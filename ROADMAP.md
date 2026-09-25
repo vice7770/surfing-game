@@ -46,7 +46,8 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
     - seabed contact.
 
     Energy ledgers close. It rides the physical surf zone riderless in the worker, drawn from the same hull curves, and it is the detached surfer's contact body. A towed 75 kg rider planes at 6 m/s but sinks at rest. The worker step is now 6–7 ms against the 4 ms gate. [Record](docs/superpowers/plans/2026-09-25-p4c-board-body.md).
-  - [ ] P4d–P4f: rider contacts and pop-up, fins and breaking, fall (on the merged detached surfer), paddling and catch calibration, practice and natural modes.
+  - [x] P4d: a separate 73 kg rider rides the board through checked contacts: it pushes only along a line through its centre of mass that meets the feet, within friction and a load cap, and it holds on while lying down. It floats and paddles prone at about 1.6 m/s, pops up in 1.2 s when the board planes (and lies back down when it does not), and shifts weight onto a rail to steer. A failed contact separates it into the detached surfer with continuous momentum. The physical mode is now ridden: Space paddles, Enter pops up, the arrows steer and R relaunches; a ride camera follows. Catching a physical wave is not yet possible (P4f), and without fins the board wanders and spins out (P4e). [Record](docs/superpowers/plans/2026-09-25-p4d-rider.md).
+  - [ ] P4e–P4f: fins, rails and breaking; catch calibration, practice and natural modes.
 ### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `Backlog`
 
 ## Current milestone — sustained wave and physical wipeout — `Done for prototype`
