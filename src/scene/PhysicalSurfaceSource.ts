@@ -13,6 +13,10 @@ export class PhysicalSurfaceSource implements SurfaceSource {
     return this.simulation.config.significantHeight;
   }
 
+  get time(): number {
+    return this.simulation.seaTime;
+  }
+
   write(data: Float32Array): void {
     this.grid.xMin = this.simulation.windowXMin;
     this.simulation.writeUniformSurface(data, this.grid);

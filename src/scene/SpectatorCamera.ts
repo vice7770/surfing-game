@@ -9,7 +9,7 @@ export interface SpectatorScene {
 
 /** View-only camera for the physical surf zone: cliff overview, water-line profile, or underwater. */
 export class SpectatorCamera {
-  readonly camera = new PerspectiveCamera(52, 1, 0.1, 900);
+  readonly camera = new PerspectiveCamera(52, 1, 0.1, 3000);
   private currentView: SpectatorView = 'overview';
   private readonly desired = new Vector3();
   private readonly target = new Vector3();

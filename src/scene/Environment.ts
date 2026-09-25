@@ -45,6 +45,8 @@ export class Environment {
       `,
     });
     const sky = new Mesh(new SphereGeometry(150, 32, 16), this.skyMaterial);
+    // Drawn first without depth, so distant water beyond the sphere still covers it.
+    sky.renderOrder = -10;
     sky.renderOrder = -10;
     this.group.add(sky);
 

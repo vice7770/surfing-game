@@ -12,6 +12,7 @@ import {
   Vector3,
   Vector4,
 } from 'three';
+import { DEFAULT_WATER_CHOP, waterChopNormal, waterChopPars } from './waterChop';
 
 export interface SurfaceGrid {
   xMin: number;
@@ -58,6 +59,7 @@ uniform vec3 waterBaseColor;
 uniform vec3 waterCrestColor;
 uniform vec3 waterFoamColor;
 varying vec3 vWaterColor;
+varying vec3 vWaterWorld;
 
 float waterHeightAt( vec2 xz ) {
   vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
@@ -98,6 +100,8 @@ export interface SurfaceSource {
   readonly grid: SurfaceGrid;
   /** Wave height used to scale the crest tint, m. */
   readonly waveHeight: number;
+  /** Simulation clock that animates the shading-only wind chop, s. */
+  readonly time: number;
   write(data: Float32Array): void;
 }
 
@@ -120,6 +124,8 @@ export class WaterSurface {
       waterBaseColor: { value: new Color('#0c8f9d') },
       waterCrestColor: { value: new Color('#4fc1b5') },
       waterFoamColor: { value: new Color('#d8f2e9') },
+      waterTime: { value: 0 },
+      waterChop: { value: DEFAULT_WATER_CHOP },
     };
     const material = new MeshPhysicalMaterial({
       color: '#ffffff',
@@ -135,9 +141,10 @@ export class WaterSurface {
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', `#include <common>\n${waterVertexPars}`)
         .replace('#include <beginnormal_vertex>', waterBeginNormal)
-        .replace('#include <begin_vertex>', 'vec3 transformed = vec3( position );\ntransformed.y = waterHeight;');
+        .replace('#include <begin_vertex>', 'vec3 transformed = vec3( position );\ntransformed.y = waterHeight;\nvWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', '#include <common>\nvarying vec3 vWaterColor;')
+        .replace('#include <common>', `#include <common>\nvarying vec3 vWaterColor;\n${waterChopPars}`)
+        .replace('#include <normal_fragment_begin>', waterChopNormal)
         .replace('#include <color_fragment>', 'diffuseColor.rgb *= vWaterColor;');
     };
     material.customProgramCacheKey = () => 'breakline-water-surface';
@@ -155,6 +162,7 @@ export class WaterSurface {
     const grid = this.source.grid;
     (this.uniforms.waterGrid.value as Vector4).set(grid.xMin, grid.zMin, grid.spacing, 0);
     this.uniforms.waterWaveHeight.value = this.source.waveHeight;
+    this.uniforms.waterTime.value = this.source.time;
     this.mesh.position.set(grid.xMin + ((grid.nx - 1) * grid.spacing) / 2, 0, grid.zMin + ((grid.nz - 1) * grid.spacing) / 2);
     this.texture.needsUpdate = true;
   }

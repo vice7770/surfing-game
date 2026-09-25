@@ -150,6 +150,7 @@ class SurfGame {
     this.scene.add(this.water.mesh, this.sheetMesh.mesh);
     this.scene.add(this.seabed.mesh);
     this.physicalMode = new PhysicalMode(this.scene);
+    this.physicalMode.farField.mesh.material.envMapIntensity = 0.28;
     this.physics = this.createPhysics(this.wave, this.activeSettings, this.plungingSheet);
     this.lastDiagnostics = this.physics.diagnostics();
     this.scene.add(this.surfer.group);
@@ -644,7 +645,7 @@ class SurfGame {
     const previousPosition = this.environment.group.position.clone();
     this.environment.group.scale.setScalar(1);
     this.environment.group.position.set(0, 0, 0);
-    const hidden = [this.water.mesh, this.sheetMesh.mesh, this.surfer.group, this.physicalMode.seabed.mesh,
+    const hidden = [this.water.mesh, this.sheetMesh.mesh, this.surfer.group, this.physicalMode.seabed.mesh, this.physicalMode.farField.mesh,
       this.boardWake.trail, this.boardWake.spray, this.breakSpray.points, this.seabed.mesh,
       this.crestMarker, this.environment.sunMesh, ...this.contactMarkers];
     const visibility = hidden.map((object) => object.visible);
@@ -655,8 +656,10 @@ class SurfGame {
     camera.update(this.renderer, this.scene);
     const pmrem = new PMREMGenerator(this.renderer);
     const nextMap = pmrem.fromCubemap(capture.texture);
-    this.water.mesh.material.envMap = nextMap.texture;
-    this.water.mesh.material.needsUpdate = true;
+    for (const material of [this.water.mesh.material, this.physicalMode.farField.mesh.material]) {
+      material.envMap = nextMap.texture;
+      material.needsUpdate = true;
+    }
     this.reflectionMapTarget?.dispose();
     this.reflectionMapTarget = nextMap;
     capture.dispose();

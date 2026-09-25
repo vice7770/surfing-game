@@ -24,12 +24,17 @@ describe('PhysicalMode', () => {
     expect(water.grid.nz).toBe(mode.simulation.renderGrid(1).nz);
     expect(mode.seabed.mesh.visible).toBe(true);
     expect(scene.children).toContain(mode.seabed.mesh);
+    expect(scene.children).toContain(mode.farField.mesh);
+    expect(mode.farField.mesh.visible).toBe(true);
+    expect(mode.farField.textureSize.width).toBe(mode.simulation.sea.components.length + 1);
     expect(mode.focus).toEqual(mode.simulation.breakPoint());
     mode.step(1 / 60);
     mode.update(1 / 60);
     expect(mode.camera.camera.position.y).toBeGreaterThan(10);
+    expect(mode.farField.temporalPhases[0]).toBeCloseTo((mode.simulation.sea.components[0].omega * mode.simulation.seaTime) % (2 * Math.PI), 4);
     mode.setVisible(false);
     expect(mode.seabed.mesh.visible).toBe(false);
+    expect(mode.farField.mesh.visible).toBe(false);
   });
 
   it('describes the running sea, solver cost and next set in the Wave Lab readout', () => {

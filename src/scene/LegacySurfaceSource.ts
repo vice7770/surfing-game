@@ -18,6 +18,10 @@ export class LegacySurfaceSource implements SurfaceSource {
     return this.wave.settings.height;
   }
 
+  get time(): number {
+    return this.wave.time;
+  }
+
   write(data: Float32Array): void {
     const wave = this.wave;
     if (wave.zMin !== this.lastZMin) {
