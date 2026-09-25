@@ -119,4 +119,52 @@ describe('ShallowWaterSolver', () => {
     expect(worstRatio).toBeLessThan(1.081);
     expect(edges.length - 1).toBeLessThan(260);
   });
+
+  it('slides the window along shore, keeping overlapping water and extending the edge', () => {
+    const spot = createSpot('point', 1);
+    const solver = new ShallowWaterSolver(
+      { nx: 30, xMin: -60, dx: 4, zEdges: uniformEdges(-200, 20, 55), xBoundary: 'open' }, spot.depthAt, { waterLevel: 0.2 },
+    );
+    for (let i = 0; i < solver.h.length; i += 1) if (solver.h[i] > 0) solver.h[i] += 0.1 * Math.sin(i * 0.37);
+    for (let frame = 0; frame < 30; frame += 1) solver.step(1 / 15);
+    const before = Float64Array.from(solver.h);
+    const edgeSurface = (iz: number) => before[iz * solver.nx + solver.nx - 1] + solver.bed[iz * solver.nx + solver.nx - 1];
+    const edges = Array.from({ length: solver.nz }, (_, iz) => edgeSurface(iz));
+    const edgeWet = Array.from({ length: solver.nz }, (_, iz) => before[iz * solver.nx + solver.nx - 1] > 1e-4);
+    solver.shiftAlongShore(5);
+    expect(solver.xCenters[0]).toBeCloseTo(-60 + 5 * 4 + 2, 12);
+    for (let iz = 0; iz < solver.nz; iz += 1) {
+      for (let ix = 0; ix < solver.nx - 5; ix += 1) expect(solver.h[iz * solver.nx + ix]).toBe(before[iz * solver.nx + ix + 5]);
+      for (let ix = solver.nx - 5; ix < solver.nx; ix += 1) {
+        const i = iz * solver.nx + ix;
+        expect(solver.bed[i]).toBe(-spot.depthAt(solver.xCenters[ix], solver.zCenters[iz]));
+        const surface = edgeWet[iz] ? edges[iz] : 0.2;
+        expect(solver.h[i]).toBeCloseTo(Math.max(0, surface - solver.bed[i]), 12);
+      }
+    }
+    expect(() => solver.shiftAlongShore(30)).toThrow(RangeError);
+  });
+
+  it('keeps a lake at rest while the window slides across the headland', () => {
+    const spot = createSpot('point', 1);
+    const solver = new ShallowWaterSolver(
+      { nx: 30, xMin: -200, dx: 4, zEdges: uniformEdges(-200, 20, 55), xBoundary: 'open' }, spot.depthAt, { waterLevel: 0.2 },
+    );
+    for (let move = 0; move < 40; move += 1) {
+      solver.step(1 / 15);
+      solver.shiftAlongShore(move % 3 === 2 ? -1 : 3);
+    }
+    let largestFlow = 0;
+    let depthError = 0;
+    for (let iz = 0; iz < solver.nz; iz += 1) {
+      for (let ix = 0; ix < solver.nx; ix += 1) {
+        const i = iz * solver.nx + ix;
+        largestFlow = Math.max(largestFlow, Math.abs(solver.qx[i]), Math.abs(solver.qz[i]));
+        depthError = Math.max(depthError, Math.abs(solver.h[i] - Math.max(0, 0.2 - solver.bed[i])));
+      }
+    }
+    expect(solver.xCenters[0]).toBeGreaterThan(0);
+    expect(largestFlow).toBeLessThan(1e-9);
+    expect(depthError).toBeLessThan(1e-9);
+  });
 });

@@ -334,6 +334,46 @@ export class ShallowWaterSolver {
     return weights;
   }
 
+  /**
+   * Move the window `columns` cells along shore (+x when positive) over the
+   * fixed spot seabed. Overlapping water is kept exactly. New columns sample the
+   * seabed and extend the old edge's surface and velocity, or rest at the still
+   * level where the edge was dry. Relaxation weights move with their cells.
+   */
+  shiftAlongShore(columns: number): void {
+    const shift = Math.trunc(columns);
+    if (shift === 0) return;
+    const { nx, nz } = this;
+    if (Math.abs(shift) >= nx) throw new RangeError(`Cannot shift ${shift} columns in a ${nx}-column window`);
+    for (let ix = 0; ix < nx; ix += 1) this.xCenters[ix] += shift * this.dx;
+    const arrays = [this.bed, this.h, this.qx, this.qz, ...this.zones.map((entry) => entry.zone.weights)];
+    for (let iz = 0; iz < nz; iz += 1) {
+      const row = iz * nx;
+      const oldEdge = shift > 0 ? row + nx - 1 : row;
+      const edgeWet = this.h[oldEdge] > this.dryDepth;
+      const edgeSurface = edgeWet ? this.h[oldEdge] + this.bed[oldEdge] : this.restLevel;
+      const edgeU = edgeWet ? this.qx[oldEdge] / this.h[oldEdge] : 0;
+      const edgeW = edgeWet ? this.qz[oldEdge] / this.h[oldEdge] : 0;
+      for (const values of arrays) {
+        if (shift > 0) values.copyWithin(row, row + shift, row + nx);
+        else values.copyWithin(row - shift, row, row + nx + shift);
+      }
+      const keptEdge = shift > 0 ? row + nx - 1 - shift : row - shift;
+      const start = shift > 0 ? nx - shift : 0;
+      const end = shift > 0 ? nx : -shift;
+      for (let ix = start; ix < end; ix += 1) {
+        const i = row + ix;
+        this.bed[i] = -this.depthAt(this.xCenters[ix], this.zCenters[iz]);
+        const depth = Math.max(0, edgeSurface - this.bed[i]);
+        const wet = depth > this.dryDepth;
+        this.h[i] = depth;
+        this.qx[i] = wet ? depth * edgeU : 0;
+        this.qz[i] = wet ? depth * edgeW : 0;
+        for (const entry of this.zones) entry.zone.weights[i] = entry.zone.weights[keptEdge];
+      }
+    }
+  }
+
   /** Blend relaxation zones toward their prescribed water after each sub-step. */
   private relax(): void {
     for (const { zone, firstRow, lastRow } of this.zones) {
