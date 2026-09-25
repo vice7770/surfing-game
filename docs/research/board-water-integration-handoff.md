@@ -19,6 +19,12 @@ The proposal's `SurfWater` interface is a **consumer contract**, not an instruct
 
 ## Baseline record before changing forces
 
+### Candidate reference setup
+
+An [ocean-wave field study by Shormann and in het Panhuis (2020)](https://doi.org/10.1371/journal.pone.0232035) records a coherent shortboard/rider pair: **73 kg surfer**, **1.78 m length**, **0.47 m width**, **0.06 m thickness**, **25.9 L board volume**, and a three-fin thruster setup. This is a provisional B0 reference because it is an observed setup close to the current code's 74 kg rider value. It is not a prescribed board for all surfers or proof that the game's reference video used those dimensions. The paper does not supply the board's mass, so mass must be chosen and documented separately before inertia is calibrated. The study's measured board yaw, pitch, roll, speed and turn duration can later provide plausibility checks, with wave and skill differences noted.
+
+The game currently renders a 2.65 m board and uses `boardMass = 80` in `BoardPhysics`, alongside `riderMass = 74`. The 80 kg value acts as an effective simulation mass and must not be relabeled as the physical shortboard mass. Reconcile visible geometry, physics contact positions, volume, board mass and inertia as **one configuration** when B0 begins; changing just the mesh length would not do so.
+
 Preserve enough information to compare the new board model with the current game without treating legacy behavior as a physical target:
 
 | Record | Minimum fields |
