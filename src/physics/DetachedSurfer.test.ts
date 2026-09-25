@@ -57,6 +57,19 @@ function advance(body: DetachedSurfer, water: BodyWaterField, frames: number,
 }
 
 describe('DetachedSurfer on controlled water', () => {
+  it('records external forces with directions that match the sampled flow', () => {
+    const body = new DetachedSurfer();
+    launch(body, new Vector3(0, -2, 0));
+    body.step(1 / 60, uniformWater(new Vector3(2, 0, 0)));
+    expect(body.lastForces.gravity.y).toBeCloseTo(-body.mass * 9.81);
+    expect(body.lastForces.buoyancy.y).toBeGreaterThan(0);
+    expect(body.lastForces.drag.x).toBeGreaterThan(0);
+    expect(body.lastForces.swim.length()).toBe(0);
+    body.step(1 / 60, uniformWater(new Vector3(-2, 0, 0)));
+    expect(body.lastForces.drag.x).toBeLessThan(0);
+    expect(body.lastForces.gravity.y).toBeCloseTo(-body.mass * 9.81);
+  });
+
   it('starts at the attached center of mass with continuous point velocities and momentum', () => {
     const body = new DetachedSurfer();
     const center = new Vector3(4, 1, -2);

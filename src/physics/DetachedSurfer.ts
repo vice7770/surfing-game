@@ -29,6 +29,14 @@ export interface SwimInput {
   steer: number;
 }
 
+/** Sum of external forces applied during the latest body step, in newtons. */
+export interface BodyForceLedger {
+  readonly gravity: Vector3;
+  readonly buoyancy: Vector3;
+  readonly drag: Vector3;
+  readonly swim: Vector3;
+}
+
 /** Contact-only board seam. The later physical board owns its water forces. */
 export interface BoardContactBody {
   readonly position: Vector3;
@@ -186,6 +194,9 @@ export class DetachedSurfer implements DetachedRiderPose {
   angularSpeed = 0;
   heading = 0;
   outsideDomain = false;
+  readonly lastForces: BodyForceLedger = {
+    gravity: new Vector3(), buoyancy: new Vector3(), drag: new Vector3(), swim: new Vector3(),
+  };
   private swimEligible = false;
   private contactPending = false;
   private lipContactPending = false;
@@ -267,6 +278,7 @@ export class DetachedSurfer implements DetachedRiderPose {
     this.contactPending = false;
     this.lipContactPending = false;
     this.contactedLipIds.clear();
+    for (const force of Object.values(this.lastForces)) force.set(0, 0, 0);
   }
 
   centerOfMass(out = new Vector3()): Vector3 {
@@ -453,9 +465,11 @@ export class DetachedSurfer implements DetachedRiderPose {
     let breaking = 0;
     let wetMass = 0;
     this.outsideDomain = false;
+    for (const force of Object.values(this.lastForces)) force.set(0, 0, 0);
     for (let index = 0; index < this.nodes.length; index += 1) {
       const node = this.nodes[index];
       const force = this.forces[index].set(0, -node.mass * GRAVITY, 0);
+      this.lastForces.gravity.y -= node.mass * GRAVITY;
       water.sampleAt(node.position, this.sample);
       this.previous[index].copy(node.position);
       this.bedY[index] = this.sample.outsideDomain ? -Infinity : this.sample.bedY;
@@ -467,7 +481,9 @@ export class DetachedSurfer implements DetachedRiderPose {
       }
       node.submersion = this.sample.wet
         ? submergedFraction(this.sample.surfaceY - node.position.y, node.radius) : 0;
-      force.y += WATER_DENSITY * GRAVITY * node.volume * node.submersion;
+      const buoyancy = WATER_DENSITY * GRAVITY * node.volume * node.submersion;
+      force.y += buoyancy;
+      this.lastForces.buoyancy.y += buoyancy;
       const relative = this.sample.wet
         ? this.relative.subVectors(node.velocity, this.sample.flow)
         : this.relative.copy(node.velocity);
@@ -479,6 +495,7 @@ export class DetachedSurfer implements DetachedRiderPose {
         node.mass / dt,
       );
       force.addScaledVector(relative, -dragMagnitude);
+      this.lastForces.drag.addScaledVector(relative, -dragMagnitude);
       if (node.submersion > 0) {
         relativeSpeed += speed * node.mass;
         wetMass += node.mass;
@@ -524,8 +541,9 @@ export class DetachedSurfer implements DetachedRiderPose {
       for (const index of [3, 4, 5, 6]) {
         if (this.nodes[index].submersion <= 0) continue;
         const thrust = index < 5 ? 75 : 30;
-        this.forces[index].addScaledVector(direction,
-          thrust * this.controlGain * this.nodes[index].submersion);
+        const magnitude = thrust * this.controlGain * this.nodes[index].submersion;
+        this.forces[index].addScaledVector(direction, magnitude);
+        this.lastForces.swim.addScaledVector(direction, magnitude);
       }
     }
 

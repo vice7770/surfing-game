@@ -62,6 +62,8 @@ S0 is a contract gate, not a request for the wave agent to implement this entire
 
 `PhysicalBodyWaterField` now adapts the merged P3b wave snapshot to that body contract without changing the solver. It explicitly rejects points beyond the current along-shore window or tank instead of accepting `sampleCentered`'s clamped edge; samples the same surface and bed as the physical render; classifies water below 1 cm as dry; and passes breaking strength through. Horizontal velocity starts from `q/h` at the body point and applies the plan's bounded Airy depth profile from the dominant period, fading to the depth average inside a fully breaking bore. Near-dry speed is capped at 12 m/s. The sample labels the horizontal flow as `reconstructed`, `dry` or `outside`; vertical flow remains zero because the stage 1 solver does not resolve it. These bounds and the profile are modeling choices for P4 calibration, not measured 3D flow. The adapter is tested against an actual `SurfZoneSimulation`, but it is not yet used by playable runtime or a worker.
 
+The detached body now records the latest step's summed gravity, buoyancy, water/air drag and swim forces in newtons. This ledger does not yet include constraint impulses, bed impulses or board/lip contacts, so it cannot be treated as a complete momentum audit until those entries are added.
+
 ## Acceptance scenarios and failure signals
 
 1. **Separation:** capture the final attached and first detached poses, linear/angular momentum and board load. They agree within the stated integration tolerance without an unexplained launch impulse.
