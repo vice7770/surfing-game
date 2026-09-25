@@ -86,7 +86,14 @@ describe('PhysicalMode', () => {
     local.refresh();
     mode.update(1 / 30);
     expect(mode.bubbles.mesh.geometry.drawRange.count).toBeGreaterThan(0);
+    const board = local.runner.board!;
+    expect(scene.children).toContain(mode.board);
+    expect(mode.board.visible).toBe(true);
+    expect(mode.board.position.toArray()).toEqual(board.position.toArray());
+    expect(mode.board.quaternion.toArray()).toEqual(board.orientation.toArray());
+    expect(mode.readout().find((row) => row.label === 'BOARD')?.value).toMatch(/^riderless · \d+\.\d m\/s$/);
     mode.setVisible(false);
+    expect(mode.board.visible).toBe(false);
     expect(mode.lipPoints.mesh.visible).toBe(false);
     expect(mode.bubbles.mesh.visible).toBe(false);
     expect(mode.seabed.mesh.visible).toBe(false);

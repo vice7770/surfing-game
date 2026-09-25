@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { REFERENCE_BOARD } from '../physics/boardReference';
+import { WATER } from '../physics/hullForces';
+import type { SpotName } from './Bathymetry';
 import { BubbleCloud } from './BubbleCloud';
 import { SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea } from './SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
@@ -72,5 +75,62 @@ describe('SurfZoneRunner', () => {
 
   it('carries a bubble cloud in the runner, not in the renderer', () => {
     expect(new SurfZoneRunner(config).bubbles).toBeInstanceOf(BubbleCloud);
+  });
+});
+
+describe('SurfZoneRunner with a board', () => {
+  const calm = (spot: SpotName): SurfZoneConfig => ({ ...config, spot, significantHeight: 0.02, peakPeriod: 10 });
+
+  it('floats a riderless board in the lineup on every spot’s calm water, at its draft', () => {
+    for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
+      const runner = new SurfZoneRunner(calm(spot), { board: true });
+      const board = runner.board!;
+      expect(board.position.z).toBeCloseTo(runner.focus.z - 25, 6);
+      runner.advance(240);
+      expect(board.outsideDomain, spot).toBe(false);
+      expect(board.submergedVolume / (REFERENCE_BOARD.mass / WATER.density), spot).toBeCloseTo(1, 1);
+      expect(Math.abs(board.velocity.y), spot).toBeLessThan(0.02);
+      expect(runner.status().board?.resets).toBe(0);
+    }
+  });
+
+  it('lets passing waves move the board on the Beach, and keeps it finite', () => {
+    const runner = new SurfZoneRunner({ ...config, spot: 'beach', significantHeight: 1.2, peakPeriod: 10 }, { board: true });
+    const board = runner.board!;
+    const start = board.position.clone();
+    let lowest = Infinity;
+    let highest = -Infinity;
+    for (let step = 0; step < 900; step += 1) {
+      runner.advance(1);
+      lowest = Math.min(lowest, board.position.y);
+      highest = Math.max(highest, board.position.y);
+      expect(Number.isFinite(board.position.x + board.position.y + board.position.z + board.orientation.w)).toBe(true);
+    }
+    expect(highest - lowest).toBeGreaterThan(0.2);
+    expect(board.position.distanceTo(start)).toBeGreaterThan(0.5);
+  });
+
+  it('puts a board that left the window back in the lineup, counting it', () => {
+    const runner = new SurfZoneRunner(calm('point'), { board: true });
+    const board = runner.board!;
+    const spawn = board.position.clone();
+    board.place(spawn.clone().setX(runner.windowXMin - 5));
+    runner.advance(1);
+    expect(board.position.distanceTo(spawn)).toBeLessThan(0.05);
+    expect(runner.status().board?.resets).toBe(1);
+  });
+
+  it('snapshots the board’s pose as stepped, and nothing without one', () => {
+    const runner = new SurfZoneRunner(calm('reef'), { board: true });
+    runner.advance(30);
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    const { position, orientation } = runner.board!;
+    expect(Array.from(buffers.board)).toEqual([...position.toArray(), ...orientation.toArray(), 1]);
+    const bare = new SurfZoneRunner(calm('reef'));
+    const empty = bare.createBuffers();
+    bare.fill(empty);
+    expect(bare.board).toBeUndefined();
+    expect(empty.board[7]).toBe(0);
   });
 });

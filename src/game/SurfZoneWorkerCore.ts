@@ -1,10 +1,10 @@
-import { SurfZoneRunner, type SurfZoneBuffers } from '../wave/SurfZoneRunner';
+import { SurfZoneRunner, type SurfZoneBuffers, type SurfZoneRunnerOptions } from '../wave/SurfZoneRunner';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import type { SurfZoneInit, SurfZoneSnapshot } from './SurfZoneHost';
 
 /** Main thread → worker. `buffers` come back filled in the next snapshot. */
 export type SurfZoneRequest =
-  | { type: 'start'; config: SurfZoneConfig }
+  | { type: 'start'; config: SurfZoneConfig; options?: SurfZoneRunnerOptions }
   | { type: 'advance'; steps: number; buffers: SurfZoneBuffers };
 
 /** Worker → main thread. */
@@ -12,9 +12,9 @@ export type SurfZoneReply =
   | { type: 'ready'; init: SurfZoneInit; snapshot: SurfZoneSnapshot }
   | { type: 'snapshot'; snapshot: SurfZoneSnapshot };
 
-/** The four arrays of a snapshot, handed over without copying. */
+/** The arrays of a snapshot, handed over without copying. */
 export function transferables(buffers: SurfZoneBuffers): Transferable[] {
-  return [buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer];
+  return [buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.board.buffer];
 }
 
 /**
@@ -29,7 +29,7 @@ export class SurfZoneWorkerCore {
 
   handle(request: SurfZoneRequest): void {
     if (request.type === 'start') {
-      const runner = new SurfZoneRunner(request.config);
+      const runner = new SurfZoneRunner(request.config, request.options);
       this.runner = runner;
       const buffers = runner.createBuffers();
       runner.fill(buffers);

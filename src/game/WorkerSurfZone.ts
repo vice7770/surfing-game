@@ -1,4 +1,4 @@
-import type { SurfZoneBuffers } from '../wave/SurfZoneRunner';
+import type { SurfZoneBuffers, SurfZoneRunnerOptions } from '../wave/SurfZoneRunner';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { SnapshotSampler, type SurfZoneHost, type SurfZoneInit, type SurfZoneSnapshot } from './SurfZoneHost';
 import { transferables, type SurfZoneReply, type SurfZoneRequest } from './SurfZoneWorkerCore';
@@ -26,6 +26,7 @@ function emptyLike(snapshot: SurfZoneBuffers): SurfZoneBuffers {
     lipCount: 0,
     bubbles: new Float32Array(snapshot.bubbles.length),
     bubbleCount: 0,
+    board: new Float64Array(snapshot.board.length),
   };
 }
 
@@ -43,7 +44,7 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
   private pending = 0;
   private disposed = false;
 
-  constructor(readonly config: SurfZoneConfig, private readonly port: WorkerPort = createSurfZoneWorker()) {
+  constructor(readonly config: SurfZoneConfig, private readonly port: WorkerPort = createSurfZoneWorker(), options: SurfZoneRunnerOptions = {}) {
     super();
     this.ready = new Promise((resolve, reject) => {
       port.onerror = (event) => reject(new Error(event.message || 'The surf zone worker failed'));
@@ -62,7 +63,7 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
         this.flush();
       };
     });
-    port.postMessage({ type: 'start', config });
+    port.postMessage({ type: 'start', config, options });
   }
 
   advance(steps: number): void {

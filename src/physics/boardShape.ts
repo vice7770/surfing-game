@@ -56,6 +56,10 @@ export interface HullPatch {
 export interface BoardShape {
   length: number;
   maxWidth: number;
+  /** Width, bottom height (rocker) and stringer thickness, m, at fraction s of the length from the tail. */
+  curves: { width: (s: number) => number; rocker: (s: number) => number; thickness: (s: number) => number };
+  /** Rail taper a: thickness across the width is t(s)(1 − a u²) at u ∈ [−1, 1]. */
+  taper: number;
   patches: HullPatch[];
   volume: number;
   planformArea: number;
@@ -147,5 +151,5 @@ export function buildBoardShape(reference: typeof REFERENCE_BOARD = REFERENCE_BO
   }
   let maxWidth = 0;
   for (let s = 0; s <= 1; s += 0.001) maxWidth = Math.max(maxWidth, outline(s));
-  return { length, maxWidth, patches, volume, planformArea, mass, centerOfMass: center, inertia };
+  return { length, maxWidth, curves: { width: outline, rocker, thickness }, taper, patches, volume, planformArea, mass, centerOfMass: center, inertia };
 }

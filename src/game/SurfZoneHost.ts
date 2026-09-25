@@ -1,6 +1,6 @@
 import type { RenderableSurfZone } from '../scene/PhysicalSurfaceSource';
 import { sampleSurfaceBed, sampleSurfaceHeight, type SurfaceGrid } from '../scene/WaterSurface';
-import { SurfZoneRunner, type SurfZoneBuffers, type SurfZoneStatus } from '../wave/SurfZoneRunner';
+import { SurfZoneRunner, type SurfZoneBuffers, type SurfZoneRunnerOptions, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { RenderGrid, SurfZoneConfig } from '../wave/SurfZoneSimulation';
 
 /** What a surf zone fixes when it starts: its render grid, bed, break focus, window and solver column width. */
@@ -57,9 +57,9 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
   readonly init: SurfZoneInit;
   readonly snapshot: SurfZoneSnapshot;
 
-  constructor(readonly config: SurfZoneConfig) {
+  constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}) {
     super();
-    this.runner = new SurfZoneRunner(config);
+    this.runner = new SurfZoneRunner(config, options);
     this.init = {
       grid: { ...this.runner.grid }, bed: this.runner.bed, focus: this.runner.focus,
       windowXMin: this.runner.windowXMin, dx: this.runner.simulation.solver.dx,

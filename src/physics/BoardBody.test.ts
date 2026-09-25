@@ -188,6 +188,29 @@ describe('rigid board body', () => {
     expect(water.reactions).toBeGreaterThan(0);
   });
 
+  it('samples the water, then hands each patch’s reaction back once per step', () => {
+    const calls: string[] = [];
+    const water = new PlaneWater({ flow: { x: 0.5, y: 0, z: 0 } });
+    const sampleAt = water.sampleAt.bind(water);
+    const addReaction = water.addReaction.bind(water);
+    water.sampleAt = (x, y, z, out) => {
+      calls.push('sample');
+      return sampleAt(x, y, z, out);
+    };
+    water.addReaction = (x, z, jx, jy, jz) => {
+      calls.push('react');
+      addReaction(x, z, jx, jy, jz);
+    };
+    const board = levelBoard();
+    run(board, water, 0.5);
+    calls.length = 0;
+    board.step(STEP, water);
+    const firstReaction = calls.indexOf('react');
+    expect(firstReaction).toBeGreaterThan(0);
+    expect(calls.slice(firstReaction).every((call) => call === 'react')).toBe(true);
+    expect(calls.length - firstReaction).toBeLessThanOrEqual(board.shape.patches.length);
+  });
+
   it('gives the same motion at 1/60 and 1/120 s steps, and bit-identical repeats', () => {
     const drop = (dt: number) => {
       const board = levelBoard(0.5);

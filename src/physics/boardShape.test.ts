@@ -47,4 +47,15 @@ describe('reference shortboard hull', () => {
     expect(tail.normal.z).toBeLessThan(0);
     expect(nose.position.y).toBeGreaterThan(tail.position.y);
   });
+
+  it('exposes the curves it is built from, so a renderer can draw the same hull', () => {
+    for (const patch of shape.patches) {
+      const s = patch.position.z / shape.length + 0.5;
+      const u = patch.position.x / (shape.curves.width(s) / 2);
+      expect(patch.position.y).toBeCloseTo(shape.curves.rocker(s), 12);
+      expect(patch.thickness).toBeCloseTo(shape.curves.thickness(s) * (1 - shape.taper * u * u), 12);
+    }
+    expect(shape.taper).toBeGreaterThan(0);
+    expect(shape.taper).toBeLessThan(1);
+  });
 });

@@ -1,4 +1,6 @@
 import type { Scene } from 'three';
+import { buildBoardShape } from '../physics/boardShape';
+import { createBoardMesh } from '../scene/BoardMesh';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
@@ -129,6 +131,7 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
     { label: 'NEXT SET', value: toSet > 0 ? `in ${Math.round(toSet)} s` : `${Math.round(-toSet)} s ago` },
     { label: 'BREAKER', value: breaker.type === 'none' ? 'FLAT BED' : `ξ ${breaker.value.toFixed(2)} · ${breaker.type.toUpperCase()}` },
     { label: 'BREAKING', value: `${Math.round(status.breakingFraction * 100)} % of the surf zone` },
+    ...(status.board ? [{ label: 'BOARD', value: `riderless · ${status.board.speed.toFixed(1)} m/s${status.board.resets ? ` · back in the lineup ×${status.board.resets}` : ''}` }] : []),
     { label: 'PEEL', value: peelText },
     { label: 'LIP', value: status.lipLaunches === 0 ? 'no lip yet'
       : `${status.lipLaunches} throws · ${status.lipVolume.toFixed(1)} m³ · ${status.lipAirborne.toFixed(1)} m³ airborne` },
@@ -145,7 +148,7 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
 export type SurfZoneHostFactory = (config: SurfZoneConfig) => SurfZoneHost;
 
 /** Runs the surf zone in the page (tests, and browsers without Web Workers). */
-export const localSurfZone: SurfZoneHostFactory = (config) => new LocalSurfZone(config);
+export const localSurfZone: SurfZoneHostFactory = (config) => new LocalSurfZone(config, { board: true });
 
 /** The latest snapshot's packed lip positions, in the shape `LipPoints` draws. */
 function snapshotLip(snapshot: SurfZoneSnapshot): RenderableLip {
@@ -163,6 +166,8 @@ export class PhysicalMode {
   readonly lipPoints = new LipPoints();
   /** Bubbles entrained under breaking bores, seen from below the surface. */
   readonly bubbles = new BubblePoints();
+  /** The riderless physical board, drawn at the snapshot's pose. */
+  readonly board = createBoardMesh(buildBoardShape());
   /** The running surf zone, once it has spun up. */
   host?: SurfZoneHost;
   config?: SurfZoneConfig;
@@ -170,9 +175,11 @@ export class PhysicalMode {
   storm?: StormSwell;
   focus = { x: 0, z: 0 };
   private starts = 0;
+  private shown = true;
 
   constructor(scene: Scene) {
-    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh);
+    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh, this.board);
+    this.board.visible = false;
   }
 
   get ready(): boolean {
@@ -260,6 +267,7 @@ export class PhysicalMode {
   stop(): void {
     this.host?.dispose();
     this.host = undefined;
+    this.board.visible = false;
   }
 
   /** Request `steps` fixed physics steps (`SURF_ZONE_STEP` each). */
@@ -273,6 +281,10 @@ export class PhysicalMode {
     this.camera.update(host, this.focus, dt);
     this.farField.update(host.snapshot.status.seaTime);
     this.lipPoints.update(snapshotLip(host.snapshot));
+    const pose = host.snapshot.board;
+    this.board.visible = this.shown && pose[7] > 0;
+    this.board.position.set(pose[0], pose[1], pose[2]);
+    this.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
     this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
   }
 
@@ -288,6 +300,8 @@ export class PhysicalMode {
   }
 
   setVisible(visible: boolean): void {
+    this.shown = visible;
+    this.board.visible = visible && (this.host?.snapshot.board[7] ?? 0) > 0;
     this.seabed.mesh.visible = visible;
     this.farField.mesh.visible = visible;
     this.lipPoints.mesh.visible = visible;

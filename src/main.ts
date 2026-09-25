@@ -71,7 +71,7 @@ const physicalRequested = new URLSearchParams(window.location.search).has('physi
  * without workers, runs it on the main thread instead.
  */
 const createSurfZone: SurfZoneHostFactory = typeof Worker === 'undefined' || new URLSearchParams(window.location.search).has('inpage')
-  ? localSurfZone : (config) => new WorkerSurfZone(config);
+  ? localSurfZone : (config) => new WorkerSurfZone(config, undefined, { board: true });
 
 function getElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
