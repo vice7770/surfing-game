@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { breakerDepthFor } from './Breaking';
 import { SurfZoneSimulation, TANK, type SurfZoneConfig } from './SurfZoneSimulation';
 
 const small: Omit<SurfZoneConfig, 'spot'> = {
@@ -59,9 +60,44 @@ describe('SurfZoneSimulation', () => {
     expect(dryChecked).toBeGreaterThan(5);
   });
 
-  it('finds the break line where the still depth is Hs / 0.78', () => {
+  it('finds the break line at the shoaled breaker depth', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'beach' });
     const point = simulation.breakPoint();
-    expect(simulation.spot.depthAt(point.x, point.z)).toBeCloseTo(1.4 / 0.78, 1);
+    const depth = breakerDepthFor(1.4, simulation.sea.depth);
+    expect(simulation.breakerDepth()).toBeCloseTo(depth, 12);
+    expect(simulation.spot.depthAt(point.x, point.z)).toBeCloseTo(depth, 1);
+  });
+
+  it('breaks waves in the surf zone, measures the peel and paints whitewater', () => {
+    // Bores need the game's 1 m surf-zone cells; 2 m cells smear them below either breaking criterion.
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, directionDegrees: 20, spreading: 24 });
+    let broke = false;
+    let estimate = simulation.peelEstimate();
+    for (let frame = 0; frame < 20 * 30 && !(estimate && simulation.breakingFraction() > 0.02); frame += 1) {
+      simulation.step(1 / 30);
+      broke ||= simulation.breakingFraction() > 0;
+      estimate = simulation.peelEstimate() ?? estimate;
+    }
+    expect(broke).toBe(true);
+    expect(estimate).toBeDefined();
+    expect(estimate!.angleDegrees).toBeGreaterThanOrEqual(0);
+    expect(estimate!.angleDegrees).toBeLessThanOrEqual(90);
+    for (const value of simulation.breaking.strength) expect(value).toBeLessThanOrEqual(1);
+    const grid = simulation.renderGrid(1);
+    const data = new Float32Array(grid.nx * grid.nz * 2);
+    simulation.writeUniformSurface(data, grid);
+    let whitewater = 0;
+    for (let k = 0; k < grid.nx * grid.nz; k += 1) if (data[k * 2 + 1] > 0.3) whitewater += 1;
+    expect(whitewater).toBeGreaterThan(0);
+    const iribarren = simulation.iribarren();
+    expect(iribarren.value).toBeGreaterThan(0);
+    expect(['spilling', 'plunging', 'surging']).toContain(iribarren.type);
+  });
+
+  it('holds waves up longer under offshore wind', () => {
+    const onshore = new SurfZoneSimulation({ ...small, spot: 'beach', windSpeed: 10 });
+    const offshore = new SurfZoneSimulation({ ...small, spot: 'beach', windSpeed: -10 });
+    expect(offshore.breaking.onsetScale).toBeGreaterThan(1);
+    expect(onshore.breaking.onsetScale).toBeLessThan(1);
   });
 });

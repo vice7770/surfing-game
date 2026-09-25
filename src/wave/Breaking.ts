@@ -13,9 +13,27 @@ export interface BreakingOptions {
 
 const MIN_DEPTH = 0.05;
 
+function ramp(value: number, from: number, to: number): number {
+  return Math.min(1, Math.max(0, (value - from) / (to - from)));
+}
+
 /**
- * Kennedy et al. (2000) breaking indicator on the stage 1 solver (plan §1.8,
- * Q27). A cell breaks when its surface rises faster than η_t*; η_t* starts at
+ * Stage 1 bore criterion. The shallow-water solver smears a bore over 2–3 cells,
+ * so the Kennedy rise rate depends on resolution: the peak measured on the reef
+ * was 0.33 √(gh) with 2 m cells and 0.70 √(gh) with 1 m cells, against a 0.65
+ * onset. A rising front counts as breaking when it is both steep (slope 0.10 →
+ * 0.25) and depth-limited (η/h 0.15 → 0.30, scaled by the wind). The second
+ * condition keeps the solver's non-dispersive steepening offshore from reading as
+ * surf.
+ */
+export function boreStrength(slope: number, relativeHeight: number, scale = 1): number {
+  return ramp(slope, 0.1, 0.25) * ramp(relativeHeight, 0.15 * scale, 0.3 * scale);
+}
+
+/**
+ * Breaking indicator on the stage 1 solver (plan §1.8, Q27): the larger of the
+ * Kennedy et al. (2000) rise-rate test and the stage 1 bore criterion
+ * (`boreStrength`). A cell breaks when its surface rises faster than η_t*; η_t* starts at
  * the onset fraction of √(gh) and ramps to the end fraction over T* = 5√(h/g).
  * A cell inherits the breaking age of breaking neighbours, so a travelling
  * bore keeps its age. In stage 1 this is an indicator for rendering, readouts
@@ -43,7 +61,7 @@ export class BreakingModel {
   }
 
   update(dt: number): void {
-    const { nx, nz, h, bed } = this.solver;
+    const { nx, nz, h, bed, dx, zCenters, restLevel } = this.solver;
     if (!this.primed || !(dt > 0)) {
       for (let i = 0; i < h.length; i += 1) this.previousSurface[i] = h[i] + bed[i];
       this.primed = true;
@@ -71,7 +89,13 @@ export class BreakingModel {
         if (iz < nz - 1 && this.strength[i + nx] > 0) inherited = Math.max(inherited, this.age[i + nx]);
         const ramp = Math.min(1, inherited / (transition * Math.sqrt(depth / GRAVITY)));
         const threshold = Math.sqrt(GRAVITY * depth) * (onset + (end - onset) * ramp);
-        const breaking = Math.min(1, Math.max(0, rise / threshold - 1));
+        let breaking = Math.min(1, Math.max(0, rise / threshold - 1));
+        const stillDepth = restLevel - bed[i];
+        if (rise > 0 && stillDepth > 0.1 && ix > 0 && ix < nx - 1 && iz > 0 && iz < nz - 1) {
+          const slopeX = (h[i + 1] + bed[i + 1] - h[i - 1] - bed[i - 1]) / (2 * dx);
+          const slopeZ = (h[i + nx] + bed[i + nx] - h[i - nx] - bed[i - nx]) / (zCenters[iz + 1] - zCenters[iz - 1]);
+          breaking = Math.max(breaking, boreStrength(Math.hypot(slopeX, slopeZ), (surface - restLevel) / stillDepth, this.onsetScale));
+        }
         this.nextStrength[i] = breaking;
         this.nextAge[i] = breaking > 0 ? inherited + dt : 0;
       }

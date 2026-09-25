@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BreakingModel, PeelTracker, breakerDepthFor, skillForPeel } from './Breaking';
+import { BreakingModel, PeelTracker, boreStrength, breakerDepthFor, skillForPeel } from './Breaking';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
 
 function damBreak(): ShallowWaterSolver {
@@ -59,6 +59,16 @@ describe('BreakingModel', () => {
       return total;
     };
     expect(count(1.2)).toBeLessThan(count(0.8));
+  });
+});
+
+describe('boreStrength', () => {
+  it('needs both a steep front and a depth-limited height', () => {
+    expect(boreStrength(0.4, 0.4)).toBe(1);
+    expect(boreStrength(0.4, 0.1)).toBe(0);
+    expect(boreStrength(0.05, 0.4)).toBe(0);
+    expect(boreStrength(0.175, 0.225)).toBeCloseTo(0.25, 12);
+    expect(boreStrength(0.4, 0.25, 1.2)).toBeLessThan(boreStrength(0.4, 0.25, 0.8));
   });
 });
 

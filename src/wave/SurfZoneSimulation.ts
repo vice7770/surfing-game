@@ -1,9 +1,10 @@
 import { createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
-import { shallowWaterWaveNumber } from './dispersion';
+import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
+import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
 import { SeaState } from './SeaState';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import { ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
-import { BREAKER_INDEX } from './SwellReadout';
+import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
 
 export interface SurfZoneConfig {
@@ -27,6 +28,10 @@ export interface SurfZoneConfig {
   spinUpPeriods?: number;
   /** Seconds between hand-over and the next set peak at the zone. */
   lead?: number;
+  /** Local wind, m/s: positive onshore, negative offshore. */
+  windSpeed?: number;
+  /** Kennedy onset threshold as a fraction of √(gh); defaults per spot. */
+  breakingOnset?: number;
 }
 
 export interface RenderGrid {
@@ -42,6 +47,17 @@ export const TANK = { offshore: -330, zoneInner: -270, blendEnd: -190, fineFrom:
 
 /** Flat tank bed offshore of each spot's blend, m below datum. */
 export const OFFSHORE_DEPTH: Record<SpotName, number> = { beach: 5, point: 8, reef: 10, canyon: 5 };
+
+/** Kennedy onset per spot (plan Q27): 0.35√(gh) on the barred beach, 0.65√(gh) on plain or steep beds. */
+export const BREAKING_ONSET: Record<SpotName, number> = { beach: 0.35, point: 0.65, reef: 0.65, canyon: 0.65 };
+
+/**
+ * Wind shifts breaking onset: offshore wind holds faces up, onshore wind makes them crumble early
+ * (plan Q23). This is a qualitative ±20 % at 13 m/s whose magnitude is still to be sourced.
+ */
+export function windOnsetScale(windSpeed: number): number {
+  return Math.min(1.2, Math.max(0.8, 1 - 0.015 * windSpeed));
+}
 
 /** Spot seabed with a flat offshore floor under the relaxation zone, blended over TANK.zoneInner…blendEnd. */
 export function tankDepth(spot: SurfSpot, offshoreDepth: number, x: number, z: number): number {
@@ -61,11 +77,13 @@ export class SurfZoneSimulation {
   readonly sea: SeaState;
   readonly solver: ShallowWaterSolver;
   readonly plan: SetRunPlan;
+  readonly breaking: BreakingModel;
+  readonly peel: PeelTracker;
   lastStepMs = 0;
   private readonly seaTimeOffset: number;
   private mapping?: {
     grid: RenderGrid; xMin: number; columns: Int32Array; columnWeights: Float64Array;
-    rows: Int32Array; rowWeights: Float64Array; heights: Float64Array; wet: Uint8Array;
+    rows: Int32Array; rowWeights: Float64Array; heights: Float64Array; wet: Uint8Array; whitewater: Float64Array;
   };
 
   constructor(readonly config: SurfZoneConfig) {
@@ -98,6 +116,10 @@ export class SurfZoneSimulation {
     ));
     // Settle the nonlinear shape at the CFL limit, re-checking stability every quarter second.
     while (this.solver.time < spinUp - 1e-9) this.solver.step(Math.min(0.25, spinUp - this.solver.time));
+    this.breaking = new BreakingModel(this.solver, { onset: config.breakingOnset ?? BREAKING_ONSET[config.spot] });
+    this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0);
+    this.breaking.update(0);
+    this.peel = new PeelTracker(this.solver.xCenters, config.peakPeriod);
   }
 
   get seaTime(): number {
@@ -116,7 +138,56 @@ export class SurfZoneSimulation {
   step(dt: number): void {
     const start = performance.now();
     this.solver.step(dt);
+    this.breaking.update(dt);
+    this.peel.record(this.solver.time, (column) => this.columnBreaking(column));
     this.lastStepMs = performance.now() - start;
+  }
+
+  /** Still depth where the shoaled swell breaks, h_b = (Hs·D^¼/γ)^⅘, m. */
+  breakerDepth(): number {
+    return breakerDepthFor(this.config.significantHeight, this.sea.depth);
+  }
+
+  /** Bore speed at the break, √(g h_b), m/s. */
+  breakerCelerity(): number {
+    return Math.sqrt(GRAVITY * this.breakerDepth());
+  }
+
+  /** Breaker-point Iribarren number from the bed slope at the break line and H_b = γ h_b. */
+  iribarren(): { value: number; type: BreakerType } {
+    const point = this.breakPoint();
+    const slope = Math.abs(this.spot.depthAt(point.x, point.z - 2) - this.spot.depthAt(point.x, point.z + 2)) / 4;
+    const depth = this.breakerDepth();
+    const readout = describeSwell({ height: BREAKER_INDEX * depth, period: this.config.peakPeriod, depth, bedSlope: slope });
+    return { value: readout.iribarren, type: readout.breakerType };
+  }
+
+  peelEstimate(): PeelEstimate | undefined {
+    return this.peel.estimate(this.solver.time, this.breakerCelerity());
+  }
+
+  /** Share of wet surf-zone cells breaking with B > 0.3. */
+  breakingFraction(): number {
+    const { solver } = this;
+    let wet = 0;
+    let breaking = 0;
+    for (let iz = solver.rowBelow(TANK.fineFrom); iz < solver.nz; iz += 1) {
+      for (let ix = 0; ix < solver.nx; ix += 1) {
+        const i = iz * solver.nx + ix;
+        if (solver.h[i] <= WET) continue;
+        wet += 1;
+        if (this.breaking.strength[i] > 0.3) breaking += 1;
+      }
+    }
+    return wet > 0 ? breaking / wet : 0;
+  }
+
+  private columnBreaking(column: number): boolean {
+    const { solver } = this;
+    for (let iz = solver.rowBelow(TANK.fineFrom); iz < solver.nz; iz += 1) {
+      if (this.breaking.strength[iz * solver.nx + column] > 0.3) return true;
+    }
+    return false;
   }
 
   /** Water surface elevation, m; on dry land this is the bed. */
@@ -142,13 +213,14 @@ export class SurfZoneSimulation {
 
   /**
    * Resample the water to interleaved (height, foam) per render node. Dry nodes
-   * sit 5 cm under the bed so the seabed mesh hides them. Foam here is only the
-   * steep-slope tint; breaking foam arrives with P3.
+   * sit 5 cm under the bed so the seabed mesh hides them. Foam is the larger of
+   * the steep-slope tint and the Kennedy breaking strength (whitewater).
    */
   writeUniformSurface(data: Float32Array, grid: RenderGrid): void {
     const mapping = this.mappingFor(grid);
     const { h, bed, nx } = this.solver;
-    const { columns, columnWeights, rows, rowWeights, heights, wet } = mapping;
+    const strength = this.breaking.strength;
+    const { columns, columnWeights, rows, rowWeights, heights, wet, whitewater } = mapping;
     for (let r = 0; r < grid.nz; r += 1) {
       const row = rows[r] * nx;
       const tz = rowWeights[r];
@@ -158,6 +230,7 @@ export class SurfZoneSimulation {
         const depth = (h[i] * (1 - tx) + h[i + 1] * tx) * (1 - tz) + (h[i + nx] * (1 - tx) + h[i + nx + 1] * tx) * tz;
         const bottom = (bed[i] * (1 - tx) + bed[i + 1] * tx) * (1 - tz) + (bed[i + nx] * (1 - tx) + bed[i + nx + 1] * tx) * tz;
         const k = r * grid.nx + c;
+        whitewater[k] = (strength[i] * (1 - tx) + strength[i + 1] * tx) * (1 - tz) + (strength[i + nx] * (1 - tx) + strength[i + nx + 1] * tx) * tz;
         wet[k] = depth > WET ? 1 : 0;
         heights[k] = wet[k] ? depth + bottom : bottom - 0.05;
       }
@@ -172,14 +245,14 @@ export class SurfZoneSimulation {
           continue;
         }
         const slope = Math.hypot((heights[k + 1] - heights[k - 1]) * inverse, (heights[k + grid.nx] - heights[k - grid.nx]) * inverse);
-        data[k * 2 + 1] = Math.max(0, Math.min(0.12, (slope - 0.12) * 0.5));
+        data[k * 2 + 1] = Math.max(Math.max(0, Math.min(0.12, (slope - 0.12) * 0.5)), Math.min(0.95, 1.2 * whitewater[k]));
       }
     }
   }
 
-  /** Where the still depth first reaches Hs / γ on the x = 0 transect: the camera's break focus. */
+  /** Where the still depth first reaches the shoaled breaker depth on the x = 0 transect: the camera's break focus. */
   breakPoint(): { x: number; z: number } {
-    const target = this.config.significantHeight / BREAKER_INDEX;
+    const target = this.breakerDepth();
     for (let z = TANK.blendEnd; z < TANK.shore; z += 0.5) {
       if (this.spot.depthAt(0, z) + this.config.tide <= target) return { x: 0, z };
     }
@@ -202,7 +275,7 @@ export class SurfZoneSimulation {
       }
       mapping = {
         grid: { ...grid }, xMin: Number.NaN, columns: new Int32Array(grid.nx), columnWeights: new Float64Array(grid.nx),
-        rows, rowWeights, heights: new Float64Array(size), wet: new Uint8Array(size),
+        rows, rowWeights, heights: new Float64Array(size), wet: new Uint8Array(size), whitewater: new Float64Array(size),
       };
       this.mapping = mapping;
     }
