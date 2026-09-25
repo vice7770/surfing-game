@@ -2,19 +2,20 @@ import type { Scene } from 'three';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
-import { LipPoints } from '../scene/LipPoints';
+import { LipPoints, type RenderableLip } from '../scene/LipPoints';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera } from '../scene/SpectatorCamera';
 import { SpotSeabed } from '../scene/SpotSeabed';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import type { WaterSurface } from '../scene/WaterSurface';
-import { smoothstep, type SpotName } from '../wave/Bathymetry';
+import { createSpot, smoothstep, type SpotName } from '../wave/Bathymetry';
 import { FarFieldProfile } from '../wave/FarFieldProfile';
 import { MIXED_PEAK_FIT, skillForPeel } from '../wave/Breaking';
 import { stormSwell, type StormSwell } from '../wave/StormSwell';
 import type { ReadoutRow } from '../wave/SwellReadout';
-import { SurfZoneRunner, type SurfZoneStatus } from '../wave/SurfZoneRunner';
-import { OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import type { SurfZoneStatus } from '../wave/SurfZoneRunner';
+import { OFFSHORE_DEPTH, TANK, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost, type SurfZoneSnapshot } from './SurfZoneHost';
 
 /** Wave Lab inputs for the view-only physical surf zone (buoy values or a storm, plan Q2, Q22 and Q31). */
 export interface PhysicalSettings {
@@ -141,6 +142,20 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
  * the shared water surface, a seabed mesh from the spot, and a spectator
  * camera. The legacy board does not ride these waves until P4.
  */
+export type SurfZoneHostFactory = (config: SurfZoneConfig) => SurfZoneHost;
+
+/** Runs the surf zone in the page (tests, and browsers without Web Workers). */
+export const localSurfZone: SurfZoneHostFactory = (config) => new LocalSurfZone(config);
+
+/** The latest snapshot's packed lip positions, in the shape `LipPoints` draws. */
+function snapshotLip(snapshot: SurfZoneSnapshot): RenderableLip {
+  return {
+    forEachActive(visit) {
+      for (let i = 0; i < snapshot.lipCount; i += 1) visit(snapshot.lip[i * 3], snapshot.lip[i * 3 + 1], snapshot.lip[i * 3 + 2], 0);
+    },
+  };
+}
+
 export class PhysicalMode {
   readonly camera = new SpectatorCamera();
   readonly seabed = new SpotSeabed();
@@ -148,19 +163,33 @@ export class PhysicalMode {
   readonly lipPoints = new LipPoints();
   /** Bubbles entrained under breaking bores, seen from below the surface. */
   readonly bubbles = new BubblePoints();
-  runner!: SurfZoneRunner;
+  /** The running surf zone, once it has spun up. */
+  host?: SurfZoneHost;
+  config?: SurfZoneConfig;
   /** The storm behind the running sea, in storm mode. */
   storm?: StormSwell;
   focus = { x: 0, z: 0 };
+  private starts = 0;
 
   constructor(scene: Scene) {
     scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh);
   }
 
-  /** Build the surf zone (warm start and spin-up take a few seconds) and show it on `water`. */
-  start(settings: PhysicalSettings, seed: number, water: WaterSurface, overrides: Partial<SurfZoneConfig> = {}): void {
+  get ready(): boolean {
+    return this.host !== undefined;
+  }
+
+  /**
+   * Build the surf zone (warm start and spin-up take a few seconds) and show it
+   * on `water`. Resolves false when a later start superseded this one.
+   */
+  async start(
+    settings: PhysicalSettings, seed: number, water: WaterSurface, overrides: Partial<SurfZoneConfig> = {},
+    createHost: SurfZoneHostFactory = localSurfZone,
+  ): Promise<boolean> {
+    const start = ++this.starts;
     const swell = swellFor(settings);
-    const runner = new SurfZoneRunner({
+    const config: SurfZoneConfig = {
       spot: settings.spot,
       seed,
       significantHeight: swell.significantHeight,
@@ -171,68 +200,91 @@ export class PhysicalMode {
       tide: settings.tide,
       windSpeed: settings.windSpeed,
       ...overrides,
-    });
-    this.runner = runner;
-    const { simulation } = runner;
+    };
+    const host = createHost(config);
+    await host.ready;
+    if (start !== this.starts) {
+      host.dispose();
+      return false;
+    }
+    this.stop();
+    this.host = host;
+    this.config = config;
     this.storm = swell.storm;
-    water.setSource(new PhysicalSurfaceSource(simulation, 1));
+    const { init } = host;
+    water.setSource(new PhysicalSurfaceSource(new SnapshotSurfZone(host), init.grid.spacing));
     water.setChop(chopForWind(settings.windSpeed));
     water.setOptics(SPOT_OPTICS[settings.spot]);
     this.farField.setOptics(SPOT_OPTICS[settings.spot]);
+    const spot = createSpot(config.spot, config.seed);
     const offshoreDepth = OFFSHORE_DEPTH[settings.spot];
-    const { dx } = simulation.solver;
-    const windowMin = simulation.windowXMin;
-    const windowMax = windowMin + simulation.solver.nx * dx;
-    const leftX = windowMin + dx / 2;
-    const rightX = windowMax - dx / 2;
+    const windowMin = init.windowXMin;
+    const windowMax = windowMin + (init.grid.nx - 1) * init.grid.spacing;
+    const leftX = windowMin + init.dx / 2;
+    const rightX = windowMax - init.dx / 2;
     // Beyond the window the world continues each edge column's seabed; offshore it deepens to FAR_DEPTH.
     const offshoreBed = (z: number) => offshoreDepth + (FAR_DEPTH - offshoreDepth) * smoothstep(TANK.offshore, TANK.offshore - FAR_SLOPE_LENGTH, z);
     const bedDepth = (x: number, z: number) => {
       if (z < TANK.offshore) return offshoreBed(z);
-      return tankDepth(simulation.spot, offshoreDepth, x < windowMin ? leftX : x > windowMax ? rightX : x, z);
+      return tankDepth(spot, offshoreDepth, x < windowMin ? leftX : x > windowMax ? rightX : x, z);
     };
-    this.focus = simulation.breakPoint();
+    this.focus = { ...init.focus };
     const hole = { xMin: windowMin, xMax: windowMax, zMin: TANK.offshore, zMax: TANK.shore };
     this.seabed.setDepthOnGrid(
       bedDepth,
       gradedAxis(this.focus.x - 600, this.focus.x + 600, windowMin, windowMax, 2, 30),
       gradedAxis(-900, TANK.shore + 30, TANK.offshore, TANK.shore, 2, 30),
     );
-    const profile = new FarFieldProfile(simulation.sea, {
+    const profile = new FarFieldProfile(surfZoneSea(config), {
       referenceZ: TANK.offshore,
       shoreZ: TANK.shore,
       offshoreZ: TANK.offshore - (FAR_EXTENT - 330),
       shoreSamples: 181,
       offshoreSamples: 391,
       offshoreDepth: (z) => offshoreBed(z) + settings.tide,
-      leftDepth: (z) => tankDepth(simulation.spot, offshoreDepth, leftX, z) + settings.tide,
-      rightDepth: (z) => tankDepth(simulation.spot, offshoreDepth, rightX, z) + settings.tide,
+      leftDepth: (z) => tankDepth(spot, offshoreDepth, leftX, z) + settings.tide,
+      rightDepth: (z) => tankDepth(spot, offshoreDepth, rightX, z) + settings.tide,
     });
     this.farField.setProfile(profile, hole, this.focus, { extent: FAR_EXTENT });
     this.farField.setChop(chopForWind(settings.windSpeed));
     this.camera.setView(this.camera.view);
+    return true;
   }
 
-  /** The running surf zone's simulation. */
-  get simulation(): SurfZoneSimulation {
-    return this.runner.simulation;
+  /** Supersede any start still spinning up, so it never takes over. */
+  cancel(): void {
+    this.starts += 1;
   }
 
-  /** Advance one fixed physics step (`SURF_ZONE_STEP`). */
-  step(): void {
-    this.runner.advance(1);
+  /** Let the running surf zone go (its worker, if any, ends). */
+  stop(): void {
+    this.host?.dispose();
+    this.host = undefined;
+  }
+
+  /** Request `steps` fixed physics steps (`SURF_ZONE_STEP` each). */
+  advance(steps: number): void {
+    this.host?.advance(steps);
   }
 
   update(dt: number): void {
-    this.camera.update(this.simulation, this.focus, dt);
-    this.farField.update(this.simulation.seaTime);
-    this.lipPoints.update(this.simulation.lip);
-    this.bubbles.update(this.runner.bubbles);
+    const { host } = this;
+    if (!host) return;
+    this.camera.update(host, this.focus, dt);
+    this.farField.update(host.snapshot.status.seaTime);
+    this.lipPoints.update(snapshotLip(host.snapshot));
+    this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
+  }
+
+  /** The Wave Lab rows for the running surf zone. */
+  readout(): ReadoutRow[] {
+    return this.host && this.config ? formatPhysicalReadout(this.config, this.host.snapshot.status, this.storm) : [];
   }
 
   cameraBelowSurface(margin = 0.1): boolean {
+    if (!this.host) return false;
     const position = this.camera.camera.position;
-    return position.y < this.simulation.heightAt(position.x, position.z) - margin;
+    return position.y < this.host.heightAt(position.x, position.z) - margin;
   }
 
   setVisible(visible: boolean): void {

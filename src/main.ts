@@ -18,7 +18,7 @@ import {
 import { Controls } from './game/Controls';
 import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
-import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, formatPhysicalReadout, spreadingFor, swellFor, type PhysicalSettings } from './game/PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, spreadingFor, swellFor, type PhysicalSettings } from './game/PhysicalMode';
 import { BoardPhysics, type BoardDiagnostics, type PhysicsSettings } from './physics/BoardPhysics';
 import { CameraRig } from './scene/CameraRig';
 import { BoardWake } from './scene/BoardWake';
@@ -120,8 +120,9 @@ class SurfGame {
   private readonly underwaterColor = new Color('#367e83');
   private readonly skyColor = new Color('#b8e3e5');
   private readonly physicalMode: PhysicalMode;
-  private mode: WaterModel = physicalRequested ? 'physical' : 'legacy';
-  private draftMode: WaterModel = this.mode;
+  /** The mode being simulated; the physical mode only takes over once its surf zone is ready. */
+  private mode: WaterModel = 'legacy';
+  private draftMode: WaterModel = physicalRequested ? 'physical' : 'legacy';
   private physicalSettings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
   private draftPhysical: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
   private readoutClock = 0;
@@ -180,7 +181,8 @@ class SurfGame {
     this.bindUi();
     this.resize();
     window.addEventListener('resize', () => this.resize());
-    if (this.mode === 'physical') this.startPhysical(this.seed, this.physicalSettings);
+    if (physicalRequested) this.showLoadingThen(() => this.startPhysical(this.seed, this.physicalSettings));
+    else getElement<HTMLElement>('#loading').classList.add('is-hidden');
     requestAnimationFrame(this.frame);
   }
 
@@ -204,6 +206,7 @@ class SurfGame {
     const sunChanged = settings.sunHeight !== this.activeSettings.sunHeight
       || settings.sunDirection !== this.activeSettings.sunDirection;
     const spotChanged = spot !== this.activeSpot || this.mode !== 'legacy';
+    this.physicalMode.cancel();
     this.leavePhysical();
     this.seed = seed;
     this.activeSettings = { ...settings };
@@ -279,7 +282,8 @@ class SurfGame {
   }
 
   /** Build the view-only physical surf zone and hide the legacy board, rider and HUD. */
-  private startPhysical(seed: number, settings: PhysicalSettings): void {
+  private async startPhysical(seed: number, settings: PhysicalSettings): Promise<void> {
+    if (!(await this.physicalMode.start(settings, seed, this.water))) return;
     const shared = this.readDraftSettings();
     const sunChanged = shared.sunHeight !== this.activeSettings.sunHeight || shared.sunDirection !== this.activeSettings.sunDirection;
     this.activeSettings = { ...this.activeSettings, timeScale: shared.timeScale, sunHeight: shared.sunHeight, sunDirection: shared.sunDirection };
@@ -289,7 +293,6 @@ class SurfGame {
     this.draftMode = 'physical';
     this.physicalSettings = { ...settings };
     this.draftPhysical = { ...settings };
-    this.physicalMode.start(settings, seed, this.water);
     this.setLegacyVisible(false);
     this.physicalMode.setVisible(true);
     this.physicalMode.camera.setView('overview');
@@ -318,6 +321,7 @@ class SurfGame {
     if (this.mode !== 'physical') return;
     this.mode = 'legacy';
     this.draftMode = 'legacy';
+    this.physicalMode.stop();
     this.physicalMode.setVisible(false);
     this.setLegacyVisible(true);
     this.environment.showCoastline(true);
@@ -337,11 +341,11 @@ class SurfGame {
   }
 
   /** Show a loading card, let it paint, then run a blocking build such as the surf-zone spin-up. */
-  private showLoadingThen(action: () => void): void {
+  private showLoadingThen(action: () => void | Promise<void>): void {
     const loading = getElement<HTMLElement>('#loading');
     loading.classList.remove('is-hidden');
-    requestAnimationFrame(() => setTimeout(() => {
-      action();
+    requestAnimationFrame(() => setTimeout(async () => {
+      await action();
       loading.classList.add('is-hidden');
       this.focusGame();
     }, 0));
@@ -466,7 +470,7 @@ class SurfGame {
 
   private renderPhysicalReadout(): void {
     getElement<HTMLElement>('#readout-summary').textContent = 'PHYSICAL SURF ZONE · STAGE 1 SOLVER';
-    this.readoutPanel.render(formatPhysicalReadout(this.physicalMode.runner.config, this.physicalMode.runner.status(), this.physicalMode.storm));
+    this.readoutPanel.render(this.physicalMode.readout());
   }
 
   private renderPhysicsReadout(): void {
@@ -612,10 +616,10 @@ class SurfGame {
     this.accumulator = Math.min(this.accumulator + simElapsed, this.fixedStep * 4);
     let steps = 0;
     while (this.accumulator >= this.fixedStep && steps < 3) {
-      this.physicalMode.step();
       this.accumulator -= this.fixedStep;
       steps += 1;
     }
+    this.physicalMode.advance(steps);
     this.water.update();
     this.physicalMode.update(simElapsed || this.fixedStep);
     this.setUnderwater(this.physicalMode.cameraBelowSurface());
@@ -750,4 +754,3 @@ class SurfGame {
 
 const game = new SurfGame();
 const controls = new Controls(() => game.replay(), () => {});
-getElement<HTMLElement>('#loading').classList.add('is-hidden');
