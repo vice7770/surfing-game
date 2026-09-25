@@ -9,7 +9,7 @@ Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status 
 - [x] Replace the playable 20 m finish with an open ended ride while retaining the earlier finite-wave path for regression tests.
 - [x] Move the shared water grid forward with its swell and replenish the same simulated crest as it propagates; keep the board driven only by sampled water forces.
 - [x] Detach the surfer at wipeout and integrate gravity, water-relative drag, buoyancy, and surface contact while the wave and board continue.
-- [x] Validate a 140 m default clean ride, 60 m rides on both alternate spots and three more seeds, reset, wipeout immersion, and moving water/scenery in the desktop browser. The browser remained at about 120 FPS in the observed runs.
+- [x] Validate a 140 m default clean ride, 60 m rides on both alternate spots and three more seeds, a 40 m plus carved demo, reset, wipeout immersion, and moving water/scenery in the desktop browser. The browser remained at about 120 FPS in the observed runs.
 
 ## Current milestone — physics-driven wave catch
 

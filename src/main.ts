@@ -342,7 +342,7 @@ class SurfGame {
     while (this.accumulator >= this.fixedStep && steps < 5) {
       const input = demoMode !== null ? {
         paddle: this.physics.state === 'ready' || this.physics.state === 'paddling',
-        steer: demoMode === 'carve' && this.physics.state === 'riding' ? Math.sin(this.physics.time * 0.72) * 0.7 : 0,
+        steer: demoMode === 'carve' && this.physics.state === 'riding' ? Math.sin(this.physics.time * 0.72) * 0.45 : 0,
         getUp: this.lastDiagnostics.popUpAvailable,
       } : controls.input;
       this.lastPaddle = input.paddle;

@@ -136,4 +136,25 @@ describe('sustained surf', () => {
       expect(board.rideDistance, `seed ${seed}`).toBeGreaterThan(60);
     }
   }, 20_000);
+
+  it('allows a longer carved line before breaking water causes a fall', () => {
+    const board = new BoardPhysics(
+      new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS, sustained: true }),
+      { paddleForce: 14, boardResponse: 1 },
+    );
+    let maxLateral = 0;
+    for (let frame = 0; frame < 1800 && !['wipeout', 'missed'].includes(board.state); frame += 1) {
+      const before = board.diagnostics();
+      board.step(1 / 60, {
+        paddle: board.state === 'ready' || board.state === 'paddling',
+        steer: board.state === 'riding' ? Math.sin(board.time * 0.72) * 0.45 : 0,
+        getUp: before.popUpAvailable,
+      });
+      maxLateral = Math.max(maxLateral, Math.abs(board.position.x));
+    }
+    expect(board.state).toBe('wipeout');
+    expect(board.rideDistance).toBeGreaterThan(40);
+    expect(maxLateral).toBeGreaterThan(0.5);
+    expect(board.riderFall.active).toBe(true);
+  });
 });

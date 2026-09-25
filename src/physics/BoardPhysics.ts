@@ -239,7 +239,9 @@ export class BoardPhysics {
 
     this.velocity.y = Math.max(-2.4, Math.min(1.5, this.velocity.y));
     this.position.addScaledVector(this.velocity, dt);
-    this.position.x = Math.max(this.wave.xMin + 2, Math.min(this.wave.xMin + (this.wave.nx - 1) * this.wave.spacing - 2, this.position.x));
+    const sideMargin = this.wave.settings.sustained ? 10 : 2;
+    this.position.x = Math.max(this.wave.xMin + sideMargin,
+      Math.min(this.wave.xMin + (this.wave.nx - 1) * this.wave.spacing - sideMargin, this.position.x));
     this.position.y = Math.max(-0.7, Math.min(2.8, this.position.y));
 
     this.lastLipImpact *= Math.exp(-3 * dt);
