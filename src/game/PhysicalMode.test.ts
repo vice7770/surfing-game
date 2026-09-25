@@ -96,6 +96,15 @@ describe('PhysicalMode', () => {
     // The rider lies prone on the board, drawn from the snapshot, and the ride camera follows.
     expect(scene.children).toContain(mode.surfer.group);
     expect(mode.surfer.group.visible).toBe(true);
+    // Facing the rider from the beach the screen's right is the board's left; from behind, its right.
+    mode.camera.camera.updateMatrixWorld();
+    expect(mode.screenSteer(1)).toBe(1);
+    mode.camera.setView('behind');
+    mode.update(1 / 60);
+    mode.camera.camera.updateMatrixWorld();
+    expect(mode.screenSteer(1)).toBe(-1);
+    mode.camera.setView('front');
+    mode.update(1 / 60);
     expect(mode.homeView).toBe('front');
     expect(mode.nextView()).toBe('behind');
     expect(mode.nextView()).toBe('side');

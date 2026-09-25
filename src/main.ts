@@ -648,9 +648,9 @@ class SurfGame {
       this.accumulator -= this.fixedStep;
       steps += 1;
     }
-    // The ride camera sits behind the rider: screen right is the board's right, its −x.
+    // The arrows steer toward the screen's left or right, whichever way the camera faces.
     const input = controls.input;
-    this.physicalMode.advance(steps, { paddle: input.paddle, popUp: input.getUp, steer: -input.steer });
+    this.physicalMode.advance(steps, { paddle: input.paddle, popUp: input.getUp, steer: this.physicalMode.screenSteer(input.steer) });
     if (input.getUp) controls.consumeGetUp();
     this.water.update();
     this.physicalMode.update(simElapsed || this.fixedStep);

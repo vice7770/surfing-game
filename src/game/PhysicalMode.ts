@@ -1,4 +1,4 @@
-import type { Scene } from 'three';
+import { Vector3, type Scene } from 'three';
 import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { Surfer } from '../scene/Surfer';
@@ -199,6 +199,10 @@ export class PhysicalMode {
   private starts = 0;
   private shown = true;
   private chosenView: RideView | 'overview' = 'front';
+  /** Whether the screen's right is the board's left (+1) or its right (−1), from the latest clear view. */
+  private steerSign = -1;
+  private readonly cameraRight = new Vector3();
+  private readonly boardLeft = new Vector3();
   private readonly follow = { position: { x: 0, y: 0, z: 0 }, heading: 0 };
 
   constructor(scene: Scene) {
@@ -312,6 +316,23 @@ export class PhysicalMode {
     this.chosenView = next;
     this.camera.setView(next);
     return next;
+  }
+
+  /**
+   * The arrow keys steer toward the screen's left or right in any view: facing
+   * the rider from the beach, the screen's right is the board's left. Returns the
+   * board's steer (+1 its left). With the board end-on to the camera, the last
+   * clear mapping holds.
+   */
+  screenSteer(steer: number): number {
+    if (steer === 0) return 0;
+    this.cameraRight.setFromMatrixColumn(this.camera.camera.matrixWorld, 0).setY(0);
+    this.boardLeft.set(1, 0, 0).applyQuaternion(this.board.quaternion).setY(0);
+    if (this.cameraRight.lengthSq() > 1e-6 && this.boardLeft.lengthSq() > 1e-6) {
+      const alignment = this.cameraRight.normalize().dot(this.boardLeft.normalize());
+      if (Math.abs(alignment) > 0.25) this.steerSign = alignment > 0 ? 1 : -1;
+    }
+    return steer * this.steerSign;
   }
 
   /** Put board and rider back in the lineup on the next advance; the waves carry on. */

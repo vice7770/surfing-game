@@ -313,3 +313,37 @@ describe('weight-shift steering', () => {
     expect(Math.sign(goofy.board.velocity.x)).toBe(Math.sign(regular.board.velocity.x));
   });
 });
+
+describe('steering while lying down', () => {
+  const heading = (board: BoardBody) => {
+    const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+    return Math.atan2(forward.x, forward.z);
+  };
+  const turn = (steer: number, paddle: boolean) => {
+    const { board, rider } = mounted('prone');
+    const water = new PlaneWater();
+    run(board, water, 2);
+    rider.paddle = paddle;
+    rider.steer = steer;
+    run(board, water, 4);
+    return { heading: heading(board), speed: board.velocity.length(), attached: rider.attached };
+  };
+
+  it('turns toward the requested side by pulling harder with the other arm', () => {
+    const left = turn(1, true);
+    const right = turn(-1, true);
+    const straight = turn(0, true);
+    expect(left.attached && right.attached).toBe(true);
+    expect(left.heading).toBeGreaterThan(straight.heading + 0.2);
+    expect(right.heading).toBeLessThan(straight.heading - 0.2);
+    expect(left.speed).toBeGreaterThan(0.8);
+  });
+
+  it('turns without paddling by sweeping one arm', () => {
+    const left = turn(1, false);
+    const right = turn(-1, false);
+    expect(left.heading).toBeGreaterThan(0.2);
+    expect(right.heading).toBeLessThan(-0.2);
+    expect(turn(0, false).heading).toBeCloseTo(0, 6);
+  });
+});

@@ -54,6 +54,12 @@ const HAND_DEPTH = 0.25;
 const HAND_OUTSIDE_RAIL = 0.08;
 const HAND_RADIUS = 0.08;
 const HAND_DRAG_AREA = 0.066;
+/**
+ * Steering lying down: paddling, the arm on the outside of the turn pulls
+ * harder and the inside arm softer by this share; not paddling, the outside arm
+ * sweeps alone. Board +x is its left, so turning left is a stronger right arm.
+ */
+const STEER_STROKE = 0.6;
 
 /** Fraction of a sphere under a level surface `depth` above its centre. */
 function submergedFraction(depth: number, radius: number): number {
@@ -494,8 +500,9 @@ export class AttachedRider {
     if (index === 3 || index === 4) {
       const side = index === 3 ? 0 : 1;
       if (this.phase === 'prone') {
-        const z = this.paddle ? this.handLocal(side, this.localScratch) : this.localScratch.set(0, 0, this.parts[1 * 3 + 2]).z;
-        if (!this.paddle) this.localScratch.set((side === 0 ? 1 : -1) * (this.halfWidth(z) + 0.02), deckHeight(this.shape, z) + 0.02, z);
+        const stroking = (this.paddle || this.sweeping) && this.strokeEffort(side) > 0;
+        const z = stroking ? this.handLocal(side, this.localScratch) : this.localScratch.set(0, 0, this.parts[1 * 3 + 2]).z;
+        if (!stroking) this.localScratch.set((side === 0 ? 1 : -1) * (this.halfWidth(z) + 0.02), deckHeight(this.shape, z) + 0.02, z);
         return board.toWorld(this.localScratch, out);
       }
       if (this.phase === 'push') {
@@ -648,17 +655,31 @@ export class AttachedRider {
       this.applyWater(i, water, radius, this.partVolumes[i], Math.PI * radius * radius * PART_DRAG, h, shelter, deckY);
     }
     this.stroking = false;
-    if (this.phase !== 'prone' || !this.paddle) return;
+    if (this.phase !== 'prone' || (!this.paddle && !this.sweeping)) return;
     this.strokeTime += h;
     for (let side = 0; side < 2; side += 1) {
+      const effort = this.strokeEffort(side);
+      if (!(effort > 0)) continue;
       const phase = (this.strokeTime / ARM_CYCLE + side * 0.5) % 1;
       if (phase >= PULL_SHARE) continue;
       // Pull: the hand sweeps from reach to hip beside the rail, fastest mid-stroke.
       const along = this.handLocal(side, this.localScratch);
       board.toWorld(this.localScratch, this.partWorld);
       board.velocityAt(this.partWorld, this.partVelocity).add(this.scratch.set(0, 0, along).applyQuaternion(board.orientation));
-      this.applyWater(RIDER_PARTS.length + side, water, HAND_RADIUS, 0, HAND_DRAG_AREA, h, 1);
+      this.applyWater(RIDER_PARTS.length + side, water, HAND_RADIUS, 0, HAND_DRAG_AREA * effort, h, 1);
     }
+  }
+
+  /** Steering without paddling: one arm sweeps. */
+  private get sweeping(): boolean {
+    return Math.abs(this.steer) > 0.05;
+  }
+
+  /** How hard arm `side` (0 left, at +x; 1 right) strokes, from the paddle and steer input. */
+  private strokeEffort(side: number): number {
+    const steer = Math.max(-1, Math.min(1, this.steer));
+    const outside = side === 1 ? steer : -steer;
+    return this.paddle ? 1 + STEER_STROKE * outside : Math.max(0, outside);
   }
 
   /** Water on one body point at `partWorld` moving at `partVelocity`: buoyancy of `volume` and drag over `dragArea`. */
