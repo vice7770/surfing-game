@@ -1,4 +1,5 @@
 import { Quaternion, Vector3 } from 'three';
+import type { AttachedRider } from './AttachedRider';
 import type { BoardContactBody } from './DetachedSurfer';
 import { buildBoardShape, type BoardShape } from './boardShape';
 import { WATER, WET_RAMP, createPatchForce, patchForce, planingScales, wettedShare, type WorldPatch } from './hullForces';
@@ -22,6 +23,8 @@ export interface BoardWork {
   radiation: number;
   friction: number;
   bed: number;
+  /** Done by the rider's contact on the board. */
+  rider: number;
 }
 
 export interface BoardBodyOptions {
@@ -82,28 +85,37 @@ function invert3(m: number[]): number[] {
   return [A / det, -(b * i - c * h) / det, (b * f - c * e) / det, B / det, (a * i - c * g) / det, -(a * f - c * d) / det, C / det, -(a * h - b * g) / det, (a * e - b * d) / det];
 }
 
-/** Solve the symmetric positive definite 6 × 6 system A x = b in place (Cholesky); x overwrites b. */
+/**
+ * Solve the 6 × 6 system A x = b in place by Gaussian elimination with partial
+ * pivoting; x overwrites b and A is destroyed. The board alone is symmetric; a
+ * standing rider, carried at the feet but pushing along its own line, is not.
+ */
 function solve6(a: Float64Array, b: Float64Array): void {
-  for (let j = 0; j < 6; j += 1) {
-    let diagonal = a[j * 6 + j];
-    for (let k = 0; k < j; k += 1) diagonal -= a[j * 6 + k] * a[j * 6 + k];
-    const root = Math.sqrt(diagonal);
-    a[j * 6 + j] = root;
-    for (let i = j + 1; i < 6; i += 1) {
-      let value = a[i * 6 + j];
-      for (let k = 0; k < j; k += 1) value -= a[i * 6 + k] * a[j * 6 + k];
-      a[i * 6 + j] = value / root;
+  for (let col = 0; col < 6; col += 1) {
+    let pivot = col;
+    for (let row = col + 1; row < 6; row += 1) if (Math.abs(a[row * 6 + col]) > Math.abs(a[pivot * 6 + col])) pivot = row;
+    if (pivot !== col) {
+      for (let k = 0; k < 6; k += 1) {
+        const t = a[col * 6 + k];
+        a[col * 6 + k] = a[pivot * 6 + k];
+        a[pivot * 6 + k] = t;
+      }
+      const t = b[col];
+      b[col] = b[pivot];
+      b[pivot] = t;
+    }
+    const diagonal = a[col * 6 + col];
+    for (let row = col + 1; row < 6; row += 1) {
+      const factor = a[row * 6 + col] / diagonal;
+      if (factor === 0) continue;
+      for (let k = col; k < 6; k += 1) a[row * 6 + k] -= factor * a[col * 6 + k];
+      b[row] -= factor * b[col];
     }
   }
-  for (let i = 0; i < 6; i += 1) {
-    let value = b[i];
-    for (let k = 0; k < i; k += 1) value -= a[i * 6 + k] * b[k];
-    b[i] = value / a[i * 6 + i];
-  }
-  for (let i = 5; i >= 0; i -= 1) {
-    let value = b[i];
-    for (let k = i + 1; k < 6; k += 1) value -= a[k * 6 + i] * b[k];
-    b[i] = value / a[i * 6 + i];
+  for (let row = 5; row >= 0; row -= 1) {
+    let value = b[row];
+    for (let k = row + 1; k < 6; k += 1) value -= a[row * 6 + k] * b[k];
+    b[row] = value / a[row * 6 + row];
   }
 }
 
@@ -146,7 +158,9 @@ export class BoardBody implements BoardContactBody {
   readonly velocity = new Vector3();
   /** World frame, rad/s. */
   readonly angularVelocity = new Vector3();
-  readonly work: BoardWork = { gravity: 0, buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0 };
+  readonly work: BoardWork = { gravity: 0, buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, rider: 0 };
+  /** The rider standing or lying on the board, coupled through its contacts. */
+  rider?: AttachedRider;
   /** Mean forces over the latest step, N. */
   readonly forces = {
     buoyancy: new Vector3(), pressure: new Vector3(), addedMass: new Vector3(), radiation: new Vector3(), friction: new Vector3(), bed: new Vector3(),
@@ -200,10 +214,13 @@ export class BoardBody implements BoardContactBody {
   private readonly worldInverseInertia = new Array<number>(9).fill(0);
   private readonly system = new Float64Array(36);
   private readonly rhs = new Float64Array(6);
+  private readonly systemCopy = new Float64Array(36);
+  private readonly rhsCopy = new Float64Array(6);
   private readonly lastPosition = new Vector3();
   private readonly patch: WorldPatch = { position: { x: 0, y: 0, z: 0 }, normal: { x: 0, y: 0, z: 0 }, area: 0, thickness: 0 };
   private readonly force = createPatchForce();
   private readonly spin = new Quaternion();
+  private readonly inverse = new Quaternion();
   private readonly scratch = new Vector3();
   private readonly armScratch = new Vector3();
   private readonly normalScratch = new Vector3();
@@ -317,6 +334,31 @@ export class BoardBody implements BoardContactBody {
     for (const key of Object.keys(this.work) as (keyof BoardWork)[]) this.work[key] = 0;
   }
 
+  /** Put a rider on the board, in its posture and moving with the board. */
+  attach(rider: AttachedRider): void {
+    this.rider = rider;
+    rider.mount(this);
+  }
+
+  /** A board-frame point (the shape's coordinates) in the world. */
+  toWorld(local: Readonly<Vec>, out: Vector3): Vector3 {
+    const c = this.shape.centerOfMass;
+    return out.set(local.x - c.x, local.y - c.y, local.z - c.z).applyQuaternion(this.orientation).add(this.position);
+  }
+
+  /** A world point in the board frame. */
+  toLocal(world: Readonly<Vec>, out: Vector3): Vector3 {
+    const c = this.shape.centerOfMass;
+    this.inverse.copy(this.orientation).invert();
+    return out.set(world.x - this.position.x, world.y - this.position.y, world.z - this.position.z).applyQuaternion(this.inverse).add(c);
+  }
+
+  /** A board-frame 3 × 3 tensor (row-major) in the world: R A Rᵀ. */
+  rotateTensor(local: number[], out: number[]): void {
+    this.updateRotation();
+    rotateTensor(this.rotation, local, out, this.tensorScratch);
+  }
+
   kineticEnergy(): number {
     const w = this.angularVelocity;
     const I = this.worldInertia;
@@ -363,7 +405,9 @@ export class BoardBody implements BoardContactBody {
     this.reaction.fill(0);
     this.meanPosition.fill(0);
     for (const force of Object.values(this.forces)) force.set(0, 0, 0);
+    this.rider?.beginStep();
     for (let s = 0; s < this.substeps; s += 1) this.advance(h, water, 0);
+    this.rider?.endStep(dt);
     const inverseDt = 1 / dt;
     for (const force of Object.values(this.forces)) force.multiplyScalar(inverseDt);
     for (let k = 0; k < this.count; k += 1) {
@@ -505,7 +549,7 @@ export class BoardBody implements BoardContactBody {
         a[3] = ry * nz - rz * ny;
         a[4] = rz * nx - rx * nz;
         a[5] = rx * ny - ry * nx;
-        for (let i = 0; i < 6; i += 1) for (let j = 0; j <= i; j += 1) system[i * 6 + j] += damping * a[i] * a[j];
+        for (let i = 0; i < 6; i += 1) for (let j = 0; j < 6; j += 1) system[i * 6 + j] += damping * a[i] * a[j];
       }
       // The water's inertia answers the patch's motion into the local surface, along
       // its normal ν ∝ (−∂η/∂x, 1, −∂η/∂z) (generalized direction [ν, r × ν]), over
@@ -549,7 +593,7 @@ export class BoardBody implements BoardContactBody {
         a[3] = cx;
         a[4] = cy;
         a[5] = cz;
-        for (let i = 0; i < 6; i += 1) for (let j = 0; j <= i; j += 1) system[i * 6 + j] += inertia * a[i] * a[j];
+        for (let i = 0; i < 6; i += 1) for (let j = 0; j < 6; j += 1) system[i * 6 + j] += inertia * a[i] * a[j];
       }
     }
     this.submergedVolume = submerged;
@@ -567,9 +611,24 @@ export class BoardBody implements BoardContactBody {
     rhs[5] = h * (totals.btz + totals.ptz + totals.ftz - gyro[2]) + waterTz;
     for (let i = 0; i < 3; i += 1) {
       system[i * 6 + i] += this.mass;
-      for (let j = 0; j <= i; j += 1) system[(i + 3) * 6 + j + 3] += I[i * 3 + j];
+      for (let j = 0; j < 3; j += 1) system[(i + 3) * 6 + j + 3] += I[i * 3 + j];
+    }
+    // A rider joins the solve as a composite body; if its contact cannot give the
+    // impulse that needs, the two are solved apart with the impulse it can give.
+    const { rider } = this;
+    if (rider?.attached) {
+      rider.prepare(h, this, water);
+      this.systemCopy.set(system);
+      this.rhsCopy.set(rhs);
+      rider.couple(system, rhs, h);
     }
     solve6(system, rhs);
+    if (rider?.attached && !rider.settle(rhs, h, this)) {
+      system.set(this.systemCopy);
+      rhs.set(this.rhsCopy);
+      rider.pushBoard(rhs);
+      solve6(system, rhs);
+    }
     const [dvx, dvy, dvz, dwx, dwy, dwz] = rhs;
 
     const avx = v.x + dvx / 2;
@@ -654,6 +713,7 @@ export class BoardBody implements BoardContactBody {
     q.set(q.x + spin.x, q.y + spin.y, q.z + spin.z, q.w + spin.w).normalize();
     this.updateRotation();
     this.syncPosition();
+    if (rider?.attached) rider.finish(h, this);
   }
 
   /**
