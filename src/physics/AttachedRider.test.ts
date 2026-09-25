@@ -111,6 +111,65 @@ describe('rider coupled to the board', () => {
     expect(Math.abs(change - totalWork(board, rider)) / scale).toBeLessThan(0.01);
   });
 
+  // A 25.75 L board under 73 kg (0.35 L/kg, the field study's intermediate) floats awash under a prone rider.
+  it('floats prone, nose up with the nose at the surface and the head well above water', () => {
+    const { board, rider } = mounted('prone');
+    run(board, new PlaneWater(), 6);
+    expect(rider.attached).toBe(true);
+    expect(Math.abs(board.velocity.y)).toBeLessThan(0.01);
+    expect(Math.abs(rider.velocity.y)).toBeLessThan(0.01);
+    const head = rider.partPosition(2, new Vector3());
+    expect(head.y).toBeGreaterThan(0.2);
+    const deck = board.toWorld({ x: 0, y: board.shape.curves.rocker(0.5) + board.shape.curves.thickness(0.5), z: 0 }, new Vector3());
+    expect(deck.y).toBeLessThan(0);
+    expect(deck.y).toBeGreaterThan(-0.15);
+    const nose = board.toWorld({ x: 0, y: board.shape.curves.rocker(1), z: board.shape.length / 2 }, new Vector3());
+    expect(Math.abs(nose.y)).toBeLessThan(0.05);
+    // Part of the load is the rider's own buoyancy: the board alone floats only 26 kg.
+    expect(rider.buoyancy.y).toBeGreaterThan(0);
+  });
+
+  // Plan §1.10: a sustainable paddling speed of about 1.5–2 m/s (provisional).
+  it('paddles up to a steady 1.5–2 m/s in flat water without planing, pushing the water back', () => {
+    const { board, rider } = mounted('prone');
+    rider.paddle = true;
+    const water = new PlaneWater();
+    run(board, water, 20);
+    let speed = 0;
+    run(board, water, 5, () => {
+      speed += board.velocity.z / 300;
+    });
+    expect(speed).toBeGreaterThan(1.5);
+    expect(speed).toBeLessThan(2);
+    expect(board.forces.pressure.y).toBeLessThan(0.5 * (board.mass + rider.mass) * WATER.gravity);
+    const momentum = board.mass * board.velocity.z + rider.mass * rider.velocity.z;
+    expect(water.reaction.z).toBeCloseTo(momentum, 6);
+  });
+
+  it('paddles faster over the ground with a following current', () => {
+    const cruise = (current: number) => {
+      const { board, rider } = mounted('prone');
+      rider.paddle = true;
+      const water = new PlaneWater({ flow: { x: 0, y: 0, z: current } });
+      run(board, water, 20);
+      let speed = 0;
+      run(board, water, 5, () => {
+        speed += board.velocity.z / 300;
+      });
+      return speed;
+    };
+    const gain = cruise(0.5) - cruise(0);
+    expect(gain).toBeGreaterThan(0.35);
+    expect(gain).toBeLessThan(0.65);
+  });
+
+  it('gets no stroke force with its hands out of the water', () => {
+    const { board, rider } = mounted('prone', 3);
+    rider.paddle = true;
+    run(board, new PlaneWater({ level: -10 }), 0.5);
+    expect(Math.abs(board.mass * board.velocity.z + rider.mass * rider.velocity.z)).toBeLessThan(1e-9);
+  });
+
   it('cannot pull the rider down with a board that drops away: it flies instead', () => {
     const { board, rider } = mounted('standing');
     const water = new PlaneWater();

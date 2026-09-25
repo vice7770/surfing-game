@@ -85,7 +85,8 @@ type PartPlace = [x: number, heightAboveDeck: number, z: number];
  * height above the deck there and its position along the board. The heights
  * are illustrative, not measured: a standing crouch with the centre of mass
  * about 0.85 m over the deck, a landing crouch at 0.63 m, the push-up with the
- * hands on the rails at 0.28 m, and prone at 0.09 m with the legs over the tail.
+ * hands on the rails at 0.28 m, and prone at 0.12 m with the chest arched up and
+ * the legs over the tail.
  * A person facing the nose has their right at −x, so prone the left hand is at
  * +x; standing regular (left foot forward) faces the −x rail.
  */
@@ -113,8 +114,9 @@ function regularPlaces(shape: BoardShape, phase: PosePhase): { places: PartPlace
         support: { xMin: -0.23, xMax: 0.23, zMin: -0.65, zMax: 0.3 },
       };
     case 'prone':
+      // Paddling position: chest arched up, lying far enough back that the nose just clears the water.
       return {
-        places: [[0, 0.1, -0.22], [0, 0.12, 0.25], [0, 0.2, 0.62], [0.28, 0, 0.2], [-0.28, 0, 0.2], [0.08, 0.05, -0.75], [-0.08, 0.05, -0.75]],
+        places: [[0, 0.1, -0.52], [0, 0.18, -0.08], [0, 0.32, 0.25], [0.28, 0.05, -0.1], [-0.28, 0.05, -0.1], [0.08, 0.05, -1.05], [-0.08, 0.05, -1.05]],
         support: { xMin: -0.18, xMax: 0.18, zMin: -0.65, zMax: 0.55 },
       };
   }
