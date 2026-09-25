@@ -1,4 +1,4 @@
-import { Quaternion, Vector3 } from 'three';
+import { Matrix3, Quaternion, Vector3 } from 'three';
 
 /** World-space sample at one body point. The water implementation owns the interpolation. */
 export interface BodyWaterSample {
@@ -181,8 +181,10 @@ export class DetachedSurfer implements DetachedRiderPose {
   readonly nodes: readonly BodyNode[];
   active = false;
   controlGain = 0;
+  angularSpeed = 0;
   heading = 0;
   outsideDomain = false;
+  private swimEligible = false;
   private contactPending = false;
   private lipContactPending = false;
   private readonly contactedLipIds = new Set<number>();
@@ -213,6 +215,11 @@ export class DetachedSurfer implements DetachedRiderPose {
   private readonly lipClosest = new Vector3();
   private readonly lipRelativeVelocity = new Vector3();
   private readonly lipImpulse = new Vector3();
+  private readonly controlCenter = new Vector3();
+  private readonly controlLever = new Vector3();
+  private readonly controlSpin = new Vector3();
+  private readonly controlTorque = new Vector3();
+  private readonly controlInertia = new Matrix3();
 
   constructor(readonly bodyDensity = DEFAULT_BODY_DENSITY, readonly mass = totalMass) {
     if (!Number.isFinite(bodyDensity) || bodyDensity <= 0) throw new RangeError('body density must be finite and positive');
@@ -252,7 +259,9 @@ export class DetachedSurfer implements DetachedRiderPose {
     this.heading = Math.atan2(forward.x, forward.z);
     this.active = true;
     this.controlGain = 0;
+    this.angularSpeed = attached.angularVelocity.length();
     this.outsideDomain = false;
+    this.swimEligible = false;
     this.contactPending = false;
     this.lipContactPending = false;
     this.contactedLipIds.clear();
@@ -475,8 +484,36 @@ export class DetachedSurfer implements DetachedRiderPose {
       }
     }
 
+    this.centerOfMass(this.controlCenter);
+    this.controlSpin.set(0, 0, 0);
+    let xx = 0; let yy = 0; let zz = 0;
+    let xy = 0; let xz = 0; let yz = 0;
+    for (const node of this.nodes) {
+      this.controlLever.subVectors(node.position, this.controlCenter);
+      this.controlTorque.crossVectors(this.controlLever, node.velocity).multiplyScalar(node.mass);
+      this.controlSpin.add(this.controlTorque);
+      const { x, y, z } = this.controlLever;
+      xx += node.mass * (y * y + z * z);
+      yy += node.mass * (x * x + z * z);
+      zz += node.mass * (x * x + y * y);
+      xy -= node.mass * x * y;
+      xz -= node.mass * x * z;
+      yz -= node.mass * y * z;
+    }
+    this.controlInertia.set(xx, xy, xz, xy, yy, yz, xz, yz, zz);
+    this.angularSpeed = Math.abs(this.controlInertia.determinant()) < 1e-9
+      ? 100
+      : Math.min(100, this.controlSpin.applyMatrix3(this.controlInertia.invert()).length());
     const meanRelativeSpeed = wetMass > 0 ? relativeSpeed / wetMass : Infinity;
-    const calm = clamp((4 - meanRelativeSpeed) / 3, 0, 1) * (1 - breaking);
+    if (this.swimEligible) {
+      if (meanRelativeSpeed > 4 || this.angularSpeed > 8 || breaking > 0.7) this.swimEligible = false;
+    } else if (meanRelativeSpeed < 2.5 && this.angularSpeed < 5 && breaking < 0.4) {
+      this.swimEligible = true;
+    }
+    const calm = this.swimEligible
+      ? clamp((4 - meanRelativeSpeed) / 3, 0, 1)
+        * clamp((8 - this.angularSpeed) / 6, 0, 1) * (1 - breaking)
+      : 0;
     this.controlGain += (calm - this.controlGain) * Math.min(1, dt * 3);
     this.heading += clamp(input.steer, -1, 1) * this.controlGain * dt * 2;
 

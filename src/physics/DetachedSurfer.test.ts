@@ -182,6 +182,22 @@ describe('DetachedSurfer on controlled water', () => {
       .toEqual(second.nodes.map((node) => [...node.position.toArray(), ...node.velocity.toArray()]));
   });
 
+  it('withholds swim strokes during a fast tumble and restores control as it slows', () => {
+    const tumbling = new DetachedSurfer();
+    const calm = new DetachedSurfer();
+    launch(tumbling, new Vector3(0, -1.5, 0), new Vector3(), new Vector3(0, 20, 0));
+    launch(calm);
+    const water = uniformWater();
+    advance(tumbling, water, 1, true);
+    advance(calm, water, 1, true);
+    expect(tumbling.angularSpeed).toBeGreaterThan(5);
+    expect(tumbling.controlGain).toBeLessThan(calm.controlGain);
+
+    advance(tumbling, water, 180, true);
+    expect(tumbling.angularSpeed).toBeLessThan(8);
+    expect(tumbling.controlGain).toBeGreaterThan(0.3);
+  });
+
   it('marks an outside-domain body without using an edge-cell current', () => {
     const body = new DetachedSurfer();
     launch(body);
