@@ -27,7 +27,10 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 ### P1 · Far-field ocean (G2) — `Done`
 
 - [x] The physical sea continues to the horizon from the tank's own components. It is exact at the tank's offshore boundary, Airy-deepening offshore, and shoaled with a breaking-foam proxy beside the window, with Gerstner crests and a sky fade. Shading-only wind chop is on both water meshes.
-### P1 · Emergent breaking and Iribarren lip (P3) — `Backlog`
+### P1 · Emergent breaking and Iribarren lip (P3) — `In Progress`
+
+- [x] P3a: the physical waves break by themselves (Kennedy test plus a stage 1 bore criterion). Whitewater follows breaking, and the Wave Lab shows breaker type, breaking share, measured peel angle with its Hutt skill rating or a close-out explanation, and local wind (chop and onset shift). The surf zone needs cells of 1 m or finer.
+- [ ] P3b: storm mode, the mass-conserving plunging lip on plunging breakers in the physical mode, per-spot rideability statistics, and a cited wind-on-breaking magnitude.
 ### P2 · Shading, foam, board consequences (G3, G4, P4) — `Backlog`
 ### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `Backlog`
 
