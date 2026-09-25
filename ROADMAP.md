@@ -30,7 +30,7 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 ### P1 · Emergent breaking and Iribarren lip (P3) — `Done`
 
 - [x] P3a: the physical waves break by themselves (Kennedy test plus a stage 1 bore criterion). Whitewater follows breaking, and the Wave Lab shows breaker type, breaking share, measured peel angle with its Hutt skill rating or a close-out explanation, and local wind (chop and onset shift). The surf zone needs cells of 1 m or finer.
-- [x] P3b: storm mode derives the swell from wind, fetch, duration and distance (JONSWAP with a PM cap, CEM duration limit, dispersion and angular spreading). Wind's shift of breaking onset is sourced and scaled by the breaker celerity. Plunging breakers (0.4 ≤ ξ_b ≤ 2) throw a mass-conserving lip, once per wave per column. `npm run report:rideability` writes the per-spot [rideability report](docs/research/rideability-report.md). Ride-time distributions wait for the P4 rider. The Reef's shelf edge sits in the tank's boundary blend and needs a layout fix.
+- [x] P3b: storm mode derives the swell from wind, fetch, duration and distance (JONSWAP with a PM cap, CEM duration limit, dispersion and angular spreading). Wind's shift of breaking onset is sourced and scaled by the breaker celerity. Plunging breakers (0.4 ≤ ξ_b ≤ 2) throw a mass-conserving lip, once per wave per column. `npm run report:rideability` writes the per-spot [rideability report](docs/research/rideability-report.md). Ride-time distributions wait for the P4 rider.
 ### P2 · Shading, foam, board consequences (G3, G4, P4) — `Backlog`
 ### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `Backlog`
 
