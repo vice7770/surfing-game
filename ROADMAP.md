@@ -24,7 +24,9 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 - [x] P2b-1: in-place typed-array sweeps (7.9 → 6.3 ms per step for 33.6k cells in bundled Node); open along-shore boundaries; a stretched cross-shore grid (4 m to 1 m, reflection under 5 %); an along-shore sliding window that keeps a lake at rest across the headland.
 - [x] P2b-2: fused MUSCL-Hancock stepping, 4.05 ms per step on the 36.2k-cell stretched spot domain (budget 4 ms), with validation unchanged or better. A seeded sea-state relaxation boundary: precomputed row and column phases, correct after window shifts, and 0.95 of the linear Hs generated in a flat channel. A column WKB warm start (exact on a flat bed, Green's-law shoaling, γh cap; spin-up peak 1.12× the initial one). Set-run timing.
 - [x] P2c (option a, view only): a Water model switch in the Wave Lab (or `?physical`) shows the stage 1 surf zone for Beach, Point, Reef or Canyon with buoy-style inputs. It has a spot seabed, overview, profile and underwater spectator views, and a live solver and next-set readout; the legacy wave stays playable. The in-browser solver runs at 5.7–7.6 ms per step on the main thread, so the Web Worker and bicubic sampling move to P4 with board coupling.
-### P1 · Far-field ocean (G2) — `Backlog`
+### P1 · Far-field ocean (G2) — `Done`
+
+- [x] The physical sea continues to the horizon from the tank's own components. It is exact at the tank's offshore boundary, Airy-deepening offshore, and shoaled with a breaking-foam proxy beside the window, with Gerstner crests and a sky fade. Shading-only wind chop is on both water meshes.
 ### P1 · Emergent breaking and Iribarren lip (P3) — `Backlog`
 ### P2 · Shading, foam, board consequences (G3, G4, P4) — `Backlog`
 ### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `Backlog`
