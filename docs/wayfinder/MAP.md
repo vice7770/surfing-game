@@ -8,7 +8,7 @@ A playable browser-based Three.js surfing simulator where the incoming wave live
 
 - Domain: browser game and interactive wave/board simulation.
 - Use the repository's `CONTEXT.md` glossary for project terms.
-- Orchestration: GPT-6 Astra at light effort for planning and validation; GPT-6 Luna at xhigh for implementation.
+- Validation: an independent agent reviewed the current extension after implementation and rechecked all resolved findings.
 - This local Markdown map is the tracker fallback because no issue tracker is configured in this repository.
 - Wayfinder tickets record decisions and investigations; [`ROADMAP.md`](../../ROADMAP.md) is the user-facing prioritized feature tree and implementation tracker.
 - Local ticket metadata: `Status` is `OPEN` or `RESOLVED`; `Type` is a Wayfinder ticket type; `Blocked by` lists linked ticket titles. An open ticket with no unresolved blockers is on the frontier.
@@ -31,7 +31,7 @@ A playable browser-based Three.js surfing simulator where the incoming wave live
 
 ## Open tickets
 
-- [Investigate the interactive-water foundation](tickets/investigate-interactive-water-foundation.md): selected the CPU-authoritative MVP field; performance, sustained wave-carry tuning, and browser validation remain on the active roadmap.
+No Wayfinder tickets are open. The [interactive-water foundation investigation](tickets/investigate-interactive-water-foundation.md) is resolved; remaining validation and prototype extension work is tracked in [`ROADMAP.md`](../../ROADMAP.md).
 
 ## Not yet specified
 
@@ -44,4 +44,4 @@ A playable browser-based Three.js surfing simulator where the incoming wave live
 
 ## Out of scope
 
-- The exact water solver/source-of-truth architecture and calibrated pop-up thresholds remain subject to the open interactive-water research ticket.
+- Production calibration of the selected water solver and pop-up thresholds remains future work.

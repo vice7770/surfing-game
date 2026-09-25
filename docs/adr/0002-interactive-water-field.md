@@ -1,6 +1,6 @@
 # ADR 0002: CPU-authoritative interactive water field
 
-- Status: Accepted for the surfing MVP, subject to the validation limits below
+- Status: Accepted for bulk water; detached-lip extension in [ADR 0003](0003-plunging-sheet-collision.md)
 - Date: 2026-09-25
 
 ## Context

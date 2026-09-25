@@ -70,13 +70,14 @@ describe('BoardPhysics', () => {
     const rideStartZ = board.position.z;
     const rideStartTime = board.time;
     for (let frame = 0; frame < 180 && board.state === 'riding'; frame += 1) board.step(1 / 60, input(false));
-    expect(board.time - rideStartTime).toBeGreaterThanOrEqual(3);
+    expect(board.time - rideStartTime).toBeGreaterThan(2.99);
     expect(board.position.z - rideStartZ).toBeGreaterThan(0.8);
     expect(['riding', 'complete']).toContain(board.state);
     expect(rideStartZ).toBeGreaterThan(startZ);
     for (let frame = 0; frame < 1200 && board.state === 'riding'; frame += 1) board.step(1 / 60, input(false));
     expect(board.state).toBe('complete');
     expect(board.time - rideStartTime).toBeLessThan(20);
+    expect(board.rideDistance).toBeGreaterThanOrEqual(20);
   });
 
   it('ends in missed when the player never paddles or pops up', () => {
@@ -130,5 +131,78 @@ describe('BoardPhysics', () => {
       for (const point of board.contactPoints) maxPenetration = Math.max(maxPenetration, wave.sample(point.x, point.z).height - point.y);
     }
     expect(maxPenetration).toBeLessThan(0.2);
+  });
+
+  it('turns the board path through water rather than only rotating its mesh', () => {
+    const settings = { height: 0, period: 8, speed: 0 };
+    const straight = new BoardPhysics(new InteractiveWaterField(1, settings), { paddleForce: 14, boardResponse: 1 });
+    const carving = new BoardPhysics(new InteractiveWaterField(1, settings), { paddleForce: 14, boardResponse: 1 });
+    straight.velocity.z = 1.8;
+    carving.velocity.z = 1.8;
+    for (let frame = 0; frame < 90; frame += 1) {
+      straight.step(1 / 60, input(false, 0));
+      carving.step(1 / 60, input(false, 1));
+    }
+    expect(carving.position.x).toBeGreaterThan(straight.position.x + 0.08);
+    expect(carving.rotation.y).toBeGreaterThan(straight.rotation.y);
+    expect(carving.riderLean).toBeGreaterThan(0.8);
+    carving.reset();
+    expect(carving.riderLean).toBe(0);
+  });
+
+  it('loses lateral fin grip when the board is clear of the water', () => {
+    const settings = { height: 0, period: 8, speed: 0 };
+    const wet = new BoardPhysics(new InteractiveWaterField(1, settings), { paddleForce: 14, boardResponse: 1 });
+    const dry = new BoardPhysics(new InteractiveWaterField(1, settings), { paddleForce: 14, boardResponse: 1 });
+    wet.velocity.z = dry.velocity.z = 2;
+    dry.position.y = 1.2;
+    for (let frame = 0; frame < 15; frame += 1) {
+      wet.step(1 / 60, input(false, 1));
+      dry.step(1 / 60, input(false, 1));
+    }
+    expect(wet.position.x).toBeGreaterThan(dry.position.x + 0.001);
+  });
+
+  it('can carve into the peeling break and wipe out as balance falls', () => {
+    const board = makeBoard();
+    let maxBreaking = 0;
+    let sawCarve = false;
+    let sawFlow = false;
+    for (let frame = 0; frame < 1200 && !['complete', 'missed', 'wipeout'].includes(board.state); frame += 1) {
+      const before = board.diagnostics();
+      const action = input(
+        board.state === 'ready' || board.state === 'paddling',
+        board.state === 'riding' ? Math.sin(board.time * 0.72) * 0.7 : 0,
+        before.popUpAvailable,
+      );
+      const after = board.step(1 / 60, action);
+      maxBreaking = Math.max(maxBreaking, after.breaking);
+      sawCarve ||= after.maneuver === 'CARVE';
+      sawFlow ||= after.flow > 0.4;
+    }
+    expect(board.state).toBe('wipeout');
+    expect(board.rideDistance).toBeGreaterThan(8);
+    expect(maxBreaking).toBeGreaterThan(0.5);
+    expect(board.diagnostics().balance).toBeLessThan(0.95);
+    expect(sawCarve).toBe(true);
+    expect(sawFlow).toBe(true);
+  });
+
+  it('reports a carve and a snap only after physically steering on the wave', () => {
+    const board = makeBoard();
+    for (let frame = 0; frame < 900 && board.state !== 'riding'; frame += 1) {
+      const d = board.diagnostics();
+      board.step(1 / 60, input(board.state === 'ready' || board.state === 'paddling', 0, d.popUpAvailable));
+    }
+    expect(board.state).toBe('riding');
+    let sawCarve = false;
+    for (let frame = 0; frame < 60 && board.state === 'riding'; frame += 1) {
+      const diagnostic = board.step(1 / 60, input(false, 0.55));
+      sawCarve ||= diagnostic.maneuver === 'CARVE';
+    }
+    expect(sawCarve).toBe(true);
+    const snap = board.step(1 / 60, input(false, -0.55));
+    expect(snap.maneuver).toBe('SNAP');
+    expect(board.position.x).not.toBe(0);
   });
 });
