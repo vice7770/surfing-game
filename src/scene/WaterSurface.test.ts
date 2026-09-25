@@ -212,8 +212,29 @@ describe('WaterSurface GPU displacement data', () => {
     expect(shader.vertexShader).toContain('vWaterDepth = max( 0.0, waterHeight - waterBedAt( waterXZ ) )');
     expect(shader.fragmentShader).toContain('waterBodyReflectance( vWaterDepth');
     expect(shader.fragmentShader).toContain('waterCrestThickness( vWaterWorld');
+    expect(shader.vertexShader).toContain('vWaterFlow = waterFlowAt( waterXZ )');
+    expect(shader.fragmentShader).toContain('waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime )');
+    expect(Object.keys(shader.uniforms)).toContain('waterFlow');
     expect(Object.keys(shader.uniforms)).toEqual(expect.arrayContaining(['waterBed', 'waterAttenuation', 'waterSunDirection', 'waterSunRadiance']));
     expect(surface.mesh.material.ior).toBeCloseTo(1.333, 6);
     expect(surface.mesh.material.clearcoat).toBe(0);
+  });
+
+  it('uploads the physical current for the foam pattern and keeps the legacy one still', () => {
+    const wave = new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS });
+    const surface = new WaterSurface(new LegacySurfaceSource(wave));
+    expect(surface.flowData.every((value) => value === 0)).toBe(true);
+    const simulation = new SurfZoneSimulation({
+      spot: 'beach', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
+      componentCount: 8, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
+    });
+    const source = new PhysicalSurfaceSource(simulation, 2);
+    surface.setSource(source);
+    for (let frame = 0; frame < 20; frame += 1) simulation.step(1 / 30);
+    surface.update();
+    const expected = new Float32Array(surface.flowData.length);
+    simulation.writeUniformFlow(expected, source.grid);
+    expect(Array.from(surface.flowData)).toEqual(Array.from(expected));
+    expect(surface.flowData.some((value) => Math.abs(value) > 0.05)).toBe(true);
   });
 });

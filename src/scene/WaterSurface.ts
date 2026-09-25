@@ -13,6 +13,7 @@ import {
   Vector3,
   Vector4,
 } from 'three';
+import { foamPatternPars } from './foamPattern';
 import { DEFAULT_WATER_CHOP, waterChopNormal, waterChopPars } from './waterChop';
 import {
   WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
@@ -88,8 +89,10 @@ float waterHeightAt( vec2 xz ) {
 const waterVertexPars = /* glsl */ `
 ${waterHeightPars}
 uniform sampler2D waterBed;
+uniform sampler2D waterFlow;
 varying float vWaterDepth;
 varying float vWaterFoam;
+varying vec2 vWaterFlow;
 varying vec3 vWaterWorld;
 
 float waterFoamAt( vec2 xz ) {
@@ -98,6 +101,15 @@ float waterFoamAt( vec2 xz ) {
   vec2 t = g - vec2( c );
   float top = mix( texelFetch( waterSurface, c, 0 ).g, texelFetch( waterSurface, c + ivec2( 1, 0 ), 0 ).g, t.x );
   float bottom = mix( texelFetch( waterSurface, c + ivec2( 0, 1 ), 0 ).g, texelFetch( waterSurface, c + ivec2( 1, 1 ), 0 ).g, t.x );
+  return mix( top, bottom, t.y );
+}
+
+vec2 waterFlowAt( vec2 xz ) {
+  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
+  ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
+  vec2 t = g - vec2( c );
+  vec2 top = mix( texelFetch( waterFlow, c, 0 ).rg, texelFetch( waterFlow, c + ivec2( 1, 0 ), 0 ).rg, t.x );
+  vec2 bottom = mix( texelFetch( waterFlow, c + ivec2( 0, 1 ), 0 ).rg, texelFetch( waterFlow, c + ivec2( 1, 1 ), 0 ).rg, t.x );
   return mix( top, bottom, t.y );
 }
 
@@ -124,6 +136,7 @@ float waterSlopeZ = ( waterHeightAt( waterXZ + waterStepZ ) - waterHeightAt( wat
 vec3 objectNormal = normalize( vec3( -waterSlopeX, 1.0, -waterSlopeZ ) );
 vWaterDepth = max( 0.0, waterHeight - waterBedAt( waterXZ ) );
 vWaterFoam = waterFoamAt( waterXZ );
+vWaterFlow = waterFlowAt( waterXZ );
 `;
 
 const waterFragmentPars = /* glsl */ `
@@ -131,9 +144,11 @@ ${waterHeightPars}
 uniform vec3 waterFoamColor;
 varying float vWaterDepth;
 varying float vWaterFoam;
+varying vec2 vWaterFlow;
 ${waterOpticsPars}
 ${waterCrestPars}
 ${waterChopPars}
+${foamPatternPars}
 `;
 
 /** Supplies interleaved (height, foam) for every node of a uniform render grid. */
@@ -156,8 +171,12 @@ export class WaterSurface {
   surfaceData: Float32Array;
   /** Bed elevation per grid node, uploaded only when the source's bed changes. */
   bedData: Float32Array;
+  /** Interleaved surface current (u, w) per grid node for the foam pattern; zero for sources without one. */
+  flowData: Float32Array;
   private texture: DataTexture;
   private bedTexture: DataTexture;
+  private flowTexture: DataTexture;
+  private flowSource?: SurfaceSource;
   private bedSource?: SurfaceSource;
   private bedRevision = Number.NaN;
   private readonly uniforms: Record<string, { value: unknown }>;
@@ -168,9 +187,12 @@ export class WaterSurface {
     this.texture = WaterSurface.createTexture(this.surfaceData, grid);
     this.bedData = new Float32Array(grid.nx * grid.nz);
     this.bedTexture = WaterSurface.createBedTexture(this.bedData, grid);
+    this.flowData = new Float32Array(grid.nx * grid.nz * 2);
+    this.flowTexture = WaterSurface.createTexture(this.flowData, grid);
     this.uniforms = {
       waterSurface: { value: this.texture },
       waterBed: { value: this.bedTexture },
+      waterFlow: { value: this.flowTexture },
       waterGrid: { value: new Vector4(grid.xMin, grid.zMin, grid.spacing, 0) },
       waterGridSize: { value: new Vector2(grid.nx, grid.nz) },
       waterFoamColor: { value: new Color('#d8f2e9') },
@@ -222,6 +244,14 @@ export class WaterSurface {
       this.bedRevision = this.source.bedRevision;
       this.bedTexture.needsUpdate = true;
     }
+    if (this.source.writeFlow) {
+      this.source.writeFlow(this.flowData);
+      this.flowTexture.needsUpdate = true;
+    } else if (this.flowSource !== this.source) {
+      this.flowData.fill(0);
+      this.flowTexture.needsUpdate = true;
+    }
+    this.flowSource = this.source;
   }
 
   /** Water clarity and seabed colour for the current spot. */
@@ -253,6 +283,11 @@ export class WaterSurface {
     this.bedTexture.dispose();
     this.bedTexture = WaterSurface.createBedTexture(this.bedData, grid);
     this.uniforms.waterBed.value = this.bedTexture;
+    this.flowData = new Float32Array(grid.nx * grid.nz * 2);
+    this.flowTexture.dispose();
+    this.flowTexture = WaterSurface.createTexture(this.flowData, grid);
+    this.uniforms.waterFlow.value = this.flowTexture;
+    this.flowSource = undefined;
     (this.uniforms.waterGridSize.value as Vector2).set(grid.nx, grid.nz);
     this.mesh.geometry.dispose();
     this.mesh.geometry = WaterSurface.createGeometry(grid);
@@ -262,6 +297,7 @@ export class WaterSurface {
     this.mesh.geometry.dispose();
     this.texture.dispose();
     this.bedTexture.dispose();
+    this.flowTexture.dispose();
     this.mesh.material.dispose();
   }
 

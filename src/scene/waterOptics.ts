@@ -175,7 +175,7 @@ float waterCrestThickness( vec3 origin, vec3 direction ) {
  * `<emissivemap_fragment>`): the water body's colour from the depth under the
  * fragment, foam over it, and with `crestLight` the sunlight that crosses thin
  * crests when the sun is behind them. Needs `vWaterWorld`, `vWaterDepth`,
- * `vWaterFoam` and `waterFoamColor`.
+ * `vWaterFoam`, `vWaterFlow`, `waterFoamColor`, `waterTime` and `foamPatternPars`.
  */
 export function waterBodyFragment(crestLight: boolean): string {
   // Sunlight crosses the crest from its sunlit back toward the face in view, so
@@ -200,7 +200,10 @@ export function waterBodyFragment(crestLight: boolean): string {
   if ( waterViewCos > 0.0 ) {
     waterBody = waterBodyReflectance( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ) );${crestLight ? crest : ''}
   }
-  diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, vWaterFoam );
+  // Foam is a matte network over the water (plan §2.4) that drifts with the current.
+  float waterCover = waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime );
+  diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, waterCover );
+  roughnessFactor = mix( roughnessFactor, 0.9, waterCover );
 }
 `;
 }

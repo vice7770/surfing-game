@@ -14,6 +14,7 @@ import {
 } from 'three';
 import type { FarFieldProfile } from '../wave/FarFieldProfile';
 import { buildGridGeometry, gradedAxis, type HoleRect } from './gridGeometry';
+import { foamPatternPars } from './foamPattern';
 import { DEFAULT_WATER_CHOP, waterChopNormal, waterChopPars } from './waterChop';
 import { WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterOpticsPars, type WaterOptics } from './waterOptics';
 
@@ -34,6 +35,7 @@ uniform float farGerstner;
 uniform vec4 farHole;
 varying float vWaterDepth;
 varying float vWaterFoam;
+varying vec2 vWaterFlow;
 varying vec3 vWaterWorld;
 
 float farRowFor( float z ) {
@@ -84,6 +86,7 @@ if ( farDry ) {
 vec3 objectNormal = normalize( vec3( -farSlope.x, 1.0, -farSlope.y ) );
 vWaterDepth = max( 0.0, farDepth + farHeight );
 vWaterFoam = farDry ? 0.0 : clamp( ( 1.0 - farCap ) * 1.4, 0.0, 0.85 );
+vWaterFlow = vec2( 0.0 );
 `;
 
 const farFragmentPars = /* glsl */ `
@@ -92,8 +95,10 @@ uniform vec2 farFade;
 uniform vec3 waterFoamColor;
 varying float vWaterDepth;
 varying float vWaterFoam;
+varying vec2 vWaterFlow;
 ${waterOpticsPars}
 ${waterChopPars}
+${foamPatternPars}
 `;
 
 /**
