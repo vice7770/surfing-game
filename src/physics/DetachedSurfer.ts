@@ -8,6 +8,8 @@ export interface BodyWaterSample {
   wet: boolean;
   outsideDomain: boolean;
   breaking: number;
+  /** Horizontal depth profile is reconstructed from solver-averaged momentum. */
+  flowModel?: 'reconstructed' | 'dry' | 'outside';
 }
 
 export interface BodyWaterField {
