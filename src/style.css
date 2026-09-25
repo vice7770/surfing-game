@@ -73,6 +73,7 @@ input[type='range'] { display: block; width: 100%; height: 3px; margin: 0; appea
 input[type='range']::-webkit-slider-thumb { width: 10px; height: 10px; appearance: none; border: 2px solid #f4f3e7; border-radius: 50%; background: #287d80; box-shadow: 0 0 0 1px #287d80; }
 input[type='range']::-moz-range-thumb { width: 8px; height: 8px; border: 2px solid #f4f3e7; border-radius: 50%; background: #287d80; box-shadow: 0 0 0 1px #287d80; }
 .pending-note { margin: 10px 0 0; color: #bb6749; font: 8px var(--mono); letter-spacing: .06em; }
+.storm-derived { margin: 4px 0 8px; color: #2c7779; font: 8px/1.5 var(--mono); letter-spacing: .04em; }
 .panel-actions { display: flex; gap: 7px; margin-top: 13px; }
 .button { min-height: 34px; border: 1px solid transparent; border-radius: 2px; font: 9px var(--mono); letter-spacing: .04em; cursor: pointer; transition: transform .16s ease, background .16s ease, opacity .16s ease; }
 .button:hover:not(:disabled) { transform: translateY(-1px); }
@@ -90,6 +91,12 @@ input[type='range']::-moz-range-thumb { width: 8px; height: 8px; border: 2px sol
 .run-history ol { max-height: 145px; margin: 9px 0 0; padding-left: 17px; overflow: auto; }
 .run-history li { margin: 0 0 8px; font: 9px/1.5 var(--mono); }
 .run-history li small { display: block; color: #557778; font: 10px/1.35 'DM Sans', 'Avenir Next', sans-serif; }
+.physics-readout dl { display: grid; gap: 5px; margin: 9px 0 0; }
+.physics-readout dl div { display: flex; justify-content: space-between; gap: 12px; font: 9px/1.4 var(--mono); }
+.physics-readout dt { color: #537472; }
+.physics-readout dd { margin: 0; color: #183f42; text-align: right; }
+.is-physical .telemetry, .is-physical .hero-copy, .is-physical .control-hint, .is-physical .touch-controls,
+.is-physical #get-up-button, .is-physical #replay-action, .is-physical .maneuver-callout { display: none !important; }
 
 .control-hint { position: absolute; bottom: 5.1%; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 7px; color: #305d5f; font: 8px var(--mono); letter-spacing: .08em; white-space: nowrap; }
 .touch-controls { display: none; }

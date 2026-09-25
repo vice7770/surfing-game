@@ -175,4 +175,11 @@ describe('InteractiveWaterField', () => {
     expect(shelf.breakingAt(0, crestZ, marginalSlope, crestZ)).toBeGreaterThan(0);
     expect(shelf.breakingAt(0, crestZ, 10, crestZ)).toBeLessThanOrEqual(1);
   });
+
+  it('reports the steepest shelf bed slope for the physics readout', () => {
+    expect(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS, shelfStrength: 0 }).maxBedSlope()).toBe(0);
+    const reef = new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS, height: 2.2, shelfStrength: 0.65 });
+    const analytic = (reef.meanDepth * 0.58 * 0.65 * 1.5) / 28;
+    expect(reef.maxBedSlope() / analytic).toBeCloseTo(1, 2);
+  });
 });

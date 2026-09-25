@@ -12,7 +12,7 @@ import {
   Vector3,
   Vector4,
 } from 'three';
-import type { InteractiveWaterField } from '../wave/WaveModel';
+import { DEFAULT_WATER_CHOP, waterChopNormal, waterChopPars } from './waterChop';
 
 export interface SurfaceGrid {
   xMin: number;
@@ -59,6 +59,7 @@ uniform vec3 waterBaseColor;
 uniform vec3 waterCrestColor;
 uniform vec3 waterFoamColor;
 varying vec3 vWaterColor;
+varying vec3 vWaterWorld;
 
 float waterHeightAt( vec2 xz ) {
   vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
@@ -94,40 +95,37 @@ float waterCrest = clamp( waterHeight / max( waterWaveHeight, 0.01 ) * 0.6, 0.0,
 vWaterColor = mix( mix( waterBaseColor, waterCrestColor, waterCrest ), waterFoamColor, waterFoamAt( waterXZ ) );
 `;
 
+/** Supplies interleaved (height, foam) for every node of a uniform render grid. */
+export interface SurfaceSource {
+  readonly grid: SurfaceGrid;
+  /** Wave height used to scale the crest tint, m. */
+  readonly waveHeight: number;
+  /** Simulation clock that animates the shading-only wind chop, s. */
+  readonly time: number;
+  write(data: Float32Array): void;
+}
+
 export class WaterSurface {
   readonly mesh: Mesh<PlaneGeometry, MeshPhysicalMaterial>;
   /** Interleaved (height, foam) per grid node, uploaded as an RG float texture each frame. */
-  readonly surfaceData: Float32Array;
-  readonly grid: SurfaceGrid;
-  private readonly geometry: PlaneGeometry;
-  private readonly texture: DataTexture;
-  private readonly foamMemory: Float32Array;
+  surfaceData: Float32Array;
+  private texture: DataTexture;
   private readonly uniforms: Record<string, { value: unknown }>;
-  private lastWaveTime = 0;
-  private lastZMin: number;
 
-  constructor(private wave: InteractiveWaterField) {
-    this.grid = { xMin: wave.xMin, zMin: wave.zMin, spacing: wave.spacing, nx: wave.nx, nz: wave.nz };
-    this.surfaceData = new Float32Array(wave.nx * wave.nz * 2);
-    this.foamMemory = new Float32Array(wave.nx * wave.nz);
-    this.lastZMin = wave.zMin;
-    this.texture = new DataTexture(this.surfaceData, wave.nx, wave.nz, RGFormat, FloatType);
-    this.texture.magFilter = NearestFilter;
-    this.texture.minFilter = NearestFilter;
-    this.texture.generateMipmaps = false;
-
-    // Static vertices on the grid nodes; the vertex shader displaces them.
-    this.geometry = new PlaneGeometry(48, 80, wave.nx - 1, wave.nz - 1);
-    this.geometry.rotateX(-Math.PI / 2);
-    this.geometry.translate(0, 0, 8);
+  constructor(private source: SurfaceSource) {
+    const grid = source.grid;
+    this.surfaceData = new Float32Array(grid.nx * grid.nz * 2);
+    this.texture = WaterSurface.createTexture(this.surfaceData, grid);
     this.uniforms = {
       waterSurface: { value: this.texture },
-      waterGrid: { value: new Vector4(wave.xMin, wave.zMin, wave.spacing, 0) },
-      waterGridSize: { value: new Vector2(wave.nx, wave.nz) },
-      waterWaveHeight: { value: wave.settings.height },
+      waterGrid: { value: new Vector4(grid.xMin, grid.zMin, grid.spacing, 0) },
+      waterGridSize: { value: new Vector2(grid.nx, grid.nz) },
+      waterWaveHeight: { value: source.waveHeight },
       waterBaseColor: { value: new Color('#0c8f9d') },
       waterCrestColor: { value: new Color('#4fc1b5') },
       waterFoamColor: { value: new Color('#d8f2e9') },
+      waterTime: { value: 0 },
+      waterChop: { value: DEFAULT_WATER_CHOP },
     };
     const material = new MeshPhysicalMaterial({
       color: '#ffffff',
@@ -143,64 +141,70 @@ export class WaterSurface {
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', `#include <common>\n${waterVertexPars}`)
         .replace('#include <beginnormal_vertex>', waterBeginNormal)
-        .replace('#include <begin_vertex>', 'vec3 transformed = vec3( position );\ntransformed.y = waterHeight;');
+        .replace('#include <begin_vertex>', 'vec3 transformed = vec3( position );\ntransformed.y = waterHeight;\nvWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', '#include <common>\nvarying vec3 vWaterColor;')
+        .replace('#include <common>', `#include <common>\nvarying vec3 vWaterColor;\n${waterChopPars}`)
+        .replace('#include <normal_fragment_begin>', waterChopNormal)
         .replace('#include <color_fragment>', 'diffuseColor.rgb *= vWaterColor;');
     };
     material.customProgramCacheKey = () => 'breakline-water-surface';
-    this.mesh = new Mesh(this.geometry, material);
+    this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
     this.mesh.frustumCulled = false;
     this.update();
   }
 
+  get grid(): SurfaceGrid {
+    return this.source.grid;
+  }
+
   update(): void {
-    const wave = this.wave;
-    if (wave.zMin !== this.lastZMin) {
-      const cells = Math.round((wave.zMin - this.lastZMin) / wave.spacing) * wave.nx;
-      this.foamMemory.copyWithin(0, cells);
-      this.foamMemory.fill(0, this.foamMemory.length - cells);
-      this.lastZMin = wave.zMin;
-    }
-    this.mesh.position.z = wave.zMin + 32;
-    const crestZ = wave.crestZ();
-    const elapsed = Math.max(0, wave.time - this.lastWaveTime);
-    this.lastWaveTime = wave.time;
-    const foamDecay = Math.exp(-elapsed / 2.2);
-    wave.copyHeights(this.surfaceData, 2, 0);
-    for (let iz = 0; iz < wave.nz; iz += 1) {
-      const z = wave.zMin + iz * wave.spacing;
-      for (let ix = 0; ix < wave.nx; ix += 1) {
-        const i = iz * wave.nx + ix;
-        const x = wave.xMin + ix * wave.spacing;
-        const slope = wave.slopeMagnitude(x, z);
-        const crestDistance = (z - wave.crestZAt(x, crestZ)) / 1.15;
-        const narrowFoam = Math.exp(-0.5 * crestDistance * crestDistance);
-        const activeFoam = Math.max(
-          Math.max(0, Math.min(0.12, (slope - 0.12) * 0.5)),
-          wave.breakingAt(x, z, slope, crestZ) * narrowFoam * 0.88,
-        );
-        this.foamMemory[i] = Math.max(activeFoam, this.foamMemory[i] * foamDecay);
-        this.surfaceData[i * 2 + 1] = Math.max(activeFoam, this.foamMemory[i] * 0.65);
-      }
-    }
-    this.grid.zMin = wave.zMin;
-    (this.uniforms.waterGrid.value as Vector4).y = wave.zMin;
-    this.uniforms.waterWaveHeight.value = wave.settings.height;
+    this.source.write(this.surfaceData);
+    const grid = this.source.grid;
+    (this.uniforms.waterGrid.value as Vector4).set(grid.xMin, grid.zMin, grid.spacing, 0);
+    this.uniforms.waterWaveHeight.value = this.source.waveHeight;
+    this.uniforms.waterTime.value = this.source.time;
+    this.mesh.position.set(grid.xMin + ((grid.nx - 1) * grid.spacing) / 2, 0, grid.zMin + ((grid.nz - 1) * grid.spacing) / 2);
     this.texture.needsUpdate = true;
   }
 
-  setWave(wave: InteractiveWaterField): void {
-    this.wave = wave;
-    this.foamMemory.fill(0);
-    this.lastWaveTime = 0;
-    this.lastZMin = wave.zMin;
-    this.mesh.position.z = wave.zMin + 32;
+  /** Strength of the shading-only wind chop (see waterChop.ts). */
+  setChop(strength: number): void {
+    this.uniforms.waterChop.value = strength;
+  }
+
+  /** Switch to another water source, rebuilding the mesh and texture if its grid differs. */
+  setSource(source: SurfaceSource): void {
+    const previous = this.source.grid;
+    this.source = source;
+    const grid = source.grid;
+    if (previous.nx === grid.nx && previous.nz === grid.nz && previous.spacing === grid.spacing) return;
+    this.surfaceData = new Float32Array(grid.nx * grid.nz * 2);
+    this.texture.dispose();
+    this.texture = WaterSurface.createTexture(this.surfaceData, grid);
+    this.uniforms.waterSurface.value = this.texture;
+    (this.uniforms.waterGridSize.value as Vector2).set(grid.nx, grid.nz);
+    this.mesh.geometry.dispose();
+    this.mesh.geometry = WaterSurface.createGeometry(grid);
   }
 
   dispose(): void {
-    this.geometry.dispose();
+    this.mesh.geometry.dispose();
     this.texture.dispose();
     this.mesh.material.dispose();
+  }
+
+  private static createTexture(data: Float32Array, grid: SurfaceGrid): DataTexture {
+    const texture = new DataTexture(data, grid.nx, grid.nz, RGFormat, FloatType);
+    texture.magFilter = NearestFilter;
+    texture.minFilter = NearestFilter;
+    texture.generateMipmaps = false;
+    return texture;
+  }
+
+  /** Static vertices on the grid nodes, centred on the mesh origin; the vertex shader displaces them. */
+  private static createGeometry(grid: SurfaceGrid): PlaneGeometry {
+    const geometry = new PlaneGeometry((grid.nx - 1) * grid.spacing, (grid.nz - 1) * grid.spacing, grid.nx - 1, grid.nz - 1);
+    geometry.rotateX(-Math.PI / 2);
+    return geometry;
   }
 }

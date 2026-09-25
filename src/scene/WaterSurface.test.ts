@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField, type WaveSettings } from '../wave/WaveModel';
 import { WaterSurface, sampleSurfaceHeight, sampleSurfaceNormal } from './WaterSurface';
+import { LegacySurfaceSource } from './LegacySurfaceSource';
+import { PhysicalSurfaceSource } from './PhysicalSurfaceSource';
+import { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
 
 function advancedSurface(settings: Partial<WaveSettings> = {}, steps = 240) {
   const wave = new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS, shelfStrength: 0.4, ...settings });
-  const surface = new WaterSurface(wave);
+  const surface = new WaterSurface(new LegacySurfaceSource(wave));
   for (let i = 0; i < steps; i += 1) {
     wave.step(1 / 60);
     surface.update();
@@ -105,7 +108,7 @@ describe('WaterSurface GPU displacement data', () => {
 
   it('keeps the previous foam memory on every grid node while the grid scrolls', () => {
     const wave = new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS, shelfStrength: 0.4, sustained: true });
-    const surface = new WaterSurface(wave);
+    const surface = new WaterSurface(new LegacySurfaceSource(wave));
     const oracle = new LegacyFoam(wave);
     oracle.update();
     let foamyNodes = 0;
@@ -122,5 +125,23 @@ describe('WaterSurface GPU displacement data', () => {
     }
     expect(wave.zMin).toBeGreaterThan(-32);
     expect(foamyNodes).toBeGreaterThan(0);
+  });
+
+  it('rebuilds its mesh and texture for a differently sized physical source', () => {
+    const wave = new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS });
+    const surface = new WaterSurface(new LegacySurfaceSource(wave));
+    const simulation = new SurfZoneSimulation({
+      spot: 'beach', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 0, spreading: 12, tide: 0,
+      componentCount: 8, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
+    });
+    surface.setSource(new PhysicalSurfaceSource(simulation, 2));
+    surface.update();
+    expect(surface.grid.nx).toBe(21);
+    expect(surface.surfaceData.length).toBe(surface.grid.nx * surface.grid.nz * 2);
+    expect(surface.mesh.geometry.getAttribute('position').count).toBe(surface.grid.nx * surface.grid.nz);
+    expect(surface.mesh.position.x).toBeCloseTo(surface.grid.xMin + 20, 9);
+    simulation.solver.shiftAlongShore(3);
+    surface.update();
+    expect(surface.grid.xMin).toBeCloseTo(-20 + 6, 9);
   });
 });

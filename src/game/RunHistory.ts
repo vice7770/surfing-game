@@ -6,7 +6,7 @@ export interface RunReport {
   outcome: Extract<RunState, 'missed' | 'wipeout' | 'complete'>;
   reason: string;
   spot?: string;
-  settings: WaveSettings & { paddleForce: number; boardResponse: number; sunHeight?: number; sunDirection?: number };
+  settings: WaveSettings & { paddleForce: number; boardResponse: number; sunHeight?: number; sunDirection?: number; timeScale?: number };
   elapsedSeconds: number;
   rideDistance: number;
   peakSpeed: number;

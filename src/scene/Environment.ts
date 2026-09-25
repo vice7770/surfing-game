@@ -45,6 +45,8 @@ export class Environment {
       `,
     });
     const sky = new Mesh(new SphereGeometry(150, 32, 16), this.skyMaterial);
+    // Drawn first without depth, so distant water beyond the sphere still covers it.
+    sky.renderOrder = -10;
     sky.renderOrder = -10;
     this.group.add(sky);
 
@@ -66,6 +68,11 @@ export class Environment {
   }
 
   get sunPosition() { return this.sun.position; }
+
+  /** The legacy coastline cards sit offshore in the physical tank's frame, so that mode hides them. */
+  showCoastline(visible: boolean): void {
+    this.coastline.forEach((mesh) => { mesh.visible = visible; });
+  }
   get sunMesh() { return this.sun; }
 
   setSpot(spot: 'training' | 'point' | 'reef' | 'custom'): void {
