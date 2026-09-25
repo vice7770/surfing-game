@@ -27,6 +27,7 @@ import { Surfer } from './scene/Surfer';
 import { Seabed } from './scene/Seabed';
 import { PlungingSheetMesh } from './scene/PlungingSheetMesh';
 import { WaterSurface } from './scene/WaterSurface';
+import { LegacySurfaceSource } from './scene/LegacySurfaceSource';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField, type WaveSettings } from './wave/WaveModel';
 import { PlungingSheet } from './wave/PlungingSheet';
 import { Hud } from './ui/Hud';
@@ -133,7 +134,7 @@ class SurfGame {
     this.wave = new InteractiveWaterField(this.seed, this.activeSettings);
     this.plungingSheet = new PlungingSheet(this.wave);
     this.sheetMesh = new PlungingSheetMesh(this.plungingSheet);
-    this.water = new WaterSurface(this.wave);
+    this.water = new WaterSurface(new LegacySurfaceSource(this.wave));
     this.water.mesh.material.envMapIntensity = 0.28;
     this.scene.add(this.water.mesh, this.sheetMesh.mesh);
     this.scene.add(this.seabed.mesh);
@@ -188,7 +189,7 @@ class SurfGame {
     getElement<HTMLElement>('#spot-name').textContent = SPOT_NAMES[spot];
     this.wave = new InteractiveWaterField(this.seed, this.activeSettings);
     this.plungingSheet = new PlungingSheet(this.wave);
-    this.water.setWave(this.wave);
+    this.water.setSource(new LegacySurfaceSource(this.wave));
     this.physics = this.createPhysics(this.wave, this.activeSettings, this.plungingSheet);
     this.sheetMesh.update(this.plungingSheet);
     this.environment.group.position.z = 0;
