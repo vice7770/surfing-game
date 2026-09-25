@@ -1,4 +1,5 @@
 import { exactWaveNumber } from './dispersion';
+import { seededRandom } from './random';
 
 export interface WaveComponent {
   /** Amplitude a, m. */
@@ -39,17 +40,6 @@ export function jonswapShape(omega: number, peakOmega: number, gamma = JONSWAP_G
   const sigma = omega <= peakOmega ? 0.07 : 0.09;
   const r = Math.exp(-((omega - peakOmega) ** 2) / (2 * sigma * sigma * peakOmega * peakOmega));
   return Math.pow(omega, -5) * Math.exp(-1.25 * Math.pow(peakOmega / omega, 4)) * Math.pow(gamma, r);
-}
-
-function seededRandom(seed: number): () => number {
-  let value = (seed ^ 0x5eaa57a7) >>> 0;
-  return () => {
-    value = (value + 0x6d2b79f5) >>> 0;
-    let t = value;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 /** Tabulated inverse CDF of `density` on [lo, hi] (trapezoid rule, linear inversion). */
@@ -105,7 +95,7 @@ export class SeaState {
     const s = Math.max(0, params.spreading);
     const directionAt = inverseCdf(-halfWidth, halfWidth, 721, (theta) => Math.pow(Math.cos(theta / 2), 2 * s));
     const amplitude = params.significantHeight / Math.sqrt(8 * count);
-    const random = seededRandom(seed);
+    const random = seededRandom(seed, 0x5eaa57a7);
     const components: WaveComponent[] = [];
     for (let index = 0; index < count; index += 1) {
       const omega = frequencyAt((index + 0.25 + 0.5 * random()) / count);
