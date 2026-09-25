@@ -69,3 +69,19 @@ _Avoid_: board physics (too broad without a specific model)
 **Physics tuning panel**:
 The in-game controls for adjusting MVP wave and board parameters to inspect their effect.
 _Avoid_: debug menu
+
+**Sea state**:
+The spectral description of the swell at the spot (Hs, Tp, direction, spread, tide), represented as seeded linear components.
+_Avoid_: wave settings
+
+**Set**:
+A group of larger waves produced by interference of nearby periods, arriving at the group velocity.
+_Avoid_: wave series
+
+**Time-scale**:
+A uniform slow-motion factor on simulated time; gravity and the fixed physics step are unchanged.
+_Avoid_: slow gravity
+
+**Breaker type**:
+Spilling, plunging, or surging, classified by the Iribarren number.
+_Avoid_: wave style

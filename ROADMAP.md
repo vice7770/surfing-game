@@ -4,6 +4,26 @@ This is the project’s working plan and priority tracker. Update it whenever a 
 
 Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status values: `Backlog`, `Ready`, `In Progress`, `Blocked`, `Done`.
 
+## Next milestone — physical wave formation — `In Progress`
+
+Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR 0004](docs/adr/0004-dispersive-surf-zone-solver.md).
+
+### P0 · GPU displacement from the shared field (G1) — `Done`
+
+- [x] Upload per-node height and foam as a float texture; the vertex shader displaces, shades, and colors the surface with the field's own bilinear lookup. `WaterSurface.update()` fell from 3.36 ms to 1.07 ms per frame (merged in PR #1).
+
+### P0 · SI wave foundation (P1) — `Done`
+
+- [x] Airy dispersion with the explicit Guo wavenumber; seeded JONSWAP sea state with cos-2s spreading, linear elevation and depth-averaged flow, and a set predictor verified against the Munk beat period.
+- [x] Froude-consistent time-scale (0.4–1.0) in the Wave Lab; physics readout comparing Airy speed with the legacy simulation speed.
+- [ ] g = 9.81 in the solver, removal of the Wave speed slider, and the `legacy` flag move to P2 with the new solver, which keeps the legacy wave playable until the P4 board retune.
+
+### P1 · Spots, sliding window and finite-volume solver (P2) — `Ready`
+### P1 · Far-field ocean (G2) — `Backlog`
+### P1 · Emergent breaking and Iribarren lip (P3) — `Backlog`
+### P2 · Shading, foam, board consequences (G3, G4, P4) — `Backlog`
+### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `Backlog`
+
 ## Current milestone — sustained wave and physical wipeout — `Done for prototype`
 
 - [x] Replace the playable 20 m finish with an open ended ride while retaining the earlier finite-wave path for regression tests.
