@@ -332,4 +332,18 @@ describe('DetachedSurfer on controlled water', () => {
       expect(body.nodes[index].velocity.distanceTo(before[index])).toBeLessThanOrEqual(8 + 1e-9);
     }
   });
+
+  it('keeps the center-of-mass fall close when the fixed step is halved', () => {
+    const sixty = new DetachedSurfer();
+    const oneTwenty = new DetachedSurfer();
+    const center = new Vector3(0, -1, 0);
+    const velocity = new Vector3(1.3, -1, 0.4);
+    launch(sixty, center, velocity);
+    launch(oneTwenty, center, velocity);
+    const water = uniformWater(new Vector3(0.4, 0, 0));
+    for (let frame = 0; frame < 120; frame += 1) sixty.step(1 / 60, water);
+    for (let frame = 0; frame < 240; frame += 1) oneTwenty.step(1 / 120, water);
+
+    expect(sixty.centerOfMass().distanceTo(oneTwenty.centerOfMass())).toBeLessThan(0.15);
+  });
 });
