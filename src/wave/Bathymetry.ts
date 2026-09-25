@@ -25,7 +25,7 @@ export function deanDepth(offshore: number, a = 0.12, maxDepth = 12, landSlope =
 export const BEACH_BAR = { offshore: 90, height: 0.9, width: 18, ripSpacing: 110, ripWidth: 22, ripJitter: 25 };
 export const POINT_HEADLAND = { center: 0, halfWidth: 150, protrusion: 120, slope: 0.04, maxDepth: 12 };
 export const REEF = { edge: -150, apexX: 0, protrusion: 100, halfWidth: 250, edgeWidth: 80, shelfDepth: 2, channelDepth: 10 };
-export const CANYON = { axisX: 0, halfWidth: 30, depth: 14, head: 60, fullAt: 160, fadeStart: 260, fadeEnd: 320 };
+export const CANYON = { axisX: 0, halfWidth: 30, depth: 14, head: 60, fullAt: 160, fadeStart: 200, fadeEnd: 250 };
 
 function beach(seed: number): SurfSpot {
   const random = seededRandom(seed, 0xbeac4);

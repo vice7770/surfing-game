@@ -261,6 +261,30 @@ export class ShallowWaterSolver {
     return low * this.nx + ix;
   }
 
+  /** Bilinear sample of a cell-centred field at (x, z), clamped to the outermost centres. */
+  sampleCentered(values: Float64Array, x: number, z: number): number {
+    const gx = Math.min(this.nx - 1, Math.max(0, (x - this.xCenters[0]) / this.dx));
+    const ix = Math.min(this.nx - 2, Math.floor(gx));
+    const tx = gx - ix;
+    const iz = this.rowBelow(z);
+    const tz = Math.min(1, Math.max(0, (z - this.zCenters[iz]) / (this.zCenters[iz + 1] - this.zCenters[iz])));
+    const i = iz * this.nx + ix;
+    return (values[i] * (1 - tx) + values[i + 1] * tx) * (1 - tz)
+      + (values[i + this.nx] * (1 - tx) + values[i + this.nx + 1] * tx) * tz;
+  }
+
+  /** Largest row whose centre is at or below z, clamped to [0, nz − 2]. */
+  rowBelow(z: number): number {
+    let low = 0;
+    let high = this.nz - 1;
+    while (high - low > 1) {
+      const middle = (low + high) >> 1;
+      if (this.zCenters[middle] <= z) low = middle;
+      else high = middle;
+    }
+    return Math.min(low, this.nz - 2);
+  }
+
   /** Largest time step the CFL condition allows for the current state, s. */
   maxStableStep(): number {
     let rate = 0;

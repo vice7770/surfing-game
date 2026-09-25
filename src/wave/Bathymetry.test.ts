@@ -63,7 +63,7 @@ describe('surf spot bathymetry', () => {
   it('cuts a canyon that is far deeper on its axis and fades before the offshore boundary', () => {
     const canyon = createSpot('canyon', 1);
     expect(canyon.depthAt(CANYON.axisX, -200) - canyon.depthAt(CANYON.axisX + 120, -200)).toBeGreaterThan(8);
-    expect(Math.abs(canyon.depthAt(CANYON.axisX, -340) - canyon.depthAt(CANYON.axisX + 120, -340))).toBeLessThan(0.05);
+    expect(Math.abs(canyon.depthAt(CANYON.axisX, -270) - canyon.depthAt(CANYON.axisX + 120, -270))).toBeLessThan(0.05);
   });
 
   it('puts dry land shoreward of every shoreline and stays finite', () => {

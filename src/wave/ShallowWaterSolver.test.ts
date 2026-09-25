@@ -167,4 +167,17 @@ describe('ShallowWaterSolver', () => {
     expect(largestFlow).toBeLessThan(1e-9);
     expect(depthError).toBeLessThan(1e-9);
   });
+
+  it('samples cell-centred fields bilinearly on the stretched grid', () => {
+    const solver = new ShallowWaterSolver({ nx: 6, xMin: 0, dx: 2, zEdges: stretchedEdges(-40, 10, -10, 1, 3) }, (x, z) => 5 + 0.1 * x - 0.05 * z);
+    const ix = 2;
+    const iz = 20;
+    const i = iz * solver.nx + ix;
+    expect(solver.sampleCentered(solver.bed, solver.xCenters[ix], solver.zCenters[iz])).toBe(solver.bed[i]);
+    const x = 0.5 * (solver.xCenters[ix] + solver.xCenters[ix + 1]);
+    const z = 0.5 * (solver.zCenters[iz] + solver.zCenters[iz + 1]);
+    const expected = 0.25 * (solver.bed[i] + solver.bed[i + 1] + solver.bed[i + solver.nx] + solver.bed[i + solver.nx + 1]);
+    expect(solver.sampleCentered(solver.bed, x, z)).toBeCloseTo(expected, 12);
+    expect(solver.sampleCentered(solver.bed, -100, -100)).toBe(solver.bed[0]);
+  });
 });
