@@ -18,7 +18,10 @@ export interface TraceResult {
   state: RunState;
   outcome: string;
   catchTime: number | null;
+  /** When riding began, s. */
   rideTime: number | null;
+  /** How long the ride lasted before it ended (or the run did), s. */
+  rideSeconds: number | null;
   rideDistance: number;
   peakSpeed: number;
   peakTurnRate: number;
@@ -66,6 +69,7 @@ export function runTrace(scenario: TraceScenario): TraceResult {
   const hash = new Fnv1a();
   let catchTime: number | null = null;
   let rideTime: number | null = null;
+  let rideEnd: number | null = null;
   let peakSpeed = 0;
   let peakTurnRate = 0;
   let lowestBalance = 1;
@@ -92,6 +96,7 @@ export function runTrace(scenario: TraceScenario): TraceResult {
     hash.add(wave.heightAt(0, wave.zMin + 20));
     if (catchTime === null && board.state === 'catching') catchTime = board.time;
     if (rideTime === null && board.state === 'riding') rideTime = board.time;
+    if (rideTime !== null && rideEnd === null && board.state !== 'riding') rideEnd = board.time;
     peakSpeed = Math.max(peakSpeed, diagnostics.speed);
     if (board.state === 'riding') {
       peakTurnRate = Math.max(peakTurnRate, Math.abs(diagnostics.pathTurnRate));
@@ -106,6 +111,7 @@ export function runTrace(scenario: TraceScenario): TraceResult {
     outcome: board.diagnostics().outcomeReason,
     catchTime,
     rideTime,
+    rideSeconds: rideTime === null ? null : (rideEnd ?? board.time) - rideTime,
     rideDistance: board.rideDistance,
     peakSpeed,
     peakTurnRate,
