@@ -295,6 +295,16 @@ export class InteractiveWaterField {
     return this.meanDepth * (1 - 0.58 * strength * shelf);
   }
 
+  /** Steepest still-water bed slope |∂h/∂z| across the shelf, for the physics readout. */
+  maxBedSlope(): number {
+    const step = 0.25;
+    let steepest = 0;
+    for (let z = -40; z < 60; z += step) {
+      steepest = Math.max(steepest, Math.abs(this.depthAt(0, z + step) - this.depthAt(0, z)) / step);
+    }
+    return steepest;
+  }
+
   /** Relative depth-averaged wave energy for calibration checks, not joules. */
   totalEnergy(): number {
     let energy = 0;

@@ -49,20 +49,44 @@
       <section class="tuning-panel" aria-label="Wave and board tuning">
         <div class="panel-head"><div><p class="eyebrow">EXPERIMENT WITH THE CONDITIONS</p><h2>Wave lab</h2></div><button id="panel-toggle" class="panel-toggle" type="button" aria-expanded="true" aria-controls="tuning-controls">−</button></div>
         <div id="tuning-controls" class="tuning-controls">
-          <label class="slider-row"><span>Surf spot</span><select id="spot-select"><option value="training">Training Beach</option><option value="point">Glassy Point</option><option value="reef">Windy Reef</option><option value="custom">Custom conditions</option></select></label>
-          <label class="slider-row"><span>Wave height <output id="height-output">1.4 m</output></span><input id="height-slider" type="range" min="0.6" max="2.4" step="0.1" value="1.4" /></label>
-          <label class="slider-row"><span>Wave period <output id="period-output">8.0 s</output></span><input id="period-slider" type="range" min="5" max="12" step="0.5" value="8" /></label>
-          <label class="slider-row"><span>Wave speed <output id="wave-speed-output">3.0 m/s</output></span><input id="wave-speed-slider" type="range" min="1.5" max="5" step="0.1" value="3" /></label>
-          <label class="slider-row"><span>Shore shelf <output id="shelf-output">0%</output></span><input id="shelf-slider" type="range" min="0" max="1" step="0.05" value="0" /></label>
-          <label class="slider-row"><span>Paddle force <output id="paddle-output">14 N</output></span><input id="paddle-slider" type="range" min="5" max="25" step="1" value="14" /></label>
-          <label class="slider-row"><span>Board response <output id="response-output">1.0×</output></span><input id="response-slider" type="range" min="0.5" max="2" step="0.1" value="1" /></label>
-          <label class="slider-row"><span>Cross-current <output id="current-output">0.0 m/s</output></span><input id="current-slider" type="range" min="-0.8" max="0.8" step="0.1" value="0" /></label>
-          <label class="slider-row"><span>Wind push <output id="wind-output">0.00 m/s²</output></span><input id="wind-slider" type="range" min="-0.08" max="0.08" step="0.01" value="0" /></label>
+          <label class="slider-row"><span>Water model</span><select id="model-select"><option value="legacy">Playable wave (legacy)</option><option value="physical">Physical surf zone · view only</option></select></label>
+          <div id="legacy-controls">
+            <label class="slider-row"><span>Surf spot</span><select id="spot-select"><option value="training">Training Beach</option><option value="point">Glassy Point</option><option value="reef">Windy Reef</option><option value="custom">Custom conditions</option></select></label>
+            <label class="slider-row"><span>Wave height <output id="height-output">1.4 m</output></span><input id="height-slider" type="range" min="0.6" max="2.4" step="0.1" value="1.4" /></label>
+            <label class="slider-row"><span>Wave period <output id="period-output">8.0 s</output></span><input id="period-slider" type="range" min="5" max="12" step="0.5" value="8" /></label>
+            <label class="slider-row"><span>Wave speed <output id="wave-speed-output">3.0 m/s</output></span><input id="wave-speed-slider" type="range" min="1.5" max="5" step="0.1" value="3" /></label>
+            <label class="slider-row"><span>Shore shelf <output id="shelf-output">0%</output></span><input id="shelf-slider" type="range" min="0" max="1" step="0.05" value="0" /></label>
+            <label class="slider-row"><span>Paddle force <output id="paddle-output">14 N</output></span><input id="paddle-slider" type="range" min="5" max="25" step="1" value="14" /></label>
+            <label class="slider-row"><span>Board response <output id="response-output">1.0×</output></span><input id="response-slider" type="range" min="0.5" max="2" step="0.1" value="1" /></label>
+            <label class="slider-row"><span>Cross-current <output id="current-output">0.0 m/s</output></span><input id="current-slider" type="range" min="-0.8" max="0.8" step="0.1" value="0" /></label>
+            <label class="slider-row"><span>Wind push <output id="wind-output">0.00 m/s²</output></span><input id="wind-slider" type="range" min="-0.08" max="0.08" step="0.01" value="0" /></label>
+          </div>
+          <div id="physical-controls" hidden>
+            <label class="slider-row"><span>Physical spot</span><select id="physical-spot"><option value="beach">Beach · sandbar and rips</option><option value="point">Point · headland</option><option value="reef">Reef · steep shelf</option><option value="canyon">Canyon · refraction</option></select></label>
+            <label class="slider-row"><span>Swell source</span><select id="swell-source"><option value="buoy">Buoy · Hs, Tp and spread</option><option value="storm">Storm · wind, fetch and distance</option></select></label>
+            <div id="buoy-controls">
+              <label class="slider-row"><span>Swell height Hs <output id="hs-output">1.4 m</output></span><input id="hs-slider" type="range" min="0.3" max="3" step="0.1" value="1.4" /></label>
+              <label class="slider-row"><span>Peak period Tp <output id="tp-output">10.0 s</output></span><input id="tp-slider" type="range" min="6" max="18" step="0.5" value="10" /></label>
+              <label class="slider-row"><span>Spread <output id="spread-output">mixed · s 12</output></span><input id="spread-slider" type="range" min="0" max="1" step="0.05" value="0.4" /></label>
+            </div>
+            <div id="storm-controls" hidden>
+              <label class="slider-row"><span>Storm wind <output id="storm-wind-output">18 m/s</output></span><input id="storm-wind-slider" type="range" min="8" max="30" step="1" value="18" /></label>
+              <label class="slider-row"><span>Fetch <output id="storm-fetch-output">600 km</output></span><input id="storm-fetch-slider" type="range" min="50" max="2000" step="50" value="600" /></label>
+              <label class="slider-row"><span>Duration <output id="storm-duration-output">36 h</output></span><input id="storm-duration-slider" type="range" min="3" max="96" step="3" value="36" /></label>
+              <label class="slider-row"><span>Distance <output id="storm-distance-output">3000 km</output></span><input id="storm-distance-slider" type="range" min="0" max="10000" step="100" value="3000" /></label>
+              <p id="storm-derived" class="storm-derived"></p>
+            </div>
+            <label class="slider-row"><span>Swell direction <output id="direction-output">10°</output></span><input id="direction-slider" type="range" min="-40" max="40" step="5" value="10" /></label>
+            <label class="slider-row"><span>Tide <output id="tide-output">0.0 m</output></span><input id="tide-slider" type="range" min="-1" max="1" step="0.1" value="0" /></label>
+            <label class="slider-row"><span>Local wind <output id="wind-speed-output">calm</output></span><input id="wind-speed-slider" type="range" min="-12" max="12" step="1" value="0" /></label>
+          </div>
+          <label class="slider-row"><span>Time scale <output id="time-scale-output">1.00×</output></span><input id="time-scale-slider" type="range" min="0.4" max="1" step="0.05" value="1" /></label>
           <label class="slider-row"><span>Sun height <output id="sun-output">35%</output></span><input id="sun-slider" type="range" min="0" max="1" step="0.05" value="0.35" /></label>
           <label class="slider-row"><span>Sun direction <output id="sun-direction-output">-25°</output></span><input id="sun-direction-slider" type="range" min="-60" max="60" step="5" value="-25" /></label>
           <p id="pending-note" class="pending-note" hidden>SETUP CHANGED · APPLY TO START THIS CONDITION</p>
           <div class="panel-actions"><button id="apply-button" class="button button-light" type="button" disabled>Apply &amp; replay</button><button id="replay-button" class="button button-quiet" type="button">↺ Replay</button></div>
           <details class="run-history"><summary id="history-summary">RECENT RUNS</summary><ol id="history-list"></ol></details>
+          <details class="run-history physics-readout" open><summary id="readout-summary">PHYSICS READOUT · LINEAR WAVE THEORY</summary><dl id="physics-readout"></dl></details>
         </div>
       </section>
 
