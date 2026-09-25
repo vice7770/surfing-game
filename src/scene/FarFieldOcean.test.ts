@@ -81,8 +81,8 @@ describe('FarFieldOcean', () => {
     expect(shader.fragmentShader).toContain('waterBodyReflectance( vWaterDepth');
     expect(shader.fragmentShader).not.toContain('waterCrestThickness');
     expect(shader.vertexShader).toContain('vWaterFlow = vec2( 0.0 )');
-    expect(shader.fragmentShader).toContain('waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime )');
-    expect(Object.keys(shader.uniforms)).toEqual(expect.arrayContaining(['waterAttenuation', 'waterSunDirection', 'farTable']));
+    expect(shader.fragmentShader).toContain('waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, ');
+    expect(Object.keys(shader.uniforms)).toEqual(expect.arrayContaining(['waterAttenuation', 'waterSunDirection', 'farTable', 'waterFoamTile']));
     expect(ocean.mesh.material.ior).toBeCloseTo(1.333, 6);
     expect(ocean.mesh.material.clearcoat).toBe(0);
   });

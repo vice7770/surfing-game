@@ -213,8 +213,8 @@ describe('WaterSurface GPU displacement data', () => {
     expect(shader.fragmentShader).toContain('waterBodyReflectance( vWaterDepth');
     expect(shader.fragmentShader).toContain('waterCrestThickness( vWaterWorld');
     expect(shader.vertexShader).toContain('vWaterFlow = waterFlowAt( waterXZ )');
-    expect(shader.fragmentShader).toContain('waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime )');
-    expect(Object.keys(shader.uniforms)).toContain('waterFlow');
+    expect(shader.fragmentShader).toContain('waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, ');
+    expect(Object.keys(shader.uniforms)).toEqual(expect.arrayContaining(['waterFlow', 'waterFoamTile']));
     expect(Object.keys(shader.uniforms)).toEqual(expect.arrayContaining(['waterBed', 'waterAttenuation', 'waterSunDirection', 'waterSunRadiance']));
     expect(surface.mesh.material.ior).toBeCloseTo(1.333, 6);
     expect(surface.mesh.material.clearcoat).toBe(0);

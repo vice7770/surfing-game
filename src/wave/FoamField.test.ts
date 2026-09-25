@@ -114,8 +114,8 @@ describe('FoamField', () => {
     const small = 40 * solver.nx + 30;
     const calm = 40 * solver.nx + 50;
     const dry = 40 * solver.nx + 70;
-    solver.h[big] = 1.5;
-    solver.h[small] = 1.2;
+    solver.h[big] = 1.25;
+    solver.h[small] = 1.1;
     solver.h[calm] = 1.5;
     solver.h[dry] = 0.005;
     breaking[big] = 1;
@@ -124,7 +124,7 @@ describe('FoamField', () => {
     foam.dense[dry] = 0.5;
     foam.update(0.1, breaking);
     expect(foam.dense[big]).toBeCloseTo(FOAM_SOURCE_RATE * 0.1, 9);
-    expect(foam.dense[small]).toBeCloseTo((FOAM_SOURCE_RATE * 0.1 * boreDissipation(1, 1.2)) / boreDissipation(1, 1.5), 9);
+    expect(foam.dense[small]).toBeCloseTo((FOAM_SOURCE_RATE * 0.1 * boreDissipation(1, 1.1)) / boreDissipation(1, 1.25), 9);
     expect(foam.dense[calm]).toBe(0);
     expect(foam.totalAt(dry)).toBe(0);
   });

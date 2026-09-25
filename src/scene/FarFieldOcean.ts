@@ -14,7 +14,7 @@ import {
 } from 'three';
 import type { FarFieldProfile } from '../wave/FarFieldProfile';
 import { buildGridGeometry, gradedAxis, type HoleRect } from './gridGeometry';
-import { foamPatternPars } from './foamPattern';
+import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, waterChopNormal, waterChopPars } from './waterChop';
 import { WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterOpticsPars, type WaterOptics } from './waterOptics';
 
@@ -129,6 +129,7 @@ export class FarFieldOcean {
       farFocus: { value: new Vector2() },
       farFade: { value: new Vector2(1000, 1450) },
       waterFoamColor: { value: new Color('#d8f2e9') },
+      waterFoamTile: { value: foamTileTexture() },
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
       ...createOpticsUniforms(),

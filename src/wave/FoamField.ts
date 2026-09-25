@@ -7,10 +7,14 @@ export interface FoamDecay {
   readonly residual: number;
 }
 
-/** Dense foam made per second by a fully breaking reference bore (B = 1); smaller bores make less. */
+/**
+ * Dense foam made per second by a fully breaking (B = 1) reference bore; a
+ * roller is white, so it covers the surface within a quarter second. Bores
+ * make foam in proportion to their dissipation, so weaker ones make less.
+ */
 export const FOAM_SOURCE_RATE = 4;
-/** A 0.5 m bore running onto 1 m of still water. */
-export const REFERENCE_BORE = { stillDepth: 1, depth: 1.5 };
+/** A modest surf bore: 0.25 m running onto 1 m of still water. */
+export const REFERENCE_BORE = { stillDepth: 1, depth: 1.25 };
 /** Share of the dense foam that decays into residual lace instead of vanishing (a game value). */
 export const LACE_SHARE = 0.3;
 /** Depth of landed lip water that covers a cell with foam, m. */

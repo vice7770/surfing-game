@@ -13,7 +13,7 @@ import {
   Vector3,
   Vector4,
 } from 'three';
-import { foamPatternPars } from './foamPattern';
+import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, waterChopNormal, waterChopPars } from './waterChop';
 import {
   WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
@@ -193,6 +193,7 @@ export class WaterSurface {
       waterSurface: { value: this.texture },
       waterBed: { value: this.bedTexture },
       waterFlow: { value: this.flowTexture },
+      waterFoamTile: { value: foamTileTexture() },
       waterGrid: { value: new Vector4(grid.xMin, grid.zMin, grid.spacing, 0) },
       waterGridSize: { value: new Vector2(grid.nx, grid.nz) },
       waterFoamColor: { value: new Color('#d8f2e9') },
