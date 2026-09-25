@@ -85,6 +85,9 @@ const WATER_DENSITY = 1000;
 const AIR_DENSITY = 1.2;
 const DRAG_COEFFICIENT = 0.9;
 const DEFAULT_BODY_DENSITY = 950;
+// Provisional contact parameters for the standalone kernel, not measured surf data.
+const BOARD_RESTITUTION = 0.05;
+const BOARD_FRICTION = 0.4;
 
 function clamp(value: number, low: number, high: number): number {
   return Math.min(high, Math.max(low, value));
@@ -188,6 +191,7 @@ export class DetachedSurfer implements DetachedRiderPose {
   private readonly boardPointVelocity = new Vector3();
   private readonly boardRelativeVelocity = new Vector3();
   private readonly boardImpulse = new Vector3();
+  private readonly boardTangent = new Vector3();
   private readonly expandedHalf = new Vector3();
 
   constructor(readonly bodyDensity = DEFAULT_BODY_DENSITY, readonly mass = totalMass) {
@@ -340,9 +344,23 @@ export class DetachedSurfer implements DetachedRiderPose {
       if (approach >= 0) continue;
       const inverseEffective = 1 / node.mass + board.inverseEffectiveMass(contactPoint, normal);
       if (!(inverseEffective > 0)) continue;
-      const impulse = this.boardImpulse.copy(normal).multiplyScalar(-1.05 * approach / inverseEffective);
+      const normalImpulse = -(1 + BOARD_RESTITUTION) * approach / inverseEffective;
+      const impulse = this.boardImpulse.copy(normal).multiplyScalar(normalImpulse);
       node.velocity.addScaledVector(impulse, 1 / node.mass);
       board.applyImpulse(impulse.multiplyScalar(-1), contactPoint);
+      board.velocityAt(contactPoint, this.boardPointVelocity);
+      this.boardRelativeVelocity.subVectors(node.velocity, this.boardPointVelocity);
+      const tangent = this.boardTangent.copy(this.boardRelativeVelocity)
+        .addScaledVector(normal, -this.boardRelativeVelocity.dot(normal));
+      const tangentialSpeed = tangent.length();
+      if (tangentialSpeed < 1e-9) continue;
+      tangent.divideScalar(tangentialSpeed);
+      const tangentInverseMass = 1 / node.mass + board.inverseEffectiveMass(contactPoint, tangent);
+      if (!(tangentInverseMass > 0)) continue;
+      const frictionImpulse = Math.min(tangentialSpeed / tangentInverseMass,
+        BOARD_FRICTION * normalImpulse);
+      node.velocity.addScaledVector(tangent, -frictionImpulse / node.mass);
+      board.applyImpulse(this.boardImpulse.copy(tangent).multiplyScalar(frictionImpulse), contactPoint);
     }
     return contacts;
   }

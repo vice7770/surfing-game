@@ -253,4 +253,22 @@ describe('DetachedSurfer on controlled water', () => {
     expect(body.resolveBoardContact(board)).toBe(0);
     expect(board.velocity.equals(velocityAfterContact)).toBe(true);
   });
+
+  it('transfers sideways momentum during a glancing board impact', () => {
+    const body = new DetachedSurfer();
+    launch(body, new Vector3(0, 1.2, 0), new Vector3(2, -8, 0));
+    const board = new TestBoard();
+    let contacted = false;
+    for (let frame = 0; frame < 30; frame += 1) {
+      body.step(1 / 60, uniformWater(new Vector3(), -10));
+      const before = body.linearMomentum().addScaledVector(board.velocity, 1 / board.inverseMass);
+      if (body.resolveBoardContact(board) === 0) continue;
+      const after = body.linearMomentum().addScaledVector(board.velocity, 1 / board.inverseMass);
+      expect(after.distanceTo(before)).toBeLessThan(1e-8);
+      contacted = true;
+      break;
+    }
+    expect(contacted).toBe(true);
+    expect(board.velocity.x).toBeGreaterThan(0);
+  });
 });
