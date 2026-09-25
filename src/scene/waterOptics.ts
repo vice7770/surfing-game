@@ -17,9 +17,11 @@ export const WATER_ABSORPTION: Rgb = [0.34, 0.0565, 0.00922];
 export const WATER_BACKSCATTER: Rgb = [650, 550, 450].map((nm) => 0.5 * 0.0076 * (400 / nm) ** 4.32) as unknown as Rgb;
 /** Backscatter fraction of the Petzold average particle phase function (Mobley 1994). */
 export const PARTICLE_BACKSCATTER_FRACTION = 0.0183;
+/** Single-scattering albedo assumed for suspended sediment, b_p/(a_p + b_p): mostly scattering mineral grains. */
+export const PARTICLE_ALBEDO = 0.95;
 
 export interface WaterOptics {
-  /** Suspended-particle scattering, m⁻¹. Spectrally flat, it adds to the beam attenuation and backscatters 1.83 %. */
+  /** Suspended-particle scattering b_p, m⁻¹, spectrally flat; the particles also absorb b_p (1 − ω)/ω. */
   readonly turbidity: number;
   /** Seabed albedo, linear RGB. */
   readonly bedAlbedo: Rgb;
@@ -27,14 +29,14 @@ export interface WaterOptics {
 
 /**
  * Water per spot. Particle beam attenuation runs from about 0.01 m⁻¹ offshore to
- * 0.5–2.5 m⁻¹ and more in turbid coastal water; these keep the bed readable a few
- * metres down, clearest over the reef's carbonate sand.
+ * 0.5–2.5 m⁻¹ and more in turbid coastal water (IOCCG 2019): the beach's surf is
+ * sandy, the reef's water clear over bright carbonate sand.
  */
 export const SPOT_OPTICS: Record<SpotName, WaterOptics> = {
-  beach: { turbidity: 0.3, bedAlbedo: [0.42, 0.36, 0.24] },
-  point: { turbidity: 0.18, bedAlbedo: [0.36, 0.33, 0.24] },
-  reef: { turbidity: 0.06, bedAlbedo: [0.5, 0.47, 0.36] },
-  canyon: { turbidity: 0.2, bedAlbedo: [0.42, 0.36, 0.24] },
+  beach: { turbidity: 2, bedAlbedo: [0.42, 0.36, 0.24] },
+  point: { turbidity: 1, bedAlbedo: [0.36, 0.33, 0.24] },
+  reef: { turbidity: 0.15, bedAlbedo: [0.5, 0.47, 0.36] },
+  canyon: { turbidity: 1, bedAlbedo: [0.42, 0.36, 0.24] },
 };
 
 const perChannel = (value: (channel: number) => number): Rgb => [value(0), value(1), value(2)];
@@ -50,12 +52,20 @@ export function refractedCosine(cosine: number): number {
   return Math.sqrt(1 - (1 - c * c) / (WATER_IOR * WATER_IOR));
 }
 
-/** Beam attenuation c = a_w + turbidity, m⁻¹. */
+const particleAbsorption = (optics: WaterOptics) => (optics.turbidity * (1 - PARTICLE_ALBEDO)) / PARTICLE_ALBEDO;
+const backscattering = (optics: WaterOptics, i: number) => WATER_BACKSCATTER[i] + PARTICLE_BACKSCATTER_FRACTION * optics.turbidity;
+
+/** Beam attenuation c = a + b_p, m⁻¹: what a direct ray loses (pure-water scattering is negligible here). */
 export function beamAttenuation(optics: WaterOptics): Rgb {
-  return perChannel((i) => WATER_ABSORPTION[i] + optics.turbidity);
+  return perChannel((i) => WATER_ABSORPTION[i] + particleAbsorption(optics) + optics.turbidity);
 }
 
-/** Share of light left after `path` metres of water, e^{−c·path} (Beer–Lambert). */
+/** Diffuse attenuation K ≈ a + b_b, m⁻¹ per unit path (Gordon 1989), for light that may scatter forward on its way. */
+export function diffuseAttenuation(optics: WaterOptics): Rgb {
+  return perChannel((i) => WATER_ABSORPTION[i] + particleAbsorption(optics) + backscattering(optics, i));
+}
+
+/** Share of a direct ray left after `path` metres of water, e^{−c·path} (Beer–Lambert). */
 export function transmittance(optics: WaterOptics, path: number): Rgb {
   const attenuation = beamAttenuation(optics);
   return perChannel((i) => Math.exp(-attenuation[i] * path));
@@ -64,32 +74,44 @@ export function transmittance(optics: WaterOptics, path: number): Rgb {
 /** Reflectance of bottomless water just below the surface, R∞ = 0.33 b_b/(a + b_b) (Morel & Prieur 1977). */
 export function deepReflectance(optics: WaterOptics): Rgb {
   return perChannel((i) => {
-    const backscatter = WATER_BACKSCATTER[i] + PARTICLE_BACKSCATTER_FRACTION * optics.turbidity;
-    return (0.33 * backscatter) / (WATER_ABSORPTION[i] + backscatter);
+    const backscatter = backscattering(optics, i);
+    return (0.33 * backscatter) / (WATER_ABSORPTION[i] + particleAbsorption(optics) + backscatter);
   });
 }
 
 /**
- * Reflectance of water `depth` metres deep over the seabed, R = R∞ + (A − R∞)·T
- * (Maritorena, Morel & Gentili 1994), with T the beam transmittance along the
- * refracted sun path down and view path up.
+ * Reflectance of water `depth` metres deep over the seabed, R = R∞ + (A − R∞)·e^{−K·path}
+ * (Maritorena, Morel & Gentili 1994, whose 2KH becomes K along the refracted
+ * sun path down and view path up).
  */
 export function shallowReflectance(optics: WaterOptics, depth: number, viewCosine: number, sunCosine: number): Rgb {
   const path = Math.max(0, depth) * (1 / refractedCosine(viewCosine) + 1 / refractedCosine(sunCosine));
   const deep = deepReflectance(optics);
-  const through = transmittance(optics, path);
-  return perChannel((i) => deep[i] + (optics.bedAlbedo[i] - deep[i]) * through[i]);
+  const attenuation = diffuseAttenuation(optics);
+  return perChannel((i) => deep[i] + (optics.bedAlbedo[i] - deep[i]) * Math.exp(-attenuation[i] * path));
 }
 
 export interface Point3 { x: number; y: number; z: number }
 
-/** Distances along the refracted view ray where the shader samples the surface, m (plan §2.3: 2–4 lookups). */
-export const CREST_SAMPLES = [0.5, 1, 2, 4] as const;
-/** Thickness reported when the ray is still under water after the last sample. */
+/** Distances along the ray where the shader samples the surface, m (plan §2.3: 2–4 lookups). */
+export const CREST_SAMPLES = [0.25, 1, 2.5, 6] as const;
+/**
+ * Brightness applied to the water body's reflectance for readability (plan §2.8:
+ * readability wins). Physically it is 1; the scene's lights and fixed exposure
+ * were tuned for brighter, painted water, and at 1 the bed is barely visible.
+ */
+export const WATER_BODY_GAIN = 3;
+
+/**
+ * Share of the sunlight crossing a crest that scatters toward the viewer: a
+ * rendering constant (the single-scattering phase integral is not modelled).
+ */
+export const CREST_SCATTER = 0.35;
+/** Thickness reported when no crest lies across the ray: it never enters water, or is still under water after the last sample. */
 export const OPAQUE = 1e4;
 
 /**
- * Water a refracted view ray entering at `origin` crosses before it leaves the
+ * Water a ray from a surface point at `origin` crosses before it leaves the
  * back of a crest, interpolating the surface crossing between samples.
  */
 export function crestThickness(heightAt: (x: number, z: number) => number, origin: Point3, direction: Point3): number {
@@ -97,7 +119,7 @@ export function crestThickness(heightAt: (x: number, z: number) => number, origi
   let previousGap = 0;
   for (const distance of CREST_SAMPLES) {
     const gap = heightAt(origin.x + direction.x * distance, origin.z + direction.z * distance) - (origin.y + direction.y * distance);
-    if (gap <= 0) return previous + ((distance - previous) * previousGap) / (previousGap - gap);
+    if (gap <= 0) return previousGap > 0 ? previous + ((distance - previous) * previousGap) / (previousGap - gap) : OPAQUE;
     previous = distance;
     previousGap = gap;
   }
@@ -109,6 +131,7 @@ const glsl = (value: number) => value.toFixed(6);
 /** Uniforms and functions shared by both water meshes; `waterBodyReflectance` mirrors `shallowReflectance`. */
 export const waterOpticsPars = /* glsl */ `
 uniform vec3 waterAttenuation;
+uniform vec3 waterDiffuseAttenuation;
 uniform vec3 waterDeepReflectance;
 uniform vec3 waterBedAlbedo;
 uniform vec3 waterSunDirection;
@@ -126,20 +149,20 @@ float waterRefractedCosine( float c ) {
 
 vec3 waterBodyReflectance( float depth, float viewCosine, float sunCosine ) {
   float path = max( depth, 0.0 ) * ( 1.0 / waterRefractedCosine( viewCosine ) + 1.0 / waterRefractedCosine( sunCosine ) );
-  return waterDeepReflectance + ( waterBedAlbedo - waterDeepReflectance ) * exp( -waterAttenuation * path );
+  return waterDeepReflectance + ( waterBedAlbedo - waterDeepReflectance ) * exp( -waterDiffuseAttenuation * path );
 }
 `;
 
 /** Mirrors `crestThickness`; needs `waterHeightAt( vec2 )` declared first. */
 export const waterCrestPars = /* glsl */ `
 float waterCrestThickness( vec3 origin, vec3 direction ) {
-  const float samples[${CREST_SAMPLES.length}] = float[${CREST_SAMPLES.length}]( ${CREST_SAMPLES.map((d) => d.toFixed(1)).join(', ')} );
+  const float samples[${CREST_SAMPLES.length}] = float[${CREST_SAMPLES.length}]( ${CREST_SAMPLES.map((d) => d.toFixed(2)).join(', ')} );
   float previous = 0.0;
   float previousGap = 0.0;
   for ( int i = 0; i < ${CREST_SAMPLES.length}; i ++ ) {
     vec3 p = origin + direction * samples[ i ];
     float gap = waterHeightAt( p.xz ) - p.y;
-    if ( gap <= 0.0 ) return previous + ( samples[ i ] - previous ) * previousGap / ( previousGap - gap );
+    if ( gap <= 0.0 ) return previousGap > 0.0 ? previous + ( samples[ i ] - previous ) * previousGap / ( previousGap - gap ) : ${OPAQUE.toFixed(1)};
     previous = samples[ i ];
     previousGap = gap;
   }
@@ -155,12 +178,16 @@ float waterCrestThickness( vec3 origin, vec3 direction ) {
  * `vWaterFoam` and `waterFoamColor`.
  */
 export function waterBodyFragment(crestLight: boolean): string {
+  // Sunlight crosses the crest from its sunlit back toward the face in view, so
+  // march horizontally toward the sun; a height-field crest seldom lets the
+  // refracted view ray out through its back.
   const crest = /* glsl */ `
     float waterBehind = pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 4.0 );
-    if ( waterBehind > 0.001 ) {
-      vec3 waterRay = refract( -waterV, waterN, ${glsl(1 / WATER_IOR)} );
-      float waterThickness = waterCrestThickness( vWaterWorld, waterRay );
-      totalEmissiveRadiance += ( 1.0 - vWaterFoam ) * waterBehind * ( 1.0 - waterFresnel( waterViewCos ) )
+    vec2 waterSunward = waterSunDirection.xz;
+    if ( waterBehind > 0.001 && dot( waterSunward, waterSunward ) > 1e-6 ) {
+      vec2 waterToSun = normalize( waterSunward );
+      float waterThickness = waterCrestThickness( vWaterWorld, vec3( waterToSun.x, 0.0, waterToSun.y ) );
+      totalEmissiveRadiance += ${glsl(CREST_SCATTER)} * ( 1.0 - vWaterFoam ) * waterBehind * ( 1.0 - waterFresnel( waterViewCos ) )
         * waterSunRadiance * exp( -waterAttenuation * waterThickness );
     }`;
   return /* glsl */ `
@@ -183,11 +210,12 @@ export type OpticsUniforms = Record<string, { value: unknown }>;
 export function createOpticsUniforms(): OpticsUniforms {
   const uniforms: OpticsUniforms = {
     waterAttenuation: { value: new Vector3() },
+    waterDiffuseAttenuation: { value: new Vector3() },
     waterDeepReflectance: { value: new Vector3() },
     waterBedAlbedo: { value: new Vector3() },
     waterSunDirection: { value: new Vector3(0, 1, 0) },
     waterSunRadiance: { value: new Color(1, 1, 1) },
-    waterBodyGain: { value: 1 },
+    waterBodyGain: { value: WATER_BODY_GAIN },
   };
   applyOptics(uniforms, SPOT_OPTICS.beach);
   return uniforms;
@@ -195,6 +223,7 @@ export function createOpticsUniforms(): OpticsUniforms {
 
 export function applyOptics(uniforms: OpticsUniforms, optics: WaterOptics): void {
   (uniforms.waterAttenuation.value as Vector3).fromArray(beamAttenuation(optics));
+  (uniforms.waterDiffuseAttenuation.value as Vector3).fromArray(diffuseAttenuation(optics));
   (uniforms.waterDeepReflectance.value as Vector3).fromArray(deepReflectance(optics));
   (uniforms.waterBedAlbedo.value as Vector3).fromArray(optics.bedAlbedo);
 }
