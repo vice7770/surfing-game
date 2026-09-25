@@ -64,3 +64,9 @@ export function shallowWaterWaveNumber(omega: number, depth: number, g = GRAVITY
   if (!(depth > 0) || !Number.isFinite(depth)) throw new RangeError(`Shallow-water waves need a finite positive depth, got ${depth}`);
   return omega / Math.sqrt(g * depth);
 }
+
+/** Group speed dω/dk for any dispersion, by central difference in ω, m/s. */
+export function groupSpeed(waveNumberAt: WaveNumberFunction, omega: number, depth: number): number {
+  const step = omega * 1e-4;
+  return (2 * step) / (waveNumberAt(omega + step, depth) - waveNumberAt(omega - step, depth));
+}

@@ -1,3 +1,4 @@
+import { groupSpeed } from './dispersion';
 import type { SeaState } from './SeaState';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 
@@ -24,7 +25,7 @@ export function warmStart(solver: ShallowWaterSolver, sea: SeaState, options: Wa
   const gamma = options.breakerIndex ?? 0.78;
   const components = sea.components;
   const count = components.length;
-  const referenceFlux = components.map((c) => groupSpeed(sea, c.omega, sea.depth) * (c.kz / c.k));
+  const referenceFlux = components.map((c) => groupSpeed(sea.waveNumberAt, c.omega, sea.depth) * (c.kz / c.k));
   const phase = new Float64Array(count);
   const alive = new Uint8Array(count);
   const amplitude = new Float64Array(count);
@@ -63,7 +64,7 @@ export function warmStart(solver: ShallowWaterSolver, sea: SeaState, options: Wa
         const kz = Math.sqrt(k * k - component.kx * component.kx);
         localKz[c] = kz;
         phase[c] += 0.5 * (previousKz[c] + kz) * (z - previousZ);
-        const flux = groupSpeed(sea, component.omega, depth) * (kz / k);
+        const flux = groupSpeed(sea.waveNumberAt, component.omega, depth) * (kz / k);
         amplitude[c] = component.amplitude * Math.sqrt(referenceFlux[c] / flux);
         kxOverK[c] = component.kx / k;
         kzOverK[c] = kz / k;
@@ -96,12 +97,6 @@ export function warmStart(solver: ShallowWaterSolver, sea: SeaState, options: Wa
       solver.qz[i] = wet ? qz : 0;
     }
   }
-}
-
-/** Group speed dω/dk for the sea's dispersion, by central difference. */
-function groupSpeed(sea: SeaState, omega: number, depth: number): number {
-  const step = omega * 1e-4;
-  return (2 * step) / (sea.waveNumberAt(omega + step, depth) - sea.waveNumberAt(omega - step, depth));
 }
 
 export interface SetRunPlan {
