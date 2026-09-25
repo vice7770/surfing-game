@@ -4,6 +4,7 @@
 - Goal: make catching, trimming, carving, popping up and wiping out consequences of board–rider forces in the same moving water that is rendered. The game should remain controllable with the existing paddle, pop-up and steer inputs.
 - Evidence: the three user-supplied papers and additional primary work are assessed in [board and surfer physics sources](board-surfer-physics-sources.md). A measured value is identified as such below; all coefficients and control mappings without measured support are calibration parameters, not claims about real surfing.
 - Integration: the [board–water handoff](board-water-integration-handoff.md) records the active P2a solver's available fields, unresolved sampling and momentum interfaces, and the checkpoint before board code begins.
+- Acceptance: the [validation protocol](board-surfer-validation-protocol.md) defines observable catch, turn, pop-up and fall events, fixed-seed practice acceptance, and natural-wave reports.
 
 ## 0. Agreed experience and scope
 
