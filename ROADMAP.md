@@ -18,11 +18,11 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 - [x] Froude-consistent time-scale (0.4–1.0) in the Wave Lab; physics readout comparing Airy speed with the legacy simulation speed.
 - [ ] g = 9.81 in the solver, removal of the Wave speed slider, and the `legacy` flag move to P2 with the new solver, which keeps the legacy wave playable until the P4 board retune.
 
-### P1 · Spots, sliding window and finite-volume solver (P2) — `In Progress`
+### P1 · Spots, sliding window and finite-volume solver (P2) — `In Progress` (P2a, P2b done; P2c next)
 
 - [x] P2a: composable seabeds for Beach (Dean profile with seeded sandbar and rips), Point (31° headland contours), Reef (0.15 shelf-edge slope), and Canyon. A well-balanced, positivity-preserving finite-volume shallow-water solver with wet/dry cells, Manning friction, and relaxation zones. Validated against lake at rest, conservation, the Stoker dam break, √(gh) speed, relaxation reflection (0.27 %), Green's law, Snell's law and beach run-up.
 - [x] P2b-1: in-place typed-array sweeps (7.9 → 6.3 ms per step for 33.6k cells in bundled Node); open along-shore boundaries; a stretched cross-shore grid (4 m to 1 m, reflection under 5 %); an along-shore sliding window that keeps a lake at rest across the headland.
-- [ ] P2b-2: MUSCL-Hancock single-evaluation stepping to reach the 4 ms budget (the full stretched spot domain is 7.0 ms now). Then the sea-state relaxation target with model-consistent dispersion and precomputed phases, a per-column WKB warm start, and skip-to-set.
+- [x] P2b-2: fused MUSCL-Hancock stepping, 4.05 ms per step on the 36.2k-cell stretched spot domain (budget 4 ms), with validation unchanged or better. A seeded sea-state relaxation boundary: precomputed row and column phases, correct after window shifts, and 0.95 of the linear Hs generated in a flat channel. A column WKB warm start (exact on a flat bed, Green's-law shoaling, γh cap; spin-up peak 1.12× the initial one). Set-run timing.
 - [ ] P2c: game integration behind a flag, g = 9.81 and removal of the Wave speed slider, rendering and seabed from the spot, worker simulation, and bicubic board sampling.
 ### P1 · Far-field ocean (G2) — `Backlog`
 ### P1 · Emergent breaking and Iribarren lip (P3) — `Backlog`
