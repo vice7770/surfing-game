@@ -413,7 +413,7 @@ These are planning estimates. The measured baseline is 0.50–0.80 ms per step f
 
 | Configuration | Cells | Estimate per step | Where |
 |---|---:|---:|---|
-| Stage 1 NLSW, CPU (**measured, P2a**) | 33.6k | **7.5 ms** in Node on the development machine (flux core ≈ 6.7 ms, Manning friction ≈ 1.3 ms); over budget, so P2b must optimize before integration | worker |
+| Stage 1 NLSW, CPU (**measured**) | 33.6k uniform · 36.2k stretched · 24.2k at 1.5 m along shore | P2a: 7.5 ms. P2b-1 (typed-array in-place sweeps, dry skipping, ∛ friction), in bundled Node on the development machine: **6.3 ms** uniform, **7.0 ms** for the full stretched spot domain (160 m × 330 m), **4.6 ms** with 1.5 m along-shore cells. Still over the 4 ms budget. The next lever is a single-evaluation MUSCL-Hancock predictor-corrector in place of SSP-RK2's two flux evaluations (estimated ~1.8×); then coarser CPU-tier cells, which change what players see and are the user's call | worker |
 | Stage 2 Boussinesq, CPU | ~34k | 5–8 ms (tridiagonal solves plus breaking) | worker |
 | Stage 2 Boussinesq, WebGPU | ~128k | < 3 ms; Celeris-WebGPU reports ~1M cells at 4.2× real time on an RTX 4090 in standard mode | GPU |
 | Far field, 24–64 components | — | < 0.5 ms GPU | vertex shader |

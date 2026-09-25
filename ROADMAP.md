@@ -21,7 +21,8 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 ### P1 · Spots, sliding window and finite-volume solver (P2) — `In Progress`
 
 - [x] P2a: composable seabeds for Beach (Dean profile with seeded sandbar and rips), Point (31° headland contours), Reef (0.15 shelf-edge slope), and Canyon. A well-balanced, positivity-preserving finite-volume shallow-water solver with wet/dry cells, Manning friction, and relaxation zones. Validated against lake at rest, conservation, the Stoker dam break, √(gh) speed, relaxation reflection (0.27 %), Green's law, Snell's law and beach run-up.
-- [ ] P2b: sea-state relaxation boundary with analytic refraction; warm start and skip-to-set; stretched cross-shore grid; along-shore sliding window. Cut the solver from 7.5 ms per step (33.6k cells, Node) to the 4 ms worker budget.
+- [x] P2b-1: in-place typed-array sweeps (7.9 → 6.3 ms per step for 33.6k cells in bundled Node); open along-shore boundaries; a stretched cross-shore grid (4 m to 1 m, reflection under 5 %); an along-shore sliding window that keeps a lake at rest across the headland.
+- [ ] P2b-2: MUSCL-Hancock single-evaluation stepping to reach the 4 ms budget (the full stretched spot domain is 7.0 ms now). Then the sea-state relaxation target with model-consistent dispersion and precomputed phases, a per-column WKB warm start, and skip-to-set.
 - [ ] P2c: game integration behind a flag, g = 9.81 and removal of the Wave speed slider, rendering and seabed from the spot, worker simulation, and bicubic board sampling.
 ### P1 · Far-field ocean (G2) — `Backlog`
 ### P1 · Emergent breaking and Iribarren lip (P3) — `Backlog`
