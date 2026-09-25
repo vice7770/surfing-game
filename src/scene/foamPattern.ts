@@ -202,6 +202,8 @@ export function foamCover(x: number, z: number, flowX: number, flowZ: number, fo
 
 export const foamPatternPars = /* glsl */ `
 uniform sampler2D waterFoamTile;
+// 1 where foam is a covered fraction (the physical sea), 0 for a plain tint strength (the legacy field).
+uniform float waterFoamPattern;
 const float FOAM_CELL = ${FOAM_CELL.toFixed(3)};
 const float FOAM_TILE = ${FOAM_TILE.toFixed(1)};
 const float FOAM_FLOW_PERIOD = ${FOAM_FLOW_PERIOD.toFixed(3)};

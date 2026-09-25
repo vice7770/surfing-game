@@ -177,6 +177,7 @@ export class WaterSurface {
   private bedTexture: DataTexture;
   private flowTexture: DataTexture;
   private flowSource?: SurfaceSource;
+  private flowFrames = 0;
   private bedSource?: SurfaceSource;
   private bedRevision = Number.NaN;
   private readonly uniforms: Record<string, { value: unknown }>;
@@ -194,6 +195,7 @@ export class WaterSurface {
       waterBed: { value: this.bedTexture },
       waterFlow: { value: this.flowTexture },
       waterFoamTile: { value: foamTileTexture() },
+      waterFoamPattern: { value: 0 },
       waterGrid: { value: new Vector4(grid.xMin, grid.zMin, grid.spacing, 0) },
       waterGridSize: { value: new Vector2(grid.nx, grid.nz) },
       waterFoamColor: { value: new Color('#d8f2e9') },
@@ -245,14 +247,21 @@ export class WaterSurface {
       this.bedRevision = this.source.bedRevision;
       this.bedTexture.needsUpdate = true;
     }
-    if (this.source.writeFlow) {
+    // The current changes slowly beside the 2 s flow-map period, so every other frame is enough.
+    if (this.source.writeFlow && (this.flowSource !== this.source || (this.flowFrames += 1) % 2 === 0)) {
       this.source.writeFlow(this.flowData);
       this.flowTexture.needsUpdate = true;
-    } else if (this.flowSource !== this.source) {
+    } else if (!this.source.writeFlow && this.flowSource !== this.source) {
       this.flowData.fill(0);
       this.flowTexture.needsUpdate = true;
     }
     this.flowSource = this.source;
+    this.uniforms.waterFoamPattern.value = this.source.writeFlow ? 1 : 0;
+  }
+
+  /** 1 when the foam is drawn as the flowing network (a source with a current), 0 for the legacy soft tint. */
+  get foamPattern(): number {
+    return this.uniforms.waterFoamPattern.value as number;
   }
 
   /** Water clarity and seabed colour for the current spot. */

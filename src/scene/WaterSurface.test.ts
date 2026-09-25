@@ -214,7 +214,8 @@ describe('WaterSurface GPU displacement data', () => {
     expect(shader.fragmentShader).toContain('waterCrestThickness( vWaterWorld');
     expect(shader.vertexShader).toContain('vWaterFlow = waterFlowAt( waterXZ )');
     expect(shader.fragmentShader).toContain('waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, ');
-    expect(Object.keys(shader.uniforms)).toEqual(expect.arrayContaining(['waterFlow', 'waterFoamTile']));
+    expect(Object.keys(shader.uniforms)).toEqual(expect.arrayContaining(['waterFlow', 'waterFoamTile', 'waterFoamPattern']));
+    expect(shader.fragmentShader).toContain('mix( vWaterFoam, waterFoamCover(');
     expect(Object.keys(shader.uniforms)).toEqual(expect.arrayContaining(['waterBed', 'waterAttenuation', 'waterSunDirection', 'waterSunRadiance']));
     expect(surface.mesh.material.ior).toBeCloseTo(1.333, 6);
     expect(surface.mesh.material.clearcoat).toBe(0);
@@ -224,6 +225,8 @@ describe('WaterSurface GPU displacement data', () => {
     const wave = new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS });
     const surface = new WaterSurface(new LegacySurfaceSource(wave));
     expect(surface.flowData.every((value) => value === 0)).toBe(true);
+    // The legacy foam is a tint strength, not a covered fraction, so it keeps the soft tint.
+    expect(surface.foamPattern).toBe(0);
     const simulation = new SurfZoneSimulation({
       spot: 'beach', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
       componentCount: 8, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
@@ -235,6 +238,7 @@ describe('WaterSurface GPU displacement data', () => {
     const expected = new Float32Array(surface.flowData.length);
     simulation.writeUniformFlow(expected, source.grid);
     expect(Array.from(surface.flowData)).toEqual(Array.from(expected));
+    expect(surface.foamPattern).toBe(1);
     expect(surface.flowData.some((value) => Math.abs(value) > 0.05)).toBe(true);
   });
 });

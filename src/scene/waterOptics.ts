@@ -202,7 +202,7 @@ export function waterBodyFragment(crestLight: boolean): string {
   }
   // Foam is a matte network over the water (plan §2.4) that drifts with the current.
   vec2 waterFootprint = fwidth( vWaterWorld.xz );
-  float waterCover = waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) );
+  float waterCover = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
   diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, waterCover );
   roughnessFactor = mix( roughnessFactor, 0.9, waterCover );
 }

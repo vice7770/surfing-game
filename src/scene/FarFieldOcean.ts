@@ -130,6 +130,7 @@ export class FarFieldOcean {
       farFade: { value: new Vector2(1000, 1450) },
       waterFoamColor: { value: new Color('#d8f2e9') },
       waterFoamTile: { value: foamTileTexture() },
+      waterFoamPattern: { value: 1 },
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
       ...createOpticsUniforms(),
