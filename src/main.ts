@@ -71,7 +71,7 @@ const physicalRequested = new URLSearchParams(window.location.search).has('physi
  * without workers, runs it on the main thread instead.
  */
 const createSurfZone: SurfZoneHostFactory = typeof Worker === 'undefined' || new URLSearchParams(window.location.search).has('inpage')
-  ? localSurfZone : (config) => new WorkerSurfZone(config, undefined, { board: true });
+  ? localSurfZone : (config) => new WorkerSurfZone(config, undefined, { rider: true });
 
 function getElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -193,6 +193,15 @@ class SurfGame {
     requestAnimationFrame(this.frame);
   }
 
+  /** R: in the physical mode, paddle out again from the lineup while the waves carry on; otherwise replay. */
+  quickRetry = (): void => {
+    if (this.mode === 'physical') {
+      this.physicalMode.retry();
+      return;
+    }
+    this.replay();
+  };
+
   replay = (): void => {
     if (this.mode === 'physical') {
       this.showLoadingThen(() => this.startPhysical(this.seed, this.physicalSettings));
@@ -288,7 +297,7 @@ class SurfGame {
     };
   }
 
-  /** Build the view-only physical surf zone and hide the legacy board, rider and HUD. */
+  /** Build the physical surf zone with its ridden board, and hide the legacy board, rider and HUD. */
   private async startPhysical(seed: number, settings: PhysicalSettings): Promise<void> {
     if (!(await this.physicalMode.start(settings, seed, this.water, {}, createSurfZone))) return;
     const shared = this.readDraftSettings();
@@ -302,7 +311,7 @@ class SurfGame {
     this.draftPhysical = { ...settings };
     this.setLegacyVisible(false);
     this.physicalMode.setVisible(true);
-    this.physicalMode.camera.setView('overview');
+    this.physicalMode.camera.setView(this.physicalMode.homeView);
     this.environment.showCoastline(false);
     this.environment.group.scale.setScalar(5);
     this.environment.group.position.set(this.physicalMode.focus.x, 0, this.physicalMode.focus.z);
@@ -315,7 +324,7 @@ class SurfGame {
     }
     getElement<HTMLElement>('#app').classList.add('is-physical');
     getElement<HTMLElement>('#spot-name').textContent = `${settings.spot.toUpperCase()} · PHYSICAL SURF ZONE`;
-    getElement<HTMLElement>('#run-state').textContent = 'VIEW ONLY';
+    getElement<HTMLElement>('#run-state').textContent = 'RIDE';
     getElement<HTMLElement>('#seed-label').textContent = `SEED ${seed.toString().padStart(4, '0')}`;
     this.accumulator = 0;
     this.syncViewButtons();
@@ -429,7 +438,7 @@ class SurfGame {
     getElement<HTMLButtonElement>('#new-wave-button').addEventListener('click', () => this.newWave());
     getElement<HTMLButtonElement>('#diagnostic-toggle').addEventListener('click', (event) => {
       if (this.mode === 'physical') {
-        this.physicalMode.camera.setView(this.physicalMode.camera.view === 'profile' ? 'overview' : 'profile');
+        this.physicalMode.camera.setView(this.physicalMode.camera.view === 'profile' ? this.physicalMode.homeView : 'profile');
         this.syncViewButtons();
         this.focusGame();
         return;
@@ -445,7 +454,7 @@ class SurfGame {
     });
     getElement<HTMLButtonElement>('#underwater-toggle').addEventListener('click', (event) => {
       if (this.mode === 'physical') {
-        this.physicalMode.camera.setView(this.physicalMode.camera.view === 'below' ? 'overview' : 'below');
+        this.physicalMode.camera.setView(this.physicalMode.camera.view === 'below' ? this.physicalMode.homeView : 'below');
         this.syncViewButtons();
         this.focusGame();
         return;
@@ -618,7 +627,7 @@ class SurfGame {
     requestAnimationFrame(this.frame);
   };
 
-  /** One frame of the view-only physical surf zone: fixed solver steps, render, 4 Hz readout. */
+  /** One frame of the physical surf zone: fixed solver steps with the player's input, render, 4 Hz readout. */
   private physicalFrame(elapsed: number, simElapsed: number): void {
     this.accumulator = Math.min(this.accumulator + simElapsed, this.fixedStep * 4);
     let steps = 0;
@@ -626,7 +635,10 @@ class SurfGame {
       this.accumulator -= this.fixedStep;
       steps += 1;
     }
-    this.physicalMode.advance(steps);
+    // The ride camera sits behind the rider: screen right is the board's right, its −x.
+    const input = controls.input;
+    this.physicalMode.advance(steps, { paddle: input.paddle, popUp: input.getUp, steer: -input.steer });
+    if (input.getUp) controls.consumeGetUp();
     this.water.update();
     this.physicalMode.update(simElapsed || this.fixedStep);
     this.setUnderwater(this.physicalMode.cameraBelowSurface());
@@ -760,4 +772,4 @@ class SurfGame {
 }
 
 const game = new SurfGame();
-const controls = new Controls(() => game.replay(), () => {});
+const controls = new Controls(() => game.quickRetry(), () => {});

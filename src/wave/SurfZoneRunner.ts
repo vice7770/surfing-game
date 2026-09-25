@@ -1,6 +1,8 @@
 import { Vector3 } from 'three';
+import type { PopUpReport, RiderSeparation } from '../physics/AttachedRider';
 import { BoardBody } from '../physics/BoardBody';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
+import { RideSession, type RideInput } from '../physics/RideSession';
 import type { PeelEstimate } from './Breaking';
 import { BubbleCloud } from './BubbleCloud';
 import { SurfZoneSimulation, type RenderGrid, type SurfZoneConfig } from './SurfZoneSimulation';
@@ -18,7 +20,21 @@ const LINEUP_OFFSET = 25;
 export interface SurfZoneRunnerOptions {
   /** Carry a riderless board on the water (P4c). */
   board?: boolean;
+  /** Carry a board with a rider the player controls (P4d). */
+  rider?: boolean;
 }
+
+/** The player's request for a batch of steps: the ride's input, and a quick retry. */
+export interface RideRequest extends RideInput {
+  retry: boolean;
+}
+
+/** The rider's phases in snapshot order, `fallen` once in the water. */
+export const RIDER_PHASES = ['prone', 'push', 'landing', 'standing', 'recover', 'fallen'] as const;
+/** Layout of a snapshot's rider array: seven drawn points (x, y, z each), then phase, cue, presence and heading. */
+export const RIDER_SNAPSHOT = { points: 0, phase: 21, cue: 22, present: 23, heading: 24, length: 25 } as const;
+
+const IDLE: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
 
 /** The Wave Lab readout's values, as plain data that can cross the worker boundary. */
 export interface SurfZoneStatus {
@@ -39,6 +55,8 @@ export interface SurfZoneStatus {
   onsetScale: number;
   /** The riderless board: its speed, m/s, and how often it left the water's domain and was put back in the lineup. */
   board?: { speed: number; resets: number };
+  /** The ride: the rider's phase, board speed, pop-up cue and latest pop-up, why it last fell, and how often it restarted. */
+  ride?: { phase: (typeof RIDER_PHASES)[number]; speed: number; cue: boolean; popUp: PopUpReport; separation?: RiderSeparation; resets: number };
 }
 
 /**
@@ -54,6 +72,7 @@ export interface SurfZoneBuffers {
   bubbles: Float32Array;
   bubbleCount: number;
   board: Float64Array;
+  rider: Float64Array;
 }
 
 /**
@@ -70,8 +89,12 @@ export class SurfZoneRunner {
   readonly bed: Float32Array;
   /** Where the break line crosses x = 0: the camera's focus. */
   readonly focus: { x: number; z: number };
-  /** The riderless board, sampling the water through the `SurfWater` seam. */
+  /** The board, riderless or ridden, sampling the water through the `SurfWater` seam. */
   readonly board?: BoardBody;
+  /** The board, its rider and the rider's fall body, when the player rides. */
+  readonly session?: RideSession;
+  private rideResets = 0;
+  private readonly point = new Vector3();
   readonly water: PhysicalSurfWater;
   private readonly breaker: SurfZoneStatus['breaker'];
   private readonly breakDepth: number;
@@ -90,7 +113,11 @@ export class SurfZoneRunner {
     this.breakDepth = this.simulation.spot.depthAt(this.focus.x, this.focus.z) + config.tide;
     this.water = PhysicalSurfWater.forSimulation(this.simulation);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
-    if (options.board) {
+    if (options.rider) {
+      this.session = new RideSession();
+      this.board = this.session.board;
+      this.launchRide();
+    } else if (options.board) {
       this.board = new BoardBody();
       this.launchBoard();
     }
@@ -105,11 +132,27 @@ export class SurfZoneRunner {
    * integrates and hands its reactions back; the bubbles follow the water. A
    * snapshot (`fill`) shows the state after the last step.
    */
-  advance(steps: number): void {
-    const { board } = this;
+  advance(steps: number, input: RideRequest = IDLE): void {
+    const { board, session } = this;
     for (let step = 0; step < steps; step += 1) {
       this.simulation.step(SURF_ZONE_STEP);
-      if (board) {
+      if (session) {
+        // A press (pop-up, retry) counts once per batch; held controls apply to every step.
+        const request = step === 0 ? input : { ...input, popUp: false, retry: false };
+        if (request.retry) {
+          this.rideResets += 1;
+          this.launchRide();
+        }
+        const start = performance.now();
+        session.step(SURF_ZONE_STEP, this.water, request);
+        this.boardMs = performance.now() - start;
+        const lost = session.board.outsideDomain || (session.surfer.active && session.surfer.outsideDomain)
+          || !Number.isFinite(session.board.position.x + session.board.position.y + session.board.position.z);
+        if (lost) {
+          this.rideResets += 1;
+          this.launchRide();
+        }
+      } else if (board) {
         const start = performance.now();
         board.step(SURF_ZONE_STEP, this.water);
         this.boardMs = performance.now() - start;
@@ -120,6 +163,11 @@ export class SurfZoneRunner {
       }
       this.bubbles.update(this.simulation, SURF_ZONE_STEP);
     }
+  }
+
+  /** Board and rider back in the lineup: prone, nose to the beach. */
+  private launchRide(): void {
+    this.session?.reset(this.lineup, 0, this.water);
   }
 
   /** Float the board level in the lineup, nose to the beach, at rest on the surface. */
@@ -140,6 +188,7 @@ export class SurfZoneRunner {
       bubbles: new Float32Array(PARCEL_CAPACITY * 3),
       bubbleCount: 0,
       board: new Float64Array(8),
+      rider: new Float64Array(RIDER_SNAPSHOT.length),
     };
   }
 
@@ -166,6 +215,15 @@ export class SurfZoneRunner {
       board.orientation.toArray(buffers.board, 3);
       buffers.board[7] = 1;
     }
+    const { session } = this;
+    buffers.rider.fill(0);
+    if (session) {
+      for (let i = 0; i < 7; i += 1) session.renderPoint(i, this.point).toArray(buffers.rider, RIDER_SNAPSHOT.points + i * 3);
+      buffers.rider[RIDER_SNAPSHOT.phase] = RIDER_PHASES.indexOf(session.phase);
+      buffers.rider[RIDER_SNAPSHOT.cue] = session.rider.popUpCue ? 1 : 0;
+      buffers.rider[RIDER_SNAPSHOT.present] = 1;
+      buffers.rider[RIDER_SNAPSHOT.heading] = session.heading;
+    }
   }
 
   status(): SurfZoneStatus {
@@ -184,7 +242,15 @@ export class SurfZoneRunner {
       lipVolume: simulation.lipVolume,
       lipAirborne: simulation.lip.airborneVolume(),
       onsetScale: simulation.breaking.onsetScale,
-      board: this.board ? { speed: this.board.velocity.length(), resets: this.boardResets } : undefined,
+      board: this.board && !this.session ? { speed: this.board.velocity.length(), resets: this.boardResets } : undefined,
+      ride: this.session ? {
+        phase: this.session.phase,
+        speed: this.session.board.velocity.length(),
+        cue: this.session.rider.popUpCue,
+        popUp: { ...this.session.rider.popUpReport },
+        separation: this.session.separation,
+        resets: this.rideResets,
+      } : undefined,
     };
   }
 }

@@ -16,6 +16,7 @@ const shown = (snapshot: SurfZoneSnapshot) => ({
   lip: Array.from(snapshot.lip.subarray(0, snapshot.lipCount * 3)),
   bubbles: Array.from(snapshot.bubbles.subarray(0, snapshot.bubbleCount * 3)),
   board: Array.from(snapshot.board),
+  rider: Array.from(snapshot.rider),
   status: { ...snapshot.status, stepMs: 0 },
 });
 
@@ -43,8 +44,8 @@ describe('SurfZoneWorkerCore', () => {
   it('replies with the same start data and snapshots as the in-page surf zone, transferring the buffers', () => {
     const replies: { reply: SurfZoneReply; transfer: Transferable[] }[] = [];
     const core = new SurfZoneWorkerCore((reply, transfer) => replies.push({ reply, transfer }));
-    const local = new LocalSurfZone(config, { board: true });
-    core.handle({ type: 'start', config, options: { board: true } });
+    const local = new LocalSurfZone(config, { rider: true });
+    core.handle({ type: 'start', config, options: { rider: true } });
     const ready = replies[0].reply;
     if (ready.type !== 'ready') throw new Error('expected ready');
     expect(ready.init.grid).toEqual(local.init.grid);
@@ -52,13 +53,15 @@ describe('SurfZoneWorkerCore', () => {
     expect(ready.init.focus).toEqual(local.init.focus);
     expect(shown(ready.snapshot)).toEqual(shown(local.snapshot));
     const { status: _status, ...buffers } = ready.snapshot;
-    core.handle({ type: 'advance', steps: 45, buffers });
-    local.advance(45);
+    const input = { paddle: true, popUp: false, steer: 0.5, retry: false };
+    core.handle({ type: 'advance', steps: 45, buffers, input });
+    local.advance(45, input);
     const snapshot = replies[1].reply;
     if (snapshot.type !== 'snapshot') throw new Error('expected snapshot');
     expect(shown(snapshot.snapshot)).toEqual(shown(local.snapshot));
     expect(snapshot.snapshot.board[7]).toBe(1);
-    expect(replies[1].transfer).toEqual([buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.board.buffer]);
+    expect(snapshot.snapshot.rider[23]).toBe(1);
+    expect(replies[1].transfer).toEqual([buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.board.buffer, buffers.rider.buffer]);
   });
 });
 

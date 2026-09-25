@@ -1,4 +1,4 @@
-import type { SurfZoneBuffers, SurfZoneRunnerOptions } from '../wave/SurfZoneRunner';
+import type { RideRequest, SurfZoneBuffers, SurfZoneRunnerOptions } from '../wave/SurfZoneRunner';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { SnapshotSampler, type SurfZoneHost, type SurfZoneInit, type SurfZoneSnapshot } from './SurfZoneHost';
 import { transferables, type SurfZoneReply, type SurfZoneRequest } from './SurfZoneWorkerCore';
@@ -27,6 +27,7 @@ function emptyLike(snapshot: SurfZoneBuffers): SurfZoneBuffers {
     bubbles: new Float32Array(snapshot.bubbles.length),
     bubbleCount: 0,
     board: new Float64Array(snapshot.board.length),
+    rider: new Float64Array(snapshot.rider.length),
   };
 }
 
@@ -42,6 +43,8 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
   private spare?: SurfZoneBuffers;
   private inFlight = false;
   private pending = 0;
+  /** Held controls from the latest request; presses (pop-up, retry) kept until an advance carries them. */
+  private input: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
   private disposed = false;
 
   constructor(readonly config: SurfZoneConfig, private readonly port: WorkerPort = createSurfZoneWorker(), options: SurfZoneRunnerOptions = {}) {
@@ -66,7 +69,10 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
     port.postMessage({ type: 'start', config, options });
   }
 
-  advance(steps: number): void {
+  advance(steps: number, input?: RideRequest): void {
+    if (input) {
+      this.input = { ...input, popUp: this.input.popUp || input.popUp, retry: this.input.retry || input.retry };
+    }
     if (steps <= 0 || this.disposed) return;
     this.pending = Math.min(MAX_QUEUED_STEPS, this.pending + steps);
     this.flush();
@@ -84,6 +90,8 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
     this.inFlight = true;
     const steps = this.pending;
     this.pending = 0;
-    this.port.postMessage({ type: 'advance', steps, buffers }, transferables(buffers));
+    const input = this.input;
+    this.input = { ...input, popUp: false, retry: false };
+    this.port.postMessage({ type: 'advance', steps, buffers, input }, transferables(buffers));
   }
 }

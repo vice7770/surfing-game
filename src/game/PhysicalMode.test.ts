@@ -91,9 +91,20 @@ describe('PhysicalMode', () => {
     expect(mode.board.visible).toBe(true);
     expect(mode.board.position.toArray()).toEqual(board.position.toArray());
     expect(mode.board.quaternion.toArray()).toEqual(board.orientation.toArray());
-    expect(mode.readout().find((row) => row.label === 'BOARD')?.value).toMatch(/^riderless · \d+\.\d m\/s$/);
+    // The rider lies prone on the board, drawn from the snapshot, and the ride camera follows.
+    expect(scene.children).toContain(mode.surfer.group);
+    expect(mode.surfer.group.visible).toBe(true);
+    expect(mode.homeView).toBe('ride');
+    expect(mode.readout().find((row) => row.label === 'RIDER')?.value).toMatch(/^PRONE · \d+\.\d m\/s/);
+    mode.advance(1, { paddle: false, popUp: true, steer: 0 });
+    expect(local.runner.session!.rider.phase).toBe('push');
+    mode.retry();
+    mode.advance(1);
+    expect(local.runner.session!.rider.phase).toBe('prone');
+    expect(local.runner.status().ride!.resets).toBe(1);
     mode.setVisible(false);
     expect(mode.board.visible).toBe(false);
+    expect(mode.surfer.group.visible).toBe(false);
     expect(mode.lipPoints.mesh.visible).toBe(false);
     expect(mode.bubbles.mesh.visible).toBe(false);
     expect(mode.seabed.mesh.visible).toBe(false);

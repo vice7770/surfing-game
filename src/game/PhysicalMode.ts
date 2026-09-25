@@ -1,6 +1,9 @@
 import type { Scene } from 'three';
 import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
+import { Surfer } from '../scene/Surfer';
+import type { BodyPart, DetachedRiderPose } from '../physics/DetachedSurfer';
+import { RIDER_PARTS } from '../physics/riderPosture';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
@@ -15,7 +18,8 @@ import { FarFieldProfile } from '../wave/FarFieldProfile';
 import { MIXED_PEAK_FIT, skillForPeel } from '../wave/Breaking';
 import { stormSwell, type StormSwell } from '../wave/StormSwell';
 import type { ReadoutRow } from '../wave/SwellReadout';
-import type { SurfZoneStatus } from '../wave/SurfZoneRunner';
+import { RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
+import type { SpectatorView } from '../scene/SpectatorCamera';
 import { OFFSHORE_DEPTH, TANK, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost, type SurfZoneSnapshot } from './SurfZoneHost';
 
@@ -132,6 +136,13 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
     { label: 'BREAKER', value: breaker.type === 'none' ? 'FLAT BED' : `ξ ${breaker.value.toFixed(2)} · ${breaker.type.toUpperCase()}` },
     { label: 'BREAKING', value: `${Math.round(status.breakingFraction * 100)} % of the surf zone` },
     ...(status.board ? [{ label: 'BOARD', value: `riderless · ${status.board.speed.toFixed(1)} m/s${status.board.resets ? ` · back in the lineup ×${status.board.resets}` : ''}` }] : []),
+    ...(status.ride ? [
+      { label: 'RIDER', value: `${status.ride.phase.toUpperCase()} · ${status.ride.speed.toFixed(1)} m/s${status.ride.cue ? ' · POP UP NOW' : ''}` },
+      { label: 'POP-UP', value: status.ride.popUp.outcome === 'none' ? 'not yet'
+        : status.ride.popUp.outcome === 'stood' ? `stood in ${status.ride.popUp.duration.toFixed(2)} s · landing ${status.ride.popUp.landingPeak.toFixed(1)} BW, ${Math.round(status.ride.popUp.frontShare * 100)} % front`
+        : status.ride.popUp.outcome === 'rising' ? 'rising' : 'no support: board not planing' },
+      ...(status.ride.separation ? [{ label: 'FELL', value: `${status.ride.separation} · R to paddle out again` }] : []),
+    ] : []),
     { label: 'PEEL', value: peelText },
     { label: 'LIP', value: status.lipLaunches === 0 ? 'no lip yet'
       : `${status.lipLaunches} throws · ${status.lipVolume.toFixed(1)} m³ · ${status.lipAirborne.toFixed(1)} m³ airborne` },
@@ -148,7 +159,7 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
 export type SurfZoneHostFactory = (config: SurfZoneConfig) => SurfZoneHost;
 
 /** Runs the surf zone in the page (tests, and browsers without Web Workers). */
-export const localSurfZone: SurfZoneHostFactory = (config) => new LocalSurfZone(config, { board: true });
+export const localSurfZone: SurfZoneHostFactory = (config) => new LocalSurfZone(config, { rider: true });
 
 /** The latest snapshot's packed lip positions, in the shape `LipPoints` draws. */
 function snapshotLip(snapshot: SurfZoneSnapshot): RenderableLip {
@@ -166,8 +177,19 @@ export class PhysicalMode {
   readonly lipPoints = new LipPoints();
   /** Bubbles entrained under breaking bores, seen from below the surface. */
   readonly bubbles = new BubblePoints();
-  /** The riderless physical board, drawn at the snapshot's pose. */
+  /** The physical board, drawn at the snapshot's pose. */
   readonly board = createBoardMesh(buildBoardShape());
+  /** The rider's body, drawn from the snapshot's seven points (its legacy board hidden). */
+  readonly surfer = new Surfer();
+  private readonly riderPose: { -readonly [K in keyof DetachedRiderPose]: DetachedRiderPose[K] } & { points: Float64Array } = {
+    heading: 0,
+    points: new Float64Array(RIDER_SNAPSHOT.length),
+    getPartPosition(part: BodyPart, out) {
+      const i = RIDER_PARTS.indexOf(part);
+      return out.set(this.points[i * 3], this.points[i * 3 + 1], this.points[i * 3 + 2]);
+    },
+  };
+  private retryPending = false;
   /** The running surf zone, once it has spun up. */
   host?: SurfZoneHost;
   config?: SurfZoneConfig;
@@ -176,10 +198,13 @@ export class PhysicalMode {
   focus = { x: 0, z: 0 };
   private starts = 0;
   private shown = true;
+  private readonly follow = { position: { x: 0, y: 0, z: 0 }, heading: 0 };
 
   constructor(scene: Scene) {
-    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh, this.board);
+    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh, this.board, this.surfer.group);
     this.board.visible = false;
+    this.surfer.setBoardVisible(false);
+    this.surfer.group.visible = false;
   }
 
   get ready(): boolean {
@@ -268,23 +293,48 @@ export class PhysicalMode {
     this.host?.dispose();
     this.host = undefined;
     this.board.visible = false;
+    this.surfer.group.visible = false;
   }
 
   /** Request `steps` fixed physics steps (`SURF_ZONE_STEP` each). */
-  advance(steps: number): void {
-    this.host?.advance(steps);
+  /** The view a ride starts in, and returns to from profile or underwater. */
+  get homeView(): SpectatorView {
+    return this.host && this.host.snapshot.rider[RIDER_SNAPSHOT.present] > 0 ? 'ride' : 'overview';
+  }
+
+  /** Put board and rider back in the lineup on the next advance; the waves carry on. */
+  retry(): void {
+    this.retryPending = true;
+  }
+
+  advance(steps: number, input?: Omit<RideRequest, 'retry'>): void {
+    const retry = this.retryPending;
+    if (input || retry) this.retryPending = false;
+    this.host?.advance(steps, input || retry ? { paddle: false, popUp: false, steer: 0, ...input, retry } : undefined);
   }
 
   update(dt: number): void {
     const { host } = this;
     if (!host) return;
-    this.camera.update(host, this.focus, dt);
+    const pose = host.snapshot.board;
+    const rider = host.snapshot.rider;
+    const riding = rider[RIDER_SNAPSHOT.present] > 0;
+    this.follow.position.x = pose[0];
+    this.follow.position.y = pose[1];
+    this.follow.position.z = pose[2];
+    this.follow.heading = riding ? rider[RIDER_SNAPSHOT.heading] : 0;
+    this.camera.update(host, this.focus, dt, pose[7] > 0 ? this.follow : undefined);
     this.farField.update(host.snapshot.status.seaTime);
     this.lipPoints.update(snapshotLip(host.snapshot));
-    const pose = host.snapshot.board;
     this.board.visible = this.shown && pose[7] > 0;
     this.board.position.set(pose[0], pose[1], pose[2]);
     this.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
+    this.surfer.group.visible = this.shown && riding;
+    if (riding) {
+      this.riderPose.points.set(rider);
+      this.riderPose.heading = rider[RIDER_SNAPSHOT.heading];
+      this.surfer.updateDetached(this.riderPose, this.board.position, this.board.quaternion);
+    }
     this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
   }
 
@@ -302,6 +352,7 @@ export class PhysicalMode {
   setVisible(visible: boolean): void {
     this.shown = visible;
     this.board.visible = visible && (this.host?.snapshot.board[7] ?? 0) > 0;
+    this.surfer.group.visible = visible && (this.host?.snapshot.rider[RIDER_SNAPSHOT.present] ?? 0) > 0;
     this.seabed.mesh.visible = visible;
     this.farField.mesh.visible = visible;
     this.lipPoints.mesh.visible = visible;

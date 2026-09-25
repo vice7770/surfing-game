@@ -1,9 +1,10 @@
+import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { REFERENCE_BOARD } from '../physics/boardReference';
 import { WATER } from '../physics/hullForces';
 import type { SpotName } from './Bathymetry';
 import { BubbleCloud } from './BubbleCloud';
-import { SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea } from './SurfZoneRunner';
+import { RIDER_PHASES, RIDER_SNAPSHOT, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea } from './SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
 
 const config: SurfZoneConfig = {
@@ -132,5 +133,58 @@ describe('SurfZoneRunner with a board', () => {
     bare.fill(empty);
     expect(bare.board).toBeUndefined();
     expect(empty.board[7]).toBe(0);
+  });
+});
+
+describe('SurfZoneRunner with a rider', () => {
+  const calm: SurfZoneConfig = { ...config, spot: 'beach', significantHeight: 0.02, peakPeriod: 10 };
+  const idle = { paddle: false, popUp: false, steer: 0, retry: false };
+
+  it('lies a rider prone on the board in the lineup, and snapshots its render points and phase', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    runner.advance(60, idle);
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    const session = runner.session!;
+    expect(session.rider.attached).toBe(true);
+    expect(buffers.rider[RIDER_SNAPSHOT.present]).toBe(1);
+    expect(buffers.rider[RIDER_SNAPSHOT.phase]).toBe(RIDER_PHASES.indexOf('prone'));
+    for (let i = 0; i < 7; i += 1) {
+      const point = new Vector3(buffers.rider[i * 3], buffers.rider[i * 3 + 1], buffers.rider[i * 3 + 2]);
+      expect(point.distanceTo(session.board.position)).toBeLessThan(1.6);
+    }
+    expect(runner.status().ride?.phase).toBe('prone');
+  });
+
+  it('paddles toward the beach when asked', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    const start = runner.session!.board.position.clone();
+    runner.advance(360, { ...idle, paddle: true });
+    const board = runner.session!.board;
+    expect(board.position.z - start.z).toBeGreaterThan(3);
+    expect(runner.status().ride!.speed).toBeGreaterThan(1);
+  });
+
+  it('puts board and rider back in the lineup on retry, without restarting the wave', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    const start = runner.session!.board.position.clone();
+    runner.advance(120, { ...idle, paddle: true });
+    const seaTime = runner.simulation.seaTime;
+    runner.advance(1, { ...idle, retry: true });
+    expect(runner.session!.board.position.distanceTo(start)).toBeLessThan(0.2);
+    expect(runner.session!.rider.phase).toBe('prone');
+    expect(runner.simulation.seaTime).toBeGreaterThan(seaTime);
+    expect(runner.status().ride!.resets).toBe(1);
+  });
+});
+
+describe('SurfZoneRunner rider in waves', () => {
+  // Without fins (P4e) the prone board wanders off its heading, so this only asks that the rider holds on.
+  it('holds on lying down while paddling through passing waves', () => {
+    const runner = new SurfZoneRunner({ ...config, spot: 'beach', significantHeight: 1.2, peakPeriod: 10, directionDegrees: 0 }, { rider: true });
+    for (let i = 0; i < 12 * 60; i += 1) {
+      runner.advance(1, { paddle: true, popUp: false, steer: 0, retry: false });
+      expect(runner.session!.phase).toBe('prone');
+    }
   });
 });

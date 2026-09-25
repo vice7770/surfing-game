@@ -2,7 +2,7 @@ import { Quaternion, Vector3 } from 'three';
 import { AttachedRider, type RiderPhase, type RiderSeparation } from './AttachedRider';
 import { BoardBody } from './BoardBody';
 import { DetachedSurfer } from './DetachedSurfer';
-import type { StanceName } from './riderPosture';
+import { RIDER_PARTS, type StanceName } from './riderPosture';
 import type { SurfWater } from './SurfWater';
 import { SurfWaterBodyField } from './SurfWaterBodyField';
 
@@ -59,6 +59,18 @@ export class RideSession {
     this.rider.phase = 'prone';
     this.board.attach(this.rider);
     this.surfer.active = false;
+  }
+
+  /** The drawn body's seven points (pelvis, torso, head, hands, feet), riding or fallen. */
+  renderPoint(index: number, out: Vector3): Vector3 {
+    return this.rider.attached ? this.rider.renderPoint(index, this.board, out) : this.surfer.getPartPosition(RIDER_PARTS[index], out);
+  }
+
+  /** Which way the body faces, radians from +z toward +x. */
+  get heading(): number {
+    if (!this.rider.attached) return this.surfer.heading;
+    const forward = new Vector3(0, 0, 1).applyQuaternion(this.board.orientation);
+    return Math.atan2(forward.x, forward.z);
   }
 
   /** Let the rider go now, into the water. */

@@ -16,6 +16,8 @@ import type { SurfWater } from './SurfWater';
  */
 const FOOT_FRICTION = 0.9;
 const PRONE_FRICTION = 0.7;
+/** How hard a body lying on the board can hold it, body weights (a modelling choice). */
+const PRONE_GRIP = 0.3;
 const MAX_LOAD = 4;
 export const MAX_FLIGHT = 0.4;
 export const RECOVERABLE_ERROR = 0.25;
@@ -481,6 +483,67 @@ export class AttachedRider {
     if (this.attached) this.separate(cause);
   }
 
+  /**
+   * Where the drawn body puts each of the seven points: the trunk parts at their
+   * centres, the hands and feet at their tips (the hands in their stroke or on
+   * the rails, the feet on the deck while standing).
+   */
+  renderPoint(index: number, board: BoardBody, out: Vector3): Vector3 {
+    if (index < 3) return this.partPosition(index, out);
+    const upright = this.phase === 'landing' || this.phase === 'standing';
+    if (index === 3 || index === 4) {
+      const side = index === 3 ? 0 : 1;
+      if (this.phase === 'prone') {
+        const z = this.paddle ? this.handLocal(side, this.localScratch) : this.localScratch.set(0, 0, this.parts[1 * 3 + 2]).z;
+        if (!this.paddle) this.localScratch.set((side === 0 ? 1 : -1) * (this.halfWidth(z) + 0.02), deckHeight(this.shape, z) + 0.02, z);
+        return board.toWorld(this.localScratch, out);
+      }
+      if (this.phase === 'push') {
+        const z = this.parts[1 * 3 + 2];
+        return board.toWorld(this.localScratch.set((side === 0 ? 1 : -1) * this.halfWidth(z), deckHeight(this.shape, z), z), out);
+      }
+      // Arms held out from the shoulders.
+      this.partPosition(index, out);
+      return out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(0.7));
+    }
+    if (upright) {
+      const front = (index === 5) === (this.stance === 'regular');
+      const z = front ? this.feet.front : this.feet.rear;
+      return board.toWorld(this.localScratch.set(0, deckHeight(this.shape, z), z), out);
+    }
+    // Legs lying along the board: from the hips through the leg's centre to the feet.
+    this.partPosition(index, out);
+    return out.add(this.scratch2.copy(out).sub(this.partPosition(0, this.target)).multiplyScalar(0.9));
+  }
+
+  private halfWidth(z: number): number {
+    return this.shape.curves.width(Math.min(1, Math.max(0, z / this.shape.length + 0.5))) / 2;
+  }
+
+  /**
+   * A paddling hand's place in the board frame (into `out`) at this point of its
+   * stroke: pulling under water from reach to hip, or swinging forward above it.
+   * Returns the hand's speed along the board while pulling (0 in recovery).
+   */
+  private handLocal(side: number, out: Vector3): number {
+    const phase = (this.strokeTime / ARM_CYCLE + side * 0.5) % 1;
+    let z: number;
+    let height: number;
+    let along = 0;
+    if (phase < PULL_SHARE) {
+      const s = phase / PULL_SHARE;
+      z = REACH + ((HIP - REACH) * (1 - Math.cos(Math.PI * s))) / 2;
+      height = -HAND_DEPTH;
+      along = ((HIP - REACH) * Math.PI * Math.sin(Math.PI * s)) / (2 * PULL_SHARE * ARM_CYCLE);
+    } else {
+      const s = (phase - PULL_SHARE) / (1 - PULL_SHARE);
+      z = HIP + ((REACH - HIP) * (1 - Math.cos(Math.PI * s))) / 2;
+      height = 0.25 * Math.sin(Math.PI * s);
+    }
+    out.set((side === 0 ? 1 : -1) * (this.halfWidth(z) + HAND_OUTSIDE_RAIL), deckHeight(this.shape, z) + height, z);
+    return along;
+  }
+
   /** A part's centre in the world. */
   partPosition(index: number, out: Vector3): Vector3 {
     this.localScratch.set(this.parts[index * 3], this.parts[index * 3 + 1], this.parts[index * 3 + 2]).sub(this.localCenter);
@@ -587,12 +650,7 @@ export class AttachedRider {
       const phase = (this.strokeTime / ARM_CYCLE + side * 0.5) % 1;
       if (phase >= PULL_SHARE) continue;
       // Pull: the hand sweeps from reach to hip beside the rail, fastest mid-stroke.
-      const s = phase / PULL_SHARE;
-      const z = REACH + ((HIP - REACH) * (1 - Math.cos(Math.PI * s))) / 2;
-      const along = ((HIP - REACH) * Math.PI * Math.sin(Math.PI * s)) / (2 * PULL_SHARE * ARM_CYCLE);
-      const width = this.shape.curves.width(Math.min(1, Math.max(0, z / this.shape.length + 0.5)));
-      const x = (side === 0 ? 1 : -1) * (width / 2 + HAND_OUTSIDE_RAIL);
-      this.localScratch.set(x, deckHeight(this.shape, z) - HAND_DEPTH, z);
+      const along = this.handLocal(side, this.localScratch);
       board.toWorld(this.localScratch, this.partWorld);
       board.velocityAt(this.partWorld, this.partVelocity).add(this.scratch.set(0, 0, along).applyQuaternion(board.orientation));
       this.applyWater(RIDER_PARTS.length + side, water, HAND_RADIUS, 0, HAND_DRAG_AREA, h, 1);
@@ -839,6 +897,7 @@ export class AttachedRider {
     const q = board.orientation;
     const j = this.scratch.copy(impulse).applyQuaternion(this.spin.copy(q).invert());
     const height = local.y - deckHeight(this.shape, local.z);
+    if (!this.upright) return this.projectHold(j, h, local, out.set(0, 0, 0), q);
     if (!(j.y > 0) || !(height > 0)) {
       this.contact.centreOfPressure.set(local.x, local.y - height, local.z);
       this.limit = 'flight';
@@ -862,7 +921,7 @@ export class AttachedRider {
     if (limit === 'none' && (copX !== freeX || copZ !== freeZ)) limit = 'tip';
     let tx = ((local.x - copX) * normal) / height;
     let tz = ((local.z - copZ) * normal) / height;
-    const friction = (this.phase === 'prone' ? PRONE_FRICTION : FOOT_FRICTION) * normal;
+    const friction = FOOT_FRICTION * normal;
     const tangential = Math.hypot(tx, tz);
     if (tangential > friction) {
       tx *= friction / tangential;
@@ -875,6 +934,44 @@ export class AttachedRider {
     this.contact.centreOfPressure.set(cx, deckHeight(this.shape, cz), cz);
     const span = this.feet.front - this.feet.rear;
     this.contact.frontShare = Math.min(1, Math.max(0, (cz - this.feet.rear) / span));
+    return out.set(tx, normal, tz).applyQuaternion(q);
+  }
+
+  /**
+   * Lying on the board (and pushing up, or lying back), the body holds it with
+   * chest, arms and legs: the contact can pull up to PRONE_GRIP body weights,
+   * and grips across the deck in proportion to how hard it presses plus that
+   * hold. Only a pull beyond the hold lifts the rider off.
+   */
+  private projectHold(j: Vector3, h: number, local: Vector3, out: Vector3, q: Quaternion): Vector3 {
+    const weight = this.mass * WATER.gravity * h;
+    const grip = PRONE_GRIP * weight;
+    this.contact.centreOfPressure.set(local.x, deckHeight(this.shape, local.z), local.z);
+    this.contact.frontShare = 0;
+    this.loaded = j.y > BALANCE_LOAD * weight;
+    if (this.loaded) {
+      const height = Math.max(0.05, local.y - deckHeight(this.shape, local.z));
+      this.desiredCop.x = local.x - (height * j.x) / j.y;
+      this.desiredCop.z = local.z - (height * j.z) / j.y;
+    }
+    if (j.y < -grip) {
+      this.limit = 'flight';
+      this.loaded = false;
+      return out;
+    }
+    const cap = MAX_LOAD * weight;
+    const normal = Math.min(j.y, cap);
+    let limit: ContactLimit = j.y > cap ? 'impact' : 'none';
+    let tx = j.x;
+    let tz = j.z;
+    const friction = PRONE_FRICTION * (normal + grip);
+    const tangential = Math.hypot(tx, tz);
+    if (tangential > friction) {
+      tx *= friction / tangential;
+      tz *= friction / tangential;
+      if (limit === 'none') limit = 'slip';
+    }
+    this.limit = limit;
     return out.set(tx, normal, tz).applyQuaternion(q);
   }
 

@@ -1,13 +1,19 @@
 import { PerspectiveCamera, Vector3 } from 'three';
 
-export type SpectatorView = 'overview' | 'profile' | 'below';
+export type SpectatorView = 'overview' | 'profile' | 'below' | 'ride';
+
+/** What the ride view follows: the board's position and heading (radians from +z toward +x). */
+export interface FollowTarget {
+  position: { x: number; y: number; z: number };
+  heading: number;
+}
 
 export interface SpectatorScene {
   heightAt(x: number, z: number): number;
   bedAt(x: number, z: number): number;
 }
 
-/** View-only camera for the physical surf zone: cliff overview, water-line profile, or underwater. */
+/** Camera for the physical surf zone: cliff overview, water-line profile, underwater, or following the ride. */
 export class SpectatorCamera {
   readonly camera = new PerspectiveCamera(52, 1, 0.1, 3000);
   private currentView: SpectatorView = 'overview';
@@ -25,8 +31,16 @@ export class SpectatorCamera {
     this.settled = false;
   }
 
-  update(scene: SpectatorScene, focus: { x: number; z: number }, dt: number): void {
-    if (this.currentView === 'overview') {
+  update(scene: SpectatorScene, focus: { x: number; z: number }, dt: number, follow?: FollowTarget): void {
+    if (this.currentView === 'ride' && follow) {
+      // Behind and a little above the board, looking past the rider toward where it is heading.
+      const forwardX = Math.sin(follow.heading);
+      const forwardZ = Math.cos(follow.heading);
+      const x = follow.position.x - forwardX * 6.5;
+      const z = follow.position.z - forwardZ * 6.5;
+      this.desired.set(x, Math.max(scene.heightAt(x, z) + 1.2, follow.position.y + 2.6), z);
+      this.target.set(follow.position.x + forwardX * 4, follow.position.y + 0.6, follow.position.z + forwardZ * 4);
+    } else if (this.currentView === 'overview' || this.currentView === 'ride') {
       this.desired.set(focus.x + 70, 16, focus.z + 95);
       this.target.set(focus.x, 0, focus.z - 40);
     } else if (this.currentView === 'profile') {

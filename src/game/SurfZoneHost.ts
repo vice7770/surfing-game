@@ -1,6 +1,6 @@
 import type { RenderableSurfZone } from '../scene/PhysicalSurfaceSource';
 import { sampleSurfaceBed, sampleSurfaceHeight, type SurfaceGrid } from '../scene/WaterSurface';
-import { SurfZoneRunner, type SurfZoneBuffers, type SurfZoneRunnerOptions, type SurfZoneStatus } from '../wave/SurfZoneRunner';
+import { SurfZoneRunner, type RideRequest, type SurfZoneBuffers, type SurfZoneRunnerOptions, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { RenderGrid, SurfZoneConfig } from '../wave/SurfZoneSimulation';
 
 /** What a surf zone fixes when it starts: its render grid, bed, break focus, window and solver column width. */
@@ -28,8 +28,8 @@ export interface SurfZoneHost {
   readonly ready: Promise<void>;
   readonly init: SurfZoneInit;
   readonly snapshot: SurfZoneSnapshot;
-  /** Request `steps` fixed physics steps (`SURF_ZONE_STEP` each). */
-  advance(steps: number): void;
+  /** Request `steps` fixed physics steps (`SURF_ZONE_STEP` each), with the player's input for a ridden board. */
+  advance(steps: number, input?: RideRequest): void;
   /** Rendered water surface at (x, z), m: the same lookup the water shader uses. */
   heightAt(x: number, z: number): number;
   bedAt(x: number, z: number): number;
@@ -68,9 +68,16 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
     this.refresh();
   }
 
-  advance(steps: number): void {
+  private pendingPress = { popUp: false, retry: false };
+
+  advance(steps: number, input?: RideRequest): void {
+    if (input) {
+      this.pendingPress.popUp ||= input.popUp;
+      this.pendingPress.retry ||= input.retry;
+    }
     if (steps <= 0) return;
-    this.runner.advance(steps);
+    this.runner.advance(steps, input ? { ...input, ...this.pendingPress } : undefined);
+    this.pendingPress = { popUp: false, retry: false };
     this.refresh();
   }
 
