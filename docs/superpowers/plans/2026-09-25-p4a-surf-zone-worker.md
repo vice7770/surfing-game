@@ -1,82 +1,75 @@
-# P4a Surf Zone Worker Implementation Plan
+# P4a Surf Zone Worker: Design Record
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Built test-first on `claude/charming-sanderson-d9a2c0` after G4. The implementation plan this record replaces is in the history of this file (`e1206e3`). Test code lives in the files listed.
 
-**Goal:** Run the physical surf zone in a Web Worker, so the main thread only renders snapshots. This is the first step of P4 (board on physical waves), required before the physical waves can be played ([plan](../../research/wave-formation-plan.md) §3.2, P2 deferral; board plan's P2c handoff).
+**Goal:** Run the physical surf zone in a Web Worker, so the main thread only renders snapshots. This is the first step of P4 (board on physical waves), and it had to come before the physical waves could be played ([plan](../../research/wave-formation-plan.md) §3.2; P2 deferral).
 
-**Architecture:** A pure `SurfZoneRunner` owns the `SurfZoneSimulation` and the bubble cloud, steps them at a fixed 1/60 s, and fills a snapshot: the render grid's (height, foam) and (u, w) arrays, lip and bubble positions, and a plain-data status for the Wave Lab readout. A `SurfZoneHost` interface is the main thread's only view of a running surf zone. `LocalSurfZone` runs the runner in-thread (tests, fallback), and `WorkerSurfZone` runs it in `surfZoneWorker.ts`, exchanging transferable buffers. `PhysicalMode` renders from the host's latest snapshot. It rebuilds the spot and sea state from the config (both pure and seeded) for the seabed and far field.
+## Where P4a sits
 
-**Tech Stack:** TypeScript, Vite module workers (`new Worker(new URL(…), { type: 'module' })`), transferable `ArrayBuffer`s, three.js r186, Vitest.
-
-## Context: where P4a sits
-
-The wave plan's P4 is the board phase. The agreed board and surfer physics plan (`docs/research/board-surfer-physics-plan.md` on the local branch `codex/board-surfer-physics-proposal`, requirements confirmed in a 23-question grilling) splits the same work into B0–B5. Its integration handoff (`board-water-integration-handoff.md`, same branch) makes a stable worker and water sampler the precondition. P4 is therefore delivered as:
+The wave plan's P4 is the board phase. The board and surfer physics plan (`docs/research/board-surfer-physics-plan.md` on the local branch `codex/board-surfer-physics-proposal`; its requirements were confirmed in a 23-question grilling) splits the same work into B0–B5. Its integration handoff (`board-water-integration-handoff.md`, same branch) makes a stable worker and water sampler the precondition. P4 is delivered as:
 
 | Sub-phase | Content | Board plan |
 |---|---|---|
-| **P4a** (this plan) | Surf zone in a Web Worker; host interface; snapshots | P2c handoff: worker, step ownership, budget |
-| P4b | `SurfWater` sampling seam (surface, normal, wet/dry, outside-domain, flow at body depth by the §1.10 profile, breaking) over legacy and physical water; legacy `BoardPhysics` on the seam with bit-identical replays; baseline traces; reference shortboard and rider record | B0 |
-| P4c | Rigid board body (separate board and rider mass, quaternion, buoyancy, drag, bounded planing) in the worker on physical water, with horizontal reactions | B1 |
+| **P4a** ✓ | Surf zone in a Web Worker; host interface; snapshots | P2c handoff: worker, step ownership, budget |
+| P4b | `SurfWater` sampling seam over legacy and physical water: surface, normal, wet/dry, outside-domain, flow at body depth by the §1.10 profile, and breaking. Legacy `BoardPhysics` moves onto the seam with bit-identical replays, plus baseline traces and the reference shortboard and rider record. | B0 |
+| P4c | Rigid board body in the worker on physical water, with horizontal reactions | B1 |
 | P4d | Rider contacts, stance, manual pop-up phases, weight-shift steering | B2 |
 | P4e | Fins, rails, stall, breaking and lip impacts | B3 |
 | P4f | Continuous fall, paddling and catch calibration, practice-wave forcing and natural sets; the §1.10 board tests | B4 |
 
-## Global Constraints
+## Design
 
-- One water state; the worker is the authority, and the main thread never steps physics.
-- Determinism: the runner is pure. The worker and `LocalSurfZone` produce bit-identical snapshots for the same config and step sequence, and the tests run on the local runner.
-- Fixed step 1/60 s; the main thread decides how many steps each frame requests (the existing accumulator, at most 3 per frame), so pacing is unchanged.
-- Budget (§3.1): water step ≤ 4 ms in the worker (measured, not assumed), main-thread upload ≤ 0.5 ms.
-- No gameplay change: the physical mode stays view-only, and the legacy mode is untouched.
+- **`src/wave/SurfZoneRunner.ts`**
+  - Owns the `SurfZoneSimulation` and the `BubbleCloud`, and advances both at a fixed 1/60 s (`SURF_ZONE_STEP`). Bubbles now move per physics step, not per render frame, so they are deterministic.
+  - `fill(buffers)` writes the render grid's (height, foam) and (u, w), plus packed lip and bubble positions.
+  - `status()` returns the Wave Lab values as plain data. The break point and breaker type are fixed per run and cached.
+  - `surfZoneSea(config)` builds the seeded sea on either side of the worker boundary.
+- **`src/wave/BubbleCloud.ts`** is the bubble simulation, split from `BubblePoints` so the worker needs no three.js; `BubblePoints` only draws positions.
+- **`src/game/SurfZoneHost.ts`**
+  - `SurfZoneHost` is the main thread's only view of a running surf zone: `ready`, fixed start data (render grid, bed, focus, window, column width), the latest snapshot, `advance(steps)`, and `heightAt`/`bedAt` through the snapshot's render lookups.
+  - `LocalSurfZone` runs the runner in the page.
+  - `SnapshotSurfZone` feeds a host's snapshots to `PhysicalSurfaceSource`.
+- **`src/game/SurfZoneWorkerCore.ts`, `surfZoneWorker.ts`, `WorkerSurfZone.ts`**
+  - The worker core answers `start` with `ready` (start data and a first snapshot), and `advance` with `snapshot`. It fills and transfers the buffers the page lends it.
+  - `WorkerSurfZone` keeps two buffer sets in turn: one shown, one out at the worker. It keeps one advance in flight and at most six queued steps, so a worker that falls behind drops time instead of lagging further.
+  - Worker errors reject `ready`. `dispose` terminates the worker.
+- **`PhysicalMode`**
+  - Starts asynchronously through a host factory. A later start supersedes an earlier one, and a legacy run cancels a pending start.
+  - Rebuilds the spot and sea from the config for the seabed and far field.
+  - Draws the water, lip, bubbles, camera and readout from snapshots.
+- **`main.ts`**
+  - Requests each frame's fixed steps in one `advance`.
+  - Switches to the physical mode only once its surf zone is ready, behind the loading overlay.
+  - Uses the worker wherever `Worker` exists; `?inpage` keeps the surf zone on the main thread.
 
-## File Structure
+## Verification
 
-- Create `src/wave/SurfZoneRunner.ts` (+ test): runner, `SurfZoneStatus`, `surfZoneSea(config)`.
-- Create `src/wave/BubbleCloud.ts` (+ test): the bubble simulation split from `BubblePoints` (no three.js in the worker).
-- Modify `src/scene/BubblePoints.ts`: render positions only.
-- Create `src/game/SurfZoneHost.ts` (+ test): `SurfZoneHost`, `SurfZoneSnapshot`, `LocalSurfZone`.
-- Create `src/game/surfZoneWorker.ts` and `src/game/WorkerSurfZone.ts`, with a pure `SurfZoneWorkerCore` message handler (+ test).
-- Modify `src/game/PhysicalMode.ts`, `src/main.ts`, `src/scene/PhysicalSurfaceSource.ts` users, and tests.
+- **Tests (205 in the suite; the build passes, with a 36.85 kB worker chunk):**
+  - `SurfZoneRunner.test.ts` (5):
+    - the runner steps bit-identically to the simulation it wraps;
+    - its snapshot equals the simulation's own render writes, lip parcels and bubbles;
+    - its status equals the simulation's readout methods;
+    - the same sea is built on both sides.
+  - `BubbleCloud.test.ts` (3) and `BubblePoints.test.ts` (1): the bubble behaviour is unchanged, and the renderer draws what it is given within its pool.
+  - `SurfZoneHost.test.ts` (2): the local host snapshots the same surf zone a runner steps, and samples the rendered surface and bed.
+  - `WorkerSurfZone.test.ts` (4):
+    - the worker core's start data and snapshots are bit-identical to the in-page surf zone's, and it transfers its four buffers;
+    - behind an asynchronous fake port, the host keeps one advance in flight, queues the rest, caps the queue and shows the latest snapshot;
+    - a worker error fails the start.
+  - `PhysicalMode.test.ts`: the tests run on the async host, and a new one shows that only the latest of overlapping starts takes over and that `cancel` supersedes a pending start.
+- **Browser (local dev server, measured by calling the physical frame at 1/60 s):**
 
----
+  | | Main thread per physical frame | Surf zone start |
+  |---|---|---|
+  | Worker | 0.10 ms median, 0.30 ms p95 | does not block |
+  | `?inpage` | 10.8 ms median, 12.3 ms p95 | blocks for 3.1 s |
 
-### Task 1: SurfZoneRunner, status and bubble cloud
+  - The worker's own step (solver, breaking, foam, lip and bubbles) is 5.8 ms.
+  - Every spot renders as before, with no console errors, and physical → legacy → physical round trips work.
 
-**Interfaces:**
-- Produces:
-  - `surfZoneSea(config: SurfZoneConfig): SeaState`, used by `SurfZoneSimulation`'s constructor too.
-  - `interface SurfZoneStatus { seaTime; timeToSet; stepMs; cells; breakPoint; breakDepth; breaker; breakingFraction; peel?; lipLaunches; lipVolume; lipAirborne; onsetScale }`.
-  - `class BubbleCloud { constructor(seed, capacity); update(scene, dt); count; positions: Float32Array; clear() }`.
-  - `class SurfZoneRunner { constructor(config); readonly simulation; readonly grid; readonly bed: Float32Array; readonly focus; windowXMin; advance(steps); fill(snapshot: SurfZoneBuffers): void; status(): SurfZoneStatus }`, where `SurfZoneBuffers = { surface: Float32Array; flow: Float32Array; lip: Float32Array; bubbles: Float32Array; lipCount; bubbleCount }`.
-  - `formatPhysicalReadout(config, status, storm?)`.
-- [ ] Tests: `fill` equals `writeUniformSurface` and `writeUniformFlow` of the same simulation; `status()` equals the simulation's methods; the lip and bubble arrays hold the active positions; the readout strings from status are unchanged (existing `PhysicalMode` readout tests move onto status); `BubbleCloud` keeps the `BubblePoints` behaviour tests.
-- [ ] Implement, run, and commit `refactor: step the surf zone in a runner that fills snapshots`.
+## Deviations and open items
 
-### Task 2: SurfZoneHost and PhysicalMode on snapshots
-
-**Interfaces:**
-- Produces:
-  - `interface SurfZoneSnapshot extends SurfZoneBuffers { status: SurfZoneStatus }`.
-  - `interface SurfZoneHost { readonly config; readonly grid; readonly bed; readonly focus; readonly windowXMin; readonly snapshot?: SurfZoneSnapshot; advance(steps): void; heightAt(x, z); bedAt(x, z); dispose() }`; `heightAt` and `bedAt` read the snapshot through `sampleSurfaceHeight` and `sampleSurfaceBed`.
-  - `class LocalSurfZone implements SurfZoneHost` (a synchronous `advance`).
-  - `PhysicalMode.start(settings, seed, water, overrides?, host?)` takes a host factory. The render source, lip points, bubble points, camera and readout all read the host.
-- [ ] Tests: `PhysicalMode` tests pass on `LocalSurfZone`; the render data after N steps equals a direct `SurfZoneSimulation` run of N steps (bit-identical); `heightAt` matches the snapshot sampler.
-- [ ] Implement, run, and commit `refactor: render the physical mode from surf zone snapshots`.
-
-### Task 3: Web Worker host
-
-**Interfaces:**
-- Produces:
-  - Message protocol `{ type: 'start', config } → { type: 'ready', grid, bed, focus, windowXMin }` and `{ type: 'advance', steps, buffers } → { type: 'snapshot', snapshot }`, with transferred buffers returned to a pool of two.
-  - `SurfZoneWorkerCore` (pure handler: `handle(message, post)`).
-  - `surfZoneWorker.ts` (binds the core to `self`).
-  - `WorkerSurfZone implements SurfZoneHost`: `start()` resolves on `ready`; one advance in flight, with requested steps accumulating while busy.
-  - `main.ts` uses `WorkerSurfZone` when `Worker` exists, and shows its loading state until `ready`.
-- [ ] Tests: the core's snapshots are bit-identical to `LocalSurfZone`'s for the same steps; buffers round-trip, and a busy core queues steps; `WorkerSurfZone` against a fake worker port handles ready, one-in-flight and dispose.
-- [ ] Implement, run, and commit `feat: run the physical surf zone in a Web Worker`.
-
-### Task 4: Browser verification and record
-
-- [ ] Every spot starts without console errors, the loading overlay covers the spin-up, and the visuals match the in-thread build.
-- [ ] Measure main-thread time per frame before and after (physical frame, upload), the worker step (ms per fixed step at the game grid), snapshot transfer, and FPS.
-- [ ] Rewrite this plan as the record; update the wave plan's §3.2/§4.1 and the ROADMAP (P4 in progress, P4a done); run the suite and build; commit `docs: record P4a surf zone worker`.
+- **Worker budget:** 5.8 ms per step against the plan's 4 ms worker gate (§3.1). The bundled-Node solver alone was 4.05 ms; P3's breaking, G4's foam, the lip and the bubbles add the rest. The frame no longer pays for it, and 60 steps/s is about 35 % of one core. But P4c's board adds to the same step, so the gate is an explicit risk. The options stay those of §3.3: a narrower window, keeping 1 m cells (P3a needs them), or WebAssembly/SIMD.
+- **Hidden tabs:** the loading wrapper waits for an animation frame before starting, so a page loaded hidden starts its surf zone only once it becomes visible.
+- **Readout cadence:** the status is computed every snapshot; it is cheap, but it could drop to the readout's 4 Hz if the budget tightens.
+- **Bicubic sampling** (Q10) moves with the `SurfWater` seam to P4b, where the board first samples the physical water. Render and contact must switch kernels together (G1 note).

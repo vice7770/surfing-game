@@ -35,7 +35,10 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 
 - [x] G3: physically based water shading on both water meshes: Fresnel (n = 1.333), per-spot turbidity and bed albedo, shallow-water reflectance from the seabed under every node (sandbars and the reef shelf read turquoise from above, channels blue), and sunlight through thin crests marched toward the sun. Stage 1's broad crests glow only at their tops; P5's peaked crests and the rendered lip will show more. [Record](docs/superpowers/plans/2026-09-25-g3-water-shading.md).
 - [x] G4: foam carried by the solver's currents in the physical mode: dense whitewater from bore dissipation and lip splashes decays into a lace that lasts longest on the Beach, drawn as a patchy lace network that drifts with the flow, with bubbles under the bores. The legacy wave keeps its soft foam tint. [Record](docs/superpowers/plans/2026-09-25-g4-advected-foam.md).
-- [ ] P4: board velocity at hull depth, paddle retune, drop and angle tests, rider fall in the orbital flow.
+- [ ] P4: the board on physical waves, delivered in the sub-phases of the board and surfer physics plan (branch `codex/board-surfer-physics-proposal`, B0–B4):
+  - [x] P4a: the physical surf zone runs in a Web Worker behind a snapshot host; the main thread spends 0.10 ms per physical frame (10.8 ms before) and a spot's spin-up no longer freezes the page. The worker step is 5.8 ms against the 4 ms gate, a risk for the board phases. [Record](docs/superpowers/plans/2026-09-25-p4a-surf-zone-worker.md).
+  - [ ] P4b: `SurfWater` sampling seam (surface, normal, wet/dry, outside-domain, flow at body depth, breaking) over legacy and physical water; legacy board on the seam with bit-identical replays; bicubic sampling; baseline traces.
+  - [ ] P4c–P4f: rigid board body, rider contacts and pop-up, fins and breaking, fall, paddling and catch calibration, practice and natural modes.
 ### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `Backlog`
 
 ## Current milestone — sustained wave and physical wipeout — `Done for prototype`
