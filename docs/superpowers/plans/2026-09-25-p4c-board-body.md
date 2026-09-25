@@ -33,8 +33,24 @@
 - **Rocker:** 3.5 cm at the tail and 12.5 cm at the nose, typical of shortboards.
 - **Thickness:** peaks at the stringer; rails taper across the width.
 - **Hull:** a flat bottom across (no vee or concave). The shell's mass is spread in proportion to volume.
-- **C_n:** calibrated once against Savitsky's dynamic lift for a flat plate (λ = 3, τ = 4°, C_V = 5), not tuned for feel.
+- **C_n:** calibrated once against Savitsky's dynamic lift for a flat plate (λ = 3, τ = 4°, C_V = 5), not tuned for feel. Uniform patch pressure scales with λ where Savitsky's lift scales with √λ, so one coefficient holds within ±25 % only over a surfboard's planing range (τ 3–7°, λ 2–4, about 4–8 m/s with a rider).
+- **Waterline ramp:** a patch wets over 1 cm centred on the waterline, so the force stays continuous as the waterline crosses a patch without shortening a sloping hull's wetted length.
 - **No lateral resistance yet:** there are no fins or rails; they are P4e.
+
+## Alignment with the surfer plan (merged from `main`, 2026-09-25)
+
+[`surfer-physics-p4-plan.md`](../../research/surfer-physics-p4-plan.md) and the detached surfer kernel on `main` (`DetachedSurfer`, `BoardRecovery`, `PhysicalBodyWaterField`) set these requirements for this phase:
+
+- **`BoardBody` implements `BoardContactBody`:** position, orientation, contact-box `halfExtents`, `inverseMass`, `velocityAt`, `inverseEffectiveMass` and `applyImpulse`. The detached surfer, its board strikes and `BoardRecovery` then act on the physical board directly. The frame already matches: x across, y up, z toward the nose. The contact box is centred on the centre of mass.
+- **One water constant:** hull forces use `SEAWATER_DENSITY` (1025 kg/m³). `DetachedSurfer` still uses 1000 for water and lip parcels, and should switch to the shared constant.
+- **One body sampler:** `PhysicalBodyWaterField` duplicates `PhysicalSurfWater` with different choices:
+  - its surface is bilinear on solver cells, where `PhysicalSurfWater` uses Catmull-Rom over the render nodes;
+  - its profile fades with breaking and is capped at 1.5, where ours switches to bore flow above B = 0.3 and is capped at 2;
+  - it caps horizontal speed at 12 m/s and vertical speed at 3 m/s.
+
+  The surfer plan asks for one shared sampler and a single force law. When the surfer moves into the worker, it should sample through `SurfWater`, via a `BodyWaterField` adapter, and the two sets of bounds should be reconciled. This phase does not change the surfer's files.
+- **Step order:** the worker's order is fixed and tested: water step → body samples → body integration → reactions → snapshot. Each reaction is applied once, from the simulated pose, never from a render-interpolated one. Lip contact slots in after sampling, in a later phase.
+- **Explicit domain status:** a drifting board that leaves the window reports `outsideDomain` and gets no water force. It is never held up by a clamped edge cell. Moving the window with the board belongs to the ride phase.
 
 ## Tasks
 
@@ -63,7 +79,7 @@
 - Commit `feat: add planing, buoyancy and friction forces on hull patches`.
 
 ### Task 3: BoardBody
-- `src/physics/BoardBody.ts`: state; `step(dt, water)` with substeps; payloads; reactions; an energy ledger (work by gravity, water pressure and buoyancy, and friction).
+- `src/physics/BoardBody.ts`: state; `step(dt, water)` with substeps; payloads; reactions; an energy ledger (work by gravity, water pressure and buoyancy, and friction); implements `BoardContactBody`.
 - Tests (a flat still channel, and an analytic tilted-plane `SurfWater` stub):
   - the bare board floats at m/ρ displaced volume (to 3 %) and settles level;
   - a +20 kg payload floats deeper, and a +75 kg payload sinks: the board floats 26.4 kg at most;
@@ -72,13 +88,16 @@
   - a slide down the tilted plane reaches 0.9–1.0 × √(2gΔh), with the ledger closed (§1.10 drop test);
   - the board drifts to a uniform current's velocity;
   - 1/60 and 1/120 s steps agree to tolerance;
-  - identical runs are bit-identical.
+  - identical runs are bit-identical;
+  - a detached surfer striking the floating board exchanges equal and opposite momentum (the `BoardContactBody` seam).
 - Commit `feat: float, drop and plane a rigid board body on sampled water`.
 
 ### Task 4: A board in the physical surf zone
 - The runner (and worker) carry an optional `BoardBody` on `PhysicalSurfWater`, spawned in the lineup offshore of the break; snapshots add its pose. `PhysicalMode` draws a reference-size board mesh there.
 - Tests:
   - worker and local snapshots stay bit-identical with the board;
+  - the step order is water → sample → integrate → react → snapshot, with each reaction applied once;
+  - a board beyond the window is flagged outside the domain and gets no water force;
   - the board floats on every spot's still water at its draft;
   - on the Beach it is moved by passing waves and stays finite.
 - Commit `feat: float a board on the physical surf zone`.
