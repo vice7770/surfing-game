@@ -66,6 +66,11 @@ export class Environment {
   }
 
   get sunPosition() { return this.sun.position; }
+
+  /** The legacy coastline cards sit offshore in the physical tank's frame, so that mode hides them. */
+  showCoastline(visible: boolean): void {
+    this.coastline.forEach((mesh) => { mesh.visible = visible; });
+  }
   get sunMesh() { return this.sun; }
 
   setSpot(spot: 'training' | 'point' | 'reef' | 'custom'): void {

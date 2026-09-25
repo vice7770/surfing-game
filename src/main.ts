@@ -18,6 +18,7 @@ import {
 import { Controls } from './game/Controls';
 import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
+import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, formatPhysicalReadout, spreadingFor, type PhysicalSettings } from './game/PhysicalMode';
 import { BoardPhysics, type BoardDiagnostics, type PhysicsSettings } from './physics/BoardPhysics';
 import { CameraRig } from './scene/CameraRig';
 import { BoardWake } from './scene/BoardWake';
@@ -33,6 +34,7 @@ import { PlungingSheet } from './wave/PlungingSheet';
 import { Hud } from './ui/Hud';
 import { PhysicsReadoutPanel } from './ui/PhysicsReadoutPanel';
 import { describeSwell, formatSwellReadout } from './wave/SwellReadout';
+import type { SpotName } from './wave/Bathymetry';
 import './style.css';
 
 interface TuningSettings extends WaveSettings, PhysicsSettings { sunHeight: number; sunDirection: number; timeScale: number }
@@ -56,6 +58,9 @@ const SPOT_NAMES: Record<Spot, string> = {
   training: 'PACIFIC TRAINING BREAK', point: 'GLASSY POINT', reef: 'WINDY REEF', custom: 'CUSTOM BREAK',
 };
 const demoMode = new URLSearchParams(window.location.search).get('demo');
+type WaterModel = 'legacy' | 'physical';
+/** `?physical` opens the view-only physical surf zone (plan P2c, option a). */
+const physicalRequested = new URLSearchParams(window.location.search).has('physical');
 
 function getElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -110,6 +115,12 @@ class SurfGame {
   private readonly underwaterFog = new FogExp2('#367e83', 0.035);
   private readonly underwaterColor = new Color('#367e83');
   private readonly skyColor = new Color('#b8e3e5');
+  private readonly physicalMode: PhysicalMode;
+  private mode: WaterModel = physicalRequested ? 'physical' : 'legacy';
+  private draftMode: WaterModel = this.mode;
+  private physicalSettings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
+  private draftPhysical: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
+  private readoutClock = 0;
 
   constructor() {
     this.renderer = new WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -138,6 +149,7 @@ class SurfGame {
     this.water.mesh.material.envMapIntensity = 0.28;
     this.scene.add(this.water.mesh, this.sheetMesh.mesh);
     this.scene.add(this.seabed.mesh);
+    this.physicalMode = new PhysicalMode(this.scene);
     this.physics = this.createPhysics(this.wave, this.activeSettings, this.plungingSheet);
     this.lastDiagnostics = this.physics.diagnostics();
     this.scene.add(this.surfer.group);
@@ -162,10 +174,15 @@ class SurfGame {
     this.bindUi();
     this.resize();
     window.addEventListener('resize', () => this.resize());
+    if (this.mode === 'physical') this.startPhysical(this.seed, this.physicalSettings);
     requestAnimationFrame(this.frame);
   }
 
   replay = (): void => {
+    if (this.mode === 'physical') {
+      this.showLoadingThen(() => this.startPhysical(this.seed, this.physicalSettings));
+      return;
+    }
     this.startRun(this.seed, this.activeSettings, this.activeSpot);
     this.focusGame();
   };
@@ -180,7 +197,8 @@ class SurfGame {
   private startRun(seed: number, settings: TuningSettings, spot: Spot = this.activeSpot): void {
     const sunChanged = settings.sunHeight !== this.activeSettings.sunHeight
       || settings.sunDirection !== this.activeSettings.sunDirection;
-    const spotChanged = spot !== this.activeSpot;
+    const spotChanged = spot !== this.activeSpot || this.mode !== 'legacy';
+    this.leavePhysical();
     this.seed = seed;
     this.activeSettings = { ...settings };
     this.draftSettings = { ...settings };
@@ -219,8 +237,111 @@ class SurfGame {
   private newWave(): void {
     this.seed = (this.seed + 1) >>> 0;
     if (this.seed === 0) this.seed = 1;
-    this.startRun(this.seed, this.readDraftSettings(), this.draftSpot);
+    this.applyDraft(this.seed);
+  }
+
+  /** Start whichever water model the Wave Lab has selected, with the drafted settings. */
+  private applyDraft(seed: number): void {
+    if (this.draftMode === 'physical') {
+      const settings = this.readDraftPhysical();
+      this.showLoadingThen(() => this.startPhysical(seed, settings));
+      return;
+    }
+    this.startRun(seed, this.readDraftSettings(), this.draftSpot);
     this.focusGame();
+  }
+
+  private readDraftPhysical(): PhysicalSettings {
+    const number = (id: string): number => Number.parseFloat(getElement<HTMLInputElement>(id).value);
+    return {
+      spot: getElement<HTMLSelectElement>('#physical-spot').value as SpotName,
+      significantHeight: number('#hs-slider'),
+      peakPeriod: number('#tp-slider'),
+      directionDegrees: number('#direction-slider'),
+      spread: number('#spread-slider'),
+      tide: number('#tide-slider'),
+    };
+  }
+
+  /** Build the view-only physical surf zone and hide the legacy board, rider and HUD. */
+  private startPhysical(seed: number, settings: PhysicalSettings): void {
+    const shared = this.readDraftSettings();
+    const sunChanged = shared.sunHeight !== this.activeSettings.sunHeight || shared.sunDirection !== this.activeSettings.sunDirection;
+    this.activeSettings = { ...this.activeSettings, timeScale: shared.timeScale, sunHeight: shared.sunHeight, sunDirection: shared.sunDirection };
+    this.draftSettings = { ...this.activeSettings };
+    this.seed = seed;
+    this.mode = 'physical';
+    this.draftMode = 'physical';
+    this.physicalSettings = { ...settings };
+    this.draftPhysical = { ...settings };
+    this.physicalMode.start(settings, seed, this.water);
+    this.setLegacyVisible(false);
+    this.physicalMode.setVisible(true);
+    this.physicalMode.camera.setView('overview');
+    this.environment.showCoastline(false);
+    this.environment.group.scale.setScalar(5);
+    this.environment.group.position.set(this.physicalMode.focus.x, 0, this.physicalMode.focus.z);
+    if (sunChanged) {
+      this.environment.setSunPosition(shared.sunHeight, shared.sunDirection);
+      this.sunlight.position.copy(this.environment.sunPosition).normalize().multiplyScalar(45);
+      this.sunlight.intensity = 1.2 + 0.6 * shared.sunHeight;
+      this.refreshReflection();
+    }
+    getElement<HTMLElement>('#app').classList.add('is-physical');
+    getElement<HTMLElement>('#spot-name').textContent = `${settings.spot.toUpperCase()} · PHYSICAL SURF ZONE`;
+    getElement<HTMLElement>('#run-state').textContent = 'VIEW ONLY';
+    getElement<HTMLElement>('#seed-label').textContent = `SEED ${seed.toString().padStart(4, '0')}`;
+    this.accumulator = 0;
+    this.syncViewButtons();
+    this.refreshTuningUi();
+    this.renderPhysicalReadout();
+  }
+
+  /** Return to the playable legacy wave; startRun installs its water source. */
+  private leavePhysical(): void {
+    if (this.mode !== 'physical') return;
+    this.mode = 'legacy';
+    this.draftMode = 'legacy';
+    this.physicalMode.setVisible(false);
+    this.setLegacyVisible(true);
+    this.environment.showCoastline(true);
+    this.environment.group.scale.setScalar(1);
+    this.environment.group.position.set(0, 0, 0);
+    getElement<HTMLElement>('#app').classList.remove('is-physical');
+    this.syncViewButtons();
+  }
+
+  private setLegacyVisible(visible: boolean): void {
+    for (const object of [this.surfer.group, this.boardWake.trail, this.boardWake.spray, this.breakSpray.points, this.sheetMesh.mesh, this.seabed.mesh]) {
+      object.visible = visible;
+    }
+    const markers = visible && this.cameraRig.profile;
+    this.crestMarker.visible = markers;
+    this.contactMarkers.forEach((marker) => { marker.visible = markers; });
+  }
+
+  /** Show a loading card, let it paint, then run a blocking build such as the surf-zone spin-up. */
+  private showLoadingThen(action: () => void): void {
+    const loading = getElement<HTMLElement>('#loading');
+    loading.classList.remove('is-hidden');
+    requestAnimationFrame(() => setTimeout(() => {
+      action();
+      loading.classList.add('is-hidden');
+      this.focusGame();
+    }, 0));
+  }
+
+  private syncViewButtons(): void {
+    const physical = this.mode === 'physical';
+    const profile = physical ? this.physicalMode.camera.view === 'profile' : this.cameraRig.profile;
+    const below = physical ? this.physicalMode.camera.view === 'below' : this.cameraRig.underwater;
+    const diagnostic = getElement<HTMLButtonElement>('#diagnostic-toggle');
+    diagnostic.setAttribute('aria-pressed', String(profile));
+    diagnostic.classList.toggle('is-active', profile);
+    const underwater = getElement<HTMLButtonElement>('#underwater-toggle');
+    underwater.setAttribute('aria-pressed', String(below));
+    underwater.classList.toggle('is-active', below);
+    getElement<HTMLElement>('#app').classList.toggle('is-diagnostic', !physical && this.cameraRig.profile);
   }
 
   private readDraftSettings(): TuningSettings {
@@ -256,21 +377,34 @@ class SurfGame {
         this.refreshTuningUi();
       });
     }
+    for (const selector of ['#hs-slider', '#tp-slider', '#direction-slider', '#spread-slider', '#tide-slider', '#physical-spot']) {
+      getElement<HTMLInputElement>(selector).addEventListener(selector === '#physical-spot' ? 'change' : 'input', () => {
+        this.draftPhysical = this.readDraftPhysical();
+        this.refreshTuningUi();
+      });
+    }
+    getElement<HTMLSelectElement>('#model-select').addEventListener('change', (event) => {
+      this.draftMode = (event.currentTarget as HTMLSelectElement).value as WaterModel;
+      this.refreshTuningUi();
+    });
     getElement<HTMLSelectElement>('#spot-select').addEventListener('change', (event) => {
       const selected = (event.currentTarget as HTMLSelectElement).value as Spot;
       this.draftSpot = selected;
       if (selected !== 'custom') this.draftSettings = { ...SPOT_SETTINGS[selected] };
       this.refreshTuningUi();
     });
-    getElement<HTMLButtonElement>('#apply-button').addEventListener('click', () => {
-      this.startRun(this.seed, this.readDraftSettings(), this.draftSpot);
-      this.focusGame();
-    });
+    getElement<HTMLButtonElement>('#apply-button').addEventListener('click', () => this.applyDraft(this.seed));
     getElement<HTMLButtonElement>('#replay-button').addEventListener('click', this.replay);
     getElement<HTMLButtonElement>('#replay-action').addEventListener('click', this.replay);
     getElement<HTMLButtonElement>('#get-up-button').addEventListener('click', () => controls.requestGetUp());
     getElement<HTMLButtonElement>('#new-wave-button').addEventListener('click', () => this.newWave());
     getElement<HTMLButtonElement>('#diagnostic-toggle').addEventListener('click', (event) => {
+      if (this.mode === 'physical') {
+        this.physicalMode.camera.setView(this.physicalMode.camera.view === 'profile' ? 'overview' : 'profile');
+        this.syncViewButtons();
+        this.focusGame();
+        return;
+      }
       this.cameraRig.profile = !this.cameraRig.profile;
       const button = event.currentTarget as HTMLButtonElement;
       button.setAttribute('aria-pressed', String(this.cameraRig.profile));
@@ -281,6 +415,12 @@ class SurfGame {
       this.focusGame();
     });
     getElement<HTMLButtonElement>('#underwater-toggle').addEventListener('click', (event) => {
+      if (this.mode === 'physical') {
+        this.physicalMode.camera.setView(this.physicalMode.camera.view === 'below' ? 'overview' : 'below');
+        this.syncViewButtons();
+        this.focusGame();
+        return;
+      }
       this.cameraRig.underwater = !this.cameraRig.underwater;
       const button = event.currentTarget as HTMLButtonElement;
       button.setAttribute('aria-pressed', String(this.cameraRig.underwater));
@@ -306,7 +446,13 @@ class SurfGame {
     this.renderPhysicsReadout();
   }
 
+  private renderPhysicalReadout(): void {
+    getElement<HTMLElement>('#readout-summary').textContent = 'PHYSICAL SURF ZONE · STAGE 1 SOLVER';
+    this.readoutPanel.render(formatPhysicalReadout(this.physicalMode.simulation));
+  }
+
   private renderPhysicsReadout(): void {
+    getElement<HTMLElement>('#readout-summary').textContent = 'PHYSICS READOUT · LINEAR WAVE THEORY';
     const settings = this.activeSettings;
     const readout = describeSwell({
       height: settings.height, period: settings.period, depth: this.wave.meanDepth, bedSlope: this.wave.maxBedSlope(),
@@ -339,7 +485,26 @@ class SurfGame {
     getElement<HTMLOutputElement>('#sun-direction-output').value = `${values.sunDirection}°`;
     getElement<HTMLInputElement>('#time-scale-slider').value = String(values.timeScale);
     getElement<HTMLOutputElement>('#time-scale-output').value = `${values.timeScale.toFixed(2)}×`;
-    const changed = this.draftSpot !== this.activeSpot || Object.keys(DEFAULT_SETTINGS).some((key) => values[key as keyof TuningSettings] !== this.activeSettings[key as keyof TuningSettings]);
+    getElement<HTMLSelectElement>('#model-select').value = this.draftMode;
+    getElement<HTMLElement>('#legacy-controls').hidden = this.draftMode !== 'legacy';
+    getElement<HTMLElement>('#physical-controls').hidden = this.draftMode !== 'physical';
+    const physical = this.draftPhysical;
+    getElement<HTMLSelectElement>('#physical-spot').value = physical.spot;
+    getElement<HTMLInputElement>('#hs-slider').value = String(physical.significantHeight);
+    getElement<HTMLInputElement>('#tp-slider').value = String(physical.peakPeriod);
+    getElement<HTMLInputElement>('#direction-slider').value = String(physical.directionDegrees);
+    getElement<HTMLInputElement>('#spread-slider').value = String(physical.spread);
+    getElement<HTMLInputElement>('#tide-slider').value = String(physical.tide);
+    getElement<HTMLOutputElement>('#hs-output').value = `${physical.significantHeight.toFixed(1)} m`;
+    getElement<HTMLOutputElement>('#tp-output').value = `${physical.peakPeriod.toFixed(1)} s`;
+    getElement<HTMLOutputElement>('#direction-output').value = `${physical.directionDegrees}°`;
+    const spreadName = physical.spread < 0.34 ? 'groundswell' : physical.spread < 0.67 ? 'mixed' : 'windswell';
+    getElement<HTMLOutputElement>('#spread-output').value = `${spreadName} · s ${spreadingFor(physical.spread).toFixed(0)}`;
+    getElement<HTMLOutputElement>('#tide-output').value = `${physical.tide.toFixed(1)} m`;
+    const sharedChanged = (['timeScale', 'sunHeight', 'sunDirection'] as const).some((key) => values[key] !== this.activeSettings[key]);
+    const changed = this.draftMode !== this.mode || (this.draftMode === 'physical'
+      ? sharedChanged || (Object.keys(physical) as Array<keyof PhysicalSettings>).some((key) => physical[key] !== this.physicalSettings[key])
+      : this.draftSpot !== this.activeSpot || Object.keys(DEFAULT_SETTINGS).some((key) => values[key as keyof TuningSettings] !== this.activeSettings[key as keyof TuningSettings]));
     getElement<HTMLElement>('#pending-note').hidden = !changed;
     getElement<HTMLButtonElement>('#apply-button').disabled = !changed;
   }
@@ -358,6 +523,11 @@ class SurfGame {
       }
     }
     const simElapsed = simulatedSeconds(elapsed, this.activeSettings.timeScale);
+    if (this.mode === 'physical') {
+      this.physicalFrame(elapsed, simElapsed);
+      requestAnimationFrame(this.frame);
+      return;
+    }
     this.accumulator = Math.min(this.accumulator + simElapsed, this.fixedStep * 6);
     let steps = 0;
     while (this.accumulator >= this.fixedStep && steps < 5) {
@@ -397,6 +567,26 @@ class SurfGame {
     this.updateHud();
     requestAnimationFrame(this.frame);
   };
+
+  /** One frame of the view-only physical surf zone: fixed solver steps, render, 4 Hz readout. */
+  private physicalFrame(elapsed: number, simElapsed: number): void {
+    this.accumulator = Math.min(this.accumulator + simElapsed, this.fixedStep * 4);
+    let steps = 0;
+    while (this.accumulator >= this.fixedStep && steps < 3) {
+      this.physicalMode.step(this.fixedStep);
+      this.accumulator -= this.fixedStep;
+      steps += 1;
+    }
+    this.water.update();
+    this.physicalMode.update(simElapsed || this.fixedStep);
+    this.setUnderwater(this.physicalMode.cameraBelowSurface());
+    this.renderer.render(this.scene, this.physicalMode.camera.camera);
+    this.readoutClock += elapsed;
+    if (this.readoutClock >= 0.25) {
+      this.readoutClock = 0;
+      this.renderPhysicalReadout();
+    }
+  }
 
   private updateHud(): void {
     this.hud.update(this.seed, this.activeSettings, this.lastDiagnostics, this.fps);
@@ -450,7 +640,11 @@ class SurfGame {
     this.environment.group.visible = true;
     this.scene.fog = null;
     this.scene.background = this.skyColor;
-    const hidden = [this.water.mesh, this.sheetMesh.mesh, this.surfer.group,
+    const previousScale = this.environment.group.scale.x;
+    const previousPosition = this.environment.group.position.clone();
+    this.environment.group.scale.setScalar(1);
+    this.environment.group.position.set(0, 0, 0);
+    const hidden = [this.water.mesh, this.sheetMesh.mesh, this.surfer.group, this.physicalMode.seabed.mesh,
       this.boardWake.trail, this.boardWake.spray, this.breakSpray.points, this.seabed.mesh,
       this.crestMarker, this.environment.sunMesh, ...this.contactMarkers];
     const visibility = hidden.map((object) => object.visible);
@@ -469,6 +663,8 @@ class SurfGame {
     pmrem.dispose();
     hidden.forEach((object, index) => { object.visible = visibility[index]; });
     this.environment.group.visible = previousEnvironmentVisibility;
+    this.environment.group.scale.setScalar(previousScale);
+    this.environment.group.position.copy(previousPosition);
     this.scene.fog = previousFog;
     this.scene.background = previousBackground;
   }
@@ -478,7 +674,11 @@ class SurfGame {
     const surface = this.wave.heightAt(camera.x, camera.z);
     if (!this.isBelowSurface && camera.y < surface - 0.14) this.isBelowSurface = true;
     else if (this.isBelowSurface && camera.y > surface + 0.18) this.isBelowSurface = false;
-    const below = this.isBelowSurface;
+    this.setUnderwater(this.isBelowSurface);
+  }
+
+  private setUnderwater(below: boolean): void {
+    this.isBelowSurface = below;
     if (this.environment.group.visible === below) {
       this.scene.fog = below ? this.underwaterFog : null;
       this.scene.background = below ? this.underwaterColor : this.skyColor;
@@ -495,6 +695,7 @@ class SurfGame {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.cameraRig.camera.aspect = window.innerWidth / Math.max(1, window.innerHeight);
     this.cameraRig.camera.updateProjectionMatrix();
+    this.physicalMode.camera.resize(window.innerWidth / Math.max(1, window.innerHeight));
   }
 }
 
