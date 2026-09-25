@@ -17,7 +17,7 @@ The repository began with a playable analytic traveling-wave baseline. The curre
 - **Pop-up:** paddle to build speed; expose Get Up through a button and Enter only when speed and local wave conditions permit. Early attempts do nothing. The cue should come mainly from visible wave/board behavior, not a persistent HUD tutorial.
 - **Determinism:** seeded PRNG only for generated wave variation. Run state and tuning snapshot are immutable per attempt. Replay resets all time/state/PRNG inputs. New Wave changes seed; it does not silently overwrite explicit slider values.
 - **Visual style:** polished but intentionally stylized surf demo, with a third-person chase camera, visible crest and board, cyan/teal palette, foam accents, and a diagnostic profile mode.
-- **Future water rendering:** study reflection/refraction, caustics, disturbances, and underwater appearance from [ThreeJS-water](https://github.com/martinRenou/threejs-water), plus sun/sky controls from the [Three.js ocean shader](https://threejs.org/examples/webgl_shaders_ocean). Adapt pool-demo assumptions carefully for open surf; visual effects must follow the authoritative surface without creating a second water-simulation state.
+- **Future water rendering:** study reflection/refraction, caustics, disturbances, and underwater appearance from [ThreeJS-water](https://github.com/martinRenou/threejs-water), plus sun/sky controls from the [Three.js ocean shader](https://threejs.org/examples/webgl_shaders_ocean). Adapt pool-demo assumptions carefully for open surf; bulk-water effects follow the authoritative height field, while the detached lip has its own bounded 3D state described in ADR 0003.
 
 ## Module boundaries
 
@@ -26,8 +26,10 @@ src/
   main.ts                 # boot, renderer, scene, resize, animation loop
   game/Controls.ts        # keyboard and touch input normalization
   wave/WaveModel.ts       # seeded interactive water field and shared sampling
+  wave/PlungingSheet.ts   # bounded 3D lip parcels and collision
   physics/BoardPhysics.ts # fixed-step board/rider integration and forces
-  scene/WaterSurface.ts   # mesh deformation, foam lip, water material
+  scene/WaterSurface.ts   # bulk-water mesh, foam, and material
+  scene/PlungingSheetMesh.ts # lip mesh from collidable parcel state
   scene/BoardWake.ts      # visual trail and spray from physical board motion
   scene/Environment.ts    # static sky, sun, and coastline
   scene/Surfer.ts         # board and simple rider meshes
@@ -54,7 +56,7 @@ The analytic baseline is committed as `1fe7ecc` and the playable prototype as `5
 
 ## Risks and boundaries
 
-- A height field can depict a peeling, dissipating break but cannot represent an overturning/overhanging barrel. Defer full barrel geometry and reforming whitewater; realism claims remain qualitative until measured calibration is planned.
+- A height field can depict a peeling, dissipating break but cannot represent an overturning barrel. A bounded 3D parcel sheet now provides local overhang geometry and rider collision; full tube flow and reforming whitewater remain outside this hybrid model. Realism claims remain qualitative until measured calibration is planned.
 - A future GPU water state could be difficult to sample synchronously from CPU board physics. Any WebGPU exploration must prove synchronization and avoid rendering a field that differs from the physics field.
 - WebGPU compute may constrain browser support. WebGL 2 remains the baseline; do not assume renderer fallback proves compute-example compatibility.
 - Recomputing mesh normals and vertices can be expensive. Keep the mesh bounded around the camera/board, choose moderate subdivisions, and profile before increasing resolution.

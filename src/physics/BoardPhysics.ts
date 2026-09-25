@@ -1,5 +1,6 @@
 import { Euler, Vector3 } from 'three';
 import type { InteractiveWaterField } from '../wave/WaveModel';
+import type { PlungingSheet } from '../wave/PlungingSheet';
 
 export type RunState = 'ready' | 'paddling' | 'pop-up-available' | 'catching' | 'riding' | 'missed' | 'wipeout' | 'complete';
 
@@ -25,6 +26,7 @@ export interface BoardDiagnostics {
   distanceToCrest: number;
   popUpAvailable: boolean;
   breaking: number;
+  lipImpact: number;
   lateralSpeed: number;
   pathTurnRate: number;
   balance: number;
@@ -53,6 +55,7 @@ export class BoardPhysics {
   private lastCrestDistance = 0;
   private missedTime = 0;
   private lastBreaking = 0;
+  private lastLipImpact = 0;
   private lastLateralSpeed = 0;
   private lastPathTurnRate = 0;
   private balance = 1;
@@ -71,7 +74,8 @@ export class BoardPhysics {
     new Vector3(0.22, -0.08, 1.05),
   ];
 
-  constructor(readonly wave: InteractiveWaterField, readonly settings: PhysicsSettings) {}
+  constructor(readonly wave: InteractiveWaterField, readonly settings: PhysicsSettings,
+    readonly plungingSheet?: PlungingSheet) {}
 
   get contactPoints(): Vector3[] {
     return this.contacts.map((local) => local.clone().applyEuler(this.rotation).add(this.position));
@@ -82,6 +86,7 @@ export class BoardPhysics {
   step(dt: number, input: BoardInput): BoardDiagnostics {
     if (this.isTerminal()) return this.diagnostics();
     this.wave.step(dt);
+    this.plungingSheet?.step(dt);
     this.time += dt;
     if (input.paddle && this.state === 'ready') this.state = 'paddling';
 
@@ -214,6 +219,20 @@ export class BoardPhysics {
     this.position.x = Math.max(this.wave.xMin + 2, Math.min(this.wave.xMin + (this.wave.nx - 1) * this.wave.spacing - 2, this.position.x));
     this.position.y = Math.max(-0.7, Math.min(2.8, this.position.y));
 
+    this.lastLipImpact *= Math.exp(-3 * dt);
+    if (this.plungingSheet) {
+      const standing = this.state === 'catching' || this.state === 'riding';
+      const riderCenter = this.position.clone().add(new Vector3(0, standing ? 0.75 : 0.28, 0));
+      const impact = this.plungingSheet.resolveSphere(riderCenter, standing ? 0.34 : 0.27, this.velocity);
+      if (impact) {
+        this.velocity.addScaledVector(impact.impulse, 1 / (this.boardMass + this.riderMass));
+        this.position.addScaledVector(impact.normal, Math.min(0.05, impact.penetration * 0.2));
+        const impactStrength = impact.impulse.length() / 42;
+        this.lastLipImpact = Math.max(this.lastLipImpact, impactStrength);
+        if (this.state === 'riding') this.balance = Math.max(0, this.balance - impactStrength * 0.06);
+      }
+    }
+
     let worstPenetration = 0;
     let meanSurfaceVelocityY = 0;
     const movedContacts = this.contactPoints;
@@ -332,6 +351,8 @@ export class BoardPhysics {
     this.lastCrestDistance = 0;
     this.missedTime = 0;
     this.lastBreaking = 0;
+    this.lastLipImpact = 0;
+    this.plungingSheet?.reset();
     this.lastLateralSpeed = 0;
     this.lastPathTurnRate = 0;
     this.balance = 1;
@@ -360,6 +381,7 @@ export class BoardPhysics {
       distanceToCrest: this.lastCrestDistance || crestDistance,
       popUpAvailable: this.state === 'pop-up-available',
       breaking: this.lastBreaking,
+      lipImpact: this.lastLipImpact,
       lateralSpeed: this.lastLateralSpeed,
       pathTurnRate: this.lastPathTurnRate,
       balance: this.balance,

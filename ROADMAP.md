@@ -65,7 +65,7 @@ Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status 
 
 ## Repository state
 
-- [x] The analytic baseline is `1fe7ecc`, the playable prototype is `52ede4e`, and the surf shelf is `88d501e` on local `main`. `origin/main` is still at the baseline.
+- [x] The analytic baseline is `1fe7ecc`; the playable prototype and physics increments are committed on local `main`. `origin/main` is still at the baseline.
 
 ## Next milestone — physics fidelity and learning tools
 
@@ -102,7 +102,7 @@ Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status 
 ### P2 · Breaking-wave behavior — `Done for this height-field prototype`
 
 - [x] Investigate breaking, spilling/reforming waves, whitewater, and overturning/overhang representations in [the decision note](docs/research/breaking-wave-representations.md).
-- [x] Keep the height field as gameplay authority for this prototype; add a bounded visual curl, decaying whitewater, and pooled spray. Interactive barrel collision/flow would require a separate 3D authority decision.
+- [x] Keep the height field as bulk-water authority; add a bounded curling lip, decaying whitewater, and pooled spray. The lip now has a separate 3D parcel/collision authority described in [ADR 0003](docs/adr/0003-plunging-sheet-collision.md).
 
 ### P2 · Board, rider, and environment fidelity — `Done for prototype`
 
@@ -118,7 +118,8 @@ Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status 
 ### Further work after this prototype — `Ready`
 
 - [ ] Gather comparable measured board/fin and wave data if quantitative hydrodynamic validation becomes a goal.
-- [ ] Prototype a separate 3D water/collision authority before promising an interactive plunging barrel or tube.
+- [x] Prototype a separate 3D plunging-water and collision authority, rendered from the same evolving parcels that contact the rider/board. Keep the height field as bulk-water authority and document the hybrid limit in [ADR 0003](docs/adr/0003-plunging-sheet-collision.md).
+- [ ] Decide whether a full interactive barrel needs volumetric water and air flow beyond this bounded sheet.
 - [ ] Evaluate a low-resolution live scene reflection pass and physical-looking refraction only if playtesting shows a clear visual benefit and frame-time headroom.
 
 ## Existing baseline — `Done`

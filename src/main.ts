@@ -24,8 +24,10 @@ import { BreakSpray } from './scene/BreakSpray';
 import { Environment } from './scene/Environment';
 import { Surfer } from './scene/Surfer';
 import { Seabed } from './scene/Seabed';
+import { PlungingSheetMesh } from './scene/PlungingSheetMesh';
 import { WaterSurface } from './scene/WaterSurface';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField, type WaveSettings } from './wave/WaveModel';
+import { PlungingSheet } from './wave/PlungingSheet';
 import { Hud } from './ui/Hud';
 import './style.css';
 
@@ -68,6 +70,7 @@ class SurfGame {
   private readonly breakSpray = new BreakSpray();
   private readonly environment = new Environment();
   private readonly seabed = new Seabed();
+  private readonly sheetMesh: PlungingSheetMesh;
   private readonly sunlight: DirectionalLight;
   private reflectionMapTarget?: WebGLRenderTarget;
   private readonly hud = new Hud();
@@ -76,6 +79,7 @@ class SurfGame {
   private readonly contactMarkers: Mesh[] = [];
   private readonly water: WaterSurface;
   private wave: InteractiveWaterField;
+  private plungingSheet: PlungingSheet;
   private physics: BoardPhysics;
   private seed = 1;
   private activeSettings = { ...DEFAULT_SETTINGS };
@@ -91,7 +95,7 @@ class SurfGame {
   private lastPaddle = false;
   private recordedTerminal = false;
   private runMeasurements = {
-    peakSpeed: 0, peakBreaking: 0, peakFlow: 0, lowestBalance: 1,
+    peakSpeed: 0, peakBreaking: 0, peakLipImpact: 0, peakFlow: 0, lowestBalance: 1,
     popUpAt: null as number | null, ridingAt: null as number | null,
   };
   private readonly fixedStep = 1 / 60;
@@ -121,11 +125,13 @@ class SurfGame {
     this.scene.add(fill);
 
     this.wave = new InteractiveWaterField(this.seed, this.activeSettings);
+    this.plungingSheet = new PlungingSheet(this.wave);
+    this.sheetMesh = new PlungingSheetMesh(this.plungingSheet);
     this.water = new WaterSurface(this.wave);
     this.water.mesh.material.envMapIntensity = 0.28;
-    this.scene.add(this.water.mesh, this.water.lipMesh);
+    this.scene.add(this.water.mesh, this.sheetMesh.mesh);
     this.scene.add(this.seabed.mesh);
-    this.physics = this.createPhysics(this.wave, this.activeSettings);
+    this.physics = this.createPhysics(this.wave, this.activeSettings, this.plungingSheet);
     this.lastDiagnostics = this.physics.diagnostics();
     this.scene.add(this.surfer.group);
     this.scene.add(this.boardWake.trail, this.boardWake.spray, this.breakSpray.points);
@@ -157,11 +163,11 @@ class SurfGame {
     this.focusGame();
   };
 
-  private createPhysics(wave: InteractiveWaterField, settings: TuningSettings): BoardPhysics {
+  private createPhysics(wave: InteractiveWaterField, settings: TuningSettings, sheet: PlungingSheet): BoardPhysics {
     return new BoardPhysics(wave, {
       paddleForce: settings.paddleForce,
       boardResponse: settings.boardResponse,
-    });
+    }, sheet);
   }
 
   private startRun(seed: number, settings: TuningSettings, spot: Spot = this.activeSpot): void {
@@ -175,8 +181,10 @@ class SurfGame {
     this.draftSpot = spot;
     getElement<HTMLElement>('#spot-name').textContent = SPOT_NAMES[spot];
     this.wave = new InteractiveWaterField(this.seed, this.activeSettings);
+    this.plungingSheet = new PlungingSheet(this.wave);
     this.water.setWave(this.wave);
-    this.physics = this.createPhysics(this.wave, this.activeSettings);
+    this.physics = this.createPhysics(this.wave, this.activeSettings, this.plungingSheet);
+    this.sheetMesh.update(this.plungingSheet);
     if (sunChanged || spotChanged) {
       this.environment.setSunPosition(settings.sunHeight, settings.sunDirection);
       this.environment.setSpot(spot);
@@ -189,7 +197,7 @@ class SurfGame {
     this.lastPaddle = false;
     this.recordedTerminal = false;
     this.runMeasurements = {
-      peakSpeed: 0, peakBreaking: 0, peakFlow: 0, lowestBalance: 1,
+      peakSpeed: 0, peakBreaking: 0, peakLipImpact: 0, peakFlow: 0, lowestBalance: 1,
       popUpAt: null, ridingAt: null,
     };
     this.lastDiagnostics = this.physics.diagnostics();
@@ -349,6 +357,7 @@ class SurfGame {
     }
 
     this.water.update();
+    this.sheetMesh.update(this.plungingSheet);
     this.seabed.update(this.wave);
     this.breakSpray.update(this.wave);
     const crestZ = this.wave.crestZ();
@@ -372,6 +381,7 @@ class SurfGame {
     const values = this.runMeasurements;
     values.peakSpeed = Math.max(values.peakSpeed, diagnostics.speed);
     values.peakBreaking = Math.max(values.peakBreaking, diagnostics.breaking);
+    values.peakLipImpact = Math.max(values.peakLipImpact, diagnostics.lipImpact);
     values.peakFlow = Math.max(values.peakFlow, diagnostics.flow);
     values.lowestBalance = Math.min(values.lowestBalance, diagnostics.balance);
     if (diagnostics.state === 'catching' && values.popUpAt === null) values.popUpAt = this.physics.time;
@@ -402,7 +412,7 @@ class SurfGame {
       const item = document.createElement('li');
       item.textContent = `SEED ${report.seed.toString().padStart(4, '0')} · ${report.outcome.toUpperCase()} · ${report.rideDistance.toFixed(1)} m`;
       const detail = document.createElement('small');
-      detail.textContent = `${report.spot ?? 'SURF BREAK'} · ${report.reason} Peak ${report.peakSpeed.toFixed(1)} m/s, break ${Math.round(report.peakBreaking * 100)}%.`;
+      detail.textContent = `${report.spot ?? 'SURF BREAK'} · ${report.reason} Peak ${report.peakSpeed.toFixed(1)} m/s, break ${Math.round(report.peakBreaking * 100)}%, lip hit ${Math.round((report.peakLipImpact ?? 0) * 100)}%.`;
       item.append(detail);
       list.append(item);
     }
@@ -415,7 +425,7 @@ class SurfGame {
     this.environment.group.visible = true;
     this.scene.fog = null;
     this.scene.background = this.skyColor;
-    const hidden = [this.water.mesh, this.water.lipMesh, this.surfer.group,
+    const hidden = [this.water.mesh, this.sheetMesh.mesh, this.surfer.group,
       this.boardWake.trail, this.boardWake.spray, this.breakSpray.points, this.seabed.mesh,
       this.crestMarker, this.environment.sunMesh, ...this.contactMarkers];
     const visibility = hidden.map((object) => object.visible);

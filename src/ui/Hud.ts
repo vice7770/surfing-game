@@ -35,6 +35,7 @@ export class Hud {
   private readonly app = document.querySelector<HTMLElement>('#app')!;
   private readonly rideMetrics = document.querySelector<HTMLElement>('#ride-metrics')!;
   private readonly breaking = document.querySelector<HTMLElement>('#breaking-value')!;
+  private readonly lipImpact = document.querySelector<HTMLElement>('#lip-impact-value')!;
   private readonly balance = document.querySelector<HTMLElement>('#balance-value')!;
   private readonly flow = document.querySelector<HTMLElement>('#flow-value')!;
   private readonly flowFill = document.querySelector<HTMLElement>('#flow-fill')!;
@@ -63,6 +64,7 @@ export class Hud {
       || diagnostics.state === 'complete' || diagnostics.state === 'wipeout';
     this.rideMetrics.hidden = !inRide;
     this.breaking.textContent = Math.round(diagnostics.breaking * 100).toString();
+    this.lipImpact.textContent = Math.round(diagnostics.lipImpact * 100).toString();
     this.balance.textContent = Math.round(diagnostics.balance * 100).toString();
     this.flow.textContent = Math.round(diagnostics.flow * 100).toString();
     this.flowFill.style.width = `${Math.round(diagnostics.flow * 100)}%`;

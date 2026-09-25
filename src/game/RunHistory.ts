@@ -12,6 +12,7 @@ export interface RunReport {
   peakSpeed: number;
   peakBreaking: number;
   peakFlow: number;
+  peakLipImpact?: number;
   lowestBalance: number;
   popUpAt: number | null;
   ridingAt: number | null;
