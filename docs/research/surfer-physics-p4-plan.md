@@ -1,6 +1,6 @@
 # Surfer physics on the physical waves · P4 proposal
 
-Status: **confirmed design, planning only**, 2026-09-25. This plan records the surfer-specific decisions confirmed in Q24–Q41. It refines the [board and surfer plan](board-surfer-physics-plan.md) and [validation protocol](board-surfer-validation-protocol.md); it does not implement or retune either solver. The implementation snapshot below is the active wave branch at `c3fce46`, not a claim about `main`.
+Status: **confirmed design; isolated surfer-kernel prototype started**, 2026-09-25. This plan records the surfer-specific decisions confirmed in Q24–Q41. It refines the [board and surfer plan](board-surfer-physics-plan.md) and [validation protocol](board-surfer-validation-protocol.md); no wave solver or playable mode has been changed. The implementation snapshot below is the active wave branch at `c3fce46`, not a claim about `main`.
 
 ## Goal and boundary
 
@@ -55,6 +55,10 @@ An input/diagnostic snapshot includes step and seed; segment transforms and velo
 | **S4: calibration and release** | Run practice and natural sets on the same force laws; tune body coefficients and controls using logged force budgets. Profile desktop and phone with the same physics rules. | The existing 30-second practice ride with real bottom/top turns; deterministic wipeout/recovery tests; seeded natural-wave outcome report; worker budget and documented approximations. |
 
 S0 is a contract gate, not a request for the wave agent to implement this entire plan. S1–S3 are sequential because water/body step ownership precedes trustworthy collisions, and a controllable swimmer needs a stable independent body. Advanced fall and swimming should not block the first playable physical-wave ride; each gate remains reviewable.
+
+### Independent kernel now available
+
+`src/physics/DetachedSurfer.ts` is an isolated, solver-independent foundation. Its seven mass points use a `BodyWaterField` sample at each node, preserve attached center-of-mass and point velocities on launch, and integrate gravity, displaced-volume buoyancy, water-relative drag, seabed contact and force-driven swim strokes. Controlled flat, opposing, following, sheared, breaking and outside-domain water fixtures exercise these behaviors. The existing procedural `Surfer` and `CameraRig` now accept the detached pose through separate methods; they are not called by legacy gameplay. This is **not S2 completion**: joints currently constrain link length only; angular joint limits, board/lip collision, remount, worker snapshots, runtime render binding and physical-wave calibration still need their gates. Legacy gameplay continues to use `RiderFall`.
 
 ## Acceptance scenarios and failure signals
 
