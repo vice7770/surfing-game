@@ -271,4 +271,49 @@ describe('DetachedSurfer on controlled water', () => {
     expect(contacted).toBe(true);
     expect(board.velocity.x).toBeGreaterThan(0);
   });
+
+  it('detects a swept lip parcel and retains its post-impact momentum', () => {
+    const body = new DetachedSurfer();
+    launch(body);
+    body.step(1 / 60, uniformWater());
+    const torso = body.nodes[1].position;
+    const parcel = {
+      id: 7,
+      previousPosition: new Vector3(-2, torso.y, torso.z),
+      position: new Vector3(2, torso.y, torso.z),
+      velocity: new Vector3(12, 0, 0),
+      volume: 0.02,
+      radius: 0.12,
+    };
+    const before = body.linearMomentum().addScaledVector(parcel.velocity, 1000 * parcel.volume);
+    const contacts = body.resolveLipContact(parcel);
+    const after = body.linearMomentum().addScaledVector(parcel.velocity, 1000 * parcel.volume);
+
+    expect(contacts).toBeGreaterThan(0);
+    expect(after.distanceTo(before)).toBeLessThan(1e-8);
+    expect(parcel.velocity.x).toBeLessThan(12);
+    const parcelVelocity = parcel.velocity.clone();
+    expect(body.resolveLipContact(parcel)).toBe(0);
+    expect(parcel.velocity.equals(parcelVelocity)).toBe(true);
+  });
+
+  it('bounds the impulse from a coarse parcel representing a large water volume', () => {
+    const body = new DetachedSurfer();
+    launch(body);
+    body.step(1 / 60, uniformWater());
+    const torso = body.nodes[1].position;
+    const before = body.nodes.map((node) => node.velocity.clone());
+    const parcel = {
+      id: 8,
+      previousPosition: new Vector3(-2, torso.y, torso.z),
+      position: new Vector3(2, torso.y, torso.z),
+      velocity: new Vector3(100, 0, 0),
+      volume: 100,
+      radius: 0.12,
+    };
+    expect(body.resolveLipContact(parcel)).toBeGreaterThan(0);
+    for (let index = 0; index < body.nodes.length; index += 1) {
+      expect(body.nodes[index].velocity.distanceTo(before[index])).toBeLessThanOrEqual(8 + 1e-9);
+    }
+  });
 });

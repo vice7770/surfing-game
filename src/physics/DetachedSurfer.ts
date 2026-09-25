@@ -38,6 +38,16 @@ export interface BoardContactBody {
   applyImpulse(impulse: Readonly<Vector3>, worldPoint: Readonly<Vector3>): void;
 }
 
+/** One coarse airborne water parcel. Its full momentum persists to landing. */
+export interface LipContactParcel {
+  readonly id: number;
+  readonly previousPosition: Readonly<Vector3>;
+  readonly position: Readonly<Vector3>;
+  readonly velocity: Vector3;
+  readonly volume: number;
+  readonly radius: number;
+}
+
 export type BodyPart = 'pelvis' | 'torso' | 'head' | 'leftArm' | 'rightArm' | 'leftLeg' | 'rightLeg';
 
 /** Read-only pose seam for the procedural surfer and recovery camera. */
@@ -88,6 +98,8 @@ const DEFAULT_BODY_DENSITY = 950;
 // Provisional contact parameters for the standalone kernel, not measured surf data.
 const BOARD_RESTITUTION = 0.05;
 const BOARD_FRICTION = 0.4;
+const LIP_CONTACT_FRACTION = 0.05;
+const MAX_LIP_BODY_DELTA_SPEED = 8;
 
 function clamp(value: number, low: number, high: number): number {
   return Math.min(high, Math.max(low, value));
@@ -172,6 +184,8 @@ export class DetachedSurfer implements DetachedRiderPose {
   heading = 0;
   outsideDomain = false;
   private contactPending = false;
+  private lipContactPending = false;
+  private readonly contactedLipIds = new Set<number>();
   private readonly previous: Vector3[];
   private readonly bedY: number[];
   private readonly sample: BodyWaterSample = {
@@ -193,6 +207,12 @@ export class DetachedSurfer implements DetachedRiderPose {
   private readonly boardImpulse = new Vector3();
   private readonly boardTangent = new Vector3();
   private readonly expandedHalf = new Vector3();
+  private readonly lipStart = new Vector3();
+  private readonly lipEnd = new Vector3();
+  private readonly lipTravel = new Vector3();
+  private readonly lipClosest = new Vector3();
+  private readonly lipRelativeVelocity = new Vector3();
+  private readonly lipImpulse = new Vector3();
 
   constructor(readonly bodyDensity = DEFAULT_BODY_DENSITY, readonly mass = totalMass) {
     if (!Number.isFinite(bodyDensity) || bodyDensity <= 0) throw new RangeError('body density must be finite and positive');
@@ -234,6 +254,8 @@ export class DetachedSurfer implements DetachedRiderPose {
     this.controlGain = 0;
     this.outsideDomain = false;
     this.contactPending = false;
+    this.lipContactPending = false;
+    this.contactedLipIds.clear();
   }
 
   centerOfMass(out = new Vector3()): Vector3 {
@@ -365,6 +387,53 @@ export class DetachedSurfer implements DetachedRiderPose {
     return contacts;
   }
 
+  /**
+   * Swept contact with a coarse airborne lip parcel. Only a bounded fraction
+   * of its mass participates in one strike; the equal opposite impulse changes
+   * the full parcel velocity so landing deposits its post-contact momentum.
+   * The wave adapter must provide a stable parcel id and updated velocity.
+   */
+  resolveLipContact(parcel: LipContactParcel): number {
+    if (!this.active || !this.lipContactPending || this.contactedLipIds.has(parcel.id)
+      || !(parcel.volume > 0 && parcel.radius > 0)) return 0;
+    this.contactedLipIds.add(parcel.id);
+    const parcelMass = WATER_DENSITY * parcel.volume;
+    let contacts = 0;
+    for (let index = 0; index < this.nodes.length; index += 1) {
+      const node = this.nodes[index];
+      const start = this.lipStart.subVectors(this.previous[index], parcel.previousPosition);
+      const end = this.lipEnd.subVectors(node.position, parcel.position);
+      const travel = this.lipTravel.subVectors(end, start);
+      const travelSquared = travel.lengthSq();
+      const combinedRadius = node.radius + parcel.radius;
+      const startOutside = start.lengthSq() > combinedRadius * combinedRadius;
+      let fraction = 0;
+      if (startOutside) {
+        if (travelSquared < 1e-12) continue;
+        const along = start.dot(travel);
+        const discriminant = along * along
+          - travelSquared * (start.lengthSq() - combinedRadius * combinedRadius);
+        if (discriminant < 0) continue;
+        fraction = (-along - Math.sqrt(discriminant)) / travelSquared;
+        if (fraction < 0 || fraction > 1) continue;
+      }
+      const nearest = this.lipClosest.copy(start).addScaledVector(travel, fraction);
+      const distance = nearest.length();
+      const normal = distance > 1e-9 ? nearest.divideScalar(distance) : nearest.copy(start).normalize();
+      if (normal.lengthSq() < 1e-9) normal.set(0, 1, 0);
+      const approach = this.lipRelativeVelocity.subVectors(node.velocity, parcel.velocity).dot(normal);
+      if (approach >= 0) continue;
+      const effectiveMass = Math.min(parcelMass * LIP_CONTACT_FRACTION, node.mass * 0.5);
+      const impulseMagnitude = Math.min(-approach / (1 / node.mass + 1 / effectiveMass),
+        node.mass * MAX_LIP_BODY_DELTA_SPEED);
+      const impulse = this.lipImpulse.copy(normal).multiplyScalar(impulseMagnitude);
+      node.velocity.addScaledVector(impulse, 1 / node.mass);
+      parcel.velocity.addScaledVector(impulse, -1 / parcelMass);
+      contacts += 1;
+    }
+    return contacts;
+  }
+
   step(dt: number, water: BodyWaterField, input: SwimInput = { stroke: false, steer: 0 }): void {
     if (!this.active) return;
     if (!(dt > 0 && dt <= 1 / 20)) throw new RangeError('expected a fixed step no larger than 1/20 s');
@@ -457,5 +526,7 @@ export class DetachedSurfer implements DetachedRiderPose {
       }
     }
     this.contactPending = true;
+    this.lipContactPending = true;
+    this.contactedLipIds.clear();
   }
 }
