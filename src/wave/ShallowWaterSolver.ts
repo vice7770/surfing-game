@@ -23,6 +23,24 @@ export interface SolverOptions {
   waterLevel?: number;
 }
 
+export interface WaterTarget {
+  eta: number;
+  qx: number;
+  qz: number;
+}
+
+export interface RelaxationZone {
+  /** Per-step blend weight for each cell (index iz * nx + ix): 0 leaves it free, 1 prescribes it. */
+  weights: Float64Array;
+  target(x: number, z: number, t: number, out: WaterTarget): void;
+}
+
+/** Jacobsen et al. (2012) ramp: 0 at the zone's inner edge, 1 at its outer boundary. */
+export function relaxationRamp(s: number): number {
+  const clamped = Math.min(1, Math.max(0, s));
+  return (Math.exp(Math.pow(clamped, 3.5)) - 1) / (Math.E - 1);
+}
+
 export function uniformEdges(start: number, end: number, count: number): Float64Array {
   const edges = new Float64Array(count + 1);
   for (let i = 0; i <= count; i += 1) edges[i] = start + ((end - start) * i) / count;
@@ -216,6 +234,8 @@ export class ShallowWaterSolver {
   private readonly rateQz: Float64Array;
   private readonly line: Line;
   private readonly flux: Flux = { mass: 0, normal: 0, tangent: 0, leftCorrection: 0, rightCorrection: 0 };
+  private readonly zones: RelaxationZone[] = [];
+  private readonly target: WaterTarget = { eta: 0, qx: 0, qz: 0 };
 
   constructor(grid: SolverGrid, depthAt: DepthFunction, options: SolverOptions = {}) {
     this.nx = grid.nx;
@@ -319,8 +339,39 @@ export class ShallowWaterSolver {
     return energy;
   }
 
-  /** Hook for boundary work after each sub-step (relaxation zones in Task 3). */
-  protected afterSubstep(_dt: number): void {}
+  addRelaxationZone(zone: RelaxationZone): void {
+    this.zones.push(zone);
+  }
+
+  /** Weights for a zone spanning z from `inner` (weight 0) to `outer` (weight 1). */
+  zoneWeightsAlongZ(inner: number, outer: number): Float64Array {
+    const weights = new Float64Array(this.nx * this.nz);
+    for (let iz = 0; iz < this.nz; iz += 1) {
+      const s = (this.zCenters[iz] - inner) / (outer - inner);
+      if (s <= 0) continue;
+      weights.fill(relaxationRamp(s), iz * this.nx, (iz + 1) * this.nx);
+    }
+    return weights;
+  }
+
+  /** Blend relaxation zones toward their prescribed water after each sub-step. */
+  protected afterSubstep(_dt: number): void {
+    for (const zone of this.zones) {
+      for (let iz = 0; iz < this.nz; iz += 1) {
+        for (let ix = 0; ix < this.nx; ix += 1) {
+          const i = iz * this.nx + ix;
+          const weight = zone.weights[i];
+          if (weight <= 0) continue;
+          zone.target(this.xCenters[ix], this.zCenters[iz], this.time, this.target);
+          const targetDepth = Math.max(0, this.target.eta - this.bed[i]);
+          this.h[i] += weight * (targetDepth - this.h[i]);
+          const wet = this.h[i] > this.dryDepth;
+          this.qx[i] = wet ? this.qx[i] + weight * (this.target.qx - this.qx[i]) : 0;
+          this.qz[i] = wet ? this.qz[i] + weight * (this.target.qz - this.qz[i]) : 0;
+        }
+      }
+    }
+  }
 
   private advance(dt: number): void {
     const { h, qx, qz, stageH, stageQx, stageQz, rateH, rateQx, rateQz } = this;
