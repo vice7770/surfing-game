@@ -1,6 +1,6 @@
 # Board and surfer validation protocol
 
-Status: **pre-implementation acceptance design**, 2026-09-25. This makes the agreed outcomes in the [board and surfer physics plan](board-surfer-physics-plan.md) observable. It introduces no code and does not prescribe the water worker's final API. Recheck its water-dependent measurements at the [P2c handoff](board-water-integration-handoff.md).
+Status: **pre-implementation acceptance design**, updated 2026-09-25. This makes the agreed outcomes in the [board and surfer physics plan](board-surfer-physics-plan.md) and [surfer P4 plan](surfer-physics-p4-plan.md) observable. It introduces no code and does not prescribe the water worker's final API. Recheck its water-dependent measurements at the [P4 handoff](board-water-integration-handoff.md).
 
 ## Evidence and test roles
 
@@ -22,14 +22,14 @@ Per-step diagnostics needed once B0/B1 implementation begins:
 |---|---|
 | Water | surface height and normal at each contact, depth-specific flow, wet/dry/outside-domain state, crest position and motion, breaking and lip impulse, sample step |
 | Board | position, quaternion, linear/angular velocity, wetted patch area, planing center of pressure, drag/lift/buoyancy/fin/rail forces and moments, horizontal water reaction |
-| Rider | posture phase, center of mass, hand/knee/foot contact locations and loads, requested versus achieved lean, assist interventions |
-| Outcome | catch/miss/stand/ride/wipeout transitions, face-relative path, ride distance/time, turn evidence, separation and fall settling, restart event |
+| Rider | posture phase, center of mass, hand/knee/foot contact locations and loads, requested versus achieved lean, assist interventions; after separation, segment poses/velocities, joint impulses, per-segment water forces, swim-control gain and board-grab contacts |
+| Outcome | catch/miss/stand/ride/wipeout transitions, face-relative path, ride distance/time, turn evidence, separation, submersion, resurfacing, swim and remount events, fall settling, domain exit and restart event |
 
-The current legacy diagnostics cover only part of this set. Missing fields are **future B0/B1 implementation requirements**, not work for the agent building P2 water.
+The current legacy diagnostics cover only part of this set. Missing fields are **future B0/S0 and later implementation requirements**, not features already supplied by the view-only physical wave mode.
 
 ## Event definitions
 
-These definitions set the measurement method. Numerical thresholds such as minimum heading change and event hysteresis are selected from the first P2c/B0 baseline and frozen before B3/B4 tuning; they are not retrofitted after a failed run.
+These definitions set the measurement method. Numerical thresholds such as minimum heading change and event hysteresis are selected from the first P4/B0 baseline and frozen before B3/B4 tuning; they are not retrofitted after a failed run.
 
 | Event | Required observations | Exclusions |
 |---|---|---|
@@ -40,6 +40,8 @@ These definitions set the measurement method. Numerical thresholds such as minim
 | **Top turn / cutback** | After climbing to the upper face, the board changes heading and cross-face direction, with a corresponding roll/contact transition, then remains supported or visibly releases. | A steering-input reversal that does not move the board across the face. |
 | **Wipeout** | Foot/hand support is physically unrecoverable or a water/lip impulse separates the rider; record cause, contact loss and board/rider states. | Balance-meter depletion as the sole cause. |
 | **Fall settled** | Independent board and rider have completed meaningful impact/tumble motion and reached a stable or out-of-domain state. | Freezing at a fixed elapsed time. |
+| **Swim control available** | Impact energy, body angular speed and local breaking strength permit a smoothly rising input gain with hysteresis. Strokes impart finite force against water. | A fixed unconscious timer or direct velocity assignment. |
+| **Board remount** | Reachable hand/chest contact, low relative speed and support establish prone contact with continuous board/rider transforms. | Teleport, board homing or a state switch without physical contact. |
 
 The field study describes a bottom turn followed by a cutback/top turn and records changes in board rotation, speed and duration. Its particular speeds and turn rates are **comparison envelopes**, not conditions for recognizing a turn in this game. Face position and measured board path are the primary event evidence.
 
@@ -54,7 +56,7 @@ The field study describes a bottom turn followed by a cutback/top turn and recor
 
 ### B. Natural sets: distributions rather than guarantees
 
-- Use a frozen suite of spot, sea-state and seed combinations established after P2c. Mark waves suitable or unsuitable from the **wave field alone** (face length, breaking/closeout pattern and available approach) before judging board success, to avoid defining suitability by whether the current controller caught them.
+- Use a frozen suite of spot, sea-state and seed combinations established after P4 coupling. Mark waves suitable or unsuitable from the **wave field alone** (face length, breaking/closeout pattern and available approach) before judging board success, to avoid defining suitability by whether the current controller caught them.
 - Report catch opportunities, attempts, catches, ride duration and distance, bottom/top turns, miss/wipeout causes and assists state. Show per-spot distributions and the full seed list. Set numerical success percentages only after the first solver baseline, then freeze them before board-force tuning.
 - Keep an unsuitable-wave sample in the suite: some waves should close out or pass the rider. This verifies that natural mode has not inherited practice mode's continuous-face guarantee.
 
@@ -65,15 +67,19 @@ The field study describes a bottom turn followed by a cutback/top turn and recor
 - **Turn response:** opposite steer inputs produce opposite body-weight shift and lateral board path under mirrored symmetric conditions; regular and goofy controls retain the same travel-direction meaning.
 - **Energy and reaction:** during a drop, log gravity work, moving-water work and drag separately. Horizontal reaction impulse on water has the opposite sign to the board's applied water force after area weighting. No state transition adds unexplained kinetic energy.
 - **Fall continuity:** at separation, world position and velocity, including the board's angular contribution at the rider contact point, continue without a jump. Fall motion responds to local flow and lip collision and has no fixed three-second cutoff.
+- **Articulated water response:** major segments sample flow at their own depths; equal starting falls in following versus opposing flow produce directionally different drift and tumble. Log reconstructed vertical flow and turbulence as approximations. A dry segment receives no buoyancy or water drag.
+- **Lip and seabed:** swept lip contact changes both body and parcel momentum; later parcel landing uses its changed momentum. Board/body/seabed contact does not tunnel or generate unlogged energy. Out-of-domain states are explicit.
+- **Recovery:** from the same settled state, strokes-on and strokes-off traces diverge through applied forces. A reachable board can be physically grabbed and remounted without a pose jump. A board that drifts beyond reach does not home back; Quick retry remains possible. The camera follows through surface entry and submersion without a forced cut.
 - **Time step and domain:** compare 1/60 and 1/120 s traces within a stated convergence tolerance. Wet/dry and sliding-window edge queries remain finite and explicitly report outside-domain state rather than clamping to an unrelated edge cell.
 
 ## Gate order and reports
 
 | Gate | What is frozen or checked | Blocking result |
 |---|---|---|
-| **P2c handoff** | Actual water sampler, coordinate convention, worker step order, rendering agreement and measured budget. | Missing contact water data, mismatched surface or no credible worker budget. |
+| **P4/S0 handoff** | Actual water sampler, coordinate convention, worker step order, lip momentum contact, rendering agreement, window/domain behavior and measured budget. | Missing contact water data, mismatched surface or no credible worker budget. |
 | **B0** | Reference geometry/mass record, scenario format, baseline traces and deterministic replay. | Inability to reproduce a seeded run or distinguish legacy guarantees from natural-wave results. |
 | **B1/B2** | Float, drag, board angular response, stance mirror, manual pop-up and support transitions. | Direct yaw/velocity injection, invalid contact load or unbounded integration. |
 | **B3/B4** | Fins/rails, physical wipeout, practice 30-second run and natural-wave distribution. | No linked turns, falls that teleport/freeze, or natural-wave success claimed from a single hand-picked seed. |
+| **S2/S3** | Articulated fall, segment flow/contacts, lip accounting, swim and remount traces on the physical wave. | Scripted tumble, parcel double counting, frozen fall, direct swim velocity or remount jump. |
 
 Each gate report should include a small table of passed/failed cases, the seed/input artifacts, measured worker time and remaining deviations. A failed physical invariant blocks tuning; a failed playability case calls for diagnosing water opportunity, board forces, rider control and assist intervention separately before changing coefficients.

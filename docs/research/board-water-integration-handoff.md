@@ -1,12 +1,12 @@
 # Board–water integration handoff
 
-Status: **planning only**, 2026-09-25. No gameplay or solver code is changed by this note. It complements the [board and surfer physics plan](board-surfer-physics-plan.md). Its observations describe the concurrent wave branch at `a5fb915` (`feat/wave-formation-p1-sea-state`), so the API inventory must be checked again after P2c is merged.
+Status: **planning only**, updated 2026-09-25. No gameplay or solver code is changed by this note. It complements the [board and surfer physics plan](board-surfer-physics-plan.md) and the [surfer P4 plan](surfer-physics-p4-plan.md). The table below preserves the P2a observation at `a5fb915` for history. The active wave branch was rechecked at `c3fce46` (`feat/wave-formation-p1-sea-state`); recheck again at the actual P4 implementation handoff.
 
 ## Current dependency boundary
 
-P2a has a standalone, validated finite-volume shallow-water solver and four spot bathymetries. P2b is planned to add sea-state boundaries, warm start, a sliding window and performance work. P2c is planned to integrate the solver, renderer and worker with the game. **Board implementation should wait for P2c's stable worker and water sampling interface.** Read-only baseline analysis and this contract can proceed now.
+P2a–P2c and P3a–P3b have since landed on the active wave branch. P2c deliberately shipped a **view-only** physical mode; the legacy wave remains playable. The physical solver now has sea-state boundaries, warm start, a sliding window method, breaker strength and mass-conserving lip parcels. It still has no runtime body sampler, lip-body collision, board/rider coupling or Web Worker. **The body-sampling and worker dependency moved to P4.** Board and surfer force code should wait for that stable contract; read-only baselines and planning can proceed now.
 
-| Board need | P2a observation | Handoff requirement after P2c |
+| Board need | P2a observation (historical) | P4 handoff requirement |
 |---|---|---|
 | Free surface at arbitrary hull and rider points | `ShallowWaterSolver` stores cell-centered total depth `h` and bed elevation `bed`; `surfaceAt(i) = h[i] + bed[i]`. | One continuous world-space sampler that matches the render surface. Specify the interpolation kernel and demonstrate render/contact agreement, including stretched z cells. |
 | Local water motion | It stores depth-integrated `qx`, `qz` in m²/s. Wet-cell depth-averaged speed is `q/h`. It has no public 3D velocity sampler. | Return horizontal flow at the queried body depth with the wave plan's vertical-profile approximation where valid. Define a bounded behavior for bores, shallow cells and dry cells. Vertical flow, if returned, must be identified as a reconstruction rather than solver state. |
@@ -47,16 +47,17 @@ The existing `BoardPhysics` diagnostics already provide speed, waterline, submer
 
 Existing `BoardPhysics.test.ts` asserts a catch for every seed 1–12 and a complete ride of at least 20 m in under 20 s under the legacy packet. Keep those as a baseline while that field remains available. When the new solver becomes authoritative, replace them with the agreed fixed-seed 30-second practice ride and seeded natural-wave distributions; a guaranteed catch on every natural wave would contradict the wave formation plan.
 
-## Integration risks to resolve at the P2c checkpoint
+## Integration risks to resolve at the P4 checkpoint
 
-1. **Performance headroom.** The concurrent wave plan records P2a at about **7.5 ms per 33.6k-cell step** in Node, above the proposed **4 ms total CPU worker** gate before board contacts are added. P2b optimization and P2c measurement must establish a real board budget. Do not claim the board fits until measured. If a budget is missed later, simplify redundant hull contacts and rider joint detail first, then measure handling changes; keep the shared water field and force directions.
+1. **Performance headroom.** The active wave branch records P2b-2 at about **4.05 ms per 36.2k-cell step** in bundled Node and P2c at **5.7–7.6 ms per step in browser on the main thread**, before board and rider contacts. The proposed **4 ms total CPU worker** gate is not yet met end to end. P4 must measure the coupled worker rather than infer headroom from the solver-only benchmark. If the gate is missed, profile and simplify redundant hull contacts or rider joint detail, then measure the effect; keep the shared water field and force directions.
 2. **Board scale.** The current render geometry spans **2.65 m** length and roughly **0.6 m** maximum width, while the provisional measured reference is a 1.778 m shortboard. Its four physics contacts reach `z = ±1.05 m`. Before mass, inertia or wetted-area calibration, confirm or revise the provisional reference and apply one coherent geometry to both rendered hull and physical contacts. The current visual dimensions are a code observation, not a researched shortboard standard.
 3. **Surface/flow consistency.** P2a's cell-centered `h`, `qx`, `qz` differ from the legacy node field. The board, fall body and renderer need the same world-coordinate convention and interpolation policy. Tests should cover cells near the wet/dry edge and the moving window boundary.
 4. **Velocity profile limits.** The wave plan's linear depth profile is suitable as a controlled approximation before breaking; it is not a resolved vertical flow in bores. Bound it and flag the regime in diagnostics so tuning does not hide a large extrapolation.
-5. **Practice-wave forcing.** The agreed endless practice mode must use the same P2c solver and board forces as natural mode. P2b/P2c should expose a controlled incoming-wave configuration suitable for that mode; no direct speed or grip injection belongs in the board adapter.
+5. **Practice-wave forcing.** The agreed endless practice mode must use the same physical solver and board forces as natural mode. P4 should expose a controlled incoming-wave configuration suitable for that mode; no direct speed or grip injection belongs in the board adapter.
+6. **Lip-body contact and moving window.** P3b's `PlungingLip` exposes positions and volumes for rendering but no swept collision or public contact momentum. `shiftAlongShore` exists but has no runtime caller. P4 needs collision impulse accounting and explicit domain status while the simulation follows the board before a fall and the surfer after one. See the [surfer P4 plan](surfer-physics-p4-plan.md).
 
 ## Release sequence
 
-1. **While P2b/P2c is active:** keep this handoff and the board proposal current; do not edit shared water or board code. Preserve the provisional measured board/rider reference above and record any later revision with its reason.
-2. **At P2c merge:** recheck the actual worker snapshot, water sampler, interpolation, domain handling and measured step cost against the table above. Resolve any missing contract with the water implementation before B0 code begins.
-3. **Then B0:** implement the adapter and baseline telemetry in an isolated branch, keeping gameplay behavior unchanged. Only after the B0 gates pass should B1 replace board dynamics.
+1. **While P4 is being prepared:** keep the board and surfer plans current without editing the active water branch. Preserve the provisional measured board/rider reference above and record any revision with its reason.
+2. **At the P4 handoff:** check the worker snapshot, depth-flow sampler, interpolation, wet/dry and outside-domain behavior, lip contact data, window shifting and measured coupled step cost against the table above. Resolve missing contract fields before tuning board or surfer forces.
+3. **Then B0/S0:** implement the adapter and baseline telemetry in an isolated branch, keeping gameplay behavior unchanged. Only after those gates pass should B1/S1 replace legacy board and rider dynamics.
