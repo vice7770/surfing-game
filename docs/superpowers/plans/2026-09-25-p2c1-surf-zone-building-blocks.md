@@ -725,7 +725,8 @@ describe('SpotSeabed', () => {
     const world = new Vector3();
     for (let i = 0; i < positions.count; i += 37) {
       world.fromBufferAttribute(positions, i).add(seabed.mesh.position);
-      expect(world.y).toBeCloseTo(-depthAt(world.x, world.z), 9);
+      // Vertex positions are 32-bit floats.
+      expect(world.y).toBeCloseTo(-depthAt(world.x, world.z), 5);
     }
     expect(seabed.mesh.visible).toBe(true);
   });
