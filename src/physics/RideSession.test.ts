@@ -1,0 +1,66 @@
+import { Vector3 } from 'three';
+import { describe, expect, it } from 'vitest';
+import { PlaneWater } from './PlaneWater';
+import { RideSession } from './RideSession';
+
+const STEP = 1 / 60;
+const idle = { paddle: false, popUp: false, steer: 0 };
+
+describe('ride session', () => {
+  it('starts prone on a board floating level at the given point, heading the given way', () => {
+    const session = new RideSession();
+    session.reset(new Vector3(2, 0, -5), Math.PI / 2, new PlaneWater());
+    expect(session.rider.attached).toBe(true);
+    expect(session.rider.phase).toBe('prone');
+    const forward = new Vector3(0, 0, 1).applyQuaternion(session.board.orientation);
+    expect(forward.x).toBeCloseTo(1, 6);
+    expect(session.board.position.x).toBeCloseTo(2, 6);
+    expect(session.surfer.active).toBe(false);
+  });
+
+  it('throws the rider off a board stopped dead, into a fall body that keeps its momentum', () => {
+    const session = new RideSession();
+    const water = new PlaneWater();
+    session.reset(new Vector3(), 0, water);
+    session.board.velocity.z = 6;
+    session.rider.velocity.z = 6;
+    for (let i = 0; i < 180; i += 1) {
+      session.step(STEP, water, i === 30 ? { ...idle, popUp: true } : idle);
+      if (session.rider.phase !== 'standing' || session.rider.popUpReport.outcome !== 'stood') {
+        session.board.velocity.z = 6;
+        session.rider.velocity.z = 6;
+      }
+    }
+    expect(session.rider.phase).toBe('standing');
+    // The board jams on something and is held still: the rider cannot hold on.
+    let handed: { momentum: Vector3; centre: Vector3 } | undefined;
+    for (let i = 0; i < 20 && !handed; i += 1) {
+      session.board.velocity.set(0, 0, 0);
+      session.board.angularVelocity.set(0, 0, 0);
+      session.step(STEP, water, idle);
+      if (session.surfer.active) handed = { momentum: session.started.momentum.clone(), centre: session.started.center.clone() };
+    }
+    expect(handed).toBeDefined();
+    expect(session.rider.attached).toBe(false);
+    expect(session.rider.separation).toBeDefined();
+    expect(handed!.momentum.distanceTo(session.handoff.velocity.clone().multiplyScalar(session.rider.mass))).toBeLessThan(1e-9);
+    expect(handed!.centre.distanceTo(session.handoff.center)).toBeLessThan(1e-9);
+    // Still moving forward when it lets go: thrown over the nose.
+    expect(handed!.momentum.z).toBeGreaterThan(50);
+  });
+
+  it('keeps the riderless board floating while the rider falls and swims', () => {
+    const session = new RideSession();
+    const water = new PlaneWater();
+    session.reset(new Vector3(), 0, water);
+    session.rider.popUp();
+    for (let i = 0; i < 600; i += 1) session.step(STEP, water, idle);
+    // At rest the pop-up fails and the rider lies back down; force a separation to check the aftermath.
+    session.separate();
+    for (let i = 0; i < 300; i += 1) session.step(STEP, water, { ...idle, paddle: true });
+    expect(session.surfer.active).toBe(true);
+    expect(Number.isFinite(session.surfer.centerOfMass().y)).toBe(true);
+    expect(session.board.lowestPoint()).toBeGreaterThan(-0.05);
+    expect(session.board.lowestPoint()).toBeLessThan(0.02);
+  });
+});

@@ -273,3 +273,40 @@ describe('pop-up', () => {
     }
   });
 });
+
+describe('weight-shift steering', () => {
+  const ride = (steer: number, stance: 'regular' | 'goofy' = 'regular') => {
+    const angle = (15 * Math.PI) / 180;
+    const board = new BoardBody();
+    const along = new Vector3(0, -Math.sin(angle), Math.cos(angle));
+    board.place(new Vector3(0, board.shape.centerOfMass.y * Math.cos(angle), 0), new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), angle), along.multiplyScalar(6));
+    const rider = new AttachedRider(board.shape, { phase: 'standing', stance });
+    board.attach(rider);
+    const water = new PlaneWater({ slopeZ: -Math.tan(angle) });
+    run(board, water, 1);
+    rider.steer = steer;
+    // Half a second: without fins (P4e) nothing holds the heading, and a rolled board soon spins out.
+    run(board, water, 0.5);
+    return { board, rider, roll: new Vector3(0, 1, 0).applyQuaternion(board.orientation).x };
+  };
+
+  it('loads the rail on the requested side, rolling the board and carrying it that way', () => {
+    const left = ride(1);
+    const right = ride(-1);
+    const straight = ride(0);
+    expect(left.rider.attached && right.rider.attached).toBe(true);
+    expect(left.rider.contact.centreOfPressure.x).toBeGreaterThan(0.03);
+    expect(right.rider.contact.centreOfPressure.x).toBeLessThan(-0.03);
+    expect(left.roll).toBeGreaterThan(0.01);
+    expect(right.roll).toBeLessThan(-0.01);
+    expect(left.board.velocity.x).toBeGreaterThan(straight.board.velocity.x);
+    expect(right.board.velocity.x).toBeLessThan(straight.board.velocity.x);
+  });
+
+  it('means the same direction in either stance', () => {
+    const regular = ride(1, 'regular');
+    const goofy = ride(1, 'goofy');
+    expect(Math.sign(goofy.roll)).toBe(Math.sign(regular.roll));
+    expect(Math.sign(goofy.board.velocity.x)).toBe(Math.sign(regular.board.velocity.x));
+  });
+});

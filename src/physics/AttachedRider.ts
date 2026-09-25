@@ -77,6 +77,13 @@ const STANDING_SHIFT = { x: 0.35, z: 0.25 };
  * distance of the middle of the stance, clear of the feet's edges.
  */
 const TRIM_FREEDOM = 0.2;
+/**
+ * Steering asks for weight on a rail: the centre of pressure moves across the
+ * feet by up to this much, m, toward the side to turn to (board +x is its left),
+ * the same for either stance. The balance shift then puts it there, the board
+ * rolls onto that rail, and the hull's pressure carries it that way.
+ */
+const STEER_REACH = 0.1;
 /** Below this load, in body weights, the centre of pressure says nothing and the rider does not rebalance. */
 const BALANCE_LOAD = 0.1;
 /** The fastest the body shifts, m/s, and accelerates, m/s² (so balance never jerks the contact), and how long the centre of pressure it reacts to is smoothed, s. */
@@ -163,6 +170,7 @@ export interface RiderWork {
 type V3 = { x: number; y: number; z: number };
 
 const Y = new Vector3(0, 1, 0);
+const X = new Vector3(1, 0, 0);
 
 function cross(a: V3, b: V3, out: Vector3): Vector3 {
   return out.set(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
@@ -216,6 +224,8 @@ export class AttachedRider {
   readonly work: RiderWork = { gravity: 0, water: 0, contact: 0 };
   /** Paddle while prone. */
   paddle = false;
+  /** Standing, the requested weight shift: −1 (toward board −x, its right) to 1 (toward +x, its left). */
+  steer = 0;
   /** Buoyancy on the body at the latest substep, N. */
   readonly buoyancy = new Vector3();
   /** Contact over the latest step: mean force on the rider (N, world), centre of pressure (board frame) and more. */
@@ -450,6 +460,25 @@ export class AttachedRider {
     const w = this.angularVelocity;
     const I = this.worldInertia;
     return linear + 0.5 * (w.x * (I[0] * w.x + I[1] * w.y + I[2] * w.z) + w.y * (I[3] * w.x + I[4] * w.y + I[5] * w.z) + w.z * (I[6] * w.x + I[7] * w.y + I[8] * w.z));
+  }
+
+  /**
+   * The state a fall body starts from when the rider lets go: its centre of
+   * mass and velocity, and a body frame whose up is the head's direction (along
+   * the board lying down, the rider's up standing), spinning with the rider.
+   */
+  handoffState(out: { center: Vector3; orientation: Quaternion; velocity: Vector3; angularVelocity: Vector3 }): typeof out {
+    out.center.copy(this.position);
+    out.velocity.copy(this.velocity);
+    out.angularVelocity.copy(this.angularVelocity);
+    out.orientation.copy(this.orientation);
+    if (!this.upright) out.orientation.multiply(this.spin.setFromAxisAngle(X, Math.PI / 2));
+    return out;
+  }
+
+  /** Let go of the board now (a retry, or a fall forced from outside). */
+  release(cause: RiderSeparation = 'balance'): void {
+    if (this.attached) this.separate(cause);
   }
 
   /** A part's centre in the world. */
@@ -892,6 +921,7 @@ export class AttachedRider {
   private balanceStep(h: number): void {
     const reach = this.upright ? STANDING_SHIFT : PRONE_SHIFT;
     const support = this.support;
+    this.copTarget.x = this.upright ? Math.max(-1, Math.min(1, this.steer)) * STEER_REACH : 0;
     const wantX = (support.xMin + support.xMax) / 2 + this.copTarget.x;
     const wantZ = (support.zMin + support.zMax) / 2 + this.copTarget.z;
     if (this.inContact && this.loaded) {
