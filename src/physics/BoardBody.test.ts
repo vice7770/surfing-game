@@ -224,3 +224,24 @@ describe('rigid board body', () => {
     expect(board.velocity.y).toBeLessThan(0);
   });
 });
+
+describe('fins and rails', () => {
+  it('straighten a board sliding sideways into its path', () => {
+    const board = new BoardBody();
+    board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(2, 0, 5));
+    run(board, new PlaneWater(), 1.5);
+    const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+    const slip = Math.atan2(board.velocity.x, board.velocity.z) - Math.atan2(forward.x, forward.z);
+    expect(Math.abs(slip)).toBeLessThan((5 * Math.PI) / 180);
+    expect(board.work.fins).toBeLessThan(0);
+  });
+
+  it('let a finless board slide on', () => {
+    const board = new BoardBody({ fins: [] });
+    board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(2, 0, 5));
+    run(board, new PlaneWater(), 0.5);
+    const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+    const slip = Math.atan2(board.velocity.x, board.velocity.z) - Math.atan2(forward.x, forward.z);
+    expect(Math.abs(slip)).toBeGreaterThan((5 * Math.PI) / 180);
+  });
+});

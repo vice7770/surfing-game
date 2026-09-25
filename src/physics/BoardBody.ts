@@ -2,6 +2,7 @@ import { Quaternion, Vector3 } from 'three';
 import type { AttachedRider } from './AttachedRider';
 import type { BoardContactBody } from './DetachedSurfer';
 import { buildBoardShape, type BoardShape } from './boardShape';
+import { THRUSTER, createFinForce, finForce, type FinSpec } from './finForces';
 import { WATER, WET_RAMP, createPatchForce, patchForce, planingScales, wettedShare, type WorldPatch } from './hullForces';
 import { createWaterSample, type SurfWater, type WaterSample } from './SurfWater';
 
@@ -25,6 +26,9 @@ export interface BoardWork {
   bed: number;
   /** Done by the rider's contact on the board. */
   rider: number;
+  /** Done by the water on the fins and on the rails' side faces. */
+  fins: number;
+  rails: number;
 }
 
 export interface BoardBodyOptions {
@@ -32,6 +36,25 @@ export interface BoardBodyOptions {
   payloads?: BoardPayload[];
   /** Substeps per `step` (4 at 1/60 s). */
   substeps?: number;
+  /** The fin set; the reference thruster by default, none with []. */
+  fins?: readonly FinSpec[];
+}
+
+/**
+ * A rail's side face resists the board sliding sideways into the water with
+ * this pressure coefficient (a bluff face, p = ½ρ C |v| max(0, v·n)); a modelling
+ * choice. It wets over its own height.
+ */
+const RAIL_PRESSURE = 1;
+
+/** A fin or a rail face in the board frame, relative to the centre of mass. */
+interface Foil {
+  kind: 'fin' | 'rail';
+  local: Vec;
+  normal: Vec;
+  fin?: FinSpec;
+  area: number;
+  height: number;
 }
 
 /**
@@ -158,12 +181,13 @@ export class BoardBody implements BoardContactBody {
   readonly velocity = new Vector3();
   /** World frame, rad/s. */
   readonly angularVelocity = new Vector3();
-  readonly work: BoardWork = { gravity: 0, buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, rider: 0 };
+  readonly work: BoardWork = { gravity: 0, buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, rider: 0, fins: 0, rails: 0 };
   /** The rider standing or lying on the board, coupled through its contacts. */
   rider?: AttachedRider;
   /** Mean forces over the latest step, N. */
   readonly forces = {
     buoyancy: new Vector3(), pressure: new Vector3(), addedMass: new Vector3(), radiation: new Vector3(), friction: new Vector3(), bed: new Vector3(),
+    fins: new Vector3(), rails: new Vector3(),
   };
   /** Hull volume under water and wetted bottom area at the latest substep. */
   submergedVolume = 0;
@@ -193,6 +217,18 @@ export class BoardBody implements BoardContactBody {
   /** Each patch's speed into the local water surface, and that surface's normal, at the start of the substep. */
   private readonly surfaceSpeed: Float64Array;
   private readonly surfaceNormal: Float64Array;
+  private readonly foils: Foil[];
+  private readonly foilArm: Float64Array;
+  private readonly foilNormal: Float64Array;
+  private readonly foilDamping: Float64Array;
+  private readonly foilReaction: Float64Array;
+  private readonly foilMean: Float64Array;
+  /** Fin and rail force and torque this substep: fins F, T, then rails F, T. */
+  private readonly foilTotals = new Float64Array(12);
+  private readonly finOut = createFinForce();
+  private readonly foilSample = createWaterSample();
+  private readonly foilScratch = new Vector3();
+  private readonly foilPoint = new Vector3();
   /** Patch indices of each strip along the board, tail to nose, and each patch's planing pressure scale. */
   private readonly strips: Int32Array[];
   private readonly pressureScale: Float64Array;
@@ -314,7 +350,42 @@ export class BoardBody implements BoardContactBody {
     this.reaction = new Float64Array(count * 3);
     this.meanPosition = new Float64Array(count * 2);
     this.bedImpulse = new Float64Array(count * 2 * 3);
+    this.foils = this.buildFoils(options.fins ?? THRUSTER, center, shape.taper);
+    const foilCount = this.foils.length;
+    this.foilArm = new Float64Array(foilCount * 3);
+    this.foilNormal = new Float64Array(foilCount * 3);
+    this.foilDamping = new Float64Array(foilCount);
+    this.foilReaction = new Float64Array(foilCount * 3);
+    this.foilMean = new Float64Array(foilCount * 2);
     this.place(new Vector3());
+  }
+
+  /** Fins at their roots on the bottom, and a side face at each station of each rail. */
+  private buildFoils(fins: readonly FinSpec[], center: Vec, railTaper: number): Foil[] {
+    const { shape } = this;
+    const foils: Foil[] = [];
+    const s = (z: number) => Math.min(1, Math.max(0, z / shape.length + 0.5));
+    for (const fin of fins) {
+      const z = -shape.length / 2 + fin.fromTail;
+      const half = shape.curves.width(s(z)) / 2;
+      const x = fin.side === 0 ? 0 : fin.side * (half - fin.fromRail);
+      foils.push({ kind: 'fin', local: { x: x - center.x, y: shape.curves.rocker(s(z)) - center.y, z: z - center.z }, normal: { x: 1, y: 0, z: 0 }, fin, area: fin.area, height: fin.depth });
+    }
+    const stations = [...new Set(shape.patches.map((patch) => patch.position.z))].sort((a, b) => a - b);
+    for (const z of stations) {
+      const half = shape.curves.width(s(z)) / 2;
+      const height = shape.curves.thickness(s(z)) * (1 - railTaper);
+      for (const side of [1, -1]) {
+        foils.push({
+          kind: 'rail',
+          local: { x: side * half - center.x, y: shape.curves.rocker(s(z)) + height / 2 - center.y, z: z - center.z },
+          normal: { x: side, y: 0, z: 0 },
+          area: this.stationLength * height,
+          height,
+        });
+      }
+    }
+    return foils;
   }
 
   get outsideDomain(): boolean {
@@ -404,6 +475,8 @@ export class BoardBody implements BoardContactBody {
     const h = dt / this.substeps;
     this.reaction.fill(0);
     this.meanPosition.fill(0);
+    this.foilReaction.fill(0);
+    this.foilMean.fill(0);
     for (const force of Object.values(this.forces)) force.set(0, 0, 0);
     this.rider?.beginStep();
     for (let s = 0; s < this.substeps; s += 1) this.advance(h, water, 0);
@@ -416,6 +489,171 @@ export class BoardBody implements BoardContactBody {
       const jz = this.reaction[k * 3 + 2];
       if (jx === 0 && jy === 0 && jz === 0) continue;
       water.addReaction(this.meanPosition[k * 2] * inverseDt, this.meanPosition[k * 2 + 1] * inverseDt, jx, jy, jz);
+    }
+    for (let k = 0; k < this.foils.length; k += 1) {
+      const jx = this.foilReaction[k * 3];
+      const jy = this.foilReaction[k * 3 + 1];
+      const jz = this.foilReaction[k * 3 + 2];
+      if (jx === 0 && jy === 0 && jz === 0) continue;
+      water.addReaction(this.foilMean[k * 2] * inverseDt, this.foilMean[k * 2 + 1] * inverseDt, jx, jy, jz);
+    }
+  }
+
+  /**
+   * Fins and rail faces this substep: their forces and torques into `foilTotals`,
+   * and their sideways damping into the implicit system along each normal.
+   */
+  private applyFoils(h: number, water: SurfWater, system: Float64Array): void {
+    const ft = this.foilTotals;
+    ft.fill(0);
+    const { velocity: v, angularVelocity: w, centerOfMass: c, orientation: q } = this;
+    const inverse = this.inverse.copy(q).invert();
+    for (let k = 0; k < this.foils.length; k += 1) {
+      const foil = this.foils[k];
+      const root = this.foilScratch.set(foil.local.x, foil.local.y, foil.local.z).applyQuaternion(q).add(c);
+      let fx = 0;
+      let fy = 0;
+      let fz = 0;
+      let damping = 0;
+      const n = this.foilPoint.set(foil.normal.x, foil.normal.y, foil.normal.z).applyQuaternion(q);
+      let nx = n.x;
+      let ny = n.y;
+      let nz = n.z;
+      let px = root.x;
+      let py = root.y;
+      let pz = root.z;
+      if (foil.kind === 'fin' && foil.fin) {
+        // The fin hangs from its root along the board's down; it grips with the part in the water.
+        const down = this.foilPoint.set(0, -1, 0).applyQuaternion(q);
+        const tipX = root.x + down.x * foil.height;
+        const tipY = root.y + down.y * foil.height;
+        const tipZ = root.z + down.z * foil.height;
+        const sample = water.sampleAt((root.x + tipX) / 2, (root.y + tipY) / 2, (root.z + tipZ) / 2, this.foilSample);
+        let immersed = 0;
+        if (sample.wet && !sample.outsideDomain) {
+          const low = Math.min(root.y, tipY);
+          const span = Math.abs(root.y - tipY);
+          immersed = span > 1e-9 ? Math.min(1, Math.max(0, (sample.surfaceY - low) / span)) : sample.surfaceY > low ? 1 : 0;
+        }
+        // Centre of the wetted part, from the lower end.
+        const lowIsTip = tipY < root.y;
+        const share = immersed / 2;
+        px = lowIsTip ? tipX + (root.x - tipX) * share : root.x + (tipX - root.x) * share;
+        py = lowIsTip ? tipY + (root.y - tipY) * share : root.y + (tipY - root.y) * share;
+        pz = lowIsTip ? tipZ + (root.z - tipZ) * share : root.z + (tipZ - root.z) * share;
+        const rx = px - c.x;
+        const ry = py - c.y;
+        const rz = pz - c.z;
+        const relative = this.foilScratch.set(
+          v.x + w.y * rz - w.z * ry - sample.flowX,
+          v.y + w.z * rx - w.x * rz - sample.flowY,
+          v.z + w.x * ry - w.y * rx - sample.flowZ,
+        ).applyQuaternion(inverse);
+        const out = finForce(foil.fin, relative, immersed, this.finOut);
+        const force = this.foilScratch.set(out.force.x, out.force.y, out.force.z).applyQuaternion(q);
+        fx = force.x;
+        fy = force.y;
+        fz = force.z;
+        const normal = this.foilPoint.set(out.normal.x, out.normal.y, out.normal.z).applyQuaternion(q);
+        nx = normal.x;
+        ny = normal.y;
+        nz = normal.z;
+        damping = out.damping;
+      } else {
+        // A rail's side face: one-sided pressure against sliding sideways into the water.
+        const sample = water.sampleAt(px, py, pz, this.foilSample);
+        const share = sample.wet && !sample.outsideDomain ? Math.min(1, Math.max(0, 0.5 + (sample.surfaceY - py) / foil.height)) : 0;
+        const rx = px - c.x;
+        const ry = py - c.y;
+        const rz = pz - c.z;
+        const ux = v.x + w.y * rz - w.z * ry - sample.flowX;
+        const uy = v.y + w.z * rx - w.x * rz - sample.flowY;
+        const uz = v.z + w.x * ry - w.y * rx - sample.flowZ;
+        const into = ux * nx + uy * ny + uz * nz;
+        const speed = Math.hypot(ux, uy, uz);
+        if (into > 0 && share > 0 && speed > 0) {
+          const k2 = 0.5 * WATER.density * RAIL_PRESSURE * share * foil.area;
+          fx = -k2 * speed * into * nx;
+          fy = -k2 * speed * into * ny;
+          fz = -k2 * speed * into * nz;
+          damping = k2 * (speed + (into * into) / speed);
+        }
+      }
+      const rx = px - c.x;
+      const ry = py - c.y;
+      const rz = pz - c.z;
+      this.foilArm[k * 3] = rx;
+      this.foilArm[k * 3 + 1] = ry;
+      this.foilArm[k * 3 + 2] = rz;
+      this.foilNormal[k * 3] = nx;
+      this.foilNormal[k * 3 + 1] = ny;
+      this.foilNormal[k * 3 + 2] = nz;
+      this.foilDamping[k] = damping * h;
+      const base = foil.kind === 'fin' ? 0 : 6;
+      ft[base] += fx;
+      ft[base + 1] += fy;
+      ft[base + 2] += fz;
+      ft[base + 3] += ry * fz - rz * fy;
+      ft[base + 4] += rz * fx - rx * fz;
+      ft[base + 5] += rx * fy - ry * fx;
+      this.foilReaction[k * 3] += fx * h;
+      this.foilReaction[k * 3 + 1] += fy * h;
+      this.foilReaction[k * 3 + 2] += fz * h;
+      this.foilMean[k * 2] += px * h;
+      this.foilMean[k * 2 + 1] += pz * h;
+      if (damping > 0) {
+        const a = this.direction;
+        a[0] = nx;
+        a[1] = ny;
+        a[2] = nz;
+        a[3] = ry * nz - rz * ny;
+        a[4] = rz * nx - rx * nz;
+        a[5] = rx * ny - ry * nx;
+        const coefficient = damping * h;
+        for (let i = 0; i < 6; i += 1) for (let j = 0; j < 6; j += 1) system[i * 6 + j] += coefficient * a[i] * a[j];
+      }
+    }
+  }
+
+  /** After the solve: the implicit part of each fin's and rail's sideways impulse, and their work. */
+  private settleFoils(h: number, du: Float64Array, avx: number, avy: number, avz: number, awx: number, awy: number, awz: number): void {
+    const ft = this.foilTotals;
+    const [dvx, dvy, dvz, dwx, dwy, dwz] = du;
+    for (let kind = 0; kind < 2; kind += 1) {
+      const b = kind * 6;
+      const work = h * (ft[b] * avx + ft[b + 1] * avy + ft[b + 2] * avz + ft[b + 3] * awx + ft[b + 4] * awy + ft[b + 5] * awz);
+      const force = kind === 0 ? this.forces.fins : this.forces.rails;
+      force.x += h * ft[b];
+      force.y += h * ft[b + 1];
+      force.z += h * ft[b + 2];
+      if (kind === 0) this.work.fins += work;
+      else this.work.rails += work;
+    }
+    for (let k = 0; k < this.foils.length; k += 1) {
+      const damping = this.foilDamping[k];
+      if (!(damping > 0)) continue;
+      const rx = this.foilArm[k * 3];
+      const ry = this.foilArm[k * 3 + 1];
+      const rz = this.foilArm[k * 3 + 2];
+      const nx = this.foilNormal[k * 3];
+      const ny = this.foilNormal[k * 3 + 1];
+      const nz = this.foilNormal[k * 3 + 2];
+      const cx = ry * nz - rz * ny;
+      const cy = rz * nx - rx * nz;
+      const cz = rx * ny - ry * nx;
+      const change = dvx * nx + dvy * ny + dvz * nz + dwx * cx + dwy * cy + dwz * cz;
+      const mean = avx * nx + avy * ny + avz * nz + awx * cx + awy * cy + awz * cz;
+      const impulse = -damping * change;
+      const fin = this.foils[k].kind === 'fin';
+      if (fin) this.work.fins += impulse * mean;
+      else this.work.rails += impulse * mean;
+      const force = fin ? this.forces.fins : this.forces.rails;
+      force.x += impulse * nx;
+      force.y += impulse * ny;
+      force.z += impulse * nz;
+      this.foilReaction[k * 3] += impulse * nx;
+      this.foilReaction[k * 3 + 1] += impulse * ny;
+      this.foilReaction[k * 3 + 2] += impulse * nz;
     }
   }
 
@@ -598,17 +836,19 @@ export class BoardBody implements BoardContactBody {
     }
     this.submergedVolume = submerged;
     this.wettedArea = wetted;
+    this.applyFoils(h, water, system);
+    const ft = this.foilTotals;
 
     const I = this.worldInertia;
     const Iw = [I[0] * w.x + I[1] * w.y + I[2] * w.z, I[3] * w.x + I[4] * w.y + I[5] * w.z, I[6] * w.x + I[7] * w.y + I[8] * w.z];
     const gyro = [w.y * Iw[2] - w.z * Iw[1], w.z * Iw[0] - w.x * Iw[2], w.x * Iw[1] - w.y * Iw[0]];
     const weight = -this.mass * WATER.gravity;
-    rhs[0] = h * (totals.bx + totals.px + totals.fx) + waterX;
-    rhs[1] = h * (weight + totals.by + totals.py + totals.fy) + waterY;
-    rhs[2] = h * (totals.bz + totals.pz + totals.fz) + waterZ;
-    rhs[3] = h * (totals.btx + totals.ptx + totals.ftx - gyro[0]) + waterTx;
-    rhs[4] = h * (totals.bty + totals.pty + totals.fty - gyro[1]) + waterTy;
-    rhs[5] = h * (totals.btz + totals.ptz + totals.ftz - gyro[2]) + waterTz;
+    rhs[0] = h * (totals.bx + totals.px + totals.fx + ft[0] + ft[6]) + waterX;
+    rhs[1] = h * (weight + totals.by + totals.py + totals.fy + ft[1] + ft[7]) + waterY;
+    rhs[2] = h * (totals.bz + totals.pz + totals.fz + ft[2] + ft[8]) + waterZ;
+    rhs[3] = h * (totals.btx + totals.ptx + totals.ftx + ft[3] + ft[9] - gyro[0]) + waterTx;
+    rhs[4] = h * (totals.bty + totals.pty + totals.fty + ft[4] + ft[10] - gyro[1]) + waterTy;
+    rhs[5] = h * (totals.btz + totals.ptz + totals.ftz + ft[5] + ft[11] - gyro[2]) + waterTz;
     for (let i = 0; i < 3; i += 1) {
       system[i * 6 + i] += this.mass;
       for (let j = 0; j < 3; j += 1) system[(i + 3) * 6 + j + 3] += I[i * 3 + j];
@@ -685,6 +925,7 @@ export class BoardBody implements BoardContactBody {
       this.reaction[k * 3 + 2] += pressure * nz + water * uz;
     }
 
+    this.settleFoils(h, rhs, avx, avy, avz, awx, awy, awz);
     this.work.gravity += h * weight * avy;
     this.work.buoyancy += h * (totals.bx * avx + totals.by * avy + totals.bz * avz + totals.btx * awx + totals.bty * awy + totals.btz * awz);
     this.work.pressure += h * (totals.px * avx + totals.py * avy + totals.pz * avz + totals.ptx * awx + totals.pty * awy + totals.ptz * awz);

@@ -293,15 +293,21 @@ describe('weight-shift steering', () => {
     return { board, rider, roll: new Vector3(0, 1, 0).applyQuaternion(board.orientation).x };
   };
 
-  it('loads the rail on the requested side, rolling the board and carrying it that way', () => {
+  // Weight on a rail rolls the board onto it and its fins turn it that way. (Held at full steer for
+  // over a second the carve still throws the rider: an open P4e item.)
+  it('loads the rail on the requested side, rolling the board and turning it that way', () => {
     const left = ride(1);
     const right = ride(-1);
     const straight = ride(0);
+    const heading = (board: BoardBody) => {
+      const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+      return Math.atan2(forward.x, forward.z);
+    };
     expect(left.rider.attached && right.rider.attached).toBe(true);
-    expect(left.rider.contact.centreOfPressure.x).toBeGreaterThan(0.03);
-    expect(right.rider.contact.centreOfPressure.x).toBeLessThan(-0.03);
-    expect(left.roll).toBeGreaterThan(0.01);
-    expect(right.roll).toBeLessThan(-0.01);
+    expect(left.roll).toBeGreaterThan(0.05);
+    expect(right.roll).toBeLessThan(-0.05);
+    expect(heading(left.board)).toBeGreaterThan(heading(straight.board));
+    expect(heading(right.board)).toBeLessThan(heading(straight.board));
     expect(left.board.velocity.x).toBeGreaterThan(straight.board.velocity.x);
     expect(right.board.velocity.x).toBeLessThan(straight.board.velocity.x);
   });

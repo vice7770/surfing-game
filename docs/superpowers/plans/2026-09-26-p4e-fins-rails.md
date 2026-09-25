@@ -41,6 +41,13 @@
   - **Front-face steepness at the break**, over 60 s: Beach up to 23° (rarely above 20°), Point up to 30° (594 samples above 20°), Reef up to 48°. Catches are physically possible on the Point and Reef.
   - **A catch bot on the Point:** it waits 3 m outside the break line, paddles when a face arrives and pops up on the cue. It reached 5.4 m/s and lit the cue twice in 3 minutes, but never stood. Without fins the board yaws on the drop.
   - After fins, rerun the bot on each spot and record catch and ride-time distributions (P4f).
+- **Task 2 partly done** (`feat: carve on fins and rails`):
+  - The board carries the thruster and a side face on each rail station, all implicit sideways.
+  - A sideslipping board straightens within 1.5 s; a finless one slides on.
+  - Steering now asks for an edge angle (up to 30°) rather than a fixed weight on the rail. The board rolls onto the rail and turns, 14–30° of heading in the first second.
+  - **Open:** held at full steer on a 15° static face, the carve throws the rider after about a second: the board slows from 7 to 5 m/s and drops away (flight, then 'lost board').
+  - A faster standing balance loop (0.06–0.12 s) oscillated, even without steering, so it stays at 0.15 s. The `carve.ts` probe in the scratchpad reproduces this.
+  - Next: find what decelerates and drops the board (fin induced drag, rail face drag, or traversing the slope). Then try a lean feedforward from the feet's sideways acceleration.
 - **User requests queued:**
   - play the swimmer after a fall and choose to swim back and remount (ROADMAP);
   - the camera views front, behind, side and overview, now done (`8d145db`).
