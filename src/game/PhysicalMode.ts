@@ -5,6 +5,7 @@ import { LipPoints } from '../scene/LipPoints';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera } from '../scene/SpectatorCamera';
 import { SpotSeabed } from '../scene/SpotSeabed';
+import { SPOT_OPTICS } from '../scene/waterOptics';
 import type { WaterSurface } from '../scene/WaterSurface';
 import { smoothstep, type SpotName } from '../wave/Bathymetry';
 import { FarFieldProfile } from '../wave/FarFieldProfile';
@@ -173,6 +174,8 @@ export class PhysicalMode {
     this.storm = swell.storm;
     water.setSource(new PhysicalSurfaceSource(simulation, 1));
     water.setChop(chopForWind(settings.windSpeed));
+    water.setOptics(SPOT_OPTICS[settings.spot]);
+    this.farField.setOptics(SPOT_OPTICS[settings.spot]);
     const offshoreDepth = OFFSHORE_DEPTH[settings.spot];
     const { dx } = simulation.solver;
     const windowMin = simulation.windowXMin;
@@ -202,7 +205,7 @@ export class PhysicalMode {
       leftDepth: (z) => tankDepth(simulation.spot, offshoreDepth, leftX, z) + settings.tide,
       rightDepth: (z) => tankDepth(simulation.spot, offshoreDepth, rightX, z) + settings.tide,
     });
-    this.farField.setProfile(profile, hole, this.focus, { extent: FAR_EXTENT, waveHeight: swell.significantHeight });
+    this.farField.setProfile(profile, hole, this.focus, { extent: FAR_EXTENT });
     this.farField.setChop(chopForWind(settings.windSpeed));
     this.camera.setView(this.camera.view);
   }

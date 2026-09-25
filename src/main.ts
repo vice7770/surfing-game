@@ -30,6 +30,7 @@ import { PlungingSheetMesh } from './scene/PlungingSheetMesh';
 import { WaterSurface } from './scene/WaterSurface';
 import { LegacySurfaceSource } from './scene/LegacySurfaceSource';
 import { DEFAULT_WATER_CHOP } from './scene/waterChop';
+import { SPOT_OPTICS } from './scene/waterOptics';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField, type WaveSettings } from './wave/WaveModel';
 import { PlungingSheet } from './wave/PlungingSheet';
 import { Hud } from './ui/Hud';
@@ -55,6 +56,8 @@ const SPOT_SETTINGS: Record<Exclude<Spot, 'custom'>, TuningSettings> = {
   point: { ...DEFAULT_SETTINGS, height: 1.8, period: 9, speed: 3.3, shelfStrength: 0.25, currentX: -0.2, sunHeight: 0.2, sunDirection: 20 },
   reef: { ...DEFAULT_SETTINGS, height: 2.2, period: 6.5, speed: 4, shelfStrength: 0.65, currentX: 0.5, windX: 0.05, sunHeight: 0.6, sunDirection: -45 },
 };
+/** Water optics for the legacy spots, borrowed from the physical spot each one resembles. */
+const LEGACY_OPTICS: Record<Spot, SpotName> = { training: 'beach', point: 'point', reef: 'reef', custom: 'beach' };
 const SPOT_NAMES: Record<Spot, string> = {
   training: 'PACIFIC TRAINING BREAK', point: 'GLASSY POINT', reef: 'WINDY REEF', custom: 'CUSTOM BREAK',
 };
@@ -171,6 +174,7 @@ class SurfGame {
       this.scene.add(marker);
     }
 
+    this.refreshSun();
     this.refreshReflection();
 
     this.bindUi();
@@ -211,6 +215,7 @@ class SurfGame {
     this.plungingSheet = new PlungingSheet(this.wave);
     this.water.setSource(new LegacySurfaceSource(this.wave));
     this.water.setChop(DEFAULT_WATER_CHOP);
+    this.water.setOptics(SPOT_OPTICS[LEGACY_OPTICS[spot]]);
     this.physics = this.createPhysics(this.wave, this.activeSettings, this.plungingSheet);
     this.sheetMesh.update(this.plungingSheet);
     this.environment.group.position.z = 0;
@@ -219,6 +224,7 @@ class SurfGame {
       this.environment.setSpot(spot);
       this.sunlight.position.copy(this.environment.sunPosition).normalize().multiplyScalar(45);
       this.sunlight.intensity = 1.2 + 0.6 * settings.sunHeight;
+      this.refreshSun();
       this.refreshReflection();
     }
     this.boardWake.reset();
@@ -294,6 +300,7 @@ class SurfGame {
       this.environment.setSunPosition(shared.sunHeight, shared.sunDirection);
       this.sunlight.position.copy(this.environment.sunPosition).normalize().multiplyScalar(45);
       this.sunlight.intensity = 1.2 + 0.6 * shared.sunHeight;
+      this.refreshSun();
       this.refreshReflection();
     }
     getElement<HTMLElement>('#app').classList.add('is-physical');
@@ -663,6 +670,14 @@ class SurfGame {
       item.append(detail);
       list.append(item);
     }
+  }
+
+  /** Both water meshes light their crests and bodies from the scene's sun. */
+  private refreshSun(): void {
+    const direction = this.environment.sunPosition.clone().normalize();
+    const radiance = this.sunlight.color.clone().multiplyScalar(this.sunlight.intensity);
+    this.water.setSun(direction, radiance);
+    this.physicalMode.farField.setSun(direction, radiance);
   }
 
   private refreshReflection(): void {

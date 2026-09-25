@@ -1,3 +1,4 @@
+import { ShaderLib } from 'three';
 import { describe, expect, it } from 'vitest';
 import { shallowWaterWaveNumber } from '../wave/dispersion';
 import { FarFieldProfile } from '../wave/FarFieldProfile';
@@ -59,7 +60,7 @@ describe('FarFieldOcean', () => {
       offshoreDepth: () => 5, leftDepth: () => 5, rightDepth: () => 5,
     });
     const ocean = new FarFieldOcean();
-    ocean.setProfile(profile, hole, { x: 0, z: -60 }, { extent: 1500, waveHeight: 1 });
+    ocean.setProfile(profile, hole, { x: 0, z: -60 }, { extent: 1500 });
     expect(ocean.mesh.visible).toBe(true);
     expect(ocean.textureSize).toEqual({ width: 13, height: 2 * profile.samples });
     ocean.update(1234.5);
@@ -68,5 +69,19 @@ describe('FarFieldOcean', () => {
       const expected = (profile.omega[c] * 1234.5) % (2 * Math.PI);
       expect(temporal[c]).toBeCloseTo(expected, 5);
     }
+  });
+
+  it('shades the far field with the tank water optics', () => {
+    const ocean = new FarFieldOcean();
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    ocean.mesh.material.onBeforeCompile(shader as never, undefined as never);
+    for (const chunk of ['beginnormal_vertex', 'begin_vertex']) expect(shader.vertexShader).not.toContain(`#include <${chunk}>`);
+    expect(shader.vertexShader).toContain('vWaterDepth = max( 0.0, farDepth + farHeight )');
+    expect(shader.fragmentShader).not.toContain('#include <color_fragment>');
+    expect(shader.fragmentShader).toContain('waterBodyReflectance( vWaterDepth');
+    expect(shader.fragmentShader).not.toContain('waterCrestThickness');
+    expect(Object.keys(shader.uniforms)).toEqual(expect.arrayContaining(['waterAttenuation', 'waterSunDirection', 'farTable']));
+    expect(ocean.mesh.material.ior).toBeCloseTo(1.333, 6);
+    expect(ocean.mesh.material.clearcoat).toBe(0);
   });
 });

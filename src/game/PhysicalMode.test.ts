@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Scene } from 'three';
 import { WaterSurface } from '../scene/WaterSurface';
 import { LegacySurfaceSource } from '../scene/LegacySurfaceSource';
+import { SPOT_OPTICS } from '../scene/waterOptics';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField } from '../wave/WaveModel';
 import { stormSwell } from '../wave/StormSwell';
 import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, chopForWind, formatPhysicalReadout, spreadingFor, swellFor } from './PhysicalMode';
@@ -50,7 +51,11 @@ describe('PhysicalMode', () => {
     const scene = new Scene();
     const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
     const mode = new PhysicalMode(scene);
+    const waterOptics = vi.spyOn(water, 'setOptics');
+    const farOptics = vi.spyOn(mode.farField, 'setOptics');
     mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef' }, 5, water, quick);
+    expect(waterOptics).toHaveBeenCalledWith(SPOT_OPTICS.reef);
+    expect(farOptics).toHaveBeenCalledWith(SPOT_OPTICS.reef);
     water.update();
     expect(water.grid.nz).toBe(mode.simulation.renderGrid(1).nz);
     expect(mode.seabed.mesh.visible).toBe(true);
