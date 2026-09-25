@@ -35,6 +35,7 @@ interface TuningSettings extends WaveSettings, PhysicsSettings { sunHeight: numb
 
 const DEFAULT_SETTINGS: TuningSettings = {
   ...DEFAULT_WAVE_SETTINGS,
+  sustained: true,
   paddleForce: 14,
   boardResponse: 1,
   sunHeight: 0.35,
@@ -185,6 +186,7 @@ class SurfGame {
     this.water.setWave(this.wave);
     this.physics = this.createPhysics(this.wave, this.activeSettings, this.plungingSheet);
     this.sheetMesh.update(this.plungingSheet);
+    this.environment.group.position.z = 0;
     if (sunChanged || spotChanged) {
       this.environment.setSunPosition(settings.sunHeight, settings.sunDirection);
       this.environment.setSpot(spot);
@@ -217,6 +219,7 @@ class SurfGame {
   private readDraftSettings(): TuningSettings {
     const number = (id: string): number => Number.parseFloat(getElement<HTMLInputElement>(id).value);
     return {
+      sustained: true,
       height: number('#height-slider'),
       period: number('#period-slider'),
       speed: number('#wave-speed-slider'),
@@ -363,6 +366,7 @@ class SurfGame {
     const crestZ = this.wave.crestZ();
     this.crestMarker.position.set(0, this.wave.sample(0, crestZ).height + 0.05, crestZ);
     this.surfer.update(this.physics, this.lastPaddle, elapsed);
+    this.environment.group.position.z = this.physics.position.z;
     this.boardWake.update(this.physics, this.wave, elapsed);
     const contacts = this.physics.contactPoints;
     for (let index = 0; index < contacts.length; index += 1) this.contactMarkers[index].position.copy(contacts[index]);

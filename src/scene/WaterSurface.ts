@@ -20,6 +20,7 @@ export class WaterSurface {
   private readonly resolutionZ = 160;
   private readonly foamMemory: Float32Array;
   private lastWaveTime = 0;
+  private lastZMin = -32;
 
   constructor(private wave: InteractiveWaterField) {
     this.geometry = new PlaneGeometry(48, 80, this.resolutionX, this.resolutionZ);
@@ -47,6 +48,14 @@ export class WaterSurface {
   }
 
   update(): void {
+    if (this.wave.zMin !== this.lastZMin) {
+      const rows = Math.round((this.wave.zMin - this.lastZMin) / (80 / this.resolutionZ));
+      const cells = rows * (this.resolutionX + 1);
+      this.foamMemory.copyWithin(0, cells);
+      this.foamMemory.fill(0, this.foamMemory.length - cells);
+      this.lastZMin = this.wave.zMin;
+    }
+    this.mesh.position.z = this.wave.zMin + 32;
     const color = this.baseColor.clone();
     const crestZ = this.wave.crestZ();
     const elapsed = Math.max(0, this.wave.time - this.lastWaveTime);
@@ -54,7 +63,7 @@ export class WaterSurface {
     const foamDecay = Math.exp(-elapsed / 2.2);
     for (let i = 0; i < this.positions.count; i += 1) {
       const x = this.positions.getX(i);
-      const z = this.positions.getZ(i);
+      const z = this.positions.getZ(i) + this.mesh.position.z;
       const height = this.wave.heightAt(x, z);
       this.positions.setY(i, height);
       const slope = this.wave.slopeMagnitude(x, z);
@@ -82,6 +91,8 @@ export class WaterSurface {
     this.wave = wave;
     this.foamMemory.fill(0);
     this.lastWaveTime = 0;
+    this.lastZMin = wave.zMin;
+    this.mesh.position.z = wave.zMin + 32;
   }
 
   dispose(): void {

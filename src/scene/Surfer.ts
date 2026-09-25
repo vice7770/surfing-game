@@ -1,6 +1,6 @@
 import {
-  BoxGeometry, CapsuleGeometry, CylinderGeometry, DoubleSide, Group, Mesh,
-  MeshStandardMaterial, Shape, ShapeGeometry, SphereGeometry, Vector3,
+  BoxGeometry, CapsuleGeometry, CylinderGeometry, DoubleSide, Euler, Group, Mesh,
+  MeshStandardMaterial, Quaternion, Shape, ShapeGeometry, SphereGeometry, Vector3,
 } from 'three';
 import type { BoardPhysics } from '../physics/BoardPhysics';
 import { createSurfboardGeometry } from './SurfboardGeometry';
@@ -191,5 +191,16 @@ export class Surfer {
     posePoint(j[11], [0.13, 0.1, -1.01], [0.2, 0.1, -0.62], blend);
     this.legs[0].update(j[6], j[7], j[8]);
     this.legs[1].update(j[9], j[10], j[11]);
+    if (physics.riderFall.active) {
+      const boardInverse = new Quaternion().setFromEuler(physics.rotation).invert();
+      const fallRotation = new Quaternion().setFromEuler(new Euler(
+        physics.riderFall.rotation.x, 0, physics.riderFall.rotation.z, 'YXZ',
+      ));
+      const riderOrigin = physics.riderFall.position.clone().sub(
+        new Vector3(0, 0.65, 0).applyQuaternion(fallRotation),
+      );
+      this.rider.position.copy(riderOrigin.sub(physics.position).applyQuaternion(boardInverse));
+      this.rider.quaternion.copy(boardInverse.multiply(fallRotation));
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { Euler, Vector3 } from 'three';
 import type { InteractiveWaterField } from '../wave/WaveModel';
 import type { PlungingSheet } from '../wave/PlungingSheet';
+import { RiderFall } from './RiderFall';
 
 export type RunState = 'ready' | 'paddling' | 'pop-up-available' | 'catching' | 'riding' | 'missed' | 'wipeout' | 'complete';
 
@@ -17,6 +18,7 @@ export interface BoardInput {
 
 export interface BoardDiagnostics {
   speed: number;
+  rideDistance: number;
   waterline: number;
   submersion: number;
   catchProgress: number;
@@ -41,11 +43,13 @@ export class BoardPhysics {
   readonly position = new Vector3(0, 0.05, 0);
   readonly velocity = new Vector3();
   readonly rotation = new Euler(0, 0, 0, 'YXZ');
+  readonly riderFall = new RiderFall();
   state: RunState = 'ready';
   time = 0;
   rideDistance = 0;
   private catchTime = 0;
   private rideTime = 0;
+  private wipeoutElapsed = 0;
   private aboveWaterTime = 0;
   private lastZ = 0;
   private lastWaterline = 0;
@@ -84,6 +88,22 @@ export class BoardPhysics {
   get riderLean(): number { return this.lean; }
 
   step(dt: number, input: BoardInput): BoardDiagnostics {
+    if (this.state === 'wipeout') {
+      if (this.wipeoutElapsed >= 3) return this.diagnostics();
+      this.wave.step(dt);
+      this.plungingSheet?.step(dt);
+      this.time += dt;
+      this.wipeoutElapsed += dt;
+      this.riderFall.step(dt, this.wave);
+      const water = this.wave.sample(this.position.x, this.position.z);
+      this.velocity.x += (water.velocity.x - this.velocity.x) * Math.min(1, dt * 0.8);
+      this.velocity.z += (water.velocity.z - this.velocity.z) * Math.min(1, dt * 0.8);
+      this.velocity.y += (water.height + 0.08 - this.position.y) * dt * 8;
+      this.velocity.y *= Math.exp(-4 * dt);
+      this.position.addScaledVector(this.velocity, dt);
+      this.rotation.z *= Math.exp(-0.5 * dt);
+      return this.diagnostics();
+    }
     if (this.isTerminal()) return this.diagnostics();
     this.wave.step(dt);
     this.plungingSheet?.step(dt);
@@ -203,8 +223,11 @@ export class BoardPhysics {
 
     if (this.state === 'riding') {
       const control = Math.min(1, Math.abs(input.steer));
+      const faceGap = Math.max(0, Math.abs(crestDistanceFrom(this.wave, this.position.z))
+        - this.wave.packetWidth * 2);
       const instability = meanBreaking * 0.6 + Math.max(0, Math.abs(lateralSlip) - 0.8) * 0.06
-        + Math.max(0, Math.abs(this.rotation.z) - 0.45) * 0.28;
+        + Math.max(0, Math.abs(this.rotation.z) - 0.45) * 0.28
+        + (this.wave.settings.sustained ? control * control * 0.1 + Math.min(0.5, faceGap * 0.06) : 0);
       this.balance = Math.max(0, Math.min(1, this.balance + dt * (0.11 * (1 - control) - instability)));
       const pocket = crestDistanceFrom(this.wave, this.position.z) > -this.wave.packetWidth * 0.7
         && crestDistanceFrom(this.wave, this.position.z) < this.wave.packetWidth * 1.2;
@@ -316,18 +339,21 @@ export class BoardPhysics {
       }
       if (this.balance <= 0.04) {
         this.state = 'wipeout';
-        this.outcomeReason = 'Breaking water and the turn overwhelmed your balance.';
+        this.outcomeReason = this.wave.settings.sustained && Math.abs(crestDistance) > this.wave.packetWidth * 2
+          ? 'The wave ran ahead and the rider lost balance on the fading face.'
+          : 'Breaking water and the turn overwhelmed your balance.';
       }
-      if (this.state === 'riding' && this.rideDistance >= 20) {
+      if (!this.wave.settings.sustained && this.state === 'riding' && this.rideDistance >= 20) {
         this.state = 'complete';
         this.outcomeReason = 'You held a 20 m line on the wave.';
-      } else if (this.state === 'riding' && this.rideTime >= 3 && crestDistance > 15) {
+      } else if (!this.wave.settings.sustained && this.state === 'riding' && this.rideTime >= 3 && crestDistance > 15) {
         this.state = this.rideDistance >= 8 ? 'complete' : 'missed';
         this.outcomeReason = this.state === 'complete'
           ? 'You rode the face until the wave ran ahead.'
           : 'The wave ran ahead before the ride developed.';
       }
     }
+    if (this.state === 'wipeout') this.riderFall.start(this.position, this.velocity, this.rotation.z);
     this.lastZ = this.position.z;
     return this.diagnostics();
   }
@@ -337,11 +363,13 @@ export class BoardPhysics {
     this.position.set(0, 0.05, 0);
     this.velocity.set(0, 0, 0);
     this.rotation.set(0, 0, 0);
+    this.riderFall.reset();
     this.state = 'ready';
     this.time = 0;
     this.rideDistance = 0;
     this.catchTime = 0;
     this.rideTime = 0;
+    this.wipeoutElapsed = 0;
     this.aboveWaterTime = 0;
     this.lastZ = 0;
     this.lastWaterline = 0;
@@ -372,6 +400,7 @@ export class BoardPhysics {
     const crestDistance = this.wave.crestZ() - this.position.z;
     return {
       speed: this.velocity.length(),
+      rideDistance: this.rideDistance,
       waterline: this.lastWaterline || waterline,
       submersion: this.lastSubmersion,
       catchProgress: this.catchTime,

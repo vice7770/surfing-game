@@ -22,6 +22,7 @@ export class Hud {
   private readonly state = document.querySelector<HTMLElement>('#run-state')!;
   private readonly seed = document.querySelector<HTMLElement>('#seed-label')!;
   private readonly speed = document.querySelector<HTMLElement>('#speed-value')!;
+  private readonly rideDistance = document.querySelector<HTMLElement>('#ride-distance-value')!;
   private readonly waterline = document.querySelector<HTMLElement>('#waterline-value')!;
   private readonly submersion = document.querySelector<HTMLElement>('#submersion-value')!;
   private readonly period = document.querySelector<HTMLElement>('#period-value')!;
@@ -47,6 +48,7 @@ export class Hud {
     this.state.dataset.state = diagnostics.state;
     this.seed.textContent = `SEED ${seed.toString().padStart(4, '0')}`;
     this.speed.textContent = diagnostics.speed.toFixed(1);
+    this.rideDistance.textContent = diagnostics.rideDistance.toFixed(1);
     this.waterSpeed.textContent = diagnostics.localWaterSpeed.toFixed(1);
     this.relativeSpeed.textContent = diagnostics.relativeSpeed.toFixed(1);
     this.waterline.textContent = diagnostics.waterline.toFixed(2);

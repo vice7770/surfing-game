@@ -7,6 +7,7 @@ export interface WaveSettings {
   currentX?: number;
   windX?: number;
   shelfStrength?: number;
+  sustained?: boolean;
 }
 
 export interface WaveSample {
@@ -51,7 +52,8 @@ export function makeSeedShape(seed: number): WaveSeedShape {
 
 /**
  * CPU-authoritative depth-averaged shallow-water approximation. The incoming wave is initialized
- * as a right-travelling height/velocity packet, then evolves on a fixed grid.
+ * as a right-travelling height/velocity packet, then evolves on a grid that can
+ * scroll with a replenished swell during sustained play.
  * Rendering and board physics sample this same state. Wave speed is tunable, so
  * the field uses an effective pressure coefficient while board gravity remains
  * SI gravity; this is a qualitative, deterministic surfing model, not CFD.
@@ -63,11 +65,12 @@ export class InteractiveWaterField {
   readonly nz = 161;
   readonly spacing = 0.5;
   readonly xMin = -24;
-  readonly zMin = -32;
+  zMin = -32;
   readonly meanDepth: number;
   readonly effectiveGravity: number;
   readonly packetWidth: number;
   time = 0;
+  private driverZ = this.startZ;
   /** Cumulative horizontal-flow energy removed by breaker damping, in totalEnergy() units. */
   breakingDissipation = 0;
 
@@ -114,6 +117,10 @@ export class InteractiveWaterField {
   /** Advance the coupled surface/flow state by one fixed simulation step. */
   step(dt: number): void {
     if (!(dt > 0) || !Number.isFinite(dt)) return;
+    if (this.settings.sustained) {
+      this.driverZ += this.settings.speed * 1.08 * Math.sqrt(this.depthAt(0, this.driverZ) / this.meanDepth) * dt;
+      this.advanceWindow();
+    }
     const dx = this.spacing;
     const inv2Dx = 1 / (2 * dx);
     const invDxSquared = 1 / (dx * dx);
@@ -210,6 +217,8 @@ export class InteractiveWaterField {
       wNext[index] *= damping;
     }
 
+    if (this.settings.sustained) this.driveSwell(hNext, wNext, dt);
+
     for (let index = 0; index < h.length; index += 1) {
       this.surfaceVelocityY[index] = (hNext[index] - h[index]) / dt;
     }
@@ -244,7 +253,7 @@ export class InteractiveWaterField {
   /** A scheduled peel front gates breaking; live crest and slope set its strength. */
   breakingAt(x: number, z: number, slope = this.slopeMagnitude(x, z), centerCrest = this.crestZ()): number {
     if (this.settings.height <= 0) return 0;
-    const frontX = -20 + this.peelSpeed * (this.time - 2);
+    const frontX = this.breakingFrontX;
     if (frontX <= x) return 0;
     const behindFront = Math.max(0, Math.min(1, (frontX - x) / 2.5));
     const localCrest = centerCrest + this.crestOffset(x) - this.crestOffset(0);
@@ -259,6 +268,11 @@ export class InteractiveWaterField {
   }
 
   get breakingFrontX(): number {
+    if (this.settings.sustained) {
+      const span = 28;
+      const phase = Math.max(0, this.time - 2) * this.peelSpeed;
+      return -20 + phase % span;
+    }
     return Math.max(this.xMin, Math.min(this.xMin + (this.nx - 1) * this.spacing,
       -20 + this.peelSpeed * (this.time - 2)));
   }
@@ -351,6 +365,8 @@ export class InteractiveWaterField {
 
   reset(): void {
     this.time = 0;
+    this.zMin = -32;
+    this.driverZ = this.startZ;
     this.breakingDissipation = 0;
     this.height.fill(0);
     this.nextHeight.fill(0);
@@ -359,7 +375,47 @@ export class InteractiveWaterField {
     this.velocityZ.fill(0);
     this.nextVelocityZ.fill(0);
     this.surfaceVelocityY.fill(0);
+    for (let iz = 0; iz < this.nz; iz += 1) {
+      this.bedDepth.fill(this.depthAt(0, this.zMin + iz * this.spacing), iz * this.nx, (iz + 1) * this.nx);
+    }
     this.initializeIncomingWave();
+  }
+
+  private advanceWindow(): void {
+    const shiftRows = 16;
+    const shiftCells = shiftRows * this.nx;
+    while (this.driverZ > this.zMin + 38) {
+      for (const values of [this.height, this.nextHeight, this.velocityX, this.nextVelocityX,
+        this.velocityZ, this.nextVelocityZ, this.surfaceVelocityY, this.breakingStrength, this.bedDepth]) {
+        values.copyWithin(0, shiftCells);
+        values.fill(0, values.length - shiftCells);
+      }
+      this.zMin += shiftRows * this.spacing;
+      for (let iz = this.nz - shiftRows; iz < this.nz; iz += 1) {
+        this.bedDepth.fill(this.depthAt(0, this.zMin + iz * this.spacing), iz * this.nx, (iz + 1) * this.nx);
+      }
+    }
+  }
+
+  private driveSwell(height: Float32Array, velocityZ: Float32Array, dt: number): void {
+    // A moving wave maker replaces energy lost to spreading and breaking. It
+    // acts on the same field sampled by the board, independently of the rider.
+    const response = 1 - Math.exp(-1.15 * dt);
+    const reach = this.packetWidth * 3.2;
+    const first = Math.max(1, Math.floor((this.driverZ - reach - this.zMin) / this.spacing));
+    const last = Math.min(this.nz - 2, Math.ceil((this.driverZ + reach - this.zMin) / this.spacing));
+    for (let iz = first; iz <= last; iz += 1) {
+      const z = this.zMin + iz * this.spacing;
+      for (let ix = 1; ix < this.nx - 1; ix += 1) {
+        const x = this.xMin + ix * this.spacing;
+        const index = iz * this.nx + ix;
+        const target = this.waveProfile(x, z, this.driverZ);
+        const envelope = Math.exp(-0.5 * ((z - this.driverZ) / (this.packetWidth * 1.4)) ** 2);
+        const gain = response * envelope;
+        height[index] += (target - height[index]) * gain;
+        velocityZ[index] += (this.settings.speed * target / this.meanDepth - velocityZ[index]) * gain;
+      }
+    }
   }
 
   private initializeIncomingWave(): void {
@@ -378,7 +434,11 @@ export class InteractiveWaterField {
   }
 
   private initialHeight(x: number, z: number): number {
-    const q = (z - this.startZ - this.crestOffset(x)) / this.packetWidth;
+    return this.waveProfile(x, z, this.startZ);
+  }
+
+  private waveProfile(x: number, z: number, centerZ: number): number {
+    const q = (z - centerZ - this.crestOffset(x)) / this.packetWidth;
     const skewed = q * (1 + this.shape.skew * Math.tanh(q));
     const crest = Math.exp(-0.5 * skewed * skewed);
     const trough = 0.55 * Math.exp(-0.5 * ((q - 1.65) / 0.75) ** 2);

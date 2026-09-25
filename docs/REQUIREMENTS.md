@@ -10,7 +10,7 @@ Evolve the current browser-based Three.js prototype into a physics-focused surfi
 2. Paddle to build speed while reading the visible wave/board interaction for a suitable pop-up opportunity.
 3. Trigger Get Up during the valid window; the surfer stands and the run attempts a wave catch.
 4. Release paddle and steer/balance while moving water carries the board forward through simulated forces.
-5. Reach ride complete, miss the window/wave, or wipe out; replay the same seed/settings or generate a different wave.
+5. Stay on the driven wave as long as balance and contact allow, or miss the catch or wipe out; replay the same seed/settings or generate a different wave.
 
 ## MVP functional requirements
 
@@ -21,7 +21,7 @@ Evolve the current browser-based Three.js prototype into a physics-focused surfi
 - Provide surface height, slope/normal, and local water motion to rendering and board force calculations from that shared state.
 - Wave conditions remain reproducible and tunable; a seed adds deterministic variation without defeating explicit settings.
 - Research the Three.js compute-water example as a reference for height-field propagation and water/object coupling. Prototype CPU/reference and optional WebGPU compute approaches; preserve WebGL 2 as the baseline unless compatibility testing demonstrates the required compute behavior.
-- Render the evolving finite water field, visible incoming crest, restrained slope-driven foam, horizon/sky, and light. Board support and motion must agree with that physical state.
+- Render the evolving water field, visible incoming crest, restrained slope-driven foam, horizon/sky, and light. The playable mode scrolls the grid and replenishes the wave so the ride is not limited by the field edge. Board support and motion must agree with that physical state.
 - Provide a diagnostic side/profile view with the crest and board contact samples visible.
 
 ### Board and rider
@@ -31,6 +31,7 @@ Evolve the current browser-based Three.js prototype into a physics-focused surfi
 - Include modest two-way coupling: the board hull can create a small local displacement/wake. Detailed hand/paddle-fluid forces and more complete coupling are future work.
 - After a valid pop-up, wave-driven forward travel must result from the shared water field and board forces. Continued paddle thrust, scripted translation, and timed ride animation must not create or sustain the ride.
 - Apply a bounded contact correction so no hull sample penetrates the water surface by more than 0.2 m during approach, catch, or ride.
+- On wipeout, detach the rider from the board and integrate a separate falling body with gravity, water-relative drag, buoyancy, and surface contact. Keep the board and water moving after the fall.
 - Use a fixed 1/60 s physics step with a capped catch-up loop. Rendering runs independently.
 - The MVP aims for stable, legible, physically emergent qualitative surfing behavior, not measured hydrodynamic accuracy.
 
@@ -72,8 +73,8 @@ Evolve the current browser-based Three.js prototype into a physics-focused surfi
 - A successful catch is sustained riding in which simulated water forces carry the board. Crest proximity alone is insufficient.
 - An early Get Up attempt has no effect. Missing the valid opportunity can result in `missed`; losing board support/stability can result in `wipeout`.
 - Wipe out if board roll exceeds 48°, pitch exceeds 55°, or all four board samples remain more than 0.25 m above the water for 1 s.
-- Complete after riding 20 m with the wave, or after at least 8 m when the crest passes 15 m beyond the board. A shorter catch that loses the wave is `missed` rather than a completed ride.
-- Terminal states freeze simulation and offer Replay and New Wave.
+- In the playable sustained mode, keep riding past 20 m until stability or water contact fails. The earlier finite-wave completion rules remain available to the legacy simulation tests.
+- Missed and complete states freeze simulation. After wipeout, the water, board, and detached rider continue through the fall, then settle into the replay scene while Replay and New Wave are offered.
 
 ### Replay and seeds
 
@@ -100,7 +101,7 @@ Evolve the current browser-based Three.js prototype into a physics-focused surfi
 - After Get Up and with no paddle input, the board travels with the incoming wave for at least 3 seconds as a result of board-water physics; no scripted forward ride motion is used.
 - Rendering and board-contact samples use the same water state and remain aligned.
 - Steering changes board heading/lean smoothly; no unbounded drift or NaN state occurs during a normal run.
-- Miss, wipeout, and ride-complete outcomes are reachable and expose Replay/New Wave.
+- Miss and wipeout outcomes are reachable and expose Replay/New Wave. The sustained playable mode has no automatic distance finish.
 - Replay restores identical seed/settings and reset state; New Wave changes the seed and visible crest profile.
 - Diagnostic view and overlay expose local water motion, board speed relative to water, distance to crest/face, pop-up eligibility, and board support.
 - Keep the playable prototype and later physics changes in reviewable local commits. Publishing to the GitHub remote is a separate handoff.

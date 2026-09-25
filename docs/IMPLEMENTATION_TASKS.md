@@ -47,6 +47,14 @@ The first checklist records the delivered analytic-wave baseline. The following 
 5. [x] **Breaker energy accounting:** accumulate the exact relative horizontal-flow energy removed by damping in the same units as the field-energy diagnostic; compare otherwise identical broken and unbroken waves and verify cumulative loss resets on Replay.
 6. [x] **3D lip and collision prototype:** spawn a bounded ballistic sheet from the shared break, render a thickened mesh from its parcels, and exchange capped rider/parcel collision impulse. Verify determinism, reset, rendered-contact agreement, board response, preset rides, and browser frame rate. See [ADR 0003](adr/0003-plunging-sheet-collision.md) for its limits.
 
+## Sustained ride and physical wipeout
+
+1. [x] **Continuous swell:** scroll the authoritative water grid with the traveling crest and replenish its height and flow after spreading and breaker loss. Keep the swell independent of board position and keep board translation force-driven.
+2. [x] **Long ride:** remove the playable 20 m finish, show live ride distance, and retain a legacy finite-wave branch for previous regression tests. A clean default catch can continue beyond 140 m without paddle input.
+3. [x] **Detached fall:** release the rider from the board on wipeout and integrate gravity, water-relative drag, buoyancy, and surface contact while the board and water keep moving through the fall.
+4. [x] **Lost-face outcome:** let a carve that falls far behind the crest drain balance and trigger a wipeout rather than leaving a stationary board marked as riding.
+5. [x] **Browser and release check:** verify the long ride, scrolling water and coastline, wipeout presentation, full tests, and production build. The observed desktop browser run stayed near 120 FPS.
+
 ## After MVP acceptance
 
 - [ ] **Publish to GitHub:** `origin` already points to `vice7770/surfing-game`. Local prototype and physics commits remain unpushed; publication is a separate handoff step.
