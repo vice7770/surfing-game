@@ -1,6 +1,6 @@
-import { Vector3 } from 'three';
+import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import type { BodyWaterSample } from './DetachedSurfer';
+import { DetachedSurfer, type BodyWaterSample } from './DetachedSurfer';
 import { horizontalProfileGain, PhysicalBodyWaterField } from './PhysicalBodyWaterField';
 import { SurfZoneSimulation, TANK } from '../wave/SurfZoneSimulation';
 
@@ -96,5 +96,26 @@ describe('PhysicalBodyWaterField', () => {
     field.sampleAt(new Vector3(solver.xCenters[4], 0, solver.zCenters[20]), sample);
     expect(sample.flow.length()).toBeCloseTo(12);
     expect(Number.isFinite(sample.flow.z)).toBe(true);
+  });
+
+  it('transports a detached body with the physical solver flow', () => {
+    const still = fixture();
+    const moving = fixture();
+    for (const run of [still, moving]) run.simulation.solver.h.fill(4);
+    moving.simulation.solver.qz.fill(8);
+    const x = moving.simulation.solver.xCenters[4];
+    const z = moving.simulation.solver.zCenters[20];
+    const center = new Vector3(x, moving.simulation.bedAt(x, z) + 2, z);
+    const bodies = [new DetachedSurfer(), new DetachedSurfer()];
+    for (const body of bodies) body.start({
+      center, orientation: new Quaternion(), velocity: new Vector3(), angularVelocity: new Vector3(),
+    });
+    for (let step = 0; step < 60; step += 1) {
+      bodies[0].step(1 / 60, still.field);
+      bodies[1].step(1 / 60, moving.field);
+    }
+    expect(bodies[1].centerOfMass().z).toBeGreaterThan(bodies[0].centerOfMass().z + 0.5);
+    expect(bodies[0].outsideDomain).toBe(false);
+    expect(bodies[1].outsideDomain).toBe(false);
   });
 });
