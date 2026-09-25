@@ -36,7 +36,8 @@ describe('PhysicalBodyWaterField', () => {
     expect(sample.flowModel).toBe('reconstructed');
     expect(sample.flow.x).toBeGreaterThan(0);
     expect(sample.flow.z / sample.flow.x).toBeCloseTo(2);
-    expect(sample.flow.y).toBe(0);
+    expect(Number.isFinite(sample.flow.y)).toBe(true);
+    expect(Math.abs(sample.flow.y)).toBeLessThanOrEqual(3);
   });
 
   it('has lower horizontal flow near the bed than near the surface, and flattens the profile in a bore', () => {
@@ -94,8 +95,31 @@ describe('PhysicalBodyWaterField', () => {
     solver.h.fill(0.011);
     solver.qz.fill(10);
     field.sampleAt(new Vector3(solver.xCenters[4], 0, solver.zCenters[20]), sample);
-    expect(sample.flow.length()).toBeCloseTo(12);
+    expect(Math.hypot(sample.flow.x, sample.flow.z)).toBeCloseTo(12);
     expect(Number.isFinite(sample.flow.z)).toBe(true);
+  });
+
+  it('reconstructs upward motion over a rising bed and caps vertical flow', () => {
+    const { simulation, field, sample } = fixture();
+    const { solver } = simulation;
+    solver.h.fill(3);
+    solver.qz.fill(6);
+    // Use a local ramp in the sampled bed while the mean horizontal flow is uniform.
+    for (let row = 0; row < solver.nz; row += 1) {
+      for (let column = 0; column < solver.nx; column += 1) {
+        solver.bed[row * solver.nx + column] = 0.2 * solver.zCenters[row];
+      }
+    }
+    const x = solver.xCenters[4];
+    const z = solver.zCenters[20];
+    const bed = simulation.bedAt(x, z);
+    field.sampleAt(new Vector3(x, bed + 1.5, z), sample);
+    expect(sample.flow.y).toBeGreaterThan(0);
+    expect(sample.flow.y).toBeLessThan(3);
+    solver.qz.fill(600);
+    field.sampleAt(new Vector3(x, bed + 1.5, z), sample);
+    expect(sample.flow.y).toBeLessThanOrEqual(3);
+    expect(Number.isFinite(sample.flow.y)).toBe(true);
   });
 
   it('transports a detached body with the physical solver flow', () => {
