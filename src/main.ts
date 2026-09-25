@@ -677,7 +677,7 @@ class SurfGame {
     this.environment.group.scale.setScalar(1);
     this.environment.group.position.set(0, 0, 0);
     const hidden = [this.water.mesh, this.sheetMesh.mesh, this.surfer.group, this.physicalMode.seabed.mesh, this.physicalMode.farField.mesh,
-      this.boardWake.trail, this.boardWake.spray, this.breakSpray.points, this.seabed.mesh,
+      this.physicalMode.lipPoints.mesh, this.boardWake.trail, this.boardWake.spray, this.breakSpray.points, this.seabed.mesh,
       this.crestMarker, this.environment.sunMesh, ...this.contactMarkers];
     const visibility = hidden.map((object) => object.visible);
     hidden.forEach((object) => { object.visible = false; });

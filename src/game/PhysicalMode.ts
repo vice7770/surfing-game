@@ -1,6 +1,7 @@
 import type { Scene } from 'three';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
+import { LipPoints } from '../scene/LipPoints';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera } from '../scene/SpectatorCamera';
 import { SpotSeabed } from '../scene/SpotSeabed';
@@ -127,6 +128,8 @@ export function formatPhysicalReadout(simulation: SurfZoneSimulation, storm?: St
     { label: 'BREAKER', value: breaker.type === 'none' ? 'FLAT BED' : `ξ ${breaker.value.toFixed(2)} · ${breaker.type.toUpperCase()}` },
     { label: 'BREAKING', value: `${Math.round(simulation.breakingFraction() * 100)} % of the surf zone` },
     { label: 'PEEL', value: peelText },
+    { label: 'LIP', value: simulation.lipLaunches === 0 ? 'no lip yet'
+      : `${simulation.lipLaunches} throws · ${simulation.lipVolume.toFixed(1)} m³ · ${simulation.lip.airborneVolume().toFixed(1)} m³ airborne` },
     { label: 'WIND', value: wind === 0 ? 'calm'
       : `${Math.abs(wind)} m/s ${wind > 0 ? 'onshore' : 'offshore'} · breaking thresholds ×${simulation.breaking.onsetScale.toFixed(2)}` },
   ];
@@ -141,13 +144,14 @@ export class PhysicalMode {
   readonly camera = new SpectatorCamera();
   readonly seabed = new SpotSeabed();
   readonly farField = new FarFieldOcean();
+  readonly lipPoints = new LipPoints();
   simulation!: SurfZoneSimulation;
   /** The storm behind the running sea, in storm mode. */
   storm?: StormSwell;
   focus = { x: 0, z: 0 };
 
   constructor(scene: Scene) {
-    scene.add(this.seabed.mesh, this.farField.mesh);
+    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh);
   }
 
   /** Build the surf zone (warm start and spin-up take a few seconds) and show it on `water`. */
@@ -210,6 +214,7 @@ export class PhysicalMode {
   update(dt: number): void {
     this.camera.update(this.simulation, this.focus, dt);
     this.farField.update(this.simulation.seaTime);
+    this.lipPoints.update(this.simulation.lip);
   }
 
   cameraBelowSurface(margin = 0.1): boolean {
@@ -220,5 +225,6 @@ export class PhysicalMode {
   setVisible(visible: boolean): void {
     this.seabed.mesh.visible = visible;
     this.farField.mesh.visible = visible;
+    this.lipPoints.mesh.visible = visible;
   }
 }

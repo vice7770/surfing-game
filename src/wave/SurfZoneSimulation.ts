@@ -1,6 +1,7 @@
 import { createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
+import { PlungingLip, lipThrow } from './PlungingLip';
 import { SeaState } from './SeaState';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import { ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
@@ -85,12 +86,19 @@ export class SurfZoneSimulation {
   readonly solver: ShallowWaterSolver;
   readonly plan: SetRunPlan;
   readonly breaking: BreakingModel;
+  /** Ballistic lip parcels thrown by plunging breakers (plan Q12). */
+  readonly lip: PlungingLip;
+  /** Lip throws so far, and their total volume, m³. */
+  lipLaunches = 0;
+  lipVolume = 0;
   readonly peel: PeelTracker;
   lastStepMs = 0;
   /** Most offshore breaking cell per column last step (Infinity when none). */
   private readonly outerBreak: Float64Array;
   /** The first pass only records the spin-up's bores; onsets count from the next step. */
   private onsetsArmed = false;
+  /** When each column last started a wave that could throw a lip, s. */
+  private lastThrow!: Float64Array;
   private readonly seaTimeOffset: number;
   private mapping?: {
     grid: RenderGrid; xMin: number; columns: Int32Array; columnWeights: Float64Array;
@@ -133,6 +141,8 @@ export class SurfZoneSimulation {
     this.breaking.update(0);
     this.peel = new PeelTracker(this.solver.xCenters, config.peakPeriod);
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
+    this.lip = new PlungingLip(this.solver);
+    this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
   }
 
   get seaTime(): number {
@@ -153,6 +163,7 @@ export class SurfZoneSimulation {
     this.solver.step(dt);
     this.breaking.update(dt);
     this.markBreakingOnsets();
+    this.lip.step(dt);
     this.lastStepMs = performance.now() - start;
   }
 
@@ -207,17 +218,66 @@ export class SurfZoneSimulation {
     const firstRow = solver.rowBelow(TANK.fineFrom);
     for (let column = 0; column < solver.nx; column += 1) {
       let outer = Infinity;
+      let row = -1;
       for (let iz = firstRow; iz < solver.nz; iz += 1) {
         if (this.breaking.strength[iz * solver.nx + column] > 0.3) {
           outer = solver.zCenters[iz];
+          row = iz;
           break;
         }
       }
       const previous = this.outerBreak[column];
-      if (this.onsetsArmed && outer < previous - 5) this.peel.markOnset(column, solver.time);
+      if (this.onsetsArmed && outer < previous - 5) {
+        this.peel.markOnset(column, solver.time);
+        this.throwLip(column, row);
+      }
       this.outerBreak[column] = outer;
     }
     this.onsetsArmed = true;
+  }
+
+  /**
+   * Throw a lip where a new wave starts breaking in `column`, if the local
+   * breaker-point Iribarren number says plunging. The crest is the highest
+   * surface up to four cells seaward of the outermost breaking cell; H_b = γ h
+   * there, and the slope is the local bed gradient. A column throws at most once
+   * per 0.7 Tp (one wave), and only where the still depth is at least 0.4 h_b:
+   * shallower first breaks are swash bores reaching the shore after a lull, not
+   * new breakers, and a lip there would carry almost no water (volume ∝ H²).
+   */
+  private throwLip(column: number, row: number): void {
+    const { solver } = this;
+    const { nx, nz, bed, zCenters } = solver;
+    if (solver.time - this.lastThrow[column] < 0.7 * this.config.peakPeriod) return;
+    let crest = row * nx + column;
+    for (let iz = row - 1; iz >= Math.max(1, row - 4); iz -= 1) {
+      if (solver.surfaceAt(iz * nx + column) > solver.surfaceAt(crest)) crest = iz * nx + column;
+    }
+    const crestRow = Math.floor(crest / nx);
+    const stillDepth = solver.restLevel - bed[crest];
+    if (!(stillDepth >= 0.4 * this.breakerDepth()) || crestRow < 1 || crestRow > nz - 2) return;
+    this.lastThrow[column] = solver.time;
+    const slopeZ = (bed[crest + nx] - bed[crest - nx]) / (zCenters[crestRow + 1] - zCenters[crestRow - 1]);
+    const slopeX = column > 0 && column < nx - 1 ? (bed[crest + 1] - bed[crest - 1]) / (2 * solver.dx) : 0;
+    const breakerHeight = BREAKER_INDEX * stillDepth;
+    const deepWavelength = (GRAVITY * this.config.peakPeriod ** 2) / (2 * Math.PI);
+    const shape = lipThrow({
+      iribarren: Math.hypot(slopeX, slopeZ) / Math.sqrt(breakerHeight / deepWavelength),
+      breakerHeight,
+      windOverCelerity: (this.config.windSpeed ?? 0) / Math.sqrt(GRAVITY * stillDepth),
+      width: solver.dx,
+    });
+    if (!shape) return;
+    // The jet leaves along the crest flow, which points the way the wave travels.
+    const flowX = solver.qx[crest];
+    const flowZ = solver.qz[crest];
+    const flow = Math.hypot(flowX, flowZ);
+    const along = flowZ > 0 && flow > 0 ? { x: flowX / flow, z: flowZ / flow } : { x: 0, z: 1 };
+    const thrown = this.lip.launch(crest, { x: along.x * shape.speed, z: along.z * shape.speed }, solver.surfaceAt(crest), shape.volume);
+    if (thrown > 0) {
+      this.lipLaunches += 1;
+      this.lipVolume += thrown;
+    }
   }
 
   /** Water surface elevation, m; on dry land this is the bed. */

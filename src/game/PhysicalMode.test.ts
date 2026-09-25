@@ -57,13 +57,20 @@ describe('PhysicalMode', () => {
     expect(scene.children).toContain(mode.seabed.mesh);
     expect(scene.children).toContain(mode.farField.mesh);
     expect(mode.farField.mesh.visible).toBe(true);
+    expect(scene.children).toContain(mode.lipPoints.mesh);
+    expect(mode.lipPoints.mesh.visible).toBe(true);
     expect(mode.farField.textureSize.width).toBe(mode.simulation.sea.components.length + 1);
     expect(mode.focus).toEqual(mode.simulation.breakPoint());
     mode.step(1 / 60);
     mode.update(1 / 60);
     expect(mode.camera.camera.position.y).toBeGreaterThan(10);
     expect(mode.farField.temporalPhases[0]).toBeCloseTo((mode.simulation.sea.components[0].omega * mode.simulation.seaTime) % (2 * Math.PI), 4);
+    const crest = mode.simulation.solver.cellIndex(0, -60);
+    mode.simulation.lip.launch(crest, { x: 0, z: 5 }, 3, 0.5);
+    mode.update(1 / 60);
+    expect(mode.lipPoints.mesh.geometry.drawRange.count).toBe(mode.simulation.lip.activeCount());
     mode.setVisible(false);
+    expect(mode.lipPoints.mesh.visible).toBe(false);
     expect(mode.seabed.mesh.visible).toBe(false);
     expect(mode.farField.mesh.visible).toBe(false);
   });
@@ -83,6 +90,7 @@ describe('PhysicalMode', () => {
     expect(value('WIND')).toBe('calm');
     expect(value('BREAKING')).toMatch(/^\d+ % of the surf zone$/);
     expect(value('STORM')).toBeUndefined();
+    expect(value('LIP')).toBe('no lip yet');
   });
 
   it('builds the sea from a storm and reports it', () => {

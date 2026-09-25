@@ -104,6 +104,28 @@ describe('SurfZoneSimulation', () => {
     expect(late).toBeGreaterThan(30);
   }, 60_000);
 
+  // The reef's shelf edge lies in the tank's boundary blend (plan P3b record), so the point is the plunging case.
+  it('throws a lip from plunging point waves, once per wave, but not from a spilling beach', () => {
+    const run = (config: SurfZoneConfig) => {
+      const simulation = new SurfZoneSimulation(config);
+      let broke = 0;
+      for (let frame = 0; frame < 20 * 30; frame += 1) {
+        simulation.step(1 / 30);
+        if (simulation.breakingFraction() > 0) broke += 1;
+      }
+      return { simulation, broke };
+    };
+    const point = run({ ...small, spot: 'point', dx: 1, fineSpacing: 1, peakPeriod: 14, directionDegrees: 20, spreading: 24 });
+    expect(point.simulation.iribarren().type).toBe('plunging');
+    expect(point.simulation.lipLaunches).toBeGreaterThan(0);
+    expect(point.simulation.lipLaunches).toBeLessThanOrEqual(point.simulation.solver.nx * Math.ceil(20 / (0.7 * 14)));
+    expect(point.simulation.lip.landings).toBeGreaterThan(0);
+    const beach = run({ ...small, spot: 'beach', dx: 1, fineSpacing: 1, peakPeriod: 6 });
+    expect(beach.simulation.iribarren().type).toBe('spilling');
+    expect(beach.broke).toBeGreaterThan(0);
+    expect(beach.simulation.lipLaunches).toBe(0);
+  }, 60_000);
+
   it('finds the reef break on its steep edge rather than the flat shelf', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 2 });
     expect(simulation.breakPoint().z).toBeLessThan(TANK.blendEnd);
