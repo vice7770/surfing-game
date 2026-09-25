@@ -54,11 +54,16 @@ export const OFFSHORE_DEPTH: Record<SpotName, number> = { beach: 5, point: 8, re
 export const BREAKING_ONSET: Record<SpotName, number> = { beach: 0.35, point: 0.65, reef: 0.65, canyon: 0.65 };
 
 /**
- * Wind shifts breaking onset: offshore wind holds faces up, onshore wind makes them crumble early
- * (plan Q23). This is a qualitative ±20 % at 13 m/s whose magnitude is still to be sourced.
+ * Wind shifts breaking onset (plan Q23), as a factor on the breaking thresholds
+ * like the breaker index γ. With u = U/√(g h_b), positive onshore: γ(1 − 0.10u)
+ * onshore and γ(1 + 0.05|u|) offshore, clamped to 0.6–1.1. Lab studies (Douglass
+ * 1990 to U/√(gh) = ±2.3; King & Baker 1996 to ±1.1; reviewed by Zdyrski &
+ * Feddersen 2022) find onshore wind lowers H_b/h_b by up to ~40 % and offshore
+ * wind raises it by up to ~10 %, mostly by moving the breaker depth.
  */
-export function windOnsetScale(windSpeed: number): number {
-  return Math.min(1.2, Math.max(0.8, 1 - 0.015 * windSpeed));
+export function windOnsetScale(windSpeed: number, breakerDepth: number): number {
+  const u = windSpeed / Math.sqrt(GRAVITY * Math.max(0.1, breakerDepth));
+  return u >= 0 ? Math.max(0.6, 1 - 0.1 * u) : Math.min(1.1, 1 - 0.05 * u);
 }
 
 /** Spot seabed with a flat offshore floor under the relaxation zone, blended over TANK.zoneInner…blendEnd. */
@@ -124,7 +129,7 @@ export class SurfZoneSimulation {
     // Settle the nonlinear shape at the CFL limit, re-checking stability every quarter second.
     while (this.solver.time < spinUp - 1e-9) this.solver.step(Math.min(0.25, spinUp - this.solver.time));
     this.breaking = new BreakingModel(this.solver, { onset: config.breakingOnset ?? BREAKING_ONSET[config.spot] });
-    this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0);
+    this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     this.breaking.update(0);
     this.peel = new PeelTracker(this.solver.xCenters, config.peakPeriod);
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);

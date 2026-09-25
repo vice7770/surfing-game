@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { breakerDepthFor } from './Breaking';
-import { OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, type SurfZoneConfig } from './SurfZoneSimulation';
+import { OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
 
 const small: Omit<SurfZoneConfig, 'spot'> = {
   seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -121,5 +121,18 @@ describe('SurfZoneSimulation', () => {
     const offshore = new SurfZoneSimulation({ ...small, spot: 'beach', windSpeed: -10 });
     expect(offshore.breaking.onsetScale).toBeGreaterThan(1);
     expect(onshore.breaking.onsetScale).toBeLessThan(1);
+    expect(onshore.breaking.onsetScale).toBeCloseTo(windOnsetScale(10, onshore.breakerDepth()), 12);
+  });
+
+  // Douglass 1990 and King & Baker 1996 via Zdyrski & Feddersen 2022: onshore wind lowers the
+  // breaker index by up to ~40 % at U/√(g h_b) ≈ 4; offshore wind raises it by up to ~10 %.
+  it('scales the wind effect on breaking by the breaker celerity, stronger onshore than offshore', () => {
+    const celerity = Math.sqrt(9.81 * 2);
+    expect(windOnsetScale(0, 2)).toBe(1);
+    expect(windOnsetScale(10, 2)).toBeCloseTo(1 - (0.1 * 10) / celerity, 12);
+    expect(windOnsetScale(-4, 2)).toBeCloseTo(1 + (0.05 * 4) / celerity, 12);
+    expect(windOnsetScale(-10, 2)).toBe(1.1);
+    expect(windOnsetScale(30, 1)).toBe(0.6);
+    expect(windOnsetScale(6, 1)).toBeLessThan(windOnsetScale(6, 3));
   });
 });

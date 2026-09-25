@@ -127,7 +127,8 @@ export function formatPhysicalReadout(simulation: SurfZoneSimulation, storm?: St
     { label: 'BREAKER', value: breaker.type === 'none' ? 'FLAT BED' : `ξ ${breaker.value.toFixed(2)} · ${breaker.type.toUpperCase()}` },
     { label: 'BREAKING', value: `${Math.round(simulation.breakingFraction() * 100)} % of the surf zone` },
     { label: 'PEEL', value: peelText },
-    { label: 'WIND', value: wind === 0 ? 'calm' : `${Math.abs(wind)} m/s ${wind > 0 ? 'onshore' : 'offshore'}` },
+    { label: 'WIND', value: wind === 0 ? 'calm'
+      : `${Math.abs(wind)} m/s ${wind > 0 ? 'onshore' : 'offshore'} · breaking thresholds ×${simulation.breaking.onsetScale.toFixed(2)}` },
   ];
 }
 
