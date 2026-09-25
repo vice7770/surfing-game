@@ -14,10 +14,6 @@ export class LegacySurfaceSource implements SurfaceSource {
     this.lastZMin = wave.zMin;
   }
 
-  get waveHeight(): number {
-    return this.wave.settings.height;
-  }
-
   get time(): number {
     return this.wave.time;
   }

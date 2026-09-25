@@ -1,3 +1,4 @@
+import { Color, Vector3 } from 'three';
 import type { SpotName } from '../wave/Bathymetry';
 
 /**
@@ -101,4 +102,105 @@ export function crestThickness(heightAt: (x: number, z: number) => number, origi
     previousGap = gap;
   }
   return OPAQUE;
+}
+
+const glsl = (value: number) => value.toFixed(6);
+
+/** Uniforms and functions shared by both water meshes; `waterBodyReflectance` mirrors `shallowReflectance`. */
+export const waterOpticsPars = /* glsl */ `
+uniform vec3 waterAttenuation;
+uniform vec3 waterDeepReflectance;
+uniform vec3 waterBedAlbedo;
+uniform vec3 waterSunDirection;
+uniform vec3 waterSunRadiance;
+uniform float waterBodyGain;
+
+float waterFresnel( float c ) {
+  return ${glsl(WATER_F0)} + ( 1.0 - ${glsl(WATER_F0)} ) * pow( 1.0 - clamp( c, 0.0, 1.0 ), 5.0 );
+}
+
+float waterRefractedCosine( float c ) {
+  c = clamp( c, 0.0, 1.0 );
+  return sqrt( 1.0 - ( 1.0 - c * c ) / ( ${WATER_IOR} * ${WATER_IOR} ) );
+}
+
+vec3 waterBodyReflectance( float depth, float viewCosine, float sunCosine ) {
+  float path = max( depth, 0.0 ) * ( 1.0 / waterRefractedCosine( viewCosine ) + 1.0 / waterRefractedCosine( sunCosine ) );
+  return waterDeepReflectance + ( waterBedAlbedo - waterDeepReflectance ) * exp( -waterAttenuation * path );
+}
+`;
+
+/** Mirrors `crestThickness`; needs `waterHeightAt( vec2 )` declared first. */
+export const waterCrestPars = /* glsl */ `
+float waterCrestThickness( vec3 origin, vec3 direction ) {
+  const float samples[${CREST_SAMPLES.length}] = float[${CREST_SAMPLES.length}]( ${CREST_SAMPLES.map((d) => d.toFixed(1)).join(', ')} );
+  float previous = 0.0;
+  float previousGap = 0.0;
+  for ( int i = 0; i < ${CREST_SAMPLES.length}; i ++ ) {
+    vec3 p = origin + direction * samples[ i ];
+    float gap = waterHeightAt( p.xz ) - p.y;
+    if ( gap <= 0.0 ) return previous + ( samples[ i ] - previous ) * previousGap / ( previousGap - gap );
+    previous = samples[ i ];
+    previousGap = gap;
+  }
+  return ${OPAQUE.toFixed(1)};
+}
+`;
+
+/**
+ * Fragment block run after the normal is final (it replaces
+ * `<emissivemap_fragment>`): the water body's colour from the depth under the
+ * fragment, foam over it, and with `crestLight` the sunlight that crosses thin
+ * crests when the sun is behind them. Needs `vWaterWorld`, `vWaterDepth`,
+ * `vWaterFoam` and `waterFoamColor`.
+ */
+export function waterBodyFragment(crestLight: boolean): string {
+  const crest = /* glsl */ `
+    float waterBehind = pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 4.0 );
+    if ( waterBehind > 0.001 ) {
+      vec3 waterRay = refract( -waterV, waterN, ${glsl(1 / WATER_IOR)} );
+      float waterThickness = waterCrestThickness( vWaterWorld, waterRay );
+      totalEmissiveRadiance += ( 1.0 - vWaterFoam ) * waterBehind * ( 1.0 - waterFresnel( waterViewCos ) )
+        * waterSunRadiance * exp( -waterAttenuation * waterThickness );
+    }`;
+  return /* glsl */ `
+#include <emissivemap_fragment>
+{
+  vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
+  vec3 waterV = normalize( cameraPosition - vWaterWorld );
+  float waterViewCos = dot( waterN, waterV );
+  vec3 waterBody = waterDeepReflectance;
+  if ( waterViewCos > 0.0 ) {
+    waterBody = waterBodyReflectance( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ) );${crestLight ? crest : ''}
+  }
+  diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, vWaterFoam );
+}
+`;
+}
+
+export type OpticsUniforms = Record<string, { value: unknown }>;
+
+export function createOpticsUniforms(): OpticsUniforms {
+  const uniforms: OpticsUniforms = {
+    waterAttenuation: { value: new Vector3() },
+    waterDeepReflectance: { value: new Vector3() },
+    waterBedAlbedo: { value: new Vector3() },
+    waterSunDirection: { value: new Vector3(0, 1, 0) },
+    waterSunRadiance: { value: new Color(1, 1, 1) },
+    waterBodyGain: { value: 1 },
+  };
+  applyOptics(uniforms, SPOT_OPTICS.beach);
+  return uniforms;
+}
+
+export function applyOptics(uniforms: OpticsUniforms, optics: WaterOptics): void {
+  (uniforms.waterAttenuation.value as Vector3).fromArray(beamAttenuation(optics));
+  (uniforms.waterDeepReflectance.value as Vector3).fromArray(deepReflectance(optics));
+  (uniforms.waterBedAlbedo.value as Vector3).fromArray(optics.bedAlbedo);
+}
+
+/** `direction` points toward the sun (world); `radiance` is the sun light's colour × intensity. */
+export function applySun(uniforms: OpticsUniforms, direction: Vector3, radiance: Color): void {
+  (uniforms.waterSunDirection.value as Vector3).copy(direction).normalize();
+  (uniforms.waterSunRadiance.value as Color).copy(radiance);
 }

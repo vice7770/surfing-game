@@ -4,7 +4,6 @@ import type { SurfaceGrid, SurfaceSource } from './WaterSurface';
 export interface RenderableSurfZone {
   readonly windowXMin: number;
   readonly seaTime: number;
-  readonly config: { readonly significantHeight: number };
   renderGrid(spacing: number): SurfaceGrid;
   writeUniformSurface(data: Float32Array, grid: SurfaceGrid): void;
   writeUniformBed(data: Float32Array, grid: SurfaceGrid): void;
@@ -27,10 +26,6 @@ export class PhysicalSurfaceSource implements SurfaceSource {
   constructor(private readonly simulation: RenderableSurfZone, spacing = 1) {
     this.grid = simulation.renderGrid(spacing);
     this.memory = new Float32Array(this.grid.nx * this.grid.nz);
-  }
-
-  get waveHeight(): number {
-    return this.simulation.config.significantHeight;
   }
 
   get time(): number {

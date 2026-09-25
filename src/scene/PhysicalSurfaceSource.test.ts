@@ -7,7 +7,6 @@ function stubZone(): Omit<RenderableSurfZone, 'seaTime'> & { frames: number; sea
     frames: 0,
     windowXMin: -2,
     seaTime: 0,
-    config: { significantHeight: 1 },
     renderGrid: (spacing: number) => ({ xMin: -2, zMin: 0, spacing, nx: 3, nz: 3 }),
     writeUniformSurface(data: Float32Array) {
       data.fill(0);

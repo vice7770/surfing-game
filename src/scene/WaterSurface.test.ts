@@ -1,3 +1,4 @@
+import { ShaderLib } from 'three';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField, type WaveSettings } from '../wave/WaveModel';
 import { WaterSurface, sampleSurfaceBed, sampleSurfaceHeight, sampleSurfaceNormal } from './WaterSurface';
@@ -199,5 +200,20 @@ describe('WaterSurface GPU displacement data', () => {
     simulation.solver.shiftAlongShore(3);
     surface.update();
     expect(surface.grid.xMin).toBeCloseTo(-20 + 6, 9);
+  });
+
+  it('patches every shader chunk it replaces and shades with water optics', () => {
+    const surface = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS })));
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    surface.mesh.material.onBeforeCompile(shader as never, undefined as never);
+    for (const chunk of ['beginnormal_vertex', 'begin_vertex']) expect(shader.vertexShader).not.toContain(`#include <${chunk}>`);
+    expect(shader.fragmentShader).not.toContain('#include <color_fragment>');
+    expect(shader.fragmentShader).toContain('waterChopSlope( vWaterWorld.xz');
+    expect(shader.vertexShader).toContain('vWaterDepth = max( 0.0, waterHeight - waterBedAt( waterXZ ) )');
+    expect(shader.fragmentShader).toContain('waterBodyReflectance( vWaterDepth');
+    expect(shader.fragmentShader).toContain('waterCrestThickness( vWaterWorld');
+    expect(Object.keys(shader.uniforms)).toEqual(expect.arrayContaining(['waterBed', 'waterAttenuation', 'waterSunDirection', 'waterSunRadiance']));
+    expect(surface.mesh.material.ior).toBeCloseTo(1.333, 6);
+    expect(surface.mesh.material.clearcoat).toBe(0);
   });
 });

@@ -14,6 +14,9 @@ import {
   Vector4,
 } from 'three';
 import { DEFAULT_WATER_CHOP, waterChopNormal, waterChopPars } from './waterChop';
+import {
+  WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
+} from './waterOptics';
 
 export interface SurfaceGrid {
   xMin: number;
@@ -65,16 +68,11 @@ export function sampleSurfaceNormal(data: Float32Array, grid: SurfaceGrid, x: nu
   return new Vector3(-slopeX, 1, -slopeZ).normalize();
 }
 
-const waterVertexPars = /* glsl */ `
+/** Height lookup shared by both shader stages: the field's own bilinear sampling (see `sampleSurfaceHeight`). */
+const waterHeightPars = /* glsl */ `
 uniform sampler2D waterSurface;
 uniform vec4 waterGrid;
 uniform vec2 waterGridSize;
-uniform float waterWaveHeight;
-uniform vec3 waterBaseColor;
-uniform vec3 waterCrestColor;
-uniform vec3 waterFoamColor;
-varying vec3 vWaterColor;
-varying vec3 vWaterWorld;
 
 float waterHeightAt( vec2 xz ) {
   vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
@@ -85,6 +83,14 @@ float waterHeightAt( vec2 xz ) {
   float bottom = mix( texelFetch( waterSurface, c + ivec2( 0, 1 ), 0 ).r, texelFetch( waterSurface, c + ivec2( 1, 1 ), 0 ).r, t.x );
   return mix( top, bottom, t.y );
 }
+`;
+
+const waterVertexPars = /* glsl */ `
+${waterHeightPars}
+uniform sampler2D waterBed;
+varying float vWaterDepth;
+varying float vWaterFoam;
+varying vec3 vWaterWorld;
 
 float waterFoamAt( vec2 xz ) {
   vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
@@ -94,10 +100,20 @@ float waterFoamAt( vec2 xz ) {
   float bottom = mix( texelFetch( waterSurface, c + ivec2( 0, 1 ), 0 ).g, texelFetch( waterSurface, c + ivec2( 1, 1 ), 0 ).g, t.x );
   return mix( top, bottom, t.y );
 }
+
+// sampleSurfaceBed() in WaterSurface.ts.
+float waterBedAt( vec2 xz ) {
+  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
+  ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
+  vec2 t = g - vec2( c );
+  float top = mix( texelFetch( waterBed, c, 0 ).r, texelFetch( waterBed, c + ivec2( 1, 0 ), 0 ).r, t.x );
+  float bottom = mix( texelFetch( waterBed, c + ivec2( 0, 1 ), 0 ).r, texelFetch( waterBed, c + ivec2( 1, 1 ), 0 ).r, t.x );
+  return mix( top, bottom, t.y );
+}
 `;
 
-// Replaces <beginnormal_vertex>: height, normal, and crest/foam color all come
-// from the shared field texture instead of CPU-written vertex attributes.
+// Replaces <beginnormal_vertex>: height, normal, depth and foam all come from
+// the shared field textures instead of CPU-written vertex attributes.
 const waterBeginNormal = /* glsl */ `
 vec2 waterXZ = ( modelMatrix * vec4( position, 1.0 ) ).xz;
 float waterHeight = waterHeightAt( waterXZ );
@@ -106,15 +122,23 @@ vec2 waterStepZ = vec2( 0.0, waterGrid.z );
 float waterSlopeX = ( waterHeightAt( waterXZ + waterStepX ) - waterHeightAt( waterXZ - waterStepX ) ) / ( 2.0 * waterGrid.z );
 float waterSlopeZ = ( waterHeightAt( waterXZ + waterStepZ ) - waterHeightAt( waterXZ - waterStepZ ) ) / ( 2.0 * waterGrid.z );
 vec3 objectNormal = normalize( vec3( -waterSlopeX, 1.0, -waterSlopeZ ) );
-float waterCrest = clamp( waterHeight / max( waterWaveHeight, 0.01 ) * 0.6, 0.0, 0.6 );
-vWaterColor = mix( mix( waterBaseColor, waterCrestColor, waterCrest ), waterFoamColor, waterFoamAt( waterXZ ) );
+vWaterDepth = max( 0.0, waterHeight - waterBedAt( waterXZ ) );
+vWaterFoam = waterFoamAt( waterXZ );
+`;
+
+const waterFragmentPars = /* glsl */ `
+${waterHeightPars}
+uniform vec3 waterFoamColor;
+varying float vWaterDepth;
+varying float vWaterFoam;
+${waterOpticsPars}
+${waterCrestPars}
+${waterChopPars}
 `;
 
 /** Supplies interleaved (height, foam) for every node of a uniform render grid. */
 export interface SurfaceSource {
   readonly grid: SurfaceGrid;
-  /** Wave height used to scale the crest tint, m. */
-  readonly waveHeight: number;
   /** Simulation clock that animates the shading-only wind chop, s. */
   readonly time: number;
   write(data: Float32Array): void;
@@ -147,19 +171,17 @@ export class WaterSurface {
       waterBed: { value: this.bedTexture },
       waterGrid: { value: new Vector4(grid.xMin, grid.zMin, grid.spacing, 0) },
       waterGridSize: { value: new Vector2(grid.nx, grid.nz) },
-      waterWaveHeight: { value: source.waveHeight },
-      waterBaseColor: { value: new Color('#0c8f9d') },
-      waterCrestColor: { value: new Color('#4fc1b5') },
       waterFoamColor: { value: new Color('#d8f2e9') },
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
+      ...createOpticsUniforms(),
     };
+    // One air–water interface: Fresnel from n = 1.333 (F0 = 0.020), no clearcoat.
     const material = new MeshPhysicalMaterial({
       color: '#ffffff',
       roughness: 0.62,
-      metalness: 0.01,
-      clearcoat: 0.12,
-      clearcoatRoughness: 0.55,
+      metalness: 0,
+      ior: WATER_IOR,
       side: DoubleSide,
       flatShading: false,
     });
@@ -170,9 +192,10 @@ export class WaterSurface {
         .replace('#include <beginnormal_vertex>', waterBeginNormal)
         .replace('#include <begin_vertex>', 'vec3 transformed = vec3( position );\ntransformed.y = waterHeight;\nvWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', `#include <common>\nvarying vec3 vWaterColor;\n${waterChopPars}`)
+        .replace('#include <common>', `#include <common>\n${waterFragmentPars}`)
         .replace('#include <normal_fragment_begin>', waterChopNormal)
-        .replace('#include <color_fragment>', 'diffuseColor.rgb *= vWaterColor;');
+        .replace('#include <color_fragment>', '')
+        .replace('#include <emissivemap_fragment>', waterBodyFragment(true));
     };
     material.customProgramCacheKey = () => 'breakline-water-surface';
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
@@ -188,7 +211,6 @@ export class WaterSurface {
     this.source.write(this.surfaceData);
     const grid = this.source.grid;
     (this.uniforms.waterGrid.value as Vector4).set(grid.xMin, grid.zMin, grid.spacing, 0);
-    this.uniforms.waterWaveHeight.value = this.source.waveHeight;
     this.uniforms.waterTime.value = this.source.time;
     this.mesh.position.set(grid.xMin + ((grid.nx - 1) * grid.spacing) / 2, 0, grid.zMin + ((grid.nz - 1) * grid.spacing) / 2);
     this.texture.needsUpdate = true;
@@ -198,6 +220,16 @@ export class WaterSurface {
       this.bedRevision = this.source.bedRevision;
       this.bedTexture.needsUpdate = true;
     }
+  }
+
+  /** Water clarity and seabed colour for the current spot. */
+  setOptics(optics: WaterOptics): void {
+    applyOptics(this.uniforms, optics);
+  }
+
+  /** `direction` points toward the sun; `radiance` is the sun light's colour × intensity. */
+  setSun(direction: Vector3, radiance: Color): void {
+    applySun(this.uniforms, direction, radiance);
   }
 
   /** Strength of the shading-only wind chop (see waterChop.ts). */

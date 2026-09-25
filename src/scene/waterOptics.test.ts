@@ -1,7 +1,8 @@
+import { Color, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import {
-  OPAQUE, SPOT_OPTICS, WATER_F0, beamAttenuation, crestThickness, deepReflectance, refractedCosine,
-  schlickFresnel, shallowReflectance, transmittance, type WaterOptics,
+  OPAQUE, SPOT_OPTICS, WATER_F0, WATER_IOR, applyOptics, applySun, beamAttenuation, createOpticsUniforms, crestThickness,
+  deepReflectance, refractedCosine, schlickFresnel, shallowReflectance, transmittance, waterOpticsPars, type WaterOptics,
 } from './waterOptics';
 
 const pure: WaterOptics = { turbidity: 0, bedAlbedo: [0.4, 0.35, 0.25] };
@@ -71,5 +72,19 @@ describe('water optics', () => {
     // Four samples (0.5, 1, 2, 4 m) find the back face to within a fraction of a step.
     expect(Math.abs(crestThickness(ridge, origin, direction) - exit)).toBeLessThan(0.2);
     expect(crestThickness(() => 0, { x: 0, y: 0, z: 0 }, { x: 0, y: -0.5, z: 0.87 })).toBe(OPAQUE);
+  });
+
+  it('feeds the shader uniforms from the same model', () => {
+    const uniforms = createOpticsUniforms();
+    applyOptics(uniforms, SPOT_OPTICS.reef);
+    const vector = (name: string) => (uniforms[name].value as Vector3).toArray();
+    expect(vector('waterAttenuation')).toEqual([...beamAttenuation(SPOT_OPTICS.reef)]);
+    expect(vector('waterDeepReflectance')).toEqual([...deepReflectance(SPOT_OPTICS.reef)]);
+    expect(vector('waterBedAlbedo')).toEqual([...SPOT_OPTICS.reef.bedAlbedo]);
+    applySun(uniforms, new Vector3(0, 3, -4), new Color(2, 1.5, 1));
+    vector('waterSunDirection').forEach((value, i) => expect(value).toBeCloseTo([0, 0.6, -0.8][i], 12));
+    expect((uniforms.waterSunRadiance.value as Color).toArray()).toEqual([2, 1.5, 1]);
+    expect(waterOpticsPars).toContain(`${WATER_IOR}`);
+    expect(waterOpticsPars).toContain(WATER_F0.toFixed(6));
   });
 });
