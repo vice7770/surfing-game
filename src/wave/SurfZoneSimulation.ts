@@ -1,0 +1,220 @@
+import { createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
+import { shallowWaterWaveNumber } from './dispersion';
+import { SeaState } from './SeaState';
+import { SeaStateBoundary } from './SeaStateBoundary';
+import { ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
+import { BREAKER_INDEX } from './SwellReadout';
+import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
+
+export interface SurfZoneConfig {
+  spot: SpotName;
+  seed: number;
+  /** Offshore significant wave height Hs, m. */
+  significantHeight: number;
+  peakPeriod: number;
+  /** Mean direction from shore-normal, degrees (positive toward +x). */
+  directionDegrees: number;
+  /** cos-2s spreading exponent s. */
+  spreading: number;
+  /** Still-water level above datum, m. */
+  tide: number;
+  componentCount?: number;
+  /** Along-shore window width, m. */
+  alongShore?: number;
+  dx?: number;
+  fineSpacing?: number;
+  coarseSpacing?: number;
+  spinUpPeriods?: number;
+  /** Seconds between hand-over and the next set peak at the zone. */
+  lead?: number;
+}
+
+export interface RenderGrid {
+  xMin: number;
+  zMin: number;
+  spacing: number;
+  nx: number;
+  nz: number;
+}
+
+/** Wave-tank layout across shore, m (z increases toward the beach). */
+export const TANK = { offshore: -330, zoneInner: -270, blendEnd: -190, fineFrom: -150, shore: 30 };
+
+/** Flat tank bed offshore of each spot's blend, m below datum. */
+export const OFFSHORE_DEPTH: Record<SpotName, number> = { beach: 5, point: 8, reef: 10, canyon: 5 };
+
+/** Spot seabed with a flat offshore floor under the relaxation zone, blended over TANK.zoneInner…blendEnd. */
+export function tankDepth(spot: SurfSpot, offshoreDepth: number, x: number, z: number): number {
+  const toSpot = smoothstep(TANK.zoneInner, TANK.blendEnd, z);
+  return offshoreDepth + (spot.depthAt(x, z) - offshoreDepth) * toSpot;
+}
+
+const WET = 0.01;
+
+/**
+ * Stage 1 physical surf zone for one spot: a seeded sea enters through an
+ * offshore relaxation zone into the stretched finite-volume solver, which
+ * starts from a warm WKB field a set's lead time before its peak.
+ */
+export class SurfZoneSimulation {
+  readonly spot: SurfSpot;
+  readonly sea: SeaState;
+  readonly solver: ShallowWaterSolver;
+  readonly plan: SetRunPlan;
+  lastStepMs = 0;
+  private readonly seaTimeOffset: number;
+  private mapping?: {
+    grid: RenderGrid; xMin: number; columns: Int32Array; columnWeights: Float64Array;
+    rows: Int32Array; rowWeights: Float64Array; heights: Float64Array; wet: Uint8Array;
+  };
+
+  constructor(readonly config: SurfZoneConfig) {
+    this.spot = createSpot(config.spot, config.seed);
+    const offshoreDepth = OFFSHORE_DEPTH[config.spot];
+    const alongShore = config.alongShore ?? 160;
+    const dx = config.dx ?? 1;
+    this.solver = new ShallowWaterSolver(
+      {
+        nx: Math.round(alongShore / dx), xMin: -alongShore / 2, dx, xBoundary: 'open',
+        zEdges: stretchedEdges(TANK.offshore, TANK.shore, TANK.fineFrom, config.fineSpacing ?? 1, config.coarseSpacing ?? 4),
+      },
+      (x, z) => tankDepth(this.spot, offshoreDepth, x, z),
+      { waterLevel: config.tide },
+    );
+    this.sea = SeaState.fromSpectrum({
+      significantHeight: config.significantHeight,
+      peakPeriod: config.peakPeriod,
+      direction: (config.directionDegrees * Math.PI) / 180,
+      spreading: config.spreading,
+      componentCount: config.componentCount ?? 24,
+      depth: offshoreDepth + config.tide,
+    }, config.seed, shallowWaterWaveNumber);
+    const spinUp = (config.spinUpPeriods ?? 2) * config.peakPeriod;
+    this.plan = planSetRun(this.sea, 0, TANK.zoneInner, 0, config.lead ?? 25, spinUp);
+    this.seaTimeOffset = this.plan.warmStartSeaTime;
+    warmStart(this.solver, this.sea, { referenceZ: TANK.zoneInner, seaTime: this.plan.warmStartSeaTime });
+    this.solver.addRelaxationZone(new SeaStateBoundary(
+      this.solver, this.sea, this.solver.zoneWeightsAlongZ(TANK.zoneInner, TANK.offshore), this.seaTimeOffset,
+    ));
+    // Settle the nonlinear shape at the CFL limit, re-checking stability every quarter second.
+    while (this.solver.time < spinUp - 1e-9) this.solver.step(Math.min(0.25, spinUp - this.solver.time));
+  }
+
+  get seaTime(): number {
+    return this.solver.time + this.seaTimeOffset;
+  }
+
+  /** Seconds until the planned set peaks at the offshore zone line (negative once it has passed). */
+  get timeToSet(): number {
+    return this.plan.setPeakSeaTime - this.seaTime;
+  }
+
+  get windowXMin(): number {
+    return this.solver.xCenters[0] - 0.5 * this.solver.dx;
+  }
+
+  step(dt: number): void {
+    const start = performance.now();
+    this.solver.step(dt);
+    this.lastStepMs = performance.now() - start;
+  }
+
+  /** Water surface elevation, m; on dry land this is the bed. */
+  heightAt(x: number, z: number): number {
+    return this.solver.sampleCentered(this.solver.h, x, z) + this.bedAt(x, z);
+  }
+
+  bedAt(x: number, z: number): number {
+    return this.solver.sampleCentered(this.solver.bed, x, z);
+  }
+
+  /** Uniform render grid covering the window and the whole tank. */
+  renderGrid(spacing: number): RenderGrid {
+    const width = this.solver.nx * this.solver.dx;
+    return {
+      xMin: this.windowXMin,
+      zMin: TANK.offshore,
+      spacing,
+      nx: Math.round(width / spacing) + 1,
+      nz: Math.round((TANK.shore - TANK.offshore) / spacing) + 1,
+    };
+  }
+
+  /**
+   * Resample the water to interleaved (height, foam) per render node. Dry nodes
+   * sit 5 cm under the bed so the seabed mesh hides them. Foam here is only the
+   * steep-slope tint; breaking foam arrives with P3.
+   */
+  writeUniformSurface(data: Float32Array, grid: RenderGrid): void {
+    const mapping = this.mappingFor(grid);
+    const { h, bed, nx } = this.solver;
+    const { columns, columnWeights, rows, rowWeights, heights, wet } = mapping;
+    for (let r = 0; r < grid.nz; r += 1) {
+      const row = rows[r] * nx;
+      const tz = rowWeights[r];
+      for (let c = 0; c < grid.nx; c += 1) {
+        const i = row + columns[c];
+        const tx = columnWeights[c];
+        const depth = (h[i] * (1 - tx) + h[i + 1] * tx) * (1 - tz) + (h[i + nx] * (1 - tx) + h[i + nx + 1] * tx) * tz;
+        const bottom = (bed[i] * (1 - tx) + bed[i + 1] * tx) * (1 - tz) + (bed[i + nx] * (1 - tx) + bed[i + nx + 1] * tx) * tz;
+        const k = r * grid.nx + c;
+        wet[k] = depth > WET ? 1 : 0;
+        heights[k] = wet[k] ? depth + bottom : bottom - 0.05;
+      }
+    }
+    const inverse = 1 / (2 * grid.spacing);
+    for (let r = 0; r < grid.nz; r += 1) {
+      for (let c = 0; c < grid.nx; c += 1) {
+        const k = r * grid.nx + c;
+        data[k * 2] = heights[k];
+        if (!wet[k] || r === 0 || c === 0 || r === grid.nz - 1 || c === grid.nx - 1) {
+          data[k * 2 + 1] = 0;
+          continue;
+        }
+        const slope = Math.hypot((heights[k + 1] - heights[k - 1]) * inverse, (heights[k + grid.nx] - heights[k - grid.nx]) * inverse);
+        data[k * 2 + 1] = Math.max(0, Math.min(0.12, (slope - 0.12) * 0.5));
+      }
+    }
+  }
+
+  /** Where the still depth first reaches Hs / γ on the x = 0 transect: the camera's break focus. */
+  breakPoint(): { x: number; z: number } {
+    const target = this.config.significantHeight / BREAKER_INDEX;
+    for (let z = TANK.blendEnd; z < TANK.shore; z += 0.5) {
+      if (this.spot.depthAt(0, z) + this.config.tide <= target) return { x: 0, z };
+    }
+    return { x: 0, z: TANK.fineFrom };
+  }
+
+  private mappingFor(grid: RenderGrid) {
+    const { solver } = this;
+    const size = grid.nx * grid.nz;
+    let mapping = this.mapping;
+    if (!mapping || mapping.grid.nx !== grid.nx || mapping.grid.nz !== grid.nz
+      || mapping.grid.spacing !== grid.spacing || mapping.grid.zMin !== grid.zMin) {
+      const rows = new Int32Array(grid.nz);
+      const rowWeights = new Float64Array(grid.nz);
+      for (let r = 0; r < grid.nz; r += 1) {
+        const z = grid.zMin + r * grid.spacing;
+        const iz = solver.rowBelow(z);
+        rows[r] = iz;
+        rowWeights[r] = Math.min(1, Math.max(0, (z - solver.zCenters[iz]) / (solver.zCenters[iz + 1] - solver.zCenters[iz])));
+      }
+      mapping = {
+        grid: { ...grid }, xMin: Number.NaN, columns: new Int32Array(grid.nx), columnWeights: new Float64Array(grid.nx),
+        rows, rowWeights, heights: new Float64Array(size), wet: new Uint8Array(size),
+      };
+      this.mapping = mapping;
+    }
+    if (mapping.xMin !== grid.xMin) {
+      for (let c = 0; c < grid.nx; c += 1) {
+        const gx = Math.min(solver.nx - 1, Math.max(0, (grid.xMin + c * grid.spacing - solver.xCenters[0]) / solver.dx));
+        const ix = Math.min(solver.nx - 2, Math.floor(gx));
+        mapping.columns[c] = ix;
+        mapping.columnWeights[c] = gx - ix;
+      }
+      mapping.xMin = grid.xMin;
+    }
+    return mapping;
+  }
+}
