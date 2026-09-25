@@ -45,9 +45,16 @@
   - The board carries the thruster and a side face on each rail station, all implicit sideways.
   - A sideslipping board straightens within 1.5 s; a finless one slides on.
   - Steering now asks for an edge angle (up to 30°) rather than a fixed weight on the rail. The board rolls onto the rail and turns, 14–30° of heading in the first second.
-  - **Open:** held at full steer on a 15° static face, the carve throws the rider after about a second: the board slows from 7 to 5 m/s and drops away (flight, then 'lost board').
-  - A faster standing balance loop (0.06–0.12 s) oscillated, even without steering, so it stays at 0.15 s. The `carve.ts` probe in the scratchpad reproduces this.
-  - Next: find what decelerates and drops the board (fin induced drag, rail face drag, or traversing the slope). Then try a lean feedforward from the feet's sideways acceleration.
+  - **Superseded, then fixed:** an edge-angle controller (roll feedback through the centre of pressure) made the roll ring, growing until the rider tipped off after about a second.
+    - Steering is now a direct lean: the upper body shifts up to 0.2 m toward the rail, smoothed.
+    - Standing balance acts only when the centre of pressure leaves ±0.06 m across the feet (±0.2 m along).
+    - On a 15° static face, half steer carves steadily at a 5° roll, turning about 12° in 2.5 s at 7–8 m/s.
+    - Full steer holds a 9–10° roll and turns 21° in 2 s.
+  - **Still open:** at full steer, about 2.1 s in (heading about 22°), the rider's drive velocity jumps by about 0.16 m/s in one step. A 2.9 BW contact spike, then flight and 'lost board', follow. The failure is the same at 8 substeps, so it is not the step size.
+    - Suspects: the heading-velocity term, or the correction term, as the board traverses the slope.
+    - `(board as any).entering(h)` is true throughout the carve, so the entry refinement runs every substep. That is costly; check its criterion.
+  - A faster standing balance loop (0.06–0.12 s) oscillates even without steering.
+  - Probes: `carve.ts` and `carve2.ts` in the session scratchpad.
 - **User requests queued:**
   - play the swimmer after a fall and choose to swim back and remount (ROADMAP);
   - the camera views front, behind, side and overview, now done (`8d145db`).

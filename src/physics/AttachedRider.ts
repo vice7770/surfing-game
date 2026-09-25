@@ -86,22 +86,15 @@ const STANDING_SHIFT = { x: 0.35, z: 0.25 };
  */
 const TRIM_FREEDOM = 0.2;
 /**
- * Steering asks for weight on a rail: the centre of pressure moves across the
- * feet by up to this much, m, toward the side to turn to (board +x is its left),
- * the same for either stance. The balance shift then puts it there, the board
- * rolls onto that rail, and its fins and rail carry it round.
+ * Standing, steering is a lean: the upper body shifts toward the rail on the
+ * side to turn to (board +x is its left, the same for either stance) by up to
+ * MAX_LEAN, m (about 13° at the centre of mass), smoothed like the balance
+ * shift. The board settles at whatever roll balances that weight on its hull,
+ * fins and rail, with no feedback on the roll to ring. Balance then only keeps
+ * the centre of pressure within LATERAL_FREEDOM of the middle of the feet.
  */
-const STEER_REACH = 0.1;
-/**
- * Steering sets the edge angle the rider wants: up to MAX_EDGE of board roll at
- * full input. The weight on the rail is proportional to the roll still missing
- * (EDGE_GAIN, m per radian) less a damping share of the roll rate (EDGE_DAMPING,
- * m per rad/s), capped at STEER_REACH, so the board settles on its rail instead of
- * rolling over. Modelling values.
- */
-const MAX_EDGE = (30 * Math.PI) / 180;
-const EDGE_GAIN = 0.4;
-const EDGE_DAMPING = 0.06;
+const MAX_LEAN = 0.2;
+const LATERAL_FREEDOM = 0.06;
 /** Below this load, in body weights, the centre of pressure says nothing and the rider does not rebalance. */
 const BALANCE_LOAD = 0.1;
 /** The fastest the body shifts, m/s, and accelerates, m/s² (so balance never jerks the contact), and how long the centre of pressure it reacts to is smoothed, s. */
@@ -326,11 +319,9 @@ export class AttachedRider {
   private loaded = false;
   /** Where the rider wants its centre of pressure, relative to the middle of the support (steering moves it toward a rail). */
   readonly copTarget = { x: 0, z: 0 };
-  /** The board's roll toward its left rail, rad, and its rate, for edge control. */
-  private roll = 0;
-  private rollRate = 0;
-  private readonly edgeForward = new Vector3();
-  private readonly edgeUp = new Vector3();
+  /** The steering lean of the upper body across the board, m, and its rate. */
+  private readonly lean = new Vector3();
+  private readonly leanRate = new Vector3();
   private stepImpulse = new Vector3();
   private stepLoad = 0;
 
@@ -617,7 +608,6 @@ export class AttachedRider {
 
   /** Before the board's solve: the posture's target, its drive velocity and the forces on the rider. */
   prepare(h: number, board: BoardBody, water: SurfWater): void {
-    this.measureRoll(board, h);
     this.advancePhase(h, board, water);
     this.balanceStep(h);
     this.updatePosture();
@@ -639,7 +629,7 @@ export class AttachedRider {
     this.headingVelocity(board, this.drive).addScaledVector(this.up, this.flexRate);
     // The balance shift moves the centre of mass across the board.
     const shifted = this.shiftedShare();
-    this.drive.add(this.scratch.set(this.balanceRate.x * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.heading : board.orientation));
+    this.drive.add(this.scratch.set((this.balanceRate.x + this.leanRate.x) * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.heading : board.orientation));
     // The posture's own motion (a pop-up) carries the centre of mass with it.
     this.drive.add(this.scratch.copy(this.postureRate).applyQuaternion(this.upright ? this.heading : board.orientation));
     const error = this.scratch.subVectors(this.target, this.position);
@@ -1042,7 +1032,7 @@ export class AttachedRider {
     this.base.set(pose.base.x, pose.base.y, pose.base.z);
     for (let i = 0; i < RIDER_PARTS.length; i += 1) {
       if (!this.shifts(i)) continue;
-      this.parts[i * 3] += this.balance.x;
+      this.parts[i * 3] += this.balance.x + this.lean.x;
       this.parts[i * 3 + 2] += this.balance.z;
     }
     const center = postureCenter(this.parts, this.partMasses);
@@ -1060,38 +1050,21 @@ export class AttachedRider {
     return shifted / this.mass;
   }
 
-  /** Weight on the rail toward the edge angle the steer asks for. */
-  private edgeWeight(): number {
-    const want = Math.max(-1, Math.min(1, this.steer)) * MAX_EDGE;
-    const weight = EDGE_GAIN * (want - this.roll) - EDGE_DAMPING * this.rollRate;
-    return Math.max(-STEER_REACH, Math.min(STEER_REACH, weight));
-  }
-
-  /** The board's roll about its heading, toward its left rail positive. */
-  private measureRoll(board: BoardBody, h: number): void {
-    const forward = this.edgeForward.set(0, 0, 1).applyQuaternion(board.orientation).setY(0);
-    if (forward.lengthSq() < 1e-6) return;
-    forward.normalize();
-    const up = this.edgeUp.set(0, 1, 0).applyQuaternion(board.orientation);
-    // The board's left in the horizontal plane is (f.z, 0, −f.x).
-    const roll = Math.asin(Math.max(-1, Math.min(1, up.x * forward.z - up.z * forward.x)));
-    this.rollRate = (roll - this.roll) / h;
-    this.roll = roll;
-  }
-
   /** Move the body toward putting the centre of pressure where the rider wants it, within its reach. */
   private balanceStep(h: number): void {
     const reach = this.upright ? STANDING_SHIFT : PRONE_SHIFT;
     const support = this.support;
-    this.copTarget.x = this.upright ? this.edgeWeight() : 0;
-    const wantX = (support.xMin + support.xMax) / 2 + this.copTarget.x;
+    this.copTarget.x = 0;
+    const wantX = (support.xMin + support.xMax) / 2;
     const wantZ = (support.zMin + support.zMax) / 2 + this.copTarget.z;
     if (this.inContact && this.loaded) {
       const smooth = Math.min(1, h / COP_SMOOTHING);
       this.smoothedCop.x += (this.desiredCop.x - this.smoothedCop.x) * smooth;
       this.smoothedCop.z += (this.desiredCop.z - this.smoothedCop.z) * smooth;
       const share = this.shiftedShare();
-      const targetX = Math.min(reach.x, Math.max(-reach.x, this.balance.x + (wantX - this.smoothedCop.x) / share));
+      // Standing, across the board as along it, balance only keeps the load clear of the feet's edges.
+      const keepX = this.upright ? Math.min(wantX + LATERAL_FREEDOM, Math.max(wantX - LATERAL_FREEDOM, this.smoothedCop.x)) : wantX;
+      const targetX = Math.min(reach.x, Math.max(-reach.x, this.balance.x + (keepX - this.smoothedCop.x) / share));
       const keepZ = Math.min(wantZ + TRIM_FREEDOM, Math.max(wantZ - TRIM_FREEDOM, this.smoothedCop.z));
       const targetZ = Math.min(reach.z, Math.max(-reach.z, this.balance.z + (keepZ - this.smoothedCop.z) / share));
       this.shiftAxis('x', targetX, reach.x, h);
@@ -1100,6 +1073,13 @@ export class AttachedRider {
       this.shiftAxis('x', this.balance.x, reach.x, h);
       this.shiftAxis('z', this.balance.z, reach.z, h);
     }
+    // The steering lean, standing only.
+    const lean = this.upright ? Math.max(-1, Math.min(1, this.steer)) * MAX_LEAN : 0;
+    const frequency = 1 / BALANCE_TIME;
+    const acceleration = Math.min(MAX_SHIFT_ACCELERATION, Math.max(-MAX_SHIFT_ACCELERATION,
+      frequency * frequency * (lean - this.lean.x) - 2 * frequency * this.leanRate.x));
+    this.leanRate.x = Math.min(MAX_SHIFT_SPEED, Math.max(-MAX_SHIFT_SPEED, this.leanRate.x + acceleration * h));
+    this.lean.x += this.leanRate.x * h;
   }
 
   /** Critically damped motion of the balance shift toward `target`, within speed, acceleration and reach limits. */
