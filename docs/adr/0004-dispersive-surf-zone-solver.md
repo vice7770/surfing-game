@@ -28,9 +28,9 @@
 
 ## Limits
 
-- The model is depth-averaged. The vertical velocity profile uses linear theory, overturning water is still the bounded parcel sheet from ADR 0003, and there is no air entrainment or full tube flow.
+- The model is depth-averaged. The vertical velocity profile uses linear theory, overturning water is the bounded parcel sheet from ADR 0003, and in the physical mode a mass-conserving lip whose four parcels per metre-wide throw coarsely sample the jet. There is no air entrainment or full tube flow.
 - The along-shore edges and the offshore far field are linear approximations. They must stay at least one wavelength from the rider.
-- The crest wind-stress effect is qualitative until its magnitude is sourced.
+- The wind's shift of breaking onset is sourced (Douglass 1990; King & Baker 1996; Feddersen et al. 2023). The stage 2 crest wind-stress term stays qualitative.
 
 ## Validation
 
