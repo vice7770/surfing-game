@@ -73,6 +73,7 @@ input[type='range'] { display: block; width: 100%; height: 3px; margin: 0; appea
 input[type='range']::-webkit-slider-thumb { width: 10px; height: 10px; appearance: none; border: 2px solid #f4f3e7; border-radius: 50%; background: #287d80; box-shadow: 0 0 0 1px #287d80; }
 input[type='range']::-moz-range-thumb { width: 8px; height: 8px; border: 2px solid #f4f3e7; border-radius: 50%; background: #287d80; box-shadow: 0 0 0 1px #287d80; }
 .pending-note { margin: 10px 0 0; color: #bb6749; font: 8px var(--mono); letter-spacing: .06em; }
+.storm-derived { margin: 4px 0 8px; color: #2c7779; font: 8px/1.5 var(--mono); letter-spacing: .04em; }
 .panel-actions { display: flex; gap: 7px; margin-top: 13px; }
 .button { min-height: 34px; border: 1px solid transparent; border-radius: 2px; font: 9px var(--mono); letter-spacing: .04em; cursor: pointer; transition: transform .16s ease, background .16s ease, opacity .16s ease; }
 .button:hover:not(:disabled) { transform: translateY(-1px); }

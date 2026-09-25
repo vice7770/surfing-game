@@ -52,6 +52,16 @@ describe('SeaState spectrum', () => {
     expect(narrowDirections.reduce((sum, value) => sum + value, 0) / narrowDirections.length).toBeCloseTo(0.3, 1);
   });
 
+  it('narrows component frequencies around the peak when given a bandwidth', () => {
+    const relative = (params: SpectrumParams) => SeaState.fromSpectrum({ ...params, componentCount: 64 }, 7).components
+      .map((component) => (component.omega * 8) / (2 * Math.PI));
+    const open = relative(swell);
+    const narrow = relative({ ...swell, bandwidth: 0.04 });
+    expect(spread(narrow)).toBeLessThan(0.5 * spread(open));
+    expect(spread(narrow)).toBeLessThan(0.05);
+    expect(relative({ ...swell, bandwidth: Infinity })).toEqual(open);
+  });
+
   it('resolves each component wavenumber from the reference depth', () => {
     const sea = new SeaState([{ amplitude: 0.5, omega: (2 * Math.PI) / 8, direction: Math.PI / 6, phase: 0 }], 4);
     const [component] = sea.components;

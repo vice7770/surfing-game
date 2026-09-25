@@ -18,7 +18,7 @@ import {
 import { Controls } from './game/Controls';
 import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
-import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, formatPhysicalReadout, spreadingFor, type PhysicalSettings } from './game/PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, formatPhysicalReadout, spreadingFor, swellFor, type PhysicalSettings } from './game/PhysicalMode';
 import { BoardPhysics, type BoardDiagnostics, type PhysicsSettings } from './physics/BoardPhysics';
 import { CameraRig } from './scene/CameraRig';
 import { BoardWake } from './scene/BoardWake';
@@ -258,12 +258,17 @@ class SurfGame {
     const number = (id: string): number => Number.parseFloat(getElement<HTMLInputElement>(id).value);
     return {
       spot: getElement<HTMLSelectElement>('#physical-spot').value as SpotName,
+      source: getElement<HTMLSelectElement>('#swell-source').value as PhysicalSettings['source'],
       significantHeight: number('#hs-slider'),
       peakPeriod: number('#tp-slider'),
       directionDegrees: number('#direction-slider'),
       spread: number('#spread-slider'),
       tide: number('#tide-slider'),
       windSpeed: number('#wind-speed-slider'),
+      stormWindSpeed: number('#storm-wind-slider'),
+      stormFetchKm: number('#storm-fetch-slider'),
+      stormDurationHours: number('#storm-duration-slider'),
+      stormDistanceKm: number('#storm-distance-slider'),
     };
   }
 
@@ -381,8 +386,10 @@ class SurfGame {
         this.refreshTuningUi();
       });
     }
-    for (const selector of ['#hs-slider', '#tp-slider', '#direction-slider', '#spread-slider', '#tide-slider', '#wind-speed-slider', '#physical-spot']) {
-      getElement<HTMLInputElement>(selector).addEventListener(selector === '#physical-spot' ? 'change' : 'input', () => {
+    const physicalInputs = ['#hs-slider', '#tp-slider', '#direction-slider', '#spread-slider', '#tide-slider', '#wind-speed-slider',
+      '#storm-wind-slider', '#storm-fetch-slider', '#storm-duration-slider', '#storm-distance-slider'];
+    for (const selector of [...physicalInputs, '#physical-spot', '#swell-source']) {
+      getElement<HTMLInputElement>(selector).addEventListener(selector.startsWith('#physical-spot') || selector === '#swell-source' ? 'change' : 'input', () => {
         this.draftPhysical = this.readDraftPhysical();
         this.refreshTuningUi();
       });
@@ -452,7 +459,7 @@ class SurfGame {
 
   private renderPhysicalReadout(): void {
     getElement<HTMLElement>('#readout-summary').textContent = 'PHYSICAL SURF ZONE · STAGE 1 SOLVER';
-    this.readoutPanel.render(formatPhysicalReadout(this.physicalMode.simulation));
+    this.readoutPanel.render(formatPhysicalReadout(this.physicalMode.simulation, this.physicalMode.storm));
   }
 
   private renderPhysicsReadout(): void {
@@ -494,6 +501,24 @@ class SurfGame {
     getElement<HTMLElement>('#physical-controls').hidden = this.draftMode !== 'physical';
     const physical = this.draftPhysical;
     getElement<HTMLSelectElement>('#physical-spot').value = physical.spot;
+    getElement<HTMLSelectElement>('#swell-source').value = physical.source;
+    getElement<HTMLElement>('#buoy-controls').hidden = physical.source !== 'buoy';
+    getElement<HTMLElement>('#storm-controls').hidden = physical.source !== 'storm';
+    getElement<HTMLInputElement>('#storm-wind-slider').value = String(physical.stormWindSpeed);
+    getElement<HTMLInputElement>('#storm-fetch-slider').value = String(physical.stormFetchKm);
+    getElement<HTMLInputElement>('#storm-duration-slider').value = String(physical.stormDurationHours);
+    getElement<HTMLInputElement>('#storm-distance-slider').value = String(physical.stormDistanceKm);
+    getElement<HTMLOutputElement>('#storm-wind-output').value = `${physical.stormWindSpeed} m/s`;
+    getElement<HTMLOutputElement>('#storm-fetch-output').value = `${physical.stormFetchKm} km`;
+    getElement<HTMLOutputElement>('#storm-duration-output').value = `${physical.stormDurationHours} h`;
+    getElement<HTMLOutputElement>('#storm-distance-output').value = physical.stormDistanceKm === 0 ? 'in the storm' : `${physical.stormDistanceKm} km`;
+    if (physical.source === 'storm') {
+      const swell = swellFor(physical);
+      const storm = swell.storm!;
+      const limited = Math.abs(storm.significantHeight - swell.significantHeight) > 0.05 ? ` (${storm.significantHeight.toFixed(1)} m capped)` : '';
+      getElement<HTMLElement>('#storm-derived').textContent = `${storm.growth.toUpperCase()} · STORM HS ${storm.stormHeight.toFixed(1)} M`
+        + ` → AT THE SPOT HS ${swell.significantHeight.toFixed(1)} M${limited.toUpperCase()} · TP ${swell.peakPeriod.toFixed(1)} S · S ${swell.spreading.toFixed(0)}`;
+    }
     getElement<HTMLInputElement>('#hs-slider').value = String(physical.significantHeight);
     getElement<HTMLInputElement>('#tp-slider').value = String(physical.peakPeriod);
     getElement<HTMLInputElement>('#direction-slider').value = String(physical.directionDegrees);

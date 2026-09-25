@@ -17,6 +17,8 @@ export interface SurfZoneConfig {
   directionDegrees: number;
   /** cos-2s spreading exponent s. */
   spreading: number;
+  /** Relative width of the frequencies arriving together from a distant storm; omitted for the full band. */
+  bandwidth?: number;
   /** Still-water level above datum, m. */
   tide: number;
   componentCount?: number;
@@ -110,6 +112,7 @@ export class SurfZoneSimulation {
       spreading: config.spreading,
       componentCount: config.componentCount ?? 24,
       depth: offshoreDepth + config.tide,
+      bandwidth: config.bandwidth,
     }, config.seed, shallowWaterWaveNumber);
     const spinUp = (config.spinUpPeriods ?? 2) * config.peakPeriod;
     this.plan = planSetRun(this.sea, 0, TANK.zoneInner, 0, config.lead ?? 25, spinUp);

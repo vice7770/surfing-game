@@ -30,6 +30,12 @@ export interface SpectrumParams {
   componentCount: number;
   /** Reference still-water depth for each wavenumber, m (Infinity = deep water). */
   depth: number;
+  /**
+   * Relative width Δω/ω_p of the frequencies arriving together from a distant
+   * storm (a Gaussian window on the spectrum); omitted or Infinity keeps the
+   * full JONSWAP band.
+   */
+  bandwidth?: number;
 }
 
 export const JONSWAP_GAMMA = 3.3;
@@ -41,6 +47,16 @@ export function jonswapShape(omega: number, peakOmega: number, gamma = JONSWAP_G
   const r = Math.exp(-((omega - peakOmega) ** 2) / (2 * sigma * sigma * peakOmega * peakOmega));
   return Math.pow(omega, -5) * Math.exp(-1.25 * Math.pow(peakOmega / omega, 4)) * Math.pow(gamma, r);
 }
+
+/** Gaussian dispersion window exp(−(ω/ω_p − 1)² / 2w²); 1 everywhere for a non-finite width. */
+export function bandwidthWindow(omega: number, peakOmega: number, bandwidth = Infinity): number {
+  if (!Number.isFinite(bandwidth)) return 1;
+  const offset = omega / peakOmega - 1;
+  return Math.exp(-(offset * offset) / (2 * bandwidth * bandwidth));
+}
+
+/** Frequency range the spectrum is sampled over, as multiples of ω_p. */
+export const SPECTRUM_RANGE = { low: 0.5, high: 4 };
 
 /** Tabulated inverse CDF of `density` on [lo, hi] (trapezoid rule, linear inversion). */
 function inverseCdf(lo: number, hi: number, samples: number, density: (x: number) => number): (u: number) => number {
@@ -94,7 +110,8 @@ export class SeaState {
   static fromSpectrum(params: SpectrumParams, seed: number, waveNumberAt: WaveNumberFunction = exactWaveNumber): SeaState {
     const count = Math.max(1, Math.floor(params.componentCount));
     const peakOmega = (2 * Math.PI) / params.peakPeriod;
-    const frequencyAt = inverseCdf(0.5 * peakOmega, 4 * peakOmega, 2048, (omega) => jonswapShape(omega, peakOmega));
+    const frequencyAt = inverseCdf(SPECTRUM_RANGE.low * peakOmega, SPECTRUM_RANGE.high * peakOmega, 2048,
+      (omega) => jonswapShape(omega, peakOmega) * bandwidthWindow(omega, peakOmega, params.bandwidth));
     const halfWidth = Math.PI / 2;
     const s = Math.max(0, params.spreading);
     const directionAt = inverseCdf(-halfWidth, halfWidth, 721, (theta) => Math.pow(Math.cos(theta / 2), 2 * s));
