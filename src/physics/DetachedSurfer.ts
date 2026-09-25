@@ -37,6 +37,12 @@ export interface BodyForceLedger {
   readonly swim: Vector3;
 }
 
+/** External contact impulses delivered to the body since its latest step. */
+export interface BodyContactLedger {
+  readonly board: Vector3;
+  readonly lip: Vector3;
+}
+
 /** Contact-only board seam. The later physical board owns its water forces. */
 export interface BoardContactBody {
   readonly position: Vector3;
@@ -197,6 +203,7 @@ export class DetachedSurfer implements DetachedRiderPose {
   readonly lastForces: BodyForceLedger = {
     gravity: new Vector3(), buoyancy: new Vector3(), drag: new Vector3(), swim: new Vector3(),
   };
+  readonly lastContacts: BodyContactLedger = { board: new Vector3(), lip: new Vector3() };
   private swimEligible = false;
   private contactPending = false;
   private lipContactPending = false;
@@ -279,6 +286,8 @@ export class DetachedSurfer implements DetachedRiderPose {
     this.lipContactPending = false;
     this.contactedLipIds.clear();
     for (const force of Object.values(this.lastForces)) force.set(0, 0, 0);
+    this.lastContacts.board.set(0, 0, 0);
+    this.lastContacts.lip.set(0, 0, 0);
   }
 
   centerOfMass(out = new Vector3()): Vector3 {
@@ -392,6 +401,7 @@ export class DetachedSurfer implements DetachedRiderPose {
       const normalImpulse = -(1 + BOARD_RESTITUTION) * approach / inverseEffective;
       const impulse = this.boardImpulse.copy(normal).multiplyScalar(normalImpulse);
       node.velocity.addScaledVector(impulse, 1 / node.mass);
+      this.lastContacts.board.add(impulse);
       board.applyImpulse(impulse.multiplyScalar(-1), contactPoint);
       board.velocityAt(contactPoint, this.boardPointVelocity);
       this.boardRelativeVelocity.subVectors(node.velocity, this.boardPointVelocity);
@@ -405,6 +415,7 @@ export class DetachedSurfer implements DetachedRiderPose {
       const frictionImpulse = Math.min(tangentialSpeed / tangentInverseMass,
         BOARD_FRICTION * normalImpulse);
       node.velocity.addScaledVector(tangent, -frictionImpulse / node.mass);
+      this.lastContacts.board.addScaledVector(tangent, -frictionImpulse);
       board.applyImpulse(this.boardImpulse.copy(tangent).multiplyScalar(frictionImpulse), contactPoint);
     }
     return contacts;
@@ -451,6 +462,7 @@ export class DetachedSurfer implements DetachedRiderPose {
         node.mass * MAX_LIP_BODY_DELTA_SPEED);
       const impulse = this.lipImpulse.copy(normal).multiplyScalar(impulseMagnitude);
       node.velocity.addScaledVector(impulse, 1 / node.mass);
+      this.lastContacts.lip.add(impulse);
       parcel.velocity.addScaledVector(impulse, -1 / parcelMass);
       contacts += 1;
     }
@@ -466,6 +478,8 @@ export class DetachedSurfer implements DetachedRiderPose {
     let wetMass = 0;
     this.outsideDomain = false;
     for (const force of Object.values(this.lastForces)) force.set(0, 0, 0);
+    this.lastContacts.board.set(0, 0, 0);
+    this.lastContacts.lip.set(0, 0, 0);
     for (let index = 0; index < this.nodes.length; index += 1) {
       const node = this.nodes[index];
       const force = this.forces[index].set(0, -node.mass * GRAVITY, 0);

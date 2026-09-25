@@ -262,6 +262,7 @@ describe('DetachedSurfer on controlled water', () => {
       if (count === 0) continue;
       const after = body.linearMomentum().addScaledVector(board.velocity, 1 / board.inverseMass);
       expect(after.distanceTo(before)).toBeLessThan(1e-8);
+      expect(body.lastContacts.board.clone().addScaledVector(board.velocity, 1 / board.inverseMass).length()).toBeLessThan(1e-8);
       contacted = true;
       break;
     }
@@ -320,6 +321,7 @@ describe('DetachedSurfer on controlled water', () => {
 
     expect(contacts).toBeGreaterThan(0);
     expect(after.distanceTo(before)).toBeLessThan(1e-8);
+    expect(body.lastContacts.lip.clone().addScaledVector(parcel.velocity.clone().sub(new Vector3(12, 0, 0)), 1000 * parcel.volume).length()).toBeLessThan(1e-8);
     expect(parcel.velocity.x).toBeLessThan(12);
     const parcelVelocity = parcel.velocity.clone();
     expect(body.resolveLipContact(parcel)).toBe(0);
