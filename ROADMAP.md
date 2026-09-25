@@ -38,7 +38,15 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 - [ ] P4: the board on physical waves, delivered in the sub-phases of the board and surfer physics plan (branch `codex/board-surfer-physics-proposal`, B0–B4):
   - [x] P4a: the physical surf zone runs in a Web Worker behind a snapshot host; the main thread spends 0.10 ms per physical frame (10.8 ms before) and a spot's spin-up no longer freezes the page. The worker step is 5.8 ms against the 4 ms gate, a risk for the board phases. [Record](docs/superpowers/plans/2026-09-25-p4a-surf-zone-worker.md).
   - [x] P4b: one `SurfWater` sampling seam for bodies over legacy and physical water: Catmull-Rom surface agreeing with the rendered vertices, flow at body depth by the §1.10 profile (flagged in bores), explicit dry and outside-domain samples, momentum-conserving reactions. The legacy board and rider fall sample only through it, with golden replays unchanged bit for bit; the reference shortboard and rider are recorded and the [legacy board baseline](docs/research/board-baseline.md) is generated. [Record](docs/superpowers/plans/2026-09-25-p4b-surf-water-seam.md).
-  - [ ] P4c–P4f: rigid board body, rider contacts and pop-up, fins and breaking, fall, paddling and catch calibration, practice and natural modes.
+  - [x] P4c: a rigid reference shortboard (25.75 L, 2.54 kg, its own inertia) floats, drops and planes on sampled water. The forces are:
+    - buoyancy along the surface slope;
+    - Savitsky-calibrated planing pressure concentrated behind the spray root;
+    - ITTC friction;
+    - added mass, water entry and radiation;
+    - seabed contact.
+
+    Energy ledgers close. It rides the physical surf zone riderless in the worker, drawn from the same hull curves, and it is the detached surfer's contact body. A towed 75 kg rider planes at 6 m/s but sinks at rest. The worker step is now 6–7 ms against the 4 ms gate. [Record](docs/superpowers/plans/2026-09-25-p4c-board-body.md).
+  - [ ] P4d–P4f: rider contacts and pop-up, fins and breaking, fall (on the merged detached surfer), paddling and catch calibration, practice and natural modes.
 ### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `Backlog`
 
 ## Current milestone — sustained wave and physical wipeout — `Done for prototype`
