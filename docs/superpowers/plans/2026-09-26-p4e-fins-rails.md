@@ -53,6 +53,10 @@
   - **Still open:** at full steer, about 2.1 s in (heading about 22°), the rider's drive velocity jumps by about 0.16 m/s in one step. A 2.9 BW contact spike, then flight and 'lost board', follow. The failure is the same at 8 substeps, so it is not the step size.
     - Suspects: the heading-velocity term, or the correction term, as the board traverses the slope.
     - `(board as any).entering(h)` is true throughout the carve, so the entry refinement runs every substep. That is costly; check its criterion.
+    - Ruled out: the lateral deadband. The result is identical with `LATERAL_FREEDOM` at 0.2 instead of 0.06, and the balance loop never engages.
+    - Ruled out: the step size (same at 8 substeps).
+    - In the failing step (about 2.13 s), the board decelerates by about 15 m/s² (7.62 → 7.36 m/s), while the step-mean fin, rail and hull forces stay small.
+    - Next: log each substep's rider impulse (`settle`/`pushBoard`) and the board's velocity change, to find which impulse grabs the board.
   - A faster standing balance loop (0.06–0.12 s) oscillates even without steering.
   - Probes: `carve.ts` and `carve2.ts` in the session scratchpad.
 - **User requests queued:**
