@@ -466,7 +466,7 @@ class SurfGame {
 
   private renderPhysicalReadout(): void {
     getElement<HTMLElement>('#readout-summary').textContent = 'PHYSICAL SURF ZONE · STAGE 1 SOLVER';
-    this.readoutPanel.render(formatPhysicalReadout(this.physicalMode.simulation, this.physicalMode.storm));
+    this.readoutPanel.render(formatPhysicalReadout(this.physicalMode.runner.config, this.physicalMode.runner.status(), this.physicalMode.storm));
   }
 
   private renderPhysicsReadout(): void {
@@ -612,7 +612,7 @@ class SurfGame {
     this.accumulator = Math.min(this.accumulator + simElapsed, this.fixedStep * 4);
     let steps = 0;
     while (this.accumulator >= this.fixedStep && steps < 3) {
-      this.physicalMode.step(this.fixedStep);
+      this.physicalMode.step();
       this.accumulator -= this.fixedStep;
       steps += 1;
     }

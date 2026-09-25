@@ -67,7 +67,7 @@ describe('PhysicalMode', () => {
     expect(scene.children).toContain(mode.bubbles.mesh);
     expect(mode.farField.textureSize.width).toBe(mode.simulation.sea.components.length + 1);
     expect(mode.focus).toEqual(mode.simulation.breakPoint());
-    mode.step(1 / 60);
+    mode.step();
     mode.update(1 / 60);
     expect(mode.camera.camera.position.y).toBeGreaterThan(10);
     expect(mode.farField.temporalPhases[0]).toBeCloseTo((mode.simulation.sea.components[0].omega * mode.simulation.seaTime) % (2 * Math.PI), 4);
@@ -76,7 +76,8 @@ describe('PhysicalMode', () => {
     mode.update(1 / 60);
     expect(mode.lipPoints.mesh.geometry.drawRange.count).toBe(mode.simulation.lip.activeCount());
     mode.simulation.foam.source.fill(0);
-    mode.simulation.foam.source[crest] = 4;
+    mode.simulation.foam.source[crest] = 40;
+    mode.runner.bubbles.update(mode.simulation, 1 / 60);
     mode.update(1 / 30);
     expect(mode.bubbles.mesh.geometry.drawRange.count).toBeGreaterThan(0);
     mode.setVisible(false);
@@ -90,7 +91,7 @@ describe('PhysicalMode', () => {
     const mode = new PhysicalMode(new Scene());
     const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
     mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'canyon', significantHeight: 1.8, peakPeriod: 12 }, 2, water, quick);
-    const rows = formatPhysicalReadout(mode.simulation);
+    const rows = formatPhysicalReadout(mode.runner.config, mode.runner.status());
     const value = (label: string) => rows.find((row) => row.label === label)?.value;
     expect(value('SPOT')).toBe('CANYON');
     expect(value('SWELL')).toMatch(/^Hs 1\.8 m · Tp 12\.0 s · 10°$/);
@@ -112,7 +113,7 @@ describe('PhysicalMode', () => {
     expect(mode.storm).toEqual(storm);
     expect(mode.simulation.config.significantHeight).toBeCloseTo(storm.significantHeight, 12);
     expect(mode.simulation.config.bandwidth).toBe(storm.bandwidth);
-    const rows = formatPhysicalReadout(mode.simulation, mode.storm);
+    const rows = formatPhysicalReadout(mode.runner.config, mode.runner.status(), mode.storm);
     const value = (label: string) => rows.find((row) => row.label === label)?.value;
     expect(value('SWELL')).toMatch(/^Hs 1\.4 m · Tp 13\.5 s · 10°$/);
     expect(value('STORM')).toBe('Hs 7.1 m · Tp 13.5 s · fetch-limited · arrives after 4.4 days');

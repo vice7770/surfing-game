@@ -13,6 +13,7 @@ import { FarFieldProfile } from '../wave/FarFieldProfile';
 import { MIXED_PEAK_FIT, skillForPeel } from '../wave/Breaking';
 import { stormSwell, type StormSwell } from '../wave/StormSwell';
 import type { ReadoutRow } from '../wave/SwellReadout';
+import { SurfZoneRunner, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import { OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 
 /** Wave Lab inputs for the view-only physical surf zone (buoy values or a storm, plan Q2, Q22 and Q31). */
@@ -100,12 +101,10 @@ export function formatStorm(storm: StormSwell): string {
   return `Hs ${storm.stormHeight.toFixed(1)} m · Tp ${storm.stormPeriod.toFixed(1)} s · ${storm.growth} · ${travel}`;
 }
 
-export function formatPhysicalReadout(simulation: SurfZoneSimulation, storm?: StormSwell): ReadoutRow[] {
-  const { config, solver } = simulation;
-  const breakPoint = simulation.breakPoint();
-  const toSet = simulation.timeToSet;
-  const breaker = simulation.iribarren();
-  const peel = simulation.peelEstimate();
+/** The Wave Lab rows for a running surf zone, from plain status values (they can come from the worker). */
+export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneStatus, storm?: StormSwell): ReadoutRow[] {
+  const { breakPoint, breaker, peel } = status;
+  const toSet = status.timeToSet;
   const wind = config.windSpeed ?? 0;
   let peelText = 'waiting for a break';
   if (peel) {
@@ -124,16 +123,16 @@ export function formatPhysicalReadout(simulation: SurfZoneSimulation, storm?: St
     { label: 'SWELL', value: `Hs ${config.significantHeight.toFixed(1)} m · Tp ${config.peakPeriod.toFixed(1)} s · ${config.directionDegrees}°${clamped}` },
     { label: 'SPREAD', value: `s ${config.spreading.toFixed(0)}${band}` },
     { label: 'TIDE', value: `${config.tide.toFixed(1)} m` },
-    { label: 'BREAK LINE', value: `${Math.round(-breakPoint.z)} m out · ${(simulation.spot.depthAt(breakPoint.x, breakPoint.z) + config.tide).toFixed(2)} m deep` },
-    { label: 'SOLVER', value: `${(solver.nx * solver.nz).toLocaleString('en-US')} cells · ${simulation.lastStepMs.toFixed(1)} ms/step` },
+    { label: 'BREAK LINE', value: `${Math.round(-breakPoint.z)} m out · ${status.breakDepth.toFixed(2)} m deep` },
+    { label: 'SOLVER', value: `${status.cells.toLocaleString('en-US')} cells · ${status.stepMs.toFixed(1)} ms/step` },
     { label: 'NEXT SET', value: toSet > 0 ? `in ${Math.round(toSet)} s` : `${Math.round(-toSet)} s ago` },
     { label: 'BREAKER', value: breaker.type === 'none' ? 'FLAT BED' : `ξ ${breaker.value.toFixed(2)} · ${breaker.type.toUpperCase()}` },
-    { label: 'BREAKING', value: `${Math.round(simulation.breakingFraction() * 100)} % of the surf zone` },
+    { label: 'BREAKING', value: `${Math.round(status.breakingFraction * 100)} % of the surf zone` },
     { label: 'PEEL', value: peelText },
-    { label: 'LIP', value: simulation.lipLaunches === 0 ? 'no lip yet'
-      : `${simulation.lipLaunches} throws · ${simulation.lipVolume.toFixed(1)} m³ · ${simulation.lip.airborneVolume().toFixed(1)} m³ airborne` },
+    { label: 'LIP', value: status.lipLaunches === 0 ? 'no lip yet'
+      : `${status.lipLaunches} throws · ${status.lipVolume.toFixed(1)} m³ · ${status.lipAirborne.toFixed(1)} m³ airborne` },
     { label: 'WIND', value: wind === 0 ? 'calm'
-      : `${Math.abs(wind)} m/s ${wind > 0 ? 'onshore' : 'offshore'} · breaking thresholds ×${simulation.breaking.onsetScale.toFixed(2)}` },
+      : `${Math.abs(wind)} m/s ${wind > 0 ? 'onshore' : 'offshore'} · breaking thresholds ×${status.onsetScale.toFixed(2)}` },
   ];
 }
 
@@ -148,8 +147,8 @@ export class PhysicalMode {
   readonly farField = new FarFieldOcean();
   readonly lipPoints = new LipPoints();
   /** Bubbles entrained under breaking bores, seen from below the surface. */
-  readonly bubbles = new BubblePoints(1);
-  simulation!: SurfZoneSimulation;
+  readonly bubbles = new BubblePoints();
+  runner!: SurfZoneRunner;
   /** The storm behind the running sea, in storm mode. */
   storm?: StormSwell;
   focus = { x: 0, z: 0 };
@@ -161,7 +160,7 @@ export class PhysicalMode {
   /** Build the surf zone (warm start and spin-up take a few seconds) and show it on `water`. */
   start(settings: PhysicalSettings, seed: number, water: WaterSurface, overrides: Partial<SurfZoneConfig> = {}): void {
     const swell = swellFor(settings);
-    const simulation = new SurfZoneSimulation({
+    const runner = new SurfZoneRunner({
       spot: settings.spot,
       seed,
       significantHeight: swell.significantHeight,
@@ -173,9 +172,9 @@ export class PhysicalMode {
       windSpeed: settings.windSpeed,
       ...overrides,
     });
-    this.simulation = simulation;
+    this.runner = runner;
+    const { simulation } = runner;
     this.storm = swell.storm;
-    this.bubbles.clear();
     water.setSource(new PhysicalSurfaceSource(simulation, 1));
     water.setChop(chopForWind(settings.windSpeed));
     water.setOptics(SPOT_OPTICS[settings.spot]);
@@ -214,15 +213,21 @@ export class PhysicalMode {
     this.camera.setView(this.camera.view);
   }
 
-  step(dt: number): void {
-    this.simulation.step(dt);
+  /** The running surf zone's simulation. */
+  get simulation(): SurfZoneSimulation {
+    return this.runner.simulation;
+  }
+
+  /** Advance one fixed physics step (`SURF_ZONE_STEP`). */
+  step(): void {
+    this.runner.advance(1);
   }
 
   update(dt: number): void {
     this.camera.update(this.simulation, this.focus, dt);
     this.farField.update(this.simulation.seaTime);
     this.lipPoints.update(this.simulation.lip);
-    this.bubbles.update(this.simulation, dt);
+    this.bubbles.update(this.runner.bubbles);
   }
 
   cameraBelowSurface(margin = 0.1): boolean {

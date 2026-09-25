@@ -84,6 +84,22 @@ export function windOnsetScale(windSpeed: number, breakerDepth: number): number 
   return u >= 0 ? Math.max(0.6, 1 - 0.1 * u) : Math.min(1.1, 1 - 0.05 * u);
 }
 
+/**
+ * The seeded sea a surf zone is built from, at the tank's offshore depth. Pure,
+ * so the renderer can rebuild the same sea (for the far field) outside the worker.
+ */
+export function surfZoneSea(config: SurfZoneConfig): SeaState {
+  return SeaState.fromSpectrum({
+    significantHeight: config.significantHeight,
+    peakPeriod: config.peakPeriod,
+    direction: (config.directionDegrees * Math.PI) / 180,
+    spreading: config.spreading,
+    componentCount: config.componentCount ?? 24,
+    depth: OFFSHORE_DEPTH[config.spot] + config.tide,
+    bandwidth: config.bandwidth,
+  }, config.seed, shallowWaterWaveNumber);
+}
+
 /** Spot seabed with a flat offshore floor under the relaxation zone, blended over TANK.zoneInner…blendEnd. */
 export function tankDepth(spot: SurfSpot, offshoreDepth: number, x: number, z: number): number {
   const toSpot = smoothstep(TANK.zoneInner, TANK.blendEnd, z);
@@ -140,15 +156,7 @@ export class SurfZoneSimulation {
       (x, z) => tankDepth(this.spot, offshoreDepth, x, z),
       { waterLevel: config.tide },
     );
-    this.sea = SeaState.fromSpectrum({
-      significantHeight: config.significantHeight,
-      peakPeriod: config.peakPeriod,
-      direction: (config.directionDegrees * Math.PI) / 180,
-      spreading: config.spreading,
-      componentCount: config.componentCount ?? 24,
-      depth: offshoreDepth + config.tide,
-      bandwidth: config.bandwidth,
-    }, config.seed, shallowWaterWaveNumber);
+    this.sea = surfZoneSea(config);
     const spinUp = (config.spinUpPeriods ?? 2) * config.peakPeriod;
     this.plan = planSetRun(this.sea, 0, TANK.zoneInner, 0, config.lead ?? 25, spinUp);
     this.seaTimeOffset = this.plan.warmStartSeaTime;
