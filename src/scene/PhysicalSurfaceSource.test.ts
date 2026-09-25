@@ -15,6 +15,9 @@ function stubZone(): Omit<RenderableSurfZone, 'seaTime'> & { frames: number; sea
       this.frames += 1;
       this.seaTime += 1;
     },
+    writeUniformBed(data: Float32Array) {
+      data.fill(-2);
+    },
   };
 }
 

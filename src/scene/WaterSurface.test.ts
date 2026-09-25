@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField, type WaveSettings } from '../wave/WaveModel';
-import { WaterSurface, sampleSurfaceHeight, sampleSurfaceNormal } from './WaterSurface';
+import { WaterSurface, sampleSurfaceBed, sampleSurfaceHeight, sampleSurfaceNormal } from './WaterSurface';
 import { LegacySurfaceSource } from './LegacySurfaceSource';
 import { PhysicalSurfaceSource } from './PhysicalSurfaceSource';
 import { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
@@ -125,6 +125,62 @@ describe('WaterSurface GPU displacement data', () => {
     }
     expect(wave.zMin).toBeGreaterThan(-32);
     expect(foamyNodes).toBeGreaterThan(0);
+  });
+
+  it('uploads the legacy bed and follows it when the grid scrolls', () => {
+    const wave = new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS, shelfStrength: 0.4, sustained: true });
+    const surface = new WaterSurface(new LegacySurfaceSource(wave));
+    const check = () => {
+      for (let iz = 0; iz < wave.nz; iz += 9) {
+        for (let ix = 0; ix < wave.nx; ix += 5) {
+          const x = wave.xMin + ix * wave.spacing;
+          const z = wave.zMin + iz * wave.spacing;
+          expect(surface.bedData[iz * wave.nx + ix]).toBeCloseTo(-wave.depthAt(x, z), 6);
+          expect(sampleSurfaceBed(surface.bedData, surface.grid, x + 0.3, z + 0.4)).toBeCloseTo(-wave.depthAt(x + 0.3, z + 0.4), 2);
+        }
+      }
+    };
+    check();
+    const zMin = wave.zMin;
+    for (let frame = 0; frame < 900 && wave.zMin === zMin; frame += 1) {
+      wave.step(1 / 60);
+      surface.update();
+    }
+    expect(wave.zMin).not.toBe(zMin);
+    check();
+  });
+
+  it('uploads the physical bed under every node, 5 cm above the tucked-in dry surface, and follows the window', () => {
+    const wave = new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS });
+    const surface = new WaterSurface(new LegacySurfaceSource(wave));
+    const simulation = new SurfZoneSimulation({
+      spot: 'reef', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 0, spreading: 12, tide: 0,
+      componentCount: 8, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
+    });
+    surface.setSource(new PhysicalSurfaceSource(simulation, 2));
+    surface.update();
+    const check = () => {
+      let dry = 0;
+      let wet = 0;
+      for (let k = 0; k < surface.bedData.length; k += 1) {
+        const depth = surface.surfaceData[k * 2] - surface.bedData[k];
+        if (depth < 0) {
+          expect(depth).toBeCloseTo(-0.05, 5);
+          dry += 1;
+        } else {
+          expect(depth).toBeGreaterThan(0.009);
+          wet += 1;
+        }
+      }
+      expect(dry).toBeGreaterThan(0);
+      expect(wet).toBeGreaterThan(0);
+    };
+    check();
+    const x = surface.grid.xMin + 4;
+    expect(sampleSurfaceBed(surface.bedData, surface.grid, x, -200)).toBeCloseTo(simulation.bedAt(x, -200), 1);
+    simulation.solver.shiftAlongShore(3);
+    surface.update();
+    check();
   });
 
   it('rebuilds its mesh and texture for a differently sized physical source', () => {

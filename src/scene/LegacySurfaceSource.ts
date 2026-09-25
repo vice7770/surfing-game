@@ -22,6 +22,19 @@ export class LegacySurfaceSource implements SurfaceSource {
     return this.wave.time;
   }
 
+  /** The still bed only moves when the grid scrolls. */
+  get bedRevision(): number {
+    return this.wave.zMin;
+  }
+
+  writeBed(data: Float32Array): void {
+    const wave = this.wave;
+    for (let iz = 0; iz < wave.nz; iz += 1) {
+      const z = wave.zMin + iz * wave.spacing;
+      for (let ix = 0; ix < wave.nx; ix += 1) data[iz * wave.nx + ix] = -wave.depthAt(wave.xMin + ix * wave.spacing, z);
+    }
+  }
+
   write(data: Float32Array): void {
     const wave = this.wave;
     if (wave.zMin !== this.lastZMin) {

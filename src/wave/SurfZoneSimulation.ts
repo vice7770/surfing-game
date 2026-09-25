@@ -340,6 +340,21 @@ export class SurfZoneSimulation {
     }
   }
 
+  /** Resample the bed elevation to one value per render node, with the same interpolation as `writeUniformSurface`. */
+  writeUniformBed(data: Float32Array, grid: RenderGrid): void {
+    const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
+    const { bed, nx } = this.solver;
+    for (let r = 0; r < grid.nz; r += 1) {
+      const row = rows[r] * nx;
+      const tz = rowWeights[r];
+      for (let c = 0; c < grid.nx; c += 1) {
+        const i = row + columns[c];
+        const tx = columnWeights[c];
+        data[r * grid.nx + c] = (bed[i] * (1 - tx) + bed[i + 1] * tx) * (1 - tz) + (bed[i + nx] * (1 - tx) + bed[i + nx + 1] * tx) * tz;
+      }
+    }
+  }
+
   /** Where the still depth first reaches the shoaled breaker depth on the x = 0 transect: the camera's break focus. */
   breakPoint(): { x: number; z: number } {
     const target = this.breakerDepth();

@@ -7,6 +7,7 @@ import {
   MeshPhysicalMaterial,
   NearestFilter,
   PlaneGeometry,
+  RedFormat,
   RGFormat,
   Vector2,
   Vector3,
@@ -39,6 +40,20 @@ export function sampleSurfaceHeight(data: Float32Array, grid: SurfaceGrid, x: nu
   const row = grid.nx * 2;
   const top = data[i] * (1 - tx) + data[i + 2] * tx;
   const bottom = data[i + row] * (1 - tx) + data[i + row + 2] * tx;
+  return top * (1 - tz) + bottom * tz;
+}
+
+/** CPU mirror of `waterBedAt` in the vertex shader: bilinear bed elevation from one value per node, clamped to the grid. */
+export function sampleSurfaceBed(bed: Float32Array, grid: SurfaceGrid, x: number, z: number): number {
+  const gx = Math.min(grid.nx - 1, Math.max(0, (x - grid.xMin) / grid.spacing));
+  const gz = Math.min(grid.nz - 1, Math.max(0, (z - grid.zMin) / grid.spacing));
+  const x0 = Math.min(grid.nx - 2, Math.floor(gx));
+  const z0 = Math.min(grid.nz - 2, Math.floor(gz));
+  const tx = gx - x0;
+  const tz = gz - z0;
+  const i = z0 * grid.nx + x0;
+  const top = bed[i] * (1 - tx) + bed[i + 1] * tx;
+  const bottom = bed[i + grid.nx] * (1 - tx) + bed[i + grid.nx + 1] * tx;
   return top * (1 - tz) + bottom * tz;
 }
 
@@ -103,21 +118,33 @@ export interface SurfaceSource {
   /** Simulation clock that animates the shading-only wind chop, s. */
   readonly time: number;
   write(data: Float32Array): void;
+  /** Changes whenever `writeBed` would write different values. */
+  readonly bedRevision: number;
+  /** Bed elevation per grid node, m (negative below datum). */
+  writeBed(data: Float32Array): void;
 }
 
 export class WaterSurface {
   readonly mesh: Mesh<PlaneGeometry, MeshPhysicalMaterial>;
   /** Interleaved (height, foam) per grid node, uploaded as an RG float texture each frame. */
   surfaceData: Float32Array;
+  /** Bed elevation per grid node, uploaded only when the source's bed changes. */
+  bedData: Float32Array;
   private texture: DataTexture;
+  private bedTexture: DataTexture;
+  private bedSource?: SurfaceSource;
+  private bedRevision = Number.NaN;
   private readonly uniforms: Record<string, { value: unknown }>;
 
   constructor(private source: SurfaceSource) {
     const grid = source.grid;
     this.surfaceData = new Float32Array(grid.nx * grid.nz * 2);
     this.texture = WaterSurface.createTexture(this.surfaceData, grid);
+    this.bedData = new Float32Array(grid.nx * grid.nz);
+    this.bedTexture = WaterSurface.createBedTexture(this.bedData, grid);
     this.uniforms = {
       waterSurface: { value: this.texture },
+      waterBed: { value: this.bedTexture },
       waterGrid: { value: new Vector4(grid.xMin, grid.zMin, grid.spacing, 0) },
       waterGridSize: { value: new Vector2(grid.nx, grid.nz) },
       waterWaveHeight: { value: source.waveHeight },
@@ -165,6 +192,12 @@ export class WaterSurface {
     this.uniforms.waterTime.value = this.source.time;
     this.mesh.position.set(grid.xMin + ((grid.nx - 1) * grid.spacing) / 2, 0, grid.zMin + ((grid.nz - 1) * grid.spacing) / 2);
     this.texture.needsUpdate = true;
+    if (this.source !== this.bedSource || this.source.bedRevision !== this.bedRevision) {
+      this.source.writeBed(this.bedData);
+      this.bedSource = this.source;
+      this.bedRevision = this.source.bedRevision;
+      this.bedTexture.needsUpdate = true;
+    }
   }
 
   /** Strength of the shading-only wind chop (see waterChop.ts). */
@@ -182,6 +215,10 @@ export class WaterSurface {
     this.texture.dispose();
     this.texture = WaterSurface.createTexture(this.surfaceData, grid);
     this.uniforms.waterSurface.value = this.texture;
+    this.bedData = new Float32Array(grid.nx * grid.nz);
+    this.bedTexture.dispose();
+    this.bedTexture = WaterSurface.createBedTexture(this.bedData, grid);
+    this.uniforms.waterBed.value = this.bedTexture;
     (this.uniforms.waterGridSize.value as Vector2).set(grid.nx, grid.nz);
     this.mesh.geometry.dispose();
     this.mesh.geometry = WaterSurface.createGeometry(grid);
@@ -190,11 +227,20 @@ export class WaterSurface {
   dispose(): void {
     this.mesh.geometry.dispose();
     this.texture.dispose();
+    this.bedTexture.dispose();
     this.mesh.material.dispose();
   }
 
   private static createTexture(data: Float32Array, grid: SurfaceGrid): DataTexture {
     const texture = new DataTexture(data, grid.nx, grid.nz, RGFormat, FloatType);
+    texture.magFilter = NearestFilter;
+    texture.minFilter = NearestFilter;
+    texture.generateMipmaps = false;
+    return texture;
+  }
+
+  private static createBedTexture(data: Float32Array, grid: SurfaceGrid): DataTexture {
+    const texture = new DataTexture(data, grid.nx, grid.nz, RedFormat, FloatType);
     texture.magFilter = NearestFilter;
     texture.minFilter = NearestFilter;
     texture.generateMipmaps = false;

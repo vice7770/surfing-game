@@ -7,6 +7,7 @@ export interface RenderableSurfZone {
   readonly config: { readonly significantHeight: number };
   renderGrid(spacing: number): SurfaceGrid;
   writeUniformSurface(data: Float32Array, grid: SurfaceGrid): void;
+  writeUniformBed(data: Float32Array, grid: SurfaceGrid): void;
 }
 
 /** Whitewater fades over this many seconds once the break has passed (a game constant; see Callaghan et al. 2024). */
@@ -34,6 +35,16 @@ export class PhysicalSurfaceSource implements SurfaceSource {
 
   get time(): number {
     return this.simulation.seaTime;
+  }
+
+  /** The seabed is fixed, so it only changes when the window slides. */
+  get bedRevision(): number {
+    return this.simulation.windowXMin;
+  }
+
+  writeBed(data: Float32Array): void {
+    this.grid.xMin = this.simulation.windowXMin;
+    this.simulation.writeUniformBed(data, this.grid);
   }
 
   write(data: Float32Array): void {
