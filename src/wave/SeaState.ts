@@ -115,6 +115,28 @@ export class SeaState {
     return new SeaState(components, params.depth);
   }
 
+  /** Linear surface elevation η(x, z, t) = Σ a cos(k·x − ωt + φ), m. */
+  elevation(x: number, z: number, t: number): number {
+    let eta = 0;
+    for (const component of this.components) {
+      eta += component.amplitude * Math.cos(component.kx * x + component.kz * z - component.omega * t + component.phase);
+    }
+    return eta;
+  }
+
+  /** Depth-averaged horizontal flow from linear continuity, ū = η ω / (k h) along each component, m/s. */
+  depthAveragedVelocity(x: number, z: number, t: number): { x: number; z: number } {
+    const flow = { x: 0, z: 0 };
+    if (!Number.isFinite(this.depth)) return flow;
+    for (const component of this.components) {
+      const speed = (component.amplitude * component.omega) / (component.k * this.depth)
+        * Math.cos(component.kx * x + component.kz * z - component.omega * t + component.phase);
+      flow.x += speed * Math.sin(component.direction);
+      flow.z += speed * Math.cos(component.direction);
+    }
+    return flow;
+  }
+
   get significantHeight(): number {
     let m0 = 0;
     for (const component of this.components) m0 += 0.5 * component.amplitude * component.amplitude;

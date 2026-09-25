@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SeaState, jonswapShape, type SpectrumParams } from './SeaState';
+import { waveKinematics } from './dispersion';
 
 const swell: SpectrumParams = {
   significantHeight: 1.4, peakPeriod: 8, direction: 0, spreading: 10, componentCount: 24, depth: 15,
@@ -57,5 +58,31 @@ describe('SeaState spectrum', () => {
     expect((2 * Math.PI) / component.k).toBeCloseTo(48.0, 1);
     expect(component.kx).toBeCloseTo(component.k * 0.5, 12);
     expect(component.kz).toBeCloseTo(component.k * Math.cos(Math.PI / 6), 12);
+  });
+});
+
+describe('SeaState linear sampler', () => {
+  it('moves a single component at the Airy phase speed', () => {
+    const sea = new SeaState([{ amplitude: 0.5, omega: (2 * Math.PI) / 8, direction: 0, phase: 0.3 }], 4);
+    const speed = waveKinematics(8, 4).phaseSpeed;
+    expect(sea.elevation(1.2, 5 + speed * 3.7, 3.7)).toBeCloseTo(sea.elevation(1.2, 5, 0), 9);
+    expect(sea.elevation(0, 0, 0)).toBeCloseTo(0.5 * Math.cos(0.3), 12);
+  });
+
+  it('satisfies linear continuity between elevation and depth-averaged flow', () => {
+    const depth = 6;
+    const sea = SeaState.fromSpectrum({ ...swell, depth, direction: 0.2 }, 9);
+    const epsilon = 1e-3;
+    for (const [x, z, t] of [[1.3, -4.2, 2.5], [-7, 11, 9.1], [3.3, 0.4, 17]]) {
+      const etaRate = (sea.elevation(x, z, t + epsilon) - sea.elevation(x, z, t - epsilon)) / (2 * epsilon);
+      const divergence = (sea.depthAveragedVelocity(x + epsilon, z, t).x - sea.depthAveragedVelocity(x - epsilon, z, t).x) / (2 * epsilon)
+        + (sea.depthAveragedVelocity(x, z + epsilon, t).z - sea.depthAveragedVelocity(x, z - epsilon, t).z) / (2 * epsilon);
+      expect(Math.abs(etaRate + depth * divergence)).toBeLessThan(1e-6);
+    }
+  });
+
+  it('reports no depth-averaged flow for deep water', () => {
+    const sea = new SeaState([{ amplitude: 0.5, omega: 1, direction: 0, phase: 0 }], Infinity);
+    expect(sea.depthAveragedVelocity(0, 0, 0)).toEqual({ x: 0, z: 0 });
   });
 });
