@@ -344,7 +344,7 @@ export class SurfZoneSimulation {
   breakPoint(): { x: number; z: number } {
     const target = this.breakerDepth();
     const offshoreDepth = OFFSHORE_DEPTH[this.config.spot];
-    // Scan the simulated bed from the relaxation zone inward: a reef edge may reach into the tank's blend band.
+    // Scan the whole simulated bed from the relaxation zone inward.
     for (let z = TANK.zoneInner; z < TANK.shore; z += 0.5) {
       if (tankDepth(this.spot, offshoreDepth, 0, z) + this.config.tide <= target) return { x: 0, z };
     }
