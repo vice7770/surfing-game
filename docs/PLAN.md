@@ -50,7 +50,7 @@ Keep simulation state independently testable and expose the same authoritative w
 7. [Done] Add restrained coastline, sunset, and sky/coastline reflections. Keep the moving surface synchronized to the authoritative water field.
 8. [Done] Add run history, stronger board/water coupling, breaking spray, tapered board/rider details, environmental presets, sun controls, and underwater inspection. See the decision notes under `docs/research/` for physical and visual limits.
 
-The baseline is already committed and linked to a GitHub remote. Current extension changes remain uncommitted.
+The analytic baseline is committed as `1fe7ecc` and the playable prototype as `52ede4e` on local `main`. The surf-shelf work is a separate physics change. The GitHub remote still points to the baseline.
 
 ## Risks and boundaries
 

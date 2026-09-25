@@ -41,8 +41,8 @@ const DEFAULT_SETTINGS: TuningSettings = {
 type Spot = 'training' | 'point' | 'reef' | 'custom';
 const SPOT_SETTINGS: Record<Exclude<Spot, 'custom'>, TuningSettings> = {
   training: DEFAULT_SETTINGS,
-  point: { ...DEFAULT_SETTINGS, height: 1.8, period: 9, speed: 3.3, currentX: -0.2, sunHeight: 0.2, sunDirection: 20 },
-  reef: { ...DEFAULT_SETTINGS, height: 2.2, period: 6.5, speed: 4, currentX: 0.5, windX: 0.05, sunHeight: 0.6, sunDirection: -45 },
+  point: { ...DEFAULT_SETTINGS, height: 1.8, period: 9, speed: 3.3, shelfStrength: 0.25, currentX: -0.2, sunHeight: 0.2, sunDirection: 20 },
+  reef: { ...DEFAULT_SETTINGS, height: 2.2, period: 6.5, speed: 4, shelfStrength: 0.65, currentX: 0.5, windX: 0.05, sunHeight: 0.6, sunDirection: -45 },
 };
 const SPOT_NAMES: Record<Spot, string> = {
   training: 'PACIFIC TRAINING BREAK', point: 'GLASSY POINT', reef: 'WINDY REEF', custom: 'CUSTOM BREAK',
@@ -212,6 +212,7 @@ class SurfGame {
       height: number('#height-slider'),
       period: number('#period-slider'),
       speed: number('#wave-speed-slider'),
+      shelfStrength: number('#shelf-slider'),
       paddleForce: number('#paddle-slider'),
       boardResponse: number('#response-slider'),
       currentX: number('#current-slider'),
@@ -223,7 +224,7 @@ class SurfGame {
 
   private bindUi(): void {
     const sliders = [
-      '#height-slider', '#period-slider', '#wave-speed-slider', '#paddle-slider', '#response-slider',
+      '#height-slider', '#period-slider', '#wave-speed-slider', '#shelf-slider', '#paddle-slider', '#response-slider',
       '#current-slider', '#wind-slider',
       '#sun-slider',
       '#sun-direction-slider',
@@ -290,6 +291,7 @@ class SurfGame {
     getElement<HTMLInputElement>('#height-slider').value = String(values.height);
     getElement<HTMLInputElement>('#period-slider').value = String(values.period);
     getElement<HTMLInputElement>('#wave-speed-slider').value = String(values.speed);
+    getElement<HTMLInputElement>('#shelf-slider').value = String(values.shelfStrength ?? 0);
     getElement<HTMLInputElement>('#paddle-slider').value = String(values.paddleForce);
     getElement<HTMLInputElement>('#response-slider').value = String(values.boardResponse);
     getElement<HTMLInputElement>('#current-slider').value = String(values.currentX ?? 0);
@@ -299,6 +301,7 @@ class SurfGame {
     getElement<HTMLOutputElement>('#height-output').value = `${values.height.toFixed(1)} m`;
     getElement<HTMLOutputElement>('#period-output').value = `${values.period.toFixed(1)} s`;
     getElement<HTMLOutputElement>('#wave-speed-output').value = `${values.speed.toFixed(1)} m/s`;
+    getElement<HTMLOutputElement>('#shelf-output').value = `${Math.round((values.shelfStrength ?? 0) * 100)}%`;
     getElement<HTMLOutputElement>('#paddle-output').value = `${values.paddleForce.toFixed(0)} N`;
     getElement<HTMLOutputElement>('#response-output').value = `${values.boardResponse.toFixed(1)}×`;
     getElement<HTMLOutputElement>('#current-output').value = `${(values.currentX ?? 0).toFixed(1)} m/s`;

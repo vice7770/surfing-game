@@ -7,6 +7,7 @@ export class Seabed {
   private readonly colors: BufferAttribute;
   private readonly sand = new Color('#487e7a');
   private readonly light = new Color('#9bc2ae');
+  private lastWave?: InteractiveWaterField;
 
   constructor() {
     const geometry = new PlaneGeometry(48, 80, 32, 50);
@@ -20,6 +21,14 @@ export class Seabed {
 
   update(wave: InteractiveWaterField): void {
     const positions = this.mesh.geometry.getAttribute('position');
+    if (this.lastWave !== wave) {
+      for (let i = 0; i < positions.count; i += 1) {
+        positions.setY(i, -wave.depthAt(positions.getX(i), positions.getZ(i)));
+      }
+      positions.needsUpdate = true;
+      this.mesh.geometry.computeVertexNormals();
+      this.lastWave = wave;
+    }
     const color = this.sand.clone();
     for (let i = 0; i < positions.count; i += 1) {
       const x = positions.getX(i);

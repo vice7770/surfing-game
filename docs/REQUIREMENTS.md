@@ -103,7 +103,7 @@ Evolve the current browser-based Three.js prototype into a physics-focused surfi
 - Miss, wipeout, and ride-complete outcomes are reachable and expose Replay/New Wave.
 - Replay restores identical seed/settings and reset state; New Wave changes the seed and visible crest profile.
 - Diagnostic view and overlay expose local water motion, board speed relative to water, distance to crest/face, pop-up eligibility, and board support.
-- Keep the current prototype extension uncommitted until it is accepted; the earlier baseline is already committed and published.
+- Keep the playable prototype and later physics changes in reviewable local commits. Publishing to the GitHub remote is a separate handoff.
 
 ## Advanced playable prototype extension
 

@@ -36,6 +36,31 @@ describe('InteractiveWaterField', () => {
     expect(fast.crestZ() - fastStart).toBeGreaterThan(slow.crestZ() - slowStart + 1.5);
   });
 
+  it('keeps flat still water at rest over a sloping shelf', () => {
+    const wave = new InteractiveWaterField(5, {
+      height: 0, period: 8, speed: 3, shelfStrength: 1,
+    });
+    expect(wave.depthAt(0, 25)).toBeLessThan(wave.depthAt(0, -18) * 0.5);
+    for (let frame = 0; frame < 300; frame += 1) wave.step(1 / 60);
+    for (const z of [-18, -4, 4, 12, 25]) {
+      expect(wave.heightAt(0, z)).toBe(0);
+      expect(wave.sample(0, z).velocity.length()).toBe(0);
+    }
+  });
+
+  it('slows a traveling crest over the shelf without unbounded energy', () => {
+    const flat = new InteractiveWaterField(3, { ...DEFAULT_WAVE_SETTINGS });
+    const shelf = new InteractiveWaterField(3, { ...DEFAULT_WAVE_SETTINGS, shelfStrength: 1 });
+    const initialEnergy = shelf.totalEnergy();
+    for (let frame = 0; frame < 720; frame += 1) {
+      flat.step(1 / 60);
+      shelf.step(1 / 60);
+    }
+    expect(flat.crestZ() - shelf.crestZ()).toBeGreaterThan(1);
+    expect(Number.isFinite(shelf.totalEnergy())).toBe(true);
+    expect(shelf.totalEnergy()).toBeLessThan(initialEnergy);
+  }, 20_000);
+
   it('produces a different initialized surface shape for a different seed', () => {
     const first = new InteractiveWaterField(21, { ...DEFAULT_WAVE_SETTINGS });
     const next = new InteractiveWaterField(22, { ...DEFAULT_WAVE_SETTINGS });

@@ -6,6 +6,7 @@ export interface WaveSettings {
   speed: number;
   currentX?: number;
   windX?: number;
+  shelfStrength?: number;
 }
 
 export interface WaveSample {
@@ -29,6 +30,7 @@ export const DEFAULT_WAVE_SETTINGS: WaveSettings = {
   speed: 3,
   currentX: 0,
   windX: 0,
+  shelfStrength: 0,
 };
 
 export function makeSeedShape(seed: number): WaveSeedShape {
@@ -48,7 +50,7 @@ export function makeSeedShape(seed: number): WaveSeedShape {
 }
 
 /**
- * CPU-authoritative linear shallow-water field. The incoming wave is initialized
+ * CPU-authoritative depth-averaged shallow-water approximation. The incoming wave is initialized
  * as a right-travelling height/velocity packet, then evolves on a fixed grid.
  * Rendering and board physics sample this same state. Wave speed is tunable, so
  * the field uses an effective pressure coefficient while board gravity remains
@@ -75,6 +77,7 @@ export class InteractiveWaterField {
   private velocityZ: Float32Array;
   private nextVelocityZ: Float32Array;
   private surfaceVelocityY: Float32Array;
+  private readonly bedDepth: Float32Array;
   private readonly breakingStrength: Float32Array;
   private readonly cellArea = this.spacing * this.spacing;
   private readonly fluidDensity = 1000;
@@ -98,7 +101,12 @@ export class InteractiveWaterField {
     this.velocityZ = new Float32Array(size);
     this.nextVelocityZ = new Float32Array(size);
     this.surfaceVelocityY = new Float32Array(size);
+    this.bedDepth = new Float32Array(size);
     this.breakingStrength = new Float32Array(size);
+    for (let iz = 0; iz < this.nz; iz += 1) {
+      const depth = this.depthAt(0, this.zMin + iz * this.spacing);
+      this.bedDepth.fill(depth, iz * this.nx, (iz + 1) * this.nx);
+    }
     this.initializeIncomingWave();
   }
 
@@ -151,20 +159,28 @@ export class InteractiveWaterField {
       }
     }
 
-    // Then update elevation from the completed next-step flow field. This
-    // split prevents traversal-order-dependent divergence and energy injection.
+    // Then update elevation from face-averaged fluxes of local water depth and
+    // completed next-step flow. A flat free surface over the shelf stays at
+    // rest, while a traveling packet slows as the still-water depth decreases.
+    // The split prevents traversal-order-dependent divergence.
     for (let iz = 1; iz < this.nz - 1; iz += 1) {
       const row = iz * this.nx;
       for (let ix = 1; ix < this.nx - 1; ix += 1) {
         const index = row + ix;
         const eta = h[index];
-        const depth = Math.max(0.35, this.meanDepth + eta);
         const etaX = (h[index + 1] - h[index - 1]) * inv2Dx;
         const etaZ = (h[index + this.nx] - h[index - this.nx]) * inv2Dx;
-        const divFlow = (uNext[index + 1] - uNext[index - 1] + wNext[index + this.nx] - wNext[index - this.nx]) * inv2Dx;
-        const advectEta = uNext[index] * etaX + wNext[index] * etaZ;
+        const fluxXPlus = Math.max(0.35, (this.bedDepth[index] + eta + this.bedDepth[index + 1] + h[index + 1]) * 0.5)
+          * (uNext[index] + uNext[index + 1]) * 0.5;
+        const fluxXMinus = Math.max(0.35, (this.bedDepth[index] + eta + this.bedDepth[index - 1] + h[index - 1]) * 0.5)
+          * (uNext[index] + uNext[index - 1]) * 0.5;
+        const fluxZPlus = Math.max(0.35, (this.bedDepth[index] + eta + this.bedDepth[index + this.nx] + h[index + this.nx]) * 0.5)
+          * (wNext[index] + wNext[index + this.nx]) * 0.5;
+        const fluxZMinus = Math.max(0.35, (this.bedDepth[index] + eta + this.bedDepth[index - this.nx] + h[index - this.nx]) * 0.5)
+          * (wNext[index] + wNext[index - this.nx]) * 0.5;
+        const divFlux = (fluxXPlus - fluxXMinus + fluxZPlus - fluxZMinus) / dx;
         const lapEta = (h[index - 1] + h[index + 1] + h[index - this.nx] + h[index + this.nx] - 4 * eta) * invDxSquared;
-        let nextEta = eta + dt * (this.viscosity * lapEta - depth * divFlow - advectEta);
+        let nextEta = eta + dt * (this.viscosity * lapEta - divFlux);
         const x = this.xMin + ix * dx;
         if (x < breakingFront) {
           const z = this.zMin + iz * dx;
@@ -176,7 +192,7 @@ export class InteractiveWaterField {
             nextEta += dt * 0.14 * breaking * (neighborMean - eta);
           }
         }
-        hNext[index] = this.clampHeight(nextEta);
+        hNext[index] = this.clampHeight(nextEta, this.bedDepth[index]);
       }
     }
 
@@ -244,13 +260,21 @@ export class InteractiveWaterField {
     return this.sampleHeight(x, z);
   }
 
+  /** Still-water depth; the optional shelf shallows smoothly toward shore (+z). */
+  depthAt(_x: number, z: number): number {
+    const strength = Math.max(0, Math.min(1, this.settings.shelfStrength ?? 0));
+    const progress = Math.max(0, Math.min(1, (z + 8) / 28));
+    const shelf = progress * progress * (3 - 2 * progress);
+    return this.meanDepth * (1 - 0.58 * strength * shelf);
+  }
+
   /** Relative depth-averaged wave energy for calibration checks, not joules. */
   totalEnergy(): number {
     let energy = 0;
     for (let index = 0; index < this.height.length; index += 1) {
       const elevation = this.height[index];
       const flowSquared = this.velocityX[index] ** 2 + this.velocityZ[index] ** 2;
-      energy += 0.5 * (this.effectiveGravity * elevation * elevation + this.meanDepth * flowSquared);
+      energy += 0.5 * (this.effectiveGravity * elevation * elevation + this.bedDepth[index] * flowSquared);
     }
     return energy * this.cellArea;
   }
@@ -263,13 +287,13 @@ export class InteractiveWaterField {
   }
 
   crestZ(): number {
-    const predicted = this.startZ + this.settings.speed * this.time;
     const centerX = Math.round((0 - this.xMin) / this.spacing);
-    const minZ = Math.max(1, Math.floor((predicted - this.packetWidth * 1.8 - this.zMin) / this.spacing));
-    const maxZ = Math.min(this.nz - 2, Math.ceil((predicted + this.packetWidth * 1.8 - this.zMin) / this.spacing));
-    let peakIndex = minZ;
+    // Read the live packet instead of assuming deep-water travel speed. The
+    // shelf changes propagation speed, so a constant-speed search window can
+    // eventually leave the physical crest behind.
+    let peakIndex = 1;
     let peakHeight = -Infinity;
-    for (let iz = minZ; iz <= maxZ; iz += 1) {
+    for (let iz = 1; iz < this.nz - 1; iz += 1) {
       const value = this.height[iz * this.nx + centerX];
       if (value > peakHeight) {
         peakHeight = value;
@@ -297,7 +321,7 @@ export class InteractiveWaterField {
         weightSum += weight;
       }
     }
-    const cellMass = this.fluidDensity * this.meanDepth * this.cellArea;
+    const cellMass = this.fluidDensity * this.bedDepth[gz * this.nx + gx] * this.cellArea;
     for (const { index, weight } of weights) {
       const share = weight / weightSum;
       this.velocityX[index] = this.clampVelocity(this.velocityX[index] - forceOnBoard.x * dt * share / cellMass);
@@ -385,9 +409,9 @@ export class InteractiveWaterField {
     return amount * amount * 2.4;
   }
 
-  private clampHeight(value: number): number {
+  private clampHeight(value: number, localDepth: number): number {
     if (!Number.isFinite(value)) return 0;
-    return Math.max(-this.meanDepth * 0.7, Math.min(this.settings.height * 2.5, value));
+    return Math.max(-localDepth * 0.8, Math.min(this.settings.height * 2.5, value));
   }
 
   private clampVelocity(value: number): number {

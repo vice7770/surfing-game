@@ -49,9 +49,9 @@ it('keeps the board and shared water bounded under opposite current and wind', (
 
 it('allows a timed pop-up and sustained ride at each named surf spot', () => {
   const spots = [
-    { name: 'Training Beach', height: 1.4, period: 8, speed: 3, currentX: 0, windX: 0 },
-    { name: 'Glassy Point', height: 1.8, period: 9, speed: 3.3, currentX: -0.2, windX: 0 },
-    { name: 'Windy Reef', height: 2.2, period: 6.5, speed: 4, currentX: 0.5, windX: 0.05 },
+    { name: 'Training Beach', height: 1.4, period: 8, speed: 3, shelfStrength: 0, currentX: 0, windX: 0 },
+    { name: 'Glassy Point', height: 1.8, period: 9, speed: 3.3, shelfStrength: 0.25, currentX: -0.2, windX: 0 },
+    { name: 'Windy Reef', height: 2.2, period: 6.5, speed: 4, shelfStrength: 0.65, currentX: 0.5, windX: 0.05 },
   ];
   for (const spot of spots) {
     const board = new BoardPhysics(new InteractiveWaterField(1, spot), { paddleForce: 14, boardResponse: 1 });
@@ -68,4 +68,27 @@ it('allows a timed pop-up and sustained ride at each named surf spot', () => {
     expect(board.state, spot.name).toBe('complete');
     expect(board.rideDistance, spot.name).toBeGreaterThanOrEqual(8);
   }
+}, 20_000);
+
+it('keeps an extreme wave and board finite over the steepest shelf', () => {
+  const wave = new InteractiveWaterField(7, {
+    height: 2.4, period: 5, speed: 5, shelfStrength: 1,
+  });
+  const board = new BoardPhysics(wave, { paddleForce: 14, boardResponse: 1 });
+  let maxPenetration = 0;
+  for (let frame = 0; frame < 1200 && !['complete', 'missed', 'wipeout'].includes(board.state); frame += 1) {
+    const before = board.diagnostics();
+    board.step(1 / 60, {
+      paddle: board.state === 'ready' || board.state === 'paddling',
+      steer: 0,
+      getUp: before.popUpAvailable,
+    });
+    for (const point of board.contactPoints) {
+      maxPenetration = Math.max(maxPenetration, wave.sample(point.x, point.z).height - point.y);
+    }
+    expect(Number.isFinite(wave.totalEnergy())).toBe(true);
+  }
+  expect(board.position.toArray().every(Number.isFinite)).toBe(true);
+  expect(maxPenetration).toBeLessThan(0.2);
+  expect(['complete', 'missed', 'wipeout']).toContain(board.state);
 }, 20_000);

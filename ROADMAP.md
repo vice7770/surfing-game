@@ -65,9 +65,15 @@ Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status 
 
 ## Repository state
 
-- [x] The existing baseline was committed as `1fe7ecc` on `main` and is already linked to `origin` (`vice7770/surfing-game`). Current session changes are uncommitted and have not been pushed.
+- [x] The analytic baseline is `1fe7ecc` and the playable prototype is `52ede4e` on local `main`. `origin/main` is still at the baseline; the surf-shelf work is the next local commit.
 
 ## Next milestone — physics fidelity and learning tools
+
+### P1 · Depth-varying surf shelf — `Done for prototype`
+
+- [x] Add a gentle, configurable seabed shelf to the shared field and evolve elevation through depth-weighted horizontal fluxes.
+- [x] Show the same shelf in the underwater seabed view and expose it as a Wave Lab condition.
+- [x] Check still-water balance, wave slowdown over the shelf, bounded energy, the steepest setting, and catch/playability across surf spots. Breaking onset remains an authored peel.
 
 ### P1 · Improve model fidelity and explain failures — `Done for prototype`
 
@@ -109,7 +115,7 @@ Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status 
 
 - [x] Browser-based Three.js prototype with deterministic analytic wave, custom water mesh, floating board, paddle/steer controls, tuning, replay/new wave, and diagnostics.
 - [x] Automated baseline tests and production build.
-- [x] Baseline code was committed before this session; no commit has been created for the current extension.
+- [x] The analytic baseline and playable prototype are recorded in separate local commits.
 
 ## Design references
 

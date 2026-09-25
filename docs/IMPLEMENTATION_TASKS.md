@@ -1,6 +1,6 @@
 # Baseline Delivery and Prototype Implementation Tasks
 
-The first checklist records the delivered analytic-wave baseline. The following sections track the newer shared-field catch and advanced ride. Follow [ROADMAP.md](../ROADMAP.md), [REQUIREMENTS.md](REQUIREMENTS.md), and [PLAN.md](PLAN.md). Keep the current extension uncommitted.
+The first checklist records the delivered analytic-wave baseline. The following sections track the newer shared-field catch and advanced ride. Follow [ROADMAP.md](../ROADMAP.md), [REQUIREMENTS.md](REQUIREMENTS.md), and [PLAN.md](PLAN.md). The playable prototype is committed locally as `52ede4e`.
 
 1. [x] **Scaffold app:** add package scripts/dependencies for Vite, TypeScript, and Three.js; create the HTML entrypoint, responsive canvas, HUD, and minimal start state.
 2. [x] **Wave model:** implement deterministic seeded wave parameters and pure height/normal/surface-velocity sampling. Add tests covering repeatability and finite values.
@@ -18,7 +18,7 @@ The first checklist records the delivered analytic-wave baseline. The following 
 3. [x] **Physical board coupling:** board uses water-relative forces and bounded equal-and-opposite hull reaction; tests cover stable contacts and sustained paddle-free carry. Higher-fidelity coupling/calibration remain future work.
 4. [x] **Timed pop-up flow:** Get Up button + Enter, local eligibility, early input ignored, rider standing transition, and missed/wipeout/complete outcomes are implemented and covered by simulation tests.
 5. [x] **Physics validation:** automated tests prove the three-second carry and a 20 m paddle-free ride across twelve seeds, plus drag, field evolution, replay determinism, hull reaction, and bounded support. Desktop and narrow mobile browser checks cover ride, carving, profile, replay, New Wave, and local frame rate.
-6. [x] **Independent validation:** a separate agent audited the extension and rechecked the fixes for solver ordering, maneuver detection, peel-front claims, and setting outcomes. Current extension remains uncommitted.
+6. [x] **Independent validation:** a separate agent audited the extension and rechecked the fixes for solver ordering, maneuver detection, peel-front claims, and setting outcomes.
 
 ## Advanced playable prototype extension
 
@@ -38,9 +38,15 @@ The first checklist records the delivered analytic-wave baseline. The following 
 6. [x] **Improve water appearance:** add adjustable sun height/direction, refreshed sky/coast reflections on moving wave normals, underwater camera/fog, and decorative seabed light bands.
 7. [x] **Verify:** run the full test suite and production build; check desktop and narrow browser layouts and local frame rate. Quantitative fluid validation, a true 3D barrel, live rider mirror, and physical refraction remain outside this prototype.
 
+## Surf-shelf physics
+
+1. [x] **Depth-varying water:** add a tunable still-water shelf and update elevation through local-depth horizontal fluxes while leaving the free surface at rest over the bed.
+2. [x] **Shared presentation:** derive underwater seabed height from the same depth function, expose Shore shelf in the Wave Lab, and give the named surf spots distinct shelf strengths.
+3. [x] **Check behavior:** verify slower crest travel, finite and decaying energy, bounded hull contact at full shelf, and catch/playability for the three spots.
+
 ## After MVP acceptance
 
-- [ ] **Publish to GitHub:** `origin` already points to `vice7770/surfing-game`. The current extension remains uncommitted and unpushed; publication is a separate handoff step after review.
+- [ ] **Publish to GitHub:** `origin` already points to `vice7770/surfing-game`. Local prototype and physics commits remain unpushed; publication is a separate handoff step.
 
 ## Initial baseline handoff checklist (not the new physics milestone)
 
@@ -50,4 +56,4 @@ The first checklist records the delivered analytic-wave baseline. The following 
 - [x] New Wave produces a distinct seed and visible variation.
 - [x] Paddle/catch, steering, missed, wipeout, and completion flows are reachable in simulation checks.
 - [x] Diagnostic controls and HUD make the mechanics inspectable.
-- [x] The baseline was later committed; the current extension has no commit.
+- [x] The baseline was committed as `1fe7ecc`; the playable prototype was committed as `52ede4e`.
