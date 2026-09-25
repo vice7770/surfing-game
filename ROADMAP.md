@@ -18,7 +18,11 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 - [x] Froude-consistent time-scale (0.4–1.0) in the Wave Lab; physics readout comparing Airy speed with the legacy simulation speed.
 - [ ] g = 9.81 in the solver, removal of the Wave speed slider, and the `legacy` flag move to P2 with the new solver, which keeps the legacy wave playable until the P4 board retune.
 
-### P1 · Spots, sliding window and finite-volume solver (P2) — `Ready`
+### P1 · Spots, sliding window and finite-volume solver (P2) — `In Progress`
+
+- [x] P2a: composable seabeds for Beach (Dean profile with seeded sandbar and rips), Point (31° headland contours), Reef (0.15 shelf-edge slope), and Canyon. A well-balanced, positivity-preserving finite-volume shallow-water solver with wet/dry cells, Manning friction, and relaxation zones. Validated against lake at rest, conservation, the Stoker dam break, √(gh) speed, relaxation reflection (0.27 %), Green's law, Snell's law and beach run-up.
+- [ ] P2b: sea-state relaxation boundary with analytic refraction; warm start and skip-to-set; stretched cross-shore grid; along-shore sliding window. Cut the solver from 7.5 ms per step (33.6k cells, Node) to the 4 ms worker budget.
+- [ ] P2c: game integration behind a flag, g = 9.81 and removal of the Wave speed slider, rendering and seabed from the spot, worker simulation, and bicubic board sampling.
 ### P1 · Far-field ocean (G2) — `Backlog`
 ### P1 · Emergent breaking and Iribarren lip (P3) — `Backlog`
 ### P2 · Shading, foam, board consequences (G3, G4, P4) — `Backlog`
