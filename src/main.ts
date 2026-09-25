@@ -30,6 +30,8 @@ import { WaterSurface } from './scene/WaterSurface';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField, type WaveSettings } from './wave/WaveModel';
 import { PlungingSheet } from './wave/PlungingSheet';
 import { Hud } from './ui/Hud';
+import { PhysicsReadoutPanel } from './ui/PhysicsReadoutPanel';
+import { describeSwell, formatSwellReadout } from './wave/SwellReadout';
 import './style.css';
 
 interface TuningSettings extends WaveSettings, PhysicsSettings { sunHeight: number; sunDirection: number; timeScale: number }
@@ -77,6 +79,7 @@ class SurfGame {
   private readonly sunlight: DirectionalLight;
   private reflectionMapTarget?: WebGLRenderTarget;
   private readonly hud = new Hud();
+  private readonly readoutPanel = new PhysicsReadoutPanel(getElement<HTMLElement>('#physics-readout'));
   private readonly runHistory = new RunHistory(availableStorage());
   private readonly crestMarker: Mesh;
   private readonly contactMarkers: Mesh[] = [];
@@ -208,6 +211,7 @@ class SurfGame {
     this.accumulator = 0;
     this.refreshTuningUi();
     this.renderHistory();
+    this.renderPhysicsReadout();
     this.updateHud();
   }
 
@@ -298,6 +302,15 @@ class SurfGame {
     }
     this.refreshTuningUi();
     this.renderHistory();
+    this.renderPhysicsReadout();
+  }
+
+  private renderPhysicsReadout(): void {
+    const settings = this.activeSettings;
+    const readout = describeSwell({
+      height: settings.height, period: settings.period, depth: this.wave.meanDepth, bedSlope: this.wave.maxBedSlope(),
+    });
+    this.readoutPanel.render(formatSwellReadout(readout, { depth: this.wave.meanDepth, simSpeed: settings.speed }));
   }
 
   private refreshTuningUi(): void {

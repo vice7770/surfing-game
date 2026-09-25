@@ -90,6 +90,10 @@ input[type='range']::-moz-range-thumb { width: 8px; height: 8px; border: 2px sol
 .run-history ol { max-height: 145px; margin: 9px 0 0; padding-left: 17px; overflow: auto; }
 .run-history li { margin: 0 0 8px; font: 9px/1.5 var(--mono); }
 .run-history li small { display: block; color: #557778; font: 10px/1.35 'DM Sans', 'Avenir Next', sans-serif; }
+.physics-readout dl { display: grid; gap: 5px; margin: 9px 0 0; }
+.physics-readout dl div { display: flex; justify-content: space-between; gap: 12px; font: 9px/1.4 var(--mono); }
+.physics-readout dt { color: #537472; }
+.physics-readout dd { margin: 0; color: #183f42; text-align: right; }
 
 .control-hint { position: absolute; bottom: 5.1%; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 7px; color: #305d5f; font: 8px var(--mono); letter-spacing: .08em; white-space: nowrap; }
 .touch-controls { display: none; }
