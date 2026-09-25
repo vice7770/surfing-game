@@ -29,6 +29,22 @@
 - **Direction:** Kniesburges et al. 2025 measured the fin pressure difference and its outward lateral lift in a real turn. That checks direction, not magnitude.
 - **Post-stall:** flat-plate C_L ≈ sin 2α and C_D ≈ 1.3 sin² α.
 
+## Findings so far (2026-09-26, for whoever picks this up)
+
+- **Status:**
+  - Task 1 (fin forces, `finForces.ts`) is done and committed (`9e63eb8`).
+  - Task 2 starts in `BoardBody.substep`. Resolve each fin's root from the shape (z = −L/2 + fromTail, x = side × (half width − fromRail), y = rocker), and sample the water at the fin's immersed mid-span.
+  - Add the fin force and torque, and put each fin's `damping` on the system as a rank-one term along its world normal, as for `pressureDamping`, with the matching correction impulse after the solve.
+  - Give fins and rails their own reaction slots, a `work.fins` and `work.rails` ledger entry, and `forces.fins` and `forces.rails`.
+- **Why catching fails today** (probes in the session scratchpad, all reproducible from `SurfZoneRunner` with `{ rider: true }`):
+  - **Prone drag on a tow:** 21 N at 1 m/s, 72 at 2, 124 at 3, 161 at 4 and 184 at 5 m/s. At 4 m/s the two legs trailing past the tail make 71 N of the body's 93 N (Task 3's leg-wake shelter). Moving the legs onto the tail broke the prone float instead.
+  - **Front-face steepness at the break**, over 60 s: Beach up to 23° (rarely above 20°), Point up to 30° (594 samples above 20°), Reef up to 48°. Catches are physically possible on the Point and Reef.
+  - **A catch bot on the Point:** it waits 3 m outside the break line, paddles when a face arrives and pops up on the cue. It reached 5.4 m/s and lit the cue twice in 3 minutes, but never stood. Without fins the board yaws on the drop.
+  - After fins, rerun the bot on each spot and record catch and ride-time distributions (P4f).
+- **User requests queued:**
+  - play the swimmer after a fall and choose to swim back and remount (ROADMAP);
+  - the camera views front, behind, side and overview, now done (`8d145db`).
+
 ## Tasks
 
 ### Task 1: Fin forces
