@@ -83,4 +83,18 @@ describe('ShallowWaterSolver', () => {
     };
     expect(run()).toEqual(run());
   });
+
+  it('lets waves leave through open along-shore boundaries', () => {
+    const excessEnergy = (xBoundary: 'wall' | 'open') => {
+      const grid = { nx: 80, xMin: -80, dx: 2, zEdges: uniformEdges(-20, 20, 20), xBoundary };
+      const still = new ShallowWaterSolver(grid, () => 3, { manning: 0 }).totalEnergy();
+      const solver = new ShallowWaterSolver(grid, () => 3, { manning: 0 });
+      for (let iz = 0; iz < solver.nz; iz += 1) {
+        for (let ix = 0; ix < solver.nx; ix += 1) solver.h[iz * solver.nx + ix] = 3 + 0.3 * Math.exp(-(solver.xCenters[ix] ** 2) / 40);
+      }
+      for (let frame = 0; frame < 400; frame += 1) solver.step(0.1);
+      return solver.totalEnergy() - still;
+    };
+    expect(excessEnergy('open')).toBeLessThan(0.1 * excessEnergy('wall'));
+  });
 });
