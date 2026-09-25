@@ -27,6 +27,17 @@ export interface SwimInput {
   steer: number;
 }
 
+/** Contact-only board seam. The later physical board owns its water forces. */
+export interface BoardContactBody {
+  readonly position: Vector3;
+  readonly orientation: Quaternion;
+  readonly halfExtents: Readonly<Vector3>;
+  readonly inverseMass: number;
+  velocityAt(worldPoint: Readonly<Vector3>, out: Vector3): Vector3;
+  inverseEffectiveMass(worldPoint: Readonly<Vector3>, normal: Readonly<Vector3>): number;
+  applyImpulse(impulse: Readonly<Vector3>, worldPoint: Readonly<Vector3>): void;
+}
+
 export type BodyPart = 'pelvis' | 'torso' | 'head' | 'leftArm' | 'rightArm' | 'leftLeg' | 'rightLeg';
 
 /** Read-only pose seam for the procedural surfer and recovery camera. */
@@ -88,6 +99,38 @@ function submergedFraction(surfaceAboveCenter: number, radius: number): number {
     / (4 * radius * radius * radius);
 }
 
+type SweepHit = { fraction: number; normal: Vector3 };
+
+/** Segment against a box expanded by a sphere radius, in board-local coordinates. */
+function sweepExpandedBox(start: Vector3, end: Vector3, half: Vector3): SweepHit | undefined {
+  let enter = 0;
+  let exit = 1;
+  let normalAxis = -1;
+  let normalSign = 0;
+  for (let axis = 0; axis < 3; axis += 1) {
+    const origin = start.getComponent(axis);
+    const movement = end.getComponent(axis) - origin;
+    const extent = half.getComponent(axis);
+    if (Math.abs(movement) < 1e-12) {
+      if (origin < -extent || origin > extent) return undefined;
+      continue;
+    }
+    const first = (-extent - origin) / movement;
+    const second = (extent - origin) / movement;
+    const near = Math.min(first, second);
+    const far = Math.max(first, second);
+    if (near > enter) {
+      enter = near;
+      normalAxis = axis;
+      normalSign = movement > 0 ? -1 : 1;
+    }
+    exit = Math.min(exit, far);
+    if (enter > exit) return undefined;
+  }
+  if (normalAxis < 0 || enter > 1 || exit < 0) return undefined;
+  return { fraction: enter, normal: new Vector3().setComponent(normalAxis, normalSign) };
+}
+
 const totalMass = SPECS.reduce((sum, spec) => sum + spec.mass, 0);
 const localCenter = SPECS.reduce(
   (center, spec) => center.addScaledVector(spec.local, spec.mass / totalMass),
@@ -97,11 +140,27 @@ const localOffsets = SPECS.map((spec) => spec.local.clone().sub(localCenter));
 const links = LINKS.map(([a, b]) => ({
   a, b, length: localOffsets[a].distanceTo(localOffsets[b]),
 }));
+const angleLimits = [
+  { a: 0, joint: 1, b: 2, minDegrees: 125, maxDegrees: 180 },
+  { a: 0, joint: 1, b: 3, minDegrees: 35, maxDegrees: 160 },
+  { a: 0, joint: 1, b: 4, minDegrees: 35, maxDegrees: 160 },
+  { a: 1, joint: 0, b: 5, minDegrees: 75, maxDegrees: 180 },
+  { a: 1, joint: 0, b: 6, minDegrees: 75, maxDegrees: 180 },
+].map(({ a, joint, b, minDegrees, maxDegrees }) => {
+  const first = localOffsets[a].distanceTo(localOffsets[joint]);
+  const second = localOffsets[b].distanceTo(localOffsets[joint]);
+  const distanceAt = (degrees: number): number => Math.sqrt(
+    first * first + second * second
+      - 2 * first * second * Math.cos(degrees * Math.PI / 180),
+  );
+  return { a, b, minDistance: distanceAt(minDegrees), maxDistance: distanceAt(maxDegrees) };
+});
 
 /**
  * Solver-independent post-wipeout body. Seven buoyant mass points and distance
- * joints provide a deterministic first integration slice. Angle limits, lip
- * contact, and board grabbing belong to later P4 gates.
+ * joints provide a deterministic first integration slice. Broad neck,
+ * shoulder and hip angle bounds keep the point skeleton coherent; lip contact
+ * and board grabbing belong to later P4 gates.
  */
 export class DetachedSurfer implements DetachedRiderPose {
   readonly nodes: readonly BodyNode[];
@@ -109,6 +168,7 @@ export class DetachedSurfer implements DetachedRiderPose {
   controlGain = 0;
   heading = 0;
   outsideDomain = false;
+  private contactPending = false;
   private readonly previous: Vector3[];
   private readonly bedY: number[];
   private readonly sample: BodyWaterSample = {
@@ -118,6 +178,17 @@ export class DetachedSurfer implements DetachedRiderPose {
   private readonly relative = new Vector3();
   private readonly strokeDirection = new Vector3();
   private readonly linkDelta = new Vector3();
+  private readonly boardInverse = new Quaternion();
+  private readonly boardLocalStart = new Vector3();
+  private readonly boardLocalEnd = new Vector3();
+  private readonly boardLocalContact = new Vector3();
+  private readonly boardLocalNormal = new Vector3();
+  private readonly boardWorldNormal = new Vector3();
+  private readonly boardWorldContact = new Vector3();
+  private readonly boardPointVelocity = new Vector3();
+  private readonly boardRelativeVelocity = new Vector3();
+  private readonly boardImpulse = new Vector3();
+  private readonly expandedHalf = new Vector3();
 
   constructor(readonly bodyDensity = DEFAULT_BODY_DENSITY, readonly mass = totalMass) {
     if (!Number.isFinite(bodyDensity) || bodyDensity <= 0) throw new RangeError('body density must be finite and positive');
@@ -158,6 +229,7 @@ export class DetachedSurfer implements DetachedRiderPose {
     this.active = true;
     this.controlGain = 0;
     this.outsideDomain = false;
+    this.contactPending = false;
   }
 
   centerOfMass(out = new Vector3()): Vector3 {
@@ -187,6 +259,92 @@ export class DetachedSurfer implements DetachedRiderPose {
       out.add(radius.cross(momentum));
     }
     return out;
+  }
+
+  private solveDistance(aIndex: number, bIndex: number, minimum: number, maximum: number): void {
+    const a = this.nodes[aIndex];
+    const b = this.nodes[bIndex];
+    const delta = this.linkDelta.subVectors(b.position, a.position);
+    const distance = delta.length();
+    if (distance < 1e-9) return;
+    const target = clamp(distance, minimum, maximum);
+    const error = (distance - target) / distance;
+    const inverseA = 1 / a.mass;
+    const inverseB = 1 / b.mass;
+    a.position.addScaledVector(delta, error * inverseA / (inverseA + inverseB));
+    b.position.addScaledVector(delta, -error * inverseB / (inverseA + inverseB));
+  }
+
+  /**
+   * Contact against a board pose held fixed over the just-completed body step.
+   * Uses a swept point against an expanded box for fast impacts, then transfers
+   * equal and opposite normal impulse. P4 must also sweep the moving board pose.
+   */
+  resolveBoardContact(board: BoardContactBody): number {
+    if (!this.active || !this.contactPending) return 0;
+    this.contactPending = false;
+    this.boardInverse.copy(board.orientation).invert();
+    let contacts = 0;
+    for (let index = 0; index < this.nodes.length; index += 1) {
+      const node = this.nodes[index];
+      const start = this.boardLocalStart.copy(this.previous[index]).sub(board.position)
+        .applyQuaternion(this.boardInverse);
+      const end = this.boardLocalEnd.copy(node.position).sub(board.position)
+        .applyQuaternion(this.boardInverse);
+      const half = board.halfExtents;
+      const closest = this.boardLocalContact.set(
+        clamp(end.x, -half.x, half.x),
+        clamp(end.y, -half.y, half.y),
+        clamp(end.z, -half.z, half.z),
+      );
+      const difference = this.boardLocalNormal.subVectors(end, closest);
+      const distance = difference.length();
+      let penetration = 0;
+      if (distance < node.radius) {
+        if (distance > 1e-9) {
+          difference.divideScalar(distance);
+          penetration = node.radius - distance;
+        } else {
+          const margins = [half.x - Math.abs(end.x), half.y - Math.abs(end.y), half.z - Math.abs(end.z)];
+          const axis = margins.indexOf(Math.min(...margins));
+          difference.set(0, 0, 0).setComponent(axis, end.getComponent(axis) < 0 ? -1 : 1);
+          closest.setComponent(axis, difference.getComponent(axis) * half.getComponent(axis));
+          penetration = node.radius + margins[axis];
+        }
+      } else {
+        this.expandedHalf.set(half.x + node.radius, half.y + node.radius, half.z + node.radius);
+        const hit = sweepExpandedBox(start, end, this.expandedHalf);
+        if (!hit) continue;
+        difference.copy(hit.normal);
+        end.lerpVectors(start, end, hit.fraction);
+        node.position.copy(end).applyQuaternion(board.orientation).add(board.position);
+        closest.set(
+          clamp(end.x, -half.x, half.x),
+          clamp(end.y, -half.y, half.y),
+          clamp(end.z, -half.z, half.z),
+        );
+      }
+      contacts += 1;
+      const normal = this.boardWorldNormal.copy(difference).applyQuaternion(board.orientation);
+      const contactPoint = this.boardWorldContact.copy(closest).applyQuaternion(board.orientation)
+        .add(board.position);
+      if (penetration > 0) {
+        const inverseNode = 1 / node.mass;
+        const inverseTotal = inverseNode + board.inverseMass;
+        node.position.addScaledVector(normal, penetration * inverseNode / inverseTotal);
+        board.position.addScaledVector(normal, -penetration * board.inverseMass / inverseTotal);
+      }
+      board.velocityAt(contactPoint, this.boardPointVelocity);
+      const approach = this.boardRelativeVelocity.subVectors(node.velocity, this.boardPointVelocity)
+        .dot(normal);
+      if (approach >= 0) continue;
+      const inverseEffective = 1 / node.mass + board.inverseEffectiveMass(contactPoint, normal);
+      if (!(inverseEffective > 0)) continue;
+      const impulse = this.boardImpulse.copy(normal).multiplyScalar(-1.05 * approach / inverseEffective);
+      node.velocity.addScaledVector(impulse, 1 / node.mass);
+      board.applyImpulse(impulse.multiplyScalar(-1), contactPoint);
+    }
+    return contacts;
   }
 
   step(dt: number, water: BodyWaterField, input: SwimInput = { stroke: false, steer: 0 }): void {
@@ -251,21 +409,15 @@ export class DetachedSurfer implements DetachedRiderPose {
       node.position.addScaledVector(node.velocity, dt);
     }
 
-    // Mass-weighted, axial corrections preserve total linear momentum and do
-    // not inject a constraint torque. The first slice leaves angle limits open.
-    const delta = this.linkDelta;
-    for (let iteration = 0; iteration < 6; iteration += 1) {
+    // Angle bounds are endpoint-distance inequalities around each joint.
+    // Axial, mass-weighted corrections conserve the point system's linear
+    // and angular momentum in free space.
+    for (let iteration = 0; iteration < 10; iteration += 1) {
       for (const link of links) {
-        const a = this.nodes[link.a];
-        const b = this.nodes[link.b];
-        delta.subVectors(b.position, a.position);
-        const distance = delta.length();
-        if (distance < 1e-9) continue;
-        const error = (distance - link.length) / distance;
-        const inverseA = 1 / a.mass;
-        const inverseB = 1 / b.mass;
-        a.position.addScaledVector(delta, error * inverseA / (inverseA + inverseB));
-        b.position.addScaledVector(delta, -error * inverseB / (inverseA + inverseB));
+        this.solveDistance(link.a, link.b, link.length, link.length);
+      }
+      for (const limit of angleLimits) {
+        this.solveDistance(limit.a, limit.b, limit.minDistance, limit.maxDistance);
       }
       for (let index = 0; index < this.nodes.length; index += 1) {
         const node = this.nodes[index];
@@ -286,5 +438,6 @@ export class DetachedSurfer implements DetachedRiderPose {
         node.velocity.z *= 0.8;
       }
     }
+    this.contactPending = true;
   }
 }

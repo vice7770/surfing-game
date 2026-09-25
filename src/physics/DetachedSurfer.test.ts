@@ -1,6 +1,35 @@
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { DetachedSurfer, type BodyWaterField, type BodyWaterSample } from './DetachedSurfer';
+import {
+  DetachedSurfer, type BoardContactBody, type BodyWaterField, type BodyWaterSample,
+} from './DetachedSurfer';
+
+class TestBoard implements BoardContactBody {
+  readonly position = new Vector3();
+  readonly orientation = new Quaternion();
+  readonly halfExtents = new Vector3(0.55, 0.05, 1.1);
+  readonly inverseMass = 1 / 3;
+  readonly velocity = new Vector3();
+  readonly angularVelocity = new Vector3();
+  private readonly inverseInertia = 0.5;
+
+  velocityAt(worldPoint: Readonly<Vector3>, out: Vector3): Vector3 {
+    return out.copy(this.angularVelocity).cross(
+      new Vector3().subVectors(worldPoint, this.position),
+    ).add(this.velocity);
+  }
+
+  inverseEffectiveMass(worldPoint: Readonly<Vector3>, normal: Readonly<Vector3>): number {
+    const torqueAxis = new Vector3().subVectors(worldPoint, this.position).cross(normal);
+    return this.inverseMass + torqueAxis.lengthSq() * this.inverseInertia;
+  }
+
+  applyImpulse(impulse: Readonly<Vector3>, worldPoint: Readonly<Vector3>): void {
+    const torque = new Vector3().subVectors(worldPoint, this.position).cross(impulse);
+    this.velocity.addScaledVector(impulse, this.inverseMass);
+    this.angularVelocity.addScaledVector(torque, this.inverseInertia);
+  }
+}
 
 function uniformWater(flow = new Vector3(), bedY = -10, breaking = 0): BodyWaterField {
   return {
@@ -76,6 +105,22 @@ describe('DetachedSurfer on controlled water', () => {
     advance(body, shear, 45);
 
     expect(Math.abs(body.angularMomentum().z)).toBeGreaterThan(0.1);
+  });
+
+  it('keeps a struck head within a broad neck angle instead of folding through the torso', () => {
+    const body = new DetachedSurfer();
+    launch(body);
+    body.nodes[2].velocity.y = -15;
+    let smallestAngle = 180;
+    for (let frame = 0; frame < 45; frame += 1) {
+      body.step(1 / 60, uniformWater());
+      const torso = body.nodes[1].position;
+      const towardPelvis = body.nodes[0].position.clone().sub(torso).normalize();
+      const towardHead = body.nodes[2].position.clone().sub(torso).normalize();
+      smallestAngle = Math.min(smallestAngle,
+        Math.acos(Math.max(-1, Math.min(1, towardPelvis.dot(towardHead)))) * 180 / Math.PI);
+    }
+    expect(smallestAngle).toBeGreaterThan(115);
   });
 
   it('uses displaced volume so a buoyant body rises relative to a dense body', () => {
@@ -174,5 +219,38 @@ describe('DetachedSurfer on controlled water', () => {
 
     expect(Math.abs(body.centerOfMass().x)).toBeLessThan(1e-9);
     expect(body.nodes.every((node) => node.submersion === 0)).toBe(true);
+  });
+
+  it('transfers equal and opposite impact momentum to a movable board', () => {
+    const body = new DetachedSurfer();
+    launch(body, new Vector3(0.28, 1.2, 0), new Vector3(0, -8, 0));
+    const board = new TestBoard();
+    let contacted = false;
+    for (let frame = 0; frame < 30; frame += 1) {
+      body.step(1 / 60, uniformWater(new Vector3(), -10));
+      const before = body.linearMomentum().addScaledVector(board.velocity, 1 / board.inverseMass);
+      const count = body.resolveBoardContact(board);
+      if (count === 0) continue;
+      const after = body.linearMomentum().addScaledVector(board.velocity, 1 / board.inverseMass);
+      expect(after.distanceTo(before)).toBeLessThan(1e-8);
+      contacted = true;
+      break;
+    }
+    expect(contacted).toBe(true);
+    expect(board.velocity.y).toBeLessThan(0);
+    expect(Math.abs(board.angularVelocity.z)).toBeGreaterThan(0);
+  });
+
+  it('catches a fast surfer crossing the thin board in one step', () => {
+    const body = new DetachedSurfer();
+    launch(body, new Vector3(0, 1.6, 0), new Vector3(0, -150, 0));
+    const board = new TestBoard();
+    body.step(1 / 60, uniformWater(new Vector3(), -10));
+
+    expect(body.resolveBoardContact(board)).toBeGreaterThan(0);
+    expect(board.velocity.y).toBeLessThan(0);
+    const velocityAfterContact = board.velocity.clone();
+    expect(body.resolveBoardContact(board)).toBe(0);
+    expect(board.velocity.equals(velocityAfterContact)).toBe(true);
   });
 });
