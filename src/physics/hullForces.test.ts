@@ -1,40 +1,55 @@
 import { describe, expect, it } from 'vitest';
-import { WATER, createPatchForce, ittcFriction, patchForce, savitskyLift, type WorldPatch } from './hullForces';
+import { PRESSURE_COEFFICIENT, WATER, createPatchForce, ittcFriction, patchForce, planingScales, savitskyLift, wettedShare, type WorldPatch } from './hullForces';
 import { createWaterSample } from './SurfWater';
 
 const still = () => ({ ...createWaterSample(), surfaceY: 0, stillDepth: 3, waterDepth: 3, wet: true, regime: 'profile' as const });
 
 /**
  * A flat plate of beam b trimmed bow-up by τ, moving at V along +z, with λb of
- * its length wetted: the trailing edge sits λ b sin τ deep.
+ * its length wetted: the trailing edge sits λ b sin τ deep. Its pressure follows
+ * the spray-root distribution unless `uniform`.
  */
-function towedPlate(trimDegrees: number, lambda: number, speedCoefficient: number, beam = 0.4) {
+function towedPlate(trimDegrees: number, lambda: number, speedCoefficient: number, { beam = 0.4, uniform = false } = {}) {
   const trim = (trimDegrees * Math.PI) / 180;
   const speed = speedCoefficient * Math.sqrt(WATER.gravity * beam);
   const length = 6 * beam;
   const segments = 240;
+  const segment = length / segments;
   const patches: WorldPatch[] = [];
   for (let k = 0; k < segments; k += 1) {
-    const along = ((k + 0.5) / segments) * length;
+    const along = (k + 0.5) * segment;
     patches.push({
       position: { x: 0, y: -lambda * beam * Math.sin(trim) + along * Math.sin(trim), z: along * Math.cos(trim) },
       normal: { x: 0, y: -Math.cos(trim), z: Math.sin(trim) },
-      area: (length / segments) * beam,
+      area: segment * beam,
       thickness: 0.05,
     });
+  }
+  // Leading edge first: the flow meets the plate's raised forward end. The trailing edge is at z = 0.
+  const leading = [...patches].reverse();
+  const scales = new Float64Array(segments).fill(1);
+  if (!uniform) {
+    planingScales(leading.map((patch) => wettedShare(-patch.position.y)), segment, leading.map(() => beam), Math.cos(trim) ** 2, scales);
   }
   let lift = 0;
   let drag = 0;
   let wetted = 0;
+  let moment = 0;
   const out = createPatchForce();
-  for (const patch of patches) {
-    patchForce(patch, still(), { x: 0, y: 0, z: speed }, length, out);
+  leading.forEach((patch, i) => {
+    patchForce(patch, still(), { x: 0, y: 0, z: speed }, length, out, scales[i]);
     lift += out.pressure.y;
     drag -= out.pressure.z;
     wetted += out.wettedArea;
-  }
+    moment += out.pressure.y * patch.position.z;
+  });
   const dynamicPressure = 0.5 * WATER.density * speed * speed * beam * beam;
-  return { lift, drag, wetted, savitsky: savitskyLift(trimDegrees, lambda, speedCoefficient).dynamic * dynamicPressure };
+  return {
+    lift, drag, wetted,
+    /** Centre of pressure ahead of the trailing edge, as a share of the wetted length. */
+    centre: moment / lift / (lambda * beam * Math.cos(trim)),
+    savitsky: savitskyLift(trimDegrees, lambda, speedCoefficient).dynamic * dynamicPressure,
+  };
 }
 
 describe('hull patch forces', () => {
@@ -54,21 +69,43 @@ describe('hull patch forces', () => {
     }
   });
 
-  // Uniform patch pressure cannot follow Savitsky's √λ growth exactly; over a surfboard's
-  // planing range (τ 3–7°, λ 2–4, about 4–8 m/s with a rider) one coefficient stays within ±25 %.
-  it('stays within a quarter of Savitsky’s lift over the planing range, rising with trim', () => {
-    let previous = 0;
+  // Uniform pressure scales with λ where Savitsky's lift scales with √λ; one coefficient holds only
+  // over a surfboard's planing range (τ 3–7°, λ 2–4, about 4–8 m/s with a rider) to ±25 %.
+  it('keeps uniform pressure within a quarter of Savitsky’s lift over the surfboard planing range', () => {
     for (const trim of [3, 5, 7]) {
       for (const lambda of [2, 4]) {
-        const { lift, savitsky } = towedPlate(trim, lambda, 5);
+        const { lift, savitsky } = towedPlate(trim, lambda, 5, { uniform: true });
         expect(lift / savitsky, `τ ${trim}°, λ ${lambda}`).toBeGreaterThan(0.75);
         expect(lift / savitsky, `τ ${trim}°, λ ${lambda}`).toBeLessThan(1.25);
+      }
+    }
+  });
+
+  // Planing pressure peaks at the spray root; p ∝ 1/√x behind it gives lift ∝ √λ and a centre of
+  // pressure two thirds of the wetted length ahead of the trailing edge (Savitsky: 0.75 at high speed).
+  it('concentrates the pressure behind the spray root, following Savitsky over the whole planing range', () => {
+    let previous = 0;
+    for (const trim of [3, 6, 10]) {
+      for (const lambda of [2, 3, 4]) {
+        const { lift, savitsky, centre } = towedPlate(trim, lambda, 5);
+        expect(lift / savitsky, `τ ${trim}°, λ ${lambda}`).toBeGreaterThan(0.85);
+        expect(lift / savitsky, `τ ${trim}°, λ ${lambda}`).toBeLessThan(1.15);
+        expect(centre, `τ ${trim}°, λ ${lambda}`).toBeGreaterThan(0.62);
+        expect(centre, `τ ${trim}°, λ ${lambda}`).toBeLessThan(0.72);
       }
       const { lift } = towedPlate(trim, 3, 5);
       expect(lift).toBeGreaterThan(previous);
       previous = lift;
     }
     expect(towedPlate(6, 3, 5).drag).toBeCloseTo(towedPlate(6, 3, 5).lift * Math.tan((6 * Math.PI) / 180), 6);
+  });
+
+  it('spreads pressure evenly when the flow meets the hull head-on', () => {
+    const scales = new Float64Array(6);
+    planingScales([0, 0.5, 1, 1, 1, 1], 0.15, [0.4, 0.4, 0.4, 0.4, 0.4, 0.4], 0, scales);
+    expect([...scales]).toEqual([1, 1, 1, 1, 1, 1]);
+    planingScales([0, 0.5, 1, 1, 1, 1], 0.15, [0.4, 0.4, 0.4, 0.4, 0.4, 0.4], 1, scales);
+    for (let i = 2; i < 6; i += 1) expect(scales[i]).toBeLessThan(scales[i - 1]);
   });
 
   it('drags the wetted bottom with the ITTC 1957 friction line', () => {
@@ -95,5 +132,44 @@ describe('hull patch forces', () => {
     // Rising out of the water: no suction.
     patchForce(patch, still(), { x: 0, y: 2, z: 0 }, 1.5, out);
     expect(out.pressure.y).toBe(0);
+  });
+
+  // Hydrostatic pressure p = ρg(η − y) pushes a displaced volume V by ρgV(−∂η/∂x, 1, −∂η/∂z): down a wave face.
+  it('pushes a floating patch down the slope of the water surface, normal to it', () => {
+    const out = createPatchForce();
+    const patch: WorldPatch = { position: { x: 0, y: -0.025, z: 0 }, normal: { x: 0, y: -1, z: 0 }, area: 0.1, thickness: 0.05 };
+    patchForce(patch, { ...still(), slopeX: -0.1, slopeZ: 0.3 }, { x: 0, y: 0, z: 0 }, 1.5, out);
+    const weight = WATER.density * WATER.gravity * 0.1 * 0.025;
+    expect(out.buoyancy.y).toBeCloseTo(weight, 9);
+    expect(out.buoyancy.x).toBeCloseTo(0.1 * weight, 9);
+    expect(out.buoyancy.z).toBeCloseTo(-0.3 * weight, 9);
+  });
+
+  it('floats a capsized patch on its deck and resists it being pushed down deck first', () => {
+    const out = createPatchForce();
+    // Upside down: the bottom faces up at y = 0.03 and the deck is 2 cm under water.
+    const patch: WorldPatch = { position: { x: 0, y: 0.03, z: 0 }, normal: { x: 0, y: 1, z: 0 }, area: 0.1, thickness: 0.05 };
+    patchForce(patch, still(), { x: 0, y: -1, z: 0 }, 1.5, out);
+    expect(out.buoyancy.y).toBeCloseTo(WATER.density * WATER.gravity * 0.1 * 0.02, 9);
+    expect(out.buoyancyPoint.y).toBeCloseTo(-0.01, 12);
+    expect(out.pressure.y).toBeCloseTo(0.5 * WATER.density * PRESSURE_COEFFICIENT * 0.1, 9);
+    expect(out.wettedArea).toBe(0);
+    expect(out.deckWettedArea).toBeCloseTo(0.1, 12);
+  });
+
+  // The integrator treats pressure implicitly along the normal; its coefficient must be the true derivative.
+  it('reports the derivative of its pressure along the normal', () => {
+    const out = createPatchForce();
+    const patch: WorldPatch = { position: { x: 0, y: -0.02, z: 0 }, normal: { x: 0, y: -Math.cos(0.1), z: Math.sin(0.1) }, area: 0.1, thickness: 0.05 };
+    const pressureAlongNormal = (push: number) => {
+      const { normal } = patch;
+      patchForce(patch, still(), { x: 0.3 + push * normal.x, y: push * normal.y, z: 4 + push * normal.z }, 1.5, out);
+      return out.pressure.x * normal.x + out.pressure.y * normal.y + out.pressure.z * normal.z;
+    };
+    const step = 1e-6;
+    const derivative = -(pressureAlongNormal(step) - pressureAlongNormal(-step)) / (2 * step);
+    pressureAlongNormal(0);
+    expect(out.pressureDamping).toBeCloseTo(derivative, 3);
+    expect(out.pressureDamping).toBeGreaterThan(0);
   });
 });

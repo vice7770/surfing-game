@@ -84,6 +84,7 @@ describe('PhysicalSurfWater', () => {
     expect(out.flowY).toBe(0);
     expect(out.wet).toBe(true);
     expect(out.stillDepth).toBeCloseTo(3, 12);
+    expect(out.bedY).toBeCloseTo(bed, 12);
   });
 
   it('keeps the depth-averaged current in bores and very shallow water, and none on dry land', () => {
@@ -101,6 +102,7 @@ describe('PhysicalSurfWater', () => {
     expect(out.regime).toBe('dry');
     expect([out.flowX, out.flowY, out.flowZ]).toEqual([0, 0, 0]);
     expect(Number.isFinite(out.surfaceY)).toBe(true);
+    expect(out.bedY).toBeCloseTo(solver.bed[0], 12);
   });
 
   it('reconstructs rising water from the flow converging on a point', () => {
@@ -122,6 +124,7 @@ describe('PhysicalSurfWater', () => {
       water.sampleAt(x, 0, z, out);
       expect(out.outsideDomain).toBe(true);
       expect(out.regime).toBe('outside');
+      expect(out.bedY).toBe(-Infinity);
     }
     expect(water.sampleAt(0, 0, 0, out).outsideDomain).toBe(false);
   });

@@ -24,6 +24,7 @@ describe('LegacySurfWater', () => {
       expect(out.breaking).toBe(legacy.breaking);
       expect(out.regime).toBe('surface');
       expect(out.stillDepth).toBe(wave.depthAt(x, z));
+      expect(out.bedY).toBe(-wave.depthAt(x, z));
       expect(out.wet).toBe(true);
       expect(out.outsideDomain).toBe(false);
       expect(water.surfaceAt(x, z)).toBe(wave.heightAt(x, z));

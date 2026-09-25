@@ -17,6 +17,8 @@ export interface WaterSample {
   stillDepth: number;
   /** Depth of the water column at the point, m. */
   waterDepth: number;
+  /** Height of the seabed, m (−∞ outside the domain). */
+  bedY: number;
   wet: boolean;
   /** The point lies beyond the simulated water; the values are then only a flat-sea stand-in. */
   outsideDomain: boolean;
@@ -36,7 +38,7 @@ export interface WaterSample {
 
 export function createWaterSample(): WaterSample {
   return {
-    surfaceY: 0, stillDepth: 0, waterDepth: 0, wet: false, outsideDomain: false, slopeX: 0, slopeZ: 0,
+    surfaceY: 0, stillDepth: 0, waterDepth: 0, bedY: -Infinity, wet: false, outsideDomain: false, slopeX: 0, slopeZ: 0,
     normalX: 0, normalY: 1, normalZ: 0, flowX: 0, flowY: 0, flowZ: 0, regime: 'outside', breaking: 0,
   };
 }
@@ -75,6 +77,7 @@ export class LegacySurfWater implements SurfWater {
     out.surfaceY = sample.height;
     out.stillDepth = wave.depthAt(x, z);
     out.waterDepth = out.stillDepth + sample.height;
+    out.bedY = -out.stillDepth;
     out.wet = true;
     out.outsideDomain = gx < 0 || gz < 0 || gx >= wave.nx - 1 || gz >= wave.nz - 1;
     out.slopeX = sample.slopeX;

@@ -80,6 +80,7 @@ export class PhysicalSurfWater implements SurfWater {
     const bottom = this.blend(bed);
     out.outsideDomain = false;
     out.waterDepth = depth;
+    out.bedY = bottom;
     out.stillDepth = Math.max(0, solver.restLevel - bottom);
     out.wet = depth > WET;
     this.surface(x, z, out);
@@ -258,6 +259,7 @@ export class PhysicalSurfWater implements SurfWater {
     out.surfaceY = this.solver.restLevel;
     out.stillDepth = 0;
     out.waterDepth = 0;
+    out.bedY = -Infinity;
     out.wet = false;
     out.outsideDomain = true;
     out.slopeX = 0;
