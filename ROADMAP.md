@@ -34,7 +34,7 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 ### P2 · Shading, foam, board consequences (G3, G4, P4) — `In Progress`
 
 - [x] G3: physically based water shading on both water meshes: Fresnel (n = 1.333), per-spot turbidity and bed albedo, shallow-water reflectance from the seabed under every node (sandbars and the reef shelf read turquoise from above, channels blue), and sunlight through thin crests marched toward the sun. Stage 1's broad crests glow only at their tops; P5's peaked crests and the rendered lip will show more. [Record](docs/superpowers/plans/2026-09-25-g3-water-shading.md).
-- [ ] G4: foam carried by the flow, bore roller and bubbles.
+- [x] G4: foam carried by the solver's currents in the physical mode: dense whitewater from bore dissipation and lip splashes decays into a lace that lasts longest on the Beach, drawn as a patchy lace network that drifts with the flow, with bubbles under the bores. The legacy wave keeps its soft foam tint. [Record](docs/superpowers/plans/2026-09-25-g4-advected-foam.md).
 - [ ] P4: board velocity at hull depth, paddle retune, drop and angle tests, rider fall in the orbital flow.
 ### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `Backlog`
 
