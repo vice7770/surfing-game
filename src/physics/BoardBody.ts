@@ -407,9 +407,9 @@ export class BoardBody implements BoardContactBody {
     for (const force of Object.values(this.forces)) force.set(0, 0, 0);
     this.rider?.beginStep();
     for (let s = 0; s < this.substeps; s += 1) this.advance(h, water, 0);
-    this.rider?.endStep(dt, water);
     const inverseDt = 1 / dt;
     for (const force of Object.values(this.forces)) force.multiplyScalar(inverseDt);
+    this.rider?.endStep(dt, water, this);
     for (let k = 0; k < this.count; k += 1) {
       const jx = this.reaction[k * 3];
       const jy = this.reaction[k * 3 + 1];

@@ -20,7 +20,7 @@ describe('rider posture', () => {
   });
 
   it('holds each posture’s centre of mass over its support, at the height the phase needs', () => {
-    const heights: Record<PosePhase, [number, number]> = { prone: [0.08, 0.16], push: [0.22, 0.34], landing: [0.58, 0.68], standing: [0.8, 0.88] };
+    const heights: Record<PosePhase, [number, number]> = { prone: [0.08, 0.16], push: [0.32, 0.44], landing: [0.5, 0.62], standing: [0.8, 0.88] };
     for (const phase of Object.keys(heights) as PosePhase[]) {
       const pose = riderPose(shape, phase, 'regular');
       const centre = postureCenter(pose.parts, riderPartMasses());

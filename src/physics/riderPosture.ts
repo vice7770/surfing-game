@@ -84,9 +84,9 @@ type PartPlace = [x: number, heightAboveDeck: number, z: number];
  * The regular-stance postures, as each part's position across the board, its
  * height above the deck there and its position along the board. The heights
  * are illustrative, not measured: a standing crouch with the centre of mass
- * about 0.85 m over the deck, a landing crouch at 0.63 m, the push-up with the
- * hands on the rails at 0.28 m, and prone at 0.12 m with the chest arched up and
- * the legs over the tail.
+ * about 0.85 m over the deck, a landing crouch at 0.57 m, the push-up with the
+ * hands on the rails at 0.38 m (the arms do most of the lifting), and prone at
+ * 0.12 m with the chest arched up and the legs over the tail.
  * A person facing the nose has their right at −x, so prone the left hand is at
  * +x; standing regular (left foot forward) faces the −x rail.
  */
@@ -102,15 +102,15 @@ function regularPlaces(shape: BoardShape, phase: PosePhase): { places: PartPlace
       };
     case 'landing': {
       // Landing loads the front foot (72/28 in the laboratory study), so the trunk sits forward.
-      const trunk = middle + 0.12;
+      const trunk = middle + 0.08;
       return {
-        places: [[0, 0.55, trunk], [0, 0.8, trunk], [0, 1.1, trunk], [0, 0.75, trunk + 0.35], [0, 0.75, trunk - 0.35], [0, 0.25, front - 0.06], [0, 0.25, rear + 0.06]],
+        places: [[0, 0.48, trunk], [0, 0.72, trunk], [0, 1.02, trunk], [0, 0.68, trunk + 0.35], [0, 0.68, trunk - 0.35], [0, 0.22, front - 0.06], [0, 0.22, rear + 0.06]],
         support: feet,
       };
     }
     case 'push':
       return {
-        places: [[0, 0.25, -0.25], [0, 0.4, 0.15], [0, 0.55, 0.45], [0.22, 0.2, 0.15], [-0.22, 0.2, 0.15], [0.08, 0.1, -0.55], [-0.08, 0.1, -0.55]],
+        places: [[0, 0.35, -0.25], [0, 0.55, 0.15], [0, 0.75, 0.45], [0.22, 0.2, 0.15], [-0.22, 0.2, 0.15], [0.08, 0.15, -0.55], [-0.08, 0.15, -0.55]],
         support: { xMin: -0.23, xMax: 0.23, zMin: -0.65, zMax: 0.3 },
       };
     case 'prone':

@@ -79,8 +79,9 @@ const STANDING_SHIFT = { x: 0.35, z: 0.25 };
 const TRIM_FREEDOM = 0.2;
 /** Below this load, in body weights, the centre of pressure says nothing and the rider does not rebalance. */
 const BALANCE_LOAD = 0.1;
-/** The fastest the body shifts, m/s, and how long the centre of pressure it reacts to is smoothed, s. */
+/** The fastest the body shifts, m/s, and accelerates, m/s² (so balance never jerks the contact), and how long the centre of pressure it reacts to is smoothed, s. */
 const MAX_SHIFT_SPEED = 0.6;
+const MAX_SHIFT_ACCELERATION = 3;
 const COP_SMOOTHING = 0.05;
 
 /** Knee flex that absorbs a landing: natural frequency, rad/s, and the deepest crouch, m. */
@@ -91,6 +92,52 @@ export interface AttachedRiderOptions {
   mass?: number;
   stance?: StanceName;
   phase?: PosePhase;
+}
+
+/** The rider's phase: a posture, or lying back down after a failed pop-up. */
+export type RiderPhase = PosePhase | 'recover';
+
+/** The latest pop-up: how it ended, how long it took to stand, s, and its peak landing load, body weights, with the front foot's share then. */
+export interface PopUpReport {
+  outcome: 'none' | 'rising' | 'stood' | 'no support';
+  duration: number;
+  landingPeak: number;
+  frontShare: number;
+}
+
+/**
+ * The pop-up's timing, from the laboratory study (Borgonovo-Santos et al. 2021):
+ * 1.20 s in all, about 60 % pushing up and 40 % bringing the feet down. After
+ * landing the body rises from the landing crouch to the riding stance, and a
+ * failed attempt lies back down; both of those times are modelling choices.
+ */
+const PUSH_TIME = 0.72;
+const LANDING_TIME = 0.48;
+const SETTLE_TIME = 0.8;
+const RECOVER_TIME = 0.6;
+/** A stand needs the deck under the feet no deeper than this, m, and the board sinking into the surface slower than this, m/s. */
+const FEET_DEPTH = 0.1;
+const SINK_RATE = 0.3;
+/** …and the contact bound by its limits for no more than this long lately, s. */
+const STAND_STRAIN = 0.05;
+/**
+ * The pop-up cue, shown and never acted on: planing pressure carries at least
+ * this share of board and rider (lying down, the body's own buoyancy carries
+ * much of the rest), the board moves at least this fast, m/s, and
+ * the surface falls along its heading at least this steeply (Kimura and
+ * Kakinuma 2015: crest-relative speed and a place on the face). Modelling values.
+ */
+const CUE_SUPPORT = 0.35;
+const CUE_SPEED = 2;
+const CUE_SLOPE = Math.tan((2 * Math.PI) / 180);
+
+/** Minimum-jerk blend 0 → 1, and its rate per unit s. */
+function minimumJerk(s: number): number {
+  return s * s * s * (10 - 15 * s + 6 * s * s);
+}
+
+function minimumJerkRate(s: number): number {
+  return 30 * s * s * (1 - s) * (1 - s);
 }
 
 /** Why a rider left the board: tipped off its support, slipped, lost the board, or buckled under load. */
@@ -146,7 +193,12 @@ function cross(a: V3, b: V3, out: Vector3): Vector3 {
 export class AttachedRider {
   readonly mass: number;
   readonly stance: StanceName;
-  phase: PosePhase;
+  phase: RiderPhase;
+  readonly popUpReport: PopUpReport = { outcome: 'none', duration: 0, landingPeak: 0, frontShare: 0 };
+  /** Whether a pop-up would find the board planing down a face now. */
+  popUpCue = false;
+  /** A paddling hand pulled through the water in the latest substep. */
+  stroking = false;
   /** Centre of mass, world. */
   readonly position = new Vector3();
   readonly velocity = new Vector3();
@@ -207,6 +259,13 @@ export class AttachedRider {
   private readonly reaction = new Float64Array((RIDER_PARTS.length + 2) * 3);
   private readonly reactionAt = new Float64Array((RIDER_PARTS.length + 2) * 2);
   private strokeTime = 0;
+  /** A posture transition: where it started (board frame), how far along it is and how long it takes, s. */
+  private readonly fromParts: Float64Array;
+  private phaseTime = 0;
+  private phaseDuration = 0;
+  private readonly postureRate = new Vector3();
+  private readonly footWorld = new Vector3();
+  private popUpTime = 0;
   private readonly boardVelocity = new Vector3();
   private readonly boardSpin = new Vector3();
   private readonly impulse = new Vector3();
@@ -246,9 +305,114 @@ export class AttachedRider {
     this.partMasses = riderPartMasses(this.mass);
     this.partVolumes = riderPartVolumes(this.mass);
     this.feet = stanceFeet(shape);
-    const pose = riderPose(shape, this.phase, this.stance);
+    const pose = riderPose(shape, this.posePhase(), this.stance);
     this.parts = pose.parts.slice();
+    this.fromParts = pose.parts.slice();
     this.support = pose.support;
+  }
+
+  /**
+   * Start a pop-up from prone: the hands push the chest up, then the feet come
+   * down onto the stance. It stands only if the board still carries the rider
+   * then; otherwise the rider lies back down.
+   */
+  popUp(): boolean {
+    if (!this.attached || this.phase !== 'prone') return false;
+    this.beginTransition('push', PUSH_TIME);
+    this.popUpTime = 0;
+    Object.assign(this.popUpReport, { outcome: 'rising', duration: 0, landingPeak: 0, frontShare: 0 });
+    return true;
+  }
+
+  private posePhase(): PosePhase {
+    return this.phase === 'recover' ? 'prone' : this.phase;
+  }
+
+  private beginTransition(phase: RiderPhase, duration: number, board?: BoardBody): void {
+    this.fromParts.set(this.parts);
+    // The new support's centre is where the centre of pressure is expected until the contact says otherwise.
+    const { support } = riderPose(this.shape, phase === 'recover' ? 'prone' : phase, this.stance);
+    this.desiredCop.x = this.smoothedCop.x = (support.xMin + support.xMax) / 2;
+    this.desiredCop.z = this.smoothedCop.z = (support.zMin + support.zMax) / 2;
+    // Changing between lying rigid and standing upright, restate where the parts
+    // start in the new frame so none of them moves.
+    const upright = phase === 'landing' || phase === 'standing';
+    if (board && upright !== this.upright) this.remap(this.fromParts, upright, board);
+    // The balance shift is folded into where the transition starts.
+    this.balance.set(0, 0, 0);
+    this.balanceRate.set(0, 0, 0);
+    this.phase = phase;
+    this.phaseTime = 0;
+    this.phaseDuration = duration;
+  }
+
+  /** Advance the phase clock; at a phase's end, move on (or check whether the rider can stand). */
+  private advancePhase(h: number, board: BoardBody, water: SurfWater): void {
+    if (this.popUpReport.outcome === 'rising') this.popUpTime += h;
+    if (this.phaseDuration === 0) return;
+    this.phaseTime += h;
+    if (this.phaseTime < this.phaseDuration) return;
+    const ended = this.phase;
+    this.phaseDuration = 0;
+    if (ended === 'push') {
+      this.beginTransition('landing', LANDING_TIME, board);
+    } else if (ended === 'landing') {
+      if (this.canStand(board, water)) {
+        this.beginTransition('standing', SETTLE_TIME, board);
+        this.popUpReport.outcome = 'stood';
+        this.popUpReport.duration = this.popUpTime;
+      } else {
+        this.beginTransition('recover', RECOVER_TIME, board);
+        this.popUpReport.outcome = 'no support';
+      }
+    } else if (ended === 'recover') {
+      this.fromParts.set(this.parts);
+      this.phase = 'prone';
+    }
+  }
+
+  /**
+   * Board-frame part positions as placed in one frame, restated for the other so
+   * their world positions stay put: rigid places a part at the board transform
+   * of its position, upright at the stance point plus its offset turned by the
+   * heading.
+   */
+  private remap(parts: Float64Array, toUpright: boolean, board: BoardBody): void {
+    this.frame(board);
+    const inverseHeading = this.spin.copy(this.heading).invert();
+    const baseWorld = board.toWorld(this.base, this.baseWorld);
+    for (let i = 0; i < RIDER_PARTS.length; i += 1) {
+      const part = this.localScratch.set(parts[i * 3], parts[i * 3 + 1], parts[i * 3 + 2]);
+      let world: Vector3;
+      if (toUpright) {
+        world = board.toWorld(part, this.scratch);
+        part.subVectors(world, baseWorld).applyQuaternion(inverseHeading).add(this.base);
+      } else {
+        world = this.scratch.subVectors(part, this.base).applyQuaternion(this.heading).add(baseWorld);
+        board.toLocal(world, part);
+      }
+      parts[i * 3] = part.x;
+      parts[i * 3 + 1] = part.y;
+      parts[i * 3 + 2] = part.z;
+    }
+  }
+
+  /** Both feet down on a deck that is not sinking away, with the load between them lately. */
+  private canStand(board: BoardBody, water: SurfWater): boolean {
+    const strained = this.limitTime.flight + this.limitTime.tip + this.limitTime.slip + this.limitTime.impact;
+    if (!this.inContact || strained > STAND_STRAIN) return false;
+    // Sinking means moving into the water surface, not just downhill along a face.
+    const centre = water.sampleAt(board.position.x, board.position.y, board.position.z, this.sample);
+    if (centre.outsideDomain || !centre.wet) return false;
+    const norm = Math.hypot(centre.slopeX, 1, centre.slopeZ);
+    const into = -((board.velocity.x - centre.flowX) * -centre.slopeX + (board.velocity.y - centre.flowY) + (board.velocity.z - centre.flowZ) * -centre.slopeZ) / norm;
+    if (into > SINK_RATE) return false;
+    for (const z of [this.feet.rear, this.feet.front]) {
+      board.toWorld(this.localScratch.set(0, deckHeight(this.shape, z), z), this.footWorld);
+      const sample = water.sampleAt(this.footWorld.x, this.footWorld.y, this.footWorld.z, this.sample);
+      if (sample.outsideDomain || sample.surfaceY - this.footWorld.y > FEET_DEPTH) return false;
+    }
+    return true;
   }
 
   /** Put the rider in its posture on the board, moving with it. */
@@ -304,9 +468,14 @@ export class AttachedRider {
   }
 
   /** After the board's step: the contact means, and the water's reactions to what it did to the body. */
-  endStep(dt: number, water: SurfWater): void {
+  endStep(dt: number, water: SurfWater, board: BoardBody): void {
     this.contact.force.copy(this.stepImpulse).divideScalar(dt);
     this.contact.load = this.stepLoad;
+    if ((this.phase === 'landing' || (this.phase === 'standing' && this.phaseDuration > 0)) && this.stepLoad > this.popUpReport.landingPeak) {
+      this.popUpReport.landingPeak = this.stepLoad;
+      this.popUpReport.frontShare = this.contact.frontShare;
+    }
+    this.popUpCue = this.attached && this.phase === 'prone' && this.cue(board, water);
     const { reaction, reactionAt } = this;
     for (let k = 0; k < RIDER_PARTS.length + 2; k += 1) {
       const jx = reaction[k * 3];
@@ -317,8 +486,20 @@ export class AttachedRider {
     }
   }
 
+  /** Planing down a face: the state the pop-up cue shows. */
+  private cue(board: BoardBody, water: SurfWater): boolean {
+    const weight = (board.mass + this.mass) * WATER.gravity;
+    if (board.forces.pressure.y < CUE_SUPPORT * weight || board.velocity.length() < CUE_SPEED) return false;
+    const forward = this.scratch.set(0, 0, 1).applyQuaternion(board.orientation).setY(0);
+    if (forward.lengthSq() < 1e-6) return false;
+    forward.normalize();
+    const sample = water.sampleAt(board.position.x, board.position.y, board.position.z, this.sample);
+    return !sample.outsideDomain && -(sample.slopeX * forward.x + sample.slopeZ * forward.z) >= CUE_SLOPE;
+  }
+
   /** Before the board's solve: the posture's target, its drive velocity and the forces on the rider. */
   prepare(h: number, board: BoardBody, water: SurfWater): void {
+    this.advancePhase(h, board, water);
     this.balanceStep(h);
     this.updatePosture();
     this.updateInertia(board);
@@ -340,6 +521,8 @@ export class AttachedRider {
     // The balance shift moves the centre of mass across the board.
     const shifted = this.shiftedShare();
     this.drive.add(this.scratch.set(this.balanceRate.x * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.heading : board.orientation));
+    // The posture's own motion (a pop-up) carries the centre of mass with it.
+    this.drive.add(this.scratch.copy(this.postureRate).applyQuaternion(this.upright ? this.heading : board.orientation));
     const error = this.scratch.subVectors(this.target, this.position);
     const correction = Math.min(MAX_CORRECTION, (CORRECTION * error.length()) / h);
     if (error.lengthSq() > 0) this.drive.addScaledVector(error.normalize(), correction);
@@ -368,6 +551,7 @@ export class AttachedRider {
       const radius = Math.cbrt((3 * this.partVolumes[i]) / (4 * Math.PI));
       this.applyWater(i, water, radius, this.partVolumes[i], Math.PI * radius * radius * PART_DRAG, h, shelter);
     }
+    this.stroking = false;
     if (this.phase !== 'prone' || !this.paddle) return;
     this.strokeTime += h;
     for (let side = 0; side < 2; side += 1) {
@@ -393,6 +577,7 @@ export class AttachedRider {
     if (!sample.wet || sample.outsideDomain) return;
     const wet = submergedFraction(sample.surfaceY - p.y, radius);
     if (!(wet > 0)) return;
+    if (slot >= RIDER_PARTS.length) this.stroking = true;
     const support = SEAWATER * WATER.gravity * volume * wet;
     const force = this.partForce.set(-support * sample.slopeX, support, -support * sample.slopeZ);
     this.buoyancy.add(force);
@@ -666,8 +851,20 @@ export class AttachedRider {
 
   /** The posture's parts, centre of mass and support for the current phase. */
   private updatePosture(): void {
-    const pose = riderPose(this.shape, this.phase, this.stance);
-    this.parts.set(pose.parts);
+    const pose = riderPose(this.shape, this.posePhase(), this.stance);
+    this.postureRate.set(0, 0, 0);
+    if (this.phaseDuration > 0) {
+      // A minimum-jerk path from where the transition began to the phase's pose.
+      const s = Math.min(1, this.phaseTime / this.phaseDuration);
+      const blend = minimumJerk(s);
+      const rate = minimumJerkRate(s) / this.phaseDuration;
+      const from = postureCenter(this.fromParts, this.partMasses);
+      const to = postureCenter(pose.parts, this.partMasses);
+      this.postureRate.set((to.x - from.x) * rate, (to.y - from.y) * rate, (to.z - from.z) * rate);
+      for (let k = 0; k < this.parts.length; k += 1) this.parts[k] = this.fromParts[k] + (pose.parts[k] - this.fromParts[k]) * blend;
+    } else {
+      this.parts.set(pose.parts);
+    }
     this.support = pose.support;
     this.upright = pose.upright;
     this.base.set(pose.base.x, pose.base.y, pose.base.z);
@@ -697,8 +894,6 @@ export class AttachedRider {
     const support = this.support;
     const wantX = (support.xMin + support.xMax) / 2 + this.copTarget.x;
     const wantZ = (support.zMin + support.zMax) / 2 + this.copTarget.z;
-    const previousX = this.balance.x;
-    const previousZ = this.balance.z;
     if (this.inContact && this.loaded) {
       const smooth = Math.min(1, h / COP_SMOOTHING);
       this.smoothedCop.x += (this.desiredCop.x - this.smoothedCop.x) * smooth;
@@ -707,12 +902,24 @@ export class AttachedRider {
       const targetX = Math.min(reach.x, Math.max(-reach.x, this.balance.x + (wantX - this.smoothedCop.x) / share));
       const keepZ = Math.min(wantZ + TRIM_FREEDOM, Math.max(wantZ - TRIM_FREEDOM, this.smoothedCop.z));
       const targetZ = Math.min(reach.z, Math.max(-reach.z, this.balance.z + (keepZ - this.smoothedCop.z) / share));
-      const blend = Math.min(1, h / BALANCE_TIME);
-      const limit = MAX_SHIFT_SPEED * h;
-      this.balance.x += Math.min(limit, Math.max(-limit, (targetX - this.balance.x) * blend));
-      this.balance.z += Math.min(limit, Math.max(-limit, (targetZ - this.balance.z) * blend));
+      this.shiftAxis('x', targetX, reach.x, h);
+      this.shiftAxis('z', targetZ, reach.z, h);
+    } else {
+      this.shiftAxis('x', this.balance.x, reach.x, h);
+      this.shiftAxis('z', this.balance.z, reach.z, h);
     }
-    this.balanceRate.set((this.balance.x - previousX) / h, 0, (this.balance.z - previousZ) / h);
+  }
+
+  /** Critically damped motion of the balance shift toward `target`, within speed, acceleration and reach limits. */
+  private shiftAxis(axis: 'x' | 'z', target: number, reach: number, h: number): void {
+    const frequency = 1 / BALANCE_TIME;
+    const acceleration = Math.min(MAX_SHIFT_ACCELERATION, Math.max(-MAX_SHIFT_ACCELERATION,
+      frequency * frequency * (target - this.balance[axis]) - 2 * frequency * this.balanceRate[axis]));
+    const rate = Math.min(MAX_SHIFT_SPEED, Math.max(-MAX_SHIFT_SPEED, this.balanceRate[axis] + acceleration * h));
+    const next = this.balance[axis] + rate * h;
+    const clamped = Math.min(reach, Math.max(-reach, next));
+    this.balanceRate[axis] = clamped === next ? rate : 0;
+    this.balance[axis] = clamped;
   }
 
   /** Inertia of the parts about the centre of mass (point masses and their spheres), in the world. */

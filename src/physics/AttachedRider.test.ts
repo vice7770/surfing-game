@@ -1,4 +1,4 @@
-import { Vector3 } from 'three';
+import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { AttachedRider } from './AttachedRider';
 import { BoardBody } from './BoardBody';
@@ -185,5 +185,91 @@ describe('rider coupled to the board', () => {
     expect(rider.inContact).toBe(false);
     expect(rider.contact.feasible).toBe(false);
     expect(rider.velocity.y).toBeGreaterThan(riderFall - WATER.gravity * STEP - 1e-6);
+  });
+});
+
+/** A board on a face sloping down toward +z, level across, sliding down it at 5 m/s with a rider in `phase`. */
+function onFace(degrees: number, phase: 'prone' | 'standing') {
+  const angle = (degrees * Math.PI) / 180;
+  const board = new BoardBody();
+  const along = new Vector3(0, -Math.sin(angle), Math.cos(angle));
+  board.place(new Vector3(0, board.shape.centerOfMass.y * Math.cos(angle), 0), new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), angle), along.multiplyScalar(5));
+  const rider = new AttachedRider(board.shape, { phase });
+  board.attach(rider);
+  return { board, rider, water: new PlaneWater({ slopeZ: -Math.tan(angle) }) };
+}
+
+describe('pop-up', () => {
+  const towedProne = (speed: number, water = new PlaneWater()) => {
+    const { board, rider } = mounted('prone');
+    const tow = () => {
+      board.velocity.z = speed;
+      rider.velocity.z = speed;
+    };
+    tow();
+    run(board, water, 3, tow);
+    return { board, rider, tow, water };
+  };
+
+  // Borgonovo-Santos et al. 2021: 1.20 ± 0.19 s, about 60 % push and 40 % landing, peak landing 1.63 ± 0.18 BW, front-foot biased.
+  it('stands from prone in about 1.2 s on a planing board, landing on the front foot', () => {
+    const { board, rider, tow, water } = towedProne(6);
+    expect(rider.popUp()).toBe(true);
+    expect(rider.phase).toBe('push');
+    let standingAt = 0;
+    run(board, water, 2, () => {
+      tow();
+      if (!standingAt && rider.phase === 'standing') standingAt = rider.popUpReport.duration;
+    });
+    expect(rider.attached).toBe(true);
+    expect(rider.phase).toBe('standing');
+    expect(rider.popUpReport.outcome).toBe('stood');
+    expect(rider.popUpReport.duration).toBeCloseTo(1.2, 1);
+    expect(rider.popUpReport.landingPeak).toBeGreaterThan(1.2);
+    expect(rider.popUpReport.landingPeak).toBeLessThan(2.0);
+    expect(rider.popUpReport.frontShare).toBeGreaterThan(0.5);
+    expect(standingAt).toBeGreaterThan(0);
+  });
+
+  it('cannot stand on a board at rest in flat water: it sinks, and the rider lies back down', () => {
+    const { board, rider } = mounted('prone');
+    const water = new PlaneWater();
+    run(board, water, 3);
+    rider.popUp();
+    run(board, water, 3);
+    expect(rider.attached).toBe(true);
+    expect(rider.phase).toBe('prone');
+    expect(rider.popUpReport.outcome).toBe('no support');
+  });
+
+  it('stops paddling once the hands push up', () => {
+    const { board, rider, tow, water } = towedProne(3);
+    rider.paddle = true;
+    rider.popUp();
+    run(board, water, 0.3, tow);
+    expect(rider.stroking).toBe(false);
+  });
+
+  it('cues the pop-up only when planing down a face', () => {
+    const rest = mounted('prone');
+    run(rest.board, new PlaneWater(), 2);
+    expect(rest.rider.popUpCue).toBe(false);
+    const flat = towedProne(6);
+    expect(flat.rider.popUpCue).toBe(false);
+    const down = onFace(15, 'prone');
+    run(down.board, down.water, 2);
+    expect(down.rider.popUpCue).toBe(true);
+  });
+
+  // A static sloping sheet of water stands in for a wave face: gravity along it balances the drag.
+  it('stands up on a steep face, but not on one too gentle to plane on', () => {
+    for (const [degrees, outcome] of [[15, 'stood'], [10, 'no support']] as const) {
+      const { board, rider, water } = onFace(degrees, 'prone');
+      run(board, water, 3);
+      rider.popUp();
+      run(board, water, 2.5);
+      expect(rider.popUpReport.outcome, `${degrees}°`).toBe(outcome);
+      expect(rider.attached, `${degrees}°`).toBe(true);
+    }
   });
 });
