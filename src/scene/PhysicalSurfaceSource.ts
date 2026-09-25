@@ -10,7 +10,7 @@ export interface RenderableSurfZone {
 }
 
 /** Whitewater fades over this many seconds once the break has passed (a game constant; see Callaghan et al. 2024). */
-const FOAM_DECAY = 3;
+const FOAM_DECAY = 4;
 
 /**
  * The physical surf zone resampled onto a uniform render grid that follows the
@@ -51,7 +51,7 @@ export class PhysicalSurfaceSource implements SurfaceSource {
     for (let k = 0; k < nodes; k += 1) {
       const active = data[k * 2 + 1];
       this.memory[k] = Math.max(active, this.memory[k] * decay);
-      data[k * 2 + 1] = Math.max(active, 0.85 * this.memory[k]);
+      data[k * 2 + 1] = Math.max(active, 0.9 * this.memory[k]);
     }
   }
 }

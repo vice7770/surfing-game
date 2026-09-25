@@ -30,9 +30,9 @@ describe('PhysicalSurfaceSource', () => {
     source.write(data);
     const afterTwo = data[4 * 2 + 1];
     expect(afterOne).toBeGreaterThan(0.4);
-    expect(afterOne).toBeLessThan(0.85);
+    expect(afterOne).toBeLessThan(0.9);
     expect(afterTwo).toBeLessThan(afterOne);
-    expect(afterTwo / afterOne).toBeCloseTo(Math.exp(-1 / 3), 5);
+    expect(afterTwo / afterOne).toBeCloseTo(Math.exp(-1 / 4), 5);
     expect(data[0 * 2 + 1]).toBe(0);
   });
 });

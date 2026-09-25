@@ -267,7 +267,7 @@ export class SurfZoneSimulation {
           continue;
         }
         const slope = Math.hypot((heights[k + 1] - heights[k - 1]) * inverse, (heights[k + grid.nx] - heights[k - grid.nx]) * inverse);
-        data[k * 2 + 1] = Math.max(Math.max(0, Math.min(0.12, (slope - 0.12) * 0.5)), Math.min(0.95, 1.2 * whitewater[k]));
+        data[k * 2 + 1] = Math.max(Math.max(0, Math.min(0.12, (slope - 0.12) * 0.5)), Math.min(0.95, 2.5 * whitewater[k]));
       }
     }
   }
