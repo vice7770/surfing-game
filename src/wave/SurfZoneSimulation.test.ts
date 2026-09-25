@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { REEF, createSpot } from './Bathymetry';
 import { breakerDepthFor } from './Breaking';
-import { OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
+import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
 
 const small: Omit<SurfZoneConfig, 'spot'> = {
   seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -182,5 +182,84 @@ describe('SurfZoneSimulation', () => {
     expect(windOnsetScale(-10, 2)).toBe(1.1);
     expect(windOnsetScale(30, 1)).toBe(0.6);
     expect(windOnsetScale(6, 1)).toBeLessThan(windOnsetScale(6, 3));
+  });
+
+  it('leaves foam behind the breaking bores, fading into lace, and none offshore of the break', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, directionDegrees: 20, spreading: 24 });
+    const { solver, foam } = simulation;
+    let outermost = Infinity;
+    for (let frame = 0; frame < 20 * 30; frame += 1) {
+      simulation.step(1 / 30);
+      for (let i = 0; i < solver.h.length; i += 1) {
+        if (simulation.breaking.strength[i] > 0.3) outermost = Math.min(outermost, solver.zCenters[Math.floor(i / solver.nx)]);
+      }
+    }
+    let foamy = 0;
+    let lace = 0;
+    for (let i = 0; i < solver.h.length; i += 1) {
+      const z = solver.zCenters[Math.floor(i / solver.nx)];
+      expect(foam.totalAt(i)).toBeLessThanOrEqual(1 + 1e-12);
+      if (z < outermost - 10) expect(foam.totalAt(i)).toBeLessThan(1e-3);
+      if (foam.totalAt(i) > 0.05) foamy += 1;
+      if (foam.residual[i] > 0.02) lace += 1;
+    }
+    expect(outermost).toBeLessThan(0);
+    expect(foamy).toBeGreaterThan(50);
+    expect(lace).toBeGreaterThan(50);
+  }, 60_000);
+
+  it('keeps lace longest in the beach’s sandy surf and lets a spot override its decay', () => {
+    expect(FOAM_DECAY.beach.residual).toBeGreaterThan(FOAM_DECAY.reef.residual);
+    for (const decay of Object.values(FOAM_DECAY)) expect(decay.dense).toBe(3);
+    expect(new SurfZoneSimulation({ ...small, spot: 'reef' }).foam.decay).toEqual(FOAM_DECAY.reef);
+    expect(new SurfZoneSimulation({ ...small, spot: 'reef', foamDecay: { dense: 1, residual: 2 } }).foam.decay).toEqual({ dense: 1, residual: 2 });
+  });
+
+  it('splashes landing lip water into foam', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'beach' });
+    const { solver, foam, lip } = simulation;
+    foam.dense.fill(0);
+    foam.residual.fill(0);
+    const crest = solver.cellIndex(0, -60);
+    expect(lip.launch(crest, { x: 0, z: 4 }, solver.surfaceAt(crest) + 1, 0.2)).toBeGreaterThan(0);
+    for (let step = 0; step < 60 && lip.landings === 0; step += 1) lip.step(1 / 60);
+    expect(lip.landings).toBeGreaterThan(0);
+    expect(foam.dense.reduce((sum, value) => sum + value, 0)).toBeGreaterThan(0.5);
+  });
+
+  it('renders the foam field and the current it rides on', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'beach' });
+    const { solver, foam } = simulation;
+    for (let frame = 0; frame < 30; frame += 1) simulation.step(1 / 30);
+    for (let i = 0; i < solver.h.length; i += 1) {
+      foam.dense[i] = solver.h[i] > 0.01 ? 0.5 * (1 + Math.sin(i * 0.37)) * 0.6 : 0;
+      foam.residual[i] = solver.h[i] > 0.01 ? 0.1 : 0;
+    }
+    const grid = simulation.renderGrid(1);
+    const surface = new Float32Array(grid.nx * grid.nz * 2);
+    const flow = new Float32Array(grid.nx * grid.nz * 2);
+    simulation.writeUniformSurface(surface, grid);
+    simulation.writeUniformFlow(flow, grid);
+    const total = Float64Array.from(foam.dense, (value, i) => value + foam.residual[i]);
+    const u = Float64Array.from(solver.qx, (q, i) => (solver.h[i] > 0.01 ? q / solver.h[i] : 0));
+    const w = Float64Array.from(solver.qz, (q, i) => (solver.h[i] > 0.01 ? q / solver.h[i] : 0));
+    let wet = 0;
+    for (let r = 0; r < grid.nz; r += 5) {
+      for (let c = 0; c < grid.nx; c += 3) {
+        const k = r * grid.nx + c;
+        const x = grid.xMin + c * grid.spacing;
+        const z = grid.zMin + r * grid.spacing;
+        if (solver.sampleCentered(solver.h, x, z) <= 0.01) {
+          expect(surface[k * 2 + 1]).toBe(0);
+          expect(flow[k * 2]).toBe(0);
+          continue;
+        }
+        wet += 1;
+        expect(surface[k * 2 + 1]).toBeCloseTo(solver.sampleCentered(total, x, z), 5);
+        expect(flow[k * 2]).toBeCloseTo(solver.sampleCentered(u, x, z), 5);
+        expect(flow[k * 2 + 1]).toBeCloseTo(solver.sampleCentered(w, x, z), 5);
+      }
+    }
+    expect(wet).toBeGreaterThan(200);
   });
 });

@@ -1,6 +1,7 @@
 import { createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
+import { FoamField, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
 import { SeaState } from './SeaState';
 import { SeaStateBoundary } from './SeaStateBoundary';
@@ -35,6 +36,8 @@ export interface SurfZoneConfig {
   windSpeed?: number;
   /** Kennedy onset threshold as a fraction of √(gh); defaults per spot. */
   breakingOnset?: number;
+  /** Foam e-folding times; defaults per spot. */
+  foamDecay?: FoamDecay;
 }
 
 export interface RenderGrid {
@@ -53,6 +56,20 @@ export const OFFSHORE_DEPTH: Record<SpotName, number> = { beach: 5, point: 8, re
 
 /** Kennedy onset per spot (plan Q27): 0.35√(gh) on the barred beach, 0.65√(gh) on plain or steep beds. */
 export const BREAKING_ONSET: Record<SpotName, number> = { beach: 0.35, point: 0.65, reef: 0.65, canyon: 0.65 };
+
+/**
+ * Foam e-folding times per spot, s (plan §2.4, G4). Dense whitewater decays like
+ * oceanic whitecap foam, whose effective decay time is 1.4–4.8 s (Callaghan,
+ * Deane & Stokes 2012). Surfactants stabilise a residual lace for much longer
+ * (Callaghan et al. 2013, 2017); its times are game values, longest in the
+ * beach's sandy surf and shortest in the reef's clear water.
+ */
+export const FOAM_DECAY: Record<SpotName, FoamDecay> = {
+  beach: { dense: 3, residual: 20 },
+  point: { dense: 3, residual: 12 },
+  reef: { dense: 3, residual: 8 },
+  canyon: { dense: 3, residual: 15 },
+};
 
 /**
  * Wind shifts breaking onset (plan Q23), as a factor on the breaking thresholds
@@ -88,6 +105,8 @@ export class SurfZoneSimulation {
   readonly breaking: BreakingModel;
   /** Ballistic lip parcels thrown by plunging breakers (plan Q12). */
   readonly lip: PlungingLip;
+  /** Foam carried by the flow (plan §2.4): made by bores and lip splashes. */
+  readonly foam: FoamField;
   /** Lip throws so far, and their total volume, m³. */
   lipLaunches = 0;
   lipVolume = 0;
@@ -102,8 +121,11 @@ export class SurfZoneSimulation {
   private readonly seaTimeOffset: number;
   private mapping?: {
     grid: RenderGrid; xMin: number; columns: Int32Array; columnWeights: Float64Array;
-    rows: Int32Array; rowWeights: Float64Array; heights: Float64Array; wet: Uint8Array; whitewater: Float64Array;
+    rows: Int32Array; rowWeights: Float64Array;
   };
+  /** Per-cell velocity scratch for `writeUniformFlow`. */
+  private velocityX?: Float64Array;
+  private velocityZ?: Float64Array;
 
   constructor(readonly config: SurfZoneConfig) {
     this.spot = createSpot(config.spot, config.seed);
@@ -142,6 +164,8 @@ export class SurfZoneSimulation {
     this.peel = new PeelTracker(this.solver.xCenters, config.peakPeriod);
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver);
+    this.foam = new FoamField(this.solver, config.foamDecay ?? FOAM_DECAY[config.spot]);
+    this.lip.onLand = (x, z, volume) => this.foam.addSplash(x, z, volume);
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
   }
 
@@ -164,6 +188,7 @@ export class SurfZoneSimulation {
     this.breaking.update(dt);
     this.markBreakingOnsets();
     this.lip.step(dt);
+    this.foam.update(dt, this.breaking.strength);
     this.lastStepMs = performance.now() - start;
   }
 
@@ -303,39 +328,73 @@ export class SurfZoneSimulation {
 
   /**
    * Resample the water to interleaved (height, foam) per render node. Dry nodes
-   * sit 5 cm under the bed so the seabed mesh hides them. Foam is the larger of
-   * the steep-slope tint and the Kennedy breaking strength (whitewater).
+   * sit 5 cm under the bed so the seabed mesh hides them. Foam is the foam
+   * field's covered fraction.
    */
   writeUniformSurface(data: Float32Array, grid: RenderGrid): void {
     const mapping = this.mappingFor(grid);
     const { h, bed, nx } = this.solver;
-    const strength = this.breaking.strength;
-    const { columns, columnWeights, rows, rowWeights, heights, wet, whitewater } = mapping;
+    const { dense, residual } = this.foam;
+    const { columns, columnWeights, rows, rowWeights } = mapping;
     for (let r = 0; r < grid.nz; r += 1) {
       const row = rows[r] * nx;
       const tz = rowWeights[r];
       for (let c = 0; c < grid.nx; c += 1) {
         const i = row + columns[c];
         const tx = columnWeights[c];
-        const depth = (h[i] * (1 - tx) + h[i + 1] * tx) * (1 - tz) + (h[i + nx] * (1 - tx) + h[i + nx + 1] * tx) * tz;
-        const bottom = (bed[i] * (1 - tx) + bed[i + 1] * tx) * (1 - tz) + (bed[i + nx] * (1 - tx) + bed[i + nx + 1] * tx) * tz;
+        const w00 = (1 - tx) * (1 - tz);
+        const w10 = tx * (1 - tz);
+        const w01 = (1 - tx) * tz;
+        const w11 = tx * tz;
+        const depth = h[i] * w00 + h[i + 1] * w10 + h[i + nx] * w01 + h[i + nx + 1] * w11;
+        const bottom = bed[i] * w00 + bed[i + 1] * w10 + bed[i + nx] * w01 + bed[i + nx + 1] * w11;
         const k = r * grid.nx + c;
-        whitewater[k] = (strength[i] * (1 - tx) + strength[i + 1] * tx) * (1 - tz) + (strength[i + nx] * (1 - tx) + strength[i + nx + 1] * tx) * tz;
-        wet[k] = depth > WET ? 1 : 0;
-        heights[k] = wet[k] ? depth + bottom : bottom - 0.05;
+        if (depth > WET) {
+          data[k * 2] = depth + bottom;
+          data[k * 2 + 1] = (dense[i] + residual[i]) * w00 + (dense[i + 1] + residual[i + 1]) * w10
+            + (dense[i + nx] + residual[i + nx]) * w01 + (dense[i + nx + 1] + residual[i + nx + 1]) * w11;
+        } else {
+          data[k * 2] = bottom - 0.05;
+          data[k * 2 + 1] = 0;
+        }
       }
     }
-    const inverse = 1 / (2 * grid.spacing);
+  }
+
+  /** Resample the depth-averaged current to interleaved (u, w) per render node, m/s; 0 on dry nodes. */
+  writeUniformFlow(data: Float32Array, grid: RenderGrid): void {
+    const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
+    const { h, qx, qz, nx } = this.solver;
+    if (!this.velocityX || this.velocityX.length !== h.length) {
+      this.velocityX = new Float64Array(h.length);
+      this.velocityZ = new Float64Array(h.length);
+    }
+    const u = this.velocityX;
+    const w = this.velocityZ!;
+    for (let i = 0; i < h.length; i += 1) {
+      const wet = h[i] > WET;
+      u[i] = wet ? qx[i] / h[i] : 0;
+      w[i] = wet ? qz[i] / h[i] : 0;
+    }
     for (let r = 0; r < grid.nz; r += 1) {
+      const row = rows[r] * nx;
+      const tz = rowWeights[r];
       for (let c = 0; c < grid.nx; c += 1) {
-        const k = r * grid.nx + c;
-        data[k * 2] = heights[k];
-        if (!wet[k] || r === 0 || c === 0 || r === grid.nz - 1 || c === grid.nx - 1) {
-          data[k * 2 + 1] = 0;
+        const i = row + columns[c];
+        const tx = columnWeights[c];
+        const w00 = (1 - tx) * (1 - tz);
+        const w10 = tx * (1 - tz);
+        const w01 = (1 - tx) * tz;
+        const w11 = tx * tz;
+        const k = (r * grid.nx + c) * 2;
+        const depth = h[i] * w00 + h[i + 1] * w10 + h[i + nx] * w01 + h[i + nx + 1] * w11;
+        if (depth <= WET) {
+          data[k] = 0;
+          data[k + 1] = 0;
           continue;
         }
-        const slope = Math.hypot((heights[k + 1] - heights[k - 1]) * inverse, (heights[k + grid.nx] - heights[k - grid.nx]) * inverse);
-        data[k * 2 + 1] = Math.max(Math.max(0, Math.min(0.12, (slope - 0.12) * 0.5)), Math.min(0.95, 2.5 * whitewater[k]));
+        data[k] = u[i] * w00 + u[i + 1] * w10 + u[i + nx] * w01 + u[i + nx + 1] * w11;
+        data[k + 1] = w[i] * w00 + w[i + 1] * w10 + w[i + nx] * w01 + w[i + nx + 1] * w11;
       }
     }
   }
@@ -368,7 +427,6 @@ export class SurfZoneSimulation {
 
   private mappingFor(grid: RenderGrid) {
     const { solver } = this;
-    const size = grid.nx * grid.nz;
     let mapping = this.mapping;
     if (!mapping || mapping.grid.nx !== grid.nx || mapping.grid.nz !== grid.nz
       || mapping.grid.spacing !== grid.spacing || mapping.grid.zMin !== grid.zMin) {
@@ -381,8 +439,7 @@ export class SurfZoneSimulation {
         rowWeights[r] = Math.min(1, Math.max(0, (z - solver.zCenters[iz]) / (solver.zCenters[iz + 1] - solver.zCenters[iz])));
       }
       mapping = {
-        grid: { ...grid }, xMin: Number.NaN, columns: new Int32Array(grid.nx), columnWeights: new Float64Array(grid.nx),
-        rows, rowWeights, heights: new Float64Array(size), wet: new Uint8Array(size), whitewater: new Float64Array(size),
+        grid: { ...grid }, xMin: Number.NaN, columns: new Int32Array(grid.nx), columnWeights: new Float64Array(grid.nx), rows, rowWeights,
       };
       this.mapping = mapping;
     }

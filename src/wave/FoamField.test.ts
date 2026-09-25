@@ -148,6 +148,7 @@ describe('FoamField', () => {
     run(foam, solver, 1 / 30);
     const after = moments(foam, solver);
     expect(after.x).toBeCloseTo(before.x, 6);
-    expect(after.total).toBeCloseTo(before.total, 6);
+    // Only the blob's sub-1e-6 tails are flushed.
+    expect(after.total).toBeCloseTo(before.total, 3);
   });
 });

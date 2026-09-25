@@ -16,6 +16,7 @@ export const LACE_SHARE = 0.3;
 /** Depth of landed lip water that covers a cell with foam, m. */
 export const SPLASH_DEPTH = 0.05;
 const WET = 0.01;
+const TRACE = 1e-6;
 
 /**
  * Energy a bore dissipates per unit crest length, divided by ρ, m³/s³: g q ΔH,
@@ -89,8 +90,9 @@ export class FoamField {
       const lace = this.residual[i] * keepLace + LACE_SHARE * (previous - dense);
       const strength = breaking[i];
       if (strength > 0) dense += (strength * FOAM_SOURCE_RATE * boreDissipation(restLevel - bed[i], h[i]) * dt) / REFERENCE_DISSIPATION;
-      this.dense[i] = Math.min(1, dense);
-      this.residual[i] = Math.min(lace, 1 - this.dense[i]);
+      // Flush traces the resampling spreads upstream; they would never show.
+      this.dense[i] = dense < TRACE ? 0 : Math.min(1, dense);
+      this.residual[i] = lace < TRACE ? 0 : Math.min(lace, 1 - this.dense[i]);
     }
   }
 

@@ -79,6 +79,8 @@ export class PlungingLip {
   readonly volume: Float64Array;
   /** Landings since the lip was created. */
   landings = 0;
+  /** Told of every landing: where the parcel fell and how much water it returned, m³. */
+  onLand?: (x: number, z: number, volume: number) => void;
   private readonly vx: Float64Array;
   private readonly vy: Float64Array;
   private readonly vz: Float64Array;
@@ -187,5 +189,6 @@ export class PlungingLip {
     this.active[parcel] = 0;
     this.free.push(parcel);
     this.landings += 1;
+    this.onLand?.(this.x[parcel], this.z[parcel], this.volume[parcel]);
   }
 }

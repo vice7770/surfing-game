@@ -146,6 +146,8 @@ export interface SurfaceSource {
   readonly bedRevision: number;
   /** Bed elevation per grid node, m (negative below datum). */
   writeBed(data: Float32Array): void;
+  /** Interleaved surface current (u, w) per grid node, m/s; without it the foam pattern stands still. */
+  writeFlow?(data: Float32Array): void;
 }
 
 export class WaterSurface {
