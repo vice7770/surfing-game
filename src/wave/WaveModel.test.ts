@@ -23,6 +23,19 @@ describe('InteractiveWaterField', () => {
     expect(wave.crestZ()).toBeLessThan(initial + 5);
   });
 
+  it('advances a faster configured long wave farther before the break', () => {
+    const slow = new InteractiveWaterField(9, { ...DEFAULT_WAVE_SETTINGS, speed: 2 });
+    const fast = new InteractiveWaterField(9, { ...DEFAULT_WAVE_SETTINGS, speed: 4 });
+    const slowStart = slow.crestZ();
+    const fastStart = fast.crestZ();
+    for (let frame = 0; frame < 120; frame += 1) {
+      slow.step(1 / 60);
+      fast.step(1 / 60);
+    }
+    expect(slow.crestZ()).toBeGreaterThan(slowStart + 2);
+    expect(fast.crestZ() - fastStart).toBeGreaterThan(slow.crestZ() - slowStart + 1.5);
+  });
+
   it('produces a different initialized surface shape for a different seed', () => {
     const first = new InteractiveWaterField(21, { ...DEFAULT_WAVE_SETTINGS });
     const next = new InteractiveWaterField(22, { ...DEFAULT_WAVE_SETTINGS });
@@ -56,5 +69,52 @@ describe('InteractiveWaterField', () => {
     const before = wave.sample(0, 0).velocity.z;
     wave.applyBoardReaction(0, 0, new Vector3(0, 0, 80), 1 / 60);
     expect(wave.sample(0, 0).velocity.z).toBeLessThan(before);
+  });
+
+  it('spreads vertical hull pressure outward through the shallow-water flow', () => {
+    const wave = new InteractiveWaterField(8, { height: 0, period: 8, speed: 0 });
+    wave.applyBoardReaction(0, 0, new Vector3(0, 800, 0), 1 / 60);
+    expect(wave.sample(0.5, 0).velocity.x).toBeGreaterThan(0);
+    expect(wave.sample(-0.5, 0).velocity.x).toBeLessThan(0);
+  });
+
+  it('tracks bounded wave energy through propagation and breaking', () => {
+    const wave = new InteractiveWaterField(2, { ...DEFAULT_WAVE_SETTINGS });
+    const initial = wave.totalEnergy();
+    for (let frame = 0; frame < 600; frame += 1) wave.step(1 / 60);
+    const after = wave.totalEnergy();
+    expect(Number.isFinite(after)).toBe(true);
+    expect(after).toBeGreaterThan(0);
+    expect(after).toBeLessThan(initial);
+    expect(wave.breakingDissipation).toBeGreaterThan(0);
+  });
+
+  it('keeps current in the shared field and responds to wind forcing', () => {
+    const still = new InteractiveWaterField(4, { height: 0, period: 8, speed: 0, currentX: 0.4, windX: 0 });
+    const windy = new InteractiveWaterField(4, { height: 0, period: 8, speed: 0, currentX: 0.4, windX: 0.06 });
+    expect(still.sample(0, 0).velocity.x).toBeCloseTo(0.4, 2);
+    for (let frame = 0; frame < 120; frame += 1) {
+      still.step(1 / 60);
+      windy.step(1 / 60);
+    }
+    expect(windy.sample(0, 0).velocity.x).toBeGreaterThan(still.sample(0, 0).velocity.x + 0.05);
+  });
+
+  it('peels across the physical crest while leaving the unbroken face rideable', () => {
+    const wave = new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS });
+    for (let frame = 0; frame < 480; frame += 1) wave.step(1 / 60);
+    const crest = wave.crestZ();
+    const peakBreaking = (x: number): number => {
+      let peak = 0;
+      for (let z = crest - 3; z <= crest + 3; z += 0.5) {
+        peak = Math.max(peak, wave.sample(x, z).breaking);
+      }
+      return peak;
+    };
+    expect(peakBreaking(-15)).toBeGreaterThan(0.05);
+    expect(peakBreaking(10)).toBe(0);
+    expect(wave.breakingFrontX).toBeGreaterThan(-15);
+    expect(wave.breakingFrontX).toBeLessThan(10);
+    expect(wave.breakingDissipation).toBeGreaterThan(0);
   });
 });

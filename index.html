@@ -14,17 +14,18 @@
         <a class="brand" href="#" aria-label="Breakline home"><span class="brand-mark">B</span><span>BREAKLINE<span class="brand-sub">SURF SIMULATOR</span></span></a>
         <div class="session-pill"><span class="live-dot"></span><span id="run-state">READY</span><span class="divider">/</span><span id="seed-label">SEED 0001</span></div>
         <button id="diagnostic-toggle" class="icon-button" type="button" aria-pressed="false" title="Toggle diagnostic view">◫ <span>PROFILE</span></button>
+        <button id="underwater-toggle" class="icon-button" type="button" aria-pressed="false" title="Toggle underwater view">≈ <span>BELOW</span></button>
       </header>
 
       <section class="hero-copy" aria-label="Session prompt">
-        <p class="eyebrow"><span class="eyebrow-line"></span> PACIFIC TRAINING BREAK · SESSION 01</p>
+        <p class="eyebrow"><span class="eyebrow-line"></span> <span id="spot-name">PACIFIC TRAINING BREAK</span> · SESSION 01</p>
         <h1>Find your<br /><em>line.</em></h1>
         <p class="hero-note">Hold Space to paddle. Press Enter or Get Up when the board and wave line up; arrows steer.</p>
       </section>
 
       <aside class="telemetry" aria-label="Live physics telemetry">
         <div class="telemetry-heading"><span>LIVE TELEMETRY</span><span class="telemetry-live"><i></i> SIM</span></div>
-        <div class="telemetry-row"><span>BOARD SPEED</span><strong><span id="speed-value">0.0</span><small>m/s</small></strong></div>
+        <div class="telemetry-row ride-essential"><span>BOARD SPEED</span><strong><span id="speed-value">0.0</span><small>m/s</small></strong></div>
         <div class="telemetry-row"><span>WATER SPEED</span><strong><span id="water-speed-value">0.0</span><small>m/s</small></strong></div>
         <div class="telemetry-row"><span>RELATIVE SPEED</span><strong><span id="relative-speed-value">0.0</span><small>m/s</small></strong></div>
         <div class="telemetry-row"><span>WATERLINE</span><strong><span id="waterline-value">0.00</span><small>m</small></strong></div>
@@ -32,24 +33,43 @@
         <div class="telemetry-row"><span>WAVE PERIOD</span><strong><span id="period-value">8.0</span><small>s</small></strong></div>
         <div class="telemetry-row"><span>CREST DISTANCE</span><strong><span id="crest-value">0.0 m</span></strong></div>
         <div class="telemetry-row"><span>POP-UP WINDOW</span><strong><span id="eligibility-value">WAIT</span></strong></div>
+        <div class="telemetry-row"><span>FRAME RATE</span><strong><span id="fps-value">—</span><small>fps</small></strong></div>
+        <div id="ride-metrics" class="ride-metrics" hidden>
+          <div class="telemetry-row ride-essential"><span>BREAKING</span><strong><span id="breaking-value">0</span><small>%</small></strong></div>
+          <div class="telemetry-row ride-essential"><span>BALANCE</span><strong><span id="balance-value">100</span><small>%</small></strong></div>
+          <div class="flow-label"><span>FLOW</span><strong id="flow-value">0</strong></div>
+          <div class="flow-track" aria-hidden="true"><div id="flow-fill"></div></div>
+        </div>
         <div id="outcome-message" class="outcome-message" aria-live="polite"></div>
       </aside>
+      <div id="maneuver-callout" class="maneuver-callout" aria-live="polite"></div>
 
       <section class="tuning-panel" aria-label="Wave and board tuning">
         <div class="panel-head"><div><p class="eyebrow">EXPERIMENT WITH THE CONDITIONS</p><h2>Wave lab</h2></div><button id="panel-toggle" class="panel-toggle" type="button" aria-expanded="true" aria-controls="tuning-controls">−</button></div>
         <div id="tuning-controls" class="tuning-controls">
+          <label class="slider-row"><span>Surf spot</span><select id="spot-select"><option value="training">Training Beach</option><option value="point">Glassy Point</option><option value="reef">Windy Reef</option><option value="custom">Custom conditions</option></select></label>
           <label class="slider-row"><span>Wave height <output id="height-output">1.4 m</output></span><input id="height-slider" type="range" min="0.6" max="2.4" step="0.1" value="1.4" /></label>
           <label class="slider-row"><span>Wave period <output id="period-output">8.0 s</output></span><input id="period-slider" type="range" min="5" max="12" step="0.5" value="8" /></label>
           <label class="slider-row"><span>Wave speed <output id="wave-speed-output">3.0 m/s</output></span><input id="wave-speed-slider" type="range" min="1.5" max="5" step="0.1" value="3" /></label>
           <label class="slider-row"><span>Paddle force <output id="paddle-output">14 N</output></span><input id="paddle-slider" type="range" min="5" max="25" step="1" value="14" /></label>
           <label class="slider-row"><span>Board response <output id="response-output">1.0×</output></span><input id="response-slider" type="range" min="0.5" max="2" step="0.1" value="1" /></label>
+          <label class="slider-row"><span>Cross-current <output id="current-output">0.0 m/s</output></span><input id="current-slider" type="range" min="-0.8" max="0.8" step="0.1" value="0" /></label>
+          <label class="slider-row"><span>Wind push <output id="wind-output">0.00 m/s²</output></span><input id="wind-slider" type="range" min="-0.08" max="0.08" step="0.01" value="0" /></label>
+          <label class="slider-row"><span>Sun height <output id="sun-output">35%</output></span><input id="sun-slider" type="range" min="0" max="1" step="0.05" value="0.35" /></label>
+          <label class="slider-row"><span>Sun direction <output id="sun-direction-output">-25°</output></span><input id="sun-direction-slider" type="range" min="-60" max="60" step="5" value="-25" /></label>
           <p id="pending-note" class="pending-note" hidden>SETUP CHANGED · APPLY TO START THIS CONDITION</p>
           <div class="panel-actions"><button id="apply-button" class="button button-light" type="button" disabled>Apply &amp; replay</button><button id="replay-button" class="button button-quiet" type="button">↺ Replay</button></div>
+          <details class="run-history"><summary id="history-summary">RECENT RUNS</summary><ol id="history-list"></ol></details>
         </div>
       </section>
 
       <div class="control-hint"><span class="keycap">SPACE</span> PADDLE <span class="hint-dot">·</span> <span class="keycap">ENTER</span> GET UP WHEN READY <span class="hint-dot">·</span> <span class="keycap">←</span><span class="keycap">→</span> STEER</div>
-      <div class="bottom-actions"><button id="get-up-button" class="button button-get-up" type="button" disabled>Get up</button><button id="new-wave-button" class="button button-dark" type="button">New wave <span>↗</span></button></div>
+      <div class="touch-controls" aria-label="Touch surf controls">
+        <button id="touch-left" class="touch-button" type="button" aria-label="Steer left">←</button>
+        <button id="touch-paddle" class="touch-button touch-paddle" type="button">Hold to paddle</button>
+        <button id="touch-right" class="touch-button" type="button" aria-label="Steer right">→</button>
+      </div>
+      <div class="bottom-actions"><button id="get-up-button" class="button button-get-up" type="button" disabled>Get up</button><button id="replay-action" class="button button-get-up" type="button" hidden>↺ Replay</button><button id="new-wave-button" class="button button-dark" type="button">New wave <span>↗</span></button></div>
       <div id="loading" class="loading"><span class="loading-mark">B</span><span>SETTING THE BREAK…</span></div>
     </main>
     <script type="module" src="/src/main.ts"></script>

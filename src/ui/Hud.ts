@@ -27,12 +27,21 @@ export class Hud {
   private readonly period = document.querySelector<HTMLElement>('#period-value')!;
   private readonly outcome = document.querySelector<HTMLElement>('#outcome-message')!;
   private readonly getUp = document.querySelector<HTMLButtonElement>('#get-up-button')!;
+  private readonly replayAction = document.querySelector<HTMLButtonElement>('#replay-action')!;
   private readonly crest = document.querySelector<HTMLElement>('#crest-value')!;
   private readonly waterSpeed = document.querySelector<HTMLElement>('#water-speed-value')!;
   private readonly relativeSpeed = document.querySelector<HTMLElement>('#relative-speed-value')!;
   private readonly eligibility = document.querySelector<HTMLElement>('#eligibility-value')!;
+  private readonly app = document.querySelector<HTMLElement>('#app')!;
+  private readonly rideMetrics = document.querySelector<HTMLElement>('#ride-metrics')!;
+  private readonly breaking = document.querySelector<HTMLElement>('#breaking-value')!;
+  private readonly balance = document.querySelector<HTMLElement>('#balance-value')!;
+  private readonly flow = document.querySelector<HTMLElement>('#flow-value')!;
+  private readonly flowFill = document.querySelector<HTMLElement>('#flow-fill')!;
+  private readonly maneuver = document.querySelector<HTMLElement>('#maneuver-callout')!;
+  private readonly fps = document.querySelector<HTMLElement>('#fps-value')!;
 
-  update(seed: number, settings: WaveSettings, diagnostics: BoardDiagnostics): void {
+  update(seed: number, settings: WaveSettings, diagnostics: BoardDiagnostics, fps: number): void {
     this.state.textContent = labels[diagnostics.state];
     this.state.dataset.state = diagnostics.state;
     this.seed.textContent = `SEED ${seed.toString().padStart(4, '0')}`;
@@ -44,8 +53,23 @@ export class Hud {
     this.period.textContent = settings.period.toFixed(1);
     this.crest.textContent = `${diagnostics.distanceToCrest.toFixed(1)} m`;
     this.getUp.disabled = !diagnostics.popUpAvailable;
+    const terminal = diagnostics.state === 'missed' || diagnostics.state === 'wipeout' || diagnostics.state === 'complete';
+    this.getUp.hidden = terminal;
+    this.replayAction.hidden = !terminal;
     this.getUp.classList.toggle('is-ready', diagnostics.popUpAvailable);
     this.eligibility.textContent = diagnostics.popUpAvailable ? 'NOW' : 'WAIT';
-    this.outcome.textContent = outcomes[diagnostics.state] ?? '';
+    this.outcome.textContent = diagnostics.outcomeReason || outcomes[diagnostics.state] || '';
+    const inRide = diagnostics.state === 'catching' || diagnostics.state === 'riding'
+      || diagnostics.state === 'complete' || diagnostics.state === 'wipeout';
+    this.rideMetrics.hidden = !inRide;
+    this.breaking.textContent = Math.round(diagnostics.breaking * 100).toString();
+    this.balance.textContent = Math.round(diagnostics.balance * 100).toString();
+    this.flow.textContent = Math.round(diagnostics.flow * 100).toString();
+    this.flowFill.style.width = `${Math.round(diagnostics.flow * 100)}%`;
+    this.maneuver.textContent = diagnostics.maneuver;
+    this.maneuver.classList.toggle('is-visible', diagnostics.maneuver.length > 0);
+    this.app.classList.toggle('is-playing', ['paddling', 'pop-up-available', 'catching', 'riding'].includes(diagnostics.state));
+    this.app.classList.toggle('is-terminal', terminal);
+    this.fps.textContent = fps > 0 ? Math.round(fps).toString() : '—';
   }
 }

@@ -19,22 +19,20 @@ The repository began with a playable analytic traveling-wave baseline. The curre
 - **Visual style:** polished but intentionally stylized surf demo, with a third-person chase camera, visible crest and board, cyan/teal palette, foam accents, and a diagnostic profile mode.
 - **Future water rendering:** study reflection/refraction, caustics, disturbances, and underwater appearance from [ThreeJS-water](https://github.com/martinRenou/threejs-water), plus sun/sky controls from the [Three.js ocean shader](https://threejs.org/examples/webgl_shaders_ocean). Adapt pool-demo assumptions carefully for open surf; visual effects must follow the authoritative surface without creating a second water-simulation state.
 
-## Suggested module boundaries
+## Module boundaries
 
 ```text
 src/
   main.ts                 # boot, renderer, scene, resize, animation loop
-  game/Game.ts            # owns run state, seed/settings, replay/new-wave actions
-  game/GameState.ts       # state types and transitions
-  game/controls.ts        # keyboard, buttons, input normalization
+  game/Controls.ts        # keyboard and touch input normalization
   wave/WaveModel.ts       # seeded interactive water field and shared sampling
-  wave/WaterSurface.ts    # custom mesh deformation/material/diagnostic view
   physics/BoardPhysics.ts # fixed-step board/rider integration and forces
-  physics/types.ts        # physics state, settings, diagnostics
+  scene/WaterSurface.ts   # mesh deformation, foam lip, water material
+  scene/BoardWake.ts      # visual trail and spray from physical board motion
+  scene/Environment.ts    # static sky, sun, and coastline
   scene/Surfer.ts         # board and simple rider meshes
   scene/CameraRig.ts      # third-person follow and profile camera
   ui/Hud.ts               # seed, state, outcome, speed, diagnostics
-  ui/TuningPanel.ts       # parameters, Apply & Replay, Replay/New Wave
   style.css               # responsive layout, HUD, focus states
 index.html
 ```
@@ -47,11 +45,16 @@ Keep simulation state independently testable and expose the same authoritative w
 2. [Done] Render the evolving field and couple board contacts/modest hull reaction to the shared state.
 3. [Done] Add explicit Get Up timing, visible readiness cue, and miss/wipeout/complete outcomes.
 4. [Done] Verify paddle release, three-second wave-driven forward carry, replay determinism, diagnostics, bounded support, and finite field values.
-5. [In progress] Visual/interaction review passed at desktop and mobile sizes; still profile actual browser frame rate and obtain Astra validation. Do not commit before the MVP is finished; publishing to GitHub is requested as the follow-on step.
+5. [Done] Browser frame-rate and interaction checks pass locally at desktop and narrow mobile sizes; a separate agent audited the code and rechecked resolved findings.
+6. [Done] Extend the prototype with contact-normal pressure, rail-driven carving, a deterministic peeling break, readable wake/foam, and maneuver/balance feedback. Verify 20 m paddle-free rides and failure paths across seeds and tuning settings.
+7. [Done] Add restrained coastline, sunset, and sky/coastline reflections. Keep the moving surface synchronized to the authoritative water field.
+8. [Done] Add run history, stronger board/water coupling, breaking spray, tapered board/rider details, environmental presets, sun controls, and underwater inspection. See the decision notes under `docs/research/` for physical and visual limits.
+
+The baseline is already committed and linked to a GitHub remote. Current extension changes remain uncommitted.
 
 ## Risks and boundaries
 
-- A height field cannot represent breaking/overturning/overhanging water. Defer breaking waves, whitewater, and overhangs to future work; realism claims remain qualitative until measured calibration is planned.
+- A height field can depict a peeling, dissipating break but cannot represent an overturning/overhanging barrel. Defer full barrel geometry and reforming whitewater; realism claims remain qualitative until measured calibration is planned.
 - A future GPU water state could be difficult to sample synchronously from CPU board physics. Any WebGPU exploration must prove synchronization and avoid rendering a field that differs from the physics field.
 - WebGPU compute may constrain browser support. WebGL 2 remains the baseline; do not assume renderer fallback proves compute-example compatibility.
 - Recomputing mesh normals and vertices can be expensive. Keep the mesh bounded around the camera/board, choose moderate subdivisions, and profile before increasing resolution.

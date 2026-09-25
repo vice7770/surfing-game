@@ -72,7 +72,7 @@ Evolve the current browser-based Three.js prototype into a physics-focused surfi
 - A successful catch is sustained riding in which simulated water forces carry the board. Crest proximity alone is insufficient.
 - An early Get Up attempt has no effect. Missing the valid opportunity can result in `missed`; losing board support/stability can result in `wipeout`.
 - Wipe out if board roll exceeds 48°, pitch exceeds 55°, or all four board samples remain more than 0.25 m above the water for 1 s.
-- Complete after riding 20 m with the wave or when the crest passes 15 m beyond the board.
+- Complete after riding 20 m with the wave, or after at least 8 m when the crest passes 15 m beyond the board. A shorter catch that loses the wave is `missed` rather than a completed ride.
 - Terminal states freeze simulation and offer Replay and New Wave.
 
 ### Replay and seeds
@@ -103,4 +103,12 @@ Evolve the current browser-based Three.js prototype into a physics-focused surfi
 - Miss, wipeout, and ride-complete outcomes are reachable and expose Replay/New Wave.
 - Replay restores identical seed/settings and reset state; New Wave changes the seed and visible crest profile.
 - Diagnostic view and overlay expose local water motion, board speed relative to water, distance to crest/face, pop-up eligibility, and board support.
-- No commits are created during implementation.
+- Keep the current prototype extension uncommitted until it is accepted; the earlier baseline is already committed and published.
+
+## Advanced playable prototype extension
+
+- A catch begins on the approaching wave face. Four board contacts produce pressure along local water normals, and rail/fin side force makes steering change the board path and speed.
+- A deterministic breaking front peels along the crest. Breaking dissipates motion in the shared field, drives synchronized foam/lip rendering, and increases board instability.
+- A clean no-paddle ride should travel at least 20 m on default conditions across generated seeds; steering into the breaking section can produce a recoverable challenge or a wipeout.
+- Show break intensity, balance, FLOW, and concise move feedback derived from physical turning and pocket position. Visual wake and spray follow the simulated board.
+- The wave and board remain the main focus. Add a restrained coastline, sunset, and reflective water only after the ride and break are playable.

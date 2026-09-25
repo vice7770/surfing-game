@@ -4,6 +4,8 @@ export interface WaveSettings {
   height: number;
   period: number;
   speed: number;
+  currentX?: number;
+  windX?: number;
 }
 
 export interface WaveSample {
@@ -12,6 +14,7 @@ export interface WaveSample {
   slopeZ: number;
   normal: Vector3;
   velocity: Vector3;
+  breaking: number;
 }
 
 export interface WaveSeedShape {
@@ -24,6 +27,8 @@ export const DEFAULT_WAVE_SETTINGS: WaveSettings = {
   height: 1.4,
   period: 8,
   speed: 3,
+  currentX: 0,
+  windX: 0,
 };
 
 export function makeSeedShape(seed: number): WaveSeedShape {
@@ -61,6 +66,7 @@ export class InteractiveWaterField {
   readonly effectiveGravity: number;
   readonly packetWidth: number;
   time = 0;
+  breakingDissipation = 0;
 
   private height: Float32Array;
   private nextHeight: Float32Array;
@@ -69,9 +75,12 @@ export class InteractiveWaterField {
   private velocityZ: Float32Array;
   private nextVelocityZ: Float32Array;
   private surfaceVelocityY: Float32Array;
+  private readonly breakingStrength: Float32Array;
   private readonly cellArea = this.spacing * this.spacing;
   private readonly fluidDensity = 1000;
   private readonly damping = 0.003;
+  private readonly viscosity = 0.08;
+  private readonly peelSpeed = 2.8;
 
   constructor(
     readonly seed: number,
@@ -80,7 +89,7 @@ export class InteractiveWaterField {
     this.shape = makeSeedShape(seed);
     this.meanDepth = Math.max(4, settings.height * 2.1);
     this.effectiveGravity = (settings.speed * settings.speed) / this.meanDepth;
-    this.packetWidth = Math.max(2.2, (settings.speed * settings.period) / (Math.PI * 2));
+    this.packetWidth = Math.max(3.4, (settings.speed * settings.period) / Math.PI * 0.72);
     const size = this.nx * this.nz;
     this.height = new Float32Array(size);
     this.nextHeight = new Float32Array(size);
@@ -89,6 +98,7 @@ export class InteractiveWaterField {
     this.velocityZ = new Float32Array(size);
     this.nextVelocityZ = new Float32Array(size);
     this.surfaceVelocityY = new Float32Array(size);
+    this.breakingStrength = new Float32Array(size);
     this.initializeIncomingWave();
   }
 
@@ -97,16 +107,22 @@ export class InteractiveWaterField {
     if (!(dt > 0) || !Number.isFinite(dt)) return;
     const dx = this.spacing;
     const inv2Dx = 1 / (2 * dx);
+    const invDxSquared = 1 / (dx * dx);
     const g = this.effectiveGravity;
+    const backgroundCurrent = this.settings.currentX ?? 0;
+    const windX = this.settings.windX ?? 0;
     const h = this.height;
     const u = this.velocityX;
     const w = this.velocityZ;
     const hNext = this.nextHeight;
     const uNext = this.nextVelocityX;
     const wNext = this.nextVelocityZ;
+    const breakingCrest = this.crestZ();
+    const breakingFront = this.breakingFrontX;
     hNext.fill(0);
     uNext.fill(0);
     wNext.fill(0);
+    this.breakingStrength.fill(0);
 
     // First update the complete horizontal flow field. Continuity below reads
     // neighboring values from this same time level, never partially updated
@@ -115,8 +131,6 @@ export class InteractiveWaterField {
       const row = iz * this.nx;
       for (let ix = 1; ix < this.nx - 1; ix += 1) {
         const index = row + ix;
-        const eta = h[index];
-        const depth = Math.max(0.35, this.meanDepth + eta);
         const etaX = (h[index + 1] - h[index - 1]) * inv2Dx;
         const etaZ = (h[index + this.nx] - h[index - this.nx]) * inv2Dx;
         const duDx = (u[index + 1] - u[index - 1]) * inv2Dx;
@@ -127,8 +141,13 @@ export class InteractiveWaterField {
         // stable while allowing the traveling wave to carry horizontal water.
         const advectU = u[index] * duDx + w[index] * (u[index + this.nx] - u[index - this.nx]) * inv2Dx;
         const advectW = u[index] * (w[index + 1] - w[index - 1]) * inv2Dx + w[index] * dwDz;
-        uNext[index] = this.clampVelocity(u[index] - dt * (g * etaX + advectU + damp * u[index]));
-        wNext[index] = this.clampVelocity(w[index] - dt * (g * etaZ + advectW + damp * w[index]));
+        const lapU = (u[index - 1] + u[index + 1] + u[index - this.nx] + u[index + this.nx] - 4 * u[index]) * invDxSquared;
+        const lapW = (w[index - 1] + w[index + 1] + w[index - this.nx] + w[index + this.nx] - 4 * w[index]) * invDxSquared;
+        uNext[index] = this.clampVelocity(u[index] + dt * (
+          this.viscosity * lapU - g * etaX - advectU - damp * (u[index] - backgroundCurrent)
+          + windX
+        ));
+        wNext[index] = this.clampVelocity(w[index] + dt * (this.viscosity * lapW - g * etaZ - advectW - damp * w[index]));
       }
     }
 
@@ -144,8 +163,32 @@ export class InteractiveWaterField {
         const etaZ = (h[index + this.nx] - h[index - this.nx]) * inv2Dx;
         const divFlow = (uNext[index + 1] - uNext[index - 1] + wNext[index + this.nx] - wNext[index - this.nx]) * inv2Dx;
         const advectEta = uNext[index] * etaX + wNext[index] * etaZ;
-        hNext[index] = this.clampHeight(eta - dt * (depth * divFlow + advectEta));
+        const lapEta = (h[index - 1] + h[index + 1] + h[index - this.nx] + h[index + this.nx] - 4 * eta) * invDxSquared;
+        let nextEta = eta + dt * (this.viscosity * lapEta - depth * divFlow - advectEta);
+        const x = this.xMin + ix * dx;
+        if (x < breakingFront) {
+          const z = this.zMin + iz * dx;
+          const breaking = this.breakingAt(x, z, Math.hypot(etaX, etaZ), breakingCrest);
+          if (breaking > 0) {
+            this.breakingStrength[index] = breaking;
+            // Spilling water spreads the crest in the shared height field.
+            const neighborMean = (h[index - 1] + h[index + 1] + h[index - this.nx] + h[index + this.nx]) * 0.25;
+            nextEta += dt * 0.14 * breaking * (neighborMean - eta);
+          }
+        }
+        hNext[index] = this.clampHeight(nextEta);
       }
+    }
+
+    // Apply breaker damping only after every cell has read the same complete
+    // next-step flow field for its divergence. This avoids traversal bias.
+    for (let index = 0; index < h.length; index += 1) {
+      const breaking = this.breakingStrength[index];
+      if (breaking <= 0) continue;
+      const damping = 1 - Math.min(0.4, breaking * dt * 0.45);
+      this.breakingDissipation += (uNext[index] * uNext[index] + wNext[index] * wNext[index]) * (1 - damping);
+      uNext[index] *= damping;
+      wNext[index] *= damping;
     }
 
     for (let index = 0; index < h.length; index += 1) {
@@ -164,6 +207,7 @@ export class InteractiveWaterField {
     const height = this.sampleArray(this.height, x, z);
     const slopeX = (this.sampleHeight(x + this.spacing, z) - this.sampleHeight(x - this.spacing, z)) / (2 * this.spacing);
     const slopeZ = (this.sampleHeight(x, z + this.spacing) - this.sampleHeight(x, z - this.spacing)) / (2 * this.spacing);
+    const slope = Math.hypot(slopeX, slopeZ);
     return {
       height,
       slopeX,
@@ -174,11 +218,41 @@ export class InteractiveWaterField {
         this.sampleArray(this.surfaceVelocityY, x, z),
         this.sampleArray(this.velocityZ, x, z),
       ),
+      breaking: this.breakingAt(x, z, slope),
     };
+  }
+
+  /** A scheduled peel front gates breaking; live crest and slope set its strength. */
+  breakingAt(x: number, z: number, slope = this.slopeMagnitude(x, z), centerCrest = this.crestZ()): number {
+    if (this.settings.height <= 0) return 0;
+    const frontX = -20 + this.peelSpeed * (this.time - 2);
+    if (frontX <= x) return 0;
+    const behindFront = Math.max(0, Math.min(1, (frontX - x) / 2.5));
+    const localCrest = centerCrest + this.crestOffset(x) - this.crestOffset(0);
+    const distance = (z - localCrest) / Math.max(0.9, this.packetWidth * 0.85);
+    const crestEnvelope = Math.exp(-0.5 * distance * distance);
+    const steepness = Math.max(0, Math.min(1, (slope - 0.035) * 10));
+    return behindFront * crestEnvelope * steepness;
+  }
+
+  get breakingFrontX(): number {
+    return Math.max(this.xMin, Math.min(this.xMin + (this.nx - 1) * this.spacing,
+      -20 + this.peelSpeed * (this.time - 2)));
   }
 
   heightAt(x: number, z: number): number {
     return this.sampleHeight(x, z);
+  }
+
+  /** Relative depth-averaged wave energy for calibration checks, not joules. */
+  totalEnergy(): number {
+    let energy = 0;
+    for (let index = 0; index < this.height.length; index += 1) {
+      const elevation = this.height[index];
+      const flowSquared = this.velocityX[index] ** 2 + this.velocityZ[index] ** 2;
+      energy += 0.5 * (this.effectiveGravity * elevation * elevation + this.meanDepth * flowSquared);
+    }
+    return energy * this.cellArea;
   }
 
   slopeMagnitude(x: number, z: number): number {
@@ -205,6 +279,10 @@ export class InteractiveWaterField {
     return this.zMin + peakIndex * this.spacing;
   }
 
+  crestZAt(x: number, centerCrest = this.crestZ()): number {
+    return centerCrest + this.crestOffset(x) - this.crestOffset(0);
+  }
+
   /** Apply the equal-and-opposite water impulse to a small hull-contact footprint. */
   applyBoardReaction(x: number, z: number, forceOnBoard: Vector3, dt: number): void {
     const gx = Math.round((x - this.xMin) / this.spacing);
@@ -225,10 +303,24 @@ export class InteractiveWaterField {
       this.velocityX[index] = this.clampVelocity(this.velocityX[index] - forceOnBoard.x * dt * share / cellMass);
       this.velocityZ[index] = this.clampVelocity(this.velocityZ[index] - forceOnBoard.z * dt * share / cellMass);
     }
+    // A downward hull reaction cannot exist as vertical flow in this depth-
+    // averaged field. Represent its first-order effect as outward surface flow.
+    for (let dz = -1; dz <= 1; dz += 1) {
+      for (let dx = -1; dx <= 1; dx += 1) {
+        const radius = Math.hypot(dx, dz);
+        if (radius === 0) continue;
+        const weight = Math.exp(-0.7 * radius * radius) / weightSum;
+        const index = (gz + dz) * this.nx + gx + dx;
+        const impulse = forceOnBoard.y * dt * weight / cellMass * 0.35;
+        this.velocityX[index] = this.clampVelocity(this.velocityX[index] + impulse * dx / radius);
+        this.velocityZ[index] = this.clampVelocity(this.velocityZ[index] + impulse * dz / radius);
+      }
+    }
   }
 
   reset(): void {
     this.time = 0;
+    this.breakingDissipation = 0;
     this.height.fill(0);
     this.nextHeight.fill(0);
     this.velocityX.fill(0);
@@ -247,6 +339,7 @@ export class InteractiveWaterField {
         const index = iz * this.nx + ix;
         const eta = this.initialHeight(x, z);
         this.height[index] = eta;
+        this.velocityX[index] = this.settings.currentX ?? 0;
         // Initialize horizontal orbital motion with the right-traveling packet.
         this.velocityZ[index] = this.settings.speed * eta / this.meanDepth;
       }
@@ -254,11 +347,17 @@ export class InteractiveWaterField {
   }
 
   private initialHeight(x: number, z: number): number {
-    const q = (z - this.startZ) / this.packetWidth;
+    const q = (z - this.startZ - this.crestOffset(x)) / this.packetWidth;
     const skewed = q * (1 + this.shape.skew * Math.tanh(q));
-    const profile = Math.exp(-0.5 * skewed * skewed);
+    const crest = Math.exp(-0.5 * skewed * skewed);
+    const trough = 0.55 * Math.exp(-0.5 * ((q - 1.65) / 0.75) ** 2);
+    const profile = crest - trough;
     const across = 1 - this.shape.lateral * (1 - Math.cos(x * 0.22 + this.shape.phase));
-    return this.settings.height * 0.45 * profile * across;
+    return this.settings.height * 0.74 * profile * across;
+  }
+
+  private crestOffset(x: number): number {
+    return 1.6 * Math.sin(x * 0.075 + this.shape.phase) - 1.6 * Math.sin(this.shape.phase);
   }
 
   private sampleHeight(x: number, z: number): number {

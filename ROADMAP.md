@@ -12,7 +12,7 @@ Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status 
   - [x] Prototype an evolving height field that contains the generated incoming wave as part of its simulation state from the start.
   - [x] Establish one authoritative water state sampled by rendering and board physics.
   - [x] Select a deterministic CPU reference field and retain WebGL 2 for rendering; WebGPU compute remains a future option pending synchronized board sampling and compatibility tests.
-  - [x] Verify deterministic fixed-step evolution, board sampling/synchronization, and bounded field values in automated tests; browser performance still needs manual review.
+  - [x] Verify deterministic fixed-step evolution, board sampling/synchronization, and bounded field values in automated tests; profile browser performance locally.
   - [x] Record selected architecture and limitations in [ADR 0002](docs/adr/0002-interactive-water-field.md).
 
 ### P0 · Couple the board to the simulated wave — `Done`
@@ -32,50 +32,84 @@ Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status 
   - [x] Accepted input stands the rider; tests sustain water-driven travel with paddle released.
   - [x] Preserve Replay (same seed/settings) and New Wave (new seed).
 
-### P0 · Verify the physics and gameplay together — `In Progress`
+### P0 · Verify the physics and gameplay together — `Done`
 
 - [x] Add deterministic tests for water evolution, incoming-wave propagation, board/water coupling, and the pop-up transition.
   - [x] Confirm paddle input accelerates the board and on still water release permits drag to reduce paddle-generated speed.
   - [x] Confirm that after entering `riding`, no paddle input yields at least 3 seconds and >0.8 m forward travel through simulated water forces.
   - [x] Rendered surface and board-contact samples query the same field instance.
   - [x] Expose local water speed, board-relative speed, crest distance, and pop-up eligibility in the HUD.
-  - [ ] Profile browser frame rate and obtain Astra validation; desktop and two mobile viewport visual/interaction checks have passed.
+  - [x] Profile browser frame rate: the current Codex in-app browser reports about 115–120 FPS during desktop play and 120 FPS in the checked mobile view on this machine. This is a local observation, not a device-wide guarantee.
+  - [x] Review desktop and narrow mobile play, Replay, New Wave, profile view, and tuning controls in the browser; no browser console errors observed.
+  - [x] Center the mobile follow camera and provide hold-to-paddle and steer touch buttons alongside the existing Get Up action.
+  - [x] Obtain an independent agent audit of the physics and presentation changes; resolve all four concrete findings from the audit.
 
-## After the MVP — GitHub publication
+## Current extension — advanced playable ride and peeling break
 
-- [ ] After MVP validation, publish the project to the user's GitHub. The local repository currently has no remote; confirm the target repository name/owner and public/private visibility before creating or pushing. Keep the implementation uncommitted until the MVP is accepted.
+### P0 · Make the ride physically sustained and steerable — `Done`
+
+- [x] Project four board-contact water pressures along local surface normals and use direction-dependent water drag; no scripted ride translation.
+- [x] Catch on the approaching face. With paddle released, a default no-steer ride reaches 20 m on seeds 1–12 in automated simulation.
+- [x] Make rail/fin side force turn the board path, not only its heading. Steering can carve across the face or destabilize the board.
+- [x] Check extreme settings with deterministic runs and expose specific terminal failure reasons; continue subjective steering feel tuning with player feedback.
+
+### P0 · Add a shared-field peeling break and readable maneuvers — `Done`
+
+- [x] Advance a deterministic peel front along the crest. Break strength follows local slope and crest proximity, dissipates coherent water motion, and raises board instability.
+- [x] Render a synchronized foam lip and board wake/spray from the same water field; expose break, balance, FLOW, and physics-detected CARVE/SNAP feedback.
+- [x] Refine the foam/lip appearance and verify synchronized rendering, maneuver diagnostics, and frame rate in desktop and mobile browser runs. A full overturning barrel remains outside the shared height-field representation.
+
+### P1 · Finish the playable prototype presentation — `Done`
+
+- [x] Add a coastline, sunset light, and a one-time captured sky/coastline environment map for restrained water reflections while preserving one physics authority. Narrow mobile view uses centered ride framing.
+
+## Repository state
+
+- [x] The existing baseline was committed as `1fe7ecc` on `main` and is already linked to `origin` (`vice7770/surfing-game`). Current session changes are uncommitted and have not been pushed.
 
 ## Next milestone — physics fidelity and learning tools
 
-### P1 · Improve model fidelity and explain failures — `Backlog`
+### P1 · Improve model fidelity and explain failures — `Done for prototype`
 
-- [ ] Record attempt/catch failure reasons and relevant simulation measurements for later comparison.
-- [ ] Investigate fuller two-way board-water coupling and more complete physical water/board forces.
-- [ ] Calibrate qualitative model parameters against documented physical references when an appropriate data source is selected.
+- [x] Record terminal catch/ride outcomes, failure reasons, settings, timing, and peak measurements in a bounded local run history visible in the Wave Lab.
+- [x] Investigate fuller two-way coupling and force directions in [the calibration note](docs/research/surf-physics-calibration.md); feed contact pressure and vertical hull displacement back into the water, use water-relative planing/fin forces, and track wave energy. Coefficients remain tuned for play.
+- [x] Check qualitative relationships from [the calibration note](docs/research/surf-physics-calibration.md): a faster configured wave propagates farther, breaking removes field energy, and board turning weakens out of water. Maintain gameplay-tuned coefficients; no comparable measured board and wave dataset is available for quantitative calibration.
 
 ## Future scope
 
-### P2 · Breaking-wave behavior — `Backlog`
+### P1 · Upgrade the surfer and board models — `Done for prototype`
 
-- [ ] Investigate breaking, spilling/reforming waves, whitewater, and overturning/overhang representations.
-- [ ] Decide whether a height-field model remains adequate or a different representation is needed.
+- [x] Replace the stick-like rider with two-segment arms and legs, visible hands and feet, a shaped wetsuit torso/pelvis, neck, face, hair, and a readable head silhouette.
+- [x] Blend prone paddling into a bent-knee standing stance, animate alternating paddle strokes, preserve physics-driven lean, and move the rider into a fall pose on wipeout.
+- [x] Refine the shortboard outline, colored deck/rails/nose, traction pad, deck stripes, and swept fins. Bring chase/profile cameras closer so the model is readable; verify desktop and narrow browser presentation at local 120 FPS.
 
-### P2 · Board, rider, and environment fidelity — `Backlog`
+### P2 · Breaking-wave behavior — `Done for this height-field prototype`
 
-- [ ] Higher-fidelity board geometry, fin effects, and rider mass/pose coupling.
-- [ ] Environmental conditions such as wind and current; expand locations/surf conditions after core physics is useful.
+- [x] Investigate breaking, spilling/reforming waves, whitewater, and overturning/overhang representations in [the decision note](docs/research/breaking-wave-representations.md).
+- [x] Keep the height field as gameplay authority for this prototype; add a bounded visual curl, decaying whitewater, and pooled spray. Interactive barrel collision/flow would require a separate 3D authority decision.
 
-### P2 · Water appearance and underwater view — `Backlog`
+### P2 · Board, rider, and environment fidelity — `Done for prototype`
 
-- [ ] Study reflection/refraction, caustics, surface disturbances, and underwater rendering techniques from the ThreeJS-water project; adapt only what fits an open-ocean surf scene.
-- [ ] Add sun-position/sky-light controls and dynamic water reflections, using the Three.js ocean shader example as a visual reference; keep visual effects independent of and synchronized to the authoritative physics field.
-- [ ] Add a below-surface view with underwater light/caustic patterns and depth/color attenuation; do not introduce a competing water simulation.
+- [x] Add tapered shortboard geometry with rocker and fins, water-relative fin grip, and rider lean that affects board roll. These are lightweight gameplay approximations.
+- [x] Feed cross-current and wind into the shared water field; add Training Beach, Glassy Point, and Windy Reef condition presets with distinct coastline palettes and tested catch paths.
+
+### P2 · Water appearance and underwater view — `Done for prototype`
+
+- [x] Compare reflection/refraction, caustic, and underwater approaches in [the water appearance decision note](docs/research/water-appearance.md); retain the deformed shared-field surface instead of a flat-water add-on.
+- [x] Add sun height and direction controls, sky color changes, a recaptured sky/coast environment map, and moving field-derived surface normals for view-dependent reflections. A live planar rider mirror and physical refraction remain outside this prototype.
+- [x] Add a below-surface camera mode, wave-height-based waterline detection, blue-green distance fog, and decorative seabed caustic bands tied to the shared wave. The bands are a visual approximation, not refracted light transport.
+
+### Further work after this prototype — `Ready`
+
+- [ ] Gather comparable measured board/fin and wave data if quantitative hydrodynamic validation becomes a goal.
+- [ ] Prototype a separate 3D water/collision authority before promising an interactive plunging barrel or tube.
+- [ ] Evaluate a low-resolution live scene reflection pass and physical-looking refraction only if playtesting shows a clear visual benefit and frame-time headroom.
 
 ## Existing baseline — `Done`
 
 - [x] Browser-based Three.js prototype with deterministic analytic wave, custom water mesh, floating board, paddle/steer controls, tuning, replay/new wave, and diagnostics.
 - [x] Automated baseline tests and production build.
-- [x] No commits created.
+- [x] Baseline code was committed before this session; no commit has been created for the current extension.
 
 ## Design references
 
