@@ -127,6 +127,8 @@ describe('FoamField', () => {
     expect(foam.dense[small]).toBeCloseTo((FOAM_SOURCE_RATE * 0.1 * boreDissipation(1, 1.1)) / boreDissipation(1, 1.25), 9);
     expect(foam.dense[calm]).toBe(0);
     expect(foam.totalAt(dry)).toBe(0);
+    expect(foam.source[big]).toBeCloseTo(FOAM_SOURCE_RATE, 9);
+    expect(foam.source[calm]).toBe(0);
   });
 
   it('saturates the cell a lip splashes into', () => {

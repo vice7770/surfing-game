@@ -1,6 +1,7 @@
 import type { Scene } from 'three';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
+import { BubblePoints } from '../scene/BubblePoints';
 import { LipPoints } from '../scene/LipPoints';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera } from '../scene/SpectatorCamera';
@@ -146,13 +147,15 @@ export class PhysicalMode {
   readonly seabed = new SpotSeabed();
   readonly farField = new FarFieldOcean();
   readonly lipPoints = new LipPoints();
+  /** Bubbles entrained under breaking bores, seen from below the surface. */
+  readonly bubbles = new BubblePoints(1);
   simulation!: SurfZoneSimulation;
   /** The storm behind the running sea, in storm mode. */
   storm?: StormSwell;
   focus = { x: 0, z: 0 };
 
   constructor(scene: Scene) {
-    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh);
+    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh);
   }
 
   /** Build the surf zone (warm start and spin-up take a few seconds) and show it on `water`. */
@@ -172,6 +175,7 @@ export class PhysicalMode {
     });
     this.simulation = simulation;
     this.storm = swell.storm;
+    this.bubbles.clear();
     water.setSource(new PhysicalSurfaceSource(simulation, 1));
     water.setChop(chopForWind(settings.windSpeed));
     water.setOptics(SPOT_OPTICS[settings.spot]);
@@ -218,6 +222,7 @@ export class PhysicalMode {
     this.camera.update(this.simulation, this.focus, dt);
     this.farField.update(this.simulation.seaTime);
     this.lipPoints.update(this.simulation.lip);
+    this.bubbles.update(this.simulation, dt);
   }
 
   cameraBelowSurface(margin = 0.1): boolean {
@@ -229,5 +234,6 @@ export class PhysicalMode {
     this.seabed.mesh.visible = visible;
     this.farField.mesh.visible = visible;
     this.lipPoints.mesh.visible = visible;
+    this.bubbles.mesh.visible = visible;
   }
 }

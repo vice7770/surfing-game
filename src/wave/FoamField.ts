@@ -49,6 +49,8 @@ const REFERENCE_DISSIPATION = boreDissipation(REFERENCE_BORE.stillDepth, REFEREN
 export class FoamField {
   readonly dense: Float64Array;
   readonly residual: Float64Array;
+  /** Dense foam bores made per second in each cell at the last update (it also drives the bubbles). */
+  readonly source: Float64Array;
   private readonly nextDense: Float64Array;
   private readonly nextResidual: Float64Array;
   private windowX: number;
@@ -57,6 +59,7 @@ export class FoamField {
     const size = solver.nx * solver.nz;
     this.dense = new Float64Array(size);
     this.residual = new Float64Array(size);
+    this.source = new Float64Array(size);
     this.nextDense = new Float64Array(size);
     this.nextResidual = new Float64Array(size);
     this.windowX = solver.xCenters[0];
@@ -87,13 +90,16 @@ export class FoamField {
       if (h[i] <= WET) {
         this.dense[i] = 0;
         this.residual[i] = 0;
+        this.source[i] = 0;
         continue;
       }
       const previous = this.dense[i];
       let dense = previous * keepDense;
       const lace = this.residual[i] * keepLace + LACE_SHARE * (previous - dense);
       const strength = breaking[i];
-      if (strength > 0) dense += (strength * FOAM_SOURCE_RATE * boreDissipation(restLevel - bed[i], h[i]) * dt) / REFERENCE_DISSIPATION;
+      const rate = strength > 0 ? (strength * FOAM_SOURCE_RATE * boreDissipation(restLevel - bed[i], h[i])) / REFERENCE_DISSIPATION : 0;
+      this.source[i] = rate;
+      dense += rate * dt;
       // Flush traces the resampling spreads upstream; they would never show.
       this.dense[i] = dense < TRACE ? 0 : Math.min(1, dense);
       this.residual[i] = lace < TRACE ? 0 : Math.min(lace, 1 - this.dense[i]);

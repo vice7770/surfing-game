@@ -64,6 +64,7 @@ describe('PhysicalMode', () => {
     expect(mode.farField.mesh.visible).toBe(true);
     expect(scene.children).toContain(mode.lipPoints.mesh);
     expect(mode.lipPoints.mesh.visible).toBe(true);
+    expect(scene.children).toContain(mode.bubbles.mesh);
     expect(mode.farField.textureSize.width).toBe(mode.simulation.sea.components.length + 1);
     expect(mode.focus).toEqual(mode.simulation.breakPoint());
     mode.step(1 / 60);
@@ -74,8 +75,13 @@ describe('PhysicalMode', () => {
     mode.simulation.lip.launch(crest, { x: 0, z: 5 }, 3, 0.5);
     mode.update(1 / 60);
     expect(mode.lipPoints.mesh.geometry.drawRange.count).toBe(mode.simulation.lip.activeCount());
+    mode.simulation.foam.source.fill(0);
+    mode.simulation.foam.source[crest] = 4;
+    mode.update(1 / 30);
+    expect(mode.bubbles.mesh.geometry.drawRange.count).toBeGreaterThan(0);
     mode.setVisible(false);
     expect(mode.lipPoints.mesh.visible).toBe(false);
+    expect(mode.bubbles.mesh.visible).toBe(false);
     expect(mode.seabed.mesh.visible).toBe(false);
     expect(mode.farField.mesh.visible).toBe(false);
   });
