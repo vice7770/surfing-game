@@ -2,6 +2,7 @@ import { Euler, Vector3 } from 'three';
 import type { InteractiveWaterField } from '../wave/WaveModel';
 import type { PlungingSheet } from '../wave/PlungingSheet';
 import { RiderFall } from './RiderFall';
+import { LegacySurfWater, createWaterSample, type SurfWater } from './SurfWater';
 
 export type RunState = 'ready' | 'paddling' | 'pop-up-available' | 'catching' | 'riding' | 'missed' | 'wipeout' | 'complete';
 
@@ -78,8 +79,16 @@ export class BoardPhysics {
     new Vector3(0.22, -0.08, 1.05),
   ];
 
+  /** The board and rider sample the water only through this seam (P4b); the legacy rules stay on `wave`. */
+  readonly water: SurfWater;
+  private readonly sample = createWaterSample();
+  private readonly sampleNormal = new Vector3();
+  private readonly sampleFlow = new Vector3();
+
   constructor(readonly wave: InteractiveWaterField, readonly settings: PhysicsSettings,
-    readonly plungingSheet?: PlungingSheet) {}
+    readonly plungingSheet?: PlungingSheet) {
+    this.water = new LegacySurfWater(wave);
+  }
 
   get contactPoints(): Vector3[] {
     return this.contacts.map((local) => local.clone().applyEuler(this.rotation).add(this.position));
@@ -94,11 +103,11 @@ export class BoardPhysics {
       this.plungingSheet?.step(dt);
       this.time += dt;
       this.wipeoutElapsed += dt;
-      this.riderFall.step(dt, this.wave);
-      const water = this.wave.sample(this.position.x, this.position.z);
-      this.velocity.x += (water.velocity.x - this.velocity.x) * Math.min(1, dt * 0.8);
-      this.velocity.z += (water.velocity.z - this.velocity.z) * Math.min(1, dt * 0.8);
-      this.velocity.y += (water.height + 0.08 - this.position.y) * dt * 8;
+      this.riderFall.step(dt, this.water);
+      const water = this.water.sampleAt(this.position.x, this.position.y, this.position.z, this.sample);
+      this.velocity.x += (water.flowX - this.velocity.x) * Math.min(1, dt * 0.8);
+      this.velocity.z += (water.flowZ - this.velocity.z) * Math.min(1, dt * 0.8);
+      this.velocity.y += (water.surfaceY + 0.08 - this.position.y) * dt * 8;
       this.velocity.y *= Math.exp(-4 * dt);
       this.position.addScaledVector(this.velocity, dt);
       this.rotation.z *= Math.exp(-0.5 * dt);
@@ -119,18 +128,20 @@ export class BoardPhysics {
     let meanBreaking = 0;
     const contactPressure = new Vector3();
     for (const point of contacts) {
-      const water = this.wave.sample(point.x, point.z);
-      const depth = water.height - point.y + 0.22;
+      const water = this.water.sampleAt(point.x, point.y, point.z, this.sample);
+      const normal = this.sampleNormal.set(water.normalX, water.normalY, water.normalZ);
+      const flow = this.sampleFlow.set(water.flowX, water.flowY, water.flowZ);
+      const depth = water.surfaceY - point.y + 0.22;
       const contactImmersion = Math.max(0, Math.min(1, depth / 0.34));
       immersion += contactImmersion;
-      waterline += water.height;
-      meanWaterVelocity.add(water.velocity);
+      waterline += water.surfaceY;
+      meanWaterVelocity.add(flow);
       meanSlopeX += water.slopeX;
       meanSlopeZ += water.slopeZ;
       meanBreaking += water.breaking;
-      const approachSpeed = Math.max(0, Math.min(1.5, water.velocity.clone().sub(this.velocity).dot(water.normal)));
+      const approachSpeed = Math.max(0, Math.min(1.5, flow.clone().sub(this.velocity).dot(normal)));
       const support = 9.81 * contactImmersion + approachSpeed * 2;
-      contactPressure.addScaledVector(water.normal, support / contacts.length);
+      contactPressure.addScaledVector(normal, support / contacts.length);
     }
     immersion /= contacts.length;
     waterline /= contacts.length;
@@ -262,9 +273,9 @@ export class BoardPhysics {
     let meanSurfaceVelocityY = 0;
     const movedContacts = this.contactPoints;
     for (const point of movedContacts) {
-      const sample = this.wave.sample(point.x, point.z);
-      worstPenetration = Math.max(worstPenetration, sample.height - point.y);
-      meanSurfaceVelocityY += sample.velocity.y;
+      const sample = this.water.sampleAt(point.x, point.y, point.z, this.sample);
+      worstPenetration = Math.max(worstPenetration, sample.surfaceY - point.y);
+      meanSurfaceVelocityY += sample.flowY;
     }
     meanSurfaceVelocityY /= movedContacts.length;
     if (worstPenetration > 0.12) {
@@ -283,7 +294,7 @@ export class BoardPhysics {
         dragForceOnBoard.z += contactPressure.z * this.boardMass;
       }
       dragForceOnBoard.y += (buoyancy + planingLift) * this.boardMass;
-      this.wave.applyBoardReaction(this.position.x, this.position.z, dragForceOnBoard, dt);
+      this.water.addReaction(this.position.x, this.position.z, dragForceOnBoard.x * dt, dragForceOnBoard.y * dt, dragForceOnBoard.z * dt);
     }
 
     const crestZ = this.wave.crestZ();
@@ -333,7 +344,7 @@ export class BoardPhysics {
         this.state = 'wipeout';
         this.outcomeReason = 'The board rolled or pitched beyond a recoverable angle.';
       }
-      const aboveAllContacts = this.contactPoints.every((point) => point.y > this.wave.sample(point.x, point.z).height + 0.25);
+      const aboveAllContacts = this.contactPoints.every((point) => point.y > this.water.sampleAt(point.x, point.y, point.z, this.sample).surfaceY + 0.25);
       this.aboveWaterTime = aboveAllContacts ? this.aboveWaterTime + dt : 0;
       if (this.aboveWaterTime > 1) {
         this.state = 'wipeout';
@@ -398,7 +409,7 @@ export class BoardPhysics {
 
   diagnostics(): BoardDiagnostics {
     const points = this.contactPoints;
-    const waterline = points.reduce((sum, point) => sum + this.wave.sample(point.x, point.z).height, 0) / points.length;
+    const waterline = points.reduce((sum, point) => sum + this.water.sampleAt(point.x, point.y, point.z, this.sample).surfaceY, 0) / points.length;
     const crestDistance = this.wave.crestZ() - this.position.z;
     return {
       speed: this.velocity.length(),
