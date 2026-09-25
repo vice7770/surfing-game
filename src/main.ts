@@ -18,7 +18,8 @@ import {
 import { Controls } from './game/Controls';
 import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
-import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, spreadingFor, swellFor, type PhysicalSettings } from './game/PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, localSurfZone, spreadingFor, swellFor, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
+import { WorkerSurfZone } from './game/WorkerSurfZone';
 import { BoardPhysics, type BoardDiagnostics, type PhysicsSettings } from './physics/BoardPhysics';
 import { CameraRig } from './scene/CameraRig';
 import { BoardWake } from './scene/BoardWake';
@@ -65,6 +66,12 @@ const demoMode = new URLSearchParams(window.location.search).get('demo');
 type WaterModel = 'legacy' | 'physical';
 /** `?physical` opens the view-only physical surf zone (plan P2c, option a). */
 const physicalRequested = new URLSearchParams(window.location.search).has('physical');
+/**
+ * The surf zone runs in a Web Worker (plan §3.2, P4a); `?inpage`, or a browser
+ * without workers, runs it on the main thread instead.
+ */
+const createSurfZone: SurfZoneHostFactory = typeof Worker === 'undefined' || new URLSearchParams(window.location.search).has('inpage')
+  ? localSurfZone : (config) => new WorkerSurfZone(config);
 
 function getElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -283,7 +290,7 @@ class SurfGame {
 
   /** Build the view-only physical surf zone and hide the legacy board, rider and HUD. */
   private async startPhysical(seed: number, settings: PhysicalSettings): Promise<void> {
-    if (!(await this.physicalMode.start(settings, seed, this.water))) return;
+    if (!(await this.physicalMode.start(settings, seed, this.water, {}, createSurfZone))) return;
     const shared = this.readDraftSettings();
     const sunChanged = shared.sunHeight !== this.activeSettings.sunHeight || shared.sunDirection !== this.activeSettings.sunDirection;
     this.activeSettings = { ...this.activeSettings, timeScale: shared.timeScale, sunHeight: shared.sunHeight, sunDirection: shared.sunDirection };
