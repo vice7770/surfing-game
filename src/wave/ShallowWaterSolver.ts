@@ -34,7 +34,7 @@ export interface WaterTarget {
 export interface RelaxationZone {
   /** Per-step blend weight for each cell (index iz * nx + ix): 0 leaves it free, 1 prescribes it. */
   weights: Float64Array;
-  target(x: number, z: number, t: number, out: WaterTarget): void;
+  target(x: number, z: number, t: number, out: WaterTarget, index: number): void;
 }
 
 /** Jacobsen et al. (2012) ramp: 0 at the zone's inner edge, 1 at its outer boundary. */
@@ -168,7 +168,7 @@ export class ShallowWaterSolver {
   time = 0;
   protected readonly gravity: number;
   protected readonly dryDepth: number;
-  protected readonly restLevel: number;
+  readonly restLevel: number;
   protected readonly depthAt: DepthFunction;
   private readonly manning: number;
   private readonly courant: number;
@@ -384,7 +384,7 @@ export class ShallowWaterSolver {
           const i = iz * this.nx + ix;
           const weight = zone.weights[i];
           if (weight <= 0) continue;
-          zone.target(this.xCenters[ix], this.zCenters[iz], this.time, this.target);
+          zone.target(this.xCenters[ix], this.zCenters[iz], this.time, this.target, i);
           const targetDepth = Math.max(0, this.target.eta - this.bed[i]);
           this.h[i] += weight * (targetDepth - this.h[i]);
           const wet = this.h[i] > this.dryDepth;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SeaState, jonswapShape, type SpectrumParams } from './SeaState';
-import { waveKinematics } from './dispersion';
+import { shallowWaterWaveNumber, waveKinematics } from './dispersion';
 
 const swell: SpectrumParams = {
   significantHeight: 1.4, peakPeriod: 8, direction: 0, spreading: 10, componentCount: 24, depth: 15,
@@ -109,5 +109,16 @@ describe('SeaState sets', () => {
     for (let t = 20; t <= 320; t += 0.25) largest = Math.max(largest, sea.envelope(0, 0, t));
     expect(peak).toBeGreaterThanOrEqual(20);
     expect(sea.envelope(0, 0, peak)).toBeGreaterThanOrEqual(0.89 * largest);
+  });
+});
+
+describe('SeaState dispersion choice', () => {
+  it('uses the stage 1 solver-consistent shallow-water dispersion when asked', () => {
+    const omega = (2 * Math.PI) / 8;
+    const shallow = new SeaState([{ amplitude: 0.3, omega, direction: 0, phase: 0 }], 4, shallowWaterWaveNumber);
+    const airy = new SeaState([{ amplitude: 0.3, omega, direction: 0, phase: 0 }], 4);
+    expect(omega / shallow.components[0].k).toBeCloseTo(Math.sqrt(9.81 * 4), 12);
+    expect((2 * Math.PI) / airy.components[0].k).toBeCloseTo(48.0, 1);
+    expect(SeaState.fromSpectrum({ ...swell, depth: 6 }, 2, shallowWaterWaveNumber).waveNumberAt).toBe(shallowWaterWaveNumber);
   });
 });

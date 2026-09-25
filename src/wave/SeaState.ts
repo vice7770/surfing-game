@@ -1,4 +1,4 @@
-import { exactWaveNumber } from './dispersion';
+import { exactWaveNumber, type WaveNumberFunction } from './dispersion';
 import { seededRandom } from './random';
 
 export interface WaveComponent {
@@ -75,9 +75,13 @@ function inverseCdf(lo: number, hi: number, samples: number, density: (x: number
 export class SeaState {
   readonly components: readonly ResolvedComponent[];
 
-  constructor(components: readonly WaveComponent[], readonly depth: number) {
+  constructor(
+    components: readonly WaveComponent[],
+    readonly depth: number,
+    readonly waveNumberAt: WaveNumberFunction = exactWaveNumber,
+  ) {
     this.components = components.map((component) => {
-      const k = exactWaveNumber(component.omega, depth);
+      const k = waveNumberAt(component.omega, depth);
       return { ...component, k, kx: k * Math.sin(component.direction), kz: k * Math.cos(component.direction) };
     });
   }
@@ -87,7 +91,7 @@ export class SeaState {
    * frequency, direction (cos-2s, clipped to shoreward travel), and phase from the
    * seed. Equal energy per component makes the realized Hs exact.
    */
-  static fromSpectrum(params: SpectrumParams, seed: number): SeaState {
+  static fromSpectrum(params: SpectrumParams, seed: number, waveNumberAt: WaveNumberFunction = exactWaveNumber): SeaState {
     const count = Math.max(1, Math.floor(params.componentCount));
     const peakOmega = (2 * Math.PI) / params.peakPeriod;
     const frequencyAt = inverseCdf(0.5 * peakOmega, 4 * peakOmega, 2048, (omega) => jonswapShape(omega, peakOmega));
@@ -102,7 +106,7 @@ export class SeaState {
       const direction = params.direction + directionAt(random());
       components.push({ amplitude, omega, direction, phase: 2 * Math.PI * random() });
     }
-    return new SeaState(components, params.depth);
+    return new SeaState(components, params.depth, waveNumberAt);
   }
 
   /** Linear surface elevation η(x, z, t) = Σ a cos(k·x − ωt + φ), m. */

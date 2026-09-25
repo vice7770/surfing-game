@@ -56,3 +56,11 @@ export function depthClass(depth: number, wavelength: number): DepthClass {
   if (ratio < 1 / 20) return 'shallow';
   return 'transitional';
 }
+
+export type WaveNumberFunction = (omega: number, depth: number) => number;
+
+/** Non-dispersive shallow-water wavenumber k = ω/√(gh), consistent with the stage 1 solver. */
+export function shallowWaterWaveNumber(omega: number, depth: number, g = GRAVITY): number {
+  if (!(depth > 0) || !Number.isFinite(depth)) throw new RangeError(`Shallow-water waves need a finite positive depth, got ${depth}`);
+  return omega / Math.sqrt(g * depth);
+}
