@@ -1,57 +1,70 @@
-# P4b SurfWater Sampling Seam Implementation Plan
+# P4b SurfWater Sampling Seam: Design Record
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Built test-first on `claude/charming-sanderson-d9a2c0` after P4a. The implementation plan this record replaces is in the history of this file (`01ec126`). Test code lives in the files listed.
 
-**Goal:** One water-sampling interface for the board and the rider fall, over the legacy field and the physical surf zone, with the legacy board moved onto it and its replays unchanged bit for bit. This is B0 of the board and surfer physics plan (branch `codex/board-surfer-physics-proposal`), P4b of the [wave plan](../../research/wave-formation-plan.md) (§1.10, Q10).
+**Goal:** One water-sampling interface for the board and the rider fall, over the legacy field and the physical surf zone, with the legacy board moved onto it and its replays unchanged bit for bit. This is B0 of the board and surfer physics plan (local branch `codex/board-surfer-physics-proposal`), and P4b of the [wave plan](../../research/wave-formation-plan.md) (§1.10, Q10).
 
-**Architecture:**
-- A `SurfWater` interface samples the water at a world point, including a depth below the surface: surface, normal, slopes, still and actual depth, wet and outside-domain flags, flow at that depth with its profile regime, and breaking. It also takes horizontal and vertical reaction impulses.
-- `LegacySurfWater` wraps `InteractiveWaterField` and returns exactly what `sample()` did, so the legacy board's traces are unchanged. They are locked first by golden hashes of whole runs.
-- `PhysicalSurfWater` wraps a `SurfZoneSimulation` in the worker:
-  - **Surface:** Catmull-Rom (Q10) over the uniform render nodes, where each node is the solver's bilinear cell sample, exactly the value the renderer uploads. At vertices the board and the rendered mesh agree exactly, in height and in the shader's central-difference normal.
-  - **Flow:** the §1.10 linear profile, bounded and flagged in bores and in very shallow water. Vertical flow is a labelled reconstruction.
-  - **Reactions:** they become Δq = −J/(ρA) over the four nearest cells, which conserves momentum.
+## Design
 
-**Tech Stack:** TypeScript, three.js `Vector3` (legacy only), Vitest.
+- **`src/physics/SurfWater.ts`**
+  - `SurfWater.sampleAt(x, y, z, out)` returns a `WaterSample`:
+    - the surface, still depth and actual water depth;
+    - explicit `wet` and `outsideDomain` flags;
+    - slopes and normal;
+    - the flow at height y, with its regime (`surface`, `profile`, `bore`, `shallow`, `dry`, `outside`);
+    - breaking.
+  - `surfaceAt(x, z)` gives the surface alone.
+  - `addReaction(x, z, Jx, Jy, Jz)` hands the water the reaction to the impulse it gave a body this step; the water takes −J.
+  - Units are SI: x along shore, z toward the beach, y up.
+- **`LegacySurfWater`**
+  - Returns exactly what `InteractiveWaterField.sample()` does, with surface velocity whatever the depth.
+  - Reports points beyond the grid as `outsideDomain`; the field itself silently returns a flat sea there.
+  - `InteractiveWaterField.applyBoardImpulse` takes the reaction as an impulse, with the same arithmetic order, so the replays stay bit-identical.
+- **`BoardPhysics` and `RiderFall`** sample the water only through the seam. The legacy-only game rules (crest, packet width, peel phase, stepping the field) stay on the field.
+- **`src/physics/PhysicalSurfWater.ts`** answers the seam from the stage 1 solver, in the worker next to it:
+  - **Surface:** Catmull-Rom (Q10) over the uniform render nodes. Each node is the solver's bilinear cell sample, exactly the value the renderer uploads. Bodies therefore meet the drawn vertices and the shader's central-difference normal exactly, and the slope stays continuous between nodes. The render mesh has one vertex per node, so the shader's kernel needs no change until the mesh densifies (G1 note).
+  - **Flow:** the depth-averaged current reshaped by the linear profile u/ū = kh cosh(k s)/sinh(kh), at height s above the bed (§1.10). k comes from the peak period at the local depth, and the factor is capped at 2. The flow stays depth-averaged where breaking exceeds 0.3 (`bore`) or kh < 0.05 (`shallow`).
+  - **Vertical flow** is reconstructed from continuity (∂η/∂t = −∇·q) with the same profile, and is not solver state.
+  - **Dry and outside:** samples say so, instead of reusing an edge cell.
+  - **Reactions:** Δq = −J/(ρA) over the nearest wet cells (ρ = 1025 kg/m³), conserving momentum. The vertical part cannot enter the depth-averaged water, so it is tallied in `unappliedVerticalImpulse`.
+  - **Cost:** about 1.3 µs per sample.
+- **`src/physics/boardReference.ts`** records the provisional B0 reference beside the legacy code's effective values:
 
-## Global Constraints
+  | | Value | Source |
+  |---|---|---|
+  | Rider | 73 kg | Shormann & in het Panhuis 2020 |
+  | Board | 1.778 × 0.464 × 0.0667 m, 25.75 L, 2.54 kg, thruster | Connellan et al. 2026, DP-1 |
+  | Legacy today | 2.65 m rendered board, 80 kg effective board mass, 74 kg rider | code |
 
-- Legacy gameplay is unchanged: identical inputs give bit-identical legacy traces before and after (golden hashes).
-- SI units; x along shore, z toward the beach, y up; one sample and the force applied from it belong to the same fixed step.
-- Outside the physical window or tank, samples say so (`outsideDomain`) and never silently reuse an edge cell.
-- The linear velocity profile applies only where it is valid: flagged as `'bore'` (depth-averaged, factor 1) where breaking is above 0.3, and as `'shallow'` for kh < 0.05. The factor is capped at 2.
-- A depth-averaged solver cannot take a vertical impulse; the physical adapter records it but does not apply it.
+  At rest the reference board floats 26.4 kg of seawater, so 65 % of a standing rider and board must come from planing lift. That is the first requirement of P4c's board body.
+- **Traces and baseline**
+  - `src/physics/boardTrace.ts` runs scripted legacy scenarios and hashes every step's state (FNV-1a).
+  - `npm run report:board-baseline` writes the [legacy board baseline](../../research/board-baseline.md).
 
-## Tasks
+## Verification
 
-### Task 1: Golden legacy traces
-- `src/physics/boardTrace.ts`: scripted scenarios (paddle to the pop-up window, get up, then scripted steering) that hash every step's board, rider-fall and diagnostic state (FNV-1a over the float bytes).
-- Test `BoardTrace.test.ts`: a default catch-and-ride on seeds 1, 5 and 9; the sustained carve to a wipeout and fall; and the Point and Reef presets. Each is locked to the hash the current code produces.
-- Commit `test: lock legacy board traces with golden hashes`.
+- **Tests: 227 in the suite, and the build passes.**
+  - `BoardTrace.test.ts` (8): seven golden hashes cover the default catch on seeds 1, 5 and 9, a sustained carve to a wipeout and fall, a forced hard-turn wipeout, and the Point and Reef presets. They were taken before the refactor and are unchanged after it. A one-part-in-14,000 change to paddle force changes the hash.
+  - `SurfWater.test.ts` (3): the legacy adapter matches `sample()` field by field, flags points beyond the grid, and reproduces the force reaction bit for bit.
+  - `PhysicalSurfWater.test.ts` (8):
+    - the Catmull-Rom weights interpolate, sum to one and reproduce lines;
+    - the surface and normal equal the render data at more than 200 render nodes;
+    - the slope is continuous across node lines (to 1e-5);
+    - the profile keeps ū as its depth average (to 1e-4), with kh coth kh at the surface and kh/sinh kh at the bed;
+    - the bore, shallow and dry regimes are flagged;
+    - converging flow reconstructs the rise rate;
+    - outside-domain queries are reported;
+    - reactions conserve momentum exactly, and the vertical impulse is tallied.
+  - `boardReference.test.ts` (3): the volume fraction, the flotation shortfall, and that the legacy values are kept apart.
+- **Baseline** (seeds 1–12 on Training, then 3 seeds × 3 presets × 3 steering styles over 60 s):
+  - Every seed catches in 3.3–3.6 s and completes the legacy 20 m ride. That is the guarantee natural sets must not inherit.
+  - Straight sustained rides last the full 60 s (183–201 m).
+  - The carve script wipes out after 13–16 s, except one Reef seed that holds.
+  - Hard turns wipe out after about 6 s.
 
-### Task 2: SurfWater and the legacy adapter
-- `src/physics/SurfWater.ts`: `SurfWater { sampleAt(x, y, z, out); surfaceAt(x, z); addReaction(x, z, impulse) }` and `WaterSample`.
-- `LegacySurfWater` returns `sample()`'s values; flow is the legacy surface velocity, with regime `'surface'`. `InteractiveWaterField.applyBoardImpulse` does the reaction with the same arithmetic order.
-- `BoardPhysics` and `RiderFall` sample only through the seam; the legacy-only game rules (crest, packet, peel) stay on the field.
-- Tests: the golden hashes are unchanged; the adapter matches `sample()` field by field.
-- Commit `refactor: sample the legacy water through the SurfWater seam`.
+## Deviations and open items
 
-### Task 3: The physical adapter
-- `src/physics/PhysicalSurfWater.ts` over `SurfZoneSimulation`: Catmull-Rom surface and gradient over render nodes, depth and wet by the render convention, outside-domain, the §1.10 flow profile (k from Tp at the local depth), vertical reconstruction w = −∇·q·(z + h)/h, breaking, and `addReaction`.
-- Tests:
-  - nodes equal the render data;
-  - C¹ across cell edges, and linear fields reproduced;
-  - the profile's depth average equals ū, and its surface value is kh·coth kh times ū;
-  - `'bore'` and `'shallow'` regimes are flagged;
-  - outside-domain queries are reported;
-  - `Σ ρ A Δq = −J`;
-  - samples at the wet/dry edge are finite.
-- Commit `feat: sample the physical surf zone for the board`.
-
-### Task 4: Reference record and baseline report
-- `src/physics/boardReference.ts`: the provisional B0 shortboard and rider (73 kg rider; 1.778 × 0.464 × 0.0667 m, 25.75 L, 2.54 kg thruster) with sources. It is recorded, not yet used.
-- `npm run report:board-baseline` writes `docs/research/board-baseline.md`: legacy catch, ride, turn and wipeout statistics across seeds and presets, as the B0 baseline the new board will be compared with.
-- Commit `docs: record the reference board and the legacy board baseline`.
-
-### Task 5: Record
-- Rewrite this plan as the record; update the ROADMAP and the plan's §1.10; run the suite and build; commit `docs: record P4b SurfWater seam`.
+- The board does not yet ride the physical water: P4c builds its body in the worker on `PhysicalSurfWater`.
+- Legacy samples ignore the query depth (regime `surface`) to stay bit-identical; the profile applies to the physical water only.
+- `main.ts` still reads the legacy field directly for the crest marker and the legacy camera's underwater test (the same `heightAt`). They are rendering, not bodies, and retire with the legacy field.
+- The render mesh stays at one vertex per node. If it densifies (G1's 2× near the camera), the shader must evaluate the same Catmull-Rom between nodes.
