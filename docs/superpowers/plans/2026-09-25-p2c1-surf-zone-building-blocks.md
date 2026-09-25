@@ -875,3 +875,32 @@ Expected: PASS.
 git add src/scene/SpotSeabed.ts src/scene/SpectatorCamera.ts src/scene/SpotSeabed.test.ts src/scene/SpectatorCamera.test.ts
 git commit -m "feat: add a spot seabed mesh and a spectator camera"
 ```
+
+---
+
+## P2c-2 record: integration into the game
+
+Implemented after P2c-1, following the same design (commit `feat: add the view-only physical surf zone behind a Water model switch`):
+
+- `src/game/PhysicalMode.ts` owns the `SurfZoneSimulation`, the `SpotSeabed` and the `SpectatorCamera`. It also provides `spreadingFor()` (s = 24 → 4) and `formatPhysicalReadout()`. Its three tests cover the spread mapping, showing the sea on the shared `WaterSurface`, and the readout rows.
+- **Wave Lab:**
+  - A **Water model** select, plus a `?physical` URL flag.
+  - Grouped legacy controls, and physical controls (spot, Hs 0.3–3 m, Tp 6–18 s, direction ±40°, spread, tide ±1 m).
+  - Time-scale and sun are shared between the two models.
+  - Apply, Replay and New Wave build the selected model; the blocking 2–3 s spin-up runs behind the loading card.
+- **`main.ts` in physical mode:**
+  - Hides the legacy board, rider, HUD and coastline cards.
+  - Scales the sky ×5 around the break (the reflection capture resets it).
+  - Steps the solver in fixed 1/60 s steps (at most 3 per frame).
+  - Uses PROFILE and BELOW to switch spectator views, and refreshes the readout at 4 Hz.
+- **Browser check (local dev server):**
+  - Overview, profile and underwater views render, and switching back to the legacy wave restores it, with no console errors.
+  - The in-page solver readout shows 5.7–7.6 ms per step on the main thread, against 4.0–5.1 ms in bundled Node, which is over the 4 ms budget.
+  - The frame rate could not be judged because the browser pane was hidden (requestAnimationFrame is throttled).
+
+**Deferred:**
+- The Web Worker, to P4 with board coupling, since board and water must step together.
+- Bicubic sampling, to P4, because it has to change on the board and in the shader together.
+- Removing the Wave speed slider, until the legacy solver is retired (P5).
+- Breaking foam, to P3.
+- The far-field ocean beyond the 160 m tank, to G2.
