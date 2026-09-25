@@ -17,6 +17,7 @@ import {
 } from 'three';
 import { Controls } from './game/Controls';
 import { RunHistory, type RunReport } from './game/RunHistory';
+import { simulatedSeconds } from './game/timeScale';
 import { BoardPhysics, type BoardDiagnostics, type PhysicsSettings } from './physics/BoardPhysics';
 import { CameraRig } from './scene/CameraRig';
 import { BoardWake } from './scene/BoardWake';
@@ -31,7 +32,7 @@ import { PlungingSheet } from './wave/PlungingSheet';
 import { Hud } from './ui/Hud';
 import './style.css';
 
-interface TuningSettings extends WaveSettings, PhysicsSettings { sunHeight: number; sunDirection: number }
+interface TuningSettings extends WaveSettings, PhysicsSettings { sunHeight: number; sunDirection: number; timeScale: number }
 
 const DEFAULT_SETTINGS: TuningSettings = {
   ...DEFAULT_WAVE_SETTINGS,
@@ -40,6 +41,7 @@ const DEFAULT_SETTINGS: TuningSettings = {
   boardResponse: 1,
   sunHeight: 0.35,
   sunDirection: -25,
+  timeScale: 1,
 };
 type Spot = 'training' | 'point' | 'reef' | 'custom';
 const SPOT_SETTINGS: Record<Exclude<Spot, 'custom'>, TuningSettings> = {
@@ -230,6 +232,7 @@ class SurfGame {
       windX: number('#wind-slider'),
       sunHeight: number('#sun-slider'),
       sunDirection: number('#sun-direction-slider'),
+      timeScale: number('#time-scale-slider'),
     };
   }
 
@@ -239,6 +242,7 @@ class SurfGame {
       '#current-slider', '#wind-slider',
       '#sun-slider',
       '#sun-direction-slider',
+      '#time-scale-slider',
     ];
     for (const selector of sliders) {
       getElement<HTMLInputElement>(selector).addEventListener('input', () => {
@@ -319,6 +323,8 @@ class SurfGame {
     getElement<HTMLOutputElement>('#wind-output').value = `${(values.windX ?? 0).toFixed(2)} m/s²`;
     getElement<HTMLOutputElement>('#sun-output').value = `${Math.round(values.sunHeight * 100)}%`;
     getElement<HTMLOutputElement>('#sun-direction-output').value = `${values.sunDirection}°`;
+    getElement<HTMLInputElement>('#time-scale-slider').value = String(values.timeScale);
+    getElement<HTMLOutputElement>('#time-scale-output').value = `${values.timeScale.toFixed(2)}×`;
     const changed = this.draftSpot !== this.activeSpot || Object.keys(DEFAULT_SETTINGS).some((key) => values[key as keyof TuningSettings] !== this.activeSettings[key as keyof TuningSettings]);
     getElement<HTMLElement>('#pending-note').hidden = !changed;
     getElement<HTMLButtonElement>('#apply-button').disabled = !changed;
@@ -337,7 +343,8 @@ class SurfGame {
         this.fpsSeconds = 0;
       }
     }
-    this.accumulator = Math.min(this.accumulator + elapsed, this.fixedStep * 6);
+    const simElapsed = simulatedSeconds(elapsed, this.activeSettings.timeScale);
+    this.accumulator = Math.min(this.accumulator + simElapsed, this.fixedStep * 6);
     let steps = 0;
     while (this.accumulator >= this.fixedStep && steps < 5) {
       const input = demoMode !== null ? {
@@ -365,12 +372,12 @@ class SurfGame {
     this.breakSpray.update(this.wave);
     const crestZ = this.wave.crestZ();
     this.crestMarker.position.set(0, this.wave.sample(0, crestZ).height + 0.05, crestZ);
-    this.surfer.update(this.physics, this.lastPaddle, elapsed);
+    this.surfer.update(this.physics, this.lastPaddle, simElapsed);
     this.environment.group.position.z = this.physics.position.z;
-    this.boardWake.update(this.physics, this.wave, elapsed);
+    this.boardWake.update(this.physics, this.wave, simElapsed);
     const contacts = this.physics.contactPoints;
     for (let index = 0; index < contacts.length; index += 1) this.contactMarkers[index].position.copy(contacts[index]);
-    this.cameraRig.update(this.physics, this.wave, elapsed || this.fixedStep);
+    this.cameraRig.update(this.physics, this.wave, simElapsed || this.fixedStep);
     this.updateUnderwaterView();
     this.renderer.render(this.scene, this.cameraRig.camera);
     this.updateHud();
