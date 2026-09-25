@@ -1,6 +1,7 @@
+import { ShaderLib } from 'three';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField, type WaveSettings } from '../wave/WaveModel';
-import { WaterSurface, sampleSurfaceHeight, sampleSurfaceNormal } from './WaterSurface';
+import { WaterSurface, sampleSurfaceBed, sampleSurfaceHeight, sampleSurfaceNormal } from './WaterSurface';
 import { LegacySurfaceSource } from './LegacySurfaceSource';
 import { PhysicalSurfaceSource } from './PhysicalSurfaceSource';
 import { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
@@ -127,6 +128,62 @@ describe('WaterSurface GPU displacement data', () => {
     expect(foamyNodes).toBeGreaterThan(0);
   });
 
+  it('uploads the legacy bed and follows it when the grid scrolls', () => {
+    const wave = new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS, shelfStrength: 0.4, sustained: true });
+    const surface = new WaterSurface(new LegacySurfaceSource(wave));
+    const check = () => {
+      for (let iz = 0; iz < wave.nz; iz += 9) {
+        for (let ix = 0; ix < wave.nx; ix += 5) {
+          const x = wave.xMin + ix * wave.spacing;
+          const z = wave.zMin + iz * wave.spacing;
+          expect(surface.bedData[iz * wave.nx + ix]).toBeCloseTo(-wave.depthAt(x, z), 6);
+          expect(sampleSurfaceBed(surface.bedData, surface.grid, x + 0.3, z + 0.4)).toBeCloseTo(-wave.depthAt(x + 0.3, z + 0.4), 2);
+        }
+      }
+    };
+    check();
+    const zMin = wave.zMin;
+    for (let frame = 0; frame < 900 && wave.zMin === zMin; frame += 1) {
+      wave.step(1 / 60);
+      surface.update();
+    }
+    expect(wave.zMin).not.toBe(zMin);
+    check();
+  });
+
+  it('uploads the physical bed under every node, 5 cm above the tucked-in dry surface, and follows the window', () => {
+    const wave = new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS });
+    const surface = new WaterSurface(new LegacySurfaceSource(wave));
+    const simulation = new SurfZoneSimulation({
+      spot: 'reef', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 0, spreading: 12, tide: 0,
+      componentCount: 8, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
+    });
+    surface.setSource(new PhysicalSurfaceSource(simulation, 2));
+    surface.update();
+    const check = () => {
+      let dry = 0;
+      let wet = 0;
+      for (let k = 0; k < surface.bedData.length; k += 1) {
+        const depth = surface.surfaceData[k * 2] - surface.bedData[k];
+        if (depth < 0) {
+          expect(depth).toBeCloseTo(-0.05, 5);
+          dry += 1;
+        } else {
+          expect(depth).toBeGreaterThan(0.009);
+          wet += 1;
+        }
+      }
+      expect(dry).toBeGreaterThan(0);
+      expect(wet).toBeGreaterThan(0);
+    };
+    check();
+    const x = surface.grid.xMin + 4;
+    expect(sampleSurfaceBed(surface.bedData, surface.grid, x, -200)).toBeCloseTo(simulation.bedAt(x, -200), 1);
+    simulation.solver.shiftAlongShore(3);
+    surface.update();
+    check();
+  });
+
   it('rebuilds its mesh and texture for a differently sized physical source', () => {
     const wave = new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS });
     const surface = new WaterSurface(new LegacySurfaceSource(wave));
@@ -143,5 +200,45 @@ describe('WaterSurface GPU displacement data', () => {
     simulation.solver.shiftAlongShore(3);
     surface.update();
     expect(surface.grid.xMin).toBeCloseTo(-20 + 6, 9);
+  });
+
+  it('patches every shader chunk it replaces and shades with water optics', () => {
+    const surface = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS })));
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    surface.mesh.material.onBeforeCompile(shader as never, undefined as never);
+    for (const chunk of ['beginnormal_vertex', 'begin_vertex']) expect(shader.vertexShader).not.toContain(`#include <${chunk}>`);
+    expect(shader.fragmentShader).not.toContain('#include <color_fragment>');
+    expect(shader.fragmentShader).toContain('waterChopSlope( vWaterWorld.xz');
+    expect(shader.vertexShader).toContain('vWaterDepth = max( 0.0, waterHeight - waterBedAt( waterXZ ) )');
+    expect(shader.fragmentShader).toContain('waterBodyReflectance( vWaterDepth');
+    expect(shader.fragmentShader).toContain('waterCrestThickness( vWaterWorld');
+    expect(shader.vertexShader).toContain('vWaterFlow = waterFlowAt( waterXZ )');
+    expect(shader.fragmentShader).toContain('waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, ');
+    expect(Object.keys(shader.uniforms)).toEqual(expect.arrayContaining(['waterFlow', 'waterFoamTile', 'waterFoamPattern']));
+    expect(shader.fragmentShader).toContain('mix( vWaterFoam, waterFoamCover(');
+    expect(Object.keys(shader.uniforms)).toEqual(expect.arrayContaining(['waterBed', 'waterAttenuation', 'waterSunDirection', 'waterSunRadiance']));
+    expect(surface.mesh.material.ior).toBeCloseTo(1.333, 6);
+    expect(surface.mesh.material.clearcoat).toBe(0);
+  });
+
+  it('uploads the physical current for the foam pattern and keeps the legacy one still', () => {
+    const wave = new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS });
+    const surface = new WaterSurface(new LegacySurfaceSource(wave));
+    expect(surface.flowData.every((value) => value === 0)).toBe(true);
+    // The legacy foam is a tint strength, not a covered fraction, so it keeps the soft tint.
+    expect(surface.foamPattern).toBe(0);
+    const simulation = new SurfZoneSimulation({
+      spot: 'beach', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
+      componentCount: 8, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
+    });
+    const source = new PhysicalSurfaceSource(simulation, 2);
+    surface.setSource(source);
+    for (let frame = 0; frame < 20; frame += 1) simulation.step(1 / 30);
+    surface.update();
+    const expected = new Float32Array(surface.flowData.length);
+    simulation.writeUniformFlow(expected, source.grid);
+    expect(Array.from(surface.flowData)).toEqual(Array.from(expected));
+    expect(surface.foamPattern).toBe(1);
+    expect(surface.flowData.some((value) => Math.abs(value) > 0.05)).toBe(true);
   });
 });

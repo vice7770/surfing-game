@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { REEF, createSpot } from './Bathymetry';
 import { breakerDepthFor } from './Breaking';
-import { OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
+import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
 
 const small: Omit<SurfZoneConfig, 'spot'> = {
   seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -104,7 +105,6 @@ describe('SurfZoneSimulation', () => {
     expect(late).toBeGreaterThan(30);
   }, 60_000);
 
-  // The reef's shelf edge lies in the tank's boundary blend (plan P3b record), so the point is the plunging case.
   it('throws a lip from plunging point waves, once per wave, but not from a spilling beach', () => {
     const run = (config: SurfZoneConfig) => {
       const simulation = new SurfZoneSimulation(config);
@@ -126,11 +126,37 @@ describe('SurfZoneSimulation', () => {
     expect(beach.simulation.lipLaunches).toBe(0);
   }, 60_000);
 
-  it('finds the reef break on its steep edge rather than the flat shelf', () => {
-    const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 2 });
-    expect(simulation.breakPoint().z).toBeLessThan(TANK.blendEnd);
-    expect(simulation.iribarren().type).not.toBe('none');
+  // Stage 1 needs 1 m cells to see a wave break (P3a), so the whole reef edge must lie in the fine surf zone.
+  it('keeps the whole reef edge in the fine surf zone across the 160 m window, with a flat shelf behind it', () => {
+    const reef = createSpot('reef', 1);
+    for (let x = -80; x <= 80; x += 4) {
+      for (let z = TANK.zoneInner; z <= TANK.fineFrom; z += 1) {
+        expect(tankDepth(reef, OFFSHORE_DEPTH.reef, x, z)).toBeCloseTo(REEF.channelDepth, 3);
+      }
+      let shelf = 0;
+      for (let z = TANK.fineFrom; z < 0; z += 1) if (Math.abs(reef.depthAt(x, z) - REEF.shelfDepth) < 0.05) shelf += 1;
+      expect(shelf).toBeGreaterThanOrEqual(15);
+    }
   });
+
+  it('finds the reef break on its steep edge inside the fine surf zone', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 2 });
+    const point = simulation.breakPoint();
+    const bed = (z: number) => tankDepth(simulation.spot, OFFSHORE_DEPTH.reef, point.x, z);
+    expect(point.z).toBeGreaterThan(TANK.fineFrom);
+    expect(bed(point.z)).toBeGreaterThan(REEF.shelfDepth + 0.25);
+    expect(bed(point.z)).toBeLessThan(REEF.channelDepth - 0.25);
+    expect((bed(point.z - 2) - bed(point.z + 2)) / 4).toBeGreaterThan(0.05);
+    expect(simulation.iribarren().type).toBe('plunging');
+  });
+
+  it('throws lips from plunging waves on the reef edge', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 });
+    for (let frame = 0; frame < 20 * 30; frame += 1) simulation.step(1 / 30);
+    expect(simulation.iribarren().type).toBe('plunging');
+    expect(simulation.lipLaunches).toBeGreaterThan(0);
+    expect(simulation.lip.landings).toBeGreaterThan(0);
+  }, 60_000);
 
   it('does not read the spin-up bores as one simultaneous close-out', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1 });
@@ -156,5 +182,84 @@ describe('SurfZoneSimulation', () => {
     expect(windOnsetScale(-10, 2)).toBe(1.1);
     expect(windOnsetScale(30, 1)).toBe(0.6);
     expect(windOnsetScale(6, 1)).toBeLessThan(windOnsetScale(6, 3));
+  });
+
+  it('leaves foam behind the breaking bores, fading into lace, and none offshore of the break', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, directionDegrees: 20, spreading: 24 });
+    const { solver, foam } = simulation;
+    let outermost = Infinity;
+    for (let frame = 0; frame < 20 * 30; frame += 1) {
+      simulation.step(1 / 30);
+      for (let i = 0; i < solver.h.length; i += 1) {
+        if (simulation.breaking.strength[i] > 0.3) outermost = Math.min(outermost, solver.zCenters[Math.floor(i / solver.nx)]);
+      }
+    }
+    let foamy = 0;
+    let lace = 0;
+    for (let i = 0; i < solver.h.length; i += 1) {
+      const z = solver.zCenters[Math.floor(i / solver.nx)];
+      expect(foam.totalAt(i)).toBeLessThanOrEqual(1 + 1e-12);
+      if (z < outermost - 10) expect(foam.totalAt(i)).toBeLessThan(1e-3);
+      if (foam.totalAt(i) > 0.05) foamy += 1;
+      if (foam.residual[i] > 0.02) lace += 1;
+    }
+    expect(outermost).toBeLessThan(0);
+    expect(foamy).toBeGreaterThan(50);
+    expect(lace).toBeGreaterThan(50);
+  }, 60_000);
+
+  it('keeps lace longest in the beach’s sandy surf and lets a spot override its decay', () => {
+    expect(FOAM_DECAY.beach.residual).toBeGreaterThan(FOAM_DECAY.reef.residual);
+    for (const decay of Object.values(FOAM_DECAY)) expect(decay.dense).toBe(3);
+    expect(new SurfZoneSimulation({ ...small, spot: 'reef' }).foam.decay).toEqual(FOAM_DECAY.reef);
+    expect(new SurfZoneSimulation({ ...small, spot: 'reef', foamDecay: { dense: 1, residual: 2 } }).foam.decay).toEqual({ dense: 1, residual: 2 });
+  });
+
+  it('splashes landing lip water into foam', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'beach' });
+    const { solver, foam, lip } = simulation;
+    foam.dense.fill(0);
+    foam.residual.fill(0);
+    const crest = solver.cellIndex(0, -60);
+    expect(lip.launch(crest, { x: 0, z: 4 }, solver.surfaceAt(crest) + 1, 0.2)).toBeGreaterThan(0);
+    for (let step = 0; step < 60 && lip.landings === 0; step += 1) lip.step(1 / 60);
+    expect(lip.landings).toBeGreaterThan(0);
+    expect(foam.dense.reduce((sum, value) => sum + value, 0)).toBeGreaterThan(0.5);
+  });
+
+  it('renders the foam field and the current it rides on', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'beach' });
+    const { solver, foam } = simulation;
+    for (let frame = 0; frame < 30; frame += 1) simulation.step(1 / 30);
+    for (let i = 0; i < solver.h.length; i += 1) {
+      foam.dense[i] = solver.h[i] > 0.01 ? 0.5 * (1 + Math.sin(i * 0.37)) * 0.6 : 0;
+      foam.residual[i] = solver.h[i] > 0.01 ? 0.1 : 0;
+    }
+    const grid = simulation.renderGrid(1);
+    const surface = new Float32Array(grid.nx * grid.nz * 2);
+    const flow = new Float32Array(grid.nx * grid.nz * 2);
+    simulation.writeUniformSurface(surface, grid);
+    simulation.writeUniformFlow(flow, grid);
+    const total = Float64Array.from(foam.dense, (value, i) => value + foam.residual[i]);
+    const u = Float64Array.from(solver.qx, (q, i) => (solver.h[i] > 0.01 ? q / solver.h[i] : 0));
+    const w = Float64Array.from(solver.qz, (q, i) => (solver.h[i] > 0.01 ? q / solver.h[i] : 0));
+    let wet = 0;
+    for (let r = 0; r < grid.nz; r += 5) {
+      for (let c = 0; c < grid.nx; c += 3) {
+        const k = r * grid.nx + c;
+        const x = grid.xMin + c * grid.spacing;
+        const z = grid.zMin + r * grid.spacing;
+        if (solver.sampleCentered(solver.h, x, z) <= 0.01) {
+          expect(surface[k * 2 + 1]).toBe(0);
+          expect(flow[k * 2]).toBe(0);
+          continue;
+        }
+        wet += 1;
+        expect(surface[k * 2 + 1]).toBeCloseTo(solver.sampleCentered(total, x, z), 5);
+        expect(flow[k * 2]).toBeCloseTo(solver.sampleCentered(u, x, z), 5);
+        expect(flow[k * 2 + 1]).toBeCloseTo(solver.sampleCentered(w, x, z), 5);
+      }
+    }
+    expect(wet).toBeGreaterThan(200);
   });
 });

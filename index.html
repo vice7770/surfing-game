@@ -15,6 +15,7 @@
         <div class="session-pill"><span class="live-dot"></span><span id="run-state">READY</span><span class="divider">/</span><span id="seed-label">SEED 0001</span></div>
         <button id="diagnostic-toggle" class="icon-button" type="button" aria-pressed="false" title="Toggle diagnostic view">◫ <span>PROFILE</span></button>
         <button id="underwater-toggle" class="icon-button" type="button" aria-pressed="false" title="Toggle underwater view">≈ <span>BELOW</span></button>
+        <button id="view-toggle" class="icon-button" type="button" title="Change camera: front, behind, side, overview (C)">⌖ <span id="view-label">FRONT</span></button>
       </header>
 
       <section class="hero-copy" aria-label="Session prompt">
@@ -49,7 +50,7 @@
       <section class="tuning-panel" aria-label="Wave and board tuning">
         <div class="panel-head"><div><p class="eyebrow">EXPERIMENT WITH THE CONDITIONS</p><h2>Wave lab</h2></div><button id="panel-toggle" class="panel-toggle" type="button" aria-expanded="true" aria-controls="tuning-controls">−</button></div>
         <div id="tuning-controls" class="tuning-controls">
-          <label class="slider-row"><span>Water model</span><select id="model-select"><option value="legacy">Playable wave (legacy)</option><option value="physical">Physical surf zone · view only</option></select></label>
+          <label class="slider-row"><span>Water model</span><select id="model-select"><option value="legacy">Playable wave (legacy)</option><option value="physical">Physical surf zone · ride</option></select></label>
           <div id="legacy-controls">
             <label class="slider-row"><span>Surf spot</span><select id="spot-select"><option value="training">Training Beach</option><option value="point">Glassy Point</option><option value="reef">Windy Reef</option><option value="custom">Custom conditions</option></select></label>
             <label class="slider-row"><span>Wave height <output id="height-output">1.4 m</output></span><input id="height-slider" type="range" min="0.6" max="2.4" step="0.1" value="1.4" /></label>

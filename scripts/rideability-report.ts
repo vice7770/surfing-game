@@ -84,7 +84,6 @@ ${histograms.join('\n')}
 **Known limits.**
 - Ride-time distributions need a rider in the physical mode (P4), so they are not reported yet.
 - The stage 1 solver has no dispersion, so waves break early and as bores. This is a known bias (plan §1.7) that the stage 2 Boussinesq solver removes.
-- On the reef, the shelf edge lies inside the tank's offshore boundary blend (z −270 to −190). The measured break is therefore the bore crossing the flat shelf, not the plunge on the edge.
 - The peel is measured over the along-shore window only, with 10 % of the columns at each open edge left out.
 
 Run time: ${((Date.now() - started) / 60000).toFixed(1)} min.

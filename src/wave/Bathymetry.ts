@@ -24,7 +24,13 @@ export function deanDepth(offshore: number, a = 0.12, maxDepth = 12, landSlope =
 
 export const BEACH_BAR = { offshore: 90, height: 0.9, width: 18, ripSpacing: 110, ripWidth: 22, ripJitter: 25 };
 export const POINT_HEADLAND = { center: 0, halfWidth: 150, protrusion: 120, slope: 0.04, maxDepth: 12 };
-export const REEF = { edge: -150, apexX: 0, protrusion: 100, halfWidth: 250, edgeWidth: 80, shelfDepth: 2, channelDepth: 10 };
+/**
+ * A-frame reef: a 10 m channel, a 0.15 shelf edge (edgeWidth sets the slope)
+ * and a 2 m shelf. The whole edge lies in the tank's 1 m surf zone
+ * (z ≥ −150) across the 160 m window, so a steep coarse-sand beach (Dean A
+ * 0.3) backs the shelf to leave room for it.
+ */
+export const REEF = { edge: -55, apexX: 0, protrusion: 50, halfWidth: 125, edgeWidth: 80, shelfDepth: 2, channelDepth: 10, beachA: 0.3 };
 export const CANYON = { axisX: 0, halfWidth: 30, depth: 14, head: 60, fullAt: 160, fadeStart: 200, fadeEnd: 250 };
 
 function beach(seed: number): SurfSpot {
@@ -61,10 +67,9 @@ function reef(): SurfSpot {
     name: 'reef',
     depthAt(x, z) {
       const edgeZ = REEF.edge - REEF.protrusion * Math.max(0, 1 - Math.abs(x - REEF.apexX) / REEF.halfWidth);
-      const beachDepth = deanDepth(-z);
       const onReef = smoothstep(edgeZ - REEF.edgeWidth / 2, edgeZ + REEF.edgeWidth / 2, z);
-      const channel = Math.max(beachDepth, REEF.channelDepth);
-      const shelf = Math.min(beachDepth, REEF.shelfDepth);
+      const channel = Math.max(deanDepth(-z), REEF.channelDepth);
+      const shelf = Math.min(deanDepth(-z, REEF.beachA), REEF.shelfDepth);
       return channel + (shelf - channel) * onReef;
     },
   };

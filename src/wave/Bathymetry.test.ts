@@ -51,13 +51,13 @@ describe('surf spot bathymetry', () => {
 
   it('raises the reef shelf steeply enough to plunge', () => {
     const reef = createSpot('reef', 1);
-    const x = REEF.halfWidth + 50;
+    const apex = REEF.edge - REEF.protrusion;
     let steepest = 0;
-    for (let z = -260; z <= -40; z += 0.5) steepest = Math.max(steepest, slopeZ(reef, x, z));
+    for (let z = apex - REEF.edgeWidth; z <= apex + REEF.edgeWidth / 2; z += 0.5) steepest = Math.max(steepest, slopeZ(reef, REEF.apexX, z));
     expect(steepest).toBeGreaterThan(0.1);
     expect(steepest).toBeLessThan(0.2);
-    expect(reef.depthAt(x, REEF.edge + REEF.edgeWidth)).toBeCloseTo(REEF.shelfDepth, 1);
-    expect(reef.depthAt(x, REEF.edge - REEF.edgeWidth)).toBeCloseTo(REEF.channelDepth, 1);
+    expect(reef.depthAt(REEF.apexX, apex + REEF.edgeWidth)).toBeCloseTo(REEF.shelfDepth, 1);
+    expect(reef.depthAt(REEF.apexX, apex - REEF.edgeWidth)).toBeCloseTo(REEF.channelDepth, 1);
   });
 
   it('cuts a canyon that is far deeper on its axis and fades before the offshore boundary', () => {

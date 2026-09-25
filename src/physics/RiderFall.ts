@@ -1,5 +1,5 @@
 import { Vector3 } from 'three';
-import type { InteractiveWaterField } from '../wave/WaveModel';
+import { createWaterSample, type SurfWater } from './SurfWater';
 
 /** Independent post-wipeout body. The moving surface supplies buoyancy and drag. */
 export class RiderFall {
@@ -8,6 +8,8 @@ export class RiderFall {
   readonly rotation = new Vector3();
   active = false;
   submersion = 0;
+  private readonly sample = createWaterSample();
+  private readonly flow = new Vector3();
 
   start(boardPosition: Vector3, boardVelocity: Vector3, boardRoll: number): void {
     const side = Math.sign(boardRoll || 1);
@@ -18,20 +20,20 @@ export class RiderFall {
     this.active = true;
   }
 
-  step(dt: number, wave: InteractiveWaterField): void {
+  step(dt: number, water: SurfWater): void {
     if (!this.active) return;
-    const water = wave.sample(this.position.x, this.position.z);
+    const sample = water.sampleAt(this.position.x, this.position.y, this.position.z, this.sample);
     const radius = 0.3;
     this.submersion = Math.max(0, Math.min(1,
-      (water.height - this.position.y + radius) / (2 * radius),
+      (sample.surfaceY - this.position.y + radius) / (2 * radius),
     ));
-    const relative = this.velocity.clone().sub(water.velocity);
+    const relative = this.velocity.clone().sub(this.flow.set(sample.flowX, sample.flowY, sample.flowZ));
     const drag = this.submersion * 2.8 + 0.08;
     this.velocity.x -= relative.x * drag * dt;
     this.velocity.z -= relative.z * drag * dt;
     this.velocity.y += (-9.81 + this.submersion * 23 - relative.y * (this.submersion * 5 + 0.08)) * dt;
     this.position.addScaledVector(this.velocity, dt);
-    const floor = wave.heightAt(this.position.x, this.position.z) - 0.42;
+    const floor = water.surfaceAt(this.position.x, this.position.z) - 0.42;
     if (this.position.y < floor) {
       this.position.y = floor;
       this.velocity.y = Math.max(0, this.velocity.y) * 0.25;

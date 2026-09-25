@@ -346,6 +346,11 @@ export class InteractiveWaterField {
 
   /** Apply the equal-and-opposite water impulse to a small hull-contact footprint. */
   applyBoardReaction(x: number, z: number, forceOnBoard: Vector3, dt: number): void {
+    this.applyBoardImpulse(x, z, forceOnBoard.x * dt, forceOnBoard.y * dt, forceOnBoard.z * dt);
+  }
+
+  /** The water takes −J for the impulse J (N·s) it exerted on the board at (x, z): horizontal flow, plus an outward-flow proxy for the vertical part. */
+  applyBoardImpulse(x: number, z: number, impulseX: number, impulseY: number, impulseZ: number): void {
     const gx = Math.round((x - this.xMin) / this.spacing);
     const gz = Math.round((z - this.zMin) / this.spacing);
     if (gx < 2 || gx >= this.nx - 2 || gz < 2 || gz >= this.nz - 2) return;
@@ -361,8 +366,8 @@ export class InteractiveWaterField {
     const cellMass = this.fluidDensity * this.bedDepth[gz * this.nx + gx] * this.cellArea;
     for (const { index, weight } of weights) {
       const share = weight / weightSum;
-      this.velocityX[index] = this.clampVelocity(this.velocityX[index] - forceOnBoard.x * dt * share / cellMass);
-      this.velocityZ[index] = this.clampVelocity(this.velocityZ[index] - forceOnBoard.z * dt * share / cellMass);
+      this.velocityX[index] = this.clampVelocity(this.velocityX[index] - impulseX * share / cellMass);
+      this.velocityZ[index] = this.clampVelocity(this.velocityZ[index] - impulseZ * share / cellMass);
     }
     // A downward hull reaction cannot exist as vertical flow in this depth-
     // averaged field. Represent its first-order effect as outward surface flow.
@@ -372,7 +377,7 @@ export class InteractiveWaterField {
         if (radius === 0) continue;
         const weight = Math.exp(-0.7 * radius * radius) / weightSum;
         const index = (gz + dz) * this.nx + gx + dx;
-        const impulse = forceOnBoard.y * dt * weight / cellMass * 0.35;
+        const impulse = impulseY * weight / cellMass * 0.35;
         this.velocityX[index] = this.clampVelocity(this.velocityX[index] + impulse * dx / radius);
         this.velocityZ[index] = this.clampVelocity(this.velocityZ[index] + impulse * dz / radius);
       }

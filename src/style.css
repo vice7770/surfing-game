@@ -32,6 +32,7 @@ button { color: inherit; }
 .divider { color: #90aaa4; }
 .icon-button { height: 36px; display: flex; gap: 8px; align-items: center; padding: 0 12px; border: 1px solid rgba(31, 73, 73, .24); border-radius: 3px; background: rgba(250, 249, 237, .45); font-size: 15px; cursor: pointer; }
 .icon-button span { font: 9px var(--mono); letter-spacing: .08em; }
+#app:not(.is-physical) #view-toggle { display: none; }
 .icon-button:hover, .icon-button.is-active { background: rgba(248, 246, 234, .9); border-color: rgba(31, 73, 73, .55); }
 
 .hero-copy { position: absolute; top: 17.5%; left: 8.3%; width: min(430px, 37vw); animation: rise-in .75s .12s both; transition: opacity .4s ease; }

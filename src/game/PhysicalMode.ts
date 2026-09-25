@@ -1,17 +1,27 @@
-import type { Scene } from 'three';
+import { Vector3, type Scene } from 'three';
+import { buildBoardShape } from '../physics/boardShape';
+import { createBoardMesh } from '../scene/BoardMesh';
+import { Surfer } from '../scene/Surfer';
+import type { BodyPart, DetachedRiderPose } from '../physics/DetachedSurfer';
+import { RIDER_PARTS } from '../physics/riderPosture';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
-import { LipPoints } from '../scene/LipPoints';
+import { BubblePoints } from '../scene/BubblePoints';
+import { LipPoints, type RenderableLip } from '../scene/LipPoints';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera } from '../scene/SpectatorCamera';
 import { SpotSeabed } from '../scene/SpotSeabed';
+import { SPOT_OPTICS } from '../scene/waterOptics';
 import type { WaterSurface } from '../scene/WaterSurface';
-import { smoothstep, type SpotName } from '../wave/Bathymetry';
+import { createSpot, smoothstep, type SpotName } from '../wave/Bathymetry';
 import { FarFieldProfile } from '../wave/FarFieldProfile';
 import { MIXED_PEAK_FIT, skillForPeel } from '../wave/Breaking';
 import { stormSwell, type StormSwell } from '../wave/StormSwell';
 import type { ReadoutRow } from '../wave/SwellReadout';
-import { OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
+import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
+import { OFFSHORE_DEPTH, TANK, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost, type SurfZoneSnapshot } from './SurfZoneHost';
 
 /** Wave Lab inputs for the view-only physical surf zone (buoy values or a storm, plan Q2, Q22 and Q31). */
 export interface PhysicalSettings {
@@ -98,12 +108,10 @@ export function formatStorm(storm: StormSwell): string {
   return `Hs ${storm.stormHeight.toFixed(1)} m · Tp ${storm.stormPeriod.toFixed(1)} s · ${storm.growth} · ${travel}`;
 }
 
-export function formatPhysicalReadout(simulation: SurfZoneSimulation, storm?: StormSwell): ReadoutRow[] {
-  const { config, solver } = simulation;
-  const breakPoint = simulation.breakPoint();
-  const toSet = simulation.timeToSet;
-  const breaker = simulation.iribarren();
-  const peel = simulation.peelEstimate();
+/** The Wave Lab rows for a running surf zone, from plain status values (they can come from the worker). */
+export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneStatus, storm?: StormSwell): ReadoutRow[] {
+  const { breakPoint, breaker, peel } = status;
+  const toSet = status.timeToSet;
   const wind = config.windSpeed ?? 0;
   let peelText = 'waiting for a break';
   if (peel) {
@@ -122,16 +130,24 @@ export function formatPhysicalReadout(simulation: SurfZoneSimulation, storm?: St
     { label: 'SWELL', value: `Hs ${config.significantHeight.toFixed(1)} m · Tp ${config.peakPeriod.toFixed(1)} s · ${config.directionDegrees}°${clamped}` },
     { label: 'SPREAD', value: `s ${config.spreading.toFixed(0)}${band}` },
     { label: 'TIDE', value: `${config.tide.toFixed(1)} m` },
-    { label: 'BREAK LINE', value: `${Math.round(-breakPoint.z)} m out · ${(simulation.spot.depthAt(breakPoint.x, breakPoint.z) + config.tide).toFixed(2)} m deep` },
-    { label: 'SOLVER', value: `${(solver.nx * solver.nz).toLocaleString('en-US')} cells · ${simulation.lastStepMs.toFixed(1)} ms/step` },
+    { label: 'BREAK LINE', value: `${Math.round(-breakPoint.z)} m out · ${status.breakDepth.toFixed(2)} m deep` },
+    { label: 'SOLVER', value: `${status.cells.toLocaleString('en-US')} cells · ${status.stepMs.toFixed(1)} ms/step` },
     { label: 'NEXT SET', value: toSet > 0 ? `in ${Math.round(toSet)} s` : `${Math.round(-toSet)} s ago` },
     { label: 'BREAKER', value: breaker.type === 'none' ? 'FLAT BED' : `ξ ${breaker.value.toFixed(2)} · ${breaker.type.toUpperCase()}` },
-    { label: 'BREAKING', value: `${Math.round(simulation.breakingFraction() * 100)} % of the surf zone` },
+    { label: 'BREAKING', value: `${Math.round(status.breakingFraction * 100)} % of the surf zone` },
+    ...(status.board ? [{ label: 'BOARD', value: `riderless · ${status.board.speed.toFixed(1)} m/s${status.board.resets ? ` · back in the lineup ×${status.board.resets}` : ''}` }] : []),
+    ...(status.ride ? [
+      { label: 'RIDER', value: `${status.ride.phase.toUpperCase()} · ${status.ride.speed.toFixed(1)} m/s${status.ride.cue ? ' · POP UP NOW' : ''}` },
+      { label: 'POP-UP', value: status.ride.popUp.outcome === 'none' ? 'not yet'
+        : status.ride.popUp.outcome === 'stood' ? `stood in ${status.ride.popUp.duration.toFixed(2)} s · landing ${status.ride.popUp.landingPeak.toFixed(1)} BW, ${Math.round(status.ride.popUp.frontShare * 100)} % front`
+        : status.ride.popUp.outcome === 'rising' ? 'rising' : 'no support: board not planing' },
+      ...(status.ride.separation ? [{ label: 'FELL', value: `${status.ride.separation} · R to paddle out again` }] : []),
+    ] : []),
     { label: 'PEEL', value: peelText },
-    { label: 'LIP', value: simulation.lipLaunches === 0 ? 'no lip yet'
-      : `${simulation.lipLaunches} throws · ${simulation.lipVolume.toFixed(1)} m³ · ${simulation.lip.airborneVolume().toFixed(1)} m³ airborne` },
+    { label: 'LIP', value: status.lipLaunches === 0 ? 'no lip yet'
+      : `${status.lipLaunches} throws · ${status.lipVolume.toFixed(1)} m³ · ${status.lipAirborne.toFixed(1)} m³ airborne` },
     { label: 'WIND', value: wind === 0 ? 'calm'
-      : `${Math.abs(wind)} m/s ${wind > 0 ? 'onshore' : 'offshore'} · breaking thresholds ×${simulation.breaking.onsetScale.toFixed(2)}` },
+      : `${Math.abs(wind)} m/s ${wind > 0 ? 'onshore' : 'offshore'} · breaking thresholds ×${status.onsetScale.toFixed(2)}` },
   ];
 }
 
@@ -140,24 +156,77 @@ export function formatPhysicalReadout(simulation: SurfZoneSimulation, storm?: St
  * the shared water surface, a seabed mesh from the spot, and a spectator
  * camera. The legacy board does not ride these waves until P4.
  */
+export type SurfZoneHostFactory = (config: SurfZoneConfig) => SurfZoneHost;
+
+/** Runs the surf zone in the page (tests, and browsers without Web Workers). */
+export const localSurfZone: SurfZoneHostFactory = (config) => new LocalSurfZone(config, { rider: true });
+
+/** The latest snapshot's packed lip positions, in the shape `LipPoints` draws. */
+function snapshotLip(snapshot: SurfZoneSnapshot): RenderableLip {
+  return {
+    forEachActive(visit) {
+      for (let i = 0; i < snapshot.lipCount; i += 1) visit(snapshot.lip[i * 3], snapshot.lip[i * 3 + 1], snapshot.lip[i * 3 + 2], 0);
+    },
+  };
+}
+
 export class PhysicalMode {
   readonly camera = new SpectatorCamera();
   readonly seabed = new SpotSeabed();
   readonly farField = new FarFieldOcean();
   readonly lipPoints = new LipPoints();
-  simulation!: SurfZoneSimulation;
+  /** Bubbles entrained under breaking bores, seen from below the surface. */
+  readonly bubbles = new BubblePoints();
+  /** The physical board, drawn at the snapshot's pose. */
+  readonly board = createBoardMesh(buildBoardShape());
+  /** The rider's body, drawn from the snapshot's seven points (its legacy board hidden). */
+  readonly surfer = new Surfer();
+  private readonly riderPose: { -readonly [K in keyof DetachedRiderPose]: DetachedRiderPose[K] } & { points: Float64Array } = {
+    heading: 0,
+    points: new Float64Array(RIDER_SNAPSHOT.length),
+    getPartPosition(part: BodyPart, out) {
+      const i = RIDER_PARTS.indexOf(part);
+      return out.set(this.points[i * 3], this.points[i * 3 + 1], this.points[i * 3 + 2]);
+    },
+  };
+  private retryPending = false;
+  /** The running surf zone, once it has spun up. */
+  host?: SurfZoneHost;
+  config?: SurfZoneConfig;
   /** The storm behind the running sea, in storm mode. */
   storm?: StormSwell;
   focus = { x: 0, z: 0 };
+  private starts = 0;
+  private shown = true;
+  private chosenView: RideView | 'overview' = 'front';
+  /** Whether the screen's right is the board's left (+1) or its right (−1), from the latest clear view. */
+  private steerSign = -1;
+  private readonly cameraRight = new Vector3();
+  private readonly boardLeft = new Vector3();
+  private readonly follow = { position: { x: 0, y: 0, z: 0 }, heading: 0 };
 
   constructor(scene: Scene) {
-    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh);
+    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh, this.board, this.surfer.group);
+    this.board.visible = false;
+    this.surfer.setBoardVisible(false);
+    this.surfer.group.visible = false;
   }
 
-  /** Build the surf zone (warm start and spin-up take a few seconds) and show it on `water`. */
-  start(settings: PhysicalSettings, seed: number, water: WaterSurface, overrides: Partial<SurfZoneConfig> = {}): void {
+  get ready(): boolean {
+    return this.host !== undefined;
+  }
+
+  /**
+   * Build the surf zone (warm start and spin-up take a few seconds) and show it
+   * on `water`. Resolves false when a later start superseded this one.
+   */
+  async start(
+    settings: PhysicalSettings, seed: number, water: WaterSurface, overrides: Partial<SurfZoneConfig> = {},
+    createHost: SurfZoneHostFactory = localSurfZone,
+  ): Promise<boolean> {
+    const start = ++this.starts;
     const swell = swellFor(settings);
-    const simulation = new SurfZoneSimulation({
+    const config: SurfZoneConfig = {
       spot: settings.spot,
       seed,
       significantHeight: swell.significantHeight,
@@ -168,63 +237,160 @@ export class PhysicalMode {
       tide: settings.tide,
       windSpeed: settings.windSpeed,
       ...overrides,
-    });
-    this.simulation = simulation;
+    };
+    const host = createHost(config);
+    await host.ready;
+    if (start !== this.starts) {
+      host.dispose();
+      return false;
+    }
+    this.stop();
+    this.host = host;
+    this.config = config;
     this.storm = swell.storm;
-    water.setSource(new PhysicalSurfaceSource(simulation, 1));
+    const { init } = host;
+    water.setSource(new PhysicalSurfaceSource(new SnapshotSurfZone(host), init.grid.spacing));
     water.setChop(chopForWind(settings.windSpeed));
+    water.setOptics(SPOT_OPTICS[settings.spot]);
+    this.farField.setOptics(SPOT_OPTICS[settings.spot]);
+    const spot = createSpot(config.spot, config.seed);
     const offshoreDepth = OFFSHORE_DEPTH[settings.spot];
-    const { dx } = simulation.solver;
-    const windowMin = simulation.windowXMin;
-    const windowMax = windowMin + simulation.solver.nx * dx;
-    const leftX = windowMin + dx / 2;
-    const rightX = windowMax - dx / 2;
+    const windowMin = init.windowXMin;
+    const windowMax = windowMin + (init.grid.nx - 1) * init.grid.spacing;
+    const leftX = windowMin + init.dx / 2;
+    const rightX = windowMax - init.dx / 2;
     // Beyond the window the world continues each edge column's seabed; offshore it deepens to FAR_DEPTH.
     const offshoreBed = (z: number) => offshoreDepth + (FAR_DEPTH - offshoreDepth) * smoothstep(TANK.offshore, TANK.offshore - FAR_SLOPE_LENGTH, z);
     const bedDepth = (x: number, z: number) => {
       if (z < TANK.offshore) return offshoreBed(z);
-      return tankDepth(simulation.spot, offshoreDepth, x < windowMin ? leftX : x > windowMax ? rightX : x, z);
+      return tankDepth(spot, offshoreDepth, x < windowMin ? leftX : x > windowMax ? rightX : x, z);
     };
-    this.focus = simulation.breakPoint();
+    this.focus = { ...init.focus };
     const hole = { xMin: windowMin, xMax: windowMax, zMin: TANK.offshore, zMax: TANK.shore };
     this.seabed.setDepthOnGrid(
       bedDepth,
       gradedAxis(this.focus.x - 600, this.focus.x + 600, windowMin, windowMax, 2, 30),
       gradedAxis(-900, TANK.shore + 30, TANK.offshore, TANK.shore, 2, 30),
     );
-    const profile = new FarFieldProfile(simulation.sea, {
+    const profile = new FarFieldProfile(surfZoneSea(config), {
       referenceZ: TANK.offshore,
       shoreZ: TANK.shore,
       offshoreZ: TANK.offshore - (FAR_EXTENT - 330),
       shoreSamples: 181,
       offshoreSamples: 391,
       offshoreDepth: (z) => offshoreBed(z) + settings.tide,
-      leftDepth: (z) => tankDepth(simulation.spot, offshoreDepth, leftX, z) + settings.tide,
-      rightDepth: (z) => tankDepth(simulation.spot, offshoreDepth, rightX, z) + settings.tide,
+      leftDepth: (z) => tankDepth(spot, offshoreDepth, leftX, z) + settings.tide,
+      rightDepth: (z) => tankDepth(spot, offshoreDepth, rightX, z) + settings.tide,
     });
-    this.farField.setProfile(profile, hole, this.focus, { extent: FAR_EXTENT, waveHeight: swell.significantHeight });
+    this.farField.setProfile(profile, hole, this.focus, { extent: FAR_EXTENT });
     this.farField.setChop(chopForWind(settings.windSpeed));
-    this.camera.setView(this.camera.view);
+    this.chosenView = 'front';
+    this.camera.setView(this.homeView);
+    return true;
   }
 
-  step(dt: number): void {
-    this.simulation.step(dt);
+  /** Supersede any start still spinning up, so it never takes over. */
+  cancel(): void {
+    this.starts += 1;
+  }
+
+  /** Let the running surf zone go (its worker, if any, ends). */
+  stop(): void {
+    this.host?.dispose();
+    this.host = undefined;
+    this.board.visible = false;
+    this.surfer.group.visible = false;
+  }
+
+  /** Request `steps` fixed physics steps (`SURF_ZONE_STEP` each). */
+  /** The following view last chosen (or the overview), which profile and underwater toggles return to. */
+  get homeView(): SpectatorView {
+    return this.host && this.host.snapshot.rider[RIDER_SNAPSHOT.present] > 0 ? this.chosenView : 'overview';
+  }
+
+  /** Cycle the camera: in front, behind, to the side of the rider, then the overview of the break. */
+  nextView(): SpectatorView {
+    const order: (RideView | 'overview')[] = [...RIDE_VIEWS, 'overview'];
+    const current = order.indexOf(this.camera.view as RideView | 'overview');
+    const next = order[(current + 1) % order.length];
+    this.chosenView = next;
+    this.camera.setView(next);
+    return next;
+  }
+
+  /**
+   * The arrow keys steer toward the screen's left or right in any view: facing
+   * the rider from the beach, the screen's right is the board's left. Returns the
+   * board's steer (+1 its left). With the board end-on to the camera, the last
+   * clear mapping holds.
+   */
+  screenSteer(steer: number): number {
+    if (steer === 0) return 0;
+    this.cameraRight.setFromMatrixColumn(this.camera.camera.matrixWorld, 0).setY(0);
+    this.boardLeft.set(1, 0, 0).applyQuaternion(this.board.quaternion).setY(0);
+    if (this.cameraRight.lengthSq() > 1e-6 && this.boardLeft.lengthSq() > 1e-6) {
+      const alignment = this.cameraRight.normalize().dot(this.boardLeft.normalize());
+      if (Math.abs(alignment) > 0.25) this.steerSign = alignment > 0 ? 1 : -1;
+    }
+    return steer * this.steerSign;
+  }
+
+  /** Put board and rider back in the lineup on the next advance; the waves carry on. */
+  retry(): void {
+    this.retryPending = true;
+  }
+
+  advance(steps: number, input?: Omit<RideRequest, 'retry'>): void {
+    const retry = this.retryPending;
+    if (input || retry) this.retryPending = false;
+    this.host?.advance(steps, input || retry ? { paddle: false, popUp: false, steer: 0, ...input, retry } : undefined);
   }
 
   update(dt: number): void {
-    this.camera.update(this.simulation, this.focus, dt);
-    this.farField.update(this.simulation.seaTime);
-    this.lipPoints.update(this.simulation.lip);
+    const { host } = this;
+    if (!host) return;
+    const pose = host.snapshot.board;
+    const rider = host.snapshot.rider;
+    const riding = rider[RIDER_SNAPSHOT.present] > 0;
+    // Follow the rider's body once it is in the water, the board while it rides.
+    const fallen = riding && rider[RIDER_SNAPSHOT.phase] === RIDER_PHASES.indexOf('fallen');
+    this.follow.position.x = fallen ? rider[RIDER_SNAPSHOT.points] : pose[0];
+    this.follow.position.y = fallen ? rider[RIDER_SNAPSHOT.points + 1] : pose[1];
+    this.follow.position.z = fallen ? rider[RIDER_SNAPSHOT.points + 2] : pose[2];
+    this.follow.heading = riding ? rider[RIDER_SNAPSHOT.heading] : 0;
+    this.camera.update(host, this.focus, dt, pose[7] > 0 ? this.follow : undefined);
+    this.farField.update(host.snapshot.status.seaTime);
+    this.lipPoints.update(snapshotLip(host.snapshot));
+    this.board.visible = this.shown && pose[7] > 0;
+    this.board.position.set(pose[0], pose[1], pose[2]);
+    this.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
+    this.surfer.group.visible = this.shown && riding;
+    if (riding) {
+      this.riderPose.points.set(rider);
+      this.riderPose.heading = rider[RIDER_SNAPSHOT.heading];
+      this.surfer.updateDetached(this.riderPose, this.board.position, this.board.quaternion);
+    }
+    this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
+  }
+
+  /** The Wave Lab rows for the running surf zone. */
+  readout(): ReadoutRow[] {
+    return this.host && this.config ? formatPhysicalReadout(this.config, this.host.snapshot.status, this.storm) : [];
   }
 
   cameraBelowSurface(margin = 0.1): boolean {
+    if (!this.host) return false;
     const position = this.camera.camera.position;
-    return position.y < this.simulation.heightAt(position.x, position.z) - margin;
+    return position.y < this.host.heightAt(position.x, position.z) - margin;
   }
 
   setVisible(visible: boolean): void {
+    this.shown = visible;
+    this.board.visible = visible && (this.host?.snapshot.board[7] ?? 0) > 0;
+    this.surfer.group.visible = visible && (this.host?.snapshot.rider[RIDER_SNAPSHOT.present] ?? 0) > 0;
     this.seabed.mesh.visible = visible;
     this.farField.mesh.visible = visible;
     this.lipPoints.mesh.visible = visible;
+    this.bubbles.mesh.visible = visible;
   }
 }

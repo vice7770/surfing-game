@@ -150,6 +150,11 @@ export class Surfer {
     this.group.add(this.board, this.rider);
   }
 
+  /** Show or hide the drawn legacy board (the physical mode draws its own). */
+  setBoardVisible(visible: boolean): void {
+    this.board.visible = visible;
+  }
+
   resetPose(): void {
     this.poseBlend = 0;
     this.fallBlend = 0;

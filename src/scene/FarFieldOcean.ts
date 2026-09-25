@@ -9,11 +9,14 @@ import {
   NearestFilter,
   RGBAFormat,
   Vector2,
+  Vector3,
   Vector4,
 } from 'three';
 import type { FarFieldProfile } from '../wave/FarFieldProfile';
 import { buildGridGeometry, gradedAxis, type HoleRect } from './gridGeometry';
+import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, waterChopNormal, waterChopPars } from './waterChop';
+import { WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterOpticsPars, type WaterOptics } from './waterOptics';
 
 export type { HoleRect } from './gridGeometry';
 
@@ -30,11 +33,9 @@ uniform float farKx[${MAX_COMPONENTS}];
 uniform float farTemporal[${MAX_COMPONENTS}];
 uniform float farGerstner;
 uniform vec4 farHole;
-uniform float farWaveHeight;
-uniform vec3 waterBaseColor;
-uniform vec3 waterCrestColor;
-uniform vec3 waterFoamColor;
-varying vec3 vWaterColor;
+varying float vWaterDepth;
+varying float vWaterFoam;
+varying vec2 vWaterFlow;
 varying vec3 vWaterWorld;
 
 float farRowFor( float z ) {
@@ -83,9 +84,21 @@ if ( farDry ) {
   farShift = vec2( 0.0 );
 }
 vec3 objectNormal = normalize( vec3( -farSlope.x, 1.0, -farSlope.y ) );
-float farCrest = clamp( farHeight / max( farWaveHeight, 0.01 ) * 0.6, 0.0, 0.6 );
-float farFoam = farDry ? 0.0 : clamp( ( 1.0 - farCap ) * 1.4, 0.0, 0.85 );
-vWaterColor = mix( mix( waterBaseColor, waterCrestColor, farCrest ), waterFoamColor, farFoam );
+vWaterDepth = max( 0.0, farDepth + farHeight );
+vWaterFoam = farDry ? 0.0 : clamp( ( 1.0 - farCap ) * 1.4, 0.0, 0.85 );
+vWaterFlow = vec2( 0.0 );
+`;
+
+const farFragmentPars = /* glsl */ `
+uniform vec2 farFocus;
+uniform vec2 farFade;
+uniform vec3 waterFoamColor;
+varying float vWaterDepth;
+varying float vWaterFoam;
+varying vec2 vWaterFlow;
+${waterOpticsPars}
+${waterChopPars}
+${foamPatternPars}
 `;
 
 /**
@@ -93,6 +106,7 @@ vWaterColor = mix( mix( waterBaseColor, waterCrestColor, farCrest ), waterFoamCo
  * seeded components as the tank's boundary, refracted and shoaled along the
  * cross-shore axis by `FarFieldProfile`, with a slight Gerstner crest, a
  * breaking-foam proxy beside the window, wind chop, and a fade into the sky.
+ * It shades like the tank water from its tabulated depth, without crest light.
  */
 export class FarFieldOcean {
   readonly mesh: Mesh<BufferGeometry, MeshPhysicalMaterial>;
@@ -112,18 +126,17 @@ export class FarFieldOcean {
       farTemporal: { value: new Float32Array(MAX_COMPONENTS) },
       farGerstner: { value: 0.6 },
       farHole: { value: new Vector4() },
-      farWaveHeight: { value: 1 },
       farFocus: { value: new Vector2() },
       farFade: { value: new Vector2(1000, 1450) },
-      waterBaseColor: { value: new Color('#0c8f9d') },
-      waterCrestColor: { value: new Color('#4fc1b5') },
       waterFoamColor: { value: new Color('#d8f2e9') },
+      waterFoamTile: { value: foamTileTexture() },
+      waterFoamPattern: { value: 1 },
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
+      ...createOpticsUniforms(),
     };
     const material = new MeshPhysicalMaterial({
-      color: '#ffffff', roughness: 0.62, metalness: 0.01, clearcoat: 0.12, clearcoatRoughness: 0.55,
-      side: DoubleSide, transparent: true,
+      color: '#ffffff', roughness: 0.62, metalness: 0, ior: WATER_IOR, side: DoubleSide, transparent: true,
     });
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, this.uniforms);
@@ -132,9 +145,10 @@ export class FarFieldOcean {
         .replace('#include <beginnormal_vertex>', farBeginNormal)
         .replace('#include <begin_vertex>', 'vec3 transformed = vec3( position.x + farShift.x, farHeight, position.z + farShift.y );\nvWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', `#include <common>\nvarying vec3 vWaterColor;\nuniform vec2 farFocus;\nuniform vec2 farFade;\n${waterChopPars}`)
+        .replace('#include <common>', `#include <common>\n${farFragmentPars}`)
         .replace('#include <normal_fragment_begin>', waterChopNormal)
-        .replace('#include <color_fragment>', 'diffuseColor.rgb *= vWaterColor;\ndiffuseColor.a *= 1.0 - smoothstep( farFade.x, farFade.y, length( vWaterWorld.xz - farFocus ) );');
+        .replace('#include <color_fragment>', 'diffuseColor.a *= 1.0 - smoothstep( farFade.x, farFade.y, length( vWaterWorld.xz - farFocus ) );')
+        .replace('#include <emissivemap_fragment>', waterBodyFragment(false));
     };
     material.customProgramCacheKey = () => 'breakline-far-field-ocean';
     this.mesh = new Mesh(new BufferGeometry(), material);
@@ -151,7 +165,7 @@ export class FarFieldOcean {
   }
 
   /** Build the mesh around `hole` out to `extent` metres and upload the profile tables. */
-  setProfile(profile: FarFieldProfile, hole: HoleRect, focus: { x: number; z: number }, options: { extent: number; waveHeight: number }): void {
+  setProfile(profile: FarFieldProfile, hole: HoleRect, focus: { x: number; z: number }, options: { extent: number }): void {
     if (profile.count > MAX_COMPONENTS) throw new RangeError(`The far field supports ${MAX_COMPONENTS} components, got ${profile.count}`);
     this.profile = profile;
     const xs = gradedAxis(focus.x - options.extent, focus.x + options.extent, hole.xMin, hole.xMax, 4, 40);
@@ -176,8 +190,16 @@ export class FarFieldOcean {
     (this.uniforms.farHole.value as Vector4).set(hole.xMin, hole.xMax, hole.zMin, hole.zMax);
     (this.uniforms.farFocus.value as Vector2).set(focus.x, focus.z);
     (this.uniforms.farFade.value as Vector2).set(options.extent * 0.66, options.extent * 0.97);
-    this.uniforms.farWaveHeight.value = options.waveHeight;
     this.mesh.visible = true;
+  }
+
+  setOptics(optics: WaterOptics): void {
+    applyOptics(this.uniforms, optics);
+  }
+
+  /** `direction` points toward the sun; `radiance` is the sun light's colour × intensity. */
+  setSun(direction: Vector3, radiance: Color): void {
+    applySun(this.uniforms, direction, radiance);
   }
 
   setChop(strength: number): void {
