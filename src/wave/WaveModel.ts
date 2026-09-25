@@ -281,6 +281,12 @@ export class InteractiveWaterField {
     return this.sampleHeight(x, z);
   }
 
+  /** Copy raw node elevations for rendering: node `iz * nx + ix` lands at `offset + index * stride`. */
+  copyHeights(target: Float32Array, stride = 1, offset = 0): void {
+    const heights = this.height;
+    for (let index = 0; index < heights.length; index += 1) target[offset + index * stride] = heights[index];
+  }
+
   /** Still-water depth; the optional shelf shallows smoothly toward shore (+z). */
   depthAt(_x: number, z: number): number {
     const strength = Math.max(0, Math.min(1, this.settings.shelfStrength ?? 0));
