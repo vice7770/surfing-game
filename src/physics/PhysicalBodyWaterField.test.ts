@@ -142,4 +142,29 @@ describe('PhysicalBodyWaterField', () => {
     expect(bodies[0].outsideDomain).toBe(false);
     expect(bodies[1].outsideDomain).toBe(false);
   });
+
+  it('replays a fall deterministically while the physical wave advances', () => {
+    const run = () => {
+      const { simulation, field } = fixture();
+      const body = new DetachedSurfer();
+      const x = simulation.solver.xCenters[4];
+      const z = simulation.solver.zCenters[30];
+      body.start({
+        center: new Vector3(x, simulation.heightAt(x, z) + 0.5, z),
+        orientation: new Quaternion(), velocity: new Vector3(0, -2, 0),
+        angularVelocity: new Vector3(0.2, 0, 0),
+      });
+      for (let step = 0; step < 12; step += 1) {
+        simulation.step(1 / 60);
+        body.step(1 / 60, field);
+      }
+      return { center: body.centerOfMass().toArray(), momentum: body.linearMomentum().toArray(),
+        surface: simulation.heightAt(x, z), outside: body.outsideDomain };
+    };
+    const first = run();
+    expect(first).toEqual(run());
+    expect(first.center.every(Number.isFinite)).toBe(true);
+    expect(first.momentum.every(Number.isFinite)).toBe(true);
+    expect(first.outside).toBe(false);
+  });
 });
