@@ -86,3 +86,28 @@ describe('SeaState linear sampler', () => {
     expect(sea.depthAveragedVelocity(0, 0, 0)).toEqual({ x: 0, z: 0 });
   });
 });
+
+describe('SeaState sets', () => {
+  it('spaces two-component sets by the Munk beat period', () => {
+    const periods = [12.5, 13];
+    const sea = new SeaState(periods.map((period) => ({
+      amplitude: 0.5, omega: (2 * Math.PI) / period, direction: 0, phase: 0,
+    })), 30);
+    const beat = (periods[0] * periods[1]) / Math.abs(periods[1] - periods[0]);
+    const first = sea.nextSetPeak(0, 0, 1, 700);
+    const second = sea.nextSetPeak(0, 0, first + 10, 700);
+    expect(beat).toBeCloseTo(325, 6);
+    expect(first / beat).toBeCloseTo(1, 2);
+    expect((second - first) / beat).toBeCloseTo(1, 2);
+    expect(sea.envelope(0, 0, first)).toBeCloseTo(1, 3);
+  });
+
+  it('finds a large-envelope moment in a spectral sea', () => {
+    const sea = SeaState.fromSpectrum({ ...swell, spreading: 24 }, 11);
+    const peak = sea.nextSetPeak(0, 0, 20, 300);
+    let largest = 0;
+    for (let t = 20; t <= 320; t += 0.25) largest = Math.max(largest, sea.envelope(0, 0, t));
+    expect(peak).toBeGreaterThanOrEqual(20);
+    expect(sea.envelope(0, 0, peak)).toBeGreaterThanOrEqual(0.89 * largest);
+  });
+});

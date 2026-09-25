@@ -137,6 +137,41 @@ export class SeaState {
     return flow;
   }
 
+  /** Wave-group envelope |Σ a e^{iψ}|; its slow beats are the sets, m. */
+  envelope(x: number, z: number, t: number): number {
+    let real = 0;
+    let imaginary = 0;
+    for (const component of this.components) {
+      const psi = component.kx * x + component.kz * z - component.omega * t + component.phase;
+      real += component.amplitude * Math.cos(psi);
+      imaginary += component.amplitude * Math.sin(psi);
+    }
+    return Math.hypot(real, imaginary);
+  }
+
+  /** First set peak after `fromTime`: an envelope maximum within 90 % of the horizon's largest, s. */
+  nextSetPeak(x: number, z: number, fromTime: number, horizon = 600, step = 0.25): number {
+    const count = Math.max(3, Math.ceil(horizon / step) + 1);
+    const values = new Float64Array(count);
+    let largest = 0;
+    let largestIndex = 0;
+    for (let index = 0; index < count; index += 1) {
+      values[index] = this.envelope(x, z, fromTime + index * step);
+      if (values[index] > largest) {
+        largest = values[index];
+        largestIndex = index;
+      }
+    }
+    for (let index = 1; index < count - 1; index += 1) {
+      const value = values[index];
+      if (value < 0.9 * largest || value < values[index - 1] || value < values[index + 1]) continue;
+      const curvature = values[index - 1] - 2 * value + values[index + 1];
+      const offset = curvature < 0 ? (0.5 * (values[index - 1] - values[index + 1])) / curvature : 0;
+      return fromTime + (index + offset) * step;
+    }
+    return fromTime + largestIndex * step;
+  }
+
   get significantHeight(): number {
     let m0 = 0;
     for (const component of this.components) m0 += 0.5 * component.amplitude * component.amplitude;
