@@ -5,6 +5,7 @@
 - Evidence: the three user-supplied papers and additional primary work are assessed in [board and surfer physics sources](board-surfer-physics-sources.md). A measured value is identified as such below; all coefficients and control mappings without measured support are calibration parameters, not claims about real surfing.
 - Integration: the [board–water handoff](board-water-integration-handoff.md) records the active P2a solver's available fields, unresolved sampling and momentum interfaces, and the checkpoint before board code begins.
 - Acceptance: the [validation protocol](board-surfer-validation-protocol.md) defines observable catch, turn, pop-up and fall events, fixed-seed practice acceptance, and natural-wave reports.
+- Gameplay reference: the [video brief](gameplay-video-reference.md) records the user-supplied clip's ride sequence and camera cues separately from physical measurements.
 
 ## 0. Agreed experience and scope
 
@@ -124,6 +125,6 @@ This extends wave-plan P4; it does not move wave P1–P3 implementation into the
 ## 9. Decisions and unresolved calibration
 
 - **Adopt now:** one water sampling seam, separate board and rider mass, force-applied steering, depth-specific flow, continuous fall, practice and natural modes on the same force laws, seeded scenario diagnostics and an assists-off validation switch.
-- **Measure during B0/B1:** real board geometry, rider mass/stance ranges, force response of the current game and the worker contact budget. Do not assign universal hydrodynamic coefficients from a single CFD geometry.
+- **Measure during B0/B1:** confirm the documented measured shortboard/rider reference against the visible model, then record its actual rendered/physical geometry, mass distribution, stance range, legacy force response and worker contact budget. Do not assign universal hydrodynamic coefficients from a single CFD geometry.
 - **Calibrate during B3/B4:** planing/fin lift and stall curves, paddle force and stroke timing, foot friction and recovery limits. Each calibration record should state the source, wave/board conditions and whether it came from a measured study, a numerical study or playtesting.
 - **Defer:** detailed board flex, aero forces, leash dynamics, individual finger/hand water contacts and full anatomical ragdoll. Add them only if a demonstrated gameplay or validation gap requires them.

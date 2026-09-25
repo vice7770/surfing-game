@@ -21,9 +21,17 @@ The proposal's `SurfWater` interface is a **consumer contract**, not an instruct
 
 ### Candidate reference setup
 
-An [ocean-wave field study by Shormann and in het Panhuis (2020)](https://doi.org/10.1371/journal.pone.0232035) records a coherent shortboard/rider pair: **73 kg surfer**, **1.78 m length**, **0.47 m width**, **0.06 m thickness**, **25.9 L board volume**, and a three-fin thruster setup. This is a provisional B0 reference because it is an observed setup close to the current code's 74 kg rider value. It is not a prescribed board for all surfers or proof that the game's reference video used those dimensions. The paper does not supply the board's mass, so mass must be chosen and documented separately before inertia is calibrated. The study's measured board yaw, pitch, roll, speed and turn duration can later provide plausibility checks, with wave and skill differences noted.
+The recommended **provisional B0 reference** combines two clearly identified measurements:
 
-The game currently renders a 2.65 m board and uses `boardMass = 80` in `BoardPhysics`, alongside `riderMass = 74`. The 80 kg value acts as an effective simulation mass and must not be relabeled as the physical shortboard mass. Reconcile visible geometry, physics contact positions, volume, board mass and inertia as **one configuration** when B0 begins; changing just the mesh length would not do so.
+| Parameter | Initial value and source | Boundary |
+|---|---|---|
+| Rider mass | **73 kg**, a participant in [Shormann and in het Panhuis's ocean-wave study (2020)](https://doi.org/10.1371/journal.pone.0232035). | The current code's 74 kg rider is already close; rider posture and distribution still need modeling. |
+| Board shell | **1.778 m × 0.464 m × 0.0667 m**, **25.75 L**, **2.54 kg**, PU/stringer shortboard DP-1 with three fin boxes, measured in [Connellan et al. (2026), Table 1](https://doi.org/10.1002/adem.71000). | The study measured this physical board for structural response, not surfing forces. Removable fin mass and installed-fin center of mass are not specified by this value. |
+| Fin configuration | Three-fin thruster, as ridden in the [2020 field study](https://doi.org/10.1371/journal.pone.0232035). | Use one combined fin/rail force first; individual fins come later only if they improve handling. Fin areas and locations are B3 calibration inputs. |
+
+The field study's 73 kg participant rode a different but very similar **1.78 × 0.47 × 0.06 m, 25.9 L** shortboard. Thus the combined reference is a **modeling choice from two studies**, not one measured board-and-rider system. It is a defensible starting point close to the selected shortboard style, not a claim about the exact board visible in the [user's video](gameplay-video-reference.md). The field study's measured board yaw, pitch, roll, speed and turn duration can later provide plausibility checks, with wave and skill differences noted.
+
+The game currently renders a 2.65 m board and uses `boardMass = 80` in `BoardPhysics`, alongside `riderMass = 74`. The 80 kg value acts as an effective simulation mass and must not be relabeled as the physical shortboard mass. Reconcile visible geometry, physics contact positions, volume, board shell/fin mass and inertia as **one configuration** when B0 begins; changing just the mesh length would not do so. Compute inertia from that geometry and mass distribution, then check convergence and turn response. Do not import the field study's combined board-and-surfer moment of inertia as the board's inertia.
 
 Preserve enough information to compare the new board model with the current game without treating legacy behavior as a physical target:
 
@@ -42,13 +50,13 @@ Existing `BoardPhysics.test.ts` asserts a catch for every seed 1–12 and a comp
 ## Integration risks to resolve at the P2c checkpoint
 
 1. **Performance headroom.** The concurrent wave plan records P2a at about **7.5 ms per 33.6k-cell step** in Node, above the proposed **4 ms total CPU worker** gate before board contacts are added. P2b optimization and P2c measurement must establish a real board budget. Do not claim the board fits until measured. If a budget is missed later, simplify redundant hull contacts and rider joint detail first, then measure handling changes; keep the shared water field and force directions.
-2. **Board scale.** The current render geometry spans **2.65 m** length and roughly **0.6 m** maximum width, while the selected reference is a shortboard. Its four physics contacts reach `z = ±1.05 m`. Before mass, inertia or wetted-area calibration, choose and record one coherent geometry for both rendered hull and physical contacts. The current visual dimensions are a code observation, not a researched shortboard standard.
+2. **Board scale.** The current render geometry spans **2.65 m** length and roughly **0.6 m** maximum width, while the provisional measured reference is a 1.778 m shortboard. Its four physics contacts reach `z = ±1.05 m`. Before mass, inertia or wetted-area calibration, confirm or revise the provisional reference and apply one coherent geometry to both rendered hull and physical contacts. The current visual dimensions are a code observation, not a researched shortboard standard.
 3. **Surface/flow consistency.** P2a's cell-centered `h`, `qx`, `qz` differ from the legacy node field. The board, fall body and renderer need the same world-coordinate convention and interpolation policy. Tests should cover cells near the wet/dry edge and the moving window boundary.
 4. **Velocity profile limits.** The wave plan's linear depth profile is suitable as a controlled approximation before breaking; it is not a resolved vertical flow in bores. Bound it and flag the regime in diagnostics so tuning does not hide a large extrapolation.
 5. **Practice-wave forcing.** The agreed endless practice mode must use the same P2c solver and board forces as natural mode. P2b/P2c should expose a controlled incoming-wave configuration suitable for that mode; no direct speed or grip injection belongs in the board adapter.
 
 ## Release sequence
 
-1. **While P2b/P2c is active:** keep this handoff and the board proposal current; do not edit shared water or board code. Record the chosen reference board and rider parameters once a coherent target is selected.
+1. **While P2b/P2c is active:** keep this handoff and the board proposal current; do not edit shared water or board code. Preserve the provisional measured board/rider reference above and record any later revision with its reason.
 2. **At P2c merge:** recheck the actual worker snapshot, water sampler, interpolation, domain handling and measured step cost against the table above. Resolve any missing contract with the water implementation before B0 code begins.
 3. **Then B0:** implement the adapter and baseline telemetry in an isolated branch, keeping gameplay behavior unchanged. Only after the B0 gates pass should B1 replace board dynamics.
