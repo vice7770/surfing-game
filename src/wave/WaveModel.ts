@@ -68,6 +68,7 @@ export class InteractiveWaterField {
   readonly effectiveGravity: number;
   readonly packetWidth: number;
   time = 0;
+  /** Cumulative horizontal-flow energy removed by breaker damping, in totalEnergy() units. */
   breakingDissipation = 0;
 
   private height: Float32Array;
@@ -202,7 +203,9 @@ export class InteractiveWaterField {
       const breaking = this.breakingStrength[index];
       if (breaking <= 0) continue;
       const damping = 1 - Math.min(0.4, breaking * dt * 0.45);
-      this.breakingDissipation += (uNext[index] * uNext[index] + wNext[index] * wNext[index]) * (1 - damping);
+      const flowSquared = uNext[index] * uNext[index] + wNext[index] * wNext[index];
+      this.breakingDissipation += 0.5 * this.bedDepth[index] * flowSquared
+        * (1 - damping * damping) * this.cellArea;
       uNext[index] *= damping;
       wNext[index] *= damping;
     }

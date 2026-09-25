@@ -80,6 +80,11 @@ Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status 
 - [x] Let the existing local-slope break respond more strongly in shallower water while retaining the deterministic lateral peel.
 - [x] Verify that the effect comes from the shared field, remains bounded, and preserves catch/playability and browser performance. Windy Reef still completes in the local browser at 120 FPS.
 
+### P1 · Account for breaker energy loss — `Done for prototype`
+
+- [x] Express the break's horizontal-flow energy loss in the same relative units as total field energy.
+- [x] Verify nonnegative, cumulative loss and reset behavior without changing wave or board trajectories; compare the same seeded field with and without breaker damping.
+
 ### P1 · Improve model fidelity and explain failures — `Done for prototype`
 
 - [x] Record terminal catch/ride outcomes, failure reasons, settings, timing, and peak measurements in a bounded local run history visible in the Wave Lab.

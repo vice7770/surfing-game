@@ -19,7 +19,7 @@ This note separates evidence-backed **relationships** from coefficients tuned fo
 ## Practical calibration checks for this prototype
 
 1. Measure unforced packet propagation and check that crest speed remains near the selected wave speed before breaking. With no board input, check that the field does not gain energy over time.
-2. Compare otherwise identical rides with and without breaking. Breaking should reduce coherent crest energy and create a local loss of ride support, without teleporting the board or increasing its speed solely from the damping term. Treat `breakingDissipation` as an internal diagnostic until it is tied to an explicit physical energy integral.
+2. Compare otherwise identical rides with and without breaking. Breaking should reduce coherent crest energy and create a local loss of ride support, without teleporting the board or increasing its speed solely from the damping term. `breakingDissipation` now accumulates the exact horizontal-flow energy removed by the break damping operation, using the same relative units as `totalEnergy()`. It omits elevation smoothing, viscosity, and boundary losses, so it is not the complete field-energy budget or a measurement in joules.
 3. For turning, compare matched left/right input, zero input, and reduced immersion. Lateral path change should reverse with steering and weaken with little water contact. Tune feel against the supplied gameplay video, not against fin force numbers from a different board and standing river wave.
 4. Keep coefficients such as `0.035` planing lift, `0.18` riding fin force, `0.45` break damping, and the 2.8 m/s peel speed documented as **game constants**. No cited experiment determines them for this geometry, water field, rider, or camera scale.
 

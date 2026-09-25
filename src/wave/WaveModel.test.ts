@@ -106,13 +106,32 @@ describe('InteractiveWaterField', () => {
   it('tracks bounded wave energy through propagation and breaking', () => {
     const wave = new InteractiveWaterField(2, { ...DEFAULT_WAVE_SETTINGS });
     const initial = wave.totalEnergy();
-    for (let frame = 0; frame < 600; frame += 1) wave.step(1 / 60);
+    for (let frame = 0; frame < 360; frame += 1) wave.step(1 / 60);
+    const earlyLoss = wave.breakingDissipation;
+    for (let frame = 360; frame < 600; frame += 1) wave.step(1 / 60);
     const after = wave.totalEnergy();
     expect(Number.isFinite(after)).toBe(true);
     expect(after).toBeGreaterThan(0);
     expect(after).toBeLessThan(initial);
     expect(wave.breakingDissipation).toBeGreaterThan(0);
+    expect(wave.breakingDissipation).toBeGreaterThanOrEqual(earlyLoss);
+    expect(wave.breakingDissipation).toBeLessThan(initial - after);
+    wave.reset();
+    expect(wave.breakingDissipation).toBe(0);
   });
+
+  it('removes energy compared with the same wave without breaker damping', () => {
+    const breaking = new InteractiveWaterField(2, { ...DEFAULT_WAVE_SETTINGS });
+    const unbroken = new InteractiveWaterField(2, { ...DEFAULT_WAVE_SETTINGS });
+    unbroken.breakingAt = () => 0;
+    for (let frame = 0; frame < 600; frame += 1) {
+      breaking.step(1 / 60);
+      unbroken.step(1 / 60);
+    }
+    expect(breaking.breakingDissipation).toBeGreaterThan(0);
+    expect(unbroken.breakingDissipation).toBe(0);
+    expect(breaking.totalEnergy()).toBeLessThan(unbroken.totalEnergy());
+  }, 20_000);
 
   it('keeps current in the shared field and responds to wind forcing', () => {
     const still = new InteractiveWaterField(4, { height: 0, period: 8, speed: 0, currentX: 0.4, windX: 0 });
