@@ -178,25 +178,29 @@ export class ShallowWaterSolver {
   private readonly u: Float64Array;
   private readonly w: Float64Array;
   private readonly eta: Float64Array;
-  private readonly stageH: Float64Array;
-  private readonly stageQx: Float64Array;
-  private readonly stageQz: Float64Array;
   private readonly rateH: Float64Array;
   private readonly rateQx: Float64Array;
   private readonly rateQz: Float64Array;
   private readonly flux: Flux = { mass: 0, normal: 0, tangent: 0, leftCorrection: 0, rightCorrection: 0 };
-  private readonly hW: Float64Array;
-  private readonly hE: Float64Array;
-  private readonly etaW: Float64Array;
-  private readonly etaE: Float64Array;
-  private readonly unW: Float64Array;
-  private readonly unE: Float64Array;
-  private readonly utW: Float64Array;
-  private readonly utE: Float64Array;
+  /** MUSCL face states per cell: x faces (west/east) and z faces (south/north). */
+  private readonly xhW: Float64Array;
+  private readonly xhE: Float64Array;
+  private readonly xetaW: Float64Array;
+  private readonly xetaE: Float64Array;
+  private readonly xuW: Float64Array;
+  private readonly xuE: Float64Array;
+  private readonly xwW: Float64Array;
+  private readonly xwE: Float64Array;
+  private readonly zhS: Float64Array;
+  private readonly zhN: Float64Array;
+  private readonly zetaS: Float64Array;
+  private readonly zetaN: Float64Array;
+  private readonly zwS: Float64Array;
+  private readonly zwN: Float64Array;
+  private readonly zuS: Float64Array;
+  private readonly zuN: Float64Array;
   private readonly zones: ZoneEntry[] = [];
   private readonly target: WaterTarget = { eta: 0, qx: 0, qz: 0 };
-  /** Depth array the current sweep reads (h or the RK stage). */
-  private lineDepth: Float64Array;
 
   constructor(grid: SolverGrid, depthAt: DepthFunction, options: SolverOptions = {}) {
     this.nx = grid.nx;
@@ -226,13 +230,11 @@ export class ShallowWaterSolver {
     const make = () => new Float64Array(size);
     this.bed = make(); this.h = make(); this.qx = make(); this.qz = make();
     this.u = make(); this.w = make(); this.eta = make();
-    this.stageH = make(); this.stageQx = make(); this.stageQz = make();
     this.rateH = make(); this.rateQx = make(); this.rateQz = make();
-    this.lineDepth = this.h;
-    const lineLength = Math.max(this.nx, this.nz);
-    const face = () => new Float64Array(lineLength);
-    this.hW = face(); this.hE = face(); this.etaW = face(); this.etaE = face();
-    this.unW = face(); this.unE = face(); this.utW = face(); this.utE = face();
+    this.xhW = make(); this.xhE = make(); this.xetaW = make(); this.xetaE = make();
+    this.xuW = make(); this.xuE = make(); this.xwW = make(); this.xwE = make();
+    this.zhS = make(); this.zhN = make(); this.zetaS = make(); this.zetaN = make();
+    this.zwS = make(); this.zwN = make(); this.zuS = make(); this.zuN = make();
     for (let iz = 0; iz < this.nz; iz += 1) {
       for (let ix = 0; ix < this.nx; ix += 1) {
         const i = iz * this.nx + ix;
@@ -393,21 +395,25 @@ export class ShallowWaterSolver {
     }
   }
 
+  /**
+   * MUSCL-Hancock step: reconstruct faces once, advance them half a step with
+   * each cell's own face fluxes (the Hancock predictor), then take one full
+   * conservative step with Riemann fluxes of the predicted faces. One flux
+   * evaluation per step instead of SSP-RK2's two.
+   */
   private advance(dt: number): void {
-    const { h, qx, qz, stageH, stageQx, stageQz, rateH, rateQx, rateQz } = this;
-    this.computeRates(h, qx, qz);
+    const { h, qx, qz, rateH, rateQx, rateQz } = this;
+    this.predictFaces(0.5 * dt);
+    rateH.fill(0);
+    rateQx.fill(0);
+    rateQz.fill(0);
+    this.fluxAlongX();
+    this.fluxAlongZ();
     for (let i = 0; i < h.length; i += 1) {
-      stageH[i] = Math.max(0, h[i] + dt * rateH[i]);
-      const wet = stageH[i] > this.dryDepth;
-      stageQx[i] = wet ? qx[i] + dt * rateQx[i] : 0;
-      stageQz[i] = wet ? qz[i] + dt * rateQz[i] : 0;
-    }
-    this.computeRates(stageH, stageQx, stageQz);
-    for (let i = 0; i < h.length; i += 1) {
-      h[i] = Math.max(0, 0.5 * (h[i] + stageH[i] + dt * rateH[i]));
+      h[i] = Math.max(0, h[i] + dt * rateH[i]);
       const wet = h[i] > this.dryDepth;
-      qx[i] = wet ? 0.5 * (qx[i] + stageQx[i] + dt * rateQx[i]) : 0;
-      qz[i] = wet ? 0.5 * (qz[i] + stageQz[i] + dt * rateQz[i]) : 0;
+      qx[i] = wet ? qx[i] + dt * rateQx[i] : 0;
+      qz[i] = wet ? qz[i] + dt * rateQz[i] : 0;
     }
     if (this.manning > 0) {
       const factor = dt * this.gravity * this.manning * this.manning;
@@ -423,118 +429,203 @@ export class ShallowWaterSolver {
     }
   }
 
-  private computeRates(h: Float64Array, qx: Float64Array, qz: Float64Array): void {
-    const { u, w, eta, bed, rateH, rateQx, rateQz } = this;
+  /**
+   * MC-limited faces of every cell along x and z (walls mirror, open edges extend
+   * the cell), advanced half a step by the Hancock predictor in the same pass:
+   * each cell's own face fluxes and the corrector's bed-slope source, so a lake
+   * at rest predicts no change.
+   */
+  private predictFaces(half: number): void {
+    const { nx, nz, h, qx, qz, bed, u, w, eta, dz, zGaps, dryDepth, gravity: g } = this;
+    const { xhW, xhE, xetaW, xetaE, xuW, xuE, xwW, xwE, zhS, zhN, zetaS, zetaN, zwS, zwN, zuS, zuN } = this;
     for (let i = 0; i < h.length; i += 1) {
-      const wet = h[i] > this.dryDepth;
+      const wet = h[i] > dryDepth;
       u[i] = wet ? qx[i] / h[i] : 0;
       w[i] = wet ? qz[i] / h[i] : 0;
       eta[i] = h[i] + bed[i];
-      rateH[i] = 0;
-      rateQx[i] = 0;
-      rateQz[i] = 0;
     }
-    this.lineDepth = h;
-    for (let iz = 0; iz < this.nz; iz += 1) {
-      this.sweepLine(iz * this.nx, 1, this.nx, this.xBoundary, null, this.dx, u, w, rateQx, rateQz);
-    }
-    for (let ix = 0; ix < this.nx; ix += 1) {
-      this.sweepLine(ix, this.nx, this.nz, WALL, this.dz, 0, w, u, rateQz, rateQx);
+    const periodic = this.xBoundary === PERIODIC;
+    const wallX = this.xBoundary === WALL;
+    const invDx = 1 / this.dx;
+    for (let iz = 0; iz < nz; iz += 1) {
+      const row = iz * nx;
+      const hasBelow = iz > 0;
+      const hasAbove = iz < nz - 1;
+      const backScale = hasBelow ? dz[iz] / zGaps[iz - 1] : 1;
+      const forwardScale = hasAbove ? dz[iz] / zGaps[iz] : 1;
+      const invDz = 1 / dz[iz];
+      for (let ix = 0; ix < nx; ix += 1) {
+        const i = row + ix;
+        const hasLeft = ix > 0 || periodic;
+        const hasRight = ix < nx - 1 || periodic;
+        const left = ix > 0 ? i - 1 : row + nx - 1;
+        const right = ix < nx - 1 ? i + 1 : row;
+        const below = i - nx;
+        const above = i + nx;
+        const hi = h[i];
+        const hL = hasLeft ? h[left] : hi;
+        const hR = hasRight ? h[right] : hi;
+        const hB = hasBelow ? h[below] : hi;
+        const hA = hasAbove ? h[above] : hi;
+        const ei = eta[i];
+        if (hi <= 0 && hL <= 0 && hR <= 0 && hB <= 0 && hA <= 0) {
+          xhW[i] = 0; xhE[i] = 0; xetaW[i] = ei; xetaE[i] = ei; xuW[i] = 0; xuE[i] = 0; xwW[i] = 0; xwE[i] = 0;
+          zhS[i] = 0; zhN[i] = 0; zetaS[i] = ei; zetaN[i] = ei; zwS[i] = 0; zwN[i] = 0; zuS[i] = 0; zuN[i] = 0;
+          continue;
+        }
+        const ui = u[i];
+        const wi = w[i];
+        // Along x: normal velocity u, tangential w.
+        const shx = 0.5 * limited(hi - hL, hR - hi);
+        const sex = 0.5 * limited(ei - (hasLeft ? eta[left] : ei), (hasRight ? eta[right] : ei) - ei);
+        const sux = 0.5 * limited(ui - (hasLeft ? u[left] : wallX ? -ui : ui), (hasRight ? u[right] : wallX ? -ui : ui) - ui);
+        const swx = 0.5 * limited(wi - (hasLeft ? w[left] : wi), (hasRight ? w[right] : wi) - wi);
+        // Along z: normal velocity w, tangential u; walls at both ends.
+        const shz = 0.5 * limited((hi - hB) * backScale, (hA - hi) * forwardScale);
+        const sez = 0.5 * limited((ei - (hasBelow ? eta[below] : ei)) * backScale, ((hasAbove ? eta[above] : ei) - ei) * forwardScale);
+        const swz = 0.5 * limited((wi - (hasBelow ? w[below] : -wi)) * backScale, ((hasAbove ? w[above] : -wi) - wi) * forwardScale);
+        const suz = 0.5 * limited((ui - (hasBelow ? u[below] : ui)) * backScale, ((hasAbove ? u[above] : ui) - ui) * forwardScale);
+        const westRaw = hi - shx;
+        const eastRaw = hi + shx;
+        const southRaw = hi - shz;
+        const northRaw = hi + shz;
+        const hW = westRaw > 0 ? westRaw : 0;
+        const hE = eastRaw > 0 ? eastRaw : 0;
+        const hS = southRaw > 0 ? southRaw : 0;
+        const hN = northRaw > 0 ? northRaw : 0;
+        const uW = ui - sux; const uE = ui + sux; const vW = wi - swx; const vE = wi + swx;
+        const wS = wi - swz; const wN = wi + swz; const tS = ui - suz; const tN = ui + suz;
+        const etaW = ei - sex; const etaE = ei + sex; const etaS = ei - sez; const etaN = ei + sez;
+        // Hancock predictor.
+        const massX = hE * uE - hW * uW;
+        const massZ = hN * wN - hS * wS;
+        const pressureX = hE * uE * uE + 0.5 * g * hE * hE - hW * uW * uW - 0.5 * g * hW * hW
+          - g * 0.5 * (hW + hE) * ((etaW - hW) - (etaE - hE));
+        const pressureZ = hN * wN * wN + 0.5 * g * hN * hN - hS * wS * wS - 0.5 * g * hS * hS
+          - g * 0.5 * (hS + hN) * ((etaS - hS) - (etaN - hN));
+        const shearX = hE * uE * vE - hW * uW * vW;
+        const shearZ = hN * wN * tN - hS * wS * tS;
+        const dH = -half * (massX * invDx + massZ * invDz);
+        const dQx = -half * (pressureX * invDx + shearZ * invDz);
+        const dQz = -half * (shearX * invDx + pressureZ * invDz);
+        let depth = hW + dH;
+        if (depth > dryDepth) { const inverse = 1 / depth; xuW[i] = (hW * uW + dQx) * inverse; xwW[i] = (hW * vW + dQz) * inverse; }
+        else { depth = depth > 0 ? depth : 0; xuW[i] = 0; xwW[i] = 0; }
+        xetaW[i] = etaW + depth - hW; xhW[i] = depth;
+        depth = hE + dH;
+        if (depth > dryDepth) { const inverse = 1 / depth; xuE[i] = (hE * uE + dQx) * inverse; xwE[i] = (hE * vE + dQz) * inverse; }
+        else { depth = depth > 0 ? depth : 0; xuE[i] = 0; xwE[i] = 0; }
+        xetaE[i] = etaE + depth - hE; xhE[i] = depth;
+        depth = hS + dH;
+        if (depth > dryDepth) { const inverse = 1 / depth; zwS[i] = (hS * wS + dQz) * inverse; zuS[i] = (hS * tS + dQx) * inverse; }
+        else { depth = depth > 0 ? depth : 0; zwS[i] = 0; zuS[i] = 0; }
+        zetaS[i] = etaS + depth - hS; zhS[i] = depth;
+        depth = hN + dH;
+        if (depth > dryDepth) { const inverse = 1 / depth; zwN[i] = (hN * wN + dQz) * inverse; zuN[i] = (hN * tN + dQx) * inverse; }
+        else { depth = depth > 0 ? depth : 0; zwN[i] = 0; zuN[i] = 0; }
+        zetaN[i] = etaN + depth - hN; zhN[i] = depth;
+      }
     }
   }
 
-  /** Second-order fluxes and well-balanced sources along one row or column, read in place. */
-  private sweepLine(
-    base: number, stride: number, n: number, boundary: number,
-    widths: Float64Array | null, uniformWidth: number,
-    normal: Float64Array, tangent: Float64Array, rateNormal: Float64Array, rateTangent: Float64Array,
-  ): void {
-    const h = this.lineDepth;
-    const { eta, rateH, flux, gravity: g, hW, hE, etaW, etaE, unW, unE, utW, utE } = this;
-    const gaps = widths ? this.zGaps : null;
-    const wall = boundary === WALL;
-    const periodic = boundary === PERIODIC;
-    for (let j = 0; j < n; j += 1) {
-      const index = base + j * stride;
-      const hj = h[index];
-      const hasPrevious = j > 0 || periodic;
-      const hasNext = j < n - 1 || periodic;
-      const previous = j > 0 ? index - stride : base + (n - 1) * stride;
-      const following = j < n - 1 ? index + stride : base;
-      const hPrevious = hasPrevious ? h[previous] : hj;
-      const hNext = hasNext ? h[following] : hj;
-      if (hj <= 0 && hPrevious <= 0 && hNext <= 0) {
-        hW[j] = 0; hE[j] = 0;
-        continue;
+  /** Riemann fluxes and well-balanced sources across x faces, row by row. */
+  private fluxAlongX(): void {
+    const { nx, nz, rateH, rateQx, rateQz, flux, gravity: g } = this;
+    const { xhW, xhE, xetaW, xetaE, xuW, xuE, xwW, xwE } = this;
+    const periodic = this.xBoundary === PERIODIC;
+    const wall = this.xBoundary === WALL;
+    const invDx = 1 / this.dx;
+    const interfaces = periodic ? nx : nx - 1;
+    for (let iz = 0; iz < nz; iz += 1) {
+      const row = iz * nx;
+      for (let ix = 0; ix < interfaces; ix += 1) {
+        const left = row + ix;
+        const right = ix + 1 < nx ? left + 1 : row;
+        if (xhE[left] <= 0 && xhW[right] <= 0) continue;
+        interfaceFlux(xhE[left], xetaE[left], xuE[left], xwE[left], xhW[right], xetaW[right], xuW[right], xwW[right], g, flux);
+        rateH[left] -= flux.mass * invDx;
+        rateQx[left] -= (flux.normal + flux.leftCorrection) * invDx;
+        rateQz[left] -= flux.tangent * invDx;
+        rateH[right] += flux.mass * invDx;
+        rateQx[right] += (flux.normal + flux.rightCorrection) * invDx;
+        rateQz[right] += flux.tangent * invDx;
       }
-      const width = widths ? widths[j] : uniformWidth;
-      const backScale = hasPrevious ? width / (gaps ? gaps[j > 0 ? j - 1 : n - 1] : uniformWidth) : 1;
-      const forwardScale = hasNext ? width / (gaps ? gaps[j < n - 1 ? j : n - 1] : uniformWidth) : 1;
-      const etaj = eta[index];
-      const unj = normal[index];
-      const utj = tangent[index];
-      const etaPrevious = hasPrevious ? eta[previous] : etaj;
-      const etaNext = hasNext ? eta[following] : etaj;
-      const unPrevious = hasPrevious ? normal[previous] : wall ? -unj : unj;
-      const unNext = hasNext ? normal[following] : wall ? -unj : unj;
-      const utPrevious = hasPrevious ? tangent[previous] : utj;
-      const utNext = hasNext ? tangent[following] : utj;
-      const sh = 0.5 * limited((hj - hPrevious) * backScale, (hNext - hj) * forwardScale);
-      const se = 0.5 * limited((etaj - etaPrevious) * backScale, (etaNext - etaj) * forwardScale);
-      const su = 0.5 * limited((unj - unPrevious) * backScale, (unNext - unj) * forwardScale);
-      const sv = 0.5 * limited((utj - utPrevious) * backScale, (utNext - utj) * forwardScale);
-      const west = hj - sh;
-      const east = hj + sh;
-      hW[j] = west > 0 ? west : 0;
-      hE[j] = east > 0 ? east : 0;
-      etaW[j] = etaj - se;
-      etaE[j] = etaj + se;
-      unW[j] = unj - su;
-      unE[j] = unj + su;
-      utW[j] = utj - sv;
-      utE[j] = utj + sv;
-    }
-    const interfaces = periodic ? n : n - 1;
-    for (let j = 0; j < interfaces; j += 1) {
-      const k = j + 1 < n ? j + 1 : 0;
-      if (hE[j] <= 0 && hW[k] <= 0) continue;
-      const left = base + j * stride;
-      const right = base + k * stride;
-      const leftWidth = widths ? widths[j] : uniformWidth;
-      const rightWidth = widths ? widths[k] : uniformWidth;
-      interfaceFlux(hE[j], etaE[j], unE[j], utE[j], hW[k], etaW[k], unW[k], utW[k], g, flux);
-      rateH[left] -= flux.mass / leftWidth;
-      rateNormal[left] -= (flux.normal + flux.leftCorrection) / leftWidth;
-      rateTangent[left] -= flux.tangent / leftWidth;
-      rateH[right] += flux.mass / rightWidth;
-      rateNormal[right] += (flux.normal + flux.rightCorrection) / rightWidth;
-      rateTangent[right] += flux.tangent / rightWidth;
-    }
-    if (!periodic) {
-      if (hW[0] > 0) {
-        const width = widths ? widths[0] : uniformWidth;
-        interfaceFlux(hW[0], etaW[0], wall ? -unW[0] : unW[0], utW[0], hW[0], etaW[0], unW[0], utW[0], g, flux);
-        rateH[base] += flux.mass / width;
-        rateNormal[base] += (flux.normal + flux.rightCorrection) / width;
-        rateTangent[base] += flux.tangent / width;
+      if (!periodic) {
+        const first = row;
+        if (xhW[first] > 0) {
+          interfaceFlux(xhW[first], xetaW[first], wall ? -xuW[first] : xuW[first], xwW[first],
+            xhW[first], xetaW[first], xuW[first], xwW[first], g, flux);
+          rateH[first] += flux.mass * invDx;
+          rateQx[first] += (flux.normal + flux.rightCorrection) * invDx;
+          rateQz[first] += flux.tangent * invDx;
+        }
+        const last = row + nx - 1;
+        if (xhE[last] > 0) {
+          interfaceFlux(xhE[last], xetaE[last], xuE[last], xwE[last],
+            xhE[last], xetaE[last], wall ? -xuE[last] : xuE[last], xwE[last], g, flux);
+          rateH[last] -= flux.mass * invDx;
+          rateQx[last] -= (flux.normal + flux.leftCorrection) * invDx;
+          rateQz[last] -= flux.tangent * invDx;
+        }
       }
-      const lastJ = n - 1;
-      if (hE[lastJ] > 0) {
-        const last = base + lastJ * stride;
-        const width = widths ? widths[lastJ] : uniformWidth;
-        interfaceFlux(hE[lastJ], etaE[lastJ], unE[lastJ], utE[lastJ], hE[lastJ], etaE[lastJ], wall ? -unE[lastJ] : unE[lastJ], utE[lastJ], g, flux);
-        rateH[last] -= flux.mass / width;
-        rateNormal[last] -= (flux.normal + flux.leftCorrection) / width;
-        rateTangent[last] -= flux.tangent / width;
+      for (let ix = 0; ix < nx; ix += 1) {
+        const i = row + ix;
+        const depthSum = xhW[i] + xhE[i];
+        if (depthSum <= 0) continue;
+        rateQx[i] += g * 0.5 * depthSum * ((xetaW[i] - xhW[i]) - (xetaE[i] - xhE[i])) * invDx;
       }
-    }
-    // Centred bed-slope source of the second-order hydrostatic reconstruction.
-    for (let j = 0; j < n; j += 1) {
-      const depthSum = hW[j] + hE[j];
-      if (depthSum <= 0) continue;
-      const width = widths ? widths[j] : uniformWidth;
-      rateNormal[base + j * stride] += (g * 0.5 * depthSum * ((etaW[j] - hW[j]) - (etaE[j] - hE[j]))) / width;
     }
   }
 
+  /** Riemann fluxes and well-balanced sources across z faces, with walls at both cross-shore ends. */
+  private fluxAlongZ(): void {
+    const { nx, nz, dz, rateH, rateQx, rateQz, flux, gravity: g } = this;
+    const { zhS, zhN, zetaS, zetaN, zwS, zwN, zuS, zuN } = this;
+    for (let iz = 0; iz < nz - 1; iz += 1) {
+      const invLower = 1 / dz[iz];
+      const invUpper = 1 / dz[iz + 1];
+      const row = iz * nx;
+      for (let ix = 0; ix < nx; ix += 1) {
+        const lower = row + ix;
+        const upper = lower + nx;
+        if (zhN[lower] <= 0 && zhS[upper] <= 0) continue;
+        interfaceFlux(zhN[lower], zetaN[lower], zwN[lower], zuN[lower], zhS[upper], zetaS[upper], zwS[upper], zuS[upper], g, flux);
+        rateH[lower] -= flux.mass * invLower;
+        rateQz[lower] -= (flux.normal + flux.leftCorrection) * invLower;
+        rateQx[lower] -= flux.tangent * invLower;
+        rateH[upper] += flux.mass * invUpper;
+        rateQz[upper] += (flux.normal + flux.rightCorrection) * invUpper;
+        rateQx[upper] += flux.tangent * invUpper;
+      }
+    }
+    const invFirst = 1 / dz[0];
+    const invLast = 1 / dz[nz - 1];
+    const lastRow = (nz - 1) * nx;
+    for (let ix = 0; ix < nx; ix += 1) {
+      const south = ix;
+      if (zhS[south] > 0) {
+        interfaceFlux(zhS[south], zetaS[south], -zwS[south], zuS[south], zhS[south], zetaS[south], zwS[south], zuS[south], g, flux);
+        rateH[south] += flux.mass * invFirst;
+        rateQz[south] += (flux.normal + flux.rightCorrection) * invFirst;
+        rateQx[south] += flux.tangent * invFirst;
+      }
+      const north = lastRow + ix;
+      if (zhN[north] > 0) {
+        interfaceFlux(zhN[north], zetaN[north], zwN[north], zuN[north], zhN[north], zetaN[north], -zwN[north], zuN[north], g, flux);
+        rateH[north] -= flux.mass * invLast;
+        rateQz[north] -= (flux.normal + flux.leftCorrection) * invLast;
+        rateQx[north] -= flux.tangent * invLast;
+      }
+    }
+    for (let iz = 0; iz < nz; iz += 1) {
+      const inverse = 1 / dz[iz];
+      const row = iz * nx;
+      for (let ix = 0; ix < nx; ix += 1) {
+        const i = row + ix;
+        const depthSum = zhS[i] + zhN[i];
+        if (depthSum <= 0) continue;
+        rateQz[i] += g * 0.5 * depthSum * ((zetaS[i] - zhS[i]) - (zetaN[i] - zhN[i])) * inverse;
+      }
+    }
+  }
 }
