@@ -1,5 +1,6 @@
 import { PerspectiveCamera, Vector3 } from 'three';
 import type { BoardPhysics } from '../physics/BoardPhysics';
+import type { DetachedRiderPose } from '../physics/DetachedSurfer';
 import type { InteractiveWaterField } from '../wave/WaveModel';
 
 export class CameraRig {
@@ -8,6 +9,7 @@ export class CameraRig {
   underwater = false;
   private readonly desired = new Vector3();
   private readonly lookTarget = new Vector3();
+  private readonly riderHead = new Vector3();
 
   update(board: BoardPhysics, wave: InteractiveWaterField, dt: number): void {
     if (this.underwater) {
@@ -24,6 +26,25 @@ export class CameraRig {
     } else {
       this.desired.set(board.position.x + 2.2, board.position.y + 3.6, board.position.z + 6);
       this.lookTarget.set(board.position.x, board.position.y + 0.55, board.position.z - 2.5);
+    }
+    this.camera.position.lerp(this.desired, 1 - Math.exp(-2.6 * dt));
+    this.camera.lookAt(this.lookTarget);
+  }
+
+  /** Continuous recovery view, supplied by a body snapshot rather than a wave implementation. */
+  updateDetached(pose: DetachedRiderPose, boardPosition: Readonly<Vector3>,
+    surfaceY: number, dt: number): void {
+    pose.getPartPosition('head', this.riderHead);
+    const submerged = this.riderHead.y < surfaceY - 0.08;
+    if (submerged) {
+      this.desired.set(this.riderHead.x + 2, Math.min(this.riderHead.y + 0.5, surfaceY - 0.15),
+        this.riderHead.z + 3);
+    } else {
+      this.desired.set(this.riderHead.x + 2.4, this.riderHead.y + 2.5, this.riderHead.z + 5);
+    }
+    this.lookTarget.copy(this.riderHead);
+    if (this.riderHead.distanceToSquared(boardPosition) < 16) {
+      this.lookTarget.lerp(boardPosition, 0.16);
     }
     this.camera.position.lerp(this.desired, 1 - Math.exp(-2.6 * dt));
     this.camera.lookAt(this.lookTarget);

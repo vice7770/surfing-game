@@ -1,13 +1,17 @@
 import {
-  BoxGeometry, CapsuleGeometry, CylinderGeometry, DoubleSide, Euler, Group, Mesh,
+  BoxGeometry, CapsuleGeometry, CylinderGeometry, DoubleSide, Euler, Group, Matrix4, Mesh,
   MeshStandardMaterial, Quaternion, Shape, ShapeGeometry, SphereGeometry, Vector3,
 } from 'three';
 import type { BoardPhysics } from '../physics/BoardPhysics';
+import type { BodyPart, DetachedRiderPose } from '../physics/DetachedSurfer';
 import { createSurfboardGeometry } from './SurfboardGeometry';
 
 type Point = readonly [number, number, number];
 const up = new Vector3(0, 1, 0);
 const segmentDirection = new Vector3();
+const detachedParts: readonly BodyPart[] = [
+  'pelvis', 'torso', 'head', 'leftArm', 'rightArm', 'leftLeg', 'rightLeg',
+];
 
 function posePoint(out: Vector3, prone: Point, standing: Point, blend: number): void {
   out.set(
@@ -62,6 +66,15 @@ export class Surfer {
   private readonly arms: [BentLimb, BentLimb];
   private readonly legs: [BentLimb, BentLimb];
   private readonly joints = Array.from({ length: 12 }, () => new Vector3());
+  private readonly detachedPoints = detachedParts.map(() => new Vector3());
+  private readonly detachedRoots = Array.from({ length: 4 }, () => new Vector3());
+  private readonly detachedHinges = Array.from({ length: 4 }, () => new Vector3());
+  private readonly detachedAxis = new Vector3();
+  private readonly detachedOffset = new Vector3();
+  private readonly detachedForward = new Vector3();
+  private readonly detachedRight = new Vector3();
+  private readonly detachedBasis = new Matrix4();
+  private readonly detachedBoardInverse = new Quaternion();
   private poseBlend = 0;
   private fallBlend = 0;
 
@@ -140,6 +153,64 @@ export class Surfer {
   resetPose(): void {
     this.poseBlend = 0;
     this.fallBlend = 0;
+  }
+
+  /** Render a detached physical pose without consulting either wave implementation. */
+  updateDetached(pose: DetachedRiderPose, boardPosition: Readonly<Vector3>,
+    boardOrientation: Readonly<Quaternion>): void {
+    this.group.position.copy(boardPosition);
+    this.group.quaternion.copy(boardOrientation);
+    this.group.updateMatrixWorld(true);
+    this.rider.position.set(0, 0, 0);
+    this.rider.quaternion.identity();
+
+    for (let index = 0; index < detachedParts.length; index += 1) {
+      pose.getPartPosition(detachedParts[index], this.detachedPoints[index]);
+      this.group.worldToLocal(this.detachedPoints[index]);
+    }
+    const points = this.detachedPoints;
+    this.pelvis.position.copy(points[0]);
+    this.torso.position.copy(points[1]);
+    this.detachedAxis.subVectors(points[2], points[0]).normalize();
+    this.detachedBoardInverse.copy(boardOrientation).invert();
+    this.detachedForward.set(Math.sin(pose.heading), 0, Math.cos(pose.heading))
+      .applyQuaternion(this.detachedBoardInverse);
+    this.detachedForward.addScaledVector(this.detachedAxis,
+      -this.detachedForward.dot(this.detachedAxis));
+    if (this.detachedForward.lengthSq() < 1e-6) {
+      this.detachedForward.set(Math.abs(this.detachedAxis.z) < 0.9 ? 0 : 1,
+        0, Math.abs(this.detachedAxis.z) < 0.9 ? 1 : 0);
+      this.detachedForward.addScaledVector(this.detachedAxis,
+        -this.detachedForward.dot(this.detachedAxis));
+    }
+    this.detachedForward.normalize();
+    this.detachedRight.crossVectors(this.detachedAxis, this.detachedForward).normalize();
+    this.detachedForward.crossVectors(this.detachedRight, this.detachedAxis).normalize();
+    this.detachedBasis.makeBasis(this.detachedRight, this.detachedAxis, this.detachedForward);
+    this.torso.quaternion.setFromRotationMatrix(this.detachedBasis);
+    this.chestPanel.position.copy(points[1]).add(
+      this.detachedOffset.set(0, 0, 0.14).applyQuaternion(this.torso.quaternion),
+    );
+    this.chestPanel.quaternion.copy(this.torso.quaternion);
+    this.neck.position.copy(points[1]).lerp(points[2], 0.65);
+    this.neck.quaternion.copy(this.torso.quaternion);
+    this.head.position.copy(points[2]);
+    this.head.quaternion.copy(this.torso.quaternion);
+
+    for (let side = 0; side < 2; side += 1) {
+      const sign = side === 0 ? -1 : 1;
+      const armRoot = this.detachedRoots[side].copy(points[1]).add(
+        this.detachedOffset.set(sign * 0.16, 0.06, 0).applyQuaternion(this.torso.quaternion),
+      );
+      const armHinge = this.detachedHinges[side].copy(armRoot).lerp(points[3 + side], 0.5);
+      this.arms[side].update(armRoot, armHinge, points[3 + side]);
+
+      const legRoot = this.detachedRoots[side + 2].copy(points[0]).add(
+        this.detachedOffset.set(sign * 0.1, -0.06, 0).applyQuaternion(this.torso.quaternion),
+      );
+      const legHinge = this.detachedHinges[side + 2].copy(legRoot).lerp(points[5 + side], 0.5);
+      this.legs[side].update(legRoot, legHinge, points[5 + side]);
+    }
   }
 
   update(physics: BoardPhysics, paddle: boolean, dt: number): void {
