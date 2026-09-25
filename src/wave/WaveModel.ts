@@ -247,7 +247,11 @@ export class InteractiveWaterField {
     const localCrest = centerCrest + this.crestOffset(x) - this.crestOffset(0);
     const distance = (z - localCrest) / Math.max(0.9, this.packetWidth * 0.85);
     const crestEnvelope = Math.exp(-0.5 * distance * distance);
-    const steepness = Math.max(0, Math.min(1, (slope - 0.035) * 10));
+    // The depth-averaged field cannot resolve an overturning lip. Use local
+    // shoaling only to make a steep crest spill more readily on the shelf;
+    // the lateral peel remains authored so the ride stays predictable.
+    const depthGain = Math.sqrt(this.meanDepth / this.depthAt(x, z));
+    const steepness = Math.max(0, Math.min(1, (slope - 0.035 / depthGain) * 10 * depthGain));
     return behindFront * crestEnvelope * steepness;
   }
 

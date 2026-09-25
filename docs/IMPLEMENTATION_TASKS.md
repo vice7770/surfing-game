@@ -43,6 +43,7 @@ The first checklist records the delivered analytic-wave baseline. The following 
 1. [x] **Depth-varying water:** add a tunable still-water shelf and update elevation through local-depth horizontal fluxes while leaving the free surface at rest over the bed.
 2. [x] **Shared presentation:** derive underwater seabed height from the same depth function, expose Shore shelf in the Wave Lab, and give the named surf spots distinct shelf strengths.
 3. [x] **Check behavior:** verify slower crest travel, finite and decaying energy, bounded hull contact at full shelf, and catch/playability for the three spots.
+4. [x] **Depth-aware spilling:** scale the existing local-slope spill response with local shelf depth; retain the authored lateral peel and verify bounded strength, preset catches, and a complete Windy Reef browser run.
 
 ## After MVP acceptance
 

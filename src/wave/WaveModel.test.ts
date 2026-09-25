@@ -142,4 +142,18 @@ describe('InteractiveWaterField', () => {
     expect(wave.breakingFrontX).toBeLessThan(10);
     expect(wave.breakingDissipation).toBeGreaterThan(0);
   });
+
+  it('makes a marginal spilling crest more responsive over the shelf', () => {
+    const flat = new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS });
+    const shelf = new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS, shelfStrength: 1 });
+    for (let frame = 0; frame < 600; frame += 1) {
+      flat.step(1 / 60);
+      shelf.step(1 / 60);
+    }
+    const crestZ = 12;
+    const marginalSlope = 0.03;
+    expect(flat.breakingAt(0, crestZ, marginalSlope, crestZ)).toBe(0);
+    expect(shelf.breakingAt(0, crestZ, marginalSlope, crestZ)).toBeGreaterThan(0);
+    expect(shelf.breakingAt(0, crestZ, 10, crestZ)).toBeLessThanOrEqual(1);
+  });
 });

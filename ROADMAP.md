@@ -65,7 +65,7 @@ Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status 
 
 ## Repository state
 
-- [x] The analytic baseline is `1fe7ecc` and the playable prototype is `52ede4e` on local `main`. `origin/main` is still at the baseline; the surf-shelf work is the next local commit.
+- [x] The analytic baseline is `1fe7ecc`, the playable prototype is `52ede4e`, and the surf shelf is `88d501e` on local `main`. `origin/main` is still at the baseline.
 
 ## Next milestone — physics fidelity and learning tools
 
@@ -74,6 +74,11 @@ Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status 
 - [x] Add a gentle, configurable seabed shelf to the shared field and evolve elevation through depth-weighted horizontal fluxes.
 - [x] Show the same shelf in the underwater seabed view and expose it as a Wave Lab condition.
 - [x] Check still-water balance, wave slowdown over the shelf, bounded energy, the steepest setting, and catch/playability across surf spots. Breaking onset remains an authored peel.
+
+### P1 · Couple spilling strength to local depth — `Done for prototype`
+
+- [x] Let the existing local-slope break respond more strongly in shallower water while retaining the deterministic lateral peel.
+- [x] Verify that the effect comes from the shared field, remains bounded, and preserves catch/playability and browser performance. Windy Reef still completes in the local browser at 120 FPS.
 
 ### P1 · Improve model fidelity and explain failures — `Done for prototype`
 
