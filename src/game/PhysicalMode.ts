@@ -18,8 +18,8 @@ import { FarFieldProfile } from '../wave/FarFieldProfile';
 import { MIXED_PEAK_FIT, skillForPeel } from '../wave/Breaking';
 import { stormSwell, type StormSwell } from '../wave/StormSwell';
 import type { ReadoutRow } from '../wave/SwellReadout';
-import { RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
-import type { SpectatorView } from '../scene/SpectatorCamera';
+import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
+import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
 import { OFFSHORE_DEPTH, TANK, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost, type SurfZoneSnapshot } from './SurfZoneHost';
 
@@ -198,6 +198,7 @@ export class PhysicalMode {
   focus = { x: 0, z: 0 };
   private starts = 0;
   private shown = true;
+  private chosenView: RideView | 'overview' = 'front';
   private readonly follow = { position: { x: 0, y: 0, z: 0 }, heading: 0 };
 
   constructor(scene: Scene) {
@@ -279,7 +280,8 @@ export class PhysicalMode {
     });
     this.farField.setProfile(profile, hole, this.focus, { extent: FAR_EXTENT });
     this.farField.setChop(chopForWind(settings.windSpeed));
-    this.camera.setView(this.camera.view);
+    this.chosenView = 'front';
+    this.camera.setView(this.homeView);
     return true;
   }
 
@@ -297,9 +299,19 @@ export class PhysicalMode {
   }
 
   /** Request `steps` fixed physics steps (`SURF_ZONE_STEP` each). */
-  /** The view a ride starts in, and returns to from profile or underwater. */
+  /** The following view last chosen (or the overview), which profile and underwater toggles return to. */
   get homeView(): SpectatorView {
-    return this.host && this.host.snapshot.rider[RIDER_SNAPSHOT.present] > 0 ? 'ride' : 'overview';
+    return this.host && this.host.snapshot.rider[RIDER_SNAPSHOT.present] > 0 ? this.chosenView : 'overview';
+  }
+
+  /** Cycle the camera: in front, behind, to the side of the rider, then the overview of the break. */
+  nextView(): SpectatorView {
+    const order: (RideView | 'overview')[] = [...RIDE_VIEWS, 'overview'];
+    const current = order.indexOf(this.camera.view as RideView | 'overview');
+    const next = order[(current + 1) % order.length];
+    this.chosenView = next;
+    this.camera.setView(next);
+    return next;
   }
 
   /** Put board and rider back in the lineup on the next advance; the waves carry on. */
@@ -319,9 +331,11 @@ export class PhysicalMode {
     const pose = host.snapshot.board;
     const rider = host.snapshot.rider;
     const riding = rider[RIDER_SNAPSHOT.present] > 0;
-    this.follow.position.x = pose[0];
-    this.follow.position.y = pose[1];
-    this.follow.position.z = pose[2];
+    // Follow the rider's body once it is in the water, the board while it rides.
+    const fallen = riding && rider[RIDER_SNAPSHOT.phase] === RIDER_PHASES.indexOf('fallen');
+    this.follow.position.x = fallen ? rider[RIDER_SNAPSHOT.points] : pose[0];
+    this.follow.position.y = fallen ? rider[RIDER_SNAPSHOT.points + 1] : pose[1];
+    this.follow.position.z = fallen ? rider[RIDER_SNAPSHOT.points + 2] : pose[2];
     this.follow.heading = riding ? rider[RIDER_SNAPSHOT.heading] : 0;
     this.camera.update(host, this.focus, dt, pose[7] > 0 ? this.follow : undefined);
     this.farField.update(host.snapshot.status.seaTime);

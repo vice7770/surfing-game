@@ -72,7 +72,9 @@ describe('PhysicalMode', () => {
     expect(mode.focus).toEqual(simulation.breakPoint());
     mode.advance(1);
     mode.update(1 / 60);
-    expect(mode.camera.camera.position.y).toBeGreaterThan(10);
+    // The front view, elevated on the beach side of the rider.
+    expect(mode.camera.camera.position.y).toBeGreaterThan(mode.board.position.y + 2);
+    expect(mode.camera.camera.position.z).toBeGreaterThan(mode.board.position.z);
     expect(mode.farField.temporalPhases[0]).toBeCloseTo((simulation.sea.components[0].omega * simulation.seaTime) % (2 * Math.PI), 4);
     const crest = simulation.solver.cellIndex(0, -60);
     simulation.lip.launch(crest, { x: 0, z: 5 }, 3, 0.5);
@@ -94,7 +96,11 @@ describe('PhysicalMode', () => {
     // The rider lies prone on the board, drawn from the snapshot, and the ride camera follows.
     expect(scene.children).toContain(mode.surfer.group);
     expect(mode.surfer.group.visible).toBe(true);
-    expect(mode.homeView).toBe('ride');
+    expect(mode.homeView).toBe('front');
+    expect(mode.nextView()).toBe('behind');
+    expect(mode.nextView()).toBe('side');
+    expect(mode.nextView()).toBe('overview');
+    expect(mode.nextView()).toBe('front');
     expect(mode.readout().find((row) => row.label === 'RIDER')?.value).toMatch(/^PRONE · \d+\.\d m\/s/);
     mode.advance(1, { paddle: false, popUp: true, steer: 0 });
     expect(local.runner.session!.rider.phase).toBe('push');

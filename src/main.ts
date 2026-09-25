@@ -378,7 +378,16 @@ class SurfGame {
     underwater.setAttribute('aria-pressed', String(below));
     underwater.classList.toggle('is-active', below);
     getElement<HTMLElement>('#app').classList.toggle('is-diagnostic', !physical && this.cameraRig.profile);
+    getElement<HTMLElement>('#view-label').textContent = physical ? this.physicalMode.homeView.toUpperCase() : 'FRONT';
   }
+
+  /** C, or the view button: cycle the physical mode's camera. */
+  cycleView = (): void => {
+    if (this.mode !== 'physical') return;
+    this.physicalMode.nextView();
+    this.syncViewButtons();
+    this.focusGame();
+  };
 
   private readDraftSettings(): TuningSettings {
     const number = (id: string): number => Number.parseFloat(getElement<HTMLInputElement>(id).value);
@@ -451,6 +460,10 @@ class SurfGame {
       this.crestMarker.visible = this.cameraRig.profile;
       this.contactMarkers.forEach((marker) => { marker.visible = this.cameraRig.profile; });
       this.focusGame();
+    });
+    getElement<HTMLButtonElement>('#view-toggle').addEventListener('click', this.cycleView);
+    window.addEventListener('keydown', (event) => {
+      if (event.code === 'KeyC' && !event.repeat && !(event.target instanceof HTMLInputElement)) this.cycleView();
     });
     getElement<HTMLButtonElement>('#underwater-toggle').addEventListener('click', (event) => {
       if (this.mode === 'physical') {
