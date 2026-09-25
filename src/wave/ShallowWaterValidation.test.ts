@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GRAVITY } from './dispersion';
-import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
+import { ShallowWaterSolver, stretchedEdges, uniformEdges } from './ShallowWaterSolver';
 import { calmTarget, longWaveTarget, meanLag, upCrossings } from './shallowWaterTestSupport';
 
 describe('shallow-water validation', () => {
@@ -113,5 +113,38 @@ describe('shallow-water validation', () => {
     expect(finite).toBe(true);
     expect(shallowest).toBeGreaterThanOrEqual(0);
     expect(highestWetZ).toBeGreaterThan(80);
+  });
+
+  it('passes a long wave from coarse to fine cells without reflection or speed error', () => {
+    const depth = 4;
+    const solver = new ShallowWaterSolver(
+      { nx: 2, xMin: 0, dx: 1, zEdges: stretchedEdges(0, 600, 300, 1, 4), xBoundary: 'periodic' }, () => depth, { manning: 0 },
+    );
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(100, 0), target: longWaveTarget(0.02, 20, depth) });
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(450, 600), target: calmTarget });
+    const gaugeA = solver.cellIndex(0.5, 320.5);
+    const gaugeB = solver.cellIndex(0.5, 420.5);
+    const times: number[] = [];
+    const seriesA: number[] = [];
+    const seriesB: number[] = [];
+    const envelope = new Float64Array(solver.nz);
+    while (solver.time < 150) {
+      solver.step(0.1);
+      if (solver.time < 100) continue;
+      times.push(solver.time);
+      seriesA.push(solver.surfaceAt(gaugeA));
+      seriesB.push(solver.surfaceAt(gaugeB));
+      for (let iz = 0; iz < solver.nz; iz += 1) envelope[iz] = Math.max(envelope[iz], Math.abs(solver.surfaceAt(iz * solver.nx)));
+    }
+    const speed = 100 / meanLag(upCrossings(times, seriesA), upCrossings(times, seriesB));
+    expect(Math.abs(speed / Math.sqrt(GRAVITY * depth) - 1)).toBeLessThan(0.02);
+    let largest = 0;
+    let smallest = Infinity;
+    for (let iz = 0; iz < solver.nz; iz += 1) {
+      if (solver.zCenters[iz] < 120 || solver.zCenters[iz] > 280) continue;
+      largest = Math.max(largest, envelope[iz]);
+      smallest = Math.min(smallest, envelope[iz]);
+    }
+    expect((largest - smallest) / (largest + smallest)).toBeLessThan(0.05);
   });
 });

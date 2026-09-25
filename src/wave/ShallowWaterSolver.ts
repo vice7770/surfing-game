@@ -49,6 +49,37 @@ export function uniformEdges(start: number, end: number, count: number): Float64
   return edges;
 }
 
+/**
+ * Cross-shore edges from `offshore` to `shore`: uniform cells of about `fine`
+ * shoreward of `fineFrom`, growing by at most `growth` per cell to `coarse`
+ * toward `offshore`. The offshore cells are scaled together to fit exactly.
+ */
+export function stretchedEdges(offshore: number, shore: number, fineFrom: number, fine: number, coarse: number, growth = 1.08): Float64Array {
+  const fineCount = Math.max(1, Math.round((shore - fineFrom) / fine));
+  const fineSpacing = (shore - fineFrom) / fineCount;
+  const span = fineFrom - offshore;
+  const spacings: number[] = [];
+  let covered = 0;
+  let spacing = fineSpacing;
+  while (covered < span) {
+    spacing = Math.min(coarse, spacing * growth);
+    spacings.push(spacing);
+    covered += spacing;
+  }
+  const scale = spacings.length > 0 ? span / covered : 1;
+  const edges = new Float64Array(spacings.length + fineCount + 1);
+  edges[0] = offshore;
+  let z = offshore;
+  for (let k = spacings.length - 1; k >= 0; k -= 1) {
+    z += spacings[k] * scale;
+    edges[spacings.length - k] = z;
+  }
+  edges[spacings.length] = fineFrom;
+  for (let k = 1; k <= fineCount; k += 1) edges[spacings.length + k] = fineFrom + k * fineSpacing;
+  edges[edges.length - 1] = shore;
+  return edges;
+}
+
 const WALL = 0;
 const PERIODIC = 1;
 const OPEN = 2;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSpot } from './Bathymetry';
-import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
+import { ShallowWaterSolver, stretchedEdges, uniformEdges } from './ShallowWaterSolver';
 import { longWaveTarget } from './shallowWaterTestSupport';
 
 // Stoker's wet-bed dam break for 2.0 m → 0.5 m (computed by bisection on the Riemann invariants).
@@ -96,5 +96,27 @@ describe('ShallowWaterSolver', () => {
       return solver.totalEnergy() - still;
     };
     expect(excessEnergy('open')).toBeLessThan(0.1 * excessEnergy('wall'));
+  });
+
+  it('stretches cross-shore cells smoothly from fine to coarse', () => {
+    const edges = stretchedEdges(-300, 30, -150, 1, 4);
+    expect(edges[0]).toBe(-300);
+    expect(edges[edges.length - 1]).toBe(30);
+    let largest = 0;
+    let smallest = Infinity;
+    let worstRatio = 1;
+    for (let i = 1; i < edges.length; i += 1) {
+      const spacing = edges[i] - edges[i - 1];
+      largest = Math.max(largest, spacing);
+      smallest = Math.min(smallest, spacing);
+      if (i > 1) {
+        const previous = edges[i - 1] - edges[i - 2];
+        worstRatio = Math.max(worstRatio, spacing / previous, previous / spacing);
+      }
+    }
+    expect(largest).toBeLessThanOrEqual(4 + 1e-9);
+    expect(smallest).toBeGreaterThan(0.99);
+    expect(worstRatio).toBeLessThan(1.081);
+    expect(edges.length - 1).toBeLessThan(260);
   });
 });
