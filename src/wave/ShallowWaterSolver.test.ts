@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createSpot } from './Bathymetry';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
+import { longWaveTarget } from './shallowWaterTestSupport';
 
 // Stoker's wet-bed dam break for 2.0 m → 0.5 m (computed by bisection on the Riemann invariants).
 const STOKER = { left: 2, right: 0.5, middle: 1.1035, shockSpeed: 4.1663, tailSpeed: -1.0116 };
@@ -51,7 +52,7 @@ describe('ShallowWaterSolver', () => {
 
   it('matches the Stoker dam-break solution on a wet bed', () => {
     const solver = new ShallowWaterSolver(
-      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(-50, 50, 400), periodicX: true }, () => 1, { manning: 0 },
+      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(-50, 50, 400), xBoundary: 'periodic' }, () => 1, { manning: 0 },
     );
     for (let iz = 0; iz < solver.nz; iz += 1) {
       const depth = solver.zCenters[iz] < 0 ? STOKER.left : STOKER.right;
@@ -69,5 +70,17 @@ describe('ShallowWaterSolver', () => {
       }
     }
     expect(Math.abs(shockZ - STOKER.shockSpeed * duration)).toBeLessThan(0.75);
+  });
+
+  it('repeats bit-identical states for identical runs', () => {
+    const run = () => {
+      const solver = new ShallowWaterSolver(
+        { nx: 24, xMin: -48, dx: 4, zEdges: uniformEdges(-160, 20, 60), xBoundary: 'open' }, createSpot('reef', 1).depthAt,
+      );
+      solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(-120, -160), target: longWaveTarget(0.5, 9, 10) });
+      for (let frame = 0; frame < 200; frame += 1) solver.step(1 / 30);
+      return [Array.from(solver.h), Array.from(solver.qx), Array.from(solver.qz)];
+    };
+    expect(run()).toEqual(run());
   });
 });

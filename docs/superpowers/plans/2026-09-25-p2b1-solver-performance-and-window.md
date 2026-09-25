@@ -1,3 +1,64 @@
+# P2b-1 Solver Performance, Boundaries, Stretched Grid and Sliding Window
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Make the P2a solver fit the game. Bring the 33.6k-cell step from 7.5 ms toward the 4 ms worker budget. Add open along-shore boundaries, a stretched cross-shore grid, and a window that slides along shore over the fixed spot seabed ([plan](../../research/wave-formation-plan.md) §1.5, Q10, Q24, Q30).
+
+**Architecture:**
+- `ShallowWaterSolver` sweeps rows and columns in place with a stride. It no longer copies each line, and it keeps only two cells' face states at a time.
+- Relaxation zones remember which rows they touch.
+- `xBoundary` replaces `periodicX` and adds zero-gradient `'open'` edges.
+- `stretchedEdges()` builds geometric cross-shore spacing.
+- `shiftAlongShore()` moves the window by whole columns. New columns sample the spot seabed and extend the edge water surface (or the rest level) and velocity.
+
+**Tech Stack:** TypeScript 5.9 strict, Vitest 5.
+
+## Global Constraints
+
+- The behaviour stays validated: every existing solver and validation test keeps passing, with its tolerances unchanged.
+- Determinism: identical inputs give bit-identical states.
+- No gameplay changes; the solver is still standalone.
+- Performance numbers are measured in Node on the development machine and recorded, not asserted.
+- Commit on `feat/wave-formation-p1-sea-state`; do not push.
+
+---
+
+### Task 1: In-place strided sweeps, cheaper friction, row-bounded zones
+
+**Files:**
+- Modify: `src/wave/ShallowWaterSolver.ts` (replace the `Line`/`solveLine` machinery; change `periodicX` to `xBoundary`)
+- Modify: `src/wave/ShallowWaterSolver.test.ts`, `src/wave/ShallowWaterValidation.test.ts` (`periodicX: true` becomes `xBoundary: 'periodic'`; add a determinism test)
+
+**Interfaces:**
+- Produces:
+  - `type AlongShoreBoundary = 'wall' | 'periodic' | 'open'`
+  - `SolverGrid.xBoundary?: AlongShoreBoundary` (default `'wall'`)
+  - Every other export is unchanged.
+
+- [ ] **Step 1: Write the failing test.** Change the call sites with `sed -i '' "s/periodicX: true/xBoundary: 'periodic'/" src/wave/ShallowWaterSolver.test.ts src/wave/ShallowWaterValidation.test.ts`. Then append to the `describe` in `src/wave/ShallowWaterSolver.test.ts`, and add `import { longWaveTarget } from './shallowWaterTestSupport';` at the top:
+
+```ts
+  it('repeats bit-identical states for identical runs', () => {
+    const run = () => {
+      const solver = new ShallowWaterSolver(
+        { nx: 24, xMin: -48, dx: 4, zEdges: uniformEdges(-160, 20, 60), xBoundary: 'open' }, createSpot('reef', 1).depthAt,
+      );
+      solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(-120, -160), target: longWaveTarget(0.5, 9, 10) });
+      for (let frame = 0; frame < 200; frame += 1) solver.step(1 / 30);
+      return [Array.from(solver.h), Array.from(solver.qx), Array.from(solver.qz)];
+    };
+    expect(run()).toEqual(run());
+  });
+```
+
+- [ ] **Step 2: Run tests to verify they fail**
+
+Run: `npx vitest run src/wave/ShallowWaterSolver.test.ts`
+Expected: FAIL. TypeScript accepts the unknown `xBoundary` at runtime, but the determinism test's `'open'` edge is treated as a wall, so it passes. The periodic Stoker case then fails because `periodicX` is no longer read. If both happen to pass, move on: Step 3 is a refactor guarded by the existing suite.
+
+- [ ] **Step 3: Replace the implementation.** An intermediate version kept two cells' faces in objects and called a per-cell `reconstruct` method. It measured 6.8 ms per step (bundled Node), and CPU profiling put 36 % of the time in `reconstruct` and 33 % in `sweepLine`. The version below instead reconstructs each line into typed face arrays inline, reads the grid in place, and skips fully dry stretches. It measured **6.3 ms**, against 7.9 ms for the P2a code. Benchmark in bundled Node (`npx rolldown` plus `node`), because Vitest's module transform distorts timings (it reported 11 ms for the same code). Replace `src/wave/ShallowWaterSolver.ts` with:
+
+```ts
 import { GRAVITY } from './dispersion';
 
 export type DepthFunction = (x: number, z: number) => number;
@@ -467,3 +528,316 @@ export class ShallowWaterSolver {
   }
 
 }
+```
+
+- [ ] **Step 4: Run tests and measure**
+
+Run: `npx vitest run src/wave/ShallowWaterSolver.test.ts src/wave/ShallowWaterValidation.test.ts`
+Expected: PASS (4 + 4 tests).
+
+Then re-run the P2a benchmark (a temporary `src/wave/__bench_tmp.test.ts`: the 160 × 210 beach grid with a relaxation zone, 600 steps of 1/60 s after a warm-up; delete the file afterwards) and record the ms per step.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/wave/ShallowWaterSolver.ts src/wave/ShallowWaterSolver.test.ts src/wave/ShallowWaterValidation.test.ts
+git commit -m "perf: sweep the shallow-water solver in place"
+```
+
+---
+
+### Task 2: Open along-shore boundaries
+
+**Files:**
+- Test: `src/wave/ShallowWaterSolver.test.ts` (append)
+
+`'open'` is implemented in Task 1's `reconstruct` and `sweepLine`: ghosts copy the edge cell. This task proves the behaviour.
+
+- [ ] **Step 1: Write the test** (append inside the `describe`)
+
+```ts
+  it('lets waves leave through open along-shore boundaries', () => {
+    const excessEnergy = (xBoundary: 'wall' | 'open') => {
+      const grid = { nx: 80, xMin: -80, dx: 2, zEdges: uniformEdges(-20, 20, 20), xBoundary };
+      const still = new ShallowWaterSolver(grid, () => 3, { manning: 0 }).totalEnergy();
+      const solver = new ShallowWaterSolver(grid, () => 3, { manning: 0 });
+      for (let iz = 0; iz < solver.nz; iz += 1) {
+        for (let ix = 0; ix < solver.nx; ix += 1) solver.h[iz * solver.nx + ix] = 3 + 0.3 * Math.exp(-(solver.xCenters[ix] ** 2) / 40);
+      }
+      for (let frame = 0; frame < 400; frame += 1) solver.step(0.1);
+      return solver.totalEnergy() - still;
+    };
+    expect(excessEnergy('open')).toBeLessThan(0.1 * excessEnergy('wall'));
+  });
+```
+
+- [ ] **Step 2: Run it**
+
+Run: `npx vitest run src/wave/ShallowWaterSolver.test.ts`
+Expected: PASS (5 tests). If it fails, the open ghost in `reconstruct` or `sweepLine` is wrong; fix the code, not the test.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/wave/ShallowWaterSolver.test.ts
+git commit -m "test: verify open along-shore boundaries release waves"
+```
+
+---
+
+### Task 3: Stretched cross-shore grid
+
+**Files:**
+- Modify: `src/wave/ShallowWaterSolver.ts` (add `stretchedEdges`)
+- Test: `src/wave/ShallowWaterSolver.test.ts`, `src/wave/ShallowWaterValidation.test.ts` (append)
+
+**Interfaces:**
+- Produces: `stretchedEdges(offshore, shore, fineFrom, fine, coarse, growth = 1.08): Float64Array`
+
+- [ ] **Step 1: Write the failing tests**
+
+Append to `src/wave/ShallowWaterSolver.test.ts`, and add `stretchedEdges` to its import:
+
+```ts
+  it('stretches cross-shore cells smoothly from fine to coarse', () => {
+    const edges = stretchedEdges(-300, 30, -150, 1, 4);
+    expect(edges[0]).toBe(-300);
+    expect(edges[edges.length - 1]).toBe(30);
+    let largest = 0;
+    let smallest = Infinity;
+    let worstRatio = 1;
+    for (let i = 1; i < edges.length; i += 1) {
+      const spacing = edges[i] - edges[i - 1];
+      largest = Math.max(largest, spacing);
+      smallest = Math.min(smallest, spacing);
+      if (i > 1) {
+        const previous = edges[i - 1] - edges[i - 2];
+        worstRatio = Math.max(worstRatio, spacing / previous, previous / spacing);
+      }
+    }
+    expect(largest).toBeLessThanOrEqual(4 + 1e-9);
+    expect(smallest).toBeGreaterThan(0.99);
+    expect(worstRatio).toBeLessThan(1.081);
+    expect(edges.length - 1).toBeLessThan(260);
+  });
+```
+
+Append to `src/wave/ShallowWaterValidation.test.ts`, and add `stretchedEdges` to its import:
+
+```ts
+  it('passes a long wave from coarse to fine cells without reflection or speed error', () => {
+    const depth = 4;
+    const solver = new ShallowWaterSolver(
+      { nx: 2, xMin: 0, dx: 1, zEdges: stretchedEdges(0, 600, 300, 1, 4), xBoundary: 'periodic' }, () => depth, { manning: 0 },
+    );
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(100, 0), target: longWaveTarget(0.02, 20, depth) });
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(450, 600), target: calmTarget });
+    const gaugeA = solver.cellIndex(0.5, 320.5);
+    const gaugeB = solver.cellIndex(0.5, 420.5);
+    const times: number[] = [];
+    const seriesA: number[] = [];
+    const seriesB: number[] = [];
+    const envelope = new Float64Array(solver.nz);
+    while (solver.time < 150) {
+      solver.step(0.1);
+      if (solver.time < 100) continue;
+      times.push(solver.time);
+      seriesA.push(solver.surfaceAt(gaugeA));
+      seriesB.push(solver.surfaceAt(gaugeB));
+      for (let iz = 0; iz < solver.nz; iz += 1) envelope[iz] = Math.max(envelope[iz], Math.abs(solver.surfaceAt(iz * solver.nx)));
+    }
+    const speed = 100 / meanLag(upCrossings(times, seriesA), upCrossings(times, seriesB));
+    expect(Math.abs(speed / Math.sqrt(GRAVITY * depth) - 1)).toBeLessThan(0.02);
+    let largest = 0;
+    let smallest = Infinity;
+    for (let iz = 0; iz < solver.nz; iz += 1) {
+      if (solver.zCenters[iz] < 120 || solver.zCenters[iz] > 280) continue;
+      largest = Math.max(largest, envelope[iz]);
+      smallest = Math.min(smallest, envelope[iz]);
+    }
+    expect((largest - smallest) / (largest + smallest)).toBeLessThan(0.05);
+  });
+```
+
+- [ ] **Step 2: Run tests to verify they fail**
+
+Run: `npx vitest run src/wave/ShallowWaterSolver.test.ts src/wave/ShallowWaterValidation.test.ts`
+Expected: FAIL — `stretchedEdges is not a function`.
+
+- [ ] **Step 3: Implement** (add after `uniformEdges` in `src/wave/ShallowWaterSolver.ts`)
+
+```ts
+/**
+ * Cross-shore edges from `offshore` to `shore`: uniform cells of about `fine`
+ * shoreward of `fineFrom`, growing by at most `growth` per cell to `coarse`
+ * toward `offshore`. The offshore cells are scaled together to fit exactly.
+ */
+export function stretchedEdges(offshore: number, shore: number, fineFrom: number, fine: number, coarse: number, growth = 1.08): Float64Array {
+  const fineCount = Math.max(1, Math.round((shore - fineFrom) / fine));
+  const fineSpacing = (shore - fineFrom) / fineCount;
+  const span = fineFrom - offshore;
+  const spacings: number[] = [];
+  let covered = 0;
+  let spacing = fineSpacing;
+  while (covered < span) {
+    spacing = Math.min(coarse, spacing * growth);
+    spacings.push(spacing);
+    covered += spacing;
+  }
+  const scale = spacings.length > 0 ? span / covered : 1;
+  const edges = new Float64Array(spacings.length + fineCount + 1);
+  edges[0] = offshore;
+  let z = offshore;
+  for (let k = spacings.length - 1; k >= 0; k -= 1) {
+    z += spacings[k] * scale;
+    edges[spacings.length - k] = z;
+  }
+  edges[spacings.length] = fineFrom;
+  for (let k = 1; k <= fineCount; k += 1) edges[spacings.length + k] = fineFrom + k * fineSpacing;
+  edges[edges.length - 1] = shore;
+  return edges;
+}
+```
+
+- [ ] **Step 4: Run tests to verify they pass**
+
+Run: `npx vitest run src/wave/ShallowWaterSolver.test.ts src/wave/ShallowWaterValidation.test.ts`
+Expected: PASS.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/wave/ShallowWaterSolver.ts src/wave/ShallowWaterSolver.test.ts src/wave/ShallowWaterValidation.test.ts
+git commit -m "feat: add a stretched cross-shore grid for the solver"
+```
+
+---
+
+### Task 4: Along-shore sliding window
+
+**Files:**
+- Modify: `src/wave/ShallowWaterSolver.ts` (add `shiftAlongShore`)
+- Test: `src/wave/ShallowWaterSolver.test.ts` (append)
+
+**Interfaces:**
+- Produces: `ShallowWaterSolver.shiftAlongShore(columns: number): void`. A positive value moves the window toward +x. It throws a `RangeError` when |columns| ≥ nx.
+
+- [ ] **Step 1: Write the failing tests** (append inside the `describe`)
+
+```ts
+  it('slides the window along shore, keeping overlapping water and extending the edge', () => {
+    const spot = createSpot('point', 1);
+    const solver = new ShallowWaterSolver(
+      { nx: 30, xMin: -60, dx: 4, zEdges: uniformEdges(-200, 20, 55), xBoundary: 'open' }, spot.depthAt, { waterLevel: 0.2 },
+    );
+    for (let i = 0; i < solver.h.length; i += 1) if (solver.h[i] > 0) solver.h[i] += 0.1 * Math.sin(i * 0.37);
+    for (let frame = 0; frame < 30; frame += 1) solver.step(1 / 15);
+    const before = Float64Array.from(solver.h);
+    const edgeSurface = (iz: number) => before[iz * solver.nx + solver.nx - 1] + solver.bed[iz * solver.nx + solver.nx - 1];
+    const edges = Array.from({ length: solver.nz }, (_, iz) => edgeSurface(iz));
+    const edgeWet = Array.from({ length: solver.nz }, (_, iz) => before[iz * solver.nx + solver.nx - 1] > 1e-4);
+    solver.shiftAlongShore(5);
+    expect(solver.xCenters[0]).toBeCloseTo(-60 + 5 * 4 + 2, 12);
+    for (let iz = 0; iz < solver.nz; iz += 1) {
+      for (let ix = 0; ix < solver.nx - 5; ix += 1) expect(solver.h[iz * solver.nx + ix]).toBe(before[iz * solver.nx + ix + 5]);
+      for (let ix = solver.nx - 5; ix < solver.nx; ix += 1) {
+        const i = iz * solver.nx + ix;
+        expect(solver.bed[i]).toBe(-spot.depthAt(solver.xCenters[ix], solver.zCenters[iz]));
+        const surface = edgeWet[iz] ? edges[iz] : 0.2;
+        expect(solver.h[i]).toBeCloseTo(Math.max(0, surface - solver.bed[i]), 12);
+      }
+    }
+    expect(() => solver.shiftAlongShore(30)).toThrow(RangeError);
+  });
+
+  it('keeps a lake at rest while the window slides across the headland', () => {
+    const spot = createSpot('point', 1);
+    const solver = new ShallowWaterSolver(
+      { nx: 30, xMin: -200, dx: 4, zEdges: uniformEdges(-200, 20, 55), xBoundary: 'open' }, spot.depthAt, { waterLevel: 0.2 },
+    );
+    for (let move = 0; move < 40; move += 1) {
+      solver.step(1 / 15);
+      solver.shiftAlongShore(move % 3 === 2 ? -1 : 3);
+    }
+    let largestFlow = 0;
+    let depthError = 0;
+    for (let iz = 0; iz < solver.nz; iz += 1) {
+      for (let ix = 0; ix < solver.nx; ix += 1) {
+        const i = iz * solver.nx + ix;
+        largestFlow = Math.max(largestFlow, Math.abs(solver.qx[i]), Math.abs(solver.qz[i]));
+        depthError = Math.max(depthError, Math.abs(solver.h[i] - Math.max(0, 0.2 - solver.bed[i])));
+      }
+    }
+    expect(solver.xCenters[0]).toBeGreaterThan(0);
+    expect(largestFlow).toBeLessThan(1e-9);
+    expect(depthError).toBeLessThan(1e-9);
+  });
+```
+
+- [ ] **Step 2: Run tests to verify they fail**
+
+Run: `npx vitest run src/wave/ShallowWaterSolver.test.ts`
+Expected: FAIL — `solver.shiftAlongShore is not a function`.
+
+- [ ] **Step 3: Implement** (add inside `class ShallowWaterSolver`, after `zoneWeightsAlongZ`)
+
+```ts
+  /**
+   * Move the window `columns` cells along shore (+x when positive) over the
+   * fixed spot seabed. Overlapping water is kept exactly. New columns sample the
+   * seabed and extend the old edge's surface and velocity, or rest at the still
+   * level where the edge was dry. Relaxation weights move with their cells.
+   */
+  shiftAlongShore(columns: number): void {
+    const shift = Math.trunc(columns);
+    if (shift === 0) return;
+    const { nx, nz } = this;
+    if (Math.abs(shift) >= nx) throw new RangeError(`Cannot shift ${shift} columns in a ${nx}-column window`);
+    for (let ix = 0; ix < nx; ix += 1) this.xCenters[ix] += shift * this.dx;
+    const arrays = [this.bed, this.h, this.qx, this.qz, ...this.zones.map((entry) => entry.zone.weights)];
+    for (let iz = 0; iz < nz; iz += 1) {
+      const row = iz * nx;
+      const oldEdge = shift > 0 ? row + nx - 1 : row;
+      const edgeWet = this.h[oldEdge] > this.dryDepth;
+      const edgeSurface = edgeWet ? this.h[oldEdge] + this.bed[oldEdge] : this.restLevel;
+      const edgeU = edgeWet ? this.qx[oldEdge] / this.h[oldEdge] : 0;
+      const edgeW = edgeWet ? this.qz[oldEdge] / this.h[oldEdge] : 0;
+      for (const values of arrays) {
+        if (shift > 0) values.copyWithin(row, row + shift, row + nx);
+        else values.copyWithin(row - shift, row, row + nx + shift);
+      }
+      const keptEdge = shift > 0 ? row + nx - 1 - shift : row - shift;
+      const start = shift > 0 ? nx - shift : 0;
+      const end = shift > 0 ? nx : -shift;
+      for (let ix = start; ix < end; ix += 1) {
+        const i = row + ix;
+        this.bed[i] = -this.depthAt(this.xCenters[ix], this.zCenters[iz]);
+        const depth = Math.max(0, edgeSurface - this.bed[i]);
+        const wet = depth > this.dryDepth;
+        this.h[i] = depth;
+        this.qx[i] = wet ? depth * edgeU : 0;
+        this.qz[i] = wet ? depth * edgeW : 0;
+        for (const entry of this.zones) entry.zone.weights[i] = entry.zone.weights[keptEdge];
+      }
+    }
+  }
+```
+
+- [ ] **Step 4: Run tests to verify they pass**
+
+Run: `npx vitest run src/wave/ShallowWaterSolver.test.ts`
+Expected: PASS.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/wave/ShallowWaterSolver.ts src/wave/ShallowWaterSolver.test.ts
+git commit -m "feat: slide the solver window along shore over the spot seabed"
+```
+
+---
+
+### Task 5: Record P2b-1
+
+- [ ] In `docs/research/wave-formation-plan.md` §3.3, add the measured post-optimization ms per step to the stage 1 row. In `ROADMAP.md`, split P2b into P2b-1 (checked: performance, open boundaries, stretched grid, sliding window) and P2b-2 (unchecked: sea-state relaxation target with model-consistent dispersion and precomputed phases, per-column WKB warm start, skip-to-set). State whether the 4 ms budget is met. If it isn't, give the next optimization lever as a P2b-2 item.
+- [ ] Commit: `git add docs/research/wave-formation-plan.md ROADMAP.md docs/superpowers/plans/2026-09-25-p2b1-solver-performance-and-window.md && git commit -m "docs: record P2b-1 solver performance and window"`

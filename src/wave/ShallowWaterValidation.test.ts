@@ -8,7 +8,7 @@ describe('shallow-water validation', () => {
     const depth = 4;
     const amplitude = 0.02;
     const solver = new ShallowWaterSolver(
-      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(0, 600, 600), periodicX: true }, () => depth, { manning: 0 },
+      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(0, 600, 600), xBoundary: 'periodic' }, () => depth, { manning: 0 },
     );
     solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(100, 0), target: longWaveTarget(amplitude, 20, depth) });
     solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(450, 600), target: calmTarget });
@@ -42,7 +42,7 @@ describe('shallow-water validation', () => {
   it("shoals a long wave by Green's law on a gentle slope", () => {
     const depthAt = (_x: number, z: number) => (z < 200 ? 6 : z > 1100 ? 1.5 : 6 - (4.5 * (z - 200)) / 900);
     const solver = new ShallowWaterSolver(
-      { nx: 2, xMin: 0, dx: 2, zEdges: uniformEdges(0, 1400, 700), periodicX: true }, depthAt, { manning: 0 },
+      { nx: 2, xMin: 0, dx: 2, zEdges: uniformEdges(0, 1400, 700), xBoundary: 'periodic' }, depthAt, { manning: 0 },
     );
     solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(150, 0), target: longWaveTarget(0.015, 30, 6) });
     solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(1200, 1400), target: calmTarget });
@@ -71,7 +71,7 @@ describe('shallow-water validation', () => {
     const kx = (2 * Math.PI) / (nx * dx);
     const incident = Math.asin(kx / (omega / Math.sqrt(GRAVITY * deep)));
     const solver = new ShallowWaterSolver(
-      { nx, xMin: 0, dx, zEdges: uniformEdges(0, 500, 125), periodicX: true }, depthAt, { manning: 0 },
+      { nx, xMin: 0, dx, zEdges: uniformEdges(0, 500, 125), xBoundary: 'periodic' }, depthAt, { manning: 0 },
     );
     solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(100, 0), target: longWaveTarget(0.02, period, deep, incident) });
     solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(430, 500), target: calmTarget });
@@ -96,7 +96,7 @@ describe('shallow-water validation', () => {
   it('runs a wave up a dry beach without negative depth or non-finite state', () => {
     const depthAt = (_x: number, z: number) => (z < 0 ? 4 : 4 - 0.05 * z);
     const solver = new ShallowWaterSolver(
-      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(-60, 120, 180), periodicX: true }, depthAt,
+      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(-60, 120, 180), xBoundary: 'periodic' }, depthAt,
     );
     solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(-20, -60), target: longWaveTarget(0.3, 10, 4) });
     let shallowest = Infinity;
