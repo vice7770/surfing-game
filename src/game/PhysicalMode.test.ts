@@ -3,7 +3,7 @@ import { Scene } from 'three';
 import { WaterSurface } from '../scene/WaterSurface';
 import { LegacySurfaceSource } from '../scene/LegacySurfaceSource';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField } from '../wave/WaveModel';
-import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, formatPhysicalReadout, spreadingFor } from './PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, chopForWind, formatPhysicalReadout, spreadingFor } from './PhysicalMode';
 
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
 
@@ -13,6 +13,12 @@ describe('PhysicalMode', () => {
     expect(spreadingFor(1)).toBeCloseTo(4, 12);
     expect(spreadingFor(0.5)).toBeCloseTo(Math.sqrt(24 * 4), 9);
     expect(spreadingFor(3)).toBeCloseTo(4, 12);
+  });
+
+  it('roughens the chop more under onshore than offshore wind', () => {
+    expect(chopForWind(12)).toBeGreaterThan(chopForWind(-12));
+    expect(chopForWind(-12)).toBeGreaterThan(chopForWind(0));
+    expect(chopForWind(0)).toBeGreaterThan(0);
   });
 
   it('shows the physical sea on the shared water surface and frames its break', () => {
@@ -47,5 +53,9 @@ describe('PhysicalMode', () => {
     expect(value('SWELL')).toMatch(/^Hs 1\.8 m · Tp 12\.0 s · 10°$/);
     expect(value('SOLVER')).toMatch(/cells · \d+\.\d ms\/step$/);
     expect(value('NEXT SET')).toBe('in 25 s');
+    expect(value('BREAKER')).toMatch(/^ξ \d+\.\d\d · (SPILLING|PLUNGING|SURGING)$/);
+    expect(value('PEEL')).toBe('waiting for a break');
+    expect(value('WIND')).toBe('calm');
+    expect(value('BREAKING')).toMatch(/^\d+ % of the surf zone$/);
   });
 });

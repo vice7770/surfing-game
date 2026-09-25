@@ -180,6 +180,10 @@ export class FarFieldOcean {
     this.mesh.visible = true;
   }
 
+  setChop(strength: number): void {
+    this.uniforms.waterChop.value = strength;
+  }
+
   /** Advance to sea time t: each component's ωt is reduced mod 2π in double precision. */
   update(seaTime: number): void {
     const profile = this.profile;

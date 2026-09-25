@@ -80,6 +80,10 @@ export class SurfZoneSimulation {
   readonly breaking: BreakingModel;
   readonly peel: PeelTracker;
   lastStepMs = 0;
+  /** Most offshore breaking cell per column last step (Infinity when none). */
+  private readonly outerBreak: Float64Array;
+  /** The first pass only records the spin-up's bores; onsets count from the next step. */
+  private onsetsArmed = false;
   private readonly seaTimeOffset: number;
   private mapping?: {
     grid: RenderGrid; xMin: number; columns: Int32Array; columnWeights: Float64Array;
@@ -120,6 +124,7 @@ export class SurfZoneSimulation {
     this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0);
     this.breaking.update(0);
     this.peel = new PeelTracker(this.solver.xCenters, config.peakPeriod);
+    this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
   }
 
   get seaTime(): number {
@@ -139,7 +144,7 @@ export class SurfZoneSimulation {
     const start = performance.now();
     this.solver.step(dt);
     this.breaking.update(dt);
-    this.peel.record(this.solver.time, (column) => this.columnBreaking(column));
+    this.markBreakingOnsets();
     this.lastStepMs = performance.now() - start;
   }
 
@@ -156,7 +161,9 @@ export class SurfZoneSimulation {
   /** Breaker-point Iribarren number from the bed slope at the break line and H_b = γ h_b. */
   iribarren(): { value: number; type: BreakerType } {
     const point = this.breakPoint();
-    const slope = Math.abs(this.spot.depthAt(point.x, point.z - 2) - this.spot.depthAt(point.x, point.z + 2)) / 4;
+    const offshoreDepth = OFFSHORE_DEPTH[this.config.spot];
+    const bed = (z: number) => tankDepth(this.spot, offshoreDepth, point.x, z);
+    const slope = Math.abs(bed(point.z - 2) - bed(point.z + 2)) / 4;
     const depth = this.breakerDepth();
     const readout = describeSwell({ height: BREAKER_INDEX * depth, period: this.config.peakPeriod, depth, bedSlope: slope });
     return { value: readout.iribarren, type: readout.breakerType };
@@ -182,12 +189,27 @@ export class SurfZoneSimulation {
     return wet > 0 ? breaking / wet : 0;
   }
 
-  private columnBreaking(column: number): boolean {
+  /**
+   * A new wave starts breaking in a column when its most offshore breaking cell
+   * jumps seaward by more than 5 m. Bores still crossing the inner surf zone
+   * therefore do not hide the next onset.
+   */
+  private markBreakingOnsets(): void {
     const { solver } = this;
-    for (let iz = solver.rowBelow(TANK.fineFrom); iz < solver.nz; iz += 1) {
-      if (this.breaking.strength[iz * solver.nx + column] > 0.3) return true;
+    const firstRow = solver.rowBelow(TANK.fineFrom);
+    for (let column = 0; column < solver.nx; column += 1) {
+      let outer = Infinity;
+      for (let iz = firstRow; iz < solver.nz; iz += 1) {
+        if (this.breaking.strength[iz * solver.nx + column] > 0.3) {
+          outer = solver.zCenters[iz];
+          break;
+        }
+      }
+      const previous = this.outerBreak[column];
+      if (this.onsetsArmed && outer < previous - 5) this.peel.markOnset(column, solver.time);
+      this.outerBreak[column] = outer;
     }
-    return false;
+    this.onsetsArmed = true;
   }
 
   /** Water surface elevation, m; on dry land this is the bed. */
@@ -253,8 +275,10 @@ export class SurfZoneSimulation {
   /** Where the still depth first reaches the shoaled breaker depth on the x = 0 transect: the camera's break focus. */
   breakPoint(): { x: number; z: number } {
     const target = this.breakerDepth();
-    for (let z = TANK.blendEnd; z < TANK.shore; z += 0.5) {
-      if (this.spot.depthAt(0, z) + this.config.tide <= target) return { x: 0, z };
+    const offshoreDepth = OFFSHORE_DEPTH[this.config.spot];
+    // Scan the simulated bed from the relaxation zone inward: a reef edge may reach into the tank's blend band.
+    for (let z = TANK.zoneInner; z < TANK.shore; z += 0.5) {
+      if (tankDepth(this.spot, offshoreDepth, 0, z) + this.config.tide <= target) return { x: 0, z };
     }
     return { x: 0, z: TANK.fineFrom };
   }

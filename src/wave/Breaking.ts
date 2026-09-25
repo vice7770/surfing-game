@@ -155,9 +155,14 @@ export class PeelTracker {
   record(time: number, isBreaking: (column: number) => boolean): void {
     for (let column = 0; column < this.xs.length; column += 1) {
       if (!isBreaking(column)) continue;
-      if (time - this.lastBreaking[column] > this.quiet) this.onset[column] = time;
+      if (time - this.lastBreaking[column] > this.quiet) this.markOnset(column, time);
       this.lastBreaking[column] = time;
     }
+  }
+
+  /** Record that a new wave started breaking in `column` at `time`. */
+  markOnset(column: number, time: number): void {
+    this.onset[column] = time;
   }
 
   /** Fit onset time against x over recent onsets, leaving out `margin` of the columns at each open edge. */

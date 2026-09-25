@@ -167,6 +167,11 @@ export class WaterSurface {
     this.texture.needsUpdate = true;
   }
 
+  /** Strength of the shading-only wind chop (see waterChop.ts). */
+  setChop(strength: number): void {
+    this.uniforms.waterChop.value = strength;
+  }
+
   /** Switch to another water source, rebuilding the mesh and texture if its grid differs. */
   setSource(source: SurfaceSource): void {
     const previous = this.source.grid;

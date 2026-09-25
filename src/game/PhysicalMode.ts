@@ -7,6 +7,7 @@ import { SpotSeabed } from '../scene/SpotSeabed';
 import type { WaterSurface } from '../scene/WaterSurface';
 import { smoothstep, type SpotName } from '../wave/Bathymetry';
 import { FarFieldProfile } from '../wave/FarFieldProfile';
+import { skillForPeel } from '../wave/Breaking';
 import type { ReadoutRow } from '../wave/SwellReadout';
 import { OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 
@@ -19,6 +20,8 @@ export interface PhysicalSettings {
   /** 0 = narrow groundswell … 1 = broad windswell. */
   spread: number;
   tide: number;
+  /** Local wind, m/s: positive onshore, negative offshore. */
+  windSpeed: number;
 }
 
 /** Far-field ocean layout: deepening from the tank floor to FAR_DEPTH over FAR_SLOPE_LENGTH offshore of the tank, out to FAR_EXTENT. */
@@ -27,8 +30,13 @@ const FAR_SLOPE_LENGTH = 870;
 const FAR_EXTENT = 1500;
 
 export const DEFAULT_PHYSICAL_SETTINGS: PhysicalSettings = {
-  spot: 'beach', significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spread: 0.4, tide: 0,
+  spot: 'beach', significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spread: 0.4, tide: 0, windSpeed: 0,
 };
+
+/** Shading chop from local wind: onshore wind roughens the surf, offshore wind grooms it (qualitative, plan Q23). */
+export function chopForWind(windSpeed: number): number {
+  return windSpeed >= 0 ? 0.12 + 0.03 * windSpeed : 0.12 + 0.008 * -windSpeed;
+}
 
 /** Spread slider to the cos-2s exponent: s = 24 (groundswell) falling geometrically to 4 (windswell). */
 export function spreadingFor(spread: number): number {
@@ -40,6 +48,17 @@ export function formatPhysicalReadout(simulation: SurfZoneSimulation): ReadoutRo
   const { config, solver } = simulation;
   const breakPoint = simulation.breakPoint();
   const toSet = simulation.timeToSet;
+  const breaker = simulation.iribarren();
+  const peel = simulation.peelEstimate();
+  const wind = config.windSpeed ?? 0;
+  let peelText = 'waiting for a break';
+  if (peel) {
+    const angle = Math.round(peel.angleDegrees);
+    const skill = skillForPeel(peel.angleDegrees);
+    if (skill === 'closeout') peelText = `closing out · ${angle}° (needs ≥ 27°)`;
+    else if (peel.fit < 0.3) peelText = `mixed peaks · ${angle}°`;
+    else peelText = `${angle}° toward ${peel.direction > 0 ? '+x' : '−x'} · ${skill}`;
+  }
   return [
     { label: 'SPOT', value: config.spot.toUpperCase() },
     { label: 'SWELL', value: `Hs ${config.significantHeight.toFixed(1)} m · Tp ${config.peakPeriod.toFixed(1)} s · ${config.directionDegrees}°` },
@@ -48,6 +67,10 @@ export function formatPhysicalReadout(simulation: SurfZoneSimulation): ReadoutRo
     { label: 'BREAK LINE', value: `${Math.round(-breakPoint.z)} m out · ${(simulation.spot.depthAt(breakPoint.x, breakPoint.z) + config.tide).toFixed(2)} m deep` },
     { label: 'SOLVER', value: `${(solver.nx * solver.nz).toLocaleString('en-US')} cells · ${simulation.lastStepMs.toFixed(1)} ms/step` },
     { label: 'NEXT SET', value: toSet > 0 ? `in ${Math.round(toSet)} s` : `${Math.round(-toSet)} s ago` },
+    { label: 'BREAKER', value: breaker.type === 'none' ? 'FLAT BED' : `ξ ${breaker.value.toFixed(2)} · ${breaker.type.toUpperCase()}` },
+    { label: 'BREAKING', value: `${Math.round(simulation.breakingFraction() * 100)} % of the surf zone` },
+    { label: 'PEEL', value: peelText },
+    { label: 'WIND', value: wind === 0 ? 'calm' : `${Math.abs(wind)} m/s ${wind > 0 ? 'onshore' : 'offshore'}` },
   ];
 }
 
@@ -77,10 +100,12 @@ export class PhysicalMode {
       directionDegrees: settings.directionDegrees,
       spreading: spreadingFor(settings.spread),
       tide: settings.tide,
+      windSpeed: settings.windSpeed,
       ...overrides,
     });
     this.simulation = simulation;
     water.setSource(new PhysicalSurfaceSource(simulation, 1));
+    water.setChop(chopForWind(settings.windSpeed));
     const offshoreDepth = OFFSHORE_DEPTH[settings.spot];
     const { dx } = simulation.solver;
     const windowMin = simulation.windowXMin;
@@ -111,6 +136,7 @@ export class PhysicalMode {
       rightDepth: (z) => tankDepth(simulation.spot, offshoreDepth, rightX, z) + settings.tide,
     });
     this.farField.setProfile(profile, hole, this.focus, { extent: FAR_EXTENT, waveHeight: settings.significantHeight });
+    this.farField.setChop(chopForWind(settings.windSpeed));
     this.camera.setView(this.camera.view);
   }
 

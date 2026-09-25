@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { breakerDepthFor } from './Breaking';
-import { SurfZoneSimulation, TANK, type SurfZoneConfig } from './SurfZoneSimulation';
+import { OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, type SurfZoneConfig } from './SurfZoneSimulation';
 
 const small: Omit<SurfZoneConfig, 'spot'> = {
   seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -65,7 +65,7 @@ describe('SurfZoneSimulation', () => {
     const point = simulation.breakPoint();
     const depth = breakerDepthFor(1.4, simulation.sea.depth);
     expect(simulation.breakerDepth()).toBeCloseTo(depth, 12);
-    expect(simulation.spot.depthAt(point.x, point.z)).toBeCloseTo(depth, 1);
+    expect(tankDepth(simulation.spot, OFFSHORE_DEPTH.beach, point.x, point.z)).toBeCloseTo(depth, 1);
   });
 
   it('breaks waves in the surf zone, measures the peel and paints whitewater', () => {
@@ -92,6 +92,28 @@ describe('SurfZoneSimulation', () => {
     const iribarren = simulation.iribarren();
     expect(iribarren.value).toBeGreaterThan(0);
     expect(['spilling', 'plunging', 'surging']).toContain(iribarren.type);
+  });
+
+  it('keeps measuring peel while earlier bores are still crossing the surf zone', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, directionDegrees: 20, spreading: 24 });
+    let late = 0;
+    for (let frame = 0; frame < 24 * 30; frame += 1) {
+      simulation.step(1 / 30);
+      if (frame > 12 * 30 && simulation.peelEstimate()) late += 1;
+    }
+    expect(late).toBeGreaterThan(30);
+  }, 60_000);
+
+  it('finds the reef break on its steep edge rather than the flat shelf', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 2 });
+    expect(simulation.breakPoint().z).toBeLessThan(TANK.blendEnd);
+    expect(simulation.iribarren().type).not.toBe('none');
+  });
+
+  it('does not read the spin-up bores as one simultaneous close-out', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1 });
+    for (let frame = 0; frame < 3; frame += 1) simulation.step(1 / 30);
+    expect(simulation.peelEstimate()).toBeUndefined();
   });
 
   it('holds waves up longer under offshore wind', () => {

@@ -29,6 +29,7 @@ import { Seabed } from './scene/Seabed';
 import { PlungingSheetMesh } from './scene/PlungingSheetMesh';
 import { WaterSurface } from './scene/WaterSurface';
 import { LegacySurfaceSource } from './scene/LegacySurfaceSource';
+import { DEFAULT_WATER_CHOP } from './scene/waterChop';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField, type WaveSettings } from './wave/WaveModel';
 import { PlungingSheet } from './wave/PlungingSheet';
 import { Hud } from './ui/Hud';
@@ -209,6 +210,7 @@ class SurfGame {
     this.wave = new InteractiveWaterField(this.seed, this.activeSettings);
     this.plungingSheet = new PlungingSheet(this.wave);
     this.water.setSource(new LegacySurfaceSource(this.wave));
+    this.water.setChop(DEFAULT_WATER_CHOP);
     this.physics = this.createPhysics(this.wave, this.activeSettings, this.plungingSheet);
     this.sheetMesh.update(this.plungingSheet);
     this.environment.group.position.z = 0;
@@ -261,6 +263,7 @@ class SurfGame {
       directionDegrees: number('#direction-slider'),
       spread: number('#spread-slider'),
       tide: number('#tide-slider'),
+      windSpeed: number('#wind-speed-slider'),
     };
   }
 
@@ -378,7 +381,7 @@ class SurfGame {
         this.refreshTuningUi();
       });
     }
-    for (const selector of ['#hs-slider', '#tp-slider', '#direction-slider', '#spread-slider', '#tide-slider', '#physical-spot']) {
+    for (const selector of ['#hs-slider', '#tp-slider', '#direction-slider', '#spread-slider', '#tide-slider', '#wind-speed-slider', '#physical-spot']) {
       getElement<HTMLInputElement>(selector).addEventListener(selector === '#physical-spot' ? 'change' : 'input', () => {
         this.draftPhysical = this.readDraftPhysical();
         this.refreshTuningUi();
@@ -502,6 +505,9 @@ class SurfGame {
     const spreadName = physical.spread < 0.34 ? 'groundswell' : physical.spread < 0.67 ? 'mixed' : 'windswell';
     getElement<HTMLOutputElement>('#spread-output').value = `${spreadName} · s ${spreadingFor(physical.spread).toFixed(0)}`;
     getElement<HTMLOutputElement>('#tide-output').value = `${physical.tide.toFixed(1)} m`;
+    getElement<HTMLInputElement>('#wind-speed-slider').value = String(physical.windSpeed);
+    getElement<HTMLOutputElement>('#wind-speed-output').value = physical.windSpeed === 0 ? 'calm'
+      : `${Math.abs(physical.windSpeed)} m/s ${physical.windSpeed > 0 ? 'onshore' : 'offshore'}`;
     const sharedChanged = (['timeScale', 'sunHeight', 'sunDirection'] as const).some((key) => values[key] !== this.activeSettings[key]);
     const changed = this.draftMode !== this.mode || (this.draftMode === 'physical'
       ? sharedChanged || (Object.keys(physical) as Array<keyof PhysicalSettings>).some((key) => physical[key] !== this.physicalSettings[key])
