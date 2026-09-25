@@ -149,6 +149,9 @@ describe('rider coupled to the board', () => {
   it('paddles faster over the ground with a following current', () => {
     const cruise = (current: number) => {
       const { board, rider } = mounted('prone');
+      // Drifting with the current from the start: a light coupling to the water takes long to pick it up.
+      board.velocity.z = current;
+      rider.velocity.z = current;
       rider.paddle = true;
       const water = new PlaneWater({ flow: { x: 0, y: 0, z: current } });
       run(board, water, 20);

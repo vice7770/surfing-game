@@ -641,7 +641,11 @@ export class AttachedRider {
       this.partWorld.add(this.position);
       this.partVelocity.copy(cross(this.angularVelocity, offset, this.scratch)).add(this.velocity);
       const radius = Math.cbrt((3 * this.partVolumes[i]) / (4 * Math.PI));
-      this.applyWater(i, water, radius, this.partVolumes[i], Math.PI * radius * radius * PART_DRAG, h, shelter);
+      // Lying on the board, the part of a body sphere inside the board is board, not wet body.
+      const z = this.parts[i * 3 + 2];
+      const onDeck = !this.upright && Math.abs(z) < this.shape.length / 2;
+      const deckY = onDeck ? board.toWorld(this.localScratch.set(this.parts[i * 3], deckHeight(this.shape, z), z), this.scratch2).y : -Infinity;
+      this.applyWater(i, water, radius, this.partVolumes[i], Math.PI * radius * radius * PART_DRAG, h, shelter, deckY);
     }
     this.stroking = false;
     if (this.phase !== 'prone' || !this.paddle) return;
@@ -658,11 +662,12 @@ export class AttachedRider {
   }
 
   /** Water on one body point at `partWorld` moving at `partVelocity`: buoyancy of `volume` and drag over `dragArea`. */
-  private applyWater(slot: number, water: SurfWater, radius: number, volume: number, dragArea: number, h: number, shelter: number): void {
+  private applyWater(slot: number, water: SurfWater, radius: number, volume: number, dragArea: number, h: number, shelter: number, deckY = -Infinity): void {
     const p = this.partWorld;
     const sample = water.sampleAt(p.x, p.y, p.z, this.sample);
     if (!sample.wet || sample.outsideDomain) return;
-    const wet = submergedFraction(sample.surfaceY - p.y, radius);
+    // Wet between the deck (if the part lies on one) and the surface.
+    const wet = submergedFraction(sample.surfaceY - p.y, radius) - (Number.isFinite(deckY) ? submergedFraction(Math.min(deckY, sample.surfaceY) - p.y, radius) : 0);
     if (!(wet > 0)) return;
     if (slot >= RIDER_PARTS.length) this.stroking = true;
     const support = SEAWATER * WATER.gravity * volume * wet;
