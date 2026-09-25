@@ -6,6 +6,7 @@
 - Integration: the [board–water handoff](board-water-integration-handoff.md) records the active P2a solver's available fields, unresolved sampling and momentum interfaces, and the checkpoint before board code begins.
 - Acceptance: the [validation protocol](board-surfer-validation-protocol.md) defines observable catch, turn, pop-up and fall events, fixed-seed practice acceptance, and natural-wave reports.
 - Gameplay reference: the [video brief](gameplay-video-reference.md) records the user-supplied clip's ride sequence and camera cues separately from physical measurements.
+- Parallel preparation: the [planning backlog](parallel-planning-backlog.md) prioritizes player-flow, visual alignment, spot experience, calibration and accessibility specifications while P2c is in progress.
 
 ## 0. Agreed experience and scope
 
