@@ -8,7 +8,7 @@ import { SpotSeabed } from '../scene/SpotSeabed';
 import type { WaterSurface } from '../scene/WaterSurface';
 import { smoothstep, type SpotName } from '../wave/Bathymetry';
 import { FarFieldProfile } from '../wave/FarFieldProfile';
-import { skillForPeel } from '../wave/Breaking';
+import { MIXED_PEAK_FIT, skillForPeel } from '../wave/Breaking';
 import { stormSwell, type StormSwell } from '../wave/StormSwell';
 import type { ReadoutRow } from '../wave/SwellReadout';
 import { OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
@@ -110,7 +110,7 @@ export function formatPhysicalReadout(simulation: SurfZoneSimulation, storm?: St
     const angle = Math.round(peel.angleDegrees);
     const skill = skillForPeel(peel.angleDegrees);
     if (skill === 'closeout') peelText = `closing out · ${angle}° (needs ≥ 27°)`;
-    else if (peel.fit < 0.3) peelText = `mixed peaks · ${angle}°`;
+    else if (peel.fit < MIXED_PEAK_FIT) peelText = `mixed peaks · ${angle}°`;
     else peelText = `${angle}° toward ${peel.direction > 0 ? '+x' : '−x'} · ${skill}`;
   }
   const band = config.bandwidth !== undefined && Number.isFinite(config.bandwidth) ? ` · band ±${Math.round(config.bandwidth * 100)} %` : '';

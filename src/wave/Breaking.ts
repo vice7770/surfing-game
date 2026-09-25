@@ -128,13 +128,18 @@ export type PeelSkill = 'beginner' | 'intermediate' | 'advanced' | 'professional
  * Minimum makeable peel angles by skill (Hutt, Black & Mead 2001, from secondary
  * copies): 60° beginner, 40° intermediate, 29° top amateur, 27° professional.
  */
+export const PEEL_SKILL_MINIMUM = { beginner: 60, intermediate: 40, advanced: 29, professional: 27 } as const;
+
 export function skillForPeel(angleDegrees: number): PeelSkill {
-  if (angleDegrees >= 60) return 'beginner';
-  if (angleDegrees >= 40) return 'intermediate';
-  if (angleDegrees >= 29) return 'advanced';
-  if (angleDegrees >= 27) return 'professional';
+  if (angleDegrees >= PEEL_SKILL_MINIMUM.beginner) return 'beginner';
+  if (angleDegrees >= PEEL_SKILL_MINIMUM.intermediate) return 'intermediate';
+  if (angleDegrees >= PEEL_SKILL_MINIMUM.advanced) return 'advanced';
+  if (angleDegrees >= PEEL_SKILL_MINIMUM.professional) return 'professional';
   return 'closeout';
 }
+
+/** Below this r² the onset-time fit reads several peaks breaking at once, not one peel. */
+export const MIXED_PEAK_FIT = 0.3;
 
 /**
  * Measures peel from when each along-shore column starts breaking. The break
