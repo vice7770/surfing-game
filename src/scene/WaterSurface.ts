@@ -20,6 +20,7 @@ import { RICH_FOAM, richBeginNormal, richFragmentPars, richNormalFragment, richV
 import {
   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
 } from './water/richPatch';
+import { churnTexture, waterChurnPars } from './water/churnTexture';
 import { rippleTexture, waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import { waterStreakPars } from './water/streaks';
@@ -231,6 +232,7 @@ export class WaterSurface {
       waterPatchActive: { value: 0 },
       waterRippleMap: { value: rippleTexture() },
       waterRippleStrength: { value: rippleStrength(DEFAULT_WATER_CHOP) },
+      waterChurnMap: { value: churnTexture() },
     };
     // One air–water interface: Fresnel from n = 1.333 (F0 = 0.020), no clearcoat.
     const material = new MeshPhysicalMaterial({
@@ -250,9 +252,9 @@ export class WaterSurface {
           .replace('#include <beginnormal_vertex>', richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\n${waterFragmentPars}\n${waterCubicPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${richPatchFragmentPars}`)
+          .replace('#include <common>', `#include <common>\n${waterFragmentPars}\n${waterCubicPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richPatchFragmentPars}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}`)
-          .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true }))
+          .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true, churn: true }))
           .replace('#include <color_fragment>', '')
           .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true, RICH_FOAM));
         return;

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { FarFieldOcean } from './FarFieldOcean';
 import { SprayPoints } from './SprayPoints';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
+import { churnTexture } from './water/churnTexture';
 import { rippleTexture } from './water/rippleTexture';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import { DEFAULT_WATER_CHOP } from './waterChop';
@@ -117,6 +118,18 @@ describe('Classic water parity', () => {
     expect(fragment).toContain('waterCover = max( waterCover, waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam ) );');
     expect(fragment).toContain('float waterStreak( vec2 p, vec2 flow, float steepness, float foam )');
     expect(fragment).not.toContain('roughnessFactor = mix( roughnessFactor, 0.9, waterCover );');
+  });
+
+  it('draws fresh Rich whitewater as churn that opens into lace, with relief and backlit edges', () => {
+    const water = new WaterSurface({ ...source, cubic: true });
+    water.setLook('rich');
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    water.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
+    expect((shader.uniforms as Record<string, { value: unknown }>).waterChurnMap.value).toBe(churnTexture());
+    expect(shader.fragmentShader).toContain('vec2 waterChurn = waterChurnAt( vWaterWorld.xz, vWaterFlow );');
+    expect(shader.fragmentShader).toContain('float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterFresh );');
+    expect(shader.fragmentShader).toContain('waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, vWaterFlow );');
+    expect(shader.fragmentShader).toContain('totalEmissiveRadiance += 0.18 * waterFresh');
   });
 
   it('names nothing in the Rich program with a GLSL ES 3.00 reserved word', () => {
