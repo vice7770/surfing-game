@@ -237,6 +237,19 @@ describe('OnlineController', () => {
     expect(await handed).toBeUndefined();
   });
 
+  it('says when it is closed, and asks for no sea once closed', async () => {
+    const { controller, sockets, welcome } = setup();
+    sockets[0].open();
+    welcome();
+    expect(controller.closed).toBe(false);
+    const waiting = controller.requestSea();
+    controller.close();
+    expect(controller.closed).toBe(true);
+    expect(await waiting).toBeUndefined();
+    expect(await controller.requestSea()).toBeUndefined();
+    expect(sockets[0].texts().filter((message) => message.type === 'needSea')).toHaveLength(1);
+  });
+
   it('reports a refusal', () => {
     const { controller, sockets } = setup({ join: 'ABCD2345' });
     const refused = vi.fn();

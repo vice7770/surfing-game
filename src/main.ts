@@ -582,6 +582,8 @@ class SurfGame {
     const spawn = { spawnAlong: (Math.random() - 0.5) * 40, spawnOut: 10 + Math.random() * 15 };
     const handed = await controller.requestSea();
     const sea = handed ? await decompress(handed.bytes, handed.deflated) : undefined;
+    // Left the room while waiting for its sea: build nothing (it would replace the menu's waves).
+    if (controller.closed) return false;
     // A handed-over sea brings its own clock and replaces everything a spin-up would build; a fresh one starts at the room's.
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),

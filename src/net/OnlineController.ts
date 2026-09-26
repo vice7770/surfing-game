@@ -130,6 +130,7 @@ export class OnlineController {
    */
   requestSea(wait = SEA_WAIT_MS): Promise<HandedSea | undefined> {
     this.takeSea(undefined);
+    if (this.closed) return Promise.resolve(undefined);
     return new Promise((resolve) => {
       const timer = setTimeout(() => {
         if (this.seaWanted === settle) this.takeSea(undefined);
@@ -244,8 +245,13 @@ export class OnlineController {
     this.remote.prune(now);
   }
 
+  /** Left for good (or turned away): no more sea, poses or messages. */
+  get closed(): boolean {
+    return this.status === 'closed';
+  }
+
   close(): void {
-    this.takeSea(undefined);
     this.net.close();
+    this.takeSea(undefined);
   }
 }
