@@ -85,4 +85,36 @@ describe('ride session', () => {
     session.strike(aimedAt(session.surfer.getPartPosition('torso', new Vector3()), 2));
     expect(session.surfer.lastContacts.lip.x).toBeLessThan(0);
   });
+
+  it('lets the swimmer climb back onto a board within reach, the pair keeping its momentum', () => {
+    const session = new RideSession();
+    const water = new PlaneWater();
+    session.reset(new Vector3(), 0, water);
+    session.separate();
+    for (let i = 0; i < 30; i += 1) session.step(STEP, water, idle);
+    expect(session.surfer.active).toBe(true);
+    // Still beside the board: reach for it.
+    for (let i = 0; i < 900 && !session.rider.attached; i += 1) session.step(STEP, water, { ...idle, popUp: true });
+    expect(session.rider.attached).toBe(true);
+    expect(session.rider.phase).toBe('prone');
+    expect(session.surfer.active).toBe(false);
+    expect(session.remount.count).toBe(1);
+    expect(session.remount.after.distanceTo(session.remount.before)).toBeLessThan(1e-9);
+    // Back on the board it paddles again.
+    for (let i = 0; i < 240; i += 1) session.step(STEP, water, { ...idle, paddle: true });
+    expect(session.board.velocity.length()).toBeGreaterThan(0.8);
+  });
+
+  it('cannot climb onto a board out of reach', () => {
+    const session = new RideSession();
+    const water = new PlaneWater();
+    session.reset(new Vector3(), 0, water);
+    session.separate();
+    for (let i = 0; i < 180; i += 1) session.step(STEP, water, idle);
+    session.board.place(new Vector3(6, session.board.position.y, 6), session.board.orientation.clone());
+    for (let i = 0; i < 300; i += 1) session.step(STEP, water, { ...idle, popUp: true });
+    expect(session.rider.attached).toBe(false);
+    expect(session.remount.count).toBe(0);
+  });
 });
+
