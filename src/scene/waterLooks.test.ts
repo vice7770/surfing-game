@@ -6,6 +6,7 @@ import { WaterSurface, type SurfaceSource } from './WaterSurface';
 import { rippleTexture } from './water/rippleTexture';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import { DEFAULT_WATER_CHOP } from './waterChop';
+import { CLASSIC_FOAM, waterBodyFragment } from './waterOptics';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -102,6 +103,20 @@ describe('Classic water parity', () => {
     water.setLook('rich');
     water.setSource(source);
     expect(water.mesh.material.roughness).toBe(0.62);
+  });
+
+  it('keeps the Classic foam composition as the default body chunk', () => {
+    expect(waterBodyFragment(true, true)).toBe(waterBodyFragment(true, true, CLASSIC_FOAM));
+    expect(CLASSIC_FOAM).toContain('roughnessFactor = mix( roughnessFactor, 0.9, waterCover );');
+  });
+
+  it('streaks the Rich foam up steep faces, only where the foam is drawn as lace', () => {
+    const water = new WaterSurface({ ...source, cubic: true });
+    water.setLook('rich');
+    const { fragment } = compiled(water.mesh.material);
+    expect(fragment).toContain('waterCover = max( waterCover, waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam ) );');
+    expect(fragment).toContain('float waterStreak( vec2 p, vec2 flow, float steepness, float foam )');
+    expect(fragment).not.toContain('roughnessFactor = mix( roughnessFactor, 0.9, waterCover );');
   });
 
   it('names nothing in the Rich program with a GLSL ES 3.00 reserved word', () => {

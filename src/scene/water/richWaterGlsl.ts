@@ -4,6 +4,7 @@
  */
 import { waterCubicPars } from './cubicSurface';
 import { PATCH_SKIRT } from './richPatch';
+import { RICH_SPECULAR } from './specular';
 
 export { waterCubicPars };
 
@@ -29,6 +30,17 @@ export const richVertexHeight = `vec3 transformed = vec3( position );
 transformed.y = waterHeight - ${PATCH_SKIRT.toFixed(3)} * skirt;
 vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;
 vPatch = onPatch;`;
+
+/**
+ * The Rich foam composition for `waterBodyFragment`: the lace, streaked up
+ * steep faces along the current, over a glossy body that turns matte under foam.
+ */
+export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );
+  float waterCover = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
+  waterCover = max( waterCover, waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam ) );
+  diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, waterCover );
+  ${RICH_SPECULAR}
+  roughnessFactor = mix( roughnessFactor, 0.7, waterCover );`;
 
 /**
  * Rich <normal_fragment_begin>: the Catmull-Rom normal per pixel, the wind chop

@@ -17,3 +17,9 @@ float richRoughness( float base, float variance ) {
   return min( ${MAX_ROUGHNESS.toFixed(3)}, sqrt( base * base + 2.0 * variance ) );
 }
 `;
+
+/** Classic's roughness, which the Rich water keeps on its underside. */
+export const CLASSIC_ROUGHNESS = 0.62;
+
+/** GLSL: the Rich gloss. From below, past the Snell window, the water reflects itself, not the sky: Classic's roughness keeps that dim. Needs `faceDirection`. */
+export const RICH_SPECULAR = `roughnessFactor = faceDirection > 0.0 ? richRoughness( roughnessFactor, waterRippleVariance ) : ${CLASSIC_ROUGHNESS.toFixed(3)};`;

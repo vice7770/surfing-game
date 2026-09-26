@@ -16,12 +16,13 @@ import {
   Vector4,
 } from 'three';
 import type { WaterLook } from './water/waterLook';
-import { richBeginNormal, richFragmentPars, richNormalFragment, richVertexHeight, waterCubicPars } from './water/richWaterGlsl';
+import { RICH_FOAM, richBeginNormal, richFragmentPars, richNormalFragment, richVertexHeight, waterCubicPars } from './water/richWaterGlsl';
 import {
   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
 } from './water/richPatch';
 import { rippleTexture, waterRipplePars } from './water/rippleTexture';
-import { RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
+import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
+import { waterStreakPars } from './water/streaks';
 import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
@@ -162,10 +163,6 @@ ${foamPatternPars}
 ${causticLookupPars}
 `;
 
-/** Classic's roughness; Rich starts from `RICH_BASE_ROUGHNESS` and roughens where a pixel averages ripples away (G8). */
-const CLASSIC_ROUGHNESS = 0.62;
-// From below, past the Snell window, the water reflects itself, not the sky: Classic's roughness keeps that dim.
-const RICH_SPECULAR = `roughnessFactor = faceDirection > 0.0 ? richRoughness( roughnessFactor, waterRippleVariance ) : ${CLASSIC_ROUGHNESS.toFixed(3)};`;
 /** The ripples' strength: 0.8 on calm water, 1 at the default chop. */
 const rippleStrength = (chop: number) => 0.8 + (0.2 * chop) / DEFAULT_WATER_CHOP;
 
@@ -253,11 +250,11 @@ export class WaterSurface {
           .replace('#include <beginnormal_vertex>', richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\n${waterFragmentPars}\n${waterCubicPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richPatchFragmentPars}`)
+          .replace('#include <common>', `#include <common>\n${waterFragmentPars}\n${waterCubicPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${richPatchFragmentPars}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}`)
           .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true }))
           .replace('#include <color_fragment>', '')
-          .replace('#include <emissivemap_fragment>', `${waterBodyFragment(true, true)}\n${RICH_SPECULAR}`);
+          .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true, RICH_FOAM));
         return;
       }
       shader.vertexShader = shader.vertexShader
