@@ -86,6 +86,20 @@
     - A push that puts the capture point beyond the feet topples the rider: 'balance' past 0.25 m of sway. A 0.2 m³ parcel at 8 m/s through the torso throws it; a 0.01 m³ splash is ridden out.
     - Without the sway, the light board simply slid sideways with the rider.
   - `RideSession.strike` hands the lip to the rider on the board or to the fallen surfer, and the runner calls it every step after the board and body move.
+- **Task 5 done (the record):**
+  - `npm run report:catch` runs a bot surfer on each spot. It waits prone a few metres outside the break line, paddles when a crest rises behind it, pops up on the cue and rides straight until it falls or the wave leaves it.
+  - On the stage 1 solver (2 seeds × 3 minutes per spot, the Wave Lab defaults) it made 135 attempts: 11 cues, 11 pop-ups, none stood. By spot, attempts and cues:
+
+    | Spot | Attempts | Cues |
+    |---|---:|---:|
+    | Beach | 27 | 1 |
+    | Point | 39 | 1 |
+    | Reef | 69 | 9 |
+    | Canyon | 0 | 0 |
+
+    Top speeds were 3.1–4.8 m/s. Most attempts ended with the prone rider lifted off the board by the bore ('lost board'); every pop-up ended 'no support'. The Canyon never raised a crest over the bot's trigger.
+  - A sweep of the wait (3–25 m outside the break) and the trigger distance (14 or 30 m) found no catch.
+  - Stage 1's non-dispersive waves arrive at the break line as bores. The face passes the board in about half a second while backwash runs seaward at up to 1.2 m/s. So P5 (the Boussinesq solver) comes before P4f's catch calibration.
 - **User requests queued:**
   - play the swimmer after a fall and choose to swim back and remount (ROADMAP);
   - the camera views front, behind, side and overview, now done (`8d145db`).
