@@ -183,6 +183,16 @@ export class PhotoSky {
     return changed;
   }
 
+  /** Releases the loaded sky; a load still under way is discarded when it finishes. */
+  dispose(): void {
+    this.request += 1;
+    this.loaded?.dispose();
+    this.loaded = undefined;
+    this.environment = undefined;
+    this.background = undefined;
+    this.current = undefined;
+  }
+
   /** The background and environment on the scene, and the same map turned the same way on materials that carry their own. */
   applyTo(scene: Scene, materials: readonly MeshStandardMaterial[]): void {
     if (!this.environment) return;
