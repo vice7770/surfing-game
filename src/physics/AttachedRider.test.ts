@@ -278,7 +278,7 @@ describe('pop-up', () => {
 });
 
 describe('weight-shift steering', () => {
-  const ride = (steer: number, stance: 'regular' | 'goofy' = 'regular') => {
+  const ride = (steer: number, stance: 'regular' | 'goofy' = 'regular', seconds = 0.5) => {
     const angle = (15 * Math.PI) / 180;
     const board = new BoardBody();
     const along = new Vector3(0, -Math.sin(angle), Math.cos(angle));
@@ -288,21 +288,20 @@ describe('weight-shift steering', () => {
     const water = new PlaneWater({ slopeZ: -Math.tan(angle) });
     run(board, water, 1);
     rider.steer = steer;
-    // Half a second: without fins (P4e) nothing holds the heading, and a rolled board soon spins out.
-    run(board, water, 0.5);
+    run(board, water, seconds);
     return { board, rider, roll: new Vector3(0, 1, 0).applyQuaternion(board.orientation).x };
   };
 
-  // Weight on a rail rolls the board onto it and its fins turn it that way. (Held at full steer for
-  // over a second the carve still throws the rider: an open P4e item.)
+  const heading = (board: BoardBody) => {
+    const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+    return Math.atan2(forward.x, forward.z);
+  };
+
+  // Weight on a rail rolls the board onto it and its fins turn it that way.
   it('loads the rail on the requested side, rolling the board and turning it that way', () => {
     const left = ride(1);
     const right = ride(-1);
     const straight = ride(0);
-    const heading = (board: BoardBody) => {
-      const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
-      return Math.atan2(forward.x, forward.z);
-    };
     expect(left.rider.attached && right.rider.attached).toBe(true);
     expect(left.roll).toBeGreaterThan(0.05);
     expect(right.roll).toBeLessThan(-0.05);
@@ -310,6 +309,27 @@ describe('weight-shift steering', () => {
     expect(heading(right.board)).toBeLessThan(heading(straight.board));
     expect(left.board.velocity.x).toBeGreaterThan(straight.board.velocity.x);
     expect(right.board.velocity.x).toBeLessThan(straight.board.velocity.x);
+  });
+
+  // Carried at the stance point but pushing through its centre of mass, the rider made the coupled
+  // solve singular as the carve turned, and it blew up after 2.3 s ('lost board').
+  it('holds a full carve across the face for 2.5 s', () => {
+    const { board, rider } = ride(1, 'regular', 2.5);
+    expect(rider.attached).toBe(true);
+    expect(heading(board)).toBeGreaterThan((20 * Math.PI) / 180);
+    expect(board.velocity.length()).toBeGreaterThan(4);
+  });
+
+  // Open P4e item: after about 2.8 s at full steer a 3.3 BW load spike still throws the rider ('balance').
+  it.fails('holds a full carve across the face for 4 s', () => {
+    const { rider } = ride(1, 'regular', 4);
+    expect(rider.attached).toBe(true);
+  });
+
+  it('holds a three-quarter carve for 4 s', () => {
+    const { board, rider } = ride(0.75, 'regular', 4);
+    expect(rider.attached).toBe(true);
+    expect(heading(board)).toBeGreaterThan((20 * Math.PI) / 180);
   });
 
   it('means the same direction in either stance', () => {
