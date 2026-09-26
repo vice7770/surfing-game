@@ -89,6 +89,21 @@ describe('the collapsing tube and its air (G9)', () => {
     expect(escaped.spit + escaped.erupted).toBeCloseTo(3 * trapped * TUBE_AIR.escape, 9);
   });
 
+  it('breaks the air into bubbles all along the collapsing void, not at one point', () => {
+    const { lip, run } = peel([3.5], 0);
+    const spans: number[] = [];
+    let step: number[] = [];
+    lip.onAir = (_x, z) => step.push(z);
+    for (let frame = 0; frame < 2400; frame += 1) {
+      step = [];
+      run(1 / 240);
+      if (step.length > 0) spans.push(Math.max(...step) - Math.min(...step));
+    }
+    expect(spans.length).toBeGreaterThan(10);
+    // Its first breath of bubbles spans most of the void's length, crest to jet tip.
+    expect(spans[0]).toBeGreaterThan(0.5 * tube.length * Math.cos(tube.tilt));
+  });
+
   it('spits out of a peel’s open end, as fast as the collapsing air must leave through its mouth', () => {
     const { escaped, run } = peel([2.5, 3.5, 4.5, 5.5], 0.25);
     run(6);

@@ -38,9 +38,23 @@ describe('the aeration field', () => {
     const penetration = 1.2;
     field.addPlunge(0.5, 0.5, energy, penetration);
     const cell = solver.cellIndex(0.5, 0.5);
-    const volume = field.air[cell] * solver.dx * solver.dz[Math.floor(cell / solver.nx)];
-    expect(volume * DENSITY * GRAVITY * (penetration / 2)).toBeCloseTo(AERATION.share * energy, 6);
+    expect(moments(field, solver).total * DENSITY * GRAVITY * (penetration / 2)).toBeCloseTo(AERATION.share * energy, 6);
     expect(field.depth[cell]).toBeCloseTo(penetration, 12);
+  });
+
+  it('spreads a plunge’s or a tube’s air over a plume as wide as it is deep, keeping all of it', () => {
+    const solver = flatSolver();
+    const field = new AerationField(solver);
+    field.addAir(0.5, 0.5, 0.3, 1.2);
+    expect(moments(field, solver).total).toBeCloseTo(0.3, 12);
+    // Every cell within the plume's radius holds the same air per square metre; none beyond it holds any.
+    const inside = [solver.cellIndex(0.5, 0.5), solver.cellIndex(1.5, 0.5), solver.cellIndex(0.5, -0.5)];
+    for (const cell of inside) {
+      expect(field.air[cell]).toBeCloseTo(field.air[inside[0]], 12);
+      expect(field.depth[cell]).toBeCloseTo(1.2, 12);
+    }
+    expect(field.air[solver.cellIndex(2.5, 0.5)]).toBe(0);
+    expect(field.air[solver.cellIndex(0.5, 0.5)]).toBeLessThan(0.3 / 4);
   });
 
   it('never plunges deeper than the water', () => {
@@ -69,8 +83,7 @@ describe('the aeration field', () => {
       deep.update(1 / 30);
       shallow.update(1 / 30);
     }
-    const cell = solver.cellIndex(0.5, 0.5);
-    expect(deep.air[cell]).toBeGreaterThan(shallow.air[cell]);
+    expect(moments(deep, solver).total).toBeGreaterThan(moments(shallow, solver).total);
   });
 
   it('is carried by the current, and keeps its air on the same water when the window slides', () => {
@@ -98,6 +111,18 @@ describe('the aeration field', () => {
     field.update(1 / 30);
     expect(field.air[cell]).toBe(0);
     expect(field.voidFraction(cell)).toBe(0);
+  });
+
+  it('holds no more than the measured peak void fraction: air beyond it vents at once', () => {
+    const solver = flatSolver();
+    const field = new AerationField(solver);
+    for (let k = 0; k < 20; k += 1) field.addAir(0.5, 0.5, 1, 1);
+    const cell = solver.cellIndex(0.5, 0.5);
+    expect(field.voidFraction(cell)).toBeCloseTo(AERATION.peak, 12);
+    // The water shallowing under it squeezes the excess out too.
+    solver.h[cell] = 0.5;
+    field.update(1e-6);
+    expect(field.voidFraction(cell)).toBeLessThanOrEqual(AERATION.peak + 1e-9);
   });
 
   it('aerates a bore by its dissipation, shallower than a plunge', () => {

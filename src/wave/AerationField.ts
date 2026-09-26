@@ -6,9 +6,11 @@ import type { ShallowWaterSolver } from './ShallowWaterSolver';
  * - `share` (β): share of the dissipated energy spent entraining air against buoyancy, 4–14 % in
  *   surf-zone breakers (Blenkinsopp & Chaplin 2007);
  * - `plungeDepth` (κ_p) and `boreDepth` (κ_s): plume depth per breaker or bore height (provisional);
- * - `riseSpeed` (w_b): bubbles of radius above 0.5 mm rise at 0.2–0.3 m/s (Deane & Stokes 2002).
+ * - `riseSpeed` (w_b): bubbles of radius above 0.5 mm rise at 0.2–0.3 m/s (Deane & Stokes 2002);
+ * - `peak` (α_max): the most air a surf-zone plume holds, about 20 % under plunging breakers
+ *   (Blenkinsopp & Chaplin 2007). Air driven in beyond it vents at once.
  */
-export const AERATION = { share: 0.1, plungeDepth: 0.8, boreDepth: 0.3, riseSpeed: 0.25 } as const;
+export const AERATION = { share: 0.1, plungeDepth: 0.8, boreDepth: 0.3, riseSpeed: 0.25, peak: 0.2 } as const;
 
 const DENSITY = 1025;
 const WET = 0.01;
@@ -21,7 +23,8 @@ const MIN_DEPTH = 0.05;
  * area (m³/m², its depth if it were one layer) and the plume's depth. Air
  * enters where lip water lands (a share of the impact's energy spent against
  * buoyancy, carried down to half the plunge's depth on average), where bores
- * dissipate, and where trapped tubes break into bubbles. It is carried by the
+ * dissipate, and where trapped tubes break into bubbles. A plunge's or a
+ * tube's bubbles fill a plume as wide as it is deep (provisional). It is carried by the
  * current semi-Lagrangian, like the foam, and degasses as its bubbles rise
  * out of the plume. It never feeds back into the water.
  */
@@ -46,7 +49,7 @@ export class AerationField {
     const cell = this.solver.cellIndex(x, z);
     const reach = this.reach(cell, penetration);
     if (!(reach > 0) || !(energy > 0)) return;
-    this.addTo(cell, (AERATION.share * energy) / (DENSITY * GRAVITY * (reach / 2)), reach);
+    this.spread(x, z, (AERATION.share * energy) / (DENSITY * GRAVITY * (reach / 2)), reach);
   }
 
   /**
@@ -69,7 +72,7 @@ export class AerationField {
     const cell = this.solver.cellIndex(x, z);
     const reach = this.reach(cell, penetration);
     if (!(reach > 0) || !(volume > 0)) return;
-    this.addTo(cell, volume, reach);
+    this.spread(x, z, volume, reach);
   }
 
   /** The void fraction the plume holds: its air over its depth, 0 … 1. */
@@ -92,7 +95,7 @@ export class AerationField {
       }
       const depth = Math.min(this.depth[i], h[i]);
       const air = this.air[i] * Math.exp((-AERATION.riseSpeed * dt) / Math.max(MIN_DEPTH, depth));
-      this.air[i] = air < TRACE ? 0 : Math.min(air, depth);
+      this.air[i] = air < TRACE ? 0 : Math.min(air, AERATION.peak * depth);
       this.depth[i] = this.air[i] > 0 ? depth : 0;
     }
   }
@@ -101,11 +104,43 @@ export class AerationField {
     return Math.min(penetration, this.solver.h[cell]);
   }
 
+  /**
+   * `volume` m³ of air over the wet cells whose centres lie within `radius` of
+   * (x, z) (always the cell it lands in), evenly per square metre, each down to
+   * `radius` or its water's depth.
+   */
+  private spread(x: number, z: number, volume: number, radius: number): void {
+    const { nx, nz, xCenters, zCenters, dx, dz, h } = this.solver;
+    const centre = this.solver.cellIndex(x, z);
+    const column = centre % nx;
+    const row = Math.floor(centre / nx);
+    const span = Math.ceil(radius / dx);
+    const cells = this.plume;
+    cells.length = 0;
+    let area = 0;
+    for (const step of [-1, 1]) {
+      for (let iz = step < 0 ? row : row + 1; iz >= 0 && iz < nz; iz += step) {
+        const across = zCenters[iz] - z;
+        if (iz !== row && Math.abs(across) > radius) break;
+        for (let ix = Math.max(0, column - span); ix <= Math.min(nx - 1, column + span); ix += 1) {
+          const i = iz * nx + ix;
+          const inside = i === centre || Math.hypot(xCenters[ix] - x, across) <= radius;
+          if (!inside || h[i] <= WET) continue;
+          cells.push(i);
+          area += dx * dz[iz];
+        }
+      }
+    }
+    for (const i of cells) this.addTo(i, (volume * dx * dz[Math.floor(i / nx)]) / area, this.reach(i, radius));
+  }
+
+  private readonly plume: number[] = [];
+
   private addTo(cell: number, volume: number, reach: number): void {
     const { dx, dz, nx } = this.solver;
     const area = dx * dz[Math.floor(cell / nx)];
     this.depth[cell] = Math.max(this.depth[cell], reach);
-    this.air[cell] = Math.min(this.depth[cell], this.air[cell] + volume / area);
+    this.air[cell] = Math.min(AERATION.peak * this.depth[cell], this.air[cell] + volume / area);
   }
 
   /** Semi-Lagrangian step: each cell takes the air (and plume depth) found upstream at x − u·dt. */

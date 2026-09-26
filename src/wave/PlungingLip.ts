@@ -33,6 +33,8 @@ export const SPLASH_UP = { share: 0.3, vertical: 0.6, horizontal: 0.8, minImpact
  * but for the air's volume, which is conserved.
  */
 export const TUBE_AIR = { escape: 0.5 } as const;
+/** A closing void's bubbles are spread over this many points along it (numerical). */
+const BUBBLE_POINTS = 4;
 /** A breaking roller's cross-section per H² (G9, κ_r; Svendsen 1984): the foam ball tumbling in a collapsing tube. */
 export const ROLLER_AREA = 0.9;
 
@@ -751,7 +753,7 @@ export class PlungingLip implements LipParcelSource {
           area: ROLLER_AREA * tube.drop * tube.drop, width: this.solver.dx,
         });
         const escaping = TUBE_AIR.escape * volume;
-        this.onAir?.(centre.x, centre.z, volume - escaping, AERATION.plungeDepth * tube.drop);
+        this.breakIntoBubbles(strip, 1 - done, volume - escaping);
         const rate = escaping / dt;
         if (mouths.length > 0) {
           let nearest = 0;
@@ -788,6 +790,24 @@ export class PlungingLip implements LipParcelSource {
           x: burst.x / burst.rate, y: burst.y / burst.rate, z: burst.z / burst.rate, airRate: burst.rate, speed: burst.speed / burst.rate,
         });
       }
+    }
+  }
+
+  /**
+   * A closing void's air that does not escape breaks into bubbles all along
+   * it, crest to jet tip (as it now stands, shrunk to `scale`), driven down as
+   * far as the jet fell.
+   */
+  private breakIntoBubbles(strip: LipStrip, scale: number, volume: number): void {
+    if (!this.onAir) return;
+    const tube = strip.tube!;
+    const reach = tube.geometry.length * Math.max(scale, 0) * Math.cos(tube.geometry.tilt);
+    const age = this.time - strip.launchTime;
+    const crestX = tube.x + tube.dirX * tube.crestSpeed * age;
+    const crestZ = tube.z + tube.dirZ * tube.crestSpeed * age;
+    for (let k = 0; k < BUBBLE_POINTS; k += 1) {
+      const ahead = ((k + 0.5) / BUBBLE_POINTS) * reach;
+      this.onAir(crestX + tube.dirX * ahead, crestZ + tube.dirZ * ahead, volume / BUBBLE_POINTS, AERATION.plungeDepth * tube.drop);
     }
   }
 
