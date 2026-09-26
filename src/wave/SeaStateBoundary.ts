@@ -32,11 +32,22 @@ export class SeaStateBoundary implements RelaxationZone {
   private cachedTime = Number.NaN;
   private cachedFirstX = Number.NaN;
 
+  /** Sea time at solver time 0, s. */
+  get timeOffset(): number {
+    return this.offset;
+  }
+
+  /** A new offset (the sea handover takes the donor's, spec N1); the cached phases are dropped. */
+  set timeOffset(offset: number) {
+    this.offset = offset;
+    this.cachedTime = Number.NaN;
+  }
+
   constructor(
     private readonly grid: ZoneGrid,
     readonly sea: SeaState,
     readonly weights: Float64Array,
-    readonly timeOffset = 0,
+    private offset = 0,
   ) {
     const components = sea.components;
     this.count = components.length;
@@ -109,7 +120,7 @@ export class SeaStateBoundary implements RelaxationZone {
       this.cachedFirstX = firstX;
     }
     if (t !== this.cachedTime) {
-      const seaTime = t + this.timeOffset;
+      const seaTime = t + this.offset;
       for (let r = 0; r < this.rows; r += 1) {
         for (let c = 0; c < this.count; c += 1) {
           const phase = this.rowPhase[r * this.count + c] - this.omega[c] * seaTime;
@@ -125,7 +136,7 @@ export class SeaStateBoundary implements RelaxationZone {
     let eta = 0;
     let qx = 0;
     let qz = 0;
-    const seaTime = t + this.timeOffset;
+    const seaTime = t + this.offset;
     this.sea.components.forEach((component, c) => {
       const value = component.amplitude * Math.cos(component.kx * x + component.kz * z - component.omega * seaTime + component.phase);
       eta += value;

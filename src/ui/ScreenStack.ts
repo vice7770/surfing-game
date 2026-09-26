@@ -1,5 +1,5 @@
 /** Every screen of the game (plan P8). `menu`, `ride` and `wavelab` show a scene; the rest are panels over one. */
-export type ScreenId = 'menu' | 'surf' | 'logbook' | 'settings' | 'ride' | 'pause' | 'wavelab';
+export type ScreenId = 'menu' | 'surf' | 'multiplayer' | 'logbook' | 'settings' | 'ride' | 'pause' | 'wavelab';
 
 const SCENES: ReadonlySet<ScreenId> = new Set(['menu', 'ride', 'wavelab']);
 

@@ -112,6 +112,7 @@ function throughputOf(config: SurfZoneConfig): Promise<{ rate: number; compute: 
     let started = 0;
     port.onerror = (event) => reject(new Error(event.message || 'worker failed'));
     port.onmessage = ({ data }) => {
+      if (data.type === 'state') return;
       const { status, ...buffers } = data.snapshot;
       if (data.type === 'ready') {
         first = status.seaTime;

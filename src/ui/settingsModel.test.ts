@@ -8,7 +8,7 @@ const context = { devTools: false, detecting: false };
 describe('settingsModel', () => {
   it('offers telemetry only with the dev tools on', () => {
     const ids = (devTools: boolean) => settingsModel('gameplay', defaultSettings(), { ...context, devTools }).map((row) => row.id);
-    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'scoreRides']);
+    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'scoreRides', 'nameTags']);
     expect(ids(true)).toContain('showTelemetry');
   });
 
@@ -29,6 +29,13 @@ describe('settingsModel', () => {
     expect(applyRow(defaultSettings(), 'scoreRides', true)).toEqual({ tab: 'gameplay', patch: { scoreRides: true } });
   });
 
+  // N1: names over the other surfers online, on by default.
+  it('offers name tags, on by default', () => {
+    const row = settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'nameTags');
+    expect(row).toMatchObject({ kind: 'toggle', value: true });
+    expect(applyRow(defaultSettings(), 'nameTags', false)).toEqual({ tab: 'gameplay', patch: { nameTags: false } });
+  });
+
   it('marks the water simulation and sea detail as taking effect on the next wave', () => {
     const rows = settingsModel('graphics', defaultSettings(), context);
     const nextWave = rows.filter((row) => 'nextWave' in row && row.nextWave).map((row) => row.id);
@@ -43,10 +50,10 @@ describe('settingsModel', () => {
     expect(settingsModel('graphics', low, context).find((row) => row.id === 'redetect')).toBeUndefined();
   });
 
-  it('lists a keyboard pair and a gamepad button for each of the eleven actions (P9 adds trim, crouch and the hand; S1 adds mute)', () => {
+  it('lists a keyboard pair and a gamepad button for each of the fifteen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls)', () => {
     const bindings = settingsModel('controls', defaultSettings(), context).filter((row) => row.kind === 'binding');
-    expect(bindings).toHaveLength(33);
-    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(11);
+    expect(bindings).toHaveLength(45);
+    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(15);
   });
 });
 

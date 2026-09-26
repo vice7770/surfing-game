@@ -228,6 +228,55 @@ describe('SurfZoneRunner with a rider', () => {
     expect(runner.status().ride!.resets).toBe(1);
   });
 
+  it('spawns the rider where asked, relative to the take-off (spec N1)', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true, spawnAlong: 12, spawnOut: 20 });
+    const board = runner.session!.board.position;
+    expect(board.x).toBeCloseTo(runner.focus.x + 12, 6);
+    expect(runner.focus.z - board.z).toBeCloseTo(20, 6);
+  });
+
+  it('respawns at a given spot on retry, and there again on the next', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    const spot = { x: runner.focus.x - 9, z: runner.focus.z - 15 };
+    runner.advance(1, { ...idle, retry: true, spawnAt: spot });
+    expect(runner.session!.board.position.x).toBeCloseTo(spot.x, 1);
+    expect(runner.session!.board.position.z).toBeCloseTo(spot.z, 1);
+    runner.advance(30, { ...idle, paddle: true });
+    runner.advance(1, { ...idle, retry: true });
+    expect(runner.session!.board.position.x).toBeCloseTo(spot.x, 1);
+  });
+
+  it('reports the board\'s push on the water in each snapshot, once', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    runner.session!.reset(new Vector3(runner.focus.x, 0, runner.focus.z - 25), 0, runner.water);
+    runner.advance(60, { ...idle, paddle: true });
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(Math.hypot(buffers.reaction[2], buffers.reaction[3])).toBeGreaterThan(0);
+    expect(Math.abs(buffers.reaction[1] - runner.session!.board.position.z)).toBeLessThan(3);
+    runner.fill(buffers);
+    expect([...buffers.reaction]).toEqual([0, 0, 0, 0]);
+  });
+
+  it('applies remote boards\' pushes before its next step, without reporting them as its own', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    const { solver } = runner.simulation;
+    const before = solver.qx.slice();
+    const x = runner.focus.x + 5;
+    const z = runner.focus.z - 30;
+    runner.advance(1, idle, Float32Array.of(x, z, 400, 0));
+    const column = solver.xCenters.findIndex((center) => Math.abs(center - x) <= solver.dx / 2);
+    let changed = false;
+    for (let row = 0; row < solver.nz; row += 1) {
+      if (Math.abs(solver.zCenters[row] - z) > 3) continue;
+      if (Math.abs(solver.qx[row * solver.nx + column] - before[row * solver.nx + column]) > 1e-3) changed = true;
+    }
+    expect(changed).toBe(true);
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(Math.abs(buffers.reaction[2])).toBeLessThan(50);
+  });
+
   it('reads each ride from its trace, and reports the finished ride as plain data', () => {
     // On a flat sea the break line, and the lineup just outside it, lie in the shallows: a ride there ends inside at once.
     const runner = new SurfZoneRunner(calm, { rider: true });

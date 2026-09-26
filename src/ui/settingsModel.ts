@@ -81,6 +81,7 @@ export function settingsModel(tab: SettingsTab, settings: GameSettings, context:
       { kind: 'choice', id: 'touchControls', label: t('settings.touchControls'), value: g.touchControls, options: options('settings.touch', ['auto', 'on', 'off']) },
       { kind: 'choice', id: 'balanceMeter', label: t('settings.balanceMeter'), value: g.balanceMeter, options: options('settings.balanceMeter', ['practice', 'always', 'never']) },
       { kind: 'toggle', id: 'scoreRides', label: t('settings.scoreRides'), value: g.scoreRides },
+      { kind: 'toggle', id: 'nameTags', label: t('settings.nameTags'), value: g.nameTags },
       ...(context.devTools ? [{ kind: 'toggle' as const, id: 'showTelemetry', label: t('settings.showTelemetry'), value: g.showTelemetry }] : []),
     ];
   }
@@ -105,7 +106,7 @@ export function settingsModel(tab: SettingsTab, settings: GameSettings, context:
   ];
 }
 
-const GAMEPLAY = new Set(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'scoreRides', 'showTelemetry']);
+const GAMEPLAY = new Set(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'scoreRides', 'nameTags', 'showTelemetry']);
 const ACCESSIBILITY = new Set(['reducedMotion', 'uiScale', 'highContrastHud', 'monoAudio']);
 const AUDIO = new Set(['master', 'sea', 'board', 'ui', 'muteInBackground']);
 

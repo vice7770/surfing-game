@@ -131,3 +131,29 @@ _Avoid_: exit button
 **Lost the face**:
 A ride ended because the wave moved on and stopped carrying the board.
 _Avoid_: missed
+
+## Online
+
+**Room**:
+One shared break online: a spot, its conditions, a sea seed and a player cap, joined by an 8-character code or its link.
+_Avoid_: server, lobby, match
+
+**Room sea time**:
+The sea time every player in a room steps to, from the server's clock: the sea time at the room's creation plus the time since.
+_Avoid_: server time, tick
+
+**Sea handover**:
+A player joining late (or rebuilding a sea that fell behind) starting from another player's sea, sent through the server, so every player's waves break in the same places.
+_Avoid_: sync, snapshot restore
+
+**Remote surfer**:
+Another player's surfer as drawn on this player's water, from the poses they send.
+_Avoid_: ghost (the reports' ghost riders are something else), avatar
+
+**Re-sync**:
+Rebuilding this player's sea at the room's sea time after it fell behind.
+_Avoid_: reload, reset
+
+**Surf call**:
+A short shout ("Left!", "Right!", "Party wave!", "Nice one!") shown as a bubble over the caller.
+_Avoid_: chat, emote

@@ -56,6 +56,17 @@ describe('bindings', () => {
     expect([0, 7, 9, 12].map(buttonLabel)).toEqual(['A', 'RT', 'Start', 'D-pad↑']);
   });
 
+  // N1: surf calls online, on 1–4 and four spare pad buttons, rebindable.
+  it('shouts the four surf calls on 1–4 and spare pad buttons, clashing with nothing', () => {
+    expect(heldActions(new Set(['Digit1', 'Digit2', 'Digit3', 'Digit4']), [], DEFAULT_BINDINGS))
+      .toEqual(new Set(['callLeft', 'callRight', 'callParty', 'callNice']));
+    expect(heldActions(new Set(), [pad([10, 11, 4, 1])], DEFAULT_BINDINGS)).toEqual(new Set(['callLeft', 'callRight', 'callParty', 'callNice']));
+    for (const call of ['callLeft', 'callRight', 'callParty', 'callNice'] as const) {
+      expect(REBINDABLE).toContain(call);
+      for (const code of DEFAULT_BINDINGS.keyboard[call]) expect(heldActions(new Set([code]), [], DEFAULT_BINDINGS)).toEqual(new Set([call]));
+    }
+  });
+
   it('mutes with M or the gamepad\'s Back button, rebindable like the rest (S1)', () => {
     expect(heldActions(new Set(['KeyM']), [], DEFAULT_BINDINGS)).toEqual(new Set(['mute']));
     expect(REBINDABLE).toContain('mute');

@@ -10,6 +10,7 @@ import { breakerForm, crestMotion, waveHeightAt } from './CrestKinematics';
 import { jetFlightTime, tubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
 import { SeaStateBoundary } from './SeaStateBoundary';
+import type { SurfZoneState } from './surfZoneState';
 import type { LipImpact } from './SprayCloud';
 import { ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
@@ -48,6 +49,8 @@ export interface SurfZoneConfig {
   stage?: 1 | 2;
   /** Where stage 2 water steps: 'auto' on the GPU when a host offers one (the worker, with WebGPU), 'cpu' always on the CPU. */
   compute?: 'auto' | 'cpu';
+  /** Online (spec N1): warm start so the sea, once spun up, sits at this sea time (the room's clock). */
+  startSeaTime?: number;
 }
 
 /** Along-shore window width unless the config says otherwise, m. */
@@ -200,7 +203,9 @@ export class SurfZoneSimulation {
   private lastThrow!: Float64Array;
   /** When each column last started breaking a new wave, s. */
   private lastOnset!: Float64Array;
-  private readonly seaTimeOffset: number;
+  /** Sea time at solver time 0, s: set by the warm start, or taken over with a handed-over sea (spec N1). */
+  private seaTimeOffset: number;
+  private readonly boundary: SeaStateBoundary;
   private takeOff?: { x: number; z: number };
   private mapping?: {
     grid: RenderGrid; xMin: number; columns: Int32Array; columnWeights: Float64Array;
@@ -228,11 +233,12 @@ export class SurfZoneSimulation {
     if (this.solver instanceof BoussinesqSolver) this.solver.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     const spinUp = (config.spinUpPeriods ?? 2) * config.peakPeriod;
     this.plan = planSetRun(this.sea, 0, TANK.zoneInner, 0, config.lead ?? 25, spinUp);
-    this.seaTimeOffset = this.plan.warmStartSeaTime;
-    warmStart(this.solver, this.sea, { referenceZ: TANK.zoneInner, seaTime: this.plan.warmStartSeaTime });
-    this.solver.addRelaxationZone(new SeaStateBoundary(
+    this.seaTimeOffset = config.startSeaTime !== undefined ? config.startSeaTime - spinUp : this.plan.warmStartSeaTime;
+    warmStart(this.solver, this.sea, { referenceZ: TANK.zoneInner, seaTime: this.seaTimeOffset });
+    this.boundary = new SeaStateBoundary(
       this.solver, this.sea, this.solver.zoneWeightsAlongZ(TANK.zoneInner, TANK.offshore), this.seaTimeOffset,
-    ));
+    );
+    this.solver.addRelaxationZone(this.boundary);
     // Settle the nonlinear shape at the CFL limit, re-checking stability every quarter second.
     while (this.solver.time < spinUp - 1e-9) this.solver.step(Math.min(0.25, spinUp - this.solver.time));
     this.breaking = new BreakingModel(this.solver, { onset });
@@ -248,6 +254,61 @@ export class SurfZoneSimulation {
     };
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
+  }
+
+  /** The arrays that carry the sea's history (the handover's state probe found them; spec N1), by name. */
+  private stateArrays(): Record<string, Float64Array> {
+    const { solver } = this;
+    const arrays: Record<string, Float64Array> = {
+      h: solver.h, qx: solver.qx, qz: solver.qz,
+      'foam.dense': this.foam.dense, 'foam.residual': this.foam.residual,
+      outerBreak: this.outerBreak, lastThrow: this.lastThrow, lastOnset: this.lastOnset,
+    };
+    if (solver instanceof BoussinesqSolver) {
+      arrays.breakingStrength = solver.breakingStrength;
+      arrays.breakingAge = solver.breakingAge;
+      const { predictor } = solver;
+      if (predictor) {
+        arrays['predictor.x'] = predictor.x;
+        arrays['predictor.z'] = predictor.z;
+      }
+    }
+    return arrays;
+  }
+
+  /**
+   * This sea's state for a player joining the room late (spec N1: the sea
+   * handover): the water, its breaking and foam, the lip in the air, and the
+   * clock, copied. A sea built from the same room config and given it with
+   * `importState` steps on exactly as this one does.
+   */
+  exportState(): SurfZoneState {
+    const arrays = Object.fromEntries(Object.entries(this.stateArrays()).map(([name, array]) => [name, array.slice()]));
+    return {
+      nx: this.solver.nx, nz: this.solver.nz, solverTime: this.solver.time, seaTimeOffset: this.seaTimeOffset, arrays,
+      counters: { lipLaunches: this.lipLaunches, lipVolume: this.lipVolume, lipJets: this.lipJets, lipRollers: this.lipRollers },
+      lip: this.lip.exportState(),
+    };
+  }
+
+  /** Takes over another player's sea (`exportState`): this sea must be built from the same room config. */
+  importState(state: SurfZoneState): void {
+    const { solver } = this;
+    if (state.nx !== solver.nx || state.nz !== solver.nz) throw new Error(`A sea state from another tank (${state.nx}×${state.nz}, not ${solver.nx}×${solver.nz})`);
+    const arrays = this.stateArrays();
+    for (const [name, values] of Object.entries(state.arrays)) {
+      const target = arrays[name];
+      if (!target || target.length !== values.length) throw new Error(`A sea state from another tank: ${name} does not fit`);
+      target.set(values);
+    }
+    solver.time = state.solverTime;
+    this.seaTimeOffset = state.seaTimeOffset;
+    this.boundary.timeOffset = state.seaTimeOffset;
+    this.lipLaunches = state.counters.lipLaunches;
+    this.lipVolume = state.counters.lipVolume;
+    this.lipJets = state.counters.lipJets;
+    this.lipRollers = state.counters.lipRollers;
+    this.lip.importState(state.lip);
   }
 
   get seaTime(): number {

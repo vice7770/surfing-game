@@ -12,19 +12,19 @@ export interface MenuTile {
   badge?: StringKey;
 }
 
-/** The main menu's tiles (plan P8); the Wave Lab only with the dev tools on, multiplayer still to come. */
+/** The main menu's tiles (plan P8); the Wave Lab only with the dev tools on. */
 export function menuTiles(devTools: boolean): MenuTile[] {
   const tiles: MenuTile[] = [
     { id: 'surf', label: 'menu.surf', icon: 'surf', disabled: false },
     { id: 'waveLab', label: 'menu.waveLab', icon: 'waveLab', disabled: false },
-    { id: 'multiplayer', label: 'menu.multiplayer', icon: 'multiplayer', disabled: true, badge: 'menu.comingSoon' },
+    { id: 'multiplayer', label: 'menu.multiplayer', icon: 'multiplayer', disabled: false },
     { id: 'logbook', label: 'menu.logbook', icon: 'logbook', disabled: false },
     { id: 'settings', label: 'menu.settings', icon: 'settings', disabled: false },
   ];
   return devTools ? tiles : tiles.filter((tile) => tile.id !== 'waveLab');
 }
 
-export type MainMenuHandlers = Record<Exclude<MenuTileId, 'multiplayer'>, () => void>;
+export type MainMenuHandlers = Record<MenuTileId, () => void>;
 
 function fullscreenButton(): HTMLElement | null {
   if (!document.fullscreenEnabled) return null;
@@ -74,7 +74,7 @@ export function createMainMenu(
     class: tile.id === 'surf' ? 'tile tile-primary' : 'tile',
     attrs: { type: 'button', ...(tile.disabled ? { 'aria-disabled': 'true' } : {}) },
     dataset: tile.id === 'surf' ? { nav: '', navDefault: '' } : { nav: '' },
-    on: { click: () => { if (tile.id !== 'multiplayer') handlers[tile.id](); } },
+    on: { click: () => { if (!tile.disabled) handlers[tile.id](); } },
   }, tile.badge ? el('span', { class: 'badge', text: t(tile.badge) }) : null, icon(ICONS[tile.icon]), el('span', { text: t(tile.label) })));
   return el('section', { class: 'screen screen-menu', attrs: { 'aria-label': t('app.name') } },
     el('div', { class: 'brand-block' },

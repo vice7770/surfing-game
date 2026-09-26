@@ -75,6 +75,8 @@ class SoundEvents {
     return count;
   }
 }
+/** A board's push on the water, as snapshots and the network carry it: x, z, jx, jz (spec N1). */
+export const REACTION_STRIDE = 4;
 /** Most lip parcels and bubbles a snapshot carries. */
 const PARCEL_CAPACITY = 4096;
 /** A riderless board waits this far seaward of the break line, m. */
@@ -93,11 +95,16 @@ export interface SurfZoneRunnerOptions {
   rider?: boolean;
   /** The render grid's spacing, m (1 by default; finer for close shots). The physics samples the water as before. */
   renderSpacing?: number;
+  /** Online (spec N1): where the rider first waits, m along shore from the take-off and seaward of the break line. */
+  spawnAlong?: number;
+  spawnOut?: number;
 }
 
 /** The player's request for a batch of steps: the ride's input, and a quick retry. */
 export interface RideRequest extends RideInput {
   retry: boolean;
+  /** Online (spec N1): a retry puts the rider here, and later retries too (a free spot in the lineup). */
+  spawnAt?: { x: number; z: number };
 }
 
 /** The rider's phases in snapshot order, `fallen` once in the water. */
@@ -175,6 +182,8 @@ export interface SurfZoneBuffers {
   strokeHitCount: number;
   /** Sound (S1): breaking roar by along-shore sector: Σ B·|q|·area (m⁴/s), and its weighted x and z. */
   roar: Float32Array;
+  /** Online (spec N1): the board's push on the water since the last snapshot: its point (x, z) and impulse (jx, jz). */
+  reaction: Float64Array;
 }
 
 /**
@@ -232,7 +241,7 @@ export class SurfZoneRunner {
     this.breakDepth = this.simulation.spot.depthAt(this.focus.x, this.focus.z) + config.tide;
     this.water = PhysicalSurfWater.forSimulation(this.simulation);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
-    this.rideLineup = new Vector3(this.focus.x, 0, this.focus.z - RIDE_LINEUP_OFFSET);
+    this.rideLineup = new Vector3(this.focus.x + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? RIDE_LINEUP_OFFSET));
     if (options.rider) {
       const direction = (config.directionDegrees * Math.PI) / 180;
       this.gauge = new WaveFrameGauge({ directionX: Math.sin(direction), directionZ: Math.cos(direction) });
@@ -263,7 +272,8 @@ export class SurfZoneRunner {
    * through the rider or the fallen surfer strike it; the bubbles follow the
    * water. A snapshot (`fill`) shows the state after the last step.
    */
-  advance(steps: number, input: RideRequest = IDLE): void {
+  advance(steps: number, input: RideRequest = IDLE, reactions?: ArrayLike<number>): void {
+    this.applyRemote(reactions);
     for (let step = 0; step < steps; step += 1) {
       this.simulation.step(SURF_ZONE_STEP);
       this.afterWater(step, input);
@@ -271,10 +281,19 @@ export class SurfZoneRunner {
   }
 
   /** `advance` with the water stepped on the simulation's device, when it has one (plan P6). */
-  async advanceAsync(steps: number, input: RideRequest = IDLE): Promise<void> {
+  async advanceAsync(steps: number, input: RideRequest = IDLE, reactions?: ArrayLike<number>): Promise<void> {
+    this.applyRemote(reactions);
     for (let step = 0; step < steps; step += 1) {
       await this.simulation.stepAsync(SURF_ZONE_STEP);
       this.afterWater(step, input);
+    }
+  }
+
+  /** Other players' boards pushing on this water (spec N1): x, z, jx, jz each (`REACTION_STRIDE`). */
+  private applyRemote(reactions?: ArrayLike<number>): void {
+    if (!reactions) return;
+    for (let o = 0; o + REACTION_STRIDE <= reactions.length; o += REACTION_STRIDE) {
+      this.water.applyRemoteReaction(reactions[o], reactions[o + 1], reactions[o + 2], reactions[o + 3]);
     }
   }
 
@@ -297,6 +316,7 @@ export class SurfZoneRunner {
       // A press (pop-up, retry) counts once per batch; held controls apply to every step.
       const request = step === 0 ? input : { ...input, popUp: false, retry: false };
       if (request.retry) {
+        if (request.spawnAt) this.rideLineup.set(request.spawnAt.x, 0, request.spawnAt.z);
         this.rideResets += 1;
         this.launchRide();
       }
@@ -412,6 +432,7 @@ export class SurfZoneRunner {
       strokeHits: new Float32Array(SOUND_EVENT_CAPACITY * STROKE_HIT_STRIDE),
       strokeHitCount: 0,
       roar: new Float32Array(ROAR_SECTORS * 3),
+      reaction: new Float64Array(REACTION_STRIDE),
     };
   }
 
@@ -459,6 +480,7 @@ export class SurfZoneRunner {
     }
     buffers.lipHitCount = this.lipHits.drain(buffers.lipHits);
     buffers.strokeHitCount = this.strokeHits.drain(buffers.strokeHits);
+    this.water.drainReaction(buffers.reaction);
     this.measureRoar(buffers.roar);
   }
 

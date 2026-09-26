@@ -110,6 +110,27 @@ export function lipThrow(conditions: LipConditions): LipThrow | undefined {
 }
 
 /** A void under a flying jet, riding with the crest that threw it. */
+/** A lip parcel's per-slot fields, as the sea handover carries them (spec N1). */
+const PARCEL_FIELDS = [
+  'x', 'y', 'z', 'volume', 'vx', 'vy', 'vz', 'px', 'py', 'pz', 'id', 'age', 'active', 'lx', 'ly', 'lz', 'crestSpeed', 'state',
+  'releaseAt', 'strip', 'column', 'index', 'launchTime',
+] as const;
+
+/** A lip as plain data (JSON-safe): its clock and counters, its free slots, the parcels in use and their strips. */
+export interface LipState {
+  capacity: number;
+  time: number;
+  landings: number;
+  nextId: number;
+  nextStrip: number;
+  free: number[];
+  /** The slots in use, and each per-parcel field's values in that order. */
+  slots: number[];
+  fields: Record<(typeof PARCEL_FIELDS)[number], number[]>;
+  strips: [number, { column: number; launchTime: number; parcels: number[]; live: number; tube?: FlyingTube }][];
+  byColumn: [number, number[]][];
+}
+
 interface FlyingTube {
   geometry: TubeGeometry;
   /** The crest when it threw: where, and how high, m. */
@@ -219,6 +240,58 @@ export class PlungingLip implements LipParcelSource {
     this.launchTime = new Float64Array(capacity);
     this.linked = new Uint32Array(capacity);
     for (let index = capacity - 1; index >= 0; index -= 1) this.free.push(index);
+  }
+
+  /** Every per-parcel array, by name, for the sea handover (spec N1). */
+  private parcelArrays(): Record<(typeof PARCEL_FIELDS)[number], Float64Array | Int32Array | Uint8Array> {
+    return {
+      x: this.x, y: this.y, z: this.z, volume: this.volume, vx: this.vx, vy: this.vy, vz: this.vz, px: this.px, py: this.py, pz: this.pz,
+      id: this.id, age: this.age, active: this.active, lx: this.lx, ly: this.ly, lz: this.lz, crestSpeed: this.crestSpeed, state: this.state,
+      releaseAt: this.releaseAt, strip: this.strip, column: this.column, index: this.index, launchTime: this.launchTime,
+    };
+  }
+
+  /** The lip as plain data (spec N1: the sea handover): its clock, its parcels in flight or waiting, and their strips. */
+  exportState(): LipState {
+    const slots: number[] = [];
+    for (let slot = 0; slot < this.capacity; slot += 1) if (this.state[slot] !== 0 || this.active[slot] !== 0) slots.push(slot);
+    const arrays = this.parcelArrays();
+    const fields = Object.fromEntries(PARCEL_FIELDS.map((name) => [name, slots.map((slot) => arrays[name][slot])])) as LipState['fields'];
+    return {
+      capacity: this.capacity, time: this.time, landings: this.landings, nextId: this.nextId, nextStrip: this.nextStrip,
+      free: [...this.free], slots, fields,
+      strips: [...this.strips].map(([id, strip]) => [id, {
+        column: strip.column, launchTime: strip.launchTime, parcels: [...strip.parcels], live: strip.live,
+        ...(strip.tube ? { tube: { ...strip.tube, geometry: { ...strip.tube.geometry } } } : {}),
+      }]),
+      byColumn: [...this.byColumn].map(([column, ids]) => [column, [...ids]]),
+    };
+  }
+
+  /** Takes over another lip's state (the same capacity): what it has in the air lands here as it would there. */
+  importState(state: LipState): void {
+    if (state.capacity !== this.capacity) throw new Error(`A lip state for ${state.capacity} parcels, not ${this.capacity}`);
+    const arrays = this.parcelArrays();
+    for (const name of PARCEL_FIELDS) {
+      arrays[name].fill(0);
+      state.slots.forEach((slot, k) => { arrays[name][slot] = state.fields[name][k]; });
+    }
+    this.linked.fill(0);
+    this.free.length = 0;
+    this.free.push(...state.free);
+    this.strips.clear();
+    for (const [id, strip] of state.strips) {
+      this.strips.set(id, {
+        column: strip.column, launchTime: strip.launchTime, parcels: [...strip.parcels], live: strip.live,
+        ...(strip.tube ? { tube: { ...strip.tube, geometry: { ...strip.tube.geometry } } } : {}),
+      });
+    }
+    this.byColumn.clear();
+    for (const [column, ids] of state.byColumn) this.byColumn.set(column, [...ids]);
+    this.time = state.time;
+    this.landings = state.landings;
+    this.nextId = state.nextId;
+    this.nextStrip = state.nextStrip;
   }
 
   /**

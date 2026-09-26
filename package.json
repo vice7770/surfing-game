@@ -17,13 +17,24 @@
     "report:carve": "rolldown scripts/carve-lab.ts -o dist/scripts/carve-lab.mjs --format esm --platform node && node dist/scripts/carve-lab.mjs",
     "assets:skies": "rolldown scripts/assets/fetch-skies.ts -o dist/scripts/fetch-skies.mjs --format esm --platform node && node dist/scripts/fetch-skies.mjs",
     "assets:surfers": "/Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/assets/build_surfers.py && node scripts/assets/pack-surfers.mjs",
-    "report:sound": "rolldown scripts/sound-report.ts -o dist/scripts/sound-report.mjs --format esm --platform node && node dist/scripts/sound-report.mjs"
+    "report:sound": "rolldown scripts/sound-report.ts -o dist/scripts/sound-report.mjs --format esm --platform node && node dist/scripts/sound-report.mjs",
+    "report:drift": "rolldown scripts/drift-report.ts -o dist/scripts/drift-report.mjs --format esm --platform node && node dist/scripts/drift-report.mjs",
+    "server": "npm run build && npm run build:server && node dist-server/server.mjs",
+    "server:dev": "npm run build:server && STATIC_DIR=dist node dist-server/server.mjs",
+    "build:server": "tsc -p server/tsconfig.json && rolldown server/main.ts -o dist-server/server.mjs --format esm --platform node --external ws",
+    "typecheck:server": "tsc -p server/tsconfig.json",
+    "bots:record": "rolldown scripts/bot-tracks.ts -o dist/scripts/bot-tracks.mjs --format esm --platform node && node dist/scripts/bot-tracks.mjs",
+    "server:bots": "npm run build:server && BOTS=1 node dist-server/server.mjs",
+    "deploy": "fly deploy --build-arg BUILD_ID=$(git rev-parse --short HEAD)"
   },
   "dependencies": {
-    "three": "^0.186.1"
+    "three": "^0.186.1",
+    "ws": "^8.22.0"
   },
   "devDependencies": {
+    "@types/node": "^22.20.4",
     "@types/three": "^0.186.0",
+    "@types/ws": "^8.18.1",
     "@webgpu/types": "^0.1.74",
     "gltfpack": "^1.3.0",
     "mp4-muxer": "^5.2.2",
