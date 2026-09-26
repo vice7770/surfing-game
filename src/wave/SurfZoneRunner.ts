@@ -18,6 +18,12 @@ export const SURF_ZONE_STEP = 1 / 60;
 const PARCEL_CAPACITY = 4096;
 /** A riderless board waits this far seaward of the break line, m. */
 const LINEUP_OFFSET = 25;
+/**
+ * The rider starts, and relaunches, this far seaward of the break line, m. In
+ * the catch reports riders stood almost only from 4–8 m outside; from 25 m out
+ * the waves pass before a paddler can reach the peak.
+ */
+const RIDE_LINEUP_OFFSET = 6;
 
 export interface SurfZoneRunnerOptions {
   /** Carry a riderless board on the water (P4c). */
@@ -109,6 +115,7 @@ export class SurfZoneRunner {
   private readonly breaker: SurfZoneStatus['breaker'];
   private readonly breakDepth: number;
   private readonly lineup: Vector3;
+  private readonly rideLineup: Vector3;
   private boardResets = 0;
   private boardMs = 0;
 
@@ -124,6 +131,7 @@ export class SurfZoneRunner {
     this.breakDepth = this.simulation.spot.depthAt(this.focus.x, this.focus.z) + config.tide;
     this.water = PhysicalSurfWater.forSimulation(this.simulation);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
+    this.rideLineup = new Vector3(this.focus.x, 0, this.focus.z - RIDE_LINEUP_OFFSET);
     if (options.rider) {
       this.session = new RideSession();
       this.board = this.session.board;
@@ -212,7 +220,7 @@ export class SurfZoneRunner {
 
   /** Board and rider back in the lineup: prone, nose to the beach. */
   private launchRide(): void {
-    this.session?.reset(this.lineup, 0, this.water);
+    this.session?.reset(this.rideLineup, 0, this.water);
   }
 
   /** Float the board level in the lineup, nose to the beach, at rest on the surface. */

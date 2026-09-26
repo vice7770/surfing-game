@@ -468,6 +468,54 @@ describe('lip strikes', () => {
 });
 
 // Wave plan §1.10: a catch comes from the wave, never from paddling alone.
+/** The board's roll, rad: positive with its left rail (+x) up. */
+function roll(board: BoardBody): number {
+  const side = new Vector3(1, 0, 0).applyQuaternion(board.orientation);
+  return Math.asin(Math.max(-1, Math.min(1, side.y)));
+}
+
+describe('prone balance', () => {
+  // A shortboard carrying a prone rider floats awash with the rider's weight above it: passively
+  // it capsizes. A paddler balances the roll by shifting toward the high rail.
+  it('rights a board tipped 15° under a prone rider', () => {
+    const board = new BoardBody();
+    board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), (15 * Math.PI) / 180));
+    const rider = new AttachedRider(board.shape, { phase: 'prone' });
+    board.attach(rider);
+    run(board, new PlaneWater(), 3);
+    expect(rider.attached).toBe(true);
+    expect(Math.abs(roll(board))).toBeLessThan((5 * Math.PI) / 180);
+  });
+
+  it('never pushes a hand harder than an arm can, however fast the board runs', () => {
+    const { board, rider } = mounted('prone');
+    board.velocity.z = 5;
+    rider.velocity.z = 5;
+    rider.paddle = true;
+    let hardest = 0;
+    run(board, new PlaneWater({ level: 0.3 }), 3, () => {
+      hardest = Math.max(hardest, rider.handLoad[0], rider.handLoad[1]);
+    });
+    const weight = rider.mass * WATER.gravity;
+    expect(hardest).toBeGreaterThan(0.3 * weight);
+    expect(hardest).toBeLessThanOrEqual(0.4 * weight + 1e-9);
+    expect(rider.attached).toBe(true);
+  });
+
+  it('stays on the board lying still through a minute of oblique swell', () => {
+    const swell = new SwellWater({ height: 1.2, period: 10, direction: Math.PI / 6 });
+    const { board, rider } = mounted('prone', swell.surfaceAt(0, 0));
+    let worst = 0;
+    for (let i = 0; i < 60 * 60 && rider.attached; i += 1) {
+      board.step(STEP, swell);
+      swell.advance(STEP);
+      worst = Math.max(worst, Math.abs(roll(board)));
+    }
+    expect(rider.attached).toBe(true);
+    expect(worst).toBeLessThan((20 * Math.PI) / 180);
+  });
+});
+
 describe('catching', () => {
   it('never cues or stands from paddling on flat water', () => {
     const { board, rider } = mounted('prone');

@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import type { LipContactParcel, LipParcelSource } from './DetachedSurfer';
 import { PlaneWater } from './PlaneWater';
 import { RideSession } from './RideSession';
+import { SwellWater } from './SwellWater';
+import { createWaterSample } from './SurfWater';
 
 const STEP = 1 / 60;
 const idle = { paddle: false, popUp: false, steer: 0 };
@@ -17,6 +19,29 @@ describe('ride session', () => {
     expect(forward.x).toBeCloseTo(1, 6);
     expect(session.board.position.x).toBeCloseTo(2, 6);
     expect(session.surfer.active).toBe(false);
+  });
+
+  it('relaunches drifting with the water and lying along its surface, so paddling off does not throw the rider', () => {
+    // A quarter period past the crest: the surface falls and the orbital flow runs shoreward.
+    const swell = new SwellWater({ height: 1.6, period: 10, direction: 0.3 });
+    swell.advance(2.5);
+    const at = new Vector3(3, 0, -4);
+    const session = new RideSession();
+    session.reset(at, 0.2, swell);
+    const sample = swell.sampleAt(at.x, swell.surfaceAt(at.x, at.z) - 0.05, at.z, createWaterSample());
+    const { board, rider } = session;
+    expect(board.velocity.x).toBeCloseTo(sample.flowX, 2);
+    expect(board.velocity.z).toBeCloseTo(sample.flowZ, 2);
+    expect(rider.velocity.distanceTo(board.velocity)).toBeLessThan(0.05);
+    const up = new Vector3(0, 1, 0).applyQuaternion(board.orientation);
+    expect(up.angleTo(new Vector3(sample.normalX, sample.normalY, sample.normalZ))).toBeLessThan(0.01);
+    const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+    expect(Math.atan2(forward.x, forward.z)).toBeCloseTo(0.2, 2);
+    for (let i = 0; i < 120; i += 1) {
+      session.step(STEP, swell, { ...idle, paddle: true });
+      swell.advance(STEP);
+    }
+    expect(rider.attached).toBe(true);
   });
 
   it('throws the rider off a board stopped dead, into a fall body that keeps its momentum', () => {
