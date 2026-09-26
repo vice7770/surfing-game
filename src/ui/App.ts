@@ -489,6 +489,8 @@ export class App {
       return;
     }
     this.online = controller;
+    // Dev tools: the session, for checks in the page.
+    if (DEV_TOOLS) (globalThis as unknown as { breaklineOnline?: OnlineController }).breaklineOnline = controller;
     // Kicked, or turned away on a reconnect: back to Multiplayer with the reason.
     controller.onRefused = (reason) => this.failOnline(reason);
     this.hideEndCard();

@@ -71,6 +71,8 @@ export class OnlineController {
   /** This player's sea, for someone joining late (spec N1: the sea handover); the game sets it. */
   provideSea?: () => Promise<HandedSea | undefined>;
   private seaWanted?: (sea: HandedSea | undefined) => void;
+  /** Where this player's latest sea came from: another player's, or fresh. */
+  seaSource?: 'handed' | 'fresh';
   readonly name: string;
   readonly look: PlayerLook;
   private readonly net: NetClient;
@@ -134,6 +136,7 @@ export class OnlineController {
       }, wait);
       const settle = (sea: HandedSea | undefined) => {
         clearTimeout(timer);
+        this.seaSource = sea ? 'handed' : 'fresh';
         resolve(sea);
       };
       this.seaWanted = settle;
