@@ -11,6 +11,7 @@ import type { SpotName } from '../wave/Bathymetry';
 import type { SurfZoneStatus } from '../wave/SurfZoneRunner';
 import packageJson from '../../package.json';
 import { el } from './dom';
+import { createLogbookScreen, logbookModel } from './LogbookScreen';
 import { createMainMenu } from './MainMenu';
 import { MenuInput } from './MenuInput';
 import { createPauseMenu } from './PauseMenu';
@@ -163,7 +164,7 @@ export class App {
       return [createMainMenu({
         surf: () => this.go('surf'),
         waveLab: () => {},
-        logbook: () => {},
+        logbook: () => this.go('logbook'),
         settings: () => {},
       }, { devTools: DEV_TOOLS, version: packageJson.version })];
     }
@@ -173,6 +174,9 @@ export class App {
         paddleOut: () => void this.paddleOut(),
         back: () => this.back(),
       })];
+    }
+    if (id === 'logbook') {
+      return [createLogbookScreen(logbookModel(this.logbook, this.settings.value.gameplay.units, Date.now()), () => this.back())];
     }
     if (id === 'ride') return this.endCard ? [this.rideHud.root, this.endCard] : [this.rideHud.root];
     if (id === 'pause') {

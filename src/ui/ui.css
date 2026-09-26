@@ -135,6 +135,20 @@
 .hud-hints { position: absolute; bottom: max(16px, 4vh); left: 50%; display: flex; gap: 1.2em; transform: translateX(-50%); color: #fff8e9; font: .7em var(--mono); letter-spacing: .1em; text-transform: uppercase; text-shadow: 0 1px 8px rgba(16, 58, 61, .6); white-space: nowrap; }
 .has-touch .hud-hints { display: none; }
 
+/* Logbook. */
+.panel-subhead { margin: .2em 0 -.3em; color: var(--muted); font: .72em var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+.log-spots { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7em; }
+.log-spot { padding: .8em .9em; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 253, 243, .55); }
+.log-spot h3 { margin: 0 0 .5em; font: 400 1.2em Georgia, 'Times New Roman', serif; }
+.log-spot dl { display: grid; gap: .3em; margin: 0; }
+.log-spot dl div { display: flex; justify-content: space-between; gap: .6em; }
+.log-spot dt { color: var(--muted); font: .62em var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+.log-spot dd { margin: 0; font-weight: 600; }
+.log-recent { display: grid; gap: .4em; margin: 0; padding: 0; list-style: none; }
+.log-recent li { display: flex; flex-direction: column; gap: .15em; padding: .6em .8em; border-radius: 10px; background: rgba(255, 253, 243, .5); }
+.log-recent small { color: var(--muted); font: .72em var(--mono); letter-spacing: .04em; }
+.log-empty { margin: 0; color: var(--muted); }
+
 /* Pause menu. */
 .panel-narrow { width: min(100%, 22em); }
 .pause-title { margin: 0; font: 400 1.8em Georgia, 'Times New Roman', serif; letter-spacing: -.03em; text-align: center; }
@@ -171,7 +185,7 @@
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); width: min(100%, 22em); gap: .7em; }
   .tile { aspect-ratio: auto; min-height: 6.4em; }
   .tile:first-child { grid-column: 1 / -1; }
-  .spot-cards { grid-template-columns: 1fr; }
+  .spot-cards, .log-spots { grid-template-columns: 1fr; }
   .spot-card { flex-direction: row; align-items: center; gap: .9em; }
   .spot-card svg { flex: none; width: 4.2em; }
   .choice-row { grid-template-columns: 1fr; gap: .35em; }
