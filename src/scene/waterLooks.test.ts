@@ -31,4 +31,21 @@ describe('Classic water parity', () => {
     const { material } = new SprayPoints().mesh;
     expect({ vertex: material.vertexShader, fragment: material.fragmentShader }).toMatchSnapshot();
   });
+
+  it('keys the program by look, and switching back gives the Classic shaders again', () => {
+    const water = new WaterSurface(source);
+    const classic = compiled(water.mesh.material);
+    expect(water.look).toBe('classic');
+    expect(water.mesh.material.customProgramCacheKey()).toContain('classic');
+    water.setLook('rich');
+    expect(water.look).toBe('rich');
+    water.setLook('classic');
+    expect(water.mesh.material.customProgramCacheKey()).toContain('classic');
+    expect(compiled(water.mesh.material)).toEqual(classic);
+    for (const other of [new FarFieldOcean(), new SprayPoints()]) {
+      other.setLook('rich');
+      other.setLook('classic');
+      expect(other.look).toBe('classic');
+    }
+  });
 });

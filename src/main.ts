@@ -302,6 +302,9 @@ class SurfGame {
     this.breakSpray.points.visible = resolved.sprayMist && this.mode === 'legacy';
     this.physicalMode.farField.setViewDistance(resolved.oceanView);
     this.water.setFoamDetail(resolved.detailedFoam);
+    this.water.setLook(resolved.waterLook);
+    this.physicalMode.farField.setLook(resolved.waterLook);
+    this.physicalMode.spray.setLook(resolved.waterLook);
   }
 
   /** R: in the physical mode, paddle out again from the lineup while the waves carry on; otherwise replay. */

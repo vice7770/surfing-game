@@ -13,6 +13,7 @@ import {
   Vector3,
   Vector4,
 } from 'three';
+import type { WaterLook } from './water/waterLook';
 import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
@@ -184,6 +185,7 @@ export class WaterSurface {
   private bedRevision = Number.NaN;
   private readonly uniforms: Record<string, { value: unknown }>;
   private detailedFoam = true;
+  private currentLook: WaterLook = 'classic';
   /** Caustic map lighting the bed seen through the water (G5); off until a `CausticMap` draws into it. */
   readonly causticUniforms: CausticUniforms = createCausticUniforms();
 
@@ -231,7 +233,7 @@ export class WaterSurface {
         .replace('#include <color_fragment>', '')
         .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true));
     };
-    material.customProgramCacheKey = () => 'breakline-water-surface';
+    material.customProgramCacheKey = () => `breakline-water-surface-${this.currentLook}`;
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
     this.mesh.frustumCulled = false;
     this.update();
@@ -274,6 +276,17 @@ export class WaterSurface {
     }
     this.flowSource = this.source;
     this.refreshFoamPattern();
+  }
+
+  /** Graphics setting (G8): the Classic water, or the Rich look. */
+  setLook(look: WaterLook): void {
+    if (look === this.currentLook) return;
+    this.currentLook = look;
+    this.mesh.material.needsUpdate = true;
+  }
+
+  get look(): WaterLook {
+    return this.currentLook;
   }
 
   /** Graphics setting (plan P8): Simple keeps the soft foam tint even on water with a current. */

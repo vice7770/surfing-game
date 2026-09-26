@@ -1,5 +1,6 @@
 import { BufferAttribute, BufferGeometry, NormalBlending, PerspectiveCamera, Points, ShaderMaterial, Vector2 } from 'three';
 import { SPRAY_STRIDE } from '../wave/SprayCloud';
+import type { WaterLook } from './water/waterLook';
 
 /** What the renderer needs from a spray cloud: packed x, y, z, size and opacity per particle, and how many are live. */
 export interface RenderableSpray {
@@ -38,6 +39,7 @@ export class SprayPoints {
   private readonly positions: BufferAttribute;
   private readonly looks: BufferAttribute;
   private readonly buffer = new Vector2();
+  private currentLook: WaterLook = 'classic';
 
   constructor(readonly capacity = 4096) {
     const geometry = new BufferGeometry();
@@ -62,6 +64,20 @@ export class SprayPoints {
       const fov = camera instanceof PerspectiveCamera ? camera.fov : 50;
       material.uniforms.pixelsPerMetre.value = height / (2 * Math.tan((fov * Math.PI) / 360));
     };
+  }
+
+  /** Graphics setting (G8): the Classic spray, or the Rich look. */
+  setLook(look: WaterLook): void {
+    if (look === this.currentLook) return;
+    this.currentLook = look;
+    const { material } = this.mesh;
+    material.vertexShader = vertexShader;
+    material.fragmentShader = fragmentShader;
+    material.needsUpdate = true;
+  }
+
+  get look(): WaterLook {
+    return this.currentLook;
   }
 
   update(spray: RenderableSpray): void {

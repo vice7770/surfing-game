@@ -12,6 +12,7 @@ import {
   Vector3,
   Vector4,
 } from 'three';
+import type { WaterLook } from './water/waterLook';
 import type { FarFieldProfile } from '../wave/FarFieldProfile';
 import { buildGridGeometry, gradedAxis, type HoleRect } from './gridGeometry';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
@@ -118,6 +119,7 @@ export class FarFieldOcean {
   private readonly uniforms: Record<string, { value: unknown }>;
   private extent = 1500;
   private view: 'near' | 'far' = 'far';
+  private currentLook: WaterLook = 'classic';
 
   constructor() {
     this.uniforms = {
@@ -156,10 +158,21 @@ export class FarFieldOcean {
         .replace('#include <color_fragment>', 'diffuseColor.a *= 1.0 - smoothstep( farFade.x, farFade.y, length( vWaterWorld.xz - farFocus ) );')
         .replace('#include <emissivemap_fragment>', waterBodyFragment(false));
     };
-    material.customProgramCacheKey = () => 'breakline-far-field-ocean';
+    material.customProgramCacheKey = () => `breakline-far-field-ocean-${this.currentLook}`;
     this.mesh = new Mesh(new BufferGeometry(), material);
     this.mesh.frustumCulled = false;
     this.mesh.visible = false;
+  }
+
+  /** Graphics setting (G8): the Classic water, or the Rich look. */
+  setLook(look: WaterLook): void {
+    if (look === this.currentLook) return;
+    this.currentLook = look;
+    this.mesh.material.needsUpdate = true;
+  }
+
+  get look(): WaterLook {
+    return this.currentLook;
   }
 
   get textureSize(): { width: number; height: number } {
