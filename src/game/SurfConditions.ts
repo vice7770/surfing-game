@@ -35,11 +35,17 @@ export const SWELLS = {
 export const TIDES: Record<TideLevel, number> = { low: -0.6, mid: 0, high: 0.6 };
 /** Local wind, m/s, positive onshore. */
 export const WINDS: Record<WindKind, number> = { offshore: -5, calm: 0, onshore: 6 };
-/** The sun for each time of day: height 0–1 and direction, degrees, as on the Wave Lab's sliders. */
+/**
+ * The sun for each time of day: height 0–1 and direction, degrees, as on the
+ * Wave Lab's sliders. Heights match the photographed skies' measured suns
+ * (G7: 2.1°, 47.9° and 6.1° over the slider's 0–60°), so each time snaps to its
+ * own photo. Low suns stand to the side of the seaward cameras: looking into a
+ * photographed sunset's haze washes the frame out.
+ */
 export const TIMES: Record<TimeOfDay, { sunHeight: number; sunDirection: number }> = {
-  dawn: { sunHeight: 0.1, sunDirection: -50 },
-  midday: { sunHeight: 0.75, sunDirection: -15 },
-  sunset: { sunHeight: 0.08, sunDirection: 45 },
+  dawn: { sunHeight: 0.035, sunDirection: -110 },
+  midday: { sunHeight: 0.8, sunDirection: -15 },
+  sunset: { sunHeight: 0.1, sunDirection: 110 },
 };
 /** The light behind the main menu. */
 export const BACKDROP_TIME: TimeOfDay = 'sunset';

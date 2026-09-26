@@ -74,8 +74,8 @@ describe('PhysicalMode', () => {
     expect(scene.children).toContain(mode.seabed.mesh);
     expect(scene.children).toContain(mode.farField.mesh);
     expect(mode.farField.mesh.visible).toBe(true);
-    expect(scene.children).toContain(mode.lipPoints.mesh);
-    expect(mode.lipPoints.mesh.visible).toBe(true);
+    expect(scene.children).toContain(mode.lipSheet.mesh);
+    expect(mode.lipSheet.mesh.visible).toBe(true);
     expect(scene.children).toContain(mode.bubbles.mesh);
     expect(mode.farField.textureSize.width).toBe(simulation.sea.components.length + 1);
     expect(mode.focus).toEqual(simulation.breakPoint());
@@ -86,11 +86,13 @@ describe('PhysicalMode', () => {
     expect(mode.camera.camera.position.z).toBeGreaterThan(mode.board.position.z);
     expect(mode.farField.temporalPhases[0]).toBeCloseTo((simulation.sea.components[0].omega * simulation.seaTime) % (2 * Math.PI), 4);
     const crest = simulation.solver.cellIndex(0, -60);
-    simulation.lip.launch(crest, { x: 0, z: 5 }, 3, 0.5);
-    mode.advance(1);
-    mode.update(1 / 60);
-    expect(mode.lipPoints.mesh.geometry.drawRange.count).toBe(simulation.lip.activeCount());
-    expect(mode.lipPoints.mesh.geometry.drawRange.count).toBeGreaterThan(0);
+    simulation.lip.launch(crest, { x: 0, z: 5 }, simulation.solver.surfaceAt(crest) + 3, 0.5);
+    // Once the strip has left the crest, the drawn sheet covers it.
+    for (let step = 0; step < 18; step += 1) {
+      mode.advance(1);
+      mode.update(1 / 60);
+    }
+    expect(mode.lipSheet.mesh.geometry.index!.count).toBeGreaterThan(0);
     simulation.foam.source.fill(0);
     simulation.foam.source[crest] = 40;
     local.runner.bubbles.update(simulation, 1 / 60);
@@ -129,7 +131,7 @@ describe('PhysicalMode', () => {
     mode.setVisible(false);
     expect(mode.board.visible).toBe(false);
     expect(mode.surfer.group.visible).toBe(false);
-    expect(mode.lipPoints.mesh.visible).toBe(false);
+    expect(mode.lipSheet.mesh.visible).toBe(false);
     expect(mode.bubbles.mesh.visible).toBe(false);
     expect(mode.seabed.mesh.visible).toBe(false);
     expect(mode.farField.mesh.visible).toBe(false);

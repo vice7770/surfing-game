@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { TANK_SWELL_LIMITS } from './PhysicalMode';
+import skyManifest from '../../public/assets/skies/skies.json';
+import { nearestSky, sunElevationFromSlider, type SkyEntry } from '../scene/PhotoSky';
 import {
-  DEFAULT_CONDITIONS, SURF_SPOTS, SWELLS, TIDES, WINDS, backdropSettings, nextBackdropSpot, physicalSettingsFor,
+  DEFAULT_CONDITIONS, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings, nextBackdropSpot, physicalSettingsFor,
 } from './SurfConditions';
 
 const water = { stage: 2 as const, compute: 'auto' as const };
@@ -43,5 +45,12 @@ describe('surf conditions', () => {
       previous = next;
     }
     expect(backdropSettings('beach', water)).toMatchObject({ spot: 'beach', source: 'practice', windSpeed: 0 });
+  });
+
+  it('lights each time of day with its own photographed sky (G7)', () => {
+    const skies = skyManifest.skies as unknown as SkyEntry[];
+    for (const time of ['dawn', 'midday', 'sunset'] as const) {
+      expect(nearestSky(skies, sunElevationFromSlider(TIMES[time].sunHeight)).timeOfDay, time).toBe(time);
+    }
   });
 });

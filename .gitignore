@@ -3,3 +3,6 @@ dist/
 *.tsbuildinfo
 .DS_Store
 recordings/
+scripts/assets/.cache/
+scripts/assets/.build/
+.superpowers/

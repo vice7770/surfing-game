@@ -95,7 +95,7 @@ function runSpot(spot: SpotName, seed: number): { attempts: Attempt[]; seconds: 
   };
   const recoil = new Vector3();
   const lip: LipParcelSource = {
-    forEachContact: (visit) => runner.simulation.lip.forEachContact((parcel) => {
+    forEachContactNear: (center, reach, visit) => runner.simulation.lip.forEachContactNear(center, reach, (parcel) => {
       recoil.copy(parcel.velocity);
       visit(parcel);
       parcel.velocity.copy(recoil);

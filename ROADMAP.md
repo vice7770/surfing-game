@@ -128,7 +128,7 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 
   [Record](docs/superpowers/plans/2026-09-26-p6-webgpu-tier.md).
 
-### P1 · Barrels (P7) — `Ready`
+### P1 · Barrels (P7) — `In Progress (tubes wait for jet data)`
 
 Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels](docs/superpowers/plans/2026-09-26-p7-barrels.md).
 - [ ] **Scope:** a physical lip sheet the rider can be hit by or covered by. Deliberate tube-riding comes later (see the gameplay list below).
@@ -141,6 +141,57 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels
   5. a translucent sheet with foam;
   6. validation, per-spot tube reports and a video.
 - [ ] Every tier gets tubes. If the physics is too heavy, it is sped up later, never faked.
+- **Built, 2026-09-26:**
+  - the throw trigger and classification;
+  - jets at the crest's measured speed, with tubes measured in the crest's frame;
+  - the continuous, water-conserving sheet;
+  - hit or covered;
+  - the translucent sheet;
+  - `npm run report:tubes`.
+- **Tubes do not open yet.** Thrown at the crest's own speed, the lip lands on the face beneath it (no tube of 10 cm or more at any spot). This waits for measured jet kinematics from the user.
+- **Along the way:**
+  - the peel measurement stopped counting shore swash;
+  - the Reef's shelf is now 1 m, so waves break on its edge (769 jets a minute against 307);
+  - no reef shape reached a 27–60° peel inside the tank.
+
+  [Record](docs/superpowers/plans/2026-09-26-p7-barrels.md), [tube report](docs/research/tube-report.md), [rideability report](docs/research/rideability-report.md).
+
+### P1 · Characters and sky (G7) — `In Progress`
+
+Requirements agreed in a grilling session on 2026-09-26: [G7 spec](docs/superpowers/specs/2026-09-26-g7-characters-and-sky.md). Part A is [recorded](docs/superpowers/plans/2026-09-26-g7a-characters-and-sky.md), and every asset's source and licence is in [ASSETS.md](docs/ASSETS.md).
+- [x] **Part A · Surfers:** four semi-realistic MakeHuman surfers (two women, two men, 1.65–1.74 m, CC0), built headless in Blender with MPFB 2 on its Mixamo-compatible skeleton, 1.0–1.6 MB each.
+  - The physics owns the body: each frame a humanoid rig solves the skeleton from the worker's seven rider points by two-bone IK. A code-driven layer sets the knee and elbow directions, the chest's turn toward the nose, the head's look and cupped paddling hands.
+  - Outfits are crisp per-vertex cuts in the body's shader: full suit, spring suit, rash vest with boardshorts or bikini, with a swappable accent colour.
+  - Skin, hair and suits read wet. A low-poly body takes over beyond 8 m. The simple surfer stays as the fallback if a model cannot load.
+- [x] **Part A · Board:** the physics hull in resin with a waxed deck, a grooved traction pad and a stringer. The thruster's fins are drawn at the places and sizes `THRUSTER` gives their forces. There are five unbranded designs.
+- [x] **Part A · Sky:** three Poly Haven pure-sky photos for dawn, midday and sunset. Each sun is moved out of its HDR into a measured directional light, so the photo lights the shade and the light casts the shadow.
+  - The sun-direction control turns the photo, and the sun-height slider snaps to the nearest photo.
+  - Neutral tone mapping.
+- [x] **Part A · Shadows:** four levels, each checked in the browser:
+  - a blob;
+  - the rider and board on themselves and the deck;
+  - also the water and seabed;
+  - soft PCSS.
+
+  The shadow camera follows the rider in whole texels. `?shadows=` picks a level until P8's presets do.
+- [x] **Part A · Paddle splashes:** each pulling hand throws spray in proportion to the work it does on the water, at the lip splash's rate.
+- [x] **Merged with P8:** P8's Dawn, Midday and Sunset now pick their own photos. Their sun heights match the photos' measured suns, and dawn and sunset suns stand to the side of the seaward cameras (±110°), since looking into a photographed sunset's haze washed out the menu.
+- [ ] **Part B (P8 has merged, so it can start):**
+  - a Surfer card on the Surf screen with a slowly rotating preview under the chosen time of day, with pickers for body, outfit, wetsuit colour and board design, saved in P8's settings;
+  - P8's Time of day picks the sky;
+  - Low–Ultra pick the shadow level, the level of detail and the texture sizes.
+- [ ] **Then:** a playtest with the user. `character-sheet.html` is the dev screenshot sheet: every surfer prone, standing and fallen, at chase distance and at 1.5 m, under each sky, plus a sun-alignment check.
+- **Backlog:**
+  - the beach, sand and coastline;
+  - water texture detail;
+  - a replay or photo mode;
+  - dripping water;
+  - a full character creator;
+  - motion capture to refine the paddle and pop-up;
+  - Mixamo clips (swim, tread water, beach idle), which need the user's Adobe login;
+  - moving to the WebGPU renderer;
+  - a preset's mass and height fed into the physics (after P9's flexible rider);
+  - the leash, drawn once P11 adds it to the physics.
 
 ### Future gameplay mechanics — `Backlog`
 
