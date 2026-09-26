@@ -15,7 +15,10 @@ export type SurfZoneReply =
 
 /** The arrays of a snapshot, handed over without copying. */
 export function transferables(buffers: SurfZoneBuffers): Transferable[] {
-  return [buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.spray.buffer, buffers.board.buffer, buffers.rider.buffer];
+  return [
+    buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.spray.buffer, buffers.board.buffer, buffers.rider.buffer,
+    buffers.lipHits.buffer, buffers.strokeHits.buffer, buffers.roar.buffer,
+  ];
 }
 
 /** Makes the device a stage 2 solver steps on (the GPU), or none. */
