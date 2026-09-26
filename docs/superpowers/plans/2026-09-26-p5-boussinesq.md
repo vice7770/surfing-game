@@ -34,6 +34,34 @@ P and Q stay the primary state, so relaxation zones, the lip's mass exchange and
 
 ---
 
+## Record (2026-09-26)
+
+- **Task 1:** `BoussinesqSolver` extends the stage 1 solver.
+  - Driven at the model's own kh, a small wave's phase speed matches the equations within 1 % at kh = 0.5–3.
+  - The equations stay within 2.5 % of Airy to kh = 3 (2.4 % there). The plan's bound is at fixed kh; at fixed frequency the same equations differ from Airy by 4.1 %.
+  - With dispersion off the solver is stage 1 bit for bit. A lake stays at rest over a sloping bed and a dry beach.
+- **Task 2, and a numerical finding:** the Hancock predictor advanced face fluxes half a step with the shallow-water acceleration only.
+  - For short waves the dispersive terms change that acceleration by tens of percent. A kh = 1.5 wave lost 8 % of its height per wavelength at 40 cells per wavelength, and 4 % at 80 (first order). The limiter was not the cause.
+  - The predictor now adds the acceleration the dispersive terms gave the previous step: 0.2 % per wavelength, and 0.03 % at 80 cells.
+  - Then: shoaling within 10 % of linear theory, Snell within 2°, a packet at the model's group speed within 5 %, and a solitary wave (A/d = 0.1) at √(g(d + A)) within 1 %, holding its height.
+- **Task 3:** Kennedy breaking runs inside the step.
+  - Thresholds scale with the still depth, as in Kennedy et al.; with the total depth under a rising crest, the onset was never reached.
+  - ν = B δ² (h + η) η_t, capped at 0.3 (h + η)√(g(h + η)), with its explicit stability limit in the CFL step.
+  - On a 1:40 beach a 10 s, 0.6 m wave shoals to H/h ≈ 0.98 and breaks at H_b/h_b ≈ 0.98 (Battjes' slope form predicts 0.93). The Tonelli–Petti switch takes the crest to shallow water a row before the eddy viscosity's B passes 0.3, and no wave is steeper than Miche before either.
+- **Task 4:** the surf zone runs on stage 2 by default, with stage 1 a Wave Lab setting away ('Solver').
+  - `BreakingModel` mirrors the solver's breaking, so lip, foam, readouts and the board read one signal.
+  - Every test of the surf zone, lip, foam, peel and worker passes unchanged.
+  - The rideability report (stage 2, 3 seeds × 20 periods) still has the Beach, Point and Reef mostly closing out (median peel 11–13°). The Canyon peels at a median 25°: 38 % of its waves are makeable at the professional level and 13 % at intermediate.
+- **Performance gate (failed on the CPU; the fallback is the user's choice, plan §3.3):**
+  - Bundled Node on the development machine, per 1/60 s step with breaking, foam, lip and bubbles: stage 1 takes 6.7–7.8 ms and stage 2 12.4–14.5 ms.
+  - In the browser's worker, stage 2 shows 12.8–15.1 ms.
+  - Caching the still depth, eroding the mask with array passes and solving the columns row by row saved only about 0.7 ms. The rest is some 20 full-grid finite-difference passes and two tridiagonal sweeps.
+  - Stage 2 stays the default because it still runs in real time at 60 Hz on this machine.
+  - The fallbacks: (a) a narrower CPU window, (b) stage 1 on the low tier, (c) WebAssembly or SIMD. P6's WebGPU tier is the plan's route to the budget.
+- **Not done:**
+  - The Celeris-WebGPU benchmark comparison: no reference run was available offline. Analytic benchmarks (dispersion, groups, solitary wave, Green, Snell, breaker depth, Miche) stand in for it.
+  - Retiring `legacy`: it moves to the end of P4f, once the physical mode is catchable.
+
 ## The equations (x along shore, y ≡ z across shore, d = still depth, H = total depth)
 
 - Mass: η_t + P_x + Q_y = 0.
