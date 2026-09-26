@@ -12,6 +12,7 @@ import type { SurfZoneStatus } from '../wave/SurfZoneRunner';
 import packageJson from '../../package.json';
 import { el } from './dom';
 import { createLogbookScreen, logbookModel } from './LogbookScreen';
+import { createSettingsScreen } from './SettingsScreen';
 import { createMainMenu } from './MainMenu';
 import { MenuInput } from './MenuInput';
 import { createPauseMenu } from './PauseMenu';
@@ -165,7 +166,7 @@ export class App {
         surf: () => this.go('surf'),
         waveLab: () => {},
         logbook: () => this.go('logbook'),
-        settings: () => {},
+        settings: () => this.go('settings'),
       }, { devTools: DEV_TOOLS, version: packageJson.version })];
     }
     if (id === 'surf') {
@@ -173,6 +174,15 @@ export class App {
         change: (choice) => { this.surfChoice = choice; },
         paddleOut: () => void this.paddleOut(),
         back: () => this.back(),
+      })];
+    }
+    if (id === 'settings') {
+      return [createSettingsScreen({
+        store: this.settings,
+        context: () => ({ devTools: DEV_TOOLS, detecting: this.detecting }),
+        onBack: () => this.back(),
+        onRedetect: () => this.redetect(),
+        onCapture: (capturing) => { this.menuInput.active = !capturing; },
       })];
     }
     if (id === 'logbook') {
