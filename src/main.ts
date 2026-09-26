@@ -182,6 +182,8 @@ class SurfGame {
     this.scene.add(this.water.mesh, this.sheetMesh.mesh);
     this.scene.add(this.seabed.mesh);
     this.physicalMode = new PhysicalMode(this.scene);
+    // `?surfer=surfer2…4` picks another body until Part B's picker (dev flag).
+    void this.physicalMode.surfer.load(new URLSearchParams(window.location.search).get('surfer') ?? 'surfer1');
     this.physicalMode.farField.mesh.material.envMapIntensity = 0.28;
     this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
     this.physicalMode.seabed.useCaustics(this.water.causticUniforms, this.water.causticSource as never);

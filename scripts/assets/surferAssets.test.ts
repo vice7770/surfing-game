@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { REQUIRED_BONES } from '../rig/humanoidBones';
+import { REQUIRED_BONES } from '../../src/scene/rig/humanoidBones';
 
 /** Node names as three.js's GLTFLoader sanitises them (`PropertyBinding.sanitizeNodeName`). */
 const sanitize = (name: string) => name.replace(/\s/g, '_').replace(/[[\]\.:\/]/g, '');
