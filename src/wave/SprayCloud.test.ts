@@ -177,6 +177,14 @@ describe('the foam ball (G9)', () => {
     expect(foamBalls(cloud).length).toBe(0);
   });
 
+  it('keeps room for a closing tube’s foam ball and spit when the landing lip’s splash would fill the pool', () => {
+    const cloud = new SprayCloud(12, 40);
+    const spit: TubeSpit = { x: 5, y: 1, z: 20, dirX: 1, dirZ: 0, speed: 6, airRate: 12 };
+    cloud.update({ ...flatScene(0, [impact(0.4)]), spits: [spit], rollers: [roller()] }, 1 / 60);
+    expect(cloud.count).toBe(40);
+    expect(foamBalls(cloud).length).toBe(Math.round(1.5 / FOAM_BALL_VOLUME));
+  });
+
   it('packs each particle’s kind after its opacity: spray 0, mist 1, foam ball 2', () => {
     expect(SPRAY_STRIDE).toBe(6);
     const cloud = new SprayCloud(3);

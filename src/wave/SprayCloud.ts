@@ -155,15 +155,16 @@ export class SprayCloud {
   update(scene: SprayScene, dt: number): void {
     if (!(dt > 0)) return;
     this.fly(scene, dt);
-    for (const impact of scene.lipImpacts) this.splash(scene, impact);
-    for (const stroke of scene.strokes ?? []) this.strokeSplash(scene, stroke);
+    // A closing tube's whitewater draws first: in a full pool, a lip's splash gives way to its foam ball and spit (G9).
+    this.roll(scene.rollers ?? [], dt);
     for (const spit of scene.spits ?? []) {
       this.tubeBurst(spit.x, spit.y, spit.z, spit.dirX * spit.speed, 0, spit.dirZ * spit.speed, spit.airRate * dt, SPIT_MIST);
     }
     for (const eruption of scene.eruptions ?? []) {
       this.tubeBurst(eruption.x, eruption.y, eruption.z, 0, eruption.speed, 0, eruption.airRate * dt, ERUPTION_MIST);
     }
-    this.roll(scene.rollers ?? [], dt);
+    for (const impact of scene.lipImpacts) this.splash(scene, impact);
+    for (const stroke of scene.strokes ?? []) this.strokeSplash(scene, stroke);
     this.boreSpray(scene, dt);
     this.feather(scene, dt);
     this.pack();
