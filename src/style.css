@@ -172,3 +172,12 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
   .touch-button.is-held { background: #df7558; }
   .is-terminal .touch-controls { display: none; }
 }
+
+/* S1: the Wave Lab's sound check (dev tools). */
+.sound-check { position: absolute; top: 96px; right: 4.2vw; z-index: 6; width: min(340px, 90vw); max-height: calc(100vh - 120px); overflow: auto; padding: 14px 16px; background: var(--paper); border: 1px solid rgba(255, 255, 255, .7); box-shadow: 0 14px 44px rgba(18, 64, 68, .14); backdrop-filter: blur(18px); }
+.sound-check h2 { margin: 0 0 6px; }
+.sound-check-note { margin: 0 0 10px; color: #537472; font: 9px var(--mono); }
+.sound-check-row { padding: 8px 0; border-top: 1px solid var(--line); font: 10px var(--mono); }
+.sound-check-row .panel-actions { flex-wrap: wrap; margin: 6px 0; }
+.sound-check-row code { display: block; margin-top: 4px; color: #2c7779; font-size: 9px; word-break: break-all; }
+

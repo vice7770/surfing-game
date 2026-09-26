@@ -61,7 +61,12 @@ describe('SurfZoneWorkerCore', () => {
     expect(shown(snapshot.snapshot)).toEqual(shown(local.snapshot));
     expect(snapshot.snapshot.board[7]).toBe(1);
     expect(snapshot.snapshot.rider[23]).toBe(1);
-    expect(replies[1].transfer).toEqual([buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.spray.buffer, buffers.board.buffer, buffers.rider.buffer]);
+    expect(replies[1].transfer).toEqual([
+      buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.spray.buffer, buffers.board.buffer, buffers.rider.buffer,
+      buffers.lipHits.buffer, buffers.strokeHits.buffer, buffers.roar.buffer,
+    ]);
+    // S1: the paddler's strokes reach the snapshot for sound, as the in-page surf zone reports them.
+    expect(snapshot.snapshot.strokeHitCount).toBe(local.snapshot.strokeHitCount);
   });
 
   it('steps the water on a device when given one, replying once it is done', async () => {

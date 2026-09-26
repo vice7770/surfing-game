@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_BINDINGS, buttonLabel, heldActions, keyLabel, padSteer, rebind, type PadState } from './Bindings';
+import { DEFAULT_BINDINGS, REBINDABLE, buttonLabel, heldActions, keyLabel, padSteer, rebind, type PadState } from './Bindings';
 
 const pad = (buttons: number[] = [], x = 0): PadState => ({
   buttons: Array.from({ length: 17 }, (_, i) => buttons.includes(i)), axes: [x, 0, 0, 0],
@@ -55,4 +55,11 @@ describe('bindings', () => {
     expect(['Space', 'ArrowUp', 'KeyR', 'Digit1', 'ShiftLeft'].map(keyLabel)).toEqual(['Space', '↑', 'R', '1', 'Shift']);
     expect([0, 7, 9, 12].map(buttonLabel)).toEqual(['A', 'RT', 'Start', 'D-pad↑']);
   });
+
+  it('mutes with M or the gamepad\'s Back button, rebindable like the rest (S1)', () => {
+    expect(heldActions(new Set(['KeyM']), [], DEFAULT_BINDINGS)).toEqual(new Set(['mute']));
+    expect(REBINDABLE).toContain('mute');
+    expect(rebind(DEFAULT_BINDINGS, 'keyboard', 'mute', 0, 'KeyN').keyboard.mute).toEqual(['KeyN']);
+  });
 });
+

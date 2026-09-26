@@ -19,6 +19,61 @@ export { surfZoneSea } from './SurfZoneSimulation';
 export const SURF_ZONE_STEP = 1 / 60;
 /** A snapshot's lip parcel: x, y, z, world column, index along its strip, the strip's launch time and the parcel's age (plan P7). */
 export const LIP_STRIDE = 7;
+
+/** Sound (S1): lip landings and paddle strokes are kept between snapshots, at most this many of each; more merge into the nearest. */
+export const SOUND_EVENT_CAPACITY = 64;
+/** A lip landing for sound: x, z, volume (m³), impact speed (m/s), spare. */
+export const LIP_HIT_STRIDE = 5;
+/** A paddle stroke for sound: x, z, the work the hand did (J), spare. */
+export const STROKE_HIT_STRIDE = 4;
+/** The breaking roar is reported in this many along-shore sectors of the window: power, x, z each. */
+export const ROAR_SECTORS = 8;
+
+/**
+ * Events for sound between two snapshots (S1). Past its capacity an event is
+ * merged into the nearest one kept: its amount is added and its peak kept, so a
+ * burst of landings keeps all its water in fewer, louder places.
+ */
+class SoundEvents {
+  readonly data: Float32Array;
+  count = 0;
+
+  constructor(private readonly stride: number, private readonly capacity = SOUND_EVENT_CAPACITY) {
+    this.data = new Float32Array(capacity * stride);
+  }
+
+  add(x: number, z: number, amount: number, peak = 0): void {
+    const { data, stride } = this;
+    if (this.count < this.capacity) {
+      const o = this.count * stride;
+      data[o] = x;
+      data[o + 1] = z;
+      data[o + 2] = amount;
+      data[o + 3] = peak;
+      this.count += 1;
+      return;
+    }
+    let nearest = 0;
+    let best = Infinity;
+    for (let i = 0; i < this.count; i += 1) {
+      const d = (data[i * stride] - x) ** 2 + (data[i * stride + 1] - z) ** 2;
+      if (d < best) {
+        best = d;
+        nearest = i;
+      }
+    }
+    data[nearest * stride + 2] += amount;
+    data[nearest * stride + 3] = Math.max(data[nearest * stride + 3], peak);
+  }
+
+  /** Copy the events into a snapshot's buffer and start afresh; returns how many. */
+  drain(into: Float32Array): number {
+    const count = this.count;
+    into.set(this.data.subarray(0, count * this.stride));
+    this.count = 0;
+    return count;
+  }
+}
 /** Most lip parcels and bubbles a snapshot carries. */
 const PARCEL_CAPACITY = 4096;
 /** A riderless board waits this far seaward of the break line, m. */
@@ -106,6 +161,14 @@ export interface SurfZoneBuffers {
   sprayCount: number;
   board: Float64Array;
   rider: Float64Array;
+  /** Sound (S1): lip landings since the last snapshot (`LIP_HIT_STRIDE`). */
+  lipHits: Float32Array;
+  lipHitCount: number;
+  /** Sound (S1): an attached paddler's strokes since the last snapshot (`STROKE_HIT_STRIDE`). */
+  strokeHits: Float32Array;
+  strokeHitCount: number;
+  /** Sound (S1): breaking roar by along-shore sector: Σ B·|q|·area (m⁴/s), and its weighted x and z. */
+  roar: Float32Array;
 }
 
 /**
@@ -128,6 +191,8 @@ export class SurfZoneRunner {
   /** The board, its rider and the rider's fall body, when the player rides. */
   readonly session?: RideSession;
   private rideResets = 0;
+  private readonly lipHits = new SoundEvents(LIP_HIT_STRIDE);
+  private readonly strokeHits = new SoundEvents(STROKE_HIT_STRIDE);
   private readonly point = new Vector3();
   private readonly momentum = new Vector3();
   readonly water: PhysicalSurfWater;
@@ -251,6 +316,19 @@ export class SurfZoneRunner {
     }
     this.bubbles.update(this.simulation, SURF_ZONE_STEP);
     this.spray.update(this.sprayScene, SURF_ZONE_STEP);
+    this.collectSounds();
+  }
+
+  /** Each step's lip landings and paddle strokes, kept for the next snapshot's sound (S1). */
+  private collectSounds(): void {
+    for (const impact of this.simulation.lipImpacts) {
+      this.lipHits.add(impact.x, impact.z, impact.volume, Math.hypot(impact.vx, impact.vy, impact.vz));
+    }
+    if (this.session?.rider.attached) {
+      for (const stroke of this.session.rider.strokes) {
+        this.strokeHits.add(stroke.x, stroke.z, Math.hypot(stroke.jx, stroke.jy, stroke.jz) * stroke.speed);
+      }
+    }
   }
 
   /** Board and rider back in the lineup: prone, nose to the beach. */
@@ -321,6 +399,11 @@ export class SurfZoneRunner {
       sprayCount: 0,
       board: new Float64Array(8),
       rider: new Float64Array(RIDER_SNAPSHOT.length),
+      lipHits: new Float32Array(SOUND_EVENT_CAPACITY * LIP_HIT_STRIDE),
+      lipHitCount: 0,
+      strokeHits: new Float32Array(SOUND_EVENT_CAPACITY * STROKE_HIT_STRIDE),
+      strokeHitCount: 0,
+      roar: new Float32Array(ROAR_SECTORS * 3),
     };
   }
 
@@ -362,6 +445,41 @@ export class SurfZoneRunner {
       buffers.rider[RIDER_SNAPSHOT.cue] = session.rider.popUpCue ? 1 : 0;
       buffers.rider[RIDER_SNAPSHOT.present] = 1;
       buffers.rider[RIDER_SNAPSHOT.heading] = session.heading;
+    }
+    buffers.lipHitCount = this.lipHits.drain(buffers.lipHits);
+    buffers.strokeHitCount = this.strokeHits.drain(buffers.strokeHits);
+    this.measureRoar(buffers.roar);
+  }
+
+  /**
+   * The breaking roar by along-shore sector (S1): each cell's breaking strength
+   * times its discharge, over its area. Provisional as a measure of loudness: it
+   * follows how much water is breaking and how fast it moves.
+   */
+  private measureRoar(roar: Float32Array): void {
+    const { solver, breaking } = this.simulation;
+    const { nx, nz, dx, dz, qx, qz, xCenters, zCenters } = solver;
+    const strength = breaking.strength;
+    roar.fill(0);
+    const perSector = nx / ROAR_SECTORS;
+    for (let iz = 0; iz < nz; iz += 1) {
+      for (let ix = 0; ix < nx; ix += 1) {
+        const i = iz * nx + ix;
+        const b = strength[i];
+        if (!(b > 0)) continue;
+        const power = b * Math.hypot(qx[i], qz[i]) * dx * dz[iz];
+        if (!(power > 0)) continue;
+        const o = Math.min(ROAR_SECTORS - 1, Math.floor(ix / perSector)) * 3;
+        roar[o] += power;
+        roar[o + 1] += power * xCenters[ix];
+        roar[o + 2] += power * zCenters[iz];
+      }
+    }
+    for (let o = 0; o < roar.length; o += 3) {
+      if (roar[o] > 0) {
+        roar[o + 1] /= roar[o];
+        roar[o + 2] /= roar[o];
+      }
     }
   }
 

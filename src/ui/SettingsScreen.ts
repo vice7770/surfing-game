@@ -5,7 +5,7 @@ import { ICONS } from './icons';
 import { applyRow, settingsModel, type Row, type SettingsContext } from './settingsModel';
 import { t, type StringKey } from './strings';
 
-const TABS: readonly SettingsTab[] = ['gameplay', 'graphics', 'controls', 'accessibility'];
+const TABS: readonly SettingsTab[] = ['gameplay', 'graphics', 'controls', 'audio', 'accessibility'];
 /** Pressing B while waiting for a gamepad button cancels, as Esc does for a key. */
 const CANCEL_BUTTON = 1;
 

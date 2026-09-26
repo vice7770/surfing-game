@@ -30,6 +30,11 @@ function emptyLike(snapshot: SurfZoneBuffers): SurfZoneBuffers {
     sprayCount: 0,
     board: new Float64Array(snapshot.board.length),
     rider: new Float64Array(snapshot.rider.length),
+    lipHits: new Float32Array(snapshot.lipHits.length),
+    lipHitCount: 0,
+    strokeHits: new Float32Array(snapshot.strokeHits.length),
+    strokeHitCount: 0,
+    roar: new Float32Array(snapshot.roar.length),
   };
 }
 
