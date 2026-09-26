@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { REEF, createSpot } from './Bathymetry';
+import { POINT_HEADLAND, REEF, createSpot } from './Bathymetry';
 import { breakerDepthFor } from './Breaking';
 import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TANK, takeOffPoint, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
 import { rayConcentration } from './Refraction';
@@ -189,8 +189,16 @@ describe('SurfZoneSimulation', () => {
     }
   });
 
-  it('takes off straight out from the window centre at the other spots', () => {
-    for (const spot of ['beach', 'point', 'reef'] as const) expect(takeOffPoint({ ...small, spot, alongShore: 160 }).x).toBe(0);
+  // The Point's waves peak first on its bank and peel along the point from there.
+  it('seats the Point take-off on its bank', () => {
+    for (const directionDegrees of [0, 10, 20]) {
+      const point = takeOffPoint({ ...small, spot: 'point', alongShore: 160, peakPeriod: 12, significantHeight: 2, directionDegrees });
+      expect(Math.abs(point.x - POINT_HEADLAND.shoalX)).toBeLessThan(15);
+    }
+  });
+
+  it('takes off straight out from the window centre at the Beach and Reef', () => {
+    for (const spot of ['beach', 'reef'] as const) expect(takeOffPoint({ ...small, spot, alongShore: 160 }).x).toBe(0);
   });
 
   it('finds the reef break on its steep edge inside the fine surf zone', () => {
