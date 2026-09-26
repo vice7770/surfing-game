@@ -251,6 +251,14 @@ The user's original list of 15 mechanics (2026-09-26) is covered as follows:
 - duck-dive, reading sets, wipeout and recovery → P11;
 - pull-in/race-out, rail grab/hand drag, tube camera → P12.
 
+### Later — `Backlog`
+
+Follow-ups from the open-edge fix (#14) and the test timeouts (#15), 2026-09-26. The full-lock carve is not repeated here; it is P9's next physics item.
+1. **Rerun the catch reports.** The Canyon's ghost-rider numbers (#12) and the other spots' rows were measured before the open-edge fix, which changes breaking near the window's edges: in the 40 m Point peel test, lip launches went 28 → 57 and the second wave now breaks in almost every column. Regenerate the [natural](docs/research/catch-report.md) and [practice](docs/research/catch-report-practice.md) reports and the numbers quoted above.
+2. **Check the Point over several seeds.** The practice Point fell from 13 stands to 8 on one seed, and its peel and lip counts moved with the open-edge fix. Run several seeds before reading either as a change.
+3. **Watch the settings sweep's timeouts.** Its three other tests take up to 14 s against their 20 s limit at load 12–16. Raise them to 60 s like the rest if they start to flake.
+4. **The issue seen while playing:** on the user's fix list, still to be described.
+
 ## Current milestone — sustained wave and physical wipeout — `Done for prototype`
 
 - [x] Replace the playable 20 m finish with an open ended ride while retaining the earlier finite-wave path for regression tests.
