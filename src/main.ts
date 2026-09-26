@@ -69,6 +69,8 @@ const demoMode = new URLSearchParams(window.location.search).get('demo');
 type WaterModel = 'legacy' | 'physical';
 /** `?physical` opens the view-only physical surf zone (plan P2c, option a). */
 const physicalRequested = new URLSearchParams(window.location.search).has('physical');
+/** `?record`: a dev tool films an autopilot ride frame by frame (src/dev/rideRecorder.ts); the page's own clock stays off. */
+const recordRequested = new URLSearchParams(window.location.search).has('record');
 /**
  * The surf zone runs in a Web Worker (plan §3.2, P4a); `?inpage`, or a browser
  * without workers, runs it on the main thread instead.
@@ -202,7 +204,31 @@ class SurfGame {
     window.addEventListener('resize', () => this.resize());
     if (physicalRequested) this.showLoadingThen(() => this.startPhysical(this.seed, this.physicalSettings));
     else getElement<HTMLElement>('#loading').classList.add('is-hidden');
-    requestAnimationFrame(this.frame);
+    if (!recordRequested) requestAnimationFrame(this.frame);
+  }
+
+  /**
+   * Dev hooks for filming a ride (`?record`): start a physical session, take one
+   * fixed step with a given input, render at a given size, all without the
+   * animation-frame clock, so even a hidden page films frame by frame.
+   */
+  get recording() {
+    return {
+      start: async (settings: PhysicalSettings) => {
+        await this.startPhysical(this.seed, settings);
+        getElement<HTMLElement>('#loading').classList.add('is-hidden');
+      },
+      step: (input: { paddle: boolean; popUp: boolean; steer: number }) => this.physicalMode.advance(1, input),
+      retry: () => this.physicalMode.retry(),
+      render: (seconds: number) => this.physicalRender(seconds, seconds),
+      resize: (width: number, height: number) => {
+        this.renderer.setPixelRatio(1);
+        this.renderer.setSize(width, height, false);
+        this.physicalMode.camera.resize(width / height);
+      },
+      mode: this.physicalMode,
+      canvas: this.renderer.domElement,
+    };
   }
 
   /** R: in the physical mode, paddle out again from the lineup while the waves carry on; otherwise replay. */
@@ -676,6 +702,11 @@ class SurfGame {
     const input = controls.input;
     this.physicalMode.advance(steps, { paddle: input.paddle, popUp: input.getUp, steer: this.physicalMode.screenSteer(input.steer) });
     if (input.getUp) controls.consumeGetUp();
+    this.physicalRender(elapsed, simElapsed);
+  }
+
+  /** Draw the physical surf zone as it now stands, and refresh the readout at 4 Hz. */
+  private physicalRender(elapsed: number, simElapsed: number): void {
     this.water.update();
     this.physicalMode.update(simElapsed || this.fixedStep);
     this.setUnderwater(this.physicalMode.cameraBelowSurface());
@@ -822,4 +853,5 @@ class SurfGame {
 }
 
 const game = new SurfGame();
+if (recordRequested) void import('./dev/rideRecorder').then(({ recordRide }) => recordRide(game.recording));
 const controls = new Controls(() => game.quickRetry(), () => {});

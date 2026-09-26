@@ -10,6 +10,7 @@
     "preview": "vite preview --host 0.0.0.0",
     "report:rideability": "rolldown scripts/rideability-report.ts -o dist/scripts/rideability-report.mjs --format esm --platform node && node dist/scripts/rideability-report.mjs",
     "report:board-baseline": "rolldown scripts/board-baseline.ts -o dist/scripts/board-baseline.mjs --format esm --platform node && node dist/scripts/board-baseline.mjs",
+    "record:ride": "node scripts/ride-video-receiver.mjs recordings",
     "report:catch": "rolldown scripts/catch-report.ts -o dist/scripts/catch-report.mjs --format esm --platform node && node dist/scripts/catch-report.mjs"
   },
   "dependencies": {
@@ -18,6 +19,7 @@
   "devDependencies": {
     "@types/three": "^0.186.0",
     "@webgpu/types": "^0.1.74",
+    "mp4-muxer": "^5.2.2",
     "typescript": "~5.9.3",
     "vite": "^8.3.1",
     "vitest": "^5.0.1"
