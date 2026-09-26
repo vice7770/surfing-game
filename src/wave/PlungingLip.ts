@@ -58,6 +58,8 @@ export interface LipSheetParcel {
   /** Place along its strip: 0 left the crest first. */
   index: number;
   launchTime: number;
+  /** Seconds since it left the crest. */
+  age: number;
   volume: number;
 }
 
@@ -157,7 +159,7 @@ export class PlungingLip implements LipParcelSource {
   private nextStrip = 1;
   /** The lip's clock, s. */
   time = 0;
-  private readonly view = { slot: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, column: 0, index: 0, launchTime: 0, volume: 0 };
+  private readonly view = { slot: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, column: 0, index: 0, launchTime: 0, age: 0, volume: 0 };
   /** Marks parcels a query found linked, by query number. */
   private readonly linked: Uint32Array;
   private query = 0;
@@ -403,6 +405,7 @@ export class PlungingLip implements LipParcelSource {
       view.column = this.column[parcel];
       view.index = this.index[parcel];
       view.launchTime = this.launchTime[parcel];
+      view.age = this.age[parcel];
       view.volume = this.volume[parcel];
       visit(view);
     }

@@ -9,7 +9,7 @@ import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
 import { SprayPoints } from '../scene/SprayPoints';
-import { LipPoints, type RenderableLip } from '../scene/LipPoints';
+import { LipSheetMesh } from '../scene/LipSheetMesh';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera } from '../scene/SpectatorCamera';
 import { SpotSeabed } from '../scene/SpotSeabed';
@@ -23,7 +23,7 @@ import type { ReadoutRow } from '../wave/SwellReadout';
 import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
 import { OFFSHORE_DEPTH, SEA_COMPONENTS, TANK, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
-import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost, type SurfZoneSnapshot } from './SurfZoneHost';
+import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 
 /** Wave Lab inputs for the view-only physical surf zone (buoy values or a storm, plan Q2, Q22 and Q31). */
 export interface PhysicalSettings {
@@ -198,20 +198,12 @@ export type SurfZoneHostFactory = (config: SurfZoneConfig) => SurfZoneHost;
 /** Runs the surf zone in the page (tests, and browsers without Web Workers). */
 export const localSurfZone: SurfZoneHostFactory = (config) => new LocalSurfZone(config, { rider: true });
 
-/** The latest snapshot's packed lip positions, in the shape `LipPoints` draws. */
-function snapshotLip(snapshot: SurfZoneSnapshot): RenderableLip {
-  return {
-    forEachActive(visit) {
-      for (let i = 0; i < snapshot.lipCount; i += 1) visit(snapshot.lip[i * 3], snapshot.lip[i * 3 + 1], snapshot.lip[i * 3 + 2], 0);
-    },
-  };
-}
-
 export class PhysicalMode {
   readonly camera = new SpectatorCamera();
   readonly seabed = new SpotSeabed();
   readonly farField = new FarFieldOcean();
-  readonly lipPoints = new LipPoints();
+  /** The thrown lip, drawn as one sheet (plan P7). */
+  readonly lipSheet = new LipSheetMesh();
   /** Bubbles entrained under breaking bores, seen from below the surface. */
   readonly bubbles = new BubblePoints();
   /** Spray and mist thrown up by lip impacts, bores and offshore wind (G6). */
@@ -247,7 +239,7 @@ export class PhysicalMode {
   private readonly follow = { position: { x: 0, y: 0, z: 0 }, heading: 0 };
 
   constructor(scene: Scene) {
-    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group);
+    scene.add(this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group);
     this.board.visible = false;
     this.surfer.setBoardVisible(false);
     this.surfer.group.visible = false;
@@ -407,7 +399,7 @@ export class PhysicalMode {
     this.follow.heading = riding ? rider[RIDER_SNAPSHOT.heading] : 0;
     this.camera.update(host, this.focus, dt, pose[7] > 0 ? this.follow : undefined);
     this.farField.update(host.snapshot.status.seaTime);
-    this.lipPoints.update(snapshotLip(host.snapshot));
+    this.lipSheet.update(host.snapshot.lip, host.snapshot.lipCount, host.init.dx);
     this.board.visible = this.shown && pose[7] > 0;
     this.board.position.set(pose[0], pose[1], pose[2]);
     this.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
@@ -438,7 +430,7 @@ export class PhysicalMode {
     this.surfer.group.visible = visible && (this.host?.snapshot.rider[RIDER_SNAPSHOT.present] ?? 0) > 0;
     this.seabed.mesh.visible = visible;
     this.farField.mesh.visible = visible;
-    this.lipPoints.mesh.visible = visible;
+    this.lipSheet.mesh.visible = visible;
     this.bubbles.mesh.visible = visible;
     this.spray.mesh.visible = visible;
   }
