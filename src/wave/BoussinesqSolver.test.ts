@@ -2,7 +2,37 @@ import { describe, expect, it } from 'vitest';
 import { BoussinesqSolver, madsenSorensenCelerity } from './BoussinesqSolver';
 import { GRAVITY } from './dispersion';
 import { ShallowWaterSolver, uniformEdges, type WaterTarget } from './ShallowWaterSolver';
-import { calmTarget, longWaveTarget } from './shallowWaterTestSupport';
+import { calmTarget, longWaveTarget, meanLag, upCrossings } from './shallowWaterTestSupport';
+
+/** Airy wavenumber for ω at depth d (Newton on ω² = g k tanh kd). */
+function airyWavenumber(omega: number, depth: number): number {
+  let k = omega / Math.sqrt(GRAVITY * depth);
+  for (let i = 0; i < 50; i += 1) {
+    const t = Math.tanh(k * depth);
+    k -= (GRAVITY * k * t - omega * omega) / (GRAVITY * (t + k * depth * (1 - t * t)));
+  }
+  return k;
+}
+
+/** Airy group speed for ω at depth d. */
+function airyGroupSpeed(omega: number, depth: number): number {
+  const k = airyWavenumber(omega, depth);
+  return 0.5 * (omega / k) * (1 + (2 * k * depth) / Math.sinh(2 * k * depth));
+}
+
+/** A small Airy wave travelling at `angle` from +z: η = a cos(k·x − ωt), with its depth-integrated flux (ω/k) η. */
+function airyTarget(amplitude: number, period: number, depth: number, angle = 0) {
+  const omega = (2 * Math.PI) / period;
+  const k = airyWavenumber(omega, depth);
+  const kx = k * Math.sin(angle);
+  const kz = k * Math.cos(angle);
+  return (x: number, z: number, t: number, out: WaterTarget): void => {
+    const eta = amplitude * Math.cos(kx * x + kz * z - omega * t);
+    out.eta = eta;
+    out.qx = (omega / k) * eta * Math.sin(angle);
+    out.qz = (omega / k) * eta * Math.cos(angle);
+  };
+}
 
 /** A small linear wave η = a cos(kz − ωt), with the flux that carries it, P = (ω/k) η. */
 function linearTarget(amplitude: number, omega: number, k: number) {
@@ -102,6 +132,34 @@ describe('Boussinesq dispersion', () => {
     }, 60_000);
   }
 
+  // The Hancock predictor must see the dispersive acceleration: with shallow-water rates alone it
+  // lost 8 % of a kh = 1.5 wave's height per wavelength at this resolution.
+  it('carries a short dispersive wave without numerical decay', () => {
+    const depth = 2;
+    const k = 1.5 / depth;
+    const omega = k * modelCelerityAt(k, depth);
+    const wavelength = (2 * Math.PI) / k;
+    const length = 16 * wavelength;
+    const solver = new BoussinesqSolver(
+      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(0, length, 16 * 40), xBoundary: 'periodic' }, () => depth, { manning: 0, breaking: false },
+    );
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(2 * wavelength, 0), target: linearTarget(0.002, omega, k) });
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(13 * wavelength, length), target: calmTarget });
+    const period = (2 * Math.PI) / omega;
+    const settle = (13 * wavelength) / (0.45 * modelCelerityAt(k, depth)) + 3 * period;
+    const near = solver.cellIndex(0.5, 3 * wavelength);
+    const far = solver.cellIndex(0.5, 12 * wavelength);
+    let nearEnvelope = 0;
+    let farEnvelope = 0;
+    while (solver.time < settle + 4 * period) {
+      solver.step(period / 40);
+      if (solver.time < settle) continue;
+      nearEnvelope = Math.max(nearEnvelope, Math.abs(solver.surfaceAt(near)));
+      farEnvelope = Math.max(farEnvelope, Math.abs(solver.surfaceAt(far)));
+    }
+    expect(1 - Math.pow(farEnvelope / nearEnvelope, 1 / 9)).toBeLessThan(0.005);
+  }, 60_000);
+
   it('reduces exactly to the shallow-water solver with dispersion off', () => {
     const grid = { nx: 3, xMin: 0, dx: 1, zEdges: uniformEdges(0, 200, 200), xBoundary: 'open' as const };
     const depthAt = (_x: number, z: number) => 4 - 0.015 * z;
@@ -143,4 +201,134 @@ describe('Boussinesq dispersion', () => {
       expect(Math.abs(model / airy - 1)).toBeLessThan(0.025);
     }
   });
+});
+
+describe('Boussinesq shoaling, refraction and groups', () => {
+  it('shoals a dispersive wave by linear theory, √(c_g0 / c_g), on a gentle slope', () => {
+    const depthAt = (_x: number, z: number) => (z < 200 ? 6 : z > 1100 ? 1.5 : 6 - (4.5 * (z - 200)) / 900);
+    const period = 8;
+    const solver = new BoussinesqSolver(
+      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(0, 1400, 1400), xBoundary: 'periodic' }, depthAt, { manning: 0, breaking: false },
+    );
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(150, 0), target: airyTarget(0.015, period, 6) });
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(1200, 1400), target: calmTarget });
+    const deepGauge = solver.cellIndex(0.5, 250.5);
+    const shallowGauge = solver.cellIndex(0.5, 1050.5);
+    let deepEnvelope = 0;
+    let shallowEnvelope = 0;
+    while (solver.time < 360) {
+      solver.step(0.1);
+      if (solver.time < 290) continue;
+      deepEnvelope = Math.max(deepEnvelope, Math.abs(solver.surfaceAt(deepGauge)));
+      shallowEnvelope = Math.max(shallowEnvelope, Math.abs(solver.surfaceAt(shallowGauge)));
+    }
+    const omega = (2 * Math.PI) / period;
+    const expected = Math.sqrt(airyGroupSpeed(omega, depthAt(0, 250.5)) / airyGroupSpeed(omega, depthAt(0, 1050.5)));
+    expect(Math.abs(shallowEnvelope / deepEnvelope / expected - 1)).toBeLessThan(0.1);
+  }, 120_000);
+
+  it("refracts an oblique wave by Snell's law over a sloping bed", () => {
+    const nx = 89;
+    const dx = 4;
+    const period = 20;
+    const omega = (2 * Math.PI) / period;
+    const deep = 8;
+    const shallow = 2;
+    const depthAt = (_x: number, z: number) => (z < 150 ? deep : z > 350 ? shallow : deep + ((shallow - deep) * (z - 150)) / 200);
+    const kx = (2 * Math.PI) / (nx * dx);
+    const incident = Math.asin(kx / airyWavenumber(omega, deep));
+    const solver = new BoussinesqSolver(
+      { nx, xMin: 0, dx, zEdges: uniformEdges(0, 500, 125), xBoundary: 'periodic' }, depthAt, { manning: 0, breaking: false },
+    );
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(100, 0), target: airyTarget(0.02, period, deep, incident) });
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(430, 500), target: calmTarget });
+    const gaugeA = solver.cellIndex(solver.xCenters[0], 370);
+    const gaugeB = solver.cellIndex(solver.xCenters[0], 410);
+    const times: number[] = [];
+    const seriesA: number[] = [];
+    const seriesB: number[] = [];
+    while (solver.time < 160) {
+      solver.step(0.1);
+      if (solver.time < 110) continue;
+      times.push(solver.time);
+      seriesA.push(solver.surfaceAt(gaugeA));
+      seriesB.push(solver.surfaceAt(gaugeB));
+    }
+    const kz = (omega * meanLag(upCrossings(times, seriesA), upCrossings(times, seriesB))) / 40;
+    const measured = (Math.atan2(kx, kz) * 180) / Math.PI;
+    const expected = (Math.asin(kx / airyWavenumber(omega, shallow)) * 180) / Math.PI;
+    expect(Math.abs(measured - expected)).toBeLessThan(2);
+  }, 120_000);
+
+  it('moves a wave packet at the group speed of its equations, dω/dk', () => {
+    const depth = 2;
+    const kh = 1.5;
+    const k = kh / depth;
+    const omega = k * modelCelerityAt(k, depth);
+    const step = 1e-4;
+    const group = ((k + step) * modelCelerityAt(k + step, depth) - (k - step) * modelCelerityAt(k - step, depth)) / (2 * step);
+    const wavelength = (2 * Math.PI) / k;
+    const length = 30 * wavelength;
+    const solver = new BoussinesqSolver(
+      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(0, length, 30 * 40), xBoundary: 'periodic' }, () => depth, { manning: 0, breaking: false },
+    );
+    const period = (2 * Math.PI) / omega;
+    const peak = 6 * period;
+    const width = 2.5 * period;
+    solver.addRelaxationZone({
+      weights: solver.zoneWeightsAlongZ(2 * wavelength, 0),
+      target: (_x, z, t, out) => {
+        const eta = 0.001 * depth * Math.exp(-(((t - peak) / width) ** 2)) * Math.cos(k * z - omega * t);
+        out.eta = eta;
+        out.qx = 0;
+        out.qz = (omega / k) * eta;
+      },
+    });
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(26 * wavelength, length), target: calmTarget });
+    const near = solver.cellIndex(0.5, 6 * wavelength);
+    const far = solver.cellIndex(0.5, 18 * wavelength);
+    const arrival = [0, 0];
+    const energy = [0, 0];
+    while (solver.time < peak + (22 * wavelength) / group + 3 * width) {
+      solver.step(period / 40);
+      [near, far].forEach((gauge, n) => {
+        const e = solver.surfaceAt(gauge) ** 2;
+        arrival[n] += e * solver.time;
+        energy[n] += e;
+      });
+    }
+    const measured = (12 * wavelength) / (arrival[1] / energy[1] - arrival[0] / energy[0]);
+    expect(Math.abs(measured / group - 1)).toBeLessThan(0.05);
+  }, 120_000);
+
+  it('carries a solitary wave at about √(g(d + A)) without losing its height', () => {
+    const depth = 1;
+    const height = 0.1;
+    const speed = Math.sqrt(GRAVITY * (depth + height));
+    const solver = new BoussinesqSolver(
+      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(0, 60, 600), xBoundary: 'periodic' }, () => depth, { manning: 0, breaking: false },
+    );
+    const kappa = Math.sqrt((3 * height) / (4 * depth ** 3));
+    for (let iz = 0; iz < solver.nz; iz += 1) {
+      const eta = height / Math.cosh(kappa * (solver.zCenters[iz] - 10)) ** 2;
+      for (let ix = 0; ix < solver.nx; ix += 1) {
+        const i = iz * solver.nx + ix;
+        solver.h[i] = depth + eta;
+        solver.qz[i] = speed * eta;
+      }
+    }
+    const crest = () => {
+      let best = 0;
+      for (let iz = 1; iz < solver.nz; iz += 1) if (solver.h[iz * 2] > solver.h[best * 2]) best = iz;
+      const [a, b, c] = [solver.h[(best - 1) * 2], solver.h[best * 2], solver.h[(best + 1) * 2]];
+      const shift = (0.5 * (a - c)) / (a - 2 * b + c);
+      return { z: solver.zCenters[best] + shift * 0.1, height: b - depth };
+    };
+    while (solver.time < 2) solver.step(0.02);
+    const start = { time: solver.time, ...crest() };
+    while (solver.time < 2 + 20 / speed) solver.step(0.02);
+    const end = crest();
+    expect(Math.abs((end.z - start.z) / (solver.time - start.time) / speed - 1)).toBeLessThan(0.03);
+    expect(Math.abs(end.height / height - 1)).toBeLessThan(0.05);
+  }, 120_000);
 });

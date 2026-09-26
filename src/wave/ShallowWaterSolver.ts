@@ -201,6 +201,12 @@ export class ShallowWaterSolver {
   protected readonly zuS: Float64Array;
   protected readonly zuN: Float64Array;
   private readonly zones: ZoneEntry[] = [];
+  /**
+   * Accelerations of qx and qz beyond the shallow-water terms (a dispersive
+   * solver's), added to the Hancock predictor's half step; absent in stage 1.
+   */
+  protected predictorX?: Float64Array;
+  protected predictorZ?: Float64Array;
   private readonly target: WaterTarget = { eta: 0, qx: 0, qz: 0 };
 
   constructor(grid: SolverGrid, depthAt: DepthFunction, options: SolverOptions = {}) {
@@ -472,7 +478,7 @@ export class ShallowWaterSolver {
    * at rest predicts no change.
    */
   protected predictFaces(half: number): void {
-    const { nx, nz, h, qx, qz, bed, u, w, eta, dz, zGaps, dryDepth, gravity: g } = this;
+    const { nx, nz, h, qx, qz, bed, u, w, eta, dz, zGaps, dryDepth, gravity: g, predictorX, predictorZ } = this;
     const { xhW, xhE, xetaW, xetaE, xuW, xuE, xwW, xwE, zhS, zhN, zetaS, zetaN, zwS, zwN, zuS, zuN } = this;
     for (let i = 0; i < h.length; i += 1) {
       const wet = h[i] > dryDepth;
@@ -542,8 +548,12 @@ export class ShallowWaterSolver {
         const shearX = hE * uE * vE - hW * uW * vW;
         const shearZ = hN * wN * tN - hS * wS * tS;
         const dH = -half * (massX * invDx + massZ * invDz);
-        const dQx = -half * (pressureX * invDx + shearZ * invDz);
-        const dQz = -half * (shearX * invDx + pressureZ * invDz);
+        let dQx = -half * (pressureX * invDx + shearZ * invDz);
+        let dQz = -half * (shearX * invDx + pressureZ * invDz);
+        if (predictorX && predictorZ) {
+          dQx += half * predictorX[i];
+          dQz += half * predictorZ[i];
+        }
         let depth = hW + dH;
         if (depth > dryDepth) { const inverse = 1 / depth; xuW[i] = (hW * uW + dQx) * inverse; xwW[i] = (hW * vW + dQz) * inverse; }
         else { depth = depth > 0 ? depth : 0; xuW[i] = 0; xwW[i] = 0; }

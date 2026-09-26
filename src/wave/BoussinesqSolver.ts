@@ -89,6 +89,9 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   private readonly right: Float64Array;
   private readonly scratch: Float64Array;
   private readonly spare: Float64Array;
+  /** P and Q as the step began, to measure the acceleration beyond shallow water for the next predictor. */
+  private readonly startP: Float64Array;
+  private readonly startQ: Float64Array;
 
   constructor(grid: SolverGrid, depthAt: DepthFunction, options: BoussinesqOptions = {}) {
     super(grid, depthAt, options);
@@ -112,6 +115,12 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     this.right = new Float64Array(longest);
     this.scratch = new Float64Array(longest);
     this.spare = new Float64Array(longest);
+    this.startP = make();
+    this.startQ = make();
+    if (this.dispersive) {
+      this.predictorX = make();
+      this.predictorZ = make();
+    }
   }
 
   protected override advance(dt: number): void {
@@ -120,6 +129,8 @@ export class BoussinesqSolver extends ShallowWaterSolver {
       return;
     }
     const { h, qx, qz, rateH, rateQx, rateQz, pBar, qBar, sourceX, sourceZ, dryDepth } = this;
+    this.startP.set(qx);
+    this.startQ.set(qz);
     this.updateMask();
     this.modifiedFluxes();
     this.computeRates(dt);
@@ -133,10 +144,18 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     }
     this.recoverRows();
     this.recoverColumns();
+    const { startP, startQ, predictorX, predictorZ } = this;
     for (let i = 0; i < h.length; i += 1) {
-      if (h[i] > dryDepth) continue;
+      if (h[i] > dryDepth) {
+        // What the dispersive terms added to the acceleration this step: the next predictor's estimate.
+        predictorX![i] = (qx[i] - startP[i]) / dt - rateQx[i];
+        predictorZ![i] = (qz[i] - startQ[i]) / dt - rateQz[i];
+        continue;
+      }
       qx[i] = 0;
       qz[i] = 0;
+      predictorX![i] = 0;
+      predictorZ![i] = 0;
     }
     this.applyFriction(dt);
   }
