@@ -3,6 +3,7 @@ import {
 } from '../src/net/protocol';
 import { POSE_BYTES } from '../src/net/poseCodec';
 import { newRoomCode } from '../src/net/roomCode';
+import type { BotSource } from './bots';
 import { Room, send, type Connection, type Player } from './Room';
 
 export type { Connection } from './Room';
@@ -16,6 +17,8 @@ export interface RegistryOptions {
   random: (count: number) => Uint8Array;
   /** A new room's sea seed; 1–9999 from `random` by default. */
   seed?: () => number;
+  /** Dev bots' track (spec N1): only a server started with BOTS=1 has one. */
+  bots?: BotSource;
 }
 
 function hex(bytes: Uint8Array): string {
@@ -70,6 +73,8 @@ export class RoomRegistry {
       ...message.settings, code, seed: this.seed(), build: this.options.build, seaTimeAtCreate: 0, createdAt: now,
     }, token, now);
     this.rooms.set(code, room);
+    // Bots first, so the creator's welcome lists them.
+    if (message.bots && this.options.bots) room.addBots(message.bots, this.options.bots, this.options.random);
     return { room, player: room.add(conn, message.name, message.look, token) };
   }
 

@@ -1,4 +1,6 @@
 import { POSE_BYTES, encodeBundle, readSeaFrame } from '../src/net/poseCodec';
+import { SURF_ZONE_STEP } from '../src/wave/SurfZoneRunner';
+import { botLook, botPose, type BotSource } from './bots';
 import { MAX_SEA_BYTES, SEA_DONOR_SECONDS, type PlayerInfo, type PlayerLook, type RoomInfo, type ServerMessage } from '../src/net/protocol';
 
 /** One player's socket, as the rooms see it. */
@@ -18,7 +20,12 @@ export interface Player {
   /** The latest pose, and whether it arrived since the last tick. */
   pose?: Uint8Array;
   poseFresh: boolean;
+  /** A dev bot: it replays a track, and never gives its sea. */
+  bot?: { source: BotSource; frame: number; shift: number };
 }
+
+/** A bot's socket: it hears nothing. */
+const NOBODY: Connection = { sendText() {}, sendBinary() {}, close() {} };
 
 export function send(conn: Connection, message: ServerMessage): void {
   conn.sendText(JSON.stringify(message));
@@ -61,6 +68,18 @@ export class Room {
 
   isCreator(player: Player): boolean {
     return player.token === this.creatorToken;
+  }
+
+  /**
+   * Dev bots (spec N1): up to `count` surfers replaying `source` from random
+   * points, spread along shore; they leave a seat for the creator.
+   */
+  addBots(count: number, source: BotSource, random: (count: number) => Uint8Array): void {
+    for (let i = 1; i <= count && this.players.size < this.info.cap - 1; i += 1) {
+      const player = this.add(NOBODY, `Bot ${i}`, botLook(random), `bot${i}`.padEnd(32, '0'));
+      const [a, b, c] = random(3);
+      player.bot = { source, frame: ((a << 8) | b) % source.count, shift: (c / 255) * 100 - 50 };
+    }
   }
 
   /** Seat a player: they get the room and everyone in it, everyone else hears they joined. */
@@ -115,7 +134,7 @@ export class Room {
    */
   needSea(joiner: Player, now: number): void {
     const request: SeaRequest = {
-      id: this.nextRequest, joiner, deadline: 0, next: [...this.players.values()].filter((player) => player !== joiner),
+      id: this.nextRequest, joiner, deadline: 0, next: [...this.players.values()].filter((player) => player !== joiner && !player.bot),
     };
     this.nextRequest = this.nextRequest >= 0xffffffff ? 1 : this.nextRequest + 1;
     this.seaRequests.set(request.id, request);
@@ -148,9 +167,22 @@ export class Room {
     if (this.players.get(request.joiner.id) === request.joiner) request.joiner.conn.sendBinary(data.slice());
   }
 
+  /** Each bot's next recorded pose, on the room's clock. */
+  private moveBots(now: number): void {
+    if (!Number.isFinite(now)) return;
+    const step = Math.round((this.info.seaTimeAtCreate + (now - this.info.createdAt) / 1000) / SURF_ZONE_STEP);
+    for (const player of this.players.values()) {
+      if (!player.bot) continue;
+      player.pose = botPose(player.bot.source, player.bot.frame, player.bot.shift, step, player.pose ?? new Uint8Array(POSE_BYTES));
+      player.bot.frame += 1;
+      player.poseFresh = true;
+    }
+  }
+
   /** Each player gets one bundle of the others' poses that arrived since the last tick; slow donors are passed over. */
   tick(now = Number.NEGATIVE_INFINITY): void {
     for (const request of [...this.seaRequests.values()]) if (now > request.deadline) this.askNext(request, now);
+    this.moveBots(now);
     const fresh = [...this.players.values()].filter((player) => player.poseFresh && player.pose);
     if (fresh.length === 0) return;
     for (const recipient of this.players.values()) {

@@ -21,7 +21,9 @@
     "server": "npm run build && npm run build:server && node dist-server/server.mjs",
     "server:dev": "npm run build:server && STATIC_DIR=dist node dist-server/server.mjs",
     "build:server": "tsc -p server/tsconfig.json && rolldown server/main.ts -o dist-server/server.mjs --format esm --platform node --external ws",
-    "typecheck:server": "tsc -p server/tsconfig.json"
+    "typecheck:server": "tsc -p server/tsconfig.json",
+    "bots:record": "rolldown scripts/bot-tracks.ts -o dist/scripts/bot-tracks.mjs --format esm --platform node && node dist/scripts/bot-tracks.mjs",
+    "server:bots": "npm run build:server && BOTS=1 node dist-server/server.mjs"
   },
   "dependencies": {
     "three": "^0.186.1",
