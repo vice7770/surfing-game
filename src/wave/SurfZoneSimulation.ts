@@ -4,7 +4,7 @@ import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from '
 import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
 import { FoamField, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
-import { BREAKING_ONSET_RATIO, CrestTracker, breakerForm, flowDirection, surfaceSpeedAt } from './CrestKinematics';
+import { JET_SPEED_RATIO, breakerForm, crestMotion } from './CrestKinematics';
 import { SeaState } from './SeaState';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import type { LipImpact } from './SprayCloud';
@@ -148,8 +148,6 @@ export class SurfZoneSimulation {
   /** Breaks since the start that threw a plunging jet, and that spilled as a roller (plan P7). */
   lipJets = 0;
   lipRollers = 0;
-  /** Each column's crest and its kinematics, which decide when it breaks (plan P7). */
-  readonly crests: CrestTracker;
   readonly peel: PeelTracker;
   lastStepMs = 0;
   /** Most offshore breaking cell per column last step (Infinity when none). */
@@ -204,7 +202,6 @@ export class SurfZoneSimulation {
       this.lipImpacts.push({ x, z, volume, vx, vy, vz });
     };
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
-    this.crests = new CrestTracker(this.solver, config.peakPeriod, this.solver.rowBelow(TANK.fineFrom));
   }
 
   get seaTime(): number {
@@ -253,9 +250,7 @@ export class SurfZoneSimulation {
   /** Everything a step does once the water has moved: breaking, lip, foam. */
   private afterWater(dt: number, start: number): void {
     this.breaking.update(dt);
-    this.crests.update(dt);
     this.markBreakingOnsets();
-    this.markCrestOnsets();
     this.lip.step(dt);
     this.foam.update(dt, this.breaking.strength);
     this.lastStepMs = performance.now() - start;
@@ -331,20 +326,6 @@ export class SurfZoneSimulation {
   }
 
   /**
-   * A crest breaks once its surface water nears the crest's own speed
-   * (Barthelemy et al. 2018): each column whose tracked crest reaches the ratio
-   * throws, spills or surges by the bed under it.
-   */
-  private markCrestOnsets(): void {
-    if (!this.onsetsArmed) return;
-    const { nx } = this.solver;
-    for (let column = 0; column < nx; column += 1) {
-      const crest = this.crests.crest(column);
-      if (crest && crest.ratio >= BREAKING_ONSET_RATIO) this.throwLip(column, Math.floor(crest.cell / nx));
-    }
-  }
-
-  /**
    * Throw a lip where a new wave starts breaking in `column`, if the local
    * breaker-point Iribarren number says plunging. The crest is the highest
    * surface up to four cells seaward of the outermost breaking cell; H_b = γ h
@@ -365,7 +346,6 @@ export class SurfZoneSimulation {
     const stillDepth = solver.restLevel - bed[crest];
     if (!(stillDepth >= 0.4 * this.breakerDepth()) || crestRow < 1 || crestRow > nz - 2) return;
     this.lastThrow[column] = solver.time;
-    const tracked = this.crests.crest(column);
     const slopeZ = (bed[crest + nx] - bed[crest - nx]) / (zCenters[crestRow + 1] - zCenters[crestRow - 1]);
     const slopeX = column > 0 && column < nx - 1 ? (bed[crest + 1] - bed[crest - 1]) / (2 * solver.dx) : 0;
     const breakerHeight = BREAKER_INDEX * stillDepth;
@@ -373,25 +353,19 @@ export class SurfZoneSimulation {
     const iribarren = Math.hypot(slopeX, slopeZ) / Math.sqrt(breakerHeight / deepWavelength);
     const form = breakerForm(iribarren);
     if (form === 'roller') this.lipRollers += 1;
-    if (form !== 'jet') {
-      this.crests.release(column);
-      return;
-    }
+    if (form !== 'jet') return;
     const shape = lipThrow({
       iribarren,
       breakerHeight,
       windOverCelerity: (this.config.windSpeed ?? 0) / Math.sqrt(GRAVITY * stillDepth),
       width: solver.dx,
     });
-    if (!shape) {
-      this.crests.release(column);
-      return;
-    }
-    // The jet leaves at the crest's surface water speed, the way that water moves (plan P7).
-    const speed = tracked ? tracked.surfaceSpeed : surfaceSpeedAt(solver, crest, this.crests.omega);
-    const along = tracked ? tracked.direction : flowDirection(solver, crest);
-    const thrown = this.lip.launch(crest, { x: along.x * speed, z: along.z * speed }, solver.surfaceAt(crest), shape.volume);
-    this.crests.release(column);
+    // The jet leaves the way the crest travels, at its speed, measured from the crest's own motion (plan P7).
+    const motion = crestMotion(solver, crest);
+    if (!shape || !motion) return;
+    const speed = JET_SPEED_RATIO * motion.speed;
+    const along = motion.direction;
+    const thrown = this.lip.launch(crest, { x: along.x * speed, z: along.z * speed }, solver.surfaceAt(crest), shape.volume, motion.speed);
     if (thrown > 0) {
       this.lipLaunches += 1;
       this.lipJets += 1;

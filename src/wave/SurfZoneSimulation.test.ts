@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { REEF, createSpot } from './Bathymetry';
 import { breakerDepthFor } from './Breaking';
 import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
+import { JET_SPEED_RATIO, crestSpeedAt } from './CrestKinematics';
 
 const small: Omit<SurfZoneConfig, 'spot'> = {
   seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -147,14 +148,13 @@ describe('SurfZoneSimulation', () => {
     expect(beach.simulation.lipRollers).toBeGreaterThan(0);
   }, 60_000);
 
-  it('throws each jet at the surface water speed of the crest it leaves (P7)', () => {
+  it("throws each jet at the speed of the crest it leaves, measured from the crest's own motion (P7)", () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, peakPeriod: 14, directionDegrees: 20, spreading: 24 });
     const launches: { speed: number; crest: number }[] = [];
     const launch = simulation.lip.launch.bind(simulation.lip);
-    simulation.lip.launch = (cell, velocity, height, volume) => {
-      const crest = simulation.crests.crest(cell % simulation.solver.nx);
-      if (crest) launches.push({ speed: Math.hypot(velocity.x, velocity.z), crest: crest.surfaceSpeed });
-      return launch(cell, velocity, height, volume);
+    simulation.lip.launch = (cell, velocity, height, volume, crestSpeed) => {
+      launches.push({ speed: Math.hypot(velocity.x, velocity.z), crest: JET_SPEED_RATIO * crestSpeedAt(simulation.solver, cell)! });
+      return launch(cell, velocity, height, volume, crestSpeed);
     };
     for (let frame = 0; frame < 20 * 30; frame += 1) simulation.step(1 / 30);
     expect(simulation.lipJets).toBeGreaterThan(0);

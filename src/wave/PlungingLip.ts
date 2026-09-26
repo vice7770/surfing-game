@@ -34,6 +34,14 @@ export function tubeWidthRatio(iribarren: number, windOverCelerity: number): num
   return clamp(1 / 3 + (2 / 3) * plunge - 0.18 * windOverCelerity, 0.2, 1);
 }
 
+/** A landed parcel's flight: where it left the crest, the height it came down at (m), how long it flew (s) and the speed of the crest it left (m/s). */
+export interface LipFlight {
+  launch: { x: number; y: number; z: number };
+  y: number;
+  age: number;
+  crestSpeed: number;
+}
+
 export interface LipConditions {
   /** Local breaker-point Iribarren number ξ_b. */
   iribarren: number;
@@ -81,8 +89,12 @@ export class PlungingLip implements LipParcelSource {
   readonly volume: Float64Array;
   /** Landings since the lip was created. */
   landings = 0;
-  /** Told of every landing: where the parcel fell, how much water it returned (m³), and how fast it hit (m/s). */
-  onLand?: (x: number, z: number, volume: number, vx: number, vy: number, vz: number) => void;
+  /**
+   * Told of every landing: where the parcel fell, how much water it returned
+   * (m³), how fast it hit (m/s), and its flight: where it left the crest and
+   * the height it landed at (the tube it drew, `measureTube`).
+   */
+  onLand?: (x: number, z: number, volume: number, vx: number, vy: number, vz: number, flight?: LipFlight) => void;
   private readonly vx: Float64Array;
   private readonly vy: Float64Array;
   private readonly vz: Float64Array;
@@ -97,6 +109,13 @@ export class PlungingLip implements LipParcelSource {
   };
   private readonly age: Float64Array;
   private readonly active: Uint8Array;
+  /** Where each parcel left the crest. */
+  private readonly lx: Float64Array;
+  private readonly ly: Float64Array;
+  private readonly lz: Float64Array;
+  /** The speed of the crest each parcel left, m/s. */
+  private readonly crestSpeed: Float64Array;
+  private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0 };
   private readonly free: number[] = [];
 
   constructor(private readonly solver: ShallowWaterSolver, readonly capacity = 4096) {
@@ -113,6 +132,10 @@ export class PlungingLip implements LipParcelSource {
     this.id = new Float64Array(capacity);
     this.age = new Float64Array(capacity);
     this.active = new Uint8Array(capacity);
+    this.lx = new Float64Array(capacity);
+    this.ly = new Float64Array(capacity);
+    this.lz = new Float64Array(capacity);
+    this.crestSpeed = new Float64Array(capacity);
     for (let index = capacity - 1; index >= 0; index -= 1) this.free.push(index);
   }
 
@@ -121,7 +144,7 @@ export class PlungingLip implements LipParcelSource {
    * horizontal `velocity` (m/s). Returns the volume actually thrown: 0 when the
    * parcel pool is full or the crest is dry.
    */
-  launch(cell: number, velocity: { x: number; z: number }, height: number, volume: number): number {
+  launch(cell: number, velocity: { x: number; z: number }, height: number, volume: number, crestSpeed = 0): number {
     if (this.free.length < PARCEL_SPEEDS.length || !(volume > 0)) return 0;
     const { solver } = this;
     const { nx, h, qx, qz, dx, dz } = solver;
@@ -149,9 +172,10 @@ export class PlungingLip implements LipParcelSource {
     for (const speed of PARCEL_SPEEDS) {
       const parcel = this.free.pop()!;
       this.active[parcel] = 1;
-      this.x[parcel] = this.px[parcel] = x;
-      this.y[parcel] = this.py[parcel] = height;
-      this.z[parcel] = this.pz[parcel] = z;
+      this.x[parcel] = this.px[parcel] = this.lx[parcel] = x;
+      this.y[parcel] = this.py[parcel] = this.ly[parcel] = height;
+      this.z[parcel] = this.pz[parcel] = this.lz[parcel] = z;
+      this.crestSpeed[parcel] = crestSpeed;
       this.id[parcel] = this.nextId;
       this.nextId += 1;
       this.vx[parcel] = speed * velocity.x;
@@ -231,6 +255,13 @@ export class PlungingLip implements LipParcelSource {
     this.active[parcel] = 0;
     this.free.push(parcel);
     this.landings += 1;
-    this.onLand?.(this.x[parcel], this.z[parcel], this.volume[parcel], this.vx[parcel], this.vy[parcel], this.vz[parcel]);
+    const { flight } = this;
+    flight.launch.x = this.lx[parcel];
+    flight.launch.y = this.ly[parcel];
+    flight.launch.z = this.lz[parcel];
+    flight.y = this.y[parcel];
+    flight.age = this.age[parcel];
+    flight.crestSpeed = this.crestSpeed[parcel];
+    this.onLand?.(this.x[parcel], this.z[parcel], this.volume[parcel], this.vx[parcel], this.vy[parcel], this.vz[parcel], flight);
   }
 }
