@@ -50,11 +50,18 @@
     - Standing balance acts only when the centre of pressure leaves ±0.06 m across the feet (±0.2 m along).
     - On a 15° static face, half steer carves steadily at a 5° roll, turning about 12° in 2.5 s at 7–8 m/s.
     - Full steer holds a 9–10° roll and turns 21° in 2 s.
-  - **Still open:** at full steer, about 2.1 s in (heading about 22°), the rider's drive velocity jumps by about 0.16 m/s in one step. A 2.9 BW contact spike, then flight and 'lost board', follow. The failure is the same at 8 substeps, so it is not the step size.
-    - Suspects: the heading-velocity term, or the correction term, as the board traverses the slope.
-    - `(board as any).entering(h)` is true throughout the carve, so the entry refinement runs every substep. That is costly; check its criterion.
+  - **Found and fixed** (`fix: carry the standing rider symmetrically in the solve`): the full-steer fall after about 2.3 s was the coupled solve going singular, not a force.
+    - The standing rider was carried at the stance point on the deck (v + ω × b) but pushed through its centre of mass 0.9 m above (torque a × J). That makes the coupled 6 × 6 system non-symmetric.
+    - As the carve turned, its smallest eigenvalue fell smoothly from 0.21 to 0.007. The one-step map's dominant eigenvalue went from 1.005 (3.5 s) to 3.5 and then 11. The board's spin then grew about 1.4× per substep, ending in a 2.9 BW spike, flight and 'lost board'.
+    - Physically, a light board rolls out from under a rider held upright by arbitrarily strong ankles.
+    - The fix: the solve carries the centre of mass rigidly (v + ω × a, symmetric and positive definite). A drive term, −(ω_roll/pitch × offset), keeps the body upright as the board rolls and pitches under the feet.
+    - Result: full steer on the 15° face now holds for 2.85 s, up from 2.28 s, and ends in 'balance' instead. Three-quarter and half steer hold for 4 s.
+    - Method, for similar bugs: clone the board and rider (a prototype-preserving deep clone), perturb consistently, and take the eigenvalues of the step map and of the coupled matrix (`sing.ts`, `jac.ts` and `eig.ts` in the session scratchpad).
+  - **Still open** (`it.fails` in `AttachedRider.test.ts`): after about 2.8 s at full steer, a 3.3 BW load spike still throws the rider ('balance'). Not yet diagnosed; start with the coupled-matrix eigenvalues through that window.
+  - **Rider yaw inertia (tried, left out):** the standing body yaws with the board, so its own yaw inertia (about 3.7 kg·m² from the posture parts) belongs in the solve. Added (the [4][4] entry plus a yaw-impulse ledger), it turns a growing roll–yaw swing of about 2.3 Hz unstable even at half steer. That is likely physical (a Dutch roll) that the open-loop lean does not damp. It needs roll-rate feedback in the balance or lean, then the inertia can go back in.
+  - `(board as any).entering(h)` is true throughout the carve, so the entry refinement runs every substep (4 substeps of h/4). That is costly; check its criterion.
   - A faster standing balance loop (0.06–0.12 s) oscillates even without steering.
-  - Probes: `carve.ts` and `carve2.ts` in the session scratchpad.
+  - Probes: `carve.ts` to `carve11.ts` and `tcarve.ts` in the session scratchpad.
 - **User requests queued:**
   - play the swimmer after a fall and choose to swim back and remount (ROADMAP);
   - the camera views front, behind, side and overview, now done (`8d145db`).

@@ -457,8 +457,7 @@ export class AttachedRider {
     this.flexRate = 0;
     this.frame(board);
     this.position.copy(this.target);
-    this.velocity.copy(this.drive.set(0, 0, 0)).add(board.velocityAt(this.carriedPoint(board, this.scratch), this.scratch2));
-    this.velocity.add(this.headingVelocity(board, this.scratch));
+    this.velocity.copy(this.drive.set(0, 0, 0)).add(board.velocityAt(this.target, this.scratch2));
     this.angularVelocity.copy(this.upright ? this.scratch.set(0, board.angularVelocity.y, 0) : board.angularVelocity);
     this.attached = true;
     this.separation = undefined;
@@ -618,15 +617,19 @@ export class AttachedRider {
     this.frame(board);
     // Back from the air, the knees take up the approach speed along the body's up.
     if (!this.inContact) {
-      board.velocityAt(this.carriedPoint(board, this.scratch), this.scratch2);
+      board.velocityAt(this.upright ? board.toWorld(this.base, this.scratch) : this.target, this.scratch2);
       const approach = this.scratch.subVectors(this.velocity, this.scratch2).dot(this.up);
       if (this.scratch.subVectors(this.position, this.target).dot(this.up) <= 0.02 && approach < 0) this.flexRate = approach;
     }
     this.flexStep(h);
     this.frame(board);
-    this.carried.subVectors(this.carriedPoint(board, this.scratch), board.centerOfMass);
-    // Drive: the posture turning with the heading, the knees' flex, and a bounded correction toward the posture.
-    this.headingVelocity(board, this.drive).addScaledVector(this.up, this.flexRate);
+    // The solve carries the centre of mass rigidly with the board (a symmetric coupling). Carried at
+    // the stance point while pushing through the centre of mass instead, the coupled system turned
+    // singular as a carve changed its geometry, and the solve blew up.
+    this.carried.subVectors(this.target, board.centerOfMass);
+    // Drive: standing upright as the board rolls and pitches under the feet, the knees' flex, and a
+    // bounded correction toward the posture.
+    this.uprightVelocity(board, this.drive.set(0, 0, 0)).addScaledVector(this.up, this.flexRate);
     // The balance shift moves the centre of mass across the board.
     const shifted = this.shiftedShare();
     this.drive.add(this.scratch.set((this.balanceRate.x + this.leanRate.x) * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.heading : board.orientation));
@@ -896,16 +899,12 @@ export class AttachedRider {
     this.target.addScaledVector(this.up, this.flex);
   }
 
-  /** Where the rider is carried: the stance point standing, its own centre of mass lying down. */
-  private carriedPoint(board: BoardBody, out: Vector3): Vector3 {
-    return this.upright ? board.toWorld(this.base, out) : out.copy(this.target);
-  }
-
-  /** How the standing body moves as the heading turns it about the stance point. */
-  private headingVelocity(board: BoardBody, out: Vector3): Vector3 {
-    if (!this.upright) return out.set(0, 0, 0);
+  /** Standing, the velocity that keeps the body upright as the board rolls and pitches under the stance point. */
+  private uprightVelocity(board: BoardBody, out: Vector3): Vector3 {
+    if (!this.upright) return out;
     const offset = this.scratch2.subVectors(this.target, this.baseWorld);
-    return cross(this.scratch.set(0, board.angularVelocity.y, 0), offset, out);
+    const w = this.scratch.set(-board.angularVelocity.x, 0, -board.angularVelocity.z);
+    return out.add(cross(w, offset, this.localScratch));
   }
 
   /** Lying rigid, the rider turned with the board: book the angular impulse on both sides. */
