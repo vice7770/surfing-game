@@ -1,6 +1,7 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, STRIP_PARCELS, lipThrow, overturnArea, tubeWidthRatio } from './PlungingLip';
+import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, STRIP_PARCELS, lipThrow, overturnArea } from './PlungingLip';
+import { jetRelativeSpeed, overturn, overturnParameter } from './Overturn';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
 
 function basin(): ShallowWaterSolver {
@@ -210,30 +211,41 @@ describe('PlungingLip', () => {
 });
 
 describe('lip shape', () => {
+  const conditions = { iribarren: 0.8, slope: 1 / 20, nonlinearity: 0.3, breakerHeight: 1.5, windOverCelerity: 0, width: 1 };
+
   it('throws only from plunging breakers', () => {
-    expect(lipThrow({ iribarren: 0.3, breakerHeight: 1.5, windOverCelerity: 0, width: 1 })).toBeUndefined();
-    expect(lipThrow({ iribarren: 2.4, breakerHeight: 1.5, windOverCelerity: 0, width: 1 })).toBeUndefined();
-    expect(lipThrow({ iribarren: 0.8, breakerHeight: 1.5, windOverCelerity: 0, width: 1 })).toBeDefined();
+    expect(lipThrow({ ...conditions, iribarren: 0.3 })).toBeUndefined();
+    expect(lipThrow({ ...conditions, iribarren: 2.4 })).toBeUndefined();
+    expect(lipThrow(conditions)).toBeDefined();
   });
 
-  it('sizes the overturn from the Surf Ranch measurements (Feddersen et al. 2023)', () => {
+  it("throws the jet's own water and flies it over the void, from the overturn of Pick & Feddersen (2026)", () => {
+    const thrown = lipThrow({ ...conditions, width: 2 })!;
+    const shape = overturn(overturnParameter(1 / 20, 0.3));
+    expect(thrown.shape).toEqual(shape);
+    expect(thrown.volume).toBeCloseTo(shape.jetArea * 1.5 * 1.5 * 2, 12);
+    expect(thrown.relativeSpeed).toBeCloseTo(jetRelativeSpeed(shape, 1.5), 12);
+  });
+
+  it('throws bigger, faster jets over steeper beds', () => {
+    const gentle = lipThrow({ ...conditions, slope: 1 / 50 })!;
+    const steep = lipThrow({ ...conditions, slope: 1 / 12 })!;
+    expect(steep.volume).toBeGreaterThan(gentle.volume);
+    expect(steep.relativeSpeed).toBeGreaterThan(gentle.relativeSpeed);
+  });
+
+  it('opens the void and rounds it in offshore wind, as measured at Surf Ranch (Feddersen et al. 2023)', () => {
     expect(overturnArea(0.75)).toBeCloseTo(0.2, 2);
     expect(overturnArea(-0.4)).toBeCloseTo(0.4, 2);
     expect(overturnArea(-2)).toBe(0.4);
     expect(overturnArea(3)).toBe(0.2);
-    const calm = lipThrow({ iribarren: 0.8, breakerHeight: 1.5, windOverCelerity: 0, width: 2 })!;
-    expect(calm.volume).toBeCloseTo(overturnArea(0) * 1.5 * 1.5 * 2, 12);
-  });
-
-  it('rounds the tube from almond to circle as ξ rises and as offshore wind grows', () => {
-    expect(tubeWidthRatio(0.4, 0)).toBeCloseTo(1 / 3, 12);
-    expect(tubeWidthRatio(2, 0)).toBeCloseTo(1, 12);
-    expect(tubeWidthRatio(0.8, -1)).toBeGreaterThan(tubeWidthRatio(0.8, 0));
-    expect(tubeWidthRatio(0.8, 1)).toBeLessThan(tubeWidthRatio(0.8, 0));
-    // A ballistic lip launched level from the crest lands one tube length ahead: speed = (L/W)·√(gH/2).
-    const almond = lipThrow({ iribarren: 0.4, breakerHeight: 1.5, windOverCelerity: 0, width: 1 })!;
-    const round = lipThrow({ iribarren: 2, breakerHeight: 1.5, windOverCelerity: 0, width: 1 })!;
-    expect(almond.speed).toBeCloseTo(3 * Math.sqrt((9.81 * 1.5) / 2), 9);
-    expect(round.speed).toBeCloseTo(Math.sqrt((9.81 * 1.5) / 2), 9);
+    const calm = lipThrow(conditions)!;
+    const offshore = lipThrow({ ...conditions, windOverCelerity: -0.4 })!;
+    const onshore = lipThrow({ ...conditions, windOverCelerity: 0.75 })!;
+    expect(offshore.shape.area / calm.shape.area).toBeCloseTo(overturnArea(-0.4) / overturnArea(0), 12);
+    expect(offshore.shape.aspect - calm.shape.aspect).toBeCloseTo(0.18 * 0.4, 12);
+    expect(onshore.shape.area).toBeLessThan(calm.shape.area);
+    expect(offshore.relativeSpeed).toBeGreaterThan(calm.relativeSpeed);
   });
 });
+

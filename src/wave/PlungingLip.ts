@@ -1,6 +1,7 @@
 import { Vector3 } from 'three';
 import type { LipContactParcel, LipParcelSource } from '../physics/DetachedSurfer';
 import { GRAVITY } from './dispersion';
+import { jetRelativeSpeed, overturn, overturnParameter, type OverturnShape } from './Overturn';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 
 /** Parcels along one column's jet: the sheet's resolution across its thickness of flight (numerical). */
@@ -30,17 +31,6 @@ function clamp(value: number, low: number, high: number): number {
  */
 export function overturnArea(windOverCelerity: number): number {
   return clamp(0.2 + (0.2 * (0.75 - windOverCelerity)) / 1.15, 0.2, 0.4);
-}
-
-/**
- * Tube width-to-length ratio W/L. The ξ_b mapping is the plan's modeling choice
- * (Q12): almond (1:3) at ξ = 0.4 to round (1:1) at ξ = 2.0, after passyworld's
- * tube ratios. Wind tilts it by −0.18 per unit U/C, the slope of Feddersen et
- * al. (2023): W/L ≈ 0.48 offshore to ≈ 0.25 at U/C = 0.75.
- */
-export function tubeWidthRatio(iribarren: number, windOverCelerity: number): number {
-  const plunge = clamp((iribarren - 0.4) / 1.6, 0, 1);
-  return clamp(1 / 3 + (2 / 3) * plunge - 0.18 * windOverCelerity, 0.2, 1);
 }
 
 /** A flying parcel's place in the lip sheet. */
@@ -74,6 +64,10 @@ export interface LipFlight {
 export interface LipConditions {
   /** Local breaker-point Iribarren number ξ_b. */
   iribarren: number;
+  /** Bed slope under the crest. */
+  slope: number;
+  /** The incoming sea's height over the tank's offshore depth, H0/h0. */
+  nonlinearity: number;
   /** Breaker height H_b, m. */
   breakerHeight: number;
   /** Local wind over the breaker celerity, positive onshore. */
@@ -83,22 +77,34 @@ export interface LipConditions {
 }
 
 export interface LipThrow {
-  /** Water thrown, m³: the overturn area times the crest length. */
+  /** Water thrown, m³: the jet's area times the crest length. */
   volume: number;
-  /** Level launch speed that lands the lip one tube length L = H·(L/W) ahead, m/s. */
-  speed: number;
-  widthRatio: number;
+  /** Level launch speed ahead of the crest that flies the jet over the void, m/s. */
+  relativeSpeed: number;
+  /** The overturn, wind included. */
+  shape: OverturnShape;
 }
 
-/** A lip only leaves plunging breakers, 0.4 ≤ ξ_b ≤ 2.0 (plan §1.9, Q12). */
+/**
+ * A lip only leaves plunging breakers, 0.4 ≤ ξ_b ≤ 2.0 (plan §1.9, Q12). Its
+ * overturn is Pick & Feddersen's (2026) for the bed slope and the sea, and
+ * the wind reshapes the void as measured at Surf Ranch: its area by
+ * `overturnArea`'s ratio to calm, and its aspect by −0.18 per unit U/C
+ * (Feddersen et al. 2023).
+ */
 export function lipThrow(conditions: LipConditions): LipThrow | undefined {
-  const { iribarren, breakerHeight, windOverCelerity, width } = conditions;
+  const { iribarren, slope, nonlinearity, breakerHeight, windOverCelerity, width } = conditions;
   if (!(iribarren >= 0.4 && iribarren <= 2) || !(breakerHeight > 0)) return undefined;
-  const widthRatio = tubeWidthRatio(iribarren, windOverCelerity);
+  const calm = overturn(overturnParameter(slope, nonlinearity));
+  const shape: OverturnShape = {
+    ...calm,
+    area: (calm.area * overturnArea(windOverCelerity)) / overturnArea(0),
+    aspect: clamp(calm.aspect - 0.18 * windOverCelerity, 0.2, 1),
+  };
   return {
-    volume: overturnArea(windOverCelerity) * breakerHeight * breakerHeight * width,
-    speed: Math.sqrt((GRAVITY * breakerHeight) / 2) / widthRatio,
-    widthRatio,
+    volume: shape.jetArea * breakerHeight * breakerHeight * width,
+    relativeSpeed: jetRelativeSpeed(shape, breakerHeight),
+    shape,
   };
 }
 

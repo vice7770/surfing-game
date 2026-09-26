@@ -5,7 +5,7 @@ import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
 import { FoamField, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
 import { focusX } from './Refraction';
-import { JET_SPEED_RATIO, breakerForm, crestMotion } from './CrestKinematics';
+import { breakerForm, crestMotion } from './CrestKinematics';
 import { SeaState } from './SeaState';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import type { LipImpact } from './SprayCloud';
@@ -412,20 +412,25 @@ export class SurfZoneSimulation {
     const slopeX = column > 0 && column < nx - 1 ? (bed[crest + 1] - bed[crest - 1]) / (2 * solver.dx) : 0;
     const breakerHeight = BREAKER_INDEX * stillDepth;
     const deepWavelength = (GRAVITY * this.config.peakPeriod ** 2) / (2 * Math.PI);
-    const iribarren = Math.hypot(slopeX, slopeZ) / Math.sqrt(breakerHeight / deepWavelength);
+    const slope = Math.hypot(slopeX, slopeZ);
+    const iribarren = slope / Math.sqrt(breakerHeight / deepWavelength);
     const form = breakerForm(iribarren);
     if (form === 'roller') this.lipRollers += 1;
     if (form !== 'jet') return;
     const shape = lipThrow({
       iribarren,
+      slope,
+      // The overturn fits' H0/h0: the incoming sea's height over the tank's offshore depth.
+      nonlinearity: this.config.significantHeight / (OFFSHORE_DEPTH[this.config.spot] + this.config.tide),
       breakerHeight,
       windOverCelerity: (this.config.windSpeed ?? 0) / Math.sqrt(GRAVITY * stillDepth),
       width: solver.dx,
     });
-    // The jet leaves the way the crest travels, at its speed, measured from the crest's own motion (plan P7).
+    // The jet leaves the way the crest travels, measured from the crest's own motion, and outruns it
+    // by the speed that flies it over its overturn's void (plan P7).
     const motion = crestMotion(solver, crest);
     if (!shape || !motion) return;
-    const speed = JET_SPEED_RATIO * motion.speed;
+    const speed = motion.speed + shape.relativeSpeed;
     const along = motion.direction;
     const thrown = this.lip.launch(crest, { x: along.x * speed, z: along.z * speed }, solver.surfaceAt(crest), shape.volume, motion.speed);
     if (thrown > 0) {

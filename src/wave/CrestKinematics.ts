@@ -1,12 +1,5 @@
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 
-/**
- * A jet leaves the crest at this multiple of the crest's own speed. The
- * kinematic breaking criterion: a crest overturns once its water catches up
- * with the crest (Barthelemy et al. 2018 put the onset at 0.85 of it).
- * Provisional until checked against measured jet speeds.
- */
-export const JET_SPEED_RATIO = 1;
 /** Crests over thinner water are shore swash, not waves, m. */
 const WET = 0.05;
 /** How far ahead of the crest to look for its front face, m. */

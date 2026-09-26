@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BoussinesqSolver, madsenSorensenCelerity } from './BoussinesqSolver';
-import { JET_SPEED_RATIO, breakerForm, crestSpeedAt } from './CrestKinematics';
+import { breakerForm, crestSpeedAt } from './CrestKinematics';
 import { uniformEdges } from './ShallowWaterSolver';
 import { waveNumber } from './dispersion';
 
@@ -37,10 +37,9 @@ describe('crest kinematics', () => {
     expect(crestSpeedAt(solver, 20 * solver.nx + 1)).toBeUndefined();
   });
 
-  it('throws a jet only on plunging bed slopes, at the crest speed until measured otherwise', () => {
+  it('throws a jet only on plunging bed slopes', () => {
     expect(breakerForm(0.2)).toBe('roller');
     expect(breakerForm(0.8)).toBe('jet');
     expect(breakerForm(3)).toBe('none');
-    expect(JET_SPEED_RATIO).toBe(1);
   });
 });
