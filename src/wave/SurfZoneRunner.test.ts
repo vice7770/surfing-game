@@ -23,6 +23,14 @@ describe('SurfZoneRunner', () => {
     expect(runner.simulation.seaTime).toBe(direct.seaTime);
   });
 
+  it('reports how many breaks threw a jet and how many spilled', () => {
+    const runner = new SurfZoneRunner(config);
+    runner.simulation.lipJets = 3;
+    runner.simulation.lipRollers = 5;
+    expect(runner.status().lipJets).toBe(3);
+    expect(runner.status().lipRollers).toBe(5);
+  });
+
   it('fills a snapshot with the render surface, the current, the lip and the bubbles', () => {
     const runner = new SurfZoneRunner(config);
     runner.advance(120);

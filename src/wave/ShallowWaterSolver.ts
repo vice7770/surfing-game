@@ -343,6 +343,11 @@ export class ShallowWaterSolver {
     return energy;
   }
 
+  /** How fast the surface rises in each cell over the latest step, η_t = −∇·q, m/s. */
+  get surfaceRiseRate(): Float64Array {
+    return this.rateH;
+  }
+
   /** The relaxation zones, in the order they blend. */
   get relaxationZones(): readonly RelaxationZone[] {
     return this.zones.map((entry) => entry.zone);

@@ -5,10 +5,11 @@
  *
  *   npm run report:rideability -- --seeds 3 --periods 20
  *   npm run report:rideability -- --spots point --direction 30 --spread 0 --out /tmp/point.md
+ *   npm run report:rideability -- --spots reef --reef obliquity=45,edge=-35 --out /tmp/reef.md
  */
 import { writeFileSync } from 'node:fs';
 import { DEFAULT_PHYSICAL_SETTINGS, spreadingFor } from '../src/game/PhysicalMode';
-import type { SpotName } from '../src/wave/Bathymetry';
+import { REEF, type SpotName } from '../src/wave/Bathymetry';
 import { PEEL_SKILL_MINIMUM } from '../src/wave/Breaking';
 import { measureRideability, rideability, type PeelSample } from '../src/wave/Rideability';
 
@@ -32,6 +33,15 @@ const settings = {
 const custom = settings.significantHeight !== DEFAULT_PHYSICAL_SETTINGS.significantHeight || settings.peakPeriod !== DEFAULT_PHYSICAL_SETTINGS.peakPeriod
   || settings.directionDegrees !== DEFAULT_PHYSICAL_SETTINGS.directionDegrees || settings.spread !== DEFAULT_PHYSICAL_SETTINGS.spread;
 const percent = (share: number) => `${Math.round(share * 100)} %`;
+// Reshape the Reef for this run (its shape is read when a spot is built): `--reef obliquity=45,edge=-35`.
+const reefShape = option('reef');
+if (reefShape) {
+  for (const pair of reefShape.split(',')) {
+    const [key, value] = pair.split('=');
+    if (!(key in REEF)) throw new Error(`No reef parameter ${key}`);
+    (REEF as Record<string, number>)[key] = Number(value);
+  }
+}
 
 const rows: string[] = [];
 const histograms: string[] = [];

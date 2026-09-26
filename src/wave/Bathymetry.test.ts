@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, CANYON, POINT_HEADLAND, REEF, createSpot, deanDepth, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, CANYON, POINT_HEADLAND, REEF, createSpot, deanDepth, reefEdgeZ, type SurfSpot } from './Bathymetry';
 
 /** Offshore bed slope: depth increase per metre toward −z. */
 function slopeZ(spot: SurfSpot, x: number, z: number, step = 0.5): number {
@@ -49,9 +49,27 @@ describe('surf spot bathymetry', () => {
     expect(angle).toBeLessThan(34);
   });
 
+  it("sets the angle of the reef edge's arms by its obliquity", () => {
+    const along = (a: number, b: number) => (reefEdgeZ(REEF.apexX + b) - reefEdgeZ(REEF.apexX + a)) / (b - a);
+    expect(along(20, 60)).toBeCloseTo(Math.tan((REEF.obliquity * Math.PI) / 180), 12);
+    expect(along(-60, -20)).toBeCloseTo(-Math.tan((REEF.obliquity * Math.PI) / 180), 12);
+    expect(reefEdgeZ(REEF.apexX + REEF.halfWidth + 10)).toBe(REEF.edge);
+  });
+
+  it('runs a single-arm reef edge straight across at its obliquity through its middle point', () => {
+    const saved = { ...REEF };
+    Object.assign(REEF, { arms: 1, obliquity: 30, edgeMid: -90 });
+    try {
+      expect(reefEdgeZ(REEF.apexX)).toBeCloseTo(-90, 12);
+      expect((reefEdgeZ(40) - reefEdgeZ(-40)) / 80).toBeCloseTo(-Math.tan(Math.PI / 6), 12);
+    } finally {
+      Object.assign(REEF, saved);
+    }
+  });
+
   it('raises the reef shelf steeply enough to plunge', () => {
     const reef = createSpot('reef', 1);
-    const apex = REEF.edge - REEF.protrusion;
+    const apex = reefEdgeZ(REEF.apexX);
     let steepest = 0;
     for (let z = apex - REEF.edgeWidth; z <= apex + REEF.edgeWidth / 2; z += 0.5) steepest = Math.max(steepest, slopeZ(reef, REEF.apexX, z));
     expect(steepest).toBeGreaterThan(0.1);

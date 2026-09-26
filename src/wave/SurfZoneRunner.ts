@@ -14,6 +14,8 @@ export { surfZoneSea } from './SurfZoneSimulation';
 
 /** Fixed simulation step, s: the game's physics rate. */
 export const SURF_ZONE_STEP = 1 / 60;
+/** A snapshot's lip parcel: x, y, z, world column, index along its strip, the strip's launch time and the parcel's age (plan P7). */
+export const LIP_STRIDE = 7;
 /** Most lip parcels and bubbles a snapshot carries. */
 const PARCEL_CAPACITY = 4096;
 /** A riderless board waits this far seaward of the break line, m. */
@@ -61,6 +63,9 @@ export interface SurfZoneStatus {
   peel?: PeelEstimate;
   lipLaunches: number;
   lipVolume: number;
+  /** Breaks that threw a plunging jet, and that spilled as a roller (plan P7). */
+  lipJets: number;
+  lipRollers: number;
   lipAirborne: number;
   /** Spray and mist particles in the air. */
   spray: number;
@@ -240,7 +245,7 @@ export class SurfZoneRunner {
     return {
       surface: new Float32Array(nodes * 2),
       flow: new Float32Array(nodes * 2),
-      lip: new Float32Array(PARCEL_CAPACITY * 3),
+      lip: new Float32Array(PARCEL_CAPACITY * LIP_STRIDE),
       lipCount: 0,
       bubbles: new Float32Array(PARCEL_CAPACITY * 3),
       bubbleCount: 0,
@@ -257,11 +262,16 @@ export class SurfZoneRunner {
     simulation.writeUniformSurface(buffers.surface, grid);
     simulation.writeUniformFlow(buffers.flow, grid);
     let parcels = 0;
-    simulation.lip.forEachActive((x, y, z) => {
+    simulation.lip.forEachActiveParcel((parcel) => {
       if (parcels >= PARCEL_CAPACITY) return;
-      buffers.lip[parcels * 3] = x;
-      buffers.lip[parcels * 3 + 1] = y;
-      buffers.lip[parcels * 3 + 2] = z;
+      const o = parcels * LIP_STRIDE;
+      buffers.lip[o] = parcel.x;
+      buffers.lip[o + 1] = parcel.y;
+      buffers.lip[o + 2] = parcel.z;
+      buffers.lip[o + 3] = parcel.column;
+      buffers.lip[o + 4] = parcel.index;
+      buffers.lip[o + 5] = parcel.launchTime;
+      buffers.lip[o + 6] = parcel.age;
       parcels += 1;
     });
     buffers.lipCount = parcels;
@@ -302,6 +312,8 @@ export class SurfZoneRunner {
       peel: simulation.peelEstimate(),
       lipLaunches: simulation.lipLaunches,
       lipVolume: simulation.lipVolume,
+      lipJets: simulation.lipJets,
+      lipRollers: simulation.lipRollers,
       lipAirborne: simulation.lip.airborneVolume(),
       spray: this.spray.count,
       onsetScale: simulation.breaking.onsetScale,
