@@ -61,7 +61,7 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
     - a relaunch started the board at rest mid-wave, where the flow jolted it. It now drifts with the water;
     - a stroking hand's drag grew without bound with the board's speed. An arm now gives way at 0.4 body weights.
 
-    Paddlers lost the board 156 → 29 times at the natural Point and 420 → 127 in practice (the other spots similarly). Stands rose at the practice Point (5 → 13, longest ride 13.7 s) but fell in the natural sea (10 → 5): the old cues partly rode on the runaway hand thrust. **Next:** sprint paddling at take-off, and pop-ups that fail on late take-offs off the lip. The game's relaunch point is 25 m outside the break line, where catches are rare (the ghost riders stood from 4–8 m out).
+    Paddlers lost the board 156 → 29 times at the natural Point and 420 → 127 in practice (the other spots similarly). Stands rose at the practice Point (5 → 13, longest ride 13.7 s) but fell in the natural sea (10 → 5): the old cues partly rode on the runaway hand thrust. **Next:** sprint paddling at take-off, and pop-ups that fail on late take-offs off the lip. The rider now starts, and relaunches, 6 m outside the break line instead of 25 m, where catches were rare (the ghost riders stood from 4–8 m out).
   - [x] Play the surfer, not the board (user request, 2026-09-26): after a fall the camera follows the swimmer, who strokes with Space and steers with the arrows. Enter within reach of the board grabs it and lies back down prone, keeping the pair's linear momentum (surfer plan S3); R still relaunches in the lineup.
 ### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `Done`
 
@@ -79,6 +79,41 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
   - **Deviations:** the whole field is read back every frame with no lag, not an async patch: the renderer is WebGL on the page, and the lip, foam and breaking model read the whole grid. 0.5 m cells were measured at a quarter of real time and not adopted.
 
   [Record](docs/superpowers/plans/2026-09-26-p6-webgpu-tier.md).
+
+### P1 · Barrels (P7) — `Ready`
+
+Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels](docs/superpowers/plans/2026-09-26-p7-barrels.md).
+- [ ] **Scope:** a physical lip sheet the rider can be hit by or covered by. Deliberate tube-riding comes later (see the gameplay list below).
+- [ ] **Physics:** a tube forms, or not, from the wave's own state. A column throws when its crest water nears the crest's speed on a steep face, and the local bed slope decides between a plunging jet and a spilling roller. The jet leaves at the crest's surface water speed, so the tube's shape is an outcome, checked against measured ranges: width-to-length 0.25–1, overturn area 0.2–0.4 H² (Feddersen et al. 2023). Values the user's sources will confirm are marked provisional.
+- [ ] **The work, in order:**
+  1. the throw trigger and speed;
+  2. a continuous, water-conserving sheet stitched along a peel;
+  3. rider contact (hit versus covered, and a tube can be too small for a standing rider);
+  4. a peeling Reef (27–60°);
+  5. a translucent sheet with foam;
+  6. validation, per-spot tube reports and a video.
+- [ ] Every tier gets tubes. If the physics is too heavy, it is sped up later, never faked.
+
+### Future gameplay mechanics — `Backlog`
+
+Physical inputs to the rider, not scripted moves (user's list, 2026-09-26):
+1. **Crouch to fit the tube:** compress the stance to lower the body; less height, but a new balance to keep.
+2. **Stall:** a hand in the face or weight back on the tail, slowing down so the tube catches up.
+3. **High or low line on the face:** trim to control speed and stay in the pocket.
+4. **Pumping:** working the board up and down the face to generate speed.
+5. **Pulling in and racing out of the tube:** timing the entry, and making the exit.
+6. **Grabbing the rail or dragging a hand:** holding a line inside the tube.
+7. **Sprint paddle at take-off:** a harder, tiring burst. It also answers the lower natural catch rate after the paddler fix.
+8. **Angled take-off:** paddling in at an angle to the peel.
+9. **Late take-off and air drop:** surviving a free-fall down the face.
+10. **Bottom and top turns (carves, snaps, cutbacks):** need the flexible (finite-impedance) rider.
+11. **Duck-dive or turtle roll:** getting under the whitewater while paddling out.
+12. **Picking your spot and reading sets.**
+13. **Wipeout and recovery:** holding your breath, the leash tugging the board, swimming back.
+14. **Stamina:** paddling tires you and costs sprint strength.
+15. **Tube camera:** a view that works inside the barrel.
+
+Also noted by the user: the rider's speed and position relative to the wave looked wrong in the recorded ride; to be worked out later.
 
 ## Current milestone — sustained wave and physical wipeout — `Done for prototype`
 

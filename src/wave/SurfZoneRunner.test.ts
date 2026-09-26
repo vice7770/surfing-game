@@ -173,8 +173,17 @@ describe('SurfZoneRunner with a rider', () => {
     expect(runner.status().ride?.phase).toBe('prone');
   });
 
+  it('starts the rider just outside the break line, where catches happen', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    const board = runner.session!.board.position;
+    expect(runner.focus.z - board.z).toBeCloseTo(6, 6);
+    expect(board.x).toBeCloseTo(runner.focus.x, 6);
+  });
+
   it('paddles toward the beach when asked', () => {
     const runner = new SurfZoneRunner(calm, { rider: true });
+    // In calm water the break line is almost at the shore; paddle from deep water instead.
+    runner.session!.reset(new Vector3(runner.focus.x, 0, runner.focus.z - 25), 0, runner.water);
     const start = runner.session!.board.position.clone();
     runner.advance(360, { ...idle, paddle: true });
     const board = runner.session!.board;
