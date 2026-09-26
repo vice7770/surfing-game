@@ -17,7 +17,11 @@
     "assets:skies": "rolldown scripts/assets/fetch-skies.ts -o dist/scripts/fetch-skies.mjs --format esm --platform node && node dist/scripts/fetch-skies.mjs",
     "assets:surfers": "/Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/assets/build_surfers.py && node scripts/assets/pack-surfers.mjs",
     "report:sound": "rolldown scripts/sound-report.ts -o dist/scripts/sound-report.mjs --format esm --platform node && node dist/scripts/sound-report.mjs",
-    "report:drift": "rolldown scripts/drift-report.ts -o dist/scripts/drift-report.mjs --format esm --platform node && node dist/scripts/drift-report.mjs"
+    "report:drift": "rolldown scripts/drift-report.ts -o dist/scripts/drift-report.mjs --format esm --platform node && node dist/scripts/drift-report.mjs",
+    "server": "npm run build && npm run build:server && node dist-server/server.mjs",
+    "server:dev": "npm run build:server && STATIC_DIR=dist node dist-server/server.mjs",
+    "build:server": "tsc -p server/tsconfig.json && rolldown server/main.ts -o dist-server/server.mjs --format esm --platform node --external ws",
+    "typecheck:server": "tsc -p server/tsconfig.json"
   },
   "dependencies": {
     "three": "^0.186.1",

@@ -6,3 +6,4 @@ recordings/
 scripts/assets/.cache/
 scripts/assets/.build/
 .superpowers/
+dist-server/
