@@ -56,6 +56,12 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
     - the 30 s practice ride with linked turns is not met: the bots ride straight, the spots mostly close out, and hard carves need the finite-impedance rider (P4e).
 
     `legacy` stays until catching is reliable. [Record](docs/superpowers/plans/2026-09-26-p4f-catch.md), [natural](docs/research/catch-report.md) and [practice](docs/research/catch-report-practice.md) reports.
+  - [x] Paddlers stay on their boards (user's fix list, 2026-09-26). Most catch attempts used to end with the paddler lifted off before the cue. Three causes were found and fixed:
+    - lying down, the rider never reacted to the board's roll, and a shortboard under a prone body capsizes on its own. The body now shifts toward the high rail;
+    - a relaunch started the board at rest mid-wave, where the flow jolted it. It now drifts with the water;
+    - a stroking hand's drag grew without bound with the board's speed. An arm now gives way at 0.4 body weights.
+
+    Paddlers lost the board 156 → 29 times at the natural Point and 420 → 127 in practice (the other spots similarly). Stands rose at the practice Point (5 → 13, longest ride 13.7 s) but fell in the natural sea (10 → 5): the old cues partly rode on the runaway hand thrust. **Next:** sprint paddling at take-off, and pop-ups that fail on late take-offs off the lip. The game's relaunch point is 25 m outside the break line, where catches are rare (the ghost riders stood from 4–8 m out).
   - [x] Play the surfer, not the board (user request, 2026-09-26): after a fall the camera follows the swimmer, who strokes with Space and steers with the arrows. Enter within reach of the board grabs it and lies back down prone, keeping the pair's linear momentum (surfer plan S3); R still relaunches in the lineup.
 ### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `Done`
 
