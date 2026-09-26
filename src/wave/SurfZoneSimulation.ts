@@ -6,7 +6,7 @@ import { FoamField, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
 import { focusX } from './Refraction';
 import { breakerForm, crestMotion, waveHeightAt } from './CrestKinematics';
-import { tubeGeometry } from './Overturn';
+import { jetFlightTime, tubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import type { LipImpact } from './SprayCloud';
@@ -436,8 +436,10 @@ export class SurfZoneSimulation {
     // by the speed that flies it over its overturn's void (plan P7).
     const speed = motion.speed + shape.relativeSpeed;
     const along = motion.direction;
+    // It keeps pouring from the crest until it lands, as measured jets do (Erinin et al. 2023).
     const thrown = this.lip.launch(
       crest, { x: along.x * speed, z: along.z * speed }, solver.surfaceAt(crest), shape.volume, motion.speed, tubeGeometry(shape.shape, height),
+      jetFlightTime(shape.shape, height),
     );
     if (thrown > 0) {
       this.lipLaunches += 1;

@@ -72,9 +72,18 @@ export function tubeGeometry(shape: OverturnShape, height: number): TubeGeometry
  * et al. 1996), 1.68 (Chang & Liu 1998) and 1.73 (Kjeldsen 1984).
  */
 export function jetRelativeSpeed(shape: OverturnShape, height: number): number {
+  const { length, tilt } = tubeGeometry(shape, height);
+  return (length * Math.cos(tilt)) / jetFlightTime(shape, height);
+}
+
+/**
+ * How long the jet takes from the crest top to the void's front end, s. The jet
+ * keeps pouring from its crest over this long: measured jets take 1.5–1.6 √(H/g)
+ * from forming to impact (Erinin et al. 2023).
+ */
+export function jetFlightTime(shape: OverturnShape, height: number): number {
   const { length, width, tilt } = tubeGeometry(shape, height);
-  const flight = Math.sqrt((2 * (width / 2 + length * Math.sin(tilt))) / GRAVITY);
-  return (length * Math.cos(tilt)) / flight;
+  return Math.sqrt((2 * (width / 2 + length * Math.sin(tilt))) / GRAVITY);
 }
 
 /** The half-width of Longuet-Higgins's curve across its axis at u = x′/L along it, as a fraction of W. */

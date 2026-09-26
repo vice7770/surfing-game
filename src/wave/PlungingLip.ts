@@ -7,10 +7,10 @@ import type { ShallowWaterSolver } from './ShallowWaterSolver';
 /** Parcels along one column's jet: the sheet's resolution across its thickness of flight (numerical). */
 export const STRIP_PARCELS = 8;
 /**
- * The jet leaves the crest over this long, s: the strip's parcels are released
- * evenly across it, each from where the crest has moved to, so a strip is the
- * jet's cross-section from its fallen tip back up to the crest. Provisional,
- * to confirm against measured jet kinematics.
+ * The jet leaves the crest over this long, s, unless a throw says otherwise
+ * (a plunging break pours for its jet's flight): the strip's parcels are
+ * released evenly across it, each from where the crest has moved to, so a
+ * strip is the jet's cross-section from its fallen tip back up to the crest.
  */
 export const JET_RELEASE_TIME = 0.25;
 /** Strips of neighbouring columns thrown within this long of each other join into one sheet, s (numerical). */
@@ -222,7 +222,10 @@ export class PlungingLip implements LipParcelSource {
    * horizontal `velocity` (m/s). Returns the volume actually thrown: 0 when the
    * parcel pool is full or the crest is dry.
    */
-  launch(cell: number, velocity: { x: number; z: number }, height: number, volume: number, crestSpeed = 0, tube?: TubeGeometry): number {
+  launch(
+    cell: number, velocity: { x: number; z: number }, height: number, volume: number, crestSpeed = 0, tube?: TubeGeometry,
+    releaseTime = JET_RELEASE_TIME,
+  ): number {
     if (this.free.length < STRIP_PARCELS || !(volume > 0)) return 0;
     const { solver } = this;
     const { nx, h, qx, qz, dx, dz } = solver;
@@ -252,7 +255,7 @@ export class PlungingLip implements LipParcelSource {
     this.nextStrip += 1;
     const column = Math.round(x / dx - 0.5);
     const strip = { column, launchTime: this.time, parcels: [] as number[], live: STRIP_PARCELS, tube: undefined as FlyingTube | undefined };
-    const spacing = JET_RELEASE_TIME / (STRIP_PARCELS - 1);
+    const spacing = releaseTime / (STRIP_PARCELS - 1);
     // The crest moves on at its own speed, the way the jet leaves.
     const jetSpeed = Math.hypot(velocity.x, velocity.z);
     const crestX = jetSpeed > 0 ? (velocity.x / jetSpeed) * crestSpeed : 0;
