@@ -1,0 +1,17 @@
+{
+  "sounds": {
+    "roar": { "candidates": [], "chosen": 0, "gain": 1 },
+    "distant": { "candidates": [], "chosen": 0, "gain": 1 },
+    "wind": { "candidates": [], "chosen": 0, "gain": 1 },
+    "rush": { "candidates": [], "chosen": 0, "gain": 1 },
+    "rail": { "candidates": [], "chosen": 0, "gain": 1 },
+    "bubbles": { "candidates": [], "chosen": 0, "gain": 1 },
+    "lipJet": { "candidates": [], "chosen": 0, "gain": 1 },
+    "lipRoller": { "candidates": [], "chosen": 0, "gain": 1 },
+    "paddle": { "candidates": [], "chosen": 0, "gain": 1 },
+    "popUp": { "candidates": [], "chosen": 0, "gain": 1 },
+    "plunge": { "candidates": [], "chosen": 0, "gain": 1 },
+    "click": { "candidates": [], "chosen": 0, "gain": 1 },
+    "chime": { "candidates": [], "chosen": 0, "gain": 1 }
+  }
+}
