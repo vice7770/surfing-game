@@ -10,6 +10,7 @@ import {
 } from 'three';
 import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
+import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SkinnedSurfer } from '../scene/character/SkinnedSurfer';
 import type { OutfitId } from '../scene/character/outfits';
 import { PhotoSky, type TimeOfDay } from '../scene/PhotoSky';
@@ -38,10 +39,16 @@ const sun = new DirectionalLight();
 scene.add(sun, sun.target);
 const water = new Mesh(new PlaneGeometry(400, 400).rotateX(-Math.PI / 2), new MeshPhysicalMaterial({ color: '#1d5d6b', roughness: 0.06, ior: 1.333 }));
 scene.add(water);
-const board = createBoardMesh(buildBoardShape());
 const boardPosition = new Vector3(0, 0.03, 0);
-board.position.copy(boardPosition);
-scene.add(board);
+const boardShape = buildBoardShape();
+/** Each row rides a different board design. */
+const boards = SURFERS.map((_, i) => {
+  const board = createBoardMesh(boardShape, BOARD_DESIGNS[i % BOARD_DESIGNS.length]);
+  board.position.copy(boardPosition);
+  board.visible = false;
+  scene.add(board);
+  return board;
+});
 const camera = new PerspectiveCamera(40, TILE.width / TILE.height, 0.05, 500);
 
 /** A body floating face down beside the board, limbs spread (the detached surfer's limb centres). */
@@ -116,6 +123,7 @@ async function main(): Promise<void> {
     for (let c = 0; c < COLUMNS; c += 1) {
       if (single && (r !== Number(row) || c !== Number(col))) continue;
       surfers.forEach((surfer, i) => { surfer.group.visible = i === r; });
+      boards.forEach((board, i) => { board.visible = i === r; });
       const shot = SHOTS[c];
       surfers[r].update(poseFor(shot, state), new Vector3(...shot.eye));
       camera.aspect = TILE.width / TILE.height;
