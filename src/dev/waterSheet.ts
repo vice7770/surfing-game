@@ -9,6 +9,8 @@ import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalMode, type PhysicalSettings } f
 import type { TimeOfDay } from '../game/SurfConditions';
 import type { WaterLook } from '../scene/water/waterLook';
 import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
+import { tubeFloorDepth } from '../wave/Overturn';
+import { TUBE_STRIDE } from '../wave/tubeTable';
 
 interface SheetHooks {
   start(settings: PhysicalSettings): Promise<void>;
@@ -43,6 +45,55 @@ const breathe = () => new Promise<void>((resolve) => {
 });
 
 interface Shot { name: string; eye: Vector3; target: Vector3 }
+
+/** `?waterSheet&spot=reef` (G9): the practice Reef, held on an open tube, with tube shots in place of the face and bore. */
+const SPOT = new URLSearchParams(window.location.search).get('spot') === 'reef' ? 'reef' : 'point';
+/** The Reef sheet holds once a tube is open this far ahead of its crest, m. */
+const TUBE_OPEN = 0.8;
+
+/** The most open flying tube in the snapshot: its row and how far its void reaches ahead of the crest, m. */
+function openTube(mode: PhysicalMode): { row: number; reach: number } | undefined {
+  const snapshot = mode.host?.snapshot;
+  if (!snapshot) return undefined;
+  let best: { row: number; reach: number } | undefined;
+  for (let row = 0; row < snapshot.tubeCount; row += 1) {
+    const t = snapshot.tubes;
+    const o = row * TUBE_STRIDE;
+    const reach = Math.min(t[o + 5], t[o + 6] * t[o + 10] * Math.cos(t[o + 8]));
+    if (!best || reach > best.reach) best = { row, reach };
+  }
+  return best;
+}
+
+/**
+ * Shots of one tube: beside it, from its shoulder looking in, and inside at
+ * eye height above its floor, looking out of its mouth. The shoulder is the
+ * side whose neighbouring tubes are younger (less open): the way it peels.
+ */
+function tubeShots(mode: PhysicalMode, tube: { row: number; reach: number }): Shot[] {
+  const t = mode.host!.snapshot.tubes;
+  const count = mode.host!.snapshot.tubeCount;
+  const o = tube.row * TUBE_STRIDE;
+  const [crestX, crestZ, y, dirX, dirZ] = [t[o], t[o + 1], t[o + 2], t[o + 3], t[o + 4]];
+  const column = t[o + 9];
+  let younger = 0;
+  for (let row = 0; row < count; row += 1) {
+    const offset = t[row * TUBE_STRIDE + 9] - column;
+    if (offset !== 0 && Math.abs(offset) <= 3) younger += Math.sign(offset) * (t[o + 5] - t[row * TUBE_STRIDE + 5]);
+  }
+  // Along the crest, toward the unbroken shoulder.
+  const side = younger >= 0 ? 1 : -1;
+  const [sx, sz] = [-dirZ * side, dirX * side];
+  const ahead = tube.reach / 2;
+  const floor = y - tubeFloorDepth({ length: t[o + 6] * t[o + 10], width: t[o + 7] * t[o + 10], tilt: t[o + 8] }, ahead);
+  const [mx, mz] = [crestX + dirX * ahead, crestZ + dirZ * ahead];
+  const middle = (floor + y) / 2;
+  return [
+    { name: 'tube-beside', eye: new Vector3(mx + sx * 6 + dirX * 2, y + 1.5, mz + sz * 6 + dirZ * 2), target: new Vector3(mx, middle, mz) },
+    { name: 'tube-shoulder', eye: new Vector3(mx + sx * 8, y + 0.5, mz + sz * 8), target: new Vector3(mx - sx * 4, middle, mz - sz * 4) },
+    { name: 'tube-inside', eye: new Vector3(mx - sx * 1.5, floor + 0.6, mz - sz * 1.5), target: new Vector3(mx + sx * 6, floor + 0.6, mz + sz * 6) },
+  ];
+}
 
 /** The steepest node within 40 m of the break: where a face stands. */
 function steepestFace(water: WaterSurface, focus: { x: number; z: number }): { x: number; z: number; height: number; slope: number } {
@@ -103,22 +154,26 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   status.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:1000;padding:6px 10px;background:#0d1117;color:#d6dde6;font:12px ui-monospace,monospace';
   status.textContent = 'Water sheet: settling the sea…';
   document.body.append(status);
-  const settings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS, spot: 'point', source: 'practice', compute: 'cpu' };
+  const settings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS, spot: SPOT, source: 'practice', compute: 'cpu' };
   await hooks.start(settings);
   hooks.resize(RENDER.width, RENDER.height);
   const idle = { paddle: false, popUp: false, steer: 0 };
   let simulated = 0;
   while (simulated < MAX_SETTLE) {
-    for (let k = 0; k < 60; k += 1) hooks.step(idle);
-    simulated += 60 * STEP;
+    // A tube flies about a second: once settled, the Reef looks for one every 0.2 s.
+    const chunk = SPOT === 'reef' && simulated >= MIN_SETTLE ? 12 : 60;
+    for (let k = 0; k < chunk; k += 1) hooks.step(idle);
+    simulated += chunk * STEP;
     if (simulated >= MIN_SETTLE) {
       hooks.render(0);
-      if (steepestFace(hooks.water, hooks.mode.focus).slope >= FACE_SLOPE) break;
+      if (SPOT === 'reef' ? (openTube(hooks.mode)?.reach ?? 0) >= TUBE_OPEN : steepestFace(hooks.water, hooks.mode.focus).slope >= FACE_SLOPE) break;
     }
     await breathe();
   }
   hooks.render(0);
-  const shots = findShots(hooks.water, hooks.mode.focus);
+  const tube = SPOT === 'reef' ? openTube(hooks.mode) : undefined;
+  const shots = findShots(hooks.water, hooks.mode.focus).flatMap((shot) =>
+    tube && shot.name === 'face' ? tubeShots(hooks.mode, tube) : tube && shot.name === 'bore' ? [] : [shot]);
   const sheet = document.createElement('canvas');
   sheet.width = TILE.width * TIMES.length * LOOKS.length;
   sheet.height = TILE.height * shots.length;

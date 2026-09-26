@@ -23,11 +23,15 @@ export function tubeFloor(table: ArrayLike<number>, tube: number, x: number, z: 
   return table[o + T.y] - depth;
 }
 
+const between = new Float64Array(TUBE_STRIDE);
+
 /**
- * The surface at (x, z) where the tubes leave it, m. Each column's tubes cut
- * the surface down to their lowest floor; between column centres the two
- * neighbouring columns' surfaces blend linearly, as the water does between
- * nodes, so a tube's inside does not step each column along the peel.
+ * The surface at (x, z) where the tubes leave it, m. Between two column
+ * centres that both hold a tube, the tube itself is interpolated (its crest,
+ * opening and size, from each column's most open one): a peeling tube is one
+ * shape, and its columns are samples of it at neighbouring stages. Beside a
+ * column with none, each column's tubes cut the surface to their lowest floor
+ * and the two columns blend linearly, as the water does between nodes.
  */
 export function carveAt(table: ArrayLike<number>, count: number, columnWidth: number, x: number, z: number, surface: number): number {
   if (count === 0) return surface;
@@ -36,13 +40,28 @@ export function carveAt(table: ArrayLike<number>, count: number, columnWidth: nu
   const t = u - c0;
   let m0 = surface;
   let m1 = surface;
+  let open0 = -1;
+  let open1 = -1;
   for (let tube = 0; tube < count; tube += 1) {
-    const column = table[tube * TUBE_STRIDE + T.column];
+    const o = tube * TUBE_STRIDE;
+    const column = table[o + T.column];
     if (column !== c0 && column !== c0 + 1) continue;
+    if (column === c0 && (open0 < 0 || table[o + T.open] > table[open0 * TUBE_STRIDE + T.open])) open0 = tube;
+    if (column === c0 + 1 && (open1 < 0 || table[o + T.open] > table[open1 * TUBE_STRIDE + T.open])) open1 = tube;
     const floor = tubeFloor(table, tube, x, z);
     if (!(floor === floor)) continue;
     if (column === c0) m0 = Math.min(m0, floor);
     else m1 = Math.min(m1, floor);
+  }
+  if (open0 >= 0 && open1 >= 0) {
+    const a = open0 * TUBE_STRIDE;
+    const b = open1 * TUBE_STRIDE;
+    for (let k = 0; k < TUBE_STRIDE; k += 1) between[k] = table[a + k] + (table[b + k] - table[a + k]) * t;
+    const length = Math.hypot(between[T.dirX], between[T.dirZ]) || 1;
+    between[T.dirX] /= length;
+    between[T.dirZ] /= length;
+    const floor = tubeFloor(between, 0, x, z);
+    return floor === floor ? Math.min(surface, floor) : surface;
   }
   return m0 + (m1 - m0) * t;
 }

@@ -30,6 +30,17 @@ describe('tube table', () => {
     expect(carveAt([], 0, 1, 5, 0.7, 5)).toBe(5);
   });
 
+  it('interpolates the tube itself between neighbouring columns that both hold one, so a peel’s stages do not saw the void', () => {
+    // Column 5 threw later: its crest is behind and its void less open.
+    const table = [...tube(4, { crestZ: 0.4, open: 3 }), ...tube(5, { crestZ: 0, open: 0.8 })];
+    const between = [4.5 + 0.5, 0.2, 2, 0, 1, 1.9, 2, 0.8, 0.6, 4.5, 1, 0];
+    expect(carveAt(table, 2, 1, 5, 0.9, 5)).toBeCloseTo(tubeFloor(between, 0, 5, 0.9), 12);
+    // At a column centre it is that column's own tube.
+    expect(carveAt(table, 2, 1, 4.5, 0.9, 5)).toBeCloseTo(tubeFloor(table, 0, 4.5, 0.9), 12);
+    // Beyond the less open tube's reach, the interpolated one still reaches: no step at column 5's opening.
+    expect(carveAt(table, 2, 1, 5, 1.5, 5)).toBeLessThan(5);
+  });
+
   it('keeps the lower floor where two tubes of one column overlap, and never raises the surface', () => {
     const table = [...tube(4, { y: 2 }), ...tube(4, { y: 1.5 })];
     expect(carveAt(table, 2, 1, 4.5, 0.7, 5)).toBeCloseTo(tubeFloor(table, 1, 4.5, 0.7), 12);

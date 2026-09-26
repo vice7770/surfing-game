@@ -88,14 +88,29 @@ float waterTubeFloorDepth( float L, float W, float tilt, float ahead ) {
   float u = 0.5 * ( lo + hi );
   return W * 0.5 + L * u * s + W * ${HALF_WIDTH.toFixed(9)} * u * sqrt( max( 0.0, 1.0 - u ) ) * c;
 }
-float waterTubeFloor( int k, vec2 xz ) {
-  vec4 a = texelFetch( waterTubeMap, ivec2( 0, k ), 0 );
-  vec4 b = texelFetch( waterTubeMap, ivec2( 1, k ), 0 );
-  vec4 c = texelFetch( waterTubeMap, ivec2( 2, k ), 0 );
+float waterTubeFloorOf( vec4 a, vec4 b, vec4 c, vec2 xz ) {
   float ahead = ( xz.x - a.x ) * a.w + ( xz.y - a.y ) * b.x;
   if ( ahead < 0.0 || ahead > b.y || c.z <= 0.0 ) return 1e6;
   float depth = waterTubeFloorDepth( b.z * c.z, b.w * c.z, c.x, ahead );
   return depth < 0.0 ? 1e6 : a.z - depth;
+}
+float waterTubeFloor( int k, vec2 xz ) {
+  return waterTubeFloorOf( texelFetch( waterTubeMap, ivec2( 0, k ), 0 ), texelFetch( waterTubeMap, ivec2( 1, k ), 0 ), texelFetch( waterTubeMap, ivec2( 2, k ), 0 ), xz );
+}
+// The column's most open tube, or -1.
+int waterColumnTube( float column ) {
+  int c = int( column - waterTubeColumn0 );
+  if ( c < 0 || c >= textureSize( waterTubeColumns, 0 ).x ) return -1;
+  vec2 span = texelFetch( waterTubeColumns, ivec2( c, 0 ), 0 ).rg;
+  int best = -1;
+  float open = -1.0;
+  for ( int i = 0; i < ${TUBES_PER_COLUMN}; i ++ ) {
+    if ( float( i ) >= span.y ) break;
+    int k = int( span.x ) + i;
+    float o = texelFetch( waterTubeMap, ivec2( 1, k ), 0 ).y;
+    if ( o > open ) { open = o; best = k; }
+  }
+  return best;
 }
 float waterColumnCarve( float column, vec2 xz, float surface ) {
   int c = int( column - waterTubeColumn0 );
@@ -112,7 +127,20 @@ float waterCarve( vec2 xz, float surface ) {
   if ( waterTubeCount < 0.5 ) return surface;
   float u = xz.x / waterTubeColumnWidth - 0.5;
   float c0 = floor( u );
-  return mix( waterColumnCarve( c0, xz, surface ), waterColumnCarve( c0 + 1.0, xz, surface ), u - c0 );
+  float t = u - c0;
+  int k0 = waterColumnTube( c0 );
+  int k1 = waterColumnTube( c0 + 1.0 );
+  if ( k0 >= 0 && k1 >= 0 ) {
+    // Both columns hold a tube: interpolate the tube itself along the peel.
+    vec4 a = mix( texelFetch( waterTubeMap, ivec2( 0, k0 ), 0 ), texelFetch( waterTubeMap, ivec2( 0, k1 ), 0 ), t );
+    vec4 b = mix( texelFetch( waterTubeMap, ivec2( 1, k0 ), 0 ), texelFetch( waterTubeMap, ivec2( 1, k1 ), 0 ), t );
+    vec4 c = mix( texelFetch( waterTubeMap, ivec2( 2, k0 ), 0 ), texelFetch( waterTubeMap, ivec2( 2, k1 ), 0 ), t );
+    vec2 dir = normalize( vec2( a.w, b.x ) );
+    a.w = dir.x;
+    b.x = dir.y;
+    return min( surface, waterTubeFloorOf( a, b, c, xz ) );
+  }
+  return mix( waterColumnCarve( c0, xz, surface ), waterColumnCarve( c0 + 1.0, xz, surface ), t );
 }
 vec3 waterCarvedCubic( vec2 xz ) {
   vec3 surface = waterCubic( xz );

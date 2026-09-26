@@ -22,6 +22,11 @@ describe('the Rich lip', () => {
     expect(lipThickness(0, 0.5, 1)).toBe(0);
   });
 
+  it('is never thicker than a compact blob of its own water, where just-thrown parcels still bunch up', () => {
+    expect(lipThickness(0.1, 0.01, 1)).toBeCloseTo(Math.sqrt(0.1), 12);
+    expect(lipThickness(0.1, 0.01, 2)).toBeCloseTo(Math.sqrt(0.05), 12);
+  });
+
   it('builds two faces half its thickness either side of a flat strip', () => {
     const volume = lipThickness(1, 1, 1) * 0.2; // 0.2 m thick at 1 m spacing and width
     const sheet = buildRichLipSheet(pack(strip(3, () => 2, volume)), 8, 1);

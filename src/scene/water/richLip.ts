@@ -8,9 +8,16 @@ export const LIP_SUBDIVISIONS = 3;
 /** Lip water whitens to foam over this long in the air, s (as the Classic sheet). */
 const FOAM_AGE = 0.6;
 
-/** How thick a sheet of lip water is, m: a parcel's volume over the area of sheet it stands for (its spacing along the strip by the column's width). */
+/**
+ * How thick a sheet of lip water is, m: a parcel's volume over the area of
+ * sheet it stands for (its spacing along the strip by the column's width). The
+ * spacing is at least the water's own compact size, √(volume / width): parcels
+ * just thrown still bunch up at the crest, and water that has not yet stretched
+ * into a sheet is a blob, not a slab thicker than it is long.
+ */
 export function lipThickness(volume: number, spacing: number, width: number): number {
-  return volume / (Math.max(spacing, 1e-3) * width);
+  if (!(volume > 0)) return 0;
+  return volume / (Math.max(spacing, Math.sqrt(volume / width)) * width);
 }
 
 export interface RichLipGeometry {
@@ -255,8 +262,18 @@ varying vec3 vLipWorld;
 export const richLipBody = /* glsl */ `#include <emissivemap_fragment>
 {
   vec3 lipV = normalize( cameraPosition - vLipWorld );
+  vec3 lipN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
   float lipBehind = pow( max( 0.0, dot( -lipV, waterSunDirection ) ), 4.0 );
   totalEmissiveRadiance += ${CREST_SCATTER.toFixed(3)} * ( 1.0 - vLipFoam ) * lipBehind * waterSunRadiance * exp( -waterAttenuation * vLipThickness );
+  #ifdef ENVMAP_TYPE_CUBE_UV
+    // The sky's light through the lip along the view ray, dimmed by Beer–Lambert over the path through it.
+    vec3 lipThrough = -lipV;
+    lipThrough.y = max( lipThrough.y, 0.05 );
+    vec3 lipSky = textureCubeUV( envMap, envMapRotation * normalize( lipThrough ), 0.4 ).rgb * envMapIntensity;
+    float lipCos = abs( dot( lipN, lipV ) );
+    float lipPath = vLipThickness / max( 0.25, lipCos );
+    totalEmissiveRadiance += ( 1.0 - vLipFoam ) * lipSky * exp( -waterAttenuation * lipPath ) * ( 1.0 - waterFresnel( lipCos ) );
+  #endif
   diffuseColor.rgb = mix( waterDeepReflectance * waterBodyGain, lipFoamColor, vLipFoam * vLipFoam );
   roughnessFactor = mix( roughnessFactor, 0.7, vLipFoam );
   diffuseColor.a = mix( max( 0.55, 1.0 - exp( -4.0 * vLipThickness ) ), 0.97, vLipFoam );
