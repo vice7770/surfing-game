@@ -33,6 +33,14 @@ import { createSurfScreen, type SurfChoice } from './SurfScreen';
 import { createSurferCard } from './SurferCard';
 import { SurferPreview } from '../scene/character/SurferPreview';
 import { oncePerFlight } from './oncePerFlight';
+import { webGpuAvailable } from '../game/PhysicalMode';
+import { onlineUrl } from '../net/NetClient';
+import { OnlineController, type OnlineIntent } from '../net/OnlineController';
+import type { OnlinePhase } from '../game/OnlinePlay';
+import { DEFAULT_ROOM_SETTINGS, MAX_BOTS, type Refusal } from '../net/protocol';
+import { roomCodeFromSearch } from '../net/roomCode';
+import { devParam } from '../devTools';
+import { createMultiplayerScreen, type MultiplayerState } from './MultiplayerScreen';
 
 /** What the menus ask of the game (implemented by `SurfGame` in main.ts). */
 export interface GameHost {
@@ -57,7 +65,17 @@ export interface GameHost {
   /** Sound (S1): the surf zone's report for this frame, and the camera as the listener. */
   soundFrame(dt: number, paused: boolean): SoundFrame | undefined;
   readonly listenerPose: ListenerPose;
+  /** Online (N1): ride a room's sea with the others in it; false when superseded. */
+  startOnline(controller: OnlineController, camera: RideView | 'overview'): Promise<boolean>;
+  leaveOnline(): void;
+  /** Online play's phase and a respawn's countdown, while online. */
+  readonly onlineState: { phase: OnlinePhase; respawnIn?: number } | undefined;
 }
+
+/** Waiting this long for a room's welcome, ms, the server counts as unreachable. */
+const WELCOME_TIMEOUT_MS = 10_000;
+/** After the welcome, wait at most this long for the first clock reading, ms. */
+const CLOCK_WAIT_MS = 3000;
 
 function localStore(): Storage | undefined {
   try {
@@ -113,6 +131,10 @@ export class App {
   private rotateHint?: HTMLElement;
   private rotateDismissed = false;
   private readonly sound: GameSound;
+  /** Online (N1): the room session while in one, and the Multiplayer screen's state. */
+  private online?: OnlineController;
+  private multiplayer: MultiplayerState;
+  private webGpuAsked = false;
 
   constructor(
     private readonly game: GameHost,
@@ -121,6 +143,10 @@ export class App {
     options: { startInWaveLab: boolean },
   ) {
     this.stack = new ScreenStack(options.startInWaveLab ? 'wavelab' : 'menu');
+    // A room's link (`?room=CODE`) opens Multiplayer with the code filled in (N1).
+    const linked = roomCodeFromSearch(globalThis.location?.search ?? '');
+    this.multiplayer = { name: settings.value.online.name, code: linked ?? '', settings: { ...DEFAULT_ROOM_SETTINGS }, webGpu: undefined };
+    if (linked && !options.startInWaveLab) this.stack.push('multiplayer');
     this.scene = options.startInWaveLab ? 'wavelab' : undefined;
     this.menuInput = new MenuInput({ root: () => this.ui, onBack: () => this.back() });
     this.adapter = adapterName(game.gl);
@@ -260,6 +286,7 @@ export class App {
     if (id === 'menu') {
       return [createMainMenu({
         surf: () => this.go('surf'),
+        multiplayer: () => this.go('multiplayer'),
         waveLab: () => this.enterWaveLab(),
         logbook: () => this.go('logbook'),
         settings: () => this.go('settings'),
@@ -276,6 +303,26 @@ export class App {
           card.setTime(choice.conditions.time);
         },
         paddleOut: () => void this.paddleOut(),
+        back: () => this.back(),
+      }, card.root)];
+    }
+    if (id === 'multiplayer') {
+      this.askWebGpu();
+      const card = createSurferCard(this.settings.value.surfer, this.multiplayer.settings.conditions.time, {
+        change: (patch) => this.settings.setSurfer(patch),
+      }, (canvas) => SurferPreview.create(canvas, { reducedMotion: this.settings.value.accessibility.reducedMotion }));
+      this.disposeScreen = card.dispose;
+      return [createMultiplayerScreen(this.multiplayer, {
+        name: (value) => this.settings.setOnlineName(value),
+        create: (settings, name) => {
+          this.multiplayer.settings = settings;
+          const bots = Math.min(MAX_BOTS, Math.max(0, Math.round(Number(devParam('bots') ?? 0)) || 0));
+          void this.goOnline({ create: settings, ...(bots ? { bots } : {}) }, name);
+        },
+        join: (code, name) => {
+          this.multiplayer.code = code;
+          void this.goOnline({ join: code }, name);
+        },
         back: () => this.back(),
       }, card.root)];
     }
@@ -337,6 +384,7 @@ export class App {
   }
 
   private quitToMenu(): void {
+    this.leaveRoom();
     this.hideEndCard();
     this.sessionScores = [];
     this.stack.reset('menu');
@@ -386,6 +434,117 @@ export class App {
   private hideEndCard(): void {
     this.endCard?.remove();
     this.endCard = undefined;
+  }
+
+  /** Whether this browser can run a room's shared sea (WebGPU), asked once when Multiplayer first opens. */
+  private askWebGpu(): void {
+    if (this.webGpuAsked) return;
+    this.webGpuAsked = true;
+    void webGpuAvailable().then((available) => {
+      this.multiplayer = { ...this.multiplayer, webGpu: available };
+      if (this.stack.current === 'multiplayer') this.show();
+    });
+  }
+
+  /** Online (N1): make or join a room behind the loading card, then ride its sea; presses while it loads are ignored. */
+  private readonly goOnline = (intent: OnlineIntent, name: string) => this.joinOnce(intent, name);
+  private joining = false;
+
+  private async joinOnce(intent: OnlineIntent, name: string): Promise<void> {
+    if (this.joining) return;
+    this.joining = true;
+    try {
+      await this.joinRoom(intent, name);
+    } finally {
+      this.joining = false;
+    }
+  }
+
+  private async joinRoom(intent: OnlineIntent, name: string): Promise<void> {
+    this.settings.setOnlineName(name);
+    this.multiplayer = { ...this.multiplayer, name, busy: true, refusal: undefined };
+    this.setLoadingText('online.joining');
+    this.loading.classList.remove('is-hidden');
+    const code = 'join' in intent ? intent.join : undefined;
+    const controller = new OnlineController({
+      url: onlineUrl(location), name, surfer: this.settings.value.surfer, intent,
+      token: code ? this.settings.value.online.tokens[code] : undefined,
+    });
+    const outcome = await this.welcomed(controller);
+    if (outcome !== 'welcomed') {
+      controller.close();
+      this.failOnline(outcome);
+      return;
+    }
+    const room = controller.room!;
+    if (controller.token) this.settings.rememberRoom(room.code, controller.token);
+    this.multiplayer = { ...this.multiplayer, code: room.code };
+    this.setRoomInUrl(room.code);
+    this.setLoadingText('online.catchingUp');
+    const started = await this.game.startOnline(controller, this.settings.value.gameplay.defaultCamera);
+    this.loading.classList.add('is-hidden');
+    this.multiplayer = { ...this.multiplayer, busy: false };
+    if (!started) {
+      controller.close();
+      return;
+    }
+    this.online = controller;
+    // Kicked, or turned away on a reconnect: back to Multiplayer with the reason.
+    controller.onRefused = (reason) => this.failOnline(reason);
+    this.hideEndCard();
+    this.tracker.reset();
+    this.scene = 'ride';
+    this.stack.reset('ride');
+    this.show();
+  }
+
+  /** The room's welcome and a first reading of the server's clock; a refusal; or nothing from the server for a while. */
+  private welcomed(controller: OnlineController): Promise<'welcomed' | Refusal | 'unreachable'> {
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => resolve('unreachable'), WELCOME_TIMEOUT_MS);
+      controller.onRefused = (reason) => {
+        clearTimeout(timer);
+        resolve(reason);
+      };
+      controller.onWelcome = () => {
+        clearTimeout(timer);
+        const since = performance.now();
+        const wait = () => {
+          if (controller.clockReady || performance.now() - since > CLOCK_WAIT_MS) resolve('welcomed');
+          else setTimeout(wait, 50);
+        };
+        wait();
+      };
+    });
+  }
+
+  /** Back to Multiplayer with why the room turned the player away (or couldn't be reached). */
+  private failOnline(reason: Refusal | 'unreachable'): void {
+    this.loading.classList.add('is-hidden');
+    this.leaveRoom();
+    this.multiplayer = { ...this.multiplayer, busy: false, refusal: reason };
+    this.hideEndCard();
+    this.stack.reset('menu');
+    this.stack.push('multiplayer');
+    this.show();
+  }
+
+  /** Leave the room: the session closes, the other surfers go, and the page's address no longer names the room. */
+  private leaveRoom(): void {
+    const { online } = this;
+    this.online = undefined;
+    online?.close();
+    this.game.leaveOnline();
+    this.setRoomInUrl(undefined);
+  }
+
+  /** The page's address carries the room (`?room=CODE`), so it can be copied from the address bar too. */
+  private setRoomInUrl(code: string | undefined): void {
+    if (typeof history === 'undefined') return;
+    const url = new URL(location.href);
+    if (code) url.searchParams.set('room', code);
+    else url.searchParams.delete('room');
+    history.replaceState(history.state, '', url);
   }
 
   /** Start the chosen session behind the loading card, then ride; repeated presses while it loads are ignored. */

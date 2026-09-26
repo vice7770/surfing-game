@@ -1345,9 +1345,11 @@ const settings = new SettingsStore(availableStorage(), defaultSettings(reducedMo
 const applyGraphics = () => game.applyGraphics(resolveGraphics(settings.value.graphics, settings.value.detected, window.devicePixelRatio));
 applyGraphics();
 game.setSurfer(settings.value.surfer);
+game.setNameTags(settings.value.gameplay.nameTags);
 settings.subscribe((value, change) => {
   if (change === 'graphics' || change === 'detected') applyGraphics();
   if (change === 'surfer') game.setSurfer(value.surfer);
+  if (change === 'gameplay') game.setNameTags(value.gameplay.nameTags);
 });
 const controls = new Controls(() => settings.value.controls.bindings, {
   retry: () => {

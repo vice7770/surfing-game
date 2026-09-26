@@ -110,3 +110,42 @@ describe('SettingsStore', () => {
   });
 });
 
+describe('SettingsStore online (N1)', () => {
+  const token = (n: number) => n.toString(16).padStart(32, '0');
+  const code = (n: number) => `ABCD23${'ABCDEFGHJKMN'[n]}${'ABCDEFGHJKMN'[n]}`;
+
+  it('shows name tags by default, starts with no name, and loads an older save without them', () => {
+    const store = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { units: 'imperial' } }) }));
+    expect(store.value.gameplay.nameTags).toBe(true);
+    expect(store.value.online).toEqual({ name: '', tokens: {} });
+  });
+
+  it('keeps a clean name, and drops a bad one', () => {
+    const store = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ online: { name: '  Ana\n Rita ', tokens: {} } }) }));
+    expect(store.value.online.name).toBe('Ana Rita');
+    const bad = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ online: { name: 42 } }) }));
+    expect(bad.value.online.name).toBe('');
+  });
+
+  it('remembers the token for each room, the last 10 only, and nothing malformed', () => {
+    const store = new SettingsStore(memory());
+    const listener = vi.fn();
+    store.subscribe(listener);
+    for (let i = 0; i < 12; i += 1) store.rememberRoom(code(i), token(i));
+    expect(Object.keys(store.value.online.tokens)).toHaveLength(10);
+    expect(Object.values(store.value.online.tokens)).not.toContain(token(0));
+    expect(store.value.online.tokens[code(11)]).toBe(token(11));
+    expect(listener).toHaveBeenLastCalledWith(store.value, 'online');
+    const loaded = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ online: { name: 'Ana', tokens: { ABCD2345: token(1), nope: token(2), EFGH2345: 'short' } } }) }));
+    expect(loaded.value.online.tokens).toEqual({ ABCD2345: token(1) });
+  });
+
+  it('saves the player\'s name', () => {
+    const storage = memory();
+    const store = new SettingsStore(storage);
+    store.setOnlineName(' Bea ');
+    expect(store.value.online.name).toBe('Bea');
+    expect(JSON.parse(storage.data.get(SETTINGS_KEY)!).online.name).toBe('Bea');
+  });
+});
+

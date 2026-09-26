@@ -8,7 +8,7 @@ const context = { devTools: false, detecting: false };
 describe('settingsModel', () => {
   it('offers telemetry only with the dev tools on', () => {
     const ids = (devTools: boolean) => settingsModel('gameplay', defaultSettings(), { ...context, devTools }).map((row) => row.id);
-    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'scoreRides']);
+    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'scoreRides', 'nameTags']);
     expect(ids(true)).toContain('showTelemetry');
   });
 
@@ -27,6 +27,13 @@ describe('settingsModel', () => {
     const row = settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'scoreRides');
     expect(row).toMatchObject({ kind: 'toggle', value: false });
     expect(applyRow(defaultSettings(), 'scoreRides', true)).toEqual({ tab: 'gameplay', patch: { scoreRides: true } });
+  });
+
+  // N1: names over the other surfers online, on by default.
+  it('offers name tags, on by default', () => {
+    const row = settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'nameTags');
+    expect(row).toMatchObject({ kind: 'toggle', value: true });
+    expect(applyRow(defaultSettings(), 'nameTags', false)).toEqual({ tab: 'gameplay', patch: { nameTags: false } });
   });
 
   it('marks the water simulation and sea detail as taking effect on the next wave', () => {
