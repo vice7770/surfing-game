@@ -60,4 +60,21 @@ describe('SettingsStore', () => {
     const broken = { ...valid, preset: 'turbo' };
     expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ detected: broken }) })).value.detected).toBeUndefined();
   });
+
+  // S1: the Audio tab and Mono audio.
+  it('starts the Audio tab at full volume with muting out of view on, and Mono off', () => {
+    const { audio, accessibility } = new SettingsStore(memory()).value;
+    expect(audio).toEqual({ master: 1, sea: 1, board: 1, ui: 1, muteInBackground: true });
+    expect(accessibility.monoAudio).toBe(false);
+  });
+
+  it('loads an older save without an Audio tab, and replaces a volume out of range', () => {
+    const older = { gameplay: { units: 'imperial' }, accessibility: { uiScale: 1.2 } };
+    const store = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify(older) }));
+    expect(store.value.audio.master).toBe(1);
+    expect(store.value.gameplay.units).toBe('imperial');
+    const loud = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ audio: { master: 3, sea: 0.4, muteInBackground: false } }) }));
+    expect(loud.value.audio).toMatchObject({ master: 1, sea: 0.4, muteInBackground: false });
+  });
 });
+

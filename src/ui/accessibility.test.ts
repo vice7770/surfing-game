@@ -8,7 +8,7 @@ describe('accessibilityClasses', () => {
   });
 
   it('marks reduced motion, high contrast, touch and a left-handed layout', () => {
-    const a = { reducedMotion: true, uiScale: 1.2, highContrastHud: true };
+    const a = { reducedMotion: true, uiScale: 1.2, highContrastHud: true, monoAudio: false };
     expect(accessibilityClasses(a, true, 'left')).toEqual(['is-reduced-motion', 'is-high-contrast', 'has-touch', 'is-left-handed']);
   });
 });
