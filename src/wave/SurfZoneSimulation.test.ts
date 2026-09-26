@@ -12,6 +12,13 @@ const small: Omit<SurfZoneConfig, 'spot'> = {
 };
 
 describe('SurfZoneSimulation', () => {
+  it('warm-starts so the spun-up sea sits at a chosen sea time (a room\'s clock)', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'canyon', stage: 1, startSeaTime: 500 });
+    expect(simulation.seaTime).toBeCloseTo(500, 6);
+    const early = new SurfZoneSimulation({ ...small, spot: 'canyon', stage: 1, startSeaTime: 3 });
+    expect(early.seaTime).toBeCloseTo(3, 6);
+  });
+
   it('builds a finite, wave-filled surf zone for every spot and hands over before the set', () => {
     for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
       const simulation = new SurfZoneSimulation({ ...small, spot });

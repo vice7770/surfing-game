@@ -47,6 +47,8 @@ export interface SurfZoneConfig {
   stage?: 1 | 2;
   /** Where stage 2 water steps: 'auto' on the GPU when a host offers one (the worker, with WebGPU), 'cpu' always on the CPU. */
   compute?: 'auto' | 'cpu';
+  /** Online (spec N1): warm start so the sea, once spun up, sits at this sea time (the room's clock). */
+  startSeaTime?: number;
 }
 
 /** Along-shore window width unless the config says otherwise, m. */
@@ -227,8 +229,8 @@ export class SurfZoneSimulation {
     if (this.solver instanceof BoussinesqSolver) this.solver.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     const spinUp = (config.spinUpPeriods ?? 2) * config.peakPeriod;
     this.plan = planSetRun(this.sea, 0, TANK.zoneInner, 0, config.lead ?? 25, spinUp);
-    this.seaTimeOffset = this.plan.warmStartSeaTime;
-    warmStart(this.solver, this.sea, { referenceZ: TANK.zoneInner, seaTime: this.plan.warmStartSeaTime });
+    this.seaTimeOffset = config.startSeaTime !== undefined ? config.startSeaTime - spinUp : this.plan.warmStartSeaTime;
+    warmStart(this.solver, this.sea, { referenceZ: TANK.zoneInner, seaTime: this.seaTimeOffset });
     this.solver.addRelaxationZone(new SeaStateBoundary(
       this.solver, this.sea, this.solver.zoneWeightsAlongZ(TANK.zoneInner, TANK.offshore), this.seaTimeOffset,
     ));
