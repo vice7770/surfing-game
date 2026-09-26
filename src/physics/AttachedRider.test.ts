@@ -792,6 +792,18 @@ describe('lean, trim, crouch and heading hold', () => {
       }
     });
 
+    // The Canyon's ride report: standing after a pop-up on a board at 1-2 m/s, below planing, the rider tipped over
+    // with no steer at all; the hull gives the ankles nothing to push against there.
+    it('stays on a slow board down the face, nudged sideways', () => {
+      for (const speed of [1.5, 2.5]) {
+        const { board, rider, water } = acrossFace(0, speed);
+        run(board, water, 0.2);
+        rider.velocity.x += 0.2;
+        run(board, water, 1.5);
+        expect(rider.attached).toBe(true);
+      }
+    });
+
     // Review Focus 5: the pop-up's landing is unchanged, the body carried upright over its stance as before the bank;
     // the bank applies only once standing.
     it('lands upright, banking only once standing', () => {
