@@ -9,7 +9,7 @@ import {
   LIP_HIT_STRIDE, LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea,
 } from './SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
-import { SPRAY_PER_AIR } from './SprayCloud';
+import { FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE } from './SprayCloud';
 
 const config: SurfZoneConfig = {
   spot: 'point', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 20, spreading: 24, tide: 0,
@@ -128,10 +128,10 @@ describe('SurfZoneRunner', () => {
     const buffers = runner.createBuffers();
     runner.fill(buffers);
     expect(buffers.sprayCount).toBe(runner.spray.count);
-    expect(Array.from(buffers.spray.subarray(0, buffers.sprayCount * 5))).toEqual(Array.from(runner.spray.particles.subarray(0, runner.spray.count * 5)));
+    expect(Array.from(buffers.spray.subarray(0, buffers.sprayCount * SPRAY_STRIDE))).toEqual(Array.from(runner.spray.particles.subarray(0, runner.spray.count * SPRAY_STRIDE)));
   });
 
-  it('breaks a closing tube’s air into the aeration field, and blows its spits and eruptions into the spray (G9)', () => {
+  it('breaks a closing tube’s air into the aeration field, and blows its spits, eruptions and foam balls into the spray (G9)', () => {
     const twin = new SurfZoneRunner(config);
     const runner = new SurfZoneRunner(config);
     twin.advance(60);
@@ -148,10 +148,19 @@ describe('SurfZoneRunner', () => {
       step(dt);
       lip.spits.push({ x: 0, y: surface + 1, z: -60, dirX: 1, dirZ: 0, speed: 5, airRate: 1 / SURF_ZONE_STEP });
       lip.eruptions.push({ x: 2, y: surface + 1, z: -60, airRate: 1 / SURF_ZONE_STEP, speed: 3 });
+      lip.rollers.push({ id: 99, x: 4, y: surface, z: -60, dirX: 0, dirZ: 1, speed: 4, area: 1.5, width: 1 });
     };
     twin.advance(1);
     runner.advance(1);
     expect(runner.spray.count - twin.spray.count).toBeGreaterThanOrEqual(2 * SPRAY_PER_AIR - 10);
+    // The Point's own tubes are already rolling foam balls: count the extra roller's against the twin's.
+    const foamBalls = (of: SurfZoneRunner) => {
+      let balls = 0;
+      for (let k = 0; k < of.spray.count; k += 1) if (of.spray.particles[k * SPRAY_STRIDE + 5] === 2) balls += 1;
+      return balls;
+    };
+    expect(runner.spray.count).toBeLessThan(4096);
+    expect(foamBalls(runner) - foamBalls(twin)).toBe(Math.round(1.5 / FOAM_BALL_VOLUME));
   });
 
   it('carries a bubble cloud in the runner, not in the renderer', () => {

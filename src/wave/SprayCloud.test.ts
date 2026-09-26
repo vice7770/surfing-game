@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SPRAY_PER_AIR, SPRAY_STRIDE, SprayCloud, splashLaunch, type LipImpact, type SprayScene, type StrokeSplash } from './SprayCloud';
-import { SPLASH_UP, type TubeEruption, type TubeSpit } from './PlungingLip';
+import { FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE, SprayCloud, splashLaunch, type LipImpact, type SprayScene, type StrokeSplash } from './SprayCloud';
+import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
 
 /** Flat water 2 m deep over 10 m × 40 m (1 m cells), still, with no bores; `crest` raises a steep shoreward-facing step. */
 function flatScene(windSpeed = 0, lipImpacts: LipImpact[] = [], crest = false): SprayScene {
@@ -124,6 +124,65 @@ describe('spray and mist', () => {
     }
     expect(a.count).toBeLessThanOrEqual(64);
     expect(Array.from(a.particles.subarray(0, a.count * SPRAY_STRIDE))).toEqual(Array.from(b.particles.subarray(0, b.count * SPRAY_STRIDE)));
+  });
+});
+
+describe('the foam ball (G9)', () => {
+  const roller = (z = 20): TubeRoller => ({ id: 1, x: 5, y: 0.5, z, dirX: 0, dirZ: 1, speed: 4, area: 1.5, width: 1 });
+  const foamBalls = (cloud: SprayCloud) => Array.from({ length: cloud.count }, (_, k) => k).filter((k) => cloud.particles[k * SPRAY_STRIDE + 5] === 2);
+
+  it('keeps about A·w / v_s foam-ball sprites alive in a roller, each half a metre to 0.8 m across', () => {
+    const cloud = new SprayCloud(8);
+    for (let frame = 0; frame < 30; frame += 1) cloud.update({ ...flatScene(), rollers: [roller()] }, 1 / 60);
+    const balls = foamBalls(cloud);
+    expect(Math.abs(balls.length - 1.5 / FOAM_BALL_VOLUME)).toBeLessThanOrEqual(1);
+    for (const k of balls) {
+      expect(cloud.particles[k * SPRAY_STRIDE + 3]).toBeGreaterThanOrEqual(0.5);
+      expect(cloud.particles[k * SPRAY_STRIDE + 3]).toBeLessThanOrEqual(0.8);
+    }
+  });
+
+  it('holds them in its cross-section, riding with the crest and tumbling at its speed over its radius', () => {
+    const cloud = new SprayCloud(9);
+    const first = roller();
+    cloud.update({ ...flatScene(), rollers: [first] }, 1 / 60);
+    const radius = Math.sqrt(first.area / Math.PI);
+    const angle = (k: number, at: TubeRoller) => Math.atan2(cloud.particles[k * SPRAY_STRIDE + 1] - at.y, cloud.particles[k * SPRAY_STRIDE + 2] - at.z);
+    const balls = foamBalls(cloud);
+    expect(balls.length).toBeGreaterThan(5);
+    const before = balls.map((k) => angle(k, first));
+    const next = roller(first.z + first.speed / 60);
+    cloud.update({ ...flatScene(), rollers: [next] }, 1 / 60);
+    expect(foamBalls(cloud)).toEqual(balls);
+    balls.forEach((k, n) => {
+      const along = cloud.particles[k * SPRAY_STRIDE + 2] - next.z;
+      const up = cloud.particles[k * SPRAY_STRIDE + 1] - next.y;
+      expect(Math.hypot(along, up)).toBeLessThanOrEqual(radius + 1e-5);
+      expect(Math.abs(cloud.particles[k * SPRAY_STRIDE] - next.x)).toBeLessThanOrEqual(next.width / 2 + 1e-5);
+      if (Math.hypot(along, up) < 0.2) return;
+      // Its top rolls forward, the way the crest goes.
+      const turn = Math.atan2(Math.sin(angle(k, next) - before[n]), Math.cos(angle(k, next) - before[n]));
+      expect(turn).toBeCloseTo(-(next.speed / radius) / 60, 4);
+    });
+  });
+
+  it('lets them drift on for a second once the roller is gone', () => {
+    const cloud = new SprayCloud(10);
+    for (let frame = 0; frame < 10; frame += 1) cloud.update({ ...flatScene(), rollers: [roller()] }, 1 / 60);
+    const balls = foamBalls(cloud).length;
+    expect(balls).toBeGreaterThan(0);
+    for (let frame = 0; frame < 54; frame += 1) cloud.update(flatScene(), 1 / 60);
+    expect(foamBalls(cloud).length).toBe(balls);
+    for (let frame = 0; frame < 12; frame += 1) cloud.update(flatScene(), 1 / 60);
+    expect(foamBalls(cloud).length).toBe(0);
+  });
+
+  it('packs each particle’s kind after its opacity: spray 0, mist 1, foam ball 2', () => {
+    expect(SPRAY_STRIDE).toBe(6);
+    const cloud = new SprayCloud(3);
+    cloud.update({ ...flatScene(0, [impact(0.2)]), rollers: [roller()] }, 1 / 60);
+    const kinds = new Set(Array.from({ length: cloud.count }, (_, k) => cloud.particles[k * SPRAY_STRIDE + 5]));
+    expect([...kinds].sort()).toEqual([0, 1, 2]);
   });
 });
 

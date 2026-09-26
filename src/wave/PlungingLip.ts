@@ -33,6 +33,8 @@ export const SPLASH_UP = { share: 0.3, vertical: 0.6, horizontal: 0.8, minImpact
  * but for the air's volume, which is conserved.
  */
 export const TUBE_AIR = { escape: 0.5 } as const;
+/** A breaking roller's cross-section per H² (G9, κ_r; Svendsen 1984): the foam ball tumbling in a collapsing tube. */
+export const ROLLER_AREA = 0.9;
 
 /** Air a closing peel squeezes out of its open end this step (G9): where the mouth is, which way it blows, how fast, m/s, and how much air, m³/s. */
 export interface TubeSpit {
@@ -43,6 +45,24 @@ export interface TubeSpit {
   dirZ: number;
   speed: number;
   airRate: number;
+}
+
+/**
+ * The foam ball in a collapsing tube this step (G9): the roller of churned
+ * water where the void was, κ_r·H² in section (H the jet's fall) over its
+ * column's width, riding with its crest. `id` is its throw's, the same each
+ * step, so the sprites drawing it can follow it.
+ */
+export interface TubeRoller {
+  id: number;
+  x: number;
+  y: number;
+  z: number;
+  dirX: number;
+  dirZ: number;
+  speed: number;
+  area: number;
+  width: number;
 }
 
 /** Air bursting up through a section that closes with no open end this step (G9): where, how fast (as fast as its voids' roofs fall, √(gW/2)), m/s, and how much air, m³/s. */
@@ -162,6 +182,8 @@ interface LipStrip {
 
 /** A void under a flying jet, riding with the crest that threw it. */
 interface FlyingTube {
+  /** Its strip's id. */
+  id: number;
   geometry: TubeGeometry;
   /** The crest when it threw: where, and how high, m. */
   x: number;
@@ -214,9 +236,10 @@ export class PlungingLip implements LipParcelSource {
   onLand?: (x: number, z: number, volume: number, vx: number, vy: number, vz: number, flight?: LipFlight) => void;
   /** Told of a closing tube's air breaking into bubbles (G9): where, how much, m³, and how deep it is driven, m. */
   onAir?: (x: number, z: number, volume: number, penetration: number) => void;
-  /** This step's spits and eruptions from closing tubes (G9). */
+  /** This step's spits, eruptions and foam balls from closing tubes (G9). */
   readonly spits: TubeSpit[] = [];
   readonly eruptions: TubeEruption[] = [];
+  readonly rollers: TubeRoller[] = [];
   private readonly vx: Float64Array;
   private readonly vy: Float64Array;
   private readonly vz: Float64Array;
@@ -339,7 +362,7 @@ export class PlungingLip implements LipParcelSource {
     const crestZ = jetSpeed > 0 ? (velocity.z / jetSpeed) * crestSpeed : 0;
     if (tube && jetSpeed > 0) {
       strip.tube = {
-        geometry: tube, x, z, y: height, dirX: velocity.x / jetSpeed, dirZ: velocity.z / jetSpeed, crestSpeed, relativeSpeed: jetSpeed - crestSpeed,
+        id: stripId, geometry: tube, x, z, y: height, dirX: velocity.x / jetSpeed, dirZ: velocity.z / jetSpeed, crestSpeed, relativeSpeed: jetSpeed - crestSpeed,
         closedAt: Number.NaN, air: 0, released: 0, drop: 0,
       };
     }
@@ -690,11 +713,13 @@ export class PlungingLip implements LipParcelSource {
    * end, it blows out of the nearer one, along the tube, as fast as that much
    * air must go through the mouth's void cross-section; where the peel has
    * closed all along, it bursts up through the lip. The rest breaks into
-   * bubbles where the void was, driven down as far as the jet fell.
+   * bubbles where the void was, driven down as far as the jet fell. Each
+   * closing tube rolls a foam ball where its void was.
    */
   private releaseAir(dt: number): void {
     this.spits.length = 0;
     this.eruptions.length = 0;
+    this.rollers.length = 0;
     let closing = false;
     for (const [stripId, strip] of this.strips) {
       const { tube } = strip;
@@ -721,6 +746,10 @@ export class PlungingLip implements LipParcelSource {
         tube.released = done;
         if (!(volume > 0)) continue;
         const centre = this.voidCentre(strip, 1 - done);
+        this.rollers.push({
+          id: tube.id, x: centre.x, y: centre.y, z: centre.z, dirX: tube.dirX, dirZ: tube.dirZ, speed: tube.crestSpeed,
+          area: ROLLER_AREA * tube.drop * tube.drop, width: this.solver.dx,
+        });
         const escaping = TUBE_AIR.escape * volume;
         this.onAir?.(centre.x, centre.z, volume - escaping, AERATION.plungeDepth * tube.drop);
         const rate = escaping / dt;

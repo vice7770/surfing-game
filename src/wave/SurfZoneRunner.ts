@@ -254,7 +254,7 @@ export class SurfZoneRunner {
     const strokes = this.session?.rider.attached ? this.session.rider.strokes : undefined;
     return {
       solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, windSpeed: this.config.windSpeed ?? 0, strokes,
-      spits: simulation.lip.spits, eruptions: simulation.lip.eruptions,
+      spits: simulation.lip.spits, eruptions: simulation.lip.eruptions, rollers: simulation.lip.rollers,
     };
   }
 

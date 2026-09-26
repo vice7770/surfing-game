@@ -1,6 +1,6 @@
 import { GRAVITY } from './dispersion';
 import { seededRandom } from './random';
-import { SPLASH_UP, type TubeEruption, type TubeSpit } from './PlungingLip';
+import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
 
 /** A lip parcel falling back into the water: where, how much, and how fast. */
 export interface LipImpact {
@@ -48,9 +48,10 @@ export interface SprayScene {
   readonly windSpeed: number;
   /** The rider's hands pulling through the water this step. */
   readonly strokes?: readonly StrokeSplash[];
-  /** This step's spits and eruptions from closing tubes (G9). */
+  /** This step's spits, eruptions and foam balls from closing tubes (G9). */
   readonly spits?: readonly TubeSpit[];
   readonly eruptions?: readonly TubeEruption[];
+  readonly rollers?: readonly TubeRoller[];
 }
 
 /**
@@ -75,6 +76,11 @@ export const SPRAY_PER_AIR = 40;
 /** The share of a spit's and of an eruption's particles that are mist (provisional). */
 const SPIT_MIST = 0.5;
 const ERUPTION_MIST = 0.3;
+/** One foam-ball sprite stands for this much of a roller's churned water, m³: a 0.6 m ball (provisional render value). */
+export const FOAM_BALL_VOLUME = (Math.PI * 0.6 ** 3) / 6;
+/** Foam-ball sprites are this wide, m, and outlive their roller by this long, s. */
+const FOAM_BALL_SIZE = { min: 0.5, max: 0.8 };
+const FOAM_BALL_LINGER = 1;
 /** Offshore wind this fast starts blowing spray off steep crests, m/s; the crest must face it this steeply and stand this high over the depth. */
 const FEATHER_ONSET = 4;
 const FEATHER_SLOPE = 0.25;
@@ -94,24 +100,26 @@ export function splashLaunch(speed: number, random: number): { up: number; forwa
 }
 const WET = 0.05;
 const WATER_DENSITY = 1025;
-/** Floats per particle in `particles`: x, y, z, size (m), opacity. */
-export const SPRAY_STRIDE = 5;
+/** Floats per particle in `particles`: x, y, z, size (m), opacity, kind (0 spray, 1 mist, 2 foam ball). */
+export const SPRAY_STRIDE = 6;
 
-type Kind = 0 | 1;
+type Kind = 0 | 1 | 2;
 const SPRAY: Kind = 0;
 const MIST: Kind = 1;
+const FOAM_BALL: Kind = 2;
 
 /**
  * Spray and mist (plan §2.6, G6): pooled particles marking where the water's
  * kinetic energy converts, launched from lip impacts (splash-up with the
  * parcel's own momentum), from bore faces, blown off steep crests by
- * offshore wind, and blown out of closing tubes by their air (G9). They fly ballistically with quadratic air drag toward the
+ * offshore wind, and blown out of closing tubes by their air (G9). A closing
+ * tube's foam ball is drawn by sprites tumbling in its roller (G9). They fly ballistically with quadratic air drag toward the
  * wind, and end when they fall back through the surface or their time is up.
  * Visual only, with no rendering dependency, so it runs in the worker beside
  * the water; `SprayPoints` draws it.
  */
 export class SprayCloud {
-  /** Per live particle: x, y, z, size, opacity (`SPRAY_STRIDE`), packed at the front. */
+  /** Per live particle: x, y, z, size, opacity, kind (`SPRAY_STRIDE`), packed at the front. */
   readonly particles: Float32Array;
   count = 0;
   private readonly x: Float64Array;
@@ -126,6 +134,11 @@ export class SprayCloud {
   private readonly drag: Float64Array;
   private readonly size: Float64Array;
   private readonly kind: Uint8Array;
+  /** A foam-ball sprite's roller, and where it sits in it: its distance from the axis, angle round it, and offset along it. */
+  private readonly owner: Float64Array;
+  private readonly radial: Float64Array;
+  private readonly spin: Float64Array;
+  private readonly lateral: Float64Array;
   private readonly random: () => number;
 
   constructor(seed: number, readonly capacity = 4096) {
@@ -134,6 +147,7 @@ export class SprayCloud {
     this.x = make(); this.y = make(); this.z = make();
     this.vx = make(); this.vy = make(); this.vz = make();
     this.age = make(); this.life = make(); this.drag = make(); this.size = make();
+    this.owner = make(); this.radial = make(); this.spin = make(); this.lateral = make();
     this.kind = new Uint8Array(capacity);
     this.particles = new Float32Array(capacity * SPRAY_STRIDE);
   }
@@ -149,6 +163,7 @@ export class SprayCloud {
     for (const eruption of scene.eruptions ?? []) {
       this.tubeBurst(eruption.x, eruption.y, eruption.z, 0, eruption.speed, 0, eruption.airRate * dt, ERUPTION_MIST);
     }
+    this.roll(scene.rollers ?? [], dt);
     this.boreSpray(scene, dt);
     this.feather(scene, dt);
     this.pack();
@@ -161,6 +176,14 @@ export class SprayCloud {
   private fly(scene: SprayScene, dt: number): void {
     const { solver, windSpeed } = scene;
     for (let k = 0; k < this.count; k += 1) {
+      if (this.kind[k] === FOAM_BALL) {
+        // Rolled into place by its roller (`roll`); once that is gone it drifts on with the crest, and fades.
+        this.x[k] += this.vx[k] * dt;
+        this.z[k] += this.vz[k] * dt;
+        this.age[k] += dt;
+        if (this.age[k] > this.life[k]) this.remove(k--);
+        continue;
+      }
       // Quadratic drag toward the wind (implicit in the drag's size, so light mist cannot overshoot it).
       const rx = this.vx[k];
       const ry = this.vy[k];
@@ -246,6 +269,50 @@ export class SprayCloud {
     }
   }
 
+  /**
+   * The foam balls (G9): each roller keeps about A·w / FOAM_BALL_VOLUME sprites
+   * in its cross-section, spread evenly over it and along its width. They ride
+   * with it and tumble as it rolls, its top going forward, at its speed over
+   * its radius, and outlive it by FOAM_BALL_LINGER.
+   */
+  private roll(rollers: readonly TubeRoller[], dt: number): void {
+    if (rollers.length === 0) return;
+    const held = new Map<number, number>();
+    for (let k = 0; k < this.count; k += 1) {
+      if (this.kind[k] === FOAM_BALL) held.set(this.owner[k], (held.get(this.owner[k]) ?? 0) + 1);
+    }
+    const byId = new Map<number, TubeRoller>();
+    for (const roller of rollers) {
+      const radius = Math.sqrt(roller.area / Math.PI);
+      if (!(radius > 0)) continue;
+      byId.set(roller.id, roller);
+      const wanted = Math.round((roller.area * roller.width) / FOAM_BALL_VOLUME);
+      for (let n = held.get(roller.id) ?? 0; n < wanted && this.count < this.capacity; n += 1) {
+        const k = this.count;
+        this.spawn(FOAM_BALL, roller.x, roller.y, roller.z, 0, 0, 0);
+        this.owner[k] = roller.id;
+        this.radial[k] = radius * Math.sqrt(this.random());
+        this.spin[k] = 2 * Math.PI * this.random();
+        this.lateral[k] = (this.random() - 0.5) * roller.width;
+      }
+    }
+    for (let k = 0; k < this.count; k += 1) {
+      if (this.kind[k] !== FOAM_BALL) continue;
+      const roller = byId.get(this.owner[k]);
+      if (!roller) continue;
+      const radius = Math.sqrt(roller.area / Math.PI);
+      this.spin[k] -= (roller.speed / radius) * dt;
+      const along = this.radial[k] * Math.cos(this.spin[k]);
+      this.x[k] = roller.x + roller.dirX * along - roller.dirZ * this.lateral[k];
+      this.y[k] = roller.y + this.radial[k] * Math.sin(this.spin[k]);
+      this.z[k] = roller.z + roller.dirZ * along + roller.dirX * this.lateral[k];
+      this.vx[k] = roller.dirX * roller.speed;
+      this.vy[k] = 0;
+      this.vz[k] = roller.dirZ * roller.speed;
+      this.life[k] = this.age[k] + FOAM_BALL_LINGER;
+    }
+  }
+
   /** Drops thrown up at bore faces, where the foam field sees bores dissipate. */
   private boreSpray(scene: SprayScene, dt: number): void {
     const { solver, foam } = scene;
@@ -316,11 +383,17 @@ export class SprayCloud {
     this.vz[k] = vz;
     this.age[k] = 0;
     this.kind[k] = kind;
+    this.count += 1;
+    if (kind === FOAM_BALL) {
+      this.drag[k] = 0;
+      this.life[k] = FOAM_BALL_LINGER;
+      this.size[k] = this.between(FOAM_BALL_SIZE);
+      return;
+    }
     const fall = kind === SPRAY ? this.between(SPRAY_FALL) : this.between(MIST_FALL);
     this.drag[k] = GRAVITY / (fall * fall);
     this.life[k] = (kind === SPRAY ? SPRAY_LIFE : MIST_LIFE) * (0.6 + 0.4 * this.random());
     this.size[k] = kind === SPRAY ? 0.06 + 0.08 * this.random() : 0.35 + 0.45 * this.random();
-    this.count += 1;
   }
 
   private remove(k: number): void {
@@ -337,6 +410,10 @@ export class SprayCloud {
     this.drag[k] = this.drag[last];
     this.size[k] = this.size[last];
     this.kind[k] = this.kind[last];
+    this.owner[k] = this.owner[last];
+    this.radial[k] = this.radial[last];
+    this.spin[k] = this.spin[last];
+    this.lateral[k] = this.lateral[last];
   }
 
   private pack(): void {
@@ -348,7 +425,11 @@ export class SprayCloud {
       this.particles[o + 1] = this.y[k];
       this.particles[o + 2] = this.z[k];
       this.particles[o + 3] = this.size[k] * (mist ? 1 + t : 1);
-      this.particles[o + 4] = (mist ? 0.25 : 0.8) * (1 - t * t);
+      // A foam ball holds until its roller is gone, then fades over the time it lingers.
+      this.particles[o + 4] = this.kind[k] === FOAM_BALL
+        ? 0.9 * Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER)
+        : (mist ? 0.25 : 0.8) * (1 - t * t);
+      this.particles[o + 5] = this.kind[k];
     }
   }
 

@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, SPLASH_UP, STRIP_PARCELS, TUBE_AIR, lipThrow, overturnArea } from './PlungingLip';
+import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, ROLLER_AREA, SPLASH_UP, STRIP_PARCELS, TUBE_AIR, lipThrow, overturnArea, type TubeRoller } from './PlungingLip';
 import { GRAVITY } from './dispersion';
 import { LH82_AREA, jetRelativeSpeed, overturn, overturnParameter, tubeFloorDepth, type TubeGeometry } from './Overturn';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
@@ -97,6 +97,28 @@ describe('the collapsing tube and its air (G9)', () => {
     // The older columns close first; the air leaves toward the newest, still open.
     expect(first.dirX).toBeGreaterThan(0.9);
     expect(first.speed).toBeCloseTo(first.airRate / (LH82_AREA * tube.length * tube.width), 9);
+  });
+
+  it('rolls a foam ball in a closing tube: a roller κ_r·H² in section over its column, riding with its crest, while the void collapses', () => {
+    const { lip, run } = peel([3.5], 0);
+    let drop = 0;
+    lip.onLand = (_x, _z, _volume, _vx, _vy, _vz, flight) => {
+      if (drop === 0 && flight) drop = Math.max(0.1, flight.launch.y - flight.y);
+    };
+    let steps = 0;
+    let first: TubeRoller | undefined;
+    for (let frame = 0; frame < 2400; frame += 1) {
+      run(1 / 240);
+      if (lip.rollers.length > 0) {
+        steps += 1;
+        first ??= { ...lip.rollers[0] };
+      }
+    }
+    expect(Math.abs(steps - collapse * 240)).toBeLessThanOrEqual(1.5);
+    expect(first!.area).toBeCloseTo(ROLLER_AREA * drop * drop, 9);
+    expect(first!.width).toBe(1);
+    expect(first!.dirZ).toBeCloseTo(1, 9);
+    expect(first!.speed).toBe(3);
   });
 
   it('erupts upward when the whole section closes at once, with no mouth to spit from', () => {
