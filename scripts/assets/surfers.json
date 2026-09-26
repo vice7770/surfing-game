@@ -1,0 +1,103 @@
+{
+  "pack": "scripts/assets/.cache/makehuman_system_assets_cc0.zip",
+  "packUrl": "https://files2.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip",
+  "rig": "mixamo",
+  "surfers": [
+    {
+      "id": "surfer1",
+      "sex": "female",
+      "macros": {
+        "gender": 0.0,
+        "age": 0.45,
+        "muscle": 0.62,
+        "weight": 0.45,
+        "height": 0.55,
+        "proportions": 0.7,
+        "cupsize": 0.45,
+        "firmness": 0.6,
+        "race": {
+          "african": 0.9,
+          "asian": 0.05,
+          "caucasian": 0.05
+        }
+      },
+      "skin": "young_african_female",
+      "hair": "braid01",
+      "eyebrows": "eyebrow010",
+      "eyelashes": "eyelashes01",
+      "proxy": "female1605"
+    },
+    {
+      "id": "surfer2",
+      "sex": "female",
+      "macros": {
+        "gender": 0.0,
+        "age": 0.42,
+        "muscle": 0.6,
+        "weight": 0.42,
+        "height": 0.62,
+        "proportions": 0.7,
+        "cupsize": 0.4,
+        "firmness": 0.6,
+        "race": {
+          "african": 0.05,
+          "asian": 0.05,
+          "caucasian": 0.9
+        }
+      },
+      "skin": "young_caucasian_female",
+      "hair": "ponytail01",
+      "eyebrows": "eyebrow001",
+      "eyelashes": "eyelashes02",
+      "proxy": "female1605"
+    },
+    {
+      "id": "surfer3",
+      "sex": "male",
+      "macros": {
+        "gender": 1.0,
+        "age": 0.45,
+        "muscle": 0.66,
+        "weight": 0.48,
+        "height": 0.52,
+        "proportions": 0.7,
+        "cupsize": 0.5,
+        "firmness": 0.5,
+        "race": {
+          "african": 0.85,
+          "asian": 0.05,
+          "caucasian": 0.1
+        }
+      },
+      "skin": "young_african_male",
+      "hair": "short02",
+      "eyebrows": "eyebrow002",
+      "eyelashes": "eyelashes01",
+      "proxy": "male1591"
+    },
+    {
+      "id": "surfer4",
+      "sex": "male",
+      "macros": {
+        "gender": 1.0,
+        "age": 0.5,
+        "muscle": 0.6,
+        "weight": 0.5,
+        "height": 0.56,
+        "proportions": 0.7,
+        "cupsize": 0.5,
+        "firmness": 0.5,
+        "race": {
+          "african": 0.05,
+          "asian": 0.85,
+          "caucasian": 0.1
+        }
+      },
+      "skin": "young_asian_male",
+      "hair": "short04",
+      "eyebrows": "eyebrow006",
+      "eyelashes": "eyelashes01",
+      "proxy": "male1591"
+    }
+  ]
+}
