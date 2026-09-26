@@ -22,7 +22,7 @@ import { stormSwell, type StormSwell } from '../wave/StormSwell';
 import type { ReadoutRow } from '../wave/SwellReadout';
 import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
-import { OFFSHORE_DEPTH, TANK, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { OFFSHORE_DEPTH, SEA_COMPONENTS, TANK, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost, type SurfZoneSnapshot } from './SurfZoneHost';
 
 /** Wave Lab inputs for the view-only physical surf zone (buoy values or a storm, plan Q2, Q22 and Q31). */
@@ -67,6 +67,18 @@ export interface SwellInput {
  * force law are the natural mode's. Ghost riders catch most on the Point in it.
  */
 export const PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 2, peakPeriod: 12, spreading: 40, bandwidth: 0.08, directionDegrees: 10 };
+
+/** The GPU tier's sea (plan P6): more components, so sets repeat less often. */
+export const GPU_TIER_COMPONENTS = 64;
+
+/** Whether this page can step the water on the GPU: a WebGPU adapter answers. */
+export async function webGpuAvailable(): Promise<boolean> {
+  try {
+    return Boolean(await globalThis.navigator?.gpu?.requestAdapter());
+  } catch {
+    return false;
+  }
+}
 
 /** Largest swell the tank carries, matching the buoy sliders: deeper water would be needed beyond this. */
 export const TANK_SWELL_LIMITS = { height: { min: 0.3, max: 3 }, period: { min: 6, max: 18 } };
@@ -155,7 +167,7 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
     { label: 'SPREAD', value: `s ${config.spreading.toFixed(0)}${band}` },
     { label: 'TIDE', value: `${config.tide.toFixed(1)} m` },
     { label: 'BREAK LINE', value: `${Math.round(-breakPoint.z)} m out · ${status.breakDepth.toFixed(2)} m deep` },
-    { label: 'SOLVER', value: `${(config.stage ?? 2) === 2 ? 'Boussinesq' : 'shallow water'} · ${status.compute === 'gpu' ? 'GPU' : 'CPU'} · ${status.cells.toLocaleString('en-US')} cells · ${status.stepMs.toFixed(1)} ms/step` },
+    { label: 'SOLVER', value: `${(config.stage ?? 2) === 2 ? 'Boussinesq' : 'shallow water'} · ${status.compute === 'gpu' ? 'GPU' : 'CPU'} · ${config.componentCount ?? SEA_COMPONENTS} components · ${status.cells.toLocaleString('en-US')} cells · ${status.stepMs.toFixed(1)} ms/step` },
     { label: 'NEXT SET', value: toSet > 0 ? `in ${Math.round(toSet)} s` : `${Math.round(-toSet)} s ago` },
     { label: 'BREAKER', value: breaker.type === 'none' ? 'FLAT BED' : `ξ ${breaker.value.toFixed(2)} · ${breaker.type.toUpperCase()}` },
     { label: 'BREAKING', value: `${Math.round(status.breakingFraction * 100)} % of the surf zone` },
@@ -251,10 +263,12 @@ export class PhysicalMode {
    */
   async start(
     settings: PhysicalSettings, seed: number, water: WaterSurface, overrides: Partial<SurfZoneConfig> = {},
-    createHost: SurfZoneHostFactory = localSurfZone,
+    createHost: SurfZoneHostFactory = localSurfZone, gpuTier?: () => Promise<boolean>,
   ): Promise<boolean> {
     const start = ++this.starts;
     const swell = swellFor(settings);
+    // The GPU tier builds a richer sea; the page decides, so its far field matches the worker's tank.
+    const tier = settings.stage === 2 && settings.compute === 'auto' && gpuTier !== undefined && await gpuTier();
     const config: SurfZoneConfig = {
       spot: settings.spot,
       seed,
@@ -267,6 +281,7 @@ export class PhysicalMode {
       windSpeed: settings.windSpeed,
       stage: settings.stage,
       compute: settings.compute,
+      ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
       ...overrides,
     };
     const host = createHost(config);

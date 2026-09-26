@@ -15,7 +15,7 @@ import {
 import type { FarFieldProfile } from '../wave/FarFieldProfile';
 import { buildGridGeometry, gradedAxis, type HoleRect } from './gridGeometry';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
-import { DEFAULT_WATER_CHOP, waterChopNormal, waterChopPars } from './waterChop';
+import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
 import { WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterOpticsPars, type WaterOptics } from './waterOptics';
 
 export type { HoleRect } from './gridGeometry';
@@ -133,6 +133,7 @@ export class FarFieldOcean {
       waterFoamPattern: { value: 1 },
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
+      ...chopFieldUniforms,
       ...createOpticsUniforms(),
     };
     const material = new MeshPhysicalMaterial({

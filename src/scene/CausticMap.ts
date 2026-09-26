@@ -2,7 +2,7 @@ import {
   AdditiveBlending, Camera, Color, DoubleSide, HalfFloatType, Mesh, NoToneMapping, PlaneGeometry, RGBAFormat, Scene, ShaderMaterial, Vector4,
   WebGLRenderTarget, type Texture, type WebGLRenderer,
 } from 'three';
-import { waterChopPars } from './waterChop';
+import { chopFieldUniforms, waterChopPars } from './waterChop';
 import { WATER_IOR } from './waterOptics';
 
 /**
@@ -146,7 +146,7 @@ export class CausticMap {
 
   constructor(source: CausticSource, readonly uniforms: CausticUniforms = createCausticUniforms()) {
     const material = new ShaderMaterial({
-      uniforms: { ...(source as unknown as Record<string, { value: unknown }>), causticDomain: uniforms.causticDomain },
+      uniforms: { ...(source as unknown as Record<string, { value: unknown }>), ...chopFieldUniforms, causticDomain: uniforms.causticDomain },
       vertexShader,
       fragmentShader,
       blending: AdditiveBlending,

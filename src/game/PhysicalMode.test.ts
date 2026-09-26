@@ -5,7 +5,7 @@ import { LegacySurfaceSource } from '../scene/LegacySurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField } from '../wave/WaveModel';
 import { stormSwell } from '../wave/StormSwell';
-import { DEFAULT_PHYSICAL_SETTINGS, PRACTICE_SWELL, PhysicalMode, chopForWind, formatPhysicalReadout, spreadingFor, swellFor } from './PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, chopForWind, formatPhysicalReadout, spreadingFor, swellFor } from './PhysicalMode';
 import type { LocalSurfZone } from './SurfZoneHost';
 
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
@@ -182,6 +182,26 @@ describe('PhysicalMode', () => {
     expect(value('SWELL')).toMatch(/^Hs 1\.4 m · Tp 13\.5 s · 10°$/);
     expect(value('STORM')).toBe('Hs 7.1 m · Tp 13.5 s · fetch-limited · arrives after 4.4 days');
     expect(value('SPREAD')).toBe('s 75 · band ±14 %');
+  });
+
+  it('builds the GPU tier\'s richer sea only when a GPU answers and the water may use it', async () => {
+    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const { componentCount: _count, ...coarse } = quick;
+    const asked: string[] = [];
+    const probe = (answer: boolean) => async () => {
+      asked.push(String(answer));
+      return answer;
+    };
+    const mode = new PhysicalMode(new Scene());
+    await mode.start(DEFAULT_PHYSICAL_SETTINGS, 2, water, { ...coarse, spinUpPeriods: 0.2 }, undefined, probe(true));
+    expect(mode.config!.componentCount).toBe(GPU_TIER_COMPONENTS);
+    expect(mode.readout().find((row) => row.label === 'SOLVER')?.value).toContain(`${GPU_TIER_COMPONENTS} components`);
+    await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, compute: 'cpu' }, 2, water, { ...coarse, spinUpPeriods: 0.2 }, undefined, probe(true));
+    expect(mode.config!.componentCount).toBeUndefined();
+    await mode.start(DEFAULT_PHYSICAL_SETTINGS, 2, water, { ...coarse, spinUpPeriods: 0.2 }, undefined, probe(false));
+    expect(mode.config!.componentCount).toBeUndefined();
+    expect(asked).toEqual(['true', 'false']);
+    mode.stop();
   });
 
   it('runs practice on the same solver with only the incoming swell changed', async () => {

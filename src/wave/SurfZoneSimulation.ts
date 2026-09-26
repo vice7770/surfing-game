@@ -46,6 +46,9 @@ export interface SurfZoneConfig {
   compute?: 'auto' | 'cpu';
 }
 
+/** Swell components the tank's sea is built from, unless the config says otherwise. */
+export const SEA_COMPONENTS = 24;
+
 /** The stage 2 water stepped elsewhere (the GPU, plan P6): it advances the solver's own state in place. */
 export interface SolverDevice {
   step(dt: number): Promise<void>;
@@ -106,7 +109,7 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
     peakPeriod: config.peakPeriod,
     direction: (config.directionDegrees * Math.PI) / 180,
     spreading: config.spreading,
-    componentCount: config.componentCount ?? 24,
+    componentCount: config.componentCount ?? SEA_COMPONENTS,
     depth: OFFSHORE_DEPTH[config.spot] + config.tide,
     bandwidth: config.bandwidth,
   }, config.seed, shallowWaterWaveNumber);

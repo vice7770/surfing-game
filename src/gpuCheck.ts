@@ -4,6 +4,9 @@
  * the device, and the page reports how far the device's surface and fluxes
  * drift from the CPU reference, and what each step costs.
  */
+import { DataUtils, WebGLRenderer } from 'three';
+import { FftChop } from './scene/FftChop';
+import { chopSpectrum, inverseFft2d, slopeSpectrum } from './scene/fftChopMath';
 import { BoussinesqSolver } from './wave/BoussinesqSolver';
 import { GpuBoussinesq } from './wave/gpu/GpuBoussinesq';
 import { SURF_ZONE_STEP } from './wave/SurfZoneRunner';
@@ -135,5 +138,37 @@ async function throughput(): Promise<void> {
   say('DONE');
 }
 
+/** The FFT chop's slope map on this page's WebGL2 GPU against the TypeScript reference transform. */
+async function chop(): Promise<void> {
+  const renderer = new WebGLRenderer({ canvas: document.createElement('canvas') });
+  const fft = new FftChop();
+  const wind = 6;
+  const time = 2.5;
+  fft.setWind(wind, 1);
+  fft.render(renderer, time);
+  const n = fft.size;
+  const pixels = new Uint16Array(n * n * 4);
+  renderer.readRenderTargetPixels(fft.output, 0, 0, n, n, pixels);
+  const reference = inverseFft2d(slopeSpectrum(chopSpectrum(wind, 1, n, fft.patch), time, n, fft.patch), n);
+  let worst = 0;
+  let squares = 0;
+  for (let i = 0; i < n * n; i += 1) {
+    for (let c = 0; c < 2; c += 1) {
+      const gpu = DataUtils.fromHalfFloat(pixels[i * 4 + c]);
+      worst = Math.max(worst, Math.abs(gpu - reference[i * 2 + c]));
+      squares += reference[i * 2 + c] ** 2;
+    }
+  }
+  const rms = Math.sqrt(squares / (n * n));
+  say(`FFT chop ${n}² at t ${time} s: rms slope ${rms.toFixed(4)}, largest GPU error ${worst.toExponential(2)} (${((worst / rms) * 100).toFixed(2)} % of rms)`);
+  const started = performance.now();
+  for (let frame = 0; frame < 120; frame += 1) fft.render(renderer, time + frame / 60);
+  renderer.readRenderTargetPixels(fft.output, 0, 0, 1, 1, new Uint16Array(4));
+  say(`  ${((performance.now() - started) / 120).toFixed(2)} ms per transform (17 passes, CPU wall time including the final sync)`);
+  say('DONE');
+  fft.dispose();
+  renderer.dispose();
+}
+
 const mode = new URLSearchParams(location.search).get('mode');
-(mode === 'worker' ? throughput() : run()).catch((error: unknown) => say(`FAILED: ${error instanceof Error ? error.message : String(error)}`));
+(mode === 'worker' ? throughput() : mode === 'chop' ? chop() : run()).catch((error: unknown) => say(`FAILED: ${error instanceof Error ? error.message : String(error)}`));
