@@ -8,8 +8,25 @@ const context = { devTools: false, detecting: false };
 describe('settingsModel', () => {
   it('offers telemetry only with the dev tools on', () => {
     const ids = (devTools: boolean) => settingsModel('gameplay', defaultSettings(), { ...context, devTools }).map((row) => row.id);
-    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls']);
+    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'scoreRides']);
     expect(ids(true)).toContain('showTelemetry');
+  });
+
+  // P9: the balance meter, in Practice by default; and a line on what each new action does.
+  it('offers the balance meter in Practice by default, and explains the standing actions', () => {
+    expect(settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'balanceMeter')).toMatchObject({ kind: 'choice', value: 'practice' });
+    expect(applyRow(defaultSettings(), 'balanceMeter', 'never')).toEqual({ tab: 'gameplay', patch: { balanceMeter: 'never' } });
+    const rows = settingsModel('controls', defaultSettings(), context);
+    const help = (action: string) => rows.find((r) => r.kind === 'binding' && r.action === action && 'help' in r)?.['help' as never];
+    for (const action of ['trimForward', 'trimBack', 'crouch', 'hand']) expect(help(action)).toBeTruthy();
+    expect(help('paddle')).toBeUndefined();
+  });
+
+  // P9: a WSL-style score, only if the player wants it.
+  it('offers scoring rides, off by default', () => {
+    const row = settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'scoreRides');
+    expect(row).toMatchObject({ kind: 'toggle', value: false });
+    expect(applyRow(defaultSettings(), 'scoreRides', true)).toEqual({ tab: 'gameplay', patch: { scoreRides: true } });
   });
 
   it('marks the water simulation and sea detail as taking effect on the next wave', () => {
@@ -26,10 +43,10 @@ describe('settingsModel', () => {
     expect(settingsModel('graphics', low, context).find((row) => row.id === 'redetect')).toBeUndefined();
   });
 
-  it('lists a keyboard pair and a gamepad button for each of the six actions', () => {
+  it('lists a keyboard pair and a gamepad button for each of the ten actions (P9 adds trim, crouch and the hand)', () => {
     const bindings = settingsModel('controls', defaultSettings(), context).filter((row) => row.kind === 'binding');
-    expect(bindings).toHaveLength(18);
-    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(6);
+    expect(bindings).toHaveLength(30);
+    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(10);
   });
 });
 

@@ -13,6 +13,7 @@
     "record:ride": "node scripts/ride-video-receiver.mjs recordings",
     "report:tubes": "rolldown scripts/tube-report.ts -o dist/scripts/tube-report.mjs --format esm --platform node && node dist/scripts/tube-report.mjs",
     "report:catch": "rolldown scripts/catch-report.ts -o dist/scripts/catch-report.mjs --format esm --platform node && node dist/scripts/catch-report.mjs",
+    "report:ride": "rolldown scripts/ride-report.ts -o dist/scripts/ride-report.mjs --format esm --platform node && node dist/scripts/ride-report.mjs",
     "assets:skies": "rolldown scripts/assets/fetch-skies.ts -o dist/scripts/fetch-skies.mjs --format esm --platform node && node dist/scripts/fetch-skies.mjs",
     "assets:surfers": "/Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/assets/build_surfers.py && node scripts/assets/pack-surfers.mjs"
   },

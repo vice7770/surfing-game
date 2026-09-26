@@ -2,6 +2,7 @@ import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { REFERENCE_BOARD } from '../physics/boardReference';
 import { WATER } from '../physics/hullForces';
+import { createWaterSample } from '../physics/SurfWater';
 import type { SpotName } from './Bathymetry';
 import { BubbleCloud } from './BubbleCloud';
 import { RIDER_PHASES, RIDER_SNAPSHOT, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea } from './SurfZoneRunner';
@@ -213,9 +214,47 @@ describe('SurfZoneRunner with a rider', () => {
     expect(runner.simulation.seaTime).toBeGreaterThan(seaTime);
     expect(runner.status().ride!.resets).toBe(1);
   });
+
+  it('reads each ride from its trace, and reports the finished ride as plain data', () => {
+    // On a flat sea the break line, and the lineup just outside it, lie in the shallows: a ride there ends inside at once.
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    runner.advance(1);
+    expect(runner.status().ride!.report).toBeUndefined();
+    const { rider, board } = runner.session!;
+    const { x, y, z } = board.position;
+    expect(runner.water.sampleAt(x, y, z, createWaterSample()).stillDepth).toBeLessThan(0.5);
+    const stand = () => {
+      // A pop-up's last two phases, as the analyzer reads them: landing, then standing.
+      for (const phase of ['landing', 'standing'] as const) {
+        rider.phase = phase;
+        board.attach(rider);
+        runner.advance(1);
+      }
+      runner.advance(1);
+    };
+    stand();
+    const status = runner.status();
+    expect(status.ride!.report).toMatchObject({ id: 1, end: 'inside', maneuvers: [] });
+    expect(structuredClone(status)).toEqual(status);
+    stand();
+    expect(runner.status().ride!.report!.id).toBe(2);
+  });
 });
 
 describe('SurfZoneRunner rider in waves', () => {
+  it('measures the rider against the wave it rides, and reports its speed over ground', () => {
+    const runner = new SurfZoneRunner(config, { rider: true });
+    runner.advance(15 * 60, { paddle: true, popUp: false, steer: 0, retry: false });
+    const ride = runner.status().ride!;
+    const { velocity } = runner.session!.board;
+    expect(ride.speed).toBeCloseTo(Math.hypot(velocity.x, velocity.z), 9);
+    expect(ride.boardSpeed).toBeCloseTo(velocity.length(), 9);
+    const { requiredSpeed, ...rest } = ride.wave;
+    for (const [name, value] of Object.entries(rest)) if (typeof value === 'number') expect(Number.isFinite(value), name).toBe(true);
+    expect(requiredSpeed).toBeGreaterThan(0);
+    expect(Math.hypot(ride.wave.directionX, ride.wave.directionZ)).toBeCloseTo(1, 9);
+  });
+
   // Without fins (P4e) the prone board wanders off its heading, so this only asks that the rider holds on.
   it('holds on lying down while paddling through passing waves', () => {
     const runner = new SurfZoneRunner({ ...config, spot: 'beach', significantHeight: 1.2, peakPeriod: 10, directionDegrees: 0 }, { rider: true });

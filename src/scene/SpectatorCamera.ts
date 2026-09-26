@@ -14,6 +14,10 @@ export const RIDE_VIEWS: readonly RideView[] = ['front', 'behind', 'side'];
 export interface FollowTarget {
   position: { x: number; y: number; z: number };
   heading: number;
+  /** The rider's velocity, m/s: the front view leads by it so it keeps up. */
+  velocity?: { x: number; y: number; z: number };
+  /** The crest of the wave the rider rides, when there is one: the front view keeps its lip in frame. */
+  crest?: { x: number; y: number; z: number };
 }
 
 export interface SpectatorScene {
@@ -34,6 +38,18 @@ const BEHIND_DISTANCE = 6.5;
 const BEHIND_HEIGHT = 2.6;
 const SIDE_DISTANCE = 14;
 const SIDE_HEIGHT = 1.8;
+/** The camera closes on where it wants to be at this rate, 1/s. */
+const FOLLOW_RATE = 3;
+/**
+ * The front view leads the rider by its horizontal velocity over this time, s:
+ * the follow rate's lag, so at a steady speed the rider stays where it sits at
+ * rest instead of trailing by v / FOLLOW_RATE (3.3 m at 10 m/s).
+ */
+const FRONT_LEAD = 1 / FOLLOW_RATE;
+/** The front view follows the rider's height smoothed over this time, s, so a drop down the face does not lift the wave in frame. */
+const FRONT_HEIGHT_TIME = 1.5;
+/** How far the front view's look point moves toward the crest, keeping the lip in frame. */
+const FRONT_CREST_SHARE = 0.3;
 
 /**
  * The menu's cinematic view (plan P8): the camera sweeps CINEMA_SWEEP m either
@@ -50,8 +66,11 @@ export class SpectatorCamera {
   readonly camera = new PerspectiveCamera(52, 1, 0.1, 3000);
   private currentView: SpectatorView = 'overview';
   private readonly desired = new Vector3();
+  private readonly crest = new Vector3();
   private readonly target = new Vector3();
   private settled = false;
+  /** The rider's height as the front view follows it, smoothed. */
+  private followHeight = 0;
   private cinemaTime = 0;
   private reducedMotion = false;
 
@@ -83,10 +102,15 @@ export class SpectatorCamera {
       if (view === 'front') {
         // The video brief's wide, elevated three-quarter view from the beach side,
         // looking back out to sea: the incoming wave while paddling, the face and lip
-        // while riding (waves run toward +z).
-        this.desired.set(p.x + FRONT_SIDE, 0, p.z + FRONT_SHOREWARD);
-        this.desired.y = Math.max(scene.heightAt(this.desired.x, this.desired.z) + 1.5, p.y + FRONT_HEIGHT);
-        this.target.set(p.x, p.y + 0.4, p.z - FRONT_LOOK_SEAWARD);
+        // while riding (waves run toward +z). It leads a moving rider, holds its
+        // height through drops, and tilts toward the crest.
+        this.followHeight = this.settled ? this.followHeight + (p.y - this.followHeight) * (1 - Math.exp(-dt / FRONT_HEIGHT_TIME)) : p.y;
+        const x = p.x + (follow.velocity?.x ?? 0) * FRONT_LEAD;
+        const z = p.z + (follow.velocity?.z ?? 0) * FRONT_LEAD;
+        this.desired.set(x + FRONT_SIDE, 0, z + FRONT_SHOREWARD);
+        this.desired.y = Math.max(scene.heightAt(this.desired.x, this.desired.z) + 1.5, this.followHeight + FRONT_HEIGHT);
+        this.target.set(x, this.followHeight + 0.4, z - FRONT_LOOK_SEAWARD);
+        if (follow.crest) this.target.lerp(this.crest.set(follow.crest.x, follow.crest.y, follow.crest.z), FRONT_CREST_SHARE);
       } else if (view === 'behind') {
         const forwardX = Math.sin(follow.heading);
         const forwardZ = Math.cos(follow.heading);

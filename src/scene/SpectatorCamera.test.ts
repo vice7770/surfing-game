@@ -43,3 +43,48 @@ describe('SpectatorCamera', () => {
     expect(spectator.camera.position.distanceTo(first)).toBeLessThan(1e-9);
   });
 });
+
+describe('SpectatorCamera front ride view', () => {
+  const focus = { x: 0, z: -60 };
+  const offset = (spectator: SpectatorCamera, position: { x: number; y: number; z: number }) =>
+    ({ x: spectator.camera.position.x - position.x, y: spectator.camera.position.y - position.y, z: spectator.camera.position.z - position.z });
+
+  it('keeps up with a fast rider instead of trailing it', () => {
+    const spectator = new SpectatorCamera();
+    spectator.setView('front');
+    const position = { x: 0, y: 0, z: -50 };
+    for (let i = 0; i < 120; i += 1) spectator.update(scene, focus, 1 / 60, { position, heading: 0, velocity: { x: 0, y: 0, z: 0 } });
+    const rest = offset(spectator, position);
+    const velocity = { x: 10, y: 0, z: 0 };
+    for (let i = 0; i < 300; i += 1) {
+      position.x += velocity.x / 60;
+      spectator.update(scene, focus, 1 / 60, { position, heading: 0, velocity });
+    }
+    const moving = offset(spectator, position);
+    expect(Math.hypot(moving.x - rest.x, moving.y - rest.y, moving.z - rest.z)).toBeLessThan(0.5);
+  });
+
+  it('holds its height while the rider drops down a face', () => {
+    const spectator = new SpectatorCamera();
+    spectator.setView('front');
+    const position = { x: 0, y: 1, z: -50 };
+    for (let i = 0; i < 120; i += 1) spectator.update(scene, focus, 1 / 60, { position, heading: 0 });
+    const before = spectator.camera.position.y;
+    for (let i = 0; i < 60; i += 1) {
+      position.y -= 2 / 60;
+      spectator.update(scene, focus, 1 / 60, { position, heading: 0, velocity: { x: 0, y: -2, z: 0 } });
+    }
+    expect(before - spectator.camera.position.y).toBeLessThan(0.8);
+  });
+
+  it('looks up toward a crest above the rider, keeping the lip in frame', () => {
+    const look = (crest?: { x: number; y: number; z: number }) => {
+      const spectator = new SpectatorCamera();
+      spectator.setView('front');
+      const position = { x: 0, y: 0, z: -50 };
+      for (let i = 0; i < 120; i += 1) spectator.update(scene, focus, 1 / 60, { position, heading: 0, crest });
+      return spectator.camera.getWorldDirection(new Vector3());
+    };
+    expect(look({ x: 0, y: 1.8, z: -54 }).y).toBeGreaterThan(look().y);
+  });
+});

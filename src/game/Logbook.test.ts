@@ -20,6 +20,19 @@ describe('Logbook', () => {
     expect(log.recent[0].seed).toBe(LOGBOOK_SIZE + 4);
   });
 
+  // P9: a score only when the player asked for one, and a best score per spot.
+  it('stores a score only with the ride that has one, and keeps each spot’s best score', () => {
+    const storage = memory();
+    const log = new Logbook(storage);
+    log.add(ride());
+    expect('score' in log.recent[0]).toBe(false);
+    expect(log.bests('point').score).toBeUndefined();
+    expect(log.add(ride({ score: 4.2 }))).toContain('score');
+    expect(log.add(ride({ score: 3.1 }))).not.toContain('score');
+    expect(new Logbook(storage).bests('point').score).toBe(4.2);
+    expect(new Logbook(storage).recent[0].score).toBe(3.1);
+  });
+
   it('sets every best on a first ride, and only the beaten ones after', () => {
     const log = new Logbook(memory());
     expect(log.add(ride()).sort()).toEqual(['distance', 'seconds', 'topSpeed']);

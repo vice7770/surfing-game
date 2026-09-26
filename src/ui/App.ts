@@ -20,7 +20,9 @@ import { createMainMenu } from './MainMenu';
 import { MenuInput } from './MenuInput';
 import { createPauseMenu } from './PauseMenu';
 import { createRideEndCard, endCardModel } from './RideEndCard';
-import { RideHud, type HintKeys } from './RideHud';
+import { bestTwo, scoreRide } from '../game/waveScore';
+import { HintBook, HintCoach, type HintId } from '../game/hints';
+import { RideHud, showsBalanceMeter, type HintKeys } from './RideHud';
 import { ScreenStack, type ScreenId } from './ScreenStack';
 import { EN, t, type StringKey } from './strings';
 import { createSurfScreen, type SurfChoice } from './SurfScreen';
@@ -89,6 +91,10 @@ export class App {
   private readonly tracker = new RideTracker();
   private readonly logbook = new Logbook(localStore());
   private endCard?: HTMLElement;
+  /** One-time hints for the riding mechanics (P9). */
+  private readonly coach = new HintCoach(new HintBook(localStore()));
+  /** This session's wave scores (P9), for the best two; a new spot or conditions start a new session. */
+  private sessionScores: number[] = [];
   /** The dev tools' telemetry over a Surf ride: the physical readout and the frame rate, at 4 Hz. */
   private readonly telemetryList = el('dl');
   private readonly telemetry = el('aside', { class: 'ride-telemetry physics-readout' }, this.telemetryList);
@@ -130,7 +136,14 @@ export class App {
     }
     if (this.stack.current === 'ride') {
       const { gameplay, seen } = this.settings.value;
-      this.rideHud.update(this.game.rideStatus, gameplay.units, this.hintKeys(), !seen.rideHints);
+      const ride = this.game.rideStatus;
+      const hint = this.coach.update(intervalMs / 1000, {
+        standing: ride?.phase === 'standing',
+        crestBreaking: ride?.wave.valid ? ride.wave.crestBreaking : 0,
+        input: this.controls.lastRequest,
+      }, (id) => this.hintText(id) !== '');
+      this.rideHud.update(ride, gameplay.units, this.hintKeys(), !seen.rideHints,
+        showsBalanceMeter(gameplay.balanceMeter, this.surfChoice.conditions.swell), hint ? this.hintText(hint) : '');
       this.trackRide();
     }
     if (!this.benchmark || this.stack.base !== 'menu' || !this.backdropReady || !this.game.backdropRunning) return;
@@ -267,12 +280,14 @@ export class App {
 
   private quitToMenu(): void {
     this.hideEndCard();
+    this.sessionScores = [];
     this.stack.reset('menu');
     this.show();
   }
 
   private changeSpot(): void {
     this.hideEndCard();
+    this.sessionScores = [];
     this.stack.reset('menu');
     this.stack.push('surf');
     this.show();
@@ -289,10 +304,15 @@ export class App {
 
   private finishRide(result: RideResult): void {
     const { spot, conditions } = this.surfChoice;
-    const records = this.logbook.add({ ...result, spot, conditions, seed: this.seed, at: Date.now() });
+    // Scored only when the player asks, and only rides the worker read (P9).
+    const score = this.settings.value.gameplay.scoreRides && result.report ? scoreRide(result.report).score : undefined;
+    if (score !== undefined) this.sessionScores.push(score);
+    const { report: _, timeScale: __, ...summary } = result;
+    const records = this.logbook.add({ ...summary, spot, conditions, seed: this.seed, at: Date.now(), ...(score !== undefined ? { score } : {}) });
     if (!this.settings.value.seen.rideHints) this.settings.markSeen('rideHints');
     this.hideEndCard();
-    this.endCard = createRideEndCard(endCardModel(result, records, this.settings.value.gameplay.units), {
+    const scoring = score !== undefined ? { score, bestTwo: bestTwo(this.sessionScores) } : undefined;
+    this.endCard = createRideEndCard(endCardModel(result, records, this.settings.value.gameplay.units, scoring), {
       replay: () => {
         this.game.quickRetry();
         this.noteRetry();
@@ -330,6 +350,22 @@ export class App {
     if (this.loadingText) this.loadingText.textContent = t(key);
   }
 
+  /** A riding hint's text (P9), naming the player's keys, pad or touch buttons; empty when the device has no input for it. */
+  private hintText(id: HintId): string {
+    if (this.touchActive()) {
+      if (id === 'lean') return t('hint.lean', { keys: '← →' });
+      if (id === 'crouch') return t('hint.crouch', { keys: t('touch.crouch') });
+      return '';
+    }
+    const { bindings } = this.settings.value.controls;
+    const pad = this.controls.lastDevice === 'gamepad';
+    const label = (action: Action) => (pad ? buttonLabel(bindings.gamepad[action][0]) : keyLabel(bindings.keyboard[action][0]));
+    const keys = id === 'lean' ? (pad ? t('hud.stick') : `${label('steerLeft')} ${label('steerRight')}`)
+      : id === 'trim' ? (pad ? t('hud.stick') : `${label('trimForward')} ${label('trimBack')}`)
+        : label(id);
+    return t(`hint.${id}`, { keys });
+  }
+
   /** The keys (or pad buttons) the prompts and hints name, from the player's bindings and last-used device. */
   private hintKeys(): HintKeys {
     // On touch the prompts name the on-screen buttons; paddling out again is the end card's Replay.
@@ -358,6 +394,7 @@ export class App {
     };
     label('touch-paddle', 'touch.paddle');
     label('touch-popup', 'touch.popUp');
+    label('touch-crouch', 'touch.crouch');
     label('touch-left', 'touch.left', true);
     label('touch-right', 'touch.right', true);
     document.getElementById('touch-popup')?.addEventListener('pointerdown', (event) => {

@@ -213,6 +213,15 @@
 #app[data-screen='ride'].has-touch .hud-readout { bottom: 84px; }
 #app[data-screen='ride'] .touch-button { min-width: 58px; height: 52px; padding: 0 12px; border: 1px solid rgba(251, 249, 231, .6); border-radius: 12px; background: rgba(20, 70, 73, .68); box-shadow: 0 4px 16px rgba(0, 35, 40, .17); color: #fff8e9; font: 19px var(--mono); touch-action: none; user-select: none; pointer-events: auto; }
 #app[data-screen='ride'] .touch-paddle, #app[data-screen='ride'] .touch-popup { flex: 1; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+#app[data-screen='ride'] .touch-crouch { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.hud-callout { position: absolute; left: 50%; top: 28%; margin: 0; transform: translateX(-50%); color: #fff8e9; font: 600 22px var(--mono); letter-spacing: .12em; text-shadow: 0 2px 12px rgba(0, 35, 40, .55); opacity: 0; pointer-events: none; }
+.hud-callout.is-shown { animation: hud-callout 1.6s ease-out forwards; }
+@keyframes hud-callout { 0% { opacity: 0; transform: translate(-50%, 6px); } 12% { opacity: 1; transform: translate(-50%, 0); } 70% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .hud-callout.is-shown { animation: hud-callout-still 1.6s linear forwards; } }
+@keyframes hud-callout-still { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+.end-card-turns, .end-card-note { margin: 6px 0 0; font-size: 13px; opacity: .85; }
+.hud-coach { position: absolute; top: calc(max(16px, 5vh) + 3.2em); left: 50%; max-width: min(88vw, 30em); margin: 0; padding: .45em 1em; transform: translateX(-50%); border-radius: 99px; background: rgba(23, 63, 67, .5); color: #fff8e9; font: 500 .85em 'DM Sans', 'Avenir Next', sans-serif; text-align: center; backdrop-filter: blur(8px); }
+.setting-help { display: block; margin-top: 2px; font-size: .78em; opacity: .7; }
 #app[data-screen='ride'] .touch-popup { background: rgba(223, 117, 88, .85); }
 #app[data-screen='ride'] .touch-button.is-held { background: #df7558; }
 #app[data-base='wavelab'] .touch-popup { display: none; }
