@@ -154,9 +154,9 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
 }
 
 /**
- * The view-only physical surf zone (plan P2c, option a): the stage 1 solver on
- * the shared water surface, a seabed mesh from the spot, and a spectator
- * camera. The legacy board does not ride these waves until P4.
+ * The physical surf zone (plan P2c, P4 and P5): the chosen solver stage on
+ * the shared water surface, a seabed mesh from the spot, a spectator camera,
+ * and the rider who paddles, pops up and rides these waves.
  */
 export type SurfZoneHostFactory = (config: SurfZoneConfig) => SurfZoneHost;
 

@@ -499,7 +499,7 @@ class SurfGame {
   }
 
   private renderPhysicalReadout(): void {
-    getElement<HTMLElement>('#readout-summary').textContent = 'PHYSICAL SURF ZONE · STAGE 1 SOLVER';
+    getElement<HTMLElement>('#readout-summary').textContent = `PHYSICAL SURF ZONE · ${this.physicalSettings.stage === 1 ? 'SHALLOW-WATER' : 'BOUSSINESQ'} SOLVER`;
     this.readoutPanel.render(this.physicalMode.readout());
   }
 
