@@ -30,6 +30,7 @@ import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, Physica
 import { OnlinePlay, type OnlinePhase } from './game/OnlinePlay';
 import type { OnlineController } from './net/OnlineController';
 import { ONLINE_QUEUE } from './net/OnlinePacer';
+import { decompress } from './wave/surfZoneState';
 import { INTERPOLATION_DELAY, createRemoteState, type RemoteState } from './net/RemoteSurfers';
 import { RemoteSurferViews } from './scene/RemoteSurferViews';
 import { NameTags, type TagEntry } from './ui/NameTags';
@@ -116,10 +117,10 @@ function surfZoneFactory(rider: boolean): SurfZoneHostFactory {
  * outside the break line), and the worker may queue enough steps to catch up with the
  * room's clock.
  */
-function onlineSurfZoneFactory(spawn: { spawnAlong: number; spawnOut: number }): SurfZoneHostFactory {
+function onlineSurfZoneFactory(spawn: { spawnAlong: number; spawnOut: number }, sea?: Uint8Array): SurfZoneHostFactory {
   return inPage
-    ? (config) => new LocalSurfZone(config, { rider: true, ...spawn })
-    : (config) => new WorkerSurfZone(config, undefined, { rider: true, ...spawn }, { maxQueuedSteps: ONLINE_QUEUE });
+    ? (config) => new LocalSurfZone(config, { rider: true, ...spawn }, sea)
+    : (config) => new WorkerSurfZone(config, undefined, { rider: true, ...spawn }, { maxQueuedSteps: ONLINE_QUEUE, ...(sea ? { sea } : {}) });
 }
 /** Only the worker steps on the GPU (plan P6), so only it gets the GPU tier's sea. */
 const gpuTier = inPage ? undefined : webGpuAvailable;
@@ -568,6 +569,8 @@ class SurfGame {
    * Online (spec N1): the room's sea, built from its seed and conditions at the room's
    * clock (stage 2 with the GPU tier's 64 components, whatever the graphics settings),
    * with the rider waiting outside the break until the sea has caught up with the room.
+   * The sea is another player's, handed over through the server, whenever someone else
+   * is in the room (spec N1: late joiners' fresh seas break elsewhere); fresh otherwise.
    * Called again to rebuild the sea when it falls behind.
    */
   async startOnline(controller: OnlineController, camera: RideView | 'overview' = 'front'): Promise<boolean> {
@@ -577,9 +580,12 @@ class SurfGame {
     this.physicalMode.defaultView = camera;
     const settings = physicalSettingsFor(room.spot, room.conditions, { stage: 2, compute: 'auto' });
     const spawn = { spawnAlong: (Math.random() - 0.5) * 40, spawnOut: 10 + Math.random() * 15 };
+    const handed = await controller.requestSea();
+    const sea = handed ? await decompress(handed.bytes, handed.deflated) : undefined;
+    // A handed-over sea brings its own clock; a fresh one starts at the room's.
     const overrides: Partial<SurfZoneConfig> = { stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow() };
     const started = await this.startPhysical(room.seed, settings, {
-      sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn), overrides,
+      sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea), overrides,
     });
     if (!started) return false;
     if (this.online?.controller === controller) {
@@ -594,6 +600,8 @@ class SurfGame {
       controller, play: new OnlinePlay(controller), views, tags: new NameTags(getElement('#app')),
       state: createRemoteState(), anchors: [], rebuilding: false,
     };
+    // Someone joining late takes this sea (spec N1).
+    controller.provideSea = async () => (this.online?.controller === controller ? this.physicalMode.host?.exportState() : undefined);
     return true;
   }
 

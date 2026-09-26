@@ -3,7 +3,7 @@ import { DEFAULT_SURFER } from '../game/SurferChoice';
 import { SURF_ZONE_STEP } from '../wave/SurfZoneRunner';
 import type { SocketLike } from './NetClient';
 import { OnlineController, CALL_SECONDS, FEED_SECONDS } from './OnlineController';
-import { POSE_BYTES, createPose, encodeBundle, encodePose } from './poseCodec';
+import { POSE_BYTES, createPose, encodeBundle, encodePose, encodeSeaFrame, readSeaFrame } from './poseCodec';
 import { DEFAULT_ROOM_SETTINGS, lookFor, type ClientMessage, type RoomInfo, type ServerMessage } from './protocol';
 
 class FakeSocket implements SocketLike {
@@ -201,6 +201,40 @@ describe('OnlineController', () => {
     welcome({ you: 5, players: [{ id: 3, name: 'Cai', look }] });
     expect(controller.you).toBe(5);
     expect(controller.remote.ids()).toEqual([3]);
+  });
+
+  it('answers the server\'s call for its sea with a sea frame (spec N1)', async () => {
+    const { controller, sockets, welcome } = setup();
+    sockets[0].open();
+    welcome();
+    controller.provideSea = async () => ({ bytes: Uint8Array.of(9, 9, 9), deflated: true });
+    sockets[0].receive({ type: 'seaRequest', request: 42 });
+    await vi.waitFor(() => expect(sockets[0].binaries().length).toBeGreaterThan(0));
+    const frame = readSeaFrame(sockets[0].binaries().at(-1)!);
+    expect(frame).toMatchObject({ request: 42, deflated: true });
+    expect(Array.from(frame!.bytes)).toEqual([9, 9, 9]);
+  });
+
+  it('asks for the room\'s sea, and takes a handed-over one or starts fresh', async () => {
+    const { controller, sockets, welcome } = setup();
+    sockets[0].open();
+    welcome();
+    const handed = controller.requestSea();
+    expect(sockets[0].texts().at(-1)).toEqual({ type: 'needSea' });
+    sockets[0].receive(encodeSeaFrame(3, Uint8Array.of(1, 2, 3, 4), false).buffer as ArrayBuffer);
+    expect(await handed).toEqual({ bytes: Uint8Array.of(1, 2, 3, 4), deflated: false });
+    const fresh = controller.requestSea();
+    sockets[0].receive({ type: 'fresh' });
+    expect(await fresh).toBeUndefined();
+  });
+
+  it('starts fresh when no sea comes in time', async () => {
+    const { controller, sockets, welcome, advance } = setup();
+    sockets[0].open();
+    welcome();
+    const handed = controller.requestSea(5000);
+    advance(5001);
+    expect(await handed).toBeUndefined();
   });
 
   it('reports a refusal', () => {

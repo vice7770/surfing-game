@@ -73,6 +73,11 @@ export class NetClient {
   }
 
   sendPose(bytes: Uint8Array): void {
+    this.sendBinary(bytes);
+  }
+
+  /** A binary frame (a pose, or a handed-over sea), while connected. */
+  sendBinary(bytes: Uint8Array): void {
     if (this.open) this.socket!.send(bytes);
   }
 

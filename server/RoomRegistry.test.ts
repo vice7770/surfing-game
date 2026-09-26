@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SURFER } from '../src/game/SurferChoice';
-import { POSE_BYTES, readBundle } from '../src/net/poseCodec';
-import { lookFor, type ServerMessage } from '../src/net/protocol';
+import { POSE_BYTES, encodeSeaFrame, readBundle, readSeaFrame } from '../src/net/poseCodec';
+import { MAX_SEA_BYTES, SEA_DONOR_SECONDS, lookFor, type ServerMessage } from '../src/net/protocol';
 import { RoomRegistry, type Connection } from './RoomRegistry';
 
 class FakeConnection implements Connection {
@@ -242,6 +242,76 @@ describe('RoomRegistry', () => {
     advance(1000);
     a.session.text('{"type":"ping","t":1}');
     expect(a.conn.closed).toBe(false);
+  });
+
+  describe('the sea handover (spec N1)', () => {
+    const request = (conn: FakeConnection) => conn.last('seaRequest')!.request;
+    const seaFrame = (id: number, fill: number) => encodeSeaFrame(id, new Uint8Array(1000).fill(fill), true);
+
+    it('starts a lone player fresh', () => {
+      const { create } = setup();
+      const a = create();
+      a.session.text('{"type":"needSea"}');
+      expect(a.conn.last('fresh')).toEqual({ type: 'fresh' });
+    });
+
+    it('asks the longest-present player, and passes their sea to the joiner only', () => {
+      const { create, join } = setup();
+      const a = create();
+      const { code } = a.conn.last('welcome')!.room;
+      const b = join(code, 'Bea');
+      const c = join(code, 'Cai');
+      c.session.text('{"type":"needSea"}');
+      expect(b.conn.last('seaRequest')).toBeUndefined();
+      const id = request(a.conn);
+      a.session.binary(seaFrame(id, 7));
+      expect(c.conn.bundles).toHaveLength(1);
+      const frame = readSeaFrame(c.conn.bundles[0]);
+      expect(frame).toMatchObject({ request: id, deflated: true });
+      expect(frame!.bytes[0]).toBe(7);
+      expect(b.conn.bundles).toHaveLength(0);
+      // A second, unasked frame goes nowhere.
+      a.session.binary(seaFrame(id, 8));
+      expect(c.conn.bundles).toHaveLength(1);
+    });
+
+    it('asks the next player when a donor is slow, then starts the joiner fresh', () => {
+      const { registry, create, join, advance } = setup();
+      const a = create();
+      const { code } = a.conn.last('welcome')!.room;
+      const b = join(code, 'Bea');
+      const c = join(code, 'Cai');
+      c.session.text('{"type":"needSea"}');
+      advance(SEA_DONOR_SECONDS * 1000 + 1);
+      registry.tick();
+      expect(b.conn.last('seaRequest')).toBeDefined();
+      // The first donor's late answer is ignored.
+      a.session.binary(seaFrame(request(a.conn), 1));
+      expect(c.conn.bundles).toHaveLength(0);
+      advance(SEA_DONOR_SECONDS * 1000 + 1);
+      registry.tick();
+      expect(c.conn.last('fresh')).toEqual({ type: 'fresh' });
+    });
+
+    it('moves on at once when the donor leaves', () => {
+      const { create, join } = setup();
+      const a = create();
+      const { code } = a.conn.last('welcome')!.room;
+      const b = join(code, 'Bea');
+      const c = join(code, 'Cai');
+      c.session.text('{"type":"needSea"}');
+      a.session.close();
+      expect(b.conn.last('seaRequest')).toBeDefined();
+    });
+
+    it('drops frames bigger than the limit', () => {
+      const { create, join } = setup();
+      const a = create();
+      const b = join(a.conn.last('welcome')!.room.code);
+      b.session.text('{"type":"needSea"}');
+      a.session.binary(encodeSeaFrame(request(a.conn), new Uint8Array(MAX_SEA_BYTES + 1), false));
+      expect(b.conn.bundles).toHaveLength(0);
+    });
   });
 
   it('drops oversized text', () => {

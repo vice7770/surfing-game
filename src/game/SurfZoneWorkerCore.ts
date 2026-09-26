@@ -1,17 +1,21 @@
 import type { BoussinesqSolver } from '../wave/BoussinesqSolver';
 import { SurfZoneRunner, type RideRequest, type SurfZoneBuffers, type SurfZoneRunnerOptions } from '../wave/SurfZoneRunner';
 import type { SolverDevice, SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { compress, decodeSurfZoneState, encodeSurfZoneState } from '../wave/surfZoneState';
 import type { SurfZoneInit, SurfZoneSnapshot } from './SurfZoneHost';
 
 /** Main thread → worker. `buffers` come back filled in the next snapshot. */
 export type SurfZoneRequest =
-  | { type: 'start'; config: SurfZoneConfig; options?: SurfZoneRunnerOptions }
+  /** `sea`: an encoded sea handed over by another player (spec N1), taken over before the device attaches. */
+  | { type: 'start'; config: SurfZoneConfig; options?: SurfZoneRunnerOptions; sea?: Uint8Array }
+  | { type: 'exportState'; id: number }
   | { type: 'advance'; steps: number; buffers: SurfZoneBuffers; input?: RideRequest; reactions?: Float32Array };
 
 /** Worker → main thread. */
 export type SurfZoneReply =
   | { type: 'ready'; init: SurfZoneInit; snapshot: SurfZoneSnapshot }
-  | { type: 'snapshot'; snapshot: SurfZoneSnapshot };
+  | { type: 'snapshot'; snapshot: SurfZoneSnapshot }
+  | { type: 'state'; id: number; bytes: Uint8Array; deflated: boolean };
 
 /** The arrays of a snapshot, handed over without copying. */
 export function transferables(buffers: SurfZoneBuffers): Transferable[] {
@@ -33,6 +37,8 @@ export type SolverDeviceFactory = (solver: BoussinesqSolver) => Promise<SolverDe
  */
 export class SurfZoneWorkerCore {
   private runner?: SurfZoneRunner;
+  /** A device step under way: an export waits for it, so it never sees half a step. */
+  private stepping?: Promise<void>;
 
   constructor(
     private readonly post: (reply: SurfZoneReply, transfer: Transferable[]) => void,
@@ -42,6 +48,7 @@ export class SurfZoneWorkerCore {
   handle(request: SurfZoneRequest): void | Promise<void> {
     if (request.type === 'start') {
       const runner = new SurfZoneRunner(request.config, request.options);
+      if (request.sea) runner.simulation.importState(decodeSurfZoneState(request.sea));
       this.runner = runner;
       if (this.createDevice && (request.config.compute ?? 'auto') === 'auto') {
         return runner.useDevice(this.createDevice).then(() => this.ready(runner));
@@ -51,11 +58,24 @@ export class SurfZoneWorkerCore {
     }
     const { runner } = this;
     if (!runner) return;
+    if (request.type === 'exportState') return this.exportState(runner, request.id);
     if (runner.simulation.device) {
-      return runner.advanceAsync(request.steps, request.input, request.reactions).then(() => this.reply(runner, request.buffers));
+      const step = runner.advanceAsync(request.steps, request.input, request.reactions).then(() => this.reply(runner, request.buffers));
+      this.stepping = step.finally(() => {
+        if (this.stepping === settled) this.stepping = undefined;
+      });
+      const settled = this.stepping;
+      return step;
     }
     runner.advance(request.steps, request.input, request.reactions);
     this.reply(runner, request.buffers);
+  }
+
+  /** This sea, encoded and compressed, for a player joining late (spec N1), once any step under way is done. */
+  private async exportState(runner: SurfZoneRunner, id: number): Promise<void> {
+    await this.stepping;
+    const { bytes, deflated } = await compress(encodeSurfZoneState(runner.simulation.exportState()));
+    this.post({ type: 'state', id, bytes, deflated }, [bytes.buffer]);
   }
 
   private ready(runner: SurfZoneRunner): void {

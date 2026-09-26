@@ -480,7 +480,7 @@ export class App {
     if (controller.token) this.settings.rememberRoom(room.code, controller.token);
     this.multiplayer = { ...this.multiplayer, code: room.code };
     this.setRoomInUrl(room.code);
-    this.setLoadingText('online.catchingUp');
+    this.setLoadingText('online.handover');
     const started = await this.game.startOnline(controller, this.settings.value.gameplay.defaultCamera);
     this.loading.classList.add('is-hidden');
     this.multiplayer = { ...this.multiplayer, busy: false };

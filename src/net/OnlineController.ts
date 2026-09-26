@@ -2,7 +2,7 @@ import type { SurferSettings } from '../game/SurferChoice';
 import { BUILD_ID } from './buildId';
 import { roomSeaTime } from './ClockSync';
 import { NetClient, type NetStatus, type SocketLike } from './NetClient';
-import { POSE_BYTES, encodePose, type SurferPose } from './poseCodec';
+import { POSE_BYTES, SEA_KIND, encodePose, encodeSeaFrame, readSeaFrame, type SurferPose } from './poseCodec';
 import { lookFor, type CallId, type ClientMessage, type PlayerInfo, type PlayerLook, type Refusal, type RoomInfo, type RoomSettings, type ServerMessage } from './protocol';
 import { RemoteSurfers } from './RemoteSurfers';
 
@@ -12,6 +12,15 @@ export const CALL_SECONDS = 2;
 export const FEED_SECONDS = 6;
 /** Rides shorter than this, s, are not announced. */
 export const FEED_MIN_SECONDS = 3;
+
+/** A player asking for the room's sea waits this long for one, ms, then starts fresh. */
+export const SEA_WAIT_MS = 30_000;
+
+/** A sea as it travels: encoded (`encodeSurfZoneState`), and deflated or not. */
+export interface HandedSea {
+  bytes: Uint8Array;
+  deflated: boolean;
+}
 
 /** Make a room (with dev bots, when the server allows them), or join one by its code. */
 export type OnlineIntent = { create: RoomSettings; bots?: number } | { join: string };
@@ -59,6 +68,9 @@ export class OnlineController {
   onWelcome?: (room: RoomInfo) => void;
   onChange?: () => void;
   onRefused?: (reason: Refusal) => void;
+  /** This player's sea, for someone joining late (spec N1: the sea handover); the game sets it. */
+  provideSea?: () => Promise<HandedSea | undefined>;
+  private seaWanted?: (sea: HandedSea | undefined) => void;
   readonly name: string;
   readonly look: PlayerLook;
   private readonly net: NetClient;
@@ -75,7 +87,7 @@ export class OnlineController {
     this.now = options.now ?? (() => performance.now());
     this.net = new NetClient(options.url, () => this.hello(), {
       message: (message) => this.handle(message),
-      poses: (data) => this.remote.receiveBundle(data, this.now(), this.reactions),
+      poses: (data) => this.receiveBinary(data),
       status: (status) => {
         this.status = status;
         this.onChange?.();
@@ -90,6 +102,49 @@ export class OnlineController {
     const { intent } = this.options;
     if ('create' in intent) return { type: 'create', build, settings: intent.create, name, look, ...(intent.bots ? { bots: intent.bots } : {}) };
     return { type: 'join', build, code: intent.join, name, look, ...(this.token ? { token: this.token } : {}) };
+  }
+
+  /** A bundle of the others' poses, or the sea this player asked for. */
+  private receiveBinary(data: ArrayBuffer): void {
+    const bytes = new Uint8Array(data);
+    if (bytes[0] !== SEA_KIND) {
+      this.remote.receiveBundle(data, this.now(), this.reactions);
+      return;
+    }
+    const frame = readSeaFrame(bytes);
+    if (frame) this.takeSea({ bytes: frame.bytes.slice(), deflated: frame.deflated });
+  }
+
+  private takeSea(sea: HandedSea | undefined): void {
+    const wanted = this.seaWanted;
+    this.seaWanted = undefined;
+    wanted?.(sea);
+  }
+
+  /**
+   * The room's sea (spec N1): the longest-present player's, handed over through
+   * the server, or undefined to start fresh (nobody else here, nobody answered,
+   * or nothing came within `wait` ms).
+   */
+  requestSea(wait = SEA_WAIT_MS): Promise<HandedSea | undefined> {
+    this.takeSea(undefined);
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => {
+        if (this.seaWanted === settle) this.takeSea(undefined);
+      }, wait);
+      const settle = (sea: HandedSea | undefined) => {
+        clearTimeout(timer);
+        resolve(sea);
+      };
+      this.seaWanted = settle;
+      this.net.send({ type: 'needSea' });
+    });
+  }
+
+  /** The server asks for this player's sea for someone joining: send it, if the game has one. */
+  private async answerSea(request: number): Promise<void> {
+    const sea = await this.provideSea?.();
+    if (sea) this.net.sendBinary(encodeSeaFrame(request, sea.bytes, sea.deflated));
   }
 
   private handle(message: ServerMessage): void {
@@ -116,6 +171,12 @@ export class OnlineController {
         break;
       case 'ride':
         this.feed.push({ id: message.id, name: this.nameOf(message.id) ?? '', distance: message.distance, seconds: message.seconds, until: now + FEED_SECONDS * 1000 });
+        break;
+      case 'seaRequest':
+        void this.answerSea(message.request);
+        break;
+      case 'fresh':
+        this.takeSea(undefined);
         break;
       case 'refused':
         this.refusal = message.reason;
@@ -181,6 +242,7 @@ export class OnlineController {
   }
 
   close(): void {
+    this.takeSea(undefined);
     this.net.close();
   }
 }

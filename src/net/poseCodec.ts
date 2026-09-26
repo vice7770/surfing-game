@@ -19,6 +19,30 @@
  * | 68 | f32 ×2 reaction impulse x, z (N·s) |
  */
 export const POSE_BYTES = 76;
+/**
+ * A handed-over sea (spec N1), both ways through the server: kind, flags (1 =
+ * deflated), u16 0, u32 request id, then the encoded state (`encodeSurfZoneState`).
+ */
+export const SEA_KIND = 2;
+const SEA_HEADER = 8;
+
+export function encodeSeaFrame(request: number, bytes: Uint8Array, deflated: boolean): Uint8Array {
+  const frame = new Uint8Array(SEA_HEADER + bytes.byteLength);
+  const view = new DataView(frame.buffer);
+  view.setUint8(0, SEA_KIND);
+  view.setUint8(1, deflated ? 1 : 0);
+  view.setUint32(4, request, true);
+  frame.set(bytes, SEA_HEADER);
+  return frame;
+}
+
+/** A sea frame's request id, flags and payload; undefined for anything else (a pose is exactly POSE_BYTES, a bundle is kind 1). */
+export function readSeaFrame(data: Uint8Array): { request: number; deflated: boolean; bytes: Uint8Array } | undefined {
+  if (data.byteLength <= SEA_HEADER || data.byteLength === POSE_BYTES || data[0] !== SEA_KIND) return undefined;
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  return { request: view.getUint32(4, true), deflated: (data[1] & 1) === 1, bytes: data.subarray(SEA_HEADER) };
+}
+
 /** The server's bundle of others' poses: kind, 0, u16 count, then (u16 id, pose) each. */
 export const BUNDLE_KIND = 1;
 const BUNDLE_HEADER = 4;

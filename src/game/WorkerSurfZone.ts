@@ -21,6 +21,8 @@ export const MAX_QUEUED_STEPS = 6;
 export interface WorkerSurfZoneOptions {
   /** Most steps queued while an advance is in flight; online play raises it to catch up with the room's clock (spec N1). */
   maxQueuedSteps?: number;
+  /** An encoded sea handed over by another player, to start from (spec N1). */
+  sea?: Uint8Array;
 }
 
 function emptyLike(snapshot: SurfZoneBuffers): SurfZoneBuffers {
@@ -63,6 +65,8 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
   /** Held controls from the latest request; presses (pop-up, retry) kept until an advance carries them. */
   private input: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
   private disposed = false;
+  private exports = 0;
+  private readonly exporting = new Map<number, (sea: { bytes: Uint8Array; deflated: boolean }) => void>();
 
   constructor(
     readonly config: SurfZoneConfig, private readonly port: WorkerPort = createSurfZoneWorker(), options: SurfZoneRunnerOptions = {},
@@ -73,6 +77,11 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
     this.ready = new Promise((resolve, reject) => {
       port.onerror = (event) => reject(new Error(event.message || 'The surf zone worker failed'));
       port.onmessage = ({ data }) => {
+        if (data.type === 'state') {
+          this.exporting.get(data.id)?.({ bytes: data.bytes, deflated: data.deflated });
+          this.exporting.delete(data.id);
+          return;
+        }
         if (data.type === 'ready') {
           this.init = data.init;
           this.snapshot = data.snapshot;
@@ -88,7 +97,8 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
         this.flush();
       };
     });
-    port.postMessage({ type: 'start', config, options });
+    const { sea } = host;
+    port.postMessage({ type: 'start', config, options, ...(sea ? { sea } : {}) }, sea ? [sea.buffer] : []);
   }
 
   /** Steps asked for that no snapshot shows yet: queued, and in the worker now. */
@@ -104,6 +114,15 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
     if (steps <= 0 || this.disposed) return;
     this.pending = Math.min(this.maxQueuedSteps, this.pending + steps);
     this.flush();
+  }
+
+  /** This sea for a player joining late (spec N1), from the worker once its step under way is done. */
+  exportState(): Promise<{ bytes: Uint8Array; deflated: boolean }> {
+    const id = ++this.exports;
+    return new Promise((resolve) => {
+      this.exporting.set(id, resolve);
+      this.port.postMessage({ type: 'exportState', id });
+    });
   }
 
   dispose(): void {

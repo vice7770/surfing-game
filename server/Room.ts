@@ -1,5 +1,5 @@
-import { POSE_BYTES, encodeBundle } from '../src/net/poseCodec';
-import type { PlayerInfo, PlayerLook, RoomInfo, ServerMessage } from '../src/net/protocol';
+import { POSE_BYTES, encodeBundle, readSeaFrame } from '../src/net/poseCodec';
+import { MAX_SEA_BYTES, SEA_DONOR_SECONDS, type PlayerInfo, type PlayerLook, type RoomInfo, type ServerMessage } from '../src/net/protocol';
 
 /** One player's socket, as the rooms see it. */
 export interface Connection {
@@ -24,6 +24,15 @@ export function send(conn: Connection, message: ServerMessage): void {
   conn.sendText(JSON.stringify(message));
 }
 
+/** A player waiting for the room's sea: who is asked now (and until when), and who is left to ask. */
+interface SeaRequest {
+  id: number;
+  joiner: Player;
+  donor?: Player;
+  deadline: number;
+  next: Player[];
+}
+
 function info(player: Player): PlayerInfo {
   return { id: player.id, name: player.name, look: player.look };
 }
@@ -39,6 +48,8 @@ export class Room {
   /** When the room last became empty, server ms (its creation counts). */
   emptySince: number;
   private nextId = 1;
+  private readonly seaRequests = new Map<number, SeaRequest>();
+  private nextRequest = 1;
 
   constructor(readonly info: RoomInfo, readonly creatorToken: string, now: number) {
     this.emptySince = now;
@@ -67,6 +78,10 @@ export class Room {
   remove(player: Player, now: number): void {
     if (this.players.get(player.id) !== player) return;
     this.players.delete(player.id);
+    for (const request of [...this.seaRequests.values()]) {
+      if (request.joiner === player) this.seaRequests.delete(request.id);
+      else if (request.donor === player) this.askNext(request, now);
+    }
     for (const other of this.players.values()) send(other.conn, { type: 'left', id: player.id });
     if (this.players.size === 0) this.emptySince = now;
   }
@@ -93,8 +108,49 @@ export class Room {
     player.poseFresh = true;
   }
 
-  /** Each player gets one bundle of the others' poses that arrived since the last tick. */
-  tick(): void {
+  /**
+   * A player needs the room's sea (spec N1: the sea handover): the player who
+   * has been in the room longest is asked for theirs; with nobody else here,
+   * the player starts fresh.
+   */
+  needSea(joiner: Player, now: number): void {
+    const request: SeaRequest = {
+      id: this.nextRequest, joiner, deadline: 0, next: [...this.players.values()].filter((player) => player !== joiner),
+    };
+    this.nextRequest = this.nextRequest >= 0xffffffff ? 1 : this.nextRequest + 1;
+    this.seaRequests.set(request.id, request);
+    this.askNext(request, now);
+  }
+
+  /** The next donor in line, or `fresh` for the joiner when there is none. */
+  private askNext(request: SeaRequest, now: number): void {
+    let donor: Player | undefined;
+    while (!donor && request.next.length) {
+      const candidate = request.next.shift()!;
+      if (this.players.get(candidate.id) === candidate) donor = candidate;
+    }
+    request.donor = donor;
+    if (!donor) {
+      this.seaRequests.delete(request.id);
+      if (this.players.get(request.joiner.id) === request.joiner) send(request.joiner.conn, { type: 'fresh' });
+      return;
+    }
+    request.deadline = now + SEA_DONOR_SECONDS * 1000;
+    send(donor.conn, { type: 'seaRequest', request: request.id });
+  }
+
+  /** A donor's sea: passed to the player who asked, if it is the answer asked for and not too big. */
+  seaFrame(from: Player, data: Uint8Array): void {
+    const frame = readSeaFrame(data);
+    const request = frame && this.seaRequests.get(frame.request);
+    if (!frame || !request || request.donor !== from || frame.bytes.byteLength > MAX_SEA_BYTES) return;
+    this.seaRequests.delete(request.id);
+    if (this.players.get(request.joiner.id) === request.joiner) request.joiner.conn.sendBinary(data.slice());
+  }
+
+  /** Each player gets one bundle of the others' poses that arrived since the last tick; slow donors are passed over. */
+  tick(now = Number.NEGATIVE_INFINITY): void {
+    for (const request of [...this.seaRequests.values()]) if (now > request.deadline) this.askNext(request, now);
     const fresh = [...this.players.values()].filter((player) => player.poseFresh && player.pose);
     if (fresh.length === 0) return;
     for (const recipient of this.players.values()) {

@@ -2,6 +2,7 @@ import type { RenderableSurfZone } from '../scene/PhysicalSurfaceSource';
 import { sampleSurfaceBed, sampleSurfaceHeight, type SurfaceGrid } from '../scene/WaterSurface';
 import { SurfZoneRunner, type RideRequest, type SurfZoneBuffers, type SurfZoneRunnerOptions, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { RenderGrid, SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { compress, decodeSurfZoneState, encodeSurfZoneState } from '../wave/surfZoneState';
 
 /** What a surf zone fixes when it starts: its render grid, bed, break focus, window and solver column width. */
 export interface SurfZoneInit {
@@ -32,6 +33,8 @@ export interface SurfZoneHost {
   advance(steps: number, input?: RideRequest, reactions?: ArrayLike<number>): void;
   /** Steps asked for that no snapshot shows yet (online pacing counts them, spec N1). */
   readonly outstandingSteps: number;
+  /** This sea for a player joining late (spec N1): encoded, and compressed where the platform can. */
+  exportState(): Promise<{ bytes: Uint8Array; deflated: boolean }>;
   /** Rendered water surface at (x, z), m: the same lookup the water shader uses. */
   heightAt(x: number, z: number): number;
   bedAt(x: number, z: number): number;
@@ -59,9 +62,11 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
   readonly init: SurfZoneInit;
   readonly snapshot: SurfZoneSnapshot;
 
-  constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}) {
+  /** `sea`: an encoded sea handed over by another player (spec N1). */
+  constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, sea?: Uint8Array) {
     super();
     this.runner = new SurfZoneRunner(config, options);
+    if (sea) this.runner.simulation.importState(decodeSurfZoneState(sea));
     this.init = {
       grid: { ...this.runner.grid }, bed: this.runner.bed, focus: this.runner.focus,
       windowXMin: this.runner.windowXMin, dx: this.runner.simulation.solver.dx,
@@ -86,6 +91,10 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
     this.pendingReactions = [];
     this.pendingPress = { popUp: false, retry: false };
     this.refresh();
+  }
+
+  exportState(): Promise<{ bytes: Uint8Array; deflated: boolean }> {
+    return compress(encodeSurfZoneState(this.runner.simulation.exportState()));
   }
 
   dispose(): void {}

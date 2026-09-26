@@ -1,8 +1,8 @@
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { WebSocketServer, type RawData } from 'ws';
-import { POSE_HZ } from '../src/net/protocol';
+import { MAX_SEA_BYTES, POSE_HZ } from '../src/net/protocol';
 import { RoomRegistry } from './RoomRegistry';
 import { readBuild, serveStatic } from './staticFiles';
 
@@ -19,8 +19,8 @@ export interface RunningServer {
   close(): Promise<void>;
 }
 
-/** Bigger frames close the socket (the sessions themselves drop anything over MAX_MESSAGE_BYTES). */
-const MAX_FRAME_BYTES = 64 * 1024;
+/** Bigger frames close the socket: a handed-over sea is the largest (the sessions drop oversized text themselves). */
+const MAX_FRAME_BYTES = MAX_SEA_BYTES + 64;
 /** How often empty rooms are looked for, ms. */
 const SWEEP_MS = 10_000;
 
@@ -75,7 +75,8 @@ export async function startServer(options: ServerOptions): Promise<RunningServer
 }
 
 async function main(): Promise<void> {
-  const root = process.env.STATIC_DIR ?? 'dist';
+  // The built game sits beside the built server (`dist/` and `dist-server/`), wherever it is started from.
+  const root = process.env.STATIC_DIR ?? fileURLToPath(new URL('../dist/', import.meta.url));
   const running = await startServer({ port: Number(process.env.PORT ?? 8787), root });
   console.log(`Breakline: the game and its rooms on http://localhost:${running.port} (build ${readBuild(root)}).`);
 }

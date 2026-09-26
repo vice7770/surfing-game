@@ -1,6 +1,7 @@
 import {
   EMPTY_ROOM_SECONDS, FLOOD_SECONDS, MAX_MESSAGE_BYTES, MAX_MESSAGES_PER_SECOND, parseClientMessage, type ClientMessage, type Refusal,
 } from '../src/net/protocol';
+import { POSE_BYTES } from '../src/net/poseCodec';
 import { newRoomCode } from '../src/net/roomCode';
 import { Room, send, type Connection, type Player } from './Room';
 
@@ -42,7 +43,8 @@ export class RoomRegistry {
 
   /** Relay: every room sends its bundles. */
   tick(): void {
-    for (const room of this.rooms.values()) room.tick();
+    const now = this.options.now();
+    for (const room of this.rooms.values()) room.tick(now);
   }
 
   /** Close rooms empty for EMPTY_ROOM_SECONDS. */
@@ -120,6 +122,9 @@ export class ServerSession {
       case 'kick':
         room.kick(player, message.id, this.registry.options.now());
         break;
+      case 'needSea':
+        room.needSea(player, this.registry.options.now());
+        break;
       default:
         break;
     }
@@ -127,7 +132,8 @@ export class ServerSession {
 
   binary(data: Uint8Array): void {
     if (!this.admit() || !this.player || !this.room) return;
-    this.room.pose(this.player, data);
+    if (data.byteLength === POSE_BYTES) this.room.pose(this.player, data);
+    else this.room.seaFrame(this.player, data);
   }
 
   /** The connection went away: the player leaves their room. */

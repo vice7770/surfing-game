@@ -17,6 +17,10 @@ export const FLOOD_SECONDS = 5;
 export const EMPTY_ROOM_SECONDS = 300;
 /** A player not heard from in this long, s, vanishes for the others. */
 export const SILENT_PLAYER_SECONDS = 5;
+/** A handed-over sea may be this big, bytes (spec N1). */
+export const MAX_SEA_BYTES = 8 * 1024 * 1024;
+/** A donor gets this long to send its sea before the next is asked, s. */
+export const SEA_DONOR_SECONDS = 10;
 /** Longest name, characters. */
 export const NAME_LENGTH = 16;
 /** Most bots a dev room takes. */
@@ -76,7 +80,9 @@ export type ClientMessage =
   | { type: 'ping'; t: number }
   | { type: 'call'; call: CallId }
   | { type: 'ride'; distance: number; seconds: number }
-  | { type: 'kick'; id: number };
+  | { type: 'kick'; id: number }
+  /** Ask for the room's sea: a handover from another player, or `fresh` when nobody can give one (spec N1). */
+  | { type: 'needSea' };
 
 /** Server → player, as JSON text. Poses come as binary bundles (`poseCodec`). */
 export type ServerMessage =
@@ -86,7 +92,11 @@ export type ServerMessage =
   | { type: 'pong'; t: number; server: number }
   | { type: 'call'; id: number; call: CallId }
   | { type: 'ride'; id: number; distance: number; seconds: number }
-  | { type: 'refused'; reason: Refusal };
+  | { type: 'refused'; reason: Refusal }
+  /** To a donor: send your sea for request `request` (a `SEA_KIND` frame). */
+  | { type: 'seaRequest'; request: number }
+  /** To a player who asked: no sea is coming, start a fresh one. */
+  | { type: 'fresh' };
 
 function record(value: unknown): Record<string, unknown> | undefined {
   return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
@@ -160,6 +170,8 @@ export function parseClientMessage(text: string): ClientMessage | undefined {
       const seconds = finite(value.seconds);
       return distance !== undefined && seconds !== undefined && distance >= 0 && seconds >= 0 ? { type: 'ride', distance, seconds } : undefined;
     }
+    case 'needSea':
+      return { type: 'needSea' };
     case 'kick':
       return typeof value.id === 'number' && Number.isInteger(value.id) ? { type: 'kick', id: value.id } : undefined;
     case 'create': {
