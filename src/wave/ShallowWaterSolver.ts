@@ -80,9 +80,10 @@ export function stretchedEdges(offshore: number, shore: number, fineFrom: number
   return edges;
 }
 
-const WALL = 0;
-const PERIODIC = 1;
-const OPEN = 2;
+/** Along-shore boundary codes. */
+export const WALL = 0;
+export const PERIODIC = 1;
+export const OPEN = 2;
 
 interface Flux {
   mass: number;
@@ -170,35 +171,35 @@ export class ShallowWaterSolver {
   protected readonly dryDepth: number;
   readonly restLevel: number;
   protected readonly depthAt: DepthFunction;
-  private readonly manning: number;
-  private readonly courant: number;
-  private readonly xBoundary: number;
-  private readonly zEdges: Float64Array;
-  private readonly zGaps: Float64Array;
-  private readonly u: Float64Array;
-  private readonly w: Float64Array;
-  private readonly eta: Float64Array;
-  private readonly rateH: Float64Array;
-  private readonly rateQx: Float64Array;
-  private readonly rateQz: Float64Array;
+  protected readonly manning: number;
+  protected readonly courant: number;
+  protected readonly xBoundary: number;
+  protected readonly zEdges: Float64Array;
+  protected readonly zGaps: Float64Array;
+  protected readonly u: Float64Array;
+  protected readonly w: Float64Array;
+  protected readonly eta: Float64Array;
+  protected readonly rateH: Float64Array;
+  protected readonly rateQx: Float64Array;
+  protected readonly rateQz: Float64Array;
   private readonly flux: Flux = { mass: 0, normal: 0, tangent: 0, leftCorrection: 0, rightCorrection: 0 };
   /** MUSCL face states per cell: x faces (west/east) and z faces (south/north). */
-  private readonly xhW: Float64Array;
-  private readonly xhE: Float64Array;
-  private readonly xetaW: Float64Array;
-  private readonly xetaE: Float64Array;
-  private readonly xuW: Float64Array;
-  private readonly xuE: Float64Array;
-  private readonly xwW: Float64Array;
-  private readonly xwE: Float64Array;
-  private readonly zhS: Float64Array;
-  private readonly zhN: Float64Array;
-  private readonly zetaS: Float64Array;
-  private readonly zetaN: Float64Array;
-  private readonly zwS: Float64Array;
-  private readonly zwN: Float64Array;
-  private readonly zuS: Float64Array;
-  private readonly zuN: Float64Array;
+  protected readonly xhW: Float64Array;
+  protected readonly xhE: Float64Array;
+  protected readonly xetaW: Float64Array;
+  protected readonly xetaE: Float64Array;
+  protected readonly xuW: Float64Array;
+  protected readonly xuE: Float64Array;
+  protected readonly xwW: Float64Array;
+  protected readonly xwE: Float64Array;
+  protected readonly zhS: Float64Array;
+  protected readonly zhN: Float64Array;
+  protected readonly zetaS: Float64Array;
+  protected readonly zetaN: Float64Array;
+  protected readonly zwS: Float64Array;
+  protected readonly zwN: Float64Array;
+  protected readonly zuS: Float64Array;
+  protected readonly zuN: Float64Array;
   private readonly zones: ZoneEntry[] = [];
   private readonly target: WaterTarget = { eta: 0, qx: 0, qz: 0 };
 
@@ -425,20 +426,31 @@ export class ShallowWaterSolver {
    * conservative step with Riemann fluxes of the predicted faces. One flux
    * evaluation per step instead of SSP-RK2's two.
    */
-  private advance(dt: number): void {
+  protected advance(dt: number): void {
     const { h, qx, qz, rateH, rateQx, rateQz } = this;
-    this.predictFaces(0.5 * dt);
-    rateH.fill(0);
-    rateQx.fill(0);
-    rateQz.fill(0);
-    this.fluxAlongX();
-    this.fluxAlongZ();
+    this.computeRates(dt);
     for (let i = 0; i < h.length; i += 1) {
       h[i] = Math.max(0, h[i] + dt * rateH[i]);
       const wet = h[i] > this.dryDepth;
       qx[i] = wet ? qx[i] + dt * rateQx[i] : 0;
       qz[i] = wet ? qz[i] + dt * rateQz[i] : 0;
     }
+    this.applyFriction(dt);
+  }
+
+  /** The Hancock predictor's faces, then the conservative rates of h, qx and qz over a step of `dt`. */
+  protected computeRates(dt: number): void {
+    this.predictFaces(0.5 * dt);
+    this.rateH.fill(0);
+    this.rateQx.fill(0);
+    this.rateQz.fill(0);
+    this.fluxAlongX();
+    this.fluxAlongZ();
+  }
+
+  /** Semi-implicit Manning bottom friction over `dt`. */
+  protected applyFriction(dt: number): void {
+    const { h, qx, qz } = this;
     if (this.manning > 0) {
       const factor = dt * this.gravity * this.manning * this.manning;
       for (let i = 0; i < h.length; i += 1) {
@@ -459,7 +471,7 @@ export class ShallowWaterSolver {
    * each cell's own face fluxes and the corrector's bed-slope source, so a lake
    * at rest predicts no change.
    */
-  private predictFaces(half: number): void {
+  protected predictFaces(half: number): void {
     const { nx, nz, h, qx, qz, bed, u, w, eta, dz, zGaps, dryDepth, gravity: g } = this;
     const { xhW, xhE, xetaW, xetaE, xuW, xuE, xwW, xwE, zhS, zhN, zetaS, zetaN, zwS, zwN, zuS, zuN } = this;
     for (let i = 0; i < h.length; i += 1) {
@@ -553,7 +565,7 @@ export class ShallowWaterSolver {
   }
 
   /** Riemann fluxes and well-balanced sources across x faces, row by row. */
-  private fluxAlongX(): void {
+  protected fluxAlongX(): void {
     const { nx, nz, rateH, rateQx, rateQz, flux, gravity: g } = this;
     const { xhW, xhE, xetaW, xetaE, xuW, xuE, xwW, xwE } = this;
     const periodic = this.xBoundary === PERIODIC;
@@ -602,7 +614,7 @@ export class ShallowWaterSolver {
   }
 
   /** Riemann fluxes and well-balanced sources across z faces, with walls at both cross-shore ends. */
-  private fluxAlongZ(): void {
+  protected fluxAlongZ(): void {
     const { nx, nz, dz, rateH, rateQx, rateQz, flux, gravity: g } = this;
     const { zhS, zhN, zetaS, zetaN, zwS, zwN, zuS, zuN } = this;
     for (let iz = 0; iz < nz - 1; iz += 1) {
