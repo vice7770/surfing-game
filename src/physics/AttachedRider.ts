@@ -217,6 +217,26 @@ const LEG_FREQUENCY = 12;
 const CROUCH_ACCELERATION = 6;
 const CROUCH_SPEED = 1.5;
 const EXTEND_ACCELERATION = 15;
+/**
+ * Standing, a hand in the face (spec P9): asked for, the upper body bends toward
+ * the wave side, where the water stands higher beside the board (read
+ * WAVE_SIDE_REACH, m, out on each side; a side only when it is WAVE_SIDE_MIN, m,
+ * higher), leaning HAND_BEND of the full lean that way. The shoulder swings out
+ * and down (an upper body HAND_TORSO, m, bent HAND_TORSO_ANGLE from the leg) and
+ * the arm (ARM_LENGTH, m) reaches down and out at ARM_ANGLE from the leg. A flat
+ * hand's drag, C_d A = 1.1 x 0.013 m2 (Berger et al. 1995; Bilinauskaite et al.
+ * 2013), times its immersed share; the arm gives way at HAND_FORCE_LIMIT. The
+ * geometry is provisional. The drag acts on the body, and its moment about the
+ * body's vertical turns the board through the feet.
+ */
+const WAVE_SIDE_REACH = 0.6;
+const WAVE_SIDE_MIN = 0.05;
+const HAND_BEND = 0.5;
+const HAND_TORSO = 0.55;
+const HAND_TORSO_ANGLE = (60 * Math.PI) / 180;
+const ARM_LENGTH = 0.7;
+const ARM_ANGLE = (25 * Math.PI) / 180;
+const STANDING_HAND_DRAG = 1.1 * 0.013;
 
 export interface AttachedRiderOptions {
   mass?: number;
@@ -475,6 +495,10 @@ export class AttachedRider {
   standingLine: number | undefined;
   private standingHold = 0;
   private legStiffness = LEG_STIFFNESS;
+  /** Standing, the side the hand reaches for (+1 the board's +x side, −1 the other, 0 none), where it is, and the moment of its drag about the body's vertical this substep, N m. */
+  private handSide = 0;
+  readonly handPoint = new Vector3();
+  private handYaw = 0;
   private restRate = 0;
 
   private legFresh = true;
@@ -709,7 +733,8 @@ export class AttachedRider {
         const z = this.parts[1 * 3 + 2];
         return board.toWorld(this.localScratch.set((side === 0 ? 1 : -1) * this.halfWidth(z), deckHeight(this.shape, z), z), out);
       }
-      // Arms held out from the shoulders.
+      // The hand in the face, or arms held out from the shoulders.
+      if (this.handSide !== 0 && (index === 3) === (this.handSide > 0)) return out.copy(this.handPoint);
       this.partPosition(index, out);
       return out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(0.7));
     }
@@ -868,6 +893,7 @@ export class AttachedRider {
   prepare(h: number, board: BoardBody, water: SurfWater): void {
     this.advancePhase(h, board, water);
     this.holdLine(board);
+    this.waveSide(board, water);
     this.balanceStep(h, board);
     this.swayStep(h);
     this.updatePosture();
@@ -982,6 +1008,10 @@ export class AttachedRider {
       this.applyWater(i, water, radius, this.partVolumes[i], Math.PI * radius * radius * PART_DRAG, h, inWake ? shelter * WAKE_SHELTER : shelter, deckY);
     }
     this.stroking = false;
+    this.handLoad[0] = 0;
+    this.handLoad[1] = 0;
+    this.handYaw = 0;
+    if (this.upright && this.handSide !== 0) this.standingHand(h, board, water);
     if (this.phase !== 'prone' || (!this.paddle && !this.sweeping)) {
       this.line = undefined;
       this.hold = 0;
@@ -1000,6 +1030,22 @@ export class AttachedRider {
       board.velocityAt(this.partWorld, this.partVelocity).add(this.scratch.set(0, 0, along).applyQuaternion(board.orientation));
       this.applyWater(RIDER_PARTS.length + side, water, HAND_RADIUS, 0, HAND_DRAG_AREA * effort, h, 1);
     }
+  }
+
+  /** Standing, the hand reaching into the face on the wave side: its drag on the body, and the moment it turns the board by. */
+  private standingHand(h: number, board: BoardBody, water: SurfWater): void {
+    const side = this.scratch2.set(this.handSide, 0, 0).applyQuaternion(board.orientation).setY(0);
+    if (side.lengthSq() < 1e-9) return;
+    side.normalize();
+    // The shoulder: out from the hips along the bent upper body; the hand: down and out along the arm.
+    const hand = this.partPosition(0, this.handPoint)
+      .addScaledVector(this.up, HAND_TORSO * Math.cos(HAND_TORSO_ANGLE)).addScaledVector(side, HAND_TORSO * Math.sin(HAND_TORSO_ANGLE))
+      .addScaledVector(this.up, -ARM_LENGTH * Math.cos(ARM_ANGLE)).addScaledVector(side, ARM_LENGTH * Math.sin(ARM_ANGLE));
+    this.partWorld.copy(hand);
+    this.partVelocity.copy(cross(this.angularVelocity, this.localScratch.subVectors(hand, this.position), this.scratch)).add(this.velocity);
+    const moment = this.waterMoment.y;
+    this.applyWater(RIDER_PARTS.length + (this.handSide > 0 ? 0 : 1), water, HAND_RADIUS, 0, STANDING_HAND_DRAG, h, 1);
+    this.handYaw = this.waterMoment.y - moment;
   }
 
   /** Steering without paddling: one arm sweeps. */
@@ -1184,7 +1230,7 @@ export class AttachedRider {
     rhs[2] += f.z;
     const torque = cross(a, f, this.scratch);
     rhs[3] += torque.x;
-    rhs[4] += torque.y;
+    rhs[4] += torque.y + h * this.handYaw;
     rhs[5] += torque.z;
     // Backward Euler on the leg: its force now, less what the current rate adds to the stretch over the substep.
     rhs[6] += n.dot(f) + h * (this.leg.force - h * this.legStiffness * this.leg.rate);
@@ -1246,6 +1292,10 @@ export class AttachedRider {
     const mean = before.add(this.velocity).multiplyScalar(0.5);
     this.work.gravity += h * this.gravity.dot(mean);
     this.work.water += h * this.waterForce.dot(mean);
+    if (this.upright && this.feasible && this.handYaw !== 0) {
+      // The hand's moment turned the board through the feet.
+      this.work.water += (h * this.handYaw * (this.boardSpin.y + board.angularVelocity.y)) / 2;
+    }
     if (!this.upright && this.feasible) {
       const spin = this.boardSpin;
       const after = board.angularVelocity;
@@ -1500,10 +1550,23 @@ export class AttachedRider {
       this.shiftAxis('z', this.balance.z, reach.z, h);
     }
     // The steering lean (with the rider's own heading hold) and the trim, standing only.
-    const lean = this.upright ? Math.max(-1, Math.min(1, this.steer + this.standingHold)) * MAX_LEAN : 0;
+    const lean = this.upright ? Math.max(-1, Math.min(1, this.steer + this.standingHold + HAND_BEND * this.handSide)) * MAX_LEAN : 0;
     const trim = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
     this.leanAxis('x', lean, h);
     this.leanAxis('z', trim, h);
+  }
+
+  /** Standing with the hand asked for: which side of the board the water stands higher on, the side the hand reaches for. */
+  private waveSide(board: BoardBody, water: SurfWater): void {
+    this.handSide = 0;
+    if (!this.hand || this.phase !== 'standing' || !this.attached) return;
+    const side = this.scratch.set(1, 0, 0).applyQuaternion(board.orientation).setY(0);
+    if (side.lengthSq() < 1e-9) return;
+    side.normalize();
+    const { x, z } = board.position;
+    const left = water.surfaceAt(x + side.x * WAVE_SIDE_REACH, z + side.z * WAVE_SIDE_REACH);
+    const right = water.surfaceAt(x - side.x * WAVE_SIDE_REACH, z - side.z * WAVE_SIDE_REACH);
+    if (Math.abs(left - right) >= WAVE_SIDE_MIN) this.handSide = left > right ? 1 : -1;
   }
 
   /** Critically damped motion of the lean toward `target` along one axis, within the shift's speed and acceleration. */
@@ -1521,7 +1584,7 @@ export class AttachedRider {
    */
   private holdLine(board: BoardBody): void {
     const standing = this.phase === 'standing' && this.attached;
-    if (!standing || Math.abs(this.steer) > 0.05) {
+    if (!standing || Math.abs(this.steer) > 0.05 || this.hand) {
       this.standingLine = undefined;
       this.standingHold = 0;
       return;

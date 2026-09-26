@@ -613,6 +613,69 @@ describe('lean, trim, crouch and heading hold', () => {
   });
 });
 
+/** Flat water with a wall of water `height` m high beyond x = `from` (the face rising beside a board in the pocket). */
+class WallWater extends PlaneWater {
+  constructor(private readonly from: number, private readonly height: number) {
+    super();
+  }
+
+  override surfaceAt(x: number, z: number): number {
+    return x >= this.from ? this.height : super.surfaceAt(x, z);
+  }
+
+  override sampleAt(x: number, y: number, z: number, out: import('./SurfWater').WaterSample) {
+    super.sampleAt(x, y, z, out);
+    if (x >= this.from) out.surfaceY = this.height;
+    return out;
+  }
+}
+
+describe('a hand in the face', () => {
+  const weight = REFERENCE_RIDER.mass * WATER.gravity;
+  /** A board planing at 6 m/s along +z with a crouched rider, a wall of water 0.35 m to its left (+x). */
+  const pocket = (hand: boolean, water: SurfWater = new WallWater(0.35, 0.35)) => {
+    const { board, rider } = mounted('standing');
+    board.velocity.z = 6;
+    rider.velocity.z = 6;
+    rider.crouch = 1;
+    run(board, water, 0.6);
+    const speed = board.velocity.length();
+    const heading = headingOf(board);
+    const before = board.kineticEnergy() + rider.kineticEnergy();
+    const workBefore = totalWork(board, rider);
+    let peak = 0;
+    rider.hand = hand;
+    run(board, water, 1, () => { peak = Math.max(peak, rider.handLoad[0], rider.handLoad[1]); });
+    return {
+      board, rider, peak,
+      deceleration: (speed - board.velocity.length()) / 1,
+      turn: headingOf(board) - heading,
+      ledger: Math.abs(board.kineticEnergy() + rider.kineticEnergy() - before - (totalWork(board, rider) - workBefore)) / before,
+    };
+  };
+
+  it('drags a hand in the face beside it to slow down, turning toward it', () => {
+    const without = pocket(false);
+    const withHand = pocket(true);
+    expect(withHand.rider.attached).toBe(true);
+    const extra = withHand.deceleration - without.deceleration;
+    expect(extra).toBeGreaterThan(0.5);
+    expect(extra).toBeLessThan(4);
+    expect(withHand.turn).toBeGreaterThan(without.turn);
+    // The water's work on the hand, and its moment through the feet, close the energy ledger.
+    expect(withHand.ledger).toBeLessThan(0.02);
+  });
+
+  it('never pulls harder than an arm can', () => {
+    expect(pocket(true).peak).toBeLessThanOrEqual(0.4 * weight + 1e-9);
+  });
+
+  it('touches nothing with no water beside it to reach', () => {
+    const flat = pocket(true, new PlaneWater());
+    expect(flat.peak).toBe(0);
+  });
+});
+
 describe('lip strikes', () => {
   const towed = () => {
     const { board, rider } = mounted('standing');
