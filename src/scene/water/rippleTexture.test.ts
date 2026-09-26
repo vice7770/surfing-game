@@ -1,6 +1,6 @@
 import { DataUtils } from 'three';
 import { describe, expect, it } from 'vitest';
-import { RIPPLE_RMS_SLOPE, RIPPLE_SIZE, rippleSlope, rippleTexture, waterRipplePars } from './rippleTexture';
+import { RIPPLE_RMS_SLOPE, RIPPLE_SIZE, rippleFoamGain, rippleSlope, rippleTexture, waterRipplePars } from './rippleTexture';
 
 describe('ripple texture', () => {
   it('tiles exactly: the slope at one edge equals the opposite edge', () => {
@@ -48,5 +48,14 @@ describe('ripple texture', () => {
   it('carries the ripples on the current in two phases in the shader', () => {
     expect(waterRipplePars).toContain('vec2 waterRippleSlopeAt( vec2 p, vec2 flow )');
     expect(waterRipplePars).toContain('waterRippleVariance =');
+  });
+});
+
+describe('ripple strength over foam', () => {
+  it('is glassy on clean water, busiest in thin turbulent foam, and damped under thick foam', () => {
+    expect(rippleFoamGain(0)).toBeCloseTo(0.35, 9);
+    expect(rippleFoamGain(0.25)).toBeGreaterThan(0.75);
+    expect(rippleFoamGain(0.9)).toBeLessThan(0.3);
+    expect(waterRipplePars).toContain('float waterRippleFoamGain( float foam )');
   });
 });

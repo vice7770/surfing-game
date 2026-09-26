@@ -51,5 +51,8 @@ void main() {
   // Mist is a softer disc than a drop cluster.
   float disc = vMist > 0.5 ? ( 1.0 - r ) * ( 1.0 - r ) : 1.0 - r * r;
   gl_FragColor = vec4( sprayColor * light / thin, vOpacity * disc * thin * smoothstep( -0.1, 0.35, vAbove ) );
+  // Lit by a coloured sun the spray can pass 1: tone-map it like the rest of the scene rather than clip it.
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
 }
 `;

@@ -7,7 +7,8 @@ import { churnTexture } from './water/churnTexture';
 import { rippleStrength, rippleTexture } from './water/rippleTexture';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import { DEFAULT_WATER_CHOP } from './waterChop';
-import { CLASSIC_FOAM, waterBodyFragment } from './waterOptics';
+import { CLASSIC_FOAM, WATER_BODY_GAIN, waterBodyFragment } from './waterOptics';
+import { RICH_WATER } from './water/richWaterGlsl';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -166,6 +167,28 @@ describe('Classic water parity', () => {
     ocean.setLook('classic');
     expect(ocean.mesh.material.roughness).toBe(0.62);
     expect(compiled(ocean.mesh.material)).toEqual(classic);
+  });
+
+  it('tunes the Rich water with its own reflection and body gain, and gives Classic its own back', () => {
+    for (const make of [() => new WaterSurface({ ...source, cubic: true }), () => new FarFieldOcean()]) {
+      const water = make();
+      water.setLook('rich');
+      const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+      water.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
+      expect(shader.fragmentShader).toContain('#include <lights_fragment_maps>\n#if defined( RE_IndirectSpecular )\n  radiance *= waterReflection;\n#endif');
+      const uniforms = shader.uniforms as Record<string, { value: unknown }>;
+      expect(uniforms.waterReflection.value).toBe(RICH_WATER.reflection);
+      expect(uniforms.waterBodyGain.value).toBe(RICH_WATER.bodyGain);
+      water.setLook('classic');
+      expect(uniforms.waterBodyGain.value).toBe(WATER_BODY_GAIN);
+    }
+  });
+
+  it('tone-maps the Rich spray like the rest of the scene, so a coloured sun cannot clip it', () => {
+    const spray = new SprayPoints();
+    spray.setLook('rich');
+    expect(spray.mesh.material.fragmentShader).toContain('#include <tonemapping_fragment>');
+    expect(spray.mesh.material.fragmentShader).toContain('#include <colorspace_fragment>');
   });
 
   it('names nothing in the Rich program with a GLSL ES 3.00 reserved word', () => {

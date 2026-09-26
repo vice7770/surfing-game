@@ -50,6 +50,23 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
   roughnessFactor = mix( roughnessFactor, 0.7, waterCover );
   totalEmissiveRadiance += 0.18 * waterFresh * ( 1.0 - waterChurn.x ) * pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 6.0 ) * waterSunRadiance;`;
 
+/**
+ * The Rich look's own balance (G8, tuned on the water sheet against the
+ * reference stills): how much of the sky its glossy surface mirrors, and the
+ * gain on its body colour. Classic keeps `WATER_BODY_GAIN` and the full sky.
+ */
+export const RICH_WATER = { reflection: 0.5, bodyGain: 4 } as const;
+
+export const richReflectionPars = /* glsl */ `
+uniform float waterReflection;
+`;
+
+/** Rich: scales the sky the water mirrors (three's image-based specular), after <lights_fragment_maps>. */
+export const RICH_REFLECTION = `#include <lights_fragment_maps>
+#if defined( RE_IndirectSpecular )
+  radiance *= waterReflection;
+#endif`;
+
 /** The far ocean's Rich foam: Classic's composition with the Rich gloss (it has no churn or streaks). */
 export const RICH_FAR_FOAM = CLASSIC_FOAM.replace(
   'roughnessFactor = mix( roughnessFactor, 0.9, waterCover );',

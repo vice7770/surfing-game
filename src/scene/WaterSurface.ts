@@ -16,7 +16,7 @@ import {
   Vector4,
 } from 'three';
 import type { WaterLook } from './water/waterLook';
-import { RICH_FOAM, richBeginNormal, richFragmentPars, richNormalFragment, richVertexHeight, waterCubicPars } from './water/richWaterGlsl';
+import { RICH_FOAM, RICH_REFLECTION, RICH_WATER, richBeginNormal, richFragmentPars, richReflectionPars, richNormalFragment, richVertexHeight, waterCubicPars } from './water/richWaterGlsl';
 import {
   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
 } from './water/richPatch';
@@ -28,7 +28,7 @@ import { causticLookupPars, createCausticUniforms, type CausticSource, type Caus
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
 import {
-  WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
+  WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
 } from './waterOptics';
 
 export interface SurfaceGrid {
@@ -231,6 +231,7 @@ export class WaterSurface {
       waterRippleMap: { value: rippleTexture() },
       waterRippleStrength: { value: rippleStrength(DEFAULT_WATER_CHOP) },
       waterChurnMap: { value: churnTexture() },
+      waterReflection: { value: RICH_WATER.reflection },
     };
     // One air–water interface: Fresnel from n = 1.333 (F0 = 0.020), no clearcoat.
     const material = new MeshPhysicalMaterial({
@@ -250,11 +251,12 @@ export class WaterSurface {
           .replace('#include <beginnormal_vertex>', richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\n${waterFragmentPars}\n${waterCubicPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richPatchFragmentPars}`)
+          .replace('#include <common>', `#include <common>\n${waterFragmentPars}\n${waterCubicPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}`)
           .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true, churn: true }))
           .replace('#include <color_fragment>', '')
-          .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true, RICH_FOAM));
+          .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true, RICH_FOAM))
+          .replace('#include <lights_fragment_maps>', RICH_REFLECTION);
         return;
       }
       shader.vertexShader = shader.vertexShader
@@ -337,6 +339,7 @@ export class WaterSurface {
     this.patch.visible = rich;
     this.uniforms.waterPatchActive.value = rich ? 1 : 0;
     this.mesh.material.roughness = rich ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
+    this.uniforms.waterBodyGain.value = rich ? RICH_WATER.bodyGain : WATER_BODY_GAIN;
   }
 
   private readonly patchCamera = new Vector3();

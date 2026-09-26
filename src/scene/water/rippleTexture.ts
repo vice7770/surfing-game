@@ -1,5 +1,6 @@
 import { DataTexture, DataUtils, HalfFloatType, LinearFilter, LinearMipmapLinearFilter, RGBAFormat, RepeatWrapping } from 'three';
 import { seededRandom } from '../../wave/random';
+import { smoothstep } from '../../wave/Bathymetry';
 import { FOAM_FLOW_PERIOD } from '../foamPattern';
 import { DEFAULT_WATER_CHOP } from '../waterChop';
 
@@ -11,6 +12,15 @@ export const RIPPLE_PERIOD = FOAM_FLOW_PERIOD;
 /** RMS slope of one layer at strength 1 (a light wind sea's fine slopes, art-directed). */
 export const RIPPLE_RMS_SLOPE = 0.1;
 const COMPONENTS = 48;
+
+/**
+ * The ripples' gain over a foam value: glassy on clean water, busiest in the
+ * thin foam of turbulent water, and damped under thick foam, which calms the
+ * surface beneath it (a lit foam mat would otherwise show them as blotches).
+ */
+export function rippleFoamGain(foam: number): number {
+  return (0.35 + 0.65 * Math.min(1, Math.max(0, foam * 3))) * (1 - 0.75 * smoothstep(0.3, 0.8, foam));
+}
 
 /** The ripples' strength for a wind chop: 0.8 on calm water, 1 at the default chop; the tank and the far ocean share it. */
 export const rippleStrength = (chop: number) => 0.8 + (0.2 * chop) / DEFAULT_WATER_CHOP;
@@ -112,6 +122,7 @@ uniform float waterRippleStrength;
 const float RIPPLE_PERIOD = ${RIPPLE_PERIOD.toFixed(3)};
 const float RIPPLE_TILE_0 = ${RIPPLE_TILES[0].toFixed(3)};
 const float RIPPLE_TILE_1 = ${RIPPLE_TILES[1].toFixed(3)};
+float waterRippleFoamGain( float foam ) { return mix( 0.35, 1.0, clamp( foam * 3.0, 0.0, 1.0 ) ) * ( 1.0 - 0.75 * smoothstep( 0.3, 0.8, foam ) ); }
 vec4 waterRippleTap( vec2 p, float tile ) { return texture( waterRippleMap, p / tile ); }
 vec4 waterRippleLayers( vec2 p ) { return waterRippleTap( p, RIPPLE_TILE_0 ) + vec4( 0.6, 0.6, 0.36, 0.36 ) * waterRippleTap( p, RIPPLE_TILE_1 ); }
 vec2 waterRippleSlopeAt( vec2 p, vec2 flow ) {
@@ -120,7 +131,7 @@ vec2 waterRippleSlopeAt( vec2 p, vec2 flow ) {
   float w = 1.0 - abs( 2.0 * a - 1.0 );
   vec4 s = w * waterRippleLayers( p - flow * a * RIPPLE_PERIOD )
     + ( 1.0 - w ) * waterRippleLayers( p - flow * b * RIPPLE_PERIOD + vec2( 7.13, 3.31 ) );
-  float strength = waterRippleStrength * mix( 0.35, 1.0, clamp( vWaterFoam * 2.0, 0.0, 1.0 ) );
+  float strength = waterRippleStrength * waterRippleFoamGain( vWaterFoam );
   waterRippleVariance = strength * strength * max( 0.0, s.z + s.w - dot( s.xy, s.xy ) );
   return strength * s.xy;
 }
