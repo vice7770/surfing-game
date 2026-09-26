@@ -270,15 +270,33 @@ describe('pop-up', () => {
     expect(standingAt).toBeGreaterThan(0);
   });
 
-  it('cannot stand on a board at rest in flat water: it sinks, and the rider lies back down', () => {
+  // The playtest: a pop-up that found no support laid the rider back down on its own. It stands, noting why the
+  // board cannot carry it; only the player lies back down.
+  it('stands up on a board at rest in flat water, noting it has no support, and never lies back down on its own', () => {
     const { board, rider } = mounted('prone');
     const water = new PlaneWater();
     run(board, water, 3);
     rider.popUp();
-    run(board, water, 3);
+    let lay = false;
+    run(board, water, 3, () => { lay ||= rider.attached && (rider.phase === 'recover' || rider.phase === 'prone'); });
+    expect(lay).toBe(false);
+    expect(rider.popUpReport.outcome).toBe('stood');
+    expect(rider.popUpReport.refusal).toBeDefined();
+  });
+
+  it('lies back down when asked while standing', () => {
+    const { board, rider } = mounted('standing');
+    const tow = () => {
+      board.velocity.z = 6;
+      rider.velocity.z = 6;
+    };
+    tow();
+    run(board, new PlaneWater(), 1, tow);
+    expect(rider.lieDown(board)).toBe(true);
+    run(board, new PlaneWater(), 1, tow);
     expect(rider.attached).toBe(true);
     expect(rider.phase).toBe('prone');
-    expect(rider.popUpReport.outcome).toBe('no support');
+    expect(mounted('prone').rider.lieDown(board)).toBe(false);
   });
 
   it('stops paddling once the hands push up', () => {
@@ -301,14 +319,14 @@ describe('pop-up', () => {
   });
 
   // A static sloping sheet of water stands in for a wave face: gravity along it balances the drag.
-  it('stands up on a steep face, but not on one too gentle to plane on', () => {
-    for (const [degrees, outcome] of [[15, 'stood'], [10, 'no support']] as const) {
+  it('stands up on a steep face, and notes one too gentle to plane on', () => {
+    for (const [degrees, supported] of [[15, true], [10, false]] as const) {
       const { board, rider, water } = onFace(degrees, 'prone');
       run(board, water, 3);
       rider.popUp();
-      run(board, water, 2.5);
-      expect(rider.popUpReport.outcome, `${degrees}°`).toBe(outcome);
-      expect(rider.attached, `${degrees}°`).toBe(true);
+      run(board, water, 1.3);
+      expect(rider.popUpReport.outcome, `${degrees}°`).toBe('stood');
+      expect(rider.popUpReport.refusal === undefined, `${degrees}°`).toBe(supported);
     }
   });
 });
@@ -804,6 +822,33 @@ describe('lean, trim, crouch and heading hold', () => {
       }
     });
 
+    // The Canyon's ride report: standing on a board at 1-2 m/s, below planing, the banked body tipped over with no
+    // steer at all (the carve lab's held rider capsized its board at 3 m/s: the hull gives the ankles nothing to
+    // push against there). Below planing the body is carried upright over its feet, as landing; planing, it banks.
+    it('carries the body upright below planing, and banks on a planing board', () => {
+      const towed = (speed: number) => {
+        const { board, rider } = mounted('standing');
+        const tow = () => {
+          board.velocity.z = speed;
+          rider.velocity.z = speed;
+        };
+        tow();
+        run(board, new PlaneWater(), 0.3, tow);
+        rider.steer = 1;
+        let widest = 0;
+        run(board, new PlaneWater(), 1, () => {
+          tow();
+          widest = Math.max(widest, Math.abs(rider.bank.angle));
+        });
+        return { rider, widest };
+      };
+      const slow = towed(2);
+      expect(slow.widest).toBe(0);
+      const planing = towed(6);
+      expect(planing.rider.attached).toBe(true);
+      expect(degrees(planing.widest)).toBeGreaterThan(5);
+    });
+
     // Review Focus 5: the pop-up's landing is unchanged, the body carried upright over its stance as before the bank;
     // the bank applies only once standing.
     it('lands upright, banking only once standing', () => {
@@ -1193,8 +1238,8 @@ describe('catching', () => {
     expect(board.velocity.length()).toBeGreaterThan(1.2);
     expect(cued).toBe(false);
     rider.popUp();
-    run(board, water, 2.5);
-    expect(rider.popUpReport.outcome).toBe('no support');
+    run(board, water, 1.3);
+    expect(rider.popUpReport.outcome).toBe('stood');
     expect(rider.popUpReport.refusal).toBeDefined();
   });
 

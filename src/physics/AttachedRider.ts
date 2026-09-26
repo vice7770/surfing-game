@@ -126,8 +126,28 @@ const STANDING_SHIFT = { x: 0.35, z: 0.25 };
  * distance of the middle of the stance, clear of the feet's edges.
  */
 const TRIM_FREEDOM = 0.2;
-/** Landing from a pop-up, balance keeps the centre of pressure within this, m, of the middle of the feet across. */
+/**
+ * Carried upright (landing from a pop-up, and standing below planing), balance
+ * keeps the centre of pressure within LATERAL_FREEDOM, m, of the middle of the
+ * feet across, and steering leans the upper body toward the rail by up to
+ * MAX_LEAN, m, as before the bank.
+ */
 const LATERAL_FREEDOM = 0.06;
+const MAX_LEAN = 0.2;
+/**
+ * The body banks only while the board planes: its speed through the water over
+ * PLANING_SPEED, m/s, and until it falls under PLANING_DROP. Below planing the
+ * hull gives the ankles nothing to push against (the carve lab's held rider
+ * capsized its board at 3 m/s), and a banked body tipped over on a slow board
+ * after the pop-up (the Canyon's ride report); off the plane it stands back up
+ * and is then carried upright. Snapped upright at once, a body banked in a
+ * slowing carve threw the board onto its rail.
+ */
+const PLANING_SPEED = 4;
+const PLANING_DROP = 3;
+/** Off the plane, the body stands back up on its ankles first, and is carried upright once within this bank, rad, and bank rate, rad/s. */
+const UPRIGHT_BANK = (2 * Math.PI) / 180;
+const UPRIGHT_RATE = 0.2;
 /**
  * Standing, the body banks on its ankles and knees (the turn redesign): an
  * inverted pendulum over the feet whose bank θ from the vertical, toward the
@@ -311,13 +331,13 @@ export interface AttachedRiderOptions {
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
 export type RiderPhase = PosePhase | 'recover';
 
-/** Why a pop-up found no support: the contact strained lately, the board sank into the surface, the feet landed under water, or there was no water. */
+/** Why a stand has no support: the contact strained lately, the board sank into the surface, the feet landed under water, or there was no water. */
 export type StandRefusal = 'strained' | 'sinking' | 'feet under water' | 'no water';
 
 /** The latest pop-up: how it ended, how long it took to stand, s, and its peak landing load, body weights, with the front foot's share then. */
 export interface PopUpReport {
-  outcome: 'none' | 'rising' | 'stood' | 'no support';
-  /** For 'no support', which check refused the stand. */
+  outcome: 'none' | 'rising' | 'stood';
+  /** A stand the board could not carry: which check found no support (the rider stands anyway). */
   refusal?: StandRefusal;
   duration: number;
   landingPeak: number;
@@ -614,6 +634,9 @@ export class AttachedRider {
   private bankSpeedAfter = 0;
   private legLength = 1;
   private bankReference = 0;
+  /** The board planes (PLANING_SPEED, PLANING_DROP); the body banks, from planing until it is upright again off the plane. */
+  private planing = false;
+  private banked = false;
   private ankleRest = 0;
   private ankleTorque = 0;
   protected swingTorque = 0;
@@ -634,12 +657,13 @@ export class AttachedRider {
 
   /** +1 regular (left foot forward), −1 goofy. */
   /**
-   * Standing, the body banks on its ankles (the turn redesign). Landing from a
-   * pop-up it is carried upright over its stance, keeping the load clear of the
-   * feet's edges across as along (LATERAL_FREEDOM), as before the bank.
+   * Standing on a planing board, the body banks on its ankles (the turn
+   * redesign). Landing from a pop-up, and standing below planing, it is carried
+   * upright over its stance, keeping the load clear of the feet's edges across
+   * as along (LATERAL_FREEDOM), as before the bank.
    */
   private get banking(): boolean {
-    return this.upright && this.phase === 'standing';
+    return this.upright && this.phase === 'standing' && this.banked;
   }
 
   get stanceSign(): number {
@@ -656,6 +680,13 @@ export class AttachedRider {
     this.beginTransition('push', PUSH_TIME);
     this.popUpTime = 0;
     Object.assign(this.popUpReport, { outcome: 'rising', duration: 0, landingPeak: 0, frontShare: 0, refusal: undefined });
+    return true;
+  }
+
+  /** Lie back down from standing, when the player asks: the body goes back to the prone posture over RECOVER_TIME. */
+  lieDown(board: BoardBody): boolean {
+    if (!this.attached || this.phase !== 'standing') return false;
+    this.beginTransition('recover', RECOVER_TIME, board);
     return true;
   }
 
@@ -697,16 +728,12 @@ export class AttachedRider {
     if (ended === 'push') {
       this.beginTransition('landing', LANDING_TIME, board);
     } else if (ended === 'landing') {
-      const refusal = this.standRefusal(board, water);
-      if (!refusal) {
-        this.beginTransition('standing', SETTLE_TIME, board);
-        this.popUpReport.outcome = 'stood';
-        this.popUpReport.duration = this.popUpTime;
-      } else {
-        this.beginTransition('recover', RECOVER_TIME, board);
-        this.popUpReport.outcome = 'no support';
-        this.popUpReport.refusal = refusal;
-      }
+      // The rider stands whatever the board can carry (the playtest: laid back down on its own, it seemed a
+      // fault); a stand without support is noted, and the physics decides what follows.
+      this.popUpReport.refusal = this.standRefusal(board, water);
+      this.beginTransition('standing', SETTLE_TIME, board);
+      this.popUpReport.outcome = 'stood';
+      this.popUpReport.duration = this.popUpTime;
     } else if (ended === 'recover') {
       this.fromParts.set(this.parts);
       this.phase = 'prone';
@@ -778,6 +805,8 @@ export class AttachedRider {
     this.bankSpeed = 0;
     this.bankSpeedAfter = 0;
     this.bankReference = 0;
+    this.planing = false;
+    this.banked = false;
     this.ankleRest = 0;
     this.ankleTorque = 0;
     this.swingTorque = 0;
@@ -1057,6 +1086,7 @@ export class AttachedRider {
   /** Before the board's solve: the posture's target, its drive velocity and the forces on the rider. */
   prepare(h: number, board: BoardBody, water: SurfWater): void {
     this.advancePhase(h, board, water);
+    this.planingStep(board, water);
     this.holdLine(h, board);
     this.waveSide(board, water);
     this.balanceStep(h, board);
@@ -1095,7 +1125,7 @@ export class AttachedRider {
     this.uprightVelocity(board, this.drive.set(0, 0, 0)).addScaledVector(this.up, this.flexRate);
     // The balance shift moves the centre of mass across the board.
     const shifted = this.shiftedShare();
-    this.drive.add(this.scratch.set(this.balanceRate.x * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.bodyFrame : board.orientation));
+    this.drive.add(this.scratch.set((this.balanceRate.x + this.leanRate.x) * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.bodyFrame : board.orientation));
     // A push's sway carries the centre of mass off its feet.
     if (this.upright) this.drive.add(this.scratch.set(this.swayRate.x, 0, this.swayRate.z).applyQuaternion(board.orientation));
     // The posture's own motion (a pop-up) carries the centre of mass with it.
@@ -1125,6 +1155,17 @@ export class AttachedRider {
     }
   }
 
+  /** Whether the board planes: its speed through the water under it, over PLANING_SPEED and until under PLANING_DROP. */
+  private planingStep(board: BoardBody, water: SurfWater): void {
+    const under = water.sampleAt(board.position.x, board.position.y, board.position.z, this.sample);
+    const flowX = under.outsideDomain ? 0 : under.flowX;
+    const flowZ = under.outsideDomain ? 0 : under.flowZ;
+    const speed = Math.hypot(board.velocity.x - flowX, board.velocity.z - flowZ);
+    if (this.planing ? speed < PLANING_DROP : speed > PLANING_SPEED) this.planing = !this.planing;
+    if (this.planing) this.banked = true;
+    else if (Math.abs(this.bank.angle) < UPRIGHT_BANK && Math.abs(this.bank.rate) < UPRIGHT_RATE) this.banked = false;
+  }
+
   /**
    * Standing: the bank's rate, the balance's ankle rest and the ankle's torque
    * before the board's solve (the turn redesign). The rest is taken from the
@@ -1145,7 +1186,7 @@ export class AttachedRider {
     const rollRate = this.rollAxis.dot(this.boardSpin);
     // The bank asked for, no more than a turn at the board's speed can hold, eased in.
     const speed = this.boardVelocity.dot(this.localScratch.set(0, 0, 1).applyQuaternion(this.heading));
-    const most = Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * TURN_RADIUS)));
+    const most = this.planing ? Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * TURN_RADIUS))) : 0;
     const asked = Math.max(-most, Math.min(most, this.steer * RAIL_RANGE + (this.standingHold + HAND_BEND * this.handSide) * HOLD_BANK));
     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
     this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
@@ -1803,7 +1844,7 @@ export class AttachedRider {
     this.base.set(pose.base.x, pose.base.y, pose.base.z);
     for (let i = 0; i < RIDER_PARTS.length; i += 1) {
       if (!this.shifts(i)) continue;
-      this.parts[i * 3] += this.balance.x;
+      this.parts[i * 3] += this.balance.x + this.lean.x;
       this.parts[i * 3 + 2] += this.balance.z + this.lean.z;
     }
     const center = postureCenter(this.parts, this.partMasses);
@@ -1852,8 +1893,10 @@ export class AttachedRider {
       this.shiftAxis('x', this.banking ? 0 : this.balance.x, reach.x, h);
       this.shiftAxis('z', this.balance.z, reach.z, h);
     }
-    // The trim, standing only (steering is the bank).
+    // Carried upright, the steering lean (with the heading hold and the hand); banked, steering is the bank. The trim, standing only.
+    const lean = this.upright && !this.banking ? Math.max(-1, Math.min(1, this.steer + this.standingHold + HAND_BEND * this.handSide)) * MAX_LEAN : 0;
     const trim = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
+    this.leanAxis('x', lean, h);
     this.leanAxis('z', trim, h);
   }
 

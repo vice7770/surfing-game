@@ -138,7 +138,7 @@ export function formatStorm(storm: StormSwell): string {
   return `Hs ${storm.stormHeight.toFixed(1)} m · Tp ${storm.stormPeriod.toFixed(1)} s · ${storm.growth} · ${travel}`;
 }
 
-/** Why a pop-up found no support, in the player's words. */
+/** Why a stand has no support, in the player's words. */
 const REFUSAL_TEXT: Record<StandRefusal, string> = {
   strained: 'thrown off balance on the way up',
   sinking: 'board sinking, not planing yet',
@@ -188,8 +188,8 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
       { label: 'RIDER', value: `${status.ride.phase.toUpperCase()} · ${status.ride.speed.toFixed(1)} m/s${status.ride.cue ? ' · POP UP NOW' : ''}` },
       ...crestRows(status.ride.wave),
       { label: 'POP-UP', value: status.ride.popUp.outcome === 'none' ? 'not yet'
-        : status.ride.popUp.outcome === 'stood' ? `stood in ${status.ride.popUp.duration.toFixed(2)} s · landing ${status.ride.popUp.landingPeak.toFixed(1)} BW, ${Math.round(status.ride.popUp.frontShare * 100)} % front`
-        : status.ride.popUp.outcome === 'rising' ? 'rising' : `no support: ${REFUSAL_TEXT[status.ride.popUp.refusal ?? 'sinking']}` },
+        : status.ride.popUp.outcome === 'stood' ? `stood in ${status.ride.popUp.duration.toFixed(2)} s · landing ${status.ride.popUp.landingPeak.toFixed(1)} BW, ${Math.round(status.ride.popUp.frontShare * 100)} % front${status.ride.popUp.refusal ? ` · no support: ${REFUSAL_TEXT[status.ride.popUp.refusal]}` : ''}`
+        : 'rising' },
       ...(status.ride.separation ? [{ label: 'FELL', value: `${status.ride.separation} · swim back (Space, arrows) and press Enter by the board to climb on, or R to paddle out again` }] : []),
     ] : []),
     { label: 'PEEL', value: peelText },
@@ -255,6 +255,8 @@ export class PhysicalMode {
   defaultView: RideView | 'overview' = 'front';
   /** Whether the screen's right is the board's left (+1) or its right (−1), from the latest clear view. */
   private steerSign = -1;
+  /** The way (±1) the held steer was pressed when its mapping was read; 0 with nothing held. */
+  private steerHeld = 0;
   private readonly cameraRight = new Vector3();
   private readonly boardLeft = new Vector3();
   private readonly follow: FollowTarget = { position: { x: 0, y: 0, z: 0 }, heading: 0, velocity: { x: 0, y: 0, z: 0 } };
@@ -447,16 +449,26 @@ export class PhysicalMode {
   /**
    * The arrow keys steer toward the screen's left or right in any view: facing
    * the rider from the beach, the screen's right is the board's left. Returns the
-   * board's steer (+1 its left). With the board end-on to the camera, the last
-   * clear mapping holds.
+   * board's steer (+1 its left). The mapping is read when a key is pressed (or
+   * the other one), and held while it is: read every frame, a hard turn took the
+   * board past side-on to the camera, the mapping flipped, and the held key
+   * turned it back. With the board end-on to the camera, the last clear mapping
+   * holds.
    */
   screenSteer(steer: number): number {
-    if (steer === 0) return 0;
-    this.cameraRight.setFromMatrixColumn(this.camera.camera.matrixWorld, 0).setY(0);
-    this.boardLeft.set(1, 0, 0).applyQuaternion(this.board.quaternion).setY(0);
-    if (this.cameraRight.lengthSq() > 1e-6 && this.boardLeft.lengthSq() > 1e-6) {
-      const alignment = this.cameraRight.normalize().dot(this.boardLeft.normalize());
-      if (Math.abs(alignment) > 0.25) this.steerSign = alignment > 0 ? 1 : -1;
+    const way = Math.sign(steer);
+    if (way === 0) {
+      this.steerHeld = 0;
+      return 0;
+    }
+    if (way !== this.steerHeld) {
+      this.steerHeld = way;
+      this.cameraRight.setFromMatrixColumn(this.camera.camera.matrixWorld, 0).setY(0);
+      this.boardLeft.set(1, 0, 0).applyQuaternion(this.board.quaternion).setY(0);
+      if (this.cameraRight.lengthSq() > 1e-6 && this.boardLeft.lengthSq() > 1e-6) {
+        const alignment = this.cameraRight.normalize().dot(this.boardLeft.normalize());
+        if (Math.abs(alignment) > 0.25) this.steerSign = alignment > 0 ? 1 : -1;
+      }
     }
     return steer * this.steerSign;
   }
