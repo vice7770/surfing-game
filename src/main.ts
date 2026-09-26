@@ -25,7 +25,8 @@ import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
 import { DEFAULT_PHYSICAL_SETTINGS, PRACTICE_SWELL, PhysicalMode, spreadingFor, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
 import { LocalSurfZone } from './game/SurfZoneHost';
-import { BACKDROP_TIME, TIMES, backdropSettings } from './game/SurfConditions';
+import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, type SurfConditions } from './game/SurfConditions';
+import type { RideView } from './scene/SpectatorCamera';
 import type { SurfZoneStatus } from './wave/SurfZoneRunner';
 import { WorkerSurfZone } from './game/WorkerSurfZone';
 import { BoardPhysics, type BoardDiagnostics, type PhysicsSettings } from './physics/BoardPhysics';
@@ -432,6 +433,19 @@ class SurfGame {
     if (!(await this.startPhysical(this.seed, backdropSettings(spot, water), { sun: TIMES[BACKDROP_TIME], rider: false }))) return false;
     if (this.graphics?.stillBackdrop) this.freezeIn = BACKDROP_SETTLE_SECONDS;
     return true;
+  }
+
+  /** A Surf session (plan P8): the physical surf zone with the player's rider, in the chosen conditions and camera. */
+  async startSurf(spot: SpotName, conditions: SurfConditions, seed: number, camera: RideView | 'overview'): Promise<boolean> {
+    this.physicalMode.idleView = 'overview';
+    this.physicalMode.defaultView = camera;
+    const water = { stage: this.graphics?.stage ?? 2, compute: this.graphics?.compute ?? 'auto' } as const;
+    return this.startPhysical(seed, physicalSettingsFor(spot, conditions, water), { sun: TIMES[conditions.time], rider: true });
+  }
+
+  /** The physical ride's status, while a rider is on the water. */
+  get rideStatus(): SurfZoneStatus['ride'] | undefined {
+    return this.mode === 'physical' ? this.physicalMode.host?.snapshot.status.ride : undefined;
   }
 
   /** Whether the menu's waves are running, not held as a still frame. */

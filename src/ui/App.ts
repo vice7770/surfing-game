@@ -1,7 +1,9 @@
+import { buttonLabel, keyLabel, type Action } from '../game/Bindings';
 import type { Controls } from '../game/Controls';
 import { BenchmarkRecorder, adapterName, needsDetection, withPreset } from '../game/Graphics';
 import type { SettingsStore } from '../game/Settings';
-import { nextBackdropSpot } from '../game/SurfConditions';
+import { DEFAULT_CONDITIONS, nextBackdropSpot, type SurfConditions } from '../game/SurfConditions';
+import type { RideView } from '../scene/SpectatorCamera';
 import { DEV_TOOLS } from '../devTools';
 import type { SpotName } from '../wave/Bathymetry';
 import type { SurfZoneStatus } from '../wave/SurfZoneRunner';
@@ -9,8 +11,10 @@ import packageJson from '../../package.json';
 import { el } from './dom';
 import { createMainMenu } from './MainMenu';
 import { MenuInput } from './MenuInput';
+import { RideHud, type HintKeys } from './RideHud';
 import { ScreenStack, type ScreenId } from './ScreenStack';
 import { t } from './strings';
+import { createSurfScreen, type SurfChoice } from './SurfScreen';
 
 /** What the menus ask of the game (implemented by `SurfGame` in main.ts). */
 export interface GameHost {
@@ -19,6 +23,8 @@ export interface GameHost {
   /** Whether the menu's waves are running (not spinning up, not a still frame). */
   readonly backdropRunning: boolean;
   showBackdrop(spot: SpotName): Promise<boolean>;
+  startSurf(spot: SpotName, conditions: SurfConditions, seed: number, camera: RideView | 'overview'): Promise<boolean>;
+  readonly rideStatus: SurfZoneStatus['ride'] | undefined;
 }
 
 /** Frames skipped after the menu's waves start, before the benchmark counts (shaders compile, caches fill). */
@@ -41,6 +47,12 @@ export class App {
   private benchmark?: BenchmarkRecorder;
   private warmup = 0;
   private notice?: HTMLElement;
+  private readonly loading = document.getElementById('loading')!;
+  private readonly loadingText = document.getElementById('loading-text');
+  private surfChoice: SurfChoice = { spot: 'point', conditions: { ...DEFAULT_CONDITIONS } };
+  /** The current wave's seed: Replay keeps it, New wave moves on. */
+  private seed = 1 + Math.floor(Math.random() * 9999);
+  private readonly rideHud: RideHud;
 
   constructor(
     private readonly game: GameHost,
@@ -52,14 +64,19 @@ export class App {
     this.scene = options.startInWaveLab ? 'wavelab' : undefined;
     this.menuInput = new MenuInput({ root: () => this.ui, onBack: () => this.back() });
     this.adapter = adapterName(game.gl);
-    const loadingText = document.getElementById('loading-text');
-    if (loadingText) loadingText.textContent = t('loading.break');
+    this.rideHud = new RideHud(() => this.pause());
+    this.setLoadingText('loading.break');
+    this.bindTouch();
     this.show();
   }
 
   /** Called by the game once per rendered frame: the gamepad, and the Auto benchmark while the menu's waves run. */
   frame(intervalMs: number, status?: SurfZoneStatus): void {
     this.menuInput.poll();
+    if (this.stack.current === 'ride') {
+      const { gameplay, seen } = this.settings.value;
+      this.rideHud.update(this.game.rideStatus, gameplay.units, this.hintKeys(), !seen.rideHints);
+    }
     if (!this.benchmark || this.stack.base !== 'menu' || !this.game.backdropRunning) return;
     if (this.warmup < BENCHMARK_WARMUP_FRAMES) {
       this.warmup += 1;
@@ -79,6 +96,9 @@ export class App {
     return this.benchmark !== undefined;
   }
 
+  /** Esc, Start or the pause button: until the pause menu exists (Task 12), nothing. */
+  pause(): void {}
+
   back(): void {
     if (this.stack.back() !== undefined) this.show();
   }
@@ -95,6 +115,7 @@ export class App {
     const playing = current === 'ride' || current === 'wavelab';
     this.controls.enabled = playing;
     this.menuInput.active = !playing;
+    this.applyTouch();
     if (base === 'menu' && this.scene !== 'backdrop') this.openBackdrop();
     this.ui.replaceChildren(...this.render(current));
     if (this.notice) this.ui.append(this.notice);
@@ -105,13 +126,78 @@ export class App {
   private render(id: ScreenId): Node[] {
     if (id === 'menu') {
       return [createMainMenu({
-        surf: () => {},
+        surf: () => this.go('surf'),
         waveLab: () => {},
         logbook: () => {},
         settings: () => {},
       }, { devTools: DEV_TOOLS, version: packageJson.version })];
     }
+    if (id === 'surf') {
+      return [createSurfScreen(this.surfChoice, {
+        change: (choice) => { this.surfChoice = choice; },
+        paddleOut: () => void this.paddleOut(),
+        back: () => this.back(),
+      })];
+    }
+    if (id === 'ride') return [this.rideHud.root];
     return [];
+  }
+
+  /** Start the chosen session behind the loading card, then ride. */
+  private async paddleOut(): Promise<void> {
+    this.setLoadingText('loading.paddleOut');
+    this.loading.classList.remove('is-hidden');
+    const { spot, conditions } = this.surfChoice;
+    const started = await this.game.startSurf(spot, conditions, this.seed, this.settings.value.gameplay.defaultCamera);
+    this.loading.classList.add('is-hidden');
+    if (!started) return;
+    this.scene = 'ride';
+    this.stack.reset('ride');
+    this.show();
+  }
+
+  private setLoadingText(key: Parameters<typeof t>[0]): void {
+    if (this.loadingText) this.loadingText.textContent = t(key);
+  }
+
+  /** The keys (or pad buttons) the prompts and hints name, from the player's bindings and last-used device. */
+  private hintKeys(): HintKeys {
+    const { bindings } = this.settings.value.controls;
+    const pad = this.controls.lastDevice === 'gamepad';
+    const label = (action: Action) => (pad ? buttonLabel(bindings.gamepad[action][0]) : keyLabel(bindings.keyboard[action][0]));
+    return {
+      paddle: label('paddle'),
+      popUp: label('popUp'),
+      retry: label('retry'),
+      steer: pad ? t('hud.stick') : `${label('steerLeft')} ${label('steerRight')}`,
+      pause: label('pause'),
+    };
+  }
+
+  /** The touch buttons: labelled from the strings, Pop up wired, shown per the Touch controls setting. */
+  private bindTouch(): void {
+    const label = (id: string, key: Parameters<typeof t>[0], aria = false) => {
+      const button = document.getElementById(id);
+      if (!button) return;
+      if (aria) button.setAttribute('aria-label', t(key));
+      else button.textContent = t(key);
+    };
+    label('touch-paddle', 'touch.paddle');
+    label('touch-popup', 'touch.popUp');
+    label('touch-left', 'touch.left', true);
+    label('touch-right', 'touch.right', true);
+    document.getElementById('touch-popup')?.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      this.controls.requestGetUp();
+    });
+  }
+
+  private applyTouch(): void {
+    const { gameplay, controls } = this.settings.value;
+    const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+    const touch = gameplay.touchControls === 'on' || (gameplay.touchControls === 'auto' && coarse);
+    this.root.classList.toggle('has-touch', touch);
+    this.root.classList.toggle('is-left-handed', controls.handedness === 'left');
   }
 
   /**

@@ -33,6 +33,8 @@ export class Controls {
   private touchRight = false;
   private getUpRequested = false;
   private active = true;
+  /** The device the player last pressed something on, so hints can name its keys or buttons. */
+  lastDevice: 'keyboard' | 'gamepad' = 'keyboard';
   private readonly pads: () => PadState[];
 
   constructor(private readonly bindings: () => Bindings, private readonly handlers: ControlHandlers, environment: ControlEnvironment = {}) {
@@ -80,6 +82,7 @@ export class Controls {
   poll(): void {
     const pads = this.pads();
     const now = heldActions(new Set(), pads, this.bindings());
+    if (pads.some((pad) => pad.buttons.some(Boolean) || Math.abs(pad.axes[0] ?? 0) > 0.5)) this.lastDevice = 'gamepad';
     if (this.active) {
       for (const action of now) if (!this.padPrevious.has(action)) this.press(action);
       this.padHeld = now;
@@ -91,6 +94,7 @@ export class Controls {
   private keyDown(event: KeyboardEvent): void {
     const tag = (event.target as Element | null)?.tagName;
     if (tag && EDITABLE.has(tag)) return;
+    this.lastDevice = 'keyboard';
     if (!this.active) return;
     const actions = heldActions(new Set([event.code]), [], this.bindings());
     if (actions.size > 0 || event.code === 'Space') event.preventDefault();

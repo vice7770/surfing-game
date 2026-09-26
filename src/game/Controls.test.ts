@@ -53,4 +53,14 @@ describe('Controls', () => {
     controls.poll();
     expect(controls.input.getUp).toBe(false);
   });
+
+  it('remembers whether the keyboard or a gamepad was used last, for the hints', () => {
+    const { controls, key, setPads } = setup();
+    expect(controls.lastDevice).toBe('keyboard');
+    setPads([pad([0])]);
+    controls.poll();
+    expect(controls.lastDevice).toBe('gamepad');
+    key('keydown', 'Space');
+    expect(controls.lastDevice).toBe('keyboard');
+  });
 });
