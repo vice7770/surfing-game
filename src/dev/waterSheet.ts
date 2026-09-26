@@ -28,10 +28,10 @@ const LOOKS: readonly WaterLook[] = ['classic', 'rich'];
 const RENDER = { width: 1280, height: 720 };
 const TILE = { width: 320, height: 180 };
 const STEP = 1 / 60;
-/** The sheet holds the sea once a crest this high stands within 30 m of the break, after at least MIN_SETTLE, s. */
-const MIN_SETTLE = 40;
-const MAX_SETTLE = 120;
-const CREST_HEIGHT = 1.0;
+/** The sheet holds the sea once a face this steep stands within 40 m of the break, after at least MIN_SETTLE, s. */
+const MIN_SETTLE = 30;
+const MAX_SETTLE = 150;
+const FACE_SLOPE = 0.35;
 /** Where the finished sheet is posted as a PNG (`npm run record:ride` runs the receiver), so it can be read without the page on screen. */
 const RECEIVER = new URLSearchParams(window.location.search).get('receiver') ?? 'http://localhost:5199';
 
@@ -44,14 +44,16 @@ const breathe = () => new Promise<void>((resolve) => {
 
 interface Shot { name: string; eye: Vector3; target: Vector3 }
 
-/** The highest node within 30 m of the break. */
-function highestCrest(water: WaterSurface, focus: { x: number; z: number }): { x: number; z: number; height: number } {
+/** The steepest node within 40 m of the break: where a face stands. */
+function steepestFace(water: WaterSurface, focus: { x: number; z: number }): { x: number; z: number; height: number; slope: number } {
   const { grid } = water;
-  let best = { x: focus.x, z: focus.z, height: -Infinity };
-  for (let j = 0; j < grid.nz; j += 1) {
-    for (let i = 0; i < grid.nx; i += 1) {
+  let best = { x: focus.x, z: focus.z, height: 0, slope: -1 };
+  for (let j = 1; j < grid.nz - 1; j += 1) {
+    for (let i = 1; i < grid.nx - 1; i += 1) {
       const here = node(water, i, j);
-      if (Math.hypot(here.x - focus.x, here.z - focus.z) <= 30 && here.height > best.height) best = here;
+      if (Math.hypot(here.x - focus.x, here.z - focus.z) > 40) continue;
+      const slope = Math.hypot(node(water, i + 1, j).height - node(water, i - 1, j).height, node(water, i, j + 1).height - node(water, i, j - 1).height) / (2 * grid.spacing);
+      if (slope > best.slope) best = { x: here.x, z: here.z, height: here.height, slope };
     }
   }
   return best;
@@ -67,25 +69,21 @@ function node(water: WaterSurface, i: number, j: number): { height: number; foam
 function findShots(water: WaterSurface, focus: { x: number; z: number }): Shot[] {
   const { grid } = water;
   const height = (x: number, z: number) => sampleSurfaceHeight(water.surfaceData, grid, x, z);
-  const crest = highestCrest(water, focus);
-  let steepest = { slope: -1, x: crest.x, z: crest.z, height: crest.height };
+  const steepest = steepestFace(water, focus);
+  const crestHeight = Math.max(steepest.height, height(steepest.x, steepest.z - 2), height(steepest.x, steepest.z - 4));
   let foamiest = { foam: -1, x: focus.x, z: focus.z, height: 0 };
   for (let j = 1; j < grid.nz - 1; j += 1) {
     for (let i = 1; i < grid.nx - 1; i += 1) {
       const here = node(water, i, j);
       if (Math.hypot(here.x - focus.x, here.z - focus.z) > 40) continue;
       if (here.foam > foamiest.foam) foamiest = { foam: here.foam, x: here.x, z: here.z, height: here.height };
-      // The face: the steepest point just shoreward of the highest crest.
-      if (Math.abs(here.x - crest.x) > 12 || here.z < crest.z || here.z > crest.z + 8) continue;
-      const slope = Math.hypot(node(water, i + 1, j).height - node(water, i - 1, j).height, node(water, i, j + 1).height - node(water, i, j - 1).height) / (2 * grid.spacing);
-      if (slope > steepest.slope) steepest = { slope, x: here.x, z: here.z, height: here.height };
     }
   }
   const lineupZ = focus.z - 25;
   const lineupHeight = height(focus.x, lineupZ);
   return [
     { name: 'lineup', eye: new Vector3(focus.x, lineupHeight + 1.6, lineupZ), target: new Vector3(focus.x + 30, lineupHeight, lineupZ - 4) },
-    { name: 'face', eye: new Vector3(steepest.x + 3, crest.height + 1.2, steepest.z + 10), target: new Vector3(steepest.x, steepest.height, steepest.z) },
+    { name: 'face', eye: new Vector3(steepest.x + 3, crestHeight + 1.2, steepest.z + 10), target: new Vector3(steepest.x, steepest.height, steepest.z) },
     { name: 'bore', eye: new Vector3(foamiest.x + 12, foamiest.height + 3, foamiest.z + 4), target: new Vector3(foamiest.x, foamiest.height, foamiest.z) },
     { name: 'horizon', eye: new Vector3(focus.x, 14, focus.z), target: new Vector3(focus.x, 0, focus.z - 200) },
     { name: 'below', eye: new Vector3(focus.x, lineupHeight - 1.2, lineupZ), target: new Vector3(focus.x, lineupHeight - 1.2 + Math.tan((20 * Math.PI) / 180) * 10, lineupZ - 10) },
@@ -107,7 +105,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     simulated += 60 * STEP;
     if (simulated >= MIN_SETTLE) {
       hooks.render(0);
-      if (highestCrest(hooks.water, hooks.mode.focus).height >= CREST_HEIGHT) break;
+      if (steepestFace(hooks.water, hooks.mode.focus).slope >= FACE_SLOPE) break;
     }
     await breathe();
   }
@@ -141,7 +139,9 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     }
   }
   status.textContent = `Water sheet: Point practice, ${simulated.toFixed(0)} s settled · columns ${TIMES.map((t) => LOOKS.map((l) => `${l} ${t}`).join(', ')).join(', ')} · rows ${shots.map((s) => s.name).join(', ')}`;
-  (window as unknown as { waterSheetReady: boolean }).waterSheetReady = true;
+  const face = steepestFace(hooks.water, hooks.mode.focus);
+  status.textContent += ` · face slope ${face.slope.toFixed(2)} · program ${hooks.water.mesh.material.customProgramCacheKey()}`;
+  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water });
   const png = await new Promise<Blob | null>((resolve) => sheet.toBlob(resolve, 'image/png'));
   if (png) await fetch(`${RECEIVER}/upload?name=water-sheet.png`, { method: 'POST', body: png }).catch(() => undefined);
 }

@@ -1,0 +1,123 @@
+import { DataTexture, DataUtils, HalfFloatType, LinearFilter, LinearMipmapLinearFilter, RGBAFormat, RepeatWrapping } from 'three';
+import { seededRandom } from '../../wave/random';
+import { FOAM_FLOW_PERIOD } from '../foamPattern';
+
+/** The two ripple layers' repeats, m: the larger rides the chop, the finer the capillary texture. */
+export const RIPPLE_TILES = [4, 1.3] as const;
+export const RIPPLE_SIZE = 256;
+/** The flow-map period, s: the foam lace's, so ripples and lace drift together. */
+export const RIPPLE_PERIOD = FOAM_FLOW_PERIOD;
+/** RMS slope of one layer at strength 1 (a light wind sea's fine slopes, art-directed). */
+export const RIPPLE_RMS_SLOPE = 0.1;
+const COMPONENTS = 48;
+
+interface Component { nx: number; nz: number; amplitude: number; phase: number }
+
+/**
+ * The ripple height field over one tile: a seeded sum of cosines with integer
+ * wave vectors (so it tiles exactly), |n| from 3 to 28 per tile, spread as
+ * cos² about the +x wind, amplitudes falling as |n|⁻² (a wind sea's slope
+ * spectrum), scaled so the rms slope of each component is `RIPPLE_RMS_SLOPE`.
+ */
+function components(seed: number): Component[] {
+  const random = seededRandom(seed, 0x51b7a1);
+  const list: Component[] = [];
+  const taken = new Set<string>();
+  while (list.length < COMPONENTS) {
+    const magnitude = 3 * (28 / 3) ** random();
+    const angle = (random() - 0.5) * Math.PI;
+    if (random() > Math.cos(angle) ** 2) continue;
+    const nx = Math.round(magnitude * Math.cos(angle));
+    const nz = Math.round(magnitude * Math.sin(angle));
+    const key = `${nx},${nz}`;
+    if ((nx === 0 && nz === 0) || taken.has(key)) continue;
+    taken.add(key);
+    list.push({ nx, nz, amplitude: 1 / (nx * nx + nz * nz), phase: random() * 2 * Math.PI });
+  }
+  // Scale to the rms slope, measured on a 64² grid of the tile.
+  let squares = 0;
+  for (let i = 0; i < 64; i += 1) {
+    for (let j = 0; j < 64; j += 1) {
+      const [sx, sz] = rawSlope(list, i / 64, j / 64);
+      squares += sx * sx + sz * sz;
+    }
+  }
+  const scale = RIPPLE_RMS_SLOPE / Math.sqrt(squares / (2 * 64 * 64));
+  for (const component of list) component.amplitude *= scale;
+  return list;
+}
+
+function rawSlope(list: readonly Component[], u: number, v: number): [number, number] {
+  let sx = 0;
+  let sz = 0;
+  for (const { nx, nz, amplitude, phase } of list) {
+    const s = -amplitude * 2 * Math.PI * Math.sin(2 * Math.PI * (nx * u + nz * v) + phase);
+    sx += s * nx;
+    sz += s * nz;
+  }
+  return [sx, sz];
+}
+
+const cache = new Map<number, Component[]>();
+const componentsFor = (seed: number) => {
+  let list = cache.get(seed);
+  if (!list) cache.set(seed, (list = components(seed)));
+  return list;
+};
+
+/** The ripple slope (∂h/∂u, ∂h/∂v) at tile coordinates (u, v), exact and tileable. */
+export function rippleSlope(u: number, v: number, seed = 1): [number, number] {
+  return rawSlope(componentsFor(seed), u, v);
+}
+
+let texture: DataTexture | undefined;
+
+/** RGBA half floats (sx, sz, sx², sz²), mipmapped and repeating: filtered texels give each footprint's mean slope and its variance. */
+export function rippleTexture(seed = 1): DataTexture {
+  if (texture) return texture;
+  const data = new Uint16Array(RIPPLE_SIZE * RIPPLE_SIZE * 4);
+  for (let j = 0; j < RIPPLE_SIZE; j += 1) {
+    for (let i = 0; i < RIPPLE_SIZE; i += 1) {
+      const [sx, sz] = rippleSlope((i + 0.5) / RIPPLE_SIZE, (j + 0.5) / RIPPLE_SIZE, seed);
+      const k = (j * RIPPLE_SIZE + i) * 4;
+      data[k] = DataUtils.toHalfFloat(sx);
+      data[k + 1] = DataUtils.toHalfFloat(sz);
+      data[k + 2] = DataUtils.toHalfFloat(sx * sx);
+      data[k + 3] = DataUtils.toHalfFloat(sz * sz);
+    }
+  }
+  texture = new DataTexture(data, RIPPLE_SIZE, RIPPLE_SIZE, RGBAFormat, HalfFloatType);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.magFilter = LinearFilter;
+  texture.minFilter = LinearMipmapLinearFilter;
+  texture.generateMipmaps = true;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+/**
+ * GLSL: the two ripple layers carried by the current in two flow-map phases
+ * (as the foam lace), glassy on clean water and busier where there is foam.
+ * Sets `waterRippleVariance` (declared in `richFragmentPars`), the slope
+ * variance the footprint leaves unresolved, for the specular anti-aliasing.
+ */
+export const waterRipplePars = /* glsl */ `
+uniform sampler2D waterRippleMap;
+uniform float waterRippleStrength;
+const float RIPPLE_PERIOD = ${RIPPLE_PERIOD.toFixed(3)};
+const float RIPPLE_TILE_0 = ${RIPPLE_TILES[0].toFixed(3)};
+const float RIPPLE_TILE_1 = ${RIPPLE_TILES[1].toFixed(3)};
+vec4 waterRippleTap( vec2 p, float tile ) { return texture( waterRippleMap, p / tile ); }
+vec4 waterRippleLayers( vec2 p ) { return waterRippleTap( p, RIPPLE_TILE_0 ) + vec4( 0.6, 0.6, 0.36, 0.36 ) * waterRippleTap( p, RIPPLE_TILE_1 ); }
+vec2 waterRippleSlopeAt( vec2 p, vec2 flow ) {
+  float a = fract( waterTime / RIPPLE_PERIOD );
+  float b = fract( a + 0.5 );
+  float w = 1.0 - abs( 2.0 * a - 1.0 );
+  vec4 s = w * waterRippleLayers( p - flow * a * RIPPLE_PERIOD )
+    + ( 1.0 - w ) * waterRippleLayers( p - flow * b * RIPPLE_PERIOD + vec2( 7.13, 3.31 ) );
+  float strength = waterRippleStrength * mix( 0.35, 1.0, clamp( vWaterFoam * 2.0, 0.0, 1.0 ) );
+  waterRippleVariance = strength * strength * max( 0.0, s.z + s.w - dot( s.xy, s.xy ) );
+  return strength * s.xy;
+}
+`;

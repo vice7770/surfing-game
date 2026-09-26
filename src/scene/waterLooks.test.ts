@@ -63,4 +63,17 @@ describe('Classic water parity', () => {
     expect(fragment).toContain('waterCubic( vWaterWorld.xz )');
     expect(water.mesh.material.customProgramCacheKey()).toContain('rich');
   });
+
+  it('adds the dense patch only for a Rich cubic source, the base mesh discarding under it', () => {
+    const water = new WaterSurface({ ...source, cubic: true });
+    expect(water.patch.visible).toBe(false);
+    expect(water.patch.material).toBe(water.mesh.material);
+    water.setLook('rich');
+    expect(water.patch.visible).toBe(true);
+    const { vertex, fragment } = compiled(water.mesh.material);
+    expect(vertex).toContain('attribute float patch;');
+    expect(fragment).toContain('waterPatchRect');
+    water.setLook('classic');
+    expect(water.patch.visible).toBe(false);
+  });
 });

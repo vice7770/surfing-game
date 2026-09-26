@@ -3,6 +3,7 @@
  * `WaterSurface` and `FarFieldOcean` when the Water look is Rich.
  */
 import { waterCubicPars } from './cubicSurface';
+import { PATCH_SKIRT } from './richPatch';
 
 export { waterCubicPars };
 
@@ -23,8 +24,11 @@ vWaterFoam = waterFoamAt( waterXZ );
 vWaterFlow = waterFlowAt( waterXZ );
 `;
 
-/** Rich <begin_vertex>: the vertex lifted to the Catmull-Rom height. */
-export const richVertexHeight = 'vec3 transformed = vec3( position );\ntransformed.y = waterHeight;\nvWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;';
+/** Rich <begin_vertex>: the vertex lifted to the Catmull-Rom height; the patch's skirt hangs below it. */
+export const richVertexHeight = `vec3 transformed = vec3( position );
+transformed.y = waterHeight - ${PATCH_SKIRT.toFixed(3)} * skirt;
+vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;
+vPatch = patch;`;
 
 /**
  * Rich <normal_fragment_begin>: the Catmull-Rom normal per pixel, the wind chop
