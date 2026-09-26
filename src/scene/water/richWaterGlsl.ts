@@ -9,12 +9,19 @@ import { CLASSIC_FOAM } from '../waterOptics';
 
 export { waterCubicPars };
 
+/**
+ * The bubble plume's whiteness per unit void fraction per metre (G9, a render
+ * constant): a fully aerated metre of plume (α ≈ 0.2) reads near white.
+ */
+export const PLUME_DENSITY = 15;
+
 /** File-scope values the normal chunk computes and the body chunk reads (Rich fragment only). */
 export const richFragmentPars = /* glsl */ `
 vec2 waterSurfaceSlope;
 float waterRippleVariance = 0.0;
 varying float vWaterAir;
 varying float vWaterPlumeDepth;
+const float PLUME_DENSITY = ${PLUME_DENSITY.toFixed(3)};
 `;
 
 /**
@@ -60,6 +67,8 @@ vWaterSkirt = skirt;`;
  * churn, creased between its clumps, opening into the lace as it ages; the
  * lace streaked up steep faces along the current; a glossy body that turns
  * matte under foam; and thin fresh foam glowing when the sun is behind it.
+ * Under it all, the bubble plume (G9) whitens the body as far down as the air
+ * went: from above seen through the water over its middle, from below plainly.
  */
 export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );
   float waterLace = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
@@ -68,7 +77,10 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
   float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterFresh );
   waterCover = max( waterCover, waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam ) );
   float waterCrease = mix( 1.0, 0.88 + 0.12 * waterChurn.y, waterFresh );
-  diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor * waterCrease, waterCover );
+  float waterPlume = 1.0 - exp( -PLUME_DENSITY * vWaterAir * min( vWaterPlumeDepth, vWaterDepth ) );
+  float waterPlumePath = faceDirection > 0.0 ? 0.5 * min( vWaterPlumeDepth, vWaterDepth ) / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;
+  vec3 waterUnder = mix( waterBody * waterBodyGain, waterFoamColor * exp( -waterAttenuation * waterPlumePath ), waterPlume );
+  diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );
   ${RICH_SPECULAR}
   roughnessFactor = mix( roughnessFactor, 0.7, waterCover );
   totalEmissiveRadiance += 0.18 * waterFresh * ( 1.0 - waterChurn.x ) * pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 6.0 ) * waterSunRadiance;`;

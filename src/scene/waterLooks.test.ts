@@ -10,7 +10,7 @@ import { rippleStrength, rippleTexture } from './water/rippleTexture';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import { DEFAULT_WATER_CHOP } from './waterChop';
 import { CLASSIC_FOAM, WATER_BODY_GAIN, waterBodyFragment } from './waterOptics';
-import { RICH_REFLECTION, RICH_WATER } from './water/richWaterGlsl';
+import { PLUME_DENSITY, RICH_REFLECTION, RICH_WATER } from './water/richWaterGlsl';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -162,6 +162,19 @@ describe('Classic water parity', () => {
     expect(shader.fragmentShader).toContain('float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterFresh );');
     expect(shader.fragmentShader).toContain('waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, vWaterFlow );');
     expect(shader.fragmentShader).toContain('totalEmissiveRadiance += 0.18 * waterFresh');
+  });
+
+  it('whitens the Rich water where the bubble plume fills it, seen through the water above it, and plainly from below (G9)', () => {
+    const water = new WaterSurface({ ...source, cubic: true });
+    water.setLook('rich');
+    const { fragment } = compiled(water.mesh.material);
+    expect(fragment).toContain(`const float PLUME_DENSITY = ${PLUME_DENSITY.toFixed(3)};`);
+    expect(fragment).toContain('float waterPlume = 1.0 - exp( -PLUME_DENSITY * vWaterAir * min( vWaterPlumeDepth, vWaterDepth ) );');
+    expect(fragment).toContain('float waterPlumePath = faceDirection > 0.0 ? 0.5 * min( vWaterPlumeDepth, vWaterDepth ) / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;');
+    expect(fragment).toContain('vec3 waterUnder = mix( waterBody * waterBodyGain, waterFoamColor * exp( -waterAttenuation * waterPlumePath ), waterPlume );');
+    expect(fragment).toContain('diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );');
+    // A fully aerated metre of plume reads near white.
+    expect(1 - Math.exp(-PLUME_DENSITY * 0.2 * 1)).toBeGreaterThan(0.9);
   });
 
   it('lights Rich mist toward the sun and fades spray into the water, and switches back to the Classic spray', () => {
