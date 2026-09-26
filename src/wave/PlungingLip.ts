@@ -126,11 +126,12 @@ interface FlyingTube {
 /**
  * Mass-conserving plunging lip for the physical surf zone (plan §1.9, Q12).
  * A throw takes water from the crest cell and its across-shore neighbours (at
- * most a fifth of each), keeping their velocity, and launches it as ballistic
- * parcels. A parcel that falls back through the surface returns its volume and
- * horizontal momentum to the cell it lands in, which drives the splash-up and
- * the secondary bore; its vertical momentum is lost to turbulence. The parcels
- * are a coarse sample of the jet: one throw is four parcels.
+ * most a fifth of each), with the momentum the jet carries off, and launches it
+ * as ballistic parcels. A parcel that falls back through the surface returns its
+ * volume and horizontal momentum to the cell it lands in, which drives the
+ * splash-up and the secondary bore; its vertical momentum is lost to turbulence.
+ * The parcels are a coarse sample of the jet: one throw is a strip of
+ * STRIP_PARCELS.
  */
 export class PlungingLip implements LipParcelSource {
   readonly x: Float64Array;
@@ -240,8 +241,9 @@ export class PlungingLip implements LipParcelSource {
       const depth = h[index];
       if (!(depth > 0)) continue;
       const removed = share * SOURCE_SHARE * depth;
-      qx[index] -= (qx[index] / depth) * removed;
-      qz[index] -= (qz[index] / depth) * removed;
+      // The jet is the crest's fast surface water: the column keeps what is left of its momentum.
+      qx[index] -= velocity.x * removed;
+      qz[index] -= velocity.z * removed;
       h[index] = depth - removed;
     }
     const x = solver.xCenters[cell - row * nx];
@@ -403,6 +405,8 @@ export class PlungingLip implements LipParcelSource {
    * proportion to their weights, so momentum is conserved.
    */
   forEachContactNear(center: Vector3, reach: number, visit: (parcel: LipContactParcel) => void): void {
+    // A body gone non-finite would meet every parcel, and hand its NaN to the whole sheet.
+    if (!Number.isFinite(center.x + center.y + center.z + reach)) return;
     const { near, contact: c } = this;
     this.query = (this.query + 1) >>> 0 || 1;
     const query = this.query;

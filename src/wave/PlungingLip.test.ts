@@ -38,6 +38,30 @@ describe('PlungingLip', () => {
     expect(lip.landings).toBe(STRIP_PARCELS);
   });
 
+  it('takes from the crest the momentum its jet carries off', () => {
+    // A jet is the crest's fast surface water: thrown faster than the column moves, it must not add momentum.
+    const solver = basin();
+    for (let i = 0; i < solver.h.length; i += 1) solver.qz[i] = 1.5 * solver.h[i];
+    const lip = new PlungingLip(solver, 256);
+    const before = momentumZ(solver);
+    const thrown = lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 3, 0.6, 3);
+    expect(momentumZ(solver) + thrown * 4).toBeCloseTo(before, 9);
+  });
+
+  it('ignores a contact query from a body that has gone non-finite', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 3, 0.6, 3);
+    lip.step(JET_RELEASE_TIME);
+    let visited = 0;
+    lip.forEachContactNear(new Vector3(Number.NaN, 0, 0), 1, (parcel) => {
+      visited += 1;
+      parcel.velocity.set(Number.NaN, Number.NaN, Number.NaN);
+    });
+    expect(visited).toBe(0);
+    lip.forEachActiveParcel((parcel) => expect(Number.isFinite(parcel.vx + parcel.vy + parcel.vz)).toBe(true));
+  });
+
   it('caps the volume taken from the crest at a fifth of the local water', () => {
     const solver = basin();
     const lip = new PlungingLip(solver, 256);
@@ -82,9 +106,15 @@ describe('PlungingLip', () => {
     const thrown = lip.launch(cell, { x: 0, z: 4 }, 3, 0.6);
     const landed: number[] = [];
     for (let frame = 0; frame < 120 && lip.activeCount() > 0; frame += 1) lip.step(1 / 120);
-    for (let iz = 0; iz < solver.nz; iz += 1) if (solver.qz[iz * solver.nx + 3] > 0) landed.push(solver.zCenters[iz]);
+    let ahead = 0;
+    for (let iz = 0; iz < solver.nz; iz += 1) {
+      if (solver.qz[iz * solver.nx + 3] > 0) landed.push(solver.zCenters[iz]);
+      if (solver.zCenters[iz] > 13.5) for (let ix = 0; ix < solver.nx; ix += 1) ahead += solver.qz[iz * solver.nx + ix] * solver.dx * solver.dz[iz];
+    }
     expect(Math.min(...landed)).toBeGreaterThan(13.5);
-    expect(momentumZ(solver)).toBeCloseTo(thrown * 4, 9);
+    // The crest lost what the jet carried off, and the water where it landed gained it.
+    expect(ahead).toBeCloseTo(thrown * 4, 9);
+    expect(momentumZ(solver)).toBeCloseTo(0, 9);
   });
 
   it('keeps a bounded number of parcels, refusing a whole strip it cannot hold', () => {
