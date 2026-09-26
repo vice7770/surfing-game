@@ -239,6 +239,8 @@ export class PhysicalMode {
   focus = { x: 0, z: 0 };
   private starts = 0;
   private shown = true;
+  /** Graphics setting (plan P8): spray and mist are still simulated, only not drawn. */
+  private sprayShown = true;
   private chosenView: RideView | 'overview' = 'front';
   /** Whether the screen's right is the board's left (+1) or its right (−1), from the latest clear view. */
   private steerSign = -1;
@@ -426,6 +428,11 @@ export class PhysicalMode {
     return this.host && this.config ? formatPhysicalReadout(this.config, this.host.snapshot.status, this.storm, this.practice) : [];
   }
 
+  setSprayVisible(visible: boolean): void {
+    this.sprayShown = visible;
+    this.spray.mesh.visible = this.shown && visible;
+  }
+
   cameraBelowSurface(margin = 0.1): boolean {
     if (!this.host) return false;
     const position = this.camera.camera.position;
@@ -440,6 +447,6 @@ export class PhysicalMode {
     this.farField.mesh.visible = visible;
     this.lipPoints.mesh.visible = visible;
     this.bubbles.mesh.visible = visible;
-    this.spray.mesh.visible = visible;
+    this.spray.mesh.visible = visible && this.sprayShown;
   }
 }

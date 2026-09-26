@@ -242,5 +242,12 @@ describe('WaterSurface GPU displacement data', () => {
     expect(Array.from(surface.flowData)).toEqual(Array.from(expected));
     expect(surface.foamPattern).toBe(1);
     expect(surface.flowData.some((value) => Math.abs(value) > 0.05)).toBe(true);
+    // The Simple foam setting keeps the soft tint even on water with a current.
+    surface.setFoamDetail(false);
+    expect(surface.foamPattern).toBe(0);
+    surface.update();
+    expect(surface.foamPattern).toBe(0);
+    surface.setFoamDetail(true);
+    expect(surface.foamPattern).toBe(1);
   });
 });

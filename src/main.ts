@@ -17,7 +17,9 @@ import {
   Vector3,
 } from 'three';
 import { Controls } from './game/Controls';
-import { DEFAULT_BINDINGS } from './game/Bindings';
+import { frameDue } from './game/frameLimit';
+import { resolveGraphics, type ResolvedGraphics } from './game/Graphics';
+import { SettingsStore, defaultSettings } from './game/Settings';
 import { devFlag, devParam } from './devTools';
 import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
@@ -147,10 +149,13 @@ class SurfGame {
   private physicalSettings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
   private draftPhysical: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
   private readoutClock = 0;
+  /** The graphics settings in force (plan P8); until applied, today's defaults. */
+  private graphics?: ResolvedGraphics;
+  private lastRender = 0;
 
   constructor() {
     this.renderer = new WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    this.renderer.setPixelRatio(this.pixelRatio());
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.outputColorSpace = 'srgb';
     this.renderer.toneMappingExposure = 1.05;
@@ -231,6 +236,17 @@ class SurfGame {
       mode: this.physicalMode,
       canvas: this.renderer.domElement,
     };
+  }
+
+  /** Apply the graphics settings (plan P8): resolution, frame limit, and what is drawn; water changes wait for the next wave. */
+  applyGraphics(resolved: ResolvedGraphics): void {
+    this.graphics = resolved;
+    this.resize();
+    if (!resolved.caustics) this.caustics.disable();
+    this.physicalMode.setSprayVisible(resolved.sprayMist);
+    this.breakSpray.points.visible = resolved.sprayMist && this.mode === 'legacy';
+    this.physicalMode.farField.setViewDistance(resolved.oceanView);
+    this.water.setFoamDetail(resolved.detailedFoam);
   }
 
   /** R: in the physical mode, paddle out again from the lineup while the waves carry on; otherwise replay. */
@@ -341,7 +357,7 @@ class SurfGame {
 
   /** Build the physical surf zone with its ridden board, and hide the legacy board, rider and HUD. */
   private async startPhysical(seed: number, settings: PhysicalSettings): Promise<void> {
-    if (!(await this.physicalMode.start(settings, seed, this.water, {}, createSurfZone, gpuTier))) return;
+    if (!(await this.physicalMode.start(settings, seed, this.water, {}, createSurfZone, this.graphics?.richSea === false ? undefined : gpuTier))) return;
     const shared = this.readDraftSettings();
     const sunChanged = shared.sunHeight !== this.activeSettings.sunHeight || shared.sunDirection !== this.activeSettings.sunDirection;
     this.activeSettings = { ...this.activeSettings, timeScale: shared.timeScale, sunHeight: shared.sunHeight, sunDirection: shared.sunDirection };
@@ -393,6 +409,7 @@ class SurfGame {
     for (const object of [this.surfer.group, this.boardWake.trail, this.boardWake.spray, this.breakSpray.points, this.sheetMesh.mesh, this.seabed.mesh]) {
       object.visible = visible;
     }
+    this.breakSpray.points.visible = visible && this.graphics?.sprayMist !== false;
     const markers = visible && this.cameraRig.profile;
     this.crestMarker.visible = markers;
     this.contactMarkers.forEach((marker) => { marker.visible = markers; });
@@ -629,6 +646,12 @@ class SurfGame {
   }
 
   private frame = (timestamp: number): void => {
+    // Under a frame limit, skipped frames leave the clock alone, so the next one steps the time they covered.
+    if (!frameDue(timestamp, this.lastRender, this.graphics?.frameInterval ?? 0)) {
+      requestAnimationFrame(this.frame);
+      return;
+    }
+    this.lastRender = timestamp;
     controls.poll();
     const rawElapsed = this.previousFrame === 0 ? 0 : (timestamp - this.previousFrame) / 1000;
     const elapsed = Math.min(rawElapsed, 0.1);
@@ -716,13 +739,14 @@ class SurfGame {
     if (ahead.lengthSq() > 1e-6) ahead.normalize();
     // The WebGPU tier shades with the FFT chop; the others keep the procedural waves.
     const host = this.physicalMode.host;
-    if (host?.snapshot.status.compute === 'gpu') {
+    if (host?.snapshot.status.compute === 'gpu' && this.graphics?.richSea !== false) {
       this.fftChop.setWind(this.physicalSettings.windSpeed);
       this.fftChop.render(this.renderer, host.snapshot.status.seaTime);
     } else {
       this.fftChop.disable();
     }
-    this.caustics.render(this.renderer, view.position.x + (ahead.x * CAUSTIC_WINDOW) / 3, view.position.z + (ahead.z * CAUSTIC_WINDOW) / 3);
+    if (this.graphics?.caustics === false) this.caustics.disable();
+    else this.caustics.render(this.renderer, view.position.x + (ahead.x * CAUSTIC_WINDOW) / 3, view.position.z + (ahead.z * CAUSTIC_WINDOW) / 3);
     this.renderer.render(this.scene, this.physicalMode.camera.camera);
     this.readoutClock += elapsed;
     if (this.readoutClock >= 0.25) {
@@ -843,8 +867,12 @@ class SurfGame {
     this.renderer.domElement.focus({ preventScroll: true });
   }
 
+  private pixelRatio(): number {
+    return this.graphics?.pixelRatio ?? Math.min(window.devicePixelRatio || 1, 1.75);
+  }
+
   private resize(): void {
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    this.renderer.setPixelRatio(this.pixelRatio());
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.cameraRig.camera.aspect = window.innerWidth / Math.max(1, window.innerHeight);
     this.cameraRig.camera.updateProjectionMatrix();
@@ -854,7 +882,14 @@ class SurfGame {
 
 const game = new SurfGame();
 if (recordRequested) void import('./dev/rideRecorder').then(({ recordRide }) => recordRide(game.recording));
-const controls = new Controls(() => DEFAULT_BINDINGS, {
+const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const settings = new SettingsStore(availableStorage(), defaultSettings(reducedMotion));
+const applyGraphics = () => game.applyGraphics(resolveGraphics(settings.value.graphics, settings.value.detected, window.devicePixelRatio));
+applyGraphics();
+settings.subscribe((_, change) => {
+  if (change === 'graphics' || change === 'detected') applyGraphics();
+});
+const controls = new Controls(() => settings.value.controls.bindings, {
   retry: () => game.quickRetry(),
   camera: () => game.cycleView(),
   pause: () => {},
