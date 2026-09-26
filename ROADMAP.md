@@ -239,7 +239,7 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
     - the hard turn makes 66° in 1.2 s at 2.1 rad/s on a 50–60° rail (it made 13° at 0.2 rad/s; Forsyth 2024: 99° in 0.96 s at 1.9 rad/s on 42°), and the roll–yaw wobble decays at 7–11 m/s (ζ 0.05–0.07);
     - the carve lab measured the plant: a planing board rights about the rider's load line (850–1,700 N·m/rad), and the turn follows the rail within 0.03 s;
     - open: full-steer reversals after 1.5 s of carving up the plane face fall (the rail bogs past about 45–50° and the board stalls). The steer's 50° full bank was chosen with the user for the stronger turn;
-    - open, blocking: on the Canyon the autopilot's riders fall soon after standing, on a slow board below planing (7 stands and no ride of 3 s over two seeds, against 14 and 10 before the redesign; [ride report](docs/research/ride-report-practice.md)). Next: carry the body upright below planing, as the pop-up's landing now is.
+    - open (merged after the user's playtest, 2026-09-26): on the Canyon the autopilot's riders fall soon after standing, on a slow board below planing (7 stands and no ride of 3 s over two seeds, against 14 and 10 before the redesign; [ride report](docs/research/ride-report-practice.md)). Next: carry the body upright below planing, as the pop-up's landing now is.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
