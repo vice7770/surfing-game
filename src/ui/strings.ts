@@ -17,6 +17,12 @@ export const EN = {
   'menu.version': 'v{version}',
   'loading.break': 'Setting the break…',
   'loading.paddleOut': 'Paddling out…',
+  'ride.reason.balance': 'Lost balance',
+  'ride.reason.footSlip': 'Feet slipped',
+  'ride.reason.lostBoard': 'Lost the board',
+  'ride.reason.impact': 'Hit by the lip',
+  'ride.reason.retry': 'Paddled back out',
+  'ride.reason.outOfWave': 'Rode it out',
 } as const;
 
 export type StringKey = keyof typeof EN;
