@@ -28,6 +28,24 @@
 - **Touch has no Esc.** The ride HUD gets a pause button, and touch play gets a Pop up button next to Paddle.
 - **Leftovers from the dev tools:** `?demo`, `?physical`, `?record` and `?inpage` are read directly in `main.ts`, and the C key is bound there. Both move behind `devTools` and the bindings respectively.
 
+## Record (2026-09-26)
+
+All 16 tasks are implemented, one commit per task, on `claude/p8-menus`. Where the build departed from this plan:
+- **Balance meter (Task 7):** it measures 1 − max(sway, posture error) / `RECOVERABLE_ERROR`, the rider's distance from letting go.
+  - A probe found the body's balance shift (`balance.x`, the plan's choice) still at 0.75–1.0 when "balance" falls began, and at 1.0 on a sinking board.
+  - The new measure reads 0.999 on a steady ride and 0.006–0.07 just before a fall.
+- **Spin-ups (Task 12):** `PhysicalMode.start` drops a superseded spin-up at once, and a start superseded while waiting on the GPU check never builds a host. Before this, the menu's surf zone kept spinning up about 30 s in its worker after Surf replaced it.
+- **Esc (Task 12):** the menu input ignores keys the ride controls have already handled. Otherwise the Esc that pauses also closed the pause menu in the same event.
+- **Menu (Task 10):** it never waits for its waves. It stands on a gradient in the brand's colours, and the sea fades in (36 s spin-up measured under load).
+- **Touch (Task 15):** prompts name the on-screen buttons, and paddling out again is the end card's Replay.
+- **Smaller calls:**
+  - `App` takes the settings store from `main.ts` and talks to the game through a `GameHost` interface;
+  - the Re-detect row is labelled "Auto detection";
+  - key hints hide while touch controls show;
+  - every connected gamepad is read, whether or not it reports the standard mapping.
+- **Not checked live:** the browser pane was hidden, which throttled the page to about 1.5 fps. So the swell sizes are untuned, and no real wipeout was ridden (the end card was rendered from a probe). Everything else was checked in the pane at desktop size and at 375×812, including `DEV_TOOLS = false`.
+- **Tests:** 451 passed at the Task 12 checkpoint. The only failures were timeouts in suites with hard-coded 20 s and 60 s limits, run at a load average of about 22 while another session ran reports.
+
 ## Global Constraints
 
 - **No new dependencies**, runtime or dev. Plain TypeScript DOM and native CSS; `three` stays the only runtime dependency.
