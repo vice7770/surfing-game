@@ -266,8 +266,8 @@ export class BoardBody implements BoardContactBody {
   private readonly systemCopy = new Float64Array(36);
   private readonly rhsCopy = new Float64Array(6);
   /** A standing rider joins with its leg's rate as a seventh unknown (spec P9). */
-  private readonly system7 = new Float64Array(49);
-  private readonly rhs7 = new Float64Array(7);
+  private readonly system8 = new Float64Array(64);
+  private readonly rhs8 = new Float64Array(8);
   private readonly lastPosition = new Vector3();
   private readonly patch: WorldPatch = { position: { x: 0, y: 0, z: 0 }, normal: { x: 0, y: 0, z: 0 }, area: 0, thickness: 0 };
   private readonly force = createPatchForce();
@@ -884,17 +884,17 @@ export class BoardBody implements BoardContactBody {
     const { rider } = this;
     if (rider?.attached) rider.prepare(h, this, water);
     if (rider?.attached && rider.upright) {
-      // Standing, the leg's rate is a seventh unknown.
-      const s7 = this.system7.fill(0);
-      const r7 = this.rhs7.fill(0);
+      // Standing, the leg's rate is a seventh unknown and the bank's an eighth.
+      const s8 = this.system8.fill(0);
+      const r8 = this.rhs8.fill(0);
       for (let i = 0; i < 6; i += 1) {
-        for (let j = 0; j < 6; j += 1) s7[i * 7 + j] = system[i * 6 + j];
-        r7[i] = rhs[i];
+        for (let j = 0; j < 6; j += 1) s8[i * 8 + j] = system[i * 6 + j];
+        r8[i] = rhs[i];
       }
-      rider.coupleStanding(s7, r7, h);
-      solveLinear(s7, r7, 7);
-      if (rider.settleStanding(r7, h, this)) {
-        for (let i = 0; i < 6; i += 1) rhs[i] = r7[i];
+      rider.coupleStanding(s8, r8, h);
+      solveLinear(s8, r8, 8);
+      if (rider.settleStanding(r8, h, this)) {
+        for (let i = 0; i < 6; i += 1) rhs[i] = r8[i];
       } else {
         rider.pushBoard(rhs);
         solve6(system, rhs);

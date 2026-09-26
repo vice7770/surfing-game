@@ -2,7 +2,10 @@
  * Carve lab (turn redesign, Task 1): standard manoeuvres on a 15° plane face,
  * measured against Forsyth et al. 2024. It reports the hard turn, the carve
  * envelope, the roll–yaw wobble after a roll kick (P4e's Mode B), and the
- * hull's own roll stiffness and damping from a prone rider's board. Writes
+ * hull's own roll stiffness and damping from a prone rider's board. Task 3a
+ * adds the plant the balance is designed on: a board towed along its heading
+ * on flat water under a held rider (`HeldRider`), its roll and turn under a
+ * couple, and where it settles under a banked load. Writes
  * docs/research/carve-lab.md.
  *
  *   npm run report:carve
@@ -11,9 +14,11 @@
 import { writeFileSync } from 'node:fs';
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { dampedMode, turnMeasures } from '../src/dev/carveMetrics';
+import { HeldRider, towAlongHeading } from '../src/dev/heldRider';
 import { AttachedRider } from '../src/physics/AttachedRider';
 import { BoardBody } from '../src/physics/BoardBody';
 import { PlaneWater } from '../src/physics/PlaneWater';
+import { WATER } from '../src/physics/hullForces';
 
 const option = (name: string): string | undefined => {
   const index = process.argv.indexOf(`--${name}`);
@@ -146,6 +151,74 @@ function hullRoll() {
   };
 }
 
+const flat = new PlaneWater();
+const mean = (values: readonly number[]) => values.reduce((a, b) => a + b, 0) / Math.max(1, values.length);
+
+/** A held rider's board on flat water, towed along its heading at `speed` and settled for 0.5 s. */
+function towed(speed: number) {
+  const board = new BoardBody();
+  board.place(new Vector3(0, board.shape.centerOfMass.y, 0), undefined, new Vector3(0, 0, speed));
+  const rider = new HeldRider(board.shape);
+  board.attach(rider);
+  const step = () => {
+    towAlongHeading(board, rider, speed);
+    board.step(STEP, flat);
+  };
+  for (let i = 0; i < 30; i += 1) step();
+  return { board, rider, step };
+}
+
+/**
+ * A couple on the held rider's board for 1.5 s: the steady rail (last 0.5 s) and
+ * the couple per rad of it, the time to 63 % of it, the steady yaw rate, the
+ * pull per rail G = (v ω / g) / tan φ, and how long the yaw rate lags the rail.
+ */
+function underCouple(speed: number, couple: number) {
+  const { board, rider, step } = towed(speed);
+  rider.rollCouple = couple;
+  const rails: number[] = [];
+  const yaws: number[] = [];
+  for (let i = 0; i < 90 && rider.attached; i += 1) {
+    step();
+    rails.push(rail(board));
+    yaws.push(board.angularVelocity.y);
+  }
+  const steadyRail = mean(rails.slice(-30));
+  const steadyYaw = mean(yaws.slice(-30));
+  const rise = rails.findIndex((r) => r >= 0.63 * steadyRail) * STEP;
+  const yawRise = yaws.findIndex((w) => w >= 0.63 * steadyYaw) * STEP;
+  const pull = (speed * steadyYaw) / WATER.gravity;
+  return { rail: steadyRail, stiffness: couple / steadyRail, rise, yaw: steadyYaw, gain: pull / Math.tan(steadyRail), lag: yawRise - rise, attached: rider.attached };
+}
+
+/**
+ * The body banked by steering for 0.7 s, then held with no couple for 0.7 s: the
+ * bank, where the board's rail settles (as a share of the bank: 1 if the hull
+ * rights the board about the rider's load line, 0 about the vertical), the
+ * pull per rail, and the speed lost per second once the tow lets go.
+ */
+function loadLine(speed: number, steer: number) {
+  const { board, rider, step } = towed(speed);
+  rider.holding = false;
+  rider.steer = steer;
+  for (let i = 0; i < 42 && rider.attached; i += 1) step();
+  rider.holding = true;
+  rider.steer = 0;
+  const rails: number[] = [];
+  const yaws: number[] = [];
+  for (let i = 0; i < 42 && rider.attached; i += 1) {
+    step();
+    rails.push(rail(board));
+    yaws.push(board.angularVelocity.y);
+  }
+  const bank = rider.bank.angle;
+  const steadyRail = mean(rails.slice(-18));
+  const pull = (speed * mean(yaws.slice(-18))) / WATER.gravity;
+  const before = board.velocity.length();
+  for (let i = 0; i < 30 && rider.attached; i += 1) board.step(STEP, flat);
+  return { bank, rail: steadyRail, share: steadyRail / bank, gain: pull / Math.tan(steadyRail), drag: (before - board.velocity.length()) / 0.5, attached: rider.attached };
+}
+
 const started = Date.now();
 const turn = hardTurn();
 const carves: string[] = [];
@@ -161,6 +234,18 @@ for (const speed of [5, 7, 9, 11]) {
   wobbles.push(`| ${speed} | ${w.mode ? fixed(w.mode.frequency, 2) : '—'} | ${w.mode ? fixed(w.mode.damping, 3) : '—'} | ${w.attached ? 'on' : 'fell'} |`);
 }
 const hull = hullRoll();
+const plant: string[] = [];
+const lines: string[] = [];
+for (const speed of [3, 5, 7, 9, 11]) {
+  for (const couple of [20, 40]) {
+    const c = underCouple(speed, couple);
+    plant.push(`| ${speed} | ${couple} | ${fixed(degrees(c.rail), 1)} | ${fixed(c.stiffness, 0)} | ${fixed(c.rise, 2)} | ${fixed(c.yaw, 2)} | ${fixed(c.gain, 2)} | ${fixed(c.lag, 2)} | ${c.attached ? 'on' : 'off'} |`);
+  }
+  for (const steer of [0.3, 0.6]) {
+    const l = loadLine(speed, steer);
+    lines.push(`| ${speed} | ${steer} | ${fixed(degrees(l.bank), 1)} | ${fixed(degrees(l.rail), 1)} | ${fixed(l.share, 2)} | ${fixed(l.gain, 2)} | ${fixed(l.drag, 2)} | ${l.attached ? 'on' : 'off'} |`);
+  }
+}
 
 const report = `# Carve lab
 
@@ -198,6 +283,22 @@ A prone rider (rigid with the board) at 7 m/s, the board kicked 10° onto its ra
 | Frequency Hz | Damping ratio | Roll stiffness N·m/rad | Roll damping N·m·s/rad | Rider |
 |---:|---:|---:|---:|---|
 | ${hull.mode ? fixed(hull.mode.frequency, 2) : '—'} | ${hull.mode ? fixed(hull.mode.damping, 3) : '—'} | ${fixed(hull.stiffness, 0)} | ${fixed(hull.damping, 1)} | ${hull.attached ? 'on' : 'fell'} |
+
+## The plant (Task 3a)
+
+A standing rider held on the board (\`HeldRider\`: carried at its bank whatever its feet could hold), the board towed along its heading on flat water at a steady speed.
+
+**Under a couple.** The body upright; a couple about the board's roll axis (in place of the ankle's) for 1.5 s. The rail and yaw rate are the last 0.5 s; the stiffness is the couple per rad of rail; G is the pull per rail, (v ω / g) / tan φ; the lag is how much later the yaw rate reaches 63 % than the rail.
+
+| Speed m/s | Couple N·m | Rail ° | Stiffness N·m/rad | Rail's 63 % s | Yaw rate rad/s | G | Yaw lag s | Rider |
+|---:|---:|---:|---:|---:|---:|---:|---:|---|
+${plant.join('\n')}
+
+**Under a banked load.** The rider banks by steering for 0.7 s, then is held there with no couple for 0.7 s. The share is the board's rail over the body's bank: 1 if the hull rights the board about the rider's load line, 0 about the vertical. The drag is the speed lost per second once the tow lets go.
+
+| Speed m/s | Steer | Bank ° | Rail ° | Share | G | Speed lost m/s² | Rider |
+|---:|---:|---:|---:|---:|---:|---:|---|
+${lines.join('\n')}
 `;
 writeFileSync(output, report);
 console.log(report);

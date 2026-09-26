@@ -1,5 +1,6 @@
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+import { dampedMode } from '../dev/carveMetrics';
 import { AttachedRider } from './AttachedRider';
 import { LIP_CONTACT, type LipContactParcel, type LipParcelSource } from './DetachedSurfer';
 import { BoardBody } from './BoardBody';
@@ -622,10 +623,10 @@ describe('lean, trim, crouch and heading hold', () => {
   });
 
   // A bottom turn: Forsyth et al. 2024's accomplished surfers turn about 100° in a second at 1.9 rad/s,
-  // on a rail rolled 42°. Open (P9 Task 10): the upright body cannot bank into the turn, so the push the
-  // turn needs lands outboard and rolls the board back to about 9°: 13° in 1.2 s, 0.2 rad/s. A body
-  // banked with the turn fed the board's 3 Hz roll-yaw swing (P4e's Mode B) and caught the rail.
-  it.fails('turns hard with a full lean and a crouch, keeping most of its speed', () => {
+  // on a rail rolled 42°. Held upright in the world, the body could not bank: the push the turn needs landed
+  // outboard and rolled the board back to about 9° (13° in 1.2 s). Banked on its ankles it carves (the turn
+  // redesign plan).
+  it('turns hard with a full lean and a crouch, keeping most of its speed', () => {
     const { board, rider, water } = acrossFace(0, 7);
     run(board, water, 0.3);
     const start = headingOf(board);
@@ -643,6 +644,102 @@ describe('lean, trim, crouch and heading hold', () => {
     expect(degrees(headingOf(board) - start)).toBeGreaterThan(60);
     expect(peak).toBeGreaterThan(1);
     expect(board.velocity.length()).toBeGreaterThan(0.7 * speed);
+  });
+
+  describe('the banked body (turn redesign)', () => {
+    /** The board's roll about its length, degrees: positive with its +x (left) rail down. */
+    const railOf = (board: BoardBody) => -degrees(Math.asin(Math.max(-1, Math.min(1, new Vector3(1, 0, 0).applyQuaternion(board.orientation).y))));
+
+    it('holds a three-quarter carve on its rail for 4 s', () => {
+      const { board, rider, water } = acrossFace(0, 7);
+      run(board, water, 0.3);
+      rider.steer = 0.75;
+      const rails: number[] = [];
+      run(board, water, 4, () => rails.push(railOf(board)));
+      expect(rider.attached).toBe(true);
+      const settled = rails.slice(-60).reduce((a, b) => a + b, 0) / 60;
+      expect(Math.abs(settled)).toBeGreaterThan(25);
+      expect(Math.abs(settled)).toBeLessThan(50);
+    });
+
+    // Review Focus 1: the same key turns the same way over the ground in either stance.
+    it('turns the same way over the ground in either stance', () => {
+      const turned = (stance: 'regular' | 'goofy') => {
+        const { board, rider, water } = acrossFace(0, 7, stance);
+        run(board, water, 0.3);
+        const start = headingOf(board);
+        rider.steer = 1;
+        run(board, water, 1.2);
+        return degrees(headingOf(board) - start);
+      };
+      const regular = turned('regular');
+      const goofy = turned('goofy');
+      expect(Math.sign(goofy)).toBe(Math.sign(regular));
+      expect(Math.abs(goofy - regular)).toBeLessThan(10);
+    });
+
+    // Review Focus 2: a relaunch mid-carve starts the body upright.
+    it('starts upright when mounted again mid-carve, and rides on', () => {
+      const { board, rider, water } = acrossFace(0, 7);
+      run(board, water, 0.3);
+      rider.steer = 1;
+      run(board, water, 0.8);
+      rider.steer = 0;
+      board.attach(rider);
+      expect(rider.bank).toEqual({ angle: 0, rate: 0 });
+      run(board, water, 2);
+      expect(rider.attached).toBe(true);
+      expect(Number.isFinite(rider.bank.angle + rider.bank.rate + board.position.x)).toBe(true);
+    });
+
+    // Review Focus 4: riding straight, the body does not bank on its own.
+    it('stays near upright riding straight, towed or down the face', () => {
+      const { board, rider } = mounted('standing');
+      const tow = () => {
+        board.velocity.z = 6;
+        rider.velocity.z = 6;
+      };
+      tow();
+      let widest = 0;
+      run(board, new PlaneWater(), 5, () => {
+        tow();
+        widest = Math.max(widest, Math.abs(rider.bank.angle));
+      });
+      expect(rider.attached).toBe(true);
+      expect(degrees(widest)).toBeLessThan(5);
+      const face = acrossFace(0, 6);
+      widest = 0;
+      run(face.board, face.water, 5, () => { widest = Math.max(widest, Math.abs(face.rider.bank.angle)); });
+      expect(face.rider.attached).toBe(true);
+      expect(degrees(widest)).toBeLessThan(5);
+    });
+
+    // Review Focus 5: lying down there is no bank.
+    it('has no bank lying down', () => {
+      const { board, rider } = mounted('prone');
+      rider.paddle = true;
+      run(board, new PlaneWater(), 3);
+      expect(rider.bank).toEqual({ angle: 0, rate: 0 });
+    });
+
+    // The roll–yaw wobble (P4e's Mode B) was barely damped before (ζ 0.005–0.02); the bank must not make it grow.
+    it('does not grow the roll–yaw wobble riding straight', () => {
+      for (const speed of [7, 9]) {
+        const { board, rider, water } = acrossFace(0, speed);
+        run(board, water, 1);
+        board.angularVelocity.addScaledVector(new Vector3(0, 0, 1).applyQuaternion(board.orientation), 0.5);
+        const rates: number[] = [];
+        let previous = headingOf(board);
+        run(board, water, 3, () => {
+          const heading = headingOf(board);
+          rates.push((heading - previous) / STEP);
+          previous = heading;
+        });
+        expect(rider.attached).toBe(true);
+        const mode = dampedMode(rates, STEP);
+        if (mode) expect(mode.damping).toBeGreaterThanOrEqual(0);
+      }
+    });
   });
 
   it('leans and holds its line the same way in either stance', () => {

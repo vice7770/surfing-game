@@ -148,44 +148,83 @@
 
 - [ ] **Step 6: Commit** `feat: a linear roll model of the board and a banked rider, and the design numbers from it`.
 
-### Task 3: The banked rider in the solve
+### Task 3: The banked rider in the solve (amended 2026-09-26)
 
-**Files:**
-- Modify: `src/physics/AttachedRider.ts` (bank state, ankle torque, balance), `src/physics/BoardBody.ts` (the 8 × 8 standing solve), `src/physics/AttachedRider.test.ts`, `src/physics/BoardBody.test.ts`
+The first pass (below, "Built so far") put the bank in the solve and found a balance that carves, but riders fell leaving turns, linking them and dragging a hand. Task 2's model left out what decided those: the planing hull's roll response, the turn's speed dependence, the board's roll–yaw mode and the feet's limit. The user chose to redesign the balance on a measured plant (3a–3c) rather than tune past the model again.
+
+**Built so far (kept, uncommitted until 3c):**
+- `AttachedRider`: the body banks about the feet. The bank is measured from where the centre of mass leans over the stance; the body's frame, `up` (the leg) and `across` bank with it, within MAX_BANK 70°. `bank: { angle, rate }` is public.
+- The standing solve is 8 × 8 (`BoardBody.system8`): the bank's speed across the leg is the eighth unknown. The ankle's spring and damper are implicit in it (backward Euler). The board takes the ankle's couple through the contact's line through the centre of mass.
+- Standing, the lateral balance shift and the steering lean are gone (the bank replaces them); the trim stays.
+- The interim balance: δ = 7.4 (θ_ref − θ) − 3.6 θ̇ − φ_surface, through a 0.01 s motor lag, with the reference eased in over 0.1 s. The heading hold asks for 0.1 rad and reads a yaw rate smoothed over 0.25 s. It passes the hard turn, the carve, the wobble, the shove and the line hold; it fails exits, S-turns and the hand (Findings).
 
 **Interfaces:**
-- Consumes: `RollParams` numbers from Task 2 (as constants `ANKLE_STIFFNESS`, `ANKLE_DAMPING`, `BANK_GAIN`, `BANK_RATE`, `RAIL_RANGE`).
-- Produces: `AttachedRider.bank: { angle: number; rate: number }` (rad, rad/s; read by rendering and the lab).
-  - The standing solve gains an eighth unknown, the bank rate's change. The ankle's spring and damper are implicit in it, as the leg's are in the seventh.
+- Produces: `AttachedRider.bank: { angle: number; rate: number }` (rad, rad/s; read by rendering and the lab). The 8 × 8 standing solve.
+- 3a produces the plant table (`docs/research/carve-lab.md`, "The plant") that 3b reads into `rollModel.ts` as `PLANT` (speed → params). 3b produces the balance law and numbers that 3c builds in.
 
-- [ ] **Step 1: Write the failing tests** in `AttachedRider.test.ts` (and flip the P9 hard-turn test from `it.fails` to `it`):
-  - **Hard turn** (the existing P9 test): full lean and crouch 0.6 at 7 m/s turns at least 60° in 1.2 s, peaking above 1 rad/s, attached, keeping at least 0.7 of its speed.
-  - **Holds a carve:** steer 0.75 for 4 s at 7 m/s: the rider stays on, and the rail settles between 25° and 50°.
-  - **Review Focus 1:** a goofy rider's hard turn turns the same way over the ground, within 10°.
-  - **Review Focus 2:** relaunched mid-carve (`board.attach(rider)` after 0.8 s of steer 1), `rider.bank` reads 0, 0, and a straight ride for 2 s stays attached with no NaN.
-  - **Review Focus 3:** the 0.3 m drop at 7 m/s (the P9 landing test) keeps the load under the 4 BW cap, and the ledger closes within 2 %.
-  - **Review Focus 4:** a standing rider on still flat water, and one gliding at 1.5 m/s: over 5 s, |bank| stays under 5° and the rider stays on.
-  - **Review Focus 5:** lying and paddling for 3 s, `rider.bank` stays 0, 0.
-  - **The wobble** (from the lab's measure, as a test): riding straight at 7 and 9 m/s after a 0.5 rad/s roll kick, the yaw rate's `dampedMode` damping is at least the baseline's.
+#### Task 3a: Measure the plant
 
-- [ ] **Step 2: Run them.** Expected: the hard turn and the carve hold FAIL as today (13° in 1.2 s; the board capsizes past 0.4 m of lean); the others fail on the missing `bank`.
+**Files:**
+- Create: `src/dev/heldRider.ts` (a lab rider whose bank is held and whose board takes a set couple), `src/dev/heldRider.test.ts`
+- Modify: `scripts/carve-lab.ts` (a "plant" section), `docs/research/carve-lab.md`
 
-- [ ] **Step 3: Implement**, in this order, running the whole `AttachedRider.test.ts` after each:
-  1. **The bank state and its pendulum, with the ankle torque.**
-     - Add `bank` and integrate I θ̈ = m g h sin θ − m h a_lat cos θ − τ implicitly with the solve.
-     - The body's centre of mass moves h sin θ across the stance frame. This replaces the kinematic `lean.x` while standing; `lean.z` stays the trim.
-  2. **The torque on the board.**
-     - τ reaches the board as the centre of pressure's offset, c_x = τ / N.
-     - When |c_x| would pass 0.13 m, τ clamps and the existing `tip` limit applies.
-  3. **The eighth unknown.** The bank rate enters the standing system as the leg's rate did: the ankle's damping c and stiffness k at h·c and h²·k, implicit on the substep.
-  4. **The balance.**
-     - δ = −BANK_GAIN (θ − θ* + θ̇ / BANK_RATE), with θ* = atan(a_lat / g) from the stance's lateral acceleration, low-passed over 0.1 s.
-     - Plus the steer's rail command: δ += steer · RAIL_RANGE.
-     - Heading hold's lean becomes a small δ bias; the hand's bend likewise.
-  5. **Rendering:** the drawn body banks by θ about the stance's forward axis.
+- [ ] **Step 1: Write the failing tests** in `src/dev/heldRider.test.ts`:
+  - with no couple, a held rider towed at 7 m/s on flat water keeps `bank` at 0, 0 for 2 s and stays on;
+  - a +30 N·m couple rolls the board toward its +x rail (the rail grows positive) and turns it toward +x;
+  - the couple's sign flips both.
+- [ ] **Step 2: Run them.** Expected: FAIL (module not found).
+- [ ] **Step 3: Implement `HeldRider`**, a subclass of `AttachedRider` for the lab only:
+  - `couple` (N·m, about the board's roll axis, positive rolling the +x rail down) and `heldBank` (rad);
+  - `coupleStanding` calls the parent's, then replaces row and column 7 with u′ = 0 (the body carried at its bank, as before the redesign) and adds h·couple·r to the board's angular rows, r = −(the heading's forward).
+- [ ] **Step 4: Run them.** Expected: PASS.
+- [ ] **Step 5: Add the plant section to the lab.** On flat water, the board kept at speed along its heading each step (a tow that follows the heading), at 3, 5, 7, 9 and 11 m/s:
+  1. **The hull's roll:** couples of ±20 and ±40 N·m for 1.5 s. Report the steady rail per N·m (1/K_h) and the time to 63 % (C_h/K_h).
+  2. **The turn:** from the same runs, the steady yaw rate and the pull per rail, G = (v ω / g) / tan φ, and the pull's lag behind the rail, T.
+  3. **The rail's drag:** without the tow, the speed lost per second at steady rails of 20°, 40° and 60°.
+  4. **The load line:** the body held at a bank of 20° with no couple. Where does the board's rail settle, as a share of the bank?
+  5. **Mode B with the body held:** the wobble ratio after a roll kick (the old rider's).
+- [ ] **Step 6: Run** `npm run report:carve` and record the plant table.
+- [ ] **Step 7: Commit** `feat: the carve lab measures the board's roll and turn under a held rider`.
 
-- [ ] **Step 4: Run** `npx vitest run src/physics`, then the whole suite. Expected: all pass, with the hard turn and the carve hold now passing. **Gate:** if the wobble test fails at any speed for every k and c the model allowed, stop. Record the measurements in Findings and report to the user; do not tune past the model.
+#### Task 3b: Design the balance on the measured plant
 
+**Files:**
+- Modify: `src/physics/rollModel.ts`, `src/physics/rollModel.test.ts`
+
+- [ ] **Step 1: Write the failing tests** in `rollModel.test.ts`:
+  - `PLANT(v)` gives 3a's measured K_h, C_h, G and T at 3–11 m/s, interpolated between speeds.
+  - `simulateBalance(plant, law, scenario)` (nonlinear: τ clamps at 0.13 N, the ankle's rest within its range) reports the rail, the bank, the heading and whether the rider tips.
+  - With the chosen law, at 4, 7 and 11 m/s, the rider stays on through:
+    - **entry:** steer 0 → 1;
+    - **exit:** 1 → 0 after 1 s, back within 10° of upright in 1 s;
+    - **reversal:** +1 → −1 at 2 s periods for 6 s;
+    - **the hand's push:** a 90 N drag on the body, 1 s.
+  - At 7 m/s, full steer settles at a 38–46° rail (Forsyth's 42°).
+  - The balance on the bank alone still has the reference gain equal to the bank gain.
+- [ ] **Step 2: Run them.** Expected: FAIL.
+- [ ] **Step 3: Implement** `PLANT`, `simulateBalance` and the law. Its structure:
+  - steer into the fall: the board's rail target leads the body's bank by the bank error and its rate;
+  - the rail the balance may ask for is capped (RAIL_MAX), keeping headroom above the steady carve to tighten a turn on the way out;
+  - anti-windup: the ankle's rest never asks for more than the feet's torque and the ankle's range can give;
+  - its gains scheduled with the measured turn gain G(v), if the scenarios need it.
+- [ ] **Step 4: Run them.** Expected: PASS.
+- [ ] **Step 5: Commit** `feat: a balance for the banked rider, designed on the measured plant`.
+
+#### Task 3c: Build the balance in and validate in the solve
+
+**Files:**
+- Modify: `src/physics/AttachedRider.ts`, `src/physics/AttachedRider.test.ts`, `src/physics/BoardBody.ts`
+
+- [ ] **Step 1: Write the failing tests** in `AttachedRider.test.ts`, with the existing Task 3 tests:
+  - **Linked turns:** from 6 m/s on the face, S-turns at steer 0.75 and at steer 1, 2 s periods, for 6 s: attached, the heading swinging at least 40°.
+  - **The exit:** the existing "holds the new line after a turn".
+  - **The hand:** the existing "drags a hand in the face".
+  - **Review Focus 2, the relaunch:** carve 0.8 s at steer 1, then place the board afresh and attach, as `RideSession.reset` does. `rider.bank` reads 0, 0, and 2 s of straight riding stay attached.
+  - **The carve hold:** steer 0.75 for 1.5 s holds a 25–50° rail.
+- [ ] **Step 2: Run them.** Expected: the S-turns, the exit, the hand and the relaunch FAIL with the interim balance.
+- [ ] **Step 3: Implement** 3b's law and numbers in `prepareBank`. Remove the lab's probe knobs.
+- [ ] **Step 4: Run** `npx vitest run src/physics`, then the whole suite. Expected: all pass.
+  - **Gate:** if the model's law fails the solve's scenarios and one re-measure of the plant does not explain why, stop and report to the user.
 - [ ] **Step 5: Commit** `feat: bank the standing rider into turns on its ankles`.
 
 ### Task 4: Validate against Forsyth and record
@@ -201,4 +240,16 @@
 
 ## Findings
 
-(Filled in as the tasks run.)
+**Task 3, first pass (the interim balance).**
+- The bank as an eighth unknown works. With Task 2's gains every standing test fell: the roll-rate gain cancelled most of the ankle's damping on the board, and the roll and pull feedbacks fed the board's 3–5 Hz roll–yaw mode, which the model leaves out.
+- A balance with no motor lag rang from one substep to the next through the light board; 0.01 s cures it (0.02 s lets the 11 m/s wobble grow).
+- The heading hold, sized for the old 0.2 m lean, drove the wobble through the bank; asking 0.1 rad and reading a yaw rate smoothed over 0.25 s fixes it.
+- In a coordinated carve the ankle rests, so the reference gain is the bank gain.
+- δ = 7.4 (θ_ref − θ) − 3.6 θ̇: the wobble decays at 5–11 m/s, the hard turn makes 66° in 1.2 s at 2.46 rad/s on a 54° rail, a 0.75 carve holds 38°. But riders fall leaving a turn, linking turns and dragging a hand: the ankle's rest winds far past what the feet can give, and the board rolls away onto a 45–85° rail.
+
+**Task 3a, the plant** (a held rider, the board towed along its heading on flat water; `docs/research/carve-lab.md`).
+- The board is stiff in roll under the rider: 850–910 N·m/rad at 5–7 m/s, 1,270–1,700 at 9–11 m/s, settling in 0.03–0.05 s (the prone kick's 100 was a paddling board). The feet's ~100 N·m move the rail only about 6°.
+- It rights about the rider's load line: under a banked, held body the rail settles at 0.97–1.0 of the bank at 5–7 m/s, 0.8–0.9 at 9 m/s, 0.7–0.8 at 11 m/s. The rail comes from the body's bank.
+- The turn follows the rail within about 0.03 s (Task 2 assumed 0.3 s), with a pull per rail G ≈ 1.0–1.2 under a banked load (1.3–1.7 at the couple's small rails). A banked turn loses about 2 m/s² of speed at 12–24° of rail.
+- At 3 m/s the board hardly planes and a banked rider falls off.
+- So the ankle's rest saturates the feet past about 0.25 rad (14°); anything more only over-rolls the board. With the rest capped there the hard turn makes 75° at 2.2 rad/s, but exits, S-turns and the hand still fall later: the bank can change only about 3.3 rad/s² on the feet (−40° to +40° takes about 1.3 s), on the face the body stalls banked while the board carves uphill and slows, and the hand's drag yaws the board so the body falls outward.
