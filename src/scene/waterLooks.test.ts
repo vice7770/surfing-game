@@ -73,6 +73,8 @@ describe('Classic water parity', () => {
     const { vertex, fragment } = compiled(water.mesh.material);
     expect(vertex).toContain('waterCarvedCubic( waterXZ )');
     expect(fragment).toContain('waterCarvedCubic( vWaterWorld.xz )');
+    // The crest light marches through the carved surface: through a tube's void, not as if it were water.
+    expect(fragment).toContain('float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;');
     expect(water.mesh.material.customProgramCacheKey()).toContain('rich');
     const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
     water.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
@@ -162,12 +164,14 @@ describe('Classic water parity', () => {
     const spray = new SprayPoints();
     const classic = { vertex: spray.mesh.material.vertexShader, fragment: spray.mesh.material.fragmentShader };
     spray.setLook('rich');
-    expect(spray.mesh.material.vertexShader).toContain('vAbove = world.y - waterHeightAt( world.xz );');
+    // G9: the spray fades at the carved surface, so spit blown out of a tube is not taken for underwater.
+    expect(spray.mesh.material.vertexShader).toContain('vAbove = world.y - waterCarve( world.xz, waterHeightAt( world.xz ) );');
     expect(spray.mesh.material.fragmentShader).toContain('henyeyGreenstein( dot( normalize( vSprayWorld - cameraPosition ), spraySunDirection ), MIST_G )');
     expect(spray.mesh.material.fragmentShader).toContain('smoothstep( -0.1, 0.35, vAbove )');
     const water = new WaterSurface({ ...source, cubic: true });
     spray.useWater(water.causticSource);
     expect(spray.mesh.material.uniforms.waterSurface).toBe(water.causticSource.waterSurface);
+    expect(spray.mesh.material.uniforms.waterTubeMap).toBe((water.causticSource as unknown as Record<string, unknown>).waterTubeMap);
     spray.setSun(new Vector3(0, 1, 0), new Color(2, 2, 2));
     expect(spray.mesh.material.uniforms.spraySunDirection.value).toEqual(new Vector3(0, 1, 0));
     spray.setLook('classic');
@@ -226,6 +230,8 @@ describe('Classic water parity', () => {
     expect(shader.fragmentShader).toContain('exp( -waterAttenuation * vLipThickness )');
     expect(shader.fragmentShader).toContain(RICH_REFLECTION);
     expect(shader.vertexShader).toContain('vLipThickness = thickness;');
+    // The sky's light comes through only where sky lies behind the lip: none looking down onto it, where the tube's water is.
+    expect(shader.fragmentShader).toContain('float lipSkyward = smoothstep( -0.1, 0.2, lipThrough.y );');
     lip.setLook('classic');
     expect(lip.mesh.material).toBe(classic);
   });

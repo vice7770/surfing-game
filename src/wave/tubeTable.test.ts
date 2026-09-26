@@ -41,6 +41,32 @@ describe('tube table', () => {
     expect(carveAt(table, 2, 1, 5, 1.5, 5)).toBeLessThan(5);
   });
 
+  it('interpolates only between tubes of one peel: neighbours far apart along their travel, or facing apart, just blend', () => {
+    const blend = (table: number[], x: number, z: number) => {
+      const t = x - 4.5;
+      const f0 = tubeFloor(table, 0, x, z);
+      const f1 = tubeFloor(table, 1, x, z);
+      const m0 = f0 === f0 ? Math.min(5, f0) : 5;
+      const m1 = f1 === f1 ? Math.min(5, f1) : 5;
+      return m0 + (m1 - m0) * t;
+    };
+    const apart = [...tube(4, { crestZ: 0 }), ...tube(5, { crestZ: 5 })];
+    for (const z of [0.3, 1.5, 2.5, 5.5]) expect(carveAt(apart, 2, 1, 5, z, 5)).toBeCloseTo(blend(apart, 5, z), 12);
+    const facing = [...tube(4), ...tube(5)];
+    facing[12 + 4] = -1; // column 5's crest runs the other way
+    for (const z of [-3, 0.2, 0.7, 4]) expect(carveAt(facing, 2, 1, 5, z, 5)).toBeCloseTo(blend(facing, 5, z), 12);
+  });
+
+  it('keeps a second, lower tube of a column between column centres too', () => {
+    const table = [...tube(4, { open: 3 }), ...tube(5, { open: 2.8 }), ...tube(4, { y: 1, open: 1 })];
+    const [x, z] = [4.8, 0.5];
+    const m0 = Math.min(tubeFloor(table, 0, x, z), tubeFloor(table, 2, x, z));
+    const m1 = tubeFloor(table, 1, x, z);
+    const blend = m0 + (m1 - m0) * (x - 4.5);
+    expect(tubeFloor(table, 2, x, z)).toBeLessThan(tubeFloor(table, 0, x, z));
+    expect(carveAt(table, 3, 1, x, z, 5)).toBeLessThanOrEqual(blend + 1e-9);
+  });
+
   it('keeps the lower floor where two tubes of one column overlap, and never raises the surface', () => {
     const table = [...tube(4, { y: 2 }), ...tube(4, { y: 1.5 })];
     expect(carveAt(table, 2, 1, 4.5, 0.7, 5)).toBeCloseTo(tubeFloor(table, 1, 4.5, 0.7), 12);

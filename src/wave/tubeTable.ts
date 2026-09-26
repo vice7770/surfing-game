@@ -9,7 +9,14 @@ import { tubeFloorDepth } from './Overturn';
  * and so does the page, from the copy each snapshot carries.
  */
 export const TUBE_STRIDE = 12;
-export const TUBE_CAPACITY = 128;
+export const TUBE_CAPACITY = 256;
+/**
+ * Two neighbouring columns' tubes are one peel's, and so interpolated, only
+ * when their crests stand within this far of each other along their travel, m,
+ * and their travel directions agree to within 60°; otherwise they blend.
+ */
+export const PEEL_GAP = 2;
+export const PEEL_ALIGNMENT = 0.5;
 
 const T = { crestX: 0, crestZ: 1, y: 2, dirX: 3, dirZ: 4, open: 5, length: 6, width: 7, tilt: 8, column: 9, scale: 10 } as const;
 
@@ -53,17 +60,23 @@ export function carveAt(table: ArrayLike<number>, count: number, columnWidth: nu
     if (column === c0) m0 = Math.min(m0, floor);
     else m1 = Math.min(m1, floor);
   }
+  const blended = m0 + (m1 - m0) * t;
   if (open0 >= 0 && open1 >= 0) {
     const a = open0 * TUBE_STRIDE;
     const b = open1 * TUBE_STRIDE;
-    for (let k = 0; k < TUBE_STRIDE; k += 1) between[k] = table[a + k] + (table[b + k] - table[a + k]) * t;
-    const length = Math.hypot(between[T.dirX], between[T.dirZ]) || 1;
-    between[T.dirX] /= length;
-    between[T.dirZ] /= length;
-    const floor = tubeFloor(between, 0, x, z);
-    return floor === floor ? Math.min(surface, floor) : surface;
+    const gap = (table[b + T.crestX] - table[a + T.crestX]) * table[a + T.dirX] + (table[b + T.crestZ] - table[a + T.crestZ]) * table[a + T.dirZ];
+    const alignment = table[a + T.dirX] * table[b + T.dirX] + table[a + T.dirZ] * table[b + T.dirZ];
+    if (Math.abs(gap) <= PEEL_GAP && alignment >= PEEL_ALIGNMENT) {
+      for (let k = 0; k < TUBE_STRIDE; k += 1) between[k] = table[a + k] + (table[b + k] - table[a + k]) * t;
+      const length = Math.hypot(between[T.dirX], between[T.dirZ]);
+      between[T.dirX] /= length;
+      between[T.dirZ] /= length;
+      // Every tube of the two columns still cuts (the blend), and the peel's shape smooths their stages.
+      const floor = tubeFloor(between, 0, x, z);
+      return floor === floor ? Math.min(blended, floor) : blended;
+    }
   }
-  return m0 + (m1 - m0) * t;
+  return blended;
 }
 
 let marks = new Uint8Array(0);
@@ -88,10 +101,11 @@ export function carveGrid(
     const reach = Math.min(table[o + T.open], table[o + T.length] * Math.cos(table[o + T.tilt]));
     const frontX = table[o + T.crestX] + table[o + T.dirX] * reach;
     const frontZ = table[o + T.crestZ] + table[o + T.dirZ] * reach;
-    const x0 = Math.min((column - 0.5) * columnWidth, Math.min(table[o + T.crestX], frontX) - spacing);
-    const x1 = Math.max((column + 1.5) * columnWidth, Math.max(table[o + T.crestX], frontX) + spacing);
-    const z0 = Math.min(table[o + T.crestZ], frontZ) - spacing;
-    const z1 = Math.max(table[o + T.crestZ], frontZ) + spacing;
+    const x0 = Math.min((column - 0.5) * columnWidth, Math.min(table[o + T.crestX], frontX) - spacing - PEEL_GAP / 2);
+    const x1 = Math.max((column + 1.5) * columnWidth, Math.max(table[o + T.crestX], frontX) + spacing + PEEL_GAP / 2);
+    // Padded by half the peel gap too: an interpolated tube's crest sits between its two columns'.
+    const z0 = Math.min(table[o + T.crestZ], frontZ) - spacing - PEEL_GAP / 2;
+    const z1 = Math.max(table[o + T.crestZ], frontZ) + spacing + PEEL_GAP / 2;
     const c0 = Math.max(0, Math.ceil((x0 - xMin) / spacing));
     const c1 = Math.min(nx - 1, Math.floor((x1 - xMin) / spacing));
     const r0 = Math.max(0, Math.ceil((z0 - zMin) / spacing));

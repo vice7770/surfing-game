@@ -350,10 +350,15 @@ export class PlungingLip implements LipParcelSource {
     return this.tubeRows;
   }
 
-  /** Copy up to `capacity` flying tubes into `into` as a `tubeTable`; returns how many. */
+  /**
+   * Copy up to `capacity` flying tubes into `into` as a `tubeTable`; returns how
+   * many. Past capacity it keeps the newest (the table runs oldest first): they
+   * are at the peel's front, where the rider is.
+   */
   writeTubes(into: Float32Array, capacity: number): number {
     const count = Math.min(this.tubeRows, capacity, Math.floor(into.length / TUBE_STRIDE));
-    for (let k = 0; k < count * TUBE_STRIDE; k += 1) into[k] = this.tubes[k];
+    const first = (this.tubeRows - count) * TUBE_STRIDE;
+    for (let k = 0; k < count * TUBE_STRIDE; k += 1) into[k] = this.tubes[first + k];
     return count;
   }
 

@@ -149,6 +149,8 @@ export class LipSheetMesh {
     lipFoamColor: { value: new Color('#d8f2e9') },
   };
   private currentLook: WaterLook = 'classic';
+  /** What the drawn sheet was built from: its parcels' buffer, count and a sum of them (G9: rebuild only on a new snapshot). */
+  private built = { parcels: undefined as Float32Array | undefined, count: -1, sum: 0 };
 
   constructor() {
     const material = new ShaderMaterial({
@@ -189,6 +191,7 @@ export class LipSheetMesh {
   /** Graphics setting (G9): the Classic sheet, or the Rich lip. */
   setLook(look: WaterLook): void {
     this.currentLook = look;
+    this.built.count = -1;
     this.mesh.material = look === 'rich' ? this.richMaterial : this.classicMaterial;
   }
 
@@ -209,6 +212,11 @@ export class LipSheetMesh {
 
   /** Rebuild the sheet from `count` parcels of a snapshot, with columns `width` m wide. */
   update(parcels: Float32Array, count: number, width: number): void {
+    // The page draws several frames per snapshot: rebuild only when the parcels changed.
+    let sum = 0;
+    for (let k = 0; k < count * LIP_STRIDE; k += 1) sum += parcels[k];
+    if (parcels === this.built.parcels && count === this.built.count && sum === this.built.sum) return;
+    this.built = { parcels, count, sum };
     if (this.currentLook === 'rich') {
       const lip = buildRichLipSheet(parcels, count, width);
       const geometry = this.mesh.geometry;

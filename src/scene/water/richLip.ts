@@ -44,7 +44,8 @@ function crSlope(p0: number, p1: number, p2: number, p3: number, t: number): num
  * The lip sheet in the Rich look (G9): its parcels' strips, chained across
  * columns where they were thrown within LINK_TIME, as one smooth Catmull-Rom
  * surface (LIP_SUBDIVISIONS points between parcels both ways), with two faces
- * half the water's thickness either side and rims round its edges. A strip's
+ * half the water's thickness either side, meeting in a rounded edge wherever
+ * the sheet ends. A strip's
  * side with no linked neighbour gets a half-column ribbon, as the Classic
  * sheet has. Only flying parcels are drawn; a strip breaks where they landed.
  */
@@ -155,11 +156,15 @@ function emitCell(net: Vec[][], corners: Node[], open: { left: boolean; right: b
   const n = LIP_SUBDIVISIONS + 1;
   const mid: Vec[][] = [];
   const normal: Vec[][] = [];
+  const outward: Vec[][] = [];
+  const taper: number[][] = [];
   const thick: number[][] = [];
   const white: number[][] = [];
   for (let a = 0; a <= n; a += 1) {
     mid[a] = [];
     normal[a] = [];
+    outward[a] = [];
+    taper[a] = [];
     thick[a] = [];
     white[a] = [];
     const s = a / n;
@@ -181,8 +186,15 @@ function emitCell(net: Vec[][], corners: Node[], open: { left: boolean; right: b
       const size = Math.hypot(cx, cy, cz);
       mid[a][b] = p;
       normal[a][b] = size > 1e-9 ? [cx / size, cy / size, cz / size] : [0, 1, 0];
+      // A rounded edge: toward an open edge the sheet thins as √(distance), and its normals turn outward.
+      const sizeS = Math.hypot(...ds) || 1;
+      const sizeT = Math.hypot(...dt) || 1;
+      const [fl, fr, ff, fb] = [open.left ? Math.sqrt(s) : 1, open.right ? Math.sqrt(1 - s) : 1, open.front ? Math.sqrt(t) : 1, open.back ? Math.sqrt(1 - t) : 1];
+      taper[a][b] = fl * fr * ff * fb;
+      outward[a][b] = [0, 1, 2].map((axis) =>
+        (ds[axis] / sizeS) * ((1 - fr) - (1 - fl)) + (dt[axis] / sizeT) * ((1 - fb) - (1 - ff))) as Vec;
       const [c00, c10, c01, c11] = corners;
-      thick[a][b] = (c00.thickness * (1 - s) + c10.thickness * s) * (1 - t) + (c01.thickness * (1 - s) + c11.thickness * s) * t;
+      thick[a][b] = taper[a][b] * ((c00.thickness * (1 - s) + c10.thickness * s) * (1 - t) + (c01.thickness * (1 - s) + c11.thickness * s) * t);
       white[a][b] = (c00.foam * (1 - s) + c10.foam * s) * (1 - t) + (c01.foam * (1 - s) + c11.foam * s) * t;
     }
   }
@@ -194,7 +206,11 @@ function emitCell(net: Vec[][], corners: Node[], open: { left: boolean; right: b
         const [nx, ny, nz] = normal[a][b];
         const h = (side * thick[a][b]) / 2;
         out.positions.push(px + nx * h, py + ny * h, pz + nz * h);
-        out.normals.push(nx * side, ny * side, nz * side);
+        const [ox, oy, oz] = outward[a][b];
+        const k = side * taper[a][b];
+        const [sx, sy, sz] = [nx * k + ox, ny * k + oy, nz * k + oz];
+        const size = Math.hypot(sx, sy, sz) || 1;
+        out.normals.push(sx / size, sy / size, sz / size);
         out.foam.push(white[a][b]);
         out.thickness.push(thick[a][b]);
       }
@@ -209,26 +225,9 @@ function emitCell(net: Vec[][], corners: Node[], open: { left: boolean; right: b
     }
     return first;
   };
-  const top = face(1);
-  const bottom = face(-1);
-  // Rims join the two faces round the cell's open edges.
-  const rim = (along: [number, number][]) => {
-    for (let m = 0; m + 1 < along.length; m += 1) {
-      const [a0, b0] = along[m];
-      const [a1, b1] = along[m + 1];
-      const t0 = top + a0 * (n + 1) + b0;
-      const t1 = top + a1 * (n + 1) + b1;
-      const d0 = bottom + a0 * (n + 1) + b0;
-      const d1 = bottom + a1 * (n + 1) + b1;
-      out.indices.push(t0, d0, t1, t1, d0, d1);
-    }
-  };
-  const line = (fixed: 'a' | 'b', value: number): [number, number][] =>
-    Array.from({ length: n + 1 }, (_, m) => (fixed === 'a' ? [value, m] : [m, value]) as [number, number]);
-  if (open.left) rim(line('a', 0));
-  if (open.right) rim(line('a', n));
-  if (open.front) rim(line('b', 0));
-  if (open.back) rim(line('b', n));
+  // The faces meet along every open edge (the taper), so the lip closes with no rim.
+  face(1);
+  face(-1);
 }
 
 /** The Rich lip's vertex chunk pieces: its foam and thickness per vertex, and where it is. */
@@ -268,11 +267,13 @@ export const richLipBody = /* glsl */ `#include <emissivemap_fragment>
   #ifdef ENVMAP_TYPE_CUBE_UV
     // The sky's light through the lip along the view ray, dimmed by Beer–Lambert over the path through it.
     vec3 lipThrough = -lipV;
+    // Only where sky lies behind the lip: looking down onto it, the tube's water is there instead.
+    float lipSkyward = smoothstep( -0.1, 0.2, lipThrough.y );
     lipThrough.y = max( lipThrough.y, 0.05 );
     vec3 lipSky = textureCubeUV( envMap, envMapRotation * normalize( lipThrough ), 0.4 ).rgb * envMapIntensity;
     float lipCos = abs( dot( lipN, lipV ) );
     float lipPath = vLipThickness / max( 0.25, lipCos );
-    totalEmissiveRadiance += ( 1.0 - vLipFoam ) * lipSky * exp( -waterAttenuation * lipPath ) * ( 1.0 - waterFresnel( lipCos ) );
+    totalEmissiveRadiance += lipSkyward * ( 1.0 - vLipFoam ) * lipSky * exp( -waterAttenuation * lipPath ) * ( 1.0 - waterFresnel( lipCos ) );
   #endif
   diffuseColor.rgb = mix( waterDeepReflectance * waterBodyGain, lipFoamColor, vLipFoam * vLipFoam );
   roughnessFactor = mix( roughnessFactor, 0.7, vLipFoam );

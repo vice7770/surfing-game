@@ -34,7 +34,25 @@ describe('the Rich lip', () => {
     expect(Math.min(...ys)).toBeCloseTo(1.9, 5);
     expect(Math.max(...ys)).toBeCloseTo(2.1, 5);
     expect(sheet.indices.length).toBeGreaterThan(0);
-    expect(Array.from(sheet.thickness).every((t) => Math.abs(t - 0.2) < 1e-6)).toBe(true);
+    expect(Math.max(...Array.from(sheet.thickness))).toBeCloseTo(0.2, 6);
+  });
+
+  it('rounds its open edges: the faces meet there, their normals turning outward, so it closes with no box', () => {
+    const volume = 0.2;
+    const sheet = buildRichLipSheet(pack(strip(3, () => 2, volume)), 8, 1);
+    const drawn = vertices(sheet.positions);
+    const normals = vertices(sheet.normals);
+    let edges = 0;
+    drawn.forEach(([x, y, z], k) => {
+      if (Math.abs(x - 3) > 1e-6 && Math.abs(x - 4) > 1e-6) return;
+      // Toward the strip's ends the edge also rounds along it: check the side edges between.
+      if (z < 1 - 1e-6 || z > 6 + 1e-6) return;
+      edges += 1;
+      expect(y).toBeCloseTo(2, 6);
+      expect(sheet.thickness[k]).toBeCloseTo(0, 6);
+      expect(normals[k][0] * Math.sign(x - 3.5)).toBeGreaterThan(0.99);
+    });
+    expect(edges).toBeGreaterThan(0);
   });
 
   it('passes its spline through every parcel', () => {

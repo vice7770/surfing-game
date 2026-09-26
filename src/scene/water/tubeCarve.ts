@@ -1,4 +1,4 @@
-import { TUBE_CAPACITY, TUBE_STRIDE } from '../../wave/tubeTable';
+import { PEEL_ALIGNMENT, PEEL_GAP, TUBE_CAPACITY, TUBE_STRIDE } from '../../wave/tubeTable';
 import type { SurfaceGrid } from '../WaterSurface';
 
 /** Bisection steps the GPU takes along a void's floor curve (the CPU's `tubeFloorDepth` takes 40): millimetres off at most. */
@@ -56,7 +56,7 @@ export function packTubeTextures(
     columns[(column - column0) * 2] = rows;
     columns[(column - column0) * 2 + 1] = kept.length;
     for (const tube of kept) {
-      for (let k = 0; k < TUBE_STRIDE; k += 1) tubes[rows * 12 + k] = table[tube * TUBE_STRIDE + k];
+      for (let k = 0; k < TUBE_STRIDE; k += 1) tubes[rows * TUBE_STRIDE + k] = table[tube * TUBE_STRIDE + k];
       rows += 1;
     }
   }
@@ -64,11 +64,11 @@ export function packTubeTextures(
 }
 
 /**
- * GLSL (G9): the Catmull-Rom surface cut by the flying tubes, as `carveAt`
- * cuts it on the CPU: each column's tubes down to their lowest floor, blended
- * linearly between column centres. Needs `waterCubicPars`.
+ * GLSL (G9): a surface cut by the flying tubes, as `carveAt` cuts it on the
+ * CPU (`float waterCarve( vec2 xz, float surface )`). Needs `waterGrid` only
+ * through its callers; the tube uniforms are its own.
  */
-export const waterTubePars = /* glsl */ `
+export const waterTubeCarvePars = /* glsl */ `
 uniform sampler2D waterTubeMap;
 uniform sampler2D waterTubeColumns;
 uniform float waterTubeColumn0;
@@ -128,20 +128,33 @@ float waterCarve( vec2 xz, float surface ) {
   float u = xz.x / waterTubeColumnWidth - 0.5;
   float c0 = floor( u );
   float t = u - c0;
+  float blended = mix( waterColumnCarve( c0, xz, surface ), waterColumnCarve( c0 + 1.0, xz, surface ), t );
   int k0 = waterColumnTube( c0 );
   int k1 = waterColumnTube( c0 + 1.0 );
   if ( k0 >= 0 && k1 >= 0 ) {
-    // Both columns hold a tube: interpolate the tube itself along the peel.
-    vec4 a = mix( texelFetch( waterTubeMap, ivec2( 0, k0 ), 0 ), texelFetch( waterTubeMap, ivec2( 0, k1 ), 0 ), t );
-    vec4 b = mix( texelFetch( waterTubeMap, ivec2( 1, k0 ), 0 ), texelFetch( waterTubeMap, ivec2( 1, k1 ), 0 ), t );
-    vec4 c = mix( texelFetch( waterTubeMap, ivec2( 2, k0 ), 0 ), texelFetch( waterTubeMap, ivec2( 2, k1 ), 0 ), t );
-    vec2 dir = normalize( vec2( a.w, b.x ) );
-    a.w = dir.x;
-    b.x = dir.y;
-    return min( surface, waterTubeFloorOf( a, b, c, xz ) );
+    vec4 a0 = texelFetch( waterTubeMap, ivec2( 0, k0 ), 0 );
+    vec4 b0 = texelFetch( waterTubeMap, ivec2( 1, k0 ), 0 );
+    vec4 a1 = texelFetch( waterTubeMap, ivec2( 0, k1 ), 0 );
+    vec4 b1 = texelFetch( waterTubeMap, ivec2( 1, k1 ), 0 );
+    float gap = dot( a1.xy - a0.xy, vec2( a0.w, b0.x ) );
+    float alignment = a0.w * a1.w + b0.x * b1.x;
+    // Neighbouring tubes of one peel: interpolate the tube itself; every tube still cuts through the blend.
+    if ( abs( gap ) <= ${PEEL_GAP.toFixed(3)} && alignment >= ${PEEL_ALIGNMENT.toFixed(3)} ) {
+      vec4 a = mix( a0, a1, t );
+      vec4 b = mix( b0, b1, t );
+      vec4 c = mix( texelFetch( waterTubeMap, ivec2( 2, k0 ), 0 ), texelFetch( waterTubeMap, ivec2( 2, k1 ), 0 ), t );
+      vec2 dir = normalize( vec2( a.w, b.x ) );
+      a.w = dir.x;
+      b.x = dir.y;
+      return min( blended, waterTubeFloorOf( a, b, c, xz ) );
+    }
   }
-  return mix( waterColumnCarve( c0, xz, surface ), waterColumnCarve( c0 + 1.0, xz, surface ), t );
+  return blended;
 }
+`;
+
+/** GLSL: the Catmull-Rom surface cut by the tubes, with its slope. Needs `waterCubicPars` and `waterTubeCarvePars`. */
+export const waterCarvedCubicPars = /* glsl */ `
 vec3 waterCarvedCubic( vec2 xz ) {
   vec3 surface = waterCubic( xz );
   float h = waterCarve( xz, surface.x );
@@ -154,3 +167,6 @@ vec3 waterCarvedCubic( vec2 xz ) {
   return vec3( h, ( hx - h ) / e, ( hz - h ) / e );
 }
 `;
+
+/** Both, for the Rich water. */
+export const waterTubePars = `${waterTubeCarvePars}\n${waterCarvedCubicPars}`;
