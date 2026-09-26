@@ -169,7 +169,32 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     await post(closeUp, 'water-shot.png');
     return true;
   };
-  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots });
+  /**
+   * One shot's render cost, ms per frame (median and 90th percentile): each
+   * frame is drawn and then waited for with a one-pixel read, so the timing
+   * holds even in a hidden page, where animation frames are throttled.
+   */
+  const waterSheetTime = async (name: string, look: WaterLook, frames = 120) => {
+    const shot = shots.find((candidate) => candidate.name === name);
+    const gl = hooks.canvas.getContext('webgl2');
+    if (!shot || !gl) return undefined;
+    hooks.setWaterLook(look);
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    const pixel = new Uint8Array(4);
+    const times: number[] = [];
+    for (let k = 0; k < frames + 10; k += 1) {
+      const start = performance.now();
+      hooks.renderView(camera);
+      gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+      if (k >= 10) times.push(performance.now() - start);
+      if (k % 10 === 9) await breathe();
+    }
+    times.sort((a, b) => a - b);
+    return { median: times[Math.floor(times.length / 2)], p90: times[Math.floor(times.length * 0.9)] };
+  };
+  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime });
   await post(sheet, 'water-sheet.png');
 }
 
