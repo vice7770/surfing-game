@@ -86,10 +86,13 @@ const ENTRY_CROSSING = WET_RAMP / 4;
 
 /**
  * Substeps per step while a rider stands. The standing rider is kept upright by
- * a drive from the board's spin in the previous substep; at 1/240 s that lag
- * pumps the board's roll in a hard carve, at 1/960 s it holds.
+ * a drive from the board's spin in the previous substep. At 1/240 s that lag
+ * pumps the board's roll in a hard carve. At 1/960 s a 13–16 Hz roll jitter
+ * remained (P4e's Mode A): in a carve it bounced the pressure onto the feet's
+ * edge, where the light board rolled onto its rail in a tenth of a second and
+ * threw the rider after about 2.8 s at full lean. At 1/1920 s the jitter is gone.
  */
-const STANDING_SUBSTEPS = 16;
+const STANDING_SUBSTEPS = 32;
 
 /** Seabed contact: Coulomb friction of foam on sand, share of penetration removed per substep, allowed overlap (m), passes. */
 const BED_FRICTION = 0.6;
