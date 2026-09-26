@@ -59,6 +59,12 @@ export class SprayPoints {
         waterSurface: { value: null },
         waterGrid: { value: new Vector4() },
         waterGridSize: { value: new Vector2() },
+        // G9: the water's flying tubes, so the spray fades at the carved surface.
+        waterTubeMap: { value: null },
+        waterTubeColumns: { value: null },
+        waterTubeColumn0: { value: 0 },
+        waterTubeColumnWidth: { value: 1 },
+        waterTubeCount: { value: 0 },
       },
       vertexShader,
       fragmentShader,
@@ -89,9 +95,11 @@ export class SprayPoints {
   /** The Rich spray fades into the water: read its height from the water's own uniforms. */
   useWater(uniforms: { waterSurface: { value: unknown }; waterGrid: { value: unknown }; waterGridSize: { value: unknown } }): void {
     const target = this.mesh.material.uniforms;
-    target.waterSurface = uniforms.waterSurface;
-    target.waterGrid = uniforms.waterGrid;
-    target.waterGridSize = uniforms.waterGridSize;
+    const source = uniforms as unknown as Record<string, { value: unknown } | undefined>;
+    for (const name of ['waterSurface', 'waterGrid', 'waterGridSize', 'waterTubeMap', 'waterTubeColumns', 'waterTubeColumn0', 'waterTubeColumnWidth', 'waterTubeCount']) {
+      const shared = source[name];
+      if (shared) target[name] = shared;
+    }
   }
 
   /** The Rich mist glows toward the sun. */

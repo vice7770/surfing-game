@@ -4,9 +4,10 @@ import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from '
 import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
 import { FoamField, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
+import { TUBE_CAPACITY, carveGrid } from './tubeTable';
 import { focusX } from './Refraction';
 import { breakerForm, crestMotion, waveHeightAt } from './CrestKinematics';
-import { tubeGeometry } from './Overturn';
+import { jetFlightTime, tubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import type { SurfZoneState } from './surfZoneState';
@@ -497,14 +498,26 @@ export class SurfZoneSimulation {
     // by the speed that flies it over its overturn's void (plan P7).
     const speed = motion.speed + shape.relativeSpeed;
     const along = motion.direction;
+    // It keeps pouring from the crest until it lands, as measured jets do (Erinin et al. 2023).
     const thrown = this.lip.launch(
       crest, { x: along.x * speed, z: along.z * speed }, solver.surfaceAt(crest), shape.volume, motion.speed, tubeGeometry(shape.shape, height),
+      jetFlightTime(shape.shape, height),
     );
     if (thrown > 0) {
       this.lipLaunches += 1;
       this.lipJets += 1;
       this.lipVolume += thrown;
     }
+  }
+
+  /** The flying tubes as a `tubeTable` (G9); returns how many. */
+  writeTubes(into: Float32Array): number {
+    return this.lip.writeTubes(into, TUBE_CAPACITY);
+  }
+
+  /** The width of the columns the lip throws in, m. */
+  get tubeColumnWidth(): number {
+    return this.solver.dx;
   }
 
   /** Water surface elevation, m; on dry land this is the bed. */
@@ -531,9 +544,11 @@ export class SurfZoneSimulation {
   /**
    * Resample the water to interleaved (height, foam) per render node. Dry nodes
    * sit 5 cm under the bed so the seabed mesh hides them. Foam is the foam
-   * field's covered fraction.
+   * field's covered fraction. Under a flying lip the surface drops to its
+   * void's floor, unless `carve` is false (the snapshot's raw heights, G9: the
+   * page carves them from the tube table).
    */
-  writeUniformSurface(data: Float32Array, grid: RenderGrid): void {
+  writeUniformSurface(data: Float32Array, grid: RenderGrid, carve = true): void {
     const mapping = this.mappingFor(grid);
     const { h, bed, nx } = this.solver;
     const { dense, residual } = this.foam;
@@ -561,19 +576,7 @@ export class SurfZoneSimulation {
         }
       }
     }
-    // Under a flying lip the surface drops to its void's floor.
-    this.lip.forEachTubeExtent((xMin, xMax, zMin, zMax) => {
-      const c0 = Math.max(0, Math.ceil((xMin - grid.xMin) / grid.spacing));
-      const c1 = Math.min(grid.nx - 1, Math.floor((xMax - grid.xMin) / grid.spacing));
-      const r0 = Math.max(0, Math.ceil((zMin - grid.zMin) / grid.spacing));
-      const r1 = Math.min(grid.nz - 1, Math.floor((zMax - grid.zMin) / grid.spacing));
-      for (let r = r0; r <= r1; r += 1) {
-        for (let c = c0; c <= c1; c += 1) {
-          const k = (r * grid.nx + c) * 2;
-          data[k] = this.lip.carve(grid.xMin + c * grid.spacing, grid.zMin + r * grid.spacing, data[k]);
-        }
-      }
-    });
+    if (carve) carveGrid(data, grid, this.lip.tubeTable, this.lip.tubeCount, this.solver.dx);
   }
 
   /** Resample the depth-averaged current to interleaved (u, w) per render node, m/s; 0 on dry nodes. */

@@ -20,6 +20,21 @@ function momentumZ(solver: ShallowWaterSolver): number {
   return total;
 }
 
+describe('PlungingLip tubes', () => {
+  it('writes the newest tubes when more fly than a snapshot holds: they are at the peel’s front, where the rider is', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    const tube: TubeGeometry = { length: 1.5, width: 0.6, tilt: 0.5 };
+    for (const x of [0.5, 1.5, 2.5]) {
+      lip.launch(solver.cellIndex(x, 12.5), { x: 0, z: 5 }, 3, 0.3, 3, tube);
+      lip.step(1 / 60);
+    }
+    const into = new Float32Array(2 * 12);
+    expect(lip.writeTubes(into, 2)).toBe(2);
+    expect([into[9], into[12 + 9]]).toEqual([1, 2]);
+  });
+});
+
 describe('PlungingLip', () => {
   it('conserves water volume through launch, flight and landing in a closed basin', () => {
     const solver = basin();
@@ -150,6 +165,22 @@ describe('PlungingLip', () => {
     parcels.sort((a, b) => a.index - b.index);
     for (let k = 1; k < parcels.length; k += 1) expect(parcels[k].y).toBeGreaterThan(parcels[k - 1].y);
     expect(parcels.at(-1)!.y).toBeCloseTo(30, 6);
+  });
+
+  it('keeps pouring from the crest for as long as the throw says', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 6 }, 30, 0.6, 4, undefined, 0.7);
+    const flying = () => {
+      let count = 0;
+      lip.forEachActive(() => (count += 1));
+      return count;
+    };
+    lip.step(0.35);
+    expect(flying()).toBeGreaterThan(1);
+    expect(flying()).toBeLessThan(STRIP_PARCELS);
+    lip.step(0.35 + 1e-9);
+    expect(flying()).toBe(STRIP_PARCELS);
   });
 
   it('releases each parcel where its crest has moved to, not where the faster jet has', () => {

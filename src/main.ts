@@ -110,7 +110,11 @@ const waterSheetRequested = devFlag('waterSheet');
 const inPage = typeof Worker === 'undefined' || devFlag('inpage');
 /** A surf zone with a rider the player controls, or none (the menu's waves, plan P8). */
 function surfZoneFactory(rider: boolean): SurfZoneHostFactory {
-  return inPage ? (config) => new LocalSurfZone(config, { rider }) : (config) => new WorkerSurfZone(config, undefined, { rider });
+  // `?renderSpacing=0.5` draws the water on a finer grid, for close recordings (dev flag).
+  const renderSpacing = Number(devParam('renderSpacing')) || undefined;
+  return inPage
+    ? (config) => new LocalSurfZone(config, { rider, renderSpacing })
+    : (config) => new WorkerSurfZone(config, undefined, { rider, renderSpacing });
 }
 /**
  * Online (spec N1): the rider starts at `spawn` (m along shore from the take-off, and
@@ -1180,6 +1184,7 @@ class SurfGame {
     this.water.setLook(look);
     this.physicalMode.farField.setLook(look);
     this.physicalMode.spray.setLook(look);
+    this.physicalMode.lipSheet.setLook(look);
   }
 
   private updateHud(): void {
@@ -1256,7 +1261,7 @@ class SurfGame {
     this.fill.intensity = 0;
     this.reflectionMapTarget?.dispose();
     this.reflectionMapTarget = undefined;
-    this.photoSky.applyTo(this.scene, [this.water.mesh.material, this.physicalMode.farField.mesh.material]);
+    this.photoSky.applyTo(this.scene, [this.water.mesh.material, this.physicalMode.farField.mesh.material, this.physicalMode.lipSheet.richMaterial]);
     if (!this.isBelowSurface) this.scene.background = this.photoSky.background ?? this.skyColor;
     this.refreshSun();
   }
@@ -1273,6 +1278,7 @@ class SurfGame {
     this.water.setSun(direction, radiance);
     this.physicalMode.farField.setSun(direction, radiance);
     this.physicalMode.spray.setSun(direction, radiance);
+    this.physicalMode.lipSheet.setSun(direction, radiance);
   }
 
   private refreshReflection(): void {

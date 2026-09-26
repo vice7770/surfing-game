@@ -1,5 +1,6 @@
 import { waterHeightPars } from '../WaterSurface';
 import { mistPars } from './mist';
+import { waterTubeCarvePars } from './tubeCarve';
 
 /**
  * The Rich spray's shaders (G8): mist (the wide sprites) drawn larger and
@@ -11,6 +12,7 @@ export const richSprayVertex = /* glsl */ `
 attribute vec2 look;
 uniform float pixelsPerMetre;
 ${waterHeightPars}
+${waterTubeCarvePars}
 ${mistPars}
 varying float vOpacity;
 varying float vAbove;
@@ -25,7 +27,7 @@ void main() {
   vOpacity = look.y;
   vec3 world = ( modelMatrix * vec4( position, 1.0 ) ).xyz;
   vSprayWorld = world;
-  vAbove = world.y - waterHeightAt( world.xz );
+  vAbove = world.y - waterCarve( world.xz, waterHeightAt( world.xz ) );
 }
 `;
 

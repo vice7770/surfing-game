@@ -34,6 +34,14 @@ describe('SurfZoneRunner', () => {
     expect(runner.status().lipRollers).toBe(5);
   });
 
+  it('renders on a finer grid when asked, for close shots, leaving the physics as it is', () => {
+    const fine = new SurfZoneRunner(config, { renderSpacing: 0.5 });
+    const coarse = new SurfZoneRunner(config);
+    expect(fine.grid.spacing).toBe(0.5);
+    expect(fine.grid.nx).toBe(2 * (coarse.grid.nx - 1) + 1);
+    expect(fine.createBuffers().surface.length).toBe(fine.grid.nx * fine.grid.nz * 2);
+  });
+
   it('fills a snapshot with the render surface, the current, the lip and the bubbles', () => {
     const runner = new SurfZoneRunner(config);
     runner.advance(120);
@@ -45,7 +53,8 @@ describe('SurfZoneRunner', () => {
     runner.fill(buffers);
     const surface = new Float32Array(buffers.surface.length);
     const flow = new Float32Array(buffers.flow.length);
-    runner.simulation.writeUniformSurface(surface, runner.grid);
+    // Raw heights: the page carves them with the snapshot's tubes (G9).
+    runner.simulation.writeUniformSurface(surface, runner.grid, false);
     runner.simulation.writeUniformFlow(flow, runner.grid);
     expect(Array.from(buffers.surface)).toEqual(Array.from(surface));
     expect(Array.from(buffers.flow)).toEqual(Array.from(flow));
