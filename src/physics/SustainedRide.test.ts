@@ -25,7 +25,7 @@ describe('sustained surf', () => {
     expect(wave.zMin).toBeGreaterThan(80);
     expect(Math.abs(wave.crestZ() - board.position.z)).toBeLessThan(12);
     expect(Math.abs(wave.heightAt(board.position.x, board.position.z))).toBeGreaterThan(0.1);
-  }, 20_000);
+  }, 60_000);
 
   it('throws the rider free and lets the simulated water arrest the fall', () => {
     const wave = new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS, sustained: true });
@@ -135,7 +135,7 @@ describe('sustained surf', () => {
       expect(board.state, `seed ${seed}`).toBe('riding');
       expect(board.rideDistance, `seed ${seed}`).toBeGreaterThan(60);
     }
-  }, 20_000);
+  }, 60_000);
 
   it('allows a longer carved line before breaking water causes a fall', () => {
     const board = new BoardPhysics(

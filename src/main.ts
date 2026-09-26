@@ -14,6 +14,7 @@ import {
   WebGLRenderer,
   WebGLCubeRenderTarget,
   WebGLRenderTarget,
+  Vector3,
 } from 'three';
 import { Controls } from './game/Controls';
 import { RunHistory, type RunReport } from './game/RunHistory';
@@ -29,6 +30,7 @@ import { Surfer } from './scene/Surfer';
 import { Seabed } from './scene/Seabed';
 import { PlungingSheetMesh } from './scene/PlungingSheetMesh';
 import { WaterSurface } from './scene/WaterSurface';
+import { CAUSTIC_WINDOW, CausticMap } from './scene/CausticMap';
 import { LegacySurfaceSource } from './scene/LegacySurfaceSource';
 import { DEFAULT_WATER_CHOP } from './scene/waterChop';
 import { SPOT_OPTICS } from './scene/waterOptics';
@@ -101,6 +103,9 @@ class SurfGame {
   private readonly crestMarker: Mesh;
   private readonly contactMarkers: Mesh[] = [];
   private readonly water: WaterSurface;
+  /** Caustics refracted through the physical surface onto its seabed (G5). */
+  private readonly caustics: CausticMap;
+  private readonly causticAhead = new Vector3();
   private wave: InteractiveWaterField;
   private plungingSheet: PlungingSheet;
   private physics: BoardPhysics;
@@ -163,6 +168,8 @@ class SurfGame {
     this.scene.add(this.seabed.mesh);
     this.physicalMode = new PhysicalMode(this.scene);
     this.physicalMode.farField.mesh.material.envMapIntensity = 0.28;
+    this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
+    this.physicalMode.seabed.useCaustics(this.water.causticUniforms, this.water.causticSource as never);
     this.physics = this.createPhysics(this.wave, this.activeSettings, this.plungingSheet);
     this.lastDiagnostics = this.physics.diagnostics();
     this.scene.add(this.surfer.group);
@@ -637,6 +644,7 @@ class SurfGame {
     for (let index = 0; index < contacts.length; index += 1) this.contactMarkers[index].position.copy(contacts[index]);
     this.cameraRig.update(this.physics, this.wave, simElapsed || this.fixedStep);
     this.updateUnderwaterView();
+    this.caustics.disable();
     this.renderer.render(this.scene, this.cameraRig.camera);
     this.updateHud();
     requestAnimationFrame(this.frame);
@@ -657,6 +665,11 @@ class SurfGame {
     this.water.update();
     this.physicalMode.update(simElapsed || this.fixedStep);
     this.setUnderwater(this.physicalMode.cameraBelowSurface());
+    // Caustics where the view looks: a window a third of its width ahead of the camera.
+    const view = this.physicalMode.camera.camera;
+    const ahead = view.getWorldDirection(this.causticAhead).setY(0);
+    if (ahead.lengthSq() > 1e-6) ahead.normalize();
+    this.caustics.render(this.renderer, view.position.x + (ahead.x * CAUSTIC_WINDOW) / 3, view.position.z + (ahead.z * CAUSTIC_WINDOW) / 3);
     this.renderer.render(this.scene, this.physicalMode.camera.camera);
     this.readoutClock += elapsed;
     if (this.readoutClock >= 0.25) {

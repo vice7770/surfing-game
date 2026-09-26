@@ -151,6 +151,14 @@ vec3 waterBodyReflectance( float depth, float viewCosine, float sunCosine ) {
   float path = max( depth, 0.0 ) * ( 1.0 / waterRefractedCosine( viewCosine ) + 1.0 / waterRefractedCosine( sunCosine ) );
   return waterDeepReflectance + ( waterBedAlbedo - waterDeepReflectance ) * exp( -waterDiffuseAttenuation * path );
 }
+
+// As waterBodyReflectance, with the light reaching the bed scaled by \`bedLight\` (caustics, 1 under flat water):
+// R∞ (1 − e) + A · bedLight · e.
+vec3 waterBodyReflectanceLit( float depth, float viewCosine, float sunCosine, float bedLight ) {
+  float path = max( depth, 0.0 ) * ( 1.0 / waterRefractedCosine( viewCosine ) + 1.0 / waterRefractedCosine( sunCosine ) );
+  vec3 reach = exp( -waterDiffuseAttenuation * path );
+  return waterDeepReflectance * ( 1.0 - reach ) + waterBedAlbedo * bedLight * reach;
+}
 `;
 
 /** Mirrors `crestThickness`; needs `waterHeightAt( vec2 )` declared first. */
@@ -177,7 +185,15 @@ float waterCrestThickness( vec3 origin, vec3 direction ) {
  * crests when the sun is behind them. Needs `vWaterWorld`, `vWaterDepth`,
  * `vWaterFoam`, `vWaterFlow`, `waterFoamColor`, `waterTime` and `foamPatternPars`.
  */
-export function waterBodyFragment(crestLight: boolean): string {
+export function waterBodyFragment(crestLight: boolean, caustics = false): string {
+  // The bed seen through the fragment lies along the refracted view ray; light it with the caustic map there.
+  const body = caustics
+    ? /* glsl */ `
+    vec3 waterDown = refract( -waterV, waterN, ${glsl(1 / WATER_IOR)} );
+    vec2 waterBedXZ = vWaterWorld.xz + waterDown.xz * ( vWaterDepth / max( 0.05, -waterDown.y ) );
+    waterBody = waterBodyReflectanceLit( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ), causticLightAt( waterBedXZ ) );`
+    : /* glsl */ `
+    waterBody = waterBodyReflectance( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ) );`;
   // Sunlight crosses the crest from its sunlit back toward the face in view, so
   // march horizontally toward the sun; a height-field crest seldom lets the
   // refracted view ray out through its back.
@@ -197,8 +213,7 @@ export function waterBodyFragment(crestLight: boolean): string {
   vec3 waterV = normalize( cameraPosition - vWaterWorld );
   float waterViewCos = dot( waterN, waterV );
   vec3 waterBody = waterDeepReflectance;
-  if ( waterViewCos > 0.0 ) {
-    waterBody = waterBodyReflectance( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ) );${crestLight ? crest : ''}
+  if ( waterViewCos > 0.0 ) {${body}${crestLight ? crest : ''}
   }
   // Foam is a matte network over the water (plan §2.4) that drifts with the current.
   vec2 waterFootprint = fwidth( vWaterWorld.xz );
