@@ -65,7 +65,8 @@
           <div id="physical-controls" hidden>
             <label class="slider-row"><span>Physical spot</span><select id="physical-spot"><option value="beach">Beach · sandbar and rips</option><option value="point">Point · headland</option><option value="reef">Reef · steep shelf</option><option value="canyon">Canyon · refraction</option></select></label>
             <label class="slider-row"><span>Solver</span><select id="physical-solver"><option value="2">Boussinesq · dispersive waves</option><option value="1">Shallow water · faster, early bores</option></select></label>
-            <label class="slider-row"><span>Swell source</span><select id="swell-source"><option value="buoy">Buoy · Hs, Tp and spread</option><option value="storm">Storm · wind, fetch and distance</option></select></label>
+            <label class="slider-row"><span>Swell source</span><select id="swell-source"><option value="buoy">Buoy · Hs, Tp and spread</option><option value="storm">Storm · wind, fetch and distance</option><option value="practice">Practice · steady groundswell</option></select></label>
+            <p id="practice-note" class="storm-derived" hidden></p>
             <div id="buoy-controls">
               <label class="slider-row"><span>Swell height Hs <output id="hs-output">1.4 m</output></span><input id="hs-slider" type="range" min="0.3" max="3" step="0.1" value="1.4" /></label>
               <label class="slider-row"><span>Peak period Tp <output id="tp-output">10.0 s</output></span><input id="tp-slider" type="range" min="6" max="18" step="0.5" value="10" /></label>

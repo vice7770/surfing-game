@@ -19,7 +19,7 @@ import {
 import { Controls } from './game/Controls';
 import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
-import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, localSurfZone, spreadingFor, swellFor, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, PRACTICE_SWELL, PhysicalMode, localSurfZone, spreadingFor, swellFor, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
 import { WorkerSurfZone } from './game/WorkerSurfZone';
 import { BoardPhysics, type BoardDiagnostics, type PhysicsSettings } from './physics/BoardPhysics';
 import { CameraRig } from './scene/CameraRig';
@@ -553,6 +553,12 @@ class SurfGame {
     getElement<HTMLSelectElement>('#swell-source').value = physical.source;
     getElement<HTMLElement>('#buoy-controls').hidden = physical.source !== 'buoy';
     getElement<HTMLElement>('#storm-controls').hidden = physical.source !== 'storm';
+    getElement<HTMLElement>('#practice-note').hidden = physical.source !== 'practice';
+    getElement<HTMLInputElement>('#direction-slider').disabled = physical.source === 'practice';
+    if (physical.source === 'practice') {
+      getElement<HTMLElement>('#practice-note').textContent = `SAME WATER AND FORCES, STEADIER SWELL · HS ${PRACTICE_SWELL.significantHeight.toFixed(1)} M`
+        + ` · TP ${PRACTICE_SWELL.peakPeriod} S · S ${PRACTICE_SWELL.spreading} · BAND ±${Math.round(PRACTICE_SWELL.bandwidth! * 100)} % · ${PRACTICE_SWELL.directionDegrees}° · BEST AT THE POINT`;
+    }
     getElement<HTMLInputElement>('#storm-wind-slider').value = String(physical.stormWindSpeed);
     getElement<HTMLInputElement>('#storm-fetch-slider').value = String(physical.stormFetchKm);
     getElement<HTMLInputElement>('#storm-duration-slider').value = String(physical.stormDurationHours);

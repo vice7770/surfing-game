@@ -1,4 +1,5 @@
 import { Vector3, type Scene } from 'three';
+import type { StandRefusal } from '../physics/AttachedRider';
 import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { Surfer } from '../scene/Surfer';
@@ -29,8 +30,8 @@ export interface PhysicalSettings {
   spot: SpotName;
   /** Solver stage: 2 Boussinesq (dispersive, breaking by eddy viscosity), 1 shallow water (cheaper; waves break early as bores). */
   stage: 1 | 2;
-  /** Buoy values taken directly, or derived from a storm. */
-  source: 'buoy' | 'storm';
+  /** Buoy values taken directly, derived from a storm, or the practice groundswell. */
+  source: 'buoy' | 'storm' | 'practice';
   significantHeight: number;
   peakPeriod: number;
   directionDegrees: number;
@@ -52,9 +53,18 @@ export interface SwellInput {
   peakPeriod: number;
   spreading: number;
   bandwidth?: number;
+  /** Set when the swell fixes its own direction (practice). */
+  directionDegrees?: number;
   /** The storm it came from, in storm mode. */
   storm?: StormSwell;
 }
+
+/**
+ * Practice mode (plan P4f): a narrow-band, narrow-spread groundswell that keeps
+ * catchable faces coming. Only the incoming water changes; the solver and every
+ * force law are the natural mode's. Ghost riders catch most on the Point in it.
+ */
+export const PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 2, peakPeriod: 12, spreading: 40, bandwidth: 0.08, directionDegrees: 10 };
 
 /** Largest swell the tank carries, matching the buoy sliders: deeper water would be needed beyond this. */
 export const TANK_SWELL_LIMITS = { height: { min: 0.3, max: 3 }, period: { min: 6, max: 18 } };
@@ -84,8 +94,9 @@ export function spreadingFor(spread: number): number {
   return 24 * Math.pow(4 / 24, t);
 }
 
-/** Buoy values as set, or the swell a storm delivers to the spot, kept within TANK_SWELL_LIMITS. */
+/** Buoy values as set, the practice groundswell, or the swell a storm delivers to the spot, kept within TANK_SWELL_LIMITS. */
 export function swellFor(settings: PhysicalSettings): SwellInput {
+  if (settings.source === 'practice') return { ...PRACTICE_SWELL };
   if (settings.source !== 'storm') {
     return { significantHeight: settings.significantHeight, peakPeriod: settings.peakPeriod, spreading: spreadingFor(settings.spread) };
   }
@@ -111,8 +122,16 @@ export function formatStorm(storm: StormSwell): string {
   return `Hs ${storm.stormHeight.toFixed(1)} m · Tp ${storm.stormPeriod.toFixed(1)} s · ${storm.growth} · ${travel}`;
 }
 
+/** Why a pop-up found no support, in the player's words. */
+const REFUSAL_TEXT: Record<StandRefusal, string> = {
+  strained: 'thrown off balance on the way up',
+  sinking: 'board sinking, not planing yet',
+  'feet under water': 'feet landed under water',
+  'no water': 'no water under the board',
+};
+
 /** The Wave Lab rows for a running surf zone, from plain status values (they can come from the worker). */
-export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneStatus, storm?: StormSwell): ReadoutRow[] {
+export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneStatus, storm?: StormSwell, practice = false): ReadoutRow[] {
   const { breakPoint, breaker, peel } = status;
   const toSet = status.timeToSet;
   const wind = config.windSpeed ?? 0;
@@ -130,7 +149,7 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
   return [
     { label: 'SPOT', value: config.spot.toUpperCase() },
     ...(storm ? [{ label: 'STORM', value: formatStorm(storm) }] : []),
-    { label: 'SWELL', value: `Hs ${config.significantHeight.toFixed(1)} m · Tp ${config.peakPeriod.toFixed(1)} s · ${config.directionDegrees}°${clamped}` },
+    { label: 'SWELL', value: `Hs ${config.significantHeight.toFixed(1)} m · Tp ${config.peakPeriod.toFixed(1)} s · ${config.directionDegrees}°${clamped}${practice ? ' · practice groundswell' : ''}` },
     { label: 'SPREAD', value: `s ${config.spreading.toFixed(0)}${band}` },
     { label: 'TIDE', value: `${config.tide.toFixed(1)} m` },
     { label: 'BREAK LINE', value: `${Math.round(-breakPoint.z)} m out · ${status.breakDepth.toFixed(2)} m deep` },
@@ -143,8 +162,8 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
       { label: 'RIDER', value: `${status.ride.phase.toUpperCase()} · ${status.ride.speed.toFixed(1)} m/s${status.ride.cue ? ' · POP UP NOW' : ''}` },
       { label: 'POP-UP', value: status.ride.popUp.outcome === 'none' ? 'not yet'
         : status.ride.popUp.outcome === 'stood' ? `stood in ${status.ride.popUp.duration.toFixed(2)} s · landing ${status.ride.popUp.landingPeak.toFixed(1)} BW, ${Math.round(status.ride.popUp.frontShare * 100)} % front`
-        : status.ride.popUp.outcome === 'rising' ? 'rising' : 'no support: board not planing' },
-      ...(status.ride.separation ? [{ label: 'FELL', value: `${status.ride.separation} · R to paddle out again` }] : []),
+        : status.ride.popUp.outcome === 'rising' ? 'rising' : `no support: ${REFUSAL_TEXT[status.ride.popUp.refusal ?? 'sinking']}` },
+      ...(status.ride.separation ? [{ label: 'FELL', value: `${status.ride.separation} · swim back (Space, arrows) and press Enter by the board to climb on, or R to paddle out again` }] : []),
     ] : []),
     { label: 'PEEL', value: peelText },
     { label: 'LIP', value: status.lipLaunches === 0 ? 'no lip yet'
@@ -201,6 +220,8 @@ export class PhysicalMode {
   config?: SurfZoneConfig;
   /** The storm behind the running sea, in storm mode. */
   storm?: StormSwell;
+  /** Whether the running sea is the practice groundswell. */
+  practice = false;
   focus = { x: 0, z: 0 };
   private starts = 0;
   private shown = true;
@@ -237,7 +258,7 @@ export class PhysicalMode {
       seed,
       significantHeight: swell.significantHeight,
       peakPeriod: swell.peakPeriod,
-      directionDegrees: settings.directionDegrees,
+      directionDegrees: swell.directionDegrees ?? settings.directionDegrees,
       spreading: swell.spreading,
       bandwidth: swell.bandwidth,
       tide: settings.tide,
@@ -255,6 +276,7 @@ export class PhysicalMode {
     this.host = host;
     this.config = config;
     this.storm = swell.storm;
+    this.practice = settings.source === 'practice';
     const { init } = host;
     water.setSource(new PhysicalSurfaceSource(new SnapshotSurfZone(host), init.grid.spacing));
     water.setChop(chopForWind(settings.windSpeed));
@@ -383,7 +405,7 @@ export class PhysicalMode {
 
   /** The Wave Lab rows for the running surf zone. */
   readout(): ReadoutRow[] {
-    return this.host && this.config ? formatPhysicalReadout(this.config, this.host.snapshot.status, this.storm) : [];
+    return this.host && this.config ? formatPhysicalReadout(this.config, this.host.snapshot.status, this.storm, this.practice) : [];
   }
 
   cameraBelowSurface(margin = 0.1): boolean {
