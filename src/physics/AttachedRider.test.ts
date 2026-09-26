@@ -571,8 +571,8 @@ describe('lean, trim, crouch and heading hold', () => {
   const degrees = (radians: number) => (radians * 180) / Math.PI;
 
   // Trimming across the face is surfing's basic line. With no line of its own the rider let the board turn
-  // down the face (27° in 10 s at 45° across). The hold chatters between its limits, wandering a few degrees. Steeper than about 50° across this face the rider still falls:
-  // an upright body cannot follow the tilted board's sideways pull (P4e's open finding).
+  // down the face (27° in 10 s at 45° across). The hold chatters between its limits, wandering a few degrees. Banked, steeper
+  // lines (55–80° across) hold until the board slows below planing, 5–9 s; held upright they threw the rider at once (P4e).
   it('holds its line across the face with no input, leaning into the face', () => {
     const { board, rider, water } = acrossFace(45, 7);
     const start = headingOf(board);
@@ -601,6 +601,23 @@ describe('lean, trim, crouch and heading hold', () => {
     });
     expect(rider.attached).toBe(true);
     expect(worst).toBeLessThan(10);
+  });
+
+  // The hold waits for a turn to die down before taking up its line; after a hard turn that is under half a second.
+  it('takes up a line within half a second of letting go of a hard turn', () => {
+    const { board, rider, water } = acrossFace(0, 7);
+    run(board, water, 0.3);
+    rider.steer = 1;
+    run(board, water, 0.6);
+    rider.steer = 0;
+    let waited = 0;
+    for (let i = 0; i < 60 && rider.standingLine === undefined; i += 1) {
+      board.step(STEP, water);
+      waited += STEP;
+    }
+    expect(rider.attached).toBe(true);
+    expect(rider.standingLine).toBeDefined();
+    expect(waited).toBeLessThanOrEqual(0.5 + STEP);
   });
 
   it('slows with its weight back and runs with it forward, the nose rising and falling', () => {
@@ -740,6 +757,26 @@ describe('lean, trim, crouch and heading hold', () => {
       run(face.board, face.water, 5, () => { widest = Math.max(widest, Math.abs(face.rider.bank.angle)); });
       expect(face.rider.attached).toBe(true);
       expect(degrees(widest)).toBeLessThan(5);
+    });
+
+    // Review Focus 4: slow, the rider does not tip over from a turn that is not there. Standing still or gliding at
+    // 1.5 m/s a shortboard sinks under the rider until the leg runs out of travel (about 0.6 m in 1.5-1.9 s, as it
+    // did before the bank); until then the body stays upright over it.
+    it('stays upright standing still or gliding slowly on flat water, until the board sinks away', () => {
+      for (const speed of [0, 1.5]) {
+        const { board, rider } = mounted('standing');
+        board.velocity.z = speed;
+        rider.velocity.z = speed;
+        let widest = 0;
+        let time = 0;
+        run(board, new PlaneWater(), 5, () => {
+          if (!rider.attached) return;
+          time += STEP;
+          widest = Math.max(widest, Math.abs(rider.bank.angle));
+        });
+        expect(time).toBeGreaterThan(1);
+        expect(degrees(widest)).toBeLessThan(5);
+      }
     });
 
     // Review Focus 5: lying down there is no bank.

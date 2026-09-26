@@ -265,7 +265,7 @@ export class BoardBody implements BoardContactBody {
   private readonly rhs = new Float64Array(6);
   private readonly systemCopy = new Float64Array(36);
   private readonly rhsCopy = new Float64Array(6);
-  /** A standing rider joins with its leg's rate as a seventh unknown (spec P9). */
+  /** A standing rider joins with its leg's rate as a seventh unknown (spec P9) and its bank's as an eighth (the turn redesign). */
   private readonly system8 = new Float64Array(64);
   private readonly rhs8 = new Float64Array(8);
   private readonly lastPosition = new Vector3();

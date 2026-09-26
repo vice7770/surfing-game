@@ -239,10 +239,9 @@ const LEG_STIFFNESS = 44_000;
  * with at most STANDING_HOLD_SHARE of its lean (provisional). Holding a line
  * across a face means leaning into it, onto the uphill rail. With the paddler's
  * 10° the board drifted 7° toward the fall line over 10 s at 45° across a 15°
- * face; at 5° it holds within about 1°. Lines steeper than about 50° across that
- * face still throw the rider: a body held upright across the board cannot follow
- * the board's sideways pull on a face tilted under it (P4e's finding; the P9
- * plan's findings).
+ * face; at 5° it holds within about 1°. Banked (the turn redesign), lines up to
+ * 80° across that face hold until the board, slowed by running across it, stops
+ * planing (5–9 s from 7 m/s); held upright they threw the rider at once (P4e).
  */
 const STANDING_HOLD_ANGLE = (5 * Math.PI) / 180;
 const STANDING_HOLD_RATE_TIME = 0.5;
@@ -1071,7 +1070,7 @@ export class AttachedRider {
       const off = this.scratch.subVectors(this.position, this.target);
       this.carried.addScaledVector(this.up, off.dot(this.up)).addScaledVector(this.across, off.dot(this.across));
     }
-    // Drive: standing upright as the board rolls and pitches under the feet, the knees' flex, and a
+    // Drive: keeping the body's bank as the board rolls and pitches under the feet, the knees' flex, and a
     // bounded correction toward the posture.
     this.uprightVelocity(board, this.drive.set(0, 0, 0)).addScaledVector(this.up, this.flexRate);
     // The balance shift moves the centre of mass across the board.
