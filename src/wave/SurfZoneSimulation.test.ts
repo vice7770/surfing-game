@@ -26,6 +26,25 @@ describe('SurfZoneSimulation', () => {
     }
   });
 
+  it('drops a failing device and steps that frame on the CPU', async () => {
+    const reference = new SurfZoneSimulation({ ...small, spot: 'point' });
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'point' });
+    let disposed = false;
+    simulation.device = { step: () => Promise.reject(new Error('device lost')), dispose: () => { disposed = true; } };
+    const warn = console.warn;
+    console.warn = () => {};
+    try {
+      await simulation.stepAsync(1 / 60);
+    } finally {
+      console.warn = warn;
+    }
+    reference.step(1 / 60);
+    expect(disposed).toBe(true);
+    expect(simulation.device).toBeUndefined();
+    expect(Array.from(simulation.solver.h)).toEqual(Array.from(reference.solver.h));
+    expect(simulation.solver.time).toBe(reference.solver.time);
+  });
+
   it('replays a seed exactly and changes with another', () => {
     const run = (seed: number) => {
       const simulation = new SurfZoneSimulation({ ...small, spot: 'beach', seed });

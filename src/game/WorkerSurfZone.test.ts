@@ -63,6 +63,38 @@ describe('SurfZoneWorkerCore', () => {
     expect(snapshot.snapshot.rider[23]).toBe(1);
     expect(replies[1].transfer).toEqual([buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.spray.buffer, buffers.board.buffer, buffers.rider.buffer]);
   });
+
+  it('steps the water on a device when given one, replying once it is done', async () => {
+    // A stand-in device that takes the CPU solver's own step, asynchronously.
+    const created: string[] = [];
+    const core = (compute?: 'auto' | 'cpu') => {
+      const replies: SurfZoneReply[] = [];
+      const worker = new SurfZoneWorkerCore((reply) => replies.push(reply), async (solver) => {
+        created.push(compute ?? 'auto');
+        return { step: async (dt: number) => solver.step(dt), dispose() {} };
+      });
+      return { worker, replies };
+    };
+    const { worker, replies } = core();
+    const local = new LocalSurfZone(config, { rider: true });
+    await worker.handle({ type: 'start', config, options: { rider: true } });
+    const ready = replies[0];
+    if (ready.type !== 'ready') throw new Error('expected ready');
+    expect(ready.snapshot.status.compute).toBe('gpu');
+    const { status: _status, ...buffers } = ready.snapshot;
+    const input = { paddle: true, popUp: false, steer: 0.5, retry: false };
+    const pending = worker.handle({ type: 'advance', steps: 30, buffers, input });
+    expect(replies).toHaveLength(1);
+    await pending;
+    local.advance(30, input);
+    const snapshot = replies[1];
+    if (snapshot.type !== 'snapshot') throw new Error('expected snapshot');
+    expect(shown(snapshot.snapshot)).toEqual({ ...shown(local.snapshot), status: { ...shown(local.snapshot).status, compute: 'gpu' } });
+    const cpu = core('cpu');
+    await cpu.worker.handle({ type: 'start', config: { ...config, compute: 'cpu' }, options: { rider: true } });
+    expect(created).toEqual(['auto']);
+    expect(cpu.replies[0].type === 'ready' && cpu.replies[0].snapshot.status.compute).toBe('cpu');
+  });
 });
 
 describe('WorkerSurfZone', () => {

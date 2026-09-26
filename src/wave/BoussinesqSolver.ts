@@ -1,5 +1,5 @@
 import { GRAVITY } from './dispersion';
-import { PERIODIC, ShallowWaterSolver, WALL, type DepthFunction, type SolverGrid, type SolverOptions } from './ShallowWaterSolver';
+import { PERIODIC, ShallowWaterSolver, WALL, type DepthFunction, type RelaxationZone, type SolverGrid, type SolverOptions } from './ShallowWaterSolver';
 
 /** Madsen & Sørensen (1992) dispersion coefficient: the [2,2] Padé fit to Airy. */
 export const MADSEN_SORENSEN_B = 1 / 15;
@@ -44,6 +44,29 @@ export interface BoussinesqOptions extends SolverOptions {
   dispersion?: boolean;
   /** Eddy-viscosity breaking; false (the default) leaves it out. */
   breaking?: KennedyOptions | false;
+}
+
+/** What a device port of the step reads from the solver (plan P6). */
+export interface BoussinesqDeviceLayout {
+  gravity: number;
+  dryDepth: number;
+  manning: number;
+  /** WALL, PERIODIC or OPEN. */
+  xBoundary: number;
+  dispersive: boolean;
+  /** Kennedy breaking with the onset already scaled by the wind; absent when waves do not break. */
+  breaking?: { onset: number; end: number; transition: number; mixing: number };
+  /** Still depth and its slopes along x and z. */
+  still: Float64Array;
+  slopeX: Float64Array;
+  slopeZ: Float64Array;
+  /** Distance to the neighbour centre below and above each row, and to the next row's centre, m. */
+  below: Float64Array;
+  above: Float64Array;
+  gaps: Float64Array;
+  /** Changes whenever the window shifted: the bed, still depth and carried state moved with it. */
+  version: number;
+  zones: readonly RelaxationZone[];
 }
 
 /** Thinner water does not break, m. */
@@ -101,6 +124,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   private viscosityPeak = 0;
   /** The still depth and its slopes follow the bed; recomputed when the window shifts. */
   private depthDirty = true;
+  private layoutVersion = 0;
   /** Column solves, all columns at once row by row: the eliminated upper band and right side. */
   private readonly columnUpper: Float64Array;
   private readonly columnRight: Float64Array;
@@ -213,6 +237,47 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     this.applyFriction(dt);
   }
 
+  /** The dispersive acceleration the next Hancock predictor adds, per cell; absent without dispersion. */
+  get predictor(): { x: Float64Array; z: Float64Array } | undefined {
+    return this.predictorX && this.predictorZ ? { x: this.predictorX, z: this.predictorZ } : undefined;
+  }
+
+  /** The constants, still depth and zones a device step needs (refreshed first). */
+  deviceLayout(): BoussinesqDeviceLayout {
+    this.refreshStillDepth();
+    const kennedy = this.kennedy;
+    return {
+      gravity: this.gravity,
+      dryDepth: this.dryDepth,
+      manning: this.manning,
+      xBoundary: this.xBoundary,
+      dispersive: this.dispersive,
+      breaking: kennedy && {
+        onset: kennedy.onset * this.onsetScale, end: kennedy.end, transition: kennedy.transition, mixing: kennedy.delta * kennedy.delta,
+      },
+      still: this.still,
+      slopeX: this.dX,
+      slopeZ: this.dZ,
+      below: this.below,
+      above: this.above,
+      gaps: this.zGaps,
+      version: this.layoutVersion,
+      zones: this.relaxationZones,
+    };
+  }
+
+  /**
+   * Book a step of `elapsed` seconds that a device took and wrote back into h,
+   * qx, qz and the breaking and predictor fields: the clock, and the eddy
+   * viscosity's step limit from the viscosity it read back.
+   */
+  adoptDeviceStep(elapsed: number): void {
+    this.time += elapsed;
+    let peak = 0;
+    for (const nu of this.viscosity) if (nu > peak) peak = nu;
+    this.viscosityPeak = peak;
+  }
+
   /** The CFL step, and for breaking water the explicit eddy viscosity's limit. */
   override maxStableStep(): number {
     const step = super.maxStableStep();
@@ -318,13 +383,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
    */
   private updateMask(): void {
     const { h, still, mask, f1: wet, f2: alongX, f3: box, f4: work } = this;
-    if (this.depthDirty) {
-      const { bed, restLevel } = this;
-      for (let i = 0; i < h.length; i += 1) still[i] = Math.max(0, restLevel - bed[i]);
-      this.derivativeX(still, this.dX, false);
-      this.derivativeZ(still, this.dZ, false);
-      this.depthDirty = false;
-    }
+    this.refreshStillDepth();
     for (let i = 0; i < h.length; i += 1) wet[i] = h[i] > DISPERSIVE_DEPTH && still[i] > DISPERSIVE_DEPTH ? 1 : 0;
     // Erode the wet cells by the stencils' reach: two along each axis, and the 3 × 3 box for the diagonals.
     this.erodeX(wet, alongX, 2);
@@ -335,6 +394,15 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     for (let i = 0; i < h.length; i += 1) {
       mask[i] = wet[i] > 0 && alongX[i] > 0 && work[i] > 0 && box[i] > 0 && h[i] - still[i] <= SWITCH_RATIO * still[i] ? on : 0;
     }
+  }
+
+  private refreshStillDepth(): void {
+    if (!this.depthDirty) return;
+    const { bed, restLevel, still } = this;
+    for (let i = 0; i < still.length; i += 1) still[i] = Math.max(0, restLevel - bed[i]);
+    this.derivativeX(still, this.dX, false);
+    this.derivativeZ(still, this.dZ, false);
+    this.depthDirty = false;
   }
 
   /** The smallest of `f` within `reach` cells along x (clamped at edges, wrapped when periodic). */
@@ -373,6 +441,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   override shiftAlongShore(columns: number): void {
     super.shiftAlongShore(columns);
     this.depthDirty = true;
+    this.layoutVersion += 1;
     // The breaking bores and the predictor's memory move with the water; new columns start quiet.
     const shift = Math.trunc(columns);
     if (shift === 0) return;

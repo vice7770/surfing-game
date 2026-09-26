@@ -4,9 +4,10 @@ import { BoardBody } from '../physics/BoardBody';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { RideSession, type RideInput } from '../physics/RideSession';
 import type { PeelEstimate } from './Breaking';
+import { BoussinesqSolver } from './BoussinesqSolver';
 import { BubbleCloud } from './BubbleCloud';
 import { SPRAY_STRIDE, SprayCloud } from './SprayCloud';
-import { SurfZoneSimulation, type RenderGrid, type SurfZoneConfig } from './SurfZoneSimulation';
+import { SurfZoneSimulation, type RenderGrid, type SolverDevice, type SurfZoneConfig } from './SurfZoneSimulation';
 import type { BreakerType } from './SwellReadout';
 
 export { surfZoneSea } from './SurfZoneSimulation';
@@ -43,6 +44,8 @@ export interface SurfZoneStatus {
   timeToSet: number;
   /** Wall-clock time of the latest step, water and board, ms. */
   stepMs: number;
+  /** Where the water steps: on the GPU (plan P6) or the CPU. */
+  compute: 'gpu' | 'cpu';
   cells: number;
   breakPoint: { x: number; z: number };
   /** Still depth at the break point, including tide, m. */
@@ -148,38 +151,63 @@ export class SurfZoneRunner {
    * water. A snapshot (`fill`) shows the state after the last step.
    */
   advance(steps: number, input: RideRequest = IDLE): void {
-    const { board, session } = this;
     for (let step = 0; step < steps; step += 1) {
       this.simulation.step(SURF_ZONE_STEP);
-      if (session) {
-        // A press (pop-up, retry) counts once per batch; held controls apply to every step.
-        const request = step === 0 ? input : { ...input, popUp: false, retry: false };
-        if (request.retry) {
-          this.rideResets += 1;
-          this.launchRide();
-        }
-        const start = performance.now();
-        session.step(SURF_ZONE_STEP, this.water, request);
-        session.strike(this.simulation.lip);
-        this.boardMs = performance.now() - start;
-        const lost = session.board.outsideDomain || (session.surfer.active && session.surfer.outsideDomain)
-          || !Number.isFinite(session.board.position.x + session.board.position.y + session.board.position.z);
-        if (lost) {
-          this.rideResets += 1;
-          this.launchRide();
-        }
-      } else if (board) {
-        const start = performance.now();
-        board.step(SURF_ZONE_STEP, this.water);
-        this.boardMs = performance.now() - start;
-        if (board.outsideDomain || !Number.isFinite(board.position.x + board.position.y + board.position.z)) {
-          this.boardResets += 1;
-          this.launchBoard();
-        }
-      }
-      this.bubbles.update(this.simulation, SURF_ZONE_STEP);
-      this.spray.update(this.sprayScene, SURF_ZONE_STEP);
+      this.afterWater(step, input);
     }
+  }
+
+  /** `advance` with the water stepped on the simulation's device, when it has one (plan P6). */
+  async advanceAsync(steps: number, input: RideRequest = IDLE): Promise<void> {
+    for (let step = 0; step < steps; step += 1) {
+      await this.simulation.stepAsync(SURF_ZONE_STEP);
+      this.afterWater(step, input);
+    }
+  }
+
+  /** Step stage 2 water on a device from `create` (the GPU); false when it offers none and the CPU keeps stepping. */
+  async useDevice(create: (solver: BoussinesqSolver) => Promise<SolverDevice | undefined>): Promise<boolean> {
+    const { solver } = this.simulation;
+    if (!(solver instanceof BoussinesqSolver)) return false;
+    try {
+      this.simulation.device = await create(solver);
+    } catch (error) {
+      console.warn('No surf zone device; stepping on the CPU.', error);
+    }
+    return this.simulation.device !== undefined;
+  }
+
+  /** The board, rider and particles after the water's step `step` of a batch. */
+  private afterWater(step: number, input: RideRequest): void {
+    const { board, session } = this;
+    if (session) {
+      // A press (pop-up, retry) counts once per batch; held controls apply to every step.
+      const request = step === 0 ? input : { ...input, popUp: false, retry: false };
+      if (request.retry) {
+        this.rideResets += 1;
+        this.launchRide();
+      }
+      const start = performance.now();
+      session.step(SURF_ZONE_STEP, this.water, request);
+      session.strike(this.simulation.lip);
+      this.boardMs = performance.now() - start;
+      const lost = session.board.outsideDomain || (session.surfer.active && session.surfer.outsideDomain)
+        || !Number.isFinite(session.board.position.x + session.board.position.y + session.board.position.z);
+      if (lost) {
+        this.rideResets += 1;
+        this.launchRide();
+      }
+    } else if (board) {
+      const start = performance.now();
+      board.step(SURF_ZONE_STEP, this.water);
+      this.boardMs = performance.now() - start;
+      if (board.outsideDomain || !Number.isFinite(board.position.x + board.position.y + board.position.z)) {
+        this.boardResets += 1;
+        this.launchBoard();
+      }
+    }
+    this.bubbles.update(this.simulation, SURF_ZONE_STEP);
+    this.spray.update(this.sprayScene, SURF_ZONE_STEP);
   }
 
   /** Board and rider back in the lineup: prone, nose to the beach. */
@@ -253,6 +281,7 @@ export class SurfZoneRunner {
       seaTime: simulation.seaTime,
       timeToSet: simulation.timeToSet,
       stepMs: simulation.lastStepMs + this.boardMs,
+      compute: simulation.device ? 'gpu' : 'cpu',
       cells: simulation.solver.nx * simulation.solver.nz,
       breakPoint: { ...this.focus },
       breakDepth: this.breakDepth,

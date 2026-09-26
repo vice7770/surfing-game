@@ -42,6 +42,14 @@ export interface SurfZoneConfig {
   foamDecay?: FoamDecay;
   /** Solver stage: 1 shallow water, 2 Madsen–Sørensen Boussinesq with Kennedy breaking (the default). */
   stage?: 1 | 2;
+  /** Where stage 2 water steps: 'auto' on the GPU when a host offers one (the worker, with WebGPU), 'cpu' always on the CPU. */
+  compute?: 'auto' | 'cpu';
+}
+
+/** The stage 2 water stepped elsewhere (the GPU, plan P6): it advances the solver's own state in place. */
+export interface SolverDevice {
+  step(dt: number): Promise<void>;
+  dispose(): void;
 }
 
 export interface RenderGrid {
@@ -202,10 +210,38 @@ export class SurfZoneSimulation {
     return this.solver.xCenters[0] - 0.5 * this.solver.dx;
   }
 
+  /** Steps the water on a device instead of the CPU solver, when set (`stepAsync`). */
+  device?: SolverDevice;
+
   step(dt: number): void {
     const start = performance.now();
     this.lipImpacts.length = 0;
     this.solver.step(dt);
+    this.afterWater(dt, start);
+  }
+
+  /** `step` with the water on the device when there is one; a failing device is dropped for the CPU solver. */
+  async stepAsync(dt: number): Promise<void> {
+    const { device } = this;
+    if (!device) {
+      this.step(dt);
+      return;
+    }
+    const start = performance.now();
+    this.lipImpacts.length = 0;
+    try {
+      await device.step(dt);
+    } catch (error) {
+      console.warn('Surf zone device step failed; stepping on the CPU from here.', error);
+      device.dispose();
+      this.device = undefined;
+      this.solver.step(dt);
+    }
+    this.afterWater(dt, start);
+  }
+
+  /** Everything a step does once the water has moved: breaking, lip, foam. */
+  private afterWater(dt: number, start: number): void {
     this.breaking.update(dt);
     this.markBreakingOnsets();
     this.lip.step(dt);

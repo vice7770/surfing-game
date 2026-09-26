@@ -343,6 +343,11 @@ export class ShallowWaterSolver {
     return energy;
   }
 
+  /** The relaxation zones, in the order they blend. */
+  get relaxationZones(): readonly RelaxationZone[] {
+    return this.zones.map((entry) => entry.zone);
+  }
+
   addRelaxationZone(zone: RelaxationZone): void {
     let firstRow = this.nz;
     let lastRow = -1;
