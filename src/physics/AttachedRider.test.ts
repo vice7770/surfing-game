@@ -187,9 +187,15 @@ describe('rider coupled to the board', () => {
     const riderFall = rider.velocity.y;
     board.velocity.y = -4;
     board.step(STEP, water);
-    expect(rider.inContact).toBe(false);
+    // The leg cannot pull: the rider is not dragged down, only gravity acts on it.
     expect(rider.contact.feasible).toBe(false);
     expect(rider.velocity.y).toBeGreaterThan(riderFall - WATER.gravity * STEP - 1e-6);
+    // Standing on a leg, the feet stay on the deck, unloaded, until it drops out of the leg's reach; then it flies.
+    board.velocity.y = -4;
+    board.step(STEP, water);
+    board.velocity.y = -4;
+    board.step(STEP, water);
+    expect(rider.inContact).toBe(false);
   });
 });
 
@@ -339,6 +345,100 @@ describe('weight-shift steering', () => {
     const goofy = ride(1, 'goofy');
     expect(Math.sign(goofy.roll)).toBe(Math.sign(regular.roll));
     expect(Math.sign(goofy.board.velocity.x)).toBe(Math.sign(regular.board.velocity.x));
+  });
+});
+
+describe('standing on the leg', () => {
+  const weight = REFERENCE_RIDER.mass * WATER.gravity;
+  /** A board sliding down a 15° face at 6 m/s with a standing rider (the steering tests' set-up). */
+  const onSlope = () => {
+    const angle = (15 * Math.PI) / 180;
+    const board = new BoardBody();
+    const along = new Vector3(0, -Math.sin(angle), Math.cos(angle));
+    board.place(new Vector3(0, board.shape.centerOfMass.y * Math.cos(angle), 0), new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), angle), along.multiplyScalar(6));
+    const rider = new AttachedRider(board.shape, { phase: 'standing' });
+    board.attach(rider);
+    return { board, rider, water: new PlaneWater({ slopeZ: -Math.tan(angle) }) };
+  };
+
+  it('stands balanced down a face for 20 s with no input, the load between its feet', () => {
+    const { board, rider, water } = onSlope();
+    let widest = 0;
+    let time = 0;
+    run(board, water, 20, () => {
+      time += STEP;
+      if (time > 1 && rider.attached) widest = Math.max(widest, Math.abs(rider.contact.centreOfPressure.x));
+    });
+    expect(rider.attached).toBe(true);
+    expect(widest).toBeLessThan(0.06);
+  });
+
+  it('holds its weight on the leg riding a towed board, and settles within a second when the water drops away', () => {
+    const { board, rider } = mounted('standing');
+    const tow = () => {
+      board.velocity.z = 6;
+      rider.velocity.z = 6;
+    };
+    tow();
+    run(board, new PlaneWater(), 1, tow);
+    expect(rider.leg.force / weight).toBeCloseTo(1, 1);
+    const dropped = new PlaneWater({ level: -0.05 });
+    const deviation: number[] = [];
+    run(board, dropped, 1.5, () => {
+      tow();
+      deviation.push(Math.abs(rider.leg.extension - rider.leg.rest));
+    });
+    expect(rider.attached).toBe(true);
+    const peak = Math.max(...deviation);
+    expect(peak).toBeGreaterThan(0.002);
+    expect(Math.max(...deviation.slice(Math.round(1 / STEP)))).toBeLessThan(0.2 * peak);
+  });
+
+  it('only pushes: dropped 0.3 m at speed it flies unloaded, lands through its leg and rides on, the ledger closed', () => {
+    // A board at rest cannot carry a standing rider (it sinks), so the drop lands planing, at 7 m/s. From 0.5 m
+    // the flat landing digs the nose in and pitches the rider off, rigid or on a leg alike.
+    const { board, rider } = mounted('standing', 0.3);
+    board.velocity.z = 7;
+    rider.velocity.z = 7;
+    const water = new PlaneWater();
+    const before = board.kineticEnergy() + rider.kineticEnergy();
+    const loads: number[] = [];
+    let airborne = true;
+    let flightLoad = 0;
+    let deepest = 0;
+    run(board, water, 1.2, () => {
+      if (airborne && board.lowestPoint() < 0) airborne = false;
+      if (airborne) flightLoad = Math.max(flightLoad, rider.contact.load);
+      loads.push(rider.contact.load);
+      deepest = Math.min(deepest, rider.leg.extension);
+    });
+    expect(flightLoad).toBeLessThan(0.05);
+    expect(rider.attached).toBe(true);
+    expect(Math.max(...loads)).toBeGreaterThan(1.5);
+    expect(Math.max(...loads)).toBeLessThanOrEqual(4 + 1e-3);
+    // The leg took the landing: it compressed.
+    expect(deepest).toBeLessThan(-0.02);
+    const change = board.kineticEnergy() + rider.kineticEnergy() - before;
+    const scale = (board.mass + rider.mass) * WATER.gravity * 0.3;
+    expect(Math.abs(change - totalWork(board, rider)) / scale).toBeLessThan(0.02);
+  });
+
+  it('starts a relaunch in its neutral stance, whatever it was doing before', () => {
+    const { board, rider, water } = onSlope();
+    rider.steer = 1;
+    run(board, water, 1);
+    const fresh = onSlope();
+    // Relaunching places the board afresh and mounts the rider on it, as `RideSession.reset` does.
+    rider.steer = 0;
+    board.place(fresh.board.position, fresh.board.orientation, fresh.board.velocity);
+    board.attach(rider);
+    expect(rider.leg.extension).toBe(0);
+    expect(rider.leg.rate).toBe(0);
+    run(board, water, 1);
+    run(fresh.board, fresh.water, 1);
+    expect(rider.attached).toBe(true);
+    expect(rider.leg.force).toBeCloseTo(fresh.rider.leg.force, 6);
+    expect(rider.position.distanceTo(fresh.rider.position)).toBeLessThan(1e-9);
   });
 });
 
