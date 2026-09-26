@@ -34,6 +34,14 @@ describe('SurfZoneRunner', () => {
     expect(runner.status().lipRollers).toBe(5);
   });
 
+  it('renders on a finer grid when asked, for close shots, leaving the physics as it is', () => {
+    const fine = new SurfZoneRunner(config, { renderSpacing: 0.5 });
+    const coarse = new SurfZoneRunner(config);
+    expect(fine.grid.spacing).toBe(0.5);
+    expect(fine.grid.nx).toBe(2 * (coarse.grid.nx - 1) + 1);
+    expect(fine.createBuffers().surface.length).toBe(fine.grid.nx * fine.grid.nz * 2);
+  });
+
   it('fills a snapshot with the render surface, the current, the lip and the bubbles', () => {
     const runner = new SurfZoneRunner(config);
     runner.advance(120);

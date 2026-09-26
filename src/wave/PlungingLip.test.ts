@@ -167,6 +167,22 @@ describe('PlungingLip', () => {
     expect(parcels.at(-1)!.y).toBeCloseTo(30, 6);
   });
 
+  it('keeps pouring from the crest for as long as the throw says', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 6 }, 30, 0.6, 4, undefined, 0.7);
+    const flying = () => {
+      let count = 0;
+      lip.forEachActive(() => (count += 1));
+      return count;
+    };
+    lip.step(0.35);
+    expect(flying()).toBeGreaterThan(1);
+    expect(flying()).toBeLessThan(STRIP_PARCELS);
+    lip.step(0.35 + 1e-9);
+    expect(flying()).toBe(STRIP_PARCELS);
+  });
+
   it('releases each parcel where its crest has moved to, not where the faster jet has', () => {
     const solver = basin();
     const lip = new PlungingLip(solver, 256);

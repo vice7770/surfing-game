@@ -91,6 +91,8 @@ export interface SurfZoneRunnerOptions {
   board?: boolean;
   /** Carry a board with a rider the player controls (P4d). */
   rider?: boolean;
+  /** The render grid's spacing, m (1 by default; finer for close shots). The physics samples the water as before. */
+  renderSpacing?: number;
 }
 
 /** The player's request for a batch of steps: the ride's input, and a quick retry. */
@@ -218,7 +220,7 @@ export class SurfZoneRunner {
   private readonly rideSample = createWaterSample();
   private readonly axis = new Vector3();
 
-  constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, renderSpacing = 1) {
+  constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, renderSpacing = options.renderSpacing ?? 1) {
     this.simulation = new SurfZoneSimulation(config);
     this.bubbles = new BubbleCloud(config.seed, PARCEL_CAPACITY);
     this.spray = new SprayCloud(config.seed, PARCEL_CAPACITY);
