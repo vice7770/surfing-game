@@ -593,6 +593,30 @@ describe('lean, trim, crouch and heading hold', () => {
     expect((rider.leg.height + rider.leg.extension) / standing).toBeGreaterThan(0.97);
   });
 
+  // A bottom turn: Forsyth et al. 2024's accomplished surfers turn about 100° in a second at 1.9 rad/s,
+  // on a rail rolled 42°. Open (P9 Task 10): the upright body cannot bank into the turn, so the push the
+  // turn needs lands outboard and rolls the board back to about 9°: 13° in 1.2 s, 0.2 rad/s. A body
+  // banked with the turn fed the board's 3 Hz roll-yaw swing (P4e's Mode B) and caught the rail.
+  it.fails('turns hard with a full lean and a crouch, keeping most of its speed', () => {
+    const { board, rider, water } = acrossFace(0, 7);
+    run(board, water, 0.3);
+    const start = headingOf(board);
+    const speed = board.velocity.length();
+    let previous = start;
+    let peak = 0;
+    rider.steer = 1;
+    rider.crouch = 0.6;
+    run(board, water, 1.2, () => {
+      const heading = headingOf(board);
+      peak = Math.max(peak, Math.abs(heading - previous) / STEP);
+      previous = heading;
+    });
+    expect(rider.attached).toBe(true);
+    expect(degrees(headingOf(board) - start)).toBeGreaterThan(60);
+    expect(peak).toBeGreaterThan(1);
+    expect(board.velocity.length()).toBeGreaterThan(0.7 * speed);
+  });
+
   it('leans and holds its line the same way in either stance', () => {
     const turn = (stance: 'regular' | 'goofy') => {
       const { board, rider, water } = acrossFace(0, 6, stance);
