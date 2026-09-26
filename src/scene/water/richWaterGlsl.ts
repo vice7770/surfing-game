@@ -13,6 +13,26 @@ export { waterCubicPars };
 export const richFragmentPars = /* glsl */ `
 vec2 waterSurfaceSlope;
 float waterRippleVariance = 0.0;
+varying float vWaterAir;
+varying float vWaterPlumeDepth;
+`;
+
+/**
+ * Rich vertex pars (G9): the air breaking drove into the water, per render node
+ * (void fraction, plume depth), bilinear as the flow is. Needs the height pars.
+ */
+export const richAerationVertexPars = /* glsl */ `
+uniform sampler2D waterAeration;
+varying float vWaterAir;
+varying float vWaterPlumeDepth;
+vec2 waterAerationAt( vec2 xz ) {
+  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
+  ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
+  vec2 t = g - vec2( c );
+  vec2 top = mix( texelFetch( waterAeration, c, 0 ).rg, texelFetch( waterAeration, c + ivec2( 1, 0 ), 0 ).rg, t.x );
+  vec2 bottom = mix( texelFetch( waterAeration, c + ivec2( 0, 1 ), 0 ).rg, texelFetch( waterAeration, c + ivec2( 1, 1 ), 0 ).rg, t.x );
+  return mix( top, bottom, t.y );
+}
 `;
 
 /** Rich <beginnormal_vertex>: the Classic varyings, the height from the Catmull-Rom surface (the normal is per pixel). */
@@ -23,6 +43,8 @@ float waterHeight = waterCubicSample.x;
 vec3 objectNormal = normalize( vec3( -waterCubicSample.y, 1.0, -waterCubicSample.z ) );
 vWaterDepth = max( 0.0, waterHeight - waterBedAt( waterXZ ) );
 vWaterFoam = waterFoamAt( waterXZ );
+vWaterAir = waterAerationAt( waterXZ ).x;
+vWaterPlumeDepth = waterAerationAt( waterXZ ).y;
 vWaterFlow = waterFlowAt( waterXZ );
 `;
 
@@ -42,7 +64,7 @@ vWaterSkirt = skirt;`;
 export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );
   float waterLace = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
   vec2 waterChurn = waterChurnAt( vWaterWorld.xz, vWaterFlow );
-  float waterFresh = waterFreshness( vWaterFoam ) * waterFoamPattern;
+  float waterFresh = waterFreshness( vWaterAir ) * waterFoamPattern;
   float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterFresh );
   waterCover = max( waterCover, waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam ) );
   float waterCrease = mix( 1.0, 0.88 + 0.12 * waterChurn.y, waterFresh );
@@ -87,7 +109,7 @@ export const richFarNormal = /* glsl */ `
 `;
 
 // Fresh whitewater's clumps stand proud of the surface.
-const CHURN_RELIEF = `float waterFreshNormal = waterFreshness( vWaterFoam ) * waterFoamPattern;
+const CHURN_RELIEF = `float waterFreshNormal = waterFreshness( vWaterAir ) * waterFoamPattern;
   if ( waterFreshNormal > 0.0 ) waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, vWaterFlow );`;
 
 /**

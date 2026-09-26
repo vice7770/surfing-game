@@ -160,6 +160,8 @@ export interface SurfZoneBuffers {
   /** The flying tubes as a `tubeTable` (G9): the page carves the raw `surface` with them. */
   tubes: Float32Array;
   tubeCount: number;
+  /** G9: the air breaking drove in, (void fraction, plume depth) per render node. */
+  aeration: Float32Array;
   bubbles: Float32Array;
   bubbleCount: number;
   /** Spray and mist: x, y, z, size and opacity per particle (`SPRAY_STRIDE`). */
@@ -401,6 +403,7 @@ export class SurfZoneRunner {
       lipCount: 0,
       tubes: new Float32Array(TUBE_CAPACITY * TUBE_STRIDE),
       tubeCount: 0,
+      aeration: new Float32Array(nodes * 2),
       bubbles: new Float32Array(PARCEL_CAPACITY * 3),
       bubbleCount: 0,
       spray: new Float32Array(PARCEL_CAPACITY * SPRAY_STRIDE),
@@ -421,6 +424,7 @@ export class SurfZoneRunner {
     // Raw heights: the page carves them with the tubes (G9), exactly as the physics does.
     simulation.writeUniformSurface(buffers.surface, grid, false);
     buffers.tubeCount = simulation.lip.writeTubes(buffers.tubes, TUBE_CAPACITY);
+    simulation.writeUniformAeration(buffers.aeration, grid);
     simulation.writeUniformFlow(buffers.flow, grid);
     let parcels = 0;
     simulation.lip.forEachActiveParcel((parcel) => {

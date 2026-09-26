@@ -127,6 +127,10 @@ export class SnapshotSurfZone implements RenderableSurfZone {
     return this.host.init.dx;
   }
 
+  writeUniformAeration(data: Float32Array): void {
+    data.set(this.host.snapshot.aeration);
+  }
+
   writeUniformBed(data: Float32Array): void {
     data.set(this.host.init.bed);
   }

@@ -18,7 +18,7 @@ import {
   Vector4,
 } from 'three';
 import type { WaterLook } from './water/waterLook';
-import { RICH_FOAM, RICH_REFLECTION, RICH_WATER, richBeginNormal, richFragmentPars, richReflectionPars, richNormalFragment, richVertexHeight, waterCubicPars } from './water/richWaterGlsl';
+import { RICH_FOAM, RICH_REFLECTION, RICH_WATER, richAerationVertexPars, richBeginNormal, richFragmentPars, richReflectionPars, richNormalFragment, richVertexHeight, waterCubicPars } from './water/richWaterGlsl';
 import {
   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
 } from './water/richPatch';
@@ -180,6 +180,8 @@ export interface SurfaceSource {
   writeTubes?(into: Float32Array): number;
   /** The width of the columns the tubes are thrown in, m. */
   readonly tubeColumnWidth?: number;
+  /** G9: the air breaking drove in, interleaved (void fraction, plume depth, m) per grid node, for the Rich water. */
+  writeAeration?(data: Float32Array): void;
   /** Changes whenever `writeBed` would write different values. */
   readonly bedRevision: number;
   /** Bed elevation per grid node, m (negative below datum). */
@@ -203,6 +205,9 @@ export class WaterSurface {
   private texture: DataTexture;
   private bedTexture: DataTexture;
   private flowTexture: DataTexture;
+  /** G9: (void fraction, plume depth) per grid node, for the Rich churn and plume. */
+  private aerationData: Float32Array;
+  private aerationTexture: DataTexture;
   /** G9: the source's flying tubes, and their GPU layout (`packTubeTextures`). */
   private readonly tubeTable = new Float32Array(TUBE_CAPACITY * TUBE_STRIDE);
   private readonly tubeTexels = new Float32Array(3 * 4 * TUBE_CAPACITY);
@@ -227,6 +232,8 @@ export class WaterSurface {
     this.bedTexture = WaterSurface.createBedTexture(this.bedData, grid);
     this.flowData = new Float32Array(grid.nx * grid.nz * 2);
     this.flowTexture = WaterSurface.createTexture(this.flowData, grid);
+    this.aerationData = new Float32Array(grid.nx * grid.nz * 2);
+    this.aerationTexture = WaterSurface.createTexture(this.aerationData, grid);
     this.uniforms = {
       waterSurface: { value: this.texture },
       waterBed: { value: this.bedTexture },
@@ -251,6 +258,7 @@ export class WaterSurface {
       waterTubeColumn0: { value: 0 },
       waterTubeColumnWidth: { value: 1 },
       waterTubeCount: { value: 0 },
+      waterAeration: { value: this.aerationTexture },
       waterReflection: { value: RICH_WATER.reflection },
     };
     // One air–water interface: Fresnel from n = 1.333 (F0 = 0.020), no clearcoat.
@@ -267,7 +275,7 @@ export class WaterSurface {
       if (this.effectiveLook === 'rich') {
         // G8: the physics' Catmull-Rom surface, its normal per pixel.
         shader.vertexShader = shader.vertexShader
-          .replace('#include <common>', `#include <common>\n${waterVertexPars}\n${waterCubicPars}\n${waterTubePars}\n${richPatchVertexPars}`)
+          .replace('#include <common>', `#include <common>\n${waterVertexPars}\n${richAerationVertexPars}\n${waterCubicPars}\n${waterTubePars}\n${richPatchVertexPars}`)
           .replace('#include <beginnormal_vertex>', richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
@@ -324,6 +332,10 @@ export class WaterSurface {
     // The Rich water cuts the tubes itself, per vertex and per pixel (G9); everything else takes them carved.
     this.source.write(this.surfaceData, !(this.effectiveLook === 'rich' && this.source.writeTubes));
     this.updateTubes();
+    if (this.effectiveLook === 'rich' && this.source.writeAeration) {
+      this.source.writeAeration(this.aerationData);
+      this.aerationTexture.needsUpdate = true;
+    }
     const grid = this.source.grid;
     (this.uniforms.waterGrid.value as Vector4).set(grid.xMin, grid.zMin, grid.spacing, 0);
     this.uniforms.waterTime.value = this.source.time;
@@ -468,6 +480,10 @@ export class WaterSurface {
     this.flowTexture.dispose();
     this.flowTexture = WaterSurface.createTexture(this.flowData, grid);
     this.uniforms.waterFlow.value = this.flowTexture;
+    this.aerationData = new Float32Array(grid.nx * grid.nz * 2);
+    this.aerationTexture.dispose();
+    this.aerationTexture = WaterSurface.createTexture(this.aerationData, grid);
+    this.uniforms.waterAeration.value = this.aerationTexture;
     this.flowSource = undefined;
     (this.uniforms.waterGridSize.value as Vector2).set(grid.nx, grid.nz);
     this.mesh.geometry.dispose();
@@ -480,6 +496,7 @@ export class WaterSurface {
     this.texture.dispose();
     this.bedTexture.dispose();
     this.flowTexture.dispose();
+    this.aerationTexture.dispose();
     this.tubeTexture.dispose();
     this.tubeColumnTexture.dispose();
     this.mesh.material.dispose();

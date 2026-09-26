@@ -37,13 +37,13 @@ export function churnSample(u: number, v: number): { density: number; height: nu
   return { density: smoothstep(0.1, 0.35, height), height };
 }
 
-/** How much fresh churn replaces the lace: none on old foam, all on the freshest. */
-export function freshness(foam: number): number {
-  return smoothstep(FRESH_FOAM[0], FRESH_FOAM[1], foam);
+/** How much fresh churn replaces the lace, from the void fraction the breaking drove in (G9): none once the air has risen out. */
+export function freshness(voidFraction: number): number {
+  return smoothstep(FRESH_AIR[0], FRESH_AIR[1], voidFraction);
 }
 
-/** The foam value over which the churn takes over from the lace: the newest whitewater. */
-const FRESH_FOAM = [0.55, 0.9] as const;
+/** The void fraction over which churn takes over from the lace: measured peaks under breakers are near 0.2 (whitewater-sources.md). */
+const FRESH_AIR = [0.02, 0.15] as const;
 
 let texture: DataTexture | undefined;
 
@@ -81,7 +81,7 @@ export const waterChurnPars = /* glsl */ `
 uniform sampler2D waterChurnMap;
 const float CHURN_TILE = ${CHURN_TILE.toFixed(3)};
 const float CHURN_RELIEF = ${CHURN_RELIEF.toFixed(3)};
-float waterFreshness( float foam ) { return smoothstep( ${FRESH_FOAM[0].toFixed(3)}, ${FRESH_FOAM[1].toFixed(3)}, foam ); }
+float waterFreshness( float voidFraction ) { return smoothstep( ${FRESH_AIR[0].toFixed(3)}, ${FRESH_AIR[1].toFixed(3)}, voidFraction ); }
 vec2 waterChurnTap( vec2 p ) { return texture( waterChurnMap, p / CHURN_TILE ).rg; }
 vec2 waterChurnAt( vec2 p, vec2 flow ) {
   float a = fract( waterTime / FOAM_FLOW_PERIOD );

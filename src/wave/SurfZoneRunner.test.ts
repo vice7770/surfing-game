@@ -42,6 +42,23 @@ describe('SurfZoneRunner', () => {
     expect(fine.createBuffers().surface.length).toBe(fine.grid.nx * fine.grid.nz * 2);
   });
 
+  it('carries the air breaking drives into the water: a landing lip aerates where it falls, and the snapshot holds it per node', () => {
+    const runner = new SurfZoneRunner(config);
+    runner.advance(120);
+    const crest = runner.simulation.solver.cellIndex(0, -60);
+    runner.simulation.lip.launch(crest, { x: 0, z: 4 }, runner.simulation.solver.surfaceAt(crest) + 1, 0.3);
+    runner.advance(60);
+    let air = 0;
+    for (const value of runner.simulation.aeration.air) air += value;
+    expect(air).toBeGreaterThan(0);
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    const expected = new Float32Array(buffers.aeration.length);
+    runner.simulation.writeUniformAeration(expected, runner.grid);
+    expect(Array.from(buffers.aeration)).toEqual(Array.from(expected));
+    expect(Math.max(...Array.from(buffers.aeration))).toBeGreaterThan(0);
+  });
+
   it('fills a snapshot with the render surface, the current, the lip and the bubbles', () => {
     const runner = new SurfZoneRunner(config);
     runner.advance(120);

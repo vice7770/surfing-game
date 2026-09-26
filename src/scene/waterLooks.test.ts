@@ -73,6 +73,9 @@ describe('Classic water parity', () => {
     const { vertex, fragment } = compiled(water.mesh.material);
     expect(vertex).toContain('waterCarvedCubic( waterXZ )');
     expect(fragment).toContain('waterCarvedCubic( vWaterWorld.xz )');
+    // G9: fresh churn shows where the plunge drove air in, from the aeration each snapshot carries.
+    expect(fragment).toContain('float waterFresh = waterFreshness( vWaterAir ) * waterFoamPattern;');
+    expect(vertex).toContain('vWaterAir = waterAerationAt( waterXZ ).x;');
     // The crest light marches through the carved surface: through a tube's void, not as if it were water.
     expect(fragment).toContain('float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;');
     expect(water.mesh.material.customProgramCacheKey()).toContain('rich');
