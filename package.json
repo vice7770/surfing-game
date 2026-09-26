@@ -9,7 +9,8 @@
     "test": "vitest run",
     "preview": "vite preview --host 0.0.0.0",
     "report:rideability": "rolldown scripts/rideability-report.ts -o dist/scripts/rideability-report.mjs --format esm --platform node && node dist/scripts/rideability-report.mjs",
-    "report:board-baseline": "rolldown scripts/board-baseline.ts -o dist/scripts/board-baseline.mjs --format esm --platform node && node dist/scripts/board-baseline.mjs"
+    "report:board-baseline": "rolldown scripts/board-baseline.ts -o dist/scripts/board-baseline.mjs --format esm --platform node && node dist/scripts/board-baseline.mjs",
+    "report:catch": "rolldown scripts/catch-report.ts -o dist/scripts/catch-report.mjs --format esm --platform node && node dist/scripts/catch-report.mjs"
   },
   "dependencies": {
     "three": "^0.186.1"

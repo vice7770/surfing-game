@@ -14,6 +14,7 @@ import {
   WebGLRenderer,
   WebGLCubeRenderTarget,
   WebGLRenderTarget,
+  Vector3,
 } from 'three';
 import { Controls } from './game/Controls';
 import { RunHistory, type RunReport } from './game/RunHistory';
@@ -29,6 +30,7 @@ import { Surfer } from './scene/Surfer';
 import { Seabed } from './scene/Seabed';
 import { PlungingSheetMesh } from './scene/PlungingSheetMesh';
 import { WaterSurface } from './scene/WaterSurface';
+import { CAUSTIC_WINDOW, CausticMap } from './scene/CausticMap';
 import { LegacySurfaceSource } from './scene/LegacySurfaceSource';
 import { DEFAULT_WATER_CHOP } from './scene/waterChop';
 import { SPOT_OPTICS } from './scene/waterOptics';
@@ -101,6 +103,9 @@ class SurfGame {
   private readonly crestMarker: Mesh;
   private readonly contactMarkers: Mesh[] = [];
   private readonly water: WaterSurface;
+  /** Caustics refracted through the physical surface onto its seabed (G5). */
+  private readonly caustics: CausticMap;
+  private readonly causticAhead = new Vector3();
   private wave: InteractiveWaterField;
   private plungingSheet: PlungingSheet;
   private physics: BoardPhysics;
@@ -163,6 +168,8 @@ class SurfGame {
     this.scene.add(this.seabed.mesh);
     this.physicalMode = new PhysicalMode(this.scene);
     this.physicalMode.farField.mesh.material.envMapIntensity = 0.28;
+    this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
+    this.physicalMode.seabed.useCaustics(this.water.causticUniforms, this.water.causticSource as never);
     this.physics = this.createPhysics(this.wave, this.activeSettings, this.plungingSheet);
     this.lastDiagnostics = this.physics.diagnostics();
     this.scene.add(this.surfer.group);
@@ -283,6 +290,7 @@ class SurfGame {
     const number = (id: string): number => Number.parseFloat(getElement<HTMLInputElement>(id).value);
     return {
       spot: getElement<HTMLSelectElement>('#physical-spot').value as SpotName,
+      stage: getElement<HTMLSelectElement>('#physical-solver').value === '1' ? 1 : 2,
       source: getElement<HTMLSelectElement>('#swell-source').value as PhysicalSettings['source'],
       significantHeight: number('#hs-slider'),
       peakPeriod: number('#tp-slider'),
@@ -424,8 +432,8 @@ class SurfGame {
     }
     const physicalInputs = ['#hs-slider', '#tp-slider', '#direction-slider', '#spread-slider', '#tide-slider', '#wind-speed-slider',
       '#storm-wind-slider', '#storm-fetch-slider', '#storm-duration-slider', '#storm-distance-slider'];
-    for (const selector of [...physicalInputs, '#physical-spot', '#swell-source']) {
-      getElement<HTMLInputElement>(selector).addEventListener(selector.startsWith('#physical-spot') || selector === '#swell-source' ? 'change' : 'input', () => {
+    for (const selector of [...physicalInputs, '#physical-spot', '#physical-solver', '#swell-source']) {
+      getElement<HTMLInputElement>(selector).addEventListener(selector.startsWith('#physical-') || selector === '#swell-source' ? 'change' : 'input', () => {
         this.draftPhysical = this.readDraftPhysical();
         this.refreshTuningUi();
       });
@@ -498,7 +506,7 @@ class SurfGame {
   }
 
   private renderPhysicalReadout(): void {
-    getElement<HTMLElement>('#readout-summary').textContent = 'PHYSICAL SURF ZONE · STAGE 1 SOLVER';
+    getElement<HTMLElement>('#readout-summary').textContent = `PHYSICAL SURF ZONE · ${this.physicalSettings.stage === 1 ? 'SHALLOW-WATER' : 'BOUSSINESQ'} SOLVER`;
     this.readoutPanel.render(this.physicalMode.readout());
   }
 
@@ -541,6 +549,7 @@ class SurfGame {
     getElement<HTMLElement>('#physical-controls').hidden = this.draftMode !== 'physical';
     const physical = this.draftPhysical;
     getElement<HTMLSelectElement>('#physical-spot').value = physical.spot;
+    getElement<HTMLSelectElement>('#physical-solver').value = String(physical.stage);
     getElement<HTMLSelectElement>('#swell-source').value = physical.source;
     getElement<HTMLElement>('#buoy-controls').hidden = physical.source !== 'buoy';
     getElement<HTMLElement>('#storm-controls').hidden = physical.source !== 'storm';
@@ -635,6 +644,7 @@ class SurfGame {
     for (let index = 0; index < contacts.length; index += 1) this.contactMarkers[index].position.copy(contacts[index]);
     this.cameraRig.update(this.physics, this.wave, simElapsed || this.fixedStep);
     this.updateUnderwaterView();
+    this.caustics.disable();
     this.renderer.render(this.scene, this.cameraRig.camera);
     this.updateHud();
     requestAnimationFrame(this.frame);
@@ -655,6 +665,11 @@ class SurfGame {
     this.water.update();
     this.physicalMode.update(simElapsed || this.fixedStep);
     this.setUnderwater(this.physicalMode.cameraBelowSurface());
+    // Caustics where the view looks: a window a third of its width ahead of the camera.
+    const view = this.physicalMode.camera.camera;
+    const ahead = view.getWorldDirection(this.causticAhead).setY(0);
+    if (ahead.lengthSq() > 1e-6) ahead.normalize();
+    this.caustics.render(this.renderer, view.position.x + (ahead.x * CAUSTIC_WINDOW) / 3, view.position.z + (ahead.z * CAUSTIC_WINDOW) / 3);
     this.renderer.render(this.scene, this.physicalMode.camera.camera);
     this.readoutClock += elapsed;
     if (this.readoutClock >= 0.25) {
@@ -728,7 +743,7 @@ class SurfGame {
     this.environment.group.scale.setScalar(1);
     this.environment.group.position.set(0, 0, 0);
     const hidden = [this.water.mesh, this.sheetMesh.mesh, this.surfer.group, this.physicalMode.seabed.mesh, this.physicalMode.farField.mesh,
-      this.physicalMode.lipPoints.mesh, this.physicalMode.bubbles.mesh, this.boardWake.trail, this.boardWake.spray, this.breakSpray.points, this.seabed.mesh,
+      this.physicalMode.lipPoints.mesh, this.physicalMode.bubbles.mesh, this.physicalMode.spray.mesh, this.boardWake.trail, this.boardWake.spray, this.breakSpray.points, this.seabed.mesh,
       this.crestMarker, this.environment.sunMesh, ...this.contactMarkers];
     const visibility = hidden.map((object) => object.visible);
     hidden.forEach((object) => { object.visible = false; });

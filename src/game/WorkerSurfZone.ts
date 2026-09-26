@@ -26,6 +26,8 @@ function emptyLike(snapshot: SurfZoneBuffers): SurfZoneBuffers {
     lipCount: 0,
     bubbles: new Float32Array(snapshot.bubbles.length),
     bubbleCount: 0,
+    spray: new Float32Array(snapshot.spray.length),
+    sprayCount: 0,
     board: new Float64Array(snapshot.board.length),
     rider: new Float64Array(snapshot.rider.length),
   };

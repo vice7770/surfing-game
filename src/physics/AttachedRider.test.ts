@@ -1,11 +1,13 @@
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { AttachedRider } from './AttachedRider';
+import { LIP_CONTACT } from './DetachedSurfer';
 import { BoardBody } from './BoardBody';
 import { REFERENCE_RIDER } from './boardReference';
 import { WATER } from './hullForces';
 import { PlaneWater } from './PlaneWater';
 import { stanceFeet } from './riderPosture';
+import { SwellWater } from './SwellWater';
 import type { SurfWater } from './SurfWater';
 
 const STEP = 1 / 60;
@@ -355,6 +357,32 @@ describe('steering while lying down', () => {
     return { heading: heading(board), speed: board.velocity.length(), attached: rider.attached };
   };
 
+  // Without fins and a paddler keeping its line, the board wandered 45° in 20 s. The first pull, one
+  // arm from rest before the fins grip, still yaws it about 15°; under way it holds its line.
+  it('holds its line within 10° over 20 s of paddling through oblique swell', () => {
+    const swell = new SwellWater({ height: 0.8, period: 8, direction: Math.PI / 4 });
+    const { board, rider } = mounted('prone', swell.surfaceAt(0, 0));
+    rider.paddle = true;
+    const start = heading(board);
+    let startUp = 0;
+    for (let i = 0; i < 2 * 60; i += 1) {
+      board.step(STEP, swell);
+      swell.advance(STEP);
+      startUp = Math.max(startUp, Math.abs(heading(board) - start));
+    }
+    const line = heading(board);
+    let worst = 0;
+    for (let i = 0; i < 20 * 60; i += 1) {
+      board.step(STEP, swell);
+      swell.advance(STEP);
+      worst = Math.max(worst, Math.abs(heading(board) - line));
+    }
+    expect(rider.attached).toBe(true);
+    expect(board.velocity.length()).toBeGreaterThan(1);
+    expect(startUp).toBeLessThan((20 * Math.PI) / 180);
+    expect(worst).toBeLessThan((10 * Math.PI) / 180);
+  });
+
   it('turns toward the requested side by pulling harder with the other arm', () => {
     const left = turn(1, true);
     const right = turn(-1, true);
@@ -371,5 +399,70 @@ describe('steering while lying down', () => {
     expect(left.heading).toBeGreaterThan(0.2);
     expect(right.heading).toBeLessThan(-0.2);
     expect(turn(0, false).heading).toBeCloseTo(0, 6);
+  });
+});
+
+describe('lip strikes', () => {
+  const towed = () => {
+    const { board, rider } = mounted('standing');
+    const water = new PlaneWater();
+    const tow = () => {
+      board.velocity.z = 6;
+      rider.velocity.z = 6;
+    };
+    tow();
+    run(board, water, 1, tow);
+    return { board, rider, water, tow };
+  };
+  /** A lip parcel crossing the board from +x to −x at 8 m/s, at torso height plus `above`, over the latest step. */
+  const crossing = (rider: AttachedRider, above = 0) => {
+    const torso = rider.partPosition(1, new Vector3());
+    return {
+      id: 7,
+      previousPosition: new Vector3(torso.x + 1.5, torso.y + above, torso.z - 6 * STEP),
+      position: new Vector3(torso.x - 1.5, torso.y + above, torso.z),
+      velocity: new Vector3(-8, 0, 6),
+      volume: 0.2,
+      radius: 0.3,
+    };
+  };
+
+  it('knocks a standing rider off, taking the equal and opposite impulse from the parcel', () => {
+    const { board, rider, water, tow } = towed();
+    const parcel = crossing(rider);
+    const parcelBefore = parcel.velocity.clone();
+    const riderBefore = rider.velocity.clone();
+    expect(rider.resolveLipContact(parcel, board)).toBeGreaterThan(0);
+    const parcelMass = LIP_CONTACT.density * parcel.volume;
+    const riderGain = rider.velocity.clone().sub(riderBefore).multiplyScalar(rider.mass);
+    const parcelGain = parcel.velocity.clone().sub(parcelBefore).multiplyScalar(parcelMass);
+    expect(riderGain.x).toBeLessThan(-10);
+    expect(riderGain.clone().add(parcelGain).length()).toBeLessThan(1e-9);
+    expect(rider.lastLipImpulse.distanceTo(riderGain)).toBeLessThan(1e-9);
+    // The same parcel strikes once.
+    expect(rider.resolveLipContact(parcel, board)).toBe(0);
+    run(board, water, 1.5, tow);
+    expect(rider.attached).toBe(false);
+    expect(['impact', 'balance', 'foot slip']).toContain(rider.separation);
+  });
+
+  // A push whose capture point stays inside the feet is caught by moving the centre of pressure.
+  it('rides out a light splash', () => {
+    const { board, rider, water, tow } = towed();
+    const parcel = { ...crossing(rider), volume: 0.01 };
+    expect(rider.resolveLipContact(parcel, board)).toBe(1);
+    expect(rider.lastLipImpulse.length()).toBeGreaterThan(1);
+    run(board, water, 1.5, tow);
+    expect(rider.attached).toBe(true);
+  });
+
+  it('leaves a rider alone when the parcel passes clear overhead', () => {
+    const { board, rider, water, tow } = towed();
+    const parcel = crossing(rider, 1.5);
+    const before = parcel.velocity.clone();
+    expect(rider.resolveLipContact(parcel, board)).toBe(0);
+    expect(parcel.velocity.equals(before)).toBe(true);
+    run(board, water, 1.5, tow);
+    expect(rider.attached).toBe(true);
   });
 });

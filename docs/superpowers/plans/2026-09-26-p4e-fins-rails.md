@@ -57,11 +57,49 @@
     - The fix: the solve carries the centre of mass rigidly (v + ω × a, symmetric and positive definite). A drive term, −(ω_roll/pitch × offset), keeps the body upright as the board rolls and pitches under the feet.
     - Result: full steer on the 15° face now holds for 2.85 s, up from 2.28 s, and ends in 'balance' instead. Three-quarter and half steer hold for 4 s.
     - Method, for similar bugs: clone the board and rider (a prototype-preserving deep clone), perturb consistently, and take the eigenvalues of the step map and of the coupled matrix (`sing.ts`, `jac.ts` and `eig.ts` in the session scratchpad).
-  - **Still open** (`it.fails` in `AttachedRider.test.ts`): after about 2.8 s at full steer, a 3.3 BW load spike still throws the rider ('balance'). Not yet diagnosed; start with the coupled-matrix eigenvalues through that window.
+  - **Diagnosed, still open** (`it.fails` in `AttachedRider.test.ts`): after about 2.8 s at full steer, a roll oscillation throws the rider ('balance').
+    - A linearization of the one-frame map (block power iteration on cloned board and rider states, `lin.ts` in the session scratchpad) finds two modes:
+      - A 13–16 Hz roll mode whose growth per frame goes from 0.94 (2.5 s) to 1.26–1.42 (from 2.9 s). Its frequency rises as the substep shrinks (15 Hz at 1/960 s, 44 Hz at 1/3840 s), so it is numerical. The upright drive, −(ω × offset), uses the board's spin from the previous substep while the solve carries a 73 kg body 0.9 m up rigidly (a lever inertia of about 66 kg·m²). The lag adds a jerk term, m·o²·h·θ‴, which destabilizes the roll when m·o²·h·k exceeds the board's roll inertia times its roll damping. This is the infinitely strong ankle again; its implicit, non-symmetric form goes singular at the same state.
+      - A 3–4 Hz roll–yaw swing (the Dutch roll) that sits at 1.00–1.02 per frame, at the edge of stability, at every steer level.
+    - At ¾ and full steer both runs fail when the heading reaches about 33° across the 15° face. Trimming at 60° across it fails at once: a rider held world-vertical stands 13° off a board lying on the face.
+    - Three rewrites of the standing coupling were tried and rejected:
+      1. A body that leans with the board and rights itself over τ = 0.002–0.2 s. The Dutch roll goes unstable at every τ.
+      2. A balanced rider carried and pushing at the deck point under its centre of mass, leaning along the force that supports it:
+         - taken from its own contact, the lean feeds back through its height with a gain of about o/(gτh) ≈ 900 and explodes in two frames;
+         - from an outside reference (the surface normal plus the turn), the true centre of pressure pins at the feet's edges.
+      3. A leg-line inverted pendulum: a rank-one symmetric push along the line from a controlled centre of pressure through the centre of mass, with divergent-component balance. It chatters between the load cap and flight, because a freely swaying body cannot follow the light board's surges.
+    - The fix this points to is a finite-impedance rider: ankle and leg stiffness and damping in a coupled 9-DOF solve, with slow active balance. It is deferred until P4f shows whether real waves need it.
+    - Meanwhile a standing rider steps at 16 substeps (1/960 s), where the lag holds for the tested carves (`STANDING_SUBSTEPS`). Before this, that step came about by accident from the entry refinement (below).
   - **Rider yaw inertia (tried, left out):** the standing body yaws with the board, so its own yaw inertia (about 3.7 kg·m² from the posture parts) belongs in the solve. Added (the [4][4] entry plus a yaw-impulse ledger), it turns a growing roll–yaw swing of about 2.3 Hz unstable even at half steer. That is likely physical (a Dutch roll) that the open-loop lean does not damp. It needs roll-rate feedback in the balance or lean, then the inertia can go back in.
-  - `(board as any).entering(h)` is true throughout the carve, so the entry refinement runs every substep (4 substeps of h/4). That is costly; check its criterion.
+  - **Fixed:** `entering(h)` was true throughout the carve, because it compared vertical speed with the water instead of speed into the sloping surface. Gliding down a face now refines nothing; a drop still does.
   - A faster standing balance loop (0.06–0.12 s) oscillates even without steering.
   - Probes: `carve.ts` to `carve11.ts` and `tcarve.ts` in the session scratchpad.
+- **Task 3 done** (`feat: keep the paddler's line and shelter trailing legs`):
+  - `SwellWater` is a linear-wave test fixture: elevation, slope and Wheeler-stretched orbital flow.
+  - With fins alone, a paddler still veered about 16–20° on flat water and settled 40° off course in 0.8 m, 8 s swell at 45°. The first pull is one arm from rest, before the fins can grip.
+  - The paddler now keeps its line only through its strokes: with no steer, the arms pull unevenly against the heading error (full at 10°) and the yaw rate (0.5 s). Steering sets a new line. Under way it holds within about 3° over 20 s; the first pull still yaws it about 14°.
+  - Legs trailing past the tail sit in the board's wake: along the body they meet half the sheltered drag. Prone tow drag is 19, 64, 106, 133 and 148 N at 1–5 m/s, down from 21, 72, 124, 161 and 184 N.
+- **Task 4 done** (`feat: strike the rider with the plunging lip`):
+  - `PlungingLip.forEachContact` offers each airborne parcel as a sphere of its own volume, with a stable id and its position before and after the step. A velocity the visitor changes stays with the parcel, so it lands with its momentum after the strike.
+  - The attached rider sweeps each part against the parcel over the step, as the fallen surfer does (`LIP_CONTACT`: 5 % of the parcel's mass engages, at most 8 m/s of change), and books the strike's work.
+    - Standing, the push's share along the deck sways the body off its feet as an inverted pendulum. Balance moves the centre of pressure within the support to catch it (the push-recovery capture point, 0.15 s).
+    - A push that puts the capture point beyond the feet topples the rider: 'balance' past 0.25 m of sway. A 0.2 m³ parcel at 8 m/s through the torso throws it; a 0.01 m³ splash is ridden out.
+    - Without the sway, the light board simply slid sideways with the rider.
+  - `RideSession.strike` hands the lip to the rider on the board or to the fallen surfer, and the runner calls it every step after the board and body move.
+- **Task 5 done (the record):**
+  - `npm run report:catch` runs a bot surfer on each spot. It waits prone a few metres outside the break line, paddles when a crest rises behind it, pops up on the cue and rides straight until it falls or the wave leaves it.
+  - On the stage 1 solver (2 seeds × 3 minutes per spot, the Wave Lab defaults) it made 135 attempts: 11 cues, 11 pop-ups, none stood. By spot, attempts and cues:
+
+    | Spot | Attempts | Cues |
+    |---|---:|---:|
+    | Beach | 27 | 1 |
+    | Point | 39 | 1 |
+    | Reef | 69 | 9 |
+    | Canyon | 0 | 0 |
+
+    Top speeds were 3.1–4.8 m/s. Most attempts ended with the prone rider lifted off the board by the bore ('lost board'); every pop-up ended 'no support'. The Canyon never raised a crest over the bot's trigger.
+  - A sweep of the wait (3–25 m outside the break) and the trigger distance (14 or 30 m) found no catch.
+  - Stage 1's non-dispersive waves arrive at the break line as bores. The face passes the board in about half a second while backwash runs seaward at up to 1.2 m/s. So P5 (the Boussinesq solver) comes before P4f's catch calibration.
 - **User requests queued:**
   - play the swimmer after a fall and choose to swim back and remount (ROADMAP);
   - the camera views front, behind, side and overview, now done (`8d145db`).

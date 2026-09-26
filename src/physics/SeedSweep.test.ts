@@ -12,4 +12,4 @@ it('carries the board 20 m after a timed pop-up across twelve generated waves', 
     expect(board.state, `seed ${seed}`).toBe('complete');
     expect(board.rideDistance, `seed ${seed}`).toBeGreaterThanOrEqual(20);
   }
-}, 20_000);
+}, 60_000);

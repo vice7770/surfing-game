@@ -13,6 +13,7 @@ import {
   Vector3,
   Vector4,
 } from 'three';
+import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, waterChopNormal, waterChopPars } from './waterChop';
 import {
@@ -149,6 +150,7 @@ ${waterOpticsPars}
 ${waterCrestPars}
 ${waterChopPars}
 ${foamPatternPars}
+${causticLookupPars}
 `;
 
 /** Supplies interleaved (height, foam) for every node of a uniform render grid. */
@@ -181,6 +183,8 @@ export class WaterSurface {
   private bedSource?: SurfaceSource;
   private bedRevision = Number.NaN;
   private readonly uniforms: Record<string, { value: unknown }>;
+  /** Caustic map lighting the bed seen through the water (G5); off until a `CausticMap` draws into it. */
+  readonly causticUniforms: CausticUniforms = createCausticUniforms();
 
   constructor(private source: SurfaceSource) {
     const grid = source.grid;
@@ -202,6 +206,7 @@ export class WaterSurface {
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
       ...createOpticsUniforms(),
+      ...this.causticUniforms,
     };
     // One air–water interface: Fresnel from n = 1.333 (F0 = 0.020), no clearcoat.
     const material = new MeshPhysicalMaterial({
@@ -222,7 +227,7 @@ export class WaterSurface {
         .replace('#include <common>', `#include <common>\n${waterFragmentPars}`)
         .replace('#include <normal_fragment_begin>', waterChopNormal)
         .replace('#include <color_fragment>', '')
-        .replace('#include <emissivemap_fragment>', waterBodyFragment(true));
+        .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true));
     };
     material.customProgramCacheKey = () => 'breakline-water-surface';
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
@@ -232,6 +237,16 @@ export class WaterSurface {
 
   get grid(): SurfaceGrid {
     return this.source.grid;
+  }
+
+  /** The surface, bed, grid and sun uniforms a caustic pass refracts through: the objects this mesh renders from. */
+  get causticSource(): CausticSource {
+    return this.uniforms as unknown as CausticSource;
+  }
+
+  /** Beam attenuation of the current water, m⁻¹ per channel (Beer–Lambert). */
+  get attenuation(): { value: unknown } {
+    return this.uniforms.waterAttenuation;
   }
 
   update(): void {

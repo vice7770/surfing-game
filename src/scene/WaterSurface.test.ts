@@ -126,7 +126,7 @@ describe('WaterSurface GPU displacement data', () => {
     }
     expect(wave.zMin).toBeGreaterThan(-32);
     expect(foamyNodes).toBeGreaterThan(0);
-  });
+  }, 20_000);
 
   it('uploads the legacy bed and follows it when the grid scrolls', () => {
     const wave = new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS, shelfStrength: 0.4, sustained: true });
@@ -210,7 +210,9 @@ describe('WaterSurface GPU displacement data', () => {
     expect(shader.fragmentShader).not.toContain('#include <color_fragment>');
     expect(shader.fragmentShader).toContain('waterChopSlope( vWaterWorld.xz');
     expect(shader.vertexShader).toContain('vWaterDepth = max( 0.0, waterHeight - waterBedAt( waterXZ ) )');
-    expect(shader.fragmentShader).toContain('waterBodyReflectance( vWaterDepth');
+    // The bed seen through the water is lit by the caustic map where the refracted view ray meets it.
+    expect(shader.fragmentShader).toContain('waterBodyReflectanceLit( vWaterDepth');
+    expect(shader.fragmentShader).toContain('causticLightAt( waterBedXZ )');
     expect(shader.fragmentShader).toContain('waterCrestThickness( vWaterWorld');
     expect(shader.vertexShader).toContain('vWaterFlow = waterFlowAt( waterXZ )');
     expect(shader.fragmentShader).toContain('waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, ');

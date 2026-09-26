@@ -131,6 +131,30 @@ describe('rigid board body', () => {
     expect(Math.abs(board.kineticEnergy() - before - work) / (board.mass * WATER.gravity * drop)).toBeLessThan(0.01);
   });
 
+  // Gliding down a face moves the hull along the surface, not into it, so there is no water entry to refine.
+  it('refines its substeps while entering the water, not while gliding down a face', () => {
+    const angle = (15 * Math.PI) / 180;
+    const board = new BoardBody({ payloads: deckPayload(REFERENCE_RIDER.mass, STANCE) });
+    const along = new Vector3(0, -Math.sin(angle), Math.cos(angle));
+    board.place(new Vector3(0, board.shape.centerOfMass.y * Math.cos(angle), 0), new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), angle), along.multiplyScalar(6));
+    const face = new PlaneWater({ slopeZ: -Math.tan(angle) });
+    run(board, face, 1);
+    let most = 0;
+    for (let i = 0; i < 60; i += 1) {
+      board.step(STEP, face);
+      most = Math.max(most, board.substepsTaken);
+    }
+    expect(most).toBe(4);
+    const dropped = levelBoard(1);
+    const flat = new PlaneWater();
+    let entering = 0;
+    for (let i = 0; i < 60; i += 1) {
+      dropped.step(STEP, flat);
+      entering = Math.max(entering, dropped.substepsTaken);
+    }
+    expect(entering).toBeGreaterThan(4);
+  });
+
   it('drifts up to a current’s speed, handing the water the momentum it takes', () => {
     const board = levelBoard();
     const water = new PlaneWater({ flow: { x: 0.8, y: 0, z: 0 } });

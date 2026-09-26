@@ -1,5 +1,6 @@
+import { ShaderLib, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { Vector3 } from 'three';
+import { createCausticUniforms } from './CausticMap';
 import { SpotSeabed } from './SpotSeabed';
 
 describe('SpotSeabed', () => {
@@ -16,4 +17,19 @@ describe('SpotSeabed', () => {
     }
     expect(seabed.mesh.visible).toBe(true);
   });
+
+  it('lights its sand with the caustic map, faded by the water on the way down', () => {
+    const seabed = new SpotSeabed();
+    const caustics = createCausticUniforms();
+    const water = { waterAttenuation: { value: new Vector3(0.3, 0.1, 0.05) }, waterSunDirection: { value: new Vector3(0, 1, 0) } };
+    seabed.useCaustics(caustics, water);
+    const shader = { uniforms: {} as Record<string, unknown>, vertexShader: ShaderLib.basic.vertexShader, fragmentShader: ShaderLib.basic.fragmentShader };
+    seabed.mesh.material.onBeforeCompile(shader as never, undefined as never);
+    expect(shader.vertexShader).toContain('vSeabedWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
+    expect(shader.fragmentShader).toContain('causticLightAt( vSeabedWorld.xz )');
+    expect(shader.fragmentShader).toContain('exp( -waterAttenuation');
+    expect(shader.uniforms.causticMap).toBe(caustics.causticMap);
+    expect(shader.uniforms.waterAttenuation).toBe(water.waterAttenuation);
+  });
 });
+

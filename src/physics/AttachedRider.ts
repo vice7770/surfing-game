@@ -1,6 +1,7 @@
 import { Quaternion, Vector3 } from 'three';
 import type { BoardBody } from './BoardBody';
 import { REFERENCE_RIDER } from './boardReference';
+import { LIP_CONTACT, type LipContactParcel } from './DetachedSurfer';
 import type { BoardShape } from './boardShape';
 import { WATER } from './hullForces';
 import { SEAWATER_DENSITY as SEAWATER } from './PhysicalSurfWater';
@@ -60,6 +61,20 @@ const HAND_DRAG_AREA = 0.066;
  * sweeps alone. Board +x is its left, so turning left is a stronger right arm.
  */
 const STEER_STROKE = 0.6;
+/**
+ * A paddler keeps its line: with no steering asked for, the arm on the side to
+ * turn toward pulls softer and the other harder, in proportion to the heading
+ * error over HOLD_ANGLE, rad, and to the yaw rate over HOLD_ANGLE / HOLD_RATE_TIME
+ * (a modelling choice for the paddler's own correction; the turn comes only
+ * from the strokes' drag). Steering sets a new line.
+ */
+const HOLD_ANGLE = (10 * Math.PI) / 180;
+const HOLD_RATE_TIME = 0.5;
+/**
+ * Lying down, the legs trailing past the tail sit in the board's wake: flow
+ * along the body meets this further share of their drag (a modelling choice).
+ */
+const WAKE_SHELTER = 0.5;
 
 /** Fraction of a sphere under a level surface `depth` above its centre. */
 function submergedFraction(depth: number, radius: number): number {
@@ -105,6 +120,16 @@ const STANDING_BALANCE_TIME = 0.15;
 const STANDING_SHIFT_SPEED = 0.6;
 const STANDING_SHIFT_ACCELERATION = 3;
 const COP_SMOOTHING = 0.05;
+
+/**
+ * Standing, a push along the deck (a lip strike) sways the body off its feet as
+ * an inverted pendulum, ω₀ = √(g / height). Balance moves the centre of pressure
+ * within the support to bring the capture point, sway + rate/ω₀, back at rate
+ * 1/SWAY_RECOVERY, s; a push that puts the capture point beyond the feet cannot
+ * be caught and the body topples (push-recovery capture point; the rate is a
+ * modelling choice).
+ */
+const SWAY_RECOVERY = 0.15;
 
 /** Knee flex that absorbs a landing: natural frequency, rad/s, and the deepest crouch, m. */
 const FLEX_FREQUENCY = 5;
@@ -180,6 +205,8 @@ export interface RiderWork {
   gravity: number;
   water: number;
   contact: number;
+  /** Done by lip parcels striking the body. */
+  lip: number;
 }
 
 type V3 = { x: number; y: number; z: number };
@@ -236,11 +263,16 @@ export class AttachedRider {
   flightTime = 0;
   /** Distance of the centre of mass from where the posture puts it, m. */
   postureError = 0;
-  readonly work: RiderWork = { gravity: 0, water: 0, contact: 0 };
+  readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0 };
+  /** Impulse the lip gave the body since the latest step began, N·s. */
+  readonly lastLipImpulse = new Vector3();
   /** Paddle while prone. */
   paddle = false;
   /** Standing, the requested weight shift: −1 (toward board −x, its right) to 1 (toward +x, its left). */
   steer = 0;
+  /** Lying down, the heading the paddler keeps (rad from +z toward +x), and the correction it asks of the strokes now. */
+  private line: number | undefined;
+  private hold = 0;
   /** Buoyancy on the body at the latest substep, N. */
   readonly buoyancy = new Vector3();
   /** Contact over the latest step: mean force on the rider (N, world), centre of pressure (board frame) and more. */
@@ -324,6 +356,14 @@ export class AttachedRider {
   private readonly leanRate = new Vector3();
   private stepImpulse = new Vector3();
   private stepLoad = 0;
+  /** The parts' centres (world) as the latest step began, for swept lip contact, and the parcels that have struck. */
+  private readonly previousParts = new Float64Array(RIDER_PARTS.length * 3);
+  private readonly struckBy = new Set<number>();
+  private readonly sweepStart = new Vector3();
+  private readonly sweepEnd = new Vector3();
+  /** Standing, how far a push has swayed the centre of mass off its posture along the deck (board frame x and z), and how fast. */
+  private readonly sway = new Vector3();
+  private readonly swayRate = new Vector3();
 
   constructor(shape: BoardShape, options: AttachedRiderOptions = {}) {
     this.shape = shape;
@@ -469,6 +509,12 @@ export class AttachedRider {
     this.work.gravity = 0;
     this.work.water = 0;
     this.work.contact = 0;
+    this.work.lip = 0;
+    this.struckBy.clear();
+    this.lastLipImpulse.set(0, 0, 0);
+    this.sway.set(0, 0, 0);
+    this.swayRate.set(0, 0, 0);
+    this.markParts();
   }
 
   kineticEnergy(): number {
@@ -568,11 +614,69 @@ export class AttachedRider {
 
   /** Called by the board at the start of each step. */
   beginStep(): void {
+    this.markParts();
+    this.lastLipImpulse.set(0, 0, 0);
     this.reaction.fill(0);
     this.reactionAt.fill(0);
     this.stepImpulse.set(0, 0, 0);
     this.stepLoad = 0;
     this.contact.feasible = true;
+  }
+
+  private markParts(): void {
+    for (let i = 0; i < RIDER_PARTS.length; i += 1) this.partPosition(i, this.partWorld).toArray(this.previousParts, i * 3);
+  }
+
+  /**
+   * Swept contact with an airborne lip parcel over the latest step, part by part
+   * (each a sphere of its own volume), as for the fallen surfer. A bounded share
+   * of the parcel's mass strikes the body, which moves as one on the board, and
+   * the parcel takes the equal and opposite impulse. The body's contact with the
+   * board must then take the kick, and may not. Returns 1 for a strike.
+   */
+  resolveLipContact(parcel: LipContactParcel, board: BoardBody): number {
+    if (!this.attached || this.struckBy.has(parcel.id) || !(parcel.volume > 0 && parcel.radius > 0)) return 0;
+    const parcelMass = LIP_CONTACT.density * parcel.volume;
+    for (let i = 0; i < RIDER_PARTS.length; i += 1) {
+      const current = this.partPosition(i, this.partWorld);
+      const start = this.sweepStart.fromArray(this.previousParts, i * 3).sub(parcel.previousPosition);
+      const end = this.sweepEnd.subVectors(current, parcel.position);
+      const travel = end.sub(start);
+      const radius = Math.cbrt((3 * this.partVolumes[i]) / (4 * Math.PI)) + parcel.radius;
+      let fraction = 0;
+      if (start.lengthSq() > radius * radius) {
+        const travelled = travel.lengthSq();
+        if (travelled < 1e-12) continue;
+        const along = start.dot(travel);
+        const discriminant = along * along - travelled * (start.lengthSq() - radius * radius);
+        if (discriminant < 0) continue;
+        fraction = (-along - Math.sqrt(discriminant)) / travelled;
+        if (fraction < 0 || fraction > 1) continue;
+      }
+      const normal = start.addScaledVector(travel, fraction);
+      if (normal.lengthSq() > 1e-18) normal.normalize();
+      else normal.set(0, 1, 0);
+      const partVelocity = cross(this.angularVelocity, this.scratch.subVectors(current, this.position), this.scratch2).add(this.velocity);
+      const approach = partVelocity.sub(parcel.velocity).dot(normal);
+      if (approach >= 0) continue;
+      const effective = Math.min(parcelMass * LIP_CONTACT.fraction, this.mass * 0.5);
+      const strike = Math.min(-approach / (1 / this.mass + 1 / effective), this.mass * LIP_CONTACT.maxDeltaSpeed);
+      const impulse = normal.multiplyScalar(strike);
+      const before = this.scratch.copy(this.velocity);
+      this.velocity.addScaledVector(impulse, 1 / this.mass);
+      if (this.upright) {
+        // Along the deck the push sways the body off its feet; into the deck the legs take it.
+        const local = this.sweepEnd.copy(impulse).applyQuaternion(this.spin.copy(board.orientation).invert());
+        this.swayRate.x += local.x / this.mass;
+        this.swayRate.z += local.z / this.mass;
+      }
+      this.work.lip += impulse.dot(before.add(this.velocity)) / 2;
+      this.lastLipImpulse.add(impulse);
+      parcel.velocity.addScaledVector(impulse, -1 / parcelMass);
+      this.struckBy.add(parcel.id);
+      return 1;
+    }
+    return 0;
   }
 
   /** After the board's step: the contact means, and the water's reactions to what it did to the body. */
@@ -609,6 +713,7 @@ export class AttachedRider {
   prepare(h: number, board: BoardBody, water: SurfWater): void {
     this.advancePhase(h, board, water);
     this.balanceStep(h);
+    this.swayStep(h);
     this.updatePosture();
     this.updateInertia(board);
     this.boardVelocity.copy(board.velocity);
@@ -633,6 +738,8 @@ export class AttachedRider {
     // The balance shift moves the centre of mass across the board.
     const shifted = this.shiftedShare();
     this.drive.add(this.scratch.set((this.balanceRate.x + this.leanRate.x) * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.heading : board.orientation));
+    // A push's sway carries the centre of mass off its feet.
+    if (this.upright) this.drive.add(this.scratch.set(this.swayRate.x, 0, this.swayRate.z).applyQuaternion(board.orientation));
     // The posture's own motion (a pop-up) carries the centre of mass with it.
     this.drive.add(this.scratch.copy(this.postureRate).applyQuaternion(this.upright ? this.heading : board.orientation));
     const error = this.scratch.subVectors(this.target, this.position);
@@ -665,10 +772,16 @@ export class AttachedRider {
       const z = this.parts[i * 3 + 2];
       const onDeck = !this.upright && Math.abs(z) < this.shape.length / 2;
       const deckY = onDeck ? board.toWorld(this.localScratch.set(this.parts[i * 3], deckHeight(this.shape, z), z), this.scratch2).y : -Infinity;
-      this.applyWater(i, water, radius, this.partVolumes[i], Math.PI * radius * radius * PART_DRAG, h, shelter, deckY);
+      const inWake = !this.upright && z < -this.shape.length / 2;
+      this.applyWater(i, water, radius, this.partVolumes[i], Math.PI * radius * radius * PART_DRAG, h, inWake ? shelter * WAKE_SHELTER : shelter, deckY);
     }
     this.stroking = false;
-    if (this.phase !== 'prone' || (!this.paddle && !this.sweeping)) return;
+    if (this.phase !== 'prone' || (!this.paddle && !this.sweeping)) {
+      this.line = undefined;
+      this.hold = 0;
+      return;
+    }
+    this.keepLine(board);
     this.strokeTime += h;
     for (let side = 0; side < 2; side += 1) {
       const effort = this.strokeEffort(side);
@@ -688,11 +801,25 @@ export class AttachedRider {
     return Math.abs(this.steer) > 0.05;
   }
 
-  /** How hard arm `side` (0 left, at +x; 1 right) strokes, from the paddle and steer input. */
+  /** How hard arm `side` (0 left, at +x; 1 right) strokes, from the paddle and steer input and the paddler's own line keeping. */
   private strokeEffort(side: number): number {
-    const steer = Math.max(-1, Math.min(1, this.steer));
+    const steer = Math.max(-1, Math.min(1, this.steer + this.hold));
     const outside = side === 1 ? steer : -steer;
     return this.paddle ? 1 + STEER_STROKE * outside : Math.max(0, outside);
+  }
+
+  /** Paddling straight, the correction that brings the board back to its line; steering, a new line. */
+  private keepLine(board: BoardBody): void {
+    const forward = this.scratch.set(0, 0, 1).applyQuaternion(board.orientation);
+    const heading = Math.atan2(forward.x, forward.z);
+    if (this.line === undefined || this.sweeping || !this.paddle) {
+      this.line = heading;
+      this.hold = 0;
+      return;
+    }
+    let error = heading - this.line;
+    error -= 2 * Math.PI * Math.round(error / (2 * Math.PI));
+    this.hold = Math.max(-1, Math.min(1, -(error + HOLD_RATE_TIME * board.angularVelocity.y) / HOLD_ANGLE));
   }
 
   /** Water on one body point at `partWorld` moving at `partVelocity`: buoyancy of `volume` and drag over `dragArea`. */
@@ -861,8 +988,9 @@ export class AttachedRider {
     for (const limit of Object.keys(this.limitTime) as (keyof typeof this.limitTime)[]) {
       this.limitTime[limit] = this.limitTime[limit] * decay + (this.limit === limit ? h : 0);
     }
-    // Pushed too far off the posture, or airborne too long: the rider lets go of the board.
+    // Pushed too far off the posture, swayed past recovery, or airborne too long: the rider lets go of the board.
     if (this.flightTime > MAX_FLIGHT) this.separate('lost board');
+    else if (this.upright && Math.hypot(this.sway.x, this.sway.z) > RECOVERABLE_ERROR) this.separate('balance');
     else if (this.postureError > RECOVERABLE_ERROR && this.limit !== 'none') this.separate(SEPARATION[this.dominantLimit()]);
   }
 
@@ -897,6 +1025,7 @@ export class AttachedRider {
       board.toWorld(this.localCenter, this.target);
     }
     this.target.addScaledVector(this.up, this.flex);
+    if (this.upright) this.target.add(this.localScratch.set(this.sway.x, 0, this.sway.z).applyQuaternion(board.orientation));
   }
 
   /** Standing, the velocity that keeps the body upright as the board rolls and pitches under the stance point. */
@@ -1079,6 +1208,33 @@ export class AttachedRider {
       frequency * frequency * (lean - this.lean.x) - 2 * frequency * this.leanRate.x));
     this.leanRate.x = Math.min(MAX_SHIFT_SPEED, Math.max(-MAX_SHIFT_SPEED, this.leanRate.x + acceleration * h));
     this.lean.x += this.leanRate.x * h;
+  }
+
+  /**
+   * The sway of a pushed body as an inverted pendulum over its feet, caught (or
+   * not) by the centre of pressure the support allows.
+   */
+  private swayStep(h: number): void {
+    if (!this.upright) {
+      this.sway.set(0, 0, 0);
+      this.swayRate.set(0, 0, 0);
+      return;
+    }
+    if (this.sway.lengthSq() === 0 && this.swayRate.lengthSq() === 0) return;
+    const omega = Math.sqrt(WATER.gravity / Math.max(0.3, this.localCenter.y - this.base.y));
+    const recovery = 1 + 1 / (SWAY_RECOVERY * omega);
+    const { support } = this;
+    for (const axis of ['x', 'z'] as const) {
+      const half = axis === 'x' ? (support.xMax - support.xMin) / 2 : (support.zMax - support.zMin) / 2;
+      const capture = this.sway[axis] + this.swayRate[axis] / omega;
+      const pressure = Math.max(-half, Math.min(half, capture * recovery));
+      this.swayRate[axis] += h * omega * omega * (this.sway[axis] - pressure);
+      this.sway[axis] += h * this.swayRate[axis];
+    }
+    if (this.sway.lengthSq() < 1e-10 && this.swayRate.lengthSq() < 1e-10) {
+      this.sway.set(0, 0, 0);
+      this.swayRate.set(0, 0, 0);
+    }
   }
 
   /** Critically damped motion of the balance shift toward `target`, within speed, acceleration and reach limits. */

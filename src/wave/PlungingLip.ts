@@ -1,3 +1,5 @@
+import { Vector3 } from 'three';
+import type { LipContactParcel, LipParcelSource } from '../physics/DetachedSurfer';
 import { GRAVITY } from './dispersion';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 
@@ -72,18 +74,27 @@ export function lipThrow(conditions: LipConditions): LipThrow | undefined {
  * the secondary bore; its vertical momentum is lost to turbulence. The parcels
  * are a coarse sample of the jet: one throw is four parcels.
  */
-export class PlungingLip {
+export class PlungingLip implements LipParcelSource {
   readonly x: Float64Array;
   readonly y: Float64Array;
   readonly z: Float64Array;
   readonly volume: Float64Array;
   /** Landings since the lip was created. */
   landings = 0;
-  /** Told of every landing: where the parcel fell and how much water it returned, m³. */
-  onLand?: (x: number, z: number, volume: number) => void;
+  /** Told of every landing: where the parcel fell, how much water it returned (m³), and how fast it hit (m/s). */
+  onLand?: (x: number, z: number, volume: number, vx: number, vy: number, vz: number) => void;
   private readonly vx: Float64Array;
   private readonly vy: Float64Array;
   private readonly vz: Float64Array;
+  /** Each parcel's position before the latest step, for swept contact, and its id (unique per throw). */
+  private readonly px: Float64Array;
+  private readonly py: Float64Array;
+  private readonly pz: Float64Array;
+  private readonly id: Float64Array;
+  private nextId = 1;
+  private readonly contact = {
+    id: 0, previousPosition: new Vector3(), position: new Vector3(), velocity: new Vector3(), volume: 0, radius: 0,
+  };
   private readonly age: Float64Array;
   private readonly active: Uint8Array;
   private readonly free: number[] = [];
@@ -96,6 +107,10 @@ export class PlungingLip {
     this.vx = new Float64Array(capacity);
     this.vy = new Float64Array(capacity);
     this.vz = new Float64Array(capacity);
+    this.px = new Float64Array(capacity);
+    this.py = new Float64Array(capacity);
+    this.pz = new Float64Array(capacity);
+    this.id = new Float64Array(capacity);
     this.age = new Float64Array(capacity);
     this.active = new Uint8Array(capacity);
     for (let index = capacity - 1; index >= 0; index -= 1) this.free.push(index);
@@ -134,9 +149,11 @@ export class PlungingLip {
     for (const speed of PARCEL_SPEEDS) {
       const parcel = this.free.pop()!;
       this.active[parcel] = 1;
-      this.x[parcel] = x;
-      this.y[parcel] = height;
-      this.z[parcel] = z;
+      this.x[parcel] = this.px[parcel] = x;
+      this.y[parcel] = this.py[parcel] = height;
+      this.z[parcel] = this.pz[parcel] = z;
+      this.id[parcel] = this.nextId;
+      this.nextId += 1;
       this.vx[parcel] = speed * velocity.x;
       this.vy[parcel] = 0;
       this.vz[parcel] = speed * velocity.z;
@@ -152,6 +169,9 @@ export class PlungingLip {
     const { solver } = this;
     for (let parcel = 0; parcel < this.capacity; parcel += 1) {
       if (!this.active[parcel]) continue;
+      this.px[parcel] = this.x[parcel];
+      this.py[parcel] = this.y[parcel];
+      this.pz[parcel] = this.z[parcel];
       this.vy[parcel] -= GRAVITY * dt;
       this.x[parcel] += this.vx[parcel] * dt;
       this.y[parcel] += this.vy[parcel] * dt;
@@ -172,6 +192,28 @@ export class PlungingLip {
     return this.capacity - this.free.length;
   }
 
+  /**
+   * Offer each airborne parcel for swept contact over the latest step, as a
+   * sphere of its own volume. A velocity the visitor changes stays with the
+   * parcel, so it lands with its momentum after the strike.
+   */
+  forEachContact(visit: (parcel: LipContactParcel) => void): void {
+    const c = this.contact;
+    for (let parcel = 0; parcel < this.capacity; parcel += 1) {
+      if (!this.active[parcel]) continue;
+      c.id = this.id[parcel];
+      c.previousPosition.set(this.px[parcel], this.py[parcel], this.pz[parcel]);
+      c.position.set(this.x[parcel], this.y[parcel], this.z[parcel]);
+      c.velocity.set(this.vx[parcel], this.vy[parcel], this.vz[parcel]);
+      c.volume = this.volume[parcel];
+      c.radius = Math.cbrt((3 * c.volume) / (4 * Math.PI));
+      visit(c);
+      this.vx[parcel] = c.velocity.x;
+      this.vy[parcel] = c.velocity.y;
+      this.vz[parcel] = c.velocity.z;
+    }
+  }
+
   forEachActive(visit: (x: number, y: number, z: number, volume: number) => void): void {
     for (let parcel = 0; parcel < this.capacity; parcel += 1) {
       if (this.active[parcel]) visit(this.x[parcel], this.y[parcel], this.z[parcel], this.volume[parcel]);
@@ -189,6 +231,6 @@ export class PlungingLip {
     this.active[parcel] = 0;
     this.free.push(parcel);
     this.landings += 1;
-    this.onLand?.(this.x[parcel], this.z[parcel], this.volume[parcel]);
+    this.onLand?.(this.x[parcel], this.z[parcel], this.volume[parcel], this.vx[parcel], this.vy[parcel], this.vz[parcel]);
   }
 }

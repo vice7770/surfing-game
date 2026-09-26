@@ -1,6 +1,6 @@
 # ADR 0004: SI-consistent dispersive surf-zone solver on 2D bathymetry
 
-- Status: **Proposed (draft).** It will supersede the bulk-water parts of [ADR 0002](0002-interactive-water-field.md) once phase P2 of the [wave formation plan](../research/wave-formation-plan.md) passes validation. [ADR 0003](0003-plunging-sheet-collision.md) remains valid, amended by the mass-exchange and Iribarren-spawn rules below.
+- Status: **Accepted for stage 2 physics (P5, 2026-09-26); performance gate open.** Dispersion, shoaling, refraction, group, solitary-wave, breaker-depth and Miche tests pass on the CPU reference. The CPU step (12–15 ms) misses the 4 ms budget, and the fallback is the user's decision. The Celeris benchmark comparison was replaced by analytic benchmarks. Earlier status: **Proposed (draft).** It will supersede the bulk-water parts of [ADR 0002](0002-interactive-water-field.md) once phase P2 of the [wave formation plan](../research/wave-formation-plan.md) passes validation. [ADR 0003](0003-plunging-sheet-collision.md) remains valid, amended by the mass-exchange and Iribarren-spawn rules below.
 - Date: 2026-09-25
 
 ## Context

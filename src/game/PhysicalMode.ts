@@ -7,6 +7,7 @@ import { RIDER_PARTS } from '../physics/riderPosture';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
+import { SprayPoints } from '../scene/SprayPoints';
 import { LipPoints, type RenderableLip } from '../scene/LipPoints';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera } from '../scene/SpectatorCamera';
@@ -26,6 +27,8 @@ import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost, type SurfZoneSnapsh
 /** Wave Lab inputs for the view-only physical surf zone (buoy values or a storm, plan Q2, Q22 and Q31). */
 export interface PhysicalSettings {
   spot: SpotName;
+  /** Solver stage: 2 Boussinesq (dispersive, breaking by eddy viscosity), 1 shallow water (cheaper; waves break early as bores). */
+  stage: 1 | 2;
   /** Buoy values taken directly, or derived from a storm. */
   source: 'buoy' | 'storm';
   significantHeight: number;
@@ -66,7 +69,7 @@ const FAR_SLOPE_LENGTH = 870;
 const FAR_EXTENT = 1500;
 
 export const DEFAULT_PHYSICAL_SETTINGS: PhysicalSettings = {
-  spot: 'beach', source: 'buoy', significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spread: 0.4, tide: 0, windSpeed: 0,
+  spot: 'beach', stage: 2, source: 'buoy', significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spread: 0.4, tide: 0, windSpeed: 0,
   stormWindSpeed: 18, stormFetchKm: 600, stormDurationHours: 36, stormDistanceKm: 3000,
 };
 
@@ -131,7 +134,7 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
     { label: 'SPREAD', value: `s ${config.spreading.toFixed(0)}${band}` },
     { label: 'TIDE', value: `${config.tide.toFixed(1)} m` },
     { label: 'BREAK LINE', value: `${Math.round(-breakPoint.z)} m out · ${status.breakDepth.toFixed(2)} m deep` },
-    { label: 'SOLVER', value: `${status.cells.toLocaleString('en-US')} cells · ${status.stepMs.toFixed(1)} ms/step` },
+    { label: 'SOLVER', value: `${(config.stage ?? 2) === 2 ? 'Boussinesq' : 'shallow water'} · ${status.cells.toLocaleString('en-US')} cells · ${status.stepMs.toFixed(1)} ms/step` },
     { label: 'NEXT SET', value: toSet > 0 ? `in ${Math.round(toSet)} s` : `${Math.round(-toSet)} s ago` },
     { label: 'BREAKER', value: breaker.type === 'none' ? 'FLAT BED' : `ξ ${breaker.value.toFixed(2)} · ${breaker.type.toUpperCase()}` },
     { label: 'BREAKING', value: `${Math.round(status.breakingFraction * 100)} % of the surf zone` },
@@ -146,15 +149,16 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
     { label: 'PEEL', value: peelText },
     { label: 'LIP', value: status.lipLaunches === 0 ? 'no lip yet'
       : `${status.lipLaunches} throws · ${status.lipVolume.toFixed(1)} m³ · ${status.lipAirborne.toFixed(1)} m³ airborne` },
+    { label: 'SPRAY', value: status.spray > 0 ? `${status.spray.toLocaleString('en-US')} drops and mist in the air` : 'none' },
     { label: 'WIND', value: wind === 0 ? 'calm'
       : `${Math.abs(wind)} m/s ${wind > 0 ? 'onshore' : 'offshore'} · breaking thresholds ×${status.onsetScale.toFixed(2)}` },
   ];
 }
 
 /**
- * The view-only physical surf zone (plan P2c, option a): the stage 1 solver on
- * the shared water surface, a seabed mesh from the spot, and a spectator
- * camera. The legacy board does not ride these waves until P4.
+ * The physical surf zone (plan P2c, P4 and P5): the chosen solver stage on
+ * the shared water surface, a seabed mesh from the spot, a spectator camera,
+ * and the rider who paddles, pops up and rides these waves.
  */
 export type SurfZoneHostFactory = (config: SurfZoneConfig) => SurfZoneHost;
 
@@ -177,6 +181,8 @@ export class PhysicalMode {
   readonly lipPoints = new LipPoints();
   /** Bubbles entrained under breaking bores, seen from below the surface. */
   readonly bubbles = new BubblePoints();
+  /** Spray and mist thrown up by lip impacts, bores and offshore wind (G6). */
+  readonly spray = new SprayPoints();
   /** The physical board, drawn at the snapshot's pose. */
   readonly board = createBoardMesh(buildBoardShape());
   /** The rider's body, drawn from the snapshot's seven points (its legacy board hidden). */
@@ -206,7 +212,7 @@ export class PhysicalMode {
   private readonly follow = { position: { x: 0, y: 0, z: 0 }, heading: 0 };
 
   constructor(scene: Scene) {
-    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh, this.board, this.surfer.group);
+    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group);
     this.board.visible = false;
     this.surfer.setBoardVisible(false);
     this.surfer.group.visible = false;
@@ -236,6 +242,7 @@ export class PhysicalMode {
       bandwidth: swell.bandwidth,
       tide: settings.tide,
       windSpeed: settings.windSpeed,
+      stage: settings.stage,
       ...overrides,
     };
     const host = createHost(config);
@@ -371,6 +378,7 @@ export class PhysicalMode {
       this.surfer.updateDetached(this.riderPose, this.board.position, this.board.quaternion);
     }
     this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
+    this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount });
   }
 
   /** The Wave Lab rows for the running surf zone. */
@@ -392,5 +400,6 @@ export class PhysicalMode {
     this.farField.mesh.visible = visible;
     this.lipPoints.mesh.visible = visible;
     this.bubbles.mesh.visible = visible;
+    this.spray.mesh.visible = visible;
   }
 }

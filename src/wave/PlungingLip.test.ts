@@ -46,6 +46,31 @@ describe('PlungingLip', () => {
     [cell - solver.nx, cell, cell + solver.nx].forEach((index, n) => expect(solver.h[index]).toBeCloseTo(0.8 * depths[n], 9));
   });
 
+  it('offers each airborne parcel for contact, and a struck parcel lands with its changed momentum', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    const cell = solver.cellIndex(3.5, 12.5);
+    const thrown = lip.launch(cell, { x: 0, z: 4 }, 3, 0.6);
+    lip.step(1 / 120);
+    const seen: { id: number; travel: number; speed: number }[] = [];
+    lip.forEachContact((parcel) => {
+      seen.push({ id: parcel.id, travel: parcel.position.distanceTo(parcel.previousPosition), speed: parcel.velocity.z });
+      expect(parcel.radius).toBeCloseTo(Math.cbrt((3 * parcel.volume) / (4 * Math.PI)), 12);
+      parcel.velocity.x += 2;
+    });
+    expect(seen.length).toBe(4);
+    expect(new Set(seen.map((parcel) => parcel.id)).size).toBe(4);
+    for (const parcel of seen) expect(parcel.travel).toBeCloseTo(Math.hypot(parcel.speed, 9.81 / 120) / 120, 3);
+    // Ids stay with their parcels.
+    const again: number[] = [];
+    lip.forEachContact((parcel) => again.push(parcel.id));
+    expect(again).toEqual(seen.map((parcel) => parcel.id));
+    for (let frame = 0; frame < 240 && lip.activeCount() > 0; frame += 1) lip.step(1 / 120);
+    let momentumX = 0;
+    for (let index = 0; index < solver.h.length; index += 1) momentumX += solver.qx[index] * solver.dx * solver.dz[Math.floor(index / solver.nx)];
+    expect(momentumX).toBeCloseTo(thrown * 2, 9);
+  });
+
   it('lands ahead of the crest and hands its forward momentum to the water there', () => {
     const solver = basin();
     const lip = new PlungingLip(solver, 256);
