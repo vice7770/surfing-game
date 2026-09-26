@@ -14,6 +14,7 @@
     "report:tubes": "rolldown scripts/tube-report.ts -o dist/scripts/tube-report.mjs --format esm --platform node && node dist/scripts/tube-report.mjs",
     "report:catch": "rolldown scripts/catch-report.ts -o dist/scripts/catch-report.mjs --format esm --platform node && node dist/scripts/catch-report.mjs",
     "report:ride": "rolldown scripts/ride-report.ts -o dist/scripts/ride-report.mjs --format esm --platform node && node dist/scripts/ride-report.mjs",
+    "report:carve": "rolldown scripts/carve-lab.ts -o dist/scripts/carve-lab.mjs --format esm --platform node && node dist/scripts/carve-lab.mjs",
     "assets:skies": "rolldown scripts/assets/fetch-skies.ts -o dist/scripts/fetch-skies.mjs --format esm --platform node && node dist/scripts/fetch-skies.mjs",
     "assets:surfers": "/Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/assets/build_surfers.py && node scripts/assets/pack-surfers.mjs",
     "report:sound": "rolldown scripts/sound-report.ts -o dist/scripts/sound-report.mjs --format esm --platform node && node dist/scripts/sound-report.mjs",

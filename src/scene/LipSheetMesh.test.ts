@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LIP_STRIDE } from '../wave/SurfZoneRunner';
-import { buildLipSheet } from './LipSheetMesh';
+import { LipSheetMesh, buildLipSheet } from './LipSheetMesh';
 
 /** Parcels of strips in the snapshot's layout: x, y, z, column, index, launch time, age. */
 function strips(...defs: { column: number; launchTime: number; indices?: number[] }[]): { parcels: Float32Array; count: number } {
@@ -14,6 +14,21 @@ function strips(...defs: { column: number; launchTime: number; indices?: number[
 }
 
 describe('lip sheet mesh', () => {
+  it('rebuilds only when a new snapshot brings different parcels, in either look', () => {
+    for (const look of ['classic', 'rich'] as const) {
+      const lip = new LipSheetMesh();
+      lip.setLook(look);
+      const { parcels, count } = strips({ column: 4, launchTime: 1 }, { column: 5, launchTime: 1.2 });
+      lip.update(parcels, count, 1);
+      const built = lip.mesh.geometry.getAttribute('position');
+      lip.update(parcels, count, 1);
+      expect(lip.mesh.geometry.getAttribute('position')).toBe(built);
+      parcels[1] += 0.1;
+      lip.update(parcels, count, 1);
+      expect(lip.mesh.geometry.getAttribute('position')).not.toBe(built);
+    }
+  });
+
   it('joins two strips thrown close in time into one surface, a column wide at its ends', () => {
     const { parcels, count } = strips({ column: 4, launchTime: 1 }, { column: 5, launchTime: 1.2 });
     const sheet = buildLipSheet(parcels, count, 1);

@@ -20,6 +20,21 @@ function momentumZ(solver: ShallowWaterSolver): number {
   return total;
 }
 
+describe('PlungingLip tubes', () => {
+  it('writes the newest tubes when more fly than a snapshot holds: they are at the peel’s front, where the rider is', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    const tube: TubeGeometry = { length: 1.5, width: 0.6, tilt: 0.5 };
+    for (const x of [0.5, 1.5, 2.5]) {
+      lip.launch(solver.cellIndex(x, 12.5), { x: 0, z: 5 }, 3, 0.3, 3, tube);
+      lip.step(1 / 60);
+    }
+    const into = new Float32Array(2 * 12);
+    expect(lip.writeTubes(into, 2)).toBe(2);
+    expect([into[9], into[12 + 9]]).toEqual([1, 2]);
+  });
+});
+
 describe('PlungingLip', () => {
   it('conserves water volume through launch, flight and landing in a closed basin', () => {
     const solver = basin();

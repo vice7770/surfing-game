@@ -303,6 +303,20 @@ Requirements agreed on 2026-09-26: [G8 spec](docs/superpowers/specs/2026-09-26-g
   - a middle water level if the M1 Air needs one;
   - the tank/far-field seam: from high up, the tank's offshore ridge shows a thin outline and sand-coloured slivers, in both looks.
 
+### P1 · Barrel and whitewater (G9) — `In Progress (Part A done)`
+
+Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpowers/specs/2026-09-26-g9-barrel-whitewater.md); [plan](docs/superpowers/plans/2026-09-26-g9-barrel-whitewater.md).
+- [x] **Part A · the barrel look** (Rich only; Classic unchanged, its lip sheet now pinned by a snapshot too):
+  - **Tubes reach the page.** The worker sends raw heights and a table of flying tubes. One carve serves the physics, the page's Classic texture and its height lookups; it agrees with the worker to under 0.1 mm.
+  - **The void as one shape along the peel.** Between two columns whose tubes belong to one peel (crests within 2 m along their travel, facing the same way), the tube itself is interpolated (crest, opening, size); otherwise the carved surfaces blend. The physics carves with the same function at its 1 m nodes while the Rich water cuts every 0.25 m, so board and eye agree to about 0.2 m inside a void; a finer physics carve can come with P12's tube riding.
+  - **The void cut on the GPU**, per vertex in the 0.25 m patch and per pixel, with a 16-step twin of the physics' floor curve, within 5 mm of it.
+  - **The lip:** spline-smoothed between its parcels, as thick as its water (never thicker than a compact blob of it), with rounded edges where it ends, shaded with the Rich water's optics. Sunlight, and the sky's light where sky lies behind it, come through it by Beer–Lambert over its own path; it reflects at the Rich balance and whitens to foam as it ages. It is rebuilt only when a snapshot brings new parcels.
+  - **Judging it:** `?inpage&waterSheet&spot=reef` holds the practice Reef on an open tube and shoots it beside, from the shoulder and inside.
+  - **Cost on the M1 Air** (render alone, 1280×720): Rich tube shots take about 12 ms against Classic's 6 ms; the lineup about 8 ms against 6 ms.
+  - **Checked:** a JS mirror of the GPU carve agrees with the physics' to 5 mm; the Rich spray fade and crest light read the carved surface; snapshots carry up to 256 tubes, keeping the newest.
+  - **Open, for the playtest:** how the barrel reads in play; a cheaper carve slope (analytic, one evaluation instead of three); the caustics under a void still refract through the uncut surface.
+- [ ] **Part B · breaking whitewater:** splash-up, trapped air with the tube's collapse and spit, air entrainment driving the churn, the foam ball and the bubble plume, sourced and reported per spot.
+
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 
 Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](docs/superpowers/specs/2026-09-26-gameplay-milestone.md), grounded in the [surf-science survey](docs/research/surf-gameplay-research.md).
@@ -319,7 +333,12 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
     - trim, stall, crouch, the hand in the face and heading hold;
     - pumping gains speed when timed with the path (Kogelbauer 2024), and nothing on flat water;
     - turns and ride ends read from the ride's trace, and a provisional 0–10 score on the WSL criteria.
-  - **Open: turns are about ten times too slow.** A full lean turns about 0.2 rad/s on a 9° rail, against Forsyth 2024's 1.9 rad/s on 42°. The upright body cannot bank into a turn. A rail-angle controller designed on a modal model of the board and a banked body is the next physics item, with the full-lock carve.
+  - **Turns redesigned** ([plan](docs/superpowers/plans/2026-09-26-turn-redesign.md), [findings](docs/superpowers/plans/2026-09-26-turn-redesign.md#findings), [carve lab](docs/research/carve-lab.md)):
+    - the standing body banks on its ankles as an eighth unknown in the board's solve; the balance caps the ankle where the feet reach their edges, and the upper body's swing takes the rest;
+    - the hard turn makes 66° in 1.2 s at 2.1 rad/s on a 50–60° rail (it made 13° at 0.2 rad/s; Forsyth 2024: 99° in 0.96 s at 1.9 rad/s on 42°), and the roll–yaw wobble decays at 7–11 m/s (ζ 0.05–0.07);
+    - the carve lab measured the plant: a planing board rights about the rider's load line (850–1,700 N·m/rad), and the turn follows the rail within 0.03 s;
+    - open: full-steer reversals after 1.5 s of carving up the plane face fall (the rail bogs past about 45–50° and the board stalls). The steer's 50° full bank was chosen with the user for the stronger turn;
+    - open (merged after the user's playtest, 2026-09-26): on the Canyon the autopilot's riders fall soon after standing, on a slow board below planing (7 stands and no ride of 3 s over two seeds, against 14 and 10 before the redesign; [ride report](docs/research/ride-report-practice.md)). Next: carry the body upright below planing, as the pop-up's landing now is.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
@@ -338,7 +357,7 @@ The user's original list of 15 mechanics (2026-09-26) is covered as follows:
 
 ### Later — `Backlog`
 
-Follow-ups from the open-edge fix (#14) and the test timeouts (#15), 2026-09-26. The full-lock carve is not repeated here; it is P9's next physics item.
+Follow-ups from the open-edge fix (#14) and the test timeouts (#15), 2026-09-26. The full-lock carve and slow turns were closed by the turn redesign.
 1. **Rerun the catch reports.** The Canyon's ghost-rider numbers (#12) and the other spots' rows were measured before the open-edge fix, which changes breaking near the window's edges: in the 40 m Point peel test, lip launches went 28 → 57 and the second wave now breaks in almost every column. Regenerate the [natural](docs/research/catch-report.md) and [practice](docs/research/catch-report-practice.md) reports and the numbers quoted above.
 2. **Checked (2026-09-26): the Point over several seeds.** Practice, 3 seeds × 2 min, 30 ghost riders, before P7 against now (tubes and the momentum fix):
    - stands fell 14 → 3 and rides of 3 s or more 4 → 2 (longest 13.7 → 5.5 s); by seed, stands went 13 / 1 / 0 → 2 / 0 / 1, so seed 1's lucky run carries most of the drop;

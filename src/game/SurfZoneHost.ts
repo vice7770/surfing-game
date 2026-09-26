@@ -2,6 +2,7 @@ import type { RenderableSurfZone } from '../scene/PhysicalSurfaceSource';
 import { sampleSurfaceBed, sampleSurfaceHeight, type SurfaceGrid } from '../scene/WaterSurface';
 import { SurfZoneRunner, type RideRequest, type SurfZoneBuffers, type SurfZoneRunnerOptions, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { RenderGrid, SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { TUBE_STRIDE, carveAt, carveGrid } from '../wave/tubeTable';
 
 /** What a surf zone fixes when it starts: its render grid, bed, break focus, window and solver column width. */
 export interface SurfZoneInit {
@@ -42,7 +43,8 @@ export abstract class SnapshotSampler {
   abstract readonly snapshot: SurfZoneSnapshot;
 
   heightAt(x: number, z: number): number {
-    return sampleSurfaceHeight(this.snapshot.surface, this.init.grid, x, z);
+    const { snapshot } = this;
+    return carveAt(snapshot.tubes, snapshot.tubeCount, this.init.dx, x, z, sampleSurfaceHeight(snapshot.surface, this.init.grid, x, z));
   }
 
   bedAt(x: number, z: number): number {
@@ -107,8 +109,22 @@ export class SnapshotSurfZone implements RenderableSurfZone {
     return { ...this.host.init.grid };
   }
 
-  writeUniformSurface(data: Float32Array): void {
-    data.set(this.host.snapshot.surface);
+  /** The snapshot's heights, carved by its tubes as the physics carves them unless `carve` is false (the Rich water cuts them itself, G9). */
+  writeUniformSurface(data: Float32Array, grid: SurfaceGrid, carve = true): void {
+    const { snapshot, init } = this.host;
+    data.set(snapshot.surface);
+    if (carve) carveGrid(data, grid, snapshot.tubes, snapshot.tubeCount, init.dx);
+  }
+
+  writeTubes(into: Float32Array): number {
+    const { tubes, tubeCount } = this.host.snapshot;
+    const count = Math.min(tubeCount, Math.floor(into.length / TUBE_STRIDE));
+    into.set(tubes.subarray(0, count * TUBE_STRIDE));
+    return count;
+  }
+
+  get tubeColumnWidth(): number {
+    return this.host.init.dx;
   }
 
   writeUniformBed(data: Float32Array): void {

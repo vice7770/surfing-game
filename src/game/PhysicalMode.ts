@@ -374,6 +374,7 @@ export class PhysicalMode {
     water.setChop(chopForWind(settings.windSpeed));
     water.setOptics(SPOT_OPTICS[settings.spot]);
     this.farField.setOptics(SPOT_OPTICS[settings.spot]);
+    this.lipSheet.setOptics(SPOT_OPTICS[settings.spot]);
     const spot = createSpot(config.spot, config.seed);
     const offshoreDepth = OFFSHORE_DEPTH[settings.spot];
     const windowMin = init.windowXMin;
