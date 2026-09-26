@@ -26,12 +26,30 @@ export function madsenSorensenCelerity(omega: number, depth: number, g = GRAVITY
   return omega / k;
 }
 
-export interface BoussinesqOptions extends SolverOptions {
-  /** Madsen–Sørensen dispersive terms (default on); off, the solver is stage 1 exactly. */
-  dispersion?: boolean;
-  /** Kennedy et al. (2000) eddy-viscosity breaking (Task 3); false leaves it out. */
-  breaking?: false;
+/**
+ * Kennedy et al. (2000) breaking: a cell breaks when its surface rises faster
+ * than η_t*, which ramps from `onset` to `end` (fractions of √(gh), h the still
+ * depth) over `transition` · √(h/g) after breaking starts, and the breaking
+ * water mixes momentum with eddy viscosity ν = B δ² (h + η) η_t.
+ */
+export interface KennedyOptions {
+  onset: number;
+  end?: number;
+  transition?: number;
+  delta?: number;
 }
+
+export interface BoussinesqOptions extends SolverOptions {
+  /** Madsen–Sørensen dispersive terms (default on); off, with no breaking, the solver is stage 1 exactly. */
+  dispersion?: boolean;
+  /** Eddy-viscosity breaking; false (the default) leaves it out. */
+  breaking?: KennedyOptions | false;
+}
+
+/** Thinner water does not break, m. */
+const BREAKING_DEPTH = 0.05;
+/** The eddy viscosity never exceeds this share of H √(gH): a mixing length of the depth at the long-wave speed. */
+const MAX_EDDY = 0.3;
 
 /** Solve a tridiagonal system in place (Thomas): lower a, diagonal b, upper c, right side r → solution in r. */
 function thomas(a: Float64Array, b: Float64Array, c: Float64Array, r: Float64Array, scratch: Float64Array, n: number): void {
@@ -63,6 +81,20 @@ function thomas(a: Float64Array, b: Float64Array, c: Float64Array, r: Float64Arr
  */
 export class BoussinesqSolver extends ShallowWaterSolver {
   readonly dispersive: boolean;
+  /** Breaking strength B in [0, 1], seconds since the bore over each cell began breaking, surface rise rate η_t (m/s) and eddy viscosity (m²/s). */
+  readonly breakingStrength: Float64Array;
+  readonly breakingAge: Float64Array;
+  readonly riseRate: Float64Array;
+  readonly viscosity: Float64Array;
+  /** Multiplies the breaking onset; the local wind shifts it (plan Q23). */
+  onsetScale = 1;
+  private readonly kennedy?: Required<KennedyOptions>;
+  private readonly nextStrength: Float64Array;
+  private readonly nextAge: Float64Array;
+  private readonly viscousX: Float64Array;
+  private readonly viscousZ: Float64Array;
+  private viscosityPeak = 0;
+  private readonly finest: number;
   /** Still depth, m, and whether each cell disperses this step (1) or is shallow water (0). */
   readonly still: Float64Array;
   readonly mask: Float64Array;
@@ -96,8 +128,12 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   constructor(grid: SolverGrid, depthAt: DepthFunction, options: BoussinesqOptions = {}) {
     super(grid, depthAt, options);
     this.dispersive = options.dispersion ?? true;
+    if (options.breaking) this.kennedy = { end: 0.15, transition: 5, delta: 1.2, ...options.breaking };
     const size = this.nx * this.nz;
     const make = () => new Float64Array(size);
+    this.breakingStrength = make(); this.breakingAge = make(); this.riseRate = make(); this.viscosity = make();
+    this.nextStrength = make(); this.nextAge = make(); this.viscousX = make(); this.viscousZ = make();
+    this.finest = Math.min(this.dx, ...this.dz);
     this.still = make(); this.mask = make();
     this.pBar = make(); this.qBar = make(); this.sourceX = make(); this.sourceZ = make(); this.halfEta = make();
     this.dX = make(); this.dZ = make();
@@ -124,7 +160,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   }
 
   protected override advance(dt: number): void {
-    if (!this.dispersive) {
+    if (!this.dispersive && !this.kennedy) {
       super.advance(dt);
       return;
     }
@@ -136,11 +172,13 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     this.computeRates(dt);
     this.halfStepSurface();
     this.dispersiveSources();
+    this.breakingTerms(dt);
+    const { viscousX, viscousZ } = this;
     for (let i = 0; i < h.length; i += 1) {
       h[i] = Math.max(0, h[i] + dt * rateH[i]);
       const wet = h[i] > dryDepth;
-      pBar[i] = wet ? pBar[i] + dt * (rateQx[i] + sourceX[i]) : 0;
-      qBar[i] = wet ? qBar[i] + dt * (rateQz[i] + sourceZ[i]) : 0;
+      pBar[i] = wet ? pBar[i] + dt * (rateQx[i] + sourceX[i] + viscousX[i]) : 0;
+      qBar[i] = wet ? qBar[i] + dt * (rateQz[i] + sourceZ[i] + viscousZ[i]) : 0;
     }
     this.recoverRows();
     this.recoverColumns();
@@ -148,16 +186,118 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     for (let i = 0; i < h.length; i += 1) {
       if (h[i] > dryDepth) {
         // What the dispersive terms added to the acceleration this step: the next predictor's estimate.
-        predictorX![i] = (qx[i] - startP[i]) / dt - rateQx[i];
-        predictorZ![i] = (qz[i] - startQ[i]) / dt - rateQz[i];
+        if (predictorX && predictorZ) {
+          predictorX[i] = (qx[i] - startP[i]) / dt - rateQx[i];
+          predictorZ[i] = (qz[i] - startQ[i]) / dt - rateQz[i];
+        }
         continue;
       }
       qx[i] = 0;
       qz[i] = 0;
-      predictorX![i] = 0;
-      predictorZ![i] = 0;
+      if (predictorX && predictorZ) {
+        predictorX[i] = 0;
+        predictorZ[i] = 0;
+      }
     }
     this.applyFriction(dt);
+  }
+
+  /** The CFL step, and for breaking water the explicit eddy viscosity's limit. */
+  override maxStableStep(): number {
+    const step = super.maxStableStep();
+    return this.viscosityPeak > 0 ? Math.min(step, (0.2 * this.finest * this.finest) / this.viscosityPeak) : step;
+  }
+
+  /**
+   * Kennedy breaking from this step's surface rise rate (the continuity rate),
+   * and the eddy-viscosity terms R_x = ∂x(ν P_x) + ½∂y(ν(P_y + Q_x)),
+   * R_y = ½∂x(ν(P_y + Q_x)) + ∂y(ν Q_y).
+   */
+  private breakingTerms(dt: number): void {
+    const { viscousX, viscousZ } = this;
+    const kennedy = this.kennedy;
+    if (!kennedy) {
+      viscousX.fill(0);
+      viscousZ.fill(0);
+      return;
+    }
+    const { nx, nz, h, rateH, breakingStrength: strength, breakingAge: age, nextStrength, nextAge, riseRate, viscosity: nu, gravity: g } = this;
+    const onset = kennedy.onset * this.onsetScale;
+    const mixing = kennedy.delta * kennedy.delta;
+    let peak = 0;
+    for (let iz = 0; iz < nz; iz += 1) {
+      for (let ix = 0; ix < nx; ix += 1) {
+        const i = iz * nx + ix;
+        const depth = h[i];
+        const rise = rateH[i];
+        riseRate[i] = rise;
+        if (depth <= BREAKING_DEPTH) {
+          nextStrength[i] = 0;
+          nextAge[i] = 0;
+          nu[i] = 0;
+          continue;
+        }
+        let inherited = strength[i] > 0 ? age[i] : 0;
+        if (ix > 0 && strength[i - 1] > 0) inherited = Math.max(inherited, age[i - 1]);
+        if (ix < nx - 1 && strength[i + 1] > 0) inherited = Math.max(inherited, age[i + 1]);
+        if (iz > 0 && strength[i - nx] > 0) inherited = Math.max(inherited, age[i - nx]);
+        if (iz < nz - 1 && strength[i + nx] > 0) inherited = Math.max(inherited, age[i + nx]);
+        // Thresholds scale with the still depth (Kennedy et al. 2000); the mixing acts over the whole column.
+        const still = Math.max(BREAKING_DEPTH, this.still[i]);
+        const ramp = Math.min(1, inherited / (kennedy.transition * Math.sqrt(still / g)));
+        const threshold = Math.sqrt(g * still) * (onset + (kennedy.end - onset) * ramp);
+        const breaking = Math.min(1, Math.max(0, rise / threshold - 1));
+        nextStrength[i] = breaking;
+        nextAge[i] = breaking > 0 ? inherited + dt : 0;
+        nu[i] = breaking > 0 ? Math.min(MAX_EDDY * depth * Math.sqrt(g * depth), breaking * mixing * depth * rise) : 0;
+        if (nu[i] > peak) peak = nu[i];
+      }
+    }
+    strength.set(nextStrength);
+    age.set(nextAge);
+    this.viscosityPeak = peak;
+    if (!(peak > 0)) {
+      viscousX.fill(0);
+      viscousZ.fill(0);
+      return;
+    }
+    const { qx: P, qz: Q, below, above, f1, f2, f3 } = this;
+    const periodic = this.xBoundary === PERIODIC;
+    const pEdge = this.xBoundary === WALL ? -1 : 1;
+    const inverse = 1 / (this.dx * this.dx);
+    for (let iz = 0; iz < nz; iz += 1) {
+      const minus = below[iz];
+      const plus = above[iz];
+      const across = 2 / (minus + plus);
+      const row = iz * nx;
+      for (let ix = 0; ix < nx; ix += 1) {
+        const i = row + ix;
+        const left = ix > 0 ? i - 1 : periodic ? row + nx - 1 : -1;
+        const right = ix < nx - 1 ? i + 1 : periodic ? row : -1;
+        const nuL = left >= 0 ? 0.5 * (nu[i] + nu[left]) : nu[i];
+        const nuR = right >= 0 ? 0.5 * (nu[i] + nu[right]) : nu[i];
+        const pL = left >= 0 ? P[left] : pEdge * P[i];
+        const pR = right >= 0 ? P[right] : pEdge * P[i];
+        viscousX[i] = (nuR * (pR - P[i]) - nuL * (P[i] - pL)) * inverse;
+        const down = iz > 0 ? i - nx : -1;
+        const up = iz < nz - 1 ? i + nx : -1;
+        const nuD = down >= 0 ? 0.5 * (nu[i] + nu[down]) : nu[i];
+        const nuU = up >= 0 ? 0.5 * (nu[i] + nu[up]) : nu[i];
+        const qD = down >= 0 ? Q[down] : -Q[i];
+        const qU = up >= 0 ? Q[up] : -Q[i];
+        viscousZ[i] = (nuU * (qU - Q[i]) / plus - nuD * (Q[i] - qD) / minus) * across;
+      }
+    }
+    // The shear: S = ν(P_y + Q_x), odd across walls of either kind.
+    this.derivativeZ(P, f1, false);
+    this.derivativeX(Q, f2, false);
+    for (let i = 0; i < f1.length; i += 1) f3[i] = nu[i] * (f1[i] + f2[i]);
+    this.derivativeZ(f3, f1, true);
+    this.derivativeX(f3, f2, true);
+    for (let i = 0; i < f1.length; i += 1) {
+      viscousX[i] += 0.5 * f1[i];
+      viscousZ[i] += 0.5 * f2[i];
+    }
   }
 
   /**
@@ -180,7 +320,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
         let all = wet[i] > 0 && h[i] - still[i] <= SWITCH_RATIO * still[i];
         for (let k = -2; k <= 2 && all; k += 1) all = wet[iz * nx + column(ix + k)] > 0 && wet[row(iz + k) * nx + ix] > 0;
         for (let k = -1; k <= 1 && all; k += 2) all = wet[row(iz + k) * nx + column(ix - 1)] > 0 && wet[row(iz + k) * nx + column(ix + 1)] > 0;
-        mask[i] = all ? 1 : 0;
+        mask[i] = all && this.dispersive ? 1 : 0;
       }
     }
     this.derivativeX(still, this.dX, false);

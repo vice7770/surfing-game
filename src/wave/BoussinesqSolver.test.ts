@@ -332,3 +332,100 @@ describe('Boussinesq shoaling, refraction and groups', () => {
     expect(Math.abs(end.height / height - 1)).toBeLessThan(0.05);
   }, 120_000);
 });
+
+describe('Boussinesq breaking', () => {
+  /** A 10 s, 0.6 m wave from 5 m of water up a 1:40 plane beach, with Kennedy breaking at the plain-slope onset. */
+  function planeBeach() {
+    const depthAt = (_x: number, z: number) => (z < 60 ? 5 : 5 - (z - 60) / 40);
+    const solver = new BoussinesqSolver(
+      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(0, 280, 560), xBoundary: 'periodic' }, depthAt, { breaking: { onset: 0.65 } },
+    );
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(50, 0), target: airyTarget(0.3, 10, 5) });
+    return { solver, depthAt };
+  }
+
+  it('breaks a shoaling wave where its height reaches 0.6–1.0 of the depth, never steeper than Miche before it breaks', () => {
+    const { solver, depthAt } = planeBeach();
+    const rows = solver.nz;
+    const high = new Float64Array(rows).fill(-Infinity);
+    const low = new Float64Array(rows).fill(Infinity);
+    const broke = new Float64Array(rows);
+    const touched = new Float64Array(rows);
+    let finite = true;
+    while (solver.time < 160) {
+      solver.step(0.05);
+      if (solver.time < 110) continue;
+      for (let iz = 0; iz < rows; iz += 1) {
+        const i = iz * solver.nx;
+        const surface = solver.surfaceAt(i);
+        finite &&= Number.isFinite(surface);
+        high[iz] = Math.max(high[iz], surface);
+        low[iz] = Math.min(low[iz], surface);
+        if (solver.breakingStrength[i] > 0.3) broke[iz] = 1;
+        // Breaking by eddy viscosity, or a crest high enough to switch to shallow water (a shock-captured front).
+        if (solver.breakingStrength[i] > 0 || (solver.h[i] > 0.05 && solver.mask[i] === 0)) touched[iz] = 1;
+      }
+    }
+    expect(finite).toBe(true);
+    let onset = -1;
+    for (let iz = 0; iz < rows; iz += 1) {
+      if (solver.zCenters[iz] > 60 && broke[iz] > 0) {
+        onset = iz;
+        break;
+      }
+    }
+    expect(onset).toBeGreaterThan(0);
+    const depth = depthAt(0, solver.zCenters[onset]);
+    expect((high[onset] - low[onset]) / depth).toBeGreaterThan(0.6);
+    expect((high[onset] - low[onset]) / depth).toBeLessThan(1.0);
+    const omega = (2 * Math.PI) / 10;
+    for (let iz = 0; iz < onset; iz += 1) {
+      if (touched[iz] > 0) continue;
+      const d = depthAt(0, solver.zCenters[iz]);
+      const k = airyWavenumber(omega, d);
+      const limit = (0.142 * Math.tanh(k * d) * 2 * Math.PI) / k;
+      expect(high[iz] - low[iz]).toBeLessThan(1.1 * limit);
+    }
+  }, 120_000);
+
+  it('runs a breaking wave up a dry beach without negative depth or non-finite state', () => {
+    const depthAt = (_x: number, z: number) => (z < 0 ? 4 : 4 - 0.05 * z);
+    const solver = new BoussinesqSolver(
+      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(-60, 120, 180), xBoundary: 'periodic' }, depthAt, { breaking: { onset: 0.65 } },
+    );
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(-20, -60), target: longWaveTarget(0.3, 10, 4) });
+    let shallowest = Infinity;
+    let highestWetZ = -Infinity;
+    let finite = true;
+    while (solver.time < 60) {
+      solver.step(1 / 30);
+      for (let i = 0; i < solver.h.length; i += 1) {
+        finite &&= Number.isFinite(solver.h[i]) && Number.isFinite(solver.qz[i]);
+        shallowest = Math.min(shallowest, solver.h[i]);
+        if (solver.h[i] > 0.01) highestWetZ = Math.max(highestWetZ, solver.zCenters[Math.floor(i / solver.nx)]);
+      }
+    }
+    expect(finite).toBe(true);
+    expect(shallowest).toBeGreaterThanOrEqual(0);
+    expect(highestWetZ).toBeGreaterThan(80);
+  }, 60_000);
+
+  it('never gains energy in a closed basin', () => {
+    const depth = 2;
+    const solver = new BoussinesqSolver(
+      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 200), xBoundary: 'periodic' }, () => depth, { breaking: { onset: 0.65 } },
+    );
+    for (let iz = 0; iz < solver.nz; iz += 1) {
+      for (let ix = 0; ix < solver.nx; ix += 1) solver.h[iz * solver.nx + ix] = depth + 0.3 * Math.cos((3 * Math.PI * solver.zCenters[iz]) / 40);
+    }
+    const start = solver.totalEnergy();
+    let largest = start;
+    while (solver.time < 60) {
+      solver.step(1 / 30);
+      largest = Math.max(largest, solver.totalEnergy());
+    }
+    expect(largest / start).toBeLessThan(1.005);
+    expect(solver.totalEnergy()).toBeLessThan(start);
+  }, 60_000);
+});
+
