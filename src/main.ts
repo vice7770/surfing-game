@@ -19,7 +19,7 @@ import {
 import { Controls } from './game/Controls';
 import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
-import { DEFAULT_PHYSICAL_SETTINGS, PhysicalMode, localSurfZone, spreadingFor, swellFor, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, PRACTICE_SWELL, PhysicalMode, localSurfZone, spreadingFor, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
 import { WorkerSurfZone } from './game/WorkerSurfZone';
 import { BoardPhysics, type BoardDiagnostics, type PhysicsSettings } from './physics/BoardPhysics';
 import { CameraRig } from './scene/CameraRig';
@@ -31,6 +31,7 @@ import { Seabed } from './scene/Seabed';
 import { PlungingSheetMesh } from './scene/PlungingSheetMesh';
 import { WaterSurface } from './scene/WaterSurface';
 import { CAUSTIC_WINDOW, CausticMap } from './scene/CausticMap';
+import { FftChop } from './scene/FftChop';
 import { LegacySurfaceSource } from './scene/LegacySurfaceSource';
 import { DEFAULT_WATER_CHOP } from './scene/waterChop';
 import { SPOT_OPTICS } from './scene/waterOptics';
@@ -74,6 +75,8 @@ const physicalRequested = new URLSearchParams(window.location.search).has('physi
  */
 const createSurfZone: SurfZoneHostFactory = typeof Worker === 'undefined' || new URLSearchParams(window.location.search).has('inpage')
   ? localSurfZone : (config) => new WorkerSurfZone(config, undefined, { rider: true });
+/** Only the worker steps on the GPU (plan P6), so only it gets the GPU tier's sea. */
+const gpuTier = createSurfZone === localSurfZone ? undefined : webGpuAvailable;
 
 function getElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -105,6 +108,8 @@ class SurfGame {
   private readonly water: WaterSurface;
   /** Caustics refracted through the physical surface onto its seabed (G5). */
   private readonly caustics: CausticMap;
+  /** The WebGPU tier's FFT wind sea for the water's shading (plan P6). */
+  private readonly fftChop = new FftChop();
   private readonly causticAhead = new Vector3();
   private wave: InteractiveWaterField;
   private plungingSheet: PlungingSheet;
@@ -291,6 +296,7 @@ class SurfGame {
     return {
       spot: getElement<HTMLSelectElement>('#physical-spot').value as SpotName,
       stage: getElement<HTMLSelectElement>('#physical-solver').value === '1' ? 1 : 2,
+      compute: getElement<HTMLSelectElement>('#physical-compute').value === 'cpu' ? 'cpu' : 'auto',
       source: getElement<HTMLSelectElement>('#swell-source').value as PhysicalSettings['source'],
       significantHeight: number('#hs-slider'),
       peakPeriod: number('#tp-slider'),
@@ -307,7 +313,7 @@ class SurfGame {
 
   /** Build the physical surf zone with its ridden board, and hide the legacy board, rider and HUD. */
   private async startPhysical(seed: number, settings: PhysicalSettings): Promise<void> {
-    if (!(await this.physicalMode.start(settings, seed, this.water, {}, createSurfZone))) return;
+    if (!(await this.physicalMode.start(settings, seed, this.water, {}, createSurfZone, gpuTier))) return;
     const shared = this.readDraftSettings();
     const sunChanged = shared.sunHeight !== this.activeSettings.sunHeight || shared.sunDirection !== this.activeSettings.sunDirection;
     this.activeSettings = { ...this.activeSettings, timeScale: shared.timeScale, sunHeight: shared.sunHeight, sunDirection: shared.sunDirection };
@@ -432,7 +438,7 @@ class SurfGame {
     }
     const physicalInputs = ['#hs-slider', '#tp-slider', '#direction-slider', '#spread-slider', '#tide-slider', '#wind-speed-slider',
       '#storm-wind-slider', '#storm-fetch-slider', '#storm-duration-slider', '#storm-distance-slider'];
-    for (const selector of [...physicalInputs, '#physical-spot', '#physical-solver', '#swell-source']) {
+    for (const selector of [...physicalInputs, '#physical-spot', '#physical-solver', '#physical-compute', '#swell-source']) {
       getElement<HTMLInputElement>(selector).addEventListener(selector.startsWith('#physical-') || selector === '#swell-source' ? 'change' : 'input', () => {
         this.draftPhysical = this.readDraftPhysical();
         this.refreshTuningUi();
@@ -550,9 +556,16 @@ class SurfGame {
     const physical = this.draftPhysical;
     getElement<HTMLSelectElement>('#physical-spot').value = physical.spot;
     getElement<HTMLSelectElement>('#physical-solver').value = String(physical.stage);
+    getElement<HTMLSelectElement>('#physical-compute').value = physical.compute;
     getElement<HTMLSelectElement>('#swell-source').value = physical.source;
     getElement<HTMLElement>('#buoy-controls').hidden = physical.source !== 'buoy';
     getElement<HTMLElement>('#storm-controls').hidden = physical.source !== 'storm';
+    getElement<HTMLElement>('#practice-note').hidden = physical.source !== 'practice';
+    getElement<HTMLInputElement>('#direction-slider').disabled = physical.source === 'practice';
+    if (physical.source === 'practice') {
+      getElement<HTMLElement>('#practice-note').textContent = `SAME WATER AND FORCES, STEADIER SWELL · HS ${PRACTICE_SWELL.significantHeight.toFixed(1)} M`
+        + ` · TP ${PRACTICE_SWELL.peakPeriod} S · S ${PRACTICE_SWELL.spreading} · BAND ±${Math.round(PRACTICE_SWELL.bandwidth! * 100)} % · ${PRACTICE_SWELL.directionDegrees}° · BEST AT THE POINT`;
+    }
     getElement<HTMLInputElement>('#storm-wind-slider').value = String(physical.stormWindSpeed);
     getElement<HTMLInputElement>('#storm-fetch-slider').value = String(physical.stormFetchKm);
     getElement<HTMLInputElement>('#storm-duration-slider').value = String(physical.stormDurationHours);
@@ -645,6 +658,7 @@ class SurfGame {
     this.cameraRig.update(this.physics, this.wave, simElapsed || this.fixedStep);
     this.updateUnderwaterView();
     this.caustics.disable();
+    this.fftChop.disable();
     this.renderer.render(this.scene, this.cameraRig.camera);
     this.updateHud();
     requestAnimationFrame(this.frame);
@@ -669,6 +683,14 @@ class SurfGame {
     const view = this.physicalMode.camera.camera;
     const ahead = view.getWorldDirection(this.causticAhead).setY(0);
     if (ahead.lengthSq() > 1e-6) ahead.normalize();
+    // The WebGPU tier shades with the FFT chop; the others keep the procedural waves.
+    const host = this.physicalMode.host;
+    if (host?.snapshot.status.compute === 'gpu') {
+      this.fftChop.setWind(this.physicalSettings.windSpeed);
+      this.fftChop.render(this.renderer, host.snapshot.status.seaTime);
+    } else {
+      this.fftChop.disable();
+    }
     this.caustics.render(this.renderer, view.position.x + (ahead.x * CAUSTIC_WINDOW) / 3, view.position.z + (ahead.z * CAUSTIC_WINDOW) / 3);
     this.renderer.render(this.scene, this.physicalMode.camera.camera);
     this.readoutClock += elapsed;

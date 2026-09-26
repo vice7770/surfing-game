@@ -1,6 +1,7 @@
 import { Quaternion, Vector3 } from 'three';
 import { AttachedRider, type RiderPhase, type RiderSeparation } from './AttachedRider';
 import { BoardBody } from './BoardBody';
+import { BoardRecovery } from './BoardRecovery';
 import { DetachedSurfer, type LipParcelSource } from './DetachedSurfer';
 import { RIDER_PARTS, type StanceName } from './riderPosture';
 import type { SurfWater } from './SurfWater';
@@ -32,6 +33,11 @@ export class RideSession {
   readonly board = new BoardBody();
   readonly rider: AttachedRider;
   readonly surfer = new DetachedSurfer();
+  /** The fallen surfer's grab on the board, pulling them back onto it (surfer plan S3). */
+  readonly recovery = new BoardRecovery(this.surfer);
+  /** The latest climb back on: the swimmer's and board's linear momentum just before, the mounted pair's after (N·s), and how many so far. */
+  readonly remount = { before: new Vector3(), after: new Vector3(), count: 0 };
+  private readonly spinPart = new Vector3();
   /** The state the fall body started from, at the latest separation. */
   readonly handoff = { center: new Vector3(), orientation: new Quaternion(), velocity: new Vector3(), angularVelocity: new Vector3() };
   /** The fall body's linear momentum and centre of mass as it started, for continuity checks. */
@@ -59,6 +65,7 @@ export class RideSession {
     this.rider.phase = 'prone';
     this.board.attach(this.rider);
     this.surfer.active = false;
+    this.recovery.release();
   }
 
   /** The drawn body's seven points (pelvis, torso, head, hands, feet), riding or fallen. */
@@ -94,7 +101,30 @@ export class RideSession {
     if (surfer.active) {
       surfer.step(dt, this.bodyField(water), { stroke: input.paddle, steer: input.steer });
       surfer.resolveBoardContact(board);
+      // In the water, the pop-up input reaches for the board; within reach the grab pulls the body onto it.
+      if (input.popUp && this.recovery.state === 'free') this.recovery.tryGrab(board);
+      if (this.recovery.state !== 'free' && this.recovery.step(dt, board) === 'prone-ready') this.climbOn();
     }
+  }
+
+  /**
+   * Lying back down on the board after a grab: the rider remounts prone, and
+   * the pair moves on with the linear momentum the swimmer and board had
+   * together (an inelastic join, like the fall's handoff in reverse).
+   */
+  private climbOn(): void {
+    const { board, rider, surfer, remount } = this;
+    surfer.linearMomentum(remount.before).addScaledVector(board.velocity, board.mass);
+    rider.phase = 'prone';
+    board.attach(rider);
+    // Mounted, the body moves with the deck under it, spin included: share the momentum around that.
+    const spin = this.spinPart.subVectors(rider.velocity, board.velocity);
+    board.velocity.copy(remount.before).addScaledVector(spin, -rider.mass).divideScalar(board.mass + rider.mass);
+    rider.velocity.copy(board.velocity).add(spin);
+    remount.after.copy(rider.velocity).multiplyScalar(rider.mass).addScaledVector(board.velocity, board.mass);
+    surfer.active = false;
+    this.recovery.release();
+    remount.count += 1;
   }
 
   /**

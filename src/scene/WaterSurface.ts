@@ -15,7 +15,7 @@ import {
 } from 'three';
 import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
-import { DEFAULT_WATER_CHOP, waterChopNormal, waterChopPars } from './waterChop';
+import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
 import {
   WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
 } from './waterOptics';
@@ -205,6 +205,7 @@ export class WaterSurface {
       waterFoamColor: { value: new Color('#d8f2e9') },
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
+      ...chopFieldUniforms,
       ...createOpticsUniforms(),
       ...this.causticUniforms,
     };

@@ -466,3 +466,40 @@ describe('lip strikes', () => {
     expect(rider.attached).toBe(true);
   });
 });
+
+// Wave plan §1.10: a catch comes from the wave, never from paddling alone.
+describe('catching', () => {
+  it('never cues or stands from paddling on flat water', () => {
+    const { board, rider } = mounted('prone');
+    const water = new PlaneWater();
+    rider.paddle = true;
+    let cued = false;
+    run(board, water, 30, () => {
+      cued ||= rider.popUpCue;
+    });
+    expect(board.velocity.length()).toBeGreaterThan(1.2);
+    expect(cued).toBe(false);
+    rider.popUp();
+    run(board, water, 2.5);
+    expect(rider.popUpReport.outcome).toBe('no support');
+    expect(rider.popUpReport.refusal).toBeDefined();
+  });
+
+  it('paddles faster down a passing swell’s face than on flat water', () => {
+    const fastest = (water: PlaneWater | SwellWater) => {
+      const { board, rider } = mounted('prone', water.surfaceAt(0, 0));
+      rider.paddle = true;
+      let top = 0;
+      for (let i = 0; i < 20 * 60; i += 1) {
+        board.step(STEP, water);
+        if (water instanceof SwellWater) water.advance(STEP);
+        top = Math.max(top, board.velocity.z);
+      }
+      return top;
+    };
+    const flat = fastest(new PlaneWater());
+    const swell = fastest(new SwellWater({ height: 1.2, period: 10, depth: 3 }));
+    expect(swell).toBeGreaterThan(flat + 0.3);
+  });
+});
+

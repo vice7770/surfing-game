@@ -17,8 +17,14 @@ import type { SurfWater } from './SurfWater';
  */
 const FOOT_FRICTION = 0.9;
 const PRONE_FRICTION = 0.7;
-/** How hard a body lying on the board can hold it, body weights (a modelling choice). */
-const PRONE_GRIP = 0.3;
+/**
+ * How hard a body lying on the board can hold it, body weights (a modelling
+ * choice): both hands on the rails. Calibrated in P4f: 30 ghost riders on the
+ * Point's practice swell for 1.5 min kept hold of the board over a steepening
+ * face at 0.6 (80 cues, 6 stands, all 6 riding ≥ 3 s) where 0.3 let the face
+ * lift them off (34 cues, 2 stands).
+ */
+const PRONE_GRIP = 0.6;
 const MAX_LOAD = 4;
 export const MAX_FLIGHT = 0.4;
 export const RECOVERABLE_ERROR = 0.25;
@@ -144,9 +150,14 @@ export interface AttachedRiderOptions {
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
 export type RiderPhase = PosePhase | 'recover';
 
+/** Why a pop-up found no support: the contact strained lately, the board sank into the surface, the feet landed under water, or there was no water. */
+export type StandRefusal = 'strained' | 'sinking' | 'feet under water' | 'no water';
+
 /** The latest pop-up: how it ended, how long it took to stand, s, and its peak landing load, body weights, with the front foot's share then. */
 export interface PopUpReport {
   outcome: 'none' | 'rising' | 'stood' | 'no support';
+  /** For 'no support', which check refused the stand. */
+  refusal?: StandRefusal;
   duration: number;
   landingPeak: number;
   frontShare: number;
@@ -162,7 +173,12 @@ const PUSH_TIME = 0.72;
 const LANDING_TIME = 0.48;
 const SETTLE_TIME = 0.8;
 const RECOVER_TIME = 0.6;
-/** A stand needs the deck under the feet no deeper than this, m, and the board sinking into the surface slower than this, m/s. */
+/**
+ * A stand needs the deck under the feet no deeper than this, m, and the board
+ * sinking into the surface slower than this, m/s. Checked in P4f and kept: from
+ * 0.2 m a static 10° face lets the rider stand; 0.15 m stood more riders but no
+ * more rides of 3 s; a sinking limit of 0.8 m/s changed nothing.
+ */
 const FEET_DEPTH = 0.1;
 const SINK_RATE = 0.3;
 /** …and the contact bound by its limits for no more than this long lately, s. */
@@ -388,7 +404,7 @@ export class AttachedRider {
     if (!this.attached || this.phase !== 'prone') return false;
     this.beginTransition('push', PUSH_TIME);
     this.popUpTime = 0;
-    Object.assign(this.popUpReport, { outcome: 'rising', duration: 0, landingPeak: 0, frontShare: 0 });
+    Object.assign(this.popUpReport, { outcome: 'rising', duration: 0, landingPeak: 0, frontShare: 0, refusal: undefined });
     return true;
   }
 
@@ -425,13 +441,15 @@ export class AttachedRider {
     if (ended === 'push') {
       this.beginTransition('landing', LANDING_TIME, board);
     } else if (ended === 'landing') {
-      if (this.canStand(board, water)) {
+      const refusal = this.standRefusal(board, water);
+      if (!refusal) {
         this.beginTransition('standing', SETTLE_TIME, board);
         this.popUpReport.outcome = 'stood';
         this.popUpReport.duration = this.popUpTime;
       } else {
         this.beginTransition('recover', RECOVER_TIME, board);
         this.popUpReport.outcome = 'no support';
+        this.popUpReport.refusal = refusal;
       }
     } else if (ended === 'recover') {
       this.fromParts.set(this.parts);
@@ -465,22 +483,23 @@ export class AttachedRider {
     }
   }
 
-  /** Both feet down on a deck that is not sinking away, with the load between them lately. */
-  private canStand(board: BoardBody, water: SurfWater): boolean {
+  /** Both feet down on a deck that is not sinking away, with the load between them lately; otherwise, why not. */
+  private standRefusal(board: BoardBody, water: SurfWater): StandRefusal | undefined {
     const strained = this.limitTime.flight + this.limitTime.tip + this.limitTime.slip + this.limitTime.impact;
-    if (!this.inContact || strained > STAND_STRAIN) return false;
+    if (!this.inContact || strained > STAND_STRAIN) return 'strained';
     // Sinking means moving into the water surface, not just downhill along a face.
     const centre = water.sampleAt(board.position.x, board.position.y, board.position.z, this.sample);
-    if (centre.outsideDomain || !centre.wet) return false;
+    if (centre.outsideDomain || !centre.wet) return 'no water';
     const norm = Math.hypot(centre.slopeX, 1, centre.slopeZ);
     const into = -((board.velocity.x - centre.flowX) * -centre.slopeX + (board.velocity.y - centre.flowY) + (board.velocity.z - centre.flowZ) * -centre.slopeZ) / norm;
-    if (into > SINK_RATE) return false;
+    if (into > SINK_RATE) return 'sinking';
     for (const z of [this.feet.rear, this.feet.front]) {
       board.toWorld(this.localScratch.set(0, deckHeight(this.shape, z), z), this.footWorld);
       const sample = water.sampleAt(this.footWorld.x, this.footWorld.y, this.footWorld.z, this.sample);
-      if (sample.outsideDomain || sample.surfaceY - this.footWorld.y > FEET_DEPTH) return false;
+      if (sample.outsideDomain) return 'no water';
+      if (sample.surfaceY - this.footWorld.y > FEET_DEPTH) return 'feet under water';
     }
-    return true;
+    return undefined;
   }
 
   /** Put the rider in its posture on the board, moving with it. */
