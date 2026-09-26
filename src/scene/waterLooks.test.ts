@@ -1,4 +1,4 @@
-import { Color, ShaderLib, Vector3, type WebGLProgramParametersWithUniforms } from 'three';
+import { Color, ShaderLib, Vector3, type ShaderMaterial, type WebGLProgramParametersWithUniforms } from 'three';
 import { describe, expect, it } from 'vitest';
 import { FarFieldOcean } from './FarFieldOcean';
 import { LipSheetMesh } from './LipSheetMesh';
@@ -9,7 +9,7 @@ import { rippleStrength, rippleTexture } from './water/rippleTexture';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import { DEFAULT_WATER_CHOP } from './waterChop';
 import { CLASSIC_FOAM, WATER_BODY_GAIN, waterBodyFragment } from './waterOptics';
-import { RICH_WATER } from './water/richWaterGlsl';
+import { RICH_REFLECTION, RICH_WATER } from './water/richWaterGlsl';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -40,7 +40,7 @@ describe('Classic water parity', () => {
   });
 
   it('keeps the lip sheet’s Classic shaders exactly as before G9', () => {
-    const { material } = new LipSheetMesh().mesh;
+    const material = new LipSheetMesh().mesh.material as ShaderMaterial;
     expect({ vertex: material.vertexShader, fragment: material.fragmentShader }).toMatchSnapshot();
   });
 
@@ -214,6 +214,20 @@ describe('Classic water parity', () => {
     spray.setLook('rich');
     expect(spray.mesh.material.fragmentShader).toContain('#include <tonemapping_fragment>');
     expect(spray.mesh.material.fragmentShader).toContain('#include <colorspace_fragment>');
+  });
+
+  it('draws the Rich lip as sky-lit water, as thick as its own, and restores the Classic sheet', () => {
+    const lip = new LipSheetMesh();
+    const classic = lip.mesh.material;
+    lip.setLook('rich');
+    expect(lip.mesh.material).toBe(lip.richMaterial);
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    lip.richMaterial.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
+    expect(shader.fragmentShader).toContain('exp( -waterAttenuation * vLipThickness )');
+    expect(shader.fragmentShader).toContain(RICH_REFLECTION);
+    expect(shader.vertexShader).toContain('vLipThickness = thickness;');
+    lip.setLook('classic');
+    expect(lip.mesh.material).toBe(classic);
   });
 
   it('names nothing in the Rich program with a GLSL ES 3.00 reserved word', () => {

@@ -1014,6 +1014,7 @@ class SurfGame {
     this.water.setLook(look);
     this.physicalMode.farField.setLook(look);
     this.physicalMode.spray.setLook(look);
+    this.physicalMode.lipSheet.setLook(look);
   }
 
   private updateHud(): void {
@@ -1090,7 +1091,7 @@ class SurfGame {
     this.fill.intensity = 0;
     this.reflectionMapTarget?.dispose();
     this.reflectionMapTarget = undefined;
-    this.photoSky.applyTo(this.scene, [this.water.mesh.material, this.physicalMode.farField.mesh.material]);
+    this.photoSky.applyTo(this.scene, [this.water.mesh.material, this.physicalMode.farField.mesh.material, this.physicalMode.lipSheet.richMaterial]);
     if (!this.isBelowSurface) this.scene.background = this.photoSky.background ?? this.skyColor;
     this.refreshSun();
   }
@@ -1107,6 +1108,7 @@ class SurfGame {
     this.water.setSun(direction, radiance);
     this.physicalMode.farField.setSun(direction, radiance);
     this.physicalMode.spray.setSun(direction, radiance);
+    this.physicalMode.lipSheet.setSun(direction, radiance);
   }
 
   private refreshReflection(): void {
