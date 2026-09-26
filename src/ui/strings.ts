@@ -175,7 +175,7 @@ export const EN = {
   'settings.uiScale': 'UI scale',
   'settings.highContrastHud': 'High-contrast HUD',
   'action.paddle': 'Paddle',
-  'action.popUp': 'Pop up',
+  'action.popUp': 'Pop up / lie down',
   'action.steerLeft': 'Steer left',
   'action.steerRight': 'Steer right',
   'action.trimForward': 'Trim forward',

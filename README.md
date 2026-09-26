@@ -15,7 +15,7 @@ Open the local URL printed by Vite. The game opens on its main menu, over live w
 
 - **Surf:** pick Beach, Point, Reef or Canyon and the conditions (swell, tide, wind and time of day), then paddle out on the physical surf zone. It starts at the Canyon, whose waves peel along the break; the other spots mostly close out.
   - Hold Space (or ↑) to paddle, and press Enter when "Pop up now" shows. Steer with ← → or A D.
-  - Standing, lean with ← → (A D) to carve. W or ↑ puts your weight forward to run down the line, and S or ↓ puts it back to slow and stall. Hold Shift to crouch: extending out of a turn pumps. Hold E to drag the wave-side hand in the face. With nothing held, the rider holds its line.
+  - Standing, lean with ← → (A D) to carve. W or ↑ puts your weight forward to run down the line, and S or ↓ puts it back to slow and stall. Hold Shift to crouch: extending out of a turn pumps. Hold E to drag the wave-side hand in the face. With nothing held, the rider holds its line. Press Enter again to lie back down on the board.
   - R paddles out again, C changes the camera, and Esc pauses.
   - On a gamepad: RT paddles, A pops up, and the left stick or D-pad steers. Standing, the left stick's up and down trims, LT crouches as far as you pull it, and X drags the hand. Y paddles out again, RB changes the camera, and Start pauses.
   - On a touch phone, use the Paddle, Pop up, Crouch and arrow buttons, and the pause button at the top right.
