@@ -69,6 +69,32 @@
 
 - [ ] ROADMAP (G7 Part B), `docs/ASSETS.md` if anything is added, this plan's record. Commit `docs: record G7 Part B`.
 
-## Record
+## Record (2026-09-26)
 
-(Filled in at the end.)
+- **Done:** Tasks 1–4 as planned, on `claude/g7b-surfer-card`:
+  - the choice in the settings;
+  - riding as it;
+  - the presets' shadows, detail and texture caps;
+  - the Surfer card with its preview.
+
+  Checked in the browser:
+  - picks of surfer 3, the rash vest (renamed "Vest and boardshorts" on that body), coral and Midnight showed in the preview;
+  - the ride then paddled out as that surfer.
+- **Rulings:**
+  - Colour picks the suit's accent (the vest takes it whole), as the G7 spec's "swappable accent colour" says. The suit's base stays black.
+  - The texture cap downsizes at load: the models embed one 2048 px WebP per skin and hair, so there is nothing smaller to pick.
+  - `ShadowRig.setLevel` recompiles every material, so the level only applies when it changes.
+  - The preview's first framing (3.6 m) cut off the arms and board; it circles at 5.4 m.
+- **Tests:**
+  - the choice (bodies match the committed manifest, the vest by sex, field-by-field fallback);
+  - the store's surfer section;
+  - the latest body winning a load race;
+  - dressing;
+  - the texture size reloading;
+  - the board's design;
+  - the preset table;
+  - the LOD distance and the texture cap;
+  - the card's model;
+  - `PhotoSky.dispose`.
+- **Not tested automatically:** the preview's rendering and the card's DOM (UI tests here check models); both were checked in the browser.
+- **Left:** the playtest with the user (deferred, like P9's).
