@@ -5,6 +5,7 @@
 import { waterCubicPars } from './cubicSurface';
 import { PATCH_SKIRT } from './richPatch';
 import { RICH_SPECULAR } from './specular';
+import { CLASSIC_FOAM } from '../waterOptics';
 
 export { waterCubicPars };
 
@@ -48,6 +49,24 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
   ${RICH_SPECULAR}
   roughnessFactor = mix( roughnessFactor, 0.7, waterCover );
   totalEmissiveRadiance += 0.18 * waterFresh * ( 1.0 - waterChurn.x ) * pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 6.0 ) * waterSunRadiance;`;
+
+/** The far ocean's Rich foam: Classic's composition with the Rich gloss (it has no churn or streaks). */
+export const RICH_FAR_FOAM = CLASSIC_FOAM.replace(
+  'roughnessFactor = mix( roughnessFactor, 0.9, waterCover );',
+  `${RICH_SPECULAR}\n  roughnessFactor = mix( roughnessFactor, 0.7, waterCover );`,
+);
+
+/** The far ocean's Rich <normal_fragment_begin>: its analytic normal and the chop, as Classic, plus the ripples on still water. */
+export const richFarNormal = /* glsl */ `
+#include <normal_fragment_begin>
+{
+  float chopFade = exp( -length( vWaterWorld - cameraPosition ) / 80.0 );
+  vec2 chopSlope = waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime ) + waterRippleSlopeAt( vWaterWorld.xz, vec2( 0.0 ) );
+  vec3 chopNormal = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
+  chopNormal = normalize( chopNormal + vec3( -chopSlope.x, 0.0, -chopSlope.y ) );
+  normal = normalize( ( viewMatrix * vec4( chopNormal, 0.0 ) ).xyz );
+}
+`;
 
 // Fresh whitewater's clumps stand proud of the surface.
 const CHURN_RELIEF = `float waterFreshNormal = waterFreshness( vWaterFoam ) * waterFoamPattern;

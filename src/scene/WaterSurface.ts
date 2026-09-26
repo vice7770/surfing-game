@@ -21,7 +21,7 @@ import {
   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
 } from './water/richPatch';
 import { churnTexture, waterChurnPars } from './water/churnTexture';
-import { rippleTexture, waterRipplePars } from './water/rippleTexture';
+import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import { waterStreakPars } from './water/streaks';
 import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
@@ -164,8 +164,6 @@ ${foamPatternPars}
 ${causticLookupPars}
 `;
 
-/** The ripples' strength: 0.8 on calm water, 1 at the default chop. */
-const rippleStrength = (chop: number) => 0.8 + (0.2 * chop) / DEFAULT_WATER_CHOP;
 
 /** Supplies interleaved (height, foam) for every node of a uniform render grid. */
 export interface SurfaceSource {

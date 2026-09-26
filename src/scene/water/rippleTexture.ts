@@ -1,6 +1,7 @@
 import { DataTexture, DataUtils, HalfFloatType, LinearFilter, LinearMipmapLinearFilter, RGBAFormat, RepeatWrapping } from 'three';
 import { seededRandom } from '../../wave/random';
 import { FOAM_FLOW_PERIOD } from '../foamPattern';
+import { DEFAULT_WATER_CHOP } from '../waterChop';
 
 /** The two ripple layers' repeats, m: the larger rides the chop, the finer the capillary texture. */
 export const RIPPLE_TILES = [4, 1.3] as const;
@@ -10,6 +11,9 @@ export const RIPPLE_PERIOD = FOAM_FLOW_PERIOD;
 /** RMS slope of one layer at strength 1 (a light wind sea's fine slopes, art-directed). */
 export const RIPPLE_RMS_SLOPE = 0.1;
 const COMPONENTS = 48;
+
+/** The ripples' strength for a wind chop: 0.8 on calm water, 1 at the default chop; the tank and the far ocean share it. */
+export const rippleStrength = (chop: number) => 0.8 + (0.2 * chop) / DEFAULT_WATER_CHOP;
 
 interface Component { nx: number; nz: number; amplitude: number; phase: number }
 

@@ -4,7 +4,7 @@ import { FarFieldOcean } from './FarFieldOcean';
 import { SprayPoints } from './SprayPoints';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
 import { churnTexture } from './water/churnTexture';
-import { rippleTexture } from './water/rippleTexture';
+import { rippleStrength, rippleTexture } from './water/rippleTexture';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import { DEFAULT_WATER_CHOP } from './waterChop';
 import { CLASSIC_FOAM, waterBodyFragment } from './waterOptics';
@@ -146,6 +146,26 @@ describe('Classic water parity', () => {
     expect(spray.mesh.material.uniforms.spraySunDirection.value).toEqual(new Vector3(0, 1, 0));
     spray.setLook('classic');
     expect({ vertex: spray.mesh.material.vertexShader, fragment: spray.mesh.material.fragmentShader }).toEqual(classic);
+  });
+
+  it('gives the Rich far ocean the ripples and anti-aliased gloss, still, and switches back to Classic', () => {
+    const ocean = new FarFieldOcean();
+    const classic = compiled(ocean.mesh.material);
+    ocean.setLook('rich');
+    expect(ocean.mesh.material.roughness).toBe(RICH_BASE_ROUGHNESS);
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    ocean.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
+    expect(shader.fragmentShader).toContain('waterRippleSlopeAt( vWaterWorld.xz, vec2( 0.0 ) )');
+    expect(shader.fragmentShader).toContain('richRoughness( roughnessFactor, waterRippleVariance )');
+    const uniforms = shader.uniforms as Record<string, { value: unknown }>;
+    expect(uniforms.waterRippleMap.value).toBe(rippleTexture());
+    expect(uniforms.waterRippleStrength.value).toBeCloseTo(rippleStrength(DEFAULT_WATER_CHOP), 9);
+    // The same wind ripples the tank and the far ocean alike, so the two meet without a step in gloss.
+    ocean.setChop(0);
+    expect(uniforms.waterRippleStrength.value).toBeCloseTo(rippleStrength(0), 9);
+    ocean.setLook('classic');
+    expect(ocean.mesh.material.roughness).toBe(0.62);
+    expect(compiled(ocean.mesh.material)).toEqual(classic);
   });
 
   it('names nothing in the Rich program with a GLSL ES 3.00 reserved word', () => {

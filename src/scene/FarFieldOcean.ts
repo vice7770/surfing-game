@@ -13,6 +13,9 @@ import {
   Vector4,
 } from 'three';
 import type { WaterLook } from './water/waterLook';
+import { RICH_FAR_FOAM, richFarNormal, richFragmentPars } from './water/richWaterGlsl';
+import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTexture';
+import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import type { FarFieldProfile } from '../wave/FarFieldProfile';
 import { buildGridGeometry, gradedAxis, type HoleRect } from './gridGeometry';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
@@ -142,21 +145,27 @@ export class FarFieldOcean {
       waterChop: { value: DEFAULT_WATER_CHOP },
       ...chopFieldUniforms,
       ...createOpticsUniforms(),
+      // Rich only (G8): the tank's ripples, so the two meet without a step in gloss.
+      waterRippleMap: { value: rippleTexture() },
+      waterRippleStrength: { value: rippleStrength(DEFAULT_WATER_CHOP) },
     };
     const material = new MeshPhysicalMaterial({
-      color: '#ffffff', roughness: 0.62, metalness: 0, ior: WATER_IOR, side: DoubleSide, transparent: true,
+      color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide, transparent: true,
     });
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, this.uniforms);
+      const rich = this.currentLook === 'rich';
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', `#include <common>\n${farVertexPars}`)
         .replace('#include <beginnormal_vertex>', farBeginNormal)
         .replace('#include <begin_vertex>', 'vec3 transformed = vec3( position.x + farShift.x, farHeight, position.z + farShift.y );\nvWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', `#include <common>\n${farFragmentPars}`)
-        .replace('#include <normal_fragment_begin>', waterChopNormal)
+        .replace('#include <common>', rich
+          ? `#include <common>\n${farFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}`
+          : `#include <common>\n${farFragmentPars}`)
+        .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
         .replace('#include <color_fragment>', 'diffuseColor.a *= 1.0 - smoothstep( farFade.x, farFade.y, length( vWaterWorld.xz - farFocus ) );')
-        .replace('#include <emissivemap_fragment>', waterBodyFragment(false));
+        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, false, RICH_FAR_FOAM) : waterBodyFragment(false));
     };
     material.customProgramCacheKey = () => `breakline-far-field-ocean-${this.currentLook}`;
     this.mesh = new Mesh(new BufferGeometry(), material);
@@ -168,6 +177,7 @@ export class FarFieldOcean {
   setLook(look: WaterLook): void {
     if (look === this.currentLook) return;
     this.currentLook = look;
+    this.mesh.material.roughness = look === 'rich' ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
     this.mesh.material.needsUpdate = true;
   }
 
@@ -241,6 +251,7 @@ export class FarFieldOcean {
 
   setChop(strength: number): void {
     this.uniforms.waterChop.value = strength;
+    this.uniforms.waterRippleStrength.value = rippleStrength(strength);
   }
 
   /** Advance to sea time t: each component's ωt is reduced mod 2π in double precision. */
