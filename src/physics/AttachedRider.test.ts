@@ -678,6 +678,18 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(Math.abs(settled)).toBeLessThan(50);
     });
 
+    // The carve lab's envelope: at 5 m/s a quarter steer held 4 s fell at 3.8 s, the feet fighting the hull to
+    // lay the board flat on the face, and the upper body's swing ran past its range taking up the steady demand.
+    it('holds a gentle carve at 5 m/s, the swing within its range', () => {
+      const { board, rider, water } = acrossFace(0, 5);
+      run(board, water, 0.3);
+      rider.steer = 0.25;
+      let widest = 0;
+      run(board, water, 4, () => { widest = Math.max(widest, Math.abs(rider.swing.angle)); });
+      expect(rider.attached).toBe(true);
+      expect(widest).toBeLessThanOrEqual(1.2 + 1e-9);
+    });
+
     // Review Focus 1: the same key turns the same way over the ground in either stance.
     it('turns the same way over the ground in either stance', () => {
       const turned = (stance: 'regular' | 'goofy') => {

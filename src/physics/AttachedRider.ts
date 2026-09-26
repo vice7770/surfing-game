@@ -1091,26 +1091,26 @@ export class AttachedRider {
     this.external.copy(this.gravity).add(this.waterForce);
     if (this.upright) {
       this.prepareLeg(h, board, water);
-      this.prepareBank(h, board, water);
+      this.prepareBank(h, board);
     }
   }
 
   /**
    * Standing: the bank's rate, the balance's ankle rest and the ankle's torque
-   * before the board's solve (the turn redesign). The ankle takes up the water's
-   * own tilt, so a board lying on a face under an upright body needs no torque.
+   * before the board's solve (the turn redesign). The rest is taken from the
+   * body's line, not the water's: the planing board rights about the rider's
+   * load line (the carve lab's plant), and a rest that laid it flat on a face
+   * across the heading held the feet at their edges against the hull.
    */
-  private prepareBank(h: number, board: BoardBody, water: SurfWater): void {
+  private prepareBank(h: number, board: BoardBody): void {
     this.legLength = Math.max(0.4, this.leg.height + this.leg.extension);
     const carried = cross(this.boardSpin, this.carried, this.scratch2).add(this.boardVelocity).add(this.drive);
     this.bankSpeed = this.localScratch.subVectors(this.velocity, carried).dot(this.across);
     this.bank.rate = this.bankSpeed / this.legLength;
-    // The board's roll about the heading and the water's under it, positive with the +x rail down.
+    // The board's roll about the heading, positive with the +x rail down.
     const side = this.scratch.set(1, 0, 0).applyQuaternion(this.heading);
     const boardUp = this.scratch2.set(0, 1, 0).applyQuaternion(board.orientation);
     const roll = Math.atan2(boardUp.dot(side), boardUp.y);
-    const under = water.sampleAt(board.position.x, board.position.y, board.position.z, this.sample);
-    const surfaceRoll = under.outsideDomain || !under.wet ? 0 : Math.atan2(-(under.slopeX * side.x + under.slopeZ * side.z), 1);
     this.rollAxis.set(0, 0, -1).applyQuaternion(this.heading);
     const rollRate = this.rollAxis.dot(this.boardSpin);
     // The bank asked for, eased in.
@@ -1121,24 +1121,32 @@ export class AttachedRider {
     const wanted = BANK_GAIN * (this.bankReference - this.bank.angle) - BANK_RATE_GAIN * this.bank.rate;
     const lean = Math.max(-ANKLE_REST_RANGE, Math.min(ANKLE_REST_RANGE, wanted));
     this.swingStep(h, wanted - lean);
-    this.ankleRest += (lean - surfaceRoll - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
+    this.ankleRest += (lean - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
     // Backward Euler on the ankle: over the substep the bank and the roll move at their rates after the solve.
     this.ankleTorque = ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (ANKLE_STIFFNESS * h + ANKLE_DAMPING) * (this.bank.rate - rollRate);
   }
 
   /**
    * The upper body's swing: `unmet` is the rest the balance wanted beyond the
-   * feet's range, rad. The hips turn the upper body against it; the swing comes
-   * back only once the feet can carry the body alone.
+   * feet's range, rad. The hips turn the upper body against it, a burst it can
+   * give only while the swing could still be braked inside its range (a rotor
+   * holds no steady torque); the swing comes back only once the feet can carry
+   * the body alone, and stops hard at its range.
    */
   private swingStep(h: number, unmet: number): void {
     let burst = Math.max(-SWING_TORQUE, Math.min(SWING_TORQUE, -SWING_SERIES * unmet));
-    // The upper body turns the other way to the body; not past its range.
-    if ((this.swing.angle >= SWING_RANGE && burst < 0) || (this.swing.angle <= -SWING_RANGE && burst > 0)) burst = 0;
+    // The upper body turns the other way to the body (its acceleration is −burst / inertia).
+    const outward = -burst * (this.swing.angle !== 0 ? Math.sign(this.swing.angle) : -Math.sign(burst)) > 0;
+    const braking = (this.swing.rate * Math.abs(this.swing.rate) * SWING_INERTIA) / (2 * SWING_TORQUE);
+    if (outward && Math.abs(this.swing.angle + braking) >= SWING_RANGE) burst = 0;
     const back = Math.max(0, 1 - Math.abs(unmet) / SWING_RELEASE);
     this.swingTorque = burst + SWING_INERTIA * SWING_FREQUENCY * (back * SWING_FREQUENCY * this.swing.angle + 2 * this.swing.rate);
     this.swing.rate -= (h * this.swingTorque) / SWING_INERTIA;
     this.swing.angle += h * this.swing.rate;
+    if (Math.abs(this.swing.angle) > SWING_RANGE) {
+      this.swing.angle = Math.sign(this.swing.angle) * SWING_RANGE;
+      if (this.swing.rate * this.swing.angle > 0) this.swing.rate = 0;
+    }
   }
 
   /** Standing: the leg's state and load before the board's solve. */
