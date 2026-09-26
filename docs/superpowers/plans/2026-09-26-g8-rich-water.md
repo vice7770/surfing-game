@@ -9,7 +9,7 @@
 ### The setting
 
 - **Water look: Classic / Rich** is a choice row in P8's Graphics › Advanced, after Sea detail. It applies instantly, with no new wave.
-- **Presets:** Low → Classic; Medium, High and Ultra → Rich. Saves from before G8 load with their preset's look, so an old Low (or Auto that detected Low) stays Classic.
+- **Presets:** Low → Classic; Medium, High and Ultra → Rich. Saves from before G8 load with their preset's look, so an old Low (or Auto that detected Low) stays Classic. An old Custom save stays Classic where the benchmark rated the machine Low.
 - **One water, two looks:** `WaterSurface`, `FarFieldOcean` and `SprayPoints` each have `setLook(look)`. The look is part of the program cache key, so switching compiles once per look and switching back reuses Classic's program.
 - **Classic is byte-identical:** vitest snapshots pin Classic's compiled shaders for all three. Every Rich difference sits behind the look, including constants: Rich has its own uniforms rather than changed shared values.
 - **The legacy wave stays Classic.** Rich needs the physics' Catmull-Rom surface (`SurfaceSource.cubic`), so the legacy field draws Classic even when Rich is chosen.
@@ -19,15 +19,16 @@
 
 - **The physics' own surface** (`water/cubicSurface.ts`): Rich draws the Catmull-Rom surface over the 1 m render nodes, clamped at the grid edges exactly as `PhysicalSurfWater.surfaceAt` is, so the board sits on what is drawn. The height comes per vertex. The normal comes per pixel from the analytic derivative, flipped by `faceDirection` for the underside. `sampleCubicSurface` is its CPU mirror.
 - **The dense patch** (`water/richPatch.ts`): a 96 m square of 0.25 m cells follows the camera, centred 0.3 of its size ahead along the view and snapped to render nodes. A skirt hangs 0.3 m below its rim to hide seams.
-  - It shares the coarse water's material. An `onPatch` vertex attribute tells the two apart, with the coarse mesh reading 0 through `material.defaultAttributeValues`, and the coarse water discards its fragments under the patch.
+  - It shares the coarse water's material. An `onPatch` vertex attribute tells the two apart, and the coarse water discards its fragments under the patch. The coarse geometry carries real zero `skirt` and `onPatch` attributes, not three's `defaultAttributeValues`, which are context-wide state another material can overwrite.
+  - The skirt's inner faces are discarded, so it hangs no curtain in the underwater view.
   - Both meshes place the patch from the camera about to draw them, so the answer never depends on draw order.
 - **Fine ripples** (`water/rippleTexture.ts`): two layers (4 m and 1.3 m repeats) of one baked 256² tile.
   - The tile is an integer-wave-vector sum of 48 cosines around the wind, so it tiles exactly. The amplitudes fall as |n|⁻², scaled to an rms slope of 0.1.
-  - It is stored as RGBA half floats (sx, sz, sx², sz²) with mipmaps, so a filtered read gives each pixel footprint's mean slope and its variance.
+  - It is stored as RGBA half floats (sx, sz, sx², sz²) with mipmaps, so a filtered read gives each pixel footprint's mean slope and its variance. The variance is taken per layer and per phase (`rippleVariance` is its CPU mirror), so ripples the footprint resolves leave none.
   - The currents carry it in the foam lace's two flow-map phases (2 s).
   - Strength: 0.8–1.0 with the wind chop, times a foam gain that is glassy on clean water (0.35), busiest in thin turbulent foam, and damped under thick foam.
-- **Gloss and specular anti-aliasing** (`water/specular.ts`): the base roughness is 0.08. The slope variance a pixel averages away comes back as roughness, sqrt(base² + 2·variance) ≤ 0.6, so distant ripples dim to a sheen instead of sparkling. The underside keeps Classic's 0.62: from below, past the Snell window, the water reflects itself, not the sky.
-- **Face streaks** (`water/streaks.ts`): the lace's walls are stretched 7× along the local current and carried by it, as thin lines of up to 55 % cover. They appear only on steep faces (slope 0.25–0.5) with some foam (0.005–0.05), and fade once a pixel spans a lace cell.
+- **Gloss and specular anti-aliasing** (`water/specular.ts`): the base roughness is 0.08. The slope variance a pixel averages away comes back as roughness in three's GGX alpha space (α = roughness², α² grows by 2·variance), capped at 0.6, so distant ripples dim to a sheen instead of sparkling. The underside keeps Classic's 0.62: from below, past the Snell window, the water reflects itself, not the sky.
+- **Face streaks** (`water/streaks.ts`): the lace's walls are stretched 7× along the local current and carried by it, as thin lines of up to 55 % cover. The stretch turns with the current about anchors 6 m apart, each reading the current at its own node, and the four around a pixel are blended (tiled directional flow). So a turn of the current moves the lines by at most its angle times about 8 m, not times the distance to the world's origin. They appear only on steep faces (slope 0.25–0.5) with some foam (0.005–0.05), and fade once a pixel spans a lace cell.
 
 ### Whitewater
 
@@ -74,6 +75,12 @@ Tuned live on the water sheet against the reference stills:
   - crease floor 0.88 (0.72 read as dirty grey veins).
 - **Mist:** dim mist thins instead of greying, and the Rich spray is tone-mapped. It is wired in `main.ts` only, not `PhysicalMode`.
 - **Far ocean:** it has the tank's ripple strength instead of 0.5.
+- **Review fixes:**
+  - streaks turn about local anchors (the plan's frame pivoted on the world origin and swam in motion);
+  - the anti-aliasing works in GGX alpha space with per-layer variance (the plan's formula used perceptual roughness);
+  - the skirt is hidden from below;
+  - the coarse water has real zero attributes;
+  - old Custom saves on machines rated Low stay Classic.
 - **Colour:**
   - Rich gained its own reflection and body gain (0.5 and 4);
   - ripples are damped under thick foam, where a low sun lit them as white blotches on the foam.
@@ -81,21 +88,22 @@ Tuned live on the water sheet against the reference stills:
 
 ## Verification
 
-- **Tests:** 46 new across 11 files, all green:
-  - Classic parity snapshots and look switching (17 in `waterLooks.test.ts`), including:
+- **Review:** a fresh reviewer (Opus) found no Critical issues. The two Important ones (streaks swimming, the anti-aliasing maths) and three re-graded Minors (the skirt from below, the coarse attributes, old Custom saves) were fixed test-first.
+- **Tests:** 53 new across 11 files, all green:
+  - Classic parity snapshots and look switching (18 in `waterLooks.test.ts`), including:
     - the reserved-word and attribute checks;
     - the underside;
     - the spray and the far ocean;
     - the tuning uniforms;
   - Catmull-Rom agreement with the physics between nodes and at the clamped edges (3);
   - the patch's placement, snapping, small grids and skirt (4);
-  - ripples tiling exactly with the intended rms slope, and the foam gain (5);
-  - specular anti-aliasing (2);
-  - streaks (5);
+  - ripples tiling exactly with the intended rms slope, their per-layer variance, and the foam gain (7);
+  - specular anti-aliasing in GGX alpha space (3);
+  - streaks, including holding still when the current turns 100 m from the origin (7);
   - churn tiling, cover and freshness (4);
   - mist (3);
-  - the setting (3): old Low and Auto-detected-Low saves stay Classic, the presets' looks, and the row after Sea detail with no new wave.
-- **Full suite:** 703 passed, with 3 heavy simulation tests timing out under load. They pass alone (31/31). **Build:** passes.
+  - the setting (4): old Low, Auto-detected-Low and Custom-on-Low saves stay Classic, the presets' looks, and the row after Sea detail with no new wave.
+- **Full suite:** 713 passed after the review fixes (earlier, 3 heavy simulation tests timed out while the sheet loaded the machine, and passed alone). **Build:** passes.
 - **Sheet:**
   - Rich faces are smooth and glossy, with sharp glints and moving ripples, and no moiré at the horizon;
   - streaks show up the steep face and none on calm water;
