@@ -1,6 +1,7 @@
 import { Color, ShaderLib, Vector3, type WebGLProgramParametersWithUniforms } from 'three';
 import { describe, expect, it } from 'vitest';
 import { FarFieldOcean } from './FarFieldOcean';
+import { LipSheetMesh } from './LipSheetMesh';
 import { SprayPoints } from './SprayPoints';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
 import { churnTexture } from './water/churnTexture';
@@ -35,6 +36,11 @@ describe('Classic water parity', () => {
 
   it('keeps the spray’s Classic shaders exactly as before G8', () => {
     const { material } = new SprayPoints().mesh;
+    expect({ vertex: material.vertexShader, fragment: material.fragmentShader }).toMatchSnapshot();
+  });
+
+  it('keeps the lip sheet’s Classic shaders exactly as before G9', () => {
+    const { material } = new LipSheetMesh().mesh;
     expect({ vertex: material.vertexShader, fragment: material.fragmentShader }).toMatchSnapshot();
   });
 
