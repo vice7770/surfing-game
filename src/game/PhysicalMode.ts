@@ -232,6 +232,8 @@ export class PhysicalMode {
   /** Whether the latest input paddles, which cups the drawn hands. */
   private paddling = false;
   private retryPending = false;
+  /** Where the pending retry puts the rider (online: a free spot in the lineup). */
+  private spawnAt?: { x: number; z: number };
   /** The running surf zone, once it has spun up. */
   host?: SurfZoneHost;
   config?: SurfZoneConfig;
@@ -458,16 +460,23 @@ export class PhysicalMode {
     return steer * this.steerSign;
   }
 
-  /** Put board and rider back in the lineup on the next advance; the waves carry on. */
-  retry(): void {
+  /** Put board and rider back in the lineup on the next advance (online, at `spawnAt` from then on); the waves carry on. */
+  retry(spawnAt?: { x: number; z: number }): void {
     this.retryPending = true;
+    this.spawnAt = spawnAt;
   }
 
-  advance(steps: number, input?: Omit<RideRequest, 'retry'>): void {
+  /** Request `steps` fixed physics steps, with the player's input and (online) other boards' pushes on the water. */
+  advance(steps: number, input?: Omit<RideRequest, 'retry'>, reactions?: ArrayLike<number>): void {
     const retry = this.retryPending;
-    if (input || retry) this.retryPending = false;
+    const spawnAt = retry ? this.spawnAt : undefined;
+    if (input || retry) {
+      this.retryPending = false;
+      this.spawnAt = undefined;
+    }
     if (input) this.paddling = input.paddle;
-    this.host?.advance(steps, input || retry ? { paddle: false, popUp: false, steer: 0, ...input, retry } : undefined);
+    const request = input || retry ? { paddle: false, popUp: false, steer: 0, ...input, retry, ...(spawnAt ? { spawnAt } : {}) } : undefined;
+    this.host?.advance(steps, request, reactions);
   }
 
   update(dt: number): void {

@@ -63,7 +63,7 @@ describe('SurfZoneWorkerCore', () => {
     expect(snapshot.snapshot.rider[23]).toBe(1);
     expect(replies[1].transfer).toEqual([
       buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.spray.buffer, buffers.board.buffer, buffers.rider.buffer,
-      buffers.lipHits.buffer, buffers.strokeHits.buffer, buffers.roar.buffer,
+      buffers.lipHits.buffer, buffers.strokeHits.buffer, buffers.roar.buffer, buffers.reaction.buffer,
     ]);
     // S1: the paddler's strokes reach the snapshot for sound, as the in-page surf zone reports them.
     expect(snapshot.snapshot.strokeHitCount).toBe(local.snapshot.strokeHitCount);
@@ -132,6 +132,38 @@ describe('WorkerSurfZone', () => {
     host.advance(20);
     await settle();
     expect(port.requests.map((request) => (request.type === 'advance' ? request.steps : request.type))).toEqual(['start', 1, MAX_QUEUED_STEPS]);
+    host.dispose();
+  });
+
+  it('counts the steps asked for but not yet shown, and passes remote pushes on (spec N1)', async () => {
+    const port = new FakePort();
+    const host = new WorkerSurfZone(config, port);
+    await host.ready;
+    expect(host.outstandingSteps).toBe(0);
+    host.advance(3, undefined, Float32Array.of(1, 2, 3, 4));
+    host.advance(2, undefined, Float32Array.of(5, 6, 7, 8));
+    expect(host.outstandingSteps).toBe(5);
+    const advances = () => port.requests.filter((request) => request.type === 'advance');
+    expect(Array.from(advances()[0].reactions ?? [])).toEqual([1, 2, 3, 4]);
+    await settle();
+    expect(advances()).toHaveLength(2);
+    expect(Array.from(advances()[1].reactions ?? [])).toEqual([5, 6, 7, 8]);
+    await settle();
+    expect(host.outstandingSteps).toBe(0);
+    // Each push went out once.
+    expect(advances()).toHaveLength(2);
+    host.dispose();
+  });
+
+  it('queues as many steps as its options allow', async () => {
+    const port = new FakePort();
+    const host = new WorkerSurfZone(config, port, {}, { maxQueuedSteps: 90 });
+    await host.ready;
+    host.advance(1);
+    host.advance(60);
+    host.advance(60);
+    await settle();
+    expect(port.requests.map((request) => (request.type === 'advance' ? request.steps : request.type))).toEqual(['start', 1, 90]);
     host.dispose();
   });
 

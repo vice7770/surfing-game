@@ -18,6 +18,11 @@ export function createSurfZoneWorker(): WorkerPort {
 /** Most steps queued while an advance is in flight (the page's accumulator caps its backlog the same way). */
 export const MAX_QUEUED_STEPS = 6;
 
+export interface WorkerSurfZoneOptions {
+  /** Most steps queued while an advance is in flight; online play raises it to catch up with the room's clock (spec N1). */
+  maxQueuedSteps?: number;
+}
+
 function emptyLike(snapshot: SurfZoneBuffers): SurfZoneBuffers {
   return {
     surface: new Float32Array(snapshot.surface.length),
@@ -35,6 +40,7 @@ function emptyLike(snapshot: SurfZoneBuffers): SurfZoneBuffers {
     strokeHits: new Float32Array(snapshot.strokeHits.length),
     strokeHitCount: 0,
     roar: new Float32Array(snapshot.roar.length),
+    reaction: new Float64Array(snapshot.reaction.length),
   };
 }
 
@@ -49,13 +55,21 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
   snapshot!: SurfZoneSnapshot;
   private spare?: SurfZoneBuffers;
   private inFlight = false;
+  private inFlightSteps = 0;
   private pending = 0;
+  /** Other boards' pushes waiting for the next advance (spec N1). */
+  private pendingReactions: number[] = [];
+  private readonly maxQueuedSteps: number;
   /** Held controls from the latest request; presses (pop-up, retry) kept until an advance carries them. */
   private input: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
   private disposed = false;
 
-  constructor(readonly config: SurfZoneConfig, private readonly port: WorkerPort = createSurfZoneWorker(), options: SurfZoneRunnerOptions = {}) {
+  constructor(
+    readonly config: SurfZoneConfig, private readonly port: WorkerPort = createSurfZoneWorker(), options: SurfZoneRunnerOptions = {},
+    host: WorkerSurfZoneOptions = {},
+  ) {
     super();
+    this.maxQueuedSteps = host.maxQueuedSteps ?? MAX_QUEUED_STEPS;
     this.ready = new Promise((resolve, reject) => {
       port.onerror = (event) => reject(new Error(event.message || 'The surf zone worker failed'));
       port.onmessage = ({ data }) => {
@@ -69,6 +83,7 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
           this.snapshot = data.snapshot;
           this.spare = shown;
           this.inFlight = false;
+          this.inFlightSteps = 0;
         }
         this.flush();
       };
@@ -76,12 +91,18 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
     port.postMessage({ type: 'start', config, options });
   }
 
-  advance(steps: number, input?: RideRequest): void {
+  /** Steps asked for that no snapshot shows yet: queued, and in the worker now. */
+  get outstandingSteps(): number {
+    return this.pending + this.inFlightSteps;
+  }
+
+  advance(steps: number, input?: RideRequest, reactions?: ArrayLike<number>): void {
+    if (reactions) for (let i = 0; i < reactions.length; i += 1) this.pendingReactions.push(reactions[i]);
     if (input) {
       this.input = { ...input, popUp: this.input.popUp || input.popUp, retry: this.input.retry || input.retry };
     }
     if (steps <= 0 || this.disposed) return;
-    this.pending = Math.min(MAX_QUEUED_STEPS, this.pending + steps);
+    this.pending = Math.min(this.maxQueuedSteps, this.pending + steps);
     this.flush();
   }
 
@@ -97,8 +118,11 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
     this.inFlight = true;
     const steps = this.pending;
     this.pending = 0;
+    this.inFlightSteps = steps;
+    const reactions = this.pendingReactions.length ? Float32Array.from(this.pendingReactions) : undefined;
+    this.pendingReactions = [];
     const input = this.input;
     this.input = { ...input, popUp: false, retry: false };
-    this.port.postMessage({ type: 'advance', steps, buffers, input }, transferables(buffers));
+    this.port.postMessage({ type: 'advance', steps, buffers, input, ...(reactions ? { reactions } : {}) }, transferables(buffers));
   }
 }

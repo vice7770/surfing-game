@@ -6,7 +6,7 @@ import type { SurfZoneInit, SurfZoneSnapshot } from './SurfZoneHost';
 /** Main thread → worker. `buffers` come back filled in the next snapshot. */
 export type SurfZoneRequest =
   | { type: 'start'; config: SurfZoneConfig; options?: SurfZoneRunnerOptions }
-  | { type: 'advance'; steps: number; buffers: SurfZoneBuffers; input?: RideRequest };
+  | { type: 'advance'; steps: number; buffers: SurfZoneBuffers; input?: RideRequest; reactions?: Float32Array };
 
 /** Worker → main thread. */
 export type SurfZoneReply =
@@ -17,7 +17,7 @@ export type SurfZoneReply =
 export function transferables(buffers: SurfZoneBuffers): Transferable[] {
   return [
     buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.spray.buffer, buffers.board.buffer, buffers.rider.buffer,
-    buffers.lipHits.buffer, buffers.strokeHits.buffer, buffers.roar.buffer,
+    buffers.lipHits.buffer, buffers.strokeHits.buffer, buffers.roar.buffer, buffers.reaction.buffer,
   ];
 }
 
@@ -52,9 +52,9 @@ export class SurfZoneWorkerCore {
     const { runner } = this;
     if (!runner) return;
     if (runner.simulation.device) {
-      return runner.advanceAsync(request.steps, request.input).then(() => this.reply(runner, request.buffers));
+      return runner.advanceAsync(request.steps, request.input, request.reactions).then(() => this.reply(runner, request.buffers));
     }
-    runner.advance(request.steps, request.input);
+    runner.advance(request.steps, request.input, request.reactions);
     this.reply(runner, request.buffers);
   }
 
