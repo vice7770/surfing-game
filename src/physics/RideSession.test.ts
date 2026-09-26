@@ -113,7 +113,7 @@ describe('ride session', () => {
     session.step(STEP, water, idle);
     /** One parcel crossing `point` from +x to −x over the latest step. */
     const aimedAt = (point: Vector3, id: number): LipParcelSource => ({
-      forEachContact(visit: (parcel: LipContactParcel) => void) {
+      forEachContactNear(_center: Vector3, _reach: number, visit: (parcel: LipContactParcel) => void) {
         visit({ id, previousPosition: point.clone().add(new Vector3(1.5, 0, 0)), position: point.clone().add(new Vector3(-1.5, 0, 0)), velocity: new Vector3(-8, 0, 0), volume: 0.2, radius: 0.3 });
       },
     });

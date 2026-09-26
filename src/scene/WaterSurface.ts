@@ -183,6 +183,7 @@ export class WaterSurface {
   private bedSource?: SurfaceSource;
   private bedRevision = Number.NaN;
   private readonly uniforms: Record<string, { value: unknown }>;
+  private detailedFoam = true;
   /** Caustic map lighting the bed seen through the water (G5); off until a `CausticMap` draws into it. */
   readonly causticUniforms: CausticUniforms = createCausticUniforms();
 
@@ -272,7 +273,17 @@ export class WaterSurface {
       this.flowTexture.needsUpdate = true;
     }
     this.flowSource = this.source;
-    this.uniforms.waterFoamPattern.value = this.source.writeFlow ? 1 : 0;
+    this.refreshFoamPattern();
+  }
+
+  /** Graphics setting (plan P8): Simple keeps the soft foam tint even on water with a current. */
+  setFoamDetail(detailed: boolean): void {
+    this.detailedFoam = detailed;
+    this.refreshFoamPattern();
+  }
+
+  private refreshFoamPattern(): void {
+    this.uniforms.waterFoamPattern.value = this.detailedFoam && this.source.writeFlow ? 1 : 0;
   }
 
   /** 1 when the foam is drawn as the flowing network (a source with a current), 0 for the legacy soft tint. */

@@ -6,7 +6,8 @@ import { SPOT_OPTICS } from '../scene/waterOptics';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField } from '../wave/WaveModel';
 import { stormSwell } from '../wave/StormSwell';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, chopForWind, formatPhysicalReadout, spreadingFor, swellFor } from './PhysicalMode';
-import type { LocalSurfZone } from './SurfZoneHost';
+import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
+import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
 
@@ -73,8 +74,8 @@ describe('PhysicalMode', () => {
     expect(scene.children).toContain(mode.seabed.mesh);
     expect(scene.children).toContain(mode.farField.mesh);
     expect(mode.farField.mesh.visible).toBe(true);
-    expect(scene.children).toContain(mode.lipPoints.mesh);
-    expect(mode.lipPoints.mesh.visible).toBe(true);
+    expect(scene.children).toContain(mode.lipSheet.mesh);
+    expect(mode.lipSheet.mesh.visible).toBe(true);
     expect(scene.children).toContain(mode.bubbles.mesh);
     expect(mode.farField.textureSize.width).toBe(simulation.sea.components.length + 1);
     expect(mode.focus).toEqual(simulation.breakPoint());
@@ -85,11 +86,13 @@ describe('PhysicalMode', () => {
     expect(mode.camera.camera.position.z).toBeGreaterThan(mode.board.position.z);
     expect(mode.farField.temporalPhases[0]).toBeCloseTo((simulation.sea.components[0].omega * simulation.seaTime) % (2 * Math.PI), 4);
     const crest = simulation.solver.cellIndex(0, -60);
-    simulation.lip.launch(crest, { x: 0, z: 5 }, 3, 0.5);
-    mode.advance(1);
-    mode.update(1 / 60);
-    expect(mode.lipPoints.mesh.geometry.drawRange.count).toBe(simulation.lip.activeCount());
-    expect(mode.lipPoints.mesh.geometry.drawRange.count).toBeGreaterThan(0);
+    simulation.lip.launch(crest, { x: 0, z: 5 }, simulation.solver.surfaceAt(crest) + 3, 0.5);
+    // Once the strip has left the crest, the drawn sheet covers it.
+    for (let step = 0; step < 18; step += 1) {
+      mode.advance(1);
+      mode.update(1 / 60);
+    }
+    expect(mode.lipSheet.mesh.geometry.index!.count).toBeGreaterThan(0);
     simulation.foam.source.fill(0);
     simulation.foam.source[crest] = 40;
     local.runner.bubbles.update(simulation, 1 / 60);
@@ -128,12 +131,41 @@ describe('PhysicalMode', () => {
     mode.setVisible(false);
     expect(mode.board.visible).toBe(false);
     expect(mode.surfer.group.visible).toBe(false);
-    expect(mode.lipPoints.mesh.visible).toBe(false);
+    expect(mode.lipSheet.mesh.visible).toBe(false);
     expect(mode.bubbles.mesh.visible).toBe(false);
     expect(mode.seabed.mesh.visible).toBe(false);
     expect(mode.farField.mesh.visible).toBe(false);
     mode.stop();
     expect(mode.ready).toBe(false);
+  });
+
+  it('frames a riderless sea from its idle view, and a ride from the default view', async () => {
+    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const mode = new PhysicalMode(new Scene());
+    mode.idleView = 'cinematic';
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick, (config) => new LocalSurfZone(config, {}))).toBe(true);
+    expect(mode.homeView).toBe('cinematic');
+    expect(mode.camera.view).toBe('cinematic');
+    mode.defaultView = 'side';
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick)).toBe(true);
+    expect(mode.homeView).toBe('side');
+  });
+
+  it('lets go of a superseded surf zone at once, without waiting for its spin-up', async () => {
+    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const mode = new PhysicalMode(new Scene());
+    const dispose = vi.fn();
+    const neverReady = (config: SurfZoneConfig) => ({ config, ready: new Promise<void>(() => {}), dispose }) as unknown as SurfZoneHost;
+    const stuck = mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick, neverReady);
+    const next = mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'point' }, 1, water, quick);
+    expect(await stuck).toBe(false);
+    expect(dispose).toHaveBeenCalledTimes(1);
+    expect(await next).toBe(true);
+    const cancelled = mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef' }, 1, water, quick, neverReady);
+    mode.cancel();
+    expect(await cancelled).toBe(false);
+    expect(dispose).toHaveBeenCalledTimes(2);
+    expect(mode.config?.spot).toBe('point');
   });
 
   it('lets only the latest of overlapping starts take over', async () => {
@@ -178,7 +210,7 @@ describe('PhysicalMode', () => {
       valid: true, directionX: 0, directionZ: 1, aheadOfCrest: 4.2, crestSpeed: 5.1, faceHeight: 1.2, faceFraction: 0.55, crestBreaking: 0,
       speedOverGround: 6, speedShoreward: 3, speedAlongCrest: 5, requiredSpeed: 7.2,
     };
-    const ride = { phase: 'standing' as const, speed: 6, boardSpeed: 6.2, cue: false, popUp: { outcome: 'none' as const, duration: 0, landingPeak: 0, frontShare: 0 }, resets: 0, wave };
+    const ride = { phase: 'standing' as const, speed: 6, boardSpeed: 6.2, cue: false, popUp: { outcome: 'none' as const, duration: 0, landingPeak: 0, frontShare: 0 }, resets: 0, balance: 1, wave };
     const value = (rows: { label: string; value: string }[], label: string) => rows.find((row) => row.label === label)?.value;
     const rows = formatPhysicalReadout(mode.config!, { ...status, ride });
     expect(value(rows, 'CREST')).toBe('c 5.1 m/s · need 7.2 m/s');

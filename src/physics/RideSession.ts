@@ -151,8 +151,8 @@ export class RideSession {
    */
   strike(lip: LipParcelSource): void {
     const { rider, board, surfer } = this;
-    if (rider.attached) lip.forEachContact((parcel) => rider.resolveLipContact(parcel, board));
-    else if (surfer.active) lip.forEachContact((parcel) => surfer.resolveLipContact(parcel));
+    if (rider.attached) rider.strikeBy(lip, board);
+    else if (surfer.active) surfer.strikeBy(lip);
   }
 
   private bodyField(water: SurfWater): SurfWaterBodyField {

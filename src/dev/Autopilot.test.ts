@@ -10,7 +10,7 @@ const wave = (overrides: Partial<WaveFrame> = {}): WaveFrame => ({
 type RideView = AutopilotView['ride'];
 const ride = (overrides: Partial<RideView> = {}): RideView => ({
   phase: 'prone', speed: 0, boardSpeed: 0, cue: false, popUp: { outcome: 'none', duration: 0, landingPeak: 0, frontShare: 0 }, resets: 0,
-  wave: wave(), ...overrides,
+  balance: 1, wave: wave(), ...overrides,
 });
 
 const view = (overrides: Partial<AutopilotView> = {}): AutopilotView => ({

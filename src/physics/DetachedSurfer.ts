@@ -64,10 +64,17 @@ export interface LipContactParcel {
   readonly radius: number;
 }
 
-/** The airborne lip, offering each parcel in turn for swept contact; a velocity the visitor changes stays with the parcel. */
+/**
+ * The airborne lip, offering what of it lies within `reach` of `center` for
+ * swept contact: the sheet at its closest point there (plan P7), or a lone
+ * parcel. A velocity the visitor changes goes back to the lip's water.
+ */
 export interface LipParcelSource {
-  forEachContact(visit: (parcel: LipContactParcel) => void): void;
+  forEachContactNear(center: Vector3, reach: number, visit: (parcel: LipContactParcel) => void): void;
 }
+
+/** How far beyond a body part the lip is queried, m: the sheet's thickness and a step's travel of either. */
+export const LIP_QUERY_MARGIN = 0.5;
 
 export type BodyPart = 'pelvis' | 'torso' | 'head' | 'leftArm' | 'rightArm' | 'leftLeg' | 'rightLeg';
 
@@ -439,10 +446,14 @@ export class DetachedSurfer implements DetachedRiderPose {
    * the full parcel velocity so landing deposits its post-contact momentum.
    * The wave adapter must provide a stable parcel id and updated velocity.
    */
+  /** Let the lip strike each body node it reaches (`resolveLipContact`). */
+  strikeBy(lip: LipParcelSource): void {
+    for (const node of this.nodes) lip.forEachContactNear(node.position, node.radius + LIP_QUERY_MARGIN, (parcel) => this.resolveLipContact(parcel));
+  }
+
   resolveLipContact(parcel: LipContactParcel): number {
     if (!this.active || !this.lipContactPending || this.contactedLipIds.has(parcel.id)
       || !(parcel.volume > 0 && parcel.radius > 0)) return 0;
-    this.contactedLipIds.add(parcel.id);
     const parcelMass = WATER_DENSITY * parcel.volume;
     let contacts = 0;
     for (let index = 0; index < this.nodes.length; index += 1) {
@@ -478,6 +489,8 @@ export class DetachedSurfer implements DetachedRiderPose {
       parcel.velocity.addScaledVector(impulse, -1 / parcelMass);
       contacts += 1;
     }
+    // A piece of lip strikes once per step; one that missed may still meet another node.
+    if (contacts > 0) this.contactedLipIds.add(parcel.id);
     return contacts;
   }
 

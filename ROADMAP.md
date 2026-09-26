@@ -4,6 +4,54 @@ This is the project’s working plan and priority tracker. Update it whenever a 
 
 Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status values: `Backlog`, `Ready`, `In Progress`, `Blocked`, `Done`.
 
+## Next milestone — the game around the waves — `In Progress`
+
+### P0 · Menus and settings (P8) — `Done`
+
+Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus and settings](docs/superpowers/plans/2026-09-26-p8-menus-settings.md). P7 is parked on `claude/barrels` meanwhile, and P8 builds on the fixes in PR #7.
+- [x] **Main menu:** big icon tiles in PolyTrack's layout, dressed in Breakline's look: teal ink, sand paper, coral accent, DM Sans and DM Mono, the round "B" mark, hand-drawn inline SVG icons.
+  - Tiles: **Surf · Wave Lab · Multiplayer (coming soon) · Logbook · Settings**, and a bottom strip with Fullscreen and the version.
+  - Behind the menu, live waves only: the practice groundswell, a different spot each time, and a slow cinematic camera along the break. Devices on the Low preset see a still frame.
+- [x] **Surf:** cards for Beach, Point and Reef (the Canyon is hidden until its catch cue works). Conditions:
+  - Swell: Practice / Small / Medium / Big
+  - Tide: Low / Mid / High
+  - Wind: Offshore / Calm / Onshore
+  - Time of day: Dawn / Midday / Sunset
+
+  Surf always uses the physical surf zone.
+- [x] **During a ride:** a clean screen with the prompt, speed and balance, plus key hints on the first ride.
+  - Esc pauses: Resume, Replay wave, New wave, Camera, Settings, Quit to menu.
+  - An end-of-ride card shows the outcome and reason, distance, top speed and time, and a "new best" badge. Its buttons are Replay (R), New wave, Change spot and Menu.
+- [x] **Wave Lab:** today's screen, unchanged, reached from the menu. It sits behind one `devTools` switch together with the telemetry option, the Profile and Below views and the URL flags, so one line hides them all later.
+- [x] **Logbook:** the last 50 rides, and bests per spot for distance, top speed and ride time. No score yet.
+- [x] **Settings:** Gameplay · Graphics · Controls · Accessibility. Changes apply instantly and are saved in the browser, each tab has a Reset button, and settings that can only change between waves are marked "next wave".
+  - **Gameplay:** units (km/h and m, or mph and ft), default camera, touch controls, and a telemetry option while `devTools` is on.
+  - **Graphics:**
+    - presets Auto / Low / Medium / High / Ultra;
+    - Auto runs a benchmark on first launch behind the menu. It runs again when the graphics card changes, has a Re-detect button, and warns when performance is low. It also carries out the decided CPU fallback: stage 1 when stage 2 cannot keep real time;
+    - an Advanced section: render scale and pixel density, frame limit, Water simulation (Fast / Accurate / Auto), sea detail, caustics, spray and mist, ocean view distance, foam.
+  - **Controls:** keyboard and gamepad can both be remapped. Every menu works with arrows or D-pad, Enter or A, and Esc or B. The touch layout is fixed, with a left/right-handed swap.
+  - **Accessibility:** reduced motion, UI scale, high-contrast HUD.
+- [x] **Text and platforms:** English only, with all player-facing text in one typed strings file (a Language tab appears when a second language exists). Desktop keyboard, phone and tablet touch, and gamepad, in portrait and landscape; a ride on a phone suggests landscape. No hover-only interactions.
+- [x] **Build:** plain TypeScript and native CSS: no framework and no new dependencies. On launch, the loading screen goes straight to the menu.
+- **Record (2026-09-26):**
+  - **What shipped:** the main menu, Surf, the ride HUD, pause, the end-of-ride card, the Logbook and Settings. A rebind swaps keys between actions, and Esc and Start stay reserved.
+  - **Auto benchmark:** on the development Mac (Apple M1, ANGLE Metal, run while another session was loading the CPU) it chose High with accurate water.
+  - **Balance meter:** it reads the rider's distance from its separation threshold (sway or posture error against `RECOVERABLE_ERROR`). The body's balance shift, the plan's first choice, barely moved before a fall.
+  - **Spin-ups:** a superseded surf-zone spin-up is now dropped at once, so leaving the menu for a ride no longer waits behind the menu's own waves. The menu never waits for its waves either: it opens on a gradient, and the sea fades in.
+  - [Plan and record](docs/superpowers/plans/2026-09-26-p8-menus-settings.md).
+- [ ] **Open:**
+  - Tune the swell sizes by riding each spot. The browser pane was hidden (about 1.5 fps) during the build, so live play was not judged.
+  - Check a physical gamepad by hand; the mapping is covered by unit tests.
+  - Bring back a flow bar once a physical flow measure exists.
+
+### Later — `Backlog`
+
+Recorded in the same session; each gets its own grilling before work starts.
+1. **Multiplayer beach:** rooms with a player limit the host sets, players starting on the sand, and a beach bar to hang out in. Crowded lineups where surfers and boards collide physically are part of the fun, as on a real busy beach. Details wait for its grilling: room sizes, who hosts, board and body collisions, and whether solo play also starts on the sand.
+2. **Filmed menu background:** a sequence of waves forming and breaking, filmed with the `?record` tool once the waves are finished. It replaces the live menu background.
+3. **Sound:** ocean ambience, breaking waves, paddling, wind and wipeouts, with optional music. It is the phase after P8, and it brings the Audio settings tab.
+
 ## Next milestone — physical wave formation — `In Progress`
 
 Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR 0004](docs/adr/0004-dispersive-surf-zone-solver.md).
@@ -80,7 +128,7 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 
   [Record](docs/superpowers/plans/2026-09-26-p6-webgpu-tier.md).
 
-### P1 · Barrels (P7) — `Ready`
+### P1 · Barrels (P7) — `In Progress (tubes wait for jet data)`
 
 Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels](docs/superpowers/plans/2026-09-26-p7-barrels.md).
 - [ ] **Scope:** a physical lip sheet the rider can be hit by or covered by. Deliberate tube-riding comes later (see the gameplay list below).
@@ -93,6 +141,57 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels
   5. a translucent sheet with foam;
   6. validation, per-spot tube reports and a video.
 - [ ] Every tier gets tubes. If the physics is too heavy, it is sped up later, never faked.
+- **Built, 2026-09-26:**
+  - the throw trigger and classification;
+  - jets at the crest's measured speed, with tubes measured in the crest's frame;
+  - the continuous, water-conserving sheet;
+  - hit or covered;
+  - the translucent sheet;
+  - `npm run report:tubes`.
+- **Tubes do not open yet.** Thrown at the crest's own speed, the lip lands on the face beneath it (no tube of 10 cm or more at any spot). This waits for measured jet kinematics from the user.
+- **Along the way:**
+  - the peel measurement stopped counting shore swash;
+  - the Reef's shelf is now 1 m, so waves break on its edge (769 jets a minute against 307);
+  - no reef shape reached a 27–60° peel inside the tank.
+
+  [Record](docs/superpowers/plans/2026-09-26-p7-barrels.md), [tube report](docs/research/tube-report.md), [rideability report](docs/research/rideability-report.md).
+
+### P1 · Characters and sky (G7) — `In Progress`
+
+Requirements agreed in a grilling session on 2026-09-26: [G7 spec](docs/superpowers/specs/2026-09-26-g7-characters-and-sky.md). Part A is [recorded](docs/superpowers/plans/2026-09-26-g7a-characters-and-sky.md), and every asset's source and licence is in [ASSETS.md](docs/ASSETS.md).
+- [x] **Part A · Surfers:** four semi-realistic MakeHuman surfers (two women, two men, 1.65–1.74 m, CC0), built headless in Blender with MPFB 2 on its Mixamo-compatible skeleton, 1.0–1.6 MB each.
+  - The physics owns the body: each frame a humanoid rig solves the skeleton from the worker's seven rider points by two-bone IK. A code-driven layer sets the knee and elbow directions, the chest's turn toward the nose, the head's look and cupped paddling hands.
+  - Outfits are crisp per-vertex cuts in the body's shader: full suit, spring suit, rash vest with boardshorts or bikini, with a swappable accent colour.
+  - Skin, hair and suits read wet. A low-poly body takes over beyond 8 m. The simple surfer stays as the fallback if a model cannot load.
+- [x] **Part A · Board:** the physics hull in resin with a waxed deck, a grooved traction pad and a stringer. The thruster's fins are drawn at the places and sizes `THRUSTER` gives their forces. There are five unbranded designs.
+- [x] **Part A · Sky:** three Poly Haven pure-sky photos for dawn, midday and sunset. Each sun is moved out of its HDR into a measured directional light, so the photo lights the shade and the light casts the shadow.
+  - The sun-direction control turns the photo, and the sun-height slider snaps to the nearest photo.
+  - Neutral tone mapping.
+- [x] **Part A · Shadows:** four levels, each checked in the browser:
+  - a blob;
+  - the rider and board on themselves and the deck;
+  - also the water and seabed;
+  - soft PCSS.
+
+  The shadow camera follows the rider in whole texels. `?shadows=` picks a level until P8's presets do.
+- [x] **Part A · Paddle splashes:** each pulling hand throws spray in proportion to the work it does on the water, at the lip splash's rate.
+- [x] **Merged with P8:** P8's Dawn, Midday and Sunset now pick their own photos. Their sun heights match the photos' measured suns, and dawn and sunset suns stand to the side of the seaward cameras (±110°), since looking into a photographed sunset's haze washed out the menu.
+- [ ] **Part B (P8 has merged, so it can start):**
+  - a Surfer card on the Surf screen with a slowly rotating preview under the chosen time of day, with pickers for body, outfit, wetsuit colour and board design, saved in P8's settings;
+  - P8's Time of day picks the sky;
+  - Low–Ultra pick the shadow level, the level of detail and the texture sizes.
+- [ ] **Then:** a playtest with the user. `character-sheet.html` is the dev screenshot sheet: every surfer prone, standing and fallen, at chase distance and at 1.5 m, under each sky, plus a sun-alignment check.
+- **Backlog:**
+  - the beach, sand and coastline;
+  - water texture detail;
+  - a replay or photo mode;
+  - dripping water;
+  - a full character creator;
+  - motion capture to refine the paddle and pop-up;
+  - Mixamo clips (swim, tread water, beach idle), which need the user's Adobe login;
+  - moving to the WebGPU renderer;
+  - a preset's mass and height fed into the physics (after P9's flexible rider);
+  - the leash, drawn once P11 adds it to the physics.
 
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 

@@ -1,7 +1,7 @@
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { AttachedRider } from './AttachedRider';
-import { LIP_CONTACT } from './DetachedSurfer';
+import { LIP_CONTACT, type LipContactParcel, type LipParcelSource } from './DetachedSurfer';
 import { BoardBody } from './BoardBody';
 import { REFERENCE_RIDER } from './boardReference';
 import { WATER } from './hullForces';
@@ -75,6 +75,32 @@ describe('rider coupled to the board', () => {
     expect(rider.contact.centreOfPressure.z).toBeLessThan(front + 0.06);
     expect(Math.abs(rider.contact.centreOfPressure.x)).toBeLessThan(0.13);
     expect(rider.postureError).toBeLessThan(0.01);
+  });
+
+  it('keeps most of its balance in reserve on a board towed straight', () => {
+    const { board, rider } = mounted('standing');
+    const tow = () => {
+      board.velocity.z = 6;
+      rider.velocity.z = 6;
+    };
+    tow();
+    let lowest = 1;
+    run(board, new PlaneWater(), 4, () => {
+      tow();
+      lowest = Math.min(lowest, rider.balanceReserve);
+    });
+    expect(lowest).toBeGreaterThan(0.5);
+    expect(rider.balanceReserve).toBeLessThanOrEqual(1);
+  });
+
+  it('runs out of balance reserve before it lets go of a sinking board', () => {
+    const { board, rider } = mounted('standing');
+    let lowest = 1;
+    run(board, new PlaneWater(), 4, () => {
+      if (rider.attached) lowest = Math.min(lowest, rider.balanceReserve);
+    });
+    expect(rider.attached).toBe(false);
+    expect(lowest).toBeLessThan(0.1);
   });
 
   it('sinks a board it stands on at rest', () => {
@@ -755,6 +781,28 @@ describe('a hand in the face', () => {
 });
 
 describe('lip strikes', () => {
+  /** A falling lip sheet, `height` m above still water, moving shoreward at 5 m/s and down at 3 m/s: offered at its closest point to each body part. */
+  const sheetAt = (height: number): LipParcelSource => ({
+    forEachContactNear(center: Vector3, reach: number, visit: (parcel: LipContactParcel) => void) {
+      if (Math.abs(center.y - height) > reach) return;
+      const velocity = new Vector3(0, -3, 5);
+      const position = new Vector3(center.x, height, center.z);
+      visit({ id: 11, previousPosition: position.clone().addScaledVector(velocity, -STEP), position, velocity, volume: 0.05, radius: 0.075 });
+    },
+  });
+
+  // At rest on flat water the board sinks under a standing rider: its head tops out near 0.97 m above still water, a prone body near 0.43 m.
+  it('is covered, not touched, by a lip falling 1 m over it lying down, and struck by it standing', () => {
+    const prone = mounted('prone');
+    run(prone.board, new PlaneWater(), 1);
+    prone.rider.strikeBy(sheetAt(1), prone.board);
+    expect(prone.rider.lastLipImpulse.length()).toBe(0);
+    const standing = mounted('standing');
+    run(standing.board, new PlaneWater(), 1);
+    standing.rider.strikeBy(sheetAt(1), standing.board);
+    expect(standing.rider.lastLipImpulse.length()).toBeGreaterThan(0);
+  });
+
   const towed = () => {
     const { board, rider } = mounted('standing');
     const water = new PlaneWater();
@@ -852,6 +900,42 @@ describe('prone balance', () => {
     expect(hardest).toBeGreaterThan(0.3 * weight);
     expect(hardest).toBeLessThanOrEqual(0.4 * weight + 1e-9);
     expect(rider.attached).toBe(true);
+  });
+
+  it('records each pulling hand’s stroke for the spray: beside a rail, pushed forward by the water', () => {
+    const { board, rider } = mounted('prone');
+    rider.paddle = true;
+    let steps = 0;
+    let stroked = 0;
+    let forward = 0;
+    let strokes = 0;
+    let push = 0;
+    run(board, new PlaneWater(), 2, () => {
+      steps += 1;
+      if (rider.strokes.length) stroked += 1;
+      const inverse = board.orientation.clone().invert();
+      for (const stroke of rider.strokes) {
+        strokes += 1;
+        // In the board's frame: across it beside a rail, pushed toward its nose.
+        const at = new Vector3(stroke.x, stroke.y, stroke.z).sub(board.position).applyQuaternion(inverse);
+        const along = new Vector3(stroke.jx, stroke.jy, stroke.jz).applyQuaternion(inverse).z;
+        push += along;
+        if (along > 0) forward += 1;
+        expect(Math.abs(at.x)).toBeGreaterThan(0.15);
+        expect(Math.abs(at.x)).toBeLessThan(0.6);
+      }
+    });
+    // Each arm pulls for about a third of its cycle, the two half a cycle apart.
+    expect(stroked / steps).toBeGreaterThan(0.3);
+    expect(stroked).toBeLessThan(steps);
+    // The water pushes the pulling hands forward; only at the catch, still carried with the board, is a hand pushed back.
+    expect(push).toBeGreaterThan(0);
+    expect(forward / strokes).toBeGreaterThan(0.8);
+  });
+
+  it('records no strokes while lying still', () => {
+    const { board, rider } = mounted('prone');
+    run(board, new PlaneWater(), 1, () => expect(rider.strokes).toHaveLength(0));
   });
 
   it('stays on the board lying still through a minute of oblique swell', () => {

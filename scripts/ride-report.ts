@@ -111,7 +111,7 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
   };
   const recoil = new Vector3();
   const lip: LipParcelSource = {
-    forEachContact: (visit) => runner.simulation.lip.forEachContact((parcel) => {
+    forEachContactNear: (center, reach, visit) => runner.simulation.lip.forEachContactNear(center, reach, (parcel) => {
       recoil.copy(parcel.velocity);
       visit(parcel);
       parcel.velocity.copy(recoil);
@@ -176,6 +176,7 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
       const ride = {
         phase: session.phase, speed: Math.hypot(board.velocity.x, board.velocity.z), boardSpeed: board.velocity.length(),
         cue: session.rider.popUpCue, popUp: { ...session.rider.popUpReport }, separation: session.separation, resets: 0, wave: { ...wave },
+        balance: session.phase === 'fallen' ? 0 : session.rider.balanceReserve,
       };
       let crest = -Infinity;
       for (let back = 2; back <= LOOK; back += 2) crest = Math.max(crest, runner.water.surfaceAt(board.position.x, board.position.z - back));

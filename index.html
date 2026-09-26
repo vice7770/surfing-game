@@ -10,6 +10,7 @@
   <body>
     <main id="app" aria-label="Surfing simulator">
       <div id="scene" aria-label="3D surf scene"></div>
+      <div id="wave-lab" class="wave-lab">
       <header class="topbar">
         <a class="brand" href="#" aria-label="Breakline home"><span class="brand-mark">B</span><span>BREAKLINE<span class="brand-sub">SURF SIMULATOR</span></span></a>
         <div class="session-pill"><span class="live-dot"></span><span id="run-state">READY</span><span class="divider">/</span><span id="seed-label">SEED 0001</span></div>
@@ -95,13 +96,16 @@
       </section>
 
       <div class="control-hint"><span class="keycap">SPACE</span> PADDLE <span class="hint-dot">·</span> <span class="keycap">ENTER</span> GET UP WHEN READY <span class="hint-dot">·</span> <span class="keycap">←</span><span class="keycap">→</span> STEER</div>
-      <div class="touch-controls" aria-label="Touch surf controls">
+      <div class="bottom-actions"><button id="get-up-button" class="button button-get-up" type="button" disabled>Get up</button><button id="replay-action" class="button button-get-up" type="button" hidden>↺ Replay</button><button id="new-wave-button" class="button button-dark" type="button">New wave <span>↗</span></button></div>
+      </div>
+      <div id="touch-controls" class="touch-controls" aria-label="Touch surf controls">
         <button id="touch-left" class="touch-button" type="button" aria-label="Steer left">←</button>
         <button id="touch-paddle" class="touch-button touch-paddle" type="button">Hold to paddle</button>
+        <button id="touch-popup" class="touch-button touch-popup" type="button">Pop up</button>
         <button id="touch-right" class="touch-button" type="button" aria-label="Steer right">→</button>
       </div>
-      <div class="bottom-actions"><button id="get-up-button" class="button button-get-up" type="button" disabled>Get up</button><button id="replay-action" class="button button-get-up" type="button" hidden>↺ Replay</button><button id="new-wave-button" class="button button-dark" type="button">New wave <span>↗</span></button></div>
-      <div id="loading" class="loading"><span class="loading-mark">B</span><span>SETTING THE BREAK…</span></div>
+      <div id="ui" class="ui"></div>
+      <div id="loading" class="loading"><span class="loading-mark">B</span><span id="loading-text">Setting the break…</span></div>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

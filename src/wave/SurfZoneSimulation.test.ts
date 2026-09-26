@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { REEF, createSpot } from './Bathymetry';
 import { breakerDepthFor } from './Breaking';
 import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
+import { JET_SPEED_RATIO, crestSpeedAt } from './CrestKinematics';
 
 const small: Omit<SurfZoneConfig, 'spot'> = {
   seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -143,6 +144,22 @@ describe('SurfZoneSimulation', () => {
     expect(beach.simulation.iribarren().type).toBe('spilling');
     expect(beach.broke).toBeGreaterThan(0);
     expect(beach.simulation.lipLaunches).toBe(0);
+    expect(beach.simulation.lipJets).toBe(0);
+    expect(beach.simulation.lipRollers).toBeGreaterThan(0);
+  }, 60_000);
+
+  it("throws each jet at the speed of the crest it leaves, measured from the crest's own motion (P7)", () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, peakPeriod: 14, directionDegrees: 20, spreading: 24 });
+    const launches: { speed: number; crest: number }[] = [];
+    const launch = simulation.lip.launch.bind(simulation.lip);
+    simulation.lip.launch = (cell, velocity, height, volume, crestSpeed) => {
+      launches.push({ speed: Math.hypot(velocity.x, velocity.z), crest: JET_SPEED_RATIO * crestSpeedAt(simulation.solver, cell)! });
+      return launch(cell, velocity, height, volume, crestSpeed);
+    };
+    for (let frame = 0; frame < 20 * 30; frame += 1) simulation.step(1 / 30);
+    expect(simulation.lipJets).toBeGreaterThan(0);
+    expect(launches.length).toBeGreaterThan(0);
+    for (const { speed, crest } of launches) expect(speed).toBeCloseTo(crest, 9);
   }, 60_000);
 
   // Stage 1 needs 1 m cells to see a wave break (P3a), so the whole reef edge must lie in the fine surf zone.
@@ -175,6 +192,27 @@ describe('SurfZoneSimulation', () => {
     expect(simulation.iribarren().type).toBe('plunging');
     expect(simulation.lipLaunches).toBeGreaterThan(0);
     expect(simulation.lip.landings).toBeGreaterThan(0);
+  }, 60_000);
+
+  it('counts a column breaking once per wave for the peel, and never shore swash', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 1.4, peakPeriod: 10, dx: 1, fineSpacing: 1 });
+    const { solver } = simulation;
+    const onsets: { column: number; time: number; still: number }[] = [];
+    const peel = simulation.peel;
+    const mark = peel.markOnset.bind(peel);
+    peel.markOnset = (column: number, time: number) => {
+      const row = solver.rowBelow(simulation.outerBreakZ(column));
+      onsets.push({ column, time, still: solver.restLevel - solver.bed[row * solver.nx + column] });
+      mark(column, time);
+    };
+    for (let frame = 0; frame < 30 * 30; frame += 1) simulation.step(1 / 30);
+    expect(onsets.length).toBeGreaterThan(0);
+    for (const onset of onsets) expect(onset.still).toBeGreaterThanOrEqual(0.4 * simulation.breakerDepth() - 1e-9);
+    const last = new Map<number, number>();
+    for (const { column, time } of onsets) {
+      if (last.has(column)) expect(time - last.get(column)!).toBeGreaterThanOrEqual(0.7 * 10 - 1e-9);
+      last.set(column, time);
+    }
   }, 60_000);
 
   it('does not read the spin-up bores as one simultaneous close-out', () => {
@@ -241,8 +279,10 @@ describe('SurfZoneSimulation', () => {
     foam.residual.fill(0);
     const crest = solver.cellIndex(0, -60);
     expect(lip.launch(crest, { x: 0, z: 4 }, solver.surfaceAt(crest) + 1, 0.2)).toBeGreaterThan(0);
-    for (let step = 0; step < 60 && lip.landings === 0; step += 1) lip.step(1 / 60);
+    // The whole strip leaves the crest and lands.
+    for (let step = 0; step < 240 && lip.activeCount() > 0; step += 1) lip.step(1 / 60);
     expect(lip.landings).toBeGreaterThan(0);
+    expect(lip.activeCount()).toBe(0);
     expect(foam.dense.reduce((sum, value) => sum + value, 0)).toBeGreaterThan(0.5);
   });
 

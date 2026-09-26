@@ -24,6 +24,14 @@ describe('SurfZoneRunner', () => {
     expect(runner.simulation.seaTime).toBe(direct.seaTime);
   });
 
+  it('reports how many breaks threw a jet and how many spilled', () => {
+    const runner = new SurfZoneRunner(config);
+    runner.simulation.lipJets = 3;
+    runner.simulation.lipRollers = 5;
+    expect(runner.status().lipJets).toBe(3);
+    expect(runner.status().lipRollers).toBe(5);
+  });
+
   it('fills a snapshot with the render surface, the current, the lip and the bubbles', () => {
     const runner = new SurfZoneRunner(config);
     runner.advance(120);
@@ -190,6 +198,9 @@ describe('SurfZoneRunner with a rider', () => {
     const board = runner.session!.board;
     expect(board.position.z - start.z).toBeGreaterThan(3);
     expect(runner.status().ride!.speed).toBeGreaterThan(1);
+    const { balance } = runner.status().ride!;
+    expect(balance).toBeGreaterThanOrEqual(0);
+    expect(balance).toBeLessThanOrEqual(1);
   });
 
   it('puts board and rider back in the lineup on retry, without restarting the wave', () => {

@@ -3,14 +3,13 @@ import type { StandRefusal } from '../physics/AttachedRider';
 import type { WaveFrame } from '../physics/waveFrame';
 import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
-import { Surfer } from '../scene/Surfer';
-import type { BodyPart, DetachedRiderPose } from '../physics/DetachedSurfer';
-import { RIDER_PARTS } from '../physics/riderPosture';
+import { SurferView } from '../scene/character/SurferView';
+import { createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
 import { SprayPoints } from '../scene/SprayPoints';
-import { LipPoints, type RenderableLip } from '../scene/LipPoints';
+import { LipSheetMesh } from '../scene/LipSheetMesh';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera, type FollowTarget } from '../scene/SpectatorCamera';
 import { SpotSeabed } from '../scene/SpotSeabed';
@@ -24,7 +23,7 @@ import type { ReadoutRow } from '../wave/SwellReadout';
 import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
 import { OFFSHORE_DEPTH, SEA_COMPONENTS, TANK, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
-import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost, type SurfZoneSnapshot } from './SurfZoneHost';
+import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 
 /** Wave Lab inputs for the view-only physical surf zone (buoy values or a storm, plan Q2, Q22 and Q31). */
 export interface PhysicalSettings {
@@ -210,36 +209,23 @@ export type SurfZoneHostFactory = (config: SurfZoneConfig) => SurfZoneHost;
 /** Runs the surf zone in the page (tests, and browsers without Web Workers). */
 export const localSurfZone: SurfZoneHostFactory = (config) => new LocalSurfZone(config, { rider: true });
 
-/** The latest snapshot's packed lip positions, in the shape `LipPoints` draws. */
-function snapshotLip(snapshot: SurfZoneSnapshot): RenderableLip {
-  return {
-    forEachActive(visit) {
-      for (let i = 0; i < snapshot.lipCount; i += 1) visit(snapshot.lip[i * 3], snapshot.lip[i * 3 + 1], snapshot.lip[i * 3 + 2], 0);
-    },
-  };
-}
-
 export class PhysicalMode {
   readonly camera = new SpectatorCamera();
   readonly seabed = new SpotSeabed();
   readonly farField = new FarFieldOcean();
-  readonly lipPoints = new LipPoints();
+  /** The thrown lip, drawn as one sheet (plan P7). */
+  readonly lipSheet = new LipSheetMesh();
   /** Bubbles entrained under breaking bores, seen from below the surface. */
   readonly bubbles = new BubblePoints();
   /** Spray and mist thrown up by lip impacts, bores and offshore wind (G6). */
   readonly spray = new SprayPoints();
   /** The physical board, drawn at the snapshot's pose. */
   readonly board = createBoardMesh(buildBoardShape());
-  /** The rider's body, drawn from the snapshot's seven points (its legacy board hidden). */
-  readonly surfer = new Surfer();
-  private readonly riderPose: { -readonly [K in keyof DetachedRiderPose]: DetachedRiderPose[K] } & { points: Float64Array } = {
-    heading: 0,
-    points: new Float64Array(RIDER_SNAPSHOT.length),
-    getPartPosition(part: BodyPart, out) {
-      const i = RIDER_PARTS.indexOf(part);
-      return out.set(this.points[i * 3], this.points[i * 3 + 1], this.points[i * 3 + 2]);
-    },
-  };
+  /** The rider's body, solved from the snapshot's seven points: a skinned surfer (G7), or the simple one until it loads. */
+  readonly surfer = new SurferView();
+  private readonly riderState = createRiderVisualState();
+  /** Whether the latest input paddles, which cups the drawn hands. */
+  private paddling = false;
   private retryPending = false;
   /** The running surf zone, once it has spun up. */
   host?: SurfZoneHost;
@@ -250,8 +236,16 @@ export class PhysicalMode {
   practice = false;
   focus = { x: 0, z: 0 };
   private starts = 0;
+  /** Lets go of the surf zone still spinning up, when a later start or a cancel supersedes it. */
+  private dropPending?: () => void;
   private shown = true;
+  /** Graphics setting (plan P8): spray and mist are still simulated, only not drawn. */
+  private sprayShown = true;
   private chosenView: RideView | 'overview' = 'front';
+  /** The view with no rider on the water: the overview in the Wave Lab, the cinematic sweep behind the menu (plan P8). */
+  idleView: SpectatorView = 'overview';
+  /** The ride view each new session starts in: the player's default camera (plan P8). */
+  defaultView: RideView | 'overview' = 'front';
   /** Whether the screen's right is the board's left (+1) or its right (−1), from the latest clear view. */
   private steerSign = -1;
   private readonly cameraRight = new Vector3();
@@ -292,9 +286,8 @@ export class PhysicalMode {
   }
 
   constructor(scene: Scene) {
-    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group);
+    scene.add(this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group);
     this.board.visible = false;
-    this.surfer.setBoardVisible(false);
     this.surfer.group.visible = false;
   }
 
@@ -329,12 +322,20 @@ export class PhysicalMode {
       ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
       ...overrides,
     };
+    // Superseded while asking for the GPU: never build it, and never drop the newer start's spin-up.
+    if (start !== this.starts) return false;
     const host = createHost(config);
-    await host.ready;
-    if (start !== this.starts) {
+    // A superseded spin-up is let go at once, so its worker stops competing with the next one.
+    this.dropPending?.();
+    const dropped = new Promise<'dropped'>((resolve) => {
+      this.dropPending = () => resolve('dropped');
+    });
+    const outcome = await Promise.race([host.ready.then(() => 'ready' as const), dropped]);
+    if (outcome === 'dropped' || start !== this.starts) {
       host.dispose();
       return false;
     }
+    this.dropPending = undefined;
     this.stop();
     this.host = host;
     this.config = config;
@@ -376,7 +377,7 @@ export class PhysicalMode {
     });
     this.farField.setProfile(profile, hole, this.focus, { extent: FAR_EXTENT });
     this.farField.setChop(chopForWind(settings.windSpeed));
-    this.chosenView = 'front';
+    this.chosenView = this.defaultView;
     this.camera.setView(this.homeView);
     return true;
   }
@@ -384,6 +385,8 @@ export class PhysicalMode {
   /** Supersede any start still spinning up, so it never takes over. */
   cancel(): void {
     this.starts += 1;
+    this.dropPending?.();
+    this.dropPending = undefined;
   }
 
   /** Let the running surf zone go (its worker, if any, ends). */
@@ -397,7 +400,7 @@ export class PhysicalMode {
   /** Request `steps` fixed physics steps (`SURF_ZONE_STEP` each). */
   /** The following view last chosen (or the overview), which profile and underwater toggles return to. */
   get homeView(): SpectatorView {
-    return this.host && this.host.snapshot.rider[RIDER_SNAPSHOT.present] > 0 ? this.chosenView : 'overview';
+    return this.host && this.host.snapshot.rider[RIDER_SNAPSHOT.present] > 0 ? this.chosenView : this.idleView;
   }
 
   /** Cycle the camera: in front, behind, to the side of the rider, then the overview of the break. */
@@ -435,6 +438,7 @@ export class PhysicalMode {
   advance(steps: number, input?: Omit<RideRequest, 'retry'>): void {
     const retry = this.retryPending;
     if (input || retry) this.retryPending = false;
+    if (input) this.paddling = input.paddle;
     this.host?.advance(steps, input || retry ? { paddle: false, popUp: false, steer: 0, ...input, retry } : undefined);
   }
 
@@ -453,15 +457,15 @@ export class PhysicalMode {
     this.followMotion(host);
     this.camera.update(host, this.focus, dt, pose[7] > 0 ? this.follow : undefined);
     this.farField.update(host.snapshot.status.seaTime);
-    this.lipPoints.update(snapshotLip(host.snapshot));
+    this.lipSheet.update(host.snapshot.lip, host.snapshot.lipCount, host.init.dx);
     this.board.visible = this.shown && pose[7] > 0;
     this.board.position.set(pose[0], pose[1], pose[2]);
     this.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
     this.surfer.group.visible = this.shown && riding;
     if (riding) {
-      this.riderPose.points.set(rider);
-      this.riderPose.heading = rider[RIDER_SNAPSHOT.heading];
-      this.surfer.updateDetached(this.riderPose, this.board.position, this.board.quaternion);
+      readRiderSnapshot(rider, pose, this.riderState);
+      this.riderState.stroking = this.paddling && this.riderState.phase === 'prone' ? 1 : 0;
+      this.surfer.update(this.riderState, this.camera.camera.position);
     }
     this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
     this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount });
@@ -470,6 +474,11 @@ export class PhysicalMode {
   /** The Wave Lab rows for the running surf zone. */
   readout(): ReadoutRow[] {
     return this.host && this.config ? formatPhysicalReadout(this.config, this.host.snapshot.status, this.storm, this.practice) : [];
+  }
+
+  setSprayVisible(visible: boolean): void {
+    this.sprayShown = visible;
+    this.spray.mesh.visible = this.shown && visible;
   }
 
   cameraBelowSurface(margin = 0.1): boolean {
@@ -484,8 +493,8 @@ export class PhysicalMode {
     this.surfer.group.visible = visible && (this.host?.snapshot.rider[RIDER_SNAPSHOT.present] ?? 0) > 0;
     this.seabed.mesh.visible = visible;
     this.farField.mesh.visible = visible;
-    this.lipPoints.mesh.visible = visible;
+    this.lipSheet.mesh.visible = visible;
     this.bubbles.mesh.visible = visible;
-    this.spray.mesh.visible = visible;
+    this.spray.mesh.visible = visible && this.sprayShown;
   }
 }
