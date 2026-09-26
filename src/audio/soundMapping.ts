@@ -48,9 +48,78 @@ export interface SoundTargets {
 /** At most this many one-shots start in one frame; the quietest are dropped. */
 export const ONE_SHOT_CAP = 32;
 
+/**
+ * The shortest time between two one-shots of a kind in one place, s
+ * (provisional, by ear). Lip landings arrive by the hundred as a wave throws, and
+ * a paddling hand pulls for many steps: they gather into a few crashes a second
+ * and one splash per stroke, each carrying the energy it gathered.
+ */
+export const MIN_INTERVAL: Record<OneShotId, number> = { lipJet: 0.18, lipRoller: 0.25, paddle: 0.45, popUp: 0, plunge: 0 };
+/** Landings this close together, m, along and across shore, are heard as one place. */
+const PLACE = 10;
+
+interface Impulse {
+  id: OneShotId;
+  key: string;
+  amount: number;
+  x: number;
+  y: number;
+  z: number;
+}
+
+interface Gathered {
+  id: OneShotId;
+  amount: number;
+  /** Amount-weighted sums of the places and of the weights, so a crash sounds from where most of its water landed. */
+  w: number;
+  wx: number;
+  wy: number;
+  wz: number;
+}
+
+/**
+ * Gathers one-shot impulses by kind and place, and releases each place at most
+ * every `MIN_INTERVAL` with all it gathered. Keep one across frames; a new one
+ * releases everything at once (a single frame, as in tests).
+ */
+export class OneShotShaper {
+  private readonly pending = new Map<string, Gathered>();
+  private readonly last = new Map<string, number>();
+  private clock = 0;
+
+  release(impulses: readonly Impulse[], dt: number): Gathered[] {
+    this.clock += dt;
+    for (const impulse of impulses) {
+      const gathered = this.pending.get(impulse.key) ?? { id: impulse.id, amount: 0, w: 0, wx: 0, wy: 0, wz: 0 };
+      const weight = Math.max(impulse.amount, 1e-9);
+      gathered.amount += impulse.amount;
+      gathered.w += weight;
+      gathered.wx += impulse.x * weight;
+      gathered.wy += impulse.y * weight;
+      gathered.wz += impulse.z * weight;
+      this.pending.set(impulse.key, gathered);
+    }
+    const released: Gathered[] = [];
+    for (const [key, gathered] of this.pending) {
+      if (this.clock - (this.last.get(key) ?? -Infinity) < MIN_INTERVAL[gathered.id]) continue;
+      released.push(gathered);
+      this.pending.delete(key);
+      this.last.set(key, this.clock);
+    }
+    // Places quiet for a while are forgotten.
+    for (const [key, at] of this.last) if (this.clock - at > 2) this.last.delete(key);
+    return released;
+  }
+
+  clear(): void {
+    this.pending.clear();
+  }
+}
+
 // Provisional (by ear): the roar's reference power, m⁴/s, and how many decades above it reach full level.
-const ROAR_REF = 5;
-const ROAR_DECADES = 2.5;
+// The sound report puts a practice set's sectors at a few hundred m⁴/s: this leaves them room to swell.
+const ROAR_REF = 20;
+const ROAR_DECADES = 3;
 // Provisional (by ear): distant surf from Hs 0.3 m (silent) to 3 m (full).
 const DISTANT_MIN_HS = 0.3;
 const DISTANT_MAX_HS = 3;
@@ -59,7 +128,7 @@ const WIND_FULL = 12;
 // Provisional (by ear): the board's rush starts at 0.5 m/s and is full at 12 m/s; rail spray is full at 12 m²/s² of sideslip × speed.
 const RUSH_START = 0.5;
 const RUSH_FULL = 12;
-const RAIL_FULL = 12;
+const RAIL_FULL = 30;
 const BUBBLES_LEVEL = 0.6;
 // Provisional (by ear): a landing is a plunging jet from this impact speed, m/s; its loudness follows volume × speed² (energy).
 const JET_SPEED = 4;
@@ -75,7 +144,15 @@ const PAUSED_MUFFLE = 0.85;
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 const decibelsLike = (value: number, reference: number, decades: number) => clamp01(Math.log10(1 + Math.max(0, value) / reference) / decades);
 
-export function soundTargets(frame: SoundFrame): SoundTargets {
+/** The impulse's loudness: lip crashes by their energy (volume × speed²), strokes by their work, the plunge by the speed. */
+function impulseGain(id: OneShotId, amount: number): number {
+  if (id === 'lipJet' || id === 'lipRoller') return decibelsLike(amount, LIP_REF, LIP_DECADES);
+  if (id === 'paddle') return decibelsLike(amount, PADDLE_REF, PADDLE_DECADES);
+  if (id === 'popUp') return POP_UP_LEVEL;
+  return clamp01(0.4 + amount / 15);
+}
+
+export function soundTargets(frame: SoundFrame, shaper = new OneShotShaper()): SoundTargets {
   const { paused, listener, board } = frame;
   const bed = paused ? PAUSED_BED : 1;
   const loops: SoundTargets['loops'] = [];
@@ -109,30 +186,35 @@ export function soundTargets(frame: SoundFrame): SoundTargets {
   );
 
   const oneShots: SoundTargets['oneShots'] = [];
-  if (!paused) {
+  if (paused) {
+    shaper.clear();
+  } else {
+    const impulses: Impulse[] = [];
     for (let i = 0; i < frame.lipHitCount; i += 1) {
       const o = i * LIP_HIT_STRIDE;
+      const x = frame.lipHits[o];
+      const z = frame.lipHits[o + 1];
       const volume = frame.lipHits[o + 2];
       const impact = frame.lipHits[o + 3];
-      oneShots.push({
-        id: impact >= JET_SPEED ? 'lipJet' : 'lipRoller', rate: 1,
-        gain: decibelsLike(volume * impact * impact, LIP_REF, LIP_DECADES),
-        position: { x: frame.lipHits[o], y: 0, z: frame.lipHits[o + 1] },
-      });
+      const id: OneShotId = impact >= JET_SPEED ? 'lipJet' : 'lipRoller';
+      impulses.push({ id, key: `${id}:${Math.round(x / PLACE)}:${Math.round(z / PLACE)}`, amount: volume * impact * impact, x, y: 0, z });
     }
     for (let i = 0; i < frame.strokeHitCount; i += 1) {
       const o = i * STROKE_HIT_STRIDE;
-      oneShots.push({
-        id: 'paddle', rate: 1,
-        gain: decibelsLike(frame.strokeHits[o + 2], PADDLE_REF, PADDLE_DECADES),
-        position: { x: frame.strokeHits[o], y: 0, z: frame.strokeHits[o + 1] },
-      });
+      impulses.push({ id: 'paddle', key: 'paddle', amount: frame.strokeHits[o + 2], x: frame.strokeHits[o], y: 0, z: frame.strokeHits[o + 1] });
     }
     const ride = frame.ride;
     if (ride && ride.phase !== ride.previousPhase) {
       const where = boardPosition ?? { x: listener.x, y: listener.y, z: listener.z };
-      if (ride.previousPhase === 'prone' && ride.phase === 'push') oneShots.push({ id: 'popUp', rate: 1, gain: POP_UP_LEVEL, position: where });
-      if (ride.phase === 'fallen') oneShots.push({ id: 'plunge', rate: 1, gain: clamp01(0.4 + ride.speed / 15), position: where });
+      if (ride.previousPhase === 'prone' && ride.phase === 'push') impulses.push({ id: 'popUp', key: 'popUp', amount: 1, ...where });
+      if (ride.phase === 'fallen') impulses.push({ id: 'plunge', key: 'plunge', amount: ride.speed, ...where });
+    }
+    for (const gathered of shaper.release(impulses, frame.dt)) {
+      oneShots.push({
+        id: gathered.id, rate: 1,
+        gain: impulseGain(gathered.id, gathered.amount),
+        position: { x: gathered.wx / gathered.w, y: gathered.wy / gathered.w, z: gathered.wz / gathered.w },
+      });
     }
   }
   oneShots.sort((a, b) => b.gain - a.gain);

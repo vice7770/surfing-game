@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LIP_HIT_STRIDE, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE } from '../wave/SurfZoneRunner';
-import { ONE_SHOT_CAP, soundTargets, type SoundFrame } from './soundMapping';
+import { MIN_INTERVAL, ONE_SHOT_CAP, OneShotShaper, soundTargets, type SoundFrame } from './soundMapping';
 
 function frame(overrides: Partial<SoundFrame> = {}): SoundFrame {
   return {
@@ -72,24 +72,51 @@ describe('soundTargets', () => {
     expect(jet.position).toEqual({ x: 3, y: 0, z: -30 });
   });
 
-  it('keeps only the loudest one-shots in a burst', () => {
-    const hits = Array.from({ length: 200 }, (_, i) => ({ x: i, z: -40, volume: 0.01 * (i + 1), speed: 5 }));
+  it('merges a burst of landings by place, and keeps only the loudest places', () => {
+    const hits = Array.from({ length: 200 }, (_, i) => ({ x: i * 2, z: -40, volume: 0.01 * (i + 1), speed: 5 }));
     const { oneShots } = soundTargets(frame(lipHits(hits)));
     expect(oneShots).toHaveLength(ONE_SHOT_CAP);
     const kept = Math.min(...oneShots.map((s) => s.gain));
-    const dropped = soundTargets(frame(lipHits([hits[0]]))).oneShots[0].gain;
-    expect(kept).toBeGreaterThan(dropped);
+    const quietest = soundTargets(frame(lipHits(hits.slice(0, 6)))).oneShots[0].gain;
+    expect(kept).toBeGreaterThan(quietest);
+    // Two landings a metre apart are one crash.
+    expect(soundTargets(frame(lipHits([{ x: 1, z: -40, volume: 0.2, speed: 5 }, { x: 2, z: -40, volume: 0.2, speed: 5 }]))).oneShots).toHaveLength(1);
   });
 
-  it('splashes each paddle stroke by its work', () => {
+  it('gathers landings in one place into a few crashes a second, keeping their energy', () => {
+    const shaper = new OneShotShaper();
+    const shots: number[] = [];
+    let energy = 0;
+    for (let i = 0; i < 60; i += 1) {
+      const targets = soundTargets(frame(lipHits([{ x: 3, z: -30, volume: 0.1, speed: 6 }])), shaper);
+      for (const shot of targets.oneShots) shots.push(shot.gain);
+      energy += 0.1 * 36;
+    }
+    expect(shots.length).toBeGreaterThanOrEqual(Math.floor(1 / MIN_INTERVAL.lipJet));
+    expect(shots.length).toBeLessThanOrEqual(Math.ceil(1 / MIN_INTERVAL.lipJet) + 1);
+    // Each crash carries the frames it gathered, so it is louder than one frame's landing alone.
+    expect(Math.max(...shots)).toBeGreaterThan(soundTargets(frame(lipHits([{ x: 3, z: -30, volume: 0.1, speed: 6 }]))).oneShots[0].gain);
+    expect(energy).toBeGreaterThan(0);
+  });
+
+  it('splashes a paddler’s pull once per stroke, not once per step', () => {
+    const shaper = new OneShotShaper();
     const strokes = new Float32Array(SOUND_EVENT_CAPACITY * STROKE_HIT_STRIDE);
-    strokes.set([1, 2, 30, 0], 0);
-    strokes.set([1.2, 2, 120, 0], STROKE_HIT_STRIDE);
-    const paddles = soundTargets(frame({ strokeHits: strokes, strokeHitCount: 2 })).oneShots.filter((s) => s.id === 'paddle');
-    expect(paddles).toHaveLength(2);
-    const harder = paddles.find((s) => s.position.x === Math.fround(1.2))!;
-    const softer = paddles.find((s) => s.position.x === 1)!;
-    expect(harder.gain).toBeGreaterThan(softer.gain);
+    strokes.set([1, 2, 5, 0], 0);
+    let count = 0;
+    for (let i = 0; i < 60; i += 1) count += soundTargets(frame({ strokeHits: strokes, strokeHitCount: 1 }), shaper).oneShots.length;
+    expect(count).toBeLessThanOrEqual(Math.ceil(1 / MIN_INTERVAL.paddle) + 1);
+    expect(count).toBeGreaterThan(0);
+  });
+
+  it('splashes a harder stroke louder', () => {
+    const splash = (work: number) => {
+      const strokes = new Float32Array(SOUND_EVENT_CAPACITY * STROKE_HIT_STRIDE);
+      strokes.set([1, 2, work, 0], 0);
+      return soundTargets(frame({ strokeHits: strokes, strokeHitCount: 1 })).oneShots.find((s) => s.id === 'paddle')!;
+    };
+    expect(splash(120).gain).toBeGreaterThan(splash(30).gain);
+    expect(splash(30).position).toEqual({ x: 1, y: 0, z: 2 });
   });
 
   it('sounds the pop-up and the plunge once, on the phase change', () => {

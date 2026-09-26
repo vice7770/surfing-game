@@ -2,7 +2,7 @@ import type { GameSettings, SettingsStore } from '../game/Settings';
 import { LIP_HIT_STRIDE, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE } from '../wave/SurfZoneRunner';
 import { AudioEngine, type ListenerPose } from './AudioEngine';
 import { INITIAL_AUDIO_STATE, audible, audioState, shouldRun, type AudioEvent, type AudioState } from './audioState';
-import { soundTargets, type SoundFrame, type SoundTargets } from './soundMapping';
+import { OneShotShaper, soundTargets, type SoundFrame, type SoundTargets } from './soundMapping';
 import { parseManifest } from './soundManifest';
 
 /** Every loop at silence: what the game plays where there is no surf zone to hear (the legacy wave), so loops fade out. */
@@ -24,6 +24,8 @@ export class GameSound {
   private engine?: AudioEngine;
   private state: AudioState;
   private readonly gesture = () => this.dispatch({ type: 'gesture' });
+  /** Gathers landings and strokes across frames into crashes and splashes. */
+  private readonly shaper = new OneShotShaper();
 
   constructor(private readonly settings: SettingsStore, private readonly onMuteChange: () => void = () => {}) {
     this.state = {
@@ -55,7 +57,7 @@ export class GameSound {
   /** One frame: the surf zone's report as sound, or every loop fading out where there is none. */
   frame(frame: SoundFrame | undefined, listener: ListenerPose, dt: number): void {
     if (!this.engine || !shouldRun(this.state)) return;
-    this.engine.update(frame ? soundTargets(frame) : SILENCE, listener, dt);
+    this.engine.update(frame ? soundTargets(frame, this.shaper) : SILENCE, listener, dt);
   }
 
   playUi(id: 'click' | 'chime'): void {
