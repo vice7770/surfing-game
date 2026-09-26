@@ -20,6 +20,7 @@ export interface LipSheetGeometry {
 interface Strip {
   column: number;
   launchTime: number;
+  kind: number;
   /** Vertex of each parcel along the strip, or −1. */
   at: number[];
 }
@@ -48,13 +49,15 @@ export function buildLipSheet(parcels: Float32Array, count: number, width: numbe
     const column = parcels[o + 3];
     const index = parcels[o + 4];
     const launchTime = parcels[o + 5];
-    const key = `${column}|${launchTime}`;
+    const kind = parcels[o + 8];
+    const key = `${column}|${launchTime}|${kind}`;
     let strip = strips.get(key);
     if (!strip) {
-      strip = { column, launchTime, at: [] };
+      strip = { column, launchTime, kind, at: [] };
       strips.set(key, strip);
     }
-    const white = Math.max(Math.min(1, parcels[o + 6] / FOAM_AGE), index === 0 ? 1 : 0);
+    // A splash-up (G9) is whitewater from the start.
+    const white = kind === 1 ? 1 : Math.max(Math.min(1, parcels[o + 6] / FOAM_AGE), index === 0 ? 1 : 0);
     strip.at[index] = vertex(parcels[o], parcels[o + 1], parcels[o + 2], white);
   }
   const byColumn = new Map<number, Strip[]>();
@@ -63,7 +66,7 @@ export function buildLipSheet(parcels: Float32Array, count: number, width: numbe
     if (list) list.push(strip);
     else byColumn.set(strip.column, [strip]);
   }
-  const linked = (strip: Strip, side: number) => (byColumn.get(strip.column + side) ?? []).find((other) => Math.abs(other.launchTime - strip.launchTime) < LINK_TIME);
+  const linked = (strip: Strip, side: number) => (byColumn.get(strip.column + side) ?? []).find((other) => other.kind === strip.kind && Math.abs(other.launchTime - strip.launchTime) < LINK_TIME);
   const quad = (a: number, b: number, c: number, d: number) => indices.push(a, b, c, b, d, c);
   const present = (strip: Strip, k: number) => strip.at[k] !== undefined && strip.at[k] >= 0;
   for (const strip of strips.values()) {

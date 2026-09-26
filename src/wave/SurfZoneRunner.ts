@@ -18,8 +18,8 @@ export { surfZoneSea } from './SurfZoneSimulation';
 
 /** Fixed simulation step, s: the game's physics rate. */
 export const SURF_ZONE_STEP = 1 / 60;
-/** A snapshot's lip parcel: x, y, z, world column, index along its strip, the strip's launch time, the parcel's age (plan P7) and its volume, m³ (G9). */
-export const LIP_STRIDE = 8;
+/** A snapshot's lip parcel: x, y, z, world column, index along its strip, the strip's launch time, the parcel's age (plan P7), its volume, m³, and its kind: 0 a jet's water, 1 a splash-up's (G9). */
+export const LIP_STRIDE = 9;
 
 /** Sound (S1): lip landings and paddle strokes are kept between snapshots, at most this many of each; more merge into the nearest. */
 export const SOUND_EVENT_CAPACITY = 64;
@@ -438,6 +438,7 @@ export class SurfZoneRunner {
       buffers.lip[o + 5] = parcel.launchTime;
       buffers.lip[o + 6] = parcel.age;
       buffers.lip[o + 7] = parcel.volume;
+      buffers.lip[o + 8] = parcel.kind;
       parcels += 1;
     });
     buffers.lipCount = parcels;

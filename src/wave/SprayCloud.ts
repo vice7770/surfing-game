@@ -1,5 +1,6 @@
 import { GRAVITY } from './dispersion';
 import { seededRandom } from './random';
+import { SPLASH_UP } from './PlungingLip';
 
 /** A lip parcel falling back into the water: where, how much, and how fast. */
 export interface LipImpact {
@@ -74,8 +75,15 @@ const FEATHER_HEIGHT = 0.3;
 const STROKE_UP = { min: 0.3, max: 0.9 };
 const STROKE_BACK = { min: 0.3, max: 0.7 };
 /** A splash-up leaves at this share of the lip's impact speed, upward, and keeps this share of its horizontal speed. */
-const SPLASH_UP = { min: 0.3, max: 0.8 };
-const SPLASH_FORWARD = { min: 0.2, max: 0.6 };
+/**
+ * A lip impact's drops leave at the splash-up's speeds (G9, `SPLASH_UP`): up at
+ * its share of the impact speed, on at its share of the parcel's forward speed,
+ * each a fifth either way for variety. `random` is in [0, 1).
+ */
+export function splashLaunch(speed: number, random: number): { up: number; forward: number } {
+  const spread = 0.8 + 0.4 * random;
+  return { up: speed * SPLASH_UP.vertical * spread, forward: SPLASH_UP.horizontal * (1.2 - 0.4 * random) };
+}
 const WET = 0.05;
 const WATER_DENSITY = 1025;
 /** Floats per particle in `particles`: x, y, z, size (m), opacity. */
@@ -168,8 +176,7 @@ export class SprayCloud {
     const cell = scene.solver.cellIndex(impact.x, impact.z);
     const surface = scene.solver.h[cell] + scene.solver.bed[cell];
     for (; spawns > 0 && this.count < this.capacity; spawns -= 1) {
-      const up = speed * this.between(SPLASH_UP);
-      const forward = this.between(SPLASH_FORWARD);
+      const { up, forward } = splashLaunch(speed, this.random());
       const spread = 1.5;
       const mist = this.random() < 0.2;
       this.spawn(

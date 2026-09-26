@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SPRAY_STRIDE, SprayCloud, type LipImpact, type SprayScene, type StrokeSplash } from './SprayCloud';
+import { SPRAY_STRIDE, SprayCloud, splashLaunch, type LipImpact, type SprayScene, type StrokeSplash } from './SprayCloud';
+import { SPLASH_UP } from './PlungingLip';
 
 /** Flat water 2 m deep over 10 m × 40 m (1 m cells), still, with no bores; `crest` raises a steep shoreward-facing step. */
 function flatScene(windSpeed = 0, lipImpacts: LipImpact[] = [], crest = false): SprayScene {
@@ -68,6 +69,16 @@ describe('paddle splashes', () => {
 });
 
 describe('spray and mist', () => {
+  it('throws a lip impact’s drops at the splash-up’s speeds (G9), with a fifth either way of variety', () => {
+    for (const random of [0, 0.25, 0.5, 0.75, 0.999]) {
+      const { up, forward } = splashLaunch(6, random);
+      expect(up / (SPLASH_UP.vertical * 6)).toBeGreaterThanOrEqual(0.8 - 1e-12);
+      expect(up / (SPLASH_UP.vertical * 6)).toBeLessThanOrEqual(1.2);
+      expect(forward / SPLASH_UP.horizontal).toBeGreaterThanOrEqual(0.8 - 1e-12);
+      expect(forward / SPLASH_UP.horizontal).toBeLessThanOrEqual(1.2);
+    }
+  });
+
   it('splashes drops up from a lip impact in proportion to its energy, which fall back into the water', () => {
     const small = new SprayCloud(3);
     small.update(flatScene(0, [impact(0.05)]), 1 / 60);

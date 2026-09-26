@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, STRIP_PARCELS, lipThrow, overturnArea } from './PlungingLip';
+import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, SPLASH_UP, STRIP_PARCELS, lipThrow, overturnArea } from './PlungingLip';
 import { jetRelativeSpeed, overturn, overturnParameter, tubeFloorDepth, type TubeGeometry } from './Overturn';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
 
@@ -35,6 +35,65 @@ describe('PlungingLip tubes', () => {
   });
 });
 
+describe('the splash-up (G9)', () => {
+  /** Step until the jet's first landing; returns what landed. */
+  function firstLanding(lip: PlungingLip) {
+    let landed: { volume: number; vx: number; vy: number; vz: number } | undefined;
+    lip.onLand = (_x, _z, volume, vx, vy, vz) => (landed ??= { volume, vx, vy, vz });
+    for (let frame = 0; frame < 600 && !landed; frame += 1) lip.step(1 / 240);
+    return landed!;
+  }
+
+  it('re-throws a share of a landing jet parcel up and on, and returns the rest to the water at once', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 3, 0.6);
+    const landed = firstLanding(lip);
+    const splashes: { volume: number; vx: number; vy: number; vz: number }[] = [];
+    lip.forEachActiveParcel((parcel) => {
+      if (parcel.kind === 1) splashes.push({ volume: parcel.volume, vx: parcel.vx, vy: parcel.vy, vz: parcel.vz });
+    });
+    expect(splashes).toHaveLength(1);
+    expect(splashes[0].volume).toBeCloseTo(SPLASH_UP.share * landed.volume, 12);
+    expect(splashes[0].vz).toBeCloseTo(SPLASH_UP.horizontal * landed.vz, 9);
+    expect(splashes[0].vy).toBeCloseTo(SPLASH_UP.vertical * Math.abs(landed.vy), 9);
+  });
+
+  it('conserves the water and its forward momentum through the jet, its splash-up and their landings', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    const before = solver.totalVolume();
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 3, 0.6);
+    for (let frame = 0; frame < 2400 && lip.activeCount() > 0; frame += 1) {
+      lip.step(1 / 240);
+      expect((solver.totalVolume() + lip.airborneVolume()) / before).toBeCloseTo(1, 12);
+    }
+    expect(lip.activeCount()).toBe(0);
+    expect(momentumZ(solver)).toBeCloseTo(0, 9);
+  });
+
+  it('is never offered to a rider, and lands with no further splash-up', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 3, 0.6);
+    let splashesOnly = false;
+    for (let frame = 0; frame < 2400 && !splashesOnly; frame += 1) {
+      lip.step(1 / 240);
+      let jets = 0;
+      let splashes = 0;
+      lip.forEachActiveParcel((parcel) => (parcel.kind === 1 ? (splashes += 1) : (jets += 1)));
+      splashesOnly = splashes > 0 && jets === 0 && lip.activeCount() === splashes;
+    }
+    expect(splashesOnly).toBe(true);
+    let offered = 0;
+    lip.forEachContact(() => (offered += 1));
+    lip.forEachContactNear(new Vector3(3.5, 3, 15), 100, () => (offered += 1));
+    expect(offered).toBe(0);
+    for (let frame = 0; frame < 2400 && lip.activeCount() > 0; frame += 1) lip.step(1 / 240);
+    expect(lip.landings).toBe(2 * STRIP_PARCELS);
+  });
+});
+
 describe('PlungingLip', () => {
   it('conserves water volume through launch, flight and landing in a closed basin', () => {
     const solver = basin();
@@ -44,13 +103,14 @@ describe('PlungingLip', () => {
     expect(thrown).toBeCloseTo(0.6, 12);
     expect(lip.airborneVolume()).toBeCloseTo(0.6, 12);
     expect(solver.totalVolume() + lip.airborneVolume()).toBeCloseTo(before, 9);
-    for (let frame = 0; frame < 120; frame += 1) {
+    // Long enough for the jet and its splash-up (G9) to land.
+    for (let frame = 0; frame < 240; frame += 1) {
       solver.step(1 / 60);
       lip.step(1 / 60);
       expect((solver.totalVolume() + lip.airborneVolume()) / before).toBeCloseTo(1, 12);
     }
     expect(lip.activeCount()).toBe(0);
-    expect(lip.landings).toBe(STRIP_PARCELS);
+    expect(lip.landings).toBe(2 * STRIP_PARCELS);
   });
 
   it('takes from the crest the momentum its jet carries off', () => {
@@ -120,7 +180,8 @@ describe('PlungingLip', () => {
     const cell = solver.cellIndex(3.5, 12.5);
     const thrown = lip.launch(cell, { x: 0, z: 4 }, 3, 0.6);
     const landed: number[] = [];
-    for (let frame = 0; frame < 120 && lip.activeCount() > 0; frame += 1) lip.step(1 / 120);
+    // Long enough for its splash-up (G9) to land too.
+    for (let frame = 0; frame < 600 && lip.activeCount() > 0; frame += 1) lip.step(1 / 120);
     let ahead = 0;
     for (let iz = 0; iz < solver.nz; iz += 1) {
       if (solver.qz[iz * solver.nx + 3] > 0) landed.push(solver.zCenters[iz]);

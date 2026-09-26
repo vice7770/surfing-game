@@ -16,6 +16,13 @@ export const STRIP_PARCELS = 8;
 export const JET_RELEASE_TIME = 0.25;
 /** Strips of neighbouring columns thrown within this long of each other join into one sheet, s (numerical). */
 export const LINK_TIME = 1;
+/**
+ * The splash-up a landing jet throws (G9, docs/research/whitewater-sources.md;
+ * provisional, bounded by Peregrine 1983 and the measured splash-up speeds): the
+ * share of a landing jet parcel's water it re-throws, its speed over the
+ * impact's, up and on, and the least downward impact speed that throws one, m/s.
+ */
+export const SPLASH_UP = { share: 0.3, vertical: 0.6, horizontal: 0.8, minImpact: 0.5 } as const;
 /** Largest share of a source cell's water one throw may take. */
 const SOURCE_SHARE = 0.2;
 /** Parcels still airborne after this long land where they are, s. */
@@ -52,6 +59,8 @@ export interface LipSheetParcel {
   /** Seconds since it left the crest. */
   age: number;
   volume: number;
+  /** 0 a jet's water, 1 a splash-up's (G9). */
+  kind: number;
 }
 
 /** A landed parcel's flight: where it left the crest, the height it came down at (m), how long it flew (s) and the speed of the crest it left (m/s). */
@@ -107,6 +116,18 @@ export function lipThrow(conditions: LipConditions): LipThrow | undefined {
     relativeSpeed: jetRelativeSpeed(shape, breakerHeight),
     shape,
   };
+}
+
+/** One throw's parcels (a strip): a jet's, or the splash-up it throws when it lands (G9). */
+interface LipStrip {
+  column: number;
+  launchTime: number;
+  parcels: number[];
+  live: number;
+  kind: 0 | 1;
+  tube?: FlyingTube;
+  /** A jet's splash-up strip, once it has one. */
+  splash?: number;
 }
 
 /** A void under a flying jet, riding with the crest that threw it. */
@@ -177,12 +198,14 @@ export class PlungingLip implements LipParcelSource {
   private readonly index: Uint8Array;
   private readonly launchTime: Float64Array;
   /** Live strips: their parcels, by strip id; and the strips of each world column. */
-  private readonly strips = new Map<number, { column: number; launchTime: number; parcels: number[]; live: number; tube?: FlyingTube }>();
+  private readonly strips = new Map<number, LipStrip>();
+  /** Each parcel's kind: 0 a jet's water, 1 a splash-up's (G9). */
+  private readonly kind: Uint8Array;
   private readonly byColumn = new Map<number, number[]>();
   private nextStrip = 1;
   /** The lip's clock, s. */
   time = 0;
-  private readonly view = { slot: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, column: 0, index: 0, launchTime: 0, age: 0, volume: 0 };
+  private readonly view = { slot: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, column: 0, index: 0, launchTime: 0, age: 0, volume: 0, kind: 0 };
   /** Marks parcels a query found linked, by query number. */
   private readonly linked: Uint32Array;
   private query = 0;
@@ -217,6 +240,7 @@ export class PlungingLip implements LipParcelSource {
     this.column = new Int32Array(capacity);
     this.index = new Uint8Array(capacity);
     this.launchTime = new Float64Array(capacity);
+    this.kind = new Uint8Array(capacity);
     this.linked = new Uint32Array(capacity);
     for (let index = capacity - 1; index >= 0; index -= 1) this.free.push(index);
   }
@@ -258,7 +282,7 @@ export class PlungingLip implements LipParcelSource {
     const stripId = this.nextStrip;
     this.nextStrip += 1;
     const column = Math.round(x / dx - 0.5);
-    const strip = { column, launchTime: this.time, parcels: [] as number[], live: STRIP_PARCELS, tube: undefined as FlyingTube | undefined };
+    const strip: LipStrip = { column, launchTime: this.time, parcels: [], live: STRIP_PARCELS, kind: 0 };
     const spacing = releaseTime / (STRIP_PARCELS - 1);
     // The crest moves on at its own speed, the way the jet leaves.
     const jetSpeed = Math.hypot(velocity.x, velocity.z);
@@ -291,6 +315,7 @@ export class PlungingLip implements LipParcelSource {
       this.column[parcel] = column;
       this.index[parcel] = k;
       this.launchTime[parcel] = this.time;
+      this.kind[parcel] = 0;
     }
     this.strips.set(stripId, strip);
     const inColumn = this.byColumn.get(column);
@@ -309,6 +334,8 @@ export class PlungingLip implements LipParcelSource {
     for (let parcel = 0; parcel < this.capacity; parcel += 1) {
       const state = this.state[parcel];
       if (state === 0) continue;
+      // A splash-up thrown earlier in this very step already stands where it leaves from.
+      if (state === 1 && this.kind[parcel] === 1 && this.age[parcel] === 0 && this.releaseAt[parcel] === this.time) continue;
       let flight = dt;
       if (state === 2) {
         if (this.releaseAt[parcel] > this.time) continue;
@@ -416,7 +443,8 @@ export class PlungingLip implements LipParcelSource {
   forEachContact(visit: (parcel: LipContactParcel) => void): void {
     const c = this.contact;
     for (let parcel = 0; parcel < this.capacity; parcel += 1) {
-      if (this.state[parcel] !== 1) continue;
+      // Splash-ups are whitewater: they never strike a body (G9).
+      if (this.state[parcel] !== 1 || this.kind[parcel] === 1) continue;
       c.id = this.id[parcel];
       c.previousPosition.set(this.px[parcel], this.py[parcel], this.pz[parcel]);
       c.position.set(this.x[parcel], this.y[parcel], this.z[parcel]);
@@ -447,6 +475,7 @@ export class PlungingLip implements LipParcelSource {
     const query = this.query;
     const width = this.solver.dx;
     this.forEachLink((a, b) => {
+      if (this.kind[a] === 1) return;
       this.linked[a] = query;
       this.linked[b] = query;
       near.a.set(this.x[a], this.y[a], this.z[a]);
@@ -480,7 +509,7 @@ export class PlungingLip implements LipParcelSource {
       this.vz[b] += (change.z * t) / this.volume[b];
     });
     for (let parcel = 0; parcel < this.capacity; parcel += 1) {
-      if (this.state[parcel] !== 1 || this.linked[parcel] === query) continue;
+      if (this.state[parcel] !== 1 || this.linked[parcel] === query || this.kind[parcel] === 1) continue;
       c.position.set(this.x[parcel], this.y[parcel], this.z[parcel]);
       if (c.position.distanceTo(center) > reach) continue;
       c.id = this.id[parcel];
@@ -518,6 +547,7 @@ export class PlungingLip implements LipParcelSource {
       view.launchTime = this.launchTime[parcel];
       view.age = this.age[parcel];
       view.volume = this.volume[parcel];
+      view.kind = this.kind[parcel];
       visit(view);
     }
   }
@@ -536,7 +566,7 @@ export class PlungingLip implements LipParcelSource {
       }
       for (const neighbourId of this.byColumn.get(strip.column + 1) ?? []) {
         const neighbour = this.strips.get(neighbourId)!;
-        if (Math.abs(neighbour.launchTime - strip.launchTime) >= LINK_TIME) continue;
+        if (neighbour.kind !== strip.kind || Math.abs(neighbour.launchTime - strip.launchTime) >= LINK_TIME) continue;
         for (let k = 0; k < parcels.length; k += 1) {
           if (flying(parcels[k]) && flying(neighbour.parcels[k])) visit(parcels[k], neighbour.parcels[k]);
         }
@@ -544,14 +574,31 @@ export class PlungingLip implements LipParcelSource {
     }
   }
 
+  /**
+   * A parcel falls back in. A jet's water hitting hard enough throws a
+   * splash-up (G9): SPLASH_UP's share of it, up and on; the rest returns to
+   * the cell it lands in at once, with all the parcel's forward momentum but
+   * the splash-up's, so the water's momentum is conserved. A splash-up lands
+   * whole.
+   */
   private land(parcel: number): void {
     const { solver } = this;
-    const cell = solver.cellIndex(this.x[parcel], this.z[parcel]);
+    const [x, y, z] = [this.x[parcel], this.y[parcel], this.z[parcel]];
+    const [vx, vy, vz] = [this.vx[parcel], this.vy[parcel], this.vz[parcel]];
+    const volume = this.volume[parcel];
+    const splash = this.kind[parcel] === 0 && -vy > SPLASH_UP.minImpact ? SPLASH_UP.share * volume : 0;
+    const cell = solver.cellIndex(x, z);
     const area = solver.dx * solver.dz[Math.floor(cell / solver.nx)];
-    const depth = this.volume[parcel] / area;
-    solver.h[cell] += depth;
-    solver.qx[cell] += depth * this.vx[parcel];
-    solver.qz[cell] += depth * this.vz[parcel];
+    solver.h[cell] += (volume - splash) / area;
+    solver.qx[cell] += (volume * vx - splash * SPLASH_UP.horizontal * vx) / area;
+    solver.qz[cell] += (volume * vz - splash * SPLASH_UP.horizontal * vz) / area;
+    const { flight } = this;
+    flight.launch.x = this.lx[parcel];
+    flight.launch.y = this.ly[parcel];
+    flight.launch.z = this.lz[parcel];
+    flight.y = y;
+    flight.age = this.age[parcel];
+    flight.crestSpeed = this.crestSpeed[parcel];
     this.active[parcel] = 0;
     this.state[parcel] = 0;
     this.free.push(parcel);
@@ -568,14 +615,56 @@ export class PlungingLip implements LipParcelSource {
         // Its void closes with it.
         if (strip.tube) this.refreshTubes();
       }
+      if (splash > 0) this.throwSplash(strip, x, y, z, splash, vx, vy, vz);
     }
-    const { flight } = this;
-    flight.launch.x = this.lx[parcel];
-    flight.launch.y = this.ly[parcel];
-    flight.launch.z = this.lz[parcel];
-    flight.y = this.y[parcel];
-    flight.age = this.age[parcel];
-    flight.crestSpeed = this.crestSpeed[parcel];
-    this.onLand?.(this.x[parcel], this.z[parcel], this.volume[parcel], this.vx[parcel], this.vy[parcel], this.vz[parcel], flight);
+    this.onLand?.(x, z, volume, vx, vy, vz, flight);
+  }
+
+  /** One splash-up parcel, gathered with the rest of its jet's into one strip, so they draw as one sheet. */
+  private throwSplash(jet: LipStrip, x: number, y: number, z: number, volume: number, vx: number, vy: number, vz: number): void {
+    const parcel = this.free.pop();
+    if (parcel === undefined) {
+      // No room in the pool: the water lands after all.
+      const cell = this.solver.cellIndex(x, z);
+      const area = this.solver.dx * this.solver.dz[Math.floor(cell / this.solver.nx)];
+      this.solver.h[cell] += volume / area;
+      this.solver.qx[cell] += (volume * SPLASH_UP.horizontal * vx) / area;
+      this.solver.qz[cell] += (volume * SPLASH_UP.horizontal * vz) / area;
+      return;
+    }
+    let splashId = jet.splash;
+    let splash = splashId === undefined ? undefined : this.strips.get(splashId);
+    if (!splash) {
+      splashId = this.nextStrip;
+      this.nextStrip += 1;
+      splash = { column: jet.column, launchTime: this.time, parcels: [], live: 0, kind: 1 };
+      this.strips.set(splashId, splash);
+      const inColumn = this.byColumn.get(jet.column);
+      if (inColumn) inColumn.push(splashId);
+      else this.byColumn.set(jet.column, [splashId]);
+      jet.splash = splashId;
+    }
+    splash.parcels.push(parcel);
+    splash.live += 1;
+    // Airborne at once; the step that threw it does not fly it again (see `step`).
+    this.active[parcel] = 1;
+    this.state[parcel] = 1;
+    this.releaseAt[parcel] = this.time;
+    this.x[parcel] = this.px[parcel] = this.lx[parcel] = x;
+    this.y[parcel] = this.py[parcel] = this.ly[parcel] = y;
+    this.z[parcel] = this.pz[parcel] = this.lz[parcel] = z;
+    this.crestSpeed[parcel] = 0;
+    this.id[parcel] = this.nextId;
+    this.nextId += 1;
+    this.vx[parcel] = SPLASH_UP.horizontal * vx;
+    this.vy[parcel] = SPLASH_UP.vertical * Math.abs(vy);
+    this.vz[parcel] = SPLASH_UP.horizontal * vz;
+    this.volume[parcel] = volume;
+    this.age[parcel] = 0;
+    this.strip[parcel] = splashId!;
+    this.column[parcel] = splash.column;
+    this.index[parcel] = splash.parcels.length - 1;
+    this.launchTime[parcel] = splash.launchTime;
+    this.kind[parcel] = 1;
   }
 }
