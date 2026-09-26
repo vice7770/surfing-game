@@ -1,48 +1,74 @@
 import type { BoardInput } from '../physics/BoardPhysics';
+import { heldActions, padSteer, readPads, type Action, type Bindings, type PadState } from './Bindings';
 
+/** What a press of retry, camera and pause does; paddle, pop-up and steer are read through `input`. */
+export interface ControlHandlers {
+  retry(): void;
+  camera(): void;
+  pause(): void;
+}
+
+/** Where the controls listen: the window and the connected pads by default; tests pass stand-ins. */
+export interface ControlEnvironment {
+  target?: EventTarget;
+  pads?: () => PadState[];
+  document?: Document;
+}
+
+const EDITABLE = new Set(['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA']);
+const NO_INPUT: BoardInput = { paddle: false, steer: 0, getUp: false };
+
+/**
+ * Keyboard, gamepad and touch input for the ride, through the player's bindings
+ * (plan P8). Presses (pop-up, retry, camera, pause) fire once per press; held
+ * actions are read each frame. Disabled while a menu is open, holding nothing.
+ */
 export class Controls {
-  private paddle = false;
-  private left = false;
-  private right = false;
+  private readonly held = new Set<string>();
+  private padHeld = new Set<Action>();
+  private padPrevious = new Set<Action>();
+  private padSteerValue = 0;
   private touchPaddle = false;
   private touchLeft = false;
   private touchRight = false;
-  private readonly held = new Set<string>();
   private getUpRequested = false;
+  private active = true;
+  private readonly pads: () => PadState[];
 
-  constructor(onReplay: () => void, onGetUp: () => void) {
-    window.addEventListener('keydown', (event) => {
-      const target = event.target;
-      if (target instanceof HTMLInputElement || target instanceof HTMLButtonElement) return;
-      if (event.code === 'Space' || event.code === 'ArrowUp' || event.code === 'ArrowLeft' || event.code === 'ArrowRight' || event.code === 'Enter') event.preventDefault();
-      if (event.code === 'KeyR' && !this.held.has(event.code)) onReplay();
-      if (event.code === 'Enter' && !this.held.has(event.code)) {
-        this.getUpRequested = true;
-        onGetUp();
-      }
-      this.held.add(event.code);
-      this.readHeld();
+  constructor(private readonly bindings: () => Bindings, private readonly handlers: ControlHandlers, environment: ControlEnvironment = {}) {
+    const target = environment.target ?? globalThis.window;
+    this.pads = environment.pads ?? (() => readPads());
+    target.addEventListener('keydown', (event) => this.keyDown(event as KeyboardEvent));
+    target.addEventListener('keyup', (event) => {
+      this.held.delete((event as KeyboardEvent).code);
     });
-    window.addEventListener('keyup', (event) => {
-      this.held.delete(event.code);
-      this.readHeld();
-    });
-    window.addEventListener('blur', () => {
-      this.held.clear();
-      this.readHeld();
-      this.touchPaddle = false;
-      this.touchLeft = false;
-      this.touchRight = false;
-    });
-    this.bindTouchButton('touch-paddle', (held) => { this.touchPaddle = held; });
-    this.bindTouchButton('touch-left', (held) => { this.touchLeft = held; });
-    this.bindTouchButton('touch-right', (held) => { this.touchRight = held; });
+    target.addEventListener('blur', () => this.release());
+    const page = environment.document ?? globalThis.document;
+    if (page) {
+      this.bindTouchButton(page, 'touch-paddle', (held) => { this.touchPaddle = held; });
+      this.bindTouchButton(page, 'touch-left', (held) => { this.touchLeft = held; });
+      this.bindTouchButton(page, 'touch-right', (held) => { this.touchRight = held; });
+    }
+  }
+
+  get enabled(): boolean {
+    return this.active;
+  }
+
+  /** Off while a menu is open: everything held is let go, so nothing sticks on return. */
+  set enabled(enabled: boolean) {
+    this.active = enabled;
+    if (!enabled) this.release();
   }
 
   get input(): BoardInput {
+    if (!this.active) return NO_INPUT;
+    const keys = heldActions(this.held, [], this.bindings());
+    const has = (action: Action) => keys.has(action) || this.padHeld.has(action);
+    const digital = Number(has('steerRight') || this.touchRight) - Number(has('steerLeft') || this.touchLeft);
     return {
-      paddle: this.paddle || this.touchPaddle,
-      steer: Number(this.right || this.touchRight) - Number(this.left || this.touchLeft),
+      paddle: has('paddle') || this.touchPaddle,
+      steer: this.padSteerValue !== 0 ? this.padSteerValue : digital,
       getUp: this.getUpRequested,
     };
   }
@@ -50,8 +76,47 @@ export class Controls {
   requestGetUp(): void { this.getUpRequested = true; }
   consumeGetUp(): void { this.getUpRequested = false; }
 
-  private bindTouchButton(id: string, setHeld: (held: boolean) => void): void {
-    const button = document.getElementById(id);
+  /** Read the gamepads once a frame: new presses fire, held buttons and the stick are kept. */
+  poll(): void {
+    const pads = this.pads();
+    const now = heldActions(new Set(), pads, this.bindings());
+    if (this.active) {
+      for (const action of now) if (!this.padPrevious.has(action)) this.press(action);
+      this.padHeld = now;
+      this.padSteerValue = padSteer(pads);
+    }
+    this.padPrevious = now;
+  }
+
+  private keyDown(event: KeyboardEvent): void {
+    const tag = (event.target as Element | null)?.tagName;
+    if (tag && EDITABLE.has(tag)) return;
+    if (!this.active) return;
+    const actions = heldActions(new Set([event.code]), [], this.bindings());
+    if (actions.size > 0 || event.code === 'Space') event.preventDefault();
+    if (!event.repeat && !this.held.has(event.code)) for (const action of actions) this.press(action);
+    this.held.add(event.code);
+  }
+
+  private press(action: Action): void {
+    if (action === 'popUp') this.getUpRequested = true;
+    else if (action === 'retry') this.handlers.retry();
+    else if (action === 'camera') this.handlers.camera();
+    else if (action === 'pause') this.handlers.pause();
+  }
+
+  private release(): void {
+    this.held.clear();
+    this.padHeld = new Set();
+    this.padSteerValue = 0;
+    this.touchPaddle = false;
+    this.touchLeft = false;
+    this.touchRight = false;
+    this.getUpRequested = false;
+  }
+
+  private bindTouchButton(page: Document, id: string, setHeld: (held: boolean) => void): void {
+    const button = page.getElementById(id);
     if (!button) return;
     button.addEventListener('pointerdown', (event) => {
       event.preventDefault();
@@ -66,11 +131,5 @@ export class Controls {
     button.addEventListener('pointerup', release);
     button.addEventListener('pointercancel', release);
     button.addEventListener('lostpointercapture', release);
-  }
-
-  private readHeld(): void {
-    this.paddle = this.held.has('Space') || this.held.has('ArrowUp');
-    this.left = this.held.has('ArrowLeft') || this.held.has('KeyA');
-    this.right = this.held.has('ArrowRight') || this.held.has('KeyD');
   }
 }

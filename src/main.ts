@@ -17,6 +17,7 @@ import {
   Vector3,
 } from 'three';
 import { Controls } from './game/Controls';
+import { DEFAULT_BINDINGS } from './game/Bindings';
 import { devFlag, devParam } from './devTools';
 import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
@@ -503,9 +504,6 @@ class SurfGame {
       this.focusGame();
     });
     getElement<HTMLButtonElement>('#view-toggle').addEventListener('click', this.cycleView);
-    window.addEventListener('keydown', (event) => {
-      if (event.code === 'KeyC' && !event.repeat && !(event.target instanceof HTMLInputElement)) this.cycleView();
-    });
     getElement<HTMLButtonElement>('#underwater-toggle').addEventListener('click', (event) => {
       if (this.mode === 'physical') {
         this.physicalMode.camera.setView(this.physicalMode.camera.view === 'below' ? this.physicalMode.homeView : 'below');
@@ -631,6 +629,7 @@ class SurfGame {
   }
 
   private frame = (timestamp: number): void => {
+    controls.poll();
     const rawElapsed = this.previousFrame === 0 ? 0 : (timestamp - this.previousFrame) / 1000;
     const elapsed = Math.min(rawElapsed, 0.1);
     this.previousFrame = timestamp;
@@ -855,4 +854,8 @@ class SurfGame {
 
 const game = new SurfGame();
 if (recordRequested) void import('./dev/rideRecorder').then(({ recordRide }) => recordRide(game.recording));
-const controls = new Controls(() => game.quickRetry(), () => {});
+const controls = new Controls(() => DEFAULT_BINDINGS, {
+  retry: () => game.quickRetry(),
+  camera: () => game.cycleView(),
+  pause: () => {},
+});
