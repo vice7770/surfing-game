@@ -143,6 +143,23 @@ describe('SurfZoneSimulation', () => {
     expect(beach.simulation.iribarren().type).toBe('spilling');
     expect(beach.broke).toBeGreaterThan(0);
     expect(beach.simulation.lipLaunches).toBe(0);
+    expect(beach.simulation.lipJets).toBe(0);
+    expect(beach.simulation.lipRollers).toBeGreaterThan(0);
+  }, 60_000);
+
+  it('throws each jet at the surface water speed of the crest it leaves (P7)', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, peakPeriod: 14, directionDegrees: 20, spreading: 24 });
+    const launches: { speed: number; crest: number }[] = [];
+    const launch = simulation.lip.launch.bind(simulation.lip);
+    simulation.lip.launch = (cell, velocity, height, volume) => {
+      const crest = simulation.crests.crest(cell % simulation.solver.nx);
+      if (crest) launches.push({ speed: Math.hypot(velocity.x, velocity.z), crest: crest.surfaceSpeed });
+      return launch(cell, velocity, height, volume);
+    };
+    for (let frame = 0; frame < 20 * 30; frame += 1) simulation.step(1 / 30);
+    expect(simulation.lipJets).toBeGreaterThan(0);
+    expect(launches.length).toBeGreaterThan(0);
+    for (const { speed, crest } of launches) expect(speed).toBeCloseTo(crest, 9);
   }, 60_000);
 
   // Stage 1 needs 1 m cells to see a wave break (P3a), so the whole reef edge must lie in the fine surf zone.

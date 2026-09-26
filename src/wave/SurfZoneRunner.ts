@@ -61,6 +61,9 @@ export interface SurfZoneStatus {
   peel?: PeelEstimate;
   lipLaunches: number;
   lipVolume: number;
+  /** Breaks that threw a plunging jet, and that spilled as a roller (plan P7). */
+  lipJets: number;
+  lipRollers: number;
   lipAirborne: number;
   /** Spray and mist particles in the air. */
   spray: number;
@@ -298,6 +301,8 @@ export class SurfZoneRunner {
       peel: simulation.peelEstimate(),
       lipLaunches: simulation.lipLaunches,
       lipVolume: simulation.lipVolume,
+      lipJets: simulation.lipJets,
+      lipRollers: simulation.lipRollers,
       lipAirborne: simulation.lip.airborneVolume(),
       spray: this.spray.count,
       onsetScale: simulation.breaking.onsetScale,
