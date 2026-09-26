@@ -156,6 +156,8 @@ export class SurfZoneSimulation {
   private onsetsArmed = false;
   /** When each column last started a wave that could throw a lip, s. */
   private lastThrow!: Float64Array;
+  /** When each column last started breaking a new wave, s. */
+  private lastOnset!: Float64Array;
   private readonly seaTimeOffset: number;
   private mapping?: {
     grid: RenderGrid; xMin: number; columns: Int32Array; columnWeights: Float64Array;
@@ -202,6 +204,7 @@ export class SurfZoneSimulation {
       this.lipImpacts.push({ x, z, volume, vx, vy, vz });
     };
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
+    this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
   }
 
   get seaTime(): number {
@@ -316,13 +319,31 @@ export class SurfZoneSimulation {
         }
       }
       const previous = this.outerBreak[column];
-      if (this.onsetsArmed && outer < previous - 5) {
+      this.outerBreak[column] = outer;
+      if (this.onsetsArmed && outer < previous - 5 && this.newBreaker(column, row)) {
+        this.lastOnset[column] = solver.time;
         this.peel.markOnset(column, solver.time);
         this.throwLip(column, row);
       }
-      this.outerBreak[column] = outer;
     }
     this.onsetsArmed = true;
+  }
+
+  /** Where each column's outermost breaking cell lies across shore, z (Infinity when the column is not breaking). */
+  outerBreakZ(column: number): number {
+    return this.outerBreak[column];
+  }
+
+  /**
+   * Whether a column's break at `row` starts a new wave: at most one per
+   * 0.7 Tp, and only where the still depth is at least 0.4 h_b. Shallower
+   * first breaks are swash bores reaching the shore after a lull; counting
+   * them read every spot's peel as mixed peaks.
+   */
+  private newBreaker(column: number, row: number): boolean {
+    const { solver } = this;
+    if (solver.time - this.lastOnset[column] < 0.7 * this.config.peakPeriod) return false;
+    return solver.restLevel - solver.bed[row * solver.nx + column] >= 0.4 * this.breakerDepth();
   }
 
   /**

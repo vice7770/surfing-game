@@ -194,6 +194,27 @@ describe('SurfZoneSimulation', () => {
     expect(simulation.lip.landings).toBeGreaterThan(0);
   }, 60_000);
 
+  it('counts a column breaking once per wave for the peel, and never shore swash', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 1.4, peakPeriod: 10, dx: 1, fineSpacing: 1 });
+    const { solver } = simulation;
+    const onsets: { column: number; time: number; still: number }[] = [];
+    const peel = simulation.peel;
+    const mark = peel.markOnset.bind(peel);
+    peel.markOnset = (column: number, time: number) => {
+      const row = solver.rowBelow(simulation.outerBreakZ(column));
+      onsets.push({ column, time, still: solver.restLevel - solver.bed[row * solver.nx + column] });
+      mark(column, time);
+    };
+    for (let frame = 0; frame < 30 * 30; frame += 1) simulation.step(1 / 30);
+    expect(onsets.length).toBeGreaterThan(0);
+    for (const onset of onsets) expect(onset.still).toBeGreaterThanOrEqual(0.4 * simulation.breakerDepth() - 1e-9);
+    const last = new Map<number, number>();
+    for (const { column, time } of onsets) {
+      if (last.has(column)) expect(time - last.get(column)!).toBeGreaterThanOrEqual(0.7 * 10 - 1e-9);
+      last.set(column, time);
+    }
+  }, 60_000);
+
   it('does not read the spin-up bores as one simultaneous close-out', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1 });
     for (let frame = 0; frame < 3; frame += 1) simulation.step(1 / 30);
