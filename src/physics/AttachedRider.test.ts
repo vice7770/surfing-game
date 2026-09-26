@@ -703,6 +703,21 @@ describe('the balance margin', () => {
     expect(rider.balanceMargin).toBeGreaterThan(0.8);
   });
 
+  // P9: the HUD's balance meter reads the leg's margin standing, and P8's rule lying down.
+  it('serves the margin to the balance meter while standing', () => {
+    const { board, rider } = mounted('standing');
+    const tow = () => {
+      board.velocity.z = 6;
+      rider.velocity.z = 6;
+    };
+    tow();
+    run(board, new PlaneWater(), 1.5, tow);
+    rider.velocity.x += 0.6;
+    run(board, new PlaneWater(), 0.2, tow);
+    expect(rider.balanceMargin).toBeLessThan(0.7);
+    expect(rider.balanceReserve).toBe(rider.balanceMargin);
+  });
+
   it('spreads the drawn arms as the margin shrinks', () => {
     const { board, rider } = mounted('standing');
     run(board, new PlaneWater(), 0.2);

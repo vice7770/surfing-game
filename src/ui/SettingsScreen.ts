@@ -155,8 +155,9 @@ export function createSettingsScreen(options: SettingsScreenOptions): HTMLElemen
           button.addEventListener('click', () => captureBinding(button, binding));
           return button;
         };
+        const help = 'help' in row && row.help ? el('small', { class: 'setting-help', text: row.help }) : null;
         children.push(el('div', { class: 'binding-row' },
-          el('span', { class: 'setting-label', text: row.label }),
+          el('span', { class: 'setting-label' }, row.label, help),
           el('span', { class: 'binding-keys' }, bindingButton(group[0]), bindingButton(group[1])),
           bindingButton(group[2])));
       } else {

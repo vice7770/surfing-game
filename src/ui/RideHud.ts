@@ -1,4 +1,6 @@
 import type { Maneuver } from '../game/rideAnalysis';
+import type { GameplaySettings } from '../game/Settings';
+import type { SurfConditions } from '../game/SurfConditions';
 import type { SurfZoneStatus } from '../wave/SurfZoneRunner';
 import { el, icon } from './dom';
 import { ICONS } from './icons';
@@ -6,6 +8,11 @@ import { MANEUVER_LABELS } from './RideEndCard';
 import { ridePrompt, type PromptKeys } from './ridePrompt';
 import { t } from './strings';
 import { speedParts, type Units } from './units';
+
+/** Whether the balance meter shows (spec P9): by default on the Practice swell only, where the mechanics are learned. */
+export function showsBalanceMeter(setting: GameplaySettings['balanceMeter'], swell: SurfConditions['swell']): boolean {
+  return setting === 'always' || (setting === 'practice' && swell === 'practice');
+}
 
 /**
  * The callout for the ride's latest manoeuvre (P9): its name, the first time it is
@@ -42,12 +49,15 @@ export class RideHud {
   /** A brief callout of each manoeuvre (P9), and the one shown last. */
   private readonly callout = el('p', { class: 'hud-callout', attrs: { 'aria-live': 'polite' } });
   private calloutKey = '';
+  /** A one-time hint for a riding mechanic (P9). */
+  private readonly coach = el('p', { class: 'hud-coach', attrs: { 'aria-live': 'polite' } });
 
   constructor(onPause: () => void) {
     this.balance.append(this.balanceFill);
     this.root = el('section', { class: 'ride-hud', attrs: { 'aria-label': t('hud.speed') } },
       this.prompt,
       this.callout,
+      this.coach,
       el('div', { class: 'hud-readout' },
         this.balance,
         el('div', { class: 'hud-speed' }, this.speedValue, this.speedUnit)),
@@ -55,7 +65,9 @@ export class RideHud {
       this.hints);
   }
 
-  update(ride: SurfZoneStatus['ride'] | undefined, units: Units, keys: HintKeys, showHints: boolean): void {
+  update(ride: SurfZoneStatus['ride'] | undefined, units: Units, keys: HintKeys, showHints: boolean, showBalance = true, coachHint = ''): void {
+    if (this.coach.textContent !== coachHint) this.coach.textContent = coachHint;
+    this.coach.hidden = coachHint === '';
     const prompt = ridePrompt(ride, keys);
     if (this.prompt.textContent !== prompt) this.prompt.textContent = prompt;
     this.prompt.hidden = prompt === '';
@@ -72,7 +84,7 @@ export class RideHud {
     this.speedValue.textContent = value;
     this.speedUnit.textContent = unit;
     const standing = ride?.phase === 'standing' || ride?.phase === 'recover';
-    this.balance.hidden = !standing;
+    this.balance.hidden = !standing || !showBalance;
     if (standing) {
       const reserve = ride.balance;
       this.balanceFill.style.transform = `scaleY(${reserve.toFixed(3)})`;

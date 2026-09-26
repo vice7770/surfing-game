@@ -38,6 +38,8 @@ export class Controls {
   private touchCrouch = false;
   /** Keys held → the ride's axes, ramped (spec P9). */
   private readonly ramps = { steer: new AxisRamp(), trim: new AxisRamp(), crouch: new AxisRamp() };
+  /** The latest ride request, for the hints to see what the player holds. */
+  lastRequest: RideInput = { paddle: false, popUp: false, steer: 0, trim: 0, crouch: 0, hand: false };
   private getUpRequested = false;
   private active = true;
   /** The device the player last pressed something on, so hints can name its keys or buttons. */
@@ -100,7 +102,7 @@ export class Controls {
     const trim = this.ramps.trim.update(trimKeys, dt);
     const crouch = this.ramps.crouch.update(crouchKeys, dt);
     const pad = this.active;
-    return {
+    this.lastRequest = {
       paddle: !standing && (has('paddle') || touch(this.touchPaddle)),
       popUp: this.active && this.getUpRequested,
       steer: pad && this.padSteerValue !== 0 ? this.padSteerValue : steer,
@@ -108,6 +110,7 @@ export class Controls {
       crouch: standing && pad ? Math.max(this.padCrouchValue, crouch) : crouch,
       hand: standing && has('hand'),
     };
+    return this.lastRequest;
   }
 
   requestGetUp(): void { this.getUpRequested = true; }

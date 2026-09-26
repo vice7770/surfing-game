@@ -1,7 +1,7 @@
 import { REBINDABLE, buttonLabel, keyLabel, rebind, type Action } from '../game/Bindings';
 import { NEXT_WAVE_FIELDS, withAdvanced, withPreset } from '../game/Graphics';
 import type { AdvancedGraphics, GameSettings, GraphicsPreset, SettingsTab } from '../game/Settings';
-import { t, type StringKey } from './strings';
+import { EN, t, type StringKey } from './strings';
 
 type Option = { value: string; label: string };
 
@@ -10,7 +10,7 @@ export type Row =
   | { kind: 'choice'; id: string; label: string; value: string; options: Option[]; nextWave?: boolean }
   | { kind: 'toggle'; id: string; label: string; value: boolean; nextWave?: boolean }
   | { kind: 'slider'; id: string; label: string; value: number; min: number; max: number; step: number }
-  | { kind: 'binding'; id: string; label: string; device: 'keyboard' | 'gamepad'; action: Action; slot: 0 | 1; value: string }
+  | { kind: 'binding'; id: string; label: string; help?: string; device: 'keyboard' | 'gamepad'; action: Action; slot: 0 | 1; value: string }
   | { kind: 'button'; id: string; label: string; action: string; disabled: boolean }
   | { kind: 'heading'; id: string; label: string };
 
@@ -57,11 +57,14 @@ function controlRows(settings: GameSettings): Row[] {
   const rows: Row[] = [];
   for (const action of REBINDABLE) {
     const label = t(`action.${action}` as StringKey);
+    // The standing actions (P9) say what they do, as the key card.
+    const helpKey = `action.${action}.help`;
+    const help = helpKey in EN ? { help: t(helpKey as StringKey) } : {};
     for (const slot of [0, 1] as const) {
       const code = bindings.keyboard[action][slot];
-      rows.push({ kind: 'binding', id: `bind:keyboard:${action}:${slot}`, label, device: 'keyboard', action, slot, value: code ? keyLabel(code) : '—' });
+      rows.push({ kind: 'binding', id: `bind:keyboard:${action}:${slot}`, label, ...help, device: 'keyboard', action, slot, value: code ? keyLabel(code) : '—' });
     }
-    rows.push({ kind: 'binding', id: `bind:gamepad:${action}:0`, label, device: 'gamepad', action, slot: 0, value: buttonLabel(bindings.gamepad[action][0]) });
+    rows.push({ kind: 'binding', id: `bind:gamepad:${action}:0`, label, ...help, device: 'gamepad', action, slot: 0, value: buttonLabel(bindings.gamepad[action][0]) });
   }
   rows.push({ kind: 'choice', id: 'handedness', label: t('settings.handedness'), value: handedness, options: options('settings.hand', ['right', 'left']) });
   return rows;
@@ -75,6 +78,7 @@ export function settingsModel(tab: SettingsTab, settings: GameSettings, context:
       { kind: 'choice', id: 'units', label: t('settings.units'), value: g.units, options: options('settings.units', ['metric', 'imperial']) },
       { kind: 'choice', id: 'defaultCamera', label: t('settings.defaultCamera'), value: g.defaultCamera, options: options('view', ['front', 'behind', 'side', 'overview']) },
       { kind: 'choice', id: 'touchControls', label: t('settings.touchControls'), value: g.touchControls, options: options('settings.touch', ['auto', 'on', 'off']) },
+      { kind: 'choice', id: 'balanceMeter', label: t('settings.balanceMeter'), value: g.balanceMeter, options: options('settings.balanceMeter', ['practice', 'always', 'never']) },
       { kind: 'toggle', id: 'scoreRides', label: t('settings.scoreRides'), value: g.scoreRides },
       ...(context.devTools ? [{ kind: 'toggle' as const, id: 'showTelemetry', label: t('settings.showTelemetry'), value: g.showTelemetry }] : []),
     ];
@@ -89,7 +93,7 @@ export function settingsModel(tab: SettingsTab, settings: GameSettings, context:
   ];
 }
 
-const GAMEPLAY = new Set(['units', 'defaultCamera', 'touchControls', 'scoreRides', 'showTelemetry']);
+const GAMEPLAY = new Set(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'scoreRides', 'showTelemetry']);
 const ACCESSIBILITY = new Set(['reducedMotion', 'uiScale', 'highContrastHud']);
 
 /** The store update a row's new value makes, or undefined when refused (a reserved key) or not a setting (Re-detect). */

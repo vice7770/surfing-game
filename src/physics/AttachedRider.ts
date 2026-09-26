@@ -711,13 +711,16 @@ export class AttachedRider {
   }
 
   /**
-   * How far the rider is from letting go, for the balance meter (plan P8): 1 in
-   * the posture, 0 when the sway (standing) or the posture error reaches
-   * RECOVERABLE_ERROR, the separation threshold in `endStep`.
+   * How far the rider is from letting go, for the balance meter (plan P8).
+   * Standing, it is the leg's balance margin (P9): how near the feet's pressure is
+   * to their edges and their grip. The body's sway off its stance, which P8 read,
+   * barely moved while the feet were close to tipping. Otherwise 1 in the
+   * posture, 0 when the posture error reaches RECOVERABLE_ERROR, the separation
+   * threshold in `endStep`.
    */
   get balanceReserve(): number {
-    const sway = this.upright ? Math.hypot(this.sway.x, this.sway.z) : 0;
-    return Math.max(0, 1 - Math.max(sway, this.postureError) / RECOVERABLE_ERROR);
+    if (this.upright) return this.balanceMargin;
+    return Math.max(0, 1 - this.postureError / RECOVERABLE_ERROR);
   }
 
   kineticEnergy(): number {

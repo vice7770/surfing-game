@@ -11,6 +11,8 @@ export interface GameplaySettings {
   units: Units;
   defaultCamera: RideView | 'overview';
   touchControls: 'auto' | 'on' | 'off';
+  /** The balance meter (spec P9): on the Practice swell only, always, or never. */
+  balanceMeter: 'practice' | 'always' | 'never';
   /** Score each ride 0–10 on the WSL criteria (spec P9), off unless the player wants it. */
   scoreRides: boolean;
   /** Only offered while the dev tools are on. */
@@ -73,7 +75,7 @@ function copyBindings(bindings: Bindings): Bindings {
 
 export function defaultSettings(prefersReducedMotion = false): GameSettings {
   return {
-    gameplay: { units: 'metric', defaultCamera: 'front', touchControls: 'auto', scoreRides: false, showTelemetry: false },
+    gameplay: { units: 'metric', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', scoreRides: false, showTelemetry: false },
     // The Medium preset's values (Graphics.PRESETS.medium; a test keeps the two equal).
     graphics: {
       preset: 'auto', renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto',
@@ -143,6 +145,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       units: oneOf(gameplay.units, ['metric', 'imperial'] as const, defaults.gameplay.units),
       defaultCamera: oneOf(gameplay.defaultCamera, ['front', 'behind', 'side', 'overview'] as const, defaults.gameplay.defaultCamera),
       touchControls: oneOf(gameplay.touchControls, ['auto', 'on', 'off'] as const, defaults.gameplay.touchControls),
+      balanceMeter: oneOf(gameplay.balanceMeter, ['practice', 'always', 'never'] as const, defaults.gameplay.balanceMeter),
       scoreRides: flag(gameplay.scoreRides, defaults.gameplay.scoreRides),
       showTelemetry: flag(gameplay.showTelemetry, defaults.gameplay.showTelemetry),
     },

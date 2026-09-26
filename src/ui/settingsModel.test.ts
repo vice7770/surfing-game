@@ -8,8 +8,18 @@ const context = { devTools: false, detecting: false };
 describe('settingsModel', () => {
   it('offers telemetry only with the dev tools on', () => {
     const ids = (devTools: boolean) => settingsModel('gameplay', defaultSettings(), { ...context, devTools }).map((row) => row.id);
-    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'scoreRides']);
+    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'scoreRides']);
     expect(ids(true)).toContain('showTelemetry');
+  });
+
+  // P9: the balance meter, in Practice by default; and a line on what each new action does.
+  it('offers the balance meter in Practice by default, and explains the standing actions', () => {
+    expect(settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'balanceMeter')).toMatchObject({ kind: 'choice', value: 'practice' });
+    expect(applyRow(defaultSettings(), 'balanceMeter', 'never')).toEqual({ tab: 'gameplay', patch: { balanceMeter: 'never' } });
+    const rows = settingsModel('controls', defaultSettings(), context);
+    const help = (action: string) => rows.find((r) => r.kind === 'binding' && r.action === action && 'help' in r)?.['help' as never];
+    for (const action of ['trimForward', 'trimBack', 'crouch', 'hand']) expect(help(action)).toBeTruthy();
+    expect(help('paddle')).toBeUndefined();
   });
 
   // P9: a WSL-style score, only if the player wants it.
