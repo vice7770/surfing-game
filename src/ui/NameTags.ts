@@ -37,7 +37,8 @@ export function tagLayout(entries: readonly TagEntry[], camera: Camera, width: n
     projected.copy(entry.world).project(camera);
     const inView = projected.z > -1 && projected.z < 1 && Math.abs(projected.x) <= 1.2 && Math.abs(projected.y) <= 1.2;
     const near = entry.world.distanceTo(origin) <= TAG_DISTANCE;
-    const showName = showNames;
+    // An unnamed entry is the player's own: only its call ever shows.
+    const showName = showNames && entry.name.length > 0;
     return {
       id: entry.id, name: entry.name, call: entry.call,
       x: (projected.x * 0.5 + 0.5) * width,

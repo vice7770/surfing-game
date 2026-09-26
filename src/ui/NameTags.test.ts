@@ -29,6 +29,15 @@ describe('tagLayout', () => {
     expect(tagLayout([{ id: 3, name: 'Near', world: new Vector3(0, 2, -10) }], view, 800, 400, false)[0].visible).toBe(false);
   });
 
+  it('shows only the call for an unnamed entry (the player\'s own)', () => {
+    const [own, silent] = tagLayout([
+      { id: 1, name: '', world: new Vector3(0, 2, -10), call: 'Left!' },
+      { id: 2, name: '', world: new Vector3(0, 2, -10) },
+    ], camera(), 800, 400, true);
+    expect(own).toMatchObject({ visible: true, showName: false, call: 'Left!' });
+    expect(silent.visible).toBe(false);
+  });
+
   it('shows a call even with name tags off', () => {
     const [tag] = tagLayout([{ id: 1, name: 'Ana', world: new Vector3(0, 2, -10), call: 'Party wave!' }], camera(), 800, 400, false);
     expect(tag.visible).toBe(true);
