@@ -1,6 +1,6 @@
 import { PerspectiveCamera, Vector3 } from 'three';
 
-export type SpectatorView = 'overview' | 'profile' | 'below' | RideView;
+export type SpectatorView = 'overview' | 'profile' | 'below' | 'cinematic' | RideView;
 
 /**
  * Views that follow the rider: in front (from the beach side, looking out at the
@@ -35,6 +35,16 @@ const BEHIND_HEIGHT = 2.6;
 const SIDE_DISTANCE = 14;
 const SIDE_HEIGHT = 1.8;
 
+/**
+ * The menu's cinematic view (plan P8): the camera sweeps CINEMA_SWEEP m either
+ * side of the break at CINEMA_RATE rad/s (a full sweep in about three minutes),
+ * CINEMA_SHOREWARD m inshore of it and CINEMA_HEIGHT m up, looking out to sea.
+ */
+export const CINEMA_SWEEP = 55;
+export const CINEMA_RATE = 0.035;
+export const CINEMA_SHOREWARD = 60;
+export const CINEMA_HEIGHT = 11;
+
 /** Camera for the physical surf zone: cliff overview, water-line profile, underwater, or following the ride. */
 export class SpectatorCamera {
   readonly camera = new PerspectiveCamera(52, 1, 0.1, 3000);
@@ -42,6 +52,8 @@ export class SpectatorCamera {
   private readonly desired = new Vector3();
   private readonly target = new Vector3();
   private settled = false;
+  private cinemaTime = 0;
+  private reducedMotion = false;
 
   get view(): SpectatorView {
     return this.currentView;
@@ -53,9 +65,20 @@ export class SpectatorCamera {
     this.settled = false;
   }
 
+  /** Accessibility (plan P8): the cinematic view holds still. */
+  setReducedMotion(reduced: boolean): void {
+    this.reducedMotion = reduced;
+  }
+
   update(scene: SpectatorScene, focus: { x: number; z: number }, dt: number, follow?: FollowTarget): void {
     const view = this.currentView;
-    if (follow && (view === 'front' || view === 'behind' || view === 'side')) {
+    if (view === 'cinematic') {
+      if (!this.reducedMotion) this.cinemaTime += dt;
+      const sweep = Math.sin(CINEMA_RATE * this.cinemaTime);
+      this.desired.set(focus.x + CINEMA_SWEEP * sweep, 0, focus.z + CINEMA_SHOREWARD);
+      this.desired.y = Math.max(scene.heightAt(this.desired.x, this.desired.z) + 6, CINEMA_HEIGHT);
+      this.target.set(focus.x + 0.5 * CINEMA_SWEEP * sweep, 0, focus.z - 30);
+    } else if (follow && (view === 'front' || view === 'behind' || view === 'side')) {
       const p = follow.position;
       if (view === 'front') {
         // The video brief's wide, elevated three-quarter view from the beach side,

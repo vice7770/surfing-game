@@ -68,7 +68,11 @@ export interface SurfZoneStatus {
   /** The riderless board: its speed, m/s, and how often it left the water's domain and was put back in the lineup. */
   board?: { speed: number; resets: number };
   /** The ride: the rider's phase, board speed, pop-up cue and latest pop-up, why it last fell, and how often it restarted. */
-  ride?: { phase: (typeof RIDER_PHASES)[number]; speed: number; cue: boolean; popUp: PopUpReport; separation?: RiderSeparation; resets: number };
+  ride?: {
+    phase: (typeof RIDER_PHASES)[number]; speed: number; cue: boolean; popUp: PopUpReport; separation?: RiderSeparation; resets: number;
+    /** The rider's balance reserve, 0–1 (0 once fallen). */
+    balance: number;
+  };
 }
 
 /**
@@ -309,6 +313,7 @@ export class SurfZoneRunner {
         popUp: { ...this.session.rider.popUpReport },
         separation: this.session.separation,
         resets: this.rideResets,
+        balance: this.session.phase === 'fallen' ? 0 : this.session.rider.balanceReserve,
       } : undefined,
     };
   }

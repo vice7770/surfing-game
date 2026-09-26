@@ -69,6 +69,13 @@ describe('FarFieldOcean', () => {
       const expected = (profile.omega[c] * 1234.5) % (2 * Math.PI);
       expect(temporal[c]).toBeCloseTo(expected, 5);
     }
+    expect(ocean.viewFade.start).toBeCloseTo(990, 6);
+    expect(ocean.viewFade.end).toBeCloseTo(1455, 6);
+    ocean.setViewDistance('near');
+    expect(ocean.viewFade.start).toBeCloseTo(450, 6);
+    expect(ocean.viewFade.end).toBeCloseTo(705, 6);
+    ocean.setProfile(profile, hole, { x: 0, z: -60 }, { extent: 1500 });
+    expect(ocean.viewFade.end).toBeCloseTo(705, 6);
   });
 
   it('shades the far field with the tank water optics', () => {

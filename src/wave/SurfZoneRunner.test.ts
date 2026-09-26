@@ -189,6 +189,9 @@ describe('SurfZoneRunner with a rider', () => {
     const board = runner.session!.board;
     expect(board.position.z - start.z).toBeGreaterThan(3);
     expect(runner.status().ride!.speed).toBeGreaterThan(1);
+    const { balance } = runner.status().ride!;
+    expect(balance).toBeGreaterThanOrEqual(0);
+    expect(balance).toBeLessThanOrEqual(1);
   });
 
   it('puts board and rider back in the lineup on retry, without restarting the wave', () => {

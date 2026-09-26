@@ -238,8 +238,16 @@ export class PhysicalMode {
   practice = false;
   focus = { x: 0, z: 0 };
   private starts = 0;
+  /** Lets go of the surf zone still spinning up, when a later start or a cancel supersedes it. */
+  private dropPending?: () => void;
   private shown = true;
+  /** Graphics setting (plan P8): spray and mist are still simulated, only not drawn. */
+  private sprayShown = true;
   private chosenView: RideView | 'overview' = 'front';
+  /** The view with no rider on the water: the overview in the Wave Lab, the cinematic sweep behind the menu (plan P8). */
+  idleView: SpectatorView = 'overview';
+  /** The ride view each new session starts in: the player's default camera (plan P8). */
+  defaultView: RideView | 'overview' = 'front';
   /** Whether the screen's right is the board's left (+1) or its right (−1), from the latest clear view. */
   private steerSign = -1;
   private readonly cameraRight = new Vector3();
@@ -284,12 +292,20 @@ export class PhysicalMode {
       ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
       ...overrides,
     };
+    // Superseded while asking for the GPU: never build it, and never drop the newer start's spin-up.
+    if (start !== this.starts) return false;
     const host = createHost(config);
-    await host.ready;
-    if (start !== this.starts) {
+    // A superseded spin-up is let go at once, so its worker stops competing with the next one.
+    this.dropPending?.();
+    const dropped = new Promise<'dropped'>((resolve) => {
+      this.dropPending = () => resolve('dropped');
+    });
+    const outcome = await Promise.race([host.ready.then(() => 'ready' as const), dropped]);
+    if (outcome === 'dropped' || start !== this.starts) {
       host.dispose();
       return false;
     }
+    this.dropPending = undefined;
     this.stop();
     this.host = host;
     this.config = config;
@@ -331,7 +347,7 @@ export class PhysicalMode {
     });
     this.farField.setProfile(profile, hole, this.focus, { extent: FAR_EXTENT });
     this.farField.setChop(chopForWind(settings.windSpeed));
-    this.chosenView = 'front';
+    this.chosenView = this.defaultView;
     this.camera.setView(this.homeView);
     return true;
   }
@@ -339,6 +355,8 @@ export class PhysicalMode {
   /** Supersede any start still spinning up, so it never takes over. */
   cancel(): void {
     this.starts += 1;
+    this.dropPending?.();
+    this.dropPending = undefined;
   }
 
   /** Let the running surf zone go (its worker, if any, ends). */
@@ -352,7 +370,7 @@ export class PhysicalMode {
   /** Request `steps` fixed physics steps (`SURF_ZONE_STEP` each). */
   /** The following view last chosen (or the overview), which profile and underwater toggles return to. */
   get homeView(): SpectatorView {
-    return this.host && this.host.snapshot.rider[RIDER_SNAPSHOT.present] > 0 ? this.chosenView : 'overview';
+    return this.host && this.host.snapshot.rider[RIDER_SNAPSHOT.present] > 0 ? this.chosenView : this.idleView;
   }
 
   /** Cycle the camera: in front, behind, to the side of the rider, then the overview of the break. */
@@ -426,6 +444,11 @@ export class PhysicalMode {
     return this.host && this.config ? formatPhysicalReadout(this.config, this.host.snapshot.status, this.storm, this.practice) : [];
   }
 
+  setSprayVisible(visible: boolean): void {
+    this.sprayShown = visible;
+    this.spray.mesh.visible = this.shown && visible;
+  }
+
   cameraBelowSurface(margin = 0.1): boolean {
     if (!this.host) return false;
     const position = this.camera.camera.position;
@@ -440,6 +463,6 @@ export class PhysicalMode {
     this.farField.mesh.visible = visible;
     this.lipPoints.mesh.visible = visible;
     this.bubbles.mesh.visible = visible;
-    this.spray.mesh.visible = visible;
+    this.spray.mesh.visible = visible && this.sprayShown;
   }
 }

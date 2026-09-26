@@ -108,11 +108,16 @@ ${foamPatternPars}
  * breaking-foam proxy beside the window, wind chop, and a fade into the sky.
  * It shades like the tank water from its tabulated depth, without crest light.
  */
+/** The fade into the sky as fractions of the extent: far to the horizon, or near for the Low preset. */
+const VIEW_FADE = { far: [0.66, 0.97], near: [0.3, 0.47] } as const;
+
 export class FarFieldOcean {
   readonly mesh: Mesh<BufferGeometry, MeshPhysicalMaterial>;
   private texture?: DataTexture;
   private profile?: FarFieldProfile;
   private readonly uniforms: Record<string, { value: unknown }>;
+  private extent = 1500;
+  private view: 'near' | 'far' = 'far';
 
   constructor() {
     this.uniforms = {
@@ -190,8 +195,26 @@ export class FarFieldOcean {
     this.uniforms.farCenterX.value = 0.5 * (hole.xMin + hole.xMax);
     (this.uniforms.farHole.value as Vector4).set(hole.xMin, hole.xMax, hole.zMin, hole.zMax);
     (this.uniforms.farFocus.value as Vector2).set(focus.x, focus.z);
-    (this.uniforms.farFade.value as Vector2).set(options.extent * 0.66, options.extent * 0.97);
+    this.extent = options.extent;
+    this.applyFade();
     this.mesh.visible = true;
+  }
+
+  /** Graphics setting (plan P8): the far ocean fades out nearer on the Near setting. */
+  setViewDistance(view: 'near' | 'far'): void {
+    this.view = view;
+    this.applyFade();
+  }
+
+  /** Where the far ocean starts and finishes fading into the sky, m from the focus. */
+  get viewFade(): { start: number; end: number } {
+    const fade = this.uniforms.farFade.value as Vector2;
+    return { start: fade.x, end: fade.y };
+  }
+
+  private applyFade(): void {
+    const [start, end] = VIEW_FADE[this.view];
+    (this.uniforms.farFade.value as Vector2).set(this.extent * start, this.extent * end);
   }
 
   setOptics(optics: WaterOptics): void {
