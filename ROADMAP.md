@@ -300,6 +300,19 @@ Requirements agreed on 2026-09-26: [G8 spec](docs/superpowers/specs/2026-09-26-g
   - a middle water level if the M1 Air needs one;
   - the tank/far-field seam: from high up, the tank's offshore ridge shows a thin outline and sand-coloured slivers, in both looks.
 
+### P1 · Barrel and whitewater (G9) — `In Progress (Part A done)`
+
+Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpowers/specs/2026-09-26-g9-barrel-whitewater.md); [plan](docs/superpowers/plans/2026-09-26-g9-barrel-whitewater.md).
+- [x] **Part A · the barrel look** (Rich only; Classic unchanged, its lip sheet now pinned by a snapshot too):
+  - **Tubes reach the page.** The worker sends raw heights and a table of flying tubes. One carve serves the physics, the page's Classic texture and its height lookups; it agrees with the worker to under 0.1 mm.
+  - **The void as one shape along the peel.** Between two columns that both hold a tube, the tube itself is interpolated (crest, opening, size); beside a column with none, the carved surfaces blend. The physics carves the same way, so board and eye meet one surface.
+  - **The void cut on the GPU**, per vertex in the 0.25 m patch and per pixel, with a 16-step twin of the physics' floor curve, within 5 mm of it.
+  - **The lip:** spline-smoothed between its parcels, as thick as its water (never thicker than a compact blob of it), shaded with the Rich water's optics. Sunlight and the sky's light come through it by Beer–Lambert over its own path, it reflects at the Rich balance, and it whitens to foam as it ages.
+  - **Judging it:** `?inpage&waterSheet&spot=reef` holds the practice Reef on an open tube and shoots it beside, from the shoulder and inside.
+  - **Cost on the M1 Air** (render alone, 1280×720): Rich tube shots take about 12 ms against Classic's 6 ms; the lineup about 8 ms against 6 ms.
+  - **Open, for the playtest:** the curtain still hangs in drapes where strips at different stages leave holes; a cheaper carve slope (analytic, one evaluation instead of three).
+- [ ] **Part B · breaking whitewater:** splash-up, trapped air with the tube's collapse and spit, air entrainment driving the churn, the foam ball and the bubble plume, sourced and reported per spot.
+
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 
 Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](docs/superpowers/specs/2026-09-26-gameplay-milestone.md), grounded in the [surf-science survey](docs/research/surf-gameplay-research.md).
