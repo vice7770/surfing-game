@@ -17,6 +17,8 @@ export interface RenderableSurfZone {
  */
 export class PhysicalSurfaceSource implements SurfaceSource {
   readonly grid: SurfaceGrid;
+  /** Its bodies ride a Catmull-Rom surface over these nodes (`PhysicalSurfWater`), so the Rich water draws that (G8). */
+  readonly cubic = true;
 
   constructor(private readonly simulation: RenderableSurfZone, spacing = 1) {
     this.grid = simulation.renderGrid(spacing);

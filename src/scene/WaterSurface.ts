@@ -14,6 +14,7 @@ import {
   Vector4,
 } from 'three';
 import type { WaterLook } from './water/waterLook';
+import { richBeginNormal, richFragmentPars, richNormalFragment, richVertexHeight, waterCubicPars } from './water/richWaterGlsl';
 import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
@@ -166,6 +167,8 @@ export interface SurfaceSource {
   writeBed(data: Float32Array): void;
   /** Interleaved surface current (u, w) per grid node, m/s; without it the foam pattern stands still. */
   writeFlow?(data: Float32Array): void;
+  /** Its bodies sample a Catmull-Rom surface over the render nodes (`PhysicalSurfWater`), which the Rich look draws (G8). */
+  readonly cubic?: boolean;
 }
 
 export class WaterSurface {
@@ -223,6 +226,19 @@ export class WaterSurface {
     });
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, this.uniforms);
+      if (this.effectiveLook === 'rich') {
+        // G8: the physics' Catmull-Rom surface, its normal per pixel.
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', `#include <common>\n${waterVertexPars}\n${waterCubicPars}`)
+          .replace('#include <beginnormal_vertex>', richBeginNormal)
+          .replace('#include <begin_vertex>', richVertexHeight);
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', `#include <common>\n${waterFragmentPars}\n${waterCubicPars}\n${richFragmentPars}`)
+          .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: false }))
+          .replace('#include <color_fragment>', '')
+          .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true));
+        return;
+      }
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', `#include <common>\n${waterVertexPars}`)
         .replace('#include <beginnormal_vertex>', waterBeginNormal)
@@ -233,7 +249,7 @@ export class WaterSurface {
         .replace('#include <color_fragment>', '')
         .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true));
     };
-    material.customProgramCacheKey = () => `breakline-water-surface-${this.currentLook}`;
+    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}`;
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
     this.mesh.frustumCulled = false;
     this.update();
@@ -289,6 +305,11 @@ export class WaterSurface {
     return this.currentLook;
   }
 
+  /** The look drawn: Rich only for a source whose bodies ride the Catmull-Rom surface; the legacy wave stays Classic. */
+  private get effectiveLook(): WaterLook {
+    return this.currentLook === 'rich' && this.source.cubic ? 'rich' : 'classic';
+  }
+
   /** Graphics setting (plan P8): Simple keeps the soft foam tint even on water with a current. */
   setFoamDetail(detailed: boolean): void {
     this.detailedFoam = detailed;
@@ -322,7 +343,9 @@ export class WaterSurface {
   /** Switch to another water source, rebuilding the mesh and texture if its grid differs. */
   setSource(source: SurfaceSource): void {
     const previous = this.source.grid;
+    const wasLook = this.effectiveLook;
     this.source = source;
+    if (this.effectiveLook !== wasLook) this.mesh.material.needsUpdate = true;
     const grid = source.grid;
     if (previous.nx === grid.nx && previous.nz === grid.nz && previous.spacing === grid.spacing) return;
     this.surfaceData = new Float32Array(grid.nx * grid.nz * 2);

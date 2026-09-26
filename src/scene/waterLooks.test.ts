@@ -48,4 +48,19 @@ describe('Classic water parity', () => {
       expect(other.look).toBe('classic');
     }
   });
+
+  it('keeps a bilinear source Classic even when Rich is chosen', () => {
+    const water = new WaterSurface(source);
+    water.setLook('rich');
+    expect(compiled(water.mesh.material)).toEqual(compiled(new WaterSurface(source).mesh.material));
+  });
+
+  it('draws a cubic source’s Rich surface from the Catmull-Rom chunk, per pixel', () => {
+    const water = new WaterSurface({ ...source, cubic: true });
+    water.setLook('rich');
+    const { vertex, fragment } = compiled(water.mesh.material);
+    expect(vertex).toContain('waterCubic( waterXZ )');
+    expect(fragment).toContain('waterCubic( vWaterWorld.xz )');
+    expect(water.mesh.material.customProgramCacheKey()).toContain('rich');
+  });
 });
