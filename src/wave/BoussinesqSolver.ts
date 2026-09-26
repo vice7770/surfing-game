@@ -1,5 +1,5 @@
 import { GRAVITY } from './dispersion';
-import { PERIODIC, ShallowWaterSolver, WALL, type DepthFunction, type RelaxationZone, type SolverGrid, type SolverOptions } from './ShallowWaterSolver';
+import { OPEN, PERIODIC, ShallowWaterSolver, WALL, type DepthFunction, type RelaxationZone, type SolverGrid, type SolverOptions } from './ShallowWaterSolver';
 
 /** Madsen & Sørensen (1992) dispersion coefficient: the [2,2] Padé fit to Airy. */
 export const MADSEN_SORENSEN_B = 1 / 15;
@@ -496,6 +496,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   private dispersiveSources(): void {
     const { halfEta: eta, still: d, dX, dZ, mask, sourceX, sourceZ, f1, f2, f3, f4, f5, f6, gravity: g } = this;
     this.secondX(eta, f1, false);
+    this.carryCurvatureAcrossOpenEdges(f1);
     this.secondZ(eta, f2, false);
     this.derivativeZ(eta, f5, false);
     this.derivativeX(f5, f3, false);
@@ -518,6 +519,28 @@ export class BoussinesqSolver extends ShallowWaterSolver {
       }
       const scale = MADSEN_SORENSEN_B * g * d[i] * d[i];
       sourceZ[i] = scale * (d[i] * (f4[i] + f6[i]) + dZ[i] * (2 * f2[i] + f1[i]) + dX[i] * f3[i]);
+    }
+  }
+
+  /**
+   * η_xx at each open edge column from its inner neighbour: the curvature
+   * carries across the edge, as if η were extrapolated quadratically. The
+   * extended ghost that serves the shallow-water fluxes would give −η_x/dx
+   * there instead, not a curvature at all, and B g d³ η_xxx a surface-slope
+   * force (B d²/2dx²) times the hydrostatic one: 2.7 times in 9 m of water on
+   * a 1 m grid. Over a bed sloping across the edge, where any along-shore
+   * outflow draws the surface down toward the shallower side, that force
+   * pushes on the drawdown and runs away.
+   */
+  private carryCurvatureAcrossOpenEdges(curvature: Float64Array): void {
+    const { nx, nz } = this;
+    if (this.xBoundary !== OPEN || nx < 2) return;
+    for (let iz = 0; iz < nz; iz += 1) {
+      const row = iz * nx;
+      const west = curvature[row + 1];
+      const east = curvature[row + nx - 2];
+      curvature[row] = west;
+      curvature[row + nx - 1] = east;
     }
   }
 

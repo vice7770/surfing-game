@@ -495,3 +495,42 @@ describe('Boussinesq surf zone beds', () => {
   });
 });
 
+
+describe('Boussinesq open along-shore edges', () => {
+  /** The Canyon's wall across both open edges, each 30 m (one half-width) from the axis: 8.2 m deep and a 0.34 slope there. */
+  const canyonWalls = (x: number) => 3 + 14 * Math.exp(-(((x - 30) / 30) ** 2));
+  const grid = { nx: 60, xMin: 0, dx: 1, zEdges: uniformEdges(0, 200, 50), xBoundary: 'open' as const };
+
+  it('keeps a lake at rest over a bed sloping steeply across the open edges', () => {
+    const solver = new BoussinesqSolver(grid, canyonWalls, { breaking: { onset: 0.65 } });
+    const initialDepth = Float64Array.from(solver.h);
+    for (let frame = 0; frame < 300; frame += 1) solver.step(1 / 30);
+    let largestFlow = 0;
+    let depthChange = 0;
+    for (let i = 0; i < solver.h.length; i += 1) {
+      largestFlow = Math.max(largestFlow, Math.abs(solver.qx[i]), Math.abs(solver.qz[i]));
+      depthChange = Math.max(depthChange, Math.abs(solver.h[i] - initialDepth[i]));
+    }
+    expect(largestFlow).toBeLessThan(1e-9);
+    expect(depthChange).toBeLessThan(1e-9);
+  });
+
+  it('stays bounded for 90 s while an oblique wave train leaves across a bed sloping steeply across the open edges', () => {
+    const solver = new BoussinesqSolver(grid, canyonWalls, { breaking: false });
+    const edgeDepth = canyonWalls(0);
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(40, 0), target: longWaveTarget(0.5, 10, edgeDepth, (10 * Math.PI) / 180) });
+    solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(160, 200), target: calmTarget });
+    // Twice the linear orbital speed a √(g/d) at the edges.
+    const bound = 2 * 0.5 * Math.sqrt(GRAVITY / edgeDepth);
+    let fastest = 0;
+    while (solver.time < 90 && fastest < bound) {
+      solver.step(1 / 30);
+      for (let i = 0; i < solver.h.length; i += 1) {
+        const speed = Math.hypot(solver.qx[i], solver.qz[i]) / solver.h[i];
+        if (!(speed <= fastest)) fastest = speed;
+      }
+    }
+    expect(fastest).toBeLessThan(bound);
+    expect(solver.time).toBeGreaterThan(90 - 1e-9);
+  }, 60_000);
+});

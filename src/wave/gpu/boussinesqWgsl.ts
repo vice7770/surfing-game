@@ -49,6 +49,7 @@ struct Params {
 
 const WALL: u32 = 0u;
 const PERIODIC: u32 = 1u;
+const OPEN: u32 = 2u;
 const ALPHA: f32 = ${f(ALPHA)};
 const BCOEF: f32 = ${f(B)};
 const DISPERSIVE_DEPTH: f32 = 0.05;
@@ -349,7 +350,7 @@ fn wetAt(ix: i32, iz: i32) -> f32 {
   let ix = i % P.nx; let iz = i / P.nx;
   if (at(${FIELD.MASK}u, i) <= 0.0) { put(${FIELD.SRCX}u, i, 0.0); put(${FIELD.SRCZ}u, i, 0.0); return; }
   let d = at(${FIELD.STILL}u, i); let dx = at(${FIELD.DDX}u, i); let dz = at(${FIELD.DDZ}u, i);
-  let exx = ddxx(${FIELD.HALF}u, ix, iz, false);
+  let exx = etaXX(ix, iz);
   let ezz = ddzz(${FIELD.HALF}u, ix, iz, false);
   let exz = dxOfDz(${FIELD.HALF}u, ix, iz, false, false);
   // Third derivatives: ∂x of η_xx and η_zz, ∂z of η_zz and η_xx, each from its neighbours' second derivatives.
@@ -363,11 +364,19 @@ fn wetAt(ix: i32, iz: i32) -> f32 {
   put(${FIELD.SRCX}u, i, scale * (d * (exxx + exzz) + dx * (2.0 * exx + ezz) + dz * exz));
   put(${FIELD.SRCZ}u, i, scale * (d * (ezzz + exxz) + dz * (2.0 * ezz + exx) + dx * exz));
 }
+// η_xx, carried across an open edge from the inner neighbour (BoussinesqSolver.carryCurvatureAcrossOpenEdges).
+fn etaXX(ix: u32, iz: u32) -> f32 {
+  var cx = ix;
+  if (P.boundary == OPEN && P.nx > 1u) {
+    if (ix == 0u) { cx = 1u; } else if (ix == P.nx - 1u) { cx = P.nx - 2u; }
+  }
+  return ddxx(${FIELD.HALF}u, cx, iz, false);
+}
 fn secondXAt(ix: i32, iz: u32) -> f32 {
   let nx = i32(P.nx);
-  if (ix >= 0 && ix < nx) { return ddxx(${FIELD.HALF}u, u32(ix), iz, false); }
-  if (P.boundary == PERIODIC) { return ddxx(${FIELD.HALF}u, u32((ix + nx) % nx), iz, false); }
-  return ddxx(${FIELD.HALF}u, select(u32(nx - 1), 0u, ix < 0), iz, false);
+  if (ix >= 0 && ix < nx) { return etaXX(u32(ix), iz); }
+  if (P.boundary == PERIODIC) { return etaXX(u32((ix + nx) % nx), iz); }
+  return etaXX(select(u32(nx - 1), 0u, ix < 0), iz);
 }
 fn secondZAtX(ix: i32, iz: u32) -> f32 {
   let nx = i32(P.nx);
@@ -381,7 +390,7 @@ fn secondZAtZ(ix: u32, iz: i32) -> f32 {
 }
 fn secondXAtZ(ix: u32, iz: i32) -> f32 {
   let nz = i32(P.nz);
-  return ddxx(${FIELD.HALF}u, ix, u32(clamp(iz, 0, nz - 1)), false);
+  return etaXX(ix, u32(clamp(iz, 0, nz - 1)));
 }
 
 // K7: Kennedy breaking from the step's rise rate (BoussinesqSolver.breakingTerms, first half).
