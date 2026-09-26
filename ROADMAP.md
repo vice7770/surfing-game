@@ -198,26 +198,26 @@ Requirements agreed in a grilling session on 2026-09-26: [G7 spec](docs/superpow
 Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](docs/superpowers/specs/2026-09-26-gameplay-milestone.md), grounded in the [surf-science survey](docs/research/surf-gameplay-research.md).
 - Every mechanic is a physical rider input; the player gives intent and the rider's reflexes balance.
 - Study outcomes are validation checks, body limits are tunable parameters, and performance is measured, never a gate.
-- The branch `claude/gameplay-p9` stacks on PR #7.
-- **With P8:** P8 (Menus and settings) owns the UI shell. The gameplay layers' physics runs in parallel with it; their player-facing parts are built on P8's HUD, end card, Logbook, Settings and bindings after it merges.
-- **With P7:** P7 is parked, and resumes before the Tube layer.
+- The branch `claude/gameplay-p9` started on PR #7 and has merged main (P8 menus, P7 barrels, G7 characters).
+- **With P8:** P8 (Menus and settings) owns the UI shell. The gameplay layers' physics runs in parallel with it; their player-facing parts are built on P8's HUD, end card, Logbook, Settings and bindings. P8 has merged.
+- **With P7:** P7 (barrels) has merged, so the Tube layer can follow P11.
 
-- [ ] **P9 Riding** (`Ready`, [plan](docs/superpowers/plans/2026-09-26-p9-riding.md)):
-  - **Part A, physics, now:**
-    - phase 0: speed and position against the crest, speed over ground in the status, a horizon-holding ride camera, a line-holding autopilot. This is where "the rider's speed and position relative to the wave looked wrong" gets worked out;
-    - the flexible (finite-impedance) rider;
-    - trim, stall, crouch, pumping, turns and heading hold;
-    - turn and ride-end detection;
-    - the score rubric.
-  - **Part B, after P8 merges:**
-    - the new keys and gamepad axes;
-    - the ride report and score on P8's end card and Logbook;
-    - the balance meter;
-    - one-time hints;
-    - the playtest.
+- [ ] **P9 Riding** (`Playtest`, [plan](docs/superpowers/plans/2026-09-26-p9-riding.md), [findings](docs/superpowers/plans/2026-09-26-p9-riding.md#findings)):
+  - **Part A, physics — done:**
+    - phase 0: speed and position against the crest, speed over ground, a horizon-holding ride camera, an autopilot. It found that catching, not the rider, bounds the rides; the rider outruns closing-out waves onto the flats;
+    - the rider stands on a leg (a spring and damper in the board's solve): it holds the load it feels, absorbs landings and crouches;
+    - trim, stall, crouch, the hand in the face and heading hold;
+    - pumping gains speed when timed with the path (Kogelbauer 2024), and nothing on flat water;
+    - turns and ride ends read from the ride's trace, and a provisional 0–10 score on the WSL criteria.
+  - **Open: turns are about ten times too slow.** A full lean turns about 0.2 rad/s on a 9° rail, against Forsyth 2024's 1.9 rad/s on 42°. The upright body cannot bank into a turn. A rail-angle controller designed on a modal model of the board and a banked body is the next physics item, with the full-lock carve.
+  - **Part B, player-facing — done:**
+    - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
+    - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
+    - the balance meter on the leg's margin, in Practice by default; one-time hints; the Controls screen explains the standing actions.
+  - **Next:** the user's playtest on the M4 Pro. It also checks, live, what the automated pass could not reach standing: W/S, crouch, the meter in a carve, hints, callouts and the end card.
 - [ ] **P10 Take-off** (`Backlog`): cruise and sprint paddling recalibrated to measured speeds, critical-power stamina, angled take-offs, late take-offs and air drops.
 - [ ] **P11 Lineup** (`Backlog`): a sliding window to pick a peak, sets read from the horizon, duck-dives, a surface roller with aeration (hold-downs emerge), breath, a snapping leash, Next set.
-- [ ] **P12 Tube** (`Backlog`, after P7 resumes and finishes): pulling in and racing out, rail grab and hand drag, crouch clearance, the Regular/Goofy setting, an automatic tube camera.
+- [ ] **P12 Tube** (`Backlog`, after P11; P7 has finished): pulling in and racing out, rail grab and hand drag, crouch clearance, the Regular/Goofy setting, an automatic tube camera.
 - **Backlog beyond P12:** multiplayer and community judging, local ride replay, airs, turtle roll and longboard, computer surfers, session-long fatigue. Audio is P8's backlog.
 
 The user's original list of 15 mechanics (2026-09-26) is covered as follows:

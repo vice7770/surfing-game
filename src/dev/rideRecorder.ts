@@ -1,6 +1,7 @@
 /**
  * Dev tool (`?inpage&record`): an autopilot (`Autopilot`) paddles for waves in
- * the physical surf zone, pops up on the cue and holds a line along the face, while the game's own
+ * the physical surf zone, pops up on the cue and rides S-turns up and down the face (`&style=line`:
+ * holds a line along it), while the game's own
  * renderer films it frame by frame into an H.264 MP4 (WebCodecs). Failed
  * attempts are dropped; the first ride of at least MIN_RIDE seconds is posted
  * to a local receiver (RECEIVER, `npm run record:ride`) as `ride.mp4`. It
@@ -40,6 +41,7 @@ const WAIT_OUTSIDE = Number(params.get('outside') ?? 5);
 const LEAD = 4;
 const AFTER = 2.5;
 const MAX_SIM_SECONDS = Number(params.get('maxMinutes') ?? 20) * 60;
+const STYLE = params.get('style') === 'line' ? 'line' : 'turns';
 
 const post = (path: string, body: BodyInit) => fetch(`${RECEIVER}${path}`, { method: 'POST', body }).catch(() => undefined);
 const log = (text: string) => post('/log', text);
@@ -100,7 +102,7 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
   composite.height = HEIGHT;
   const context = composite.getContext('2d')!;
   const rise = 0.25 * (source === 'practice' ? 2 : settings.significantHeight);
-  const autopilot = new Autopilot({ waitOutside: WAIT_OUTSIDE, rise, giveUp: GIVE_UP });
+  const autopilot = new Autopilot({ waitOutside: WAIT_OUTSIDE, rise, giveUp: GIVE_UP, style: STYLE });
 
   let clip = new Clip();
   let previous = autopilot.state;
