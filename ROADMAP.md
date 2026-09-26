@@ -128,7 +128,7 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 
   [Record](docs/superpowers/plans/2026-09-26-p6-webgpu-tier.md).
 
-### P1 · Barrels (P7) — `Ready`
+### P1 · Barrels (P7) — `In Progress (tubes wait for jet data)`
 
 Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels](docs/superpowers/plans/2026-09-26-p7-barrels.md).
 - [ ] **Scope:** a physical lip sheet the rider can be hit by or covered by. Deliberate tube-riding comes later (see the gameplay list below).
@@ -141,6 +141,20 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels
   5. a translucent sheet with foam;
   6. validation, per-spot tube reports and a video.
 - [ ] Every tier gets tubes. If the physics is too heavy, it is sped up later, never faked.
+- **Built, 2026-09-26:**
+  - the throw trigger and classification;
+  - jets at the crest's measured speed, with tubes measured in the crest's frame;
+  - the continuous, water-conserving sheet;
+  - hit or covered;
+  - the translucent sheet;
+  - `npm run report:tubes`.
+- **Tubes do not open yet.** Thrown at the crest's own speed, the lip lands on the face beneath it (no tube of 10 cm or more at any spot). This waits for measured jet kinematics from the user.
+- **Along the way:**
+  - the peel measurement stopped counting shore swash;
+  - the Reef's shelf is now 1 m, so waves break on its edge (769 jets a minute against 307);
+  - no reef shape reached a 27–60° peel inside the tank.
+
+  [Record](docs/superpowers/plans/2026-09-26-p7-barrels.md), [tube report](docs/research/tube-report.md), [rideability report](docs/research/rideability-report.md).
 
 ### P1 · Characters and sky (G7) — `In Progress`
 
