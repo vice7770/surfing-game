@@ -28,6 +28,7 @@ import { BoardWake } from './scene/BoardWake';
 import { BreakSpray } from './scene/BreakSpray';
 import { Environment } from './scene/Environment';
 import { PhotoSky, sunElevationFromSlider } from './scene/PhotoSky';
+import { ShadowRig, parseShadowLevel } from './scene/ShadowRig';
 import { Surfer } from './scene/Surfer';
 import { Seabed } from './scene/Seabed';
 import { PlungingSheetMesh } from './scene/PlungingSheetMesh';
@@ -107,6 +108,10 @@ class SurfGame {
   private readonly fill = new DirectionalLight('#76c6d3', 0.8);
   /** The photographed sky (G7): background, environment and sun, once loaded. */
   private readonly photoSky: PhotoSky;
+  /** The sun's shadow around the rider (G7); `?shadows=` picks the level until P8's presets do. */
+  private readonly shadows: ShadowRig;
+  private readonly shadowSun = new Vector3();
+  private readonly shadowNose = new Vector3();
   private reflectionMapTarget?: WebGLRenderTarget;
   private readonly hud = new Hud();
   private readonly readoutPanel = new PhysicsReadoutPanel(getElement<HTMLElement>('#physics-readout'));
@@ -191,6 +196,10 @@ class SurfGame {
     this.lastDiagnostics = this.physics.diagnostics();
     this.scene.add(this.surfer.group);
     this.scene.add(this.boardWake.trail, this.boardWake.spray, this.breakSpray.points);
+    this.shadows = new ShadowRig(this.renderer, this.sunlight, this.scene);
+    this.shadows.setLevel(parseShadowLevel(window.location.search), {
+      surfaces: [this.water.mesh, this.physicalMode.seabed.mesh, this.physicalMode.farField.mesh],
+    });
 
     const markerMaterial = new MeshStandardMaterial({ color: '#f9a273', emissive: '#a34b2d', emissiveIntensity: 0.22, roughness: 0.5 });
     this.crestMarker = new Mesh(new BoxGeometry(9, 0.025, 0.055), markerMaterial);
@@ -686,6 +695,7 @@ class SurfGame {
     this.updateUnderwaterView();
     this.caustics.disable();
     this.fftChop.disable();
+    this.shadows.follow(this.surfer.group.position, this.currentSunDirection(), this.surfer.group.position.y - 0.04, this.surfer.group.rotation.y);
     this.renderer.render(this.scene, this.cameraRig.camera);
     this.updateHud();
     requestAnimationFrame(this.frame);
@@ -724,6 +734,9 @@ class SurfGame {
       this.fftChop.disable();
     }
     this.caustics.render(this.renderer, view.position.x + (ahead.x * CAUSTIC_WINDOW) / 3, view.position.z + (ahead.z * CAUSTIC_WINDOW) / 3);
+    const { board } = this.physicalMode;
+    const nose = this.shadowNose.set(0, 0, 1).applyQuaternion(board.quaternion);
+    this.shadows.follow(board.position, this.currentSunDirection(), board.position.y - 0.04, Math.atan2(nose.x, nose.z));
     this.renderer.render(this.scene, this.physicalMode.camera.camera);
     this.readoutClock += elapsed;
     if (this.readoutClock >= 0.25) {
@@ -808,6 +821,11 @@ class SurfGame {
     this.photoSky.applyTo(this.scene, [this.water.mesh.material, this.physicalMode.farField.mesh.material]);
     if (!this.isBelowSurface) this.scene.background = this.photoSky.background ?? this.skyColor;
     this.refreshSun();
+  }
+
+  /** Toward the sun: the photographed sky's once loaded, else the painted one's. */
+  private currentSunDirection(): Vector3 {
+    return this.photoSky.ready ? this.shadowSun.copy(this.photoSky.sunDirection) : this.shadowSun.copy(this.environment.sunPosition).normalize();
   }
 
   /** Both water meshes light their crests and bodies from the scene's sun. */

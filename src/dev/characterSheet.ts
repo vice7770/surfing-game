@@ -14,6 +14,7 @@ import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SkinnedSurfer } from '../scene/character/SkinnedSurfer';
 import type { OutfitId } from '../scene/character/outfits';
 import { PhotoSky, type TimeOfDay } from '../scene/PhotoSky';
+import { ShadowRig, parseShadowLevel } from '../scene/ShadowRig';
 import { posturePoints } from '../scene/rig/posturePoints';
 import { POINT, createRiderVisualState, type RiderVisualState } from '../scene/rig/riderVisualState';
 
@@ -50,6 +51,8 @@ const boards = SURFERS.map((_, i) => {
   return board;
 });
 const camera = new PerspectiveCamera(40, TILE.width / TILE.height, 0.05, 500);
+const shadows = new ShadowRig(renderer, sun, scene);
+shadows.setLevel(parseShadowLevel(window.location.search), { surfaces: [water] });
 
 /** A body floating face down beside the board, limbs spread (the detached surfer's limb centres). */
 function fallenState(out: RiderVisualState): RiderVisualState {
@@ -88,6 +91,7 @@ async function main(): Promise<void> {
   sun.color.copy(sky.sunColor);
   sun.intensity = sky.sunIntensity;
   sun.position.copy(sky.sunDirection).multiplyScalar(40);
+  shadows.follow(boardPosition, sky.sunDirection, 0);
 
   if (params.has('sun')) {
     // Look along the sun's azimuth, low: the photo's sun and the glint on the flat water should share a vertical line.
