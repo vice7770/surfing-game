@@ -1,10 +1,10 @@
-import { Quaternion, Vector3 } from 'three';
+import { Matrix4, Quaternion, Vector3 } from 'three';
 import { AttachedRider, type RiderPhase, type RiderSeparation } from './AttachedRider';
 import { BoardBody } from './BoardBody';
 import { BoardRecovery } from './BoardRecovery';
 import { DetachedSurfer, type LipParcelSource } from './DetachedSurfer';
 import { RIDER_PARTS, type StanceName } from './riderPosture';
-import type { SurfWater } from './SurfWater';
+import { createWaterSample, type SurfWater } from './SurfWater';
 import { SurfWaterBodyField } from './SurfWaterBodyField';
 
 /** What the player asks for in one step. */
@@ -18,8 +18,6 @@ export interface RideInput {
 export interface RideSessionOptions {
   stance?: StanceName;
 }
-
-const Y = new Vector3(0, 1, 0);
 
 /**
  * One board and its rider through a ride and its aftermath (board plan B2, surfer
@@ -38,6 +36,7 @@ export class RideSession {
   /** The latest climb back on: the swimmer's and board's linear momentum just before, the mounted pair's after (N·s), and how many so far. */
   readonly remount = { before: new Vector3(), after: new Vector3(), count: 0 };
   private readonly spinPart = new Vector3();
+  private readonly sample = createWaterSample();
   /** The state the fall body started from, at the latest separation. */
   readonly handoff = { center: new Vector3(), orientation: new Quaternion(), velocity: new Vector3(), angularVelocity: new Vector3() };
   /** The fall body's linear momentum and centre of mass as it started, for continuity checks. */
@@ -59,9 +58,19 @@ export class RideSession {
 
   /** Lie prone on a level board floating at the surface over (x, z), nose along `heading` (radians from +z toward +x). */
   reset(at: Vector3, heading: number, water: SurfWater): void {
-    const orientation = new Quaternion().setFromAxisAngle(Y, heading);
+    // Put in moving water, a body drifts with it: the board starts with the surface water's velocity,
+    // lying along the surface, heading `heading`. Started at rest mid-wave, the flow jolts it.
     const surface = water.surfaceAt(at.x, at.z);
-    this.board.place(new Vector3(at.x, surface + this.board.shape.centerOfMass.y - 0.05, at.z), orientation);
+    const sample = water.sampleAt(at.x, surface - 0.05, at.z, this.sample);
+    const moving = sample.wet && !sample.outsideDomain;
+    const up = new Vector3(0, 1, 0);
+    if (moving && sample.normalY > 0.5) up.set(sample.normalX, sample.normalY, sample.normalZ).normalize();
+    // Forward keeps the heading's horizontal direction and lies in the surface; the board's +x is its left.
+    const forward = new Vector3(Math.sin(heading), -(up.x * Math.sin(heading) + up.z * Math.cos(heading)) / up.y, Math.cos(heading)).normalize();
+    const left = new Vector3().crossVectors(up, forward);
+    const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, up, forward));
+    const velocity = moving ? new Vector3(sample.flowX, sample.flowY, sample.flowZ) : new Vector3();
+    this.board.place(new Vector3(at.x, surface + this.board.shape.centerOfMass.y - 0.05, at.z), orientation, velocity);
     this.rider.phase = 'prone';
     this.board.attach(this.rider);
     this.surfer.active = false;
