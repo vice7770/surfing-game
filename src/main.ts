@@ -99,7 +99,11 @@ const waterSheetRequested = devFlag('waterSheet');
 const inPage = typeof Worker === 'undefined' || devFlag('inpage');
 /** A surf zone with a rider the player controls, or none (the menu's waves, plan P8). */
 function surfZoneFactory(rider: boolean): SurfZoneHostFactory {
-  return inPage ? (config) => new LocalSurfZone(config, { rider }) : (config) => new WorkerSurfZone(config, undefined, { rider });
+  // `?renderSpacing=0.5` draws the water on a finer grid, for close recordings (dev flag).
+  const renderSpacing = Number(devParam('renderSpacing')) || undefined;
+  return inPage
+    ? (config) => new LocalSurfZone(config, { rider, renderSpacing })
+    : (config) => new WorkerSurfZone(config, undefined, { rider, renderSpacing });
 }
 /** Only the worker steps on the GPU (plan P6), so only it gets the GPU tier's sea. */
 const gpuTier = inPage ? undefined : webGpuAvailable;
