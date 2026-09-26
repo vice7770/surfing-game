@@ -10,7 +10,7 @@ export const PATCH_SKIRT = 0.3;
 /** Rich vertex pars: the patch's skirt and flag. */
 export const richPatchVertexPars = /* glsl */ `
 attribute float skirt;
-attribute float patch;
+attribute float onPatch;
 varying float vPatch;
 `;
 
@@ -100,7 +100,7 @@ export function createPatchGeometry(size: number, spacing: number): BufferGeomet
   geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
   geometry.setAttribute('skirt', new Float32BufferAttribute(skirt, 1));
   // 1 on every patch vertex: the coarse water lacks the attribute and reads 0, so one material tells them apart.
-  geometry.setAttribute('patch', new Float32BufferAttribute(new Float32Array(skirt.length).fill(1), 1));
+  geometry.setAttribute('onPatch', new Float32BufferAttribute(new Float32Array(skirt.length).fill(1), 1));
   geometry.setIndex(indices);
   return geometry;
 }

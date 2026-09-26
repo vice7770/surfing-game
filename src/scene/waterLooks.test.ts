@@ -71,9 +71,39 @@ describe('Classic water parity', () => {
     water.setLook('rich');
     expect(water.patch.visible).toBe(true);
     const { vertex, fragment } = compiled(water.mesh.material);
-    expect(vertex).toContain('attribute float patch;');
+    expect(vertex).toContain('attribute float onPatch;');
     expect(fragment).toContain('waterPatchRect');
     water.setLook('classic');
     expect(water.patch.visible).toBe(false);
   });
+
+  it('names nothing in the Rich program with a GLSL ES 3.00 reserved word', () => {
+    const water = new WaterSurface({ ...source, cubic: true });
+    water.setLook('rich');
+    const { vertex, fragment } = compiled(water.mesh.material);
+    const declaration = /\b(?:float|int|bool|void|[iu]?vec[234]|mat[234]|sampler2D)\s+([A-Za-z_]\w*)/g;
+    const names = new Set([...`${vertex}\n${fragment}`.matchAll(declaration)].map((match) => match[1]));
+    expect([...names].filter((name) => GLSL_RESERVED.has(name))).toEqual([]);
+  });
+
+  it('feeds every attribute the Rich program adds to the coarse water too, which lacks them', () => {
+    const water = new WaterSurface({ ...source, cubic: true });
+    water.setLook('rich');
+    const attributes = [...compiled(water.mesh.material).vertex.matchAll(/\battribute\s+\w+\s+(\w+);/g)].map((match) => match[1]);
+    expect(attributes.length).toBeGreaterThan(0);
+    const defaults = (water.mesh.material as { defaultAttributeValues?: Record<string, number[]> }).defaultAttributeValues ?? {};
+    for (const name of attributes) {
+      expect(water.patch.geometry.getAttribute(name), name).toBeDefined();
+      expect(water.mesh.geometry.getAttribute(name) ?? defaults[name], name).toBeDefined();
+    }
+  });
 });
+
+/** GLSL ES 3.00 keywords and words reserved for future use (§3.6–3.7) that a name could collide with. */
+const GLSL_RESERVED = new Set(
+  `attribute const uniform varying layout centroid flat smooth break continue do for while switch case default if else in out
+  inout float int void bool true false invariant discard return struct precision lowp mediump highp uint coherent volatile
+  restrict readonly writeonly resource atomic_uint noperspective patch sample subroutine common partition active asm class
+  union enum typedef template this goto inline noinline public static extern external interface long short double half fixed
+  unsigned superp input output filter sizeof cast namespace using`.split(/\s+/),
+);

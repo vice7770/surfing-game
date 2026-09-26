@@ -260,6 +260,8 @@ export class WaterSurface {
         .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true));
     };
     material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}`;
+    // The coarse water lacks the patch's attributes; three feeds them from here, or they read a stale value.
+    Object.assign(material, { defaultAttributeValues: { skirt: [0], onPatch: [0] } });
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
     this.mesh.frustumCulled = false;
     this.patch = new Mesh(createPatchGeometry(PATCH_SIZE, PATCH_SPACING), material);

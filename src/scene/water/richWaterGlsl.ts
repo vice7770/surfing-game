@@ -28,7 +28,7 @@ vWaterFlow = waterFlowAt( waterXZ );
 export const richVertexHeight = `vec3 transformed = vec3( position );
 transformed.y = waterHeight - ${PATCH_SKIRT.toFixed(3)} * skirt;
 vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;
-vPatch = patch;`;
+vPatch = onPatch;`;
 
 /**
  * Rich <normal_fragment_begin>: the Catmull-Rom normal per pixel, the wind chop
