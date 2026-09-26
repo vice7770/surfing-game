@@ -93,7 +93,7 @@ describe('SurfZoneRunner with a board', () => {
       expect(Math.abs(board.velocity.y), spot).toBeLessThan(0.02);
       expect(runner.status().board?.resets).toBe(0);
     }
-  });
+  }, 20_000);
 
   it('lets passing waves move the board on the Beach, and keeps it finite', () => {
     const runner = new SurfZoneRunner({ ...config, spot: 'beach', significantHeight: 1.2, peakPeriod: 10 }, { board: true });

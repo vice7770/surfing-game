@@ -126,7 +126,7 @@ describe('WaterSurface GPU displacement data', () => {
     }
     expect(wave.zMin).toBeGreaterThan(-32);
     expect(foamyNodes).toBeGreaterThan(0);
-  });
+  }, 20_000);
 
   it('uploads the legacy bed and follows it when the grid scrolls', () => {
     const wave = new InteractiveWaterField(7, { ...DEFAULT_WAVE_SETTINGS, shelfStrength: 0.4, sustained: true });

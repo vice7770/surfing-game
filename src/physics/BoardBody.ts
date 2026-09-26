@@ -83,6 +83,13 @@ const RADIATION_DAMPING = 0.5;
 const MAX_REFINEMENT = 4;
 const ENTRY_CROSSING = WET_RAMP / 4;
 
+/**
+ * Substeps per step while a rider stands. The standing rider is kept upright by
+ * a drive from the board's spin in the previous substep; at 1/240 s that lag
+ * pumps the board's roll in a hard carve, at 1/960 s it holds.
+ */
+const STANDING_SUBSTEPS = 16;
+
 /** Seabed contact: Coulomb friction of foam on sand, share of penetration removed per substep, allowed overlap (m), passes. */
 const BED_FRICTION = 0.6;
 const BED_BIAS = 0.2;
@@ -194,6 +201,8 @@ export class BoardBody implements BoardContactBody {
   wettedArea = 0;
   /** Patches that sampled beyond the water's domain at the latest substep. */
   outsidePatches = 0;
+  /** Substeps taken in the latest step, with water-entry refinement. */
+  substepsTaken = 0;
 
   private readonly substeps: number;
   private readonly count: number;
@@ -472,14 +481,16 @@ export class BoardBody implements BoardContactBody {
   step(dt: number, water: SurfWater): void {
     // A contact solver may have moved the board between steps.
     this.centerOfMass.add(this.scratch.subVectors(this.position, this.lastPosition));
-    const h = dt / this.substeps;
+    const substeps = this.rider?.attached && this.rider.upright ? Math.max(this.substeps, STANDING_SUBSTEPS) : this.substeps;
+    const h = dt / substeps;
     this.reaction.fill(0);
     this.meanPosition.fill(0);
     this.foilReaction.fill(0);
     this.foilMean.fill(0);
     for (const force of Object.values(this.forces)) force.set(0, 0, 0);
     this.rider?.beginStep();
-    for (let s = 0; s < this.substeps; s += 1) this.advance(h, water, 0);
+    this.substepsTaken = 0;
+    for (let s = 0; s < substeps; s += 1) this.advance(h, water, 0);
     const inverseDt = 1 / dt;
     for (const force of Object.values(this.forces)) force.multiplyScalar(inverseDt);
     this.rider?.endStep(dt, water, this);
@@ -662,11 +673,16 @@ export class BoardBody implements BoardContactBody {
       this.advance(h / 2, water, depth + 1);
       this.advance(h / 2, water, depth + 1);
     } else {
+      this.substepsTaken += 1;
       this.substep(h, water);
     }
   }
 
-  /** Whether a face moving into the water, against the latest samples, would wet too fast in a substep of `h`. */
+  /**
+   * Whether a face moving into the water, against the latest samples, would wet
+   * too fast in a substep of `h`. Its depth changes at its speed into the local
+   * surface, relative to the water: gliding along a sloping face enters nothing.
+   */
   private entering(h: number): boolean {
     this.updateRotation();
     const { samples, velocity: v, angularVelocity: w, centerOfMass: c } = this;
@@ -680,7 +696,10 @@ export class BoardBody implements BoardContactBody {
         const rx = r.x - n.x * t;
         const ry = r.y - n.y * t;
         const rz = r.z - n.z * t;
-        const sinking = -(v.y + w.z * rx - w.x * rz - sample.flowY) * h;
+        const ux = v.x + w.y * rz - w.z * ry - sample.flowX;
+        const uy = v.y + w.z * rx - w.x * rz - sample.flowY;
+        const uz = v.z + w.x * ry - w.y * rx - sample.flowZ;
+        const sinking = -(uy - sample.slopeX * ux - sample.slopeZ * uz) * h;
         if (!(sinking > ENTRY_CROSSING)) continue;
         const depth = sample.surfaceY - (c.y + ry);
         if (depth < WET_RAMP / 2 && depth + sinking > -WET_RAMP / 2) return true;

@@ -57,9 +57,21 @@
     - The fix: the solve carries the centre of mass rigidly (v + ω × a, symmetric and positive definite). A drive term, −(ω_roll/pitch × offset), keeps the body upright as the board rolls and pitches under the feet.
     - Result: full steer on the 15° face now holds for 2.85 s, up from 2.28 s, and ends in 'balance' instead. Three-quarter and half steer hold for 4 s.
     - Method, for similar bugs: clone the board and rider (a prototype-preserving deep clone), perturb consistently, and take the eigenvalues of the step map and of the coupled matrix (`sing.ts`, `jac.ts` and `eig.ts` in the session scratchpad).
-  - **Still open** (`it.fails` in `AttachedRider.test.ts`): after about 2.8 s at full steer, a 3.3 BW load spike still throws the rider ('balance'). Not yet diagnosed; start with the coupled-matrix eigenvalues through that window.
+  - **Diagnosed, still open** (`it.fails` in `AttachedRider.test.ts`): after about 2.8 s at full steer, a roll oscillation throws the rider ('balance').
+    - A linearization of the one-frame map (block power iteration on cloned board and rider states, `lin.ts` in the session scratchpad) finds two modes:
+      - A 13–16 Hz roll mode whose growth per frame goes from 0.94 (2.5 s) to 1.26–1.42 (from 2.9 s). Its frequency rises as the substep shrinks (15 Hz at 1/960 s, 44 Hz at 1/3840 s), so it is numerical. The upright drive, −(ω × offset), uses the board's spin from the previous substep while the solve carries a 73 kg body 0.9 m up rigidly (a lever inertia of about 66 kg·m²). The lag adds a jerk term, m·o²·h·θ‴, which destabilizes the roll when m·o²·h·k exceeds the board's roll inertia times its roll damping. This is the infinitely strong ankle again; its implicit, non-symmetric form goes singular at the same state.
+      - A 3–4 Hz roll–yaw swing (the Dutch roll) that sits at 1.00–1.02 per frame, at the edge of stability, at every steer level.
+    - At ¾ and full steer both runs fail when the heading reaches about 33° across the 15° face. Trimming at 60° across it fails at once: a rider held world-vertical stands 13° off a board lying on the face.
+    - Three rewrites of the standing coupling were tried and rejected:
+      1. A body that leans with the board and rights itself over τ = 0.002–0.2 s. The Dutch roll goes unstable at every τ.
+      2. A balanced rider carried and pushing at the deck point under its centre of mass, leaning along the force that supports it:
+         - taken from its own contact, the lean feeds back through its height with a gain of about o/(gτh) ≈ 900 and explodes in two frames;
+         - from an outside reference (the surface normal plus the turn), the true centre of pressure pins at the feet's edges.
+      3. A leg-line inverted pendulum: a rank-one symmetric push along the line from a controlled centre of pressure through the centre of mass, with divergent-component balance. It chatters between the load cap and flight, because a freely swaying body cannot follow the light board's surges.
+    - The fix this points to is a finite-impedance rider: ankle and leg stiffness and damping in a coupled 9-DOF solve, with slow active balance. It is deferred until P4f shows whether real waves need it.
+    - Meanwhile a standing rider steps at 16 substeps (1/960 s), where the lag holds for the tested carves (`STANDING_SUBSTEPS`). Before this, that step came about by accident from the entry refinement (below).
   - **Rider yaw inertia (tried, left out):** the standing body yaws with the board, so its own yaw inertia (about 3.7 kg·m² from the posture parts) belongs in the solve. Added (the [4][4] entry plus a yaw-impulse ledger), it turns a growing roll–yaw swing of about 2.3 Hz unstable even at half steer. That is likely physical (a Dutch roll) that the open-loop lean does not damp. It needs roll-rate feedback in the balance or lean, then the inertia can go back in.
-  - `(board as any).entering(h)` is true throughout the carve, so the entry refinement runs every substep (4 substeps of h/4). That is costly; check its criterion.
+  - **Fixed:** `entering(h)` was true throughout the carve, because it compared vertical speed with the water instead of speed into the sloping surface. Gliding down a face now refines nothing; a drop still does.
   - A faster standing balance loop (0.06–0.12 s) oscillates even without steering.
   - Probes: `carve.ts` to `carve11.ts` and `tcarve.ts` in the session scratchpad.
 - **User requests queued:**
