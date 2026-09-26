@@ -10,6 +10,22 @@ const STEP = 1 / 60;
 const idle = { paddle: false, popUp: false, steer: 0 };
 
 describe('ride session', () => {
+  it('rides the same with or without the standing inputs left at rest', () => {
+    const ride = (input: typeof idle & { trim?: number; crouch?: number; hand?: boolean }) => {
+      const session = new RideSession();
+      const water = new SwellWater({ height: 1, period: 9, depth: 5 });
+      session.reset(new Vector3(0, 0, 0), 0, water);
+      for (let i = 0; i < 300; i += 1) {
+        session.step(STEP, water, { ...input, paddle: i < 240, popUp: i === 200 });
+        water.advance(STEP);
+      }
+      return session.board.position.clone();
+    };
+    const plain = ride(idle);
+    const explicit = ride({ ...idle, trim: 0, crouch: 0, hand: false });
+    expect(explicit.distanceTo(plain)).toBe(0);
+  });
+
   it('starts prone on a board floating level at the given point, heading the given way', () => {
     const session = new RideSession();
     session.reset(new Vector3(2, 0, -5), Math.PI / 2, new PlaneWater());

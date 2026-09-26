@@ -181,6 +181,42 @@ const LEG_EXTENSION = 0.1;
  * threw the rider.
  */
 const LEG_STIFFNESS = 44_000;
+/**
+ * Standing, the rider's own reflexes (spec P9, heading hold): with no lean asked
+ * for, it keeps the line it was on, leaning against the heading error (full lean
+ * at STANDING_HOLD_ANGLE, rad) and the yaw rate (over STANDING_HOLD_RATE_TIME, s),
+ * with at most STANDING_HOLD_SHARE of its lean (provisional). Holding a line
+ * across a face means leaning into it, onto the uphill rail. With the paddler's
+ * 10° the board drifted 7° toward the fall line over 10 s at 45° across a 15°
+ * face; at 5° it holds within about 1°. Lines steeper than about 50° across that
+ * face still throw the rider: a body held upright across the board cannot follow
+ * the board's sideways pull on a face tilted under it (P4e's finding; the P9
+ * plan's findings).
+ */
+const STANDING_HOLD_ANGLE = (5 * Math.PI) / 180;
+const STANDING_HOLD_RATE_TIME = 0.5;
+const STANDING_HOLD_SHARE = 0.5;
+/** Trim: the upper body shifts fore or aft by up to this much, m, moving the load along the board (provisional). */
+const TRIM_SHIFT = 0.25;
+/**
+ * Crouch: the leg shortens by up to CROUCH_DEPTH, m, to about two thirds of the
+ * standing height (0.6-0.7 in the survey, for tube clearance), at most
+ * MAX_LEG_SPEED, m/s (a countermovement jump's take-off speed, so a jump stays
+ * possible), and softens toward the legs-bent 22 kN/m (provisional).
+ */
+const CROUCH_DEPTH = 0.3;
+const MAX_LEG_SPEED = 2.5;
+const CROUCH_SOFTENING = 0.5;
+/**
+ * How the leg's rest length moves toward the crouch asked for: critically damped
+ * at LEG_FREQUENCY, rad/s; going down at most CROUCH_ACCELERATION, m/s² (about
+ * 0.6 g, so the feet stay loaded) and CROUCH_SPEED, m/s; extending at most
+ * EXTEND_ACCELERATION and MAX_LEG_SPEED (provisional).
+ */
+const LEG_FREQUENCY = 12;
+const CROUCH_ACCELERATION = 6;
+const CROUCH_SPEED = 1.5;
+const EXTEND_ACCELERATION = 15;
 
 export interface AttachedRiderOptions {
   mass?: number;
@@ -327,6 +363,12 @@ export class AttachedRider {
   readonly handLoad = new Float64Array(2);
   /** Paddle while prone. */
   paddle = false;
+  /** Standing, weight along the board: −1 (back, on the tail) to 1 (forward). */
+  trim = 0;
+  /** Standing, how deep the crouch: 0 (riding stance) to 1 (deepest). */
+  crouch = 0;
+  /** Standing, the wave-side hand reaches for the water. */
+  hand = false;
   /** Standing, the requested weight shift: −1 (toward board −x, its right) to 1 (toward +x, its left). */
   steer = 0;
   /** Lying down, the heading the paddler keeps (rad from +z toward +x), and the correction it asks of the strokes now. */
@@ -428,7 +470,13 @@ export class AttachedRider {
    * the posture's place, m, and its rate relative to the board, m/s; the extension
    * it rests at (a crouch shortens it); and its force on the rider along the leg, N.
    */
-  readonly leg = { extension: 0, rate: 0, rest: 0, force: 0 };
+  readonly leg = { extension: 0, rate: 0, rest: 0, force: 0, height: 0 };
+  /** Standing, the heading the rider holds (rad from +z toward +x) when no lean is asked for, and its own lean for it now. */
+  standingLine: number | undefined;
+  private standingHold = 0;
+  private legStiffness = LEG_STIFFNESS;
+  private restRate = 0;
+
   private legFresh = true;
   private legDamping = 0;
   /** Gravity plus the stance's acceleration, low-passed (world), and the stance's velocity at the latest substep. */
@@ -450,6 +498,11 @@ export class AttachedRider {
     this.parts = pose.parts.slice();
     this.fromParts = pose.parts.slice();
     this.support = pose.support;
+  }
+
+  /** +1 regular (left foot forward), −1 goofy. */
+  get stanceSign(): number {
+    return this.stance === 'regular' ? 1 : -1;
   }
 
   /**
@@ -601,7 +654,11 @@ export class AttachedRider {
     this.legFresh = true;
     this.leg.extension = 0;
     this.leg.rate = 0;
+    this.leg.rest = 0;
+    this.restRate = 0;
     this.legRateAfter = 0;
+    this.standingLine = undefined;
+    this.standingHold = 0;
     this.markParts();
   }
 
@@ -697,7 +754,17 @@ export class AttachedRider {
   /** A part's centre in the world. */
   partPosition(index: number, out: Vector3): Vector3 {
     this.localScratch.set(this.parts[index * 3], this.parts[index * 3 + 1], this.parts[index * 3 + 2]).sub(this.localCenter);
-    return out.copy(this.localScratch).applyQuaternion(this.orientation).add(this.position);
+    return out.copy(this.localScratch).applyQuaternion(this.orientation).add(this.position).addScaledVector(this.up, this.legFold(index));
+  }
+
+  /**
+   * Standing on a compressed or crouched leg, the legs fold rather than sink: the
+   * feet stay on the deck, so a leg's middle drops half as far as the hips. The
+   * body's parts otherwise move with its centre of mass.
+   */
+  private legFold(part: number): number {
+    if (!this.upright || this.shifts(part)) return 0;
+    return -this.leg.extension / 2;
   }
 
   /** Called by the board at the start of each step. */
@@ -800,6 +867,7 @@ export class AttachedRider {
   /** Before the board's solve: the posture's target, its drive velocity and the forces on the rider. */
   prepare(h: number, board: BoardBody, water: SurfWater): void {
     this.advancePhase(h, board, water);
+    this.holdLine(board);
     this.balanceStep(h, board);
     this.swayStep(h);
     this.updatePosture();
@@ -866,12 +934,26 @@ export class AttachedRider {
     this.specificForce.z += ((stance.z - this.stanceVelocity.z) / h - this.specificForce.z) * blend;
     this.stanceVelocity.copy(stance);
     this.legLoad = this.mass * Math.max(0, this.specificForce.dot(this.up));
-    this.legDamping = 2 * RIDER_LEG.axialDamping * Math.sqrt(LEG_STIFFNESS * this.mass);
+    // The crouch: a shorter leg, reached no faster than the legs can move, and softer.
+    // Critically damped, and going down no harder than keeps the feet loaded: a sudden drop of the leg would
+    // have to pull the body down, and unloaded feet lose their grip.
+    const rest = -Math.max(0, Math.min(1, this.crouch)) * CROUCH_DEPTH;
+    const down = rest < this.leg.rest;
+    const accelerationLimit = down ? CROUCH_ACCELERATION : EXTEND_ACCELERATION;
+    const speedLimit = down ? CROUCH_SPEED : MAX_LEG_SPEED;
+    const acceleration = Math.max(-accelerationLimit, Math.min(accelerationLimit,
+      LEG_FREQUENCY * LEG_FREQUENCY * (rest - this.leg.rest) - 2 * LEG_FREQUENCY * this.restRate));
+    this.restRate = Math.max(-speedLimit, Math.min(speedLimit, this.restRate + acceleration * h));
+    this.leg.rest = Math.max(-CROUCH_DEPTH, Math.min(0, this.leg.rest + this.restRate * h));
+    if (this.leg.rest === 0 || this.leg.rest === -CROUCH_DEPTH) this.restRate = 0;
+    this.legStiffness = LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * -this.leg.rest) / CROUCH_DEPTH);
+    this.legDamping = 2 * RIDER_LEG.axialDamping * Math.sqrt(this.legStiffness * this.mass);
+    this.leg.height = this.localCenter.y - this.base.y;
     // Where the centre of mass is along the leg, and how fast it moves along it relative to where it is carried.
     this.leg.extension = this.scratch2.subVectors(this.position, this.target).dot(this.up);
     const carried = cross(this.boardSpin, this.carried, this.scratch2).add(this.boardVelocity).add(this.drive);
     this.leg.rate = this.localScratch.subVectors(this.velocity, carried).dot(this.up);
-    this.leg.force = this.legLoad - LEG_STIFFNESS * (this.leg.extension - this.leg.rest) - this.legDamping * this.leg.rate;
+    this.leg.force = this.legLoad - this.legStiffness * (this.leg.extension - this.leg.rest) - this.legDamping * this.leg.rate;
   }
 
   /**
@@ -889,7 +971,7 @@ export class AttachedRider {
     for (let i = 0; i < RIDER_PARTS.length; i += 1) {
       this.partWorld.set(this.parts[i * 3], this.parts[i * 3 + 1], this.parts[i * 3 + 2]).sub(this.localCenter).applyQuaternion(frame);
       const offset = this.localScratch.copy(this.partWorld);
-      this.partWorld.add(this.position);
+      this.partWorld.add(this.position).addScaledVector(this.up, this.legFold(i));
       this.partVelocity.copy(cross(this.angularVelocity, offset, this.scratch)).add(this.velocity);
       const radius = Math.cbrt((3 * this.partVolumes[i]) / (4 * Math.PI));
       // Lying on the board, the part of a body sphere inside the board is board, not wet body.
@@ -1093,7 +1175,7 @@ export class AttachedRider {
     for (let i = 0; i < 3; i += 1) {
       for (let j = 0; j < 3; j += 1) system[(3 + i) * 7 + 3 + j] += m * ((i === j ? ab : 0) - bv[i] * av[j]);
     }
-    system[6 * 7 + 6] += m + h * this.legDamping + h * h * LEG_STIFFNESS;
+    system[6 * 7 + 6] += m + h * this.legDamping + h * h * this.legStiffness;
     // The momentum the constraint must supply: v_rider' = v' + w' x carried + drive + up s''.
     const mismatch = cross(this.boardSpin, b, this.scratch).add(this.boardVelocity).add(this.drive).addScaledVector(n, this.leg.rate).sub(this.velocity);
     const f = this.scratch2.copy(this.external).multiplyScalar(h).addScaledVector(mismatch, -m);
@@ -1105,7 +1187,7 @@ export class AttachedRider {
     rhs[4] += torque.y;
     rhs[5] += torque.z;
     // Backward Euler on the leg: its force now, less what the current rate adds to the stretch over the substep.
-    rhs[6] += n.dot(f) + h * (this.leg.force - h * LEG_STIFFNESS * this.leg.rate);
+    rhs[6] += n.dot(f) + h * (this.leg.force - h * this.legStiffness * this.leg.rate);
   }
 
   /** Standing, after the 7 x 7 solve: the contact impulse the motion needs, and whether feet on a deck can give it (as `settle`). */
@@ -1187,7 +1269,7 @@ export class AttachedRider {
     if (this.upright) {
       // Along the leg, its travel is not an error: only how far past it the body has gone.
       const along = this.scratch2.subVectors(this.position, this.target).dot(this.up);
-      const travel = Math.min(LEG_EXTENSION, Math.max(-MAX_FLEX, along));
+      const travel = Math.min(LEG_EXTENSION, Math.max(Math.min(-MAX_FLEX, this.leg.rest - 0.15), along));
       this.postureError = this.localScratch.copy(this.target).addScaledVector(this.up, travel).distanceTo(this.position);
     } else {
       this.postureError = this.target.distanceTo(this.position);
@@ -1369,7 +1451,7 @@ export class AttachedRider {
     for (let i = 0; i < RIDER_PARTS.length; i += 1) {
       if (!this.shifts(i)) continue;
       this.parts[i * 3] += this.balance.x + this.lean.x;
-      this.parts[i * 3 + 2] += this.balance.z;
+      this.parts[i * 3 + 2] += this.balance.z + this.lean.z;
     }
     const center = postureCenter(this.parts, this.partMasses);
     this.localCenter.set(center.x, center.y, center.z);
@@ -1417,13 +1499,40 @@ export class AttachedRider {
       this.shiftAxis('x', this.balance.x, reach.x, h);
       this.shiftAxis('z', this.balance.z, reach.z, h);
     }
-    // The steering lean, standing only.
-    const lean = this.upright ? Math.max(-1, Math.min(1, this.steer)) * MAX_LEAN : 0;
+    // The steering lean (with the rider's own heading hold) and the trim, standing only.
+    const lean = this.upright ? Math.max(-1, Math.min(1, this.steer + this.standingHold)) * MAX_LEAN : 0;
+    const trim = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
+    this.leanAxis('x', lean, h);
+    this.leanAxis('z', trim, h);
+  }
+
+  /** Critically damped motion of the lean toward `target` along one axis, within the shift's speed and acceleration. */
+  private leanAxis(axis: 'x' | 'z', target: number, h: number): void {
     const frequency = 1 / BALANCE_TIME;
     const acceleration = Math.min(MAX_SHIFT_ACCELERATION, Math.max(-MAX_SHIFT_ACCELERATION,
-      frequency * frequency * (lean - this.lean.x) - 2 * frequency * this.leanRate.x));
-    this.leanRate.x = Math.min(MAX_SHIFT_SPEED, Math.max(-MAX_SHIFT_SPEED, this.leanRate.x + acceleration * h));
-    this.lean.x += this.leanRate.x * h;
+      frequency * frequency * (target - this.lean[axis]) - 2 * frequency * this.leanRate[axis]));
+    this.leanRate[axis] = Math.min(MAX_SHIFT_SPEED, Math.max(-MAX_SHIFT_SPEED, this.leanRate[axis] + acceleration * h));
+    this.lean[axis] += this.leanRate[axis] * h;
+  }
+
+  /**
+   * Standing, with no lean asked for, the rider keeps the line it was on: its
+   * own lean against the heading error and the yaw rate. Steering sets a new line.
+   */
+  private holdLine(board: BoardBody): void {
+    const standing = this.phase === 'standing' && this.attached;
+    if (!standing || Math.abs(this.steer) > 0.05) {
+      this.standingLine = undefined;
+      this.standingHold = 0;
+      return;
+    }
+    const forward = this.scratch.set(0, 0, 1).applyQuaternion(board.orientation);
+    const heading = Math.atan2(forward.x, forward.z);
+    if (this.standingLine === undefined) this.standingLine = heading;
+    let error = heading - this.standingLine;
+    error -= 2 * Math.PI * Math.round(error / (2 * Math.PI));
+    const turn = -(error + STANDING_HOLD_RATE_TIME * board.angularVelocity.y) / STANDING_HOLD_ANGLE;
+    this.standingHold = Math.max(-STANDING_HOLD_SHARE, Math.min(STANDING_HOLD_SHARE, turn));
   }
 
   /**
