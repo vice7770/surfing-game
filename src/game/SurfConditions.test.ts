@@ -3,7 +3,7 @@ import { TANK_SWELL_LIMITS } from './PhysicalMode';
 import skyManifest from '../../public/assets/skies/skies.json';
 import { nearestSky, sunElevationFromSlider, type SkyEntry } from '../scene/PhotoSky';
 import {
-  DEFAULT_CONDITIONS, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings, nextBackdropSpot, physicalSettingsFor,
+  DEFAULT_CONDITIONS, DEFAULT_SPOT, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings, nextBackdropSpot, physicalSettingsFor,
 } from './SurfConditions';
 
 const water = { stage: 2 as const, compute: 'auto' as const };
@@ -33,6 +33,11 @@ describe('surf conditions', () => {
 
   it('offers all four spots, the Canyon included now that its catch cue works', () => {
     expect(SURF_SPOTS).toEqual(['beach', 'point', 'reef', 'canyon']);
+  });
+
+  // The Canyon's waves peel (median 58°) and catch best; the other spots mostly close out (median 12–15°).
+  it('starts a new player at the Canyon', () => {
+    expect(DEFAULT_SPOT).toBe('canyon');
   });
 
   it('shows the menu a different spot each time, on calm practice water', () => {
