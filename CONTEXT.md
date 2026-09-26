@@ -85,3 +85,49 @@ _Avoid_: slow gravity
 **Breaker type**:
 Spilling, plunging, or surging, classified by the Iribarren number.
 _Avoid_: wave style
+
+## Riding
+
+**Speed over ground**:
+The board's horizontal speed, as a GPS watch measures it; the speed the player sees.
+_Avoid_: board speed (ambiguous with speed through the water)
+
+**Required speed**:
+The speed a rider needs to keep pace with a peeling break, c / sin α, from the breaker's celerity c and the peel angle α.
+_Avoid_: wave speed
+
+**Flexible rider**:
+The standing rider as a body on legs of finite stiffness and damping, coupled to the board in one implicit solve and kept up by slow active balance.
+_Avoid_: rigid rider, ragdoll
+
+**Trim**:
+Where the rider puts its weight along the board, which sets the board's pitch, wetted length and drag.
+_Avoid_: speed control
+
+**Stall**:
+Slowing on purpose, with weight on the tail or a hand in the face.
+_Avoid_: brake
+
+**Pump**:
+Speed gained by crouching and extending in time with the load on the feet; it needs a curved path on a wave and gives nothing on flat water.
+_Avoid_: boost
+
+**Heading hold**:
+The rider's own reflex that keeps the board on its line when no lean is asked for.
+_Avoid_: auto-steer
+
+**Ride report**:
+The measured summary of one ride: time, distance, speeds, time in the pocket and detected turns.
+_Avoid_: score screen
+
+**Wave score**:
+An optional 0–10 rating of one ride from a rubric of measured quantities modelled on WSL judging criteria.
+_Avoid_: points
+
+**Kick-out**:
+A ride ended by going up and over the back of the wave while still on the board.
+_Avoid_: exit button
+
+**Lost the face**:
+A ride ended because the wave moved on and stopped carrying the board.
+_Avoid_: missed
