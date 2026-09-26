@@ -4,6 +4,7 @@ import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from '
 import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
 import { FoamField, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
+import { carveGrid } from './tubeTable';
 import { focusX } from './Refraction';
 import { breakerForm, crestMotion, waveHeightAt } from './CrestKinematics';
 import { tubeGeometry } from './Overturn';
@@ -470,9 +471,11 @@ export class SurfZoneSimulation {
   /**
    * Resample the water to interleaved (height, foam) per render node. Dry nodes
    * sit 5 cm under the bed so the seabed mesh hides them. Foam is the foam
-   * field's covered fraction.
+   * field's covered fraction. Under a flying lip the surface drops to its
+   * void's floor, unless `carve` is false (the snapshot's raw heights, G9: the
+   * page carves them from the tube table).
    */
-  writeUniformSurface(data: Float32Array, grid: RenderGrid): void {
+  writeUniformSurface(data: Float32Array, grid: RenderGrid, carve = true): void {
     const mapping = this.mappingFor(grid);
     const { h, bed, nx } = this.solver;
     const { dense, residual } = this.foam;
@@ -500,19 +503,7 @@ export class SurfZoneSimulation {
         }
       }
     }
-    // Under a flying lip the surface drops to its void's floor.
-    this.lip.forEachTubeExtent((xMin, xMax, zMin, zMax) => {
-      const c0 = Math.max(0, Math.ceil((xMin - grid.xMin) / grid.spacing));
-      const c1 = Math.min(grid.nx - 1, Math.floor((xMax - grid.xMin) / grid.spacing));
-      const r0 = Math.max(0, Math.ceil((zMin - grid.zMin) / grid.spacing));
-      const r1 = Math.min(grid.nz - 1, Math.floor((zMax - grid.zMin) / grid.spacing));
-      for (let r = r0; r <= r1; r += 1) {
-        for (let c = c0; c <= c1; c += 1) {
-          const k = (r * grid.nx + c) * 2;
-          data[k] = this.lip.carve(grid.xMin + c * grid.spacing, grid.zMin + r * grid.spacing, data[k]);
-        }
-      }
-    });
+    if (carve) carveGrid(data, grid, this.lip.tubeTable, this.lip.tubeCount, this.solver.dx);
   }
 
   /** Resample the depth-averaged current to interleaved (u, w) per render node, m/s; 0 on dry nodes. */

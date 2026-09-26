@@ -1,8 +1,9 @@
 import { Vector3 } from 'three';
 import type { LipContactParcel, LipParcelSource } from '../physics/DetachedSurfer';
 import { GRAVITY } from './dispersion';
-import { jetRelativeSpeed, overturn, overturnParameter, tubeFloorDepth, type OverturnShape, type TubeGeometry } from './Overturn';
+import { jetRelativeSpeed, overturn, overturnParameter, type OverturnShape, type TubeGeometry } from './Overturn';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
+import { TUBE_STRIDE, carveAt } from './tubeTable';
 
 /** Parcels along one column's jet: the sheet's resolution across its thickness of flight (numerical). */
 export const STRIP_PARCELS = 8;
@@ -188,6 +189,9 @@ export class PlungingLip implements LipParcelSource {
   private readonly near = { a: new Vector3(), b: new Vector3(), pa: new Vector3(), pb: new Vector3(), velocity: new Vector3() };
   private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0 };
   private readonly free: number[] = [];
+  /** The flying tubes as a `tubeTable` (G9), refreshed as the clock moves and strips come and go. */
+  private tubes = new Float64Array(64 * TUBE_STRIDE);
+  private tubeRows = 0;
 
   constructor(private readonly solver: ShallowWaterSolver, readonly capacity = 16384) {
     this.x = new Float64Array(capacity);
@@ -289,6 +293,7 @@ export class PlungingLip implements LipParcelSource {
     const inColumn = this.byColumn.get(column);
     if (inColumn) inColumn.push(stripId);
     else this.byColumn.set(column, [stripId]);
+    this.refreshTubes();
     return thrown;
   }
 
@@ -297,6 +302,7 @@ export class PlungingLip implements LipParcelSource {
     if (!(dt > 0)) return;
     const { solver } = this;
     this.time += dt;
+    this.refreshTubes();
     for (let parcel = 0; parcel < this.capacity; parcel += 1) {
       const state = this.state[parcel];
       if (state === 0) continue;
@@ -332,33 +338,54 @@ export class PlungingLip implements LipParcelSource {
    * water is left as it is.
    */
   carve(x: number, z: number, surface: number): number {
-    const strips = this.byColumn.get(Math.round(x / this.solver.dx - 0.5));
-    if (!strips) return surface;
-    let carved = surface;
-    for (const id of strips) {
-      const strip = this.strips.get(id);
-      const tube = strip?.tube;
-      if (!strip || !tube) continue;
-      const age = this.time - strip.launchTime;
-      const ahead = (x - tube.x - tube.dirX * tube.crestSpeed * age) * tube.dirX + (z - tube.z - tube.dirZ * tube.crestSpeed * age) * tube.dirZ;
-      if (ahead > tube.relativeSpeed * age) continue;
-      const depth = tubeFloorDepth(tube.geometry, ahead);
-      if (!Number.isNaN(depth)) carved = Math.min(carved, tube.y - depth);
-    }
-    return carved;
+    return carveAt(this.tubes, this.tubeRows, this.solver.dx, x, z, surface);
   }
 
-  /** Each flying void's ground: its column's x span, and the z span from its crest to its open front, padded by a cell, m. */
-  forEachTubeExtent(visit: (xMin: number, xMax: number, zMin: number, zMax: number) => void): void {
-    const { dx } = this.solver;
+  /** The flying tubes as a `tubeTable` (G9); `tubeCount` rows are live. */
+  get tubeTable(): Float64Array {
+    return this.tubes;
+  }
+
+  get tubeCount(): number {
+    return this.tubeRows;
+  }
+
+  /** Copy up to `capacity` flying tubes into `into` as a `tubeTable`; returns how many. */
+  writeTubes(into: Float32Array, capacity: number): number {
+    const count = Math.min(this.tubeRows, capacity, Math.floor(into.length / TUBE_STRIDE));
+    for (let k = 0; k < count * TUBE_STRIDE; k += 1) into[k] = this.tubes[k];
+    return count;
+  }
+
+  /** Pack every live strip's void where its crest is now, opened as far as its jet's tip has flown. */
+  private refreshTubes(): void {
+    let rows = 0;
     for (const strip of this.strips.values()) {
       const tube = strip.tube;
       if (!tube) continue;
+      if ((rows + 1) * TUBE_STRIDE > this.tubes.length) {
+        const grown = new Float64Array(this.tubes.length * 2);
+        grown.set(this.tubes);
+        this.tubes = grown;
+      }
       const age = this.time - strip.launchTime;
-      const crestZ = tube.z + tube.dirZ * tube.crestSpeed * age;
-      const front = crestZ + tube.dirZ * Math.min(tube.geometry.length * Math.cos(tube.geometry.tilt), tube.relativeSpeed * age);
-      visit(strip.column * dx, (strip.column + 1) * dx, Math.min(crestZ, front) - dx, Math.max(crestZ, front) + dx);
+      const o = rows * TUBE_STRIDE;
+      const t = this.tubes;
+      t[o] = tube.x + tube.dirX * tube.crestSpeed * age;
+      t[o + 1] = tube.z + tube.dirZ * tube.crestSpeed * age;
+      t[o + 2] = tube.y;
+      t[o + 3] = tube.dirX;
+      t[o + 4] = tube.dirZ;
+      t[o + 5] = tube.relativeSpeed * age;
+      t[o + 6] = tube.geometry.length;
+      t[o + 7] = tube.geometry.width;
+      t[o + 8] = tube.geometry.tilt;
+      t[o + 9] = strip.column;
+      t[o + 10] = 1;
+      t[o + 11] = 0;
+      rows += 1;
     }
+    this.tubeRows = rows;
   }
 
   /** Water thrown and not yet landed, flying or still to leave the crest, m³. */
@@ -530,6 +557,8 @@ export class PlungingLip implements LipParcelSource {
         const inColumn = this.byColumn.get(strip.column)!;
         inColumn.splice(inColumn.indexOf(stripId), 1);
         if (inColumn.length === 0) this.byColumn.delete(strip.column);
+        // Its void closes with it.
+        if (strip.tube) this.refreshTubes();
       }
     }
     const { flight } = this;
