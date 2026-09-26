@@ -12,7 +12,7 @@ import { BubblePoints } from '../scene/BubblePoints';
 import { SprayPoints } from '../scene/SprayPoints';
 import { LipPoints, type RenderableLip } from '../scene/LipPoints';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
-import { SpectatorCamera } from '../scene/SpectatorCamera';
+import { SpectatorCamera, type FollowTarget } from '../scene/SpectatorCamera';
 import { SpotSeabed } from '../scene/SpotSeabed';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import type { WaterSurface } from '../scene/WaterSurface';
@@ -256,7 +256,40 @@ export class PhysicalMode {
   private steerSign = -1;
   private readonly cameraRight = new Vector3();
   private readonly boardLeft = new Vector3();
-  private readonly follow = { position: { x: 0, y: 0, z: 0 }, heading: 0 };
+  private readonly follow: FollowTarget = { position: { x: 0, y: 0, z: 0 }, heading: 0, velocity: { x: 0, y: 0, z: 0 } };
+  /** The followed point and sea time at the latest new snapshot, for the ride view's lead. */
+  private readonly followedAt = { x: 0, y: 0, z: 0, seaTime: Number.NaN };
+  private readonly followCrest = { x: 0, y: 0, z: 0 };
+
+  /**
+   * The ride view's lead and lip: the followed point's velocity over the sea time
+   * between snapshots, and the crest of the wave under the rider (spec P9 phase 0).
+   */
+  private followMotion(host: SurfZoneHost): void {
+    const { follow, followedAt } = this;
+    const { seaTime, ride } = host.snapshot.status;
+    const elapsed = seaTime - followedAt.seaTime;
+    const velocity = follow.velocity!;
+    if (elapsed > 0 && elapsed < 0.5) {
+      velocity.x = (follow.position.x - followedAt.x) / elapsed;
+      velocity.y = (follow.position.y - followedAt.y) / elapsed;
+      velocity.z = (follow.position.z - followedAt.z) / elapsed;
+    } else if (!(elapsed >= 0)) {
+      velocity.x = velocity.y = velocity.z = 0;
+    }
+    if (!(elapsed === 0)) Object.assign(followedAt, follow.position, { seaTime });
+    const wave = ride?.wave;
+    if (wave?.valid) {
+      const { position } = follow;
+      const surface = host.heightAt(position.x, position.z);
+      this.followCrest.x = position.x - wave.aheadOfCrest * wave.directionX;
+      this.followCrest.z = position.z - wave.aheadOfCrest * wave.directionZ;
+      this.followCrest.y = surface + (1 - wave.faceFraction) * wave.faceHeight;
+      follow.crest = this.followCrest;
+    } else {
+      follow.crest = undefined;
+    }
+  }
 
   constructor(scene: Scene) {
     scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group);
@@ -417,6 +450,7 @@ export class PhysicalMode {
     this.follow.position.y = fallen ? rider[RIDER_SNAPSHOT.points + 1] : pose[1];
     this.follow.position.z = fallen ? rider[RIDER_SNAPSHOT.points + 2] : pose[2];
     this.follow.heading = riding ? rider[RIDER_SNAPSHOT.heading] : 0;
+    this.followMotion(host);
     this.camera.update(host, this.focus, dt, pose[7] > 0 ? this.follow : undefined);
     this.farField.update(host.snapshot.status.seaTime);
     this.lipPoints.update(snapshotLip(host.snapshot));
