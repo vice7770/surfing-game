@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BEACH_BAR, CANYON, POINT_HEADLAND, REEF, createSpot, deanDepth, reefEdgeZ, type SurfSpot } from './Bathymetry';
+import { ALONG_SHORE } from './SurfZoneSimulation';
 
 /** Offshore bed slope: depth increase per metre toward −z. */
 function slopeZ(spot: SurfSpot, x: number, z: number, step = 0.5): number {
@@ -82,6 +83,14 @@ describe('surf spot bathymetry', () => {
     const canyon = createSpot('canyon', 1);
     expect(canyon.depthAt(CANYON.axisX, -200) - canyon.depthAt(CANYON.axisX + 120, -200)).toBeGreaterThan(8);
     expect(Math.abs(canyon.depthAt(CANYON.axisX, -270) - canyon.depthAt(CANYON.axisX + 120, -270))).toBeLessThan(0.05);
+  });
+
+  it('runs the canyon along the window\'s open edge, so the bed is level across the boundary', () => {
+    // An open edge copies its neighbours: a bed sloping across it drove the edge cells unstable.
+    const canyon = createSpot('canyon', 1);
+    const edge = ALONG_SHORE / 2;
+    for (let z = -260; z <= -40; z += 20) expect(Math.abs(gradientX(canyon, edge, z))).toBeLessThan(1e-3);
+    expect(canyon.depthAt(edge, -200) - canyon.depthAt(0, -200)).toBeGreaterThan(8);
   });
 
   it('puts dry land shoreward of every shoreline and stays finite', () => {

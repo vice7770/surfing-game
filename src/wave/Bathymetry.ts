@@ -51,7 +51,16 @@ export function reefEdgeZ(x: number): number {
   const reach = Math.max(0, REEF.halfWidth - Math.abs(x - REEF.apexX));
   return REEF.edge - reach * slope;
 }
-export const CANYON = { axisX: 0, halfWidth: 30, depth: 14, head: 60, fullAt: 160, fadeStart: 200, fadeEnd: 250 };
+/**
+ * A canyon cut through the shelf. It bends the swell off its axis, leaving a
+ * shadow over it, and gathers it on its flank: 60–130 m from the axis at the
+ * break line, by the swell's direction and period. The axis runs along the
+ * window's open edge (x = 80, half the 160 m window), so the window holds the
+ * focusing flank and the bed is level across the boundary. On the centreline
+ * the focus fell on the open edges and the break line was all shadow; with a
+ * canyon wall crossing an edge, the edge cells ran unstable.
+ */
+export const CANYON = { axisX: 80, halfWidth: 30, depth: 14, head: 60, fullAt: 160, fadeStart: 200, fadeEnd: 250 };
 
 function beach(seed: number): SurfSpot {
   const random = seededRandom(seed, 0xbeac4);

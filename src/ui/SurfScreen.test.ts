@@ -3,9 +3,9 @@ import { DEFAULT_CONDITIONS } from '../game/SurfConditions';
 import { surfModel } from './SurfScreen';
 
 describe('surfModel', () => {
-  it('offers Beach, Point and Reef, marking the chosen spot', () => {
+  it('offers Beach, Point, Reef and Canyon, marking the chosen spot', () => {
     const model = surfModel({ spot: 'point', conditions: DEFAULT_CONDITIONS });
-    expect(model.spots.map((spot) => spot.id)).toEqual(['beach', 'point', 'reef']);
+    expect(model.spots.map((spot) => spot.id)).toEqual(['beach', 'point', 'reef', 'canyon']);
     expect(model.spots.filter((spot) => spot.selected).map((spot) => spot.id)).toEqual(['point']);
   });
 

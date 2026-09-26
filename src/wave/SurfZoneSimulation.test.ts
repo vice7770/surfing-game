@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { REEF, createSpot } from './Bathymetry';
 import { breakerDepthFor } from './Breaking';
-import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TANK, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
+import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TANK, takeOffPoint, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
+import { rayConcentration } from './Refraction';
 import { JET_SPEED_RATIO, crestSpeedAt } from './CrestKinematics';
 
 const small: Omit<SurfZoneConfig, 'spot'> = {
@@ -173,6 +174,23 @@ describe('SurfZoneSimulation', () => {
       for (let z = TANK.fineFrom; z < 0; z += 1) if (Math.abs(reef.depthAt(x, z) - REEF.shelfDepth) < 0.05) shelf += 1;
       expect(shelf).toBeGreaterThanOrEqual(15);
     }
+  });
+
+  it('seats the Canyon take-off where its bed gathers the swell, from either side', () => {
+    const canyon = createSpot('canyon', 1);
+    const bed = (x: number, z: number) => tankDepth(canyon, OFFSHORE_DEPTH.canyon, x, z);
+    for (const directionDegrees of [-10, 10, 25]) {
+      const config: SurfZoneConfig = { ...small, spot: 'canyon', alongShore: 160, peakPeriod: 10, directionDegrees };
+      const point = takeOffPoint(config);
+      const swell = { period: 10, direction: (directionDegrees * Math.PI) / 180 };
+      expect(Math.abs(point.x)).toBeLessThanOrEqual(80 - TAKE_OFF_EDGE_MARGIN);
+      expect(rayConcentration(bed, swell, TANK.zoneInner, point.z, [point.x], 10)[0]).toBeGreaterThan(1.3);
+      expect(bed(point.x, point.z)).toBeCloseTo(breakerDepthFor(1.4, OFFSHORE_DEPTH.canyon), 1);
+    }
+  });
+
+  it('takes off straight out from the window centre at the other spots', () => {
+    for (const spot of ['beach', 'point', 'reef'] as const) expect(takeOffPoint({ ...small, spot, alongShore: 160 }).x).toBe(0);
   });
 
   it('finds the reef break on its steep edge inside the fine surf zone', () => {
