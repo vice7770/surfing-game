@@ -171,7 +171,12 @@ export interface SurfaceSource {
   readonly grid: SurfaceGrid;
   /** Simulation clock that animates the shading-only wind chop, s. */
   readonly time: number;
-  write(data: Float32Array): void;
+  /** Interleaved (height, foam) per grid node; with `carve` false, the heights before the tubes cut them (G9). */
+  write(data: Float32Array, carve?: boolean): void;
+  /** G9: the flying tubes as a `tubeTable`, for the Rich water to cut itself; returns how many. */
+  writeTubes?(into: Float32Array): number;
+  /** The width of the columns the tubes are thrown in, m. */
+  readonly tubeColumnWidth?: number;
   /** Changes whenever `writeBed` would write different values. */
   readonly bedRevision: number;
   /** Bed elevation per grid node, m (negative below datum). */
@@ -299,7 +304,8 @@ export class WaterSurface {
   }
 
   update(): void {
-    this.source.write(this.surfaceData);
+    // The Rich water cuts the tubes itself, per vertex and per pixel (G9); everything else takes them carved.
+    this.source.write(this.surfaceData, !(this.effectiveLook === 'rich' && this.source.writeTubes));
     const grid = this.source.grid;
     (this.uniforms.waterGrid.value as Vector4).set(grid.xMin, grid.zMin, grid.spacing, 0);
     this.uniforms.waterTime.value = this.source.time;

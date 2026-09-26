@@ -4,7 +4,7 @@ import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from '
 import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
 import { FoamField, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
-import { carveGrid } from './tubeTable';
+import { TUBE_CAPACITY, carveGrid } from './tubeTable';
 import { focusX } from './Refraction';
 import { breakerForm, crestMotion, waveHeightAt } from './CrestKinematics';
 import { tubeGeometry } from './Overturn';
@@ -445,6 +445,16 @@ export class SurfZoneSimulation {
       this.lipJets += 1;
       this.lipVolume += thrown;
     }
+  }
+
+  /** The flying tubes as a `tubeTable` (G9); returns how many. */
+  writeTubes(into: Float32Array): number {
+    return this.lip.writeTubes(into, TUBE_CAPACITY);
+  }
+
+  /** The width of the columns the lip throws in, m. */
+  get tubeColumnWidth(): number {
+    return this.solver.dx;
   }
 
   /** Water surface elevation, m; on dry land this is the bed. */
