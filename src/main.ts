@@ -48,7 +48,7 @@ import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField, type WaveSettings } from 
 import { PlungingSheet } from './wave/PlungingSheet';
 import { Hud } from './ui/Hud';
 import { PhysicsReadoutPanel } from './ui/PhysicsReadoutPanel';
-import { describeSwell, formatSwellReadout } from './wave/SwellReadout';
+import { describeSwell, formatSwellReadout, type ReadoutRow } from './wave/SwellReadout';
 import type { SpotName } from './wave/Bathymetry';
 import { App } from './ui/App';
 import './style.css';
@@ -449,6 +449,26 @@ class SurfGame {
   /** The physical ride's status, while a rider is on the water. */
   get rideStatus(): SurfZoneStatus['ride'] | undefined {
     return this.mode === 'physical' ? this.physicalMode.host?.snapshot.status.ride : undefined;
+  }
+
+  /** The Wave Lab (plan P8): today's playable legacy wave, with every tool, reached from the menu. */
+  enterWaveLab(): void {
+    this.physicalMode.idleView = 'overview';
+    this.frozen = false;
+    this.freezeIn = undefined;
+    if (physicalRequested) this.showLoadingThen(() => this.startPhysical(this.seed, this.physicalSettings));
+    else this.startRun(this.seed, this.activeSettings, this.activeSpot);
+    this.focusGame();
+  }
+
+  /** Accessibility (plan P8): the menu's cinematic camera holds still. */
+  setReducedMotion(reduced: boolean): void {
+    this.physicalMode.camera.setReducedMotion(reduced);
+  }
+
+  /** The physical surf zone's readout rows, for the dev-tools telemetry overlay. */
+  get readout(): ReadoutRow[] {
+    return this.mode === 'physical' ? this.physicalMode.readout() : [];
   }
 
   setPaused(paused: boolean): void {

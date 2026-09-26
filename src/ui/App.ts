@@ -9,6 +9,9 @@ import type { RideView } from '../scene/SpectatorCamera';
 import { DEV_TOOLS } from '../devTools';
 import type { SpotName } from '../wave/Bathymetry';
 import type { SurfZoneStatus } from '../wave/SurfZoneRunner';
+import type { ReadoutRow } from '../wave/SwellReadout';
+import { applyAccessibility } from './accessibility';
+import { PhysicsReadoutPanel } from './PhysicsReadoutPanel';
 import packageJson from '../../package.json';
 import { el } from './dom';
 import { createLogbookScreen, logbookModel } from './LogbookScreen';
@@ -39,6 +42,9 @@ export interface GameHost {
   /** The Wave Lab's own replay and new wave. */
   replay(): void;
   newWave(): void;
+  enterWaveLab(): void;
+  setReducedMotion(reduced: boolean): void;
+  readonly readout: ReadoutRow[];
 }
 
 function localStore(): Storage | undefined {
@@ -78,6 +84,14 @@ export class App {
   private readonly tracker = new RideTracker();
   private readonly logbook = new Logbook(localStore());
   private endCard?: HTMLElement;
+  /** The dev tools' telemetry over a Surf ride: the physical readout and the frame rate, at 4 Hz. */
+  private readonly telemetryList = el('dl');
+  private readonly telemetry = el('aside', { class: 'ride-telemetry physics-readout' }, this.telemetryList);
+  private readonly telemetryPanel = new PhysicsReadoutPanel(this.telemetryList);
+  private telemetryClock = 0;
+  private fps = 0;
+  private rotateHint?: HTMLElement;
+  private rotateDismissed = false;
 
   constructor(
     private readonly game: GameHost,
@@ -92,12 +106,23 @@ export class App {
     this.rideHud = new RideHud(() => this.pause());
     this.setLoadingText('loading.break');
     this.bindTouch();
+    this.settings.subscribe((_, change) => {
+      if (change === 'accessibility' || change === 'gameplay' || change === 'controls') this.applyAccessibility();
+    });
     this.show();
   }
 
   /** Called by the game once per rendered frame: the gamepad, and the Auto benchmark while the menu's waves run. */
   frame(intervalMs: number, status?: SurfZoneStatus): void {
     this.menuInput.poll();
+    if (intervalMs > 0 && intervalMs < 500) this.fps += (1000 / intervalMs - this.fps) * 0.1;
+    if (this.stack.current === 'ride' && this.telemetry.isConnected) {
+      this.telemetryClock += intervalMs;
+      if (this.telemetryClock >= 250) {
+        this.telemetryClock = 0;
+        this.telemetryPanel.render([...this.game.readout, { label: 'FRAME RATE', value: `${Math.round(this.fps)} fps` }]);
+      }
+    }
     if (this.stack.current === 'ride') {
       const { gameplay, seen } = this.settings.value;
       this.rideHud.update(this.game.rideStatus, gameplay.units, this.hintKeys(), !seen.rideHints);
@@ -150,7 +175,7 @@ export class App {
     this.controls.enabled = playing;
     this.menuInput.active = !playing;
     this.game.setPaused(this.stack.stack.includes('pause'));
-    this.applyTouch();
+    this.applyAccessibility();
     if (base === 'menu' && this.scene !== 'backdrop') this.openBackdrop();
     // The gradient only stands in for the menu's first waves; a ride or the Wave Lab shows its own scene.
     if (base !== 'menu') this.root.classList.remove('is-scene-pending');
@@ -164,7 +189,7 @@ export class App {
     if (id === 'menu') {
       return [createMainMenu({
         surf: () => this.go('surf'),
-        waveLab: () => {},
+        waveLab: () => this.enterWaveLab(),
         logbook: () => this.go('logbook'),
         settings: () => this.go('settings'),
       }, { devTools: DEV_TOOLS, version: packageJson.version })];
@@ -188,7 +213,15 @@ export class App {
     if (id === 'logbook') {
       return [createLogbookScreen(logbookModel(this.logbook, this.settings.value.gameplay.units, Date.now()), () => this.back())];
     }
-    if (id === 'ride') return this.endCard ? [this.rideHud.root, this.endCard] : [this.rideHud.root];
+    if (id === 'ride') {
+      const { gameplay } = this.settings.value;
+      return [
+        this.rideHud.root,
+        ...(DEV_TOOLS && gameplay.showTelemetry ? [this.telemetry] : []),
+        ...(this.needsRotateHint() ? [this.rotateHintElement()] : []),
+        ...(this.endCard ? [this.endCard] : []),
+      ];
+    }
     if (id === 'pause') {
       const inLab = this.stack.base === 'wavelab';
       return [createPauseMenu({
@@ -287,6 +320,10 @@ export class App {
 
   /** The keys (or pad buttons) the prompts and hints name, from the player's bindings and last-used device. */
   private hintKeys(): HintKeys {
+    // On touch the prompts name the on-screen buttons; paddling out again is the end card's Replay.
+    if (this.touchActive()) {
+      return { paddle: t('touch.paddle'), popUp: t('touch.popUp'), retry: t('touch.retry'), steer: '', pause: '' };
+    }
     const { bindings } = this.settings.value.controls;
     const pad = this.controls.lastDevice === 'gamepad';
     const label = (action: Action) => (pad ? buttonLabel(bindings.gamepad[action][0]) : keyLabel(bindings.keyboard[action][0]));
@@ -317,12 +354,45 @@ export class App {
     });
   }
 
-  private applyTouch(): void {
-    const { gameplay, controls } = this.settings.value;
+  private touchActive(): boolean {
+    const { touchControls } = this.settings.value.gameplay;
     const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
-    const touch = gameplay.touchControls === 'on' || (gameplay.touchControls === 'auto' && coarse);
-    this.root.classList.toggle('has-touch', touch);
-    this.root.classList.toggle('is-left-handed', controls.handedness === 'left');
+    return touchControls === 'on' || (touchControls === 'auto' && coarse);
+  }
+
+  /** UI scale, reduced motion, high contrast, touch and handedness, from the settings. */
+  private applyAccessibility(): void {
+    const { accessibility, controls } = this.settings.value;
+    applyAccessibility(this.root, accessibility, this.touchActive(), controls.handedness);
+    this.game.setReducedMotion(accessibility.reducedMotion);
+  }
+
+  /** A ride on a phone held upright suggests turning it sideways, once per visit. */
+  private needsRotateHint(): boolean {
+    return !this.rotateDismissed && this.touchActive() && window.innerHeight > window.innerWidth;
+  }
+
+  private rotateHintElement(): HTMLElement {
+    this.rotateHint ??= el('button', {
+      class: 'rotate-hint',
+      attrs: { type: 'button' },
+      text: t('hud.rotate'),
+      on: {
+        click: () => {
+          this.rotateDismissed = true;
+          this.rotateHint?.remove();
+        },
+      },
+    });
+    return this.rotateHint;
+  }
+
+  /** The Wave Lab (dev tools): today's screen with the legacy wave; Esc pauses, and Quit returns to the menu. */
+  private enterWaveLab(): void {
+    this.scene = 'wavelab';
+    this.game.enterWaveLab();
+    this.stack.reset('wavelab');
+    this.show();
   }
 
   /**

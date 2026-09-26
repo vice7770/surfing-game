@@ -192,6 +192,22 @@
 .ui:has(.end-card) .hud-hints { display: none; }
 .has-touch .end-card { bottom: 84px; }
 
+/* Dev tools: telemetry over a Surf ride. */
+.ride-telemetry { position: absolute; top: max(64px, 9vh); right: max(12px, 2vw); width: min(22em, 46vw); max-height: 70vh; overflow: auto; padding: .7em .8em; border-radius: 12px; background: var(--paper); box-shadow: 0 12px 35px rgba(20, 73, 75, .12); backdrop-filter: blur(14px); font-size: .9em; }
+.ride-telemetry dl { margin: 0; }
+
+.rotate-hint { position: absolute; top: calc(max(16px, 5vh) + 5.6em); left: 50%; max-width: min(88vw, 22em); padding: .6em 1em; transform: translateX(-50%); border: 0; border-radius: 12px; background: rgba(23, 63, 67, .8); color: #fff8e9; font: 500 .85em 'DM Sans', 'Avenir Next', sans-serif; cursor: pointer; }
+
+/* High-contrast HUD: solid backs and full-white text over a bright sky. */
+.is-high-contrast .hud-prompt { background: #0d2a2d; color: #fff; }
+.is-high-contrast .hud-speed { padding: .2em .6em; border-radius: 10px; background: #0d2a2d; color: #fff; text-shadow: none; }
+.is-high-contrast .hud-balance { background: #0d2a2d; outline: 2px solid #fff; }
+.is-high-contrast .hud-balance-fill { background: #fff; }
+.is-high-contrast .hud-balance.is-low .hud-balance-fill { background: #ff8a5c; }
+.is-high-contrast .hud-hints { padding: .4em .8em; border-radius: 10px; background: #0d2a2d; }
+.is-high-contrast .ride-hud .hud-pause { background: #0d2a2d; border-color: #fff; }
+.is-reduced-motion .hud-balance-fill, .is-reduced-motion .end-card { animation: none; transition: none; }
+
 /* Touch controls during a ride; the Wave Lab keeps its own rules. */
 #app[data-screen='ride'].has-touch .touch-controls { position: absolute; z-index: 5; left: 12px; right: 12px; bottom: 16px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; pointer-events: none; }
 #app[data-screen='ride'].has-touch .hud-readout { bottom: 84px; }
@@ -213,6 +229,8 @@
   .binding-row { grid-template-columns: 1fr 1fr; }
   .binding-row > .setting-label { grid-column: 1 / -1; }
   .binding-head { display: none; }
+  .settings-tabs { overflow-x: auto; scrollbar-width: none; }
+  .settings-tab { flex: 1 0 auto; padding: 0 .5em; font-size: .8em; }
   .panel { padding: 1em; }
   .panel-footer .button-primary { width: 100%; }
   .hud-speed strong { font-size: 2.4em; }
