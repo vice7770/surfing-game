@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { PRESETS } from './Graphics';
 import { SETTINGS_KEY, SettingsStore, defaultSettings } from './Settings';
 
 function memory(initial: Record<string, string> = {}) {
@@ -7,6 +8,26 @@ function memory(initial: Record<string, string> = {}) {
 }
 
 describe('SettingsStore', () => {
+  // G8: the Rich water, and a saved Low player kept on the Classic water.
+  it('defaults the water look to Rich and keeps an old Low save on Classic', () => {
+    expect(defaultSettings().graphics.waterLook).toBe('rich');
+    const { waterLook: _low, ...oldLow } = { preset: 'low', ...PRESETS.low };
+    expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: oldLow }) })).value.graphics.waterLook).toBe('classic');
+    const { waterLook: _auto, ...oldAuto } = { preset: 'auto', ...PRESETS.low };
+    const detected = { preset: 'low', water: 'fast', lowPerformance: true, adapter: 'test' };
+    expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: oldAuto, detected }) })).value.graphics.waterLook).toBe('classic');
+    const { waterLook: _medium, ...oldMedium } = { preset: 'medium', ...PRESETS.medium };
+    expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: oldMedium }) })).value.graphics.waterLook).toBe('rich');
+  });
+
+  it('keeps an old Custom save on Classic where the benchmark rated the machine Low, and on Rich elsewhere', () => {
+    const { waterLook: _custom, ...oldCustom } = { preset: 'custom', ...PRESETS.low };
+    const low = { preset: 'low', water: 'fast', lowPerformance: true, adapter: 'test' };
+    const medium = { preset: 'medium', water: 'fast', lowPerformance: false, adapter: 'test' };
+    expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: oldCustom, detected: low }) })).value.graphics.waterLook).toBe('classic');
+    expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: oldCustom, detected: medium }) })).value.graphics.waterLook).toBe('rich');
+  });
+
   it('starts from the defaults with nothing stored, or with something that is not JSON', () => {
     expect(new SettingsStore(memory()).value).toEqual(defaultSettings());
     expect(new SettingsStore(memory({ [SETTINGS_KEY]: '{oops' })).value).toEqual(defaultSettings());
@@ -22,6 +43,17 @@ describe('SettingsStore', () => {
     expect(store.value.controls.bindings.keyboard.paddle).toEqual(['KeyW']);
     expect(store.value.controls.bindings.keyboard.popUp).toEqual(['Enter']);
     expect(store.value.controls.bindings.gamepad.retry).toEqual([3]);
+  });
+
+  it('keeps the player\'s surfer, saves a change to it and tells subscribers', () => {
+    const storage = memory();
+    const store = new SettingsStore(storage);
+    const heard = vi.fn();
+    store.subscribe(heard);
+    store.setSurfer({ body: 'surfer3', board: 'midnight' });
+    expect(store.value.surfer).toMatchObject({ body: 'surfer3', board: 'midnight', outfit: 'fullsuit' });
+    expect(heard).toHaveBeenCalledWith(store.value, 'surfer');
+    expect(new SettingsStore(storage).value.surfer.body).toBe('surfer3');
   });
 
   it('saves every change, and keeps working when the storage throws', () => {

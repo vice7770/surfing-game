@@ -66,6 +66,17 @@ describe('applyRow', () => {
     expect(applyRow(defaultSettings(), 'units', 'imperial')).toEqual({ tab: 'gameplay', patch: { units: 'imperial' } });
     expect(applyRow(defaultSettings(), 'uiScale', 1.2)).toEqual({ tab: 'accessibility', patch: { uiScale: 1.2 } });
   });
+
+  // G8: the water look among the advanced graphics.
+  it('offers the water look among the advanced graphics and applies it instantly', () => {
+    const rows = settingsModel('graphics', defaultSettings(), context);
+    const row = rows.find((r) => r.id === 'waterLook');
+    expect(row).toMatchObject({ kind: 'choice', value: 'rich' });
+    expect(row && 'nextWave' in row && row.nextWave).toBeFalsy();
+    const ids = rows.map((r) => r.id);
+    expect(ids.indexOf('waterLook')).toBe(ids.indexOf('seaDetail') + 1);
+    expect(applyRow(defaultSettings(), 'waterLook', 'classic')).toMatchObject({ tab: 'graphics', patch: { waterLook: 'classic' } });
+  });
 });
 
 describe('the Audio tab (S1)', () => {

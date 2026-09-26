@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultSettings } from './Settings';
+import { defaultSettings, type Detection, type GraphicsSettings } from './Settings';
 import { BenchmarkRecorder, PRESETS, choosePreset, needsDetection, resolveGraphics, withAdvanced, withPreset } from './Graphics';
 
 const steady = (ms: number, n = 360) => Array.from({ length: n }, () => ms);
@@ -43,6 +43,21 @@ describe('graphics', () => {
     expect(resolveGraphics(withPreset(defaultSettings().graphics, 'ultra'), undefined, 3).pixelRatio).toBeCloseTo(1.75 * 1.25, 9);
   });
 
+  it("lets each preset pick the surfer's shadow, level of detail and texture size (G7 Part B)", () => {
+    const at = (preset: GraphicsSettings['preset'], detected?: Detection) => {
+      const { shadows, surferLodDistance, textureCap } = resolveGraphics({ ...defaultSettings().graphics, preset }, detected, 1);
+      return { shadows, surferLodDistance, textureCap };
+    };
+    expect(at('low')).toEqual({ shadows: 'blob', surferLodDistance: 0, textureCap: 512 });
+    expect(at('medium')).toEqual({ shadows: 'rider', surferLodDistance: 8, textureCap: 1024 });
+    expect(at('high')).toEqual({ shadows: 'surfaces', surferLodDistance: 12, textureCap: 2048 });
+    expect(at('ultra')).toEqual({ shadows: 'soft', surferLodDistance: 20, textureCap: 2048 });
+    const detected: Detection = { preset: 'high', water: 'accurate', lowPerformance: false, adapter: 'test' };
+    expect(at('auto', detected)).toEqual(at('high'));
+    expect(at('custom', detected)).toEqual(at('high'));
+    expect(at('custom')).toEqual(at('medium'));
+  });
+
   it('turns the preset to Custom when an advanced value changes, and back when a preset is chosen', () => {
     const custom = withAdvanced(withPreset(defaultSettings().graphics, 'high'), { caustics: false });
     expect(custom.preset).toBe('custom');
@@ -56,5 +71,13 @@ describe('graphics', () => {
     expect(needsDetection(auto, seen, 'Apple M2')).toBe(false);
     expect(needsDetection(auto, seen, 'Intel UHD 620')).toBe(true);
     expect(needsDetection(withPreset(auto, 'low'), undefined, 'x')).toBe(false);
+  });
+
+  // G8: the water look by preset.
+  it('puts Low on the Classic water and the others on Rich', () => {
+    expect(PRESETS.low.waterLook).toBe('classic');
+    for (const preset of ['medium', 'high', 'ultra'] as const) expect(PRESETS[preset].waterLook).toBe('rich');
+    expect(resolveGraphics({ preset: 'low', ...PRESETS.low }, undefined, 2).waterLook).toBe('classic');
+    expect(resolveGraphics({ preset: 'high', ...PRESETS.high }, undefined, 2).waterLook).toBe('rich');
   });
 });

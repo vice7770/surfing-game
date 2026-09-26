@@ -1,23 +1,37 @@
+import type { ShadowLevel } from '../scene/ShadowRig';
+import type { WaterLook } from '../scene/water/waterLook';
 import type { AdvancedGraphics, ConcretePreset, Detection, GraphicsPreset, GraphicsSettings } from './Settings';
 
 /** What each graphics preset sets (plan P8). Ultra supersamples; the Auto benchmark never picks it. */
 export const PRESETS: Record<ConcretePreset, AdvancedGraphics> = {
   low: {
     renderScale: 0.75, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'standard',
-    caustics: false, sprayMist: false, oceanView: 'near', foam: 'simple',
+    caustics: false, sprayMist: false, oceanView: 'near', foam: 'simple', waterLook: 'classic',
   },
   medium: {
     renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'standard',
-    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed',
+    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich',
   },
   high: {
     renderScale: 1, nativePixelDensity: true, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'rich',
-    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed',
+    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich',
   },
   ultra: {
     renderScale: 1.25, nativePixelDensity: true, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'rich',
-    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed',
+    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich',
   },
+};
+
+/**
+ * What each preset draws of the surfer (G7 Part B): its shadow, how far away
+ * the full body still shows before the low-poly one takes over, m, and its
+ * largest texture, px (the skin and hair are 2048 px).
+ */
+export const SURFER_DETAIL: Record<ConcretePreset, { shadows: ShadowLevel; surferLodDistance: number; textureCap: number }> = {
+  low: { shadows: 'blob', surferLodDistance: 0, textureCap: 512 },
+  medium: { shadows: 'rider', surferLodDistance: 8, textureCap: 1024 },
+  high: { shadows: 'surfaces', surferLodDistance: 12, textureCap: 2048 },
+  ultra: { shadows: 'soft', surferLodDistance: 20, textureCap: 2048 },
 };
 
 /** Settings the running surf zone cannot change: they take effect on the next wave. */
@@ -48,8 +62,13 @@ export interface ResolvedGraphics {
   sprayMist: boolean;
   oceanView: 'near' | 'far';
   detailedFoam: boolean;
+  /** G8: which water look to draw. */
+  waterLook: WaterLook;
   /** Show the menu's waves as a still frame instead of running them. */
   stillBackdrop: boolean;
+  shadows: ShadowLevel;
+  surferLodDistance: number;
+  textureCap: number;
 }
 
 /** The sharpest pixel ratio drawn at native density; beyond it the cost outweighs what shows. */
@@ -69,7 +88,10 @@ export function resolveGraphics(graphics: GraphicsSettings, detected: Detection 
     sprayMist: graphics.sprayMist,
     oceanView: graphics.oceanView,
     detailedFoam: graphics.foam === 'detailed',
+    waterLook: graphics.waterLook,
     stillBackdrop: effective === 'low',
+    // Custom tunes only the advanced values: the surfer follows the detected preset.
+    ...SURFER_DETAIL[effective === 'custom' ? detected?.preset ?? 'medium' : effective],
   };
 }
 

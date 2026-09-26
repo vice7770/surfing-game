@@ -30,6 +30,8 @@ import { RideHud, showsBalanceMeter, type HintKeys } from './RideHud';
 import { ScreenStack, type ScreenId } from './ScreenStack';
 import { EN, t, type StringKey } from './strings';
 import { createSurfScreen, type SurfChoice } from './SurfScreen';
+import { createSurferCard } from './SurferCard';
+import { SurferPreview } from '../scene/character/SurferPreview';
 import { oncePerFlight } from './oncePerFlight';
 
 /** What the menus ask of the game (implemented by `SurfGame` in main.ts). */
@@ -264,11 +266,18 @@ export class App {
       }, { devTools: DEV_TOOLS, version: packageJson.version, sound: { muted: this.sound.muted, toggle: () => this.toggleMute() } })];
     }
     if (id === 'surf') {
+      const card = createSurferCard(this.settings.value.surfer, this.surfChoice.conditions.time, {
+        change: (patch) => this.settings.setSurfer(patch),
+      }, (canvas) => SurferPreview.create(canvas, { reducedMotion: this.settings.value.accessibility.reducedMotion }));
+      this.disposeScreen = card.dispose;
       return [createSurfScreen(this.surfChoice, {
-        change: (choice) => { this.surfChoice = choice; },
+        change: (choice) => {
+          this.surfChoice = choice;
+          card.setTime(choice.conditions.time);
+        },
         paddleOut: () => void this.paddleOut(),
         back: () => this.back(),
-      })];
+      }, card.root)];
     }
     if (id === 'settings') {
       const screen = createSettingsScreen({

@@ -1,0 +1,817 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Classic water parity > keeps the far ocean’s Classic shaders exactly as before G8 1`] = `
+{
+  "fragment": "#define STANDARD
+#ifdef PHYSICAL
+	#define IOR
+	#define USE_SPECULAR
+#endif
+uniform vec3 diffuse;
+uniform vec3 emissive;
+uniform float roughness;
+uniform float metalness;
+uniform float opacity;
+#ifdef IOR
+	uniform float ior;
+#endif
+#ifdef USE_SPECULAR
+	uniform float specularIntensity;
+	uniform vec3 specularColor;
+	#ifdef USE_SPECULAR_COLORMAP
+		uniform sampler2D specularColorMap;
+	#endif
+	#ifdef USE_SPECULAR_INTENSITYMAP
+		uniform sampler2D specularIntensityMap;
+	#endif
+#endif
+#ifdef USE_CLEARCOAT
+	uniform float clearcoat;
+	uniform float clearcoatRoughness;
+#endif
+#ifdef USE_DISPERSION
+	uniform float dispersion;
+#endif
+#ifdef USE_RETROREFLECTION
+	uniform float retroreflectivity;
+#endif
+#ifdef USE_IRIDESCENCE
+	uniform float iridescence;
+	uniform float iridescenceIOR;
+	uniform float iridescenceThicknessMinimum;
+	uniform float iridescenceThicknessMaximum;
+#endif
+#ifdef USE_SHEEN
+	uniform vec3 sheenColor;
+	uniform float sheenRoughness;
+	#ifdef USE_SHEEN_COLORMAP
+		uniform sampler2D sheenColorMap;
+	#endif
+	#ifdef USE_SHEEN_ROUGHNESSMAP
+		uniform sampler2D sheenRoughnessMap;
+	#endif
+#endif
+#ifdef USE_ANISOTROPY
+	uniform vec2 anisotropyVector;
+	#ifdef USE_ANISOTROPYMAP
+		uniform sampler2D anisotropyMap;
+	#endif
+#endif
+varying vec3 vViewPosition;
+#include <common>
+
+uniform vec2 farFocus;
+uniform vec2 farFade;
+uniform vec3 waterFoamColor;
+varying float vWaterDepth;
+varying float vWaterFoam;
+varying vec2 vWaterFlow;
+
+uniform vec3 waterAttenuation;
+uniform vec3 waterDiffuseAttenuation;
+uniform vec3 waterDeepReflectance;
+uniform vec3 waterBedAlbedo;
+uniform vec3 waterSunDirection;
+uniform vec3 waterSunRadiance;
+uniform float waterBodyGain;
+
+float waterFresnel( float c ) {
+  return 0.020373 + ( 1.0 - 0.020373 ) * pow( 1.0 - clamp( c, 0.0, 1.0 ), 5.0 );
+}
+
+float waterRefractedCosine( float c ) {
+  c = clamp( c, 0.0, 1.0 );
+  return sqrt( 1.0 - ( 1.0 - c * c ) / ( 1.333 * 1.333 ) );
+}
+
+vec3 waterBodyReflectance( float depth, float viewCosine, float sunCosine ) {
+  float path = max( depth, 0.0 ) * ( 1.0 / waterRefractedCosine( viewCosine ) + 1.0 / waterRefractedCosine( sunCosine ) );
+  return waterDeepReflectance + ( waterBedAlbedo - waterDeepReflectance ) * exp( -waterDiffuseAttenuation * path );
+}
+
+// As waterBodyReflectance, with the light reaching the bed scaled by \`bedLight\` (caustics, 1 under flat water):
+// R∞ (1 − e) + A · bedLight · e.
+vec3 waterBodyReflectanceLit( float depth, float viewCosine, float sunCosine, float bedLight ) {
+  float path = max( depth, 0.0 ) * ( 1.0 / waterRefractedCosine( viewCosine ) + 1.0 / waterRefractedCosine( sunCosine ) );
+  vec3 reach = exp( -waterDiffuseAttenuation * path );
+  return waterDeepReflectance * ( 1.0 - reach ) + waterBedAlbedo * bedLight * reach;
+}
+
+
+uniform float waterTime;
+uniform float waterChop;
+uniform sampler2D waterChopMap;
+uniform float waterChopPatch;
+uniform float waterChopFft;
+varying vec3 vWaterWorld;
+
+vec2 waterChopSlope( vec2 p, float t ) {
+  // The WebGPU tier's FFT wind sea (FftChop), when it runs; else six analytic waves.
+  if ( waterChopFft > 0.5 ) return texture2D( waterChopMap, p / waterChopPatch ).xy;
+  const vec3 waves[6] = vec3[6](
+    vec3( 0.94, 0.34, 1.9 ), vec3( -0.50, 0.87, 1.3 ), vec3( 0.20, -0.98, 2.7 ),
+    vec3( 0.77, 0.64, 0.85 ), vec3( -0.90, -0.43, 3.4 ), vec3( 0.34, 0.94, 1.1 )
+  );
+  vec2 slope = vec2( 0.0 );
+  for ( int i = 0; i < 6; i ++ ) {
+    vec3 wave = waves[ i ];
+    float k = 6.2831853 / wave.z;
+    float amplitude = 0.012 * wave.z;
+    float phase = k * dot( wave.xy, p ) - sqrt( 9.81 * k ) * t + float( i ) * 1.7;
+    slope -= amplitude * k * wave.xy * sin( phase );
+  }
+  return slope;
+}
+
+
+uniform sampler2D waterFoamTile;
+// 1 where foam is a covered fraction (the physical sea), 0 for a plain tint strength (the legacy field).
+uniform float waterFoamPattern;
+const float FOAM_CELL = 0.700;
+const float FOAM_TILE = 64.0;
+const float FOAM_FLOW_PERIOD = 2.000;
+const float FOAM_THRESHOLDS[17] = float[17]( 0.00085, 0.05792, 0.07876, 0.09606, 0.11346, 0.13295, 0.15882, 0.18993, 0.22258, 0.25836, 0.29737, 0.34001, 0.38918, 0.44380, 0.51101, 0.60410, 1.00000 );
+
+float foamCoverage( float foam, float distance ) {
+  if ( foam <= 0.001 ) return 0.0;
+  float s = min( foam, 1.0 ) * 16.0;
+  int k = min( 15, int( floor( s ) ) );
+  float radius = mix( FOAM_THRESHOLDS[ k ], FOAM_THRESHOLDS[ k + 1 ], s - float( k ) );
+  return 1.0 - smoothstep( radius - 0.040, radius + 0.040, distance );
+}
+
+float foamPhaseCover( float foam, vec2 p ) {
+  vec2 tile = texture( waterFoamTile, p / ( FOAM_CELL * FOAM_TILE ) ).rg;
+  float f = min( foam, 1.0 );
+  return foamCoverage( f * ( 1.0 + ( 2.0 * tile.g - 1.0 ) * ( 1.0 - f ) ), tile.r );
+}
+
+float waterFoamCover( vec2 p, vec2 flow, float foam, float time, float footprint ) {
+  if ( foam <= 0.001 ) return 0.0;
+  float fade = smoothstep( 0.25, 1.0, footprint / FOAM_CELL );
+  if ( fade >= 1.0 ) return foam;
+  float a = fract( time / FOAM_FLOW_PERIOD );
+  float b = fract( a + 0.5 );
+  float weight = 1.0 - abs( 2.0 * a - 1.0 );
+  float offset = smoothstep( 0.0, 0.5, length( flow ) * FOAM_FLOW_PERIOD / FOAM_CELL );
+  float coverA = foamPhaseCover( foam, p - flow * a * FOAM_FLOW_PERIOD );
+  float coverB = foamPhaseCover( foam, p - flow * b * FOAM_FLOW_PERIOD + vec2( 17.3, 5.9 ) * FOAM_CELL * offset );
+  return mix( weight * coverA + ( 1.0 - weight ) * coverB, foam, fade );
+}
+
+
+#include <dithering_pars_fragment>
+#include <color_pars_fragment>
+#include <uv_pars_fragment>
+#include <map_pars_fragment>
+#include <alphamap_pars_fragment>
+#include <alphatest_pars_fragment>
+#include <alphahash_pars_fragment>
+#include <aomap_pars_fragment>
+#include <lightmap_pars_fragment>
+#include <emissivemap_pars_fragment>
+#include <iridescence_fragment>
+#include <cube_uv_reflection_fragment>
+#include <envmap_common_pars_fragment>
+#include <envmap_physical_pars_fragment>
+#include <fog_pars_fragment>
+#include <lights_pars_begin>
+#include <normal_pars_fragment>
+#include <lights_physical_pars_fragment>
+#include <transmission_pars_fragment>
+#include <shadowmap_pars_fragment>
+#include <bumpmap_pars_fragment>
+#include <normalmap_pars_fragment>
+#include <clearcoat_pars_fragment>
+#include <iridescence_pars_fragment>
+#include <roughnessmap_pars_fragment>
+#include <metalnessmap_pars_fragment>
+#include <logdepthbuf_pars_fragment>
+#include <clipping_planes_pars_fragment>
+void main() {
+	vec4 diffuseColor = vec4( diffuse, opacity );
+	#include <clipping_planes_fragment>
+	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
+	vec3 totalEmissiveRadiance = emissive;
+	#include <logdepthbuf_fragment>
+	#include <map_fragment>
+	diffuseColor.a *= 1.0 - smoothstep( farFade.x, farFade.y, length( vWaterWorld.xz - farFocus ) );
+	#include <alphamap_fragment>
+	#include <alphatest_fragment>
+	#include <alphahash_fragment>
+	#include <roughnessmap_fragment>
+	#include <metalnessmap_fragment>
+	
+#include <normal_fragment_begin>
+{
+  float chopFade = exp( -length( vWaterWorld - cameraPosition ) / 80.0 );
+  vec2 chopSlope = waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime );
+  vec3 chopNormal = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
+  chopNormal = normalize( chopNormal + vec3( -chopSlope.x, 0.0, -chopSlope.y ) );
+  normal = normalize( ( viewMatrix * vec4( chopNormal, 0.0 ) ).xyz );
+}
+
+	#include <normal_fragment_maps>
+	#include <clearcoat_normal_fragment_begin>
+	#include <clearcoat_normal_fragment_maps>
+	
+#include <emissivemap_fragment>
+{
+  vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
+  vec3 waterV = normalize( cameraPosition - vWaterWorld );
+  float waterViewCos = dot( waterN, waterV );
+  vec3 waterBody = waterDeepReflectance;
+  if ( waterViewCos > 0.0 ) {
+    waterBody = waterBodyReflectance( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ) );
+  }
+  // Foam is a matte network over the water (plan §2.4) that drifts with the current.
+  vec2 waterFootprint = fwidth( vWaterWorld.xz );
+  float waterCover = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
+  diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, waterCover );
+  roughnessFactor = mix( roughnessFactor, 0.9, waterCover );
+}
+
+	#include <lights_physical_fragment>
+	#include <lights_fragment_begin>
+	#include <lights_fragment_maps>
+	#include <lights_fragment_end>
+	#include <aomap_fragment>
+	vec3 totalDiffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
+	vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;
+	#include <transmission_fragment>
+	vec3 outgoingLight = totalDiffuse + totalSpecular + totalEmissiveRadiance;
+	#ifdef USE_SHEEN
+ 
+		outgoingLight = outgoingLight + sheenSpecularDirect + sheenSpecularIndirect;
+ 
+ 	#endif
+	#ifdef USE_CLEARCOAT
+		float dotNVcc = saturate( dot( geometryClearcoatNormal, geometryViewDir ) );
+		vec3 Fcc = F_Schlick( material.clearcoatF0, material.clearcoatF90, dotNVcc );
+		outgoingLight = outgoingLight * ( 1.0 - material.clearcoat * Fcc ) + ( clearcoatSpecularDirect + clearcoatSpecularIndirect ) * material.clearcoat;
+	#endif
+	#include <opaque_fragment>
+	#include <tonemapping_fragment>
+	#include <colorspace_fragment>
+	#include <fog_fragment>
+	#include <premultiplied_alpha_fragment>
+	#include <dithering_fragment>
+}",
+  "vertex": "#define STANDARD
+varying vec3 vViewPosition;
+#ifdef USE_TRANSMISSION
+	varying vec3 vWorldPosition;
+#endif
+#include <common>
+
+uniform sampler2D farTable;
+uniform int farCount;
+uniform int farShoreSamples;
+uniform int farOffshoreSamples;
+uniform vec3 farZ;
+uniform float farCenterX;
+uniform float farKx[64];
+uniform float farTemporal[64];
+uniform float farGerstner;
+uniform vec4 farHole;
+varying float vWaterDepth;
+varying float vWaterFoam;
+varying vec2 vWaterFlow;
+varying vec3 vWaterWorld;
+
+float farRowFor( float z ) {
+  float reference = float( farShoreSamples - 1 );
+  if ( z >= farZ.y ) return clamp( ( farZ.x - z ) / ( farZ.x - farZ.y ), 0.0, 1.0 ) * reference;
+  return reference + clamp( ( farZ.y - z ) / ( farZ.y - farZ.z ), 0.0, 1.0 ) * float( farOffshoreSamples - 1 );
+}
+
+#include <batching_pars_vertex>
+#include <uv_pars_vertex>
+#include <displacementmap_pars_vertex>
+#include <color_pars_vertex>
+#include <fog_pars_vertex>
+#include <normal_pars_vertex>
+#include <morphtarget_pars_vertex>
+#include <skinning_pars_vertex>
+#include <shadowmap_pars_vertex>
+#include <logdepthbuf_pars_vertex>
+#include <clipping_planes_pars_vertex>
+void main() {
+	#include <uv_vertex>
+	#include <color_vertex>
+	#include <morphinstance_vertex>
+	#include <morphcolor_vertex>
+	#include <batching_vertex>
+	
+vec2 farXZ = ( modelMatrix * vec4( position, 1.0 ) ).xz;
+int farSamples = farShoreSamples + farOffshoreSamples - 1;
+int farSide = farXZ.x < farCenterX ? 0 : 1;
+float farRow = farRowFor( farXZ.y );
+int farRow0 = int( floor( farRow ) );
+int farRow1 = min( farRow0 + 1, farSamples - 1 );
+float farBlend = farRow - float( farRow0 );
+int farBase0 = farSide * farSamples + farRow0;
+int farBase1 = farSide * farSamples + farRow1;
+float farDepth = mix( texelFetch( farTable, ivec2( farCount, farBase0 ), 0 ).r, texelFetch( farTable, ivec2( farCount, farBase1 ), 0 ).r, farBlend );
+// Gerstner sharpening fades out within 60 m of the tank so both meshes meet.
+float farGerstnerFade = smoothstep( 0.0, 60.0, length( farXZ - clamp( farXZ, farHole.xz, farHole.yw ) ) );
+float farHeight = 0.0;
+vec2 farSlope = vec2( 0.0 );
+vec2 farShift = vec2( 0.0 );
+float farCap = 1.0;
+for ( int c = 0; c < 64; c ++ ) {
+  if ( c >= farCount ) break;
+  vec4 farA = texelFetch( farTable, ivec2( c, farBase0 ), 0 );
+  vec4 farB = texelFetch( farTable, ivec2( c, farBase1 ), 0 );
+  farCap = mix( farA.w, farB.w, farBlend );
+  float farAmplitude = mix( farA.y, farB.y, farBlend ) * farCap;
+  vec2 farK = vec2( farKx[ c ], mix( farA.z, farB.z, farBlend ) );
+  float farPsi = farK.x * farXZ.x + mix( farA.x, farB.x, farBlend ) - farTemporal[ c ];
+  float farSin = sin( farPsi );
+  farHeight += farAmplitude * cos( farPsi );
+  farSlope -= farAmplitude * farK * farSin;
+  farShift -= farGerstner * farGerstnerFade * farAmplitude * farK / max( length( farK ), 1e-6 ) * farSin;
+}
+bool farDry = farDepth <= 0.05;
+if ( farDry ) {
+  // Tuck dry land's water just under the seabed mesh.
+  farHeight = -farDepth - 0.05;
+  farSlope = vec2( 0.0 );
+  farShift = vec2( 0.0 );
+}
+vec3 objectNormal = normalize( vec3( -farSlope.x, 1.0, -farSlope.y ) );
+vWaterDepth = max( 0.0, farDepth + farHeight );
+vWaterFoam = farDry ? 0.0 : clamp( ( 1.0 - farCap ) * 1.4, 0.0, 0.85 );
+vWaterFlow = vec2( 0.0 );
+
+	#include <morphnormal_vertex>
+	#include <skinbase_vertex>
+	#include <skinnormal_vertex>
+	#include <defaultnormal_vertex>
+	#include <normal_vertex>
+	vec3 transformed = vec3( position.x + farShift.x, farHeight, position.z + farShift.y );
+vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;
+	#include <morphtarget_vertex>
+	#include <skinning_vertex>
+	#include <displacementmap_vertex>
+	#include <project_vertex>
+	#include <logdepthbuf_vertex>
+	#include <clipping_planes_vertex>
+	vViewPosition = - mvPosition.xyz;
+	#include <worldpos_vertex>
+	#include <shadowmap_vertex>
+	#include <fog_vertex>
+#ifdef USE_TRANSMISSION
+	vWorldPosition = worldPosition.xyz;
+#endif
+}",
+}
+`;
+
+exports[`Classic water parity > keeps the spray’s Classic shaders exactly as before G8 1`] = `
+{
+  "fragment": "
+uniform vec3 sprayColor;
+varying float vOpacity;
+
+void main() {
+  // A soft round drop cluster: opaque in the middle, fading to its rim.
+  float r = length( gl_PointCoord - 0.5 ) * 2.0;
+  if ( r > 1.0 ) discard;
+  gl_FragColor = vec4( sprayColor, vOpacity * ( 1.0 - r * r ) );
+}
+",
+  "vertex": "
+attribute vec2 look;
+uniform float pixelsPerMetre;
+varying float vOpacity;
+
+void main() {
+  vec4 view = modelViewMatrix * vec4( position, 1.0 );
+  gl_Position = projectionMatrix * view;
+  gl_PointSize = max( 1.0, look.x * pixelsPerMetre / max( 0.1, -view.z ) );
+  vOpacity = look.y;
+}
+",
+}
+`;
+
+exports[`Classic water parity > keeps the tank water’s Classic shaders exactly as before G8 1`] = `
+{
+  "fragment": "#define STANDARD
+#ifdef PHYSICAL
+	#define IOR
+	#define USE_SPECULAR
+#endif
+uniform vec3 diffuse;
+uniform vec3 emissive;
+uniform float roughness;
+uniform float metalness;
+uniform float opacity;
+#ifdef IOR
+	uniform float ior;
+#endif
+#ifdef USE_SPECULAR
+	uniform float specularIntensity;
+	uniform vec3 specularColor;
+	#ifdef USE_SPECULAR_COLORMAP
+		uniform sampler2D specularColorMap;
+	#endif
+	#ifdef USE_SPECULAR_INTENSITYMAP
+		uniform sampler2D specularIntensityMap;
+	#endif
+#endif
+#ifdef USE_CLEARCOAT
+	uniform float clearcoat;
+	uniform float clearcoatRoughness;
+#endif
+#ifdef USE_DISPERSION
+	uniform float dispersion;
+#endif
+#ifdef USE_RETROREFLECTION
+	uniform float retroreflectivity;
+#endif
+#ifdef USE_IRIDESCENCE
+	uniform float iridescence;
+	uniform float iridescenceIOR;
+	uniform float iridescenceThicknessMinimum;
+	uniform float iridescenceThicknessMaximum;
+#endif
+#ifdef USE_SHEEN
+	uniform vec3 sheenColor;
+	uniform float sheenRoughness;
+	#ifdef USE_SHEEN_COLORMAP
+		uniform sampler2D sheenColorMap;
+	#endif
+	#ifdef USE_SHEEN_ROUGHNESSMAP
+		uniform sampler2D sheenRoughnessMap;
+	#endif
+#endif
+#ifdef USE_ANISOTROPY
+	uniform vec2 anisotropyVector;
+	#ifdef USE_ANISOTROPYMAP
+		uniform sampler2D anisotropyMap;
+	#endif
+#endif
+varying vec3 vViewPosition;
+#include <common>
+
+
+uniform sampler2D waterSurface;
+uniform vec4 waterGrid;
+uniform vec2 waterGridSize;
+
+float waterHeightAt( vec2 xz ) {
+  vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
+  if ( g.x < 0.0 || g.y < 0.0 || g.x >= waterGridSize.x - 1.0 || g.y >= waterGridSize.y - 1.0 ) return 0.0;
+  ivec2 c = ivec2( floor( g ) );
+  vec2 t = g - vec2( c );
+  float top = mix( texelFetch( waterSurface, c, 0 ).r, texelFetch( waterSurface, c + ivec2( 1, 0 ), 0 ).r, t.x );
+  float bottom = mix( texelFetch( waterSurface, c + ivec2( 0, 1 ), 0 ).r, texelFetch( waterSurface, c + ivec2( 1, 1 ), 0 ).r, t.x );
+  return mix( top, bottom, t.y );
+}
+
+uniform vec3 waterFoamColor;
+varying float vWaterDepth;
+varying float vWaterFoam;
+varying vec2 vWaterFlow;
+
+uniform vec3 waterAttenuation;
+uniform vec3 waterDiffuseAttenuation;
+uniform vec3 waterDeepReflectance;
+uniform vec3 waterBedAlbedo;
+uniform vec3 waterSunDirection;
+uniform vec3 waterSunRadiance;
+uniform float waterBodyGain;
+
+float waterFresnel( float c ) {
+  return 0.020373 + ( 1.0 - 0.020373 ) * pow( 1.0 - clamp( c, 0.0, 1.0 ), 5.0 );
+}
+
+float waterRefractedCosine( float c ) {
+  c = clamp( c, 0.0, 1.0 );
+  return sqrt( 1.0 - ( 1.0 - c * c ) / ( 1.333 * 1.333 ) );
+}
+
+vec3 waterBodyReflectance( float depth, float viewCosine, float sunCosine ) {
+  float path = max( depth, 0.0 ) * ( 1.0 / waterRefractedCosine( viewCosine ) + 1.0 / waterRefractedCosine( sunCosine ) );
+  return waterDeepReflectance + ( waterBedAlbedo - waterDeepReflectance ) * exp( -waterDiffuseAttenuation * path );
+}
+
+// As waterBodyReflectance, with the light reaching the bed scaled by \`bedLight\` (caustics, 1 under flat water):
+// R∞ (1 − e) + A · bedLight · e.
+vec3 waterBodyReflectanceLit( float depth, float viewCosine, float sunCosine, float bedLight ) {
+  float path = max( depth, 0.0 ) * ( 1.0 / waterRefractedCosine( viewCosine ) + 1.0 / waterRefractedCosine( sunCosine ) );
+  vec3 reach = exp( -waterDiffuseAttenuation * path );
+  return waterDeepReflectance * ( 1.0 - reach ) + waterBedAlbedo * bedLight * reach;
+}
+
+
+float waterCrestThickness( vec3 origin, vec3 direction ) {
+  const float samples[4] = float[4]( 0.25, 1.00, 2.50, 6.00 );
+  float previous = 0.0;
+  float previousGap = 0.0;
+  for ( int i = 0; i < 4; i ++ ) {
+    vec3 p = origin + direction * samples[ i ];
+    float gap = waterHeightAt( p.xz ) - p.y;
+    if ( gap <= 0.0 ) return previousGap > 0.0 ? previous + ( samples[ i ] - previous ) * previousGap / ( previousGap - gap ) : 10000.0;
+    previous = samples[ i ];
+    previousGap = gap;
+  }
+  return 10000.0;
+}
+
+
+uniform float waterTime;
+uniform float waterChop;
+uniform sampler2D waterChopMap;
+uniform float waterChopPatch;
+uniform float waterChopFft;
+varying vec3 vWaterWorld;
+
+vec2 waterChopSlope( vec2 p, float t ) {
+  // The WebGPU tier's FFT wind sea (FftChop), when it runs; else six analytic waves.
+  if ( waterChopFft > 0.5 ) return texture2D( waterChopMap, p / waterChopPatch ).xy;
+  const vec3 waves[6] = vec3[6](
+    vec3( 0.94, 0.34, 1.9 ), vec3( -0.50, 0.87, 1.3 ), vec3( 0.20, -0.98, 2.7 ),
+    vec3( 0.77, 0.64, 0.85 ), vec3( -0.90, -0.43, 3.4 ), vec3( 0.34, 0.94, 1.1 )
+  );
+  vec2 slope = vec2( 0.0 );
+  for ( int i = 0; i < 6; i ++ ) {
+    vec3 wave = waves[ i ];
+    float k = 6.2831853 / wave.z;
+    float amplitude = 0.012 * wave.z;
+    float phase = k * dot( wave.xy, p ) - sqrt( 9.81 * k ) * t + float( i ) * 1.7;
+    slope -= amplitude * k * wave.xy * sin( phase );
+  }
+  return slope;
+}
+
+
+uniform sampler2D waterFoamTile;
+// 1 where foam is a covered fraction (the physical sea), 0 for a plain tint strength (the legacy field).
+uniform float waterFoamPattern;
+const float FOAM_CELL = 0.700;
+const float FOAM_TILE = 64.0;
+const float FOAM_FLOW_PERIOD = 2.000;
+const float FOAM_THRESHOLDS[17] = float[17]( 0.00085, 0.05792, 0.07876, 0.09606, 0.11346, 0.13295, 0.15882, 0.18993, 0.22258, 0.25836, 0.29737, 0.34001, 0.38918, 0.44380, 0.51101, 0.60410, 1.00000 );
+
+float foamCoverage( float foam, float distance ) {
+  if ( foam <= 0.001 ) return 0.0;
+  float s = min( foam, 1.0 ) * 16.0;
+  int k = min( 15, int( floor( s ) ) );
+  float radius = mix( FOAM_THRESHOLDS[ k ], FOAM_THRESHOLDS[ k + 1 ], s - float( k ) );
+  return 1.0 - smoothstep( radius - 0.040, radius + 0.040, distance );
+}
+
+float foamPhaseCover( float foam, vec2 p ) {
+  vec2 tile = texture( waterFoamTile, p / ( FOAM_CELL * FOAM_TILE ) ).rg;
+  float f = min( foam, 1.0 );
+  return foamCoverage( f * ( 1.0 + ( 2.0 * tile.g - 1.0 ) * ( 1.0 - f ) ), tile.r );
+}
+
+float waterFoamCover( vec2 p, vec2 flow, float foam, float time, float footprint ) {
+  if ( foam <= 0.001 ) return 0.0;
+  float fade = smoothstep( 0.25, 1.0, footprint / FOAM_CELL );
+  if ( fade >= 1.0 ) return foam;
+  float a = fract( time / FOAM_FLOW_PERIOD );
+  float b = fract( a + 0.5 );
+  float weight = 1.0 - abs( 2.0 * a - 1.0 );
+  float offset = smoothstep( 0.0, 0.5, length( flow ) * FOAM_FLOW_PERIOD / FOAM_CELL );
+  float coverA = foamPhaseCover( foam, p - flow * a * FOAM_FLOW_PERIOD );
+  float coverB = foamPhaseCover( foam, p - flow * b * FOAM_FLOW_PERIOD + vec2( 17.3, 5.9 ) * FOAM_CELL * offset );
+  return mix( weight * coverA + ( 1.0 - weight ) * coverB, foam, fade );
+}
+
+
+uniform sampler2D causticMap;
+uniform vec4 causticDomain;
+uniform float causticStrength;
+
+float causticLightAt( vec2 xz ) {
+  if ( causticStrength <= 0.0 ) return 1.0;
+  vec2 uv = ( xz - causticDomain.xy ) / causticDomain.zw;
+  if ( uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0 ) return 1.0;
+  vec2 edge = min( uv, 1.0 - uv ) / 0.20;
+  float fade = smoothstep( 0.0, 1.0, min( edge.x, edge.y ) );
+  return mix( 1.0, min( texture( causticMap, uv ).r, 16.0 ), causticStrength * fade );
+}
+
+
+#include <dithering_pars_fragment>
+#include <color_pars_fragment>
+#include <uv_pars_fragment>
+#include <map_pars_fragment>
+#include <alphamap_pars_fragment>
+#include <alphatest_pars_fragment>
+#include <alphahash_pars_fragment>
+#include <aomap_pars_fragment>
+#include <lightmap_pars_fragment>
+#include <emissivemap_pars_fragment>
+#include <iridescence_fragment>
+#include <cube_uv_reflection_fragment>
+#include <envmap_common_pars_fragment>
+#include <envmap_physical_pars_fragment>
+#include <fog_pars_fragment>
+#include <lights_pars_begin>
+#include <normal_pars_fragment>
+#include <lights_physical_pars_fragment>
+#include <transmission_pars_fragment>
+#include <shadowmap_pars_fragment>
+#include <bumpmap_pars_fragment>
+#include <normalmap_pars_fragment>
+#include <clearcoat_pars_fragment>
+#include <iridescence_pars_fragment>
+#include <roughnessmap_pars_fragment>
+#include <metalnessmap_pars_fragment>
+#include <logdepthbuf_pars_fragment>
+#include <clipping_planes_pars_fragment>
+void main() {
+	vec4 diffuseColor = vec4( diffuse, opacity );
+	#include <clipping_planes_fragment>
+	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
+	vec3 totalEmissiveRadiance = emissive;
+	#include <logdepthbuf_fragment>
+	#include <map_fragment>
+	
+	#include <alphamap_fragment>
+	#include <alphatest_fragment>
+	#include <alphahash_fragment>
+	#include <roughnessmap_fragment>
+	#include <metalnessmap_fragment>
+	
+#include <normal_fragment_begin>
+{
+  float chopFade = exp( -length( vWaterWorld - cameraPosition ) / 80.0 );
+  vec2 chopSlope = waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime );
+  vec3 chopNormal = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
+  chopNormal = normalize( chopNormal + vec3( -chopSlope.x, 0.0, -chopSlope.y ) );
+  normal = normalize( ( viewMatrix * vec4( chopNormal, 0.0 ) ).xyz );
+}
+
+	#include <normal_fragment_maps>
+	#include <clearcoat_normal_fragment_begin>
+	#include <clearcoat_normal_fragment_maps>
+	
+#include <emissivemap_fragment>
+{
+  vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
+  vec3 waterV = normalize( cameraPosition - vWaterWorld );
+  float waterViewCos = dot( waterN, waterV );
+  vec3 waterBody = waterDeepReflectance;
+  if ( waterViewCos > 0.0 ) {
+    vec3 waterDown = refract( -waterV, waterN, 0.750188 );
+    vec2 waterBedXZ = vWaterWorld.xz + waterDown.xz * ( vWaterDepth / max( 0.05, -waterDown.y ) );
+    waterBody = waterBodyReflectanceLit( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ), causticLightAt( waterBedXZ ) );
+    float waterBehind = pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 4.0 );
+    vec2 waterSunward = waterSunDirection.xz;
+    if ( waterBehind > 0.001 && dot( waterSunward, waterSunward ) > 1e-6 ) {
+      vec2 waterToSun = normalize( waterSunward );
+      float waterThickness = waterCrestThickness( vWaterWorld, vec3( waterToSun.x, 0.0, waterToSun.y ) );
+      totalEmissiveRadiance += 0.350000 * ( 1.0 - vWaterFoam ) * waterBehind * ( 1.0 - waterFresnel( waterViewCos ) )
+        * waterSunRadiance * exp( -waterAttenuation * waterThickness );
+    }
+  }
+  // Foam is a matte network over the water (plan §2.4) that drifts with the current.
+  vec2 waterFootprint = fwidth( vWaterWorld.xz );
+  float waterCover = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
+  diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor, waterCover );
+  roughnessFactor = mix( roughnessFactor, 0.9, waterCover );
+}
+
+	#include <lights_physical_fragment>
+	#include <lights_fragment_begin>
+	#include <lights_fragment_maps>
+	#include <lights_fragment_end>
+	#include <aomap_fragment>
+	vec3 totalDiffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
+	vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;
+	#include <transmission_fragment>
+	vec3 outgoingLight = totalDiffuse + totalSpecular + totalEmissiveRadiance;
+	#ifdef USE_SHEEN
+ 
+		outgoingLight = outgoingLight + sheenSpecularDirect + sheenSpecularIndirect;
+ 
+ 	#endif
+	#ifdef USE_CLEARCOAT
+		float dotNVcc = saturate( dot( geometryClearcoatNormal, geometryViewDir ) );
+		vec3 Fcc = F_Schlick( material.clearcoatF0, material.clearcoatF90, dotNVcc );
+		outgoingLight = outgoingLight * ( 1.0 - material.clearcoat * Fcc ) + ( clearcoatSpecularDirect + clearcoatSpecularIndirect ) * material.clearcoat;
+	#endif
+	#include <opaque_fragment>
+	#include <tonemapping_fragment>
+	#include <colorspace_fragment>
+	#include <fog_fragment>
+	#include <premultiplied_alpha_fragment>
+	#include <dithering_fragment>
+}",
+  "vertex": "#define STANDARD
+varying vec3 vViewPosition;
+#ifdef USE_TRANSMISSION
+	varying vec3 vWorldPosition;
+#endif
+#include <common>
+
+
+uniform sampler2D waterSurface;
+uniform vec4 waterGrid;
+uniform vec2 waterGridSize;
+
+float waterHeightAt( vec2 xz ) {
+  vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
+  if ( g.x < 0.0 || g.y < 0.0 || g.x >= waterGridSize.x - 1.0 || g.y >= waterGridSize.y - 1.0 ) return 0.0;
+  ivec2 c = ivec2( floor( g ) );
+  vec2 t = g - vec2( c );
+  float top = mix( texelFetch( waterSurface, c, 0 ).r, texelFetch( waterSurface, c + ivec2( 1, 0 ), 0 ).r, t.x );
+  float bottom = mix( texelFetch( waterSurface, c + ivec2( 0, 1 ), 0 ).r, texelFetch( waterSurface, c + ivec2( 1, 1 ), 0 ).r, t.x );
+  return mix( top, bottom, t.y );
+}
+
+uniform sampler2D waterBed;
+uniform sampler2D waterFlow;
+varying float vWaterDepth;
+varying float vWaterFoam;
+varying vec2 vWaterFlow;
+varying vec3 vWaterWorld;
+
+float waterFoamAt( vec2 xz ) {
+  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
+  ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
+  vec2 t = g - vec2( c );
+  float top = mix( texelFetch( waterSurface, c, 0 ).g, texelFetch( waterSurface, c + ivec2( 1, 0 ), 0 ).g, t.x );
+  float bottom = mix( texelFetch( waterSurface, c + ivec2( 0, 1 ), 0 ).g, texelFetch( waterSurface, c + ivec2( 1, 1 ), 0 ).g, t.x );
+  return mix( top, bottom, t.y );
+}
+
+vec2 waterFlowAt( vec2 xz ) {
+  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
+  ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
+  vec2 t = g - vec2( c );
+  vec2 top = mix( texelFetch( waterFlow, c, 0 ).rg, texelFetch( waterFlow, c + ivec2( 1, 0 ), 0 ).rg, t.x );
+  vec2 bottom = mix( texelFetch( waterFlow, c + ivec2( 0, 1 ), 0 ).rg, texelFetch( waterFlow, c + ivec2( 1, 1 ), 0 ).rg, t.x );
+  return mix( top, bottom, t.y );
+}
+
+// sampleSurfaceBed() in WaterSurface.ts.
+float waterBedAt( vec2 xz ) {
+  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
+  ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
+  vec2 t = g - vec2( c );
+  float top = mix( texelFetch( waterBed, c, 0 ).r, texelFetch( waterBed, c + ivec2( 1, 0 ), 0 ).r, t.x );
+  float bottom = mix( texelFetch( waterBed, c + ivec2( 0, 1 ), 0 ).r, texelFetch( waterBed, c + ivec2( 1, 1 ), 0 ).r, t.x );
+  return mix( top, bottom, t.y );
+}
+
+#include <batching_pars_vertex>
+#include <uv_pars_vertex>
+#include <displacementmap_pars_vertex>
+#include <color_pars_vertex>
+#include <fog_pars_vertex>
+#include <normal_pars_vertex>
+#include <morphtarget_pars_vertex>
+#include <skinning_pars_vertex>
+#include <shadowmap_pars_vertex>
+#include <logdepthbuf_pars_vertex>
+#include <clipping_planes_pars_vertex>
+void main() {
+	#include <uv_vertex>
+	#include <color_vertex>
+	#include <morphinstance_vertex>
+	#include <morphcolor_vertex>
+	#include <batching_vertex>
+	
+vec2 waterXZ = ( modelMatrix * vec4( position, 1.0 ) ).xz;
+float waterHeight = waterHeightAt( waterXZ );
+vec2 waterStepX = vec2( waterGrid.z, 0.0 );
+vec2 waterStepZ = vec2( 0.0, waterGrid.z );
+float waterSlopeX = ( waterHeightAt( waterXZ + waterStepX ) - waterHeightAt( waterXZ - waterStepX ) ) / ( 2.0 * waterGrid.z );
+float waterSlopeZ = ( waterHeightAt( waterXZ + waterStepZ ) - waterHeightAt( waterXZ - waterStepZ ) ) / ( 2.0 * waterGrid.z );
+vec3 objectNormal = normalize( vec3( -waterSlopeX, 1.0, -waterSlopeZ ) );
+vWaterDepth = max( 0.0, waterHeight - waterBedAt( waterXZ ) );
+vWaterFoam = waterFoamAt( waterXZ );
+vWaterFlow = waterFlowAt( waterXZ );
+
+	#include <morphnormal_vertex>
+	#include <skinbase_vertex>
+	#include <skinnormal_vertex>
+	#include <defaultnormal_vertex>
+	#include <normal_vertex>
+	vec3 transformed = vec3( position );
+transformed.y = waterHeight;
+vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;
+	#include <morphtarget_vertex>
+	#include <skinning_vertex>
+	#include <displacementmap_vertex>
+	#include <project_vertex>
+	#include <logdepthbuf_vertex>
+	#include <clipping_planes_vertex>
+	vViewPosition = - mvPosition.xyz;
+	#include <worldpos_vertex>
+	#include <shadowmap_vertex>
+	#include <fog_vertex>
+#ifdef USE_TRANSMISSION
+	vWorldPosition = worldPosition.xyz;
+#endif
+}",
+}
+`;
