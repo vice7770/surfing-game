@@ -45,7 +45,9 @@ import { Hud } from './ui/Hud';
 import { PhysicsReadoutPanel } from './ui/PhysicsReadoutPanel';
 import { describeSwell, formatSwellReadout } from './wave/SwellReadout';
 import type { SpotName } from './wave/Bathymetry';
+import { App } from './ui/App';
 import './style.css';
+import './ui/ui.css';
 
 interface TuningSettings extends WaveSettings, PhysicsSettings { sunHeight: number; sunDirection: number; timeScale: number }
 
@@ -236,6 +238,13 @@ class SurfGame {
       mode: this.physicalMode,
       canvas: this.renderer.domElement,
     };
+  }
+
+  /** Called once per rendered frame with the time since the last one, ms (the menus poll the gamepad here). */
+  onFrame?: (intervalMs: number) => void;
+
+  get canvas(): HTMLCanvasElement {
+    return this.renderer.domElement;
   }
 
   /** Apply the graphics settings (plan P8): resolution, frame limit, and what is drawn; water changes wait for the next wave. */
@@ -654,6 +663,7 @@ class SurfGame {
     this.lastRender = timestamp;
     controls.poll();
     const rawElapsed = this.previousFrame === 0 ? 0 : (timestamp - this.previousFrame) / 1000;
+    this.onFrame?.(rawElapsed * 1000);
     const elapsed = Math.min(rawElapsed, 0.1);
     this.previousFrame = timestamp;
     if (rawElapsed > 0 && rawElapsed < 0.5) {
@@ -894,3 +904,5 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   camera: () => game.cycleView(),
   pause: () => {},
 });
+const app = new App(game, controls, settings, { startInWaveLab: physicalRequested || demoMode !== null || recordRequested });
+game.onFrame = (intervalMs) => app.frame(intervalMs);
