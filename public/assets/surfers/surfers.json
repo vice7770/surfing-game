@@ -1,0 +1,56 @@
+{
+  "surfers": [
+    {
+      "id": "surfer1",
+      "file": "surfers/surfer1.glb",
+      "sex": "female",
+      "skin": "young_african_female",
+      "hair": "braid01",
+      "lods": [
+        "LOD0",
+        "LOD1"
+      ],
+      "height": 1.654,
+      "bytes": 1007368
+    },
+    {
+      "id": "surfer2",
+      "file": "surfers/surfer2.glb",
+      "sex": "female",
+      "skin": "young_caucasian_female",
+      "hair": "ponytail01",
+      "lods": [
+        "LOD0",
+        "LOD1"
+      ],
+      "height": 1.657,
+      "bytes": 1595524
+    },
+    {
+      "id": "surfer3",
+      "file": "surfers/surfer3.glb",
+      "sex": "male",
+      "skin": "young_african_male",
+      "hair": "short02",
+      "lods": [
+        "LOD0",
+        "LOD1"
+      ],
+      "height": 1.744,
+      "bytes": 1181876
+    },
+    {
+      "id": "surfer4",
+      "file": "surfers/surfer4.glb",
+      "sex": "male",
+      "skin": "young_asian_male",
+      "hair": "short04",
+      "lods": [
+        "LOD0",
+        "LOD1"
+      ],
+      "height": 1.721,
+      "bytes": 1229864
+    }
+  ]
+}

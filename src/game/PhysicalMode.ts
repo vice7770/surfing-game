@@ -2,9 +2,8 @@ import { Vector3, type Scene } from 'three';
 import type { StandRefusal } from '../physics/AttachedRider';
 import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
-import { Surfer } from '../scene/Surfer';
-import type { BodyPart, DetachedRiderPose } from '../physics/DetachedSurfer';
-import { RIDER_PARTS } from '../physics/riderPosture';
+import { SurferView } from '../scene/character/SurferView';
+import { createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
@@ -210,16 +209,11 @@ export class PhysicalMode {
   readonly spray = new SprayPoints();
   /** The physical board, drawn at the snapshot's pose. */
   readonly board = createBoardMesh(buildBoardShape());
-  /** The rider's body, drawn from the snapshot's seven points (its legacy board hidden). */
-  readonly surfer = new Surfer();
-  private readonly riderPose: { -readonly [K in keyof DetachedRiderPose]: DetachedRiderPose[K] } & { points: Float64Array } = {
-    heading: 0,
-    points: new Float64Array(RIDER_SNAPSHOT.length),
-    getPartPosition(part: BodyPart, out) {
-      const i = RIDER_PARTS.indexOf(part);
-      return out.set(this.points[i * 3], this.points[i * 3 + 1], this.points[i * 3 + 2]);
-    },
-  };
+  /** The rider's body, solved from the snapshot's seven points: a skinned surfer (G7), or the simple one until it loads. */
+  readonly surfer = new SurferView();
+  private readonly riderState = createRiderVisualState();
+  /** Whether the latest input paddles, which cups the drawn hands. */
+  private paddling = false;
   private retryPending = false;
   /** The running surf zone, once it has spun up. */
   host?: SurfZoneHost;
@@ -249,7 +243,6 @@ export class PhysicalMode {
   constructor(scene: Scene) {
     scene.add(this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group);
     this.board.visible = false;
-    this.surfer.setBoardVisible(false);
     this.surfer.group.visible = false;
   }
 
@@ -400,6 +393,7 @@ export class PhysicalMode {
   advance(steps: number, input?: Omit<RideRequest, 'retry'>): void {
     const retry = this.retryPending;
     if (input || retry) this.retryPending = false;
+    if (input) this.paddling = input.paddle;
     this.host?.advance(steps, input || retry ? { paddle: false, popUp: false, steer: 0, ...input, retry } : undefined);
   }
 
@@ -423,9 +417,9 @@ export class PhysicalMode {
     this.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
     this.surfer.group.visible = this.shown && riding;
     if (riding) {
-      this.riderPose.points.set(rider);
-      this.riderPose.heading = rider[RIDER_SNAPSHOT.heading];
-      this.surfer.updateDetached(this.riderPose, this.board.position, this.board.quaternion);
+      readRiderSnapshot(rider, pose, this.riderState);
+      this.riderState.stroking = this.paddling && this.riderState.phase === 'prone' ? 1 : 0;
+      this.surfer.update(this.riderState, this.camera.camera.position);
     }
     this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
     this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount });

@@ -15,6 +15,7 @@ import {
 export class Environment {
   readonly group = new Group();
   private readonly sun: Mesh;
+  private readonly sky: Mesh;
   private readonly skyMaterial: ShaderMaterial;
   private readonly coastline: Mesh[] = [];
 
@@ -44,11 +45,10 @@ export class Environment {
         }
       `,
     });
-    const sky = new Mesh(new SphereGeometry(150, 32, 16), this.skyMaterial);
+    this.sky = new Mesh(new SphereGeometry(150, 32, 16), this.skyMaterial);
     // Drawn first without depth, so distant water beyond the sphere still covers it.
-    sky.renderOrder = -10;
-    sky.renderOrder = -10;
-    this.group.add(sky);
+    this.sky.renderOrder = -10;
+    this.group.add(this.sky);
 
     this.sun = new Mesh(new SphereGeometry(4, 24, 16), new MeshBasicMaterial({ color: '#fff1c9', fog: false }));
     this.group.add(this.sun);
@@ -68,6 +68,12 @@ export class Environment {
   }
 
   get sunPosition() { return this.sun.position; }
+
+  /** The painted sky and sun give way to a photographed sky (`PhotoSky`) once it has loaded. */
+  showSky(visible: boolean): void {
+    this.sky.visible = visible;
+    this.sun.visible = visible;
+  }
 
   /** The legacy coastline cards sit offshore in the physical tank's frame, so that mode hides them. */
   showCoastline(visible: boolean): void {

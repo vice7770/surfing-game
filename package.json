@@ -12,7 +12,9 @@
     "report:board-baseline": "rolldown scripts/board-baseline.ts -o dist/scripts/board-baseline.mjs --format esm --platform node && node dist/scripts/board-baseline.mjs",
     "record:ride": "node scripts/ride-video-receiver.mjs recordings",
     "report:tubes": "rolldown scripts/tube-report.ts -o dist/scripts/tube-report.mjs --format esm --platform node && node dist/scripts/tube-report.mjs",
-    "report:catch": "rolldown scripts/catch-report.ts -o dist/scripts/catch-report.mjs --format esm --platform node && node dist/scripts/catch-report.mjs"
+    "report:catch": "rolldown scripts/catch-report.ts -o dist/scripts/catch-report.mjs --format esm --platform node && node dist/scripts/catch-report.mjs",
+    "assets:skies": "rolldown scripts/assets/fetch-skies.ts -o dist/scripts/fetch-skies.mjs --format esm --platform node && node dist/scripts/fetch-skies.mjs",
+    "assets:surfers": "/Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/assets/build_surfers.py && node scripts/assets/pack-surfers.mjs"
   },
   "dependencies": {
     "three": "^0.186.1"
@@ -20,6 +22,7 @@
   "devDependencies": {
     "@types/three": "^0.186.0",
     "@webgpu/types": "^0.1.74",
+    "gltfpack": "^1.3.0",
     "mp4-muxer": "^5.2.2",
     "typescript": "~5.9.3",
     "vite": "^8.3.1",

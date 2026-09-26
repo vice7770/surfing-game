@@ -154,7 +154,9 @@ export class SurfZoneRunner {
   /** What the spray reads from the surf zone each step. */
   private get sprayScene() {
     const { simulation } = this;
-    return { solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, windSpeed: this.config.windSpeed ?? 0 };
+    // A detached rider's last strokes are stale: only an attached paddler splashes.
+    const strokes = this.session?.rider.attached ? this.session.rider.strokes : undefined;
+    return { solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, windSpeed: this.config.windSpeed ?? 0, strokes };
   }
 
   get windowXMin(): number {
