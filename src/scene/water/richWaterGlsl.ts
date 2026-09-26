@@ -18,7 +18,7 @@ float waterRippleVariance = 0.0;
 /** Rich <beginnormal_vertex>: the Classic varyings, the height from the Catmull-Rom surface (the normal is per pixel). */
 export const richBeginNormal = /* glsl */ `
 vec2 waterXZ = ( modelMatrix * vec4( position, 1.0 ) ).xz;
-vec3 waterCubicSample = waterCubic( waterXZ );
+vec3 waterCubicSample = waterCarvedCubic( waterXZ );
 float waterHeight = waterCubicSample.x;
 vec3 objectNormal = normalize( vec3( -waterCubicSample.y, 1.0, -waterCubicSample.z ) );
 vWaterDepth = max( 0.0, waterHeight - waterBedAt( waterXZ ) );
@@ -98,7 +98,7 @@ export function richNormalFragment(opts: { ripples: boolean; churn?: boolean }):
   return /* glsl */ `
 #include <normal_fragment_begin>
 {
-  vec3 waterSurfaceSample = waterCubic( vWaterWorld.xz );
+  vec3 waterSurfaceSample = waterCarvedCubic( vWaterWorld.xz );
   waterSurfaceSlope = waterSurfaceSample.yz;
   vec2 waterSlope = waterSurfaceSample.yz;
   float chopFade = exp( -length( vWaterWorld - cameraPosition ) / 80.0 );

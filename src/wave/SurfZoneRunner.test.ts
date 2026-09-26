@@ -53,7 +53,8 @@ describe('SurfZoneRunner', () => {
     runner.fill(buffers);
     const surface = new Float32Array(buffers.surface.length);
     const flow = new Float32Array(buffers.flow.length);
-    runner.simulation.writeUniformSurface(surface, runner.grid);
+    // Raw heights: the page carves them with the snapshot's tubes (G9).
+    runner.simulation.writeUniformSurface(surface, runner.grid, false);
     runner.simulation.writeUniformFlow(flow, runner.grid);
     expect(Array.from(buffers.surface)).toEqual(Array.from(surface));
     expect(Array.from(buffers.flow)).toEqual(Array.from(flow));
