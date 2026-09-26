@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GRAVITY } from './dispersion';
-import { LH82_AREA, PSI_RANGE, jetRelativeSpeed, overturn, overturnParameter, overturnSize } from './Overturn';
+import { LH82_AREA, PSI_RANGE, jetRelativeSpeed, overturn, overturnParameter, overturnSize, tubeFloorDepth, tubeGeometry } from './Overturn';
 
 describe('the overturn of a plunging wave (Pick & Feddersen 2026)', () => {
   it('reproduces the published fits at the ends of their range', () => {
@@ -36,21 +36,34 @@ describe('the overturn of a plunging wave (Pick & Feddersen 2026)', () => {
     expect(LH82_AREA * width * length).toBeCloseTo(shape.area * 4, 12);
   });
 
-  it('launches a ballistic jet, in the crest frame, that lands at the far end of the void', () => {
+  it('launches a ballistic jet from the crest, in its frame, that lands at the front end of the void', () => {
     const shape = overturn(0.05);
     const height = 1.5;
-    const { length } = overturnSize(shape, height);
+    const tube = tubeGeometry(shape, height);
     const speed = jetRelativeSpeed(shape, height);
     let x = 0;
     let y = 0;
     let vy = 0;
     const h = 1e-5;
-    while (y > -length * Math.sin(shape.tilt)) {
+    const drop = tube.width / 2 + tube.length * Math.sin(tube.tilt);
+    while (y > -drop) {
       x += speed * h;
       vy -= GRAVITY * h;
       y += vy * h;
     }
-    expect(x).toBeCloseTo(length * Math.cos(shape.tilt), 3);
+    expect(x).toBeCloseTo(tube.length * Math.cos(tube.tilt), 3);
+  });
+
+  it("carves the void's floor from half its width under the crest down to where the jet lands", () => {
+    const tube = tubeGeometry(overturn(0.05), 1.5);
+    const front = tube.length * Math.cos(tube.tilt);
+    expect(tubeFloorDepth(tube, 0)).toBeCloseTo(tube.width / 2, 6);
+    expect(tubeFloorDepth(tube, front)).toBeCloseTo(tube.width / 2 + tube.length * Math.sin(tube.tilt), 6);
+    // Between them it bellies below the straight axis, by up to half the width across it.
+    const middle = tubeFloorDepth(tube, front / 2);
+    expect(middle).toBeGreaterThan(tube.width / 2 + (front / 2) * Math.tan(tube.tilt));
+    expect(Number.isNaN(tubeFloorDepth(tube, -0.1))).toBe(true);
+    expect(Number.isNaN(tubeFloorDepth(tube, front + 0.1))).toBe(true);
   });
 
   it('implies jet speeds within the measured 1.15-1.73 times the crest speed', () => {

@@ -1,7 +1,7 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, STRIP_PARCELS, lipThrow, overturnArea } from './PlungingLip';
-import { jetRelativeSpeed, overturn, overturnParameter } from './Overturn';
+import { jetRelativeSpeed, overturn, overturnParameter, tubeFloorDepth, type TubeGeometry } from './Overturn';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
 
 function basin(): ShallowWaterSolver {
@@ -134,6 +134,46 @@ describe('PlungingLip', () => {
     expect(last.z - 6 * last.age).toBeCloseTo(start + 4 * JET_RELEASE_TIME, 6);
   });
 
+  describe('the void under the lip', () => {
+    // A still crest on the hump, 0.8 m up, throwing a jet that flies its void to the front end.
+    const tube: TubeGeometry = { length: 1.2, width: 0.5, tilt: 0.35 };
+    const drop = tube.width / 2 + tube.length * Math.sin(tube.tilt);
+    const reach = tube.length * Math.cos(tube.tilt);
+    const speed = reach / Math.sqrt((2 * drop) / 9.81);
+    const throwOver = (lip: PlungingLip, solver: ShallowWaterSolver) =>
+      lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: speed }, 0.8, 0.3, 0, tube);
+    const crestZ = (solver: ShallowWaterSolver) => solver.zCenters[Math.floor(solver.cellIndex(3.5, 12.5) / solver.nx)];
+
+    it('lowers the water to the void floor under the lip, opening only as far as the jet has reached', () => {
+      const solver = basin();
+      const lip = new PlungingLip(solver, 256);
+      throwOver(lip, solver);
+      lip.step(0.1);
+      const tip = speed * 0.1;
+      const ahead = tip / 2;
+      expect(lip.carve(3.5, crestZ(solver) + ahead, 5)).toBeCloseTo(0.8 - tubeFloorDepth(tube, ahead), 9);
+      // Beyond the jet's tip, behind the crest, and in another column, the water is untouched.
+      expect(lip.carve(3.5, crestZ(solver) + tip + 0.2, 5)).toBe(5);
+      expect(lip.carve(3.5, crestZ(solver) - 0.2, 5)).toBe(5);
+      expect(lip.carve(5.5, crestZ(solver) + ahead, 5)).toBe(5);
+      // It only ever carves down.
+      expect(lip.carve(3.5, crestZ(solver) + ahead, -1)).toBe(-1);
+    });
+
+    it("lands the jet at the void's front end, then closes the void", () => {
+      const solver = basin();
+      const lip = new PlungingLip(solver, 256);
+      const landings: number[] = [];
+      lip.onLand = (_x, z, _v, _vx, _vy, _vz, flight) => {
+        if (flight && flight.launch.z === crestZ(solver)) landings.push(z - flight.launch.z);
+      };
+      throwOver(lip, solver);
+      for (let step = 0; step < 240 && lip.airborneVolume() > 0; step += 1) lip.step(1 / 120);
+      expect(landings[0]).toBeCloseTo(reach, 1);
+      expect(lip.carve(3.5, crestZ(solver) + reach / 2, 5)).toBe(5);
+    });
+  });
+
   it('links neighbouring columns thrown close in time into one sheet, and not those thrown far apart', () => {
     const across = (gap: number) => {
       const solver = basin();
@@ -245,7 +285,6 @@ describe('lip shape', () => {
     expect(offshore.shape.area / calm.shape.area).toBeCloseTo(overturnArea(-0.4) / overturnArea(0), 12);
     expect(offshore.shape.aspect - calm.shape.aspect).toBeCloseTo(0.18 * 0.4, 12);
     expect(onshore.shape.area).toBeLessThan(calm.shape.area);
-    expect(offshore.relativeSpeed).toBeGreaterThan(calm.relativeSpeed);
   });
 });
 

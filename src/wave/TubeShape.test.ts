@@ -49,10 +49,9 @@ describe('tube shape', () => {
   }, 60_000);
 
   // Measured ranges: W/L 0.25-0.48 at Surf Ranch (Feddersen et al. 2023), up to a round 1:1 (passyworld).
-  // Finding (2026-09-26): the lip lands up to 1 m ahead of its crest but only 0.03-0.3 m below where it
-  // left. The depth-averaged face under it slopes about 17 degrees at the throw, where a real face has
-  // gone vertical, so the solver's water stands where the tube's void should be.
-  it.fails('throws jets whose tubes land within the measured width-to-length range on the reef edge', () => {
+  // The lip flies over its overturn's void, whose floor the water meets under it (P7): at Hs 1.5 m the
+  // reef edge's tubes land about 1.75 m ahead of their crest and 1.3 m below it.
+  it('throws jets whose tubes land within the measured width-to-length range on the reef edge', () => {
     const { ratios } = reefEdgeTubes();
     expect(median(ratios)).toBeGreaterThanOrEqual(0.25);
     expect(median(ratios)).toBeLessThanOrEqual(1);

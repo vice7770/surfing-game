@@ -1,7 +1,7 @@
 import { Vector3 } from 'three';
 import type { LipContactParcel, LipParcelSource } from '../physics/DetachedSurfer';
 import { GRAVITY } from './dispersion';
-import { jetRelativeSpeed, overturn, overturnParameter, type OverturnShape } from './Overturn';
+import { jetRelativeSpeed, overturn, overturnParameter, tubeFloorDepth, type OverturnShape, type TubeGeometry } from './Overturn';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 
 /** Parcels along one column's jet: the sheet's resolution across its thickness of flight (numerical). */
@@ -68,7 +68,7 @@ export interface LipConditions {
   slope: number;
   /** The incoming sea's height over the tank's offshore depth, H0/h0. */
   nonlinearity: number;
-  /** Breaker height H_b, m. */
+  /** The breaking wave's height, m. */
   breakerHeight: number;
   /** Local wind over the breaker celerity, positive onshore. */
   windOverCelerity: number;
@@ -106,6 +106,21 @@ export function lipThrow(conditions: LipConditions): LipThrow | undefined {
     relativeSpeed: jetRelativeSpeed(shape, breakerHeight),
     shape,
   };
+}
+
+/** A void under a flying jet, riding with the crest that threw it. */
+interface FlyingTube {
+  geometry: TubeGeometry;
+  /** The crest when it threw: where, and how high, m. */
+  x: number;
+  z: number;
+  y: number;
+  /** The crest's travel direction (unit) and speed, m/s. */
+  dirX: number;
+  dirZ: number;
+  crestSpeed: number;
+  /** How fast the jet's tip leaves the crest behind, m/s. */
+  relativeSpeed: number;
 }
 
 /**
@@ -160,7 +175,7 @@ export class PlungingLip implements LipParcelSource {
   private readonly index: Uint8Array;
   private readonly launchTime: Float64Array;
   /** Live strips: their parcels, by strip id; and the strips of each world column. */
-  private readonly strips = new Map<number, { column: number; launchTime: number; parcels: number[]; live: number }>();
+  private readonly strips = new Map<number, { column: number; launchTime: number; parcels: number[]; live: number; tube?: FlyingTube }>();
   private readonly byColumn = new Map<number, number[]>();
   private nextStrip = 1;
   /** The lip's clock, s. */
@@ -206,7 +221,7 @@ export class PlungingLip implements LipParcelSource {
    * horizontal `velocity` (m/s). Returns the volume actually thrown: 0 when the
    * parcel pool is full or the crest is dry.
    */
-  launch(cell: number, velocity: { x: number; z: number }, height: number, volume: number, crestSpeed = 0): number {
+  launch(cell: number, velocity: { x: number; z: number }, height: number, volume: number, crestSpeed = 0, tube?: TubeGeometry): number {
     if (this.free.length < STRIP_PARCELS || !(volume > 0)) return 0;
     const { solver } = this;
     const { nx, h, qx, qz, dx, dz } = solver;
@@ -234,12 +249,17 @@ export class PlungingLip implements LipParcelSource {
     const stripId = this.nextStrip;
     this.nextStrip += 1;
     const column = Math.round(x / dx - 0.5);
-    const strip = { column, launchTime: this.time, parcels: [] as number[], live: STRIP_PARCELS };
+    const strip = { column, launchTime: this.time, parcels: [] as number[], live: STRIP_PARCELS, tube: undefined as FlyingTube | undefined };
     const spacing = JET_RELEASE_TIME / (STRIP_PARCELS - 1);
     // The crest moves on at its own speed, the way the jet leaves.
     const jetSpeed = Math.hypot(velocity.x, velocity.z);
     const crestX = jetSpeed > 0 ? (velocity.x / jetSpeed) * crestSpeed : 0;
     const crestZ = jetSpeed > 0 ? (velocity.z / jetSpeed) * crestSpeed : 0;
+    if (tube && jetSpeed > 0) {
+      strip.tube = {
+        geometry: tube, x, z, y: height, dirX: velocity.x / jetSpeed, dirZ: velocity.z / jetSpeed, crestSpeed, relativeSpeed: jetSpeed - crestSpeed,
+      };
+    }
     for (let k = 0; k < STRIP_PARCELS; k += 1) {
       const parcel = this.free.pop()!;
       strip.parcels.push(parcel);
@@ -295,8 +315,47 @@ export class PlungingLip implements LipParcelSource {
       this.y[parcel] += this.vy[parcel] * flight;
       this.z[parcel] += this.vz[parcel] * flight;
       this.age[parcel] += flight;
-      const surface = solver.sampleCentered(solver.h, this.x[parcel], this.z[parcel]) + solver.sampleCentered(solver.bed, this.x[parcel], this.z[parcel]);
+      const water = solver.sampleCentered(solver.h, this.x[parcel], this.z[parcel]) + solver.sampleCentered(solver.bed, this.x[parcel], this.z[parcel]);
+      const surface = this.carve(this.x[parcel], this.z[parcel], water);
       if ((this.vy[parcel] < 0 && this.y[parcel] <= surface) || this.age[parcel] > MAX_FLIGHT) this.land(parcel);
+    }
+  }
+
+  /**
+   * The water surface where the lip's voids leave it, m. Under a flying jet,
+   * inside its overturn, the rider and the eye meet the void's floor (the lower
+   * half of the overturn curve), not the depth-averaged face that stands where
+   * a real face has gone vertical. A void rides with its crest, opens as far as
+   * the jet's tip has flown, and closes when its strip has landed. The solver's
+   * water is left as it is.
+   */
+  carve(x: number, z: number, surface: number): number {
+    const strips = this.byColumn.get(Math.round(x / this.solver.dx - 0.5));
+    if (!strips) return surface;
+    let carved = surface;
+    for (const id of strips) {
+      const strip = this.strips.get(id);
+      const tube = strip?.tube;
+      if (!strip || !tube) continue;
+      const age = this.time - strip.launchTime;
+      const ahead = (x - tube.x - tube.dirX * tube.crestSpeed * age) * tube.dirX + (z - tube.z - tube.dirZ * tube.crestSpeed * age) * tube.dirZ;
+      if (ahead > tube.relativeSpeed * age) continue;
+      const depth = tubeFloorDepth(tube.geometry, ahead);
+      if (!Number.isNaN(depth)) carved = Math.min(carved, tube.y - depth);
+    }
+    return carved;
+  }
+
+  /** Each flying void's ground: its column's x span, and the z span from its crest to its open front, padded by a cell, m. */
+  forEachTubeExtent(visit: (xMin: number, xMax: number, zMin: number, zMax: number) => void): void {
+    const { dx } = this.solver;
+    for (const strip of this.strips.values()) {
+      const tube = strip.tube;
+      if (!tube) continue;
+      const age = this.time - strip.launchTime;
+      const crestZ = tube.z + tube.dirZ * tube.crestSpeed * age;
+      const front = crestZ + tube.dirZ * Math.min(tube.geometry.length * Math.cos(tube.geometry.tilt), tube.relativeSpeed * age);
+      visit(strip.column * dx, (strip.column + 1) * dx, Math.min(crestZ, front) - dx, Math.max(crestZ, front) + dx);
     }
   }
 

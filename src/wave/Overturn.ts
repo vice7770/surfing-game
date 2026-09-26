@@ -48,15 +48,60 @@ export function overturnSize(shape: OverturnShape, height: number): { length: nu
   return { length, width: shape.aspect * length };
 }
 
+/** The void in its crest's frame: length and width, m, and its long axis's tilt below the horizontal, rad. */
+export interface TubeGeometry {
+  length: number;
+  width: number;
+  tilt: number;
+}
+
 /**
- * How fast, relative to its crest, a ballistic jet leaves level to fly the
- * void's long axis: it covers L cos θ while it falls L sin θ, m/s. Added to
- * the crest's speed, this spans 1.2–1.75 times it over the fitted range, as
- * measured jets do: 1.15–1.18 (Erinin et al. 2023), 1.3 (Perlin et al. 1996),
- * 1.68 (Chang & Liu 1998) and 1.73 (Kjeldsen 1984).
+ * The void under a wave H m high. Its pointed back sits half its width
+ * under the crest, where the face has gone vertical, and its long axis runs
+ * forward and down to the round front end where the jet lands.
+ */
+export function tubeGeometry(shape: OverturnShape, height: number): TubeGeometry {
+  return { ...overturnSize(shape, height), tilt: shape.tilt };
+}
+
+/**
+ * How fast, relative to its crest, a ballistic jet leaves the crest level to
+ * land at the void's front end: it covers L cos θ while it falls W/2 + L sin θ,
+ * m/s. Added to the crest's speed, this spans 1.2–1.6 times it over the fitted
+ * range, as measured jets leave: 1.15–1.18 (Erinin et al. 2023), 1.3 (Perlin
+ * et al. 1996), 1.68 (Chang & Liu 1998) and 1.73 (Kjeldsen 1984).
  */
 export function jetRelativeSpeed(shape: OverturnShape, height: number): number {
-  const { length } = overturnSize(shape, height);
-  const flight = Math.sqrt((2 * length * Math.sin(shape.tilt)) / GRAVITY);
-  return (length * Math.cos(shape.tilt)) / flight;
+  const { length, width, tilt } = tubeGeometry(shape, height);
+  const flight = Math.sqrt((2 * (width / 2 + length * Math.sin(tilt))) / GRAVITY);
+  return (length * Math.cos(tilt)) / flight;
+}
+
+/** The half-width of Longuet-Higgins's curve across its axis at u = x′/L along it, as a fraction of W. */
+function halfWidth(u: number): number {
+  return ((3 * Math.sqrt(3)) / 4) * u * Math.sqrt(Math.max(0, 1 - u));
+}
+
+/**
+ * How far below its crest the void's floor lies, m, `ahead` m ahead of the
+ * crest along its travel; NaN outside the void. The floor is the lower half
+ * of Longuet-Higgins's curve, tilted down by θ: the face the rider meets
+ * inside a tube.
+ */
+export function tubeFloorDepth(tube: TubeGeometry, ahead: number): number {
+  const { length, width, tilt } = tube;
+  const cos = Math.cos(tilt);
+  const sin = Math.sin(tilt);
+  if (!(ahead >= 0 && ahead <= length * cos)) return Number.NaN;
+  // Along the floor, the distance ahead grows with u (the tilt never turns it back): bisect for u.
+  const aheadAt = (u: number) => length * u * cos - width * halfWidth(u) * sin;
+  let low = 0;
+  let high = 1;
+  for (let step = 0; step < 40; step += 1) {
+    const middle = (low + high) / 2;
+    if (aheadAt(middle) < ahead) low = middle;
+    else high = middle;
+  }
+  const u = (low + high) / 2;
+  return width / 2 + length * u * sin + width * halfWidth(u) * cos;
 }

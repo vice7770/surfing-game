@@ -34,6 +34,8 @@ export interface PhysicalSurfWaterOptions {
   breaking?: ArrayLike<number>;
   /** Render node spacing, m (the physical mode renders at 1 m). */
   nodeSpacing?: number;
+  /** Lowers the surface where a flying lip's void leaves it (the plunging lip's `carve`). */
+  carve?: (x: number, z: number, surface: number) => number;
 }
 
 /**
@@ -68,7 +70,10 @@ export class PhysicalSurfWater implements SurfWater {
   }
 
   static forSimulation(simulation: SurfZoneSimulation): PhysicalSurfWater {
-    return new PhysicalSurfWater(simulation.solver, { peakPeriod: simulation.config.peakPeriod, breaking: simulation.breaking.strength });
+    const { lip } = simulation;
+    return new PhysicalSurfWater(simulation.solver, {
+      peakPeriod: simulation.config.peakPeriod, breaking: simulation.breaking.strength, carve: (x, z, surface) => lip.carve(x, z, surface),
+    });
   }
 
   sampleAt(x: number, y: number, z: number, out: WaterSample): WaterSample {
@@ -155,7 +160,8 @@ export class PhysicalSurfWater implements SurfWater {
     const { solver } = this;
     const depth = solver.sampleCentered(solver.h, x, z);
     const bottom = solver.sampleCentered(solver.bed, x, z);
-    return depth > WET ? depth + bottom : bottom - 0.05;
+    const height = depth > WET ? depth + bottom : bottom - 0.05;
+    return this.options.carve ? this.options.carve(x, z, height) : height;
   }
 
   /** Fill the 4 × 4 node stencil around (x, z); returns the node-space coordinates. */

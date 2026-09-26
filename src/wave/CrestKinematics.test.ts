@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BoussinesqSolver, madsenSorensenCelerity } from './BoussinesqSolver';
-import { breakerForm, crestSpeedAt } from './CrestKinematics';
+import { breakerForm, crestSpeedAt, waveHeightAt } from './CrestKinematics';
 import { uniformEdges } from './ShallowWaterSolver';
 import { waveNumber } from './dispersion';
 
@@ -29,6 +29,13 @@ describe('crest kinematics', () => {
     const expected = madsenSorensenCelerity(omega, depth);
     expect(speed).toBeGreaterThan(0.95 * expected);
     expect(speed).toBeLessThan(1.05 * expected);
+  });
+
+  it('measures a crest\'s wave height down to the trough ahead of it', () => {
+    const { solver, crest } = travellingWave(0.3, 8);
+    // Half a wavelength ahead reaches the trough; less stops on the face.
+    expect(waveHeightAt(solver, crest * solver.nx + 1, 40)).toBeCloseTo(0.6, 2);
+    expect(waveHeightAt(solver, crest * solver.nx + 1, 5)).toBeLessThan(0.3);
   });
 
   it('finds no crest speed on still water', () => {
