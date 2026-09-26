@@ -43,34 +43,11 @@ describe('surf spot bathymetry', () => {
   });
 
   it('angles the point contours about 31 degrees to the coast on the headland flank', () => {
-    // The headland alone: its bank (below) bends the contours near it.
-    const height = POINT_HEADLAND.shoalHeight;
-    POINT_HEADLAND.shoalHeight = 0;
-    try {
-      const point = createSpot('point', 1);
-      const z = -POINT_HEADLAND.protrusion / 2 - 60;
-      const angle = (Math.atan2(Math.abs(gradientX(point, 0, z)), Math.abs(slopeZ(point, 0, z))) * 180) / Math.PI;
-      expect(angle).toBeGreaterThan(28);
-      expect(angle).toBeLessThan(34);
-    } finally {
-      POINT_HEADLAND.shoalHeight = height;
-    }
-  });
-
-  // Without it the swell refracts parallel to the headland's contours and closes out (median peel 15°): the
-  // waves peak first on the bank and peel along the point from there (median 48°, 2 seeds × 10 periods).
-  it('raises a bank off the point, never shallower than a metre', () => {
-    const { shoalX, shoalOffshore, shoalRadius } = POINT_HEADLAND;
-    const withBank = createSpot('point', 1);
-    const height = POINT_HEADLAND.shoalHeight;
-    POINT_HEADLAND.shoalHeight = 0;
-    const headland = createSpot('point', 1);
-    POINT_HEADLAND.shoalHeight = height;
-    const crest = withBank.depthAt(shoalX, -shoalOffshore);
-    expect(crest).toBeGreaterThanOrEqual(1);
-    expect(headland.depthAt(shoalX, -shoalOffshore) - crest).toBeGreaterThan(1.5);
-    // Well away from it the bed is the headland's.
-    expect(withBank.depthAt(shoalX + 4 * shoalRadius, -shoalOffshore)).toBeCloseTo(headland.depthAt(shoalX + 4 * shoalRadius, -shoalOffshore), 4);
+    const point = createSpot('point', 1);
+    const z = -POINT_HEADLAND.protrusion / 2 - 60;
+    const angle = (Math.atan2(Math.abs(gradientX(point, 0, z)), Math.abs(slopeZ(point, 0, z))) * 180) / Math.PI;
+    expect(angle).toBeGreaterThan(28);
+    expect(angle).toBeLessThan(34);
   });
 
   it("sets the angle of the reef edge's arms by its obliquity", () => {

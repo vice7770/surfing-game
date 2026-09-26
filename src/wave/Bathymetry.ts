@@ -23,19 +23,7 @@ export function deanDepth(offshore: number, a = 0.12, maxDepth = 12, landSlope =
 }
 
 export const BEACH_BAR = { offshore: 90, height: 0.9, width: 18, ripSpacing: 110, ripWidth: 22, ripJitter: 25 };
-/**
- * The Point: a headland whose shoreline steps 120 m offshore over ±150 m, on a
- * 0.04 bed, and a bank off its tip: shoalHeight m high (never shallower than
- * 1 m) at shoalX along shore and shoalOffshore m out, of radius shoalRadius.
- * Without the bank the swell refracted parallel to the headland's contours and
- * closed out (median peel 15°, as P7 found for every reef edge); the waves now
- * peak first on the bank, where it gathers the swell, and peel along the point
- * (median 48°, 15 % close-outs; the wave-and-turns findings).
- */
-export const POINT_HEADLAND = {
-  center: 0, halfWidth: 150, protrusion: 120, slope: 0.04, maxDepth: 12,
-  shoalHeight: 5, shoalX: -40, shoalOffshore: 150, shoalRadius: 45,
-};
+export const POINT_HEADLAND = { center: 0, halfWidth: 150, protrusion: 120, slope: 0.04, maxDepth: 12 };
 /**
  * A-frame reef: a 10 m channel, a 0.15 shelf edge (edgeWidth sets the slope)
  * and a 1 m shelf, shallow enough that waves break on the edge as plunging
@@ -91,17 +79,14 @@ function beach(seed: number): SurfSpot {
 }
 
 function point(): SurfSpot {
-  const { center, halfWidth, protrusion, slope, maxDepth, shoalHeight, shoalX, shoalOffshore, shoalRadius } = POINT_HEADLAND;
+  const { center, halfWidth, protrusion, slope, maxDepth } = POINT_HEADLAND;
   return {
     name: 'point',
     depthAt(x, z) {
       // The shoreline steps offshore across the headland; its flank sets the contour angle.
       const shoreline = -protrusion * smoothstep(center + halfWidth, center - halfWidth, x);
       const offshore = shoreline - z;
-      const depth = offshore <= 0 ? offshore * 0.06 : Math.min(maxDepth, slope * offshore);
-      if (shoalHeight <= 0 || depth <= 0) return depth;
-      const shoal = shoalHeight * Math.exp(-(((x - shoalX) ** 2 + (-z - shoalOffshore) ** 2) / (shoalRadius * shoalRadius)));
-      return Math.max(Math.min(depth, 1), depth - shoal);
+      return offshore <= 0 ? offshore * 0.06 : Math.min(maxDepth, slope * offshore);
     },
   };
 }

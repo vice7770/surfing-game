@@ -124,10 +124,9 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
  * How each spot finds its take-off transect: straight out from the window's
  * centre, or where its bed gathers the swell. A canyon's peak sits beside the
  * shadow it casts (as measured over the Scripps canyon, Magne et al. 2007),
- * and moves with the swell's direction and period. The Point's waves peak first
- * on the bank off its tip.
+ * and moves with the swell's direction and period.
  */
-export const TAKE_OFF: Record<SpotName, 'centre' | 'focus'> = { beach: 'centre', point: 'focus', reef: 'centre', canyon: 'focus' };
+export const TAKE_OFF: Record<SpotName, 'centre' | 'focus'> = { beach: 'centre', point: 'centre', reef: 'centre', canyon: 'focus' };
 
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */
 export const TAKE_OFF_EDGE_MARGIN = 30;

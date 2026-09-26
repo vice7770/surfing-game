@@ -9,7 +9,7 @@
  */
 import { writeFileSync } from 'node:fs';
 import { DEFAULT_PHYSICAL_SETTINGS, spreadingFor } from '../src/game/PhysicalMode';
-import { POINT_HEADLAND, REEF, type SpotName } from '../src/wave/Bathymetry';
+import { REEF, type SpotName } from '../src/wave/Bathymetry';
 import { PEEL_SKILL_MINIMUM } from '../src/wave/Breaking';
 import { measureRideability, rideability, type PeelSample } from '../src/wave/Rideability';
 
@@ -40,16 +40,6 @@ if (reefShape) {
     const [key, value] = pair.split('=');
     if (!(key in REEF)) throw new Error(`No reef parameter ${key}`);
     (REEF as Record<string, number>)[key] = Number(value);
-  }
-}
-
-// Reshape the Point's headland the same way: `--point protrusion=240,slope=0.08`.
-const pointShape = option('point');
-if (pointShape) {
-  for (const pair of pointShape.split(',')) {
-    const [key, value] = pair.split('=');
-    if (!(key in POINT_HEADLAND)) throw new Error(`No point parameter ${key}`);
-    (POINT_HEADLAND as Record<string, number>)[key] = Number(value);
   }
 }
 
