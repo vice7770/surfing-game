@@ -28,9 +28,10 @@ const LOOKS: readonly WaterLook[] = ['classic', 'rich'];
 const RENDER = { width: 1280, height: 720 };
 const TILE = { width: 320, height: 180 };
 const STEP = 1 / 60;
-/** The sheet holds the sea once it breaks, after at least this long, s. */
+/** The sheet holds the sea once a crest this high stands within 30 m of the break, after at least MIN_SETTLE, s. */
 const MIN_SETTLE = 40;
-const MAX_SETTLE = 90;
+const MAX_SETTLE = 120;
+const CREST_HEIGHT = 1.0;
 /** Where the finished sheet is posted as a PNG (`npm run record:ride` runs the receiver), so it can be read without the page on screen. */
 const RECEIVER = new URLSearchParams(window.location.search).get('receiver') ?? 'http://localhost:5199';
 
@@ -43,6 +44,19 @@ const breathe = () => new Promise<void>((resolve) => {
 
 interface Shot { name: string; eye: Vector3; target: Vector3 }
 
+/** The highest node within 30 m of the break. */
+function highestCrest(water: WaterSurface, focus: { x: number; z: number }): { x: number; z: number; height: number } {
+  const { grid } = water;
+  let best = { x: focus.x, z: focus.z, height: -Infinity };
+  for (let j = 0; j < grid.nz; j += 1) {
+    for (let i = 0; i < grid.nx; i += 1) {
+      const here = node(water, i, j);
+      if (Math.hypot(here.x - focus.x, here.z - focus.z) <= 30 && here.height > best.height) best = here;
+    }
+  }
+  return best;
+}
+
 /** Height and foam at a render node. */
 function node(water: WaterSurface, i: number, j: number): { height: number; foam: number; x: number; z: number } {
   const { grid, surfaceData } = water;
@@ -53,22 +67,25 @@ function node(water: WaterSurface, i: number, j: number): { height: number; foam
 function findShots(water: WaterSurface, focus: { x: number; z: number }): Shot[] {
   const { grid } = water;
   const height = (x: number, z: number) => sampleSurfaceHeight(water.surfaceData, grid, x, z);
-  let steepest = { slope: -1, x: focus.x, z: focus.z, height: 0 };
+  const crest = highestCrest(water, focus);
+  let steepest = { slope: -1, x: crest.x, z: crest.z, height: crest.height };
   let foamiest = { foam: -1, x: focus.x, z: focus.z, height: 0 };
   for (let j = 1; j < grid.nz - 1; j += 1) {
     for (let i = 1; i < grid.nx - 1; i += 1) {
       const here = node(water, i, j);
       if (Math.hypot(here.x - focus.x, here.z - focus.z) > 40) continue;
+      if (here.foam > foamiest.foam) foamiest = { foam: here.foam, x: here.x, z: here.z, height: here.height };
+      // The face: the steepest point just shoreward of the highest crest.
+      if (Math.abs(here.x - crest.x) > 12 || here.z < crest.z || here.z > crest.z + 8) continue;
       const slope = Math.hypot(node(water, i + 1, j).height - node(water, i - 1, j).height, node(water, i, j + 1).height - node(water, i, j - 1).height) / (2 * grid.spacing);
       if (slope > steepest.slope) steepest = { slope, x: here.x, z: here.z, height: here.height };
-      if (here.foam > foamiest.foam) foamiest = { foam: here.foam, x: here.x, z: here.z, height: here.height };
     }
   }
   const lineupZ = focus.z - 25;
   const lineupHeight = height(focus.x, lineupZ);
   return [
     { name: 'lineup', eye: new Vector3(focus.x, lineupHeight + 1.6, lineupZ), target: new Vector3(focus.x + 30, lineupHeight, lineupZ - 4) },
-    { name: 'face', eye: new Vector3(steepest.x + 2, steepest.height + 2.2, steepest.z + 9), target: new Vector3(steepest.x, steepest.height, steepest.z) },
+    { name: 'face', eye: new Vector3(steepest.x + 3, crest.height + 1.2, steepest.z + 10), target: new Vector3(steepest.x, steepest.height, steepest.z) },
     { name: 'bore', eye: new Vector3(foamiest.x + 12, foamiest.height + 3, foamiest.z + 4), target: new Vector3(foamiest.x, foamiest.height, foamiest.z) },
     { name: 'horizon', eye: new Vector3(focus.x, 14, focus.z), target: new Vector3(focus.x, 0, focus.z - 200) },
     { name: 'below', eye: new Vector3(focus.x, lineupHeight - 1.2, lineupZ), target: new Vector3(focus.x, lineupHeight - 1.2 + Math.tan((20 * Math.PI) / 180) * 10, lineupZ - 10) },
@@ -88,8 +105,10 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   while (simulated < MAX_SETTLE) {
     for (let k = 0; k < 60; k += 1) hooks.step(idle);
     simulated += 60 * STEP;
-    const breaking = hooks.mode.host?.snapshot.status.breakingFraction ?? 0;
-    if (simulated >= MIN_SETTLE && breaking > 0.02) break;
+    if (simulated >= MIN_SETTLE) {
+      hooks.render(0);
+      if (highestCrest(hooks.water, hooks.mode.focus).height >= CREST_HEIGHT) break;
+    }
     await breathe();
   }
   hooks.render(0);
