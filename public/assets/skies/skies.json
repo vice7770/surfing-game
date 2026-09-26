@@ -1,0 +1,85 @@
+{
+  "skies": [
+    {
+      "id": "qwantani_sunrise_puresky",
+      "timeOfDay": "dawn",
+      "hdr": "skies/qwantani_sunrise_puresky_1k.hdr",
+      "background": "skies/qwantani_sunrise_puresky.jpg",
+      "sun": {
+        "direction": [
+          0.8077948893687379,
+          0.036329383704376224,
+          0.5883430908826996
+        ],
+        "irradiance": [
+          0.3083908881212516,
+          0.03363941904153282,
+          0
+        ],
+        "pixels": 6
+      },
+      "skyIrradiance": 3.399077603845517,
+      "author": "Greg Zaal, Jarod Guest",
+      "licence": "CC0",
+      "source": "https://polyhaven.com/a/qwantani_sunrise_puresky",
+      "bytes": {
+        "hdr": 2097202,
+        "background": 357301
+      }
+    },
+    {
+      "id": "kloofendal_48d_partly_cloudy_puresky",
+      "timeOfDay": "midday",
+      "hdr": "skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+      "background": "skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+      "sun": {
+        "direction": [
+          0.5543528237984373,
+          0.7417159177529422,
+          0.37755853069240725
+        ],
+        "irradiance": [
+          4.164240149496282,
+          4.217543742002063,
+          3.852313200496158
+        ],
+        "pixels": 7
+      },
+      "skyIrradiance": 1.6869690927124783,
+      "author": "Greg Zaal, Jarod Guest",
+      "licence": "CC0",
+      "source": "https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky",
+      "bytes": {
+        "hdr": 2097202,
+        "background": 681062
+      }
+    },
+    {
+      "id": "qwantani_sunset_puresky",
+      "timeOfDay": "sunset",
+      "hdr": "skies/qwantani_sunset_puresky_1k.hdr",
+      "background": "skies/qwantani_sunset_puresky.jpg",
+      "sun": {
+        "direction": [
+          0.8042365756674544,
+          0.10592927507853106,
+          0.5847927145921227
+        ],
+        "irradiance": [
+          6.9435957095144865,
+          2.384933779940095,
+          0.14854316769888737
+        ],
+        "pixels": 7
+      },
+      "skyIrradiance": 2.3356573986450977,
+      "author": "Greg Zaal, Jarod Guest",
+      "licence": "CC0",
+      "source": "https://polyhaven.com/a/qwantani_sunset_puresky",
+      "bytes": {
+        "hdr": 2097202,
+        "background": 372349
+      }
+    }
+  ]
+}
