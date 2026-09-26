@@ -11,7 +11,8 @@
     "report:rideability": "rolldown scripts/rideability-report.ts -o dist/scripts/rideability-report.mjs --format esm --platform node && node dist/scripts/rideability-report.mjs",
     "report:board-baseline": "rolldown scripts/board-baseline.ts -o dist/scripts/board-baseline.mjs --format esm --platform node && node dist/scripts/board-baseline.mjs",
     "record:ride": "node scripts/ride-video-receiver.mjs recordings",
-    "report:catch": "rolldown scripts/catch-report.ts -o dist/scripts/catch-report.mjs --format esm --platform node && node dist/scripts/catch-report.mjs"
+    "report:catch": "rolldown scripts/catch-report.ts -o dist/scripts/catch-report.mjs --format esm --platform node && node dist/scripts/catch-report.mjs",
+    "report:ride": "rolldown scripts/ride-report.ts -o dist/scripts/ride-report.mjs --format esm --platform node && node dist/scripts/ride-report.mjs"
   },
   "dependencies": {
     "three": "^0.186.1"

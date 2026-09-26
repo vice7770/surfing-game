@@ -1,6 +1,6 @@
 /**
- * Dev tool (`?inpage&record`): an autopilot paddles for waves in the physical
- * surf zone, pops up on the cue and rides straight, while the game's own
+ * Dev tool (`?inpage&record`): an autopilot (`Autopilot`) paddles for waves in
+ * the physical surf zone, pops up on the cue and holds a line along the face, while the game's own
  * renderer films it frame by frame into an H.264 MP4 (WebCodecs). Failed
  * attempts are dropped; the first ride of at least MIN_RIDE seconds is posted
  * to a local receiver (RECEIVER, `npm run record:ride`) as `ride.mp4`. It
@@ -9,6 +9,8 @@
  */
 import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
 import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
+import { RIDER_SNAPSHOT } from '../wave/SurfZoneRunner';
+import { Autopilot } from './Autopilot';
 
 interface RecordingHooks {
   start(settings: PhysicalSettings): Promise<void>;
@@ -98,99 +100,64 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
   composite.height = HEIGHT;
   const context = composite.getContext('2d')!;
   const rise = 0.25 * (source === 'practice' ? 2 : settings.significantHeight);
+  const autopilot = new Autopilot({ waitOutside: WAIT_OUTSIDE, rise, giveUp: GIVE_UP });
 
   let clip = new Clip();
-  let state = 'position' as 'position' | 'wait' | 'go' | 'after';
-  let clock = 0;
+  let previous = autopilot.state;
   let waited = 0;
-  let stood = false;
-  let ride = 0;
-  let stalled = 0;
-  let attempts = 0;
-  let popped = false;
-  let label = 'PADDLING INTO POSITION';
+  let after = 0;
   let simulated = 0;
   let step = 0;
 
-  const endAttempt = (why: string) => {
-    state = 'after';
-    clock = 0;
-    label = stood ? `RODE ${ride.toFixed(1)} s · ${why}` : why.toUpperCase();
-  };
-
   while (simulated < MAX_SIM_SECONDS) {
-    const { status } = host.snapshot;
-    const board = host.snapshot.board;
+    const { status, board, rider } = host.snapshot;
     const riding = status.ride;
-    const input = { paddle: false, popUp: false, steer: 0 };
-    if (state === 'position' && riding) {
-      // From the relaunch point, paddle in to just outside the break line, then wait there.
-      if (hooks.mode.focus.z - board[2] > WAIT_OUTSIDE && riding.phase === 'prone') {
-        input.paddle = true;
-      } else {
-        state = 'wait';
-        waited = 0;
-        label = 'WAITING FOR A WAVE';
-        clip.drop();
-        clip = new Clip();
-      }
-    } else if (state === 'wait' && riding) {
+    let input = { paddle: false, popUp: false, steer: 0 };
+    if (riding) {
+      // Watch behind: the highest water within LOOK m seaward of the board.
       let crest = -Infinity;
       for (let back = 2; back <= LOOK; back += 2) crest = Math.max(crest, host.heightAt(board[0], board[2] - back));
+      input = autopilot.next({
+        ride: riding,
+        peelDirection: status.peel?.direction ?? 0,
+        board: { x: board[0], z: board[2], heading: rider[RIDER_SNAPSHOT.heading] },
+        focusZ: hooks.mode.focus.z,
+        crestBehind: crest - settings.tide,
+      }, STEP);
+    }
+    const { state } = autopilot;
+    if (state === 'wait' && previous !== 'wait') {
+      // Film only the last few seconds of waiting before a wave.
+      clip.drop();
+      clip = new Clip();
+      waited = 0;
+    }
+    if (state === 'wait') {
       waited += STEP;
-      if (crest - settings.tide > rise) {
-        state = 'go';
-        clock = 0;
-        stood = false;
-        popped = false;
-        ride = 0;
-        stalled = 0;
-        attempts += 1;
-        label = 'PADDLING';
-      } else if (waited > LEAD) {
-        // Keep only the last few seconds of waiting before the wave.
+      if (waited > LEAD) {
         clip.drop();
         clip = new Clip();
         waited = 0;
       }
-    } else if (state === 'go' && riding) {
-      clock += STEP;
-      if (riding.separation || riding.phase === 'fallen' || riding.phase === 'recover') {
-        endAttempt(riding.separation ? `fell · ${riding.separation}` : 'no stand');
-      } else if (riding.phase === 'prone') {
-        input.paddle = true;
-        if (riding.cue && !popped) {
-          input.popUp = true;
-          input.paddle = false;
-          popped = true;
-          label = 'POP-UP';
-        } else if (clock > GIVE_UP) {
-          endAttempt('missed the wave');
-        }
-      } else {
-        if (riding.popUp.outcome === 'stood') stood = true;
-        if (stood) {
-          ride += STEP;
-          stalled = riding.speed < 1.5 ? stalled + STEP : 0;
-          label = `RIDING ${riding.speed.toFixed(1)} m/s · ${ride.toFixed(1)} s`;
-          if (stalled > 1) endAttempt('the wave left');
-        }
-      }
-    } else if (state === 'after') {
-      clock += STEP;
-      if (clock > AFTER) {
-        if (stood && ride >= MIN_RIDE) {
+    }
+    previous = state;
+    const label = labelFor(autopilot, riding?.speed ?? 0, input.popUp);
+    if (state === 'done') {
+      after += STEP;
+      if (after > AFTER) {
+        if (autopilot.rideTime >= MIN_RIDE) {
           const video = await clip.finish();
           await post('/upload?name=ride.mp4', video);
-          await log(`saved a ${ride.toFixed(1)} s ride after ${attempts} attempts, ${(simulated / 60).toFixed(1)} min simulated, ${clip.frames} frames`);
+          await log(`saved a ${autopilot.rideTime.toFixed(1)} s ride after ${autopilot.attempts} attempts, ${(simulated / 60).toFixed(1)} min simulated, ${clip.frames} frames`);
           return;
         }
-        await log(`attempt ${attempts}: ${label} (${(simulated / 60).toFixed(1)} min simulated)`);
+        await log(`attempt ${autopilot.attempts}: ${label} (${(simulated / 60).toFixed(1)} min simulated)`);
         clip.drop();
         clip = new Clip();
         hooks.retry();
-        state = 'position';
-        label = 'PADDLING INTO POSITION';
+        autopilot.reset();
+        previous = autopilot.state;
+        after = 0;
       }
     }
     hooks.step(input);
@@ -199,12 +166,23 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
     if (step % STEPS_PER_FRAME === 0) {
       hooks.render(STEPS_PER_FRAME * STEP);
       context.drawImage(hooks.canvas, 0, 0, WIDTH, HEIGHT);
-      drawOverlay(context, spot, source, label, attempts);
+      drawOverlay(context, spot, source, label, autopilot.attempts);
       await clip.add(composite);
     }
     if (step % 30 === 0) await breathe();
   }
-  await log(`no ride of ${MIN_RIDE} s in ${attempts} attempts`);
+  await log(`no ride of ${MIN_RIDE} s in ${autopilot.attempts} attempts`);
+}
+
+/** The overlay's line for what the autopilot is doing. */
+function labelFor(autopilot: Autopilot, speed: number, poppingUp: boolean): string {
+  switch (autopilot.state) {
+    case 'position': return 'PADDLING INTO POSITION';
+    case 'wait': return 'WAITING FOR A WAVE';
+    case 'go': return poppingUp ? 'POP-UP' : 'PADDLING';
+    case 'ride': return `RIDING ${(speed * 3.6).toFixed(0)} km/h · ${autopilot.rideTime.toFixed(1)} s`;
+    case 'done': return autopilot.rideTime > 0 ? `RODE ${autopilot.rideTime.toFixed(1)} s · ${autopilot.outcome}` : (autopilot.outcome ?? '').toUpperCase();
+  }
 }
 
 function drawOverlay(context: CanvasRenderingContext2D, spot: string, source: string, label: string, attempt: number): void {

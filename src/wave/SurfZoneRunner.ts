@@ -241,6 +241,11 @@ export class SurfZoneRunner {
     this.gauge?.reset();
   }
 
+  /** The rider against the wave after the latest step (the gauge's own frame, overwritten each step). */
+  get waveFrame(): WaveFrame | undefined {
+    return this.wave;
+  }
+
   /** The rider (on the board, or fallen) against the wave under it. */
   private measureRide(): void {
     const { session, gauge } = this;
