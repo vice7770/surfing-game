@@ -64,6 +64,21 @@ The report compares where and when each wave starts breaking along the take-off 
 - **Pass line:** breaking positions within 1 m and timing within 0.2 s for every matched wave.
 - **If it fails:** stop, and bring the user options before building anything that depends on the shared sea. The likely option is the server nudging everyone's sea toward a shared reference.
 
+**Result (2026-09-26, [drift report](../../research/drift-report.md)):**
+- **Precision and a paddler:** both copies stayed identical to the reference for 240 s (every onset matched within 0.00 s and 0.00 m). The forced surf zone is not chaotic at these scales.
+- **Late joiners:** they fail. A fresh warm start breaks up to 2 s and 17 m off; with a 6-period spin-up, 0.7 s and 4 m off (RMS 5–8 % of Hs), converging only slowly.
+- **The user's decision:** hand the sea over (below).
+
+### Sea handover (decided 2026-09-26)
+
+A player joining a room that already has players starts from a snapshot of an existing player's sea, not from a fresh warm start.
+- **Asking for it:** when a player joins, or re-syncs, and others are in the room, the server asks the player who has been in the room longest for a snapshot. That player's worker exports its surf zone's state at its current sea time: the water, the breaking model, the foam and the lip. The state is stored as 32-bit floats and deflate-compressed; the size is measured (roughly 0.5–1 MB, once).
+- **Delivering it:** the server forwards the snapshot to the joiner. The joiner builds the room's surf zone, loads the snapshot, and catches up to the room's clock.
+- **When no snapshot comes:** if none arrives within 10 s (the donor left or stalled), the server asks the next-longest player. When nobody can give one, the joiner starts fresh and accepts the drift.
+- **An empty room** starts fresh from its seed at the room's sea time. So does the creator.
+- **Transport:** snapshots are binary WebSocket messages of their own kind. They are sent only when the server asks, with a larger size limit (8 MB).
+- **What isn't sent:** the players' own boards and riders, and the visual-only bubbles and spray.
+
 ### Network
 
 - **Transport:** WebSocket.

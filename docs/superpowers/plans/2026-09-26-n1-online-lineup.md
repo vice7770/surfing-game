@@ -1550,6 +1550,46 @@ git commit -m "feat: surf a room's sea with the others in it"
 
 ---
 
+### Task 12b: Sea handover (added after the drift gate, user's decision 2026-09-26)
+
+The drift gate showed that seas started together stay identical, but late joiners don't. A joiner therefore starts from a snapshot of an existing player's sea (spec: "Sea handover").
+
+**Files:**
+- Create: `src/wave/surfZoneState.ts`: capture, restore and binary encoding (32-bit floats, deflate via `CompressionStream` where available).
+- Modify: `src/wave/SurfZoneSimulation.ts`: `exportState()` and `importState(state)`, over the arrays and scalars that carry history.
+- Modify: `src/game/SurfZoneWorkerCore.ts`, `src/game/WorkerSurfZone.ts`, `src/game/SurfZoneHost.ts`:
+  - `start` takes an optional snapshot;
+  - an `exportState` request returns one;
+  - the host gains `exportState(): Promise<Uint8Array>`.
+- Modify: `src/net/protocol.ts`: `{ type: 'stateRequest', request }` (server → donor) and `{ type: 'fresh' }` (server → joiner, no snapshot coming).
+- Modify: `src/net/poseCodec.ts`: binary kind 2, a snapshot frame `[u8 2][u8 0][u16 0][u32 request][bytes]`.
+- Modify: `server/Room.ts`, `server/RoomRegistry.ts`:
+  - on a join with others present, ask the longest-present player;
+  - relay kind-2 frames of at most 8 MB from the asked player to the joiner;
+  - give each donor 10 s, then ask the next, then send `fresh`.
+- Modify: `src/net/OnlineController.ts`: `waitForSea(): Promise<Uint8Array | undefined>` (a snapshot, or undefined for fresh), and answers `stateRequest` through a provider the game sets.
+- Modify: `src/main.ts`: `startOnline` builds from the snapshot when one comes, and the game provides `exportState` to the controller.
+
+**Which state:** a probe finds it empirically (scratchpad `state-probe.ts`).
+- It copies every typed array and scalar of the simulation's object graph into a fresh copy, and checks the two step bit-identically.
+- It then drops arrays one at a time; those whose absence changes nothing are scratch.
+- The minimal list goes into `surfZoneState.ts`.
+
+**Tests:**
+- **Continuation:** a simulation restored from another's `exportState()` steps identically (64-bit) for 300 steps, and within the drift gate's pass line after 32-bit encoding.
+- **Encoding:** round-trips.
+- **Registry:**
+  - asks the longest-present player;
+  - relays only from the asked player to the joiner;
+  - times out to the next player, then to `fresh`;
+  - never asks for an empty room.
+- **Worker:** exports and starts from a snapshot.
+- **Controller:** hands its snapshot to the game; answers requests.
+
+**Commit:** `feat: hand a room's sea to players who join late`
+
+---
+
 ### Task 13: The Multiplayer screen, links and settings
 
 **Files:**
