@@ -275,7 +275,7 @@ class SurfGame {
       },
       step: (input: { paddle: boolean; popUp: boolean; steer: number }) => this.physicalMode.advance(1, input),
       retry: () => this.physicalMode.retry(),
-      render: (seconds: number) => this.physicalRender(seconds, seconds),
+      render: (seconds: number, camera?: PerspectiveCamera) => this.physicalRender(seconds, seconds, camera),
       resize: (width: number, height: number) => {
         this.renderer.setPixelRatio(1);
         this.renderer.setSize(width, height, false);
@@ -890,11 +890,14 @@ class SurfGame {
     this.physicalRender(elapsed, simElapsed);
   }
 
-  /** Draw the physical surf zone as it now stands, and refresh the readout at 4 Hz. */
-  private physicalRender(elapsed: number, simElapsed: number): void {
+  /**
+   * Draw the physical surf zone as it now stands, and refresh the readout at 4 Hz.
+   * `camera` overrides the physical mode's own for this frame (the `?record` tool's shots).
+   */
+  private physicalRender(elapsed: number, simElapsed: number, camera?: PerspectiveCamera): void {
     this.physicalMode.update(simElapsed || this.fixedStep);
     this.setUnderwater(this.physicalMode.cameraBelowSurface());
-    this.drawPhysical(this.physicalMode.camera.camera);
+    this.drawPhysical(camera ?? this.physicalMode.camera.camera);
     this.readoutClock += elapsed;
     if (this.readoutClock >= 0.25) {
       this.readoutClock = 0;

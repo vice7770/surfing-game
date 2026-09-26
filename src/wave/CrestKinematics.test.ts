@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BoussinesqSolver, madsenSorensenCelerity } from './BoussinesqSolver';
-import { JET_SPEED_RATIO, breakerForm, crestSpeedAt } from './CrestKinematics';
+import { breakerForm, crestSpeedAt, waveHeightAt } from './CrestKinematics';
 import { uniformEdges } from './ShallowWaterSolver';
 import { waveNumber } from './dispersion';
 
@@ -31,16 +31,22 @@ describe('crest kinematics', () => {
     expect(speed).toBeLessThan(1.05 * expected);
   });
 
+  it('measures a crest\'s wave height down to the trough ahead of it', () => {
+    const { solver, crest } = travellingWave(0.3, 8);
+    // Half a wavelength ahead reaches the trough; less stops on the face.
+    expect(waveHeightAt(solver, crest * solver.nx + 1, 40)).toBeCloseTo(0.6, 2);
+    expect(waveHeightAt(solver, crest * solver.nx + 1, 5)).toBeLessThan(0.3);
+  });
+
   it('finds no crest speed on still water', () => {
     const solver = new BoussinesqSolver({ nx: 3, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40) }, () => 3);
     solver.step(1 / 60);
     expect(crestSpeedAt(solver, 20 * solver.nx + 1)).toBeUndefined();
   });
 
-  it('throws a jet only on plunging bed slopes, at the crest speed until measured otherwise', () => {
+  it('throws a jet only on plunging bed slopes', () => {
     expect(breakerForm(0.2)).toBe('roller');
     expect(breakerForm(0.8)).toBe('jet');
     expect(breakerForm(3)).toBe('none');
-    expect(JET_SPEED_RATIO).toBe(1);
   });
 });

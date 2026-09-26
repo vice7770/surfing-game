@@ -56,7 +56,6 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus a
     | Big (2.4 m, 14 s) | 0 | not measured | not measured |
 
     Medium works everywhere. P7 has since reshaped the Reef, and P10 changes catching, so the table waits for both. The Reef's Small run also showed a 39.9 m/s top speed, an outlier for the gameplay session to check.
-  - Check a physical gamepad by hand; the mapping is covered by unit tests.
   - Bring back a flow bar once a physical flow measure exists (gameplay, P9).
 
 ### Later — `Backlog`
@@ -65,6 +64,7 @@ Recorded in the same session; each gets its own grilling before work starts.
 1. **Multiplayer beach:** rooms with a player limit the host sets, players starting on the sand, and a beach bar to hang out in. Crowded lineups where surfers and boards collide physically are part of the fun, as on a real busy beach. Details wait for its grilling: room sizes, who hosts, board and body collisions, and whether solo play also starts on the sand.
 2. **Filmed menu background:** a sequence of waves forming and breaking, filmed with the `?record` tool once the waves are finished. It replaces the live menu background.
 3. **Sound:** ocean ambience, breaking waves, paddling, wind and wipeouts, with optional music. It is the phase after P8, and it brings the Audio settings tab.
+4. **A physical gamepad, checked by hand** (moved here by the user, 2026-09-26). The mapping is covered by unit tests.
 
 ## Next milestone — physical wave formation — `In Progress`
 
@@ -125,10 +125,16 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 
     Paddlers lost the board 156 → 29 times at the natural Point and 420 → 127 in practice (the other spots similarly). Stands rose at the practice Point (5 → 13, longest ride 13.7 s) but fell in the natural sea (10 → 5): the old cues partly rode on the runaway hand thrust. **Next:** sprint paddling at take-off, and pop-ups that fail on late take-offs off the lip. The rider now starts, and relaunches, 6 m outside the break line instead of 25 m, where catches were rare (the ghost riders stood from 4–8 m out).
   - [x] The Canyon cues (user's fix list, 2026-09-26). The rider waited over the canyon's axis, in the shadow its refraction casts: crests there were 0.2–0.3 m, and no ghost rider ever saw the cue. The canyon does gather the swell on its flank (crests 1.7× those of the same shelf without it), but on the window's centreline that focus fell on the open edges. Now:
-    - the canyon's axis runs along the window's edge (x = 80), so its focusing flank fills the window and the bed is level across the open boundary. A canyon wall crossing the edge ran the edge cells unstable (3 → 57 m/s in 6 s); the open edge itself is a separate fix;
+    - the canyon's axis runs along the window's edge (x = 80), so its focusing flank fills the window and the bed is level across the open boundary. A canyon wall crossing the edge ran the edge cells unstable (3 → 57 m/s in 6 s); the open edge itself is fixed below;
     - the rider waits where the swell gathers: linear rays from the relaxation zone, averaged over half a wavelength, pick the take-off for the day's direction and period. It sits near x = 0 for the Surf screen's swells, and at −24 m for a swell from −10°. In the Boussinesq surf zone, its waves are 89–96 % of the largest along the lineup. Beach, Point and Reef keep their centre transect.
 
     Ghost riders at the Canyon: 0 → 9 cues and 5 stands in the natural sea (longest 3.1 s), 0 → 34 cues and 5 stands in practice (4 rides ≥ 3 s, longest 5.9 s). Its card is back on the Surf screen. The other spots' rows moved with P7's lip since the last reports: the natural Point held (2 stands, longest 14.0 s), but the practice Point fell from 13 stands to 8 and lost its 13.7 s ride. That is one seed, so it needs a multi-seed check. [Natural](docs/research/catch-report.md) and [practice](docs/research/catch-report-practice.md) reports.
+  - [x] Open edges hold over sloping beds (2026-09-26). With the Canyon's axis 30 m inside the window, its 0.34 wall crossed the open edge and the edge column ran away at t ≈ 67 s. At an open edge the dispersive terms extended the surface with the shallow-water fluxes' zero-gradient ghost. That made the edge's η_xx equal to −η_x/dx, not a curvature, and B g d³ η_xxx a surface-slope force 2.7 times the hydrostatic one in 9 m of water. Over a bed rising toward the edge, an along-shore outflow draws the surface down, and that force pushed on the drawdown until it ran away. The edge column now takes its neighbour's curvature, on the CPU and the GPU:
+    - that layout runs 90 s under 3.3 m/s, like the level-bed ones;
+    - the GPU matches the CPU to 7e-5 m over 10 s, against 0.2 m without the port;
+    - a new test runs an oblique wave train over a canyon wall at both open edges for 90 s.
+
+    Switching dispersion off beside open edges also held, but it was rejected: that border runs the whole cross-shore length, so its waves broke 25 m early and the breaking spread along the crest (the peel test failed). The shipped Canyon keeps its axis on the edge (level bed); the catch reports above predate this fix.
   - [x] Play the surfer, not the board (user request, 2026-09-26): after a fall the camera follows the swimmer, who strokes with Space and steers with the arrows. Enter within reach of the board grabs it and lies back down prone, keeping the pair's linear momentum (surfer plan S3); R still relaunches in the lineup.
 ### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `Done`
 
@@ -147,7 +153,7 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 
   [Record](docs/superpowers/plans/2026-09-26-p6-webgpu-tier.md).
 
-### P1 · Barrels (P7) — `In Progress (tubes wait for jet data)`
+### P1 · Barrels (P7) — `In Progress (tubes open; the barrel needs a visual pass)`
 
 Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels](docs/superpowers/plans/2026-09-26-p7-barrels.md).
 - [ ] **Scope:** a physical lip sheet the rider can be hit by or covered by. Deliberate tube-riding comes later (see the gameplay list below).
@@ -167,7 +173,10 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels
   - hit or covered;
   - the translucent sheet;
   - `npm run report:tubes`.
-- **Tubes do not open yet.** Thrown at the crest's own speed, the lip lands on the face beneath it (no tube of 10 cm or more at any spot). This waits for measured jet kinematics from the user.
+- **Tubes open (2026-09-26, evening).** Each plunging break takes its overturn from Pick & Feddersen's (2026) fits for its bed slope and sea, sized by the wave the solver has. The lip throws the jet's own water and flies it to the overturn's front end at 1.2–1.6 times the crest speed, as measured jets leave (1.15–1.73). The depth-averaged face stands where a real face has gone vertical, so each flying lip carries its void, and the rider, the board, the renderer and the lip's landing meet the void's floor (the user's choice; the solver's water is untouched).
+  - At the Wave Lab defaults the Reef's tubes run a median 1.12 m (90th percentile 1.78 m), 97 % inside the measured range. Openings reach 1.1–1.6 m under the lip: a crouching rider fits the bigger ones.
+  - Fixed on the way: throws created momentum (they removed the crest's depth-averaged momentum but launched at the jet's speed), which drove the practice Reef's water to 23 m/s; strip parcels were released where the jet, not the crest, had moved to; a non-finite body's lip query spread NaN through the sheet.
+  - **Not yet:** the barrel does not read on screen. `?record&watch` films the break from beside the lip, but the void is carved on the 1 m render grid and the lip sheet is thin and faint. A visual pass comes next, with the tube camera (P12).
 - **Along the way:**
   - the peel measurement stopped counting shore swash;
   - the Reef's shelf is now 1 m, so waves break on its edge (769 jets a minute against 307);
@@ -255,7 +264,7 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
     - the balance meter on the leg's margin, in Practice by default; one-time hints; the Controls screen explains the standing actions.
-  - **Next:** the user's playtest on the M4 Pro. It also checks, live, what the automated pass could not reach standing: W/S, crouch, the meter in a carve, hints, callouts and the end card.
+  - **Next:** the user's playtest on the M4 Pro, deferred by the user (2026-09-26): it runs well there, so the playtest comes later. It also checks, live, what the automated pass could not reach standing: W/S, crouch, the meter in a carve, hints, callouts and the end card.
 - [ ] **P10 Take-off** (`Backlog`): cruise and sprint paddling recalibrated to measured speeds, critical-power stamina, angled take-offs, late take-offs and air drops.
 - [ ] **P11 Lineup** (`Backlog`): a sliding window to pick a peak, sets read from the horizon, duck-dives, a surface roller with aeration (hold-downs emerge), breath, a snapping leash, Next set.
 - [ ] **P12 Tube** (`Backlog`, after P11; P7 has finished): pulling in and racing out, rail grab and hand drag, crouch clearance, the Regular/Goofy setting, an automatic tube camera.
@@ -266,6 +275,14 @@ The user's original list of 15 mechanics (2026-09-26) is covered as follows:
 - sprint, angled take-off, late take-off, stamina → P10;
 - duck-dive, reading sets, wipeout and recovery → P11;
 - pull-in/race-out, rail grab/hand drag, tube camera → P12.
+
+### Later — `Backlog`
+
+Follow-ups from the open-edge fix (#14) and the test timeouts (#15), 2026-09-26. The full-lock carve is not repeated here; it is P9's next physics item.
+1. **Rerun the catch reports.** The Canyon's ghost-rider numbers (#12) and the other spots' rows were measured before the open-edge fix, which changes breaking near the window's edges: in the 40 m Point peel test, lip launches went 28 → 57 and the second wave now breaks in almost every column. Regenerate the [natural](docs/research/catch-report.md) and [practice](docs/research/catch-report-practice.md) reports and the numbers quoted above.
+2. **Check the Point over several seeds.** The practice Point fell from 13 stands to 8 on one seed, and its peel and lip counts moved with the open-edge fix. Run several seeds before reading either as a change.
+3. **Watch the settings sweep's timeouts.** Its three other tests take up to 14 s against their 20 s limit at load 12–16. Raise them to 60 s like the rest if they start to flake.
+4. **The issue seen while playing:** on the user's fix list, still to be described.
 
 ## Current milestone — sustained wave and physical wipeout — `Done for prototype`
 

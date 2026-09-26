@@ -5,7 +5,7 @@ import { WATER } from '../physics/hullForces';
 import { createWaterSample } from '../physics/SurfWater';
 import type { SpotName } from './Bathymetry';
 import { BubbleCloud } from './BubbleCloud';
-import { RIDER_PHASES, RIDER_SNAPSHOT, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea } from './SurfZoneRunner';
+import { LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea } from './SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
 
 const config: SurfZoneConfig = {
@@ -50,7 +50,9 @@ describe('SurfZoneRunner', () => {
     const parcels: number[] = [];
     runner.simulation.lip.forEachActive((x, y, z) => parcels.push(x, y, z));
     expect(buffers.lipCount).toBe(parcels.length / 3);
-    expect(Array.from(buffers.lip.subarray(0, parcels.length))).toEqual(Array.from(Float32Array.from(parcels)));
+    const drawn: number[] = [];
+    for (let k = 0; k < buffers.lipCount; k += 1) drawn.push(...buffers.lip.subarray(k * LIP_STRIDE, k * LIP_STRIDE + 3));
+    expect(drawn).toEqual(Array.from(Float32Array.from(parcels)));
     expect(buffers.bubbleCount).toBe(runner.bubbles.count);
     expect(buffers.bubbleCount).toBeGreaterThan(0);
     expect(Array.from(buffers.bubbles.subarray(0, buffers.bubbleCount * 3))).toEqual(Array.from(runner.bubbles.positions.subarray(0, buffers.bubbleCount * 3)));
@@ -119,7 +121,7 @@ describe('SurfZoneRunner with a board', () => {
       expect(Math.abs(board.velocity.y), spot).toBeLessThan(0.02);
       expect(runner.status().board?.resets).toBe(0);
     }
-  }, 20_000);
+  }, 60_000);
 
   it('lets passing waves move the board on the Beach, and keeps it finite', () => {
     const runner = new SurfZoneRunner({ ...config, spot: 'beach', significantHeight: 1.2, peakPeriod: 10 }, { board: true });

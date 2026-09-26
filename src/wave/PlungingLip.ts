@@ -1,6 +1,7 @@
 import { Vector3 } from 'three';
 import type { LipContactParcel, LipParcelSource } from '../physics/DetachedSurfer';
 import { GRAVITY } from './dispersion';
+import { jetRelativeSpeed, overturn, overturnParameter, tubeFloorDepth, type OverturnShape, type TubeGeometry } from './Overturn';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 
 /** Parcels along one column's jet: the sheet's resolution across its thickness of flight (numerical). */
@@ -30,17 +31,6 @@ function clamp(value: number, low: number, high: number): number {
  */
 export function overturnArea(windOverCelerity: number): number {
   return clamp(0.2 + (0.2 * (0.75 - windOverCelerity)) / 1.15, 0.2, 0.4);
-}
-
-/**
- * Tube width-to-length ratio W/L. The ξ_b mapping is the plan's modeling choice
- * (Q12): almond (1:3) at ξ = 0.4 to round (1:1) at ξ = 2.0, after passyworld's
- * tube ratios. Wind tilts it by −0.18 per unit U/C, the slope of Feddersen et
- * al. (2023): W/L ≈ 0.48 offshore to ≈ 0.25 at U/C = 0.75.
- */
-export function tubeWidthRatio(iribarren: number, windOverCelerity: number): number {
-  const plunge = clamp((iribarren - 0.4) / 1.6, 0, 1);
-  return clamp(1 / 3 + (2 / 3) * plunge - 0.18 * windOverCelerity, 0.2, 1);
 }
 
 /** A flying parcel's place in the lip sheet. */
@@ -74,7 +64,11 @@ export interface LipFlight {
 export interface LipConditions {
   /** Local breaker-point Iribarren number ξ_b. */
   iribarren: number;
-  /** Breaker height H_b, m. */
+  /** Bed slope under the crest. */
+  slope: number;
+  /** The incoming sea's height over the tank's offshore depth, H0/h0. */
+  nonlinearity: number;
+  /** The breaking wave's height, m. */
   breakerHeight: number;
   /** Local wind over the breaker celerity, positive onshore. */
   windOverCelerity: number;
@@ -83,33 +77,61 @@ export interface LipConditions {
 }
 
 export interface LipThrow {
-  /** Water thrown, m³: the overturn area times the crest length. */
+  /** Water thrown, m³: the jet's area times the crest length. */
   volume: number;
-  /** Level launch speed that lands the lip one tube length L = H·(L/W) ahead, m/s. */
-  speed: number;
-  widthRatio: number;
+  /** Level launch speed ahead of the crest that flies the jet over the void, m/s. */
+  relativeSpeed: number;
+  /** The overturn, wind included. */
+  shape: OverturnShape;
 }
 
-/** A lip only leaves plunging breakers, 0.4 ≤ ξ_b ≤ 2.0 (plan §1.9, Q12). */
+/**
+ * A lip only leaves plunging breakers, 0.4 ≤ ξ_b ≤ 2.0 (plan §1.9, Q12). Its
+ * overturn is Pick & Feddersen's (2026) for the bed slope and the sea, and
+ * the wind reshapes the void as measured at Surf Ranch: its area by
+ * `overturnArea`'s ratio to calm, and its aspect by −0.18 per unit U/C
+ * (Feddersen et al. 2023).
+ */
 export function lipThrow(conditions: LipConditions): LipThrow | undefined {
-  const { iribarren, breakerHeight, windOverCelerity, width } = conditions;
+  const { iribarren, slope, nonlinearity, breakerHeight, windOverCelerity, width } = conditions;
   if (!(iribarren >= 0.4 && iribarren <= 2) || !(breakerHeight > 0)) return undefined;
-  const widthRatio = tubeWidthRatio(iribarren, windOverCelerity);
-  return {
-    volume: overturnArea(windOverCelerity) * breakerHeight * breakerHeight * width,
-    speed: Math.sqrt((GRAVITY * breakerHeight) / 2) / widthRatio,
-    widthRatio,
+  const calm = overturn(overturnParameter(slope, nonlinearity));
+  const shape: OverturnShape = {
+    ...calm,
+    area: (calm.area * overturnArea(windOverCelerity)) / overturnArea(0),
+    aspect: clamp(calm.aspect - 0.18 * windOverCelerity, 0.2, 1),
   };
+  return {
+    volume: shape.jetArea * breakerHeight * breakerHeight * width,
+    relativeSpeed: jetRelativeSpeed(shape, breakerHeight),
+    shape,
+  };
+}
+
+/** A void under a flying jet, riding with the crest that threw it. */
+interface FlyingTube {
+  geometry: TubeGeometry;
+  /** The crest when it threw: where, and how high, m. */
+  x: number;
+  z: number;
+  y: number;
+  /** The crest's travel direction (unit) and speed, m/s. */
+  dirX: number;
+  dirZ: number;
+  crestSpeed: number;
+  /** How fast the jet's tip leaves the crest behind, m/s. */
+  relativeSpeed: number;
 }
 
 /**
  * Mass-conserving plunging lip for the physical surf zone (plan §1.9, Q12).
  * A throw takes water from the crest cell and its across-shore neighbours (at
- * most a fifth of each), keeping their velocity, and launches it as ballistic
- * parcels. A parcel that falls back through the surface returns its volume and
- * horizontal momentum to the cell it lands in, which drives the splash-up and
- * the secondary bore; its vertical momentum is lost to turbulence. The parcels
- * are a coarse sample of the jet: one throw is four parcels.
+ * most a fifth of each), with the momentum the jet carries off, and launches it
+ * as ballistic parcels. A parcel that falls back through the surface returns its
+ * volume and horizontal momentum to the cell it lands in, which drives the
+ * splash-up and the secondary bore; its vertical momentum is lost to turbulence.
+ * The parcels are a coarse sample of the jet: one throw is a strip of
+ * STRIP_PARCELS.
  */
 export class PlungingLip implements LipParcelSource {
   readonly x: Float64Array;
@@ -154,7 +176,7 @@ export class PlungingLip implements LipParcelSource {
   private readonly index: Uint8Array;
   private readonly launchTime: Float64Array;
   /** Live strips: their parcels, by strip id; and the strips of each world column. */
-  private readonly strips = new Map<number, { column: number; launchTime: number; parcels: number[]; live: number }>();
+  private readonly strips = new Map<number, { column: number; launchTime: number; parcels: number[]; live: number; tube?: FlyingTube }>();
   private readonly byColumn = new Map<number, number[]>();
   private nextStrip = 1;
   /** The lip's clock, s. */
@@ -200,7 +222,7 @@ export class PlungingLip implements LipParcelSource {
    * horizontal `velocity` (m/s). Returns the volume actually thrown: 0 when the
    * parcel pool is full or the crest is dry.
    */
-  launch(cell: number, velocity: { x: number; z: number }, height: number, volume: number, crestSpeed = 0): number {
+  launch(cell: number, velocity: { x: number; z: number }, height: number, volume: number, crestSpeed = 0, tube?: TubeGeometry): number {
     if (this.free.length < STRIP_PARCELS || !(volume > 0)) return 0;
     const { solver } = this;
     const { nx, h, qx, qz, dx, dz } = solver;
@@ -219,8 +241,9 @@ export class PlungingLip implements LipParcelSource {
       const depth = h[index];
       if (!(depth > 0)) continue;
       const removed = share * SOURCE_SHARE * depth;
-      qx[index] -= (qx[index] / depth) * removed;
-      qz[index] -= (qz[index] / depth) * removed;
+      // The jet is the crest's fast surface water: the column keeps what is left of its momentum.
+      qx[index] -= velocity.x * removed;
+      qz[index] -= velocity.z * removed;
       h[index] = depth - removed;
     }
     const x = solver.xCenters[cell - row * nx];
@@ -228,18 +251,27 @@ export class PlungingLip implements LipParcelSource {
     const stripId = this.nextStrip;
     this.nextStrip += 1;
     const column = Math.round(x / dx - 0.5);
-    const strip = { column, launchTime: this.time, parcels: [] as number[], live: STRIP_PARCELS };
+    const strip = { column, launchTime: this.time, parcels: [] as number[], live: STRIP_PARCELS, tube: undefined as FlyingTube | undefined };
     const spacing = JET_RELEASE_TIME / (STRIP_PARCELS - 1);
+    // The crest moves on at its own speed, the way the jet leaves.
+    const jetSpeed = Math.hypot(velocity.x, velocity.z);
+    const crestX = jetSpeed > 0 ? (velocity.x / jetSpeed) * crestSpeed : 0;
+    const crestZ = jetSpeed > 0 ? (velocity.z / jetSpeed) * crestSpeed : 0;
+    if (tube && jetSpeed > 0) {
+      strip.tube = {
+        geometry: tube, x, z, y: height, dirX: velocity.x / jetSpeed, dirZ: velocity.z / jetSpeed, crestSpeed, relativeSpeed: jetSpeed - crestSpeed,
+      };
+    }
     for (let k = 0; k < STRIP_PARCELS; k += 1) {
       const parcel = this.free.pop()!;
       strip.parcels.push(parcel);
       this.active[parcel] = 1;
       this.state[parcel] = k === 0 ? 1 : 2;
       this.releaseAt[parcel] = this.time + k * spacing;
-      // Each parcel leaves from where the crest has moved to by its release.
-      this.x[parcel] = this.px[parcel] = this.lx[parcel] = x + velocity.x * k * spacing;
+      // Each parcel leaves from where the crest has moved to by its release (its height is taken then).
+      this.x[parcel] = this.px[parcel] = this.lx[parcel] = x + crestX * k * spacing;
       this.y[parcel] = this.py[parcel] = this.ly[parcel] = height;
-      this.z[parcel] = this.pz[parcel] = this.lz[parcel] = z + velocity.z * k * spacing;
+      this.z[parcel] = this.pz[parcel] = this.lz[parcel] = z + crestZ * k * spacing;
       this.crestSpeed[parcel] = crestSpeed;
       this.id[parcel] = this.nextId;
       this.nextId += 1;
@@ -273,6 +305,9 @@ export class PlungingLip implements LipParcelSource {
         if (this.releaseAt[parcel] > this.time) continue;
         this.state[parcel] = 1;
         flight = this.time - this.releaseAt[parcel];
+        // A crest still rising as it throws lets the later jet go from higher up.
+        const crest = solver.sampleCentered(solver.h, this.x[parcel], this.z[parcel]) + solver.sampleCentered(solver.bed, this.x[parcel], this.z[parcel]);
+        if (crest > this.y[parcel]) this.y[parcel] = this.ly[parcel] = crest;
       }
       this.px[parcel] = this.x[parcel];
       this.py[parcel] = this.y[parcel];
@@ -282,8 +317,47 @@ export class PlungingLip implements LipParcelSource {
       this.y[parcel] += this.vy[parcel] * flight;
       this.z[parcel] += this.vz[parcel] * flight;
       this.age[parcel] += flight;
-      const surface = solver.sampleCentered(solver.h, this.x[parcel], this.z[parcel]) + solver.sampleCentered(solver.bed, this.x[parcel], this.z[parcel]);
+      const water = solver.sampleCentered(solver.h, this.x[parcel], this.z[parcel]) + solver.sampleCentered(solver.bed, this.x[parcel], this.z[parcel]);
+      const surface = this.carve(this.x[parcel], this.z[parcel], water);
       if ((this.vy[parcel] < 0 && this.y[parcel] <= surface) || this.age[parcel] > MAX_FLIGHT) this.land(parcel);
+    }
+  }
+
+  /**
+   * The water surface where the lip's voids leave it, m. Under a flying jet,
+   * inside its overturn, the rider and the eye meet the void's floor (the lower
+   * half of the overturn curve), not the depth-averaged face that stands where
+   * a real face has gone vertical. A void rides with its crest, opens as far as
+   * the jet's tip has flown, and closes when its strip has landed. The solver's
+   * water is left as it is.
+   */
+  carve(x: number, z: number, surface: number): number {
+    const strips = this.byColumn.get(Math.round(x / this.solver.dx - 0.5));
+    if (!strips) return surface;
+    let carved = surface;
+    for (const id of strips) {
+      const strip = this.strips.get(id);
+      const tube = strip?.tube;
+      if (!strip || !tube) continue;
+      const age = this.time - strip.launchTime;
+      const ahead = (x - tube.x - tube.dirX * tube.crestSpeed * age) * tube.dirX + (z - tube.z - tube.dirZ * tube.crestSpeed * age) * tube.dirZ;
+      if (ahead > tube.relativeSpeed * age) continue;
+      const depth = tubeFloorDepth(tube.geometry, ahead);
+      if (!Number.isNaN(depth)) carved = Math.min(carved, tube.y - depth);
+    }
+    return carved;
+  }
+
+  /** Each flying void's ground: its column's x span, and the z span from its crest to its open front, padded by a cell, m. */
+  forEachTubeExtent(visit: (xMin: number, xMax: number, zMin: number, zMax: number) => void): void {
+    const { dx } = this.solver;
+    for (const strip of this.strips.values()) {
+      const tube = strip.tube;
+      if (!tube) continue;
+      const age = this.time - strip.launchTime;
+      const crestZ = tube.z + tube.dirZ * tube.crestSpeed * age;
+      const front = crestZ + tube.dirZ * Math.min(tube.geometry.length * Math.cos(tube.geometry.tilt), tube.relativeSpeed * age);
+      visit(strip.column * dx, (strip.column + 1) * dx, Math.min(crestZ, front) - dx, Math.max(crestZ, front) + dx);
     }
   }
 
@@ -331,6 +405,8 @@ export class PlungingLip implements LipParcelSource {
    * proportion to their weights, so momentum is conserved.
    */
   forEachContactNear(center: Vector3, reach: number, visit: (parcel: LipContactParcel) => void): void {
+    // A body gone non-finite would meet every parcel, and hand its NaN to the whole sheet.
+    if (!Number.isFinite(center.x + center.y + center.z + reach)) return;
     const { near, contact: c } = this;
     this.query = (this.query + 1) >>> 0 || 1;
     const query = this.query;
