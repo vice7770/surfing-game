@@ -792,6 +792,30 @@ describe('lean, trim, crouch and heading hold', () => {
       }
     });
 
+    // Review Focus 5: the pop-up's landing is unchanged, the body carried upright over its stance as before the bank;
+    // the bank applies only once standing.
+    it('lands upright, banking only once standing', () => {
+      const board = new BoardBody();
+      board.place(new Vector3(0, board.shape.centerOfMass.y, 0));
+      const rider = new AttachedRider(board.shape, { phase: 'landing' });
+      board.attach(rider);
+      const tow = () => {
+        board.velocity.z = 6;
+        rider.velocity.z = 6;
+      };
+      tow();
+      run(board, new PlaneWater(), 0.2, tow);
+      rider.velocity.x += 0.3;
+      let widest = 0;
+      run(board, new PlaneWater(), 0.3, () => {
+        tow();
+        widest = Math.max(widest, Math.abs(rider.bank.angle) + Math.abs(rider.bank.rate));
+      });
+      expect(rider.phase).toBe('landing');
+      expect(rider.attached).toBe(true);
+      expect(widest).toBe(0);
+    });
+
     // Review Focus 5: lying down there is no bank.
     it('has no bank lying down', () => {
       const { board, rider } = mounted('prone');

@@ -126,6 +126,8 @@ const STANDING_SHIFT = { x: 0.35, z: 0.25 };
  * distance of the middle of the stance, clear of the feet's edges.
  */
 const TRIM_FREEDOM = 0.2;
+/** Landing from a pop-up, balance keeps the centre of pressure within this, m, of the middle of the feet across. */
+const LATERAL_FREEDOM = 0.06;
 /**
  * Standing, the body banks on its ankles and knees (the turn redesign): an
  * inverted pendulum over the feet whose bank θ from the vertical, toward the
@@ -631,6 +633,15 @@ export class AttachedRider {
   }
 
   /** +1 regular (left foot forward), −1 goofy. */
+  /**
+   * Standing, the body banks on its ankles (the turn redesign). Landing from a
+   * pop-up it is carried upright over its stance, keeping the load clear of the
+   * feet's edges across as along (LATERAL_FREEDOM), as before the bank.
+   */
+  private get banking(): boolean {
+    return this.upright && this.phase === 'standing';
+  }
+
   get stanceSign(): number {
     return this.stance === 'regular' ? 1 : -1;
   }
@@ -1076,7 +1087,8 @@ export class AttachedRider {
     this.carried.subVectors(this.target, board.centerOfMass);
     if (this.upright) {
       const off = this.scratch.subVectors(this.position, this.target);
-      this.carried.addScaledVector(this.up, off.dot(this.up)).addScaledVector(this.across, off.dot(this.across));
+      this.carried.addScaledVector(this.up, off.dot(this.up));
+      if (this.banking) this.carried.addScaledVector(this.across, off.dot(this.across));
     }
     // Drive: keeping the body's bank as the board rolls and pitches under the feet, the knees' flex, and a
     // bounded correction toward the posture.
@@ -1090,7 +1102,8 @@ export class AttachedRider {
     this.drive.add(this.scratch.copy(this.postureRate).applyQuaternion(this.upright ? this.bodyFrame : board.orientation));
     const error = this.scratch.subVectors(this.target, this.position);
     // Standing, the leg holds the height and the ankles the bank; the correction only brings the body back along the board.
-    if (this.upright) error.addScaledVector(this.up, -error.dot(this.up)).addScaledVector(this.across, -error.dot(this.across));
+    if (this.upright) error.addScaledVector(this.up, -error.dot(this.up));
+    if (this.banking) error.addScaledVector(this.across, -error.dot(this.across));
     const correction = Math.min(MAX_CORRECTION, (CORRECTION * error.length()) / h);
     if (error.lengthSq() > 0) this.drive.addScaledVector(error.normalize(), correction);
     this.gravity.set(0, -this.mass * WATER.gravity, 0);
@@ -1098,7 +1111,17 @@ export class AttachedRider {
     this.external.copy(this.gravity).add(this.waterForce);
     if (this.upright) {
       this.prepareLeg(h, board, water);
-      this.prepareBank(h, board);
+      if (this.banking) {
+        this.prepareBank(h, board);
+      } else {
+        // Landing: carried upright, the bank's unknown held at nothing.
+        this.bank.rate = 0;
+        this.bankSpeed = 0;
+        this.ankleTorque = 0;
+        this.swingTorque = 0;
+        this.swing.angle = 0;
+        this.swing.rate = 0;
+      }
     }
   }
 
@@ -1436,6 +1459,7 @@ export class AttachedRider {
       system[6 * N + i] += m * nv[i];
       system[(3 + i) * N + 6] += m * an[i];
       system[6 * N + 3 + i] += m * bn[i];
+      if (!this.banking) continue;
       system[i * N + 7] += m * tv[i];
       system[7 * N + i] += m * tv[i];
       system[(3 + i) * N + 7] += m * at[i];
@@ -1458,7 +1482,8 @@ export class AttachedRider {
     }
     system[6 * N + 6] += m + h * this.legDamping + h * h * this.legStiffness;
     const length = this.legLength;
-    system[7 * N + 7] += m + (h * (ANKLE_STIFFNESS * h + ANKLE_DAMPING)) / (length * length);
+    // Landing, the bank's unknown is held at nothing: the body is carried upright.
+    system[7 * N + 7] += this.banking ? m + (h * (ANKLE_STIFFNESS * h + ANKLE_DAMPING)) / (length * length) : 1;
     // The momentum the constraint must supply: v_rider' = v' + w' x carried + drive + up s'' + across u'.
     const mismatch = cross(this.boardSpin, b, this.scratch).add(this.boardVelocity).add(this.drive)
       .addScaledVector(n, this.leg.rate).addScaledVector(t, this.bankSpeed).sub(this.velocity);
@@ -1473,7 +1498,7 @@ export class AttachedRider {
     // Backward Euler on the leg: its force now, less what the current rate adds to the stretch over the substep.
     rhs[6] += n.dot(f) + h * (this.leg.force - h * this.legStiffness * this.leg.rate);
     // The ankle pushes the body back across the leg by its torque over the leg's length.
-    rhs[7] += t.dot(f) - (h * (this.ankleTorque + this.swingTorque)) / length;
+    if (this.banking) rhs[7] += t.dot(f) - (h * (this.ankleTorque + this.swingTorque)) / length;
     // The upper body's swing turns the body on its feet; the board feels only the push at the feet, not its couple.
     rhs[3] -= h * this.swingTorque * this.rollAxis.x;
     rhs[4] -= h * this.swingTorque * this.rollAxis.y;
@@ -1612,11 +1637,14 @@ export class AttachedRider {
     if (this.upright) {
       board.toWorld(this.base, this.baseWorld);
       const sway = this.localScratch.set(this.sway.x, 0, this.sway.z).applyQuaternion(board.orientation);
-      if (measure) {
+      if (measure && this.banking) {
         const lean = this.scratch2.subVectors(this.position, this.baseWorld).sub(sway);
         const side = this.scratch.copy(X).applyQuaternion(this.heading);
         const angle = Math.atan2(lean.dot(side), lean.y) - Math.atan2(this.localCenter.x - this.base.x, this.localCenter.y - this.base.y);
         this.bank.angle = Math.max(-MAX_BANK, Math.min(MAX_BANK, angle));
+      } else if (!this.banking) {
+        this.bank.angle = 0;
+        this.bank.rate = 0;
       }
       this.bodyFrame.copy(this.heading).multiply(this.bankTurn.setFromAxisAngle(Z, -this.bank.angle));
       this.up.copy(Y).applyQuaternion(this.bodyFrame);
@@ -1813,14 +1841,15 @@ export class AttachedRider {
       this.smoothedCop.x += (this.desiredCop.x - this.smoothedCop.x) * smooth;
       this.smoothedCop.z += (this.desiredCop.z - this.smoothedCop.z) * smooth;
       const share = this.shiftedShare();
-      // Standing, the bank balances across the board (`prepareBank`); along it, balance only keeps the load clear of the feet's edges.
-      const targetX = this.upright ? 0 : Math.min(reach.x, Math.max(-reach.x, this.balance.x + (wantX - this.smoothedCop.x) / share));
+      // Standing, the bank balances across the board (`prepareBank`); landing, as along it, balance only keeps the load clear of the feet's edges.
+      const keepX = this.upright ? Math.min(wantX + LATERAL_FREEDOM, Math.max(wantX - LATERAL_FREEDOM, this.smoothedCop.x)) : wantX;
+      const targetX = this.banking ? 0 : Math.min(reach.x, Math.max(-reach.x, this.balance.x + (keepX - this.smoothedCop.x) / share));
       const keepZ = Math.min(wantZ + TRIM_FREEDOM, Math.max(wantZ - TRIM_FREEDOM, this.smoothedCop.z));
       const targetZ = Math.min(reach.z, Math.max(-reach.z, this.balance.z + (keepZ - this.smoothedCop.z) / share));
       this.shiftAxis('x', targetX, reach.x, h);
       this.shiftAxis('z', targetZ, reach.z, h);
     } else {
-      this.shiftAxis('x', this.upright ? 0 : this.balance.x, reach.x, h);
+      this.shiftAxis('x', this.banking ? 0 : this.balance.x, reach.x, h);
       this.shiftAxis('z', this.balance.z, reach.z, h);
     }
     // The trim, standing only (steering is the bank).
