@@ -9,6 +9,7 @@ import {
   LIP_HIT_STRIDE, LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea,
 } from './SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
+import { SPRAY_PER_AIR } from './SprayCloud';
 
 const config: SurfZoneConfig = {
   spot: 'point', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 20, spreading: 24, tide: 0,
@@ -128,6 +129,29 @@ describe('SurfZoneRunner', () => {
     runner.fill(buffers);
     expect(buffers.sprayCount).toBe(runner.spray.count);
     expect(Array.from(buffers.spray.subarray(0, buffers.sprayCount * 5))).toEqual(Array.from(runner.spray.particles.subarray(0, runner.spray.count * 5)));
+  });
+
+  it('breaks a closing tube’s air into the aeration field, and blows its spits and eruptions into the spray (G9)', () => {
+    const twin = new SurfZoneRunner(config);
+    const runner = new SurfZoneRunner(config);
+    twin.advance(60);
+    runner.advance(60);
+    const { lip, aeration, solver } = runner.simulation;
+    const total = () => aeration.air.reduce((sum, value) => sum + value, 0);
+    const before = total();
+    lip.onAir!(0, -60, 0.5, 0.8);
+    expect(total()).toBeGreaterThan(before);
+    // This step's lip blows out 1 m³ of air each way: SPRAY_PER_AIR particles apiece.
+    const surface = solver.surfaceAt(solver.cellIndex(0, -60));
+    const step = lip.step.bind(lip);
+    lip.step = (dt: number) => {
+      step(dt);
+      lip.spits.push({ x: 0, y: surface + 1, z: -60, dirX: 1, dirZ: 0, speed: 5, airRate: 1 / SURF_ZONE_STEP });
+      lip.eruptions.push({ x: 2, y: surface + 1, z: -60, airRate: 1 / SURF_ZONE_STEP, speed: 3 });
+    };
+    twin.advance(1);
+    runner.advance(1);
+    expect(runner.spray.count - twin.spray.count).toBeGreaterThanOrEqual(2 * SPRAY_PER_AIR - 10);
   });
 
   it('carries a bubble cloud in the runner, not in the renderer', () => {

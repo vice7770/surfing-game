@@ -1,6 +1,6 @@
 import { GRAVITY } from './dispersion';
 import { seededRandom } from './random';
-import { SPLASH_UP } from './PlungingLip';
+import { SPLASH_UP, type TubeEruption, type TubeSpit } from './PlungingLip';
 
 /** A lip parcel falling back into the water: where, how much, and how fast. */
 export interface LipImpact {
@@ -48,6 +48,9 @@ export interface SprayScene {
   readonly windSpeed: number;
   /** The rider's hands pulling through the water this step. */
   readonly strokes?: readonly StrokeSplash[];
+  /** This step's spits and eruptions from closing tubes (G9). */
+  readonly spits?: readonly TubeSpit[];
+  readonly eruptions?: readonly TubeEruption[];
 }
 
 /**
@@ -67,6 +70,11 @@ const MIST_LIFE = 4;
 const SPRAY_PER_JOULE = 0.05;
 const SPRAY_PER_FOAM = 0.6;
 const FEATHER_RATE = 0.05;
+/** Drawn spray and mist per m³ of air a closing tube blows out (G9, s_a; docs/research/whitewater-sources.md, provisional). */
+export const SPRAY_PER_AIR = 40;
+/** The share of a spit's and of an eruption's particles that are mist (provisional). */
+const SPIT_MIST = 0.5;
+const ERUPTION_MIST = 0.3;
 /** Offshore wind this fast starts blowing spray off steep crests, m/s; the crest must face it this steeply and stand this high over the depth. */
 const FEATHER_ONSET = 4;
 const FEATHER_SLOPE = 0.25;
@@ -96,8 +104,8 @@ const MIST: Kind = 1;
 /**
  * Spray and mist (plan §2.6, G6): pooled particles marking where the water's
  * kinetic energy converts, launched from lip impacts (splash-up with the
- * parcel's own momentum), from bore faces, and blown off steep crests by
- * offshore wind. They fly ballistically with quadratic air drag toward the
+ * parcel's own momentum), from bore faces, blown off steep crests by
+ * offshore wind, and blown out of closing tubes by their air (G9). They fly ballistically with quadratic air drag toward the
  * wind, and end when they fall back through the surface or their time is up.
  * Visual only, with no rendering dependency, so it runs in the worker beside
  * the water; `SprayPoints` draws it.
@@ -135,6 +143,12 @@ export class SprayCloud {
     this.fly(scene, dt);
     for (const impact of scene.lipImpacts) this.splash(scene, impact);
     for (const stroke of scene.strokes ?? []) this.strokeSplash(scene, stroke);
+    for (const spit of scene.spits ?? []) {
+      this.tubeBurst(spit.x, spit.y, spit.z, spit.dirX * spit.speed, 0, spit.dirZ * spit.speed, spit.airRate * dt, SPIT_MIST);
+    }
+    for (const eruption of scene.eruptions ?? []) {
+      this.tubeBurst(eruption.x, eruption.y, eruption.z, 0, eruption.speed, 0, eruption.airRate * dt, ERUPTION_MIST);
+    }
     this.boreSpray(scene, dt);
     this.feather(scene, dt);
     this.pack();
@@ -209,6 +223,25 @@ export class SprayCloud {
         SPRAY,
         stroke.x + (this.random() - 0.5) * 0.15, surface + 0.03, stroke.z + (this.random() - 0.5) * 0.15,
         backX * back + (this.random() - 0.5) * spread, up, backZ * back + (this.random() - 0.5) * spread,
+      );
+    }
+  }
+
+  /**
+   * Spray and mist a closing tube's air blows out (G9): the spit out of its
+   * mouth, or an eruption up through the lip. SPRAY_PER_AIR particles per m³
+   * of the air, carried at its velocity with a fifth either way of variety.
+   */
+  private tubeBurst(x: number, y: number, z: number, vx: number, vy: number, vz: number, air: number, mistShare: number): void {
+    const expected = air * SPRAY_PER_AIR;
+    let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
+    const spread = 0.1 * Math.hypot(vx, vy, vz);
+    for (; spawns > 0 && this.count < this.capacity; spawns -= 1) {
+      const pace = 0.8 + 0.4 * this.random();
+      this.spawn(
+        this.random() < mistShare ? MIST : SPRAY,
+        x + (this.random() - 0.5) * 0.3, y + (this.random() - 0.5) * 0.3, z + (this.random() - 0.5) * 0.3,
+        vx * pace + (this.random() - 0.5) * spread, vy * pace + (this.random() - 0.5) * spread, vz * pace + (this.random() - 0.5) * spread,
       );
     }
   }

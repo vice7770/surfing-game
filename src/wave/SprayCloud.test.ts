@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SPRAY_STRIDE, SprayCloud, splashLaunch, type LipImpact, type SprayScene, type StrokeSplash } from './SprayCloud';
-import { SPLASH_UP } from './PlungingLip';
+import { SPRAY_PER_AIR, SPRAY_STRIDE, SprayCloud, splashLaunch, type LipImpact, type SprayScene, type StrokeSplash } from './SprayCloud';
+import { SPLASH_UP, type TubeEruption, type TubeSpit } from './PlungingLip';
 
 /** Flat water 2 m deep over 10 m × 40 m (1 m cells), still, with no bores; `crest` raises a steep shoreward-facing step. */
 function flatScene(windSpeed = 0, lipImpacts: LipImpact[] = [], crest = false): SprayScene {
@@ -124,5 +124,45 @@ describe('spray and mist', () => {
     }
     expect(a.count).toBeLessThanOrEqual(64);
     expect(Array.from(a.particles.subarray(0, a.count * SPRAY_STRIDE))).toEqual(Array.from(b.particles.subarray(0, b.count * SPRAY_STRIDE)));
+  });
+});
+
+describe('the spit and the eruption (G9)', () => {
+  /** The particles' mean velocity over a step so short the drag has barely acted. */
+  function launchVelocity(cloud: SprayCloud): { x: number; y: number; z: number } {
+    const start = Array.from(cloud.particles.subarray(0, cloud.count * SPRAY_STRIDE));
+    const count = cloud.count;
+    const dt = 1e-4;
+    cloud.update(flatScene(), dt);
+    const mean = { x: 0, y: 0, z: 0 };
+    for (let k = 0; k < count; k += 1) {
+      mean.x += (cloud.particles[k * SPRAY_STRIDE] - start[k * SPRAY_STRIDE]) / dt / count;
+      mean.y += (cloud.particles[k * SPRAY_STRIDE + 1] - start[k * SPRAY_STRIDE + 1]) / dt / count;
+      mean.z += (cloud.particles[k * SPRAY_STRIDE + 2] - start[k * SPRAY_STRIDE + 2]) / dt / count;
+    }
+    return mean;
+  }
+
+  it('blows a spit’s spray and mist out of the mouth at its speed, s_a particles per m³ of air', () => {
+    const spit: TubeSpit = { x: 5, y: 1, z: 20, dirX: 1, dirZ: 0, speed: 6, airRate: 3 };
+    const cloud = new SprayCloud(6);
+    cloud.update({ ...flatScene(), spits: [spit] }, 0.5);
+    // 3 m³/s for half a second is 1.5 m³ of air.
+    expect(cloud.count).toBe(1.5 * SPRAY_PER_AIR);
+    const velocity = launchVelocity(cloud);
+    expect(velocity.x / spit.speed).toBeGreaterThan(0.85);
+    expect(velocity.x / spit.speed).toBeLessThan(1.15);
+    expect(Math.abs(velocity.z)).toBeLessThan(0.1 * spit.speed);
+  });
+
+  it('bursts an eruption’s spray and mist straight up', () => {
+    const eruption: TubeEruption = { x: 5, y: 1, z: 20, airRate: 2, speed: 3 };
+    const cloud = new SprayCloud(7);
+    cloud.update({ ...flatScene(), eruptions: [eruption] }, 0.5);
+    expect(cloud.count).toBe(SPRAY_PER_AIR);
+    const velocity = launchVelocity(cloud);
+    expect(velocity.y / eruption.speed).toBeGreaterThan(0.85);
+    expect(velocity.y / eruption.speed).toBeLessThan(1.15);
+    expect(Math.hypot(velocity.x, velocity.z)).toBeLessThan(0.1 * eruption.speed);
   });
 });

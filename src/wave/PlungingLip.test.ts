@@ -1,7 +1,8 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, SPLASH_UP, STRIP_PARCELS, lipThrow, overturnArea } from './PlungingLip';
-import { jetRelativeSpeed, overturn, overturnParameter, tubeFloorDepth, type TubeGeometry } from './Overturn';
+import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, SPLASH_UP, STRIP_PARCELS, TUBE_AIR, lipThrow, overturnArea } from './PlungingLip';
+import { GRAVITY } from './dispersion';
+import { LH82_AREA, jetRelativeSpeed, overturn, overturnParameter, tubeFloorDepth, type TubeGeometry } from './Overturn';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
 
 function basin(): ShallowWaterSolver {
@@ -32,6 +33,77 @@ describe('PlungingLip tubes', () => {
     const into = new Float32Array(2 * 12);
     expect(lip.writeTubes(into, 2)).toBe(2);
     expect([into[9], into[12 + 9]]).toEqual([1, 2]);
+  });
+});
+
+describe('the collapsing tube and its air (G9)', () => {
+  const tube: TubeGeometry = { length: 1.4, width: 0.6, tilt: 0.5 };
+  const trapped = LH82_AREA * tube.length * tube.width * 1;
+  const collapse = Math.sqrt((2 * tube.width) / GRAVITY);
+
+  /** Throw tubed jets in the given columns, `stagger` s apart; returns the lip and the air it breaks into bubbles. */
+  function peel(columns: number[], stagger: number) {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 512);
+    const bubbles = { volume: 0 };
+    lip.onAir = (_x, _z, volume) => (bubbles.volume += volume);
+    const escaped = { spit: 0, erupted: 0, spits: [] as { dirX: number; speed: number; airRate: number; x: number }[] };
+    const record = (dt: number) => {
+      for (const spit of lip.spits) {
+        escaped.spit += spit.airRate * dt;
+        escaped.spits.push({ dirX: spit.dirX, speed: spit.speed, airRate: spit.airRate, x: spit.x });
+      }
+      for (const eruption of lip.eruptions) escaped.erupted += eruption.airRate * dt;
+    };
+    columns.forEach((x, k) => {
+      if (k > 0) for (let frame = 0; frame < Math.round(stagger * 240); frame += 1) (lip.step(1 / 240), record(1 / 240));
+      lip.launch(solver.cellIndex(x, 12.5), { x: 0, z: 5 }, 3, 0.3, 3, tube);
+    });
+    return { lip, bubbles, escaped, run: (seconds: number) => { for (let frame = 0; frame < seconds * 240; frame += 1) (lip.step(1 / 240), record(1 / 240)); } };
+  }
+
+  it('closes a tube when its jet first lands, and shrinks its void over its free-fall time', () => {
+    const { lip, run } = peel([3.5], 0);
+    let closed = -1;
+    for (let frame = 0; frame < 2400 && closed < 0; frame += 1) {
+      run(1 / 240);
+      const table = new Float32Array(12 * 4);
+      if (lip.writeTubes(table, 4) === 1 && table[10] < 1) closed = frame;
+    }
+    expect(closed).toBeGreaterThan(0);
+    const table = new Float32Array(12 * 4);
+    lip.writeTubes(table, 4);
+    expect(table[11]).toBeGreaterThan(0);
+    expect(table[11]).toBeLessThanOrEqual(trapped + 1e-9);
+    run(collapse / 2);
+    lip.writeTubes(table, 4);
+    expect(table[10]).toBeCloseTo(0.5, 1);
+    run(collapse);
+    expect(lip.writeTubes(table, 4)).toBe(0);
+  });
+
+  it('accounts for every bit of a tube’s air: what escapes plus what breaks into bubbles is what it trapped', () => {
+    const { bubbles, escaped, run } = peel([2.5, 3.5, 4.5], 0.3);
+    run(6);
+    expect(escaped.spit + escaped.erupted + bubbles.volume).toBeCloseTo(3 * trapped, 9);
+    expect(escaped.spit + escaped.erupted).toBeCloseTo(3 * trapped * TUBE_AIR.escape, 9);
+  });
+
+  it('spits out of a peel’s open end, as fast as the collapsing air must leave through its mouth', () => {
+    const { escaped, run } = peel([2.5, 3.5, 4.5, 5.5], 0.25);
+    run(6);
+    expect(escaped.spit).toBeGreaterThan(0);
+    const first = escaped.spits[0];
+    // The older columns close first; the air leaves toward the newest, still open.
+    expect(first.dirX).toBeGreaterThan(0.9);
+    expect(first.speed).toBeCloseTo(first.airRate / (LH82_AREA * tube.length * tube.width), 9);
+  });
+
+  it('erupts upward when the whole section closes at once, with no mouth to spit from', () => {
+    const { escaped, run } = peel([2.5, 3.5, 4.5], 0);
+    run(6);
+    expect(escaped.erupted).toBeGreaterThan(0);
+    expect(escaped.spit).toBe(0);
   });
 });
 

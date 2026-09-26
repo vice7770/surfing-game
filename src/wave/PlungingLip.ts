@@ -1,7 +1,8 @@
 import { Vector3 } from 'three';
 import type { LipContactParcel, LipParcelSource } from '../physics/DetachedSurfer';
 import { GRAVITY } from './dispersion';
-import { jetRelativeSpeed, overturn, overturnParameter, type OverturnShape, type TubeGeometry } from './Overturn';
+import { AERATION } from './AerationField';
+import { LH82_AREA, jetRelativeSpeed, overturn, overturnParameter, type OverturnShape, type TubeGeometry } from './Overturn';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 import { TUBE_STRIDE, carveAt } from './tubeTable';
 
@@ -23,6 +24,35 @@ export const LINK_TIME = 1;
  * impact's, up and on, and the least downward impact speed that throws one, m/s.
  */
 export const SPLASH_UP = { share: 0.3, vertical: 0.6, horizontal: 0.8, minImpact: 0.5 } as const;
+/**
+ * A tube's trapped air (G9, docs/research/whitewater-sources.md): when its jet
+ * lands the void closes, shrinking over its free-fall time t_c = √(2W/g) as
+ * its air is squeezed out evenly. `escape` of the air leaves as spray (the
+ * spit, out of a peel's open end; or an eruption up through the lip where a
+ * section closes all at once) and the rest breaks into bubbles. Provisional,
+ * but for the air's volume, which is conserved.
+ */
+export const TUBE_AIR = { escape: 0.5 } as const;
+
+/** Air a closing peel squeezes out of its open end this step (G9): where the mouth is, which way it blows, how fast, m/s, and how much air, m³/s. */
+export interface TubeSpit {
+  x: number;
+  y: number;
+  z: number;
+  dirX: number;
+  dirZ: number;
+  speed: number;
+  airRate: number;
+}
+
+/** Air bursting up through a section that closes with no open end this step (G9): where, how fast (as fast as its voids' roofs fall, √(gW/2)), m/s, and how much air, m³/s. */
+export interface TubeEruption {
+  x: number;
+  y: number;
+  z: number;
+  airRate: number;
+  speed: number;
+}
 /** Largest share of a source cell's water one throw may take. */
 const SOURCE_SHARE = 0.2;
 /** Parcels still airborne after this long land where they are, s. */
@@ -143,6 +173,20 @@ interface FlyingTube {
   crestSpeed: number;
   /** How fast the jet's tip leaves the crest behind, m/s. */
   relativeSpeed: number;
+  /** When its jet first landed and the void began to close, s; NaN while it flies. */
+  closedAt: number;
+  /** The air it trapped as it closed, m³, and the share of it squeezed out so far. */
+  air: number;
+  released: number;
+  /** How far its jet fell to close it, m: its air is driven down in proportion. */
+  drop: number;
+}
+
+/** The share of a tube's collapse done by `time`: 0 while it flies, 1 once its void is gone. */
+function collapsed(tube: FlyingTube, time: number): number {
+  if (Number.isNaN(tube.closedAt)) return 0;
+  const collapseTime = Math.sqrt((2 * tube.geometry.width) / GRAVITY);
+  return collapseTime > 0 ? Math.min(1, (time - tube.closedAt) / collapseTime) : 1;
 }
 
 /**
@@ -168,6 +212,11 @@ export class PlungingLip implements LipParcelSource {
    * the height it landed at (the tube it drew, `measureTube`).
    */
   onLand?: (x: number, z: number, volume: number, vx: number, vy: number, vz: number, flight?: LipFlight) => void;
+  /** Told of a closing tube's air breaking into bubbles (G9): where, how much, m³, and how deep it is driven, m. */
+  onAir?: (x: number, z: number, volume: number, penetration: number) => void;
+  /** This step's spits and eruptions from closing tubes (G9). */
+  readonly spits: TubeSpit[] = [];
+  readonly eruptions: TubeEruption[] = [];
   private readonly vx: Float64Array;
   private readonly vy: Float64Array;
   private readonly vz: Float64Array;
@@ -291,6 +340,7 @@ export class PlungingLip implements LipParcelSource {
     if (tube && jetSpeed > 0) {
       strip.tube = {
         geometry: tube, x, z, y: height, dirX: velocity.x / jetSpeed, dirZ: velocity.z / jetSpeed, crestSpeed, relativeSpeed: jetSpeed - crestSpeed,
+        closedAt: Number.NaN, air: 0, released: 0, drop: 0,
       };
     }
     for (let k = 0; k < STRIP_PARCELS; k += 1) {
@@ -357,6 +407,7 @@ export class PlungingLip implements LipParcelSource {
       const surface = this.carve(this.x[parcel], this.z[parcel], water);
       if ((this.vy[parcel] < 0 && this.y[parcel] <= surface) || this.age[parcel] > MAX_FLIGHT) this.land(parcel);
     }
+    this.releaseAir(dt);
   }
 
   /**
@@ -364,8 +415,8 @@ export class PlungingLip implements LipParcelSource {
    * inside its overturn, the rider and the eye meet the void's floor (the lower
    * half of the overturn curve), not the depth-averaged face that stands where
    * a real face has gone vertical. A void rides with its crest, opens as far as
-   * the jet's tip has flown, and closes when its strip has landed. The solver's
-   * water is left as it is.
+   * the jet's tip has flown, and once its jet lands shrinks away as its air is
+   * squeezed out (G9, `TUBE_AIR`). The solver's water is left as it is.
    */
   carve(x: number, z: number, surface: number): number {
     return carveAt(this.tubes, this.tubeRows, this.solver.dx, x, z, surface);
@@ -392,12 +443,14 @@ export class PlungingLip implements LipParcelSource {
     return count;
   }
 
-  /** Pack every live strip's void where its crest is now, opened as far as its jet's tip has flown. */
+  /** Pack every live strip's void where its crest is now, opened as far as its jet's tip has flown and shrunk as far as it has collapsed. */
   private refreshTubes(): void {
     let rows = 0;
     for (const strip of this.strips.values()) {
       const tube = strip.tube;
       if (!tube) continue;
+      const scale = 1 - collapsed(tube, this.time);
+      if (!(scale > 0)) continue;
       if ((rows + 1) * TUBE_STRIDE > this.tubes.length) {
         const grown = new Float64Array(this.tubes.length * 2);
         grown.set(this.tubes);
@@ -416,8 +469,8 @@ export class PlungingLip implements LipParcelSource {
       t[o + 7] = tube.geometry.width;
       t[o + 8] = tube.geometry.tilt;
       t[o + 9] = strip.column;
-      t[o + 10] = 1;
-      t[o + 11] = 0;
+      t[o + 10] = scale;
+      t[o + 11] = tube.air * scale;
       rows += 1;
     }
     this.tubeRows = rows;
@@ -606,18 +659,144 @@ export class PlungingLip implements LipParcelSource {
     const stripId = this.strip[parcel];
     const strip = this.strips.get(stripId);
     if (strip) {
+      // Its slot is free for other throws now.
+      strip.parcels[strip.parcels.indexOf(parcel)] = -1;
       strip.live -= 1;
-      if (strip.live === 0) {
-        this.strips.delete(stripId);
-        const inColumn = this.byColumn.get(strip.column)!;
-        inColumn.splice(inColumn.indexOf(stripId), 1);
-        if (inColumn.length === 0) this.byColumn.delete(strip.column);
-        // Its void closes with it.
-        if (strip.tube) this.refreshTubes();
+      const { tube } = strip;
+      if (tube && Number.isNaN(tube.closedAt)) {
+        // The jet has come down: its void closes, trapping its air (its cross-section over its column's width).
+        tube.closedAt = this.time;
+        tube.air = LH82_AREA * tube.geometry.length * tube.geometry.width * solver.dx;
+        tube.drop = Math.max(0.1, flight.launch.y - y);
       }
+      // A strip stays while its water flies or its void is still collapsing.
+      if (strip.live === 0 && (!tube || collapsed(tube, this.time) >= 1)) this.removeStrip(stripId, strip);
       if (splash > 0) this.throwSplash(strip, x, y, z, splash, vx, vy, vz);
     }
     this.onLand?.(x, z, volume, vx, vy, vz, flight);
+  }
+
+  private removeStrip(stripId: number, strip: LipStrip): void {
+    this.strips.delete(stripId);
+    const inColumn = this.byColumn.get(strip.column)!;
+    inColumn.splice(inColumn.indexOf(stripId), 1);
+    if (inColumn.length === 0) this.byColumn.delete(strip.column);
+  }
+
+  /**
+   * Squeeze out this step's share of every closing tube's air (G9, `TUBE_AIR`).
+   * `escape` of it leaves as spray. Where the closing tube's peel (its chain of
+   * tubes in neighbouring columns thrown within LINK_TIME) still has an open
+   * end, it blows out of the nearer one, along the tube, as fast as that much
+   * air must go through the mouth's void cross-section; where the peel has
+   * closed all along, it bursts up through the lip. The rest breaks into
+   * bubbles where the void was, driven down as far as the jet fell.
+   */
+  private releaseAir(dt: number): void {
+    this.spits.length = 0;
+    this.eruptions.length = 0;
+    let closing = false;
+    for (const [stripId, strip] of this.strips) {
+      const { tube } = strip;
+      if (!tube || Number.isNaN(tube.closedAt)) continue;
+      if (tube.released < 1) closing = true;
+      else if (strip.live === 0) this.removeStrip(stripId, strip);
+    }
+    if (!closing) return;
+    for (const chain of this.tubeChains()) {
+      let lowest = Infinity;
+      let highest = -Infinity;
+      for (const strip of chain) {
+        lowest = Math.min(lowest, strip.column);
+        highest = Math.max(highest, strip.column);
+      }
+      const mouths = chain.filter((strip) => Number.isNaN(strip.tube!.closedAt) && (strip.column === lowest || strip.column === highest));
+      const fed = mouths.map(() => ({ rate: 0, x: 0, z: 0 }));
+      const burst = { rate: 0, x: 0, y: 0, z: 0, speed: 0 };
+      for (const strip of chain) {
+        const tube = strip.tube!;
+        if (Number.isNaN(tube.closedAt) || tube.released >= 1) continue;
+        const done = collapsed(tube, this.time);
+        const volume = tube.air * (done - tube.released);
+        tube.released = done;
+        if (!(volume > 0)) continue;
+        const centre = this.voidCentre(strip, 1 - done);
+        const escaping = TUBE_AIR.escape * volume;
+        this.onAir?.(centre.x, centre.z, volume - escaping, AERATION.plungeDepth * tube.drop);
+        const rate = escaping / dt;
+        if (mouths.length > 0) {
+          let nearest = 0;
+          for (let m = 1; m < mouths.length; m += 1) {
+            if (Math.abs(mouths[m].column - strip.column) < Math.abs(mouths[nearest].column - strip.column)) nearest = m;
+          }
+          fed[nearest].rate += rate;
+          fed[nearest].x += rate * centre.x;
+          fed[nearest].z += rate * centre.z;
+        } else {
+          burst.rate += rate;
+          burst.x += rate * centre.x;
+          burst.y += rate * tube.y;
+          burst.z += rate * centre.z;
+          burst.speed += rate * Math.sqrt((GRAVITY * tube.geometry.width) / 2);
+        }
+      }
+      mouths.forEach((mouth, m) => {
+        const { rate } = fed[m];
+        if (!(rate > 0)) return;
+        const tube = mouth.tube!;
+        const centre = this.voidCentre(mouth, 1);
+        // Along the tube (across its travel), out of the peel: from the closing voids toward the mouth.
+        const alongX = -tube.dirZ;
+        const alongZ = tube.dirX;
+        const outward = (centre.x - fed[m].x / rate) * alongX + (centre.z - fed[m].z / rate) * alongZ >= 0 ? 1 : -1;
+        this.spits.push({
+          x: centre.x, y: centre.y, z: centre.z, dirX: outward * alongX, dirZ: outward * alongZ,
+          speed: rate / (LH82_AREA * tube.geometry.length * tube.geometry.width), airRate: rate,
+        });
+      });
+      if (burst.rate > 0) {
+        this.eruptions.push({
+          x: burst.x / burst.rate, y: burst.y / burst.rate, z: burst.z / burst.rate, airRate: burst.rate, speed: burst.speed / burst.rate,
+        });
+      }
+    }
+  }
+
+  /** The middle of a strip's void now, shrunk to `scale`: ahead of its crest and down, halfway along its long axis. */
+  private voidCentre(strip: LipStrip, scale: number): { x: number; y: number; z: number } {
+    const tube = strip.tube!;
+    const { length, width, tilt } = tube.geometry;
+    const age = this.time - strip.launchTime;
+    const ahead = 0.5 * length * scale * Math.cos(tilt);
+    return {
+      x: tube.x + tube.dirX * (tube.crestSpeed * age + ahead),
+      y: tube.y - 0.5 * width * scale - 0.5 * length * scale * Math.sin(tilt),
+      z: tube.z + tube.dirZ * (tube.crestSpeed * age + ahead),
+    };
+  }
+
+  /** The tubed strips, grouped into peels: tubes of neighbouring columns thrown within LINK_TIME of each other. */
+  private tubeChains(): LipStrip[][] {
+    const seen = new Set<LipStrip>();
+    const chains: LipStrip[][] = [];
+    for (const strip of this.strips.values()) {
+      if (!strip.tube || seen.has(strip)) continue;
+      const chain = [strip];
+      seen.add(strip);
+      for (let k = 0; k < chain.length; k += 1) {
+        const at = chain[k];
+        for (const column of [at.column - 1, at.column + 1]) {
+          for (const id of this.byColumn.get(column) ?? []) {
+            const other = this.strips.get(id)!;
+            if (!other.tube || seen.has(other) || Math.abs(other.launchTime - at.launchTime) >= LINK_TIME) continue;
+            seen.add(other);
+            chain.push(other);
+          }
+        }
+      }
+      chains.push(chain);
+    }
+    return chains;
   }
 
   /** One splash-up parcel, gathered with the rest of its jet's into one strip, so they draw as one sheet. */
