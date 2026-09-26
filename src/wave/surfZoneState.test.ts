@@ -31,7 +31,8 @@ describe('surf zone state (spec N1: the sea handover)', () => {
     untilAirborne(donor);
     expect(donor.lip.airborneVolume()).toBeGreaterThan(0);
     const state = donor.exportState();
-    const joiner = new SurfZoneSimulation({ ...config, startSeaTime: 1000 });
+    // A joiner skips its own spin-up: the handed-over sea replaces all of it.
+    const joiner = new SurfZoneSimulation({ ...config, startSeaTime: 1000, spinUpPeriods: 0 });
     joiner.importState(state);
     expect(joiner.seaTime).toBe(donor.seaTime);
     for (let i = 0; i < 300; i += 1) {

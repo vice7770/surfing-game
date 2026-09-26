@@ -37,6 +37,8 @@ export type OnlinePhase = 'catching-up' | 'riding' | 'resyncing';
  */
 export class OnlinePlay {
   phase: OnlinePhase = 'catching-up';
+  /** How far the sea is behind the room's clock, s, as of the latest frame. */
+  behind = 0;
   private readonly pacer = new OnlinePacer();
   private readonly own = new OwnPoseTracker();
   private readonly pose = createPose();
@@ -58,7 +60,9 @@ export class OnlinePlay {
       this.own.accumulate(host.snapshot.reaction);
       this.lastSeaTime = shown;
     }
-    const { steps, resync, caughtUp } = this.pacer.next(this.link.seaTimeNow(), shown, host.outstandingSteps, elapsed);
+    const target = this.link.seaTimeNow();
+    this.behind = target - shown;
+    const { steps, resync, caughtUp } = this.pacer.next(target, shown, host.outstandingSteps, elapsed);
     if (resync) {
       this.phase = 'resyncing';
       return { resync: true };

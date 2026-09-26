@@ -230,6 +230,10 @@ export const EN = {
   'action.retry': 'Paddle out again',
   'action.camera': 'Camera',
   'action.mute': 'Mute',
+  'action.callLeft': 'Call "Left!"',
+  'action.callRight': 'Call "Right!"',
+  'action.callParty': 'Call "Party wave!"',
+  'action.callNice': 'Call "Nice one!"',
   'notice.lowPerformance.title': 'Low performance detected',
   'notice.lowPerformance.body': 'Check that hardware acceleration is on in your browser settings, then restart the browser.',
   'notice.dismiss': 'Dismiss',
@@ -258,6 +262,7 @@ export const EN = {
   'online.joining': 'Joining the lineup…',
   'online.handover': 'Taking the sea from the lineup…',
   'online.catchingUp': 'Catching up with the sea…',
+  'online.catchingUpBy': 'Catching up with the sea… {s} s to go',
   'online.resyncing': 'Catching up with the sea…',
   'online.noWebGpu': "This browser can't run the shared sea. Use a current Chrome or Safari.",
   'online.refused.full': 'This room is full.',
@@ -281,6 +286,7 @@ export const EN = {
   'online.call.party': 'Party wave!',
   'online.call.nice': 'Nice one!',
   'settings.nameTags': 'Name tags',
+  'log.online': 'Online',
   'settings.nameTags.hint': 'Names over the other surfers online',
 } as const;
 

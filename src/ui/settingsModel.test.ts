@@ -50,10 +50,10 @@ describe('settingsModel', () => {
     expect(settingsModel('graphics', low, context).find((row) => row.id === 'redetect')).toBeUndefined();
   });
 
-  it('lists a keyboard pair and a gamepad button for each of the eleven actions (P9 adds trim, crouch and the hand; S1 adds mute)', () => {
+  it('lists a keyboard pair and a gamepad button for each of the fifteen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls)', () => {
     const bindings = settingsModel('controls', defaultSettings(), context).filter((row) => row.kind === 'binding');
-    expect(bindings).toHaveLength(33);
-    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(11);
+    expect(bindings).toHaveLength(45);
+    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(15);
   });
 });
 

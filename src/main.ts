@@ -582,8 +582,10 @@ class SurfGame {
     const spawn = { spawnAlong: (Math.random() - 0.5) * 40, spawnOut: 10 + Math.random() * 15 };
     const handed = await controller.requestSea();
     const sea = handed ? await decompress(handed.bytes, handed.deflated) : undefined;
-    // A handed-over sea brings its own clock; a fresh one starts at the room's.
-    const overrides: Partial<SurfZoneConfig> = { stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow() };
+    // A handed-over sea brings its own clock and replaces everything a spin-up would build; a fresh one starts at the room's.
+    const overrides: Partial<SurfZoneConfig> = {
+      stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
+    };
     const started = await this.startPhysical(room.seed, settings, {
       sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea), overrides,
     });
@@ -615,9 +617,9 @@ class SurfGame {
   }
 
   /** Online play for the HUD: catching up, riding or rebuilding the sea, and a respawn's countdown. */
-  get onlineState(): { phase: OnlinePhase; respawnIn?: number } | undefined {
+  get onlineState(): { phase: OnlinePhase; behind: number; respawnIn?: number } | undefined {
     const { online } = this;
-    return online && { phase: online.rebuilding ? 'resyncing' : online.play.phase, respawnIn: online.play.respawnIn };
+    return online && { phase: online.rebuilding ? 'resyncing' : online.play.phase, behind: online.play.behind, respawnIn: online.play.respawnIn };
   }
 
   /** Settings: names over the other surfers online. */
@@ -1367,6 +1369,7 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   camera: () => game.cycleView(),
   pause: () => app.pause(),
   mute: () => app.toggleMute(),
+  call: (call) => app.call(call),
 });
 const app = new App(game, controls, settings, { startInWaveLab: physicalRequested || demoMode !== null || recordRequested || waterSheetRequested });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);

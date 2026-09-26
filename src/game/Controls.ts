@@ -2,6 +2,7 @@ import type { BoardInput } from '../physics/BoardPhysics';
 import type { RideInput } from '../physics/RideSession';
 import { heldActions, padSteer, padTrim, padValue, readPads, type Action, type Bindings, type PadState } from './Bindings';
 import { AxisRamp } from './InputAxes';
+import type { CallId } from '../net/protocol';
 
 /** What a press of retry, camera and pause does; paddle, pop-up and steer are read through `input`. */
 export interface ControlHandlers {
@@ -10,7 +11,12 @@ export interface ControlHandlers {
   pause(): void;
   /** Sound on and off (S1). */
   mute?(): void;
+  /** A surf call online (N1). */
+  call?(call: CallId): void;
 }
+
+/** Each call action's call. */
+const CALL_OF: Partial<Record<Action, CallId>> = { callLeft: 'left', callRight: 'right', callParty: 'party', callNice: 'nice' };
 
 /** Where the controls listen: the window and the connected pads by default; tests pass stand-ins. */
 export interface ControlEnvironment {
@@ -151,6 +157,7 @@ export class Controls {
     else if (action === 'camera') this.handlers.camera();
     else if (action === 'pause') this.handlers.pause();
     else if (action === 'mute') this.handlers.mute?.();
+    else if (CALL_OF[action]) this.handlers.call?.(CALL_OF[action]);
   }
 
   private release(): void {

@@ -86,6 +86,7 @@ describe('OnlinePlay', () => {
     expect(surf.advances[0].steps).toBe(30);
     expect(surf.advances[0].input).toEqual({ paddle: false, popUp: false, steer: 0 });
     expect(play.phase).toBe('catching-up');
+    expect(play.behind).toBeCloseTo(10, 6);
     expect(link.sent).toHaveLength(0);
     expect(surf.retries).toEqual([]);
   });

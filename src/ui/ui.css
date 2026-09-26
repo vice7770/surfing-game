@@ -275,3 +275,16 @@
 .online-message { margin: 0; padding: .6em 1em; border-radius: 12px; background: rgba(239, 128, 94, .14); color: #8a3c25; font-size: .92em; }
 .online-message[hidden] { display: none; }
 .button-primary:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Online (N1): the notice and ride feed over a ride, and the pause menu's players. */
+.online-hud { position: absolute; inset: 0; pointer-events: none !important; }
+.online-notice { position: absolute; top: calc(max(16px, 5vh) + 3.2em); left: 50%; margin: 0; padding: .45em 1em; transform: translateX(-50%); border-radius: 99px; background: rgba(23, 63, 67, .62); color: #fff8e9; font: 500 .85em 'DM Sans', 'Avenir Next', sans-serif; white-space: nowrap; backdrop-filter: blur(8px); }
+.online-notice[hidden] { display: none; }
+.online-feed { position: absolute; top: max(16px, 2vh); left: max(16px, 3vw); display: flex; flex-direction: column; gap: .35em; margin: 0; padding: 0; list-style: none; }
+.online-feed li { padding: .3em .8em; border-radius: 99px; background: rgba(23, 63, 67, .5); color: #fff8e9; font: .78em var(--mono); letter-spacing: .04em; backdrop-filter: blur(6px); animation: screen-in .25s ease both; }
+.online-players-panel { display: flex; flex-direction: column; gap: .6em; margin-top: 1em; padding-top: .8em; border-top: 1px solid var(--line); }
+.online-players { display: flex; flex-direction: column; gap: .35em; margin: 0; padding: 0; list-style: none; max-height: 14em; overflow-y: auto; }
+.online-players li { display: flex; align-items: center; gap: .6em; }
+.online-players li span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.online-players li small { color: var(--muted); font: .72em var(--mono); text-transform: uppercase; letter-spacing: .1em; }
+.online-link { display: flex; align-items: center; gap: .6em; margin: 0; color: var(--muted); font: .78em var(--mono); word-break: break-all; }

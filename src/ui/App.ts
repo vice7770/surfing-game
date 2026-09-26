@@ -22,7 +22,10 @@ import { createSettingsScreen } from './SettingsScreen';
 import { createMainMenu, refreshSoundToggles } from './MainMenu';
 import { createSoundCheck } from './SoundCheck';
 import { MenuInput } from './MenuInput';
-import { createPauseMenu } from './PauseMenu';
+import { createOnlinePauseMenu, createPauseMenu } from './PauseMenu';
+import { OnlineHud, PlayersPanel, onlineHudModel, playersModel } from './OnlineHud';
+import { roomLink } from '../net/roomCode';
+import type { CallId } from '../net/protocol';
 import { createRideEndCard, endCardModel } from './RideEndCard';
 import { bestTwo, scoreRide } from '../game/waveScore';
 import { HintBook, HintCoach, type HintId } from '../game/hints';
@@ -69,7 +72,7 @@ export interface GameHost {
   startOnline(controller: OnlineController, camera: RideView | 'overview'): Promise<boolean>;
   leaveOnline(): void;
   /** Online play's phase and a respawn's countdown, while online. */
-  readonly onlineState: { phase: OnlinePhase; respawnIn?: number } | undefined;
+  readonly onlineState: { phase: OnlinePhase; behind?: number; respawnIn?: number } | undefined;
 }
 
 /** Waiting this long for a room's welcome, ms, the server counts as unreachable. */
@@ -135,6 +138,8 @@ export class App {
   private online?: OnlineController;
   private multiplayer: MultiplayerState;
   private webGpuAsked = false;
+  private readonly onlineHud = new OnlineHud();
+  private playersPanel?: PlayersPanel;
 
   constructor(
     private readonly game: GameHost,
@@ -219,8 +224,17 @@ export class App {
         input: this.controls.lastRequest,
       }, (id) => this.hintText(id) !== '');
       this.rideHud.update(ride, gameplay.units, this.hintKeys(), !seen.rideHints,
-        showsBalanceMeter(gameplay.balanceMeter, this.surfChoice.conditions.swell), hint ? this.hintText(hint) : '');
+        showsBalanceMeter(gameplay.balanceMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell), hint ? this.hintText(hint) : '');
       this.trackRide();
+    }
+    const { online } = this;
+    if (online && (this.stack.current === 'ride' || this.stack.current === 'pause')) {
+      const state = this.game.onlineState;
+      this.onlineHud.update(onlineHudModel({
+        status: online.status, phase: state?.phase, behind: state?.behind, respawnIn: state?.respawnIn, feed: online.feed,
+        units: this.settings.value.gameplay.units, now: performance.now(),
+      }));
+      if (this.stack.current === 'pause') this.playersPanel?.update(playersModel(online.players(), online.you, online.creator));
     }
     if (!this.benchmark || this.stack.base !== 'menu' || !this.backdropReady || !this.game.backdropRunning) return;
     if (this.warmup < BENCHMARK_WARMUP_FRAMES) {
@@ -344,10 +358,26 @@ export class App {
       const { gameplay } = this.settings.value;
       return [
         this.rideHud.root,
+        ...(this.online ? [this.onlineHud.root] : []),
         ...(DEV_TOOLS && gameplay.showTelemetry ? [this.telemetry] : []),
         ...(this.needsRotateHint() ? [this.rotateHintElement()] : []),
         ...(this.endCard ? [this.endCard] : []),
       ];
+    }
+    if (id === 'pause' && this.online) {
+      const online = this.online;
+      this.playersPanel = new PlayersPanel(roomLink(location.origin, online.room!.code), (player) => online.kick(player));
+      this.playersPanel.update(playersModel(online.players(), online.you, online.creator));
+      return [createOnlinePauseMenu({
+        resume: () => this.back(),
+        camera: () => {
+          this.game.cycleView();
+          return this.viewLabel();
+        },
+        settings: () => this.go('settings'),
+        leave: () => this.quitToMenu(),
+        sound: { muted: this.sound.muted, toggle: () => this.toggleMute() },
+      }, this.viewLabel(), this.playersPanel.root)];
     }
     if (id === 'pause') {
       const inLab = this.stack.base === 'wavelab';
@@ -409,6 +439,10 @@ export class App {
   }
 
   private finishRide(result: RideResult): void {
+    if (this.online) {
+      this.finishOnlineRide(result);
+      return;
+    }
     const { spot, conditions } = this.surfChoice;
     // Scored only when the player asks, and only rides the worker read (P9).
     const score = this.settings.value.gameplay.scoreRides && result.report ? scoreRide(result.report).score : undefined;
@@ -429,6 +463,26 @@ export class App {
       menu: () => this.quitToMenu(),
     }, this.hintKeys().retry);
     if (this.stack.current === 'ride') this.ui.append(this.endCard);
+  }
+
+  /**
+   * An online ride ends (spec N1): logged as online, announced to the room (the
+   * feed shows it to everyone, this player included); no end card, the sea goes on.
+   */
+  private finishOnlineRide(result: RideResult): void {
+    const { online } = this;
+    const room = online?.room;
+    if (!online || !room) return;
+    const { report: _, timeScale: __, ...summary } = result;
+    const records = this.logbook.add({ ...summary, spot: room.spot, conditions: room.conditions, seed: room.seed, at: Date.now(), online: true });
+    if (records.length > 0) this.sound.playUi('chime');
+    if (!this.settings.value.seen.rideHints) this.settings.markSeen('rideHints');
+    online.rideFinished(result.distance, result.seconds);
+  }
+
+  /** A surf call (N1): shouted to the room while online. */
+  call(call: CallId): void {
+    if (this.online && (this.stack.current === 'ride' || this.stack.current === 'pause')) this.online.call(call);
   }
 
   private hideEndCard(): void {
