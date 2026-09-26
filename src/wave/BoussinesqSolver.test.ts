@@ -470,5 +470,28 @@ describe('Boussinesq surf zone beds', () => {
     expect(largestFlow).toBeLessThan(1e-9);
     expect(stillError).toBe(0);
   });
+
+  it('carries its breaking and predictor state with the water when the window slides', () => {
+    const solver = new BoussinesqSolver(
+      { nx: 20, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' }, () => 3, { breaking: { onset: 0.65 } },
+    );
+    const state = solver as unknown as { breakingStrength: Float64Array; breakingAge: Float64Array; predictorX: Float64Array; predictorZ: Float64Array };
+    for (let i = 0; i < solver.h.length; i += 1) {
+      const column = i % solver.nx;
+      state.breakingStrength[i] = column / 20;
+      state.breakingAge[i] = column;
+      state.predictorX[i] = column * 2;
+      state.predictorZ[i] = column * 3;
+    }
+    solver.shiftAlongShore(3);
+    const row = 5 * solver.nx;
+    // The column that was 3 is now column 0, and so on; new columns start quiet.
+    expect(state.breakingAge[row]).toBe(3);
+    expect(state.breakingStrength[row + 4]).toBeCloseTo(7 / 20, 12);
+    expect(state.predictorX[row + 10]).toBe(26);
+    expect(state.predictorZ[row + 16]).toBe(57);
+    expect(state.breakingAge[row + 19]).toBe(0);
+    expect(state.predictorX[row + 17]).toBe(0);
+  });
 });
 

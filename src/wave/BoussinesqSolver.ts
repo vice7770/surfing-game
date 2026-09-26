@@ -373,6 +373,23 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   override shiftAlongShore(columns: number): void {
     super.shiftAlongShore(columns);
     this.depthDirty = true;
+    // The breaking bores and the predictor's memory move with the water; new columns start quiet.
+    const shift = Math.trunc(columns);
+    if (shift === 0) return;
+    const { nx, nz } = this;
+    const carried = [this.breakingStrength, this.breakingAge, this.viscosity, ...(this.predictorX && this.predictorZ ? [this.predictorX, this.predictorZ] : [])];
+    for (let iz = 0; iz < nz; iz += 1) {
+      const row = iz * nx;
+      for (const values of carried) {
+        if (shift > 0) {
+          values.copyWithin(row, row + shift, row + nx);
+          values.fill(0, row + nx - shift, row + nx);
+        } else {
+          values.copyWithin(row - shift, row, row + nx + shift);
+          values.fill(0, row, row - shift);
+        }
+      }
+    }
   }
 
   /** P̄ and Q̄ from P and Q. */
