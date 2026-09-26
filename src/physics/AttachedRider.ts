@@ -8,6 +8,7 @@ import { SEAWATER_DENSITY as SEAWATER } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
 import { RIDER_PARTS, deckHeight, postureCenter, riderPartMasses, riderPartVolumes, riderPose, stanceFeet, type PosePhase, type StanceName, type SupportRegion } from './riderPosture';
 import type { SurfWater } from './SurfWater';
+import type { StrokeSplash } from '../wave/SprayCloud';
 
 /**
  * Contact limits of a body on a waxed deck (modelling choices, not measured):
@@ -302,6 +303,13 @@ export class AttachedRider {
   readonly lastLipImpulse = new Vector3();
   /** The water's latest force on each stroking hand (left, right), N. */
   readonly handLoad = new Float64Array(2);
+  /** Each hand that pulled through the water in the latest step, for the spray (G7): where, how hard, how fast. */
+  readonly strokes: StrokeSplash[] = [];
+  private readonly strokePool: [StrokeSplash, StrokeSplash] = [
+    { x: 0, y: 0, z: 0, jx: 0, jy: 0, jz: 0, speed: 0 },
+    { x: 0, y: 0, z: 0, jx: 0, jy: 0, jz: 0, speed: 0 },
+  ];
+  private readonly handWet = [false, false];
   /** Paddle while prone. */
   paddle = false;
   /** Standing, the requested weight shift: −1 (toward board −x, its right) to 1 (toward +x, its left). */
@@ -656,6 +664,8 @@ export class AttachedRider {
     this.markParts();
     this.lastLipImpulse.set(0, 0, 0);
     this.reaction.fill(0);
+    this.handWet[0] = false;
+    this.handWet[1] = false;
     this.reactionAt.fill(0);
     this.stepImpulse.set(0, 0, 0);
     this.stepLoad = 0;
@@ -734,6 +744,16 @@ export class AttachedRider {
       const jz = reaction[k * 3 + 2];
       if (jx === 0 && jy === 0 && jz === 0) continue;
       water.addReaction(reactionAt[k * 2] / dt, reactionAt[k * 2 + 1] / dt, jx, jy, jz);
+    }
+    this.strokes.length = 0;
+    for (let side = 0; side < 2; side += 1) {
+      const k = RIDER_PARTS.length + side;
+      const stroke = this.strokePool[side];
+      if (!this.handWet[side] || (reaction[k * 3] === 0 && reaction[k * 3 + 2] === 0)) continue;
+      stroke.jx = reaction[k * 3];
+      stroke.jy = reaction[k * 3 + 1];
+      stroke.jz = reaction[k * 3 + 2];
+      this.strokes.push(stroke);
     }
   }
 
@@ -881,6 +901,12 @@ export class AttachedRider {
       const magnitude = force.length();
       if (magnitude > limit) force.multiplyScalar(limit / magnitude);
       this.handLoad[slot - RIDER_PARTS.length] = Math.min(magnitude, limit);
+      const stroke = this.strokePool[slot - RIDER_PARTS.length];
+      stroke.x = p.x;
+      stroke.y = p.y;
+      stroke.z = p.z;
+      stroke.speed = relative.length();
+      this.handWet[slot - RIDER_PARTS.length] = true;
     }
     this.waterForce.add(force);
     const arm = this.scratch.subVectors(p, this.position);

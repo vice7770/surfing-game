@@ -502,6 +502,42 @@ describe('prone balance', () => {
     expect(rider.attached).toBe(true);
   });
 
+  it('records each pulling hand’s stroke for the spray: beside a rail, pushed forward by the water', () => {
+    const { board, rider } = mounted('prone');
+    rider.paddle = true;
+    let steps = 0;
+    let stroked = 0;
+    let forward = 0;
+    let strokes = 0;
+    let push = 0;
+    run(board, new PlaneWater(), 2, () => {
+      steps += 1;
+      if (rider.strokes.length) stroked += 1;
+      const inverse = board.orientation.clone().invert();
+      for (const stroke of rider.strokes) {
+        strokes += 1;
+        // In the board's frame: across it beside a rail, pushed toward its nose.
+        const at = new Vector3(stroke.x, stroke.y, stroke.z).sub(board.position).applyQuaternion(inverse);
+        const along = new Vector3(stroke.jx, stroke.jy, stroke.jz).applyQuaternion(inverse).z;
+        push += along;
+        if (along > 0) forward += 1;
+        expect(Math.abs(at.x)).toBeGreaterThan(0.15);
+        expect(Math.abs(at.x)).toBeLessThan(0.6);
+      }
+    });
+    // Each arm pulls for about a third of its cycle, the two half a cycle apart.
+    expect(stroked / steps).toBeGreaterThan(0.3);
+    expect(stroked).toBeLessThan(steps);
+    // The water pushes the pulling hands forward; only at the catch, still carried with the board, is a hand pushed back.
+    expect(push).toBeGreaterThan(0);
+    expect(forward / strokes).toBeGreaterThan(0.8);
+  });
+
+  it('records no strokes while lying still', () => {
+    const { board, rider } = mounted('prone');
+    run(board, new PlaneWater(), 1, () => expect(rider.strokes).toHaveLength(0));
+  });
+
   it('stays on the board lying still through a minute of oblique swell', () => {
     const swell = new SwellWater({ height: 1.2, period: 10, direction: Math.PI / 6 });
     const { board, rider } = mounted('prone', swell.surfaceAt(0, 0));

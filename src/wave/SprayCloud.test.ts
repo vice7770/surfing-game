@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SPRAY_STRIDE, SprayCloud, type LipImpact, type SprayScene } from './SprayCloud';
+import { SPRAY_STRIDE, SprayCloud, type LipImpact, type SprayScene, type StrokeSplash } from './SprayCloud';
 
 /** Flat water 2 m deep over 10 m × 40 m (1 m cells), still, with no bores; `crest` raises a steep shoreward-facing step. */
 function flatScene(windSpeed = 0, lipImpacts: LipImpact[] = [], crest = false): SprayScene {
@@ -36,6 +36,36 @@ function meanVelocityZ(cloud: SprayCloud, scene: SprayScene, seconds: number): n
   for (let k = 0; k < Math.min(count, cloud.count); k += 1) drift += cloud.particles[k * SPRAY_STRIDE + 2] - start[k];
   return drift / Math.max(1, Math.min(count, cloud.count)) / seconds;
 }
+
+describe('paddle splashes', () => {
+  // A hand pulling back beside the rail: the water pushes it forward (+z), so the splash flies back (−z).
+  const stroke = (jz: number, speed = 5): StrokeSplash => ({ x: 5, y: 0, z: 20, jx: 0, jy: 0, jz, speed });
+
+  it('throws drops in proportion to the work the stroke does on the water', () => {
+    const hard = new SprayCloud(4);
+    hard.update({ ...flatScene(), strokes: [stroke(60)] }, 1 / 60);
+    // 60 N·s at 5 m/s is 300 J: 15 particles at the lip splash's rate.
+    expect(Math.abs(hard.count - 15)).toBeLessThanOrEqual(1);
+    const none = new SprayCloud(4);
+    none.update({ ...flatScene(), strokes: [stroke(0)] }, 1 / 60);
+    expect(none.count).toBe(0);
+  });
+
+  it('throws them up and back, away from the push on the hand', () => {
+    const cloud = new SprayCloud(5);
+    cloud.update({ ...flatScene(), strokes: [stroke(60)] }, 1 / 60);
+    const start = Array.from({ length: cloud.count }, (_, k) => [cloud.particles[k * SPRAY_STRIDE + 1], cloud.particles[k * SPRAY_STRIDE + 2]]);
+    cloud.update(flatScene(), 0.05);
+    let rise = 0;
+    let back = 0;
+    start.forEach(([y, z], k) => {
+      rise += cloud.particles[k * SPRAY_STRIDE + 1] - y;
+      back += z - cloud.particles[k * SPRAY_STRIDE + 2];
+    });
+    expect(rise).toBeGreaterThan(0);
+    expect(back).toBeGreaterThan(0);
+  });
+});
 
 describe('spray and mist', () => {
   it('splashes drops up from a lip impact in proportion to its energy, which fall back into the water', () => {

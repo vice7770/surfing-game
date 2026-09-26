@@ -11,7 +11,21 @@ export interface LipImpact {
   vz: number;
 }
 
-/** What the spray needs from a surf zone: its grid and water, bore foam, the latest lip impacts and the wind. */
+/**
+ * A paddling hand's pull during one step (G7): where it was, the impulse the
+ * water gave it (N·s; the water took the opposite), and its speed through the water.
+ */
+export interface StrokeSplash {
+  x: number;
+  y: number;
+  z: number;
+  jx: number;
+  jy: number;
+  jz: number;
+  speed: number;
+}
+
+/** What the spray needs from a surf zone: its grid and water, bore foam, the latest lip impacts and paddle strokes, and the wind. */
 export interface SprayScene {
   readonly solver: {
     readonly nx: number;
@@ -31,6 +45,8 @@ export interface SprayScene {
   readonly lipImpacts: readonly LipImpact[];
   /** Local wind at crest height, m/s: positive onshore (+z). */
   readonly windSpeed: number;
+  /** The rider's hands pulling through the water this step. */
+  readonly strokes?: readonly StrokeSplash[];
 }
 
 /**
@@ -54,6 +70,9 @@ const FEATHER_RATE = 0.05;
 const FEATHER_ONSET = 4;
 const FEATHER_SLOPE = 0.25;
 const FEATHER_HEIGHT = 0.3;
+/** A paddle splash leaves at these shares of the hand's speed through the water: upward, and back along the water the hand pushed. */
+const STROKE_UP = { min: 0.3, max: 0.9 };
+const STROKE_BACK = { min: 0.3, max: 0.7 };
 /** A splash-up leaves at this share of the lip's impact speed, upward, and keeps this share of its horizontal speed. */
 const SPLASH_UP = { min: 0.3, max: 0.8 };
 const SPLASH_FORWARD = { min: 0.2, max: 0.6 };
@@ -107,6 +126,7 @@ export class SprayCloud {
     if (!(dt > 0)) return;
     this.fly(scene, dt);
     for (const impact of scene.lipImpacts) this.splash(scene, impact);
+    for (const stroke of scene.strokes ?? []) this.strokeSplash(scene, stroke);
     this.boreSpray(scene, dt);
     this.feather(scene, dt);
     this.pack();
@@ -156,6 +176,32 @@ export class SprayCloud {
         mist ? MIST : SPRAY,
         impact.x + (this.random() - 0.5) * 0.8, surface + 0.05, impact.z + (this.random() - 0.5) * 0.8,
         impact.vx * forward + (this.random() - 0.5) * spread, up, impact.vz * forward + (this.random() - 0.5) * spread,
+      );
+    }
+  }
+
+  /**
+   * A paddle stroke's splash: drops in proportion to the work the hand did on
+   * the water (its push times its speed through it), at the lip splash's rate
+   * per joule, thrown up and back along the water it pushed.
+   */
+  private strokeSplash(scene: SprayScene, stroke: StrokeSplash): void {
+    const push = Math.hypot(stroke.jx, stroke.jz);
+    if (!(push > 0) || !(stroke.speed > 0)) return;
+    const expected = push * stroke.speed * SPRAY_PER_JOULE;
+    let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
+    const cell = scene.solver.cellIndex(stroke.x, stroke.z);
+    const surface = scene.solver.h[cell] + scene.solver.bed[cell];
+    const backX = -stroke.jx / push;
+    const backZ = -stroke.jz / push;
+    for (; spawns > 0 && this.count < this.capacity; spawns -= 1) {
+      const up = stroke.speed * this.between(STROKE_UP);
+      const back = stroke.speed * this.between(STROKE_BACK);
+      const spread = 0.3 * stroke.speed;
+      this.spawn(
+        SPRAY,
+        stroke.x + (this.random() - 0.5) * 0.15, surface + 0.03, stroke.z + (this.random() - 0.5) * 0.15,
+        backX * back + (this.random() - 0.5) * spread, up, backZ * back + (this.random() - 0.5) * spread,
       );
     }
   }
