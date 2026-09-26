@@ -23,6 +23,20 @@ describe('SurferView', () => {
     expect(view.group.children).toContain(chosen.group);
   });
 
+  it("loads at the preset's texture size, reloads when it changes, and hands on the detail distance", async () => {
+    const load = vi.spyOn(SkinnedSurfer, 'load').mockImplementation(async () => SkinnedSurfer.fromScene(fakeGltfScene()));
+    const view = new SurferView();
+    view.setDetail(8, 1024);
+    await view.load('surfer4');
+    expect(load).toHaveBeenLastCalledWith('assets/surfers/surfer4.glb', 1024);
+    view.setDetail(20, 1024);
+    expect(view.skinned!.lodDistance).toBe(20);
+    expect(load).toHaveBeenCalledTimes(1);
+    view.setDetail(20, 512);
+    await vi.waitFor(() => expect(load).toHaveBeenLastCalledWith('assets/surfers/surfer4.glb', 512));
+    await vi.waitFor(() => expect(view.skinned!.lodDistance).toBe(20));
+  });
+
   it('dresses the surfer it loads, and the one it has, in the chosen outfit and colour', async () => {
     const surfer = SkinnedSurfer.fromScene(fakeGltfScene());
     const setOutfit = vi.spyOn(surfer, 'setOutfit');

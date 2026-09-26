@@ -128,6 +128,8 @@ class SurfGame {
   private readonly photoSky: PhotoSky;
   /** The sun's shadow around the rider (G7); `?shadows=` picks the level until P8's presets do. */
   private readonly shadows: ShadowRig;
+  /** What the sun's shadow falls on from the High preset up. */
+  private readonly shadowSurfaces: Mesh[];
   private readonly shadowSun = new Vector3();
   private readonly shadowNose = new Vector3();
   private reflectionMapTarget?: WebGLRenderTarget;
@@ -227,9 +229,8 @@ class SurfGame {
     this.scene.add(this.surfer.group);
     this.scene.add(this.boardWake.trail, this.boardWake.spray, this.breakSpray.points);
     this.shadows = new ShadowRig(this.renderer, this.sunlight, this.scene);
-    this.shadows.setLevel(parseShadowLevel(window.location.search), {
-      surfaces: [this.water.mesh, this.physicalMode.seabed.mesh, this.physicalMode.farField.mesh],
-    });
+    this.shadowSurfaces = [this.water.mesh, this.physicalMode.seabed.mesh, this.physicalMode.farField.mesh];
+    this.shadows.setLevel(parseShadowLevel(window.location.search), { surfaces: this.shadowSurfaces });
 
     const markerMaterial = new MeshStandardMaterial({ color: '#f9a273', emissive: '#a34b2d', emissiveIntensity: 0.22, roughness: 0.5 });
     this.crestMarker = new Mesh(new BoxGeometry(9, 0.025, 0.055), markerMaterial);
@@ -308,6 +309,11 @@ class SurfGame {
     this.breakSpray.points.visible = resolved.sprayMist && this.mode === 'legacy';
     this.physicalMode.farField.setViewDistance(resolved.oceanView);
     this.water.setFoamDetail(resolved.detailedFoam);
+    // The preset's shadow and surfer detail (G7 Part B); `?shadows=` still picks the level.
+    const level = parseShadowLevel(window.location.search, resolved.shadows);
+    // A new level recompiles every material, so only a change applies it.
+    if (level !== this.shadows.currentLevel) this.shadows.setLevel(level, { surfaces: this.shadowSurfaces });
+    this.physicalMode.surfer.setDetail(resolved.surferLodDistance, resolved.textureCap);
   }
 
   /** R: in the physical mode, paddle out again from the lineup while the waves carry on; otherwise replay. */

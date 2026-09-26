@@ -1,9 +1,9 @@
-import { BufferGeometry, MeshPhysicalMaterial, Quaternion, SkinnedMesh, Vector3 } from 'three';
+import { BufferGeometry, MeshPhysicalMaterial, MeshStandardMaterial, Quaternion, SkinnedMesh, Texture, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { BONES } from '../rig/humanoidBones';
 import { posturePoints } from '../rig/posturePoints';
 import { POINT, createRiderVisualState } from '../rig/riderVisualState';
-import { SkinnedSurfer } from './SkinnedSurfer';
+import { SkinnedSurfer, capTextures } from './SkinnedSurfer';
 import { fakeGltfScene } from './testSurferScene';
 
 describe('skinned surfer', () => {
@@ -44,5 +44,27 @@ describe('skinned surfer', () => {
     surfer.update(state, new Vector3(270, 3, -580));
     expect(surfer.group.getObjectByName('LOD0')!.visible).toBe(false);
     expect(surfer.group.getObjectByName('LOD1')!.visible).toBe(true);
+    // The graphics preset sets the distance: Ultra keeps the full body out to 20 m, Low never draws it.
+    surfer.lodDistance = 30;
+    surfer.update(state, new Vector3(270, 3, -580));
+    expect(surfer.group.getObjectByName('LOD0')!.visible).toBe(true);
+    surfer.lodDistance = 0;
+    surfer.update(state, new Vector3(252, 1.5, -597));
+    expect(surfer.group.getObjectByName('LOD1')!.visible).toBe(true);
+  });
+
+  it('downsizes textures above the cap, keeping their proportions', () => {
+    const scene = fakeGltfScene();
+    const skin = new Texture({ width: 2048, height: 1024 });
+    const small = new Texture({ width: 256, height: 256 });
+    (scene.getObjectByName('LOD0') as SkinnedMesh).material = new MeshStandardMaterial({ map: skin, roughnessMap: small });
+    const resized: [number, number][] = [];
+    capTextures(scene, 512, (_image, width, height) => {
+      resized.push([width, height]);
+      return { width, height };
+    });
+    expect(resized).toEqual([[512, 256]]);
+    expect(skin.image).toEqual({ width: 512, height: 256 });
+    expect(small.image).toEqual({ width: 256, height: 256 });
   });
 });
