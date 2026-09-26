@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GRAVITY } from './dispersion';
-import { LH82_AREA, PSI_RANGE, jetRelativeSpeed, overturn, overturnParameter, overturnSize, tubeFloorDepth, tubeGeometry } from './Overturn';
+import { LH82_AREA, PSI_RANGE, jetFlightTime, jetRelativeSpeed, overturn, overturnParameter, overturnSize, tubeFloorDepth, tubeGeometry } from './Overturn';
 
 describe('the overturn of a plunging wave (Pick & Feddersen 2026)', () => {
   it('reproduces the published fits at the ends of their range', () => {
@@ -52,6 +52,17 @@ describe('the overturn of a plunging wave (Pick & Feddersen 2026)', () => {
       y += vy * h;
     }
     expect(x).toBeCloseTo(tube.length * Math.cos(tube.tilt), 3);
+  });
+
+  it('times the jet from the crest to where it lands, which is how long it pours (Erinin et al. 2023)', () => {
+    const shape = overturn(0.05);
+    const tube = tubeGeometry(shape, 1.5);
+    const flight = jetFlightTime(shape, 1.5);
+    expect(flight).toBeCloseTo(Math.sqrt((2 * (tube.width / 2 + tube.length * Math.sin(tube.tilt))) / GRAVITY), 12);
+    expect(jetRelativeSpeed(shape, 1.5) * flight).toBeCloseTo(tube.length * Math.cos(tube.tilt), 12);
+    // Their jets took 1.5-1.6 sqrt(H/g) from forming to impact; the fitted overturns fly in the same few tenths.
+    expect(flight / Math.sqrt(1.5 / GRAVITY)).toBeGreaterThan(0.8);
+    expect(flight / Math.sqrt(1.5 / GRAVITY)).toBeLessThan(1.8);
   });
 
   it("carves the void's floor from half its width under the crest down to where the jet lands", () => {
