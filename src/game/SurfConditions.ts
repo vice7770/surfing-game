@@ -1,11 +1,8 @@
 import type { SpotName } from '../wave/Bathymetry';
 import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalSettings } from './PhysicalMode';
 
-/**
- * The Surf screen's few choices (plan P8), turned into the Wave Lab's physical
- * settings. The Canyon returns to this list once its catch cue works (ROADMAP P8).
- */
-export const SURF_SPOTS: readonly SpotName[] = ['beach', 'point', 'reef'];
+/** The Surf screen's few choices (plan P8), turned into the Wave Lab's physical settings. */
+export const SURF_SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon'];
 
 export type SwellSize = 'practice' | 'small' | 'medium' | 'big';
 export type TideLevel = 'low' | 'mid' | 'high';
