@@ -1,3 +1,4 @@
+import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, STRIP_PARCELS, lipThrow, overturnArea, tubeWidthRatio } from './PlungingLip';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
@@ -154,6 +155,32 @@ describe('PlungingLip', () => {
     const before = links();
     solver.shiftAlongShore(3);
     expect(links()).toEqual(before);
+  });
+
+  it('offers the sheet at its closest point to a body, and hands a strike back to the parcels it joins', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    lip.launch(solver.cellIndex(2.5, 12.5), { x: 0, z: 1 }, 60, 0.3);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 1 }, 60, 0.3);
+    lip.step(JET_RELEASE_TIME + 0.01);
+    const parcels = new Map<number, { x: number; y: number; z: number; vz: number; volume: number }>();
+    lip.forEachActiveParcel((p) => parcels.set(p.slot, { x: p.x, y: p.y, z: p.z, vz: p.vz, volume: p.volume }));
+    // A body just beside the middle of the across-link between the two strips' tips.
+    const tip = [...parcels.values()].filter((p) => p.y < 60).sort((a, b) => a.y - b.y);
+    const center = new Vector3(3, tip[0].y, tip[0].z + 0.1);
+    const momentumBefore = [...parcels.values()].reduce((sum, p) => sum + p.volume * p.vz, 0);
+    let offered = 0;
+    let exchanged = 0;
+    lip.forEachContactNear(center, 0.5, (parcel) => {
+      offered += 1;
+      expect(parcel.position.distanceTo(center)).toBeLessThanOrEqual(0.5);
+      parcel.velocity.z -= 1;
+      exchanged += parcel.volume;
+    });
+    expect(offered).toBeGreaterThan(0);
+    let momentumAfter = 0;
+    lip.forEachActiveParcel((p) => (momentumAfter += p.volume * p.vz));
+    expect(momentumAfter - momentumBefore).toBeCloseTo(-exchanged, 9);
   });
 
   it('throws the same sheet for the same throws', () => {

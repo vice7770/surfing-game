@@ -50,6 +50,9 @@ export interface LipSheetParcel {
   x: number;
   y: number;
   z: number;
+  vx: number;
+  vy: number;
+  vz: number;
   /** World column (x / dx, rounded), so links survive a sliding window. */
   column: number;
   /** Place along its strip: 0 left the crest first. */
@@ -154,7 +157,11 @@ export class PlungingLip implements LipParcelSource {
   private nextStrip = 1;
   /** The lip's clock, s. */
   time = 0;
-  private readonly view = { slot: 0, x: 0, y: 0, z: 0, column: 0, index: 0, launchTime: 0, volume: 0 };
+  private readonly view = { slot: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, column: 0, index: 0, launchTime: 0, volume: 0 };
+  /** Marks parcels a query found linked, by query number. */
+  private readonly linked: Uint32Array;
+  private query = 0;
+  private readonly near = { a: new Vector3(), b: new Vector3(), pa: new Vector3(), pb: new Vector3(), velocity: new Vector3() };
   private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0 };
   private readonly free: number[] = [];
 
@@ -182,6 +189,7 @@ export class PlungingLip implements LipParcelSource {
     this.column = new Int32Array(capacity);
     this.index = new Uint8Array(capacity);
     this.launchTime = new Float64Array(capacity);
+    this.linked = new Uint32Array(capacity);
     for (let index = capacity - 1; index >= 0; index -= 1) this.free.push(index);
   }
 
@@ -311,6 +319,69 @@ export class PlungingLip implements LipParcelSource {
     }
   }
 
+  /**
+   * Offer the sheet within `reach` of `center` for contact (plan P7): each link
+   * at its closest point to `center`, with the link's interpolated motion, the
+   * water around that point (the two parcels' volumes, weighted) and the
+   * sheet's half thickness there (that volume over the link's length and a
+   * column's width, at least 5 cm); and each lone flying parcel as its sphere.
+   * A velocity change the visitor makes goes back to the link's two parcels in
+   * proportion to their weights, so momentum is conserved.
+   */
+  forEachContactNear(center: Vector3, reach: number, visit: (parcel: LipContactParcel) => void): void {
+    const { near, contact: c } = this;
+    this.query = (this.query + 1) >>> 0 || 1;
+    const query = this.query;
+    const width = this.solver.dx;
+    this.forEachLink((a, b) => {
+      this.linked[a] = query;
+      this.linked[b] = query;
+      near.a.set(this.x[a], this.y[a], this.z[a]);
+      near.b.set(this.x[b], this.y[b], this.z[b]);
+      const along = near.b.sub(near.a);
+      const length = along.length();
+      const t = length > 1e-9 ? Math.min(1, Math.max(0, near.pa.subVectors(center, near.a).dot(along) / (length * length))) : 0;
+      c.position.copy(near.a).addScaledVector(along, t);
+      if (c.position.distanceTo(center) > reach) return;
+      near.pa.set(this.px[a], this.py[a], this.pz[a]);
+      near.pb.set(this.px[b], this.py[b], this.pz[b]);
+      c.previousPosition.copy(near.pa).lerp(near.pb, t);
+      near.velocity.set(
+        this.vx[a] + (this.vx[b] - this.vx[a]) * t,
+        this.vy[a] + (this.vy[b] - this.vy[a]) * t,
+        this.vz[a] + (this.vz[b] - this.vz[a]) * t,
+      );
+      c.velocity.copy(near.velocity);
+      c.volume = this.volume[a] * (1 - t) + this.volume[b] * t;
+      c.radius = Math.max(0.05, c.volume / (2 * Math.max(0.05, length) * width));
+      // A link's id: negative, so it never meets a lone parcel's.
+      c.id = -(this.id[a] * 4194304 + this.id[b]);
+      visit(c);
+      const change = near.velocity.subVectors(c.velocity, near.velocity).multiplyScalar(c.volume);
+      if (change.lengthSq() === 0) return;
+      this.vx[a] += (change.x * (1 - t)) / this.volume[a];
+      this.vy[a] += (change.y * (1 - t)) / this.volume[a];
+      this.vz[a] += (change.z * (1 - t)) / this.volume[a];
+      this.vx[b] += (change.x * t) / this.volume[b];
+      this.vy[b] += (change.y * t) / this.volume[b];
+      this.vz[b] += (change.z * t) / this.volume[b];
+    });
+    for (let parcel = 0; parcel < this.capacity; parcel += 1) {
+      if (this.state[parcel] !== 1 || this.linked[parcel] === query) continue;
+      c.position.set(this.x[parcel], this.y[parcel], this.z[parcel]);
+      if (c.position.distanceTo(center) > reach) continue;
+      c.id = this.id[parcel];
+      c.previousPosition.set(this.px[parcel], this.py[parcel], this.pz[parcel]);
+      c.velocity.set(this.vx[parcel], this.vy[parcel], this.vz[parcel]);
+      c.volume = this.volume[parcel];
+      c.radius = Math.cbrt((3 * c.volume) / (4 * Math.PI));
+      visit(c);
+      this.vx[parcel] = c.velocity.x;
+      this.vy[parcel] = c.velocity.y;
+      this.vz[parcel] = c.velocity.z;
+    }
+  }
+
   forEachActive(visit: (x: number, y: number, z: number, volume: number) => void): void {
     for (let parcel = 0; parcel < this.capacity; parcel += 1) {
       if (this.state[parcel] === 1) visit(this.x[parcel], this.y[parcel], this.z[parcel], this.volume[parcel]);
@@ -326,6 +397,9 @@ export class PlungingLip implements LipParcelSource {
       view.x = this.x[parcel];
       view.y = this.y[parcel];
       view.z = this.z[parcel];
+      view.vx = this.vx[parcel];
+      view.vy = this.vy[parcel];
+      view.vz = this.vz[parcel];
       view.column = this.column[parcel];
       view.index = this.index[parcel];
       view.launchTime = this.launchTime[parcel];

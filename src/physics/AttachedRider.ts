@@ -1,7 +1,7 @@
 import { Quaternion, Vector3 } from 'three';
 import type { BoardBody } from './BoardBody';
 import { REFERENCE_RIDER } from './boardReference';
-import { LIP_CONTACT, type LipContactParcel } from './DetachedSurfer';
+import { LIP_CONTACT, LIP_QUERY_MARGIN, type LipContactParcel, type LipParcelSource } from './DetachedSurfer';
 import type { BoardShape } from './boardShape';
 import { WATER } from './hullForces';
 import { SEAWATER_DENSITY as SEAWATER } from './PhysicalSurfWater';
@@ -395,6 +395,7 @@ export class AttachedRider {
   /** The parts' centres (world) as the latest step began, for swept lip contact, and the parcels that have struck. */
   private readonly previousParts = new Float64Array(RIDER_PARTS.length * 3);
   private readonly struckBy = new Set<number>();
+  private readonly lipCenter = new Vector3();
   private readonly sweepStart = new Vector3();
   private readonly sweepEnd = new Vector3();
   /** Standing, how far a push has swayed the centre of mass off its posture along the deck (board frame x and z), and how fast. */
@@ -673,6 +674,16 @@ export class AttachedRider {
    * the parcel takes the equal and opposite impulse. The body's contact with the
    * board must then take the kick, and may not. Returns 1 for a strike.
    */
+  /** Let the lip strike each body part it reaches (`resolveLipContact`): the sheet is offered at its closest point to each. */
+  strikeBy(lip: LipParcelSource, board: BoardBody): void {
+    if (!this.attached) return;
+    for (let i = 0; i < RIDER_PARTS.length; i += 1) {
+      const center = this.partPosition(i, this.lipCenter);
+      const reach = Math.cbrt((3 * this.partVolumes[i]) / (4 * Math.PI)) + LIP_QUERY_MARGIN;
+      lip.forEachContactNear(center, reach, (parcel) => this.resolveLipContact(parcel, board));
+    }
+  }
+
   resolveLipContact(parcel: LipContactParcel, board: BoardBody): number {
     if (!this.attached || this.struckBy.has(parcel.id) || !(parcel.volume > 0 && parcel.radius > 0)) return 0;
     const parcelMass = LIP_CONTACT.density * parcel.volume;

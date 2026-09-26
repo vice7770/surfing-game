@@ -1,7 +1,7 @@
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { AttachedRider } from './AttachedRider';
-import { LIP_CONTACT } from './DetachedSurfer';
+import { LIP_CONTACT, type LipContactParcel, type LipParcelSource } from './DetachedSurfer';
 import { BoardBody } from './BoardBody';
 import { REFERENCE_RIDER } from './boardReference';
 import { WATER } from './hullForces';
@@ -403,6 +403,28 @@ describe('steering while lying down', () => {
 });
 
 describe('lip strikes', () => {
+  /** A falling lip sheet, `height` m above still water, moving shoreward at 5 m/s and down at 3 m/s: offered at its closest point to each body part. */
+  const sheetAt = (height: number): LipParcelSource => ({
+    forEachContactNear(center: Vector3, reach: number, visit: (parcel: LipContactParcel) => void) {
+      if (Math.abs(center.y - height) > reach) return;
+      const velocity = new Vector3(0, -3, 5);
+      const position = new Vector3(center.x, height, center.z);
+      visit({ id: 11, previousPosition: position.clone().addScaledVector(velocity, -STEP), position, velocity, volume: 0.05, radius: 0.075 });
+    },
+  });
+
+  // At rest on flat water the board sinks under a standing rider: its head tops out near 0.97 m above still water, a prone body near 0.43 m.
+  it('is covered, not touched, by a lip falling 1 m over it lying down, and struck by it standing', () => {
+    const prone = mounted('prone');
+    run(prone.board, new PlaneWater(), 1);
+    prone.rider.strikeBy(sheetAt(1), prone.board);
+    expect(prone.rider.lastLipImpulse.length()).toBe(0);
+    const standing = mounted('standing');
+    run(standing.board, new PlaneWater(), 1);
+    standing.rider.strikeBy(sheetAt(1), standing.board);
+    expect(standing.rider.lastLipImpulse.length()).toBeGreaterThan(0);
+  });
+
   const towed = () => {
     const { board, rider } = mounted('standing');
     const water = new PlaneWater();
