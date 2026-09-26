@@ -20,6 +20,7 @@ import { createMainMenu } from './MainMenu';
 import { MenuInput } from './MenuInput';
 import { createPauseMenu } from './PauseMenu';
 import { createRideEndCard, endCardModel } from './RideEndCard';
+import { bestTwo, scoreRide } from '../game/waveScore';
 import { RideHud, type HintKeys } from './RideHud';
 import { ScreenStack, type ScreenId } from './ScreenStack';
 import { EN, t, type StringKey } from './strings';
@@ -84,6 +85,8 @@ export class App {
   private readonly tracker = new RideTracker();
   private readonly logbook = new Logbook(localStore());
   private endCard?: HTMLElement;
+  /** This session's wave scores (P9), for the best two; a new spot or conditions start a new session. */
+  private sessionScores: number[] = [];
   /** The dev tools' telemetry over a Surf ride: the physical readout and the frame rate, at 4 Hz. */
   private readonly telemetryList = el('dl');
   private readonly telemetry = el('aside', { class: 'ride-telemetry physics-readout' }, this.telemetryList);
@@ -257,12 +260,14 @@ export class App {
 
   private quitToMenu(): void {
     this.hideEndCard();
+    this.sessionScores = [];
     this.stack.reset('menu');
     this.show();
   }
 
   private changeSpot(): void {
     this.hideEndCard();
+    this.sessionScores = [];
     this.stack.reset('menu');
     this.stack.push('surf');
     this.show();
@@ -279,10 +284,15 @@ export class App {
 
   private finishRide(result: RideResult): void {
     const { spot, conditions } = this.surfChoice;
-    const records = this.logbook.add({ ...result, spot, conditions, seed: this.seed, at: Date.now() });
+    // Scored only when the player asks, and only rides the worker read (P9).
+    const score = this.settings.value.gameplay.scoreRides && result.report ? scoreRide(result.report).score : undefined;
+    if (score !== undefined) this.sessionScores.push(score);
+    const { report: _, timeScale: __, ...summary } = result;
+    const records = this.logbook.add({ ...summary, spot, conditions, seed: this.seed, at: Date.now(), ...(score !== undefined ? { score } : {}) });
     if (!this.settings.value.seen.rideHints) this.settings.markSeen('rideHints');
     this.hideEndCard();
-    this.endCard = createRideEndCard(endCardModel(result, records, this.settings.value.gameplay.units), {
+    const scoring = score !== undefined ? { score, bestTwo: bestTwo(this.sessionScores) } : undefined;
+    this.endCard = createRideEndCard(endCardModel(result, records, this.settings.value.gameplay.units, scoring), {
       replay: () => {
         this.game.quickRetry();
         this.noteRetry();

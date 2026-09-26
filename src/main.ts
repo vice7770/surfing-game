@@ -491,7 +491,10 @@ class SurfGame {
     const ride = host?.snapshot.status.ride;
     if (!host || !ride) return undefined;
     const { board, status } = host.snapshot;
-    return { phase: ride.phase, speed: ride.speed, resets: ride.resets, separation: ride.separation, seaTime: status.seaTime, x: board[0], z: board[2] };
+    return {
+      phase: ride.phase, speed: ride.speed, resets: ride.resets, separation: ride.separation, seaTime: status.seaTime, x: board[0], z: board[2],
+      report: ride.report, timeScale: this.activeSettings.timeScale,
+    };
   }
 
   /** The camera view now in use, for the pause menu. */

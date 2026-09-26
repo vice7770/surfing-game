@@ -1,9 +1,21 @@
+import type { Maneuver } from '../game/rideAnalysis';
 import type { SurfZoneStatus } from '../wave/SurfZoneRunner';
 import { el, icon } from './dom';
 import { ICONS } from './icons';
+import { MANEUVER_LABELS } from './RideEndCard';
 import { ridePrompt, type PromptKeys } from './ridePrompt';
 import { t } from './strings';
 import { speedParts, type Units } from './units';
+
+/**
+ * The callout for the ride's latest manoeuvre (P9): its name, the first time it is
+ * seen (`key` names the one shown last); nothing between rides, which forgets it.
+ */
+export function maneuverCallout(live: Maneuver | undefined, shown: string): { key: string; text?: string } {
+  if (!live) return { key: '' };
+  const key = `${live.kind}@${live.start.toFixed(2)}`;
+  return key === shown ? { key } : { key, text: t(MANEUVER_LABELS[live.kind]).toUpperCase() };
+}
 
 /** The balance meter turns to the accent colour below this reserve. */
 const LOW_BALANCE = 0.3;
@@ -27,11 +39,15 @@ export class RideHud {
   private readonly balanceFill = el('div', { class: 'hud-balance-fill' });
   private readonly hints = el('div', { class: 'hud-hints' });
   private hintKeys = '';
+  /** A brief callout of each manoeuvre (P9), and the one shown last. */
+  private readonly callout = el('p', { class: 'hud-callout', attrs: { 'aria-live': 'polite' } });
+  private calloutKey = '';
 
   constructor(onPause: () => void) {
     this.balance.append(this.balanceFill);
     this.root = el('section', { class: 'ride-hud', attrs: { 'aria-label': t('hud.speed') } },
       this.prompt,
+      this.callout,
       el('div', { class: 'hud-readout' },
         this.balance,
         el('div', { class: 'hud-speed' }, this.speedValue, this.speedUnit)),
@@ -43,6 +59,15 @@ export class RideHud {
     const prompt = ridePrompt(ride, keys);
     if (this.prompt.textContent !== prompt) this.prompt.textContent = prompt;
     this.prompt.hidden = prompt === '';
+    const callout = maneuverCallout(ride?.live, this.calloutKey);
+    this.calloutKey = callout.key;
+    if (callout.text) {
+      // Restart the fade for each new manoeuvre.
+      this.callout.textContent = callout.text;
+      this.callout.classList.remove('is-shown');
+      void this.callout.offsetWidth;
+      this.callout.classList.add('is-shown');
+    }
     const { value, unit } = speedParts(ride?.speed ?? 0, units);
     this.speedValue.textContent = value;
     this.speedUnit.textContent = unit;

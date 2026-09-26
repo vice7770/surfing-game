@@ -86,6 +86,15 @@ export const EN = {
   'end.topSpeed': 'Top speed',
   'end.time': 'Ride time',
   'end.newBest': 'New best',
+  'end.pocket': 'In the pocket',
+  'end.turns': 'Turns (speed kept)',
+  'end.score': 'Score',
+  'end.bestTwo': 'Best two',
+  'end.slowMotion': 'Slow motion ×{scale}',
+  'maneuver.bottomTurn': 'Bottom turn',
+  'maneuver.topTurn': 'Top turn',
+  'maneuver.snap': 'Snap',
+  'maneuver.cutback': 'Cutback',
   'end.replay': 'Replay ({key})',
   'end.newWave': 'New wave',
   'end.changeSpot': 'Change spot',
@@ -155,6 +164,7 @@ export const EN = {
   'settings.keyboard': 'Keyboard',
   'settings.gamepad': 'Gamepad',
   'settings.handedness': 'Touch layout',
+  'settings.scoreRides': 'Score rides',
   'settings.hand.right': 'Right-handed',
   'settings.hand.left': 'Left-handed',
   'settings.reducedMotion': 'Reduced motion',
@@ -179,6 +189,9 @@ export const EN = {
   'ride.reason.impact': 'Hit by the lip',
   'ride.reason.retry': 'Paddled back out',
   'ride.reason.outOfWave': 'Rode it out',
+  'ride.reason.lostFace': 'The wave moved on',
+  'ride.reason.inside': 'Reached the inside',
+  'ride.reason.kickedOut': 'Kicked out',
 } as const;
 
 export type StringKey = keyof typeof EN;

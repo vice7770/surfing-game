@@ -75,6 +75,7 @@ export function settingsModel(tab: SettingsTab, settings: GameSettings, context:
       { kind: 'choice', id: 'units', label: t('settings.units'), value: g.units, options: options('settings.units', ['metric', 'imperial']) },
       { kind: 'choice', id: 'defaultCamera', label: t('settings.defaultCamera'), value: g.defaultCamera, options: options('view', ['front', 'behind', 'side', 'overview']) },
       { kind: 'choice', id: 'touchControls', label: t('settings.touchControls'), value: g.touchControls, options: options('settings.touch', ['auto', 'on', 'off']) },
+      { kind: 'toggle', id: 'scoreRides', label: t('settings.scoreRides'), value: g.scoreRides },
       ...(context.devTools ? [{ kind: 'toggle' as const, id: 'showTelemetry', label: t('settings.showTelemetry'), value: g.showTelemetry }] : []),
     ];
   }
@@ -88,7 +89,7 @@ export function settingsModel(tab: SettingsTab, settings: GameSettings, context:
   ];
 }
 
-const GAMEPLAY = new Set(['units', 'defaultCamera', 'touchControls', 'showTelemetry']);
+const GAMEPLAY = new Set(['units', 'defaultCamera', 'touchControls', 'scoreRides', 'showTelemetry']);
 const ACCESSIBILITY = new Set(['reducedMotion', 'uiScale', 'highContrastHud']);
 
 /** The store update a row's new value makes, or undefined when refused (a reserved key) or not a setting (Re-detect). */

@@ -8,8 +8,15 @@ const context = { devTools: false, detecting: false };
 describe('settingsModel', () => {
   it('offers telemetry only with the dev tools on', () => {
     const ids = (devTools: boolean) => settingsModel('gameplay', defaultSettings(), { ...context, devTools }).map((row) => row.id);
-    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls']);
+    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'scoreRides']);
     expect(ids(true)).toContain('showTelemetry');
+  });
+
+  // P9: a WSL-style score, only if the player wants it.
+  it('offers scoring rides, off by default', () => {
+    const row = settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'scoreRides');
+    expect(row).toMatchObject({ kind: 'toggle', value: false });
+    expect(applyRow(defaultSettings(), 'scoreRides', true)).toEqual({ tab: 'gameplay', patch: { scoreRides: true } });
   });
 
   it('marks the water simulation and sea detail as taking effect on the next wave', () => {
