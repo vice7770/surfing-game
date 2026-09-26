@@ -72,4 +72,12 @@ describe('graphics', () => {
     expect(needsDetection(auto, seen, 'Intel UHD 620')).toBe(true);
     expect(needsDetection(withPreset(auto, 'low'), undefined, 'x')).toBe(false);
   });
+
+  // G8: the water look by preset.
+  it('puts Low on the Classic water and the others on Rich', () => {
+    expect(PRESETS.low.waterLook).toBe('classic');
+    for (const preset of ['medium', 'high', 'ultra'] as const) expect(PRESETS[preset].waterLook).toBe('rich');
+    expect(resolveGraphics({ preset: 'low', ...PRESETS.low }, undefined, 2).waterLook).toBe('classic');
+    expect(resolveGraphics({ preset: 'high', ...PRESETS.high }, undefined, 2).waterLook).toBe('rich');
+  });
 });

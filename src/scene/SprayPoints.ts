@@ -1,5 +1,7 @@
-import { BufferAttribute, BufferGeometry, NormalBlending, PerspectiveCamera, Points, ShaderMaterial, Vector2 } from 'three';
+import { BufferAttribute, BufferGeometry, Color, NormalBlending, PerspectiveCamera, Points, ShaderMaterial, Vector2, Vector3, Vector4 } from 'three';
 import { SPRAY_STRIDE } from '../wave/SprayCloud';
+import { richSprayFragment, richSprayVertex } from './water/richSpray';
+import type { WaterLook } from './water/waterLook';
 
 /** What the renderer needs from a spray cloud: packed x, y, z, size and opacity per particle, and how many are live. */
 export interface RenderableSpray {
@@ -38,6 +40,7 @@ export class SprayPoints {
   private readonly positions: BufferAttribute;
   private readonly looks: BufferAttribute;
   private readonly buffer = new Vector2();
+  private currentLook: WaterLook = 'classic';
 
   constructor(readonly capacity = 4096) {
     const geometry = new BufferGeometry();
@@ -47,7 +50,16 @@ export class SprayPoints {
     geometry.setAttribute('look', this.looks);
     geometry.setDrawRange(0, 0);
     const material = new ShaderMaterial({
-      uniforms: { pixelsPerMetre: { value: 500 }, sprayColor: { value: [0.94, 0.97, 1] } },
+      uniforms: {
+        pixelsPerMetre: { value: 500 },
+        sprayColor: { value: [0.94, 0.97, 1] },
+        // Rich only: the sun for the mist, and the water's height (shared with the water by `useWater`).
+        spraySunDirection: { value: new Vector3(0, 1, 0) },
+        spraySunRadiance: { value: new Color(1, 1, 1) },
+        waterSurface: { value: null },
+        waterGrid: { value: new Vector4() },
+        waterGridSize: { value: new Vector2() },
+      },
       vertexShader,
       fragmentShader,
       transparent: true,
@@ -62,6 +74,35 @@ export class SprayPoints {
       const fov = camera instanceof PerspectiveCamera ? camera.fov : 50;
       material.uniforms.pixelsPerMetre.value = height / (2 * Math.tan((fov * Math.PI) / 360));
     };
+  }
+
+  /** Graphics setting (G8): the Classic spray, or the Rich look. */
+  setLook(look: WaterLook): void {
+    if (look === this.currentLook) return;
+    this.currentLook = look;
+    const { material } = this.mesh;
+    material.vertexShader = look === 'rich' ? richSprayVertex : vertexShader;
+    material.fragmentShader = look === 'rich' ? richSprayFragment : fragmentShader;
+    material.needsUpdate = true;
+  }
+
+  /** The Rich spray fades into the water: read its height from the water's own uniforms. */
+  useWater(uniforms: { waterSurface: { value: unknown }; waterGrid: { value: unknown }; waterGridSize: { value: unknown } }): void {
+    const target = this.mesh.material.uniforms;
+    target.waterSurface = uniforms.waterSurface;
+    target.waterGrid = uniforms.waterGrid;
+    target.waterGridSize = uniforms.waterGridSize;
+  }
+
+  /** The Rich mist glows toward the sun. */
+  setSun(direction: Vector3, radiance: Color): void {
+    const { uniforms } = this.mesh.material;
+    (uniforms.spraySunDirection.value as Vector3).copy(direction).normalize();
+    (uniforms.spraySunRadiance.value as Color).copy(radiance);
+  }
+
+  get look(): WaterLook {
+    return this.currentLook;
   }
 
   update(spray: RenderableSpray): void {

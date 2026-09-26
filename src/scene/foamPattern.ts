@@ -28,7 +28,7 @@ export const FOAM_FLOW_PERIOD = 2;
 const EDGE = 0.04;
 const LEVELS = 16;
 
-function pcg2d(ix: number, iz: number): [number, number] {
+export function pcg2d(ix: number, iz: number): [number, number] {
   let x = (Math.imul(ix >>> 0, 1664525) + 1013904223) >>> 0;
   let y = (Math.imul(iz >>> 0, 1664525) + 1013904223) >>> 0;
   x = (x + Math.imul(y, 1664525)) >>> 0;

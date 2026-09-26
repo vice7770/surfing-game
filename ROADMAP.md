@@ -230,6 +230,28 @@ Requirements agreed in a grilling session on 2026-09-26: [G7 spec](docs/superpow
   - a preset's mass and height fed into the physics (after P9's flexible rider);
   - the leash, drawn once P11 adds it to the physics.
 
+### P1 · Rich water (G8) — `Done (playtest open)`
+
+Requirements agreed on 2026-09-26: [G8 spec](docs/superpowers/specs/2026-09-26-g8-rich-water.md), built as [recorded](docs/superpowers/plans/2026-09-26-g8-rich-water.md). Rendering only; the physics is unchanged.
+- [x] **Water look: Classic / Rich** in Graphics › Advanced. Low is Classic, Medium to Ultra are Rich, and old Low saves stay Classic. Classic's shaders are pinned byte for byte by snapshots.
+- [x] **Wave face:**
+  - the physics' own Catmull-Rom surface, normals per pixel, with a dense 96 m patch at 0.25 m where the camera looks;
+  - fine ripples carried by the currents;
+  - a glossy finish whose specular anti-aliasing turns distant ripples into a sheen;
+  - foam streaks up steep faces along the current.
+- [x] **Whitewater:** fresh foam drawn as bright, clumpy churn with relief and creases, opening into the G4 lace as it ages. Thin fresh foam glows when backlit.
+- [x] **Mist and spray:** mist lit toward the sun (forward scattering) and softer. Every sprite fades into the water with no hard line.
+- [x] **Far ocean:** the same ripples and gloss, meeting the tank without a step.
+- [x] **Colour:** Rich mirrors half the sky over a stronger body colour, tuned on the water sheet (`?inpage&waterSheet`) against the reference stills.
+- [x] **Cost on the M1 Air:** Rich adds 0.2–0.9 ms per frame at 1280×720 (8.1–8.8 ms Classic, 8.5–9.7 ms Rich, medians of the render alone). Frame intervals per preset wait for a session with the browser pane shown.
+- [ ] **Playtest:** Rich against Classic in play, and the frame times per preset.
+- **Backlog:**
+  - the lip and tube look, once P7's tubes resume;
+  - screen-space reflections;
+  - refraction of the bed through the face;
+  - a middle water level if the M1 Air needs one;
+  - the tank/far-field seam: from high up, the tank's offshore ridge shows a thin outline and sand-coloured slivers, in both looks.
+
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 
 Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](docs/superpowers/specs/2026-09-26-gameplay-milestone.md), grounded in the [surf-science survey](docs/research/surf-gameplay-research.md).
