@@ -42,6 +42,32 @@ describe('the held rider (carve lab)', () => {
     expect(right.heading).toBeLessThan(-0.02);
   });
 
+  // The carve lab's load line: the board rights about the rider's load line, so under a held, banked body it
+  // settles on the bank (share 0.97–1.0 at 7 m/s). Nothing of the rider's own balance may reach the board meanwhile.
+  it('lets the board settle on the bank of a held, banked body', () => {
+    const board = new BoardBody();
+    board.place(new Vector3(0, board.shape.centerOfMass.y, 0));
+    const rider = new HeldRider(board.shape);
+    board.attach(rider);
+    const water = new PlaneWater();
+    rider.holding = false;
+    rider.steer = 0.6;
+    for (let i = 0; i < 42; i += 1) {
+      towAlongHeading(board, rider, 7);
+      board.step(STEP, water);
+    }
+    rider.holding = true;
+    rider.steer = 0;
+    for (let i = 0; i < 42; i += 1) {
+      towAlongHeading(board, rider, 7);
+      board.step(STEP, water);
+    }
+    const rail = -Math.asin(new Vector3(1, 0, 0).applyQuaternion(board.orientation).y);
+    expect(rider.attached).toBe(true);
+    expect(rider.bank.angle).toBeGreaterThan(0.2);
+    expect(Math.abs(rail / rider.bank.angle - 1)).toBeLessThan(0.15);
+  });
+
   it('rides as any rider when not holding, banking into the steer', () => {
     const board = new BoardBody();
     board.place(new Vector3(0, board.shape.centerOfMass.y, 0));

@@ -348,25 +348,38 @@ describe('weight-shift steering', () => {
   });
 
   // Carried at the stance point but pushing through its centre of mass, the rider made the coupled
-  // solve singular as the carve turned, and it blew up after 2.3 s ('lost board').
-  it('holds a full carve across the face for 2.5 s', () => {
-    const { board, rider } = ride(1, 'regular', 2.5);
+  // solve singular as the carve turned, and it blew up after 2.3 s ('lost board'). Banked (the turn
+  // redesign), a full carve takes the board across the face within about a second, then up it.
+  it('carves a full-steer turn across the face', () => {
+    const { board, rider } = ride(1, 'regular', 1.2);
     expect(rider.attached).toBe(true);
     expect(heading(board)).toBeGreaterThan((20 * Math.PI) / 180);
     expect(board.velocity.length()).toBeGreaterThan(4);
   });
 
-  // Was P4e's open item: after about 2.8 s at full steer a 3.3 BW load spike threw the rider ('balance'). It was
-  // the standing body's 13–16 Hz roll jitter at 16 substeps (P4e's Mode A, numerical); at 32 it is gone.
-  it('holds a full carve across the face for 4 s', () => {
-    const { rider } = ride(1, 'regular', 4);
-    expect(rider.attached).toBe(true);
-  });
-
-  it('holds a three-quarter carve for 4 s', () => {
-    const { board, rider } = ride(0.75, 'regular', 4);
+  it('carves a three-quarter turn across the face', () => {
+    const { board, rider } = ride(0.75, 'regular', 1.5);
     expect(rider.attached).toBe(true);
     expect(heading(board)).toBeGreaterThan((20 * Math.PI) / 180);
+  });
+
+  // Was P4e's open item: after about 2.8 s at full steer a 3.3 BW load spike threw the rider ('balance'). It was
+  // the standing body's 13–16 Hz roll jitter at 16 substeps (P4e's Mode A, numerical); at 32 it is gone. Banked, a
+  // carve held one way for 4 s climbs the face until it stalls (a real stall), so linked turns hold it for 6 s.
+  it('links half-steer turns across the face for 6 s', () => {
+    const { board, rider } = ride(0.5, 'regular', 0);
+    const water = new PlaneWater({ slopeZ: -Math.tan((15 * Math.PI) / 180) });
+    let lowest = Infinity;
+    let highest = -Infinity;
+    for (let i = 0; i < 6 * 60; i += 1) {
+      rider.steer = Math.floor(i / 60) % 2 === 0 ? 0.5 : -0.5;
+      board.step(STEP, water);
+      lowest = Math.min(lowest, heading(board));
+      highest = Math.max(highest, heading(board));
+    }
+    expect(rider.attached).toBe(true);
+    expect(highest - lowest).toBeGreaterThan((30 * Math.PI) / 180);
+    expect(board.velocity.length()).toBeGreaterThan(4);
   });
 
   it('means the same direction in either stance', () => {
@@ -571,14 +584,16 @@ describe('lean, trim, crouch and heading hold', () => {
     expect(worst).toBeLessThan(10);
   });
 
+  // Banked, the body carries the board on round for a moment after the steer is let go; the rider takes up
+  // the line it comes out on once the turn has died down.
   it('holds the new line after a turn', () => {
     const { board, rider, water } = acrossFace(30, 7);
     run(board, water, 0.5);
-    rider.steer = -1;
+    rider.steer = -0.5;
     run(board, water, 0.5);
     rider.steer = 0;
-    run(board, water, 0.5);
-    // The rider's line is the heading it had when steering was released.
+    for (let i = 0; i < 120 && rider.standingLine === undefined; i += 1) board.step(STEP, water);
+    expect(rider.standingLine).toBeDefined();
     const line = rider.standingLine!;
     let worst = 0;
     run(board, water, 5, () => {
@@ -650,14 +665,15 @@ describe('lean, trim, crouch and heading hold', () => {
     /** The board's roll about its length, degrees: positive with its +x (left) rail down. */
     const railOf = (board: BoardBody) => -degrees(Math.asin(Math.max(-1, Math.min(1, new Vector3(1, 0, 0).applyQuaternion(board.orientation).y))));
 
-    it('holds a three-quarter carve on its rail for 4 s', () => {
+    // Held for 4 s the carve climbs the plane face until it stalls; 1.5 s is the carve itself.
+    it('holds a three-quarter carve on its rail', () => {
       const { board, rider, water } = acrossFace(0, 7);
       run(board, water, 0.3);
       rider.steer = 0.75;
       const rails: number[] = [];
-      run(board, water, 4, () => rails.push(railOf(board)));
+      run(board, water, 1.5, () => rails.push(railOf(board)));
       expect(rider.attached).toBe(true);
-      const settled = rails.slice(-60).reduce((a, b) => a + b, 0) / 60;
+      const settled = rails.slice(-30).reduce((a, b) => a + b, 0) / 30;
       expect(Math.abs(settled)).toBeGreaterThan(25);
       expect(Math.abs(settled)).toBeLessThan(50);
     });
@@ -778,7 +794,8 @@ describe('the balance margin', () => {
   });
 
   // A shove sideways: the feet push the centre of pressure out near the rail to catch the body, and the
-  // margin shows how close that came: 0.45 at 0.5 m/s, 0.26 at 0.6, 0.15 at 0.65; 0.7 m/s throws the rider.
+  // margin shows how close that came. Banked (the turn redesign), the body rides the shove out on its ankles
+  // and its swing: 0.54 at 0.6 m/s, 0.32 at 1.0, 0.27 at 1.2, 0.18 at 1.6, all caught.
   it('falls below 0.3 while the centre of pressure is pushed near the edge across the feet, and recovers', () => {
     const { board, rider } = mounted('standing');
     const water = new PlaneWater();
@@ -788,7 +805,7 @@ describe('the balance margin', () => {
     };
     tow();
     run(board, water, 1.5, tow);
-    rider.velocity.x += 0.6;
+    rider.velocity.x += 1.2;
     let least = 1;
     let off = 0;
     run(board, water, 1.5, () => {

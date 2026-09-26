@@ -132,31 +132,55 @@ const TRIM_FREEDOM = 0.2;
  * board's +x side (its left, the same for either stance), is an eighth unknown
  * in the board's solve. The ankle couples it to the board's roll φ with
  * ANKLE_STIFFNESS, N·m/rad, and ANKLE_DAMPING, N·m·s/rad (`rollModel`'s pick):
- * τ = k (θ − φ − δ) + c (θ̇ − φ̇). The balance sets the ankle's rest δ from the
- * bank asked for, the body's bank and its rate, BANK_GAIN (θ_ref − θ) −
- * BANK_RATE_GAIN θ̇, through a motor lag of BALANCE_LAG, s (without it the
- * feedback rang from one substep to the next through the light board). In a
- * steady carve the ankle rests, so the body and the rail bank as far as asked:
- * the reference gain is the bank gain (`rollModel`'s `referenceGain` for a
- * balance on the bank alone). The balance reads nothing of the board's roll or
- * the turn's pull: fed back, both drove the board's 3–5 Hz roll-yaw wobble (P4e's
- * Mode B), which the model leaves out, so the gains were tuned in the solve (the
- * turn redesign plan's findings). Steering asks for up to RAIL_RANGE of bank,
- * eased in over REFERENCE_TIME, s, at up to REFERENCE_RATE, rad/s; the heading
- * hold and the hand ask for up to HOLD_BANK, rad. Past MAX_BANK the body is off
- * its posture.
+ * τ = k (θ − φ − δ) + c (θ̇ − φ̇).
+ *
+ * The balance sets the ankle's rest δ from the bank asked for, the body's bank
+ * and its rate, BANK_GAIN (θ_ref − θ) − BANK_RATE_GAIN θ̇, through a motor lag of
+ * BALANCE_LAG, s (without it the feedback rang from one substep to the next
+ * through the light board). In a steady carve the ankle rests, so the body and
+ * the rail bank as far as asked: the reference gain is the bank gain. The
+ * balance reads nothing of the board's roll or the turn's pull: fed back, both
+ * drove the board's 3–5 Hz roll-yaw wobble (P4e's Mode B).
+ *
+ * The planing board is stiff in roll about the rider's load line (850–1,700
+ * N·m/rad, the carve lab's plant), so the rail follows the body's bank and the
+ * rest only trims it; past ANKLE_REST_RANGE, rad, the feet's pressure reaches
+ * their edges and more only rolls the board away onto its rail (`rollModel`'s
+ * `bankAuthority`). Steering asks for up to RAIL_RANGE of bank (50°, chosen
+ * with the user over 40–45°: a stronger turn, and a stall if it is held
+ * uphill), eased in over REFERENCE_TIME, s, at up to REFERENCE_RATE, rad/s; the
+ * heading hold and the hand ask for up to HOLD_BANK, rad. Past MAX_BANK the body
+ * is off its posture.
  */
 const ANKLE_STIFFNESS = 800;
 const ANKLE_DAMPING = 80;
 const BANK_GAIN = 7.4;
 const BANK_RATE_GAIN = 3.6;
 const BALANCE_LAG = 0.01;
-const RAIL_RANGE = (55 * Math.PI) / 180;
-const REFERENCE_TIME = 0.1;
+const ANKLE_REST_RANGE = 0.25;
+const RAIL_RANGE = (50 * Math.PI) / 180;
+const REFERENCE_TIME = 0.05;
 const REFERENCE_RATE = 5;
 const HOLD_BANK = 0.1;
 const MAX_BANK = (70 * Math.PI) / 180;
-export const BANK_TUNING = { range: Infinity, outRate: REFERENCE_RATE, speedRef: 0, gainFloor: 0.1, railRange: RAIL_RANGE, settle: Infinity };
+/**
+ * The upper body's swing (the turn redesign, with the user): the torso and arms
+ * swing about the forward axis as a rotor of SWING_INERTIA, kg·m², within
+ * ±SWING_RANGE, rad, driven from the hips at up to SWING_TORQUE, N·m
+ * (provisional). What the balance asks of the feet beyond their range goes to
+ * the swing, sized by SWING_SERIES, N·m/rad (the ankle and the planing hull in
+ * series at 7 m/s: 800 and 860). Its reaction turns the body on its feet; the
+ * board feels only the push at the feet. It swings back at SWING_FREQUENCY,
+ * rad/s, only once the feet can carry the body again (the rest asked for within
+ * SWING_RELEASE, rad, of their range): given back while the body still needed
+ * it, the momentum threw the rider into the turn.
+ */
+const SWING_INERTIA = 10;
+const SWING_TORQUE = 200;
+const SWING_RANGE = 1.2;
+const SWING_SERIES = 430;
+const SWING_FREQUENCY = 1.5;
+const SWING_RELEASE = 0.05;
 /** Below this load, in body weights, the centre of pressure says nothing and the rider does not rebalance. */
 const BALANCE_LOAD = 0.1;
 /** The fastest the body shifts, m/s, and accelerates, m/s² (so balance never jerks the contact), and how long the centre of pressure it reacts to is smoothed, s. */
@@ -224,6 +248,8 @@ const STANDING_HOLD_ANGLE = (5 * Math.PI) / 180;
 const STANDING_HOLD_RATE_TIME = 0.5;
 /** The hold reads the yaw rate smoothed over this, s: it keeps a line, and read raw it fed the board's roll-yaw wobble through the bank. */
 const STANDING_HOLD_RATE_SMOOTHING = 0.25;
+/** Out of a turn, the hold takes up its line once the yaw rate has fallen below this, rad/s. */
+const STANDING_HOLD_SETTLE = 0.15;
 const STANDING_HOLD_SHARE = 0.5;
 /** Trim: the upper body shifts fore or aft by up to this much, m, moving the load along the board (provisional). */
 const TRIM_SHIFT = 0.25;
@@ -563,6 +589,8 @@ export class AttachedRider {
    * the leg toward more bank, and the board's roll axis along the heading.
    */
   readonly bank = { angle: 0, rate: 0 };
+  /** Standing, the upper body's swing about the forward axis against the body, rad and rad/s (the turn redesign). */
+  readonly swing = { angle: 0, rate: 0 };
   private readonly bodyFrame = new Quaternion();
   private readonly bankTurn = new Quaternion();
   private readonly across = new Vector3();
@@ -579,6 +607,7 @@ export class AttachedRider {
   private bankReference = 0;
   private ankleRest = 0;
   private ankleTorque = 0;
+  protected swingTorque = 0;
 
   constructor(shape: BoardShape, options: AttachedRiderOptions = {}) {
     this.shape = shape;
@@ -733,6 +762,9 @@ export class AttachedRider {
     this.bankReference = 0;
     this.ankleRest = 0;
     this.ankleTorque = 0;
+    this.swingTorque = 0;
+    this.swing.angle = 0;
+    this.swing.rate = 0;
     this.frame(board, false);
     this.position.copy(this.target);
     this.velocity.copy(this.drive.set(0, 0, 0)).add(board.velocityAt(this.target, this.scratch2));
@@ -1082,18 +1114,31 @@ export class AttachedRider {
     this.rollAxis.set(0, 0, -1).applyQuaternion(this.heading);
     const rollRate = this.rollAxis.dot(this.boardSpin);
     // The bank asked for, eased in.
-    const asked = Math.max(-MAX_BANK, Math.min(MAX_BANK, this.steer * BANK_TUNING.railRange + (this.standingHold + HAND_BEND * this.handSide) * HOLD_BANK));
+    const asked = Math.max(-MAX_BANK, Math.min(MAX_BANK, this.steer * RAIL_RANGE + (this.standingHold + HAND_BEND * this.handSide) * HOLD_BANK));
     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
-    const rate = Math.abs(asked) < Math.abs(this.bankReference) ? BANK_TUNING.outRate : REFERENCE_RATE;
-    this.bankReference += Math.max(-rate * h, Math.min(rate * h, toward));
-    const forward = this.scratch2.set(0, 0, 1).applyQuaternion(this.heading);
-    const speed = Math.max(0, this.boardVelocity.dot(forward));
-    const schedule = BANK_TUNING.speedRef > 0 ? Math.max(BANK_TUNING.gainFloor, Math.min(1, (speed / BANK_TUNING.speedRef) ** 2)) : 1;
-    let command = BANK_GAIN * schedule * (this.bankReference - this.bank.angle) - BANK_RATE_GAIN * this.bank.rate - surfaceRoll;
-    command = Math.max(-BANK_TUNING.range, Math.min(BANK_TUNING.range, command));
-    this.ankleRest += (command - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
+    this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
+    // The rest the balance wants, within what the feet can give; the upper body swings for the rest of it.
+    const wanted = BANK_GAIN * (this.bankReference - this.bank.angle) - BANK_RATE_GAIN * this.bank.rate;
+    const lean = Math.max(-ANKLE_REST_RANGE, Math.min(ANKLE_REST_RANGE, wanted));
+    this.swingStep(h, wanted - lean);
+    this.ankleRest += (lean - surfaceRoll - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
     // Backward Euler on the ankle: over the substep the bank and the roll move at their rates after the solve.
     this.ankleTorque = ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (ANKLE_STIFFNESS * h + ANKLE_DAMPING) * (this.bank.rate - rollRate);
+  }
+
+  /**
+   * The upper body's swing: `unmet` is the rest the balance wanted beyond the
+   * feet's range, rad. The hips turn the upper body against it; the swing comes
+   * back only once the feet can carry the body alone.
+   */
+  private swingStep(h: number, unmet: number): void {
+    let burst = Math.max(-SWING_TORQUE, Math.min(SWING_TORQUE, -SWING_SERIES * unmet));
+    // The upper body turns the other way to the body; not past its range.
+    if ((this.swing.angle >= SWING_RANGE && burst < 0) || (this.swing.angle <= -SWING_RANGE && burst > 0)) burst = 0;
+    const back = Math.max(0, 1 - Math.abs(unmet) / SWING_RELEASE);
+    this.swingTorque = burst + SWING_INERTIA * SWING_FREQUENCY * (back * SWING_FREQUENCY * this.swing.angle + 2 * this.swing.rate);
+    this.swing.rate -= (h * this.swingTorque) / SWING_INERTIA;
+    this.swing.angle += h * this.swing.rate;
   }
 
   /** Standing: the leg's state and load before the board's solve. */
@@ -1411,7 +1456,11 @@ export class AttachedRider {
     // Backward Euler on the leg: its force now, less what the current rate adds to the stretch over the substep.
     rhs[6] += n.dot(f) + h * (this.leg.force - h * this.legStiffness * this.leg.rate);
     // The ankle pushes the body back across the leg by its torque over the leg's length.
-    rhs[7] += t.dot(f) - (h * this.ankleTorque) / length;
+    rhs[7] += t.dot(f) - (h * (this.ankleTorque + this.swingTorque)) / length;
+    // The upper body's swing turns the body on its feet; the board feels only the push at the feet, not its couple.
+    rhs[3] -= h * this.swingTorque * this.rollAxis.x;
+    rhs[4] -= h * this.swingTorque * this.rollAxis.y;
+    rhs[5] -= h * this.swingTorque * this.rollAxis.z;
   }
 
   /** Standing, after the 8 x 8 solve: the contact impulse the motion needs, and whether feet on a deck can give it (as `settle`). */
@@ -1473,6 +1522,10 @@ export class AttachedRider {
     const mean = before.add(this.velocity).multiplyScalar(0.5);
     this.work.gravity += h * this.gravity.dot(mean);
     this.work.water += h * this.waterForce.dot(mean);
+    if (this.upright && this.feasible && this.swingTorque !== 0) {
+      // The swing's couple, which the board did not take with the push along the line of force.
+      board.work.rider -= (h * this.swingTorque * this.rollAxis.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;
+    }
     if (this.upright && this.feasible && this.handYaw !== 0) {
       // The hand's moment turned the board through the feet.
       this.work.water += (h * this.handYaw * (this.boardSpin.y + board.angularVelocity.y)) / 2;
@@ -1555,6 +1608,9 @@ export class AttachedRider {
     } else {
       this.bank.angle = 0;
       this.bank.rate = 0;
+      this.swing.angle = 0;
+      this.swing.rate = 0;
+      this.swingTorque = 0;
       this.up.set(0, 1, 0).applyQuaternion(board.orientation);
       board.toWorld(this.localCenter, this.target);
     }
@@ -1792,8 +1848,8 @@ export class AttachedRider {
     const forward = this.scratch.set(0, 0, 1).applyQuaternion(board.orientation);
     const heading = Math.atan2(forward.x, forward.z);
     if (this.standingLine === undefined) {
-      // Out of a turn, the line is the heading once the turn has died down (ZZ probe: settle).
-      if (Math.abs(board.angularVelocity.y) > BANK_TUNING.settle) {
+      // Out of a turn the banked body carries the board on round a moment: the line is the heading it comes out on.
+      if (Math.abs(board.angularVelocity.y) > STANDING_HOLD_SETTLE) {
         this.standingHold = 0;
         return;
       }

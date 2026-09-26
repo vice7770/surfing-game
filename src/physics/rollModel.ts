@@ -151,6 +151,13 @@ export function referenceGain(p: RollParams, gains: Omit<RollGains, 'reference'>
  * 8.4/s, damping 0.95, 40° in 0.54 s at 95 N·m. The reference gain comes from
  * the steady state (`referenceGain`), since the steady rail is sensitive to the
  * other gains.
+ *
+ * It did not carry into the solve (Task 3's findings): its roll and pull
+ * feedbacks fed the board's 3–5 Hz roll–yaw mode, which this model leaves out,
+ * and the carve lab's plant then showed a planing hull far stiffer than the
+ * prone kick's (850–1,700 N·m/rad about the rider's load line) with a turn
+ * that follows the rail within 0.03 s. The rider keeps the ankle's k and c and
+ * the reference rule, and balances on its bank alone within `bankAuthority`.
  */
 const DESIGN_PARAMS: RollParams = {
   boardInertia: 0.03, hullStiffness: 100, hullDamping: 5, mass: 75, height: 1,
@@ -161,6 +168,27 @@ export const ROLL_DESIGN: { params: RollParams; gains: RollGains } = {
   params: DESIGN_PARAMS,
   gains: { ...DESIGN_FEEDBACK, reference: referenceGain(DESIGN_PARAMS, DESIGN_FEEDBACK) },
 };
+
+/**
+ * What the feet can do to the body's bank on the carve lab's plant (turn
+ * redesign, Task 3b). The planing board rights about the rider's load line with
+ * `hullStiffness`, N·m/rad, so the ankle's rest δ reaches the body through the
+ * ankle and the hull in series (`series`, N·m/rad) and rolls the board against
+ * the body by `share` of itself, which the turn follows within about 0.03 s.
+ * Then the body's bank answers the rest like a double integrator. `restRange`
+ * is the rest, rad, at which the feet's pressure reaches their edges
+ * (`footReach`, m, out from the middle, under one body weight), and
+ * `acceleration` the body's bank acceleration there, rad/s².
+ */
+export function bankAuthority(p: { mass: number; height: number; ankleStiffness: number; hullStiffness: number; footReach: number }) {
+  const k = p.ankleStiffness;
+  const series = (k * p.hullStiffness) / (k + p.hullStiffness);
+  const share = k / (k + p.hullStiffness);
+  const weight = p.mass * GRAVITY;
+  const restRange = (p.footReach * weight) / series;
+  const acceleration = ((weight * p.height * share + series) * restRange) / (p.mass * p.height * p.height);
+  return { series, share, restRange, acceleration };
+}
 
 /** The steady carve for a turn pulling aLat, m/s²: the body banks to where gravity and the pull balance, and the rail with it. */
 export function steadyCarve(aLat: number): { bank: number; rail: number } {

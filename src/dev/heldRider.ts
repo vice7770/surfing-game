@@ -25,6 +25,8 @@ export class HeldRider extends AttachedRider {
   }
 
   override coupleStanding(system: Float64Array, rhs: Float64Array, h: number): void {
+    // Held, the body neither balances nor swings: nothing of the rider's own reaches the board.
+    if (this.holding) this.swingTorque = 0;
     super.coupleStanding(system, rhs, h);
     if (!this.holding) return;
     // The body's frame turns about the heading's forward to bank, so its forward is the heading's.
