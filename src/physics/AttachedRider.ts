@@ -62,6 +62,15 @@ const HAND_OUTSIDE_RAIL = 0.08;
 const HAND_RADIUS = 0.08;
 const HAND_DRAG_AREA = 0.066;
 /**
+ * The most one arm pushes or holds against the water, body weights (a modelling
+ * choice): steady flat-water paddling needs at most 0.37 from a hand. The hand
+ * moves on a fixed path over the board, so its drag grows with the board's
+ * speed through the water; beyond this the arm gives way. Without the limit a
+ * paddler buried on a steepening face drove a hand at 1.2–1.8 body weights and
+ * slid off the board.
+ */
+const HAND_FORCE_LIMIT = 0.4;
+/**
  * Steering lying down: paddling, the arm on the outside of the turn pulls
  * harder and the inside arm softer by this share; not paddling, the outside arm
  * sweeps alone. Board +x is its left, so turning left is a stronger right arm.
@@ -99,6 +108,15 @@ function submergedFraction(depth: number, radius: number): number {
 const BALANCE_TIME = 0.15;
 /** Lying down the hips shift only across the board: fore and aft is trim, not balance. */
 const PRONE_SHIFT = { x: 0.1, z: 0 };
+/**
+ * Lying down, balance is the board's roll. A shortboard under a prone rider
+ * floats awash with the body's weight above it, and on its own the pair
+ * capsizes (a board tipped 15° on flat water rolls over in about 2 s). A
+ * paddler keeps it level by shifting toward the high rail: m of shift per rad
+ * of roll and per rad/s of roll rate (a modelling choice).
+ */
+const PRONE_ROLL_SHIFT = 0.4;
+const PRONE_ROLL_DAMPING = 0.16;
 const STANDING_SHIFT = { x: 0.35, z: 0.25 };
 /**
  * Fore and aft, where the load sits is trim (a later, deliberate control), not
@@ -282,6 +300,8 @@ export class AttachedRider {
   readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0 };
   /** Impulse the lip gave the body since the latest step began, N·s. */
   readonly lastLipImpulse = new Vector3();
+  /** The water's latest force on each stroking hand (left, right), N. */
+  readonly handLoad = new Float64Array(2);
   /** Paddle while prone. */
   paddle = false;
   /** Standing, the requested weight shift: −1 (toward board −x, its right) to 1 (toward +x, its left). */
@@ -731,7 +751,7 @@ export class AttachedRider {
   /** Before the board's solve: the posture's target, its drive velocity and the forces on the rider. */
   prepare(h: number, board: BoardBody, water: SurfWater): void {
     this.advancePhase(h, board, water);
-    this.balanceStep(h);
+    this.balanceStep(h, board);
     this.swayStep(h);
     this.updatePosture();
     this.updateInertia(board);
@@ -856,6 +876,12 @@ export class AttachedRider {
     const relative = this.flow.set(sample.flowX, sample.flowY, sample.flowZ).sub(this.partVelocity);
     const drag = 0.5 * SEAWATER * dragArea * wet * relative.length();
     force.addScaledVector(relative, drag).addScaledVector(this.bodyAxis, -drag * (1 - shelter) * relative.dot(this.bodyAxis));
+    if (slot >= RIDER_PARTS.length) {
+      const limit = HAND_FORCE_LIMIT * this.mass * WATER.gravity;
+      const magnitude = force.length();
+      if (magnitude > limit) force.multiplyScalar(limit / magnitude);
+      this.handLoad[slot - RIDER_PARTS.length] = Math.min(magnitude, limit);
+    }
     this.waterForce.add(force);
     const arm = this.scratch.subVectors(p, this.position);
     this.waterMoment.add(cross(arm, force, this.scratch2));
@@ -1198,13 +1224,21 @@ export class AttachedRider {
   }
 
   /** Move the body toward putting the centre of pressure where the rider wants it, within its reach. */
-  private balanceStep(h: number): void {
+  private balanceStep(h: number, board: BoardBody): void {
     const reach = this.upright ? STANDING_SHIFT : PRONE_SHIFT;
     const support = this.support;
     this.copTarget.x = 0;
     const wantX = (support.xMin + support.xMax) / 2;
     const wantZ = (support.zMin + support.zMax) / 2 + this.copTarget.z;
-    if (this.inContact && this.loaded) {
+    if (!this.upright && this.inContact) {
+      // Toward the high rail (board +x is its left): the roll, positive with the left rail up, and its rate about the board's length.
+      const side = this.scratch.set(1, 0, 0).applyQuaternion(board.orientation);
+      const roll = Math.asin(Math.max(-1, Math.min(1, side.y)));
+      const rate = this.scratch2.copy(board.angularVelocity).applyQuaternion(this.spin.copy(board.orientation).invert()).z;
+      const targetX = Math.min(reach.x, Math.max(-reach.x, PRONE_ROLL_SHIFT * roll + PRONE_ROLL_DAMPING * rate));
+      this.shiftAxis('x', targetX, reach.x, h);
+      this.shiftAxis('z', 0, reach.z, h);
+    } else if (this.inContact && this.loaded) {
       const smooth = Math.min(1, h / COP_SMOOTHING);
       this.smoothedCop.x += (this.desiredCop.x - this.smoothedCop.x) * smooth;
       this.smoothedCop.z += (this.desiredCop.z - this.smoothedCop.z) * smooth;
