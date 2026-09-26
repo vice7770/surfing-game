@@ -60,6 +60,20 @@ const HAND_DRAG_AREA = 0.066;
  * sweeps alone. Board +x is its left, so turning left is a stronger right arm.
  */
 const STEER_STROKE = 0.6;
+/**
+ * A paddler keeps its line: with no steering asked for, the arm on the side to
+ * turn toward pulls softer and the other harder, in proportion to the heading
+ * error over HOLD_ANGLE, rad, and to the yaw rate over HOLD_ANGLE / HOLD_RATE_TIME
+ * (a modelling choice for the paddler's own correction; the turn comes only
+ * from the strokes' drag). Steering sets a new line.
+ */
+const HOLD_ANGLE = (10 * Math.PI) / 180;
+const HOLD_RATE_TIME = 0.5;
+/**
+ * Lying down, the legs trailing past the tail sit in the board's wake: flow
+ * along the body meets this further share of their drag (a modelling choice).
+ */
+const WAKE_SHELTER = 0.5;
 
 /** Fraction of a sphere under a level surface `depth` above its centre. */
 function submergedFraction(depth: number, radius: number): number {
@@ -241,6 +255,9 @@ export class AttachedRider {
   paddle = false;
   /** Standing, the requested weight shift: −1 (toward board −x, its right) to 1 (toward +x, its left). */
   steer = 0;
+  /** Lying down, the heading the paddler keeps (rad from +z toward +x), and the correction it asks of the strokes now. */
+  private line: number | undefined;
+  private hold = 0;
   /** Buoyancy on the body at the latest substep, N. */
   readonly buoyancy = new Vector3();
   /** Contact over the latest step: mean force on the rider (N, world), centre of pressure (board frame) and more. */
@@ -665,10 +682,16 @@ export class AttachedRider {
       const z = this.parts[i * 3 + 2];
       const onDeck = !this.upright && Math.abs(z) < this.shape.length / 2;
       const deckY = onDeck ? board.toWorld(this.localScratch.set(this.parts[i * 3], deckHeight(this.shape, z), z), this.scratch2).y : -Infinity;
-      this.applyWater(i, water, radius, this.partVolumes[i], Math.PI * radius * radius * PART_DRAG, h, shelter, deckY);
+      const inWake = !this.upright && z < -this.shape.length / 2;
+      this.applyWater(i, water, radius, this.partVolumes[i], Math.PI * radius * radius * PART_DRAG, h, inWake ? shelter * WAKE_SHELTER : shelter, deckY);
     }
     this.stroking = false;
-    if (this.phase !== 'prone' || (!this.paddle && !this.sweeping)) return;
+    if (this.phase !== 'prone' || (!this.paddle && !this.sweeping)) {
+      this.line = undefined;
+      this.hold = 0;
+      return;
+    }
+    this.keepLine(board);
     this.strokeTime += h;
     for (let side = 0; side < 2; side += 1) {
       const effort = this.strokeEffort(side);
@@ -688,11 +711,25 @@ export class AttachedRider {
     return Math.abs(this.steer) > 0.05;
   }
 
-  /** How hard arm `side` (0 left, at +x; 1 right) strokes, from the paddle and steer input. */
+  /** How hard arm `side` (0 left, at +x; 1 right) strokes, from the paddle and steer input and the paddler's own line keeping. */
   private strokeEffort(side: number): number {
-    const steer = Math.max(-1, Math.min(1, this.steer));
+    const steer = Math.max(-1, Math.min(1, this.steer + this.hold));
     const outside = side === 1 ? steer : -steer;
     return this.paddle ? 1 + STEER_STROKE * outside : Math.max(0, outside);
+  }
+
+  /** Paddling straight, the correction that brings the board back to its line; steering, a new line. */
+  private keepLine(board: BoardBody): void {
+    const forward = this.scratch.set(0, 0, 1).applyQuaternion(board.orientation);
+    const heading = Math.atan2(forward.x, forward.z);
+    if (this.line === undefined || this.sweeping || !this.paddle) {
+      this.line = heading;
+      this.hold = 0;
+      return;
+    }
+    let error = heading - this.line;
+    error -= 2 * Math.PI * Math.round(error / (2 * Math.PI));
+    this.hold = Math.max(-1, Math.min(1, -(error + HOLD_RATE_TIME * board.angularVelocity.y) / HOLD_ANGLE));
   }
 
   /** Water on one body point at `partWorld` moving at `partVelocity`: buoyancy of `volume` and drag over `dragArea`. */

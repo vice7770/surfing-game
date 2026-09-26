@@ -74,6 +74,11 @@
   - **Fixed:** `entering(h)` was true throughout the carve, because it compared vertical speed with the water instead of speed into the sloping surface. Gliding down a face now refines nothing; a drop still does.
   - A faster standing balance loop (0.06–0.12 s) oscillates even without steering.
   - Probes: `carve.ts` to `carve11.ts` and `tcarve.ts` in the session scratchpad.
+- **Task 3 done** (`feat: keep the paddler's line and shelter trailing legs`):
+  - `SwellWater` is a linear-wave test fixture: elevation, slope and Wheeler-stretched orbital flow.
+  - With fins alone, a paddler still veered about 16–20° on flat water and settled 40° off course in 0.8 m, 8 s swell at 45°. The first pull is one arm from rest, before the fins can grip.
+  - The paddler now keeps its line only through its strokes: with no steer, the arms pull unevenly against the heading error (full at 10°) and the yaw rate (0.5 s). Steering sets a new line. Under way it holds within about 3° over 20 s; the first pull still yaws it about 14°.
+  - Legs trailing past the tail sit in the board's wake: along the body they meet half the sheltered drag. Prone tow drag is 19, 64, 106, 133 and 148 N at 1–5 m/s, down from 21, 72, 124, 161 and 184 N.
 - **User requests queued:**
   - play the swimmer after a fall and choose to swim back and remount (ROADMAP);
   - the camera views front, behind, side and overview, now done (`8d145db`).

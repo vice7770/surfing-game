@@ -6,6 +6,7 @@ import { REFERENCE_RIDER } from './boardReference';
 import { WATER } from './hullForces';
 import { PlaneWater } from './PlaneWater';
 import { stanceFeet } from './riderPosture';
+import { SwellWater } from './SwellWater';
 import type { SurfWater } from './SurfWater';
 
 const STEP = 1 / 60;
@@ -354,6 +355,32 @@ describe('steering while lying down', () => {
     run(board, water, 4);
     return { heading: heading(board), speed: board.velocity.length(), attached: rider.attached };
   };
+
+  // Without fins and a paddler keeping its line, the board wandered 45° in 20 s. The first pull, one
+  // arm from rest before the fins grip, still yaws it about 15°; under way it holds its line.
+  it('holds its line within 10° over 20 s of paddling through oblique swell', () => {
+    const swell = new SwellWater({ height: 0.8, period: 8, direction: Math.PI / 4 });
+    const { board, rider } = mounted('prone', swell.surfaceAt(0, 0));
+    rider.paddle = true;
+    const start = heading(board);
+    let startUp = 0;
+    for (let i = 0; i < 2 * 60; i += 1) {
+      board.step(STEP, swell);
+      swell.advance(STEP);
+      startUp = Math.max(startUp, Math.abs(heading(board) - start));
+    }
+    const line = heading(board);
+    let worst = 0;
+    for (let i = 0; i < 20 * 60; i += 1) {
+      board.step(STEP, swell);
+      swell.advance(STEP);
+      worst = Math.max(worst, Math.abs(heading(board) - line));
+    }
+    expect(rider.attached).toBe(true);
+    expect(board.velocity.length()).toBeGreaterThan(1);
+    expect(startUp).toBeLessThan((20 * Math.PI) / 180);
+    expect(worst).toBeLessThan((10 * Math.PI) / 180);
+  });
 
   it('turns toward the requested side by pulling harder with the other arm', () => {
     const left = turn(1, true);
