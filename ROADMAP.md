@@ -56,7 +56,6 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus a
     | Big (2.4 m, 14 s) | 0 | not measured | not measured |
 
     Medium works everywhere. P7 has since reshaped the Reef, and P10 changes catching, so the table waits for both. The Reef's Small run also showed a 39.9 m/s top speed, an outlier for the gameplay session to check.
-  - Check a physical gamepad by hand; the mapping is covered by unit tests.
   - Bring back a flow bar once a physical flow measure exists (gameplay, P9).
 
 ### Later — `Backlog`
@@ -65,6 +64,7 @@ Recorded in the same session; each gets its own grilling before work starts.
 1. **Multiplayer beach:** rooms with a player limit the host sets, players starting on the sand, and a beach bar to hang out in. Crowded lineups where surfers and boards collide physically are part of the fun, as on a real busy beach. Details wait for its grilling: room sizes, who hosts, board and body collisions, and whether solo play also starts on the sand.
 2. **Filmed menu background:** a sequence of waves forming and breaking, filmed with the `?record` tool once the waves are finished. It replaces the live menu background.
 3. **Sound:** ocean ambience, breaking waves, paddling, wind and wipeouts, with optional music. It is the phase after P8, and it brings the Audio settings tab.
+4. **A physical gamepad, checked by hand** (moved here by the user, 2026-09-26). The mapping is covered by unit tests.
 
 ## Next milestone — physical wave formation — `In Progress`
 
@@ -153,7 +153,7 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 
   [Record](docs/superpowers/plans/2026-09-26-p6-webgpu-tier.md).
 
-### P1 · Barrels (P7) — `In Progress (tubes wait for jet data)`
+### P1 · Barrels (P7) — `In Progress (tubes open; the barrel needs a visual pass)`
 
 Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels](docs/superpowers/plans/2026-09-26-p7-barrels.md).
 - [ ] **Scope:** a physical lip sheet the rider can be hit by or covered by. Deliberate tube-riding comes later (see the gameplay list below).
@@ -173,7 +173,10 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels
   - hit or covered;
   - the translucent sheet;
   - `npm run report:tubes`.
-- **Tubes do not open yet.** Thrown at the crest's own speed, the lip lands on the face beneath it (no tube of 10 cm or more at any spot). This waits for measured jet kinematics from the user.
+- **Tubes open (2026-09-26, evening).** Each plunging break takes its overturn from Pick & Feddersen's (2026) fits for its bed slope and sea, sized by the wave the solver has. The lip throws the jet's own water and flies it to the overturn's front end at 1.2–1.6 times the crest speed, as measured jets leave (1.15–1.73). The depth-averaged face stands where a real face has gone vertical, so each flying lip carries its void, and the rider, the board, the renderer and the lip's landing meet the void's floor (the user's choice; the solver's water is untouched).
+  - At the Wave Lab defaults the Reef's tubes run a median 1.12 m (90th percentile 1.78 m), 97 % inside the measured range. Openings reach 1.1–1.6 m under the lip: a crouching rider fits the bigger ones.
+  - Fixed on the way: throws created momentum (they removed the crest's depth-averaged momentum but launched at the jet's speed), which drove the practice Reef's water to 23 m/s; strip parcels were released where the jet, not the crest, had moved to; a non-finite body's lip query spread NaN through the sheet.
+  - **Not yet:** the barrel does not read on screen. `?record&watch` films the break from beside the lip, but the void is carved on the 1 m render grid and the lip sheet is thin and faint. A visual pass comes next, with the tube camera (P12).
 - **Along the way:**
   - the peel measurement stopped counting shore swash;
   - the Reef's shelf is now 1 m, so waves break on its edge (769 jets a minute against 307);
@@ -239,7 +242,7 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
     - the balance meter on the leg's margin, in Practice by default; one-time hints; the Controls screen explains the standing actions.
-  - **Next:** the user's playtest on the M4 Pro. It also checks, live, what the automated pass could not reach standing: W/S, crouch, the meter in a carve, hints, callouts and the end card.
+  - **Next:** the user's playtest on the M4 Pro, deferred by the user (2026-09-26): it runs well there, so the playtest comes later. It also checks, live, what the automated pass could not reach standing: W/S, crouch, the meter in a carve, hints, callouts and the end card.
 - [ ] **P10 Take-off** (`Backlog`): cruise and sprint paddling recalibrated to measured speeds, critical-power stamina, angled take-offs, late take-offs and air drops.
 - [ ] **P11 Lineup** (`Backlog`): a sliding window to pick a peak, sets read from the horizon, duck-dives, a surface roller with aeration (hold-downs emerge), breath, a snapping leash, Next set.
 - [ ] **P12 Tube** (`Backlog`, after P11; P7 has finished): pulling in and racing out, rail grab and hand drag, crouch clearance, the Regular/Goofy setting, an automatic tube camera.

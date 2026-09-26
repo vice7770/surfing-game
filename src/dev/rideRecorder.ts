@@ -9,15 +9,17 @@
  * in real time.
  */
 import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
+import { PerspectiveCamera, Vector3 } from 'three';
 import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
-import { RIDER_SNAPSHOT } from '../wave/SurfZoneRunner';
+import { LIP_STRIDE, RIDER_SNAPSHOT } from '../wave/SurfZoneRunner';
 import { Autopilot } from './Autopilot';
 
 interface RecordingHooks {
   start(settings: PhysicalSettings): Promise<void>;
   step(input: { paddle: boolean; popUp: boolean; steer: number }): void;
   retry(): void;
-  render(seconds: number): void;
+  /** Render a frame, from `camera` when given, else the mode's own view. */
+  render(seconds: number, camera?: PerspectiveCamera): void;
   resize(width: number, height: number): void;
   mode: PhysicalMode;
   canvas: HTMLCanvasElement;
@@ -42,6 +44,14 @@ const LEAD = 4;
 const AFTER = 2.5;
 const MAX_SIM_SECONDS = Number(params.get('maxMinutes') ?? 20) * 60;
 const STYLE = params.get('style') === 'line' ? 'line' : 'turns';
+/** `watch=S`: film S s of breaking waves from beside the lip, from the first throw near the take-off on, instead of a ride (`waves.mp4`). */
+const WATCH = Number(params.get('watch') ?? 0);
+/** The watching camera looks along the crest into the tube it follows, from this far along it and this far inshore, m. */
+const WATCH_SIDE = 9;
+const WATCH_SHOREWARD = 2;
+/** It follows the newest throws within this far of the take-off, and the strips within this far along the crest of them, m. */
+const WATCH_REACH = 25;
+const WATCH_SECTION = 6;
 
 const post = (path: string, body: BodyInit) => fetch(`${RECEIVER}${path}`, { method: 'POST', body }).catch(() => undefined);
 const log = (text: string) => post('/log', text);
@@ -101,6 +111,10 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
   composite.width = WIDTH;
   composite.height = HEIGHT;
   const context = composite.getContext('2d')!;
+  if (WATCH > 0) {
+    await filmBreaks(hooks, context, spot, source);
+    return;
+  }
   const rise = 0.25 * (source === 'practice' ? 2 : settings.significantHeight);
   const autopilot = new Autopilot({ waitOutside: WAIT_OUTSIDE, rise, giveUp: GIVE_UP, style: STYLE });
 
@@ -187,7 +201,82 @@ function labelFor(autopilot: Autopilot, speed: number, poppingUp: boolean): stri
   }
 }
 
-function drawOverlay(context: CanvasRenderingContext2D, spot: string, source: string, label: string, attempt: number): void {
+/** Film the break from beside its flying lip: the last LEAD s before the first throw, then WATCH s. */
+async function filmBreaks(hooks: RecordingHooks, context: CanvasRenderingContext2D, spot: string, source: string): Promise<void> {
+  const host = hooks.mode.host!;
+  const camera = new PerspectiveCamera(40, WIDTH / HEIGHT, 0.1, 3000);
+  const aim = new Vector3(hooks.mode.focus.x, 0.5, hooks.mode.focus.z);
+  const lip = new Vector3();
+  let clip = new Clip();
+  let thrownAt = -1;
+  let simulated = 0;
+  let step = 0;
+  let waiting = 0;
+  while (simulated < MAX_SIM_SECONDS && !(thrownAt >= 0 && simulated - thrownAt > WATCH)) {
+    hooks.step({ paddle: false, popUp: false, steer: 0 });
+    simulated += STEP;
+    step += 1;
+    const { snapshot } = host;
+    if (thrownAt < 0) {
+      // Keep only the last few seconds before the first throw.
+      waiting += STEP;
+      if (waiting > LEAD) {
+        clip.drop();
+        clip = new Clip();
+        waiting = 0;
+      }
+    }
+    if (step % STEPS_PER_FRAME === 0) {
+      // Follow one tube: the section around the newest throw near the take-off, holding still while none flies.
+      let newest = -Infinity;
+      let newestX = 0;
+      for (let k = 0; k < snapshot.lipCount; k += 1) {
+        const o = k * LIP_STRIDE;
+        if (Math.abs(snapshot.lip[o] - hooks.mode.focus.x) < WATCH_REACH && snapshot.lip[o + 5] > newest) {
+          newest = snapshot.lip[o + 5];
+          newestX = snapshot.lip[o];
+        }
+      }
+      let count = 0;
+      lip.set(0, 0, 0);
+      for (let k = 0; k < snapshot.lipCount; k += 1) {
+        const o = k * LIP_STRIDE;
+        if (snapshot.lip[o + 5] < newest - 0.5 || Math.abs(snapshot.lip[o] - newestX) > WATCH_SECTION) continue;
+        lip.x += snapshot.lip[o];
+        lip.y += snapshot.lip[o + 1];
+        lip.z += snapshot.lip[o + 2];
+        count += 1;
+      }
+      if (count > 0) {
+        if (thrownAt < 0) {
+          // The first throw near the take-off starts the film; until then the camera waits there.
+          thrownAt = simulated;
+          aim.copy(lip.divideScalar(count));
+        } else {
+          aim.lerp(lip.divideScalar(count), 1 - Math.exp(-3 * STEPS_PER_FRAME * STEP));
+        }
+      }
+      const x = aim.x + WATCH_SIDE;
+      const z = aim.z + WATCH_SHOREWARD;
+      camera.position.set(x, Math.max(host.heightAt(x, z) + 0.4, aim.y - 0.2), z);
+      camera.lookAt(aim);
+      hooks.render(STEPS_PER_FRAME * STEP, camera);
+      context.drawImage(hooks.canvas, 0, 0, WIDTH, HEIGHT);
+      drawOverlay(context, spot, source, thrownAt < 0 ? 'WAITING FOR A SET' : 'THE LIP THROWS', 0, 'WATCHING THE BREAK');
+      await clip.add(context.canvas);
+    }
+    if (step % 30 === 0) await breathe();
+  }
+  if (thrownAt < 0) {
+    await log(`no wave threw a lip in ${(simulated / 60).toFixed(1)} min`);
+    return;
+  }
+  const video = await clip.finish();
+  await post('/upload?name=waves.mp4', video);
+  await log(`saved ${clip.frames} frames of breaking waves, the first lip ${(thrownAt / 60).toFixed(1)} min in`);
+}
+
+function drawOverlay(context: CanvasRenderingContext2D, spot: string, source: string, label: string, attempt: number, activity = `AUTOPILOT · ATTEMPT ${attempt}`): void {
   context.save();
   context.fillStyle = 'rgba(8, 24, 32, 0.55)';
   context.fillRect(24, 24, 560, 74);
@@ -196,6 +285,6 @@ function drawOverlay(context: CanvasRenderingContext2D, spot: string, source: st
   context.fillText(label, 40, 56);
   context.font = '15px ui-monospace, Menlo, monospace';
   context.fillStyle = 'rgba(232, 244, 242, 0.8)';
-  context.fillText(`${spot.toUpperCase()} · ${source === 'practice' ? 'PRACTICE GROUNDSWELL' : source.toUpperCase()} · BOUSSINESQ · AUTOPILOT · ATTEMPT ${attempt}`, 40, 84);
+  context.fillText(`${spot.toUpperCase()} · ${source === 'practice' ? 'PRACTICE GROUNDSWELL' : source.toUpperCase()} · BOUSSINESQ · ${activity}`, 40, 84);
   context.restore();
 }

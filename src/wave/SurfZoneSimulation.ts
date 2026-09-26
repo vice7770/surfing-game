@@ -5,7 +5,8 @@ import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
 import { FoamField, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
 import { focusX } from './Refraction';
-import { JET_SPEED_RATIO, breakerForm, crestMotion } from './CrestKinematics';
+import { breakerForm, crestMotion, waveHeightAt } from './CrestKinematics';
+import { tubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import type { LipImpact } from './SprayCloud';
@@ -412,22 +413,32 @@ export class SurfZoneSimulation {
     const slopeX = column > 0 && column < nx - 1 ? (bed[crest + 1] - bed[crest - 1]) / (2 * solver.dx) : 0;
     const breakerHeight = BREAKER_INDEX * stillDepth;
     const deepWavelength = (GRAVITY * this.config.peakPeriod ** 2) / (2 * Math.PI);
-    const iribarren = Math.hypot(slopeX, slopeZ) / Math.sqrt(breakerHeight / deepWavelength);
+    const slope = Math.hypot(slopeX, slopeZ);
+    const iribarren = slope / Math.sqrt(breakerHeight / deepWavelength);
     const form = breakerForm(iribarren);
     if (form === 'roller') this.lipRollers += 1;
     if (form !== 'jet') return;
+    const motion = crestMotion(solver, crest);
+    if (!motion) return;
+    // The overturn scales with the wave the solver has: its crest over the trough half a wavelength ahead.
+    const height = waveHeightAt(solver, crest, 0.5 * motion.speed * this.config.peakPeriod);
     const shape = lipThrow({
       iribarren,
-      breakerHeight,
+      slope,
+      // The overturn fits' H0/h0: the incoming sea's height over the tank's offshore depth.
+      nonlinearity: this.config.significantHeight / (OFFSHORE_DEPTH[this.config.spot] + this.config.tide),
+      breakerHeight: height,
       windOverCelerity: (this.config.windSpeed ?? 0) / Math.sqrt(GRAVITY * stillDepth),
       width: solver.dx,
     });
-    // The jet leaves the way the crest travels, at its speed, measured from the crest's own motion (plan P7).
-    const motion = crestMotion(solver, crest);
-    if (!shape || !motion) return;
-    const speed = JET_SPEED_RATIO * motion.speed;
+    if (!shape) return;
+    // The jet leaves the way the crest travels, measured from the crest's own motion, and outruns it
+    // by the speed that flies it over its overturn's void (plan P7).
+    const speed = motion.speed + shape.relativeSpeed;
     const along = motion.direction;
-    const thrown = this.lip.launch(crest, { x: along.x * speed, z: along.z * speed }, solver.surfaceAt(crest), shape.volume, motion.speed);
+    const thrown = this.lip.launch(
+      crest, { x: along.x * speed, z: along.z * speed }, solver.surfaceAt(crest), shape.volume, motion.speed, tubeGeometry(shape.shape, height),
+    );
     if (thrown > 0) {
       this.lipLaunches += 1;
       this.lipJets += 1;
@@ -437,7 +448,7 @@ export class SurfZoneSimulation {
 
   /** Water surface elevation, m; on dry land this is the bed. */
   heightAt(x: number, z: number): number {
-    return this.solver.sampleCentered(this.solver.h, x, z) + this.bedAt(x, z);
+    return this.lip.carve(x, z, this.solver.sampleCentered(this.solver.h, x, z) + this.bedAt(x, z));
   }
 
   bedAt(x: number, z: number): number {
@@ -489,6 +500,19 @@ export class SurfZoneSimulation {
         }
       }
     }
+    // Under a flying lip the surface drops to its void's floor.
+    this.lip.forEachTubeExtent((xMin, xMax, zMin, zMax) => {
+      const c0 = Math.max(0, Math.ceil((xMin - grid.xMin) / grid.spacing));
+      const c1 = Math.min(grid.nx - 1, Math.floor((xMax - grid.xMin) / grid.spacing));
+      const r0 = Math.max(0, Math.ceil((zMin - grid.zMin) / grid.spacing));
+      const r1 = Math.min(grid.nz - 1, Math.floor((zMax - grid.zMin) / grid.spacing));
+      for (let r = r0; r <= r1; r += 1) {
+        for (let c = c0; c <= c1; c += 1) {
+          const k = (r * grid.nx + c) * 2;
+          data[k] = this.lip.carve(grid.xMin + c * grid.spacing, grid.zMin + r * grid.spacing, data[k]);
+        }
+      }
+    });
   }
 
   /** Resample the depth-averaged current to interleaved (u, w) per render node, m/s; 0 on dry nodes. */

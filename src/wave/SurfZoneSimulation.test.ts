@@ -3,7 +3,8 @@ import { REEF, createSpot } from './Bathymetry';
 import { breakerDepthFor } from './Breaking';
 import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TANK, takeOffPoint, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
 import { rayConcentration } from './Refraction';
-import { JET_SPEED_RATIO, crestSpeedAt } from './CrestKinematics';
+import { crestSpeedAt } from './CrestKinematics';
+import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 
 const small: Omit<SurfZoneConfig, 'spot'> = {
   seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -149,18 +150,52 @@ describe('SurfZoneSimulation', () => {
     expect(beach.simulation.lipRollers).toBeGreaterThan(0);
   }, 60_000);
 
-  it("throws each jet at the speed of the crest it leaves, measured from the crest's own motion (P7)", () => {
+  it('throws each jet ahead of its crest, 1.15-1.8 times its speed, as measured jets leave (P7)', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, peakPeriod: 14, directionDegrees: 20, spreading: 24 });
     const launches: { speed: number; crest: number }[] = [];
     const launch = simulation.lip.launch.bind(simulation.lip);
     simulation.lip.launch = (cell, velocity, height, volume, crestSpeed) => {
-      launches.push({ speed: Math.hypot(velocity.x, velocity.z), crest: JET_SPEED_RATIO * crestSpeedAt(simulation.solver, cell)! });
+      launches.push({ speed: Math.hypot(velocity.x, velocity.z), crest: crestSpeedAt(simulation.solver, cell)! });
       return launch(cell, velocity, height, volume, crestSpeed);
     };
     for (let frame = 0; frame < 20 * 30; frame += 1) simulation.step(1 / 30);
     expect(simulation.lipJets).toBeGreaterThan(0);
     expect(launches.length).toBeGreaterThan(0);
-    for (const { speed, crest } of launches) expect(speed).toBeCloseTo(crest, 9);
+    for (const { speed, crest } of launches) {
+      expect(speed / crest).toBeGreaterThan(1.15);
+      expect(speed / crest).toBeLessThan(1.8);
+    }
+  }, 60_000);
+
+  it('carves the void under a flying lip into the water the rider feels and the renderer draws (P7)', () => {
+    const simulation = new SurfZoneSimulation({
+      spot: 'reef', seed: 1, significantHeight: 1.5, peakPeriod: 12, directionDegrees: 0, spreading: 24, tide: 0,
+      alongShore: 8, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 12,
+    });
+    const { solver } = simulation;
+    const water = PhysicalSurfWater.forSimulation(simulation);
+    const grid = simulation.renderGrid(1);
+    const data = new Float32Array(grid.nx * grid.nz * 2);
+    let carved = 0;
+    for (let frame = 0; frame < 60 * 30 && carved === 0; frame += 1) {
+      simulation.step(1 / 30);
+      if (simulation.lip.airborneVolume() === 0) continue;
+      simulation.writeUniformSurface(data, grid);
+      for (let r = 0; r < grid.nz; r += 1) {
+        for (let c = 0; c < grid.nx; c += 1) {
+          const x = grid.xMin + c * grid.spacing;
+          const z = grid.zMin + r * grid.spacing;
+          const face = solver.sampleCentered(solver.h, x, z) + solver.sampleCentered(solver.bed, x, z);
+          const floor = simulation.lip.carve(x, z, face);
+          if (!(floor < face - 0.05)) continue;
+          carved += 1;
+          expect(simulation.heightAt(x, z)).toBeCloseTo(floor, 6);
+          expect(data[(r * grid.nx + c) * 2]).toBeCloseTo(floor, 3);
+          expect(water.surfaceAt(x, z)).toBeCloseTo(floor, 3);
+        }
+      }
+    }
+    expect(carved).toBeGreaterThan(0);
   }, 60_000);
 
   // Stage 1 needs 1 m cells to see a wave break (P3a), so the whole reef edge must lie in the fine surf zone.
