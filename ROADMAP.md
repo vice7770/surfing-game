@@ -58,12 +58,37 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus a
     Medium works everywhere. P7 has since reshaped the Reef, and P10 changes catching, so the table waits for both. The Reef's Small run also showed a 39.9 m/s top speed, an outlier for the gameplay session to check.
   - Bring back a flow bar once a physical flow measure exists (gameplay, P9).
 
+### P1 · Sound (S1) — `In Progress`
+
+Requirements agreed in a grilling session on 2026-09-26. The plan is [S1 sound](docs/superpowers/plans/2026-09-26-s1-sound.md).
+- [ ] **Sources:** CC0 recordings (listed in `docs/ASSETS.md`, fetched by a script, shipped as AAC `.m4a`), layered and looped. Every sound also has a synthesised fallback, used until its recording loads or if it fails.
+- [ ] **Driven by the physics, never scripted:**
+  - surf roar from where the water breaks (breaking strength × discharge, by along-shore sector);
+  - lip impacts by their landed volume and speed; whitewater bores;
+  - distant surf from the swell height; wind from the Wind setting;
+  - water rushing under the board with its speed, and rail spray from its sideslip;
+  - paddle splashes from each stroke's work; the pop-up; a wipeout plunge, then underwater bubbles.
+
+  Only what you would really hear, with no artificial cues.
+- [ ] **Space and time:**
+  - the camera is the listener: positional sound, fading with distance, heavily muffled underwater;
+  - slow motion (the Wave Lab's time scale) slows and pitches the sound down;
+  - paused, the sea fades to a low, muffled bed and returns over half a second.
+- [ ] **Where:** Surf rides, the menu's waves and the Wave Lab's physical mode; subtle interface clicks and a new-best chime. The legacy wave stays silent. No music this phase (backlog).
+- [ ] **Controls:**
+  - an Audio settings tab: Master, Sea, Board and rider, and Interface volumes, and Mute when out of view (on);
+  - Mono audio under Accessibility;
+  - sound starts at the first click or key; a speaker toggle in the menu strip and the pause menu, and M (rebindable);
+  - the iPhone's silent switch is respected.
+- [ ] **Sound check (dev tools):** a Wave Lab panel auditions each candidate recording and the bus levels; a manifest picks the recording.
+- [ ] **Done:** unit tests on the physics-to-sound mapping, a headless sound report over an autopilot ride, and the user's listening playtest. CPU cost is measured, not tied to the graphics presets.
+
 ### Later — `Backlog`
 
 Recorded in the same session; each gets its own grilling before work starts.
 1. **Multiplayer beach:** rooms with a player limit the host sets, players starting on the sand, and a beach bar to hang out in. Crowded lineups where surfers and boards collide physically are part of the fun, as on a real busy beach. Details wait for its grilling: room sizes, who hosts, board and body collisions, and whether solo play also starts on the sand.
 2. **Filmed menu background:** a sequence of waves forming and breaking, filmed with the `?record` tool once the waves are finished. It replaces the live menu background.
-3. **Sound:** ocean ambience, breaking waves, paddling, wind and wipeouts, with optional music. It is the phase after P8, and it brings the Audio settings tab.
+3. **Music:** none in S1 (grilling, 2026-09-26). Good CC0 music is scarce; a CC-BY or paid track would need a credits screen.
 4. **A physical gamepad, checked by hand** (moved here by the user, 2026-09-26). The mapping is covered by unit tests.
 
 ## Next milestone — physical wave formation — `In Progress`
