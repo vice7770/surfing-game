@@ -17,6 +17,7 @@ import { Vector3 } from 'three';
 import { Autopilot } from '../src/dev/Autopilot';
 import { DEFAULT_PHYSICAL_SETTINGS, swellFor } from '../src/game/PhysicalMode';
 import { RideAnalyzer, type ManeuverKind, type RideReport } from '../src/game/rideAnalysis';
+import { bestTwo, scoreRide } from '../src/game/waveScore';
 import type { LipParcelSource } from '../src/physics/DetachedSurfer';
 import { RideSession } from '../src/physics/RideSession';
 import { createWaterSample, type SurfWater } from '../src/physics/SurfWater';
@@ -255,7 +256,10 @@ function turnTables(rides: Ride[]): string {
     });
   }
   const unread = rides.length - analyses.length;
-  return `Ride ends (the ride analyzer): ${[...ends].map(([e, c]) => `${e} ×${c}`).join(', ') || 'none'}${unread ? `; ${unread} ride(s) still open when the rider was relaunched` : ''}. Turns per ride ${fixed(maneuvers.length / Math.max(1, analyses.length))}.
+  const scores = analyses.map((a) => scoreRide(a).score);
+  return `Scores (provisional WSL-criteria rubric, 0.1–10): mean ${fixed(mean(scores))}, best two ${fixed(bestTwo(scores))} of 20.
+
+Ride ends (the ride analyzer): ${[...ends].map(([e, c]) => `${e} ×${c}`).join(', ') || 'none'}${unread ? `; ${unread} ride(s) still open when the rider was relaunched` : ''}. Turns per ride ${fixed(maneuvers.length / Math.max(1, analyses.length))}.
 
 | Turn | Count | Duration s | Yaw ° | Peak yaw rate rad/s | Speed in m/s | Radius m | Lateral g | Rail ° | In the pocket |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -281,7 +285,7 @@ for (const spot of spots) {
     console.log(`${spot} seed ${seed}: ${run.attempts} attempts, ${run.stands} stands, ${run.rides.length} rides ≥ ${MIN_RIDE} s; ${[...run.outcomes].map(([o, c]) => `${o} ×${c}`).join(', ')}`);
   }
   summary.push(`| ${spot} | ${attempts} | ${stands} | ${all.length} | ${fixed(mean(all.map((r) => r.seconds)))} | ${fixed(mean(all.map((r) => r.meanSpeed)))} | ${fixed(all.length ? Math.max(...all.map((r) => r.topSpeed)) : NaN)} | ${fixed(mean(all.map((r) => r.meanLabel)))} | ${fixed(mean(all.map((r) => r.crestSpeed)))} | ${fixed(mean(all.map((r) => r.required)))} | ${fixed(mean(all.map((r) => r.ratio)), 2)} | ${fixed(mean(all.map((r) => r.faceFraction)), 2)} | ${fixed(mean(all.map((r) => r.ahead)))} |`);
-  sections.push(`### ${spot}\n\n${turnTables(all)}\n\nAttempt outcomes: ${[...outcomes].map(([o, c]) => `${o} ×${c}`).join(', ') || 'none'}.\n\n| Ride s | Distance m | Mean / top over ground m/s | Mean / top old label m/s | Crest c m/s | Required m/s | Over ground ÷ required | > 1.3 × required | Face fraction | Ahead of crest m (mean / p90) | Outcome |\n|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|\n${all.map((r) => `| ${fixed(r.seconds)} | ${fixed(r.distance, 0)} | ${fixed(r.meanSpeed)} / ${fixed(r.topSpeed)} | ${fixed(r.meanLabel)} / ${fixed(r.topLabel)} | ${fixed(r.crestSpeed)} | ${fixed(r.required)} | ${fixed(r.ratio, 2)} | ${fixed(r.fastShare * 100, 0)} % | ${fixed(r.faceFraction, 2)} | ${fixed(r.ahead)} / ${fixed(r.aheadP90)} | ${r.outcome} |`).join('\n') || '| — | | | | | | | | | | no ride |'}`);
+  sections.push(`### ${spot}\n\n${turnTables(all)}\n\nAttempt outcomes: ${[...outcomes].map(([o, c]) => `${o} ×${c}`).join(', ') || 'none'}.\n\n| Ride s | Distance m | Mean / top over ground m/s | Mean / top old label m/s | Crest c m/s | Required m/s | Over ground ÷ required | > 1.3 × required | Face fraction | Ahead of crest m (mean / p90) | Outcome | Turns | Score |\n|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|\n${all.map((r) => `| ${fixed(r.seconds)} | ${fixed(r.distance, 0)} | ${fixed(r.meanSpeed)} / ${fixed(r.topSpeed)} | ${fixed(r.meanLabel)} / ${fixed(r.topLabel)} | ${fixed(r.crestSpeed)} | ${fixed(r.required)} | ${fixed(r.ratio, 2)} | ${fixed(r.fastShare * 100, 0)} % | ${fixed(r.faceFraction, 2)} | ${fixed(r.ahead)} / ${fixed(r.aheadP90)} | ${r.outcome} | ${r.analysis ? r.analysis.maneuvers.length : '—'} | ${r.analysis ? fixed(scoreRide(r.analysis).score) : '—'} |`).join('\n') || '| — | | | | | | | | | | no ride | | |'}`);
 }
 
 const report = `# Ride report

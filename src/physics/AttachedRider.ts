@@ -173,6 +173,11 @@ const MAX_FLEX = 0.35;
  */
 const SPECIFIC_FORCE_TIME = 0.1;
 const LEG_EXTENSION = 0.1;
+/** The balance margin's smoothing, s. */
+const MARGIN_TIME = 0.1;
+/** The drawn arms reach out ARM_SPREAD of their length at ease, and ARM_ALARM more with no margin left. */
+const ARM_SPREAD = 0.7;
+const ARM_ALARM = 0.8;
 /**
  * The leg's stiffness in the riding stance, N/m: between the upright body's
  * 87 kN/m (5.5 Hz) and the legs-bent 22 kN/m (2.75 Hz, RIDER_LEG) of Matsumoto &
@@ -509,6 +514,14 @@ export class AttachedRider {
   /** The load the leg holds, N, and the leg's rate after the latest solve, m/s. */
   private legLoad = 0;
   private legRateAfter = 0;
+  /**
+   * Standing, how far from a fall, 0 to 1 (spec P9): the least of how near the
+   * centre of pressure is to the support's edges across and along, and how near
+   * the push across the deck is to the feet's grip, smoothed over MARGIN_TIME.
+   * 1 in any other phase. The drawn arms spread as it shrinks.
+   */
+  balanceMargin = 1;
+  private rawMargin = 1;
 
   constructor(shape: BoardShape, options: AttachedRiderOptions = {}) {
     this.shape = shape;
@@ -681,6 +694,8 @@ export class AttachedRider {
     this.leg.rest = 0;
     this.restRate = 0;
     this.legRateAfter = 0;
+    this.balanceMargin = 1;
+    this.rawMargin = 1;
     this.standingLine = undefined;
     this.standingHold = 0;
     this.markParts();
@@ -736,7 +751,8 @@ export class AttachedRider {
       // The hand in the face, or arms held out from the shoulders.
       if (this.handSide !== 0 && (index === 3) === (this.handSide > 0)) return out.copy(this.handPoint);
       this.partPosition(index, out);
-      return out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(0.7));
+      const spread = upright ? ARM_SPREAD + ARM_ALARM * (1 - this.balanceMargin) : ARM_SPREAD;
+      return out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread));
     }
     if (upright) {
       const front = (index === 5) === (this.stance === 'regular');
@@ -1289,6 +1305,7 @@ export class AttachedRider {
       this.flightTime = this.inContact ? 0 : this.flightTime + h;
       this.contact.feasible = false;
     }
+    this.balanceMargin = this.upright ? this.balanceMargin + (this.rawMargin - this.balanceMargin) * (1 - Math.exp(-h / MARGIN_TIME)) : 1;
     const mean = before.add(this.velocity).multiplyScalar(0.5);
     this.work.gravity += h * this.gravity.dot(mean);
     this.work.water += h * this.waterForce.dot(mean);
@@ -1404,6 +1421,7 @@ export class AttachedRider {
     if (!this.upright) return this.projectHold(j, h, local, out.set(0, 0, 0), q);
     if (!(j.y > 0) || !(height > 0)) {
       this.contact.centreOfPressure.set(local.x, local.y - height, local.z);
+      this.rawMargin = 0;
       this.limit = 'flight';
       this.loaded = false;
       return out.set(0, 0, 0);
@@ -1433,6 +1451,14 @@ export class AttachedRider {
       if (limit === 'none') limit = 'slip';
     }
     this.limit = limit;
+    // How near a fall: the free centre of pressure against the support's edges across; along, only past a
+    // foot toward the support's end (weight on one foot is a stance, not a fall); and the push across the
+    // deck against the grip.
+    const across = 1 - Math.abs(freeX - (support.xMin + support.xMax) / 2) / ((support.xMax - support.xMin) / 2);
+    const feet = (this.feet.front - this.feet.rear) / 2;
+    const beyond = Math.max(0, Math.abs(freeZ - (support.zMin + support.zMax) / 2) - feet);
+    const along = 1 - beyond / Math.max(1e-6, (support.zMax - support.zMin) / 2 - feet);
+    this.rawMargin = Math.max(0, Math.min(1, across, along, 1 - tangential / friction));
     const cx = local.x - (height * tx) / normal;
     const cz = local.z - (height * tz) / normal;
     this.contact.centreOfPressure.set(cx, deckHeight(this.shape, cz), cz);

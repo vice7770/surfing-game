@@ -637,6 +637,60 @@ describe('lean, trim, crouch and heading hold', () => {
   });
 });
 
+describe('the balance margin', () => {
+  it('is near 1 standing centred on a towed board, and 1 lying down', () => {
+    const { board, rider } = mounted('standing');
+    const tow = () => {
+      board.velocity.z = 6;
+      rider.velocity.z = 6;
+    };
+    tow();
+    run(board, new PlaneWater(), 2, tow);
+    expect(rider.balanceMargin).toBeGreaterThan(0.8);
+    const prone = mounted('prone');
+    run(prone.board, new PlaneWater(), 1);
+    expect(prone.rider.balanceMargin).toBe(1);
+  });
+
+  // A shove sideways: the feet push the centre of pressure out near the rail to catch the body, and the
+  // margin shows how close that came: 0.45 at 0.5 m/s, 0.26 at 0.6, 0.15 at 0.65; 0.7 m/s throws the rider.
+  it('falls below 0.3 while the centre of pressure is pushed near the edge across the feet, and recovers', () => {
+    const { board, rider } = mounted('standing');
+    const water = new PlaneWater();
+    const tow = () => {
+      board.velocity.z = 6;
+      rider.velocity.z = 6;
+    };
+    tow();
+    run(board, water, 1.5, tow);
+    rider.velocity.x += 0.6;
+    let least = 1;
+    let off = 0;
+    run(board, water, 1.5, () => {
+      tow();
+      least = Math.min(least, rider.balanceMargin);
+      off = Math.max(off, Math.abs(rider.contact.centreOfPressure.x));
+    });
+    expect(rider.attached).toBe(true);
+    expect(off).toBeGreaterThan(0.09);
+    expect(least).toBeLessThan(0.3);
+    expect(rider.balanceMargin).toBeGreaterThan(0.8);
+  });
+
+  it('spreads the drawn arms as the margin shrinks', () => {
+    const { board, rider } = mounted('standing');
+    run(board, new PlaneWater(), 0.2);
+    const reach = () => {
+      const torso = rider.renderPoint(1, board, new Vector3());
+      return rider.renderPoint(4, board, new Vector3()).distanceTo(torso);
+    };
+    rider.balanceMargin = 1;
+    const calm = reach();
+    rider.balanceMargin = 0;
+    expect(reach()).toBeGreaterThan(calm * 1.2);
+  });
+});
+
 /** Flat water with a wall of water `height` m high beyond x = `from` (the face rising beside a board in the pocket). */
 class WallWater extends PlaneWater {
   constructor(private readonly from: number, private readonly height: number) {

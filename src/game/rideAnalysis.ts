@@ -27,6 +27,7 @@ export type ManeuverKind = 'bottom turn' | 'top turn' | 'snap' | 'cutback';
 
 export interface Maneuver {
   kind: ManeuverKind;
+  /** Seconds into the ride. */
   start: number;
   end: number;
   /** Radians turned, signed as the heading. */
@@ -266,7 +267,7 @@ export class RideAnalyzer {
       else kind = 'top turn';
     } else return;
     this.maneuvers.push({
-      kind, start: turn.start, end: turn.end, yaw: turn.yaw, peakYawRate: turn.peak,
+      kind, start: turn.start - this.startTime, end: turn.end - this.startTime, yaw: turn.yaw, peakYawRate: turn.peak,
       speedIn: turn.speedIn, speedOut: turn.speedOut,
       radius: turn.peakSpeed / turn.peak, lateralG: (turn.peakSpeed * turn.peak) / GRAVITY, roll: turn.roll,
       faceFraction: turn.wave.faceFraction,

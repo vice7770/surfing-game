@@ -77,6 +77,9 @@ describe('RideAnalyzer', () => {
     expect(maneuver.lateralG).toBeCloseTo(1.3, 1);
     expect(maneuver.speedIn).toBeCloseTo(7.3, 6);
     expect(maneuver.faceFraction).toBeCloseTo(0.25, 6);
+    // Timed from the ride's start: it stood at 1/60 s and turned from 0.5 s to 1.5 s.
+    expect(maneuver.start).toBeCloseTo(0.5 - 1 / 60, 6);
+    expect(maneuver.end).toBeCloseTo(1.5 - 1 / 60, 6);
     expect(maneuver.pocket).toBe(false);
   });
 
