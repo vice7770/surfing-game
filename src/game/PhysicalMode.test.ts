@@ -6,7 +6,7 @@ import { SPOT_OPTICS } from '../scene/waterOptics';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField } from '../wave/WaveModel';
 import { stormSwell } from '../wave/StormSwell';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, chopForWind, formatPhysicalReadout, spreadingFor, swellFor } from './PhysicalMode';
-import type { LocalSurfZone } from './SurfZoneHost';
+import { LocalSurfZone } from './SurfZoneHost';
 
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
 
@@ -134,6 +134,18 @@ describe('PhysicalMode', () => {
     expect(mode.farField.mesh.visible).toBe(false);
     mode.stop();
     expect(mode.ready).toBe(false);
+  });
+
+  it('frames a riderless sea from its idle view, and a ride from the default view', async () => {
+    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const mode = new PhysicalMode(new Scene());
+    mode.idleView = 'cinematic';
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick, (config) => new LocalSurfZone(config, {}))).toBe(true);
+    expect(mode.homeView).toBe('cinematic');
+    expect(mode.camera.view).toBe('cinematic');
+    mode.defaultView = 'side';
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick)).toBe(true);
+    expect(mode.homeView).toBe('side');
   });
 
   it('lets only the latest of overlapping starts take over', async () => {

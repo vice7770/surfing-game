@@ -23,7 +23,10 @@ import { SettingsStore, defaultSettings } from './game/Settings';
 import { devFlag, devParam } from './devTools';
 import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
-import { DEFAULT_PHYSICAL_SETTINGS, PRACTICE_SWELL, PhysicalMode, localSurfZone, spreadingFor, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, PRACTICE_SWELL, PhysicalMode, spreadingFor, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
+import { LocalSurfZone } from './game/SurfZoneHost';
+import { BACKDROP_TIME, TIMES, backdropSettings } from './game/SurfConditions';
+import type { SurfZoneStatus } from './wave/SurfZoneRunner';
 import { WorkerSurfZone } from './game/WorkerSurfZone';
 import { BoardPhysics, type BoardDiagnostics, type PhysicsSettings } from './physics/BoardPhysics';
 import { CameraRig } from './scene/CameraRig';
@@ -72,6 +75,8 @@ const SPOT_NAMES: Record<Spot, string> = {
   training: 'PACIFIC TRAINING BREAK', point: 'GLASSY POINT', reef: 'WINDY REEF', custom: 'CUSTOM BREAK',
 };
 const demoMode = devParam('demo');
+/** Seconds the menu's waves run before holding still on the Low preset. */
+const BACKDROP_SETTLE_SECONDS = 1.5;
 type WaterModel = 'legacy' | 'physical';
 /** `?physical` opens the view-only physical surf zone (plan P2c, option a). */
 const physicalRequested = devFlag('physical');
@@ -81,10 +86,13 @@ const recordRequested = devFlag('record');
  * The surf zone runs in a Web Worker (plan §3.2, P4a); `?inpage`, or a browser
  * without workers, runs it on the main thread instead.
  */
-const createSurfZone: SurfZoneHostFactory = typeof Worker === 'undefined' || devFlag('inpage')
-  ? localSurfZone : (config) => new WorkerSurfZone(config, undefined, { rider: true });
+const inPage = typeof Worker === 'undefined' || devFlag('inpage');
+/** A surf zone with a rider the player controls, or none (the menu's waves, plan P8). */
+function surfZoneFactory(rider: boolean): SurfZoneHostFactory {
+  return inPage ? (config) => new LocalSurfZone(config, { rider }) : (config) => new WorkerSurfZone(config, undefined, { rider });
+}
 /** Only the worker steps on the GPU (plan P6), so only it gets the GPU tier's sea. */
-const gpuTier = createSurfZone === localSurfZone ? undefined : webGpuAvailable;
+const gpuTier = inPage ? undefined : webGpuAvailable;
 
 function getElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -151,6 +159,11 @@ class SurfGame {
   private physicalSettings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
   private draftPhysical: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
   private readoutClock = 0;
+  /** A still frame: the surf zone is no longer stepped, and the scene is drawn only when it changes. */
+  private frozen = false;
+  /** Seconds left before the backdrop freezes, on the Low preset. */
+  private freezeIn?: number;
+  private needsRender = true;
   /** The graphics settings in force (plan P8); until applied, today's defaults. */
   private graphics?: ResolvedGraphics;
   private lastRender = 0;
@@ -241,15 +254,20 @@ class SurfGame {
   }
 
   /** Called once per rendered frame with the time since the last one, ms (the menus poll the gamepad here). */
-  onFrame?: (intervalMs: number) => void;
+  onFrame?: (intervalMs: number, status?: SurfZoneStatus) => void;
 
   get canvas(): HTMLCanvasElement {
     return this.renderer.domElement;
   }
 
+  get gl(): WebGLRenderingContext | WebGL2RenderingContext {
+    return this.renderer.getContext();
+  }
+
   /** Apply the graphics settings (plan P8): resolution, frame limit, and what is drawn; water changes wait for the next wave. */
   applyGraphics(resolved: ResolvedGraphics): void {
     this.graphics = resolved;
+    this.needsRender = true;
     this.resize();
     if (!resolved.caustics) this.caustics.disable();
     this.physicalMode.setSprayVisible(resolved.sprayMist);
@@ -365,9 +383,13 @@ class SurfGame {
   }
 
   /** Build the physical surf zone with its ridden board, and hide the legacy board, rider and HUD. */
-  private async startPhysical(seed: number, settings: PhysicalSettings): Promise<void> {
-    if (!(await this.physicalMode.start(settings, seed, this.water, {}, createSurfZone, this.graphics?.richSea === false ? undefined : gpuTier))) return;
-    const shared = this.readDraftSettings();
+  private async startPhysical(seed: number, settings: PhysicalSettings, options: { sun?: { sunHeight: number; sunDirection: number }; rider?: boolean } = {}): Promise<boolean> {
+    const factory = surfZoneFactory(options.rider ?? true);
+    if (!(await this.physicalMode.start(settings, seed, this.water, {}, factory, this.graphics?.richSea === false ? undefined : gpuTier))) return false;
+    this.frozen = false;
+    this.freezeIn = undefined;
+    // The Wave Lab's sliders set the sun and time scale; the menu and Surf pass their own sun and run in real time.
+    const shared = options.sun ? { ...this.activeSettings, timeScale: 1, ...options.sun } : this.readDraftSettings();
     const sunChanged = shared.sunHeight !== this.activeSettings.sunHeight || shared.sunDirection !== this.activeSettings.sunDirection;
     this.activeSettings = { ...this.activeSettings, timeScale: shared.timeScale, sunHeight: shared.sunHeight, sunDirection: shared.sunDirection };
     this.draftSettings = { ...this.activeSettings };
@@ -397,6 +419,24 @@ class SurfGame {
     this.syncViewButtons();
     this.refreshTuningUi();
     this.renderPhysicalReadout();
+    return true;
+  }
+
+  /**
+   * The menu's waves (plan P8): a riderless surf zone on the practice groundswell,
+   * seen by the cinematic sweep. On the Low preset it runs briefly, then holds still.
+   */
+  async showBackdrop(spot: SpotName): Promise<boolean> {
+    this.physicalMode.idleView = 'cinematic';
+    const water = { stage: this.graphics?.stage ?? 2, compute: this.graphics?.compute ?? 'auto' } as const;
+    if (!(await this.startPhysical(this.seed, backdropSettings(spot, water), { sun: TIMES[BACKDROP_TIME], rider: false }))) return false;
+    if (this.graphics?.stillBackdrop) this.freezeIn = BACKDROP_SETTLE_SECONDS;
+    return true;
+  }
+
+  /** Whether the menu's waves are running, not held as a still frame. */
+  get backdropRunning(): boolean {
+    return this.mode === 'physical' && this.physicalMode.ready && !this.frozen && this.freezeIn === undefined;
   }
 
   /** Return to the playable legacy wave; startRun installs its water source. */
@@ -425,7 +465,7 @@ class SurfGame {
   }
 
   /** Show a loading card, let it paint, then run a blocking build such as the surf-zone spin-up. */
-  private showLoadingThen(action: () => void | Promise<void>): void {
+  private showLoadingThen(action: () => unknown): void {
     const loading = getElement<HTMLElement>('#loading');
     loading.classList.remove('is-hidden');
     requestAnimationFrame(() => setTimeout(async () => {
@@ -663,7 +703,7 @@ class SurfGame {
     this.lastRender = timestamp;
     controls.poll();
     const rawElapsed = this.previousFrame === 0 ? 0 : (timestamp - this.previousFrame) / 1000;
-    this.onFrame?.(rawElapsed * 1000);
+    this.onFrame?.(rawElapsed * 1000, this.mode === 'physical' ? this.physicalMode.host?.snapshot.status : undefined);
     const elapsed = Math.min(rawElapsed, 0.1);
     this.previousFrame = timestamp;
     if (rawElapsed > 0 && rawElapsed < 0.5) {
@@ -677,7 +717,16 @@ class SurfGame {
     }
     const simElapsed = simulatedSeconds(elapsed, this.activeSettings.timeScale);
     if (this.mode === 'physical') {
-      this.physicalFrame(elapsed, simElapsed);
+      if (this.freezeIn !== undefined) {
+        this.freezeIn -= elapsed;
+        if (this.freezeIn <= 0) {
+          this.freezeIn = undefined;
+          this.frozen = true;
+        }
+      }
+      if (!this.frozen) this.physicalFrame(elapsed, simElapsed);
+      else if (this.needsRender) this.physicalRender(0, 0);
+      this.needsRender = false;
       requestAnimationFrame(this.frame);
       return;
     }
@@ -882,6 +931,7 @@ class SurfGame {
   }
 
   private resize(): void {
+    this.needsRender = true;
     this.renderer.setPixelRatio(this.pixelRatio());
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.cameraRig.camera.aspect = window.innerWidth / Math.max(1, window.innerHeight);
@@ -905,4 +955,4 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   pause: () => {},
 });
 const app = new App(game, controls, settings, { startInWaveLab: physicalRequested || demoMode !== null || recordRequested });
-game.onFrame = (intervalMs) => app.frame(intervalMs);
+game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);

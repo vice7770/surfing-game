@@ -6,6 +6,7 @@
 export const EN = {
   'app.name': 'Breakline',
   'app.tagline': 'Surf simulator',
+  'menu.title': 'Main menu',
   'menu.surf': 'Surf',
   'menu.waveLab': 'Wave Lab',
   'menu.multiplayer': 'Multiplayer',
@@ -17,6 +18,9 @@ export const EN = {
   'menu.version': 'v{version}',
   'loading.break': 'Setting the break…',
   'loading.paddleOut': 'Paddling out…',
+  'notice.lowPerformance.title': 'Low performance detected',
+  'notice.lowPerformance.body': 'Check that hardware acceleration is on in your browser settings, then restart the browser.',
+  'notice.dismiss': 'Dismiss',
   'ride.reason.balance': 'Lost balance',
   'ride.reason.footSlip': 'Feet slipped',
   'ride.reason.lostBoard': 'Lost the board',

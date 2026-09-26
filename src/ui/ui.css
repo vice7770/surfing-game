@@ -3,6 +3,10 @@
 .wave-lab { display: contents; }
 #app:not([data-base='wavelab']) .wave-lab { display: none; }
 .loading { text-transform: uppercase; }
+/* Until the menu's first waves are ready, the menu stands on the brand's sunset gradient; the sea fades in. */
+#scene { transition: opacity 1.2s ease; }
+#app.is-scene-pending { background: linear-gradient(180deg, #e9a988 0%, #a9c3bc 38%, #5a9798 66%, #245f63 100%); }
+#app.is-scene-pending #scene { opacity: 0; }
 
 .ui {
   --tile-radius: 14px;
