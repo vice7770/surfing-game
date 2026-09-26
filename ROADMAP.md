@@ -94,6 +94,42 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels
   6. validation, per-spot tube reports and a video.
 - [ ] Every tier gets tubes. If the physics is too heavy, it is sped up later, never faked.
 
+### P1 · Characters and sky (G7) — `In Progress`
+
+Requirements agreed in a grilling session on 2026-09-26: [G7 spec](docs/superpowers/specs/2026-09-26-g7-characters-and-sky.md). Part A is [recorded](docs/superpowers/plans/2026-09-26-g7a-characters-and-sky.md), and every asset's source and licence is in [ASSETS.md](docs/ASSETS.md).
+- [x] **Part A · Surfers:** four semi-realistic MakeHuman surfers (two women, two men, 1.65–1.74 m, CC0), built headless in Blender with MPFB 2 on its Mixamo-compatible skeleton, 1.0–1.6 MB each.
+  - The physics owns the body: each frame a humanoid rig solves the skeleton from the worker's seven rider points by two-bone IK. A code-driven layer sets the knee and elbow directions, the chest's turn toward the nose, the head's look and cupped paddling hands.
+  - Outfits are crisp per-vertex cuts in the body's shader: full suit, spring suit, rash vest with boardshorts or bikini, with a swappable accent colour.
+  - Skin, hair and suits read wet. A low-poly body takes over beyond 8 m. The simple surfer stays as the fallback if a model cannot load.
+- [x] **Part A · Board:** the physics hull in resin with a waxed deck, a grooved traction pad and a stringer. The thruster's fins are drawn at the places and sizes `THRUSTER` gives their forces. There are five unbranded designs.
+- [x] **Part A · Sky:** three Poly Haven pure-sky photos for dawn, midday and sunset. Each sun is moved out of its HDR into a measured directional light, so the photo lights the shade and the light casts the shadow.
+  - The sun-direction control turns the photo, and the sun-height slider snaps to the nearest photo.
+  - Neutral tone mapping.
+- [x] **Part A · Shadows:** four levels, each checked in the browser:
+  - a blob;
+  - the rider and board on themselves and the deck;
+  - also the water and seabed;
+  - soft PCSS.
+
+  The shadow camera follows the rider in whole texels. `?shadows=` picks a level until P8's presets do.
+- [x] **Part A · Paddle splashes:** each pulling hand throws spray in proportion to the work it does on the water, at the lip splash's rate.
+- [ ] **Part B (after P8 merges):**
+  - a Surfer card on the Surf screen with a slowly rotating preview under the chosen time of day, with pickers for body, outfit, wetsuit colour and board design, saved in P8's settings;
+  - P8's Time of day picks the sky;
+  - Low–Ultra pick the shadow level, the level of detail and the texture sizes.
+- [ ] **Then:** a playtest with the user. `character-sheet.html` is the dev screenshot sheet: every surfer prone, standing and fallen, at chase distance and at 1.5 m, under each sky, plus a sun-alignment check.
+- **Backlog:**
+  - the beach, sand and coastline;
+  - water texture detail;
+  - a replay or photo mode;
+  - dripping water;
+  - a full character creator;
+  - motion capture to refine the paddle and pop-up;
+  - Mixamo clips (swim, tread water, beach idle), which need the user's Adobe login;
+  - moving to the WebGPU renderer;
+  - a preset's mass and height fed into the physics (after P9's flexible rider);
+  - the leash, drawn once P11 adds it to the physics.
+
 ### Future gameplay mechanics — `Backlog`
 
 Physical inputs to the rider, not scripted moves (user's list, 2026-09-26):
