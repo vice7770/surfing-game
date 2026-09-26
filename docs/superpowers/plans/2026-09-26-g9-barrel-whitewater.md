@@ -38,7 +38,7 @@
 
 ## Part A · The barrel look
 
-### Task A1: The tube table and the interpolated carve
+### Task 1 (A1): The tube table and the interpolated carve
 
 **Files:**
 - Create: `src/wave/tubeTable.ts`, `src/wave/tubeTable.test.ts`
@@ -126,7 +126,7 @@ describe('tube table', () => {
 - [ ] **Step 5: Run:** `npx vitest run src/wave`. Expected: PASS. Existing carve tests that sample a column off its centre may now see the interpolation. Update them only to the interpolated value, with a ledger ruling, never by loosening a tolerance.
 - [ ] **Step 6: Commit:** `git add src/wave && git commit -m "feat: carve tubes from one table, blended between neighbouring columns"`
 
-### Task A2: Raw heights and tubes cross to the page, which carves
+### Task 2 (A2): Raw heights and tubes cross to the page, which carves
 
 **Files:**
 - Modify:
@@ -167,7 +167,7 @@ describe('tube table', () => {
 - [ ] **Step 4: Run:** `npx vitest run src/game src/scene src/wave`. Expected: PASS, with the Classic snapshots unchanged.
 - [ ] **Step 5: Commit:** `git add src && git commit -m "feat: send the page raw heights and the flying tubes, and carve there"`
 
-### Task A3: The void cut per vertex and per pixel in Rich
+### Task 3 (A3): The void cut per vertex and per pixel in Rich
 
 **Files:**
 - Create: `src/scene/water/tubeCarve.ts`, `src/scene/water/tubeCarve.test.ts`
@@ -260,7 +260,7 @@ describe('tube table', () => {
 - [ ] **Step 5: Sheet check** (in Task A5's shots): the tube's inside curves smoothly in the patch, with no 1 m steps along the peel.
 - [ ] **Step 6: Commit:** `git add src/scene && git commit -m "feat: cut the tube's void per vertex and per pixel in the Rich water"`
 
-### Task A4: The lip as a smooth, thick, sky-lit curtain in Rich
+### Task 4 (A4): The lip as a smooth, thick, sky-lit curtain in Rich
 
 **Files:**
 - Create: `src/scene/water/richLip.ts`, `src/scene/water/richLip.test.ts`
@@ -310,7 +310,7 @@ describe('tube table', () => {
 - [ ] **Step 4: Run:** `npx vitest run src/scene`. Expected: PASS, every Classic snapshot unchanged.
 - [ ] **Step 5: Commit:** `git add src && git commit -m "feat: draw the lip as a smooth, thick, sky-lit curtain in the Rich look"`
 
-### Task A5: Tube shots, a clip, the record and the Part A PR
+### Task 5 (A5): Tube shots, a clip, the record and the Part A PR
 
 **Files:**
 - Modify: `src/dev/waterSheet.ts` (`?waterSheet&spot=reef`: tube shots), `ROADMAP.md` (G9 entry, Part A), `docs/superpowers/specs/2026-09-26-g9-barrel-whitewater.md` (nothing unless a ruling changes it)
@@ -338,7 +338,7 @@ describe('tube table', () => {
 
 ## Part B · Breaking whitewater
 
-### Task B1: Sources and ranges
+### Task 6 (B1): Sources and ranges
 
 **Files:**
 - Create: `docs/research/whitewater-sources.md`
@@ -364,7 +364,7 @@ describe('tube table', () => {
   - Record every change from a default as a ledger ruling. Later tasks read their constants from this document.
 - [ ] **Step 3: Commit:** `git add docs/research && git commit -m "docs: sources and ranges for breaking whitewater"`
 
-### Task B2: The aeration field, and churn by aeration
+### Task 7 (B2): The aeration field, and churn by aeration
 
 **Files:**
 - Create: `src/wave/AerationField.ts`, `src/wave/AerationField.test.ts`
@@ -409,7 +409,7 @@ describe('tube table', () => {
 - [ ] **Step 4: Run:** `npx vitest run src/wave src/game src/scene`. Expected: PASS, Classic unchanged.
 - [ ] **Step 5: Commit:** `git add src && git commit -m "feat: track the air breaking waves drive into the water, and draw churn where it is"`
 
-### Task B3: Splash-up
+### Task 8 (B3): Splash-up
 
 **Files:**
 - Modify:
@@ -436,7 +436,7 @@ describe('tube table', () => {
 - [ ] **Step 4: Run:** `npx vitest run src/wave src/physics src/scene`. Expected: PASS. Existing ride and catch tests may shift slightly, because splash-up water returns later. Any test that changes gets a ledger ruling with the before and after values.
 - [ ] **Step 5: Commit:** `git add src && git commit -m "feat: throw a splash-up from each landing lip"`
 
-### Task B4: Trapped air, the collapse and the spit
+### Task 9 (B4): Trapped air, the collapse and the spit
 
 **Files:**
 - Modify:
@@ -476,7 +476,7 @@ describe('tube table', () => {
 - [ ] **Step 4: Run:** `npx vitest run src/wave src/physics`. Expected: PASS. Rulings for any ride or catch test that moves, because the collapse changes the carve for a fraction of a second.
 - [ ] **Step 5: Commit:** `git add src && git commit -m "feat: collapse tubes as their air escapes, spitting from the mouth"`
 
-### Task B5: The foam ball
+### Task 10 (B5): The foam ball
 
 **Files:**
 - Modify:
@@ -500,7 +500,7 @@ describe('tube table', () => {
 - [ ] **Step 4: Run:** `npx vitest run src/wave src/scene`. Expected: PASS.
 - [ ] **Step 5: Commit:** `git add src && git commit -m "feat: tumble a foam ball in the collapsing tube"`
 
-### Task B6: The bubble plume
+### Task 11 (B6): The bubble plume
 
 **Files:**
 - Modify: `src/scene/water/richWaterGlsl.ts` (the plume in the Rich body chunk: above, and from below)
@@ -512,7 +512,7 @@ describe('tube table', () => {
 - [ ] **Step 4: Run:** `npx vitest run src/scene`. Expected: PASS.
 - [ ] **Step 5: Commit:** `git add src && git commit -m "feat: draw the bubble plume under the whitewater"`
 
-### Task B7: Whitewater report, sheet, clip, record and the Part B PR
+### Task 12 (B7): Whitewater report, sheet, clip, record and the Part B PR
 
 **Files:**
 - Create: `scripts/whitewater-report.ts`, `docs/research/whitewater-report.md`
