@@ -17,6 +17,7 @@ import {
   Vector3,
 } from 'three';
 import { Controls } from './game/Controls';
+import { devFlag, devParam } from './devTools';
 import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
 import { DEFAULT_PHYSICAL_SETTINGS, PRACTICE_SWELL, PhysicalMode, localSurfZone, spreadingFor, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
@@ -65,17 +66,17 @@ const LEGACY_OPTICS: Record<Spot, SpotName> = { training: 'beach', point: 'point
 const SPOT_NAMES: Record<Spot, string> = {
   training: 'PACIFIC TRAINING BREAK', point: 'GLASSY POINT', reef: 'WINDY REEF', custom: 'CUSTOM BREAK',
 };
-const demoMode = new URLSearchParams(window.location.search).get('demo');
+const demoMode = devParam('demo');
 type WaterModel = 'legacy' | 'physical';
 /** `?physical` opens the view-only physical surf zone (plan P2c, option a). */
-const physicalRequested = new URLSearchParams(window.location.search).has('physical');
+const physicalRequested = devFlag('physical');
 /** `?record`: a dev tool films an autopilot ride frame by frame (src/dev/rideRecorder.ts); the page's own clock stays off. */
-const recordRequested = new URLSearchParams(window.location.search).has('record');
+const recordRequested = devFlag('record');
 /**
  * The surf zone runs in a Web Worker (plan §3.2, P4a); `?inpage`, or a browser
  * without workers, runs it on the main thread instead.
  */
-const createSurfZone: SurfZoneHostFactory = typeof Worker === 'undefined' || new URLSearchParams(window.location.search).has('inpage')
+const createSurfZone: SurfZoneHostFactory = typeof Worker === 'undefined' || devFlag('inpage')
   ? localSurfZone : (config) => new WorkerSurfZone(config, undefined, { rider: true });
 /** Only the worker steps on the GPU (plan P6), so only it gets the GPU tier's sea. */
 const gpuTier = createSurfZone === localSurfZone ? undefined : webGpuAvailable;
