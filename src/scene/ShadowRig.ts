@@ -162,6 +162,10 @@ export class ShadowRig {
     scene.add(this.blob);
   }
 
+  get currentLevel(): ShadowLevel {
+    return this.level;
+  }
+
   setLevel(level: ShadowLevel, receivers: { surfaces: readonly Mesh[] }): void {
     const map = level !== 'blob';
     this.renderer.shadowMap.enabled = map;

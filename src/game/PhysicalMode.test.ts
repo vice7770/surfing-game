@@ -151,6 +151,28 @@ describe('PhysicalMode', () => {
     expect(mode.homeView).toBe('side');
   });
 
+  it('rides as the chosen surfer: the body loaded once, dressed, and the board in its design', () => {
+    const mode = new PhysicalMode(new Scene());
+    const load = vi.spyOn(mode.surfer, 'load').mockResolvedValue();
+    const dress = vi.spyOn(mode.surfer, 'dress');
+    mode.setSurfer({ body: 'surfer3', outfit: 'vest', color: 'coral', board: 'midnight' });
+    expect(load).toHaveBeenCalledWith('surfer3');
+    expect(dress).toHaveBeenLastCalledWith('vestShorts', { accent: expect.objectContaining({ r: expect.any(Number) }) });
+    const colours = () => {
+      const found: string[] = [];
+      mode.board.traverse((object) => {
+        type Coloured = { color?: { getHexString(): string } };
+        const materials = ([] as Coloured[]).concat((object as unknown as { material?: Coloured | Coloured[] }).material ?? []);
+        for (const material of materials) if (material.color) found.push(`#${material.color.getHexString()}`);
+      });
+      return found;
+    };
+    expect(colours()).toContain('#2c3a50');
+    mode.setSurfer({ body: 'surfer3', outfit: 'fullsuit', color: 'teal', board: 'classic' });
+    expect(load).toHaveBeenCalledTimes(1);
+    expect(colours()).not.toContain('#2c3a50');
+  });
+
   it('lets go of a superseded surf zone at once, without waiting for its spin-up', async () => {
     const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
     const mode = new PhysicalMode(new Scene());

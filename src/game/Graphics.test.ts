@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultSettings } from './Settings';
+import { defaultSettings, type Detection, type GraphicsSettings } from './Settings';
 import { BenchmarkRecorder, PRESETS, choosePreset, needsDetection, resolveGraphics, withAdvanced, withPreset } from './Graphics';
 
 const steady = (ms: number, n = 360) => Array.from({ length: n }, () => ms);
@@ -41,6 +41,21 @@ describe('graphics', () => {
       { preset: 'medium', water: 'fast', lowPerformance: false, adapter: 'x' }, 3);
     expect(fast).toMatchObject({ frameInterval: 1000 / 30, stage: 1, compute: 'cpu', stillBackdrop: false });
     expect(resolveGraphics(withPreset(defaultSettings().graphics, 'ultra'), undefined, 3).pixelRatio).toBeCloseTo(1.75 * 1.25, 9);
+  });
+
+  it("lets each preset pick the surfer's shadow, level of detail and texture size (G7 Part B)", () => {
+    const at = (preset: GraphicsSettings['preset'], detected?: Detection) => {
+      const { shadows, surferLodDistance, textureCap } = resolveGraphics({ ...defaultSettings().graphics, preset }, detected, 1);
+      return { shadows, surferLodDistance, textureCap };
+    };
+    expect(at('low')).toEqual({ shadows: 'blob', surferLodDistance: 0, textureCap: 512 });
+    expect(at('medium')).toEqual({ shadows: 'rider', surferLodDistance: 8, textureCap: 1024 });
+    expect(at('high')).toEqual({ shadows: 'surfaces', surferLodDistance: 12, textureCap: 2048 });
+    expect(at('ultra')).toEqual({ shadows: 'soft', surferLodDistance: 20, textureCap: 2048 });
+    const detected: Detection = { preset: 'high', water: 'accurate', lowPerformance: false, adapter: 'test' };
+    expect(at('auto', detected)).toEqual(at('high'));
+    expect(at('custom', detected)).toEqual(at('high'));
+    expect(at('custom')).toEqual(at('medium'));
   });
 
   it('turns the preset to Custom when an advanced value changes, and back when a preset is chosen', () => {

@@ -45,6 +45,24 @@ describe('photo sky loading', () => {
     const a = (90 * Math.PI) / 180;
     expect(sky.sunDirection.x / Math.hypot(sky.sunDirection.x, sky.sunDirection.z)).toBeCloseTo(Math.sin(a), 6);
   });
+
+  it('releases its sky on dispose, and discards a load still under way when it finishes', async () => {
+    const { loads, disposed, finish } = controlledLoads();
+    const sky = new PhotoSky(undefined as never, 'assets/', loads);
+    const first = sky.select(2, 0);
+    await settle();
+    finish('sunrise');
+    await first;
+    const second = sky.select(48, 0);
+    await settle();
+    sky.dispose();
+    expect(disposed).toEqual(['sunrise']);
+    expect(sky.ready).toBe(false);
+    finish('noon');
+    expect(await second).toBe(false);
+    expect(disposed).toEqual(['sunrise', 'noon']);
+    expect(sky.ready).toBe(false);
+  });
 });
 
 describe('photo sky', () => {

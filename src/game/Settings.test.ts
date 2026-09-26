@@ -45,6 +45,17 @@ describe('SettingsStore', () => {
     expect(store.value.controls.bindings.gamepad.retry).toEqual([3]);
   });
 
+  it('keeps the player\'s surfer, saves a change to it and tells subscribers', () => {
+    const storage = memory();
+    const store = new SettingsStore(storage);
+    const heard = vi.fn();
+    store.subscribe(heard);
+    store.setSurfer({ body: 'surfer3', board: 'midnight' });
+    expect(store.value.surfer).toMatchObject({ body: 'surfer3', board: 'midnight', outfit: 'fullsuit' });
+    expect(heard).toHaveBeenCalledWith(store.value, 'surfer');
+    expect(new SettingsStore(storage).value.surfer.body).toBe('surfer3');
+  });
+
   it('saves every change, and keeps working when the storage throws', () => {
     const storage = memory();
     const store = new SettingsStore(storage);

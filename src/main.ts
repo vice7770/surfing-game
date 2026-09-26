@@ -22,6 +22,7 @@ import { Controls } from './game/Controls';
 import { frameDue } from './game/frameLimit';
 import { resolveGraphics, type ResolvedGraphics } from './game/Graphics';
 import { SettingsStore, defaultSettings } from './game/Settings';
+import { SURFER_BODIES, type SurferSettings } from './game/SurferChoice';
 import { devFlag, devParam } from './devTools';
 import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
@@ -130,6 +131,8 @@ class SurfGame {
   private readonly photoSky: PhotoSky;
   /** The sun's shadow around the rider (G7); `?shadows=` picks the level until P8's presets do. */
   private readonly shadows: ShadowRig;
+  /** What the sun's shadow falls on from the High preset up. */
+  private readonly shadowSurfaces: Mesh[];
   private readonly shadowSun = new Vector3();
   private readonly shadowNose = new Vector3();
   private reflectionMapTarget?: WebGLRenderTarget;
@@ -221,8 +224,6 @@ class SurfGame {
     this.scene.add(this.water.mesh, this.sheetMesh.mesh);
     this.scene.add(this.seabed.mesh);
     this.physicalMode = new PhysicalMode(this.scene);
-    // `?surfer=surfer2…4` picks another body until Part B's picker (dev flag).
-    void this.physicalMode.surfer.load(new URLSearchParams(window.location.search).get('surfer') ?? 'surfer1');
     this.physicalMode.farField.mesh.material.envMapIntensity = 0.28;
     this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
     this.physicalMode.seabed.useCaustics(this.water.causticUniforms, this.water.causticSource as never);
@@ -232,9 +233,8 @@ class SurfGame {
     this.scene.add(this.surfer.group);
     this.scene.add(this.boardWake.trail, this.boardWake.spray, this.breakSpray.points);
     this.shadows = new ShadowRig(this.renderer, this.sunlight, this.scene);
-    this.shadows.setLevel(parseShadowLevel(window.location.search), {
-      surfaces: [this.water.mesh, this.physicalMode.seabed.mesh, this.physicalMode.farField.mesh],
-    });
+    this.shadowSurfaces = [this.water.mesh, this.physicalMode.seabed.mesh, this.physicalMode.farField.mesh];
+    this.shadows.setLevel(parseShadowLevel(window.location.search), { surfaces: this.shadowSurfaces });
 
     const markerMaterial = new MeshStandardMaterial({ color: '#f9a273', emissive: '#a34b2d', emissiveIntensity: 0.22, roughness: 0.5 });
     this.crestMarker = new Mesh(new BoxGeometry(9, 0.025, 0.055), markerMaterial);
@@ -307,6 +307,12 @@ class SurfGame {
   }
 
   /** Apply the graphics settings (plan P8): resolution, frame limit, and what is drawn; water changes wait for the next wave. */
+  /** Ride as the player's surfer (G7 Part B); `?surfer=surfer1…4` still picks the body (dev flag). */
+  setSurfer(choice: SurferSettings): void {
+    const body = SURFER_BODIES.find((candidate) => candidate.id === devParam('surfer'))?.id;
+    this.physicalMode.setSurfer(body ? { ...choice, body } : choice);
+  }
+
   applyGraphics(resolved: ResolvedGraphics): void {
     this.graphics = resolved;
     this.needsRender = true;
@@ -316,6 +322,11 @@ class SurfGame {
     this.breakSpray.points.visible = resolved.sprayMist && this.mode === 'legacy';
     this.physicalMode.farField.setViewDistance(resolved.oceanView);
     this.water.setFoamDetail(resolved.detailedFoam);
+    // The preset's shadow and surfer detail (G7 Part B); `?shadows=` still picks the level.
+    const level = parseShadowLevel(window.location.search, resolved.shadows);
+    // A new level recompiles every material, so only a change applies it.
+    if (level !== this.shadows.currentLevel) this.shadows.setLevel(level, { surfaces: this.shadowSurfaces });
+    this.physicalMode.surfer.setDetail(resolved.surferLodDistance, resolved.textureCap);
     this.applyWaterLook(resolved.waterLook);
   }
 
@@ -1108,8 +1119,10 @@ const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-r
 const settings = new SettingsStore(availableStorage(), defaultSettings(reducedMotion));
 const applyGraphics = () => game.applyGraphics(resolveGraphics(settings.value.graphics, settings.value.detected, window.devicePixelRatio));
 applyGraphics();
-settings.subscribe((_, change) => {
+game.setSurfer(settings.value.surfer);
+settings.subscribe((value, change) => {
   if (change === 'graphics' || change === 'detected') applyGraphics();
+  if (change === 'surfer') game.setSurfer(value.surfer);
 });
 const controls = new Controls(() => settings.value.controls.bindings, {
   retry: () => {

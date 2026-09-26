@@ -56,8 +56,10 @@ function press(group: HTMLElement, chosen: HTMLElement): void {
   for (const button of group.querySelectorAll('button')) button.setAttribute('aria-pressed', String(button === chosen));
 }
 
-/** Pick a spot and the conditions, then paddle out. Choices apply as they are made; nothing re-renders. */
-export function createSurfScreen(initial: SurfChoice, handlers: { change(choice: SurfChoice): void; paddleOut(): void; back(): void }): HTMLElement {
+/** Pick a spot and the conditions (and, in `surfer`, who rides), then paddle out. Choices apply as they are made; nothing re-renders. */
+export function createSurfScreen(
+  initial: SurfChoice, handlers: { change(choice: SurfChoice): void; paddleOut(): void; back(): void }, surfer?: Node,
+): HTMLElement {
   const choice: SurfChoice = { spot: initial.spot, conditions: { ...initial.conditions } };
   const model = surfModel(choice);
   const spots = el('div', { class: 'spot-cards', attrs: { role: 'group', 'aria-label': t('surf.title') } });
@@ -102,6 +104,7 @@ export function createSurfScreen(initial: SurfChoice, handlers: { change(choice:
         el('h2', { text: t('surf.title') })),
       spots,
       el('div', { class: 'choice-rows' }, ...rows),
+      surfer,
       el('footer', { class: 'panel-footer' },
         el('button', { class: 'button-primary', attrs: { type: 'button' }, dataset: { nav: '', navDefault: '' }, text: t('surf.paddleOut'), on: { click: handlers.paddleOut } }))));
 }

@@ -2,6 +2,7 @@ import type { RideView } from '../scene/SpectatorCamera';
 import type { Units } from '../ui/units';
 import type { WaterLook } from '../scene/water/waterLook';
 import { ACTIONS, DEFAULT_BINDINGS, type Action, type Bindings } from './Bindings';
+import { DEFAULT_SURFER, sanitizeSurfer, type SurferSettings } from './SurferChoice';
 import { PRESETS } from './Graphics';
 
 /** The player's settings (plan P8): four tabs, the Auto benchmark's result, and one-off notices seen. */
@@ -65,6 +66,8 @@ export interface GameSettings {
   graphics: GraphicsSettings;
   controls: ControlSettings;
   accessibility: AccessibilitySettings;
+  /** Who the player rides as, chosen on the Surf screen (G7 Part B). */
+  surfer: SurferSettings;
   detected?: Detection;
   seen: { rideHints: boolean; lowPerformanceNotice: boolean };
 }
@@ -87,6 +90,7 @@ export function defaultSettings(prefersReducedMotion = false): GameSettings {
     },
     controls: { bindings: copyBindings(DEFAULT_BINDINGS), handedness: 'right' },
     accessibility: { reducedMotion: prefersReducedMotion, uiScale: 1, highContrastHud: false },
+    surfer: { ...DEFAULT_SURFER },
     seen: { rideHints: false, lowPerformanceNotice: false },
   };
 }
@@ -181,6 +185,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       uiScale: within(accessibility.uiScale, 0.9, 1.5, defaults.accessibility.uiScale),
       highContrastHud: flag(accessibility.highContrastHud, defaults.accessibility.highContrastHud),
     },
+    surfer: sanitizeSurfer(source.surfer, defaults.surfer),
     ...(detected ? { detected } : {}),
     seen: {
       rideHints: flag(seen.rideHints, defaults.seen.rideHints),
@@ -189,7 +194,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
   };
 }
 
-export type SettingsChange = SettingsTab | 'detected' | 'seen';
+export type SettingsChange = SettingsTab | 'surfer' | 'detected' | 'seen';
 type Listener = (settings: GameSettings, change: SettingsChange) => void;
 type SettingsStorage = Pick<Storage, 'getItem' | 'setItem'>;
 
@@ -218,6 +223,10 @@ export class SettingsStore {
 
   resetTab(tab: SettingsTab): void {
     this.commit({ ...this.current, [tab]: this.defaults[tab] }, tab);
+  }
+
+  setSurfer(patch: Partial<SurferSettings>): void {
+    this.commit({ ...this.current, surfer: { ...this.current.surfer, ...patch } }, 'surfer');
   }
 
   setDetected(detection: Detection | undefined): void {

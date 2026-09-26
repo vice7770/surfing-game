@@ -128,7 +128,7 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
     - the canyon's axis runs along the window's edge (x = 80), so its focusing flank fills the window and the bed is level across the open boundary. A canyon wall crossing the edge ran the edge cells unstable (3 → 57 m/s in 6 s); the open edge itself is fixed below;
     - the rider waits where the swell gathers: linear rays from the relaxation zone, averaged over half a wavelength, pick the take-off for the day's direction and period. It sits near x = 0 for the Surf screen's swells, and at −24 m for a swell from −10°. In the Boussinesq surf zone, its waves are 89–96 % of the largest along the lineup. Beach, Point and Reef keep their centre transect.
 
-    Ghost riders at the Canyon: 0 → 9 cues and 5 stands in the natural sea (longest 3.1 s), 0 → 34 cues and 5 stands in practice (4 rides ≥ 3 s, longest 5.9 s). Its card is back on the Surf screen. The other spots' rows moved with P7's lip since the last reports: the natural Point held (2 stands, longest 14.0 s), but the practice Point fell from 13 stands to 8 and lost its 13.7 s ride. That is one seed, so it needs a multi-seed check. [Natural](docs/research/catch-report.md) and [practice](docs/research/catch-report-practice.md) reports.
+    Ghost riders at the Canyon: 0 → 9 cues and 5 stands in the natural sea (longest 3.1 s), 0 → 34 cues and 5 stands in practice (4 rides ≥ 3 s, longest 5.9 s). Its card is back on the Surf screen. The other spots' rows moved with P7's lip since the last reports: the natural Point held (2 stands, longest 14.0 s); the practice Point's drop was checked over three seeds (below, under Later). [Natural](docs/research/catch-report.md) and [practice](docs/research/catch-report-practice.md) reports.
   - [x] Open edges hold over sloping beds (2026-09-26). With the Canyon's axis 30 m inside the window, its 0.34 wall crossed the open edge and the edge column ran away at t ≈ 67 s. At an open edge the dispersive terms extended the surface with the shallow-water fluxes' zero-gradient ghost. That made the edge's η_xx equal to −η_x/dx, not a curvature, and B g d³ η_xxx a surface-slope force 2.7 times the hydrostatic one in 9 m of water. Over a bed rising toward the edge, an along-shore outflow draws the surface down, and that force pushed on the drawdown until it ran away. The edge column now takes its neighbour's curvature, on the CPU and the GPU:
     - that layout runs 90 s under 3.3 m/s, like the level-bed ones;
     - the GPU matches the CPU to 7e-5 m over 10 s, against 0.2 m without the port;
@@ -204,10 +204,19 @@ Requirements agreed in a grilling session on 2026-09-26: [G7 spec](docs/superpow
   The shadow camera follows the rider in whole texels. `?shadows=` picks a level until P8's presets do.
 - [x] **Part A · Paddle splashes:** each pulling hand throws spray in proportion to the work it does on the water, at the lip splash's rate.
 - [x] **Merged with P8:** P8's Dawn, Midday and Sunset now pick their own photos. Their sun heights match the photos' measured suns, and dawn and sunset suns stand to the side of the seaward cameras (±110°), since looking into a photographed sunset's haze washed out the menu.
-- [ ] **Part B (P8 has merged, so it can start):**
-  - a Surfer card on the Surf screen with a slowly rotating preview under the chosen time of day, with pickers for body, outfit, wetsuit colour and board design, saved in P8's settings;
-  - P8's Time of day picks the sky;
-  - Low–Ultra pick the shadow level, the level of detail and the texture sizes.
+- [x] **Part B (2026-09-26):**
+  - **A Surfer card on the Surf screen:** pickers for surfer 1–4, the outfit (the rash vest is named for what goes with it on that body: a bikini or boardshorts), the suit's colour as six swatches and the five board designs. Picks apply at once and are saved with P8's settings.
+  - **The preview:** the surfer stands on their board, lit by the chosen time of day's photographed sky, with the camera circling at 0.15 rad/s (still with reduced motion). It has its own small WebGL context, released when the screen closes; without WebGL the pickers show alone.
+  - **Riding as the choice:** the physical mode loads the chosen body (the latest pick wins a race), dresses it, and builds the board in its design. `?surfer=` still overrides the body.
+  - **P8's Time of day picks the sky** (already so since the P8 merge).
+  - **The presets pick the surfer's detail:**
+    - Low: a blob shadow, the low-poly body and 512 px textures;
+    - Medium: the rider's own shadow, the full body within 8 m and 1024 px;
+    - High: the shadow on the water and seabed, 12 m and full-size (2048 px) textures;
+    - Ultra: soft shadows and 20 m.
+
+    Custom follows the detected preset. A new texture size reloads the surfer. `?shadows=` still picks the level.
+  - [Plan and record](docs/superpowers/plans/2026-09-26-g7b-surfer-card-and-presets.md).
 - [ ] **Then:** a playtest with the user. `character-sheet.html` is the dev screenshot sheet: every surfer prone, standing and fallen, at chase distance and at 1.5 m, under each sky, plus a sun-alignment check.
 - **Backlog:**
   - the beach, sand and coastline;
@@ -280,9 +289,11 @@ The user's original list of 15 mechanics (2026-09-26) is covered as follows:
 
 Follow-ups from the open-edge fix (#14) and the test timeouts (#15), 2026-09-26. The full-lock carve is not repeated here; it is P9's next physics item.
 1. **Rerun the catch reports.** The Canyon's ghost-rider numbers (#12) and the other spots' rows were measured before the open-edge fix, which changes breaking near the window's edges: in the 40 m Point peel test, lip launches went 28 → 57 and the second wave now breaks in almost every column. Regenerate the [natural](docs/research/catch-report.md) and [practice](docs/research/catch-report-practice.md) reports and the numbers quoted above.
-2. **Check the Point over several seeds.** The practice Point fell from 13 stands to 8 on one seed, and its peel and lip counts moved with the open-edge fix. Run several seeds before reading either as a change.
+2. **Checked (2026-09-26): the Point over several seeds.** Practice, 3 seeds × 2 min, 30 ghost riders, before P7 against now (tubes and the momentum fix):
+   - stands fell 14 → 3 and rides of 3 s or more 4 → 2 (longest 13.7 → 5.5 s); by seed, stands went 13 / 1 / 0 → 2 / 0 / 1, so seed 1's lucky run carries most of the drop;
+   - cues fell 225 → 186;
+   - lip strikes that knocked a paddler off rose 4 → 18. The lip now flies ahead of its crest, where a paddler heading straight in meets it. Real surfers take off on the shoulder, at an angle: that is P10's angled take-off, not a tuning of the lip.
 3. **Watch the settings sweep's timeouts.** Its three other tests take up to 14 s against their 20 s limit at load 12–16. Raise them to 60 s like the rest if they start to flake.
-4. **The issue seen while playing:** on the user's fix list, still to be described.
 
 ## Current milestone — sustained wave and physical wipeout — `Done for prototype`
 

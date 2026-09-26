@@ -1,37 +1,10 @@
-import {
-  BufferGeometry, Float32BufferAttribute, Group, MeshPhysicalMaterial, MeshStandardMaterial, Quaternion, Skeleton, SkinnedMesh,
-  Uint16BufferAttribute, Vector3,
-} from 'three';
+import { BufferGeometry, MeshPhysicalMaterial, MeshStandardMaterial, Quaternion, SkinnedMesh, Texture, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { BONES } from '../rig/humanoidBones';
 import { posturePoints } from '../rig/posturePoints';
 import { POINT, createRiderVisualState } from '../rig/riderVisualState';
-import { createTestHumanoid } from '../rig/testHumanoid';
-import { SkinnedSurfer } from './SkinnedSurfer';
-
-/** A scene shaped like a loaded surfer GLB: the skeleton, two body LODs, a hair card mesh. */
-function fakeGltfScene(): Group {
-  const { root, bones } = createTestHumanoid();
-  const list = [...bones.values()];
-  const index = (name: string) => list.findIndex((b) => b.name === name);
-  const mesh = (name: string, material: MeshStandardMaterial) => {
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new Float32BufferAttribute([0, 1.3, 0.1, 0.55, 1.4, 0, 0.09, 0.3, 0], 3));
-    geometry.setAttribute('skinIndex', new Uint16BufferAttribute([index(BONES.spine[2]), 0, 0, 0, index(BONES.foreArm.left), 0, 0, 0, index(BONES.leg.left), 0, 0, 0], 4));
-    geometry.setAttribute('skinWeight', new Float32BufferAttribute([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], 4));
-    const skinned = new SkinnedMesh(geometry, material);
-    skinned.name = name;
-    return skinned;
-  };
-  const scene = new Group();
-  scene.add(root);
-  const skeleton = new Skeleton(list);
-  for (const skinned of [mesh('LOD0', new MeshStandardMaterial({ name: 'Human.body' })), mesh('LOD1', new MeshStandardMaterial({ name: 'Human.body' })), mesh('Human.ponytail01', new MeshStandardMaterial({ name: 'Human.ponytail01', transparent: true }))]) {
-    scene.add(skinned);
-    skinned.bind(skeleton);
-  }
-  return scene;
-}
+import { SkinnedSurfer, capTextures } from './SkinnedSurfer';
+import { fakeGltfScene } from './testSurferScene';
 
 describe('skinned surfer', () => {
   it('never culls its skinned meshes, whose bind-pose bounds stay at the origin', () => {
@@ -71,5 +44,27 @@ describe('skinned surfer', () => {
     surfer.update(state, new Vector3(270, 3, -580));
     expect(surfer.group.getObjectByName('LOD0')!.visible).toBe(false);
     expect(surfer.group.getObjectByName('LOD1')!.visible).toBe(true);
+    // The graphics preset sets the distance: Ultra keeps the full body out to 20 m, Low never draws it.
+    surfer.lodDistance = 30;
+    surfer.update(state, new Vector3(270, 3, -580));
+    expect(surfer.group.getObjectByName('LOD0')!.visible).toBe(true);
+    surfer.lodDistance = 0;
+    surfer.update(state, new Vector3(252, 1.5, -597));
+    expect(surfer.group.getObjectByName('LOD1')!.visible).toBe(true);
+  });
+
+  it('downsizes textures above the cap, keeping their proportions', () => {
+    const scene = fakeGltfScene();
+    const skin = new Texture({ width: 2048, height: 1024 });
+    const small = new Texture({ width: 256, height: 256 });
+    (scene.getObjectByName('LOD0') as SkinnedMesh).material = new MeshStandardMaterial({ map: skin, roughnessMap: small });
+    const resized: [number, number][] = [];
+    capTextures(scene, 512, (_image, width, height) => {
+      resized.push([width, height]);
+      return { width, height };
+    });
+    expect(resized).toEqual([[512, 256]]);
+    expect(skin.image).toEqual({ width: 512, height: 256 });
+    expect(small.image).toEqual({ width: 256, height: 256 });
   });
 });

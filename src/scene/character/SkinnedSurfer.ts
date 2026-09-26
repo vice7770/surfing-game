@@ -1,4 +1,4 @@
-import { BufferAttribute, Group, Matrix4, Vector3, type Bone, type MeshStandardMaterial, type Object3D, type SkinnedMesh } from 'three';
+import { BufferAttribute, Group, Matrix4, Texture, Vector3, type Bone, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type SkinnedMesh } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { HumanoidRig } from '../rig/HumanoidRig';
@@ -6,7 +6,7 @@ import type { RiderVisualState } from '../rig/riderVisualState';
 import { computeOutfitCoverage, type OutfitId } from './outfits';
 import { DEFAULT_COLORS, dressMaterial, setOutfitColors, wetMaterial, type OutfitColors } from './surferMaterial';
 
-/** Beyond this camera distance the low-poly body (LOD1) is drawn, m. */
+/** Beyond this camera distance the low-poly body (LOD1) is drawn, m, unless the graphics preset says otherwise. */
 export const LOD_DISTANCE = 8;
 const BODY = /^LOD[01]$/;
 const EYES = /high-poly|low-poly/;
@@ -16,17 +16,52 @@ const EYES = /high-poly|low-poly/;
  * wet materials, an outfit on the body, the skeleton posed each frame from
  * the physics rider by `HumanoidRig`, and a low-poly body at a distance.
  */
+/** An image resized to width × height (the texture cap's default draws it on a canvas). */
+export type ResizeImage = (image: CanvasImageSource, width: number, height: number) => unknown;
+
+const canvasResize: ResizeImage = (image, width, height) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext('2d')?.drawImage(image, 0, 0, width, height);
+  return canvas;
+};
+
+/** Downsizes every texture under `root` larger than `cap` px on a side, keeping its proportions (the graphics preset's texture size). */
+export function capTextures(root: Object3D, cap: number, resize: ResizeImage = canvasResize): void {
+  const done = new Set<Texture>();
+  root.traverse((object) => {
+    const materials = ([] as Material[]).concat((object as Mesh).material ?? []);
+    for (const material of materials) {
+      for (const value of Object.values(material)) {
+        if (!(value instanceof Texture) || done.has(value)) continue;
+        done.add(value);
+        const image = value.image as { width?: number; height?: number } | undefined;
+        const largest = Math.max(image?.width ?? 0, image?.height ?? 0);
+        if (!(largest > cap)) continue;
+        const scale = cap / largest;
+        value.image = resize(value.image as CanvasImageSource, Math.round(image!.width! * scale), Math.round(image!.height! * scale));
+        value.needsUpdate = true;
+      }
+    }
+  });
+}
+
 export class SkinnedSurfer {
   readonly group = new Group();
   private readonly rig: HumanoidRig;
   private readonly bodies: SkinnedMesh[] = [];
   private outfit: OutfitId = 'fullsuit';
+  /** Beyond this camera distance the low-poly body is drawn, m (the graphics preset's level of detail). */
+  lodDistance = LOD_DISTANCE;
   private readonly colors: OutfitColors = {
     suit: DEFAULT_COLORS.suit.clone(), accent: DEFAULT_COLORS.accent.clone(), bottoms: DEFAULT_COLORS.bottoms.clone(),
   };
 
-  static async load(url: string): Promise<SkinnedSurfer> {
+  /** Loads a surfer GLB, its textures held to `textureCap` px on a side. */
+  static async load(url: string, textureCap = Infinity): Promise<SkinnedSurfer> {
     const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url);
+    capTextures(gltf.scene, textureCap);
     return SkinnedSurfer.fromScene(gltf.scene);
   }
 
@@ -64,7 +99,7 @@ export class SkinnedSurfer {
   update(state: RiderVisualState, cameraPosition?: Vector3): void {
     this.rig.solve(state);
     if (!cameraPosition) return;
-    const far = cameraPosition.distanceTo(state.boardPosition) > LOD_DISTANCE;
+    const far = cameraPosition.distanceTo(state.boardPosition) > this.lodDistance;
     for (const body of this.bodies) body.visible = body.name === 'LOD1' ? far : !far;
   }
 

@@ -1,8 +1,9 @@
-import { Vector3, type Scene } from 'three';
+import { Color, Mesh, Vector3, type Material, type Scene } from 'three';
 import type { StandRefusal } from '../physics/AttachedRider';
 import type { WaveFrame } from '../physics/waveFrame';
 import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
+import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SurferView } from '../scene/character/SurferView';
 import { createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
@@ -24,6 +25,7 @@ import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } f
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
 import { OFFSHORE_DEPTH, SEA_COMPONENTS, TANK, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
+import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
 /** Wave Lab inputs for the view-only physical surf zone (buoy values or a storm, plan Q2, Q22 and Q31). */
 export interface PhysicalSettings {
@@ -220,7 +222,10 @@ export class PhysicalMode {
   /** Spray and mist thrown up by lip impacts, bores and offshore wind (G6). */
   readonly spray = new SprayPoints();
   /** The physical board, drawn at the snapshot's pose. */
-  readonly board = createBoardMesh(buildBoardShape());
+  private readonly boardShape = buildBoardShape();
+  readonly board = createBoardMesh(this.boardShape);
+  private boardDesign = BOARD_DESIGNS[0].id;
+  private surferBody?: string;
   /** The rider's body, solved from the snapshot's seven points: a skinned surfer (G7), or the simple one until it loads. */
   readonly surfer = new SurferView();
   private readonly riderState = createRiderVisualState();
@@ -289,6 +294,29 @@ export class PhysicalMode {
     scene.add(this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group);
     this.board.visible = false;
     this.surfer.group.visible = false;
+  }
+
+  /** Rides as the player's surfer (G7 Part B): a new body loads, it is dressed, and the board is built in its design. */
+  setSurfer(choice: SurferSettings): void {
+    this.surfer.dress(outfitFor(choice), { accent: new Color(SUIT_COLORS[choice.color]) });
+    if (choice.body !== this.surferBody) {
+      this.surferBody = choice.body;
+      void this.surfer.load(choice.body);
+    }
+    const design = BOARD_DESIGNS.find((candidate) => candidate.id === choice.board);
+    if (design && design.id !== this.boardDesign) {
+      this.boardDesign = design.id;
+      const next = createBoardMesh(this.boardShape, design);
+      for (const old of [...this.board.children]) {
+        old.traverse((object) => {
+          if (!(object instanceof Mesh)) return;
+          object.geometry.dispose();
+          for (const material of ([] as Material[]).concat(object.material)) material.dispose();
+        });
+        this.board.remove(old);
+      }
+      this.board.add(...next.children);
+    }
   }
 
   get ready(): boolean {
