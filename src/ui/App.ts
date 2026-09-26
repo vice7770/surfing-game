@@ -20,6 +20,7 @@ import { el } from './dom';
 import { createLogbookScreen, logbookModel } from './LogbookScreen';
 import { createSettingsScreen } from './SettingsScreen';
 import { createMainMenu, refreshSoundToggles } from './MainMenu';
+import { createSoundCheck } from './SoundCheck';
 import { MenuInput } from './MenuInput';
 import { createPauseMenu } from './PauseMenu';
 import { createRideEndCard, endCardModel } from './RideEndCard';
@@ -130,6 +131,7 @@ export class App {
     this.sound = new GameSound(settings, () => refreshSoundToggles(this.ui, this.sound.muted));
     // Dev tools: the sound, for checks in the page and the sound check.
     if (DEV_TOOLS) (globalThis as unknown as { breaklineSound?: GameSound }).breaklineSound = this.sound;
+    if (DEV_TOOLS) this.bindSoundCheck();
     // A quiet click for every menu button (S1).
     this.ui.addEventListener('click', (event) => {
       if ((event.target as Element | null)?.closest?.('button')) this.sound.playUi('click');
@@ -142,6 +144,24 @@ export class App {
       if (this.settings.value.controls.bindings.keyboard.mute.includes(event.code)) this.toggleMute();
     });
     this.show();
+  }
+
+  /** The Wave Lab's sound check (dev tools): a panel of every sound, opened from its toolbar. */
+  private bindSoundCheck(): void {
+    const toggle = document.getElementById('sound-check-toggle');
+    const lab = document.getElementById('wave-lab');
+    if (!toggle || !lab) return;
+    let panel: HTMLElement | undefined;
+    toggle.addEventListener('click', () => {
+      if (panel) {
+        panel.remove();
+        panel = undefined;
+      } else {
+        panel = createSoundCheck(() => this.sound.audioEngine);
+        lab.append(panel);
+      }
+      toggle.setAttribute('aria-pressed', String(panel !== undefined));
+    });
   }
 
   /** Sound on or off: M, the gamepad's Back, or a speaker toggle. */

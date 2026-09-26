@@ -124,6 +124,25 @@ export class AudioEngine {
     return bus === 'master' ? this.master.gain.value : this.buses[bus].gain.value;
   }
 
+  /** The sound check (dev tools): play a buffer once, unplaced, at a gain. */
+  audition(buffer: AudioBuffer, gain: number): void {
+    const source = this.context.createBufferSource();
+    source.buffer = buffer;
+    const level = this.context.createGain();
+    level.gain.value = gain;
+    source.connect(level).connect(this.buses.ui);
+    source.onended = () => level.disconnect();
+    source.start();
+    // A loop is auditioned for four seconds.
+    if (buffer.duration > 4) source.stop(this.context.currentTime + 4);
+  }
+
+  /** The sound check: set one bus's level directly, without touching the saved settings. */
+  setBusLevel(bus: Bus | 'master', level: number): void {
+    const node = bus === 'master' ? this.master : this.buses[bus];
+    node.gain.setTargetAtTime(level, this.context.currentTime, RAMP);
+  }
+
   playUi(id: 'click' | 'chime'): void {
     const source = this.context.createBufferSource();
     source.buffer = this.bank.buffer(id);
