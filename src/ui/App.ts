@@ -11,12 +11,15 @@ import type { SpotName } from '../wave/Bathymetry';
 import type { SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { ReadoutRow } from '../wave/SwellReadout';
 import { applyAccessibility } from './accessibility';
+import { GameSound } from '../audio/GameSound';
+import type { ListenerPose } from '../audio/AudioEngine';
+import type { SoundFrame } from '../audio/soundMapping';
 import { PhysicsReadoutPanel } from './PhysicsReadoutPanel';
 import packageJson from '../../package.json';
 import { el } from './dom';
 import { createLogbookScreen, logbookModel } from './LogbookScreen';
 import { createSettingsScreen } from './SettingsScreen';
-import { createMainMenu } from './MainMenu';
+import { createMainMenu, refreshSoundToggles } from './MainMenu';
 import { MenuInput } from './MenuInput';
 import { createPauseMenu } from './PauseMenu';
 import { createRideEndCard, endCardModel } from './RideEndCard';
@@ -48,6 +51,9 @@ export interface GameHost {
   enterWaveLab(): void;
   setReducedMotion(reduced: boolean): void;
   readonly readout: ReadoutRow[];
+  /** Sound (S1): the surf zone's report for this frame, and the camera as the listener. */
+  soundFrame(dt: number, paused: boolean): SoundFrame | undefined;
+  readonly listenerPose: ListenerPose;
 }
 
 function localStore(): Storage | undefined {
@@ -103,6 +109,7 @@ export class App {
   private fps = 0;
   private rotateHint?: HTMLElement;
   private rotateDismissed = false;
+  private readonly sound: GameSound;
 
   constructor(
     private readonly game: GameHost,
@@ -120,12 +127,33 @@ export class App {
     this.settings.subscribe((_, change) => {
       if (change === 'accessibility' || change === 'gameplay' || change === 'controls') this.applyAccessibility();
     });
+    this.sound = new GameSound(settings, () => refreshSoundToggles(this.ui, this.sound.muted));
+    // Dev tools: the sound, for checks in the page and the sound check.
+    if (DEV_TOOLS) (globalThis as unknown as { breaklineSound?: GameSound }).breaklineSound = this.sound;
+    // A quiet click for every menu button (S1).
+    this.ui.addEventListener('click', (event) => {
+      if ((event.target as Element | null)?.closest?.('button')) this.sound.playUi('click');
+    });
+    // In the menus the ride controls are off, so the mute key is heard here.
+    window.addEventListener('keydown', (event) => {
+      if (this.controls.enabled || event.repeat || event.defaultPrevented) return;
+      const tag = (event.target as Element | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      if (this.settings.value.controls.bindings.keyboard.mute.includes(event.code)) this.toggleMute();
+    });
     this.show();
+  }
+
+  /** Sound on or off: M, the gamepad's Back, or a speaker toggle. */
+  toggleMute(): void {
+    this.sound.toggleMute();
   }
 
   /** Called by the game once per rendered frame: the gamepad, and the Auto benchmark while the menu's waves run. */
   frame(intervalMs: number, status?: SurfZoneStatus): void {
     this.menuInput.poll();
+    const dt = intervalMs / 1000;
+    this.sound.frame(this.game.soundFrame(dt, this.stack.stack.includes('pause')), this.game.listenerPose, dt);
     if (intervalMs > 0 && intervalMs < 500) this.fps += (1000 / intervalMs - this.fps) * 0.1;
     if (this.stack.current === 'ride' && this.telemetry.isConnected) {
       this.telemetryClock += intervalMs;
@@ -213,7 +241,7 @@ export class App {
         waveLab: () => this.enterWaveLab(),
         logbook: () => this.go('logbook'),
         settings: () => this.go('settings'),
-      }, { devTools: DEV_TOOLS, version: packageJson.version })];
+      }, { devTools: DEV_TOOLS, version: packageJson.version, sound: { muted: this.sound.muted, toggle: () => this.toggleMute() } })];
     }
     if (id === 'surf') {
       return [createSurfScreen(this.surfChoice, {
@@ -257,6 +285,7 @@ export class App {
         },
         settings: () => this.go('settings'),
         quit: () => this.quitToMenu(),
+        sound: { muted: this.sound.muted, toggle: () => this.toggleMute() },
       }, this.viewLabel())];
     }
     return [];
@@ -310,6 +339,7 @@ export class App {
     const { report: _, timeScale: __, ...summary } = result;
     const records = this.logbook.add({ ...summary, spot, conditions, seed: this.seed, at: Date.now(), ...(score !== undefined ? { score } : {}) });
     if (!this.settings.value.seen.rideHints) this.settings.markSeen('rideHints');
+    if (records.length > 0) this.sound.playUi('chime');
     this.hideEndCard();
     const scoring = score !== undefined ? { score, bestTwo: bestTwo(this.sessionScores) } : undefined;
     this.endCard = createRideEndCard(endCardModel(result, records, this.settings.value.gameplay.units, scoring), {

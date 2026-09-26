@@ -1,4 +1,5 @@
 import { el } from './dom';
+import { soundToggle } from './MainMenu';
 import { t } from './strings';
 
 export interface PauseHandlers {
@@ -9,6 +10,8 @@ export interface PauseHandlers {
   camera(): string;
   settings(): void;
   quit(): void;
+  /** The speaker toggle (S1). */
+  sound: { muted: boolean; toggle(): void };
 }
 
 /** The pause menu (plan P8): the waves hold still until Resume, Esc or B. */
@@ -32,5 +35,6 @@ export function createPauseMenu(handlers: PauseHandlers, viewName: string): HTML
         item(t('pause.newWave'), handlers.newWave),
         camera,
         item(t('pause.settings'), handlers.settings),
+        soundToggle('pause-item', handlers.sound.muted, handlers.sound.toggle),
         item(t('pause.quit'), handlers.quit))));
 }

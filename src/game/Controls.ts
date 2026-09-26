@@ -8,6 +8,8 @@ export interface ControlHandlers {
   retry(): void;
   camera(): void;
   pause(): void;
+  /** Sound on and off (S1). */
+  mute?(): void;
 }
 
 /** Where the controls listen: the window and the connected pads by default; tests pass stand-ins. */
@@ -148,6 +150,7 @@ export class Controls {
     else if (action === 'retry') this.handlers.retry();
     else if (action === 'camera') this.handlers.camera();
     else if (action === 'pause') this.handlers.pause();
+    else if (action === 'mute') this.handlers.mute?.();
   }
 
   private release(): void {

@@ -34,7 +34,7 @@ export class SoundBank {
 
   constructor(private readonly context: AudioContextLike, readonly manifest: SoundManifest, options: SoundBankOptions = {}) {
     this.fetcher = options.fetcher ?? defaultFetcher;
-    this.base = options.base ?? '/assets/audio/';
+    this.base = options.base ?? 'assets/audio/';
     const loads = (Object.keys(manifest.sounds) as SoundId[]).map(async (id) => {
       const entry = manifest.sounds[id]!;
       const candidate = entry.candidates[entry.chosen];

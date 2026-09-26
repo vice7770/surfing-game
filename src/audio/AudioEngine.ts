@@ -58,8 +58,16 @@ export class AudioEngine {
 
   private constructor(readonly context: AudioContext) {
     const c = context;
+    // A limiter before the output, so a burst of lip impacts cannot clip.
+    const limiter = c.createDynamicsCompressor();
+    limiter.threshold.value = -6;
+    limiter.knee.value = 6;
+    limiter.ratio.value = 12;
+    limiter.attack.value = 0.003;
+    limiter.release.value = 0.25;
+    limiter.connect(c.destination);
     this.mute = c.createGain();
-    this.mute.connect(c.destination);
+    this.mute.connect(limiter);
     this.master = c.createGain();
     this.master.connect(this.mute);
     this.muffle = c.createBiquadFilter();

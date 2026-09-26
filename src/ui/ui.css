@@ -72,6 +72,9 @@
 .menu-strip { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 1em; padding: .8em 16px; color: #eaf1e5; font: .66em var(--mono); letter-spacing: .12em; text-transform: uppercase; }
 .strip-button { display: inline-flex; align-items: center; gap: .6em; min-height: 2.4em; padding: 0 .9em; border: 1px solid rgba(248, 246, 234, .45); border-radius: 99px; background: rgba(23, 63, 67, .35); color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; backdrop-filter: blur(8px); }
 .strip-button svg { width: 1.4em; height: 1.4em; }
+.strip-group { display: inline-flex; flex-wrap: wrap; gap: .5em; }
+.pause-item[data-sound-toggle] { display: inline-flex; align-items: center; justify-content: center; gap: .5em; }
+.pause-item[data-sound-toggle] svg { width: 1.2em; height: 1.2em; }
 
 .notice { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); width: min(92vw, 26em); padding: 1em 1.1em; border-radius: 12px; background: var(--paper); box-shadow: 0 14px 40px rgba(18, 64, 68, .2); backdrop-filter: blur(14px); }
 .notice h2 { margin: 0 0 .35em; font-size: 1.05em; }
