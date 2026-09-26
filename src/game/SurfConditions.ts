@@ -3,6 +3,13 @@ import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalSettings } from './PhysicalMode
 
 /** The Surf screen's few choices (plan P8), turned into the Wave Lab's physical settings. */
 export const SURF_SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon'];
+/**
+ * Where a new player paddles out: the Canyon, whose bed gathers the swell so its
+ * waves peel (median 58°) and catch best. The Beach, Point and Reef mostly close
+ * out (median 12–15°): their swell refracts parallel to the contours before it
+ * breaks (the wave-and-turns findings).
+ */
+export const DEFAULT_SPOT: SpotName = 'canyon';
 
 export type SwellSize = 'practice' | 'small' | 'medium' | 'big';
 export type TideLevel = 'low' | 'mid' | 'high';
