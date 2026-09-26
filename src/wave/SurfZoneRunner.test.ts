@@ -2,6 +2,7 @@ import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { REFERENCE_BOARD } from '../physics/boardReference';
 import { WATER } from '../physics/hullForces';
+import { createWaterSample } from '../physics/SurfWater';
 import type { SpotName } from './Bathymetry';
 import { BubbleCloud } from './BubbleCloud';
 import { RIDER_PHASES, RIDER_SNAPSHOT, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea } from './SurfZoneRunner';
@@ -201,6 +202,31 @@ describe('SurfZoneRunner with a rider', () => {
     expect(runner.session!.rider.phase).toBe('prone');
     expect(runner.simulation.seaTime).toBeGreaterThan(seaTime);
     expect(runner.status().ride!.resets).toBe(1);
+  });
+
+  it('reads each ride from its trace, and reports the finished ride as plain data', () => {
+    // On a flat sea the break line, and the lineup just outside it, lie in the shallows: a ride there ends inside at once.
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    runner.advance(1);
+    expect(runner.status().ride!.report).toBeUndefined();
+    const { rider, board } = runner.session!;
+    const { x, y, z } = board.position;
+    expect(runner.water.sampleAt(x, y, z, createWaterSample()).stillDepth).toBeLessThan(0.5);
+    const stand = () => {
+      // A pop-up's last two phases, as the analyzer reads them: landing, then standing.
+      for (const phase of ['landing', 'standing'] as const) {
+        rider.phase = phase;
+        board.attach(rider);
+        runner.advance(1);
+      }
+      runner.advance(1);
+    };
+    stand();
+    const status = runner.status();
+    expect(status.ride!.report).toMatchObject({ id: 1, end: 'inside', maneuvers: [] });
+    expect(structuredClone(status)).toEqual(status);
+    stand();
+    expect(runner.status().ride!.report!.id).toBe(2);
   });
 });
 

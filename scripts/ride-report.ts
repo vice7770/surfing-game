@@ -3,7 +3,9 @@
  * as a player would (the runner's own rider, feeding back on the water), and
  * every ride is measured against the wave under it: speed over ground against
  * the crest's speed and the peel's required speed c / sin α, and where on the
- * face it rode. Writes docs/research/ride-report.md.
+ * face it rode. Each ride is also read by the ride analyzer (turns and how the
+ * ride ended), and its turns are set beside Forsyth et al. 2024's. Writes
+ * docs/research/ride-report.md.
  *
  *   npm run report:ride -- --practice --seeds 2 --minutes 3
  *   npm run report:ride -- --practice --ghosts --minutes 5
@@ -13,9 +15,10 @@ import { writeFileSync } from 'node:fs';
 import { Vector3 } from 'three';
 import { Autopilot } from '../src/dev/Autopilot';
 import { DEFAULT_PHYSICAL_SETTINGS, swellFor } from '../src/game/PhysicalMode';
+import { RideAnalyzer, type ManeuverKind, type RideReport } from '../src/game/rideAnalysis';
 import type { LipParcelSource } from '../src/physics/DetachedSurfer';
 import { RideSession } from '../src/physics/RideSession';
-import type { SurfWater } from '../src/physics/SurfWater';
+import { createWaterSample, type SurfWater } from '../src/physics/SurfWater';
 import { WaveFrameGauge } from '../src/physics/waveFrame';
 import type { SpotName } from '../src/wave/Bathymetry';
 import { SURF_ZONE_STEP, SurfZoneRunner } from '../src/wave/SurfZoneRunner';
@@ -41,6 +44,8 @@ const RISE = 0.25 * swell.significantHeight;
 const LOOK = 14;
 /** Rides shorter than this, s, are not reported. */
 const MIN_RIDE = 3;
+/** After the autopilot ends a ride, the rider drifts at most this long, s, for the analyzer to close it. */
+const WIND_DOWN = 2;
 
 interface Ride {
   seconds: number;
@@ -60,6 +65,8 @@ interface Ride {
   ahead: number;
   aheadP90: number;
   outcome: string;
+  /** The ride analyzer's reading of it, when the analyzer closed it. */
+  analysis?: RideReport;
 }
 
 const mean = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : NaN);
@@ -80,6 +87,10 @@ interface Bot {
   trace: { speed: number; label: number; crest: number; required: number; face: number; ahead: number; x: number; z: number }[];
   request: { paddle: boolean; popUp: boolean; steer: number };
   retry: boolean;
+  analyzer: RideAnalyzer;
+  /** The analyzer's latest closed ride, and how long the rider has drifted since the autopilot ended its ride. */
+  analysis?: RideReport;
+  windDown: number;
 }
 
 function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: number; stands: number; outcomes: Map<string, number> } {
@@ -106,7 +117,7 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
   const bot = (session: RideSession, own: boolean, along: number): Bot => ({
     session, own, home: new Vector3(runner.focus.x + along, 0, runner.focus.z - 6),
     autopilot: new Autopilot({ rise: RISE }), gauge: new WaveFrameGauge({ directionX: Math.sin(radians), directionZ: Math.cos(radians) }),
-    trace: [], request: { paddle: false, popUp: false, steer: 0 }, retry: false,
+    trace: [], request: { paddle: false, popUp: false, steer: 0 }, retry: false, analyzer: new RideAnalyzer(), windDown: 0,
   });
   const bots: Bot[] = [bot(runner.session!, true, 0)];
   for (const along of ghostAlongs) {
@@ -123,6 +134,8 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
   let peelAge = Infinity;
   const steps = Math.round((minutes * 60) / SURF_ZONE_STEP);
   const own = bots[0];
+  const here = createWaterSample();
+  const left = new Vector3();
   for (let step = 0; step < steps; step += 1) {
     runner.advance(1, { ...own.request, retry: own.retry });
     own.retry = false;
@@ -144,6 +157,18 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
       const body = session.rider.attached ? board.centerOfMass : session.surfer.centerOfMass();
       const velocity = session.rider.attached ? board.velocity : session.surfer.linearMomentum().divideScalar(session.surfer.mass);
       const wave = b.gauge.update(b.own ? runner.water : ghostWater, body, velocity, SURF_ZONE_STEP, peelAngle);
+      runner.water.sampleAt(body.x, body.y, body.z, here);
+      left.set(1, 0, 0).applyQuaternion(board.orientation);
+      b.analyzer.push({
+        t: runner.simulation.seaTime, x: body.x, z: body.z, heading: session.heading, speed: Math.hypot(velocity.x, velocity.z),
+        roll: Math.asin(Math.max(-1, Math.min(1, left.y))), load: session.rider.contact.load, phase: session.phase, wave,
+        depth: here.stillDepth, breakingHere: here.breaking,
+      });
+      const closed = b.analyzer.report();
+      if (closed) {
+        b.analysis = closed;
+        b.analyzer = new RideAnalyzer();
+      }
       const ride = {
         phase: session.phase, speed: Math.hypot(board.velocity.x, board.velocity.z), boardSpeed: board.velocity.length(),
         cue: session.rider.popUpCue, popUp: { ...session.rider.popUpReport }, separation: session.separation, resets: 0, wave: { ...wave },
@@ -163,7 +188,9 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
         });
       }
       b.request = input;
-      if (autopilot.state === 'done') {
+      if (autopilot.state === 'done' && b.analyzer.riding && b.windDown < WIND_DOWN) {
+        b.windDown += SURF_ZONE_STEP;
+      } else if (autopilot.state === 'done') {
         const outcome = autopilot.outcome ?? '';
         outcomes.set(outcome, (outcomes.get(outcome) ?? 0) + 1);
         const { trace } = b;
@@ -179,9 +206,12 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
             crestSpeed: mean(finite('crest')), required: mean(finite('required')), ratio: mean(ratios),
             fastShare: ratios.length ? ratios.filter((r) => r > 1.3).length / ratios.length : NaN,
             faceFraction: mean(finite('face')), ahead: mean(finite('ahead')), aheadP90: quantile(finite('ahead'), 0.9),
-            outcome,
+            outcome, analysis: b.analysis,
           });
         }
+        b.analysis = undefined;
+        b.analyzer = new RideAnalyzer();
+        b.windDown = 0;
         b.trace = [];
         autopilot.reset();
         b.gauge.reset();
@@ -192,6 +222,43 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
     }
   }
   return { rides, attempts: bots.reduce((sum, b) => sum + b.autopilot.attempts, 0), stands, outcomes };
+}
+
+/** Forsyth et al. 2024 (the survey's §8): accomplished surfers' turns, and the radius and lateral load they imply. */
+const FORSYTH: Partial<Record<ManeuverKind, string>> = {
+  'bottom turn': '| Forsyth 2024 bottom turn | 3.8 per wave | 0.96 | 99 | 1.9 | 7.3 | 3.8 | 1.41 | 42 | — |',
+  cutback: '| Forsyth 2024 cutback / top turn | | 0.96 | 152 | 3.0 | 6.7 | 2.2 | 2.05 | 75 | — |',
+};
+
+/** The analyzer's reading of the rides: how they ended, their turns beside Forsyth's, and the speed kept from bottom turn to top turn. */
+function turnTables(rides: Ride[]): string {
+  const analyses = rides.map((r) => r.analysis).filter((a): a is RideReport => a !== undefined);
+  const ends = new Map<string, number>();
+  for (const a of analyses) ends.set(a.end, (ends.get(a.end) ?? 0) + 1);
+  const maneuvers = analyses.flatMap((a) => a.maneuvers);
+  const rows: string[] = [];
+  for (const kind of ['bottom turn', 'top turn', 'snap', 'cutback'] as ManeuverKind[]) {
+    const of = maneuvers.filter((m) => m.kind === kind);
+    const average = (value: (m: (typeof of)[number]) => number, digits = 1) => fixed(mean(of.map(value)), digits);
+    rows.push(`| ${kind} | ${of.length} | ${average((m) => m.end - m.start, 2)} | ${average((m) => Math.abs(m.yaw) * 180 / Math.PI, 0)} | ${average((m) => m.peakYawRate)} | ${average((m) => m.speedIn)} | ${average((m) => m.radius)} | ${average((m) => m.lateralG, 2)} | ${average((m) => m.roll * 180 / Math.PI, 0)} | ${of.length ? `${fixed((of.filter((m) => m.pocket).length / of.length) * 100, 0)} %` : '—'} |`);
+    if (FORSYTH[kind]) rows.push(FORSYTH[kind]!);
+  }
+  // Speed kept: a bottom turn's entry speed against the next top turn's (Forsyth's "turn flow").
+  const kept: number[] = [];
+  for (const a of analyses) {
+    a.maneuvers.forEach((m, i) => {
+      const next = a.maneuvers[i + 1];
+      if (m.kind === 'bottom turn' && next && next.kind !== 'bottom turn' && m.speedIn > 0) kept.push(next.speedIn / m.speedIn);
+    });
+  }
+  const unread = rides.length - analyses.length;
+  return `Ride ends (the ride analyzer): ${[...ends].map(([e, c]) => `${e} ×${c}`).join(', ') || 'none'}${unread ? `; ${unread} ride(s) still open when the rider was relaunched` : ''}. Turns per ride ${fixed(maneuvers.length / Math.max(1, analyses.length))}.
+
+| Turn | Count | Duration s | Yaw ° | Peak yaw rate rad/s | Speed in m/s | Radius m | Lateral g | Rail ° | In the pocket |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+${rows.join('\n')}
+
+Speed kept from a bottom turn into the next top turn: ${fixed(mean(kept), 2)} (${kept.length} pair(s)); Forsyth 2024's "turn flow" is 0.88–0.95.`;
 }
 
 const started = Date.now();
@@ -211,7 +278,7 @@ for (const spot of spots) {
     console.log(`${spot} seed ${seed}: ${run.attempts} attempts, ${run.stands} stands, ${run.rides.length} rides ≥ ${MIN_RIDE} s; ${[...run.outcomes].map(([o, c]) => `${o} ×${c}`).join(', ')}`);
   }
   summary.push(`| ${spot} | ${attempts} | ${stands} | ${all.length} | ${fixed(mean(all.map((r) => r.seconds)))} | ${fixed(mean(all.map((r) => r.meanSpeed)))} | ${fixed(all.length ? Math.max(...all.map((r) => r.topSpeed)) : NaN)} | ${fixed(mean(all.map((r) => r.meanLabel)))} | ${fixed(mean(all.map((r) => r.crestSpeed)))} | ${fixed(mean(all.map((r) => r.required)))} | ${fixed(mean(all.map((r) => r.ratio)), 2)} | ${fixed(mean(all.map((r) => r.faceFraction)), 2)} | ${fixed(mean(all.map((r) => r.ahead)))} |`);
-  sections.push(`### ${spot}\n\nAttempt outcomes: ${[...outcomes].map(([o, c]) => `${o} ×${c}`).join(', ') || 'none'}.\n\n| Ride s | Distance m | Mean / top over ground m/s | Mean / top old label m/s | Crest c m/s | Required m/s | Over ground ÷ required | > 1.3 × required | Face fraction | Ahead of crest m (mean / p90) | Outcome |\n|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|\n${all.map((r) => `| ${fixed(r.seconds)} | ${fixed(r.distance, 0)} | ${fixed(r.meanSpeed)} / ${fixed(r.topSpeed)} | ${fixed(r.meanLabel)} / ${fixed(r.topLabel)} | ${fixed(r.crestSpeed)} | ${fixed(r.required)} | ${fixed(r.ratio, 2)} | ${fixed(r.fastShare * 100, 0)} % | ${fixed(r.faceFraction, 2)} | ${fixed(r.ahead)} / ${fixed(r.aheadP90)} | ${r.outcome} |`).join('\n') || '| — | | | | | | | | | | no ride |'}`);
+  sections.push(`### ${spot}\n\n${turnTables(all)}\n\nAttempt outcomes: ${[...outcomes].map(([o, c]) => `${o} ×${c}`).join(', ') || 'none'}.\n\n| Ride s | Distance m | Mean / top over ground m/s | Mean / top old label m/s | Crest c m/s | Required m/s | Over ground ÷ required | > 1.3 × required | Face fraction | Ahead of crest m (mean / p90) | Outcome |\n|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|\n${all.map((r) => `| ${fixed(r.seconds)} | ${fixed(r.distance, 0)} | ${fixed(r.meanSpeed)} / ${fixed(r.topSpeed)} | ${fixed(r.meanLabel)} / ${fixed(r.topLabel)} | ${fixed(r.crestSpeed)} | ${fixed(r.required)} | ${fixed(r.ratio, 2)} | ${fixed(r.fastShare * 100, 0)} % | ${fixed(r.faceFraction, 2)} | ${fixed(r.ahead)} / ${fixed(r.aheadP90)} | ${r.outcome} |`).join('\n') || '| — | | | | | | | | | | no ride |'}`);
 }
 
 const report = `# Ride report
