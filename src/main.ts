@@ -11,6 +11,7 @@ import {
   MeshStandardMaterial,
   NeutralToneMapping,
   PMREMGenerator,
+  PerspectiveCamera,
   Scene,
   WebGLRenderer,
   WebGLCubeRenderTarget,
@@ -270,7 +271,7 @@ class SurfGame {
       },
       step: (input: { paddle: boolean; popUp: boolean; steer: number }) => this.physicalMode.advance(1, input),
       retry: () => this.physicalMode.retry(),
-      render: (seconds: number) => this.physicalRender(seconds, seconds),
+      render: (seconds: number, camera?: PerspectiveCamera) => this.physicalRender(seconds, seconds, camera),
       resize: (width: number, height: number) => {
         this.renderer.setPixelRatio(1);
         this.renderer.setSize(width, height, false);
@@ -876,12 +877,13 @@ class SurfGame {
   }
 
   /** Draw the physical surf zone as it now stands, and refresh the readout at 4 Hz. */
-  private physicalRender(elapsed: number, simElapsed: number): void {
+  /** `camera` overrides the physical mode's own for this frame (the `?record` tool's shots). */
+  private physicalRender(elapsed: number, simElapsed: number, camera?: PerspectiveCamera): void {
     this.water.update();
     this.physicalMode.update(simElapsed || this.fixedStep);
     this.setUnderwater(this.physicalMode.cameraBelowSurface());
     // Caustics where the view looks: a window a third of its width ahead of the camera.
-    const view = this.physicalMode.camera.camera;
+    const view = camera ?? this.physicalMode.camera.camera;
     const ahead = view.getWorldDirection(this.causticAhead).setY(0);
     if (ahead.lengthSq() > 1e-6) ahead.normalize();
     // The WebGPU tier shades with the FFT chop; the others keep the procedural waves.
@@ -897,7 +899,7 @@ class SurfGame {
     const { board } = this.physicalMode;
     const nose = this.shadowNose.set(0, 0, 1).applyQuaternion(board.quaternion);
     this.shadows.follow(board.position, this.currentSunDirection(), board.position.y - 0.04, Math.atan2(nose.x, nose.z));
-    this.renderer.render(this.scene, this.physicalMode.camera.camera);
+    this.renderer.render(this.scene, view);
     this.readoutClock += elapsed;
     if (this.readoutClock >= 0.25) {
       this.readoutClock = 0;
