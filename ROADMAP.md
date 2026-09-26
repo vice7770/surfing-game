@@ -176,7 +176,10 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels
 - **Tubes open (2026-09-26, evening).** Each plunging break takes its overturn from Pick & Feddersen's (2026) fits for its bed slope and sea, sized by the wave the solver has. The lip throws the jet's own water and flies it to the overturn's front end at 1.2–1.6 times the crest speed, as measured jets leave (1.15–1.73). The depth-averaged face stands where a real face has gone vertical, so each flying lip carries its void, and the rider, the board, the renderer and the lip's landing meet the void's floor (the user's choice; the solver's water is untouched).
   - At the Wave Lab defaults the Reef's tubes run a median 1.12 m (90th percentile 1.78 m), 97 % inside the measured range. Openings reach 1.1–1.6 m under the lip: a crouching rider fits the bigger ones.
   - Fixed on the way: throws created momentum (they removed the crest's depth-averaged momentum but launched at the jet's speed), which drove the practice Reef's water to 23 m/s; strip parcels were released where the jet, not the crest, had moved to; a non-finite body's lip query spread NaN through the sheet.
-  - **Not yet:** the barrel does not read on screen. `?record&watch` films the break from beside the lip, but the void is carved on the 1 m render grid and the lip sheet is thin and faint. A visual pass comes next, with the tube camera (P12).
+  - **Filmed (2026-09-26, user request):** the Reef on the Big swell barrels on camera. The void opens along the crest, the lip curls over it and lands in spray.
+    - Two changes made it readable. The lip pours from its crest for its whole flight, as measured jets do (Erinin et al. 2023), so it hangs as a curtain, not a short ribbon. `?renderSpacing=0.5` carves the void on a finer grid.
+    - `?record&watch=S` films only while lips fly, from the shoulder ahead of the peel.
+    - It is still rough: an 8-parcel curtain, a heightfield under it, and spray that swamps the impact. The visual pass and the tube camera belong to P12.
 - **Along the way:**
   - the peel measurement stopped counting shore swash;
   - the Reef's shelf is now 1 m, so waves break on its edge (769 jets a minute against 307);
