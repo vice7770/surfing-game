@@ -24,6 +24,19 @@ describe('bindings', () => {
     expect(next.keyboard.steerLeft).toEqual(['ArrowLeft']);
   });
 
+  // P9: lying down ArrowUp paddles; standing it trims forward. A key may do one thing in each context.
+  it('lets a key serve one action lying down and another standing, but swaps within a context', () => {
+    const upOnlyW = { ...DEFAULT_BINDINGS, keyboard: { ...DEFAULT_BINDINGS.keyboard, trimForward: ['KeyW'] } };
+    const both = rebind(upOnlyW, 'keyboard', 'trimForward', 1, 'ArrowUp');
+    expect(both.keyboard.trimForward).toEqual(['KeyW', 'ArrowUp']);
+    expect(both.keyboard.paddle).toEqual(['Space', 'ArrowUp']);
+    const crouchOnS = rebind(DEFAULT_BINDINGS, 'keyboard', 'crouch', 0, 'KeyS');
+    expect(crouchOnS.keyboard.crouch).toEqual(['KeyS', 'ShiftRight']);
+    expect(crouchOnS.keyboard.trimBack).toEqual(['ShiftLeft', 'ArrowDown']);
+    // An action used in every context still swaps with a standing one.
+    expect(rebind(DEFAULT_BINDINGS, 'keyboard', 'retry', 0, 'KeyE').keyboard.hand).toEqual(['KeyR']);
+  });
+
   it('never binds Escape or Start, and never leaves an action without a key', () => {
     expect(rebind(DEFAULT_BINDINGS, 'keyboard', 'paddle', 0, 'Escape')).toBe(DEFAULT_BINDINGS);
     expect(rebind(DEFAULT_BINDINGS, 'gamepad', 'paddle', 0, 9)).toBe(DEFAULT_BINDINGS);

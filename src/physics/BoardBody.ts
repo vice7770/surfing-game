@@ -4,6 +4,7 @@ import type { BoardContactBody } from './DetachedSurfer';
 import { buildBoardShape, type BoardShape } from './boardShape';
 import { THRUSTER, createFinForce, finForce, type FinSpec } from './finForces';
 import { WATER, WET_RAMP, createPatchForce, patchForce, planingScales, wettedShare, type WorldPatch } from './hullForces';
+import { solveLinear } from './legSpring';
 import { createWaterSample, type SurfWater, type WaterSample } from './SurfWater';
 
 interface Vec { x: number; y: number; z: number }
@@ -261,6 +262,9 @@ export class BoardBody implements BoardContactBody {
   private readonly rhs = new Float64Array(6);
   private readonly systemCopy = new Float64Array(36);
   private readonly rhsCopy = new Float64Array(6);
+  /** A standing rider joins with its leg's rate as a seventh unknown (spec P9). */
+  private readonly system7 = new Float64Array(49);
+  private readonly rhs7 = new Float64Array(7);
   private readonly lastPosition = new Vector3();
   private readonly patch: WorldPatch = { position: { x: 0, y: 0, z: 0 }, normal: { x: 0, y: 0, z: 0 }, area: 0, thickness: 0 };
   private readonly force = createPatchForce();
@@ -875,17 +879,35 @@ export class BoardBody implements BoardContactBody {
     // A rider joins the solve as a composite body; if its contact cannot give the
     // impulse that needs, the two are solved apart with the impulse it can give.
     const { rider } = this;
-    if (rider?.attached) {
-      rider.prepare(h, this, water);
+    if (rider?.attached) rider.prepare(h, this, water);
+    if (rider?.attached && rider.upright) {
+      // Standing, the leg's rate is a seventh unknown.
+      const s7 = this.system7.fill(0);
+      const r7 = this.rhs7.fill(0);
+      for (let i = 0; i < 6; i += 1) {
+        for (let j = 0; j < 6; j += 1) s7[i * 7 + j] = system[i * 6 + j];
+        r7[i] = rhs[i];
+      }
+      rider.coupleStanding(s7, r7, h);
+      solveLinear(s7, r7, 7);
+      if (rider.settleStanding(r7, h, this)) {
+        for (let i = 0; i < 6; i += 1) rhs[i] = r7[i];
+      } else {
+        rider.pushBoard(rhs);
+        solve6(system, rhs);
+      }
+    } else if (rider?.attached) {
       this.systemCopy.set(system);
       this.rhsCopy.set(rhs);
       rider.couple(system, rhs, h);
-    }
-    solve6(system, rhs);
-    if (rider?.attached && !rider.settle(rhs, h, this)) {
-      system.set(this.systemCopy);
-      rhs.set(this.rhsCopy);
-      rider.pushBoard(rhs);
+      solve6(system, rhs);
+      if (!rider.settle(rhs, h, this)) {
+        system.set(this.systemCopy);
+        rhs.set(this.rhsCopy);
+        rider.pushBoard(rhs);
+        solve6(system, rhs);
+      }
+    } else {
       solve6(system, rhs);
     }
     const [dvx, dvy, dvz, dwx, dwy, dwz] = rhs;

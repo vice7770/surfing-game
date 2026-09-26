@@ -77,3 +77,63 @@ describe('Controls', () => {
     expect(handlers.pause).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('the ride request (P9)', () => {
+  const analog = (values: Record<number, number>, axes = [0, 0, 0, 0]): PadState => ({
+    buttons: Array.from({ length: 17 }, (_, i) => (values[i] ?? 0) > 0.5),
+    values: Array.from({ length: 17 }, (_, i) => values[i] ?? 0),
+    axes,
+  });
+
+  it('paddles on ArrowUp lying down and trims forward on it standing', () => {
+    const prone = setup();
+    prone.key('keydown', 'ArrowUp');
+    expect(prone.controls.rideRequest(0.2, false)).toMatchObject({ paddle: true, trim: 0 });
+    const standing = setup();
+    standing.key('keydown', 'ArrowUp');
+    expect(standing.controls.rideRequest(0.2, true)).toMatchObject({ paddle: false, trim: 1 });
+  });
+
+  it('crouches on Shift and reaches for the water on E only standing', () => {
+    const prone = setup();
+    prone.key('keydown', 'ShiftLeft');
+    prone.key('keydown', 'KeyE');
+    expect(prone.controls.rideRequest(0.2, false)).toMatchObject({ crouch: 0, hand: false });
+    const standing = setup();
+    standing.key('keydown', 'ShiftLeft');
+    standing.key('keydown', 'KeyE');
+    expect(standing.controls.rideRequest(0.2, true)).toMatchObject({ crouch: 1, hand: true });
+  });
+
+  it('ramps keys in over 0.2 s; opposite keys cancel, and unbound keys do nothing', () => {
+    const { controls, key } = setup();
+    key('keydown', 'KeyW');
+    expect(controls.rideRequest(0.1, true).trim).toBeCloseTo(0.5, 9);
+    key('keydown', 'KeyS');
+    expect(controls.rideRequest(0.1, true).trim).toBeCloseTo(0, 9);
+    const other = setup();
+    other.key('keydown', 'ControlLeft');
+    expect(other.controls.rideRequest(0.2, true)).toMatchObject({ paddle: false, steer: 0, trim: 0, crouch: 0, hand: false });
+  });
+
+  it('passes the pad’s trigger and stick straight through', () => {
+    const { controls, setPads } = setup();
+    setPads([analog({ 6: 0.5 }, [0, -0.8, 0, 0])]);
+    controls.poll();
+    const request = controls.rideRequest(1 / 60, true);
+    expect(request.crouch).toBeCloseTo(0.5, 9);
+    expect(request.trim).toBeGreaterThan(0.7);
+  });
+
+  // Review Focus 5: nothing stays held through a pause or a lost focus.
+  it('lets every axis go within 0.2 s of a pause or a blur', () => {
+    for (const leave of ['pause', 'blur'] as const) {
+      const { controls, key, target } = setup();
+      for (const code of ['KeyW', 'ShiftLeft', 'ArrowLeft', 'KeyE']) key('keydown', code);
+      controls.rideRequest(0.3, true);
+      if (leave === 'pause') controls.enabled = false;
+      else target.dispatchEvent(new Event('blur'));
+      expect(controls.rideRequest(0.2, true)).toMatchObject({ trim: 0, crouch: 0, steer: 0, hand: false, paddle: false });
+    }
+  });
+});

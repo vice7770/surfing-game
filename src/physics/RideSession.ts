@@ -13,6 +13,12 @@ export interface RideInput {
   popUp: boolean;
   /** −1 (right) to 1 (left). Lying down it turns the swimmer; standing it shifts weight onto a rail. */
   steer: number;
+  /** Standing, weight along the board: −1 back to 1 forward (spec P9). */
+  trim?: number;
+  /** Standing, the crouch: 0 riding stance to 1 deepest. */
+  crouch?: number;
+  /** Standing, the wave-side hand in the water. */
+  hand?: boolean;
 }
 
 export interface RideSessionOptions {
@@ -99,6 +105,9 @@ export class RideSession {
     if (rider.attached) {
       rider.paddle = input.paddle;
       rider.steer = input.steer;
+      rider.trim = input.trim ?? 0;
+      rider.crouch = input.crouch ?? 0;
+      rider.hand = input.hand ?? false;
       if (input.popUp) rider.popUp();
     }
     board.step(dt, water);

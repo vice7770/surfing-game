@@ -1,5 +1,6 @@
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+import { AttachedRider } from './AttachedRider';
 import { BoardBody, type BoardPayload } from './BoardBody';
 import { REFERENCE_BOARD, REFERENCE_RIDER } from './boardReference';
 import { buildBoardShape } from './boardShape';
@@ -267,5 +268,29 @@ describe('fins and rails', () => {
     const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
     const slip = Math.atan2(board.velocity.x, board.velocity.z) - Math.atan2(forward.x, forward.z);
     expect(Math.abs(slip)).toBeGreaterThan((5 * Math.PI) / 180);
+  });
+});
+
+describe('a standing rider on the board', () => {
+  it('carves the same at 1/60 and 1/120 s steps', () => {
+    const carve = (step: number) => {
+      const angle = (15 * Math.PI) / 180;
+      const board = new BoardBody();
+      const along = new Vector3(0, -Math.sin(angle), Math.cos(angle));
+      board.place(new Vector3(0, board.shape.centerOfMass.y * Math.cos(angle), 0), new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), angle), along.multiplyScalar(6));
+      const rider = new AttachedRider(board.shape, { phase: 'standing' });
+      board.attach(rider);
+      const water = new PlaneWater({ slopeZ: -Math.tan(angle) });
+      for (let i = 0; i < Math.round(1 / step); i += 1) board.step(step, water);
+      rider.steer = 0.75;
+      for (let i = 0; i < Math.round(2 / step); i += 1) board.step(step, water);
+      const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+      return { speed: board.velocity.length(), heading: Math.atan2(forward.x, forward.z), attached: rider.attached };
+    };
+    const coarse = carve(1 / 60);
+    const fine = carve(1 / 120);
+    expect(coarse.attached && fine.attached).toBe(true);
+    expect(Math.abs(coarse.speed - fine.speed) / fine.speed).toBeLessThan(0.02);
+    expect(Math.abs(coarse.heading - fine.heading)).toBeLessThan((2 * Math.PI) / 180);
   });
 });

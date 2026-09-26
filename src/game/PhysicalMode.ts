@@ -1,5 +1,6 @@
 import { Vector3, type Scene } from 'three';
 import type { StandRefusal } from '../physics/AttachedRider';
+import type { WaveFrame } from '../physics/waveFrame';
 import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { SurferView } from '../scene/character/SurferView';
@@ -10,7 +11,7 @@ import { BubblePoints } from '../scene/BubblePoints';
 import { SprayPoints } from '../scene/SprayPoints';
 import { LipSheetMesh } from '../scene/LipSheetMesh';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
-import { SpectatorCamera } from '../scene/SpectatorCamera';
+import { SpectatorCamera, type FollowTarget } from '../scene/SpectatorCamera';
 import { SpotSeabed } from '../scene/SpotSeabed';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import type { WaterSurface } from '../scene/WaterSurface';
@@ -143,6 +144,16 @@ const REFUSAL_TEXT: Record<StandRefusal, string> = {
   'no water': 'no water under the board',
 };
 
+/** The rider against the crest (spec P9 phase 0): the crest's speed and the peel's required speed, and where on the face the rider is. */
+function crestRows(wave: WaveFrame): ReadoutRow[] {
+  if (!wave.valid) return [{ label: 'CREST', value: 'no wave face here' }];
+  const need = Number.isFinite(wave.requiredSpeed) ? `need ${wave.requiredSpeed.toFixed(1)} m/s` : 'close-out';
+  const face = wave.aheadOfCrest >= 0
+    ? `${wave.aheadOfCrest.toFixed(1)} m ahead · ${Math.round(wave.faceFraction * 100)} % up`
+    : `${(-wave.aheadOfCrest).toFixed(1)} m behind the crest`;
+  return [{ label: 'CREST', value: `c ${wave.crestSpeed.toFixed(1)} m/s · ${need}` }, { label: 'FACE', value: face }];
+}
+
 /** The Wave Lab rows for a running surf zone, from plain status values (they can come from the worker). */
 export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneStatus, storm?: StormSwell, practice = false): ReadoutRow[] {
   const { breakPoint, breaker, peel } = status;
@@ -173,6 +184,7 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
     ...(status.board ? [{ label: 'BOARD', value: `riderless · ${status.board.speed.toFixed(1)} m/s${status.board.resets ? ` · back in the lineup ×${status.board.resets}` : ''}` }] : []),
     ...(status.ride ? [
       { label: 'RIDER', value: `${status.ride.phase.toUpperCase()} · ${status.ride.speed.toFixed(1)} m/s${status.ride.cue ? ' · POP UP NOW' : ''}` },
+      ...crestRows(status.ride.wave),
       { label: 'POP-UP', value: status.ride.popUp.outcome === 'none' ? 'not yet'
         : status.ride.popUp.outcome === 'stood' ? `stood in ${status.ride.popUp.duration.toFixed(2)} s · landing ${status.ride.popUp.landingPeak.toFixed(1)} BW, ${Math.round(status.ride.popUp.frontShare * 100)} % front`
         : status.ride.popUp.outcome === 'rising' ? 'rising' : `no support: ${REFUSAL_TEXT[status.ride.popUp.refusal ?? 'sinking']}` },
@@ -238,7 +250,40 @@ export class PhysicalMode {
   private steerSign = -1;
   private readonly cameraRight = new Vector3();
   private readonly boardLeft = new Vector3();
-  private readonly follow = { position: { x: 0, y: 0, z: 0 }, heading: 0 };
+  private readonly follow: FollowTarget = { position: { x: 0, y: 0, z: 0 }, heading: 0, velocity: { x: 0, y: 0, z: 0 } };
+  /** The followed point and sea time at the latest new snapshot, for the ride view's lead. */
+  private readonly followedAt = { x: 0, y: 0, z: 0, seaTime: Number.NaN };
+  private readonly followCrest = { x: 0, y: 0, z: 0 };
+
+  /**
+   * The ride view's lead and lip: the followed point's velocity over the sea time
+   * between snapshots, and the crest of the wave under the rider (spec P9 phase 0).
+   */
+  private followMotion(host: SurfZoneHost): void {
+    const { follow, followedAt } = this;
+    const { seaTime, ride } = host.snapshot.status;
+    const elapsed = seaTime - followedAt.seaTime;
+    const velocity = follow.velocity!;
+    if (elapsed > 0 && elapsed < 0.5) {
+      velocity.x = (follow.position.x - followedAt.x) / elapsed;
+      velocity.y = (follow.position.y - followedAt.y) / elapsed;
+      velocity.z = (follow.position.z - followedAt.z) / elapsed;
+    } else if (!(elapsed >= 0)) {
+      velocity.x = velocity.y = velocity.z = 0;
+    }
+    if (!(elapsed === 0)) Object.assign(followedAt, follow.position, { seaTime });
+    const wave = ride?.wave;
+    if (wave?.valid) {
+      const { position } = follow;
+      const surface = host.heightAt(position.x, position.z);
+      this.followCrest.x = position.x - wave.aheadOfCrest * wave.directionX;
+      this.followCrest.z = position.z - wave.aheadOfCrest * wave.directionZ;
+      this.followCrest.y = surface + (1 - wave.faceFraction) * wave.faceHeight;
+      follow.crest = this.followCrest;
+    } else {
+      follow.crest = undefined;
+    }
+  }
 
   constructor(scene: Scene) {
     scene.add(this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group);
@@ -409,6 +454,7 @@ export class PhysicalMode {
     this.follow.position.y = fallen ? rider[RIDER_SNAPSHOT.points + 1] : pose[1];
     this.follow.position.z = fallen ? rider[RIDER_SNAPSHOT.points + 2] : pose[2];
     this.follow.heading = riding ? rider[RIDER_SNAPSHOT.heading] : 0;
+    this.followMotion(host);
     this.camera.update(host, this.focus, dt, pose[7] > 0 ? this.follow : undefined);
     this.farField.update(host.snapshot.status.seaTime);
     this.lipSheet.update(host.snapshot.lip, host.snapshot.lipCount, host.init.dx);
