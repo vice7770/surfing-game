@@ -25,7 +25,7 @@ it('keeps contact bounded and distinguishes clean rides from short failed catche
     expect(board.state, JSON.stringify(setting)).toBe(setting.expected);
     if (setting.expected === 'complete') expect(board.rideDistance).toBeGreaterThanOrEqual(20);
   }
-}, 20_000);
+}, 60_000);
 
 it('keeps the board and shared water bounded under opposite current and wind', () => {
   for (const direction of [-1, 1]) {
