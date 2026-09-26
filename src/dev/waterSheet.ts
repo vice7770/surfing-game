@@ -141,7 +141,28 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   status.textContent = `Water sheet: Point practice, ${simulated.toFixed(0)} s settled · columns ${TIMES.map((t) => LOOKS.map((l) => `${l} ${t}`).join(', ')).join(', ')} · rows ${shots.map((s) => s.name).join(', ')}`;
   const face = steepestFace(hooks.water, hooks.mode.focus);
   status.textContent += ` · face slope ${face.slope.toFixed(2)} · program ${hooks.water.mesh.material.customProgramCacheKey()}`;
-  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water });
-  const png = await new Promise<Blob | null>((resolve) => sheet.toBlob(resolve, 'image/png'));
-  if (png) await fetch(`${RECEIVER}/upload?name=water-sheet.png`, { method: 'POST', body: png }).catch(() => undefined);
+  /** One shot at full size, posted as water-shot.png: for close checks from the console once the sheet is done. */
+  const closeUp = document.createElement('canvas');
+  closeUp.width = RENDER.width;
+  closeUp.height = RENDER.height;
+  const waterSheetShot = async (name: string, look: WaterLook, time: TimeOfDay) => {
+    const shot = shots.find((candidate) => candidate.name === name);
+    if (!shot) return false;
+    await hooks.setTimeOfDay(time);
+    hooks.setWaterLook(look);
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    hooks.renderView(camera);
+    closeUp.getContext('2d')!.drawImage(hooks.canvas, 0, 0, RENDER.width, RENDER.height);
+    await post(closeUp, 'water-shot.png');
+    return true;
+  };
+  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot });
+  await post(sheet, 'water-sheet.png');
+}
+
+async function post(canvas: HTMLCanvasElement, name: string): Promise<void> {
+  const png = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+  if (png) await fetch(`${RECEIVER}/upload?name=${name}`, { method: 'POST', body: png }).catch(() => undefined);
 }

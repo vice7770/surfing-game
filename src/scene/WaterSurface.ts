@@ -20,6 +20,8 @@ import { richBeginNormal, richFragmentPars, richNormalFragment, richVertexHeight
 import {
   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
 } from './water/richPatch';
+import { rippleTexture, waterRipplePars } from './water/rippleTexture';
+import { RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
@@ -160,6 +162,13 @@ ${foamPatternPars}
 ${causticLookupPars}
 `;
 
+/** Classic's roughness; Rich starts from `RICH_BASE_ROUGHNESS` and roughens where a pixel averages ripples away (G8). */
+const CLASSIC_ROUGHNESS = 0.62;
+// From below, past the Snell window, the water reflects itself, not the sky: Classic's roughness keeps that dim.
+const RICH_SPECULAR = `roughnessFactor = faceDirection > 0.0 ? richRoughness( roughnessFactor, waterRippleVariance ) : ${CLASSIC_ROUGHNESS.toFixed(3)};`;
+/** The ripples' strength: 0.8 on calm water, 1 at the default chop. */
+const rippleStrength = (chop: number) => 0.8 + (0.2 * chop) / DEFAULT_WATER_CHOP;
+
 /** Supplies interleaved (height, foam) for every node of a uniform render grid. */
 export interface SurfaceSource {
   readonly grid: SurfaceGrid;
@@ -223,11 +232,13 @@ export class WaterSurface {
       ...this.causticUniforms,
       waterPatchRect: { value: new Vector4() },
       waterPatchActive: { value: 0 },
+      waterRippleMap: { value: rippleTexture() },
+      waterRippleStrength: { value: rippleStrength(DEFAULT_WATER_CHOP) },
     };
     // One air–water interface: Fresnel from n = 1.333 (F0 = 0.020), no clearcoat.
     const material = new MeshPhysicalMaterial({
       color: '#ffffff',
-      roughness: 0.62,
+      roughness: CLASSIC_ROUGHNESS,
       metalness: 0,
       ior: WATER_IOR,
       side: DoubleSide,
@@ -242,11 +253,11 @@ export class WaterSurface {
           .replace('#include <beginnormal_vertex>', richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\n${waterFragmentPars}\n${waterCubicPars}\n${richFragmentPars}\n${richPatchFragmentPars}`)
+          .replace('#include <common>', `#include <common>\n${waterFragmentPars}\n${waterCubicPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richPatchFragmentPars}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}`)
-          .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: false }))
+          .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true }))
           .replace('#include <color_fragment>', '')
-          .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true));
+          .replace('#include <emissivemap_fragment>', `${waterBodyFragment(true, true)}\n${RICH_SPECULAR}`);
         return;
       }
       shader.vertexShader = shader.vertexShader
@@ -320,14 +331,15 @@ export class WaterSurface {
     if (look === this.currentLook) return;
     this.currentLook = look;
     this.mesh.material.needsUpdate = true;
-    this.refreshPatch();
+    this.refreshLook();
   }
 
-  /** The patch shows, and the coarse water gives way under it, only in the Rich look. */
-  private refreshPatch(): void {
+  /** The patch shows, the coarse water gives way under it, and the water turns glossy, only in the Rich look drawn. */
+  private refreshLook(): void {
     const rich = this.effectiveLook === 'rich';
     this.patch.visible = rich;
     this.uniforms.waterPatchActive.value = rich ? 1 : 0;
+    this.mesh.material.roughness = rich ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
   }
 
   private readonly patchCamera = new Vector3();
@@ -381,6 +393,7 @@ export class WaterSurface {
   /** Strength of the shading-only wind chop (see waterChop.ts). */
   setChop(strength: number): void {
     this.uniforms.waterChop.value = strength;
+    this.uniforms.waterRippleStrength.value = rippleStrength(strength);
   }
 
   /** Switch to another water source, rebuilding the mesh and texture if its grid differs. */
@@ -389,7 +402,7 @@ export class WaterSurface {
     const wasLook = this.effectiveLook;
     this.source = source;
     if (this.effectiveLook !== wasLook) this.mesh.material.needsUpdate = true;
-    this.refreshPatch();
+    this.refreshLook();
     const grid = source.grid;
     if (previous.nx === grid.nx && previous.nz === grid.nz && previous.spacing === grid.spacing) return;
     this.surfaceData = new Float32Array(grid.nx * grid.nz * 2);

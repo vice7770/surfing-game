@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { FarFieldOcean } from './FarFieldOcean';
 import { SprayPoints } from './SprayPoints';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
+import { rippleTexture } from './water/rippleTexture';
+import { RICH_BASE_ROUGHNESS } from './water/specular';
+import { DEFAULT_WATER_CHOP } from './waterChop';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -75,6 +78,30 @@ describe('Classic water parity', () => {
     expect(fragment).toContain('waterPatchRect');
     water.setLook('classic');
     expect(water.patch.visible).toBe(false);
+  });
+
+  it('gives the Rich water flow-carried ripples and a glossy, anti-aliased finish; Classic keeps its roughness', () => {
+    const water = new WaterSurface({ ...source, cubic: true });
+    expect(water.mesh.material.roughness).toBe(0.62);
+    water.setLook('rich');
+    expect(water.mesh.material.roughness).toBe(RICH_BASE_ROUGHNESS);
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    water.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
+    expect(shader.fragmentShader).toContain('waterSlope += waterRippleSlopeAt( vWaterWorld.xz, vWaterFlow );');
+    // Seen from below, the gloss would mirror the sky's lower half where the water reflects itself: keep Classic's there.
+    expect(shader.fragmentShader).toContain('roughnessFactor = faceDirection > 0.0 ? richRoughness( roughnessFactor, waterRippleVariance ) : 0.620;');
+    const uniforms = shader.uniforms as Record<string, { value: unknown }>;
+    expect(uniforms.waterRippleMap.value).toBe(rippleTexture());
+    water.setChop(DEFAULT_WATER_CHOP);
+    expect(uniforms.waterRippleStrength.value).toBeCloseTo(1, 9);
+    water.setChop(0);
+    expect(uniforms.waterRippleStrength.value).toBeCloseTo(0.8, 9);
+    water.setLook('classic');
+    expect(water.mesh.material.roughness).toBe(0.62);
+    // A bilinear source draws Classic even when Rich is chosen, and keeps Classic's roughness.
+    water.setLook('rich');
+    water.setSource(source);
+    expect(water.mesh.material.roughness).toBe(0.62);
   });
 
   it('names nothing in the Rich program with a GLSL ES 3.00 reserved word', () => {
