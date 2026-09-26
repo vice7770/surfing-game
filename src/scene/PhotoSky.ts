@@ -82,6 +82,44 @@ export function skyExposure(entry: SkyEntry): { environment: number; sun: number
   };
 }
 
+/** A loaded sky's textures, and how to free them. */
+export interface LoadedSky {
+  environment: Texture;
+  background: Texture;
+  dispose(): void;
+}
+
+/** What a sky needs loading: the manifest, then one sky's textures. Tests pass their own. */
+export interface PhotoSkyLoads {
+  manifest(): Promise<readonly SkyEntry[]>;
+  sky(entry: SkyEntry): Promise<LoadedSky>;
+}
+
+/** Loads over the network: the manifest, a PMREM environment from the 1k HDR, and the JPEG background. */
+function webLoads(renderer: WebGLRenderer, baseUrl: string): PhotoSkyLoads {
+  return {
+    async manifest() {
+      const response = await fetch(`${baseUrl}skies/skies.json`);
+      if (!response.ok) throw new Error(`sky manifest: ${response.status}`);
+      return (await response.json()).skies as SkyEntry[];
+    },
+    async sky(entry) {
+      const [hdr, background] = await Promise.all([
+        new HDRLoader().loadAsync(`${baseUrl}${entry.hdr}`),
+        new TextureLoader().loadAsync(`${baseUrl}${entry.background}`),
+      ]);
+      hdr.mapping = EquirectangularReflectionMapping;
+      background.mapping = EquirectangularReflectionMapping;
+      background.colorSpace = SRGBColorSpace;
+      const pmrem = new PMREMGenerator(renderer);
+      const target: WebGLRenderTarget = pmrem.fromEquirectangular(hdr);
+      pmrem.dispose();
+      hdr.dispose();
+      return { environment: target.texture, background, dispose: () => { target.dispose(); background.dispose(); } };
+    },
+  };
+}
+
 /** A photographed sky: the visible background, the environment for lighting and reflections, and its sun. */
 export class PhotoSky {
   readonly sunDirection = new Vector3(0, 1, 0);
@@ -94,10 +132,12 @@ export class PhotoSky {
   rotation = 0;
   private skies?: readonly SkyEntry[];
   private current?: SkyEntry;
-  private target?: WebGLRenderTarget;
+  private loaded?: LoadedSky;
+  /** Counts requests, so only the latest one's sky is kept when loads finish out of order. */
+  private request = 0;
 
   /** `baseUrl` is where `public/assets/` is served, relative to the page. */
-  constructor(private readonly renderer: WebGLRenderer, private readonly baseUrl = 'assets/') {}
+  constructor(renderer: WebGLRenderer, baseUrl = 'assets/', private readonly loads: PhotoSkyLoads = webLoads(renderer, baseUrl)) {}
 
   get ready(): boolean {
     return this.environment !== undefined;
@@ -108,35 +148,30 @@ export class PhotoSky {
   }
 
   async loadManifest(): Promise<readonly SkyEntry[]> {
-    if (!this.skies) {
-      const response = await fetch(`${this.baseUrl}skies/skies.json`);
-      if (!response.ok) throw new Error(`sky manifest: ${response.status}`);
-      this.skies = (await response.json()).skies as SkyEntry[];
-    }
+    this.skies ??= await this.loads.manifest();
     return this.skies;
   }
 
-  /** Loads the sky nearest `elevationDegrees` unless it is already current, and turns it to `azimuthDegrees`. Resolves true when the sky changed. */
+  /**
+   * Loads the sky nearest `elevationDegrees` unless it is already current, and
+   * turns it to `azimuthDegrees`. Resolves true when the sky changed, and false
+   * when a later request superseded this one (its load is then discarded).
+   */
   async select(elevationDegrees: number, azimuthDegrees: number): Promise<boolean> {
+    const request = ++this.request;
     const entry = nearestSky(await this.loadManifest(), elevationDegrees);
+    if (request !== this.request) return false;
     const changed = entry !== this.current;
     if (changed) {
-      const [hdr, background] = await Promise.all([
-        new HDRLoader().loadAsync(`${this.baseUrl}${entry.hdr}`),
-        new TextureLoader().loadAsync(`${this.baseUrl}${entry.background}`),
-      ]);
-      hdr.mapping = EquirectangularReflectionMapping;
-      background.mapping = EquirectangularReflectionMapping;
-      background.colorSpace = SRGBColorSpace;
-      const pmrem = new PMREMGenerator(this.renderer);
-      const target = pmrem.fromEquirectangular(hdr);
-      pmrem.dispose();
-      hdr.dispose();
-      this.target?.dispose();
-      this.background?.dispose();
-      this.target = target;
-      this.environment = target.texture;
-      this.background = background;
+      const loaded = await this.loads.sky(entry);
+      if (request !== this.request) {
+        loaded.dispose();
+        return false;
+      }
+      this.loaded?.dispose();
+      this.loaded = loaded;
+      this.environment = loaded.environment;
+      this.background = loaded.background;
       this.current = entry;
       const exposure = skyExposure(entry);
       this.environmentIntensity = exposure.environment;

@@ -1,6 +1,6 @@
-import { Vector3 } from 'three';
+import { Texture, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { REFERENCE_LIGHT, nearestSky, rotatedSun, skyExposure, skyRotation, sunElevationFromSlider, type SkyEntry } from './PhotoSky';
+import { PhotoSky, REFERENCE_LIGHT, nearestSky, rotatedSun, skyExposure, skyRotation, sunElevationFromSlider, type PhotoSkyLoads, type SkyEntry } from './PhotoSky';
 
 const sky = (id: string, timeOfDay: SkyEntry['timeOfDay'], elevation: number, irradiance: [number, number, number], skyIrradiance: number): SkyEntry => {
   const e = (elevation * Math.PI) / 180;
@@ -12,6 +12,40 @@ const skies = [
   sky('noon', 'midday', 47.9, [4.16, 4.22, 3.85], 1.69),
   sky('dusk', 'sunset', 6.1, [6.94, 2.38, 0.15], 2.34),
 ];
+
+describe('photo sky loading', () => {
+  /** Loads that finish when the test says, so their order can be reversed. */
+  function controlledLoads() {
+    const pending = new Map<string, () => void>();
+    const disposed: string[] = [];
+    const loads: PhotoSkyLoads = {
+      manifest: async () => skies,
+      sky: (entry) => new Promise((resolve) => {
+        pending.set(entry.id, () => resolve({ environment: new Texture(), background: new Texture(), dispose: () => disposed.push(entry.id) }));
+      }),
+    };
+    return { loads, disposed, started: (id: string) => pending.has(id), finish: (id: string) => pending.get(id)!() };
+  }
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  it('keeps the latest request’s sky when an earlier, slower load finishes last', async () => {
+    const { loads, disposed, started, finish } = controlledLoads();
+    const sky = new PhotoSky(undefined as never, 'assets/', loads);
+    const first = sky.select(48, 0);
+    await settle();
+    expect(started('noon')).toBe(true);
+    const second = sky.select(2, 90);
+    await settle();
+    finish('sunrise');
+    expect(await second).toBe(true);
+    finish('noon');
+    expect(await first).toBe(false);
+    expect(disposed).toEqual(['noon']);
+    expect(sky.timeOfDay).toBe('dawn');
+    const a = (90 * Math.PI) / 180;
+    expect(sky.sunDirection.x / Math.hypot(sky.sunDirection.x, sky.sunDirection.z)).toBeCloseTo(Math.sin(a), 6);
+  });
+});
 
 describe('photo sky', () => {
   it('maps the Wave Lab slider to 0–60° of sun elevation', () => {
