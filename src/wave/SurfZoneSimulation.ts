@@ -1,4 +1,5 @@
 import { createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
+import { BoussinesqSolver } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
 import { FoamField, type FoamDecay } from './FoamField';
@@ -38,6 +39,8 @@ export interface SurfZoneConfig {
   breakingOnset?: number;
   /** Foam e-folding times; defaults per spot. */
   foamDecay?: FoamDecay;
+  /** Solver stage: 1 shallow water, 2 Madsen–Sørensen Boussinesq with Kennedy breaking (the default). */
+  stage?: 1 | 2;
 }
 
 export interface RenderGrid {
@@ -109,9 +112,10 @@ export function tankDepth(spot: SurfSpot, offshoreDepth: number, x: number, z: n
 const WET = 0.01;
 
 /**
- * Stage 1 physical surf zone for one spot: a seeded sea enters through an
- * offshore relaxation zone into the stretched finite-volume solver, which
- * starts from a warm WKB field a set's lead time before its peak.
+ * Physical surf zone for one spot: a seeded sea enters through an offshore
+ * relaxation zone into the stretched solver (stage 2 Boussinesq by default,
+ * stage 1 shallow water on request), which starts from a warm WKB field a
+ * set's lead time before its peak.
  */
 export class SurfZoneSimulation {
   readonly spot: SurfSpot;
@@ -148,15 +152,17 @@ export class SurfZoneSimulation {
     const offshoreDepth = OFFSHORE_DEPTH[config.spot];
     const alongShore = config.alongShore ?? 160;
     const dx = config.dx ?? 1;
-    this.solver = new ShallowWaterSolver(
-      {
-        nx: Math.round(alongShore / dx), xMin: -alongShore / 2, dx, xBoundary: 'open',
-        zEdges: stretchedEdges(TANK.offshore, TANK.shore, TANK.fineFrom, config.fineSpacing ?? 1, config.coarseSpacing ?? 4),
-      },
-      (x, z) => tankDepth(this.spot, offshoreDepth, x, z),
-      { waterLevel: config.tide },
-    );
+    const grid = {
+      nx: Math.round(alongShore / dx), xMin: -alongShore / 2, dx, xBoundary: 'open' as const,
+      zEdges: stretchedEdges(TANK.offshore, TANK.shore, TANK.fineFrom, config.fineSpacing ?? 1, config.coarseSpacing ?? 4),
+    };
+    const depthAt = (x: number, z: number) => tankDepth(this.spot, offshoreDepth, x, z);
+    const onset = config.breakingOnset ?? BREAKING_ONSET[config.spot];
+    this.solver = (config.stage ?? 2) === 2
+      ? new BoussinesqSolver(grid, depthAt, { waterLevel: config.tide, breaking: { onset } })
+      : new ShallowWaterSolver(grid, depthAt, { waterLevel: config.tide });
     this.sea = surfZoneSea(config);
+    if (this.solver instanceof BoussinesqSolver) this.solver.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     const spinUp = (config.spinUpPeriods ?? 2) * config.peakPeriod;
     this.plan = planSetRun(this.sea, 0, TANK.zoneInner, 0, config.lead ?? 25, spinUp);
     this.seaTimeOffset = this.plan.warmStartSeaTime;
@@ -166,7 +172,7 @@ export class SurfZoneSimulation {
     ));
     // Settle the nonlinear shape at the CFL limit, re-checking stability every quarter second.
     while (this.solver.time < spinUp - 1e-9) this.solver.step(Math.min(0.25, spinUp - this.solver.time));
-    this.breaking = new BreakingModel(this.solver, { onset: config.breakingOnset ?? BREAKING_ONSET[config.spot] });
+    this.breaking = new BreakingModel(this.solver, { onset });
     this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     this.breaking.update(0);
     this.peel = new PeelTracker(this.solver.xCenters, config.peakPeriod);

@@ -89,11 +89,21 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   /** Multiplies the breaking onset; the local wind shifts it (plan Q23). */
   onsetScale = 1;
   private readonly kennedy?: Required<KennedyOptions>;
+
+  /** Whether waves break inside the step (Kennedy eddy viscosity). */
+  get breaks(): boolean {
+    return this.kennedy !== undefined;
+  }
   private readonly nextStrength: Float64Array;
   private readonly nextAge: Float64Array;
   private readonly viscousX: Float64Array;
   private readonly viscousZ: Float64Array;
   private viscosityPeak = 0;
+  /** The still depth and its slopes follow the bed; recomputed when the window shifts. */
+  private depthDirty = true;
+  /** Column solves, all columns at once row by row: the eliminated upper band and right side. */
+  private readonly columnUpper: Float64Array;
+  private readonly columnRight: Float64Array;
   private readonly finest: number;
   /** Still depth, m, and whether each cell disperses this step (1) or is shallow water (0). */
   readonly still: Float64Array;
@@ -133,6 +143,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     const make = () => new Float64Array(size);
     this.breakingStrength = make(); this.breakingAge = make(); this.riseRate = make(); this.viscosity = make();
     this.nextStrength = make(); this.nextAge = make(); this.viscousX = make(); this.viscousZ = make();
+    this.columnUpper = make(); this.columnRight = make();
     this.finest = Math.min(this.dx, ...this.dz);
     this.still = make(); this.mask = make();
     this.pBar = make(); this.qBar = make(); this.sourceX = make(); this.sourceZ = make(); this.halfEta = make();
@@ -306,25 +317,62 @@ export class BoussinesqSolver extends ShallowWaterSolver {
    * depth, and its surface stands below the Tonelli–Petti ratio.
    */
   private updateMask(): void {
-    const { nx, nz, h, bed, still, mask, restLevel, f1: wet } = this;
-    for (let i = 0; i < h.length; i += 1) {
-      still[i] = Math.max(0, restLevel - bed[i]);
-      wet[i] = h[i] > DISPERSIVE_DEPTH && still[i] > DISPERSIVE_DEPTH ? 1 : 0;
+    const { h, still, mask, f1: wet, f2: alongX, f3: box, f4: work } = this;
+    if (this.depthDirty) {
+      const { bed, restLevel } = this;
+      for (let i = 0; i < h.length; i += 1) still[i] = Math.max(0, restLevel - bed[i]);
+      this.derivativeX(still, this.dX, false);
+      this.derivativeZ(still, this.dZ, false);
+      this.depthDirty = false;
     }
+    for (let i = 0; i < h.length; i += 1) wet[i] = h[i] > DISPERSIVE_DEPTH && still[i] > DISPERSIVE_DEPTH ? 1 : 0;
+    // Erode the wet cells by the stencils' reach: two along each axis, and the 3 × 3 box for the diagonals.
+    this.erodeX(wet, alongX, 2);
+    this.erodeX(wet, work, 1);
+    this.erodeZ(work, box, 1);
+    this.erodeZ(wet, work, 2);
+    const on = this.dispersive ? 1 : 0;
+    for (let i = 0; i < h.length; i += 1) {
+      mask[i] = wet[i] > 0 && alongX[i] > 0 && work[i] > 0 && box[i] > 0 && h[i] - still[i] <= SWITCH_RATIO * still[i] ? on : 0;
+    }
+  }
+
+  /** The smallest of `f` within `reach` cells along x (clamped at edges, wrapped when periodic). */
+  private erodeX(f: Float64Array, out: Float64Array, reach: number): void {
+    const { nx, nz } = this;
     const periodic = this.xBoundary === PERIODIC;
-    const column = (ix: number) => (ix < 0 ? (periodic ? ix + nx : 0) : ix >= nx ? (periodic ? ix - nx : nx - 1) : ix);
-    const row = (iz: number) => Math.min(nz - 1, Math.max(0, iz));
     for (let iz = 0; iz < nz; iz += 1) {
+      const row = iz * nx;
       for (let ix = 0; ix < nx; ix += 1) {
-        const i = iz * nx + ix;
-        let all = wet[i] > 0 && h[i] - still[i] <= SWITCH_RATIO * still[i];
-        for (let k = -2; k <= 2 && all; k += 1) all = wet[iz * nx + column(ix + k)] > 0 && wet[row(iz + k) * nx + ix] > 0;
-        for (let k = -1; k <= 1 && all; k += 2) all = wet[row(iz + k) * nx + column(ix - 1)] > 0 && wet[row(iz + k) * nx + column(ix + 1)] > 0;
-        mask[i] = all && this.dispersive ? 1 : 0;
+        let least = f[row + ix];
+        for (let k = -reach; k <= reach && least > 0; k += 1) {
+          let j = ix + k;
+          if (j < 0) j = periodic ? j + nx : 0;
+          else if (j >= nx) j = periodic ? j - nx : nx - 1;
+          least = Math.min(least, f[row + j]);
+        }
+        out[row + ix] = least;
       }
     }
-    this.derivativeX(still, this.dX, false);
-    this.derivativeZ(still, this.dZ, false);
+  }
+
+  /** The smallest of `f` within `reach` rows along z (clamped at the ends). */
+  private erodeZ(f: Float64Array, out: Float64Array, reach: number): void {
+    const { nx, nz } = this;
+    for (let iz = 0; iz < nz; iz += 1) {
+      const low = Math.max(0, iz - reach);
+      const high = Math.min(nz - 1, iz + reach);
+      for (let ix = 0; ix < nx; ix += 1) {
+        let least = f[iz * nx + ix];
+        for (let k = low; k <= high && least > 0; k += 1) least = Math.min(least, f[k * nx + ix]);
+        out[iz * nx + ix] = least;
+      }
+    }
+  }
+
+  override shiftAlongShore(columns: number): void {
+    super.shiftAlongShore(columns);
+    this.depthDirty = true;
   }
 
   /** P̄ and Q̄ from P and Q. */
@@ -443,43 +491,60 @@ export class BoussinesqSolver extends ShallowWaterSolver {
    * with walls (Q odd) at both cross-shore ends.
    */
   private recoverColumns(): void {
-    const { nx, nz, qx: P, qz: Q, qBar, still: d, dX, dZ, mask, below, above, f2, f4, f6 } = this;
-    const { lowerBand: a, diagonal: b, upperBand: c, right: r, scratch } = this;
+    const { nx, nz, qx: P, qz: Q, qBar, still: d, dX, dZ, mask, below, above, f2, f4, f6, columnUpper: upper, columnRight: right } = this;
     this.derivativeX(P, f2, true);
     this.derivativeZ(f2, f4, false);
     this.derivativeZ(P, f6, false);
-    for (let ix = 0; ix < nx; ix += 1) {
-      let any = false;
-      for (let iz = 0; iz < nz; iz += 1) {
-        const i = iz * nx + ix;
+    // Thomas elimination down every column at once, one row at a time, so memory is read in order.
+    for (let iz = 0; iz < nz; iz += 1) {
+      const minus = below[iz];
+      const plus = above[iz];
+      const sum = minus + plus;
+      const secondLow = 2 / (minus * sum);
+      const secondHigh = 2 / (plus * sum);
+      const secondMid = -2 / (minus * plus);
+      const firstLow = -plus / (minus * sum);
+      const firstHigh = minus / (plus * sum);
+      const firstMid = (plus - minus) / (plus * minus);
+      const row = iz * nx;
+      for (let ix = 0; ix < nx; ix += 1) {
+        const i = row + ix;
+        let a = 0;
+        let b = 1;
+        let c = 0;
+        let r = qBar[i];
         if (mask[i] > 0) {
-          any = true;
-          const minus = below[iz];
-          const plus = above[iz];
-          const sum = minus + plus;
           const A = ALPHA * d[i] * d[i];
           const E = (d[i] * dZ[i]) / 3;
-          a[iz] = -(A * (2 / (minus * sum)) + E * (-plus / (minus * sum)));
-          b[iz] = 1 - (A * (-2 / (minus * plus)) + E * ((plus - minus) / (plus * minus)));
-          c[iz] = -(A * (2 / (plus * sum)) + E * (minus / (plus * sum)));
-          r[iz] = qBar[i] + A * f4[i] + (d[i] * dZ[i] * f2[i]) / 6 + (d[i] * dX[i] * f6[i]) / 6;
+          a = -(A * secondLow + E * firstLow);
+          b = 1 - (A * secondMid + E * firstMid);
+          c = -(A * secondHigh + E * firstHigh);
+          r += A * f4[i] + (d[i] * dZ[i] * f2[i]) / 6 + (d[i] * dX[i] * f6[i]) / 6;
+          // Walls at both ends: the ghost carries −Q.
+          if (iz === 0) {
+            b -= a;
+            a = 0;
+          }
+          if (iz === nz - 1) {
+            b -= c;
+            c = 0;
+          }
+        }
+        if (iz === 0) {
+          upper[i] = c / b;
+          right[i] = r / b;
         } else {
-          a[iz] = 0;
-          b[iz] = 1;
-          c[iz] = 0;
-          r[iz] = qBar[i];
+          const denominator = b - a * upper[i - nx];
+          upper[i] = c / denominator;
+          right[i] = (r - a * right[i - nx]) / denominator;
         }
       }
-      if (!any) {
-        for (let iz = 0; iz < nz; iz += 1) Q[iz * nx + ix] = qBar[iz * nx + ix];
-        continue;
-      }
-      b[0] -= a[0];
-      a[0] = 0;
-      b[nz - 1] -= c[nz - 1];
-      c[nz - 1] = 0;
-      thomas(a, b, c, r, scratch, nz);
-      for (let iz = 0; iz < nz; iz += 1) Q[iz * nx + ix] = r[iz];
+    }
+    const last = (nz - 1) * nx;
+    for (let ix = 0; ix < nx; ix += 1) Q[last + ix] = right[last + ix];
+    for (let iz = nz - 2; iz >= 0; iz -= 1) {
+      const row = iz * nx;
+      for (let ix = 0; ix < nx; ix += 1) Q[row + ix] = right[row + ix] - upper[row + ix] * Q[row + ix + nx];
     }
   }
 

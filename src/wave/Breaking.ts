@@ -1,3 +1,4 @@
+import { BoussinesqSolver } from './BoussinesqSolver';
 import { GRAVITY } from './dispersion';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 import { BREAKER_INDEX } from './SwellReadout';
@@ -44,14 +45,21 @@ export class BreakingModel {
   readonly strength: Float64Array;
   /** Seconds since breaking began for the bore that covers each cell. */
   readonly age: Float64Array;
-  /** Multiplies the onset threshold; the local wind shifts it (plan Q23). */
-  onsetScale = 1;
+  private scale = 1;
   private readonly previousSurface: Float64Array;
   private readonly nextStrength: Float64Array;
   private readonly nextAge: Float64Array;
   private primed = false;
 
+  /**
+   * On the stage 2 solver breaking is part of the step (Kennedy eddy
+   * viscosity): the model only mirrors the solver's strength and age, so lip,
+   * foam, readouts and the board read the same signal in both stages.
+   */
+  private readonly source?: BoussinesqSolver;
+
   constructor(private readonly solver: ShallowWaterSolver, readonly options: BreakingOptions) {
+    if (solver instanceof BoussinesqSolver && solver.breaks) this.source = solver;
     const size = solver.nx * solver.nz;
     this.strength = new Float64Array(size);
     this.age = new Float64Array(size);
@@ -60,7 +68,22 @@ export class BreakingModel {
     this.nextAge = new Float64Array(size);
   }
 
+  /** Multiplies the onset threshold; the local wind shifts it (plan Q23). */
+  get onsetScale(): number {
+    return this.source ? this.source.onsetScale : this.scale;
+  }
+
+  set onsetScale(value: number) {
+    this.scale = value;
+    if (this.source) this.source.onsetScale = value;
+  }
+
   update(dt: number): void {
+    if (this.source) {
+      this.strength.set(this.source.breakingStrength);
+      this.age.set(this.source.breakingAge);
+      return;
+    }
     const { nx, nz, h, bed, dx, zCenters, restLevel } = this.solver;
     if (!this.primed || !(dt > 0)) {
       for (let i = 0; i < h.length; i += 1) this.previousSurface[i] = h[i] + bed[i];

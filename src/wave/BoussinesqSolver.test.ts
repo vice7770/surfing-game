@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createSpot } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenCelerity } from './BoussinesqSolver';
 import { GRAVITY } from './dispersion';
 import { ShallowWaterSolver, uniformEdges, type WaterTarget } from './ShallowWaterSolver';
@@ -427,5 +428,47 @@ describe('Boussinesq breaking', () => {
     expect(largest / start).toBeLessThan(1.005);
     expect(solver.totalEnergy()).toBeLessThan(start);
   }, 60_000);
+});
+
+describe('Boussinesq surf zone beds', () => {
+  it('keeps a lake at rest over every spot, dry shoreline included, with breaking on', () => {
+    for (const name of ['beach', 'point', 'reef', 'canyon'] as const) {
+      const spot = createSpot(name, 1);
+      const solver = new BoussinesqSolver(
+        { nx: 40, xMin: -80, dx: 4, zEdges: uniformEdges(-300, 30, 110) }, spot.depthAt, { waterLevel: 0.3, breaking: { onset: 0.65 } },
+      );
+      const initialDepth = Float64Array.from(solver.h);
+      for (let frame = 0; frame < 120; frame += 1) solver.step(1 / 15);
+      let largestFlow = 0;
+      let depthChange = 0;
+      for (let i = 0; i < solver.h.length; i += 1) {
+        largestFlow = Math.max(largestFlow, Math.abs(solver.qx[i]), Math.abs(solver.qz[i]));
+        depthChange = Math.max(depthChange, Math.abs(solver.h[i] - initialDepth[i]));
+      }
+      expect(largestFlow, name).toBeLessThan(1e-9);
+      expect(depthChange, name).toBeLessThan(1e-9);
+    }
+  });
+
+  it('follows the bed as the window slides across the headland', () => {
+    const spot = createSpot('point', 1);
+    const solver = new BoussinesqSolver(
+      { nx: 30, xMin: -200, dx: 4, zEdges: uniformEdges(-200, 20, 55), xBoundary: 'open' }, spot.depthAt, { waterLevel: 0.2, breaking: { onset: 0.65 } },
+    );
+    for (let move = 0; move < 40; move += 1) {
+      solver.step(1 / 15);
+      solver.shiftAlongShore(move % 3 === 2 ? -1 : 3);
+    }
+    solver.step(1 / 15);
+    let largestFlow = 0;
+    let stillError = 0;
+    for (let i = 0; i < solver.h.length; i += 1) {
+      largestFlow = Math.max(largestFlow, Math.abs(solver.qx[i]), Math.abs(solver.qz[i]));
+      stillError = Math.max(stillError, Math.abs(solver.still[i] - Math.max(0, 0.2 - solver.bed[i])));
+    }
+    expect(solver.xCenters[0]).toBeGreaterThan(0);
+    expect(largestFlow).toBeLessThan(1e-9);
+    expect(stillError).toBe(0);
+  });
 });
 

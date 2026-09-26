@@ -283,6 +283,7 @@ class SurfGame {
     const number = (id: string): number => Number.parseFloat(getElement<HTMLInputElement>(id).value);
     return {
       spot: getElement<HTMLSelectElement>('#physical-spot').value as SpotName,
+      stage: getElement<HTMLSelectElement>('#physical-solver').value === '1' ? 1 : 2,
       source: getElement<HTMLSelectElement>('#swell-source').value as PhysicalSettings['source'],
       significantHeight: number('#hs-slider'),
       peakPeriod: number('#tp-slider'),
@@ -424,8 +425,8 @@ class SurfGame {
     }
     const physicalInputs = ['#hs-slider', '#tp-slider', '#direction-slider', '#spread-slider', '#tide-slider', '#wind-speed-slider',
       '#storm-wind-slider', '#storm-fetch-slider', '#storm-duration-slider', '#storm-distance-slider'];
-    for (const selector of [...physicalInputs, '#physical-spot', '#swell-source']) {
-      getElement<HTMLInputElement>(selector).addEventListener(selector.startsWith('#physical-spot') || selector === '#swell-source' ? 'change' : 'input', () => {
+    for (const selector of [...physicalInputs, '#physical-spot', '#physical-solver', '#swell-source']) {
+      getElement<HTMLInputElement>(selector).addEventListener(selector.startsWith('#physical-') || selector === '#swell-source' ? 'change' : 'input', () => {
         this.draftPhysical = this.readDraftPhysical();
         this.refreshTuningUi();
       });
@@ -541,6 +542,7 @@ class SurfGame {
     getElement<HTMLElement>('#physical-controls').hidden = this.draftMode !== 'physical';
     const physical = this.draftPhysical;
     getElement<HTMLSelectElement>('#physical-spot').value = physical.spot;
+    getElement<HTMLSelectElement>('#physical-solver').value = String(physical.stage);
     getElement<HTMLSelectElement>('#swell-source').value = physical.source;
     getElement<HTMLElement>('#buoy-controls').hidden = physical.source !== 'buoy';
     getElement<HTMLElement>('#storm-controls').hidden = physical.source !== 'storm';
