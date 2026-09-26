@@ -94,26 +94,38 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P7 barrels
   6. validation, per-spot tube reports and a video.
 - [ ] Every tier gets tubes. If the physics is too heavy, it is sped up later, never faked.
 
-### P1 · Gameplay milestone (P8–P11) — `In Progress`
+### P1 · Gameplay milestone (P9–P12) — `In Progress`
 
-Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](docs/superpowers/specs/2026-09-26-gameplay-milestone.md), grounded in the [surf-science survey](docs/research/surf-gameplay-research.md). Every mechanic is a physical rider input; the player gives intent and the rider's reflexes balance. Study outcomes are validation checks, body limits are tunable parameters, and performance is measured, never a gate. The branch `claude/gameplay-p8` stacks on PR #7; P7 continues in parallel and the two meet in P10.
+Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](docs/superpowers/specs/2026-09-26-gameplay-milestone.md), grounded in the [surf-science survey](docs/research/surf-gameplay-research.md).
+- Every mechanic is a physical rider input; the player gives intent and the rider's reflexes balance.
+- Study outcomes are validation checks, body limits are tunable parameters, and performance is measured, never a gate.
+- The branch `claude/gameplay-p9` stacks on PR #7.
+- **With P8:** P8 (Menus and settings) owns the UI shell. The gameplay layers' physics runs in parallel with it; their player-facing parts are built on P8's HUD, end card, Logbook, Settings and bindings after it merges.
+- **With P7:** P7 is parked, and resumes before the Tube layer.
 
-- [ ] **P8 Riding** (`Ready`, [plan](docs/superpowers/plans/2026-09-26-p8-riding.md)):
-  - phase 0: speed and position against the crest, a horizon-holding ride camera, a line-holding autopilot. This is where "the rider's speed and position relative to the wave looked wrong" gets worked out;
-  - the flexible (finite-impedance) rider;
-  - trim, stall, crouch, pumping, turns and heading hold;
-  - a ride report and an optional 0–10 score;
-  - a balance meter, a key card and one-time hints.
-- [ ] **P9 Take-off** (`Backlog`): cruise and sprint paddling recalibrated to measured speeds, critical-power stamina, angled take-offs, late take-offs and air drops.
-- [ ] **P10 Tube** (`Backlog`, with P7): pulling in and racing out, rail grab and hand drag, crouch clearance, the Regular/Goofy setting, an automatic tube camera.
+- [ ] **P9 Riding** (`Ready`, [plan](docs/superpowers/plans/2026-09-26-p9-riding.md)):
+  - **Part A, physics, now:**
+    - phase 0: speed and position against the crest, speed over ground in the status, a horizon-holding ride camera, a line-holding autopilot. This is where "the rider's speed and position relative to the wave looked wrong" gets worked out;
+    - the flexible (finite-impedance) rider;
+    - trim, stall, crouch, pumping, turns and heading hold;
+    - turn and ride-end detection;
+    - the score rubric.
+  - **Part B, after P8 merges:**
+    - the new keys and gamepad axes;
+    - the ride report and score on P8's end card and Logbook;
+    - the balance meter;
+    - one-time hints;
+    - the playtest.
+- [ ] **P10 Take-off** (`Backlog`): cruise and sprint paddling recalibrated to measured speeds, critical-power stamina, angled take-offs, late take-offs and air drops.
 - [ ] **P11 Lineup** (`Backlog`): a sliding window to pick a peak, sets read from the horizon, duck-dives, a surface roller with aeration (hold-downs emerge), breath, a snapping leash, Next set.
-- **Backlog beyond P11:** multiplayer and community judging, local ride replay, audio, airs, turtle roll and longboard, computer surfers, session-long fatigue.
+- [ ] **P12 Tube** (`Backlog`, after P7 resumes and finishes): pulling in and racing out, rail grab and hand drag, crouch clearance, the Regular/Goofy setting, an automatic tube camera.
+- **Backlog beyond P12:** multiplayer and community judging, local ride replay, airs, turtle roll and longboard, computer surfers, session-long fatigue. Audio is P8's backlog.
 
 The user's original list of 15 mechanics (2026-09-26) is covered as follows:
-- crouch, stall, high/low line, pumping, turns → P8;
-- sprint, angled take-off, late take-off, stamina → P9;
-- pull-in/race-out, rail grab/hand drag, tube camera → P10;
-- duck-dive, reading sets, wipeout and recovery → P11.
+- crouch, stall, high/low line, pumping, turns → P9;
+- sprint, angled take-off, late take-off, stamina → P10;
+- duck-dive, reading sets, wipeout and recovery → P11;
+- pull-in/race-out, rail grab/hand drag, tube camera → P12.
 
 ## Current milestone — sustained wave and physical wipeout — `Done for prototype`
 

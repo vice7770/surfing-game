@@ -1,6 +1,6 @@
-# Gameplay milestone (P8–P11): specification
+# Gameplay milestone (P9–P12): specification
 
-Status: **agreed** in a grilling session with the user on 2026-09-26. This is the spec the P8–P11 plans argue from. Each decision below was put to the user with a recommendation and confirmed. The surf-science evidence behind the numbers is in the [gameplay research survey](../../research/surf-gameplay-research.md).
+Status: **agreed** in a grilling session with the user on 2026-09-26. This is the spec the P9–P12 plans argue from. Each decision below was put to the user with a recommendation and confirmed. The surf-science evidence behind the numbers is in the [gameplay research survey](../../research/surf-gameplay-research.md).
 
 ## Principles
 
@@ -17,14 +17,26 @@ Status: **agreed** in a grilling session with the user on 2026-09-26. This is th
 
 | Phase | Layer | Contents |
 |---|---|---|
-| **P8** | Riding | Phase 0 (speed and position against the wave, camera, line-holding autopilot), the flexible rider, trim, stall, crouch, pumping, turns, heading hold, ride report and optional score, balance feedback |
-| **P9** | Take-off | Paddle recalibration, sprint, stamina, angled take-off, late take-off and air drop |
-| **P10** | Tube | Pulling in and racing out, rail grab and hand drag in the tube, crouch clearance, the Regular/Goofy setting, the tube camera. Merges with P7 (barrels) |
+| **P9** | Riding | Phase 0 (speed and position against the wave, camera, line-holding autopilot), the flexible rider, trim, stall, crouch, pumping, turns, heading hold, ride report and optional score, balance feedback |
+| **P10** | Take-off | Paddle recalibration, sprint, stamina, angled take-off, late take-off and air drop |
 | **P11** | Lineup | Sliding window, reading sets, duck-dive, surface roller and aeration, hold-downs and breath, leash, Next set |
+| **P12** | Tube | Pulling in and racing out, rail grab and hand drag in the tube, crouch clearance, the Regular/Goofy setting, the tube camera. Needs P7 (barrels) resumed and finished first |
 
-- P7 (barrels) continues in parallel on `claude/barrels`: its lip sheet is water-side and the flexible rider is rider-side. The two meet in P10.
+- **P8 is Menus and settings,** grilled separately on 2026-09-26 and built on `claude/p8-menus`. It owns the game's UI shell:
+  - the ride HUD and the end-of-ride card;
+  - the Logbook;
+  - Settings;
+  - key and gamepad bindings;
+  - `strings.ts`;
+  - the `devTools` switch that will hide the Wave Lab.
+- **How the gameplay layers use P8.** Their physics work runs in parallel with P8. Their player-facing parts are built on P8's pieces after it merges, never in the Wave Lab:
+  - new keys become remappable actions;
+  - reports and scores go on P8's card and Logbook;
+  - settings go in Settings → Gameplay;
+  - hints go through `strings.ts`.
+- **P7 (barrels) is parked** on `claude/barrels`. The order is Riding → Take-off → Lineup → *(resume and finish P7)* → Tube.
 - The gameplay branch stacks on `claude/paddler-hold` (PR #7), which holds the paddler fixes and the ride recorder.
-- Each layer is planned in detail when it is reached; only P8 has a task-by-task plan now.
+- Each layer is planned in detail when it is reached; only P9 has a task-by-task plan now.
 
 ## Controls
 
@@ -35,17 +47,17 @@ The existing keys keep their meaning. The new keys depend on whether the rider l
 | Space / ↑ | paddle (as now) | ↑ / W: weight forward (trim) |
 | ↓ / S | hold: duck-dive (P11) | weight back (stall) |
 | ← → / A D | steer (as now) | lean (as now) |
-| Shift | hold with paddle: sprint (P9) | hold: crouch; release: extend. A rhythm of presses pumps |
+| Shift | hold with paddle: sprint (P10) | hold: crouch; release: extend. A rhythm of presses pumps |
 | E | — | wave-side hand in the face (drag, stall) |
-| Q | — | grab the rail (P10) |
+| Q | — | grab the rail (P12) |
 | Enter / R / C | as now | as now |
 
-- Every key ramps an analog axis over about 0.2 s, so a future analog controller (for example a Steam Controller) maps straight onto the same axes.
+- Every key ramps an analog axis over about 0.2 s, so an analog controller (for example a Steam Controller) maps straight onto the same axes. P8 brings gamepad support and remapping; the new actions join its bindings, and the keys above are their defaults.
 - Ctrl is never bound (macOS uses Ctrl + arrows to switch spaces).
 - Touch keeps a core subset: paddle, sprint, stand, lean and crouch. Rail grab and fine trim are keyboard or controller only. Physical mode's touch controls must work (today they are hidden).
-- The rider carries a stance sign from the flexible rider's first commit (regular by default). The Regular/Goofy setting arrives in P10, when backside and frontside hand play differ.
+- The rider carries a stance sign from the flexible rider's first commit (regular by default). The Regular/Goofy setting arrives in P12, when backside and frontside hand play differ.
 
-## P8 · Riding
+## P9 · Riding
 
 - **Phase 0 (first):**
   - measure the rider's speed and position relative to the crest: crest speed, the peel's required speed c / sin α, how far ahead of the crest, and how high on the face;
@@ -67,7 +79,7 @@ The existing keys keep their meaning. The new keys depend on whether the rider l
   - pumping (crouch and extend in rhythm, working against the real load on the feet);
   - turns (lean);
   - **heading hold:** with no lean asked for, the rider's reflexes hold the current heading on the face, so releasing the keys holds a line.
-- **Feedback:**
+- **Feedback** (shown through P8's ride HUD, end-of-ride card, Logbook and Settings → Gameplay):
   - body language always (arms reach, knees drop, the board chatters);
   - an optional balance meter showing the real margin (how close the centre of pressure is to the edge of the feet, and how much of the friction is used). On by default in Practice, off by default in Natural Sets;
   - a **ride report** at the end of each ride: time, distance, top and mean speed over ground, time in the pocket, detected turns with their kinematics;
@@ -86,21 +98,13 @@ The existing keys keep their meaning. The new keys depend on whether the rider l
   - ride speeds agree with the peel geometry, c / sin α;
   - the user and Claude play it and agree it feels right.
 
-## P9 · Take-off
+## P10 · Take-off
 
 - **Paddling recalibrated:** normal paddling cruises at 0.8–1.1 m/s and sprinting reaches 1.5–1.9 m/s after 4–8 s (Nessler et al. 2019). Today's normal paddle (about 1.6 m/s) is really a sprint.
 - **Stamina** is a critical-power model. Effort below a sustainable level (cruise) never tires. Sprinting, duck-diving and hard swimming drain a reserve in about 20–30 s, and it refills over minutes. Nothing carries over between rides for the whole session (session-long fatigue is backlog). It shows through body cues (slower, shorter strokes), plus an optional meter.
 - Angled take-offs come from prone steering.
 - Late take-offs and air drops are judged by the landing physics. Validation: time to stabilise after a 0.5 m drop about 0.7 s (Tran et al. 2015).
 - Pop-up attempts can be early or late and are recoverable; the physics decides (the session spec).
-
-## P10 · Tube
-
-- Pulling in and racing out emerge from line, stall and speed.
-- Rail grab (Q) adds a hand contact that lowers the centre of mass and adds roll authority. Hand drag (E) holds a line.
-- Crouch sets clearance under the lip sheet.
-- The Regular/Goofy setting.
-- **The tube camera** switches automatically, while the rider is covered, to a low view just behind the rider looking out through the tube's opening, and back when uncovered. C still cycles. A setting turns the auto-switch off. The see-through sheet with the wide camera is the fallback.
 
 ## P11 · Lineup
 
@@ -115,10 +119,19 @@ The existing keys keep their meaning. The new keys depend on whether the rider l
 - **Leash:** an elastic tether that snaps above about 1–1.5 kN, with board recoil. There is no injury system.
 - **Next set:** restarts the surf zone just before the predicted set (the warm start, behind a loading card). A hurry-up fast-forward covers shorter waits. Practice's steady swell does not need it.
 
+## P12 · Tube
+
+- **Needs P7 first:** P7 (barrels) is parked; it resumes and finishes before this layer starts.
+- Pulling in and racing out emerge from line, stall and speed.
+- Rail grab (Q) adds a hand contact that lowers the centre of mass and adds roll authority. Hand drag (E) holds a line.
+- Crouch sets clearance under the lip sheet.
+- The Regular/Goofy setting.
+- **The tube camera** switches automatically, while the rider is covered, to a low view just behind the rider looking out through the tube's opening, and back when uncovered. C still cycles. A setting turns the auto-switch off. The see-through sheet with the wide camera is the fallback.
+
 ## Session framework
 
-- Practice (a steady swell) and Natural Sets, as in the [session experience plan](../../research/session-experience-plan.md), with R as Quick retry in both modes. Next set arrives with P11.
-- Teaching is a key card plus one-time hints that retire after the player uses the mechanic successfully.
+- Practice (a steady swell) and Natural Sets, as in the [session experience plan](../../research/session-experience-plan.md), with R as Quick retry in both modes. P8's Surf screen chooses them (its Practice swell against Small, Medium or Big). Next set arrives with P11.
+- Teaching is a key card (P8's Controls settings screen) plus one-time hints that retire after the player uses the mechanic successfully (extending P8's first-ride key hints).
 - Rides in slow motion (time-scale below 1) are still scored; the time-scale is noted in the ride report.
 
 ## Out of scope (backlog)
