@@ -164,6 +164,14 @@ const REFERENCE_RATE = 5;
 const HOLD_BANK = 0.1;
 const MAX_BANK = (70 * Math.PI) / 180;
 /**
+ * The rider leans no further than a turn of TURN_RADIUS, m, can hold at the
+ * board's speed, atan(v² / (g R)): 59° at 7 m/s, 17° at 3 m/s, 8° at 2 m/s.
+ * Forsyth et al. 2024's bottom turns run at 3.8 m and cutbacks at 2.2 m. After
+ * a pop-up the board can be slow, and a rider steering hard at 1–2 m/s banked
+ * to 70° with no turn under it to hold the lean (the Canyon's ride report).
+ */
+const TURN_RADIUS = 3;
+/**
  * The upper body's swing (the turn redesign, with the user): the torso and arms
  * swing about the forward axis as a rotor of SWING_INERTIA, kg·m², within
  * ±SWING_RANGE, rad, driven from the hips at up to SWING_TORQUE, N·m
@@ -1112,8 +1120,10 @@ export class AttachedRider {
     const roll = Math.atan2(boardUp.dot(side), boardUp.y);
     this.rollAxis.set(0, 0, -1).applyQuaternion(this.heading);
     const rollRate = this.rollAxis.dot(this.boardSpin);
-    // The bank asked for, eased in.
-    const asked = Math.max(-MAX_BANK, Math.min(MAX_BANK, this.steer * RAIL_RANGE + (this.standingHold + HAND_BEND * this.handSide) * HOLD_BANK));
+    // The bank asked for, no more than a turn at the board's speed can hold, eased in.
+    const speed = this.boardVelocity.dot(this.localScratch.set(0, 0, 1).applyQuaternion(this.heading));
+    const most = Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * TURN_RADIUS)));
+    const asked = Math.max(-most, Math.min(most, this.steer * RAIL_RANGE + (this.standingHold + HAND_BEND * this.handSide) * HOLD_BANK));
     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
     this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
     // The rest the balance wants, within what the feet can give; the upper body swings for the rest of it.

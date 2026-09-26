@@ -779,6 +779,19 @@ describe('lean, trim, crouch and heading hold', () => {
       }
     });
 
+    // The Canyon's ride report: after the pop-up the board can be slow, and a rider steering hard at 1–2 m/s banked to
+    // 70° and fell, with no turn under it to hold the lean. A rider leans no further than a turn at its speed can hold.
+    it('leans no further than a turn at its speed can hold', () => {
+      for (const speed of [2, 3]) {
+        const { board, rider, water } = acrossFace(0, speed);
+        rider.steer = 1;
+        let widest = 0;
+        run(board, water, 1, () => { if (rider.attached) widest = Math.max(widest, Math.abs(rider.bank.angle)); });
+        expect(rider.attached).toBe(true);
+        expect(degrees(widest)).toBeLessThan(30);
+      }
+    });
+
     // Review Focus 5: lying down there is no bank.
     it('has no bank lying down', () => {
       const { board, rider } = mounted('prone');
