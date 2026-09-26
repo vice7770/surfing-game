@@ -61,13 +61,32 @@ describe('Classic water parity', () => {
     expect(compiled(water.mesh.material)).toEqual(compiled(new WaterSurface(source).mesh.material));
   });
 
-  it('draws a cubic source’s Rich surface from the Catmull-Rom chunk, per pixel', () => {
+  it('draws a cubic source’s Rich surface from the Catmull-Rom chunk, cut by the flying tubes, per vertex and per pixel', () => {
     const water = new WaterSurface({ ...source, cubic: true });
     water.setLook('rich');
     const { vertex, fragment } = compiled(water.mesh.material);
-    expect(vertex).toContain('waterCubic( waterXZ )');
-    expect(fragment).toContain('waterCubic( vWaterWorld.xz )');
+    expect(vertex).toContain('waterCarvedCubic( waterXZ )');
+    expect(fragment).toContain('waterCarvedCubic( vWaterWorld.xz )');
     expect(water.mesh.material.customProgramCacheKey()).toContain('rich');
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    water.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
+    const uniforms = shader.uniforms as Record<string, { value: unknown }>;
+    expect(uniforms.waterTubeMap.value).toBeDefined();
+    expect(uniforms.waterTubeColumns.value).toBeDefined();
+  });
+
+  it('cuts only the tubes its source sends, and none in Classic', () => {
+    const tubes = [4.5, 3, 2, 0, 1, 3, 2, 0.8, 0.6, 4, 1, 0];
+    const tubed = { ...source, cubic: true, tubeColumnWidth: 1, writeTubes: (into: Float32Array) => (into.set(tubes), 1) };
+    const water = new WaterSurface(tubed);
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    water.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
+    const uniforms = shader.uniforms as Record<string, { value: unknown }>;
+    water.update();
+    expect(uniforms.waterTubeCount.value).toBe(0);
+    water.setLook('rich');
+    water.update();
+    expect(uniforms.waterTubeCount.value).toBe(1);
   });
 
   it('adds the dense patch only for a Rich cubic source, the base mesh discarding under it', () => {
