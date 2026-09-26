@@ -9,6 +9,7 @@
  *   npm run report:catch -- --seeds 2 --minutes 3
  *   npm run report:catch -- --spots point --offset 5 --out /tmp/point.md
  *   npm run report:catch -- --practice --ghosts --spots point,reef
+ *   npm run report:catch -- --ghosts --hs 2.4 --tp 14 --spread 0.2   (the Surf screen's Big swell)
  */
 import { writeFileSync } from 'node:fs';
 import { Vector3 } from 'three';
@@ -38,6 +39,7 @@ const settings = practice ? { ...DEFAULT_PHYSICAL_SETTINGS, source: 'practice' a
   ...DEFAULT_PHYSICAL_SETTINGS,
   significantHeight: argument('hs', DEFAULT_PHYSICAL_SETTINGS.significantHeight),
   peakPeriod: argument('tp', DEFAULT_PHYSICAL_SETTINGS.peakPeriod),
+  spread: argument('spread', DEFAULT_PHYSICAL_SETTINGS.spread),
 };
 const swell = swellFor(settings);
 const direction = swell.directionDegrees ?? settings.directionDegrees;
@@ -218,7 +220,7 @@ for (const spot of spots) {
 
 const sea = practice
   ? `Practice mode: the narrow-band groundswell (Hs ${swell.significantHeight} m, Tp ${swell.peakPeriod} s, spreading s ${swell.spreading}, band ±${Math.round(swell.bandwidth! * 100)} %, ${direction}° from shore-normal), tide ${settings.tide} m, calm wind`
-  : `The Wave Lab defaults: Hs ${swell.significantHeight} m, Tp ${swell.peakPeriod} s, ${direction}° from shore-normal, spreading s ${swell.spreading.toFixed(0)}, tide ${settings.tide} m, calm wind`;
+  : `A buoy swell: Hs ${swell.significantHeight} m, Tp ${swell.peakPeriod} s, ${direction}° from shore-normal, spreading s ${swell.spreading.toFixed(0)}, tide ${settings.tide} m, calm wind`;
 const where = ghosts
   ? `${bots} bots share the sea, at ${alongs.join(', ')} m along shore from the break point and ${offsets.join(', ')} m outside the break line (negative: inside)`
   : `One bot waits ${offsets[0]} m outside the break line`;

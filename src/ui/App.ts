@@ -24,6 +24,7 @@ import { RideHud, type HintKeys } from './RideHud';
 import { ScreenStack, type ScreenId } from './ScreenStack';
 import { EN, t, type StringKey } from './strings';
 import { createSurfScreen, type SurfChoice } from './SurfScreen';
+import { oncePerFlight } from './oncePerFlight';
 
 /** What the menus ask of the game (implemented by `SurfGame` in main.ts). */
 export interface GameHost {
@@ -71,6 +72,10 @@ export class App {
   /** The scene the game shows now: the menu's waves, a ride, or the Wave Lab. */
   private scene?: 'backdrop' | 'ride' | 'wavelab';
   private backdropSpot?: SpotName;
+  /** The menu's own waves are up (not the ride or Wave Lab it replaced, still running while they spin up). */
+  private backdropReady = false;
+  /** Undo for the screen now shown (the Settings screen's store subscription). */
+  private disposeScreen?: () => void;
   private readonly adapter: string;
   private benchmark?: BenchmarkRecorder;
   private warmup = 0;
@@ -128,7 +133,7 @@ export class App {
       this.rideHud.update(this.game.rideStatus, gameplay.units, this.hintKeys(), !seen.rideHints);
       this.trackRide();
     }
-    if (!this.benchmark || this.stack.base !== 'menu' || !this.game.backdropRunning) return;
+    if (!this.benchmark || this.stack.base !== 'menu' || !this.backdropReady || !this.game.backdropRunning) return;
     if (this.warmup < BENCHMARK_WARMUP_FRAMES) {
       this.warmup += 1;
       return;
@@ -176,9 +181,12 @@ export class App {
     this.menuInput.active = !playing;
     this.game.setPaused(this.stack.stack.includes('pause'));
     this.applyAccessibility();
+    if (base !== 'menu') this.backdropReady = false;
     if (base === 'menu' && this.scene !== 'backdrop') this.openBackdrop();
     // The gradient only stands in for the menu's first waves; a ride or the Wave Lab shows its own scene.
     if (base !== 'menu') this.root.classList.remove('is-scene-pending');
+    this.disposeScreen?.();
+    this.disposeScreen = undefined;
     this.ui.replaceChildren(...this.render(current));
     if (this.notice) this.ui.append(this.notice);
     if (playing) this.game.canvas.focus({ preventScroll: true });
@@ -202,13 +210,15 @@ export class App {
       })];
     }
     if (id === 'settings') {
-      return [createSettingsScreen({
+      const screen = createSettingsScreen({
         store: this.settings,
         context: () => ({ devTools: DEV_TOOLS, detecting: this.detecting }),
         onBack: () => this.back(),
         onRedetect: () => this.redetect(),
         onCapture: (capturing) => { this.menuInput.active = !capturing; },
-      })];
+      });
+      this.disposeScreen = screen.dispose;
+      return [screen.root];
     }
     if (id === 'logbook') {
       return [createLogbookScreen(logbookModel(this.logbook, this.settings.value.gameplay.units, Date.now()), () => this.back())];
@@ -299,8 +309,10 @@ export class App {
     this.endCard = undefined;
   }
 
-  /** Start the chosen session behind the loading card, then ride. */
-  private async paddleOut(): Promise<void> {
+  /** Start the chosen session behind the loading card, then ride; repeated presses while it loads are ignored. */
+  private readonly paddleOut = oncePerFlight(() => this.startSession());
+
+  private async startSession(): Promise<void> {
     this.setLoadingText('loading.paddleOut');
     this.loading.classList.remove('is-hidden');
     const { spot, conditions } = this.surfChoice;
@@ -402,10 +414,12 @@ export class App {
   private openBackdrop(): void {
     const first = this.scene === undefined;
     this.scene = 'backdrop';
+    this.backdropReady = false;
     this.backdropSpot = nextBackdropSpot(this.backdropSpot);
     if (first) this.root.classList.add('is-scene-pending');
     void this.game.showBackdrop(this.backdropSpot).then((shown) => {
       if (!shown) return;
+      this.backdropReady = this.stack.base === 'menu';
       this.root.classList.remove('is-scene-pending');
       this.warmup = 0;
       this.startBenchmarkIfNeeded();
