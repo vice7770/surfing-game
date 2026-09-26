@@ -23,7 +23,7 @@ export interface SettingsScreenOptions {
  * Settings (plan P8): four tabs whose rows come from `settingsModel`. Every change
  * applies at once through the store; each tab has its own Reset.
  */
-export function createSettingsScreen(options: SettingsScreenOptions): HTMLElement {
+export function createSettingsScreen(options: SettingsScreenOptions): { root: HTMLElement; dispose(): void } {
   const { store } = options;
   let tab: SettingsTab = 'gameplay';
   const tabBar = el('div', { class: 'settings-tabs', attrs: { role: 'tablist' } });
@@ -168,13 +168,7 @@ export function createSettingsScreen(options: SettingsScreenOptions): HTMLElemen
     if (focusKey) root.querySelector<HTMLElement>(`[data-focus-key="${CSS.escape(focusKey)}"]`)?.focus({ preventScroll: true });
   };
 
-  const stop = store.subscribe(() => {
-    if (!root.isConnected) {
-      stop();
-      return;
-    }
-    render();
-  });
+  const stop = store.subscribe(render);
   render();
-  return root;
+  return { root, dispose: stop };
 }

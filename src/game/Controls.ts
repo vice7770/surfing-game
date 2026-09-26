@@ -93,7 +93,8 @@ export class Controls {
 
   private keyDown(event: KeyboardEvent): void {
     const tag = (event.target as Element | null)?.tagName;
-    if (tag && EDITABLE.has(tag)) return;
+    // A form control keeps its own keys, except the pause key, so Esc always pauses the Wave Lab.
+    if (tag && EDITABLE.has(tag) && !this.bindings().keyboard.pause.includes(event.code)) return;
     this.lastDevice = 'keyboard';
     if (!this.active) return;
     const actions = heldActions(new Set([event.code]), [], this.bindings());

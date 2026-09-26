@@ -13,7 +13,7 @@ function setup() {
   const controls = new Controls(() => DEFAULT_BINDINGS, handlers, { target, pads: () => pads });
   const key = (type: 'keydown' | 'keyup', code: string, repeat = false) =>
     target.dispatchEvent(Object.assign(new Event(type), { code, repeat }));
-  return { controls, handlers, key, setPads: (next: PadState[]) => { pads = next; } };
+  return { controls, handlers, key, target, setPads: (next: PadState[]) => { pads = next; } };
 }
 
 describe('Controls', () => {
@@ -62,5 +62,18 @@ describe('Controls', () => {
     expect(controls.lastDevice).toBe('gamepad');
     key('keydown', 'Space');
     expect(controls.lastDevice).toBe('keyboard');
+  });
+
+  it('pauses on Esc even from a Wave Lab slider, while other keys stay with the slider', () => {
+    const { handlers, target, controls } = setup();
+    const fromSlider = (code: string) => {
+      const event = Object.assign(new Event('keydown', { cancelable: true }), { code });
+      Object.defineProperty(event, 'target', { value: { tagName: 'INPUT' } });
+      target.dispatchEvent(event);
+    };
+    fromSlider('ArrowLeft');
+    expect(controls.input.steer).toBe(0);
+    fromSlider('Escape');
+    expect(handlers.pause).toHaveBeenCalledTimes(1);
   });
 });
