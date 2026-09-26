@@ -287,4 +287,6 @@
 .online-players li { display: flex; align-items: center; gap: .6em; }
 .online-players li span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .online-players li small { color: var(--muted); font: .72em var(--mono); text-transform: uppercase; letter-spacing: .1em; }
-.online-link { display: flex; align-items: center; gap: .6em; margin: 0; color: var(--muted); font: .78em var(--mono); word-break: break-all; }
+.online-link { display: flex; align-items: center; gap: .6em; margin: 0; color: var(--muted); font: .78em var(--mono); }
+.online-link span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.online-link .strip-button { flex: none; white-space: nowrap; }
