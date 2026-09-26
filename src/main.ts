@@ -179,6 +179,10 @@ class SurfGame {
   private needsRender = true;
   /** Paused by the menu: nothing steps; the scene stays drawn. */
   private paused = false;
+  /** The menu's waves or a Surf ride: their own sun, real time, and the Wave Lab's settings left as they were. */
+  private surfScene = false;
+  /** The sun the environment shows now, whoever set it. */
+  private shownSun = { height: DEFAULT_SETTINGS.sunHeight, direction: DEFAULT_SETTINGS.sunDirection };
   /** The graphics settings in force (plan P8); until applied, today's defaults. */
   private graphics?: ResolvedGraphics;
   private lastRender = 0;
@@ -326,11 +330,11 @@ class SurfGame {
   }
 
   private startRun(seed: number, settings: TuningSettings, spot: Spot = this.activeSpot): void {
-    const sunChanged = settings.sunHeight !== this.activeSettings.sunHeight
-      || settings.sunDirection !== this.activeSettings.sunDirection;
+    const sunChanged = settings.sunHeight !== this.shownSun.height || settings.sunDirection !== this.shownSun.direction;
     const spotChanged = spot !== this.activeSpot || this.mode !== 'legacy';
     this.physicalMode.cancel();
     this.leavePhysical();
+    this.surfScene = false;
     this.seed = seed;
     this.activeSettings = { ...settings };
     this.draftSettings = { ...settings };
@@ -408,11 +412,18 @@ class SurfGame {
     if (!(await this.physicalMode.start(settings, seed, this.water, {}, factory, this.graphics?.richSea === false ? undefined : gpuTier))) return false;
     this.frozen = false;
     this.freezeIn = undefined;
-    // The Wave Lab's sliders set the sun and time scale; the menu and Surf pass their own sun and run in real time.
-    const shared = options.sun ? { ...this.activeSettings, timeScale: 1, ...options.sun } : this.readDraftSettings();
-    const sunChanged = shared.sunHeight !== this.activeSettings.sunHeight || shared.sunDirection !== this.activeSettings.sunDirection;
-    this.activeSettings = { ...this.activeSettings, timeScale: shared.timeScale, sunHeight: shared.sunHeight, sunDirection: shared.sunDirection };
-    this.draftSettings = { ...this.activeSettings };
+    // The Wave Lab's sliders set its sun and time scale; the menu and Surf bring their own sun, run in real
+    // time, and leave the Wave Lab's settings as they were.
+    this.surfScene = options.sun !== undefined;
+    let sun: { sunHeight: number; sunDirection: number };
+    if (options.sun) {
+      sun = options.sun;
+    } else {
+      const shared = this.readDraftSettings();
+      this.activeSettings = { ...this.activeSettings, timeScale: shared.timeScale, sunHeight: shared.sunHeight, sunDirection: shared.sunDirection };
+      this.draftSettings = { ...this.activeSettings };
+      sun = shared;
+    }
     this.seed = seed;
     this.mode = 'physical';
     this.draftMode = 'physical';
@@ -424,7 +435,7 @@ class SurfGame {
     this.environment.showCoastline(false);
     this.environment.group.scale.setScalar(5);
     this.environment.group.position.set(this.physicalMode.focus.x, 0, this.physicalMode.focus.z);
-    if (sunChanged) this.applySun(shared);
+    if (sun.sunHeight !== this.shownSun.height || sun.sunDirection !== this.shownSun.direction) this.applySun(sun);
     getElement<HTMLElement>('#app').classList.add('is-physical');
     getElement<HTMLElement>('#spot-name').textContent = `${settings.spot.toUpperCase()} · PHYSICAL SURF ZONE`;
     getElement<HTMLElement>('#run-state').textContent = 'RIDE';
@@ -789,7 +800,7 @@ class SurfGame {
         this.fpsSeconds = 0;
       }
     }
-    const simElapsed = simulatedSeconds(elapsed, this.activeSettings.timeScale);
+    const simElapsed = simulatedSeconds(elapsed, this.surfScene ? 1 : this.activeSettings.timeScale);
     if (this.mode === 'physical') {
       if (this.freezeIn !== undefined) {
         this.freezeIn -= elapsed;
@@ -945,6 +956,7 @@ class SurfGame {
    * chosen direction, and then lights the scene on its own.
    */
   private applySun(settings: { sunHeight: number; sunDirection: number }): void {
+    this.shownSun = { height: settings.sunHeight, direction: settings.sunDirection };
     this.environment.setSunPosition(settings.sunHeight, settings.sunDirection);
     if (!this.photoSky.ready) {
       this.sunlight.position.copy(this.environment.sunPosition).normalize().multiplyScalar(45);

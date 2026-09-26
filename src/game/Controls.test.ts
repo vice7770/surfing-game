@@ -63,6 +63,19 @@ describe('Controls', () => {
     key('keydown', 'Space');
     expect(controls.lastDevice).toBe('keyboard');
   });
+
+  it('pauses on Esc even from a Wave Lab slider, while other keys stay with the slider', () => {
+    const { handlers, target, controls } = setup();
+    const fromSlider = (code: string) => {
+      const event = Object.assign(new Event('keydown', { cancelable: true }), { code });
+      Object.defineProperty(event, 'target', { value: { tagName: 'INPUT' } });
+      target.dispatchEvent(event);
+    };
+    fromSlider('ArrowLeft');
+    expect(controls.input.steer).toBe(0);
+    fromSlider('Escape');
+    expect(handlers.pause).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('the ride request (P9)', () => {

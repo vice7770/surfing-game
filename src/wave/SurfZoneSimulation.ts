@@ -4,6 +4,7 @@ import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from '
 import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
 import { FoamField, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
+import { focusX } from './Refraction';
 import { JET_SPEED_RATIO, breakerForm, crestMotion } from './CrestKinematics';
 import { SeaState } from './SeaState';
 import { SeaStateBoundary } from './SeaStateBoundary';
@@ -46,6 +47,9 @@ export interface SurfZoneConfig {
   /** Where stage 2 water steps: 'auto' on the GPU when a host offers one (the worker, with WebGPU), 'cpu' always on the CPU. */
   compute?: 'auto' | 'cpu';
 }
+
+/** Along-shore window width unless the config says otherwise, m. */
+export const ALONG_SHORE = 160;
 
 /** Swell components the tank's sea is built from, unless the config says otherwise. */
 export const SEA_COMPONENTS = 24;
@@ -116,6 +120,42 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
   }, config.seed, shallowWaterWaveNumber);
 }
 
+/**
+ * How each spot finds its take-off transect: straight out from the window's
+ * centre, or where its bed gathers the swell. A canyon's peak sits beside the
+ * shadow it casts (as measured over the Scripps canyon, Magne et al. 2007),
+ * and moves with the swell's direction and period.
+ */
+export const TAKE_OFF: Record<SpotName, 'centre' | 'focus'> = { beach: 'centre', point: 'centre', reef: 'centre', canyon: 'focus' };
+
+/** A focus take-off stays this far inside the window's open along-shore edges, m. */
+export const TAKE_OFF_EDGE_MARGIN = 30;
+
+/**
+ * Where the rider waits for waves: on the spot's take-off transect, where the
+ * still depth first reaches the shoaled breaker depth. A focus transect is
+ * where linear rays from the relaxation zone gather most densely at the break
+ * line (`focusX`), inside the window's open edges.
+ */
+export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
+  const spot = createSpot(config.spot, config.seed);
+  const offshoreDepth = OFFSHORE_DEPTH[config.spot];
+  const target = breakerDepthFor(config.significantHeight, offshoreDepth + config.tide);
+  const breakZ = (x: number) => {
+    // Scan the whole simulated bed from the relaxation zone inward.
+    for (let z = TANK.zoneInner; z < TANK.shore; z += 0.5) {
+      if (tankDepth(spot, offshoreDepth, x, z) + config.tide <= target) return z;
+    }
+    return TANK.fineFrom;
+  };
+  const reach = Math.max(0, (config.alongShore ?? ALONG_SHORE) / 2 - TAKE_OFF_EDGE_MARGIN);
+  if (TAKE_OFF[config.spot] === 'centre' || reach === 0) return { x: 0, z: breakZ(0) };
+  const bed = (x: number, z: number) => tankDepth(spot, offshoreDepth, x, z) + config.tide;
+  const swell = { period: config.peakPeriod, direction: (config.directionDegrees * Math.PI) / 180 };
+  const x = focusX(bed, swell, TANK.zoneInner, breakZ(0), -reach, reach);
+  return { x, z: breakZ(x) };
+}
+
 /** Spot seabed with a flat offshore floor under the relaxation zone, blended over TANK.zoneInner…blendEnd. */
 export function tankDepth(spot: SurfSpot, offshoreDepth: number, x: number, z: number): number {
   const toSpot = smoothstep(TANK.zoneInner, TANK.blendEnd, z);
@@ -159,6 +199,7 @@ export class SurfZoneSimulation {
   /** When each column last started breaking a new wave, s. */
   private lastOnset!: Float64Array;
   private readonly seaTimeOffset: number;
+  private takeOff?: { x: number; z: number };
   private mapping?: {
     grid: RenderGrid; xMin: number; columns: Int32Array; columnWeights: Float64Array;
     rows: Int32Array; rowWeights: Float64Array;
@@ -170,7 +211,7 @@ export class SurfZoneSimulation {
   constructor(readonly config: SurfZoneConfig) {
     this.spot = createSpot(config.spot, config.seed);
     const offshoreDepth = OFFSHORE_DEPTH[config.spot];
-    const alongShore = config.alongShore ?? 160;
+    const alongShore = config.alongShore ?? ALONG_SHORE;
     const dx = config.dx ?? 1;
     const grid = {
       nx: Math.round(alongShore / dx), xMin: -alongShore / 2, dx, xBoundary: 'open' as const,
@@ -503,15 +544,10 @@ export class SurfZoneSimulation {
     }
   }
 
-  /** Where the still depth first reaches the shoaled breaker depth on the x = 0 transect: the camera's break focus. */
+  /** The take-off: where the break line crosses the spot's take-off transect (see `takeOffPoint`), the camera's break focus. */
   breakPoint(): { x: number; z: number } {
-    const target = this.breakerDepth();
-    const offshoreDepth = OFFSHORE_DEPTH[this.config.spot];
-    // Scan the whole simulated bed from the relaxation zone inward.
-    for (let z = TANK.zoneInner; z < TANK.shore; z += 0.5) {
-      if (tankDepth(this.spot, offshoreDepth, 0, z) + this.config.tide <= target) return { x: 0, z };
-    }
-    return { x: 0, z: TANK.fineFrom };
+    this.takeOff ??= takeOffPoint(this.config);
+    return { ...this.takeOff };
   }
 
   private mappingFor(grid: RenderGrid) {

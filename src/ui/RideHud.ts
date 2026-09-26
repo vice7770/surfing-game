@@ -80,9 +80,10 @@ export class RideHud {
       void this.callout.offsetWidth;
       this.callout.classList.add('is-shown');
     }
+    // Written only when they change: the HUD updates every frame.
     const { value, unit } = speedParts(ride?.speed ?? 0, units);
-    this.speedValue.textContent = value;
-    this.speedUnit.textContent = unit;
+    if (this.speedValue.textContent !== value) this.speedValue.textContent = value;
+    if (this.speedUnit.textContent !== unit) this.speedUnit.textContent = unit;
     const standing = ride?.phase === 'standing' || ride?.phase === 'recover';
     this.balance.hidden = !standing || !showBalance;
     if (standing) {
