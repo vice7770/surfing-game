@@ -23,7 +23,7 @@ Four bodies built from MakeHuman's base mesh with [MPFB 2](https://static.makehu
 
 Geometry is meshopt-compressed. Textures are WebP at most 2048 px.
 
-The skin, eye, eyebrow, eyelash, hair and proxy assets come from the [MakeHuman system asset pack](https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html), which lists every item as CC0 by the MakeHuman team. MakeHuman's licence FAQ states that models exported from MakeHuman/MPFB are CC0; MPFB itself is GPL tooling and does not ship in the game.
+The skin, eye, eyebrow, eyelash, hair and proxy assets come from the [MakeHuman system asset pack](https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html), which lists every item as CC0 by the MakeHuman team. [MakeHuman's licence FAQ](https://static.makehumancommunity.org/makehuman/faq/can_i_sell_models_created_with_makehuman.html) states that exported models are CC0; MPFB itself is GPL tooling and does not ship in the game.
 
 | Surfer | Body | Skin | Hair | Brows / lashes | LOD1 proxy | Height | File size |
 | --- | --- | --- | --- | --- | --- | --- | --- |
