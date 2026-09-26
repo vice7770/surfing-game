@@ -76,6 +76,32 @@ describe('rider coupled to the board', () => {
     expect(rider.postureError).toBeLessThan(0.01);
   });
 
+  it('keeps most of its balance in reserve on a board towed straight', () => {
+    const { board, rider } = mounted('standing');
+    const tow = () => {
+      board.velocity.z = 6;
+      rider.velocity.z = 6;
+    };
+    tow();
+    let lowest = 1;
+    run(board, new PlaneWater(), 4, () => {
+      tow();
+      lowest = Math.min(lowest, rider.balanceReserve);
+    });
+    expect(lowest).toBeGreaterThan(0.5);
+    expect(rider.balanceReserve).toBeLessThanOrEqual(1);
+  });
+
+  it('runs out of balance reserve before it lets go of a sinking board', () => {
+    const { board, rider } = mounted('standing');
+    let lowest = 1;
+    run(board, new PlaneWater(), 4, () => {
+      if (rider.attached) lowest = Math.min(lowest, rider.balanceReserve);
+    });
+    expect(rider.attached).toBe(false);
+    expect(lowest).toBeLessThan(0.1);
+  });
+
   it('sinks a board it stands on at rest', () => {
     const { board, rider } = mounted('standing');
     run(board, new PlaneWater(), 1);

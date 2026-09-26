@@ -4,6 +4,54 @@ This is the project’s working plan and priority tracker. Update it whenever a 
 
 Priority: **P0** = current critical path; **P1** = next; **P2** = later. Status values: `Backlog`, `Ready`, `In Progress`, `Blocked`, `Done`.
 
+## Next milestone — the game around the waves — `In Progress`
+
+### P0 · Menus and settings (P8) — `Done`
+
+Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus and settings](docs/superpowers/plans/2026-09-26-p8-menus-settings.md). P7 is parked on `claude/barrels` meanwhile, and P8 builds on the fixes in PR #7.
+- [x] **Main menu:** big icon tiles in PolyTrack's layout, dressed in Breakline's look: teal ink, sand paper, coral accent, DM Sans and DM Mono, the round "B" mark, hand-drawn inline SVG icons.
+  - Tiles: **Surf · Wave Lab · Multiplayer (coming soon) · Logbook · Settings**, and a bottom strip with Fullscreen and the version.
+  - Behind the menu, live waves only: the practice groundswell, a different spot each time, and a slow cinematic camera along the break. Devices on the Low preset see a still frame.
+- [x] **Surf:** cards for Beach, Point and Reef (the Canyon is hidden until its catch cue works). Conditions:
+  - Swell: Practice / Small / Medium / Big
+  - Tide: Low / Mid / High
+  - Wind: Offshore / Calm / Onshore
+  - Time of day: Dawn / Midday / Sunset
+
+  Surf always uses the physical surf zone.
+- [x] **During a ride:** a clean screen with the prompt, speed and balance, plus key hints on the first ride.
+  - Esc pauses: Resume, Replay wave, New wave, Camera, Settings, Quit to menu.
+  - An end-of-ride card shows the outcome and reason, distance, top speed and time, and a "new best" badge. Its buttons are Replay (R), New wave, Change spot and Menu.
+- [x] **Wave Lab:** today's screen, unchanged, reached from the menu. It sits behind one `devTools` switch together with the telemetry option, the Profile and Below views and the URL flags, so one line hides them all later.
+- [x] **Logbook:** the last 50 rides, and bests per spot for distance, top speed and ride time. No score yet.
+- [x] **Settings:** Gameplay · Graphics · Controls · Accessibility. Changes apply instantly and are saved in the browser, each tab has a Reset button, and settings that can only change between waves are marked "next wave".
+  - **Gameplay:** units (km/h and m, or mph and ft), default camera, touch controls, and a telemetry option while `devTools` is on.
+  - **Graphics:**
+    - presets Auto / Low / Medium / High / Ultra;
+    - Auto runs a benchmark on first launch behind the menu. It runs again when the graphics card changes, has a Re-detect button, and warns when performance is low. It also carries out the decided CPU fallback: stage 1 when stage 2 cannot keep real time;
+    - an Advanced section: render scale and pixel density, frame limit, Water simulation (Fast / Accurate / Auto), sea detail, caustics, spray and mist, ocean view distance, foam.
+  - **Controls:** keyboard and gamepad can both be remapped. Every menu works with arrows or D-pad, Enter or A, and Esc or B. The touch layout is fixed, with a left/right-handed swap.
+  - **Accessibility:** reduced motion, UI scale, high-contrast HUD.
+- [x] **Text and platforms:** English only, with all player-facing text in one typed strings file (a Language tab appears when a second language exists). Desktop keyboard, phone and tablet touch, and gamepad, in portrait and landscape; a ride on a phone suggests landscape. No hover-only interactions.
+- [x] **Build:** plain TypeScript and native CSS: no framework and no new dependencies. On launch, the loading screen goes straight to the menu.
+- **Record (2026-09-26):**
+  - **What shipped:** the main menu, Surf, the ride HUD, pause, the end-of-ride card, the Logbook and Settings. A rebind swaps keys between actions, and Esc and Start stay reserved.
+  - **Auto benchmark:** on the development Mac (Apple M1, ANGLE Metal, run while another session was loading the CPU) it chose High with accurate water.
+  - **Balance meter:** it reads the rider's distance from its separation threshold (sway or posture error against `RECOVERABLE_ERROR`). The body's balance shift, the plan's first choice, barely moved before a fall.
+  - **Spin-ups:** a superseded surf-zone spin-up is now dropped at once, so leaving the menu for a ride no longer waits behind the menu's own waves. The menu never waits for its waves either: it opens on a gradient, and the sea fades in.
+  - [Plan and record](docs/superpowers/plans/2026-09-26-p8-menus-settings.md).
+- [ ] **Open:**
+  - Tune the swell sizes by riding each spot. The browser pane was hidden (about 1.5 fps) during the build, so live play was not judged.
+  - Check a physical gamepad by hand; the mapping is covered by unit tests.
+  - Bring back a flow bar once a physical flow measure exists.
+
+### Later — `Backlog`
+
+Recorded in the same session; each gets its own grilling before work starts.
+1. **Multiplayer beach:** rooms with a player limit the host sets, players starting on the sand, and a beach bar to hang out in. Crowded lineups where surfers and boards collide physically are part of the fun, as on a real busy beach. Details wait for its grilling: room sizes, who hosts, board and body collisions, and whether solo play also starts on the sand.
+2. **Filmed menu background:** a sequence of waves forming and breaking, filmed with the `?record` tool once the waves are finished. It replaces the live menu background.
+3. **Sound:** ocean ambience, breaking waves, paddling, wind and wipeouts, with optional music. It is the phase after P8, and it brings the Audio settings tab.
+
 ## Next milestone — physical wave formation — `In Progress`
 
 Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR 0004](docs/adr/0004-dispersive-surf-zone-solver.md).
