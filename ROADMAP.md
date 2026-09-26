@@ -40,10 +40,24 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus a
   - **Balance meter:** it reads the rider's distance from its separation threshold (sway or posture error against `RECOVERABLE_ERROR`). The body's balance shift, the plan's first choice, barely moved before a fall.
   - **Spin-ups:** a superseded surf-zone spin-up is now dropped at once, so leaving the menu for a ride no longer waits behind the menu's own waves. The menu never waits for its waves either: it opens on a gradient, and the sea fades in.
   - [Plan and record](docs/superpowers/plans/2026-09-26-p8-menus-settings.md).
+- [x] **Follow-ups (2026-09-26):**
+  - Esc pauses the Wave Lab even from a focused slider.
+  - A second Paddle out during the loading card is ignored.
+  - The Auto benchmark samples only the menu's own waves.
+  - The menu's and Surf's sun and clock no longer overwrite the Wave Lab's settings.
+  - The catch report takes `--spread`, so it can reproduce each Surf swell.
 - [ ] **Open:**
-  - Tune the swell sizes by riding each spot. The browser pane was hidden (about 1.5 fps) during the build, so live play was not judged.
+  - **Tune the Surf swell sizes after the take-off layer (P10).** Measured before P7 with 30 ghost riders, 3 min per spot; the counts are riders who stood, and in brackets rides of 3 s or more:
+
+    | Swell | Beach | Point | Reef |
+    |---|---|---|---|
+    | Small (0.9 m, 9 s) | no cue | 1 | 36 (17) |
+    | Medium (1.4 m, 11 s) | 3 (3) | 3 (2) | 2 (2) |
+    | Big (2.4 m, 14 s) | 0 | not measured | not measured |
+
+    Medium works everywhere. P7 has since reshaped the Reef, and P10 changes catching, so the table waits for both. The Reef's Small run also showed a 39.9 m/s top speed, an outlier for the gameplay session to check.
   - Check a physical gamepad by hand; the mapping is covered by unit tests.
-  - Bring back a flow bar once a physical flow measure exists.
+  - Bring back a flow bar once a physical flow measure exists (gameplay, P9).
 
 ### Later — `Backlog`
 
