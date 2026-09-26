@@ -43,7 +43,7 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
   float waterFresh = waterFreshness( vWaterFoam ) * waterFoamPattern;
   float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterFresh );
   waterCover = max( waterCover, waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam ) );
-  float waterCrease = mix( 1.0, 0.72 + 0.28 * waterChurn.y, waterFresh );
+  float waterCrease = mix( 1.0, 0.88 + 0.12 * waterChurn.y, waterFresh );
   diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor * waterCrease, waterCover );
   ${RICH_SPECULAR}
   roughnessFactor = mix( roughnessFactor, 0.7, waterCover );
