@@ -1,6 +1,7 @@
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { AttachedRider } from './AttachedRider';
+import { LIP_CONTACT } from './DetachedSurfer';
 import { BoardBody } from './BoardBody';
 import { REFERENCE_RIDER } from './boardReference';
 import { WATER } from './hullForces';
@@ -398,5 +399,70 @@ describe('steering while lying down', () => {
     expect(left.heading).toBeGreaterThan(0.2);
     expect(right.heading).toBeLessThan(-0.2);
     expect(turn(0, false).heading).toBeCloseTo(0, 6);
+  });
+});
+
+describe('lip strikes', () => {
+  const towed = () => {
+    const { board, rider } = mounted('standing');
+    const water = new PlaneWater();
+    const tow = () => {
+      board.velocity.z = 6;
+      rider.velocity.z = 6;
+    };
+    tow();
+    run(board, water, 1, tow);
+    return { board, rider, water, tow };
+  };
+  /** A lip parcel crossing the board from +x to −x at 8 m/s, at torso height plus `above`, over the latest step. */
+  const crossing = (rider: AttachedRider, above = 0) => {
+    const torso = rider.partPosition(1, new Vector3());
+    return {
+      id: 7,
+      previousPosition: new Vector3(torso.x + 1.5, torso.y + above, torso.z - 6 * STEP),
+      position: new Vector3(torso.x - 1.5, torso.y + above, torso.z),
+      velocity: new Vector3(-8, 0, 6),
+      volume: 0.2,
+      radius: 0.3,
+    };
+  };
+
+  it('knocks a standing rider off, taking the equal and opposite impulse from the parcel', () => {
+    const { board, rider, water, tow } = towed();
+    const parcel = crossing(rider);
+    const parcelBefore = parcel.velocity.clone();
+    const riderBefore = rider.velocity.clone();
+    expect(rider.resolveLipContact(parcel, board)).toBeGreaterThan(0);
+    const parcelMass = LIP_CONTACT.density * parcel.volume;
+    const riderGain = rider.velocity.clone().sub(riderBefore).multiplyScalar(rider.mass);
+    const parcelGain = parcel.velocity.clone().sub(parcelBefore).multiplyScalar(parcelMass);
+    expect(riderGain.x).toBeLessThan(-10);
+    expect(riderGain.clone().add(parcelGain).length()).toBeLessThan(1e-9);
+    expect(rider.lastLipImpulse.distanceTo(riderGain)).toBeLessThan(1e-9);
+    // The same parcel strikes once.
+    expect(rider.resolveLipContact(parcel, board)).toBe(0);
+    run(board, water, 1.5, tow);
+    expect(rider.attached).toBe(false);
+    expect(['impact', 'balance', 'foot slip']).toContain(rider.separation);
+  });
+
+  // A push whose capture point stays inside the feet is caught by moving the centre of pressure.
+  it('rides out a light splash', () => {
+    const { board, rider, water, tow } = towed();
+    const parcel = { ...crossing(rider), volume: 0.01 };
+    expect(rider.resolveLipContact(parcel, board)).toBe(1);
+    expect(rider.lastLipImpulse.length()).toBeGreaterThan(1);
+    run(board, water, 1.5, tow);
+    expect(rider.attached).toBe(true);
+  });
+
+  it('leaves a rider alone when the parcel passes clear overhead', () => {
+    const { board, rider, water, tow } = towed();
+    const parcel = crossing(rider, 1.5);
+    const before = parcel.velocity.clone();
+    expect(rider.resolveLipContact(parcel, board)).toBe(0);
+    expect(parcel.velocity.equals(before)).toBe(true);
+    run(board, water, 1.5, tow);
+    expect(rider.attached).toBe(true);
   });
 });

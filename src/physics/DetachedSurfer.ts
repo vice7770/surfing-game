@@ -64,6 +64,11 @@ export interface LipContactParcel {
   readonly radius: number;
 }
 
+/** The airborne lip, offering each parcel in turn for swept contact; a velocity the visitor changes stays with the parcel. */
+export interface LipParcelSource {
+  forEachContact(visit: (parcel: LipContactParcel) => void): void;
+}
+
 export type BodyPart = 'pelvis' | 'torso' | 'head' | 'leftArm' | 'rightArm' | 'leftLeg' | 'rightLeg';
 
 /** Read-only pose seam for the procedural surfer and recovery camera. */
@@ -116,6 +121,13 @@ const BOARD_RESTITUTION = 0.05;
 const BOARD_FRICTION = 0.4;
 const LIP_CONTACT_FRACTION = 0.05;
 const MAX_LIP_BODY_DELTA_SPEED = 8;
+
+/**
+ * A lip strike, for every body it can hit: the water density a parcel's mass is
+ * taken at, the share of a coarse parcel's mass one strike engages, and the most
+ * one strike may change a body's speed, m/s (provisional contact parameters).
+ */
+export const LIP_CONTACT = { density: WATER_DENSITY, fraction: LIP_CONTACT_FRACTION, maxDeltaSpeed: MAX_LIP_BODY_DELTA_SPEED } as const;
 
 function clamp(value: number, low: number, high: number): number {
   return Math.min(high, Math.max(low, value));

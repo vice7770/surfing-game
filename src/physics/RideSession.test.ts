@@ -1,5 +1,6 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+import type { LipContactParcel, LipParcelSource } from './DetachedSurfer';
 import { PlaneWater } from './PlaneWater';
 import { RideSession } from './RideSession';
 
@@ -62,5 +63,26 @@ describe('ride session', () => {
     expect(Number.isFinite(session.surfer.centerOfMass().y)).toBe(true);
     expect(session.board.lowestPoint()).toBeGreaterThan(-0.05);
     expect(session.board.lowestPoint()).toBeLessThan(0.02);
+  });
+
+  it('lets the lip strike the rider on the board, and the surfer once fallen', () => {
+    const session = new RideSession();
+    const water = new PlaneWater();
+    session.reset(new Vector3(), 0, water);
+    session.step(STEP, water, idle);
+    /** One parcel crossing `point` from +x to −x over the latest step. */
+    const aimedAt = (point: Vector3, id: number): LipParcelSource => ({
+      forEachContact(visit: (parcel: LipContactParcel) => void) {
+        visit({ id, previousPosition: point.clone().add(new Vector3(1.5, 0, 0)), position: point.clone().add(new Vector3(-1.5, 0, 0)), velocity: new Vector3(-8, 0, 0), volume: 0.2, radius: 0.3 });
+      },
+    });
+    session.strike(aimedAt(session.rider.partPosition(1, new Vector3()), 1));
+    expect(session.rider.lastLipImpulse.x).toBeLessThan(0);
+    session.separate();
+    session.step(STEP, water, idle);
+    session.step(STEP, water, idle);
+    expect(session.surfer.active).toBe(true);
+    session.strike(aimedAt(session.surfer.getPartPosition('torso', new Vector3()), 2));
+    expect(session.surfer.lastContacts.lip.x).toBeLessThan(0);
   });
 });

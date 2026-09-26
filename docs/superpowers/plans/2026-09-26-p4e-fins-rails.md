@@ -79,6 +79,13 @@
   - With fins alone, a paddler still veered about 16–20° on flat water and settled 40° off course in 0.8 m, 8 s swell at 45°. The first pull is one arm from rest, before the fins can grip.
   - The paddler now keeps its line only through its strokes: with no steer, the arms pull unevenly against the heading error (full at 10°) and the yaw rate (0.5 s). Steering sets a new line. Under way it holds within about 3° over 20 s; the first pull still yaws it about 14°.
   - Legs trailing past the tail sit in the board's wake: along the body they meet half the sheltered drag. Prone tow drag is 19, 64, 106, 133 and 148 N at 1–5 m/s, down from 21, 72, 124, 161 and 184 N.
+- **Task 4 done** (`feat: strike the rider with the plunging lip`):
+  - `PlungingLip.forEachContact` offers each airborne parcel as a sphere of its own volume, with a stable id and its position before and after the step. A velocity the visitor changes stays with the parcel, so it lands with its momentum after the strike.
+  - The attached rider sweeps each part against the parcel over the step, as the fallen surfer does (`LIP_CONTACT`: 5 % of the parcel's mass engages, at most 8 m/s of change), and books the strike's work.
+    - Standing, the push's share along the deck sways the body off its feet as an inverted pendulum. Balance moves the centre of pressure within the support to catch it (the push-recovery capture point, 0.15 s).
+    - A push that puts the capture point beyond the feet topples the rider: 'balance' past 0.25 m of sway. A 0.2 m³ parcel at 8 m/s through the torso throws it; a 0.01 m³ splash is ridden out.
+    - Without the sway, the light board simply slid sideways with the rider.
+  - `RideSession.strike` hands the lip to the rider on the board or to the fallen surfer, and the runner calls it every step after the board and body move.
 - **User requests queued:**
   - play the swimmer after a fall and choose to swim back and remount (ROADMAP);
   - the camera views front, behind, side and overview, now done (`8d145db`).

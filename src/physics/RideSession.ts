@@ -1,7 +1,7 @@
 import { Quaternion, Vector3 } from 'three';
 import { AttachedRider, type RiderPhase, type RiderSeparation } from './AttachedRider';
 import { BoardBody } from './BoardBody';
-import { DetachedSurfer } from './DetachedSurfer';
+import { DetachedSurfer, type LipParcelSource } from './DetachedSurfer';
 import { RIDER_PARTS, type StanceName } from './riderPosture';
 import type { SurfWater } from './SurfWater';
 import { SurfWaterBodyField } from './SurfWaterBodyField';
@@ -95,6 +95,16 @@ export class RideSession {
       surfer.step(dt, this.bodyField(water), { stroke: input.paddle, steer: input.steer });
       surfer.resolveBoardContact(board);
     }
+  }
+
+  /**
+   * The airborne lip strikes whoever is in its path after the step: the rider on
+   * the board, or the fallen surfer. Each parcel keeps the momentum it has left.
+   */
+  strike(lip: LipParcelSource): void {
+    const { rider, board, surfer } = this;
+    if (rider.attached) lip.forEachContact((parcel) => rider.resolveLipContact(parcel, board));
+    else if (surfer.active) lip.forEachContact((parcel) => surfer.resolveLipContact(parcel));
   }
 
   private bodyField(water: SurfWater): SurfWaterBodyField {

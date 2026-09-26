@@ -128,9 +128,10 @@ export class SurfZoneRunner {
   }
 
   /**
-   * Each step, in order: the water advances; the board samples that water,
-   * integrates and hands its reactions back; the bubbles follow the water. A
-   * snapshot (`fill`) shows the state after the last step.
+   * Each step, in order: the water and its lip advance; the board samples that
+   * water, integrates and hands its reactions back; lip parcels that swept
+   * through the rider or the fallen surfer strike it; the bubbles follow the
+   * water. A snapshot (`fill`) shows the state after the last step.
    */
   advance(steps: number, input: RideRequest = IDLE): void {
     const { board, session } = this;
@@ -145,6 +146,7 @@ export class SurfZoneRunner {
         }
         const start = performance.now();
         session.step(SURF_ZONE_STEP, this.water, request);
+        session.strike(this.simulation.lip);
         this.boardMs = performance.now() - start;
         const lost = session.board.outsideDomain || (session.surfer.active && session.surfer.outsideDomain)
           || !Number.isFinite(session.board.position.x + session.board.position.y + session.board.position.z);
