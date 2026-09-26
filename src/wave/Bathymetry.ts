@@ -58,7 +58,8 @@ export function reefEdgeZ(x: number): number {
  * window's open edge (x = 80, half the 160 m window), so the window holds the
  * focusing flank and the bed is level across the boundary. On the centreline
  * the focus fell on the open edges and the break line was all shadow; with a
- * canyon wall crossing an edge, the edge cells ran unstable.
+ * canyon wall crossing an edge, the edge cells ran unstable until the
+ * dispersive terms carried the surface's curvature across open edges.
  */
 export const CANYON = { axisX: 80, halfWidth: 30, depth: 14, head: 60, fullAt: 160, fadeStart: 200, fadeEnd: 250 };
 
