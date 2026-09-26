@@ -161,7 +161,8 @@ Requirements agreed in a grilling session on 2026-09-26: [G7 spec](docs/superpow
 
   The shadow camera follows the rider in whole texels. `?shadows=` picks a level until P8's presets do.
 - [x] **Part A · Paddle splashes:** each pulling hand throws spray in proportion to the work it does on the water, at the lip splash's rate.
-- [ ] **Part B (after P8 merges):**
+- [x] **Merged with P8:** P8's Dawn, Midday and Sunset now pick their own photos. Their sun heights match the photos' measured suns, and dawn and sunset suns stand to the side of the seaward cameras (±110°), since looking into a photographed sunset's haze washed out the menu.
+- [ ] **Part B (P8 has merged, so it can start):**
   - a Surfer card on the Surf screen with a slowly rotating preview under the chosen time of day, with pickers for body, outfit, wetsuit colour and board design, saved in P8's settings;
   - P8's Time of day picks the sky;
   - Low–Ultra pick the shadow level, the level of detail and the texture sizes.
