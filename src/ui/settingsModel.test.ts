@@ -43,10 +43,10 @@ describe('settingsModel', () => {
     expect(settingsModel('graphics', low, context).find((row) => row.id === 'redetect')).toBeUndefined();
   });
 
-  it('lists a keyboard pair and a gamepad button for each of the ten actions (P9 adds trim, crouch and the hand)', () => {
+  it('lists a keyboard pair and a gamepad button for each of the eleven actions (P9 adds trim, crouch and the hand; S1 adds mute)', () => {
     const bindings = settingsModel('controls', defaultSettings(), context).filter((row) => row.kind === 'binding');
-    expect(bindings).toHaveLength(30);
-    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(10);
+    expect(bindings).toHaveLength(33);
+    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(11);
   });
 });
 
@@ -78,3 +78,19 @@ describe('applyRow', () => {
     expect(applyRow(defaultSettings(), 'waterLook', 'classic')).toMatchObject({ tab: 'graphics', patch: { waterLook: 'classic' } });
   });
 });
+
+describe('the Audio tab (S1)', () => {
+  it('has the four volumes and muting out of view, and Mono sits under Accessibility', () => {
+    const rows = settingsModel('audio', defaultSettings(), { devTools: false, detecting: false });
+    expect(rows.map((row) => row.id)).toEqual(['master', 'sea', 'board', 'ui', 'muteInBackground']);
+    expect(rows.filter((row) => row.kind === 'slider')).toHaveLength(4);
+    expect(settingsModel('accessibility', defaultSettings(), { devTools: false, detecting: false }).map((row) => row.id)).toContain('monoAudio');
+  });
+
+  it('applies volumes to the Audio tab and Mono to Accessibility', () => {
+    expect(applyRow(defaultSettings(), 'sea', 0.5)).toEqual({ tab: 'audio', patch: { sea: 0.5 } });
+    expect(applyRow(defaultSettings(), 'muteInBackground', false)).toEqual({ tab: 'audio', patch: { muteInBackground: false } });
+    expect(applyRow(defaultSettings(), 'monoAudio', true)).toEqual({ tab: 'accessibility', patch: { monoAudio: true } });
+  });
+});
+

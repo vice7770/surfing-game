@@ -33,6 +33,8 @@ import type { WaterLook } from './scene/water/waterLook';
 import type { RideView } from './scene/SpectatorCamera';
 import type { SurfZoneStatus } from './wave/SurfZoneRunner';
 import type { RideFrame } from './game/RideTracker';
+import type { SoundFrame } from './audio/soundMapping';
+import type { ListenerPose } from './audio/AudioEngine';
 import { WorkerSurfZone } from './game/WorkerSurfZone';
 import { BoardPhysics, type BoardDiagnostics, type PhysicsSettings } from './physics/BoardPhysics';
 import { CameraRig } from './scene/CameraRig';
@@ -190,6 +192,12 @@ class SurfGame {
   private needsRender = true;
   /** Paused by the menu: nothing steps; the scene stays drawn. */
   private paused = false;
+  /** Sound (S1): the sea time of the last snapshot heard, the board's last place and sideslip, and the rider's last phase. */
+  private soundSeaTime = Number.NaN;
+  private soundBoard?: { x: number; y: number; z: number };
+  private soundSideslip = 0;
+  private soundPhase?: NonNullable<SoundFrame['ride']>['phase'];
+  private readonly listenerForward = new Vector3();
   /** The menu's waves or a Surf ride: their own sun, real time, and the Wave Lab's settings left as they were. */
   private surfScene = false;
   /** The sun the environment shows now, whoever set it. */
@@ -536,6 +544,69 @@ class SurfGame {
       phase: ride.phase, speed: ride.speed, resets: ride.resets, separation: ride.separation, seaTime: status.seaTime, x: board[0], z: board[2],
       report: ride.report, timeScale: this.activeSettings.timeScale,
     };
+  }
+
+  /**
+   * What makes sound this frame (S1): the surf zone's report and the camera.
+   * A snapshot's landings and strokes are heard once, on the frame it arrives
+   * (the sea's clock tells a new one); the board's sideslip comes from its
+   * motion between snapshots. Undefined in the legacy mode, which is silent.
+   */
+  soundFrame(dt: number, paused: boolean): SoundFrame | undefined {
+    const host = this.mode === 'physical' ? this.physicalMode.host : undefined;
+    if (!host) {
+      this.soundSeaTime = Number.NaN;
+      this.soundPhase = undefined;
+      return undefined;
+    }
+    const { snapshot } = host;
+    const { status } = snapshot;
+    const elapsed = status.seaTime - this.soundSeaTime;
+    const fresh = !(elapsed === 0);
+    this.soundSeaTime = status.seaTime;
+    const pose = snapshot.board;
+    let board: SoundFrame['board'];
+    if (pose[7] > 0) {
+      const [x, y, z, qx, qy, qz, qw] = pose;
+      if (fresh && elapsed > 0 && this.soundBoard) {
+        // Across the board: its local +x turned by its orientation.
+        const rx = 1 - 2 * (qy * qy + qz * qz);
+        const ry = 2 * (qx * qy + qw * qz);
+        const rz = 2 * (qx * qz - qw * qy);
+        this.soundSideslip = Math.abs(((x - this.soundBoard.x) * rx + (y - this.soundBoard.y) * ry + (z - this.soundBoard.z) * rz) / elapsed);
+      }
+      this.soundBoard = { x, y, z };
+      board = { x, y, z, speed: status.ride?.boardSpeed ?? status.board?.speed ?? 0, sideslip: this.soundSideslip };
+    } else {
+      this.soundBoard = undefined;
+      this.soundSideslip = 0;
+    }
+    const ride = status.ride;
+    const previousPhase = this.soundPhase ?? ride?.phase;
+    this.soundPhase = ride?.phase;
+    const camera = this.physicalMode.camera.camera;
+    return {
+      dt,
+      timeScale: this.surfScene ? 1 : this.activeSettings.timeScale,
+      paused,
+      listener: { x: camera.position.x, y: camera.position.y, z: camera.position.z, underwater: this.physicalMode.cameraBelowSurface() },
+      roar: snapshot.roar,
+      lipHits: snapshot.lipHits,
+      lipHitCount: fresh ? snapshot.lipHitCount : 0,
+      strokeHits: snapshot.strokeHits,
+      strokeHitCount: fresh ? snapshot.strokeHitCount : 0,
+      significantHeight: this.physicalMode.config?.significantHeight ?? 0,
+      windSpeed: this.physicalMode.config?.windSpeed ?? 0,
+      ...(board ? { board } : {}),
+      ...(ride && previousPhase ? { ride: { phase: ride.phase, previousPhase, speed: ride.boardSpeed } } : {}),
+    };
+  }
+
+  /** The camera, as the sound's listener. */
+  get listenerPose(): ListenerPose {
+    const camera = this.mode === 'physical' ? this.physicalMode.camera.camera : this.cameraRig.camera;
+    const forward = camera.getWorldDirection(this.listenerForward);
+    return { x: camera.position.x, y: camera.position.y, z: camera.position.z, forward: { x: forward.x, y: forward.y, z: forward.z } };
   }
 
   /** The camera view now in use, for the pause menu. */
@@ -1135,6 +1206,7 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   },
   camera: () => game.cycleView(),
   pause: () => app.pause(),
+  mute: () => app.toggleMute(),
 });
 const app = new App(game, controls, settings, { startInWaveLab: physicalRequested || demoMode !== null || recordRequested || waterSheetRequested });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);

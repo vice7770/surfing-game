@@ -6,7 +6,7 @@ import { DEFAULT_SURFER, sanitizeSurfer, type SurferSettings } from './SurferCho
 import { PRESETS } from './Graphics';
 
 /** The player's settings (plan P8): four tabs, the Auto benchmark's result, and one-off notices seen. */
-export type SettingsTab = 'gameplay' | 'graphics' | 'controls' | 'accessibility';
+export type SettingsTab = 'gameplay' | 'graphics' | 'controls' | 'audio' | 'accessibility';
 export type ConcretePreset = 'low' | 'medium' | 'high' | 'ultra';
 export type GraphicsPreset = 'auto' | ConcretePreset | 'custom';
 
@@ -51,6 +51,17 @@ export interface AccessibilitySettings {
   /** 0.9–1.5. */
   uiScale: number;
   highContrastHud: boolean;
+  /** S1: down-mix positional sound to one channel, for single-ear listening. */
+  monoAudio: boolean;
+}
+
+/** S1: the volumes of the Master bus and each bus under it, 0–1, and muting while the game is out of view. */
+export interface AudioSettings {
+  master: number;
+  sea: number;
+  board: number;
+  ui: number;
+  muteInBackground: boolean;
 }
 
 /** What the Auto benchmark found on this device's graphics adapter. */
@@ -65,6 +76,7 @@ export interface GameSettings {
   gameplay: GameplaySettings;
   graphics: GraphicsSettings;
   controls: ControlSettings;
+  audio: AudioSettings;
   accessibility: AccessibilitySettings;
   /** Who the player rides as, chosen on the Surf screen (G7 Part B). */
   surfer: SurferSettings;
@@ -89,7 +101,8 @@ export function defaultSettings(prefersReducedMotion = false): GameSettings {
       seaDetail: 'standard', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich',
     },
     controls: { bindings: copyBindings(DEFAULT_BINDINGS), handedness: 'right' },
-    accessibility: { reducedMotion: prefersReducedMotion, uiScale: 1, highContrastHud: false },
+    audio: { master: 1, sea: 1, board: 1, ui: 1, muteInBackground: true },
+    accessibility: { reducedMotion: prefersReducedMotion, uiScale: 1, highContrastHud: false, monoAudio: false },
     surfer: { ...DEFAULT_SURFER },
     seen: { rideHints: false, lowPerformanceNotice: false },
   };
@@ -145,6 +158,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
   const graphics = record(source.graphics);
   const controls = record(source.controls);
   const accessibility = record(source.accessibility);
+  const audio = record(source.audio);
   const seen = record(source.seen);
   const g = defaults.graphics;
   const detected = sanitizeDetection(source.detected);
@@ -180,10 +194,18 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       bindings: sanitizeBindings(controls.bindings, defaults.controls.bindings),
       handedness: oneOf(controls.handedness, ['right', 'left'] as const, defaults.controls.handedness),
     },
+    audio: {
+      master: within(audio.master, 0, 1, defaults.audio.master),
+      sea: within(audio.sea, 0, 1, defaults.audio.sea),
+      board: within(audio.board, 0, 1, defaults.audio.board),
+      ui: within(audio.ui, 0, 1, defaults.audio.ui),
+      muteInBackground: flag(audio.muteInBackground, defaults.audio.muteInBackground),
+    },
     accessibility: {
       reducedMotion: flag(accessibility.reducedMotion, defaults.accessibility.reducedMotion),
       uiScale: within(accessibility.uiScale, 0.9, 1.5, defaults.accessibility.uiScale),
       highContrastHud: flag(accessibility.highContrastHud, defaults.accessibility.highContrastHud),
+      monoAudio: flag(accessibility.monoAudio, defaults.accessibility.monoAudio),
     },
     surfer: sanitizeSurfer(source.surfer, defaults.surfer),
     ...(detected ? { detected } : {}),

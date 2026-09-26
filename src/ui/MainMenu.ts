@@ -46,7 +46,30 @@ function fullscreenButton(): HTMLElement | null {
   return button;
 }
 
-export function createMainMenu(handlers: MainMenuHandlers, options: { devTools: boolean; version: string }): HTMLElement {
+/** The speaker toggle (S1): its label says the sound's state, and it carries `data-sound-toggle` so the app can relabel it. */
+export function soundToggle(className: string, muted: boolean, toggle: () => void): HTMLElement {
+  return el('button', {
+    class: className,
+    attrs: { type: 'button', 'aria-pressed': String(!muted) },
+    dataset: { nav: '', soundToggle: '' },
+    on: { click: toggle },
+  }, icon(ICONS[muted ? 'muted' : 'sound']), el('span', { class: 'sound-label', text: t(muted ? 'menu.muted' : 'menu.sound') }));
+}
+
+/** Relabel every speaker toggle on the page after the sound is muted or unmuted. */
+export function refreshSoundToggles(root: ParentNode, muted: boolean): void {
+  for (const button of root.querySelectorAll<HTMLElement>('[data-sound-toggle]')) {
+    button.setAttribute('aria-pressed', String(!muted));
+    button.querySelector('svg')?.replaceWith(icon(ICONS[muted ? 'muted' : 'sound']));
+    const label = button.querySelector('.sound-label');
+    if (label) label.textContent = t(muted ? 'menu.muted' : 'menu.sound');
+  }
+}
+
+export function createMainMenu(
+  handlers: MainMenuHandlers,
+  options: { devTools: boolean; version: string; sound: { muted: boolean; toggle: () => void } },
+): HTMLElement {
   const tiles = menuTiles(options.devTools).map((tile) => el('button', {
     class: tile.id === 'surf' ? 'tile tile-primary' : 'tile',
     attrs: { type: 'button', ...(tile.disabled ? { 'aria-disabled': 'true' } : {}) },
@@ -60,6 +83,8 @@ export function createMainMenu(handlers: MainMenuHandlers, options: { devTools: 
       el('p', { class: 'tagline', text: t('app.tagline') })),
     el('nav', { class: 'tiles', attrs: { 'aria-label': t('menu.title') } }, ...tiles),
     el('div', { class: 'menu-strip' },
-      fullscreenButton() ?? el('span'),
+      el('span', { class: 'strip-group' },
+        fullscreenButton() ?? el('span'),
+        soundToggle('strip-button', options.sound.muted, options.sound.toggle)),
       el('span', { text: t('menu.version', { version: options.version }) })));
 }

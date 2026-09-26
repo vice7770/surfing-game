@@ -3,7 +3,7 @@
  * Keys are `KeyboardEvent.code` values; buttons are indices in the Gamepad API's
  * standard mapping. Escape and Start always pause and cannot be rebound.
  */
-export const ACTIONS = ['paddle', 'popUp', 'steerLeft', 'steerRight', 'trimForward', 'trimBack', 'crouch', 'hand', 'retry', 'camera', 'pause'] as const;
+export const ACTIONS = ['paddle', 'popUp', 'steerLeft', 'steerRight', 'trimForward', 'trimBack', 'crouch', 'hand', 'retry', 'camera', 'mute', 'pause'] as const;
 export type Action = (typeof ACTIONS)[number];
 
 /**
@@ -15,7 +15,7 @@ export type ActionContext = 'prone' | 'standing' | 'always';
 export const ACTION_CONTEXT: Record<Action, ActionContext> = {
   paddle: 'prone', popUp: 'always', steerLeft: 'always', steerRight: 'always',
   trimForward: 'standing', trimBack: 'standing', crouch: 'standing', hand: 'standing',
-  retry: 'always', camera: 'always', pause: 'always',
+  retry: 'always', camera: 'always', mute: 'always', pause: 'always',
 };
 
 /** Whether two actions can be live at once, and so must not share an input. */
@@ -45,6 +45,7 @@ export const DEFAULT_BINDINGS: Bindings = {
     hand: ['KeyE'],
     retry: ['KeyR'],
     camera: ['KeyC'],
+    mute: ['KeyM'],
     pause: ['Escape'],
   },
   gamepad: {
@@ -58,6 +59,7 @@ export const DEFAULT_BINDINGS: Bindings = {
     hand: [2],
     retry: [3],
     camera: [5],
+    mute: [8],
     pause: [9],
   },
 };

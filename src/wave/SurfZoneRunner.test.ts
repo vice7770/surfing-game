@@ -5,7 +5,9 @@ import { WATER } from '../physics/hullForces';
 import { createWaterSample } from '../physics/SurfWater';
 import type { SpotName } from './Bathymetry';
 import { BubbleCloud } from './BubbleCloud';
-import { LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea } from './SurfZoneRunner';
+import {
+  LIP_HIT_STRIDE, LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea,
+} from './SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
 
 const config: SurfZoneConfig = {
@@ -272,5 +274,71 @@ describe('SurfZoneRunner rider in waves', () => {
       runner.advance(1, { paddle: true, popUp: false, steer: 0, retry: false });
       expect(runner.session!.phase).toBe('prone');
     }
+  });
+});
+
+// S1: what makes sound, reported with each snapshot.
+describe('SurfZoneRunner sound events', () => {
+  const still: SurfZoneConfig = { ...config, spot: 'beach', significantHeight: 0.02, peakPeriod: 10 };
+  const sectorPowers = (roar: Float32Array) => Array.from({ length: ROAR_SECTORS }, (_, i) => roar[i * 3]);
+
+  it('reports no roar on a calm sea, and roar where breaking water moves', () => {
+    const calm = new SurfZoneRunner(still);
+    calm.advance(30);
+    const quiet = calm.createBuffers();
+    calm.fill(quiet);
+    expect(sectorPowers(quiet.roar).every((power) => power === 0)).toBe(true);
+
+    const runner = new SurfZoneRunner(still);
+    runner.advance(30);
+    const { solver, breaking } = runner.simulation;
+    breaking.strength.fill(0);
+    const cell = solver.cellIndex(5, -40);
+    breaking.strength[cell] = 1;
+    solver.qx[cell] = 0;
+    solver.qz[cell] = 2;
+    const loud = runner.createBuffers();
+    runner.fill(loud);
+    const sector = sectorPowers(loud.roar).findIndex((power) => power > 0);
+    expect(sector).toBeGreaterThanOrEqual(0);
+    expect(sectorPowers(loud.roar).filter((power) => power > 0)).toHaveLength(1);
+    expect(loud.roar[sector * 3 + 1]).toBeCloseTo(solver.xCenters[cell % solver.nx], 6);
+    expect(loud.roar[sector * 3 + 2]).toBeCloseTo(solver.zCenters[Math.floor(cell / solver.nx)], 6);
+  });
+
+  it('reports each lip landing once, and merges a burst beyond its capacity without losing water', () => {
+    const runner = new SurfZoneRunner(still);
+    const step = runner.simulation.step.bind(runner.simulation);
+    let landings = 1;
+    runner.simulation.step = (dt: number) => {
+      step(dt);
+      for (let i = 0; i < landings; i += 1) runner.simulation.lipImpacts.push({ x: 1 + i * 0.1, z: -50, volume: 0.4, vx: 0, vy: -5, vz: 3 });
+    };
+    runner.advance(1);
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(buffers.lipHitCount).toBe(1);
+    expect(buffers.lipHits[2]).toBeCloseTo(0.4, 6);
+    expect(buffers.lipHits[3]).toBeCloseTo(Math.hypot(5, 3), 5);
+    landings = 0;
+    runner.advance(1);
+    runner.fill(buffers);
+    expect(buffers.lipHitCount).toBe(0);
+    landings = 100;
+    runner.advance(1);
+    runner.fill(buffers);
+    expect(buffers.lipHitCount).toBe(SOUND_EVENT_CAPACITY);
+    let volume = 0;
+    for (let i = 0; i < buffers.lipHitCount; i += 1) volume += buffers.lipHits[i * LIP_HIT_STRIDE + 2];
+    expect(volume).toBeCloseTo(40, 3);
+  });
+
+  it('reports a paddler’s strokes with the work each hand did', () => {
+    const runner = new SurfZoneRunner(still, { rider: true });
+    runner.advance(60, { paddle: true, popUp: false, steer: 0, retry: false });
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(buffers.strokeHitCount).toBeGreaterThan(0);
+    for (let i = 0; i < buffers.strokeHitCount; i += 1) expect(buffers.strokeHits[i * STROKE_HIT_STRIDE + 2]).toBeGreaterThan(0);
   });
 });

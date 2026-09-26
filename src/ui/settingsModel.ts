@@ -86,21 +86,34 @@ export function settingsModel(tab: SettingsTab, settings: GameSettings, context:
   }
   if (tab === 'graphics') return graphicsRows(settings, context);
   if (tab === 'controls') return controlRows(settings);
+  if (tab === 'audio') {
+    const a = settings.audio;
+    return [
+      { kind: 'slider', id: 'master', label: t('settings.master'), value: a.master, min: 0, max: 1, step: 0.05 },
+      { kind: 'slider', id: 'sea', label: t('settings.sea'), value: a.sea, min: 0, max: 1, step: 0.05 },
+      { kind: 'slider', id: 'board', label: t('settings.boardRider'), value: a.board, min: 0, max: 1, step: 0.05 },
+      { kind: 'slider', id: 'ui', label: t('settings.interface'), value: a.ui, min: 0, max: 1, step: 0.05 },
+      { kind: 'toggle', id: 'muteInBackground', label: t('settings.muteInBackground'), value: a.muteInBackground },
+    ];
+  }
   const a = settings.accessibility;
   return [
     { kind: 'toggle', id: 'reducedMotion', label: t('settings.reducedMotion'), value: a.reducedMotion },
     { kind: 'slider', id: 'uiScale', label: t('settings.uiScale'), value: a.uiScale, min: 0.9, max: 1.5, step: 0.05 },
     { kind: 'toggle', id: 'highContrastHud', label: t('settings.highContrastHud'), value: a.highContrastHud },
+    { kind: 'toggle', id: 'monoAudio', label: t('settings.monoAudio'), value: a.monoAudio },
   ];
 }
 
 const GAMEPLAY = new Set(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'scoreRides', 'showTelemetry']);
-const ACCESSIBILITY = new Set(['reducedMotion', 'uiScale', 'highContrastHud']);
+const ACCESSIBILITY = new Set(['reducedMotion', 'uiScale', 'highContrastHud', 'monoAudio']);
+const AUDIO = new Set(['master', 'sea', 'board', 'ui', 'muteInBackground']);
 
 /** The store update a row's new value makes, or undefined when refused (a reserved key) or not a setting (Re-detect). */
 export function applyRow(settings: GameSettings, id: string, value: string | number | boolean): { tab: SettingsTab; patch: object } | undefined {
   if (GAMEPLAY.has(id)) return { tab: 'gameplay', patch: { [id]: value } };
   if (ACCESSIBILITY.has(id)) return { tab: 'accessibility', patch: { [id]: value } };
+  if (AUDIO.has(id)) return { tab: 'audio', patch: { [id]: value } };
   if (id === 'handedness') return { tab: 'controls', patch: { handedness: value } };
   if (id === 'preset') return { tab: 'graphics', patch: withPreset(settings.graphics, value as GraphicsPreset, settings.detected) };
   if ((ADVANCED as readonly string[]).includes(id)) {

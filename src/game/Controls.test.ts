@@ -136,4 +136,14 @@ describe('the ride request (P9)', () => {
       expect(controls.rideRequest(0.2, true)).toMatchObject({ trim: 0, crouch: 0, steer: 0, hand: false, paddle: false });
     }
   });
+
+  it('mutes on M, once per press (S1)', () => {
+    const target = new EventTarget();
+    const mute = vi.fn();
+    new Controls(() => DEFAULT_BINDINGS, { retry: vi.fn(), camera: vi.fn(), pause: vi.fn(), mute }, { target, pads: () => [] });
+    target.dispatchEvent(Object.assign(new Event('keydown'), { code: 'KeyM', repeat: false }));
+    target.dispatchEvent(Object.assign(new Event('keydown'), { code: 'KeyM', repeat: true }));
+    expect(mute).toHaveBeenCalledTimes(1);
+  });
 });
+
