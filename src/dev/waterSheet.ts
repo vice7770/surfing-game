@@ -71,14 +71,22 @@ function findShots(water: WaterSurface, focus: { x: number; z: number }): Shot[]
   const height = (x: number, z: number) => sampleSurfaceHeight(water.surfaceData, grid, x, z);
   const steepest = steepestFace(water, focus);
   const crestHeight = Math.max(steepest.height, height(steepest.x, steepest.z - 2), height(steepest.x, steepest.z - 4));
+  // The bore: the fresh whitewater (foam ≥ 0.9) nearest the break, else the foamiest node within 40 m of it.
   let foamiest = { foam: -1, x: focus.x, z: focus.z, height: 0 };
+  let fresh: typeof foamiest | undefined;
+  let freshDistance = Infinity;
   for (let j = 1; j < grid.nz - 1; j += 1) {
     for (let i = 1; i < grid.nx - 1; i += 1) {
       const here = node(water, i, j);
-      if (Math.hypot(here.x - focus.x, here.z - focus.z) > 40) continue;
-      if (here.foam > foamiest.foam) foamiest = { foam: here.foam, x: here.x, z: here.z, height: here.height };
+      const distance = Math.hypot(here.x - focus.x, here.z - focus.z);
+      if (here.foam >= 0.9 && distance < freshDistance) {
+        freshDistance = distance;
+        fresh = here;
+      }
+      if (distance <= 40 && here.foam > foamiest.foam) foamiest = here;
     }
   }
+  if (fresh) foamiest = fresh;
   const lineupZ = focus.z - 25;
   const lineupHeight = height(focus.x, lineupZ);
   return [
@@ -145,8 +153,11 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   const closeUp = document.createElement('canvas');
   closeUp.width = RENDER.width;
   closeUp.height = RENDER.height;
-  const waterSheetShot = async (name: string, look: WaterLook, time: TimeOfDay) => {
-    const shot = shots.find((candidate) => candidate.name === name);
+  type View = { eye: [number, number, number]; target: [number, number, number] };
+  const waterSheetShot = async (name: string | View, look: WaterLook, time: TimeOfDay) => {
+    const shot = typeof name === 'string'
+      ? shots.find((candidate) => candidate.name === name)
+      : { name: 'view', eye: new Vector3(...name.eye), target: new Vector3(...name.target) };
     if (!shot) return false;
     await hooks.setTimeOfDay(time);
     hooks.setWaterLook(look);
@@ -158,7 +169,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     await post(closeUp, 'water-shot.png');
     return true;
   };
-  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot });
+  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots });
   await post(sheet, 'water-sheet.png');
 }
 

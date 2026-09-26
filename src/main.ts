@@ -226,6 +226,7 @@ class SurfGame {
     this.physicalMode.farField.mesh.material.envMapIntensity = 0.28;
     this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
     this.physicalMode.seabed.useCaustics(this.water.causticUniforms, this.water.causticSource as never);
+    this.physicalMode.spray.useWater(this.water.causticSource);
     this.physics = this.createPhysics(this.wave, this.activeSettings, this.plungingSheet);
     this.lastDiagnostics = this.physics.diagnostics();
     this.scene.add(this.surfer.group);
@@ -1020,6 +1021,7 @@ class SurfGame {
     const radiance = this.sunlight.color.clone().multiplyScalar(this.sunlight.intensity);
     this.water.setSun(direction, radiance);
     this.physicalMode.farField.setSun(direction, radiance);
+    this.physicalMode.spray.setSun(direction, radiance);
   }
 
   private refreshReflection(): void {

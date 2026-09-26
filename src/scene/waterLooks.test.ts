@@ -1,4 +1,4 @@
-import { ShaderLib, type WebGLProgramParametersWithUniforms } from 'three';
+import { Color, ShaderLib, Vector3, type WebGLProgramParametersWithUniforms } from 'three';
 import { describe, expect, it } from 'vitest';
 import { FarFieldOcean } from './FarFieldOcean';
 import { SprayPoints } from './SprayPoints';
@@ -130,6 +130,22 @@ describe('Classic water parity', () => {
     expect(shader.fragmentShader).toContain('float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterFresh );');
     expect(shader.fragmentShader).toContain('waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, vWaterFlow );');
     expect(shader.fragmentShader).toContain('totalEmissiveRadiance += 0.18 * waterFresh');
+  });
+
+  it('lights Rich mist toward the sun and fades spray into the water, and switches back to the Classic spray', () => {
+    const spray = new SprayPoints();
+    const classic = { vertex: spray.mesh.material.vertexShader, fragment: spray.mesh.material.fragmentShader };
+    spray.setLook('rich');
+    expect(spray.mesh.material.vertexShader).toContain('vAbove = world.y - waterHeightAt( world.xz );');
+    expect(spray.mesh.material.fragmentShader).toContain('henyeyGreenstein( dot( normalize( vSprayWorld - cameraPosition ), spraySunDirection ), MIST_G )');
+    expect(spray.mesh.material.fragmentShader).toContain('smoothstep( -0.1, 0.35, vAbove )');
+    const water = new WaterSurface({ ...source, cubic: true });
+    spray.useWater(water.causticSource);
+    expect(spray.mesh.material.uniforms.waterSurface).toBe(water.causticSource.waterSurface);
+    spray.setSun(new Vector3(0, 1, 0), new Color(2, 2, 2));
+    expect(spray.mesh.material.uniforms.spraySunDirection.value).toEqual(new Vector3(0, 1, 0));
+    spray.setLook('classic');
+    expect({ vertex: spray.mesh.material.vertexShader, fragment: spray.mesh.material.fragmentShader }).toEqual(classic);
   });
 
   it('names nothing in the Rich program with a GLSL ES 3.00 reserved word', () => {

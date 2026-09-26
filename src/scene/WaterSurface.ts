@@ -82,7 +82,7 @@ export function sampleSurfaceNormal(data: Float32Array, grid: SurfaceGrid, x: nu
 }
 
 /** Height lookup shared by both shader stages: the field's own bilinear sampling (see `sampleSurfaceHeight`). */
-const waterHeightPars = /* glsl */ `
+export const waterHeightPars = /* glsl */ `
 uniform sampler2D waterSurface;
 uniform vec4 waterGrid;
 uniform vec2 waterGridSize;
