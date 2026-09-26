@@ -1,5 +1,6 @@
 import { Vector3, type Scene } from 'three';
 import type { StandRefusal } from '../physics/AttachedRider';
+import type { WaveFrame } from '../physics/waveFrame';
 import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { Surfer } from '../scene/Surfer';
@@ -144,6 +145,16 @@ const REFUSAL_TEXT: Record<StandRefusal, string> = {
   'no water': 'no water under the board',
 };
 
+/** The rider against the crest (spec P9 phase 0): the crest's speed and the peel's required speed, and where on the face the rider is. */
+function crestRows(wave: WaveFrame): ReadoutRow[] {
+  if (!wave.valid) return [{ label: 'CREST', value: 'no wave face here' }];
+  const need = Number.isFinite(wave.requiredSpeed) ? `need ${wave.requiredSpeed.toFixed(1)} m/s` : 'close-out';
+  const face = wave.aheadOfCrest >= 0
+    ? `${wave.aheadOfCrest.toFixed(1)} m ahead · ${Math.round(wave.faceFraction * 100)} % up`
+    : `${(-wave.aheadOfCrest).toFixed(1)} m behind the crest`;
+  return [{ label: 'CREST', value: `c ${wave.crestSpeed.toFixed(1)} m/s · ${need}` }, { label: 'FACE', value: face }];
+}
+
 /** The Wave Lab rows for a running surf zone, from plain status values (they can come from the worker). */
 export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneStatus, storm?: StormSwell, practice = false): ReadoutRow[] {
   const { breakPoint, breaker, peel } = status;
@@ -174,6 +185,7 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
     ...(status.board ? [{ label: 'BOARD', value: `riderless · ${status.board.speed.toFixed(1)} m/s${status.board.resets ? ` · back in the lineup ×${status.board.resets}` : ''}` }] : []),
     ...(status.ride ? [
       { label: 'RIDER', value: `${status.ride.phase.toUpperCase()} · ${status.ride.speed.toFixed(1)} m/s${status.ride.cue ? ' · POP UP NOW' : ''}` },
+      ...crestRows(status.ride.wave),
       { label: 'POP-UP', value: status.ride.popUp.outcome === 'none' ? 'not yet'
         : status.ride.popUp.outcome === 'stood' ? `stood in ${status.ride.popUp.duration.toFixed(2)} s · landing ${status.ride.popUp.landingPeak.toFixed(1)} BW, ${Math.round(status.ride.popUp.frontShare * 100)} % front`
         : status.ride.popUp.outcome === 'rising' ? 'rising' : `no support: ${REFUSAL_TEXT[status.ride.popUp.refusal ?? 'sinking']}` },

@@ -3,6 +3,7 @@ import type { PopUpReport, RiderSeparation } from '../physics/AttachedRider';
 import { BoardBody } from '../physics/BoardBody';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { RideSession, type RideInput } from '../physics/RideSession';
+import { WaveFrameGauge, type WaveFrame } from '../physics/waveFrame';
 import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { BubbleCloud } from './BubbleCloud';
@@ -67,8 +68,15 @@ export interface SurfZoneStatus {
   onsetScale: number;
   /** The riderless board: its speed, m/s, and how often it left the water's domain and was put back in the lineup. */
   board?: { speed: number; resets: number };
-  /** The ride: the rider's phase, board speed, pop-up cue and latest pop-up, why it last fell, and how often it restarted. */
-  ride?: { phase: (typeof RIDER_PHASES)[number]; speed: number; cue: boolean; popUp: PopUpReport; separation?: RiderSeparation; resets: number };
+  /**
+   * The ride: the rider's phase; its speed over ground (horizontal, as GPS studies measure it) and the board's
+   * whole speed; the pop-up cue and latest pop-up; why it last fell; how often it restarted; and the rider
+   * measured against the wave under it.
+   */
+  ride?: {
+    phase: (typeof RIDER_PHASES)[number]; speed: number; boardSpeed: number; cue: boolean; popUp: PopUpReport;
+    separation?: RiderSeparation; resets: number; wave: WaveFrame;
+  };
 }
 
 /**
@@ -111,6 +119,7 @@ export class SurfZoneRunner {
   readonly session?: RideSession;
   private rideResets = 0;
   private readonly point = new Vector3();
+  private readonly momentum = new Vector3();
   readonly water: PhysicalSurfWater;
   private readonly breaker: SurfZoneStatus['breaker'];
   private readonly breakDepth: number;
@@ -118,6 +127,11 @@ export class SurfZoneRunner {
   private readonly rideLineup: Vector3;
   private boardResets = 0;
   private boardMs = 0;
+  /** The rider against the wave (spec P9 phase 0), and the peel angle it uses, refreshed once per simulated second. */
+  private readonly gauge?: WaveFrameGauge;
+  private wave?: WaveFrame;
+  private peelAngle = 0;
+  private peelAge = Infinity;
 
   constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, renderSpacing = 1) {
     this.simulation = new SurfZoneSimulation(config);
@@ -133,6 +147,8 @@ export class SurfZoneRunner {
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
     this.rideLineup = new Vector3(this.focus.x, 0, this.focus.z - RIDE_LINEUP_OFFSET);
     if (options.rider) {
+      const direction = (config.directionDegrees * Math.PI) / 180;
+      this.gauge = new WaveFrameGauge({ directionX: Math.sin(direction), directionZ: Math.cos(direction) });
       this.session = new RideSession();
       this.board = this.session.board;
       this.launchRide();
@@ -205,6 +221,7 @@ export class SurfZoneRunner {
         this.rideResets += 1;
         this.launchRide();
       }
+      this.measureRide();
     } else if (board) {
       const start = performance.now();
       board.step(SURF_ZONE_STEP, this.water);
@@ -221,6 +238,22 @@ export class SurfZoneRunner {
   /** Board and rider back in the lineup: prone, nose to the beach. */
   private launchRide(): void {
     this.session?.reset(this.rideLineup, 0, this.water);
+    this.gauge?.reset();
+  }
+
+  /** The rider (on the board, or fallen) against the wave under it. */
+  private measureRide(): void {
+    const { session, gauge } = this;
+    if (!session || !gauge) return;
+    this.peelAge += SURF_ZONE_STEP;
+    if (this.peelAge >= 1) {
+      this.peelAge = 0;
+      this.peelAngle = this.simulation.peelEstimate()?.angleDegrees ?? 0;
+    }
+    const body = session.rider.attached ? session.board : undefined;
+    const position = body ? body.centerOfMass : session.surfer.centerOfMass(this.point);
+    const velocity = body ? body.velocity : session.surfer.linearMomentum(this.momentum).divideScalar(session.surfer.mass);
+    this.wave = gauge.update(this.water, position, velocity, SURF_ZONE_STEP, this.peelAngle);
   }
 
   /** Float the board level in the lineup, nose to the beach, at rest on the surface. */
@@ -304,11 +337,13 @@ export class SurfZoneRunner {
       board: this.board && !this.session ? { speed: this.board.velocity.length(), resets: this.boardResets } : undefined,
       ride: this.session ? {
         phase: this.session.phase,
-        speed: this.session.board.velocity.length(),
+        speed: Math.hypot(this.session.board.velocity.x, this.session.board.velocity.z),
+        boardSpeed: this.session.board.velocity.length(),
         cue: this.session.rider.popUpCue,
         popUp: { ...this.session.rider.popUpReport },
         separation: this.session.separation,
         resets: this.rideResets,
+        wave: { ...(this.wave ?? this.gauge!.update(this.water, this.session.board.centerOfMass, this.session.board.velocity, 0, this.peelAngle)) },
       } : undefined,
     };
   }

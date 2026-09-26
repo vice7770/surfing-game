@@ -169,6 +169,29 @@ describe('PhysicalMode', () => {
     expect(formatPhysicalReadout(mode.config!, mode.host!.snapshot.status)).toEqual(rows);
   });
 
+  it('shows the rider against the crest in the readout', async () => {
+    const mode = new PhysicalMode(new Scene());
+    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'point' }, 2, water, quick);
+    const status = mode.host!.snapshot.status;
+    const wave = {
+      valid: true, directionX: 0, directionZ: 1, aheadOfCrest: 4.2, crestSpeed: 5.1, faceHeight: 1.2, faceFraction: 0.55, crestBreaking: 0,
+      speedOverGround: 6, speedShoreward: 3, speedAlongCrest: 5, requiredSpeed: 7.2,
+    };
+    const ride = { phase: 'standing' as const, speed: 6, boardSpeed: 6.2, cue: false, popUp: { outcome: 'none' as const, duration: 0, landingPeak: 0, frontShare: 0 }, resets: 0, wave };
+    const value = (rows: { label: string; value: string }[], label: string) => rows.find((row) => row.label === label)?.value;
+    const rows = formatPhysicalReadout(mode.config!, { ...status, ride });
+    expect(value(rows, 'CREST')).toBe('c 5.1 m/s · need 7.2 m/s');
+    expect(value(rows, 'FACE')).toBe('4.2 m ahead · 55 % up');
+    const closeOut = formatPhysicalReadout(mode.config!, { ...status, ride: { ...ride, wave: { ...wave, requiredSpeed: Infinity } } });
+    expect(value(closeOut, 'CREST')).toBe('c 5.1 m/s · close-out');
+    const behind = formatPhysicalReadout(mode.config!, { ...status, ride: { ...ride, wave: { ...wave, aheadOfCrest: -2 } } });
+    expect(value(behind, 'FACE')).toBe('2.0 m behind the crest');
+    const flat = formatPhysicalReadout(mode.config!, { ...status, ride: { ...ride, wave: { ...wave, valid: false } } });
+    expect(value(flat, 'CREST')).toBe('no wave face here');
+    expect(value(flat, 'FACE')).toBeUndefined();
+  });
+
   it('builds the sea from a storm and reports it', async () => {
     const mode = new PhysicalMode(new Scene());
     const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));

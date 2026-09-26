@@ -205,6 +205,19 @@ describe('SurfZoneRunner with a rider', () => {
 });
 
 describe('SurfZoneRunner rider in waves', () => {
+  it('measures the rider against the wave it rides, and reports its speed over ground', () => {
+    const runner = new SurfZoneRunner(config, { rider: true });
+    runner.advance(15 * 60, { paddle: true, popUp: false, steer: 0, retry: false });
+    const ride = runner.status().ride!;
+    const { velocity } = runner.session!.board;
+    expect(ride.speed).toBeCloseTo(Math.hypot(velocity.x, velocity.z), 9);
+    expect(ride.boardSpeed).toBeCloseTo(velocity.length(), 9);
+    const { requiredSpeed, ...rest } = ride.wave;
+    for (const [name, value] of Object.entries(rest)) if (typeof value === 'number') expect(Number.isFinite(value), name).toBe(true);
+    expect(requiredSpeed).toBeGreaterThan(0);
+    expect(Math.hypot(ride.wave.directionX, ride.wave.directionZ)).toBeCloseTo(1, 9);
+  });
+
   // Without fins (P4e) the prone board wanders off its heading, so this only asks that the rider holds on.
   it('holds on lying down while paddling through passing waves', () => {
     const runner = new SurfZoneRunner({ ...config, spot: 'beach', significantHeight: 1.2, peakPeriod: 10, directionDegrees: 0 }, { rider: true });
