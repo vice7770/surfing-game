@@ -1,0 +1,135 @@
+/**
+ * A surfer's pose on the wire (spec N1): 76 bytes, little-endian, sent 20
+ * times a second. Positions are centimetres (±327 m covers the tank), the
+ * board's height above its owner's water millimetres, the quaternion and the
+ * heading fixed-point; the board's push on the water rides along so every
+ * player's water feels every board.
+ *
+ * | offset | field |
+ * |---|---|
+ * | 0 | u32 room sea-time step |
+ * | 4 | i16 ×2 board x, z (cm) |
+ * | 8 | i16 lift above the owner's water (mm) |
+ * | 10 | i16 ×4 quaternion ×32767 |
+ * | 18 | i16 ×21 rider points relative to the board (cm) |
+ * | 60 | u8 phase (255 = no rider) |
+ * | 61 | u8 flags: 1 rider present, 2 board present, 4 paddling |
+ * | 62 | i16 heading ×10000 |
+ * | 64 | i16 ×2 reaction point x, z (cm) |
+ * | 68 | f32 ×2 reaction impulse x, z (N·s) |
+ */
+export const POSE_BYTES = 76;
+/** The server's bundle of others' poses: kind, 0, u16 count, then (u16 id, pose) each. */
+export const BUNDLE_KIND = 1;
+const BUNDLE_HEADER = 4;
+const BUNDLE_ENTRY = 2 + POSE_BYTES;
+
+const FLAG_PRESENT = 1;
+const FLAG_BOARD = 2;
+const FLAG_PADDLING = 4;
+const NO_RIDER = 255;
+
+export interface SurferPose {
+  /** Room sea time in fixed steps (`SURF_ZONE_STEP`). */
+  step: number;
+  x: number;
+  z: number;
+  /** The board's height above its owner's water surface, m: drawn on each player's own water. */
+  lift: number;
+  qx: number;
+  qy: number;
+  qz: number;
+  qw: number;
+  /** The rider's seven drawn points (x, y, z each) relative to the board's position, m. */
+  points: Float32Array;
+  /** Index in `RIDER_PHASES`, or −1 with no rider. */
+  phase: number;
+  present: boolean;
+  boardPresent: boolean;
+  paddling: boolean;
+  heading: number;
+  /** The board's push on the water since the last pose: its impulse-weighted point and summed impulse. */
+  reaction: { x: number; z: number; jx: number; jz: number };
+}
+
+export function createPose(): SurferPose {
+  return {
+    step: 0, x: 0, z: 0, lift: 0, qx: 0, qy: 0, qz: 0, qw: 1, points: new Float32Array(21), phase: -1,
+    present: false, boardPresent: false, paddling: false, heading: 0, reaction: { x: 0, z: 0, jx: 0, jz: 0 },
+  };
+}
+
+function i16(value: number): number {
+  return Number.isFinite(value) ? Math.max(-32768, Math.min(32767, Math.round(value))) : 0;
+}
+
+export function encodePose(pose: SurferPose, view: DataView, offset: number): void {
+  view.setUint32(offset, Math.max(0, Math.min(0xffffffff, Math.round(pose.step))), true);
+  view.setInt16(offset + 4, i16(pose.x * 100), true);
+  view.setInt16(offset + 6, i16(pose.z * 100), true);
+  view.setInt16(offset + 8, i16(pose.lift * 1000), true);
+  const norm = Math.hypot(pose.qx, pose.qy, pose.qz, pose.qw) || 1;
+  view.setInt16(offset + 10, i16((pose.qx / norm) * 32767), true);
+  view.setInt16(offset + 12, i16((pose.qy / norm) * 32767), true);
+  view.setInt16(offset + 14, i16((pose.qz / norm) * 32767), true);
+  view.setInt16(offset + 16, i16((pose.qw / norm) * 32767), true);
+  for (let i = 0; i < 21; i += 1) view.setInt16(offset + 18 + i * 2, i16(pose.points[i] * 100), true);
+  view.setUint8(offset + 60, pose.phase >= 0 && pose.phase < NO_RIDER ? Math.round(pose.phase) : NO_RIDER);
+  view.setUint8(offset + 61, (pose.present ? FLAG_PRESENT : 0) | (pose.boardPresent ? FLAG_BOARD : 0) | (pose.paddling ? FLAG_PADDLING : 0));
+  view.setInt16(offset + 62, i16(pose.heading * 10000), true);
+  view.setInt16(offset + 64, i16(pose.reaction.x * 100), true);
+  view.setInt16(offset + 66, i16(pose.reaction.z * 100), true);
+  view.setFloat32(offset + 68, Number.isFinite(pose.reaction.jx) ? pose.reaction.jx : 0, true);
+  view.setFloat32(offset + 72, Number.isFinite(pose.reaction.jz) ? pose.reaction.jz : 0, true);
+}
+
+export function decodePose(view: DataView, offset: number, out: SurferPose): SurferPose {
+  out.step = view.getUint32(offset, true);
+  out.x = view.getInt16(offset + 4, true) / 100;
+  out.z = view.getInt16(offset + 6, true) / 100;
+  out.lift = view.getInt16(offset + 8, true) / 1000;
+  out.qx = view.getInt16(offset + 10, true) / 32767;
+  out.qy = view.getInt16(offset + 12, true) / 32767;
+  out.qz = view.getInt16(offset + 14, true) / 32767;
+  out.qw = view.getInt16(offset + 16, true) / 32767;
+  for (let i = 0; i < 21; i += 1) out.points[i] = view.getInt16(offset + 18 + i * 2, true) / 100;
+  const phase = view.getUint8(offset + 60);
+  out.phase = phase === NO_RIDER ? -1 : phase;
+  const flags = view.getUint8(offset + 61);
+  out.present = (flags & FLAG_PRESENT) !== 0;
+  out.boardPresent = (flags & FLAG_BOARD) !== 0;
+  out.paddling = (flags & FLAG_PADDLING) !== 0;
+  out.heading = view.getInt16(offset + 62, true) / 10000;
+  out.reaction.x = view.getInt16(offset + 64, true) / 100;
+  out.reaction.z = view.getInt16(offset + 66, true) / 100;
+  out.reaction.jx = view.getFloat32(offset + 68, true);
+  out.reaction.jz = view.getFloat32(offset + 72, true);
+  return out;
+}
+
+/** The server's bundle: each entry's id and its player's latest pose bytes. */
+export function encodeBundle(entries: readonly { id: number; pose: Uint8Array }[]): Uint8Array {
+  const bytes = new Uint8Array(BUNDLE_HEADER + entries.length * BUNDLE_ENTRY);
+  const view = new DataView(bytes.buffer);
+  view.setUint8(0, BUNDLE_KIND);
+  view.setUint16(2, entries.length, true);
+  entries.forEach((entry, i) => {
+    const offset = BUNDLE_HEADER + i * BUNDLE_ENTRY;
+    view.setUint16(offset, entry.id, true);
+    bytes.set(entry.pose.subarray(0, POSE_BYTES), offset + 2);
+  });
+  return bytes;
+}
+
+/** Visits each pose in a bundle (its id, and where its bytes start); a malformed bundle visits nothing. Returns the count. */
+export function readBundle(data: ArrayBuffer, visit: (id: number, view: DataView, offset: number) => void): number {
+  if (data.byteLength < BUNDLE_HEADER) return 0;
+  const view = new DataView(data);
+  const count = view.getUint16(2, true);
+  if (view.getUint8(0) !== BUNDLE_KIND || data.byteLength !== BUNDLE_HEADER + count * BUNDLE_ENTRY) return 0;
+  for (let i = 0; i < count; i += 1) {
+    const offset = BUNDLE_HEADER + i * BUNDLE_ENTRY;
+    visit(view.getUint16(offset, true), view, offset + 2);
+  }
+  return count;
+}
