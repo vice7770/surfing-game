@@ -4,7 +4,7 @@ import { BenchmarkRecorder, adapterName, needsDetection, withPreset } from '../g
 import { Logbook } from '../game/Logbook';
 import { RideTracker, type RideFrame, type RideResult } from '../game/RideTracker';
 import type { SettingsStore } from '../game/Settings';
-import { DEFAULT_CONDITIONS, nextBackdropSpot, type SurfConditions } from '../game/SurfConditions';
+import { DEFAULT_CONDITIONS, DEFAULT_SPOT, nextBackdropSpot, type SurfConditions } from '../game/SurfConditions';
 import type { RideView } from '../scene/SpectatorCamera';
 import { DEV_TOOLS } from '../devTools';
 import type { SpotName } from '../wave/Bathymetry';
@@ -84,7 +84,7 @@ export class App {
   private notice?: HTMLElement;
   private readonly loading = document.getElementById('loading')!;
   private readonly loadingText = document.getElementById('loading-text');
-  private surfChoice: SurfChoice = { spot: 'point', conditions: { ...DEFAULT_CONDITIONS } };
+  private surfChoice: SurfChoice = { spot: DEFAULT_SPOT, conditions: { ...DEFAULT_CONDITIONS } };
   /** The current wave's seed: Replay keeps it, New wave moves on. */
   private seed = 1 + Math.floor(Math.random() * 9999);
   private readonly rideHud: RideHud;
