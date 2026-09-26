@@ -88,7 +88,9 @@ describe('PhysicalMode', () => {
     simulation.lip.launch(crest, { x: 0, z: 5 }, 3, 0.5);
     mode.advance(1);
     mode.update(1 / 60);
-    expect(mode.lipPoints.mesh.geometry.drawRange.count).toBe(simulation.lip.activeCount());
+    let flying = 0;
+    simulation.lip.forEachActive(() => (flying += 1));
+    expect(mode.lipPoints.mesh.geometry.drawRange.count).toBe(flying);
     expect(mode.lipPoints.mesh.geometry.drawRange.count).toBeGreaterThan(0);
     simulation.foam.source.fill(0);
     simulation.foam.source[crest] = 40;

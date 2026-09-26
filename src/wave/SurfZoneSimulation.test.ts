@@ -258,8 +258,10 @@ describe('SurfZoneSimulation', () => {
     foam.residual.fill(0);
     const crest = solver.cellIndex(0, -60);
     expect(lip.launch(crest, { x: 0, z: 4 }, solver.surfaceAt(crest) + 1, 0.2)).toBeGreaterThan(0);
-    for (let step = 0; step < 60 && lip.landings === 0; step += 1) lip.step(1 / 60);
+    // The whole strip leaves the crest and lands.
+    for (let step = 0; step < 240 && lip.activeCount() > 0; step += 1) lip.step(1 / 60);
     expect(lip.landings).toBeGreaterThan(0);
+    expect(lip.activeCount()).toBe(0);
     expect(foam.dense.reduce((sum, value) => sum + value, 0)).toBeGreaterThan(0.5);
   });
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PlungingLip, lipThrow, overturnArea, tubeWidthRatio } from './PlungingLip';
+import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, STRIP_PARCELS, lipThrow, overturnArea, tubeWidthRatio } from './PlungingLip';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
 
 function basin(): ShallowWaterSolver {
@@ -33,7 +33,7 @@ describe('PlungingLip', () => {
       expect((solver.totalVolume() + lip.airborneVolume()) / before).toBeCloseTo(1, 12);
     }
     expect(lip.activeCount()).toBe(0);
-    expect(lip.landings).toBe(4);
+    expect(lip.landings).toBe(STRIP_PARCELS);
   });
 
   it('caps the volume taken from the crest at a fifth of the local water', () => {
@@ -50,22 +50,24 @@ describe('PlungingLip', () => {
     const solver = basin();
     const lip = new PlungingLip(solver, 256);
     const cell = solver.cellIndex(3.5, 12.5);
-    const thrown = lip.launch(cell, { x: 0, z: 4 }, 3, 0.6);
-    lip.step(1 / 120);
-    const seen: { id: number; travel: number; speed: number }[] = [];
+    const thrown = lip.launch(cell, { x: 0, z: 4 }, 30, 0.6);
+    for (let t = 0; t <= JET_RELEASE_TIME + 1 / 60; t += 1 / 120) lip.step(1 / 120);
+    const seen: { id: number; travel: number; expected: number }[] = [];
     lip.forEachContact((parcel) => {
-      seen.push({ id: parcel.id, travel: parcel.position.distanceTo(parcel.previousPosition), speed: parcel.velocity.z });
+      // Over the last 1/120 s step the parcel moved at its velocity, less half a step of gravity.
+      const expected = Math.hypot(parcel.velocity.z, parcel.velocity.y + 9.81 / 240) / 120;
+      seen.push({ id: parcel.id, travel: parcel.position.distanceTo(parcel.previousPosition), expected });
       expect(parcel.radius).toBeCloseTo(Math.cbrt((3 * parcel.volume) / (4 * Math.PI)), 12);
       parcel.velocity.x += 2;
     });
-    expect(seen.length).toBe(4);
-    expect(new Set(seen.map((parcel) => parcel.id)).size).toBe(4);
-    for (const parcel of seen) expect(parcel.travel).toBeCloseTo(Math.hypot(parcel.speed, 9.81 / 120) / 120, 3);
+    expect(seen.length).toBe(STRIP_PARCELS);
+    expect(new Set(seen.map((parcel) => parcel.id)).size).toBe(STRIP_PARCELS);
+    for (const parcel of seen) expect(parcel.travel).toBeCloseTo(parcel.expected, 3);
     // Ids stay with their parcels.
     const again: number[] = [];
     lip.forEachContact((parcel) => again.push(parcel.id));
     expect(again).toEqual(seen.map((parcel) => parcel.id));
-    for (let frame = 0; frame < 240 && lip.activeCount() > 0; frame += 1) lip.step(1 / 120);
+    for (let frame = 0; frame < 1200 && lip.activeCount() > 0; frame += 1) lip.step(1 / 120);
     let momentumX = 0;
     for (let index = 0; index < solver.h.length; index += 1) momentumX += solver.qx[index] * solver.dx * solver.dz[Math.floor(index / solver.nx)];
     expect(momentumX).toBeCloseTo(thrown * 2, 9);
@@ -83,16 +85,88 @@ describe('PlungingLip', () => {
     expect(momentumZ(solver)).toBeCloseTo(thrown * 4, 9);
   });
 
-  it('keeps a bounded number of parcels', () => {
+  it('keeps a bounded number of parcels, refusing a whole strip it cannot hold', () => {
     const solver = basin();
-    const lip = new PlungingLip(solver, 8);
+    const lip = new PlungingLip(solver, 2 * STRIP_PARCELS + 3);
     const cell = solver.cellIndex(3.5, 12.5);
     expect(lip.launch(cell, { x: 0, z: 4 }, 3, 0.1)).toBeGreaterThan(0);
     expect(lip.launch(cell + 1, { x: 0, z: 4 }, 3, 0.1)).toBeGreaterThan(0);
     const volume = solver.totalVolume();
     expect(lip.launch(cell + 2, { x: 0, z: 4 }, 3, 0.1)).toBe(0);
     expect(solver.totalVolume()).toBe(volume);
-    expect(lip.activeCount()).toBe(8);
+    expect(lip.activeCount()).toBe(2 * STRIP_PARCELS);
+  });
+
+  it('releases a strip of parcels along the jet over the release time, from where the crest has moved to', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 30, 0.6);
+    const flying = () => {
+      let count = 0;
+      lip.forEachActive(() => (count += 1));
+      return count;
+    };
+    expect(flying()).toBe(1);
+    lip.step(JET_RELEASE_TIME / 2);
+    expect(flying()).toBeGreaterThan(1);
+    expect(flying()).toBeLessThan(STRIP_PARCELS);
+    lip.step(JET_RELEASE_TIME / 2 + 1e-9);
+    expect(flying()).toBe(STRIP_PARCELS);
+    // The strip is the jet's cross-section: the first parcel has fallen furthest, the last is still at the crest's height.
+    const parcels: { index: number; y: number; z: number }[] = [];
+    lip.forEachActiveParcel((p) => parcels.push({ index: p.index, y: p.y, z: p.z }));
+    parcels.sort((a, b) => a.index - b.index);
+    for (let k = 1; k < parcels.length; k += 1) expect(parcels[k].y).toBeGreaterThan(parcels[k - 1].y);
+    expect(parcels.at(-1)!.y).toBeCloseTo(30, 6);
+  });
+
+  it('links neighbouring columns thrown close in time into one sheet, and not those thrown far apart', () => {
+    const across = (gap: number) => {
+      const solver = basin();
+      const lip = new PlungingLip(solver, 256);
+      lip.launch(solver.cellIndex(2.5, 12.5), { x: 0, z: 1 }, 60, 0.3);
+      for (let t = 0; t < gap; t += 1 / 60) lip.step(1 / 60);
+      lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 1 }, 60, 0.3);
+      lip.step(JET_RELEASE_TIME + 0.01);
+      const column = new Map<number, number>();
+      lip.forEachActiveParcel((p) => column.set(p.slot, p.column));
+      let count = 0;
+      lip.forEachLink((a, b) => {
+        if (column.get(a) !== column.get(b)) count += 1;
+      });
+      return count;
+    };
+    expect(across(0.5)).toBe(STRIP_PARCELS);
+    expect(across(LINK_TIME + 1)).toBe(0);
+  });
+
+  it('keeps its links across a sliding window', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    lip.launch(solver.cellIndex(2.5, 12.5), { x: 0, z: 1 }, 60, 0.3);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 1 }, 60, 0.3);
+    lip.step(JET_RELEASE_TIME + 0.01);
+    const links = () => {
+      const found: string[] = [];
+      lip.forEachLink((a, b) => found.push(`${a}-${b}`));
+      return found.sort();
+    };
+    const before = links();
+    solver.shiftAlongShore(3);
+    expect(links()).toEqual(before);
+  });
+
+  it('throws the same sheet for the same throws', () => {
+    const run = () => {
+      const solver = basin();
+      const lip = new PlungingLip(solver, 256);
+      lip.launch(solver.cellIndex(2.5, 12.5), { x: 0.5, z: 4 }, 5, 0.4);
+      for (let frame = 0; frame < 30; frame += 1) lip.step(1 / 60);
+      const out: number[] = [];
+      lip.forEachActiveParcel((p) => out.push(p.x, p.y, p.z, p.index));
+      return out;
+    };
+    expect(run()).toEqual(run());
   });
 });
 

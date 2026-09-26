@@ -3,8 +3,17 @@ import type { LipContactParcel, LipParcelSource } from '../physics/DetachedSurfe
 import { GRAVITY } from './dispersion';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 
-/** Launch-speed spread across the parcels of one throw; the mean is 1, so the throw carries its nominal momentum. */
-const PARCEL_SPEEDS = [0.8, 0.8 + 0.4 / 3, 0.8 + 0.8 / 3, 1.2];
+/** Parcels along one column's jet: the sheet's resolution across its thickness of flight (numerical). */
+export const STRIP_PARCELS = 8;
+/**
+ * The jet leaves the crest over this long, s: the strip's parcels are released
+ * evenly across it, each from where the crest has moved to, so a strip is the
+ * jet's cross-section from its fallen tip back up to the crest. Provisional,
+ * to confirm against measured jet kinematics.
+ */
+export const JET_RELEASE_TIME = 0.25;
+/** Strips of neighbouring columns thrown within this long of each other join into one sheet, s (numerical). */
+export const LINK_TIME = 1;
 /** Largest share of a source cell's water one throw may take. */
 const SOURCE_SHARE = 0.2;
 /** Parcels still airborne after this long land where they are, s. */
@@ -32,6 +41,21 @@ export function overturnArea(windOverCelerity: number): number {
 export function tubeWidthRatio(iribarren: number, windOverCelerity: number): number {
   const plunge = clamp((iribarren - 0.4) / 1.6, 0, 1);
   return clamp(1 / 3 + (2 / 3) * plunge - 0.18 * windOverCelerity, 0.2, 1);
+}
+
+/** A flying parcel's place in the lip sheet. */
+export interface LipSheetParcel {
+  /** Pool slot, as `forEachLink` names it. */
+  slot: number;
+  x: number;
+  y: number;
+  z: number;
+  /** World column (x / dx, rounded), so links survive a sliding window. */
+  column: number;
+  /** Place along its strip: 0 left the crest first. */
+  index: number;
+  launchTime: number;
+  volume: number;
 }
 
 /** A landed parcel's flight: where it left the crest, the height it came down at (m), how long it flew (s) and the speed of the crest it left (m/s). */
@@ -115,10 +139,26 @@ export class PlungingLip implements LipParcelSource {
   private readonly lz: Float64Array;
   /** The speed of the crest each parcel left, m/s. */
   private readonly crestSpeed: Float64Array;
+  /** 0 free, 1 flying, 2 waiting to leave the crest. */
+  private readonly state: Uint8Array;
+  /** When a waiting parcel leaves, s on the lip's clock. */
+  private readonly releaseAt: Float64Array;
+  /** Each parcel's strip (throw), world column, place along the strip and the strip's launch time. */
+  private readonly strip: Int32Array;
+  private readonly column: Int32Array;
+  private readonly index: Uint8Array;
+  private readonly launchTime: Float64Array;
+  /** Live strips: their parcels, by strip id; and the strips of each world column. */
+  private readonly strips = new Map<number, { column: number; launchTime: number; parcels: number[]; live: number }>();
+  private readonly byColumn = new Map<number, number[]>();
+  private nextStrip = 1;
+  /** The lip's clock, s. */
+  time = 0;
+  private readonly view = { slot: 0, x: 0, y: 0, z: 0, column: 0, index: 0, launchTime: 0, volume: 0 };
   private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0 };
   private readonly free: number[] = [];
 
-  constructor(private readonly solver: ShallowWaterSolver, readonly capacity = 4096) {
+  constructor(private readonly solver: ShallowWaterSolver, readonly capacity = 16384) {
     this.x = new Float64Array(capacity);
     this.y = new Float64Array(capacity);
     this.z = new Float64Array(capacity);
@@ -136,6 +176,12 @@ export class PlungingLip implements LipParcelSource {
     this.ly = new Float64Array(capacity);
     this.lz = new Float64Array(capacity);
     this.crestSpeed = new Float64Array(capacity);
+    this.state = new Uint8Array(capacity);
+    this.releaseAt = new Float64Array(capacity);
+    this.strip = new Int32Array(capacity);
+    this.column = new Int32Array(capacity);
+    this.index = new Uint8Array(capacity);
+    this.launchTime = new Float64Array(capacity);
     for (let index = capacity - 1; index >= 0; index -= 1) this.free.push(index);
   }
 
@@ -145,7 +191,7 @@ export class PlungingLip implements LipParcelSource {
    * parcel pool is full or the crest is dry.
    */
   launch(cell: number, velocity: { x: number; z: number }, height: number, volume: number, crestSpeed = 0): number {
-    if (this.free.length < PARCEL_SPEEDS.length || !(volume > 0)) return 0;
+    if (this.free.length < STRIP_PARCELS || !(volume > 0)) return 0;
     const { solver } = this;
     const { nx, h, qx, qz, dx, dz } = solver;
     const row = Math.floor(cell / nx);
@@ -169,62 +215,89 @@ export class PlungingLip implements LipParcelSource {
     }
     const x = solver.xCenters[cell - row * nx];
     const z = solver.zCenters[row];
-    for (const speed of PARCEL_SPEEDS) {
+    const stripId = this.nextStrip;
+    this.nextStrip += 1;
+    const column = Math.round(x / dx - 0.5);
+    const strip = { column, launchTime: this.time, parcels: [] as number[], live: STRIP_PARCELS };
+    const spacing = JET_RELEASE_TIME / (STRIP_PARCELS - 1);
+    for (let k = 0; k < STRIP_PARCELS; k += 1) {
       const parcel = this.free.pop()!;
+      strip.parcels.push(parcel);
       this.active[parcel] = 1;
-      this.x[parcel] = this.px[parcel] = this.lx[parcel] = x;
+      this.state[parcel] = k === 0 ? 1 : 2;
+      this.releaseAt[parcel] = this.time + k * spacing;
+      // Each parcel leaves from where the crest has moved to by its release.
+      this.x[parcel] = this.px[parcel] = this.lx[parcel] = x + velocity.x * k * spacing;
       this.y[parcel] = this.py[parcel] = this.ly[parcel] = height;
-      this.z[parcel] = this.pz[parcel] = this.lz[parcel] = z;
+      this.z[parcel] = this.pz[parcel] = this.lz[parcel] = z + velocity.z * k * spacing;
       this.crestSpeed[parcel] = crestSpeed;
       this.id[parcel] = this.nextId;
       this.nextId += 1;
-      this.vx[parcel] = speed * velocity.x;
+      this.vx[parcel] = velocity.x;
       this.vy[parcel] = 0;
-      this.vz[parcel] = speed * velocity.z;
-      this.volume[parcel] = thrown / PARCEL_SPEEDS.length;
+      this.vz[parcel] = velocity.z;
+      this.volume[parcel] = thrown / STRIP_PARCELS;
       this.age[parcel] = 0;
+      this.strip[parcel] = stripId;
+      this.column[parcel] = column;
+      this.index[parcel] = k;
+      this.launchTime[parcel] = this.time;
     }
+    this.strips.set(stripId, strip);
+    const inColumn = this.byColumn.get(column);
+    if (inColumn) inColumn.push(stripId);
+    else this.byColumn.set(column, [stripId]);
     return thrown;
   }
 
-  /** Fly the parcels under gravity and land those that fall through the surface. */
+  /** Release the parcels whose time has come, fly them under gravity, and land those that fall through the surface. */
   step(dt: number): void {
     if (!(dt > 0)) return;
     const { solver } = this;
+    this.time += dt;
     for (let parcel = 0; parcel < this.capacity; parcel += 1) {
-      if (!this.active[parcel]) continue;
+      const state = this.state[parcel];
+      if (state === 0) continue;
+      let flight = dt;
+      if (state === 2) {
+        if (this.releaseAt[parcel] > this.time) continue;
+        this.state[parcel] = 1;
+        flight = this.time - this.releaseAt[parcel];
+      }
       this.px[parcel] = this.x[parcel];
       this.py[parcel] = this.y[parcel];
       this.pz[parcel] = this.z[parcel];
-      this.vy[parcel] -= GRAVITY * dt;
-      this.x[parcel] += this.vx[parcel] * dt;
-      this.y[parcel] += this.vy[parcel] * dt;
-      this.z[parcel] += this.vz[parcel] * dt;
-      this.age[parcel] += dt;
+      this.vy[parcel] -= GRAVITY * flight;
+      this.x[parcel] += this.vx[parcel] * flight;
+      this.y[parcel] += this.vy[parcel] * flight;
+      this.z[parcel] += this.vz[parcel] * flight;
+      this.age[parcel] += flight;
       const surface = solver.sampleCentered(solver.h, this.x[parcel], this.z[parcel]) + solver.sampleCentered(solver.bed, this.x[parcel], this.z[parcel]);
       if ((this.vy[parcel] < 0 && this.y[parcel] <= surface) || this.age[parcel] > MAX_FLIGHT) this.land(parcel);
     }
   }
 
+  /** Water thrown and not yet landed, flying or still to leave the crest, m³. */
   airborneVolume(): number {
     let total = 0;
     for (let parcel = 0; parcel < this.capacity; parcel += 1) if (this.active[parcel]) total += this.volume[parcel];
     return total;
   }
 
+  /** Parcels in use, flying or still to leave the crest. */
   activeCount(): number {
     return this.capacity - this.free.length;
   }
 
   /**
-   * Offer each airborne parcel for swept contact over the latest step, as a
+   * Offer each flying parcel for swept contact over the latest step, as a
    * sphere of its own volume. A velocity the visitor changes stays with the
    * parcel, so it lands with its momentum after the strike.
    */
   forEachContact(visit: (parcel: LipContactParcel) => void): void {
     const c = this.contact;
     for (let parcel = 0; parcel < this.capacity; parcel += 1) {
-      if (!this.active[parcel]) continue;
+      if (this.state[parcel] !== 1) continue;
       c.id = this.id[parcel];
       c.previousPosition.set(this.px[parcel], this.py[parcel], this.pz[parcel]);
       c.position.set(this.x[parcel], this.y[parcel], this.z[parcel]);
@@ -240,7 +313,46 @@ export class PlungingLip implements LipParcelSource {
 
   forEachActive(visit: (x: number, y: number, z: number, volume: number) => void): void {
     for (let parcel = 0; parcel < this.capacity; parcel += 1) {
-      if (this.active[parcel]) visit(this.x[parcel], this.y[parcel], this.z[parcel], this.volume[parcel]);
+      if (this.state[parcel] === 1) visit(this.x[parcel], this.y[parcel], this.z[parcel], this.volume[parcel]);
+    }
+  }
+
+  /** Each flying parcel with its place in the sheet: pool slot, world column, index along its strip and the strip's launch time. */
+  forEachActiveParcel(visit: (parcel: Readonly<LipSheetParcel>) => void): void {
+    const view = this.view;
+    for (let parcel = 0; parcel < this.capacity; parcel += 1) {
+      if (this.state[parcel] !== 1) continue;
+      view.slot = parcel;
+      view.x = this.x[parcel];
+      view.y = this.y[parcel];
+      view.z = this.z[parcel];
+      view.column = this.column[parcel];
+      view.index = this.index[parcel];
+      view.launchTime = this.launchTime[parcel];
+      view.volume = this.volume[parcel];
+      visit(view);
+    }
+  }
+
+  /**
+   * The sheet's links between flying parcels (pool slots): along each strip,
+   * k to k + 1; and across to the next world column's strips thrown within
+   * LINK_TIME, k to k. A peeling wave's strips so join into one curling sheet.
+   */
+  forEachLink(visit: (a: number, b: number) => void): void {
+    const flying = (parcel: number) => this.state[parcel] === 1;
+    for (const strip of this.strips.values()) {
+      const { parcels } = strip;
+      for (let k = 0; k + 1 < parcels.length; k += 1) {
+        if (flying(parcels[k]) && flying(parcels[k + 1])) visit(parcels[k], parcels[k + 1]);
+      }
+      for (const neighbourId of this.byColumn.get(strip.column + 1) ?? []) {
+        const neighbour = this.strips.get(neighbourId)!;
+        if (Math.abs(neighbour.launchTime - strip.launchTime) >= LINK_TIME) continue;
+        for (let k = 0; k < parcels.length; k += 1) {
+          if (flying(parcels[k]) && flying(neighbour.parcels[k])) visit(parcels[k], neighbour.parcels[k]);
+        }
+      }
     }
   }
 
@@ -253,8 +365,20 @@ export class PlungingLip implements LipParcelSource {
     solver.qx[cell] += depth * this.vx[parcel];
     solver.qz[cell] += depth * this.vz[parcel];
     this.active[parcel] = 0;
+    this.state[parcel] = 0;
     this.free.push(parcel);
     this.landings += 1;
+    const stripId = this.strip[parcel];
+    const strip = this.strips.get(stripId);
+    if (strip) {
+      strip.live -= 1;
+      if (strip.live === 0) {
+        this.strips.delete(stripId);
+        const inColumn = this.byColumn.get(strip.column)!;
+        inColumn.splice(inColumn.indexOf(stripId), 1);
+        if (inColumn.length === 0) this.byColumn.delete(strip.column);
+      }
+    }
     const { flight } = this;
     flight.launch.x = this.lx[parcel];
     flight.launch.y = this.ly[parcel];
