@@ -852,10 +852,12 @@ class SurfGame {
       this.accumulator -= this.fixedStep;
       steps += 1;
     }
-    // The arrows steer toward the screen's left or right, whichever way the camera faces.
-    const input = controls.input;
-    this.physicalMode.advance(steps, { paddle: input.paddle, popUp: input.getUp, steer: this.physicalMode.screenSteer(input.steer) });
-    if (input.getUp) controls.consumeGetUp();
+    // The arrows steer toward the screen's left or right, whichever way the camera faces. Standing, the same
+    // keys trim, crouch and reach for the water (P9); their ramps run on simulated time, like the physics.
+    const standing = this.physicalMode.host?.snapshot.status.ride?.phase === 'standing';
+    const request = controls.rideRequest(simElapsed, standing);
+    this.physicalMode.advance(steps, { ...request, steer: this.physicalMode.screenSteer(request.steer) });
+    if (request.popUp) controls.consumeGetUp();
     this.physicalRender(elapsed, simElapsed);
   }
 

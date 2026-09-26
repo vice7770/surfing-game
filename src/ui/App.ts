@@ -346,6 +346,7 @@ export class App {
     };
     label('touch-paddle', 'touch.paddle');
     label('touch-popup', 'touch.popUp');
+    label('touch-crouch', 'touch.crouch');
     label('touch-left', 'touch.left', true);
     label('touch-right', 'touch.right', true);
     document.getElementById('touch-popup')?.addEventListener('pointerdown', (event) => {

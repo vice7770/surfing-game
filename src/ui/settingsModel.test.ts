@@ -26,10 +26,10 @@ describe('settingsModel', () => {
     expect(settingsModel('graphics', low, context).find((row) => row.id === 'redetect')).toBeUndefined();
   });
 
-  it('lists a keyboard pair and a gamepad button for each of the six actions', () => {
+  it('lists a keyboard pair and a gamepad button for each of the ten actions (P9 adds trim, crouch and the hand)', () => {
     const bindings = settingsModel('controls', defaultSettings(), context).filter((row) => row.kind === 'binding');
-    expect(bindings).toHaveLength(18);
-    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(6);
+    expect(bindings).toHaveLength(30);
+    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(10);
   });
 });
 

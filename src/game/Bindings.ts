@@ -3,8 +3,27 @@
  * Keys are `KeyboardEvent.code` values; buttons are indices in the Gamepad API's
  * standard mapping. Escape and Start always pause and cannot be rebound.
  */
-export const ACTIONS = ['paddle', 'popUp', 'steerLeft', 'steerRight', 'retry', 'camera', 'pause'] as const;
+export const ACTIONS = ['paddle', 'popUp', 'steerLeft', 'steerRight', 'trimForward', 'trimBack', 'crouch', 'hand', 'retry', 'camera', 'pause'] as const;
 export type Action = (typeof ACTIONS)[number];
+
+/**
+ * When an action does anything (spec P9): paddling lying down, trim, crouch and
+ * the hand standing, the rest always. A key may serve one action per context, so
+ * ArrowUp paddles lying down and trims forward standing.
+ */
+export type ActionContext = 'prone' | 'standing' | 'always';
+export const ACTION_CONTEXT: Record<Action, ActionContext> = {
+  paddle: 'prone', popUp: 'always', steerLeft: 'always', steerRight: 'always',
+  trimForward: 'standing', trimBack: 'standing', crouch: 'standing', hand: 'standing',
+  retry: 'always', camera: 'always', pause: 'always',
+};
+
+/** Whether two actions can be live at once, and so must not share an input. */
+function overlap(a: Action, b: Action): boolean {
+  const first = ACTION_CONTEXT[a];
+  const second = ACTION_CONTEXT[b];
+  return first === 'always' || second === 'always' || first === second;
+}
 
 /** Actions the player may rebind: all but pause. */
 export const REBINDABLE: readonly Action[] = ACTIONS.filter((action) => action !== 'pause');
@@ -20,6 +39,10 @@ export const DEFAULT_BINDINGS: Bindings = {
     popUp: ['Enter'],
     steerLeft: ['ArrowLeft', 'KeyA'],
     steerRight: ['ArrowRight', 'KeyD'],
+    trimForward: ['KeyW', 'ArrowUp'],
+    trimBack: ['KeyS', 'ArrowDown'],
+    crouch: ['ShiftLeft', 'ShiftRight'],
+    hand: ['KeyE'],
     retry: ['KeyR'],
     camera: ['KeyC'],
     pause: ['Escape'],
@@ -29,6 +52,10 @@ export const DEFAULT_BINDINGS: Bindings = {
     popUp: [0],
     steerLeft: [14],
     steerRight: [15],
+    trimForward: [12],
+    trimBack: [13],
+    crouch: [6],
+    hand: [2],
     retry: [3],
     camera: [5],
     pause: [9],
@@ -38,9 +65,10 @@ export const DEFAULT_BINDINGS: Bindings = {
 const RESERVED_KEY = 'Escape';
 const RESERVED_BUTTON = 9;
 
-/** One gamepad's state, as plain values (tests build these directly). */
+/** One gamepad's state, as plain values (tests build these directly): pressed buttons, how far each is pressed (0–1, for triggers), and the axes. */
 export interface PadState {
   buttons: readonly boolean[];
+  values?: readonly number[];
   axes: readonly number[];
 }
 
@@ -49,7 +77,7 @@ export function readPads(source: () => ArrayLike<Gamepad | null> = () => globalT
   const pads: PadState[] = [];
   for (const pad of Array.from(source())) {
     if (!pad || !pad.connected) continue;
-    pads.push({ buttons: pad.buttons.map((button) => button.pressed), axes: [...pad.axes] });
+    pads.push({ buttons: pad.buttons.map((button) => button.pressed), values: pad.buttons.map((button) => button.value), axes: [...pad.axes] });
   }
   return pads;
 }
@@ -77,11 +105,28 @@ export function padSteer(pads: readonly PadState[]): number {
   return Math.sign(x) * Math.min(1, (magnitude - STICK_DEADZONE) / (1 - STICK_DEADZONE));
 }
 
+/** Trim from the first pad's left stick, up for forward, rescaled beyond the dead zone to ±1 (spec P9). */
+export function padTrim(pads: readonly PadState[]): number {
+  const y = -(pads[0]?.axes[1] ?? 0);
+  const magnitude = Math.abs(y);
+  if (magnitude <= STICK_DEADZONE) return 0;
+  return Math.sign(y) * Math.min(1, (magnitude - STICK_DEADZONE) / (1 - STICK_DEADZONE));
+}
+
+/** How far any pad presses `button`, 0–1: a trigger's travel, or 1 for a pressed button without one. */
+export function padValue(pads: readonly PadState[], button: number | undefined): number {
+  if (button === undefined) return 0;
+  let value = 0;
+  for (const pad of pads) value = Math.max(value, pad.values?.[button] ?? (pad.buttons[button] ? 1 : 0));
+  return Math.min(1, Math.max(0, value));
+}
+
 /**
- * Bind `input` to `action`'s `slot`. An input another action holds is swapped:
- * that action gets this slot's previous input in its place, so no input does two
- * things. Refused (the same object returned) for pause, Escape and Start, and when
- * the swap would leave the other action with nothing bound.
+ * Bind `input` to `action`'s `slot`. An input another action live in the same
+ * context holds is swapped: that action gets this slot's previous input in its
+ * place, so no input does two things at once. Refused (the same object returned)
+ * for pause, Escape and Start, and when the swap would leave the other action with
+ * nothing bound.
  */
 export function rebind(bindings: Bindings, device: 'keyboard' | 'gamepad', action: Action, slot: 0 | 1, input: string | number): Bindings {
   if (action === 'pause' || input === (device === 'keyboard' ? RESERVED_KEY : RESERVED_BUTTON)) return bindings;
@@ -94,7 +139,7 @@ export function rebind(bindings: Bindings, device: 'keyboard' | 'gamepad', actio
   if (ownIndex >= 0) own[ownIndex] = previous as string | number;
   own[slot] = input;
   next[action] = own.filter((value) => value !== undefined);
-  const holder = ACTIONS.find((other) => other !== action && table[other].includes(input));
+  const holder = ACTIONS.find((other) => other !== action && overlap(action, other) && table[other].includes(input));
   if (holder) {
     const theirs = [...table[holder]];
     const index = theirs.indexOf(input);

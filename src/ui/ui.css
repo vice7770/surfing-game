@@ -213,6 +213,7 @@
 #app[data-screen='ride'].has-touch .hud-readout { bottom: 84px; }
 #app[data-screen='ride'] .touch-button { min-width: 58px; height: 52px; padding: 0 12px; border: 1px solid rgba(251, 249, 231, .6); border-radius: 12px; background: rgba(20, 70, 73, .68); box-shadow: 0 4px 16px rgba(0, 35, 40, .17); color: #fff8e9; font: 19px var(--mono); touch-action: none; user-select: none; pointer-events: auto; }
 #app[data-screen='ride'] .touch-paddle, #app[data-screen='ride'] .touch-popup { flex: 1; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+#app[data-screen='ride'] .touch-crouch { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
 #app[data-screen='ride'] .touch-popup { background: rgba(223, 117, 88, .85); }
 #app[data-screen='ride'] .touch-button.is-held { background: #df7558; }
 #app[data-base='wavelab'] .touch-popup { display: none; }

@@ -1,5 +1,7 @@
 import type { BoardInput } from '../physics/BoardPhysics';
-import { heldActions, padSteer, readPads, type Action, type Bindings, type PadState } from './Bindings';
+import type { RideInput } from '../physics/RideSession';
+import { heldActions, padSteer, padTrim, padValue, readPads, type Action, type Bindings, type PadState } from './Bindings';
+import { AxisRamp } from './InputAxes';
 
 /** What a press of retry, camera and pause does; paddle, pop-up and steer are read through `input`. */
 export interface ControlHandlers {
@@ -28,9 +30,14 @@ export class Controls {
   private padHeld = new Set<Action>();
   private padPrevious = new Set<Action>();
   private padSteerValue = 0;
+  private padTrimValue = 0;
+  private padCrouchValue = 0;
   private touchPaddle = false;
   private touchLeft = false;
   private touchRight = false;
+  private touchCrouch = false;
+  /** Keys held → the ride's axes, ramped (spec P9). */
+  private readonly ramps = { steer: new AxisRamp(), trim: new AxisRamp(), crouch: new AxisRamp() };
   private getUpRequested = false;
   private active = true;
   /** The device the player last pressed something on, so hints can name its keys or buttons. */
@@ -50,6 +57,7 @@ export class Controls {
       this.bindTouchButton(page, 'touch-paddle', (held) => { this.touchPaddle = held; });
       this.bindTouchButton(page, 'touch-left', (held) => { this.touchLeft = held; });
       this.bindTouchButton(page, 'touch-right', (held) => { this.touchRight = held; });
+      this.bindTouchButton(page, 'touch-crouch', (held) => { this.touchCrouch = held; });
     }
   }
 
@@ -75,6 +83,33 @@ export class Controls {
     };
   }
 
+  /**
+   * The ride's request for this frame (spec P9): paddling lying down; trim, crouch
+   * and the hand standing; steering always. Keys and touch ramp in and out over
+   * RAMP_TIME, so a digital input feels analog; a pad's stick and trigger pass
+   * straight through. Disabled, every axis ramps back to rest.
+   */
+  rideRequest(dt: number, standing: boolean): RideInput {
+    const keys = this.active ? heldActions(this.held, [], this.bindings()) : new Set<Action>();
+    const has = (action: Action) => this.active && (keys.has(action) || this.padHeld.has(action));
+    const touch = (held: boolean) => this.active && held;
+    const steerKeys = Number(has('steerRight') || touch(this.touchRight)) - Number(has('steerLeft') || touch(this.touchLeft));
+    const trimKeys = standing ? Number(has('trimForward')) - Number(has('trimBack')) : 0;
+    const crouchKeys = standing && (has('crouch') || touch(this.touchCrouch)) ? 1 : 0;
+    const steer = this.ramps.steer.update(steerKeys, dt);
+    const trim = this.ramps.trim.update(trimKeys, dt);
+    const crouch = this.ramps.crouch.update(crouchKeys, dt);
+    const pad = this.active;
+    return {
+      paddle: !standing && (has('paddle') || touch(this.touchPaddle)),
+      popUp: this.active && this.getUpRequested,
+      steer: pad && this.padSteerValue !== 0 ? this.padSteerValue : steer,
+      trim: standing && pad && this.padTrimValue !== 0 ? this.padTrimValue : trim,
+      crouch: standing && pad ? Math.max(this.padCrouchValue, crouch) : crouch,
+      hand: standing && has('hand'),
+    };
+  }
+
   requestGetUp(): void { this.getUpRequested = true; }
   consumeGetUp(): void { this.getUpRequested = false; }
 
@@ -82,11 +117,13 @@ export class Controls {
   poll(): void {
     const pads = this.pads();
     const now = heldActions(new Set(), pads, this.bindings());
-    if (pads.some((pad) => pad.buttons.some(Boolean) || Math.abs(pad.axes[0] ?? 0) > 0.5)) this.lastDevice = 'gamepad';
+    if (pads.some((pad) => pad.buttons.some(Boolean) || Math.abs(pad.axes[0] ?? 0) > 0.5 || Math.abs(pad.axes[1] ?? 0) > 0.5)) this.lastDevice = 'gamepad';
     if (this.active) {
       for (const action of now) if (!this.padPrevious.has(action)) this.press(action);
       this.padHeld = now;
       this.padSteerValue = padSteer(pads);
+      this.padTrimValue = padTrim(pads);
+      this.padCrouchValue = padValue(pads, this.bindings().gamepad.crouch[0]);
     }
     this.padPrevious = now;
   }
@@ -113,9 +150,12 @@ export class Controls {
     this.held.clear();
     this.padHeld = new Set();
     this.padSteerValue = 0;
+    this.padTrimValue = 0;
+    this.padCrouchValue = 0;
     this.touchPaddle = false;
     this.touchLeft = false;
     this.touchRight = false;
+    this.touchCrouch = false;
     this.getUpRequested = false;
   }
 
