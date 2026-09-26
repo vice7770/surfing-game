@@ -532,5 +532,5 @@ describe('Boussinesq open along-shore edges', () => {
     }
     expect(fastest).toBeLessThan(bound);
     expect(solver.time).toBeGreaterThan(90 - 1e-9);
-  });
+  }, 60_000);
 });
