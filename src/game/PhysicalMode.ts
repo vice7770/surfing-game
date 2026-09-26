@@ -238,6 +238,8 @@ export class PhysicalMode {
   practice = false;
   focus = { x: 0, z: 0 };
   private starts = 0;
+  /** Lets go of the surf zone still spinning up, when a later start or a cancel supersedes it. */
+  private dropPending?: () => void;
   private shown = true;
   /** Graphics setting (plan P8): spray and mist are still simulated, only not drawn. */
   private sprayShown = true;
@@ -290,12 +292,20 @@ export class PhysicalMode {
       ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
       ...overrides,
     };
+    // Superseded while asking for the GPU: never build it, and never drop the newer start's spin-up.
+    if (start !== this.starts) return false;
     const host = createHost(config);
-    await host.ready;
-    if (start !== this.starts) {
+    // A superseded spin-up is let go at once, so its worker stops competing with the next one.
+    this.dropPending?.();
+    const dropped = new Promise<'dropped'>((resolve) => {
+      this.dropPending = () => resolve('dropped');
+    });
+    const outcome = await Promise.race([host.ready.then(() => 'ready' as const), dropped]);
+    if (outcome === 'dropped' || start !== this.starts) {
       host.dispose();
       return false;
     }
+    this.dropPending = undefined;
     this.stop();
     this.host = host;
     this.config = config;
@@ -345,6 +355,8 @@ export class PhysicalMode {
   /** Supersede any start still spinning up, so it never takes over. */
   cancel(): void {
     this.starts += 1;
+    this.dropPending?.();
+    this.dropPending = undefined;
   }
 
   /** Let the running surf zone go (its worker, if any, ends). */

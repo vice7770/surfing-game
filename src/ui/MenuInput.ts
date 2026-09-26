@@ -67,7 +67,8 @@ export class MenuInput {
   }
 
   private keyDown(event: KeyboardEvent): void {
-    if (!this.active) return;
+    // A key the ride controls already acted on (Esc that just paused) is not also a menu key.
+    if (!this.active || event.defaultPrevented) return;
     if (event.code === 'Escape') {
       event.preventDefault();
       this.options.onBack();

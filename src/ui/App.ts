@@ -1,6 +1,8 @@
 import { buttonLabel, keyLabel, type Action } from '../game/Bindings';
 import type { Controls } from '../game/Controls';
 import { BenchmarkRecorder, adapterName, needsDetection, withPreset } from '../game/Graphics';
+import { Logbook } from '../game/Logbook';
+import { RideTracker, type RideFrame, type RideResult } from '../game/RideTracker';
 import type { SettingsStore } from '../game/Settings';
 import { DEFAULT_CONDITIONS, nextBackdropSpot, type SurfConditions } from '../game/SurfConditions';
 import type { RideView } from '../scene/SpectatorCamera';
@@ -11,9 +13,11 @@ import packageJson from '../../package.json';
 import { el } from './dom';
 import { createMainMenu } from './MainMenu';
 import { MenuInput } from './MenuInput';
+import { createPauseMenu } from './PauseMenu';
+import { createRideEndCard, endCardModel } from './RideEndCard';
 import { RideHud, type HintKeys } from './RideHud';
 import { ScreenStack, type ScreenId } from './ScreenStack';
-import { t } from './strings';
+import { EN, t, type StringKey } from './strings';
 import { createSurfScreen, type SurfChoice } from './SurfScreen';
 
 /** What the menus ask of the game (implemented by `SurfGame` in main.ts). */
@@ -25,6 +29,22 @@ export interface GameHost {
   showBackdrop(spot: SpotName): Promise<boolean>;
   startSurf(spot: SpotName, conditions: SurfConditions, seed: number, camera: RideView | 'overview'): Promise<boolean>;
   readonly rideStatus: SurfZoneStatus['ride'] | undefined;
+  readonly rideFrame: RideFrame | undefined;
+  readonly viewName: string;
+  setPaused(paused: boolean): void;
+  cycleView(): void;
+  quickRetry(): void;
+  /** The Wave Lab's own replay and new wave. */
+  replay(): void;
+  newWave(): void;
+}
+
+function localStore(): Storage | undefined {
+  try {
+    return window.localStorage;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Frames skipped after the menu's waves start, before the benchmark counts (shaders compile, caches fill). */
@@ -53,6 +73,9 @@ export class App {
   /** The current wave's seed: Replay keeps it, New wave moves on. */
   private seed = 1 + Math.floor(Math.random() * 9999);
   private readonly rideHud: RideHud;
+  private readonly tracker = new RideTracker();
+  private readonly logbook = new Logbook(localStore());
+  private endCard?: HTMLElement;
 
   constructor(
     private readonly game: GameHost,
@@ -76,6 +99,7 @@ export class App {
     if (this.stack.current === 'ride') {
       const { gameplay, seen } = this.settings.value;
       this.rideHud.update(this.game.rideStatus, gameplay.units, this.hintKeys(), !seen.rideHints);
+      this.trackRide();
     }
     if (!this.benchmark || this.stack.base !== 'menu' || !this.game.backdropRunning) return;
     if (this.warmup < BENCHMARK_WARMUP_FRAMES) {
@@ -96,8 +120,16 @@ export class App {
     return this.benchmark !== undefined;
   }
 
-  /** Esc, Start or the pause button: until the pause menu exists (Task 12), nothing. */
-  pause(): void {}
+  /** Esc, Start or the pause button, during a ride or in the Wave Lab. */
+  pause(): void {
+    if (this.stack.current === 'ride' || this.stack.current === 'wavelab') this.go('pause');
+  }
+
+  /** The player paddled out again (R): the ride in progress ends by choice, and the card goes. */
+  noteRetry(): void {
+    this.tracker.noteRetry();
+    this.hideEndCard();
+  }
 
   back(): void {
     if (this.stack.back() !== undefined) this.show();
@@ -115,8 +147,11 @@ export class App {
     const playing = current === 'ride' || current === 'wavelab';
     this.controls.enabled = playing;
     this.menuInput.active = !playing;
+    this.game.setPaused(this.stack.stack.includes('pause'));
     this.applyTouch();
     if (base === 'menu' && this.scene !== 'backdrop') this.openBackdrop();
+    // The gradient only stands in for the menu's first waves; a ride or the Wave Lab shows its own scene.
+    if (base !== 'menu') this.root.classList.remove('is-scene-pending');
     this.ui.replaceChildren(...this.render(current));
     if (this.notice) this.ui.append(this.notice);
     if (playing) this.game.canvas.focus({ preventScroll: true });
@@ -139,8 +174,82 @@ export class App {
         back: () => this.back(),
       })];
     }
-    if (id === 'ride') return [this.rideHud.root];
+    if (id === 'ride') return this.endCard ? [this.rideHud.root, this.endCard] : [this.rideHud.root];
+    if (id === 'pause') {
+      const inLab = this.stack.base === 'wavelab';
+      return [createPauseMenu({
+        resume: () => this.back(),
+        replay: () => (inLab ? this.resumeWith(() => this.game.replay()) : void this.paddleOut()),
+        newWave: () => (inLab ? this.resumeWith(() => this.game.newWave()) : this.nextWave()),
+        camera: () => {
+          this.game.cycleView();
+          return this.viewLabel();
+        },
+        settings: () => this.go('settings'),
+        quit: () => this.quitToMenu(),
+      }, this.viewLabel())];
+    }
     return [];
+  }
+
+  private viewLabel(): string {
+    const key = `view.${this.game.viewName}`;
+    return key in EN ? t(key as StringKey) : this.game.viewName;
+  }
+
+  /** Close the pause menu, then act (the Wave Lab's own replay and new wave). */
+  private resumeWith(action: () => void): void {
+    this.back();
+    action();
+  }
+
+  private nextWave(): void {
+    this.seed = (this.seed % 9999) + 1;
+    void this.paddleOut();
+  }
+
+  private quitToMenu(): void {
+    this.hideEndCard();
+    this.stack.reset('menu');
+    this.show();
+  }
+
+  private changeSpot(): void {
+    this.hideEndCard();
+    this.stack.reset('menu');
+    this.stack.push('surf');
+    this.show();
+  }
+
+  /** Feed the ride tracker; a finished ride is logged and summed up on the end card. */
+  private trackRide(): void {
+    const frame = this.game.rideFrame;
+    if (!frame) return;
+    if (frame.phase === 'standing') this.hideEndCard();
+    const result = this.tracker.update(frame);
+    if (result) this.finishRide(result);
+  }
+
+  private finishRide(result: RideResult): void {
+    const { spot, conditions } = this.surfChoice;
+    const records = this.logbook.add({ ...result, spot, conditions, seed: this.seed, at: Date.now() });
+    if (!this.settings.value.seen.rideHints) this.settings.markSeen('rideHints');
+    this.hideEndCard();
+    this.endCard = createRideEndCard(endCardModel(result, records, this.settings.value.gameplay.units), {
+      replay: () => {
+        this.game.quickRetry();
+        this.noteRetry();
+      },
+      newWave: () => this.nextWave(),
+      changeSpot: () => this.changeSpot(),
+      menu: () => this.quitToMenu(),
+    }, this.hintKeys().retry);
+    if (this.stack.current === 'ride') this.ui.append(this.endCard);
+  }
+
+  private hideEndCard(): void {
+    this.endCard?.remove();
+    this.endCard = undefined;
   }
 
   /** Start the chosen session behind the loading card, then ride. */
@@ -151,6 +260,8 @@ export class App {
     const started = await this.game.startSurf(spot, conditions, this.seed, this.settings.value.gameplay.defaultCamera);
     this.loading.classList.add('is-hidden');
     if (!started) return;
+    this.hideEndCard();
+    this.tracker.reset();
     this.scene = 'ride';
     this.stack.reset('ride');
     this.show();
@@ -209,7 +320,8 @@ export class App {
     this.scene = 'backdrop';
     this.backdropSpot = nextBackdropSpot(this.backdropSpot);
     if (first) this.root.classList.add('is-scene-pending');
-    void this.game.showBackdrop(this.backdropSpot).then(() => {
+    void this.game.showBackdrop(this.backdropSpot).then((shown) => {
+      if (!shown) return;
       this.root.classList.remove('is-scene-pending');
       this.warmup = 0;
       this.startBenchmarkIfNeeded();

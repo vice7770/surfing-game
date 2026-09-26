@@ -135,6 +135,28 @@
 .hud-hints { position: absolute; bottom: max(16px, 4vh); left: 50%; display: flex; gap: 1.2em; transform: translateX(-50%); color: #fff8e9; font: .7em var(--mono); letter-spacing: .1em; text-transform: uppercase; text-shadow: 0 1px 8px rgba(16, 58, 61, .6); white-space: nowrap; }
 .has-touch .hud-hints { display: none; }
 
+/* Pause menu. */
+.panel-narrow { width: min(100%, 22em); }
+.pause-title { margin: 0; font: 400 1.8em Georgia, 'Times New Roman', serif; letter-spacing: -.03em; text-align: center; }
+.pause-items { display: grid; gap: .45em; }
+.pause-item { min-height: 3em; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 253, 243, .6); color: var(--ink); font: 500 1em 'DM Sans', 'Avenir Next', sans-serif; cursor: pointer; }
+.pause-item:first-child { border-color: #173f43; background: #173f43; color: #f6f1df; }
+
+/* End-of-ride card: at the foot of the screen, not modal. */
+.end-card { position: absolute; left: 50%; bottom: max(16px, 4vh); width: min(calc(100vw - 32px), 34em); padding: 1em 1.1em; transform: translateX(-50%); border-radius: 16px; background: var(--paper); box-shadow: 0 18px 50px rgba(18, 64, 68, .25); backdrop-filter: blur(16px); animation: screen-in .3s ease both; }
+.end-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1em; }
+.end-card h2 { margin: 0; font: 400 1.5em Georgia, 'Times New Roman', serif; letter-spacing: -.03em; }
+.end-card-reason { margin: .15em 0 0; color: var(--muted); font-size: .85em; }
+.end-card-best { padding: .3em .7em; border-radius: 99px; background: var(--accent); color: #fff9ee; font: 600 .7em var(--mono); letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; }
+.end-card-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5em; margin: .9em 0; }
+.end-card-stats div { padding: .5em .6em; border-radius: 10px; background: rgba(255, 253, 243, .6); }
+.end-card-stats dt { color: var(--muted); font: .62em var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.end-card-stats dd { margin: .15em 0 0; font: 400 1.35em Georgia, 'Times New Roman', serif; }
+.end-card-actions { display: flex; flex-wrap: wrap; gap: .45em; }
+.end-card-actions button { flex: 1 1 auto; min-height: 2.6em; padding: 0 1em; font-size: .88em; }
+.ui:has(.end-card) .hud-hints { display: none; }
+.has-touch .end-card { bottom: 84px; }
+
 /* Touch controls during a ride; the Wave Lab keeps its own rules. */
 #app[data-screen='ride'].has-touch .touch-controls { position: absolute; z-index: 5; left: 12px; right: 12px; bottom: 16px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; pointer-events: none; }
 #app[data-screen='ride'].has-touch .hud-readout { bottom: 84px; }

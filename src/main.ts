@@ -28,6 +28,7 @@ import { LocalSurfZone } from './game/SurfZoneHost';
 import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, type SurfConditions } from './game/SurfConditions';
 import type { RideView } from './scene/SpectatorCamera';
 import type { SurfZoneStatus } from './wave/SurfZoneRunner';
+import type { RideFrame } from './game/RideTracker';
 import { WorkerSurfZone } from './game/WorkerSurfZone';
 import { BoardPhysics, type BoardDiagnostics, type PhysicsSettings } from './physics/BoardPhysics';
 import { CameraRig } from './scene/CameraRig';
@@ -165,6 +166,8 @@ class SurfGame {
   /** Seconds left before the backdrop freezes, on the Low preset. */
   private freezeIn?: number;
   private needsRender = true;
+  /** Paused by the menu: nothing steps; the scene stays drawn. */
+  private paused = false;
   /** The graphics settings in force (plan P8); until applied, today's defaults. */
   private graphics?: ResolvedGraphics;
   private lastRender = 0;
@@ -346,7 +349,7 @@ class SurfGame {
     this.updateHud();
   }
 
-  private newWave(): void {
+  newWave(): void {
     this.seed = (this.seed + 1) >>> 0;
     if (this.seed === 0) this.seed = 1;
     this.applyDraft(this.seed);
@@ -446,6 +449,24 @@ class SurfGame {
   /** The physical ride's status, while a rider is on the water. */
   get rideStatus(): SurfZoneStatus['ride'] | undefined {
     return this.mode === 'physical' ? this.physicalMode.host?.snapshot.status.ride : undefined;
+  }
+
+  setPaused(paused: boolean): void {
+    this.paused = paused;
+  }
+
+  /** The ride as the ride tracker reads it: status, the board's position, and the sea's clock. */
+  get rideFrame(): RideFrame | undefined {
+    const host = this.mode === 'physical' ? this.physicalMode.host : undefined;
+    const ride = host?.snapshot.status.ride;
+    if (!host || !ride) return undefined;
+    const { board, status } = host.snapshot;
+    return { phase: ride.phase, speed: ride.speed, resets: ride.resets, separation: ride.separation, seaTime: status.seaTime, x: board[0], z: board[2] };
+  }
+
+  /** The camera view now in use, for the pause menu. */
+  get viewName(): string {
+    return this.mode === 'physical' ? this.physicalMode.camera.view : 'front';
   }
 
   /** Whether the menu's waves are running, not held as a still frame. */
@@ -718,6 +739,12 @@ class SurfGame {
     controls.poll();
     const rawElapsed = this.previousFrame === 0 ? 0 : (timestamp - this.previousFrame) / 1000;
     this.onFrame?.(rawElapsed * 1000, this.mode === 'physical' ? this.physicalMode.host?.snapshot.status : undefined);
+    if (this.paused) {
+      if (this.mode === 'physical') this.physicalRender(0, 0);
+      else this.renderer.render(this.scene, this.cameraRig.camera);
+      requestAnimationFrame(this.frame);
+      return;
+    }
     const elapsed = Math.min(rawElapsed, 0.1);
     this.previousFrame = timestamp;
     if (rawElapsed > 0 && rawElapsed < 0.5) {
@@ -964,9 +991,12 @@ settings.subscribe((_, change) => {
   if (change === 'graphics' || change === 'detected') applyGraphics();
 });
 const controls = new Controls(() => settings.value.controls.bindings, {
-  retry: () => game.quickRetry(),
+  retry: () => {
+    game.quickRetry();
+    app.noteRetry();
+  },
   camera: () => game.cycleView(),
-  pause: () => {},
+  pause: () => app.pause(),
 });
 const app = new App(game, controls, settings, { startInWaveLab: physicalRequested || demoMode !== null || recordRequested });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);

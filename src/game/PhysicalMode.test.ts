@@ -6,7 +6,8 @@ import { SPOT_OPTICS } from '../scene/waterOptics';
 import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField } from '../wave/WaveModel';
 import { stormSwell } from '../wave/StormSwell';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, chopForWind, formatPhysicalReadout, spreadingFor, swellFor } from './PhysicalMode';
-import { LocalSurfZone } from './SurfZoneHost';
+import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
+import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
 
@@ -146,6 +147,23 @@ describe('PhysicalMode', () => {
     mode.defaultView = 'side';
     expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick)).toBe(true);
     expect(mode.homeView).toBe('side');
+  });
+
+  it('lets go of a superseded surf zone at once, without waiting for its spin-up', async () => {
+    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const mode = new PhysicalMode(new Scene());
+    const dispose = vi.fn();
+    const neverReady = (config: SurfZoneConfig) => ({ config, ready: new Promise<void>(() => {}), dispose }) as unknown as SurfZoneHost;
+    const stuck = mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick, neverReady);
+    const next = mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'point' }, 1, water, quick);
+    expect(await stuck).toBe(false);
+    expect(dispose).toHaveBeenCalledTimes(1);
+    expect(await next).toBe(true);
+    const cancelled = mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef' }, 1, water, quick, neverReady);
+    mode.cancel();
+    expect(await cancelled).toBe(false);
+    expect(dispose).toHaveBeenCalledTimes(2);
+    expect(mode.config?.spot).toBe('point');
   });
 
   it('lets only the latest of overlapping starts take over', async () => {
