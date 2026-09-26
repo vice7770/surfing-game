@@ -86,17 +86,14 @@ describe('soundTargets', () => {
   it('gathers landings in one place into a few crashes a second, keeping their energy', () => {
     const shaper = new OneShotShaper();
     const shots: number[] = [];
-    let energy = 0;
     for (let i = 0; i < 60; i += 1) {
       const targets = soundTargets(frame(lipHits([{ x: 3, z: -30, volume: 0.1, speed: 6 }])), shaper);
       for (const shot of targets.oneShots) shots.push(shot.gain);
-      energy += 0.1 * 36;
     }
     expect(shots.length).toBeGreaterThanOrEqual(Math.floor(1 / MIN_INTERVAL.lipJet));
     expect(shots.length).toBeLessThanOrEqual(Math.ceil(1 / MIN_INTERVAL.lipJet) + 1);
     // Each crash carries the frames it gathered, so it is louder than one frame's landing alone.
     expect(Math.max(...shots)).toBeGreaterThan(soundTargets(frame(lipHits([{ x: 3, z: -30, volume: 0.1, speed: 6 }]))).oneShots[0].gain);
-    expect(energy).toBeGreaterThan(0);
   });
 
   it('splashes a paddler’s pull once per stroke, not once per step', () => {

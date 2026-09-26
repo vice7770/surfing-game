@@ -58,11 +58,11 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus a
     Medium works everywhere. P7 has since reshaped the Reef, and P10 changes catching, so the table waits for both. The Reef's Small run also showed a 39.9 m/s top speed, an outlier for the gameplay session to check.
   - Bring back a flow bar once a physical flow measure exists (gameplay, P9).
 
-### P1 · Sound (S1) — `In Progress`
+### P1 · Sound (S1) — `Playtest`
 
 Requirements agreed in a grilling session on 2026-09-26. The plan is [S1 sound](docs/superpowers/plans/2026-09-26-s1-sound.md).
 - [ ] **Sources:** CC0 recordings (listed in `docs/ASSETS.md`, fetched by a script, shipped as AAC `.m4a`), layered and looped. Every sound also has a synthesised fallback, used until its recording loads or if it fails.
-- [ ] **Driven by the physics, never scripted:**
+- [x] **Driven by the physics, never scripted:**
   - surf roar from where the water breaks (breaking strength × discharge, by along-shore sector);
   - lip impacts by their landed volume and speed; whitewater bores;
   - distant surf from the swell height; wind from the Wind setting;
@@ -70,18 +70,41 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [S1 sound](
   - paddle splashes from each stroke's work; the pop-up; a wipeout plunge, then underwater bubbles.
 
   Only what you would really hear, with no artificial cues.
-- [ ] **Space and time:**
+- [x] **Space and time:**
   - the camera is the listener: positional sound, fading with distance, heavily muffled underwater;
   - slow motion (the Wave Lab's time scale) slows and pitches the sound down;
   - paused, the sea fades to a low, muffled bed and returns over half a second.
-- [ ] **Where:** Surf rides, the menu's waves and the Wave Lab's physical mode; subtle interface clicks and a new-best chime. The legacy wave stays silent. No music this phase (backlog).
-- [ ] **Controls:**
+- [x] **Where:** Surf rides, the menu's waves and the Wave Lab's physical mode; subtle interface clicks and a new-best chime. The legacy wave stays silent. No music this phase (backlog).
+- [x] **Controls:**
   - an Audio settings tab: Master, Sea, Board and rider, and Interface volumes, and Mute when out of view (on);
   - Mono audio under Accessibility;
   - sound starts at the first click or key; a speaker toggle in the menu strip and the pause menu, and M (rebindable);
   - the iPhone's silent switch is respected.
-- [ ] **Sound check (dev tools):** a Wave Lab panel auditions each candidate recording and the bus levels; a manifest picks the recording.
+- [x] **Sound check (dev tools):** a Wave Lab panel auditions each candidate recording and the bus levels; a manifest picks the recording.
 - [ ] **Done:** unit tests on the physics-to-sound mapping, a headless sound report over an autopilot ride, and the user's listening playtest. CPU cost is measured, not tied to the graphics presets.
+- **Record (2026-09-26):**
+  - **The worker reports what makes sound** with each snapshot: the lip landings and paddle strokes since the last one, and the breaking roar in 8 along-shore sectors (B·|q|·area, with its centroid).
+  - **A pure mapping turns it into loops, places and one-shots.** A shaper gathers landings by kind and place into a few crashes a second, and a hand's pull into one splash. The first sound report showed about 170 lip one-shots a second in a set without it.
+  - **A Web Audio engine plays it** from the camera: HRTF panners, three buses, a muffle filter and a limiter.
+  - **Every sound is synthesised for now.** The Wave Lab's sound check auditions each one.
+  - **The [sound report](docs/research/sound-report.md)** runs an autopilot ride on the practice swell and checks the sound follows its causes. The roar correlates with the breaking at 0.97 and the board's rush with its speed at 1.00. There is one pop-up sound per pop-up and one plunge per fall. At most 4 one-shots start in a frame, and the mapping takes 9 µs a frame.
+  - **Checked in the page (the pane was hidden, so nothing was heard):**
+    - suspended out of view, and running with background muting off;
+    - the roar placed along the break;
+    - pause muffles to 708 Hz and quarters the sea, and silences the board;
+    - M and the toggles mute;
+    - the Sea slider sets its bus, and Mono folds the output to one channel.
+- [ ] **Open:**
+  - **CC0 recordings (the user's download approval is pending).** Candidates found, all CC0 Freesound previews, about 50 MB to fetch and about 2.5 MB shipped once trimmed:
+    - surf roar: felix.blume #868869 and treytatum3 #815319;
+    - distant surf: INNORECORDS #457740;
+    - underwater: felix.blume #705058;
+    - lip crashes: felix.blume #411509, nobarknoonan #695875 and mlnqr #542183;
+    - paddling: craigsmith #438845;
+    - plunge: kyles #637823.
+
+    Wind, rush, rail, the pop-up, the click and the chime stay synthesised.
+  - **The user's listening playtest,** which tunes the mapping's provisional levels.
 
 ### Later — `Backlog`
 

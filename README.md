@@ -20,12 +20,17 @@ Open the local URL printed by Vite. The game opens on its main menu, over live w
   - On a gamepad: RT paddles, A pops up, and the left stick or D-pad steers. Standing, the left stick's up and down trims, LT crouches as far as you pull it, and X drags the hand. Y paddles out again, RB changes the camera, and Start pauses.
   - On a touch phone, use the Paddle, Pop up, Crouch and arrow buttons, and the pause button at the top right.
   - The screen stays clean: a prompt, your speed, and a balance meter while standing. Turns are called out as you make them, and a hint teaches each riding move once. After each ride a card sums it up: distance, top speed, time, time in the pocket, and each turn with the speed it kept. It marks a new best.
+- **Sound:** the sea and your ride are heard from the camera, starting at your first click or key.
+  - Everything comes from the physics: the roar where the water breaks, lip crashes by the water they throw, distant surf with the swell, wind with the Wind setting, the board's rush with its speed, spray off the rail, paddle splashes, the pop-up and the plunge.
+  - Underwater and under the pause menu it is muffled; slow motion slows it.
+  - M (or the gamepad's Back button) mutes, and so does the speaker toggle in the menu and pause menu.
 - **Logbook:** your last 50 rides, and your bests per spot.
 - **Settings:**
   - **Gameplay:** units, default camera, touch controls, the balance meter (on the Practice swell by default), and Score rides: a 0–10 score on the WSL criteria for each ride, with the session's best two.
   - **Graphics:** Auto benchmarks the device on first launch. You can also choose Low, Medium, High or Ultra, or change individual settings under Advanced.
   - **Controls:** every action except pause can be rebound, on the keyboard and the gamepad.
-  - **Accessibility:** reduced motion, UI scale, and a high-contrast HUD.
+  - **Audio:** Master, Sea, Board and rider, and Interface volumes, and Mute when out of view.
+  - **Accessibility:** reduced motion, UI scale, a high-contrast HUD, and Mono audio.
 
   Settings are saved in the browser.
 
@@ -38,6 +43,8 @@ The Wave Lab (a menu tile) is the original screen, around the legacy wave: the w
 - `?physical` opens the physical surf zone;
 - `?record` films an autopilot ride;
 - `?inpage` runs the surf zone without a worker.
+
+The Wave Lab's ♪ Sound button opens the **sound check**: every sound's synthesised version and its candidate recordings on buttons, a gain per sound, and the bus levels; `public/assets/audio/sounds.json` picks the recordings. `npm run report:sound` logs the sound an autopilot ride makes and checks it follows its causes ([sound report](docs/research/sound-report.md)).
 
 The 3D lip is a local hybrid model, not a full fluid solver; its scope is recorded in [ADR 0003](docs/adr/0003-plunging-sheet-collision.md) and [ROADMAP.md](ROADMAP.md).
 
