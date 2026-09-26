@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { MAX_ONLINE_BATCH } from '../net/OnlinePacer';
 import { createPose, type SurferPose } from '../net/poseCodec';
 import { POSE_HZ } from '../net/protocol';
 import { RIDER_SNAPSHOT, SURF_ZONE_STEP, type RideRequest } from '../wave/SurfZoneRunner';
@@ -83,7 +84,7 @@ describe('OnlinePlay', () => {
     const { link, surf, play } = setup();
     link.seaTime = 110;
     play.step(surf, frame, paddle);
-    expect(surf.advances[0].steps).toBe(30);
+    expect(surf.advances[0].steps).toBe(MAX_ONLINE_BATCH);
     expect(surf.advances[0].input).toEqual({ paddle: false, popUp: false, steer: 0 });
     expect(play.phase).toBe('catching-up');
     expect(play.behind).toBeCloseTo(10, 6);

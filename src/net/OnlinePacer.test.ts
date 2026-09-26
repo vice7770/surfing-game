@@ -27,6 +27,12 @@ describe('OnlinePacer', () => {
     expect(result.caughtUp).toBe(false);
   });
 
+  it('gives up catching up from more than 30 s behind, and rebuilds', () => {
+    const pacer = new OnlinePacer();
+    expect(pacer.next(40, 15, 0, 1).resync).toBe(false);
+    expect(pacer.next(50, 15, 0, 1).resync).toBe(true);
+  });
+
   it('re-syncs after 3 s more than 1 s behind', () => {
     const pacer = new OnlinePacer();
     expect(pacer.next(10, 10, 0, 0.1).caughtUp).toBe(true);

@@ -5,10 +5,12 @@ export const RESYNC_BEHIND = 1;
 export const RESYNC_AFTER = 3;
 /** Behind by more than this at once, s (a background tab, a sleeping laptop): rebuild now. */
 export const RESYNC_JUMP = 5;
-/** Most steps asked for in one frame. */
-export const MAX_ONLINE_BATCH = 30;
+/** Behind by more than this while still catching up, s: a join that can't catch up rebuilds (a tab hidden as it joined). */
+export const RESYNC_HOPELESS = 30;
+/** Most steps asked for in one frame: enough to catch up at low frame rates, small enough to keep snapshots coming. */
+export const MAX_ONLINE_BATCH = 90;
 /** The worker's queue online: room to catch up after a join. */
-export const ONLINE_QUEUE = 90;
+export const ONLINE_QUEUE = 180;
 
 export interface PacerStep {
   /** Steps to ask the surf zone for now. */
@@ -44,7 +46,7 @@ export class OnlinePacer {
     const behind = target - shown;
     if (!this.caughtUp && behind <= RESYNC_BEHIND) this.caughtUp = true;
     this.behindFor = this.caughtUp && behind > RESYNC_BEHIND ? this.behindFor + dt : 0;
-    const resync = this.caughtUp && (behind > RESYNC_JUMP || this.behindFor >= RESYNC_AFTER);
+    const resync = this.caughtUp ? behind > RESYNC_JUMP || this.behindFor >= RESYNC_AFTER : behind > RESYNC_HOPELESS;
     return { steps, resync, caughtUp: this.caughtUp };
   }
 }
