@@ -170,5 +170,37 @@ async function chop(): Promise<void> {
   renderer.dispose();
 }
 
+/** A full surf-zone step (water on the device, lip, foam, breaking) on a finer grid: `?mode=fine&dx=0.5`. */
+async function fine(): Promise<void> {
+  const params = new URLSearchParams(location.search);
+  const dx = Number(params.get('dx') ?? 0.5);
+  const config: SurfZoneConfig = {
+    spot: 'point', seed: 1, significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0,
+    dx, fineSpacing: dx, spinUpPeriods: Number(params.get('spinUp') ?? 0.3),
+  };
+  let started = performance.now();
+  const simulation = new SurfZoneSimulation(config);
+  const solver = simulation.solver as BoussinesqSolver;
+  say(`${dx} m cells: ${solver.nx} × ${solver.nz} = ${(solver.nx * solver.nz).toLocaleString('en-US')} cells; built and spun up on the CPU in ${((performance.now() - started) / 1000).toFixed(1)} s`);
+  const device = await GpuBoussinesq.create(solver);
+  if (!device) {
+    say('No device.');
+    return;
+  }
+  simulation.device = device;
+  let water = 0;
+  let total = 0;
+  const frames = 120;
+  for (let frame = 0; frame < frames; frame += 1) {
+    started = performance.now();
+    await simulation.stepAsync(SURF_ZONE_STEP);
+    total += performance.now() - started;
+    water += device.lastStepMs;
+  }
+  say(`  per 1/60 s step: ${(total / frames).toFixed(2)} ms in all, ${(water / frames).toFixed(2)} ms of it the device's water (${device.lastSubsteps} substeps)`);
+  say('DONE');
+  device.dispose();
+}
+
 const mode = new URLSearchParams(location.search).get('mode');
-(mode === 'worker' ? throughput() : mode === 'chop' ? chop() : run()).catch((error: unknown) => say(`FAILED: ${error instanceof Error ? error.message : String(error)}`));
+(mode === 'worker' ? throughput() : mode === 'chop' ? chop() : mode === 'fine' ? fine() : run()).catch((error: unknown) => say(`FAILED: ${error instanceof Error ? error.message : String(error)}`));

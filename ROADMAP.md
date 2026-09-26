@@ -57,16 +57,22 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
 
     `legacy` stays until catching is reliable. [Record](docs/superpowers/plans/2026-09-26-p4f-catch.md), [natural](docs/research/catch-report.md) and [practice](docs/research/catch-report-practice.md) reports.
   - [x] Play the surfer, not the board (user request, 2026-09-26): after a fall the camera follows the swimmer, who strokes with Space and steers with the arrows. Enter within reach of the board grabs it and lies back down prone, keeping the pair's linear momentum (surfer plan S3); R still relaunches in the lineup.
-### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `In Progress`
+### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `Done`
 
 - [x] P5: the surf zone runs on a Madsen–Sørensen Boussinesq solver with Kennedy eddy-viscosity breaking and a Tonelli–Petti switch to shallow water. It is the default; stage 1 is a Wave Lab 'Solver' setting away.
   - Its phase speed matches its equations within 1 % to kh = 3, and those stay within 2.5 % of Airy.
   - It shoals by linear theory, refracts by Snell, carries groups at the model's group speed and solitary waves at √(g(d + A)).
   - It breaks at H_b/h_b ≈ 0.98 on a 1:40 beach.
   - A fix to the Hancock predictor (it now sees the dispersive acceleration) cut short-wave decay from 8 % to 0.2 % per wavelength.
-  - **Performance gate open (your choice, plan §3.3):** stage 2 takes 12–15 ms per step against the 4 ms budget (stage 1 now 7 ms). The fallbacks are a narrower window, stage 1 on the low tier, or WebAssembly/SIMD; P6 is the route to the budget.
+  - **Performance gate:** on the CPU, stage 2 takes 12–15 ms per step against the 4 ms budget (stage 1 now 7 ms). P6 meets it on the GPU (below). For machines without WebGPU the fallback is still the user's choice (plan §3.3): a narrower window, stage 1 on the low tier, or WebAssembly/SIMD.
   - `legacy` retires at the end of P4f. [Record](docs/superpowers/plans/2026-09-26-p5-boussinesq.md).
-- [ ] P6: WebGPU tier.
+- [x] P6: the WebGPU tier. The worker steps the stage 2 water on the GPU when WebGPU answers; the Wave Lab's Compute setting can force the CPU.
+  - Sixteen WGSL kernels mirror the CPU solver. Over 20 s on the Reef the device stays within 0.6 mm of the CPU's depth, with breaking agreeing on every cell.
+  - A whole frame takes 3.0 ms, against 12–15 ms on the CPU. The full surf-zone step is 4.6 ms, and the worker runs at 2.0× real time where the CPU managed 0.68× under the same load.
+  - The tier's sea has 64 components, and its shading chop is a 256² Tessendorf FFT of the local wind sea.
+  - **Deviations:** the whole field is read back every frame with no lag, not an async patch: the renderer is WebGL on the page, and the lip, foam and breaking model read the whole grid. 0.5 m cells were measured at a quarter of real time and not adopted.
+
+  [Record](docs/superpowers/plans/2026-09-26-p6-webgpu-tier.md).
 
 ## Current milestone — sustained wave and physical wipeout — `Done for prototype`
 
