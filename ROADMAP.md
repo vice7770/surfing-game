@@ -12,7 +12,7 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus a
 - [x] **Main menu:** big icon tiles in PolyTrack's layout, dressed in Breakline's look: teal ink, sand paper, coral accent, DM Sans and DM Mono, the round "B" mark, hand-drawn inline SVG icons.
   - Tiles: **Surf · Wave Lab · Multiplayer (coming soon) · Logbook · Settings**, and a bottom strip with Fullscreen and the version.
   - Behind the menu, live waves only: the practice groundswell, a different spot each time, and a slow cinematic camera along the break. Devices on the Low preset see a still frame.
-- [x] **Surf:** cards for Beach, Point and Reef (the Canyon is hidden until its catch cue works). Conditions:
+- [x] **Surf:** cards for Beach, Point, Reef and Canyon. Conditions:
   - Swell: Practice / Small / Medium / Big
   - Tide: Low / Mid / High
   - Wind: Offshore / Calm / Onshore
@@ -40,10 +40,24 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus a
   - **Balance meter:** it reads the rider's distance from its separation threshold (sway or posture error against `RECOVERABLE_ERROR`). The body's balance shift, the plan's first choice, barely moved before a fall.
   - **Spin-ups:** a superseded surf-zone spin-up is now dropped at once, so leaving the menu for a ride no longer waits behind the menu's own waves. The menu never waits for its waves either: it opens on a gradient, and the sea fades in.
   - [Plan and record](docs/superpowers/plans/2026-09-26-p8-menus-settings.md).
+- [x] **Follow-ups (2026-09-26):**
+  - Esc pauses the Wave Lab even from a focused slider.
+  - A second Paddle out during the loading card is ignored.
+  - The Auto benchmark samples only the menu's own waves.
+  - The menu's and Surf's sun and clock no longer overwrite the Wave Lab's settings.
+  - The catch report takes `--spread`, so it can reproduce each Surf swell.
 - [ ] **Open:**
-  - Tune the swell sizes by riding each spot. The browser pane was hidden (about 1.5 fps) during the build, so live play was not judged.
+  - **Tune the Surf swell sizes after the take-off layer (P10).** Measured before P7 with 30 ghost riders, 3 min per spot; the counts are riders who stood, and in brackets rides of 3 s or more:
+
+    | Swell | Beach | Point | Reef |
+    |---|---|---|---|
+    | Small (0.9 m, 9 s) | no cue | 1 | 36 (17) |
+    | Medium (1.4 m, 11 s) | 3 (3) | 3 (2) | 2 (2) |
+    | Big (2.4 m, 14 s) | 0 | not measured | not measured |
+
+    Medium works everywhere. P7 has since reshaped the Reef, and P10 changes catching, so the table waits for both. The Reef's Small run also showed a 39.9 m/s top speed, an outlier for the gameplay session to check.
   - Check a physical gamepad by hand; the mapping is covered by unit tests.
-  - Bring back a flow bar once a physical flow measure exists.
+  - Bring back a flow bar once a physical flow measure exists (gameplay, P9).
 
 ### Later — `Backlog`
 
@@ -110,6 +124,11 @@ Follows [the wave formation plan](docs/research/wave-formation-plan.md) and [ADR
     - a stroking hand's drag grew without bound with the board's speed. An arm now gives way at 0.4 body weights.
 
     Paddlers lost the board 156 → 29 times at the natural Point and 420 → 127 in practice (the other spots similarly). Stands rose at the practice Point (5 → 13, longest ride 13.7 s) but fell in the natural sea (10 → 5): the old cues partly rode on the runaway hand thrust. **Next:** sprint paddling at take-off, and pop-ups that fail on late take-offs off the lip. The rider now starts, and relaunches, 6 m outside the break line instead of 25 m, where catches were rare (the ghost riders stood from 4–8 m out).
+  - [x] The Canyon cues (user's fix list, 2026-09-26). The rider waited over the canyon's axis, in the shadow its refraction casts: crests there were 0.2–0.3 m, and no ghost rider ever saw the cue. The canyon does gather the swell on its flank (crests 1.7× those of the same shelf without it), but on the window's centreline that focus fell on the open edges. Now:
+    - the canyon's axis runs along the window's edge (x = 80), so its focusing flank fills the window and the bed is level across the open boundary. A canyon wall crossing the edge ran the edge cells unstable (3 → 57 m/s in 6 s); the open edge itself is a separate fix;
+    - the rider waits where the swell gathers: linear rays from the relaxation zone, averaged over half a wavelength, pick the take-off for the day's direction and period. It sits near x = 0 for the Surf screen's swells, and at −24 m for a swell from −10°. In the Boussinesq surf zone, its waves are 89–96 % of the largest along the lineup. Beach, Point and Reef keep their centre transect.
+
+    Ghost riders at the Canyon: 0 → 9 cues and 5 stands in the natural sea (longest 3.1 s), 0 → 34 cues and 5 stands in practice (4 rides ≥ 3 s, longest 5.9 s). Its card is back on the Surf screen. The other spots' rows moved with P7's lip since the last reports: the natural Point held (2 stands, longest 14.0 s), but the practice Point fell from 13 stands to 8 and lost its 13.7 s ride. That is one seed, so it needs a multi-seed check. [Natural](docs/research/catch-report.md) and [practice](docs/research/catch-report-practice.md) reports.
   - [x] Play the surfer, not the board (user request, 2026-09-26): after a fall the camera follows the swimmer, who strokes with Space and steers with the arrows. Enter within reach of the board grabs it and lies back down prone, keeping the pair's linear momentum (surfer plan S3); R still relaunches in the lineup.
 ### P2 · Boussinesq objective (P5) and WebGPU tier (P6) — `Done`
 

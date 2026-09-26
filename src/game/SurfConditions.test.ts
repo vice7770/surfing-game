@@ -31,8 +31,8 @@ describe('surf conditions', () => {
     for (const wind of Object.values(WINDS)) expect(Math.abs(wind)).toBeLessThanOrEqual(12);
   });
 
-  it('offers Beach, Point and Reef, not the Canyon yet', () => {
-    expect(SURF_SPOTS).toEqual(['beach', 'point', 'reef']);
+  it('offers all four spots, the Canyon included now that its catch cue works', () => {
+    expect(SURF_SPOTS).toEqual(['beach', 'point', 'reef', 'canyon']);
   });
 
   it('shows the menu a different spot each time, on calm practice water', () => {

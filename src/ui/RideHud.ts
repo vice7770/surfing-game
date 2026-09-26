@@ -43,9 +43,10 @@ export class RideHud {
     const prompt = ridePrompt(ride, keys);
     if (this.prompt.textContent !== prompt) this.prompt.textContent = prompt;
     this.prompt.hidden = prompt === '';
+    // Written only when they change: the HUD updates every frame.
     const { value, unit } = speedParts(ride?.speed ?? 0, units);
-    this.speedValue.textContent = value;
-    this.speedUnit.textContent = unit;
+    if (this.speedValue.textContent !== value) this.speedValue.textContent = value;
+    if (this.speedUnit.textContent !== unit) this.speedUnit.textContent = unit;
     const standing = ride?.phase === 'standing' || ride?.phase === 'recover';
     this.balance.hidden = !standing;
     if (standing) {

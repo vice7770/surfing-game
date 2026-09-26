@@ -14,7 +14,7 @@ const log = (recent: LoggedRide[], bests: Partial<Record<SpotName, SpotBests>> =
 describe('logbookModel', () => {
   it('shows each spot\'s bests in the player\'s units, and a dash where there are none', () => {
     const model = logbookModel(log([], { point: { distance: 42.4, topSpeed: 8.2, seconds: 12.44 } }), 'imperial', now);
-    expect(model.spots.map((spot) => spot.spot)).toEqual(['beach', 'point', 'reef']);
+    expect(model.spots.map((spot) => spot.spot)).toEqual(['beach', 'point', 'reef', 'canyon']);
     expect(model.spots[1].bests.map((best) => best.value)).toEqual(['139 ft', '18 mph', '12.4 s']);
     expect(model.spots[0].bests.map((best) => best.value)).toEqual(['—', '—', '—']);
     expect(model.empty).toBe(true);
