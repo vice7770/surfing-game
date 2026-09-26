@@ -12,6 +12,7 @@ export const richPatchVertexPars = /* glsl */ `
 attribute float skirt;
 attribute float onPatch;
 varying float vPatch;
+varying float vWaterSkirt;
 `;
 
 /** Rich fragment pars and the coarse water's discard under the patch (inset half a metre so the two overlap). */
@@ -19,8 +20,11 @@ export const richPatchFragmentPars = /* glsl */ `
 uniform vec4 waterPatchRect;
 uniform float waterPatchActive;
 varying float vPatch;
+varying float vWaterSkirt;
 `;
 export const richPatchDiscard = /* glsl */ `
+// The skirt's inner faces only show from below, as a curtain hanging under the surface.
+if ( vWaterSkirt > 0.001 && !gl_FrontFacing ) discard;
 if ( vPatch < 0.5 && waterPatchActive > 0.5
   && all( greaterThan( vWaterWorld.xz, waterPatchRect.xy + 0.5 ) ) && all( lessThan( vWaterWorld.xz, waterPatchRect.zw - 0.5 ) ) ) discard;
 `;

@@ -22,6 +22,21 @@ export function rippleFoamGain(foam: number): number {
   return (0.35 + 0.65 * Math.min(1, Math.max(0, foam * 3))) * (1 - 0.75 * smoothstep(0.3, 0.8, foam));
 }
 
+type RippleTap = readonly [number, number, number, number];
+
+const layerVariance = (t: RippleTap) => Math.max(0, t[2] + t[3] - t[0] * t[0] - t[1] * t[1]);
+
+/**
+ * CPU mirror of the shader's unresolved slope variance at strength 1, from
+ * the filtered taps (sx, sz, sx², sz²) of the two layers in the two flow-map
+ * phases: each layer's own variance, weighted as the layers are summed (the
+ * finer at 0.6, so its variance at 0.36), blended by the phase weight `w`.
+ * Where the footprint resolves the ripples every tap is a point and none is left.
+ */
+export function rippleVariance(a0: RippleTap, a1: RippleTap, b0: RippleTap, b1: RippleTap, w: number): number {
+  return w * (layerVariance(a0) + 0.36 * layerVariance(a1)) + (1 - w) * (layerVariance(b0) + 0.36 * layerVariance(b1));
+}
+
 /** The ripples' strength for a wind chop: 0.8 on calm water, 1 at the default chop; the tank and the far ocean share it. */
 export const rippleStrength = (chop: number) => 0.8 + (0.2 * chop) / DEFAULT_WATER_CHOP;
 
@@ -124,15 +139,23 @@ const float RIPPLE_TILE_0 = ${RIPPLE_TILES[0].toFixed(3)};
 const float RIPPLE_TILE_1 = ${RIPPLE_TILES[1].toFixed(3)};
 float waterRippleFoamGain( float foam ) { return mix( 0.35, 1.0, clamp( foam * 3.0, 0.0, 1.0 ) ) * ( 1.0 - 0.75 * smoothstep( 0.3, 0.8, foam ) ); }
 vec4 waterRippleTap( vec2 p, float tile ) { return texture( waterRippleMap, p / tile ); }
-vec4 waterRippleLayers( vec2 p ) { return waterRippleTap( p, RIPPLE_TILE_0 ) + vec4( 0.6, 0.6, 0.36, 0.36 ) * waterRippleTap( p, RIPPLE_TILE_1 ); }
+float waterRippleLayerVariance( vec4 t ) { return max( 0.0, t.z + t.w - dot( t.xy, t.xy ) ); }
 vec2 waterRippleSlopeAt( vec2 p, vec2 flow ) {
   float a = fract( waterTime / RIPPLE_PERIOD );
   float b = fract( a + 0.5 );
   float w = 1.0 - abs( 2.0 * a - 1.0 );
-  vec4 s = w * waterRippleLayers( p - flow * a * RIPPLE_PERIOD )
-    + ( 1.0 - w ) * waterRippleLayers( p - flow * b * RIPPLE_PERIOD + vec2( 7.13, 3.31 ) );
+  vec2 pa = p - flow * a * RIPPLE_PERIOD;
+  vec2 pb = p - flow * b * RIPPLE_PERIOD + vec2( 7.13, 3.31 );
+  vec4 a0 = waterRippleTap( pa, RIPPLE_TILE_0 );
+  vec4 a1 = waterRippleTap( pa, RIPPLE_TILE_1 );
+  vec4 b0 = waterRippleTap( pb, RIPPLE_TILE_0 );
+  vec4 b1 = waterRippleTap( pb, RIPPLE_TILE_1 );
+  vec2 slope = w * ( a0.xy + 0.6 * a1.xy ) + ( 1.0 - w ) * ( b0.xy + 0.6 * b1.xy );
+  // Each layer's own unresolved variance (see rippleVariance), so resolved ripples leave none.
+  float variance = w * ( waterRippleLayerVariance( a0 ) + 0.36 * waterRippleLayerVariance( a1 ) )
+    + ( 1.0 - w ) * ( waterRippleLayerVariance( b0 ) + 0.36 * waterRippleLayerVariance( b1 ) );
   float strength = waterRippleStrength * waterRippleFoamGain( vWaterFoam );
-  waterRippleVariance = strength * strength * max( 0.0, s.z + s.w - dot( s.xy, s.xy ) );
-  return strength * s.xy;
+  waterRippleVariance = strength * strength * variance;
+  return strength * slope;
 }
 `;

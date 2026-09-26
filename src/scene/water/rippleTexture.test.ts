@@ -1,6 +1,6 @@
 import { DataUtils } from 'three';
 import { describe, expect, it } from 'vitest';
-import { RIPPLE_RMS_SLOPE, RIPPLE_SIZE, rippleFoamGain, rippleSlope, rippleTexture, waterRipplePars } from './rippleTexture';
+import { RIPPLE_RMS_SLOPE, RIPPLE_SIZE, rippleFoamGain, rippleSlope, rippleTexture, rippleVariance, waterRipplePars } from './rippleTexture';
 
 describe('ripple texture', () => {
   it('tiles exactly: the slope at one edge equals the opposite edge', () => {
@@ -48,6 +48,20 @@ describe('ripple texture', () => {
   it('carries the ripples on the current in two phases in the shader', () => {
     expect(waterRipplePars).toContain('vec2 waterRippleSlopeAt( vec2 p, vec2 flow )');
     expect(waterRipplePars).toContain('waterRippleVariance =');
+  });
+});
+
+describe('ripple slope variance', () => {
+  const point = (sx: number, sz: number): [number, number, number, number] => [sx, sz, sx * sx, sz * sz];
+
+  it('is zero where the footprint resolves the ripples, even when the layers slope opposite ways', () => {
+    expect(rippleVariance(point(0.1, -0.05), point(-0.12, 0.08), point(-0.03, 0.02), point(0.09, -0.1), 0.7)).toBe(0);
+  });
+
+  it('adds each layer’s unresolved variance as the layers are summed (the finer at 0.6, so 0.36), blended by phase', () => {
+    const blurred = (variance: number): [number, number, number, number] => [0, 0, variance / 2, variance / 2];
+    expect(rippleVariance(blurred(0.01), blurred(0.02), blurred(0.03), blurred(0), 0.25)).toBeCloseTo(0.25 * (0.01 + 0.36 * 0.02) + 0.75 * 0.03, 12);
+    expect(waterRipplePars).toContain('float waterRippleLayerVariance( vec4 t )');
   });
 });
 

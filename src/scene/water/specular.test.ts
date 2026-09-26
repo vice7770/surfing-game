@@ -13,6 +13,13 @@ describe('specular anti-aliasing', () => {
     expect(richRoughness(RICH_BASE_ROUGHNESS, 10)).toBe(0.6);
   });
 
+  it('adds the variance in GGX alpha space, where three takes alpha = roughness² (LEAN: alpha² grows by twice it)', () => {
+    const variance = 0.0027;
+    const roughness = richRoughness(RICH_BASE_ROUGHNESS, variance);
+    expect(roughness).toBeCloseTo(0.27, 2);
+    expect(roughness ** 4 - RICH_BASE_ROUGHNESS ** 4).toBeCloseTo(2 * variance, 9);
+  });
+
   it('has a GLSL twin', () => {
     expect(waterSpecularPars).toContain('float richRoughness( float base, float variance )');
   });

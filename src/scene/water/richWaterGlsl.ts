@@ -30,7 +30,8 @@ vWaterFlow = waterFlowAt( waterXZ );
 export const richVertexHeight = `vec3 transformed = vec3( position );
 transformed.y = waterHeight - ${PATCH_SKIRT.toFixed(3)} * skirt;
 vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;
-vPatch = onPatch;`;
+vPatch = onPatch;
+vWaterSkirt = skirt;`;
 
 /**
  * The Rich foam composition for `waterBodyFragment`: fresh whitewater as dense

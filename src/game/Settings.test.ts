@@ -20,6 +20,14 @@ describe('SettingsStore', () => {
     expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: oldMedium }) })).value.graphics.waterLook).toBe('rich');
   });
 
+  it('keeps an old Custom save on Classic where the benchmark rated the machine Low, and on Rich elsewhere', () => {
+    const { waterLook: _custom, ...oldCustom } = { preset: 'custom', ...PRESETS.low };
+    const low = { preset: 'low', water: 'fast', lowPerformance: true, adapter: 'test' };
+    const medium = { preset: 'medium', water: 'fast', lowPerformance: false, adapter: 'test' };
+    expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: oldCustom, detected: low }) })).value.graphics.waterLook).toBe('classic');
+    expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: oldCustom, detected: medium }) })).value.graphics.waterLook).toBe('rich');
+  });
+
   it('starts from the defaults with nothing stored, or with something that is not JSON', () => {
     expect(new SettingsStore(memory()).value).toEqual(defaultSettings());
     expect(new SettingsStore(memory({ [SETTINGS_KEY]: '{oops' })).value).toEqual(defaultSettings());

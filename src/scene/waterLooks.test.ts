@@ -200,16 +200,32 @@ describe('Classic water parity', () => {
     expect([...names].filter((name) => GLSL_RESERVED.has(name))).toEqual([]);
   });
 
-  it('feeds every attribute the Rich program adds to the coarse water too, which lacks them', () => {
+  it('hides the patch skirt from below, where its inner faces would hang as a curtain under the surface', () => {
+    const water = new WaterSurface({ ...source, cubic: true });
+    water.setLook('rich');
+    const { vertex, fragment } = compiled(water.mesh.material);
+    expect(vertex).toContain('vWaterSkirt = skirt;');
+    expect(fragment).toContain('if ( vWaterSkirt > 0.001 && !gl_FrontFacing ) discard;');
+  });
+
+  it('gives the coarse water every attribute the Rich program adds, as zeros, even after its grid is rebuilt', () => {
+    // Not three's defaultAttributeValues: those are context-wide state another material can overwrite.
     const water = new WaterSurface({ ...source, cubic: true });
     water.setLook('rich');
     const attributes = [...compiled(water.mesh.material).vertex.matchAll(/\battribute\s+\w+\s+(\w+);/g)].map((match) => match[1]);
     expect(attributes.length).toBeGreaterThan(0);
-    const defaults = (water.mesh.material as { defaultAttributeValues?: Record<string, number[]> }).defaultAttributeValues ?? {};
-    for (const name of attributes) {
-      expect(water.patch.geometry.getAttribute(name), name).toBeDefined();
-      expect(water.mesh.geometry.getAttribute(name) ?? defaults[name], name).toBeDefined();
-    }
+    const coarse = () => {
+      for (const name of attributes) {
+        expect(water.patch.geometry.getAttribute(name), name).toBeDefined();
+        const attribute = water.mesh.geometry.getAttribute(name);
+        expect(attribute, name).toBeDefined();
+        expect(attribute.count, name).toBe(water.mesh.geometry.getAttribute('position').count);
+        expect(Array.from(attribute.array as ArrayLike<number>).every((value) => value === 0), name).toBe(true);
+      }
+    };
+    coarse();
+    water.setSource({ ...source, cubic: true, grid: { ...grid, nx: 12, nz: 10 } });
+    coarse();
   });
 });
 

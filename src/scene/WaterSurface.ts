@@ -11,6 +11,7 @@ import {
   PlaneGeometry,
   RedFormat,
   RGFormat,
+  Uint8BufferAttribute,
   Vector2,
   Vector3,
   Vector4,
@@ -270,8 +271,6 @@ export class WaterSurface {
         .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true));
     };
     material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}`;
-    // The coarse water lacks the patch's attributes; three feeds them from here, or they read a stale value.
-    Object.assign(material, { defaultAttributeValues: { skirt: [0], onPatch: [0] } });
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
     this.mesh.frustumCulled = false;
     this.patch = new Mesh(createPatchGeometry(PATCH_SIZE, PATCH_SPACING), material);
@@ -452,6 +451,11 @@ export class WaterSurface {
   private static createGeometry(grid: SurfaceGrid): PlaneGeometry {
     const geometry = new PlaneGeometry((grid.nx - 1) * grid.spacing, (grid.nz - 1) * grid.spacing, grid.nx - 1, grid.nz - 1);
     geometry.rotateX(-Math.PI / 2);
+    // The Rich program shares the patch's attributes: zeros here (no skirt, not the patch), never left to
+    // three's defaultAttributeValues, which are context-wide state another material can overwrite.
+    const zeros = new Uint8BufferAttribute(new Uint8Array(geometry.getAttribute('position').count), 1);
+    geometry.setAttribute('skirt', zeros);
+    geometry.setAttribute('onPatch', zeros);
     return geometry;
   }
 }

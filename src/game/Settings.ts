@@ -145,8 +145,11 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
   const g = defaults.graphics;
   const detected = sanitizeDetection(source.detected);
   const preset = oneOf(graphics.preset, ['auto', 'low', 'medium', 'high', 'ultra', 'custom'] as const, g.preset);
-  // A save from before G8 has no water look: take its preset's, so a Low player stays on the light Classic water.
-  const presetLook = preset === 'custom' ? g.waterLook : PRESETS[preset === 'auto' ? detected?.preset ?? 'medium' : preset].waterLook;
+  // A save from before G8 has no water look: take its preset's, so a Low player stays on the light Classic water
+  // (a Custom one takes the benchmark's, so a machine rated Low stays there too).
+  const presetLook = preset === 'custom'
+    ? (detected?.preset === 'low' ? PRESETS.low.waterLook : g.waterLook)
+    : PRESETS[preset === 'auto' ? detected?.preset ?? 'medium' : preset].waterLook;
   return {
     gameplay: {
       units: oneOf(gameplay.units, ['metric', 'imperial'] as const, defaults.gameplay.units),
