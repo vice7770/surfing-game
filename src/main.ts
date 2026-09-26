@@ -10,6 +10,7 @@ import {
   SphereGeometry,
   MeshStandardMaterial,
   NeutralToneMapping,
+  PerspectiveCamera,
   PMREMGenerator,
   Scene,
   WebGLRenderer,
@@ -26,7 +27,8 @@ import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
 import { DEFAULT_PHYSICAL_SETTINGS, PRACTICE_SWELL, PhysicalMode, spreadingFor, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
 import { LocalSurfZone } from './game/SurfZoneHost';
-import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, type SurfConditions } from './game/SurfConditions';
+import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, type SurfConditions, type TimeOfDay } from './game/SurfConditions';
+import type { WaterLook } from './scene/water/waterLook';
 import type { RideView } from './scene/SpectatorCamera';
 import type { SurfZoneStatus } from './wave/SurfZoneRunner';
 import type { RideFrame } from './game/RideTracker';
@@ -87,6 +89,8 @@ type WaterModel = 'legacy' | 'physical';
 const physicalRequested = devFlag('physical');
 /** `?record`: a dev tool films an autopilot ride frame by frame (src/dev/rideRecorder.ts); the page's own clock stays off. */
 const recordRequested = devFlag('record');
+/** `?waterSheet`: a dev tool renders fixed water shots, Classic beside Rich, under each sky (src/dev/waterSheet.ts; G8). */
+const waterSheetRequested = devFlag('waterSheet');
 /**
  * The surf zone runs in a Web Worker (plan §3.2, P4a); `?inpage`, or a browser
  * without workers, runs it on the main thread instead.
@@ -254,7 +258,7 @@ class SurfGame {
     window.addEventListener('resize', () => this.resize());
     if (physicalRequested) this.showLoadingThen(() => this.startPhysical(this.seed, this.physicalSettings));
     else getElement<HTMLElement>('#loading').classList.add('is-hidden');
-    if (!recordRequested) requestAnimationFrame(this.frame);
+    if (!recordRequested && !waterSheetRequested) requestAnimationFrame(this.frame);
   }
 
   /**
@@ -278,6 +282,15 @@ class SurfGame {
       },
       mode: this.physicalMode,
       canvas: this.renderer.domElement,
+      /** G8's water sheet: the look, the time of day (resolved once its sky is in), and a render from any camera. */
+      setWaterLook: (look: WaterLook) => this.applyWaterLook(look),
+      setTimeOfDay: (time: TimeOfDay) => this.applySun(TIMES[time]),
+      renderView: (camera: PerspectiveCamera) => {
+        const host = this.physicalMode.host;
+        this.setUnderwater(host !== undefined && camera.position.y < host.heightAt(camera.position.x, camera.position.z) - 0.1);
+        this.drawPhysical(camera);
+      },
+      water: this.water,
     };
   }
 
@@ -302,9 +315,7 @@ class SurfGame {
     this.breakSpray.points.visible = resolved.sprayMist && this.mode === 'legacy';
     this.physicalMode.farField.setViewDistance(resolved.oceanView);
     this.water.setFoamDetail(resolved.detailedFoam);
-    this.water.setLook(resolved.waterLook);
-    this.physicalMode.farField.setLook(resolved.waterLook);
-    this.physicalMode.spray.setLook(resolved.waterLook);
+    this.applyWaterLook(resolved.waterLook);
   }
 
   /** R: in the physical mode, paddle out again from the lineup while the waves carry on; otherwise replay. */
@@ -880,11 +891,20 @@ class SurfGame {
 
   /** Draw the physical surf zone as it now stands, and refresh the readout at 4 Hz. */
   private physicalRender(elapsed: number, simElapsed: number): void {
-    this.water.update();
     this.physicalMode.update(simElapsed || this.fixedStep);
     this.setUnderwater(this.physicalMode.cameraBelowSurface());
+    this.drawPhysical(this.physicalMode.camera.camera);
+    this.readoutClock += elapsed;
+    if (this.readoutClock >= 0.25) {
+      this.readoutClock = 0;
+      this.renderPhysicalReadout();
+    }
+  }
+
+  /** The water, sea and shadows around `view`, drawn from it (the physical camera, or a water sheet shot). */
+  private drawPhysical(view: PerspectiveCamera): void {
+    this.water.update();
     // Caustics where the view looks: a window a third of its width ahead of the camera.
-    const view = this.physicalMode.camera.camera;
     const ahead = view.getWorldDirection(this.causticAhead).setY(0);
     if (ahead.lengthSq() > 1e-6) ahead.normalize();
     // The WebGPU tier shades with the FFT chop; the others keep the procedural waves.
@@ -900,12 +920,14 @@ class SurfGame {
     const { board } = this.physicalMode;
     const nose = this.shadowNose.set(0, 0, 1).applyQuaternion(board.quaternion);
     this.shadows.follow(board.position, this.currentSunDirection(), board.position.y - 0.04, Math.atan2(nose.x, nose.z));
-    this.renderer.render(this.scene, this.physicalMode.camera.camera);
-    this.readoutClock += elapsed;
-    if (this.readoutClock >= 0.25) {
-      this.readoutClock = 0;
-      this.renderPhysicalReadout();
-    }
+    this.renderer.render(this.scene, view);
+  }
+
+  /** The water look (G8) on every water drawing: the tank, the far ocean and the spray. */
+  private applyWaterLook(look: WaterLook): void {
+    this.water.setLook(look);
+    this.physicalMode.farField.setLook(look);
+    this.physicalMode.spray.setLook(look);
   }
 
   private updateHud(): void {
@@ -958,7 +980,7 @@ class SurfGame {
    * whose sun is nearest in height replaces it when loaded, turned to the
    * chosen direction, and then lights the scene on its own.
    */
-  private applySun(settings: { sunHeight: number; sunDirection: number }): void {
+  private applySun(settings: { sunHeight: number; sunDirection: number }): Promise<void> {
     this.shownSun = { height: settings.sunHeight, direction: settings.sunDirection };
     this.environment.setSunPosition(settings.sunHeight, settings.sunDirection);
     if (!this.photoSky.ready) {
@@ -967,7 +989,7 @@ class SurfGame {
       this.refreshSun();
       this.refreshReflection();
     }
-    this.photoSky.select(sunElevationFromSlider(settings.sunHeight), settings.sunDirection)
+    return this.photoSky.select(sunElevationFromSlider(settings.sunHeight), settings.sunDirection)
       .then(() => this.usePhotoSky())
       .catch((error) => console.warn('Photographed sky unavailable; keeping the painted sky.', error));
   }
@@ -1076,6 +1098,7 @@ class SurfGame {
 
 const game = new SurfGame();
 if (recordRequested) void import('./dev/rideRecorder').then(({ recordRide }) => recordRide(game.recording));
+if (waterSheetRequested) void import('./dev/waterSheet').then(({ renderWaterSheet }) => renderWaterSheet(game.recording));
 const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const settings = new SettingsStore(availableStorage(), defaultSettings(reducedMotion));
 const applyGraphics = () => game.applyGraphics(resolveGraphics(settings.value.graphics, settings.value.detected, window.devicePixelRatio));
@@ -1091,5 +1114,5 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   camera: () => game.cycleView(),
   pause: () => app.pause(),
 });
-const app = new App(game, controls, settings, { startInWaveLab: physicalRequested || demoMode !== null || recordRequested });
+const app = new App(game, controls, settings, { startInWaveLab: physicalRequested || demoMode !== null || recordRequested || waterSheetRequested });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);
