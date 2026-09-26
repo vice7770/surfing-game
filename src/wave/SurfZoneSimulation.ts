@@ -6,6 +6,7 @@ import { FoamField, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
 import { SeaState } from './SeaState';
 import { SeaStateBoundary } from './SeaStateBoundary';
+import type { LipImpact } from './SprayCloud';
 import { ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
@@ -125,6 +126,8 @@ export class SurfZoneSimulation {
   readonly breaking: BreakingModel;
   /** Ballistic lip parcels thrown by plunging breakers (plan Q12). */
   readonly lip: PlungingLip;
+  /** Lip parcels that landed during the latest step: where spray splashes up (G6). */
+  readonly lipImpacts: LipImpact[] = [];
   /** Foam carried by the flow (plan §2.4): made by bores and lip splashes. */
   readonly foam: FoamField;
   /** Lip throws so far, and their total volume, m³. */
@@ -179,7 +182,10 @@ export class SurfZoneSimulation {
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver);
     this.foam = new FoamField(this.solver, config.foamDecay ?? FOAM_DECAY[config.spot]);
-    this.lip.onLand = (x, z, volume) => this.foam.addSplash(x, z, volume);
+    this.lip.onLand = (x, z, volume, vx, vy, vz) => {
+      this.foam.addSplash(x, z, volume);
+      this.lipImpacts.push({ x, z, volume, vx, vy, vz });
+    };
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
   }
 
@@ -198,6 +204,7 @@ export class SurfZoneSimulation {
 
   step(dt: number): void {
     const start = performance.now();
+    this.lipImpacts.length = 0;
     this.solver.step(dt);
     this.breaking.update(dt);
     this.markBreakingOnsets();

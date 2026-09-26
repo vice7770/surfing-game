@@ -5,6 +5,7 @@ import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { RideSession, type RideInput } from '../physics/RideSession';
 import type { PeelEstimate } from './Breaking';
 import { BubbleCloud } from './BubbleCloud';
+import { SPRAY_STRIDE, SprayCloud } from './SprayCloud';
 import { SurfZoneSimulation, type RenderGrid, type SurfZoneConfig } from './SurfZoneSimulation';
 import type { BreakerType } from './SwellReadout';
 
@@ -52,6 +53,8 @@ export interface SurfZoneStatus {
   lipLaunches: number;
   lipVolume: number;
   lipAirborne: number;
+  /** Spray and mist particles in the air. */
+  spray: number;
   onsetScale: number;
   /** The riderless board: its speed, m/s, and how often it left the water's domain and was put back in the lineup. */
   board?: { speed: number; resets: number };
@@ -71,6 +74,9 @@ export interface SurfZoneBuffers {
   lipCount: number;
   bubbles: Float32Array;
   bubbleCount: number;
+  /** Spray and mist: x, y, z, size and opacity per particle (`SPRAY_STRIDE`). */
+  spray: Float32Array;
+  sprayCount: number;
   board: Float64Array;
   rider: Float64Array;
 }
@@ -83,6 +89,7 @@ export interface SurfZoneBuffers {
 export class SurfZoneRunner {
   readonly simulation: SurfZoneSimulation;
   readonly bubbles: BubbleCloud;
+  readonly spray: SprayCloud;
   /** Uniform render grid over the window and the whole tank. */
   readonly grid: RenderGrid;
   /** Bed elevation per render node (fixed until the window slides). */
@@ -105,6 +112,7 @@ export class SurfZoneRunner {
   constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, renderSpacing = 1) {
     this.simulation = new SurfZoneSimulation(config);
     this.bubbles = new BubbleCloud(config.seed, PARCEL_CAPACITY);
+    this.spray = new SprayCloud(config.seed, PARCEL_CAPACITY);
     this.grid = this.simulation.renderGrid(renderSpacing);
     this.bed = new Float32Array(this.grid.nx * this.grid.nz);
     this.simulation.writeUniformBed(this.bed, this.grid);
@@ -121,6 +129,12 @@ export class SurfZoneRunner {
       this.board = new BoardBody();
       this.launchBoard();
     }
+  }
+
+  /** What the spray reads from the surf zone each step. */
+  private get sprayScene() {
+    const { simulation } = this;
+    return { solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, windSpeed: this.config.windSpeed ?? 0 };
   }
 
   get windowXMin(): number {
@@ -164,6 +178,7 @@ export class SurfZoneRunner {
         }
       }
       this.bubbles.update(this.simulation, SURF_ZONE_STEP);
+      this.spray.update(this.sprayScene, SURF_ZONE_STEP);
     }
   }
 
@@ -189,6 +204,8 @@ export class SurfZoneRunner {
       lipCount: 0,
       bubbles: new Float32Array(PARCEL_CAPACITY * 3),
       bubbleCount: 0,
+      spray: new Float32Array(PARCEL_CAPACITY * SPRAY_STRIDE),
+      sprayCount: 0,
       board: new Float64Array(8),
       rider: new Float64Array(RIDER_SNAPSHOT.length),
     };
@@ -210,6 +227,8 @@ export class SurfZoneRunner {
     buffers.lipCount = parcels;
     buffers.bubbleCount = Math.min(PARCEL_CAPACITY, this.bubbles.count);
     buffers.bubbles.set(this.bubbles.positions.subarray(0, buffers.bubbleCount * 3));
+    buffers.sprayCount = Math.min(PARCEL_CAPACITY, this.spray.count);
+    buffers.spray.set(this.spray.particles.subarray(0, buffers.sprayCount * SPRAY_STRIDE));
     const { board } = this;
     buffers.board.fill(0);
     if (board) {
@@ -243,6 +262,7 @@ export class SurfZoneRunner {
       lipLaunches: simulation.lipLaunches,
       lipVolume: simulation.lipVolume,
       lipAirborne: simulation.lip.airborneVolume(),
+      spray: this.spray.count,
       onsetScale: simulation.breaking.onsetScale,
       board: this.board && !this.session ? { speed: this.board.velocity.length(), resets: this.boardResets } : undefined,
       ride: this.session ? {

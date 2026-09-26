@@ -74,6 +74,23 @@ describe('SurfZoneRunner', () => {
     expect(surfZoneSea(config).components).toEqual(simulation.sea.components);
   });
 
+  it('splashes spray where lip water lands, and hands it over in the snapshot', () => {
+    const runner = new SurfZoneRunner(config);
+    runner.advance(60);
+    const crest = runner.simulation.solver.cellIndex(0, -60);
+    runner.simulation.lip.launch(crest, { x: 0, z: 4 }, runner.simulation.solver.surfaceAt(crest) + 1.5, 0.4);
+    let splashed = 0;
+    for (let step = 0; step < 60; step += 1) {
+      runner.advance(1);
+      splashed = Math.max(splashed, runner.spray.count);
+    }
+    expect(splashed).toBeGreaterThan(20);
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(buffers.sprayCount).toBe(runner.spray.count);
+    expect(Array.from(buffers.spray.subarray(0, buffers.sprayCount * 5))).toEqual(Array.from(runner.spray.particles.subarray(0, runner.spray.count * 5)));
+  });
+
   it('carries a bubble cloud in the runner, not in the renderer', () => {
     expect(new SurfZoneRunner(config).bubbles).toBeInstanceOf(BubbleCloud);
   });

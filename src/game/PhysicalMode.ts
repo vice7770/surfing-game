@@ -7,6 +7,7 @@ import { RIDER_PARTS } from '../physics/riderPosture';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
+import { SprayPoints } from '../scene/SprayPoints';
 import { LipPoints, type RenderableLip } from '../scene/LipPoints';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera } from '../scene/SpectatorCamera';
@@ -148,6 +149,7 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
     { label: 'PEEL', value: peelText },
     { label: 'LIP', value: status.lipLaunches === 0 ? 'no lip yet'
       : `${status.lipLaunches} throws · ${status.lipVolume.toFixed(1)} m³ · ${status.lipAirborne.toFixed(1)} m³ airborne` },
+    { label: 'SPRAY', value: status.spray > 0 ? `${status.spray.toLocaleString('en-US')} drops and mist in the air` : 'none' },
     { label: 'WIND', value: wind === 0 ? 'calm'
       : `${Math.abs(wind)} m/s ${wind > 0 ? 'onshore' : 'offshore'} · breaking thresholds ×${status.onsetScale.toFixed(2)}` },
   ];
@@ -179,6 +181,8 @@ export class PhysicalMode {
   readonly lipPoints = new LipPoints();
   /** Bubbles entrained under breaking bores, seen from below the surface. */
   readonly bubbles = new BubblePoints();
+  /** Spray and mist thrown up by lip impacts, bores and offshore wind (G6). */
+  readonly spray = new SprayPoints();
   /** The physical board, drawn at the snapshot's pose. */
   readonly board = createBoardMesh(buildBoardShape());
   /** The rider's body, drawn from the snapshot's seven points (its legacy board hidden). */
@@ -208,7 +212,7 @@ export class PhysicalMode {
   private readonly follow = { position: { x: 0, y: 0, z: 0 }, heading: 0 };
 
   constructor(scene: Scene) {
-    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh, this.board, this.surfer.group);
+    scene.add(this.seabed.mesh, this.farField.mesh, this.lipPoints.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group);
     this.board.visible = false;
     this.surfer.setBoardVisible(false);
     this.surfer.group.visible = false;
@@ -374,6 +378,7 @@ export class PhysicalMode {
       this.surfer.updateDetached(this.riderPose, this.board.position, this.board.quaternion);
     }
     this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
+    this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount });
   }
 
   /** The Wave Lab rows for the running surf zone. */
@@ -395,5 +400,6 @@ export class PhysicalMode {
     this.farField.mesh.visible = visible;
     this.lipPoints.mesh.visible = visible;
     this.bubbles.mesh.visible = visible;
+    this.spray.mesh.visible = visible;
   }
 }
