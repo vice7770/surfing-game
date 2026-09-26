@@ -256,3 +256,10 @@
   .panel-footer .button-primary { width: 100%; }
   .hud-speed strong { font-size: 2.4em; }
 }
+
+/* Online (N1): the other surfers' name tags and call bubbles, over the canvas. */
+.name-tags { position: absolute; inset: 0; z-index: 3; overflow: hidden; pointer-events: none; }
+.name-tag { position: absolute; top: 0; left: 0; display: flex; flex-direction: column; align-items: center; gap: .3em; will-change: transform; }
+.name-tag[hidden], .name-tag > [hidden] { display: none; }
+.name-tag__name { padding: .15em .6em; border-radius: 99px; background: rgba(23, 63, 67, .55); color: #fff8e9; font: 500 .72em 'DM Sans', 'Avenir Next', sans-serif; white-space: nowrap; backdrop-filter: blur(6px); }
+.name-tag__call { padding: .3em .75em; border-radius: 1em 1em 1em .2em; background: #fff8e9; color: var(--ink, #173f43); font: 600 .85em 'DM Sans', 'Avenir Next', sans-serif; white-space: nowrap; box-shadow: 0 4px 14px rgba(16, 58, 61, .3); animation: screen-in .2s ease both; }

@@ -1,6 +1,7 @@
 import { BufferAttribute, Group, Matrix4, Texture, Vector3, type Bone, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type SkinnedMesh } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { HumanoidRig } from '../rig/HumanoidRig';
 import type { RiderVisualState } from '../rig/riderVisualState';
 import { computeOutfitCoverage, type OutfitId } from './outfits';
@@ -58,11 +59,31 @@ export class SkinnedSurfer {
     suit: DEFAULT_COLORS.suit.clone(), accent: DEFAULT_COLORS.accent.clone(), bottoms: DEFAULT_COLORS.bottoms.clone(),
   };
 
-  /** Loads a surfer GLB, its textures held to `textureCap` px on a side. */
+  /** Parsed GLBs by URL and texture cap: a room of surfers (spec N1) shares each body's geometry and textures. */
+  private static readonly templates = new Map<string, Promise<Object3D>>();
+
+  /**
+   * Loads a surfer GLB, its textures held to `textureCap` px on a side. Each
+   * body is parsed once; every surfer gets its own clone, with its own skeleton
+   * and materials.
+   */
   static async load(url: string, textureCap = Infinity): Promise<SkinnedSurfer> {
-    const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url);
-    capTextures(gltf.scene, textureCap);
-    return SkinnedSurfer.fromScene(gltf.scene);
+    const key = `${url}@${textureCap}`;
+    let template = SkinnedSurfer.templates.get(key);
+    if (!template) {
+      template = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url).then((gltf) => {
+        capTextures(gltf.scene, textureCap);
+        return gltf.scene;
+      });
+      SkinnedSurfer.templates.set(key, template);
+      template.catch(() => SkinnedSurfer.templates.delete(key));
+    }
+    return SkinnedSurfer.fromScene(cloneSkinned(await template));
+  }
+
+  /** Forgets every parsed body (tests). */
+  static clearCache(): void {
+    SkinnedSurfer.templates.clear();
   }
 
   /** Builds a surfer from a loaded GLB's scene, still in its bind pose. */
