@@ -1,4 +1,6 @@
 import {
+  BufferGeometry,
+  type Camera,
   Color,
   DataTexture,
   DoubleSide,
@@ -9,15 +11,25 @@ import {
   PlaneGeometry,
   RedFormat,
   RGFormat,
+  Uint8BufferAttribute,
   Vector2,
   Vector3,
   Vector4,
 } from 'three';
+import type { WaterLook } from './water/waterLook';
+import { RICH_FOAM, RICH_REFLECTION, RICH_WATER, richBeginNormal, richFragmentPars, richReflectionPars, richNormalFragment, richVertexHeight, waterCubicPars } from './water/richWaterGlsl';
+import {
+  PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
+} from './water/richPatch';
+import { churnTexture, waterChurnPars } from './water/churnTexture';
+import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTexture';
+import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
+import { waterStreakPars } from './water/streaks';
 import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
 import {
-  WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
+  WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
 } from './waterOptics';
 
 export interface SurfaceGrid {
@@ -71,7 +83,7 @@ export function sampleSurfaceNormal(data: Float32Array, grid: SurfaceGrid, x: nu
 }
 
 /** Height lookup shared by both shader stages: the field's own bilinear sampling (see `sampleSurfaceHeight`). */
-const waterHeightPars = /* glsl */ `
+export const waterHeightPars = /* glsl */ `
 uniform sampler2D waterSurface;
 uniform vec4 waterGrid;
 uniform vec2 waterGridSize;
@@ -153,6 +165,7 @@ ${foamPatternPars}
 ${causticLookupPars}
 `;
 
+
 /** Supplies interleaved (height, foam) for every node of a uniform render grid. */
 export interface SurfaceSource {
   readonly grid: SurfaceGrid;
@@ -165,10 +178,14 @@ export interface SurfaceSource {
   writeBed(data: Float32Array): void;
   /** Interleaved surface current (u, w) per grid node, m/s; without it the foam pattern stands still. */
   writeFlow?(data: Float32Array): void;
+  /** Its bodies sample a Catmull-Rom surface over the render nodes (`PhysicalSurfWater`), which the Rich look draws (G8). */
+  readonly cubic?: boolean;
 }
 
 export class WaterSurface {
   readonly mesh: Mesh<PlaneGeometry, MeshPhysicalMaterial>;
+  /** G8: the dense patch drawn where the camera looks, in the Rich look (a child of `mesh`, same material). */
+  readonly patch: Mesh<BufferGeometry, MeshPhysicalMaterial>;
   /** Interleaved (height, foam) per grid node, uploaded as an RG float texture each frame. */
   surfaceData: Float32Array;
   /** Bed elevation per grid node, uploaded only when the source's bed changes. */
@@ -184,6 +201,7 @@ export class WaterSurface {
   private bedRevision = Number.NaN;
   private readonly uniforms: Record<string, { value: unknown }>;
   private detailedFoam = true;
+  private currentLook: WaterLook = 'classic';
   /** Caustic map lighting the bed seen through the water (G5); off until a `CausticMap` draws into it. */
   readonly causticUniforms: CausticUniforms = createCausticUniforms();
 
@@ -209,11 +227,17 @@ export class WaterSurface {
       ...chopFieldUniforms,
       ...createOpticsUniforms(),
       ...this.causticUniforms,
+      waterPatchRect: { value: new Vector4() },
+      waterPatchActive: { value: 0 },
+      waterRippleMap: { value: rippleTexture() },
+      waterRippleStrength: { value: rippleStrength(DEFAULT_WATER_CHOP) },
+      waterChurnMap: { value: churnTexture() },
+      waterReflection: { value: RICH_WATER.reflection },
     };
     // One air–water interface: Fresnel from n = 1.333 (F0 = 0.020), no clearcoat.
     const material = new MeshPhysicalMaterial({
       color: '#ffffff',
-      roughness: 0.62,
+      roughness: CLASSIC_ROUGHNESS,
       metalness: 0,
       ior: WATER_IOR,
       side: DoubleSide,
@@ -221,6 +245,21 @@ export class WaterSurface {
     });
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, this.uniforms);
+      if (this.effectiveLook === 'rich') {
+        // G8: the physics' Catmull-Rom surface, its normal per pixel.
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', `#include <common>\n${waterVertexPars}\n${waterCubicPars}\n${richPatchVertexPars}`)
+          .replace('#include <beginnormal_vertex>', richBeginNormal)
+          .replace('#include <begin_vertex>', richVertexHeight);
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', `#include <common>\n${waterFragmentPars}\n${waterCubicPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}`)
+          .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}`)
+          .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true, churn: true }))
+          .replace('#include <color_fragment>', '')
+          .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true, RICH_FOAM))
+          .replace('#include <lights_fragment_maps>', RICH_REFLECTION);
+        return;
+      }
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', `#include <common>\n${waterVertexPars}`)
         .replace('#include <beginnormal_vertex>', waterBeginNormal)
@@ -231,9 +270,17 @@ export class WaterSurface {
         .replace('#include <color_fragment>', '')
         .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true));
     };
-    material.customProgramCacheKey = () => 'breakline-water-surface';
+    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}`;
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
     this.mesh.frustumCulled = false;
+    this.patch = new Mesh(createPatchGeometry(PATCH_SIZE, PATCH_SPACING), material);
+    this.patch.frustumCulled = false;
+    this.patch.visible = false;
+    this.mesh.add(this.patch);
+    // Both meshes place the patch from the camera about to draw them, so the answer never depends on draw order.
+    const place = (camera: Camera) => this.placePatch(camera);
+    this.mesh.onBeforeRender = (_renderer, _scene, camera) => place(camera);
+    this.patch.onBeforeRender = (_renderer, _scene, camera) => place(camera);
     this.update();
   }
 
@@ -274,6 +321,47 @@ export class WaterSurface {
     }
     this.flowSource = this.source;
     this.refreshFoamPattern();
+    this.patch.receiveShadow = this.mesh.receiveShadow;
+  }
+
+  /** Graphics setting (G8): the Classic water, or the Rich look. */
+  setLook(look: WaterLook): void {
+    if (look === this.currentLook) return;
+    this.currentLook = look;
+    this.mesh.material.needsUpdate = true;
+    this.refreshLook();
+  }
+
+  /** The patch shows, the coarse water gives way under it, and the water turns glossy, only in the Rich look drawn. */
+  private refreshLook(): void {
+    const rich = this.effectiveLook === 'rich';
+    this.patch.visible = rich;
+    this.uniforms.waterPatchActive.value = rich ? 1 : 0;
+    this.mesh.material.roughness = rich ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
+    this.uniforms.waterBodyGain.value = rich ? RICH_WATER.bodyGain : WATER_BODY_GAIN;
+  }
+
+  private readonly patchCamera = new Vector3();
+  private readonly patchDirection = new Vector3();
+
+  private placePatch(camera: Camera): void {
+    if (!this.patch.visible) return;
+    camera.getWorldPosition(this.patchCamera);
+    camera.getWorldDirection(this.patchDirection);
+    const rect = patchRect({ x: this.patchCamera.x, z: this.patchCamera.z, dirX: this.patchDirection.x, dirZ: this.patchDirection.z }, this.source.grid);
+    (this.uniforms.waterPatchRect.value as Vector4).set(rect.x0, rect.z0, rect.x1, rect.z1);
+    this.patch.position.set((rect.x0 + rect.x1) / 2 - this.mesh.position.x, 0, (rect.z0 + rect.z1) / 2 - this.mesh.position.z);
+    this.patch.scale.set((rect.x1 - rect.x0) / PATCH_SIZE, 1, (rect.z1 - rect.z0) / PATCH_SIZE);
+    this.patch.updateMatrixWorld();
+  }
+
+  get look(): WaterLook {
+    return this.currentLook;
+  }
+
+  /** The look drawn: Rich only for a source whose bodies ride the Catmull-Rom surface; the legacy wave stays Classic. */
+  private get effectiveLook(): WaterLook {
+    return this.currentLook === 'rich' && this.source.cubic ? 'rich' : 'classic';
   }
 
   /** Graphics setting (plan P8): Simple keeps the soft foam tint even on water with a current. */
@@ -304,12 +392,16 @@ export class WaterSurface {
   /** Strength of the shading-only wind chop (see waterChop.ts). */
   setChop(strength: number): void {
     this.uniforms.waterChop.value = strength;
+    this.uniforms.waterRippleStrength.value = rippleStrength(strength);
   }
 
   /** Switch to another water source, rebuilding the mesh and texture if its grid differs. */
   setSource(source: SurfaceSource): void {
     const previous = this.source.grid;
+    const wasLook = this.effectiveLook;
     this.source = source;
+    if (this.effectiveLook !== wasLook) this.mesh.material.needsUpdate = true;
+    this.refreshLook();
     const grid = source.grid;
     if (previous.nx === grid.nx && previous.nz === grid.nz && previous.spacing === grid.spacing) return;
     this.surfaceData = new Float32Array(grid.nx * grid.nz * 2);
@@ -332,6 +424,7 @@ export class WaterSurface {
 
   dispose(): void {
     this.mesh.geometry.dispose();
+    this.patch.geometry.dispose();
     this.texture.dispose();
     this.bedTexture.dispose();
     this.flowTexture.dispose();
@@ -358,6 +451,11 @@ export class WaterSurface {
   private static createGeometry(grid: SurfaceGrid): PlaneGeometry {
     const geometry = new PlaneGeometry((grid.nx - 1) * grid.spacing, (grid.nz - 1) * grid.spacing, grid.nx - 1, grid.nz - 1);
     geometry.rotateX(-Math.PI / 2);
+    // The Rich program shares the patch's attributes: zeros here (no skirt, not the patch), never left to
+    // three's defaultAttributeValues, which are context-wide state another material can overwrite.
+    const zeros = new Uint8BufferAttribute(new Uint8Array(geometry.getAttribute('position').count), 1);
+    geometry.setAttribute('skirt', zeros);
+    geometry.setAttribute('onPatch', zeros);
     return geometry;
   }
 }

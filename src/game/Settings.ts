@@ -1,6 +1,8 @@
 import type { RideView } from '../scene/SpectatorCamera';
 import type { Units } from '../ui/units';
+import type { WaterLook } from '../scene/water/waterLook';
 import { ACTIONS, DEFAULT_BINDINGS, type Action, type Bindings } from './Bindings';
+import { PRESETS } from './Graphics';
 
 /** The player's settings (plan P8): four tabs, the Auto benchmark's result, and one-off notices seen. */
 export type SettingsTab = 'gameplay' | 'graphics' | 'controls' | 'accessibility';
@@ -30,6 +32,8 @@ export interface AdvancedGraphics {
   sprayMist: boolean;
   oceanView: 'near' | 'far';
   foam: 'simple' | 'detailed';
+  /** G8: Classic (today's water, the light fallback) or Rich (detail, gloss, churn, lit mist). */
+  waterLook: WaterLook;
 }
 
 export interface GraphicsSettings extends AdvancedGraphics {
@@ -79,7 +83,7 @@ export function defaultSettings(prefersReducedMotion = false): GameSettings {
     // The Medium preset's values (Graphics.PRESETS.medium; a test keeps the two equal).
     graphics: {
       preset: 'auto', renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto',
-      seaDetail: 'standard', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed',
+      seaDetail: 'standard', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich',
     },
     controls: { bindings: copyBindings(DEFAULT_BINDINGS), handedness: 'right' },
     accessibility: { reducedMotion: prefersReducedMotion, uiScale: 1, highContrastHud: false },
@@ -140,6 +144,12 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
   const seen = record(source.seen);
   const g = defaults.graphics;
   const detected = sanitizeDetection(source.detected);
+  const preset = oneOf(graphics.preset, ['auto', 'low', 'medium', 'high', 'ultra', 'custom'] as const, g.preset);
+  // A save from before G8 has no water look: take its preset's, so a Low player stays on the light Classic water
+  // (a Custom one takes the benchmark's, so a machine rated Low stays there too).
+  const presetLook = preset === 'custom'
+    ? (detected?.preset === 'low' ? PRESETS.low.waterLook : g.waterLook)
+    : PRESETS[preset === 'auto' ? detected?.preset ?? 'medium' : preset].waterLook;
   return {
     gameplay: {
       units: oneOf(gameplay.units, ['metric', 'imperial'] as const, defaults.gameplay.units),
@@ -150,7 +160,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       showTelemetry: flag(gameplay.showTelemetry, defaults.gameplay.showTelemetry),
     },
     graphics: {
-      preset: oneOf(graphics.preset, ['auto', 'low', 'medium', 'high', 'ultra', 'custom'] as const, g.preset),
+      preset,
       renderScale: within(graphics.renderScale, 0.5, 1.25, g.renderScale),
       nativePixelDensity: flag(graphics.nativePixelDensity, g.nativePixelDensity),
       frameLimit: oneOf(graphics.frameLimit, ['screen', 60, 30] as const, g.frameLimit),
@@ -160,6 +170,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       sprayMist: flag(graphics.sprayMist, g.sprayMist),
       oceanView: oneOf(graphics.oceanView, ['near', 'far'] as const, g.oceanView),
       foam: oneOf(graphics.foam, ['simple', 'detailed'] as const, g.foam),
+      waterLook: oneOf(graphics.waterLook, ['classic', 'rich'] as const, presetLook),
     },
     controls: {
       bindings: sanitizeBindings(controls.bindings, defaults.controls.bindings),
