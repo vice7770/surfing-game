@@ -230,16 +230,20 @@ export class PlungingLip implements LipParcelSource {
     const column = Math.round(x / dx - 0.5);
     const strip = { column, launchTime: this.time, parcels: [] as number[], live: STRIP_PARCELS };
     const spacing = JET_RELEASE_TIME / (STRIP_PARCELS - 1);
+    // The crest moves on at its own speed, the way the jet leaves.
+    const jetSpeed = Math.hypot(velocity.x, velocity.z);
+    const crestX = jetSpeed > 0 ? (velocity.x / jetSpeed) * crestSpeed : 0;
+    const crestZ = jetSpeed > 0 ? (velocity.z / jetSpeed) * crestSpeed : 0;
     for (let k = 0; k < STRIP_PARCELS; k += 1) {
       const parcel = this.free.pop()!;
       strip.parcels.push(parcel);
       this.active[parcel] = 1;
       this.state[parcel] = k === 0 ? 1 : 2;
       this.releaseAt[parcel] = this.time + k * spacing;
-      // Each parcel leaves from where the crest has moved to by its release.
-      this.x[parcel] = this.px[parcel] = this.lx[parcel] = x + velocity.x * k * spacing;
+      // Each parcel leaves from where the crest has moved to by its release (its height is taken then).
+      this.x[parcel] = this.px[parcel] = this.lx[parcel] = x + crestX * k * spacing;
       this.y[parcel] = this.py[parcel] = this.ly[parcel] = height;
-      this.z[parcel] = this.pz[parcel] = this.lz[parcel] = z + velocity.z * k * spacing;
+      this.z[parcel] = this.pz[parcel] = this.lz[parcel] = z + crestZ * k * spacing;
       this.crestSpeed[parcel] = crestSpeed;
       this.id[parcel] = this.nextId;
       this.nextId += 1;
@@ -273,6 +277,9 @@ export class PlungingLip implements LipParcelSource {
         if (this.releaseAt[parcel] > this.time) continue;
         this.state[parcel] = 1;
         flight = this.time - this.releaseAt[parcel];
+        // A crest still rising as it throws lets the later jet go from higher up.
+        const crest = solver.sampleCentered(solver.h, this.x[parcel], this.z[parcel]) + solver.sampleCentered(solver.bed, this.x[parcel], this.z[parcel]);
+        if (crest > this.y[parcel]) this.y[parcel] = this.ly[parcel] = crest;
       }
       this.px[parcel] = this.x[parcel];
       this.py[parcel] = this.y[parcel];

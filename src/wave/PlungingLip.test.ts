@@ -121,6 +121,18 @@ describe('PlungingLip', () => {
     expect(parcels.at(-1)!.y).toBeCloseTo(30, 6);
   });
 
+  it('releases each parcel where its crest has moved to, not where the faster jet has', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    const start = solver.zCenters[Math.floor(solver.cellIndex(3.5, 12.5) / solver.nx)];
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 6 }, 30, 0.6, 4);
+    lip.step(JET_RELEASE_TIME + 1e-9);
+    let last = { index: -1, z: 0, age: 0 };
+    lip.forEachActiveParcel((p) => { if (p.index > last.index) last = { index: p.index, z: p.z, age: p.age }; });
+    expect(last.index).toBe(STRIP_PARCELS - 1);
+    expect(last.z - 6 * last.age).toBeCloseTo(start + 4 * JET_RELEASE_TIME, 6);
+  });
+
   it('links neighbouring columns thrown close in time into one sheet, and not those thrown far apart', () => {
     const across = (gap: number) => {
       const solver = basin();
