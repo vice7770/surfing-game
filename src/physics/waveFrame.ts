@@ -27,6 +27,11 @@ export interface WaveFrame {
    * CURL_BREAKING, looked for CURL_REACH either side. 0 when the crest at the rider breaks, Infinity when none does.
    */
   curlDistance: number;
+  /**
+   * Which way along the crest the curl lies: +1 along (directionZ, −directionX), toward +x for a wave travelling +z;
+   * −1 the other way; 0 at the rider's crest point, or none. A rider on the open face rides away from it.
+   */
+  curlSide: number;
   /** Horizontal speed over ground, m/s, and its parts along the travel direction and along the crest (toward +x for a wave travelling +z). */
   speedOverGround: number;
   speedShoreward: number;
@@ -75,7 +80,7 @@ export function requiredSpeed(crestSpeed: number, peelAngleDegrees: number): num
 
 function createWaveFrame(directionX: number, directionZ: number): WaveFrame {
   return {
-    valid: false, directionX, directionZ, aheadOfCrest: 0, crestSpeed: 0, faceHeight: 0, faceFraction: 0, crestBreaking: 0, curlDistance: Infinity,
+    valid: false, directionX, directionZ, aheadOfCrest: 0, crestSpeed: 0, faceHeight: 0, faceFraction: 0, crestBreaking: 0, curlDistance: Infinity, curlSide: 0,
     speedOverGround: 0, speedShoreward: 0, speedAlongCrest: 0, requiredSpeed: Infinity,
   };
 }
@@ -163,6 +168,7 @@ export class WaveFrameGauge {
       frame.faceFraction = 0;
       frame.crestBreaking = 0;
       frame.curlDistance = Infinity;
+      frame.curlSide = 0;
       frame.crestSpeed = this.speed;
       frame.requiredSpeed = requiredSpeed(this.speed, peelAngleDegrees);
       return frame;
@@ -202,10 +208,12 @@ export class WaveFrameGauge {
     }
     frame.crestBreaking = breaking;
     frame.curlDistance = Infinity;
+    frame.curlSide = 0;
     for (let s = 0; s <= CURL_REACH; s += CURL_STEP) {
-      if (this.breaksAt(water, crestX + dz * s, crestHeight, crestZ - dx * s)
-        || (s > 0 && this.breaksAt(water, crestX - dz * s, crestHeight, crestZ + dx * s))) {
+      const ahead = this.breaksAt(water, crestX + dz * s, crestHeight, crestZ - dx * s);
+      if (ahead || (s > 0 && this.breaksAt(water, crestX - dz * s, crestHeight, crestZ + dx * s))) {
         frame.curlDistance = s;
+        frame.curlSide = s === 0 ? 0 : ahead ? 1 : -1;
         break;
       }
     }

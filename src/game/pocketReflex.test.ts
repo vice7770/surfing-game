@@ -4,7 +4,7 @@ import { POCKET_DISTANCE, POCKET_TRIM, pocketTrim, showsPocketReflex, withPocket
 
 const FRAME: WaveFrame = {
   valid: true, directionX: 0, directionZ: 1, aheadOfCrest: 3, crestSpeed: 5, faceHeight: 1.2, faceFraction: 0.5,
-  crestBreaking: 0, curlDistance: POCKET_DISTANCE, speedOverGround: 6, speedShoreward: 1, speedAlongCrest: 6, requiredSpeed: 6,
+  crestBreaking: 0, curlDistance: POCKET_DISTANCE, curlSide: 0, speedOverGround: 6, speedShoreward: 1, speedAlongCrest: 6, requiredSpeed: 6,
 };
 const at = (curlDistance: number, valid = true) => ({ ...FRAME, curlDistance, valid });
 const ride = { paddle: false, popUp: false, steer: 0.4, trim: 0, crouch: 0.3 };

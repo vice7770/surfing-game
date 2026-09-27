@@ -82,6 +82,28 @@ describe('wave frame', () => {
     expect(new WaveFrameGauge().update(flat, still, still, 1 / 60, 90).curlDistance).toBe(Infinity);
   });
 
+  // Riding-the-wave Task 7: which way along the crest the curl lies, so a rider can ride the open face away from it.
+  it('says which side of the rider the curl lies on', () => {
+    const swell = new SwellWater({ height: 1, period, depth });
+    for (let s = 0; s < 60; s += 1) swell.advance(1 / 60);
+    const breakingWhere = (broken: (x: number) => boolean): SurfWater => ({
+      surfaceAt: (x, z) => swell.surfaceAt(x, z),
+      sampleAt: (x, y, z, out) => {
+        swell.sampleAt(x, y, z, out);
+        out.breaking = broken(x) ? 1 : 0;
+        return out;
+      },
+      addReaction() {},
+    });
+    const at = { x: 0, y: 0, z: c + 5 };
+    const side = (broken: (x: number) => boolean) => new WaveFrameGauge().update(breakingWhere(broken), at, still, 1 / 60, 90).curlSide;
+    // The wave travels +z, so its crest runs along x: the curl toward −x, toward +x, at the rider, or nowhere.
+    expect(side((x) => x < -6)).toBe(-1);
+    expect(side((x) => x > 6)).toBe(1);
+    expect(side(() => true)).toBe(0);
+    expect(side(() => false)).toBe(0);
+  });
+
   it('has no frame on flat water', () => {
     const flat = new SwellWater({ height: 0, period, depth });
     expect(new WaveFrameGauge().update(flat, still, still, 1 / 60, 90).valid).toBe(false);
