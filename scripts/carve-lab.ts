@@ -220,8 +220,96 @@ function loadLine(speed: number, steer: number) {
   return { bank, rail: steadyRail, share: steadyRail / bank, gain: pull / Math.tan(steadyRail), drag: (before - board.velocity.length()) / 0.5, attached: rider.attached };
 }
 
+
+/**
+ * A rail change (the top-turn plan): a live rider at `speed`, from flat (steer 0) or
+ * from a carve (full steer the other way for 0.6 s), then full steer the new way
+ * for 1.2 s, on flat water or climbing the face 150° from its fall line. How far
+ * the board first yaws the old way (degrees), when the yaw rate turns the new way,
+ * the turn the new way in the 1.2 s, the speed kept, and whether the rider stays on.
+ */
+function railChange(speed: number, from: 'flat' | 'carve', surface: 'flat' | 'climb') {
+  const climbing = surface === 'climb';
+  const { board, rider } = climbing ? onFace(150, speed, 'standing') : (() => {
+    const b = new BoardBody();
+    b.place(new Vector3(0, b.shape.centerOfMass.y, 0), undefined, new Vector3(0, 0, speed));
+    const r = new AttachedRider(b.shape, { phase: 'standing' });
+    b.attach(r);
+    return { board: b, rider: r };
+  })();
+  const sea = climbing ? water : flat;
+  for (let i = 0; i < 12; i += 1) board.step(STEP, sea);
+  if (from === 'carve') {
+    rider.steer = -1;
+    for (let i = 0; i < 36 && rider.attached; i += 1) board.step(STEP, sea);
+  }
+  const entry = board.velocity.length();
+  rider.steer = 1;
+  let last = heading(board);
+  let turned = 0;
+  let wrong = 0;
+  let reversal: number | undefined;
+  let time = 0;
+  for (let i = 0; i < 72 && rider.attached; i += 1) {
+    board.step(STEP, sea);
+    time += STEP;
+    const now = heading(board);
+    turned += Math.atan2(Math.sin(now - last), Math.cos(now - last));
+    last = now;
+    wrong = Math.min(wrong, turned);
+    if (reversal === undefined && board.angularVelocity.y > 0.05) reversal = time;
+  }
+  return { wrong: -degrees(wrong), reversal, turned: degrees(turned), kept: board.velocity.length() / entry, attached: rider.attached, time };
+}
+
+/** A full-steer turn on flat water at 8 m/s for 1.2 s at a stance: the turn, the speed kept, and the board's mean pitch, sink and front-foot share. */
+function depthTurn(crouch: number, compress: number, trim: number) {
+  const board = new BoardBody();
+  board.place(new Vector3(0, board.shape.centerOfMass.y, 0), undefined, new Vector3(0, 0, 8));
+  const rider = new AttachedRider(board.shape, { phase: 'standing' });
+  board.attach(rider);
+  rider.crouch = crouch;
+  rider.trim = trim;
+  for (let i = 0; i < 30; i += 1) board.step(STEP, flat);
+  const entry = board.velocity.length();
+  rider.steer = 1;
+  rider.compress = compress;
+  const headings: number[] = [heading(board)];
+  let pitch = 0;
+  let sink = 0;
+  let front = 0;
+  let n = 0;
+  for (let i = 0; i < 72 && rider.attached; i += 1) {
+    board.step(STEP, flat);
+    headings.push(heading(board));
+    const nose = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+    pitch += Math.asin(Math.max(-1, Math.min(1, nose.y)));
+    sink += -board.lowestPoint();
+    front += rider.contact.frontShare;
+    n += 1;
+  }
+  const measures = turnMeasures(headings, STEP, 60);
+  return { yaw: degrees(measures.yaw), kept: board.velocity.length() / entry, pitch: degrees(pitch / n), sink: sink / n, front: front / n, attached: rider.attached };
+}
+
 const started = Date.now();
 const turn = hardTurn();
+const changes: string[] = [];
+for (const surface of ['flat', 'climb'] as const) {
+  for (const from of ['flat', 'carve'] as const) {
+    for (const speed of [6, 8, 10]) {
+      const c = railChange(speed, from, surface);
+      changes.push(`| ${surface === 'flat' ? 'flat water' : 'climbing 150°'} | ${from === 'flat' ? 'riding flat' : 'carving the other way'} | ${speed} | ${fixed(c.wrong, 0)}° | ${c.reversal !== undefined ? `${fixed(c.reversal, 2)} s` : 'never'} | ${fixed(c.turned, 0)}° | ${fixed(c.kept, 2)} | ${c.attached ? 'on' : `fell at ${fixed(c.time, 2)} s`} |`);
+    }
+  }
+}
+const depths: string[] = [];
+for (const [label, crouch, compress, trim] of [
+  ['standing', 0, 0, 0], ['crouch 0.6', 0.6, 0, 0], ['crouch 1', 1, 0, 0], ['crouch 1, weight forward 0.5', 1, 0, 0.5], ['crouch 0.6 + Compress', 0.6, 1, 0], ['weight forward 0.5', 0, 0, 0.5],
+] as const) {
+  const d = depthTurn(crouch, compress, trim);
+  depths.push(`| ${label} | ${fixed(d.yaw, 0)}° | ${fixed(d.kept, 2)} | ${fixed(d.pitch, 1)}° | ${fixed(d.sink, 3)} | ${fixed(d.front, 2)} | ${d.attached ? 'on' : 'fell'} |`);
+}
 const compressed = hardTurn(1);
 const turnRow = (label: string, t: typeof turn) =>
   `| ${label} | ${fixed(t.yaw, 0)}° | ${fixed(t.peak, 2)} rad/s | ${t.timeTo60 !== undefined ? `${fixed(t.timeTo60, 2)} s` : 'not reached'} | ${fixed(t.rail, 0)}° | ${fixed(t.kept, 2)} | ${fixed(t.load, 2)} BW | ${t.attached ? 'on' : `fell at ${fixed(t.time)} s`} |`;
@@ -304,6 +392,22 @@ ${plant.join('\n')}
 | Speed m/s | Steer | Bank ° | Rail ° | Share | G | Speed lost m/s² | Rider |
 |---:|---:|---:|---:|---:|---:|---:|---|
 ${lines.join('\n')}
+
+## Rail changes (the top-turn plan)
+
+A live rider, full steer the new way for 1.2 s: from riding flat, or from 0.6 s of full steer the other way; on flat water, or climbing the 15° face 150° from its fall line. The wrong way is how far the board first yaws the old way; the reversal is when its yaw rate turns the new way.
+
+| Water | From | Speed m/s | Wrong way | Reversal | Turned the new way | Speed kept | Rider |
+|---|---|---:|---:|---:|---:|---:|---|
+${changes.join('\n')}
+
+## Depth and speed (the top-turn plan: why Compress bleeds speed)
+
+Full steer on flat water at 8 m/s for 1.2 s at each stance: the turn, the speed kept, and the board's mean pitch (nose up positive), how deep its lowest point sinks, m, and the front foot's share of the load.
+
+| Stance | Turned | Speed kept | Pitch | Sink m | Front share | Rider |
+|---|---:|---:|---:|---:|---:|---|
+${depths.join('\n')}
 `;
 writeFileSync(output, report);
 console.log(report);
