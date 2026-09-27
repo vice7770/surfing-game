@@ -178,7 +178,9 @@
 
 **Built** (each with a test that failed first):
 - **The motion estimate** (`RiderMotion`): the turn rate, travel, speed and climb, read from the drawn states over sea time for the local rider and each remote one.
-  - A jump, climbing back on after a fall, or a surfer not drawn starts it over.
+  - A jump, climbing back on after a fall, a surfer not drawn, or sea time going back (a new session) starts it over.
+  - The travel follows the board's velocity only as far as the board moves the way it points: crawling, or sliding back in a stall, it travels where it points, with no switch.
+  - It also eases the body in: the rig's lift over the first 0.4 s from the landing, and the standing cues (the look, the twist, the leading arm, the reach) over the first 0.3 s of standing. The final review measured every pop-up snapping without it: the hips 11.6 cm at push → landing, the head 15° at landing → standing.
   - A heading wrap or a repeated sample changes nothing.
 - **Knees from the physics:** standing, the rig lifts its hips from the physics' pelvis to the model's extended legs, so the physics' crouch drop bends the knees from there. The knees' mean now reads 129° / 102° / 80° standing, crouched and compressed (before: 117° / 80° / 62°), against de Sousa 2022's ≥ 150° / 90–110° / ≤ 90°.
   - Planing at 7 m/s the board rides about 12° nose-up, with the front foot 12 cm above the rear. So the front knee always bends more (106° standing), and the rear leg reaches its full length first (152°).
@@ -189,13 +191,17 @@
 - **The trunk turns into the turn:** the chest by the turn over 0.25 s (within 35°), the hips by a third of that.
 - **The arms:**
   - In a turn the leading arm (the front foot's side) reaches where the head looks, raised 15°, blended in by the turn over 1.5 rad/s.
-  - A hand the physics reaches down past the hips (E's, or Compress's inside hand) bends the spine toward it, up to 35°, until the arm reaches.
+  - A hand the physics reaches down past the hips (E's, or Compress's inside hand) bends the spine toward it in the plane of the shoulder and the hand. The bend goes up to 60°, folding forward over the toes frontside (the reference's hips flexed to 90° or less), and is checked on the solved shoulder.
+    - On the real rider's compressed bottom turns, the test body reaches within 5 cm frontside and backside.
+    - Of the real surfers, the two taller ones reach within 6 mm; the two shorter ones stop 9 cm short frontside and 6 cm backside. The physics places the hand for its reference body.
+    - Before the final review's fix, the bend was sideways about the chest's facing only, up to 35°: 17–22 cm short frontside, 6–13 cm backside.
 - **Online:** every cue comes from the drawn points plus each view's own motion estimate, so the wire format is unchanged.
 - **The surfer sheet's riding moments** (`character-sheet.html?riding`): straight, the drop, a compressed frontside and backside bottom turn, and a top turn, for Regular and Goofy, each simulated by the real rider.
   - All stand.
-  - The compressed frontside turn reads as a deep carve: low, leaning in, the inside hand at the water, the leading arm out ahead, the head turned into the turn.
+  - The compressed frontside turn reads as a deep carve: low, leaning and folding in, the inside hand down to the water, the leading arm out ahead, the head turned into the turn.
 
 **Open, for the playtest:**
+- The pop-up's push → landing switch still snaps the head (17°), the chest (65°) and a wrist (14 cm) in one frame. This is G7's own switch from the lying body frame to the upright one, older than this plan; this plan's lift and cues ease in across it and across landing → standing.
 - Riding straight, the arms stay the physics' spread along the board (G7's pose), close to a T.
 - The balance's swing shows in the trunk, not as arms flailing across the board.
 - The front knee reads bent (106°) standing on a planing board.
