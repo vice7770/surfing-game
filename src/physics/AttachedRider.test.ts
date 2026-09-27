@@ -849,6 +849,43 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(degrees(planing.widest)).toBeGreaterThan(5);
     });
 
+    // A guard for the Canyon's off-plane falls: carried at once at the lean it had and eased upright, the body tipped
+    // the slowing board over in this case; standing back up on its ankles first, it stays on (the fall-fixes findings).
+    it('carries a leaning body back upright when the board drops off the plane', () => {
+      const { board, rider } = mounted('standing');
+      let speed = 6;
+      const tow = () => {
+        board.velocity.z = speed;
+        rider.velocity.z = speed;
+      };
+      tow();
+      run(board, new PlaneWater(), 0.3, tow);
+      rider.steer = 0.25;
+      run(board, new PlaneWater(), 0.4, tow);
+      const leaning = Math.abs(rider.bank.angle);
+      rider.steer = 0;
+      speed = 2;
+      run(board, new PlaneWater(), 1.5, tow);
+      expect(degrees(leaning)).toBeGreaterThan(3);
+      expect(rider.attached).toBe(true);
+      expect(degrees(Math.abs(rider.bank.angle))).toBeLessThan(1);
+    });
+
+    // The carve lab and the Canyon: held at full steer the rail ran to 60–65°, where the board bogs (6 → 2 m/s in
+    // 0.6 s) and the rider falls into the turn. The feet stop rolling the rail past its bite, and the rider leans no
+    // further than the board's carve can hold.
+    it('does not dig the rail past its bite at full steer', () => {
+      const { board, rider, water } = acrossFace(0, 6);
+      run(board, water, 0.3);
+      const speed = board.velocity.length();
+      rider.steer = 1;
+      let deepest = 0;
+      run(board, water, 1.5, () => { deepest = Math.max(deepest, Math.abs(railOf(board))); });
+      expect(rider.attached).toBe(true);
+      expect(deepest).toBeLessThan(52);
+      expect(board.velocity.length()).toBeGreaterThan(0.6 * speed);
+    });
+
     // Review Focus 5: the pop-up's landing is unchanged, the body carried upright over its stance as before the bank;
     // the bank applies only once standing.
     it('lands upright, banking only once standing', () => {

@@ -187,12 +187,22 @@ const HOLD_BANK = 0.1;
 const MAX_BANK = (70 * Math.PI) / 180;
 /**
  * The rider leans no further than a turn of TURN_RADIUS, m, can hold at the
- * board's speed, atan(v² / (g R)): 59° at 7 m/s, 17° at 3 m/s, 8° at 2 m/s.
- * Forsyth et al. 2024's bottom turns run at 3.8 m and cutbacks at 2.2 m. After
- * a pop-up the board can be slow, and a rider steering hard at 1–2 m/s banked
- * to 70° with no turn under it to hold the lean (the Canyon's ride report).
+ * board's speed, atan(v² / (g R)): 48° at 7 m/s, 39° at 6 m/s, 11° at 2 m/s.
+ * The board carves about 4.3 m on a 50° rail (7.4 m/s at 1.7 rad/s; Forsyth et
+ * al. 2024's bottom turns run at 3.8 m). Leaning for a tighter turn than that,
+ * the body fell into it as the turn slowed, and a rider steering hard at 1–2
+ * m/s after a pop-up banked to 70° with no turn under it (the Canyon's ride
+ * report).
  */
-const TURN_RADIUS = 3;
+const TURN_RADIUS = 4.5;
+/**
+ * The rail bites up to RAIL_BITE, rad; past it the board bogs (the carve lab: 6
+ * → 2 m/s in 0.6 s at 60–65°). The feet brake the body's fall into a turn by
+ * rolling the board further onto its rail, so past the bite their room to do so
+ * closes over RAIL_EASE, rad, and the upper body's swing brakes it instead.
+ */
+const RAIL_BITE = (48 * Math.PI) / 180;
+const RAIL_EASE = (4 * Math.PI) / 180;
 /**
  * The upper body's swing (the turn redesign, with the user): the torso and arms
  * swing about the forward axis as a rotor of SWING_INERTIA, kg·m², within
@@ -1192,7 +1202,9 @@ export class AttachedRider {
     this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
     // The rest the balance wants, within what the feet can give; the upper body swings for the rest of it.
     const wanted = BANK_GAIN * (this.bankReference - this.bank.angle) - BANK_RATE_GAIN * this.bank.rate;
-    const lean = Math.max(-ANKLE_REST_RANGE, Math.min(ANKLE_REST_RANGE, wanted));
+    // Past the rail's bite the feet no longer roll the board further onto it.
+    const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(roll) - RAIL_BITE) / RAIL_EASE);
+    const lean = roll > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
     this.swingStep(h, wanted - lean);
     this.ankleRest += (lean - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
     // Backward Euler on the ankle: over the substep the bank and the roll move at their rates after the solve.
