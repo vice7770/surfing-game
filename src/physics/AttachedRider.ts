@@ -7,7 +7,7 @@ import { WATER } from './hullForces';
 import { RIDER_LEG } from './legSpring';
 import { SEAWATER_DENSITY as SEAWATER } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
-import { RIDER_PARTS, deckHeight, postureCenter, riderPartMasses, riderPartVolumes, riderPose, stanceFeet, type PosePhase, type StanceName, type SupportRegion } from './riderPosture';
+import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, riderPartVolumes, riderPose, stanceFeet, type PosePhase, type StanceName, type SupportRegion } from './riderPosture';
 import type { SurfWater } from './SurfWater';
 import type { StrokeSplash } from '../wave/SprayCloud';
 
@@ -375,6 +375,33 @@ const LANDING_TIME = 0.48;
 const SETTLE_TIME = 0.8;
 const RECOVER_TIME = 0.6;
 /**
+ * The duck-dive's timing (the wipeout spec): the arms straighten over
+ * PRESS_TIME, s; the knee starts KNEE_DELAY s after the press began and lands
+ * over KNEE_TIME; released, both give back over RELEASE_TIME, letting the board
+ * float the body up behind the wave (given back in 0.4 s, the body pulled itself
+ * down onto the rising board harder than the prone grip holds, and let go). The input's depth
+ * (analog) sets how far each goes; below DUCK_HELD it counts as let go, and
+ * past DUCK_BUSY of the press the arms hold the rails (no strokes, no pop-up).
+ * Coaching sources [A] only: provisional.
+ */
+const PRESS_TIME = 0.25;
+const KNEE_DELAY = 0.3;
+const KNEE_TIME = 0.25;
+const RELEASE_TIME = 1.0;
+const DUCK_HELD = 0.05;
+const DUCK_BUSY = 0.1;
+/**
+ * Ducking, the board is under water and has no waterplane to right it, and the
+ * body is up over it on straight arms: an inverted pendulum. The hands on both
+ * rails let the upper body lean toward the high rail across their span, up to
+ * DUCK_SHIFT, m, at DUCK_ROLL_SHIFT m per rad of roll and DUCK_ROLL_DAMPING m
+ * per rad/s (a modelling choice: more than the body's ~0.5 m height over the
+ * board per rad, which the prone hip shift cannot give).
+ */
+const DUCK_SHIFT = 0.2;
+const DUCK_ROLL_SHIFT = 1.0;
+const DUCK_ROLL_DAMPING = 0.3;
+/**
  * A stand needs the deck under the feet no deeper than this, m, and the board
  * sinking into the surface slower than this, m/s. Checked in P4f and kept: from
  * 0.2 m a static 10° face lets the rider stand; 0.15 m stood more riders but no
@@ -495,6 +522,18 @@ export class AttachedRider {
   private readonly handWet = [false, false];
   /** Paddle while prone. */
   paddle = false;
+  /** Lying down, the Duck-dive input: 0 to 1. */
+  duckDive = 0;
+  /** The duck-dive's progress: the arms' press and the knee on the tail (0–1 each), and how long it has been held, s. */
+  readonly duck = { press: 0, knee: 0, held: 0 };
+  /** The press's and the knee's rates this substep, 1/s. */
+  private pressRate = 0;
+  private kneeRate = 0;
+  /** The duck-dive postures, and the centre of mass each moves by (press from prone, knee from press), board frame. */
+  private readonly duckPress: Float64Array;
+  private readonly duckKnee: Float64Array;
+  private readonly duckSupport: SupportRegion;
+  private readonly duckShift = { press: new Vector3(), knee: new Vector3() };
   /** Standing, weight along the board: −1 (back, on the tail) to 1 (forward). */
   trim = 0;
   /** Standing, how deep the crouch: 0 (riding stance) to 1 (deepest). */
@@ -673,6 +712,16 @@ export class AttachedRider {
     this.parts = pose.parts.slice();
     this.fromParts = pose.parts.slice();
     this.support = pose.support;
+    const press = duckPose(shape, 'duckPress', this.stance);
+    const knee = duckPose(shape, 'duckKnee', this.stance);
+    this.duckPress = press.parts;
+    this.duckKnee = knee.parts;
+    this.duckSupport = press.support;
+    const prone = postureCenter(riderPose(shape, 'prone', this.stance).parts, this.partMasses);
+    const pressed = postureCenter(press.parts, this.partMasses);
+    const kneeling = postureCenter(knee.parts, this.partMasses);
+    this.duckShift.press.set(pressed.x - prone.x, pressed.y - prone.y, pressed.z - prone.z);
+    this.duckShift.knee.set(kneeling.x - pressed.x, kneeling.y - pressed.y, kneeling.z - pressed.z);
   }
 
   /** +1 regular (left foot forward), −1 goofy. */
@@ -696,7 +745,7 @@ export class AttachedRider {
    * then; otherwise the rider lies back down.
    */
   popUp(): boolean {
-    if (!this.attached || this.phase !== 'prone') return false;
+    if (!this.attached || this.phase !== 'prone' || this.duck.press > DUCK_BUSY) return false;
     this.beginTransition('push', PUSH_TIME);
     this.popUpTime = 0;
     Object.assign(this.popUpReport, { outcome: 'rising', duration: 0, landingPeak: 0, frontShare: 0, refusal: undefined });
@@ -807,6 +856,11 @@ export class AttachedRider {
 
   /** Put the rider in its posture on the board, moving with it. */
   mount(board: BoardBody): void {
+    this.duck.press = 0;
+    this.duck.knee = 0;
+    this.duck.held = 0;
+    this.pressRate = 0;
+    this.kneeRate = 0;
     this.balance.set(0, 0, 0);
     this.balanceRate.set(0, 0, 0);
     // A new mount starts from the neutral stance, whatever the body was doing before (a relaunch mid-carve).
@@ -916,7 +970,9 @@ export class AttachedRider {
       const side = index === 3 ? 0 : 1;
       if (this.phase === 'prone') {
         const stroking = (this.paddle || this.sweeping) && this.strokeEffort(side) > 0;
-        const z = stroking ? this.handLocal(side, this.localScratch) : this.localScratch.set(0, 0, this.parts[1 * 3 + 2]).z;
+        // Ducking, the hands hold the rails where the arms reach; otherwise beside the chest.
+        const reach = this.duck.press > DUCK_BUSY ? this.parts[index * 3 + 2] + 0.15 * this.duck.press : this.parts[1 * 3 + 2];
+        const z = stroking ? this.handLocal(side, this.localScratch) : this.localScratch.set(0, 0, reach).z;
         if (!stroking) this.localScratch.set((side === 0 ? 1 : -1) * (this.halfWidth(z) + 0.02), deckHeight(this.shape, z) + 0.02, z);
         return board.toWorld(this.localScratch, out);
       }
@@ -1106,6 +1162,7 @@ export class AttachedRider {
   /** Before the board's solve: the posture's target, its drive velocity and the forces on the rider. */
   prepare(h: number, board: BoardBody, water: SurfWater): void {
     this.advancePhase(h, board, water);
+    this.duckStep(h);
     this.planingStep(board, water);
     this.holdLine(h, board);
     this.waveSide(board, water);
@@ -1359,6 +1416,8 @@ export class AttachedRider {
 
   /** How hard arm `side` (0 left, at +x; 1 right) strokes, from the paddle and steer input and the paddler's own line keeping. */
   private strokeEffort(side: number): number {
+    // Ducking, the hands hold the rails.
+    if (this.duck.press > DUCK_BUSY) return 0;
     const steer = Math.max(-1, Math.min(1, this.steer + this.hold));
     const outside = side === 1 ? steer : -steer;
     return this.paddle ? 1 + STEER_STROKE * outside : Math.max(0, outside);
@@ -1847,6 +1906,37 @@ export class AttachedRider {
     return out.set(tx, normal, tz).applyQuaternion(q);
   }
 
+  /**
+   * The duck-dive's progress this substep: lying still on the board (not in a
+   * posture change), the press moves toward the input at 1/PRESS_TIME per s and
+   * the knee follows once the press has been held KNEE_DELAY s; let go, both
+   * give back at 1/RELEASE_TIME. Anything else (standing, pushing up) holds none.
+   */
+  private duckStep(h: number): void {
+    const { duck } = this;
+    const before = { press: duck.press, knee: duck.knee };
+    if (!this.attached || this.phase !== 'prone' || this.phaseDuration > 0) {
+      duck.press = 0;
+      duck.knee = 0;
+      duck.held = 0;
+    } else {
+      const target = Math.max(0, Math.min(1, this.duckDive));
+      const toward = (value: number, goal: number, rate: number) => (value < goal ? Math.min(goal, value + rate * h) : Math.max(goal, value - rate * h));
+      if (target > DUCK_HELD) {
+        duck.held += h;
+        duck.press = toward(duck.press, target, duck.press < target ? 1 / PRESS_TIME : 1 / RELEASE_TIME);
+        const knee = duck.held >= KNEE_DELAY ? target : 0;
+        duck.knee = toward(duck.knee, knee, duck.knee < knee ? 1 / KNEE_TIME : 1 / RELEASE_TIME);
+      } else {
+        duck.held = 0;
+        duck.press = toward(duck.press, 0, 1 / RELEASE_TIME);
+        duck.knee = toward(duck.knee, 0, 1 / RELEASE_TIME);
+      }
+    }
+    this.pressRate = (duck.press - before.press) / h;
+    this.kneeRate = (duck.knee - before.knee) / h;
+  }
+
   /** The posture's parts, centre of mass and support for the current phase. */
   private updatePosture(): void {
     const pose = riderPose(this.shape, this.posePhase(), this.stance);
@@ -1864,6 +1954,15 @@ export class AttachedRider {
       this.parts.set(pose.parts);
     }
     this.support = pose.support;
+    const { press, knee } = this.duck;
+    if (press > 0 || knee > 0) {
+      // Ducking: from prone toward the press, then from the press toward the knee; the centre of mass moves with them.
+      for (let k = 0; k < this.parts.length; k += 1) {
+        this.parts[k] += press * (this.duckPress[k] - pose.parts[k]) + knee * (this.duckKnee[k] - this.duckPress[k]);
+      }
+      this.postureRate.addScaledVector(this.duckShift.press, this.pressRate).addScaledVector(this.duckShift.knee, this.kneeRate);
+      if (press > DUCK_BUSY) this.support = this.duckSupport;
+    }
     this.upright = pose.upright;
     this.base.set(pose.base.x, pose.base.y, pose.base.z);
     for (let i = 0; i < RIDER_PARTS.length; i += 1) {
@@ -1898,8 +1997,11 @@ export class AttachedRider {
       const side = this.scratch.set(1, 0, 0).applyQuaternion(board.orientation);
       const roll = Math.asin(Math.max(-1, Math.min(1, side.y)));
       const rate = this.scratch2.copy(board.angularVelocity).applyQuaternion(this.spin.copy(board.orientation).invert()).z;
-      const targetX = Math.min(reach.x, Math.max(-reach.x, PRONE_ROLL_SHIFT * roll + PRONE_ROLL_DAMPING * rate));
-      this.shiftAxis('x', targetX, reach.x, h);
+      const ducking = this.duck.press > DUCK_BUSY;
+      const reachX = ducking ? DUCK_SHIFT : reach.x;
+      const wanted = ducking ? DUCK_ROLL_SHIFT * roll + DUCK_ROLL_DAMPING * rate : PRONE_ROLL_SHIFT * roll + PRONE_ROLL_DAMPING * rate;
+      const targetX = Math.min(reachX, Math.max(-reachX, wanted));
+      this.shiftAxis('x', targetX, reachX, h);
       this.shiftAxis('z', 0, reach.z, h);
     } else if (this.inContact && this.loaded) {
       const smooth = Math.min(1, h / COP_SMOOTHING);

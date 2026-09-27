@@ -212,6 +212,16 @@ describe('ride session', () => {
   });
 });
 
+describe('the duck-dive in a ride', () => {
+  it('passes the Duck-dive input to the rider lying down', () => {
+    const session = new RideSession();
+    const water = new PlaneWater();
+    session.reset(new Vector3(0, 0, 0), 0, water);
+    for (let i = 0; i < 12; i += 1) session.step(STEP, water, { ...idle, duckDive: 1 });
+    expect(session.rider.duck.press).toBeGreaterThan(0.5);
+  });
+});
+
 describe('the leash in a ride', () => {
   const fallen = (stance: 'regular' | 'goofy' = 'regular') => {
     const session = new RideSession({ stance });

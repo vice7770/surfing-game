@@ -171,6 +171,7 @@ export class RideSession {
       rider.trim = input.trim ?? 0;
       rider.crouch = input.crouch ?? 0;
       rider.hand = input.hand ?? false;
+      rider.duckDive = input.duckDive ?? 0;
       // The pop-up key stands the rider up, or lies it back down (the playtest: only the player lies it down).
       if (input.popUp && !(rider.phase === 'standing' && rider.lieDown(board))) rider.popUp();
     }

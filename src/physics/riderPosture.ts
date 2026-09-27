@@ -122,6 +122,45 @@ function regularPlaces(shape: BoardShape, phase: PosePhase): { places: PartPlace
   }
 }
 
+export type DuckPose = 'duckPress' | 'duckKnee';
+
+/**
+ * The duck-dive (the wipeout spec, Part A; coaching sources in the gameplay
+ * survey §5), as `regularPlaces` gives its postures:
+ * - press: hands on the rails about a third of the board back from the nose,
+ *   arms straight, the chest up and forward over them (the shoulders an arm's
+ *   length, about 0.55 m, over the deck) and the legs trailing: the body's
+ *   weight comes out of the water and forward onto the nose, about 0.3 m ahead
+ *   of where it lies paddling;
+ * - knee: the back knee on the tail pad and the other leg kicked up, the body
+ *   forward and low over the board, arms still long: the tail goes under too.
+ * Heights are illustrative, like the other postures. While ducking the body is
+ * supported from the knee on the tail to the hands.
+ */
+function duckPlaces(pose: DuckPose): PartPlace[] {
+  switch (pose) {
+    case 'duckPress':
+      return [[0, 0.35, -0.2], [0, 0.55, 0.2], [0, 0.5, 0.45], [0.2, 0.3, 0.35], [-0.2, 0.3, 0.35], [0.1, 0.1, -0.75], [-0.1, 0.1, -0.75]];
+    case 'duckKnee':
+      // Regular: the back (right, −x) knee on the tail pad, the front (left) leg kicked up.
+      return [[0, 0.3, -0.25], [0, 0.45, 0.15], [0, 0.4, 0.4], [0.2, 0.25, 0.3], [-0.2, 0.25, 0.3], [0.1, 0.5, -0.8], [-0.08, 0.1, -0.55]];
+  }
+}
+
+/** A duck-dive posture for a stance (goofy mirrors regular), lying rigid on the deck like prone. */
+export function duckPose(shape: BoardShape, pose: DuckPose, stance: StanceName): Posture {
+  const places = duckPlaces(pose);
+  const parts = new Float64Array(RIDER_PARTS.length * 3);
+  for (let i = 0; i < RIDER_PARTS.length; i += 1) {
+    const [x, height, z] = places[stance === 'regular' ? i : MIRROR[i]];
+    parts[i * 3] = stance === 'regular' ? x : -x;
+    parts[i * 3 + 1] = deckHeight(shape, z) + height;
+    parts[i * 3 + 2] = z;
+  }
+  const { base } = riderPose(shape, 'prone', stance);
+  return { parts, support: { xMin: -0.23, xMax: 0.23, zMin: -shape.length / 2 + 0.15, zMax: 0.3 }, upright: false, base };
+}
+
 /** Left and right swap under the goofy mirror. */
 const MIRROR = [0, 1, 2, 4, 3, 6, 5];
 
