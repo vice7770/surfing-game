@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PadState } from './Bindings';
-import { DEFAULT_STICK, drivingPad, padSticks, shapeAxis } from './Sticks';
+import { DEFAULT_STICK, drivingPad, padSticks, shapeAxis, stickOf } from './Sticks';
 
 describe('sticks (C1)', () => {
   it('ignores the dead zone and rescales the rest to ±1', () => {
@@ -44,5 +44,13 @@ describe('sticks (C1)', () => {
     expect(drivingPad([idle('a')], 'b')).toBe('a');
     expect(drivingPad([], 'a')).toBeUndefined();
     expect(drivingPad([{ buttons: [true], axes: [] }], undefined)).toBe('pad:0');
+  });
+
+  // The Surf School's prompts and the ride hints name the stick an action is on.
+  it('says which stick each action is on: steering the left, trim the chosen one, the rest none', () => {
+    expect(stickOf('steerLeft', DEFAULT_STICK)).toBe('left');
+    expect(stickOf('trimForward', DEFAULT_STICK)).toBe('right');
+    expect(stickOf('trimBack', { ...DEFAULT_STICK, trimStick: 'left' })).toBe('left');
+    expect(stickOf('hand', DEFAULT_STICK)).toBeUndefined();
   });
 });

@@ -1,4 +1,4 @@
-import type { PadState } from './Bindings';
+import type { Action, PadState } from './Bindings';
 
 /** Linear, or Precise: finer near centre and still full lock at the edge (spec C1). */
 export type StickResponse = 'linear' | 'precise';
@@ -38,6 +38,13 @@ export function padSticks(pad: PadState | undefined, stick: StickSettings): { st
     steer: shapeAxis(pad.axes[0] ?? 0, deadzone, stick.stickResponse),
     trim: shapeAxis(-(pad.axes[trimAxis] ?? 0), deadzone, stick.stickResponse),
   };
+}
+
+/** Which stick an action is on for a pad (spec C1): steering the left, trim the chosen one; undefined for a button. */
+export function stickOf(action: Action, stick: Pick<StickSettings, 'trimStick'>): 'left' | 'right' | undefined {
+  if (action === 'steerLeft' || action === 'steerRight') return 'left';
+  if (action === 'trimForward' || action === 'trimBack') return stick.trimStick;
+  return undefined;
 }
 
 /** A pad's identity: its id, or its place in the list for a pad built without one. */

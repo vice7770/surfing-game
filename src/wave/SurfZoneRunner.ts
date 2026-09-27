@@ -4,7 +4,7 @@ import { RideAnalyzer, type Maneuver, type RideReport } from '../game/rideAnalys
 import type { PopUpReport, RiderSeparation } from '../physics/AttachedRider';
 import { BoardBody } from '../physics/BoardBody';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
-import { RideSession, type RideInput } from '../physics/RideSession';
+import { RideSession, type RideInput, type RiderPlacement } from '../physics/RideSession';
 import { createWaterSample } from '../physics/SurfWater';
 import { WaveFrameGauge, type WaveFrame } from '../physics/waveFrame';
 import type { PeelEstimate } from './Breaking';
@@ -106,6 +106,8 @@ export interface RideRequest extends RideInput {
   retry: boolean;
   /** Online (spec N1): a retry puts the rider here, and later retries too (a free spot in the lineup). */
   spawnAt?: { x: number; z: number };
+  /** Surf School (spec L2): put the rider here, standing or lying, as a restart. */
+  place?: RiderPlacement;
   /** The pocket reflex rides with the player (the riding-the-wave spec). */
   pocketReflex?: boolean;
 }
@@ -322,11 +324,18 @@ export class SurfZoneRunner {
     const { board, session } = this;
     if (session) {
       // A press (pop-up, retry) counts once per batch; held controls apply to every step.
-      const request = step === 0 ? input : { ...input, popUp: false, retry: false };
+      const request = step === 0 ? input : { ...input, popUp: false, retry: false, place: undefined };
       if (request.retry) {
         if (request.spawnAt) this.rideLineup.set(request.spawnAt.x, 0, request.spawnAt.z);
         this.rideResets += 1;
         this.launchRide();
+      }
+      if (request.place) {
+        this.rideResets += 1;
+        session.place(request.place, this.water);
+        this.gauge?.reset();
+        // A restart drops the ride in progress unreported.
+        this.analyzer = new RideAnalyzer();
       }
       const start = performance.now();
       const ridden = request.pocketReflex ? withPocketReflex(request, this.wave, session.phase) : request;

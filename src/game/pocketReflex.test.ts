@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { WaveFrame } from '../physics/waveFrame';
-import { POCKET_DISTANCE, POCKET_TRIM, pocketTrim, showsPocketReflex, withPocketReflex } from './pocketReflex';
+import { POCKET_DISTANCE, POCKET_TRIM, pocketTrim, schoolPocketReflex, showsPocketReflex, withPocketReflex } from './pocketReflex';
 
 const FRAME: WaveFrame = {
   valid: true, directionX: 0, directionZ: 1, aheadOfCrest: 3, crestSpeed: 5, faceHeight: 1.2, faceFraction: 0.5,
@@ -54,5 +54,13 @@ describe('pocket reflex', () => {
     expect(showsPocketReflex('practice', 'medium')).toBe(false);
     expect(showsPocketReflex('always', 'big')).toBe(true);
     expect(showsPocketReflex('never', 'practice')).toBe(false);
+  });
+
+  // Surf School (spec L2): a lesson teaches the weight the reflex would take; Free Practice rides the Practice swell.
+  it('is off in every lesson, and in Free Practice follows its setting on the Practice swell', () => {
+    for (const setting of ['practice', 'always', 'never'] as const) expect(schoolPocketReflex(setting, false)).toBe(false);
+    expect(schoolPocketReflex('practice', true)).toBe(true);
+    expect(schoolPocketReflex('always', true)).toBe(true);
+    expect(schoolPocketReflex('never', true)).toBe(false);
   });
 });

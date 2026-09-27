@@ -46,3 +46,8 @@ export function withPocketReflex<T extends RideInput>(input: T, frame: WaveFrame
 export function showsPocketReflex(setting: GameplaySettings['pocketReflex'], swell: SwellSize): boolean {
   return setting === 'always' || (setting === 'practice' && swell === 'practice');
 }
+
+/** Surf School (spec L2): off in every lesson, which teaches the weight itself; Free Practice rides the Practice swell. */
+export function schoolPocketReflex(setting: GameplaySettings['pocketReflex'], freePractice: boolean): boolean {
+  return freePractice && showsPocketReflex(setting, 'practice');
+}

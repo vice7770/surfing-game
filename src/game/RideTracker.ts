@@ -40,14 +40,14 @@ export interface RideFrame {
 export const MIN_RIDE_SECONDS = 1;
 
 const RIDING = new Set<RideFrame['phase']>(['standing', 'recover']);
-const FALL_REASONS: Record<RiderSeparation, StringKey> = {
+export const FALL_REASONS: Record<RiderSeparation, StringKey> = {
   balance: 'ride.reason.balance',
   'foot slip': 'ride.reason.footSlip',
   'lost board': 'ride.reason.lostBoard',
   impact: 'ride.reason.impact',
 };
 /** The worker's ride ends other than a fall (P9): the ride is complete, for these reasons. */
-const WORKER_REASONS: Record<Exclude<RideEnd, 'fell'>, StringKey> = {
+export const WORKER_REASONS: Record<Exclude<RideEnd, 'fell'>, StringKey> = {
   'kicked out': 'ride.reason.kickedOut',
   'wave died': 'ride.reason.waveDied',
   'lost the wave': 'ride.reason.lostWave',
