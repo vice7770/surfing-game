@@ -23,6 +23,8 @@ export interface RiderVisualState {
   readonly swim: { stroking: boolean; diving: boolean; under: boolean };
   /** A running clock, s, for the code-driven cycles (the swimmer's crawl and kick). */
   clock: number;
+  /** The breath held, 1 full to 0 (Part B): short of it, the swimmer's stroke quickens. */
+  breath: number;
 }
 
 export function createRiderVisualState(): RiderVisualState {
@@ -37,6 +39,7 @@ export function createRiderVisualState(): RiderVisualState {
     leash: { plug: new Vector3(), worn: true, snapped: false, reeling: false },
     swim: { stroking: false, diving: false, under: false },
     clock: 0,
+    breath: 1,
   };
 }
 
@@ -55,6 +58,7 @@ export function readRiderSnapshot(rider: ArrayLike<number>, board: ArrayLike<num
   out.leash.worn = (leash & LEASH_BITS.worn) !== 0;
   out.leash.snapped = (leash & LEASH_BITS.snapped) !== 0;
   out.leash.reeling = (leash & LEASH_BITS.reeling) !== 0;
+  out.breath = rider[RIDER_SNAPSHOT.breath] ?? 1;
   const swim = rider[RIDER_SNAPSHOT.swim] ?? 0;
   out.swim.stroking = (swim & SWIM_BITS.stroking) !== 0;
   out.swim.diving = (swim & SWIM_BITS.diving) !== 0;

@@ -50,6 +50,8 @@ export const RIG_DETAIL = {
    */
   duckArmReach: 0.97,
   crawlRate: 0.8,
+  /** Short of breath the crawl quickens, up to (1 + `panic`) times at none (Part B's body cue). */
+  panic: 1,
   crawlReach: 0.85,
   kick: 0.15,
   kickRate: 2,
@@ -156,7 +158,12 @@ export class HumanoidRig {
     this.heelToMidfoot = this.footRun / 2;
   }
 
+  /** The crawl's phase, in strokes, and the clock it was advanced to. */
+  private crawlPhase = 0;
+  private crawlClock = Number.NaN;
+
   solve(state: RiderVisualState): void {
+    this.advanceCrawl(state);
     const { up, forward, left, boardUp, boardForward, chestUp, hipsForward, target, pole } = this;
     const p = state.points;
     boardUp.set(0, 1, 0).applyQuaternion(state.boardQuaternion);
@@ -271,10 +278,19 @@ export class HumanoidRig {
    * body, recovering over the water; the arms half a stroke apart.
    */
   private crawlHand(state: RiderVisualState, side: Side, shoulder: Vector3, out: Vector3): Vector3 {
-    const angle = 2 * Math.PI * (RIG_DETAIL.crawlRate * state.clock + (side === 'left' ? 0 : 0.5));
+    const angle = 2 * Math.PI * (this.crawlPhase + (side === 'left' ? 0 : 0.5));
     const reach = RIG_DETAIL.crawlReach * this.armLength;
     this.nose.set(Math.sin(state.heading), 0, Math.cos(state.heading));
     return out.copy(shoulder).addScaledVector(this.nose, reach * Math.cos(angle)).addScaledVector(WORLD_UP, reach * Math.sin(angle));
+  }
+
+  /** The crawl advances with the clock, quicker as the breath runs low; a jump in the clock restarts nothing. */
+  private advanceCrawl(state: RiderVisualState): void {
+    const step = state.clock - this.crawlClock;
+    this.crawlClock = state.clock;
+    if (!(step > 0 && step < 0.5)) return;
+    const breath = Math.min(1, Math.max(0, state.breath));
+    this.crawlPhase = (this.crawlPhase + step * RIG_DETAIL.crawlRate * (1 + RIG_DETAIL.panic * (1 - breath))) % 1;
   }
 
   /** Ducking, a hand on its rail slid forward along the board until the arm from the shoulder is straight. */

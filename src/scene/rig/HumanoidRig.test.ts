@@ -177,6 +177,28 @@ describe('humanoid rig', () => {
       }
     });
 
+    // Part B's body cue: short of breath, the stroke quickens.
+    it('strokes faster as the breath runs low', () => {
+      const travel = (breath: number) => {
+        const { bones } = createTestHumanoid();
+        const rig = new HumanoidRig(bones);
+        const state = posturePoints('prone', 'regular', board, level, createRiderVisualState());
+        state.phase = 'fallen';
+        state.swim.stroking = true;
+        state.breath = breath;
+        let path = 0;
+        const last = new Vector3();
+        for (let i = 0; i <= 20; i += 1) {
+          state.clock = i * 0.02;
+          rig.solve(state);
+          if (i > 0) path += rig.joints.wrist.left.distanceTo(last);
+          last.copy(rig.joints.wrist.left);
+        }
+        return path;
+      };
+      expect(travel(0.1)).toBeGreaterThan(1.4 * travel(1));
+    });
+
     it('swimming, strokes the arms round in a crawl and kicks the feet', () => {
       const { bones } = createTestHumanoid();
       const rig = new HumanoidRig(bones);
