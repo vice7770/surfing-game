@@ -24,4 +24,17 @@ Bottom turns at 1.4 m: 18 of them, 0.67 s, 56°, 2.1 rad/s peak at 6.3 m/s, 2.9 
 ## Open
 
 - **The peel.** The report's peel column is the simulation's peel estimate during rides: about 5–6° at every height, as at 2 m (the old report's required speed, 71.7 m/s, says the same). The rideability report puts the Canyon's peel at 55–58°. The curl the riders see (the gauge's nearest breaking crest) lies 13–25 m along the crest from them. Which measure describes the Canyon's waves, and whether the reference wave peels as the spec asks, is for the validation (riding-the-wave Task 7).
-- **The other spots.** The Practice swell is shared by every spot. Their catch rows at 2 m and at 1.4 m follow below when the catch reports finish.
+
+## The other spots
+
+The Practice swell is shared by every spot. `npm run report:catch -- --practice --ghosts --seeds 1 --minutes 2`, the catch report's 30 ghost bots riding straight in, on this plan's code (the roller and the new ride ends), at the old and the new height:
+
+| Spot | Cue lit 2 m → 1.4 m | Stood | Rides ≥ 3 s | Median ride s | Longest s |
+|---|---:|---:|---:|---:|---:|
+| Beach | 1 → 46 | 0 → 36 | 0 → 8 | — → 2.1 | — → 7.6 |
+| Point | 92 → 116 | 19 → 55 | 3 → 13 | 1.1 → 1.5 | 4.5 → 7.6 |
+| Reef | 25 → 33 | 8 → 9 | 0 → 0 | 0.9 → 0.6 | 1.6 → 1.9 |
+| Canyon | 44 → 65 | 38 → 63 | 30 → 33 | 6.7 → 3.1 | 9.4 → 9.9 |
+
+Every spot catches and stands more at 1.4 m, the Beach and the Point most. The Canyon's straight-in rides are shorter at the median (the smaller whitewater carries less far) but as long at best. One Practice swell stays for every spot.
+
