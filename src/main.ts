@@ -19,7 +19,7 @@ import { frameDue } from './game/frameLimit';
 import { resolveGraphics, type ResolvedGraphics } from './game/Graphics';
 import { SettingsStore, defaultSettings } from './game/Settings';
 import { SURFER_BODIES, type SurferSettings } from './game/SurferChoice';
-import { devFlag, devParam } from './devTools';
+import { DEV_TOOLS, devFlag, devParam } from './devTools';
 import { simulatedSeconds } from './game/timeScale';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PhysicalMode, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
 import { OnlinePlay, type OnlinePhase } from './game/OnlinePlay';
@@ -50,7 +50,10 @@ import { FlatSurfaceSource } from './scene/FlatSurfaceSource';
 import type { ReadoutRow } from './wave/SwellReadout';
 import { Autopilot, autopilotView } from './dev/Autopilot';
 import type { SpotName } from './wave/Bathymetry';
-import { App } from './ui/App';
+import { App, type LabHost } from './ui/App';
+import { WaveLab } from './game/waveLab/WaveLab';
+import { FlyInput } from './game/waveLab/FlyInput';
+import type { WaveLabSettings } from './game/waveLab/labSettings';
 import './style.css';
 import './ui/ui.css';
 
@@ -127,8 +130,10 @@ class SurfGame {
   private seed = 1;
   private accumulator = 0;
   private previousFrame = 0;
-  /** Slow motion: simulated seconds per real second (the Wave Lab's; 1 everywhere else). */
-  private timeScale = 1;
+  /** The Wave Lab (spec L1): its camera, clock and reading of the waves, and the input that flies it. */
+  private readonly waveLab = new WaveLab();
+  private readonly labInput: FlyInput;
+  readonly lab: LabHost;
   /** `?demo`'s autopilot, and how long it has been done with its ride, s. */
   private readonly demoPilot = demoMode === null ? undefined : new Autopilot({ style: demoMode === 'line' ? 'line' : 'turns' });
   private demoDone = 0;
@@ -144,6 +149,11 @@ class SurfGame {
   /** Seconds left before the backdrop freezes, on the Low preset. */
   private freezeIn?: number;
   private needsRender = true;
+  /** Slow motion: simulated seconds per real second (the Wave Lab's clock; 1 everywhere else). */
+  private get timeScale(): number {
+    return this.waveLab.active ? this.waveLab.clock.scale : 1;
+  }
+
   /** Paused by the menu: nothing steps; the scene stays drawn. */
   private paused = false;
   /** Sound (S1): the sea time of the last snapshot heard, the board's last place and sideslip, and the rider's last phase. */
@@ -175,6 +185,20 @@ class SurfGame {
     this.renderer.domElement.tabIndex = 0;
     this.renderer.domElement.setAttribute('aria-label', 'Surf game canvas. Click here to use keyboard controls.');
     getElement('#scene').append(this.renderer.domElement);
+    this.labInput = new FlyInput({
+      follow: () => this.waveLab.toggleFollow(this.physicalMode),
+      jump: (point) => this.waveLab.jump(this.physicalMode, point),
+      hideUi: () => this.lab.onAction?.('hide'),
+      togglePause: () => this.waveLab.clock.togglePause(),
+      step: () => this.waveLab.clock.step(),
+      slower: () => this.waveLab.clock.slower(),
+      faster: () => this.waveLab.clock.faster(),
+      pause: () => this.lab.onAction?.('menu'),
+      speed: (steps) => this.waveLab.fly.scaleSpeed(steps),
+    }, { surface: this.renderer.domElement });
+    this.labInput.enabled = false;
+    // Dev tools: the lab, for checks in the page.
+    if (DEV_TOOLS) (globalThis as unknown as { breaklineLab?: WaveLab }).breaklineLab = this.waveLab;
 
     this.scene.background = new Color('#b8e3e5');
     this.scene.add(this.environment.group);
@@ -197,6 +221,7 @@ class SurfGame {
     this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
     this.physicalMode.seabed.useCaustics(this.water.causticUniforms, this.water.causticSource as never);
     this.physicalMode.spray.useWater(this.water.causticSource);
+    this.lab = this.labHost();
     this.shadows = new ShadowRig(this.renderer, this.sunlight, this.scene);
     this.shadowSurfaces = [this.water.mesh, this.physicalMode.seabed.mesh, this.physicalMode.farField.mesh];
     this.shadows.setLevel(parseShadowLevel(window.location.search), { surfaces: this.shadowSurfaces });
@@ -293,7 +318,11 @@ class SurfGame {
   /** Build the physical surf zone (with the player's rider unless `rider` is false) and show it in `sun`, or the light already shown. */
   private async startPhysical(
     seed: number, settings: PhysicalSettings,
-    options: { sun?: { sunHeight: number; sunDirection: number }; rider?: boolean; factory?: SurfZoneHostFactory; overrides?: Partial<SurfZoneConfig> } = {},
+    options: {
+      sun?: { sunHeight: number; sunDirection: number }; rider?: boolean; factory?: SurfZoneHostFactory; overrides?: Partial<SurfZoneConfig>;
+      /** The Wave Lab's sea (spec L1); any other scene ends the lab. */
+      lab?: boolean;
+    } = {},
   ): Promise<boolean> {
     const factory = options.factory ?? surfZoneFactory(options.rider ?? true);
     // An online room fixes its own sea (components included); otherwise the GPU tier decides.
@@ -301,6 +330,8 @@ class SurfGame {
     if (!(await this.physicalMode.start(settings, seed, this.water, options.overrides ?? {}, factory, tier))) return false;
     this.frozen = false;
     this.freezeIn = undefined;
+    if (!options.lab) this.leaveLab();
+    this.waveLab.active = options.lab === true;
     this.seed = seed;
     this.physicalSettings = { ...settings };
     this.water.mesh.visible = true;
@@ -474,7 +505,7 @@ class SurfGame {
     return {
       dt,
       timeScale: this.timeScale,
-      paused,
+      paused: paused || (this.waveLab.active && this.waveLab.clock.paused),
       listener: { x: camera.position.x, y: camera.position.y, z: camera.position.z, underwater: this.physicalMode.cameraBelowSurface() },
       roar: snapshot.roar,
       lipHits: snapshot.lipHits,
@@ -519,6 +550,7 @@ class SurfGame {
     }
     this.lastRender = timestamp;
     controls.poll();
+    this.labInput.poll();
     const rawElapsed = this.previousFrame === 0 ? 0 : (timestamp - this.previousFrame) / 1000;
     this.onFrame?.(rawElapsed * 1000, this.physicalMode.host?.snapshot.status);
     // Online the sea never pauses: the menu only takes the controls (spec N1).
@@ -549,6 +581,10 @@ class SurfGame {
       this.onlineFrame(elapsed);
       return;
     }
+    if (this.waveLab.active) {
+      this.labFrame(elapsed);
+      return;
+    }
     this.accumulator = Math.min(this.accumulator + simElapsed, this.fixedStep * 4);
     let steps = 0;
     while (this.accumulator >= this.fixedStep && steps < 3) {
@@ -567,6 +603,82 @@ class SurfGame {
     this.physicalMode.advance(steps, { ...request, steer: this.physicalMode.screenSteer(request.steer) });
     if (request.popUp) controls.consumeGetUp();
     this.physicalRender(simElapsed);
+  }
+
+  /** The Wave Lab's frame (spec L1): the camera flies, and the sea steps on the lab's clock (paused, slowed or stepped). */
+  private labFrame(elapsed: number): void {
+    const sim = this.waveLab.frame(this.physicalMode, elapsed, this.labInput.read(elapsed));
+    this.accumulator = Math.min(this.accumulator + sim, this.fixedStep * 4);
+    let steps = 0;
+    while (this.accumulator >= this.fixedStep - 1e-9 && steps < 3) {
+      this.accumulator -= this.fixedStep;
+      steps += 1;
+    }
+    this.physicalMode.advance(steps);
+    this.physicalRender(sim);
+  }
+
+  /** The lab as the app drives it: a sea with no rider, rebuilt on Apply, lit and looked as asked. */
+  private labHost(): LabHost {
+    // The physical mode is read when used: this runs while the game is still being built.
+    const { waveLab } = this;
+    const mode = () => this.physicalMode;
+    return {
+      onAction: undefined,
+      input: this.labInput,
+      clock: waveLab.clock,
+      get following() {
+        return waveLab.following;
+      },
+      get readout() {
+        return mode().readout();
+      },
+      enter: (settings) => this.enterLab(settings),
+      apply: async (settings, newSea) => {
+        if (newSea) this.seed = (this.seed % 9999) + 1;
+        const { fly, clock } = waveLab;
+        const kept = { position: fly.position.clone(), yaw: fly.yaw, pitch: fly.pitch, paused: clock.paused, scale: clock.scale };
+        if (!(await this.enterLab(settings))) return false;
+        // A rebuilt sea keeps the camera where it was, and the clock as it was.
+        if (mode().camera.view === 'free') {
+          fly.position.copy(kept.position);
+          fly.yaw = kept.yaw;
+          fly.pitch = kept.pitch;
+          fly.applyTo(mode().camera.camera);
+        }
+        clock.paused = kept.paused;
+        clock.scale = kept.scale;
+        return true;
+      },
+      setLight: (sun) => {
+        if (sun.sunHeight !== this.shownSun.height || sun.sunDirection !== this.shownSun.direction) void this.applySun(sun);
+      },
+      setWaterLook: (look) => this.applyWaterLook(look),
+      leave: () => this.leaveLab(),
+      toggleFollow: () => waveLab.toggleFollow(mode()),
+      jump: (point) => waveLab.jump(mode(), point),
+      info: (units) => waveLab.info(mode(), units),
+    };
+  }
+
+  /** The lab's sea (spec L1): no rider; solver and compute as the lab asks with the dev tools on, else as the graphics settings say. */
+  private async enterLab(settings: WaveLabSettings): Promise<boolean> {
+    this.leaveOnline();
+    const physical = DEV_TOOLS ? settings.physical
+      : { ...settings.physical, stage: this.graphics?.stage ?? 2, compute: this.graphics?.compute ?? 'auto' };
+    if (!(await this.startPhysical(this.seed, physical, { sun: settings, rider: false, lab: true }))) return false;
+    this.waveLab.begin(this.physicalMode);
+    this.applyWaterLook(settings.waterLook);
+    return true;
+  }
+
+  /** Out of the lab: its camera and clock let go, and the water back in the graphics settings' look. */
+  private leaveLab(): void {
+    if (!this.waveLab.active) return;
+    this.waveLab.active = false;
+    this.labInput.enabled = false;
+    this.waveLab.end(this.physicalMode);
+    this.applyWaterLook(this.graphics?.waterLook ?? 'rich');
   }
 
   /** `?demo`: the autopilot rides (its steer is already the board's), and paddles out again 2 s after each ride. */

@@ -39,6 +39,8 @@ const MOVE_KEYS: Record<string, { axis: 'strafe' | 'forward' | 'rise'; sign: 1 |
   KeyA: { axis: 'strafe', sign: -1 }, ArrowLeft: { axis: 'strafe', sign: -1 },
   KeyE: { axis: 'rise', sign: 1 }, KeyQ: { axis: 'rise', sign: -1 },
 };
+/** The lab's one-shot keys. */
+const ACTION_KEYS = new Set(['KeyF', 'KeyH', 'Space', 'Period', 'BracketLeft', 'BracketRight', 'Escape', 'Digit1', 'Digit2', 'Digit3', 'Digit4']);
 /** Standard-layout pad buttons (spec L1): A pause, X hide, Y follow, LB fast, RB step, LT/RT down/up, Start menu, d-pad jump points. */
 const PAD = { a: 0, x: 2, y: 3, lb: 4, rb: 5, lt: 6, rt: 7, start: 9, up: 12, down: 13, left: 14, right: 15 } as const;
 
@@ -158,7 +160,8 @@ export class FlyInput {
     const tag = (event.target as Element | null)?.tagName;
     if (tag && EDITABLE.has(tag) && event.code !== 'Escape') return;
     if (!this.active) return;
-    if (MOVE_KEYS[event.code] || event.code === 'Space') event.preventDefault?.();
+    // Used here, so the menus that also listen for keys (Esc among them) leave the press alone.
+    if (MOVE_KEYS[event.code] || ACTION_KEYS.has(event.code)) event.preventDefault?.();
     if (!event.repeat && !this.held.has(event.code)) this.keyPress(event.code);
     this.held.add(event.code);
   }

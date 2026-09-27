@@ -213,6 +213,12 @@ export function createWaveLabScreen(
   });
   const info = el('aside', { class: 'lab-info', attrs: { 'aria-live': 'off' } }, infoHead, infoRows,
     options.devTools ? el('div', { class: 'physics-readout' }, readoutList) : null);
+  // On a phone the card starts folded, so it leaves the wave in view.
+  if (options.touch) {
+    infoHead.setAttribute('aria-expanded', 'false');
+    infoRows.hidden = true;
+    readoutList.hidden = true;
+  }
 
   // Touch: a stick to fly with, and up and down.
   const touch = options.touch ? touchControls(handlers) : null;

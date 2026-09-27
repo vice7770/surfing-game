@@ -67,6 +67,23 @@ describe('FlyInput', () => {
     expect(actions.pause).toHaveBeenCalledTimes(1);
   });
 
+  // The menus listen to the same keys: Esc opened the pause menu, and the menu then closed on the same press.
+  it('marks the keys it acts on as used, so the menus below leave them alone', () => {
+    const { key: _, ...rest } = setup();
+    const keys = new EventTarget();
+    new FlyInput(rest.actions, { keys, pads: () => [] });
+    const press = (code: string) => {
+      const event = Object.assign(new Event('keydown', { cancelable: true }), { code, repeat: false });
+      keys.dispatchEvent(event);
+      return event.defaultPrevented;
+    };
+    expect(press('Escape')).toBe(true);
+    expect(press('KeyF')).toBe(true);
+    expect(press('Digit2')).toBe(true);
+    expect(press('KeyW')).toBe(true);
+    expect(press('KeyM')).toBe(false);
+  });
+
   it('ignores keys aimed at form controls except Escape', () => {
     const { input, actions, key } = setup();
     key('keydown', 'KeyW', { tagName: 'INPUT' });
