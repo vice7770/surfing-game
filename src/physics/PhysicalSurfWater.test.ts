@@ -241,3 +241,20 @@ describe('PhysicalSurfWater in a whitewater plume', () => {
     expect(clear.sampleAt(0.2, surface - 0.2, 0.3, out).voidFraction ?? 0).toBe(0);
   });
 });
+
+describe('PhysicalSurfWater\'s turbulence', () => {
+  it('reports the plume\'s turbulence in the water column, strongest near the surface, and leaves the flow alone', () => {
+    const { solver, breaking } = channel();
+    const turbulence = new Float64Array(solver.h.length).fill(0.5);
+    const plume = { voidFraction: () => 0, depth: new Float64Array(solver.h.length), turbulence };
+    const water = new PhysicalSurfWater(solver, { peakPeriod: 10, breaking, aeration: plume });
+    const clear = channel().water;
+    const out = createWaterSample();
+    const surface = water.sampleAt(0.2, 5, 0.3, out).surfaceY;
+    const top = water.sampleAt(0.2, surface - 0.1, 0.3, out).turbulence ?? 0;
+    expect(top).toBeGreaterThan(0.4);
+    expect(water.sampleAt(0.2, -2.8, 0.3, out).turbulence ?? 0).toBeLessThan(top);
+    const flow = water.sampleAt(0.2, surface - 0.1, 0.3, out).flowX;
+    expect(flow).toBeCloseTo(clear.sampleAt(0.2, surface - 0.1, 0.3, out).flowX, 12);
+  });
+});

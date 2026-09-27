@@ -83,6 +83,8 @@ export class RideSession {
   /** The fall body's linear momentum and centre of mass as it started, for continuity checks. */
   readonly started = { momentum: new Vector3(), center: new Vector3() };
   private field?: SurfWaterBodyField;
+  /** The session's own clock, s: the eddies' time. */
+  private time = 0;
   private fieldWater?: SurfWater;
 
   constructor(options: RideSessionOptions = {}) {
@@ -167,6 +169,7 @@ export class RideSession {
 
   step(dt: number, water: SurfWater, input: RideInput): void {
     const { rider, board, surfer } = this;
+    this.time += dt;
     if (rider.attached) {
       rider.paddle = input.paddle;
       rider.steer = input.steer;
@@ -235,7 +238,7 @@ export class RideSession {
 
   private bodyField(water: SurfWater): SurfWaterBodyField {
     if (!this.field || this.fieldWater !== water) {
-      this.field = new SurfWaterBodyField(water);
+      this.field = new SurfWaterBodyField(water, () => this.time);
       this.fieldWater = water;
     }
     return this.field;

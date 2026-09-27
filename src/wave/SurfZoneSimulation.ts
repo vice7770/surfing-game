@@ -261,7 +261,7 @@ export class SurfZoneSimulation {
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver);
     this.foam = new FoamField(this.solver, config.foamDecay ?? FOAM_DECAY[config.spot]);
-    this.aeration = new AerationField(this.solver);
+    this.aeration = new AerationField(this.solver, { period: config.peakPeriod });
     this.lip.onLand = (x, z, volume, vx, vy, vz, flight) => {
       this.foam.addSplash(x, z, volume);
       this.lipImpacts.push({ x, z, volume, vx, vy, vz, whole: flight?.volume ?? volume, kind: flight?.kind ?? 0 });
@@ -363,6 +363,8 @@ export class SurfZoneSimulation {
       if (!target || target.length !== values.length) throw new Error(`A sea state from another tank: ${name} does not fit`);
       target.set(values);
     }
+    // The turbulence is not handed over (it never feeds back into the water): the breaking stirs it afresh.
+    this.aeration.turbulence.fill(0);
     solver.time = state.solverTime;
     this.seaTimeOffset = state.seaTimeOffset;
     this.boundary.timeOffset = state.seaTimeOffset;
@@ -653,6 +655,8 @@ export class SurfZoneSimulation {
       const still = restLevel - bed[i];
       const dissipation = strength[i] * boreDissipation(still, h[i]);
       if (dissipation > 0) this.aeration.addBore(i, dissipation, h[i] - still, dt);
+      // The wipeout spec, Part B: breaking stirs the water's turbulence.
+      this.aeration.stir(i, strength[i], dt);
     }
   }
 

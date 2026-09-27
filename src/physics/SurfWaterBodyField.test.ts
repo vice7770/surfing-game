@@ -2,7 +2,9 @@ import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import type { BodyWaterSample } from './DetachedSurfer';
 import { PhysicalSurfWater } from './PhysicalSurfWater';
-import { createWaterSample } from './SurfWater';
+import { createWaterSample, type SurfWater } from './SurfWater';
+import { PlaneWater } from './PlaneWater';
+import { eddyVelocity } from './eddies';
 import { SurfWaterBodyField } from './SurfWaterBodyField';
 import { SurfZoneSimulation, TANK, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 
@@ -27,5 +29,29 @@ describe('SurfWater body field', () => {
       expect(body.flow.toArray()).toEqual([board.flowX, board.flowY, board.flowZ]);
       expect(body.flowModel).toBe(board.outsideDomain ? 'outside' : board.wet ? 'reconstructed' : 'dry');
     }
+  });
+});
+
+// The wipeout spec, Part B: the fallen surfer, seven points in separate eddies, feels the turbulence.
+describe('the body field in turbulent water', () => {
+  it('adds the eddies to the flow at the swimmer\'s points, moving with the clock', () => {
+    const plain = new PlaneWater();
+    const turbulent: SurfWater = {
+      sampleAt: (x, y, z, out) => Object.assign(plain.sampleAt(x, y, z, out), { turbulence: 0.5 }),
+      surfaceAt: (x, z) => plain.surfaceAt(x, z),
+      addReaction() {},
+    };
+    let time = 3;
+    const field = new SurfWaterBodyField(turbulent, () => time);
+    const out = { surfaceY: 0, bedY: 0, flow: new Vector3(), wet: false, outsideDomain: false, breaking: 0 };
+    field.sampleAt(new Vector3(1, -0.5, 2), out);
+    const expected = eddyVelocity(1, -0.5, 2, 3, 0.5, new Vector3());
+    expect(out.flow.distanceTo(expected)).toBeLessThan(1e-12);
+    time = 3.5;
+    field.sampleAt(new Vector3(1, -0.5, 2), out);
+    expect(out.flow.distanceTo(expected)).toBeGreaterThan(1e-3);
+    const calm = new SurfWaterBodyField(plain, () => time);
+    calm.sampleAt(new Vector3(1, -0.5, 2), out);
+    expect(out.flow.length()).toBe(0);
   });
 });
