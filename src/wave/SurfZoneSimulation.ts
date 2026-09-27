@@ -113,8 +113,8 @@ export const ZONE_WAVELENGTHS = 0.75;
 export const SET_FINE_MARGIN = 40;
 /** The furthest a tank reaches offshore, m. */
 const TANK_REACH = -3000;
-/** A bed deepening less than FLAT_RISE over FLAT_REACH seaward has levelled off, m: the edge stops there. */
-const FLAT_REACH = 100;
+/** A bed that gets no more than FLAT_RISE deeper anywhere within FLAT_REACH seaward has levelled off, m: the edge stops there. */
+const FLAT_REACH = 300;
 const FLAT_RISE = 0.1;
 
 /**
@@ -132,9 +132,13 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
   if (wanted <= today.edgeDepth) return today;
   const spot = createSpot(config.spot, config.seed);
   const depth = (z: number) => spot.depthAt(0, z);
-  // Out along the take-off transect until the bed is deep enough, or levels off short of it.
+  const deepens = (z: number) => {
+    for (let ahead = 10; ahead <= FLAT_REACH; ahead += 10) if (depth(z - ahead) - depth(z) >= FLAT_RISE) return true;
+    return false;
+  };
+  // Out along the take-off transect until the bed is deep enough, or levels off short of it (a bar's flank is not level).
   let reached = TANK.zoneInner;
-  while (depth(reached) < wanted && reached > TANK_REACH && depth(reached - FLAT_REACH) - depth(reached) >= FLAT_RISE) reached -= 1;
+  while (depth(reached) < wanted && reached > TANK_REACH && deepens(reached)) reached -= 1;
   if (Math.min(wanted, depth(reached)) <= today.edgeDepth) return today;
   // Coming in from there, the sets break where the bed first reaches their breaker depth.
   const setDepth = (SETS_OVER_TYPICAL * komarGaughan(config.significantHeight, config.peakPeriod)) / BREAKER_INDEX;

@@ -526,6 +526,11 @@ describe('the tank sized to the swell (wave sizes)', () => {
     expect(tankLayout(config('point', 4, 6)).edgeDepth).toBeLessThanOrEqual(0.4 * (9.81 * 36) / (2 * Math.PI) + 1e-9);
   });
 
+  it('reaches a 13.2 m edge for a 4 m Beach swell on its deepened outer shelf', () => {
+    const layout = tankLayout(config('beach', 4, 14));
+    expect(layout.edgeDepth).toBeGreaterThanOrEqual(13.2 - 0.05);
+  });
+
   it('stops the edge where a bed levels off short of the depth it wants: the Reef keeps today\'s tank', () => {
     // The Reef's 10 m channel runs flat for ~500 m (its bed belongs to the Reef rework).
     expect(tankLayout(config('reef', 4, 14))).toEqual({ ...TANK, edgeDepth: OFFSHORE_DEPTH.reef });
