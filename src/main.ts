@@ -18,7 +18,9 @@ import {
   WebGLRenderTarget,
   Vector3,
 } from 'three';
+import { addPadSource } from './game/Bindings';
 import { Controls } from './game/Controls';
+import { SteamControllerDriver } from './game/steam/SteamControllerDriver';
 import { frameDue } from './game/frameLimit';
 import { resolveGraphics, type ResolvedGraphics } from './game/Graphics';
 import { SettingsStore, defaultSettings } from './game/Settings';
@@ -1199,6 +1201,10 @@ settings.subscribe((value, change) => {
   if (change === 'graphics' || change === 'detected') applyGraphics();
   if (change === 'surfer') game.setSurfer(value.surfer);
 });
+// C1: the 2026 Steam Controller over WebHID, offered to every pad reader as one more standard pad.
+const steamController = new SteamControllerDriver();
+addPadSource(() => steamController.pads());
+void steamController.start();
 const controls = new Controls(() => settings.value.controls.bindings, {
   retry: () => {
     game.quickRetry();
@@ -1207,6 +1213,6 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   camera: () => game.cycleView(),
   pause: () => app.pause(),
   mute: () => app.toggleMute(),
-});
-const app = new App(game, controls, settings, { startInWaveLab: physicalRequested || demoMode !== null || recordRequested || waterSheetRequested });
+}, { stick: () => settings.value.controls });
+const app = new App(game, controls, settings, { startInWaveLab: physicalRequested || demoMode !== null || recordRequested || waterSheetRequested, steam: steamController });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);

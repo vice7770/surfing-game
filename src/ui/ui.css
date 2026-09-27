@@ -173,7 +173,7 @@
 .slider { display: flex; align-items: center; gap: .8em; }
 .slider input { flex: 1; }
 .slider output { min-width: 3.4em; color: var(--ink); font: .8em var(--mono); text-align: right; }
-.binding-row { display: grid; grid-template-columns: minmax(7em, 1fr) minmax(0, 1.4fr) minmax(0, .8fr); align-items: center; gap: .6em; }
+.binding-row { display: grid; grid-template-columns: minmax(7em, 1fr) minmax(0, 1.4fr) minmax(0, 1.4fr); align-items: center; gap: .6em; }
 .binding-head span { color: var(--muted); font: .62em var(--mono); letter-spacing: .12em; text-transform: uppercase; }
 .binding-keys { display: flex; gap: .35em; }
 .binding { flex: 1; min-height: 2.3em; padding: 0 .6em; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 8px; background: rgba(255, 253, 243, .75); color: var(--ink); font: .82em var(--mono); cursor: pointer; }

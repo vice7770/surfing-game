@@ -1,3 +1,4 @@
+import type { SteamStatus } from '../game/steam/SteamControllerDriver';
 import { el, icon } from './dom';
 import { ICONS, type IconName } from './icons';
 import { t, type StringKey } from './strings';
@@ -25,6 +26,12 @@ export function menuTiles(devTools: boolean): MenuTile[] {
 }
 
 export type MainMenuHandlers = Record<Exclude<MenuTileId, 'multiplayer'>, () => void>;
+
+/** The menu strip's Steam Controller button (spec C1): Connect until one has connected once; in a browser without WebHID, what it needs. */
+export function steamStrip(status: SteamStatus, seen: boolean): { label: StringKey; disabled: boolean } | undefined {
+  if (seen || status === 'connected') return undefined;
+  return status === 'unsupported' ? { label: 'menu.steamUnsupported', disabled: true } : { label: 'menu.steamConnect', disabled: false };
+}
 
 function fullscreenButton(): HTMLElement | null {
   if (!document.fullscreenEnabled) return null;
@@ -68,7 +75,7 @@ export function refreshSoundToggles(root: ParentNode, muted: boolean): void {
 
 export function createMainMenu(
   handlers: MainMenuHandlers,
-  options: { devTools: boolean; version: string; sound: { muted: boolean; toggle: () => void } },
+  options: { devTools: boolean; version: string; sound: { muted: boolean; toggle: () => void }; steam?: { label: string; disabled: boolean; connect(): void } },
 ): HTMLElement {
   const tiles = menuTiles(options.devTools).map((tile) => el('button', {
     class: tile.id === 'surf' ? 'tile tile-primary' : 'tile',
@@ -85,6 +92,13 @@ export function createMainMenu(
     el('div', { class: 'menu-strip' },
       el('span', { class: 'strip-group' },
         fullscreenButton() ?? el('span'),
-        soundToggle('strip-button', options.sound.muted, options.sound.toggle)),
+        soundToggle('strip-button', options.sound.muted, options.sound.toggle),
+        options.steam ? el('button', {
+          class: 'strip-button',
+          attrs: { type: 'button', ...(options.steam.disabled ? { 'aria-disabled': 'true' } : {}) },
+          dataset: { nav: '' },
+          text: options.steam.label,
+          on: { click: () => { if (!options.steam?.disabled) options.steam?.connect(); } },
+        }) : null),
       el('span', { text: t('menu.version', { version: options.version }) })));
 }

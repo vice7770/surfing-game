@@ -48,15 +48,16 @@ export const DEFAULT_BINDINGS: Bindings = {
     mute: ['KeyM'],
     pause: ['Escape'],
   },
+  // C1: the hand on LB (the right thumb trims); on the Steam Controller L4 also reaches and R4 also pops up.
   gamepad: {
     paddle: [7],
-    popUp: [0],
+    popUp: [0, 18],
     steerLeft: [14],
     steerRight: [15],
     trimForward: [12],
     trimBack: [13],
     crouch: [6],
-    hand: [2],
+    hand: [4, 17],
     retry: [3],
     camera: [5],
     mute: [8],
@@ -67,20 +68,38 @@ export const DEFAULT_BINDINGS: Bindings = {
 const RESERVED_KEY = 'Escape';
 const RESERVED_BUTTON = 9;
 
+/** Which layout a pad's buttons are printed with: an Xbox-style pad, or the 2026 Steam Controller (spec C1). */
+export type PadKind = 'standard' | 'steam';
+
 /** One gamepad's state, as plain values (tests build these directly): pressed buttons, how far each is pressed (0–1, for triggers), and the axes. */
 export interface PadState {
+  /** Which pad this is, stable while it stays connected (`gamepad:<index>`, `steam:<n>`). */
+  id?: string;
+  kind?: PadKind;
   buttons: readonly boolean[];
   values?: readonly number[];
   axes: readonly number[];
 }
 
-/** The connected gamepads. Every pad is read as the standard layout; an unusual one can be rebound. */
+/** The highest button index bound: the standard 0–16 and the Steam Controller's extras, 17–21 (spec C1). */
+export const MAX_BUTTON = 21;
+
+const padSources = new Set<() => PadState[]>();
+
+/** Add pads the Gamepad API cannot see (the Steam Controller over WebHID, spec C1); returns the undo. */
+export function addPadSource(source: () => PadState[]): () => void {
+  padSources.add(source);
+  return () => { padSources.delete(source); };
+}
+
+/** The connected gamepads, read as the standard layout (an unusual one can be rebound), then any added sources' pads. */
 export function readPads(source: () => ArrayLike<Gamepad | null> = () => globalThis.navigator?.getGamepads?.() ?? []): PadState[] {
   const pads: PadState[] = [];
   for (const pad of Array.from(source())) {
     if (!pad || !pad.connected) continue;
-    pads.push({ buttons: pad.buttons.map((button) => button.pressed), values: pad.buttons.map((button) => button.value), axes: [...pad.axes] });
+    pads.push({ id: `gamepad:${pad.index}`, kind: 'standard', buttons: pad.buttons.map((button) => button.pressed), values: pad.buttons.map((button) => button.value), axes: [...pad.axes] });
   }
+  for (const extra of padSources) pads.push(...extra());
   return pads;
 }
 
@@ -94,25 +113,6 @@ export function heldActions(keys: ReadonlySet<string>, pads: readonly PadState[]
     }
   }
   return held;
-}
-
-/** The left stick is ignored within this much of centre, so a worn stick does not steer. */
-export const STICK_DEADZONE = 0.15;
-
-/** Steering from the first pad's left stick, rescaled beyond the dead zone to ±1 (positive to the right). */
-export function padSteer(pads: readonly PadState[]): number {
-  const x = pads[0]?.axes[0] ?? 0;
-  const magnitude = Math.abs(x);
-  if (magnitude <= STICK_DEADZONE) return 0;
-  return Math.sign(x) * Math.min(1, (magnitude - STICK_DEADZONE) / (1 - STICK_DEADZONE));
-}
-
-/** Trim from the first pad's left stick, up for forward, rescaled beyond the dead zone to ±1 (spec P9). */
-export function padTrim(pads: readonly PadState[]): number {
-  const y = -(pads[0]?.axes[1] ?? 0);
-  const magnitude = Math.abs(y);
-  if (magnitude <= STICK_DEADZONE) return 0;
-  return Math.sign(y) * Math.min(1, (magnitude - STICK_DEADZONE) / (1 - STICK_DEADZONE));
 }
 
 /** How far any pad presses `button`, 0–1: a trigger's travel, or 1 for a pressed button without one. */
@@ -168,9 +168,12 @@ export function keyLabel(code: string): string {
   return code;
 }
 
-const BUTTONS = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'L3', 'R3', 'D-pad↑', 'D-pad↓', 'D-pad←', 'D-pad→', 'Home'];
+const BUTTONS = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'L3', 'R3', 'D-pad↑', 'D-pad↓', 'D-pad←', 'D-pad→', 'Home', 'L4', 'R4', 'L5', 'R5', '···'];
+/** The Steam Controller's own names for the standard buttons it labels differently (spec C1). */
+const STEAM_NAMES: Record<number, string> = { 8: 'View', 9: 'Menu', 16: 'Steam' };
 
-/** A standard-mapping button index as printed on an Xbox-style pad. */
-export function buttonLabel(index: number): string {
-  return BUTTONS[index] ?? `Button ${index}`;
+/** A button index as printed on the pad: an Xbox-style pad's names, or the Steam Controller's; a dash for an empty slot. */
+export function buttonLabel(index: number | undefined, kind: PadKind = 'standard'): string {
+  if (index === undefined) return '—';
+  return (kind === 'steam' ? STEAM_NAMES[index] : undefined) ?? BUTTONS[index] ?? `Button ${index}`;
 }

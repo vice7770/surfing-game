@@ -1,6 +1,6 @@
 # Third-party assets
 
-Every image, model and texture the game ships, with its source and licence. Nothing here needs in-game attribution: all of it is CC0. An in-game credits screen becomes necessary only if a CC-BY asset comes in.
+Every image, model and texture the game ships, with its source and licence. Nothing here needs in-game attribution: all of it is CC0. The one ported piece of code, under Code, is zlib-licensed, which asks for no in-game credit either. An in-game credits screen becomes necessary only if a CC-BY asset comes in.
 
 ## Skies (G7)
 
@@ -33,6 +33,13 @@ The skin, eye, eyebrow, eyelash, hair and proxy assets come from the [MakeHuman 
 | `surfer4` | man | young_asian_male | short04 | eyebrow006 / eyelashes01 | male1591 | 1.72 m | 1.2 MB |
 
 The eyes are MakeHuman's `high-poly` eyes with their default brown material.
+
+## Code (C1)
+
+- **The Steam Controller decoder** (`src/game/steam/tritonProtocol.ts`) is a port of SDL's driver for the 2026 Steam Controller. It covers the state report's layout, the button bits, the report IDs and the lizard-mode command.
+  - Source: [SDL](https://github.com/libsdl-org/SDL) `src/joystick/hidapi/SDL_hidapi_steam_triton.c` and `src/joystick/hidapi/steam/controller_structs.h`.
+  - Copyright Sam Lantinga and Valve, **zlib licence**. The licence asks only that the origin is not misrepresented and that altered versions are marked as such; the port says both in its header.
+- **Report notes** from [SteamlessController](https://github.com/ddeverill/SteamlessController) (`src/steam/SteamController.h`) confirmed the View and Menu bits, the product IDs and the fallback mapping commands. No code was copied from it.
 
 ## How to rebuild
 

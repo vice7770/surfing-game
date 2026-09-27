@@ -28,6 +28,25 @@ describe('SettingsStore', () => {
     expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: oldCustom, detected: medium }) })).value.graphics.waterLook).toBe('rich');
   });
 
+  // C1: the stick settings, with their defaults and ranges.
+  it('keeps the stick settings within their ranges', () => {
+    expect(defaultSettings().controls).toMatchObject({ trimStick: 'right', stickResponse: 'linear', deadzoneSteam: 0.05, deadzoneGamepad: 0.15 });
+    expect(defaultSettings().seen.steamController).toBe(false);
+    const stored = { controls: { trimStick: 'up', stickResponse: 'precise', deadzoneSteam: 0.9, deadzoneGamepad: 0.2, bindings: { gamepad: { retry: [3, 20] } } } };
+    const store = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify(stored) }));
+    expect(store.value.controls).toMatchObject({ trimStick: 'right', stickResponse: 'precise', deadzoneSteam: 0.05, deadzoneGamepad: 0.2 });
+    expect(store.value.controls.bindings.gamepad.retry).toEqual([3, 20]);
+  });
+
+  // Review Focus 4: a save from before C1 moves the hand to LB and adds the grips, once, unless those buttons are taken.
+  it('moves a saved hand on X to LB and L4, and pop-up to A and R4, just once', () => {
+    const old = (gamepad: object, extra: object = {}) =>
+      new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ controls: { bindings: { gamepad }, ...extra } }) })).value.controls.bindings.gamepad;
+    expect(old({ hand: [2], popUp: [0] })).toMatchObject({ hand: [4, 17], popUp: [0, 18] });
+    expect(old({ hand: [2], camera: [4] })).toMatchObject({ hand: [2], camera: [4] });
+    expect(old({ hand: [2] }, { padLayout: 2 })).toMatchObject({ hand: [2] });
+  });
+
   it('starts from the defaults with nothing stored, or with something that is not JSON', () => {
     expect(new SettingsStore(memory()).value).toEqual(defaultSettings());
     expect(new SettingsStore(memory({ [SETTINGS_KEY]: '{oops' })).value).toEqual(defaultSettings());

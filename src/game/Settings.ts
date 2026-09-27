@@ -1,7 +1,8 @@
 import type { RideView } from '../scene/SpectatorCamera';
 import type { Units } from '../ui/units';
 import type { WaterLook } from '../scene/water/waterLook';
-import { ACTIONS, DEFAULT_BINDINGS, type Action, type Bindings } from './Bindings';
+import { ACTIONS, DEFAULT_BINDINGS, MAX_BUTTON, type Action, type Bindings } from './Bindings';
+import { DEFAULT_STICK, MAX_DEADZONE, type StickSettings } from './Sticks';
 import { DEFAULT_SURFER, sanitizeSurfer, type SurferSettings } from './SurferChoice';
 import { PRESETS } from './Graphics';
 
@@ -41,9 +42,11 @@ export interface GraphicsSettings extends AdvancedGraphics {
   preset: GraphicsPreset;
 }
 
-export interface ControlSettings {
+export interface ControlSettings extends StickSettings {
   bindings: Bindings;
   handedness: 'right' | 'left';
+  /** Which default pad layout the bindings started from: 2 since C1 moved the hand to LB. A save without it is migrated once. */
+  padLayout: 2;
 }
 
 export interface AccessibilitySettings {
@@ -81,7 +84,8 @@ export interface GameSettings {
   /** Who the player rides as, chosen on the Surf screen (G7 Part B). */
   surfer: SurferSettings;
   detected?: Detection;
-  seen: { rideHints: boolean; lowPerformanceNotice: boolean };
+  /** One-off notices seen; `steamController`: a Steam Controller has connected, so the menu's Connect button goes (spec C1). */
+  seen: { rideHints: boolean; lowPerformanceNotice: boolean; steamController: boolean };
 }
 
 export const SETTINGS_KEY = 'breakline.settings.v1';
@@ -100,11 +104,11 @@ export function defaultSettings(prefersReducedMotion = false): GameSettings {
       preset: 'auto', renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto',
       seaDetail: 'standard', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich',
     },
-    controls: { bindings: copyBindings(DEFAULT_BINDINGS), handedness: 'right' },
+    controls: { bindings: copyBindings(DEFAULT_BINDINGS), handedness: 'right', ...DEFAULT_STICK, padLayout: 2 },
     audio: { master: 1, sea: 1, board: 1, ui: 1, muteInBackground: true },
     accessibility: { reducedMotion: prefersReducedMotion, uiScale: 1, highContrastHud: false, monoAudio: false },
     surfer: { ...DEFAULT_SURFER },
-    seen: { rideHints: false, lowPerformanceNotice: false },
+    seen: { rideHints: false, lowPerformanceNotice: false, steamController: false },
   };
 }
 
@@ -126,19 +130,31 @@ function within(value: unknown, min: number, max: number, fallback: number): num
   return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max ? value : fallback;
 }
 
-function sanitizeBindings(raw: unknown, defaults: Bindings): Bindings {
+/** The pad defaults before C1, which a save from then still holds unless the player changed them. */
+const LEGACY_PAD_DEFAULTS: Partial<Record<Action, number[]>> = { hand: [2], popUp: [0] };
+
+function sanitizeBindings(raw: unknown, defaults: Bindings, legacy: boolean): Bindings {
   const source = record(raw);
   const keyboard = record(source.keyboard);
   const gamepad = record(source.gamepad);
   const validKeys = (value: unknown): value is string[] => Array.isArray(value) && value.length >= 1 && value.length <= 2
     && value.every((code) => typeof code === 'string' && code.length > 0);
   const validButtons = (value: unknown): value is number[] => Array.isArray(value) && value.length >= 1 && value.length <= 2
-    && value.every((button) => Number.isInteger(button) && button >= 0 && button <= 16);
+    && value.every((button) => Number.isInteger(button) && button >= 0 && button <= MAX_BUTTON);
   const result = copyBindings(defaults);
   for (const action of ACTIONS) {
     if (action === 'pause') continue;
     if (validKeys(keyboard[action])) result.keyboard[action] = [...keyboard[action]];
     if (validButtons(gamepad[action])) result.gamepad[action] = [...gamepad[action]];
+  }
+  // C1 moved the hand to LB and added the grips: a save still on the old defaults moves too, unless another action holds a new button.
+  if (legacy) {
+    for (const [action, old] of Object.entries(LEGACY_PAD_DEFAULTS) as [Action, number[]][]) {
+      const fresh = defaults.gamepad[action];
+      const unchanged = result.gamepad[action].join() === old.join();
+      const taken = ACTIONS.some((other) => other !== action && fresh.some((button) => result.gamepad[other].includes(button)));
+      if (unchanged && !taken) result.gamepad[action] = [...fresh];
+    }
   }
   return result;
 }
@@ -191,8 +207,13 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       waterLook: oneOf(graphics.waterLook, ['classic', 'rich'] as const, presetLook),
     },
     controls: {
-      bindings: sanitizeBindings(controls.bindings, defaults.controls.bindings),
+      bindings: sanitizeBindings(controls.bindings, defaults.controls.bindings, controls.padLayout !== 2),
       handedness: oneOf(controls.handedness, ['right', 'left'] as const, defaults.controls.handedness),
+      trimStick: oneOf(controls.trimStick, ['right', 'left'] as const, defaults.controls.trimStick),
+      stickResponse: oneOf(controls.stickResponse, ['linear', 'precise'] as const, defaults.controls.stickResponse),
+      deadzoneSteam: within(controls.deadzoneSteam, 0, MAX_DEADZONE, defaults.controls.deadzoneSteam),
+      deadzoneGamepad: within(controls.deadzoneGamepad, 0, MAX_DEADZONE, defaults.controls.deadzoneGamepad),
+      padLayout: 2,
     },
     audio: {
       master: within(audio.master, 0, 1, defaults.audio.master),
@@ -212,6 +233,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
     seen: {
       rideHints: flag(seen.rideHints, defaults.seen.rideHints),
       lowPerformanceNotice: flag(seen.lowPerformanceNotice, defaults.seen.lowPerformanceNotice),
+      steamController: flag(seen.steamController, defaults.seen.steamController),
     },
   };
 }

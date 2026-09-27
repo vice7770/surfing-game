@@ -106,13 +106,38 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [S1 sound](
     Wind, rush, rail, the pop-up, the click and the chime stay synthesised.
   - **The user's listening playtest,** which tunes the mapping's provisional levels.
 
+### P1 · Steam Controller (C1) — `In Progress (hardware check open)`
+
+Requirements agreed in a grilling session on 2026-09-26 ([spec](docs/superpowers/specs/2026-09-26-steam-controller.md)). The plan is [C1 Steam Controller](docs/superpowers/plans/2026-09-26-c1-steam-controller.md). The user's 2026 Steam Controller (Puck and cable) plays in Chrome and Arc through WebHID, because on macOS neither the browser nor Steam exposes it as a gamepad.
+- [x] **Driver:**
+  - SDL's Triton protocol, ported and credited in `docs/ASSETS.md`, turns the vendor HID report into a standard pad (buttons 0–16, plus L4, R4, L5, R5 and ··· as 17–21).
+  - Lizard mode is off while the tab is visible (repeated every second) and handed back when it is hidden.
+  - A controller that goes quiet for 1 s, leaves the Puck or is unplugged lets go.
+- [x] **Connecting:** a Connect row in Settings › Controls, and a menu-strip button until a controller has connected once. The browser remembers the controller afterwards. Safari says "Needs Chrome or Arc".
+- [x] **Precision:**
+  - trim moves to the right stick by default, for every gamepad (a Trim stick setting puts it back);
+  - Stick response Linear or Precise (Linear until the turn-rate fix);
+  - dead zones 0.05 for the Steam Controller and 0.15 for other gamepads, each with a slider;
+  - the pad touched last drives the sticks.
+- [x] **Buttons:**
+  - the hand moves from X to LB; on the Steam Controller L4 also does the hand and R4 also pops up;
+  - Settings shows two pad slots per action;
+  - old saves migrate once;
+  - hints and Settings name View, Menu and the grips after the Steam Controller was used last.
+- [ ] **The user's hardware check:**
+  - open `/controller-check.html` in Chrome on localhost, with the controller on the Puck and then on the cable;
+  - confirm the stick stops moving the mouse, the buttons and sticks read right, and the rate at rest (for the 1 s stale rule);
+  - download two recordings (at rest and moving) for test fixtures;
+  - see whether Steam running alongside is clean.
+- [ ] **Done:** the user's hand check in a ride.
+- **Later, each with its own grilling:** gyro steering, the trackpads, rumble.
+
 ### Later — `Backlog`
 
 Recorded in the same session; each gets its own grilling before work starts.
 1. **Multiplayer beach:** rooms with a player limit the host sets, players starting on the sand, and a beach bar to hang out in. Crowded lineups where surfers and boards collide physically are part of the fun, as on a real busy beach. Details wait for its grilling: room sizes, who hosts, board and body collisions, and whether solo play also starts on the sand.
 2. **Filmed menu background:** a sequence of waves forming and breaking, filmed with the `?record` tool once the waves are finished. It replaces the live menu background.
 3. **Music:** none in S1 (grilling, 2026-09-26). Good CC0 music is scarce; a CC-BY or paid track would need a credits screen.
-4. **A physical gamepad, checked by hand** (moved here by the user, 2026-09-26). The mapping is covered by unit tests.
 
 ## Next milestone — physical wave formation — `In Progress`
 
