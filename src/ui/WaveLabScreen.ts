@@ -88,7 +88,7 @@ export function createWaveLabScreen(
   let soundPanel: HTMLElement | undefined;
 
   const refreshApply = () => {
-    const waiting = needsRebuild(running.physical, draft.physical);
+    const waiting = needsRebuild(running, draft);
     apply.disabled = !waiting;
     pending.hidden = !waiting;
   };
@@ -151,8 +151,20 @@ export function createWaveLabScreen(
         edited(true);
       }, 'look')),
       options.devTools ? group('lab.group.dev',
-        segmented([{ value: 2, label: 'Boussinesq' }, { value: 1, label: 'Shallow water' }] as const, physical.stage, (stage) => setPhysical('stage', stage), 'stage'),
-        segmented([{ value: 'auto', label: 'GPU when available' }, { value: 'cpu', label: 'CPU only' }] as const, physical.compute, (compute) => setPhysical('compute', compute), 'compute'),
+        // The graphics settings' water (as Surf runs it), or a solver and compute chosen here.
+        segmented([{ value: 'graphics', label: 'As Graphics' }, { value: 2, label: 'Boussinesq' }, { value: 1, label: 'Shallow water' }] as const,
+          draft.water === 'graphics' ? 'graphics' : physical.stage, (choice) => {
+            if (choice === 'graphics') {
+              draft.water = 'graphics';
+              edited(true);
+            } else {
+              draft.water = 'chosen';
+              setPhysical('stage', choice);
+            }
+          }, 'stage'),
+        draft.water === 'chosen'
+          ? segmented([{ value: 'auto', label: 'GPU when available' }, { value: 'cpu', label: 'CPU only' }] as const, physical.compute, (compute) => setPhysical('compute', compute), 'compute')
+          : null,
         handlers.soundCheck ? el('button', {
           class: 'button-secondary', attrs: { type: 'button' }, dataset: { nav: '' }, text: 'Sound check',
           on: {
@@ -198,6 +210,10 @@ export function createWaveLabScreen(
     el('div', { class: 'segmented lab-speed lab-jumps' }, ...jumps),
     tool('eye', 'lab.hideUi', () => handlers.hideUi()),
     menu);
+  // A mouse click hands the keys back to the scene, so Space pauses the sea instead of pressing the button again.
+  toolbar.addEventListener('pointerup', (event) => {
+    if (event.pointerType === 'mouse') (document.activeElement as HTMLElement | null)?.blur();
+  });
 
   // The info card.
   const summary = el('strong', { text: '…' });

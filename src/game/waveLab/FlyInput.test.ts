@@ -84,6 +84,21 @@ describe('FlyInput', () => {
     expect(press('KeyM')).toBe(false);
   });
 
+  // Review: after clicking Follow or dragging a slider, focus stays there, and the keys stopped flying.
+  it('keeps flying with focus on a toolbar button or a slider, leaving them their own keys', () => {
+    const { input, actions, key } = setup();
+    key('keydown', 'KeyW', { tagName: 'BUTTON' });
+    key('keydown', 'KeyE', Object.assign({ tagName: 'INPUT' }, { type: 'range' }));
+    key('keydown', 'KeyF', { tagName: 'BUTTON' });
+    key('keydown', 'ArrowLeft', Object.assign({ tagName: 'INPUT' }, { type: 'range' }));
+    key('keydown', 'Enter', { tagName: 'BUTTON' });
+    const control = input.read(1 / 60);
+    expect(control.forward).toBe(1);
+    expect(control.rise).toBe(1);
+    expect(control.strafe).toBe(0);
+    expect(actions.follow).toHaveBeenCalledTimes(1);
+  });
+
   it('ignores keys aimed at form controls except Escape', () => {
     const { input, actions, key } = setup();
     key('keydown', 'KeyW', { tagName: 'INPUT' });

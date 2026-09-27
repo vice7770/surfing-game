@@ -31,7 +31,24 @@ export const LOOK_PER_PIXEL = 0.004;
 export const PAD_LOOK_RATE = 2.2;
 export const PAD_DEAD_ZONE = 0.15;
 
-const EDITABLE = new Set(['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA']);
+/** Keys a focused control keeps for itself: a button its Space and Enter, a slider its arrows and paging keys. */
+const BUTTON_KEYS = new Set(['Space', 'Enter', 'NumpadEnter']);
+const SLIDER_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']);
+
+/**
+ * Whether a key belongs to the focused control rather than the lab: all of them in
+ * a text field or a select, Space and Enter on a button, the arrows on a slider.
+ * Esc always reaches the lab. Only those, so a click on the toolbar or a slider
+ * does not stop the keys flying.
+ */
+function ownedByControl(target: EventTarget | null, code: string): boolean {
+  if (code === 'Escape') return false;
+  const element = target as (Element & { type?: string }) | null;
+  const tag = element?.tagName;
+  if (tag === 'BUTTON') return BUTTON_KEYS.has(code);
+  if (tag === 'INPUT' && element?.type === 'range') return SLIDER_KEYS.has(code);
+  return tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA';
+}
 const MOVE_KEYS: Record<string, { axis: 'strafe' | 'forward' | 'rise'; sign: 1 | -1 }> = {
   KeyW: { axis: 'forward', sign: 1 }, ArrowUp: { axis: 'forward', sign: 1 },
   KeyS: { axis: 'forward', sign: -1 }, ArrowDown: { axis: 'forward', sign: -1 },
@@ -157,9 +174,7 @@ export class FlyInput {
   }
 
   private keyDown(event: KeyboardEvent): void {
-    const tag = (event.target as Element | null)?.tagName;
-    if (tag && EDITABLE.has(tag) && event.code !== 'Escape') return;
-    if (!this.active) return;
+    if (ownedByControl(event.target, event.code) || !this.active) return;
     // Used here, so the menus that also listen for keys (Esc among them) leave the press alone.
     if (MOVE_KEYS[event.code] || ACTION_KEYS.has(event.code)) event.preventDefault?.();
     if (!event.repeat && !this.held.has(event.code)) this.keyPress(event.code);

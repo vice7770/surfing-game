@@ -6,6 +6,12 @@ import { SURF_SPOTS, TIMES, type TimeOfDay } from '../SurfConditions';
 /** The Wave Lab's settings (spec L1): the sea, the light and the water look, remembered between visits. */
 export interface WaveLabSettings {
   physical: PhysicalSettings;
+  /**
+   * Which solver and compute run the sea: the graphics settings' (the Auto
+   * benchmark's choice, as Surf uses), or `physical.stage` and `physical.compute`
+   * as a developer chose them in the panel (dev tools only).
+   */
+  water: 'graphics' | 'chosen';
   sunHeight: number;
   sunDirection: number;
   waterLook: WaterLook;
@@ -16,6 +22,7 @@ export const LAB_KEY = 'breakline.wavelab.v1';
 export function defaultLabSettings(): WaveLabSettings {
   return {
     physical: { ...DEFAULT_PHYSICAL_SETTINGS, spot: 'canyon', source: 'practice' },
+    water: 'graphics',
     ...TIMES.midday,
     waterLook: 'rich',
   };
@@ -50,15 +57,24 @@ export function sanitizeLabSettings(value: unknown): WaveLabSettings {
       stormDurationHours: within(p.stormDurationHours, 3, 96, d.stormDurationHours),
       stormDistanceKm: within(p.stormDistanceKm, 0, 10000, d.stormDistanceKm),
     },
+    water: oneOf<WaveLabSettings['water']>(raw.water, ['graphics', 'chosen'], base.water),
     sunHeight: within(raw.sunHeight, 0, 1, base.sunHeight),
     sunDirection: within(raw.sunDirection, -180, 180, base.sunDirection),
     waterLook: oneOf<WaterLook>(raw.waterLook, ['classic', 'rich'], base.waterLook),
   };
 }
 
-/** Whether a drafted sea differs from the running one (spec L1: those changes wait for Apply). */
-export function needsRebuild(running: PhysicalSettings, draft: PhysicalSettings): boolean {
-  return (Object.keys(running) as (keyof PhysicalSettings)[]).some((key) => running[key] !== draft[key]);
+/** Whether a drafted sea differs from the running one (spec L1: those changes wait for Apply); light and look never do. */
+export function needsRebuild(running: WaveLabSettings, draft: WaveLabSettings): boolean {
+  return running.water !== draft.water
+    || (Object.keys(running.physical) as (keyof PhysicalSettings)[]).some((key) => running.physical[key] !== draft.physical[key]);
+}
+
+/** The solver and compute the lab's sea runs on: the graphics settings', unless a developer chose them. */
+export function labWater(
+  settings: WaveLabSettings, graphics: { stage: 1 | 2; compute: 'auto' | 'cpu' }, devTools: boolean,
+): { stage: 1 | 2; compute: 'auto' | 'cpu' } {
+  return devTools && settings.water === 'chosen' ? { stage: settings.physical.stage, compute: settings.physical.compute } : { ...graphics };
 }
 
 /** The preset whose sun this is, or 'custom'. */

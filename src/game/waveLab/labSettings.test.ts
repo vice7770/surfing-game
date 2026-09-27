@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TIMES } from '../SurfConditions';
-import { LAB_KEY, LabStore, defaultLabSettings, needsRebuild, sanitizeLabSettings, timeOfDayFor } from './labSettings';
+import { LAB_KEY, LabStore, defaultLabSettings, labWater, needsRebuild, sanitizeLabSettings, timeOfDayFor } from './labSettings';
 
 const memory = () => {
   const data = new Map<string, string>();
@@ -26,11 +26,24 @@ describe('lab settings', () => {
     expect(lab.waterLook).toBe('rich');
   });
 
-  it('rebuilds for sea settings, not for light or look', () => {
+  it('rebuilds for sea settings and the water tier, not for light or look', () => {
     const lab = defaultLabSettings();
-    expect(needsRebuild(lab.physical, { ...lab.physical })).toBe(false);
-    expect(needsRebuild(lab.physical, { ...lab.physical, tide: 0.5 })).toBe(true);
-    expect(needsRebuild(lab.physical, { ...lab.physical, spot: 'reef' })).toBe(true);
+    expect(needsRebuild(lab, { ...lab, sunHeight: 0.2, waterLook: 'classic' })).toBe(false);
+    expect(needsRebuild(lab, { ...lab, physical: { ...lab.physical, tide: 0.5 } })).toBe(true);
+    expect(needsRebuild(lab, { ...lab, physical: { ...lab.physical, spot: 'reef' } })).toBe(true);
+    expect(needsRebuild(lab, { ...lab, water: 'chosen' })).toBe(true);
+  });
+
+  // Review: the lab ran the heavy solver even where the Auto benchmark had picked the light one.
+  it('runs the water the graphics settings chose, unless a developer chose otherwise', () => {
+    const lab = defaultLabSettings();
+    expect(lab.water).toBe('graphics');
+    const graphics = { stage: 1, compute: 'cpu' } as const;
+    expect(labWater(lab, graphics, true)).toEqual(graphics);
+    const chosen = { ...lab, water: 'chosen' as const, physical: { ...lab.physical, stage: 2 as const, compute: 'auto' as const } };
+    expect(labWater(chosen, graphics, true)).toEqual({ stage: 2, compute: 'auto' });
+    expect(labWater(chosen, graphics, false)).toEqual(graphics);
+    expect(sanitizeLabSettings({ water: 'nonsense' }).water).toBe('graphics');
   });
 
   it('names a preset time of day only when the sun matches it', () => {

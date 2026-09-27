@@ -53,7 +53,7 @@ import type { SpotName } from './wave/Bathymetry';
 import { App, type LabHost } from './ui/App';
 import { WaveLab } from './game/waveLab/WaveLab';
 import { FlyInput } from './game/waveLab/FlyInput';
-import type { WaveLabSettings } from './game/waveLab/labSettings';
+import { labWater, type WaveLabSettings } from './game/waveLab/labSettings';
 import './style.css';
 import './ui/ui.css';
 
@@ -661,11 +661,11 @@ class SurfGame {
     };
   }
 
-  /** The lab's sea (spec L1): no rider; solver and compute as the lab asks with the dev tools on, else as the graphics settings say. */
+  /** The lab's sea (spec L1): no rider; solver and compute as the graphics settings say, unless a developer chose them. */
   private async enterLab(settings: WaveLabSettings): Promise<boolean> {
     this.leaveOnline();
-    const physical = DEV_TOOLS ? settings.physical
-      : { ...settings.physical, stage: this.graphics?.stage ?? 2, compute: this.graphics?.compute ?? 'auto' };
+    const graphics = { stage: this.graphics?.stage ?? 2, compute: this.graphics?.compute ?? 'auto' } as const;
+    const physical = { ...settings.physical, ...labWater(settings, graphics, DEV_TOOLS) };
     if (!(await this.startPhysical(this.seed, physical, { sun: settings, rider: false, lab: true }))) return false;
     this.waveLab.begin(this.physicalMode);
     this.applyWaterLook(settings.waterLook);
