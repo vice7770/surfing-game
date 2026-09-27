@@ -63,8 +63,45 @@ Step costs from the tube report (Wave Lab defaults, 1 seed, 4 periods), on a mac
 
 The difference is mostly the load. The 30 m tank's stable step (about 0.025 s at the Big swell's peak) is longer than the game's 1/60 s frame, so the Reef still steps once per frame, as before, on the same 37,280 cells. The ~1.7× CFL cost the spec expected applies only to steps longer than 0.025 s: reports at 1/30 s frames, and slow-motion catch-up.
 
+## The design sweep (Part A, Task 8)
+
+### The runs
+
+The Small swell: Hs 1.3 m, Tp 15 s, spread 0.2. 2 seeds × 12 periods each, measured by `npm run report:rideability` along the break line. The predictor is `ledgePeel`, phase matching over the 10 m shelf.
+
+| Reef | Ledge angle | Swell from | Predicted peel speed | Measured median | Median α | Close-out | Mixed | Pro-makeable |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Today's (A-frame) | — | 20° | — | — | 11° | 45 % | 50 % | 5 % |
+| New | 40° | 20° | 12.2 m/s | 22.4 m/s | 14° | 38 % | 54 % | 8 % |
+| New | 45° | 20° | 11.4 | 17.4 | 18° | 54 % | 38 % | 8 % |
+| New | 50° | 20° | 10.9 | 18.5 | 17° | 42 % | 46 % | 13 % |
+| New | 55° | 20° | 10.4 | 21.2 | 15° | 43 % | 39 % | 17 % |
+| New | 45° | 10° | 12.3 | 14.5 | 22° | 46 % | 29 % | 25 % |
+| New | 45° | 25° | 11.1 | 16.0 | 20° | 29 % | 63 % | 8 % |
+| New, long-crested (spread 0) | 45° | 20° | 11.4 | 16.0 | 20° | 29 % | 58 % | 13 % |
+
+Every new design peels better than today's Reef. None reaches the target, a 10–13 m/s peel with at most 35 % close-outs, so the plan's stop rule applies.
+
+Catching on today's Reef, the baseline (`report:catch -- --practice --ghosts`, 2 seeds × 3 min): 1018 attempts, 62 cues, 14 stood, no ride of 3 s or more, longest 2.6 s.
+
+### What the break actually does
+
+Each breaking onset (column, time, cross-shore position) was recorded on a long-crested sea and grouped into connected fronts: neighbouring columns within 1 s.
+- **The peel meter mixes two waves.** A peel along the whole ledge takes about one period, so the next wave starts at the peak while the last is still breaking inside. The meter fits every onset within one period, so it reads "mixed" or absurd speeds.
+- **It also counts breaks that aren't on the reef.** Waves break on the beach face past the reef's end (x > 25 m, in the pass and lagoon), and the meter counts those columns too.
+- **The first wave, alone, matches the prediction.** It peeled 10.7 m/s along the ledge (r² 0.96).
+- **Later waves break in sections.** For example, x −80…−48 at 16 m/s, then −48…−26 at 12 m/s. A likely cause: the steep ledge reflects about 40 % of each wave's amplitude (a long-wave step from 10 m to 1.5 m), and the interference breaks the ledge in patches.
+
+Fronts along the ledge on the 10 m shelf run a median of about 17 m/s, 1.5 times the prediction.
+
+### A shallower shelf
+
+With the shelf at 7 m instead of 10 m (same design, long-crested sea), the ledge fronts run 9–13.5 m/s. One front ran 127 columns at 11.5 m/s; the median is 13.5 m/s, α 26°. The prediction there is 10.0 m/s.
+
 ## Commands
 
 - `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "steep Reef holds"`
 - `http://localhost:<port>/gpu-check.html?spot=reef`, from `npx vite --port <port> --strictPort --host localhost` in the worktree
 - `npm run report:tubes -- --spots reef --seeds 1 --periods 4 --out <file>`, here and in a detached `origin/main` worktree
+- `npm run report:rideability -- --spots reef --hs 1.3 --tp 15 --direction <dir> --spread 0.2 --seeds 2 --periods 12 --reef angle=<angle>`
+- `npm run report:catch -- --practice --ghosts --spots reef --seeds 2 --minutes 3` (baseline, in the `origin/main` worktree)
