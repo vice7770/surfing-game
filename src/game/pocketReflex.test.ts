@@ -18,6 +18,15 @@ describe('pocket reflex', () => {
     expect(pocketTrim(at(POCKET_DISTANCE + 2))).toBeLessThan(0);
   });
 
+  // Traced on the reference wave (riding-the-wave Task 7): held back on a board already slowing below planing, the
+  // tail sank (the nose 30–60° up) and the rider fell. The reflex sits back only while the board planes.
+  it('sits back only while the board planes', () => {
+    expect(pocketTrim({ ...at(20), speedOverGround: 6 })).toBe(-POCKET_TRIM);
+    expect(pocketTrim({ ...at(20), speedOverGround: 4 })).toBeCloseTo(-POCKET_TRIM / 2, 9);
+    expect(pocketTrim({ ...at(20), speedOverGround: 2.5 })).toBe(0);
+    expect(pocketTrim({ ...at(0), speedOverGround: 2.5 })).toBeGreaterThan(0);
+  });
+
   it('does nothing with no curl or no wave', () => {
     expect(pocketTrim(at(Infinity))).toBe(0);
     expect(pocketTrim(at(3, false))).toBe(0);
