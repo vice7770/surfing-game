@@ -821,9 +821,10 @@ export class PlungingLip implements LipParcelSource {
       }
       // A strip stays while its water flies or its void is still collapsing.
       if (strip.live === 0 && (!tube || collapsed(tube, this.time) >= 1)) this.removeStrip(stripId, strip);
-      if (splash > 0) this.throwSplash(strip, x, y, z, splash, vx, vy, vz);
     }
-    this.onLand?.(x, z, volume, vx, vy, vz, flight);
+    // Each drop is told of once: the splash-up's share when it comes down itself, unless it could not fly.
+    const flies = splash > 0 && this.throwSplash(strip, x, y, z, splash, vx, vy, vz);
+    this.onLand?.(x, z, flies ? volume - splash : volume, vx, vy, vz, flight);
   }
 
   private removeStrip(stripId: number, strip: LipStrip): void {
@@ -986,16 +987,16 @@ export class PlungingLip implements LipParcelSource {
   }
 
   /** One splash-up parcel, gathered with the rest of its jet's into one strip, so they draw as one sheet. */
-  private throwSplash(jet: LipStrip, x: number, y: number, z: number, volume: number, vx: number, vy: number, vz: number): void {
-    const parcel = this.free.pop();
-    if (parcel === undefined) {
-      // No room in the pool: the water lands after all.
+  private throwSplash(jet: LipStrip | undefined, x: number, y: number, z: number, volume: number, vx: number, vy: number, vz: number): boolean {
+    const parcel = jet ? this.free.pop() : undefined;
+    if (!jet || parcel === undefined) {
+      // No room in the pool (or no jet to gather it with): the water lands after all.
       const cell = this.solver.cellIndex(x, z);
       const area = this.solver.dx * this.solver.dz[Math.floor(cell / this.solver.nx)];
       this.solver.h[cell] += volume / area;
       this.solver.qx[cell] += (volume * SPLASH_UP.horizontal * vx) / area;
       this.solver.qz[cell] += (volume * SPLASH_UP.horizontal * vz) / area;
-      return;
+      return false;
     }
     let splashId = jet.splash;
     let splash = splashId === undefined ? undefined : this.strips.get(splashId);
@@ -1031,5 +1032,6 @@ export class PlungingLip implements LipParcelSource {
     this.index[parcel] = splash.parcels.length - 1;
     this.launchTime[parcel] = splash.launchTime;
     this.kind[parcel] = 1;
+    return true;
   }
 }

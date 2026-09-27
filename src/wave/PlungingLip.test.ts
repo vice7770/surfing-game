@@ -208,6 +208,17 @@ describe('the collapsing tube and its air (G9)', () => {
 });
 
 describe('the splash-up’s landings (G9)', () => {
+  it('reports each drop of water landing once: the jet what stays, its splash-up the rest when it comes down', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 512);
+    let reported = 0;
+    lip.onLand = (_x, _z, volume) => (reported += volume);
+    const thrown = lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3);
+    for (let frame = 0; frame < 2400; frame += 1) lip.step(1 / 240);
+    expect(lip.airborneVolume()).toBe(0);
+    expect(reported).toBeCloseTo(thrown, 12);
+  });
+
   it('tells a splash-up’s landing from a jet’s, so tube measurements can leave splash-ups out', () => {
     const solver = basin();
     const lip = new PlungingLip(solver, 512);
@@ -239,7 +250,8 @@ describe('the splash-up (G9)', () => {
       if (parcel.kind === 1) splashes.push({ volume: parcel.volume, vx: parcel.vx, vy: parcel.vy, vz: parcel.vz });
     });
     expect(splashes).toHaveLength(1);
-    expect(splashes[0].volume).toBeCloseTo(SPLASH_UP.share * landed.volume, 12);
+    // The landing reports the water that stays, (1 − σ) of the parcel; its splash-up carries σ.
+    expect(splashes[0].volume).toBeCloseTo((SPLASH_UP.share / (1 - SPLASH_UP.share)) * landed.volume, 12);
     expect(splashes[0].vz).toBeCloseTo(SPLASH_UP.horizontal * landed.vz, 9);
     expect(splashes[0].vy).toBeCloseTo(SPLASH_UP.vertical * Math.abs(landed.vy), 9);
   });
