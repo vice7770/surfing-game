@@ -1,5 +1,7 @@
 # Duck-dive press momentum Implementation Plan
 
+> **Status (2026-09-28): stopped at Task 1, Step 8; not adopted.** The code is parked on branch `claude/duck-dive-momentum`. Still-water dives capsized (the knee's roll momentum), and the pitch effect was too small to sink the nose first. See the spec's status line and the roadmap.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** While ducking, the angular momentum of the body's own change of shape enters the board–rider solve, so the press turns the board nose-down at the hands (and the knee the tail down).

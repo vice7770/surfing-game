@@ -1,6 +1,6 @@
 # Duck-dive: the press pushes the nose (design)
 
-Status: **agreed** with the user on 2026-09-27 (brainstorming: the user chose "the rider pivots on its hands", then the revision below, after the solver showed what the pivot actually needs). A follow-up to the [wipeout and duck-dive spec](2026-09-27-wipeout-and-duck-dive.md), Part A's duck-dive. The milestone's principles hold: physical inputs, not scripted moves; checks are never tuned into passing; performance is measured, never a gate.
+Status: **tried, not adopted** (2026-09-28). Agreed with the user on 2026-09-27 (brainstorming: the user chose "the rider pivots on its hands", then the revision below, after the solver showed what the pivot actually needs). Built as planned and parked on branch `claude/duck-dive-momentum`. It turns the pair correctly: in free fall the board turns nose-down as the chest rises. But on still water it only eases the press's nose-up pitch (10.8° against 13.1° at 0.3 s), which the knee's reverse momentum undoes by 1.5 s. The knee's asymmetric shape change also carries roll momentum that capsizes the perched pair, even on still water. The findings, and why the rigid rider cannot make a real duck-dive, are in the roadmap's P11 entry; the duck-dive is parked pending the user's playtest. A follow-up to the [wipeout and duck-dive spec](2026-09-27-wipeout-and-duck-dive.md), Part A's duck-dive. The milestone's principles hold: physical inputs, not scripted moves; checks are never tuned into passing; performance is measured, never a gate.
 
 ## Why
 
