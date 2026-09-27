@@ -444,11 +444,11 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
 
     | | Reef | Beach |
     |---|---|---|
-    | Splash-up, 90th percentile | 1.12 m | 0.76 m |
-    | Spit speed, median | 10.8 m/s | 9.9 m/s |
-    | Median surveyed void fraction | 0.15 | 0.05 |
-    | Surveys at α_max | 24 % | 2 % |
-    | Foam-ball sprites, median | 120 | 41 |
+    | Splash-up, 90th percentile | 1.12 m | 0.77 m |
+    | Spit speed, median (fastest) | 10.5 m/s (52) | 8.8 m/s (42) |
+    | Median surveyed void fraction | 0.14 | 0.05 |
+    | Surveys at α_max | 22 % | 2 % |
+    | Foam-ball sprites, median | 117 | 53 |
 
     Collapses take 0.3–0.4 s, and the Canyon barely plunges.
   - **Judging it:** `?inpage&waterSheet&whitewater` (with `&spot=reef` or `&spot=beach`) holds the sea on a collapsing tube and shoots its whitewater.
@@ -466,7 +466,7 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
       - a void's back stood as a wall half its width deep at the crest, which the mesh drew as a jagged crack along the lip. **Fixed:** its floor now meets the surface over `TUBE_EDGE` (0.35 m) behind it, in the physics and on the GPU alike. The front, where the jet lands, is unchanged, so the tube report still holds;
       - **open:** where a peel's columns collapse at different stages, a column whose void has gone stands as a spike a metre wide between carved neighbours (Part A's instant close did the same). It needs the peel to collapse as one section;
     - the spray pool (4,096) is full a fifth of the time on the Reef and the Point, and the lip's splash gives way first;
-    - rare spits reach 160–180 m/s where a small mouth drains a long closing section.
+    - the review's deferred whitewater fixes are done (2026-09-27): spits no faster than the falling lip drives the air (√(ρ_w/ρ_a)·√(gW/2); the rest erupts); each drop of lip water reported landing once; impact drops thrown up as fast as the splash-up sheet; the aeration follows the window before adding air; its snapshot write halved; the report balances the air on what the tubes trapped.
 
     Whitewater forces on bodies and the player's tube camera (P12) stay in the Backlog.
 

@@ -18,7 +18,7 @@ import {
   Vector4,
 } from 'three';
 import type { WaterLook } from './water/waterLook';
-import { RICH_FOAM, RICH_REFLECTION, RICH_WATER, richAerationVertexPars, richBeginNormal, richFragmentPars, richReflectionPars, richNormalFragment, richVertexHeight, waterCubicPars } from './water/richWaterGlsl';
+import { RICH_FOAM, RICH_REFLECTION, RICH_WATER, richAerationFragmentPars, richAerationVertexPars, richBeginNormal, richFragmentPars, richReflectionPars, richNormalFragment, richVertexHeight, waterCubicPars } from './water/richWaterGlsl';
 import {
   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
 } from './water/richPatch';
@@ -295,7 +295,7 @@ export class WaterSurface {
           .replace('#include <beginnormal_vertex>', richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}`)
+          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}`)
           // The crest light marches through the carved surface (G9): through a tube's void, not water.
           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')

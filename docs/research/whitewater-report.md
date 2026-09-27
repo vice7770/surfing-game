@@ -16,19 +16,19 @@ Step times are wall-clock on a shared machine: the surf-zone step and the spray'
 
 | Spot | Jets | Splash-up, median, m | 90th percentile, m | Tubes closed | Collapse, median, s | Longest, s | Spits | Spit speed, median, m/s | 90th percentile, m/s | Fastest, m/s | Eruption steps | Peak void fraction | Median survey peak | Surveys at α_max | Plume depth, median, m | Deepest, m | Foam-ball sprites, median | Most | Spray peak (spray / mist / foam ball / tube spray / tube mist) | Spray pool full | Step, ms | Spray, ms |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| beach | 464 | 0.43 | 0.76 | 458 | 0.30 | 0.38 | 569 | 9.94 | 40.95 | 76.61 | 701 | 0.199 | 0.049 | 2 % | 0.93 | 0.99 | 41 | 188 | 4416 (3791 / 305 / 182 / 93 / 45) | 2 % | 44.0 | 0.48 |
-| point | 2844 | 0.47 | 0.97 | 2843 | 0.32 | 0.40 | 9308 | 3.67 | 27.52 | 180.31 | 2418 | 0.199 | 0.193 | 16 % | 1.32 | 1.34 | 36 | 812 | 5115 (3789 / 302 / 698 / 239 / 87) | 16 % | 31.6 | 0.65 |
-| reef | 2931 | 0.64 | 1.12 | 2921 | 0.38 | 0.48 | 6524 | 10.75 | 32.91 | 160.45 | 2403 | 0.199 | 0.150 | 24 % | 1.36 | 1.46 | 120 | 1019 | 5120 (3624 / 472 / 881 / 116 / 27) | 22 % | 80.7 | 1.39 |
-| canyon | 32 | 0.13 | 0.27 | 32 | 0.20 | 0.22 | 24 | 6.80 | 15.16 | 19.48 | 107 | 0.198 | 0.116 | 1 % | 0.34 | 0.48 | 3 | 23 | 1121 (993 / 128 / 0 / 0 / 0) | 0 % | 31.7 | 0.35 |
+| beach | 464 | 0.37 | 0.77 | 458 | 0.30 | 0.38 | 608 | 8.80 | 35.19 | 41.86 | 760 | 0.199 | 0.047 | 2 % | 0.93 | 0.99 | 53 | 187 | 4362 (3407 / 689 / 150 / 87 / 29) | 1 % | 67.0 | 0.74 |
+| point | 2844 | 0.41 | 0.96 | 2843 | 0.32 | 0.40 | 9299 | 3.66 | 27.17 | 55.46 | 2665 | 0.199 | 0.192 | 14 % | 1.32 | 1.34 | 37 | 798 | 4938 (3520 / 576 / 798 / 23 / 21) | 9 % | 45.7 | 0.88 |
+| reef | 2931 | 0.63 | 1.12 | 2921 | 0.38 | 0.48 | 6536 | 10.53 | 31.28 | 52.04 | 2653 | 0.199 | 0.139 | 22 % | 1.36 | 1.46 | 117 | 993 | 5120 (3544 / 552 / 848 / 133 / 43) | 17 % | 56.7 | 0.95 |
+| canyon | 32 | 0.04 | 0.16 | 32 | 0.20 | 0.22 | 29 | 8.26 | 13.93 | 15.66 | 108 | 0.198 | 0.117 | 1 % | 0.34 | 0.46 | 15 | 15 | 1121 (967 / 154 / 0 / 0 / 0) | 0 % | 36.4 | 0.36 |
 
-**The tubes' air.** Every closing tube's trapped air, where it went, and the error in its sum (m³; trapped from the escaping share ε = 0.5).
+**The tubes' air.** Every closing tube's trapped air, where it went, what the tubes still held when the run ended, and the error in the balance, m³. The share that escaped as spit and eruption should be ε = 50 %.
 
-| Spot | Trapped | Spit | Erupted | Bubbles | |Spit + erupted + bubbles − trapped| |
-|---|---:|---:|---:|---:|---:|
-| beach | 148.5 | 39.6 | 34.7 | 74.3 | 0.000000 |
-| point | 1186.7 | 521.1 | 72.2 | 593.3 | 0.000000 |
-| reef | 2117.2 | 911.5 | 147.1 | 1058.6 | 0.000000 |
-| canyon | 1.8 | 0.2 | 0.7 | 0.9 | 0.000000 |
+| Spot | Trapped | Spit | Erupted | Bubbles | Still held | |Spit + erupted + bubbles + held − trapped| | Escaped |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| beach | 148.6 | 36.0 | 38.2 | 74.3 | 0.05 | 0.000000 | 50 % |
+| point | 1187.0 | 486.7 | 106.8 | 593.5 | 0.00 | 0.000000 | 50 % |
+| reef | 2117.6 | 871.3 | 187.3 | 1058.7 | 0.30 | 0.000000 | 50 % |
+| canyon | 1.8 | 0.2 | 0.7 | 0.9 | 0.00 | 0.000000 | 50 % |
 
 **Against the sourced ranges** (docs/research/whitewater-sources.md):
 - **Peak void fraction:** about 0.2 under surf-zone plunging breakers, lower under spilling ones (Blenkinsopp & Chaplin 2007). It is the plume's cap, so the check is how often breaking reaches it.

@@ -99,6 +99,19 @@ describe('the aeration field', () => {
     solver.shiftAlongShore(3);
     field.update(1e-9);
     expect(moments(field, solver).x).toBeCloseTo(moved.x, 6);
+    // The columns the window brought in start clear.
+    for (let iz = 0; iz < solver.nz; iz += 1) {
+      for (let ix = solver.nx - 3; ix < solver.nx; ix += 1) expect(field.air[iz * solver.nx + ix]).toBe(0);
+    }
+  });
+
+  it('puts air added just after the window slides where it belongs, not shifted a second time', () => {
+    const solver = flatSolver();
+    const field = new AerationField(solver);
+    solver.shiftAlongShore(3);
+    field.addAir(0.5, 0.5, 0.2, 1);
+    field.update(1e-9);
+    expect(moments(field, solver).x).toBeCloseTo(0.5, 6);
   });
 
   it('holds no air on dry cells, and never more air than plume', () => {

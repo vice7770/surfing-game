@@ -59,6 +59,9 @@ for (const spot of spots) {
   let eruptedAir = 0;
   let eruptionSteps = 0;
   let bubbleAir = 0;
+  /** Air the tubes trapped as they closed, and what they still held when the run ended, m³. */
+  let trappedAir = 0;
+  let heldAir = 0;
   /** Per roller (a closing tube): the steps it was seen. */
   const collapseSteps: number[] = [];
   /** Each survey's highest void fraction, and deepest plume, m. */
@@ -139,12 +142,13 @@ for (const spot of spots) {
       steps += 1;
     }
     jets += simulation.lipJets;
+    trappedAir += lip.trappedAir;
+    heldAir += lip.heldAir;
     console.error(`${spot} seed ${seed}: ${simulation.lipJets} jets, ${((Date.now() - started) / 1000).toFixed(0)} s elapsed`);
   }
   const collapseTimes = collapseSteps.map((count) => count * STEP);
-  const trapped = (spitAir + eruptedAir) / TUBE_AIR.escape;
   rows.push(`| ${spot} | ${jets} | ${fixed(quantile(splashHeights, 0.5))} | ${fixed(quantile(splashHeights, 0.9))} | ${collapseTimes.length} | ${fixed(quantile(collapseTimes, 0.5))} | ${fixed(largest(collapseTimes))} | ${spitSpeeds.length} | ${fixed(quantile(spitSpeeds, 0.5))} | ${fixed(quantile(spitSpeeds, 0.9))} | ${fixed(largest(spitSpeeds))} | ${eruptionSteps} | ${fixed(largest(peakAir), 3)} | ${fixed(quantile(peakAir, 0.5), 3)} | ${Math.round((100 * peakAir.filter((peak) => peak >= 0.99 * AERATION.peak).length) / Math.max(1, peakAir.length))} % | ${fixed(quantile(plumeDepths, 0.5))} | ${fixed(largest(plumeDepths))} | ${fixed(quantile(foamBalls, 0.5), 0)} | ${fixed(largest(foamBalls), 0)} | ${sprayPeak} (${peakKinds.join(' / ')}) | ${Math.round((100 * sprayFull) / Math.max(1, steps))} % | ${fixed(stepMs / Math.max(1, steps), 1)} | ${fixed(sprayMs / Math.max(1, steps), 2)} |`);
-  airRows.push(`| ${spot} | ${fixed(trapped, 1)} | ${fixed(spitAir, 1)} | ${fixed(eruptedAir, 1)} | ${fixed(bubbleAir, 1)} | ${fixed(trapped > 0 ? Math.abs(spitAir + eruptedAir + bubbleAir - trapped) : Number.NaN, 6)} |`);
+  airRows.push(`| ${spot} | ${fixed(trappedAir, 1)} | ${fixed(spitAir, 1)} | ${fixed(eruptedAir, 1)} | ${fixed(bubbleAir, 1)} | ${fixed(heldAir, 2)} | ${fixed(trappedAir > 0 ? Math.abs(spitAir + eruptedAir + bubbleAir + heldAir - trappedAir) : Number.NaN, 6)} | ${trappedAir > 0 ? Math.round((100 * (spitAir + eruptedAir)) / (trappedAir - heldAir)) : 0} % |`);
 }
 
 const report = `# Whitewater report · physical surf zone
@@ -167,10 +171,10 @@ Step times are wall-clock on a shared machine: the surf-zone step and the spray'
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 ${rows.join('\n')}
 
-**The tubes' air.** Every closing tube's trapped air, where it went, and the error in its sum (m³; trapped from the escaping share ε = ${TUBE_AIR.escape}).
+**The tubes' air.** Every closing tube's trapped air, where it went, what the tubes still held when the run ended, and the error in the balance, m³. The share that escaped as spit and eruption should be ε = ${Math.round(TUBE_AIR.escape * 100)} %.
 
-| Spot | Trapped | Spit | Erupted | Bubbles | |Spit + erupted + bubbles − trapped| |
-|---|---:|---:|---:|---:|---:|
+| Spot | Trapped | Spit | Erupted | Bubbles | Still held | |Spit + erupted + bubbles + held − trapped| | Escaped |
+|---|---:|---:|---:|---:|---:|---:|---:|
 ${airRows.join('\n')}
 
 **Against the sourced ranges** (docs/research/whitewater-sources.md):
