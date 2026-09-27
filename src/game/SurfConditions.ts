@@ -36,6 +36,30 @@ export const SWELLS = {
   big: { significantHeight: 2.4, peakPeriod: 14, spread: 0.2 },
 } as const;
 
+/** A swell choice: buoy values, and a direction for spots whose swell comes from one side. */
+export interface SwellChoice {
+  significantHeight: number;
+  peakPeriod: number;
+  spread: number;
+  directionDegrees?: number;
+}
+
+/**
+ * The Reef's own swells (the Teahupo'o Reef spec, decision 4): long-period groundswells
+ * (Teahupo'o's are 2–5 m at 14–20 s, Shand 2024) from the peak's side, for faces of
+ * 2–3 / 3–4 / 5–6 m. Provisional until the size report calibrates them.
+ */
+export const REEF_SWELLS: Record<'small' | 'medium' | 'big', SwellChoice> = {
+  small: { significantHeight: 1.3, peakPeriod: 15, spread: 0.2, directionDegrees: 20 },
+  medium: { significantHeight: 1.9, peakPeriod: 16, spread: 0.2, directionDegrees: 20 },
+  big: { significantHeight: 3, peakPeriod: 17, spread: 0.15, directionDegrees: 20 },
+};
+
+/** A spot's swell for a Surf screen choice: the Reef's own, or the shared buoy values. */
+export function swellChoice(spot: SpotName, swell: Exclude<SwellSize, 'practice'>): SwellChoice {
+  return spot === 'reef' ? REEF_SWELLS[swell] : SWELLS[swell];
+}
+
 /** Tide, m, on the Wave Lab's −1…1 m slider. */
 export const TIDES: Record<TideLevel, number> = { low: -0.6, mid: 0, high: 0.6 };
 /** Local wind, m/s, positive onshore. */
@@ -58,7 +82,7 @@ export const BACKDROP_TIME: TimeOfDay = 'sunset';
 type WaterTier = { stage: 1 | 2; compute: 'auto' | 'cpu' };
 
 export function physicalSettingsFor(spot: SpotName, conditions: SurfConditions, water: WaterTier): PhysicalSettings {
-  const swell = conditions.swell === 'practice' ? undefined : SWELLS[conditions.swell];
+  const swell = conditions.swell === 'practice' ? undefined : swellChoice(spot, conditions.swell);
   return {
     ...DEFAULT_PHYSICAL_SETTINGS,
     spot,
@@ -66,6 +90,7 @@ export function physicalSettingsFor(spot: SpotName, conditions: SurfConditions, 
     compute: water.compute,
     source: swell ? 'buoy' : 'practice',
     ...(swell ? { significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod, spread: swell.spread } : {}),
+    ...(swell?.directionDegrees !== undefined ? { directionDegrees: swell.directionDegrees } : {}),
     tide: TIDES[conditions.tide],
     windSpeed: WINDS[conditions.wind],
   };

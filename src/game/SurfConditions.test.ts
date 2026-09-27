@@ -3,7 +3,7 @@ import { TANK_SWELL_LIMITS } from './PhysicalMode';
 import skyManifest from '../../public/assets/skies/skies.json';
 import { nearestSky, sunElevationFromSlider, type SkyEntry } from '../scene/PhotoSky';
 import {
-  DEFAULT_CONDITIONS, DEFAULT_SPOT, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings, nextBackdropSpot, physicalSettingsFor,
+  DEFAULT_CONDITIONS, DEFAULT_SPOT, REEF_SWELLS, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings, nextBackdropSpot, physicalSettingsFor,
 } from './SurfConditions';
 
 const water = { stage: 2 as const, compute: 'auto' as const };
@@ -16,8 +16,20 @@ describe('surf conditions', () => {
   it('turns a big swell at high tide with onshore wind into buoy values, on the given water tier', () => {
     const settings = physicalSettingsFor('reef', { swell: 'big', tide: 'high', wind: 'onshore', time: 'dawn' }, { stage: 1, compute: 'cpu' });
     expect(settings).toMatchObject({
-      spot: 'reef', source: 'buoy', significantHeight: 2.4, peakPeriod: 14, tide: 0.6, windSpeed: 6, stage: 2, compute: 'cpu',
+      spot: 'reef', source: 'buoy', significantHeight: REEF_SWELLS.big.significantHeight, peakPeriod: REEF_SWELLS.big.peakPeriod,
+      directionDegrees: 20, tide: 0.6, windSpeed: 6, stage: 2, compute: 'cpu',
     });
+  });
+
+  it('gives the Reef its own long-period swells from the peak’s side', () => {
+    const settings = physicalSettingsFor('reef', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, water);
+    expect(settings).toMatchObject({ source: 'buoy', significantHeight: REEF_SWELLS.medium.significantHeight, peakPeriod: REEF_SWELLS.medium.peakPeriod, directionDegrees: 20, stage: 2 });
+    expect(physicalSettingsFor('point', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, water).significantHeight).toBe(SWELLS.medium.significantHeight);
+    for (const swell of Object.values(REEF_SWELLS)) {
+      expect(swell.significantHeight).toBeLessThanOrEqual(TANK_SWELL_LIMITS.height.max);
+      expect(swell.peakPeriod).toBeGreaterThanOrEqual(14);
+      expect(swell.peakPeriod).toBeLessThanOrEqual(TANK_SWELL_LIMITS.period.max);
+    }
   });
 
   it('keeps the other spots on the water tier’s stage', () => {

@@ -4,7 +4,7 @@ import { WaterSurface } from '../scene/WaterSurface';
 import { FlatSurfaceSource } from '../scene/FlatSurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { stormSwell } from '../wave/StormSwell';
-import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, chopForWind, formatPhysicalReadout, spreadingFor, swellFor } from './PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL, chopForWind, formatPhysicalReadout, spreadingFor, swellFor } from './PhysicalMode';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 
@@ -48,6 +48,13 @@ describe('PhysicalMode', () => {
     expect(practice.bandwidth).toBeLessThan(0.1);
     expect(practice.spreading).toBeGreaterThan(spreadingFor(0));
     expect(practice.directionDegrees).toBeDefined();
+  });
+
+  it('practises the Reef on its own groundswell and every other spot on the shared one', () => {
+    expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef', source: 'practice' })).toEqual(REEF_PRACTICE_SWELL);
+    expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'canyon', source: 'practice' })).toEqual(PRACTICE_SWELL);
+    expect(REEF_PRACTICE_SWELL.bandwidth).toBeLessThan(0.1);
+    expect(REEF_PRACTICE_SWELL.directionDegrees).toBe(20);
   });
 
   it('roughens the chop more under onshore than offshore wind', () => {

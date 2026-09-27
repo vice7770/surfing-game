@@ -75,6 +75,19 @@ export interface SwellInput {
  */
 export const PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1.4, peakPeriod: 12, spreading: 40, bandwidth: 0.08, directionDegrees: 10 };
 
+/**
+ * The Reef's practice groundswell: the Practice swell's narrow band and spread at a
+ * Teahupo'o period, from the peak's side, for ~1.5–2 m faces (the Teahupo'o Reef spec).
+ * The Reef stays fast when small: its break runs along the ledge at no less than the
+ * shelf's celerity (src/wave/ledgePeel.ts). Provisional until the size report calibrates it.
+ */
+export const REEF_PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1, peakPeriod: 14, spreading: 40, bandwidth: 0.08, directionDegrees: 20 };
+
+/** A spot's practice groundswell: the Reef's own, or the shared one. */
+export function practiceSwell(spot: SpotName): Readonly<SwellInput> {
+  return spot === 'reef' ? REEF_PRACTICE_SWELL : PRACTICE_SWELL;
+}
+
 /** The GPU tier's sea (plan P6): more components, so sets repeat less often. */
 export const GPU_TIER_COMPONENTS = 64;
 
@@ -117,7 +130,7 @@ export function spreadingFor(spread: number): number {
 
 /** Buoy values as set, the practice groundswell, or the swell a storm delivers to the spot, kept within TANK_SWELL_LIMITS. */
 export function swellFor(settings: PhysicalSettings): SwellInput {
-  if (settings.source === 'practice') return { ...PRACTICE_SWELL };
+  if (settings.source === 'practice') return { ...practiceSwell(settings.spot) };
   if (settings.source !== 'storm') {
     return { significantHeight: settings.significantHeight, peakPeriod: settings.peakPeriod, spreading: spreadingFor(settings.spread) };
   }

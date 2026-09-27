@@ -121,7 +121,7 @@ export function createWaveLabScreen(
       edited(false);
     }, s.disabled));
     const derived = physical.source === 'storm' ? el('p', { class: 'lab-derived', text: stormArrives(physical, units) })
-      : physical.source === 'practice' ? el('p', { class: 'lab-note', text: practiceNote(units) }) : null;
+      : physical.source === 'practice' ? el('p', { class: 'lab-note', text: practiceNote(units, physical.spot) }) : null;
     const time = timeOfDayFor(draft);
     const sunHeight = slider(t('lab.sunHeight'), 0, 1, 0.05, draft.sunHeight, `${Math.round(draft.sunHeight * 100)} %`, (value, output) => {
       draft.sunHeight = value;

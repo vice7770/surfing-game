@@ -1,4 +1,5 @@
-import { PRACTICE_SWELL, swellFor, type PhysicalSettings } from '../game/PhysicalMode';
+import { practiceSwell, swellFor, type PhysicalSettings } from '../game/PhysicalMode';
+import type { SpotName } from '../wave/Bathymetry';
 import { t } from './strings';
 import { formatHeight, formatSpeed, type Units } from './units';
 
@@ -36,10 +37,11 @@ export function stormArrives(physical: PhysicalSettings, units: Units): string {
   return t('lab.stormArrives', { height: formatHeight(swell.significantHeight, units), period: Math.round(swell.peakPeriod) });
 }
 
-/** The practice groundswell, in words. */
-export function practiceNote(units: Units): string {
+/** A spot's practice groundswell, in words. */
+export function practiceNote(units: Units, spot: SpotName): string {
+  const swell = practiceSwell(spot);
   return t('lab.practiceNote', {
-    height: formatHeight(PRACTICE_SWELL.significantHeight, units), period: PRACTICE_SWELL.peakPeriod, direction: PRACTICE_SWELL.directionDegrees ?? 0,
+    height: formatHeight(swell.significantHeight, units), period: swell.peakPeriod, direction: swell.directionDegrees ?? 0,
   });
 }
 
