@@ -1,6 +1,6 @@
 # Performance study
 
-2026-09-27. It starts from the M4 Pro frame-rate survey (branch `claude/session-recording-fps`: [fps-report.md](https://github.com/vice7770/surfing-game/blob/claude/session-recording-fps/docs/research/fps-report.md) and its data in `docs/research/fps/`). The same survey was re-run on the M1 Air, with the GPU timing corrected (below). The CPU was profiled, load times were measured, and the start-up that the survey found hanging was traced. Measured and recorded, never a gate.
+2026-09-27. It starts from the M4 Pro frame-rate survey ([fps-report.md](fps-report.md) and its data in [fps/](fps/)). The same survey was re-run on the M1 Air, with the GPU timing corrected (below). The CPU was profiled, load times were measured, and the start-up that the survey found hanging was traced. Measured and recorded, never a gate.
 
 ## Summary
 
