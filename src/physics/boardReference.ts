@@ -3,8 +3,8 @@ import { SEAWATER_DENSITY } from './PhysicalSurfWater';
 /**
  * The provisional B0 reference rider and shortboard (board plan's integration
  * handoff). It combines two measured sources, which makes it a modelling choice
- * rather than one measured board-and-rider system. P4c builds the board body from
- * it; the legacy board keeps its own effective values (`LEGACY_BOARD`) until then.
+ * rather than one measured board-and-rider system. The board body (P4c) is built
+ * from it.
  */
 export const REFERENCE_RIDER = {
   /** kg: an intermediate participant in an ocean-wave shortboard field study. */
@@ -23,17 +23,6 @@ export const REFERENCE_BOARD = {
   mass: 2.54,
   fins: 'thruster (three fins); areas and positions are P4e calibration inputs',
   source: 'Connellan et al. 2026, Advanced Engineering Materials, Table 1 (DP-1, PU/stringer)',
-} as const;
-
-/** What the legacy `BoardPhysics` and board mesh use today: effective game values, not physical ones. */
-export const LEGACY_BOARD = {
-  renderedLength: 2.65,
-  /** kg, an effective mass that stands in for missing rider contact forces */
-  simulationMass: 80,
-  riderMass: 74,
-  /** m, the four hull contacts sit at ±(0.22, 1.05) */
-  contactHalfWidth: 0.22,
-  contactHalfLength: 1.05,
 } as const;
 
 /** How much of the reference rider and board the fully submerged board could float, at rest. */

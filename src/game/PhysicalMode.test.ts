@@ -1,9 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Quaternion, Scene, Vector3 } from 'three';
 import { WaterSurface } from '../scene/WaterSurface';
-import { LegacySurfaceSource } from '../scene/LegacySurfaceSource';
+import { FlatSurfaceSource } from '../scene/FlatSurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
-import { DEFAULT_WAVE_SETTINGS, InteractiveWaterField } from '../wave/WaveModel';
 import { stormSwell } from '../wave/StormSwell';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, chopForWind, formatPhysicalReadout, spreadingFor, swellFor } from './PhysicalMode';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -59,7 +58,7 @@ describe('PhysicalMode', () => {
 
   it('shows the physical sea on the shared water surface and frames its break', async () => {
     const scene = new Scene();
-    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const water = new WaterSurface(new FlatSurfaceSource());
     const mode = new PhysicalMode(scene);
     const waterOptics = vi.spyOn(water, 'setOptics');
     const farOptics = vi.spyOn(mode.farField, 'setOptics');
@@ -153,7 +152,7 @@ describe('PhysicalMode', () => {
   });
 
   it('frames a riderless sea from its idle view, and a ride from the default view', async () => {
-    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const water = new WaterSurface(new FlatSurfaceSource());
     const mode = new PhysicalMode(new Scene());
     mode.idleView = 'cinematic';
     expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick, (config) => new LocalSurfZone(config, {}))).toBe(true);
@@ -187,7 +186,7 @@ describe('PhysicalMode', () => {
   });
 
   it('lets go of a superseded surf zone at once, without waiting for its spin-up', async () => {
-    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const water = new WaterSurface(new FlatSurfaceSource());
     const mode = new PhysicalMode(new Scene());
     const dispose = vi.fn();
     const neverReady = (config: SurfZoneConfig) => ({ config, ready: new Promise<void>(() => {}), dispose }) as unknown as SurfZoneHost;
@@ -204,7 +203,7 @@ describe('PhysicalMode', () => {
   });
 
   it('lets only the latest of overlapping starts take over', async () => {
-    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const water = new WaterSurface(new FlatSurfaceSource());
     const mode = new PhysicalMode(new Scene());
     const first = mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick);
     const second = mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'point' }, 1, water, quick);
@@ -219,7 +218,7 @@ describe('PhysicalMode', () => {
 
   it('describes the running sea, solver cost and next set in the Wave Lab readout', async () => {
     const mode = new PhysicalMode(new Scene());
-    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const water = new WaterSurface(new FlatSurfaceSource());
     await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'canyon', significantHeight: 1.8, peakPeriod: 12 }, 2, water, quick);
     const rows = mode.readout();
     const value = (label: string) => rows.find((row) => row.label === label)?.value;
@@ -238,7 +237,7 @@ describe('PhysicalMode', () => {
 
   it('shows the rider against the crest in the readout', async () => {
     const mode = new PhysicalMode(new Scene());
-    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const water = new WaterSurface(new FlatSurfaceSource());
     await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'point' }, 2, water, quick);
     const status = mode.host!.snapshot.status;
     const wave = {
@@ -261,7 +260,7 @@ describe('PhysicalMode', () => {
 
   it('builds the sea from a storm and reports it', async () => {
     const mode = new PhysicalMode(new Scene());
-    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const water = new WaterSurface(new FlatSurfaceSource());
     await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'storm', stormWindSpeed: 18, stormFetchKm: 600, stormDurationHours: 36, stormDistanceKm: 4000 }, 2, water, quick);
     const storm = stormSwell({ windSpeed: 18, fetchKm: 600, durationHours: 36, distanceKm: 4000 });
     expect(mode.storm).toEqual(storm);
@@ -275,7 +274,7 @@ describe('PhysicalMode', () => {
   });
 
   it('builds the GPU tier\'s richer sea only when a GPU answers and the water may use it', async () => {
-    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const water = new WaterSurface(new FlatSurfaceSource());
     const { componentCount: _count, ...coarse } = quick;
     const asked: string[] = [];
     const probe = (answer: boolean) => async () => {
@@ -296,7 +295,7 @@ describe('PhysicalMode', () => {
 
   it('runs practice on the same solver with only the incoming swell changed', async () => {
     const mode = new PhysicalMode(new Scene());
-    const water = new WaterSurface(new LegacySurfaceSource(new InteractiveWaterField(1, { ...DEFAULT_WAVE_SETTINGS })));
+    const water = new WaterSurface(new FlatSurfaceSource());
     const natural = { ...DEFAULT_PHYSICAL_SETTINGS, spot: 'point' as const, directionDegrees: -30 };
     await mode.start({ ...natural, source: 'practice' }, 2, water, quick);
     const practice = mode.config!;

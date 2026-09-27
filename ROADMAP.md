@@ -175,7 +175,10 @@ Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [
     - `?record` and `?waterSheet` run on a bare stage.
 - [ ] **L1 open:** the user's playtest, with the browser pane shown, since motion and the gamepad were not judged live in the hidden pane.
 - [ ] **L2 · Surf School:** nine lessons on a recorded wave, then Free Practice. Next.
-- [ ] **L3 · Legacy removal:** delete the legacy wave's modules and tests, now unreached.
+- [x] **L3 · Legacy removal:** the legacy wave's code is deleted, now that nothing reaches it. [Plan](docs/superpowers/plans/2026-09-27-l3-legacy-removal.md).
+  - **Deleted:** the wave (`WaveModel`, `PlungingSheet`), its board (`BoardPhysics`, `boardTrace`), their views (`LegacySurfaceSource`, `CameraRig`, `BoardWake`, `BreakSpray`, `Seabed`, `PlungingSheetMesh`), the old `Hud` and `RunHistory`, the `report:board-baseline` script, and every test that only drove them.
+  - **Trimmed:** `SurfWater` loses its legacy adapter and the `surface` flow regime; `Surfer` keeps only the pose the physical rider falls back to; `BoardInput` moves into `Controls`; the legacy swell readout and board values go; the sky loses the coastline cards the physical sea always hid.
+  - **Kept on purpose:** the test waters, test surfers and the report scripts' helpers, which the suite and the reports still use.
 
 ### Later — `Backlog`
 

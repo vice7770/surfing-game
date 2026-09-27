@@ -215,7 +215,6 @@ class SurfGame {
     this.water.mesh.material.envMapIntensity = 0.28;
     this.water.mesh.visible = false;
     this.scene.add(this.water.mesh);
-    this.environment.showCoastline(false);
     this.physicalMode = new PhysicalMode(this.scene);
     this.physicalMode.farField.mesh.material.envMapIntensity = 0.28;
     this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
@@ -337,7 +336,6 @@ class SurfGame {
     this.water.mesh.visible = true;
     this.physicalMode.setVisible(true);
     this.physicalMode.camera.setView(this.physicalMode.homeView);
-    this.environment.showCoastline(false);
     this.environment.group.scale.setScalar(5);
     this.environment.group.position.set(this.physicalMode.focus.x, 0, this.physicalMode.focus.z);
     const { sun } = options;
