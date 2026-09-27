@@ -184,11 +184,11 @@ fn wetAt(ix: i32, iz: i32) -> f32 {
   return at(${FIELD.WET}u, u32(cz) * P.nx + u32(cx));
 }
 
-// K2: the dispersive mask (BoussinesqSolver.updateMask): every cell the stencils reach is wet, below the Tonelli–Petti ratio.
+// K2: the dispersive mask (BoussinesqSolver.updateMask): every cell the stencils reach is wet, within the Tonelli–Petti ratio (crest and trough).
 @compute @workgroup_size(64) fn mask(@builtin(global_invocation_id) id: vec3<u32>) {
   let i = cellOf(id); if (i >= P.n) { return; }
   let ix = i32(i % P.nx); let iz = i32(i / P.nx);
-  var dispersing = at(${FIELD.WET}u, i) > 0.0 && at(${FIELD.H}u, i) - at(${FIELD.STILL}u, i) <= SWITCH_RATIO * at(${FIELD.STILL}u, i);
+  var dispersing = at(${FIELD.WET}u, i) > 0.0 && abs(at(${FIELD.H}u, i) - at(${FIELD.STILL}u, i)) <= SWITCH_RATIO * at(${FIELD.STILL}u, i);
   for (var k = -2; k <= 2; k++) { dispersing = dispersing && wetAt(ix + k, iz) > 0.0 && wetAt(ix, iz + k) > 0.0; }
   for (var a = -1; a <= 1; a++) { for (var b = -1; b <= 1; b++) { dispersing = dispersing && wetAt(ix + a, iz + b) > 0.0; } }
   put(${FIELD.MASK}u, i, select(0.0, 1.0, dispersing && P.dispersive == 1u));

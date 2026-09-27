@@ -161,6 +161,21 @@ describe('Boussinesq dispersion', () => {
     expect(1 - Math.pow(farEnvelope / nearEnvelope, 1 / 9)).toBeLessThan(0.005);
   }, 60_000);
 
+  // A trough draining a reef ledge left 0.07 m over 4 m of still depth, and its full-depth dispersive terms ran the
+  // backwash away (the Teahupo'o Reef's Big swell): the weakly nonlinear terms fail in a trough as deep as the
+  // Tonelli–Petti crest is high, so both switch to shallow water.
+  it('turns dispersion off in a trough drained below a fifth of its still depth, as at a crest above the Tonelli–Petti ratio', () => {
+    const grid = { nx: 12, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' as const };
+    const solver = new BoussinesqSolver(grid, () => 4, { manning: 0, breaking: false });
+    const middle = 20 * solver.nx + 6;
+    const cell = (iz: number, ix: number) => iz * solver.nx + ix;
+    for (let iz = 18; iz <= 22; iz += 1) for (let ix = 4; ix <= 8; ix += 1) solver.h[cell(iz, ix)] = 0.5;
+    const normal = cell(10, 6);
+    solver.step(1e-4);
+    expect(solver.mask[normal]).toBe(1);
+    expect(solver.mask[middle]).toBe(0);
+  });
+
   it('reduces exactly to the shallow-water solver with dispersion off', () => {
     const grid = { nx: 3, xMin: 0, dx: 1, zEdges: uniformEdges(0, 200, 200), xBoundary: 'open' as const };
     const depthAt = (_x: number, z: number) => 4 - 0.015 * z;

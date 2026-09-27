@@ -360,6 +360,39 @@ describe('SurfZoneSimulation', () => {
     expect(simulation.iribarren().type).toBe('plunging');
   });
 
+  describe('the steep Reef holds', () => {
+    // Through the set's arrival (~35 s on the 30 m tank): finite, never negative, no runaway (past ones reached 23 and 112 m/s).
+    const run = (overrides: Partial<SurfZoneConfig>) => {
+      const simulation = new SurfZoneSimulation({
+        ...small, spot: 'reef', significantHeight: REEF_SWELLS.big.significantHeight, peakPeriod: REEF_SWELLS.big.peakPeriod,
+        directionDegrees: 20, spreading: 24, dx: 1, fineSpacing: 1, ...overrides,
+      });
+      const { solver } = simulation;
+      let finite = true;
+      let fastest = 0;
+      for (let frame = 0; frame < 45 * 30; frame += 1) {
+        simulation.step(1 / 30);
+        for (let i = 0; i < solver.h.length; i += 1) {
+          finite &&= Number.isFinite(solver.h[i]) && solver.h[i] >= 0;
+          if (solver.h[i] > 0.05) fastest = Math.max(fastest, Math.hypot(solver.qx[i], solver.qz[i]) / solver.h[i]);
+        }
+      }
+      expect(finite).toBe(true);
+      expect(fastest).toBeLessThan(20);
+      expect(solver.maxStableStep()).toBeGreaterThan(1e-3);
+      return simulation;
+    };
+
+    it('stays finite and bounded under the Big swell, and plunges', () => {
+      expect(run({}).lipLaunches).toBeGreaterThan(0);
+    }, 300_000);
+    it('stays finite over the drying reef flat at low tide', () => run({ tide: -0.6 }), 300_000);
+    it('stays finite with oblique swells across the open −x edge', () => {
+      run({ directionDegrees: -25, alongShore: 60 });
+      run({ directionDegrees: 25, alongShore: 60 });
+    }, 600_000);
+  });
+
   it('throws lips from plunging waves on the reef edge', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 });
     // The Reef's 30 m tank brings the set onto its ledge ~35 s in; run until a lip has flown and landed.
