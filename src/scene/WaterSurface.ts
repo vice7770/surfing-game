@@ -63,6 +63,22 @@ export function sampleSurfaceHeight(data: Float32Array, grid: SurfaceGrid, x: nu
   return top * (1 - tz) + bottom * tz;
 }
 
+/** The foam channel of the same (height, foam) pairs, bilinear, 0 outside the grid (the lab's Follow, spec L1). */
+export function sampleSurfaceFoam(data: Float32Array, grid: SurfaceGrid, x: number, z: number): number {
+  const gx = (x - grid.xMin) / grid.spacing;
+  const gz = (z - grid.zMin) / grid.spacing;
+  if (gx < 0 || gz < 0 || gx >= grid.nx - 1 || gz >= grid.nz - 1) return 0;
+  const x0 = Math.floor(gx);
+  const z0 = Math.floor(gz);
+  const tx = gx - x0;
+  const tz = gz - z0;
+  const i = (z0 * grid.nx + x0) * 2 + 1;
+  const row = grid.nx * 2;
+  const top = data[i] * (1 - tx) + data[i + 2] * tx;
+  const bottom = data[i + row] * (1 - tx) + data[i + row + 2] * tx;
+  return top * (1 - tz) + bottom * tz;
+}
+
 /** CPU mirror of `waterBedAt` in the vertex shader: bilinear bed elevation from one value per node, clamped to the grid. */
 export function sampleSurfaceBed(bed: Float32Array, grid: SurfaceGrid, x: number, z: number): number {
   const gx = Math.min(grid.nx - 1, Math.max(0, (x - grid.xMin) / grid.spacing));
