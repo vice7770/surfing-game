@@ -48,7 +48,7 @@ import { roomLink } from '../net/roomCode';
 import type { CallId } from '../net/protocol';
 import { createRideEndCard, endCardModel } from './RideEndCard';
 import { bestTwo, scoreRide } from '../game/waveScore';
-import { HintBook, HintCoach, type HintId } from '../game/hints';
+import { HintBook, HintCoach, offersHint, type HintId } from '../game/hints';
 import { RideHud, showsBalanceMeter, type HintKeys } from './RideHud';
 import { ScreenStack, type ScreenId } from './ScreenStack';
 import { EN, t, type StringKey } from './strings';
@@ -314,11 +314,13 @@ export class App {
     if (this.stack.current === 'ride') {
       const { gameplay, seen } = this.settings.value;
       const ride = this.game.rideStatus;
+      // The touch buttons show for the rider's phase: paddle lying down, Crouch and Compress standing.
+      this.root.dataset.phase = ride?.phase ?? '';
       const hint = this.coach.update(intervalMs / 1000, {
         standing: ride?.phase === 'standing',
         crestBreaking: ride?.wave.valid ? ride.wave.crestBreaking : 0,
         input: this.controls.lastRequest,
-      }, (id) => this.hintText(id) !== '');
+      }, (id) => this.hintText(id) !== '' && offersHint(id, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell));
       this.rideHud.update(ride, gameplay.units, this.hintKeys(), !seen.rideHints,
         showsBalanceMeter(gameplay.balanceMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell), hint ? this.hintText(hint) : '');
       this.trackRide();
@@ -799,6 +801,7 @@ export class App {
     if (this.touchActive()) {
       if (id === 'lean') return t('hint.lean', { keys: '← →' });
       if (id === 'crouch') return t('hint.crouch', { keys: t('touch.crouch') });
+      if (id === 'compress') return t('hint.compress', { keys: t('touch.compress') });
       return '';
     }
     const { bindings } = this.settings.value.controls;
@@ -809,6 +812,8 @@ export class App {
     const keys = id === 'lean' ? (pad ? t('hud.stick') : `${label('steerLeft')} ${label('steerRight')}`)
       : id === 'trim' ? (pad ? trimStick : `${label('trimForward')} ${label('trimBack')}`)
         : label(id);
+    // Nothing bound (an action newer than the player's saved bindings): no hint to give.
+    if (keys === '—') return '';
     return t(`hint.${id}`, { keys });
   }
 
@@ -816,7 +821,7 @@ export class App {
   private readonly actionLabel: ActionLabel = (action) => {
     if (this.touchActive()) {
       const touch: Partial<Record<Action, StringKey>> = {
-        paddle: 'touch.paddle', popUp: 'touch.popUp', crouch: 'touch.crouch', steerLeft: 'touch.left', steerRight: 'touch.right',
+        paddle: 'touch.paddle', popUp: 'touch.popUp', crouch: 'touch.crouch', compress: 'touch.compress', steerLeft: 'touch.left', steerRight: 'touch.right',
       };
       const key = touch[action];
       return key ? t(key) : '—';
@@ -1016,6 +1021,7 @@ export class App {
     label('touch-paddle', 'touch.paddle');
     label('touch-popup', 'touch.popUp');
     label('touch-crouch', 'touch.crouch');
+    label('touch-compress', 'touch.compress');
     label('touch-left', 'touch.left', true);
     label('touch-right', 'touch.right', true);
     document.getElementById('touch-popup')?.addEventListener('pointerdown', (event) => {

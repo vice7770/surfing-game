@@ -146,11 +146,14 @@ describe('autopilot turns', () => {
     const autopilot = turning(20 * DEG);
     const into = autopilot.next(standing(20 * DEG, { faceFraction: 0.2 }), 1 / 60);
     expect(into.steer).toBe(1);
+    // The stances spec's sequence: Compress over the crouch at the base of the turn.
     expect(into.crouch).toBeCloseTo(0.6, 6);
-    // Past the line and higher up the face it keeps turning, extending out of the turn.
+    expect(into.compress).toBe(1);
+    // Past the line and higher up the face it keeps turning, releasing Compress and extending out of the turn.
     const through = autopilot.next(standing(80 * DEG, { faceFraction: 0.45 }), 1 / 60);
     expect(through.steer).toBe(1);
     expect(through.crouch).toBe(0);
+    expect(through.compress).toBe(0);
     const out = autopilot.next(standing(125 * DEG, { faceFraction: 0.5 }), 1 / 60);
     expect(out.steer).toBe(0);
     // The same turn for a peel toward -x leans the other way.
@@ -174,6 +177,14 @@ describe('autopilot turns', () => {
     // A new ride forgets it.
     autopilot.reset();
     expect(turning(20 * DEG).next(standing(20 * DEG, { faceFraction: 0.2 }, 1), 1 / 60).steer).toBe(1);
+  });
+
+  // Traced on the reference wave: the curl showed on the other side halfway through a bottom turn, and the turn
+  // reversed at full lean. A turn keeps the direction it began with.
+  it('finishes a turn the way it began, though the curl shows on the other side', () => {
+    const autopilot = turning(20 * DEG);
+    expect(autopilot.next(standing(20 * DEG, { faceFraction: 0.2, curlDistance: 6, curlSide: 1 }), 1 / 60).steer).toBe(-1);
+    expect(autopilot.next(standing(0, { faceFraction: 0.2, curlDistance: 6, curlSide: -1 }), 1 / 60).steer).toBe(-1);
   });
 
   it('bottom turns only at the foot of the face, not on the flat far ahead of it', () => {
@@ -209,7 +220,7 @@ describe('autopilot turns', () => {
 
   // Task 8's rule: extend through the hollow (the bottom turn), crouch over the top and on the way down.
   it('pumps with the turns: crouched from the top down to the bottom turn, extended climbing', () => {
-    expect(turning(20 * DEG).next(standing(20 * DEG, { faceFraction: 0.5 }), 1 / 60).crouch).toBeCloseTo(0.6, 6);
+    expect(turning(20 * DEG).next(standing(20 * DEG, { faceFraction: 0.5 }), 1 / 60)).toMatchObject({ crouch: 0.6, compress: 0 });
     expect(turning(110 * DEG).next(standing(110 * DEG, { faceFraction: 0.5 }), 1 / 60).crouch).toBe(0);
     expect(turning(110 * DEG).next(standing(110 * DEG, { faceFraction: 0.8 }), 1 / 60).crouch).toBeCloseTo(0.6, 6);
   });
