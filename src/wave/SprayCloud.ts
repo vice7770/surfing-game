@@ -155,6 +155,9 @@ export class SprayCloud {
   private readonly spin: Float64Array;
   private readonly lateral: Float64Array;
   private readonly random: () => number;
+  /** Scratch for `roll`: each roller's sprites, and the rollers by id. */
+  private readonly held = new Map<number, number>();
+  private readonly rollerById = new Map<number, TubeRoller>();
 
   constructor(seed: number, readonly capacity = SPRAY_CAPACITY, readonly whitewaterCapacity = Math.round(capacity / 4)) {
     this.random = seededRandom(seed, 0x5b1a54);
@@ -299,11 +302,13 @@ export class SprayCloud {
    */
   private roll(rollers: readonly TubeRoller[], dt: number): void {
     if (rollers.length === 0) return;
-    const held = new Map<number, number>();
+    const held = this.held;
+    held.clear();
     for (let k = 0; k < this.count; k += 1) {
       if (this.kind[k] === FOAM_BALL) held.set(this.owner[k], (held.get(this.owner[k]) ?? 0) + 1);
     }
-    const byId = new Map<number, TubeRoller>();
+    const byId = this.rollerById;
+    byId.clear();
     for (const roller of rollers) {
       const radius = Math.sqrt(roller.area / Math.PI);
       if (!(radius > 0)) continue;

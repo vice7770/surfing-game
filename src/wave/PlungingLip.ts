@@ -299,6 +299,8 @@ export class PlungingLip implements LipParcelSource {
   readonly spits: TubeSpit[] = [];
   readonly eruptions: TubeEruption[] = [];
   readonly rollers: TubeRoller[] = [];
+  /** Scratch for `tubeChains`: the strips already in a chain. */
+  private readonly chained = new Set<LipStrip>();
   private readonly vx: Float64Array;
   private readonly vy: Float64Array;
   private readonly vz: Float64Array;
@@ -964,7 +966,8 @@ export class PlungingLip implements LipParcelSource {
 
   /** The tubed strips, grouped into peels: tubes of neighbouring columns thrown within LINK_TIME of each other. */
   private tubeChains(): LipStrip[][] {
-    const seen = new Set<LipStrip>();
+    const seen = this.chained;
+    seen.clear();
     const chains: LipStrip[][] = [];
     for (const strip of this.strips.values()) {
       if (!strip.tube || seen.has(strip)) continue;

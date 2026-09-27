@@ -15,6 +15,8 @@ export const AERATION = { share: 0.1, plungeDepth: 0.8, boreDepth: 0.3, riseSpee
 const DENSITY = 1025;
 const WET = 0.01;
 const TRACE = 1e-7;
+/** A plume spreads to the rows either side of where it lands. */
+const ACROSS = [-1, 1] as const;
 /** Plumes thinner than this still degas at this depth's rate, m (a numerical floor). */
 const MIN_DEPTH = 0.05;
 
@@ -119,7 +121,7 @@ export class AerationField {
     const cells = this.plume;
     cells.length = 0;
     let area = 0;
-    for (const step of [-1, 1]) {
+    for (const step of ACROSS) {
       for (let iz = step < 0 ? row : row + 1; iz >= 0 && iz < nz; iz += step) {
         const across = zCenters[iz] - z;
         if (iz !== row && Math.abs(across) > radius) break;
