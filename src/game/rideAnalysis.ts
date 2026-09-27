@@ -117,6 +117,10 @@ class Hold {
     this.time += dt;
     return this.time;
   }
+
+  reset(): void {
+    this.time = 0;
+  }
 }
 
 /** A turn in progress. */
@@ -188,6 +192,8 @@ export class RideAnalyzer {
 
   push(sample: RideSample): void {
     if (this.finished) return;
+    // Lying down ends the ride unreported (the game's tracker names it); the next stand starts a new one.
+    if (this.started && (sample.phase === 'prone' || sample.phase === 'recover')) this.forget();
     const previous = this.previous;
     if (!this.started) {
       this.remember(sample);
@@ -211,11 +217,12 @@ export class RideAnalyzer {
     if (wave.valid && wave.faceFraction >= POCKET_FACE && wave.crestBreaking >= POCKET_BREAKING) this.pocketTime += dt;
     this.track(sample, previous!, dt);
     this.remember(sample);
-    if (wave.valid && wave.curlDistance <= CURL_NEAR) this.curlTime += dt;
+    // Near the curl on unbroken water: in the whitewater every crest point breaks, so the curl reads 0 m.
+    if (wave.valid && wave.curlDistance <= CURL_NEAR && sample.breakingHere < BORE) this.curlTime += dt;
     const behind = sample.phase === 'standing' && wave.valid && wave.aheadOfCrest < -KICK_OUT_BEHIND;
     const live = wave.valid && wave.faceHeight >= LOST_FACE;
     const dead = !live && sample.breakingHere < BORE;
-    const leaving = live && wave.aheadOfCrest > LOST_AHEAD && wave.speedShoreward > wave.crestSpeed;
+    const leaving = live && sample.breakingHere < BORE && wave.aheadOfCrest > LOST_AHEAD && wave.speedShoreward > wave.crestSpeed;
     if (this.kickOut.run(behind, dt, before) >= KICK_OUT_TIME) this.finish('kicked out', this.kickOut.since);
     else if (sample.depth < SHALLOW) this.finish('wave died', { t: sample.t, distance: this.distance, pocketTime: this.pocketTime, curlTime: this.curlTime });
     else if (this.died.run(dead, dt, before) >= DIED_TIME) this.finish('wave died', this.died.since);
@@ -281,6 +288,21 @@ export class RideAnalyzer {
       faceFraction: turn.wave.faceFraction,
       pocket: turn.wave.faceFraction >= POCKET_FACE && turn.wave.crestBreaking >= POCKET_BREAKING,
     });
+  }
+
+  /** Drop the ride under way, as if the analyzer were new. */
+  private forget(): void {
+    this.started = false;
+    this.startTime = 0;
+    this.distance = 0;
+    this.pocketTime = 0;
+    this.curlTime = 0;
+    this.topSpeed = 0;
+    this.maneuvers.length = 0;
+    this.turn = undefined;
+    this.kickOut.reset();
+    this.died.reset();
+    this.lost.reset();
   }
 
   private finish(end: RideEnd, at: Mark): void {

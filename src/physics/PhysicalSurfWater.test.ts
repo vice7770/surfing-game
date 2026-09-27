@@ -138,21 +138,40 @@ describe('PhysicalSurfWater', () => {
   // so broken water carries a board; below the roller the flow stays the depth-averaged current.
   it('carries the surface of a bore at about its speed, and nothing below the roller', () => {
     const { water, breaking, solver } = channel();
-    // A 0.6 m bore over 3 m of still water, moving 1 m/s depth-averaged, breaking fully.
+    // A 0.6 m bore over 3 m of still water, moving 1 m/s toward the beach (+z) depth-averaged, breaking fully.
     for (let i = 0; i < solver.h.length; i += 1) {
       solver.h[i] = 3.6;
-      solver.qx[i] = 3.6;
+      solver.qx[i] = 0;
+      solver.qz[i] = 3.6;
     }
     breaking.fill(1);
     const out = createWaterSample();
     const surface = water.sampleAt(0.2, 5, 0.3, out).surfaceY;
     water.sampleAt(0.2, surface, 0.3, out);
     expect(out.regime).toBe('bore');
-    expect(out.flowX).toBeCloseTo(Math.sqrt(9.81 * 3.6), 1);
-    expect(out.flowZ).toBeCloseTo(0, 9);
-    expect(water.sampleAt(0.2, surface - 1, 0.3, out).flowX).toBeCloseTo(1, 9);
+    expect(out.flowZ).toBeCloseTo(Math.sqrt(9.81 * 3.6), 1);
+    expect(out.flowX).toBeCloseTo(0, 9);
+    expect(water.sampleAt(0.2, surface - 1, 0.3, out).flowZ).toBeCloseTo(1, 9);
     breaking.fill(0.5);
-    expect(water.sampleAt(0.2, surface, 0.3, out).flowX).toBeCloseTo(0.5 * Math.sqrt(9.81 * 3.6), 1);
+    expect(water.sampleAt(0.2, surface, 0.3, out).flowZ).toBeCloseTo(0.5 * Math.sqrt(9.81 * 3.6), 1);
+  });
+
+  // Final review: the roller rides the bore's front toward the shore. A current running seaward (a rip, backwash)
+  // or along the shore under breaking water carries no roller: boosted, it threw a board out to sea at about √(g d).
+  it('carries only a shoreward current with the roller', () => {
+    const { water, breaking, solver } = channel();
+    breaking.fill(1);
+    const out = createWaterSample();
+    for (const [qx, qz] of [[0, -3.6], [3.6, 0], [3.6, 0.9]]) {
+      for (let i = 0; i < solver.h.length; i += 1) {
+        solver.h[i] = 3.6;
+        solver.qx[i] = qx;
+        solver.qz[i] = qz;
+      }
+      const surface = water.sampleAt(0.2, 5, 0.3, out).surfaceY;
+      water.sampleAt(0.2, surface, 0.3, out);
+      expect(Math.hypot(out.flowX, out.flowZ)).toBeLessThan(1.1);
+    }
   });
 
   it('pushes nothing where nothing breaks, however high the water stands', () => {

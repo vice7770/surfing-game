@@ -19,10 +19,13 @@ const MAX_PROFILE = 2;
  * speed, √(g d). Within ROLLER_SHARE of the set-up under the surface the flow is
  * carried toward breaking × √(g d) along the current, fading linearly to the
  * depth-averaged current at the roller's bottom; slower than MIN_ROLLER_FLOW, m/s,
- * the current gives no direction. Provisional.
+ * the current gives no direction. The roller rides the front toward the shore
+ * (+z): a current running more than 60° off it (ROLLER_SHOREWARD, a rip or the
+ * backwash, or along the shore) carries none. Provisional.
  */
 const ROLLER_SHARE = 0.5;
 const MIN_ROLLER_FLOW = 0.05;
+const ROLLER_SHOREWARD = 0.5;
 const GRAVITY = 9.81;
 
 /** Catmull-Rom weights for nodes −1, 0, 1, 2 at fraction t of the way from node 0 to node 1. */
@@ -127,7 +130,7 @@ export class PhysicalSurfWater implements SurfWater {
       out.regime = 'bore';
       const current = Math.hypot(u, w);
       const thickness = ROLLER_SHARE * Math.max(0, out.surfaceY - solver.restLevel);
-      if (current > MIN_ROLLER_FLOW && thickness > 0) {
+      if (current > MIN_ROLLER_FLOW && thickness > 0 && w > ROLLER_SHOREWARD * current) {
         const share = Math.max(0, 1 - Math.max(0, out.surfaceY - y) / thickness);
         const carried = out.breaking * Math.sqrt(GRAVITY * depth);
         horizontal = 1 + Math.max(0, carried / current - 1) * share;
