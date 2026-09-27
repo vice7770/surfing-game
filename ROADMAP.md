@@ -148,7 +148,7 @@ Up to 50 friends share one break from a room link. Every player runs the whole s
   - a bot-filled room measured on the M4 Pro;
   - **Part B, physical collisions,** planned after the playtest.
 
-### P1 · Wave Lab and Surf School (L1–L3) — `L1 done (playtest open); L2 next`
+### P1 · Wave Lab and Surf School (L1–L3) — `L1 and L2 done (playtests open); L3 next`
 
 Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [Spec](docs/superpowers/specs/2026-09-27-wave-lab-surf-school.md) · [L1 plan](docs/superpowers/plans/2026-09-27-l1-wave-lab.md).
 
@@ -174,7 +174,24 @@ Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [
     - `?demo` starts a Surf ride the dev autopilot rides;
     - `?record` and `?waterSheet` run on a bare stage.
 - [ ] **L1 open:** the user's playtest, with the browser pane shown, since motion and the gamepad were not judged live in the hidden pane.
-- [ ] **L2 · Surf School:** nine lessons on a recorded wave, then Free Practice. Next.
+- [x] **L2 · Surf School** ([plan](docs/superpowers/plans/2026-09-27-l2-surf-school.md)): a tile after Surf, badged "Start here" until the first lesson is passed.
+  - **Nine lessons, all open:** Lean, Trim, Crouch and extend, Bottom turn, Top turn, Hand and stall, Stay in the pocket, Pop up, Paddle and catch.
+  - **Free Practice** on the same wave, started standing in the pocket or prone and ready to catch.
+  - **Each lesson:**
+    - an explanation card over the held wave, with a diagram and the player's keys;
+    - attempts with the lesson's prompt and its goal's count, the goals measured from the physics;
+    - a miss names why and what to try, and the same wave restarts after 2 s (R at once); three misses bring the card back;
+    - a pass offers Next lesson, Again or Lessons, and retires the matching one-time Surf hint.
+  - **Pause menu:** restart, the explanation, 0.5× slow motion, camera, settings, the lessons. The balance meter is always on. Nothing goes in the Logbook.
+  - **The lesson wave** (`npm run lesson:wave`): the autopilot surfs the Canyon's Practice sea, and each start's moment is taken from its rides and judged as a new player would play it (report: [lesson wave](docs/research/lesson-wave.md)).
+    - Each start's sea state is shipped (`public/lessons`, about 0.8 MB each) with where the rider was, for each solver stage.
+    - A lesson's sea is built from it with no spin-up, and every restart restores it in place (a new `restore` host request; the GPU re-uploads the breaking state).
+    - `RideSession.place` puts the rider on the water standing or prone, the one new piece of rider code.
+  - **Provisional:** the recording and the thresholds wait for the riding work's reference wave (the lean's swing is 8°, not 20°, until the turn-rate fix), and a dev note says so in the lesson.
+- [ ] **L2 open:**
+  - regenerate the lesson wave and tune the goals on the reference wave;
+  - the user's playtest (the pass card and a live pass were not seen in the hidden pane);
+  - trim and the hand have no touch buttons yet, so lessons 2 and 6 need a keyboard or a pad.
 - [ ] **L3 · Legacy removal:** delete the legacy wave's modules and tests, now unreached.
 
 ### Later — `Backlog`

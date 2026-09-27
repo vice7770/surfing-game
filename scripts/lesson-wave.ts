@@ -34,7 +34,7 @@ const seconds = Number(option('seconds') ?? 300);
 const seed = Number(option('seed') ?? 1);
 /** How long each check may run, s, and how many of the longest rides are replayed to choose from. */
 const TRIAL_SECONDS = 25;
-const FINALISTS = 3;
+const FINALISTS = 8;
 
 const practice = swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'practice' });
 const sea = {
@@ -57,7 +57,9 @@ interface Ride {
   attempt: number;
   seconds: number;
   outcome: string;
-  moments: Partial<Record<LessonStart, Moment>>;
+  moments: Partial<Record<'waiting' | 'caught', Moment>>;
+  /** Pocket moments at each of POCKET_DELAYS after the rider stood. */
+  pockets: Moment[];
 }
 
 /** The sea's state and the rider's pose now: its point, heading, and speed along the heading on top of the water's own flow. */
@@ -79,15 +81,21 @@ function moment(host: LocalSurfZone, t: number, phase: RiderPlacement['phase']):
   };
 }
 
-/** One check from a copy of a kept moment: how long the autopilot stays standing from that start, and whether it stood. */
+/**
+ * One check from a copy of a kept moment, played as a new player would: from the
+ * pocket, no input at all; caught, pop up on the cue and nothing more; waiting,
+ * the autopilot paddles for the wave, pops up and rides. How long the rider stood,
+ * and whether it stood at all.
+ */
 function check(stage: 1 | 2, start: LessonStart, kept: Moment): { ride: number; stood: boolean; note: string } {
   const host = new LocalSurfZone({ ...configFor(stage), spinUpPeriods: 0 }, { rider: true }, kept.state);
   const pilot = new Autopilot({ rise: 0.25 * sea.significantHeight, style: 'turns' });
-  pilot.state = start === 'pocket' ? 'ride' : start === 'caught' ? 'go' : 'wait';
+  pilot.state = 'wait';
   const idle: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
   host.advance(1, { ...idle, place: kept.placement });
   let standing = 0;
   let stood = false;
+  let popped = false;
   for (let time = 0; time < TRIAL_SECONDS && pilot.state !== 'done'; time += SURF_ZONE_STEP) {
     const view = autopilotView(host, host.runner.focus.z, sea.tide);
     const ride = host.snapshot.status.ride;
@@ -95,17 +103,23 @@ function check(stage: 1 | 2, start: LessonStart, kept: Moment): { ride: number; 
       stood = true;
       standing += SURF_ZONE_STEP;
     }
-    if (stood && (ride?.phase === 'fallen' || ride?.report)) break;
-    host.advance(1, view ? { ...idle, ...pilot.next(view, SURF_ZONE_STEP) } : idle);
+    if (ride?.phase === 'fallen' || (stood && ride?.report)) break;
+    let request = idle;
+    if (start === 'waiting' && view) request = { ...idle, ...pilot.next(view, SURF_ZONE_STEP) };
+    if (start === 'caught' && ride?.cue && !popped) {
+      popped = true;
+      request = { ...idle, popUp: true };
+    }
+    host.advance(1, request);
   }
   const outcome = pilot.outcome ? ` (${pilot.outcome})` : '';
-  return { ride: standing, stood, note: stood ? `stood, rode ${standing.toFixed(1)} s${outcome}` : `never stood${outcome}` };
+  return { ride: standing, stood, note: stood ? `stood ${standing.toFixed(1)} s${outcome}` : `never stood${outcome}` };
 }
 
 /** Moments kept this far back, s: the waiting start is taken this long before the autopilot sets off. */
 const WAIT_LEAD = 1;
-/** The pocket start is taken this long after the rider stands. */
-const STAND_SETTLE = 0.5;
+/** Pocket moments are taken this long after the rider stands, s; the check picks the one a still rider rides longest. */
+const POCKET_DELAYS = [0.5, 1, 1.5];
 
 async function record(stage: 1 | 2): Promise<{ wave: LessonWave; rides: Ride[] }> {
   const host = new LocalSurfZone(configFor(stage), { rider: true });
@@ -113,7 +127,7 @@ async function record(stage: 1 | 2): Promise<{ wave: LessonWave; rides: Ride[] }
   const idle: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
   const recent: Moment[] = [];
   const rides: Ride[] = [];
-  let current: Ride = { attempt: 0, seconds: 0, outcome: '', moments: {} };
+  let current: Ride = { attempt: 0, seconds: 0, outcome: '', moments: {}, pockets: [] };
   let standAt = Number.NaN;
   let retry = false;
   const steps = Math.round(seconds / SURF_ZONE_STEP);
@@ -129,14 +143,15 @@ async function record(stage: 1 | 2): Promise<{ wave: LessonWave; rides: Ride[] }
     const view = autopilotView(host, host.runner.focus.z, sea.tide);
     const input = view ? pilot.next(view, SURF_ZONE_STEP) : idle;
     if (before !== 'go' && pilot.state === 'go') {
-      current = { attempt: pilot.attempts, seconds: 0, outcome: '', moments: {} };
+      current = { attempt: pilot.attempts, seconds: 0, outcome: '', moments: {}, pockets: [] };
       const waiting = [...recent].reverse().find((kept) => kept.t <= t - WAIT_LEAD);
       if (waiting) current.moments.waiting = waiting;
     }
     if (pilot.state === 'go' && ride?.cue && !current.moments.caught) current.moments.caught = moment(host, t, 'prone');
     if (ride?.phase === 'standing') {
       if (!Number.isFinite(standAt)) standAt = t;
-      if (!current.moments.pocket && t - standAt >= STAND_SETTLE) current.moments.pocket = moment(host, t, 'standing');
+      const delay = POCKET_DELAYS[current.pockets.length];
+      if (delay !== undefined && t - standAt >= delay) current.pockets.push(moment(host, t, 'standing'));
     } else {
       standAt = Number.NaN;
     }
@@ -147,36 +162,43 @@ async function record(stage: 1 | 2): Promise<{ wave: LessonWave; rides: Ride[] }
         rides.push(current);
         console.log(`stage ${stage} · ${t.toFixed(0)} s · attempt ${current.attempt}: ${current.seconds.toFixed(1)} s (${current.outcome})`);
       }
-      current = { attempt: 0, seconds: 0, outcome: '', moments: {} };
+      current = { attempt: 0, seconds: 0, outcome: '', moments: {}, pockets: [] };
       pilot.reset();
       retry = true;
     }
     host.advance(1, { ...idle, ...input, retry });
     retry = false;
   }
-  const complete = rides.filter((ride) => ride.moments.waiting && ride.moments.caught && ride.moments.pocket)
-    .sort((a, b) => b.seconds - a.seconds);
-  if (complete.length === 0) throw new Error(`No ride with all three moments in ${seconds} s at stage ${stage}`);
-  // The replays decide: the rider's own state (balance, posture) is not recorded, so a replay can differ from the ride.
-  let chosen = complete[0];
-  let checks = {} as Record<LessonStart, string>;
-  let bestScore = -Infinity;
-  for (const ride of complete.slice(0, FINALISTS)) {
-    const results = {} as Record<LessonStart, { ride: number; stood: boolean; note: string }>;
-    for (const start of ['pocket', 'caught', 'waiting'] as const) results[start] = check(stage, start, ride.moments[start]!);
-    const score = results.pocket.ride + results.caught.ride + (results.waiting.stood ? 5 : 0);
-    console.log(`stage ${stage} · attempt ${ride.attempt} replays: pocket ${results.pocket.note} · caught ${results.caught.note} · waiting ${results.waiting.note}`);
-    if (score > bestScore) {
-      bestScore = score;
-      chosen = ride;
-      checks = { pocket: results.pocket.note, caught: results.caught.note, waiting: results.waiting.note };
+  // The replays decide, each start on its own: the rider's own state (balance, posture) is not recorded, so a replay
+  // can differ from the ride, and a moment good for one start may be poor for another. Each start still restores its
+  // own recorded state every time, so each always meets the same wave.
+  const longest = [...rides].sort((a, b) => b.seconds - a.seconds).slice(0, FINALISTS);
+  const best = {} as Record<LessonStart, { moment: Moment; ride: number; stood: boolean; note: string; attempt: number }>;
+  const consider = (start: LessonStart, moment: Moment | undefined, attempt: number) => {
+    if (!moment) return;
+    const result = check(stage, start, moment);
+    console.log(`stage ${stage} · attempt ${attempt} · ${start} replay: ${result.note}`);
+    const current = best[start];
+    // Standing at all counts first (the waiting start's catch), then how long.
+    if (!current || Number(result.stood) - Number(current.stood) > 0 || (result.stood === current.stood && result.ride > current.ride)) {
+      best[start] = { moment, ...result, attempt };
     }
+  };
+  for (const ride of longest) {
+    for (const pocket of ride.pockets) consider('pocket', pocket, ride.attempt);
+    consider('caught', ride.moments.caught, ride.attempt);
+    consider('waiting', ride.moments.waiting, ride.attempt);
   }
+  for (const start of ['pocket', 'caught', 'waiting'] as const) {
+    if (!best[start]) throw new Error(`No ${start} moment in ${seconds} s at stage ${stage}`);
+  }
+  const checks = {} as Record<LessonStart, string>;
+  for (const start of ['pocket', 'caught', 'waiting'] as const) checks[start] = `${best[start].note} (attempt ${best[start].attempt})`;
   const assets = {} as Record<LessonStart, string>;
   const placements = {} as Record<LessonStart, RiderPlacement>;
   mkdirSync('public/lessons', { recursive: true });
   for (const start of ['pocket', 'caught', 'waiting'] as const) {
-    const kept = chosen.moments[start]!;
+    const kept = best[start].moment;
     assets[start] = `lessons/canyon-s${stage}-${start}.sea`;
     placements[start] = kept.placement;
     writeFileSync(`public/${assets[start]}`, (await compress(kept.state)).bytes);
@@ -194,15 +216,15 @@ export const LESSON_WAVES: readonly LessonWave[] = ${JSON.stringify(results.map(
 `);
 
 const rows = results.flatMap(({ wave, rides }) => rides.map((ride) =>
-  `| ${wave.stage} | ${ride.attempt} | ${ride.seconds.toFixed(1)} s | ${ride.outcome} | ${['waiting', 'caught', 'pocket'].filter((start) => ride.moments[start as LessonStart]).join(', ') || '—'} |`));
+  `| ${wave.stage} | ${ride.attempt} | ${ride.seconds.toFixed(1)} s | ${ride.outcome} | ${[...(ride.moments.waiting ? ['waiting'] : []), ...(ride.moments.caught ? ['caught'] : []), ...(ride.pockets.length ? [`pocket ×${ride.pockets.length}`] : [])].join(', ') || '—'} |`));
 writeFileSync('docs/research/lesson-wave.md', `# Lesson wave
 
 Generated by \`npm run lesson:wave\` (Surf School, spec L2). The Canyon's practice sea (seed ${seed}), surfed ${seconds} s by the autopilot on the CPU per solver stage. Each ride keeps three moments, with the sea and the rider's pose at each:
 - **waiting:** 1 s before the autopilot set off paddling;
 - **caught:** at the pop-up cue;
-- **pocket:** 0.5 s after it stood.
+- **pocket:** 0.5, 1 and 1.5 s after it stood.
 
-The longest ride with all three is the lesson wave. Each of its starts is replayed from its moment as a check.
+The eight longest rides are replayed from each moment, as a new player would play them. From the pocket there is no input at all. From caught, the rider pops up on the cue and does nothing more. From waiting, the autopilot paddles, pops up and rides. Each start takes its own best moment: standing at all first (the waiting start's catch), then the longest stand. Each start always restores its own recorded state, so it always meets the same wave.
 
 **Provisional:** recorded before the riding work's reference wave. Rerun it once that lands.
 
@@ -210,6 +232,6 @@ The longest ride with all three is the lesson wave. Each of its starts is replay
 |---|---|---|---|---|
 ${rows.join('\n')}
 
-Checks of the chosen ride: ${results.map(({ wave }) => `stage ${wave.stage}: pocket ${wave.checks.pocket}; caught ${wave.checks.caught}; waiting ${wave.checks.waiting}`).join(' · ')}.
+Checks of the chosen moments: ${results.map(({ wave }) => `stage ${wave.stage}: pocket ${wave.checks.pocket}; caught ${wave.checks.caught}; waiting ${wave.checks.waiting}`).join(' · ')}.
 `);
 console.log('wrote public/lessons, src/game/school/lessonWaves.ts and docs/research/lesson-wave.md');
