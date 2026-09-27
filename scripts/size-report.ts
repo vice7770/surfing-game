@@ -86,11 +86,13 @@ const read = (folder: string): SizeRun[] => (existsSync(folder) ? readdirSync(fo
 const all = read(directory);
 for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
   const runs = all.filter((run) => run.spot === spot);
-  const buoys = runs.filter((run) => run.source === 'buoy');
-  const practice = runs.find((run) => run.source === 'practice');
+  // The forecast is fitted to the take-off's surf, which the game's readout measures.
+  const atTakeOff = (run: SizeRun) => ({ ...run, typical: run.takeOffTypical ?? Number.NaN, sets: run.takeOffSets ?? Number.NaN });
+  const buoys = runs.filter((run) => run.source === 'buoy' && run.takeOffTypical !== undefined).map(atTakeOff);
+  const practice = runs.find((run) => run.source === 'practice' && run.takeOffTypical !== undefined);
   if (!buoys.length) continue;
   const fit = fitForecast(buoys);
-  console.log(`${spot}: { a: ${fit.a.toFixed(4)}, sets: ${fit.sets.toFixed(3)} }${practice ? `; practice { typical: ${practice.typical.toFixed(2)}, sets: ${practice.sets.toFixed(2)} }` : ''} (${buoys.length} runs)`);
+  console.log(`${spot}: { a: ${fit.a.toFixed(4)}, sets: ${fit.sets.toFixed(3)} }${practice ? `; practice { typical: ${practice.takeOffTypical!.toFixed(2)}, sets: ${practice.takeOffSets!.toFixed(2)} }` : ''} (${buoys.length} runs at the take-off)`);
 }
 const gates = gating ? sizeGates(all, read(`${directory}/baseline`)) : undefined;
 writeFileSync('docs/research/size-report.md', sizeMarkdown(all, gates, `npm run report:sizes -- ${process.argv.slice(2).join(' ')}`));
