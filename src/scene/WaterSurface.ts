@@ -438,7 +438,7 @@ export class WaterSurface {
     return this.currentLook;
   }
 
-  /** The look drawn: Rich only for a source whose bodies ride the Catmull-Rom surface; the legacy wave stays Classic. */
+  /** The look drawn: Rich only for a source whose bodies ride the Catmull-Rom surface; the still sea stays Classic. */
   private get effectiveLook(): WaterLook {
     return this.currentLook === 'rich' && this.source.cubic ? 'rich' : 'classic';
   }
@@ -453,7 +453,7 @@ export class WaterSurface {
     this.uniforms.waterFoamPattern.value = this.detailedFoam && this.source.writeFlow ? 1 : 0;
   }
 
-  /** 1 when the foam is drawn as the flowing network (a source with a current), 0 for the legacy soft tint. */
+  /** 1 when the foam is drawn as the flowing network (a source with a current), 0 for the soft tint. */
   get foamPattern(): number {
     return this.uniforms.waterFoamPattern.value as number;
   }

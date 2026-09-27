@@ -438,6 +438,15 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     }
   }
 
+  /**
+   * The carried breaking and predictor state changed outside a step (a sea taken
+   * over, or restored for a lesson, spec L2): a device uploads it again before
+   * its next step, as after a window shift.
+   */
+  invalidateDeviceLayout(): void {
+    this.layoutVersion += 1;
+  }
+
   override shiftAlongShore(columns: number): void {
     super.shiftAlongShore(columns);
     this.depthDirty = true;

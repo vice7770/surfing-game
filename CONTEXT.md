@@ -59,16 +59,12 @@ The evolving water-surface state that contains the incoming wave and can propaga
 _Avoid_: render-only wave, separate wave overlay
 
 **Water sample**:
-Local observations of the shared interactive water field at a position and time, including surface elevation, slope/orientation, and water motion.
+Local observations of the simulated sea at a position and time, including surface elevation, slope/orientation, and water motion.
 _Avoid_: render-only sample
 
 **Board response**:
 The simulated motion of the surfboard under buoyancy, drag, lift, paddling, and rider input.
 _Avoid_: board physics (too broad without a specific model)
-
-**Physics tuning panel**:
-The in-game controls for adjusting MVP wave and board parameters to inspect their effect.
-_Avoid_: debug menu
 
 **Sea state**:
 The spectral description of the swell at the spot (Hs, Tp, direction, spread, tide), represented as seeded linear components.
@@ -145,6 +141,24 @@ _Avoid_: lock-on
 **Jump point**:
 A preset camera place in the lab: Overview, Profile, Below or Cinematic.
 _Avoid_: camera preset
+
+## Surf School
+
+**Surf School**:
+The mode that teaches the surfing motions, one lesson at a time, on the same recorded wave.
+_Avoid_: tutorial (too broad), training mode
+
+**Lesson wave**:
+The recorded wave every lesson starts on: one real ride's sea kept at three moments (waiting, caught, in the pocket), with where the rider was at each.
+_Avoid_: scripted wave, fake wave
+
+**Placement**:
+Putting the rider on the water at a point, heading and speed, standing or prone, as a lesson's start; the physics carries it from there.
+_Avoid_: teleport, spawn (spawning is the lineup's)
+
+**Free Practice**:
+The lesson wave with no goals, restarting after every ride.
+_Avoid_: sandbox
 
 ## Online
 

@@ -9,6 +9,8 @@ import { WATER } from './hullForces';
 import { PlaneWater } from './PlaneWater';
 import type { SurfWater } from './SurfWater';
 import { SurfWaterBodyField } from './SurfWaterBodyField';
+import { PhysicalSurfWater } from './PhysicalSurfWater';
+import { ShallowWaterSolver, uniformEdges } from '../wave/ShallowWaterSolver';
 
 const STEP = 1 / 60;
 
@@ -247,6 +249,23 @@ describe('rigid board body', () => {
     }
     expect(contacts).toBeGreaterThan(0);
     expect(board.velocity.y).toBeLessThan(0);
+  });
+});
+
+describe('broken water', () => {
+  // The riding-the-wave spec: a board in broken water is carried toward the bore's speed.
+  it('carries a board in a bore\'s roller', () => {
+    const solver = new ShallowWaterSolver({ nx: 60, xMin: -30, dx: 1, zEdges: uniformEdges(-30, 30, 60), xBoundary: 'open' }, () => 3);
+    for (let i = 0; i < solver.h.length; i += 1) {
+      solver.h[i] = 3.6;
+      solver.qz[i] = 3.6;
+    }
+    const breaking = new Float64Array(solver.h.length).fill(1);
+    const water = new PhysicalSurfWater(solver, { peakPeriod: 10, breaking });
+    const board = new BoardBody();
+    board.place(new Vector3(0, water.surfaceAt(0, 0) + board.shape.centerOfMass.y, 0));
+    for (let s = 0; s < 120; s += 1) board.step(1 / 60, water);
+    expect(board.velocity.z).toBeGreaterThan(3);
   });
 });
 

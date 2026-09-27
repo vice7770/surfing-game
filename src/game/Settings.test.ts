@@ -28,6 +28,13 @@ describe('SettingsStore', () => {
     expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: oldCustom, detected: medium }) })).value.graphics.waterLook).toBe('rich');
   });
 
+  // The riding-the-wave spec: the pocket reflex rides with the player on the Practice swell unless they choose otherwise.
+  it('keeps the pocket reflex on the Practice swell by default, and sanitizes it', () => {
+    expect(defaultSettings().gameplay.pocketReflex).toBe('practice');
+    const saved = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { pocketReflex: 'sometimes' } }) }));
+    expect(saved.value.gameplay.pocketReflex).toBe('practice');
+  });
+
   it('starts from the defaults with nothing stored, or with something that is not JSON', () => {
     expect(new SettingsStore(memory()).value).toEqual(defaultSettings());
     expect(new SettingsStore(memory({ [SETTINGS_KEY]: '{oops' })).value).toEqual(defaultSettings());
