@@ -36,6 +36,20 @@ describe('SurfZoneSimulation', () => {
     }
   });
 
+  it('spins up the menu\'s first Reef on the GPU tier\'s sea without blowing up', () => {
+    // The practice groundswell, 64 components and seed 1: at a quarter second between stability checks,
+    // a trough drained a reef cell to 7 cm with 112 m/s of backwash and the spin-up diverged at 2.25 s.
+    const simulation = new SurfZoneSimulation({
+      spot: 'reef', seed: 1, significantHeight: 2, peakPeriod: 12, directionDegrees: 10, spreading: 40, bandwidth: 0.08,
+      tide: 0, windSpeed: 0, stage: 2, componentCount: 64,
+    });
+    const { solver } = simulation;
+    let deepest = 0;
+    for (let i = 0; i < solver.h.length; i += 1) deepest = Math.max(deepest, solver.h[i]);
+    expect(deepest).toBeLessThan(20);
+    expect(solver.maxStableStep()).toBeGreaterThan(1e-3);
+  }, 180_000);
+
   it('drops a failing device and steps that frame on the CPU', async () => {
     const reference = new SurfZoneSimulation({ ...small, spot: 'point' });
     const simulation = new SurfZoneSimulation({ ...small, spot: 'point' });

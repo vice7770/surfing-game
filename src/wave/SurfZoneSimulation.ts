@@ -247,8 +247,9 @@ export class SurfZoneSimulation {
       this.solver, this.sea, this.solver.zoneWeightsAlongZ(TANK.zoneInner, TANK.offshore), this.seaTimeOffset,
     );
     this.solver.addRelaxationZone(this.boundary);
-    // Settle the nonlinear shape at the CFL limit, re-checking stability every quarter second.
-    while (this.solver.time < spinUp - 1e-9) this.solver.step(Math.min(0.25, spinUp - this.solver.time));
+    // Settle the nonlinear shape at the CFL limit, re-checking stability every substep: a trough draining a
+    // shallow reef can shrink the stable step fivefold within a quarter second, and a stale bound diverges.
+    while (this.solver.time < spinUp - 1e-9) this.solver.step(Math.min(this.solver.maxStableStep(), spinUp - this.solver.time));
     this.breaking = new BreakingModel(this.solver, { onset });
     this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     this.breaking.update(0);

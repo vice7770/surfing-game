@@ -46,6 +46,7 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus a
   - The Auto benchmark samples only the menu's own waves.
   - The menu's and Surf's sun and clock no longer overwrite the Wave Lab's settings.
   - The catch report takes `--spread`, so it can reproduce each Surf swell.
+- [x] **Fix (2026-09-27, found by the frame-rate survey):** at High, the menu's first Reef (the GPU tier's 64-component sea, seed 1) never came up, and its worker kept a core busy. The spin-up stepped a quarter second between stability checks; a trough drained a reef cell to 7 cm with 112 m/s of backwash, the step ran at 5× its stable limit, and the water diverged at 2.25 s. The spin-up now checks stability every substep, and water that diverges anyway stops with an error instead of asking for trillions of substeps. Of 24 spin-ups (four spots, 24 and 64 components, seeds 1–3), this was the only one to diverge.
 - [ ] **Open:**
   - **Tune the Surf swell sizes after the take-off layer (P10).** Measured before P7 with 30 ghost riders, 3 min per spot; the counts are riders who stood, and in brackets rides of 3 s or more:
 

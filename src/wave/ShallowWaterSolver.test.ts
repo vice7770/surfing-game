@@ -180,4 +180,12 @@ describe('ShallowWaterSolver', () => {
     expect(solver.sampleCentered(solver.bed, x, z)).toBeCloseTo(expected, 12);
     expect(solver.sampleCentered(solver.bed, -100, -100)).toBe(solver.bed[0]);
   });
+
+  it('stops with an error once the water has blown up, instead of sub-stepping without end', () => {
+    const solver = new ShallowWaterSolver({ nx: 20, xMin: -20, dx: 2, zEdges: uniformEdges(-20, 20, 20) }, () => 2);
+    const cell = 10 * solver.nx + 10;
+    // What a diverged cell looks like: a stable step near 1e-15 s, a hundred trillion substeps a frame.
+    solver.qx[cell] = 1e20;
+    expect(() => solver.step(1 / 60)).toThrow(/blew up/);
+  });
 });

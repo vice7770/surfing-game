@@ -85,6 +85,9 @@ export const WALL = 0;
 export const PERIODIC = 1;
 export const OPEN = 2;
 
+/** A stable step this short, s (about a thousandth of the surf zone's usual), means the water has diverged. */
+const COLLAPSED_STEP = 1e-5;
+
 interface Flux {
   mass: number;
   normal: number;
@@ -311,7 +314,10 @@ export class ShallowWaterSolver {
   /** Advance by dt seconds, sub-stepping as the CFL condition requires. */
   step(dt: number): void {
     if (!(dt > 0) || !Number.isFinite(dt)) return;
-    const substeps = Math.max(1, Math.ceil(dt / this.maxStableStep()));
+    const stable = this.maxStableStep();
+    // Diverged water asks for trillions of substeps: say so instead of stepping without end.
+    if (stable < COLLAPSED_STEP) throw new Error(`The water blew up: its stable step is ${stable.toExponential(1)} s`);
+    const substeps = Math.max(1, Math.ceil(dt / stable));
     const sub = dt / substeps;
     for (let s = 0; s < substeps; s += 1) {
       this.advance(sub);
