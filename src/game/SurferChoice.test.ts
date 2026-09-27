@@ -2,10 +2,15 @@ import { describe, expect, it } from 'vitest';
 import surferManifest from '../../public/assets/surfers/surfers.json';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import {
-  DEFAULT_SURFER, SUIT_COLORS, SURFER_BODIES, lookOf, looksFor, outfitFor, sanitizeSurfer, sexOf, surferBody,
+  DEFAULT_SURFER, SUIT_COLORS, SURFER_BODIES, lookOf, looksFor, outfitFor, sanitizeSurfer, sexOf, surferBody, surferHeight,
 } from './SurferChoice';
 
 describe('the surfer choice', () => {
+  it('knows each committed surfer\'s height, and 1.75 m for no one in particular (wave sizes)', () => {
+    for (const { id, height } of surferManifest.surfers) expect(surferHeight(id as Parameters<typeof surferHeight>[0])).toBeCloseTo(height, 3);
+    expect(surferHeight()).toBe(1.75);
+  });
+
   it('offers the four committed bodies, each with its sex', () => {
     expect(SURFER_BODIES.map(({ id, sex }) => ({ id, sex }))).toEqual(surferManifest.surfers.map(({ id, sex }) => ({ id, sex })));
   });
