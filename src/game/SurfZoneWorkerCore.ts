@@ -1,5 +1,6 @@
 import type { BoussinesqSolver } from '../wave/BoussinesqSolver';
 import { SurfZoneRunner, type RideRequest, type SurfZoneBuffers, type SurfZoneRunnerOptions } from '../wave/SurfZoneRunner';
+import type { SprayLook } from '../wave/SprayCloud';
 import type { SolverDevice, SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { compress, decodeSurfZoneState, encodeSurfZoneState } from '../wave/surfZoneState';
 import type { SurfZoneInit, SurfZoneSnapshot } from './SurfZoneHost';
@@ -11,6 +12,7 @@ export type SurfZoneRequest =
   | { type: 'exportState'; id: number }
   /** Take this encoded sea in place of the running one (spec L2: a lesson restarts on the same wave). */
   | { type: 'restore'; sea: Uint8Array }
+  | { type: 'look'; look: SprayLook }
   | { type: 'advance'; steps: number; buffers: SurfZoneBuffers; input?: RideRequest; reactions?: Float32Array };
 
 /** Worker → main thread. */
@@ -39,6 +41,8 @@ export type SolverDeviceFactory = (solver: BoussinesqSolver) => Promise<SolverDe
  */
 export class SurfZoneWorkerCore {
   private runner?: SurfZoneRunner;
+  /** The water look the spray is drawn in (G9: Classic keeps its spray), kept for a sea still to start. */
+  private sprayLook: SprayLook = 'rich';
   /** A device step under way: an export waits for it, so it never sees half a step. */
   private stepping?: Promise<void>;
 
@@ -48,6 +52,11 @@ export class SurfZoneWorkerCore {
   ) {}
 
   handle(request: SurfZoneRequest): void | Promise<void> {
+    if (request.type === 'look') {
+      this.sprayLook = request.look;
+      this.runner?.setSprayLook(request.look);
+      return;
+    }
     if (request.type === 'start') {
       const { config, options, sea } = request;
       if (this.createDevice && (config.compute ?? 'auto') === 'auto') {
@@ -59,12 +68,14 @@ export class SurfZoneWorkerCore {
           await runner.spinUp();
           if (sea) runner.simulation.importState(decodeSurfZoneState(sea));
           // Only a ready sea takes steps and exports.
+          runner.setSprayLook(this.sprayLook);
           this.runner = runner;
           this.ready(runner);
         })();
       }
       const runner = new SurfZoneRunner(config, options);
       if (sea) runner.simulation.importState(decodeSurfZoneState(sea));
+      runner.setSprayLook(this.sprayLook);
       this.runner = runner;
       this.ready(runner);
       return;

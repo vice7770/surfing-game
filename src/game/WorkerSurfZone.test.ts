@@ -188,6 +188,23 @@ describe('WorkerSurfZone', () => {
     expect(port.terminated).toBe(true);
   });
 
+  it('tells the worker’s spray the water look, before or after the sea is ready (G9: Classic keeps its spray)', async () => {
+    const port = new FakePort();
+    const host = new WorkerSurfZone(config, port);
+    host.setSprayLook('classic');
+    await host.ready;
+    const runner = () => (port as unknown as { core: { runner: { spray: { look: string } } } }).core.runner;
+    expect(runner().spray.look).toBe('classic');
+    host.setSprayLook('rich');
+    await settle();
+    expect(runner().spray.look).toBe('rich');
+    // The in-page host does the same.
+    const local = new LocalSurfZone(config);
+    local.setSprayLook('classic');
+    expect(local.runner.spray.look).toBe('classic');
+    host.dispose();
+  });
+
   // L2: a lesson's placement asked for with no steps rides in the next advance, and only that one.
   it('carries a placement into the next advance once', async () => {
     const port = new FakePort();

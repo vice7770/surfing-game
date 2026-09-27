@@ -1,4 +1,5 @@
 import type { RideRequest, SurfZoneBuffers, SurfZoneRunnerOptions } from '../wave/SurfZoneRunner';
+import type { SprayLook } from '../wave/SprayCloud';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { SnapshotSampler, type SurfZoneHost, type SurfZoneInit, type SurfZoneSnapshot } from './SurfZoneHost';
 import { transferables, type SurfZoneReply, type SurfZoneRequest } from './SurfZoneWorkerCore';
@@ -132,6 +133,12 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
   restore(sea: Uint8Array): void {
     if (this.disposed) return;
     this.port.postMessage({ type: 'restore', sea }, [sea.buffer]);
+  }
+
+  /** The worker's spray follows the water look (G9: Classic keeps its spray), from its next step. */
+  setSprayLook(look: SprayLook): void {
+    if (this.disposed) return;
+    this.port.postMessage({ type: 'look', look });
   }
 
   dispose(): void {

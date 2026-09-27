@@ -1,6 +1,7 @@
 import type { RenderableSurfZone } from '../scene/PhysicalSurfaceSource';
 import { sampleSurfaceBed, sampleSurfaceHeight, type SurfaceGrid } from '../scene/WaterSurface';
 import { SurfZoneRunner, type RideRequest, type SurfZoneBuffers, type SurfZoneRunnerOptions, type SurfZoneStatus } from '../wave/SurfZoneRunner';
+import type { SprayLook } from '../wave/SprayCloud';
 import type { RenderGrid, SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { compress, decodeSurfZoneState, encodeSurfZoneState } from '../wave/surfZoneState';
 import { TUBE_STRIDE, carveAt, carveGrid } from '../wave/tubeTable';
@@ -38,6 +39,8 @@ export interface SurfZoneHost {
   exportState(): Promise<{ bytes: Uint8Array; deflated: boolean }>;
   /** Take this encoded sea (from `exportState`, decompressed) in place of the running one; the next steps go on from it (spec L2). */
   restore(sea: Uint8Array): void;
+  /** The water look the spray is drawn in (G9: Classic keeps its lip-impact spray as it was). */
+  setSprayLook(look: SprayLook): void;
   /** Rendered water surface at (x, z), m: the same lookup the water shader uses. */
   heightAt(x: number, z: number): number;
   bedAt(x: number, z: number): number;
@@ -105,6 +108,10 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
   restore(sea: Uint8Array): void {
     this.runner.simulation.importState(decodeSurfZoneState(sea));
     this.refresh();
+  }
+
+  setSprayLook(look: SprayLook): void {
+    this.runner.setSprayLook(look);
   }
 
   dispose(): void {}

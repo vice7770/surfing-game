@@ -489,6 +489,7 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
       - **open:** where a peel's columns collapse at different stages, a column whose void has gone stands as a spike a metre wide between carved neighbours (Part A's instant close did the same). It needs the peel to collapse as one section;
     - the spray pool (4,096) is full a fifth of the time on the Reef and the Point, and the lip's splash gives way first;
     - the review's deferred whitewater fixes are done (2026-09-27): spits no faster than the falling lip drives the air (√(ρ_w/ρ_a)·√(gW/2); the rest erupts); each drop of lip water reported landing once; impact drops thrown up as fast as the splash-up sheet; the aeration follows the window before adding air; its snapshot write halved; the report balances the air on what the tubes trapped.
+    - Classic's spray is kept as it was before G9 (the user's call, 2026-09-27): in Classic the lip's impact drops come from the jet's whole water at the old launch speeds (30–80 % up, 20–60 % on), and splash-ups throw none; Rich follows the splash-up. The page tells the worker's spray which look it is drawn in.
 
     Whitewater forces on bodies and the player's tube camera (P12) stay in the Backlog.
 

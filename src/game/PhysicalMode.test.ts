@@ -151,6 +151,17 @@ describe('PhysicalMode', () => {
     expect(mode.ready).toBe(false);
   });
 
+  it('gives the sea it starts the water look for its spray, and the running sea every change (G9: Classic keeps its spray)', async () => {
+    const water = new WaterSurface(new FlatSurfaceSource());
+    const mode = new PhysicalMode(new Scene());
+    mode.setSprayLook('classic');
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick, (config) => new LocalSurfZone(config, {}))).toBe(true);
+    const host = mode.host as LocalSurfZone;
+    expect(host.runner.spray.look).toBe('classic');
+    mode.setSprayLook('rich');
+    expect(host.runner.spray.look).toBe('rich');
+  });
+
   it('frames a riderless sea from its idle view, and a ride from the default view', async () => {
     const water = new WaterSurface(new FlatSurfaceSource());
     const mode = new PhysicalMode(new Scene());
