@@ -282,6 +282,17 @@ describe('SurfZoneRunner with a rider', () => {
     expect(runner.status().ride!.resets).toBe(1);
   });
 
+  // L2: a lesson attempt places the rider; it counts as a restart.
+  it('places the rider where a lesson asks, standing, as a restart', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    const place = { x: runner.focus.x + 3, z: runner.focus.z - 2, heading: 0.3, speed: 3, phase: 'standing' as const };
+    runner.advance(1, { ...idle, place });
+    const ride = runner.status().ride!;
+    expect(ride.phase).toBe('standing');
+    expect(ride.resets).toBe(1);
+    expect(Math.hypot(runner.session!.board.position.x - place.x, runner.session!.board.position.z - place.z)).toBeLessThan(0.5);
+  });
+
   it('spawns the rider where asked, relative to the take-off (spec N1)', () => {
     const runner = new SurfZoneRunner(calm, { rider: true, spawnAlong: 12, spawnOut: 20 });
     const board = runner.session!.board.position;

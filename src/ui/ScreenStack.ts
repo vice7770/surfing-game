@@ -3,9 +3,10 @@
  * scene for the `?record` and `?waterSheet` dev tools, spec L1) show a scene; the
  * rest are panels over one.
  */
-export type ScreenId = 'menu' | 'surf' | 'multiplayer' | 'logbook' | 'settings' | 'ride' | 'pause' | 'wavelab' | 'stage';
+export type ScreenId = 'menu' | 'surf' | 'multiplayer' | 'logbook' | 'settings' | 'ride' | 'pause' | 'wavelab' | 'stage' | 'school' | 'lesson';
 
-const SCENES: ReadonlySet<ScreenId> = new Set(['menu', 'ride', 'wavelab', 'stage']);
+/** `lesson` (spec L2) is a Surf School lesson's scene; `school` is its list, a panel over the menu. */
+const SCENES: ReadonlySet<ScreenId> = new Set(['menu', 'ride', 'wavelab', 'stage', 'lesson']);
 
 /** Where the player is, and the way back: Esc or B pops one screen. */
 export class ScreenStack {
