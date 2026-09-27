@@ -541,6 +541,8 @@ export class AttachedRider {
   /** The press's and the knee's rates this substep, 1/s. */
   private pressRate = 0;
   private kneeRate = 0;
+  /** The latest `follow`'s rate, 1/s (no allocation per substep). */
+  private followRate = 0;
   /** The duck-dive postures, and the centre of mass each moves by (press from prone, knee from press), board frame. */
   private readonly duckPress: Float64Array;
   private readonly duckKnee: Float64Array;
@@ -1947,17 +1949,15 @@ export class AttachedRider {
     const target = Math.max(0, Math.min(1, this.duckDive));
     const holding = target > DUCK_HELD;
     duck.held = holding ? duck.held + h : 0;
-    const press = this.follow(duck.press, this.pressRate, holding ? target : 0, holding && duck.press < target ? PRESS_TIME : RELEASE_TIME, h);
-    duck.press = press.value;
-    this.pressRate = press.rate;
+    duck.press = this.follow(duck.press, this.pressRate, holding ? target : 0, holding && duck.press < target ? PRESS_TIME : RELEASE_TIME, h);
+    this.pressRate = this.followRate;
     const kneeTarget = holding && duck.held >= KNEE_DELAY ? target : 0;
-    const knee = this.follow(duck.knee, this.kneeRate, kneeTarget, duck.knee < kneeTarget ? KNEE_TIME : RELEASE_TIME, h);
-    duck.knee = knee.value;
-    this.kneeRate = knee.rate;
+    duck.knee = this.follow(duck.knee, this.kneeRate, kneeTarget, duck.knee < kneeTarget ? KNEE_TIME : RELEASE_TIME, h);
+    this.kneeRate = this.followRate;
   }
 
-  /** One substep of a critically damped follower toward `target`, settling over `time`, kept within 0–1. */
-  private follow(value: number, rate: number, target: number, time: number, h: number): { value: number; rate: number } {
+  /** One substep of a critically damped follower toward `target`, settling over `time`, kept within 0–1: the new value, and its rate in `followRate`. */
+  private follow(value: number, rate: number, target: number, time: number, h: number): number {
     const omega = SETTLE / time;
     const next = rate + (omega * omega * (target - value) - 2 * omega * rate) * h;
     let after = value + next * h;
@@ -1970,7 +1970,8 @@ export class AttachedRider {
       after = Math.max(0, Math.min(1, after));
       afterRate = (after - value) / h;
     }
-    return { value: after, rate: afterRate };
+    this.followRate = afterRate;
+    return after;
   }
 
   /** The posture's parts, centre of mass and support for the current phase. */

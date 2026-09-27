@@ -221,7 +221,8 @@ class StandGoal implements LessonGoal {
 /**
  * Duck-dive: broken water comes at the rider (a breaking crest seaward of it);
  * the goal passes once the crest is behind the rider, who stayed on the board all
- * the while and lost at most DUCK_PUSHED m toward the shore; carried further, it misses.
+ * the while and lost at most DUCK_PUSHED m toward the shore from the furthest it got
+ * out to sea (paddling out first banks no allowance); carried further, it misses.
  */
 class DuckDiveGoal implements LessonGoal {
   private armed = false;
@@ -237,6 +238,7 @@ class DuckDiveGoal implements LessonGoal {
       this.from = out;
     }
     if (!this.armed) return { progress: 0, passed: false };
+    this.from = Math.max(this.from, out);
     if (frame.phase === 'fallen') this.fell = true;
     const lost = this.from - out;
     if (lost > DUCK_PUSHED) return { progress: 0.5, passed: false, missed: 'lesson.duckDive.pushed' };

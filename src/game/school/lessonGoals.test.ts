@@ -116,6 +116,17 @@ describe('lesson goals', () => {
       expect(state.missed).toBe('lesson.duckDive.pushed');
     });
 
+    // Final review: paddling out before the whitewater arrives must not bank a push-back allowance.
+    it('counts the push-back from the furthest the rider got out to sea', () => {
+      const duck = goal('duckDive');
+      duck.update(at(0, 20));
+      duck.update(at(-4, 6));
+      duck.update(at(0, 0.5));
+      const state = duck.update(at(0.5, -2));
+      expect(state.passed).toBe(false);
+      expect(state.missed).toBe('lesson.duckDive.pushed');
+    });
+
     it('does not pass once the rider has come off the board', () => {
       const duck = goal('duckDive');
       duck.update(at(0, 6));
