@@ -27,7 +27,7 @@ export const SPLASH_UP = { share: 0.3, vertical: 0.6, horizontal: 0.8, minImpact
 /**
  * A tube's trapped air (G9, docs/research/whitewater-sources.md): once its jet has
  * all landed the void closes, shrinking over its free-fall time t_c = √(2W/g) as
- * its air is squeezed out evenly. `escape` of the air leaves as spray (the
+ * its air is squeezed out as the void loses volume. `escape` of it leaves as spray (the
  * spit, out of a peel's open end; or an eruption up through the lip where a
  * section closes all at once) and the rest breaks into bubbles. Provisional,
  * but for the air's volume, which is conserved.
@@ -115,12 +115,17 @@ export interface LipSheetParcel {
   kind: number;
 }
 
-/** A landed parcel's flight: where it left the crest, the height it came down at (m), how long it flew (s) and the speed of the crest it left (m/s). */
+/**
+ * A landed parcel's flight: where it left the crest, the height it came down
+ * at (m), how long it flew (s), the speed of the crest it left (m/s), and
+ * whether it was a jet's water (0) or a splash-up's (1, G9), which draws no tube.
+ */
 export interface LipFlight {
   launch: { x: number; y: number; z: number };
   y: number;
   age: number;
   crestSpeed: number;
+  kind: number;
 }
 
 export interface LipConditions {
@@ -284,7 +289,7 @@ export class PlungingLip implements LipParcelSource {
   private readonly linked: Uint32Array;
   private query = 0;
   private readonly near = { a: new Vector3(), b: new Vector3(), pa: new Vector3(), pb: new Vector3(), velocity: new Vector3() };
-  private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0 };
+  private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0, kind: 0 };
   private readonly free: number[] = [];
   /** The flying tubes as a `tubeTable` (G9), refreshed as the clock moves and strips come and go. */
   private tubes = new Float64Array(64 * TUBE_STRIDE);
@@ -495,7 +500,8 @@ export class PlungingLip implements LipParcelSource {
       t[o + 8] = tube.geometry.tilt;
       t[o + 9] = strip.column;
       t[o + 10] = scale;
-      t[o + 11] = tube.air * scale;
+      // Its length and width both shrink: the void, and the air it still holds, go as scale².
+      t[o + 11] = tube.air * scale * scale;
       rows += 1;
     }
     this.tubeRows = rows;
@@ -677,6 +683,7 @@ export class PlungingLip implements LipParcelSource {
     flight.y = y;
     flight.age = this.age[parcel];
     flight.crestSpeed = this.crestSpeed[parcel];
+    flight.kind = this.kind[parcel];
     this.active[parcel] = 0;
     this.state[parcel] = 0;
     this.free.push(parcel);
@@ -746,8 +753,10 @@ export class PlungingLip implements LipParcelSource {
         const tube = strip.tube!;
         if (Number.isNaN(tube.closedAt) || tube.released >= 1) continue;
         const done = collapsed(tube, this.time);
-        const volume = tube.air * (done - tube.released);
-        tube.released = done;
+        // The air leaves as the void loses volume (scale², the scale falling linearly): fastest as it starts to close.
+        const gone = 1 - (1 - done) * (1 - done);
+        const volume = tube.air * (gone - tube.released);
+        tube.released = gone;
         if (!(volume > 0)) continue;
         const centre = this.voidCentre(strip, 1 - done);
         this.rollers.push({

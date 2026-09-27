@@ -68,10 +68,10 @@ describe('the collapsing tube and its air (G9)', () => {
     const lip = new PlungingLip(solver, 512);
     lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3, tube, 0.8);
     const landed = { first: -1, last: -1 };
-    // The jet's own parcels leave with the crest's speed; its splash-ups do not.
+    // Count the jet's own landings, not its splash-ups'.
     let jet = 0;
     lip.onLand = (_x, _z, _volume, _vx, _vy, _vz, flight) => {
-      if (flight?.crestSpeed) jet += 1;
+      if (flight?.kind === 0) jet += 1;
     };
     const table = new Float32Array(12 * 4);
     for (let frame = 0; frame < 2400; frame += 1) {
@@ -103,6 +103,20 @@ describe('the collapsing tube and its air (G9)', () => {
     expect(table[10]).toBeCloseTo(0.5, 1);
     run(collapse);
     expect(lip.writeTubes(table, 4)).toBe(0);
+  });
+
+  it('lets the air out as the drawn void shrinks: what it still holds is the void’s own volume', () => {
+    const { lip, run } = peel([3.5], 0);
+    const table = new Float32Array(12 * 4);
+    let checked = 0;
+    for (let frame = 0; frame < 2400; frame += 1) {
+      run(1 / 240);
+      if (lip.writeTubes(table, 4) !== 1 || !(table[10] < 1)) continue;
+      // The void's length and width both shrink with its scale: its volume, and so its air, go as scale².
+      expect(table[11] / trapped).toBeCloseTo(table[10] * table[10], 5);
+      checked += 1;
+    }
+    expect(checked).toBeGreaterThan(40);
   });
 
   it('accounts for every bit of a tube’s air: what escapes plus what breaks into bubbles is what it trapped', () => {
@@ -164,6 +178,19 @@ describe('the collapsing tube and its air (G9)', () => {
     run(6);
     expect(escaped.erupted).toBeGreaterThan(0);
     expect(escaped.spit).toBe(0);
+  });
+});
+
+describe('the splash-up’s landings (G9)', () => {
+  it('tells a splash-up’s landing from a jet’s, so tube measurements can leave splash-ups out', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 512);
+    const kinds: number[] = [];
+    lip.onLand = (_x, _z, _volume, _vx, _vy, _vz, flight) => kinds.push(flight!.kind);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3);
+    for (let frame = 0; frame < 2400; frame += 1) lip.step(1 / 240);
+    expect(kinds.filter((kind) => kind === 0).length).toBe(STRIP_PARCELS);
+    expect(kinds.filter((kind) => kind === 1).length).toBe(STRIP_PARCELS);
   });
 });
 
