@@ -49,6 +49,8 @@ export interface BoardContactBody {
   readonly orientation: Quaternion;
   readonly halfExtents: Readonly<Vector3>;
   readonly inverseMass: number;
+  /** World frame, rad/s. */
+  readonly angularVelocity: Readonly<Vector3>;
   velocityAt(worldPoint: Readonly<Vector3>, out: Vector3): Vector3;
   inverseEffectiveMass(worldPoint: Readonly<Vector3>, normal: Readonly<Vector3>): number;
   applyImpulse(impulse: Readonly<Vector3>, worldPoint: Readonly<Vector3>): void;
