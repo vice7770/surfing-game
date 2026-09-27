@@ -1,5 +1,7 @@
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { SETS_OVER_TYPICAL, caldwellAucan, fitForecast, forecastSurf, komarGaughan } from './surfForecast';
+import type { SizeRun } from './sizeReport';
+import { PRACTICE_SURF, SETS_OVER_TYPICAL, caldwellAucan, fitForecast, forecastSurf, komarGaughan } from './surfForecast';
 
 describe('empirical surf heights', () => {
   it('breaks Hs 3 m at 12 s at about 4 m (Komar & Gaughan)', () => {
@@ -35,5 +37,24 @@ describe('empirical surf heights', () => {
       expect(surf.sets).toBeGreaterThanOrEqual(surf.typical);
     }
     expect(SETS_OVER_TYPICAL).toBe(1.27);
+  });
+
+  it('forecasts every measured run of the size report within 25 %, and Practice as measured', () => {
+    const folder = 'docs/research/sizes';
+    const runs = readdirSync(folder).filter((name) => name.endsWith('.json'))
+      .flatMap((name) => JSON.parse(readFileSync(`${folder}/${name}`, 'utf8')) as SizeRun[]);
+    for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
+      // Today's 5 m Beach edge saturates at Hs 3 m (its faces stop growing), which a power law cannot follow.
+      const saturated = (run: SizeRun) => run.spot === 'beach' && run.heightAt === 'edge' && run.significantHeight >= 3;
+      const buoys = runs.filter((run) => run.spot === spot && run.source === 'buoy' && run.waves >= 10 && !saturated(run));
+      expect(buoys.length).toBeGreaterThan(0);
+      for (const run of buoys) {
+        const ratio = forecastSurf(spot, run.significantHeight, run.period).typical / run.typical;
+        expect(ratio, `${spot} Hs ${run.significantHeight} Tp ${run.period}`).toBeGreaterThan(0.75);
+        expect(ratio, `${spot} Hs ${run.significantHeight} Tp ${run.period}`).toBeLessThan(1.25);
+      }
+      const practice = runs.find((run) => run.spot === spot && run.source === 'practice')!;
+      expect(PRACTICE_SURF[spot].typical).toBeCloseTo(practice.typical, 1);
+    }
   });
 });
