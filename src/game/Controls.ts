@@ -1,6 +1,7 @@
 import type { RideInput } from '../physics/RideSession';
-import { heldActions, padSteer, padTrim, padValue, readPads, type Action, type Bindings, type PadState } from './Bindings';
+import { heldActions, padValue, readPads, type Action, type Bindings, type PadKind, type PadState } from './Bindings';
 import { AxisRamp } from './InputAxes';
+import { DEFAULT_STICK, drivingPad, padKey, padSticks, touched, type StickSettings } from './Sticks';
 import type { CallId } from '../net/protocol';
 
 /** One frame's paddle, steer and pop-up press, as `input` reads them. */
@@ -29,6 +30,8 @@ export interface ControlEnvironment {
   target?: EventTarget;
   pads?: () => PadState[];
   document?: Document;
+  /** The stick settings (spec C1): which stick trims, the response and the dead zones; the defaults without. */
+  stick?: () => StickSettings;
 }
 
 const EDITABLE = new Set(['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA']);
@@ -60,11 +63,17 @@ export class Controls {
   private active = true;
   /** The device the player last pressed something on, so hints can name its keys or buttons. */
   lastDevice: 'keyboard' | 'gamepad' = 'keyboard';
+  /** Which pad was used last, so hints name its buttons as printed on it (spec C1). */
+  lastPadKind: PadKind = 'standard';
+  /** The pad whose sticks steer and trim: the one touched last (spec C1). */
+  private driving?: string;
+  private readonly stick: () => StickSettings;
   private readonly pads: () => PadState[];
 
   constructor(private readonly bindings: () => Bindings, private readonly handlers: ControlHandlers, environment: ControlEnvironment = {}) {
     const target = environment.target ?? globalThis.window;
     this.pads = environment.pads ?? (() => readPads());
+    this.stick = environment.stick ?? (() => DEFAULT_STICK);
     target.addEventListener('keydown', (event) => this.keyDown(event as KeyboardEvent));
     target.addEventListener('keyup', (event) => {
       this.held.delete((event as KeyboardEvent).code);
@@ -136,16 +145,22 @@ export class Controls {
   requestGetUp(): void { this.getUpRequested = true; }
   consumeGetUp(): void { this.getUpRequested = false; }
 
-  /** Read the gamepads once a frame: new presses fire, held buttons and the stick are kept. */
+  /** Read the gamepads once a frame: new presses fire, held buttons are kept, and the pad touched last drives the sticks. */
   poll(): void {
     const pads = this.pads();
     const now = heldActions(new Set(), pads, this.bindings());
-    if (pads.some((pad) => pad.buttons.some(Boolean) || Math.abs(pad.axes[0] ?? 0) > 0.5 || Math.abs(pad.axes[1] ?? 0) > 0.5)) this.lastDevice = 'gamepad';
+    this.driving = drivingPad(pads, this.driving);
+    const used = pads.find(touched);
+    if (used) {
+      this.lastDevice = 'gamepad';
+      this.lastPadKind = used.kind ?? 'standard';
+    }
     if (this.active) {
       for (const action of now) if (!this.padPrevious.has(action)) this.press(action);
       this.padHeld = now;
-      this.padSteerValue = padSteer(pads);
-      this.padTrimValue = padTrim(pads);
+      const sticks = padSticks(pads.find((pad, index) => padKey(pad, index) === this.driving), this.stick());
+      this.padSteerValue = sticks.steer;
+      this.padTrimValue = sticks.trim;
       this.padCrouchValue = padValue(pads, this.bindings().gamepad.crouch[0]);
       this.padCompressValue = padValue(pads, this.bindings().gamepad.compress[0]);
     }

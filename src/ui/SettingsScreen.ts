@@ -17,6 +17,10 @@ export interface SettingsScreenOptions {
   /** While a binding waits for a key or button, the menu's own keys and buttons stand down. */
   onCapture(capturing: boolean): void;
   pads?: () => PadState[];
+  /** Connect the Steam Controller: Chrome's chooser (spec C1). */
+  onSteamConnect?(): void;
+  /** Something outside the store the rows show changed (the Steam Controller came or went); returns the undo. */
+  external?(listener: () => void): () => void;
 }
 
 /**
@@ -121,7 +125,8 @@ export function createSettingsScreen(options: SettingsScreenOptions): { root: HT
       return el('div', { class: 'slider' }, input, output);
     }
     if (row.kind === 'button') {
-      const button = el('button', { class: 'button-secondary', attrs: { type: 'button' }, dataset: { nav: '', focusKey: row.id }, text: row.action, on: { click: options.onRedetect } });
+      const click = () => (row.id === 'steamConnect' ? options.onSteamConnect?.() : options.onRedetect());
+      const button = el('button', { class: 'button-secondary', attrs: { type: 'button' }, dataset: { nav: '', focusKey: row.id }, text: row.action, on: { click } });
       button.disabled = row.disabled;
       return button;
     }
@@ -139,30 +144,33 @@ export function createSettingsScreen(options: SettingsScreenOptions): { root: HT
     })));
     const rows = settingsModel(tab, store.value, options.context());
     const children: HTMLElement[] = [];
-    if (tab === 'controls') {
-      children.push(el('div', { class: 'binding-row binding-head' }, el('span'), el('span', { text: t('settings.keyboard') }), el('span', { text: t('settings.gamepad') })));
-    }
+    let bindingHead = false;
     for (let i = 0; i < rows.length; i += 1) {
       const row = rows[i];
       if (row.kind === 'heading') {
         children.push(el('h3', { class: 'panel-subhead', text: row.label }));
       } else if (row.kind === 'binding') {
-        // An action's two keys and its button share one line.
-        const group = rows.slice(i, i + 3) as Extract<Row, { kind: 'binding' }>[];
-        i += 2;
+        if (!bindingHead) {
+          bindingHead = true;
+          children.push(el('div', { class: 'binding-row binding-head' }, el('span'), el('span', { text: t('settings.keyboard') }), el('span', { text: t('settings.gamepad') })));
+        }
+        // An action's two keys and two buttons share one line.
+        const group = rows.slice(i, i + 4) as Extract<Row, { kind: 'binding' }>[];
+        i += 3;
         const bindingButton = (binding: typeof group[number]) => {
           const button = el('button', { class: 'binding', attrs: { type: 'button' }, dataset: { nav: '', focusKey: binding.id }, text: binding.value });
           button.addEventListener('click', () => captureBinding(button, binding));
           return button;
         };
-        const help = 'help' in row && row.help ? el('small', { class: 'setting-help', text: row.help }) : null;
+        const help = row.help ? el('small', { class: 'setting-help', text: row.help }) : null;
         children.push(el('div', { class: 'binding-row' },
           el('span', { class: 'setting-label' }, row.label, help),
           el('span', { class: 'binding-keys' }, bindingButton(group[0]), bindingButton(group[1])),
-          bindingButton(group[2])));
+          el('span', { class: 'binding-keys' }, bindingButton(group[2]), bindingButton(group[3]))));
       } else {
         const nextWave = 'nextWave' in row && row.nextWave ? el('span', { class: 'badge-inline', text: t('settings.nextWave') }) : null;
-        children.push(el('div', { class: 'setting-row' }, el('span', { class: 'setting-label' }, row.label, nextWave), control(row)));
+        const help = 'help' in row && row.help ? el('small', { class: 'setting-help', text: row.help }) : null;
+        children.push(el('div', { class: 'setting-row' }, el('span', { class: 'setting-label' }, row.label, nextWave, help), control(row)));
       }
     }
     body.replaceChildren(...children);
@@ -170,6 +178,7 @@ export function createSettingsScreen(options: SettingsScreenOptions): { root: HT
   };
 
   const stop = store.subscribe(render);
+  const stopExternal = options.external?.(render);
   render();
-  return { root, dispose: stop };
+  return { root, dispose: () => { stop(); stopExternal?.(); } };
 }

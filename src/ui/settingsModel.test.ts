@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { PRESETS } from '../game/Graphics';
+import type { PadKind } from '../game/Bindings';
 import { defaultSettings } from '../game/Settings';
+import type { SteamStatus } from '../game/steam/SteamControllerDriver';
 import { applyRow, settingsModel } from './settingsModel';
 
 const context = { devTools: false, detecting: false };
@@ -61,10 +63,37 @@ describe('settingsModel', () => {
     expect(settingsModel('graphics', low, context).find((row) => row.id === 'redetect')).toBeUndefined();
   });
 
-  it('lists a keyboard pair and a gamepad button for each of the sixteen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls; the stances spec Compress)', () => {
+  it('lists two keys and two gamepad buttons for each of the sixteen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls; C1 a second button; the stances spec Compress)', () => {
     const bindings = settingsModel('controls', defaultSettings(), context).filter((row) => row.kind === 'binding');
-    expect(bindings).toHaveLength(48);
+    expect(bindings).toHaveLength(64);
     expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(16);
+  });
+
+  // Review Focus 2 and 5: the connection row by status, with the Steam advice; Safari says what it needs.
+  it('offers the Steam Controller connection by its status (C1)', () => {
+    const row = (steam?: SteamStatus) => settingsModel('controls', defaultSettings(), { ...context, ...(steam ? { steam } : {}) }).find((r) => r.id === 'steamConnect');
+    expect(row()).toMatchObject({ kind: 'button', action: 'Needs Chrome or Arc', disabled: true });
+    expect(row('disconnected')).toMatchObject({ action: 'Connect', disabled: false, help: expect.stringContaining('quit Steam') });
+    expect(row('connected')).toMatchObject({ action: 'Connected', disabled: true });
+    expect(applyRow(defaultSettings(), 'steamConnect', true)).toBeUndefined();
+  });
+
+  it('sets which stick trims, the response and the dead zones (C1)', () => {
+    const rows = settingsModel('controls', defaultSettings(), context);
+    expect(rows.find((r) => r.id === 'trimStick')).toMatchObject({ kind: 'choice', value: 'right' });
+    expect(rows.find((r) => r.id === 'stickResponse')).toMatchObject({ kind: 'choice', value: 'linear' });
+    expect(rows.find((r) => r.id === 'deadzoneSteam')).toMatchObject({ kind: 'slider', value: 0.05, min: 0, max: 0.3 });
+    expect(rows.find((r) => r.id === 'deadzoneGamepad')).toMatchObject({ kind: 'slider', value: 0.15 });
+    expect(applyRow(defaultSettings(), 'trimStick', 'left')).toEqual({ tab: 'controls', patch: { trimStick: 'left' } });
+    expect(applyRow(defaultSettings(), 'deadzoneGamepad', 0.1)).toEqual({ tab: 'controls', patch: { deadzoneGamepad: 0.1 } });
+  });
+
+  it('names the pad buttons as printed on the pad used last (C1)', () => {
+    const value = (id: string, padKind?: PadKind) => settingsModel('controls', defaultSettings(), { ...context, ...(padKind ? { padKind } : {}) }).find((r) => r.id === id);
+    expect(value('bind:gamepad:mute:0')).toMatchObject({ value: 'Back' });
+    expect(value('bind:gamepad:mute:0', 'steam')).toMatchObject({ value: 'View' });
+    expect(value('bind:gamepad:hand:1', 'steam')).toMatchObject({ value: 'L4' });
+    expect(value('bind:gamepad:retry:1')).toMatchObject({ value: '—' });
   });
 });
 

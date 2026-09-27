@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { ACTION_CONTEXT, DEFAULT_BINDINGS, REBINDABLE, buttonLabel, heldActions, keyLabel, padSteer, rebind, type PadState } from './Bindings';
+import { ACTIONS, ACTION_CONTEXT, DEFAULT_BINDINGS, REBINDABLE, addPadSource, buttonLabel, heldActions, keyLabel, readPads, rebind, type PadState } from './Bindings';
 
 const pad = (buttons: number[] = [], x = 0): PadState => ({
-  buttons: Array.from({ length: 17 }, (_, i) => buttons.includes(i)), axes: [x, 0, 0, 0],
+  buttons: Array.from({ length: 22 }, (_, i) => buttons.includes(i)), axes: [x, 0, 0, 0],
 });
 
 describe('bindings', () => {
@@ -62,27 +62,53 @@ describe('bindings', () => {
     expect(rebind(DEFAULT_BINDINGS, 'keyboard', 'retry', 1, 'Enter')).toBe(DEFAULT_BINDINGS);
   });
 
-  it('steers from the left stick beyond its dead zone, and lets go when the pad disappears', () => {
-    expect(padSteer([pad([], 0.1)])).toBe(0);
-    expect(padSteer([pad([], -0.575)])).toBeCloseTo(-0.5, 6);
-    expect(padSteer([pad([], 1)])).toBe(1);
-    expect(padSteer([])).toBe(0);
+  it('holds nothing when no pad is connected', () => {
     expect(heldActions(new Set(), [], DEFAULT_BINDINGS).size).toBe(0);
   });
 
-  it('names keys and buttons for the screen', () => {
-    expect(['Space', 'ArrowUp', 'KeyR', 'Digit1', 'ShiftLeft'].map(keyLabel)).toEqual(['Space', '↑', 'R', '1', 'Shift']);
-    expect([0, 7, 9, 12].map(buttonLabel)).toEqual(['A', 'RT', 'Start', 'D-pad↑']);
+  // C1: the right thumb trims, so the hand moves to LB; the Steam Controller's grips keep the thumbs on the sticks.
+  it('reaches for the water with LB or L4, pops up with A or R4, and leaves L5 and R5 free', () => {
+    expect(heldActions(new Set(), [pad([4])], DEFAULT_BINDINGS)).toEqual(new Set(['hand']));
+    expect(heldActions(new Set(), [pad([17])], DEFAULT_BINDINGS)).toEqual(new Set(['hand']));
+    expect(heldActions(new Set(), [pad([18])], DEFAULT_BINDINGS)).toEqual(new Set(['popUp']));
+    expect(heldActions(new Set(), [pad([19]), pad([20])], DEFAULT_BINDINGS).size).toBe(0);
   });
 
-  // N1: surf calls online, on 1–4 and four spare pad buttons, rebindable.
+  it('names keys and buttons for the screen, as printed on the pad used last', () => {
+    expect(['Space', 'ArrowUp', 'KeyR', 'Digit1', 'ShiftLeft'].map(keyLabel)).toEqual(['Space', '↑', 'R', '1', 'Shift']);
+    expect([0, 7, 8, 9, 12].map((index) => buttonLabel(index))).toEqual(['A', 'RT', 'Back', 'Start', 'D-pad↑']);
+    expect([0, 8, 9, 16, 17, 18, 19, 20, 21].map((index) => buttonLabel(index, 'steam'))).toEqual(['A', 'View', 'Menu', 'Steam', 'L4', 'R4', 'L5', 'R5', '···']);
+    expect(buttonLabel(undefined)).toBe('—');
+  });
+
+  it('reads the Gamepad API as standard pads, then adds the Steam Controller’s (C1)', () => {
+    const gamepad = { index: 2, connected: true, buttons: [{ pressed: true, value: 1 }], axes: [0.5] } as unknown as Gamepad;
+    const steam: PadState = { id: 'steam:0', kind: 'steam', buttons: [], axes: [] };
+    const remove = addPadSource(() => [steam]);
+    expect(readPads(() => [gamepad, null])).toEqual([{ id: 'gamepad:2', kind: 'standard', buttons: [true], values: [1], axes: [0.5] }, steam]);
+    remove();
+    expect(readPads(() => [])).toEqual([]);
+  });
+
+  // N1: surf calls online, on 1–4 and four spare pad buttons, rebindable. C1 moved the party call from LB to X, which the hand left.
   it('shouts the four surf calls on 1–4 and spare pad buttons, clashing with nothing', () => {
     expect(heldActions(new Set(['Digit1', 'Digit2', 'Digit3', 'Digit4']), [], DEFAULT_BINDINGS))
       .toEqual(new Set(['callLeft', 'callRight', 'callParty', 'callNice']));
-    expect(heldActions(new Set(), [pad([10, 11, 4, 1])], DEFAULT_BINDINGS)).toEqual(new Set(['callLeft', 'callRight', 'callParty', 'callNice']));
+    expect(heldActions(new Set(), [pad([10, 11, 2, 1])], DEFAULT_BINDINGS)).toEqual(new Set(['callLeft', 'callRight', 'callParty', 'callNice']));
     for (const call of ['callLeft', 'callRight', 'callParty', 'callNice'] as const) {
       expect(REBINDABLE).toContain(call);
       for (const code of DEFAULT_BINDINGS.keyboard[call]) expect(heldActions(new Set([code]), [], DEFAULT_BINDINGS)).toEqual(new Set([call]));
+    }
+  });
+
+  it('gives no default pad button two actions that can be live at once', () => {
+    for (const a of ACTIONS) {
+      for (const b of ACTIONS) {
+        const live = ACTION_CONTEXT[a] === 'always' || ACTION_CONTEXT[b] === 'always' || ACTION_CONTEXT[a] === ACTION_CONTEXT[b];
+        if (a === b || !live) continue;
+        const shared = DEFAULT_BINDINGS.gamepad[a].filter((button) => DEFAULT_BINDINGS.gamepad[b].includes(button));
+        expect(shared, `${a} and ${b}`).toEqual([]);
+      }
     }
   });
 

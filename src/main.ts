@@ -14,7 +14,9 @@ import {
   Vector3,
   type Mesh,
 } from 'three';
+import { addPadSource } from './game/Bindings';
 import { Controls } from './game/Controls';
+import { SteamControllerDriver } from './game/steam/SteamControllerDriver';
 import { frameDue } from './game/frameLimit';
 import { resolveGraphics, type ResolvedGraphics } from './game/Graphics';
 import { schoolPocketReflex, showsPocketReflex } from './game/pocketReflex';
@@ -1082,12 +1084,16 @@ settings.subscribe((value, change) => {
     game.setStance(value.gameplay.stance);
   }
 });
+// C1: the 2026 Steam Controller over WebHID, offered to every pad reader as one more standard pad.
+const steamController = new SteamControllerDriver();
+addPadSource(() => steamController.pads());
+void steamController.start();
 const controls = new Controls(() => settings.value.controls.bindings, {
   retry: () => app.retry(),
   camera: () => game.cycleView(),
   pause: () => app.pause(),
   mute: () => app.toggleMute(),
   call: (call) => app.call(call),
-});
-const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested ? 'stage' : startRide ? 'ride' : 'menu' });
+}, { stick: () => settings.value.controls });
+const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested ? 'stage' : startRide ? 'ride' : 'menu', steam: steamController });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);
