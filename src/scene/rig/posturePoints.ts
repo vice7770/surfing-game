@@ -8,6 +8,16 @@ const centre = new Vector3(shape.centerOfMass.x, shape.centerOfMass.y, shape.cen
 const halfWidth = (z: number) => shape.curves.width(Math.min(1, Math.max(0, z / shape.length + 0.5))) / 2;
 
 /**
+ * The physics' standing pelvis above the deck, m (the pelvis part's height in the
+ * standing posture over the stance's middle): the height the rig maps to the
+ * model's extended legs, so the physics' crouch bends the knees from there.
+ */
+export const STANDING_PELVIS = (() => {
+  const { front, rear } = stanceFeet(shape);
+  return riderPose(shape, 'standing', 'regular').parts[1] - deckHeight(shape, (front + rear) / 2);
+})();
+
+/**
  * The seven drawn points of a physics posture on a board at a pose, by
  * `AttachedRider.renderPoint`'s rules: trunk centres; upright arms held out
  * 0.7 past their centres; prone hands beside the rails, push hands on them;

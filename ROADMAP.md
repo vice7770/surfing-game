@@ -541,6 +541,29 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
       - Regular/Goofy is a Gameplay setting. The bottom-turn lesson and the autopilot follow the sequence: crouch on the drop, compress with a lean at the bottom, release up the face.
       - Open: the deep U (90° in about 1 s keeping 85 % of the speed) is not met on still water by any stance (62–77° at about half the speed): the carve sheds its speed. On the reference wave the compressed bottom turns yaw 87° (Forsyth 99°), but rides of 3 s or more fell 26 → 14 (median 2.2 s). Compress turns less than the crouch on still water. Both wait on the user's decision.
       - Next: Part B animation from the thesis's cues, then the top turn and cutback against the video.
+    - Part B, the riding body ([plan](docs/superpowers/plans/2026-09-27-part-b-animation.md), [findings](docs/superpowers/plans/2026-09-27-part-b-animation.md#findings)):
+      - the knees follow the physics' crouch from extended legs (mean 129° / 102° / 80° standing, crouched and compressed);
+      - the balance's upper-body swing is drawn;
+      - the head looks where the board goes, into the turn;
+      - the trunk turns into the turn, and the leading arm points where the head looks;
+      - a hand reaching down to the water is reached;
+      - online surfers pose the same way (wire format unchanged);
+      - the surfer sheet's `?riding` view shows the moments.
+      - Next: the user's playtest, then the top turn and cutback against the video.
+    - the top turn ([plan](docs/superpowers/plans/2026-09-27-top-turn.md), [study](docs/research/rail-change-study.md), [findings](docs/superpowers/plans/2026-09-27-top-turn.md#findings)):
+      - Steering into a lean the body lags (by more than about 2°), the feet never roll the board away from it; the upper body throws the lean. The feet's counter-roll had turned the board the wrong way (the hull turns hard on a small roll) and thrown the body in. Otherwise the feet keep their range: steady carves, partial steer, the hold, a stall (the final review).
+      - Top turns from a straight climb and rail changes from a carve now stay on, and carves are smooth. The user kept the smooth carve: the hard turn makes 52° (61° rode the feet's pumping).
+      - On the reference wave:
+        - rides of 3 s or more nearly doubled (14 → 27), median 2.2 → 3.2 s, best 4.9 → 6.8 s;
+        - top turns yaw 53° (38°), and five snaps appear (64°, 3.5 rad/s);
+        - bottom turns run at Forsyth's rate but yaw 72° (87°);
+        - speed kept from a bottom turn into a top turn: 0.32 → 0.45.
+      - The snap is drawn: with the weight back over the tail in a turn, the trunk twists further and the leading arm rises toward the lip (the sheet's `?riding` snap).
+      - Open:
+        - A bottom turn carried up the face into the top turn still falls, every time.
+        - Snaps and cutbacks stall on the static lab face.
+        - These are pinned with the deep U: the carve sheds its speed and bogs past its 48° bite.
+        - The frontside reaching hand is drawn 6.6 cm short.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;

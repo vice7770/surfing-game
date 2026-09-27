@@ -3,7 +3,8 @@
  * and fallen, at chase distance and at 1.5 m, under one photographed sky, on
  * flat water. `?sky=dawn|midday|sunset` picks the sky, `?row=r&col=c` draws one
  * tile full size, and `?sun` looks along the sun to check that the photo's sun
- * and the light's glint line up.
+ * and the light's glint line up. `?riding` draws Part B's riding moments instead,
+ * each simulated by the real rider (Regular rows 1 and 3, Goofy rows 2 and 4).
  */
 import {
   DirectionalLight, Mesh, MeshPhysicalMaterial, NeutralToneMapping, PerspectiveCamera, PlaneGeometry, Quaternion, Scene, Vector3, WebGLRenderer,
@@ -17,6 +18,7 @@ import { PhotoSky, type TimeOfDay } from '../scene/PhotoSky';
 import { ShadowRig, parseShadowLevel } from '../scene/ShadowRig';
 import { posturePoints } from '../scene/rig/posturePoints';
 import { POINT, createRiderVisualState, type RiderVisualState } from '../scene/rig/riderVisualState';
+import { RIDING_MOMENTS, ridingState } from './ridingPoses';
 
 const params = new URLSearchParams(window.location.search);
 const timeOfDay = (params.get('sky') ?? 'midday') as TimeOfDay;
@@ -24,7 +26,8 @@ const SURFERS = ['surfer1', 'surfer2', 'surfer3', 'surfer4'];
 /** One outfit each, so the sheet shows all four: the women in the full suit and the bikini, the men in the shorts and the spring suit. */
 const DRESS: readonly OutfitId[] = ['fullsuit', 'vestBikini', 'vestShorts', 'springsuit'];
 const TILE = { width: 300, height: 360 };
-const COLUMNS = 6;
+const riding = params.has('riding');
+const COLUMNS = riding ? RIDING_MOMENTS.length : 6;
 const status = document.getElementById('status')!;
 const canvas = document.getElementById('sheet') as HTMLCanvasElement;
 
@@ -128,8 +131,16 @@ async function main(): Promise<void> {
       if (single && (r !== Number(row) || c !== Number(col))) continue;
       surfers.forEach((surfer, i) => { surfer.group.visible = i === r; });
       boards.forEach((board, i) => { board.visible = i === r; });
-      const shot = SHOTS[c];
-      surfers[r].update(poseFor(shot, state), new Vector3(...shot.eye));
+      const stance = r % 2 === 0 ? 'regular' : 'goofy';
+      // Riding, the camera stands on the chest's side (Regular faces −x, Goofy +x).
+      const shot: Shot = riding
+        ? { pose: 'standing', eye: [stance === 'regular' ? -2.9 : 2.9, 1.5, 1.4], look: [0, 0.75, 0.2] }
+        : SHOTS[c];
+      if (riding) {
+        ridingState(RIDING_MOMENTS[c], stance, boardPosition, state);
+        boards[r].quaternion.copy(state.boardQuaternion);
+      }
+      surfers[r].update(riding ? state : poseFor(shot, state), new Vector3(...shot.eye));
       camera.aspect = TILE.width / TILE.height;
       camera.fov = 40;
       camera.position.set(...shot.eye);
@@ -142,7 +153,9 @@ async function main(): Promise<void> {
       renderer.render(scene, camera);
     }
   }
-  status.textContent = `${entry.id} · rows ${SURFERS.join(', ')} in ${DRESS.join(', ')} · columns prone, standing, fallen × chase, 1.5 m · head ${POINT.head}`;
+  status.textContent = riding
+    ? `${entry.id} · riding · rows ${SURFERS.join(', ')} (regular, goofy, regular, goofy) · columns ${RIDING_MOMENTS.join(', ')}`
+    : `${entry.id} · rows ${SURFERS.join(', ')} in ${DRESS.join(', ')} · columns prone, standing, fallen × chase, 1.5 m · head ${POINT.head}`;
   (window as unknown as { sheetReady: boolean }).sheetReady = true;
 }
 

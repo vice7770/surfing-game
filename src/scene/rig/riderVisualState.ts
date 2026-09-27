@@ -15,6 +15,18 @@ export interface RiderVisualState {
   readonly boardQuaternion: Quaternion;
   /** 0–1: how hard the hands are pulling, which cups them. */
   stroking: number;
+  /** How the board moves (`RiderMotion`, Part B): its turn rate, rad/s (positive as the heading grows), where it travels (horizontal, unit), how fast, m/s, and its climb, m/s. */
+  yawRate: number;
+  readonly travel: Vector3;
+  speed: number;
+  climb: number;
+  /**
+   * How far the body has come into its upright pose (from the landing) and its
+   * standing cues (from standing), 0–1 (`RiderMotion`); 1 for a state built
+   * without motion (the dev sheet, tests).
+   */
+  uprightBlend: number;
+  standingBlend: number;
   /** The duck-dive's press, 0–1 (the wipeout spec). */
   duck: number;
   /** The leash: its plug on the tail, and whether it is worn whole, snapped, or being reeled in. */
@@ -35,6 +47,12 @@ export function createRiderVisualState(): RiderVisualState {
     boardPosition: new Vector3(),
     boardQuaternion: new Quaternion(),
     stroking: 0,
+    yawRate: 0,
+    travel: new Vector3(0, 0, 1),
+    speed: 0,
+    climb: 0,
+    uprightBlend: 1,
+    standingBlend: 1,
     duck: 0,
     leash: { plug: new Vector3(), worn: true, snapped: false, reeling: false },
     swim: { stroking: false, diving: false, under: false },

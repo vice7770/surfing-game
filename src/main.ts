@@ -892,7 +892,7 @@ class SurfGame {
     };
     for (const player of others) {
       const drawn = controller.remote.sample(player.id, seaTime, state);
-      views.update(player.id, drawn ? state : undefined, surface, camera.position);
+      views.update(player.id, drawn ? state : undefined, surface, camera.position, seaTime);
       const world = anchor();
       if (!views.tagAnchor(player.id, world)) continue;
       const call = controller.calls.get(player.id);
