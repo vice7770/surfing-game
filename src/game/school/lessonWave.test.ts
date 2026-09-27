@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compress } from '../../wave/surfZoneState';
-import { lessonConfig, loadLessonSea, schoolWave, type LessonWave } from './lessonWave';
+import { INSIDE, lessonConfig, loadLessonSea, recordedStart, schoolWave, startPlacement, type LessonWave } from './lessonWave';
 import { LESSON_WAVES } from './lessonWaves';
 
 const wave: LessonWave = {
@@ -17,6 +17,19 @@ const wave: LessonWave = {
 };
 
 describe('lesson wave', () => {
+  // The wipeout spec: the Duck-dive lesson starts on the inside, on the waiting start's recorded sea.
+  it('starts the inside lying further in on the waiting sea, heading out to sea', () => {
+    expect(recordedStart('inside')).toBe('waiting');
+    expect(recordedStart('pocket')).toBe('pocket');
+    const inside = startPlacement(wave, 'inside');
+    const travel = { x: Math.sin((5 * Math.PI) / 180), z: Math.cos((5 * Math.PI) / 180) };
+    const along = (inside.x - wave.placements.waiting.x) * travel.x + (inside.z - wave.placements.waiting.z) * travel.z;
+    expect(along).toBeCloseTo(INSIDE.along, 6);
+    expect(Math.sin(inside.heading) * travel.x + Math.cos(inside.heading) * travel.z).toBeCloseTo(-1, 6);
+    expect(inside).toMatchObject({ speed: 0, phase: 'prone' });
+    expect(startPlacement(wave, 'caught')).toBe(wave.placements.caught);
+  });
+
   // The riding work will change the practice swell; a recording must keep its own.
   it('builds its sea from the recorded swell, with no spin-up', () => {
     const config = lessonConfig(wave);

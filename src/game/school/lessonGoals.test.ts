@@ -83,11 +83,50 @@ describe('lesson goals', () => {
     }
   });
 
-  it('has nine lessons, the riding ones starting in the pocket', () => {
-    expect(LESSONS.map((lesson) => lesson.id)).toEqual(['lean', 'trim', 'crouch', 'bottomTurn', 'topTurn', 'hand', 'pocket', 'popUp', 'catch']);
+  it('has ten lessons, the riding ones starting in the pocket', () => {
+    expect(LESSONS.map((lesson) => lesson.id)).toEqual(['lean', 'trim', 'crouch', 'bottomTurn', 'topTurn', 'hand', 'pocket', 'popUp', 'catch', 'duckDive']);
     expect(LESSONS.filter((lesson) => lesson.start === 'pocket')).toHaveLength(7);
     expect(lessonById('popUp').start).toBe('caught');
     expect(lessonById('catch').start).toBe('waiting');
-    expect(LESSONS.filter((lesson) => lesson.hint).map((lesson) => lesson.hint)).toEqual(['lean', 'trim', 'crouch', 'hand']);
+    expect(LESSONS.filter((lesson) => lesson.hint).map((lesson) => lesson.hint)).toEqual(['lean', 'trim', 'crouch', 'hand', 'duckDive']);
+    expect(lessonById('duckDive')).toMatchObject({ start: 'inside', actions: ['paddle', 'duckDive'] });
+  });
+
+  // The wipeout spec: come up behind the broken water, still on the board, pushed back at most 3 m.
+  describe('duck-dive', () => {
+    const at = (z: number, ahead: number, phase: LessonFrame['phase'] = 'prone'): LessonFrame => ({
+      dt: 0.1, phase, speed: 1, heading: Math.PI, x: 0, z, seaward: { x: 0, z: -1 },
+      input: input({ paddle: true }),
+      wave: { valid: true, faceFraction: 0, crestBreaking: 0.8, aheadOfCrest: ahead },
+    });
+
+    it('passes when the broken water passes and the rider comes up behind it, still on, pushed back at most 3 m', () => {
+      const duck = goal('duckDive');
+      duck.update(at(0, 6));
+      expect(duck.update(at(1, 0.5)).passed).toBe(false);
+      expect(duck.update(at(2, -2)).passed).toBe(true);
+    });
+
+    it('misses when the rider is carried back more than 3 m', () => {
+      const duck = goal('duckDive');
+      duck.update(at(0, 6));
+      duck.update(at(5, 0.5));
+      const state = duck.update(at(6, -2));
+      expect(state.passed).toBe(false);
+      expect(state.missed).toBe('lesson.duckDive.pushed');
+    });
+
+    it('does not pass once the rider has come off the board', () => {
+      const duck = goal('duckDive');
+      duck.update(at(0, 6));
+      duck.update(at(1, 0.5, 'fallen'));
+      expect(duck.update(at(2, -2)).passed).toBe(false);
+    });
+
+    it('waits for broken water: an unbroken swell passing does not count', () => {
+      const duck = goal('duckDive');
+      duck.update({ ...at(0, 6), wave: { valid: true, faceFraction: 0.5, crestBreaking: 0, aheadOfCrest: 6 } });
+      expect(duck.update({ ...at(0, -2), wave: { valid: true, faceFraction: 0.5, crestBreaking: 0, aheadOfCrest: -2 } }).passed).toBe(false);
+    });
   });
 });

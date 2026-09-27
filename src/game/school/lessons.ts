@@ -1,4 +1,5 @@
 import type { Action } from '../Bindings';
+import type { StringKey } from '../../ui/strings';
 import type { HintId } from '../hints';
 import type { ManeuverKind } from '../rideAnalysis';
 import type { RideView } from '../../scene/SpectatorCamera';
@@ -18,12 +19,18 @@ export interface LessonFrame {
   wave: { valid: boolean; faceFraction: number; crestBreaking: number; aheadOfCrest: number };
   /** The ride's latest manoeuvre, as the ride analysis reads it, and when in the ride it began, s. */
   live?: { kind: ManeuverKind; start: number };
+  /** Where the board is (m), and the unit direction out to sea (against the waves' travel): the duck-dive's measure. */
+  x?: number;
+  z?: number;
+  seaward?: { x: number; z: number };
 }
 
 /** How far a goal has got: a fraction, whether it passed, and what the prompt counts ("1 of 2", "3 of 5 s"). */
 export interface GoalState {
   progress: number;
   passed: boolean;
+  /** The attempt missed for the goal's own reason (the duck-dive: pushed back too far). */
+  missed?: StringKey;
   count?: { done: number; of: number; seconds?: boolean };
 }
 
@@ -31,7 +38,7 @@ export interface LessonGoal {
   update(frame: LessonFrame): GoalState;
 }
 
-export type LessonId = 'lean' | 'trim' | 'crouch' | 'bottomTurn' | 'topTurn' | 'hand' | 'pocket' | 'popUp' | 'catch';
+export type LessonId = 'lean' | 'trim' | 'crouch' | 'bottomTurn' | 'topTurn' | 'hand' | 'pocket' | 'popUp' | 'catch' | 'duckDive';
 
 /** A lesson (spec L2): where it starts, the view, the controls it teaches, its goal, and the Surf hint it retires when passed. */
 export interface Lesson {
@@ -71,6 +78,12 @@ const POCKET_FACE = 0.4;
 const POCKET_BREAKING = 0.3;
 /** Pop-up and catch: on the feet this long without a break. */
 const STAND_TIME = 2;
+/**
+ * Duck-dive (the wipeout spec): broken water counts from DUCK_BREAKING; the rider
+ * may lose at most DUCK_PUSHED m toward the shore from when it came at them.
+ */
+const DUCK_BREAKING = 0.3;
+const DUCK_PUSHED = 3;
 
 const wrap = (angle: number) => Math.atan2(Math.sin(angle), Math.cos(angle));
 
@@ -205,9 +218,36 @@ class StandGoal implements LessonGoal {
   }
 }
 
+/**
+ * Duck-dive: broken water comes at the rider (a breaking crest seaward of it);
+ * the goal passes once the crest is behind the rider, who stayed on the board all
+ * the while and lost at most DUCK_PUSHED m toward the shore; carried further, it misses.
+ */
+class DuckDiveGoal implements LessonGoal {
+  private armed = false;
+  private from = 0;
+  private fell = false;
+
+  update(frame: LessonFrame): GoalState {
+    const seaward = frame.seaward ?? { x: 0, z: -1 };
+    const out = (frame.x ?? 0) * seaward.x + (frame.z ?? 0) * seaward.z;
+    const coming = frame.wave.valid && frame.wave.crestBreaking >= DUCK_BREAKING && frame.wave.aheadOfCrest > 0;
+    if (!this.armed && coming) {
+      this.armed = true;
+      this.from = out;
+    }
+    if (!this.armed) return { progress: 0, passed: false };
+    if (frame.phase === 'fallen') this.fell = true;
+    const lost = this.from - out;
+    if (lost > DUCK_PUSHED) return { progress: 0.5, passed: false, missed: 'lesson.duckDive.pushed' };
+    const behind = frame.wave.valid && frame.wave.aheadOfCrest < 0;
+    return { progress: behind ? 1 : 0.5, passed: behind && !this.fell };
+  }
+}
+
 const steer: readonly Action[] = ['steerLeft', 'steerRight'];
 
-/** The nine lessons, in teaching order (spec L2). */
+/** The ten lessons, in teaching order (spec L2; the wipeout spec adds the duck-dive). */
 export const LESSONS: readonly Lesson[] = [
   { id: 'lean', start: 'pocket', view: 'behind', actions: steer, goal: () => new LeanGoal(), hint: 'lean' },
   { id: 'trim', start: 'pocket', view: 'side', actions: ['trimForward', 'trimBack'], goal: () => new TrimGoal(), hint: 'trim' },
@@ -218,6 +258,7 @@ export const LESSONS: readonly Lesson[] = [
   { id: 'pocket', start: 'pocket', view: 'behind', actions: ['trimForward', 'trimBack', ...steer], goal: () => new PocketGoal() },
   { id: 'popUp', start: 'caught', view: 'front', actions: ['popUp'], goal: () => new StandGoal() },
   { id: 'catch', start: 'waiting', view: 'front', actions: ['paddle', 'popUp'], goal: () => new StandGoal() },
+  { id: 'duckDive', start: 'inside', view: 'front', actions: ['paddle', 'duckDive'], goal: () => new DuckDiveGoal(), hint: 'duckDive' },
 ];
 
 export function lessonById(id: LessonId): Lesson {

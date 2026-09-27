@@ -13,10 +13,10 @@ describe('school models', () => {
     const progress = new SchoolProgress();
     progress.pass('trim');
     const list = schoolListModel(progress, LESSONS);
-    expect(list.rows.map((row) => row.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(list.rows.map((row) => row.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     expect(list.rows[0]).toMatchObject({ id: 'lean', title: 'Lean', passed: false });
     expect(list.rows[1].passed).toBe(true);
-    expect(list.progress).toBe('1 of 9 passed');
+    expect(list.progress).toBe('1 of 10 passed');
   });
 
   it('names the lesson’s keys for the device in use', () => {
