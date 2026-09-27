@@ -1,4 +1,5 @@
 import type { RideView } from '../scene/SpectatorCamera';
+import type { SurfScale } from '../ui/surfHeight';
 import type { Units } from '../ui/units';
 import type { WaterLook } from '../scene/water/waterLook';
 import type { StanceName } from '../physics/riderPosture';
@@ -16,6 +17,8 @@ export type GraphicsPreset = 'auto' | ConcretePreset | 'custom';
 
 export interface GameplaySettings {
   units: Units;
+  /** How the surf's height reads (the wave-sizes spec): faces, or the Hawaiian scale. */
+  surfScale: SurfScale;
   defaultCamera: RideView | 'overview';
   touchControls: 'auto' | 'on' | 'off';
   /** The balance meter (spec P9): on the Practice swell only, always, or never. */
@@ -117,7 +120,7 @@ function copyBindings(bindings: Bindings): Bindings {
 
 export function defaultSettings(prefersReducedMotion = false): GameSettings {
   return {
-    gameplay: { units: 'metric', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', pocketReflex: 'practice', stance: 'regular', scoreRides: false, showTelemetry: false, nameTags: true },
+    gameplay: { units: 'metric', surfScale: 'face', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', pocketReflex: 'practice', stance: 'regular', scoreRides: false, showTelemetry: false, nameTags: true },
     // The Medium preset's values (Graphics.PRESETS.medium; a test keeps the two equal).
     graphics: {
       preset: 'auto', renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto',
@@ -220,6 +223,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
   return {
     gameplay: {
       units: oneOf(gameplay.units, ['metric', 'imperial'] as const, defaults.gameplay.units),
+      surfScale: oneOf(gameplay.surfScale, ['face', 'hawaiian'] as const, defaults.gameplay.surfScale),
       defaultCamera: oneOf(gameplay.defaultCamera, ['front', 'behind', 'side', 'overview'] as const, defaults.gameplay.defaultCamera),
       touchControls: oneOf(gameplay.touchControls, ['auto', 'on', 'off'] as const, defaults.gameplay.touchControls),
       balanceMeter: oneOf(gameplay.balanceMeter, ['practice', 'always', 'never'] as const, defaults.gameplay.balanceMeter),

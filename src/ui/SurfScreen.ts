@@ -60,9 +60,17 @@ function press(group: HTMLElement, chosen: HTMLElement): void {
  * The spot cards and the four condition rows (plan P8), shared by the Surf screen
  * and an online room's creation (N1). Choices apply as they are made; nothing re-renders.
  */
-export function createSurfChoices(initial: SurfChoice, change: (choice: SurfChoice) => void): HTMLElement[] {
+export function createSurfChoices(
+  initial: SurfChoice, change: (choice: SurfChoice) => void, forecast?: (choice: SurfChoice) => string,
+): HTMLElement[] {
   const choice: SurfChoice = { spot: initial.spot, conditions: { ...initial.conditions } };
   const model = surfModel(choice);
+  // The surf the choice will make (the wave-sizes spec), kept in step with every choice.
+  const note = forecast ? el('p', { class: 'choice-note', text: forecast(choice) }) : undefined;
+  const changed = (next: SurfChoice) => {
+    if (note && forecast) note.textContent = forecast(next);
+    change(next);
+  };
   const spots = el('div', { class: 'spot-cards', attrs: { role: 'group', 'aria-label': t('surf.title') } });
   for (const spot of model.spots) {
     const card = el('button', {
@@ -73,7 +81,7 @@ export function createSurfChoices(initial: SurfChoice, change: (choice: SurfChoi
         click: () => {
           choice.spot = spot.id;
           press(spots, card);
-          change({ ...choice, conditions: { ...choice.conditions } });
+          changed({ ...choice, conditions: { ...choice.conditions } });
         },
       },
     }, sketch(spot.id), el('span', { class: 'spot-text' }, el('strong', { text: t(spot.name) }), el('small', { text: t(spot.blurb) })));
@@ -90,7 +98,7 @@ export function createSurfChoices(initial: SurfChoice, change: (choice: SurfChoi
           click: () => {
             (choice.conditions as unknown as Record<string, string>)[row.id] = option.value;
             press(group, button);
-            change({ ...choice, conditions: { ...choice.conditions } });
+            changed({ ...choice, conditions: { ...choice.conditions } });
           },
         },
       });
@@ -98,19 +106,20 @@ export function createSurfChoices(initial: SurfChoice, change: (choice: SurfChoi
     }
     return el('div', { class: 'choice-row' }, el('span', { class: 'choice-label', text: t(row.label) }), group);
   });
-  return [spots, el('div', { class: 'choice-rows' }, ...rows)];
+  return [spots, el('div', { class: 'choice-rows' }, ...rows, ...(note ? [note] : []))];
 }
 
 /** Pick a spot and the conditions (and, in `surfer`, who rides), then paddle out. */
 export function createSurfScreen(
   initial: SurfChoice, handlers: { change(choice: SurfChoice): void; paddleOut(): void; back(): void }, surfer?: Node,
+  forecast?: (choice: SurfChoice) => string,
 ): HTMLElement {
   return el('section', { class: 'screen screen-panel', attrs: { 'aria-label': t('surf.title') } },
     el('div', { class: 'panel' },
       el('header', { class: 'panel-header' },
         el('button', { class: 'icon-back', attrs: { type: 'button', 'aria-label': t('surf.back') }, dataset: { nav: '' }, on: { click: handlers.back } }, icon(ICONS.back)),
         el('h2', { text: t('surf.title') })),
-      ...createSurfChoices(initial, handlers.change),
+      ...createSurfChoices(initial, handlers.change, forecast),
       surfer,
       el('footer', { class: 'panel-footer' },
         el('button', { class: 'button-primary', attrs: { type: 'button' }, dataset: { nav: '', navDefault: '' }, text: t('surf.paddleOut'), on: { click: handlers.paddleOut } }))));

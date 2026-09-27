@@ -12,6 +12,14 @@ export const SURFER_BODIES: readonly { id: SurferBody; sex: SurferSex }[] = [
   { id: 'surfer4', sex: 'male' },
 ];
 
+/** Each committed surfer's standing height, m (`surfers.json`): the surf's names compare the waves to it (the wave-sizes spec). */
+export const SURFER_HEIGHTS: Record<SurferBody, number> = { surfer1: 1.654, surfer2: 1.657, surfer3: 1.734, surfer4: 1.719 };
+
+/** The surfer's height, m, or 1.75 m when no surfer is chosen. */
+export function surferHeight(body?: SurferBody): number {
+  return body ? SURFER_HEIGHTS[body] : 1.75;
+}
+
 const bodiesOf = (sex: SurferSex) => SURFER_BODIES.filter((body) => body.sex === sex).map((body) => body.id);
 
 export function sexOf(body: SurferBody): SurferSex {

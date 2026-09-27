@@ -1,0 +1,61 @@
+import { readFileSync, readdirSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import type { SizeRun } from './sizeReport';
+import { PRACTICE_SURF, SETS_OVER_TYPICAL, caldwellAucan, fitForecast, forecastSurf, komarGaughan } from './surfForecast';
+
+describe('empirical surf heights', () => {
+  it('breaks Hs 3 m at 12 s at about 4 m (Komar & Gaughan)', () => {
+    expect(komarGaughan(3, 12)).toBeCloseTo(0.39 * 9.81 ** 0.2 * (12 * 9) ** 0.4, 10);
+    expect(komarGaughan(3, 12)).toBeGreaterThan(3.9);
+    expect(komarGaughan(3, 12)).toBeLessThan(4.1);
+  });
+
+  it('gives Hawaii\'s outer-reef sets from shoaling and refraction (Caldwell & Aucan)', () => {
+    const shoaled = 3 ** 0.8 * ((Math.sqrt(9.81) * 12) / (4 * Math.PI)) ** 0.4;
+    const feet = shoaled * 3.28084;
+    const kr = -0.0003 * feet ** 3 + 0.0099 * feet ** 2 - 0.025 * feet + 1.0747;
+    expect(caldwellAucan(3, 12)).toBeCloseTo(shoaled * kr, 10);
+    // Above 21 ft the refraction is fixed at 2.145.
+    const big = 8 ** 0.8 * ((Math.sqrt(9.81) * 16) / (4 * Math.PI)) ** 0.4;
+    expect(caldwellAucan(8, 16)).toBeCloseTo(big * 2.145, 10);
+  });
+
+  it('fits a spot\'s forecast to measured runs in the Komar-Gaughan form', () => {
+    const runs = [1, 2, 3, 4].flatMap((significantHeight) => [10, 14, 18].map((period) => {
+      const typical = 0.6 * significantHeight ** 0.8 * period ** 0.4;
+      return { significantHeight, period, typical, sets: 1.3 * typical };
+    }));
+    const fit = fitForecast(runs);
+    expect(fit.a).toBeCloseTo(0.6, 6);
+    expect(fit.sets).toBeCloseTo(1.3, 6);
+  });
+
+  it('forecasts sets no smaller than the typical face', () => {
+    for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
+      const surf = forecastSurf(spot, 2, 12);
+      expect(surf.typical).toBeGreaterThan(0);
+      expect(surf.sets).toBeGreaterThanOrEqual(surf.typical);
+    }
+    expect(SETS_OVER_TYPICAL).toBe(1.27);
+  });
+
+  it('forecasts the surf the take-off measures in every run of the size report within 25 %, and Practice as measured', () => {
+    const folder = 'docs/research/sizes';
+    const runs = readdirSync(folder).filter((name) => name.endsWith('.json'))
+      .flatMap((name) => JSON.parse(readFileSync(`${folder}/${name}`, 'utf8')) as SizeRun[])
+      .filter((run) => run.takeOffTypical !== undefined && (run.takeOffWaves ?? 0) >= 8);
+    for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
+      // Today's 5 m Beach edge saturates at Hs 3 m (its faces stop growing), which a power law cannot follow.
+      const saturated = (run: SizeRun) => run.spot === 'beach' && run.heightAt === 'edge' && run.significantHeight >= 3;
+      const buoys = runs.filter((run) => run.spot === spot && run.source === 'buoy' && !saturated(run));
+      expect(buoys.length).toBeGreaterThan(0);
+      for (const run of buoys) {
+        const ratio = forecastSurf(spot, run.significantHeight, run.period).typical / run.takeOffTypical!;
+        expect(ratio, `${spot} Hs ${run.significantHeight} Tp ${run.period}`).toBeGreaterThan(0.75);
+        expect(ratio, `${spot} Hs ${run.significantHeight} Tp ${run.period}`).toBeLessThan(1.25);
+      }
+      const practice = runs.find((run) => run.spot === spot && run.source === 'practice')!;
+      expect(PRACTICE_SURF[spot].typical).toBeCloseTo(practice.takeOffTypical!, 1);
+    }
+  });
+});
