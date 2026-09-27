@@ -70,13 +70,14 @@ export const RIG_DETAIL = {
    * `leadReach` of its length where the head looks, raised `leadRaise`°, blended
    * in by the turn over `armLeadRate`, rad/s (de Sousa 2022: the leading arm
    * toward the lip). A hand reaching down past the hips (E's, or Compress's
-   * inside hand) is the physics' own: the spine bends toward it, up to
-   * `reachBend`°, until the arm reaches.
+   * inside hand) is the physics' own: the spine bends toward it, in the plane of
+   * the shoulder and the hand, up to `reachBend`° (folding forward over the toes
+   * frontside: the reference's hips flexed to 90° or less), until the arm reaches.
    */
   leadReach: 0.9,
   leadRaise: 15,
   armLeadRate: 1.5,
-  reachBend: 35,
+  reachBend: 60,
 };
 
 /**
@@ -132,6 +133,7 @@ export class HumanoidRig {
   private readonly pivot = new Vector3();
   private readonly pole2 = new Vector3();
   private readonly headHint = new Vector3();
+  private readonly chestBase = new Vector3();
   private readonly pole = new Vector3();
   private readonly direction = new Vector3();
   private readonly hint = new Vector3();
@@ -243,10 +245,7 @@ export class HumanoidRig {
     if (chestUp.lengthSq() < 1e-10) chestUp.copy(up);
     chestUp.normalize();
     this.orientSpine(chestUp);
-    if (state.phase === 'standing') {
-      const bend = state.standingBlend * this.reachBend(state);
-      if (bend !== 0) this.orientSpine(chestUp.applyAxisAngle(this.bendAxis, bend));
-    }
+    if (state.phase === 'standing') this.bendToReach(state, chestUp);
     this.orient(BONES.neck, chestUp, this.facing);
     if (lying) this.orient(BONES.head, this.direction.copy(boardUp).addScaledVector(boardForward, 0.3), boardForward);
     else if (state.phase === 'standing') this.lookWhereGoing(state);
@@ -316,41 +315,62 @@ export class HumanoidRig {
   }
 
   /**
-   * Standing, how far to bend the spine about the chest's facing, rad, for an arm
-   * to reach a hand reaching down past its length: the least bend that reaches, or
-   * the nearest within `reachBend`; 0 when every hand is held out or in reach.
+   * Standing, bends the spine toward a hand reaching down past the arm's length
+   * (the physics' hand in the face, or Compress's inside hand at the water), in the
+   * plane of the shoulder and the hand about the hips, so it folds forward over the
+   * toes as well as sideways: the least bend that reaches, within `reachBend`,
+   * checked on the solved shoulder (the spine spreads a bend over its bones) and
+   * eased in by the standing blend. Leaves `chestUp` bent as the spine is.
    */
-  private reachBend(state: RiderVisualState): number {
+  private bendToReach(state: RiderVisualState, chestUp: Vector3): void {
     const { bendAxis, pivot, middle } = this;
-    bendAxis.copy(this.facing).normalize();
+    if (state.standingBlend <= 0) return;
     this.bones.get(BONES.hips)!.getWorldPosition(pivot);
     const reach = RIG_DETAIL.legReach * this.armLength;
-    const most = (RIG_DETAIL.reachBend * Math.PI) / 180;
-    let chosen = 0;
-    for (const side of SIDES) {
-      const hand = state.points[side === 'left' ? POINT.leftHand : POINT.rightHand];
+    // The reaching hand farthest out of reach.
+    let side: Side | undefined;
+    let short = 0;
+    for (const candidate of SIDES) {
+      const hand = state.points[candidate === 'left' ? POINT.leftHand : POINT.rightHand];
       if (!this.reachingDown(hand)) continue;
-      const shoulder = this.bones.get(BONES.arm[side])!.getWorldPosition(this.target).sub(pivot);
-      if (shoulder.distanceTo(middle.subVectors(hand, pivot)) <= reach) continue;
-      // The bend that turns the shoulder toward the hand about the facing, within reach of it if one does.
+      const gap = this.bones.get(BONES.arm[candidate])!.getWorldPosition(this.target).distanceTo(hand) - reach;
+      if (gap > short) {
+        short = gap;
+        side = candidate;
+      }
+    }
+    if (!side) return;
+    const hand = middle.subVectors(state.points[side === 'left' ? POINT.leftHand : POINT.rightHand], pivot);
+    const shoulderOf = () => this.bones.get(BONES.arm[side])!.getWorldPosition(this.target).sub(pivot);
+    bendAxis.crossVectors(shoulderOf(), hand);
+    if (bendAxis.lengthSq() < 1e-10) return;
+    bendAxis.normalize();
+    const base = this.chestBase.copy(chestUp);
+    const most = (RIG_DETAIL.reachBend * Math.PI) / 180;
+    let total = 0;
+    for (let pass = 0; pass < 4 && total < most; pass += 1) {
+      const shoulder = shoulderOf();
+      if (shoulder.distanceTo(hand) <= reach) break;
+      // A rigid turn of the solved shoulder toward the hand about the axis: the least that reaches, or the nearest.
       const s = this.bend.copy(shoulder).addScaledVector(bendAxis, -shoulder.dot(bendAxis));
-      const h = this.nose.copy(middle).addScaledVector(bendAxis, -middle.dot(bendAxis));
-      const toward = Math.atan2(this.scratch.crossVectors(s, h).dot(bendAxis), s.dot(h));
-      const limit = Math.max(-most, Math.min(most, toward));
+      const h = this.nose.copy(hand).addScaledVector(bendAxis, -hand.dot(bendAxis));
+      const toward = Math.min(most - total, Math.max(0, Math.atan2(this.scratch.crossVectors(s, h).dot(bendAxis), s.dot(h))));
       let best = 0;
-      let nearest = Infinity;
+      let nearest = shoulder.distanceTo(hand);
       for (let i = 1; i <= 12; i += 1) {
-        const angle = (limit * i) / 12;
-        const distance = this.hint.copy(shoulder).applyAxisAngle(bendAxis, angle).distanceTo(middle);
+        const angle = (toward * i) / 12;
+        const distance = this.hint.copy(shoulder).applyAxisAngle(bendAxis, angle).distanceTo(hand);
         if (distance < nearest) {
           nearest = distance;
           best = angle;
         }
         if (distance <= reach) break;
       }
-      if (Math.abs(best) > Math.abs(chosen)) chosen = best;
+      if (best <= 1e-4) break;
+      total = Math.min(most, total + best);
+      this.orientSpine(chestUp.copy(base).applyAxisAngle(bendAxis, total));
     }
-    return chosen;
+    if (total > 0 && state.standingBlend < 1) this.orientSpine(chestUp.copy(base).applyAxisAngle(bendAxis, state.standingBlend * total));
   }
 
   /** Standing, the leading arm reaching where the head looks, blended in by the turn. */
