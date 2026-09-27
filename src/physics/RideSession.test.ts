@@ -212,3 +212,78 @@ describe('ride session', () => {
   });
 });
 
+describe('the leash in a ride', () => {
+  const fallen = (stance: 'regular' | 'goofy' = 'regular') => {
+    const session = new RideSession({ stance });
+    const water = new PlaneWater();
+    session.reset(new Vector3(0, 0, 0), 0, water);
+    session.separate('balance');
+    session.step(STEP, water, idle);
+    return { session, water };
+  };
+
+  it('keeps a board flung away from the fallen surfer within the stretched leash', () => {
+    const { session, water } = fallen();
+    session.board.velocity.set(0, 0, 5);
+    let furthest = 0;
+    const ankle = new Vector3();
+    const plug = new Vector3();
+    for (let i = 0; i < 300; i += 1) {
+      session.step(STEP, water, idle);
+      furthest = Math.max(furthest, session.leashPlug(plug).distanceTo(session.leashAnkle(ankle)));
+    }
+    expect(session.leash.snapped).toBe(false);
+    expect(furthest).toBeGreaterThan(1.83);
+    expect(furthest).toBeLessThan(1.83 * 1.55);
+  });
+
+  it('ties the back foot: the right ankle regular, the left goofy', () => {
+    for (const stance of ['regular', 'goofy'] as const) {
+      const { session } = fallen(stance);
+      const ankle = session.leashAnkle(new Vector3());
+      const leg = session.surfer.getPartPosition(stance === 'regular' ? 'rightLeg' : 'leftLeg', new Vector3());
+      const other = session.surfer.getPartPosition(stance === 'regular' ? 'leftLeg' : 'rightLeg', new Vector3());
+      expect(ankle.distanceTo(leg)).toBeLessThan(ankle.distanceTo(other));
+    }
+  });
+
+  it('puts the plug on the deck at the tail', () => {
+    const { session } = fallen();
+    const plug = session.board.toLocal(session.leashPlug(new Vector3()), new Vector3());
+    expect(plug.z).toBeLessThan(-session.board.shape.length / 2 + 0.1);
+    expect(Math.abs(plug.x)).toBeLessThan(1e-9);
+  });
+
+  it('holding the pop-up key reels the board in and climbs back on', () => {
+    const { session, water } = fallen();
+    session.board.velocity.set(0, 0, 3);
+    for (let i = 0; i < 90; i += 1) session.step(STEP, water, idle);
+    let climbed = -1;
+    for (let i = 0; i < 900 && climbed < 0; i += 1) {
+      session.step(STEP, water, { ...idle, reel: true });
+      if (session.rider.attached) climbed = i;
+    }
+    expect(climbed).toBeGreaterThan(0);
+    expect(session.phase).toBe('prone');
+  });
+
+  // Review Focus 2: the pop-up is a press, not a hold.
+  it('does not pop up when the reel is still held after climbing on', () => {
+    const { session, water } = fallen();
+    for (let i = 0; i < 900 && !session.rider.attached; i += 1) session.step(STEP, water, { ...idle, reel: true });
+    expect(session.rider.attached).toBe(true);
+    for (let i = 0; i < 120; i += 1) session.step(STEP, water, { ...idle, reel: true });
+    expect(session.phase).toBe('prone');
+  });
+
+  // Review Focus 5.
+  it('gives a new leash on a relaunch', () => {
+    const { session, water } = fallen();
+    session.leash.snapped = true;
+    session.leash.length = 1;
+    session.reset(new Vector3(0, 0, 0), 0, water);
+    expect(session.leash.snapped).toBe(false);
+    expect(session.leash.length).toBe(1.83);
+  });
+});
+
