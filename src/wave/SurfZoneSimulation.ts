@@ -220,9 +220,10 @@ export const TAKE_OFF: Record<SpotName, 'centre' | 'focus'> = { beach: 'centre',
 /**
  * The breaker index a big day's take-off is placed with, per spot: the size report measures where each spot's
  * sets break and sets these so the take-off lands there (the wave-sizes spec). Today's tanks keep BREAKER_INDEX;
- * the Reef's is the Reef rework's to set.
+ * the Reef's is the Reef rework's to set. The Point's and the Beach's are fitted to their sets' measured breaks at
+ * 14 s (Point Hs 2–4 m: 1.05–1.16; Beach Hs 2–3 m: 1.08–1.20), before the side feed; they are refitted after it.
  */
-export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: BREAKER_INDEX, point: BREAKER_INDEX, reef: BREAKER_INDEX, canyon: BREAKER_INDEX };
+export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.13, reef: BREAKER_INDEX, canyon: BREAKER_INDEX };
 
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */
 export const TAKE_OFF_EDGE_MARGIN = 30;
