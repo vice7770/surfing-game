@@ -151,6 +151,17 @@ describe('autopilot turns', () => {
     expect(turning(-20 * DEG).next(standing(-20 * DEG, { faceFraction: 0.2, curlDistance: 6, curlSide: -1 }, -1), 1 / 60).steer).toBe(1);
   });
 
+  // Traced: mid-turn the curl went out of the gauge's reach, the autopilot fell back on the peel estimate, which
+  // pointed the other way, and reversed a full lean into the ground.
+  it('keeps the open face it last saw while the curl is out of reach', () => {
+    const autopilot = turning(20 * DEG);
+    expect(autopilot.next(standing(20 * DEG, { faceFraction: 0.2, curlDistance: 6, curlSide: 1 }, 1), 1 / 60).steer).toBe(-1);
+    expect(autopilot.next(standing(0, { faceFraction: 0.2, curlDistance: Infinity, curlSide: 0 }, 1), 1 / 60).steer).toBe(-1);
+    // A new ride forgets it.
+    autopilot.reset();
+    expect(turning(20 * DEG).next(standing(20 * DEG, { faceFraction: 0.2 }, 1), 1 / 60).steer).toBe(1);
+  });
+
   it('bottom turns only at the foot of the face, not on the flat far ahead of it', () => {
     expect(turning(10 * DEG).next(standing(10 * DEG, { faceFraction: 0.1, aheadOfCrest: 7 }), 1 / 60).steer).toBe(0);
     expect(turning(10 * DEG).next(standing(10 * DEG, { faceFraction: 0.1, aheadOfCrest: 5 }), 1 / 60).steer).toBe(1);

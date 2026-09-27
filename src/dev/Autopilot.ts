@@ -117,6 +117,8 @@ export class Autopilot {
   private clock = 0;
   private stalled = 0;
   private readonly stall: boolean;
+  /** The open face the gauge last showed this attempt (away from the curl), 0 before it has shown one. */
+  private seenFace = 0;
   private popped = false;
   private lastHeading = Number.NaN;
   private travel = 0;
@@ -142,6 +144,7 @@ export class Autopilot {
 
   reset(): void {
     this.state = 'position';
+    this.seenFace = 0;
     this.outcome = undefined;
     this.rideTime = 0;
     this.lastHeading = Number.NaN;
@@ -231,10 +234,14 @@ export class Autopilot {
     return Math.max(-1, Math.min(1, wrap(target - heading) / HEADING_GAIN - YAW_DAMPING * yawRate));
   }
 
-  /** Which way along the crest the open face lies: away from the curl when the gauge sees one, else the break's peel. */
+  /**
+   * Which way along the crest the open face lies: away from the curl the gauge sees, or last saw this attempt (a
+   * curl gone out of reach mid-turn must not reverse it), else the break's peel.
+   */
   private openFace(view: AutopilotView): number {
     const { wave } = view.ride;
-    return wave.valid && wave.curlSide !== 0 ? -wave.curlSide : Math.sign(view.peelDirection);
+    if (wave.valid && wave.curlSide !== 0) this.seenFace = -wave.curlSide;
+    return this.seenFace !== 0 ? this.seenFace : Math.sign(view.peelDirection);
   }
 
   /** S-turns: the turn the face calls for, held to its end, and the pump between them. */
