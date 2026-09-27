@@ -148,7 +148,7 @@ Up to 50 friends share one break from a room link. Every player runs the whole s
   - a bot-filled room measured on the M4 Pro;
   - **Part B, physical collisions,** planned after the playtest.
 
-### P1 · Wave Lab and Surf School (L1–L3) — `L1 and L2 done (playtests open); L3 next`
+### P1 · Wave Lab and Surf School (L1–L3) — `L1–L3 done (playtests open)`
 
 Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [Spec](docs/superpowers/specs/2026-09-27-wave-lab-surf-school.md) · [L1 plan](docs/superpowers/plans/2026-09-27-l1-wave-lab.md).
 
@@ -194,7 +194,10 @@ Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [
   - on a machine too slow for stage 2 (the Fast water's), how slow the lessons run has not been measured;
   - the user's playtest (the pass card and a live pass were not seen in the hidden pane);
   - trim and the hand have no touch buttons yet, so lessons 2 and 6 need a keyboard or a pad.
-- [ ] **L3 · Legacy removal:** delete the legacy wave's modules and tests, now unreached.
+- [x] **L3 · Legacy removal:** the legacy wave's code is deleted, now that nothing reaches it. [Plan](docs/superpowers/plans/2026-09-27-l3-legacy-removal.md).
+  - **Deleted:** the wave (`WaveModel`, `PlungingSheet`), its board (`BoardPhysics`, `boardTrace`), their views (`LegacySurfaceSource`, `CameraRig`, `BoardWake`, `BreakSpray`, `Seabed`, `PlungingSheetMesh`), the old `Hud` and `RunHistory`, the `report:board-baseline` script, and every test that only drove them.
+  - **Trimmed:** `SurfWater` loses its legacy adapter and the `surface` flow regime; `Surfer` keeps only the pose the physical rider falls back to; `BoardInput` moves into `Controls`; the legacy swell readout and board values go; the sky loses the coastline cards the physical sea always hid.
+  - **Kept on purpose:** the test waters, test surfers and the report scripts' helpers, which the suite and the reports still use.
 
 ### Later — `Backlog`
 
