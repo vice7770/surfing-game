@@ -21,4 +21,12 @@ describe('the take-off window (Kimura and Kakinuma 2015)', () => {
     expect(inTakeOffWindow({ ...CAUGHT, valid: false })).toBe(false);
     expect(inTakeOffWindow({ ...CAUGHT, crestSpeed: 0 })).toBe(false);
   });
+
+  // Traced: re-seeding on a new crest, the gauge's crest speed read near 0 for a moment, and the window opened on a
+  // paddler at 1.8–2.5 m/s at the crest, who stood behind it. Caught means faster than paddling: small waves run ~3 m/s.
+  it('never opens on a paddler, however slow the crest reads', () => {
+    expect(inTakeOffWindow({ ...CAUGHT, crestSpeed: 0.5, speedShoreward: 1.8, speedOverGround: 1.8 })).toBe(false);
+    expect(inTakeOffWindow({ ...CAUGHT, crestSpeed: 2, speedShoreward: 2.5, speedOverGround: 2.5 })).toBe(false);
+    expect(inTakeOffWindow({ ...CAUGHT, crestSpeed: 2, speedShoreward: 3, speedOverGround: 3 })).toBe(true);
+  });
 });
