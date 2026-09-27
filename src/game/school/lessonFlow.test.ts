@@ -79,6 +79,19 @@ describe('lesson flow', () => {
     expect(flow.retry()).toBe(false);
   });
 
+  // Review: the catch's time limit cut off a good ride after the catch.
+  it('in Free Practice from prone, lets a ride that stood run past the catch’s time limit', () => {
+    const flow = new LessonFlow(undefined, { start: 'waiting' });
+    flow.start();
+    feed(flow, 3, { phase: 'prone' });
+    feed(flow, 14);
+    expect(flow.state).toBe('attempt');
+    const lost = new LessonFlow(undefined, { start: 'waiting' });
+    lost.start();
+    feed(lost, 15.1, { phase: 'prone' });
+    expect(lost.cause).toBe('school.miss.time');
+  });
+
   it('in Free Practice, has no goal, restarts after every ride and never shows the card', () => {
     const flow = new LessonFlow(undefined, { start: 'pocket' });
     for (let ride = 0; ride < 4; ride += 1) {

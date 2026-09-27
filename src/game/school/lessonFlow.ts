@@ -39,6 +39,8 @@ export class LessonFlow {
   /** The ride analysis' report id when the attempt began; a newer one ended the ride. */
   private seenReport?: number;
   private readonly limit: number;
+  /** Whether the rider has stood in this attempt: in Free Practice a ride after the catch runs to FREE_POCKET_LIMIT. */
+  private stood = false;
 
   /** `start`: Free Practice's start (a lesson has its own). */
   constructor(readonly lesson: Lesson | undefined, options: { start?: LessonStart } = {}) {
@@ -55,11 +57,13 @@ export class LessonFlow {
     this.missedFor = 0;
     this.cause = undefined;
     this.seenReport = undefined;
+    this.stood = false;
   }
 
   frame(frame: FlowFrame): void {
     if (this.state !== 'attempt') return;
     this.time += frame.dt;
+    if (frame.phase === 'standing') this.stood = true;
     if (this.tracker) this.goal = this.tracker.update(frame);
     if (this.goal.passed) {
       this.state = 'passed';
@@ -70,7 +74,7 @@ export class LessonFlow {
     if (this.seenReport === undefined) this.seenReport = reportId;
     if (frame.phase === 'fallen') this.miss(FALL_REASONS[frame.separation ?? 'balance']);
     else if (frame.report && reportId !== this.seenReport) this.miss(frame.report.end === 'fell' ? FALL_REASONS[frame.separation ?? 'balance'] : WORKER_REASONS[frame.report.end]);
-    else if (this.time >= this.limit) this.miss('school.miss.time');
+    else if (this.time >= (!this.lesson && this.stood ? Math.max(this.limit, FREE_POCKET_LIMIT) : this.limit)) this.miss('school.miss.time');
   }
 
   /** While missed: after RESTART_AFTER s, 'restart' (the same wave again), or 'card' after too many misses in a row. */
