@@ -8,6 +8,7 @@
  *   npm run report:sizes -- --spots beach --gates        (Part B: gate against docs/research/sizes/baseline/)
  *   npm run report:sizes -- --spots point --heights 3 --periods 14 --seconds 120
  *   npm run report:sizes -- --spots beach --heights 3,4 --tag big --no-practice   (one of several processes per spot)
+ *   npm run report:sizes -- --summary                                            (rebuild the report and fits only)
  *
  * A process writes docs/research/sizes/<spot>[-<tag>].json; the report and the fits read every file.
  */
@@ -24,7 +25,8 @@ const option = (name: string): string | undefined => {
   return index >= 0 ? process.argv[index + 1] : undefined;
 };
 const list = (name: string, fallback: readonly number[]) => option(name)?.split(',').map(Number) ?? [...fallback];
-const spots = (option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon']) as SpotName[];
+/** `--summary` runs nothing: it rebuilds the report and prints the fits from the files there. */
+const spots = (process.argv.includes('--summary') ? [] : option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon']) as SpotName[];
 const heights = list('heights', SIZE_GRID.heights);
 const periods = list('periods', SIZE_GRID.periods);
 const seconds = Number(option('seconds') ?? SIZE_SEA_SECONDS);
