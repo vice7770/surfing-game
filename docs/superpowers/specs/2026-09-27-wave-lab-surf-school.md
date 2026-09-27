@@ -131,7 +131,7 @@ The sea is heard from the camera (already the listener). Flying into a breaking 
 
 ### The lessons
 
-The thresholds are **provisional** until the reference wave is recorded (see *The lesson wave*).
+The thresholds are **provisional** until they are tuned on the reference wave, now recorded (see *The lesson wave*).
 
 | # | Lesson | Starts | View | What it teaches | Passed when |
 |---|---|---|---|---|---|
@@ -192,7 +192,7 @@ The same wave, started standing in the pocket or prone and ready to catch (the w
   - The eight longest rides are replayed from their moments as a new player would play them: no input from the pocket; from caught, a pop-up on the cue and nothing more; from waiting, the autopilot paddles, pops up and rides.
   - The rider's own balance and posture are not recorded, so a replay can differ from the ride.
   - Each start takes its own best moment, which may come from a different ride than the other starts' (a moment good for one start can be poor for another): standing at all counts first, then how long. `docs/research/lesson-wave.md` lists every ride and check.
-- **Provisional for now.** Today's records come from the current Canyon Practice sea, and the lessons' thresholds are provisional (the lean's swing is 8° until the turn-rate fix). When the reference wave merges (riding step 3), the records are regenerated and the thresholds tuned. With `DEV_TOOLS` on, the school shows "Provisional wave" until then.
+- **On the reference wave.** *Updated 2026-09-27:* the riding work's reference wave (its Practice swell, 1–1.5 m faces on the Canyon) merged, and the record was regenerated on it with the riding work's ride ends. The old record's caught start then ended after 1.5 s. From the pocket a still rider stands 6.4 s, a pop-up on the cue stands 6.1 s, and from waiting the autopilot stands 3.8 s. The record is no longer provisional, so the "Provisional wave" dev note is gone. The lessons' thresholds still are: the lean's swing is 8° until the turn-rate fix.
 - **The same-wave check.** Two restores must give the same sea:
   - on the CPU, identical (a unit test);
   - on the GPU, the breaking within 1 m and the timing within 0.2 s (the N1 gate's numbers).

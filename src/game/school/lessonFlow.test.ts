@@ -38,11 +38,11 @@ describe('lesson flow', () => {
   it('misses when the ride analysis ends the ride, but not on a report from before the attempt', () => {
     const flow = new LessonFlow(lessonById('pocket'));
     flow.start();
-    flow.frame(frame({ report: { id: 4, end: 'lost the face' } }));
+    flow.frame(frame({ report: { id: 4, end: 'lost the wave' } }));
     expect(flow.state).toBe('attempt');
-    flow.frame(frame({ report: { id: 5, end: 'lost the face' } }));
+    flow.frame(frame({ report: { id: 5, end: 'lost the wave' } }));
     expect(flow.state).toBe('missed');
-    expect(flow.cause).toBe('ride.reason.lostFace');
+    expect(flow.cause).toBe('ride.reason.lostWave');
   });
 
   it('misses when time runs out, sooner from a prone start', () => {

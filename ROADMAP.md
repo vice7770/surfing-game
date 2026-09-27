@@ -188,9 +188,9 @@ Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [
     - It is recorded on stage 2, and the school runs stage 2 on every machine, the Fast water's included (the user's call: stage 1's recording could not be caught). A machine too slow for it plays the lesson slower than real time.
     - A lesson's sea is built from it with no spin-up, and every restart restores it in place (a new `restore` host request; the GPU re-uploads the breaking state).
     - `RideSession.place` puts the rider on the water standing or prone, the one new piece of rider code.
-  - **Provisional:** the recording and the thresholds wait for the riding work's reference wave (the lean's swing is 8°, not 20°, until the turn-rate fix), and a dev note says so in the lesson.
+  - **On the reference wave:** recorded on the riding work's Practice swell after it merged. A still rider stands 6.4 s from the pocket, a pop-up on the cue 6.1 s, and the autopilot 3.8 s from waiting. The goals' thresholds stay provisional (the lean's swing is 8°, not 20°, until the turn-rate fix).
 - [ ] **L2 open:**
-  - regenerate the lesson wave and tune the goals on the reference wave;
+  - tune the goals on the reference wave (the lean's swing first, after the turn-rate fix);
   - on a machine too slow for stage 2 (the Fast water's), how slow the lessons run has not been measured;
   - the user's playtest (the pass card and a live pass were not seen in the hidden pane);
   - trim and the hand have no touch buttons yet, so lessons 2 and 6 need a keyboard or a pad.
@@ -470,6 +470,10 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
     - a crouch held while the feet brake a lean into a turn (2026-09-27): crouched full steer on the trough's flat water threw the rider in 0.65 s (the crouch's drop took the load off the board as the body leaned in, and the ankles rolled the board over instead of stopping the body). It was how the Canyon's rides ended, in their first bottom turn. Now it holds at 8 and 11 m/s;
     - open: full steer held for 2 s or more carves up the plane face, stalls and falls, as a real carve held uphill would. The steer's 50° full bank was chosen with the user for the stronger turn;
     - open: the Canyon's rides are still short. With the play and fall fixes the autopilot made 25 stands and 3 rides of 3 s or more over two seeds × 5 min (mean 6.4 s; before them 7 and 0, and 14 and 10 before the redesign); 282 of 335 attempts missed the wave. Traced ride by ride, the rider pops up straight down a 2.2–2.8 m face, reaches 11–12 m/s against a crest at 6–8 m/s and falls in its first bottom turn, where the rail releases at 12 m/s; broken water does not carry a board. Next: [riding the wave](docs/superpowers/plans/2026-09-27-riding-the-wave.md) (honest ride ends, the curl, the whitewater's push, a 1–1.5 m reference wave, the pocket reflex).
+  - **Riding the wave, Part A** ([spec](docs/superpowers/specs/2026-09-27-riding-the-wave.md), [plan](docs/superpowers/plans/2026-09-27-riding-the-wave.md), [findings](docs/superpowers/plans/2026-09-27-riding-the-wave.md#findings)):
+    - broken water carries a board (the surface roller's push in the sampler); honest ride ends (a fall, a kick-out, the wave dying, or lost); the gauge finds the curl; the ride report reads the done criteria;
+    - the pocket reflex (Settings → Gameplay → Stay near the curl, Practice by default); the Practice swell at Hs 1.4 m for 1–1.5 m faces ([reference wave](docs/research/reference-wave.md));
+    - open: the done criteria are not met (median ride 2.6 s against 10; without the roller's push the Canyon gave 17 stands and 1 ride of 3 s, with it 49 and 21). Riders stand on the flat ahead of the crest after a straight take-off (a paddler turns only ~7°/s), stall, and fall as the face passes under the slow board; a crouched full-steer turn at 10 m/s wobbles in yaw. Next: P10's take-off, re-catching, the wobble. Animation and regular/goofy are Part B.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;

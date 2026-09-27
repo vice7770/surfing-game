@@ -48,9 +48,9 @@ export const FALL_REASONS: Record<RiderSeparation, StringKey> = {
 };
 /** The worker's ride ends other than a fall (P9): the ride is complete, for these reasons. */
 export const WORKER_REASONS: Record<Exclude<RideEnd, 'fell'>, StringKey> = {
-  'lost the face': 'ride.reason.lostFace',
-  inside: 'ride.reason.inside',
   'kicked out': 'ride.reason.kickedOut',
+  'wave died': 'ride.reason.waveDied',
+  'lost the wave': 'ride.reason.lostWave',
 };
 
 /**
