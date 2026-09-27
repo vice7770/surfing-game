@@ -131,6 +131,7 @@ export class HumanoidRig {
   private readonly bendAxis = new Vector3();
   private readonly pivot = new Vector3();
   private readonly pole2 = new Vector3();
+  private readonly headHint = new Vector3();
   private readonly pole = new Vector3();
   private readonly direction = new Vector3();
   private readonly hint = new Vector3();
@@ -218,14 +219,14 @@ export class HumanoidRig {
     this.turnTowardNose(this.facing.copy(forward), upright ? RIG_DETAIL.chestTurn : 0);
     if (state.phase === 'standing') {
       const most = (RIG_DETAIL.twistMost * Math.PI) / 180;
-      const twist = Math.max(-most, Math.min(most, RIG_DETAIL.twistGain * state.yawRate));
+      const twist = state.standingBlend * Math.max(-most, Math.min(most, RIG_DETAIL.twistGain * state.yawRate));
       this.facing.applyAxisAngle(up, twist);
       hipsForward.applyAxisAngle(up, RIG_DETAIL.hipsTwistShare * twist);
     }
 
     // 2. The hips at the pelvis point (standing, raised to the model's extended legs), brought down if the legs cannot reach the feet.
     const hipsAt = this.hipsAt.copy(p[POINT.pelvis]);
-    if (upright) hipsAt.addScaledVector(up, this.standingLift(state));
+    if (upright) hipsAt.addScaledVector(up, state.uprightBlend * this.standingLift(state));
     this.placeHips(hipsAt);
     if (upright) {
       let drop = 0;
@@ -243,7 +244,7 @@ export class HumanoidRig {
     chestUp.normalize();
     this.orientSpine(chestUp);
     if (state.phase === 'standing') {
-      const bend = this.reachBend(state);
+      const bend = state.standingBlend * this.reachBend(state);
       if (bend !== 0) this.orientSpine(chestUp.applyAxisAngle(this.bendAxis, bend));
     }
     this.orient(BONES.neck, chestUp, this.facing);
@@ -354,7 +355,7 @@ export class HumanoidRig {
 
   /** Standing, the leading arm reaching where the head looks, blended in by the turn. */
   private leadArm(state: RiderVisualState, shoulder: Vector3, target: Vector3): void {
-    const weight = Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
+    const weight = state.standingBlend * Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
     if (weight <= 0) return;
     const raise = (RIG_DETAIL.leadRaise * Math.PI) / 180;
     const aim = this.pole2.copy(this.look).multiplyScalar(Math.cos(raise)).addScaledVector(WORLD_UP, Math.sin(raise)).normalize();
@@ -379,6 +380,14 @@ export class HumanoidRig {
     const pitch = Math.max(-pitchMost, Math.min(pitchMost, Math.atan2(state.climb, Math.max(state.speed, 1))));
     direction.copy(WORLD_UP).multiplyScalar(Math.cos(pitch)).addScaledVector(look, -Math.sin(pitch));
     look.multiplyScalar(Math.cos(pitch)).addScaledVector(WORLD_UP, Math.sin(pitch));
+    // Easing in from the landing's head: world up, facing mostly the nose.
+    const blend = state.standingBlend;
+    if (blend < 1) {
+      direction.multiplyScalar(blend).addScaledVector(WORLD_UP, 1 - blend).normalize();
+      this.headHint.copy(this.boardForward).lerp(this.facing, 0.25).multiplyScalar(1 - blend).addScaledVector(look, blend);
+      this.orient(BONES.head, direction, this.headHint);
+      return;
+    }
     this.orient(BONES.head, direction, look);
   }
 

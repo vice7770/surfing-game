@@ -20,6 +20,13 @@ export interface RiderVisualState {
   readonly travel: Vector3;
   speed: number;
   climb: number;
+  /**
+   * How far the body has come into its upright pose (from the landing) and its
+   * standing cues (from standing), 0–1 (`RiderMotion`); 1 for a state built
+   * without motion (the dev sheet, tests).
+   */
+  uprightBlend: number;
+  standingBlend: number;
 }
 
 export function createRiderVisualState(): RiderVisualState {
@@ -34,6 +41,8 @@ export function createRiderVisualState(): RiderVisualState {
     travel: new Vector3(0, 0, 1),
     speed: 0,
     climb: 0,
+    uprightBlend: 1,
+    standingBlend: 1,
   };
 }
 

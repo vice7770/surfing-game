@@ -7,6 +7,7 @@ import { BONES, type Side } from './humanoidBones';
 import { HumanoidRig } from './HumanoidRig';
 import { posturePoints } from './posturePoints';
 import { POINT, createRiderVisualState } from './riderVisualState';
+import { RiderMotion } from './riderMotion';
 import { createTestHumanoid } from './testHumanoid';
 
 const SIDES: readonly Side[] = ['left', 'right'];
@@ -319,5 +320,76 @@ describe('the arms', () => {
       state.points[POINT.rightHand].copy(target);
     });
     expect(rig.joints.wrist.right.distanceTo(target)).toBeLessThan(0.05);
+  });
+});
+
+// The final review: every pop-up snapped the drawn body at its switches (the hips 11.6 cm at push → landing, the head
+// 15° at landing → standing, and turning the chest and the leading arm too). The body eases in instead.
+describe('the stand-up', () => {
+  const popUp = (yawRate?: number) => {
+    const board = new BoardBody();
+    board.place(new Vector3(0, board.shape.centerOfMass.y, 0));
+    const rider = new AttachedRider(board.shape, { phase: 'prone' });
+    board.attach(rider);
+    const water = new PlaneWater();
+    const tow = () => {
+      board.velocity.z = 6;
+      rider.velocity.z = 6;
+    };
+    for (let i = 0; i < 180; i += 1) {
+      tow();
+      board.step(1 / 60, water);
+    }
+    rider.popUp();
+    const motion = new RiderMotion();
+    const { bones } = createTestHumanoid();
+    const headRest = bones.get(BONES.head)!.getWorldQuaternion(new Quaternion());
+    const rig = new HumanoidRig(bones);
+    const state = createRiderVisualState();
+    let previous: { phase: string; hips: Vector3; head: Vector3; chest: Vector3; wrist: Vector3 } | undefined;
+    const worst = { hips: 0, head: 0, chest: 0, wrist: 0 };
+    const phases = new Set<string>();
+    for (let i = 0; i < 150; i += 1) {
+      tow();
+      board.step(1 / 60, water);
+      for (let p = 0; p < 7; p += 1) rider.renderPoint(p, board, state.points[p]);
+      state.phase = rider.attached ? rider.phase : 'fallen';
+      state.heading = 0;
+      state.boardPosition.copy(board.position);
+      state.boardQuaternion.copy(board.orientation);
+      motion.update(state, (180 + i) / 60);
+      if (yawRate !== undefined && state.phase === 'standing') state.yawRate = yawRate;
+      rig.solve(state);
+      phases.add(state.phase);
+      const now = {
+        phase: state.phase,
+        hips: bones.get(BONES.hips)!.getWorldPosition(new Vector3()).sub(board.position),
+        head: headFacing(bones, headRest),
+        chest: rig.facing.clone(),
+        wrist: rig.joints.wrist.left.clone().sub(board.position),
+      };
+      if (previous && previous.phase !== now.phase) {
+        worst.hips = Math.max(worst.hips, now.hips.distanceTo(previous.hips));
+        // The lying → upright switch at push → landing is G7's own (its body frame turns); this branch's cues start standing.
+        if (now.phase === 'standing') {
+          worst.head = Math.max(worst.head, (now.head.angleTo(previous.head) * 180) / Math.PI);
+          worst.chest = Math.max(worst.chest, (now.chest.angleTo(previous.chest) * 180) / Math.PI);
+          worst.wrist = Math.max(worst.wrist, now.wrist.distanceTo(previous.wrist));
+        }
+      }
+      previous = now;
+    }
+    expect([...phases]).toEqual(expect.arrayContaining(['push', 'landing', 'standing']));
+    return worst;
+  };
+
+  it('eases the body into standing, with no snap at its switches', () => {
+    const straight = popUp();
+    expect(straight.hips).toBeLessThan(0.03);
+    expect(straight.head).toBeLessThan(5);
+    const turning = popUp(-2);
+    expect(turning.head).toBeLessThan(5);
+    expect(turning.chest).toBeLessThan(6);
+    expect(turning.wrist).toBeLessThan(0.05);
   });
 });
