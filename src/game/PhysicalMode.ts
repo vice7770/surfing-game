@@ -7,6 +7,7 @@ import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SurferView } from '../scene/character/SurferView';
+import { RiderMotion } from '../scene/rig/riderMotion';
 import { createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
@@ -235,6 +236,8 @@ export class PhysicalMode {
   /** The rider's body, solved from the snapshot's seven points: a skinned surfer (G7), or the simple one until it loads. */
   readonly surfer = new SurferView();
   private readonly riderState = createRiderVisualState();
+  /** How the rider's board moves, for the drawn body (Part B). */
+  private readonly riderMotion = new RiderMotion();
   /** Whether the latest input paddles, which cups the drawn hands. */
   private paddling = false;
   private retryPending = false;
@@ -550,8 +553,11 @@ export class PhysicalMode {
     this.surfer.group.visible = this.shown && riding;
     if (riding) {
       readRiderSnapshot(rider, pose, this.riderState);
+      this.riderMotion.update(this.riderState, host.snapshot.status.seaTime);
       this.riderState.stroking = this.paddling && this.riderState.phase === 'prone' ? 1 : 0;
       this.surfer.update(this.riderState, this.camera.camera.position);
+    } else {
+      this.riderMotion.reset();
     }
     this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
     this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount });

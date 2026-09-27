@@ -7,6 +7,7 @@ import { RIDER_SNAPSHOT } from '../wave/SurfZoneRunner';
 import { createBoardMesh } from './BoardMesh';
 import { BOARD_DESIGNS } from './board/boardDesigns';
 import { SurferView } from './character/SurferView';
+import { RiderMotion } from './rig/riderMotion';
 import { POINT, createRiderVisualState, readRiderSnapshot, type RiderVisualState } from './rig/riderVisualState';
 
 /** The tag floats this far above the head, m. */
@@ -20,6 +21,8 @@ interface RemoteView {
   surfer: SurferView;
   look: string;
   state: RiderVisualState;
+  /** How the remote board moves, read from its poses (Part B). */
+  motion: RiderMotion;
   /** A snapshot's rider and board arrays, rebuilt from the remote pose. */
   rider: Float64Array;
   pose: Float64Array;
@@ -79,7 +82,9 @@ export class RemoteSurferViews {
     this.root.add(group);
     const pose = new Float64Array(8);
     pose[7] = 1;
-    return { group, board, surfer, look: key, state: createRiderVisualState(), rider: new Float64Array(RIDER_SNAPSHOT.length), pose, shown: false };
+    return {
+      group, board, surfer, look: key, state: createRiderVisualState(), motion: new RiderMotion(), rider: new Float64Array(RIDER_SNAPSHOT.length), pose, shown: false,
+    };
   }
 
   private remove(id: number, view: RemoteView): void {
@@ -90,13 +95,19 @@ export class RemoteSurferViews {
     this.views.delete(id);
   }
 
-  /** Draws player `id` as `state` (undefined: nothing to draw) on this water (`surfaceAt`), seen from `camera`. */
-  update(id: number, state: RemoteState | undefined, surfaceAt: (x: number, z: number) => number, camera: Vector3): void {
+  /**
+   * Draws player `id` as `state` (undefined: nothing to draw) on this water (`surfaceAt`), seen from `camera`, at
+   * the room's sea `time`, s, which times the rider's motion.
+   */
+  update(id: number, state: RemoteState | undefined, surfaceAt: (x: number, z: number) => number, camera: Vector3, time = Number.NaN): void {
     const view = this.views.get(id);
     if (!view) return;
     view.shown = Boolean(state?.boardPresent);
     view.group.visible = view.shown;
-    if (!state || !view.shown) return;
+    if (!state || !view.shown) {
+      view.motion.reset();
+      return;
+    }
     const { pose, rider } = view;
     pose[0] = state.x;
     pose[1] = surfaceAt(state.x, state.z) + state.lift;
@@ -105,14 +116,23 @@ export class RemoteSurferViews {
     view.board.position.set(pose[0], pose[1], pose[2]);
     view.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
     view.surfer.group.visible = state.present;
-    if (!state.present) return;
+    if (!state.present) {
+      view.motion.reset();
+      return;
+    }
     for (let i = 0; i < 21; i += 1) rider[RIDER_SNAPSHOT.points + i] = pose[i % 3] + state.points[i];
     rider[RIDER_SNAPSHOT.phase] = state.phase;
     rider[RIDER_SNAPSHOT.present] = 1;
     rider[RIDER_SNAPSHOT.heading] = state.heading;
     readRiderSnapshot(rider, pose, view.state);
+    view.motion.update(view.state, time);
     view.state.stroking = state.paddling && view.state.phase === 'prone' ? 1 : 0;
     view.surfer.update(view.state, camera);
+  }
+
+  /** Player `id`'s drawn rider state, if it has a view. */
+  riderStateOf(id: number): RiderVisualState | undefined {
+    return this.views.get(id)?.state;
   }
 
   /** Where player `id`'s name tag floats: above the head, or above a riderless board; false when not drawn. */

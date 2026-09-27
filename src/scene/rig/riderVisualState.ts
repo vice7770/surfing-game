@@ -15,6 +15,11 @@ export interface RiderVisualState {
   readonly boardQuaternion: Quaternion;
   /** 0–1: how hard the hands are pulling, which cups them. */
   stroking: number;
+  /** How the board moves (`RiderMotion`, Part B): its turn rate, rad/s (positive as the heading grows), where it travels (horizontal, unit), how fast, m/s, and its climb, m/s. */
+  yawRate: number;
+  readonly travel: Vector3;
+  speed: number;
+  climb: number;
 }
 
 export function createRiderVisualState(): RiderVisualState {
@@ -25,6 +30,10 @@ export function createRiderVisualState(): RiderVisualState {
     boardPosition: new Vector3(),
     boardQuaternion: new Quaternion(),
     stroking: 0,
+    yawRate: 0,
+    travel: new Vector3(0, 0, 1),
+    speed: 0,
+    climb: 0,
   };
 }
 
