@@ -36,6 +36,7 @@ import { RemoteSurferViews } from './scene/RemoteSurferViews';
 import { NameTags, type TagEntry } from './ui/NameTags';
 import { t } from './ui/strings';
 import { LocalSurfZone } from './game/SurfZoneHost';
+import { StillFrameGate } from './game/StillFrameGate';
 import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, type SurfConditions, type TimeOfDay } from './game/SurfConditions';
 import type { WaterLook } from './scene/water/waterLook';
 import type { RideView } from './scene/SpectatorCamera';
@@ -211,6 +212,8 @@ class SurfGame {
   private needsRender = true;
   /** Paused by the menu: nothing steps; the scene stays drawn. */
   private paused = false;
+  /** Paused offline, the scene is drawn again only when what shows has changed. */
+  private readonly stillFrame = new StillFrameGate();
   /** Sound (S1): the sea time of the last snapshot heard, the board's last place and sideslip, and the rider's last phase. */
   private soundSeaTime = Number.NaN;
   private soundBoard?: { x: number; y: number; z: number };
@@ -634,6 +637,7 @@ class SurfGame {
   }
 
   setPaused(paused: boolean): void {
+    if (paused !== this.paused) this.stillFrame.reset();
     this.paused = paused;
   }
 
@@ -989,7 +993,7 @@ class SurfGame {
     this.onFrame?.(rawElapsed * 1000, this.mode === 'physical' ? this.physicalMode.host?.snapshot.status : undefined);
     // Online the sea never pauses: the menu only takes the controls (spec N1).
     if (this.paused && !this.online) {
-      if (this.mode === 'physical') this.physicalRender(0, 0);
+      if (this.mode === 'physical') this.pausedRender(timestamp);
       else this.renderer.render(this.scene, this.cameraRig.camera);
       requestAnimationFrame(this.frame);
       return;
@@ -1155,6 +1159,21 @@ class SurfGame {
       this.readoutClock = 0;
       this.renderPhysicalReadout();
     }
+  }
+
+  /**
+   * A paused frame offline: nothing steps, the camera included (a new view still
+   * cuts to it), and the page keeps showing the last frame, so the scene is drawn
+   * again only when the view moves or something changed (a resize, a setting).
+   */
+  private pausedRender(now: number): void {
+    this.physicalMode.update(0);
+    const view = this.physicalMode.camera.camera;
+    if (!this.stillFrame.needsDraw(view, now, this.needsRender)) return;
+    this.needsRender = false;
+    this.setUnderwater(this.physicalMode.cameraBelowSurface());
+    this.drawPhysical(view);
+    this.stillFrame.drawn(view, now);
   }
 
   /** The water, sea and shadows around `view`, drawn from it (the physical camera, or a water sheet shot). */
