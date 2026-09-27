@@ -6,7 +6,7 @@ import { createWaterSample } from '../physics/SurfWater';
 import type { SpotName } from './Bathymetry';
 import { BubbleCloud } from './BubbleCloud';
 import {
-  LIP_HIT_STRIDE, LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea,
+  LEASH_BITS, LIP_HIT_STRIDE, LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, SWIM_BITS, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea,
 } from './SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
 import { FOAM_BALL_VOLUME, SPRAY_CAPACITY, SPRAY_PER_AIR, SPRAY_STRIDE, WHITEWATER_CAPACITY } from './SprayCloud';
@@ -275,6 +275,39 @@ describe('SurfZoneRunner with a rider', () => {
       expect(point.distanceTo(session.board.position)).toBeLessThan(1.6);
     }
     expect(runner.status().ride?.phase).toBe('prone');
+  });
+
+  // The wipeout spec: the leash, the duck-dive and the swimmer, for the HUD, hints, rig, sound and others online.
+  it('snapshots the leash, the duck-dive and the swimmer', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    runner.advance(15, { ...idle, duckDive: 1 });
+    let buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(buffers.rider[RIDER_SNAPSHOT.duck]).toBeGreaterThan(0.5);
+    expect(runner.status().ride?.duck).toBeGreaterThan(0.5);
+    const session = runner.session!;
+    session.separate('balance');
+    runner.advance(30, { ...idle, paddle: true });
+    buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(buffers.rider[RIDER_SNAPSHOT.duck]).toBe(0);
+    const bits = buffers.rider[RIDER_SNAPSHOT.leash];
+    expect(bits & LEASH_BITS.worn).toBe(LEASH_BITS.worn);
+    expect(bits & LEASH_BITS.snapped).toBe(0);
+    const plug = new Vector3(buffers.rider[RIDER_SNAPSHOT.plug], buffers.rider[RIDER_SNAPSHOT.plug + 1], buffers.rider[RIDER_SNAPSHOT.plug + 2]);
+    expect(session.board.toLocal(plug, new Vector3()).z).toBeLessThan(-session.board.shape.length / 2 + 0.1);
+    const status = runner.status().ride!;
+    expect(status.leash).toMatchObject({ snapped: false, reeling: false });
+    expect(typeof status.boardInReach).toBe('boolean');
+    expect(status.knock).toBeGreaterThanOrEqual(0);
+    session.leash.snapped = true;
+    runner.advance(1, idle);
+    runner.fill(buffers);
+    expect(buffers.rider[RIDER_SNAPSHOT.leash] & LEASH_BITS.snapped).toBe(LEASH_BITS.snapped);
+    expect(runner.status().ride?.leash.snapped).toBe(true);
+    runner.advance(120, { ...idle, duckDive: 1 });
+    runner.fill(buffers);
+    expect(buffers.rider[RIDER_SNAPSHOT.swim] & SWIM_BITS.diving).toBe(SWIM_BITS.diving);
   });
 
   it('starts the rider just outside the break line, where catches happen', () => {

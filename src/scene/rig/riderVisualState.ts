@@ -1,5 +1,5 @@
 import { Quaternion, Vector3 } from 'three';
-import { RIDER_PHASES, RIDER_SNAPSHOT } from '../../wave/SurfZoneRunner';
+import { LEASH_BITS, RIDER_PHASES, RIDER_SNAPSHOT, SWIM_BITS } from '../../wave/SurfZoneRunner';
 
 export type RiderPhase = (typeof RIDER_PHASES)[number];
 
@@ -15,6 +15,12 @@ export interface RiderVisualState {
   readonly boardQuaternion: Quaternion;
   /** 0–1: how hard the hands are pulling, which cups them. */
   stroking: number;
+  /** The duck-dive's press, 0–1 (the wipeout spec). */
+  duck: number;
+  /** The leash: its plug on the tail, and whether it is worn whole, snapped, or being reeled in. */
+  readonly leash: { readonly plug: Vector3; worn: boolean; snapped: boolean; reeling: boolean };
+  /** The fallen surfer: stroking, diving, head under. */
+  readonly swim: { stroking: boolean; diving: boolean; under: boolean };
 }
 
 export function createRiderVisualState(): RiderVisualState {
@@ -25,6 +31,9 @@ export function createRiderVisualState(): RiderVisualState {
     boardPosition: new Vector3(),
     boardQuaternion: new Quaternion(),
     stroking: 0,
+    duck: 0,
+    leash: { plug: new Vector3(), worn: true, snapped: false, reeling: false },
+    swim: { stroking: false, diving: false, under: false },
   };
 }
 
@@ -37,5 +46,15 @@ export function readRiderSnapshot(rider: ArrayLike<number>, board: ArrayLike<num
   out.heading = rider[RIDER_SNAPSHOT.heading];
   out.boardPosition.set(board[0], board[1], board[2]);
   out.boardQuaternion.set(board[3], board[4], board[5], board[6]);
+  out.duck = rider[RIDER_SNAPSHOT.duck] ?? 0;
+  out.leash.plug.set(rider[RIDER_SNAPSHOT.plug], rider[RIDER_SNAPSHOT.plug + 1], rider[RIDER_SNAPSHOT.plug + 2]);
+  const leash = rider[RIDER_SNAPSHOT.leash] ?? 0;
+  out.leash.worn = (leash & LEASH_BITS.worn) !== 0;
+  out.leash.snapped = (leash & LEASH_BITS.snapped) !== 0;
+  out.leash.reeling = (leash & LEASH_BITS.reeling) !== 0;
+  const swim = rider[RIDER_SNAPSHOT.swim] ?? 0;
+  out.swim.stroking = (swim & SWIM_BITS.stroking) !== 0;
+  out.swim.diving = (swim & SWIM_BITS.diving) !== 0;
+  out.swim.under = (swim & SWIM_BITS.under) !== 0;
   return out;
 }
