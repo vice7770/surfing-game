@@ -98,6 +98,42 @@ Fronts along the ledge on the 10 m shelf run a median of about 17 m/s, 1.5 times
 
 With the shelf at 7 m instead of 10 m (same design, long-crested sea), the ledge fronts run 9–13.5 m/s. One front ran 127 columns at 11.5 m/s; the median is 13.5 m/s, α 26°. The prediction there is 10.0 m/s.
 
+### The meter fixed, and the second sweep
+
+On the user's choice after the stop, the peel meter was fixed (commit 985e007):
+- it fits the recent wave's front: the longest run of neighbouring columns whose onsets follow within a tenth of a period;
+- the Reef counts only the columns where its ledge is ridden (`reefLedgeAt`: out of the pass, with the crest still under water off the beach face).
+
+A compact sweep then ran on the fixed meter: the 45° ledge, the Small swell, 2 seeds × 12 periods.
+
+| Shelf depth | Swell from | Measured median | Median α | Close-out | Mixed | Pro | Advanced | Intermediate | Beginner |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 10 m | 20° | **13.6 m/s** | **23°** | 58 % | 4 % | 38 % | 33 % | 25 % | 13 % |
+| 10 m | 10° | 25.7 | 12° | 65 % | 22 % | 13 % | 9 % | 4 % | 4 % |
+| 8 m | 20° | 23.9 | 13° | 79 % | 13 % | 8 % | 8 % | 0 % | 0 % |
+| 8 m | 10° | 16.1 | 20° | 61 % | 17 % | 22 % | 22 % | 9 % | 9 % |
+| 7 m | 20° | 20.2 | 15° | 75 % | 13 % | 13 % | 13 % | 0 % | 0 % |
+| 7 m | 10° | 18.5 | 17° | 58 % | 17 % | 25 % | 17 % | 8 % | 8 % |
+
+- **The winner:** the source's own 10 m shelf from 20°. It peels at 13.6 m/s, the band's top edge (the prediction was 11.4), with almost no mixed peaks.
+- **Close-outs:** about half, the fast, often through-the-tube wave the spec calls faithful.
+- **Shallower shelves:** on the short-crested Small swell they did not help. The earlier ~12 m/s at 7 m came from a long-crested sea.
+- **The rule's own limit:** with α's professional threshold (27°, ≈ 11.9 m/s at this swell's breaker speed), a median at the band's top edge cannot also keep close-outs under 35 %. The winner is chosen as the design closest to the band, on the user's instruction to pick the best and continue.
+
+### Catching on the chosen design
+
+`report:catch -- --practice --ghosts --spots reef`, 2 seeds × 3 min, each Reef on its own Practice swell.
+
+| Reef | Attempts | Cue lit | Stood | Rides ≥ 3 s | Longest | Stood per attempt |
+|---|---:|---:|---:|---:|---:|---:|
+| Today's (1.4 m, 12 s from 10°) | 1018 | 62 | 14 | 0 | 2.6 s | 1.4 % |
+| Teahupo'o (1.0 m, 14 s from 20°) | 756 | 24 | 13 | 2 | 5.4 s | 1.7 % |
+
+- **Fewer cues:** the new Reef lights fewer take-off cues. Its 14 s swell also brings fewer waves, hence fewer attempts.
+- **More stand:** a larger share of the riders who go stand up, and it gives the Reef's first rides of 3 s or more.
+- **The rule:** it misses the plan's rule on raw cues (24 against 62) and, narrowly, on stands (13 against 14).
+- **The pick:** chosen as the best design on the user's instruction ("pick the best design and continue Part A"). The Reef's values already were this design, so no code changed.
+
 ## Commands
 
 - `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "steep Reef holds"`

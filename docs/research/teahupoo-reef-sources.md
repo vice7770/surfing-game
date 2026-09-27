@@ -95,10 +95,10 @@ Phase matching, derived in `src/wave/ledgePeel.ts`:
 | Shelf depth | 10 m | Shand 2024 |
 | Ledge (inner rise) slope | 1 : 2.29 | The forereef's measured slope; WSL's "nearly 1:1" is steeper (**provisional**) |
 | Crest depth, mid tide | 1.5 m | WSL (5 ft) |
-| Ledge angle to the shoreline | 45° | **provisional**, the sweep's choice (Task 8) |
-| Reef swell direction | 20° | **provisional**, the sweep's choice (Task 8) |
+| Ledge angle to the shoreline | 45° | The sweep's choice: 13.6 m/s median peel on the fixed meter ([report](teahupoo-reef-report.md)) |
+| Reef swell direction | 20° | The sweep's choice: 10° peeled at 25.7 m/s on the 10 m shelf |
 | Pass depth, half-width | 12 m, 25 m | **provisional** |
 | Beach face | 1 : 5 | **provisional** (steep enough to stay shoreward of the forereef) |
-| Peel speed target along the ledge | 10–13 m/s | **provisional**; pros measured 8.9–10.9 m/s top speed on a point break |
+| Peel speed target along the ledge | 10–13 m/s | **provisional**; pros measured 8.9–10.9 m/s top speed on a point break. The chosen design measures 13.6 m/s |
 | Faces: Practice / Small / Medium / Big | 1.5–2 / 2–3 / 3–4 / 5–6 m | the spec (decision 4) |
 | Swell periods | 14–17 s (Practice 14) | Shand (14–20 s), WSL (14–18 s best) |
