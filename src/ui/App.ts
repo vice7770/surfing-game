@@ -118,6 +118,8 @@ export interface GameHost {
   readonly rideFrame: RideFrame | undefined;
   readonly viewName: string;
   setPaused(paused: boolean): void;
+  /** The loading card covers the whole screen: nothing drawn or stepped would show (the next sea spins up alone). */
+  setCovered(covered: boolean): void;
   cycleView(): void;
   quickRetry(): void;
   setReducedMotion(reduced: boolean): void;
@@ -389,7 +391,7 @@ export class App {
     this.applyAccessibility();
     if (base !== 'menu') this.backdropReady = false;
     if (base === 'menu' && this.scene !== 'backdrop') this.openBackdrop();
-    // The gradient only stands in for the menu's first waves; a ride or the Wave Lab shows its own scene.
+    // The gradient only stands in for the menu's waves; a ride or the Wave Lab shows its own scene.
     if (base !== 'menu') this.root.classList.remove('is-scene-pending');
     this.disposeScreen?.();
     this.disposeScreen = undefined;
@@ -674,7 +676,7 @@ export class App {
     this.settings.setOnlineName(name);
     this.multiplayer = { ...this.multiplayer, name, busy: true, refusal: undefined };
     this.setLoadingText('online.joining');
-    this.loading.classList.remove('is-hidden');
+    this.showLoading(true);
     const code = 'join' in intent ? intent.join : undefined;
     const controller = new OnlineController({
       url: onlineUrl(location), name, surfer: this.settings.value.surfer, intent,
@@ -692,7 +694,7 @@ export class App {
     this.setRoomInUrl(room.code);
     this.setLoadingText('online.handover');
     const started = await this.game.startOnline(controller, this.settings.value.gameplay.defaultCamera);
-    this.loading.classList.add('is-hidden');
+    this.showLoading(false);
     this.multiplayer = { ...this.multiplayer, busy: false };
     if (!started) {
       controller.close();
@@ -732,7 +734,7 @@ export class App {
 
   /** Back to Multiplayer with why the room turned the player away (or couldn't be reached). */
   private failOnline(reason: Refusal | 'unreachable'): void {
-    this.loading.classList.add('is-hidden');
+    this.showLoading(false);
     this.leaveRoom();
     this.multiplayer = { ...this.multiplayer, busy: false, refusal: reason };
     this.hideEndCard();
@@ -764,16 +766,22 @@ export class App {
 
   private async startSession(): Promise<void> {
     this.setLoadingText('loading.paddleOut');
-    this.loading.classList.remove('is-hidden');
+    this.showLoading(true);
     const { spot, conditions } = this.surfChoice;
     const started = await this.game.startSurf(spot, conditions, this.seed, this.settings.value.gameplay.defaultCamera);
-    this.loading.classList.add('is-hidden');
+    this.showLoading(false);
     if (!started) return;
     this.hideEndCard();
     this.tracker.reset();
     this.scene = 'ride';
     this.stack.reset('ride');
     this.show();
+  }
+
+  /** The loading card, over everything: the game stops drawing and stepping behind it. */
+  private showLoading(shown: boolean): void {
+    this.loading.classList.toggle('is-hidden', !shown);
+    this.game.setCovered(shown);
   }
 
   private setLoadingText(key: Parameters<typeof t>[0]): void {
@@ -881,7 +889,7 @@ export class App {
     const start = lesson?.start ?? freeStart;
     const view = lesson?.view ?? (start === 'pocket' ? 'behind' : 'front');
     this.setLoadingText('loading.school');
-    this.loading.classList.remove('is-hidden');
+    this.showLoading(true);
     let started = false;
     try {
       started = await this.game.school.enter(start, view, !lesson);
@@ -890,7 +898,7 @@ export class App {
       console.warn('The lesson wave did not load.', error);
       this.schoolError = t('school.loadError');
     } finally {
-      this.loading.classList.add('is-hidden');
+      this.showLoading(false);
       this.schoolBusy = false;
     }
     if (!started) {
@@ -1046,9 +1054,9 @@ export class App {
   /** The Wave Lab (spec L1): its sea builds behind the loading card, from the settings applied last time. */
   private readonly enterWaveLab = oncePerFlight(async () => {
     this.setLoadingText('loading.lab');
-    this.loading.classList.remove('is-hidden');
+    this.showLoading(true);
     const started = await this.game.lab.enter(this.labStore.value);
-    this.loading.classList.add('is-hidden');
+    this.showLoading(false);
     if (!started) return;
     this.hideEndCard();
     this.labDraft = structuredClone(this.labStore.value);
@@ -1117,14 +1125,14 @@ export class App {
     if (this.labRebuilding) return;
     this.labRebuilding = true;
     this.setLoadingText('loading.lab');
-    this.loading.classList.remove('is-hidden');
+    this.showLoading(true);
     try {
       if (!(await this.game.lab.apply(next, newSea))) return;
       this.labStore.save(next);
       this.labDraft = structuredClone(next);
       this.labScreen?.setRunning(next);
     } finally {
-      this.loading.classList.add('is-hidden');
+      this.showLoading(false);
       this.labRebuilding = false;
     }
   }
@@ -1140,21 +1148,27 @@ export class App {
   }
 
   /**
-   * The menu's waves at a new spot. The menu never waits for them: on first launch
-   * it stands on a gradient in the brand's colours and the sea fades in once ready.
+   * The menu's waves at a new spot. The menu never waits for them: it stands on a
+   * gradient in the brand's colours and the sea fades in once ready. The scene it
+   * replaces fades out and stops, so the new sea spins up on the GPU alone.
    */
   private openBackdrop(): void {
-    const first = this.scene === undefined;
     this.scene = 'backdrop';
     this.backdropReady = false;
     this.backdropSpot = nextBackdropSpot(this.backdropSpot);
-    if (first) this.root.classList.add('is-scene-pending');
+    this.root.classList.add('is-scene-pending');
+    this.game.setCovered(true);
     void this.game.showBackdrop(this.backdropSpot).then((shown) => {
+      // Superseded (a ride or the lab took over): whoever did uncovers the scene.
       if (!shown) return;
       this.backdropReady = this.stack.base === 'menu';
       this.root.classList.remove('is-scene-pending');
+      this.game.setCovered(false);
       this.warmup = 0;
       this.startBenchmarkIfNeeded();
+    }, (error: unknown) => {
+      this.game.setCovered(false);
+      throw error;
     });
   }
 

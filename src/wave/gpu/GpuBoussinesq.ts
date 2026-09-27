@@ -1,6 +1,6 @@
 import { BoussinesqSolver, type BoussinesqDeviceLayout } from '../BoussinesqSolver';
 import { SeaStateBoundary } from '../SeaStateBoundary';
-import { PERIODIC, WALL } from '../ShallowWaterSolver';
+import { PERIODIC, WALL, cflSubsteps } from '../ShallowWaterSolver';
 import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, STEP_KERNELS, boussinesqWgsl } from './boussinesqWgsl';
 
 const WORKGROUP = 64;
@@ -209,7 +209,7 @@ export class GpuBoussinesq {
       packComponents(this.zone.boundary, solver.time, solver.xCenters[0], this.components);
       device.queue.writeBuffer(this.sea, 0, this.components);
     }
-    const substeps = Math.max(1, Math.ceil(dt / solver.maxStableStep()));
+    const substeps = cflSubsteps(dt, solver.maxStableStep());
     const sub = dt / substeps;
     const cells = Math.ceil(n / WORKGROUP);
     for (let s = 0; s < substeps; s += 1) {

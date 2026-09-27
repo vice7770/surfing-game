@@ -103,16 +103,21 @@ describe('LocalSurfZone', () => {
       for (let k = 0; k < tubeCount; k += 1) if (best < 0 || tubes[k * TUBE_STRIDE + 5] > tubes[best * TUBE_STRIDE + 5]) best = k;
       return best >= 0 && tubes[best * TUBE_STRIDE + 5] >= 0.6 ? best : -1;
     };
-    for (let tenth = 0; tenth < 400 && open() < 0; tenth += 1) host.advance(3);
-    const tube = open();
-    expect(tube).toBeGreaterThanOrEqual(0);
     const grid = { ...host.runner.grid };
     const page = new SnapshotSurfZone(host);
     const carved = new Float32Array(host.snapshot.surface.length);
     const raw = new Float32Array(host.snapshot.surface.length);
     const expected = new Float32Array(host.snapshot.surface.length);
-    page.writeUniformSurface(carved, grid);
-    page.writeUniformSurface(raw, grid, false);
+    // An open tube that cuts the render grid: one can also fly between its nodes.
+    const carving = () => {
+      if (open() < 0) return false;
+      page.writeUniformSurface(carved, grid);
+      page.writeUniformSurface(raw, grid, false);
+      return carved.some((height, k) => height !== raw[k]);
+    };
+    for (let tenth = 0; tenth < 400 && !carving(); tenth += 1) host.advance(3);
+    const tube = open();
+    expect(tube).toBeGreaterThanOrEqual(0);
     host.runner.simulation.writeUniformSurface(expected, grid);
     // The tube table crosses as 32-bit floats, as every snapshot buffer does: the page agrees with the worker to well under a millimetre.
     let largest = 0;

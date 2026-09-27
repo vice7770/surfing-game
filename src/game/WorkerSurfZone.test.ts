@@ -70,6 +70,29 @@ describe('SurfZoneWorkerCore', () => {
     expect(snapshot.snapshot.strokeHitCount).toBe(local.snapshot.strokeHitCount);
   });
 
+  it('spins the sea up on its device before it reports ready', async () => {
+    const replies: SurfZoneReply[] = [];
+    let deviceSteps = 0;
+    let stepsAtReady = -1;
+    const worker = new SurfZoneWorkerCore((reply) => {
+      if (reply.type === 'ready') stepsAtReady = deviceSteps;
+      replies.push(reply);
+    }, async (solver) => ({
+      // A stand-in device that takes the CPU solver's own step.
+      step: async (dt: number) => {
+        deviceSteps += 1;
+        solver.step(dt);
+      },
+      dispose() {},
+    }));
+    await worker.handle({ type: 'start', config, options: { rider: true } });
+    expect(stepsAtReady).toBeGreaterThan(20);
+    const ready = replies[0];
+    if (ready.type !== 'ready') throw new Error('expected ready');
+    const local = new LocalSurfZone(config, { rider: true });
+    expect(shown(ready.snapshot)).toEqual({ ...shown(local.snapshot), status: { ...shown(local.snapshot).status, compute: 'gpu' } });
+  });
+
   it('steps the water on a device when given one, replying once it is done', async () => {
     // A stand-in device that takes the CPU solver's own step, asynchronously.
     const created: string[] = [];
@@ -106,12 +129,21 @@ describe('SurfZoneWorkerCore', () => {
 describe('SurfZoneWorkerCore restore (L2)', () => {
   it('restores after the step under way, so the next advance starts from the restored sea', async () => {
     let release: (() => void) | undefined;
+    // The device spins the sea up freely; once it is ready, each step waits to be released.
+    let held = false;
     const replies: SurfZoneReply[] = [];
     const worker = new SurfZoneWorkerCore((reply) => replies.push(reply), async (solver) => ({
-      step: (dt: number) => new Promise<void>((resolve) => { release = () => { solver.step(dt); resolve(); }; }),
+      step: (dt: number) => {
+        if (!held) {
+          solver.step(dt);
+          return Promise.resolve();
+        }
+        return new Promise<void>((resolve) => { release = () => { solver.step(dt); resolve(); }; });
+      },
       dispose() {},
     }));
     await worker.handle({ type: 'start', config, options: {} });
+    held = true;
     const ready = replies[0];
     if (ready.type !== 'ready') throw new Error('expected ready');
     const local = new LocalSurfZone(config);

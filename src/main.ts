@@ -34,6 +34,7 @@ import { RemoteSurferViews } from './scene/RemoteSurferViews';
 import { NameTags, type TagEntry } from './ui/NameTags';
 import { t } from './ui/strings';
 import { LocalSurfZone } from './game/SurfZoneHost';
+import { StillFrameGate } from './game/StillFrameGate';
 import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, type SurfConditions, type SwellSize, type TimeOfDay } from './game/SurfConditions';
 import type { WaterLook } from './scene/water/waterLook';
 import type { RideView } from './scene/SpectatorCamera';
@@ -177,6 +178,10 @@ class SurfGame {
 
   /** Paused by the menu: nothing steps; the scene stays drawn. */
   private paused = false;
+  /** Paused offline, the scene is drawn again only when what shows has changed. */
+  private readonly stillFrame = new StillFrameGate();
+  /** Under the loading card: nothing drawn or stepped would show, and the next sea spins up without them. */
+  private covered = false;
   /** Sound (S1): the sea time of the last snapshot heard, the board's last place and sideslip, and the rider's last phase. */
   private soundSeaTime = Number.NaN;
   private soundBoard?: { x: number; y: number; z: number };
@@ -481,7 +486,13 @@ class SurfGame {
   }
 
   setPaused(paused: boolean): void {
+    if (paused !== this.paused) this.stillFrame.reset();
     this.paused = paused;
+  }
+
+  setCovered(covered: boolean): void {
+    this.covered = covered;
+    this.needsRender = true;
   }
 
   /** The ride as the ride tracker reads it: status, the board's position, and the sea's clock. */
@@ -586,9 +597,15 @@ class SurfGame {
     this.labInput.poll();
     const rawElapsed = this.previousFrame === 0 ? 0 : (timestamp - this.previousFrame) / 1000;
     this.onFrame?.(rawElapsed * 1000, this.physicalMode.host?.snapshot.status);
+    // Behind the loading card, the sea being replaced neither steps nor draws: the GPU is the new one's to spin up on.
+    if (this.covered) {
+      this.previousFrame = timestamp;
+      requestAnimationFrame(this.frame);
+      return;
+    }
     // Online the sea never pauses: the menu only takes the controls (spec N1).
     if (this.paused && !this.online) {
-      this.physicalRender(0);
+      this.pausedRender(timestamp);
       requestAnimationFrame(this.frame);
       return;
     }
@@ -875,6 +892,21 @@ class SurfGame {
     this.drawOnline();
     this.setUnderwater(this.physicalMode.cameraBelowSurface());
     this.drawPhysical(camera ?? this.physicalMode.camera.camera);
+  }
+
+  /**
+   * A paused frame offline: nothing steps, the camera included (a new view still
+   * cuts to it), and the page keeps showing the last frame, so the scene is drawn
+   * again only when the view moves or something changed (a resize, a setting).
+   */
+  private pausedRender(now: number): void {
+    this.physicalMode.update(0);
+    const view = this.physicalMode.camera.camera;
+    if (!this.stillFrame.needsDraw(view, now, this.needsRender)) return;
+    this.needsRender = false;
+    this.setUnderwater(this.physicalMode.cameraBelowSurface());
+    this.drawPhysical(view);
+    this.stillFrame.drawn(view, now);
   }
 
   /** The water, sea and shadows around `view`, drawn from it (the physical camera, or a water sheet shot). */
