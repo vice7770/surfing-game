@@ -57,7 +57,7 @@ for (const spot of spots) {
   const samples: (PeelSample | undefined)[] = [];
   for (let seed = 1; seed <= seedCount; seed += 1) {
     const simulation = new SurfZoneSimulation({
-      spot, seed, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod,
+      spot, seed, significantHeight: swell.significantHeight, heightAt: (settings.source === 'practice' ? 'edge' : 'deep') as 'edge' | 'deep', peakPeriod: swell.peakPeriod,
       directionDegrees: swell.directionDegrees ?? settings.directionDegrees, spreading: swell.spreading, bandwidth: swell.bandwidth,
       tide: settings.tide, windSpeed: settings.windSpeed,
     });

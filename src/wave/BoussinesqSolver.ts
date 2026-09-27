@@ -26,7 +26,7 @@ export function madsenSorensenCelerity(omega: number, depth: number, g = GRAVITY
   return omega / k;
 }
 
-/** The wave number ω/c the Madsen–Sørensen equations give at depth d, 1/m (a deep tank's boundary sea). */
+/** The wave number ω/c the Madsen–Sørensen equations give at depth d, 1/m (a deep tank's boundary sea, the wave-sizes spec). */
 export function madsenSorensenWaveNumber(omega: number, depth: number, g = GRAVITY): number {
   return omega / madsenSorensenCelerity(omega, depth, g);
 }

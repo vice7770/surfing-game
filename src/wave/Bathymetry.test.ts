@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, CANYON, POINT_HEADLAND, REEF, createSpot, deanDepth, reefCrestZ, reefLedgeAt, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, BEACH_OUTER, CANYON, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
+import { seededRandom } from './random';
 import { breakerDepthFor } from './Breaking';
 import { ledgePeel } from './ledgePeel';
 import { REEF_SWELLS } from '../game/SurfConditions';
@@ -141,5 +142,58 @@ describe('surf spot bathymetry', () => {
         for (let z = -400; z <= 30; z += 10) expect(Number.isFinite(spot.depthAt(x, z))).toBe(true);
       }
     }
+  });
+});
+
+/** Today's beds, copied, for the inner zone that must not change (the wave-sizes spec). */
+const todayBeach = (seed: number) => {
+  const random = seededRandom(seed, 0xbeac4);
+  const rips: number[] = [];
+  for (let k = -8; k <= 8; k += 1) rips.push(k * BEACH_BAR.ripSpacing + (random() * 2 - 1) * BEACH_BAR.ripJitter);
+  return (x: number, z: number) => {
+    let gap = 0;
+    for (const rip of rips) gap = Math.max(gap, Math.exp(-(((x - rip) / BEACH_BAR.ripWidth) ** 2)));
+    return deanDepth(-z) - BEACH_BAR.height * Math.exp(-(((-z - BEACH_BAR.offshore) / BEACH_BAR.width) ** 2)) * (1 - gap);
+  };
+};
+const todayPoint = (x: number, z: number) => {
+  const { center, halfWidth, protrusion, slope } = POINT_HEADLAND;
+  const offshore = -protrusion * smoothstep(center + halfWidth, center - halfWidth, x) - z;
+  return offshore <= 0 ? offshore * 0.06 : Math.min(12, slope * offshore);
+};
+
+describe('outer bathymetry (wave sizes)', () => {
+  // The Reef is the Teahupo'o Reef rework's (its own tests, above).
+  it('leaves the Beach and Point shoreward of −150 m as they were', () => {
+    const beach = createSpot('beach', 1);
+    const beachToday = todayBeach(1);
+    const point = createSpot('point', 1);
+    for (let x = -80; x <= 80; x += 8) {
+      for (let z = -150; z <= 30; z += 3) {
+        expect(point.depthAt(x, z)).toBeCloseTo(todayPoint(x, z), 9);
+        // The outer bar's tail reaches the inner zone by under 1 cm.
+        expect(Math.abs(beach.depthAt(x, z) - beachToday(x, z))).toBeLessThan(0.01);
+      }
+      // Today's small-day tank blends the spot's bed in over −270…−190 m: under 2 mm of change in what it sees.
+      for (let z = -270; z <= -150; z += 3) {
+        expect(Math.abs(beach.depthAt(x, z) - beachToday(x, z)) * smoothstep(-270, -190, z)).toBeLessThan(0.002);
+      }
+    }
+  });
+
+  it('gives the Beach an outer bar and a deepening shelf beyond it', () => {
+    const beach = createSpot('beach', 1);
+    const crest = beach.depthAt(0, -BEACH_OUTER.barOffshore);
+    expect(crest).toBeGreaterThan(3);
+    expect(crest).toBeLessThan(8);
+    expect(crest).toBeLessThan(beach.depthAt(0, -BEACH_OUTER.barOffshore + 2 * BEACH_OUTER.barWidth));
+    expect(crest).toBeLessThan(beach.depthAt(0, -BEACH_OUTER.barOffshore - 2 * BEACH_OUTER.barWidth));
+    expect(beach.depthAt(0, -1300)).toBeGreaterThan(13.2);
+  });
+
+  it('carries the Point\'s shelf past 12 m on a gentler slope', () => {
+    const point = createSpot('point', 1);
+    expect(point.depthAt(0, -400)).toBeCloseTo(12 + POINT_OUTER.slope * (-60 - -400 - 12 / POINT_HEADLAND.slope), 6);
+    expect(point.depthAt(0, -3000)).toBe(POINT_OUTER.maxDepth);
   });
 });

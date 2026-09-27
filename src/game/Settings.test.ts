@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { PRESETS } from './Graphics';
-import { SETTINGS_KEY, SettingsStore, defaultSettings } from './Settings';
+import { SETTINGS_KEY, SettingsStore, defaultSettings, sanitizeSettings } from './Settings';
 
 function memory(initial: Record<string, string> = {}) {
   const data = new Map(Object.entries(initial));
@@ -8,6 +8,14 @@ function memory(initial: Record<string, string> = {}) {
 }
 
 describe('SettingsStore', () => {
+  it('reads surf as faces unless the player chose the Hawaiian scale, and old saves as faces (wave sizes)', () => {
+    const defaults = defaultSettings();
+    expect(defaults.gameplay.surfScale).toBe('face');
+    expect(sanitizeSettings({ gameplay: { surfScale: 'hawaiian' } }, defaults).gameplay.surfScale).toBe('hawaiian');
+    expect(sanitizeSettings({ gameplay: { units: 'imperial' } }, defaults).gameplay.surfScale).toBe('face');
+    expect(sanitizeSettings({ gameplay: { surfScale: 'feet' } }, defaults).gameplay.surfScale).toBe('face');
+  });
+
   // G8: the Rich water, and a saved Low player kept on the Classic water.
   it('defaults the water look to Rich and keeps an old Low save on Classic', () => {
     expect(defaultSettings().graphics.waterLook).toBe('rich');
@@ -42,11 +50,50 @@ describe('SettingsStore', () => {
   it('moves a saved hand on X to LB and L4, and pop-up to A and R4, just once', () => {
     const old = (gamepad: object, extra: object = {}) =>
       new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ controls: { bindings: { gamepad }, ...extra } }) })).value.controls.bindings.gamepad;
-    expect(old({ hand: [2], popUp: [0] })).toMatchObject({ hand: [4, 17], popUp: [0, 18] });
+    expect(old({ hand: [2], popUp: [0] })).toMatchObject({ hand: [4, 17], popUp: [0, 18], callParty: [2] });
     expect(old({ hand: [2], camera: [4] })).toMatchObject({ hand: [2], camera: [4] });
     expect(old({ hand: [2] }, { padLayout: 2 })).toMatchObject({ hand: [2] });
     // A save from after N1 moves the party call off LB with the hand, as one layout.
     expect(old({ hand: [2], callParty: [4] })).toMatchObject({ hand: [4, 17], callParty: [2] });
+  });
+
+  // Review Focus 1 (the wipeout spec): a new action takes only the defaults a save leaves free.
+  it('gives the new Duck-dive only the defaults a saved lying-down binding leaves free', () => {
+    const saved = { controls: { bindings: { keyboard: { paddle: ['KeyS'] }, gamepad: { paddle: [6] } }, padLayout: 2 } };
+    const store = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify(saved) }));
+    const { keyboard, gamepad } = store.value.controls.bindings;
+    expect(keyboard.paddle).toEqual(['KeyS']);
+    expect(keyboard.duckDive).toEqual(['ArrowDown']);
+    expect(gamepad.paddle).toEqual([6]);
+    expect(gamepad.duckDive).toEqual([13]);
+    expect(defaultSettings().controls.bindings.keyboard.duckDive).toEqual(['KeyS', 'ArrowDown']);
+  });
+
+  it('leaves the new Duck-dive unbound when a save took both its defaults', () => {
+    const saved = { controls: { bindings: { keyboard: { paddle: ['KeyS', 'ArrowDown'] } }, padLayout: 2 } };
+    const { keyboard } = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify(saved) })).value.controls.bindings;
+    expect(keyboard.paddle).toEqual(['KeyS', 'ArrowDown']);
+    expect(keyboard.duckDive).toEqual([]);
+  });
+
+  // The stances spec, the final review: a save from before Compress keeps its own bindings, and Compress takes Space and
+  // RT only where no action live standing already holds them (unbound otherwise, to set on the Controls screen).
+  it('gives Compress its default inputs on an older save only where they are free', () => {
+    const saved = (bindings: object) =>
+      new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ controls: { bindings, padLayout: 2 } }) })).value.controls.bindings;
+    expect(saved({ keyboard: { crouch: ['Space'] }, gamepad: { hand: [7] } }))
+      .toMatchObject({ keyboard: { crouch: ['Space'], compress: [] }, gamepad: { hand: [7], compress: [] } });
+    expect(saved({ keyboard: { popUp: ['Space'], paddle: ['KeyP'] } }).keyboard.compress).toEqual([]);
+    expect(saved({ keyboard: { crouch: ['KeyC'] } })).toMatchObject({ keyboard: { compress: ['Space'] }, gamepad: { compress: [7] } });
+  });
+
+  // The wipeout spec, Part B: the breath meter, like the balance meter.
+  it('shows the breath meter in Practice by default, and sanitizes it', () => {
+    expect(defaultSettings().gameplay.breathMeter).toBe('practice');
+    const saved = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { breathMeter: 'sometimes' } }) }));
+    expect(saved.value.gameplay.breathMeter).toBe('practice');
+    const never = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { breathMeter: 'never' } }) }));
+    expect(never.value.gameplay.breathMeter).toBe('never');
   });
 
   // The riding-the-wave spec: the pocket reflex rides with the player on the Practice swell unless they choose otherwise.
@@ -54,6 +101,15 @@ describe('SettingsStore', () => {
     expect(defaultSettings().gameplay.pocketReflex).toBe('practice');
     const saved = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { pocketReflex: 'sometimes' } }) }));
     expect(saved.value.gameplay.pocketReflex).toBe('practice');
+  });
+
+  // The stances spec: Regular or Goofy, Regular by default.
+  it('rides Regular by default, and sanitizes the stance', () => {
+    expect(defaultSettings().gameplay.stance).toBe('regular');
+    const goofy = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { stance: 'goofy' } }) }));
+    expect(goofy.value.gameplay.stance).toBe('goofy');
+    const odd = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { stance: 'switch' } }) }));
+    expect(odd.value.gameplay.stance).toBe('regular');
   });
 
   it('starts from the defaults with nothing stored, or with something that is not JSON', () => {

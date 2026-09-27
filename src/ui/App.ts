@@ -6,7 +6,10 @@ import { BenchmarkRecorder, adapterName, needsDetection, withPreset } from '../g
 import { Logbook } from '../game/Logbook';
 import { RideTracker, type RideFrame, type RideResult } from '../game/RideTracker';
 import type { SettingsStore } from '../game/Settings';
-import { DEFAULT_CONDITIONS, DEFAULT_SPOT, nextBackdropSpot, type SurfConditions } from '../game/SurfConditions';
+import { DEFAULT_CONDITIONS, DEFAULT_SPOT, nextBackdropSpot, surfForecastText, type SurfConditions } from '../game/SurfConditions';
+import { surferHeight } from '../game/SurferChoice';
+import type { SurfReading } from '../wave/SurfMeter';
+import { describeSurf, type SurfWords } from './surfHeight';
 import type { RideView } from '../scene/SpectatorCamera';
 import { DEV_TOOLS } from '../devTools';
 import type { SpotName } from '../wave/Bathymetry';
@@ -45,8 +48,8 @@ import { roomLink } from '../net/roomCode';
 import type { CallId } from '../net/protocol';
 import { createRideEndCard, endCardModel } from './RideEndCard';
 import { bestTwo, scoreRide } from '../game/waveScore';
-import { HintBook, HintCoach, type HintId } from '../game/hints';
-import { RideHud, showsBalanceMeter, type HintKeys } from './RideHud';
+import { HintBook, HintCoach, offersHint, type HintId } from '../game/hints';
+import { RideHud, showsBalanceMeter, showsBreathMeter, type HintKeys } from './RideHud';
 import { ScreenStack, type ScreenId } from './ScreenStack';
 import { EN, t, type StringKey } from './strings';
 import { createSurfScreen, type SurfChoice } from './SurfScreen';
@@ -76,7 +79,7 @@ export interface LabHost {
   readonly following: boolean;
   toggleFollow(): boolean;
   jump(point: JumpPoint): void;
-  info(units: Units): WaveInfo | undefined;
+  info(units: Units, words?: Omit<SurfWords, 'units'>): WaveInfo | undefined;
   /** The dev tools' physics readout. */
   readonly readout: ReadoutRow[];
   /** H or X (hide the interface) and Esc or Start (the pause menu), as the lab's input reports them. */
@@ -174,6 +177,8 @@ export class App {
   private readonly loading = document.getElementById('loading')!;
   private readonly loadingText = document.getElementById('loading-text');
   private surfChoice: SurfChoice = { spot: DEFAULT_SPOT, conditions: { ...DEFAULT_CONDITIONS } };
+  /** The running sea's measured surf, for the pause card (the wave-sizes spec). */
+  private surf?: SurfReading;
   /** The current wave's seed: Replay keeps it, New wave moves on. */
   private seed = 1 + Math.floor(Math.random() * 9999);
   private readonly rideHud: RideHud;
@@ -287,6 +292,7 @@ export class App {
   /** Called by the game once per rendered frame: the gamepad, and the Auto benchmark while the menu's waves run. */
   frame(intervalMs: number, status?: SurfZoneStatus): void {
     this.menuInput.poll();
+    this.surf = status?.surf;
     const dt = intervalMs / 1000;
     this.sound.frame(this.game.soundFrame(dt, this.stack.stack.includes('pause')), this.game.listenerPose, dt);
     if (intervalMs > 0 && intervalMs < 500) this.fps += (1000 / intervalMs - this.fps) * 0.1;
@@ -308,13 +314,22 @@ export class App {
     if (this.stack.current === 'ride') {
       const { gameplay, seen } = this.settings.value;
       const ride = this.game.rideStatus;
+      // The touch buttons show for the rider's phase: paddle lying down, Crouch and Compress standing.
+      this.root.dataset.phase = ride?.phase ?? '';
+      // Broken water coming at the rider: a breaking crest seaward of it (the wipeout spec's duck-dive hint).
+      const coming = ride?.wave.valid && ride.wave.crestBreaking > 0.3 && ride.wave.aheadOfCrest > 0 ? ride.wave.aheadOfCrest : Infinity;
       const hint = this.coach.update(intervalMs / 1000, {
         standing: ride?.phase === 'standing',
         crestBreaking: ride?.wave.valid ? ride.wave.crestBreaking : 0,
         input: this.controls.lastRequest,
-      }, (id) => this.hintText(id) !== '');
+        phase: ride?.phase,
+        whitewaterAhead: coming,
+        leashIntact: ride ? !ride.leash.snapped : false,
+        boardInReach: ride?.boardInReach ?? false,
+      }, (id) => this.hintText(id) !== '' && offersHint(id, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell));
       this.rideHud.update(ride, gameplay.units, this.hintKeys(), !seen.rideHints,
-        showsBalanceMeter(gameplay.balanceMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell), hint ? this.hintText(hint) : '');
+        showsBalanceMeter(gameplay.balanceMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell), hint ? this.hintText(hint) : '', undefined,
+        showsBreathMeter(gameplay.breathMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell));
       this.trackRide();
     }
     const { online } = this;
@@ -428,7 +443,7 @@ export class App {
         },
         paddleOut: () => void this.paddleOut(),
         back: () => this.back(),
-      }, card.root)];
+      }, card.root, (choice) => surfForecastText(choice, this.surfWords()))];
     }
     if (id === 'multiplayer') {
       this.askWebGpu();
@@ -554,7 +569,7 @@ export class App {
         settings: () => this.go('settings'),
         quit: () => this.quitToMenu(),
         sound: { muted: this.sound.muted, toggle: () => this.toggleMute() },
-      }, this.viewLabel())];
+      }, this.viewLabel(), describeSurf(this.surf, this.surfWords()))];
     }
     return [];
   }
@@ -793,6 +808,9 @@ export class App {
     if (this.touchActive()) {
       if (id === 'lean') return t('hint.lean', { keys: '← →' });
       if (id === 'crouch') return t('hint.crouch', { keys: t('touch.crouch') });
+      if (id === 'compress') return t('hint.compress', { keys: t('touch.compress') });
+      // Touch has no duck-dive (the milestone spec's touch subset); its pop-up button reels the leash.
+      if (id === 'reel') return t('hint.reel', { keys: t('touch.popUp') });
       return '';
     }
     const { bindings } = this.settings.value.controls;
@@ -802,7 +820,10 @@ export class App {
     const trimStick = t(stickOf('trimForward', this.settings.value.controls) === 'right' ? 'hud.rightStick' : 'hud.stick');
     const keys = id === 'lean' ? (pad ? t('hud.stick') : `${label('steerLeft')} ${label('steerRight')}`)
       : id === 'trim' ? (pad ? trimStick : `${label('trimForward')} ${label('trimBack')}`)
-        : label(id);
+        : id === 'reel' ? label('popUp')
+          : label(id);
+    // Nothing bound (an action newer than the player's saved bindings): no hint to give.
+    if (keys === '—') return '';
     return t(`hint.${id}`, { keys });
   }
 
@@ -810,7 +831,7 @@ export class App {
   private readonly actionLabel: ActionLabel = (action) => {
     if (this.touchActive()) {
       const touch: Partial<Record<Action, StringKey>> = {
-        paddle: 'touch.paddle', popUp: 'touch.popUp', crouch: 'touch.crouch', steerLeft: 'touch.left', steerRight: 'touch.right',
+        paddle: 'touch.paddle', popUp: 'touch.popUp', crouch: 'touch.crouch', compress: 'touch.compress', steerLeft: 'touch.left', steerRight: 'touch.right',
       };
       const key = touch[action];
       return key ? t(key) : '—';
@@ -1010,6 +1031,7 @@ export class App {
     label('touch-paddle', 'touch.paddle');
     label('touch-popup', 'touch.popUp');
     label('touch-crouch', 'touch.crouch');
+    label('touch-compress', 'touch.compress');
     label('touch-left', 'touch.left', true);
     label('touch-right', 'touch.right', true);
     document.getElementById('touch-popup')?.addEventListener('pointerdown', (event) => {
@@ -1073,6 +1095,7 @@ export class App {
     const refresh = () => this.labScreen?.update(this.labView());
     this.labScreen = createWaveLabScreen({
       settings: draft, running: this.labStore.value, devTools: DEV_TOOLS, touch: this.touchActive(), units: this.settings.value.gameplay.units,
+      scale: this.settings.value.gameplay.surfScale,
     }, {
       change: (next) => {
         this.labDraft = next;
@@ -1105,11 +1128,17 @@ export class App {
     return this.labScreen.root;
   }
 
+  /** How this player reads surf (the wave-sizes spec): the chosen scale, against the chosen surfer's height. */
+  private surfWords(): SurfWords {
+    const { gameplay, surfer } = this.settings.value;
+    return { units: gameplay.units, scale: gameplay.surfScale, surferHeight: surferHeight(surfer.body) };
+  }
+
   private labView() {
     const { lab } = this.game;
     return {
       paused: lab.clock.paused, scale: lab.clock.scale, following: lab.following, uiHidden: this.labUiHidden,
-      info: lab.info(this.settings.value.gameplay.units), ...(DEV_TOOLS ? { readout: lab.readout } : {}),
+      info: lab.info(this.settings.value.gameplay.units, this.surfWords()), ...(DEV_TOOLS ? { readout: lab.readout } : {}),
     };
   }
 

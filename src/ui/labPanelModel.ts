@@ -1,6 +1,8 @@
-import { practiceSwell, swellFor, type PhysicalSettings } from '../game/PhysicalMode';
+import { practiceSwell, swellFor, swellHeightLimit, type PhysicalSettings } from '../game/PhysicalMode';
 import type { SpotName } from '../wave/Bathymetry';
+import { forecastSurf } from '../wave/surfForecast';
 import { t } from './strings';
+import { formatSurfRange, type SurfScale } from './surfHeight';
 import { formatHeight, formatSpeed, type Units } from './units';
 
 /** The sea settings the lab's panel shows as sliders (spec L1). */
@@ -45,6 +47,12 @@ export function practiceNote(units: Units, spot: SpotName): string {
   });
 }
 
+/** The surf a buoy swell will make at the spot (the wave-sizes spec), for the line under the swell sliders: "Surf 4.3–5.4 m (forecast)". */
+export function surfForecastNote(physical: PhysicalSettings, units: Units, scale: SurfScale): string {
+  const { typical, sets } = forecastSurf(physical.spot, physical.significantHeight, physical.peakPeriod);
+  return t('lab.surfForecast', { surf: formatSurfRange(typical, sets, units, scale) });
+}
+
 /** The sliders for these settings: the chosen swell source's own, the direction (fixed by Practice), tide and wind. */
 export function labSliders(physical: PhysicalSettings, units: Units): LabSlider[] {
   const swell = (key: SliderKey, label: string, min: number, max: number, step: number, text: string): LabSlider =>
@@ -52,7 +60,7 @@ export function labSliders(physical: PhysicalSettings, units: Units): LabSlider[
   const sliders: LabSlider[] = [];
   if (physical.source === 'buoy') {
     sliders.push(
-      swell('significantHeight', t('lab.height'), 0.3, 3, 0.1, formatHeight(physical.significantHeight, units)),
+      swell('significantHeight', t('lab.height'), 0.3, swellHeightLimit(physical.spot), 0.1, formatHeight(physical.significantHeight, units)),
       swell('peakPeriod', t('lab.period'), 6, 18, 0.5, `${physical.peakPeriod.toFixed(1)} s`),
       swell('spread', t('lab.spread'), 0, 1, 0.05, spreadName(physical.spread)),
     );

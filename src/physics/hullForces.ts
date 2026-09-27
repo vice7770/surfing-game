@@ -156,7 +156,9 @@ export function patchForce(patch: WorldPatch, water: WaterSample, relative: Vec,
   const span = Math.abs(deckY - position.y);
   const submerged = span > 1e-9 ? Math.min(1, Math.max(0, (water.surfaceY - low) / span)) : water.surfaceY > low ? 1 : 0;
   out.submerged = submerged;
-  const support = WATER.density * WATER.gravity * area * thickness * submerged;
+  // Aerated water (the wipeout spec, Part B): the hull floats, planes and drags in the mixture, ρ(1 − α).
+  const density = WATER.density * (1 - (water.voidFraction ?? 0));
+  const support = density * WATER.gravity * area * thickness * submerged;
   out.buoyancy.x = -support * water.slopeX;
   out.buoyancy.y = support;
   out.buoyancy.z = -support * water.slopeZ;
@@ -173,7 +175,7 @@ export function patchForce(patch: WorldPatch, water: WaterSample, relative: Vec,
   const normalSpeed = relative.x * normal.x + relative.y * normal.y + relative.z * normal.z;
   const face = normalSpeed > 0 ? bottom : deck;
   if (normalSpeed !== 0 && face > 0) {
-    const k = 0.5 * WATER.density * PRESSURE_COEFFICIENT * pressureScale * face * area;
+    const k = 0.5 * density * PRESSURE_COEFFICIENT * pressureScale * face * area;
     const pressure = k * speed * normalSpeed;
     out.pressure.x = -pressure * normal.x;
     out.pressure.y = -pressure * normal.y;
@@ -185,7 +187,7 @@ export function patchForce(patch: WorldPatch, water: WaterSample, relative: Vec,
   const tz = relative.z - normalSpeed * normal.z;
   const tangential = Math.hypot(tx, ty, tz);
   if (tangential > 0) {
-    const friction = 0.5 * WATER.density * ittcFriction((speed * wettedLength) / WATER.viscosity) * tangential * (bottom + deck) * area;
+    const friction = 0.5 * density * ittcFriction((speed * wettedLength) / WATER.viscosity) * tangential * (bottom + deck) * area;
     out.friction.x = -friction * tx;
     out.friction.y = -friction * ty;
     out.friction.z = -friction * tz;

@@ -9,6 +9,8 @@ export interface PlaneOptions {
   /** Water depth under the surface; 0 makes dry ground at `level`. */
   depth?: number;
   inside?: (x: number, z: number) => boolean;
+  /** The share of the water that is air, 0–1 (the wipeout spec, Part B). */
+  voidFraction?: number;
 }
 
 /**
@@ -36,7 +38,7 @@ export class PlaneWater implements SurfWater {
     Object.assign(out, {
       surfaceY: depth > 0 ? surface : surface - 0.05, stillDepth: depth, waterDepth: depth, bedY: inside ? surface - depth : -Infinity,
       wet: inside && depth > 0.01, outsideDomain: !inside, slopeX, slopeZ, normalX: -slopeX / norm, normalY: 1 / norm, normalZ: -slopeZ / norm,
-      flowX: flow.x, flowY: flow.y, flowZ: flow.z, regime: inside ? (depth > 0.01 ? 'profile' : 'dry') : 'outside', breaking: 0,
+      flowX: flow.x, flowY: flow.y, flowZ: flow.z, regime: inside ? (depth > 0.01 ? 'profile' : 'dry') : 'outside', breaking: 0, voidFraction: this.o.voidFraction ?? 0,
     });
     return out;
   }

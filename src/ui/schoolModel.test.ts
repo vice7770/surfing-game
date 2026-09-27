@@ -13,10 +13,10 @@ describe('school models', () => {
     const progress = new SchoolProgress();
     progress.pass('trim');
     const list = schoolListModel(progress, LESSONS);
-    expect(list.rows.map((row) => row.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(list.rows.map((row) => row.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     expect(list.rows[0]).toMatchObject({ id: 'lean', title: 'Lean', passed: false });
     expect(list.rows[1].passed).toBe(true);
-    expect(list.progress).toBe('1 of 9 passed');
+    expect(list.progress).toBe('1 of 10 passed');
   });
 
   it('names the lesson’s keys for the device in use', () => {
@@ -46,7 +46,7 @@ describe('school models', () => {
   it('after a miss, says why and what to try, and that the wave comes round again', () => {
     const flow = new LessonFlow(lessonById('lean'));
     flow.start();
-    flow.frame({ dt: 0.1, phase: 'fallen', separation: 'foot slip', speed: 0, heading: 0, input: { steer: 0, trim: 0, crouch: 0, hand: false, paddle: false }, wave: { valid: false, faceFraction: 0, crestBreaking: 0, aheadOfCrest: 0 } });
+    flow.frame({ dt: 0.1, phase: 'fallen', separation: 'foot slip', speed: 0, heading: 0, input: { steer: 0, trim: 0, crouch: 0, compress: 0, hand: false, paddle: false }, wave: { valid: false, faceFraction: 0, crestBreaking: 0, aheadOfCrest: 0 } });
     expect(lessonHud(flow, label, 'R')).toEqual({
       prompt: 'Feet slipped — Hold the lean a little longer; the board needs a moment to bite.',
       coach: 'Same wave again in a moment · R now',

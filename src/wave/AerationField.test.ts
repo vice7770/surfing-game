@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AERATION, AerationField } from './AerationField';
+import { AERATION, AerationField, TURBULENCE } from './AerationField';
 import { GRAVITY } from './dispersion';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
 
@@ -145,5 +145,50 @@ describe('the aeration field', () => {
     field.addBore(cell, 0.114, 0.25, 1);
     expect(field.air[cell]).toBeGreaterThan(0);
     expect(field.depth[cell]).toBeCloseTo(AERATION.boreDepth * 0.25, 12);
+  });
+});
+
+// The wipeout spec, Part B: the plume's turbulence (Ting & Kirby 1995).
+describe('the whitewater plume\'s turbulence', () => {
+  const target = (depth: number, strength = 1) => (TURBULENCE.ratio * Math.sqrt(GRAVITY * depth)) ** 2 * strength;
+
+  it('stirs toward Ting & Kirby\'s intensity under breaking, √k ≈ 0.15 √(g h)', () => {
+    const solver = flatSolver(2);
+    const field = new AerationField(solver, { period: 10 });
+    const cell = solver.cellIndex(0.5, 0.5);
+    for (let t = 0; t < 2; t += 0.05) {
+      field.stir(cell, 1, 0.05);
+      field.update(0.05);
+    }
+    expect(field.turbulence[cell]).toBeGreaterThan(0.9 * target(2));
+    expect(field.turbulence[cell]).toBeLessThan(1.05 * target(2));
+  });
+
+  it('stirs a weaker break less', () => {
+    const solver = flatSolver(2);
+    const field = new AerationField(solver, { period: 10 });
+    const cell = solver.cellIndex(0.5, 0.5);
+    for (let t = 0; t < 3; t += 0.05) field.stir(cell, 0.4, 0.05);
+    expect(field.turbulence[cell]).toBeCloseTo(target(2, 0.4), 2);
+  });
+
+  it('fades within about one wave period once the breaking stops', () => {
+    const solver = flatSolver(2);
+    const field = new AerationField(solver, { period: 10 });
+    const cell = solver.cellIndex(0.5, 0.5);
+    for (let t = 0; t < 3; t += 0.05) field.stir(cell, 1, 0.05);
+    const start = field.turbulence[cell];
+    for (let t = 0; t < 10 - 1e-9; t += 0.05) field.update(0.05);
+    expect(field.turbulence[cell]).toBeCloseTo(start * Math.exp(-3), 3);
+  });
+
+  it('is carried by the current like the air', () => {
+    const solver = flatSolver(2);
+    setFlow(solver, 1, 0);
+    const field = new AerationField(solver, { period: 10 });
+    const cell = solver.cellIndex(-5.5, 0.5);
+    for (let t = 0; t < 1; t += 0.05) field.stir(cell, 1, 0.05);
+    for (let t = 0; t < 3; t += 0.05) field.update(0.05);
+    expect(field.turbulence[solver.cellIndex(-2.5, 0.5)]).toBeGreaterThan(field.turbulence[cell]);
   });
 });

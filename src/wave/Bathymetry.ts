@@ -25,6 +25,14 @@ export function deanDepth(offshore: number, a = 0.12, maxDepth = 12, landSlope =
 export const BEACH_BAR = { offshore: 90, height: 0.9, width: 18, ripSpacing: 110, ripWidth: 22, ripJitter: 25 };
 export const POINT_HEADLAND = { center: 0, halfWidth: 150, protrusion: 120, slope: 0.04, maxDepth: 12 };
 /**
+ * The Beach's outer bar and shelf (the wave-sizes spec; docs/research/outer-profiles.md): a Gaussian bar 2 m
+ * high 450 m out (crest 5 m deep, inside Duck's 300–600 m and 3–8 m), 80 m long so its tail leaves the inner
+ * bed alone, on Dean's profile continued to 30 m.
+ */
+export const BEACH_OUTER = { barOffshore: 450, barHeight: 2, barWidth: 80, maxDepth: 30 };
+/** The Point's shelf past its 12 m: a gentler 1:67 slope to 30 m (an assumption; see the research doc). */
+export const POINT_OUTER = { slope: 0.015, maxDepth: 30 };
+/**
  * The Teahupo'o Reef (the Teahupo'o Reef spec): a left slab. The tank's deep water rises up a
  * 1:2.29 forereef (Rodríguez-Burguette et al. 2025, a model of Teahupo'o's reef) to a shelf
  * about 10 m deep (Shand 2024), where the wave stands up before the reef rises again to its
@@ -83,7 +91,8 @@ function beach(seed: number): SurfSpot {
       let gap = 0;
       for (const rip of rips) gap = Math.max(gap, Math.exp(-(((x - rip) / BEACH_BAR.ripWidth) ** 2)));
       const bar = BEACH_BAR.height * Math.exp(-(((offshore - BEACH_BAR.offshore) / BEACH_BAR.width) ** 2)) * (1 - gap);
-      return deanDepth(offshore) - bar;
+      const outerBar = BEACH_OUTER.barHeight * Math.exp(-(((offshore - BEACH_OUTER.barOffshore) / BEACH_OUTER.barWidth) ** 2));
+      return deanDepth(offshore, 0.12, BEACH_OUTER.maxDepth) - bar - outerBar;
     },
   };
 }
@@ -96,7 +105,9 @@ function point(): SurfSpot {
       // The shoreline steps offshore across the headland; its flank sets the contour angle.
       const shoreline = -protrusion * smoothstep(center + halfWidth, center - halfWidth, x);
       const offshore = shoreline - z;
-      return offshore <= 0 ? offshore * 0.06 : Math.min(maxDepth, slope * offshore);
+      if (offshore <= 0) return offshore * 0.06;
+      const shelf = maxDepth / slope;
+      return offshore <= shelf ? slope * offshore : Math.min(POINT_OUTER.maxDepth, maxDepth + POINT_OUTER.slope * (offshore - shelf));
     },
   };
 }

@@ -73,3 +73,16 @@ describe('pose codec', () => {
     expect(readBundle(new ArrayBuffer(2), visit)).toBe(0);
   });
 });
+
+describe('pose flags (the wipeout spec)', () => {
+  it('carries a snapped leash, a duck-dive and a dive, and ignores flags it does not know', () => {
+    const pose = createPose();
+    Object.assign(pose, { present: true, boardPresent: true, leashSnapped: true, ducking: true, diving: false });
+    const view = new DataView(new ArrayBuffer(POSE_BYTES));
+    encodePose(pose, view, 0);
+    const back = decodePose(view, 0, createPose());
+    expect(back).toMatchObject({ leashSnapped: true, ducking: true, diving: false, present: true, boardPresent: true });
+    view.setUint8(61, view.getUint8(61) | 64);
+    expect(decodePose(view, 0, createPose())).toMatchObject({ leashSnapped: true, ducking: true, present: true });
+  });
+});

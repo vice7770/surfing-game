@@ -86,7 +86,16 @@ const THICKNESS: Point[] = [[0, 0.5], [0.2, 0.9], [0.45, 1], [0.7, 0.93], [0.9, 
  * the patches hold exactly the reference volume; the shell's mass is spread in
  * proportion to volume.
  */
-export function buildBoardShape(reference: typeof REFERENCE_BOARD = REFERENCE_BOARD, stations = 12, across = 4): BoardShape {
+/** A board's main dimensions: length, width, thickness (m), volume (m³) and shell mass (kg), as `REFERENCE_BOARD` gives them. */
+export interface BoardDimensions {
+  readonly length: number;
+  readonly width: number;
+  readonly thickness: number;
+  readonly volume: number;
+  readonly mass: number;
+}
+
+export function buildBoardShape(reference: BoardDimensions = REFERENCE_BOARD, stations = 12, across = 4): BoardShape {
   const outline = monotoneCurve(OUTLINE.map(([s, w]) => [s, w * reference.width] as const));
   const rocker = monotoneCurve(ROCKER);
   const thickness = monotoneCurve(THICKNESS.map(([s, t]) => [s, t * reference.thickness] as const));

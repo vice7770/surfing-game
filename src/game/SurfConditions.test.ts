@@ -4,7 +4,10 @@ import skyManifest from '../../public/assets/skies/skies.json';
 import { nearestSky, sunElevationFromSlider, type SkyEntry } from '../scene/PhotoSky';
 import {
   DEFAULT_CONDITIONS, DEFAULT_SPOT, REEF_SWELLS, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings, nextBackdropSpot, physicalSettingsFor,
+  surfForecastFor, surfForecastText,
 } from './SurfConditions';
+import { PRACTICE_SURF, forecastSurf } from '../wave/surfForecast';
+import { surfName as describeName } from '../ui/surfHeight';
 
 const water = { stage: 2 as const, compute: 'auto' as const };
 
@@ -58,6 +61,21 @@ describe('surf conditions', () => {
   });
 
   // The Canyon's waves peel (median 58°) and catch best; the other spots mostly close out (median 12–15°).
+  it('forecasts each swell size\'s surf at each spot, the practice groundswell as measured (wave sizes)', () => {
+    for (const spot of SURF_SPOTS) {
+      expect(surfForecastFor(spot, 'practice')).toEqual(PRACTICE_SURF[spot]);
+      expect(surfForecastFor(spot, 'big')).toEqual(forecastSurf(spot, SWELLS.big.significantHeight, SWELLS.big.peakPeriod));
+      expect(surfForecastFor(spot, 'big').typical).toBeGreaterThan(surfForecastFor(spot, 'small').typical);
+    }
+  });
+
+  it('says what surf the Surf screen\'s choice will make, in the player\'s words (wave sizes)', () => {
+    const words = { units: 'metric' as const, scale: 'face' as const, surferHeight: 1.75 };
+    const surf = forecastSurf('point', SWELLS.big.significantHeight, SWELLS.big.peakPeriod);
+    expect(surfForecastText({ spot: 'point', conditions: { ...DEFAULT_CONDITIONS, swell: 'big' } }, words))
+      .toBe(`Surf: ${surf.typical.toFixed(1)}–${surf.sets.toFixed(1)} m · ${describeName(surf.typical)}`);
+  });
+
   it('starts a new player at the Canyon', () => {
     expect(DEFAULT_SPOT).toBe('canyon');
   });

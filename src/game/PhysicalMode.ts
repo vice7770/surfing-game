@@ -2,11 +2,14 @@ import { Color, Mesh, Vector3, type Material, type Scene } from 'three';
 import type { StandRefusal } from '../physics/AttachedRider';
 import type { WaveFrame } from '../physics/waveFrame';
 import type { RiderPlacement } from '../physics/RideSession';
+import type { StanceName } from '../physics/riderPosture';
 import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SurferView } from '../scene/character/SurferView';
-import { createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
+import { RiderMotion } from '../scene/rig/riderMotion';
+import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
+import { LeashCord } from '../scene/board/LeashCord';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
@@ -25,7 +28,7 @@ import type { ReadoutRow } from '../wave/SwellReadout';
 import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { SprayLook } from '../wave/SprayCloud';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
-import { OFFSHORE_DEPTH, SEA_COMPONENTS, TANK, solverStage, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { SEA_COMPONENTS, solverStage, surfZoneSea, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
@@ -100,8 +103,13 @@ export async function webGpuAvailable(): Promise<boolean> {
   }
 }
 
-/** Largest swell the tank carries, matching the buoy sliders: deeper water would be needed beyond this. */
-export const TANK_SWELL_LIMITS = { height: { min: 0.3, max: 3 }, period: { min: 6, max: 18 } };
+/** Largest swell the tank carries, matching the buoy sliders; the tank deepens with the swell (the wave-sizes spec). */
+export const TANK_SWELL_LIMITS = { height: { min: 0.3, max: 4 }, period: { min: 6, max: 18 } };
+
+/** The Canyon keeps its tank and sea as they were (the wave-sizes spec), and so its 3 m cap. */
+export function swellHeightLimit(spot: SpotName): number {
+  return spot === 'canyon' ? 3 : TANK_SWELL_LIMITS.height.max;
+}
 
 function clamp(value: number, range: { min: number; max: number }): number {
   return Math.min(range.max, Math.max(range.min, value));
@@ -132,7 +140,7 @@ export function spreadingFor(spread: number): number {
 export function swellFor(settings: PhysicalSettings): SwellInput {
   if (settings.source === 'practice') return { ...practiceSwell(settings.spot) };
   if (settings.source !== 'storm') {
-    return { significantHeight: settings.significantHeight, peakPeriod: settings.peakPeriod, spreading: spreadingFor(settings.spread) };
+    return { significantHeight: Math.min(settings.significantHeight, swellHeightLimit(settings.spot)), peakPeriod: settings.peakPeriod, spreading: spreadingFor(settings.spread) };
   }
   const storm = stormSwell({
     windSpeed: settings.stormWindSpeed,
@@ -141,7 +149,7 @@ export function swellFor(settings: PhysicalSettings): SwellInput {
     distanceKm: settings.stormDistanceKm,
   });
   return {
-    significantHeight: clamp(storm.significantHeight, TANK_SWELL_LIMITS.height),
+    significantHeight: clamp(storm.significantHeight, { min: TANK_SWELL_LIMITS.height.min, max: swellHeightLimit(settings.spot) }),
     peakPeriod: clamp(storm.peakPeriod, TANK_SWELL_LIMITS.period),
     spreading: storm.spreading,
     bandwidth: storm.bandwidth,
@@ -246,7 +254,11 @@ export class PhysicalMode {
   private surferBody?: string;
   /** The rider's body, solved from the snapshot's seven points: a skinned surfer (G7), or the simple one until it loads. */
   readonly surfer = new SurferView();
+  /** The leash (the wipeout spec), from the back foot to the tail plug. */
+  private readonly leash = new LeashCord();
   private readonly riderState = createRiderVisualState();
+  /** How the rider's board moves, for the drawn body (Part B). */
+  private readonly riderMotion = new RiderMotion();
   /** Whether the latest input paddles, which cups the drawn hands. */
   private paddling = false;
   private retryPending = false;
@@ -254,6 +266,8 @@ export class PhysicalMode {
   private placePending?: RiderPlacement;
   /** Where the pending retry puts the rider (online: a free spot in the lineup). */
   private spawnAt?: { x: number; z: number };
+  /** The player's stance (the stances spec), sent with every request: the runner takes it up at the next ride. */
+  stance?: StanceName;
   /** The running surf zone, once it has spun up. */
   host?: SurfZoneHost;
   /** The water look the sea's spray is drawn in (G9: Classic keeps its lip-impact spray as it was). */
@@ -323,7 +337,8 @@ export class PhysicalMode {
   }
 
   constructor(scene: Scene) {
-    scene.add(this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group);
+    scene.add(this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group, this.leash.object);
+    this.leash.object.visible = false;
     this.board.visible = false;
     this.surfer.group.visible = false;
   }
@@ -382,6 +397,8 @@ export class PhysicalMode {
       windSpeed: settings.windSpeed,
       stage,
       compute,
+      // Practice's groundswell is given at the tank's edge, so its sea stays as it was (the wave-sizes spec).
+      ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
       ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
       ...overrides,
     };
@@ -412,33 +429,35 @@ export class PhysicalMode {
     this.farField.setOptics(SPOT_OPTICS[settings.spot]);
     this.lipSheet.setOptics(SPOT_OPTICS[settings.spot]);
     const spot = createSpot(config.spot, config.seed);
-    const offshoreDepth = OFFSHORE_DEPTH[settings.spot];
+    // The tank this swell needs (the wave-sizes spec): the far field and seabed start at its edge.
+    const tank = tankLayout(config);
+    const offshoreDepth = tank.edgeDepth;
     const windowMin = init.windowXMin;
     const windowMax = windowMin + (init.grid.nx - 1) * init.grid.spacing;
     const leftX = windowMin + init.dx / 2;
     const rightX = windowMax - init.dx / 2;
     // Beyond the window the world continues each edge column's seabed; offshore it deepens to FAR_DEPTH.
-    const offshoreBed = (z: number) => offshoreDepth + (FAR_DEPTH - offshoreDepth) * smoothstep(TANK.offshore, TANK.offshore - FAR_SLOPE_LENGTH, z);
+    const offshoreBed = (z: number) => offshoreDepth + (FAR_DEPTH - offshoreDepth) * smoothstep(tank.offshore, tank.offshore - FAR_SLOPE_LENGTH, z);
     const bedDepth = (x: number, z: number) => {
-      if (z < TANK.offshore) return offshoreBed(z);
-      return tankDepth(spot, offshoreDepth, x < windowMin ? leftX : x > windowMax ? rightX : x, z);
+      if (z < tank.offshore) return offshoreBed(z);
+      return tankDepth(spot, offshoreDepth, x < windowMin ? leftX : x > windowMax ? rightX : x, z, tank);
     };
     this.focus = { ...init.focus };
-    const hole = { xMin: windowMin, xMax: windowMax, zMin: TANK.offshore, zMax: TANK.shore };
+    const hole = { xMin: windowMin, xMax: windowMax, zMin: tank.offshore, zMax: tank.shore };
     this.seabed.setDepthOnGrid(
       bedDepth,
       gradedAxis(this.focus.x - 600, this.focus.x + 600, windowMin, windowMax, 2, 30),
-      gradedAxis(-900, TANK.shore + 30, TANK.offshore, TANK.shore, 2, 30),
+      gradedAxis(Math.min(-900, tank.offshore - 300), tank.shore + 30, tank.offshore, tank.shore, 2, 30),
     );
     const profile = new FarFieldProfile(surfZoneSea(config), {
-      referenceZ: TANK.offshore,
-      shoreZ: TANK.shore,
-      offshoreZ: TANK.offshore - (FAR_EXTENT - 330),
+      referenceZ: tank.offshore,
+      shoreZ: tank.shore,
+      offshoreZ: Math.min(-FAR_EXTENT, tank.offshore - 300),
       shoreSamples: 181,
       offshoreSamples: 391,
       offshoreDepth: (z) => offshoreBed(z) + settings.tide,
-      leftDepth: (z) => tankDepth(spot, offshoreDepth, leftX, z) + settings.tide,
-      rightDepth: (z) => tankDepth(spot, offshoreDepth, rightX, z) + settings.tide,
+      leftDepth: (z) => tankDepth(spot, offshoreDepth, leftX, z, tank) + settings.tide,
+      rightDepth: (z) => tankDepth(spot, offshoreDepth, rightX, z, tank) + settings.tide,
     });
     this.farField.setProfile(profile, hole, this.focus, { extent: FAR_EXTENT });
     this.farField.setChop(chopForWind(settings.windSpeed));
@@ -460,6 +479,7 @@ export class PhysicalMode {
     this.host = undefined;
     this.board.visible = false;
     this.surfer.group.visible = false;
+    this.leash.object.visible = false;
   }
 
   /** Request `steps` fixed physics steps (`SURF_ZONE_STEP` each). */
@@ -534,7 +554,10 @@ export class PhysicalMode {
     }
     if (input) this.paddling = input.paddle;
     const request = input || retry || place
-      ? { paddle: false, popUp: false, steer: 0, ...input, retry, ...(spawnAt ? { spawnAt } : {}), ...(place ? { place } : {}) } : undefined;
+      ? {
+        paddle: false, popUp: false, steer: 0, ...input, retry,
+        ...(spawnAt ? { spawnAt } : {}), ...(place ? { place } : {}), ...(this.stance ? { stance: this.stance } : {}),
+      } : undefined;
     this.host?.advance(steps, request, reactions);
   }
 
@@ -558,10 +581,20 @@ export class PhysicalMode {
     this.board.position.set(pose[0], pose[1], pose[2]);
     this.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
     this.surfer.group.visible = this.shown && riding;
+    this.leash.object.visible = this.shown && riding && pose[7] > 0;
     if (riding) {
       readRiderSnapshot(rider, pose, this.riderState);
+      this.riderMotion.update(this.riderState, host.snapshot.status.seaTime);
       this.riderState.stroking = this.paddling && this.riderState.phase === 'prone' ? 1 : 0;
+      this.riderState.clock = host.snapshot.status.seaTime;
       this.surfer.update(this.riderState, this.camera.camera.position);
+      const { leash } = this.riderState;
+      // The leash is on the back foot: the right regular, the left goofy (the stances spec's setting).
+      this.leash.update(this.riderState.points[this.stance === 'goofy' ? POINT.leftFoot : POINT.rightFoot], leash.plug, {
+        snapped: leash.snapped, hand: leash.reeling ? this.riderState.points[POINT.leftHand] : undefined,
+      });
+    } else {
+      this.riderMotion.reset();
     }
     this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
     this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount });
@@ -587,6 +620,7 @@ export class PhysicalMode {
     this.shown = visible;
     this.board.visible = visible && (this.host?.snapshot.board[7] ?? 0) > 0;
     this.surfer.group.visible = visible && (this.host?.snapshot.rider[RIDER_SNAPSHOT.present] ?? 0) > 0;
+    this.leash.object.visible = this.surfer.group.visible && (this.host?.snapshot.board[7] ?? 0) > 0;
     this.seabed.mesh.visible = visible;
     this.farField.mesh.visible = visible;
     this.lipSheet.mesh.visible = visible;

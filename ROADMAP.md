@@ -420,7 +420,7 @@ Requirements agreed in a grilling session on 2026-09-26: [G7 spec](docs/superpow
   - Mixamo clips (swim, tread water, beach idle), which need the user's Adobe login;
   - moving to the WebGPU renderer;
   - a preset's mass and height fed into the physics (after P9's flexible rider);
-  - the leash, drawn once P11 adds it to the physics.
+  - the leash, drawn once P11 adds it to the physics (now drawn: the wipeout slice, Part A).
 
 ### P1 · Rich water (G8) — `Done (playtest open)`
 
@@ -493,7 +493,28 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
 
     Whitewater forces on bodies and the player's tube camera (P12) stay in the Backlog.
 
-### P1 · Teahupo'o Reef — `Part A in review; Parts B–D next`
+### P1 · Wave sizes — `Parts A and B's machinery done; the side feed next`
+
+Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers/specs/2026-09-27-wave-sizes.md); [plan](docs/superpowers/plans/2026-09-27-wave-sizes.md). The user's complaint: 3 m waves don't look like 3 m. The Height slider was Hs at the tank's 5–10 m edge, and the spots were built for 1–2 m surf.
+
+- **Part A · measure (done, 2026-09-27):**
+  - each wave is measured as it starts to break at the take-off (its face, crest to the trough ahead); the surf reads H1/3–H1/10 over 2 minutes, with a body-relative name ("overhead") against the chosen surfer, in m, ft or the Hawaiian scale (a new Surf height setting);
+  - it shows as a Surf row on the Wave Lab's info card, beside the Height slider (forecast), on the Surf screen (forecast) and on the pause card (measured);
+  - [sources](docs/research/surf-size-sources.md): Komar & Gaughan's breaker height, Caldwell & Aucan's Hawaiian surf and scale;
+  - the [size report](docs/research/size-report.md) (`npm run report:sizes`) measured today's tank: H1/3 is 40–66 % of Komar–Gaughan at the Beach (1.5–2.0 m faces at Hs 3 m, where its 5 m edge saturates), 61–85 % at the Point, 76–86 % at the Reef and 60–89 % at the Canyon. The forecast is fitted per spot to the surf at the take-off, where the readout measures.
+- **The Reef** is handed to the Teahupo'o Reef rework (the user's decision in that session, 2026-09-27): its bed stays here, and the report shows it ungated.
+- **Part B · bigger surf, machinery (merged 2026-09-27):**
+  - the Height slider is a deep-water buoy Hs, shoaled to the tank's edge (Practice and the Canyon take theirs at the edge, and the Reef until its rework: its 10 m edge blew up under a shoaled 3–4 m, 18 s swell); the cap is 4 m (the Canyon and the Reef 3 m);
+  - the tank is sized to the swell: a deeper edge (3.3 Hs, within 0.4 of the deep-water wavelength), a longer zone, the 1 m zone from 40 m seaward of the sets' break, and Madsen–Sørensen wave numbers at the deeper edge;
+  - the Beach has a deeper outer bar (450 m out, crest 5 m deep) and the Point a longer shelf past 12 m; the [profiles' sources](docs/research/outer-profiles.md);
+  - the take-off is placed where the sets were measured to break (γ 1.13 at the Point, 1.14 at the Beach).
+  - Measured at 14 s, H1/3 now reaches 86 / 73 / 77 % of Komar–Gaughan at the Point (Hs 2 / 3 / 4 m) and 61 / 53 / 55 % at the Beach (Hs 2 / 3 / 4 m), up from 61–78 % and 40–54 % (Hs 2–3 m) on today's tanks.
+- **Why the gates aren't met yet (debugged 2026-09-27):** the window's open side edges let a directionally spread sea's energy drift out, and nothing enters from the neighbouring coast. Up to a third of the wave height is lost within ~150 m (the same sea on a straight slope, no breaking: 2.03 m with open sides against 2.78 m with periodic ones, from 3.01 m). It affects today's tanks too.
+  - **Next (the user's decision):** feed the sides with the incoming sea, shoaled and refracted over each column's bed, on every tank, on the CPU and the GPU (branch `claude/side-feed`, started). Then rerun the riding reports and Surf School's lesson waves, refit the forecast and the take-off, and gate the sizes.
+  - Short records mislead: judge heights against the input sea over the same ≥300 s record.
+- **Part C** (a size sheet, the camera) follows.
+
+### P1 · Teahupo'o Reef — `Part A in review (PR); Parts B–D next`
 
 Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers/specs/2026-09-27-teahupoo-reef.md); [Part A plan](docs/superpowers/plans/2026-09-27-teahupoo-reef-part-a.md). The A-frame Reef becomes a Teahupo'o-style heavy left: sourced thick lips and round tubes, a solid reef, and P12 tube riding brought ahead of P11.
 - [ ] **Part A · the bed and its peel** (branch `claude/teahupoo-reef`):
@@ -509,10 +530,11 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - the Big swell drained the ledge to 0.07 m and ran its backwash to NaN. Dispersion now switches off in a drained trough as at a high crest, on CPU and WGSL;
     - the peel meter measured along x, mixed two waves in a long peel, and counted breaks past the reef's end. It now fits one wave's front along its break line, and the Reef only on its ledge.
   - **The design:** chosen by a sweep of ledge angle, swell direction and shelf depth. It peels a median 13.6 m/s (α 23°) on the Small swell, against today's A-frame's 11° close-outs. About half its waves close out: fast, often made only through the tube.
-  - **Catching** on its Practice: 13 riders stood from 756 attempts (today 14 from 1018), with the Reef's first rides of 3 s or more (longest 5.4 s, against 2.6 s).
+  - **Catching** on its Practice: as many riders stand as on today's Reef (14; from 871 attempts against 1018), with the Reef's first rides of 3 s or more (longest 6.1 s, against 2.6 s); it lights fewer take-off cues (23 against 62).
+  - **On the wave sizes tank:** the Reef's 30 m edge takes the buoy's deep-water swell shoaled to it, its zone is lengthened to 0.75 of the edge wavelength, and its cap is 4 m.
   - **Open:**
-    - the move onto the wave sizes session's swell-sized tank, with the faces calibrated on its size report (Part A, Task 9, after wave sizes' Part B merges);
-    - the Big swell's faces;
+    - the Reef's faces calibrated on the size report (Practice 1.5–2 up to Big 5–6 m), held until the side feed (`claude/side-feed`) lands and its forecast refitted;
+    - the Big swell running up the pass's steep beach face at up to 26 m/s (the pass should end in a lagoon; Part C);
     - the user's look.
 - [ ] **Part B · slab tube physics:** the thick lip and round tube from slab sources (Mead & Black 2001; Blenkinsopp & Chaplin 2008), replacing the provisional submerged-crest rule.
 - [ ] **Part C · the look, the sound and a solid reef:** the lip's glow, the step, the coral, spit, the section collapsing as one, the impact sound, and "hit the reef".
@@ -547,7 +569,36 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
   - **Riding the wave, Part A** ([spec](docs/superpowers/specs/2026-09-27-riding-the-wave.md), [plan](docs/superpowers/plans/2026-09-27-riding-the-wave.md), [findings](docs/superpowers/plans/2026-09-27-riding-the-wave.md#findings)):
     - broken water carries a board (the surface roller's push in the sampler); honest ride ends (a fall, a kick-out, the wave dying, or lost); the gauge finds the curl; the ride report reads the done criteria;
     - the pocket reflex (Settings → Gameplay → Stay near the curl, Practice by default); the Practice swell at Hs 1.4 m for 1–1.5 m faces ([reference wave](docs/research/reference-wave.md));
-    - open: the done criteria are not met (median ride 2.6 s against 10; without the roller's push the Canyon gave 17 stands and 1 ride of 3 s, with it 49 and 21). Riders stand on the flat ahead of the crest after a straight take-off (a paddler turns only ~7°/s), stall, and fall as the face passes under the slow board; a crouched full-steer turn at 10 m/s wobbles in yaw. Next: P10's take-off, re-catching, the wobble. Animation and regular/goofy are Part B.
+    - open: the done criteria are not met (median ride 2.6 s against 10; without the roller's push the Canyon gave 17 stands and 1 ride of 3 s, with it 49 and 21).
+    - take-off on the face ([plan](docs/superpowers/plans/2026-09-27-take-off.md)): the pop-up cue also lights when the wave has caught the paddler high on the face (Kimura and Kakinuma's window), so riders stand on the face, 2.3 m ahead of the crest, not 8.4 m ahead on the flat. Median ride 3.0 s, best 6.4 s, mean speed 6.7 m/s (inside 6–9), bottom turns at Forsyth's rate, radius, load and rail. Open: 12 of 26 early pop-ups fall on the bigger waves (hard landings, P10). Riders stand on the flat ahead of the crest after a straight take-off (a paddler turns only ~7°/s), stall, and fall as the face passes under the slow board; a crouched full-steer turn at 10 m/s wobbles in yaw. Next: P10's take-off, re-catching, the wobble. Animation and regular/goofy are Part B.
+    - stances ([spec](docs/superpowers/specs/2026-09-27-stances.md), [plan](docs/superpowers/plans/2026-09-27-compress.md), [findings](docs/superpowers/plans/2026-09-27-compress.md#findings)):
+      - Shift's crouch stays; Compress, the bottom turn's stance, is new: Space standing, RT, a touch button. Full depth, weight forward, the inside hand reaching for the water. Its drop follows the turn's load, which reduces the crouched mid-turn wobble (swings 1.9–2.3 → 0.9–1.3 rad/s, no sign flips).
+      - Regular/Goofy is a Gameplay setting. The bottom-turn lesson and the autopilot follow the sequence: crouch on the drop, compress with a lean at the bottom, release up the face.
+      - Open: the deep U (90° in about 1 s keeping 85 % of the speed) is not met on still water by any stance (62–77° at about half the speed): the carve sheds its speed. On the reference wave the compressed bottom turns yaw 87° (Forsyth 99°), but rides of 3 s or more fell 26 → 14 (median 2.2 s). Compress turns less than the crouch on still water. Both wait on the user's decision.
+      - Next: Part B animation from the thesis's cues, then the top turn and cutback against the video.
+    - Part B, the riding body ([plan](docs/superpowers/plans/2026-09-27-part-b-animation.md), [findings](docs/superpowers/plans/2026-09-27-part-b-animation.md#findings)):
+      - the knees follow the physics' crouch from extended legs (mean 129° / 102° / 80° standing, crouched and compressed);
+      - the balance's upper-body swing is drawn;
+      - the head looks where the board goes, into the turn;
+      - the trunk turns into the turn, and the leading arm points where the head looks;
+      - a hand reaching down to the water is reached;
+      - online surfers pose the same way (wire format unchanged);
+      - the surfer sheet's `?riding` view shows the moments.
+      - Next: the user's playtest, then the top turn and cutback against the video.
+    - the top turn ([plan](docs/superpowers/plans/2026-09-27-top-turn.md), [study](docs/research/rail-change-study.md), [findings](docs/superpowers/plans/2026-09-27-top-turn.md#findings)):
+      - Steering into a lean the body lags (by more than about 2°), the feet never roll the board away from it; the upper body throws the lean. The feet's counter-roll had turned the board the wrong way (the hull turns hard on a small roll) and thrown the body in. Otherwise the feet keep their range: steady carves, partial steer, the hold, a stall (the final review).
+      - Top turns from a straight climb and rail changes from a carve now stay on, and carves are smooth. The user kept the smooth carve: the hard turn makes 52° (61° rode the feet's pumping).
+      - On the reference wave:
+        - rides of 3 s or more nearly doubled (14 → 27), median 2.2 → 3.2 s, best 4.9 → 6.8 s;
+        - top turns yaw 53° (38°), and five snaps appear (64°, 3.5 rad/s);
+        - bottom turns run at Forsyth's rate but yaw 72° (87°);
+        - speed kept from a bottom turn into a top turn: 0.32 → 0.45.
+      - The snap is drawn: with the weight back over the tail in a turn, the trunk twists further and the leading arm rises toward the lip (the sheet's `?riding` snap).
+      - Open:
+        - A bottom turn carried up the face into the top turn still falls, every time.
+        - Snaps and cutbacks stall on the static lab face.
+        - These are pinned with the deep U: the carve sheds its speed and bogs past its 48° bite.
+        - The frontside reaching hand is drawn 6.6 cm short.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
@@ -555,6 +606,22 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
   - **Next:** the user's playtest on the M4 Pro, deferred by the user (2026-09-26): it runs well there, so the playtest comes later. It also checks, live, what the automated pass could not reach standing: W/S, crouch, the meter in a carve, hints, callouts and the end card.
 - [ ] **P10 Take-off** (`Backlog`): cruise and sprint paddling recalibrated to measured speeds, critical-power stamina, angled take-offs, late take-offs and air drops.
 - [ ] **P11 Lineup** (`Backlog`): a sliding window to pick a peak, sets read from the horizon, duck-dives, a surface roller with aeration (hold-downs emerge), breath, a snapping leash, Next set.
+  - **Wipeout and duck-dive, a slice taken ahead** ([spec](docs/superpowers/specs/2026-09-27-wipeout-and-duck-dive.md), grilled 2026-09-27):
+    - **Part A — merged** (PR #47; [plan](docs/superpowers/plans/2026-09-27-wipeout-duck-dive-a.md)): the leash (6 ft, snaps above 1.2 kN, recoil), holding the pop-up key to reel the board in, grabbing it from any side (the hands turn it and roll it deck-up), the swimmer diving and swimming up, the duck-dive (S/↓, LT, D-pad down: arms press the nose, the knee the tail), hints, a Surf School lesson, the drawn cord and poses, sounds, and online flags.
+    - **Checks:** flat water, a full push holds the reference deck 0.33 m under and a 50 L board 0.58 of that (survey: 0.5–1 m, 50 L un-diveable — open); on a test bore a timed dive is pushed back under half as far as a paddler on top and early or late dives do worse (met), but not weaker inside (open: the flow under the roller is uniform to the bed); ducking from paddling speed, the pair can roll over about 1.5 s in (open: a submerged board has no waterplane and too little face-on drag).
+    - **Part B — merged** (PR #49; [plan](docs/superpowers/plans/2026-09-27-wipeout-duck-dive-b.md)): every body in broken water takes the plume's air (buoyancy and drag from the mixture's density, ρ(1 − α)); the plume carries turbulence (Ting & Kirby's √k ≈ 0.15 √(g h) under breaking, fading over about a wave period) that the fallen surfer feels as seeded eddies with a descending bias; a held breath (65 s at rest, shorter with effort, Guimard et al.), and a rescue to the lineup with "Held down too long" when it runs out; the breath meter (Practice by default), darkening screen edges, muffled sound with the head under, and a quickening stroke when short of breath.
+    - **Checks:** hold-downs ([hold-down report](docs/research/holddown-report.md), riders knocked off 8 m inside the Canyon break, 2 seeds × 3 min): relaxed, the longest stay under has a median of 10.9 s, 81 % within the survey's 5–15 s (met); swimming up shortens it to 6.4 s and costs more breath (lowest 0.60 against 0.77); no rider ran out.
+    - **The real surf zone, now aerated** ([duck-dive report](docs/research/duck-dive-report.md), Canyon practice swell, 2 seeds × 3 min): divers reach 0.61–0.75 m; a timed dive is set back 7.9 m against 12.0 m on top (0.66×, not under half); early (4.3 m) and late (6.4 m) dives are not worse; 15 m inside it is weaker (met). **Divers still almost never keep the board** (0–13 %, against 28 % on top), pulled off about 0.2 s after the broken water arrives: aeration trims the roller's push by its air, not enough.
+    - **Tried and not kept:** a low "hug" knee posture (coaching: pull in close as the wave passes) kept more boards in timed dives (17 %) but sank the board less (0.27 m on flat water) and lost the test bore's timing checks; the hug as a third stage after the knee changed nothing, as the rider is off before it starts. Posture is not what loses the board. On the analytic test bore every dive already loses the rider, so its setbacks are measured on a board let go.
+    - **Why divers lost the board — found and fixed** (branch `claude/duck-dive-hold`): the duck-dive's stages moved the body with a critically damped follower, which starts at its peak acceleration (ω²Δ, about 9 g for the knee): the contact would have had to pull the body onto the deck with up to 15 body weights, so it left the deck (even on still water, for 0.38 s of a dive) and in broken water never got back. The stages now follow minimum-jerk paths (`MinimumJerkTrack`, easing in and out, replanned from the current motion when the input changes). In the surf zone ([duck-dive report](docs/research/duck-dive-report.md)): kept boards on time 0 → 6 %, early (9 m) 13 → 38 % (on top: 28 %), 15 m inside 0 → 11 %; losses while ducking 15 → 5 per variant, and riders now come off 1.6–1.9 s after the broken water arrives (was 0.2 s), mostly after letting go at 1.5 s into whitewater still running. A timed dive is set back 6.5 m against 12.1 m on top (0.54×, not quite under half); an early dive now does best (5.5 m), so early and late are not both worse; weaker inside is met. On the test bore a dive 9 m out is set back 0.9 m against 4.5 m on top with the rider on, and weaker inside is now met there too; the 2.5 m dive keeps the rider but is set back 3.8 m (open: the front arrives before the 0.55 s press and knee are done; the check had been met only because the rider let go and the board slipped under alone).
+    - **What takes divers off now: capsizing.** Held for 3 s instead of 1.5 s (`--hold 3`), dives do no better (kept on time 0 %, early 6 %; setbacks 6.2 and 5.5 m): the pair rolls over about 1.7–2 s after the broken water arrives, held or not. Traced, the roll swings with a period of about 1 s and grows until the torso is under the board. The dive is perched: the press holds the chest up out of the water on straight arms while the board sinks level under the body's weight, an inverted pendulum on a submerged board, steadied only by the rider's balance shift (0.2 m reach). On still water the press even tips the board further nose-up (9° to 13°, the tail sinking and the nose staying at the surface): the press pulls the legs forward onto the tail. Coaching has the arms sink the nose first, 40–60 cm, and the body follows the board under.
+    - **Why the press cannot sink the nose (open check, `duckDive.test.ts`):** lying prone, the reference board is already fully under water (25.8 L, buoyancy acting at z −0.056 m, no waterplane to right it in pitch or roll), and the rider is rigid on the deck, so it loads the board through its centre of mass; the press brings that to z −0.067 m, level with the board's buoyancy, never onto the hands. A real press pivots the body on the hands while the water carries the hips and legs. Tried and not kept: the legs trailing in the water (12.6° nose-up), an upward-dog press with the hips down (9.7°: no longer tipping up, not down). The fix is a rider that pivots on its hands while pressing (a design change, for the user to choose).
+    - **Tried after that, not adopted (2026-09-28, the user parked the duck-dive for a playtest):**
+      - **The body's shape-change momentum** ([spec](docs/superpowers/specs/2026-09-27-duck-dive-press-momentum-design.md), code parked on `claude/duck-dive-momentum`). It turns the pair correctly: in free fall the board turns nose-down as the chest rises. On still water it only eases the press's nose-up (10.8° against 13.1° at 0.3 s), and the knee's reverse momentum undoes that by 1.5 s. The knee's asymmetric shape change (one knee in, the other leg up) carries roll momentum (about 2 kg·m²/s) that capsizes the perched pair even on still water.
+      - **The roll, measured.** Held on still water, the perched pair is an inverted pendulum: with no balance it e-folds in about 0.2 s. The rider's balance shift (a 0.15 s follower) turns that into an oscillation of about 1.1 s that grows until it capsizes. A low, compact body slows the fall to about 0.35 s but still oscillates. A person could not hold a perched press on a submerged board either.
+      - **A dynamic dive.** A hips-down "upward dog" press with the shape-change momentum keeps the board 8.7–10° nose-up from rest and 10–12° from paddling speed; the nose barely goes under, and the pair still capsizes at the knee.
+      - **Why.** A real duck-dive is dynamic: the push and the paddling speed drive a nose-down board under, and the body follows into the water, where it is about neutral, so there is no inverted pendulum. The attached rider is one rigid body holding a posture on the deck. Its press lifts the whole body (the centre of mass rises 0.24 m), so the reaction lands mid-board rather than at the hands, and it cannot pivot, go under or balance on its own. The faithful route is a rider that becomes its own body while ducking, joined to the board at the hands with contacts at the knee and hips: a large change, left for the user to decide after playing.
+    - **Next:** the user's playtest of both parts (the duck-dive as PR #51 leaves it); then, if the dive deserves it, the two-body ducking rider; the dive's speed (one quick motion carried in by paddling speed; the flat-water depth, 0.5–1 m, is still open); and the submerged board's hydrodynamics.
 - [ ] **P12 Tube** (`Backlog`, after P11; P7 has finished): pulling in and racing out, rail grab and hand drag, crouch clearance, the Regular/Goofy setting, an automatic tube camera.
 - **Backlog beyond P12:** multiplayer and community judging, local ride replay, airs, turtle roll and longboard, computer surfers, session-long fatigue. Audio is P8's backlog.
 

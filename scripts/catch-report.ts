@@ -88,7 +88,7 @@ function runSpot(spot: SpotName, seed: number): { attempts: Attempt[]; seconds: 
   const runner = new SurfZoneRunner({
     spot,
     seed,
-    significantHeight: swell.significantHeight,
+    significantHeight: swell.significantHeight, heightAt: (settings.source === 'practice' ? 'edge' : 'deep') as 'edge' | 'deep',
     peakPeriod: swell.peakPeriod,
     directionDegrees: direction,
     spreading: swell.spreading,

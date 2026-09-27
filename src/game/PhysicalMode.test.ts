@@ -4,13 +4,42 @@ import { WaterSurface } from '../scene/WaterSurface';
 import { FlatSurfaceSource } from '../scene/FlatSurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { stormSwell } from '../wave/StormSwell';
-import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL, chopForWind, formatPhysicalReadout, spreadingFor, swellFor } from './PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, spreadingFor, swellFor, swellHeightLimit } from './PhysicalMode';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
 
 describe('PhysicalMode', () => {
+  it('lets buoys and storms reach 4 m, and the Canyon 3 m as before (wave sizes)', () => {
+    expect(TANK_SWELL_LIMITS.height.max).toBe(4);
+    expect(swellHeightLimit('point')).toBe(4);
+    // The Reef keeps its 3 m cap until the Reef rework deepens its tank (wave sizes review).
+    expect(swellHeightLimit('reef')).toBe(3);
+    expect(swellHeightLimit('canyon')).toBe(3);
+    const storm = { ...DEFAULT_PHYSICAL_SETTINGS, source: 'storm' as const, stormWindSpeed: 30, stormFetchKm: 2000, stormDurationHours: 96, stormDistanceKm: 0 };
+    expect(swellFor({ ...storm, spot: 'point' }).significantHeight).toBe(4);
+    expect(swellFor({ ...storm, spot: 'canyon' }).significantHeight).toBe(3);
+    expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'buoy', spot: 'canyon', significantHeight: 3.8 }).significantHeight).toBe(3);
+    expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'buoy', spot: 'point', significantHeight: 3.8 }).significantHeight).toBe(3.8);
+  });
+
+  it('gives Practice\'s groundswell at the tank\'s edge and a buoy\'s in deep water (wave sizes)', async () => {
+    const water = new WaterSurface(new FlatSurfaceSource());
+    const mode = new PhysicalMode(new Scene());
+    const configs: SurfZoneConfig[] = [];
+    const capture = (config: SurfZoneConfig) => {
+      configs.push(config);
+      return { config, ready: new Promise<void>(() => {}), dispose: () => {} } as unknown as SurfZoneHost;
+    };
+    void mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'practice' }, 1, water, quick, capture);
+    void mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'buoy' }, 1, water, quick, capture);
+    await Promise.resolve();
+    mode.cancel();
+    expect(configs[0].heightAt).toBe('edge');
+    expect(configs[1].heightAt ?? 'deep').toBe('deep');
+  });
+
   it('maps the spread slider from groundswell to windswell spreading', () => {
     expect(spreadingFor(0)).toBeCloseTo(24, 12);
     expect(spreadingFor(1)).toBeCloseTo(4, 12);
@@ -37,8 +66,8 @@ describe('PhysicalMode', () => {
 
   it('keeps a derived storm swell inside what the tank can carry', () => {
     const near = swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'storm', stormWindSpeed: 28, stormFetchKm: 2000, stormDurationHours: 96, stormDistanceKm: 200 });
-    expect(near.storm!.significantHeight).toBeGreaterThan(3);
-    expect(near.significantHeight).toBe(3);
+    expect(near.storm!.significantHeight).toBeGreaterThan(4);
+    expect(near.significantHeight).toBe(4);
     expect(near.peakPeriod).toBe(18);
   });
 
@@ -280,7 +309,8 @@ describe('PhysicalMode', () => {
       valid: true, directionX: 0, directionZ: 1, aheadOfCrest: 4.2, crestSpeed: 5.1, faceHeight: 1.2, faceFraction: 0.55, crestBreaking: 0,
       curlDistance: Infinity, curlSide: 0, speedOverGround: 6, speedShoreward: 3, speedAlongCrest: 5, requiredSpeed: 7.2,
     };
-    const ride = { phase: 'standing' as const, speed: 6, boardSpeed: 6.2, cue: false, popUp: { outcome: 'none' as const, duration: 0, landingPeak: 0, frontShare: 0 }, resets: 0, balance: 1, wave };
+    const ride = { phase: 'standing' as const, speed: 6, boardSpeed: 6.2, cue: false, popUp: { outcome: 'none' as const, duration: 0, landingPeak: 0, frontShare: 0 }, resets: 0, balance: 1, wave,
+      leash: { snapped: false, tension: 0, distance: 0, reeling: false }, duck: 0, boardInReach: false, knock: 0, breath: 1, rescues: 0 };
     const value = (rows: { label: string; value: string }[], label: string) => rows.find((row) => row.label === label)?.value;
     const rows = formatPhysicalReadout(mode.config!, { ...status, ride });
     expect(value(rows, 'CREST')).toBe('c 5.1 m/s · need 7.2 m/s');

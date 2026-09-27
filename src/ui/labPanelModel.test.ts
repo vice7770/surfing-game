@@ -1,8 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import { defaultLabSettings } from '../game/waveLab/labSettings';
-import { labSliders, practiceNote, spreadName, stormArrives, windWords } from './labPanelModel';
+import { forecastSurf } from '../wave/surfForecast';
+import { labSliders, practiceNote, spreadName, stormArrives, surfForecastNote, windWords } from './labPanelModel';
+import { formatSurfRange } from './surfHeight';
 
 describe('lab panel model', () => {
+  it('lets the Height slider reach 4 m, and 3 m at the Canyon (wave sizes)', () => {
+    const height = (spot: 'point' | 'canyon') => labSliders({ ...defaultLabSettings().physical, source: 'buoy', spot }, 'metric')
+      .find((slider) => slider.key === 'significantHeight')!.max;
+    expect(height('point')).toBe(4);
+    expect(height('canyon')).toBe(3);
+  });
+
+  it('says under the swell sliders what surf the buoy swell will make, following its height and period (wave sizes)', () => {
+    const physical = { ...defaultLabSettings().physical, source: 'buoy' as const, spot: 'reef' as const, significantHeight: 3, peakPeriod: 14 };
+    const surf = forecastSurf('reef', 3, 14);
+    expect(surfForecastNote(physical, 'metric', 'face')).toBe(`Surf ${formatSurfRange(surf.typical, surf.sets, 'metric', 'face')} (forecast)`);
+    expect(surfForecastNote({ ...physical, peakPeriod: 18 }, 'metric', 'face')).not.toBe(surfForecastNote(physical, 'metric', 'face'));
+    expect(surfForecastNote(physical, 'imperial', 'hawaiian')).toContain('Hawaiian');
+  });
+
   it('names the local wind the way surfers do', () => {
     expect(windWords(0, 'metric')).toBe('Calm');
     expect(windWords(-5, 'metric')).toBe('18 km/h offshore');

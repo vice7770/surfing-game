@@ -1,0 +1,17 @@
+# Outer surf-zone profiles
+
+The measured profiles behind the Beach's and Point's deeper outer beds (the wave-sizes spec, Part B). The inner beds (shoreward of −150 m) are unchanged; the Reef's whole bed belongs to the Teahupo'o Reef rework; the Canyon is untouched.
+
+## The Beach: a double-barred beach
+
+- **Duck, North Carolina** (USACE Field Research Facility), the most studied barred beach: profiles vary from unbarred to triple-barred, most often a narrow inner bar and a broad outer bar. The inner bar sits about 125 m offshore in about 1 m of water; **the outer bar 300–600 m from the shoreline in about 3 m** (as summarised in the transverse-bar studies at Duck, e.g. Konicki & Holman 2000, *Marine Geology* 169:69–101, https://www.sciencedirect.com/science/article/abs/pii/S0025322700000578; the FRF has surveyed to 8 m depth, about 950 m offshore, since 1981).
+- **Bar shape:** Plant, Holman & Freilich (2001, "Role of morphologic feedback in surf zone sandbar response", *J. Geophys. Res.* 106(C1):973–989, https://ris.utwente.nl/ws/files/6856557/Plant01role.pdf) model the Duck profile as a plane slope plus Gaussian bars, with bar length scales fixed at 50 m for inner bars and 150 m for outer bars.
+- **Deeper outer bars elsewhere:** at Egmond aan Zee (Netherlands) the outer bar decays at the seaward limit of the surf zone at 8 m depth (Coastal Wiki, "Nearshore sandbars", https://www.coastalwiki.org/wiki/Nearshore_sandbars; Ruessink & Kroon 1994).
+- **Ranges the game's outer bar must fall in:** crest 300–600 m offshore, crest depth 3–8 m, Gaussian length 50–150 m.
+- **The game's Beach** (`BEACH_OUTER`): a Gaussian outer bar 2 m high centred 450 m offshore on the Beach's Dean profile (A 0.12, now continuing to 30 m instead of stopping at 12 m), so its crest stands 5.0 m deep. **Ruling:** its length is 80 m, not Duck's 150 m: a 150 m Gaussian centred 450 m out still lifts the bed 1 cm at 150 m offshore and changes today's tank; 80 m leaves the inner bed and today's small-day tank as they are (under 2 mm anywhere shoreward of −270 m). The crest is deeper than Duck's 3 m because the game's Dean profile (A 0.12) is steeper than Duck's plane slope; 5 m is inside the measured 3–8 m.
+
+## The Point: a headland's shelf
+
+- **Surf-break bathymetry** is classified by Mead & Black (2001, "Field studies leading to the bathymetric classification of world-class surfing breaks", *J. Coastal Research* SI 29:5–20) into components: the offshore **ramp** that refracts and organises the swell before it breaks on the shallower components (reviewed by Scarfe, Elwany, Mead & Black 2003, "The science of surfing waves and surfing breaks — a review", Scripps Institution of Oceanography, https://escholarship.org/content/qt6h72j1fz/qt6h72j1fz.pdf). Mead & Black relate breaker intensity to the orthogonal seabed gradient (their eq. 1), but their per-site gradients were not accessible here.
+- **The game's Point** keeps its 1:25 headland ramp to 12 m (inner, unchanged); big sets (H1/10 up to ~7.5 m at Hs 4 m, breaking in ~9–10 m of water) break on that ramp. Seaward of 12 m the bed continues at 1:67 (`POINT_OUTER.slope` 0.015) to 30 m, a gentler shelf as open coasts flatten offshore.
+- **Assumption (flagged):** the 1:67 outer shelf is not fitted to a measured point profile (none was found with numbers). It only sets how far out a big day's tank edge lies (13.2 m about 90 m beyond the 12 m contour), not where the sets break, so the size report's gates do not depend on it.

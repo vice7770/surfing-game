@@ -51,4 +51,9 @@ export const LESSON_DIAGRAMS: Record<LessonId, string> = {
   // Paddling ahead of the wave as it comes.
   catch: svg(`<path d="M4 64 C 20 64 30 58 38 46 C 44 38 50 34 56 36" opacity=".45"/>${prone(80, 60)}`
     + '<path d="M72 64 C 70 70 64 72 60 70"/><path d="M84 64 C 82 70 76 72 72 70"/>' + `<path d="M98 50 L112 50"/>${head(112, 50, 0)}`),
+  // The wipeout spec: the board pressed nose-first under the surface as the whitewater rolls over it.
+  duckDive: svg('<path d="M4 38 L116 38" opacity=".45"/>'
+    + '<path d="M6 38 C 10 26 22 22 30 30 C 34 34 36 38 40 38"/><circle cx="18" cy="31" r="2"/><circle cx="26" cy="27" r="1.5"/>'
+    + '<path d="M52 60 L84 52"/><path d="M58 54 L66 44 M66 44 L72 50 L84 48"/><circle cx="62" cy="41" r="3.5"/>'
+    + `<path d="M34 24 C 56 16 78 16 100 24"/>${head(100, 24, 20)}`),
 };
