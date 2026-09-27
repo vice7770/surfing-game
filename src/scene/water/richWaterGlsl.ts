@@ -19,6 +19,10 @@ export const PLUME_DENSITY = 15;
 export const richFragmentPars = /* glsl */ `
 vec2 waterSurfaceSlope;
 float waterRippleVariance = 0.0;
+`;
+
+/** The air in the water, for the tank's Rich fragment (G9): the vertex shader writes these (`richAerationVertexPars`). */
+export const richAerationFragmentPars = /* glsl */ `
 varying float vWaterAir;
 varying float vWaterPlumeDepth;
 const float PLUME_DENSITY = ${PLUME_DENSITY.toFixed(3)};
