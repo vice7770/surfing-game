@@ -29,10 +29,12 @@ The skin, eye, eyebrow, eyelash, hair and proxy assets come from the [MakeHuman 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `surfer1` | woman | young_african_female | braid01 | eyebrow010 / eyelashes01 | female1605 | 1.65 m | 1.0 MB |
 | `surfer2` | woman | young_caucasian_female | ponytail01 | eyebrow001 / eyelashes02 | female1605 | 1.66 m | 1.6 MB |
-| `surfer3` | man | young_african_male | short02 | eyebrow002 / eyelashes01 | male1591 | 1.74 m | 1.2 MB |
+| `surfer3` | man | young_african_male | short01 | eyebrow002 / eyelashes01 | male1591 | 1.73 m | 1.5 MB |
 | `surfer4` | man | young_asian_male | short04 | eyebrow006 / eyelashes01 | male1591 | 1.72 m | 1.2 MB |
 
 The eyes are MakeHuman's `high-poly` eyes with their default brown material.
+
+The men also carry MPFB shape targets on top of their macros (the recipe's `targets`, applied before the rig is fitted): a V-shaped torso, a little more shoulder width, lats, chest, shoulder and arm muscle, a thicker neck and a squarer jaw, so they read as surfers rather than slim boys.
 
 ## How to rebuild
 
