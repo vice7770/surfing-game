@@ -578,10 +578,8 @@ export class AttachedRider {
   /** The latest `follow`'s rate, 1/s (no allocation per substep). */
   private followRate = 0;
   /** The duck-dive postures, and the centre of mass each moves by (press from prone, knee from press), board frame. */
-  private readonly duckPress: Float64Array;
-  private readonly duckKnee: Float64Array;
-  private readonly duckSupport: SupportRegion;
-  private readonly duckShift = { press: new Vector3(), knee: new Vector3() };
+  /** The duck-dive postures for each stance (the stance changes between rides), with the support and each stage's centre-of-mass move. */
+  private readonly ducks: Record<StanceName, { press: Float64Array; knee: Float64Array; support: SupportRegion; shiftPress: Vector3; shiftKnee: Vector3 }>;
   /** Standing, weight along the board: −1 (back, on the tail) to 1 (forward). */
   trim = 0;
   /** Standing, how deep the crouch: 0 (riding stance) to 1 (deepest). */
@@ -762,16 +760,19 @@ export class AttachedRider {
     this.parts = pose.parts.slice();
     this.fromParts = pose.parts.slice();
     this.support = pose.support;
-    const press = duckPose(shape, 'duckPress', this.stance);
-    const knee = duckPose(shape, 'duckKnee', this.stance);
-    this.duckPress = press.parts;
-    this.duckKnee = knee.parts;
-    this.duckSupport = press.support;
-    const prone = postureCenter(riderPose(shape, 'prone', this.stance).parts, this.partMasses);
-    const pressed = postureCenter(press.parts, this.partMasses);
-    const kneeling = postureCenter(knee.parts, this.partMasses);
-    this.duckShift.press.set(pressed.x - prone.x, pressed.y - prone.y, pressed.z - prone.z);
-    this.duckShift.knee.set(kneeling.x - pressed.x, kneeling.y - pressed.y, kneeling.z - pressed.z);
+    const ducks = (stance: StanceName) => {
+      const press = duckPose(shape, 'duckPress', stance);
+      const knee = duckPose(shape, 'duckKnee', stance);
+      const prone = postureCenter(riderPose(shape, 'prone', stance).parts, this.partMasses);
+      const pressed = postureCenter(press.parts, this.partMasses);
+      const kneeling = postureCenter(knee.parts, this.partMasses);
+      return {
+        press: press.parts, knee: knee.parts, support: press.support,
+        shiftPress: new Vector3(pressed.x - prone.x, pressed.y - prone.y, pressed.z - prone.z),
+        shiftKnee: new Vector3(kneeling.x - pressed.x, kneeling.y - pressed.y, kneeling.z - pressed.z),
+      };
+    };
+    this.ducks = { regular: ducks('regular'), goofy: ducks('goofy') };
   }
 
   /** +1 regular (left foot forward), −1 goofy. */
@@ -2053,11 +2054,12 @@ export class AttachedRider {
     const { press, knee } = this.duck;
     if (press > 0 || knee > 0) {
       // Ducking: from prone toward the press, then from the press toward the knee; the centre of mass moves with them.
+      const duck = this.ducks[this.stance];
       for (let k = 0; k < this.parts.length; k += 1) {
-        this.parts[k] += press * (this.duckPress[k] - pose.parts[k]) + knee * (this.duckKnee[k] - this.duckPress[k]);
+        this.parts[k] += press * (duck.press[k] - pose.parts[k]) + knee * (duck.knee[k] - duck.press[k]);
       }
-      this.postureRate.addScaledVector(this.duckShift.press, this.pressRate).addScaledVector(this.duckShift.knee, this.kneeRate);
-      if (press > DUCK_BUSY) this.support = this.duckSupport;
+      this.postureRate.addScaledVector(duck.shiftPress, this.pressRate).addScaledVector(duck.shiftKnee, this.kneeRate);
+      if (press > DUCK_BUSY) this.support = duck.support;
     }
     this.upright = pose.upright;
     this.base.set(pose.base.x, pose.base.y, pose.base.z);
