@@ -62,6 +62,7 @@ Surf in the game is as big as the swell says, and the game says how big it is th
   - a deeper tank's relaxation zone starts where the take-off transect first reaches the edge depth, is at least 60 m and 0.75 of the edge wavelength long, and the bed blends over the 80 m inside it, as today;
   - the fine zone starts 40 m seaward of where the sets break (the empirical H1/10 face, 1.27 × Komar–Gaughan, over the breaker index 0.78), and never shoreward of −150;
   - a deeper tank's boundary sea uses the stage 2 solver's own (Madsen–Sørensen) wave numbers, so the zone forces the waves the solver carries; today's tanks keep theirs.
+- **The tank's sides are fed** (the user's decision, 2026-09-27, after Part B's debugging). The window's open side edges let a directionally spread sea's energy drift out, and nothing enters from the neighbouring coast: up to a third of the wave height was lost within ~150 m (the same sea on a straight slope without breaking: 2.03 m with open sides against 2.78 m with periodic ones, from 3.01 m). Side strips now relax toward the incoming sea, shoaled and refracted over each column's bed (the warm start's field), from the offshore zone to outside the surf zone. It applies to **every tank**, so today's seas grow too, Practice's and the Canyon's included; the riding reports are rerun and Surf School's recorded lesson waves re-chosen. It runs on the CPU and on the GPU.
 - **Performance** is measured, never a gate (M1 Air may be slow; the M4 Pro is the target).
 - **The take-off follows the measured break** (Q11): at session start and at every swell change, the take-off (the camera's focus, the lineup) is placed where the size report measured the sets break for that spot and swell, through the calibrated model. The full lineup (sitting, moving along the break) is P11.
 
@@ -70,8 +71,7 @@ Surf in the game is as big as the swell says, and the game says how big it is th
 - **Size report** (Q12), per spot, Hs 1, 2, 3, 4 m × Tp 10, 14, 18 s, 4 minutes of sea each: measured H1/3 and H1/10 faces, the break's position, and the empirical breaker height from the sourced formulas.
   - **Big days** (Hs ≥ 2 m): measured H1/3 within ±20 % of the empirical breaker height at the Beach and Point. **Settled in the spec:** the reference is Komar & Gaughan's H_b = 0.39 g^0.2 (T H0²)^0.4; Caldwell & Aucan's (2007) shoaling-and-refraction H1/10 for Hawaii's outer reefs is reported beside every spot as the high-refraction bound, not gated (it gives ~10 m sets at Hs 4 m, the Backlog's big-wave surf).
   - **The Reef** is reported, not gated (its bed is about to change; the Reef rework checks its own sizes).
-  - **Small days:** Practice, and every Hs ≤ 1.5 m sea entering today's tank, within ±5 % of today's H1/3 (the same edge sea; Part A records today's).
-  - **Canyon:** unchanged (the same faces and seas, bit for bit where its sea is built).
+  - **Small days and the Canyon:** measured and reported against Komar–Gaughan, not held to today's sizes: the side feed deliberately changes them (the user's decision above). Their input seas (Practice's edge groundswell, the Canyon's edge swell and tank) stay as specified.
   - **Take-off:** within 15 m across shore of the sets' measured median break.
 - **Size sheet** (Q13): an MPFB2 surfer standing on a set wave's face with its face height marked, shot from the channel, the beach and in the water, in Classic and Rich. The camera changes only if the sheet shows the view shrinks waves (lens, height, distance). The user's playtest judges.
 

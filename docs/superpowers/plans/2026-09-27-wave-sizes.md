@@ -1769,6 +1769,72 @@ git commit -m "feat: gate the surf sizes against Komar-Gaughan and calibrate the
 
 ---
 
+# Part B′ · Feeding the tank's sides (added 2026-09-27)
+
+Part B's debugging found that the window's open side edges drain a directionally spread sea (spec, "The tank's sides are fed"). These tasks run before Task 15, whose gates then change: the small-day and Canyon "unchanged" gates become reported measurements (spec, Checks).
+
+### Task 18 (B8): The side feed on the CPU
+
+**Files:**
+- Create: `src/wave/SideFeed.ts`
+- Modify: `src/wave/warmStart.ts` (share the per-column transform), `src/wave/ShallowWaterSolver.ts` (`RelaxationZone.afterShift?`), `src/wave/SurfZoneSimulation.ts` (add the feed; its time offset follows a handover)
+- Test: `src/wave/SideFeed.test.ts`, `src/wave/SurfZoneSimulation.test.ts`
+
+**Interfaces:**
+- Produces:
+  - `SIDE_FEED = { width: 30, breakingShare: 0.35, fade: 40 }`;
+  - `class SideFeed implements RelaxationZone { constructor(solver: ShallowWaterSolver, sea: SeaState, options: { referenceZ: number; timeOffset: number }); readonly weights: Float64Array; timeOffset: number; target(x, z, t, out, index): void; afterShift(): void }`;
+  - `transformedSea(solver, sea, referenceZ, ix, visit)`: the warm start's shoaled and refracted components per cell of a column, shared by both;
+  - `RelaxationZone.afterShift?(): void`, called by `shiftAlongShore` after the arrays move.
+- The feed's weights:
+  - only in the outer `width` m of each side, ramped like the offshore zone (0 inside, 1 at the edge);
+  - only from the offshore zone's inner edge shoreward, while the column's shoaled Hs stays under `breakingShare` × depth, fading over the last `fade` m.
+- Its target is the warm start's field at that cell and time. It is rebuilt after every slide.
+
+- [ ] **Step 1: Write the failing tests** (`SideFeed.test.ts`):
+  1. weights: zero in the middle of the window, positive in the outer 30 m of each side, largest at the edge, zero seaward of the zone's inner edge and shoreward of where the shoaled Hs passes 0.35 h;
+  2. target: equals the warm start's surface and flux at a strip cell and time (build a second solver warm-started at that sea time and compare the cell; within 1e-9);
+  3. after `shiftAlongShore(10)` the strips are back at the edges, and the target at the new edge cell matches a fresh feed's;
+  4. **the fix:** the game's directional sea (Hs 3 m, 14 s, spread 12, 10°) on a 160 m window over a flat 9.9 m bed then 1:100, no breaking, 2 m cells, 150 s. Hm0 along the middle 80 m at 150 m past the zone is **≥ 0.9** of the input sea's over the same window with the feed, and **< 0.8** without it.
+- [ ] **Step 2: Run to verify they fail** (`npx vitest run src/wave/SideFeed.test.ts` → module missing).
+- [ ] **Step 3: Implement** `transformedSea` (moved out of `warmStart`, which then uses it unchanged: its existing tests stay green), `SideFeed`, the `afterShift` hook, and in `SurfZoneSimulation` add the feed after the offshore boundary (`new SideFeed(this.solver, this.sea, { referenceZ: tank.zoneInner, timeOffset: this.seaTimeOffset })`), setting its `timeOffset` in `importState` beside the boundary's.
+- [ ] **Step 4: Run the tests and the wave suite** (`npx vitest run src/wave src/game src/physics src/net`). Existing tests pinning exact seas may move: each change is ledgered (the spec changes today's seas).
+- [ ] **Step 5: Commit** (`feat: feed the tank's sides with the incoming sea`).
+
+### Task 19 (B9): The side feed on the GPU
+
+**Files:**
+- Modify: `src/wave/gpu/GpuBoussinesq.ts` (accept the offshore boundary plus one `SideFeed`; pack the feed's per-cell components; rebuild after a slide), `src/wave/gpu/boussinesqWgsl.ts` (a `relaxSides` kernel after `relax`)
+- Test: `src/wave/gpu/GpuBoussinesq.test.ts`; the browser parity page `?gpuCheck`
+
+**Interfaces:**
+- Produces:
+  - `packSideFeed(feed: SideFeed): Float32Array` (per strip cell per component: amplitude, static phase, x and z flux factors);
+  - `packSideTimes(feed: SideFeed, start: number, out?)` (per component: −ω·sea time folded to [0, 2π), and ω);
+  - the `relaxSides` kernel: value = A·cos(Φ₀ + folded − ω τ).
+- `deviceStepRefusal` accepts `[SeaStateBoundary, SideFeed]`.
+
+- [ ] **Step 1: Failing tests:**
+  - the packed feed and times reproduce `SideFeed.target` through the device formula at three strip cells and two times (as the zone's folding test does), within 1e-4 of the amplitude;
+  - `deviceStepRefusal` accepts the pair and still refuses anything else.
+- [ ] **Step 2: Run to verify they fail.**
+- [ ] **Step 3: Implement.** Pack the feed's cells in a buffer. The kernel runs over the strip cells only (their indices packed too), blending h, qx and qz like `relax`.
+- [ ] **Step 4:** unit tests green; then the browser parity page on this machine (`?gpuCheck`, the pane shown) for the Point and the Beach: the GPU and CPU surfaces agree as closely as before the feed (record the numbers).
+- [ ] **Step 5: Commit** (`feat: feed the tank's sides on the GPU too`).
+
+### Task 20 (B10): Today's seas re-checked
+
+**Files:**
+- Modify: `src/game/school/lessonWaves.ts` (re-chosen by `scripts/lesson-wave.ts`), `docs/research/*` reports rerun, `src/wave/sizeReport.ts` (gates per the spec), `ROADMAP.md`
+- Test: the reports' own checks; `src/game/school` tests
+
+- [ ] **Step 1:** `sizeGates`: drop the small-day and Canyon "unchanged" gates (spec, Checks); their test cases change to "reported, not gated". RED→GREEN on `src/wave/sizeReport.test.ts`.
+- [ ] **Step 2:** rerun `scripts/lesson-wave.ts` for the Canyon lessons and update `lessonWaves.ts` if the chosen waves no longer qualify; `npx vitest run src/game/school` green.
+- [ ] **Step 3:** rerun the catch and ride reports (`npm run report:catch`, `npm run report:ride`) on Practice and the Canyon; record before/after in the ROADMAP; any riding regression beyond the reports' own thresholds stops and goes to the user.
+- [ ] **Step 4: Commit** (`chore: re-check today's seas with the side feed`).
+
+---
+
 # Part C · The size sheet and the camera
 
 ### Task 16 (C1): The size sheet
