@@ -57,6 +57,12 @@ describe('pocket reflex', () => {
     expect(withPocketReflex({ ...ride, steer: 0.4 }, far, 'standing').trim).toBe(-POCKET_TRIM);
   });
 
+  // The stances spec: while compressing the weight is the stance's (over the front foot).
+  it('stands aside while the rider compresses', () => {
+    const compressing = { ...ride, compress: 1 };
+    expect(withPocketReflex(compressing, at(20), 'standing')).toBe(compressing);
+  });
+
   it('is on in Practice by default, always, or never', () => {
     expect(showsPocketReflex('practice', 'practice')).toBe(true);
     expect(showsPocketReflex('practice', 'medium')).toBe(false);

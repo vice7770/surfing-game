@@ -293,6 +293,12 @@ const STANDING_HOLD_SHARE = 0.5;
 /** Trim: the upper body shifts fore or aft by up to this much, m, moving the load along the board (provisional). */
 const TRIM_SHIFT = 0.25;
 /**
+ * Compress (the stances spec), the bottom turn's stance: the crouch's full depth
+ * with the weight over the front foot, COMPRESS_WEIGHT of the trim's range forward
+ * (de Sousa 2022: the trunk over the front foot while the knees are flexed).
+ */
+const COMPRESS_WEIGHT = 0.5;
+/**
  * Crouch: the leg shortens by up to CROUCH_DEPTH, m, to about two thirds of the
  * standing height (0.6-0.7 in the survey, for tube clearance), at most
  * MAX_LEG_SPEED, m/s (a countermovement jump's take-off speed, so a jump stays
@@ -499,6 +505,8 @@ export class AttachedRider {
   trim = 0;
   /** Standing, how deep the crouch: 0 (riding stance) to 1 (deepest). */
   crouch = 0;
+  /** Standing, Compress: 0 (none) to 1 (full depth, weight forward), taken alone or over the crouch. */
+  compress = 0;
   /** Standing, the wave-side hand reaches for the water. */
   hand = false;
   /** Standing, the requested weight shift: −1 (toward board −x, its right) to 1 (toward +x, its left). */
@@ -1265,7 +1273,7 @@ export class AttachedRider {
     // The crouch: a shorter leg, reached no faster than the legs can move, and softer.
     // Critically damped, and going down no harder than keeps the feet loaded: a sudden drop of the leg would
     // have to pull the body down, and unloaded feet lose their grip.
-    const rest = -Math.max(0, Math.min(1, this.crouch)) * CROUCH_DEPTH;
+    const rest = -Math.max(0, Math.min(1, Math.max(this.crouch, this.compress))) * CROUCH_DEPTH;
     const down = rest < this.leg.rest;
     const accelerationLimit = down ? CROUCH_ACCELERATION : EXTEND_ACCELERATION;
     const speedLimit = down ? CROUCH_SPEED : MAX_LEG_SPEED;
@@ -1919,7 +1927,8 @@ export class AttachedRider {
     }
     // Carried upright, the steering lean (with the heading hold and the hand); banked, steering is the bank. The trim, standing only.
     const lean = this.upright && !this.banking ? Math.max(-1, Math.min(1, this.steer + this.standingHold + HAND_BEND * this.handSide)) * MAX_LEAN : 0;
-    const trim = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
+    const compress = Math.max(0, Math.min(1, this.compress));
+    const trim = this.upright ? Math.max(-1, Math.min(1, this.trim + COMPRESS_WEIGHT * compress)) * TRIM_SHIFT : 0;
     this.leanAxis('x', lean, h);
     this.leanAxis('z', trim, h);
   }

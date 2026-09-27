@@ -672,6 +672,55 @@ describe('lean, trim, crouch and heading hold', () => {
     expect((rider.leg.height + rider.leg.extension) / standing).toBeGreaterThan(0.97);
   });
 
+  // Compress (the stances spec): the bottom turn's stance, full crouch depth with the weight over the front foot
+  // (de Sousa 2022: knees and hips at or under 90°, the trunk over the front foot while flexed).
+  describe('Compress', () => {
+    const height = (rider: AttachedRider) => rider.leg.height + rider.leg.extension;
+    const settled = () => {
+      const ride = acrossFace(0, 6);
+      run(ride.board, ride.water, 1);
+      return ride;
+    };
+
+    it('compresses to the full crouch depth, alone or over the crouch, and releases back to the crouch', () => {
+      const full = settled();
+      full.rider.crouch = 1;
+      run(full.board, full.water, 1);
+      const alone = settled();
+      alone.rider.compress = 1;
+      run(alone.board, alone.water, 1);
+      expect(height(alone.rider)).toBeCloseTo(height(full.rider), 1);
+      const over = settled();
+      over.rider.crouch = 0.6;
+      run(over.board, over.water, 1);
+      const crouched = height(over.rider);
+      over.rider.compress = 1;
+      run(over.board, over.water, 1);
+      expect(height(over.rider)).toBeLessThan(crouched - 0.08);
+      over.rider.compress = 0;
+      run(over.board, over.water, 1);
+      expect(height(over.rider)).toBeCloseTo(crouched, 1);
+      expect(over.rider.attached).toBe(true);
+    });
+
+    it('puts the weight over the front foot', () => {
+      const { board, rider, water } = settled();
+      const before = rider.contact.centreOfPressure.z;
+      rider.compress = 1;
+      run(board, water, 0.8);
+      expect(rider.contact.centreOfPressure.z).toBeGreaterThan(before + 0.05);
+    });
+
+    it('lies down straight from Compress', () => {
+      const { board, rider, water } = settled();
+      rider.compress = 1;
+      run(board, water, 0.6);
+      expect(rider.lieDown(board)).toBe(true);
+      run(board, water, 1.5);
+      expect(rider.phase).toBe('prone');
+    });
+  });
+
   // A bottom turn: Forsyth et al. 2024's accomplished surfers turn about 100° in a second at 1.9 rad/s,
   // on a rail rolled 42°. Held upright in the world, the body could not bank: the push the turn needs landed
   // outboard and rolled the board back to about 9° (13° in 1.2 s). Banked on its ankles it carves (the turn
