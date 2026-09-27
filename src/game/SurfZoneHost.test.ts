@@ -30,6 +30,18 @@ describe('LocalSurfZone', () => {
     expect(Array.from(host.snapshot.surface)).toEqual(first);
   });
 
+  it('measures the surf afresh after a restore (wave sizes)', async () => {
+    const host = new LocalSurfZone(config);
+    await host.ready;
+    const recorded = encodeSurfZoneState(host.runner.simulation.exportState());
+    const { surf, solver } = host.runner.simulation;
+    for (let k = 1; k <= 4; k += 1) surf.add({ time: solver.time + 9 * k, x: 0, z: -80, face: 1.5 });
+    host.restore(recorded.slice());
+    expect(host.runner.simulation.surf.waves()).toHaveLength(0);
+    host.advance(1);
+    expect(host.snapshot.status.surf).toBeUndefined();
+  });
+
   it('asks the device to upload the breaking state again after a sea is taken over', async () => {
     const host = new LocalSurfZone(config);
     await host.ready;

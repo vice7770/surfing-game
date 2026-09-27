@@ -371,6 +371,8 @@ export class SurfZoneSimulation {
       target.set(values);
     }
     solver.time = state.solverTime;
+    // The surf is measured afresh from here (the wave-sizes spec): its waves belong to the sea that was replaced.
+    this.surf.clear();
     this.seaTimeOffset = state.seaTimeOffset;
     this.boundary.timeOffset = state.seaTimeOffset;
     this.lipLaunches = state.counters.lipLaunches;
