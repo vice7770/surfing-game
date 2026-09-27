@@ -2,7 +2,7 @@ import { el, icon } from './dom';
 import { ICONS, type IconName } from './icons';
 import { t, type StringKey } from './strings';
 
-export type MenuTileId = 'surf' | 'waveLab' | 'multiplayer' | 'logbook' | 'settings';
+export type MenuTileId = 'surf' | 'school' | 'waveLab' | 'multiplayer' | 'logbook' | 'settings';
 
 export interface MenuTile {
   id: MenuTileId;
@@ -12,10 +12,11 @@ export interface MenuTile {
   badge?: StringKey;
 }
 
-/** The main menu's tiles (plan P8); the Wave Lab is for everyone (spec L1). */
-export function menuTiles(): MenuTile[] {
+/** The main menu's tiles (plan P8): the Surf School badged "Start here" until its first lesson is passed (spec L2), and the Wave Lab (spec L1). */
+export function menuTiles(schoolStarted: boolean): MenuTile[] {
   return [
     { id: 'surf', label: 'menu.surf', icon: 'surf', disabled: false },
+    { id: 'school', label: 'menu.school', icon: 'school', disabled: false, ...(schoolStarted ? {} : { badge: 'menu.startHere' as const }) },
     { id: 'waveLab', label: 'menu.waveLab', icon: 'waveLab', disabled: false },
     { id: 'multiplayer', label: 'menu.multiplayer', icon: 'multiplayer', disabled: false },
     { id: 'logbook', label: 'menu.logbook', icon: 'logbook', disabled: false },
@@ -67,9 +68,9 @@ export function refreshSoundToggles(root: ParentNode, muted: boolean): void {
 
 export function createMainMenu(
   handlers: MainMenuHandlers,
-  options: { version: string; sound: { muted: boolean; toggle: () => void } },
+  options: { version: string; schoolStarted: boolean; sound: { muted: boolean; toggle: () => void } },
 ): HTMLElement {
-  const tiles = menuTiles().map((tile) => el('button', {
+  const tiles = menuTiles(options.schoolStarted).map((tile) => el('button', {
     class: tile.id === 'surf' ? 'tile tile-primary' : 'tile',
     attrs: { type: 'button', ...(tile.disabled ? { 'aria-disabled': 'true' } : {}) },
     dataset: tile.id === 'surf' ? { nav: '', navDefault: '' } : { nav: '' },

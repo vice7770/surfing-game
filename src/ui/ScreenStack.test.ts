@@ -27,6 +27,16 @@ describe('ScreenStack', () => {
     expect(stack.base).toBe('stage');
   });
 
+  // L2: a lesson is a scene; the School's list is a panel over the menu.
+  it('keeps a lesson under its pause menu, and the menu under the School', () => {
+    const stack = new ScreenStack('menu');
+    stack.push('school');
+    expect(stack.base).toBe('menu');
+    stack.push('lesson');
+    stack.push('pause');
+    expect(stack.base).toBe('lesson');
+  });
+
   it('starts over from a new root', () => {
     const stack = new ScreenStack('menu');
     stack.push('surf');

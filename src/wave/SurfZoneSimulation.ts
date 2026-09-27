@@ -223,6 +223,8 @@ export class SurfZoneSimulation {
   /** Per-cell velocity scratch for `writeUniformFlow`. */
   private velocityX?: Float64Array;
   private velocityZ?: Float64Array;
+  /** Each cell's void fraction, for `writeUniformAeration`. */
+  private voidFractions?: Float64Array;
 
   /** Solver seconds of spin-up that settle the warm-started sea's nonlinear shape. */
   private readonly spinUpSeconds: number;
@@ -369,6 +371,7 @@ export class SurfZoneSimulation {
     this.lipJets = state.counters.lipJets;
     this.lipRollers = state.counters.lipRollers;
     this.lip.importState(state.lip);
+    if (solver instanceof BoussinesqSolver) solver.invalidateDeviceLayout();
   }
 
   get seaTime(): number {
@@ -656,24 +659,24 @@ export class SurfZoneSimulation {
   /** G9: resample the aeration to interleaved (void fraction, plume depth, m) per render node; 0 on dry nodes. */
   writeUniformAeration(data: Float32Array, grid: RenderGrid): void {
     const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
-    const { nx } = this.solver;
+    const { nx, h } = this.solver;
     const { depth } = this.aeration;
+    if (!this.voidFractions || this.voidFractions.length !== h.length) this.voidFractions = new Float64Array(h.length);
+    const fraction = this.voidFractions;
+    for (let i = 0; i < h.length; i += 1) fraction[i] = this.aeration.voidFraction(i);
     for (let r = 0; r < grid.nz; r += 1) {
       const row = rows[r] * nx;
       const tz = rowWeights[r];
       for (let c = 0; c < grid.nx; c += 1) {
         const i = row + columns[c];
         const tx = columnWeights[c];
-        const w = [(1 - tx) * (1 - tz), tx * (1 - tz), (1 - tx) * tz, tx * tz];
-        const cells = [i, i + 1, i + nx, i + nx + 1];
-        let voidFraction = 0;
-        let plume = 0;
-        for (let k = 0; k < 4; k += 1) {
-          voidFraction += w[k] * this.aeration.voidFraction(cells[k]);
-          plume += w[k] * depth[cells[k]];
-        }
-        data[(r * grid.nx + c) * 2] = voidFraction;
-        data[(r * grid.nx + c) * 2 + 1] = plume;
+        const w00 = (1 - tx) * (1 - tz);
+        const w10 = tx * (1 - tz);
+        const w01 = (1 - tx) * tz;
+        const w11 = tx * tz;
+        const o = (r * grid.nx + c) * 2;
+        data[o] = w00 * fraction[i] + w10 * fraction[i + 1] + w01 * fraction[i + nx] + w11 * fraction[i + nx + 1];
+        data[o + 1] = w00 * depth[i] + w10 * depth[i + 1] + w01 * depth[i + nx] + w11 * depth[i + nx + 1];
       }
     }
   }

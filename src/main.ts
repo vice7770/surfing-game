@@ -17,7 +17,8 @@ import {
 import { Controls } from './game/Controls';
 import { frameDue } from './game/frameLimit';
 import { resolveGraphics, type ResolvedGraphics } from './game/Graphics';
-import { SettingsStore, defaultSettings } from './game/Settings';
+import { schoolPocketReflex, showsPocketReflex } from './game/pocketReflex';
+import { SettingsStore, defaultSettings, type GameplaySettings } from './game/Settings';
 import { SURFER_BODIES, type SurferSettings } from './game/SurferChoice';
 import { DEV_TOOLS, devFlag, devParam } from './devTools';
 import { simulatedSeconds } from './game/timeScale';
@@ -31,7 +32,7 @@ import { RemoteSurferViews } from './scene/RemoteSurferViews';
 import { NameTags, type TagEntry } from './ui/NameTags';
 import { t } from './ui/strings';
 import { LocalSurfZone } from './game/SurfZoneHost';
-import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, type SurfConditions, type TimeOfDay } from './game/SurfConditions';
+import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, type SurfConditions, type SwellSize, type TimeOfDay } from './game/SurfConditions';
 import type { WaterLook } from './scene/water/waterLook';
 import type { RideView } from './scene/SpectatorCamera';
 import { RIDER_SNAPSHOT, SURF_ZONE_STEP, type SurfZoneStatus } from './wave/SurfZoneRunner';
@@ -50,10 +51,14 @@ import { FlatSurfaceSource } from './scene/FlatSurfaceSource';
 import type { ReadoutRow } from './wave/SwellReadout';
 import { Autopilot, autopilotView } from './dev/Autopilot';
 import type { SpotName } from './wave/Bathymetry';
-import { App, type LabHost } from './ui/App';
+import { App, type LabHost, type SchoolHost } from './ui/App';
 import { WaveLab } from './game/waveLab/WaveLab';
 import { FlyInput } from './game/waveLab/FlyInput';
 import { labWater, type WaveLabSettings } from './game/waveLab/labSettings';
+import { SchoolSession } from './game/school/SchoolSession';
+import { lessonConfig } from './game/school/lessonWave';
+import type { FlowFrame } from './game/school/lessonFlow';
+import type { RiderPlacement } from './physics/RideSession';
 import './style.css';
 import './ui/ui.css';
 
@@ -87,6 +92,12 @@ function surfZoneFactory(rider: boolean): SurfZoneHostFactory {
  * outside the break line), and the worker may queue enough steps to catch up with the
  * room's clock.
  */
+/** Surf School (spec L2): a surf zone with the player's rider, starting from a recorded sea. */
+function recordedSurfZoneFactory(sea: Uint8Array): SurfZoneHostFactory {
+  return inPage
+    ? (config) => new LocalSurfZone(config, { rider: true }, sea)
+    : (config) => new WorkerSurfZone(config, undefined, { rider: true }, { sea });
+}
 function onlineSurfZoneFactory(spawn: { spawnAlong: number; spawnOut: number }, sea?: Uint8Array): SurfZoneHostFactory {
   return inPage
     ? (config) => new LocalSurfZone(config, { rider: true, ...spawn }, sea)
@@ -134,6 +145,13 @@ class SurfGame {
   private readonly waveLab = new WaveLab();
   private readonly labInput: FlyInput;
   readonly lab: LabHost;
+  /** The Surf School (spec L2): its recorded seas, whether a lesson sea runs now, its slow motion, and the sea time last read. */
+  private readonly schoolSession = new SchoolSession();
+  private schoolActive = false;
+  private schoolFreePractice = false;
+  private schoolSlow = false;
+  private schoolSeaTime = Number.NaN;
+  readonly school: SchoolHost;
   /** `?demo`'s autopilot, and how long it has been done with its ride, s. */
   private readonly demoPilot = demoMode === null ? undefined : new Autopilot({ style: demoMode === 'line' ? 'line' : 'turns' });
   private demoDone = 0;
@@ -151,7 +169,8 @@ class SurfGame {
   private needsRender = true;
   /** Slow motion: simulated seconds per real second (the Wave Lab's clock; 1 everywhere else). */
   private get timeScale(): number {
-    return this.waveLab.active ? this.waveLab.clock.scale : 1;
+    if (this.waveLab.active) return this.waveLab.clock.scale;
+    return this.schoolActive && this.schoolSlow ? 0.5 : 1;
   }
 
   /** Paused by the menu: nothing steps; the scene stays drawn. */
@@ -170,6 +189,9 @@ class SurfGame {
     state: RemoteState; anchors: Vector3[]; rebuilding: boolean;
   };
   private showNameTags = true;
+  /** Settings: the pocket reflex (the riding-the-wave spec), and the swell of the Surf session under way. */
+  private pocketReflex: GameplaySettings['pocketReflex'] = 'practice';
+  private surfSwell: SwellSize = 'practice';
   /** The sun the environment shows now, whoever set it. */
   private shownSun = { height: START_SUN.sunHeight, direction: START_SUN.sunDirection };
   /** The graphics settings in force (plan P8); until applied, today's defaults. */
@@ -217,13 +239,13 @@ class SurfGame {
     this.water.mesh.material.envMapIntensity = 0.28;
     this.water.mesh.visible = false;
     this.scene.add(this.water.mesh);
-    this.environment.showCoastline(false);
     this.physicalMode = new PhysicalMode(this.scene);
     this.physicalMode.farField.mesh.material.envMapIntensity = 0.28;
     this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
     this.physicalMode.seabed.useCaustics(this.water.causticUniforms, this.water.causticSource as never);
     this.physicalMode.spray.useWater(this.water.causticSource);
     this.lab = this.labHost();
+    this.school = this.schoolHost();
     this.shadows = new ShadowRig(this.renderer, this.sunlight, this.scene);
     this.shadowSurfaces = [this.water.mesh, this.physicalMode.seabed.mesh, this.physicalMode.farField.mesh];
     this.shadows.setLevel(parseShadowLevel(window.location.search), { surfaces: this.shadowSurfaces });
@@ -324,6 +346,8 @@ class SurfGame {
       sun?: { sunHeight: number; sunDirection: number }; rider?: boolean; factory?: SurfZoneHostFactory; overrides?: Partial<SurfZoneConfig>;
       /** The Wave Lab's sea (spec L1); any other scene ends the lab. */
       lab?: boolean;
+      /** A Surf School lesson's sea (spec L2); any other scene ends the school. */
+      school?: boolean;
     } = {},
   ): Promise<boolean> {
     const factory = options.factory ?? surfZoneFactory(options.rider ?? true);
@@ -334,12 +358,13 @@ class SurfGame {
     this.freezeIn = undefined;
     if (!options.lab) this.leaveLab();
     this.waveLab.active = options.lab === true;
+    if (!options.school) this.leaveSchool();
+    this.schoolActive = options.school === true;
     this.seed = seed;
     this.physicalSettings = { ...settings };
     this.water.mesh.visible = true;
     this.physicalMode.setVisible(true);
     this.physicalMode.camera.setView(this.physicalMode.homeView);
-    this.environment.showCoastline(false);
     this.environment.group.scale.setScalar(5);
     this.environment.group.position.set(this.physicalMode.focus.x, 0, this.physicalMode.focus.z);
     const { sun } = options;
@@ -364,6 +389,7 @@ class SurfGame {
   /** A Surf session (plan P8): the physical surf zone with the player's rider, in the chosen conditions and camera. */
   async startSurf(spot: SpotName, conditions: SurfConditions, seed: number, camera: RideView | 'overview'): Promise<boolean> {
     this.leaveOnline();
+    this.surfSwell = conditions.swell;
     this.physicalMode.idleView = 'overview';
     this.physicalMode.defaultView = camera;
     const water = { stage: this.graphics?.stage ?? 2, compute: this.graphics?.compute ?? 'auto' } as const;
@@ -447,6 +473,11 @@ class SurfGame {
   /** Settings: names over the other surfers online. */
   setNameTags(show: boolean): void {
     this.showNameTags = show;
+  }
+
+  /** Settings: the pocket reflex, on the Practice swell only, always, or never. */
+  setPocketReflex(setting: GameplaySettings['pocketReflex']): void {
+    this.pocketReflex = setting;
   }
 
   setPaused(paused: boolean): void {
@@ -613,7 +644,9 @@ class SurfGame {
     // keys trim, crouch and reach for the water (P9); their ramps run on simulated time, like the physics.
     const standing = this.physicalMode.host?.snapshot.status.ride?.phase === 'standing';
     const request = controls.rideRequest(simElapsed, standing);
-    this.physicalMode.advance(steps, { ...request, steer: this.physicalMode.screenSteer(request.steer) });
+    const pocketReflex = this.schoolActive ? schoolPocketReflex(this.pocketReflex, this.schoolFreePractice)
+      : showsPocketReflex(this.pocketReflex, this.surfSwell);
+    this.physicalMode.advance(steps, { ...request, steer: this.physicalMode.screenSteer(request.steer), pocketReflex });
     if (request.popUp) controls.consumeGetUp();
     this.physicalRender(simElapsed);
   }
@@ -683,6 +716,86 @@ class SurfGame {
     this.waveLab.begin(this.physicalMode);
     this.applyWaterLook(settings.waterLook);
     return true;
+  }
+
+  /** The school as the app drives it: lesson seas from their recordings, restarts on the same wave, slow motion and the attempt's frames. */
+  private schoolHost(): SchoolHost {
+    const game = this;
+    return {
+      enter: (start, camera, freePractice) => {
+        this.schoolFreePractice = freePractice;
+        return this.enterSchool(start, camera);
+      },
+      restart: async (start) => {
+        const host = this.physicalMode.host;
+        if (!host || !this.schoolActive) return;
+        this.placeRider(await this.schoolSession.restart(host, start));
+        this.schoolSeaTime = Number.NaN;
+      },
+      setSlowMotion: (on) => {
+        this.schoolSlow = on;
+      },
+      setView: (view) => this.physicalMode.setRideView(view),
+      get slowMotion() {
+        return game.schoolSlow;
+      },
+      frame: () => this.schoolFrame(),
+      get provisional() {
+        return game.schoolSession.wave?.provisional ?? true;
+      },
+      leave: () => this.leaveSchool(),
+    };
+  }
+
+  /** A lesson's sea (spec L2): the stage 2 recording whatever the graphics run, no spin-up, the rider placed for `start`. */
+  private async enterSchool(start: Parameters<SchoolHost['enter']>[0], camera: RideView): Promise<boolean> {
+    this.leaveOnline();
+    const { wave, sea } = await this.schoolSession.prepare(start);
+    // The Fast water's CPU-only compute does not apply: stage 2 takes the GPU wherever there is one.
+    const settings: PhysicalSettings = {
+      ...DEFAULT_PHYSICAL_SETTINGS, spot: wave.config.spot, stage: wave.stage, compute: 'auto', source: 'practice', tide: wave.config.tide, windSpeed: wave.config.windSpeed,
+    };
+    this.physicalMode.idleView = 'overview';
+    this.physicalMode.defaultView = camera;
+    const started = await this.startPhysical(wave.config.seed, settings, {
+      sun: TIMES.midday, rider: true, factory: recordedSurfZoneFactory(sea), overrides: lessonConfig(wave), school: true,
+    });
+    if (!started) return false;
+    this.placeRider(wave.placements[start]);
+    this.schoolSeaTime = Number.NaN;
+    return true;
+  }
+
+  /** Put the rider in place now, one step on, so it shows placed behind the lesson's card. */
+  private placeRider(placement: RiderPlacement): void {
+    this.physicalMode.place(placement);
+    this.physicalMode.advance(1);
+  }
+
+  /** This frame of the attempt: the ride's status, the player's input, and the sea time since the last frame. */
+  private schoolFrame(): FlowFrame | undefined {
+    const host = this.physicalMode.host;
+    const ride = host?.snapshot.status.ride;
+    if (!host || !ride || !this.schoolActive) return undefined;
+    const { seaTime } = host.snapshot.status;
+    const dt = Number.isFinite(this.schoolSeaTime) ? Math.max(0, seaTime - this.schoolSeaTime) : 0;
+    this.schoolSeaTime = seaTime;
+    const request = controls.lastRequest;
+    return {
+      dt, phase: ride.phase, speed: ride.speed, heading: host.snapshot.rider[RIDER_SNAPSHOT.heading],
+      input: { steer: request.steer, trim: request.trim ?? 0, crouch: request.crouch ?? 0, hand: request.hand ?? false, paddle: request.paddle },
+      wave: { valid: ride.wave.valid, faceFraction: ride.wave.faceFraction, crestBreaking: ride.wave.crestBreaking, aheadOfCrest: ride.wave.aheadOfCrest },
+      ...(ride.live ? { live: { kind: ride.live.kind, start: ride.live.start } } : {}),
+      ...(ride.separation ? { separation: ride.separation } : {}),
+      ...(ride.report ? { report: { id: ride.report.id, end: ride.report.end } } : {}),
+    };
+  }
+
+  /** Out of the school: slow motion off. */
+  private leaveSchool(): void {
+    this.schoolActive = false;
+    this.schoolSlow = false;
+    this.schoolSeaTime = Number.NaN;
   }
 
   /** Out of the lab: its camera and clock let go, and the water back in the graphics settings' look. */
@@ -926,16 +1039,17 @@ const applyGraphics = () => game.applyGraphics(resolveGraphics(settings.value.gr
 applyGraphics();
 game.setSurfer(settings.value.surfer);
 game.setNameTags(settings.value.gameplay.nameTags);
+game.setPocketReflex(settings.value.gameplay.pocketReflex);
 settings.subscribe((value, change) => {
   if (change === 'graphics' || change === 'detected') applyGraphics();
   if (change === 'surfer') game.setSurfer(value.surfer);
-  if (change === 'gameplay') game.setNameTags(value.gameplay.nameTags);
+  if (change === 'gameplay') {
+    game.setNameTags(value.gameplay.nameTags);
+    game.setPocketReflex(value.gameplay.pocketReflex);
+  }
 });
 const controls = new Controls(() => settings.value.controls.bindings, {
-  retry: () => {
-    game.quickRetry();
-    app.noteRetry();
-  },
+  retry: () => app.retry(),
   camera: () => game.cycleView(),
   pause: () => app.pause(),
   mute: () => app.toggleMute(),

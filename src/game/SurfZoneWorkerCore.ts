@@ -9,6 +9,8 @@ export type SurfZoneRequest =
   /** `sea`: an encoded sea handed over by another player (spec N1), taken over before the device attaches. */
   | { type: 'start'; config: SurfZoneConfig; options?: SurfZoneRunnerOptions; sea?: Uint8Array }
   | { type: 'exportState'; id: number }
+  /** Take this encoded sea in place of the running one (spec L2: a lesson restarts on the same wave). */
+  | { type: 'restore'; sea: Uint8Array }
   | { type: 'advance'; steps: number; buffers: SurfZoneBuffers; input?: RideRequest; reactions?: Float32Array };
 
 /** Worker → main thread. */
@@ -70,6 +72,7 @@ export class SurfZoneWorkerCore {
     const { runner } = this;
     if (!runner) return;
     if (request.type === 'exportState') return this.exportState(runner, request.id);
+    if (request.type === 'restore') return this.restore(runner, request.sea);
     if (runner.simulation.device) {
       const step = runner.advanceAsync(request.steps, request.input, request.reactions).then(() => this.reply(runner, request.buffers));
       this.stepping = step.finally(() => {
@@ -87,6 +90,12 @@ export class SurfZoneWorkerCore {
     await this.stepping;
     const { bytes, deflated } = await compress(encodeSurfZoneState(runner.simulation.exportState()));
     this.post({ type: 'state', id, bytes, deflated }, [bytes.buffer]);
+  }
+
+  /** A restore waits for any step under way, so it never lands halfway through one. */
+  private async restore(runner: SurfZoneRunner, sea: Uint8Array): Promise<void> {
+    await this.stepping;
+    runner.simulation.importState(decodeSurfZoneState(sea));
   }
 
   private ready(runner: SurfZoneRunner): void {

@@ -166,7 +166,7 @@ The Rich water whitens its body as far down as the air went, 1 − exp(−k·α�
   - its two Important findings: Classic drew the tube's spray, and splash-ups passed for tubes in the tube report;
   - three re-graded Minors: the air following the drawn void, the CPU/GPU twin at partial scale, and the smoothstep edges.
 
-  Ten Minors are deferred:
+  Ten Minors were deferred, and all were fixed after the merge (vice7770/surfing-game, the whitewater follow-up):
   - the spit speed bound;
   - `onLand` double-counting the splash-up's share;
   - the drops' and sheet's vertical speeds;
@@ -184,6 +184,6 @@ The Rich water whitens its body as far down as the air went, 1 − exp(−k·α�
 - **At dawn and sunset,** a nearby spit's mist glows as an orange haze (G8's mist phase over a lot of mist).
 - **The carve's teeth:** up close and from a low shoulder angle, the practice Reef's voids (95 columns at once in the sheet's moment) read as a jagged trench with teeth a column wide. They are Part A's per-column voids, with an open front at each column's reach. The peel interpolation smooths only neighbours that pass its gate. A smoother carve across columns is the barrel's main open item.
 - **The spray pool** (4,096) is full a fifth of the time on the Reef and the Point.
-- **Rare spits** reach 160–180 m/s, where a small mouth drains a long closing section. Physically the air would burst through the lip first.
+- **Spits** are bounded since the follow-up: no faster than the falling lip can drive the air, √(ρ_w/ρ_a)·√(gW/2), the rest erupting (provisional).
 - **Caustics** under a void still refract through the uncut surface (Part A).
 - **Backlog:** whitewater forces on bodies (lost buoyancy, hits from the splash-up and the foam ball), and the player's tube camera (P12).

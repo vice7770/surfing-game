@@ -51,6 +51,34 @@ describe('ride session', () => {
     expect(session.rider.phase).toBe('prone');
   });
 
+  // L2: a lesson places the rider on the wave, standing or lying, moving with the water plus a speed along its heading.
+  it('places the rider standing on the face, moving with the water and along its heading', () => {
+    const swell = new SwellWater({ height: 1, period: 9, depth: 5 });
+    swell.advance(2);
+    const session = new RideSession();
+    session.place({ x: 1, z: -3, heading: 0.5, speed: 6, phase: 'standing' }, swell);
+    expect(session.rider.attached).toBe(true);
+    expect(session.rider.phase).toBe('standing');
+    expect(session.surfer.active).toBe(false);
+    expect(session.heading).toBeCloseTo(0.5, 2);
+    const surface = swell.surfaceAt(1, -3);
+    const flow = swell.sampleAt(1, surface - 0.05, -3, createWaterSample());
+    const along = (session.board.velocity.x - flow.flowX) * Math.sin(0.5) + (session.board.velocity.z - flow.flowZ) * Math.cos(0.5);
+    expect(along).toBeCloseTo(6, 1);
+    expect(session.rider.velocity.distanceTo(session.board.velocity)).toBeLessThan(0.05);
+    session.place({ x: 1, z: -3, heading: 0, speed: 0, phase: 'prone' }, swell);
+    expect(session.rider.phase).toBe('prone');
+  });
+
+  it('places anywhere on the water, even in the whitewater, and stays finite', () => {
+    const session = new RideSession();
+    const water = new PlaneWater();
+    session.place({ x: 0, z: 0, heading: -1, speed: 8, phase: 'standing' }, water);
+    for (let i = 0; i < 60; i += 1) session.step(STEP, water, idle);
+    const { position } = session.phase === 'fallen' ? { position: session.surfer.centerOfMass() } : session.board;
+    expect(Number.isFinite(position.x + position.y + position.z)).toBe(true);
+  });
+
   it('starts prone on a board floating level at the given point, heading the given way', () => {
     const session = new RideSession();
     session.reset(new Vector3(2, 0, -5), Math.PI / 2, new PlaneWater());

@@ -158,7 +158,7 @@ Up to 50 friends share one break from a room link. Every player runs the whole s
   - a bot-filled room measured on the M4 Pro;
   - **Part B, physical collisions,** planned after the playtest.
 
-### P1 · Wave Lab and Surf School (L1–L3) — `L1 done (playtest open); L2 next`
+### P1 · Wave Lab and Surf School (L1–L3) — `L1–L3 done (playtests open)`
 
 Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [Spec](docs/superpowers/specs/2026-09-27-wave-lab-surf-school.md) · [L1 plan](docs/superpowers/plans/2026-09-27-l1-wave-lab.md).
 
@@ -184,8 +184,30 @@ Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [
     - `?demo` starts a Surf ride the dev autopilot rides;
     - `?record` and `?waterSheet` run on a bare stage.
 - [ ] **L1 open:** the user's playtest, with the browser pane shown, since motion and the gamepad were not judged live in the hidden pane.
-- [ ] **L2 · Surf School:** nine lessons on a recorded wave, then Free Practice. Next.
-- [ ] **L3 · Legacy removal:** delete the legacy wave's modules and tests, now unreached.
+- [x] **L2 · Surf School** ([plan](docs/superpowers/plans/2026-09-27-l2-surf-school.md)): a tile after Surf, badged "Start here" until the first lesson is passed.
+  - **Nine lessons, all open:** Lean, Trim, Crouch and extend, Bottom turn, Top turn, Hand and stall, Stay in the pocket, Pop up, Paddle and catch.
+  - **Free Practice** on the same wave, started standing in the pocket or prone and ready to catch.
+  - **Each lesson:**
+    - an explanation card over the held wave, with a diagram and the player's keys;
+    - attempts with the lesson's prompt and its goal's count, the goals measured from the physics;
+    - a miss names why and what to try, and the same wave restarts after 2 s (R at once); three misses bring the card back;
+    - a pass offers Next lesson, Again or Lessons, and retires the matching one-time Surf hint.
+  - **Pause menu:** restart, the explanation, 0.5× slow motion, camera, settings, the lessons. The balance meter is always on. Nothing goes in the Logbook.
+  - **The lesson wave** (`npm run lesson:wave`): the autopilot surfs the Canyon's Practice sea, and each start's moment is taken from its rides and judged as a new player would play it (report: [lesson wave](docs/research/lesson-wave.md)).
+    - Each start's sea state is shipped (`public/lessons`, about 0.8 MB each) with where the rider was.
+    - It is recorded on stage 2, and the school runs stage 2 on every machine, the Fast water's included (the user's call: stage 1's recording could not be caught). A machine too slow for it plays the lesson slower than real time.
+    - A lesson's sea is built from it with no spin-up, and every restart restores it in place (a new `restore` host request; the GPU re-uploads the breaking state).
+    - `RideSession.place` puts the rider on the water standing or prone, the one new piece of rider code.
+  - **On the reference wave:** recorded on the riding work's Practice swell after it merged. A still rider stands 6.4 s from the pocket, a pop-up on the cue 6.1 s, and the autopilot 3.8 s from waiting. The goals' thresholds stay provisional (the lean's swing is 8°, not 20°, until the turn-rate fix).
+- [ ] **L2 open:**
+  - tune the goals on the reference wave (the lean's swing first, after the turn-rate fix);
+  - on a machine too slow for stage 2 (the Fast water's), how slow the lessons run has not been measured;
+  - the user's playtest (the pass card and a live pass were not seen in the hidden pane);
+  - trim and the hand have no touch buttons yet, so lessons 2 and 6 need a keyboard or a pad.
+- [x] **L3 · Legacy removal:** the legacy wave's code is deleted, now that nothing reaches it. [Plan](docs/superpowers/plans/2026-09-27-l3-legacy-removal.md).
+  - **Deleted:** the wave (`WaveModel`, `PlungingSheet`), its board (`BoardPhysics`, `boardTrace`), their views (`LegacySurfaceSource`, `CameraRig`, `BoardWake`, `BreakSpray`, `Seabed`, `PlungingSheetMesh`), the old `Hud` and `RunHistory`, the `report:board-baseline` script, and every test that only drove them.
+  - **Trimmed:** `SurfWater` loses its legacy adapter and the `surface` flow regime; `Surfer` keeps only the pose the physical rider falls back to; `BoardInput` moves into `Controls`; the legacy swell readout and board values go; the sky loses the coastline cards the physical sea always hid.
+  - **Kept on purpose:** the test waters, test surfers and the report scripts' helpers, which the suite and the reports still use.
 
 ### Later — `Backlog`
 
@@ -407,11 +429,11 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
 
     | | Reef | Beach |
     |---|---|---|
-    | Splash-up, 90th percentile | 1.12 m | 0.76 m |
-    | Spit speed, median | 10.8 m/s | 9.9 m/s |
-    | Median surveyed void fraction | 0.15 | 0.05 |
-    | Surveys at α_max | 24 % | 2 % |
-    | Foam-ball sprites, median | 120 | 41 |
+    | Splash-up, 90th percentile | 1.12 m | 0.77 m |
+    | Spit speed, median (fastest) | 10.5 m/s (52) | 8.8 m/s (42) |
+    | Median surveyed void fraction | 0.14 | 0.05 |
+    | Surveys at α_max | 22 % | 2 % |
+    | Foam-ball sprites, median | 117 | 53 |
 
     Collapses take 0.3–0.4 s, and the Canyon barely plunges.
   - **Judging it:** `?inpage&waterSheet&whitewater` (with `&spot=reef` or `&spot=beach`) holds the sea on a collapsing tube and shoots its whitewater.
@@ -429,7 +451,7 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
       - a void's back stood as a wall half its width deep at the crest, which the mesh drew as a jagged crack along the lip. **Fixed:** its floor now meets the surface over `TUBE_EDGE` (0.35 m) behind it, in the physics and on the GPU alike. The front, where the jet lands, is unchanged, so the tube report still holds;
       - **open:** where a peel's columns collapse at different stages, a column whose void has gone stands as a spike a metre wide between carved neighbours (Part A's instant close did the same). It needs the peel to collapse as one section;
     - the spray pool (4,096) is full a fifth of the time on the Reef and the Point, and the lip's splash gives way first;
-    - rare spits reach 160–180 m/s where a small mouth drains a long closing section.
+    - the review's deferred whitewater fixes are done (2026-09-27): spits no faster than the falling lip drives the air (√(ρ_w/ρ_a)·√(gW/2); the rest erupts); each drop of lip water reported landing once; impact drops thrown up as fast as the splash-up sheet; the aeration follows the window before adding air; its snapshot write halved; the report balances the air on what the tubes trapped.
 
     Whitewater forces on bodies and the player's tube camera (P12) stay in the Backlog.
 
@@ -445,6 +467,7 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
 - [ ] **P9 Riding** (`Playtest`, [plan](docs/superpowers/plans/2026-09-26-p9-riding.md), [findings](docs/superpowers/plans/2026-09-26-p9-riding.md#findings)):
   - **Part A, physics — done:**
     - phase 0: speed and position against the crest, speed over ground, a horizon-holding ride camera, an autopilot. It found that catching, not the rider, bounds the rides; the rider outruns closing-out waves onto the flats;
+    - the front view holds steady while waves pass a waiting rider (user report, 2026-09-27): its lean toward the crest fades in as a wave comes from 30 m to 15 m out, fades once the crest has passed, and eases. It had cut 5–14° in one frame twice a wave, where the wave gauge's window gains or loses a crest;
     - the rider stands on a leg (a spring and damper in the board's solve): it holds the load it feels, absorbs landings and crouches;
     - trim, stall, crouch, the hand in the face and heading hold;
     - pumping gains speed when timed with the path (Kogelbauer 2024), and nothing on flat water;
@@ -458,6 +481,10 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
     - a crouch held while the feet brake a lean into a turn (2026-09-27): crouched full steer on the trough's flat water threw the rider in 0.65 s (the crouch's drop took the load off the board as the body leaned in, and the ankles rolled the board over instead of stopping the body). It was how the Canyon's rides ended, in their first bottom turn. Now it holds at 8 and 11 m/s;
     - open: full steer held for 2 s or more carves up the plane face, stalls and falls, as a real carve held uphill would. The steer's 50° full bank was chosen with the user for the stronger turn;
     - open: the Canyon's rides are still short. With the play and fall fixes the autopilot made 25 stands and 3 rides of 3 s or more over two seeds × 5 min (mean 6.4 s; before them 7 and 0, and 14 and 10 before the redesign); 282 of 335 attempts missed the wave. Traced ride by ride, the rider pops up straight down a 2.2–2.8 m face, reaches 11–12 m/s against a crest at 6–8 m/s and falls in its first bottom turn, where the rail releases at 12 m/s; broken water does not carry a board. Next: [riding the wave](docs/superpowers/plans/2026-09-27-riding-the-wave.md) (honest ride ends, the curl, the whitewater's push, a 1–1.5 m reference wave, the pocket reflex).
+  - **Riding the wave, Part A** ([spec](docs/superpowers/specs/2026-09-27-riding-the-wave.md), [plan](docs/superpowers/plans/2026-09-27-riding-the-wave.md), [findings](docs/superpowers/plans/2026-09-27-riding-the-wave.md#findings)):
+    - broken water carries a board (the surface roller's push in the sampler); honest ride ends (a fall, a kick-out, the wave dying, or lost); the gauge finds the curl; the ride report reads the done criteria;
+    - the pocket reflex (Settings → Gameplay → Stay near the curl, Practice by default); the Practice swell at Hs 1.4 m for 1–1.5 m faces ([reference wave](docs/research/reference-wave.md));
+    - open: the done criteria are not met (median ride 2.6 s against 10; without the roller's push the Canyon gave 17 stands and 1 ride of 3 s, with it 49 and 21). Riders stand on the flat ahead of the crest after a straight take-off (a paddler turns only ~7°/s), stall, and fall as the face passes under the slow board; a crouched full-steer turn at 10 m/s wobbles in yaw. Next: P10's take-off, re-catching, the wobble. Animation and regular/goofy are Part B.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
