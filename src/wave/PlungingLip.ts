@@ -287,6 +287,8 @@ export class PlungingLip implements LipParcelSource {
   readonly volume: Float64Array;
   /** Landings since the lip was created. */
   landings = 0;
+  /** Air its tubes have trapped as they closed, m³ (G9; a running total for the air's balance). */
+  trappedAir = 0;
   /**
    * Told of every landing: where the parcel fell, how much water it returned
    * (m³), how fast it hit (m/s), and its flight: where it left the crest and
@@ -625,6 +627,16 @@ export class PlungingLip implements LipParcelSource {
     this.tubeRows = rows;
   }
 
+  /** Air the closing tubes still hold, m³: what they trapped and have not yet let go (G9). */
+  get heldAir(): number {
+    let held = 0;
+    for (const strip of this.strips.values()) {
+      const { tube } = strip;
+      if (tube && !Number.isNaN(tube.closedAt)) held += tube.air * (1 - tube.released);
+    }
+    return held;
+  }
+
   /** Water thrown and not yet landed, flying or still to leave the crest, m³. */
   airborneVolume(): number {
     let total = 0;
@@ -820,6 +832,7 @@ export class PlungingLip implements LipParcelSource {
         // While it still pours, the curtain holds the void whole and the pour lands where the tube is, not on the crest.
         tube.closedAt = this.time;
         tube.air = LH82_AREA * tube.geometry.length * tube.geometry.width * solver.dx;
+        this.trappedAir += tube.air;
       }
       // A strip stays while its water flies or its void is still collapsing.
       if (strip.live === 0 && (!tube || collapsed(tube, this.time) >= 1)) this.removeStrip(stripId, strip);

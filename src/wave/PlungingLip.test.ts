@@ -174,6 +174,20 @@ describe('the collapsing tube and its air (G9)', () => {
     expect(first!.speed).toBe(3);
   });
 
+  it('counts the air its tubes have trapped, and what they still hold, so the air can be balanced at any moment', () => {
+    const { lip, bubbles, escaped, run } = peel([2.5, 3.5, 4.5], 0.3);
+    let checked = 0;
+    for (let frame = 0; frame < 6 * 240; frame += 1) {
+      run(1 / 240);
+      const out = escaped.spit + escaped.erupted + bubbles.volume;
+      expect(out + lip.heldAir).toBeCloseTo(lip.trappedAir, 9);
+      if (lip.heldAir > 0) checked += 1;
+    }
+    expect(checked).toBeGreaterThan(40);
+    expect(lip.trappedAir).toBeCloseTo(3 * trapped, 9);
+    expect(lip.heldAir).toBe(0);
+  });
+
   it('spits no faster than the falling lip can drive the air, and bursts the rest up through the lip', () => {
     // Seven columns close together into one small, late tube at the end of the section.
     const solver = basin();
