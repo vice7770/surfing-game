@@ -27,6 +27,14 @@ describe('the take-off window (Kimura and Kakinuma 2015)', () => {
   it('never opens on a paddler, however slow the crest reads', () => {
     expect(inTakeOffWindow({ ...CAUGHT, crestSpeed: 0.5, speedShoreward: 1.8, speedOverGround: 1.8 })).toBe(false);
     expect(inTakeOffWindow({ ...CAUGHT, crestSpeed: 2, speedShoreward: 2.5, speedOverGround: 2.5 })).toBe(false);
-    expect(inTakeOffWindow({ ...CAUGHT, crestSpeed: 2, speedShoreward: 3, speedOverGround: 3 })).toBe(true);
+    expect(inTakeOffWindow({ ...CAUGHT, crestSpeed: 3, speedShoreward: 3, speedOverGround: 3 })).toBe(true);
+    // Traced: four of fourteen pop-ups began while the crest read 0–2.5 m/s, at 3.4–3.8 m/s, and all fell in the pop-up.
+    expect(inTakeOffWindow({ ...CAUGHT, crestSpeed: 2.47, speedShoreward: 3.82, speedOverGround: 3.82 })).toBe(false);
+  });
+
+  // Traced: pop-ups begun within 2 m of the crest, in the lip, mostly failed or were kicked out; from 2–4 m they stood.
+  it('opens clear of the lip', () => {
+    expect(inTakeOffWindow({ ...CAUGHT, aheadOfCrest: 1.5, faceFraction: 0.95 })).toBe(false);
+    expect(inTakeOffWindow({ ...CAUGHT, aheadOfCrest: 2.3 })).toBe(true);
   });
 });
