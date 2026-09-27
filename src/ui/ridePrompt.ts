@@ -21,6 +21,9 @@ export function ridePrompt(ride: SurfZoneStatus['ride'] | undefined, keys: Promp
     case 'landing':
       return t('hud.prompt.rising');
     case 'fallen':
+      // The wipeout spec: pull the leash in, climb on once in reach, or swim after a board whose leash snapped.
+      if (ride.leash?.snapped) return t('hud.prompt.leashSnapped', { popUp: keys.popUp, retry: keys.retry });
+      if (ride.boardInReach) return t('hud.prompt.inReach', { popUp: keys.popUp });
       return t('hud.prompt.fallen', { popUp: keys.popUp, retry: keys.retry });
     default:
       return '';

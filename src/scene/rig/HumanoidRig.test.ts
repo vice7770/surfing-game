@@ -11,6 +11,7 @@ import { RIDING_MOMENTS, ridingState, type RidingMoment } from '../../dev/riding
 import type { StanceName } from '../../physics/riderPosture';
 import { RiderMotion } from './riderMotion';
 import { createTestHumanoid } from './testHumanoid';
+import type { RiderVisualState } from './riderVisualState';
 
 const SIDES: readonly Side[] = ['left', 'right'];
 const footPoint = (side: Side) => (side === 'left' ? POINT.leftFoot : POINT.rightFoot);
@@ -144,6 +145,85 @@ describe('humanoid rig', () => {
       const { x, y, z, w } = bone.quaternion;
       expect(Number.isFinite(x + y + z + w), bone.name).toBe(true);
     }
+  });
+
+  // The wipeout spec: the duck-dive and the swimmer, posed in code on the physics' points.
+  describe('duck-dive and swimming', () => {
+    /** The visual state of a rider duck-diving on flat water for `seconds`. */
+    const ducking = (seconds: number): RiderVisualState => {
+      const water = new PlaneWater();
+      const body = new BoardBody();
+      body.place(new Vector3(0, body.shape.centerOfMass.y - 0.03, 0));
+      const rider = new AttachedRider(body.shape);
+      body.attach(rider);
+      rider.duckDive = 1;
+      for (let i = 0; i < seconds * 60; i += 1) body.step(1 / 60, water);
+      const state = createRiderVisualState();
+      state.points.forEach((point, i) => rider.renderPoint(i, body, point));
+      state.phase = 'prone';
+      state.boardPosition.copy(body.position);
+      state.boardQuaternion.copy(body.orientation);
+      state.duck = rider.duck.press;
+      return state;
+    };
+    const faceOf = (bones: Map<string, Bone>) => new Vector3(0, 0, 1).applyQuaternion(bones.get(BONES.head)!.getWorldQuaternion(new Quaternion()));
+
+    it('ducking, tucks the head down toward the deck and straightens the arms onto the rails', () => {
+      const { bones } = createTestHumanoid();
+      const rig = new HumanoidRig(bones);
+      const state = ducking(0.5);
+      rig.solve(state);
+      const boardUp = new Vector3(0, 1, 0).applyQuaternion(state.boardQuaternion);
+      expect(faceOf(bones).dot(boardUp)).toBeLessThan(0);
+      for (const side of SIDES) {
+        expect(rig.joints.shoulder[side].distanceTo(rig.joints.wrist[side])).toBeGreaterThan(0.9 * rig.armLength);
+      }
+    });
+
+    // Part B's body cue: short of breath, the stroke quickens.
+    it('strokes faster as the breath runs low', () => {
+      const travel = (breath: number) => {
+        const { bones } = createTestHumanoid();
+        const rig = new HumanoidRig(bones);
+        const state = posturePoints('prone', 'regular', board, level, createRiderVisualState());
+        state.phase = 'fallen';
+        state.swim.stroking = true;
+        state.breath = breath;
+        let path = 0;
+        const last = new Vector3();
+        for (let i = 0; i <= 20; i += 1) {
+          state.clock = i * 0.02;
+          rig.solve(state);
+          if (i > 0) path += rig.joints.wrist.left.distanceTo(last);
+          last.copy(rig.joints.wrist.left);
+        }
+        return path;
+      };
+      expect(travel(0.1)).toBeGreaterThan(1.4 * travel(1));
+    });
+
+    it('swimming, strokes the arms round in a crawl and kicks the feet', () => {
+      const { bones } = createTestHumanoid();
+      const rig = new HumanoidRig(bones);
+      const state = posturePoints('prone', 'regular', board, level, createRiderVisualState());
+      state.phase = 'fallen';
+      state.swim.stroking = true;
+      state.clock = 0;
+      rig.solve(state);
+      const hand = rig.joints.wrist.left.clone();
+      const ankle = rig.joints.ankle.left.clone();
+      state.clock = 0.25;
+      rig.solve(state);
+      expect(rig.joints.wrist.left.distanceTo(hand)).toBeGreaterThan(0.2);
+      expect(rig.joints.ankle.left.distanceTo(ankle)).toBeGreaterThan(0.05);
+      state.swim.stroking = false;
+      state.clock = 0.5;
+      rig.solve(state);
+      const still = rig.joints.wrist.left.clone();
+      state.clock = 0.75;
+      rig.solve(state);
+      expect(rig.joints.wrist.left.distanceTo(still)).toBeLessThan(1e-9);
+    });
   });
 });
 

@@ -8,9 +8,17 @@ import { applyRow, settingsModel } from './settingsModel';
 const context = { devTools: false, detecting: false };
 
 describe('settingsModel', () => {
+  it('offers the surf height as faces or the Hawaiian scale, after the units (wave sizes)', () => {
+    const rows = settingsModel('gameplay', defaultSettings(), context);
+    const index = rows.findIndex((row) => row.id === 'surfScale');
+    expect(rows[index - 1].id).toBe('units');
+    expect(rows[index]).toMatchObject({ kind: 'choice', value: 'face' });
+    expect(applyRow(defaultSettings(), 'surfScale', 'hawaiian')).toEqual({ tab: 'gameplay', patch: { surfScale: 'hawaiian' } });
+  });
+
   it('offers telemetry only with the dev tools on', () => {
     const ids = (devTools: boolean) => settingsModel('gameplay', defaultSettings(), { ...context, devTools }).map((row) => row.id);
-    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'pocketReflex', 'stance', 'scoreRides', 'nameTags']);
+    expect(ids(false)).toEqual(['units', 'surfScale', 'defaultCamera', 'touchControls', 'balanceMeter', 'breathMeter', 'pocketReflex', 'stance', 'scoreRides', 'nameTags']);
     expect(ids(true)).toContain('showTelemetry');
   });
 
@@ -63,10 +71,12 @@ describe('settingsModel', () => {
     expect(settingsModel('graphics', low, context).find((row) => row.id === 'redetect')).toBeUndefined();
   });
 
-  it('lists two keys and two gamepad buttons for each of the sixteen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls; C1 a second button; the stances spec Compress)', () => {
+  it('lists two keys and two gamepad buttons for each of the seventeen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls; C1 a second button; the stances spec Compress; the wipeout spec the duck-dive)', () => {
     const bindings = settingsModel('controls', defaultSettings(), context).filter((row) => row.kind === 'binding');
-    expect(bindings).toHaveLength(64);
-    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(16);
+    expect(bindings).toHaveLength(68);
+    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(17);
+    const duck = bindings.find((row) => row.kind === 'binding' && row.action === 'duckDive');
+    expect(duck).toMatchObject({ help: expect.stringContaining('push the board under') });
   });
 
   // Review Focus 2 and 5: the connection row by status, with the Steam advice; Safari says what it needs.
@@ -141,3 +151,10 @@ describe('the Audio tab (S1)', () => {
   });
 });
 
+describe('the breath meter setting (the wipeout spec, Part B)', () => {
+  it('offers Practice, Always and Never, and applies the choice', () => {
+    const row = settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'breathMeter');
+    expect(row).toMatchObject({ kind: 'choice', value: 'practice' });
+    expect(applyRow(defaultSettings(), 'breathMeter', 'always')).toEqual({ tab: 'gameplay', patch: { breathMeter: 'always' } });
+  });
+});

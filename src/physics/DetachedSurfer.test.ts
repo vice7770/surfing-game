@@ -31,7 +31,7 @@ class TestBoard implements BoardContactBody {
   }
 }
 
-function uniformWater(flow = new Vector3(), bedY = -10, breaking = 0): BodyWaterField {
+function uniformWater(flow = new Vector3(), bedY = -10, breaking = 0, voidFraction = 0): BodyWaterField {
   return {
     sampleAt(_position: Readonly<Vector3>, out: BodyWaterSample): void {
       out.surfaceY = 0;
@@ -40,6 +40,7 @@ function uniformWater(flow = new Vector3(), bedY = -10, breaking = 0): BodyWater
       out.wet = true;
       out.outsideDomain = false;
       out.breaking = breaking;
+      out.voidFraction = voidFraction;
     },
   };
 }
@@ -360,5 +361,77 @@ describe('DetachedSurfer on controlled water', () => {
     for (let frame = 0; frame < 240; frame += 1) oneTwenty.step(1 / 120, water);
 
     expect(sixty.centerOfMass().distanceTo(oneTwenty.centerOfMass())).toBeLessThan(0.15);
+  });
+});
+
+describe('diving and swimming up (the wipeout spec)', () => {
+  /** A swimmer floating calm, in control: dropped in, it bobs for a few seconds before settling. */
+  const floatingSurfer = () => {
+    const surfer = new DetachedSurfer();
+    const field = uniformWater();
+    launch(surfer, new Vector3(0, 0, 0));
+    advance(surfer, field, 600);
+    return { surfer, field };
+  };
+  const head = (surfer: DetachedSurfer) => surfer.getPartPosition('head', new Vector3()).y;
+
+  it('dives under while the dive is held, and floats back up when let go', () => {
+    const { surfer, field } = floatingSurfer();
+    expect(surfer.controlGain).toBeGreaterThan(0.5);
+    let deepest = 0;
+    for (let i = 0; i < 120; i += 1) {
+      surfer.step(1 / 60, field, { stroke: false, steer: 0, dive: 1 });
+      deepest = Math.max(deepest, -head(surfer));
+    }
+    expect(surfer.diving).toBe(true);
+    expect(deepest).toBeGreaterThan(0.5);
+    let surfaced = -1;
+    for (let i = 0; i < 360 && surfaced < 0; i += 1) {
+      surfer.step(1 / 60, field, { stroke: false, steer: 0 });
+      if (head(surfer) > -0.05) surfaced = i;
+    }
+    expect(surfer.diving).toBe(false);
+    expect(surfaced).toBeGreaterThan(0);
+  });
+
+  it('knows when its head is under', () => {
+    const { surfer, field } = floatingSurfer();
+    expect(surfer.underwater).toBe(false);
+    for (let i = 0; i < 120; i += 1) surfer.step(1 / 60, field, { stroke: false, steer: 0, dive: 1 });
+    expect(surfer.underwater).toBe(true);
+  });
+
+  it('underwater, stroking swims up faster than floating', () => {
+    const rise = (stroke: boolean) => {
+      const { surfer, field } = floatingSurfer();
+      for (let i = 0; i < 90; i += 1) surfer.step(1 / 60, field, { stroke: false, steer: 0, dive: 1 });
+      const from = surfer.centerOfMass().y;
+      for (let i = 0; i < 30; i += 1) surfer.step(1 / 60, field, { stroke, steer: 0 });
+      return surfer.centerOfMass().y - from;
+    };
+    expect(rise(true)).toBeGreaterThan(rise(false) + 0.05);
+  });
+
+  it('dives only as hard as the input asks', () => {
+    const depth = (dive: number) => {
+      const { surfer, field } = floatingSurfer();
+      for (let i = 0; i < 60; i += 1) surfer.step(1 / 60, field, { stroke: false, steer: 0, dive });
+      return -surfer.centerOfMass().y;
+    };
+    expect(depth(0.4)).toBeLessThan(depth(1));
+  });
+});
+
+// The wipeout spec, Part B: aerated water is lighter than a surfer holding a breath.
+describe('a swimmer in aerated water', () => {
+  it('floats in clear water and sinks where the water holds 15 % air', () => {
+    const settle = (air: number) => {
+      const body = new DetachedSurfer();
+      launch(body, new Vector3(0, 0, 0));
+      advance(body, uniformWater(new Vector3(), -10, 0, air), 600);
+      return body.centerOfMass().y;
+    };
+    expect(settle(0)).toBeGreaterThan(-0.6);
+    expect(settle(0.15)).toBeLessThan(-2);
   });
 });

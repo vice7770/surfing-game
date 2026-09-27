@@ -94,6 +94,20 @@ export const RIG_DETAIL = {
   snapFull: -0.3,
   snapTwist: 30,
   snapRaise: 60,
+  /**
+   * The wipeout spec. Ducking, the head tucks down toward the deck and the arms
+   * straighten onto the rails (the hands slide along the rail to an arm's
+   * reach). Swimming, the arms crawl round the shoulders at `crawlRate` strokes a
+   * second each, alternating, `crawlReach` of the arm out, and the feet flutter
+   * `kick` m at `kickRate` a second.
+   */
+  duckArmReach: 0.97,
+  crawlRate: 0.8,
+  /** Short of breath the crawl quickens, up to (1 + `panic`) times at none (Part B's body cue). */
+  panic: 1,
+  crawlReach: 0.85,
+  kick: 0.15,
+  kickRate: 2,
 };
 
 /**
@@ -216,7 +230,12 @@ export class HumanoidRig {
     this.heelToMidfoot = this.footRun / 2;
   }
 
+  /** The crawl's phase, in strokes, and the clock it was advanced to. */
+  private crawlPhase = 0;
+  private crawlClock = Number.NaN;
+
   solve(state: RiderVisualState): void {
+    this.advanceCrawl(state);
     const { up, forward, left, boardUp, boardForward, chestUp, hipsForward, target, pole } = this;
     const p = state.points;
     boardUp.set(0, 1, 0).applyQuaternion(state.boardQuaternion);
@@ -270,7 +289,12 @@ export class HumanoidRig {
     this.orientSpine(chestUp);
     if (state.phase === 'standing') this.bendToReach(state, chestUp);
     this.orient(BONES.neck, chestUp, this.facing);
-    if (lying) this.orient(BONES.head, this.direction.copy(boardUp).addScaledVector(boardForward, 0.3), boardForward);
+    if (lying) {
+      // Ducking, the head tucks from looking ahead to facing the deck, crown toward the nose.
+      const duck = state.phase === 'prone' ? Math.min(1, Math.max(0, state.duck)) : 0;
+      this.direction.copy(boardUp).addScaledVector(boardForward, 0.3).lerp(this.scratch.copy(boardForward).addScaledVector(boardUp, 0.2), duck);
+      this.orient(BONES.head, this.direction, this.hint.copy(boardForward).lerp(this.middle.copy(boardUp).negate(), duck));
+    }
     else if (state.phase === 'standing') this.lookWhereGoing(state);
     else if (upright) this.orient(BONES.head, WORLD_UP, this.hint.copy(boardForward).lerp(this.facing, 0.25));
     else this.orient(BONES.head, chestUp, this.facing);
@@ -284,7 +308,9 @@ export class HumanoidRig {
       else pole.copy(this.facing).negate();
       const shoulder = this.bones.get(BONES.arm[side])!.getWorldPosition(this.joints.shoulder[side]);
       const hand = p[side === 'left' ? POINT.leftHand : POINT.rightHand];
-      if (fallen) target.subVectors(hand, shoulder).setLength(RIG_DETAIL.fallenReach * this.armLength).add(shoulder);
+      if (fallen && state.swim.stroking) this.crawlHand(state, side, shoulder, target);
+      else if (fallen) target.subVectors(hand, shoulder).setLength(RIG_DETAIL.fallenReach * this.armLength).add(shoulder);
+      else if (state.phase === 'prone' && state.duck > 0.3) this.straightOnRail(hand, shoulder, target);
       else target.copy(hand);
       if (state.phase === 'standing' && !this.reachingDown(hand) && !this.isRearFoot(state, side)) this.leadArm(state, shoulder, target);
       solveTwoBone(shoulder, this.upperArm, this.lowerArm, target, pole, this.joints.elbow[side], this.joints.wrist[side]);
@@ -307,6 +333,11 @@ export class HumanoidRig {
       } else {
         if (fallen) target.subVectors(foot, hip).setLength(RIG_DETAIL.fallenReach * this.legLength).add(hip);
         else target.copy(foot);
+        if (fallen && state.swim.stroking) {
+          // The flutter kick: the feet beat up and down, alternating.
+          const beat = Math.cos(2 * Math.PI * (RIG_DETAIL.kickRate * state.clock + (side === 'left' ? 0 : 0.5)));
+          target.addScaledVector(this.facing, RIG_DETAIL.kick * beat);
+        }
         pole.copy(lying ? this.scratch.copy(boardUp).negate() : this.facing);
       }
       solveTwoBone(hip, this.upperLeg, this.lowerLeg, target, pole, this.joints.knee[side], this.joints.ankle[side]);
@@ -446,6 +477,38 @@ export class HumanoidRig {
       return;
     }
     this.orient(BONES.head, direction, look);
+  }
+
+  /**
+   * The swimmer's crawl: the hand circles the shoulder in the plane of the
+   * heading and the vertical, reaching forward, pulling down and back under the
+   * body, recovering over the water; the arms half a stroke apart.
+   */
+  private crawlHand(state: RiderVisualState, side: Side, shoulder: Vector3, out: Vector3): Vector3 {
+    const angle = 2 * Math.PI * (this.crawlPhase + (side === 'left' ? 0 : 0.5));
+    const reach = RIG_DETAIL.crawlReach * this.armLength;
+    this.nose.set(Math.sin(state.heading), 0, Math.cos(state.heading));
+    return out.copy(shoulder).addScaledVector(this.nose, reach * Math.cos(angle)).addScaledVector(WORLD_UP, reach * Math.sin(angle));
+  }
+
+  /** The crawl advances with the clock, quicker as the breath runs low; a jump in the clock restarts nothing. */
+  private advanceCrawl(state: RiderVisualState): void {
+    const step = state.clock - this.crawlClock;
+    this.crawlClock = state.clock;
+    if (!(step > 0 && step < 0.5)) return;
+    const breath = Math.min(1, Math.max(0, state.breath));
+    this.crawlPhase = (this.crawlPhase + step * RIG_DETAIL.crawlRate * (1 + RIG_DETAIL.panic * (1 - breath))) % 1;
+  }
+
+  /** Ducking, a hand on its rail slid forward along the board until the arm from the shoulder is straight. */
+  private straightOnRail(hand: Vector3, shoulder: Vector3, out: Vector3): Vector3 {
+    const reach = RIG_DETAIL.duckArmReach * this.armLength;
+    const offset = this.middle.subVectors(hand, shoulder);
+    // |offset + t F| = reach, the forward root: t = −(o·F) + √((o·F)² − (|o|² − reach²)).
+    const along = offset.dot(this.boardForward);
+    const discriminant = along * along - (offset.lengthSq() - reach * reach);
+    const t = discriminant > 0 ? Math.max(0, -along + Math.sqrt(discriminant)) : 0;
+    return out.copy(hand).addScaledVector(this.boardForward, t);
   }
 
   private orient(name: string, direction: Vector3, hint: Vector3): void {

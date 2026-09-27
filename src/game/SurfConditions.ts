@@ -1,4 +1,7 @@
+import { t } from '../ui/strings';
+import { describeSurf, type SurfWords } from '../ui/surfHeight';
 import type { SpotName } from '../wave/Bathymetry';
+import { PRACTICE_SURF, forecastSurf, type SurfForecast } from '../wave/surfForecast';
 import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalSettings } from './PhysicalMode';
 
 /** The Surf screen's few choices (plan P8), turned into the Wave Lab's physical settings. */
@@ -34,6 +37,18 @@ export const SWELLS = {
   medium: { significantHeight: 1.4, peakPeriod: 11, spread: 0.3 },
   big: { significantHeight: 2.4, peakPeriod: 14, spread: 0.2 },
 } as const;
+
+/** The surf a swell size makes at a spot (the wave-sizes spec): the practice groundswell as measured, the others forecast. */
+export function surfForecastFor(spot: SpotName, swell: SwellSize): SurfForecast {
+  if (swell === 'practice') return { ...PRACTICE_SURF[spot] };
+  const { significantHeight, peakPeriod } = SWELLS[swell];
+  return forecastSurf(spot, significantHeight, peakPeriod);
+}
+
+/** The Surf screen's line for a choice: "Surf: 1.8–2.3 m · head high". */
+export function surfForecastText(choice: { spot: SpotName; conditions: SurfConditions }, words: SurfWords): string {
+  return t('surf.forecast', { surf: describeSurf(surfForecastFor(choice.spot, choice.conditions.swell), words) });
+}
 
 /** Tide, m, on the Wave Lab's −1…1 m slider. */
 export const TIDES: Record<TideLevel, number> = { low: -0.6, mid: 0, high: 0.6 };

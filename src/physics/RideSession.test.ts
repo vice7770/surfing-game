@@ -1,4 +1,4 @@
-import { Vector3 } from 'three';
+import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import type { LipContactParcel, LipParcelSource } from './DetachedSurfer';
 import { PlaneWater } from './PlaneWater';
@@ -209,6 +209,138 @@ describe('ride session', () => {
     for (let i = 0; i < 300; i += 1) session.step(STEP, water, { ...idle, popUp: true });
     expect(session.rider.attached).toBe(false);
     expect(session.remount.count).toBe(0);
+  });
+});
+
+describe('the duck-dive in a ride', () => {
+  it('passes the Duck-dive input to the rider lying down', () => {
+    const session = new RideSession();
+    const water = new PlaneWater();
+    session.reset(new Vector3(0, 0, 0), 0, water);
+    for (let i = 0; i < 12; i += 1) session.step(STEP, water, { ...idle, duckDive: 1 });
+    expect(session.rider.duck.press).toBeGreaterThan(0.5);
+  });
+});
+
+describe('the leash in a ride', () => {
+  const fallen = (stance: 'regular' | 'goofy' = 'regular') => {
+    const session = new RideSession({ stance });
+    const water = new PlaneWater();
+    session.reset(new Vector3(0, 0, 0), 0, water);
+    session.separate('balance');
+    session.step(STEP, water, idle);
+    return { session, water };
+  };
+
+  it('keeps a board flung away from the fallen surfer within the stretched leash', () => {
+    const { session, water } = fallen();
+    session.board.velocity.set(0, 0, 5);
+    let furthest = 0;
+    const ankle = new Vector3();
+    const plug = new Vector3();
+    for (let i = 0; i < 300; i += 1) {
+      session.step(STEP, water, idle);
+      furthest = Math.max(furthest, session.leashPlug(plug).distanceTo(session.leashAnkle(ankle)));
+    }
+    expect(session.leash.snapped).toBe(false);
+    expect(furthest).toBeGreaterThan(1.83);
+    expect(furthest).toBeLessThan(1.83 * 1.55);
+  });
+
+  it('ties the back foot: the right ankle regular, the left goofy', () => {
+    for (const stance of ['regular', 'goofy'] as const) {
+      const { session } = fallen(stance);
+      const ankle = session.leashAnkle(new Vector3());
+      const leg = session.surfer.getPartPosition(stance === 'regular' ? 'rightLeg' : 'leftLeg', new Vector3());
+      const other = session.surfer.getPartPosition(stance === 'regular' ? 'leftLeg' : 'rightLeg', new Vector3());
+      expect(ankle.distanceTo(leg)).toBeLessThan(ankle.distanceTo(other));
+    }
+  });
+
+  it('puts the plug on the deck at the tail', () => {
+    const { session } = fallen();
+    const plug = session.board.toLocal(session.leashPlug(new Vector3()), new Vector3());
+    expect(plug.z).toBeLessThan(-session.board.shape.length / 2 + 0.1);
+    expect(Math.abs(plug.x)).toBeLessThan(1e-9);
+  });
+
+  it('holding the pop-up key reels the board in and climbs back on', () => {
+    const { session, water } = fallen();
+    session.board.velocity.set(0, 0, 3);
+    for (let i = 0; i < 90; i += 1) session.step(STEP, water, idle);
+    let climbed = -1;
+    for (let i = 0; i < 900 && climbed < 0; i += 1) {
+      session.step(STEP, water, { ...idle, reel: true });
+      if (session.rider.attached) climbed = i;
+    }
+    expect(climbed).toBeGreaterThan(0);
+    expect(session.phase).toBe('prone');
+  });
+
+  // Review Focus 2: the pop-up is a press, not a hold.
+  it('does not pop up when the reel is still held after climbing on', () => {
+    const { session, water } = fallen();
+    for (let i = 0; i < 900 && !session.rider.attached; i += 1) session.step(STEP, water, { ...idle, reel: true });
+    expect(session.rider.attached).toBe(true);
+    for (let i = 0; i < 120; i += 1) session.step(STEP, water, { ...idle, reel: true });
+    expect(session.phase).toBe('prone');
+  });
+
+  it('lets go of a held board to dive', () => {
+    const { session, water } = fallen();
+    for (let i = 0; i < 180; i += 1) session.step(STEP, water, idle);
+    const torso = session.surfer.getPartPosition('torso', new Vector3());
+    session.board.place(new Vector3(torso.x + 0.5, session.board.shape.centerOfMass.y - 0.03, torso.z), new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI));
+    session.step(STEP, water, { ...idle, popUp: true });
+    expect(session.recovery.state).not.toBe('free');
+    session.step(STEP, water, { ...idle, duckDive: 1 });
+    expect(session.recovery.state).toBe('free');
+    for (let i = 0; i < 60; i += 1) session.step(STEP, water, { ...idle, duckDive: 1 });
+    expect(session.surfer.diving).toBe(true);
+  });
+
+  // Review Focus 5.
+  it('gives a new leash on a relaunch', () => {
+    const { session, water } = fallen();
+    session.leash.snapped = true;
+    session.leash.length = 1;
+    session.reset(new Vector3(0, 0, 0), 0, water);
+    expect(session.leash.snapped).toBe(false);
+    expect(session.leash.length).toBe(1.83);
+  });
+});
+
+// The wipeout spec, Part B: breath.
+describe('breath in a ride', () => {
+  it('never drains lying on the board, even with the deck under water', () => {
+    const session = new RideSession();
+    const water = new PlaneWater();
+    session.reset(new Vector3(0, 0, 0), 0, water);
+    for (let i = 0; i < 270; i += 1) session.step(STEP, water, { ...idle, duckDive: i < 90 ? 1 : 0 });
+    expect(session.rider.attached).toBe(true);
+    expect(session.breath.level).toBe(1);
+  });
+
+  it('drains while the fallen surfer is held under, faster diving than relaxed', () => {
+    const drained = (duckDive: number) => {
+      const session = new RideSession();
+      const water = new PlaneWater({ voidFraction: 0.18 });
+      session.reset(new Vector3(0, 0, 0), 0, water);
+      session.separate('balance');
+      for (let i = 0; i < 300; i += 1) session.step(STEP, water, { ...idle, duckDive });
+      return 1 - session.breath.level;
+    };
+    expect(drained(0)).toBeGreaterThan(0);
+    expect(drained(1)).toBeGreaterThan(drained(0));
+  });
+
+  it('comes back full on a relaunch', () => {
+    const session = new RideSession();
+    const water = new PlaneWater();
+    session.reset(new Vector3(0, 0, 0), 0, water);
+    session.breath.level = 0.2;
+    session.reset(new Vector3(0, 0, 0), 0, water);
+    expect(session.breath.level).toBe(1);
   });
 });
 

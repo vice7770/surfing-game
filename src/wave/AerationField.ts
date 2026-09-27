@@ -12,6 +12,18 @@ import type { ShallowWaterSolver } from './ShallowWaterSolver';
  */
 export const AERATION = { share: 0.1, plungeDepth: 0.8, boreDepth: 0.3, riseSpeed: 0.25, peak: 0.2 } as const;
 
+/**
+ * The plume's turbulence (the wipeout spec, Part B), provisional:
+ * - under breaking of strength B in water h deep, the turbulent kinetic energy k
+ *   relaxes over `rise` s toward (ratio · √(g h))² · B: Ting & Kirby (1995,
+ *   1996) measured √k / √(g h) of about 0.1–0.2 under broken waves;
+ * - once the breaking has passed it fades with an e-folding time of
+ *   `decayShare` of the peak period, so it is all but gone within one period
+ *   (plunging breakers dissipate their turbulence within about one wave period);
+ * - it is carried by the current like the air.
+ */
+export const TURBULENCE = { ratio: 0.15, rise: 0.5, decayShare: 1 / 3 } as const;
+
 const DENSITY = 1025;
 const WET = 0.01;
 const TRACE = 1e-7;
@@ -33,17 +45,38 @@ const MIN_DEPTH = 0.05;
 export class AerationField {
   readonly air: Float64Array;
   readonly depth: Float64Array;
+  /** The turbulent kinetic energy in each cell's water, m²/s² (`TURBULENCE`). */
+  readonly turbulence: Float64Array;
   private readonly nextAir: Float64Array;
   private readonly nextDepth: Float64Array;
+  private readonly nextTurbulence: Float64Array;
+  /** Cells breaking stirred since the latest update: they hold their turbulence rather than fade. */
+  private readonly stirred: Uint8Array;
   private windowX: number;
+  private readonly period: number;
 
-  constructor(private readonly solver: ShallowWaterSolver) {
+  /** `period`: the swell's peak period, s, which sets how fast the turbulence fades. */
+  constructor(private readonly solver: ShallowWaterSolver, options: { period?: number } = {}) {
     const size = solver.h.length;
     this.air = new Float64Array(size);
     this.depth = new Float64Array(size);
+    this.turbulence = new Float64Array(size);
     this.nextAir = new Float64Array(size);
     this.nextDepth = new Float64Array(size);
+    this.nextTurbulence = new Float64Array(size);
+    this.stirred = new Uint8Array(size);
     this.windowX = solver.xCenters[0];
+    this.period = options.period ?? 10;
+  }
+
+  /** Breaking of strength `strength` (0–1) in `cell` for `dt` s stirs its water toward Ting & Kirby's intensity. */
+  stir(cell: number, strength: number, dt: number): void {
+    this.followWindow();
+    const depth = this.solver.h[cell];
+    if (!(depth > WET) || !(strength > 0)) return;
+    this.stirred[cell] = 1;
+    const target = (TURBULENCE.ratio * Math.sqrt(GRAVITY * depth)) ** 2 * Math.min(1, strength);
+    if (target > this.turbulence[cell]) this.turbulence[cell] += (target - this.turbulence[cell]) * (1 - Math.exp(-dt / TURBULENCE.rise));
   }
 
   /** A plunge that dissipated `energy` J at (x, z), driving its bubbles `penetration` m down. */
@@ -89,7 +122,10 @@ export class AerationField {
     this.followWindow();
     this.advect(dt);
     const { h } = this.solver;
+    const fade = Math.exp(-dt / (TURBULENCE.decayShare * this.period));
     for (let i = 0; i < h.length; i += 1) {
+      this.turbulence[i] = h[i] <= WET || this.turbulence[i] < TRACE ? 0 : this.turbulence[i] * (this.stirred[i] ? 1 : fade);
+      this.stirred[i] = 0;
       if (h[i] <= WET || this.air[i] === 0) {
         // Dry water holds no air, and water with none has nothing to degas.
         this.air[i] = 0;
@@ -146,7 +182,7 @@ export class AerationField {
     this.air[cell] = Math.min(AERATION.peak * this.depth[cell], this.air[cell] + volume / area);
   }
 
-  /** Semi-Lagrangian step: each cell takes the air (and plume depth) found upstream at x − u·dt. */
+  /** Semi-Lagrangian step: each cell takes the air (and plume depth, and turbulence) found upstream at x − u·dt. */
   private advect(dt: number): void {
     const { nx, nz, h, qx, qz, xCenters, zCenters, dx } = this.solver;
     for (let iz = 0; iz < nz; iz += 1) {
@@ -156,6 +192,7 @@ export class AerationField {
         if (water <= WET) {
           this.nextAir[i] = 0;
           this.nextDepth[i] = 0;
+          this.nextTurbulence[i] = 0;
           continue;
         }
         const x = xCenters[ix] - (qx[i] / water) * dt;
@@ -173,11 +210,13 @@ export class AerationField {
         const w01 = (1 - tx) * tz;
         const w11 = tx * tz;
         this.nextAir[i] = this.air[k] * w00 + this.air[k + 1] * w10 + this.air[k + nx] * w01 + this.air[k + nx + 1] * w11;
+        this.nextTurbulence[i] = this.turbulence[k] * w00 + this.turbulence[k + 1] * w10 + this.turbulence[k + nx] * w01 + this.turbulence[k + nx + 1] * w11;
         this.nextDepth[i] = Math.max(this.depth[k] * (w00 > 0 ? 1 : 0), this.depth[k + 1] * (w10 > 0 ? 1 : 0), this.depth[k + nx] * (w01 > 0 ? 1 : 0), this.depth[k + nx + 1] * (w11 > 0 ? 1 : 0));
       }
     }
     this.air.set(this.nextAir);
     this.depth.set(this.nextDepth);
+    this.turbulence.set(this.nextTurbulence);
   }
 
   /**
@@ -190,7 +229,7 @@ export class AerationField {
     const shift = Math.round((xCenters[0] - this.windowX) / dx);
     this.windowX = xCenters[0];
     if (shift === 0) return;
-    for (const values of [this.air, this.depth]) {
+    for (const values of [this.air, this.depth, this.turbulence]) {
       for (let iz = 0; iz < nz; iz += 1) {
         const row = iz * nx;
         if (Math.abs(shift) >= nx) {

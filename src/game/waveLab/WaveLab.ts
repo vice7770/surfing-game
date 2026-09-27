@@ -2,6 +2,7 @@ import { Vector3 } from 'three';
 import { FlyCamera, type FlyBounds, type FlyControl } from '../../scene/FlyCamera';
 import type { SpectatorCamera, SpectatorView } from '../../scene/SpectatorCamera';
 import { sampleSurfaceFoam } from '../../scene/WaterSurface';
+import type { SurfWords } from '../../ui/surfHeight';
 import type { Units } from '../../ui/units';
 import type { SurfZoneStatus } from '../../wave/SurfZoneRunner';
 import { TANK } from '../../wave/SurfZoneSimulation';
@@ -119,7 +120,7 @@ export class WaveLab {
   }
 
   /** The info card for the wave under the view. */
-  info(sea: LabSea, units: Units): WaveInfo | undefined {
+  info(sea: LabSea, units: Units, words?: Omit<SurfWords, 'units'>): WaveInfo | undefined {
     const { host, config } = sea;
     if (!host || !config) return undefined;
     const point = this.underView(sea);
@@ -132,7 +133,8 @@ export class WaveLab {
       breakingFraction: status.breakingFraction,
       timeToSet: status.timeToSet,
       steady: sea.practice,
-    }, units);
+      surf: status.surf,
+    }, units, words);
   }
 
   private underView(sea: LabSea): { x: number; z: number } {

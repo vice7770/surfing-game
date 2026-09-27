@@ -6,7 +6,7 @@
  */
 export const SOUND_IDS = [
   'roar', 'distant', 'wind', 'rush', 'rail', 'bubbles',
-  'lipJet', 'lipRoller', 'paddle', 'popUp', 'plunge', 'click', 'chime',
+  'lipJet', 'lipRoller', 'paddle', 'popUp', 'plunge', 'leashSnap', 'knock', 'duckDive', 'click', 'chime',
 ] as const;
 export type SoundId = (typeof SOUND_IDS)[number];
 
@@ -215,6 +215,26 @@ export function synthesize(id: SoundId, rate: number, seed = 1): Samples {
     case 'plunge': {
       const n = seconds(1.4);
       return normalize(mix(envelope(lowPass(whiteNoise(n, next), 2200, rate), rate, 0.01, 0.4), thump(n, rate, 110, 45, 0.2), 0.7));
+    }
+    case 'leashSnap': {
+      // A sharp crack with a short rubbery twang (the wipeout spec).
+      const n = seconds(0.5);
+      const twang = new Float32Array(n);
+      for (let i = 0; i < n; i += 1) {
+        const t = i / rate;
+        twang[i] = Math.sin(2 * Math.PI * (320 - 180 * Math.min(1, t / 0.3)) * t) * Math.exp(-t / 0.09);
+      }
+      return normalize(mix(envelope(highPass(whiteNoise(n, next), 1500, rate), rate, 0.001, 0.02), twang, 0.6));
+    }
+    case 'knock': {
+      // A dull thud: the board against a body, half in the water.
+      const n = seconds(0.35);
+      return normalize(mix(thump(n, rate, 95, 60, 0.07), envelope(lowPass(whiteNoise(n, next), 700, rate), rate, 0.002, 0.05), 0.35));
+    }
+    case 'duckDive': {
+      // A gulping plunge, lower and shorter than the fall's.
+      const n = seconds(0.9);
+      return normalize(mix(envelope(lowPass(whiteNoise(n, next), 1200, rate), rate, 0.02, 0.25), thump(n, rate, 80, 40, 0.15), 0.8));
     }
     case 'click': {
       const n = seconds(0.03);

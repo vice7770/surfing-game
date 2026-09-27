@@ -90,6 +90,6 @@ describe('WaveLab', () => {
     lab.fly.applyTo(sea.camera.camera);
     const info = lab.info(sea, 'metric');
     expect(info?.summary).toBe('Plunging · a left at 50° · good for surfing');
-    expect(info?.rows[0].value).toBe('1.6 m');
+    expect(info?.rows[1].value).toBe('1.6 m');
   });
 });

@@ -14,6 +14,22 @@ export function showsBalanceMeter(setting: GameplaySettings['balanceMeter'], swe
   return setting === 'always' || (setting === 'practice' && swell === 'practice');
 }
 
+/** Whether the breath meter shows after a wipeout (the wipeout spec, Part B): by the balance meter's rule. */
+export function showsBreathMeter(setting: GameplaySettings['breathMeter'], swell: SurfConditions['swell']): boolean {
+  return setting === 'always' || (setting === 'practice' && swell === 'practice');
+}
+
+/** The screen's edges darken as the breath falls below half, to MAX_VIGNETTE at none (Part B). */
+const MAX_VIGNETTE = 0.85;
+export function breathVignette(breath: number): number {
+  return breath >= 0.5 ? 0 : MAX_VIGNETTE * Math.min(1, (0.5 - breath) / 0.5);
+}
+
+/** "Held down too long", once for each rescue (`seen` counts the rescues already told). */
+export function heldDownNotice(rescues: number, seen: number): { seen: number; text?: string } {
+  return rescues > seen ? { seen: rescues, text: t('hud.heldDown').toUpperCase() } : { seen: rescues };
+}
+
 /**
  * The callout for the ride's latest manoeuvre (P9): its name, the first time it is
  * seen (`key` names the one shown last); nothing between rides, which forgets it.
@@ -51,22 +67,30 @@ export class RideHud {
   private calloutKey = '';
   /** A one-time hint for a riding mechanic (P9). */
   private readonly coach = el('p', { class: 'hud-coach', attrs: { 'aria-live': 'polite' } });
+  /** The breath after a wipeout, the screen's darkening edges, and the rescues told (the wipeout spec, Part B). */
+  private readonly breath = el('div', { class: 'hud-balance hud-breath', attrs: { role: 'meter', 'aria-label': t('hud.breath'), 'aria-valuemin': '0', 'aria-valuemax': '100' } });
+  private readonly breathFill = el('div', { class: 'hud-balance-fill' });
+  private readonly vignette = el('div', { class: 'hud-vignette', attrs: { 'aria-hidden': 'true' } });
+  private rescuesSeen = -1;
 
   constructor(onPause: () => void) {
     this.balance.append(this.balanceFill);
+    this.breath.append(this.breathFill);
     this.root = el('section', { class: 'ride-hud', attrs: { 'aria-label': t('hud.speed') } },
+      this.vignette,
       this.prompt,
       this.callout,
       this.coach,
       el('div', { class: 'hud-readout' },
         this.balance,
+        this.breath,
         el('div', { class: 'hud-speed' }, this.speedValue, this.speedUnit)),
       el('button', { class: 'hud-pause', attrs: { type: 'button', 'aria-label': t('hud.pause') }, on: { click: onPause } }, icon(ICONS.pause)),
       this.hints);
   }
 
   /** `promptOverride`: the Surf School's own line in place of the ride's prompt (spec L2). */
-  update(ride: SurfZoneStatus['ride'] | undefined, units: Units, keys: HintKeys, showHints: boolean, showBalance = true, coachHint = '', promptOverride?: string): void {
+  update(ride: SurfZoneStatus['ride'] | undefined, units: Units, keys: HintKeys, showHints: boolean, showBalance = true, coachHint = '', promptOverride?: string, showBreath = false): void {
     if (this.coach.textContent !== coachHint) this.coach.textContent = coachHint;
     this.coach.hidden = coachHint === '';
     const prompt = promptOverride ?? ridePrompt(ride, keys);
@@ -74,6 +98,11 @@ export class RideHud {
     this.prompt.hidden = prompt === '';
     const callout = maneuverCallout(ride?.live, this.calloutKey);
     this.calloutKey = callout.key;
+    // A rescue from a hold-down says so where the manoeuvres are called (the first status only counts them).
+    const rescues = ride?.rescues ?? 0;
+    const notice = this.rescuesSeen < 0 ? { seen: rescues } : heldDownNotice(rescues, this.rescuesSeen);
+    this.rescuesSeen = notice.seen;
+    if (notice.text) callout.text = notice.text;
     if (callout.text) {
       // Restart the fade for each new manoeuvre.
       this.callout.textContent = callout.text;
@@ -93,6 +122,15 @@ export class RideHud {
       this.balance.classList.toggle('is-low', reserve < LOW_BALANCE);
       this.balance.setAttribute('aria-valuenow', Math.round(reserve * 100).toString());
     }
+    const breath = ride?.breath ?? 1;
+    this.breath.hidden = !showBreath || ride?.phase !== 'fallen' || breath >= 0.999;
+    if (!this.breath.hidden) {
+      this.breathFill.style.transform = `scaleY(${Math.max(0, breath).toFixed(3)})`;
+      this.breath.classList.toggle('is-low', breath < LOW_BALANCE);
+      this.breath.setAttribute('aria-valuenow', Math.round(Math.max(0, breath) * 100).toString());
+    }
+    const dark = breathVignette(breath).toFixed(2);
+    if (this.vignette.style.opacity !== dark) this.vignette.style.opacity = dark;
     this.hints.hidden = !showHints;
     const signature = `${keys.paddle}|${keys.popUp}|${keys.steer}|${keys.pause}`;
     if (showHints && signature !== this.hintKeys) {

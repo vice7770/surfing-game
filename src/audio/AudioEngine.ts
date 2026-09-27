@@ -13,7 +13,9 @@ export interface ListenerPose {
 
 type Bus = 'sea' | 'board' | 'ui';
 const LOOP_BUS: Record<LoopId, Bus> = { roar: 'sea', distant: 'sea', wind: 'sea', bubbles: 'sea', rush: 'board', rail: 'board' };
-const ONE_SHOT_BUS: Record<OneShotId, Bus> = { lipJet: 'sea', lipRoller: 'sea', paddle: 'board', popUp: 'board', plunge: 'board' };
+const ONE_SHOT_BUS: Record<OneShotId, Bus> = {
+  lipJet: 'sea', lipRoller: 'sea', paddle: 'board', popUp: 'board', plunge: 'board', leashSnap: 'board', knock: 'board', duckDive: 'board',
+};
 
 /** Seconds for a level, rate or place to settle on a new target. */
 const RAMP = 0.08;
