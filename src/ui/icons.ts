@@ -13,6 +13,11 @@ export const ICONS = {
   back: svg('<path d="M14.5 5.5 8 12l6.5 6.5"/>'),
   sound: svg('<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>'),
   muted: svg('<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="m16 9.5 5 5M21 9.5l-5 5"/>'),
+  // The Wave Lab's toolbar (spec L1).
+  follow: svg('<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>'),
+  play: svg('<path d="M8 5.5v13l10-6.5z"/>'),
+  step: svg('<path d="M7 5.5v13l8-6.5z"/><path d="M18 5v14"/>'),
+  eye: svg('<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>'),
 } as const;
 
 export type IconName = keyof typeof ICONS;
