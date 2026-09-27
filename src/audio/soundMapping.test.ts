@@ -173,3 +173,12 @@ describe('soundTargets', () => {
     expect(soundTargets(frame()).playbackRate).toBe(1);
   });
 });
+
+// The wipeout spec, Part B: under water, the rider hears the world muffled.
+describe('the rider under water', () => {
+  it('muffles everything while the rider\'s head is under, wherever the camera is', () => {
+    const board = { x: 0, y: 0, z: 0, speed: 1, sideslip: 0 };
+    expect(soundTargets(frame({ board, ride: { phase: 'fallen', previousPhase: 'fallen', speed: 1, headUnder: true } })).muffle).toBe(1);
+    expect(soundTargets(frame({ board, ride: { phase: 'fallen', previousPhase: 'fallen', speed: 1, headUnder: false } })).muffle).toBe(0);
+  });
+});

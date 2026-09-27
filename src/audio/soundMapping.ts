@@ -35,6 +35,8 @@ export interface SoundFrame {
   ride?: {
     phase: RiderPhase; previousPhase: RiderPhase; speed: number;
     duck?: number; previousDuck?: number; leashSnapped?: boolean; previouslySnapped?: boolean; knock?: number;
+    /** The fallen rider's head is under water (Part B): the world muffles, as for the camera under water. */
+    headUnder?: boolean;
   };
 }
 
@@ -250,7 +252,7 @@ export function soundTargets(frame: SoundFrame, shaper = new OneShotShaper()): S
   return {
     loops,
     oneShots,
-    muffle: listener.underwater ? 1 : paused ? PAUSED_MUFFLE : 0,
+    muffle: listener.underwater || frame.ride?.headUnder ? 1 : paused ? PAUSED_MUFFLE : 0,
     playbackRate: frame.timeScale,
   };
 }

@@ -46,7 +46,7 @@ import type { CallId } from '../net/protocol';
 import { createRideEndCard, endCardModel } from './RideEndCard';
 import { bestTwo, scoreRide } from '../game/waveScore';
 import { HintBook, HintCoach, offersHint, type HintId } from '../game/hints';
-import { RideHud, showsBalanceMeter, type HintKeys } from './RideHud';
+import { RideHud, showsBalanceMeter, showsBreathMeter, type HintKeys } from './RideHud';
 import { ScreenStack, type ScreenId } from './ScreenStack';
 import { EN, t, type StringKey } from './strings';
 import { createSurfScreen, type SurfChoice } from './SurfScreen';
@@ -322,7 +322,8 @@ export class App {
         boardInReach: ride?.boardInReach ?? false,
       }, (id) => this.hintText(id) !== '' && offersHint(id, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell));
       this.rideHud.update(ride, gameplay.units, this.hintKeys(), !seen.rideHints,
-        showsBalanceMeter(gameplay.balanceMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell), hint ? this.hintText(hint) : '');
+        showsBalanceMeter(gameplay.balanceMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell), hint ? this.hintText(hint) : '', undefined,
+        showsBreathMeter(gameplay.breathMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell));
       this.trackRide();
     }
     const { online } = this;
