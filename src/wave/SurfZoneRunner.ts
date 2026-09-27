@@ -134,6 +134,27 @@ export const SWIM_BITS = { stroking: 1, diving: 2, under: 4 } as const;
 
 const IDLE: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
 
+/**
+ * The rider's snapshot (`RIDER_SNAPSHOT`) from a ride session, or all zeros with
+ * no session: what the page draws the rider from (`fill`, and the body film).
+ */
+export function writeRiderSnapshot(session: RideSession | undefined, cue: boolean, out: Float64Array, point: Vector3): void {
+  out.fill(0);
+  if (!session) return;
+  for (let i = 0; i < 7; i += 1) session.renderPoint(i, point).toArray(out, RIDER_SNAPSHOT.points + i * 3);
+  out[RIDER_SNAPSHOT.phase] = RIDER_PHASES.indexOf(session.phase);
+  out[RIDER_SNAPSHOT.cue] = cue ? 1 : 0;
+  out[RIDER_SNAPSHOT.present] = 1;
+  out[RIDER_SNAPSHOT.heading] = session.heading;
+  out[RIDER_SNAPSHOT.duck] = session.rider.attached ? session.rider.duck.press : 0;
+  out[RIDER_SNAPSHOT.breath] = session.breath.level;
+  session.leashPlug(point).toArray(out, RIDER_SNAPSHOT.plug);
+  const { leash, surfer } = session;
+  out[RIDER_SNAPSHOT.leash] = (leash.snapped ? LEASH_BITS.snapped : LEASH_BITS.worn) | (leash.reeling ? LEASH_BITS.reeling : 0);
+  out[RIDER_SNAPSHOT.swim] = !surfer.active ? 0
+    : (surfer.diving ? SWIM_BITS.diving : surfer.lastForces.swim.lengthSq() > 0 ? SWIM_BITS.stroking : 0) | (surfer.underwater ? SWIM_BITS.under : 0);
+}
+
 /** The Wave Lab readout's values, as plain data that can cross the worker boundary. */
 export interface SurfZoneStatus {
   seaTime: number;
@@ -559,22 +580,7 @@ export class SurfZoneRunner {
       board.orientation.toArray(buffers.board, 3);
       buffers.board[7] = 1;
     }
-    const { session } = this;
-    buffers.rider.fill(0);
-    if (session) {
-      for (let i = 0; i < 7; i += 1) session.renderPoint(i, this.point).toArray(buffers.rider, RIDER_SNAPSHOT.points + i * 3);
-      buffers.rider[RIDER_SNAPSHOT.phase] = RIDER_PHASES.indexOf(session.phase);
-      buffers.rider[RIDER_SNAPSHOT.cue] = this.cue ? 1 : 0;
-      buffers.rider[RIDER_SNAPSHOT.present] = 1;
-      buffers.rider[RIDER_SNAPSHOT.heading] = session.heading;
-      buffers.rider[RIDER_SNAPSHOT.duck] = session.rider.attached ? session.rider.duck.press : 0;
-      buffers.rider[RIDER_SNAPSHOT.breath] = session.breath.level;
-      session.leashPlug(this.point).toArray(buffers.rider, RIDER_SNAPSHOT.plug);
-      const { leash, surfer } = session;
-      buffers.rider[RIDER_SNAPSHOT.leash] = (leash.snapped ? LEASH_BITS.snapped : LEASH_BITS.worn) | (leash.reeling ? LEASH_BITS.reeling : 0);
-      buffers.rider[RIDER_SNAPSHOT.swim] = !surfer.active ? 0
-        : (surfer.diving ? SWIM_BITS.diving : surfer.lastForces.swim.lengthSq() > 0 ? SWIM_BITS.stroking : 0) | (surfer.underwater ? SWIM_BITS.under : 0);
-    }
+    writeRiderSnapshot(this.session, this.cue, buffers.rider, this.point);
     buffers.lipHitCount = this.lipHits.drain(buffers.lipHits);
     this.snapshotKnock = this.knock;
     this.knock = 0;
