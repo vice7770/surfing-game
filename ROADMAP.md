@@ -22,7 +22,7 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus a
 - [x] **During a ride:** a clean screen with the prompt, speed and balance, plus key hints on the first ride.
   - Esc pauses: Resume, Replay wave, New wave, Camera, Settings, Quit to menu.
   - An end-of-ride card shows the outcome and reason, distance, top speed and time, and a "new best" badge. Its buttons are Replay (R), New wave, Change spot and Menu.
-- [x] **Wave Lab:** today's screen, unchanged, reached from the menu. It sits behind one `devTools` switch together with the telemetry option, the Profile and Below views and the URL flags, so one line hides them all later.
+- [x] **Wave Lab:** today's screen, unchanged, reached from the menu. It sits behind one `devTools` switch together with the telemetry option, the Profile and Below views and the URL flags, so one line hides them all later. *Replaced by L1 (2026-09-27): the Wave Lab is now a player-facing wave viewer, and the legacy playable wave has left the page (see below).*
 - [x] **Logbook:** the last 50 rides, and bests per spot for distance, top speed and ride time. No score yet.
 - [x] **Settings:** Gameplay · Graphics · Controls · Accessibility. Changes apply instantly and are saved in the browser, each tab has a Reset button, and settings that can only change between waves are marked "next wave".
   - **Gameplay:** units (km/h and m, or mph and ft), default camera, touch controls, and a telemetry option while `devTools` is on.
@@ -106,6 +106,77 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [S1 sound](
     Wind, rush, rail, the pop-up, the click and the chime stay synthesised.
   - **The user's listening playtest,** which tunes the mapping's provisional levels.
 
+### P1 · Online lineup (N1) — `Part A done (playtest open); Part B next`
+
+Grilled with the user on 2026-09-26 (Q1–Q20, every recommendation accepted). [Spec](docs/superpowers/specs/2026-09-26-online-lineup.md) · [plan](docs/superpowers/plans/2026-09-26-n1-online-lineup.md).
+
+Up to 50 friends share one break from a room link. Every player runs the whole sea and their own surfer. A small Node server keeps the room's clock and relays poses; it never runs water.
+
+- [x] **Drift gate** ([drift report](docs/research/drift-report.md)): two copies of the Canyon's sea stayed identical for 240 s under 32-bit rounding and under a paddler's pushes. Late joiners' fresh seas broke up to 2 s and 17 m off, so the user chose the **sea handover**.
+- [x] **Sea handover:** a joiner, or a player rebuilding a sea that fell behind, gets the longest-present player's sea through the server:
+  - it carries the water, breaking, predictors, foam and lip: 1.4 MB encoded, 763 KB deflated on the Canyon;
+  - a restored sea steps on bit-identically, and after 32-bit encoding it stays within 0.1 % of Hs;
+  - a donor that stalls is passed over after 10 s, and an empty room starts fresh.
+  A state probe found which arrays carry history.
+- [x] **Server** (`server/`, Node + `ws`):
+  - serves the built game and `/ws`, with rooms in memory;
+  - rooms have 8-character codes, a cap of 2–50, a pinned build and a creator's Kick;
+  - poses are bundled at 20 Hz;
+  - messages are rate-limited, and flooders are disconnected;
+  - an empty room closes after 5 minutes.
+- [x] **Game:**
+  - the sea follows the room's clock (NTP-style offset) and catches up after a join;
+  - it rebuilds when more than 1 s behind for 3 s, 5 s behind at once, or 30 s behind before catching up;
+  - poses are 76 bytes, and other surfers are interpolated 100 ms behind, drawn on this player's water in their own looks with name tags;
+  - their board pushes reach every player's water;
+  - spawns and respawns (3 s) go to a free spot in the lineup.
+- [x] **Screens:**
+  - **Multiplayer:** name, surfer, join by code or create with conditions and a cap; `?room=CODE` links; WebGPU is checked.
+  - **Online pause menu:** the sea runs on underneath; it shows the players, the link and Kick, and has Leave room.
+  - **During a ride:** surf calls on 1–4 (remappable), a ride feed, notices (catching up and how far, reconnecting, respawning), and online rides marked in the Logbook.
+- [x] **Dev bots** (`BOTS=1`, `?bots=N`) replaying an autopilot track, and **Fly.io packaging** (Dockerfile, `fly.toml`, `npm run deploy`).
+- **Record (2026-09-26):**
+  - **Checked live in the browser pane:**
+    - create, join by link, and relay;
+    - drawing another surfer with its tag;
+    - the handover (`seaSource: 'handed'` in the second tab);
+    - calls, the pause menu, and Leave room.
+  - **Not judged here:** this M1 Air was loaded (load 7–11, the pane's renderer using a full core), so a GPU step took 5–52 ms and a fresh room's catch-up took about 30 s. Frame times and bandwidth with bots wait for a machine that isn't loaded.
+- [ ] **Open:**
+  - the user's Fly.io account and first deploy;
+  - the playtest with about 5 friends;
+  - a bot-filled room measured on the M4 Pro;
+  - **Part B, physical collisions,** planned after the playtest.
+
+### P1 · Wave Lab and Surf School (L1–L3) — `L1 done (playtest open); L2 next`
+
+Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [Spec](docs/superpowers/specs/2026-09-27-wave-lab-surf-school.md) · [L1 plan](docs/superpowers/plans/2026-09-27-l1-wave-lab.md).
+
+- [x] **L1 · Wave Lab:** a place to look at waves up close, for everyone (the tile shows whatever `devTools` says). No rider, nothing to play.
+  - **Settings panel** (closed until asked for):
+    - spot; Buoy, Storm or Practice swell with their sliders; direction, tide and local wind — these rebuild the sea on **Apply**, and the camera stays where it was;
+    - **New sea** rebuilds with a new seed;
+    - Dawn / Midday / Sunset with sun height and direction, and the Classic / Rich look, which apply at once;
+    - with the dev tools on: solver, compute, the physics readout and the sound check.
+
+    The applied settings are remembered in the browser (`breakline.wavelab.v1`).
+  - **Camera:**
+    - free flight: WASD, Q/E, Shift, drag to look, the wheel for speed; the pad's sticks, triggers and LB; a touch stick with Up and Down;
+    - it goes underwater, and stays within the tank (80 m past its sides, 100 m up the beach);
+    - **jump points** 1–4: Overview, Profile, Below, and Cinematic, which sweeps until the player moves;
+    - **Follow** (F): rides along with the breaking crest nearest the centre of the view.
+  - **Time:** Space pauses the sea while the camera still flies; `.` steps one frame; `[` `]` pick 0.1, 0.25, 0.5 or 1×.
+  - **Info card:** the wave under the view in surfers' words ("Plunging · a left at 52° · good for surfing"): face height, period, breaker, peel, breaking share, next set.
+  - **Interface:** H hides everything; Esc opens a lab pause menu (Resume, Settings, sound, Quit).
+  - **Retired from the page:** the old lab screen, its legacy playable wave and tuning sliders, the lab's telemetry and the run history.
+  - **URL flags:**
+    - `?physical` starts a Surf ride;
+    - `?demo` starts a Surf ride the dev autopilot rides;
+    - `?record` and `?waterSheet` run on a bare stage.
+- [ ] **L1 open:** the user's playtest, with the browser pane shown, since motion and the gamepad were not judged live in the hidden pane.
+- [ ] **L2 · Surf School:** nine lessons on a recorded wave, then Free Practice. Next.
+- [ ] **L3 · Legacy removal:** delete the legacy wave's modules and tests, now unreached.
+
 ### P1 · Steam Controller (C1) — `In Progress (hardware check open)`
 
 Requirements agreed in a grilling session on 2026-09-26 ([spec](docs/superpowers/specs/2026-09-26-steam-controller.md)). The plan is [C1 Steam Controller](docs/superpowers/plans/2026-09-26-c1-steam-controller.md). The user's 2026 Steam Controller (Puck and cable) plays in Chrome and Arc through WebHID, because on macOS neither the browser nor Steam exposes it as a gamepad.
@@ -120,7 +191,7 @@ Requirements agreed in a grilling session on 2026-09-26 ([spec](docs/superpowers
   - dead zones 0.05 for the Steam Controller and 0.15 for other gamepads, each with a slider;
   - the pad touched last drives the sticks.
 - [x] **Buttons:**
-  - the hand moves from X to LB; on the Steam Controller L4 also does the hand and R4 also pops up;
+  - the hand moves from X to LB and the online party call (N1) from LB to X; on the Steam Controller L4 also does the hand and R4 also pops up;
   - Settings shows two pad slots per action;
   - old saves migrate once;
   - hints and Settings name View, Menu and the grips after the Steam Controller was used last.
@@ -135,9 +206,10 @@ Requirements agreed in a grilling session on 2026-09-26 ([spec](docs/superpowers
 ### Later — `Backlog`
 
 Recorded in the same session; each gets its own grilling before work starts.
-1. **Multiplayer beach:** rooms with a player limit the host sets, players starting on the sand, and a beach bar to hang out in. Crowded lineups where surfers and boards collide physically are part of the fun, as on a real busy beach. Details wait for its grilling: room sizes, who hosts, board and body collisions, and whether solo play also starts on the sand.
+1. **Multiplayer beach:** players starting on the sand, and a beach bar to hang out in. Rooms, the relay and the shared sea now exist (N1); collisions are N1 Part B. Still to grill: the beach start and the bar, and whether solo play also starts on the sand.
 2. **Filmed menu background:** a sequence of waves forming and breaking, filmed with the `?record` tool once the waves are finished. It replaces the live menu background.
 3. **Music:** none in S1 (grilling, 2026-09-26). Good CC0 music is scarce; a CC-BY or paid track would need a credits screen.
+4. **Whitewater forces on bodies** (G9's backlog): lost buoyancy in aerated water, and hits from the splash-up and the foam ball, once the riding physics settles. A lip and whitewater look for Classic, if weaker machines call for one.
 
 ## Next milestone — physical wave formation — `In Progress`
 
@@ -328,6 +400,54 @@ Requirements agreed on 2026-09-26: [G8 spec](docs/superpowers/specs/2026-09-26-g
   - a middle water level if the M1 Air needs one;
   - the tank/far-field seam: from high up, the tank's offshore ridge shows a thin outline and sand-coloured slivers, in both looks.
 
+### P1 · Barrel and whitewater (G9) — `Done`
+
+Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpowers/specs/2026-09-26-g9-barrel-whitewater.md); [plan](docs/superpowers/plans/2026-09-26-g9-barrel-whitewater.md).
+- [x] **Part A · the barrel look** (Rich only; Classic unchanged, its lip sheet now pinned by a snapshot too):
+  - **Tubes reach the page.** The worker sends raw heights and a table of flying tubes. One carve serves the physics, the page's Classic texture and its height lookups; it agrees with the worker to under 0.1 mm.
+  - **The void as one shape along the peel.** Between two columns whose tubes belong to one peel (crests within 2 m along their travel, facing the same way), the tube itself is interpolated (crest, opening, size); otherwise the carved surfaces blend. The physics carves with the same function at its 1 m nodes while the Rich water cuts every 0.25 m, so board and eye agree to about 0.2 m inside a void; a finer physics carve can come with P12's tube riding.
+  - **The void cut on the GPU**, per vertex in the 0.25 m patch and per pixel, with a 16-step twin of the physics' floor curve, within 5 mm of it.
+  - **The lip:** spline-smoothed between its parcels, as thick as its water (never thicker than a compact blob of it), with rounded edges where it ends, shaded with the Rich water's optics. Sunlight, and the sky's light where sky lies behind it, come through it by Beer–Lambert over its own path; it reflects at the Rich balance and whitens to foam as it ages. It is rebuilt only when a snapshot brings new parcels.
+  - **Judging it:** `?inpage&waterSheet&spot=reef` holds the practice Reef on an open tube and shoots it beside, from the shoulder and inside.
+  - **Cost on the M1 Air** (render alone, 1280×720): Rich tube shots take about 12 ms against Classic's 6 ms; the lineup about 8 ms against 6 ms.
+  - **Checked:** a JS mirror of the GPU carve agrees with the physics' to 5 mm; the Rich spray fade and crest light read the carved surface; snapshots carry up to 256 tubes, keeping the newest.
+  - **Open, for the playtest:** how the barrel reads in play; a cheaper carve slope (analytic, one evaluation instead of three); the caustics under a void still refract through the uncut surface.
+- [x] **Part B · breaking whitewater** (physics in the worker whatever the look, drawn in Rich only, no forces on bodies but the collapse's carve; sources in `docs/research/whitewater-sources.md`, outcomes in `docs/research/whitewater-report.md`):
+  - **Air in the water:** an aeration field on the solver grid. Landing lips entrain β = 0.1 of their impact energy against buoyancy, bores β of their dissipation, and collapsing tubes the air they do not blow out. A plunge's air fills a plume as wide as it is deep. The field is carried by the currents, degasses at 0.25 m/s over the plume's depth, and holds at most the measured α_max = 0.2. The Rich churn now shows where the water is fresh with air.
+  - **Splash-up:** each landing jet parcel re-throws 30 % of its water up (0.6 of its impact speed) and on (0.8), drawn in Rich as a sheet with the lip's machinery. Water and momentum are conserved.
+  - **Collapse and spit:** once its jet has all landed, a tube shrinks over its free-fall time √(2W/g). The rider feels the shrinking void, and its air leaves as the void loses volume. Half of it leaves as spray: out of the peel's open end at the speed mass conservation gives (the spit), or up through the lip where the whole section closes (an eruption). The rest breaks into bubbles. The air balance is exact.
+  - **Foam ball:** each collapsing tube rolls a κ_r·H² roller of 0.5–0.8 m churn sprites tumbling with its crest. The tube's whitewater (foam ball, spit, eruption) has a spray pool of its own and is drawn in Rich only.
+  - **Bubble plume:** the Rich body whitens as far down as the air went, from above through the water over it and from below.
+  - **Report** (Wave Lab defaults, 2 seeds × 12 periods): the Reef throws the most explosive whitewater and the Beach the gentlest with no per-spot values:
+
+    | | Reef | Beach |
+    |---|---|---|
+    | Splash-up, 90th percentile | 1.12 m | 0.76 m |
+    | Spit speed, median | 10.8 m/s | 9.9 m/s |
+    | Median surveyed void fraction | 0.15 | 0.05 |
+    | Surveys at α_max | 24 % | 2 % |
+    | Foam-ball sprites, median | 120 | 41 |
+
+    Collapses take 0.3–0.4 s, and the Canyon barely plunges.
+  - **Judging it:** `?inpage&waterSheet&whitewater` (with `&spot=reef` or `&spot=beach`) holds the sea on a collapsing tube and shoots its whitewater.
+  - **Cost on the M1 Air:**
+    - worker step: 17.3 ms on the Reef against Part A's 16.2 ms, and 17.9–18.7 ms on the Beach against 16.2–16.7 ms, mostly the aeration field;
+    - render, 1280×720, at the Beach's whitewater: Rich 10–13 ms against Classic's 5–8 ms, the same as Part A's tube shots.
+  - **Found and fixed:**
+    - by the sheet: collapsing a tube while its jet still poured landed the pour on the crest, and the practice Reef's solver ran away; a regression test now runs it;
+    - by the report: the aeration field had no ceiling.
+  - **Open, for the playtest:**
+    - how the whitewater reads in play;
+    - the render values (s_a 40 per m³, the mist shares, the foam-ball size, PLUME_DENSITY);
+    - at dawn and sunset a nearby spit's mist glows as an orange haze;
+    - the carve's teeth, the barrel's main open item. Two causes, found on the Reef sheets:
+      - a void's back stood as a wall half its width deep at the crest, which the mesh drew as a jagged crack along the lip. **Fixed:** its floor now meets the surface over `TUBE_EDGE` (0.35 m) behind it, in the physics and on the GPU alike. The front, where the jet lands, is unchanged, so the tube report still holds;
+      - **open:** where a peel's columns collapse at different stages, a column whose void has gone stands as a spike a metre wide between carved neighbours (Part A's instant close did the same). It needs the peel to collapse as one section;
+    - the spray pool (4,096) is full a fifth of the time on the Reef and the Point, and the lip's splash gives way first;
+    - rare spits reach 160–180 m/s where a small mouth drains a long closing section.
+
+    Whitewater forces on bodies and the player's tube camera (P12) stay in the Backlog.
+
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 
 Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](docs/superpowers/specs/2026-09-26-gameplay-milestone.md), grounded in the [surf-science survey](docs/research/surf-gameplay-research.md).
@@ -344,7 +464,19 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
     - trim, stall, crouch, the hand in the face and heading hold;
     - pumping gains speed when timed with the path (Kogelbauer 2024), and nothing on flat water;
     - turns and ride ends read from the ride's trace, and a provisional 0–10 score on the WSL criteria.
-  - **Open: turns are about ten times too slow.** A full lean turns about 0.2 rad/s on a 9° rail, against Forsyth 2024's 1.9 rad/s on 42°. The upright body cannot bank into a turn. A rail-angle controller designed on a modal model of the board and a banked body is the next physics item, with the full-lock carve.
+  - **Turns redesigned** ([plan](docs/superpowers/plans/2026-09-26-turn-redesign.md), [findings](docs/superpowers/plans/2026-09-26-turn-redesign.md#findings), [carve lab](docs/research/carve-lab.md)):
+    - the standing body banks on its ankles as an eighth unknown in the board's solve; the balance caps the ankle where the feet reach their edges, and the upper body's swing takes the rest;
+    - the hard turn makes 66° in 1.2 s at 2.1 rad/s on a 50–60° rail (it made 13° at 0.2 rad/s; Forsyth 2024: 99° in 0.96 s at 1.9 rad/s on 42°), and the roll–yaw wobble decays at 7–11 m/s (ζ 0.05–0.07);
+    - the carve lab measured the plant: a planing board rights about the rider's load line (850–1,700 N·m/rad), and the turn follows the rail within 0.03 s;
+    - play fixes after the user's playtest (PR #27): the arrow keys steer both ways; a pop-up always ends standing and Enter lies the rider back down; below planing the body rides upright over its feet;
+    - fall fixes (2026-09-27): the rail stays within its 48° bite and the lean within what a 4.5 m carve holds. Held at full steer at 6 m/s the rail reached 65° and the board bogged (79 % of its speed kept); now 50° and 98 %. The hard turn still makes 65° in 1.2 s. Carrying the body upright at once when the board drops off the plane was tried and tipped the slowing board, so it still stands back up on its ankles first;
+    - a crouch held while the feet brake a lean into a turn (2026-09-27): crouched full steer on the trough's flat water threw the rider in 0.65 s (the crouch's drop took the load off the board as the body leaned in, and the ankles rolled the board over instead of stopping the body). It was how the Canyon's rides ended, in their first bottom turn. Now it holds at 8 and 11 m/s;
+    - open: full steer held for 2 s or more carves up the plane face, stalls and falls, as a real carve held uphill would. The steer's 50° full bank was chosen with the user for the stronger turn;
+    - open: the Canyon's rides are still short. With the play and fall fixes the autopilot made 25 stands and 3 rides of 3 s or more over two seeds × 5 min (mean 6.4 s; before them 7 and 0, and 14 and 10 before the redesign); 282 of 335 attempts missed the wave. Traced ride by ride, the rider pops up straight down a 2.2–2.8 m face, reaches 11–12 m/s against a crest at 6–8 m/s and falls in its first bottom turn, where the rail releases at 12 m/s; broken water does not carry a board. Next: [riding the wave](docs/superpowers/plans/2026-09-27-riding-the-wave.md) (honest ride ends, the curl, the whitewater's push, a 1–1.5 m reference wave, the pocket reflex).
+  - **Riding the wave, Part A** ([spec](docs/superpowers/specs/2026-09-27-riding-the-wave.md), [plan](docs/superpowers/plans/2026-09-27-riding-the-wave.md), [findings](docs/superpowers/plans/2026-09-27-riding-the-wave.md#findings)):
+    - broken water carries a board (the surface roller's push in the sampler); honest ride ends (a fall, a kick-out, the wave dying, or lost); the gauge finds the curl; the ride report reads the done criteria;
+    - the pocket reflex (Settings → Gameplay → Stay near the curl, Practice by default); the Practice swell at Hs 1.4 m for 1–1.5 m faces ([reference wave](docs/research/reference-wave.md));
+    - open: the done criteria are not met (median ride 2.6 s against 10; without the roller's push the Canyon gave 17 stands and 1 ride of 3 s, with it 49 and 21). Riders stand on the flat ahead of the crest after a straight take-off (a paddler turns only ~7°/s), stall, and fall as the face passes under the slow board; a crouched full-steer turn at 10 m/s wobbles in yaw. Next: P10's take-off, re-catching, the wobble. Animation and regular/goofy are Part B.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
@@ -363,7 +495,7 @@ The user's original list of 15 mechanics (2026-09-26) is covered as follows:
 
 ### Later — `Backlog`
 
-Follow-ups from the open-edge fix (#14) and the test timeouts (#15), 2026-09-26. The full-lock carve is not repeated here; it is P9's next physics item.
+Follow-ups from the open-edge fix (#14) and the test timeouts (#15), 2026-09-26. The full-lock carve and slow turns were closed by the turn redesign.
 1. **Rerun the catch reports.** The Canyon's ghost-rider numbers (#12) and the other spots' rows were measured before the open-edge fix, which changes breaking near the window's edges: in the 40 m Point peel test, lip launches went 28 → 57 and the second wave now breaks in almost every column. Regenerate the [natural](docs/research/catch-report.md) and [practice](docs/research/catch-report-practice.md) reports and the numbers quoted above.
 2. **Checked (2026-09-26): the Point over several seeds.** Practice, 3 seeds × 2 min, 30 ghost riders, before P7 against now (tubes and the momentum fix):
    - stands fell 14 → 3 and rides of 3 s or more 4 → 2 (longest 13.7 → 5.5 s); by seed, stands went 13 / 1 / 0 → 2 / 0 / 1, so seed 1's lucky run carries most of the drop;

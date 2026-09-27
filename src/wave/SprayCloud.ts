@@ -1,5 +1,6 @@
 import { GRAVITY } from './dispersion';
 import { seededRandom } from './random';
+import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
 
 /** A lip parcel falling back into the water: where, how much, and how fast. */
 export interface LipImpact {
@@ -47,6 +48,10 @@ export interface SprayScene {
   readonly windSpeed: number;
   /** The rider's hands pulling through the water this step. */
   readonly strokes?: readonly StrokeSplash[];
+  /** This step's spits, eruptions and foam balls from closing tubes (G9). */
+  readonly spits?: readonly TubeSpit[];
+  readonly eruptions?: readonly TubeEruption[];
+  readonly rollers?: readonly TubeRoller[];
 }
 
 /**
@@ -66,6 +71,16 @@ const MIST_LIFE = 4;
 const SPRAY_PER_JOULE = 0.05;
 const SPRAY_PER_FOAM = 0.6;
 const FEATHER_RATE = 0.05;
+/** Drawn spray and mist per m³ of air a closing tube blows out (G9, s_a; docs/research/whitewater-sources.md, provisional). */
+export const SPRAY_PER_AIR = 40;
+/** The share of a spit's and of an eruption's particles that are mist (provisional). */
+const SPIT_MIST = 0.5;
+const ERUPTION_MIST = 0.3;
+/** One foam-ball sprite stands for this much of a roller's churned water, m³: a 0.6 m ball (provisional render value). */
+export const FOAM_BALL_VOLUME = (Math.PI * 0.6 ** 3) / 6;
+/** Foam-ball sprites are this wide, m, and outlive their roller by this long, s. */
+const FOAM_BALL_SIZE = { min: 0.5, max: 0.8 };
+const FOAM_BALL_LINGER = 1;
 /** Offshore wind this fast starts blowing spray off steep crests, m/s; the crest must face it this steeply and stand this high over the depth. */
 const FEATHER_ONSET = 4;
 const FEATHER_SLOPE = 0.25;
@@ -73,31 +88,55 @@ const FEATHER_HEIGHT = 0.3;
 /** A paddle splash leaves at these shares of the hand's speed through the water: upward, and back along the water the hand pushed. */
 const STROKE_UP = { min: 0.3, max: 0.9 };
 const STROKE_BACK = { min: 0.3, max: 0.7 };
-/** A splash-up leaves at this share of the lip's impact speed, upward, and keeps this share of its horizontal speed. */
-const SPLASH_UP = { min: 0.3, max: 0.8 };
-const SPLASH_FORWARD = { min: 0.2, max: 0.6 };
+/**
+ * A lip impact's drops leave at the splash-up's speeds (G9, `SPLASH_UP`): up at
+ * its share of the impact speed, on at its share of the parcel's forward speed,
+ * each a fifth either way for variety. `random` is in [0, 1).
+ */
+export function splashLaunch(speed: number, random: number): { up: number; forward: number } {
+  const spread = 0.8 + 0.4 * random;
+  return { up: speed * SPLASH_UP.vertical * spread, forward: SPLASH_UP.horizontal * (1.2 - 0.4 * random) };
+}
 const WET = 0.05;
 const WATER_DENSITY = 1025;
-/** Floats per particle in `particles`: x, y, z, size (m), opacity. */
-export const SPRAY_STRIDE = 5;
+/**
+ * Floats per particle in `particles`: x, y, z, size (m), opacity, and kind:
+ * 0 spray, 1 mist, and a closing tube's whitewater (G9, drawn in Rich only):
+ * 2 foam ball, 3 the spit's and eruption's spray, 4 their mist.
+ */
+export const SPRAY_STRIDE = 6;
+/** The worker's pools: spray and mist, and a closing tube's whitewater beside them, so neither crowds the other out. */
+export const SPRAY_CAPACITY = 4096;
+export const WHITEWATER_CAPACITY = 1024;
 
-type Kind = 0 | 1;
+type Kind = 0 | 1 | 2 | 3 | 4;
 const SPRAY: Kind = 0;
 const MIST: Kind = 1;
+const FOAM_BALL: Kind = 2;
+const TUBE_SPRAY: Kind = 3;
+const TUBE_MIST: Kind = 4;
+/** A closing tube's whitewater, drawn in Rich only. */
+const isWhitewater = (kind: number) => kind >= FOAM_BALL;
+const isMist = (kind: number) => kind === MIST || kind === TUBE_MIST;
 
 /**
  * Spray and mist (plan §2.6, G6): pooled particles marking where the water's
  * kinetic energy converts, launched from lip impacts (splash-up with the
- * parcel's own momentum), from bore faces, and blown off steep crests by
- * offshore wind. They fly ballistically with quadratic air drag toward the
+ * parcel's own momentum), from bore faces, blown off steep crests by
+ * offshore wind, and blown out of closing tubes by their air (G9). A closing
+ * tube's foam ball is drawn by sprites tumbling in its roller (G9). A tube's
+ * whitewater has its own pool (`whitewaterCapacity`) beside the spray's
+ * (`capacity`), so neither crowds the other out. They fly ballistically with quadratic air drag toward the
  * wind, and end when they fall back through the surface or their time is up.
  * Visual only, with no rendering dependency, so it runs in the worker beside
  * the water; `SprayPoints` draws it.
  */
 export class SprayCloud {
-  /** Per live particle: x, y, z, size, opacity (`SPRAY_STRIDE`), packed at the front. */
+  /** Per live particle: x, y, z, size, opacity, kind (`SPRAY_STRIDE`), packed at the front. */
   readonly particles: Float32Array;
   count = 0;
+  /** How many of them are a closing tube's whitewater. */
+  whitewaterCount = 0;
   private readonly x: Float64Array;
   private readonly y: Float64Array;
   private readonly z: Float64Array;
@@ -110,21 +149,40 @@ export class SprayCloud {
   private readonly drag: Float64Array;
   private readonly size: Float64Array;
   private readonly kind: Uint8Array;
+  /** A foam-ball sprite's roller, and where it sits in it: its distance from the axis, angle round it, and offset along it. */
+  private readonly owner: Float64Array;
+  private readonly radial: Float64Array;
+  private readonly spin: Float64Array;
+  private readonly lateral: Float64Array;
   private readonly random: () => number;
 
-  constructor(seed: number, readonly capacity = 4096) {
+  constructor(seed: number, readonly capacity = SPRAY_CAPACITY, readonly whitewaterCapacity = Math.round(capacity / 4)) {
     this.random = seededRandom(seed, 0x5b1a54);
-    const make = () => new Float64Array(capacity);
+    const total = capacity + whitewaterCapacity;
+    const make = () => new Float64Array(total);
     this.x = make(); this.y = make(); this.z = make();
     this.vx = make(); this.vy = make(); this.vz = make();
     this.age = make(); this.life = make(); this.drag = make(); this.size = make();
-    this.kind = new Uint8Array(capacity);
-    this.particles = new Float32Array(capacity * SPRAY_STRIDE);
+    this.owner = make(); this.radial = make(); this.spin = make(); this.lateral = make();
+    this.kind = new Uint8Array(total);
+    this.particles = new Float32Array(total * SPRAY_STRIDE);
+  }
+
+  /** Whether there is room for another particle of spray and mist, or of a tube's whitewater. */
+  private room(whitewater: boolean): boolean {
+    return whitewater ? this.whitewaterCount < this.whitewaterCapacity : this.count - this.whitewaterCount < this.capacity;
   }
 
   update(scene: SprayScene, dt: number): void {
     if (!(dt > 0)) return;
     this.fly(scene, dt);
+    this.roll(scene.rollers ?? [], dt);
+    for (const spit of scene.spits ?? []) {
+      this.tubeBurst(spit.x, spit.y, spit.z, spit.dirX * spit.speed, 0, spit.dirZ * spit.speed, spit.airRate * dt, SPIT_MIST);
+    }
+    for (const eruption of scene.eruptions ?? []) {
+      this.tubeBurst(eruption.x, eruption.y, eruption.z, 0, eruption.speed, 0, eruption.airRate * dt, ERUPTION_MIST);
+    }
     for (const impact of scene.lipImpacts) this.splash(scene, impact);
     for (const stroke of scene.strokes ?? []) this.strokeSplash(scene, stroke);
     this.boreSpray(scene, dt);
@@ -134,11 +192,20 @@ export class SprayCloud {
 
   clear(): void {
     this.count = 0;
+    this.whitewaterCount = 0;
   }
 
   private fly(scene: SprayScene, dt: number): void {
     const { solver, windSpeed } = scene;
     for (let k = 0; k < this.count; k += 1) {
+      if (this.kind[k] === FOAM_BALL) {
+        // Rolled into place by its roller (`roll`); once that is gone it drifts on with the crest, and fades.
+        this.x[k] += this.vx[k] * dt;
+        this.z[k] += this.vz[k] * dt;
+        this.age[k] += dt;
+        if (this.age[k] > this.life[k]) this.remove(k--);
+        continue;
+      }
       // Quadratic drag toward the wind (implicit in the drag's size, so light mist cannot overshoot it).
       const rx = this.vx[k];
       const ry = this.vy[k];
@@ -167,9 +234,8 @@ export class SprayCloud {
     let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
     const cell = scene.solver.cellIndex(impact.x, impact.z);
     const surface = scene.solver.h[cell] + scene.solver.bed[cell];
-    for (; spawns > 0 && this.count < this.capacity; spawns -= 1) {
-      const up = speed * this.between(SPLASH_UP);
-      const forward = this.between(SPLASH_FORWARD);
+    for (; spawns > 0 && this.room(false); spawns -= 1) {
+      const { up, forward } = splashLaunch(speed, this.random());
       const spread = 1.5;
       const mist = this.random() < 0.2;
       this.spawn(
@@ -194,7 +260,7 @@ export class SprayCloud {
     const surface = scene.solver.h[cell] + scene.solver.bed[cell];
     const backX = -stroke.jx / push;
     const backZ = -stroke.jz / push;
-    for (; spawns > 0 && this.count < this.capacity; spawns -= 1) {
+    for (; spawns > 0 && this.room(false); spawns -= 1) {
       const up = stroke.speed * this.between(STROKE_UP);
       const back = stroke.speed * this.between(STROKE_BACK);
       const spread = 0.3 * stroke.speed;
@@ -206,13 +272,76 @@ export class SprayCloud {
     }
   }
 
+  /**
+   * Spray and mist a closing tube's air blows out (G9): the spit out of its
+   * mouth, or an eruption up through the lip. SPRAY_PER_AIR particles per m³
+   * of the air, carried at its velocity with a fifth either way of variety.
+   */
+  private tubeBurst(x: number, y: number, z: number, vx: number, vy: number, vz: number, air: number, mistShare: number): void {
+    const expected = air * SPRAY_PER_AIR;
+    let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
+    const spread = 0.1 * Math.hypot(vx, vy, vz);
+    for (; spawns > 0 && this.room(true); spawns -= 1) {
+      const pace = 0.8 + 0.4 * this.random();
+      this.spawn(
+        this.random() < mistShare ? TUBE_MIST : TUBE_SPRAY,
+        x + (this.random() - 0.5) * 0.3, y + (this.random() - 0.5) * 0.3, z + (this.random() - 0.5) * 0.3,
+        vx * pace + (this.random() - 0.5) * spread, vy * pace + (this.random() - 0.5) * spread, vz * pace + (this.random() - 0.5) * spread,
+      );
+    }
+  }
+
+  /**
+   * The foam balls (G9): each roller keeps about A·w / FOAM_BALL_VOLUME sprites
+   * in its cross-section, spread evenly over it and along its width. They ride
+   * with it and tumble as it rolls, its top going forward, at its speed over
+   * its radius, and outlive it by FOAM_BALL_LINGER.
+   */
+  private roll(rollers: readonly TubeRoller[], dt: number): void {
+    if (rollers.length === 0) return;
+    const held = new Map<number, number>();
+    for (let k = 0; k < this.count; k += 1) {
+      if (this.kind[k] === FOAM_BALL) held.set(this.owner[k], (held.get(this.owner[k]) ?? 0) + 1);
+    }
+    const byId = new Map<number, TubeRoller>();
+    for (const roller of rollers) {
+      const radius = Math.sqrt(roller.area / Math.PI);
+      if (!(radius > 0)) continue;
+      byId.set(roller.id, roller);
+      const wanted = Math.round((roller.area * roller.width) / FOAM_BALL_VOLUME);
+      for (let n = held.get(roller.id) ?? 0; n < wanted && this.room(true); n += 1) {
+        const k = this.count;
+        this.spawn(FOAM_BALL, roller.x, roller.y, roller.z, 0, 0, 0);
+        this.owner[k] = roller.id;
+        this.radial[k] = radius * Math.sqrt(this.random());
+        this.spin[k] = 2 * Math.PI * this.random();
+        this.lateral[k] = (this.random() - 0.5) * roller.width;
+      }
+    }
+    for (let k = 0; k < this.count; k += 1) {
+      if (this.kind[k] !== FOAM_BALL) continue;
+      const roller = byId.get(this.owner[k]);
+      if (!roller) continue;
+      const radius = Math.sqrt(roller.area / Math.PI);
+      this.spin[k] -= (roller.speed / radius) * dt;
+      const along = this.radial[k] * Math.cos(this.spin[k]);
+      this.x[k] = roller.x + roller.dirX * along - roller.dirZ * this.lateral[k];
+      this.y[k] = roller.y + this.radial[k] * Math.sin(this.spin[k]);
+      this.z[k] = roller.z + roller.dirZ * along + roller.dirX * this.lateral[k];
+      this.vx[k] = roller.dirX * roller.speed;
+      this.vy[k] = 0;
+      this.vz[k] = roller.dirZ * roller.speed;
+      this.life[k] = this.age[k] + FOAM_BALL_LINGER;
+    }
+  }
+
   /** Drops thrown up at bore faces, where the foam field sees bores dissipate. */
   private boreSpray(scene: SprayScene, dt: number): void {
     const { solver, foam } = scene;
     const { nx, xCenters, zCenters, dx, dz, h, bed, qx, qz } = solver;
     const source = foam.source;
     const start = Math.floor(this.random() * source.length);
-    for (let n = 0; n < source.length && this.count < this.capacity; n += 1) {
+    for (let n = 0; n < source.length && this.room(false); n += 1) {
       const i = (start + n) % source.length;
       if (!(source[i] > 0) || h[i] <= WET) continue;
       const row = Math.floor(i / nx);
@@ -222,7 +351,7 @@ export class SprayCloud {
       const u = qx[i] / h[i];
       const w = qz[i] / h[i];
       const lift = Math.sqrt(GRAVITY * h[i]) * 0.4;
-      for (; spawns > 0 && this.count < this.capacity; spawns -= 1) {
+      for (; spawns > 0 && this.room(false); spawns -= 1) {
         this.spawn(
           this.random() < 0.3 ? MIST : SPRAY,
           xCenters[i - row * nx] + (this.random() - 0.5) * dx, surface + 0.05, zCenters[row] + (this.random() - 0.5) * dz[row],
@@ -242,9 +371,9 @@ export class SprayCloud {
     const excess = -windSpeed - FEATHER_ONSET;
     if (!(windSpeed < 0) || !(excess > 0)) return;
     const { nx, nz, xCenters, zCenters, dx, dz, h, bed, restLevel } = solver;
-    for (let row = 1; row < nz - 1 && this.count < this.capacity; row += 1) {
+    for (let row = 1; row < nz - 1 && this.room(false); row += 1) {
       const gap = zCenters[row + 1] - zCenters[row - 1];
-      for (let column = 0; column < nx && this.count < this.capacity; column += 1) {
+      for (let column = 0; column < nx && this.room(false); column += 1) {
         const i = row * nx + column;
         const depth = h[i];
         const still = restLevel - bed[i];
@@ -256,7 +385,7 @@ export class SprayCloud {
         if (slope < FEATHER_SLOPE) continue;
         const expected = FEATHER_RATE * excess * excess * dx * dz[row] * dt;
         let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
-        for (; spawns > 0 && this.count < this.capacity; spawns -= 1) {
+        for (; spawns > 0 && this.room(false); spawns -= 1) {
           this.spawn(
             MIST, xCenters[column] + (this.random() - 0.5) * dx, depth + bed[i] + 0.1, zCenters[row],
             (this.random() - 0.5) * 0.5, 0.5 + this.random(), windSpeed * (0.3 + 0.4 * this.random()),
@@ -276,14 +405,23 @@ export class SprayCloud {
     this.vz[k] = vz;
     this.age[k] = 0;
     this.kind[k] = kind;
-    const fall = kind === SPRAY ? this.between(SPRAY_FALL) : this.between(MIST_FALL);
-    this.drag[k] = GRAVITY / (fall * fall);
-    this.life[k] = (kind === SPRAY ? SPRAY_LIFE : MIST_LIFE) * (0.6 + 0.4 * this.random());
-    this.size[k] = kind === SPRAY ? 0.06 + 0.08 * this.random() : 0.35 + 0.45 * this.random();
     this.count += 1;
+    if (isWhitewater(kind)) this.whitewaterCount += 1;
+    if (kind === FOAM_BALL) {
+      this.drag[k] = 0;
+      this.life[k] = FOAM_BALL_LINGER;
+      this.size[k] = this.between(FOAM_BALL_SIZE);
+      return;
+    }
+    const mist = isMist(kind);
+    const fall = mist ? this.between(MIST_FALL) : this.between(SPRAY_FALL);
+    this.drag[k] = GRAVITY / (fall * fall);
+    this.life[k] = (mist ? MIST_LIFE : SPRAY_LIFE) * (0.6 + 0.4 * this.random());
+    this.size[k] = mist ? 0.35 + 0.45 * this.random() : 0.06 + 0.08 * this.random();
   }
 
   private remove(k: number): void {
+    if (isWhitewater(this.kind[k])) this.whitewaterCount -= 1;
     this.count -= 1;
     const last = this.count;
     this.x[k] = this.x[last];
@@ -297,18 +435,26 @@ export class SprayCloud {
     this.drag[k] = this.drag[last];
     this.size[k] = this.size[last];
     this.kind[k] = this.kind[last];
+    this.owner[k] = this.owner[last];
+    this.radial[k] = this.radial[last];
+    this.spin[k] = this.spin[last];
+    this.lateral[k] = this.lateral[last];
   }
 
   private pack(): void {
     for (let k = 0; k < this.count; k += 1) {
       const o = k * SPRAY_STRIDE;
       const t = this.age[k] / this.life[k];
-      const mist = this.kind[k] === MIST;
+      const mist = isMist(this.kind[k]);
       this.particles[o] = this.x[k];
       this.particles[o + 1] = this.y[k];
       this.particles[o + 2] = this.z[k];
       this.particles[o + 3] = this.size[k] * (mist ? 1 + t : 1);
-      this.particles[o + 4] = (mist ? 0.25 : 0.8) * (1 - t * t);
+      // A foam ball holds until its roller is gone, then fades over the time it lingers.
+      this.particles[o + 4] = this.kind[k] === FOAM_BALL
+        ? 0.9 * Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER)
+        : (mist ? 0.25 : 0.8) * (1 - t * t);
+      this.particles[o + 5] = this.kind[k];
     }
   }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Scene } from 'three';
+import { Quaternion, Scene, Vector3 } from 'three';
 import { WaterSurface } from '../scene/WaterSurface';
 import { LegacySurfaceSource } from '../scene/LegacySurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
@@ -110,10 +110,23 @@ describe('PhysicalMode', () => {
     // Facing the rider from the beach the screen's right is the board's left; from behind, its right.
     mode.camera.camera.updateMatrixWorld();
     expect(mode.screenSteer(1)).toBe(1);
+    expect(mode.screenSteer(0)).toBe(0);
     mode.camera.setView('behind');
     mode.update(1 / 60);
     mode.camera.camera.updateMatrixWorld();
     expect(mode.screenSteer(1)).toBe(-1);
+    // Held, a key keeps the way it steered when pressed, even once the board has turned past side-on to the
+    // camera: re-read each frame, a hard turn flipped the mapping mid-turn and the key turned the board back.
+    const facing = mode.board.quaternion.clone();
+    mode.board.quaternion.multiply(new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI));
+    expect(mode.screenSteer(1)).toBe(-1);
+    expect(mode.screenSteer(0.4)).toBe(-0.4);
+    // A new press, or the other key, reads the board as it now faces.
+    expect(mode.screenSteer(0)).toBe(0);
+    expect(mode.screenSteer(1)).toBe(1);
+    expect(mode.screenSteer(-1)).toBe(-1);
+    mode.board.quaternion.copy(facing);
+    mode.screenSteer(0);
     mode.camera.setView('front');
     mode.update(1 / 60);
     expect(mode.homeView).toBe('front');
@@ -230,7 +243,7 @@ describe('PhysicalMode', () => {
     const status = mode.host!.snapshot.status;
     const wave = {
       valid: true, directionX: 0, directionZ: 1, aheadOfCrest: 4.2, crestSpeed: 5.1, faceHeight: 1.2, faceFraction: 0.55, crestBreaking: 0,
-      speedOverGround: 6, speedShoreward: 3, speedAlongCrest: 5, requiredSpeed: 7.2,
+      curlDistance: Infinity, curlSide: 0, speedOverGround: 6, speedShoreward: 3, speedAlongCrest: 5, requiredSpeed: 7.2,
     };
     const ride = { phase: 'standing' as const, speed: 6, boardSpeed: 6.2, cue: false, popUp: { outcome: 'none' as const, duration: 0, landingPeak: 0, frontShare: 0 }, resets: 0, balance: 1, wave };
     const value = (rows: { label: string; value: string }[], label: string) => rows.find((row) => row.label === label)?.value;

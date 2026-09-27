@@ -9,20 +9,49 @@ import { CLASSIC_FOAM } from '../waterOptics';
 
 export { waterCubicPars };
 
+/**
+ * The bubble plume's whiteness per unit void fraction per metre (G9, a render
+ * constant): a fully aerated metre of plume (α ≈ 0.2) reads near white.
+ */
+export const PLUME_DENSITY = 15;
+
 /** File-scope values the normal chunk computes and the body chunk reads (Rich fragment only). */
 export const richFragmentPars = /* glsl */ `
 vec2 waterSurfaceSlope;
 float waterRippleVariance = 0.0;
+varying float vWaterAir;
+varying float vWaterPlumeDepth;
+const float PLUME_DENSITY = ${PLUME_DENSITY.toFixed(3)};
+`;
+
+/**
+ * Rich vertex pars (G9): the air breaking drove into the water, per render node
+ * (void fraction, plume depth), bilinear as the flow is. Needs the height pars.
+ */
+export const richAerationVertexPars = /* glsl */ `
+uniform sampler2D waterAeration;
+varying float vWaterAir;
+varying float vWaterPlumeDepth;
+vec2 waterAerationAt( vec2 xz ) {
+  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
+  ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
+  vec2 t = g - vec2( c );
+  vec2 top = mix( texelFetch( waterAeration, c, 0 ).rg, texelFetch( waterAeration, c + ivec2( 1, 0 ), 0 ).rg, t.x );
+  vec2 bottom = mix( texelFetch( waterAeration, c + ivec2( 0, 1 ), 0 ).rg, texelFetch( waterAeration, c + ivec2( 1, 1 ), 0 ).rg, t.x );
+  return mix( top, bottom, t.y );
+}
 `;
 
 /** Rich <beginnormal_vertex>: the Classic varyings, the height from the Catmull-Rom surface (the normal is per pixel). */
 export const richBeginNormal = /* glsl */ `
 vec2 waterXZ = ( modelMatrix * vec4( position, 1.0 ) ).xz;
-vec3 waterCubicSample = waterCubic( waterXZ );
+vec3 waterCubicSample = waterCarvedCubic( waterXZ );
 float waterHeight = waterCubicSample.x;
 vec3 objectNormal = normalize( vec3( -waterCubicSample.y, 1.0, -waterCubicSample.z ) );
 vWaterDepth = max( 0.0, waterHeight - waterBedAt( waterXZ ) );
 vWaterFoam = waterFoamAt( waterXZ );
+vWaterAir = waterAerationAt( waterXZ ).x;
+vWaterPlumeDepth = waterAerationAt( waterXZ ).y;
 vWaterFlow = waterFlowAt( waterXZ );
 `;
 
@@ -38,15 +67,20 @@ vWaterSkirt = skirt;`;
  * churn, creased between its clumps, opening into the lace as it ages; the
  * lace streaked up steep faces along the current; a glossy body that turns
  * matte under foam; and thin fresh foam glowing when the sun is behind it.
+ * Under it all, the bubble plume (G9) whitens the body as far down as the air
+ * went: from above seen through the water over its middle, from below plainly.
  */
 export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );
   float waterLace = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
   vec2 waterChurn = waterChurnAt( vWaterWorld.xz, vWaterFlow );
-  float waterFresh = waterFreshness( vWaterFoam ) * waterFoamPattern;
+  float waterFresh = waterFreshness( vWaterAir ) * waterFoamPattern;
   float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterFresh );
   waterCover = max( waterCover, waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam ) );
   float waterCrease = mix( 1.0, 0.88 + 0.12 * waterChurn.y, waterFresh );
-  diffuseColor.rgb = mix( waterBody * waterBodyGain, waterFoamColor * waterCrease, waterCover );
+  float waterPlume = 1.0 - exp( -PLUME_DENSITY * vWaterAir * min( vWaterPlumeDepth, vWaterDepth ) );
+  float waterPlumePath = faceDirection > 0.0 ? 0.5 * min( vWaterPlumeDepth, vWaterDepth ) / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;
+  vec3 waterUnder = mix( waterBody * waterBodyGain, waterFoamColor * exp( -waterAttenuation * waterPlumePath ), waterPlume );
+  diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );
   ${RICH_SPECULAR}
   roughnessFactor = mix( roughnessFactor, 0.7, waterCover );
   totalEmissiveRadiance += 0.18 * waterFresh * ( 1.0 - waterChurn.x ) * pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 6.0 ) * waterSunRadiance;`;
@@ -87,7 +121,7 @@ export const richFarNormal = /* glsl */ `
 `;
 
 // Fresh whitewater's clumps stand proud of the surface.
-const CHURN_RELIEF = `float waterFreshNormal = waterFreshness( vWaterFoam ) * waterFoamPattern;
+const CHURN_RELIEF = `float waterFreshNormal = waterFreshness( vWaterAir ) * waterFoamPattern;
   if ( waterFreshNormal > 0.0 ) waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, vWaterFlow );`;
 
 /**
@@ -98,7 +132,7 @@ export function richNormalFragment(opts: { ripples: boolean; churn?: boolean }):
   return /* glsl */ `
 #include <normal_fragment_begin>
 {
-  vec3 waterSurfaceSample = waterCubic( vWaterWorld.xz );
+  vec3 waterSurfaceSample = waterCarvedCubic( vWaterWorld.xz );
   waterSurfaceSlope = waterSurfaceSample.yz;
   vec2 waterSlope = waterSurfaceSample.yz;
   float chopFade = exp( -length( vWaterWorld - cameraPosition ) / 80.0 );

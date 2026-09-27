@@ -20,6 +20,12 @@ describe('logbookModel', () => {
     expect(model.empty).toBe(true);
   });
 
+  it('marks rides surfed online (N1)', () => {
+    const model = logbookModel(log([ride({ online: true }), ride({})]), 'metric', now);
+    expect(model.recent[0].title).toContain('Online');
+    expect(model.recent[1].title).not.toContain('Online');
+  });
+
   it('lists recent rides with when they happened', () => {
     const model = logbookModel(log([
       ride({ at: now - 30_000 }),

@@ -1,6 +1,11 @@
-import { BufferAttribute, BufferGeometry, Color, DoubleSide, Mesh, ShaderMaterial, Vector3 } from 'three';
+import { BufferAttribute, BufferGeometry, Color, DoubleSide, Mesh, MeshPhysicalMaterial, ShaderMaterial, Vector3 } from 'three';
 import { LINK_TIME } from '../wave/PlungingLip';
 import { LIP_STRIDE } from '../wave/SurfZoneRunner';
+import { RICH_LIP_REFLECTION, buildRichLipSheet, richLipBeginVertex, richLipBody, richLipFragmentPars, richLipVertexPars } from './water/richLip';
+import { RICH_WATER } from './water/richWaterGlsl';
+import { RICH_BASE_ROUGHNESS } from './water/specular';
+import type { WaterLook } from './water/waterLook';
+import { WATER_IOR, applyOptics, applySun, createOpticsUniforms, type WaterOptics } from './waterOptics';
 
 /** Lip water whitens to foam over this long in the air, s. */
 const FOAM_AGE = 0.6;
@@ -43,6 +48,8 @@ export function buildLipSheet(parcels: Float32Array, count: number, width: numbe
     const column = parcels[o + 3];
     const index = parcels[o + 4];
     const launchTime = parcels[o + 5];
+    // The splash-up (G9) is whitewater, drawn in Rich only: Classic draws the lip as it always has.
+    if (parcels[o + 8] !== 0) continue;
     const key = `${column}|${launchTime}`;
     let strip = strips.get(key);
     if (!strip) {
@@ -134,7 +141,18 @@ void main() {
  * through the lip, foam as it ages).
  */
 export class LipSheetMesh {
-  readonly mesh: Mesh<BufferGeometry, ShaderMaterial>;
+  readonly mesh: Mesh<BufferGeometry, ShaderMaterial | MeshPhysicalMaterial>;
+  /** G9: the lip in the Rich look, lit like the Rich water (its sky, sun and optics). */
+  readonly richMaterial: MeshPhysicalMaterial;
+  private readonly classicMaterial: ShaderMaterial;
+  private readonly richUniforms: Record<string, { value: unknown }> = {
+    ...createOpticsUniforms(),
+    waterReflection: { value: RICH_WATER.reflection },
+    lipFoamColor: { value: new Color('#d8f2e9') },
+  };
+  private currentLook: WaterLook = 'classic';
+  /** What the drawn sheet was built from: its parcels' buffer, count and a sum of them (G9: rebuild only on a new snapshot). */
+  private built = { parcels: undefined as Float32Array | undefined, count: -1, sum: 0 };
 
   constructor() {
     const material = new ShaderMaterial({
@@ -151,12 +169,66 @@ export class LipSheetMesh {
       transparent: true,
       depthWrite: false,
     });
+    this.classicMaterial = material;
+    this.richUniforms.waterBodyGain.value = RICH_WATER.bodyGain;
+    this.richMaterial = new MeshPhysicalMaterial({
+      color: '#ffffff', roughness: RICH_BASE_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide, transparent: true, depthWrite: false,
+    });
+    this.richMaterial.onBeforeCompile = (shader) => {
+      Object.assign(shader.uniforms, this.richUniforms);
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', `#include <common>\n${richLipVertexPars}`)
+        .replace('#include <begin_vertex>', richLipBeginVertex);
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', `#include <common>\n${richLipFragmentPars}`)
+        .replace('#include <color_fragment>', '')
+        .replace('#include <emissivemap_fragment>', richLipBody)
+        .replace('#include <lights_fragment_maps>', RICH_LIP_REFLECTION);
+    };
+    this.richMaterial.customProgramCacheKey = () => 'breakline-lip-rich';
     this.mesh = new Mesh(new BufferGeometry(), material);
     this.mesh.frustumCulled = false;
   }
 
+  /** Graphics setting (G9): the Classic sheet, or the Rich lip. */
+  setLook(look: WaterLook): void {
+    this.currentLook = look;
+    this.built.count = -1;
+    this.mesh.material = look === 'rich' ? this.richMaterial : this.classicMaterial;
+  }
+
+  get look(): WaterLook {
+    return this.currentLook;
+  }
+
+  /** `direction` points toward the sun; `radiance` is the sun light's colour × intensity (the Rich lip). */
+  setSun(direction: Vector3, radiance: Color): void {
+    applySun(this.richUniforms, direction, radiance);
+  }
+
+  /** The spot's water optics (the Rich lip's body and the light through it). */
+  setOptics(optics: WaterOptics): void {
+    applyOptics(this.richUniforms, optics);
+    this.richUniforms.waterBodyGain.value = RICH_WATER.bodyGain;
+  }
+
   /** Rebuild the sheet from `count` parcels of a snapshot, with columns `width` m wide. */
   update(parcels: Float32Array, count: number, width: number): void {
+    // The page draws several frames per snapshot: rebuild only when the parcels changed.
+    let sum = 0;
+    for (let k = 0; k < count * LIP_STRIDE; k += 1) sum += parcels[k];
+    if (parcels === this.built.parcels && count === this.built.count && sum === this.built.sum) return;
+    this.built = { parcels, count, sum };
+    if (this.currentLook === 'rich') {
+      const lip = buildRichLipSheet(parcels, count, width);
+      const geometry = this.mesh.geometry;
+      geometry.setAttribute('position', new BufferAttribute(lip.positions, 3));
+      geometry.setAttribute('normal', new BufferAttribute(lip.normals, 3));
+      geometry.setAttribute('foam', new BufferAttribute(lip.foam, 1));
+      geometry.setAttribute('thickness', new BufferAttribute(lip.thickness, 1));
+      geometry.setIndex(new BufferAttribute(lip.indices, 1));
+      return;
+    }
     const sheet = buildLipSheet(parcels, count, width);
     const geometry = this.mesh.geometry;
     geometry.setAttribute('position', new BufferAttribute(sheet.positions, 3));
@@ -167,6 +239,7 @@ export class LipSheetMesh {
 
   dispose(): void {
     this.mesh.geometry.dispose();
-    this.mesh.material.dispose();
+    this.classicMaterial.dispose();
+    this.richMaterial.dispose();
   }
 }

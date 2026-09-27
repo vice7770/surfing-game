@@ -1,0 +1,17 @@
+# Breakline on Fly.io (spec N1): one always-on machine serves the game and its rooms.
+# `fly launch --no-deploy` sets the app's name and the region nearest you
+# (`fly platform regions` lists them); `npm run deploy` then deploys.
+app = "breakline-surf"
+primary_region = "mad"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Rooms live in memory: a stopped machine would end them.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

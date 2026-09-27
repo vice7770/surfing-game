@@ -18,6 +18,16 @@ function setup(stick?: StickSettings) {
 }
 
 describe('Controls', () => {
+  it('shouts a surf call on its key, once per press (N1)', () => {
+    const target = new EventTarget();
+    const call = vi.fn();
+    new Controls(() => DEFAULT_BINDINGS, { retry: vi.fn(), camera: vi.fn(), pause: vi.fn(), call }, { target, pads: () => [] });
+    target.dispatchEvent(Object.assign(new Event('keydown'), { code: 'Digit3', repeat: false }));
+    target.dispatchEvent(Object.assign(new Event('keydown'), { code: 'Digit3', repeat: true }));
+    expect(call).toHaveBeenCalledTimes(1);
+    expect(call).toHaveBeenCalledWith('party');
+  });
+
   it('fires a press once, however long the key is held', () => {
     const { handlers, key } = setup();
     key('keydown', 'KeyR');

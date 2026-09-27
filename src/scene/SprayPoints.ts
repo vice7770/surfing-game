@@ -1,9 +1,10 @@
 import { BufferAttribute, BufferGeometry, Color, NormalBlending, PerspectiveCamera, Points, ShaderMaterial, Vector2, Vector3, Vector4 } from 'three';
-import { SPRAY_STRIDE } from '../wave/SprayCloud';
+import { SPRAY_CAPACITY, SPRAY_STRIDE, WHITEWATER_CAPACITY } from '../wave/SprayCloud';
+import { churnTexture } from './water/churnTexture';
 import { richSprayFragment, richSprayVertex } from './water/richSpray';
 import type { WaterLook } from './water/waterLook';
 
-/** What the renderer needs from a spray cloud: packed x, y, z, size and opacity per particle, and how many are live. */
+/** What the renderer needs from a spray cloud: packed x, y, z, size, opacity and kind per particle (`SPRAY_STRIDE`), and how many are live. */
 export interface RenderableSpray {
   readonly particles: Float32Array;
   readonly count: number;
@@ -34,20 +35,28 @@ void main() {
 }
 `;
 
-/** Draws a `SprayCloud` (or a snapshot of one) as soft points sized in metres, fading with age. */
+/**
+ * Draws a `SprayCloud` (or a snapshot of one) as soft points sized in metres,
+ * fading with age. A closing tube's whitewater (kinds 2–4, G9: the foam ball,
+ * the spit's and eruption's spray and mist) is Rich only: Classic draws the
+ * spray and mist as it always has.
+ */
 export class SprayPoints {
   readonly mesh: Points<BufferGeometry, ShaderMaterial>;
   private readonly positions: BufferAttribute;
   private readonly looks: BufferAttribute;
+  private readonly kinds: BufferAttribute;
   private readonly buffer = new Vector2();
   private currentLook: WaterLook = 'classic';
 
-  constructor(readonly capacity = 4096) {
+  constructor(readonly capacity = SPRAY_CAPACITY + WHITEWATER_CAPACITY) {
     const geometry = new BufferGeometry();
     this.positions = new BufferAttribute(new Float32Array(capacity * 3), 3);
     this.looks = new BufferAttribute(new Float32Array(capacity * 2), 2);
+    this.kinds = new BufferAttribute(new Float32Array(capacity), 1);
     geometry.setAttribute('position', this.positions);
     geometry.setAttribute('look', this.looks);
+    geometry.setAttribute('kind', this.kinds);
     geometry.setDrawRange(0, 0);
     const material = new ShaderMaterial({
       uniforms: {
@@ -59,6 +68,14 @@ export class SprayPoints {
         waterSurface: { value: null },
         waterGrid: { value: new Vector4() },
         waterGridSize: { value: new Vector2() },
+        // G9: the water's flying tubes, so the spray fades at the carved surface.
+        waterTubeMap: { value: null },
+        waterTubeColumns: { value: null },
+        waterTubeColumn0: { value: 0 },
+        waterTubeColumnWidth: { value: 1 },
+        waterTubeCount: { value: 0 },
+        // G9: the Rich foam ball is a ball of the churned whitewater.
+        waterChurnMap: { value: churnTexture() },
       },
       vertexShader,
       fragmentShader,
@@ -89,9 +106,11 @@ export class SprayPoints {
   /** The Rich spray fades into the water: read its height from the water's own uniforms. */
   useWater(uniforms: { waterSurface: { value: unknown }; waterGrid: { value: unknown }; waterGridSize: { value: unknown } }): void {
     const target = this.mesh.material.uniforms;
-    target.waterSurface = uniforms.waterSurface;
-    target.waterGrid = uniforms.waterGrid;
-    target.waterGridSize = uniforms.waterGridSize;
+    const source = uniforms as unknown as Record<string, { value: unknown } | undefined>;
+    for (const name of ['waterSurface', 'waterGrid', 'waterGridSize', 'waterTubeMap', 'waterTubeColumns', 'waterTubeColumn0', 'waterTubeColumnWidth', 'waterTubeCount']) {
+      const shared = source[name];
+      if (shared) target[name] = shared;
+    }
   }
 
   /** The Rich mist glows toward the sun. */
@@ -106,19 +125,26 @@ export class SprayPoints {
   }
 
   update(spray: RenderableSpray): void {
-    const count = Math.min(this.capacity, spray.count);
     const positions = this.positions.array as Float32Array;
     const looks = this.looks.array as Float32Array;
-    for (let k = 0; k < count; k += 1) {
+    const kinds = this.kinds.array as Float32Array;
+    const rich = this.currentLook === 'rich';
+    let drawn = 0;
+    for (let k = 0; k < spray.count && drawn < this.capacity; k += 1) {
       const o = k * SPRAY_STRIDE;
-      positions[k * 3] = spray.particles[o];
-      positions[k * 3 + 1] = spray.particles[o + 1];
-      positions[k * 3 + 2] = spray.particles[o + 2];
-      looks[k * 2] = spray.particles[o + 3];
-      looks[k * 2 + 1] = spray.particles[o + 4];
+      const kind = spray.particles[o + 5];
+      if (kind >= 2 && !rich) continue;
+      positions[drawn * 3] = spray.particles[o];
+      positions[drawn * 3 + 1] = spray.particles[o + 1];
+      positions[drawn * 3 + 2] = spray.particles[o + 2];
+      looks[drawn * 2] = spray.particles[o + 3];
+      looks[drawn * 2 + 1] = spray.particles[o + 4];
+      kinds[drawn] = kind;
+      drawn += 1;
     }
     this.positions.needsUpdate = true;
     this.looks.needsUpdate = true;
-    this.mesh.geometry.setDrawRange(0, count);
+    this.kinds.needsUpdate = true;
+    this.mesh.geometry.setDrawRange(0, drawn);
   }
 }

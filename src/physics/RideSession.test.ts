@@ -26,6 +26,31 @@ describe('ride session', () => {
     expect(explicit.distanceTo(plain)).toBe(0);
   });
 
+  // The playtest: the pop-up key toggles, lying down only when the player asks.
+  it('lies the standing rider back down on the pop-up key', () => {
+    const session = new RideSession();
+    const water = new PlaneWater();
+    session.reset(new Vector3(0, 0, 0), 0, water);
+    session.rider.phase = 'standing';
+    session.board.attach(session.rider);
+    const tow = () => {
+      session.board.velocity.z = 6;
+      session.rider.velocity.z = 6;
+    };
+    for (let i = 0; i < 30; i += 1) {
+      tow();
+      session.step(STEP, water, idle);
+    }
+    tow();
+    session.step(STEP, water, { ...idle, popUp: true });
+    for (let i = 0; i < 60; i += 1) {
+      tow();
+      session.step(STEP, water, idle);
+    }
+    expect(session.rider.attached).toBe(true);
+    expect(session.rider.phase).toBe('prone');
+  });
+
   it('starts prone on a board floating level at the given point, heading the given way', () => {
     const session = new RideSession();
     session.reset(new Vector3(2, 0, -5), Math.PI / 2, new PlaneWater());

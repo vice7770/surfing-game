@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { sampleSurfaceBed, sampleSurfaceHeight } from '../scene/WaterSurface';
 import { SurfZoneRunner } from '../wave/SurfZoneRunner';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
-import { LocalSurfZone } from './SurfZoneHost';
+import { carveAt, TUBE_STRIDE } from '../wave/tubeTable';
+import { LocalSurfZone, SnapshotSurfZone } from './SurfZoneHost';
+import { DEFAULT_PHYSICAL_SETTINGS, swellFor } from './PhysicalMode';
 
 const config: SurfZoneConfig = {
   spot: 'beach', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -10,6 +12,30 @@ const config: SurfZoneConfig = {
 };
 
 describe('LocalSurfZone', () => {
+  it('keeps the practice Reef’s water steady while its tubes collapse (G9)', () => {
+    // The water sheet's sea: collapsing a void while its jet still poured landed the rest of the pour on the crest,
+    // and the crest's water ran away within 1.5 s. Its spin-up is most of the cost: minutes under a loaded full suite.
+    const settings = { ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef' as const, source: 'practice' as const, compute: 'cpu' as const };
+    const swell = swellFor(settings);
+    const host = new LocalSurfZone({
+      spot: 'reef', seed: 1, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod,
+      directionDegrees: swell.directionDegrees ?? settings.directionDegrees, spreading: swell.spreading, bandwidth: swell.bandwidth,
+      tide: settings.tide, windSpeed: settings.windSpeed, stage: settings.stage, compute: 'cpu',
+    });
+    const { solver, lip } = host.runner.simulation;
+    let tubes = 0;
+    let fastest = 0;
+    for (let step = 0; step < 120 && fastest < 15; step += 1) {
+      host.advance(1);
+      tubes = Math.max(tubes, lip.tubeCount);
+      for (let i = 0; i < solver.h.length; i += 1) {
+        if (solver.h[i] > 0.05) fastest = Math.max(fastest, Math.hypot(solver.qx[i], solver.qz[i]) / solver.h[i]);
+      }
+    }
+    expect(tubes).toBeGreaterThan(10);
+    expect(fastest).toBeLessThan(10);
+  }, 300_000);
+
   it('is ready at once and snapshots the same surf zone a runner steps', async () => {
     const host = new LocalSurfZone(config);
     await host.ready;
@@ -37,5 +63,44 @@ describe('LocalSurfZone', () => {
       expect(host.bedAt(x, z)).toBe(sampleSurfaceBed(bed, grid, x, z));
     }
     expect(host.heightAt(0, -60)).toBeCloseTo(host.runner.simulation.heightAt(0, -60), 4);
+  });
+
+  it('carves the page\'s heights exactly as the worker does, from the raw heights and tubes it is sent', async () => {
+    // Plunging point waves (as the simulation's own lip test): a tube flies about a second, so look every 0.1 s.
+    const host = new LocalSurfZone({ ...config, spot: 'point', dx: 1, fineSpacing: 1, peakPeriod: 14, directionDegrees: 20, spreading: 24 });
+    await host.ready;
+    const open = () => {
+      const { tubes, tubeCount } = host.snapshot;
+      let best = -1;
+      for (let k = 0; k < tubeCount; k += 1) if (best < 0 || tubes[k * TUBE_STRIDE + 5] > tubes[best * TUBE_STRIDE + 5]) best = k;
+      return best >= 0 && tubes[best * TUBE_STRIDE + 5] >= 0.6 ? best : -1;
+    };
+    for (let tenth = 0; tenth < 400 && open() < 0; tenth += 1) host.advance(3);
+    const tube = open();
+    expect(tube).toBeGreaterThanOrEqual(0);
+    const grid = { ...host.runner.grid };
+    const page = new SnapshotSurfZone(host);
+    const carved = new Float32Array(host.snapshot.surface.length);
+    const raw = new Float32Array(host.snapshot.surface.length);
+    const expected = new Float32Array(host.snapshot.surface.length);
+    page.writeUniformSurface(carved, grid);
+    page.writeUniformSurface(raw, grid, false);
+    host.runner.simulation.writeUniformSurface(expected, grid);
+    // The tube table crosses as 32-bit floats, as every snapshot buffer does: the page agrees with the worker to well under a millimetre.
+    let largest = 0;
+    let changed = 0;
+    for (let k = 0; k < carved.length; k += 1) {
+      largest = Math.max(largest, Math.abs(carved[k] - expected[k]));
+      if (raw[k] !== carved[k]) changed += 1;
+    }
+    expect(largest).toBeLessThan(1e-4);
+    expect(changed).toBeGreaterThan(0);
+    // The page's sampler carves too: inside the first tube, below the raw surface.
+    const t = host.snapshot.tubes;
+    const o = tube * TUBE_STRIDE;
+    const [x, z] = [t[o] + t[o + 3] * 0.3, t[o + 1] + t[o + 4] * 0.3];
+    const rawHeight = sampleSurfaceHeight(host.snapshot.surface, host.init.grid, x, z);
+    expect(host.heightAt(x, z)).toBe(carveAt(t, host.snapshot.tubeCount, host.init.dx, x, z, rawHeight));
+    expect(host.heightAt(x, z)).toBeLessThan(rawHeight);
   });
 });

@@ -5,6 +5,8 @@ import { ACTIONS, DEFAULT_BINDINGS, MAX_BUTTON, type Action, type Bindings } fro
 import { DEFAULT_STICK, MAX_DEADZONE, type StickSettings } from './Sticks';
 import { DEFAULT_SURFER, sanitizeSurfer, type SurferSettings } from './SurferChoice';
 import { PRESETS } from './Graphics';
+import { cleanName } from '../net/protocol';
+import { normalizeRoomCode } from '../net/roomCode';
 
 /** The player's settings (plan P8): four tabs, the Auto benchmark's result, and one-off notices seen. */
 export type SettingsTab = 'gameplay' | 'graphics' | 'controls' | 'audio' | 'accessibility';
@@ -17,11 +19,24 @@ export interface GameplaySettings {
   touchControls: 'auto' | 'on' | 'off';
   /** The balance meter (spec P9): on the Practice swell only, always, or never. */
   balanceMeter: 'practice' | 'always' | 'never';
+  /** The pocket reflex (the riding-the-wave spec): with no weight held the rider trims to stay near the curl; Practice only, always, or never. */
+  pocketReflex: 'practice' | 'always' | 'never';
   /** Score each ride 0–10 on the WSL criteria (spec P9), off unless the player wants it. */
   scoreRides: boolean;
   /** Only offered while the dev tools are on. */
   showTelemetry: boolean;
+  /** Names over the other surfers online (spec N1). */
+  nameTags: boolean;
 }
+
+/** Online (spec N1): the name others see, and this player's token for each room they were in (the last ONLINE_ROOMS_KEPT). */
+export interface OnlineSettings {
+  name: string;
+  tokens: Record<string, string>;
+}
+
+/** Rooms whose tokens are kept. */
+export const ONLINE_ROOMS_KEPT = 10;
 
 export interface AdvancedGraphics {
   /** 0.5–1.25 of the display's pixels. */
@@ -86,6 +101,7 @@ export interface GameSettings {
   detected?: Detection;
   /** One-off notices seen; `steamController`: a Steam Controller has connected, so the menu's Connect button goes (spec C1). */
   seen: { rideHints: boolean; lowPerformanceNotice: boolean; steamController: boolean };
+  online: OnlineSettings;
 }
 
 export const SETTINGS_KEY = 'breakline.settings.v1';
@@ -98,7 +114,7 @@ function copyBindings(bindings: Bindings): Bindings {
 
 export function defaultSettings(prefersReducedMotion = false): GameSettings {
   return {
-    gameplay: { units: 'metric', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', scoreRides: false, showTelemetry: false },
+    gameplay: { units: 'metric', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', pocketReflex: 'practice', scoreRides: false, showTelemetry: false, nameTags: true },
     // The Medium preset's values (Graphics.PRESETS.medium; a test keeps the two equal).
     graphics: {
       preset: 'auto', renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto',
@@ -109,6 +125,7 @@ export function defaultSettings(prefersReducedMotion = false): GameSettings {
     accessibility: { reducedMotion: prefersReducedMotion, uiScale: 1, highContrastHud: false, monoAudio: false },
     surfer: { ...DEFAULT_SURFER },
     seen: { rideHints: false, lowPerformanceNotice: false, steamController: false },
+    online: { name: '', tokens: {} },
   };
 }
 
@@ -130,8 +147,8 @@ function within(value: unknown, min: number, max: number, fallback: number): num
   return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max ? value : fallback;
 }
 
-/** The pad defaults before C1, which a save from then still holds unless the player changed them. */
-const LEGACY_PAD_DEFAULTS: Partial<Record<Action, number[]>> = { hand: [2], popUp: [0] };
+/** The pad defaults before C1, which a save from then still holds unless the player changed them (the party call only exists since N1). */
+const LEGACY_PAD_DEFAULTS: Partial<Record<Action, number[]>> = { hand: [2], popUp: [0], callParty: [4] };
 
 function sanitizeBindings(raw: unknown, defaults: Bindings, legacy: boolean): Bindings {
   const source = record(raw);
@@ -147,14 +164,16 @@ function sanitizeBindings(raw: unknown, defaults: Bindings, legacy: boolean): Bi
     if (validKeys(keyboard[action])) result.keyboard[action] = [...keyboard[action]];
     if (validButtons(gamepad[action])) result.gamepad[action] = [...gamepad[action]];
   }
-  // C1 moved the hand to LB and added the grips: a save still on the old defaults moves too, unless another action holds a new button.
+  // C1 moved the hand to LB, the party call to X and added the grips. The actions a save still holds on their old defaults
+  // move together, as one layout, unless that would leave a button with two actions (the player rebound around them).
   if (legacy) {
-    for (const [action, old] of Object.entries(LEGACY_PAD_DEFAULTS) as [Action, number[]][]) {
-      const fresh = defaults.gamepad[action];
-      const unchanged = result.gamepad[action].join() === old.join();
-      const taken = ACTIONS.some((other) => other !== action && fresh.some((button) => result.gamepad[other].includes(button)));
-      if (unchanged && !taken) result.gamepad[action] = [...fresh];
-    }
+    const moved = (Object.entries(LEGACY_PAD_DEFAULTS) as [Action, number[]][])
+      .filter(([action, old]) => result.gamepad[action].join() === old.join())
+      .map(([action]) => action);
+    const next = { ...result.gamepad };
+    for (const action of moved) next[action] = [...defaults.gamepad[action]];
+    const clash = moved.some((action) => next[action].some((button) => ACTIONS.some((other) => other !== action && next[other].includes(button))));
+    if (!clash) result.gamepad = next;
   }
   return result;
 }
@@ -190,8 +209,10 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       defaultCamera: oneOf(gameplay.defaultCamera, ['front', 'behind', 'side', 'overview'] as const, defaults.gameplay.defaultCamera),
       touchControls: oneOf(gameplay.touchControls, ['auto', 'on', 'off'] as const, defaults.gameplay.touchControls),
       balanceMeter: oneOf(gameplay.balanceMeter, ['practice', 'always', 'never'] as const, defaults.gameplay.balanceMeter),
+      pocketReflex: oneOf(gameplay.pocketReflex, ['practice', 'always', 'never'] as const, defaults.gameplay.pocketReflex),
       scoreRides: flag(gameplay.scoreRides, defaults.gameplay.scoreRides),
       showTelemetry: flag(gameplay.showTelemetry, defaults.gameplay.showTelemetry),
+      nameTags: flag(gameplay.nameTags, defaults.gameplay.nameTags),
     },
     graphics: {
       preset,
@@ -235,10 +256,20 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       lowPerformanceNotice: flag(seen.lowPerformanceNotice, defaults.seen.lowPerformanceNotice),
       steamController: flag(seen.steamController, defaults.seen.steamController),
     },
+    online: sanitizeOnline(source.online, defaults.online),
   };
 }
 
-export type SettingsChange = SettingsTab | 'surfer' | 'detected' | 'seen';
+/** A clean name (or none) and the well-formed room tokens, the last ONLINE_ROOMS_KEPT. */
+function sanitizeOnline(raw: unknown, defaults: OnlineSettings): OnlineSettings {
+  const online = record(raw);
+  const tokens = Object.entries(record(online.tokens))
+    .filter(([code, token]) => normalizeRoomCode(code) === code && typeof token === 'string' && /^[0-9a-f]{32}$/.test(token))
+    .slice(-ONLINE_ROOMS_KEPT);
+  return { name: cleanName(online.name) ?? defaults.name, tokens: Object.fromEntries(tokens) as Record<string, string> };
+}
+
+export type SettingsChange = SettingsTab | 'surfer' | 'detected' | 'seen' | 'online';
 type Listener = (settings: GameSettings, change: SettingsChange) => void;
 type SettingsStorage = Pick<Storage, 'getItem' | 'setItem'>;
 
@@ -267,6 +298,18 @@ export class SettingsStore {
 
   resetTab(tab: SettingsTab): void {
     this.commit({ ...this.current, [tab]: this.defaults[tab] }, tab);
+  }
+
+  /** The name others see online (cleaned; empty when nothing is left). */
+  setOnlineName(name: string): void {
+    this.commit({ ...this.current, online: { ...this.current.online, name: cleanName(name) ?? '' } }, 'online');
+  }
+
+  /** This player's token for a room, so a rejoin keeps their place (a creator stays the creator); the oldest beyond ONLINE_ROOMS_KEPT go. */
+  rememberRoom(code: string, token: string): void {
+    const { [code]: _previous, ...others } = this.current.online.tokens;
+    const tokens = Object.fromEntries([...Object.entries(others), [code, token]].slice(-ONLINE_ROOMS_KEPT));
+    this.commit({ ...this.current, online: { ...this.current.online, tokens } }, 'online');
   }
 
   setSurfer(patch: Partial<SurferSettings>): void {

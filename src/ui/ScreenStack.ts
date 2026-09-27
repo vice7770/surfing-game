@@ -1,7 +1,11 @@
-/** Every screen of the game (plan P8). `menu`, `ride` and `wavelab` show a scene; the rest are panels over one. */
-export type ScreenId = 'menu' | 'surf' | 'logbook' | 'settings' | 'ride' | 'pause' | 'wavelab';
+/**
+ * Every screen of the game (plan P8). `menu`, `ride`, `wavelab` and `stage` (a bare
+ * scene for the `?record` and `?waterSheet` dev tools, spec L1) show a scene; the
+ * rest are panels over one.
+ */
+export type ScreenId = 'menu' | 'surf' | 'multiplayer' | 'logbook' | 'settings' | 'ride' | 'pause' | 'wavelab' | 'stage';
 
-const SCENES: ReadonlySet<ScreenId> = new Set(['menu', 'ride', 'wavelab']);
+const SCENES: ReadonlySet<ScreenId> = new Set(['menu', 'ride', 'wavelab', 'stage']);
 
 /** Where the player is, and the way back: Esc or B pops one screen. */
 export class ScreenStack {
@@ -19,7 +23,7 @@ export class ScreenStack {
     return this.screens;
   }
 
-  /** The scene under any panels: the top-most menu, ride or Wave Lab. */
+  /** The scene under any panels: the top-most menu, ride, Wave Lab or stage. */
   get base(): ScreenId {
     for (let i = this.screens.length - 1; i >= 0; i -= 1) if (SCENES.has(this.screens[i])) return this.screens[i];
     return this.screens[0];

@@ -82,11 +82,11 @@ The check decides. If the game and Steam work together cleanly, nothing more is 
   - extras 17–21: L4, R4, L5, R5 and the Quick Access (···) button;
   - axes 0–3 are the two sticks; LT and RT carry their travel.
 - **Default changes:**
-  - the hand moves from X to **LB**, for every gamepad (X becomes free);
+  - the hand moves from X to **LB**, for every gamepad. When C1 merged with N1 (2026-09-27), the online party call, which N1 had put on LB, moved to the freed X;
   - on the Steam Controller the **L4** grip also does the hand and **R4** also pops up, so the thumbs stay on the sticks;
   - L5 and R5 start unbound.
 - **Settings shows two gamepad slots** per action, like the keyboard.
-- **Saved settings:** a saved binding still equal to its old default moves to the new one.
+- **Saved settings:** the bindings a save still holds on their old defaults (the hand, pop-up and the party call) move to the new ones together, unless that would give a button two actions.
 - **Button names by device, as text:** after the Steam Controller was used last, hints and Settings say View, Menu, Steam, L4, R4, L5, R5 and ···; A, B, X, Y, the bumpers and the triggers are named as on an Xbox pad.
 - **The trim hint** names the stick trim is on.
 

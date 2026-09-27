@@ -39,7 +39,7 @@ export function logbookModel(log: { recent: readonly LoggedRide[]; bests(spot: S
       };
     }),
     recent: log.recent.map((ride) => ({
-      title: `${t(`spot.${ride.spot}` as StringKey)} · ${t(OUTCOME_TITLES[ride.outcome])}`,
+      title: `${t(`spot.${ride.spot}` as StringKey)} · ${t(OUTCOME_TITLES[ride.outcome])}${ride.online ? ` · ${t('log.online')}` : ''}`,
       detail: [formatDistance(ride.distance, units), formatSpeed(ride.topSpeed, units), formatDuration(ride.seconds), when(ride.at, now)].join(' · '),
     })),
     empty: log.recent.length === 0,

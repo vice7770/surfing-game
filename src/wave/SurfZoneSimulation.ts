@@ -2,17 +2,23 @@ import { createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymet
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
-import { FoamField, type FoamDecay } from './FoamField';
+import { AERATION, AerationField } from './AerationField';
+import { FoamField, boreDissipation, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
+import { TUBE_CAPACITY, carveGrid } from './tubeTable';
 import { focusX } from './Refraction';
 import { breakerForm, crestMotion, waveHeightAt } from './CrestKinematics';
 import { jetFlightTime, tubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
 import { SeaStateBoundary } from './SeaStateBoundary';
+import type { SurfZoneState } from './surfZoneState';
 import type { LipImpact } from './SprayCloud';
 import { ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
+
+/** Sea water, kg/m³ (the lip's impact energy for the aeration, G9). */
+const WATER_DENSITY = 1025;
 
 export interface SurfZoneConfig {
   spot: SpotName;
@@ -47,6 +53,8 @@ export interface SurfZoneConfig {
   stage?: 1 | 2;
   /** Where stage 2 water steps: 'auto' on the GPU when a host offers one (the worker, with WebGPU), 'cpu' always on the CPU. */
   compute?: 'auto' | 'cpu';
+  /** Online (spec N1): warm start so the sea, once spun up, sits at this sea time (the room's clock). */
+  startSeaTime?: number;
 }
 
 /** Along-shore window width unless the config says otherwise, m. */
@@ -183,6 +191,8 @@ export class SurfZoneSimulation {
   readonly lipImpacts: LipImpact[] = [];
   /** Foam carried by the flow (plan §2.4): made by bores and lip splashes. */
   readonly foam: FoamField;
+  /** G9: the air breaking drives into the water. */
+  readonly aeration: AerationField;
   /** Lip throws so far, and their total volume, m³. */
   lipLaunches = 0;
   lipVolume = 0;
@@ -199,7 +209,9 @@ export class SurfZoneSimulation {
   private lastThrow!: Float64Array;
   /** When each column last started breaking a new wave, s. */
   private lastOnset!: Float64Array;
-  private readonly seaTimeOffset: number;
+  /** Sea time at solver time 0, s: set by the warm start, or taken over with a handed-over sea (spec N1). */
+  private seaTimeOffset: number;
+  private readonly boundary: SeaStateBoundary;
   private takeOff?: { x: number; z: number };
   private mapping?: {
     grid: RenderGrid; xMin: number; columns: Int32Array; columnWeights: Float64Array;
@@ -227,11 +239,12 @@ export class SurfZoneSimulation {
     if (this.solver instanceof BoussinesqSolver) this.solver.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     const spinUp = (config.spinUpPeriods ?? 2) * config.peakPeriod;
     this.plan = planSetRun(this.sea, 0, TANK.zoneInner, 0, config.lead ?? 25, spinUp);
-    this.seaTimeOffset = this.plan.warmStartSeaTime;
-    warmStart(this.solver, this.sea, { referenceZ: TANK.zoneInner, seaTime: this.plan.warmStartSeaTime });
-    this.solver.addRelaxationZone(new SeaStateBoundary(
+    this.seaTimeOffset = config.startSeaTime !== undefined ? config.startSeaTime - spinUp : this.plan.warmStartSeaTime;
+    warmStart(this.solver, this.sea, { referenceZ: TANK.zoneInner, seaTime: this.seaTimeOffset });
+    this.boundary = new SeaStateBoundary(
       this.solver, this.sea, this.solver.zoneWeightsAlongZ(TANK.zoneInner, TANK.offshore), this.seaTimeOffset,
-    ));
+    );
+    this.solver.addRelaxationZone(this.boundary);
     // Settle the nonlinear shape at the CFL limit, re-checking stability every quarter second.
     while (this.solver.time < spinUp - 1e-9) this.solver.step(Math.min(0.25, spinUp - this.solver.time));
     this.breaking = new BreakingModel(this.solver, { onset });
@@ -241,12 +254,75 @@ export class SurfZoneSimulation {
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver);
     this.foam = new FoamField(this.solver, config.foamDecay ?? FOAM_DECAY[config.spot]);
-    this.lip.onLand = (x, z, volume, vx, vy, vz) => {
+    this.aeration = new AerationField(this.solver);
+    this.lip.onLand = (x, z, volume, vx, vy, vz, flight) => {
       this.foam.addSplash(x, z, volume);
       this.lipImpacts.push({ x, z, volume, vx, vy, vz });
+      // Its impact's energy drives air down in proportion to how far it fell (G9).
+      const drop = flight ? Math.max(0.1, flight.launch.y - flight.y) : 1;
+      this.aeration.addPlunge(x, z, 0.5 * WATER_DENSITY * volume * (vx * vx + vy * vy + vz * vz), AERATION.plungeDepth * drop);
     };
+    // A collapsing tube's air that does not blow out breaks into bubbles (G9).
+    this.lip.onAir = (x, z, volume, penetration) => this.aeration.addAir(x, z, volume, penetration);
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
+  }
+
+  /** The arrays that carry the sea's history (the handover's state probe found them; spec N1), by name. */
+  private stateArrays(): Record<string, Float64Array> {
+    const { solver } = this;
+    const arrays: Record<string, Float64Array> = {
+      h: solver.h, qx: solver.qx, qz: solver.qz,
+      'foam.dense': this.foam.dense, 'foam.residual': this.foam.residual,
+      // G9: the air breaking drove into the water, which draws the churn.
+      'aeration.air': this.aeration.air, 'aeration.depth': this.aeration.depth,
+      outerBreak: this.outerBreak, lastThrow: this.lastThrow, lastOnset: this.lastOnset,
+    };
+    if (solver instanceof BoussinesqSolver) {
+      arrays.breakingStrength = solver.breakingStrength;
+      arrays.breakingAge = solver.breakingAge;
+      const { predictor } = solver;
+      if (predictor) {
+        arrays['predictor.x'] = predictor.x;
+        arrays['predictor.z'] = predictor.z;
+      }
+    }
+    return arrays;
+  }
+
+  /**
+   * This sea's state for a player joining the room late (spec N1: the sea
+   * handover): the water, its breaking and foam, the lip in the air, and the
+   * clock, copied. A sea built from the same room config and given it with
+   * `importState` steps on exactly as this one does.
+   */
+  exportState(): SurfZoneState {
+    const arrays = Object.fromEntries(Object.entries(this.stateArrays()).map(([name, array]) => [name, array.slice()]));
+    return {
+      nx: this.solver.nx, nz: this.solver.nz, solverTime: this.solver.time, seaTimeOffset: this.seaTimeOffset, arrays,
+      counters: { lipLaunches: this.lipLaunches, lipVolume: this.lipVolume, lipJets: this.lipJets, lipRollers: this.lipRollers },
+      lip: this.lip.exportState(),
+    };
+  }
+
+  /** Takes over another player's sea (`exportState`): this sea must be built from the same room config. */
+  importState(state: SurfZoneState): void {
+    const { solver } = this;
+    if (state.nx !== solver.nx || state.nz !== solver.nz) throw new Error(`A sea state from another tank (${state.nx}×${state.nz}, not ${solver.nx}×${solver.nz})`);
+    const arrays = this.stateArrays();
+    for (const [name, values] of Object.entries(state.arrays)) {
+      const target = arrays[name];
+      if (!target || target.length !== values.length) throw new Error(`A sea state from another tank: ${name} does not fit`);
+      target.set(values);
+    }
+    solver.time = state.solverTime;
+    this.seaTimeOffset = state.seaTimeOffset;
+    this.boundary.timeOffset = state.seaTimeOffset;
+    this.lipLaunches = state.counters.lipLaunches;
+    this.lipVolume = state.counters.lipVolume;
+    this.lipJets = state.counters.lipJets;
+    this.lipRollers = state.counters.lipRollers;
+    this.lip.importState(state.lip);
   }
 
   get seaTime(): number {
@@ -298,6 +374,8 @@ export class SurfZoneSimulation {
     this.markBreakingOnsets();
     this.lip.step(dt);
     this.foam.update(dt, this.breaking.strength);
+    this.aerateBores(dt);
+    this.aeration.update(dt);
     this.lastStepMs = performance.now() - start;
   }
 
@@ -448,6 +526,16 @@ export class SurfZoneSimulation {
     }
   }
 
+  /** The flying tubes as a `tubeTable` (G9); returns how many. */
+  writeTubes(into: Float32Array): number {
+    return this.lip.writeTubes(into, TUBE_CAPACITY);
+  }
+
+  /** The width of the columns the lip throws in, m. */
+  get tubeColumnWidth(): number {
+    return this.solver.dx;
+  }
+
   /** Water surface elevation, m; on dry land this is the bed. */
   heightAt(x: number, z: number): number {
     return this.lip.carve(x, z, this.solver.sampleCentered(this.solver.h, x, z) + this.bedAt(x, z));
@@ -472,9 +560,11 @@ export class SurfZoneSimulation {
   /**
    * Resample the water to interleaved (height, foam) per render node. Dry nodes
    * sit 5 cm under the bed so the seabed mesh hides them. Foam is the foam
-   * field's covered fraction.
+   * field's covered fraction. Under a flying lip the surface drops to its
+   * void's floor, unless `carve` is false (the snapshot's raw heights, G9: the
+   * page carves them from the tube table).
    */
-  writeUniformSurface(data: Float32Array, grid: RenderGrid): void {
+  writeUniformSurface(data: Float32Array, grid: RenderGrid, carve = true): void {
     const mapping = this.mappingFor(grid);
     const { h, bed, nx } = this.solver;
     const { dense, residual } = this.foam;
@@ -502,19 +592,44 @@ export class SurfZoneSimulation {
         }
       }
     }
-    // Under a flying lip the surface drops to its void's floor.
-    this.lip.forEachTubeExtent((xMin, xMax, zMin, zMax) => {
-      const c0 = Math.max(0, Math.ceil((xMin - grid.xMin) / grid.spacing));
-      const c1 = Math.min(grid.nx - 1, Math.floor((xMax - grid.xMin) / grid.spacing));
-      const r0 = Math.max(0, Math.ceil((zMin - grid.zMin) / grid.spacing));
-      const r1 = Math.min(grid.nz - 1, Math.floor((zMax - grid.zMin) / grid.spacing));
-      for (let r = r0; r <= r1; r += 1) {
-        for (let c = c0; c <= c1; c += 1) {
-          const k = (r * grid.nx + c) * 2;
-          data[k] = this.lip.carve(grid.xMin + c * grid.spacing, grid.zMin + r * grid.spacing, data[k]);
+    if (carve) carveGrid(data, grid, this.lip.tubeTable, this.lip.tubeCount, this.solver.dx);
+  }
+
+  /** G9: every breaking bore drives air in by its dissipation, spilling shallower than a plunge. */
+  private aerateBores(dt: number): void {
+    const { h, bed, restLevel } = this.solver;
+    const strength = this.breaking.strength;
+    for (let i = 0; i < h.length; i += 1) {
+      if (!(strength[i] > 0)) continue;
+      const still = restLevel - bed[i];
+      const dissipation = strength[i] * boreDissipation(still, h[i]);
+      if (dissipation > 0) this.aeration.addBore(i, dissipation, h[i] - still, dt);
+    }
+  }
+
+  /** G9: resample the aeration to interleaved (void fraction, plume depth, m) per render node; 0 on dry nodes. */
+  writeUniformAeration(data: Float32Array, grid: RenderGrid): void {
+    const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
+    const { nx } = this.solver;
+    const { depth } = this.aeration;
+    for (let r = 0; r < grid.nz; r += 1) {
+      const row = rows[r] * nx;
+      const tz = rowWeights[r];
+      for (let c = 0; c < grid.nx; c += 1) {
+        const i = row + columns[c];
+        const tx = columnWeights[c];
+        const w = [(1 - tx) * (1 - tz), tx * (1 - tz), (1 - tx) * tz, tx * tz];
+        const cells = [i, i + 1, i + nx, i + nx + 1];
+        let voidFraction = 0;
+        let plume = 0;
+        for (let k = 0; k < 4; k += 1) {
+          voidFraction += w[k] * this.aeration.voidFraction(cells[k]);
+          plume += w[k] * depth[cells[k]];
         }
+        data[(r * grid.nx + c) * 2] = voidFraction;
+        data[(r * grid.nx + c) * 2 + 1] = plume;
       }
-    });
+    }
   }
 
   /** Resample the depth-averaged current to interleaved (u, w) per render node, m/s; 0 on dry nodes. */
