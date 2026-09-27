@@ -174,15 +174,21 @@ const UPRIGHT_RATE = 0.2;
  * heading hold and the hand ask for up to HOLD_BANK, rad. Past MAX_BANK the body
  * is off its posture.
  *
- * While the rider steers, the feet never roll the board away from the bank asked
- * for; the upper body's swing throws the body into a lean, and the feet only
- * catch it (the rail-change study). The planing hull turns hard on a small roll
- * (a held board rolled 8° turns at 0.8 rad/s at 7 m/s). So the feet's push that
- * threw the body into a new lean first swung the board the wrong way. At the top
- * of the face that pointed it up to stall while the body fell in at 3 rad/s; in a
- * rail change it dug the old rail; mid-carve it pumped the rail in the roll–yaw
- * wobble. Unsteered, the heading hold, the hand and a shove keep the feet's whole
- * range.
+ * Steering into a lean (past STEER_DEADBAND, toward a bank past UPRIGHT_BANK)
+ * that the body lags by more than the feet's linear range (ANKLE_REST_RANGE /
+ * BANK_GAIN, about 2°), the feet never roll the board away from it: the upper
+ * body's swing throws the body into the lean, and the feet only catch it (the
+ * rail-change study). The planing hull turns hard on a small roll (a held board
+ * rolled 8° turns at 0.8 rad/s at 7 m/s). So the feet's push that threw the body
+ * into a new lean first swung the board the wrong way. At the top of the face
+ * that pointed it up to stall while the body fell in at 3 rad/s; in a rail change
+ * it dug the old rail (it still may while the bank asked for crosses over, about
+ * 0.2 s); mid-carve it pumped the rail in the roll–yaw wobble. Within the linear
+ * range the feet hold a steady carve: the swing is a rotor and holds no steady
+ * torque, and given a carve's small steady rest across a face it wound to its
+ * range, after which a held partial steer turned the wrong way (the final
+ * review). Unsteered, near upright, the heading hold, the hand and a shove keep
+ * the feet's whole range.
  */
 const ANKLE_STIFFNESS = 800;
 const ANKLE_DAMPING = 80;
@@ -308,6 +314,8 @@ const STANDING_HOLD_RATE_SMOOTHING = 0.25;
 /** Out of a turn, the hold takes up its line once the yaw rate has fallen below this, rad/s. */
 const STANDING_HOLD_SETTLE = 0.15;
 const STANDING_HOLD_SHARE = 0.5;
+/** A steer within this is none: lying down no arm sweeps, and standing the heading hold keeps the line. */
+const STEER_DEADBAND = 0.05;
 /** Trim: the upper body shifts fore or aft by up to this much, m, moving the load along the board (provisional). */
 const TRIM_SHIFT = 0.25;
 /**
@@ -1284,9 +1292,10 @@ export class AttachedRider {
     // Past the rail's bite the feet no longer roll the board further onto it.
     const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(roll) - RAIL_BITE) / RAIL_EASE);
     const reach = roll > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
-    // Steering, the feet never roll the board away from the bank asked for: the upper body throws the lean.
-    const asking = this.steer !== 0 ? Math.sign(this.bankReference) : 0;
-    const lean = reach * asking > 0 ? 0 : reach;
+    // Steering into a lean the body lags, the feet never roll the board away from it: the upper body throws the lean.
+    const asking = Math.abs(this.steer) > STEER_DEADBAND && Math.abs(this.bankReference) > UPRIGHT_BANK ? Math.sign(this.bankReference) : 0;
+    const lagging = Math.abs(this.bankReference - this.bank.angle) > ANKLE_REST_RANGE / BANK_GAIN;
+    const lean = reach * asking > 0 && lagging ? 0 : reach;
     this.swingStep(h, wanted - lean);
     this.ankleRest += (lean - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
     // Backward Euler on the ankle: over the substep the bank and the roll move at their rates after the solve.
@@ -1447,7 +1456,7 @@ export class AttachedRider {
 
   /** Steering without paddling: one arm sweeps. */
   private get sweeping(): boolean {
-    return Math.abs(this.steer) > 0.05;
+    return Math.abs(this.steer) > STEER_DEADBAND;
   }
 
   /** How hard arm `side` (0 left, at +x; 1 right) strokes, from the paddle and steer input and the paddler's own line keeping. */
@@ -2053,7 +2062,7 @@ export class AttachedRider {
    */
   private holdLine(h: number, board: BoardBody): void {
     const standing = this.phase === 'standing' && this.attached;
-    if (!standing || Math.abs(this.steer) > 0.05 || this.hand) {
+    if (!standing || Math.abs(this.steer) > STEER_DEADBAND || this.hand) {
       this.standingLine = undefined;
       this.standingHold = 0;
       this.holdRate = 0;

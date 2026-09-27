@@ -1259,6 +1259,53 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(degrees(turned) * steer).toBeGreaterThan(60);
     });
 
+    // The final review: with the feet kept from rolling the board away from any lean asked for, a steady carve across the
+    // face gave its small steady rest to the swing, which holds no steady torque: it wound to its range in 0.7–2 s, and a
+    // held partial steer then turned the wrong way (+25° for −0.2 at 30° across) or not at all. The upper body throws
+    // only a lean the body lags behind by more than the feet's linear range.
+    const heldSteer = (across: number, speed: number, steer: number, seconds: number) => {
+      const { board, rider, water } = acrossFace(across, speed);
+      run(board, water, 0.2);
+      rider.steer = steer;
+      let last = headingOf(board);
+      let turned = 0;
+      let swing = 0;
+      run(board, water, seconds, () => {
+        const now = headingOf(board);
+        turned += Math.atan2(Math.sin(now - last), Math.cos(now - last));
+        last = now;
+        swing = Math.max(swing, Math.abs(rider.swing.angle));
+      });
+      return { attached: rider.attached, turned: degrees(turned), swing };
+    };
+
+    it.each([[30, 8, -0.2], [30, 8, 0.3], [45, 7, 0.3], [60, 9, -0.1]])('turns the steered way on a partial steer held %i° across at %i m/s (%f)', (across, speed, steer) => {
+      const held = heldSteer(across, speed, steer, 5);
+      expect(held.attached).toBe(true);
+      expect(held.turned * Math.sign(steer)).toBeGreaterThan(5);
+      expect(held.swing).toBeLessThan(0.6);
+    });
+
+    it.each([0.01, 0.03])('holds its line on a steer of %f, inside the heading hold', (steer) => {
+      const held = heldSteer(45, 7, steer, 8);
+      expect(held.attached).toBe(true);
+      expect(Math.abs(held.turned)).toBeLessThan(20);
+      expect(held.swing).toBeLessThan(0.6);
+    });
+
+    // Review Focus 2 and 4: stalling at the top, the lean asked for decays toward nothing; kept from the feet by its
+    // sign, the body toppled out of the turn with the legs pulling up to 4 body weights.
+    it.each([4.5, 5, 5.5])('never pulls the board in a top turn that stalls, from %f m/s', (speed) => {
+      const { board, rider, water } = acrossFace(150, speed);
+      run(board, water, 0.2);
+      rider.steer = 1;
+      let pull = 0;
+      run(board, water, 1.5, () => {
+        if (rider.attached) pull = Math.min(pull, rider.leg.force);
+      });
+      expect(pull).toBeGreaterThanOrEqual(0);
+    });
+
     // A rail change (the rail-change study): carving one way, full steer the other. The feet rolled the board further
     // onto the old rail to throw the body across, the old turn went on 41–67° and bled the speed, and at 8 and 10 m/s
     // the rider fell within 0.6 s. The board must turn back the new way; how far the body leans into the new turn is
