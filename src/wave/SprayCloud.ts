@@ -89,13 +89,13 @@ const FEATHER_HEIGHT = 0.3;
 const STROKE_UP = { min: 0.3, max: 0.9 };
 const STROKE_BACK = { min: 0.3, max: 0.7 };
 /**
- * A lip impact's drops leave at the splash-up's speeds (G9, `SPLASH_UP`): up at
- * its share of the impact speed, on at its share of the parcel's forward speed,
- * each a fifth either way for variety. `random` is in [0, 1).
+ * A lip impact's drops leave at the splash-up sheet's speeds (G9, `SPLASH_UP`):
+ * up at its share of the downward impact speed, on at its share of the
+ * parcel's forward speed, each a fifth either way for variety. `random` is in [0, 1).
  */
-export function splashLaunch(speed: number, random: number): { up: number; forward: number } {
+export function splashLaunch(downSpeed: number, random: number): { up: number; forward: number } {
   const spread = 0.8 + 0.4 * random;
-  return { up: speed * SPLASH_UP.vertical * spread, forward: SPLASH_UP.horizontal * (1.2 - 0.4 * random) };
+  return { up: downSpeed * SPLASH_UP.vertical * spread, forward: SPLASH_UP.horizontal * (1.2 - 0.4 * random) };
 }
 const WET = 0.05;
 const WATER_DENSITY = 1025;
@@ -155,6 +155,9 @@ export class SprayCloud {
   private readonly spin: Float64Array;
   private readonly lateral: Float64Array;
   private readonly random: () => number;
+  /** Scratch for `roll`: each roller's sprites, and the rollers by id. */
+  private readonly held = new Map<number, number>();
+  private readonly rollerById = new Map<number, TubeRoller>();
 
   constructor(seed: number, readonly capacity = SPRAY_CAPACITY, readonly whitewaterCapacity = Math.round(capacity / 4)) {
     this.random = seededRandom(seed, 0x5b1a54);
@@ -235,7 +238,7 @@ export class SprayCloud {
     const cell = scene.solver.cellIndex(impact.x, impact.z);
     const surface = scene.solver.h[cell] + scene.solver.bed[cell];
     for (; spawns > 0 && this.room(false); spawns -= 1) {
-      const { up, forward } = splashLaunch(speed, this.random());
+      const { up, forward } = splashLaunch(Math.abs(impact.vy), this.random());
       const spread = 1.5;
       const mist = this.random() < 0.2;
       this.spawn(
@@ -299,11 +302,13 @@ export class SprayCloud {
    */
   private roll(rollers: readonly TubeRoller[], dt: number): void {
     if (rollers.length === 0) return;
-    const held = new Map<number, number>();
+    const held = this.held;
+    held.clear();
     for (let k = 0; k < this.count; k += 1) {
       if (this.kind[k] === FOAM_BALL) held.set(this.owner[k], (held.get(this.owner[k]) ?? 0) + 1);
     }
-    const byId = new Map<number, TubeRoller>();
+    const byId = this.rollerById;
+    byId.clear();
     for (const roller of rollers) {
       const radius = Math.sqrt(roller.area / Math.PI);
       if (!(radius > 0)) continue;

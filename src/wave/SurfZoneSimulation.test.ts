@@ -36,6 +36,89 @@ describe('SurfZoneSimulation', () => {
     }
   });
 
+  it('spins up the menu\'s first Reef on the GPU tier\'s sea without blowing up', () => {
+    // The practice groundswell, 64 components and seed 1: at a quarter second between stability checks,
+    // a trough drained a reef cell to 7 cm with 112 m/s of backwash and the spin-up diverged at 2.25 s.
+    const simulation = new SurfZoneSimulation({
+      spot: 'reef', seed: 1, significantHeight: 2, peakPeriod: 12, directionDegrees: 10, spreading: 40, bandwidth: 0.08,
+      tide: 0, windSpeed: 0, stage: 2, componentCount: 64,
+    });
+    const { solver } = simulation;
+    let deepest = 0;
+    for (let i = 0; i < solver.h.length; i += 1) deepest = Math.max(deepest, solver.h[i]);
+    expect(deepest).toBeLessThan(20);
+    expect(solver.maxStableStep()).toBeGreaterThan(1e-3);
+  }, 180_000);
+
+  describe('spinning up after the build (the worker spins up on its GPU)', () => {
+    const sameWater = (a: SurfZoneSimulation, b: SurfZoneSimulation) => {
+      expect(a.solver.time).toBe(b.solver.time);
+      expect(Array.from(a.solver.h)).toEqual(Array.from(b.solver.h));
+      expect(Array.from(a.solver.qx)).toEqual(Array.from(b.solver.qx));
+      expect(Array.from(a.solver.qz)).toEqual(Array.from(b.solver.qz));
+    };
+
+    it('builds warm, then spins up to the same sea as a build that spins up at once', async () => {
+      const eager = new SurfZoneSimulation({ ...small, spot: 'point' });
+      const warm = new SurfZoneSimulation({ ...small, spot: 'point' }, 'warm');
+      expect(warm.solver.time).toBe(0);
+      await warm.spinUp();
+      sameWater(warm, eager);
+      for (let step = 0; step < 30; step += 1) {
+        eager.step(1 / 60);
+        warm.step(1 / 60);
+      }
+      sameWater(warm, eager);
+      expect(Array.from(warm.breaking.strength)).toEqual(Array.from(eager.breaking.strength));
+      expect(Array.from(warm.foam.dense)).toEqual(Array.from(eager.foam.dense));
+    });
+
+    it('spins up on its device, one stable substep a call', async () => {
+      const eager = new SurfZoneSimulation({ ...small, spot: 'point' });
+      const warm = new SurfZoneSimulation({ ...small, spot: 'point' }, 'warm');
+      const steps: number[] = [];
+      let overshoots = 0;
+      // A stand-in device that takes the CPU solver's own step.
+      warm.device = {
+        step: async (dt: number) => {
+          if (dt > warm.solver.maxStableStep()) overshoots += 1;
+          steps.push(dt);
+          warm.solver.step(dt);
+        },
+        dispose() {},
+      };
+      await warm.spinUp();
+      expect(steps.length).toBeGreaterThan(20);
+      expect(overshoots).toBe(0);
+      sameWater(warm, eager);
+    });
+
+    it('finishes the spin-up on the CPU when its device fails partway', async () => {
+      const eager = new SurfZoneSimulation({ ...small, spot: 'point' });
+      const warm = new SurfZoneSimulation({ ...small, spot: 'point' }, 'warm');
+      let calls = 0;
+      let disposed = false;
+      warm.device = {
+        step: async (dt: number) => {
+          calls += 1;
+          if (calls > 10) throw new Error('device lost');
+          warm.solver.step(dt);
+        },
+        dispose: () => { disposed = true; },
+      };
+      const warn = console.warn;
+      console.warn = () => {};
+      try {
+        await warm.spinUp();
+      } finally {
+        console.warn = warn;
+      }
+      expect(disposed).toBe(true);
+      expect(warm.device).toBeUndefined();
+      sameWater(warm, eager);
+    });
+  });
+
   it('drops a failing device and steps that frame on the CPU', async () => {
     const reference = new SurfZoneSimulation({ ...small, spot: 'point' });
     const simulation = new SurfZoneSimulation({ ...small, spot: 'point' });

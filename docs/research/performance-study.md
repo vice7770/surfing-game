@@ -10,6 +10,27 @@
 - **Fixed here: the pause menu redrew a still picture every frame** (4.9 ms of GPU at 120 Hz on the M4 at High; 7.8 ms at 60 Hz on the M1 at Medium). It now draws only when the view changes.
 - **The largest cost left is load time, not frame rate.** Each surf zone spins up 24 s of sea on the CPU before the GPU takes over: 11–28 s on the M1 Air, 6 s on the M4 Pro. Spinning up on the GPU is the first recommendation.
 
+## Update, later the same day
+
+Three of the recommendations below are done:
+- **1, spin up on the GPU (PR #39):** the worker attaches its device first and steps the spin-up on it, one stable substep a call. Every substep waits for the GPU, so the page also stops drawing and stepping the sea it replaces:
+  - behind the loading card;
+  - while the menu's new waves spin up on its gradient.
+
+  On the M1 Air, measured against main after the merge:
+
+  | | Before (CPU spin-up) | After |
+  |---|---:|---:|
+  | Menu's waves after launch | 38–44 s | 3.8–7.2 s |
+  | Paddle out to riding | 19–27 s | 2.6–5.8 s |
+  | Quit to the menu's new waves | 26–27 s | 2.2–4.5 s |
+
+  All 24 spin-ups of the stability scan came up finite on the GPU, in 2.3–5.3 s.
+- **4, guard the GPU step (PR #39):** the GPU step now also stops with an error on diverged water.
+- **5, fix the survey (PR #41):** only the game's context is timed; the surfer preview's timer is reported apart. On ANGLE Metal a timer spans the GPU's timeline, including overlapping work from other contexts and processes, so contexts cannot be separated exactly. The survey no longer counts a frame twice.
+
+Recommendations 2 (what the menus may cost) and 3 (Auto on the M1) stay open.
+
 ## Machines
 
 | | M4 Pro (the user's survey) | M1 Air (this study) |

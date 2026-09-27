@@ -27,6 +27,22 @@ describe('SurfZoneRunner', () => {
     expect(runner.simulation.seaTime).toBe(direct.seaTime);
   });
 
+  it('builds warm and spins up later, seating the board and rider on the spun-up sea', async () => {
+    const eager = new SurfZoneRunner(config, { rider: true });
+    const warm = new SurfZoneRunner(config, { rider: true }, 'warm');
+    await warm.spinUp();
+    const input = { paddle: true, popUp: false, steer: 0.3, retry: false };
+    eager.advance(30, input);
+    warm.advance(30, input);
+    const [a, b] = [eager.createBuffers(), warm.createBuffers()];
+    eager.fill(a);
+    warm.fill(b);
+    expect(Array.from(b.surface)).toEqual(Array.from(a.surface));
+    expect(Array.from(b.board)).toEqual(Array.from(a.board));
+    expect(Array.from(b.rider)).toEqual(Array.from(a.rider));
+    expect({ ...warm.status(), stepMs: 0 }).toEqual({ ...eager.status(), stepMs: 0 });
+  });
+
   it('reports how many breaks threw a jet and how many spilled', () => {
     const runner = new SurfZoneRunner(config);
     runner.simulation.lipJets = 3;

@@ -178,6 +178,8 @@ class SurfGame {
   private paused = false;
   /** Paused offline, the scene is drawn again only when what shows has changed. */
   private readonly stillFrame = new StillFrameGate();
+  /** Under the loading card: nothing drawn or stepped would show, and the next sea spins up without them. */
+  private covered = false;
   /** Sound (S1): the sea time of the last snapshot heard, the board's last place and sideslip, and the rider's last phase. */
   private soundSeaTime = Number.NaN;
   private soundBoard?: { x: number; y: number; z: number };
@@ -240,7 +242,6 @@ class SurfGame {
     this.water.mesh.material.envMapIntensity = 0.28;
     this.water.mesh.visible = false;
     this.scene.add(this.water.mesh);
-    this.environment.showCoastline(false);
     this.physicalMode = new PhysicalMode(this.scene);
     this.physicalMode.farField.mesh.material.envMapIntensity = 0.28;
     this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
@@ -367,7 +368,6 @@ class SurfGame {
     this.water.mesh.visible = true;
     this.physicalMode.setVisible(true);
     this.physicalMode.camera.setView(this.physicalMode.homeView);
-    this.environment.showCoastline(false);
     this.environment.group.scale.setScalar(5);
     this.environment.group.position.set(this.physicalMode.focus.x, 0, this.physicalMode.focus.z);
     const { sun } = options;
@@ -488,6 +488,11 @@ class SurfGame {
     this.paused = paused;
   }
 
+  setCovered(covered: boolean): void {
+    this.covered = covered;
+    this.needsRender = true;
+  }
+
   /** The ride as the ride tracker reads it: status, the board's position, and the sea's clock. */
   get rideFrame(): RideFrame | undefined {
     const host = this.physicalMode.host;
@@ -590,6 +595,12 @@ class SurfGame {
     this.labInput.poll();
     const rawElapsed = this.previousFrame === 0 ? 0 : (timestamp - this.previousFrame) / 1000;
     this.onFrame?.(rawElapsed * 1000, this.physicalMode.host?.snapshot.status);
+    // Behind the loading card, the sea being replaced neither steps nor draws: the GPU is the new one's to spin up on.
+    if (this.covered) {
+      this.previousFrame = timestamp;
+      requestAnimationFrame(this.frame);
+      return;
+    }
     // Online the sea never pauses: the menu only takes the controls (spec N1).
     if (this.paused && !this.online) {
       this.pausedRender(timestamp);

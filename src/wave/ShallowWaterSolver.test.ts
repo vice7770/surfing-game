@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSpot } from './Bathymetry';
-import { ShallowWaterSolver, stretchedEdges, uniformEdges } from './ShallowWaterSolver';
+import { ShallowWaterSolver, cflSubsteps, stretchedEdges, uniformEdges } from './ShallowWaterSolver';
 import { longWaveTarget } from './shallowWaterTestSupport';
 
 // Stoker's wet-bed dam break for 2.0 m → 0.5 m (computed by bisection on the Riemann invariants).
@@ -179,5 +179,19 @@ describe('ShallowWaterSolver', () => {
     const expected = 0.25 * (solver.bed[i] + solver.bed[i + 1] + solver.bed[i + solver.nx] + solver.bed[i + solver.nx + 1]);
     expect(solver.sampleCentered(solver.bed, x, z)).toBeCloseTo(expected, 12);
     expect(solver.sampleCentered(solver.bed, -100, -100)).toBe(solver.bed[0]);
+  });
+
+  it('sizes substeps at the CFL limit, the GPU step as the CPU one, and refuses a collapsed stable step', () => {
+    expect(cflSubsteps(1 / 60, 0.02)).toBe(1);
+    expect(cflSubsteps(0.25, 0.021)).toBe(12);
+    expect(() => cflSubsteps(1 / 60, 5.9e-16)).toThrow(/blew up/);
+  });
+
+  it('stops with an error once the water has blown up, instead of sub-stepping without end', () => {
+    const solver = new ShallowWaterSolver({ nx: 20, xMin: -20, dx: 2, zEdges: uniformEdges(-20, 20, 20) }, () => 2);
+    const cell = 10 * solver.nx + 10;
+    // What a diverged cell looks like: a stable step near 1e-15 s, a hundred trillion substeps a frame.
+    solver.qx[cell] = 1e20;
+    expect(() => solver.step(1 / 60)).toThrow(/blew up/);
   });
 });
