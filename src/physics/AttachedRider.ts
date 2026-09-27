@@ -5,6 +5,7 @@ import { LIP_CONTACT, LIP_QUERY_MARGIN, type LipContactParcel, type LipParcelSou
 import type { BoardShape } from './boardShape';
 import { WATER } from './hullForces';
 import { RIDER_LEG } from './legSpring';
+import { MinimumJerkTrack } from './MinimumJerkTrack';
 import { SEAWATER_DENSITY as SEAWATER } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
 import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, riderPartVolumes, riderPose, stanceFeet, type PosePhase, type StanceName, type SupportRegion } from './riderPosture';
@@ -439,18 +440,16 @@ const RECOVER_TIME = 0.6;
  * over KNEE_TIME; released, both give back over RELEASE_TIME, letting the board
  * float the body up behind the wave (given back in 0.4 s, the body pulled itself
  * down onto the rising board harder than the prone grip holds, and let go). Each
- * eases in and out, settling within 0.5 % over its time (a critically damped
- * follower): stopped dead at full press, the rising body flew off the board. The
- * input's depth (analog) sets how far each goes. Coaching sources [A] only:
- * provisional.
+ * eases in and out along a minimum-jerk path (`MinimumJerkTrack`): stopped dead
+ * at full press, the rising body flew off the board, and started at full
+ * acceleration (a critically damped follower), the knee pulled the body off the
+ * deck as it began. The input's depth (analog) sets how far each goes. Coaching
+ * sources [A] only: provisional.
  */
 const PRESS_TIME = 0.35;
 const KNEE_DELAY = 0.3;
 const KNEE_TIME = 0.25;
 const RELEASE_TIME = 1.0;
-/** A critically damped follower settles within 0.5 % in 7.43 / ω; closer than SNAP it lands on its target. */
-const SETTLE = 7.43;
-const SNAP = 0.01;
 /**
  * Ducking, both hands are wrapped round the rails: they hold the board with up
  * to DUCK_GRIP body weights (a person can hang their weight from two hands;
@@ -598,11 +597,9 @@ export class AttachedRider {
   duckDive = 0;
   /** The duck-dive's progress: the arms' press and the knee on the tail (0–1 each), and how long it has been held, s. */
   readonly duck = { press: 0, knee: 0, held: 0 };
-  /** The press's and the knee's rates this substep, 1/s. */
-  private pressRate = 0;
-  private kneeRate = 0;
-  /** The latest `follow`'s rate, 1/s (no allocation per substep). */
-  private followRate = 0;
+  /** The press's and the knee's paths, and their rates. */
+  private readonly pressTrack = new MinimumJerkTrack();
+  private readonly kneeTrack = new MinimumJerkTrack();
   /** The duck-dive postures, and the centre of mass each moves by (press from prone, knee from press), board frame. */
   /** The duck-dive postures for each stance (the stance changes between rides), with the support and each stage's centre-of-mass move. */
   private readonly ducks: Record<StanceName, { press: Float64Array; knee: Float64Array; support: SupportRegion; shiftPress: Vector3; shiftKnee: Vector3 }>;
@@ -939,8 +936,8 @@ export class AttachedRider {
     this.duck.press = 0;
     this.duck.knee = 0;
     this.duck.held = 0;
-    this.pressRate = 0;
-    this.kneeRate = 0;
+    this.pressTrack.reset();
+    this.kneeTrack.reset();
     this.balance.set(0, 0, 0);
     this.balanceRate.set(0, 0, 0);
     // A new mount starts from the neutral stance, whatever the body was doing before (a relaunch mid-carve).
@@ -2037,9 +2034,9 @@ export class AttachedRider {
 
   /**
    * The duck-dive's progress this substep: lying still on the board (not in a
-   * posture change), the press moves toward the input at 1/PRESS_TIME per s and
-   * the knee follows once the press has been held KNEE_DELAY s; let go, both
-   * give back at 1/RELEASE_TIME. Anything else (standing, pushing up) holds none.
+   * posture change), the press moves toward the input over PRESS_TIME and the knee
+   * follows once the press has been held KNEE_DELAY s; let go, both give back
+   * over RELEASE_TIME. Anything else (standing, pushing up) holds none.
    */
   private duckStep(h: number): void {
     const { duck } = this;
@@ -2047,36 +2044,21 @@ export class AttachedRider {
       duck.press = 0;
       duck.knee = 0;
       duck.held = 0;
-      this.pressRate = 0;
-      this.kneeRate = 0;
+      this.pressTrack.reset();
+      this.kneeTrack.reset();
       return;
     }
     const target = Math.max(0, Math.min(1, this.duckDive));
     const holding = target > DUCK_HELD;
     duck.held = holding ? duck.held + h : 0;
-    duck.press = this.follow(duck.press, this.pressRate, holding ? target : 0, holding && duck.press < target ? PRESS_TIME : RELEASE_TIME, h);
-    this.pressRate = this.followRate;
+    const pressTarget = holding ? target : 0;
+    this.pressTrack.retarget(pressTarget, pressTarget > duck.press ? PRESS_TIME : RELEASE_TIME);
+    this.pressTrack.step(h);
+    duck.press = this.pressTrack.value;
     const kneeTarget = holding && duck.held >= KNEE_DELAY ? target : 0;
-    duck.knee = this.follow(duck.knee, this.kneeRate, kneeTarget, duck.knee < kneeTarget ? KNEE_TIME : RELEASE_TIME, h);
-    this.kneeRate = this.followRate;
-  }
-
-  /** One substep of a critically damped follower toward `target`, settling over `time`, kept within 0–1: the new value, and its rate in `followRate`. */
-  private follow(value: number, rate: number, target: number, time: number, h: number): number {
-    const omega = SETTLE / time;
-    const next = rate + (omega * omega * (target - value) - 2 * omega * rate) * h;
-    let after = value + next * h;
-    let afterRate = next;
-    if (Math.abs(target - after) < SNAP) {
-      after = target;
-      afterRate = (target - value) / h;
-    }
-    if (after <= 0 || after >= 1) {
-      after = Math.max(0, Math.min(1, after));
-      afterRate = (after - value) / h;
-    }
-    this.followRate = afterRate;
-    return after;
+    this.kneeTrack.retarget(kneeTarget, kneeTarget > duck.knee ? KNEE_TIME : RELEASE_TIME);
+    this.kneeTrack.step(h);
+    duck.knee = this.kneeTrack.value;
   }
 
   /** The posture's parts, centre of mass and support for the current phase. */
@@ -2103,7 +2085,7 @@ export class AttachedRider {
       for (let k = 0; k < this.parts.length; k += 1) {
         this.parts[k] += press * (duck.press[k] - pose.parts[k]) + knee * (duck.knee[k] - duck.press[k]);
       }
-      this.postureRate.addScaledVector(duck.shiftPress, this.pressRate).addScaledVector(duck.shiftKnee, this.kneeRate);
+      this.postureRate.addScaledVector(duck.shiftPress, this.pressTrack.rate).addScaledVector(duck.shiftKnee, this.kneeTrack.rate);
       if (press > DUCK_BUSY) this.support = duck.support;
     }
     this.upright = pose.upright;

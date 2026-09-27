@@ -144,8 +144,9 @@ export type DuckPose = 'duckPress' | 'duckKnee';
  * bent) kept the board through more timed dives (17 % against 0 %) but sank the
  * board less (0.27 m on flat water) and lost both of the test bore's timing
  * checks; the hug as a third stage after the knee changed nothing measurable,
- * as the broken water pulls the rider off before it starts. Posture is not what
- * loses the board.
+ * as the rider had already left the deck when the knee began. Posture was not
+ * what lost the board: each stage started at full acceleration (fixed since;
+ * `MinimumJerkTrack`).
  */
 function duckPlaces(pose: DuckPose): PartPlace[] {
   switch (pose) {

@@ -12,6 +12,7 @@
  *
  *   npm run report:duckdive -- --seeds 2 --minutes 3
  *   npm run report:duckdive -- --spot beach --inside 20
+ *   npm run report:duckdive -- --hold 3 --out /tmp/held.md   (a longer press)
  */
 import { writeFileSync } from 'node:fs';
 import { Vector3 } from 'three';
@@ -39,7 +40,7 @@ const swell = swellFor(settings);
 const direction = swell.directionDegrees ?? settings.directionDegrees;
 
 /** A duck-dive press lasts this long, s. */
-const HOLD = 1.5;
+const HOLD = argument('hold', 1.5);
 /** The broken water counts from this breaking strength, and is looked for this far ahead, m. */
 const BROKEN = 0.3;
 const LOOK = 20;
