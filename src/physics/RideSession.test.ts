@@ -1,4 +1,4 @@
-import { Vector3 } from 'three';
+import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import type { LipContactParcel, LipParcelSource } from './DetachedSurfer';
 import { PlaneWater } from './PlaneWater';
@@ -274,6 +274,19 @@ describe('the leash in a ride', () => {
     expect(session.rider.attached).toBe(true);
     for (let i = 0; i < 120; i += 1) session.step(STEP, water, { ...idle, reel: true });
     expect(session.phase).toBe('prone');
+  });
+
+  it('lets go of a held board to dive', () => {
+    const { session, water } = fallen();
+    for (let i = 0; i < 180; i += 1) session.step(STEP, water, idle);
+    const torso = session.surfer.getPartPosition('torso', new Vector3());
+    session.board.place(new Vector3(torso.x + 0.5, session.board.shape.centerOfMass.y - 0.03, torso.z), new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI));
+    session.step(STEP, water, { ...idle, popUp: true });
+    expect(session.recovery.state).not.toBe('free');
+    session.step(STEP, water, { ...idle, duckDive: 1 });
+    expect(session.recovery.state).toBe('free');
+    for (let i = 0; i < 60; i += 1) session.step(STEP, water, { ...idle, duckDive: 1 });
+    expect(session.surfer.diving).toBe(true);
   });
 
   // Review Focus 5.

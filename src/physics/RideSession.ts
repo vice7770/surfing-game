@@ -186,7 +186,9 @@ export class RideSession {
       surfer.centerOfMass(this.started.center);
     }
     if (surfer.active) {
-      surfer.step(dt, this.bodyField(water), { stroke: input.paddle, steer: input.steer });
+      // Diving lets go of a held board (the leash keeps it).
+      if ((input.duckDive ?? 0) > 0.3 && this.recovery.state !== 'free') this.recovery.release();
+      surfer.step(dt, this.bodyField(water), { stroke: input.paddle, steer: input.steer, dive: input.duckDive ?? 0 });
       surfer.resolveBoardContact(board);
       const back = surfer.nodes[this.rider.stance === 'regular' ? 6 : 5];
       this.leash.step(dt, this.leashAnkle(this.ankle), back, this.leashPlug(this.plug), board, input.reel ?? false);
