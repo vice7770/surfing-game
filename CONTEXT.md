@@ -142,6 +142,24 @@ _Avoid_: lock-on
 A preset camera place in the lab: Overview, Profile, Below or Cinematic.
 _Avoid_: camera preset
 
+## Surf School
+
+**Surf School**:
+The mode that teaches the surfing motions, one lesson at a time, on the same recorded wave.
+_Avoid_: tutorial (too broad), training mode
+
+**Lesson wave**:
+The recorded wave every lesson starts on: one real ride's sea kept at three moments (waiting, caught, in the pocket), with where the rider was at each.
+_Avoid_: scripted wave, fake wave
+
+**Placement**:
+Putting the rider on the water at a point, heading and speed, standing or prone, as a lesson's start; the physics carries it from there.
+_Avoid_: teleport, spawn (spawning is the lineup's)
+
+**Free Practice**:
+The lesson wave with no goals, restarting after every ride.
+_Avoid_: sandbox
+
 ## Online
 
 **Room**:

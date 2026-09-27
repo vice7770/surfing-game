@@ -112,7 +112,7 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
   advance(steps: number, input?: RideRequest, reactions?: ArrayLike<number>): void {
     if (reactions) for (let i = 0; i < reactions.length; i += 1) this.pendingReactions.push(reactions[i]);
     if (input) {
-      this.input = { ...input, popUp: this.input.popUp || input.popUp, retry: this.input.retry || input.retry };
+      this.input = { ...input, popUp: this.input.popUp || input.popUp, retry: this.input.retry || input.retry, place: input.place ?? this.input.place };
     }
     if (steps <= 0 || this.disposed) return;
     this.pending = Math.min(this.maxQueuedSteps, this.pending + steps);
@@ -126,6 +126,12 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
       this.exporting.set(id, resolve);
       this.port.postMessage({ type: 'exportState', id });
     });
+  }
+
+  /** The sea is replaced in the worker before the next advance it receives; `sea` is handed over (transferred). */
+  restore(sea: Uint8Array): void {
+    if (this.disposed) return;
+    this.port.postMessage({ type: 'restore', sea }, [sea.buffer]);
   }
 
   dispose(): void {
@@ -144,7 +150,7 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
     const reactions = this.pendingReactions.length ? Float32Array.from(this.pendingReactions) : undefined;
     this.pendingReactions = [];
     const input = this.input;
-    this.input = { ...input, popUp: false, retry: false };
+    this.input = { ...input, popUp: false, retry: false, place: undefined };
     this.port.postMessage({ type: 'advance', steps, buffers, input, ...(reactions ? { reactions } : {}) }, transferables(buffers));
   }
 }

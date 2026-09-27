@@ -21,6 +21,19 @@ export interface RideInput {
   hand?: boolean;
 }
 
+/**
+ * Where a lesson puts the rider (Surf School, spec L2): a point on the water, a
+ * heading (radians from +z toward +x), a speed along it on top of the water's own
+ * flow, m/s, and whether the rider stands or lies.
+ */
+export interface RiderPlacement {
+  x: number;
+  z: number;
+  heading: number;
+  speed: number;
+  phase: 'standing' | 'prone';
+}
+
 export interface RideSessionOptions {
   stance?: StanceName;
 }
@@ -64,6 +77,17 @@ export class RideSession {
 
   /** Lie prone on a level board floating at the surface over (x, z), nose along `heading` (radians from +z toward +x). */
   reset(at: Vector3, heading: number, water: SurfWater): void {
+    this.place({ x: at.x, z: at.z, heading, speed: 0, phase: 'prone' }, water);
+  }
+
+  /**
+   * Put the board on the surface over a point, along a heading and moving with
+   * the surface water plus `speed` along the heading, with the rider standing or
+   * lying on it (spec L2). The rider mounts moving with the board.
+   */
+  place(placement: RiderPlacement, water: SurfWater): void {
+    const at = new Vector3(placement.x, 0, placement.z);
+    const { heading } = placement;
     // Put in moving water, a body drifts with it: the board starts with the surface water's velocity,
     // lying along the surface, heading `heading`. Started at rest mid-wave, the flow jolts it.
     const surface = water.surfaceAt(at.x, at.z);
@@ -76,8 +100,11 @@ export class RideSession {
     const left = new Vector3().crossVectors(up, forward);
     const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, up, forward));
     const velocity = moving ? new Vector3(sample.flowX, sample.flowY, sample.flowZ) : new Vector3();
+    // The placed speed runs along the heading, level: the water carries the rest.
+    velocity.x += Math.sin(heading) * placement.speed;
+    velocity.z += Math.cos(heading) * placement.speed;
     this.board.place(new Vector3(at.x, surface + this.board.shape.centerOfMass.y - 0.05, at.z), orientation, velocity);
-    this.rider.phase = 'prone';
+    this.rider.phase = placement.phase;
     this.board.attach(this.rider);
     this.surfer.active = false;
     this.recovery.release();
