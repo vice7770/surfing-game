@@ -10,6 +10,7 @@ import { focusX } from './Refraction';
 import { breakerForm, crestMotion, waveHeightAt } from './CrestKinematics';
 import { jetFlightTime, tubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
+import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import type { SurfZoneState } from './surfZoneState';
 import type { LipImpact } from './SprayCloud';
@@ -203,6 +204,10 @@ export class SurfZoneSimulation {
   lipJets = 0;
   lipRollers = 0;
   readonly peel: PeelTracker;
+  /** The waves breaking at the take-off, as surf reports measure them (the wave-sizes spec). */
+  readonly surf: SurfMeter;
+  /** Called with every wave measured starting to break, anywhere in the window (reports listen here). */
+  onBreak?: (wave: BreakingWave) => void;
   lastStepMs = 0;
   /** Most offshore breaking cell per column last step (Infinity when none). */
   private readonly outerBreak: Float64Array;
@@ -273,6 +278,8 @@ export class SurfZoneSimulation {
     this.lip.onAir = (x, z, volume, penetration) => this.aeration.addAir(x, z, volume, penetration);
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
+    const takeOff = this.breakPoint();
+    this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);
     if (start === 'spun-up') {
       while (this.spinUpLeft() > 0) this.solver.step(this.spinUpStep());
       this.breaking.update(0);
@@ -492,6 +499,7 @@ export class SurfZoneSimulation {
       if (this.onsetsArmed && outer < previous - 5 && this.newBreaker(column, row)) {
         this.lastOnset[column] = solver.time;
         this.peel.markOnset(column, solver.time);
+        this.measureBreak(column, row);
         this.throwLip(column, row);
       }
     }
@@ -513,6 +521,29 @@ export class SurfZoneSimulation {
     const { solver } = this;
     if (solver.time - this.lastOnset[column] < 0.7 * this.config.peakPeriod) return false;
     return solver.restLevel - solver.bed[row * solver.nx + column] >= 0.4 * this.breakerDepth();
+  }
+
+  /**
+   * Measure a wave starting to break in `column` (the wave-sizes spec): its crest is the highest surface up to
+   * four cells seaward of the outermost breaking cell, as for the lip, and its face runs from that crest to the
+   * lowest water within half a wavelength ahead (√(g h) Tp / 2 at the crest's still depth).
+   */
+  private measureBreak(column: number, row: number): void {
+    const { solver } = this;
+    const { nx } = solver;
+    let crest = row * nx + column;
+    for (let iz = row - 1; iz >= Math.max(1, row - 4); iz -= 1) {
+      if (solver.surfaceAt(iz * nx + column) > solver.surfaceAt(crest)) crest = iz * nx + column;
+    }
+    const stillDepth = Math.max(WET, solver.restLevel - solver.bed[crest]);
+    const wave: BreakingWave = {
+      time: solver.time,
+      x: solver.xCenters[column],
+      z: solver.zCenters[Math.floor(crest / nx)],
+      face: waveHeightAt(solver, crest, 0.5 * this.config.peakPeriod * Math.sqrt(GRAVITY * stillDepth)),
+    };
+    this.surf.add(wave);
+    this.onBreak?.(wave);
   }
 
   /**

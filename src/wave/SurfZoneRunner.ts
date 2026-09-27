@@ -14,6 +14,7 @@ import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type Spr
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { SurfZoneSimulation, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
 import type { BreakerType } from './SwellReadout';
+import type { SurfReading } from './SurfMeter';
 
 export { surfZoneSea } from './SurfZoneSimulation';
 
@@ -133,6 +134,8 @@ export interface SurfZoneStatus {
   breakDepth: number;
   breaker: { value: number; type: BreakerType };
   breakingFraction: number;
+  /** The surf at the take-off over the last 2 minutes (the wave-sizes spec); undefined while measuring. */
+  surf?: SurfReading;
   peel?: PeelEstimate;
   lipLaunches: number;
   lipVolume: number;
@@ -567,6 +570,7 @@ export class SurfZoneRunner {
       breakDepth: this.breakDepth,
       breaker: { ...this.breaker },
       breakingFraction: simulation.breakingFraction(),
+      surf: simulation.surf.reading(simulation.solver.time),
       peel: simulation.peelEstimate(),
       lipLaunches: simulation.lipLaunches,
       lipVolume: simulation.lipVolume,
