@@ -134,6 +134,40 @@ describe('PhysicalSurfWater', () => {
     expect(out.bedY).toBeCloseTo(solver.bed[0], 12);
   });
 
+  // The riding-the-wave spec (Task 4): Svendsen's surface roller rides a bore's front at about the bore's speed,
+  // so broken water carries a board; below the roller the flow stays the depth-averaged current.
+  it('carries the surface of a bore at about its speed, and nothing below the roller', () => {
+    const { water, breaking, solver } = channel();
+    // A 0.6 m bore over 3 m of still water, moving 1 m/s depth-averaged, breaking fully.
+    for (let i = 0; i < solver.h.length; i += 1) {
+      solver.h[i] = 3.6;
+      solver.qx[i] = 3.6;
+    }
+    breaking.fill(1);
+    const out = createWaterSample();
+    const surface = water.sampleAt(0.2, 5, 0.3, out).surfaceY;
+    water.sampleAt(0.2, surface, 0.3, out);
+    expect(out.regime).toBe('bore');
+    expect(out.flowX).toBeCloseTo(Math.sqrt(9.81 * 3.6), 1);
+    expect(out.flowZ).toBeCloseTo(0, 9);
+    expect(water.sampleAt(0.2, surface - 1, 0.3, out).flowX).toBeCloseTo(1, 9);
+    breaking.fill(0.5);
+    expect(water.sampleAt(0.2, surface, 0.3, out).flowX).toBeCloseTo(0.5 * Math.sqrt(9.81 * 3.6), 1);
+  });
+
+  it('pushes nothing where nothing breaks, however high the water stands', () => {
+    const { water, solver } = channel();
+    for (let i = 0; i < solver.h.length; i += 1) {
+      solver.h[i] = 3.6;
+      solver.qx[i] = 3.6;
+    }
+    const out = createWaterSample();
+    const surface = water.sampleAt(0.2, 5, 0.3, out).surfaceY;
+    water.sampleAt(0.2, surface, 0.3, out);
+    expect(out.regime).not.toBe('bore');
+    expect(out.flowX).toBeLessThan(2);
+  });
+
   it('reconstructs rising water from the flow converging on a point', () => {
     const { water, solver } = channel();
     // qx falls along +x at 0.2 m²/s per metre, so water piles up at 0.2 m/s.

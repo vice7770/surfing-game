@@ -13,6 +13,17 @@ const BORE = 0.3;
 const SHALLOW_KH = 0.05;
 /** Largest profile factor applied, u/ū. */
 const MAX_PROFILE = 2;
+/**
+ * The surface roller (Svendsen 1984; the gameplay spec's P11, only its push brought
+ * forward): in a bore the aerated roller on the front moves at about the bore's
+ * speed, √(g d). Within ROLLER_SHARE of the set-up under the surface the flow is
+ * carried toward breaking × √(g d) along the current, fading linearly to the
+ * depth-averaged current at the roller's bottom; slower than MIN_ROLLER_FLOW, m/s,
+ * the current gives no direction. Provisional.
+ */
+const ROLLER_SHARE = 0.5;
+const MIN_ROLLER_FLOW = 0.05;
+const GRAVITY = 9.81;
 
 /** Catmull-Rom weights for nodes −1, 0, 1, 2 at fraction t of the way from node 0 to node 1. */
 export function catmullRomWeights(t: number): [number, number, number, number] {
@@ -114,6 +125,13 @@ export class PhysicalSurfWater implements SurfWater {
     let vertical = height / depth;
     if (out.breaking > BORE) {
       out.regime = 'bore';
+      const current = Math.hypot(u, w);
+      const thickness = ROLLER_SHARE * Math.max(0, out.surfaceY - solver.restLevel);
+      if (current > MIN_ROLLER_FLOW && thickness > 0) {
+        const share = Math.max(0, 1 - Math.max(0, out.surfaceY - y) / thickness);
+        const carried = out.breaking * Math.sqrt(GRAVITY * depth);
+        horizontal = 1 + Math.max(0, carried / current - 1) * share;
+      }
     } else if (kh < SHALLOW_KH) {
       out.regime = 'shallow';
     } else {
