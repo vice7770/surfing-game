@@ -1287,6 +1287,47 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(degrees(turned - furthest)).toBeGreaterThan(30);
     });
 
+    // The snap (the stances spec's video; Forsyth et al. 2024's top turns and cutbacks: 152° in 0.96 s from 6.7 m/s,
+    // 3.0 rad/s at the peak, 2.2 m radius, 2.05 g, a 75° rail). Weight back pivots the board: from this climb at 6.7 m/s
+    // it turns about 90° in the first second at up to 3.6 rad/s, but the tail sinks (40° nose-up by 1 s), the board,
+    // climbing a face that gives it nothing, slows from 6.3 to 1.8 m/s, and the rider falls at 1.4 s. The carve sheds
+    // about 0.45 g at a 40–48° rail and bogs past its 48° bite, where Forsyth's surfers hold 75°: the deep U's
+    // shortfall. Pinned for the user's decision, not tuned.
+    it.fails('snaps back down the face from a climb with the weight back', () => {
+      const { board, rider, water } = acrossFace(150, 6.7);
+      run(board, water, 0.2);
+      rider.steer = 1;
+      rider.trim = -1;
+      let last = headingOf(board);
+      let turned = 0;
+      run(board, water, 1, () => {
+        const now = headingOf(board);
+        turned += Math.atan2(Math.sin(now - last), Math.cos(now - last));
+        last = now;
+      });
+      expect(rider.attached).toBe(true);
+      expect(degrees(turned)).toBeGreaterThan(150);
+    });
+
+    // A cutback: riding across the face away from the curl, a sustained turn back up the face and around toward it.
+    // No steer, weight or easing tried turns more than 80–118° before the board, climbing, slows below planing and the
+    // rider falls into the turn (1.5–2.6 s from 7 and 9 m/s). Pinned with the snap, not tuned.
+    it.fails('cuts back from across the face, turning 150° and staying on', () => {
+      const { board, rider, water } = acrossFace(80, 9);
+      run(board, water, 0.2);
+      rider.steer = -1;
+      let last = headingOf(board);
+      let turned = 0;
+      run(board, water, 2, () => {
+        if (!rider.attached) return;
+        const now = headingOf(board);
+        turned += Math.atan2(Math.sin(now - last), Math.cos(now - last));
+        last = now;
+      });
+      expect(rider.attached).toBe(true);
+      expect(-degrees(turned)).toBeGreaterThan(150);
+    });
+
     // Review Focus 5: the pop-up's landing is unchanged, the body carried upright over its stance as before the bank;
     // the bank applies only once standing.
     it('lands upright, banking only once standing', () => {
