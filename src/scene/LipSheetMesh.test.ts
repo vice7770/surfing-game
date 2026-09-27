@@ -15,14 +15,12 @@ function strips(...defs: { column: number; launchTime: number; indices?: number[
 }
 
 describe('lip sheet mesh', () => {
-  it('draws a splash-up as foam, and never joins it to a jet thrown beside it (G9)', () => {
+  it('draws a splash-up in Rich only, as foam, never joined to a jet thrown beside it (G9)', () => {
     const { parcels, count } = strips({ column: 4, launchTime: 1 }, { column: 5, launchTime: 1.1, kind: 1 });
+    // Classic draws the lip as it always has: the jet's strip alone, a half-column ribbon on each side.
     const sheet = buildLipSheet(parcels, count, 1);
-    // Two separate strips: each with a half-column ribbon on both sides, none joined across.
-    expect(sheet.indices.length).toBe(3 * 2 * (7 + 7) * 2);
-    const splashFoam: number[] = [];
-    for (let v = 0; v < sheet.positions.length / 3; v += 1) if (sheet.positions[v * 3] > 5) splashFoam.push(sheet.foam[v]);
-    expect(Math.min(...splashFoam)).toBe(1);
+    expect(sheet.indices.length).toBe(3 * 2 * 7 * 2);
+    for (let v = 0; v < sheet.positions.length / 3; v += 1) expect(sheet.positions[v * 3]).toBeLessThan(5.5);
     // Rich: two chains of one strip, each two ribbon cells across by seven along (a joined pair would be three across).
     const rich = buildRichLipSheet(parcels, count, 1);
     const perCell = 2 * (LIP_SUBDIVISIONS + 2) ** 2;
