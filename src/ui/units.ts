@@ -16,6 +16,11 @@ export function formatSpeed(metresPerSecond: number, units: Units): string {
   return `${value} ${unit}`;
 }
 
+/** A wave height in m or ft, to one decimal (the Wave Lab, spec L1). */
+export function formatHeight(metres: number, units: Units): string {
+  return units === 'metric' ? `${metres.toFixed(1)} m` : `${(metres * FEET_PER_METRE).toFixed(1)} ft`;
+}
+
 export function formatDistance(metres: number, units: Units): string {
   return units === 'metric' ? `${Math.round(metres)} m` : `${Math.round(metres * FEET_PER_METRE)} ft`;
 }
