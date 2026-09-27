@@ -97,6 +97,28 @@ describe('PeelTracker', () => {
     expect(estimate.angleDegrees).toBeCloseTo((Math.asin(celerity / peelSpeed) * 180) / Math.PI, 0);
   });
 
+  it('measures the peel along an oblique break line, not along the shore', () => {
+    const tracker = new PeelTracker(xs, 10);
+    const lineSlope = 0.8;
+    const alongLine = 10;
+    const celerity = 5;
+    const secondsPerX = Math.hypot(1, lineSlope) / alongLine;
+    xs.forEach((x, column) => tracker.markOnset(column, 1 + (x + 60) * secondsPerX, lineSlope * x));
+    const estimate = tracker.estimate(1 + 120 * secondsPerX, celerity)!;
+    expect(estimate.lineSlope).toBeCloseTo(lineSlope, 9);
+    expect(estimate.peelSpeed).toBeCloseTo(alongLine, 9);
+    expect(estimate.angleDegrees).toBeCloseTo((Math.asin(celerity / alongLine) * 180) / Math.PI, 9);
+    expect(estimate.direction).toBe(1);
+  });
+
+  it('reads a shore-parallel break line exactly as before', () => {
+    const tracker = new PeelTracker(xs, 10);
+    xs.forEach((x, column) => tracker.markOnset(column, 1 + (x + 60) / 8));
+    const estimate = tracker.estimate(16, 4.2)!;
+    expect(estimate.lineSlope).toBe(0);
+    expect(estimate.peelSpeed).toBeCloseTo(8, 9);
+  });
+
   it('reports a close-out when the whole crest breaks at once', () => {
     const tracker = new PeelTracker(xs, 10);
     for (let step = 0; step <= 60; step += 1) {

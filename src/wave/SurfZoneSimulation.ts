@@ -491,7 +491,7 @@ export class SurfZoneSimulation {
       this.outerBreak[column] = outer;
       if (this.onsetsArmed && outer < previous - 5 && this.newBreaker(column, row)) {
         this.lastOnset[column] = solver.time;
-        this.peel.markOnset(column, solver.time);
+        this.peel.markOnset(column, solver.time, outer);
         this.throwLip(column, row);
       }
     }

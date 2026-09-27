@@ -34,6 +34,16 @@ describe('rideability', () => {
     expect(stats.makeable.professional).toBe(0);
     expect(Number.isNaN(stats.medianAngle)).toBe(true);
   });
+
+  it('reports the median peel speed of clean waves', () => {
+    const stats = rideability([
+      { angleDegrees: 30, fit: 0.9, peelSpeed: 11 },
+      { angleDegrees: 35, fit: 0.9, peelSpeed: 12 },
+      { angleDegrees: 20, fit: 0.1, peelSpeed: 40 },
+      undefined,
+    ]);
+    expect(stats.medianPeelSpeed).toBeCloseTo(11.5, 12);
+  });
 });
 
 describe('measureRideability', () => {

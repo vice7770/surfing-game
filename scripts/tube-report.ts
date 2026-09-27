@@ -77,7 +77,7 @@ for (const spot of spots) {
         steps += 1;
       }
       const estimate = simulation.peelEstimate();
-      samples.push(estimate && { angleDegrees: estimate.angleDegrees, fit: estimate.fit });
+      samples.push(estimate && { angleDegrees: estimate.angleDegrees, fit: estimate.fit, peelSpeed: estimate.peelSpeed });
     }
     jets += simulation.lipJets;
     rollers += simulation.lipRollers;

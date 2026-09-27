@@ -138,8 +138,10 @@ export interface PeelEstimate {
   angleDegrees: number;
   /** +1 when the break peels toward +x, −1 toward −x, 0 when it closes out. */
   direction: number;
-  /** Along-shore speed of the break point, m/s. */
+  /** Speed of the break point along its fitted break line, m/s. */
   peelSpeed: number;
+  /** The fitted break line's dz/dx: 0 when it runs along the shore. */
+  lineSlope: number;
   columns: number;
   /** r² of the onset-time fit; low values mean several peaks at once. */
   fit: number;
@@ -165,32 +167,37 @@ export function skillForPeel(angleDegrees: number): PeelSkill {
 export const MIXED_PEAK_FIT = 0.3;
 
 /**
- * Measures peel from when each along-shore column starts breaking. The break
- * point runs along the crest at V = 1 / |dt_onset/dx|, and sin α = c_b / V
- * (Walker 1974; Hutt et al. 2001), so a close-out that breaks everywhere at
- * once gives α ≈ 0.
+ * Measures peel from when and where each along-shore column starts breaking.
+ * The onsets' times and cross-shore positions are fitted against x; the break
+ * point runs along the fitted break line at V = √(1 + (dz/dx)²) / |dt_onset/dx|,
+ * and sin α = c_b / V (Walker 1974; Hutt et al. 2001), so a close-out that
+ * breaks everywhere at once gives α ≈ 0. A break line along the shore reads
+ * V = 1 / |dt/dx|; an oblique one (a reef ledge) is measured along itself.
  */
 export class PeelTracker {
   private readonly lastBreaking: Float64Array;
   private readonly onset: Float64Array;
+  private readonly onsetZ: Float64Array;
 
   constructor(private readonly xs: ArrayLike<number>, private readonly window: number, private readonly quiet = 0.8) {
     this.lastBreaking = new Float64Array(xs.length).fill(-Infinity);
     this.onset = new Float64Array(xs.length).fill(Number.NaN);
+    this.onsetZ = new Float64Array(xs.length);
   }
 
-  /** Note which columns are breaking at `time`; a column restarting after `quiet` seconds starts a new onset. */
-  record(time: number, isBreaking: (column: number) => boolean): void {
+  /** Note which columns are breaking at `time`; a column restarting after `quiet` seconds starts a new onset at `zOf(column)`. */
+  record(time: number, isBreaking: (column: number) => boolean, zOf?: (column: number) => number): void {
     for (let column = 0; column < this.xs.length; column += 1) {
       if (!isBreaking(column)) continue;
-      if (time - this.lastBreaking[column] > this.quiet) this.markOnset(column, time);
+      if (time - this.lastBreaking[column] > this.quiet) this.markOnset(column, time, zOf?.(column) ?? 0);
       this.lastBreaking[column] = time;
     }
   }
 
-  /** Record that a new wave started breaking in `column` at `time`. */
-  markOnset(column: number, time: number): void {
+  /** Record that a new wave started breaking in `column` at `time`, `z` across shore (on the break line). */
+  markOnset(column: number, time: number, z = 0): void {
     this.onset[column] = time;
+    this.onsetZ[column] = z;
   }
 
   /** Fit onset time against x over recent onsets, leaving out `margin` of the columns at each open edge. */
@@ -200,19 +207,23 @@ export class PeelTracker {
     let count = 0;
     let sumX = 0;
     let sumT = 0;
+    let sumZ = 0;
     for (let column = first; column < last; column += 1) {
       const onset = this.onset[column];
       if (!(onset >= time - this.window && onset <= time)) continue;
       count += 1;
       sumX += this.xs[column];
       sumT += onset;
+      sumZ += this.onsetZ[column];
     }
     if (count < 8) return undefined;
     const meanX = sumX / count;
     const meanT = sumT / count;
+    const meanZ = sumZ / count;
     let sxx = 0;
     let sxt = 0;
     let stt = 0;
+    let sxz = 0;
     for (let column = first; column < last; column += 1) {
       const onset = this.onset[column];
       if (!(onset >= time - this.window && onset <= time)) continue;
@@ -221,13 +232,17 @@ export class PeelTracker {
       sxx += dx * dx;
       sxt += dx * dt;
       stt += dt * dt;
+      sxz += dx * (this.onsetZ[column] - meanZ);
     }
     const slope = sxx > 0 ? sxt / sxx : 0;
-    const sine = Math.min(1, celerity * Math.abs(slope));
+    const lineSlope = sxx > 0 ? sxz / sxx : 0;
+    const stretch = Math.hypot(1, lineSlope);
+    const sine = Math.min(1, (celerity * Math.abs(slope)) / stretch);
     return {
       angleDegrees: (Math.asin(sine) * 180) / Math.PI,
       direction: slope > 1e-9 ? 1 : slope < -1e-9 ? -1 : 0,
-      peelSpeed: Math.abs(slope) > 0 ? 1 / Math.abs(slope) : Infinity,
+      peelSpeed: Math.abs(slope) > 0 ? stretch / Math.abs(slope) : Infinity,
+      lineSlope,
       columns: count,
       fit: sxx > 0 && stt > 0 ? (sxt * sxt) / (sxx * stt) : 0,
     };
