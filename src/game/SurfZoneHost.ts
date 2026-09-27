@@ -36,6 +36,8 @@ export interface SurfZoneHost {
   readonly outstandingSteps: number;
   /** This sea for a player joining late (spec N1): encoded, and compressed where the platform can. */
   exportState(): Promise<{ bytes: Uint8Array; deflated: boolean }>;
+  /** Take this encoded sea (from `exportState`, decompressed) in place of the running one; the next steps go on from it (spec L2). */
+  restore(sea: Uint8Array): void;
   /** Rendered water surface at (x, z), m: the same lookup the water shader uses. */
   heightAt(x: number, z: number): number;
   bedAt(x: number, z: number): number;
@@ -97,6 +99,11 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
 
   exportState(): Promise<{ bytes: Uint8Array; deflated: boolean }> {
     return compress(encodeSurfZoneState(this.runner.simulation.exportState()));
+  }
+
+  restore(sea: Uint8Array): void {
+    this.runner.simulation.importState(decodeSurfZoneState(sea));
+    this.refresh();
   }
 
   dispose(): void {}

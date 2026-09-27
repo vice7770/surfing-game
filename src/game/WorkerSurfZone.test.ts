@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
-import { decompress } from '../wave/surfZoneState';
+import { decompress, encodeSurfZoneState } from '../wave/surfZoneState';
 import { LocalSurfZone, type SurfZoneSnapshot } from './SurfZoneHost';
 import { SurfZoneWorkerCore, type SurfZoneRequest, type SurfZoneReply } from './SurfZoneWorkerCore';
 import { MAX_QUEUED_STEPS, WorkerSurfZone, type WorkerPort } from './WorkerSurfZone';
@@ -100,6 +100,38 @@ describe('SurfZoneWorkerCore', () => {
     await cpu.worker.handle({ type: 'start', config: { ...config, compute: 'cpu' }, options: { rider: true } });
     expect(created).toEqual(['auto']);
     expect(cpu.replies[0].type === 'ready' && cpu.replies[0].snapshot.status.compute).toBe('cpu');
+  });
+});
+
+describe('SurfZoneWorkerCore restore (L2)', () => {
+  it('restores after the step under way, so the next advance starts from the restored sea', async () => {
+    let release: (() => void) | undefined;
+    const replies: SurfZoneReply[] = [];
+    const worker = new SurfZoneWorkerCore((reply) => replies.push(reply), async (solver) => ({
+      step: (dt: number) => new Promise<void>((resolve) => { release = () => { solver.step(dt); resolve(); }; }),
+      dispose() {},
+    }));
+    await worker.handle({ type: 'start', config, options: {} });
+    const ready = replies[0];
+    if (ready.type !== 'ready') throw new Error('expected ready');
+    const local = new LocalSurfZone(config);
+    const recorded = encodeSurfZoneState(local.runner.simulation.exportState());
+    const { status: _status, ...buffers } = ready.snapshot;
+    const stepping = worker.handle({ type: 'advance', steps: 1, buffers });
+    const restoring = worker.handle({ type: 'restore', sea: recorded.slice() });
+    // The restore waits for the step under way.
+    await Promise.resolve();
+    release!();
+    await stepping;
+    await restoring;
+    const { status: _s, ...next } = (replies[1] as Extract<SurfZoneReply, { type: 'snapshot' }>).snapshot;
+    const after = worker.handle({ type: 'advance', steps: 1, buffers: next });
+    release!();
+    await after;
+    local.restore(recorded.slice());
+    local.advance(1);
+    const shownAfter = (replies[2] as Extract<SurfZoneReply, { type: 'snapshot' }>).snapshot;
+    expect(Array.from(shownAfter.surface)).toEqual(Array.from(local.snapshot.surface));
   });
 });
 

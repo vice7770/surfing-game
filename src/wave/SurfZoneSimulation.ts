@@ -309,6 +309,7 @@ export class SurfZoneSimulation {
     this.lipJets = state.counters.lipJets;
     this.lipRollers = state.counters.lipRollers;
     this.lip.importState(state.lip);
+    if (solver instanceof BoussinesqSolver) solver.invalidateDeviceLayout();
   }
 
   get seaTime(): number {

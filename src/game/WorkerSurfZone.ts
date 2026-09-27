@@ -127,6 +127,12 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
     });
   }
 
+  /** The sea is replaced in the worker before the next advance it receives; `sea` is handed over (transferred). */
+  restore(sea: Uint8Array): void {
+    if (this.disposed) return;
+    this.port.postMessage({ type: 'restore', sea }, [sea.buffer]);
+  }
+
   dispose(): void {
     this.disposed = true;
     this.port.terminate();

@@ -3,6 +3,8 @@ import { sampleSurfaceBed, sampleSurfaceHeight } from '../scene/WaterSurface';
 import { SurfZoneRunner } from '../wave/SurfZoneRunner';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { carveAt, TUBE_STRIDE } from '../wave/tubeTable';
+import { BoussinesqSolver } from '../wave/BoussinesqSolver';
+import { encodeSurfZoneState } from '../wave/surfZoneState';
 import { LocalSurfZone, SnapshotSurfZone } from './SurfZoneHost';
 
 const config: SurfZoneConfig = {
@@ -11,6 +13,32 @@ const config: SurfZoneConfig = {
 };
 
 describe('LocalSurfZone', () => {
+  // L2: every lesson attempt starts from the same recorded sea.
+  // The recording is 32-bit (as the handover's), so restores match each other exactly, not the run it came from.
+  it('restores a running sea in place, and the same water follows every time', async () => {
+    const host = new LocalSurfZone(config);
+    await host.ready;
+    host.advance(30);
+    const recorded = encodeSurfZoneState(host.runner.simulation.exportState());
+    host.restore(recorded.slice());
+    host.advance(240);
+    const first = Array.from(host.snapshot.surface);
+    host.advance(120);
+    host.restore(recorded.slice());
+    host.advance(240);
+    expect(Array.from(host.snapshot.surface)).toEqual(first);
+  });
+
+  it('asks the device to upload the breaking state again after a sea is taken over', async () => {
+    const host = new LocalSurfZone(config);
+    await host.ready;
+    const { solver } = host.runner.simulation;
+    if (!(solver instanceof BoussinesqSolver)) throw new Error('expected stage 2');
+    const before = solver.deviceLayout().version;
+    host.restore(encodeSurfZoneState(host.runner.simulation.exportState()));
+    expect(solver.deviceLayout().version).toBe(before + 1);
+  });
+
   it('is ready at once and snapshots the same surf zone a runner steps', async () => {
     const host = new LocalSurfZone(config);
     await host.ready;
