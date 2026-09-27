@@ -119,6 +119,8 @@ export class Autopilot {
   private readonly stall: boolean;
   /** The open face the gauge last showed this attempt (away from the curl), 0 before it has shown one. */
   private seenFace = 0;
+  /** The open face the latest attempt saw: a paddler turns only about 7°/s, so waiting it points that way already. */
+  private lastFace = 0;
   private popped = false;
   private lastHeading = Number.NaN;
   private travel = 0;
@@ -164,7 +166,9 @@ export class Autopilot {
         if (ride.phase === 'prone' && view.focusZ - view.board.z > this.waitOutside) input.paddle = true;
         else this.state = 'wait';
         break;
-      case 'wait':
+      case 'wait': {
+        const face = this.lastFace || Math.sign(view.peelDirection);
+        if (face !== 0) input.steer = this.aim(this.travel + face * TAKEOFF_ANGLE, heading, yawRate);
         if (view.crestBehind > this.rise) {
           this.state = 'go';
           this.attempts += 1;
@@ -175,6 +179,7 @@ export class Autopilot {
           return this.next(view, 0);
         }
         break;
+      }
       case 'go':
         this.clock += dt;
         if (ride.phase === 'fallen' || ride.phase === 'recover') {
@@ -240,7 +245,10 @@ export class Autopilot {
    */
   private openFace(view: AutopilotView): number {
     const { wave } = view.ride;
-    if (wave.valid && wave.curlSide !== 0) this.seenFace = -wave.curlSide;
+    if (wave.valid && wave.curlSide !== 0) {
+      this.seenFace = -wave.curlSide;
+      this.lastFace = this.seenFace;
+    }
     return this.seenFace !== 0 ? this.seenFace : Math.sign(view.peelDirection);
   }
 

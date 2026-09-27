@@ -108,6 +108,20 @@ describe('the take-off', () => {
     }), 1 / 60);
   };
 
+  // Riding-the-wave Task 7: a paddler turns only about 7°/s at full steer, too slowly to angle once the wave comes;
+  // waiting, it points toward the open face its last ride saw (or the peel estimate's).
+  it('waits pointed toward the open face its last ride saw', () => {
+    const autopilot = riding(0, { style: 'turns' });
+    autopilot.next(view({ board: { x: 0, z: -20, heading: 0 }, ride: ride({ phase: 'standing', speed: 6, wave: wave({ curlDistance: 6, curlSide: -1 }) }) }), 1 / 60);
+    autopilot.reset();
+    autopilot.next(view({ board: { x: 0, z: -3, heading: 0 } }), 1 / 60);
+    expect(autopilot.state).toBe('wait');
+    expect(autopilot.next(view({ board: { x: 0, z: -3, heading: 0 } }), 1 / 60).steer).toBeGreaterThan(0.5);
+    const fresh = new Autopilot();
+    fresh.next(view({ board: { x: 0, z: -3, heading: 0 }, peelDirection: 0 }), 1 / 60);
+    expect(fresh.next(view({ board: { x: 0, z: -3, heading: 0 }, peelDirection: 0 }), 1 / 60).steer).toBe(0);
+  });
+
   // Riding-the-wave Task 7: straight down a 1.3 m face the rider stood 8 m ahead of the crest on the flat.
   it('angles the take-off toward the open face', () => {
     const toPlusX = paddling(0, -1);
