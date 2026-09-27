@@ -44,6 +44,20 @@ function duckDive(amount: number, hold = 1.5, after = 3, shape?: BoardShape) {
 }
 
 describe('duck-dive', () => {
+  it('keeps the body on the deck through the press, the knee and the release (each stage eases in)', () => {
+    // A stage that starts at full acceleration asks the hands to pull the body onto the deck far beyond
+    // their grip, and it leaves the board even on still water.
+    const { water, board, rider } = proneRider();
+    let lifted = 0;
+    for (let i = 0; i < 4.5 / STEP; i += 1) {
+      rider.duckDive = i * STEP < 1.5 ? 1 : 0;
+      board.step(STEP, water);
+      if (!rider.inContact) lifted += STEP;
+    }
+    expect(lifted).toBe(0);
+    expect(rider.attached).toBe(true);
+  });
+
   it('comes back up with the rider on after a full push, deeper than lying awash', () => {
     const full = duckDive(1);
     expect(full.deepest).toBeGreaterThan(0.3);
