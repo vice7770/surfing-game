@@ -2,7 +2,8 @@ import { createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymet
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
-import { FoamField, type FoamDecay } from './FoamField';
+import { AERATION, AerationField } from './AerationField';
+import { FoamField, boreDissipation, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
 import { TUBE_CAPACITY, carveGrid } from './tubeTable';
 import { focusX } from './Refraction';
@@ -15,6 +16,9 @@ import type { LipImpact } from './SprayCloud';
 import { ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
+
+/** Sea water, kg/m³ (the lip's impact energy for the aeration, G9). */
+const WATER_DENSITY = 1025;
 
 export interface SurfZoneConfig {
   spot: SpotName;
@@ -187,6 +191,8 @@ export class SurfZoneSimulation {
   readonly lipImpacts: LipImpact[] = [];
   /** Foam carried by the flow (plan §2.4): made by bores and lip splashes. */
   readonly foam: FoamField;
+  /** G9: the air breaking drives into the water. */
+  readonly aeration: AerationField;
   /** Lip throws so far, and their total volume, m³. */
   lipLaunches = 0;
   lipVolume = 0;
@@ -214,6 +220,8 @@ export class SurfZoneSimulation {
   /** Per-cell velocity scratch for `writeUniformFlow`. */
   private velocityX?: Float64Array;
   private velocityZ?: Float64Array;
+  /** Each cell's void fraction, for `writeUniformAeration`. */
+  private voidFractions?: Float64Array;
 
   constructor(readonly config: SurfZoneConfig) {
     this.spot = createSpot(config.spot, config.seed);
@@ -249,10 +257,16 @@ export class SurfZoneSimulation {
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver);
     this.foam = new FoamField(this.solver, config.foamDecay ?? FOAM_DECAY[config.spot]);
-    this.lip.onLand = (x, z, volume, vx, vy, vz) => {
+    this.aeration = new AerationField(this.solver);
+    this.lip.onLand = (x, z, volume, vx, vy, vz, flight) => {
       this.foam.addSplash(x, z, volume);
       this.lipImpacts.push({ x, z, volume, vx, vy, vz });
+      // Its impact's energy drives air down in proportion to how far it fell (G9).
+      const drop = flight ? Math.max(0.1, flight.launch.y - flight.y) : 1;
+      this.aeration.addPlunge(x, z, 0.5 * WATER_DENSITY * volume * (vx * vx + vy * vy + vz * vz), AERATION.plungeDepth * drop);
     };
+    // A collapsing tube's air that does not blow out breaks into bubbles (G9).
+    this.lip.onAir = (x, z, volume, penetration) => this.aeration.addAir(x, z, volume, penetration);
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
   }
@@ -263,6 +277,8 @@ export class SurfZoneSimulation {
     const arrays: Record<string, Float64Array> = {
       h: solver.h, qx: solver.qx, qz: solver.qz,
       'foam.dense': this.foam.dense, 'foam.residual': this.foam.residual,
+      // G9: the air breaking drove into the water, which draws the churn.
+      'aeration.air': this.aeration.air, 'aeration.depth': this.aeration.depth,
       outerBreak: this.outerBreak, lastThrow: this.lastThrow, lastOnset: this.lastOnset,
     };
     if (solver instanceof BoussinesqSolver) {
@@ -310,6 +326,7 @@ export class SurfZoneSimulation {
     this.lipJets = state.counters.lipJets;
     this.lipRollers = state.counters.lipRollers;
     this.lip.importState(state.lip);
+    if (solver instanceof BoussinesqSolver) solver.invalidateDeviceLayout();
   }
 
   get seaTime(): number {
@@ -361,6 +378,8 @@ export class SurfZoneSimulation {
     this.markBreakingOnsets();
     this.lip.step(dt);
     this.foam.update(dt, this.breaking.strength);
+    this.aerateBores(dt);
+    this.aeration.update(dt);
     this.lastStepMs = performance.now() - start;
   }
 
@@ -578,6 +597,43 @@ export class SurfZoneSimulation {
       }
     }
     if (carve) carveGrid(data, grid, this.lip.tubeTable, this.lip.tubeCount, this.solver.dx);
+  }
+
+  /** G9: every breaking bore drives air in by its dissipation, spilling shallower than a plunge. */
+  private aerateBores(dt: number): void {
+    const { h, bed, restLevel } = this.solver;
+    const strength = this.breaking.strength;
+    for (let i = 0; i < h.length; i += 1) {
+      if (!(strength[i] > 0)) continue;
+      const still = restLevel - bed[i];
+      const dissipation = strength[i] * boreDissipation(still, h[i]);
+      if (dissipation > 0) this.aeration.addBore(i, dissipation, h[i] - still, dt);
+    }
+  }
+
+  /** G9: resample the aeration to interleaved (void fraction, plume depth, m) per render node; 0 on dry nodes. */
+  writeUniformAeration(data: Float32Array, grid: RenderGrid): void {
+    const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
+    const { nx, h } = this.solver;
+    const { depth } = this.aeration;
+    if (!this.voidFractions || this.voidFractions.length !== h.length) this.voidFractions = new Float64Array(h.length);
+    const fraction = this.voidFractions;
+    for (let i = 0; i < h.length; i += 1) fraction[i] = this.aeration.voidFraction(i);
+    for (let r = 0; r < grid.nz; r += 1) {
+      const row = rows[r] * nx;
+      const tz = rowWeights[r];
+      for (let c = 0; c < grid.nx; c += 1) {
+        const i = row + columns[c];
+        const tx = columnWeights[c];
+        const w00 = (1 - tx) * (1 - tz);
+        const w10 = tx * (1 - tz);
+        const w01 = (1 - tx) * tz;
+        const w11 = tx * tz;
+        const o = (r * grid.nx + c) * 2;
+        data[o] = w00 * fraction[i] + w10 * fraction[i + 1] + w01 * fraction[i + nx] + w11 * fraction[i + nx + 1];
+        data[o + 1] = w00 * depth[i] + w10 * depth[i + 1] + w01 * depth[i + nx] + w11 * depth[i + nx + 1];
+      }
+    }
   }
 
   /** Resample the depth-averaged current to interleaved (u, w) per render node, m/s; 0 on dry nodes. */

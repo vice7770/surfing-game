@@ -65,10 +65,11 @@ export class RideHud {
       this.hints);
   }
 
-  update(ride: SurfZoneStatus['ride'] | undefined, units: Units, keys: HintKeys, showHints: boolean, showBalance = true, coachHint = ''): void {
+  /** `promptOverride`: the Surf School's own line in place of the ride's prompt (spec L2). */
+  update(ride: SurfZoneStatus['ride'] | undefined, units: Units, keys: HintKeys, showHints: boolean, showBalance = true, coachHint = '', promptOverride?: string): void {
     if (this.coach.textContent !== coachHint) this.coach.textContent = coachHint;
     this.coach.hidden = coachHint === '';
-    const prompt = ridePrompt(ride, keys);
+    const prompt = promptOverride ?? ridePrompt(ride, keys);
     if (this.prompt.textContent !== prompt) this.prompt.textContent = prompt;
     this.prompt.hidden = prompt === '';
     const callout = maneuverCallout(ride?.live, this.calloutKey);

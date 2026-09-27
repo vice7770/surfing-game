@@ -18,7 +18,7 @@ function turn(kind: Maneuver['kind'], start: number, degrees: number, peak: numb
  */
 function proRide(overrides: Partial<RideReport> = {}): RideReport {
   return {
-    duration: 22, distance: 140, topSpeed: 9.7, meanSpeed: 6.4, pocketTime: 8, end: 'lost the face', timeScale: 1,
+    duration: 22, distance: 140, topSpeed: 9.7, meanSpeed: 6.4, pocketTime: 8, curlTime: 12, end: 'wave died', timeScale: 1,
     maneuvers: [
       turn('bottom turn', 3, 99, 1.9, 7.3, 0.3),
       turn('cutback', 5, 152, 3, 6.7, 0.8),

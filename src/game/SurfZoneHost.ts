@@ -36,6 +36,8 @@ export interface SurfZoneHost {
   readonly outstandingSteps: number;
   /** This sea for a player joining late (spec N1): encoded, and compressed where the platform can. */
   exportState(): Promise<{ bytes: Uint8Array; deflated: boolean }>;
+  /** Take this encoded sea (from `exportState`, decompressed) in place of the running one; the next steps go on from it (spec L2). */
+  restore(sea: Uint8Array): void;
   /** Rendered water surface at (x, z), m: the same lookup the water shader uses. */
   heightAt(x: number, z: number): number;
   bedAt(x: number, z: number): number;
@@ -77,7 +79,7 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
     this.refresh();
   }
 
-  private pendingPress = { popUp: false, retry: false };
+  private pendingPress: { popUp: boolean; retry: boolean; place?: RideRequest['place'] } = { popUp: false, retry: false };
   /** Other boards' pushes waiting for the next step (spec N1). */
   private pendingReactions: number[] = [];
   readonly outstandingSteps = 0;
@@ -86,6 +88,7 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
     if (input) {
       this.pendingPress.popUp ||= input.popUp;
       this.pendingPress.retry ||= input.retry;
+      this.pendingPress.place = input.place ?? this.pendingPress.place;
     }
     if (reactions) for (let i = 0; i < reactions.length; i += 1) this.pendingReactions.push(reactions[i]);
     if (steps <= 0) return;
@@ -97,6 +100,11 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
 
   exportState(): Promise<{ bytes: Uint8Array; deflated: boolean }> {
     return compress(encodeSurfZoneState(this.runner.simulation.exportState()));
+  }
+
+  restore(sea: Uint8Array): void {
+    this.runner.simulation.importState(decodeSurfZoneState(sea));
+    this.refresh();
   }
 
   dispose(): void {}
@@ -141,6 +149,10 @@ export class SnapshotSurfZone implements RenderableSurfZone {
 
   get tubeColumnWidth(): number {
     return this.host.init.dx;
+  }
+
+  writeUniformAeration(data: Float32Array): void {
+    data.set(this.host.snapshot.aeration);
   }
 
   writeUniformBed(data: Float32Array): void {

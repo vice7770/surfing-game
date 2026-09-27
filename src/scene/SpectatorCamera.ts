@@ -1,6 +1,7 @@
 import { PerspectiveCamera, Vector3 } from 'three';
 
-export type SpectatorView = 'overview' | 'profile' | 'below' | 'cinematic' | RideView;
+/** `free`: the Wave Lab flies the camera itself (spec L1). */
+export type SpectatorView = 'overview' | 'profile' | 'below' | 'cinematic' | 'free' | RideView;
 
 /**
  * Views that follow the rider: in front (from the beach side, looking out at the
@@ -50,6 +51,26 @@ const FRONT_LEAD = 1 / FOLLOW_RATE;
 const FRONT_HEIGHT_TIME = 1.5;
 /** How far the front view's look point moves toward the crest, keeping the lip in frame. */
 const FRONT_CREST_SHARE = 0.3;
+/**
+ * The lean toward the crest fades in as a wave comes from FRONT_CREST_FAR m to
+ * FRONT_CREST_FULL m seaward of the rider, and out once its crest is between the
+ * rider and FRONT_CREST_PASSED m shoreward. The wave gauge only reports a crest
+ * from 40 m seaward to 12 m shoreward of the rider, so a wave appearing at one
+ * end of that window or leaving at the other never turns the view in one frame.
+ */
+const FRONT_CREST_FAR = 30;
+const FRONT_CREST_FULL = 15;
+const FRONT_CREST_PASSED = 4;
+
+function smoothstep(edge0: number, edge1: number, x: number): number {
+  const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)));
+  return t * t * (3 - 2 * t);
+}
+
+/** The share of the look point moved toward a crest `seaward` m seaward of the rider (negative once it has passed). */
+export function crestLean(seaward: number): number {
+  return FRONT_CREST_SHARE * smoothstep(-FRONT_CREST_PASSED, 0, seaward) * (1 - smoothstep(FRONT_CREST_FULL, FRONT_CREST_FAR, seaward));
+}
 
 /**
  * The menu's cinematic view (plan P8): the camera sweeps CINEMA_SWEEP m either
@@ -66,7 +87,9 @@ export class SpectatorCamera {
   readonly camera = new PerspectiveCamera(52, 1, 0.1, 3000);
   private currentView: SpectatorView = 'overview';
   private readonly desired = new Vector3();
-  private readonly crest = new Vector3();
+  /** The front view's lean from its look point toward the crest: as wanted this frame, and as eased. */
+  private readonly leanWanted = new Vector3();
+  private readonly lean = new Vector3();
   private readonly target = new Vector3();
   private settled = false;
   /** The rider's height as the front view follows it, smoothed. */
@@ -91,6 +114,8 @@ export class SpectatorCamera {
 
   update(scene: SpectatorScene, focus: { x: number; z: number }, dt: number, follow?: FollowTarget): void {
     const view = this.currentView;
+    // The lab's free camera (spec L1) is flown by its owner.
+    if (view === 'free') return;
     if (view === 'cinematic') {
       if (!this.reducedMotion) this.cinemaTime += dt;
       const sweep = Math.sin(CINEMA_RATE * this.cinemaTime);
@@ -110,7 +135,13 @@ export class SpectatorCamera {
         this.desired.set(x + FRONT_SIDE, 0, z + FRONT_SHOREWARD);
         this.desired.y = Math.max(scene.heightAt(this.desired.x, this.desired.z) + 1.5, this.followHeight + FRONT_HEIGHT);
         this.target.set(x, this.followHeight + 0.4, z - FRONT_LOOK_SEAWARD);
-        if (follow.crest) this.target.lerp(this.crest.set(follow.crest.x, follow.crest.y, follow.crest.z), FRONT_CREST_SHARE);
+        // Waves run toward +z, so the crest is seaward of the rider by the rider's z less the crest's. The
+        // gauge's crest can vanish or change wave between steps, so the lean eases at the follow rate.
+        const { crest } = follow;
+        if (crest) this.leanWanted.set(crest.x, crest.y, crest.z).sub(this.target).multiplyScalar(crestLean(p.z - crest.z));
+        else this.leanWanted.set(0, 0, 0);
+        this.lean.lerp(this.leanWanted, this.settled ? 1 - Math.exp(-FOLLOW_RATE * dt) : 1);
+        this.target.add(this.lean);
       } else if (view === 'behind') {
         const forwardX = Math.sin(follow.heading);
         const forwardZ = Math.cos(follow.heading);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LEGACY_BOARD, REFERENCE_BOARD, REFERENCE_RIDER, referenceFlotation } from './boardReference';
+import { REFERENCE_BOARD, REFERENCE_RIDER, referenceFlotation } from './boardReference';
 
 describe('reference shortboard and rider', () => {
   it('records a shortboard that fills about half its bounding box', () => {
@@ -14,10 +14,5 @@ describe('reference shortboard and rider', () => {
     expect(flotation.buoyantMass).toBeCloseTo(26.4, 1);
     expect(flotation.buoyantMass).toBeLessThan(REFERENCE_RIDER.mass + REFERENCE_BOARD.mass);
     expect(flotation.unsupportedFraction).toBeGreaterThan(0.6);
-  });
-
-  it('keeps the legacy effective values apart from the physical reference', () => {
-    expect(LEGACY_BOARD.simulationMass).not.toBe(REFERENCE_BOARD.mass);
-    expect(LEGACY_BOARD.renderedLength / REFERENCE_BOARD.length).toBeGreaterThan(1.4);
   });
 });

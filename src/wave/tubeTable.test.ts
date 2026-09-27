@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { tubeFloorDepth } from './Overturn';
-import { TUBE_STRIDE, carveAt, carveGrid, tubeFloor } from './tubeTable';
+import { TUBE_EDGE, TUBE_STRIDE, carveAt, carveGrid, tubeFloor } from './tubeTable';
 
 const tube = (column: number, over: Partial<Record<'crestX' | 'crestZ' | 'y' | 'open' | 'scale', number>> = {}) => [
   over.crestX ?? column + 0.5, over.crestZ ?? 0, over.y ?? 2, 0, 1, over.open ?? 3, 2, 0.8, 0.6, column, over.scale ?? 1, 0,
@@ -16,9 +16,24 @@ describe('tube table', () => {
   });
 
   it('shrinks the void toward its crest as its scale falls', () => {
-    const half = tubeFloor(tube(4, { scale: 0.5 }), 0, 4.5, 0.3);
-    expect(half).toBeCloseTo(2 - tubeFloorDepth({ length: 1, width: 0.4, tilt: 0.6 }, 0.3), 12);
-    expect(half).toBeGreaterThan(tubeFloor(tube(4), 0, 4.5, 0.3));
+    const half = tubeFloor(tube(4, { scale: 0.5 }), 0, 4.5, 0.4);
+    expect(half).toBeCloseTo(2 - tubeFloorDepth({ length: 1, width: 0.4, tilt: 0.6 }, 0.4), 12);
+    expect(half).toBeGreaterThan(tubeFloor(tube(4), 0, 4.5, 0.4));
+  });
+
+  it('meets the surface at the void’s back rather than standing as a wall there, which a mesh draws as teeth', () => {
+    const table = tube(4, { open: 3 });
+    const full = (ahead: number) => 2 - tubeFloorDepth({ length: 2, width: 0.8, tilt: 0.6 }, ahead);
+    const reach = 2 * Math.cos(0.6);
+    // At its back (the crest) it cuts nothing; an edge in, it is the whole void; halfway in, halfway down.
+    expect(2 - tubeFloor(table, 0, 4.5, 0.001)).toBeLessThan(0.005);
+    expect(tubeFloor(table, 0, 4.5, TUBE_EDGE)).toBeCloseTo(full(TUBE_EDGE), 12);
+    expect(2 - tubeFloor(table, 0, 4.5, TUBE_EDGE / 2)).toBeCloseTo((2 - full(TUBE_EDGE / 2)) / 2, 12);
+    // Its front, where the jet lands, is P7's: the whole void right to its end.
+    expect(tubeFloor(table, 0, 4.5, reach - 0.001)).toBeCloseTo(full(reach - 0.001), 12);
+    // Wider than the Rich water's finest mesh, never wider than a void can spare.
+    expect(TUBE_EDGE).toBeGreaterThan(0.25);
+    expect(TUBE_EDGE).toBeLessThan(0.5);
   });
 
   it('carves a column centre exactly as that column’s tube, and blends linearly toward an uncarved neighbour', () => {

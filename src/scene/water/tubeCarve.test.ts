@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { tubeFloorDepth } from '../../wave/Overturn';
-import { PEEL_ALIGNMENT, PEEL_GAP, TUBE_CAPACITY, TUBE_STRIDE, carveAt } from '../../wave/tubeTable';
+import { PEEL_ALIGNMENT, PEEL_GAP, TUBE_CAPACITY, TUBE_EDGE, TUBE_STRIDE, carveAt } from '../../wave/tubeTable';
 import { packTubeTextures, tubeColumnCount, tubeFloorDepthApprox, waterTubePars } from './tubeCarve';
 
 const grid = { xMin: 10, zMin: -50, spacing: 1, nx: 30, nz: 40 };
@@ -54,8 +54,8 @@ describe('the GPU tube carve', () => {
     expect(packTubeTextures(many, TUBE_CAPACITY + 5, grid, 1, tubes, columns).count).toBeLessThanOrEqual(TUBE_CAPACITY);
   });
 
-  it('agrees with the physics’ carve: one tube, a peel of two, a tube beside none, unrelated neighbours, a shifted grid, a shut tube', () => {
-    const tube = (column: number, crestZ: number, open: number, dirZ = 1) => [column + 0.5, crestZ, 2, 0, dirZ, open, 2, 0.8, 0.6, column, 1, 0];
+  it('agrees with the physics’ carve: one tube, a peel of two, a tube beside none, unrelated neighbours, a shifted grid, a shut tube, collapsing tubes', () => {
+    const tube = (column: number, crestZ: number, open: number, dirZ = 1, scale = 1) => [column + 0.5, crestZ, 2, 0, dirZ, open, 2, 0.8, 0.6, column, scale, 0];
     const cases: { table: number[]; count: number; xMin: number }[] = [
       { table: tube(14, 0, 3), count: 1, xMin: 10 },
       { table: [...tube(14, 0.4, 3), ...tube(15, 0, 0.8)], count: 2, xMin: 10 },
@@ -63,6 +63,9 @@ describe('the GPU tube carve', () => {
       { table: [...tube(14, 0, 3), ...tube(15, 0, 3, -1)], count: 2, xMin: 10 },
       { table: [...tube(21, 0.4, 3), ...tube(22, 0, 1.2)], count: 2, xMin: 17 },
       { table: tube(14, 0, 0), count: 1, xMin: 10 },
+      // G9: a collapsing tube alone, and one collapsing beside an open one of its peel.
+      { table: tube(14, 0, 3, 1, 0.55), count: 1, xMin: 10 },
+      { table: [...tube(14, 0.4, 3, 1, 0.35), ...tube(15, 0, 1.6)], count: 2, xMin: 10 },
     ];
     for (const { table, count, xMin } of cases) {
       const g = { ...grid, xMin };
@@ -84,6 +87,8 @@ describe('the GPU tube carve', () => {
     // The gate and the minimum the JS mirror above follows.
     expect(waterTubePars).toContain(`if ( abs( gap ) <= ${PEEL_GAP.toFixed(3)} && alignment >= ${PEEL_ALIGNMENT.toFixed(3)} )`);
     expect(waterTubePars).toContain('return min( blended, waterTubeFloorOf( a, b, c, xz ) );');
+    // The floor meets the surface over an edge, as the physics' carve does (TUBE_EDGE).
+    expect(waterTubePars).toContain(`float edge = smoothstep( 0.0, ${TUBE_EDGE.toFixed(3)}, ahead );`);
     expect(TUBE_STRIDE).toBeLessThanOrEqual(12);
   });
 });
@@ -96,7 +101,8 @@ function gpuCarve(tubes: Float32Array, columns: Float32Array, column0: number, c
     const ahead = (x - a[0]) * a[3] + (z - a[1]) * b[0];
     if (ahead < 0 || ahead > b[1] || c[2] <= 0) return 1e6;
     const depth = tubeFloorDepthApprox(b[2] * c[2], b[3] * c[2], c[0], ahead);
-    return depth === depth ? a[2] - depth : 1e6;
+    const t = Math.min(1, Math.max(0, ahead / TUBE_EDGE));
+    return depth === depth ? a[2] - depth * t * t * (3 - 2 * t) : 1e6;
   };
   const span = (column: number) => {
     const c = column - column0;

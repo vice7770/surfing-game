@@ -5,7 +5,7 @@ import { INITIAL_AUDIO_STATE, audible, audioState, shouldRun, type AudioEvent, t
 import { OneShotShaper, soundTargets, type SoundFrame, type SoundTargets } from './soundMapping';
 import { parseManifest } from './soundManifest';
 
-/** Every loop at silence: what the game plays where there is no surf zone to hear (the legacy wave), so loops fade out. */
+/** Every loop at silence: what the game plays where there is no surf zone to hear (the menu before any sea), so loops fade out. */
 const SILENCE: SoundTargets = soundTargets({
   dt: 0, timeScale: 1, paused: false,
   listener: { x: 0, y: 0, z: 0, underwater: false },

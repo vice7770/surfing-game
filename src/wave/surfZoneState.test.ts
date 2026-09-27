@@ -22,7 +22,11 @@ function fingerprint(sim: SurfZoneSimulation): number[] {
     a += solver.h[i] * ((i % 97) + 1);
     b += solver.qx[i] * ((i % 89) + 1) + solver.qz[i] * ((i % 83) + 1);
   }
-  return [sim.seaTime, a, b, sim.foam.dense.reduce((sum, v) => sum + v, 0), sim.lipLaunches, sim.lip.airborneVolume(), sim.lip.landings];
+  // G9: the air in the water and the tubes' collapse ride along too.
+  return [
+    sim.seaTime, a, b, sim.foam.dense.reduce((sum, v) => sum + v, 0), sim.lipLaunches, sim.lip.airborneVolume(), sim.lip.landings,
+    sim.aeration.air.reduce((sum, v) => sum + v, 0), sim.lip.tubeCount,
+  ];
 }
 
 describe('surf zone state (spec N1: the sea handover)', () => {

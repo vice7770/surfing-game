@@ -87,4 +87,62 @@ describe('SpectatorCamera front ride view', () => {
     };
     expect(look({ x: 0, y: 1.8, z: -54 }).y).toBeGreaterThan(look().y);
   });
+
+  it('holds its aim steady while waves pass a rider waiting in the lineup', () => {
+    // The wave gauge reports a crest only from 40 m seaward of the rider to 12 m shoreward of it:
+    // each wave appears at one end of that window and disappears at the other.
+    const spectator = new SpectatorCamera();
+    spectator.setView('front');
+    const position = { x: 0, y: 0, z: -50 };
+    const direction = new Vector3();
+    const previous = new Vector3();
+    let steepest = 0;
+    for (let frame = 0; frame < 60 * 30; frame += 1) {
+      const t = frame / 60;
+      // A wave every 10 s, its crest travelling shoreward (+z) at 5 m/s.
+      const crestZ = position.z - 45 + 5 * (t % 10);
+      const seen = crestZ >= position.z - 40 && crestZ <= position.z + 12;
+      const crest = seen ? { x: 0, y: 1.5, z: crestZ } : undefined;
+      spectator.update(scene, focus, 1 / 60, { position, heading: 0, velocity: { x: 0, y: 0, z: 0 }, crest });
+      spectator.camera.getWorldDirection(direction);
+      if (frame > 0) steepest = Math.max(steepest, (direction.angleTo(previous) * 180) / Math.PI);
+      previous.copy(direction);
+    }
+    expect(steepest).toBeLessThan(0.5);
+  });
+
+  it('eases off a crest the gauge stops seeing, instead of cutting away from it', () => {
+    // A face that shrinks below the gauge's least wave height vanishes wherever it is.
+    const spectator = new SpectatorCamera();
+    spectator.setView('front');
+    const position = { x: 0, y: 0, z: -50 };
+    const direction = new Vector3();
+    const previous = new Vector3();
+    let steepest = 0;
+    for (let frame = 0; frame < 240; frame += 1) {
+      const crest = frame < 120 ? { x: 0, y: 0.6, z: position.z - 1.5 } : undefined;
+      spectator.update(scene, focus, 1 / 60, { position, heading: 0, velocity: { x: 0, y: 0, z: 0 }, crest });
+      spectator.camera.getWorldDirection(direction);
+      if (frame > 0) steepest = Math.max(steepest, (direction.angleTo(previous) * 180) / Math.PI);
+      previous.copy(direction);
+    }
+    expect(steepest).toBeLessThan(0.5);
+  });
+});
+
+describe('SpectatorCamera free view', () => {
+  it('leaves the camera where its owner put it', () => {
+    const spectator = new SpectatorCamera();
+    spectator.setView('free');
+    spectator.camera.position.set(3, 4, 5);
+    spectator.update(scene, { x: 0, z: 0 }, 1 / 60);
+    expect(spectator.camera.position.toArray()).toEqual([3, 4, 5]);
+  });
+
+  it('still cuts straight to a jump point', () => {
+    const spectator = new SpectatorCamera();
+    spectator.setView('overview');
+    spectator.update(scene, { x: 0, z: 0 }, 1 / 60);
+    expect(spectator.camera.position.toArray()).toEqual([70, 16, 95]);
+  });
 });
