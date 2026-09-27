@@ -165,6 +165,16 @@ describe('duck-dive', () => {
     expect(foot.z).toBeLessThan(-0.6);
   });
 
+  // The stances spec made the stance change between rides: the duck-dive follows it.
+  it('ducks in the stance the rider has now, the back knee on the tail', () => {
+    const { water, board, rider } = proneRider();
+    rider.stance = 'goofy';
+    rider.duckDive = 1;
+    for (let i = 0; i < 45; i += 1) board.step(STEP, water);
+    // Goofy: the back (left, part 5) knee on the tail, the front (right, part 6) leg kicked up.
+    expect(rider.parts[6 * 3 + 1]).toBeGreaterThan(rider.parts[5 * 3 + 1] + 0.2);
+  });
+
   // Review Focus 3.
   it('does nothing standing', () => {
     const water = new PlaneWater();

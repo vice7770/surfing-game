@@ -235,7 +235,7 @@ export class PhysicalMode {
   private surferBody?: string;
   /** The rider's body, solved from the snapshot's seven points: a skinned surfer (G7), or the simple one until it loads. */
   readonly surfer = new SurferView();
-  /** The leash (the wipeout spec), from the back foot (the right, regular) to the tail plug. */
+  /** The leash (the wipeout spec), from the back foot to the tail plug. */
   private readonly leash = new LeashCord();
   private readonly riderState = createRiderVisualState();
   /** Whether the latest input paddles, which cups the drawn hands. */
@@ -560,7 +560,8 @@ export class PhysicalMode {
       this.riderState.clock = host.snapshot.status.seaTime;
       this.surfer.update(this.riderState, this.camera.camera.position);
       const { leash } = this.riderState;
-      this.leash.update(this.riderState.points[POINT.rightFoot], leash.plug, {
+      // The leash is on the back foot: the right regular, the left goofy (the stances spec's setting).
+      this.leash.update(this.riderState.points[this.stance === 'goofy' ? POINT.leftFoot : POINT.rightFoot], leash.plug, {
         snapped: leash.snapped, hand: leash.reeling ? this.riderState.points[POINT.leftHand] : undefined,
       });
     }
