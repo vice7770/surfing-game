@@ -73,8 +73,9 @@ describe('duck-dive under a broken wave (survey §5)', () => {
    * broken wave the flow under the roller is the depth-averaged current, uniform
    * to the bed (c η / (d + η)), with the roller's push added on top; a real
    * bore's momentum sits in the roller and the turbulence under it, fading with
-   * depth. That sheared profile is Part B's roller and aeration work. Not tuned
-   * into passing; see docs/research/duck-dive-report.md.
+   * depth. Part B's aeration and turbulence come from the surf zone's plume,
+   * which this analytic wave has none of; in the real surf zone the check is met
+   * (docs/research/duck-dive-report.md). Not tuned into passing.
    */
   it.fails('is weaker in shallow inside water', () => {
     const deep = meetBore(2.5, 2.5).pushed / meetBore(undefined, 2.5).pushed;
