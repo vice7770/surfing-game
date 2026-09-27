@@ -200,3 +200,20 @@ describe('duck-dive', () => {
     expect(rider.duck.press + rider.duck.knee).toBe(0);
   });
 });
+
+// The wipeout spec, Part B: aerated water holds a prone pair lower.
+describe('lying down in aerated water', () => {
+  it('sits deeper than in clear water', () => {
+    const deck = (air: number) => {
+      const water = new PlaneWater({ voidFraction: air });
+      const board = new BoardBody();
+      board.place(new Vector3(0, board.shape.centerOfMass.y - 0.03, 0));
+      const rider = new AttachedRider(board.shape);
+      board.attach(rider);
+      // Heavier than aerated water, the pair keeps sinking: 3 s in.
+      for (let i = 0; i < 180; i += 1) board.step(STEP, water);
+      return deckDepth(board);
+    };
+    expect(deck(0.15)).toBeGreaterThan(deck(0) + 0.08);
+  });
+});

@@ -138,6 +138,14 @@ export type DuckPose = 'duckPress' | 'duckKnee';
  *   floats back into the water and lets the board up.
  * Heights are illustrative, like the other postures. While ducking the body is
  * supported from the knee on the tail to the hands.
+ *
+ * Tried on 2026-09-27 (duck-dive report, Canyon practice swell) and not kept:
+ * a low "hug" knee posture (chest and head about 0.25 m over the deck, elbows
+ * bent) kept the board through more timed dives (17 % against 0 %) but sank the
+ * board less (0.27 m on flat water) and lost both of the test bore's timing
+ * checks; the hug as a third stage after the knee changed nothing measurable,
+ * as the broken water pulls the rider off before it starts. Posture is not what
+ * loses the board.
  */
 function duckPlaces(pose: DuckPose): PartPlace[] {
   switch (pose) {

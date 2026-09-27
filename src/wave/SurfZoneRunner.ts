@@ -124,9 +124,9 @@ export const RIDER_PHASES = ['prone', 'push', 'landing', 'standing', 'recover', 
 /**
  * Layout of a snapshot's rider array: seven drawn points (x, y, z each), then
  * phase, cue, presence and heading; the duck-dive's press (0–1), the leash's
- * plug (x, y, z), the leash's bits and the swimmer's bits (the wipeout spec).
+ * plug (x, y, z), the leash's bits and the swimmer's bits, and the breath (the wipeout spec).
  */
-export const RIDER_SNAPSHOT = { points: 0, phase: 21, cue: 22, present: 23, heading: 24, duck: 25, plug: 26, leash: 29, swim: 30, length: 31 } as const;
+export const RIDER_SNAPSHOT = { points: 0, phase: 21, cue: 22, present: 23, heading: 24, duck: 25, plug: 26, leash: 29, swim: 30, breath: 31, length: 32 } as const;
 /** `RIDER_SNAPSHOT.leash`: the leash is worn whole, has snapped, is being reeled in. */
 export const LEASH_BITS = { worn: 1, snapped: 2, reeling: 4 } as const;
 /** `RIDER_SNAPSHOT.swim`: the fallen surfer strokes, dives, has its head under. */
@@ -181,6 +181,9 @@ export interface SurfZoneStatus {
     boardInReach: boolean;
     /** The hardest the board knocked the fallen surfer since the last snapshot, N·s (sound). */
     knock: number;
+    /** The breath held, 1 full to 0 (Part B), and how often a rider held down too long was rescued. */
+    breath: number;
+    rescues: number;
   };
 }
 
@@ -250,6 +253,8 @@ export class SurfZoneRunner {
   private boardResets = 0;
   /** The hardest board knock on the fallen surfer since the last snapshot, and at it, N·s. */
   private knock = 0;
+  /** Riders held down too long and rescued to the lineup (Part B). */
+  private rescues = 0;
   private snapshotKnock = 0;
   private boardMs = 0;
   /** The rider against the wave (spec P9 phase 0), and the peel angle it uses, refreshed once per simulated second. */
@@ -394,8 +399,11 @@ export class SurfZoneRunner {
       this.boardMs = performance.now() - start;
       const lost = session.board.outsideDomain || (session.surfer.active && session.surfer.outsideDomain)
         || !Number.isFinite(session.board.position.x + session.board.position.y + session.board.position.z);
-      if (lost) {
+      // Held down too long (Part B): rescued to the lineup, where R would put the rider.
+      const heldDown = !lost && session.breath.empty;
+      if (lost || heldDown) {
         this.rideResets += 1;
+        if (heldDown) this.rescues += 1;
         this.launchRide();
       }
       this.measureRide();
@@ -560,6 +568,7 @@ export class SurfZoneRunner {
       buffers.rider[RIDER_SNAPSHOT.present] = 1;
       buffers.rider[RIDER_SNAPSHOT.heading] = session.heading;
       buffers.rider[RIDER_SNAPSHOT.duck] = session.rider.attached ? session.rider.duck.press : 0;
+      buffers.rider[RIDER_SNAPSHOT.breath] = session.breath.level;
       session.leashPlug(this.point).toArray(buffers.rider, RIDER_SNAPSHOT.plug);
       const { leash, surfer } = session;
       buffers.rider[RIDER_SNAPSHOT.leash] = (leash.snapped ? LEASH_BITS.snapped : LEASH_BITS.worn) | (leash.reeling ? LEASH_BITS.reeling : 0);
@@ -644,6 +653,8 @@ export class SurfZoneRunner {
         duck: this.session.rider.attached ? this.session.rider.duck.press : 0,
         boardInReach: this.session.surfer.active && this.session.recovery.state === 'free' && this.session.recovery.inReach(this.session.board),
         knock: this.snapshotKnock,
+        breath: this.session.breath.level,
+        rescues: this.rescues,
       } : undefined,
     };
   }

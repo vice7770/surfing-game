@@ -32,12 +32,20 @@ export interface WaterSample {
   regime: FlowRegime;
   /** Breaking strength B in [0, 1]. */
   breaking: number;
+  /**
+   * The share of the water that is air, 0–1: broken water's whitewater plume
+   * (the wipeout spec, Part B). Bodies float and drag in the mixture, ρ(1 − α).
+   * Waters without a plume leave it out (0).
+   */
+  voidFraction?: number;
+  /** The turbulent kinetic energy at the point, m²/s² (the wipeout spec, Part B); absent is calm. */
+  turbulence?: number;
 }
 
 export function createWaterSample(): WaterSample {
   return {
     surfaceY: 0, stillDepth: 0, waterDepth: 0, bedY: -Infinity, wet: false, outsideDomain: false, slopeX: 0, slopeZ: 0,
-    normalX: 0, normalY: 1, normalZ: 0, flowX: 0, flowY: 0, flowZ: 0, regime: 'outside', breaking: 0,
+    normalX: 0, normalY: 1, normalZ: 0, flowX: 0, flowY: 0, flowZ: 0, regime: 'outside', breaking: 0, voidFraction: 0, turbulence: 0,
   };
 }
 

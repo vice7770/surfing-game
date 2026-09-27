@@ -352,6 +352,25 @@ describe('SurfZoneRunner with a rider', () => {
     expect(buffers.rider[RIDER_SNAPSHOT.swim] & SWIM_BITS.diving).toBe(SWIM_BITS.diving);
   });
 
+  // The wipeout spec, Part B: held down too long, the rider is rescued to the lineup.
+  it('rescues a fallen rider whose breath runs out, back to the lineup with a full breath', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    runner.advance(5, idle);
+    const session = runner.session!;
+    session.separate('balance');
+    runner.advance(5, idle);
+    expect(runner.status().ride?.phase).toBe('fallen');
+    session.breath.level = -1;
+    runner.advance(1, idle);
+    const ride = runner.status().ride!;
+    expect(ride.rescues).toBe(1);
+    expect(ride.phase).toBe('prone');
+    expect(ride.breath).toBe(1);
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(buffers.rider[RIDER_SNAPSHOT.breath]).toBe(1);
+  });
+
   it('starts the rider just outside the break line, where catches happen', () => {
     const runner = new SurfZoneRunner(calm, { rider: true });
     const board = runner.session!.board.position;

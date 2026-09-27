@@ -18,7 +18,7 @@ describe('settingsModel', () => {
 
   it('offers telemetry only with the dev tools on', () => {
     const ids = (devTools: boolean) => settingsModel('gameplay', defaultSettings(), { ...context, devTools }).map((row) => row.id);
-    expect(ids(false)).toEqual(['units', 'surfScale', 'defaultCamera', 'touchControls', 'balanceMeter', 'pocketReflex', 'stance', 'scoreRides', 'nameTags']);
+    expect(ids(false)).toEqual(['units', 'surfScale', 'defaultCamera', 'touchControls', 'balanceMeter', 'breathMeter', 'pocketReflex', 'stance', 'scoreRides', 'nameTags']);
     expect(ids(true)).toContain('showTelemetry');
   });
 
@@ -151,3 +151,10 @@ describe('the Audio tab (S1)', () => {
   });
 });
 
+describe('the breath meter setting (the wipeout spec, Part B)', () => {
+  it('offers Practice, Always and Never, and applies the choice', () => {
+    const row = settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'breathMeter');
+    expect(row).toMatchObject({ kind: 'choice', value: 'practice' });
+    expect(applyRow(defaultSettings(), 'breathMeter', 'always')).toEqual({ tab: 'gameplay', patch: { breathMeter: 'always' } });
+  });
+});

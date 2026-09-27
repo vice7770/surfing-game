@@ -87,6 +87,15 @@ describe('SettingsStore', () => {
     expect(saved({ keyboard: { crouch: ['KeyC'] } })).toMatchObject({ keyboard: { compress: ['Space'] }, gamepad: { compress: [7] } });
   });
 
+  // The wipeout spec, Part B: the breath meter, like the balance meter.
+  it('shows the breath meter in Practice by default, and sanitizes it', () => {
+    expect(defaultSettings().gameplay.breathMeter).toBe('practice');
+    const saved = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { breathMeter: 'sometimes' } }) }));
+    expect(saved.value.gameplay.breathMeter).toBe('practice');
+    const never = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { breathMeter: 'never' } }) }));
+    expect(never.value.gameplay.breathMeter).toBe('never');
+  });
+
   // The riding-the-wave spec: the pocket reflex rides with the player on the Practice swell unless they choose otherwise.
   it('keeps the pocket reflex on the Practice swell by default, and sanitizes it', () => {
     expect(defaultSettings().gameplay.pocketReflex).toBe('practice');

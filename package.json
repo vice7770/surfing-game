@@ -23,6 +23,7 @@
     "lesson:wave": "rolldown scripts/lesson-wave.ts -o dist/scripts/lesson-wave.mjs --format esm --platform node && node dist/scripts/lesson-wave.mjs",
     "report:whitewater": "rolldown scripts/whitewater-report.ts -o dist/scripts/whitewater-report.mjs --format esm --platform node && node dist/scripts/whitewater-report.mjs",
     "report:duckdive": "rolldown scripts/duck-dive-report.ts -o dist/scripts/duck-dive-report.mjs --format esm --platform node && node dist/scripts/duck-dive-report.mjs",
+    "report:holddown": "rolldown scripts/holddown-report.ts -o dist/scripts/holddown-report.mjs --format esm --platform node && node dist/scripts/holddown-report.mjs",
     "report:sizes": "rolldown scripts/size-report.ts -o dist/scripts/size-report.mjs --format esm --platform node && node dist/scripts/size-report.mjs",
     "report:drift": "rolldown scripts/drift-report.ts -o dist/scripts/drift-report.mjs --format esm --platform node && node dist/scripts/drift-report.mjs",
     "server": "npm run build && npm run build:server && node dist-server/server.mjs",

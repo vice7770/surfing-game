@@ -31,7 +31,7 @@ class TestBoard implements BoardContactBody {
   }
 }
 
-function uniformWater(flow = new Vector3(), bedY = -10, breaking = 0): BodyWaterField {
+function uniformWater(flow = new Vector3(), bedY = -10, breaking = 0, voidFraction = 0): BodyWaterField {
   return {
     sampleAt(_position: Readonly<Vector3>, out: BodyWaterSample): void {
       out.surfaceY = 0;
@@ -40,6 +40,7 @@ function uniformWater(flow = new Vector3(), bedY = -10, breaking = 0): BodyWater
       out.wet = true;
       out.outsideDomain = false;
       out.breaking = breaking;
+      out.voidFraction = voidFraction;
     },
   };
 }
@@ -418,5 +419,19 @@ describe('diving and swimming up (the wipeout spec)', () => {
       return -surfer.centerOfMass().y;
     };
     expect(depth(0.4)).toBeLessThan(depth(1));
+  });
+});
+
+// The wipeout spec, Part B: aerated water is lighter than a surfer holding a breath.
+describe('a swimmer in aerated water', () => {
+  it('floats in clear water and sinks where the water holds 15 % air', () => {
+    const settle = (air: number) => {
+      const body = new DetachedSurfer();
+      launch(body, new Vector3(0, 0, 0));
+      advance(body, uniformWater(new Vector3(), -10, 0, air), 600);
+      return body.centerOfMass().y;
+    };
+    expect(settle(0)).toBeGreaterThan(-0.6);
+    expect(settle(0.15)).toBeLessThan(-2);
   });
 });

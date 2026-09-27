@@ -127,6 +127,8 @@ export class RemoteSurferViews {
     // The wipeout spec: the duck-dive, the leash's plug and bits, and the swimmer, from the pose's flags.
     const fallen = state.phase === RIDER_PHASES.indexOf('fallen');
     rider[RIDER_SNAPSHOT.duck] = state.ducking ? 1 : 0;
+    // Another player's breath is not sent: drawn as full.
+    rider[RIDER_SNAPSHOT.breath] = 1;
     this.turn.set(pose[3], pose[4], pose[5], pose[6]);
     this.scratch.copy(this.plug).applyQuaternion(this.turn).add(view.board.position).toArray(rider, RIDER_SNAPSHOT.plug);
     rider[RIDER_SNAPSHOT.leash] = state.leashSnapped ? LEASH_BITS.snapped : LEASH_BITS.worn;

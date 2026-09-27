@@ -23,6 +23,8 @@ export interface GameplaySettings {
   touchControls: 'auto' | 'on' | 'off';
   /** The balance meter (spec P9): on the Practice swell only, always, or never. */
   balanceMeter: 'practice' | 'always' | 'never';
+  /** The breath meter after a wipeout (the wipeout spec, Part B), by the balance meter's rule. */
+  breathMeter: 'practice' | 'always' | 'never';
   /** The pocket reflex (the riding-the-wave spec): with no weight held the rider trims to stay near the curl; Practice only, always, or never. */
   pocketReflex: 'practice' | 'always' | 'never';
   /** Regular (left foot forward) or Goofy (the stances spec); a change rides from the next ride. */
@@ -120,7 +122,7 @@ function copyBindings(bindings: Bindings): Bindings {
 
 export function defaultSettings(prefersReducedMotion = false): GameSettings {
   return {
-    gameplay: { units: 'metric', surfScale: 'face', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', pocketReflex: 'practice', stance: 'regular', scoreRides: false, showTelemetry: false, nameTags: true },
+    gameplay: { units: 'metric', surfScale: 'face', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', breathMeter: 'practice', pocketReflex: 'practice', stance: 'regular', scoreRides: false, showTelemetry: false, nameTags: true },
     // The Medium preset's values (Graphics.PRESETS.medium; a test keeps the two equal).
     graphics: {
       preset: 'auto', renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto',
@@ -227,6 +229,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       defaultCamera: oneOf(gameplay.defaultCamera, ['front', 'behind', 'side', 'overview'] as const, defaults.gameplay.defaultCamera),
       touchControls: oneOf(gameplay.touchControls, ['auto', 'on', 'off'] as const, defaults.gameplay.touchControls),
       balanceMeter: oneOf(gameplay.balanceMeter, ['practice', 'always', 'never'] as const, defaults.gameplay.balanceMeter),
+      breathMeter: oneOf(gameplay.breathMeter, ['practice', 'always', 'never'] as const, defaults.gameplay.breathMeter),
       pocketReflex: oneOf(gameplay.pocketReflex, ['practice', 'always', 'never'] as const, defaults.gameplay.pocketReflex),
       stance: oneOf(gameplay.stance, ['regular', 'goofy'] as const, defaults.gameplay.stance),
       scoreRides: flag(gameplay.scoreRides, defaults.gameplay.scoreRides),

@@ -39,7 +39,7 @@ import { StillFrameGate } from './game/StillFrameGate';
 import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, type SurfConditions, type SwellSize, type TimeOfDay } from './game/SurfConditions';
 import type { WaterLook } from './scene/water/waterLook';
 import type { RideView } from './scene/SpectatorCamera';
-import { RIDER_SNAPSHOT, SURF_ZONE_STEP, type SurfZoneStatus } from './wave/SurfZoneRunner';
+import { RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS, type SurfZoneStatus } from './wave/SurfZoneRunner';
 import type { SurfZoneConfig } from './wave/SurfZoneSimulation';
 import type { RideFrame } from './game/RideTracker';
 import type { SoundFrame } from './audio/soundMapping';
@@ -579,6 +579,7 @@ class SurfGame {
         ride: {
           phase: ride.phase, previousPhase, speed: ride.boardSpeed, duck: ride.duck, previousDuck,
           leashSnapped: ride.leash.snapped, previouslySnapped, knock: fresh ? ride.knock : 0,
+          headUnder: ride.phase === 'fallen' && (snapshot.rider[RIDER_SNAPSHOT.swim] & SWIM_BITS.under) !== 0,
         },
       } : {}),
     };
