@@ -42,22 +42,23 @@ export function fitForecast(runs: readonly { significantHeight: number; period: 
 }
 
 /**
- * Each spot's forecast, fitted by the size report on the tank (`npm run report:sizes`), at mid tide with
- * the Wave Lab's default direction and spread: today's tank (Part A, 2026-09-27; Komar–Gaughan's a is 0.616).
+ * Each spot's forecast, fitted by the size report on the tank (`npm run report:sizes`) to the surf at the
+ * take-off, which the game's readout measures, at mid tide with the Wave Lab's default direction and spread:
+ * today's tank (Part A, 2026-09-27; Komar–Gaughan's a is 0.616).
  */
 export const SURF_FORECAST: Record<SpotName, ForecastFit> = {
-  beach: { a: 0.3231, sets: 1.114 },
-  point: { a: 0.4483, sets: 1.123 },
-  reef: { a: 0.4995, sets: 1.132 },
-  canyon: { a: 0.4426, sets: 1.191 },
+  beach: { a: 0.3153, sets: 1.111 },
+  point: { a: 0.4772, sets: 1.056 },
+  reef: { a: 0.5125, sets: 1.184 },
+  canyon: { a: 0.4994, sets: 1.110 },
 };
 
-/** The practice groundswell's measured surf at each spot (the size report, 2026-09-27). */
+/** The practice groundswell's measured surf at each spot's take-off (the size report, 2026-09-27). */
 export const PRACTICE_SURF: Record<SpotName, SurfForecast> = {
-  beach: { typical: 1.49, sets: 1.63 },
-  point: { typical: 2.37, sets: 2.62 },
-  reef: { typical: 2.30, sets: 2.51 },
-  canyon: { typical: 2.37, sets: 2.83 },
+  beach: { typical: 1.43, sets: 1.52 },
+  point: { typical: 2.27, sets: 2.39 },
+  reef: { typical: 2.08, sets: 2.27 },
+  canyon: { typical: 2.85, sets: 3.08 },
 };
 
 /** The surf a buoy swell will make at a spot, from its calibrated fit. */
