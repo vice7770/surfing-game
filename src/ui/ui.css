@@ -1,7 +1,5 @@
 /* Menus and HUD (plan P8): PolyTrack's tile layout in Breakline's colours and type. */
 
-.wave-lab { display: contents; }
-#app:not([data-base='wavelab']) .wave-lab { display: none; }
 .loading { text-transform: uppercase; }
 /* Until the menu's first waves are ready, the menu stands on the brand's sunset gradient; the sea fades in. */
 #scene { transition: opacity 1.2s ease; }
@@ -218,7 +216,7 @@
 .is-high-contrast .ride-hud .hud-pause { background: #0d2a2d; border-color: #fff; }
 .is-reduced-motion .hud-balance-fill, .is-reduced-motion .end-card { animation: none; transition: none; }
 
-/* Touch controls during a ride; the Wave Lab keeps its own rules. */
+/* Touch controls during a ride. */
 #app[data-screen='ride'].has-touch .touch-controls { position: absolute; z-index: 5; left: 12px; right: 12px; bottom: 16px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; pointer-events: none; }
 #app[data-screen='ride'].has-touch .hud-readout { bottom: 84px; }
 #app[data-screen='ride'] .touch-button { min-width: 58px; height: 52px; padding: 0 12px; border: 1px solid rgba(251, 249, 231, .6); border-radius: 12px; background: rgba(20, 70, 73, .68); box-shadow: 0 4px 16px rgba(0, 35, 40, .17); color: #fff8e9; font: 19px var(--mono); touch-action: none; user-select: none; pointer-events: auto; }
@@ -234,7 +232,6 @@
 .setting-help { display: block; margin-top: 2px; font-size: .78em; opacity: .7; }
 #app[data-screen='ride'] .touch-popup { background: rgba(223, 117, 88, .85); }
 #app[data-screen='ride'] .touch-button.is-held { background: #df7558; }
-#app[data-base='wavelab'] .touch-popup { display: none; }
 #app.is-left-handed .touch-controls { flex-direction: row-reverse; }
 
 @media (max-width: 620px) {

@@ -20,7 +20,6 @@ import { el } from './dom';
 import { createLogbookScreen, logbookModel } from './LogbookScreen';
 import { createSettingsScreen } from './SettingsScreen';
 import { createMainMenu, refreshSoundToggles } from './MainMenu';
-import { createSoundCheck } from './SoundCheck';
 import { MenuInput } from './MenuInput';
 import { createOnlinePauseMenu, createPauseMenu } from './PauseMenu';
 import { OnlineHud, PlayersPanel, onlineHudModel, playersModel } from './OnlineHud';
@@ -59,10 +58,6 @@ export interface GameHost {
   setPaused(paused: boolean): void;
   cycleView(): void;
   quickRetry(): void;
-  /** The Wave Lab's own replay and new wave. */
-  replay(): void;
-  newWave(): void;
-  enterWaveLab(): void;
   setReducedMotion(reduced: boolean): void;
   readonly readout: ReadoutRow[];
   /** Sound (S1): the surf zone's report for this frame, and the camera as the listener. */
@@ -101,8 +96,8 @@ export class App {
   private readonly root = document.getElementById('app')!;
   private readonly ui = document.getElementById('ui')!;
   private readonly menuInput: MenuInput;
-  /** The scene the game shows now: the menu's waves, a ride, or the Wave Lab. */
-  private scene?: 'backdrop' | 'ride' | 'wavelab';
+  /** The scene the game shows now: the menu's waves, a ride, the Wave Lab, or the dev tools' bare stage. */
+  private scene?: 'backdrop' | 'ride' | 'wavelab' | 'stage';
   private backdropSpot?: SpotName;
   /** The menu's own waves are up (not the ride or Wave Lab it replaced, still running while they spin up). */
   private backdropReady = false;
@@ -145,14 +140,15 @@ export class App {
     private readonly game: GameHost,
     private readonly controls: Controls,
     readonly settings: SettingsStore,
-    options: { startInWaveLab: boolean },
+    /** Where the page opens: the menu, a Surf ride (`?physical`, `?demo`), or the bare stage (`?record`, `?waterSheet`). */
+    options: { start: 'menu' | 'ride' | 'stage' },
   ) {
-    this.stack = new ScreenStack(options.startInWaveLab ? 'wavelab' : 'menu');
+    this.stack = new ScreenStack(options.start === 'stage' ? 'stage' : 'menu');
     // A room's link (`?room=CODE`) opens Multiplayer with the code filled in (N1).
     const linked = roomCodeFromSearch(globalThis.location?.search ?? '');
     this.multiplayer = { name: settings.value.online.name, code: linked ?? '', settings: { ...DEFAULT_ROOM_SETTINGS }, webGpu: undefined };
-    if (linked && !options.startInWaveLab) this.stack.push('multiplayer');
-    this.scene = options.startInWaveLab ? 'wavelab' : undefined;
+    if (linked && options.start === 'menu') this.stack.push('multiplayer');
+    this.scene = options.start === 'stage' ? 'stage' : undefined;
     this.menuInput = new MenuInput({ root: () => this.ui, onBack: () => this.back() });
     this.adapter = adapterName(game.gl);
     this.rideHud = new RideHud(() => this.pause());
@@ -164,7 +160,6 @@ export class App {
     this.sound = new GameSound(settings, () => refreshSoundToggles(this.ui, this.sound.muted));
     // Dev tools: the sound, for checks in the page and the sound check.
     if (DEV_TOOLS) (globalThis as unknown as { breaklineSound?: GameSound }).breaklineSound = this.sound;
-    if (DEV_TOOLS) this.bindSoundCheck();
     // A quiet click for every menu button (S1).
     this.ui.addEventListener('click', (event) => {
       if ((event.target as Element | null)?.closest?.('button')) this.sound.playUi('click');
@@ -177,24 +172,7 @@ export class App {
       if (this.settings.value.controls.bindings.keyboard.mute.includes(event.code)) this.toggleMute();
     });
     this.show();
-  }
-
-  /** The Wave Lab's sound check (dev tools): a panel of every sound, opened from its toolbar. */
-  private bindSoundCheck(): void {
-    const toggle = document.getElementById('sound-check-toggle');
-    const lab = document.getElementById('wave-lab');
-    if (!toggle || !lab) return;
-    let panel: HTMLElement | undefined;
-    toggle.addEventListener('click', () => {
-      if (panel) {
-        panel.remove();
-        panel = undefined;
-      } else {
-        panel = createSoundCheck(() => this.sound.audioEngine);
-        lab.append(panel);
-      }
-      toggle.setAttribute('aria-pressed', String(panel !== undefined));
-    });
+    if (options.start === 'ride') void this.paddleOut();
   }
 
   /** Sound on or off: M, the gamepad's Back, or a speaker toggle. */
@@ -279,8 +257,9 @@ export class App {
     const { current, base } = this.stack;
     this.root.dataset.screen = current;
     this.root.dataset.base = base;
-    const playing = current === 'ride' || current === 'wavelab';
-    this.controls.enabled = playing;
+    const playing = current === 'ride' || current === 'wavelab' || current === 'stage';
+    // The ride's keys drive a rider; the Wave Lab flies its camera with its own input.
+    this.controls.enabled = current === 'ride';
     this.menuInput.active = !playing;
     this.game.setPaused(this.stack.stack.includes('pause'));
     this.applyAccessibility();
@@ -301,10 +280,10 @@ export class App {
       return [createMainMenu({
         surf: () => this.go('surf'),
         multiplayer: () => this.go('multiplayer'),
-        waveLab: () => this.enterWaveLab(),
+        waveLab: () => {},
         logbook: () => this.go('logbook'),
         settings: () => this.go('settings'),
-      }, { devTools: DEV_TOOLS, version: packageJson.version, sound: { muted: this.sound.muted, toggle: () => this.toggleMute() } })];
+      }, { version: packageJson.version, sound: { muted: this.sound.muted, toggle: () => this.toggleMute() } })];
     }
     if (id === 'surf') {
       const card = createSurferCard(this.settings.value.surfer, this.surfChoice.conditions.time, {
@@ -380,11 +359,10 @@ export class App {
       }, this.viewLabel(), this.playersPanel.root)];
     }
     if (id === 'pause') {
-      const inLab = this.stack.base === 'wavelab';
       return [createPauseMenu({
         resume: () => this.back(),
-        replay: () => (inLab ? this.resumeWith(() => this.game.replay()) : void this.paddleOut()),
-        newWave: () => (inLab ? this.resumeWith(() => this.game.newWave()) : this.nextWave()),
+        replay: () => void this.paddleOut(),
+        newWave: () => this.nextWave(),
         camera: () => {
           this.game.cycleView();
           return this.viewLabel();
@@ -400,12 +378,6 @@ export class App {
   private viewLabel(): string {
     const key = `view.${this.game.viewName}`;
     return key in EN ? t(key as StringKey) : this.game.viewName;
-  }
-
-  /** Close the pause menu, then act (the Wave Lab's own replay and new wave). */
-  private resumeWith(action: () => void): void {
-    this.back();
-    action();
   }
 
   private nextWave(): void {
@@ -708,14 +680,6 @@ export class App {
       },
     });
     return this.rotateHint;
-  }
-
-  /** The Wave Lab (dev tools): today's screen with the legacy wave; Esc pauses, and Quit returns to the menu. */
-  private enterWaveLab(): void {
-    this.scene = 'wavelab';
-    this.game.enterWaveLab();
-    this.stack.reset('wavelab');
-    this.show();
   }
 
   /**
