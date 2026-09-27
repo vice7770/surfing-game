@@ -83,8 +83,11 @@ export interface LabHost {
 
 /** The Surf School as the menus drive it (spec L2; implemented in main.ts). */
 export interface SchoolHost {
-  /** Build the lesson sea from its recording for `start`, the rider placed, in `camera`; false when superseded; throws when the wave will not load. */
-  enter(start: LessonStart, camera: RideView): Promise<boolean>;
+  /**
+   * Build the lesson sea from its recording for `start`, the rider placed, in `camera`; false when superseded;
+   * throws when the wave will not load. `freePractice` rides with the pocket reflex as its setting says; a lesson never does.
+   */
+  enter(start: LessonStart, camera: RideView, freePractice: boolean): Promise<boolean>;
   /** The same wave again from `start`'s recording, the rider placed. */
   restart(start: LessonStart): Promise<void>;
   /** Slow motion at 0.5× (a pause-menu toggle). */
@@ -859,7 +862,7 @@ export class App {
     this.loading.classList.remove('is-hidden');
     let started = false;
     try {
-      started = await this.game.school.enter(start, view);
+      started = await this.game.school.enter(start, view, !lesson);
       this.schoolError = undefined;
     } catch (error) {
       console.warn('The lesson wave did not load.', error);

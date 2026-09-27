@@ -17,7 +17,7 @@ import {
 import { Controls } from './game/Controls';
 import { frameDue } from './game/frameLimit';
 import { resolveGraphics, type ResolvedGraphics } from './game/Graphics';
-import { showsPocketReflex } from './game/pocketReflex';
+import { schoolPocketReflex, showsPocketReflex } from './game/pocketReflex';
 import { SettingsStore, defaultSettings, type GameplaySettings } from './game/Settings';
 import { SURFER_BODIES, type SurferSettings } from './game/SurferChoice';
 import { DEV_TOOLS, devFlag, devParam } from './devTools';
@@ -148,6 +148,7 @@ class SurfGame {
   /** The Surf School (spec L2): its recorded seas, whether a lesson sea runs now, its slow motion, and the sea time last read. */
   private readonly schoolSession = new SchoolSession();
   private schoolActive = false;
+  private schoolFreePractice = false;
   private schoolSlow = false;
   private schoolSeaTime = Number.NaN;
   readonly school: SchoolHost;
@@ -632,7 +633,8 @@ class SurfGame {
     // keys trim, crouch and reach for the water (P9); their ramps run on simulated time, like the physics.
     const standing = this.physicalMode.host?.snapshot.status.ride?.phase === 'standing';
     const request = controls.rideRequest(simElapsed, standing);
-    const pocketReflex = showsPocketReflex(this.pocketReflex, this.surfSwell);
+    const pocketReflex = this.schoolActive ? schoolPocketReflex(this.pocketReflex, this.schoolFreePractice)
+      : showsPocketReflex(this.pocketReflex, this.surfSwell);
     this.physicalMode.advance(steps, { ...request, steer: this.physicalMode.screenSteer(request.steer), pocketReflex });
     if (request.popUp) controls.consumeGetUp();
     this.physicalRender(simElapsed);
@@ -709,7 +711,10 @@ class SurfGame {
   private schoolHost(): SchoolHost {
     const game = this;
     return {
-      enter: (start, camera) => this.enterSchool(start, camera),
+      enter: (start, camera, freePractice) => {
+        this.schoolFreePractice = freePractice;
+        return this.enterSchool(start, camera);
+      },
       restart: async (start) => {
         const host = this.physicalMode.host;
         if (!host || !this.schoolActive) return;
