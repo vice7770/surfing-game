@@ -45,3 +45,13 @@ The top-turn plan (`docs/superpowers/plans/2026-09-27-top-turn.md`), on the user
    - This is closer to how surfers and skiers change edges: the board swings under a body that travels on, and the old turn need not tighten.
    - It is a new lateral actuator between body and board in the 8×8 solve, a larger change near the memory's don't-retry list (the capture-point reflex and soft-ankle variants fed the roll–yaw wobble).
 3. **Both:** the governor first, since it is smaller and measured, then the cross-under if rail changes are still slow.
+
+## The governor, tried (the user chose "governor, then cross-under")
+
+- **A governor at the actuators' capacity changes nothing.** It caps the balance's demand at the ankle's range plus the swing's torque, 0.72 rad of rest. But with a large error the demand stays saturated at that capacity either way, so the actuation is identical to before.
+- **What the fixed limits did was cap the body's bank rate on large changes.** The rate term can only brake once the demand falls below capacity: about 0.36 rad/s at a 10° margin, 1.1 rad/s at 30°.
+- **Limiting only the rising, when the body must come up or cross over, spares bottom turns** (the hard turn stays at 61°). But rail changes then never finish crossing within 1.2 s, and top turns still fall.
+- **The top-turn fall is not a rising problem.** It is the lean-in from flat on a slowing, climbing board: the counter-steer that starts any lean points the board up the face, where it stalls.
+- **In an S-turn the board must keep turning the old way to pass under the body.** That is the cross-under's geometry. The losses come from how the balance does it: the old rail digs, and the lean is started by pushing the board away.
+
+**Conclusion:** no principled governor fixes top turns without costing bottom turns. The next step is the cross-under: the way a lean is actuated.
