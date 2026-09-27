@@ -1,8 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { defaultLabSettings } from '../game/waveLab/labSettings';
+import { forecastSurf } from '../wave/surfForecast';
 import { labSliders, practiceNote, spreadName, stormArrives, windWords } from './labPanelModel';
+import { formatSurfRange } from './surfHeight';
 
 describe('lab panel model', () => {
+  it('shows the surf a buoy height will make beside the Height slider (wave sizes)', () => {
+    const physical = { ...defaultLabSettings().physical, source: 'buoy' as const, spot: 'reef' as const, significantHeight: 3, peakPeriod: 14 };
+    const height = labSliders(physical, 'metric').find((slider) => slider.key === 'significantHeight')!;
+    const surf = forecastSurf('reef', 3, 14);
+    expect(height.text).toBe(`3.0 m · surf ${formatSurfRange(surf.typical, surf.sets, 'metric', 'face')}`);
+    expect(labSliders(physical, 'imperial', 'hawaiian').find((slider) => slider.key === 'significantHeight')!.text).toContain('Hawaiian');
+  });
+
   it('names the local wind the way surfers do', () => {
     expect(windWords(0, 'metric')).toBe('Calm');
     expect(windWords(-5, 'metric')).toBe('18 km/h offshore');
@@ -34,7 +44,8 @@ describe('lab panel model', () => {
   it('formats every slider’s value for its output', () => {
     const sliders = labSliders({ ...defaultLabSettings().physical, source: 'buoy', significantHeight: 1.4, tide: -0.5 }, 'metric');
     const shown = Object.fromEntries(sliders.map((slider) => [slider.key, slider.text]));
-    expect(shown.significantHeight).toBe('1.4 m');
+    const surf = forecastSurf(defaultLabSettings().physical.spot, 1.4, defaultLabSettings().physical.peakPeriod);
+    expect(shown.significantHeight).toBe(`1.4 m · surf ${formatSurfRange(surf.typical, surf.sets, 'metric', 'face')}`);
     expect(shown.tide).toBe('-0.5 m');
     expect(shown.windSpeed).toBe('Calm');
   });

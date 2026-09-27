@@ -51,7 +51,7 @@ export function createOnlinePauseMenu(handlers: OnlinePauseHandlers, viewName: s
 }
 
 /** The pause menu (plan P8): the waves hold still until Resume, Esc or B. */
-export function createPauseMenu(handlers: PauseHandlers, viewName: string): HTMLElement {
+export function createPauseMenu(handlers: PauseHandlers, viewName: string, surf?: string): HTMLElement {
   const item = (label: string, action: () => void, isDefault = false) => el('button', {
     class: 'pause-item',
     attrs: { type: 'button' },
@@ -65,6 +65,7 @@ export function createPauseMenu(handlers: PauseHandlers, viewName: string): HTML
   return el('section', { class: 'screen screen-panel screen-pause', attrs: { 'aria-label': t('pause.title') } },
     el('div', { class: 'panel panel-narrow' },
       el('h2', { class: 'pause-title', text: t('pause.title') }),
+      surf ? el('p', { class: 'pause-note', text: t('pause.surf', { surf }) }) : undefined,
       el('div', { class: 'pause-items' },
         item(t('pause.resume'), handlers.resume, true),
         item(t('pause.replay'), handlers.replay),

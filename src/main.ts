@@ -709,7 +709,7 @@ class SurfGame {
       leave: () => this.leaveLab(),
       toggleFollow: () => waveLab.toggleFollow(mode()),
       jump: (point) => waveLab.jump(mode(), point),
-      info: (units) => waveLab.info(mode(), units),
+      info: (units, words) => waveLab.info(mode(), units, words),
     };
   }
 

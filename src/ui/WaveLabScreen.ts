@@ -11,6 +11,7 @@ import { ICONS, type IconName } from './icons';
 import { labSliders, practiceNote, stormArrives } from './labPanelModel';
 import { PhysicsReadoutPanel } from './PhysicsReadoutPanel';
 import { t, type StringKey } from './strings';
+import type { SurfScale } from './surfHeight';
 import type { Units } from './units';
 
 /** What the lab's screen asks of the app (spec L1). */
@@ -68,12 +69,13 @@ function segmented<T extends string | number>(choices: readonly { value: T; labe
  * fly with. Everything sits at the edges, and H hides it all.
  */
 export function createWaveLabScreen(
-  options: { settings: WaveLabSettings; running: WaveLabSettings; devTools: boolean; touch: boolean; units: Units },
+  options: { settings: WaveLabSettings; running: WaveLabSettings; devTools: boolean; touch: boolean; units: Units; scale?: SurfScale },
   handlers: WaveLabHandlers,
 ): WaveLabScreen {
   const draft = clone(options.settings);
   let running = clone(options.running);
   const { units } = options;
+  const scale = options.scale ?? 'face';
 
   const tool = (name: IconName, label: StringKey, action: () => void, attrs: Record<string, string> = {}) => el('button', {
     class: 'lab-tool', attrs: { type: 'button', title: t(label), ...attrs }, dataset: { nav: '' }, on: { click: action },
@@ -113,10 +115,10 @@ export function createWaveLabScreen(
   function renderPanel(): void {
     const focused = (document.activeElement as HTMLElement | null)?.dataset?.key;
     const { physical } = draft;
-    const sliders = labSliders(physical, units);
+    const sliders = labSliders(physical, units, scale);
     const sliderRows = (which: 'swell' | 'conditions') => sliders.filter((s) => s.group === which).map((s) => slider(s.label, s.min, s.max, s.step, s.value, s.text, (value, output) => {
       draft.physical[s.key] = value;
-      output.textContent = labSliders(draft.physical, units).find((next) => next.key === s.key)?.text ?? '';
+      output.textContent = labSliders(draft.physical, units, scale).find((next) => next.key === s.key)?.text ?? '';
       if (derived && physical.source === 'storm') derived.textContent = stormArrives(draft.physical, units);
       edited(false);
     }, s.disabled));
