@@ -12,14 +12,17 @@ import type { SwellSize } from './SurfConditions';
  * POCKET_TRIM (the W/S keys reach ±1). Steering, crouch and the hand stay the
  * player's. It sits back only while the board planes: fully above SIT_BACK_FULL,
  * m/s over ground, and not at all below SIT_BACK_FROM (held back on a board
- * already slowing, the tail sank with the nose 30–60° up and the rider fell).
- * Provisional.
+ * already slowing, the tail sank with the nose 30–60° up and the rider fell),
+ * and only on the face, at least SIT_BACK_FACE up it: out on the flat ahead of
+ * the crest, sitting back to wait for the curl only slowed the board below
+ * planing, and it sank before the wave came. Provisional.
  */
 export const POCKET_DISTANCE = 4;
 export const POCKET_TRIM = 0.6;
 const POCKET_GAIN = 0.15;
 const SIT_BACK_FROM = 3;
 const SIT_BACK_FULL = 5;
+const SIT_BACK_FACE = 0.2;
 /**
  * The reflex holds a line: steering at least POCKET_STEER, the weight is the
  * turn's (sat back through a crouched full-steer bottom turn at 10 m/s, the
@@ -32,6 +35,7 @@ export function pocketTrim(frame: WaveFrame): number {
   if (!frame.valid || !Number.isFinite(frame.curlDistance)) return 0;
   const trim = Math.max(-POCKET_TRIM, Math.min(POCKET_TRIM, -POCKET_GAIN * (frame.curlDistance - POCKET_DISTANCE)));
   if (trim >= 0) return trim;
+  if (frame.faceFraction < SIT_BACK_FACE) return 0;
   const planing = Math.max(0, Math.min(1, (frame.speedOverGround - SIT_BACK_FROM) / (SIT_BACK_FULL - SIT_BACK_FROM)));
   return planing > 0 ? trim * planing : 0;
 }
