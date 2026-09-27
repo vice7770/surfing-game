@@ -217,6 +217,13 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
  */
 export const TAKE_OFF: Record<SpotName, 'centre' | 'focus'> = { beach: 'centre', point: 'centre', reef: 'centre', canyon: 'focus' };
 
+/**
+ * The breaker index a big day's take-off is placed with, per spot: the size report measures where each spot's
+ * sets break and sets these so the take-off lands there (the wave-sizes spec). Today's tanks keep BREAKER_INDEX;
+ * the Reef's is the Reef rework's to set.
+ */
+export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: BREAKER_INDEX, point: BREAKER_INDEX, reef: BREAKER_INDEX, canyon: BREAKER_INDEX };
+
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */
 export const TAKE_OFF_EDGE_MARGIN = 30;
 
@@ -229,7 +236,8 @@ export const TAKE_OFF_EDGE_MARGIN = 30;
 export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   const spot = createSpot(config.spot, config.seed);
   const tank = tankLayout(config);
-  const target = breakerDepthFor(edgeHeight(config, tank.edgeDepth), tank.edgeDepth + config.tide);
+  const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
+  const target = breakerDepthFor(edgeHeight(config, tank.edgeDepth), tank.edgeDepth + config.tide, deeper ? TAKE_OFF_INDEX[config.spot] : BREAKER_INDEX);
   const breakZ = (x: number) => {
     // Scan the whole simulated bed from the relaxation zone inward.
     for (let z = tank.zoneInner; z < tank.shore; z += 0.5) {

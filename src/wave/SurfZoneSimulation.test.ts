@@ -5,7 +5,7 @@ import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
-  FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TANK, edgeHeight, surfZoneSea, takeOffPoint, tankDepth, tankLayout,
+  FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, edgeHeight, surfZoneSea, takeOffPoint, tankDepth, tankLayout,
   windOnsetScale, type SurfZoneConfig,
 } from './SurfZoneSimulation';
 import { shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
@@ -524,6 +524,20 @@ describe('the tank sized to the swell (wave sizes)', () => {
     expect(layout.blendEnd - layout.zoneInner).toBe(TANK.blendEnd - TANK.zoneInner);
     // A short-period storm sea keeps kh ≤ 2.5 at the edge.
     expect(tankLayout(config('point', 4, 6)).edgeDepth).toBeLessThanOrEqual(0.4 * (9.81 * 36) / (2 * Math.PI) + 1e-9);
+  });
+
+  it('places a big day\'s take-off by the spot\'s calibrated breaker index, and today\'s tanks as before', () => {
+    const big: SurfZoneConfig = { ...small, spot: 'point', significantHeight: 3, peakPeriod: 14, alongShore: 160 };
+    const tank = tankLayout(big);
+    expect(tank.edgeDepth).toBeGreaterThan(OFFSHORE_DEPTH.point);
+    const target = breakerDepthFor(edgeHeight(big, tank.edgeDepth), tank.edgeDepth + big.tide, TAKE_OFF_INDEX.point);
+    const point = takeOffPoint(big);
+    expect(tankDepth(createSpot('point', big.seed), tank.edgeDepth, point.x, point.z, tank)).toBeCloseTo(target, 0);
+    const todays: SurfZoneConfig = { ...small, spot: 'point', alongShore: 160 };
+    expect(tankDepth(createSpot('point', 1), OFFSHORE_DEPTH.point, 0, takeOffPoint(todays).z))
+      .toBeCloseTo(breakerDepthFor(edgeHeight(todays), OFFSHORE_DEPTH.point), 0);
+    // Only a swell-sized tank uses the calibrated index.
+    expect(Object.keys(TAKE_OFF_INDEX).sort()).toEqual(['beach', 'canyon', 'point', 'reef']);
   });
 
   it('reaches a 13.2 m edge for a 4 m Beach swell on its deepened outer shelf', () => {
