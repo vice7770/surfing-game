@@ -179,7 +179,7 @@ The same wave, started standing in the pocket or prone and ready to catch (the w
   Each moment is the sea's full state, shipped as an asset (`public/lessons/canyon-s{stage}-{start}.sea`, about 0.8 MB each, deflated). Only the start in use is loaded. Beside the states the record keeps:
   - the rider's placement at each moment (position, heading, speed along the heading on top of the water's own flow, standing or prone);
   - the sea it was recorded on (spot, seed, the swell's values, 64 components), so a later change to the Practice swell cannot break it.
-- **Two recordings.** There is one record per solver stage (Boussinesq, and shallow water for machines whose benchmark picked it). The school uses the one matching the graphics settings.
+- **One recording, on stage 2.** *Amended 2026-09-27, the user's call:* the spec first had one record per solver stage, the school using the one the graphics settings run. Stage 1's could not be caught (the autopilot stood once in 300 s; its caught and waiting starts never stood), so the school runs stage 2 on every machine: on the GPU where there is one, else on the CPU. A machine too slow for stage 2 plays the lesson slower than real time; the lesson's clocks follow the sea's, so its goals and limits stay fair.
 - **Same wave every time.**
   - A lesson's sea is built from the recording with no spin-up, the state taken over as an online join takes a handed-over sea.
   - Every restart restores the start's state **in place**: a `restore` request to the running surf zone imports it and, on the GPU, re-uploads the breaking and predictor fields. It then places the rider, so a retry costs a frame, not a rebuild.

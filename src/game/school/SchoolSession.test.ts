@@ -32,7 +32,7 @@ describe('SchoolSession', () => {
     const state = await recorded();
     const loads: string[] = [];
     const session = new SchoolSession({ waves: [wave], load: async (_wave, start) => { loads.push(start); return state; } });
-    const { sea } = await session.prepare(2, 'pocket');
+    const { sea } = await session.prepare('pocket');
     const host = new LocalSurfZone(configFor(), { rider: true }, sea);
     const run = async () => {
       const placement = await session.restart(host, 'pocket');
@@ -48,9 +48,14 @@ describe('SchoolSession', () => {
     expect(loads).toEqual(['pocket']);
   });
 
+  it('takes the stage 2 wave, whatever the graphics settings run', async () => {
+    const session = new SchoolSession({ waves: [{ ...wave, stage: 1 }, wave], load: async () => new Uint8Array(1) });
+    expect((await session.prepare('caught')).wave).toBe(wave);
+  });
+
   it('falls back when the wave will not load, keeping nothing', async () => {
     const session = new SchoolSession({ waves: [wave], load: async () => { throw new Error('The lesson wave p did not load (404)'); } });
-    await expect(session.prepare(2, 'pocket')).rejects.toThrow(/did not load/);
+    await expect(session.prepare('pocket')).rejects.toThrow(/did not load/);
     expect(session.wave).toBeUndefined();
   });
 });

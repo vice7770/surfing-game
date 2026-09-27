@@ -14,7 +14,7 @@ export type LessonStart = 'pocket' | 'caught' | 'waiting';
  * rider there, so every attempt meets the same wave.
  */
 export interface LessonWave {
-  /** The solver stage it was recorded on; the school uses the one the graphics settings run. */
+  /** The solver stage it was recorded on; the school runs stage 2 (`schoolWave`). */
   stage: 1 | 2;
   /** The sea it was recorded on, kept here so a later change to the practice swell cannot break the recording. */
   config: {
@@ -43,10 +43,15 @@ export function lessonConfig(wave: LessonWave): SurfZoneConfig {
   return { ...wave.config, stage: wave.stage, compute: 'auto', spinUpPeriods: 0 };
 }
 
-/** The recording for a solver stage. */
-export function lessonWaveFor(stage: 1 | 2): LessonWave {
-  const wave = LESSON_WAVES.find((candidate) => candidate.stage === stage);
-  if (!wave) throw new Error(`No lesson wave recorded for stage ${stage}`);
+/**
+ * The school's wave: the stage 2 recording, on every machine (the user's call,
+ * 2026-09-27). Stage 1's recording could not be caught, so a machine whose
+ * graphics run the Fast water still takes its lessons on stage 2: on the GPU
+ * where there is one, else on the CPU, slower than real time where it cannot keep up.
+ */
+export function schoolWave(waves: readonly LessonWave[] = LESSON_WAVES): LessonWave {
+  const wave = waves.find((candidate) => candidate.stage === 2);
+  if (!wave) throw new Error('No stage 2 lesson wave recorded');
   return wave;
 }
 

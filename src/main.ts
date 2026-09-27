@@ -720,18 +720,18 @@ class SurfGame {
     };
   }
 
-  /** A lesson's sea (spec L2): the recording for the solver the graphics settings run, no spin-up, the rider placed for `start`. */
+  /** A lesson's sea (spec L2): the stage 2 recording whatever the graphics run, no spin-up, the rider placed for `start`. */
   private async enterSchool(start: Parameters<SchoolHost['enter']>[0], camera: RideView): Promise<boolean> {
     this.leaveOnline();
-    const { wave, sea } = await this.schoolSession.prepare(this.graphics?.stage ?? 2, start);
-    const compute = this.graphics?.compute ?? 'auto';
+    const { wave, sea } = await this.schoolSession.prepare(start);
+    // The Fast water's CPU-only compute does not apply: stage 2 takes the GPU wherever there is one.
     const settings: PhysicalSettings = {
-      ...DEFAULT_PHYSICAL_SETTINGS, spot: wave.config.spot, stage: wave.stage, compute, source: 'practice', tide: wave.config.tide, windSpeed: wave.config.windSpeed,
+      ...DEFAULT_PHYSICAL_SETTINGS, spot: wave.config.spot, stage: wave.stage, compute: 'auto', source: 'practice', tide: wave.config.tide, windSpeed: wave.config.windSpeed,
     };
     this.physicalMode.idleView = 'overview';
     this.physicalMode.defaultView = camera;
     const started = await this.startPhysical(wave.config.seed, settings, {
-      sun: TIMES.midday, rider: true, factory: recordedSurfZoneFactory(sea), overrides: { ...lessonConfig(wave), compute }, school: true,
+      sun: TIMES.midday, rider: true, factory: recordedSurfZoneFactory(sea), overrides: lessonConfig(wave), school: true,
     });
     if (!started) return false;
     this.placeRider(wave.placements[start]);
