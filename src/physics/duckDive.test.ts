@@ -154,6 +154,17 @@ describe('duck-dive', () => {
     expect(hand.z).toBeGreaterThan(chest.z + 0.1);
   });
 
+  it('draws the kneeling leg\'s foot on the deck behind the knee', () => {
+    const { water, board, rider } = proneRider();
+    rider.duckDive = 1;
+    for (let i = 0; i < 45; i += 1) board.step(STEP, water);
+    expect(rider.duck.knee).toBeGreaterThan(0.8);
+    // Regular: the back (right) foot, point 6.
+    const foot = board.toLocal(rider.renderPoint(6, board, new Vector3()), new Vector3());
+    expect(foot.y).toBeGreaterThan(deckHeight(board.shape, foot.z) - 0.02);
+    expect(foot.z).toBeLessThan(-0.6);
+  });
+
   // Review Focus 3.
   it('does nothing standing', () => {
     const water = new PlaneWater();

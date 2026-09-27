@@ -41,6 +41,18 @@ export const RIG_DETAIL = {
   fallenReach: 0.92,
   /** Legs stop this short of straight when the hips come down to reach the feet. */
   legReach: 0.97,
+  /**
+   * The wipeout spec. Ducking, the head tucks down toward the deck and the arms
+   * straighten onto the rails (the hands slide along the rail to an arm's
+   * reach). Swimming, the arms crawl round the shoulders at `crawlRate` strokes a
+   * second each, alternating, `crawlReach` of the arm out, and the feet flutter
+   * `kick` m at `kickRate` a second.
+   */
+  duckArmReach: 0.97,
+  crawlRate: 0.8,
+  crawlReach: 0.85,
+  kick: 0.15,
+  kickRate: 2,
 };
 
 /**
@@ -189,7 +201,12 @@ export class HumanoidRig {
       this.orient(name, this.direction.copy(up).lerp(chestUp, w), this.hint.copy(hipsForward).lerp(this.facing, w));
     });
     this.orient(BONES.neck, chestUp, this.facing);
-    if (lying) this.orient(BONES.head, this.direction.copy(boardUp).addScaledVector(boardForward, 0.3), boardForward);
+    if (lying) {
+      // Ducking, the head tucks from looking ahead to facing the deck, crown toward the nose.
+      const duck = state.phase === 'prone' ? Math.min(1, Math.max(0, state.duck)) : 0;
+      this.direction.copy(boardUp).addScaledVector(boardForward, 0.3).lerp(this.scratch.copy(boardForward).addScaledVector(boardUp, 0.2), duck);
+      this.orient(BONES.head, this.direction, this.hint.copy(boardForward).lerp(this.middle.copy(boardUp).negate(), duck));
+    }
     else if (upright) this.orient(BONES.head, WORLD_UP, this.hint.copy(boardForward).lerp(this.facing, 0.25));
     else this.orient(BONES.head, chestUp, this.facing);
 
@@ -202,7 +219,9 @@ export class HumanoidRig {
       else pole.copy(this.facing).negate();
       const shoulder = this.bones.get(BONES.arm[side])!.getWorldPosition(this.joints.shoulder[side]);
       const hand = p[side === 'left' ? POINT.leftHand : POINT.rightHand];
-      if (fallen) target.subVectors(hand, shoulder).setLength(RIG_DETAIL.fallenReach * this.armLength).add(shoulder);
+      if (fallen && state.swim.stroking) this.crawlHand(state, side, shoulder, target);
+      else if (fallen) target.subVectors(hand, shoulder).setLength(RIG_DETAIL.fallenReach * this.armLength).add(shoulder);
+      else if (state.phase === 'prone' && state.duck > 0.3) this.straightOnRail(hand, shoulder, target);
       else target.copy(hand);
       solveTwoBone(shoulder, this.upperArm, this.lowerArm, target, pole, this.joints.elbow[side], this.joints.wrist[side]);
       this.aimLimb(BONES.arm[side], BONES.foreArm[side], shoulder, this.joints.elbow[side], this.joints.wrist[side], pole);
@@ -224,6 +243,11 @@ export class HumanoidRig {
       } else {
         if (fallen) target.subVectors(foot, hip).setLength(RIG_DETAIL.fallenReach * this.legLength).add(hip);
         else target.copy(foot);
+        if (fallen && state.swim.stroking) {
+          // The flutter kick: the feet beat up and down, alternating.
+          const beat = Math.cos(2 * Math.PI * (RIG_DETAIL.kickRate * state.clock + (side === 'left' ? 0 : 0.5)));
+          target.addScaledVector(this.facing, RIG_DETAIL.kick * beat);
+        }
         pole.copy(lying ? this.scratch.copy(boardUp).negate() : this.facing);
       }
       solveTwoBone(hip, this.upperLeg, this.lowerLeg, target, pole, this.joints.knee[side], this.joints.ankle[side]);
@@ -239,6 +263,29 @@ export class HumanoidRig {
         this.orient(BONES.foot[side], this.direction, lying ? this.hint.copy(boardUp).negate() : this.facing);
       }
     }
+  }
+
+  /**
+   * The swimmer's crawl: the hand circles the shoulder in the plane of the
+   * heading and the vertical, reaching forward, pulling down and back under the
+   * body, recovering over the water; the arms half a stroke apart.
+   */
+  private crawlHand(state: RiderVisualState, side: Side, shoulder: Vector3, out: Vector3): Vector3 {
+    const angle = 2 * Math.PI * (RIG_DETAIL.crawlRate * state.clock + (side === 'left' ? 0 : 0.5));
+    const reach = RIG_DETAIL.crawlReach * this.armLength;
+    this.nose.set(Math.sin(state.heading), 0, Math.cos(state.heading));
+    return out.copy(shoulder).addScaledVector(this.nose, reach * Math.cos(angle)).addScaledVector(WORLD_UP, reach * Math.sin(angle));
+  }
+
+  /** Ducking, a hand on its rail slid forward along the board until the arm from the shoulder is straight. */
+  private straightOnRail(hand: Vector3, shoulder: Vector3, out: Vector3): Vector3 {
+    const reach = RIG_DETAIL.duckArmReach * this.armLength;
+    const offset = this.middle.subVectors(hand, shoulder);
+    // |offset + t F| = reach, the forward root: t = −(o·F) + √((o·F)² − (|o|² − reach²)).
+    const along = offset.dot(this.boardForward);
+    const discriminant = along * along - (offset.lengthSq() - reach * reach);
+    const t = discriminant > 0 ? Math.max(0, -along + Math.sqrt(discriminant)) : 0;
+    return out.copy(hand).addScaledVector(this.boardForward, t);
   }
 
   private orient(name: string, direction: Vector3, hint: Vector3): void {

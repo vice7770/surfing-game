@@ -1003,6 +1003,16 @@ export class AttachedRider {
       const z = front ? this.feet.front : this.feet.rear;
       return board.toWorld(this.localScratch.set(0, deckHeight(this.shape, z), z), out);
     }
+    // Ducking, the back leg's knee is on the tail: its foot lies on the deck behind it (the wipeout spec),
+    // blended in from the trailing leg as the knee lands.
+    const back = this.stance === 'regular' ? 6 : 5;
+    if (index === back && this.phase === 'prone' && this.duck.knee > DUCK_BUSY) {
+      const footZ = Math.max(-this.shape.length / 2 + 0.02, this.parts[index * 3 + 2] - 0.55);
+      board.toWorld(this.footWorld.set(this.parts[index * 3], deckHeight(this.shape, footZ) + 0.04, footZ), this.footWorld);
+      this.partPosition(index, out);
+      out.add(this.scratch2.copy(out).sub(this.partPosition(0, this.target)).multiplyScalar(0.9));
+      return out.lerp(this.footWorld, Math.min(1, this.duck.knee));
+    }
     // Legs lying along the board: from the hips through the leg's centre to the feet.
     this.partPosition(index, out);
     return out.add(this.scratch2.copy(out).sub(this.partPosition(0, this.target)).multiplyScalar(0.9));

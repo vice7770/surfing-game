@@ -21,6 +21,8 @@ export interface RiderVisualState {
   readonly leash: { readonly plug: Vector3; worn: boolean; snapped: boolean; reeling: boolean };
   /** The fallen surfer: stroking, diving, head under. */
   readonly swim: { stroking: boolean; diving: boolean; under: boolean };
+  /** A running clock, s, for the code-driven cycles (the swimmer's crawl and kick). */
+  clock: number;
 }
 
 export function createRiderVisualState(): RiderVisualState {
@@ -34,6 +36,7 @@ export function createRiderVisualState(): RiderVisualState {
     duck: 0,
     leash: { plug: new Vector3(), worn: true, snapped: false, reeling: false },
     swim: { stroking: false, diving: false, under: false },
+    clock: 0,
   };
 }
 

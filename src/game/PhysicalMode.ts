@@ -6,7 +6,8 @@ import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SurferView } from '../scene/character/SurferView';
-import { createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
+import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
+import { LeashCord } from '../scene/board/LeashCord';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
 import { gradedAxis } from '../scene/gridGeometry';
 import { BubblePoints } from '../scene/BubblePoints';
@@ -233,6 +234,8 @@ export class PhysicalMode {
   private surferBody?: string;
   /** The rider's body, solved from the snapshot's seven points: a skinned surfer (G7), or the simple one until it loads. */
   readonly surfer = new SurferView();
+  /** The leash (the wipeout spec), from the back foot (the right, regular) to the tail plug. */
+  private readonly leash = new LeashCord();
   private readonly riderState = createRiderVisualState();
   /** Whether the latest input paddles, which cups the drawn hands. */
   private paddling = false;
@@ -310,7 +313,8 @@ export class PhysicalMode {
   }
 
   constructor(scene: Scene) {
-    scene.add(this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group);
+    scene.add(this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group, this.leash.object);
+    this.leash.object.visible = false;
     this.board.visible = false;
     this.surfer.group.visible = false;
   }
@@ -444,6 +448,7 @@ export class PhysicalMode {
     this.host = undefined;
     this.board.visible = false;
     this.surfer.group.visible = false;
+    this.leash.object.visible = false;
   }
 
   /** Request `steps` fixed physics steps (`SURF_ZONE_STEP` each). */
@@ -542,10 +547,16 @@ export class PhysicalMode {
     this.board.position.set(pose[0], pose[1], pose[2]);
     this.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
     this.surfer.group.visible = this.shown && riding;
+    this.leash.object.visible = this.shown && riding && pose[7] > 0;
     if (riding) {
       readRiderSnapshot(rider, pose, this.riderState);
       this.riderState.stroking = this.paddling && this.riderState.phase === 'prone' ? 1 : 0;
+      this.riderState.clock = host.snapshot.status.seaTime;
       this.surfer.update(this.riderState, this.camera.camera.position);
+      const { leash } = this.riderState;
+      this.leash.update(this.riderState.points[POINT.rightFoot], leash.plug, {
+        snapped: leash.snapped, hand: leash.reeling ? this.riderState.points[POINT.leftHand] : undefined,
+      });
     }
     this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
     this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount });
@@ -571,6 +582,7 @@ export class PhysicalMode {
     this.shown = visible;
     this.board.visible = visible && (this.host?.snapshot.board[7] ?? 0) > 0;
     this.surfer.group.visible = visible && (this.host?.snapshot.rider[RIDER_SNAPSHOT.present] ?? 0) > 0;
+    this.leash.object.visible = this.surfer.group.visible && (this.host?.snapshot.board[7] ?? 0) > 0;
     this.seabed.mesh.visible = visible;
     this.farField.mesh.visible = visible;
     this.lipSheet.mesh.visible = visible;

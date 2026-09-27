@@ -1,4 +1,4 @@
-import { RIDER_SNAPSHOT, SURF_ZONE_STEP } from '../wave/SurfZoneRunner';
+import { LEASH_BITS, RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS } from '../wave/SurfZoneRunner';
 import type { SurferPose } from './poseCodec';
 
 /** The parts of a surf zone snapshot a pose is made from. */
@@ -49,6 +49,10 @@ export class OwnPoseTracker {
     out.phase = out.present ? Math.round(rider[RIDER_SNAPSHOT.phase]) : -1;
     out.heading = out.present ? rider[RIDER_SNAPSHOT.heading] : 0;
     out.paddling = paddling;
+    // The wipeout spec: what the others need to draw the leash, a duck-dive and a dive.
+    out.leashSnapped = out.present && ((rider[RIDER_SNAPSHOT.leash] ?? 0) & LEASH_BITS.snapped) !== 0;
+    out.ducking = out.present && (rider[RIDER_SNAPSHOT.duck] ?? 0) >= 0.3;
+    out.diving = out.present && ((rider[RIDER_SNAPSHOT.swim] ?? 0) & SWIM_BITS.diving) !== 0;
     const { weight } = this;
     out.reaction.x = weight > 0 ? this.x / weight : 0;
     out.reaction.z = weight > 0 ? this.z / weight : 0;
