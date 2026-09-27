@@ -88,6 +88,15 @@ export const OPEN = 2;
 /** A stable step this short, s (about a thousandth of the surf zone's usual), means the water has diverged. */
 const COLLAPSED_STEP = 1e-5;
 
+/**
+ * Equal substeps for `dt` at the CFL limit `stable`, on the CPU or the GPU.
+ * Diverged water asks for trillions of them: say so instead of stepping without end.
+ */
+export function cflSubsteps(dt: number, stable: number): number {
+  if (stable < COLLAPSED_STEP) throw new Error(`The water blew up: its stable step is ${stable.toExponential(1)} s`);
+  return Math.max(1, Math.ceil(dt / stable));
+}
+
 interface Flux {
   mass: number;
   normal: number;
@@ -314,10 +323,7 @@ export class ShallowWaterSolver {
   /** Advance by dt seconds, sub-stepping as the CFL condition requires. */
   step(dt: number): void {
     if (!(dt > 0) || !Number.isFinite(dt)) return;
-    const stable = this.maxStableStep();
-    // Diverged water asks for trillions of substeps: say so instead of stepping without end.
-    if (stable < COLLAPSED_STEP) throw new Error(`The water blew up: its stable step is ${stable.toExponential(1)} s`);
-    const substeps = Math.max(1, Math.ceil(dt / stable));
+    const substeps = cflSubsteps(dt, this.maxStableStep());
     const sub = dt / substeps;
     for (let s = 0; s < substeps; s += 1) {
       this.advance(sub);

@@ -11,7 +11,7 @@ import { BoussinesqSolver } from './BoussinesqSolver';
 import { BubbleCloud } from './BubbleCloud';
 import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY } from './SprayCloud';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
-import { SurfZoneSimulation, type RenderGrid, type SolverDevice, type SurfZoneConfig } from './SurfZoneSimulation';
+import { SurfZoneSimulation, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
 import type { BreakerType } from './SwellReadout';
 
 export { surfZoneSea } from './SurfZoneSimulation';
@@ -231,8 +231,10 @@ export class SurfZoneRunner {
   private readonly rideSample = createWaterSample();
   private readonly axis = new Vector3();
 
-  constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, renderSpacing = options.renderSpacing ?? 1) {
-    this.simulation = new SurfZoneSimulation(config);
+  /** `'warm'` leaves the spin-up, and seating the board and rider, to `spinUp` (the worker spins up on its GPU). */
+  constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, start: SurfZoneStart = 'spun-up') {
+    const renderSpacing = options.renderSpacing ?? 1;
+    this.simulation = new SurfZoneSimulation(config, start);
     this.bubbles = new BubbleCloud(config.seed, PARCEL_CAPACITY);
     this.spray = new SprayCloud(config.seed, SPRAY_CAPACITY, WHITEWATER_CAPACITY);
     this.grid = this.simulation.renderGrid(renderSpacing);
@@ -249,11 +251,22 @@ export class SurfZoneRunner {
       this.gauge = new WaveFrameGauge({ directionX: Math.sin(direction), directionZ: Math.cos(direction) });
       this.session = new RideSession();
       this.board = this.session.board;
-      this.launchRide();
     } else if (options.board) {
       this.board = new BoardBody();
-      this.launchBoard();
     }
+    if (start === 'spun-up') this.seat();
+  }
+
+  /** Spin a `'warm'`-built surf zone up (on its device when it has one), then seat the board and rider on it. */
+  async spinUp(): Promise<void> {
+    await this.simulation.spinUp();
+    this.seat();
+  }
+
+  /** The board, and its rider, in the lineup on the spun-up water. */
+  private seat(): void {
+    if (this.session) this.launchRide();
+    else this.launchBoard();
   }
 
   /** What the spray reads from the surf zone each step. */

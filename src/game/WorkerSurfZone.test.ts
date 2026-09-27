@@ -70,6 +70,29 @@ describe('SurfZoneWorkerCore', () => {
     expect(snapshot.snapshot.strokeHitCount).toBe(local.snapshot.strokeHitCount);
   });
 
+  it('spins the sea up on its device before it reports ready', async () => {
+    const replies: SurfZoneReply[] = [];
+    let deviceSteps = 0;
+    let stepsAtReady = -1;
+    const worker = new SurfZoneWorkerCore((reply) => {
+      if (reply.type === 'ready') stepsAtReady = deviceSteps;
+      replies.push(reply);
+    }, async (solver) => ({
+      // A stand-in device that takes the CPU solver's own step.
+      step: async (dt: number) => {
+        deviceSteps += 1;
+        solver.step(dt);
+      },
+      dispose() {},
+    }));
+    await worker.handle({ type: 'start', config, options: { rider: true } });
+    expect(stepsAtReady).toBeGreaterThan(20);
+    const ready = replies[0];
+    if (ready.type !== 'ready') throw new Error('expected ready');
+    const local = new LocalSurfZone(config, { rider: true });
+    expect(shown(ready.snapshot)).toEqual({ ...shown(local.snapshot), status: { ...shown(local.snapshot).status, compute: 'gpu' } });
+  });
+
   it('steps the water on a device when given one, replying once it is done', async () => {
     // A stand-in device that takes the CPU solver's own step, asynchronously.
     const created: string[] = [];

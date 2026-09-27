@@ -47,12 +47,23 @@ export class SurfZoneWorkerCore {
 
   handle(request: SurfZoneRequest): void | Promise<void> {
     if (request.type === 'start') {
-      const runner = new SurfZoneRunner(request.config, request.options);
-      if (request.sea) runner.simulation.importState(decodeSurfZoneState(request.sea));
-      this.runner = runner;
-      if (this.createDevice && (request.config.compute ?? 'auto') === 'auto') {
-        return runner.useDevice(this.createDevice).then(() => this.ready(runner));
+      const { config, options, sea } = request;
+      if (this.createDevice && (config.compute ?? 'auto') === 'auto') {
+        // The device first, so the spin-up runs on the GPU too (several times faster than the CPU).
+        const runner = new SurfZoneRunner(config, options, 'warm');
+        const createDevice = this.createDevice;
+        return (async () => {
+          await runner.useDevice(createDevice);
+          await runner.spinUp();
+          if (sea) runner.simulation.importState(decodeSurfZoneState(sea));
+          // Only a ready sea takes steps and exports.
+          this.runner = runner;
+          this.ready(runner);
+        })();
       }
+      const runner = new SurfZoneRunner(config, options);
+      if (sea) runner.simulation.importState(decodeSurfZoneState(sea));
+      this.runner = runner;
       this.ready(runner);
       return;
     }

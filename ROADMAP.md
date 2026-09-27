@@ -47,6 +47,15 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus a
   - The menu's and Surf's sun and clock no longer overwrite the Wave Lab's settings.
   - The catch report takes `--spread`, so it can reproduce each Surf swell.
 - [x] **Fix (2026-09-27, found by the frame-rate survey):** at High, the menu's first Reef (the GPU tier's 64-component sea, seed 1) never came up, and its worker kept a core busy. The spin-up stepped a quarter second between stability checks; a trough drained a reef cell to 7 cm with 112 m/s of backwash, the step ran at 5× its stable limit, and the water diverged at 2.25 s. The spin-up now checks stability every substep, and water that diverges anyway stops with an error instead of asking for trillions of substeps. Of 24 spin-ups (four spots, 24 and 64 components, seeds 1–3), this was the only one to diverge.
+- [x] **Spin-up on the GPU (2026-09-27, the user's choice from the performance study):** where the worker has WebGPU, the surf zone is built warm, the device attached, and the spin-up stepped on the GPU one stable substep at a time; a device that fails hands the rest to the CPU. Diverged water stops the GPU step as it stops the CPU's. Behind the loading card the page no longer draws or steps the sea it replaces, and the menu's waves give way to its gradient while new ones spin up, so the GPU is the new sea's alone. On the M1 Air (load 9–20):
+
+  | | Before (CPU spin-up) | After |
+  |---|---:|---:|
+  | Menu's waves after launch | 38–44 s | 6.4–7.2 s |
+  | Paddle out to riding | 19–27 s | 3.7–5.8 s |
+  | Quit to the menu's new waves | 26–27 s | 3.4–4.5 s |
+
+  In the worker, all 24 spin-ups (four spots, 24 and 64 components, seeds 1–3) came up finite in 2.3–5.3 s, against 14.5–23.3 s on the CPU, with the same highest crests.
 - [ ] **Open:**
   - **Tune the Surf swell sizes after the take-off layer (P10).** Measured before P7 with 30 ghost riders, 3 min per spot; the counts are riders who stood, and in brackets rides of 3 s or more:
 
