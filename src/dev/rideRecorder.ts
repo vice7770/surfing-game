@@ -11,8 +11,8 @@
 import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
 import { PerspectiveCamera, Vector3 } from 'three';
 import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
-import { LIP_STRIDE, RIDER_SNAPSHOT } from '../wave/SurfZoneRunner';
-import { Autopilot } from './Autopilot';
+import { LIP_STRIDE } from '../wave/SurfZoneRunner';
+import { Autopilot, autopilotView } from './Autopilot';
 
 interface RecordingHooks {
   start(settings: PhysicalSettings): Promise<void>;
@@ -129,21 +129,11 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
   let step = 0;
 
   while (simulated < MAX_SIM_SECONDS) {
-    const { status, board, rider } = host.snapshot;
-    const riding = status.ride;
+    const riding = host.snapshot.status.ride;
     let input = { paddle: false, popUp: false, steer: 0 };
-    if (riding) {
-      // Watch behind: the highest water within LOOK m seaward of the board.
-      let crest = -Infinity;
-      for (let back = 2; back <= LOOK; back += 2) crest = Math.max(crest, host.heightAt(board[0], board[2] - back));
-      input = autopilot.next({
-        ride: riding,
-        peelDirection: status.peel?.direction ?? 0,
-        board: { x: board[0], z: board[2], heading: rider[RIDER_SNAPSHOT.heading] },
-        focusZ: hooks.mode.focus.z,
-        crestBehind: crest - settings.tide,
-      }, STEP);
-    }
+    // Watch behind: the highest water within LOOK m seaward of the board.
+    const view = autopilotView(host, hooks.mode.focus.z, settings.tide, LOOK);
+    if (view) input = autopilot.next(view, STEP);
     const { state } = autopilot;
     if (state === 'wait' && previous !== 'wait') {
       // Film only the last few seconds of waiting before a wave.

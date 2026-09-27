@@ -20,9 +20,16 @@ import { el } from './dom';
 import { createLogbookScreen, logbookModel } from './LogbookScreen';
 import { createSettingsScreen } from './SettingsScreen';
 import { createMainMenu, refreshSoundToggles } from './MainMenu';
-import { createSoundCheck } from './SoundCheck';
 import { MenuInput } from './MenuInput';
-import { createOnlinePauseMenu, createPauseMenu } from './PauseMenu';
+import { createLabPauseMenu, createOnlinePauseMenu, createPauseMenu } from './PauseMenu';
+import { createSoundCheck } from './SoundCheck';
+import { createWaveLabScreen, type WaveLabScreen } from './WaveLabScreen';
+import { LabStore, type WaveLabSettings } from '../game/waveLab/labSettings';
+import type { FlyInput, JumpPoint } from '../game/waveLab/FlyInput';
+import type { LabClock } from '../game/waveLab/labClock';
+import type { WaveInfo } from '../game/waveLab/waveInfo';
+import type { WaterLook } from '../scene/water/waterLook';
+import type { Units } from './units';
 import { OnlineHud, PlayersPanel, onlineHudModel, playersModel } from './OnlineHud';
 import { roomLink } from '../net/roomCode';
 import type { CallId } from '../net/protocol';
@@ -45,8 +52,30 @@ import { roomCodeFromSearch } from '../net/roomCode';
 import { devParam } from '../devTools';
 import { createMultiplayerScreen, type MultiplayerState } from './MultiplayerScreen';
 
+/** The Wave Lab as the menus drive it (spec L1; implemented in main.ts). */
+export interface LabHost {
+  /** Build the lab's sea (no rider) and fly over it; false when superseded. */
+  enter(settings: WaveLabSettings): Promise<boolean>;
+  /** Rebuild the sea with new settings (or a new seed), keeping the camera where it is. */
+  apply(settings: WaveLabSettings, newSea: boolean): Promise<boolean>;
+  setLight(sun: { sunHeight: number; sunDirection: number }): void;
+  setWaterLook(look: WaterLook): void;
+  leave(): void;
+  readonly input: FlyInput;
+  readonly clock: LabClock;
+  readonly following: boolean;
+  toggleFollow(): boolean;
+  jump(point: JumpPoint): void;
+  info(units: Units): WaveInfo | undefined;
+  /** The dev tools' physics readout. */
+  readonly readout: ReadoutRow[];
+  /** H or X (hide the interface) and Esc or Start (the pause menu), as the lab's input reports them. */
+  onAction?: (action: 'hide' | 'menu') => void;
+}
+
 /** What the menus ask of the game (implemented by `SurfGame` in main.ts). */
 export interface GameHost {
+  readonly lab: LabHost;
   readonly canvas: HTMLCanvasElement;
   readonly gl: WebGLRenderingContext | WebGL2RenderingContext;
   /** Whether the menu's waves are running (not spinning up, not a still frame). */
@@ -59,10 +88,6 @@ export interface GameHost {
   setPaused(paused: boolean): void;
   cycleView(): void;
   quickRetry(): void;
-  /** The Wave Lab's own replay and new wave. */
-  replay(): void;
-  newWave(): void;
-  enterWaveLab(): void;
   setReducedMotion(reduced: boolean): void;
   readonly readout: ReadoutRow[];
   /** Sound (S1): the surf zone's report for this frame, and the camera as the listener. */
@@ -101,8 +126,8 @@ export class App {
   private readonly root = document.getElementById('app')!;
   private readonly ui = document.getElementById('ui')!;
   private readonly menuInput: MenuInput;
-  /** The scene the game shows now: the menu's waves, a ride, or the Wave Lab. */
-  private scene?: 'backdrop' | 'ride' | 'wavelab';
+  /** The scene the game shows now: the menu's waves, a ride, the Wave Lab, or the dev tools' bare stage. */
+  private scene?: 'backdrop' | 'ride' | 'wavelab' | 'stage';
   private backdropSpot?: SpotName;
   /** The menu's own waves are up (not the ride or Wave Lab it replaced, still running while they spin up). */
   private backdropReady = false;
@@ -140,19 +165,27 @@ export class App {
   private webGpuAsked = false;
   private readonly onlineHud = new OnlineHud();
   private playersPanel?: PlayersPanel;
+  /** The Wave Lab (L1): its applied settings, kept in the browser, the draft being edited, and its screen. */
+  private readonly labStore = new LabStore(localStore());
+  private labDraft?: WaveLabSettings;
+  private labScreen?: WaveLabScreen;
+  private labUiHidden = false;
+  private labClock = 0;
+  private labRebuilding = false;
 
   constructor(
     private readonly game: GameHost,
     private readonly controls: Controls,
     readonly settings: SettingsStore,
-    options: { startInWaveLab: boolean },
+    /** Where the page opens: the menu, a Surf ride (`?physical`, `?demo`), or the bare stage (`?record`, `?waterSheet`). */
+    options: { start: 'menu' | 'ride' | 'stage' },
   ) {
-    this.stack = new ScreenStack(options.startInWaveLab ? 'wavelab' : 'menu');
+    this.stack = new ScreenStack(options.start === 'stage' ? 'stage' : 'menu');
     // A room's link (`?room=CODE`) opens Multiplayer with the code filled in (N1).
     const linked = roomCodeFromSearch(globalThis.location?.search ?? '');
     this.multiplayer = { name: settings.value.online.name, code: linked ?? '', settings: { ...DEFAULT_ROOM_SETTINGS }, webGpu: undefined };
-    if (linked && !options.startInWaveLab) this.stack.push('multiplayer');
-    this.scene = options.startInWaveLab ? 'wavelab' : undefined;
+    if (linked && options.start === 'menu') this.stack.push('multiplayer');
+    this.scene = options.start === 'stage' ? 'stage' : undefined;
     this.menuInput = new MenuInput({ root: () => this.ui, onBack: () => this.back() });
     this.adapter = adapterName(game.gl);
     this.rideHud = new RideHud(() => this.pause());
@@ -162,9 +195,12 @@ export class App {
       if (change === 'accessibility' || change === 'gameplay' || change === 'controls') this.applyAccessibility();
     });
     this.sound = new GameSound(settings, () => refreshSoundToggles(this.ui, this.sound.muted));
+    game.lab.onAction = (action) => {
+      if (action === 'menu') this.pause();
+      else this.toggleLabUi();
+    };
     // Dev tools: the sound, for checks in the page and the sound check.
     if (DEV_TOOLS) (globalThis as unknown as { breaklineSound?: GameSound }).breaklineSound = this.sound;
-    if (DEV_TOOLS) this.bindSoundCheck();
     // A quiet click for every menu button (S1).
     this.ui.addEventListener('click', (event) => {
       if ((event.target as Element | null)?.closest?.('button')) this.sound.playUi('click');
@@ -177,24 +213,7 @@ export class App {
       if (this.settings.value.controls.bindings.keyboard.mute.includes(event.code)) this.toggleMute();
     });
     this.show();
-  }
-
-  /** The Wave Lab's sound check (dev tools): a panel of every sound, opened from its toolbar. */
-  private bindSoundCheck(): void {
-    const toggle = document.getElementById('sound-check-toggle');
-    const lab = document.getElementById('wave-lab');
-    if (!toggle || !lab) return;
-    let panel: HTMLElement | undefined;
-    toggle.addEventListener('click', () => {
-      if (panel) {
-        panel.remove();
-        panel = undefined;
-      } else {
-        panel = createSoundCheck(() => this.sound.audioEngine);
-        lab.append(panel);
-      }
-      toggle.setAttribute('aria-pressed', String(panel !== undefined));
-    });
+    if (options.start === 'ride') void this.paddleOut();
   }
 
   /** Sound on or off: M, the gamepad's Back, or a speaker toggle. */
@@ -213,6 +232,13 @@ export class App {
       if (this.telemetryClock >= 250) {
         this.telemetryClock = 0;
         this.telemetryPanel.render([...this.game.readout, { label: 'FRAME RATE', value: `${Math.round(this.fps)} fps` }]);
+      }
+    }
+    if (this.stack.current === 'wavelab' && this.labScreen) {
+      this.labClock += intervalMs;
+      if (this.labClock >= 250) {
+        this.labClock = 0;
+        this.labScreen.update(this.labView());
       }
     }
     if (this.stack.current === 'ride') {
@@ -279,8 +305,10 @@ export class App {
     const { current, base } = this.stack;
     this.root.dataset.screen = current;
     this.root.dataset.base = base;
-    const playing = current === 'ride' || current === 'wavelab';
-    this.controls.enabled = playing;
+    const playing = current === 'ride' || current === 'wavelab' || current === 'stage';
+    // The ride's keys drive a rider; the Wave Lab flies its camera with its own input.
+    this.controls.enabled = current === 'ride';
+    this.game.lab.input.enabled = current === 'wavelab';
     this.menuInput.active = !playing;
     this.game.setPaused(this.stack.stack.includes('pause'));
     this.applyAccessibility();
@@ -301,10 +329,10 @@ export class App {
       return [createMainMenu({
         surf: () => this.go('surf'),
         multiplayer: () => this.go('multiplayer'),
-        waveLab: () => this.enterWaveLab(),
+        waveLab: () => void this.enterWaveLab(),
         logbook: () => this.go('logbook'),
         settings: () => this.go('settings'),
-      }, { devTools: DEV_TOOLS, version: packageJson.version, sound: { muted: this.sound.muted, toggle: () => this.toggleMute() } })];
+      }, { version: packageJson.version, sound: { muted: this.sound.muted, toggle: () => this.toggleMute() } })];
     }
     if (id === 'surf') {
       const card = createSurferCard(this.settings.value.surfer, this.surfChoice.conditions.time, {
@@ -379,12 +407,20 @@ export class App {
         sound: { muted: this.sound.muted, toggle: () => this.toggleMute() },
       }, this.viewLabel(), this.playersPanel.root)];
     }
+    if (id === 'pause' && this.stack.base === 'wavelab') {
+      return [createLabPauseMenu({
+        resume: () => this.back(),
+        settings: () => this.go('settings'),
+        quit: () => this.quitToMenu(),
+        sound: { muted: this.sound.muted, toggle: () => this.toggleMute() },
+      })];
+    }
+    if (id === 'wavelab') return [this.createLabScreen()];
     if (id === 'pause') {
-      const inLab = this.stack.base === 'wavelab';
       return [createPauseMenu({
         resume: () => this.back(),
-        replay: () => (inLab ? this.resumeWith(() => this.game.replay()) : void this.paddleOut()),
-        newWave: () => (inLab ? this.resumeWith(() => this.game.newWave()) : this.nextWave()),
+        replay: () => void this.paddleOut(),
+        newWave: () => this.nextWave(),
         camera: () => {
           this.game.cycleView();
           return this.viewLabel();
@@ -402,18 +438,13 @@ export class App {
     return key in EN ? t(key as StringKey) : this.game.viewName;
   }
 
-  /** Close the pause menu, then act (the Wave Lab's own replay and new wave). */
-  private resumeWith(action: () => void): void {
-    this.back();
-    action();
-  }
-
   private nextWave(): void {
     this.seed = (this.seed % 9999) + 1;
     void this.paddleOut();
   }
 
   private quitToMenu(): void {
+    this.leaveWaveLab();
     this.leaveRoom();
     this.hideEndCard();
     this.sessionScores = [];
@@ -710,12 +741,100 @@ export class App {
     return this.rotateHint;
   }
 
-  /** The Wave Lab (dev tools): today's screen with the legacy wave; Esc pauses, and Quit returns to the menu. */
-  private enterWaveLab(): void {
+  /** The Wave Lab (spec L1): its sea builds behind the loading card, from the settings applied last time. */
+  private readonly enterWaveLab = oncePerFlight(async () => {
+    this.setLoadingText('loading.lab');
+    this.loading.classList.remove('is-hidden');
+    const started = await this.game.lab.enter(this.labStore.value);
+    this.loading.classList.add('is-hidden');
+    if (!started) return;
+    this.hideEndCard();
+    this.labDraft = structuredClone(this.labStore.value);
+    this.labUiHidden = false;
     this.scene = 'wavelab';
-    this.game.enterWaveLab();
     this.stack.reset('wavelab');
     this.show();
+  });
+
+  /** The lab's screen, over its sea: edits apply the light and look at once; the sea rebuilds on Apply. */
+  private createLabScreen(): HTMLElement {
+    const draft = this.labDraft ?? structuredClone(this.labStore.value);
+    const clock = this.game.lab.clock;
+    const refresh = () => this.labScreen?.update(this.labView());
+    this.labScreen = createWaveLabScreen({
+      settings: draft, running: this.labStore.value, devTools: DEV_TOOLS, touch: this.touchActive(), units: this.settings.value.gameplay.units,
+    }, {
+      change: (next) => {
+        this.labDraft = next;
+        this.game.lab.setLight(next);
+        this.game.lab.setWaterLook(next.waterLook);
+      },
+      apply: (next) => void this.rebuildLab(next, false),
+      newSea: (next) => void this.rebuildLab(next, true),
+      follow: () => {
+        this.game.lab.toggleFollow();
+        refresh();
+      },
+      togglePause: () => {
+        clock.togglePause();
+        refresh();
+      },
+      step: () => clock.step(),
+      setScale: (scale) => {
+        clock.setScale(scale);
+        refresh();
+      },
+      jump: (point) => this.game.lab.jump(point),
+      hideUi: () => this.toggleLabUi(),
+      menu: () => this.pause(),
+      stick: (x, y) => this.game.lab.input.setStick(x, y),
+      rise: (value) => this.game.lab.input.setRise(value),
+      ...(DEV_TOOLS ? { soundCheck: () => createSoundCheck(() => this.sound.audioEngine) } : {}),
+    });
+    this.labScreen.update(this.labView());
+    return this.labScreen.root;
+  }
+
+  private labView() {
+    const { lab } = this.game;
+    return {
+      paused: lab.clock.paused, scale: lab.clock.scale, following: lab.following, uiHidden: this.labUiHidden,
+      info: lab.info(this.settings.value.gameplay.units), ...(DEV_TOOLS ? { readout: lab.readout } : {}),
+    };
+  }
+
+  /** H, X, Hide or Show: the lab's interface goes, or comes back. */
+  private toggleLabUi(): void {
+    if (this.stack.current !== 'wavelab') return;
+    this.labUiHidden = !this.labUiHidden;
+    this.labScreen?.update(this.labView());
+  }
+
+  /** Apply or New sea: rebuild behind the loading card; the applied settings are remembered. */
+  private async rebuildLab(next: WaveLabSettings, newSea: boolean): Promise<void> {
+    if (this.labRebuilding) return;
+    this.labRebuilding = true;
+    this.setLoadingText('loading.lab');
+    this.loading.classList.remove('is-hidden');
+    try {
+      if (!(await this.game.lab.apply(next, newSea))) return;
+      this.labStore.save(next);
+      this.labDraft = structuredClone(next);
+      this.labScreen?.setRunning(next);
+    } finally {
+      this.loading.classList.add('is-hidden');
+      this.labRebuilding = false;
+    }
+  }
+
+  /** Leaving the lab keeps its light and look for next time (the sea only as applied), and hands the scene back. */
+  private leaveWaveLab(): void {
+    if (this.scene !== 'wavelab') return;
+    const draft = this.labDraft;
+    if (draft) this.labStore.save({ ...this.labStore.value, sunHeight: draft.sunHeight, sunDirection: draft.sunDirection, waterLook: draft.waterLook });
+    this.labScreen = undefined;
+    this.labDraft = undefined;
+    this.game.lab.leave();
   }
 
   /**
