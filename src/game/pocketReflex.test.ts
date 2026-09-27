@@ -27,6 +27,14 @@ describe('pocket reflex', () => {
     expect(pocketTrim({ ...at(0), speedOverGround: 2.5 })).toBeGreaterThan(0);
   });
 
+  // Re-catching (traced on the reference wave): run out onto the flat ahead of the crest, the reflex sat back to wait
+  // for the curl, the board slowed below planing and sank before the wave came. Sitting back waits on the face only.
+  it('sits back only on the face, never out on the flat ahead of it', () => {
+    expect(pocketTrim({ ...at(20), faceFraction: 0.05, aheadOfCrest: 9 })).toBe(0);
+    expect(pocketTrim({ ...at(20), faceFraction: 0.4, aheadOfCrest: 4 })).toBe(-POCKET_TRIM);
+    expect(pocketTrim({ ...at(0), faceFraction: 0.05, aheadOfCrest: 9 })).toBeGreaterThan(0);
+  });
+
   it('does nothing with no curl or no wave', () => {
     expect(pocketTrim(at(Infinity))).toBe(0);
     expect(pocketTrim(at(3, false))).toBe(0);
