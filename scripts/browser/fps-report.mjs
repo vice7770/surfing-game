@@ -23,6 +23,12 @@ const solverShort = (r) => {
 };
 const ok = (r) => r.error === undefined;
 const machineLine = (run) => `${run.machine.model} · ${run.machine.chip} · ${run.machine.memory}`;
+/** Runs timed before `gpuTiming` added one GPU timer per WebGL context: the Surf screen, with the surfer preview's, read about twice. */
+const doubled = (run, r) => !run.gpuTiming && r.screen.startsWith('Surf');
+/** A row's GPU ms (median, then the 95th percentile), marked ‡ when counted twice, with the preview's own timer apart. */
+const gpuText = (run, r, between) => (r.gpuMsP50 === undefined ? '—'
+  : `${r.gpuMsP50}${between}${r.gpuMsP95}${between === ' (' ? ')' : ''}${doubled(run, r) ? ' ‡' : ''}${r.gpuOtherMsP50 !== undefined ? ` · preview ≤ ${r.gpuOtherMsP50}` : ''}`);
+const DOUBLED_NOTE = '‡ Timed before the survey kept the game\'s context apart: it added one timer per WebGL context, so this screen, with the surfer preview\'s context, reads about twice its GPU time. The preview itself costs about 0.5 ms (the Low column, where the game draws a still frame).';
 
 const lines = [
   '# Frame-rate report',
@@ -36,7 +42,8 @@ const lines = [
   '- **Main thread** is the time spent in the page\'s animation-frame callbacks: the game\'s simulation hand-off, scene updates and WebGL command submission. When the frame time is well above it, the GPU (or the compositor) is the limit.',
   '- **Draws** and **triangles** are the WebGL draw calls and triangles submitted per frame (median). The WebGPU water solver runs in a worker and is not counted.',
   '- **Solver** is the surf zone\'s worker step: its compute tier, and ms per step through the window (median, worst), read from the telemetry at 2 Hz. Stage 2 keeps real time at 15 ms or less (`STAGE2_REALTIME_MS`).',
-  '- **GPU ms** is the GPU time of each frame\'s WebGL commands (`EXT_disjoint_timer_query_webgl2`, timed around the page\'s frame callbacks, summed over the game\'s and the surfer preview\'s contexts). The display caps the frame rate, so this is the headroom: at 120 Hz a frame has 8.3 ms, at 60 Hz 16.7 ms. It leaves out the compositor and the WebGPU solver, which share the GPU.',
+  '- **GPU ms** is the GPU time of the game\'s WebGL commands each frame (`EXT_disjoint_timer_query_webgl2`, timed around the frame callbacks that issue them). The display caps the frame rate, so this is the headroom: at 120 Hz a frame has 8.3 ms, at 60 Hz 16.7 ms. It leaves out the compositor and the WebGPU solver, which share the GPU.',
+  '- **What a GPU timer counts.** On ANGLE Metal a timer spans the GPU\'s timeline, so it also counts work that overlaps it: another context\'s on the same page, and other processes\'. Two things follow. The Surf screen\'s surfer preview (a second WebGL context) is shown apart as *preview ≤*, its own timer, which may include the game\'s overlapping work; the two are never added, and the game\'s reading may include the preview\'s. And a survey belongs on an otherwise idle machine: another GPU-heavy process inflates every reading. Compare readings on the same screen, before and after a change.',
   '',
   'The rider sits in the lineup without input during a ride sample. The menus draw a live surf zone behind them, at a spot the game picks (seeded, so each run sees the same one). Math.random is seeded so runs repeat. The display caps the frame rate at its refresh.',
   '',
@@ -93,18 +100,19 @@ for (const run of runs) {
     if (presetRows.some((r) => r.gpuMsP50 !== undefined)) {
       const gpuCell = (screen, preset) => {
         const r = presetRows.find((x) => x.screen === screen && x.setting === preset);
-        return r?.gpuMsP50 !== undefined ? `${r.gpuMsP50} (${r.gpuMsP95})` : '—';
+        return r ? gpuText(run, r, ' (') : '—';
       };
       lines.push('### GPU time per frame by screen and preset', '', `GPU ms per frame, median with the 95th percentile in brackets. The budget at ${run.browser.refreshHz} Hz is ${(1000 / run.browser.refreshHz).toFixed(1)} ms.`, '');
       lines.push(table(['Screen', ...shown], screens.map((screen) => [screen, ...shown.map((p) => gpuCell(screen, p))]), ['l']));
       lines.push('');
+      if (presetRows.some((r) => doubled(run, r) && r.gpuMsP50 !== undefined)) lines.push(DOUBLED_NOTE, '');
     }
     for (const preset of PRESETS) {
       const rows = presetRows.filter((r) => r.setting === preset);
       if (!rows.length) continue;
       lines.push(`### ${preset}`, '');
       lines.push(table(['Screen', 'FPS', '1 % low', 'Frame p50 ms', 'p95 ms', 'p99 ms', 'Worst ms', 'GPU p50 / p95 ms', 'Main thread p50 / p95 ms', 'Draws', 'Triangles k', 'Canvas px', 'Solver ms', 'JS heap MB', 'Power'],
-        rows.map((r) => [r.screen, r.fps.toFixed(1), r.fps1Low.toFixed(1), r.frameMsP50, r.frameMsP95, r.frameMsP99, r.frameMsMax, r.gpuMsP50 !== undefined ? `${r.gpuMsP50} / ${r.gpuMsP95}` : '—', `${r.mainThreadMsP50} / ${r.mainThreadMsP95}`, r.drawCalls, r.trianglesK, r.canvas, solverShort(r), r.heapMB ?? '—', r.power ?? '—']), ['l']));
+        rows.map((r) => [r.screen, r.fps.toFixed(1), r.fps1Low.toFixed(1), r.frameMsP50, r.frameMsP95, r.frameMsP99, r.frameMsMax, gpuText(run, r, ' / '), `${r.mainThreadMsP50} / ${r.mainThreadMsP95}`, r.drawCalls, r.trianglesK, r.canvas, solverShort(r), r.heapMB ?? '—', r.power ?? '—']), ['l']));
       lines.push('');
     }
   }

@@ -4,7 +4,8 @@
 //   npm run survey:fps -- docs/research/fps/<date>-<machine>-2-settings.json --features --spot=Beach [--only=<setting>,…]
 //   npm run report:fps                       (docs/research/fps-report.md from every run)
 // Writes the samples, their statistics and the machine. The display caps the frame rate, so each frame's GPU
-// time is measured too (EXT_disjoint_timer_query_webgl2): the headroom under the cap. (Chrome 153 on macOS
+// time is measured too (EXT_disjoint_timer_query_webgl2): the headroom under the cap. It is the game's context
+// alone; a second context (the surfer preview) is reported apart (see INSTRUMENT). (Chrome 153 on macOS
 // cannot lift the cap: --disable-gpu-vsync --disable-frame-rate-limit dropped the title screen from 120 to 55 fps.)
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -53,15 +54,30 @@ const FEATURES = [
 const INSTRUMENT = `(() => {
   let a = 0x5eed;
   Math.random = () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-  const perf = window.__perf = { draws: 0, primitives: 0, work: 0, frames: [], gpu: [], sampling: false };
-  // Every WebGL 2 context (the game's, the surfer preview's) gets a GPU timer around each frame's commands.
+  const perf = window.__perf = { draws: 0, primitives: 0, work: 0, frames: [], gpu: [], gpuOther: [], contextsDrawn: 0, sampling: false };
+  // A sample starts afresh: its frames, GPU times, and which contexts drew in it.
+  perf.startSample = () => {
+    perf.frames = []; perf.gpu = []; perf.gpuOther = [];
+    for (const t of timed) t.drawn = false;
+    perf.sampling = true;
+  };
+  // Every WebGL 2 context gets a GPU timer around each frame callback. On ANGLE Metal a timer spans the GPU's
+  // timeline, so it also counts work that overlaps it: other contexts' (the Surf screen's surfer preview) and other
+  // processes'. So a timer counts only the callbacks its own context issued commands in, and the game's context
+  // (the page's first) is reported apart from the others, never added to them: adding one timer per context counted
+  // the Surf screen about twice.
   const timed = [];
+  const byContext = new Map();
   const getContext = HTMLCanvasElement.prototype.getContext;
   HTMLCanvasElement.prototype.getContext = function (type, ...rest) {
     const gl = getContext.call(this, type, ...rest);
-    if (gl && type === 'webgl2' && !timed.some((t) => t.gl === gl)) {
+    if (gl && type === 'webgl2' && !byContext.has(gl)) {
       const ext = gl.getExtension('EXT_disjoint_timer_query_webgl2');
-      if (ext) timed.push({ gl, ext, active: null, pending: [] });
+      if (ext) {
+        const t = { gl, ext, pending: [], used: false, game: timed.length === 0, drawn: false };
+        timed.push(t);
+        byContext.set(gl, t);
+      }
     }
     return gl;
   };
@@ -71,12 +87,14 @@ const INSTRUMENT = `(() => {
   const beginTimers = () => timed.filter((t) => !t.gl.isContextLost()).map((t) => {
     const query = t.gl.createQuery();
     t.gl.beginQuery(t.ext.TIME_ELAPSED_EXT, query);
+    t.used = false;
     return { t, query };
   });
   const endTimers = (open) => {
     for (const { t, query } of open) {
       t.gl.endQuery(t.ext.TIME_ELAPSED_EXT);
-      t.pending.push({ query, frame: frameIndex, sampling: perf.sampling });
+      t.pending.push({ query, frame: frameIndex, sampling: perf.sampling && t.used });
+      if (perf.sampling && t.used) t.drawn = true;
     }
   };
   const collect = () => {
@@ -87,11 +105,21 @@ const INSTRUMENT = `(() => {
         const done = t.pending.shift();
         const ns = gl.getQueryParameter(done.query, gl.QUERY_RESULT);
         gl.deleteQuery(done.query);
-        if (!gl.getParameter(ext.GPU_DISJOINT_EXT) && done.sampling) gpuFrames.set(done.frame, (gpuFrames.get(done.frame) ?? 0) + ns / 1e6);
+        if (!gl.getParameter(ext.GPU_DISJOINT_EXT) && done.sampling) {
+          const sums = gpuFrames.get(done.frame) ?? { game: 0, other: 0, gameDrew: false, otherDrew: false };
+          if (t.game) { sums.game += ns / 1e6; sums.gameDrew = true; } else { sums.other += ns / 1e6; sums.otherDrew = true; }
+          gpuFrames.set(done.frame, sums);
+        }
       }
     }
     // A frame's GPU time is final once every context has reported it (a few frames later).
-    for (const [frame, ms] of gpuFrames) if (frame < frameIndex - 8) { perf.gpu.push(ms); gpuFrames.delete(frame); }
+    for (const [frame, sums] of gpuFrames) {
+      if (frame >= frameIndex - 8) continue;
+      if (sums.gameDrew) perf.gpu.push(sums.game);
+      if (sums.otherDrew) perf.gpuOther.push(sums.other);
+      gpuFrames.delete(frame);
+    }
+    perf.contextsDrawn = timed.filter((t) => t.drawn).length;
     frameIndex += 1;
   };
   const raf = window.requestAnimationFrame.bind(window);
@@ -101,8 +129,12 @@ const INSTRUMENT = `(() => {
     try { callback(time); } finally { endTimers(open); perf.work += performance.now() - start; }
   });
   const count = (mode, n, instances = 1) => { perf.draws += 1; perf.primitives += mode === 4 ? (n / 3) * instances : 0; };
+  // Which context the callback running now gives the GPU work to.
+  const use = (gl) => { const t = byContext.get(gl); if (t) t.used = true; };
   for (const proto of [WebGL2RenderingContext.prototype, WebGLRenderingContext.prototype]) {
-    const wrap = (name, fn) => { const original = proto[name]; if (original) proto[name] = function (...args) { fn(args); return original.apply(this, args); }; };
+    const wrap = (name, fn) => { const original = proto[name]; if (original) proto[name] = function (...args) { use(this); fn(args); return original.apply(this, args); }; };
+    wrap('clear', () => {});
+    wrap('blitFramebuffer', () => {});
     wrap('drawArrays', ([mode, , n]) => count(mode, n));
     wrap('drawElements', ([mode, n]) => count(mode, n));
     wrap('drawArraysInstanced', ([mode, , n, i]) => count(mode, n, i));
@@ -194,7 +226,7 @@ browser.chrome = sh('/Applications/Google Chrome.app/Contents/MacOS/Google Chrom
 browser.refreshHz = Math.round(await page.eval(`new Promise((resolve) => { const times = []; const tick = (t) => { times.push(t); if (times.length < 240) requestAnimationFrame(tick); else { const d = times.slice(1).map((x, i) => x - times[i]).sort((a, b) => a - b); resolve(1000 / d[Math.floor(d.length / 2)]); } }; requestAnimationFrame(tick); })`));
 
 const machine = hardware();
-const run = { date: new Date().toISOString(), url: PAGE_URL, commit: args.commit ?? '', build: args.build ?? 'production (vite build)', loadAverage: loadavg().map((v) => Number(v.toFixed(2))), machine, browser, window: `${WIDTH} × ${HEIGHT}`, frameCap: 'display refresh (vsync)', menuSeconds: MENU_SECONDS, rideSeconds: RIDE_SECONDS, results: [] };
+const run = { date: new Date().toISOString(), url: PAGE_URL, commit: args.commit ?? '', build: args.build ?? 'production (vite build)', loadAverage: loadavg().map((v) => Number(v.toFixed(2))), machine, browser, window: `${WIDTH} × ${HEIGHT}`, frameCap: 'display refresh (vsync)', gpuTiming: 'game context', menuSeconds: MENU_SECONDS, rideSeconds: RIDE_SECONDS, results: [] };
 console.log(JSON.stringify({ machine, browser }, null, 1));
 mkdirSync(dirname(OUT), { recursive: true });
 const save = () => writeFileSync(OUT, `${JSON.stringify(run, null, 1)}\n`);
@@ -210,7 +242,7 @@ async function load(graphics) {
 const SOLVER = `(() => { for (const dt of document.querySelectorAll('.ride-telemetry dt')) if (dt.textContent.trim() === 'SOLVER') return dt.nextElementSibling?.textContent ?? ''; return ''; })()`;
 
 async function sample(seconds) {
-  await page.eval('window.__perf.frames = []; window.__perf.gpu = []; window.__perf.sampling = true');
+  await page.eval('window.__perf.startSample()');
   // The solver's step, read from the telemetry (4 Hz) through the window.
   const steps = [];
   const end = Date.now() + seconds * 1000;
@@ -221,7 +253,7 @@ async function sample(seconds) {
   }
   const frames = await page.eval('(() => { window.__perf.sampling = false; return window.__perf.frames; })()');
   await sleep(300); // the last frames' GPU timers report a few frames late
-  const gpu = await page.eval('window.__perf.gpu.slice()');
+  const { gpu, gpuOther, contextsDrawn } = await page.eval('({ gpu: window.__perf.gpu.slice(), gpuOther: window.__perf.gpuOther.slice(), contextsDrawn: window.__perf.contextsDrawn })');
   const extra = await page.eval(`(() => {
     const canvas = document.querySelector('canvas');
     const rows = {};
@@ -229,7 +261,12 @@ async function sample(seconds) {
     return { canvas: canvas ? canvas.width + ' × ' + canvas.height : '', solver: rows.SOLVER ?? '', heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1e6) : null };
   })()`);
   const stepStats = steps.length ? { solverMsP50: quantile(steps, 0.5), solverMsMax: Math.max(...steps) } : {};
-  const gpuStats = gpu.length ? { gpuMsP50: Number(quantile(gpu, 0.5).toFixed(2)), gpuMsP95: Number(quantile(gpu, 0.95).toFixed(2)) } : {};
+  const gpuStats = {
+    ...(gpu.length ? { gpuMsP50: Number(quantile(gpu, 0.5).toFixed(2)), gpuMsP95: Number(quantile(gpu, 0.95).toFixed(2)) } : {}),
+    // The other contexts' own timers (the surfer preview), apart: each also spans the game's overlapping work.
+    ...(gpuOther.length ? { gpuOtherMsP50: Number(quantile(gpuOther, 0.5).toFixed(2)), gpuOtherMsP95: Number(quantile(gpuOther, 0.95).toFixed(2)) } : {}),
+    gpuContexts: contextsDrawn,
+  };
   return { ...summarize(frames), ...gpuStats, ...extra, ...stepStats };
 }
 
@@ -238,7 +275,7 @@ async function measure(setting, screen, seconds, warmMs) {
   const stats = await sample(seconds);
   run.results.push({ setting, screen, ...stats, power: powerNow() });
   save();
-  console.log(`${setting.padEnd(26)} ${screen.padEnd(20)} ${String(stats.fps).padStart(6)} fps  1% low ${String(stats.fps1Low).padStart(6)}  p95 ${stats.frameMsP95} ms  gpu ${stats.gpuMsP50 ?? '-'}/${stats.gpuMsP95 ?? '-'} ms  main ${stats.mainThreadMsP50} ms  draws ${stats.drawCalls}  ${stats.canvas}  ${stats.solverMsP50 !== undefined ? `solver ${stats.solverMsP50}–${stats.solverMsMax} ms` : ''}`);
+  console.log(`${setting.padEnd(26)} ${screen.padEnd(20)} ${String(stats.fps).padStart(6)} fps  1% low ${String(stats.fps1Low).padStart(6)}  p95 ${stats.frameMsP95} ms  gpu ${stats.gpuMsP50 ?? '-'}/${stats.gpuMsP95 ?? '-'} ms${stats.gpuOtherMsP50 !== undefined ? ` (preview ${stats.gpuOtherMsP50})` : ''}  main ${stats.mainThreadMsP50} ms  draws ${stats.drawCalls}  ${stats.canvas}  ${stats.solverMsP50 !== undefined ? `solver ${stats.solverMsP50}–${stats.solverMsMax} ms` : ''}`);
 }
 
 const onScreen = (name) => page.waitFor(`document.querySelector('#app')?.dataset.screen === ${JSON.stringify(name)}`, 120000);
