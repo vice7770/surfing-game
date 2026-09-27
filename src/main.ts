@@ -796,7 +796,10 @@ class SurfGame {
     const request = controls.lastRequest;
     return {
       dt, phase: ride.phase, speed: ride.speed, heading: host.snapshot.rider[RIDER_SNAPSHOT.heading],
-      input: { steer: request.steer, trim: request.trim ?? 0, crouch: request.crouch ?? 0, hand: request.hand ?? false, paddle: request.paddle },
+      input: {
+        steer: request.steer, trim: request.trim ?? 0, crouch: request.crouch ?? 0, compress: request.compress ?? 0, hand: request.hand ?? false,
+        paddle: request.paddle,
+      },
       wave: { valid: ride.wave.valid, faceFraction: ride.wave.faceFraction, crestBreaking: ride.wave.crestBreaking, aheadOfCrest: ride.wave.aheadOfCrest },
       ...(ride.live ? { live: { kind: ride.live.kind, start: ride.live.start } } : {}),
       ...(ride.separation ? { separation: ride.separation } : {}),

@@ -4,11 +4,11 @@ import { LESSONS, lessonById, type LessonFrame, type LessonGoal } from './lesson
 const STEP = 1 / 30;
 const standing = (patch: Partial<LessonFrame> = {}): LessonFrame => ({
   dt: STEP, phase: 'standing', speed: 6, heading: 0,
-  input: { steer: 0, trim: 0, crouch: 0, hand: false, paddle: false },
+  input: { steer: 0, trim: 0, crouch: 0, compress: 0, hand: false, paddle: false },
   wave: { valid: true, faceFraction: 0.5, crestBreaking: 0.2, aheadOfCrest: 5 },
   ...patch,
 });
-const input = (patch: Partial<LessonFrame['input']>): LessonFrame['input'] => ({ steer: 0, trim: 0, crouch: 0, hand: false, paddle: false, ...patch });
+const input = (patch: Partial<LessonFrame['input']>): LessonFrame['input'] => ({ steer: 0, trim: 0, crouch: 0, compress: 0, hand: false, paddle: false, ...patch });
 /** Feed frames for `seconds`, each built from the elapsed time; the goal's last state. */
 const run = (goal: LessonGoal, seconds: number, frame: (t: number) => Partial<LessonFrame>) => {
   let state = goal.update(standing(frame(0)));
@@ -50,10 +50,61 @@ describe('lesson goals', () => {
     expect(run(crouch, 3.2, (t) => ({ speed: 6 - t, input: input({ crouch: (t % 1) < 0.5 ? 1 : 0 }) })).passed).toBe(false);
   });
 
-  it('passes the turns on the ride analysis’ own manoeuvres', () => {
-    expect(goal('bottomTurn').update(standing({ live: { kind: 'bottom turn', start: 1 } })).passed).toBe(true);
-    expect(goal('bottomTurn').update(standing({ live: { kind: 'top turn', start: 1 } })).passed).toBe(false);
+  it('passes the top turn on the ride analysis’ own manoeuvres', () => {
     expect(goal('topTurn').update(standing({ live: { kind: 'snap', start: 2 } })).passed).toBe(true);
+    expect(goal('topTurn').update(standing({ live: { kind: 'bottom turn', start: 1 } })).passed).toBe(false);
+  });
+
+  // The stances spec: the bottom turn is taught as its sequence, in order in one ride (de Sousa 2022's phases):
+  // crouch on the drop, compress with a lean at the bottom, release it climbing the face, and the ride analysis
+  // names a bottom turn.
+  describe('the bottom turn’s sequence', () => {
+    const wave = (faceFraction: number) => ({ valid: true, faceFraction, crestBreaking: 0.2, aheadOfCrest: 5 });
+    const named = { live: { kind: 'bottom turn' as const, start: 1 } };
+    const drop = (patch: Partial<LessonFrame['input']> = { crouch: 0.6 }) => (t: number) => ({ wave: wave(0.8 - 0.5 * t), input: input(patch) });
+    const bottom = (patch: Partial<LessonFrame['input']> = { crouch: 0.6, compress: 1, steer: 1 }) => (t: number) => ({ wave: wave(0.3 - 0.1 * t), input: input(patch) });
+    const climb = (patch: Partial<LessonFrame['input']> = { steer: 1 }) => (t: number) => ({ wave: wave(0.25 + 0.4 * t), input: input(patch), ...named });
+
+    it('passes crouching on the drop, compressing with a lean at the bottom and releasing up the face', () => {
+      const turn = goal('bottomTurn');
+      expect(run(turn, 1, drop())).toMatchObject({ passed: false, count: { done: 1, of: 3 } });
+      expect(run(turn, 0.5, bottom())).toMatchObject({ passed: false, count: { done: 2, of: 3 } });
+      expect(run(turn, 1, climb()).passed).toBe(true);
+    });
+
+    // Review Focus 5.
+    it('does not pass compressing before crouching', () => {
+      const turn = goal('bottomTurn');
+      run(turn, 1, drop({}));
+      run(turn, 0.5, bottom({ compress: 1, steer: 1 }));
+      expect(run(turn, 1, climb({ crouch: 0.6, steer: 1 })).passed).toBe(false);
+    });
+
+    it('does not pass without releasing Compress up the face', () => {
+      const turn = goal('bottomTurn');
+      run(turn, 1, drop());
+      run(turn, 0.5, bottom());
+      expect(run(turn, 1, climb({ compress: 1, steer: 1 })).passed).toBe(false);
+    });
+
+    it('does not pass on a compress without a lean, or the sequence without the ride analysis’ bottom turn', () => {
+      const straight = goal('bottomTurn');
+      run(straight, 1, drop());
+      run(straight, 0.5, bottom({ crouch: 0.6, compress: 1 }));
+      expect(run(straight, 1, climb()).passed).toBe(false);
+      const unnamed = goal('bottomTurn');
+      run(unnamed, 1, drop());
+      run(unnamed, 0.5, bottom());
+      expect(run(unnamed, 1, (t) => ({ wave: wave(0.25 + 0.4 * t), input: input({ steer: 1 }) })).passed).toBe(false);
+    });
+
+    it('starts over after a fall', () => {
+      const turn = goal('bottomTurn');
+      run(turn, 1, drop());
+      run(turn, 0.5, bottom());
+      turn.update(standing({ phase: 'fallen' }));
+      expect(run(turn, 1, climb()).passed).toBe(false);
+    });
   });
 
   it('passes the hand when it slows the board and lets the curl catch up', () => {
