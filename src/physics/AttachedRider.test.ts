@@ -886,6 +886,25 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(board.velocity.length()).toBeGreaterThan(0.6 * speed);
     });
 
+    // The Canyon's rides ended in their first bottom turn: crouched at full steer on the trough's flat water at 8–12
+    // m/s. The crouch's drop took the load off the board as the body leaned in, the ankles' brake rolled the board onto
+    // its rail instead of stopping the body, and the rider dove into the turn (0.65 s at 7.5 m/s). A settled crouch held.
+    // A 50° lean holds a turn of g tan 50° / v: 1.5 rad/s at 8 m/s, 1.1 rad/s at 11 m/s.
+    it.each([[8, 60], [11, 35]])('holds a crouched full-steer turn on flat water at %i m/s', (speed, turned) => {
+      const board = new BoardBody();
+      board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
+      const rider = new AttachedRider(board.shape, { phase: 'standing' });
+      board.attach(rider);
+      const water = new PlaneWater();
+      run(board, water, 0.3);
+      const start = headingOf(board);
+      rider.steer = 1;
+      rider.crouch = 0.6;
+      run(board, water, 1.2);
+      expect(rider.attached).toBe(true);
+      expect(Math.abs(degrees(headingOf(board) - start))).toBeGreaterThan(turned);
+    });
+
     // Review Focus 5: the pop-up's landing is unchanged, the body carried upright over its stance as before the bank;
     // the bank applies only once standing.
     it('lands upright, banking only once standing', () => {

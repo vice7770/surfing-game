@@ -312,6 +312,16 @@ const CROUCH_ACCELERATION = 6;
 const CROUCH_SPEED = 1.5;
 const EXTEND_ACCELERATION = 15;
 /**
+ * While the feet brake the body's bank near their edges (the ankle's rest past
+ * CROUCH_HOLD of ANKLE_REST_RANGE), the legs hold rather than drop, stopping at
+ * the edges. A crouch's drop takes the load off the board; taken as the body
+ * leaned into a hard turn, the ankles' brake rolled the light board onto its
+ * rail instead of stopping the body, and the rider dove into the turn (the
+ * Canyon's bottom turns, crouched at full steer on the trough's flat water).
+ * Surfers compress under a turn's load, once the rail is set.
+ */
+const CROUCH_HOLD = 0.75;
+/**
  * Standing, a hand in the face (spec P9): asked for, the upper body bends toward
  * the wave side, where the water stands higher beside the board (read
  * WAVE_SIDE_REACH, m, out on each side; a side only when it is WAVE_SIDE_MIN, m,
@@ -1259,9 +1269,11 @@ export class AttachedRider {
     const down = rest < this.leg.rest;
     const accelerationLimit = down ? CROUCH_ACCELERATION : EXTEND_ACCELERATION;
     const speedLimit = down ? CROUCH_SPEED : MAX_LEG_SPEED;
-    const acceleration = Math.max(-accelerationLimit, Math.min(accelerationLimit,
+    // While the feet brake the body's bank near their edges, the legs hold rather than drop (CROUCH_HOLD).
+    const hold = this.banking ? Math.max(0, Math.min(1, (Math.abs(this.ankleRest) / ANKLE_REST_RANGE - CROUCH_HOLD) / (1 - CROUCH_HOLD))) : 0;
+    const acceleration = Math.max(-accelerationLimit * (1 - hold), Math.min(accelerationLimit,
       LEG_FREQUENCY * LEG_FREQUENCY * (rest - this.leg.rest) - 2 * LEG_FREQUENCY * this.restRate));
-    this.restRate = Math.max(-speedLimit, Math.min(speedLimit, this.restRate + acceleration * h));
+    this.restRate = Math.max(-speedLimit * (1 - hold), Math.min(speedLimit, this.restRate + acceleration * h));
     this.leg.rest = Math.max(-CROUCH_DEPTH, Math.min(0, this.leg.rest + this.restRate * h));
     if (this.leg.rest === 0 || this.leg.rest === -CROUCH_DEPTH) this.restRate = 0;
     this.legStiffness = LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * -this.leg.rest) / CROUCH_DEPTH);
