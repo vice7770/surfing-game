@@ -14,6 +14,7 @@ The values Part B's whitewater physics uses, with their sources, measured ranges
 | Time for a trapped void to collapse | t_c | √(2W/g) | The void's own height W in free fall; cavities collapse and fragment into bubble clouds soon after impact (Kiger & Duncan 2012) | Provisional |
 | Share of trapped air leaving as spit when the tube has a mouth | ε | 0.5 | The collapsing tube works as bellows: air and spray are funnelled out of the open end for two or three seconds, strongest where a section throws ahead faster than its air can escape (surfing accounts: Encyclopedia of Surfing, "spit") | Provisional (mechanism sourced) |
 | Spit speed | v_spit | the collapsing air's volume per second over the mouth's area | Mass conservation: no measurement needed | Sourced (physics) |
+| Fastest spit | v_max | √(ρ_w/ρ_a)·√(gW/2), about 50 m/s for a 0.6 m void | The roof falls on the air at about √(gW/2), so the air's pressure rises no higher than the roof's dynamic pressure; air the mouth cannot pass that fast bursts up through the lip | Provisional (a mechanism, not a measurement) |
 | Rendered spray and mist per m³ of escaping air | s_a | 40 | A render density, as G6's spray per joule | Provisional (render) |
 | Breaking roller cross-section, per H² | κ_r | 0.9 | The roller is a volume of water moving with the wave, its area proportional to H² (Svendsen 1984; 0.9 H² is the value commonly carried from it) | Sourced |
 

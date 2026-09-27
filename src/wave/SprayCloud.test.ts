@@ -79,6 +79,21 @@ describe('spray and mist', () => {
     }
   });
 
+  it('throws a lip impact’s drops up as fast as its splash-up sheet goes, from the downward impact speed (G9)', () => {
+    // Coming down at 4 m/s while moving on at 6: the sheet leaves up at ζ_v × 4, and so do its drops.
+    const cloud = new SprayCloud(21);
+    cloud.update(flatScene(0, [{ x: 5, z: 20, volume: 0.3, vx: 0, vy: -4, vz: 6 }]), 1 / 60);
+    const start = Array.from(cloud.particles.subarray(0, cloud.count * SPRAY_STRIDE));
+    const count = cloud.count;
+    expect(count).toBeGreaterThan(50);
+    const dt = 1e-4;
+    cloud.update(flatScene(), dt);
+    let up = 0;
+    for (let k = 0; k < count; k += 1) up += (cloud.particles[k * SPRAY_STRIDE + 1] - start[k * SPRAY_STRIDE + 1]) / dt / count;
+    expect(up / (SPLASH_UP.vertical * 4)).toBeGreaterThan(0.85);
+    expect(up / (SPLASH_UP.vertical * 4)).toBeLessThan(1.15);
+  });
+
   it('splashes drops up from a lip impact in proportion to its energy, which fall back into the water', () => {
     const small = new SprayCloud(3);
     small.update(flatScene(0, [impact(0.05)]), 1 / 60);

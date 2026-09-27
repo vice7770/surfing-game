@@ -15,6 +15,8 @@ export const AERATION = { share: 0.1, plungeDepth: 0.8, boreDepth: 0.3, riseSpee
 const DENSITY = 1025;
 const WET = 0.01;
 const TRACE = 1e-7;
+/** A plume spreads to the rows either side of where it lands. */
+const ACROSS = [-1, 1] as const;
 /** Plumes thinner than this still degas at this depth's rate, m (a numerical floor). */
 const MIN_DEPTH = 0.05;
 
@@ -46,6 +48,7 @@ export class AerationField {
 
   /** A plunge that dissipated `energy` J at (x, z), driving its bubbles `penetration` m down. */
   addPlunge(x: number, z: number, energy: number, penetration: number): void {
+    this.followWindow();
     const cell = this.solver.cellIndex(x, z);
     const reach = this.reach(cell, penetration);
     if (!(reach > 0) || !(energy > 0)) return;
@@ -54,21 +57,20 @@ export class AerationField {
 
   /**
    * A bore dissipating `dissipation` (energy per unit crest length over ρ,
-   * m³/s³, `boreDissipation`) for `dt` s in `cell`, `height` m high, spread
-   * over its front's cross-shore length (at least twice its height).
+   * m⁴/s³, `boreDissipation`) for `dt` s in `cell`, `height` m high: β of the
+   * energy its cell's width of crest loses, as air held against buoyancy at
+   * half the plume's depth (the cell holds it, where the bore dissipates).
    */
   addBore(cell: number, dissipation: number, height: number, dt: number): void {
+    this.followWindow();
     const reach = this.reach(cell, AERATION.boreDepth * height);
     if (!(reach > 0) || !(dissipation > 0)) return;
-    const { dx, dz, nx } = this.solver;
-    const front = Math.max(dz[Math.floor(cell / nx)], 2 * height);
-    // β of the power per unit area, as air held against buoyancy at half the plume's depth.
-    const perArea = (AERATION.share * dissipation * dt) / (front * GRAVITY * (reach / 2));
-    this.addTo(cell, perArea * dx * front, reach);
+    this.addTo(cell, (AERATION.share * dissipation * dt * this.solver.dx) / (GRAVITY * (reach / 2)), reach);
   }
 
   /** Trapped air of `volume` m³ broken into bubbles at (x, z), `penetration` m down. */
   addAir(x: number, z: number, volume: number, penetration: number): void {
+    this.followWindow();
     const cell = this.solver.cellIndex(x, z);
     const reach = this.reach(cell, penetration);
     if (!(reach > 0) || !(volume > 0)) return;
@@ -88,7 +90,8 @@ export class AerationField {
     this.advect(dt);
     const { h } = this.solver;
     for (let i = 0; i < h.length; i += 1) {
-      if (h[i] <= WET) {
+      if (h[i] <= WET || this.air[i] === 0) {
+        // Dry water holds no air, and water with none has nothing to degas.
         this.air[i] = 0;
         this.depth[i] = 0;
         continue;
@@ -118,7 +121,7 @@ export class AerationField {
     const cells = this.plume;
     cells.length = 0;
     let area = 0;
-    for (const step of [-1, 1]) {
+    for (const step of ACROSS) {
       for (let iz = step < 0 ? row : row + 1; iz >= 0 && iz < nz; iz += step) {
         const across = zCenters[iz] - z;
         if (iz !== row && Math.abs(across) > radius) break;
@@ -177,7 +180,11 @@ export class AerationField {
     this.depth.set(this.nextDepth);
   }
 
-  /** Shift with the solver when its window slides, so air stays on the same water; new columns start clear. */
+  /**
+   * Shift with the solver when its window slides, so air stays on the same
+   * water; new columns start clear. Every add follows first, so air added in
+   * the window it arrives in is not shifted again.
+   */
   private followWindow(): void {
     const { nx, nz, dx, xCenters } = this.solver;
     const shift = Math.round((xCenters[0] - this.windowX) / dx);
