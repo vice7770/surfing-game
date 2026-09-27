@@ -46,6 +46,7 @@ export class AerationField {
 
   /** A plunge that dissipated `energy` J at (x, z), driving its bubbles `penetration` m down. */
   addPlunge(x: number, z: number, energy: number, penetration: number): void {
+    this.followWindow();
     const cell = this.solver.cellIndex(x, z);
     const reach = this.reach(cell, penetration);
     if (!(reach > 0) || !(energy > 0)) return;
@@ -58,6 +59,7 @@ export class AerationField {
    * over its front's cross-shore length (at least twice its height).
    */
   addBore(cell: number, dissipation: number, height: number, dt: number): void {
+    this.followWindow();
     const reach = this.reach(cell, AERATION.boreDepth * height);
     if (!(reach > 0) || !(dissipation > 0)) return;
     const { dx, dz, nx } = this.solver;
@@ -69,6 +71,7 @@ export class AerationField {
 
   /** Trapped air of `volume` m³ broken into bubbles at (x, z), `penetration` m down. */
   addAir(x: number, z: number, volume: number, penetration: number): void {
+    this.followWindow();
     const cell = this.solver.cellIndex(x, z);
     const reach = this.reach(cell, penetration);
     if (!(reach > 0) || !(volume > 0)) return;
@@ -177,7 +180,11 @@ export class AerationField {
     this.depth.set(this.nextDepth);
   }
 
-  /** Shift with the solver when its window slides, so air stays on the same water; new columns start clear. */
+  /**
+   * Shift with the solver when its window slides, so air stays on the same
+   * water; new columns start clear. Every add follows first, so air added in
+   * the window it arrives in is not shifted again.
+   */
   private followWindow(): void {
     const { nx, nz, dx, xCenters } = this.solver;
     const shift = Math.round((xCenters[0] - this.windowX) / dx);
