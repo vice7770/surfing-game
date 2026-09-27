@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { compress } from '../../wave/surfZoneState';
-import { lessonConfig, lessonWaveFor, loadLessonSea, type LessonWave } from './lessonWave';
+import { lessonConfig, loadLessonSea, schoolWave, type LessonWave } from './lessonWave';
+import { LESSON_WAVES } from './lessonWaves';
 
 const wave: LessonWave = {
   stage: 2,
@@ -24,9 +25,13 @@ describe('lesson wave', () => {
     });
   });
 
-  it('has a recording for each solver stage', () => {
-    expect(lessonWaveFor(1).stage).toBe(1);
-    expect(lessonWaveFor(2).stage).toBe(2);
+  // 2026-09-27, the user's call: stage 1's recording could not be caught, so the school runs stage 2 on every machine
+  // (on the GPU where there is one, else on the CPU, slower than real time on a slow one).
+  it('runs the school on stage 2 whatever else is recorded', () => {
+    expect(schoolWave([{ ...wave, stage: 1 }, wave])).toBe(wave);
+    expect(schoolWave().stage).toBe(2);
+    expect(lessonConfig(schoolWave())).toMatchObject({ stage: 2, compute: 'auto' });
+    expect(LESSON_WAVES.map((recorded) => recorded.stage)).toEqual([2]);
   });
 
   it('loads and inflates its recorded sea', async () => {

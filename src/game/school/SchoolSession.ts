@@ -1,7 +1,7 @@
 import type { RiderPlacement } from '../../physics/RideSession';
 import type { SurfZoneHost } from '../SurfZoneHost';
 import { LESSON_WAVES } from './lessonWaves';
-import { loadLessonSea, type LessonStart, type LessonWave } from './lessonWave';
+import { loadLessonSea, schoolWave, type LessonStart, type LessonWave } from './lessonWave';
 
 export interface SchoolSessionOptions {
   /** The recordings to choose from (tests pass their own). */
@@ -11,7 +11,7 @@ export interface SchoolSessionOptions {
 }
 
 /**
- * The Surf School's seas (spec L2): the lesson wave for the solver stage in use,
+ * The Surf School's seas (spec L2): the stage 2 lesson wave on every machine,
  * each start's recorded state loaded once, and the restart that puts a host back
  * on it. Every restore gets its own copy, since a worker takes the bytes.
  */
@@ -26,10 +26,9 @@ export class SchoolSession {
     this.load = options.load ?? ((wave, start) => loadLessonSea(wave, start));
   }
 
-  /** The lesson wave for a stage and a start's sea, loading it the first time; rejects when it will not load. */
-  async prepare(stage: 1 | 2, start: LessonStart): Promise<{ wave: LessonWave; sea: Uint8Array }> {
-    const wave = this.waves.find((candidate) => candidate.stage === stage) ?? this.waves[0];
-    if (!wave) throw new Error('No lesson wave recorded');
+  /** The school's wave and a start's sea, loading it the first time; rejects when it will not load. */
+  async prepare(start: LessonStart): Promise<{ wave: LessonWave; sea: Uint8Array }> {
+    const wave = schoolWave(this.waves);
     if (this.wave !== wave) {
       this.seas.clear();
       this.wave = undefined;

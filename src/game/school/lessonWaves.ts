@@ -50,54 +50,5 @@ export const LESSON_WAVES: readonly LessonWave[] = [
       "caught": "stood 5.5 s (attempt 7)",
       "waiting": "stood 7.4 s (attempt 4)"
     }
-  },
-  {
-    "stage": 1,
-    "config": {
-      "spot": "canyon",
-      "seed": 1,
-      "significantHeight": 2,
-      "peakPeriod": 12,
-      "directionDegrees": 10,
-      "spreading": 40,
-      "bandwidth": 0.08,
-      "tide": 0,
-      "windSpeed": 0,
-      "componentCount": 64
-    },
-    "assets": {
-      "pocket": "lessons/canyon-s1-pocket.sea",
-      "caught": "lessons/canyon-s1-caught.sea",
-      "waiting": "lessons/canyon-s1-waiting.sea"
-    },
-    "placements": {
-      "pocket": {
-        "x": -8.67,
-        "z": -98.93,
-        "heading": -0.013,
-        "speed": 0.51,
-        "phase": "standing"
-      },
-      "caught": {
-        "x": -8.16,
-        "z": -103.2,
-        "heading": -0.235,
-        "speed": 1.15,
-        "phase": "prone"
-      },
-      "waiting": {
-        "x": -7.76,
-        "z": -104.46,
-        "heading": -0.254,
-        "speed": 0.14,
-        "phase": "prone"
-      }
-    },
-    "provisional": true,
-    "checks": {
-      "pocket": "stood 1.2 s (attempt 1)",
-      "caught": "never stood (attempt 1)",
-      "waiting": "never stood (missed the wave) (attempt 1)"
-    }
   }
 ];
