@@ -3,7 +3,8 @@ import { AttachedRider, type RiderPhase, type RiderSeparation } from './Attached
 import { BoardBody } from './BoardBody';
 import { BoardRecovery } from './BoardRecovery';
 import { DetachedSurfer, type LipParcelSource } from './DetachedSurfer';
-import { RIDER_PARTS, type StanceName } from './riderPosture';
+import { Leash } from './Leash';
+import { RIDER_PARTS, deckHeight, type StanceName } from './riderPosture';
 import { createWaterSample, type SurfWater } from './SurfWater';
 import { SurfWaterBodyField } from './SurfWaterBodyField';
 
@@ -21,7 +22,20 @@ export interface RideInput {
   compress?: number;
   /** Standing, the wave-side hand in the water. */
   hand?: boolean;
+  /** Lying down or swimming, the Duck-dive action: 0 to 1 (analog). */
+  duckDive?: number;
+  /** In the water, the pop-up key held: reel the leash in, and grab the board once it is in reach. */
+  reel?: boolean;
 }
+
+/**
+ * The leash's ends (the wipeout spec): the plug sits PLUG_FROM_TAIL, m, ahead of
+ * the tail on the deck; the fallen surfer's ankle is ANKLE_REACH of the way from
+ * the pelvis through the back leg's node, which is the leg's centre, 0.48 m below
+ * the hip of a leg about 0.9 m long (`DetachedSurfer`'s body).
+ */
+const PLUG_FROM_TAIL = 0.05;
+const ANKLE_REACH = 1.85;
 
 /**
  * Where a lesson puts the rider (Surf School, spec L2): a point on the water, a
@@ -56,6 +70,12 @@ export class RideSession {
   readonly recovery = new BoardRecovery(this.surfer);
   /** The latest climb back on: the swimmer's and board's linear momentum just before, the mounted pair's after (N·s), and how many so far. */
   readonly remount = { before: new Vector3(), after: new Vector3(), count: 0 };
+  /** The leash, from the back-foot ankle to the tail plug; a new one at each placement. */
+  readonly leash = new Leash();
+  private readonly plugLocal = new Vector3();
+  private readonly ankle = new Vector3();
+  private readonly plug = new Vector3();
+  private readonly pelvis = new Vector3();
   private readonly spinPart = new Vector3();
   private readonly sample = createWaterSample();
   /** The state the fall body started from, at the latest separation. */
@@ -67,6 +87,21 @@ export class RideSession {
 
   constructor(options: RideSessionOptions = {}) {
     this.rider = new AttachedRider(this.board.shape, { stance: options.stance });
+    const tail = -this.board.shape.length / 2 + PLUG_FROM_TAIL;
+    this.plugLocal.set(0, deckHeight(this.board.shape, tail), tail);
+  }
+
+  /** The leash's plug on the tail, in the world. */
+  leashPlug(out: Vector3): Vector3 {
+    return this.board.toWorld(this.plugLocal, out);
+  }
+
+  /** The leash's ankle in the world: the attached rider's back foot, or the fallen surfer's. */
+  leashAnkle(out: Vector3): Vector3 {
+    const regular = this.rider.stance === 'regular';
+    if (this.rider.attached || !this.surfer.active) return this.rider.renderPoint(regular ? 6 : 5, this.board, out);
+    const pelvis = this.surfer.getPartPosition('pelvis', this.pelvis);
+    return this.surfer.getPartPosition(regular ? 'rightLeg' : 'leftLeg', out).sub(pelvis).multiplyScalar(ANKLE_REACH).add(pelvis);
   }
 
   get phase(): RiderPhase | 'fallen' {
@@ -110,6 +145,7 @@ export class RideSession {
     this.board.attach(this.rider);
     this.surfer.active = false;
     this.recovery.release();
+    this.leash.reset();
   }
 
   /** The drawn body's seven points (pelvis, torso, head, hands, feet), riding or fallen. */
@@ -138,20 +174,31 @@ export class RideSession {
       rider.crouch = input.crouch ?? 0;
       rider.compress = input.compress ?? 0;
       rider.hand = input.hand ?? false;
+      rider.duckDive = input.duckDive ?? 0;
       // The pop-up key stands the rider up, or lies it back down (the playtest: only the player lies it down).
       if (input.popUp && !(rider.phase === 'standing' && rider.lieDown(board))) rider.popUp();
     }
     board.step(dt, water);
+    if (rider.attached) {
+      // On the board the cord hangs slack.
+      this.leash.tension = 0;
+      this.leash.reeling = false;
+    }
     if (!rider.attached && !surfer.active) {
       surfer.start(rider.handoffState(this.handoff));
       surfer.linearMomentum(this.started.momentum);
       surfer.centerOfMass(this.started.center);
     }
     if (surfer.active) {
-      surfer.step(dt, this.bodyField(water), { stroke: input.paddle, steer: input.steer });
+      // Diving lets go of a held board (the leash keeps it).
+      if ((input.duckDive ?? 0) > 0.3 && this.recovery.state !== 'free') this.recovery.release();
+      surfer.step(dt, this.bodyField(water), { stroke: input.paddle, steer: input.steer, dive: input.duckDive ?? 0 });
       surfer.resolveBoardContact(board);
-      // In the water, the pop-up input reaches for the board; within reach the grab pulls the body onto it.
-      if (input.popUp && this.recovery.state === 'free') this.recovery.tryGrab(board);
+      const back = surfer.nodes[this.rider.stance === 'regular' ? 6 : 5];
+      this.leash.step(dt, this.leashAnkle(this.ankle), back, this.leashPlug(this.plug), board, input.reel ?? false);
+      // In the water, the pop-up input reaches for the board, and holding it reels the leash in; within reach
+      // the grab pulls the body onto it.
+      if ((input.popUp || input.reel) && this.recovery.state === 'free') this.recovery.tryGrab(board);
       if (this.recovery.state !== 'free' && this.recovery.step(dt, board) === 'prone-ready') this.climbOn();
     }
   }

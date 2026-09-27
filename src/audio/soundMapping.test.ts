@@ -126,6 +126,32 @@ describe('soundTargets', () => {
     expect(plunge.oneShots.map((s) => s.id)).toEqual(['plunge']);
   });
 
+  // The wipeout spec: each a physical cause in the frame.
+  it('snaps the leash once, when it snaps', () => {
+    const board = { x: 3, y: 0, z: 4, speed: 2, sideslip: 0 };
+    const ride = { phase: 'fallen' as const, previousPhase: 'fallen' as const, speed: 2 };
+    const snap = soundTargets(frame({ board, ride: { ...ride, leashSnapped: true, previouslySnapped: false } }));
+    expect(snap.oneShots.map((s) => s.id)).toEqual(['leashSnap']);
+    expect(snap.oneShots[0].position).toEqual({ x: 3, y: 0, z: 4 });
+    const after = soundTargets(frame({ board, ride: { ...ride, leashSnapped: true, previouslySnapped: true } }));
+    expect(after.oneShots).toEqual([]);
+  });
+
+  it('knocks the board on the swimmer louder the harder it hits, and not at all for a brush', () => {
+    const board = { x: 0, y: 0, z: 0, speed: 2, sideslip: 0 };
+    const knock = (impulse: number) => soundTargets(frame({ board, ride: { phase: 'fallen', previousPhase: 'fallen', speed: 2, knock: impulse } }))
+      .oneShots.find((s) => s.id === 'knock');
+    expect(knock(3)).toBeUndefined();
+    expect(knock(40)!.gain).toBeGreaterThan(knock(12)!.gain);
+  });
+
+  it('plunges the duck-dive once, as the press goes past half', () => {
+    const board = { x: 0, y: 0, z: 0, speed: 2, sideslip: 0 };
+    const ride = { phase: 'prone' as const, previousPhase: 'prone' as const, speed: 2 };
+    expect(soundTargets(frame({ board, ride: { ...ride, duck: 0.6, previousDuck: 0.4 } })).oneShots.map((s) => s.id)).toEqual(['duckDive']);
+    expect(soundTargets(frame({ board, ride: { ...ride, duck: 0.9, previousDuck: 0.8 } })).oneShots).toEqual([]);
+  });
+
   it('muffles everything and bubbles under water', () => {
     const targets = soundTargets(frame({ listener: { x: 0, y: -1, z: 0, underwater: true } }));
     expect(targets.muffle).toBe(1);

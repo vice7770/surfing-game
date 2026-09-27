@@ -2,6 +2,8 @@ import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { BoardRecovery } from './BoardRecovery';
 import { DetachedSurfer, type BoardContactBody, type BodyWaterField } from './DetachedSurfer';
+import { PlaneWater } from './PlaneWater';
+import { RideSession } from './RideSession';
 
 class ContactBoard implements BoardContactBody {
   readonly position = new Vector3();
@@ -94,5 +96,63 @@ describe('BoardRecovery', () => {
       if (ready) break;
     }
     expect(ready).toBe(true);
+  });
+});
+
+/**
+ * A fallen surfer floating calm on flat water with its board 0.5 m to its side:
+ * the board turned to `boardHeading` (and upside down if asked), the swimmer
+ * facing `swimmerHeading` (radians from +z toward +x).
+ */
+function swimmerBesideBoard(options: { boardHeading: number; swimmerHeading: number; upsideDown?: boolean }) {
+  const session = new RideSession();
+  const water = new PlaneWater();
+  session.reset(new Vector3(0, 0, 0), 0, water);
+  session.separate('balance');
+  for (let i = 0; i < 180; i += 1) session.step(1 / 60, water, { paddle: false, popUp: false, steer: 0 });
+  const torso = session.surfer.getPartPosition('torso', new Vector3());
+  const orientation = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), options.boardHeading);
+  if (options.upsideDown) orientation.multiply(new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), Math.PI));
+  session.board.place(new Vector3(torso.x + 0.5, session.board.shape.centerOfMass.y - 0.03, torso.z), orientation);
+  session.surfer.heading = options.swimmerHeading;
+  return { session, water };
+}
+
+const idle = { paddle: false, popUp: false, steer: 0 };
+
+describe('grabbing the board from any side', () => {
+  it('grabs a board pointing the other way, turns it and climbs on', () => {
+    const { session, water } = swimmerBesideBoard({ boardHeading: Math.PI, swimmerHeading: 0 });
+    session.step(1 / 60, water, { ...idle, popUp: true });
+    for (let steps = 0; steps < 300 && !session.rider.attached; steps += 1) session.step(1 / 60, water, idle);
+    expect(session.rider.attached).toBe(true);
+    const forward = new Vector3(0, 0, 1).applyQuaternion(session.board.orientation);
+    expect(Math.abs(Math.atan2(forward.x, forward.z))).toBeLessThan((30 * Math.PI) / 180);
+  });
+
+  it('rights an upside-down board before climbing on', () => {
+    const { session, water } = swimmerBesideBoard({ boardHeading: 0, swimmerHeading: 0, upsideDown: true });
+    session.step(1 / 60, water, { ...idle, popUp: true });
+    for (let steps = 0; steps < 360 && !session.rider.attached; steps += 1) session.step(1 / 60, water, idle);
+    expect(session.rider.attached).toBe(true);
+    expect(new Vector3(0, 1, 0).applyQuaternion(session.board.orientation).y).toBeGreaterThan(0.7);
+    // Lying on it, the rider's balance levels the board.
+    for (let steps = 0; steps < 60; steps += 1) session.step(1 / 60, water, idle);
+    expect(session.rider.attached).toBe(true);
+    expect(new Vector3(0, 1, 0).applyQuaternion(session.board.orientation).y).toBeGreaterThan(0.9);
+  });
+
+  it('twists the board with the hands: the swimmer takes the opposite turn', () => {
+    const turn = (grab: boolean) => {
+      const { session, water } = swimmerBesideBoard({ boardHeading: Math.PI / 2, swimmerHeading: 0 });
+      session.step(1 / 60, water, { ...idle, popUp: grab });
+      const before = session.surfer.angularMomentum().y;
+      session.step(1 / 60, water, idle);
+      return { swimmer: session.surfer.angularMomentum().y - before, board: session.board.angularVelocity.y };
+    };
+    const grabbed = turn(true);
+    const alone = turn(false);
+    expect(Math.abs(grabbed.board)).toBeGreaterThan(Math.abs(alone.board) + 1e-3);
+    expect(Math.sign(grabbed.swimmer - alone.swimmer)).toBe(-Math.sign(grabbed.board - alone.board));
   });
 });

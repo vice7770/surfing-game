@@ -1,7 +1,7 @@
 import type { RiderPlacement } from '../../physics/RideSession';
 import type { SurfZoneHost } from '../SurfZoneHost';
 import { LESSON_WAVES } from './lessonWaves';
-import { loadLessonSea, schoolWave, type LessonStart, type LessonWave } from './lessonWave';
+import { loadLessonSea, recordedStart, schoolWave, startPlacement, type LessonStart, type LessonWave, type RecordedStart } from './lessonWave';
 
 export interface SchoolSessionOptions {
   /** The recordings to choose from (tests pass their own). */
@@ -17,7 +17,7 @@ export interface SchoolSessionOptions {
  */
 export class SchoolSession {
   wave?: LessonWave;
-  private readonly seas = new Map<LessonStart, Uint8Array>();
+  private readonly seas = new Map<RecordedStart, Uint8Array>();
   private readonly waves: readonly LessonWave[];
   private readonly load: (wave: LessonWave, start: LessonStart) => Promise<Uint8Array>;
 
@@ -43,14 +43,16 @@ export class SchoolSession {
     const { wave } = this;
     if (!wave) throw new Error('No lesson wave prepared');
     host.restore((await this.sea(wave, start)).slice());
-    return wave.placements[start];
+    return startPlacement(wave, start);
   }
 
   private async sea(wave: LessonWave, start: LessonStart): Promise<Uint8Array> {
-    const kept = this.seas.get(start);
+    // The inside start runs on the waiting start's sea: one recording, loaded once.
+    const recorded = recordedStart(start);
+    const kept = this.seas.get(recorded);
     if (kept) return kept;
-    const sea = await this.load(wave, start);
-    this.seas.set(start, sea);
+    const sea = await this.load(wave, recorded);
+    this.seas.set(recorded, sea);
     return sea;
   }
 }

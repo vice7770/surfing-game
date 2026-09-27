@@ -57,6 +57,25 @@ describe('SettingsStore', () => {
     expect(old({ hand: [2], callParty: [4] })).toMatchObject({ hand: [4, 17], callParty: [2] });
   });
 
+  // Review Focus 1 (the wipeout spec): a new action takes only the defaults a save leaves free.
+  it('gives the new Duck-dive only the defaults a saved lying-down binding leaves free', () => {
+    const saved = { controls: { bindings: { keyboard: { paddle: ['KeyS'] }, gamepad: { paddle: [6] } }, padLayout: 2 } };
+    const store = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify(saved) }));
+    const { keyboard, gamepad } = store.value.controls.bindings;
+    expect(keyboard.paddle).toEqual(['KeyS']);
+    expect(keyboard.duckDive).toEqual(['ArrowDown']);
+    expect(gamepad.paddle).toEqual([6]);
+    expect(gamepad.duckDive).toEqual([13]);
+    expect(defaultSettings().controls.bindings.keyboard.duckDive).toEqual(['KeyS', 'ArrowDown']);
+  });
+
+  it('leaves the new Duck-dive unbound when a save took both its defaults', () => {
+    const saved = { controls: { bindings: { keyboard: { paddle: ['KeyS', 'ArrowDown'] } }, padLayout: 2 } };
+    const { keyboard } = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify(saved) })).value.controls.bindings;
+    expect(keyboard.paddle).toEqual(['KeyS', 'ArrowDown']);
+    expect(keyboard.duckDive).toEqual([]);
+  });
+
   // The stances spec, the final review: a save from before Compress keeps its own bindings, and Compress takes Space and
   // RT only where no action live standing already holds them (unbound otherwise, to set on the Controls screen).
   it('gives Compress its default inputs on an older save only where they are free', () => {

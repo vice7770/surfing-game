@@ -55,6 +55,52 @@ describe('Controls', () => {
     expect(controls.input).toMatchObject({ paddle: false, steer: 0 });
   });
 
+  // The wipeout spec: the Duck-dive action lying down (and swimming), its key shared with the trim standing.
+  it('ramps the duck-dive from S lying down, and leaves S to trim standing', () => {
+    const { controls, key } = setup();
+    key('keydown', 'KeyS');
+    const prone = controls.rideRequest(0.1, false);
+    expect(prone.duckDive).toBeGreaterThan(0);
+    expect(prone.duckDive).toBeLessThan(1);
+    expect(prone.trim ?? 0).toBe(0);
+    const standing = controls.rideRequest(0.1, true);
+    expect(standing.duckDive ?? 0).toBe(0);
+    expect(standing.trim).toBeLessThan(0);
+  });
+
+  it('reads the duck-dive from LT as an analog value lying down', () => {
+    const { controls, setPads } = setup();
+    const values = Array.from({ length: 17 }, (_, i) => (i === 6 ? 0.4 : 0));
+    setPads([{ ...pad([6]), values }]);
+    controls.poll();
+    expect(controls.rideRequest(1 / 60, false).duckDive).toBeCloseTo(0.4, 2);
+    // Held, it stays as deep as the trigger says (the keys' ramp is the keyboard's).
+    for (let i = 0; i < 60; i += 1) controls.rideRequest(1 / 60, false);
+    expect(controls.rideRequest(1 / 60, false).duckDive).toBeCloseTo(0.4, 2);
+    expect(controls.rideRequest(1 / 60, true).duckDive ?? 0).toBe(0);
+  });
+
+  it('duck-dives fully from the D-pad down', () => {
+    const { controls, setPads } = setup();
+    setPads([pad([13])]);
+    controls.poll();
+    expect(controls.rideRequest(1 / 60, false).duckDive).toBe(1);
+  });
+
+  it('holds the reel while the pop-up key is held in the water, and presses once', () => {
+    const { controls, key } = setup();
+    key('keydown', 'Enter');
+    const first = controls.rideRequest(1 / 60, false);
+    expect(first.reel).toBe(true);
+    expect(first.popUp).toBe(true);
+    controls.consumeGetUp();
+    const held = controls.rideRequest(1 / 60, false);
+    expect(held.reel).toBe(true);
+    expect(held.popUp).toBe(false);
+    key('keyup', 'Enter');
+    expect(controls.rideRequest(1 / 60, false).reel).toBe(false);
+  });
+
   it('pops up from the pad on the press, not while held', () => {
     const { controls, setPads } = setup();
     setPads([pad([0])]);

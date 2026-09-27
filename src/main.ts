@@ -60,7 +60,7 @@ import { WaveLab } from './game/waveLab/WaveLab';
 import { FlyInput } from './game/waveLab/FlyInput';
 import { labWater, type WaveLabSettings } from './game/waveLab/labSettings';
 import { SchoolSession } from './game/school/SchoolSession';
-import { lessonConfig } from './game/school/lessonWave';
+import { lessonConfig, startPlacement } from './game/school/lessonWave';
 import type { FlowFrame } from './game/school/lessonFlow';
 import type { RiderPlacement } from './physics/RideSession';
 import './style.css';
@@ -188,6 +188,8 @@ class SurfGame {
   private soundBoard?: { x: number; y: number; z: number };
   private soundSideslip = 0;
   private soundPhase?: NonNullable<SoundFrame['ride']>['phase'];
+  private soundDuck = 0;
+  private soundSnapped?: boolean;
   private readonly listenerForward = new Vector3();
   /** Online play (spec N1): the session, its frame logic, and the other surfers as drawn with their tags. */
   private online?: {
@@ -554,6 +556,11 @@ class SurfGame {
     const ride = status.ride;
     const previousPhase = this.soundPhase ?? ride?.phase;
     this.soundPhase = ride?.phase;
+    // The wipeout spec's sounds: the duck-dive's press and the leash, each against the frame before.
+    const previousDuck = this.soundDuck;
+    this.soundDuck = ride?.duck ?? 0;
+    const previouslySnapped = this.soundSnapped ?? ride?.leash.snapped ?? false;
+    this.soundSnapped = ride?.leash.snapped;
     const camera = this.physicalMode.camera.camera;
     return {
       dt,
@@ -568,7 +575,12 @@ class SurfGame {
       significantHeight: this.physicalMode.config?.significantHeight ?? 0,
       windSpeed: this.physicalMode.config?.windSpeed ?? 0,
       ...(board ? { board } : {}),
-      ...(ride && previousPhase ? { ride: { phase: ride.phase, previousPhase, speed: ride.boardSpeed } } : {}),
+      ...(ride && previousPhase ? {
+        ride: {
+          phase: ride.phase, previousPhase, speed: ride.boardSpeed, duck: ride.duck, previousDuck,
+          leashSnapped: ride.leash.snapped, previouslySnapped, knock: fresh ? ride.knock : 0,
+        },
+      } : {}),
     };
   }
 
@@ -776,7 +788,7 @@ class SurfGame {
       sun: TIMES.midday, rider: true, factory: recordedSurfZoneFactory(sea, this.stance), overrides: lessonConfig(wave), school: true,
     });
     if (!started) return false;
-    this.placeRider(wave.placements[start]);
+    this.placeRider(startPlacement(wave, start));
     this.schoolSeaTime = Number.NaN;
     return true;
   }
@@ -803,6 +815,8 @@ class SurfGame {
         paddle: request.paddle,
       },
       wave: { valid: ride.wave.valid, faceFraction: ride.wave.faceFraction, crestBreaking: ride.wave.crestBreaking, aheadOfCrest: ride.wave.aheadOfCrest },
+      // The duck-dive's measure (the wipeout spec): where the board is, and out to sea against the waves' travel.
+      x: host.snapshot.board[0], z: host.snapshot.board[2], seaward: { x: -ride.wave.directionX, z: -ride.wave.directionZ },
       ...(ride.live ? { live: { kind: ride.live.kind, start: ride.live.start } } : {}),
       ...(ride.separation ? { separation: ride.separation } : {}),
       ...(ride.report ? { report: { id: ride.report.id, end: ride.report.end } } : {}),

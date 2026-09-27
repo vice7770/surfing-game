@@ -420,7 +420,7 @@ Requirements agreed in a grilling session on 2026-09-26: [G7 spec](docs/superpow
   - Mixamo clips (swim, tread water, beach idle), which need the user's Adobe login;
   - moving to the WebGPU renderer;
   - a preset's mass and height fed into the physics (after P9's flexible rider);
-  - the leash, drawn once P11 adds it to the physics.
+  - the leash, drawn once P11 adds it to the physics (now drawn: the wipeout slice, Part A).
 
 ### P1 · Rich water (G8) — `Done (playtest open)`
 
@@ -548,6 +548,11 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
   - **Next:** the user's playtest on the M4 Pro, deferred by the user (2026-09-26): it runs well there, so the playtest comes later. It also checks, live, what the automated pass could not reach standing: W/S, crouch, the meter in a carve, hints, callouts and the end card.
 - [ ] **P10 Take-off** (`Backlog`): cruise and sprint paddling recalibrated to measured speeds, critical-power stamina, angled take-offs, late take-offs and air drops.
 - [ ] **P11 Lineup** (`Backlog`): a sliding window to pick a peak, sets read from the horizon, duck-dives, a surface roller with aeration (hold-downs emerge), breath, a snapping leash, Next set.
+  - **Wipeout and duck-dive, a slice taken ahead** ([spec](docs/superpowers/specs/2026-09-27-wipeout-and-duck-dive.md), grilled 2026-09-27):
+    - **Part A — built** ([plan](docs/superpowers/plans/2026-09-27-wipeout-duck-dive-a.md), branch `claude/wipeout-duck-dive`): the leash (6 ft, snaps above 1.2 kN, recoil), holding the pop-up key to reel the board in, grabbing it from any side (the hands turn it and roll it deck-up), the swimmer diving and swimming up, the duck-dive (S/↓, LT, D-pad down: arms press the nose, the knee the tail), hints, a Surf School lesson, the drawn cord and poses, sounds, and online flags.
+    - **Checks:** flat water, a full push holds the reference deck 0.33 m under and a 50 L board 0.58 of that (survey: 0.5–1 m, 50 L un-diveable — open); on a test bore a timed dive is pushed back under half as far as a paddler on top and early or late dives do worse (met), but not weaker inside (open: the flow under the roller is uniform to the bed); ducking from paddling speed, the pair can roll over about 1.5 s in (open: a submerged board has no waterplane and too little face-on drag).
+    - **The real surf zone** ([duck-dive report](docs/research/duck-dive-report.md), Canyon practice swell, 2 seeds × 3 min): divers reach 0.63–0.77 m under the surface (within the survey's range); a timed dive is set back 6.5 m against 10.8 m on top (0.6×, not under half); early and late dives are not worse; 15 m inside it is weaker (met). **Divers almost never keep the board** (0–13 %, against 33 % on top): the roller carries full-density water at the wave's speed through the top half of the rise, where the ducking body sits, and pulls the rider off 0.2–0.5 s after the broken water arrives. Real rollers are aerated and their push fades with depth: Part B's work.
+    - **Next:** the user's playtest; then Part B, starting with the roller's aeration and its fade with depth (the duck-dive's usefulness depends on it), then turbulence, hold-downs and breath; and the submerged board's hydrodynamics.
 - [ ] **P12 Tube** (`Backlog`, after P11; P7 has finished): pulling in and racing out, rail grab and hand drag, crouch clearance, the Regular/Goofy setting, an automatic tube camera.
 - **Backlog beyond P12:** multiplayer and community judging, local ride replay, airs, turtle roll and longboard, computer surfers, session-long fatigue. Audio is P8's backlog.
 

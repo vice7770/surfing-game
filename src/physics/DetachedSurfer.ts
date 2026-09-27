@@ -27,6 +27,8 @@ export interface AttachedRiderState {
 export interface SwimInput {
   stroke: boolean;
   steer: number;
+  /** The Duck-dive action held in the water: take a breath and dive, 0 to 1. */
+  dive?: number;
 }
 
 /** Sum of external forces applied during the latest body step, in newtons. */
@@ -49,6 +51,8 @@ export interface BoardContactBody {
   readonly orientation: Quaternion;
   readonly halfExtents: Readonly<Vector3>;
   readonly inverseMass: number;
+  /** World frame, rad/s. */
+  readonly angularVelocity: Readonly<Vector3>;
   velocityAt(worldPoint: Readonly<Vector3>, out: Vector3): Vector3;
   inverseEffectiveMass(worldPoint: Readonly<Vector3>, normal: Readonly<Vector3>): number;
   applyImpulse(impulse: Readonly<Vector3>, worldPoint: Readonly<Vector3>): void;
@@ -128,6 +132,19 @@ const BOARD_RESTITUTION = 0.05;
 const BOARD_FRICTION = 0.4;
 const LIP_CONTACT_FRACTION = 0.05;
 const MAX_LIP_BODY_DELTA_SPEED = 8;
+/**
+ * Diving (the wipeout spec): the arms pull and the legs kick down and forward at
+ * DIVE_PITCH below level, with the stroke's thrust per limb scaled by the dive
+ * input. A body of density 950 floats with about 40 N to spare fully under, so
+ * the ~150 N downward share takes it under; let go, it floats back up.
+ * Underwater (the head fully wet), a stroke swims up and forward at
+ * SURFACE_PITCH instead of along the surface. Provisional.
+ */
+const DIVE_PITCH = Math.PI / 4;
+const SURFACE_PITCH = Math.PI / 3;
+/** The arms' and the legs' thrust per limb at full effort, N (the stroke's). */
+const ARM_THRUST = 75;
+const LEG_THRUST = 30;
 
 /**
  * A lip strike, for every body it can hit: the water density a parcel's mass is
@@ -219,6 +236,10 @@ export class DetachedSurfer implements DetachedRiderPose {
   angularSpeed = 0;
   heading = 0;
   outsideDomain = false;
+  /** Diving this step: the dive held, with control. */
+  diving = false;
+  /** The head is fully under water. */
+  underwater = false;
   readonly lastForces: BodyForceLedger = {
     gravity: new Vector3(), buoyancy: new Vector3(), drag: new Vector3(), swim: new Vector3(),
   };
@@ -298,6 +319,8 @@ export class DetachedSurfer implements DetachedRiderPose {
     this.heading = Math.atan2(forward.x, forward.z);
     this.active = true;
     this.controlGain = 0;
+    this.diving = false;
+    this.underwater = false;
     this.angularSpeed = attached.angularVelocity.length();
     this.outsideDomain = false;
     this.swimEligible = false;
@@ -575,12 +598,20 @@ export class DetachedSurfer implements DetachedRiderPose {
     this.controlGain += (calm - this.controlGain) * Math.min(1, dt * 3);
     this.heading += clamp(input.steer, -1, 1) * this.controlGain * dt * 2;
 
-    if (input.stroke && this.controlGain > 0) {
-      const direction = this.strokeDirection.set(Math.sin(this.heading), 0.3, Math.cos(this.heading)).normalize();
+    this.underwater = this.nodes[PART_INDEX.head].submersion >= 1;
+    const dive = clamp(input.dive ?? 0, 0, 1);
+    this.diving = dive > 0.05 && this.controlGain > 0;
+    const effort = this.diving ? dive : input.stroke && this.controlGain > 0 ? 1 : 0;
+    if (effort > 0) {
+      // Diving pulls down and forward; underwater a stroke swims up toward the light; otherwise along the surface.
+      const pitch = this.diving ? -DIVE_PITCH : this.underwater ? SURFACE_PITCH : Math.atan(0.3);
+      const direction = this.strokeDirection.set(
+        Math.sin(this.heading) * Math.cos(pitch), Math.sin(pitch), Math.cos(this.heading) * Math.cos(pitch),
+      );
       for (const index of [3, 4, 5, 6]) {
         if (this.nodes[index].submersion <= 0) continue;
-        const thrust = index < 5 ? 75 : 30;
-        const magnitude = thrust * this.controlGain * this.nodes[index].submersion;
+        const thrust = index < 5 ? ARM_THRUST : LEG_THRUST;
+        const magnitude = thrust * effort * this.controlGain * this.nodes[index].submersion;
         this.forces[index].addScaledVector(direction, magnitude);
         this.lastForces.swim.addScaledVector(direction, magnitude);
       }

@@ -71,10 +71,12 @@ describe('settingsModel', () => {
     expect(settingsModel('graphics', low, context).find((row) => row.id === 'redetect')).toBeUndefined();
   });
 
-  it('lists two keys and two gamepad buttons for each of the sixteen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls; C1 a second button; the stances spec Compress)', () => {
+  it('lists two keys and two gamepad buttons for each of the seventeen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls; C1 a second button; the stances spec Compress; the wipeout spec the duck-dive)', () => {
     const bindings = settingsModel('controls', defaultSettings(), context).filter((row) => row.kind === 'binding');
-    expect(bindings).toHaveLength(64);
-    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(16);
+    expect(bindings).toHaveLength(68);
+    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(17);
+    const duck = bindings.find((row) => row.kind === 'binding' && row.action === 'duckDive');
+    expect(duck).toMatchObject({ help: expect.stringContaining('push the board under') });
   });
 
   // Review Focus 2 and 5: the connection row by status, with the Steam advice; Safari says what it needs.

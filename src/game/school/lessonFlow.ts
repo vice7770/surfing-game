@@ -15,7 +15,7 @@ export interface FlowFrame extends LessonFrame {
 }
 
 /** How long an attempt may run from each start, s; Free Practice rides longer from the pocket. */
-const TIME_LIMIT: Record<LessonStart, number> = { pocket: 25, caught: 12, waiting: 15 };
+const TIME_LIMIT: Record<LessonStart, number> = { pocket: 25, caught: 12, waiting: 15, inside: 15 };
 const FREE_POCKET_LIMIT = 40;
 /** A missed attempt restarts on the same wave after this long, s. */
 const RESTART_AFTER = 2;
@@ -68,6 +68,10 @@ export class LessonFlow {
     if (this.goal.passed) {
       this.state = 'passed';
       this.misses = 0;
+      return;
+    }
+    if (this.goal.missed) {
+      this.miss(this.goal.missed);
       return;
     }
     const reportId = frame.report?.id ?? -1;

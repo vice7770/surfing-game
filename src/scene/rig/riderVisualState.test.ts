@@ -1,6 +1,6 @@
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { RIDER_SNAPSHOT } from '../../wave/SurfZoneRunner';
+import { LEASH_BITS, RIDER_SNAPSHOT, SWIM_BITS } from '../../wave/SurfZoneRunner';
 import { BONES, REQUIRED_BONES } from './humanoidBones';
 import { posturePoints } from './posturePoints';
 import { POINT, createRiderVisualState, readRiderSnapshot } from './riderVisualState';
@@ -20,6 +20,19 @@ describe('rider visual state', () => {
     expect(state.heading).toBe(0.4);
     expect(state.boardPosition.toArray()).toEqual([1, 2, 3]);
     expect(state.boardQuaternion.toArray()).toEqual([0, 0, 0.6, 0.8]);
+  });
+
+  it('decodes the duck-dive, the leash and the swimmer (the wipeout spec)', () => {
+    const rider = new Float64Array(RIDER_SNAPSHOT.length);
+    rider[RIDER_SNAPSHOT.duck] = 0.7;
+    rider.set([4, 5, 6], RIDER_SNAPSHOT.plug);
+    rider[RIDER_SNAPSHOT.leash] = LEASH_BITS.worn | LEASH_BITS.reeling;
+    rider[RIDER_SNAPSHOT.swim] = SWIM_BITS.stroking | SWIM_BITS.under;
+    const state = readRiderSnapshot(rider, [0, 0, 0, 0, 0, 0, 1, 1], createRiderVisualState());
+    expect(state.duck).toBe(0.7);
+    expect(state.leash).toMatchObject({ worn: true, snapped: false, reeling: true });
+    expect(state.leash.plug.toArray()).toEqual([4, 5, 6]);
+    expect(state.swim).toEqual({ stroking: true, diving: false, under: true });
   });
 
   it('puts a standing regular rider’s left foot forward on the deck, and a goofy rider’s right', () => {
