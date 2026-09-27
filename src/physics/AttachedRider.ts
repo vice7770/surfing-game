@@ -1527,11 +1527,13 @@ export class AttachedRider {
     const wet = submergedFraction(sample.surfaceY - p.y, radius) - (Number.isFinite(deckY) ? submergedFraction(Math.min(deckY, sample.surfaceY) - p.y, radius) : 0);
     if (!(wet > 0)) return;
     if (slot >= RIDER_PARTS.length) this.stroking = true;
-    const support = SEAWATER * WATER.gravity * volume * wet;
+    // Aerated water (the wipeout spec, Part B) is a lighter mixture to float and drag in.
+    const mixture = SEAWATER * (1 - (sample.voidFraction ?? 0));
+    const support = mixture * WATER.gravity * volume * wet;
     const force = this.partForce.set(-support * sample.slopeX, support, -support * sample.slopeZ);
     this.buoyancy.add(force);
     const relative = this.flow.set(sample.flowX, sample.flowY, sample.flowZ).sub(this.partVelocity);
-    const drag = 0.5 * SEAWATER * dragArea * wet * relative.length();
+    const drag = 0.5 * mixture * dragArea * wet * relative.length();
     force.addScaledVector(relative, drag).addScaledVector(this.bodyAxis, -drag * (1 - shelter) * relative.dot(this.bodyAxis));
     if (slot >= RIDER_PARTS.length) {
       const limit = HAND_FORCE_LIMIT * this.mass * WATER.gravity;

@@ -19,6 +19,7 @@ export class SurfWaterBodyField implements BodyWaterField {
     out.wet = sample.wet;
     out.outsideDomain = sample.outsideDomain;
     out.breaking = sample.breaking;
+    out.voidFraction = sample.voidFraction ?? 0;
     out.flowModel = sample.outsideDomain ? 'outside' : sample.wet ? 'reconstructed' : 'dry';
   }
 }

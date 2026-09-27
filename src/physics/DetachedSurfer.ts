@@ -8,6 +8,8 @@ export interface BodyWaterSample {
   wet: boolean;
   outsideDomain: boolean;
   breaking: number;
+  /** The share of the water that is air (broken water's plume), 0–1; absent is clear water. */
+  voidFraction?: number;
   /** Horizontal depth profile is reconstructed from solver-averaged momentum. */
   flowModel?: 'reconstructed' | 'dry' | 'outside';
 }
@@ -543,7 +545,9 @@ export class DetachedSurfer implements DetachedRiderPose {
       }
       node.submersion = this.sample.wet
         ? submergedFraction(this.sample.surfaceY - node.position.y, node.radius) : 0;
-      const buoyancy = WATER_DENSITY * GRAVITY * node.volume * node.submersion;
+      // Aerated water (the wipeout spec, Part B) is a lighter mixture to float and drag in.
+      const mixture = WATER_DENSITY * (1 - (this.sample.voidFraction ?? 0));
+      const buoyancy = mixture * GRAVITY * node.volume * node.submersion;
       force.y += buoyancy;
       this.lastForces.buoyancy.y += buoyancy;
       const relative = this.sample.wet
@@ -551,7 +555,7 @@ export class DetachedSurfer implements DetachedRiderPose {
         : this.relative.copy(node.velocity);
       const speed = relative.length();
       const area = Math.PI * node.radius * node.radius;
-      const density = WATER_DENSITY * node.submersion + AIR_DENSITY * (1 - node.submersion);
+      const density = mixture * node.submersion + AIR_DENSITY * (1 - node.submersion);
       const dragMagnitude = Math.min(
         0.5 * density * DRAG_COEFFICIENT * area * speed,
         node.mass / dt,

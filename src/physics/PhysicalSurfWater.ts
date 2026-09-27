@@ -48,6 +48,11 @@ export interface PhysicalSurfWaterOptions {
   breaking?: ArrayLike<number>;
   /** Render node spacing, m (the physical mode renders at 1 m). */
   nodeSpacing?: number;
+  /**
+   * The whitewater plume (G9's `AerationField`): each cell's void fraction and the
+   * plume's depth under the surface. Bodies sample its air (the wipeout spec, Part B).
+   */
+  aeration?: { voidFraction(cell: number): number; readonly depth: ArrayLike<number> };
   /** Lowers the surface where a flying lip's void leaves it (the plunging lip's `carve`). */
   carve?: (x: number, z: number, surface: number) => number;
 }
@@ -89,6 +94,7 @@ export class PhysicalSurfWater implements SurfWater {
     const { lip } = simulation;
     return new PhysicalSurfWater(simulation.solver, {
       peakPeriod: simulation.config.peakPeriod, breaking: simulation.breaking.strength, carve: (x, z, surface) => lip.carve(x, z, surface),
+      aeration: simulation.aeration,
     });
   }
 
@@ -105,6 +111,7 @@ export class PhysicalSurfWater implements SurfWater {
     out.stillDepth = Math.max(0, solver.restLevel - bottom);
     out.wet = depth > WET;
     this.surface(x, z, out);
+    out.voidFraction = this.airAt(y, out.surfaceY);
     out.breaking = this.options.breaking ? this.blend(this.options.breaking) : 0;
     if (!out.wet) {
       out.flowX = 0;
@@ -316,7 +323,26 @@ export class PhysicalSurfWater implements SurfWater {
     return x < xMin || x > xMin + solver.nx * solver.dx || z < zMin || z > zMax;
   }
 
+  /**
+   * The plume's void fraction at height `y` under a surface at `surfaceY`: each of
+   * the four cells' own where the point lies within its plume's depth, blended by
+   * the cells' weights (from the latest `cellWeights`).
+   */
+  private airAt(y: number, surfaceY: number): number {
+    const plume = this.options.aeration;
+    if (!plume) return 0;
+    const below = surfaceY - y;
+    let air = 0;
+    for (let c = 0; c < 4; c += 1) {
+      const i = this.cells[c];
+      if (this.weights[c] === 0 || below > plume.depth[i]) continue;
+      air += this.weights[c] * plume.voidFraction(i);
+    }
+    return air;
+  }
+
   private flatSea(out: WaterSample): WaterSample {
+    out.voidFraction = 0;
     out.surfaceY = this.solver.restLevel;
     out.stillDepth = 0;
     out.waterDepth = 0;
