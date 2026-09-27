@@ -1,5 +1,6 @@
 import type { SpotName } from '../wave/Bathymetry';
 import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalSettings } from './PhysicalMode';
+import { solverStage } from '../wave/SurfZoneSimulation';
 
 /** The Surf screen's few choices (plan P8), turned into the Wave Lab's physical settings. */
 export const SURF_SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon'];
@@ -61,7 +62,7 @@ export function physicalSettingsFor(spot: SpotName, conditions: SurfConditions, 
   return {
     ...DEFAULT_PHYSICAL_SETTINGS,
     spot,
-    stage: water.stage,
+    stage: solverStage(spot, water.stage),
     compute: water.compute,
     source: swell ? 'buoy' : 'practice',
     ...(swell ? { significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod, spread: swell.spread } : {}),

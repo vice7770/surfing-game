@@ -1,5 +1,5 @@
 import { createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
-import { BoussinesqSolver } from './BoussinesqSolver';
+import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
 import { AERATION, AerationField } from './AerationField';
@@ -59,6 +59,17 @@ export interface SurfZoneConfig {
 
 /** Along-shore window width unless the config says otherwise, m. */
 export const ALONG_SHORE = 160;
+
+/**
+ * Spots that always run stage 2 (the Teahupo'o Reef spec): shallow water steepens waves far too early
+ * in the Reef's 30 m water, so a machine that cannot keep up runs it slower than real time instead.
+ */
+export const STAGE_2_ONLY: readonly SpotName[] = ['reef'];
+
+/** The solver stage a spot runs on: the asked one, or 2 where the spot needs it. */
+export function solverStage(spot: SpotName, stage: 1 | 2 | undefined): 1 | 2 {
+  return STAGE_2_ONLY.includes(spot) ? 2 : stage ?? 2;
+}
 
 /** Swell components the tank's sea is built from, unless the config says otherwise. */
 export const SEA_COMPONENTS = 24;
@@ -129,7 +140,7 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
     componentCount: config.componentCount ?? SEA_COMPONENTS,
     depth: OFFSHORE_DEPTH[config.spot] + config.tide,
     bandwidth: config.bandwidth,
-  }, config.seed, shallowWaterWaveNumber);
+  }, config.seed, config.spot === 'reef' ? madsenSorensenWaveNumber : shallowWaterWaveNumber);
 }
 
 /**
@@ -240,7 +251,7 @@ export class SurfZoneSimulation {
     };
     const depthAt = (x: number, z: number) => tankDepth(this.spot, offshoreDepth, x, z);
     const onset = config.breakingOnset ?? BREAKING_ONSET[config.spot];
-    this.solver = (config.stage ?? 2) === 2
+    this.solver = solverStage(config.spot, config.stage) === 2
       ? new BoussinesqSolver(grid, depthAt, { waterLevel: config.tide, breaking: { onset } })
       : new ShallowWaterSolver(grid, depthAt, { waterLevel: config.tide });
     this.sea = surfZoneSea(config);

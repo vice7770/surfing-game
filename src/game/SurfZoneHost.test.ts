@@ -53,9 +53,12 @@ describe('LocalSurfZone', () => {
     const { solver, lip } = host.runner.simulation;
     let tubes = 0;
     let fastest = 0;
-    for (let step = 0; step < 120 && fastest < 15; step += 1) {
+    // Run until a set's tubes have formed and had 2 s (120 steps) to collapse, wherever the sea's timing puts them.
+    let collapsing = 0;
+    for (let step = 0; step < 900 && fastest < 15 && collapsing < 120; step += 1) {
       host.advance(1);
       tubes = Math.max(tubes, lip.tubeCount);
+      if (tubes > 10) collapsing += 1;
       for (let i = 0; i < solver.h.length; i += 1) {
         if (solver.h[i] > 0.05) fastest = Math.max(fastest, Math.hypot(solver.qx[i], solver.qz[i]) / solver.h[i]);
       }

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { REEF, createSpot } from './Bathymetry';
 import { breakerDepthFor } from './Breaking';
-import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TANK, takeOffPoint, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
+import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TANK, solverStage, takeOffPoint, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
+import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
+import { shallowWaterWaveNumber } from './dispersion';
 import { rayConcentration } from './Refraction';
 import { crestSpeedAt } from './CrestKinematics';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
@@ -34,6 +36,18 @@ describe('SurfZoneSimulation', () => {
       expect(largest).toBeGreaterThan(0.25 * small.significantHeight);
       expect(simulation.timeToSet).toBeCloseTo(25, 6);
     }
+  });
+
+  it('runs the Reef on stage 2 whatever the config asks, forcing the solver’s own waves at its boundary', () => {
+    expect(solverStage('reef', 1)).toBe(2);
+    expect(solverStage('beach', 1)).toBe(1);
+    expect(solverStage('canyon', undefined)).toBe(2);
+    const reef = new SurfZoneSimulation({ ...small, spot: 'reef', stage: 1 });
+    expect(reef.solver).toBeInstanceOf(BoussinesqSolver);
+    const omega = reef.sea.components[0].omega;
+    expect(reef.sea.components[0].k).toBeCloseTo(madsenSorensenWaveNumber(omega, reef.sea.depth), 10);
+    const beach = new SurfZoneSimulation({ ...small, spot: 'beach' });
+    expect(beach.sea.components[0].k).toBe(shallowWaterWaveNumber(beach.sea.components[0].omega, beach.sea.depth));
   });
 
   it('spins up the menu\'s first Reef on the GPU tier\'s sea without blowing up', () => {

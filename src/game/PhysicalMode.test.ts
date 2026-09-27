@@ -56,6 +56,22 @@ describe('PhysicalMode', () => {
     expect(chopForWind(0)).toBeGreaterThan(0);
   });
 
+  it('builds the Reef on stage 2 even when the water tier or a dev asks for stage 1', async () => {
+    const scene = new Scene();
+    const water = new WaterSurface(new FlatSurfaceSource());
+    const mode = new PhysicalMode(scene);
+    const built: SurfZoneConfig[] = [];
+    const gpuTier = vi.fn(async () => false);
+    const factory = (config: SurfZoneConfig): SurfZoneHost => {
+      built.push(config);
+      return new LocalSurfZone(config);
+    };
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef', stage: 1 }, 5, water, quick, factory, gpuTier)).toBe(true);
+    expect(built[0].stage).toBe(2);
+    expect(gpuTier).toHaveBeenCalled();
+    mode.stop();
+  }, 60_000);
+
   it('shows the physical sea on the shared water surface and frames its break', async () => {
     const scene = new Scene();
     const water = new WaterSurface(new FlatSurfaceSource());

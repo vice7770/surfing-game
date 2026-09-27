@@ -16,8 +16,12 @@ describe('surf conditions', () => {
   it('turns a big swell at high tide with onshore wind into buoy values, on the given water tier', () => {
     const settings = physicalSettingsFor('reef', { swell: 'big', tide: 'high', wind: 'onshore', time: 'dawn' }, { stage: 1, compute: 'cpu' });
     expect(settings).toMatchObject({
-      spot: 'reef', source: 'buoy', significantHeight: 2.4, peakPeriod: 14, tide: 0.6, windSpeed: 6, stage: 1, compute: 'cpu',
+      spot: 'reef', source: 'buoy', significantHeight: 2.4, peakPeriod: 14, tide: 0.6, windSpeed: 6, stage: 2, compute: 'cpu',
     });
+  });
+
+  it('keeps the other spots on the water tier’s stage', () => {
+    expect(physicalSettingsFor('point', DEFAULT_CONDITIONS, { stage: 1, compute: 'cpu' }).stage).toBe(1);
   });
 
   it('keeps every choice within what the tank and the Wave Lab allow', () => {

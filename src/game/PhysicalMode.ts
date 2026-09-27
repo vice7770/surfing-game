@@ -25,7 +25,7 @@ import type { ReadoutRow } from '../wave/SwellReadout';
 import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { SprayLook } from '../wave/SprayCloud';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
-import { OFFSHORE_DEPTH, SEA_COMPONENTS, TANK, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { OFFSHORE_DEPTH, SEA_COMPONENTS, TANK, solverStage, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
@@ -353,7 +353,8 @@ export class PhysicalMode {
     const start = ++this.starts;
     const swell = swellFor(settings);
     // The GPU tier builds a richer sea; the page decides, so its far field matches the worker's tank.
-    const tier = settings.stage === 2 && settings.compute === 'auto' && gpuTier !== undefined && await gpuTier();
+    const stage = solverStage(settings.spot, settings.stage);
+    const tier = stage === 2 && settings.compute === 'auto' && gpuTier !== undefined && await gpuTier();
     const config: SurfZoneConfig = {
       spot: settings.spot,
       seed,
@@ -364,7 +365,7 @@ export class PhysicalMode {
       bandwidth: swell.bandwidth,
       tide: settings.tide,
       windSpeed: settings.windSpeed,
-      stage: settings.stage,
+      stage,
       compute: settings.compute,
       ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
       ...overrides,

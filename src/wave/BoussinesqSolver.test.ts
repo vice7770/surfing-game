@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSpot } from './Bathymetry';
-import { BoussinesqSolver, madsenSorensenCelerity } from './BoussinesqSolver';
+import { BoussinesqSolver, madsenSorensenCelerity, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { GRAVITY } from './dispersion';
 import { ShallowWaterSolver, uniformEdges, type WaterTarget } from './ShallowWaterSolver';
 import { calmTarget, longWaveTarget, meanLag, upCrossings } from './shallowWaterTestSupport';
@@ -188,6 +188,11 @@ describe('Boussinesq dispersion', () => {
       }
     }
     expect(fastest).toBeLessThan(1e-9);
+  });
+
+  it('gives the wave number of its own dispersion', () => {
+    const omega = (2 * Math.PI) / 10;
+    expect(madsenSorensenWaveNumber(omega, 12)).toBeCloseTo(omega / madsenSorensenCelerity(omega, 12), 12);
   });
 
   // Plan §1.8's table: the phase speed at a given kh is within 2.5 % of Airy up to kh = 3 (2.4 % there).
