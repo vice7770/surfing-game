@@ -1,4 +1,4 @@
-import { createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
+import { REEF, createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
@@ -7,7 +7,7 @@ import { FoamField, boreDissipation, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
 import { TUBE_CAPACITY, carveGrid } from './tubeTable';
 import { focusX } from './Refraction';
-import { breakerForm, crestMotion, waveHeightAt } from './CrestKinematics';
+import { breakerForm, crestMotion, submergedCrest, waveHeightAt } from './CrestKinematics';
 import { jetFlightTime, tubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
 import { SeaStateBoundary } from './SeaStateBoundary';
@@ -95,7 +95,7 @@ export interface RenderGrid {
 export const TANK = { offshore: -330, zoneInner: -270, blendEnd: -190, fineFrom: -150, shore: 30 };
 
 /** Flat tank bed offshore of each spot's blend, m below datum. */
-export const OFFSHORE_DEPTH: Record<SpotName, number> = { beach: 5, point: 8, reef: 10, canyon: 5 };
+export const OFFSHORE_DEPTH: Record<SpotName, number> = { beach: 5, point: 8, reef: REEF.deep, canyon: 5 };
 
 /** Kennedy onset per spot (plan Q27): 0.35√(gh) on the barred beach, 0.65√(gh) on plain or steep beds. */
 export const BREAKING_ONSET: Record<SpotName, number> = { beach: 0.35, point: 0.65, reef: 0.65, canyon: 0.65 };
@@ -149,7 +149,7 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
  * shadow it casts (as measured over the Scripps canyon, Magne et al. 2007),
  * and moves with the swell's direction and period.
  */
-export const TAKE_OFF: Record<SpotName, 'centre' | 'focus'> = { beach: 'centre', point: 'centre', reef: 'centre', canyon: 'focus' };
+export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 'centre', point: 'centre', reef: 'peak', canyon: 'focus' };
 
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */
 export const TAKE_OFF_EDGE_MARGIN = 30;
@@ -173,6 +173,11 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   };
   const reach = Math.max(0, (config.alongShore ?? ALONG_SHORE) / 2 - TAKE_OFF_EDGE_MARGIN);
   if (TAKE_OFF[config.spot] === 'centre' || reach === 0) return { x: 0, z: breakZ(0) };
+  // The Reef's riders wait at its peak, where each wave first breaks.
+  if (TAKE_OFF[config.spot] === 'peak') {
+    const x = Math.min(reach, Math.max(-reach, REEF.takeOffX));
+    return { x, z: breakZ(x) };
+  }
   const bed = (x: number, z: number) => tankDepth(spot, offshoreDepth, x, z) + config.tide;
   const swell = { period: config.peakPeriod, direction: (config.directionDegrees * Math.PI) / 180 };
   const x = focusX(bed, swell, TANK.zoneInner, breakZ(0), -reach, reach);
@@ -456,7 +461,8 @@ export class SurfZoneSimulation {
     const bed = (z: number) => tankDepth(this.spot, offshoreDepth, point.x, z);
     const slope = Math.abs(bed(point.z - 2) - bed(point.z + 2)) / 4;
     const depth = this.breakerDepth();
-    const readout = describeSwell({ height: BREAKER_INDEX * depth, period: this.config.peakPeriod, depth, bedSlope: slope });
+    const overCrest = submergedCrest((ahead) => bed(point.z + ahead) + this.config.tide, depth, slope);
+    const readout = describeSwell({ height: BREAKER_INDEX * depth, period: this.config.peakPeriod, depth, bedSlope: slope, submergedCrest: overCrest });
     return { value: readout.iribarren, type: readout.breakerType };
   }
 
@@ -552,8 +558,13 @@ export class SurfZoneSimulation {
     const breakerHeight = BREAKER_INDEX * stillDepth;
     const deepWavelength = (GRAVITY * this.config.peakPeriod ** 2) / (2 * Math.PI);
     const slope = Math.hypot(slopeX, slopeZ);
-    const iribarren = slope / Math.sqrt(breakerHeight / deepWavelength);
-    const form = breakerForm(iribarren);
+    const x = solver.xCenters[column];
+    const overCrest = submergedCrest(
+      (ahead) => solver.restLevel - solver.sampleCentered(bed, x, zCenters[crestRow] + ahead), stillDepth, Math.abs(slopeZ),
+    );
+    // Over a submerged crest a steep break plunges at the top of the plunging band (`breakerForm`).
+    const iribarren = Math.min(slope / Math.sqrt(breakerHeight / deepWavelength), overCrest ? 2 : Infinity);
+    const form = breakerForm(iribarren, overCrest);
     if (form === 'roller') this.lipRollers += 1;
     if (form !== 'jet') return;
     const motion = crestMotion(solver, crest);

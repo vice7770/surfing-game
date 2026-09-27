@@ -18,6 +18,7 @@ import type { LipParcelSource } from '../src/physics/DetachedSurfer';
 import { RideSession } from '../src/physics/RideSession';
 import type { SurfWater } from '../src/physics/SurfWater';
 import type { SpotName } from '../src/wave/Bathymetry';
+import { applyReefShape } from './reefShape';
 import { SURF_ZONE_STEP, SurfZoneRunner } from '../src/wave/SurfZoneRunner';
 
 const option = (name: string): string | undefined => {
@@ -32,6 +33,8 @@ const ghosts = flag('ghosts');
 /** Where the bots wait: metres along shore from the break point, and metres outside the break line (negative: inside). */
 const alongs = ghosts ? [-45, -25, -5, 15, 35] : [0];
 const offsets = ghosts ? [-8, -4, 0, 4, 8, 12] : [argument('offset', 3)];
+// Reshape the Reef for this run: `--reef angle=50,crestZ=-125` (the design sweep).
+applyReefShape(option('reef'));
 const spots = (option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon']) as SpotName[];
 const output = option('out') ?? 'docs/research/catch-report.md';
 const practice = flag('practice');

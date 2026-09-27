@@ -24,6 +24,7 @@ import { RideSession } from '../src/physics/RideSession';
 import { createWaterSample, type SurfWater } from '../src/physics/SurfWater';
 import { WaveFrameGauge } from '../src/physics/waveFrame';
 import type { SpotName } from '../src/wave/Bathymetry';
+import { applyReefShape } from './reefShape';
 import { SURF_ZONE_STEP, SurfZoneRunner } from '../src/wave/SurfZoneRunner';
 
 const option = (name: string): string | undefined => {
@@ -34,6 +35,8 @@ const argument = (name: string, fallback: number): number => Number(option(name)
 const flag = (name: string): boolean => process.argv.includes(`--${name}`);
 const seedCount = argument('seeds', 2);
 const minutes = argument('minutes', 3);
+// Reshape the Reef for this run: `--reef angle=50,crestZ=-125` (the design sweep).
+applyReefShape(option('reef'));
 const spots = (option('spots')?.split(',') ?? ['point', 'reef']) as SpotName[];
 const output = option('out') ?? 'docs/research/ride-report.md';
 const practice = flag('practice');

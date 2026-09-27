@@ -11,6 +11,7 @@
 import { writeFileSync } from 'node:fs';
 import { DEFAULT_PHYSICAL_SETTINGS, swellFor } from '../src/game/PhysicalMode';
 import type { SpotName } from '../src/wave/Bathymetry';
+import { applyReefShape } from './reefShape';
 import { rideability, type PeelSample } from '../src/wave/Rideability';
 import { SurfZoneSimulation } from '../src/wave/SurfZoneSimulation';
 import { measureTube } from '../src/wave/TubeShape';
@@ -23,6 +24,8 @@ const argument = (name: string, fallback: number): number => Number(option(name)
 const seedCount = argument('seeds', 2);
 const periods = argument('periods', 12);
 const practice = process.argv.includes('--practice');
+// Reshape the Reef for this run: `--reef angle=50,crestZ=-125` (the design sweep).
+applyReefShape(option('reef'));
 const spots = (option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon']) as SpotName[];
 const output = option('out') ?? 'docs/research/tube-report.md';
 const settings = practice ? { ...DEFAULT_PHYSICAL_SETTINGS, source: 'practice' as const } : DEFAULT_PHYSICAL_SETTINGS;

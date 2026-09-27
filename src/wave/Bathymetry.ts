@@ -25,31 +25,31 @@ export function deanDepth(offshore: number, a = 0.12, maxDepth = 12, landSlope =
 export const BEACH_BAR = { offshore: 90, height: 0.9, width: 18, ripSpacing: 110, ripWidth: 22, ripJitter: 25 };
 export const POINT_HEADLAND = { center: 0, halfWidth: 150, protrusion: 120, slope: 0.04, maxDepth: 12 };
 /**
- * A-frame reef: a 10 m channel, a 0.15 shelf edge (edgeWidth sets the slope)
- * and a 1 m shelf, shallow enough that waves break on the edge as plunging
- * jets rather than crossing it to spill on the shelf (plan P7: 769 jets a
- * minute against 307 with a 2 m shelf). The edge's two arms run from the apex at `obliquity`
- * degrees to the shoreline, out to `halfWidth` either side. The whole edge
- * lies in the tank's 1 m surf zone (z ≥ −150) across the 160 m window, so a
- * steep coarse-sand beach (Dean A 0.3) backs the shelf to leave room for it.
+ * The Teahupo'o Reef (the Teahupo'o Reef spec): a left slab. The tank's deep water rises up a
+ * 1:2.29 forereef (Rodríguez-Burguette et al. 2025, a model of Teahupo'o's reef) to a shelf
+ * about 10 m deep (Shand 2024), where the wave stands up before the reef rises again to its
+ * crest, about 1.5 m under the surface (WSL). The ledge rises from the shelf, its foot meeting
+ * the shelf's edge at the peak (x = crestX), and runs at `angle` degrees to the shoreline,
+ * furthest out toward −x, so each wave breaks there first and peels toward +x (a left) at the
+ * shelf's celerity over the sine of the crest's angle to it (`ledgePeel`). A pass runs along the
+ * window's +x open edge, level across it like the Canyon's axis, where the left ends. A planar
+ * beach face caps it all. Sources and provisional values: docs/research/teahupoo-reef-sources.md.
+ * Mutable for the design sweep (`scripts/reefShape.ts`).
  */
 export const REEF = {
-  edge: -55, apexX: 0, obliquity: 21.8, halfWidth: 125, edgeWidth: 80, shelfDepth: 1, channelDepth: 10, beachA: 0.3,
-  /** 2: the A-frame; 1: a single arm, one oblique edge crossing x = apexX at edgeMid, so the reef peels one way. */
-  arms: 2, edgeMid: -90,
+  deep: 30, foreSlope: 1 / 2.29, shelfEdge: -150, shelfDepth: 10,
+  ledgeSlope: 1 / 2.29, crestDepth: 1.5, crestX: -80, crestZ: -120, angle: 45,
+  passX: 80, passHalfWidth: 25, passDepth: 12, shoreSlope: 0.2, takeOffX: -50,
 };
 
-/**
- * Where the reef's shelf edge crosses along-shore position `x`. Two arms: an
- * A-frame, furthest out at the apex and back to `edge` beyond the arms. One
- * arm: a straight edge at `obliquity` to the shoreline through (apexX, edgeMid),
- * further out toward −x.
- */
-export function reefEdgeZ(x: number): number {
-  const slope = Math.tan((REEF.obliquity * Math.PI) / 180);
-  if (REEF.arms === 1) return REEF.edgeMid - (x - REEF.apexX) * slope;
-  const reach = Math.max(0, REEF.halfWidth - Math.abs(x - REEF.apexX));
-  return REEF.edge - reach * slope;
+/** Where the Reef's crest line (the top of its ledge) crosses along-shore position x. */
+export function reefCrestZ(x: number): number {
+  return REEF.crestZ + (x - REEF.crestX) * Math.tan((REEF.angle * Math.PI) / 180);
+}
+
+/** Distance seaward of the Reef's crest line, m, measured across it (negative shoreward of it). */
+export function reefSeaward(x: number, z: number): number {
+  return (reefCrestZ(x) - z) * Math.cos((REEF.angle * Math.PI) / 180);
 }
 /**
  * A canyon cut through the shelf. It bends the swell off its axis, leaving a
@@ -96,11 +96,17 @@ function reef(): SurfSpot {
   return {
     name: 'reef',
     depthAt(x, z) {
-      const edgeZ = reefEdgeZ(x);
-      const onReef = smoothstep(edgeZ - REEF.edgeWidth / 2, edgeZ + REEF.edgeWidth / 2, z);
-      const channel = Math.max(deanDepth(-z), REEF.channelDepth);
-      const shelf = Math.min(deanDepth(-z, REEF.beachA), REEF.shelfDepth);
-      return channel + (shelf - channel) * onReef;
+      const r = REEF;
+      // The shore-parallel forereef up to the shelf; on the shelf, the ledge rising from it to the crest.
+      // The crest line keeps the ledge's foot shoreward of the shelf's edge (at the peak they meet), so the bed has no cliff.
+      const fore = z >= r.shelfEdge ? r.shelfDepth : Math.min(r.deep, r.shelfDepth + (r.shelfEdge - z) * r.foreSlope);
+      const ledge = r.crestDepth + Math.max(0, reefSeaward(x, z)) * r.ledgeSlope;
+      const onReef = z >= r.shelfEdge ? Math.min(r.shelfDepth, ledge) : fore;
+      // The pass: no reef, the shelf deepened to passDepth; flat across its axis at the window's edge.
+      const pass = Math.exp(-(((x - r.passX) / r.passHalfWidth) ** 2));
+      const depth = onReef + (Math.max(fore, r.passDepth) - onReef) * pass;
+      // A 1:5 beach face (steep enough to stay shoreward of the forereef), and dry land shoreward of z = 0.
+      return Math.min(depth, z < 0 ? -z * r.shoreSlope : -z * 0.06);
     },
   };
 }

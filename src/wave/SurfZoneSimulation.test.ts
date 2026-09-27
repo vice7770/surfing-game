@@ -4,6 +4,8 @@ import { breakerDepthFor } from './Breaking';
 import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TANK, solverStage, takeOffPoint, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { shallowWaterWaveNumber } from './dispersion';
+import { REEF_SWELLS } from '../game/SurfConditions';
+import { REEF_PRACTICE_SWELL } from '../game/PhysicalMode';
 import { rayConcentration } from './Refraction';
 import { crestSpeedAt } from './CrestKinematics';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
@@ -60,7 +62,8 @@ describe('SurfZoneSimulation', () => {
     const { solver } = simulation;
     let deepest = 0;
     for (let i = 0; i < solver.h.length; i += 1) deepest = Math.max(deepest, solver.h[i]);
-    expect(deepest).toBeLessThan(20);
+    // No column stands more than 10 m above the tank's floor (the runaway piled water far higher).
+    expect(deepest).toBeLessThan(OFFSHORE_DEPTH.reef + 10);
     expect(solver.maxStableStep()).toBeGreaterThan(1e-3);
   }, 180_000);
 
@@ -302,16 +305,18 @@ describe('SurfZoneSimulation', () => {
     expect(carved).toBeGreaterThan(0);
   }, 60_000);
 
-  // Stage 1 needs 1 m cells to see a wave break (P3a), so the whole reef edge must lie in the fine surf zone.
-  it('keeps the whole reef edge in the fine surf zone across the 160 m window, with a flat shelf behind it', () => {
+  // Stage 2 still needs 1 m cells to break (P3a): every column's Small-swell break lies in the fine surf zone.
+  it('builds the Reef on a 30 m tank that stays deep up to its forereef, with every break in the fine surf zone', () => {
+    expect(OFFSHORE_DEPTH.reef).toBe(REEF.deep);
     const reef = createSpot('reef', 1);
+    const breakDepth = breakerDepthFor(REEF_SWELLS.small.significantHeight, REEF.deep);
     for (let x = -80; x <= 80; x += 4) {
-      for (let z = TANK.zoneInner; z <= TANK.fineFrom; z += 1) {
-        expect(tankDepth(reef, OFFSHORE_DEPTH.reef, x, z)).toBeCloseTo(REEF.channelDepth, 3);
+      for (let z = TANK.zoneInner; z <= REEF.shelfEdge - (REEF.deep - REEF.shelfDepth) / REEF.foreSlope; z += 1) {
+        expect(tankDepth(reef, OFFSHORE_DEPTH.reef, x, z)).toBeCloseTo(REEF.deep, 3);
       }
-      let shelf = 0;
-      for (let z = TANK.fineFrom; z < 0; z += 1) if (Math.abs(reef.depthAt(x, z) - REEF.shelfDepth) < 0.05) shelf += 1;
-      expect(shelf).toBeGreaterThanOrEqual(15);
+      let z = TANK.zoneInner;
+      while (tankDepth(reef, OFFSHORE_DEPTH.reef, x, z) > breakDepth) z += 0.5;
+      expect(z).toBeGreaterThan(TANK.fineFrom);
     }
   });
 
@@ -329,27 +334,40 @@ describe('SurfZoneSimulation', () => {
   });
 
   it('takes off straight out from the window centre at the other spots', () => {
-    for (const spot of ['beach', 'point', 'reef'] as const) expect(takeOffPoint({ ...small, spot, alongShore: 160 }).x).toBe(0);
+    for (const spot of ['beach', 'point'] as const) expect(takeOffPoint({ ...small, spot, alongShore: 160 }).x).toBe(0);
   });
 
-  it('finds the reef break on its steep edge inside the fine surf zone', () => {
-    const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 2 });
+  it('takes off at the Reef’s peak, where every Reef swell breaks, never on dry reef or in the pass', () => {
+    const swells = [REEF_PRACTICE_SWELL, ...Object.values(REEF_SWELLS)];
+    for (const swell of swells) {
+      const config: SurfZoneConfig = { ...small, spot: 'reef', alongShore: 160, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod };
+      const point = takeOffPoint(config);
+      const depth = tankDepth(createSpot('reef', 1), OFFSHORE_DEPTH.reef, point.x, point.z);
+      expect(point.x).toBe(REEF.takeOffX);
+      expect(depth).toBeGreaterThanOrEqual(0.4 * breakerDepthFor(swell.significantHeight, OFFSHORE_DEPTH.reef));
+      expect(depth).toBeLessThanOrEqual(REEF.shelfDepth);
+      expect(Math.abs(point.x - REEF.passX)).toBeGreaterThan(2 * REEF.passHalfWidth);
+    }
+  });
+
+  it('finds the Reef’s break on its ledge inside the fine surf zone, and it plunges', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', alongShore: 160, significantHeight: REEF_SWELLS.small.significantHeight, peakPeriod: REEF_SWELLS.small.peakPeriod });
     const point = simulation.breakPoint();
     const bed = (z: number) => tankDepth(simulation.spot, OFFSHORE_DEPTH.reef, point.x, z);
     expect(point.z).toBeGreaterThan(TANK.fineFrom);
-    expect(bed(point.z)).toBeGreaterThan(REEF.shelfDepth + 0.25);
-    expect(bed(point.z)).toBeLessThan(REEF.channelDepth - 0.25);
-    expect((bed(point.z - 2) - bed(point.z + 2)) / 4).toBeGreaterThan(0.05);
+    expect(bed(point.z)).toBeGreaterThan(REEF.crestDepth);
+    expect(bed(point.z)).toBeLessThan(REEF.shelfDepth);
     expect(simulation.iribarren().type).toBe('plunging');
   });
 
   it('throws lips from plunging waves on the reef edge', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 });
-    for (let frame = 0; frame < 20 * 30; frame += 1) simulation.step(1 / 30);
+    // The Reef's 30 m tank brings the set onto its ledge ~35 s in; run until a lip has flown and landed.
+    for (let frame = 0; frame < 60 * 30 && simulation.lip.landings === 0; frame += 1) simulation.step(1 / 30);
     expect(simulation.iribarren().type).toBe('plunging');
     expect(simulation.lipLaunches).toBeGreaterThan(0);
     expect(simulation.lip.landings).toBeGreaterThan(0);
-  }, 60_000);
+  }, 240_000);
 
   it('counts a column breaking once per wave for the peel, and never shore swash', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 1.4, peakPeriod: 10, dx: 1, fineSpacing: 1 });

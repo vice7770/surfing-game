@@ -22,4 +22,9 @@ describe('describeSwell', () => {
     expect(flat.breakerType).toBe('none');
     expect(flat.iribarren).toBe(0);
   });
+
+  it('reads a steep break over a submerged crest as plunging, not surging', () => {
+    expect(describeSwell({ height: 1.4, period: 8, depth: 4, bedSlope: 0.3, submergedCrest: true }).breakerType).toBe('plunging');
+    expect(describeSwell({ height: 1.4, period: 8, depth: 4, bedSlope: 0.02, submergedCrest: true }).breakerType).toBe('spilling');
+  });
 });
