@@ -9,7 +9,7 @@ import { WaveFrameGauge, type WaveFrame } from '../physics/waveFrame';
 import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { BubbleCloud } from './BubbleCloud';
-import { SPRAY_STRIDE, SprayCloud } from './SprayCloud';
+import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY } from './SprayCloud';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { SurfZoneSimulation, type RenderGrid, type SolverDevice, type SurfZoneConfig } from './SurfZoneSimulation';
 import type { BreakerType } from './SwellReadout';
@@ -18,8 +18,8 @@ export { surfZoneSea } from './SurfZoneSimulation';
 
 /** Fixed simulation step, s: the game's physics rate. */
 export const SURF_ZONE_STEP = 1 / 60;
-/** A snapshot's lip parcel: x, y, z, world column, index along its strip, the strip's launch time, the parcel's age (plan P7) and its volume, m³ (G9). */
-export const LIP_STRIDE = 8;
+/** A snapshot's lip parcel: x, y, z, world column, index along its strip, the strip's launch time, the parcel's age (plan P7), its volume, m³, and its kind: 0 a jet's water, 1 a splash-up's (G9). */
+export const LIP_STRIDE = 9;
 
 /** Sound (S1): lip landings and paddle strokes are kept between snapshots, at most this many of each; more merge into the nearest. */
 export const SOUND_EVENT_CAPACITY = 64;
@@ -169,6 +169,8 @@ export interface SurfZoneBuffers {
   /** The flying tubes as a `tubeTable` (G9): the page carves the raw `surface` with them. */
   tubes: Float32Array;
   tubeCount: number;
+  /** G9: the air breaking drove in, (void fraction, plume depth) per render node. */
+  aeration: Float32Array;
   bubbles: Float32Array;
   bubbleCount: number;
   /** Spray and mist: x, y, z, size and opacity per particle (`SPRAY_STRIDE`). */
@@ -234,7 +236,7 @@ export class SurfZoneRunner {
   constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, renderSpacing = options.renderSpacing ?? 1) {
     this.simulation = new SurfZoneSimulation(config);
     this.bubbles = new BubbleCloud(config.seed, PARCEL_CAPACITY);
-    this.spray = new SprayCloud(config.seed, PARCEL_CAPACITY);
+    this.spray = new SprayCloud(config.seed, SPRAY_CAPACITY, WHITEWATER_CAPACITY);
     this.grid = this.simulation.renderGrid(renderSpacing);
     this.bed = new Float32Array(this.grid.nx * this.grid.nz);
     this.simulation.writeUniformBed(this.bed, this.grid);
@@ -261,7 +263,10 @@ export class SurfZoneRunner {
     const { simulation } = this;
     // A detached rider's last strokes are stale: only an attached paddler splashes.
     const strokes = this.session?.rider.attached ? this.session.rider.strokes : undefined;
-    return { solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, windSpeed: this.config.windSpeed ?? 0, strokes };
+    return {
+      solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, windSpeed: this.config.windSpeed ?? 0, strokes,
+      spits: simulation.lip.spits, eruptions: simulation.lip.eruptions, rollers: simulation.lip.rollers,
+    };
   }
 
   get windowXMin(): number {
@@ -430,9 +435,10 @@ export class SurfZoneRunner {
       lipCount: 0,
       tubes: new Float32Array(TUBE_CAPACITY * TUBE_STRIDE),
       tubeCount: 0,
+      aeration: new Float32Array(nodes * 2),
       bubbles: new Float32Array(PARCEL_CAPACITY * 3),
       bubbleCount: 0,
-      spray: new Float32Array(PARCEL_CAPACITY * SPRAY_STRIDE),
+      spray: new Float32Array((SPRAY_CAPACITY + WHITEWATER_CAPACITY) * SPRAY_STRIDE),
       sprayCount: 0,
       board: new Float64Array(8),
       rider: new Float64Array(RIDER_SNAPSHOT.length),
@@ -451,6 +457,7 @@ export class SurfZoneRunner {
     // Raw heights: the page carves them with the tubes (G9), exactly as the physics does.
     simulation.writeUniformSurface(buffers.surface, grid, false);
     buffers.tubeCount = simulation.lip.writeTubes(buffers.tubes, TUBE_CAPACITY);
+    simulation.writeUniformAeration(buffers.aeration, grid);
     simulation.writeUniformFlow(buffers.flow, grid);
     let parcels = 0;
     simulation.lip.forEachActiveParcel((parcel) => {
@@ -464,12 +471,13 @@ export class SurfZoneRunner {
       buffers.lip[o + 5] = parcel.launchTime;
       buffers.lip[o + 6] = parcel.age;
       buffers.lip[o + 7] = parcel.volume;
+      buffers.lip[o + 8] = parcel.kind;
       parcels += 1;
     });
     buffers.lipCount = parcels;
     buffers.bubbleCount = Math.min(PARCEL_CAPACITY, this.bubbles.count);
     buffers.bubbles.set(this.bubbles.positions.subarray(0, buffers.bubbleCount * 3));
-    buffers.sprayCount = Math.min(PARCEL_CAPACITY, this.spray.count);
+    buffers.sprayCount = Math.min(buffers.spray.length / SPRAY_STRIDE, this.spray.count);
     buffers.spray.set(this.spray.particles.subarray(0, buffers.sprayCount * SPRAY_STRIDE));
     const { board } = this;
     buffers.board.fill(0);

@@ -30,7 +30,7 @@ export interface RichLipGeometry {
 
 type Vec = [number, number, number];
 interface Node { p: Vec; foam: number; thickness: number }
-interface Strip { column: number; launchTime: number; nodes: (Node | undefined)[] }
+interface Strip { column: number; launchTime: number; kind: number; nodes: (Node | undefined)[] }
 
 /** Catmull-Rom through p1…p2 at t, and its derivative in t. */
 function cr(p0: number, p1: number, p2: number, p3: number, t: number): number {
@@ -55,13 +55,15 @@ export function buildRichLipSheet(parcels: Float32Array, count: number, width: n
     const o = i * LIP_STRIDE;
     const column = parcels[o + 3];
     const launchTime = parcels[o + 5];
-    const key = `${column}|${launchTime}`;
+    const kind = parcels[o + 8];
+    const key = `${column}|${launchTime}|${kind}`;
     let strip = strips.get(key);
-    if (!strip) strips.set(key, (strip = { column, launchTime, nodes: [] }));
+    if (!strip) strips.set(key, (strip = { column, launchTime, kind, nodes: [] }));
     const index = parcels[o + 4];
     strip.nodes[index] = {
       p: [parcels[o], parcels[o + 1], parcels[o + 2]],
-      foam: Math.max(Math.min(1, parcels[o + 6] / FOAM_AGE), index === 0 ? 1 : 0),
+      // A splash-up (G9) is whitewater from the start.
+      foam: kind === 1 ? 1 : Math.max(Math.min(1, parcels[o + 6] / FOAM_AGE), index === 0 ? 1 : 0),
       thickness: parcels[o + 7],
     };
   }
@@ -88,7 +90,7 @@ export function buildRichLipSheet(parcels: Float32Array, count: number, width: n
   for (const strip of [...strips.values()].sort((a, b) => a.column - b.column)) {
     let best: Strip | undefined;
     for (const other of byColumn.get(strip.column + 1) ?? []) {
-      if (hasLeft.has(other) || Math.abs(other.launchTime - strip.launchTime) >= LINK_TIME) continue;
+      if (hasLeft.has(other) || other.kind !== strip.kind || Math.abs(other.launchTime - strip.launchTime) >= LINK_TIME) continue;
       if (!best || Math.abs(other.launchTime - strip.launchTime) < Math.abs(best.launchTime - strip.launchTime)) best = other;
     }
     if (best) {

@@ -201,6 +201,7 @@ Recorded in the same session; each gets its own grilling before work starts.
 2. **Filmed menu background:** a sequence of waves forming and breaking, filmed with the `?record` tool once the waves are finished. It replaces the live menu background.
 3. **Music:** none in S1 (grilling, 2026-09-26). Good CC0 music is scarce; a CC-BY or paid track would need a credits screen.
 4. **A physical gamepad, checked by hand** (moved here by the user, 2026-09-26). The mapping is covered by unit tests.
+5. **Whitewater forces on bodies** (G9's backlog): lost buoyancy in aerated water, and hits from the splash-up and the foam ball, once the riding physics settles. A lip and whitewater look for Classic, if weaker machines call for one.
 
 ## Next milestone — physical wave formation — `In Progress`
 
@@ -391,7 +392,7 @@ Requirements agreed on 2026-09-26: [G8 spec](docs/superpowers/specs/2026-09-26-g
   - a middle water level if the M1 Air needs one;
   - the tank/far-field seam: from high up, the tank's offshore ridge shows a thin outline and sand-coloured slivers, in both looks.
 
-### P1 · Barrel and whitewater (G9) — `In Progress (Part A done)`
+### P1 · Barrel and whitewater (G9) — `Done`
 
 Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpowers/specs/2026-09-26-g9-barrel-whitewater.md); [plan](docs/superpowers/plans/2026-09-26-g9-barrel-whitewater.md).
 - [x] **Part A · the barrel look** (Rich only; Classic unchanged, its lip sheet now pinned by a snapshot too):
@@ -403,7 +404,41 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
   - **Cost on the M1 Air** (render alone, 1280×720): Rich tube shots take about 12 ms against Classic's 6 ms; the lineup about 8 ms against 6 ms.
   - **Checked:** a JS mirror of the GPU carve agrees with the physics' to 5 mm; the Rich spray fade and crest light read the carved surface; snapshots carry up to 256 tubes, keeping the newest.
   - **Open, for the playtest:** how the barrel reads in play; a cheaper carve slope (analytic, one evaluation instead of three); the caustics under a void still refract through the uncut surface.
-- [ ] **Part B · breaking whitewater:** splash-up, trapped air with the tube's collapse and spit, air entrainment driving the churn, the foam ball and the bubble plume, sourced and reported per spot.
+- [x] **Part B · breaking whitewater** (physics in the worker whatever the look, drawn in Rich only, no forces on bodies but the collapse's carve; sources in `docs/research/whitewater-sources.md`, outcomes in `docs/research/whitewater-report.md`):
+  - **Air in the water:** an aeration field on the solver grid. Landing lips entrain β = 0.1 of their impact energy against buoyancy, bores β of their dissipation, and collapsing tubes the air they do not blow out. A plunge's air fills a plume as wide as it is deep. The field is carried by the currents, degasses at 0.25 m/s over the plume's depth, and holds at most the measured α_max = 0.2. The Rich churn now shows where the water is fresh with air.
+  - **Splash-up:** each landing jet parcel re-throws 30 % of its water up (0.6 of its impact speed) and on (0.8), drawn in Rich as a sheet with the lip's machinery. Water and momentum are conserved.
+  - **Collapse and spit:** once its jet has all landed, a tube shrinks over its free-fall time √(2W/g). The rider feels the shrinking void, and its air leaves as the void loses volume. Half of it leaves as spray: out of the peel's open end at the speed mass conservation gives (the spit), or up through the lip where the whole section closes (an eruption). The rest breaks into bubbles. The air balance is exact.
+  - **Foam ball:** each collapsing tube rolls a κ_r·H² roller of 0.5–0.8 m churn sprites tumbling with its crest. The tube's whitewater (foam ball, spit, eruption) has a spray pool of its own and is drawn in Rich only.
+  - **Bubble plume:** the Rich body whitens as far down as the air went, from above through the water over it and from below.
+  - **Report** (Wave Lab defaults, 2 seeds × 12 periods): the Reef throws the most explosive whitewater and the Beach the gentlest with no per-spot values:
+
+    | | Reef | Beach |
+    |---|---|---|
+    | Splash-up, 90th percentile | 1.12 m | 0.76 m |
+    | Spit speed, median | 10.8 m/s | 9.9 m/s |
+    | Median surveyed void fraction | 0.15 | 0.05 |
+    | Surveys at α_max | 24 % | 2 % |
+    | Foam-ball sprites, median | 120 | 41 |
+
+    Collapses take 0.3–0.4 s, and the Canyon barely plunges.
+  - **Judging it:** `?inpage&waterSheet&whitewater` (with `&spot=reef` or `&spot=beach`) holds the sea on a collapsing tube and shoots its whitewater.
+  - **Cost on the M1 Air:**
+    - worker step: 17.3 ms on the Reef against Part A's 16.2 ms, and 17.9–18.7 ms on the Beach against 16.2–16.7 ms, mostly the aeration field;
+    - render, 1280×720, at the Beach's whitewater: Rich 10–13 ms against Classic's 5–8 ms, the same as Part A's tube shots.
+  - **Found and fixed:**
+    - by the sheet: collapsing a tube while its jet still poured landed the pour on the crest, and the practice Reef's solver ran away; a regression test now runs it;
+    - by the report: the aeration field had no ceiling.
+  - **Open, for the playtest:**
+    - how the whitewater reads in play;
+    - the render values (s_a 40 per m³, the mist shares, the foam-ball size, PLUME_DENSITY);
+    - at dawn and sunset a nearby spit's mist glows as an orange haze;
+    - the carve's teeth, the barrel's main open item. Two causes, found on the Reef sheets:
+      - a void's back stood as a wall half its width deep at the crest, which the mesh drew as a jagged crack along the lip. **Fixed:** its floor now meets the surface over `TUBE_EDGE` (0.35 m) behind it, in the physics and on the GPU alike. The front, where the jet lands, is unchanged, so the tube report still holds;
+      - **open:** where a peel's columns collapse at different stages, a column whose void has gone stands as a spike a metre wide between carved neighbours (Part A's instant close did the same). It needs the peel to collapse as one section;
+    - the spray pool (4,096) is full a fifth of the time on the Reef and the Point, and the lip's splash gives way first;
+    - rare spits reach 160–180 m/s where a small mouth drains a long closing section.
+
+    Whitewater forces on bodies and the player's tube camera (P12) stay in the Backlog.
 
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 

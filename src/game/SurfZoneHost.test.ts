@@ -6,6 +6,7 @@ import { carveAt, TUBE_STRIDE } from '../wave/tubeTable';
 import { BoussinesqSolver } from '../wave/BoussinesqSolver';
 import { encodeSurfZoneState } from '../wave/surfZoneState';
 import { LocalSurfZone, SnapshotSurfZone } from './SurfZoneHost';
+import { DEFAULT_PHYSICAL_SETTINGS, swellFor } from './PhysicalMode';
 
 const config: SurfZoneConfig = {
   spot: 'beach', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -38,6 +39,30 @@ describe('LocalSurfZone', () => {
     host.restore(encodeSurfZoneState(host.runner.simulation.exportState()));
     expect(solver.deviceLayout().version).toBe(before + 1);
   });
+
+  it('keeps the practice Reef’s water steady while its tubes collapse (G9)', () => {
+    // The water sheet's sea: collapsing a void while its jet still poured landed the rest of the pour on the crest,
+    // and the crest's water ran away within 1.5 s. Its spin-up is most of the cost: minutes under a loaded full suite.
+    const settings = { ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef' as const, source: 'practice' as const, compute: 'cpu' as const };
+    const swell = swellFor(settings);
+    const host = new LocalSurfZone({
+      spot: 'reef', seed: 1, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod,
+      directionDegrees: swell.directionDegrees ?? settings.directionDegrees, spreading: swell.spreading, bandwidth: swell.bandwidth,
+      tide: settings.tide, windSpeed: settings.windSpeed, stage: settings.stage, compute: 'cpu',
+    });
+    const { solver, lip } = host.runner.simulation;
+    let tubes = 0;
+    let fastest = 0;
+    for (let step = 0; step < 120 && fastest < 15; step += 1) {
+      host.advance(1);
+      tubes = Math.max(tubes, lip.tubeCount);
+      for (let i = 0; i < solver.h.length; i += 1) {
+        if (solver.h[i] > 0.05) fastest = Math.max(fastest, Math.hypot(solver.qx[i], solver.qz[i]) / solver.h[i]);
+      }
+    }
+    expect(tubes).toBeGreaterThan(10);
+    expect(fastest).toBeLessThan(10);
+  }, 300_000);
 
   it('is ready at once and snapshots the same surf zone a runner steps', async () => {
     const host = new LocalSurfZone(config);
