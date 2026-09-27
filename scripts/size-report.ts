@@ -33,7 +33,9 @@ const seconds = Number(option('seconds') ?? SIZE_SEA_SECONDS);
 const gating = process.argv.includes('--gates');
 const withPractice = !process.argv.includes('--no-practice');
 const tag = option('tag');
-const directory = 'docs/research/sizes';
+/** `--dir` writes a run's files (and its report) elsewhere, so long runs survive branch switches and probes leave the committed report alone. */
+const directory = option('dir') ?? 'docs/research/sizes';
+const reportFile = option('dir') ? `${directory}/size-report.md` : 'docs/research/size-report.md';
 /** The worker's step, s. */
 const STEP = 1 / 30;
 
@@ -95,7 +97,7 @@ for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
   console.log(`${spot}: { a: ${fit.a.toFixed(4)}, sets: ${fit.sets.toFixed(3)} }${practice ? `; practice { typical: ${practice.takeOffTypical!.toFixed(2)}, sets: ${practice.takeOffSets!.toFixed(2)} }` : ''} (${buoys.length} runs at the take-off)`);
 }
 const gates = gating ? sizeGates(all, read(`${directory}/baseline`)) : undefined;
-writeFileSync('docs/research/size-report.md', sizeMarkdown(all, gates, `npm run report:sizes -- ${process.argv.slice(2).join(' ')}`));
+writeFileSync(reportFile, sizeMarkdown(all, gates, `npm run report:sizes -- ${process.argv.slice(2).join(' ')}`));
 if (gates?.some((gate) => !gate.pass)) {
   console.log(`${gates.filter((gate) => !gate.pass).length} gate(s) fail`);
   process.exitCode = 1;
