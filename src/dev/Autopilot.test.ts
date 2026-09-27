@@ -96,6 +96,30 @@ describe('autopilot', () => {
   });
 });
 
+describe('the take-off', () => {
+  const DEG = Math.PI / 180;
+  /** Paddling for a wave travelling +z with a crest behind, heading `heading`, the curl on `curlSide`. */
+  const paddling = (heading: number, curlSide: number, peel = 0) => {
+    const autopilot = new Autopilot();
+    autopilot.next(view({ board: { x: 0, z: -3, heading } }), 1 / 60);
+    return autopilot.next(view({
+      board: { x: 0, z: -3, heading }, crestBehind: 1, peelDirection: peel,
+      ride: ride({ phase: 'prone', wave: wave({ curlDistance: 8, curlSide }) }),
+    }), 1 / 60);
+  };
+
+  // Riding-the-wave Task 7: straight down a 1.3 m face the rider stood 8 m ahead of the crest on the flat.
+  it('angles the take-off toward the open face', () => {
+    const toPlusX = paddling(0, -1);
+    expect(toPlusX.paddle).toBe(true);
+    expect(toPlusX.steer).toBeGreaterThan(0.5);
+    expect(paddling(0, 1).steer).toBeLessThan(-0.5);
+    expect(paddling(0, 0, 1).steer).toBeGreaterThan(0.5);
+    expect(paddling(35 * DEG, -1).steer).toBeCloseTo(0, 1);
+    expect(paddling(0, 0, 0).steer).toBe(0);
+  });
+});
+
 describe('autopilot turns', () => {
   const DEG = Math.PI / 180;
   /** Standing at `heading` on a wave travelling +z, the peel toward `peel`. */
@@ -118,6 +142,18 @@ describe('autopilot turns', () => {
     // The same turn for a peel toward -x leans the other way.
     const mirrored = turning(-20 * DEG).next(standing(-20 * DEG, { faceFraction: 0.2 }, -1), 1 / 60);
     expect(mirrored.steer).toBe(-1);
+  });
+
+  // Riding-the-wave Task 7: on the reference wave the peel estimate's direction was not a reliable guide; the gauge's
+  // curl is. And on the flat far ahead of the crest a full bottom turn bled the speed and the rider fell.
+  it('rides away from the curl the gauge sees, over the peel estimate', () => {
+    expect(turning(20 * DEG).next(standing(20 * DEG, { faceFraction: 0.2, curlDistance: 6, curlSide: 1 }, 1), 1 / 60).steer).toBe(-1);
+    expect(turning(-20 * DEG).next(standing(-20 * DEG, { faceFraction: 0.2, curlDistance: 6, curlSide: -1 }, -1), 1 / 60).steer).toBe(1);
+  });
+
+  it('bottom turns only at the foot of the face, not on the flat far ahead of it', () => {
+    expect(turning(10 * DEG).next(standing(10 * DEG, { faceFraction: 0.1, aheadOfCrest: 7 }), 1 / 60).steer).toBe(0);
+    expect(turning(10 * DEG).next(standing(10 * DEG, { faceFraction: 0.1, aheadOfCrest: 5 }), 1 / 60).steer).toBe(1);
   });
 
   it('top turns back down the face when high, sitting back, and snaps in a breaking crest', () => {
