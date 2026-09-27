@@ -1,25 +1,15 @@
 import {
-  BoxGeometry, CapsuleGeometry, CylinderGeometry, DoubleSide, Euler, Group, Matrix4, Mesh,
+  BoxGeometry, CapsuleGeometry, CylinderGeometry, DoubleSide, Group, Matrix4, Mesh,
   MeshStandardMaterial, Quaternion, Shape, ShapeGeometry, SphereGeometry, Vector3,
 } from 'three';
-import type { BoardPhysics } from '../physics/BoardPhysics';
 import type { BodyPart, DetachedRiderPose } from '../physics/DetachedSurfer';
 import { createSurfboardGeometry } from './SurfboardGeometry';
 
-type Point = readonly [number, number, number];
 const up = new Vector3(0, 1, 0);
 const segmentDirection = new Vector3();
 const detachedParts: readonly BodyPart[] = [
   'pelvis', 'torso', 'head', 'leftArm', 'rightArm', 'leftLeg', 'rightLeg',
 ];
-
-function posePoint(out: Vector3, prone: Point, standing: Point, blend: number): void {
-  out.set(
-    prone[0] + (standing[0] - prone[0]) * blend,
-    prone[1] + (standing[1] - prone[1]) * blend,
-    prone[2] + (standing[2] - prone[2]) * blend,
-  );
-}
 
 function placeSegment(mesh: Mesh, start: Vector3, end: Vector3): void {
   segmentDirection.copy(end).sub(start);
@@ -53,7 +43,7 @@ class BentLimb {
   }
 }
 
-/** Articulated silhouette and state-driven poses; board forces still come from BoardPhysics. */
+/** The simple articulated rider: the fallen surfer's pose, and the physical rider's fallback until its skinned surfer loads (G7). */
 export class Surfer {
   readonly group = new Group();
   private readonly board = new Group();
@@ -65,7 +55,6 @@ export class Surfer {
   private readonly head = new Group();
   private readonly arms: [BentLimb, BentLimb];
   private readonly legs: [BentLimb, BentLimb];
-  private readonly joints = Array.from({ length: 12 }, () => new Vector3());
   private readonly detachedPoints = detachedParts.map(() => new Vector3());
   private readonly detachedRoots = Array.from({ length: 4 }, () => new Vector3());
   private readonly detachedHinges = Array.from({ length: 4 }, () => new Vector3());
@@ -75,8 +64,6 @@ export class Surfer {
   private readonly detachedRight = new Vector3();
   private readonly detachedBasis = new Matrix4();
   private readonly detachedBoardInverse = new Quaternion();
-  private poseBlend = 0;
-  private fallBlend = 0;
 
   constructor() {
     const boardMaterial = new MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.01 });
@@ -150,14 +137,9 @@ export class Surfer {
     this.group.add(this.board, this.rider);
   }
 
-  /** Show or hide the drawn legacy board (the physical mode draws its own). */
+  /** Show or hide the silhouette's own board (the physical mode draws its own). */
   setBoardVisible(visible: boolean): void {
     this.board.visible = visible;
-  }
-
-  resetPose(): void {
-    this.poseBlend = 0;
-    this.fallBlend = 0;
   }
 
   /** Render a detached physical pose without consulting either wave implementation. */
@@ -218,65 +200,4 @@ export class Surfer {
     }
   }
 
-  update(physics: BoardPhysics, paddle: boolean, dt: number): void {
-    this.group.position.copy(physics.position);
-    this.group.rotation.copy(physics.rotation);
-    const standing = physics.state === 'catching' || physics.state === 'riding'
-      || physics.state === 'complete' || physics.state === 'wipeout';
-    this.poseBlend += ((standing ? 1 : 0) - this.poseBlend) * Math.min(1, dt * 7);
-    this.fallBlend += ((physics.state === 'wipeout' ? 1 : 0) - this.fallBlend) * Math.min(1, dt * 3);
-    const blend = this.poseBlend;
-    const lean = physics.riderLean * blend;
-    const fallSide = Math.sign(physics.rotation.z || 1);
-    const stroke = paddle && !standing ? Math.sin(physics.time * 10) : 0;
-    this.rider.position.set(lean * 0.1 + fallSide * this.fallBlend * 0.65,
-      (paddle ? 0.012 * Math.sin(physics.time * 12) : 0) - this.fallBlend * 0.16, 0);
-    this.rider.rotation.x = -physics.rotation.x * 0.55 * blend - 0.03 * (1 - blend);
-    this.rider.rotation.z = -physics.rotation.z * 0.25 * blend + lean * 0.19 + fallSide * this.fallBlend * 1.25;
-
-    this.pelvis.position.set(0, 0.2 + blend * 0.37, -0.35 + blend * 0.25);
-    this.torso.position.set(0, 0.28 + blend * 0.57, -0.03);
-    this.torso.rotation.x = (Math.PI / 2 - 0.1) * (1 - blend) + 0.12 * blend;
-    this.torso.rotation.z = lean * 0.13;
-    this.chestPanel.position.set(0, 0.29 + blend * 0.56, 0.14 - blend * 0.008);
-    this.chestPanel.rotation.x = this.torso.rotation.x;
-    this.neck.position.set(0, 0.32 + blend * 0.75, 0.43 - blend * 0.38);
-    this.neck.rotation.x = this.torso.rotation.x * 0.35;
-    this.head.position.set(lean * 0.035, 0.39 + blend * 0.81, 0.49 - blend * 0.43);
-    this.head.rotation.x = -0.14 * (1 - blend) + 0.05 * blend;
-
-    const j = this.joints;
-    posePoint(j[0], [-0.19, 0.28, 0.3], [-0.2, 1.03, 0.05], blend);
-    posePoint(j[1], [-0.31, 0.19, 0.46], [-0.45, 0.77, 0.22], blend);
-    posePoint(j[2], [-0.37, 0.13, 0.17], [-0.26, 0.62, 0.36], blend);
-    j[1].z += stroke * 0.09 * (1 - blend);
-    j[2].z += stroke * 0.24 * (1 - blend);
-    posePoint(j[3], [0.19, 0.28, 0.3], [0.2, 1.03, 0.05], blend);
-    posePoint(j[4], [0.31, 0.19, 0.46], [0.45, 0.79, -0.08], blend);
-    posePoint(j[5], [0.37, 0.13, 0.17], [0.48, 0.63, -0.26], blend);
-    j[4].z -= stroke * 0.09 * (1 - blend);
-    j[5].z -= stroke * 0.24 * (1 - blend);
-    this.arms[0].update(j[0], j[1], j[2]);
-    this.arms[1].update(j[3], j[4], j[5]);
-
-    posePoint(j[6], [-0.13, 0.2, -0.44], [-0.13, 0.54, -0.15], blend);
-    posePoint(j[7], [-0.13, 0.16, -0.73], [-0.22, 0.3, 0.25], blend);
-    posePoint(j[8], [-0.13, 0.1, -1.01], [-0.2, 0.1, 0.5], blend);
-    posePoint(j[9], [0.13, 0.2, -0.44], [0.13, 0.54, -0.15], blend);
-    posePoint(j[10], [0.13, 0.16, -0.73], [0.21, 0.31, -0.39], blend);
-    posePoint(j[11], [0.13, 0.1, -1.01], [0.2, 0.1, -0.62], blend);
-    this.legs[0].update(j[6], j[7], j[8]);
-    this.legs[1].update(j[9], j[10], j[11]);
-    if (physics.riderFall.active) {
-      const boardInverse = new Quaternion().setFromEuler(physics.rotation).invert();
-      const fallRotation = new Quaternion().setFromEuler(new Euler(
-        physics.riderFall.rotation.x, 0, physics.riderFall.rotation.z, 'YXZ',
-      ));
-      const riderOrigin = physics.riderFall.position.clone().sub(
-        new Vector3(0, 0.65, 0).applyQuaternion(fallRotation),
-      );
-      this.rider.position.copy(riderOrigin.sub(physics.position).applyQuaternion(boardInverse));
-      this.rider.quaternion.copy(boardInverse.multiply(fallRotation));
-    }
-  }
 }

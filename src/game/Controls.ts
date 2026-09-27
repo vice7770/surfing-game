@@ -1,9 +1,15 @@
-import type { BoardInput } from '../physics/BoardPhysics';
 import type { RideInput } from '../physics/RideSession';
 import { heldActions, padValue, readPads, type Action, type Bindings, type PadKind, type PadState } from './Bindings';
 import { AxisRamp } from './InputAxes';
 import { DEFAULT_STICK, drivingPad, padKey, padSticks, touched, type StickSettings } from './Sticks';
 import type { CallId } from '../net/protocol';
+
+/** One frame's paddle, steer and pop-up press, as `input` reads them. */
+export interface BoardInput {
+  paddle: boolean;
+  steer: number;
+  getUp: boolean;
+}
 
 /** What a press of retry, camera and pause does; paddle, pop-up and steer are read through `input`. */
 export interface ControlHandlers {

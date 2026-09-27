@@ -1,23 +1,19 @@
 import {
   BackSide,
-  DoubleSide,
   Group,
   Mesh,
   MeshBasicMaterial,
   Color,
   ShaderMaterial,
-  Shape,
-  ShapeGeometry,
   SphereGeometry,
 } from 'three';
 
-/** Distant scenery only; the interactive water field remains the sole surf surface. */
+/** Distant scenery only: the painted sky and the sun. */
 export class Environment {
   readonly group = new Group();
   private readonly sun: Mesh;
   private readonly sky: Mesh;
   private readonly skyMaterial: ShaderMaterial;
-  private readonly coastline: Mesh[] = [];
 
   constructor() {
     this.skyMaterial = new ShaderMaterial({
@@ -52,10 +48,6 @@ export class Environment {
 
     this.sun = new Mesh(new SphereGeometry(4, 24, 16), new MeshBasicMaterial({ color: '#fff1c9', fog: false }));
     this.group.add(this.sun);
-
-    this.coastline.push(this.makeCoastline(-81, '#779a90', 7.5, 0.7));
-    this.coastline.push(this.makeCoastline(-59, '#597f78', 4.2, 2.1));
-    this.group.add(...this.coastline);
     this.setSunPosition(0.35, -25);
   }
 
@@ -75,34 +67,5 @@ export class Environment {
     this.sun.visible = visible;
   }
 
-  /** The legacy coastline cards sit offshore in the physical tank's frame, so that mode hides them. */
-  showCoastline(visible: boolean): void {
-    this.coastline.forEach((mesh) => { mesh.visible = visible; });
-  }
   get sunMesh() { return this.sun; }
-
-  setSpot(spot: 'training' | 'point' | 'reef' | 'custom'): void {
-    const palette = spot === 'point' ? ['#738d9c', '#496d7d']
-      : spot === 'reef' ? ['#8b907d', '#637667'] : ['#779a90', '#597f78'];
-    this.coastline.forEach((mesh, index) => {
-      (mesh.material as MeshBasicMaterial).color.set(palette[index]);
-    });
-  }
-
-  private makeCoastline(z: number, color: string, height: number, phase: number): Mesh {
-    const shape = new Shape();
-    shape.moveTo(-180, -9);
-    for (let x = -180; x <= 180; x += 3) {
-      const ridge = height * (0.5 + 0.25 * Math.sin(x * 0.08 + phase)
-        + 0.16 * Math.sin(x * 0.19 - phase * 1.7));
-      shape.lineTo(x, ridge - 1.8);
-    }
-    shape.lineTo(180, -9);
-    shape.closePath();
-    const mesh = new Mesh(new ShapeGeometry(shape), new MeshBasicMaterial({
-      color, side: DoubleSide, fog: false,
-    }));
-    mesh.position.z = z;
-    return mesh;
-  }
 }
