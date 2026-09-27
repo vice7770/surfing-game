@@ -2,6 +2,7 @@ import { Color, Mesh, Vector3, type Material, type Scene } from 'three';
 import type { StandRefusal } from '../physics/AttachedRider';
 import type { WaveFrame } from '../physics/waveFrame';
 import type { RiderPlacement } from '../physics/RideSession';
+import type { StanceName } from '../physics/riderPosture';
 import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
@@ -241,6 +242,8 @@ export class PhysicalMode {
   private placePending?: RiderPlacement;
   /** Where the pending retry puts the rider (online: a free spot in the lineup). */
   private spawnAt?: { x: number; z: number };
+  /** The player's stance (the stances spec), sent with every request: the runner takes it up at the next ride. */
+  stance?: StanceName;
   /** The running surf zone, once it has spun up. */
   host?: SurfZoneHost;
   /** The water look the sea's spray is drawn in (G9: Classic keeps its lip-impact spray as it was). */
@@ -518,7 +521,10 @@ export class PhysicalMode {
     }
     if (input) this.paddling = input.paddle;
     const request = input || retry || place
-      ? { paddle: false, popUp: false, steer: 0, ...input, retry, ...(spawnAt ? { spawnAt } : {}), ...(place ? { place } : {}) } : undefined;
+      ? {
+        paddle: false, popUp: false, steer: 0, ...input, retry,
+        ...(spawnAt ? { spawnAt } : {}), ...(place ? { place } : {}), ...(this.stance ? { stance: this.stance } : {}),
+      } : undefined;
     this.host?.advance(steps, request, reactions);
   }
 

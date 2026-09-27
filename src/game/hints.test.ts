@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HINTS_KEY, HintBook, HintCoach, type HintState } from './hints';
+import { HINTS_KEY, HintBook, HintCoach, offersHint, type HintState } from './hints';
 
 function memory() {
   const data = new Map<string, string>();
@@ -34,7 +34,7 @@ describe('HintBook', () => {
 });
 
 describe('HintCoach', () => {
-  const idle = { steer: 0, trim: 0, crouch: 0, hand: false };
+  const idle = { steer: 0, trim: 0, crouch: 0, compress: 0, hand: false };
   const standing = (input = idle, crestBreaking = 0): HintState => ({ standing: true, crestBreaking, input });
   const ride = (coach: HintCoach, seconds: number, state: HintState) => {
     let shown: ReturnType<HintCoach['update']>;
@@ -50,7 +50,10 @@ describe('HintCoach', () => {
     // Leaning for half a second retires the lean; the trim is next.
     expect(ride(coach, 0.6, standing({ ...idle, steer: 1 }))).toBe('trim');
     expect(ride(coach, 0.6, standing({ ...idle, trim: -1 }))).toBe('crouch');
-    expect(ride(coach, 0.6, standing({ ...idle, crouch: 1 }))).toBeUndefined();
+    // The stances spec: Compress after the crouch, as the bottom turn's sequence goes, and only where it may be offered.
+    expect(ride(coach, 0.6, standing({ ...idle, crouch: 1 }))).toBe('compress');
+    expect(coach.update(0.1, standing(), (id) => id !== 'compress')).toBeUndefined();
+    expect(ride(coach, 0.6, standing({ ...idle, compress: 1 }))).toBeUndefined();
   });
 
   it('teaches the hand when the crest breaks beside the rider, and forgets the clock on a fall', () => {
@@ -66,5 +69,14 @@ describe('HintCoach', () => {
     const coach = new HintCoach(book);
     ride(coach, 0.6, standing({ ...idle, crouch: 1 }));
     expect(book.offer('crouch')).toBe(false);
+  });
+});
+
+// The stances spec: Compress's hint the first time the player stands in Practice, where the riding is taught.
+describe('offersHint', () => {
+  it('offers Compress in Practice only, and the others everywhere', () => {
+    expect(offersHint('compress', 'practice')).toBe(true);
+    expect(offersHint('compress', 'medium')).toBe(false);
+    expect(offersHint('crouch', 'medium')).toBe(true);
   });
 });

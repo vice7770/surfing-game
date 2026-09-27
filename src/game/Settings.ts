@@ -1,7 +1,8 @@
 import type { RideView } from '../scene/SpectatorCamera';
 import type { Units } from '../ui/units';
 import type { WaterLook } from '../scene/water/waterLook';
-import { ACTIONS, DEFAULT_BINDINGS, MAX_BUTTON, type Action, type Bindings } from './Bindings';
+import type { StanceName } from '../physics/riderPosture';
+import { ACTIONS, DEFAULT_BINDINGS, MAX_BUTTON, freeInputs, type Action, type Bindings } from './Bindings';
 import { DEFAULT_STICK, MAX_DEADZONE, type StickSettings } from './Sticks';
 import { DEFAULT_SURFER, sanitizeSurfer, type SurferSettings } from './SurferChoice';
 import { PRESETS } from './Graphics';
@@ -21,6 +22,8 @@ export interface GameplaySettings {
   balanceMeter: 'practice' | 'always' | 'never';
   /** The pocket reflex (the riding-the-wave spec): with no weight held the rider trims to stay near the curl; Practice only, always, or never. */
   pocketReflex: 'practice' | 'always' | 'never';
+  /** Regular (left foot forward) or Goofy (the stances spec); a change rides from the next ride. */
+  stance: StanceName;
   /** Score each ride 0–10 on the WSL criteria (spec P9), off unless the player wants it. */
   scoreRides: boolean;
   /** Only offered while the dev tools are on. */
@@ -114,7 +117,7 @@ function copyBindings(bindings: Bindings): Bindings {
 
 export function defaultSettings(prefersReducedMotion = false): GameSettings {
   return {
-    gameplay: { units: 'metric', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', pocketReflex: 'practice', scoreRides: false, showTelemetry: false, nameTags: true },
+    gameplay: { units: 'metric', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', pocketReflex: 'practice', stance: 'regular', scoreRides: false, showTelemetry: false, nameTags: true },
     // The Medium preset's values (Graphics.PRESETS.medium; a test keeps the two equal).
     graphics: {
       preset: 'auto', renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto',
@@ -159,10 +162,13 @@ function sanitizeBindings(raw: unknown, defaults: Bindings, legacy: boolean): Bi
   const validButtons = (value: unknown): value is number[] => Array.isArray(value) && value.length >= 1 && value.length <= 2
     && value.every((button) => Number.isInteger(button) && button >= 0 && button <= MAX_BUTTON);
   const result = copyBindings(defaults);
+  const defaulted: { device: 'keyboard' | 'gamepad'; action: Action }[] = [];
   for (const action of ACTIONS) {
     if (action === 'pause') continue;
     if (validKeys(keyboard[action])) result.keyboard[action] = [...keyboard[action]];
+    else defaulted.push({ device: 'keyboard', action });
     if (validButtons(gamepad[action])) result.gamepad[action] = [...gamepad[action]];
+    else defaulted.push({ device: 'gamepad', action });
   }
   // C1 moved the hand to LB, the party call to X and added the grips. The actions a save still holds on their old defaults
   // move together, as one layout, unless that would leave a button with two actions (the player rebound around them).
@@ -174,6 +180,14 @@ function sanitizeBindings(raw: unknown, defaults: Bindings, legacy: boolean): Bi
     for (const action of moved) next[action] = [...defaults.gamepad[action]];
     const clash = moved.some((action) => next[action].some((button) => ACTIONS.some((other) => other !== action && next[other].includes(button))));
     if (!clash) result.gamepad = next;
+  }
+  // An action the save lacks (one added since, like Compress) takes its defaults only where the player's own bindings
+  // leave them free, so no input does two things at once; with none free it waits unbound. After C1's move, whose
+  // layout frees X for the party call.
+  for (const { device, action } of defaulted) {
+    const free = freeInputs(result, device, action);
+    if (device === 'keyboard') result.keyboard[action] = free as string[];
+    else result.gamepad[action] = free as number[];
   }
   return result;
 }
@@ -210,6 +224,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       touchControls: oneOf(gameplay.touchControls, ['auto', 'on', 'off'] as const, defaults.gameplay.touchControls),
       balanceMeter: oneOf(gameplay.balanceMeter, ['practice', 'always', 'never'] as const, defaults.gameplay.balanceMeter),
       pocketReflex: oneOf(gameplay.pocketReflex, ['practice', 'always', 'never'] as const, defaults.gameplay.pocketReflex),
+      stance: oneOf(gameplay.stance, ['regular', 'goofy'] as const, defaults.gameplay.stance),
       scoreRides: flag(gameplay.scoreRides, defaults.gameplay.scoreRides),
       showTelemetry: flag(gameplay.showTelemetry, defaults.gameplay.showTelemetry),
       nameTags: flag(gameplay.nameTags, defaults.gameplay.nameTags),

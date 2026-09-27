@@ -293,6 +293,12 @@ const STANDING_HOLD_SHARE = 0.5;
 /** Trim: the upper body shifts fore or aft by up to this much, m, moving the load along the board (provisional). */
 const TRIM_SHIFT = 0.25;
 /**
+ * Compress (the stances spec), the bottom turn's stance: the crouch's full depth
+ * with the weight over the front foot, COMPRESS_WEIGHT of the trim's range forward
+ * (de Sousa 2022: the trunk over the front foot while the knees are flexed).
+ */
+const COMPRESS_WEIGHT = 0.5;
+/**
  * Crouch: the leg shortens by up to CROUCH_DEPTH, m, to about two thirds of the
  * standing height (0.6-0.7 in the survey, for tube clearance), at most
  * MAX_LEG_SPEED, m/s (a countermovement jump's take-off speed, so a jump stays
@@ -322,6 +328,15 @@ const EXTEND_ACCELERATION = 15;
  */
 const CROUCH_HOLD = 0.75;
 /**
+ * Compressing deeper than the crouch, the legs drop as fast as the turn's load
+ * lets them: the rest's downward acceleration is the specific force along the
+ * leg above COMPRESS_KEEP of gravity, so the feet keep at least that share of
+ * the rider's weight (about 0.1 g on flat water, more as a turn loads the legs)
+ * and the crouch's hold is not needed. Surfers compress under a turn's load:
+ * slowly as the rail sets, quickly once it loads them up.
+ */
+const COMPRESS_KEEP = 0.9;
+/**
  * Standing, a hand in the face (spec P9): asked for, the upper body bends toward
  * the wave side, where the water stands higher beside the board (read
  * WAVE_SIDE_REACH, m, out on each side; a side only when it is WAVE_SIDE_MIN, m,
@@ -341,6 +356,24 @@ const HAND_TORSO_ANGLE = (60 * Math.PI) / 180;
 const ARM_LENGTH = 0.7;
 const ARM_ANGLE = (25 * Math.PI) / 180;
 const STANDING_HAND_DRAG = 1.1 * 0.013;
+/**
+ * Compressing into a lean, the inside hand reaches for the water (de Sousa 2022:
+ * the body leans into the curve until the inside hand nears the water): from
+ * REACH_FROM of Compress and REACH_LEAN of bank, on the side the body leans
+ * toward, REACH_ALONG, m, along the board toward its own arm's shoulder —
+ * frontside the rear arm (toward the tail), backside the leading arm (toward the
+ * nose). Where it is under the surface it drags like the hand in the face.
+ */
+const REACH_FROM = 0.5;
+const REACH_LEAN = (10 * Math.PI) / 180;
+const REACH_ALONG = 0.3;
+/**
+ * The reaching hand touches rather than plunges: its arm bends to keep no more
+ * than its lowest REACH_DIP, m, under the surface (about a tenth of the hand, a
+ * few tens of newtons at bottom-turn speeds; held fully under at 7 m/s it pulls
+ * about 0.4 body weights, the E hand's stall).
+ */
+const REACH_DIP = 0.03;
 
 export interface AttachedRiderOptions {
   mass?: number;
@@ -460,7 +493,8 @@ function cross(a: V3, b: V3, out: Vector3): Vector3 {
  */
 export class AttachedRider {
   readonly mass: number;
-  readonly stance: StanceName;
+  /** Regular or Goofy; changed only between rides (a retry, a placement, or off the board), never mid-ride. */
+  stance: StanceName;
   phase: RiderPhase;
   readonly popUpReport: PopUpReport = { outcome: 'none', duration: 0, landingPeak: 0, frontShare: 0 };
   /** Whether a pop-up would find the board planing down a face now. */
@@ -499,6 +533,8 @@ export class AttachedRider {
   trim = 0;
   /** Standing, how deep the crouch: 0 (riding stance) to 1 (deepest). */
   crouch = 0;
+  /** Standing, Compress: 0 (none) to 1 (full depth, weight forward), taken alone or over the crouch. */
+  compress = 0;
   /** Standing, the wave-side hand reaches for the water. */
   hand = false;
   /** Standing, the requested weight shift: −1 (toward board −x, its right) to 1 (toward +x, its left). */
@@ -1207,7 +1243,7 @@ export class AttachedRider {
     // The bank asked for, no more than a turn at the board's speed can hold, eased in.
     const speed = this.boardVelocity.dot(this.localScratch.set(0, 0, 1).applyQuaternion(this.heading));
     const most = this.planing ? Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * TURN_RADIUS))) : 0;
-    const asked = Math.max(-most, Math.min(most, this.steer * RAIL_RANGE + (this.standingHold + HAND_BEND * this.handSide) * HOLD_BANK));
+    const asked = Math.max(-most, Math.min(most, this.steer * RAIL_RANGE + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
     this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
     // The rest the balance wants, within what the feet can give; the upper body swings for the rest of it.
@@ -1265,16 +1301,26 @@ export class AttachedRider {
     // The crouch: a shorter leg, reached no faster than the legs can move, and softer.
     // Critically damped, and going down no harder than keeps the feet loaded: a sudden drop of the leg would
     // have to pull the body down, and unloaded feet lose their grip.
-    const rest = -Math.max(0, Math.min(1, this.crouch)) * CROUCH_DEPTH;
+    const rest = -Math.max(0, Math.min(1, Math.max(this.crouch, this.compress))) * CROUCH_DEPTH;
     const down = rest < this.leg.rest;
-    const accelerationLimit = down ? CROUCH_ACCELERATION : EXTEND_ACCELERATION;
+    const compressing = this.compress > this.crouch;
+    const accelerationLimit = !down ? EXTEND_ACCELERATION
+      : compressing ? Math.max(0, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
     const speedLimit = down ? CROUCH_SPEED : MAX_LEG_SPEED;
-    // While the feet brake the body's bank near their edges, the legs hold rather than drop (CROUCH_HOLD).
-    const hold = this.banking ? Math.max(0, Math.min(1, (Math.abs(this.ankleRest) / ANKLE_REST_RANGE - CROUCH_HOLD) / (1 - CROUCH_HOLD))) : 0;
+    // While the feet brake the body's bank near their edges, the crouch's legs hold rather than drop (CROUCH_HOLD).
+    const hold = this.banking && !compressing
+      ? Math.max(0, Math.min(1, (Math.abs(this.ankleRest) / ANKLE_REST_RANGE - CROUCH_HOLD) / (1 - CROUCH_HOLD))) : 0;
     const acceleration = Math.max(-accelerationLimit * (1 - hold), Math.min(accelerationLimit,
       LEG_FREQUENCY * LEG_FREQUENCY * (rest - this.leg.rest) - 2 * LEG_FREQUENCY * this.restRate));
     this.restRate = Math.max(-speedLimit * (1 - hold), Math.min(speedLimit, this.restRate + acceleration * h));
     this.leg.rest = Math.max(-CROUCH_DEPTH, Math.min(0, this.leg.rest + this.restRate * h));
+    // Feet on a deck only push: compressing, the legs fold no faster than the body falls onto them, so a board
+    // dropping or rolling away from under the rider unloads the feet rather than being pulled up by them.
+    const slack = this.leg.extension - this.legLoad / this.legStiffness;
+    if (compressing && this.leg.rest < slack) {
+      this.leg.rest = Math.min(0, slack);
+      this.restRate = Math.max(this.restRate, this.leg.rate);
+    }
     if (this.leg.rest === 0 || this.leg.rest === -CROUCH_DEPTH) this.restRate = 0;
     this.legStiffness = LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * -this.leg.rest) / CROUCH_DEPTH);
     this.legDamping = 2 * RIDER_LEG.axialDamping * Math.sqrt(this.legStiffness * this.mass);
@@ -1336,7 +1382,7 @@ export class AttachedRider {
     }
   }
 
-  /** Standing, the hand reaching into the face on the wave side: its drag on the body, and the moment it turns the board by. */
+  /** Standing, the hand reaching into the face or, compressing, toward the water on the inside of the turn: its drag on the body, and the moment it turns the board by. */
   private standingHand(h: number, board: BoardBody, water: SurfWater): void {
     const side = this.scratch2.set(this.handSide, 0, 0).applyQuaternion(board.orientation).setY(0);
     if (side.lengthSq() < 1e-9) return;
@@ -1345,11 +1391,22 @@ export class AttachedRider {
     const hand = this.partPosition(0, this.handPoint)
       .addScaledVector(this.up, HAND_TORSO * Math.cos(HAND_TORSO_ANGLE)).addScaledVector(side, HAND_TORSO * Math.sin(HAND_TORSO_ANGLE))
       .addScaledVector(this.up, -ARM_LENGTH * Math.cos(ARM_ANGLE)).addScaledVector(side, ARM_LENGTH * Math.sin(ARM_ANGLE));
+    // Reaching in a turn, the hand is its own arm's (the +x side's arm leads for Regular, trails for Goofy), and
+    // it touches the water rather than plunging.
+    if (!this.hand) {
+      hand.addScaledVector(this.scratch.set(0, 0, 1).applyQuaternion(board.orientation), this.handSide * this.stanceSign * REACH_ALONG);
+      hand.y = Math.max(hand.y, water.surfaceAt(hand.x, hand.z) + HAND_RADIUS - REACH_DIP);
+    }
     this.partWorld.copy(hand);
     this.partVelocity.copy(cross(this.angularVelocity, this.localScratch.subVectors(hand, this.position), this.scratch)).add(this.velocity);
     const moment = this.waterMoment.y;
     this.applyWater(RIDER_PARTS.length + (this.handSide > 0 ? 0 : 1), water, HAND_RADIUS, 0, STANDING_HAND_DRAG, h, 1);
     this.handYaw = this.waterMoment.y - moment;
+  }
+
+  /** The hand in the face bends the body toward it; the hand reaching in a turn follows the lean and bends none. */
+  private get handBend(): number {
+    return this.hand ? this.handSide : 0;
   }
 
   /** Steering without paddling: one arm sweeps. */
@@ -1918,16 +1975,24 @@ export class AttachedRider {
       this.shiftAxis('z', this.balance.z, reach.z, h);
     }
     // Carried upright, the steering lean (with the heading hold and the hand); banked, steering is the bank. The trim, standing only.
-    const lean = this.upright && !this.banking ? Math.max(-1, Math.min(1, this.steer + this.standingHold + HAND_BEND * this.handSide)) * MAX_LEAN : 0;
-    const trim = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
+    const lean = this.upright && !this.banking ? Math.max(-1, Math.min(1, this.steer + this.standingHold + HAND_BEND * this.handBend)) * MAX_LEAN : 0;
+    const compress = Math.max(0, Math.min(1, this.compress));
+    const trim = this.upright ? Math.max(-1, Math.min(1, this.trim + COMPRESS_WEIGHT * compress)) * TRIM_SHIFT : 0;
     this.leanAxis('x', lean, h);
     this.leanAxis('z', trim, h);
   }
 
-  /** Standing with the hand asked for: which side of the board the water stands higher on, the side the hand reaches for. */
+  /**
+   * Standing, the side the hand reaches for: with the hand asked for, the wave side, where the water stands
+   * higher beside the board; compressing into a lean without it, the side the body leans toward.
+   */
   private waveSide(board: BoardBody, water: SurfWater): void {
     this.handSide = 0;
-    if (!this.hand || this.phase !== 'standing' || !this.attached) return;
+    if (this.phase !== 'standing' || !this.attached) return;
+    if (!this.hand) {
+      if (this.compress >= REACH_FROM && Math.abs(this.bank.angle) >= REACH_LEAN) this.handSide = Math.sign(this.bank.angle);
+      return;
+    }
     const side = this.scratch.set(1, 0, 0).applyQuaternion(board.orientation).setY(0);
     if (side.lengthSq() < 1e-9) return;
     side.normalize();
