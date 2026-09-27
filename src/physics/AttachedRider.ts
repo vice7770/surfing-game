@@ -493,7 +493,7 @@ function cross(a: V3, b: V3, out: Vector3): Vector3 {
  */
 export class AttachedRider {
   readonly mass: number;
-  /** Regular or Goofy; changed only between rides (a retry or a placement), never mid-ride. */
+  /** Regular or Goofy; changed only between rides (a retry, a placement, or off the board), never mid-ride. */
   stance: StanceName;
   phase: RiderPhase;
   readonly popUpReport: PopUpReport = { outcome: 'none', duration: 0, landingPeak: 0, frontShare: 0 };

@@ -292,6 +292,10 @@ describe('SurfZoneRunner with a rider', () => {
     expect(runner.session!.rider.stance).toBe('regular');
     runner.advance(1, { ...idle, stance: 'goofy', place: { x: runner.session!.board.position.x, z: runner.session!.board.position.z, heading: 0, speed: 0, phase: 'prone' } });
     expect(runner.session!.rider.stance).toBe('goofy');
+    // The final review: in free surf a fallen rider climbs back on without a retry; off the board it takes the change.
+    runner.session!.separate();
+    runner.advance(1, { ...idle, stance: 'regular' });
+    expect(runner.session!.rider.stance).toBe('regular');
   });
 
   it('lies a rider prone on the board in the lineup, and snapshots its render points and phase', () => {

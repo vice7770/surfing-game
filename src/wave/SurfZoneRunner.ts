@@ -349,7 +349,9 @@ export class SurfZoneRunner {
     if (session) {
       // A press (pop-up, retry) counts once per batch; held controls apply to every step.
       const request = step === 0 ? input : { ...input, popUp: false, retry: false, place: undefined };
-      if ((request.retry || request.place) && request.stance) session.rider.stance = request.stance;
+      // The stance changes between rides: at a retry or a placement, or while the rider is off the board (a fallen
+      // rider climbs back on without a retry, and nothing is drawn from the rider meanwhile).
+      if ((request.retry || request.place || !session.rider.attached) && request.stance) session.rider.stance = request.stance;
       if (request.retry) {
         if (request.spawnAt) this.rideLineup.set(request.spawnAt.x, 0, request.spawnAt.z);
         this.rideResets += 1;
