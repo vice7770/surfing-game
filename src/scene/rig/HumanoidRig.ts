@@ -48,6 +48,15 @@ export const RIG_DETAIL = {
    * bends them from there (90–110° crouched, 90° or less compressed).
    */
   standingKnee: 155,
+  /**
+   * Standing, the head looks where the board goes: along its travel, led into a
+   * turn by the turn over `lookAhead`, s, within `neckTurn` of the chest, and
+   * pitched down the face or up it by the climb against the speed, within
+   * `lookPitch` (de Sousa 2022: the head toward the lip in the bottom turn).
+   */
+  lookAhead: 0.4,
+  neckTurn: 80,
+  lookPitch: 30,
 };
 
 /**
@@ -69,6 +78,8 @@ export class HumanoidRig {
   };
   /** Where the chest faces after `solve`. */
   readonly facing = new Vector3();
+  /** Standing, where the head looks after `solve` (unit). */
+  readonly look = new Vector3();
   /** The ankle's height above the sole at rest (MPFB stands the body on y = 0), m. */
   readonly soleHeight: number;
   /** From the ankle to mid-foot along the foot, m. */
@@ -207,6 +218,7 @@ export class HumanoidRig {
     });
     this.orient(BONES.neck, chestUp, this.facing);
     if (lying) this.orient(BONES.head, this.direction.copy(boardUp).addScaledVector(boardForward, 0.3), boardForward);
+    else if (state.phase === 'standing') this.lookWhereGoing(state);
     else if (upright) this.orient(BONES.head, WORLD_UP, this.hint.copy(boardForward).lerp(this.facing, 0.25));
     else this.orient(BONES.head, chestUp, this.facing);
 
@@ -256,6 +268,27 @@ export class HumanoidRig {
         this.orient(BONES.foot[side], this.direction, lying ? this.hint.copy(boardUp).negate() : this.facing);
       }
     }
+  }
+
+  /** Standing, the head along the board's travel led into the turn, within the neck's reach, pitched with the climb. */
+  private lookWhereGoing(state: RiderVisualState): void {
+    const { look, hint, direction } = this;
+    look.copy(state.travel).setY(0);
+    if (look.lengthSq() < 1e-8) look.copy(this.boardForward).setY(0);
+    if (look.lengthSq() < 1e-8) look.set(0, 0, 1);
+    look.normalize().applyAxisAngle(WORLD_UP, RIG_DETAIL.lookAhead * state.yawRate);
+    hint.copy(this.facing).setY(0);
+    if (hint.lengthSq() > 1e-8) {
+      hint.normalize();
+      const turn = Math.atan2(this.scratch.crossVectors(hint, look).y, hint.dot(look));
+      const most = (RIG_DETAIL.neckTurn * Math.PI) / 180;
+      if (Math.abs(turn) > most) look.copy(hint).applyAxisAngle(WORLD_UP, Math.sign(turn) * most);
+    }
+    const pitchMost = (RIG_DETAIL.lookPitch * Math.PI) / 180;
+    const pitch = Math.max(-pitchMost, Math.min(pitchMost, Math.atan2(state.climb, Math.max(state.speed, 1))));
+    direction.copy(WORLD_UP).multiplyScalar(Math.cos(pitch)).addScaledVector(look, -Math.sin(pitch));
+    look.multiplyScalar(Math.cos(pitch)).addScaledVector(WORLD_UP, Math.sin(pitch));
+    this.orient(BONES.head, direction, look);
   }
 
   private orient(name: string, direction: Vector3, hint: Vector3): void {

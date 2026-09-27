@@ -188,3 +188,55 @@ describe('knees from the physics', () => {
     for (const [name, length] of boneLengths(bones)) expect(length, name).toBeCloseTo(before.get(name)!, 9);
   });
 });
+
+/** The head bone's facing after a solve: its bind forward (+z) carried by its turn from rest. */
+function headFacing(bones: Map<string, Bone>, rest: Quaternion): Vector3 {
+  const now = bones.get(BONES.head)!.getWorldQuaternion(new Quaternion());
+  return new Vector3(0, 0, 1).applyQuaternion(now.multiply(rest.clone().invert()));
+}
+const yawOf = (v: Vector3) => (Math.atan2(v.x, v.z) * 180) / Math.PI;
+const pitchOf = (v: Vector3) => (Math.asin(Math.max(-1, Math.min(1, v.y / v.length()))) * 180) / Math.PI;
+
+// Part B: the head looks where the board goes, into the turn by the look-ahead, down the face on the drop and up it
+// climbing (the reference: the head toward the lip in the bottom turn). Standing only.
+describe('the head', () => {
+  const board = new Vector3(3, 0.1, -40);
+  const level = new Quaternion();
+  const look = (stance: 'regular' | 'goofy', motion: { yawRate?: number; climb?: number; phase?: 'standing' | 'prone' | 'landing' } = {}) => {
+    const { bones } = createTestHumanoid();
+    const rest = bones.get(BONES.head)!.getWorldQuaternion(new Quaternion());
+    const rig = new HumanoidRig(bones);
+    const state = posturePoints(motion.phase ?? 'standing', stance, board, level, createRiderVisualState());
+    Object.assign(state, { yawRate: motion.yawRate ?? 0, climb: motion.climb ?? 0, speed: 7 });
+    state.travel.set(0, 0, 1);
+    rig.solve(state);
+    return headFacing(bones, rest);
+  };
+
+  it('looks along the travel going straight', () => {
+    for (const stance of ['regular', 'goofy'] as const) expect(Math.abs(yawOf(look(stance)))).toBeLessThan(20);
+  });
+
+  // Regular faces −x: turning that way is frontside, where the head leads freely; backside the neck holds it.
+  it('leads into the turn, mirrored for Goofy', () => {
+    const straight = yawOf(look('regular'));
+    expect(straight - yawOf(look('regular', { yawRate: -2 }))).toBeGreaterThan(30);
+    expect(yawOf(look('regular', { yawRate: 2 })) - straight).toBeGreaterThan(5);
+    const goofy = yawOf(look('goofy'));
+    expect(yawOf(look('goofy', { yawRate: 2 })) - goofy).toBeGreaterThan(30);
+  });
+
+  it('looks down the face on the drop, and up it climbing', () => {
+    expect(pitchOf(look('regular', { climb: -3 })) - pitchOf(look('regular'))).toBeLessThan(-10);
+    expect(pitchOf(look('regular', { climb: 3 })) - pitchOf(look('regular'))).toBeGreaterThan(10);
+  });
+
+  // Review Focus 4.
+  it('keeps the lying and landing heads as they were', () => {
+    for (const phase of ['prone', 'landing'] as const) {
+      const still = look('regular', { phase });
+      const moving = look('regular', { phase, yawRate: 2, climb: -3 });
+      expect(still.distanceTo(moving)).toBeLessThan(1e-9);
+    }
+  });
+});
