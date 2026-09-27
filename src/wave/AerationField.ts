@@ -55,18 +55,15 @@ export class AerationField {
 
   /**
    * A bore dissipating `dissipation` (energy per unit crest length over ρ,
-   * m³/s³, `boreDissipation`) for `dt` s in `cell`, `height` m high, spread
-   * over its front's cross-shore length (at least twice its height).
+   * m⁴/s³, `boreDissipation`) for `dt` s in `cell`, `height` m high: β of the
+   * energy its cell's width of crest loses, as air held against buoyancy at
+   * half the plume's depth (the cell holds it, where the bore dissipates).
    */
   addBore(cell: number, dissipation: number, height: number, dt: number): void {
     this.followWindow();
     const reach = this.reach(cell, AERATION.boreDepth * height);
     if (!(reach > 0) || !(dissipation > 0)) return;
-    const { dx, dz, nx } = this.solver;
-    const front = Math.max(dz[Math.floor(cell / nx)], 2 * height);
-    // β of the power per unit area, as air held against buoyancy at half the plume's depth.
-    const perArea = (AERATION.share * dissipation * dt) / (front * GRAVITY * (reach / 2));
-    this.addTo(cell, perArea * dx * front, reach);
+    this.addTo(cell, (AERATION.share * dissipation * dt * this.solver.dx) / (GRAVITY * (reach / 2)), reach);
   }
 
   /** Trapped air of `volume` m³ broken into bubbles at (x, z), `penetration` m down. */
