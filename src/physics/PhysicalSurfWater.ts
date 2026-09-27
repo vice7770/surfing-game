@@ -13,6 +13,20 @@ const BORE = 0.3;
 const SHALLOW_KH = 0.05;
 /** Largest profile factor applied, u/ū. */
 const MAX_PROFILE = 2;
+/**
+ * The surface roller (Svendsen 1984; the gameplay spec's P11, only its push brought
+ * forward): in a bore the aerated roller on the front moves at about the bore's
+ * speed, √(g d). Within ROLLER_SHARE of the set-up under the surface the flow is
+ * carried toward breaking × √(g d) along the current, fading linearly to the
+ * depth-averaged current at the roller's bottom; slower than MIN_ROLLER_FLOW, m/s,
+ * the current gives no direction. The roller rides the front toward the shore
+ * (+z): a current running more than 60° off it (ROLLER_SHOREWARD, a rip or the
+ * backwash, or along the shore) carries none. Provisional.
+ */
+const ROLLER_SHARE = 0.5;
+const MIN_ROLLER_FLOW = 0.05;
+const ROLLER_SHOREWARD = 0.5;
+const GRAVITY = 9.81;
 
 /** Catmull-Rom weights for nodes −1, 0, 1, 2 at fraction t of the way from node 0 to node 1. */
 export function catmullRomWeights(t: number): [number, number, number, number] {
@@ -58,6 +72,8 @@ export interface PhysicalSurfWaterOptions {
 export class PhysicalSurfWater implements SurfWater {
   /** Vertical impulse handed over but not representable in the depth-averaged water, N·s. */
   unappliedVerticalImpulse = 0;
+  /** This water's own horizontal reactions since the last `drainReaction`: weight Σ|J|, Σ|J|·x, Σ|J|·z, ΣJx, ΣJz. */
+  private readonly tally = { weight: 0, x: 0, z: 0, jx: 0, jz: 0 };
   private readonly spacing: number;
   private readonly omega: number;
   private readonly nodes = new Float64Array(16);
@@ -112,6 +128,13 @@ export class PhysicalSurfWater implements SurfWater {
     let vertical = height / depth;
     if (out.breaking > BORE) {
       out.regime = 'bore';
+      const current = Math.hypot(u, w);
+      const thickness = ROLLER_SHARE * Math.max(0, out.surfaceY - solver.restLevel);
+      if (current > MIN_ROLLER_FLOW && thickness > 0 && w > ROLLER_SHOREWARD * current) {
+        const share = Math.max(0, 1 - Math.max(0, out.surfaceY - y) / thickness);
+        const carried = out.breaking * Math.sqrt(GRAVITY * depth);
+        horizontal = 1 + Math.max(0, carried / current - 1) * share;
+      }
     } else if (kh < SHALLOW_KH) {
       out.regime = 'shallow';
     } else {
@@ -138,8 +161,40 @@ export class PhysicalSurfWater implements SurfWater {
   }
 
   addReaction(x: number, z: number, impulseX: number, impulseY: number, impulseZ: number): void {
-    const { solver } = this;
     this.unappliedVerticalImpulse += impulseY;
+    const weight = Math.hypot(impulseX, impulseZ);
+    const { tally } = this;
+    tally.weight += weight;
+    tally.x += x * weight;
+    tally.z += z * weight;
+    tally.jx += impulseX;
+    tally.jz += impulseZ;
+    this.push(x, z, impulseX, impulseZ);
+  }
+
+  /** Another player's board pushing on this water (spec N1): applied like a reaction, but not tallied as this player's own. */
+  applyRemoteReaction(x: number, z: number, impulseX: number, impulseZ: number): void {
+    this.push(x, z, impulseX, impulseZ);
+  }
+
+  /**
+   * This water's own reactions since the last drain, for the network (spec N1):
+   * `out` gets the impulse-weighted mean point (x, z) and the summed horizontal
+   * impulse (jx, jz), or zeros; the tally starts again.
+   */
+  drainReaction(out: Float64Array): void {
+    const { tally } = this;
+    const weight = tally.weight;
+    out[0] = weight > 0 ? tally.x / weight : 0;
+    out[1] = weight > 0 ? tally.z / weight : 0;
+    out[2] = tally.jx;
+    out[3] = tally.jz;
+    tally.weight = tally.x = tally.z = tally.jx = tally.jz = 0;
+  }
+
+  /** −J over the four nearest wet cells: Δq = −J/(ρA). */
+  private push(x: number, z: number, impulseX: number, impulseZ: number): void {
+    const { solver } = this;
     if (this.outside(x, z)) return;
     this.cellWeights(x, z);
     let wet = 0;

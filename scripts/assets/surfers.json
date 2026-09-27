@@ -57,10 +57,10 @@
       "macros": {
         "gender": 1.0,
         "age": 0.45,
-        "muscle": 0.66,
-        "weight": 0.48,
+        "muscle": 0.78,
+        "weight": 0.5,
         "height": 0.52,
-        "proportions": 0.7,
+        "proportions": 0.85,
         "cupsize": 0.5,
         "firmness": 0.5,
         "race": {
@@ -69,8 +69,25 @@
           "caucasian": 0.1
         }
       },
+      "targets": {
+        "torso-vshape-incr": 0.5,
+        "measure-shoulder-dist-incr": 0.2,
+        "torso-muscle-dorsi-incr": 0.5,
+        "torso-muscle-pectoral-incr": 0.45,
+        "l-upperarm-shoulder-muscle-incr": 0.35,
+        "r-upperarm-shoulder-muscle-incr": 0.35,
+        "l-upperarm-muscle-incr": 0.35,
+        "r-upperarm-muscle-incr": 0.35,
+        "l-lowerarm-muscle-incr": 0.2,
+        "r-lowerarm-muscle-incr": 0.2,
+        "measure-waist-circ-decr": 0.25,
+        "neck-scale-horiz-incr": 0.3,
+        "chin-width-incr": 0.3,
+        "chin-bones-incr": 0.3,
+        "head-square": 0.25
+      },
       "skin": "young_african_male",
-      "hair": "short02",
+      "hair": "short01",
       "eyebrows": "eyebrow002",
       "eyelashes": "eyelashes01",
       "proxy": "male1591"
@@ -81,10 +98,10 @@
       "macros": {
         "gender": 1.0,
         "age": 0.5,
-        "muscle": 0.6,
+        "muscle": 0.75,
         "weight": 0.5,
         "height": 0.56,
-        "proportions": 0.7,
+        "proportions": 0.85,
         "cupsize": 0.5,
         "firmness": 0.5,
         "race": {
@@ -92,6 +109,23 @@
           "asian": 0.85,
           "caucasian": 0.1
         }
+      },
+      "targets": {
+        "torso-vshape-incr": 0.5,
+        "measure-shoulder-dist-incr": 0.2,
+        "torso-muscle-dorsi-incr": 0.5,
+        "torso-muscle-pectoral-incr": 0.45,
+        "l-upperarm-shoulder-muscle-incr": 0.35,
+        "r-upperarm-shoulder-muscle-incr": 0.35,
+        "l-upperarm-muscle-incr": 0.35,
+        "r-upperarm-muscle-incr": 0.35,
+        "l-lowerarm-muscle-incr": 0.2,
+        "r-lowerarm-muscle-incr": 0.2,
+        "measure-waist-circ-decr": 0.25,
+        "neck-scale-horiz-incr": 0.3,
+        "chin-width-incr": 0.3,
+        "chin-bones-incr": 0.3,
+        "head-square": 0.25
       },
       "skin": "young_asian_male",
       "hair": "short04",

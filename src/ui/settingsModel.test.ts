@@ -8,7 +8,7 @@ const context = { devTools: false, detecting: false };
 describe('settingsModel', () => {
   it('offers telemetry only with the dev tools on', () => {
     const ids = (devTools: boolean) => settingsModel('gameplay', defaultSettings(), { ...context, devTools }).map((row) => row.id);
-    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'scoreRides']);
+    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'pocketReflex', 'scoreRides', 'nameTags']);
     expect(ids(true)).toContain('showTelemetry');
   });
 
@@ -16,6 +16,9 @@ describe('settingsModel', () => {
   it('offers the balance meter in Practice by default, and explains the standing actions', () => {
     expect(settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'balanceMeter')).toMatchObject({ kind: 'choice', value: 'practice' });
     expect(applyRow(defaultSettings(), 'balanceMeter', 'never')).toEqual({ tab: 'gameplay', patch: { balanceMeter: 'never' } });
+    // The riding-the-wave spec: the pocket reflex, a choice like the balance meter's.
+    expect(settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'pocketReflex')).toMatchObject({ kind: 'choice', value: 'practice' });
+    expect(applyRow(defaultSettings(), 'pocketReflex', 'always')).toEqual({ tab: 'gameplay', patch: { pocketReflex: 'always' } });
     const rows = settingsModel('controls', defaultSettings(), context);
     const help = (action: string) => rows.find((r) => r.kind === 'binding' && r.action === action && 'help' in r)?.['help' as never];
     for (const action of ['trimForward', 'trimBack', 'crouch', 'hand']) expect(help(action)).toBeTruthy();
@@ -27,6 +30,13 @@ describe('settingsModel', () => {
     const row = settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'scoreRides');
     expect(row).toMatchObject({ kind: 'toggle', value: false });
     expect(applyRow(defaultSettings(), 'scoreRides', true)).toEqual({ tab: 'gameplay', patch: { scoreRides: true } });
+  });
+
+  // N1: names over the other surfers online, on by default.
+  it('offers name tags, on by default', () => {
+    const row = settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'nameTags');
+    expect(row).toMatchObject({ kind: 'toggle', value: true });
+    expect(applyRow(defaultSettings(), 'nameTags', false)).toEqual({ tab: 'gameplay', patch: { nameTags: false } });
   });
 
   it('marks the water simulation and sea detail as taking effect on the next wave', () => {
@@ -43,10 +53,10 @@ describe('settingsModel', () => {
     expect(settingsModel('graphics', low, context).find((row) => row.id === 'redetect')).toBeUndefined();
   });
 
-  it('lists a keyboard pair and a gamepad button for each of the eleven actions (P9 adds trim, crouch and the hand; S1 adds mute)', () => {
+  it('lists a keyboard pair and a gamepad button for each of the fifteen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls)', () => {
     const bindings = settingsModel('controls', defaultSettings(), context).filter((row) => row.kind === 'binding');
-    expect(bindings).toHaveLength(33);
-    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(11);
+    expect(bindings).toHaveLength(45);
+    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(15);
   });
 });
 

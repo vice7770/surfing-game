@@ -48,6 +48,8 @@ export function buildLipSheet(parcels: Float32Array, count: number, width: numbe
     const column = parcels[o + 3];
     const index = parcels[o + 4];
     const launchTime = parcels[o + 5];
+    // The splash-up (G9) is whitewater, drawn in Rich only: Classic draws the lip as it always has.
+    if (parcels[o + 8] !== 0) continue;
     const key = `${column}|${launchTime}`;
     let strip = strips.get(key);
     if (!strip) {

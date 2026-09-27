@@ -2,6 +2,7 @@ import type { RenderableSurfZone } from '../scene/PhysicalSurfaceSource';
 import { sampleSurfaceBed, sampleSurfaceHeight, type SurfaceGrid } from '../scene/WaterSurface';
 import { SurfZoneRunner, type RideRequest, type SurfZoneBuffers, type SurfZoneRunnerOptions, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { RenderGrid, SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { compress, decodeSurfZoneState, encodeSurfZoneState } from '../wave/surfZoneState';
 import { TUBE_STRIDE, carveAt, carveGrid } from '../wave/tubeTable';
 
 /** What a surf zone fixes when it starts: its render grid, bed, break focus, window and solver column width. */
@@ -30,7 +31,13 @@ export interface SurfZoneHost {
   readonly init: SurfZoneInit;
   readonly snapshot: SurfZoneSnapshot;
   /** Request `steps` fixed physics steps (`SURF_ZONE_STEP` each), with the player's input for a ridden board. */
-  advance(steps: number, input?: RideRequest): void;
+  advance(steps: number, input?: RideRequest, reactions?: ArrayLike<number>): void;
+  /** Steps asked for that no snapshot shows yet (online pacing counts them, spec N1). */
+  readonly outstandingSteps: number;
+  /** This sea for a player joining late (spec N1): encoded, and compressed where the platform can. */
+  exportState(): Promise<{ bytes: Uint8Array; deflated: boolean }>;
+  /** Take this encoded sea (from `exportState`, decompressed) in place of the running one; the next steps go on from it (spec L2). */
+  restore(sea: Uint8Array): void;
   /** Rendered water surface at (x, z), m: the same lookup the water shader uses. */
   heightAt(x: number, z: number): number;
   bedAt(x: number, z: number): number;
@@ -59,9 +66,11 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
   readonly init: SurfZoneInit;
   readonly snapshot: SurfZoneSnapshot;
 
-  constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}) {
+  /** `sea`: an encoded sea handed over by another player (spec N1). */
+  constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, sea?: Uint8Array) {
     super();
     this.runner = new SurfZoneRunner(config, options);
+    if (sea) this.runner.simulation.importState(decodeSurfZoneState(sea));
     this.init = {
       grid: { ...this.runner.grid }, bed: this.runner.bed, focus: this.runner.focus,
       windowXMin: this.runner.windowXMin, dx: this.runner.simulation.solver.dx,
@@ -70,16 +79,31 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
     this.refresh();
   }
 
-  private pendingPress = { popUp: false, retry: false };
+  private pendingPress: { popUp: boolean; retry: boolean; place?: RideRequest['place'] } = { popUp: false, retry: false };
+  /** Other boards' pushes waiting for the next step (spec N1). */
+  private pendingReactions: number[] = [];
+  readonly outstandingSteps = 0;
 
-  advance(steps: number, input?: RideRequest): void {
+  advance(steps: number, input?: RideRequest, reactions?: ArrayLike<number>): void {
     if (input) {
       this.pendingPress.popUp ||= input.popUp;
       this.pendingPress.retry ||= input.retry;
+      this.pendingPress.place = input.place ?? this.pendingPress.place;
     }
+    if (reactions) for (let i = 0; i < reactions.length; i += 1) this.pendingReactions.push(reactions[i]);
     if (steps <= 0) return;
-    this.runner.advance(steps, input ? { ...input, ...this.pendingPress } : undefined);
+    this.runner.advance(steps, input ? { ...input, ...this.pendingPress } : undefined, this.pendingReactions);
+    this.pendingReactions = [];
     this.pendingPress = { popUp: false, retry: false };
+    this.refresh();
+  }
+
+  exportState(): Promise<{ bytes: Uint8Array; deflated: boolean }> {
+    return compress(encodeSurfZoneState(this.runner.simulation.exportState()));
+  }
+
+  restore(sea: Uint8Array): void {
+    this.runner.simulation.importState(decodeSurfZoneState(sea));
     this.refresh();
   }
 
@@ -125,6 +149,10 @@ export class SnapshotSurfZone implements RenderableSurfZone {
 
   get tubeColumnWidth(): number {
     return this.host.init.dx;
+  }
+
+  writeUniformAeration(data: Float32Array): void {
+    data.set(this.host.snapshot.aeration);
   }
 
   writeUniformBed(data: Float32Array): void {

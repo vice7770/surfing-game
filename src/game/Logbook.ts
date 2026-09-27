@@ -9,6 +9,8 @@ export interface LoggedRide extends RideResult {
   seed: number;
   at: number;
   score?: number;
+  /** Surfed in an online room (N1). */
+  online?: boolean;
 }
 
 export type BestKind = 'distance' | 'topSpeed' | 'seconds' | 'score';
@@ -30,11 +32,12 @@ function validRide(value: unknown): LoggedRide | undefined {
   if (!SPOTS.includes(ride.spot as SpotName) || !OUTCOMES.includes(ride.outcome as string) || typeof ride.reason !== 'string') return undefined;
   if (![ride.distance, ride.topSpeed, ride.seconds, ride.seed, ride.at].every(finite)) return undefined;
   const conditions = record(ride.conditions);
-  const { score, ...rest } = ride as unknown as LoggedRide;
+  const { score, online, ...rest } = ride as unknown as LoggedRide;
   return {
     ...rest,
     conditions: { ...DEFAULT_CONDITIONS, ...(conditions as Partial<SurfConditions>) },
     ...(finite(score) ? { score } : {}),
+    ...(online === true ? { online } : {}),
   };
 }
 

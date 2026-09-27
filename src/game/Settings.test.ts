@@ -28,6 +28,13 @@ describe('SettingsStore', () => {
     expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: oldCustom, detected: medium }) })).value.graphics.waterLook).toBe('rich');
   });
 
+  // The riding-the-wave spec: the pocket reflex rides with the player on the Practice swell unless they choose otherwise.
+  it('keeps the pocket reflex on the Practice swell by default, and sanitizes it', () => {
+    expect(defaultSettings().gameplay.pocketReflex).toBe('practice');
+    const saved = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { pocketReflex: 'sometimes' } }) }));
+    expect(saved.value.gameplay.pocketReflex).toBe('practice');
+  });
+
   it('starts from the defaults with nothing stored, or with something that is not JSON', () => {
     expect(new SettingsStore(memory()).value).toEqual(defaultSettings());
     expect(new SettingsStore(memory({ [SETTINGS_KEY]: '{oops' })).value).toEqual(defaultSettings());
@@ -107,6 +114,45 @@ describe('SettingsStore', () => {
     expect(store.value.gameplay.units).toBe('imperial');
     const loud = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ audio: { master: 3, sea: 0.4, muteInBackground: false } }) }));
     expect(loud.value.audio).toMatchObject({ master: 1, sea: 0.4, muteInBackground: false });
+  });
+});
+
+describe('SettingsStore online (N1)', () => {
+  const token = (n: number) => n.toString(16).padStart(32, '0');
+  const code = (n: number) => `ABCD23${'ABCDEFGHJKMN'[n]}${'ABCDEFGHJKMN'[n]}`;
+
+  it('shows name tags by default, starts with no name, and loads an older save without them', () => {
+    const store = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { units: 'imperial' } }) }));
+    expect(store.value.gameplay.nameTags).toBe(true);
+    expect(store.value.online).toEqual({ name: '', tokens: {} });
+  });
+
+  it('keeps a clean name, and drops a bad one', () => {
+    const store = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ online: { name: '  Ana\n Rita ', tokens: {} } }) }));
+    expect(store.value.online.name).toBe('Ana Rita');
+    const bad = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ online: { name: 42 } }) }));
+    expect(bad.value.online.name).toBe('');
+  });
+
+  it('remembers the token for each room, the last 10 only, and nothing malformed', () => {
+    const store = new SettingsStore(memory());
+    const listener = vi.fn();
+    store.subscribe(listener);
+    for (let i = 0; i < 12; i += 1) store.rememberRoom(code(i), token(i));
+    expect(Object.keys(store.value.online.tokens)).toHaveLength(10);
+    expect(Object.values(store.value.online.tokens)).not.toContain(token(0));
+    expect(store.value.online.tokens[code(11)]).toBe(token(11));
+    expect(listener).toHaveBeenLastCalledWith(store.value, 'online');
+    const loaded = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ online: { name: 'Ana', tokens: { ABCD2345: token(1), nope: token(2), EFGH2345: 'short' } } }) }));
+    expect(loaded.value.online.tokens).toEqual({ ABCD2345: token(1) });
+  });
+
+  it('saves the player\'s name', () => {
+    const storage = memory();
+    const store = new SettingsStore(storage);
+    store.setOnlineName(' Bea ');
+    expect(store.value.online.name).toBe('Bea');
+    expect(JSON.parse(storage.data.get(SETTINGS_KEY)!).online.name).toBe('Bea');
   });
 });
 

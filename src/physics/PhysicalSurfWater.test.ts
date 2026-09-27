@@ -31,6 +31,35 @@ describe('Catmull-Rom weights', () => {
 });
 
 describe('PhysicalSurfWater', () => {
+  it('tallies its own pushes on the water for the network, but not remote ones (spec N1)', () => {
+    const { water } = channel();
+    water.addReaction(2, 0, 0, 0, 0);
+    water.addReaction(4, 0, 6, 0, 0);
+    water.addReaction(-2, 0, 0, 5, 2);
+    water.applyRemoteReaction(3, 0, 100, 100);
+    const out = new Float64Array(4);
+    water.drainReaction(out);
+    // Weighted by the horizontal impulse: 6 at x = 4 and 2 at x = −2.
+    expect(out[0]).toBeCloseTo((6 * 4 + 2 * -2) / 8, 9);
+    expect(out[1]).toBeCloseTo(0, 9);
+    expect(out[2]).toBeCloseTo(6, 9);
+    expect(out[3]).toBeCloseTo(2, 9);
+    water.drainReaction(out);
+    expect([...out]).toEqual([0, 0, 0, 0]);
+  });
+
+  it('pushes the water with a remote board\'s reaction, conserving momentum', () => {
+    const { solver, water } = channel();
+    const momentum = () => {
+      let sum = 0;
+      for (let i = 0; i < solver.qx.length; i += 1) sum += solver.qx[i] * solver.dx * solver.dz[Math.floor(i / solver.nx)];
+      return sum * SEAWATER_DENSITY;
+    };
+    const before = momentum();
+    water.applyRemoteReaction(3, 0, 50, 0);
+    expect(momentum() - before).toBeCloseTo(-50, 6);
+  });
+
   it('agrees with the rendered surface and its shading normal at every render node', () => {
     const simulation = new SurfZoneSimulation(config);
     for (let step = 0; step < 120; step += 1) simulation.step(1 / 60);
@@ -103,6 +132,59 @@ describe('PhysicalSurfWater', () => {
     expect([out.flowX, out.flowY, out.flowZ]).toEqual([0, 0, 0]);
     expect(Number.isFinite(out.surfaceY)).toBe(true);
     expect(out.bedY).toBeCloseTo(solver.bed[0], 12);
+  });
+
+  // The riding-the-wave spec (Task 4): Svendsen's surface roller rides a bore's front at about the bore's speed,
+  // so broken water carries a board; below the roller the flow stays the depth-averaged current.
+  it('carries the surface of a bore at about its speed, and nothing below the roller', () => {
+    const { water, breaking, solver } = channel();
+    // A 0.6 m bore over 3 m of still water, moving 1 m/s toward the beach (+z) depth-averaged, breaking fully.
+    for (let i = 0; i < solver.h.length; i += 1) {
+      solver.h[i] = 3.6;
+      solver.qx[i] = 0;
+      solver.qz[i] = 3.6;
+    }
+    breaking.fill(1);
+    const out = createWaterSample();
+    const surface = water.sampleAt(0.2, 5, 0.3, out).surfaceY;
+    water.sampleAt(0.2, surface, 0.3, out);
+    expect(out.regime).toBe('bore');
+    expect(out.flowZ).toBeCloseTo(Math.sqrt(9.81 * 3.6), 1);
+    expect(out.flowX).toBeCloseTo(0, 9);
+    expect(water.sampleAt(0.2, surface - 1, 0.3, out).flowZ).toBeCloseTo(1, 9);
+    breaking.fill(0.5);
+    expect(water.sampleAt(0.2, surface, 0.3, out).flowZ).toBeCloseTo(0.5 * Math.sqrt(9.81 * 3.6), 1);
+  });
+
+  // Final review: the roller rides the bore's front toward the shore. A current running seaward (a rip, backwash)
+  // or along the shore under breaking water carries no roller: boosted, it threw a board out to sea at about √(g d).
+  it('carries only a shoreward current with the roller', () => {
+    const { water, breaking, solver } = channel();
+    breaking.fill(1);
+    const out = createWaterSample();
+    for (const [qx, qz] of [[0, -3.6], [3.6, 0], [3.6, 0.9]]) {
+      for (let i = 0; i < solver.h.length; i += 1) {
+        solver.h[i] = 3.6;
+        solver.qx[i] = qx;
+        solver.qz[i] = qz;
+      }
+      const surface = water.sampleAt(0.2, 5, 0.3, out).surfaceY;
+      water.sampleAt(0.2, surface, 0.3, out);
+      expect(Math.hypot(out.flowX, out.flowZ)).toBeLessThan(1.1);
+    }
+  });
+
+  it('pushes nothing where nothing breaks, however high the water stands', () => {
+    const { water, solver } = channel();
+    for (let i = 0; i < solver.h.length; i += 1) {
+      solver.h[i] = 3.6;
+      solver.qx[i] = 3.6;
+    }
+    const out = createWaterSample();
+    const surface = water.sampleAt(0.2, 5, 0.3, out).surfaceY;
+    water.sampleAt(0.2, surface, 0.3, out);
+    expect(out.regime).not.toBe('bore');
+    expect(out.flowX).toBeLessThan(2);
   });
 
   it('reconstructs rising water from the flow converging on a point', () => {

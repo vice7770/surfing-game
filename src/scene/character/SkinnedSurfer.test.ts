@@ -1,5 +1,6 @@
 import { BufferGeometry, MeshPhysicalMaterial, MeshStandardMaterial, Quaternion, SkinnedMesh, Texture, Vector3 } from 'three';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { BONES } from '../rig/humanoidBones';
 import { posturePoints } from '../rig/posturePoints';
 import { POINT, createRiderVisualState } from '../rig/riderVisualState';
@@ -66,5 +67,39 @@ describe('skinned surfer', () => {
     expect(resized).toEqual([[512, 256]]);
     expect(skin.image).toEqual({ width: 512, height: 256 });
     expect(small.image).toEqual({ width: 256, height: 256 });
+  });
+
+  describe('loading', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+      SkinnedSurfer.clearCache();
+    });
+
+    it('parses each body once and gives every surfer its own skeleton and materials (spec N1: a room of surfers)', async () => {
+      const loadAsync = vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(async () => ({ scene: fakeGltfScene() }) as never);
+      const [a, b] = await Promise.all([SkinnedSurfer.load('assets/surfers/surfer1.glb'), SkinnedSurfer.load('assets/surfers/surfer1.glb')]);
+      expect(loadAsync).toHaveBeenCalledTimes(1);
+      const meshes = (surfer: SkinnedSurfer) => {
+        const found: SkinnedMesh[] = [];
+        surfer.group.traverse((object) => {
+          if ((object as SkinnedMesh).isSkinnedMesh) found.push(object as SkinnedMesh);
+        });
+        return found;
+      };
+      const [bodyA, bodyB] = [meshes(a)[0], meshes(b)[0]];
+      expect(bodyA.skeleton.bones[0]).not.toBe(bodyB.skeleton.bones[0]);
+      expect(bodyA.material).not.toBe(bodyB.material);
+      expect(bodyA.geometry).toBe(bodyB.geometry);
+      await SkinnedSurfer.load('assets/surfers/surfer1.glb', 512);
+      expect(loadAsync).toHaveBeenCalledTimes(2);
+    });
+
+    it('tries again after a failed load', async () => {
+      const loadAsync = vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockRejectedValueOnce(new Error('offline'))
+        .mockImplementation(async () => ({ scene: fakeGltfScene() }) as never);
+      await expect(SkinnedSurfer.load('assets/surfers/surfer2.glb')).rejects.toThrow('offline');
+      await SkinnedSurfer.load('assets/surfers/surfer2.glb');
+      expect(loadAsync).toHaveBeenCalledTimes(2);
+    });
   });
 });

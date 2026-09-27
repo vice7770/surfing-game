@@ -131,3 +131,61 @@ _Avoid_: exit button
 **Lost the face**:
 A ride ended because the wave moved on and stopped carrying the board.
 _Avoid_: missed
+
+## Wave Lab
+
+**Wave Lab**:
+The mode for looking at waves: every sea setting, a free camera, and no rider.
+_Avoid_: sandbox, debug view
+
+**Follow**:
+The lab camera travelling with a breaking crest, shoreward and along the peel.
+_Avoid_: lock-on
+
+**Jump point**:
+A preset camera place in the lab: Overview, Profile, Below or Cinematic.
+_Avoid_: camera preset
+
+## Surf School
+
+**Surf School**:
+The mode that teaches the surfing motions, one lesson at a time, on the same recorded wave.
+_Avoid_: tutorial (too broad), training mode
+
+**Lesson wave**:
+The recorded wave every lesson starts on: one real ride's sea kept at three moments (waiting, caught, in the pocket), with where the rider was at each.
+_Avoid_: scripted wave, fake wave
+
+**Placement**:
+Putting the rider on the water at a point, heading and speed, standing or prone, as a lesson's start; the physics carries it from there.
+_Avoid_: teleport, spawn (spawning is the lineup's)
+
+**Free Practice**:
+The lesson wave with no goals, restarting after every ride.
+_Avoid_: sandbox
+
+## Online
+
+**Room**:
+One shared break online: a spot, its conditions, a sea seed and a player cap, joined by an 8-character code or its link.
+_Avoid_: server, lobby, match
+
+**Room sea time**:
+The sea time every player in a room steps to, from the server's clock: the sea time at the room's creation plus the time since.
+_Avoid_: server time, tick
+
+**Sea handover**:
+A player joining late (or rebuilding a sea that fell behind) starting from another player's sea, sent through the server, so every player's waves break in the same places.
+_Avoid_: sync, snapshot restore
+
+**Remote surfer**:
+Another player's surfer as drawn on this player's water, from the poses they send.
+_Avoid_: ghost (the reports' ghost riders are something else), avatar
+
+**Re-sync**:
+Rebuilding this player's sea at the room's sea time after it fell behind.
+_Avoid_: reload, reset
+
+**Surf call**:
+A short shout ("Left!", "Right!", "Party wave!", "Nice one!") shown as a bubble over the caller.
+_Avoid_: chat, emote

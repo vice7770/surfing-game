@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { decompress, encodeSurfZoneState } from '../wave/surfZoneState';
 import { LocalSurfZone, type SurfZoneSnapshot } from './SurfZoneHost';
 import { SurfZoneWorkerCore, type SurfZoneRequest, type SurfZoneReply } from './SurfZoneWorkerCore';
 import { MAX_QUEUED_STEPS, WorkerSurfZone, type WorkerPort } from './WorkerSurfZone';
@@ -63,7 +64,7 @@ describe('SurfZoneWorkerCore', () => {
     expect(snapshot.snapshot.rider[23]).toBe(1);
     expect(replies[1].transfer).toEqual([
       buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.spray.buffer, buffers.board.buffer, buffers.rider.buffer,
-      buffers.lipHits.buffer, buffers.strokeHits.buffer, buffers.roar.buffer, buffers.tubes.buffer,
+      buffers.lipHits.buffer, buffers.strokeHits.buffer, buffers.roar.buffer, buffers.tubes.buffer, buffers.reaction.buffer, buffers.aeration.buffer,
     ]);
     // S1: the paddler's strokes reach the snapshot for sound, as the in-page surf zone reports them.
     expect(snapshot.snapshot.strokeHitCount).toBe(local.snapshot.strokeHitCount);
@@ -102,6 +103,38 @@ describe('SurfZoneWorkerCore', () => {
   });
 });
 
+describe('SurfZoneWorkerCore restore (L2)', () => {
+  it('restores after the step under way, so the next advance starts from the restored sea', async () => {
+    let release: (() => void) | undefined;
+    const replies: SurfZoneReply[] = [];
+    const worker = new SurfZoneWorkerCore((reply) => replies.push(reply), async (solver) => ({
+      step: (dt: number) => new Promise<void>((resolve) => { release = () => { solver.step(dt); resolve(); }; }),
+      dispose() {},
+    }));
+    await worker.handle({ type: 'start', config, options: {} });
+    const ready = replies[0];
+    if (ready.type !== 'ready') throw new Error('expected ready');
+    const local = new LocalSurfZone(config);
+    const recorded = encodeSurfZoneState(local.runner.simulation.exportState());
+    const { status: _status, ...buffers } = ready.snapshot;
+    const stepping = worker.handle({ type: 'advance', steps: 1, buffers });
+    const restoring = worker.handle({ type: 'restore', sea: recorded.slice() });
+    // The restore waits for the step under way.
+    await Promise.resolve();
+    release!();
+    await stepping;
+    await restoring;
+    const { status: _s, ...next } = (replies[1] as Extract<SurfZoneReply, { type: 'snapshot' }>).snapshot;
+    const after = worker.handle({ type: 'advance', steps: 1, buffers: next });
+    release!();
+    await after;
+    local.restore(recorded.slice());
+    local.advance(1);
+    const shownAfter = (replies[2] as Extract<SurfZoneReply, { type: 'snapshot' }>).snapshot;
+    expect(Array.from(shownAfter.surface)).toEqual(Array.from(local.snapshot.surface));
+  });
+});
+
 describe('WorkerSurfZone', () => {
   it('starts in the worker, keeps one advance in flight and shows the latest snapshot', async () => {
     const port = new FakePort();
@@ -123,6 +156,22 @@ describe('WorkerSurfZone', () => {
     expect(port.terminated).toBe(true);
   });
 
+  // L2: a lesson's placement asked for with no steps rides in the next advance, and only that one.
+  it('carries a placement into the next advance once', async () => {
+    const port = new FakePort();
+    const host = new WorkerSurfZone(config, port, { rider: true });
+    await host.ready;
+    const place = { x: 1, z: -50, heading: 0, speed: 2, phase: 'standing' as const };
+    host.advance(0, { paddle: false, popUp: false, steer: 0, retry: false, place });
+    host.advance(1, { paddle: false, popUp: false, steer: 0, retry: false });
+    await settle();
+    host.advance(1, { paddle: false, popUp: false, steer: 0, retry: false });
+    await settle();
+    const places = port.requests.filter((request) => request.type === 'advance').map((request) => request.type === 'advance' && request.input?.place);
+    expect(places).toEqual([place, undefined]);
+    host.dispose();
+  });
+
   // Like the page's own step accumulator: a worker that falls behind drops time instead of lagging ever further.
   it('caps the steps it queues while the worker is busy', async () => {
     const port = new FakePort();
@@ -133,6 +182,57 @@ describe('WorkerSurfZone', () => {
     await settle();
     expect(port.requests.map((request) => (request.type === 'advance' ? request.steps : request.type))).toEqual(['start', 1, MAX_QUEUED_STEPS]);
     host.dispose();
+  });
+
+  it('counts the steps asked for but not yet shown, and passes remote pushes on (spec N1)', async () => {
+    const port = new FakePort();
+    const host = new WorkerSurfZone(config, port);
+    await host.ready;
+    expect(host.outstandingSteps).toBe(0);
+    host.advance(3, undefined, Float32Array.of(1, 2, 3, 4));
+    host.advance(2, undefined, Float32Array.of(5, 6, 7, 8));
+    expect(host.outstandingSteps).toBe(5);
+    const advances = () => port.requests.filter((request) => request.type === 'advance');
+    expect(Array.from(advances()[0].reactions ?? [])).toEqual([1, 2, 3, 4]);
+    await settle();
+    expect(advances()).toHaveLength(2);
+    expect(Array.from(advances()[1].reactions ?? [])).toEqual([5, 6, 7, 8]);
+    await settle();
+    expect(host.outstandingSteps).toBe(0);
+    // Each push went out once.
+    expect(advances()).toHaveLength(2);
+    host.dispose();
+  });
+
+  it('queues as many steps as its options allow', async () => {
+    const port = new FakePort();
+    const host = new WorkerSurfZone(config, port, {}, { maxQueuedSteps: 90 });
+    await host.ready;
+    host.advance(1);
+    host.advance(60);
+    host.advance(60);
+    await settle();
+    expect(port.requests.map((request) => (request.type === 'advance' ? request.steps : request.type))).toEqual(['start', 1, 90]);
+    host.dispose();
+  });
+
+  it('hands its sea over, and a surf zone started from it shows the same water (spec N1)', async () => {
+    const donor = new WorkerSurfZone(config, new FakePort());
+    await donor.ready;
+    donor.advance(6);
+    await settle();
+    await settle();
+    const sea = await donor.exportState();
+    expect(sea.bytes.byteLength).toBeGreaterThan(1000);
+    const joiner = new WorkerSurfZone(config, new FakePort(), {}, { sea: await decompress(sea.bytes, sea.deflated) });
+    await joiner.ready;
+    expect(joiner.snapshot.status.seaTime).toBe(donor.snapshot.status.seaTime);
+    let largest = 0;
+    donor.snapshot.surface.forEach((value, i) => { largest = Math.max(largest, Math.abs(value - joiner.snapshot.surface[i])); });
+    expect(largest).toBeLessThan(1e-4);
+    const local = new LocalSurfZone(config, {}, await decompress(sea.bytes, sea.deflated));
+    expect(local.snapshot.status.seaTime).toBe(donor.snapshot.status.seaTime);
+    expect((await local.exportState()).bytes.byteLength).toBeGreaterThan(1000);
   });
 
   it('fails its start when the worker reports an error', async () => {

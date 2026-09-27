@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { LIP_STRIDE } from '../wave/SurfZoneRunner';
 import { LipSheetMesh, buildLipSheet } from './LipSheetMesh';
+import { LIP_SUBDIVISIONS, buildRichLipSheet } from './water/richLip';
 
 /** Parcels of strips in the snapshot's layout: x, y, z, column, index, launch time, age. */
-function strips(...defs: { column: number; launchTime: number; indices?: number[] }[]): { parcels: Float32Array; count: number } {
+function strips(...defs: { column: number; launchTime: number; indices?: number[]; kind?: number }[]): { parcels: Float32Array; count: number } {
   const rows: number[][] = [];
-  for (const { column, launchTime, indices = [0, 1, 2, 3, 4, 5, 6, 7] } of defs) {
-    for (const k of indices) rows.push([column + 0.5, 3 - 0.2 * k, 10 + 0.3 * k, column, k, launchTime, 0.1 * k]);
+  for (const { column, launchTime, indices = [0, 1, 2, 3, 4, 5, 6, 7], kind = 0 } of defs) {
+    for (const k of indices) rows.push([column + 0.5, 3 - 0.2 * k, 10 + 0.3 * k, column, k, launchTime, 0.1 * k, 0.05, kind]);
   }
   const parcels = new Float32Array(rows.length * LIP_STRIDE);
   rows.forEach((row, i) => parcels.set(row, i * LIP_STRIDE));
@@ -14,6 +15,18 @@ function strips(...defs: { column: number; launchTime: number; indices?: number[
 }
 
 describe('lip sheet mesh', () => {
+  it('draws a splash-up in Rich only, as foam, never joined to a jet thrown beside it (G9)', () => {
+    const { parcels, count } = strips({ column: 4, launchTime: 1 }, { column: 5, launchTime: 1.1, kind: 1 });
+    // Classic draws the lip as it always has: the jet's strip alone, a half-column ribbon on each side.
+    const sheet = buildLipSheet(parcels, count, 1);
+    expect(sheet.indices.length).toBe(3 * 2 * 7 * 2);
+    for (let v = 0; v < sheet.positions.length / 3; v += 1) expect(sheet.positions[v * 3]).toBeLessThan(5.5);
+    // Rich: two chains of one strip, each two ribbon cells across by seven along (a joined pair would be three across).
+    const rich = buildRichLipSheet(parcels, count, 1);
+    const perCell = 2 * (LIP_SUBDIVISIONS + 2) ** 2;
+    expect(rich.positions.length / 3).toBe(2 * 2 * 7 * perCell);
+  });
+
   it('rebuilds only when a new snapshot brings different parcels, in either look', () => {
     for (const look of ['classic', 'rich'] as const) {
       const lip = new LipSheetMesh();
