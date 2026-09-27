@@ -68,8 +68,11 @@ export interface SwellInput {
  * Practice mode (plan P4f): a narrow-band, narrow-spread groundswell that keeps
  * catchable faces coming. Only the incoming water changes; the solver and every
  * force law are the natural mode's. Ghost riders catch most on the Point in it.
+ * Its height gives the Canyon chest-to-head-high faces (1–1.5 m; the riding-the-wave
+ * spec's reference wave): at Hs 2 m the faces were 2.2–2.8 m and riders reached
+ * 11–12 m/s off the bottom (docs/research/reference-wave.md).
  */
-export const PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 2, peakPeriod: 12, spreading: 40, bandwidth: 0.08, directionDegrees: 10 };
+export const PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1.4, peakPeriod: 12, spreading: 40, bandwidth: 0.08, directionDegrees: 10 };
 
 /** The GPU tier's sea (plan P6): more components, so sets repeat less often. */
 export const GPU_TIER_COMPONENTS = 64;
