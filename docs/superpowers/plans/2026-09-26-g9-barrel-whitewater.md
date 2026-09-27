@@ -58,7 +58,7 @@ Each jet parcel landing faster than 0.5 m/s re-throws σ = 0.3 of its water, up 
 ### Trapped air, the collapse and the spit
 
 - **Closing:** a tube closes once its jet has all landed, trapping its void's air, area × column width. While the jet still pours, the curtain holds the void whole, so the pour lands where the tube is, not on the crest. The void then shrinks linearly over its free-fall time t_c = √(2W/g). The carve, and so the rider, follow the shrinking void, and its strip stays live until the void is gone.
-- **The air:** each step a closing tube lets go of its air evenly.
+- **The air:** a closing tube's air follows its drawn void. The void's length and width both shrink with its scale, so it holds air as scale² and lets it out fastest as it starts to close.
   - ε = 0.5 of it leaves as spray. A peel is a chain of tubes in neighbouring columns thrown within 1 s of each other.
     - Where the chain still has an open tube at an end, the air blows out of the nearer mouth, along the tube, at the speed mass conservation gives: the air per second over the mouth's void cross-section. That is the spit.
     - Where the chain has closed all along, it bursts up through the lip (the eruption), at √(gW/2).
@@ -73,7 +73,10 @@ Each closing tube rolls a roller where its void was: κ_r = 0.9 H² in section (
 - They tumble with its top going forward, at its speed over its radius.
 - They drift on and fade for a second once it is gone.
 
-Particles now carry their kind (`SPRAY_STRIDE` 6). Classic leaves the foam ball out, and Rich draws it as a ball of the churn texture lit by the sun and sky. Classic's lip sheet draws the lip alone. The spit's and eruption's drops are ordinary spray and mist, which Classic draws as it draws all spray. A closing tube's whitewater spawns before the lip's splash, so in a full pool the splash gives way.
+Particles now carry their kind (`SPRAY_STRIDE` 6): 0 spray, 1 mist, and the tube's whitewater, 2 foam ball, 3 the spit's and eruption's spray, 4 their mist.
+- The tube's whitewater has a pool of its own (1,024) beside the spray's (4,096), so neither crowds the other out.
+- Classic leaves the tube's whitewater out, and its lip sheet draws the lip alone.
+- Rich draws the foam ball as a ball of the churn texture lit by the sun and sky.
 
 ### The bubble plume
 
@@ -106,7 +109,14 @@ The Rich water whitens its body as far down as the air went, 1 − exp(−k·α�
   - it starts once the jet has **all** landed, not at its first landing (the plan). With pouring jets (#23), the first-landing close shrank the void under a jet still pouring, so the rest of the pour landed on the crest, and the practice Reef's solver ran away within 1.5 s. The water sheet found it; a Reef regression test pins it;
   - a peel's mouth is an open tube at an end of its chain, and each closing tube's air goes to the nearer mouth. A chain with no open end erupts, at √(gW/2) (an added field).
 - **The report found the aeration field saturating** (cells near void fraction 1). α_max became the plume's cap, as the sources meant. A plunge's and a tube's air now fill a plume as wide as it is deep, and a tube's bubbles break out along its void.
-- **The spray pool** draws a closing tube's whitewater before the lip's splash.
+- **Pools:** a tube's whitewater has its own pool beside the spray's. At first it spawned before the lip's splash in one shared pool, and the review found that took places from Classic's spray.
+- **Review fixes** (fresh Opus reviewer, one fix pass):
+  - Classic drew the spit and the eruption (my ruling, against the spec's "drawn in Rich only"), so their drops are now the tube's own kinds, which Classic leaves out;
+  - splash-up landings passed for tubes in the tube report, so a landing's flight now says which water came down;
+  - the tube's air follows its drawn void (scale²);
+  - the CPU/GPU agreement test covers collapsing tubes;
+  - the foam ball's rim uses smoothstep with its edges in order.
+- **Merge with main:** the online sea handover (N1) now carries Part B's state: parcel and strip kinds, splash-up links, each tube's collapse (a flying tube's `closedAt` crosses JSON as null) and the aeration field.
 - **Foam balls** carry their roller's id so the sprites can follow it. They are placed on the roller each step, not flown.
 - **Tests:** "a plunge gives a higher void fraction than a bore" was not physics (at equal air a deeper plume holds a lower fraction), so it became "holds air longer the deeper it went". "The Reef aerates more than the Beach" moved to the report.
 
@@ -121,19 +131,21 @@ The Rich water whitens its body as far down as the air went, 1 − exp(−k·α�
   - Classic's lip and spray keeping the whitewater out;
   - the runner and host wiring, with a practice-Reef stability test.
 
-  Full suite: 847 passed, 1 expected fail. `npm run build` passes.
+  - Full suite before merging `main`: 850 passed, 1 expected fail.
+  - After the merge, on a loaded machine: 1,030 of 1,034 passed. The four that timed out at 60 s (SettingsSweep, SustainedRide, WaterSurface's scrolling grid, the lip-throwing simulation test) pass alone, 45 of 45.
+  - `npm run build` and the server typecheck pass, and CI passes.
 - **Report** (`docs/research/whitewater-report.md`, Wave Lab defaults, 2 seeds × 12 periods):
 
   | | Reef | Beach |
   |---|---|---|
   | Splash-up, 90th percentile | 1.12 m | 0.76 m |
-  | Spit speed, median | 9.9 m/s | 8.2 m/s |
+  | Spit speed, median | 10.8 m/s | 9.9 m/s |
   | Median surveyed void fraction | 0.15 | 0.05 |
-  | Surveys at α_max | 25 % | 2 % |
+  | Surveys at α_max | 24 % | 2 % |
   | Foam-ball sprites, median | 120 | 41 |
 
   - Collapses take 0.3–0.4 s, and the Canyon barely plunges.
-  - The tubes' air balances exactly on every spot.
+  - Each tube's air is conserved to 1e-9 (a unit test); the report shows where it goes.
   - None of it uses per-spot values.
 - **Sheets:**
   - **Reef** (`?inpage&waterSheet&whitewater&spot=reef`): the foam ball reads as a tumbling white clump in the collapsing tube, and the spit and eruption as white spray.
@@ -150,7 +162,21 @@ The Rich water whitens its body as far down as the air went, 1 − exp(−k·α�
     | Shoulder | 4.6 / 5.3 ms | 10.1 / 10.6 ms |
     | Behind | 4.6 / 5.3 ms | 11.3 / 12.4 ms |
     | Lineup | 4.9 / 5.7 ms | 12.7 / 13.3 ms |
-- **Final review:** pending.
+- **Final review:** a fresh reviewer (Opus) found no Critical issues and judged the branch ready to merge with fixes. Five findings were fixed test-first in one pass:
+  - its two Important findings: Classic drew the tube's spray, and splash-ups passed for tubes in the tube report;
+  - three re-graded Minors: the air following the drawn void, the CPU/GPU twin at partial scale, and the smoothstep edges.
+
+  Ten Minors are deferred:
+  - the spit speed bound;
+  - `onLand` double-counting the splash-up's share;
+  - the drops' and sheet's vertical speeds;
+  - `addBore`'s dead `front`;
+  - the aeration's window order;
+  - the aeration's per-snapshot write (about 1.3 ms, written even in Classic) and its per-cell `exp`;
+  - small per-step allocations;
+  - the report's inferred balance column;
+  - the far ocean's unused varyings;
+  - a missing window-clear assertion.
 
 ## Open
 
@@ -158,6 +184,6 @@ The Rich water whitens its body as far down as the air went, 1 − exp(−k·α�
 - **At dawn and sunset,** a nearby spit's mist glows as an orange haze (G8's mist phase over a lot of mist).
 - **The carve's teeth:** up close and from a low shoulder angle, the practice Reef's voids (95 columns at once in the sheet's moment) read as a jagged trench with teeth a column wide. They are Part A's per-column voids, with an open front at each column's reach. The peel interpolation smooths only neighbours that pass its gate. A smoother carve across columns is the barrel's main open item.
 - **The spray pool** (4,096) is full a fifth of the time on the Reef and the Point.
-- **Rare spits** reach 140–160 m/s, where a small mouth drains a long closing section. Physically the air would burst through the lip first.
+- **Rare spits** reach 160–180 m/s, where a small mouth drains a long closing section. Physically the air would burst through the lip first.
 - **Caustics** under a void still refract through the uncut surface (Part A).
 - **Backlog:** whitewater forces on bodies (lost buoyancy, hits from the splash-up and the foam ball), and the player's tube camera (P12).

@@ -361,17 +361,17 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
 - [x] **Part B · breaking whitewater** (physics in the worker whatever the look, drawn in Rich only, no forces on bodies but the collapse's carve; sources in `docs/research/whitewater-sources.md`, outcomes in `docs/research/whitewater-report.md`):
   - **Air in the water:** an aeration field on the solver grid. Landing lips entrain β = 0.1 of their impact energy against buoyancy, bores β of their dissipation, and collapsing tubes the air they do not blow out. A plunge's air fills a plume as wide as it is deep. The field is carried by the currents, degasses at 0.25 m/s over the plume's depth, and holds at most the measured α_max = 0.2. The Rich churn now shows where the water is fresh with air.
   - **Splash-up:** each landing jet parcel re-throws 30 % of its water up (0.6 of its impact speed) and on (0.8), drawn in Rich as a sheet with the lip's machinery. Water and momentum are conserved.
-  - **Collapse and spit:** once its jet has all landed, a tube shrinks over its free-fall time √(2W/g). The rider feels the shrinking void. Half its air leaves as spray: out of the peel's open end at the speed mass conservation gives (the spit), or up through the lip where the whole section closes (an eruption). The rest breaks into bubbles. The air balance is exact.
-  - **Foam ball:** each collapsing tube rolls a κ_r·H² roller of 0.5–0.8 m churn sprites tumbling with its crest (Rich only; Classic filters them out).
+  - **Collapse and spit:** once its jet has all landed, a tube shrinks over its free-fall time √(2W/g). The rider feels the shrinking void, and its air leaves as the void loses volume. Half of it leaves as spray: out of the peel's open end at the speed mass conservation gives (the spit), or up through the lip where the whole section closes (an eruption). The rest breaks into bubbles. The air balance is exact.
+  - **Foam ball:** each collapsing tube rolls a κ_r·H² roller of 0.5–0.8 m churn sprites tumbling with its crest. The tube's whitewater (foam ball, spit, eruption) has a spray pool of its own and is drawn in Rich only.
   - **Bubble plume:** the Rich body whitens as far down as the air went, from above through the water over it and from below.
   - **Report** (Wave Lab defaults, 2 seeds × 12 periods): the Reef throws the most explosive whitewater and the Beach the gentlest with no per-spot values:
 
     | | Reef | Beach |
     |---|---|---|
     | Splash-up, 90th percentile | 1.12 m | 0.76 m |
-    | Spit speed, median | 9.9 m/s | 8.2 m/s |
+    | Spit speed, median | 10.8 m/s | 9.9 m/s |
     | Median surveyed void fraction | 0.15 | 0.05 |
-    | Surveys at α_max | 25 % | 2 % |
+    | Surveys at α_max | 24 % | 2 % |
     | Foam-ball sprites, median | 120 | 41 |
 
     Collapses take 0.3–0.4 s, and the Canyon barely plunges.
@@ -388,7 +388,7 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
     - at dawn and sunset a nearby spit's mist glows as an orange haze;
     - the carve's teeth: up close and from a low shoulder angle, the practice Reef's voids read as a jagged trench with teeth a column wide (Part A's per-column voids; Part B carves 60 % more nodes as voids collapse). A smoother carve across columns is the barrel's main open item;
     - the spray pool (4,096) is full a fifth of the time on the Reef and the Point, and the lip's splash gives way first;
-    - rare spits reach 140–160 m/s where a small mouth drains a long closing section.
+    - rare spits reach 160–180 m/s where a small mouth drains a long closing section.
 
     Whitewater forces on bodies and the player's tube camera (P12) stay in the Backlog.
 
