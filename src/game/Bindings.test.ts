@@ -74,6 +74,10 @@ describe('bindings', () => {
     expect(heldActions(new Set(), [pad([19]), pad([20])], DEFAULT_BINDINGS).size).toBe(0);
   });
 
+  it('names nothing bound with a dash', () => {
+    expect(keyLabel(undefined)).toBe('—');
+  });
+
   it('names keys and buttons for the screen, as printed on the pad used last', () => {
     expect(['Space', 'ArrowUp', 'KeyR', 'Digit1', 'ShiftLeft'].map(keyLabel)).toEqual(['Space', '↑', 'R', '1', 'Shift']);
     expect([0, 7, 8, 9, 12].map((index) => buttonLabel(index))).toEqual(['A', 'RT', 'Back', 'Start', 'D-pad↑']);

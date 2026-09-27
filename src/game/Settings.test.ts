@@ -42,11 +42,22 @@ describe('SettingsStore', () => {
   it('moves a saved hand on X to LB and L4, and pop-up to A and R4, just once', () => {
     const old = (gamepad: object, extra: object = {}) =>
       new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ controls: { bindings: { gamepad }, ...extra } }) })).value.controls.bindings.gamepad;
-    expect(old({ hand: [2], popUp: [0] })).toMatchObject({ hand: [4, 17], popUp: [0, 18] });
+    expect(old({ hand: [2], popUp: [0] })).toMatchObject({ hand: [4, 17], popUp: [0, 18], callParty: [2] });
     expect(old({ hand: [2], camera: [4] })).toMatchObject({ hand: [2], camera: [4] });
     expect(old({ hand: [2] }, { padLayout: 2 })).toMatchObject({ hand: [2] });
     // A save from after N1 moves the party call off LB with the hand, as one layout.
     expect(old({ hand: [2], callParty: [4] })).toMatchObject({ hand: [4, 17], callParty: [2] });
+  });
+
+  // The stances spec, the final review: a save from before Compress keeps its own bindings, and Compress takes Space and
+  // RT only where no action live standing already holds them (unbound otherwise, to set on the Controls screen).
+  it('gives Compress its default inputs on an older save only where they are free', () => {
+    const saved = (bindings: object) =>
+      new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ controls: { bindings, padLayout: 2 } }) })).value.controls.bindings;
+    expect(saved({ keyboard: { crouch: ['Space'] }, gamepad: { hand: [7] } }))
+      .toMatchObject({ keyboard: { crouch: ['Space'], compress: [] }, gamepad: { hand: [7], compress: [] } });
+    expect(saved({ keyboard: { popUp: ['Space'], paddle: ['KeyP'] } }).keyboard.compress).toEqual([]);
+    expect(saved({ keyboard: { crouch: ['KeyC'] } })).toMatchObject({ keyboard: { compress: ['Space'] }, gamepad: { compress: [7] } });
   });
 
   // The riding-the-wave spec: the pocket reflex rides with the player on the Practice swell unless they choose otherwise.

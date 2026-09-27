@@ -806,6 +806,8 @@ export class App {
     const keys = id === 'lean' ? (pad ? t('hud.stick') : `${label('steerLeft')} ${label('steerRight')}`)
       : id === 'trim' ? (pad ? trimStick : `${label('trimForward')} ${label('trimBack')}`)
         : label(id);
+    // Nothing bound (an action newer than the player's saved bindings): no hint to give.
+    if (keys === '—') return '';
     return t(`hint.${id}`, { keys });
   }
 

@@ -147,6 +147,12 @@ export function padValue(pads: readonly PadState[], button: number | undefined):
  * for pause, Escape and Start, and when the swap would leave the other action with
  * nothing bound.
  */
+/** `action`'s inputs on `device` less those another action live in the same context holds (an action new to a saved table). */
+export function freeInputs(bindings: Bindings, device: 'keyboard' | 'gamepad', action: Action): (string | number)[] {
+  const table = bindings[device] as Record<Action, (string | number)[]>;
+  return table[action].filter((input) => !ACTIONS.some((other) => other !== action && overlap(action, other) && table[other].includes(input)));
+}
+
 export function rebind(bindings: Bindings, device: 'keyboard' | 'gamepad', action: Action, slot: 0 | 1, input: string | number): Bindings {
   if (action === 'pause' || input === (device === 'keyboard' ? RESERVED_KEY : RESERVED_BUTTON)) return bindings;
   const table = bindings[device] as Record<Action, (string | number)[]>;
@@ -174,7 +180,8 @@ const ARROWS: Record<string, string> = { ArrowUp: '↑', ArrowDown: '↓', Arrow
 const MODIFIERS: Record<string, string> = { Shift: 'Shift', Control: 'Ctrl', Alt: 'Alt', Meta: 'Cmd' };
 
 /** A key code as the player knows it: `R` for KeyR, `↑` for ArrowUp, `Shift` for either Shift. */
-export function keyLabel(code: string): string {
+export function keyLabel(code: string | undefined): string {
+  if (code === undefined) return '—';
   if (ARROWS[code]) return ARROWS[code];
   const letter = /^Key([A-Z])$/.exec(code);
   if (letter) return letter[1];
