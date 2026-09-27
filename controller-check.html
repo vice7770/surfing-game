@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Steam Controller check</title>
+    <style>
+      body { font: 13px/1.5 ui-monospace, monospace; margin: 16px; background: #0d1117; color: #d6dde6; }
+      button, label { font: inherit; margin: 0 6px 6px 0; }
+      pre { white-space: pre-wrap; }
+      #live { color: #9fe0b8; min-height: 12em; }
+      a { color: #7cc4ff; display: block; margin: 4px 0; }
+    </style>
+  </head>
+  <body>
+    <h1>Steam Controller check (C1)</h1>
+    <p>Chrome or Arc, on localhost. Plug the controller in (Puck or cable), press Connect and pick it. Then move the sticks, press every button, and check that the mouse no longer moves. Record 5 s at rest and 5 s moving, and download both.</p>
+    <div>
+      <button id="connect" type="button">Connect…</button>
+      <button id="lizard-off" type="button">Lizard off</button>
+      <button id="lizard-on" type="button">Lizard on</button>
+      <button id="mappings-clear" type="button">Clear mappings (fallback)</button>
+      <button id="mappings-default" type="button">Default mappings</button>
+      <label><input id="keepalive" type="checkbox" checked /> Keep lizard off every second</label>
+      <button id="record" type="button">Record 5 s</button>
+    </div>
+    <pre id="live"></pre>
+    <pre id="log">Starting…</pre>
+    <script type="module" src="/src/controllerCheck.ts"></script>
+  </body>
+</html>

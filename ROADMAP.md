@@ -221,14 +221,39 @@ From the user's M4 Pro frame-rate survey, re-run on the M1 Air: [performance stu
   - decide what the menus' waves may cost (a 60 fps cap on faster displays, a lower scale, or holding them still);
   - re-measure High on the M1 Air with no other session running, and have Auto weigh High's resolution if it misses 60 fps.
 
+### P1 · Steam Controller (C1) — `In Progress (hardware check open)`
+
+Requirements agreed in a grilling session on 2026-09-26 ([spec](docs/superpowers/specs/2026-09-26-steam-controller.md)). The plan is [C1 Steam Controller](docs/superpowers/plans/2026-09-26-c1-steam-controller.md). The user's 2026 Steam Controller (Puck and cable) plays in Chrome and Arc through WebHID, because on macOS neither the browser nor Steam exposes it as a gamepad.
+- [x] **Driver:**
+  - SDL's Triton protocol, ported and credited in `docs/ASSETS.md`, turns the vendor HID report into a standard pad (buttons 0–16, plus L4, R4, L5, R5 and ··· as 17–21).
+  - Lizard mode is off while the tab is visible (repeated every second) and handed back when it is hidden.
+  - A controller that goes quiet for 1 s, leaves the Puck or is unplugged lets go.
+- [x] **Connecting:** a Connect row in Settings › Controls, and a menu-strip button until a controller has connected once. The browser remembers the controller afterwards. Safari says "Needs Chrome or Arc".
+- [x] **Precision:**
+  - trim moves to the right stick by default, for every gamepad (a Trim stick setting puts it back);
+  - Stick response Linear or Precise (Linear until the turn-rate fix);
+  - dead zones 0.05 for the Steam Controller and 0.15 for other gamepads, each with a slider;
+  - the pad touched last drives the sticks.
+- [x] **Buttons:**
+  - the hand moves from X to LB and the online party call (N1) from LB to X; on the Steam Controller L4 also does the hand and R4 also pops up;
+  - Settings shows two pad slots per action;
+  - old saves migrate once;
+  - hints and Settings name View, Menu and the grips after the Steam Controller was used last.
+- [ ] **The user's hardware check:**
+  - open `/controller-check.html` in Chrome on localhost, with the controller on the Puck and then on the cable;
+  - confirm the stick stops moving the mouse, the buttons and sticks read right, and the rate at rest (for the 1 s stale rule);
+  - download two recordings (at rest and moving) for test fixtures;
+  - see whether Steam running alongside is clean.
+- [ ] **Done:** the user's hand check in a ride.
+- **Later, each with its own grilling:** gyro steering, the trackpads, rumble.
+
 ### Later — `Backlog`
 
 Recorded in the same session; each gets its own grilling before work starts.
 1. **Multiplayer beach:** players starting on the sand, and a beach bar to hang out in. Rooms, the relay and the shared sea now exist (N1); collisions are N1 Part B. Still to grill: the beach start and the bar, and whether solo play also starts on the sand.
 2. **Filmed menu background:** a sequence of waves forming and breaking, filmed with the `?record` tool once the waves are finished. It replaces the live menu background.
 3. **Music:** none in S1 (grilling, 2026-09-26). Good CC0 music is scarce; a CC-BY or paid track would need a credits screen.
-4. **A physical gamepad, checked by hand** (moved here by the user, 2026-09-26). The mapping is covered by unit tests.
-5. **Whitewater forces on bodies** (G9's backlog): lost buoyancy in aerated water, and hits from the splash-up and the foam ball, once the riding physics settles. A lip and whitewater look for Classic, if weaker machines call for one.
+4. **Whitewater forces on bodies** (G9's backlog): lost buoyancy in aerated water, and hits from the splash-up and the foam ball, once the riding physics settles. A lip and whitewater look for Classic, if weaker machines call for one.
 
 ## Next milestone — physical wave formation — `In Progress`
 

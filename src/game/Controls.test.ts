@@ -1,16 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_BINDINGS, type PadState } from './Bindings';
 import { Controls } from './Controls';
+import type { StickSettings } from './Sticks';
 
 const pad = (buttons: number[] = [], x = 0): PadState => ({
   buttons: Array.from({ length: 17 }, (_, i) => buttons.includes(i)), axes: [x, 0, 0, 0],
 });
 
-function setup() {
+function setup(stick?: StickSettings) {
   const target = new EventTarget();
   let pads: PadState[] = [];
   const handlers = { retry: vi.fn(), camera: vi.fn(), pause: vi.fn() };
-  const controls = new Controls(() => DEFAULT_BINDINGS, handlers, { target, pads: () => pads });
+  const controls = new Controls(() => DEFAULT_BINDINGS, handlers, { target, pads: () => pads, ...(stick ? { stick: () => stick } : {}) });
   const key = (type: 'keydown' | 'keyup', code: string, repeat = false) =>
     target.dispatchEvent(Object.assign(new Event(type), { code, repeat }));
   return { controls, handlers, key, target, setPads: (next: PadState[]) => { pads = next; } };
@@ -128,11 +129,28 @@ describe('the ride request (P9)', () => {
 
   it('passes the pad’s trigger and stick straight through', () => {
     const { controls, setPads } = setup();
-    setPads([analog({ 6: 0.5 }, [0, -0.8, 0, 0])]);
+    setPads([analog({ 6: 0.5 }, [0, 0, 0, -0.8])]);
     controls.poll();
     const request = controls.rideRequest(1 / 60, true);
     expect(request.crouch).toBeCloseTo(0.5, 9);
     expect(request.trim).toBeGreaterThan(0.7);
+  });
+
+  it('trims with the left stick when the player chooses it (C1)', () => {
+    const { controls, setPads } = setup({ trimStick: 'left', stickResponse: 'linear', deadzoneSteam: 0.05, deadzoneGamepad: 0.15 });
+    setPads([analog({}, [0, -0.8, 0, -0.8])]);
+    controls.poll();
+    expect(controls.rideRequest(1 / 60, true).trim).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
+  });
+
+  it('steers with the pad touched last, and names the buttons for it (C1)', () => {
+    const { controls, setPads } = setup();
+    const xbox: PadState = { id: 'gamepad:0', kind: 'standard', buttons: [], axes: [0, 0, 0, 0] };
+    const steam: PadState = { id: 'steam:0', kind: 'steam', buttons: [], axes: [-0.9, 0, 0, 0] };
+    setPads([xbox, steam]);
+    controls.poll();
+    expect(controls.rideRequest(1 / 60, true).steer).toBeCloseTo(-(0.9 - 0.05) / 0.95, 6);
+    expect(controls.lastPadKind).toBe('steam');
   });
 
   // Review Focus 5: nothing stays held through a pause or a lost focus.

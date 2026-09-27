@@ -1,5 +1,7 @@
 import { buttonLabel, keyLabel, type Action } from '../game/Bindings';
 import type { Controls } from '../game/Controls';
+import type { SteamControllerDriver } from '../game/steam/SteamControllerDriver';
+import { stickOf } from '../game/Sticks';
 import { BenchmarkRecorder, adapterName, needsDetection, withPreset } from '../game/Graphics';
 import { Logbook } from '../game/Logbook';
 import { RideTracker, type RideFrame, type RideResult } from '../game/RideTracker';
@@ -19,7 +21,7 @@ import packageJson from '../../package.json';
 import { el } from './dom';
 import { createLogbookScreen, logbookModel } from './LogbookScreen';
 import { createSettingsScreen } from './SettingsScreen';
-import { createMainMenu, refreshSoundToggles } from './MainMenu';
+import { createMainMenu, refreshSoundToggles, steamStrip } from './MainMenu';
 import { MenuInput } from './MenuInput';
 import { createLabPauseMenu, createLessonPauseMenu, createOnlinePauseMenu, createPauseMenu } from './PauseMenu';
 import { LessonFlow, type FlowState } from '../game/school/lessonFlow';
@@ -205,6 +207,8 @@ export class App {
   private rotateHint?: HTMLElement;
   private rotateDismissed = false;
   private readonly sound: GameSound;
+  /** The 2026 Steam Controller over WebHID (spec C1), when the game has one. */
+  private readonly steam?: SteamControllerDriver;
   /** Online (N1): the room session while in one, and the Multiplayer screen's state. */
   private online?: OnlineController;
   private multiplayer: MultiplayerState;
@@ -223,8 +227,8 @@ export class App {
     private readonly game: GameHost,
     private readonly controls: Controls,
     readonly settings: SettingsStore,
-    /** Where the page opens: the menu, a Surf ride (`?physical`, `?demo`), or the bare stage (`?record`, `?waterSheet`). */
-    options: { start: 'menu' | 'ride' | 'stage' },
+    /** Where the page opens: the menu, a Surf ride (`?physical`, `?demo`), or the bare stage (`?record`, `?waterSheet`); and the Steam Controller (C1). */
+    options: { start: 'menu' | 'ride' | 'stage'; steam?: SteamControllerDriver },
   ) {
     this.stack = new ScreenStack(options.start === 'stage' ? 'stage' : 'menu');
     // A room's link (`?room=CODE`) opens Multiplayer with the code filled in (N1).
@@ -262,8 +266,17 @@ export class App {
       if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
       if (this.settings.value.controls.bindings.keyboard.mute.includes(event.code)) this.toggleMute();
     });
+    this.steam = options.steam;
+    this.steam?.onChange(() => this.steamChanged());
     this.show();
     if (options.start === 'ride') void this.paddleOut();
+  }
+
+  /** A Steam Controller came or went (spec C1): once one has connected, the menu's Connect button goes for good. */
+  private steamChanged(): void {
+    if (this.steam?.status !== 'connected' || this.settings.value.seen.steamController) return;
+    this.settings.markSeen('steamController');
+    if (this.stack.current === 'menu') this.show();
   }
 
   /** Sound on or off: M, the gamepad's Back, or a speaker toggle. */
@@ -390,6 +403,7 @@ export class App {
 
   private render(id: ScreenId): Node[] {
     if (id === 'menu') {
+      const strip = this.steam ? steamStrip(this.steam.status, this.settings.value.seen.steamController) : undefined;
       return [createMainMenu({
         surf: () => this.go('surf'),
         multiplayer: () => this.go('multiplayer'),
@@ -397,7 +411,10 @@ export class App {
         waveLab: () => void this.enterWaveLab(),
         logbook: () => this.go('logbook'),
         settings: () => this.go('settings'),
-      }, { version: packageJson.version, schoolStarted: this.schoolProgress.started, sound: { muted: this.sound.muted, toggle: () => this.toggleMute() } })];
+      }, {
+        version: packageJson.version, schoolStarted: this.schoolProgress.started, sound: { muted: this.sound.muted, toggle: () => this.toggleMute() },
+        ...(strip ? { steam: { label: t(strip.label), disabled: strip.disabled, connect: () => void this.steam?.request() } } : {}),
+      })];
     }
     if (id === 'surf') {
       const card = createSurferCard(this.settings.value.surfer, this.surfChoice.conditions.time, {
@@ -436,7 +453,9 @@ export class App {
     if (id === 'settings') {
       const screen = createSettingsScreen({
         store: this.settings,
-        context: () => ({ devTools: DEV_TOOLS, detecting: this.detecting }),
+        context: () => ({ devTools: DEV_TOOLS, detecting: this.detecting, steam: this.steam?.status ?? 'unsupported', padKind: this.controls.lastPadKind }),
+        onSteamConnect: () => void this.steam?.request(),
+        ...(this.steam ? { external: (listener: () => void) => this.steam!.onChange(listener) } : {}),
         onBack: () => this.back(),
         onRedetect: () => this.redetect(),
         onCapture: (capturing) => { this.menuInput.active = !capturing; },
@@ -778,9 +797,11 @@ export class App {
     }
     const { bindings } = this.settings.value.controls;
     const pad = this.controls.lastDevice === 'gamepad';
-    const label = (action: Action) => (pad ? buttonLabel(bindings.gamepad[action][0]) : keyLabel(bindings.keyboard[action][0]));
+    const kind = this.controls.lastPadKind;
+    const label = (action: Action) => (pad ? buttonLabel(bindings.gamepad[action][0], kind) : keyLabel(bindings.keyboard[action][0]));
+    const trimStick = t(stickOf('trimForward', this.settings.value.controls) === 'right' ? 'hud.rightStick' : 'hud.stick');
     const keys = id === 'lean' ? (pad ? t('hud.stick') : `${label('steerLeft')} ${label('steerRight')}`)
-      : id === 'trim' ? (pad ? t('hud.stick') : `${label('trimForward')} ${label('trimBack')}`)
+      : id === 'trim' ? (pad ? trimStick : `${label('trimForward')} ${label('trimBack')}`)
         : label(id);
     return t(`hint.${id}`, { keys });
   }
@@ -796,8 +817,9 @@ export class App {
     }
     const { bindings } = this.settings.value.controls;
     if (this.controls.lastDevice !== 'gamepad') return keyLabel(bindings.keyboard[action][0]);
-    const stick = action === 'steerLeft' || action === 'steerRight' || action === 'trimForward' || action === 'trimBack';
-    return stick ? t('hud.stick') : buttonLabel(bindings.gamepad[action][0]);
+    const stick = stickOf(action, this.settings.value.controls);
+    if (stick) return t(stick === 'right' ? 'hud.rightStick' : 'hud.stick');
+    return buttonLabel(bindings.gamepad[action][0], this.controls.lastPadKind);
   };
 
   /** The lesson's scene: the ride HUD, and whatever covers the wave (the card, the pass card, How to…). */
@@ -967,7 +989,7 @@ export class App {
     }
     const { bindings } = this.settings.value.controls;
     const pad = this.controls.lastDevice === 'gamepad';
-    const label = (action: Action) => (pad ? buttonLabel(bindings.gamepad[action][0]) : keyLabel(bindings.keyboard[action][0]));
+    const label = (action: Action) => (pad ? buttonLabel(bindings.gamepad[action][0], this.controls.lastPadKind) : keyLabel(bindings.keyboard[action][0]));
     return {
       paddle: label('paddle'),
       popUp: label('popUp'),

@@ -1,22 +1,28 @@
-import { REBINDABLE, buttonLabel, keyLabel, rebind, type Action } from '../game/Bindings';
+import { REBINDABLE, buttonLabel, keyLabel, rebind, type Action, type PadKind } from '../game/Bindings';
 import { NEXT_WAVE_FIELDS, withAdvanced, withPreset } from '../game/Graphics';
 import type { AdvancedGraphics, GameSettings, GraphicsPreset, SettingsTab } from '../game/Settings';
+import { MAX_DEADZONE } from '../game/Sticks';
+import type { SteamStatus } from '../game/steam/SteamControllerDriver';
 import { EN, t, type StringKey } from './strings';
 
 type Option = { value: string; label: string };
 
 /** One row of a Settings tab, as data; labels are already in the player's words. */
 export type Row =
-  | { kind: 'choice'; id: string; label: string; value: string; options: Option[]; nextWave?: boolean }
+  | { kind: 'choice'; id: string; label: string; help?: string; value: string; options: Option[]; nextWave?: boolean }
   | { kind: 'toggle'; id: string; label: string; value: boolean; nextWave?: boolean }
-  | { kind: 'slider'; id: string; label: string; value: number; min: number; max: number; step: number }
+  | { kind: 'slider'; id: string; label: string; help?: string; value: number; min: number; max: number; step: number }
   | { kind: 'binding'; id: string; label: string; help?: string; device: 'keyboard' | 'gamepad'; action: Action; slot: 0 | 1; value: string }
-  | { kind: 'button'; id: string; label: string; action: string; disabled: boolean }
+  | { kind: 'button'; id: string; label: string; help?: string; action: string; disabled: boolean }
   | { kind: 'heading'; id: string; label: string };
 
 export interface SettingsContext {
   devTools: boolean;
   detecting: boolean;
+  /** The Steam Controller (spec C1); unsupported when omitted. */
+  steam?: SteamStatus;
+  /** Which pad was used last, so its buttons are named as printed on it; an Xbox-style pad when omitted. */
+  padKind?: PadKind;
 }
 
 const options = (prefix: string, values: readonly string[]): Option[] =>
@@ -53,9 +59,25 @@ function graphicsRows(settings: GameSettings, context: SettingsContext): Row[] {
   ];
 }
 
-function controlRows(settings: GameSettings): Row[] {
-  const { bindings, handedness } = settings.controls;
-  const rows: Row[] = [];
+function controlRows(settings: GameSettings, context: SettingsContext): Row[] {
+  const { bindings, handedness, trimStick, stickResponse, deadzoneSteam, deadzoneGamepad } = settings.controls;
+  const steam = context.steam ?? 'unsupported';
+  const kind = context.padKind ?? 'standard';
+  const deadzoneHelp = t('settings.deadzone.help');
+  const rows: Row[] = [
+    { kind: 'heading', id: 'steamHeading', label: t('settings.steam') },
+    {
+      kind: 'button', id: 'steamConnect', label: t('settings.steam.connection'), help: t('settings.steam.help'),
+      action: t(steam === 'unsupported' ? 'settings.steam.unsupported' : steam === 'connected' ? 'settings.steam.connected' : 'settings.steam.connect'),
+      disabled: steam !== 'disconnected',
+    },
+    { kind: 'heading', id: 'sticks', label: t('settings.sticks') },
+    { kind: 'choice', id: 'trimStick', label: t('settings.trimStick'), value: trimStick, options: options('settings.trimStick', ['right', 'left']) },
+    { kind: 'choice', id: 'stickResponse', label: t('settings.stickResponse'), help: t('settings.stickResponse.help'), value: stickResponse, options: options('settings.stickResponse', ['linear', 'precise']) },
+    { kind: 'slider', id: 'deadzoneSteam', label: t('settings.deadzoneSteam'), help: deadzoneHelp, value: deadzoneSteam, min: 0, max: MAX_DEADZONE, step: 0.01 },
+    { kind: 'slider', id: 'deadzoneGamepad', label: t('settings.deadzoneGamepad'), help: deadzoneHelp, value: deadzoneGamepad, min: 0, max: MAX_DEADZONE, step: 0.01 },
+    { kind: 'heading', id: 'buttons', label: t('settings.buttons') },
+  ];
   for (const action of REBINDABLE) {
     const label = t(`action.${action}` as StringKey);
     // The standing actions (P9) say what they do, as the key card.
@@ -65,7 +87,9 @@ function controlRows(settings: GameSettings): Row[] {
       const code = bindings.keyboard[action][slot];
       rows.push({ kind: 'binding', id: `bind:keyboard:${action}:${slot}`, label, ...help, device: 'keyboard', action, slot, value: code ? keyLabel(code) : '—' });
     }
-    rows.push({ kind: 'binding', id: `bind:gamepad:${action}:0`, label, ...help, device: 'gamepad', action, slot: 0, value: buttonLabel(bindings.gamepad[action][0]) });
+    for (const slot of [0, 1] as const) {
+      rows.push({ kind: 'binding', id: `bind:gamepad:${action}:${slot}`, label, ...help, device: 'gamepad', action, slot, value: buttonLabel(bindings.gamepad[action][slot], kind) });
+    }
   }
   rows.push({ kind: 'choice', id: 'handedness', label: t('settings.handedness'), value: handedness, options: options('settings.hand', ['right', 'left']) });
   return rows;
@@ -87,7 +111,7 @@ export function settingsModel(tab: SettingsTab, settings: GameSettings, context:
     ];
   }
   if (tab === 'graphics') return graphicsRows(settings, context);
-  if (tab === 'controls') return controlRows(settings);
+  if (tab === 'controls') return controlRows(settings, context);
   if (tab === 'audio') {
     const a = settings.audio;
     return [
@@ -110,13 +134,14 @@ export function settingsModel(tab: SettingsTab, settings: GameSettings, context:
 const GAMEPLAY = new Set(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'pocketReflex', 'scoreRides', 'nameTags', 'showTelemetry']);
 const ACCESSIBILITY = new Set(['reducedMotion', 'uiScale', 'highContrastHud', 'monoAudio']);
 const AUDIO = new Set(['master', 'sea', 'board', 'ui', 'muteInBackground']);
+const CONTROLS = new Set(['handedness', 'trimStick', 'stickResponse', 'deadzoneSteam', 'deadzoneGamepad']);
 
 /** The store update a row's new value makes, or undefined when refused (a reserved key) or not a setting (Re-detect). */
 export function applyRow(settings: GameSettings, id: string, value: string | number | boolean): { tab: SettingsTab; patch: object } | undefined {
   if (GAMEPLAY.has(id)) return { tab: 'gameplay', patch: { [id]: value } };
   if (ACCESSIBILITY.has(id)) return { tab: 'accessibility', patch: { [id]: value } };
   if (AUDIO.has(id)) return { tab: 'audio', patch: { [id]: value } };
-  if (id === 'handedness') return { tab: 'controls', patch: { handedness: value } };
+  if (CONTROLS.has(id)) return { tab: 'controls', patch: { [id]: value } };
   if (id === 'preset') return { tab: 'graphics', patch: withPreset(settings.graphics, value as GraphicsPreset, settings.detected) };
   if ((ADVANCED as readonly string[]).includes(id)) {
     const typed = id === 'frameLimit' && value !== 'screen' ? Number(value) : value;
