@@ -1,5 +1,5 @@
 import { BufferAttribute, BufferGeometry, Color, NormalBlending, PerspectiveCamera, Points, ShaderMaterial, Vector2, Vector3, Vector4 } from 'three';
-import { SPRAY_STRIDE } from '../wave/SprayCloud';
+import { SPRAY_CAPACITY, SPRAY_STRIDE, WHITEWATER_CAPACITY } from '../wave/SprayCloud';
 import { churnTexture } from './water/churnTexture';
 import { richSprayFragment, richSprayVertex } from './water/richSpray';
 import type { WaterLook } from './water/waterLook';
@@ -37,7 +37,8 @@ void main() {
 
 /**
  * Draws a `SprayCloud` (or a snapshot of one) as soft points sized in metres,
- * fading with age. The foam ball (kind 2, G9) is Rich only: Classic draws the
+ * fading with age. A closing tube's whitewater (kinds 2–4, G9: the foam ball,
+ * the spit's and eruption's spray and mist) is Rich only: Classic draws the
  * spray and mist as it always has.
  */
 export class SprayPoints {
@@ -48,7 +49,7 @@ export class SprayPoints {
   private readonly buffer = new Vector2();
   private currentLook: WaterLook = 'classic';
 
-  constructor(readonly capacity = 4096) {
+  constructor(readonly capacity = SPRAY_CAPACITY + WHITEWATER_CAPACITY) {
     const geometry = new BufferGeometry();
     this.positions = new BufferAttribute(new Float32Array(capacity * 3), 3);
     this.looks = new BufferAttribute(new Float32Array(capacity * 2), 2);
@@ -124,16 +125,15 @@ export class SprayPoints {
   }
 
   update(spray: RenderableSpray): void {
-    const count = Math.min(this.capacity, spray.count);
     const positions = this.positions.array as Float32Array;
     const looks = this.looks.array as Float32Array;
     const kinds = this.kinds.array as Float32Array;
     const rich = this.currentLook === 'rich';
     let drawn = 0;
-    for (let k = 0; k < count; k += 1) {
+    for (let k = 0; k < spray.count && drawn < this.capacity; k += 1) {
       const o = k * SPRAY_STRIDE;
       const kind = spray.particles[o + 5];
-      if (kind === 2 && !rich) continue;
+      if (kind >= 2 && !rich) continue;
       positions[drawn * 3] = spray.particles[o];
       positions[drawn * 3 + 1] = spray.particles[o + 1];
       positions[drawn * 3 + 2] = spray.particles[o + 2];

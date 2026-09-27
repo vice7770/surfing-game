@@ -177,12 +177,24 @@ describe('the foam ball (G9)', () => {
     expect(foamBalls(cloud).length).toBe(0);
   });
 
-  it('keeps room for a closing tube’s foam ball and spit when the landing lip’s splash would fill the pool', () => {
-    const cloud = new SprayCloud(12, 40);
+  it('gives a closing tube’s whitewater its own room, so the spray keeps its whole pool and the foam ball its own', () => {
+    // 40 places for spray and mist, 30 for the tube's whitewater (drawn in Rich only).
+    const cloud = new SprayCloud(12, 40, 30);
     const spit: TubeSpit = { x: 5, y: 1, z: 20, dirX: 1, dirZ: 0, speed: 6, airRate: 12 };
     cloud.update({ ...flatScene(0, [impact(0.4)]), spits: [spit], rollers: [roller()] }, 1 / 60);
-    expect(cloud.count).toBe(40);
+    const kinds = Array.from({ length: cloud.count }, (_, k) => cloud.particles[k * SPRAY_STRIDE + 5]);
+    expect(kinds.filter((kind) => kind < 2).length).toBe(40);
     expect(foamBalls(cloud).length).toBe(Math.round(1.5 / FOAM_BALL_VOLUME));
+    expect(kinds.filter((kind) => kind >= 2).length).toBeLessThanOrEqual(30);
+    expect(cloud.whitewaterCount).toBe(kinds.filter((kind) => kind >= 2).length);
+  });
+
+  it('marks a spit’s and an eruption’s drops as the tube’s own: spray 3, mist 4', () => {
+    const cloud = new SprayCloud(13);
+    const spit: TubeSpit = { x: 5, y: 1, z: 20, dirX: 1, dirZ: 0, speed: 6, airRate: 3 };
+    cloud.update({ ...flatScene(), spits: [spit], eruptions: [{ x: 5, y: 1, z: 20, airRate: 2, speed: 3 }] }, 0.5);
+    const kinds = new Set(Array.from({ length: cloud.count }, (_, k) => cloud.particles[k * SPRAY_STRIDE + 5]));
+    expect([...kinds].sort()).toEqual([3, 4]);
   });
 
   it('packs each particle’s kind after its opacity: spray 0, mist 1, foam ball 2', () => {

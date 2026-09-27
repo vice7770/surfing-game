@@ -9,7 +9,7 @@ import {
   LIP_HIT_STRIDE, LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea,
 } from './SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
-import { FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE } from './SprayCloud';
+import { FOAM_BALL_VOLUME, SPRAY_CAPACITY, SPRAY_PER_AIR, SPRAY_STRIDE, WHITEWATER_CAPACITY } from './SprayCloud';
 
 const config: SurfZoneConfig = {
   spot: 'point', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 20, spreading: 24, tide: 0,
@@ -159,8 +159,12 @@ describe('SurfZoneRunner', () => {
       for (let k = 0; k < of.spray.count; k += 1) if (of.spray.particles[k * SPRAY_STRIDE + 5] === 2) balls += 1;
       return balls;
     };
-    expect(runner.spray.count).toBeLessThan(4096);
     expect(foamBalls(runner) - foamBalls(twin)).toBe(Math.round(1.5 / FOAM_BALL_VOLUME));
+    // The snapshot carries the spray's pool and the tube's whitewater's beside it.
+    const buffers = runner.createBuffers();
+    expect(buffers.spray.length).toBe((SPRAY_CAPACITY + WHITEWATER_CAPACITY) * SPRAY_STRIDE);
+    expect(runner.spray.capacity).toBe(SPRAY_CAPACITY);
+    expect(runner.spray.whitewaterCapacity).toBe(WHITEWATER_CAPACITY);
   });
 
   it('carries a bubble cloud in the runner, not in the renderer', () => {
