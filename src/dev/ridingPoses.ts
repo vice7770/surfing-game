@@ -6,8 +6,8 @@ import type { StanceName } from '../physics/riderPosture';
 import type { RiderVisualState } from '../scene/rig/riderVisualState';
 
 /** Riding moments for the surfer sheet (Part B), each simulated by the real rider. */
-export type RidingMoment = 'straight' | 'drop' | 'bottom turn' | 'backside turn' | 'top turn';
-export const RIDING_MOMENTS: readonly RidingMoment[] = ['straight', 'drop', 'bottom turn', 'backside turn', 'top turn'];
+export type RidingMoment = 'straight' | 'drop' | 'bottom turn' | 'backside turn' | 'top turn' | 'snap';
+export const RIDING_MOMENTS: readonly RidingMoment[] = ['straight', 'drop', 'bottom turn', 'backside turn', 'top turn', 'snap'];
 
 const STEP = 1 / 60;
 const FACE = (15 * Math.PI) / 180;
@@ -41,7 +41,7 @@ export function ridingState(moment: RidingMoment, stance: StanceName, at: Vector
     for (let i = 0; i < Math.round(seconds / STEP); i += 1) board.step(STEP, water);
   };
   // The bottom turn's sequence: crouched first, then the lean, then Compress at the turn's base.
-  if (moment !== 'straight' && moment !== 'top turn') rider.crouch = 0.6;
+  if (moment !== 'straight' && moment !== 'top turn' && moment !== 'snap') rider.crouch = 0.6;
   run(0.4);
   if (moment === 'drop') {
     run(0.6);
@@ -54,6 +54,11 @@ export function ridingState(moment: RidingMoment, stance: StanceName, at: Vector
     rider.steer = -toes;
     rider.trim = -0.5;
     run(0.6);
+  } else if (moment === 'snap') {
+    // The top-turn plan's snap: the weight on the back foot and full steer.
+    rider.steer = -toes;
+    rider.trim = -1;
+    run(0.5);
   } else {
     run(0.6);
   }

@@ -78,6 +78,19 @@ export const RIG_DETAIL = {
   leadRaise: 15,
   armLeadRate: 1.5,
   reachBend: 60,
+  /**
+   * The snap (de Sousa 2022's final phase: the weight to the back foot, the trunk
+   * rotating, the chest and the leading arm toward the lip; the stances spec's
+   * video). The weight is where the pelvis sits along the stance, as a share of
+   * it from the middle: riding level it sits 15–19 % ahead, with the weight back
+   * 3–11 % behind. From `snapFrom` to `snapFull` the weight goes onto the back
+   * foot. In a turn, blended in as the leading arm is, the chest turns up to
+   * `snapTwist`° further into it and the leading arm rises to `snapRaise`°.
+   */
+  snapFrom: 0,
+  snapFull: -0.1,
+  snapTwist: 30,
+  snapRaise: 60,
 };
 
 /**
@@ -119,6 +132,8 @@ export class HumanoidRig {
   private readonly footDrop: number;
   private readonly footRun: number;
   private readonly fingerRests = new Map<Bone, Quaternion>();
+  /** Standing, how far the weight is back for the snap, 0 to 1, this solve. */
+  private back = 0;
   // Scratch, one per role so helpers never share one.
   private readonly up = new Vector3();
   private readonly forward = new Vector3();
@@ -219,9 +234,12 @@ export class HumanoidRig {
     left.crossVectors(up, forward).normalize();
     this.turnTowardNose(hipsForward.copy(forward), upright ? RIG_DETAIL.hipsTurn : 0);
     this.turnTowardNose(this.facing.copy(forward), upright ? RIG_DETAIL.chestTurn : 0);
+    this.back = state.phase === 'standing' ? this.weightBack(state) : 0;
     if (state.phase === 'standing') {
       const most = (RIG_DETAIL.twistMost * Math.PI) / 180;
-      const twist = state.standingBlend * Math.max(-most, Math.min(most, RIG_DETAIL.twistGain * state.yawRate));
+      const snap = this.back * Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
+      const twist = state.standingBlend * Math.max(-most, Math.min(most, RIG_DETAIL.twistGain * state.yawRate))
+        + (Math.sign(state.yawRate) * snap * RIG_DETAIL.snapTwist * Math.PI) / 180;
       this.facing.applyAxisAngle(up, twist);
       hipsForward.applyAxisAngle(up, RIG_DETAIL.hipsTwistShare * twist);
     }
@@ -373,11 +391,23 @@ export class HumanoidRig {
     if (total > 0 && state.standingBlend < 1) this.orientSpine(chestUp.copy(base).applyAxisAngle(bendAxis, state.standingBlend * total));
   }
 
-  /** Standing, the leading arm reaching where the head looks, blended in by the turn. */
+  /** Standing, how far the weight is back (`RIG_DETAIL.snapFrom`): where the pelvis sits along the stance, 0 to 1. */
+  private weightBack(state: RiderVisualState): number {
+    const p = state.points;
+    const f = this.boardForward;
+    const left = p[POINT.leftFoot].dot(f);
+    const right = p[POINT.rightFoot].dot(f);
+    const span = Math.abs(left - right);
+    if (span < 1e-3) return 0;
+    const ahead = (p[POINT.pelvis].dot(f) - (left + right) / 2) / span;
+    return state.standingBlend * Math.max(0, Math.min(1, (RIG_DETAIL.snapFrom - ahead) / (RIG_DETAIL.snapFrom - RIG_DETAIL.snapFull)));
+  }
+
+  /** Standing, the leading arm reaching where the head looks, blended in by the turn, raised with the weight back. */
   private leadArm(state: RiderVisualState, shoulder: Vector3, target: Vector3): void {
     const weight = state.standingBlend * Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
     if (weight <= 0) return;
-    const raise = (RIG_DETAIL.leadRaise * Math.PI) / 180;
+    const raise = ((RIG_DETAIL.leadRaise + (RIG_DETAIL.snapRaise - RIG_DETAIL.leadRaise) * this.back) * Math.PI) / 180;
     const aim = this.pole2.copy(this.look).multiplyScalar(Math.cos(raise)).addScaledVector(WORLD_UP, Math.sin(raise)).normalize();
     target.lerp(this.direction.copy(shoulder).addScaledVector(aim, RIG_DETAIL.leadReach * this.armLength), weight);
   }

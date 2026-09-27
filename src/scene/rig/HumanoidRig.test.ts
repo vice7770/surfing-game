@@ -325,6 +325,67 @@ describe('the arms', () => {
   });
 });
 
+// The top-turn plan: the snap (the stances spec's video; de Sousa 2022's final phase: the weight to the back foot, the
+// trunk rotating, the chest and the leading arm toward the lip). The weight is where the pelvis sits over the feet.
+describe('the snap', () => {
+  const board = new Vector3(3, 0.1, -40);
+  const level = new Quaternion();
+  const turn = (from: number, to: number) => ((((to - from) % 360) + 540) % 360) - 180;
+  const solved = (stance: 'regular' | 'goofy', yawRate: number, back: boolean) => {
+    const { bones } = createTestHumanoid();
+    const before = boneLengths(bones);
+    const rig = new HumanoidRig(bones);
+    const state = posturePoints('standing', stance, board, level, createRiderVisualState());
+    Object.assign(state, { yawRate, speed: 5 });
+    if (back) {
+      // The body over the rear foot: the pelvis 5 cm behind the middle of the feet, along the board.
+      const p = state.points;
+      const tail = new Vector3(0, 0, -1).applyQuaternion(level);
+      const middle = p[POINT.leftFoot].clone().add(p[POINT.rightFoot]).multiplyScalar(0.5);
+      const shift = p[POINT.pelvis].clone().sub(middle).dot(tail) * -1 + 0.05;
+      for (const point of [POINT.pelvis, POINT.torso, POINT.head, POINT.leftHand, POINT.rightHand]) p[point].addScaledVector(tail, shift);
+    }
+    rig.solve(state);
+    for (const [name, length] of boneLengths(bones)) expect(length, name).toBeCloseTo(before.get(name)!, 9);
+    return { rig, chest: yawOf(rig.facing) };
+  };
+  const lead = (stance: 'regular' | 'goofy') => (stance === 'regular' ? 'left' : 'right');
+  const raised = (rig: HumanoidRig, side: Side) => {
+    const arm = rig.joints.wrist[side].clone().sub(rig.joints.shoulder[side]);
+    return (Math.asin(arm.y / arm.length()) * 180) / Math.PI;
+  };
+
+  it.each([['regular', -3], ['goofy', 3]] as const)('twists the trunk further than a carve does, %s', (stance, yawRate) => {
+    const straight = solved(stance, 0, true);
+    const carve = solved(stance, yawRate, false);
+    const snap = solved(stance, yawRate, true);
+    const carved = Math.abs(turn(straight.chest, carve.chest));
+    expect(Math.abs(turn(straight.chest, snap.chest))).toBeGreaterThan(carved + 15);
+  });
+
+  it.each([['regular', -3], ['goofy', 3]] as const)('raises the leading arm high, toward the lip, %s', (stance, yawRate) => {
+    expect(raised(solved(stance, yawRate, false).rig, lead(stance))).toBeLessThan(25);
+    expect(raised(solved(stance, yawRate, true).rig, lead(stance))).toBeGreaterThan(40);
+  });
+
+  // The surfer sheet's snap, from the real rider: the weight back (W/S) and full steer.
+  it.each(['regular', 'goofy'] as const)('draws the real rider’s snap with the leading arm high, %s', (stance) => {
+    expect(RIDING_MOMENTS).toContain('snap');
+    const state = ridingState('snap', stance, new Vector3(0, 0.03, 0), createRiderVisualState());
+    expect(state.phase).toBe('standing');
+    const rig = new HumanoidRig(createTestHumanoid().bones);
+    rig.solve(state);
+    expect(raised(rig, lead(stance))).toBeGreaterThan(40);
+  });
+
+  it('shows no snap with the weight back and no turn', () => {
+    const still = solved('regular', 0, true);
+    const upright = solved('regular', 0, false);
+    expect(Math.abs(turn(upright.chest, still.chest))).toBeLessThan(3);
+    expect(raised(still.rig, 'left')).toBeLessThan(0);
+  });
+});
+
 // The final review: every pop-up snapped the drawn body at its switches (the hips 11.6 cm at push → landing, the head
 // 15° at landing → standing, and turning the chest and the leading arm too). The body eases in instead.
 describe('the stand-up', () => {
