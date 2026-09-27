@@ -231,6 +231,9 @@ describe('Classic water parity', () => {
     ocean.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
     expect(shader.fragmentShader).toContain('waterRippleSlopeAt( vWaterWorld.xz, vec2( 0.0 ) )');
     expect(shader.fragmentShader).toContain('richRoughness( roughnessFactor, waterRippleVariance )');
+    // G9: the air in the water is the tank's; the far ocean declares no varyings its vertex shader never writes.
+    expect(shader.fragmentShader).not.toContain('vWaterAir');
+    expect(shader.fragmentShader).not.toContain('vWaterPlumeDepth');
     const uniforms = shader.uniforms as Record<string, { value: unknown }>;
     expect(uniforms.waterRippleMap.value).toBe(rippleTexture());
     expect(uniforms.waterRippleStrength.value).toBeCloseTo(rippleStrength(DEFAULT_WATER_CHOP), 9);

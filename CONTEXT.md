@@ -59,16 +59,12 @@ The evolving water-surface state that contains the incoming wave and can propaga
 _Avoid_: render-only wave, separate wave overlay
 
 **Water sample**:
-Local observations of the shared interactive water field at a position and time, including surface elevation, slope/orientation, and water motion.
+Local observations of the simulated sea at a position and time, including surface elevation, slope/orientation, and water motion.
 _Avoid_: render-only sample
 
 **Board response**:
 The simulated motion of the surfboard under buoyancy, drag, lift, paddling, and rider input.
 _Avoid_: board physics (too broad without a specific model)
-
-**Physics tuning panel**:
-The in-game controls for adjusting MVP wave and board parameters to inspect their effect.
-_Avoid_: debug menu
 
 **Sea state**:
 The spectral description of the swell at the spot (Hs, Tp, direction, spread, tide), represented as seeded linear components.

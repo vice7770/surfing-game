@@ -46,6 +46,16 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus a
   - The Auto benchmark samples only the menu's own waves.
   - The menu's and Surf's sun and clock no longer overwrite the Wave Lab's settings.
   - The catch report takes `--spread`, so it can reproduce each Surf swell.
+- [x] **Fix (2026-09-27, found by the frame-rate survey):** at High, the menu's first Reef (the GPU tier's 64-component sea, seed 1) never came up, and its worker kept a core busy. The spin-up stepped a quarter second between stability checks; a trough drained a reef cell to 7 cm with 112 m/s of backwash, the step ran at 5× its stable limit, and the water diverged at 2.25 s. The spin-up now checks stability every substep, and water that diverges anyway stops with an error instead of asking for trillions of substeps. Of 24 spin-ups (four spots, 24 and 64 components, seeds 1–3), this was the only one to diverge.
+- [x] **Spin-up on the GPU (2026-09-27, the user's choice from the performance study):** where the worker has WebGPU, the surf zone is built warm, the device attached, and the spin-up stepped on the GPU one stable substep at a time; a device that fails hands the rest to the CPU. Diverged water stops the GPU step as it stops the CPU's. Behind the loading card the page no longer draws or steps the sea it replaces, and the menu's waves give way to its gradient while new ones spin up, so the GPU is the new sea's alone. On the M1 Air (load 9–20):
+
+  | | Before (CPU spin-up) | After |
+  |---|---:|---:|
+  | Menu's waves after launch | 38–44 s | 6.4–7.2 s |
+  | Paddle out to riding | 19–27 s | 3.7–5.8 s |
+  | Quit to the menu's new waves | 26–27 s | 3.4–4.5 s |
+
+  In the worker, all 24 spin-ups (four spots, 24 and 64 components, seeds 1–3) came up finite in 2.3–5.3 s, against 14.5–23.3 s on the CPU, with the same highest crests.
 - [ ] **Open:**
   - **Tune the Surf swell sizes after the take-off layer (P10).** Measured before P7 with 30 ghost riders, 3 min per spot; the counts are riders who stood, and in brackets rides of 3 s or more:
 
@@ -148,7 +158,7 @@ Up to 50 friends share one break from a room link. Every player runs the whole s
   - a bot-filled room measured on the M4 Pro;
   - **Part B, physical collisions,** planned after the playtest.
 
-### P1 · Wave Lab and Surf School (L1–L3) — `L1 and L2 done (playtests open); L3 next`
+### P1 · Wave Lab and Surf School (L1–L3) — `L1–L3 done (playtests open)`
 
 Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [Spec](docs/superpowers/specs/2026-09-27-wave-lab-surf-school.md) · [L1 plan](docs/superpowers/plans/2026-09-27-l1-wave-lab.md).
 
@@ -194,7 +204,22 @@ Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [
   - on a machine too slow for stage 2 (the Fast water's), how slow the lessons run has not been measured;
   - the user's playtest (the pass card and a live pass were not seen in the hidden pane);
   - trim and the hand have no touch buttons yet, so lessons 2 and 6 need a keyboard or a pad.
-- [ ] **L3 · Legacy removal:** delete the legacy wave's modules and tests, now unreached.
+- [x] **L3 · Legacy removal:** the legacy wave's code is deleted, now that nothing reaches it. [Plan](docs/superpowers/plans/2026-09-27-l3-legacy-removal.md).
+  - **Deleted:** the wave (`WaveModel`, `PlungingSheet`), its board (`BoardPhysics`, `boardTrace`), their views (`LegacySurfaceSource`, `CameraRig`, `BoardWake`, `BreakSpray`, `Seabed`, `PlungingSheetMesh`), the old `Hud` and `RunHistory`, the `report:board-baseline` script, and every test that only drove them.
+  - **Trimmed:** `SurfWater` loses its legacy adapter and the `surface` flow regime; `Surfer` keeps only the pose the physical rider falls back to; `BoardInput` moves into `Controls`; the legacy swell readout and board values go; the sky loses the coastline cards the physical sea always hid.
+  - **Kept on purpose:** the test waters, test surfers and the report scripts' helpers, which the suite and the reports still use.
+
+### P1 · Performance (2026-09-27) — `Study done; two decisions open`
+
+From the user's M4 Pro frame-rate survey, re-run on the M1 Air: [performance study](docs/research/performance-study.md).
+- [x] **The M4 Pro holds 120 fps on every screen at every preset.** Its heaviest reading, the Surf screen, was the survey counting GPU time once per WebGL context. The surfer preview costs about 0.5 ms.
+- [x] **A paused game draws only when its view changes,** twice a second otherwise: 15 of 481 paused frames draw, against every frame, and the camera no longer glides after pausing.
+- [x] **Fixed separately:** the camera jumping as waves pass a waiting rider (PR #28), and the High Reef menu never coming up (PR #32).
+- [x] **Spin-up on the GPU** (PR #39, with the GPU step's guard against diverged water): on the M1 Air the menu's waves now come up in about 4–7 s and a ride in 3–6 s, against 19–44 s (see the P8 section).
+- [x] **The survey times the game's WebGL context alone** (PR #41), with the surfer preview's reported apart.
+- [ ] **Open:**
+  - decide what the menus' waves may cost (a 60 fps cap on faster displays, a lower scale, or holding them still);
+  - re-measure High on the M1 Air with no other session running, and have Auto weigh High's resolution if it misses 60 fps.
 
 ### Later — `Backlog`
 
@@ -416,11 +441,11 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
 
     | | Reef | Beach |
     |---|---|---|
-    | Splash-up, 90th percentile | 1.12 m | 0.76 m |
-    | Spit speed, median | 10.8 m/s | 9.9 m/s |
-    | Median surveyed void fraction | 0.15 | 0.05 |
-    | Surveys at α_max | 24 % | 2 % |
-    | Foam-ball sprites, median | 120 | 41 |
+    | Splash-up, 90th percentile | 1.12 m | 0.77 m |
+    | Spit speed, median (fastest) | 10.5 m/s (52) | 8.8 m/s (42) |
+    | Median surveyed void fraction | 0.14 | 0.05 |
+    | Surveys at α_max | 22 % | 2 % |
+    | Foam-ball sprites, median | 117 | 53 |
 
     Collapses take 0.3–0.4 s, and the Canyon barely plunges.
   - **Judging it:** `?inpage&waterSheet&whitewater` (with `&spot=reef` or `&spot=beach`) holds the sea on a collapsing tube and shoots its whitewater.
@@ -438,7 +463,7 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
       - a void's back stood as a wall half its width deep at the crest, which the mesh drew as a jagged crack along the lip. **Fixed:** its floor now meets the surface over `TUBE_EDGE` (0.35 m) behind it, in the physics and on the GPU alike. The front, where the jet lands, is unchanged, so the tube report still holds;
       - **open:** where a peel's columns collapse at different stages, a column whose void has gone stands as a spike a metre wide between carved neighbours (Part A's instant close did the same). It needs the peel to collapse as one section;
     - the spray pool (4,096) is full a fifth of the time on the Reef and the Point, and the lip's splash gives way first;
-    - rare spits reach 160–180 m/s where a small mouth drains a long closing section.
+    - the review's deferred whitewater fixes are done (2026-09-27): spits no faster than the falling lip drives the air (√(ρ_w/ρ_a)·√(gW/2); the rest erupts); each drop of lip water reported landing once; impact drops thrown up as fast as the splash-up sheet; the aeration follows the window before adding air; its snapshot write halved; the report balances the air on what the tubes trapped.
 
     Whitewater forces on bodies and the player's tube camera (P12) stay in the Backlog.
 
@@ -454,6 +479,7 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
 - [ ] **P9 Riding** (`Playtest`, [plan](docs/superpowers/plans/2026-09-26-p9-riding.md), [findings](docs/superpowers/plans/2026-09-26-p9-riding.md#findings)):
   - **Part A, physics — done:**
     - phase 0: speed and position against the crest, speed over ground, a horizon-holding ride camera, an autopilot. It found that catching, not the rider, bounds the rides; the rider outruns closing-out waves onto the flats;
+    - the front view holds steady while waves pass a waiting rider (user report, 2026-09-27): its lean toward the crest fades in as a wave comes from 30 m to 15 m out, fades once the crest has passed, and eases. It had cut 5–14° in one frame twice a wave, where the wave gauge's window gains or loses a crest;
     - the rider stands on a leg (a spring and damper in the board's solve): it holds the load it feels, absorbs landings and crouches;
     - trim, stall, crouch, the hand in the face and heading hold;
     - pumping gains speed when timed with the path (Kogelbauer 2024), and nothing on flat water;

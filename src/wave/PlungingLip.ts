@@ -33,6 +33,22 @@ export const SPLASH_UP = { share: 0.3, vertical: 0.6, horizontal: 0.8, minImpact
  * but for the air's volume, which is conserved.
  */
 export const TUBE_AIR = { escape: 0.5 } as const;
+/** Densities of seawater and of air, kg/m³. */
+const WATER_DENSITY = 1025;
+const AIR_DENSITY = 1.2;
+
+/**
+ * The fastest a collapsing tube can blow its air out of its mouth, m/s. The
+ * roof falls on the air at about √(gW/2) (its free fall over the void's
+ * height W), so the air's pressure can rise no higher than the roof's dynamic
+ * pressure, ½ρ_w·gW/2; air driven by that leaves at √(ρ_w/ρ_a)·√(gW/2). Air
+ * the mouth cannot pass that fast bursts up through the lip instead. (G9,
+ * provisional: a mechanism, not a measurement.)
+ */
+export function spitSpeedLimit(width: number): number {
+  return Math.sqrt((WATER_DENSITY / AIR_DENSITY) * GRAVITY * width / 2);
+}
+
 /** A closing void's bubbles are spread over this many points along it (numerical). */
 const BUBBLE_POINTS = 4;
 /** A breaking roller's cross-section per H² (G9, κ_r; Svendsen 1984): the foam ball tumbling in a collapsing tube. */
@@ -271,6 +287,8 @@ export class PlungingLip implements LipParcelSource {
   readonly volume: Float64Array;
   /** Landings since the lip was created. */
   landings = 0;
+  /** Air its tubes have trapped as they closed, m³ (G9; a running total for the air's balance). */
+  trappedAir = 0;
   /**
    * Told of every landing: where the parcel fell, how much water it returned
    * (m³), how fast it hit (m/s), and its flight: where it left the crest and
@@ -283,6 +301,8 @@ export class PlungingLip implements LipParcelSource {
   readonly spits: TubeSpit[] = [];
   readonly eruptions: TubeEruption[] = [];
   readonly rollers: TubeRoller[] = [];
+  /** Scratch for `tubeChains`: the strips already in a chain. */
+  private readonly chained = new Set<LipStrip>();
   private readonly vx: Float64Array;
   private readonly vy: Float64Array;
   private readonly vz: Float64Array;
@@ -607,6 +627,16 @@ export class PlungingLip implements LipParcelSource {
     this.tubeRows = rows;
   }
 
+  /** Air the closing tubes still hold, m³: what they trapped and have not yet let go (G9). */
+  get heldAir(): number {
+    let held = 0;
+    for (const strip of this.strips.values()) {
+      const { tube } = strip;
+      if (tube && !Number.isNaN(tube.closedAt)) held += tube.air * (1 - tube.released);
+    }
+    return held;
+  }
+
   /** Water thrown and not yet landed, flying or still to leave the crest, m³. */
   airborneVolume(): number {
     let total = 0;
@@ -802,12 +832,14 @@ export class PlungingLip implements LipParcelSource {
         // While it still pours, the curtain holds the void whole and the pour lands where the tube is, not on the crest.
         tube.closedAt = this.time;
         tube.air = LH82_AREA * tube.geometry.length * tube.geometry.width * solver.dx;
+        this.trappedAir += tube.air;
       }
       // A strip stays while its water flies or its void is still collapsing.
       if (strip.live === 0 && (!tube || collapsed(tube, this.time) >= 1)) this.removeStrip(stripId, strip);
-      if (splash > 0) this.throwSplash(strip, x, y, z, splash, vx, vy, vz);
     }
-    this.onLand?.(x, z, volume, vx, vy, vz, flight);
+    // Each drop is told of once: the splash-up's share when it comes down itself, unless it could not fly.
+    const flies = splash > 0 && this.throwSplash(strip, x, y, z, splash, vx, vy, vz);
+    this.onLand?.(x, z, flies ? volume - splash : volume, vx, vy, vz, flight);
   }
 
   private removeStrip(stripId: number, strip: LipStrip): void {
@@ -891,10 +923,20 @@ export class PlungingLip implements LipParcelSource {
         const alongX = -tube.dirZ;
         const alongZ = tube.dirX;
         const outward = (centre.x - fed[m].x / rate) * alongX + (centre.z - fed[m].z / rate) * alongZ >= 0 ? 1 : -1;
+        // The mouth passes air no faster than the falling lip can drive it; the rest bursts up through the lip.
+        const area = LH82_AREA * tube.geometry.length * tube.geometry.width;
+        const spat = Math.min(rate, spitSpeedLimit(tube.geometry.width) * area);
         this.spits.push({
-          x: centre.x, y: centre.y, z: centre.z, dirX: outward * alongX, dirZ: outward * alongZ,
-          speed: rate / (LH82_AREA * tube.geometry.length * tube.geometry.width), airRate: rate,
+          x: centre.x, y: centre.y, z: centre.z, dirX: outward * alongX, dirZ: outward * alongZ, speed: spat / area, airRate: spat,
         });
+        const excess = rate - spat;
+        if (excess > 0) {
+          burst.rate += excess;
+          burst.x += (excess * fed[m].x) / rate;
+          burst.y += excess * tube.y;
+          burst.z += (excess * fed[m].z) / rate;
+          burst.speed += excess * Math.sqrt((GRAVITY * tube.geometry.width) / 2);
+        }
       });
       if (burst.rate > 0) {
         this.eruptions.push({
@@ -937,7 +979,8 @@ export class PlungingLip implements LipParcelSource {
 
   /** The tubed strips, grouped into peels: tubes of neighbouring columns thrown within LINK_TIME of each other. */
   private tubeChains(): LipStrip[][] {
-    const seen = new Set<LipStrip>();
+    const seen = this.chained;
+    seen.clear();
     const chains: LipStrip[][] = [];
     for (const strip of this.strips.values()) {
       if (!strip.tube || seen.has(strip)) continue;
@@ -960,16 +1003,16 @@ export class PlungingLip implements LipParcelSource {
   }
 
   /** One splash-up parcel, gathered with the rest of its jet's into one strip, so they draw as one sheet. */
-  private throwSplash(jet: LipStrip, x: number, y: number, z: number, volume: number, vx: number, vy: number, vz: number): void {
-    const parcel = this.free.pop();
-    if (parcel === undefined) {
-      // No room in the pool: the water lands after all.
+  private throwSplash(jet: LipStrip | undefined, x: number, y: number, z: number, volume: number, vx: number, vy: number, vz: number): boolean {
+    const parcel = jet ? this.free.pop() : undefined;
+    if (!jet || parcel === undefined) {
+      // No room in the pool (or no jet to gather it with): the water lands after all.
       const cell = this.solver.cellIndex(x, z);
       const area = this.solver.dx * this.solver.dz[Math.floor(cell / this.solver.nx)];
       this.solver.h[cell] += volume / area;
       this.solver.qx[cell] += (volume * SPLASH_UP.horizontal * vx) / area;
       this.solver.qz[cell] += (volume * SPLASH_UP.horizontal * vz) / area;
-      return;
+      return false;
     }
     let splashId = jet.splash;
     let splash = splashId === undefined ? undefined : this.strips.get(splashId);
@@ -1005,5 +1048,6 @@ export class PlungingLip implements LipParcelSource {
     this.index[parcel] = splash.parcels.length - 1;
     this.launchTime[parcel] = splash.launchTime;
     this.kind[parcel] = 1;
+    return true;
   }
 }

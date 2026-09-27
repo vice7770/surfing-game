@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { describeSwell, formatSwellReadout } from './SwellReadout';
+import { describeSwell } from './SwellReadout';
 
 describe('describeSwell', () => {
   it('reports Airy values and the depth-limited break for a 1.4 m, 8 s wave', () => {
@@ -21,17 +21,5 @@ describe('describeSwell', () => {
     const flat = describeSwell({ height: 1.4, period: 8, depth: 4, bedSlope: 0 });
     expect(flat.breakerType).toBe('none');
     expect(flat.iribarren).toBe(0);
-  });
-});
-
-describe('formatSwellReadout', () => {
-  it('labels the theory and shows the legacy simulation speed beside it', () => {
-    const rows = formatSwellReadout(describeSwell({ height: 1.4, period: 8, depth: 4, bedSlope: 0 }), { depth: 4, simSpeed: 3 });
-    const value = (label: string) => rows.find((row) => row.label === label)?.value;
-    expect(value('WAVE SPEED · AIRY')).toBe('6.0 m/s');
-    expect(value('WAVE SPEED · SIM')).toBe('3.0 m/s');
-    expect(value('WAVELENGTH AT 4.0 M')).toBe('48.0 m');
-    expect(value('BREAKS IN DEPTH')).toBe('1.79 m');
-    expect(value('IRIBARREN ξ')).toBe('FLAT BED');
   });
 });

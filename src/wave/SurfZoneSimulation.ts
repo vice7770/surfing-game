@@ -69,6 +69,9 @@ export interface SolverDevice {
   dispose(): void;
 }
 
+/** A surf zone built spun up (on the CPU, at once), or only warm-started, to spin up later on its device (`spinUp`). */
+export type SurfZoneStart = 'spun-up' | 'warm';
+
 export interface RenderGrid {
   xMin: number;
   zMin: number;
@@ -220,8 +223,13 @@ export class SurfZoneSimulation {
   /** Per-cell velocity scratch for `writeUniformFlow`. */
   private velocityX?: Float64Array;
   private velocityZ?: Float64Array;
+  /** Each cell's void fraction, for `writeUniformAeration`. */
+  private voidFractions?: Float64Array;
 
-  constructor(readonly config: SurfZoneConfig) {
+  /** Solver seconds of spin-up that settle the warm-started sea's nonlinear shape. */
+  private readonly spinUpSeconds: number;
+
+  constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up') {
     this.spot = createSpot(config.spot, config.seed);
     const offshoreDepth = OFFSHORE_DEPTH[config.spot];
     const alongShore = config.alongShore ?? ALONG_SHORE;
@@ -245,11 +253,10 @@ export class SurfZoneSimulation {
       this.solver, this.sea, this.solver.zoneWeightsAlongZ(TANK.zoneInner, TANK.offshore), this.seaTimeOffset,
     );
     this.solver.addRelaxationZone(this.boundary);
-    // Settle the nonlinear shape at the CFL limit, re-checking stability every quarter second.
-    while (this.solver.time < spinUp - 1e-9) this.solver.step(Math.min(0.25, spinUp - this.solver.time));
+    this.spinUpSeconds = spinUp;
+    // Nothing below reads the water, so all of it can be built before the spin-up.
     this.breaking = new BreakingModel(this.solver, { onset });
     this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
-    this.breaking.update(0);
     this.peel = new PeelTracker(this.solver.xCenters, config.peakPeriod);
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver);
@@ -266,6 +273,47 @@ export class SurfZoneSimulation {
     this.lip.onAir = (x, z, volume, penetration) => this.aeration.addAir(x, z, volume, penetration);
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
+    if (start === 'spun-up') {
+      while (this.spinUpLeft() > 0) this.solver.step(this.spinUpStep());
+      this.breaking.update(0);
+    }
+  }
+
+  /**
+   * Spin a `'warm'`-built surf zone up: on its device when it has one (the GPU
+   * is several times faster), else on the CPU. A failing device is dropped and
+   * the CPU finishes from where it stopped.
+   */
+  async spinUp(): Promise<void> {
+    while (this.spinUpLeft() > 0) {
+      const dt = this.spinUpStep();
+      const { device } = this;
+      if (!device) {
+        this.solver.step(dt);
+        continue;
+      }
+      try {
+        await device.step(dt);
+      } catch (error) {
+        console.warn('Surf zone device failed during the spin-up; finishing it on the CPU.', error);
+        device.dispose();
+        this.device = undefined;
+        this.solver.step(dt);
+      }
+    }
+    this.breaking.update(0);
+  }
+
+  private spinUpLeft(): number {
+    return this.spinUpSeconds - 1e-9 - this.solver.time;
+  }
+
+  /**
+   * The next spin-up step: one substep at the CFL limit, re-checked every time. A trough draining a
+   * shallow reef can shrink the stable step fivefold within a quarter second, and a stale bound diverges.
+   */
+  private spinUpStep(): number {
+    return Math.min(this.solver.maxStableStep(), this.spinUpSeconds - this.solver.time);
   }
 
   /** The arrays that carry the sea's history (the handover's state probe found them; spec N1), by name. */
@@ -611,24 +659,24 @@ export class SurfZoneSimulation {
   /** G9: resample the aeration to interleaved (void fraction, plume depth, m) per render node; 0 on dry nodes. */
   writeUniformAeration(data: Float32Array, grid: RenderGrid): void {
     const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
-    const { nx } = this.solver;
+    const { nx, h } = this.solver;
     const { depth } = this.aeration;
+    if (!this.voidFractions || this.voidFractions.length !== h.length) this.voidFractions = new Float64Array(h.length);
+    const fraction = this.voidFractions;
+    for (let i = 0; i < h.length; i += 1) fraction[i] = this.aeration.voidFraction(i);
     for (let r = 0; r < grid.nz; r += 1) {
       const row = rows[r] * nx;
       const tz = rowWeights[r];
       for (let c = 0; c < grid.nx; c += 1) {
         const i = row + columns[c];
         const tx = columnWeights[c];
-        const w = [(1 - tx) * (1 - tz), tx * (1 - tz), (1 - tx) * tz, tx * tz];
-        const cells = [i, i + 1, i + nx, i + nx + 1];
-        let voidFraction = 0;
-        let plume = 0;
-        for (let k = 0; k < 4; k += 1) {
-          voidFraction += w[k] * this.aeration.voidFraction(cells[k]);
-          plume += w[k] * depth[cells[k]];
-        }
-        data[(r * grid.nx + c) * 2] = voidFraction;
-        data[(r * grid.nx + c) * 2 + 1] = plume;
+        const w00 = (1 - tx) * (1 - tz);
+        const w10 = tx * (1 - tz);
+        const w01 = (1 - tx) * tz;
+        const w11 = tx * tz;
+        const o = (r * grid.nx + c) * 2;
+        data[o] = w00 * fraction[i] + w10 * fraction[i + 1] + w01 * fraction[i + nx] + w11 * fraction[i + nx + 1];
+        data[o + 1] = w00 * depth[i] + w10 * depth[i + 1] + w01 * depth[i + nx] + w11 * depth[i + nx + 1];
       }
     }
   }
