@@ -34,7 +34,7 @@ const LOOK = 14;
 const WINDOW = 5;
 
 const runner = new SurfZoneRunner({
-  spot, seed, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod, directionDegrees: direction,
+  spot, seed, significantHeight: swell.significantHeight, heightAt: (settings.source === 'practice' ? 'edge' : 'deep') as 'edge' | 'deep', peakPeriod: swell.peakPeriod, directionDegrees: direction,
   spreading: swell.spreading, bandwidth: swell.bandwidth, tide: settings.tide, windSpeed: settings.windSpeed,
 }, { rider: true });
 const autopilot = new Autopilot({ rise: RISE });

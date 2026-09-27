@@ -6,9 +6,9 @@ import { formatSurfRange } from './surfHeight';
 
 describe('lab panel model', () => {
   it('lets the Height slider reach 4 m, and 3 m at the Canyon (wave sizes)', () => {
-    const height = (spot: 'reef' | 'canyon') => labSliders({ ...defaultLabSettings().physical, source: 'buoy', spot }, 'metric')
+    const height = (spot: 'point' | 'canyon') => labSliders({ ...defaultLabSettings().physical, source: 'buoy', spot }, 'metric')
       .find((slider) => slider.key === 'significantHeight')!.max;
-    expect(height('reef')).toBe(4);
+    expect(height('point')).toBe(4);
     expect(height('canyon')).toBe(3);
   });
 

@@ -182,9 +182,16 @@ export function windOnsetScale(windSpeed: number, breakerDepth: number): number 
   return u >= 0 ? Math.max(0.6, 1 - 0.1 * u) : Math.min(1.1, 1 - 0.05 * u);
 }
 
+/**
+ * Spots that take their swell at the tank's edge, as before the wave-sizes work: the Canyon (its seas are the
+ * riding reference and Surf School's), and the Reef until the Reef rework deepens its tank (its 10 m edge blew
+ * up under a shoaled 3–4 m, 18 s swell; the wave-sizes review).
+ */
+const EDGE_SWELL_SPOTS: readonly SpotName[] = ['canyon', 'reef'];
+
 /** The sea's Hs at the tank's edge, m: the buoy's deep-water height shoaled by linear theory, unless given at the edge. */
 export function edgeHeight(config: SurfZoneConfig, edgeDepth = OFFSHORE_DEPTH[config.spot]): number {
-  if (config.spot === 'canyon' || config.heightAt === 'edge') return config.significantHeight;
+  if (EDGE_SWELL_SPOTS.includes(config.spot) || config.heightAt === 'edge') return config.significantHeight;
   return config.significantHeight * shoalingCoefficient(config.peakPeriod, edgeDepth + config.tide);
 }
 

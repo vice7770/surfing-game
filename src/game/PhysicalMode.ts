@@ -93,9 +93,12 @@ export async function webGpuAvailable(): Promise<boolean> {
 /** Largest swell the tank carries, matching the buoy sliders; the tank deepens with the swell (the wave-sizes spec). */
 export const TANK_SWELL_LIMITS = { height: { min: 0.3, max: 4 }, period: { min: 6, max: 18 } };
 
-/** The Canyon keeps its tank and sea as they were (the wave-sizes spec), and so its 3 m cap. */
+/**
+ * The Canyon keeps its tank and sea as they were (the wave-sizes spec), and so its 3 m cap; the Reef keeps its
+ * cap too until the Reef rework deepens its tank (the wave-sizes review).
+ */
 export function swellHeightLimit(spot: SpotName): number {
-  return spot === 'canyon' ? 3 : TANK_SWELL_LIMITS.height.max;
+  return spot === 'canyon' || spot === 'reef' ? 3 : TANK_SWELL_LIMITS.height.max;
 }
 
 function clamp(value: number, range: { min: number; max: number }): number {
