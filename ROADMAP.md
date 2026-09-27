@@ -190,6 +190,7 @@ Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [
   - **Provisional:** the recording and the thresholds wait for the riding work's reference wave (the lean's swing is 8°, not 20°, until the turn-rate fix), and a dev note says so in the lesson.
 - [ ] **L2 open:**
   - regenerate the lesson wave and tune the goals on the reference wave;
+  - stage 1's recording is weak: on the Fast water the autopilot stood once in 300 s, so its pocket holds 1.2 s and its caught and waiting starts never stood in the replays (stage 2: 3.5 s, 5.5 s and 7.4 s). The Pop up and Paddle and catch lessons are hard on the Fast water until the reference wave is recorded, or the school runs stage 2 there;
   - the user's playtest (the pass card and a live pass were not seen in the hidden pane);
   - trim and the hand have no touch buttons yet, so lessons 2 and 6 need a keyboard or a pad.
 - [ ] **L3 · Legacy removal:** delete the legacy wave's modules and tests, now unreached.

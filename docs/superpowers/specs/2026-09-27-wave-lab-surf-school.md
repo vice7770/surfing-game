@@ -189,9 +189,9 @@ The same wave, started standing in the pocket or prone and ready to catch (the w
   - The runner's ride analysis and counters restart, as a retry does.
   - A ride request field, `place`, carries it (beside `retry` and `spawnAt`).
 - **Finding it.** `npm run lesson:wave` has the autopilot surf the sea from the lineup on the CPU, keeping each ride's moments. The pocket is kept at 0.5, 1 and 1.5 s after standing.
-  - The five longest rides are replayed from their moments as a new player would play them: no input from the pocket; from caught, a pop-up on the cue and nothing more; from waiting, the autopilot paddles, pops up and rides.
+  - The eight longest rides are replayed from their moments as a new player would play them: no input from the pocket; from caught, a pop-up on the cue and nothing more; from waiting, the autopilot paddles, pops up and rides.
   - The rider's own balance and posture are not recorded, so a replay can differ from the ride.
-  - The best total is written, with the pocket moment a still rider rides longest. `docs/research/lesson-wave.md` lists every ride and check.
+  - Each start takes its own best moment, which may come from a different ride than the other starts' (a moment good for one start can be poor for another): standing at all counts first, then how long. `docs/research/lesson-wave.md` lists every ride and check.
 - **Provisional for now.** Today's records come from the current Canyon Practice sea, and the lessons' thresholds are provisional (the lean's swing is 8° until the turn-rate fix). When the reference wave merges (riding step 3), the records are regenerated and the thresholds tuned. With `DEV_TOOLS` on, the school shows "Provisional wave" until then.
 - **The same-wave check.** Two restores must give the same sea:
   - on the CPU, identical (a unit test);
