@@ -328,6 +328,15 @@ const EXTEND_ACCELERATION = 15;
  */
 const CROUCH_HOLD = 0.75;
 /**
+ * Compressing deeper than the crouch, the legs drop as fast as the turn's load
+ * lets them: the rest's downward acceleration is the specific force along the
+ * leg above COMPRESS_KEEP of gravity, so the feet keep at least that share of
+ * the rider's weight (about 0.2 g on flat water, more as a turn loads the legs)
+ * and the crouch's hold is not needed. Surfers compress under a turn's load:
+ * slowly as the rail sets, quickly once it loads them up.
+ */
+const COMPRESS_KEEP = 0.9;
+/**
  * Standing, a hand in the face (spec P9): asked for, the upper body bends toward
  * the wave side, where the water stands higher beside the board (read
  * WAVE_SIDE_REACH, m, out on each side; a side only when it is WAVE_SIDE_MIN, m,
@@ -358,6 +367,13 @@ const STANDING_HAND_DRAG = 1.1 * 0.013;
 const REACH_FROM = 0.5;
 const REACH_LEAN = (10 * Math.PI) / 180;
 const REACH_ALONG = 0.3;
+/**
+ * The reaching hand touches rather than plunges: its arm bends to keep no more
+ * than its lowest REACH_DIP, m, under the surface (about a tenth of the hand, a
+ * few tens of newtons at bottom-turn speeds; held fully under at 7 m/s it pulls
+ * about 0.4 body weights, the E hand's stall).
+ */
+const REACH_DIP = 0.03;
 
 export interface AttachedRiderOptions {
   mass?: number;
@@ -1286,10 +1302,13 @@ export class AttachedRider {
     // have to pull the body down, and unloaded feet lose their grip.
     const rest = -Math.max(0, Math.min(1, Math.max(this.crouch, this.compress))) * CROUCH_DEPTH;
     const down = rest < this.leg.rest;
-    const accelerationLimit = down ? CROUCH_ACCELERATION : EXTEND_ACCELERATION;
+    const compressing = this.compress > this.crouch;
+    const accelerationLimit = !down ? EXTEND_ACCELERATION
+      : compressing ? Math.max(0, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
     const speedLimit = down ? CROUCH_SPEED : MAX_LEG_SPEED;
-    // While the feet brake the body's bank near their edges, the legs hold rather than drop (CROUCH_HOLD).
-    const hold = this.banking ? Math.max(0, Math.min(1, (Math.abs(this.ankleRest) / ANKLE_REST_RANGE - CROUCH_HOLD) / (1 - CROUCH_HOLD))) : 0;
+    // While the feet brake the body's bank near their edges, the crouch's legs hold rather than drop (CROUCH_HOLD).
+    const hold = this.banking && !compressing
+      ? Math.max(0, Math.min(1, (Math.abs(this.ankleRest) / ANKLE_REST_RANGE - CROUCH_HOLD) / (1 - CROUCH_HOLD))) : 0;
     const acceleration = Math.max(-accelerationLimit * (1 - hold), Math.min(accelerationLimit,
       LEG_FREQUENCY * LEG_FREQUENCY * (rest - this.leg.rest) - 2 * LEG_FREQUENCY * this.restRate));
     this.restRate = Math.max(-speedLimit * (1 - hold), Math.min(speedLimit, this.restRate + acceleration * h));
@@ -1364,8 +1383,12 @@ export class AttachedRider {
     const hand = this.partPosition(0, this.handPoint)
       .addScaledVector(this.up, HAND_TORSO * Math.cos(HAND_TORSO_ANGLE)).addScaledVector(side, HAND_TORSO * Math.sin(HAND_TORSO_ANGLE))
       .addScaledVector(this.up, -ARM_LENGTH * Math.cos(ARM_ANGLE)).addScaledVector(side, ARM_LENGTH * Math.sin(ARM_ANGLE));
-    // Reaching in a turn, the hand is its own arm's: the +x side's arm leads for Regular, trails for Goofy.
-    if (!this.hand) hand.addScaledVector(this.scratch.set(0, 0, 1).applyQuaternion(board.orientation), this.handSide * this.stanceSign * REACH_ALONG);
+    // Reaching in a turn, the hand is its own arm's (the +x side's arm leads for Regular, trails for Goofy), and
+    // it touches the water rather than plunging.
+    if (!this.hand) {
+      hand.addScaledVector(this.scratch.set(0, 0, 1).applyQuaternion(board.orientation), this.handSide * this.stanceSign * REACH_ALONG);
+      hand.y = Math.max(hand.y, water.surfaceAt(hand.x, hand.z) + HAND_RADIUS - REACH_DIP);
+    }
     this.partWorld.copy(hand);
     this.partVelocity.copy(cross(this.angularVelocity, this.localScratch.subVectors(hand, this.position), this.scratch)).add(this.velocity);
     const moment = this.waterMoment.y;

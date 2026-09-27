@@ -580,6 +580,42 @@ function acrossFace(acrossDegrees: number, speed: number, stance: 'regular' | 'g
   return { board, rider, water: new PlaneWater({ slopeZ: -Math.tan(slope) }) };
 }
 
+/** How many times a yaw-rate trace changes sign, ignoring rates under 0.05 rad/s. */
+function signFlips(rates: number[]): number {
+  let flips = 0;
+  let sign = 0;
+  for (const rate of rates) {
+    if (Math.abs(rate) < 0.05) continue;
+    if (sign !== 0 && Math.sign(rate) !== sign) flips += 1;
+    sign = Math.sign(rate);
+  }
+  return flips;
+}
+
+/** The largest swing between a trace's turning points, each a reversal of more than `deadband`. */
+function largestSwing(values: number[], deadband = 0.2): number {
+  const points: number[] = [];
+  let high = values[0];
+  let low = values[0];
+  let direction = 0;
+  for (const value of values) {
+    if (direction >= 0 && value > high) high = value;
+    if (direction <= 0 && value < low) low = value;
+    if (direction >= 0 && high - value > deadband) {
+      points.push(high);
+      direction = -1;
+      low = value;
+    } else if (direction <= 0 && value - low > deadband) {
+      points.push(low);
+      direction = 1;
+      high = value;
+    }
+  }
+  let largest = 0;
+  for (let i = 1; i < points.length; i += 1) largest = Math.max(largest, Math.abs(points[i] - points[i - 1]));
+  return largest;
+}
+
 const headingOf = (board: BoardBody) => {
   const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
   return Math.atan2(forward.x, forward.z);
@@ -728,23 +764,52 @@ describe('lean, trim, crouch and heading hold', () => {
         const hand = point(ride, index);
         return hand.y - ride.water.surfaceAt(hand.x, hand.z);
       };
-      // Index 4 is the drawn hand on the board's −x side, index 3 on its +x side.
+      // Index 4 is the drawn hand on the board's −x side, index 3 on its +x side. A hand touches the water with its
+      // centre within its radius (0.08 m) of the surface.
+      const TOUCH = 0.08;
+      /** A second leaning toward −x (up the face) at full steer: how low the −x hand gets, where along the board, and its drag. */
+      const reach = (stance: 'regular' | 'goofy', set: (rider: AttachedRider) => void) => {
+        const ride = acrossFace(60, 7, stance);
+        ride.rider.steer = -1;
+        set(ride.rider);
+        let lowest = Infinity;
+        let at = 0;
+        let pull = 0;
+        run(ride.board, ride.water, 1, () => {
+          const above = aboveWater(ride, 4);
+          if (above < lowest) {
+            lowest = above;
+            at = along(ride, 4);
+          }
+          pull = Math.max(pull, ...ride.rider.handLoad);
+        });
+        return { attached: ride.rider.attached, lowest, at, pull };
+      };
 
       it('reaches the inside hand into the face, the rear arm frontside and the leading arm backside', () => {
-        const frontside = leaning('regular', -1, (rider) => { rider.compress = 1; });
-        expect(frontside.rider.attached).toBe(true);
-        expect(aboveWater(frontside, 4)).toBeLessThanOrEqual(0.02);
-        expect(along(frontside, 4)).toBeLessThan(-0.15);
-        const backside = leaning('goofy', -1, (rider) => { rider.compress = 1; });
-        expect(backside.rider.attached).toBe(true);
-        expect(aboveWater(backside, 4)).toBeLessThanOrEqual(0.02);
-        expect(along(backside, 4)).toBeGreaterThan(0.15);
+        const frontside = reach('regular', (rider) => { rider.compress = 1; });
+        expect(frontside.attached).toBe(true);
+        expect(frontside.lowest).toBeLessThanOrEqual(TOUCH);
+        expect(frontside.at).toBeLessThan(-0.15);
+        const backside = reach('goofy', (rider) => { rider.compress = 1; });
+        expect(backside.attached).toBe(true);
+        expect(backside.lowest).toBeLessThanOrEqual(TOUCH);
+        expect(backside.at).toBeGreaterThan(0.15);
+      });
+
+      // The reference's pivot is a touch: at 7 m/s a hand held fully under pulls about 0.4 body weights (the E hand's
+      // stall), and the plunged reaching hand bled the turn from 7.5 to 4 m/s in 0.3 s.
+      it('touches the water rather than plunging into it', () => {
+        const touching = reach('regular', (rider) => { rider.compress = 1; });
+        expect(touching.pull).toBeGreaterThan(0);
+        expect(touching.lowest).toBeGreaterThanOrEqual(0);
+        expect(touching.pull).toBeLessThan(0.1 * REFERENCE_RIDER.mass * WATER.gravity);
       });
 
       it('reaches with no hand unless compressing', () => {
-        const crouched = leaning('regular', -1, (rider) => { rider.crouch = 1; rider.trim = 0.5; });
-        expect(aboveWater(crouched, 4)).toBeGreaterThan(0.2);
-        expect(Math.max(...crouched.rider.handLoad)).toBe(0);
+        const crouched = reach('regular', (rider) => { rider.crouch = 0.6; });
+        expect(crouched.attached).toBe(true);
+        expect(crouched.pull).toBe(0);
       });
 
       it('keeps the hand in the face (E) on the wave side, even leaning away from it', () => {
@@ -1017,6 +1082,45 @@ describe('lean, trim, crouch and heading hold', () => {
       run(board, water, 1.2);
       expect(rider.attached).toBe(true);
       expect(Math.abs(degrees(headingOf(board) - start))).toBeGreaterThan(turned);
+    });
+
+    // The crouched mid-turn wobble (the take-off plan; memory p4e-carve-root-cause): a crouch deepened during a
+    // full-steer turn at about 10 m/s wobbled in yaw at about 2.3 Hz. Compress is exactly that deepening, taken at
+    // the base of a bottom turn (the stances spec). A full-steer turn at 10–11 m/s already swings its yaw rate by up
+    // to 0.7–1.0 rad/s; taken with the crouch's hold, the deepening swung it 1.9–2.3 rad/s, 2.3–2.6 times the held
+    // turn's. Held past about 2 s at full steer on flat water the board bleeds its speed and the rider falls into the
+    // turn with or without Compress, so the window is the bottom turn's second.
+    it.each([[8, 60], [10, 55], [11, 45]])('holds Compress taken mid-turn on flat water at %i m/s', (speed, turned) => {
+      const turn = (compress: number) => {
+        const board = new BoardBody();
+        board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
+        const rider = new AttachedRider(board.shape, { phase: 'standing' });
+        board.attach(rider);
+        const water = new PlaneWater();
+        run(board, water, 0.3);
+        let last = headingOf(board);
+        let heading = 0;
+        const track = () => {
+          const now = headingOf(board);
+          heading += Math.atan2(Math.sin(now - last), Math.cos(now - last));
+          last = now;
+        };
+        rider.steer = 1;
+        run(board, water, 0.5, track);
+        rider.compress = compress;
+        const rates: number[] = [];
+        run(board, water, 1, () => {
+          track();
+          rates.push(board.angularVelocity.y);
+        });
+        return { attached: rider.attached, heading, rates };
+      };
+      const held = turn(0);
+      const compressed = turn(1);
+      expect(compressed.attached).toBe(true);
+      expect(signFlips(compressed.rates)).toBeLessThanOrEqual(2);
+      expect(largestSwing(compressed.rates)).toBeLessThanOrEqual(2 * largestSwing(held.rates));
+      expect(Math.abs(degrees(compressed.heading))).toBeGreaterThan(turned);
     });
 
     // Review Focus 5: the pop-up's landing is unchanged, the body carried upright over its stance as before the bank;
