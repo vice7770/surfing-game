@@ -379,15 +379,25 @@ const RECOVER_TIME = 0.6;
  * PRESS_TIME, s; the knee starts KNEE_DELAY s after the press began and lands
  * over KNEE_TIME; released, both give back over RELEASE_TIME, letting the board
  * float the body up behind the wave (given back in 0.4 s, the body pulled itself
- * down onto the rising board harder than the prone grip holds, and let go). The input's depth
- * (analog) sets how far each goes; below DUCK_HELD it counts as let go, and
- * past DUCK_BUSY of the press the arms hold the rails (no strokes, no pop-up).
- * Coaching sources [A] only: provisional.
+ * down onto the rising board harder than the prone grip holds, and let go). Each
+ * eases in and out, settling within 0.5 % over its time (a critically damped
+ * follower): stopped dead at full press, the rising body flew off the board. The
+ * input's depth (analog) sets how far each goes. Coaching sources [A] only:
+ * provisional.
  */
-const PRESS_TIME = 0.25;
+const PRESS_TIME = 0.35;
 const KNEE_DELAY = 0.3;
 const KNEE_TIME = 0.25;
 const RELEASE_TIME = 1.0;
+/** A critically damped follower settles within 0.5 % in 7.43 / ω; closer than SNAP it lands on its target. */
+const SETTLE = 7.43;
+const SNAP = 0.01;
+/**
+ * Ducking, both hands are wrapped round the rails: they hold the board with up
+ * to DUCK_GRIP body weights (a person can hang their weight from two hands;
+ * provisional), where lying down paddling holds PRONE_GRIP.
+ */
+const DUCK_GRIP = 1.0;
 const DUCK_HELD = 0.05;
 const DUCK_BUSY = 0.1;
 /**
@@ -396,7 +406,9 @@ const DUCK_BUSY = 0.1;
  * rails let the upper body lean toward the high rail across their span, up to
  * DUCK_SHIFT, m, at DUCK_ROLL_SHIFT m per rad of roll and DUCK_ROLL_DAMPING m
  * per rad/s (a modelling choice: more than the body's ~0.5 m height over the
- * board per rad, which the prone hip shift cannot give).
+ * board per rad, which the prone hip shift cannot give). It leans no faster
+ * than the hips shift: thrown across at 1.5 m/s, the body kicked the light
+ * board into a faster roll the other way.
  */
 const DUCK_SHIFT = 0.2;
 const DUCK_ROLL_SHIFT = 1.0;
@@ -1876,7 +1888,7 @@ export class AttachedRider {
    */
   private projectHold(j: Vector3, h: number, local: Vector3, out: Vector3, q: Quaternion): Vector3 {
     const weight = this.mass * WATER.gravity * h;
-    const grip = PRONE_GRIP * weight;
+    const grip = (this.duck.press > DUCK_BUSY ? DUCK_GRIP : PRONE_GRIP) * weight;
     this.contact.centreOfPressure.set(local.x, deckHeight(this.shape, local.z), local.z);
     this.contact.frontShare = 0;
     this.loaded = j.y > BALANCE_LOAD * weight;
@@ -1914,27 +1926,41 @@ export class AttachedRider {
    */
   private duckStep(h: number): void {
     const { duck } = this;
-    const before = { press: duck.press, knee: duck.knee };
     if (!this.attached || this.phase !== 'prone' || this.phaseDuration > 0) {
       duck.press = 0;
       duck.knee = 0;
       duck.held = 0;
-    } else {
-      const target = Math.max(0, Math.min(1, this.duckDive));
-      const toward = (value: number, goal: number, rate: number) => (value < goal ? Math.min(goal, value + rate * h) : Math.max(goal, value - rate * h));
-      if (target > DUCK_HELD) {
-        duck.held += h;
-        duck.press = toward(duck.press, target, duck.press < target ? 1 / PRESS_TIME : 1 / RELEASE_TIME);
-        const knee = duck.held >= KNEE_DELAY ? target : 0;
-        duck.knee = toward(duck.knee, knee, duck.knee < knee ? 1 / KNEE_TIME : 1 / RELEASE_TIME);
-      } else {
-        duck.held = 0;
-        duck.press = toward(duck.press, 0, 1 / RELEASE_TIME);
-        duck.knee = toward(duck.knee, 0, 1 / RELEASE_TIME);
-      }
+      this.pressRate = 0;
+      this.kneeRate = 0;
+      return;
     }
-    this.pressRate = (duck.press - before.press) / h;
-    this.kneeRate = (duck.knee - before.knee) / h;
+    const target = Math.max(0, Math.min(1, this.duckDive));
+    const holding = target > DUCK_HELD;
+    duck.held = holding ? duck.held + h : 0;
+    const press = this.follow(duck.press, this.pressRate, holding ? target : 0, holding && duck.press < target ? PRESS_TIME : RELEASE_TIME, h);
+    duck.press = press.value;
+    this.pressRate = press.rate;
+    const kneeTarget = holding && duck.held >= KNEE_DELAY ? target : 0;
+    const knee = this.follow(duck.knee, this.kneeRate, kneeTarget, duck.knee < kneeTarget ? KNEE_TIME : RELEASE_TIME, h);
+    duck.knee = knee.value;
+    this.kneeRate = knee.rate;
+  }
+
+  /** One substep of a critically damped follower toward `target`, settling over `time`, kept within 0–1. */
+  private follow(value: number, rate: number, target: number, time: number, h: number): { value: number; rate: number } {
+    const omega = SETTLE / time;
+    const next = rate + (omega * omega * (target - value) - 2 * omega * rate) * h;
+    let after = value + next * h;
+    let afterRate = next;
+    if (Math.abs(target - after) < SNAP) {
+      after = target;
+      afterRate = (target - value) / h;
+    }
+    if (after <= 0 || after >= 1) {
+      after = Math.max(0, Math.min(1, after));
+      afterRate = (after - value) / h;
+    }
+    return { value: after, rate: afterRate };
   }
 
   /** The posture's parts, centre of mass and support for the current phase. */

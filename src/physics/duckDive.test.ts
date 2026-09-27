@@ -66,6 +66,30 @@ describe('duck-dive', () => {
     expect(full.deepest).toBeLessThan(1.0);
   });
 
+  /*
+   * Open check: the real surf zone's report had every diver let go (fixed for the
+   * press itself: it now eases in and out, and the hands grip the rails). From
+   * paddling speed on flat water the pair still rolls over about 1.5 s into the
+   * dive: under water the board has no waterplane, and the hull gives a
+   * submerged board neither a plate's face-on drag (it meets the flow with the
+   * planing coefficient, about 0.46 against a plate's 1.2) nor added roll
+   * inertia, so the raised rider rides an inverted pendulum the balance cannot
+   * catch. Faster leaning, reflex gains and a lower knee did not hold it. The
+   * fix is the submerged board's hydrodynamics, a board-solver change.
+   */
+  it.fails('keeps hold of the board when ducking from paddling speed', () => {
+    const { water, board, rider } = proneRider();
+    rider.paddle = true;
+    for (let i = 0; i < 240; i += 1) board.step(STEP, water);
+    rider.paddle = false;
+    rider.duckDive = 1;
+    for (let i = 0; i < 90; i += 1) board.step(STEP, water);
+    expect(rider.attached).toBe(true);
+    rider.duckDive = 0;
+    for (let i = 0; i < 120; i += 1) board.step(STEP, water);
+    expect(rider.attached).toBe(true);
+  });
+
   it('pushes shallower on a lighter press (analog)', () => {
     expect(duckDive(0.5).deepest).toBeLessThan(duckDive(1).deepest - 0.1);
   });
@@ -95,9 +119,10 @@ describe('duck-dive', () => {
     for (let i = 0; i < 30; i += 1) board.step(STEP, water); // 0.7 s
     expect(rider.duck.knee).toBeGreaterThan(0.5);
     rider.duckDive = 0;
-    for (let i = 0; i < 30; i += 1) board.step(STEP, water); // halfway through the 1 s release
+    for (let i = 0; i < 15; i += 1) board.step(STEP, water); // a quarter into the 1 s release: easing back
     expect(rider.duck.press).toBeGreaterThan(0.2);
-    for (let i = 0; i < 36; i += 1) board.step(STEP, water);
+    expect(rider.duck.press).toBeLessThan(0.9);
+    for (let i = 0; i < 51; i += 1) board.step(STEP, water);
     expect(rider.duck.press + rider.duck.knee).toBe(0);
   });
 

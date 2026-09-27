@@ -132,8 +132,10 @@ export type DuckPose = 'duckPress' | 'duckKnee';
  *   length, about 0.55 m, over the deck) and the legs trailing: the body's
  *   weight comes out of the water and forward onto the nose, about 0.3 m ahead
  *   of where it lies paddling;
- * - knee: the back knee on the tail pad and the other leg kicked up, the body
- *   forward and low over the board, arms still long: the tail goes under too.
+ * - knee: the back knee on the tail pad (on the stringer) and the other leg
+ *   kicked up over it, the body forward and low over the board, arms still
+ *   long: the tail goes under too. Pulled right down to the deck the body
+ *   floats back into the water and lets the board up.
  * Heights are illustrative, like the other postures. While ducking the body is
  * supported from the knee on the tail to the hands.
  */
@@ -142,8 +144,8 @@ function duckPlaces(pose: DuckPose): PartPlace[] {
     case 'duckPress':
       return [[0, 0.35, -0.2], [0, 0.55, 0.2], [0, 0.5, 0.45], [0.2, 0.3, 0.35], [-0.2, 0.3, 0.35], [0.1, 0.1, -0.75], [-0.1, 0.1, -0.75]];
     case 'duckKnee':
-      // Regular: the back (right, −x) knee on the tail pad, the front (left) leg kicked up.
-      return [[0, 0.3, -0.25], [0, 0.45, 0.15], [0, 0.4, 0.4], [0.2, 0.25, 0.3], [-0.2, 0.25, 0.3], [0.1, 0.5, -0.8], [-0.08, 0.1, -0.55]];
+      // Regular: the back (right) knee on the tail pad, on the stringer, and the front (left) leg kicked up over it.
+      return [[0, 0.3, -0.25], [0, 0.45, 0.15], [0, 0.4, 0.4], [0.2, 0.25, 0.3], [-0.2, 0.25, 0.3], [0.03, 0.5, -0.8], [-0.03, 0.1, -0.55]];
   }
 }
 
