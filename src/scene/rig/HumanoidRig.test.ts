@@ -274,3 +274,50 @@ describe('the trunk', () => {
     expect(hipsTurn).toBeLessThan(turn(straight.chest, left.chest));
   });
 });
+
+// Part B: in a turn the leading arm (the front foot's side) points where the head looks; a hand reaching down to the
+// water (E's, or Compress's inside hand) is reached, the spine bending toward it (de Sousa 2022: the leading arm to the
+// lip; the inside hand to the water).
+describe('the arms', () => {
+  const board = new Vector3(3, 0.1, -40);
+  const level = new Quaternion();
+  const solved = (stance: 'regular' | 'goofy', yawRate: number, move?: (state: ReturnType<typeof createRiderVisualState>, rig: HumanoidRig) => void) => {
+    const { bones } = createTestHumanoid();
+    const before = boneLengths(bones);
+    const rig = new HumanoidRig(bones);
+    const state = posturePoints('standing', stance, board, level, createRiderVisualState());
+    Object.assign(state, { yawRate, speed: 7 });
+    rig.solve(state);
+    if (move) {
+      move(state, rig);
+      rig.solve(state);
+    }
+    for (const [name, length] of boneLengths(bones)) expect(length, name).toBeCloseTo(before.get(name)!, 9);
+    return { rig, state };
+  };
+  const aim = (rig: HumanoidRig, side: Side, toward: Vector3) =>
+    (rig.joints.wrist[side].clone().sub(rig.joints.shoulder[side]).angleTo(toward) * 180) / Math.PI;
+
+  it.each([['regular', -2, 'left'], ['goofy', 2, 'right']] as const)('points the leading arm where the head looks, %s', (stance, yawRate, lead) => {
+    const { rig } = solved(stance, yawRate);
+    expect(aim(rig, lead, rig.look)).toBeLessThan(25);
+  });
+
+  it('keeps the physics’ hands going straight, and the rear hand in a turn', () => {
+    const straight = solved('regular', 0);
+    for (const side of SIDES) expect(aim(straight.rig, side, straight.state.points[handPoint(side)].clone().sub(straight.rig.joints.shoulder[side]))).toBeLessThan(3);
+    const turning = solved('regular', -2);
+    expect(aim(turning.rig, 'right', turning.state.points[POINT.rightHand].clone().sub(turning.rig.joints.shoulder.right))).toBeLessThan(3);
+  });
+
+  it('bends toward a hand reaching down past the arm’s length, and reaches it', () => {
+    let target = new Vector3();
+    const { rig } = solved('regular', 0, (state, first) => {
+      const shoulder = first.joints.shoulder.right;
+      const tail = new Vector3().subVectors(state.points[POINT.rightFoot], state.points[POINT.leftFoot]).setY(0).normalize();
+      target = shoulder.clone().addScaledVector(tail.multiplyScalar(0.6).add(new Vector3(0, -0.8, 0)).normalize(), first.armLength + 0.15);
+      state.points[POINT.rightHand].copy(target);
+    });
+    expect(rig.joints.wrist.right.distanceTo(target)).toBeLessThan(0.05);
+  });
+});
