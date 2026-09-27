@@ -156,6 +156,22 @@ describe('WorkerSurfZone', () => {
     expect(port.terminated).toBe(true);
   });
 
+  // L2: a lesson's placement asked for with no steps rides in the next advance, and only that one.
+  it('carries a placement into the next advance once', async () => {
+    const port = new FakePort();
+    const host = new WorkerSurfZone(config, port, { rider: true });
+    await host.ready;
+    const place = { x: 1, z: -50, heading: 0, speed: 2, phase: 'standing' as const };
+    host.advance(0, { paddle: false, popUp: false, steer: 0, retry: false, place });
+    host.advance(1, { paddle: false, popUp: false, steer: 0, retry: false });
+    await settle();
+    host.advance(1, { paddle: false, popUp: false, steer: 0, retry: false });
+    await settle();
+    const places = port.requests.filter((request) => request.type === 'advance').map((request) => request.type === 'advance' && request.input?.place);
+    expect(places).toEqual([place, undefined]);
+    host.dispose();
+  });
+
   // Like the page's own step accumulator: a worker that falls behind drops time instead of lagging ever further.
   it('caps the steps it queues while the worker is busy', async () => {
     const port = new FakePort();

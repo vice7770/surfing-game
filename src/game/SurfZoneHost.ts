@@ -79,7 +79,7 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
     this.refresh();
   }
 
-  private pendingPress = { popUp: false, retry: false };
+  private pendingPress: { popUp: boolean; retry: boolean; place?: RideRequest['place'] } = { popUp: false, retry: false };
   /** Other boards' pushes waiting for the next step (spec N1). */
   private pendingReactions: number[] = [];
   readonly outstandingSteps = 0;
@@ -88,6 +88,7 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
     if (input) {
       this.pendingPress.popUp ||= input.popUp;
       this.pendingPress.retry ||= input.retry;
+      this.pendingPress.place = input.place ?? this.pendingPress.place;
     }
     if (reactions) for (let i = 0; i < reactions.length; i += 1) this.pendingReactions.push(reactions[i]);
     if (steps <= 0) return;
