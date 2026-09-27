@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { defaultLabSettings } from '../game/waveLab/labSettings';
 import { forecastSurf } from '../wave/surfForecast';
-import { labSliders, practiceNote, spreadName, stormArrives, windWords } from './labPanelModel';
+import { labSliders, practiceNote, spreadName, stormArrives, surfForecastNote, windWords } from './labPanelModel';
 import { formatSurfRange } from './surfHeight';
 
 describe('lab panel model', () => {
-  it('shows the surf a buoy height will make beside the Height slider (wave sizes)', () => {
+  it('says under the swell sliders what surf the buoy swell will make, following its height and period (wave sizes)', () => {
     const physical = { ...defaultLabSettings().physical, source: 'buoy' as const, spot: 'reef' as const, significantHeight: 3, peakPeriod: 14 };
-    const height = labSliders(physical, 'metric').find((slider) => slider.key === 'significantHeight')!;
     const surf = forecastSurf('reef', 3, 14);
-    expect(height.text).toBe(`3.0 m · surf ${formatSurfRange(surf.typical, surf.sets, 'metric', 'face')}`);
-    expect(labSliders(physical, 'imperial', 'hawaiian').find((slider) => slider.key === 'significantHeight')!.text).toContain('Hawaiian');
+    expect(surfForecastNote(physical, 'metric', 'face')).toBe(`Surf ${formatSurfRange(surf.typical, surf.sets, 'metric', 'face')} (forecast)`);
+    expect(surfForecastNote({ ...physical, peakPeriod: 18 }, 'metric', 'face')).not.toBe(surfForecastNote(physical, 'metric', 'face'));
+    expect(surfForecastNote(physical, 'imperial', 'hawaiian')).toContain('Hawaiian');
   });
 
   it('names the local wind the way surfers do', () => {
@@ -44,8 +44,7 @@ describe('lab panel model', () => {
   it('formats every slider’s value for its output', () => {
     const sliders = labSliders({ ...defaultLabSettings().physical, source: 'buoy', significantHeight: 1.4, tide: -0.5 }, 'metric');
     const shown = Object.fromEntries(sliders.map((slider) => [slider.key, slider.text]));
-    const surf = forecastSurf(defaultLabSettings().physical.spot, 1.4, defaultLabSettings().physical.peakPeriod);
-    expect(shown.significantHeight).toBe(`1.4 m · surf ${formatSurfRange(surf.typical, surf.sets, 'metric', 'face')}`);
+    expect(shown.significantHeight).toBe('1.4 m');
     expect(shown.tide).toBe('-0.5 m');
     expect(shown.windSpeed).toBe('Calm');
   });

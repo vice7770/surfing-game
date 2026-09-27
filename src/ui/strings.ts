@@ -80,7 +80,7 @@ export const EN = {
   'lab.info.steady': 'steady swell',
   'surf.measuring': 'measuring…',
   'surf.forecast': 'Surf: {surf}',
-  'lab.surfForecast': '{height} · surf {surf}',
+  'lab.surfForecast': 'Surf {surf} (forecast)',
   'pause.surf': 'Surf: {surf}',
   'surf.hawaiian': '{low}–{high} ft Hawaiian',
   'surf.name.ankle': 'ankle high',

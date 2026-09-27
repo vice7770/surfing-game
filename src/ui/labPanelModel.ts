@@ -45,20 +45,20 @@ export function practiceNote(units: Units): string {
   });
 }
 
-/** The buoy height with the surf it will make at the spot (the wave-sizes spec): "3.0 m · surf 4.3–5.4 m". */
-function heightText(physical: PhysicalSettings, units: Units, scale: SurfScale): string {
+/** The surf a buoy swell will make at the spot (the wave-sizes spec), for the line under the swell sliders: "Surf 4.3–5.4 m (forecast)". */
+export function surfForecastNote(physical: PhysicalSettings, units: Units, scale: SurfScale): string {
   const { typical, sets } = forecastSurf(physical.spot, physical.significantHeight, physical.peakPeriod);
-  return t('lab.surfForecast', { height: formatHeight(physical.significantHeight, units), surf: formatSurfRange(typical, sets, units, scale) });
+  return t('lab.surfForecast', { surf: formatSurfRange(typical, sets, units, scale) });
 }
 
 /** The sliders for these settings: the chosen swell source's own, the direction (fixed by Practice), tide and wind. */
-export function labSliders(physical: PhysicalSettings, units: Units, scale: SurfScale = 'face'): LabSlider[] {
+export function labSliders(physical: PhysicalSettings, units: Units): LabSlider[] {
   const swell = (key: SliderKey, label: string, min: number, max: number, step: number, text: string): LabSlider =>
     ({ key, group: 'swell', label, min, max, step, value: physical[key], text });
   const sliders: LabSlider[] = [];
   if (physical.source === 'buoy') {
     sliders.push(
-      swell('significantHeight', t('lab.height'), 0.3, 3, 0.1, heightText(physical, units, scale)),
+      swell('significantHeight', t('lab.height'), 0.3, 3, 0.1, formatHeight(physical.significantHeight, units)),
       swell('peakPeriod', t('lab.period'), 6, 18, 0.5, `${physical.peakPeriod.toFixed(1)} s`),
       swell('spread', t('lab.spread'), 0, 1, 0.05, spreadName(physical.spread)),
     );
