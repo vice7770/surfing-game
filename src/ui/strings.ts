@@ -323,6 +323,7 @@ export const EN = {
   'ride.reason.lostFace': 'The wave moved on',
   'ride.reason.inside': 'Reached the inside',
   'ride.reason.kickedOut': 'Kicked out',
+  'school.miss.time': "Time's up",
   // Online (N1).
   'online.title': 'Multiplayer',
   'online.lead': 'Surf with friends: make a room and share its link, or join one.',
