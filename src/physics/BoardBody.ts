@@ -453,6 +453,17 @@ export class BoardBody implements BoardContactBody {
     return 0.5 * this.mass * this.velocity.lengthSq() + 0.5 * (w.x * Iw[0] + w.y * Iw[1] + w.z * Iw[2]);
   }
 
+  /** Angular momentum about `about`, kg·m²/s. */
+  angularMomentum(about: Vector3, out = new Vector3()): Vector3 {
+    out.subVectors(this.centerOfMass, about).cross(this.velocity.clone().multiplyScalar(this.mass));
+    const w = this.angularVelocity;
+    const I = this.worldInertia;
+    out.x += I[0] * w.x + I[1] * w.y + I[2] * w.z;
+    out.y += I[3] * w.x + I[4] * w.y + I[5] * w.z;
+    out.z += I[6] * w.x + I[7] * w.y + I[8] * w.z;
+    return out;
+  }
+
   /** Height of the lowest point of the hull slab, m. */
   lowestPoint(): number {
     this.updateRotation();

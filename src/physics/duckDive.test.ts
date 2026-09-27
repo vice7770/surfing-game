@@ -5,7 +5,7 @@ import { BoardBody } from './BoardBody';
 import { REFERENCE_BOARD } from './boardReference';
 import { buildBoardShape, type BoardShape } from './boardShape';
 import { PlaneWater } from './PlaneWater';
-import { deckHeight } from './riderPosture';
+import { deckHeight, type StanceName } from './riderPosture';
 
 const STEP = 1 / 60;
 
@@ -56,6 +56,78 @@ describe('duck-dive', () => {
     }
     expect(lifted).toBe(0);
     expect(rider.attached).toBe(true);
+  });
+
+  it('the press has angular momentum of its own: the chest rising turns the body nose-up about its centre', () => {
+    const { water, board, rider } = proneRider();
+    rider.duckDive = 1;
+    let most = 0;
+    for (let i = 0; i < 18; i += 1) {
+      board.step(STEP, water);
+      const local = rider.postureMomentum.clone().applyQuaternion(board.orientation.clone().invert());
+      if (Math.abs(local.x) > Math.abs(most)) most = local.x;
+    }
+    // About the board's across axis (+x), nose-up is negative.
+    expect(most).toBeLessThan(-0.5);
+  });
+
+  /** A prone pair in free fall (no water), pressing for 0.3 s: the board's pitch change, rad, and the pair's worst angular momentum about its centre of mass against the press's own. */
+  function pressInFreeFall(stance: StanceName = 'regular') {
+    const board = new BoardBody();
+    board.place(new Vector3(0, 5, 0));
+    const rider = new AttachedRider(board.shape, { phase: 'prone', stance });
+    board.attach(rider);
+    const water = new PlaneWater({ inside: () => false });
+    const pitch = () => Math.asin(new Vector3(0, 0, 1).applyQuaternion(board.orientation).y);
+    const start = pitch();
+    let most = 0;
+    let drift = 0;
+    rider.duckDive = 1;
+    for (let i = 0; i < 18; i += 1) {
+      board.step(STEP, water);
+      const about = board.centerOfMass.clone().multiplyScalar(board.mass).addScaledVector(rider.position, rider.mass).divideScalar(board.mass + rider.mass);
+      const total = board.angularMomentum(about).add(rider.angularMomentum(about));
+      most = Math.max(most, rider.postureMomentum.length());
+      drift = Math.max(drift, total.length());
+    }
+    return { turned: pitch() - start, most, drift, attached: rider.attached };
+  }
+
+  it('turns the board nose-down as the body presses up, keeping the pair\'s angular momentum (free fall)', () => {
+    const { turned, most, drift, attached } = pressInFreeFall();
+    expect(attached).toBe(true);
+    expect(most).toBeGreaterThan(0.5);
+    expect(drift).toBeLessThan(0.05 * most);
+    expect(turned).toBeLessThan(-0.01); // nose-down
+  });
+
+  it('turns the board nose-down the same way for a goofy rider', () => {
+    const regular = pressInFreeFall('regular').turned;
+    const goofy = pressInFreeFall('goofy').turned;
+    expect(goofy).toBeLessThan(-0.01);
+    expect(Math.abs(goofy - regular)).toBeLessThan(0.05 * Math.abs(regular));
+  });
+
+  it('keeps the board and rider energy ledger closed through a duck-dive', () => {
+    const { water, board, rider } = proneRider();
+    const work = () => Object.values(board.work).reduce((a, b) => a + b, 0) + Object.values(rider.work).reduce((a, b) => a + b, 0);
+    const energy = () => board.kineticEnergy() + rider.kineticEnergy();
+    const [before, workBefore] = [energy(), work()];
+    for (let i = 0; i < 3 / STEP; i += 1) {
+      rider.duckDive = i * STEP < 1.5 ? 1 : 0;
+      board.step(STEP, water);
+    }
+    const scale = (board.mass + rider.mass) * 9.81 * 0.3;
+    expect(Math.abs(energy() - before - (work() - workBefore)) / scale).toBeLessThan(0.01);
+  });
+
+  it('has no posture momentum while paddling or lying still', () => {
+    const { water, board, rider } = proneRider();
+    rider.paddle = true;
+    for (let i = 0; i < 60; i += 1) {
+      board.step(STEP, water);
+      expect(rider.postureMomentum.length()).toBe(0);
+    }
   });
 
   it('comes back up with the rider on after a full push, deeper than lying awash', () => {

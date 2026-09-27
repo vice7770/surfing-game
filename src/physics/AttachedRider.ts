@@ -574,9 +574,18 @@ export class AttachedRider {
   /** The press's and the knee's paths, and their rates. */
   private readonly pressTrack = new MinimumJerkTrack();
   private readonly kneeTrack = new MinimumJerkTrack();
+  /**
+   * While ducking, the angular momentum of the body's own change of shape (its
+   * parts moving on the deck at the press's and the knee's rates), about its
+   * centre of mass, world frame, kg·m²/s; and its change over the latest
+   * substep, which the pair's solve takes from the board (the press-momentum
+   * spec: the press pushes the nose).
+   */
+  readonly postureMomentum = new Vector3();
+  private readonly postureMomentumChange = new Vector3();
   /** The duck-dive postures, and the centre of mass each moves by (press from prone, knee from press), board frame. */
   /** The duck-dive postures for each stance (the stance changes between rides), with the support and each stage's centre-of-mass move. */
-  private readonly ducks: Record<StanceName, { press: Float64Array; knee: Float64Array; support: SupportRegion; shiftPress: Vector3; shiftKnee: Vector3 }>;
+  private readonly ducks: Record<StanceName, { prone: Float64Array; press: Float64Array; knee: Float64Array; support: SupportRegion; shiftPress: Vector3; shiftKnee: Vector3 }>;
   /** Standing, weight along the board: −1 (back, on the tail) to 1 (forward). */
   trim = 0;
   /** Standing, how deep the crouch: 0 (riding stance) to 1 (deepest). */
@@ -760,11 +769,12 @@ export class AttachedRider {
     const ducks = (stance: StanceName) => {
       const press = duckPose(shape, 'duckPress', stance);
       const knee = duckPose(shape, 'duckKnee', stance);
-      const prone = postureCenter(riderPose(shape, 'prone', stance).parts, this.partMasses);
+      const lying = riderPose(shape, 'prone', stance);
+      const prone = postureCenter(lying.parts, this.partMasses);
       const pressed = postureCenter(press.parts, this.partMasses);
       const kneeling = postureCenter(knee.parts, this.partMasses);
       return {
-        press: press.parts, knee: knee.parts, support: press.support,
+        prone: lying.parts, press: press.parts, knee: knee.parts, support: press.support,
         shiftPress: new Vector3(pressed.x - prone.x, pressed.y - prone.y, pressed.z - prone.z),
         shiftKnee: new Vector3(kneeling.x - pressed.x, kneeling.y - pressed.y, kneeling.z - pressed.z),
       };
@@ -909,6 +919,8 @@ export class AttachedRider {
     this.duck.held = 0;
     this.pressTrack.reset();
     this.kneeTrack.reset();
+    this.postureMomentum.set(0, 0, 0);
+    this.postureMomentumChange.set(0, 0, 0);
     this.balance.set(0, 0, 0);
     this.balanceRate.set(0, 0, 0);
     // A new mount starts from the neutral stance, whatever the body was doing before (a relaunch mid-carve).
@@ -977,6 +989,18 @@ export class AttachedRider {
   get balanceReserve(): number {
     if (this.upright) return this.balanceMargin;
     return Math.max(0, 1 - this.postureError / RECOVERABLE_ERROR);
+  }
+
+  /** Angular momentum about `about`, kg·m²/s: the centre of mass's, and lying down the body's turn with the board and its own change of shape. */
+  angularMomentum(about: Vector3, out = new Vector3()): Vector3 {
+    out.subVectors(this.position, about).cross(this.velocity.clone().multiplyScalar(this.mass));
+    if (this.upright) return out;
+    const w = this.angularVelocity;
+    const I = this.worldInertia;
+    out.x += I[0] * w.x + I[1] * w.y + I[2] * w.z;
+    out.y += I[3] * w.x + I[4] * w.y + I[5] * w.z;
+    out.z += I[6] * w.x + I[7] * w.y + I[8] * w.z;
+    return out.add(this.postureMomentum);
   }
 
   kineticEnergy(): number {
@@ -1228,6 +1252,7 @@ export class AttachedRider {
     this.swayStep(h);
     this.updatePosture();
     this.updateInertia(board);
+    this.postureMomentumStep(board);
     this.boardVelocity.copy(board.velocity);
     this.boardSpin.copy(board.angularVelocity);
     this.arm.subVectors(this.position, board.centerOfMass);
@@ -1602,6 +1627,10 @@ export class AttachedRider {
       rhs[3] += h * this.waterMoment.x;
       rhs[4] += h * this.waterMoment.y;
       rhs[5] += h * this.waterMoment.z;
+      // The ducking body's change of shape turns the pair: the composite's momentum, I Δω + ΔL, is unchanged by it.
+      rhs[3] -= this.postureMomentumChange.x;
+      rhs[4] -= this.postureMomentumChange.y;
+      rhs[5] -= this.postureMomentumChange.z;
       const w = this.boardSpin;
       const own = this.angularVelocity;
       const dx = w.x - own.x;
@@ -1753,6 +1782,9 @@ export class AttachedRider {
         this.angularVelocity.set(0, board.angularVelocity.y, 0).addScaledVector(this.rollAxis, this.bankSpeedAfter / this.legLength);
       } else {
         this.angularImpulseWork(board);
+        // The couple of the body's change of shape did work on the pair's turn: the rider's, on the board.
+        const d = this.postureMomentumChange;
+        board.work.rider -= (d.x * (this.boardSpin.x + board.angularVelocity.x) + d.y * (this.boardSpin.y + board.angularVelocity.y) + d.z * (this.boardSpin.z + board.angularVelocity.z)) / 2;
         this.angularVelocity.copy(board.angularVelocity);
       }
       this.inContact = true;
@@ -2014,6 +2046,37 @@ export class AttachedRider {
     this.kneeTrack.retarget(kneeTarget, kneeTarget > duck.knee ? KNEE_TIME : RELEASE_TIME);
     this.kneeTrack.step(h);
     duck.knee = this.kneeTrack.value;
+  }
+
+  /** The ducking posture's own angular momentum this substep (`postureMomentum`) and its change since the last. */
+  private postureMomentumStep(board: BoardBody): void {
+    const change = this.postureMomentumChange.copy(this.postureMomentum);
+    this.postureMomentum.set(0, 0, 0);
+    const pressRate = this.pressTrack.rate;
+    const kneeRate = this.kneeTrack.rate;
+    if (this.attached && this.phase === 'prone' && this.phaseDuration === 0 && (pressRate !== 0 || kneeRate !== 0)) {
+      // Σ m (r − c) × u: the centre of mass's own rate drops out, as Σ m (r − c) = 0.
+      const { prone, press, knee } = this.ducks[this.stance];
+      const c = this.localCenter;
+      let lx = 0;
+      let ly = 0;
+      let lz = 0;
+      for (let i = 0; i < RIDER_PARTS.length; i += 1) {
+        const m = this.partMasses[i];
+        const k = i * 3;
+        const ux = pressRate * (press[k] - prone[k]) + kneeRate * (knee[k] - press[k]);
+        const uy = pressRate * (press[k + 1] - prone[k + 1]) + kneeRate * (knee[k + 1] - press[k + 1]);
+        const uz = pressRate * (press[k + 2] - prone[k + 2]) + kneeRate * (knee[k + 2] - press[k + 2]);
+        const rx = this.parts[k] - c.x;
+        const ry = this.parts[k + 1] - c.y;
+        const rz = this.parts[k + 2] - c.z;
+        lx += m * (ry * uz - rz * uy);
+        ly += m * (rz * ux - rx * uz);
+        lz += m * (rx * uy - ry * ux);
+      }
+      this.postureMomentum.set(lx, ly, lz).applyQuaternion(board.orientation);
+    }
+    change.subVectors(this.postureMomentum, change);
   }
 
   /** The posture's parts, centre of mass and support for the current phase. */
