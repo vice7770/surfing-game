@@ -15,7 +15,7 @@ export interface LessonFrame {
   speed: number;
   /** Radians from +z toward +x. */
   heading: number;
-  input: { steer: number; trim: number; crouch: number; hand: boolean; paddle: boolean };
+  input: { steer: number; trim: number; crouch: number; compress: number; hand: boolean; paddle: boolean };
   wave: { valid: boolean; faceFraction: number; crestBreaking: number; aheadOfCrest: number };
   /** The ride's latest manoeuvre, as the ride analysis reads it, and when in the ride it began, s. */
   live?: { kind: ManeuverKind; start: number };
@@ -68,6 +68,18 @@ const PUMPS = 3;
 const CROUCH_DOWN = 0.6;
 const CROUCH_UP = 0.2;
 const PUMP_WINDOW = 8;
+/**
+ * Bottom turn (the stances spec, de Sousa 2022's phases), in order in one ride: a crouch of at least DROP_CROUCH
+ * without Compress while the face fraction falls (the drop); Compress of at least COMPRESS_HELD with a lean of at
+ * least BOTTOM_LEAN no higher than BOTTOM_FACE on the face (the turn; taken higher, the sequence starts over);
+ * Compress back under RELEASED while the face fraction rises (the extension up the face); and the ride analysis
+ * names a bottom turn begun after the drop's crouch.
+ */
+const DROP_CROUCH = 0.5;
+const COMPRESS_HELD = 0.5;
+const BOTTOM_LEAN = 0.5;
+const BOTTOM_FACE = 0.35;
+const RELEASED = 0.2;
 /** Hand: held HAND_TIME s while the board slows HAND_SLOW m/s and the curl closes in HAND_CLOSER m. */
 const HAND_TIME = 1;
 const HAND_SLOW = 1;
@@ -171,6 +183,44 @@ class TurnGoal implements LessonGoal {
   }
 }
 
+/** Bottom turn: crouch on the drop, compress with a lean at the bottom, release it climbing, and the ride names the turn. */
+class BottomTurnGoal implements LessonGoal {
+  private stage = 0;
+  private named = false;
+  /** The start of the ride's latest manoeuvre at the drop's crouch: a bottom turn must begin after it. */
+  private before = -Infinity;
+  private face = Number.NaN;
+  private passed = false;
+
+  update(frame: LessonFrame): GoalState {
+    if (!this.passed) {
+      if (frame.phase !== 'standing' || !frame.wave.valid) {
+        this.stage = 0;
+        this.named = false;
+        this.before = -Infinity;
+        this.face = Number.NaN;
+      } else {
+        const { input } = frame;
+        const face = frame.wave.faceFraction;
+        const falling = face < this.face;
+        const rising = face > this.face;
+        this.face = face;
+        if (this.stage === 0 && falling && input.crouch >= DROP_CROUCH && input.compress < RELEASED) {
+          this.stage = 1;
+          this.before = frame.live?.start ?? -Infinity;
+        } else if (this.stage === 1 && input.compress >= COMPRESS_HELD) {
+          this.stage = face <= BOTTOM_FACE && Math.abs(input.steer) >= BOTTOM_LEAN ? 2 : face > BOTTOM_FACE ? 0 : 1;
+        } else if (this.stage === 2 && rising && input.compress < RELEASED) {
+          this.stage = 3;
+        }
+        if (this.stage >= 1 && frame.live?.kind === 'bottom turn' && frame.live.start > this.before) this.named = true;
+        this.passed = this.stage === 3 && this.named;
+      }
+    }
+    return { progress: this.passed ? 1 : Math.min(0.99, this.stage / 3), passed: this.passed, count: { done: this.passed ? 3 : this.stage, of: 3 } };
+  }
+}
+
 /** Hand: in the face long enough to slow the board and let the curl catch up. */
 class HandGoal implements LessonGoal {
   private held = 0;
@@ -254,7 +304,7 @@ export const LESSONS: readonly Lesson[] = [
   { id: 'lean', start: 'pocket', view: 'behind', actions: steer, goal: () => new LeanGoal(), hint: 'lean' },
   { id: 'trim', start: 'pocket', view: 'side', actions: ['trimForward', 'trimBack'], goal: () => new TrimGoal(), hint: 'trim' },
   { id: 'crouch', start: 'pocket', view: 'side', actions: ['crouch'], goal: () => new CrouchGoal(), hint: 'crouch' },
-  { id: 'bottomTurn', start: 'pocket', view: 'front', actions: [...steer, 'crouch'], goal: () => new TurnGoal(['bottom turn']) },
+  { id: 'bottomTurn', start: 'pocket', view: 'front', actions: [...steer, 'crouch', 'compress'], goal: () => new BottomTurnGoal() },
   { id: 'topTurn', start: 'pocket', view: 'front', actions: [...steer, 'trimBack'], goal: () => new TurnGoal(['top turn', 'snap']) },
   { id: 'hand', start: 'pocket', view: 'behind', actions: ['hand'], goal: () => new HandGoal(), hint: 'hand' },
   { id: 'pocket', start: 'pocket', view: 'behind', actions: ['trimForward', 'trimBack', ...steer], goal: () => new PocketGoal() },

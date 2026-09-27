@@ -5,7 +5,9 @@ import type { PopUpReport, RiderSeparation } from '../physics/AttachedRider';
 import { BoardBody } from '../physics/BoardBody';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { RideSession, type RideInput, type RiderPlacement } from '../physics/RideSession';
+import type { StanceName } from '../physics/riderPosture';
 import { createWaterSample } from '../physics/SurfWater';
+import { inTakeOffWindow } from '../physics/takeOffCue';
 import { WaveFrameGauge, type WaveFrame } from '../physics/waveFrame';
 import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
@@ -99,6 +101,8 @@ export interface SurfZoneRunnerOptions {
   /** Online (spec N1): where the rider first waits, m along shore from the take-off and seaward of the break line. */
   spawnAlong?: number;
   spawnOut?: number;
+  /** The player's stance for the first ride (the stances spec); later rides take the request's. */
+  stance?: StanceName;
 }
 
 /** The player's request for a batch of steps: the ride's input, and a quick retry. */
@@ -110,6 +114,8 @@ export interface RideRequest extends RideInput {
   place?: RiderPlacement;
   /** The pocket reflex rides with the player (the riding-the-wave spec). */
   pocketReflex?: boolean;
+  /** The player's stance, taken up at the next ride (a retry or a placement), never mid-ride. */
+  stance?: StanceName;
 }
 
 /** The rider's phases in snapshot order, `fallen` once in the water. */
@@ -273,7 +279,7 @@ export class SurfZoneRunner {
     if (options.rider) {
       const direction = (config.directionDegrees * Math.PI) / 180;
       this.gauge = new WaveFrameGauge({ directionX: Math.sin(direction), directionZ: Math.cos(direction) });
-      this.session = new RideSession();
+      this.session = new RideSession({ stance: options.stance });
       this.board = this.session.board;
     } else if (options.board) {
       this.board = new BoardBody();
@@ -362,6 +368,9 @@ export class SurfZoneRunner {
     if (session) {
       // A press (pop-up, retry) counts once per batch; held controls apply to every step.
       const request = step === 0 ? input : { ...input, popUp: false, retry: false, place: undefined };
+      // The stance changes between rides: at a retry or a placement, or while the rider is off the board (a fallen
+      // rider climbs back on without a retry, and nothing is drawn from the rider meanwhile).
+      if ((request.retry || request.place || !session.rider.attached) && request.stance) session.rider.stance = request.stance;
       if (request.retry) {
         if (request.spawnAt) this.rideLineup.set(request.spawnAt.x, 0, request.spawnAt.z);
         this.rideResets += 1;
@@ -424,6 +433,17 @@ export class SurfZoneRunner {
   /** The rider against the wave after the latest step (the gauge's own frame, overwritten each step). */
   get waveFrame(): WaveFrame | undefined {
     return this.wave;
+  }
+
+  /**
+   * The pop-up cue the HUD shows, lying down: planing down a face (the rider's
+   * own cue), or caught by the wave high on it (the take-off window, read from
+   * the gauge's latest frame).
+   */
+  get cue(): boolean {
+    const { session } = this;
+    if (!session || session.phase !== 'prone') return false;
+    return session.rider.popUpCue || (this.wave !== undefined && inTakeOffWindow(this.wave));
   }
 
   /** The rider (on the board, or fallen) against the wave under it. */
@@ -533,7 +553,7 @@ export class SurfZoneRunner {
     if (session) {
       for (let i = 0; i < 7; i += 1) session.renderPoint(i, this.point).toArray(buffers.rider, RIDER_SNAPSHOT.points + i * 3);
       buffers.rider[RIDER_SNAPSHOT.phase] = RIDER_PHASES.indexOf(session.phase);
-      buffers.rider[RIDER_SNAPSHOT.cue] = session.rider.popUpCue ? 1 : 0;
+      buffers.rider[RIDER_SNAPSHOT.cue] = this.cue ? 1 : 0;
       buffers.rider[RIDER_SNAPSHOT.present] = 1;
       buffers.rider[RIDER_SNAPSHOT.heading] = session.heading;
       buffers.rider[RIDER_SNAPSHOT.duck] = session.rider.attached ? session.rider.duck.press : 0;
@@ -608,7 +628,7 @@ export class SurfZoneRunner {
         phase: this.session.phase,
         speed: Math.hypot(this.session.board.velocity.x, this.session.board.velocity.z),
         boardSpeed: this.session.board.velocity.length(),
-        cue: this.session.rider.popUpCue,
+        cue: this.cue,
         popUp: { ...this.session.rider.popUpReport },
         separation: this.session.separation,
         resets: this.rideResets,

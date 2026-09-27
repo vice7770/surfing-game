@@ -5,7 +5,7 @@ import { lessonById } from './lessons';
 const STEP = 1 / 30;
 const frame = (patch: Partial<FlowFrame> = {}): FlowFrame => ({
   dt: STEP, phase: 'standing', speed: 6, heading: 0,
-  input: { steer: 0, trim: 0, crouch: 0, hand: false, paddle: false },
+  input: { steer: 0, trim: 0, crouch: 0, compress: 0, hand: false, paddle: false },
   wave: { valid: true, faceFraction: 0.5, crestBreaking: 0.2, aheadOfCrest: 5 },
   ...patch,
 });

@@ -20,6 +20,7 @@ import { SteamControllerDriver } from './game/steam/SteamControllerDriver';
 import { frameDue } from './game/frameLimit';
 import { resolveGraphics, type ResolvedGraphics } from './game/Graphics';
 import { schoolPocketReflex, showsPocketReflex } from './game/pocketReflex';
+import type { StanceName } from './physics/riderPosture';
 import { SettingsStore, defaultSettings, type GameplaySettings } from './game/Settings';
 import { SURFER_BODIES, type SurferSettings } from './game/SurferChoice';
 import { DEV_TOOLS, devFlag, devParam } from './devTools';
@@ -83,12 +84,12 @@ const waterSheetRequested = devFlag('waterSheet');
  */
 const inPage = typeof Worker === 'undefined' || devFlag('inpage');
 /** A surf zone with a rider the player controls, or none (the menu's waves, plan P8). */
-function surfZoneFactory(rider: boolean): SurfZoneHostFactory {
+function surfZoneFactory(rider: boolean, stance: StanceName): SurfZoneHostFactory {
   // `?renderSpacing=0.5` draws the water on a finer grid, for close recordings (dev flag).
   const renderSpacing = Number(devParam('renderSpacing')) || undefined;
   return inPage
-    ? (config) => new LocalSurfZone(config, { rider, renderSpacing })
-    : (config) => new WorkerSurfZone(config, undefined, { rider, renderSpacing });
+    ? (config) => new LocalSurfZone(config, { rider, renderSpacing, stance })
+    : (config) => new WorkerSurfZone(config, undefined, { rider, renderSpacing, stance });
 }
 /**
  * Online (spec N1): the rider starts at `spawn` (m along shore from the take-off, and
@@ -96,15 +97,15 @@ function surfZoneFactory(rider: boolean): SurfZoneHostFactory {
  * room's clock.
  */
 /** Surf School (spec L2): a surf zone with the player's rider, starting from a recorded sea. */
-function recordedSurfZoneFactory(sea: Uint8Array): SurfZoneHostFactory {
+function recordedSurfZoneFactory(sea: Uint8Array, stance: StanceName): SurfZoneHostFactory {
   return inPage
-    ? (config) => new LocalSurfZone(config, { rider: true }, sea)
-    : (config) => new WorkerSurfZone(config, undefined, { rider: true }, { sea });
+    ? (config) => new LocalSurfZone(config, { rider: true, stance }, sea)
+    : (config) => new WorkerSurfZone(config, undefined, { rider: true, stance }, { sea });
 }
-function onlineSurfZoneFactory(spawn: { spawnAlong: number; spawnOut: number }, sea?: Uint8Array): SurfZoneHostFactory {
+function onlineSurfZoneFactory(spawn: { spawnAlong: number; spawnOut: number }, sea: Uint8Array | undefined, stance: StanceName): SurfZoneHostFactory {
   return inPage
-    ? (config) => new LocalSurfZone(config, { rider: true, ...spawn }, sea)
-    : (config) => new WorkerSurfZone(config, undefined, { rider: true, ...spawn }, { maxQueuedSteps: ONLINE_QUEUE, ...(sea ? { sea } : {}) });
+    ? (config) => new LocalSurfZone(config, { rider: true, stance, ...spawn }, sea)
+    : (config) => new WorkerSurfZone(config, undefined, { rider: true, stance, ...spawn }, { maxQueuedSteps: ONLINE_QUEUE, ...(sea ? { sea } : {}) });
 }
 /** Only the worker steps on the GPU (plan P6), so only it gets the GPU tier's sea. */
 const gpuTier = inPage ? undefined : webGpuAvailable;
@@ -199,6 +200,8 @@ class SurfGame {
   /** Settings: the pocket reflex (the riding-the-wave spec), and the swell of the Surf session under way. */
   private pocketReflex: GameplaySettings['pocketReflex'] = 'practice';
   private surfSwell: SwellSize = 'practice';
+  /** Settings: Regular or Goofy (the stances spec), from the next ride. */
+  private stance: StanceName = 'regular';
   /** The sun the environment shows now, whoever set it. */
   private shownSun = { height: START_SUN.sunHeight, direction: START_SUN.sunDirection };
   /** The graphics settings in force (plan P8); until applied, today's defaults. */
@@ -357,7 +360,7 @@ class SurfGame {
       school?: boolean;
     } = {},
   ): Promise<boolean> {
-    const factory = options.factory ?? surfZoneFactory(options.rider ?? true);
+    const factory = options.factory ?? surfZoneFactory(options.rider ?? true, this.stance);
     // An online room fixes its own sea (components included); otherwise the GPU tier decides.
     const tier = options.overrides || this.graphics?.richSea === false ? undefined : gpuTier;
     if (!(await this.physicalMode.start(settings, seed, this.water, options.overrides ?? {}, factory, tier))) return false;
@@ -442,7 +445,7 @@ class SurfGame {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
     };
     const started = await this.startPhysical(room.seed, settings, {
-      sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea), overrides,
+      sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea, this.stance), overrides,
     });
     if (!started) return false;
     if (this.online?.controller === controller) {
@@ -485,6 +488,12 @@ class SurfGame {
   /** Settings: the pocket reflex, on the Practice swell only, always, or never. */
   setPocketReflex(setting: GameplaySettings['pocketReflex']): void {
     this.pocketReflex = setting;
+  }
+
+  /** Settings: Regular or Goofy, taken up at the next session, retry or lesson restart (never mid-ride). */
+  setStance(stance: StanceName): void {
+    this.stance = stance;
+    this.physicalMode.stance = stance;
   }
 
   setPaused(paused: boolean): void {
@@ -776,7 +785,7 @@ class SurfGame {
     this.physicalMode.idleView = 'overview';
     this.physicalMode.defaultView = camera;
     const started = await this.startPhysical(wave.config.seed, settings, {
-      sun: TIMES.midday, rider: true, factory: recordedSurfZoneFactory(sea), overrides: lessonConfig(wave), school: true,
+      sun: TIMES.midday, rider: true, factory: recordedSurfZoneFactory(sea, this.stance), overrides: lessonConfig(wave), school: true,
     });
     if (!started) return false;
     this.placeRider(startPlacement(wave, start));
@@ -801,7 +810,10 @@ class SurfGame {
     const request = controls.lastRequest;
     return {
       dt, phase: ride.phase, speed: ride.speed, heading: host.snapshot.rider[RIDER_SNAPSHOT.heading],
-      input: { steer: request.steer, trim: request.trim ?? 0, crouch: request.crouch ?? 0, hand: request.hand ?? false, paddle: request.paddle },
+      input: {
+        steer: request.steer, trim: request.trim ?? 0, crouch: request.crouch ?? 0, compress: request.compress ?? 0, hand: request.hand ?? false,
+        paddle: request.paddle,
+      },
       wave: { valid: ride.wave.valid, faceFraction: ride.wave.faceFraction, crestBreaking: ride.wave.crestBreaking, aheadOfCrest: ride.wave.aheadOfCrest },
       // The duck-dive's measure (the wipeout spec): where the board is, and out to sea against the waves' travel.
       x: host.snapshot.board[0], z: host.snapshot.board[2], seaward: { x: -ride.wave.directionX, z: -ride.wave.directionZ },
@@ -1076,12 +1088,14 @@ applyGraphics();
 game.setSurfer(settings.value.surfer);
 game.setNameTags(settings.value.gameplay.nameTags);
 game.setPocketReflex(settings.value.gameplay.pocketReflex);
+game.setStance(settings.value.gameplay.stance);
 settings.subscribe((value, change) => {
   if (change === 'graphics' || change === 'detected') applyGraphics();
   if (change === 'surfer') game.setSurfer(value.surfer);
   if (change === 'gameplay') {
     game.setNameTags(value.gameplay.nameTags);
     game.setPocketReflex(value.gameplay.pocketReflex);
+    game.setStance(value.gameplay.stance);
   }
 });
 // C1: the 2026 Steam Controller over WebHID, offered to every pad reader as one more standard pad.

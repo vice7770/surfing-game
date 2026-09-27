@@ -89,7 +89,10 @@ const CUTBACK_END = -30 * DEG;
 const TURN_LIMIT = 1.5;
 /** A snap: the crest breaking this strongly within 4 m. */
 const SNAP_BREAKING = 0.3;
-/** Turning, the crouch and the weight back; the bottom turn extends past EXTEND_FROM (P9 Task 8: extend where the load is high). */
+/**
+ * Turning, the crouch and the weight back; the bottom turn compresses over the crouch at its base and extends past
+ * EXTEND_FROM (P9 Task 8: extend where the load is high; the stances spec's sequence).
+ */
 const TURN_CROUCH = 0.6;
 const EXTEND_FROM = 60 * DEG;
 const TOP_TRIM = -0.5;
@@ -128,6 +131,8 @@ export class Autopilot {
   /** The turn under way and how long it has been held, and a turn given up that waits for its trigger to clear. */
   private turn?: Turn;
   private turnTime = 0;
+  /** The open face a turn under way began toward: it finishes that way (the curl showing on the other side mid-turn reversed it). */
+  private turnFace = 0;
   private blocked?: Turn;
 
   constructor(options: AutopilotOptions = {}) {
@@ -253,35 +258,39 @@ export class Autopilot {
   }
 
   /** S-turns: the turn the face calls for, held to its end, and the pump between them. */
-  private turns(view: AutopilotView, heading: number, dt: number): Pick<RideInput, 'steer' | 'trim' | 'crouch'> {
+  private turns(view: AutopilotView, heading: number, dt: number): Pick<RideInput, 'steer' | 'trim' | 'crouch' | 'compress'> {
     const { wave } = view.ride;
-    const peel = this.openFace(view);
-    const angle = peel * wrap(heading - this.travel);
+    const open = this.openFace(view);
     if (this.turn) {
       this.turnTime += dt;
+      const angle = this.turnFace * wrap(heading - this.travel);
       const done = this.turn === 'bottom' ? angle > BOTTOM_END : this.turn === 'top' ? angle < TOP_END : angle < CUTBACK_END;
       if (!done && this.turnTime > TURN_LIMIT) this.blocked = this.turn;
       if (done || this.turnTime > TURN_LIMIT) this.turn = undefined;
     }
     if (!this.turn && wave.valid) {
+      const angle = open * wrap(heading - this.travel);
       const wanted: Turn | undefined = wave.aheadOfCrest > SHOULDER && angle > TOP_END ? 'cutback'
         : wave.faceFraction > TOP_FACE && angle > TOP_START ? 'top'
           : wave.faceFraction < BOTTOM_FACE && angle < BOTTOM_START && wave.aheadOfCrest <= BOTTOM_REACH ? 'bottom' : undefined;
       if (wanted !== this.blocked) {
         this.turn = wanted;
         this.turnTime = 0;
+        this.turnFace = open;
       }
       if (wanted === undefined) this.blocked = undefined;
     }
+    const peel = this.turn ? this.turnFace : open;
+    const angle = peel * wrap(heading - this.travel);
     switch (this.turn) {
       case 'bottom':
-        return { steer: peel, trim: 0, crouch: angle < EXTEND_FROM ? TURN_CROUCH : 0 };
+        return { steer: peel, trim: 0, crouch: angle < EXTEND_FROM ? TURN_CROUCH : 0, compress: angle < EXTEND_FROM ? 1 : 0 };
       case 'top':
       case 'cutback':
-        return { steer: -peel, trim: wave.crestBreaking > SNAP_BREAKING ? SNAP_TRIM : TOP_TRIM, crouch: TURN_CROUCH };
+        return { steer: -peel, trim: wave.crestBreaking > SNAP_BREAKING ? SNAP_TRIM : TOP_TRIM, crouch: TURN_CROUCH, compress: 0 };
       default:
         // Between turns: crouched heading down into the next bottom turn, extended climbing.
-        return { steer: 0, trim: 0, crouch: angle < BOTTOM_START ? TURN_CROUCH : 0 };
+        return { steer: 0, trim: 0, crouch: angle < BOTTOM_START ? TURN_CROUCH : 0, compress: 0 };
     }
   }
 

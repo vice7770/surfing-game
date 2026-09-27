@@ -4,21 +4,22 @@
  * standard mapping. Escape and Start always pause and cannot be rebound.
  */
 export const ACTIONS = [
-  'paddle', 'popUp', 'steerLeft', 'steerRight', 'trimForward', 'trimBack', 'crouch', 'hand', 'duckDive', 'retry', 'camera', 'mute',
+  'paddle', 'popUp', 'steerLeft', 'steerRight', 'trimForward', 'trimBack', 'crouch', 'compress', 'hand', 'duckDive', 'retry', 'camera', 'mute',
   'callLeft', 'callRight', 'callParty', 'callNice', 'pause',
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 
 /**
  * When an action does anything (spec P9): paddling and the duck-dive lying down
- * (and in the water), trim, crouch and the hand standing, the rest always. A key
- * may serve one action per context, so ArrowUp paddles lying down and trims
- * forward standing, and S duck-dives lying down and trims back standing.
+ * (and in the water), trim, crouch, Compress and the hand standing, the rest
+ * always. A key may serve one action per context, so ArrowUp paddles lying down
+ * and trims forward standing, Space paddles lying down and compresses standing,
+ * and S duck-dives lying down and trims back standing.
  */
 export type ActionContext = 'prone' | 'standing' | 'always';
 export const ACTION_CONTEXT: Record<Action, ActionContext> = {
   paddle: 'prone', popUp: 'always', steerLeft: 'always', steerRight: 'always',
-  trimForward: 'standing', trimBack: 'standing', crouch: 'standing', hand: 'standing', duckDive: 'prone',
+  trimForward: 'standing', trimBack: 'standing', crouch: 'standing', compress: 'standing', hand: 'standing', duckDive: 'prone',
   retry: 'always', camera: 'always', mute: 'always', pause: 'always',
   callLeft: 'always', callRight: 'always', callParty: 'always', callNice: 'always',
 };
@@ -47,6 +48,8 @@ export const DEFAULT_BINDINGS: Bindings = {
     trimForward: ['KeyW', 'ArrowUp'],
     trimBack: ['KeyS', 'ArrowDown'],
     crouch: ['ShiftLeft', 'ShiftRight'],
+    // The stances spec: the bottom turn's stance, on the paddle's key standing.
+    compress: ['Space'],
     hand: ['KeyE'],
     // The wipeout spec: S and ↓ duck-dive lying down (they trim back standing).
     duckDive: ['KeyS', 'ArrowDown'],
@@ -69,6 +72,7 @@ export const DEFAULT_BINDINGS: Bindings = {
     trimForward: [12],
     trimBack: [13],
     crouch: [6],
+    compress: [7],
     hand: [4, 17],
     // LT (analog; it crouches only standing) and the D-pad's down.
     duckDive: [6, 13],
@@ -148,6 +152,12 @@ export function padValue(pads: readonly PadState[], button: number | undefined):
  * for pause, Escape and Start, and when the swap would leave the other action with
  * nothing bound.
  */
+/** `action`'s inputs on `device` less those another action live in the same context holds (an action new to a saved table). */
+export function freeInputs(bindings: Bindings, device: 'keyboard' | 'gamepad', action: Action): (string | number)[] {
+  const table = bindings[device] as Record<Action, (string | number)[]>;
+  return table[action].filter((input) => !ACTIONS.some((other) => other !== action && overlap(action, other) && table[other].includes(input)));
+}
+
 export function rebind(bindings: Bindings, device: 'keyboard' | 'gamepad', action: Action, slot: 0 | 1, input: string | number): Bindings {
   if (action === 'pause' || input === (device === 'keyboard' ? RESERVED_KEY : RESERVED_BUTTON)) return bindings;
   const table = bindings[device] as Record<Action, (string | number)[]>;
@@ -175,7 +185,8 @@ const ARROWS: Record<string, string> = { ArrowUp: '↑', ArrowDown: '↓', Arrow
 const MODIFIERS: Record<string, string> = { Shift: 'Shift', Control: 'Ctrl', Alt: 'Alt', Meta: 'Cmd' };
 
 /** A key code as the player knows it: `R` for KeyR, `↑` for ArrowUp, `Shift` for either Shift. */
-export function keyLabel(code: string): string {
+export function keyLabel(code: string | undefined): string {
+  if (code === undefined) return '—';
   if (ARROWS[code]) return ARROWS[code];
   const letter = /^Key([A-Z])$/.exec(code);
   if (letter) return letter[1];

@@ -1,16 +1,22 @@
 import type { RideInput } from '../physics/RideSession';
 import type { RIDER_PHASES } from '../wave/SurfZoneRunner';
+import type { SwellSize } from './SurfConditions';
 
 /**
  * The mechanics taught once: riding (spec P9; P8's first-ride key hints already
  * cover paddling and standing), and the duck-dive and pulling the leash in (the
  * wipeout spec).
  */
-export type HintId = 'lean' | 'trim' | 'crouch' | 'hand' | 'duckDive' | 'reel';
-const HINT_IDS: readonly HintId[] = ['lean', 'trim', 'crouch', 'hand', 'duckDive', 'reel'];
-const RIDING = ['lean', 'trim', 'crouch', 'hand'] as const satisfies readonly HintId[];
+export type HintId = 'lean' | 'trim' | 'crouch' | 'compress' | 'hand' | 'duckDive' | 'reel';
+const HINT_IDS: readonly HintId[] = ['lean', 'trim', 'crouch', 'compress', 'hand', 'duckDive', 'reel'];
+const RIDING = ['lean', 'trim', 'crouch', 'compress', 'hand'] as const satisfies readonly HintId[];
 
 export const HINTS_KEY = 'breakline.hints.v1';
+
+/** Where a hint may be offered: Compress in Practice, where the riding is taught (the stances spec); the rest in any ride. */
+export function offersHint(id: HintId, swell: SwellSize): boolean {
+  return id !== 'compress' || swell === 'practice';
+}
 
 /**
  * Which hints the player has learned, kept across visits. Storage that fails
@@ -54,14 +60,14 @@ export class HintBook {
 export interface HintState {
   standing: boolean;
   crestBreaking: number;
-  input: Pick<RideInput, 'steer' | 'trim' | 'crouch' | 'hand' | 'duckDive' | 'reel'>;
+  input: Pick<RideInput, 'steer' | 'trim' | 'crouch' | 'compress' | 'hand' | 'duckDive' | 'reel'>;
   phase?: (typeof RIDER_PHASES)[number];
   whitewaterAhead?: number;
   leashIntact?: boolean;
   boardInReach?: boolean;
 }
 
-/** The lean shows after LEAN_AFTER s standing, trim and crouch after DEEPER_AFTER s; the hand when the crest breaks this strongly beside the rider. */
+/** The lean shows after LEAN_AFTER s standing, trim, crouch and Compress after DEEPER_AFTER s; the hand when the crest breaks this strongly beside the rider. */
 const LEAN_AFTER = 2;
 const DEEPER_AFTER = 5;
 const HAND_BREAKING = 0.3;
@@ -76,13 +82,14 @@ const DUCK_AHEAD = 8;
 
 /**
  * When to show each hint (spec P9), one at a time: the hand when the crest breaks
- * beside the rider; the lean after 2 s standing; the trim, then the crouch, after
- * 5 s. A hint retires once its input is held for half a second standing, shown or
- * not.
+ * beside the rider; the lean after 2 s standing; the trim, then the crouch, then
+ * Compress (the bottom turn's sequence: crouch on the drop, compress at the bottom)
+ * after 5 s. A hint retires once its input is held for half a second standing,
+ * shown or not.
  */
 export class HintCoach {
   private standingTime = 0;
-  private readonly held: Record<HintId, number> = { lean: 0, trim: 0, crouch: 0, hand: 0, duckDive: 0, reel: 0 };
+  private readonly held: Record<HintId, number> = { lean: 0, trim: 0, crouch: 0, compress: 0, hand: 0, duckDive: 0, reel: 0 };
 
   constructor(private readonly book: HintBook) {}
 
@@ -99,6 +106,7 @@ export class HintCoach {
       lean: Math.abs(input.steer) > 0.5,
       trim: Math.abs(input.trim ?? 0) > 0.5,
       crouch: (input.crouch ?? 0) > 0.5,
+      compress: (input.compress ?? 0) > 0.5,
       hand: input.hand ?? false,
     };
     for (const id of RIDING) {
@@ -108,7 +116,7 @@ export class HintCoach {
     const due: HintId[] = [];
     if (state.crestBreaking > HAND_BREAKING) due.push('hand');
     if (this.standingTime >= LEAN_AFTER - 1e-9) due.push('lean');
-    if (this.standingTime >= DEEPER_AFTER - 1e-9) due.push('trim', 'crouch');
+    if (this.standingTime >= DEEPER_AFTER - 1e-9) due.push('trim', 'crouch', 'compress');
     return due.find((id) => available(id) && this.book.offer(id));
   }
 

@@ -18,6 +18,8 @@ export interface RideInput {
   trim?: number;
   /** Standing, the crouch: 0 riding stance to 1 deepest. */
   crouch?: number;
+  /** Standing, Compress (the bottom turn's stance): 0 none to 1 full depth with the weight forward. */
+  compress?: number;
   /** Standing, the wave-side hand in the water. */
   hand?: boolean;
   /** Lying down or swimming, the Duck-dive action: 0 to 1 (analog). */
@@ -170,6 +172,7 @@ export class RideSession {
       rider.steer = input.steer;
       rider.trim = input.trim ?? 0;
       rider.crouch = input.crouch ?? 0;
+      rider.compress = input.compress ?? 0;
       rider.hand = input.hand ?? false;
       rider.duckDive = input.duckDive ?? 0;
       // The pop-up key stands the rider up, or lies it back down (the playtest: only the player lies it down).

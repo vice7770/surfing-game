@@ -1,7 +1,8 @@
 import type { RideView } from '../scene/SpectatorCamera';
 import type { Units } from '../ui/units';
 import type { WaterLook } from '../scene/water/waterLook';
-import { ACTIONS, DEFAULT_BINDINGS, MAX_BUTTON, overlap, type Action, type Bindings } from './Bindings';
+import type { StanceName } from '../physics/riderPosture';
+import { ACTIONS, DEFAULT_BINDINGS, MAX_BUTTON, freeInputs, type Action, type Bindings } from './Bindings';
 import { DEFAULT_STICK, MAX_DEADZONE, type StickSettings } from './Sticks';
 import { DEFAULT_SURFER, sanitizeSurfer, type SurferSettings } from './SurferChoice';
 import { PRESETS } from './Graphics';
@@ -21,6 +22,8 @@ export interface GameplaySettings {
   balanceMeter: 'practice' | 'always' | 'never';
   /** The pocket reflex (the riding-the-wave spec): with no weight held the rider trims to stay near the curl; Practice only, always, or never. */
   pocketReflex: 'practice' | 'always' | 'never';
+  /** Regular (left foot forward) or Goofy (the stances spec); a change rides from the next ride. */
+  stance: StanceName;
   /** Score each ride 0–10 on the WSL criteria (spec P9), off unless the player wants it. */
   scoreRides: boolean;
   /** Only offered while the dev tools are on. */
@@ -114,7 +117,7 @@ function copyBindings(bindings: Bindings): Bindings {
 
 export function defaultSettings(prefersReducedMotion = false): GameSettings {
   return {
-    gameplay: { units: 'metric', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', pocketReflex: 'practice', scoreRides: false, showTelemetry: false, nameTags: true },
+    gameplay: { units: 'metric', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', pocketReflex: 'practice', stance: 'regular', scoreRides: false, showTelemetry: false, nameTags: true },
     // The Medium preset's values (Graphics.PRESETS.medium; a test keeps the two equal).
     graphics: {
       preset: 'auto', renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto',
@@ -147,25 +150,8 @@ function within(value: unknown, min: number, max: number, fallback: number): num
   return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max ? value : fallback;
 }
 
-/**
- * Where an action a save does not know yet (it arrived with an update) looks
- * after its own defaults are all taken: keys and pad buttons nothing of the
- * player's usually holds (the Duck-dive's D-pad up is the trim's, standing only).
- */
-const FALLBACK_KEYS: readonly string[] = ['KeyX', 'KeyZ', 'KeyV', 'KeyB'];
-const FALLBACK_BUTTONS: readonly number[] = [12];
-
 /** The pad defaults before C1, which a save from then still holds unless the player changed them (the party call only exists since N1). */
 const LEGACY_PAD_DEFAULTS: Partial<Record<Action, number[]>> = { hand: [2], popUp: [0], callParty: [4] };
-
-/** `action`'s inputs that no other action live with it holds: its own defaults, else the first free fallback, else its defaults as they are. */
-function freeInputs<T extends string | number>(table: Record<Action, T[]>, action: Action, fallbacks: readonly T[]): T[] {
-  const taken = (input: T) => ACTIONS.some((other) => other !== action && overlap(action, other) && table[other].includes(input));
-  const free = table[action].filter((input) => !taken(input));
-  if (free.length > 0) return free;
-  const fallback = fallbacks.find((input) => !taken(input));
-  return fallback === undefined ? table[action] : [fallback];
-}
 
 function sanitizeBindings(raw: unknown, defaults: Bindings, legacy: boolean): Bindings {
   const source = record(raw);
@@ -176,18 +162,13 @@ function sanitizeBindings(raw: unknown, defaults: Bindings, legacy: boolean): Bi
   const validButtons = (value: unknown): value is number[] => Array.isArray(value) && value.length >= 1 && value.length <= 2
     && value.every((button) => Number.isInteger(button) && button >= 0 && button <= MAX_BUTTON);
   const result = copyBindings(defaults);
+  const defaulted: { device: 'keyboard' | 'gamepad'; action: Action }[] = [];
   for (const action of ACTIONS) {
     if (action === 'pause') continue;
     if (validKeys(keyboard[action])) result.keyboard[action] = [...keyboard[action]];
+    else defaulted.push({ device: 'keyboard', action });
     if (validButtons(gamepad[action])) result.gamepad[action] = [...gamepad[action]];
-  }
-  // An action the save does not know (the wipeout spec's Duck-dive) takes only the defaults the player's own
-  // bindings leave free, so none of their keys starts doing two things; with none free, a free fallback.
-  if (Object.keys(keyboard).length > 0) {
-    for (const action of ACTIONS) if (action !== 'pause' && !(action in keyboard)) result.keyboard[action] = freeInputs(result.keyboard, action, FALLBACK_KEYS);
-  }
-  if (Object.keys(gamepad).length > 0) {
-    for (const action of ACTIONS) if (action !== 'pause' && !(action in gamepad)) result.gamepad[action] = freeInputs(result.gamepad, action, FALLBACK_BUTTONS);
+    else defaulted.push({ device: 'gamepad', action });
   }
   // C1 moved the hand to LB, the party call to X and added the grips. The actions a save still holds on their old defaults
   // move together, as one layout, unless that would leave a button with two actions (the player rebound around them).
@@ -199,6 +180,14 @@ function sanitizeBindings(raw: unknown, defaults: Bindings, legacy: boolean): Bi
     for (const action of moved) next[action] = [...defaults.gamepad[action]];
     const clash = moved.some((action) => next[action].some((button) => ACTIONS.some((other) => other !== action && next[other].includes(button))));
     if (!clash) result.gamepad = next;
+  }
+  // An action the save lacks (one added since, like Compress) takes its defaults only where the player's own bindings
+  // leave them free, so no input does two things at once; with none free it waits unbound. After C1's move, whose
+  // layout frees X for the party call.
+  for (const { device, action } of defaulted) {
+    const free = freeInputs(result, device, action);
+    if (device === 'keyboard') result.keyboard[action] = free as string[];
+    else result.gamepad[action] = free as number[];
   }
   return result;
 }
@@ -235,6 +224,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       touchControls: oneOf(gameplay.touchControls, ['auto', 'on', 'off'] as const, defaults.gameplay.touchControls),
       balanceMeter: oneOf(gameplay.balanceMeter, ['practice', 'always', 'never'] as const, defaults.gameplay.balanceMeter),
       pocketReflex: oneOf(gameplay.pocketReflex, ['practice', 'always', 'never'] as const, defaults.gameplay.pocketReflex),
+      stance: oneOf(gameplay.stance, ['regular', 'goofy'] as const, defaults.gameplay.stance),
       scoreRides: flag(gameplay.scoreRides, defaults.gameplay.scoreRides),
       showTelemetry: flag(gameplay.showTelemetry, defaults.gameplay.showTelemetry),
       nameTags: flag(gameplay.nameTags, defaults.gameplay.nameTags),
