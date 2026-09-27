@@ -25,6 +25,7 @@ import { createWaterSample, type SurfWater } from '../src/physics/SurfWater';
 import { WaveFrameGauge } from '../src/physics/waveFrame';
 import type { SpotName } from '../src/wave/Bathymetry';
 import { applyReefShape } from './reefShape';
+import { alongShift } from './botSpots';
 import { SURF_ZONE_STEP, SurfZoneRunner } from '../src/wave/SurfZoneRunner';
 
 const option = (name: string): string | undefined => {
@@ -144,8 +145,11 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
     }),
   };
   const radians = (direction * Math.PI) / 180;
+  // The ghosts slide along shore to stay inside the window near an open edge (the Reef's peak); the runner's own rider stays at the take-off.
+  const shift = alongShift(runner, ghostAlongs);
+  if (shift !== 0) console.error(`${spot} seed ${seed}: ghosts slid ${shift.toFixed(1)} m along shore to stay inside the window`);
   const bot = (session: RideSession, own: boolean, along: number): Bot => ({
-    session, own, home: new Vector3(runner.focus.x + along, 0, runner.focus.z - 6),
+    session, own, home: new Vector3(runner.focus.x + along + (own ? 0 : shift), 0, runner.focus.z - 6),
     autopilot: new Autopilot({ rise: riseAt(spot), style, stall: false }), gauge: new WaveFrameGauge({ directionX: Math.sin(radians), directionZ: Math.cos(radians) }),
     trace: [], request: { paddle: false, popUp: false, steer: 0 }, retry: false, analyzer: new RideAnalyzer(), windDown: 0,
   });

@@ -19,6 +19,7 @@ import { RideSession } from '../src/physics/RideSession';
 import type { SurfWater } from '../src/physics/SurfWater';
 import type { SpotName } from '../src/wave/Bathymetry';
 import { applyReefShape } from './reefShape';
+import { alongShift } from './botSpots';
 import { SURF_ZONE_STEP, SurfZoneRunner } from '../src/wave/SurfZoneRunner';
 
 const option = (name: string): string | undefined => {
@@ -110,9 +111,12 @@ function runSpot(spot: SpotName, seed: number): { attempts: Attempt[]; seconds: 
     }),
   };
   const bots: Bot[] = [];
+  // Near an open edge (the Reef's peak) the row slides along shore to keep every bot inside the window.
+  const shift = alongShift(runner, alongs);
+  if (shift !== 0) console.error(`${spot} seed ${seed}: bots slid ${shift.toFixed(1)} m along shore to stay inside the window`);
   for (const along of alongs) {
     for (const offset of offsets) {
-      const bot: Bot = { session: new RideSession(), home: new Vector3(runner.focus.x + along, 0, runner.focus.z - offset), offset, clock: 0, stalled: 0 };
+      const bot: Bot = { session: new RideSession(), home: new Vector3(runner.focus.x + along + shift, 0, runner.focus.z - offset), offset, clock: 0, stalled: 0 };
       bot.session.reset(bot.home, 0, water);
       bots.push(bot);
     }
