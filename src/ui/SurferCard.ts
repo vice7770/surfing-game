@@ -1,34 +1,52 @@
-import { OUTFIT_CHOICES, SUIT_COLORS, SURFER_BODIES, outfitFor, type SuitColor, type SurferSettings } from '../game/SurferChoice';
+import {
+  OUTFIT_CHOICES, SUIT_COLORS, SURFER_SEXES, lookOf, looksFor, outfitFor, sexOf, surferBody,
+  type SuitColor, type SurferSettings, type SurferSex,
+} from '../game/SurferChoice';
 import type { TimeOfDay } from '../game/SurfConditions';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { el } from './dom';
 import type { StringKey } from './strings';
 import { t } from './strings';
 
-type RowId = 'body' | 'outfit' | 'color' | 'board';
+type RowId = 'sex' | 'look' | 'outfit' | 'color' | 'board';
 
 export interface SurferModel {
   rows: { id: RowId; label: StringKey; options: { value: string; label: StringKey; selected: boolean; swatch?: string }[] }[];
 }
 
-/** The Surfer card as data (G7 Part B): body, outfit, the suit's colour and the board design, with the choice marked. */
+/**
+ * The Surfer card as data (G7 Part B): the sex, one of that sex's looks, the
+ * outfit, the suit's colour and the board design, with the choice marked.
+ * The sex and look rows are two views of the one stored body.
+ */
 export function surferModel(choice: SurferSettings): SurferModel {
-  const row = (id: RowId, values: readonly string[], label: (value: string) => StringKey, swatch?: (value: string) => string) => ({
+  const sex = sexOf(choice.body);
+  const row = (
+    id: RowId, values: readonly string[], selected: string, label: (value: string) => StringKey, swatch?: (value: string) => string,
+  ) => ({
     id,
     label: `surfer.row.${id}` as StringKey,
     options: values.map((value) => ({
-      value, label: label(value), selected: choice[id] === value, ...(swatch ? { swatch: swatch(value) } : {}),
+      value, label: label(value), selected: selected === value, ...(swatch ? { swatch: swatch(value) } : {}),
     })),
   });
   return {
     rows: [
-      row('body', SURFER_BODIES.map((body) => body.id), (value) => `surfer.body.${value}` as StringKey),
+      row('sex', SURFER_SEXES, sex, (value) => `surfer.sex.${value}` as StringKey),
+      row('look', looksFor(sex).map(String), String(lookOf(choice.body)), (value) => `surfer.look.${value}` as StringKey),
       // The vest is named for what goes with it on this body: a bikini or boardshorts.
-      row('outfit', OUTFIT_CHOICES, (value) => `surfer.outfit.${outfitFor({ ...choice, outfit: value as SurferSettings['outfit'] })}` as StringKey),
-      row('color', Object.keys(SUIT_COLORS), (value) => `surfer.color.${value}` as StringKey, (value) => SUIT_COLORS[value as SuitColor]),
-      row('board', BOARD_DESIGNS.map((design) => design.id), (value) => `surfer.board.${value}` as StringKey),
+      row('outfit', OUTFIT_CHOICES, choice.outfit, (value) => `surfer.outfit.${outfitFor({ ...choice, outfit: value as SurferSettings['outfit'] })}` as StringKey),
+      row('color', Object.keys(SUIT_COLORS), choice.color, (value) => `surfer.color.${value}` as StringKey, (value) => SUIT_COLORS[value as SuitColor]),
+      row('board', BOARD_DESIGNS.map((design) => design.id), choice.board, (value) => `surfer.board.${value}` as StringKey),
     ],
   };
+}
+
+/** What a pick changes: the sex and look rows both pick the body, and a change of sex keeps the look. */
+export function pickPatch(choice: SurferSettings, row: RowId, value: string): Partial<SurferSettings> {
+  if (row === 'sex') return { body: surferBody(value as SurferSex, lookOf(choice.body)) };
+  if (row === 'look') return { body: surferBody(sexOf(choice.body), Number(value)) };
+  return { [row]: value };
 }
 
 /** What draws the surfer beside the pickers; absent where WebGL is not. */
@@ -63,10 +81,12 @@ export function createSurferCard(
           ...(option.swatch ? {} : { text: t(option.label) }),
           on: {
             click: () => {
-              (choice as unknown as Record<string, string>)[row.id] = option.value;
-              handlers.change({ [row.id]: option.value } as Partial<SurferSettings>);
+              const patch = pickPatch(choice, row.id, option.value);
+              Object.assign(choice, patch);
+              handlers.change(patch);
               preview?.show({ ...choice }, currentTime);
-              // A body change renames the vest (bikini or boardshorts): redraw the rows, keeping focus on the pick.
+              // A body change offers that sex's looks and renames the vest (bikini or boardshorts): redraw the rows,
+              // keeping focus on the pick.
               build();
               (rows.querySelector(`[aria-label="${t(row.label)}"] [aria-pressed="true"]`) as HTMLElement | null)?.focus();
             },
