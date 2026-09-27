@@ -934,6 +934,7 @@ class SurfGame {
     this.water.setLook(look);
     this.physicalMode.farField.setLook(look);
     this.physicalMode.spray.setLook(look);
+    this.physicalMode.setSprayLook(look);
     this.physicalMode.lipSheet.setLook(look);
   }
 
