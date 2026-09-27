@@ -167,6 +167,7 @@ The shared [rideability report](rideability-report.md) was regenerated with the 
 | Reef | 734 → 374 | 2 % → 1 % | 13° → 11° | 48 % → 83 % | 52 % → 13 % |
 
 - **The Beach, Point and Canyon throw exactly the same lips** with the same breaking share. The trough switch and the submerged-crest rule do not change their water at these conditions.
+- **The Canyon's reference wave is untouched.** Its catch report on Practice (`report:catch -- --practice --ghosts --spots canyon`, 2 seeds × 3 min) is identical on both codes: 883 attempts, 181 cues, 158 stood, 85 rides of 3 s or more, longest 9.5 s.
 - **What moved is the meter.** It now reads one wave's front, where the old fit mixed waves: "mixed" readings become clean ones, mostly close-outs, since these spots close out at the lab's default swell.
 - **The Canyon's 58°** in the old report came from an older run (3 seeds × 20 periods, 2026-09-26, 7 samples of 60) on older code. Today's code at these settings already reads 9°. Recorded Canyon onsets agree: its clean fronts (r² 0.94–1.00) run 22–29 m/s (α 9–12°), as the reference-wave study's in-ride 5–6° already did.
 - **The Reef** is a new bed at its own swells. At the lab's default swell (10 s from 10°) it closes out.
