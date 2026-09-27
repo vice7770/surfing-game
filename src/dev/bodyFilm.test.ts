@@ -27,7 +27,7 @@ function film(rate: number, count: number, shape: (i: number, frame: FilmFrame) 
   for (let i = 0; i < count; i += 1) {
     const frame: FilmFrame = {
       time: i / rate, phase: 'standing', moving: true, switched: false, fallen: false,
-      joints: [new Vector3()], limbs: [new Vector3()], hips: new Vector3(), bones: [new Quaternion()], worldBones: [new Quaternion()],
+      joints: [new Vector3()], limbs: [new Vector3()], hips: new Vector3(), board: new Vector3(), bones: [new Quaternion()], worldBones: [new Quaternion()],
       chestRoll: 0, physicsRoll: 0,
     };
     shape(i, frame);
@@ -75,10 +75,10 @@ describe('the body film measures', () => {
     expect(repeatedFrames(still)).toBe(0);
   });
 
-  it('reads the hips travelling evenly as even, and in bursts as uneven', () => {
-    const even = film(60, 60, (i, frame) => frame.hips.set(i * 0.1, 0, 0));
+  it('reads the board travelling evenly as even, and in bursts as uneven', () => {
+    const even = film(60, 60, (i, frame) => frame.board.set(i * 0.1, 0.02 * Math.sin(i), 0));
     expect(unevenness(even)).toBeCloseTo(0, 6);
-    const bursts = film(60, 60, (i, frame) => frame.hips.set(Math.floor(i / 3) * 0.3, 0, 0));
+    const bursts = film(60, 60, (i, frame) => frame.board.set(Math.floor(i / 3) * 0.3, 0, 0));
     expect(unevenness(bursts)).toBeGreaterThan(1);
   });
 
@@ -95,6 +95,6 @@ describe('the body film measures', () => {
       frame.physicsRoll = roll(i / 120);
       frame.chestRoll = roll((i - 12) / 120);
     });
-    expect(drawnLag(lagged)).toBeCloseTo(0.1, 6);
+    expect(drawnLag(lagged)).toBeCloseTo(0.1, 3);
   });
 });

@@ -1,4 +1,5 @@
 import { Quaternion, Vector3 } from 'three';
+import { SnapshotTrack } from '../game/snapshotTrack';
 import { PlaneWater } from '../physics/PlaneWater';
 import { RideSession, type RideInput, type RiderPlacement } from '../physics/RideSession';
 import type { SurfWater } from '../physics/SurfWater';
@@ -38,8 +39,9 @@ export interface FilmFrame {
   joints: Vector3[];
   /** The drawn joints relative to the drawn hips, in the world's axes, m. */
   limbs: Vector3[];
-  /** The drawn hips in the world, m. */
+  /** The drawn hips and board in the world, m. */
   hips: Vector3;
+  board: Vector3;
   /** The measured bones' world rotations relative to the drawn board, and in the world. */
   bones: Quaternion[];
   worldBones: Quaternion[];
@@ -103,17 +105,23 @@ export function repeatedFrames(film: BodyFilm): number {
   return moving ? repeated / moving : 0;
 }
 
-/** How unevenly the drawn hips travel from frame to frame while the rider moves: the travel's standard deviation over its mean. */
+/**
+ * How unevenly the drawn board travels over the water from frame to frame while
+ * it moves: each frame's level travel against the mean of its neighbours', RMS,
+ * over the mean travel. A board speeding up or slowing down steadily reads 0.
+ */
 export function unevenness(film: BodyFilm): number {
   const travel: number[] = [];
   for (let t = 1; t < film.frames.length; t += 1) {
-    if (film.frames[t].moving) travel.push(film.frames[t].hips.distanceTo(film.frames[t - 1].hips));
+    const [now, before] = [film.frames[t].board, film.frames[t - 1].board];
+    if (film.frames[t].moving) travel.push(Math.hypot(now.x - before.x, now.z - before.z));
   }
-  if (travel.length < 2) return 0;
+  if (travel.length < 3) return 0;
   const mean = travel.reduce((a, b) => a + b, 0) / travel.length;
   if (mean <= 0) return 0;
-  const variance = travel.reduce((a, b) => a + (b - mean) ** 2, 0) / travel.length;
-  return Math.sqrt(variance) / mean;
+  let sum = 0;
+  for (let i = 1; i < travel.length - 1; i += 1) sum += (travel[i] - (travel[i - 1] + travel[i + 1]) / 2) ** 2;
+  return Math.sqrt(sum / (travel.length - 2)) / mean;
 }
 
 /**
@@ -159,34 +167,34 @@ export function shake(film: BodyFilm, low = 1.5, high = 4): number {
   return bandRms(film.frames.map((frame) => frame.chestRoll), film.rate, low, high);
 }
 
-/** How far the drawn chest's roll trails the physics' own, s: the lag, up to `most` s, that correlates them best. */
+/**
+ * How far the drawn chest's roll trails the physics' own, s: the shift, up to
+ * `most` s, that brings them closest (least mean squared difference), refined
+ * between frames by a parabola through the best and its neighbours.
+ */
 export function drawnLag(film: BodyFilm, most = 0.3): number {
   const physics = film.frames.map((frame) => frame.physicsRoll);
   const drawn = film.frames.map((frame) => frame.chestRoll);
-  const centre = (values: number[]) => {
-    const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    return values.map((value) => value - mean);
-  };
-  const p = centre(physics);
-  const c = centre(drawn);
-  let best = 0;
-  let bestScore = -Infinity;
-  for (let lag = 0; lag <= Math.round(most * film.rate); lag += 1) {
+  const shifts = Math.round(most * film.rate);
+  const misfit: number[] = [];
+  for (let lag = 0; lag <= shifts; lag += 1) {
     let sum = 0;
-    let pp = 0;
-    let cc = 0;
-    for (let t = 0; t + lag < p.length; t += 1) {
-      sum += p[t] * c[t + lag];
-      pp += p[t] * p[t];
-      cc += c[t + lag] * c[t + lag];
+    let count = 0;
+    for (let t = 0; t + lag < physics.length; t += 1) {
+      sum += (drawn[t + lag] - physics[t]) ** 2;
+      count += 1;
     }
-    const score = pp > 0 && cc > 0 ? sum / Math.sqrt(pp * cc) : 0;
-    if (score > bestScore) {
-      bestScore = score;
-      best = lag;
-    }
+    misfit.push(count ? sum / count : Infinity);
   }
-  return best / film.rate;
+  let best = 0;
+  for (let lag = 1; lag < misfit.length; lag += 1) if (misfit[lag] < misfit[best]) best = lag;
+  let shift = best;
+  if (best > 0 && best < misfit.length - 1) {
+    const [a, b, c] = [misfit[best - 1], misfit[best], misfit[best + 1]];
+    const curve = a - 2 * b + c;
+    if (curve > 0) shift += (0.5 * (a - c)) / curve;
+  }
+  return shift / film.rate;
 }
 
 export interface FilmScenario {
@@ -263,6 +271,20 @@ export function latestDrawer(): FilmDrawer {
   return {
     deliver(snapshot) { latest = snapshot; },
     frame: () => latest && { rider: latest.rider, board: latest.board, time: latest.seaTime },
+  };
+}
+
+/** The page's local rider since the smoothing layer: drawn between snapshots on the simulated clock (`SnapshotTrack`). */
+export function trackDrawer(): FilmDrawer {
+  const track = new SnapshotTrack();
+  const rider = new Float64Array(RIDER_SNAPSHOT.length);
+  const board = new Float64Array(8);
+  return {
+    deliver(snapshot) { track.push(snapshot.seaTime, snapshot.rider, snapshot.board); },
+    frame(dt) {
+      const time = track.sample(dt, rider, board);
+      return time === undefined ? undefined : { rider, board, time };
+    },
   };
 }
 
@@ -391,6 +413,7 @@ function record(
     joints: world.map((p) => p.clone().sub(boardPosition).applyQuaternion(boardInverse)),
     limbs: world.map((p) => p.clone().sub(hips)),
     hips,
+    board: boardPosition.clone(),
     bones: worldBones.map((q) => boardInverse.clone().multiply(q)),
     worldBones,
     chestRoll: roll(chestUp),

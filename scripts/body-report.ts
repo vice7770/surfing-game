@@ -8,7 +8,7 @@
  */
 import { writeFileSync } from 'node:fs';
 import {
-  FILM_SCENARIOS, drawnLag, filmBody, latestDrawer, repeatedFrames, rigAlone, shake, switchSpeeds, unevenness,
+  FILM_SCENARIOS, drawnLag, filmBody, latestDrawer, repeatedFrames, rigAlone, shake, switchSpeeds, trackDrawer, unevenness,
   type BodyFilm, type FilmOptions,
 } from '../src/dev/bodyFilm';
 
@@ -22,6 +22,7 @@ const started = Date.now();
 /** The drawing pipelines compared: today's page, and each step's layers as they land. */
 const PIPELINES: { name: string; options: Omit<FilmOptions, 'rate' | 'delivery'> }[] = [
   { name: 'today (the newest snapshot, the rig alone)', options: { drawer: latestDrawer, pose: rigAlone } },
+  { name: 'blended between physics steps', options: { drawer: trackDrawer, pose: rigAlone } },
 ];
 
 const scenario = (name: string) => FILM_SCENARIOS.find((candidate) => candidate.name === name)!;
@@ -51,8 +52,8 @@ for (const { name, options } of PIPELINES) {
 | Measure | Value |
 |---|---:|
 | Frames drawn again at 120 Hz, riding straight | ${fixed(100 * repeated, 0)} % |
-| Hips' travel unevenness, snapshots every step (60 Hz) | ${fixed(evenly, 2)} |
-| Hips' travel unevenness, snapshots batched by 3 (a late worker) | ${fixed(uneven, 2)} |
+| The board's travel unevenness, snapshots every step (60 Hz) | ${fixed(evenly, 2)} |
+| The same, snapshots batched by 3 (a late worker) | ${fixed(uneven, 2)} |
 | Chest roll in the wobble band (1.5–4 Hz), compressed mid-turn at 10 m/s | ${fixed(degrees(carve), 2)}° RMS |
 | Chest roll above it (4–30 Hz): jitter | ${fixed(degrees(jitter), 2)}° RMS |
 | The same, riding straight at 7 m/s | ${fixed(degrees(straight), 2)}° RMS |
