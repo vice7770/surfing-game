@@ -64,7 +64,10 @@ export function labSliders(physical: PhysicalSettings, units: Units): LabSlider[
       swell('stormDistanceKm', t('lab.distance'), 0, 10000, 100, `${physical.stormDistanceKm} km`),
     );
   }
-  sliders.push({ ...swell('directionDegrees', t('lab.direction'), -40, 40, 5, `${physical.directionDegrees}°`), disabled: physical.source === 'practice' });
+  // Practice fixes the direction: show the one its swell really comes from (the Reef's is its own).
+  const practice = physical.source === 'practice';
+  const direction = practice ? practiceSwell(physical.spot).directionDegrees ?? physical.directionDegrees : physical.directionDegrees;
+  sliders.push({ ...swell('directionDegrees', t('lab.direction'), -40, 40, 5, `${direction}°`), value: direction, disabled: practice });
   sliders.push(
     { key: 'tide', group: 'conditions', label: t('lab.tide'), min: -1, max: 1, step: 0.1, value: physical.tide, text: formatHeight(physical.tide, units) },
     { key: 'windSpeed', group: 'conditions', label: t('lab.wind'), min: -12, max: 12, step: 1, value: physical.windSpeed, text: windWords(physical.windSpeed, units) },

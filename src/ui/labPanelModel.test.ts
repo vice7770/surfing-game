@@ -32,6 +32,13 @@ describe('lab panel model', () => {
     expect(direction?.disabled).toBe(true);
   });
 
+  it('shows the direction a spot’s Practice swell really comes from', () => {
+    const direction = (spot: 'reef' | 'canyon') => labSliders({ ...defaultLabSettings().physical, source: 'practice', spot, directionDegrees: -30 }, 'metric')
+      .find((slider) => slider.key === 'directionDegrees');
+    expect(direction('reef')).toMatchObject({ value: 20, text: '20°' });
+    expect(direction('canyon')).toMatchObject({ value: 10, text: '10°' });
+  });
+
   it('formats every slider’s value for its output', () => {
     const sliders = labSliders({ ...defaultLabSettings().physical, source: 'buoy', significantHeight: 1.4, tide: -0.5 }, 'metric');
     const shown = Object.fromEntries(sliders.map((slider) => [slider.key, slider.text]));
