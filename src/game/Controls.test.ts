@@ -115,6 +115,16 @@ describe('the ride request (P9)', () => {
     expect(standing.controls.rideRequest(0.2, true)).toMatchObject({ crouch: 1, hand: true });
   });
 
+  // The stances spec: Compress standing only (Review Focus 1: held lying down it does nothing, and Space paddles).
+  it('compresses on Space standing and paddles on it lying down', () => {
+    const prone = setup();
+    prone.key('keydown', 'Space');
+    expect(prone.controls.rideRequest(0.2, false)).toMatchObject({ paddle: true, compress: 0 });
+    const standing = setup();
+    standing.key('keydown', 'Space');
+    expect(standing.controls.rideRequest(0.2, true)).toMatchObject({ paddle: false, compress: 1, crouch: 0 });
+  });
+
   it('ramps keys in over 0.2 s; opposite keys cancel, and unbound keys do nothing', () => {
     const { controls, key } = setup();
     key('keydown', 'KeyW');
@@ -133,17 +143,21 @@ describe('the ride request (P9)', () => {
     const request = controls.rideRequest(1 / 60, true);
     expect(request.crouch).toBeCloseTo(0.5, 9);
     expect(request.trim).toBeGreaterThan(0.7);
+    setPads([analog({ 7: 0.5 })]);
+    controls.poll();
+    expect(controls.rideRequest(1 / 60, true).compress).toBeCloseTo(0.5, 9);
+    expect(controls.rideRequest(1 / 60, false)).toMatchObject({ compress: 0, paddle: false });
   });
 
   // Review Focus 5: nothing stays held through a pause or a lost focus.
   it('lets every axis go within 0.2 s of a pause or a blur', () => {
     for (const leave of ['pause', 'blur'] as const) {
       const { controls, key, target } = setup();
-      for (const code of ['KeyW', 'ShiftLeft', 'ArrowLeft', 'KeyE']) key('keydown', code);
+      for (const code of ['KeyW', 'ShiftLeft', 'ArrowLeft', 'KeyE', 'Space']) key('keydown', code);
       controls.rideRequest(0.3, true);
       if (leave === 'pause') controls.enabled = false;
       else target.dispatchEvent(new Event('blur'));
-      expect(controls.rideRequest(0.2, true)).toMatchObject({ trim: 0, crouch: 0, steer: 0, hand: false, paddle: false });
+      expect(controls.rideRequest(0.2, true)).toMatchObject({ trim: 0, crouch: 0, compress: 0, steer: 0, hand: false, paddle: false });
     }
   });
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_BINDINGS, REBINDABLE, buttonLabel, heldActions, keyLabel, padSteer, rebind, type PadState } from './Bindings';
+import { ACTION_CONTEXT, DEFAULT_BINDINGS, REBINDABLE, buttonLabel, heldActions, keyLabel, padSteer, rebind, type PadState } from './Bindings';
 
 const pad = (buttons: number[] = [], x = 0): PadState => ({
   buttons: Array.from({ length: 17 }, (_, i) => buttons.includes(i)), axes: [x, 0, 0, 0],
@@ -7,8 +7,8 @@ const pad = (buttons: number[] = [], x = 0): PadState => ({
 
 describe('bindings', () => {
   it('reads the default keys and pad buttons as actions', () => {
-    expect(heldActions(new Set(['Space', 'KeyA']), [], DEFAULT_BINDINGS)).toEqual(new Set(['paddle', 'steerLeft']));
-    expect(heldActions(new Set(), [pad([7, 15])], DEFAULT_BINDINGS)).toEqual(new Set(['paddle', 'steerRight']));
+    expect(heldActions(new Set(['Space', 'KeyA']), [], DEFAULT_BINDINGS)).toEqual(new Set(['paddle', 'compress', 'steerLeft']));
+    expect(heldActions(new Set(), [pad([7, 15])], DEFAULT_BINDINGS)).toEqual(new Set(['paddle', 'compress', 'steerRight']));
   });
 
   it('swaps a key another action holds, so no key does two things', () => {
@@ -35,6 +35,25 @@ describe('bindings', () => {
     expect(crouchOnS.keyboard.trimBack).toEqual(['ShiftLeft', 'ArrowDown']);
     // An action used in every context still swaps with a standing one.
     expect(rebind(DEFAULT_BINDINGS, 'keyboard', 'retry', 0, 'KeyE').keyboard.hand).toEqual(['KeyR']);
+  });
+
+  // The stances spec: Compress on Space and the right trigger standing, where they paddle lying down; its own input
+  // standing, apart from the crouch's (Shift, the left trigger).
+  it('compresses on Space and the right trigger standing, which paddle lying down', () => {
+    expect(ACTION_CONTEXT.compress).toBe('standing');
+    expect(DEFAULT_BINDINGS.keyboard.compress).toEqual(['Space']);
+    expect(DEFAULT_BINDINGS.gamepad.compress).toEqual([7]);
+    expect(DEFAULT_BINDINGS.keyboard.paddle).toContain('Space');
+    expect(DEFAULT_BINDINGS.gamepad.paddle).toEqual([7]);
+    for (const action of REBINDABLE) {
+      if (action === 'compress' || ACTION_CONTEXT[action] === 'prone') continue;
+      expect(DEFAULT_BINDINGS.keyboard[action]).not.toContain('Space');
+      expect(DEFAULT_BINDINGS.gamepad[action]).not.toContain(7);
+    }
+    expect(REBINDABLE).toContain('compress');
+    const onShift = rebind(DEFAULT_BINDINGS, 'keyboard', 'compress', 0, 'ShiftLeft');
+    expect(onShift.keyboard.compress).toEqual(['ShiftLeft']);
+    expect(onShift.keyboard.crouch).toEqual(['Space', 'ShiftRight']);
   });
 
   it('never binds Escape or Start, and never leaves an action without a key', () => {

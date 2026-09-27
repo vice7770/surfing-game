@@ -46,14 +46,16 @@ export class Controls {
   private padSteerValue = 0;
   private padTrimValue = 0;
   private padCrouchValue = 0;
+  private padCompressValue = 0;
   private touchPaddle = false;
   private touchLeft = false;
   private touchRight = false;
   private touchCrouch = false;
+  private touchCompress = false;
   /** Keys held → the ride's axes, ramped (spec P9). */
-  private readonly ramps = { steer: new AxisRamp(), trim: new AxisRamp(), crouch: new AxisRamp() };
+  private readonly ramps = { steer: new AxisRamp(), trim: new AxisRamp(), crouch: new AxisRamp(), compress: new AxisRamp() };
   /** The latest ride request, for the hints to see what the player holds. */
-  lastRequest: RideInput = { paddle: false, popUp: false, steer: 0, trim: 0, crouch: 0, hand: false };
+  lastRequest: RideInput = { paddle: false, popUp: false, steer: 0, trim: 0, crouch: 0, compress: 0, hand: false };
   private getUpRequested = false;
   private active = true;
   /** The device the player last pressed something on, so hints can name its keys or buttons. */
@@ -74,6 +76,7 @@ export class Controls {
       this.bindTouchButton(page, 'touch-left', (held) => { this.touchLeft = held; });
       this.bindTouchButton(page, 'touch-right', (held) => { this.touchRight = held; });
       this.bindTouchButton(page, 'touch-crouch', (held) => { this.touchCrouch = held; });
+      this.bindTouchButton(page, 'touch-compress', (held) => { this.touchCompress = held; });
     }
   }
 
@@ -100,8 +103,8 @@ export class Controls {
   }
 
   /**
-   * The ride's request for this frame (spec P9): paddling lying down; trim, crouch
-   * and the hand standing; steering always. Keys and touch ramp in and out over
+   * The ride's request for this frame (spec P9): paddling lying down; trim, crouch,
+   * Compress and the hand standing; steering always. Keys and touch ramp in and out over
    * RAMP_TIME, so a digital input feels analog; a pad's stick and trigger pass
    * straight through. Disabled, every axis ramps back to rest.
    */
@@ -112,9 +115,11 @@ export class Controls {
     const steerKeys = Number(has('steerRight') || touch(this.touchRight)) - Number(has('steerLeft') || touch(this.touchLeft));
     const trimKeys = standing ? Number(has('trimForward')) - Number(has('trimBack')) : 0;
     const crouchKeys = standing && (has('crouch') || touch(this.touchCrouch)) ? 1 : 0;
+    const compressKeys = standing && (has('compress') || touch(this.touchCompress)) ? 1 : 0;
     const steer = this.ramps.steer.update(steerKeys, dt);
     const trim = this.ramps.trim.update(trimKeys, dt);
     const crouch = this.ramps.crouch.update(crouchKeys, dt);
+    const compress = this.ramps.compress.update(compressKeys, dt);
     const pad = this.active;
     this.lastRequest = {
       paddle: !standing && (has('paddle') || touch(this.touchPaddle)),
@@ -122,6 +127,7 @@ export class Controls {
       steer: pad && this.padSteerValue !== 0 ? this.padSteerValue : steer,
       trim: standing && pad && this.padTrimValue !== 0 ? this.padTrimValue : trim,
       crouch: standing && pad ? Math.max(this.padCrouchValue, crouch) : crouch,
+      compress: standing && pad ? Math.max(this.padCompressValue, compress) : compress,
       hand: standing && has('hand'),
     };
     return this.lastRequest;
@@ -141,6 +147,7 @@ export class Controls {
       this.padSteerValue = padSteer(pads);
       this.padTrimValue = padTrim(pads);
       this.padCrouchValue = padValue(pads, this.bindings().gamepad.crouch[0]);
+      this.padCompressValue = padValue(pads, this.bindings().gamepad.compress[0]);
     }
     this.padPrevious = now;
   }
@@ -172,6 +179,7 @@ export class Controls {
     this.padSteerValue = 0;
     this.padTrimValue = 0;
     this.padCrouchValue = 0;
+    this.padCompressValue = 0;
     this.touchPaddle = false;
     this.touchLeft = false;
     this.touchRight = false;

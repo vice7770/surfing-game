@@ -21,7 +21,7 @@ describe('settingsModel', () => {
     expect(applyRow(defaultSettings(), 'pocketReflex', 'always')).toEqual({ tab: 'gameplay', patch: { pocketReflex: 'always' } });
     const rows = settingsModel('controls', defaultSettings(), context);
     const help = (action: string) => rows.find((r) => r.kind === 'binding' && r.action === action && 'help' in r)?.['help' as never];
-    for (const action of ['trimForward', 'trimBack', 'crouch', 'hand']) expect(help(action)).toBeTruthy();
+    for (const action of ['trimForward', 'trimBack', 'crouch', 'compress', 'hand']) expect(help(action)).toBeTruthy();
     expect(help('paddle')).toBeUndefined();
   });
 
@@ -53,10 +53,10 @@ describe('settingsModel', () => {
     expect(settingsModel('graphics', low, context).find((row) => row.id === 'redetect')).toBeUndefined();
   });
 
-  it('lists a keyboard pair and a gamepad button for each of the fifteen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls)', () => {
+  it('lists a keyboard pair and a gamepad button for each of the sixteen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls; the stances spec Compress)', () => {
     const bindings = settingsModel('controls', defaultSettings(), context).filter((row) => row.kind === 'binding');
-    expect(bindings).toHaveLength(45);
-    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(15);
+    expect(bindings).toHaveLength(48);
+    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(16);
   });
 });
 
