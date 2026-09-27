@@ -20,6 +20,12 @@ export const POCKET_TRIM = 0.6;
 const POCKET_GAIN = 0.15;
 const SIT_BACK_FROM = 3;
 const SIT_BACK_FULL = 5;
+/**
+ * The reflex holds a line: steering at least POCKET_STEER, the weight is the
+ * turn's (sat back through a crouched full-steer bottom turn at 10 m/s, the
+ * board wobbled in yaw and threw the rider).
+ */
+const POCKET_STEER = 0.5;
 
 /** The weight the reflex asks for on this frame: −1 back to 1 forward; 0 with no wave or no curl in reach. */
 export function pocketTrim(frame: WaveFrame): number {
@@ -30,9 +36,9 @@ export function pocketTrim(frame: WaveFrame): number {
   return planing > 0 ? trim * planing : 0;
 }
 
-/** The input with the reflex's weight, standing and with no weight held; otherwise the input itself. */
+/** The input with the reflex's weight, standing, with no weight held and no hard steer; otherwise the input itself. */
 export function withPocketReflex<T extends RideInput>(input: T, frame: WaveFrame | undefined, phase: RiderPhase | 'fallen'): T {
-  if (!frame || phase !== 'standing' || (input.trim ?? 0) !== 0) return input;
+  if (!frame || phase !== 'standing' || (input.trim ?? 0) !== 0 || Math.abs(input.steer) >= POCKET_STEER) return input;
   return { ...input, trim: pocketTrim(frame) };
 }
 

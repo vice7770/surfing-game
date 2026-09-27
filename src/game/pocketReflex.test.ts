@@ -40,6 +40,15 @@ describe('pocket reflex', () => {
     expect(withPocketReflex(ride, undefined, 'standing')).toBe(ride);
   });
 
+  // Traced on the reference wave: sat back through a crouched full-steer bottom turn at 10 m/s, the board wobbled in
+  // yaw and threw the rider (on flat water too). The reflex holds a line; in a hard turn the weight is the turn's.
+  it('leaves the weight alone in a hard turn', () => {
+    const far = at(20);
+    expect(withPocketReflex({ ...ride, steer: 1 }, far, 'standing').trim).toBe(0);
+    expect(withPocketReflex({ ...ride, steer: -0.6 }, far, 'standing').trim).toBe(0);
+    expect(withPocketReflex({ ...ride, steer: 0.4 }, far, 'standing').trim).toBe(-POCKET_TRIM);
+  });
+
   it('is on in Practice by default, always, or never', () => {
     expect(showsPocketReflex('practice', 'practice')).toBe(true);
     expect(showsPocketReflex('practice', 'medium')).toBe(false);
