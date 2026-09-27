@@ -148,6 +148,19 @@ Up to 50 friends share one break from a room link. Every player runs the whole s
   - a bot-filled room measured on the M4 Pro;
   - **Part B, physical collisions,** planned after the playtest.
 
+### P1 · Performance (2026-09-27) — `Study done; recommendations open`
+
+From the user's M4 Pro frame-rate survey, re-run on the M1 Air: [performance study](docs/research/performance-study.md).
+- [x] **The M4 Pro holds 120 fps on every screen at every preset.** Its heaviest reading, the Surf screen, was the survey counting GPU time once per WebGL context. The surfer preview costs about 0.5 ms.
+- [x] **A paused game draws only when its view changes,** twice a second otherwise: 15 of 481 paused frames draw, against every frame, and the camera no longer glides after pausing.
+- [x] **Fixed separately:** the camera jumping as waves pass a waiting rider (PR #28), and the High Reef menu never coming up (PR #32).
+- [ ] **Open, most useful first:**
+  - spin up the surf zone on the GPU: loads now take 11–28 s on the M1 Air and 6 s on the M4 Pro, nearly all of it the CPU spin-up;
+  - decide what the menus' waves may cost (a 60 fps cap on faster displays, a lower scale, or holding them still);
+  - re-measure High on the M1 Air with no other session running, and have Auto weigh High's resolution if it misses 60 fps;
+  - guard the GPU step against diverged water, as the CPU step now is;
+  - fix the survey's GPU timing before measuring another machine.
+
 ### Later — `Backlog`
 
 Recorded in the same session; each gets its own grilling before work starts.
