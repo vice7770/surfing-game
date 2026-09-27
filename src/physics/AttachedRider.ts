@@ -173,6 +173,22 @@ const UPRIGHT_RATE = 0.2;
  * uphill), eased in over REFERENCE_TIME, s, at up to REFERENCE_RATE, rad/s; the
  * heading hold and the hand ask for up to HOLD_BANK, rad. Past MAX_BANK the body
  * is off its posture.
+ *
+ * Steering into a lean (past STEER_DEADBAND, toward a bank past UPRIGHT_BANK)
+ * that the body lags by more than the feet's linear range (ANKLE_REST_RANGE /
+ * BANK_GAIN, about 2°), the feet never roll the board away from it: the upper
+ * body's swing throws the body into the lean, and the feet only catch it (the
+ * rail-change study). The planing hull turns hard on a small roll (a held board
+ * rolled 8° turns at 0.8 rad/s at 7 m/s). So the feet's push that threw the body
+ * into a new lean first swung the board the wrong way. At the top of the face
+ * that pointed it up to stall while the body fell in at 3 rad/s; in a rail change
+ * it dug the old rail (it still may while the bank asked for crosses over, about
+ * 0.2 s); mid-carve it pumped the rail in the roll–yaw wobble. Within the linear
+ * range the feet hold a steady carve: the swing is a rotor and holds no steady
+ * torque, and given a carve's small steady rest across a face it wound to its
+ * range, after which a held partial steer turned the wrong way (the final
+ * review). Unsteered, near upright, the heading hold, the hand and a shove keep
+ * the feet's whole range.
  */
 const ANKLE_STIFFNESS = 800;
 const ANKLE_DAMPING = 80;
@@ -265,6 +281,14 @@ const MARGIN_TIME = 0.1;
 const ARM_SPREAD = 0.7;
 const ARM_ALARM = 0.8;
 /**
+ * The upper body's swing drawn (Part B): standing, the drawn chest, head and arms
+ * turn together about the forward axis through the pelvis by SWING_DRAWN_CHEST of
+ * the swing (at its ±69° range the trunk rolls 24°; the arms, held along the board,
+ * lie close to the axis and ride with the chest). The parts the physics solves
+ * with do not move; the drawn points carry it to online surfers.
+ */
+const SWING_DRAWN_CHEST = 0.35;
+/**
  * The leg's stiffness in the riding stance, N/m: between the upright body's
  * 87 kN/m (5.5 Hz) and the legs-bent 22 kN/m (2.75 Hz, RIDER_LEG) of Matsumoto &
  * Griffin 1998, for knees partly bent (3.9 Hz; provisional). At 22 kN/m the
@@ -290,6 +314,8 @@ const STANDING_HOLD_RATE_SMOOTHING = 0.25;
 /** Out of a turn, the hold takes up its line once the yaw rate has fallen below this, rad/s. */
 const STANDING_HOLD_SETTLE = 0.15;
 const STANDING_HOLD_SHARE = 0.5;
+/** A steer within this is none: lying down no arm sweeps, and standing the heading hold keeps the line. */
+const STEER_DEADBAND = 0.05;
 /** Trim: the upper body shifts fore or aft by up to this much, m, moving the load along the board (provisional). */
 const TRIM_SHIFT = 0.25;
 /**
@@ -729,6 +755,9 @@ export class AttachedRider {
   readonly swing = { angle: 0, rate: 0 };
   private readonly bodyFrame = new Quaternion();
   private readonly bankTurn = new Quaternion();
+  private readonly swingTurn = new Quaternion();
+  private readonly swingAxis = new Vector3();
+  private readonly swingPivot = new Vector3();
   private readonly across = new Vector3();
   private readonly rollAxis = new Vector3();
   /**
@@ -1015,7 +1044,7 @@ export class AttachedRider {
    * the rails, the feet on the deck while standing).
    */
   renderPoint(index: number, board: BoardBody, out: Vector3): Vector3 {
-    if (index < 3) return this.partPosition(index, out);
+    if (index < 3) return this.swung(index, this.partPosition(index, out), SWING_DRAWN_CHEST);
     const upright = this.phase === 'landing' || this.phase === 'standing';
     if (index === 3 || index === 4) {
       const side = index === 3 ? 0 : 1;
@@ -1035,7 +1064,8 @@ export class AttachedRider {
       if (this.handSide !== 0 && (index === 3) === (this.handSide > 0)) return out.copy(this.handPoint);
       this.partPosition(index, out);
       const spread = upright ? ARM_SPREAD + ARM_ALARM * (1 - this.balanceMargin) : ARM_SPREAD;
-      return out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread));
+      out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread));
+      return this.swung(index, out, SWING_DRAWN_CHEST);
     }
     if (upright) {
       const front = (index === 5) === (this.stance === 'regular');
@@ -1055,6 +1085,17 @@ export class AttachedRider {
     // Legs lying along the board: from the hips through the leg's centre to the feet.
     this.partPosition(index, out);
     return out.add(this.scratch2.copy(out).sub(this.partPosition(0, this.target)).multiplyScalar(0.9));
+  }
+
+  /**
+   * A drawn point of the upper body turned with the swing: about the forward axis
+   * through the pelvis by `share` of it (standing only; the swing is 0 otherwise).
+   */
+  private swung(index: number, out: Vector3, share: number): Vector3 {
+    if (index === 0 || this.phase !== 'standing' || this.swing.angle === 0) return out;
+    const pelvis = this.partPosition(0, this.swingPivot);
+    this.swingTurn.setFromAxisAngle(this.swingAxis.set(0, 0, 1).applyQuaternion(this.heading), share * this.swing.angle);
+    return out.sub(pelvis).applyQuaternion(this.swingTurn).add(pelvis);
   }
 
   private halfWidth(z: number): number {
@@ -1332,7 +1373,11 @@ export class AttachedRider {
     const wanted = BANK_GAIN * (this.bankReference - this.bank.angle) - BANK_RATE_GAIN * this.bank.rate;
     // Past the rail's bite the feet no longer roll the board further onto it.
     const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(roll) - RAIL_BITE) / RAIL_EASE);
-    const lean = roll > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
+    const reach = roll > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
+    // Steering into a lean the body lags, the feet never roll the board away from it: the upper body throws the lean.
+    const asking = Math.abs(this.steer) > STEER_DEADBAND && Math.abs(this.bankReference) > UPRIGHT_BANK ? Math.sign(this.bankReference) : 0;
+    const lagging = Math.abs(this.bankReference - this.bank.angle) > ANKLE_REST_RANGE / BANK_GAIN;
+    const lean = reach * asking > 0 && lagging ? 0 : reach;
     this.swingStep(h, wanted - lean);
     this.ankleRest += (lean - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
     // Backward Euler on the ankle: over the substep the bank and the roll move at their rates after the solve.
@@ -1493,7 +1538,7 @@ export class AttachedRider {
 
   /** Steering without paddling: one arm sweeps. */
   private get sweeping(): boolean {
-    return Math.abs(this.steer) > 0.05;
+    return Math.abs(this.steer) > STEER_DEADBAND;
   }
 
   /** How hard arm `side` (0 left, at +x; 1 right) strokes, from the paddle and steer input and the paddler's own line keeping. */
@@ -2160,7 +2205,7 @@ export class AttachedRider {
    */
   private holdLine(h: number, board: BoardBody): void {
     const standing = this.phase === 'standing' && this.attached;
-    if (!standing || Math.abs(this.steer) > 0.05 || this.hand) {
+    if (!standing || Math.abs(this.steer) > STEER_DEADBAND || this.hand) {
       this.standingLine = undefined;
       this.standingHold = 0;
       this.holdRate = 0;

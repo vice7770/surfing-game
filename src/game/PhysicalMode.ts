@@ -7,6 +7,7 @@ import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SurferView } from '../scene/character/SurferView';
+import { RiderMotion } from '../scene/rig/riderMotion';
 import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { LeashCord } from '../scene/board/LeashCord';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
@@ -238,6 +239,8 @@ export class PhysicalMode {
   /** The leash (the wipeout spec), from the back foot to the tail plug. */
   private readonly leash = new LeashCord();
   private readonly riderState = createRiderVisualState();
+  /** How the rider's board moves, for the drawn body (Part B). */
+  private readonly riderMotion = new RiderMotion();
   /** Whether the latest input paddles, which cups the drawn hands. */
   private paddling = false;
   private retryPending = false;
@@ -556,6 +559,7 @@ export class PhysicalMode {
     this.leash.object.visible = this.shown && riding && pose[7] > 0;
     if (riding) {
       readRiderSnapshot(rider, pose, this.riderState);
+      this.riderMotion.update(this.riderState, host.snapshot.status.seaTime);
       this.riderState.stroking = this.paddling && this.riderState.phase === 'prone' ? 1 : 0;
       this.riderState.clock = host.snapshot.status.seaTime;
       this.surfer.update(this.riderState, this.camera.camera.position);
@@ -564,6 +568,8 @@ export class PhysicalMode {
       this.leash.update(this.riderState.points[this.stance === 'goofy' ? POINT.leftFoot : POINT.rightFoot], leash.plug, {
         snapped: leash.snapped, hand: leash.reeling ? this.riderState.points[POINT.leftHand] : undefined,
       });
+    } else {
+      this.riderMotion.reset();
     }
     this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
     this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount });
