@@ -18,6 +18,8 @@ export interface GameplaySettings {
   touchControls: 'auto' | 'on' | 'off';
   /** The balance meter (spec P9): on the Practice swell only, always, or never. */
   balanceMeter: 'practice' | 'always' | 'never';
+  /** The pocket reflex (the riding-the-wave spec): with no weight held the rider trims to stay near the curl; Practice only, always, or never. */
+  pocketReflex: 'practice' | 'always' | 'never';
   /** Score each ride 0–10 on the WSL criteria (spec P9), off unless the player wants it. */
   scoreRides: boolean;
   /** Only offered while the dev tools are on. */
@@ -108,7 +110,7 @@ function copyBindings(bindings: Bindings): Bindings {
 
 export function defaultSettings(prefersReducedMotion = false): GameSettings {
   return {
-    gameplay: { units: 'metric', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', scoreRides: false, showTelemetry: false, nameTags: true },
+    gameplay: { units: 'metric', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', pocketReflex: 'practice', scoreRides: false, showTelemetry: false, nameTags: true },
     // The Medium preset's values (Graphics.PRESETS.medium; a test keeps the two equal).
     graphics: {
       preset: 'auto', renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto',
@@ -189,6 +191,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       defaultCamera: oneOf(gameplay.defaultCamera, ['front', 'behind', 'side', 'overview'] as const, defaults.gameplay.defaultCamera),
       touchControls: oneOf(gameplay.touchControls, ['auto', 'on', 'off'] as const, defaults.gameplay.touchControls),
       balanceMeter: oneOf(gameplay.balanceMeter, ['practice', 'always', 'never'] as const, defaults.gameplay.balanceMeter),
+      pocketReflex: oneOf(gameplay.pocketReflex, ['practice', 'always', 'never'] as const, defaults.gameplay.pocketReflex),
       scoreRides: flag(gameplay.scoreRides, defaults.gameplay.scoreRides),
       showTelemetry: flag(gameplay.showTelemetry, defaults.gameplay.showTelemetry),
       nameTags: flag(gameplay.nameTags, defaults.gameplay.nameTags),

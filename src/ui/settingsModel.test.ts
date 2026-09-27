@@ -8,7 +8,7 @@ const context = { devTools: false, detecting: false };
 describe('settingsModel', () => {
   it('offers telemetry only with the dev tools on', () => {
     const ids = (devTools: boolean) => settingsModel('gameplay', defaultSettings(), { ...context, devTools }).map((row) => row.id);
-    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'scoreRides', 'nameTags']);
+    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'pocketReflex', 'scoreRides', 'nameTags']);
     expect(ids(true)).toContain('showTelemetry');
   });
 
@@ -16,6 +16,9 @@ describe('settingsModel', () => {
   it('offers the balance meter in Practice by default, and explains the standing actions', () => {
     expect(settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'balanceMeter')).toMatchObject({ kind: 'choice', value: 'practice' });
     expect(applyRow(defaultSettings(), 'balanceMeter', 'never')).toEqual({ tab: 'gameplay', patch: { balanceMeter: 'never' } });
+    // The riding-the-wave spec: the pocket reflex, a choice like the balance meter's.
+    expect(settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'pocketReflex')).toMatchObject({ kind: 'choice', value: 'practice' });
+    expect(applyRow(defaultSettings(), 'pocketReflex', 'always')).toEqual({ tab: 'gameplay', patch: { pocketReflex: 'always' } });
     const rows = settingsModel('controls', defaultSettings(), context);
     const help = (action: string) => rows.find((r) => r.kind === 'binding' && r.action === action && 'help' in r)?.['help' as never];
     for (const action of ['trimForward', 'trimBack', 'crouch', 'hand']) expect(help(action)).toBeTruthy();

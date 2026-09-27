@@ -1,4 +1,5 @@
 import { Vector3 } from 'three';
+import { withPocketReflex } from '../game/pocketReflex';
 import { RideAnalyzer, type Maneuver, type RideReport } from '../game/rideAnalysis';
 import type { PopUpReport, RiderSeparation } from '../physics/AttachedRider';
 import { BoardBody } from '../physics/BoardBody';
@@ -105,6 +106,8 @@ export interface RideRequest extends RideInput {
   retry: boolean;
   /** Online (spec N1): a retry puts the rider here, and later retries too (a free spot in the lineup). */
   spawnAt?: { x: number; z: number };
+  /** The pocket reflex rides with the player (the riding-the-wave spec). */
+  pocketReflex?: boolean;
 }
 
 /** The rider's phases in snapshot order, `fallen` once in the water. */
@@ -326,7 +329,8 @@ export class SurfZoneRunner {
         this.launchRide();
       }
       const start = performance.now();
-      session.step(SURF_ZONE_STEP, this.water, request);
+      const ridden = request.pocketReflex ? withPocketReflex(request, this.wave, session.phase) : request;
+      session.step(SURF_ZONE_STEP, this.water, ridden);
       session.strike(this.simulation.lip);
       this.boardMs = performance.now() - start;
       const lost = session.board.outsideDomain || (session.surfer.active && session.surfer.outsideDomain)
