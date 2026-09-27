@@ -849,6 +849,62 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(degrees(planing.widest)).toBeGreaterThan(5);
     });
 
+    // A guard for the Canyon's off-plane falls: carried at once at the lean it had and eased upright, the body tipped
+    // the slowing board over in this case; standing back up on its ankles first, it stays on (the fall-fixes findings).
+    it('carries a leaning body back upright when the board drops off the plane', () => {
+      const { board, rider } = mounted('standing');
+      let speed = 6;
+      const tow = () => {
+        board.velocity.z = speed;
+        rider.velocity.z = speed;
+      };
+      tow();
+      run(board, new PlaneWater(), 0.3, tow);
+      rider.steer = 0.25;
+      run(board, new PlaneWater(), 0.4, tow);
+      const leaning = Math.abs(rider.bank.angle);
+      rider.steer = 0;
+      speed = 2;
+      run(board, new PlaneWater(), 1.5, tow);
+      expect(degrees(leaning)).toBeGreaterThan(3);
+      expect(rider.attached).toBe(true);
+      expect(degrees(Math.abs(rider.bank.angle))).toBeLessThan(1);
+    });
+
+    // The carve lab and the Canyon: held at full steer the rail ran to 60–65°, where the board bogs (6 → 2 m/s in
+    // 0.6 s) and the rider falls into the turn. The feet stop rolling the rail past its bite, and the rider leans no
+    // further than the board's carve can hold.
+    it('does not dig the rail past its bite at full steer', () => {
+      const { board, rider, water } = acrossFace(0, 6);
+      run(board, water, 0.3);
+      const speed = board.velocity.length();
+      rider.steer = 1;
+      let deepest = 0;
+      run(board, water, 1.5, () => { deepest = Math.max(deepest, Math.abs(railOf(board))); });
+      expect(rider.attached).toBe(true);
+      expect(deepest).toBeLessThan(52);
+      expect(board.velocity.length()).toBeGreaterThan(0.6 * speed);
+    });
+
+    // The Canyon's rides ended in their first bottom turn: crouched at full steer on the trough's flat water at 8–12
+    // m/s. The crouch's drop took the load off the board as the body leaned in, the ankles' brake rolled the board onto
+    // its rail instead of stopping the body, and the rider dove into the turn (0.65 s at 7.5 m/s). A settled crouch held.
+    // A 50° lean holds a turn of g tan 50° / v: 1.5 rad/s at 8 m/s, 1.1 rad/s at 11 m/s.
+    it.each([[8, 60], [11, 35]])('holds a crouched full-steer turn on flat water at %i m/s', (speed, turned) => {
+      const board = new BoardBody();
+      board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
+      const rider = new AttachedRider(board.shape, { phase: 'standing' });
+      board.attach(rider);
+      const water = new PlaneWater();
+      run(board, water, 0.3);
+      const start = headingOf(board);
+      rider.steer = 1;
+      rider.crouch = 0.6;
+      run(board, water, 1.2);
+      expect(rider.attached).toBe(true);
+      expect(Math.abs(degrees(headingOf(board) - start))).toBeGreaterThan(turned);
+    });
+
     // Review Focus 5: the pop-up's landing is unchanged, the body carried upright over its stance as before the bank;
     // the bank applies only once standing.
     it('lands upright, banking only once standing', () => {
