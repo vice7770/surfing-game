@@ -54,8 +54,8 @@ describe('the GPU tube carve', () => {
     expect(packTubeTextures(many, TUBE_CAPACITY + 5, grid, 1, tubes, columns).count).toBeLessThanOrEqual(TUBE_CAPACITY);
   });
 
-  it('agrees with the physics’ carve: one tube, a peel of two, a tube beside none, unrelated neighbours, a shifted grid, a shut tube', () => {
-    const tube = (column: number, crestZ: number, open: number, dirZ = 1) => [column + 0.5, crestZ, 2, 0, dirZ, open, 2, 0.8, 0.6, column, 1, 0];
+  it('agrees with the physics’ carve: one tube, a peel of two, a tube beside none, unrelated neighbours, a shifted grid, a shut tube, collapsing tubes', () => {
+    const tube = (column: number, crestZ: number, open: number, dirZ = 1, scale = 1) => [column + 0.5, crestZ, 2, 0, dirZ, open, 2, 0.8, 0.6, column, scale, 0];
     const cases: { table: number[]; count: number; xMin: number }[] = [
       { table: tube(14, 0, 3), count: 1, xMin: 10 },
       { table: [...tube(14, 0.4, 3), ...tube(15, 0, 0.8)], count: 2, xMin: 10 },
@@ -63,6 +63,9 @@ describe('the GPU tube carve', () => {
       { table: [...tube(14, 0, 3), ...tube(15, 0, 3, -1)], count: 2, xMin: 10 },
       { table: [...tube(21, 0.4, 3), ...tube(22, 0, 1.2)], count: 2, xMin: 17 },
       { table: tube(14, 0, 0), count: 1, xMin: 10 },
+      // G9: a collapsing tube alone, and one collapsing beside an open one of its peel.
+      { table: tube(14, 0, 3, 1, 0.55), count: 1, xMin: 10 },
+      { table: [...tube(14, 0.4, 3, 1, 0.35), ...tube(15, 0, 1.6)], count: 2, xMin: 10 },
     ];
     for (const { table, count, xMin } of cases) {
       const g = { ...grid, xMin };

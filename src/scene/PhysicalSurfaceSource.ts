@@ -10,6 +10,8 @@ export interface RenderableSurfZone {
   writeTubes?(into: Float32Array): number;
   /** The width of the columns the tubes are thrown in, m. */
   readonly tubeColumnWidth?: number;
+  /** G9: the aeration, (void fraction, plume depth) per render node. */
+  writeUniformAeration?(data: Float32Array, grid: SurfaceGrid): void;
   writeUniformBed(data: Float32Array, grid: SurfaceGrid): void;
   writeUniformFlow(data: Float32Array, grid: SurfaceGrid): void;
 }
@@ -27,12 +29,20 @@ export class PhysicalSurfaceSource implements SurfaceSource {
   /** G9: the flying tubes, when the surf zone offers them, so the Rich water can cut them itself. */
   readonly writeTubes?: (into: Float32Array) => number;
   readonly tubeColumnWidth?: number;
+  /** G9: the air breaking drove in, when the surf zone offers it. */
+  readonly writeAeration?: (data: Float32Array) => void;
 
   constructor(private readonly simulation: RenderableSurfZone, spacing = 1) {
     this.grid = simulation.renderGrid(spacing);
     if (simulation.writeTubes) {
       this.writeTubes = (into) => simulation.writeTubes!(into);
       this.tubeColumnWidth = simulation.tubeColumnWidth;
+    }
+    if (simulation.writeUniformAeration) {
+      this.writeAeration = (data) => {
+        this.grid.xMin = simulation.windowXMin;
+        simulation.writeUniformAeration!(data, this.grid);
+      };
     }
   }
 
