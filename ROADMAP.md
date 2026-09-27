@@ -504,7 +504,7 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
   - the [size report](docs/research/size-report.md) (`npm run report:sizes`) measured today's tank: H1/3 is 40–66 % of Komar–Gaughan at the Beach (1.5–2.0 m faces at Hs 3 m, where its 5 m edge saturates), 61–85 % at the Point, 76–86 % at the Reef and 60–89 % at the Canyon. The forecast is fitted per spot to the surf at the take-off, where the readout measures.
 - **The Reef** is handed to the Teahupo'o Reef rework (the user's decision in that session, 2026-09-27): its bed stays here, and the report shows it ungated.
 - **Part B · bigger surf, machinery (merged 2026-09-27):**
-  - the Height slider is a deep-water buoy Hs, shoaled to the tank's edge (Practice and the Canyon take theirs at the edge); the cap is 4 m (the Canyon 3 m);
+  - the Height slider is a deep-water buoy Hs, shoaled to the tank's edge (Practice and the Canyon take theirs at the edge, and the Reef until its rework: its 10 m edge blew up under a shoaled 3–4 m, 18 s swell); the cap is 4 m (the Canyon and the Reef 3 m);
   - the tank is sized to the swell: a deeper edge (3.3 Hs, within 0.4 of the deep-water wavelength), a longer zone, the 1 m zone from 40 m seaward of the sets' break, and Madsen–Sørensen wave numbers at the deeper edge;
   - the Beach has a deeper outer bar (450 m out, crest 5 m deep) and the Point a longer shelf past 12 m; the [profiles' sources](docs/research/outer-profiles.md);
   - the take-off is placed where the sets were measured to break (γ 1.13 at the Point, 1.14 at the Beach).
