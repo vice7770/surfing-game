@@ -57,7 +57,8 @@ for (const spot of spots) {
       tide: settings.tide, windSpeed: settings.windSpeed,
     });
     simulation.lip.onLand = (x, z, _volume, _vx, _vy, _vz, flight) => {
-      if (!flight) return;
+      // A splash-up's landing (G9) draws no tube.
+      if (!flight || flight.kind !== 0) return;
       const tube = measureTube(flight.launch, { x, z }, flight.y, flight.crestSpeed * flight.age);
       lengths.push(tube.length);
       if (tube.length >= MIN_TUBE_LENGTH) ratios.push(tube.widthRatio);
@@ -68,6 +69,7 @@ for (const spot of spots) {
         simulation.step(STEP);
         let opening = 0;
         simulation.lip.forEachActiveParcel((parcel) => {
+          if (parcel.kind !== 0) return;
           opening = Math.max(opening, parcel.y - simulation.heightAt(parcel.x, parcel.z));
         });
         if (opening > 0) openings.push(opening);

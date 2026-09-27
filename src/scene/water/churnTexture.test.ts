@@ -17,9 +17,10 @@ describe('churn whitewater', () => {
   });
 
   it('takes over from the lace only where the foam is fresh', () => {
-    expect(freshness(0.3)).toBe(0);
-    expect(freshness(0.95)).toBe(1);
-    expect(freshness(0.7)).toBeGreaterThan(freshness(0.6));
+    // G9: freshness follows the void fraction the plunge drove in (measured peaks near 0.2).
+    expect(freshness(0.01)).toBe(0);
+    expect(freshness(0.2)).toBe(1);
+    expect(freshness(0.1)).toBeGreaterThan(freshness(0.05));
   });
 
   it('bakes density and height into a repeating, mipmapped tile', () => {
