@@ -62,7 +62,30 @@ describe('the collapsing tube and its air (G9)', () => {
     return { lip, bubbles, escaped, run: (seconds: number) => { for (let frame = 0; frame < seconds * 240; frame += 1) (lip.step(1 / 240), record(1 / 240)); } };
   }
 
-  it('closes a tube when its jet first lands, and shrinks its void over its free-fall time', () => {
+  it('holds a tube open while its jet still pours, and closes it once the jet has all landed', () => {
+    // A jet pouring for 0.8 s: its tip lands long before its last water leaves the crest.
+    const solver = basin();
+    const lip = new PlungingLip(solver, 512);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3, tube, 0.8);
+    const landed = { first: -1, last: -1 };
+    // The jet's own parcels leave with the crest's speed; its splash-ups do not.
+    let jet = 0;
+    lip.onLand = (_x, _z, _volume, _vx, _vy, _vz, flight) => {
+      if (flight?.crestSpeed) jet += 1;
+    };
+    const table = new Float32Array(12 * 4);
+    for (let frame = 0; frame < 2400; frame += 1) {
+      lip.step(1 / 240);
+      if (jet > 0 && landed.first < 0) landed.first = frame;
+      if (jet === STRIP_PARCELS && landed.last < 0) landed.last = frame;
+      lip.writeTubes(table, 4);
+      // Until its last water is down the void stands whole, so the pour lands where its tube is, not on the crest.
+      if (landed.first >= 0 && landed.last < 0) expect(table[10]).toBe(1);
+    }
+    expect(landed.last - landed.first).toBeGreaterThan(60);
+  });
+
+  it('closes a tube once its jet has landed, and shrinks its void over its free-fall time', () => {
     const { lip, run } = peel([3.5], 0);
     let closed = -1;
     for (let frame = 0; frame < 2400 && closed < 0; frame += 1) {

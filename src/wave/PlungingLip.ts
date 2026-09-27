@@ -25,8 +25,8 @@ export const LINK_TIME = 1;
  */
 export const SPLASH_UP = { share: 0.3, vertical: 0.6, horizontal: 0.8, minImpact: 0.5 } as const;
 /**
- * A tube's trapped air (G9, docs/research/whitewater-sources.md): when its jet
- * lands the void closes, shrinking over its free-fall time t_c = √(2W/g) as
+ * A tube's trapped air (G9, docs/research/whitewater-sources.md): once its jet has
+ * all landed the void closes, shrinking over its free-fall time t_c = √(2W/g) as
  * its air is squeezed out evenly. `escape` of the air leaves as spray (the
  * spit, out of a peel's open end; or an eruption up through the lip where a
  * section closes all at once) and the rest breaks into bubbles. Provisional,
@@ -197,12 +197,12 @@ interface FlyingTube {
   crestSpeed: number;
   /** How fast the jet's tip leaves the crest behind, m/s. */
   relativeSpeed: number;
-  /** When its jet first landed and the void began to close, s; NaN while it flies. */
+  /** When its jet had all landed and the void began to close, s; NaN while it flies or pours. */
   closedAt: number;
   /** The air it trapped as it closed, m³, and the share of it squeezed out so far. */
   air: number;
   released: number;
-  /** How far its jet fell to close it, m: its air is driven down in proportion. */
+  /** How far its jet's tip fell, m: its air is driven down in proportion. */
   drop: number;
 }
 
@@ -688,11 +688,13 @@ export class PlungingLip implements LipParcelSource {
       strip.parcels[strip.parcels.indexOf(parcel)] = -1;
       strip.live -= 1;
       const { tube } = strip;
-      if (tube && Number.isNaN(tube.closedAt)) {
-        // The jet has come down: its void closes, trapping its air (its cross-section over its column's width).
+      // Its air is driven down as far as the jet's tip fell.
+      if (tube && tube.drop === 0) tube.drop = Math.max(0.1, flight.launch.y - y);
+      if (tube && strip.live === 0 && Number.isNaN(tube.closedAt)) {
+        // The jet has all come down: its void closes, trapping its air (its cross-section over its column's width).
+        // While it still pours, the curtain holds the void whole and the pour lands where the tube is, not on the crest.
         tube.closedAt = this.time;
         tube.air = LH82_AREA * tube.geometry.length * tube.geometry.width * solver.dx;
-        tube.drop = Math.max(0.1, flight.launch.y - y);
       }
       // A strip stays while its water flies or its void is still collapsing.
       if (strip.live === 0 && (!tube || collapsed(tube, this.time) >= 1)) this.removeStrip(stripId, strip);
