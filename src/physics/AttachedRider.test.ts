@@ -711,6 +711,71 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(rider.contact.centreOfPressure.z).toBeGreaterThan(before + 0.05);
     });
 
+    // The inside hand (de Sousa 2022): the body leans into the curve until the inside hand nears the water,
+    // frontside the rear arm, backside the leading arm. On acrossFace the board's −x side is up the face.
+    describe('the reaching hand', () => {
+      const leaning = (stance: 'regular' | 'goofy', steer: number, set: (rider: AttachedRider) => void) => {
+        const ride = acrossFace(60, 7, stance);
+        ride.rider.steer = steer;
+        set(ride.rider);
+        run(ride.board, ride.water, 0.6);
+        return ride;
+      };
+      const point = ({ board, rider }: ReturnType<typeof acrossFace>, index: number) => rider.renderPoint(index, board, new Vector3());
+      const along = (ride: ReturnType<typeof acrossFace>, index: number) =>
+        point(ride, index).sub(point(ride, 0)).dot(new Vector3(0, 0, 1).applyQuaternion(ride.board.orientation));
+      const aboveWater = (ride: ReturnType<typeof acrossFace>, index: number) => {
+        const hand = point(ride, index);
+        return hand.y - ride.water.surfaceAt(hand.x, hand.z);
+      };
+      // Index 4 is the drawn hand on the board's −x side, index 3 on its +x side.
+
+      it('reaches the inside hand into the face, the rear arm frontside and the leading arm backside', () => {
+        const frontside = leaning('regular', -1, (rider) => { rider.compress = 1; });
+        expect(frontside.rider.attached).toBe(true);
+        expect(aboveWater(frontside, 4)).toBeLessThanOrEqual(0.02);
+        expect(along(frontside, 4)).toBeLessThan(-0.15);
+        const backside = leaning('goofy', -1, (rider) => { rider.compress = 1; });
+        expect(backside.rider.attached).toBe(true);
+        expect(aboveWater(backside, 4)).toBeLessThanOrEqual(0.02);
+        expect(along(backside, 4)).toBeGreaterThan(0.15);
+      });
+
+      it('reaches with no hand unless compressing', () => {
+        const crouched = leaning('regular', -1, (rider) => { rider.crouch = 1; rider.trim = 0.5; });
+        expect(aboveWater(crouched, 4)).toBeGreaterThan(0.2);
+        expect(Math.max(...crouched.rider.handLoad)).toBe(0);
+      });
+
+      it('keeps the hand in the face (E) on the wave side, even leaning away from it', () => {
+        const ride = leaning('regular', 1, (rider) => { rider.compress = 1; rider.hand = true; });
+        expect(ride.rider.bank.angle).toBeGreaterThan(0.2);
+        expect(point(ride, 4).distanceTo(ride.rider.handPoint)).toBeLessThan(1e-9);
+        expect(point(ride, 3).distanceTo(ride.rider.handPoint)).toBeGreaterThan(0.3);
+      });
+
+      // E bends the body toward the wave side; the reaching hand follows the lean and adds none of its own
+      // (half compressed at this lean the hand stays out of the water, so the lean is all that could differ).
+      it('adds no lean of its own', () => {
+        const banks = (set: (rider: AttachedRider) => void) => {
+          const { board, rider } = mounted('standing');
+          board.velocity.z = 7;
+          rider.velocity.z = 7;
+          rider.steer = -0.4;
+          set(rider);
+          const water = new PlaneWater();
+          const out: number[] = [];
+          run(board, water, 1, () => out.push(rider.bank.angle));
+          return out;
+        };
+        const compressed = banks((rider) => { rider.compress = 0.5; });
+        const crouched = banks((rider) => { rider.crouch = 0.5; rider.trim = 0.25; });
+        expect(Math.min(...compressed)).toBeLessThan(-0.2);
+        const worst = Math.max(...compressed.map((bank, i) => Math.abs(bank - crouched[i])));
+        expect(worst).toBeLessThan((0.5 * Math.PI) / 180);
+      });
+    });
+
     it('lies down straight from Compress', () => {
       const { board, rider, water } = settled();
       rider.compress = 1;
