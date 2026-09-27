@@ -1,4 +1,4 @@
-import { Quaternion, Vector3, type Bone } from 'three';
+import { Matrix4, Quaternion, Vector3, type Bone } from 'three';
 import { describe, expect, it } from 'vitest';
 import { AttachedRider } from '../../physics/AttachedRider';
 import { BoardBody } from '../../physics/BoardBody';
@@ -338,11 +338,12 @@ describe('the snap', () => {
     const state = posturePoints('standing', stance, board, level, createRiderVisualState());
     Object.assign(state, { yawRate, speed: 5 });
     if (back) {
-      // The body over the rear foot: the pelvis 5 cm behind the middle of the feet, along the board.
+      // The weight fully back (S): the body a third of the stance behind its middle.
       const p = state.points;
       const tail = new Vector3(0, 0, -1).applyQuaternion(level);
       const middle = p[POINT.leftFoot].clone().add(p[POINT.rightFoot]).multiplyScalar(0.5);
-      const shift = p[POINT.pelvis].clone().sub(middle).dot(tail) * -1 + 0.05;
+      const span = Math.abs(p[POINT.leftFoot].clone().sub(p[POINT.rightFoot]).dot(tail));
+      const shift = p[POINT.pelvis].clone().sub(middle).dot(tail) * -1 + span / 3;
       for (const point of [POINT.pelvis, POINT.torso, POINT.head, POINT.leftHand, POINT.rightHand]) p[point].addScaledVector(tail, shift);
     }
     rig.solve(state);
@@ -376,6 +377,45 @@ describe('the snap', () => {
     const rig = new HumanoidRig(createTestHumanoid().bones);
     rig.solve(state);
     expect(raised(rig, lead(stance))).toBeGreaterThan(40);
+  });
+
+  // The final review: the weight was read along the board's own axis, so its pitch read as weight (a level carve down
+  // the face drew a third of a snap, the real snap climbing 24° nose-up none). Live riders on the 15° face.
+  const onFace = (across: number, speed: number, steer: number, trim: number, stance: 'regular' | 'goofy') => {
+    const slope = (15 * Math.PI) / 180;
+    const yaw = (across * Math.PI) / 180;
+    const normal = new Vector3(0, 1, Math.tan(slope)).normalize();
+    const fall = new Vector3(0, -Math.sin(slope), Math.cos(slope));
+    const side = new Vector3().crossVectors(normal, fall).normalize();
+    const forward = fall.clone().multiplyScalar(Math.cos(yaw)).addScaledVector(side, -Math.sin(yaw)).normalize();
+    const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(new Vector3().crossVectors(normal, forward).normalize(), normal, forward));
+    const boardBody = new BoardBody();
+    boardBody.place(normal.clone().multiplyScalar(boardBody.shape.centerOfMass.y), orientation, forward.clone().multiplyScalar(speed));
+    const rider = new AttachedRider(boardBody.shape, { phase: 'standing', stance });
+    boardBody.attach(rider);
+    const water = new PlaneWater({ slopeZ: -Math.tan(slope) });
+    for (let i = 0; i < 12; i += 1) boardBody.step(1 / 60, water);
+    rider.steer = steer;
+    rider.trim = trim;
+    for (let i = 0; i < 30; i += 1) boardBody.step(1 / 60, water);
+    expect(rider.attached).toBe(true);
+    const state = createRiderVisualState();
+    for (let p = 0; p < 7; p += 1) rider.renderPoint(p, boardBody, state.points[p]);
+    Object.assign(state, { phase: rider.phase, yawRate: boardBody.angularVelocity.y, speed: boardBody.velocity.length() });
+    state.boardPosition.copy(boardBody.position);
+    state.boardQuaternion.copy(boardBody.orientation);
+    state.travel.copy(boardBody.velocity).setY(0).normalize();
+    const rig = new HumanoidRig(createTestHumanoid().bones);
+    rig.solve(state);
+    return rig;
+  };
+
+  it.each(['regular', 'goofy'] as const)('draws no snap in a level carve down the face, %s', (stance) => {
+    expect(raised(stance === 'regular' ? onFace(60, 7, 1, 0, stance) : onFace(-60, 7, -1, 0, stance), lead(stance))).toBeLessThan(25);
+  });
+
+  it.each(['regular', 'goofy'] as const)('draws the snap climbing the face with the weight back, %s', (stance) => {
+    expect(raised(stance === 'regular' ? onFace(150, 7, 1, -1, stance) : onFace(-150, 7, -1, -1, stance), lead(stance))).toBeGreaterThan(40);
   });
 
   it('shows no snap with the weight back and no turn', () => {
@@ -476,8 +516,8 @@ describe('the reaching hand, in a compressed bottom turn', () => {
     for (const [name, length] of boneLengths(bones)) expect(length, name).toBeCloseTo(before.get(name)!, 9);
   };
   it.each([['regular'], ['goofy']] as const)('reaches the hand the physics puts at the water, %s backside turn', (stance) => reaches(stance, 'backside turn'));
-  // Frontside it fell 6.9 cm short (2.8 cm before the top-turn plan). The feet no longer roll the board away from the
-  // lean asked for, so the upper body's swing throws the lean and holds it (0.27 rad here, 0 before): the drawn chest
-  // turns 5° out of the turn, and the shoulder sits 4 cm further from the hand in the water. Pinned, not tuned.
+  // Frontside it falls 6.6 cm short (2.8 cm before the top-turn plan). The feet no longer roll the board away from a
+  // lean the body lags, so the upper body's swing throws the lean (about 0.27 rad here, 0 before): the drawn chest
+  // turns about 5° out of the turn, and the shoulder sits further from the hand in the water. Pinned, not tuned.
   it.fails.each([['regular'], ['goofy']] as const)('reaches the hand the physics puts at the water, %s bottom turn', (stance) => reaches(stance, 'bottom turn'));
 });

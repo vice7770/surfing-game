@@ -81,14 +81,17 @@ export const RIG_DETAIL = {
   /**
    * The snap (de Sousa 2022's final phase: the weight to the back foot, the trunk
    * rotating, the chest and the leading arm toward the lip; the stances spec's
-   * video). The weight is where the pelvis sits along the stance, as a share of
-   * it from the middle: riding level it sits 15–19 % ahead, with the weight back
-   * 3–11 % behind. From `snapFrom` to `snapFull` the weight goes onto the back
-   * foot. In a turn, blended in as the leading arm is, the chest turns up to
-   * `snapTwist`° further into it and the leading arm rises to `snapRaise`°.
+   * video). The weight is where the pelvis sits over the stance, level, as a
+   * share of the stance from its middle: the body rides upright, so riding level
+   * it sits over the middle, with the weight fully back (S) 31 % behind, and
+   * climbing the face nose-up it sits back over the tail whatever the weight
+   * (read along the pitched board, its pitch read as weight: the final review).
+   * From `snapFrom` to `snapFull` the weight goes onto the back foot. In a turn,
+   * blended in as the leading arm is, the chest turns up to `snapTwist`° further
+   * into it and the leading arm rises to `snapRaise`°.
    */
-  snapFrom: 0,
-  snapFull: -0.1,
+  snapFrom: -0.05,
+  snapFull: -0.3,
   snapTwist: 30,
   snapRaise: 60,
 };
@@ -140,6 +143,8 @@ export class HumanoidRig {
   private readonly left = new Vector3();
   private readonly boardUp = new Vector3();
   private readonly boardForward = new Vector3();
+  /** The board's forward, level. */
+  private readonly level = new Vector3();
   private readonly chestUp = new Vector3();
   private readonly hipsForward = new Vector3();
   private readonly target = new Vector3();
@@ -391,10 +396,12 @@ export class HumanoidRig {
     if (total > 0 && state.standingBlend < 1) this.orientSpine(chestUp.copy(base).applyAxisAngle(bendAxis, state.standingBlend * total));
   }
 
-  /** Standing, how far the weight is back (`RIG_DETAIL.snapFrom`): where the pelvis sits along the stance, 0 to 1. */
+  /** Standing, how far the weight is back (`RIG_DETAIL.snapFrom`): where the pelvis sits over the stance, level, 0 to 1. */
   private weightBack(state: RiderVisualState): number {
     const p = state.points;
-    const f = this.boardForward;
+    const f = this.level.copy(this.boardForward).setY(0);
+    if (f.lengthSq() < 1e-8) return 0;
+    f.normalize();
     const left = p[POINT.leftFoot].dot(f);
     const right = p[POINT.rightFoot].dot(f);
     const span = Math.abs(left - right);
