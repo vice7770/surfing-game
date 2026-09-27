@@ -4,26 +4,27 @@
  * standard mapping. Escape and Start always pause and cannot be rebound.
  */
 export const ACTIONS = [
-  'paddle', 'popUp', 'steerLeft', 'steerRight', 'trimForward', 'trimBack', 'crouch', 'hand', 'retry', 'camera', 'mute',
+  'paddle', 'popUp', 'steerLeft', 'steerRight', 'trimForward', 'trimBack', 'crouch', 'hand', 'duckDive', 'retry', 'camera', 'mute',
   'callLeft', 'callRight', 'callParty', 'callNice', 'pause',
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 
 /**
- * When an action does anything (spec P9): paddling lying down, trim, crouch and
- * the hand standing, the rest always. A key may serve one action per context, so
- * ArrowUp paddles lying down and trims forward standing.
+ * When an action does anything (spec P9): paddling and the duck-dive lying down
+ * (and in the water), trim, crouch and the hand standing, the rest always. A key
+ * may serve one action per context, so ArrowUp paddles lying down and trims
+ * forward standing, and S duck-dives lying down and trims back standing.
  */
 export type ActionContext = 'prone' | 'standing' | 'always';
 export const ACTION_CONTEXT: Record<Action, ActionContext> = {
   paddle: 'prone', popUp: 'always', steerLeft: 'always', steerRight: 'always',
-  trimForward: 'standing', trimBack: 'standing', crouch: 'standing', hand: 'standing',
+  trimForward: 'standing', trimBack: 'standing', crouch: 'standing', hand: 'standing', duckDive: 'prone',
   retry: 'always', camera: 'always', mute: 'always', pause: 'always',
   callLeft: 'always', callRight: 'always', callParty: 'always', callNice: 'always',
 };
 
 /** Whether two actions can be live at once, and so must not share an input. */
-function overlap(a: Action, b: Action): boolean {
+export function overlap(a: Action, b: Action): boolean {
   const first = ACTION_CONTEXT[a];
   const second = ACTION_CONTEXT[b];
   return first === 'always' || second === 'always' || first === second;
@@ -47,6 +48,8 @@ export const DEFAULT_BINDINGS: Bindings = {
     trimBack: ['KeyS', 'ArrowDown'],
     crouch: ['ShiftLeft', 'ShiftRight'],
     hand: ['KeyE'],
+    // The wipeout spec: S and ↓ duck-dive lying down (they trim back standing).
+    duckDive: ['KeyS', 'ArrowDown'],
     retry: ['KeyR'],
     camera: ['KeyC'],
     mute: ['KeyM'],
@@ -67,6 +70,8 @@ export const DEFAULT_BINDINGS: Bindings = {
     trimBack: [13],
     crouch: [6],
     hand: [4, 17],
+    // LT (analog; it crouches only standing) and the D-pad's down.
+    duckDive: [6, 13],
     retry: [3],
     camera: [5],
     mute: [8],

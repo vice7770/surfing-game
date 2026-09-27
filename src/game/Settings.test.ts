@@ -49,6 +49,25 @@ describe('SettingsStore', () => {
     expect(old({ hand: [2], callParty: [4] })).toMatchObject({ hand: [4, 17], callParty: [2] });
   });
 
+  // Review Focus 1 (the wipeout spec): a new action takes only the defaults a save leaves free.
+  it('gives the new Duck-dive only the defaults a saved lying-down binding leaves free', () => {
+    const saved = { controls: { bindings: { keyboard: { paddle: ['KeyS'] }, gamepad: { paddle: [6] } }, padLayout: 2 } };
+    const store = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify(saved) }));
+    const { keyboard, gamepad } = store.value.controls.bindings;
+    expect(keyboard.paddle).toEqual(['KeyS']);
+    expect(keyboard.duckDive).toEqual(['ArrowDown']);
+    expect(gamepad.paddle).toEqual([6]);
+    expect(gamepad.duckDive).toEqual([13]);
+    expect(defaultSettings().controls.bindings.keyboard.duckDive).toEqual(['KeyS', 'ArrowDown']);
+  });
+
+  it('gives the new Duck-dive a free fallback key when a save took both its defaults', () => {
+    const saved = { controls: { bindings: { keyboard: { paddle: ['KeyS', 'ArrowDown'] } }, padLayout: 2 } };
+    const { keyboard } = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify(saved) })).value.controls.bindings;
+    expect(keyboard.duckDive).toHaveLength(1);
+    expect(keyboard.paddle).not.toContain(keyboard.duckDive[0]);
+  });
+
   // The riding-the-wave spec: the pocket reflex rides with the player on the Practice swell unless they choose otherwise.
   it('keeps the pocket reflex on the Practice swell by default, and sanitizes it', () => {
     expect(defaultSettings().gameplay.pocketReflex).toBe('practice');

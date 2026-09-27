@@ -1,7 +1,7 @@
 import type { RideView } from '../scene/SpectatorCamera';
 import type { Units } from '../ui/units';
 import type { WaterLook } from '../scene/water/waterLook';
-import { ACTIONS, DEFAULT_BINDINGS, MAX_BUTTON, type Action, type Bindings } from './Bindings';
+import { ACTIONS, DEFAULT_BINDINGS, MAX_BUTTON, overlap, type Action, type Bindings } from './Bindings';
 import { DEFAULT_STICK, MAX_DEADZONE, type StickSettings } from './Sticks';
 import { DEFAULT_SURFER, sanitizeSurfer, type SurferSettings } from './SurferChoice';
 import { PRESETS } from './Graphics';
@@ -147,8 +147,25 @@ function within(value: unknown, min: number, max: number, fallback: number): num
   return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max ? value : fallback;
 }
 
+/**
+ * Where an action a save does not know yet (it arrived with an update) looks
+ * after its own defaults are all taken: keys and pad buttons nothing of the
+ * player's usually holds (the Duck-dive's D-pad up is the trim's, standing only).
+ */
+const FALLBACK_KEYS: readonly string[] = ['KeyX', 'KeyZ', 'KeyV', 'KeyB'];
+const FALLBACK_BUTTONS: readonly number[] = [12];
+
 /** The pad defaults before C1, which a save from then still holds unless the player changed them (the party call only exists since N1). */
 const LEGACY_PAD_DEFAULTS: Partial<Record<Action, number[]>> = { hand: [2], popUp: [0], callParty: [4] };
+
+/** `action`'s inputs that no other action live with it holds: its own defaults, else the first free fallback, else its defaults as they are. */
+function freeInputs<T extends string | number>(table: Record<Action, T[]>, action: Action, fallbacks: readonly T[]): T[] {
+  const taken = (input: T) => ACTIONS.some((other) => other !== action && overlap(action, other) && table[other].includes(input));
+  const free = table[action].filter((input) => !taken(input));
+  if (free.length > 0) return free;
+  const fallback = fallbacks.find((input) => !taken(input));
+  return fallback === undefined ? table[action] : [fallback];
+}
 
 function sanitizeBindings(raw: unknown, defaults: Bindings, legacy: boolean): Bindings {
   const source = record(raw);
@@ -163,6 +180,14 @@ function sanitizeBindings(raw: unknown, defaults: Bindings, legacy: boolean): Bi
     if (action === 'pause') continue;
     if (validKeys(keyboard[action])) result.keyboard[action] = [...keyboard[action]];
     if (validButtons(gamepad[action])) result.gamepad[action] = [...gamepad[action]];
+  }
+  // An action the save does not know (the wipeout spec's Duck-dive) takes only the defaults the player's own
+  // bindings leave free, so none of their keys starts doing two things; with none free, a free fallback.
+  if (Object.keys(keyboard).length > 0) {
+    for (const action of ACTIONS) if (action !== 'pause' && !(action in keyboard)) result.keyboard[action] = freeInputs(result.keyboard, action, FALLBACK_KEYS);
+  }
+  if (Object.keys(gamepad).length > 0) {
+    for (const action of ACTIONS) if (action !== 'pause' && !(action in gamepad)) result.gamepad[action] = freeInputs(result.gamepad, action, FALLBACK_BUTTONS);
   }
   // C1 moved the hand to LB, the party call to X and added the grips. The actions a save still holds on their old defaults
   // move together, as one layout, unless that would leave a button with two actions (the player rebound around them).
