@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, CANYON, POINT_HEADLAND, REEF, createSpot, deanDepth, reefCrestZ, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, CANYON, POINT_HEADLAND, REEF, createSpot, deanDepth, reefCrestZ, reefLedgeAt, type SurfSpot } from './Bathymetry';
 import { breakerDepthFor } from './Breaking';
 import { ledgePeel } from './ledgePeel';
 import { REEF_SWELLS } from '../game/SurfConditions';
@@ -80,6 +80,15 @@ describe('surf spot bathymetry', () => {
       expect(REEF.passX).toBe(edge);
       for (let z = -260; z <= -40; z += 20) expect(Math.abs(gradientX(reef, edge, z))).toBeLessThan(1e-3);
       expect(reef.depthAt(edge, -140)).toBeCloseTo(REEF.passDepth, 6);
+    });
+
+    it('says where the ledge is ridden: out of the pass, with its crest still under water off the beach', () => {
+      expect(reefLedgeAt(-60)).toBe(true);
+      expect(reefLedgeAt(0)).toBe(true);
+      // The crest meets the beach face's 1.5 m depth at z = −7.5, x = 32.5; the pass reaches in from x = 30.
+      expect(reefLedgeAt(29)).toBe(true);
+      expect(reefLedgeAt(35)).toBe(false);
+      expect(reefLedgeAt(REEF.passX)).toBe(false);
     });
 
     it('has no cliff anywhere in the window', () => {

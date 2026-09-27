@@ -337,6 +337,15 @@ describe('SurfZoneSimulation', () => {
     for (const spot of ['beach', 'point'] as const) expect(takeOffPoint({ ...small, spot, alongShore: 160 }).x).toBe(0);
   });
 
+  it('measures the Reef’s peel on its ledge only, and every other spot everywhere', () => {
+    const reef = new SurfZoneSimulation({ ...small, spot: 'reef', alongShore: 160, dx: 4 });
+    const column = (x: number) => reef.solver.xCenters.findIndex((center) => Math.abs(center - x) <= 2);
+    expect(reef.peel.measures(column(-40))).toBe(true);
+    expect(reef.peel.measures(column(60))).toBe(false);
+    const point = new SurfZoneSimulation({ ...small, spot: 'point', alongShore: 160, dx: 4 });
+    expect(point.peel.measures(column(60))).toBe(true);
+  });
+
   it('takes off at the Reef’s peak, where every Reef swell breaks, never on dry reef or in the pass', () => {
     const swells = [REEF_PRACTICE_SWELL, ...Object.values(REEF_SWELLS)];
     for (const swell of swells) {

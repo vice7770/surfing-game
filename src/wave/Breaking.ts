@@ -179,7 +179,10 @@ export class PeelTracker {
   private readonly onset: Float64Array;
   private readonly onsetZ: Float64Array;
 
-  constructor(private readonly xs: ArrayLike<number>, private readonly window: number, private readonly quiet = 0.8) {
+  constructor(
+    private readonly xs: ArrayLike<number>, private readonly window: number, private readonly quiet = 0.8,
+    private readonly include: (column: number) => boolean = () => true,
+  ) {
     this.lastBreaking = new Float64Array(xs.length).fill(-Infinity);
     this.onset = new Float64Array(xs.length).fill(Number.NaN);
     this.onsetZ = new Float64Array(xs.length);
@@ -200,10 +203,39 @@ export class PeelTracker {
     this.onsetZ[column] = z;
   }
 
-  /** Fit onset time against x over recent onsets, leaving out `margin` of the columns at each open edge. */
+  /** Whether this column's breaks count toward the peel (a spot may measure only where its wave is ridden). */
+  measures(column: number): boolean {
+    return this.include(column);
+  }
+
+  /**
+   * The recent wave's front: the longest run of neighbouring measured columns whose onsets
+   * follow each other within a tenth of the window. A long peel takes about a period, so the
+   * window can also hold the next wave starting at the peak; a gap in time splits the two.
+   */
+  private front(time: number, first: number, last: number): { start: number; end: number } | undefined {
+    const recent = (column: number) => this.include(column) && this.onset[column] >= time - this.window && this.onset[column] <= time;
+    const gap = 0.1 * this.window;
+    let best: { start: number; end: number } | undefined;
+    let start = -1;
+    for (let column = first; column <= last; column += 1) {
+      const joins = column < last && recent(column)
+        && (start >= 0 ? Math.abs(this.onset[column] - this.onset[column - 1]) <= gap : true);
+      if (joins && start < 0) start = column;
+      if (joins) continue;
+      if (start >= 0 && (!best || column - start > best.end - best.start)) best = { start, end: column };
+      start = column < last && recent(column) ? column : -1;
+    }
+    return best;
+  }
+
+  /** Fit onset time and position against x over the recent wave's front, leaving out `margin` of the columns at each open edge. */
   estimate(time: number, celerity: number, margin = 0.1): PeelEstimate | undefined {
-    const first = Math.floor(this.xs.length * margin);
-    const last = this.xs.length - first;
+    const edge = Math.floor(this.xs.length * margin);
+    const front = this.front(time, edge, this.xs.length - edge);
+    if (!front) return undefined;
+    const first = front.start;
+    const last = front.end;
     let count = 0;
     let sumX = 0;
     let sumT = 0;

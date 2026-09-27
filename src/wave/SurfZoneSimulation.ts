@@ -1,4 +1,4 @@
-import { REEF, createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
+import { REEF, createSpot, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
@@ -273,7 +273,9 @@ export class SurfZoneSimulation {
     // Nothing below reads the water, so all of it can be built before the spin-up.
     this.breaking = new BreakingModel(this.solver, { onset });
     this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
-    this.peel = new PeelTracker(this.solver.xCenters, config.peakPeriod);
+    // The Reef's peel is its ledge's: breaks past it (the pass, the lagoon's beach face) are not its wave.
+    const xCenters = this.solver.xCenters;
+    this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, config.spot === 'reef' ? (column) => reefLedgeAt(xCenters[column]) : undefined);
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver);
     this.foam = new FoamField(this.solver, config.foamDecay ?? FOAM_DECAY[config.spot]);

@@ -47,6 +47,15 @@ export function reefCrestZ(x: number): number {
   return REEF.crestZ + (x - REEF.crestX) * Math.tan((REEF.angle * Math.PI) / 180);
 }
 
+/**
+ * Whether the Reef's ledge is ridden at along-shore position x: out of the pass (beyond two of its
+ * half-widths from its axis) and where the crest still lies seaward of the beach face's crest depth.
+ * Past it, waves break on the beach face in the pass and the lagoon: not the Reef's wave.
+ */
+export function reefLedgeAt(x: number): boolean {
+  return x < REEF.passX - 2 * REEF.passHalfWidth && reefCrestZ(x) < -REEF.crestDepth / REEF.shoreSlope;
+}
+
 /** Distance seaward of the Reef's crest line, m, measured across it (negative shoreward of it). */
 export function reefSeaward(x: number, z: number): number {
   return (reefCrestZ(x) - z) * Math.cos((REEF.angle * Math.PI) / 180);
