@@ -132,16 +132,29 @@ describe('RideAnalyzer', () => {
       expect(ending(0.6, { wave: { aheadOfCrest: -2 } }).report()?.end).toBe('kicked out');
     });
 
-    it('inside: in a bore for two seconds, or in the shallows', () => {
-      expect(ending(1.9, { breakingHere: 0.8 }).riding).toBe(true);
-      expect(ending(2.1, { breakingHere: 0.8 }).report()?.end).toBe('inside');
-      expect(ending(0.1, { depth: 0.3 }).report()?.end).toBe('inside');
+    // The riding-the-wave spec: riding the whitewater in is riding; a ride ends when the wave dies under the rider.
+    it('keeps riding in a bore; the wave dies in the shallows, or with no face and no broken water for 1.5 s', () => {
+      expect(ending(3, { breakingHere: 0.8, wave: { faceHeight: 0.1 } }).riding).toBe(true);
+      expect(ending(0.1, { depth: 0.3 }).report()?.end).toBe('wave died');
+      expect(ending(1.4, { wave: { valid: false } }).riding).toBe(true);
+      expect(ending(1.6, { wave: { valid: false } }).report()?.end).toBe('wave died');
+      expect(ending(1.6, { wave: { faceHeight: 0.1 } }).report()?.end).toBe('wave died');
     });
 
-    it('lost the face: too slow, or no wave, for 1.5 s', () => {
-      expect(ending(1.4, { speed: 1 }).riding).toBe(true);
-      expect(ending(1.6, { speed: 1 }).report()?.end).toBe('lost the face');
-      expect(ending(1.6, { wave: { aheadOfCrest: 12, faceHeight: 0.1 } }).report()?.end).toBe('lost the face');
+    it('loses the wave only when leaving a live face far ahead of its crest', () => {
+      const leaving = { wave: { aheadOfCrest: 12, speedShoreward: 9, crestSpeed: 6 } };
+      expect(ending(1.4, leaving).riding).toBe(true);
+      expect(ending(1.6, leaving).report()?.end).toBe('lost the wave');
+      // Far ahead but slower than the crest: the wave is coming back to the rider.
+      expect(ending(3, { wave: { aheadOfCrest: 12, speedShoreward: 4, crestSpeed: 6 } }).riding).toBe(true);
+      // A slow rider on a live face is not lost: the crest passes and kicks it out, or the broken water carries it.
+      expect(ending(3, { speed: 1 }).riding).toBe(true);
+    });
+
+    it('times the ride near the curl', () => {
+      const near = analyze(trace(4, (t) => ({ wave: { curlDistance: t < 3 ? 5 : 20 } })));
+      expect(near.curlTime).toBeCloseTo(3, 1);
+      expect(analyze(trace(2, () => ({ wave: { curlDistance: Infinity } }))).curlTime).toBe(0);
     });
 
     it('starts only once the rider stands from a pop-up', () => {

@@ -48,7 +48,7 @@ export interface Maneuver {
   pocket: boolean;
 }
 
-export type RideEnd = 'fell' | 'lost the face' | 'inside' | 'kicked out';
+export type RideEnd = 'fell' | 'kicked out' | 'wave died' | 'lost the wave';
 
 export interface RideReport {
   duration: number;
@@ -57,6 +57,8 @@ export interface RideReport {
   meanSpeed: number;
   /** Time high on the face beside a breaking crest, s. */
   pocketTime: number;
+  /** Time within CURL_NEAR of the curl along the crest, s (the riding-the-wave spec's done criteria). */
+  curlTime: number;
   maneuvers: Maneuver[];
   end: RideEnd;
   /** The slow motion the ride was played at: recorded, never used (everything reads simulated time). */
@@ -80,15 +82,16 @@ const POCKET_BREAKING = 0.3;
 /** Kicked out: this far behind the crest, m, for this long, s. */
 const KICK_OUT_BEHIND = 1;
 const KICK_OUT_TIME = 0.5;
-/** Inside: water shallower than this, m, or a bore at least this strong for this long, s. */
+/** The wave died: water shallower than this under the rider, m (the shore), or for DIED_TIME, s, no face of LOST_FACE, m, and no broken water of BORE. */
 const SHALLOW = 0.5;
 const BORE = 0.5;
-const BORE_TIME = 2;
-/** Lost the face: no wave, this far ahead of a crest lower than this (m), or slower than this (m/s), for this long (s). */
-const LOST_AHEAD = 8;
 const LOST_FACE = 0.2;
-const LOST_SPEED = 1.5;
+const DIED_TIME = 1.5;
+/** Lost the wave: this far ahead of a live face's crest, m, moving shoreward faster than it, for LOST_TIME, s. */
+const LOST_AHEAD = 8;
 const LOST_TIME = 1.5;
+/** Near the curl: within this distance along the crest, m. */
+const CURL_NEAR = 8;
 
 const wrap = (angle: number) => angle - 2 * Math.PI * Math.round(angle / (2 * Math.PI));
 
@@ -97,12 +100,13 @@ interface Mark {
   t: number;
   distance: number;
   pocketTime: number;
+  curlTime: number;
 }
 
 /** How long a condition has held, and the totals when it began. */
 class Hold {
   time = 0;
-  since: Mark = { t: 0, distance: 0, pocketTime: 0 };
+  since: Mark = { t: 0, distance: 0, pocketTime: 0, curlTime: 0 };
 
   run(holds: boolean, dt: number, before: Mark): number {
     if (!holds) {
@@ -157,11 +161,12 @@ export class RideAnalyzer {
   private startTime = 0;
   private distance = 0;
   private pocketTime = 0;
+  private curlTime = 0;
   private topSpeed = 0;
   private readonly maneuvers: Maneuver[] = [];
   private turn?: Turn;
   private readonly kickOut = new Hold();
-  private readonly bore = new Hold();
+  private readonly died = new Hold();
   private readonly lost = new Hold();
   private finished?: RideReport;
 
@@ -195,7 +200,7 @@ export class RideAnalyzer {
     }
     const dt = sample.t - previous!.t;
     if (!(dt > 0)) return;
-    const before: Mark = { t: previous!.t, distance: this.distance, pocketTime: this.pocketTime };
+    const before: Mark = { t: previous!.t, distance: this.distance, pocketTime: this.pocketTime, curlTime: this.curlTime };
     if (sample.phase === 'fallen') {
       this.finish('fell', { ...before, t: sample.t });
       return;
@@ -206,12 +211,15 @@ export class RideAnalyzer {
     if (wave.valid && wave.faceFraction >= POCKET_FACE && wave.crestBreaking >= POCKET_BREAKING) this.pocketTime += dt;
     this.track(sample, previous!, dt);
     this.remember(sample);
+    if (wave.valid && wave.curlDistance <= CURL_NEAR) this.curlTime += dt;
     const behind = sample.phase === 'standing' && wave.valid && wave.aheadOfCrest < -KICK_OUT_BEHIND;
-    const noFace = !wave.valid || (wave.aheadOfCrest > LOST_AHEAD && wave.faceHeight < LOST_FACE) || sample.speed < LOST_SPEED;
+    const live = wave.valid && wave.faceHeight >= LOST_FACE;
+    const dead = !live && sample.breakingHere < BORE;
+    const leaving = live && wave.aheadOfCrest > LOST_AHEAD && wave.speedShoreward > wave.crestSpeed;
     if (this.kickOut.run(behind, dt, before) >= KICK_OUT_TIME) this.finish('kicked out', this.kickOut.since);
-    else if (sample.depth < SHALLOW) this.finish('inside', { t: sample.t, distance: this.distance, pocketTime: this.pocketTime });
-    else if (this.bore.run(sample.breakingHere >= BORE, dt, before) >= BORE_TIME) this.finish('inside', this.bore.since);
-    else if (this.lost.run(noFace, dt, before) >= LOST_TIME) this.finish('lost the face', this.lost.since);
+    else if (sample.depth < SHALLOW) this.finish('wave died', { t: sample.t, distance: this.distance, pocketTime: this.pocketTime, curlTime: this.curlTime });
+    else if (this.died.run(dead, dt, before) >= DIED_TIME) this.finish('wave died', this.died.since);
+    else if (this.lost.run(leaving, dt, before) >= LOST_TIME) this.finish('lost the wave', this.lost.since);
   }
 
   private remember(sample: RideSample): void {
@@ -280,7 +288,7 @@ export class RideAnalyzer {
     const duration = Math.max(0, at.t - this.startTime);
     this.finished = {
       duration, distance: at.distance, topSpeed: this.topSpeed, meanSpeed: duration > 0 ? at.distance / duration : 0,
-      pocketTime: at.pocketTime, maneuvers: this.maneuvers, end, timeScale: this.timeScale,
+      pocketTime: at.pocketTime, curlTime: at.curlTime, maneuvers: this.maneuvers, end, timeScale: this.timeScale,
     };
   }
 }

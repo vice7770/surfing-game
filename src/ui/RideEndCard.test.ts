@@ -24,7 +24,7 @@ describe('endCardModel', () => {
       kind, start: 2, end: 3, yaw: 1.7, peakYawRate: 1.9, speedIn, speedOut, radius: 3.8, lateralG: 1.4, roll: 0.7, faceFraction: 0.3, pocket: true,
     });
     const report: RideReport = {
-      duration: 12.4, distance: 42, topSpeed: 8.2, meanSpeed: 3.4, pocketTime: 3.24, end: 'kicked out', timeScale: 1,
+      duration: 12.4, distance: 42, topSpeed: 8.2, meanSpeed: 3.4, pocketTime: 3.24, curlTime: 6, end: 'kicked out', timeScale: 1,
       maneuvers: [turn('bottom turn', 7, 6.4), turn('cutback', 6.7, 6)],
     };
     const ridden: RideResult = { ...wipeout, report };
