@@ -415,7 +415,9 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
     - how the whitewater reads in play;
     - the render values (s_a 40 per m³, the mist shares, the foam-ball size, PLUME_DENSITY);
     - at dawn and sunset a nearby spit's mist glows as an orange haze;
-    - the carve's teeth: up close and from a low shoulder angle, the practice Reef's voids read as a jagged trench with teeth a column wide (Part A's per-column voids; Part B carves 60 % more nodes as voids collapse). A smoother carve across columns is the barrel's main open item;
+    - the carve's teeth, the barrel's main open item. Two causes, found on the Reef sheets:
+      - a void's back stood as a wall half its width deep at the crest, which the mesh drew as a jagged crack along the lip. **Fixed:** its floor now meets the surface over `TUBE_EDGE` (0.35 m) behind it, in the physics and on the GPU alike. The front, where the jet lands, is unchanged, so the tube report still holds;
+      - **open:** where a peel's columns collapse at different stages, a column whose void has gone stands as a spike a metre wide between carved neighbours (Part A's instant close did the same). It needs the peel to collapse as one section;
     - the spray pool (4,096) is full a fifth of the time on the Reef and the Point, and the lip's splash gives way first;
     - rare spits reach 160–180 m/s where a small mouth drains a long closing section.
 

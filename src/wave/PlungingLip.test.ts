@@ -4,6 +4,7 @@ import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, ROLLER_AREA, SPLASH_UP, STRIP
 import { GRAVITY } from './dispersion';
 import { LH82_AREA, jetRelativeSpeed, overturn, overturnParameter, tubeFloorDepth, type TubeGeometry } from './Overturn';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
+import { TUBE_EDGE } from './tubeTable';
 
 function basin(): ShallowWaterSolver {
   const solver = new ShallowWaterSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 30, 30), xBoundary: 'wall' }, () => 2, { manning: 0 });
@@ -429,9 +430,10 @@ describe('PlungingLip', () => {
       const solver = basin();
       const lip = new PlungingLip(solver, 256);
       throwOver(lip, solver);
-      lip.step(0.1);
-      const tip = speed * 0.1;
-      const ahead = tip / 2;
+      lip.step(0.2);
+      const tip = speed * 0.2;
+      // Past the void's back edge (G9: it meets the surface over TUBE_EDGE behind it) and short of the jet's tip.
+      const ahead = (TUBE_EDGE + tip) / 2;
       expect(lip.carve(3.5, crestZ(solver) + ahead, 5)).toBeCloseTo(0.8 - tubeFloorDepth(tube, ahead), 9);
       // Beyond the jet's tip, behind the crest, and in another column, the water is untouched.
       expect(lip.carve(3.5, crestZ(solver) + tip + 0.2, 5)).toBe(5);
