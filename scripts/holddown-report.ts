@@ -58,7 +58,7 @@ let seaSeconds = 0;
 function runSeed(seed: number): void {
   const runner = new SurfZoneRunner({
     spot, seed,
-    significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod, directionDegrees: direction,
+    significantHeight: swell.significantHeight, heightAt: (settings.source === 'practice' ? 'edge' : 'deep') as 'edge' | 'deep', peakPeriod: swell.peakPeriod, directionDegrees: direction,
     spreading: swell.spreading, bandwidth: swell.bandwidth, tide: settings.tide, windSpeed: settings.windSpeed,
   }, {});
   const ghostWater: SurfWater = {

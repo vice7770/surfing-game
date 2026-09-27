@@ -1,7 +1,8 @@
 import { createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
-import { BoussinesqSolver } from './BoussinesqSolver';
+import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
-import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
+import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
+import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { AERATION, AerationField } from './AerationField';
 import { FoamField, boreDissipation, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
@@ -24,8 +25,13 @@ const WATER_DENSITY = 1025;
 export interface SurfZoneConfig {
   spot: SpotName;
   seed: number;
-  /** Offshore significant wave height Hs, m. */
+  /** Significant wave height Hs, m: the buoy's, in deep water, unless `heightAt` is 'edge'. */
   significantHeight: number;
+  /**
+   * Where Hs is given (the wave-sizes spec): in deep water, shoaled to the tank's edge by linear theory
+   * (the default), or at the edge (Practice's groundswell). The Canyon always takes it at the edge.
+   */
+  heightAt?: 'deep' | 'edge';
   peakPeriod: number;
   /** Mean direction from shore-normal, degrees (positive toward +x). */
   directionDegrees: number;
@@ -87,6 +93,65 @@ export const TANK = { offshore: -330, zoneInner: -270, blendEnd: -190, fineFrom:
 /** Flat tank bed offshore of each spot's blend, m below datum. */
 export const OFFSHORE_DEPTH: Record<SpotName, number> = { beach: 5, point: 8, reef: 10, canyon: 5 };
 
+/** A tank's layout across shore, m, and the still depth of its flat edge under the relaxation zone, m below datum. */
+export interface TankLayout {
+  offshore: number;
+  zoneInner: number;
+  blendEnd: number;
+  fineFrom: number;
+  shore: number;
+  edgeDepth: number;
+}
+
+/** A big day's edge is this many buoy heights deep, so the zone's linear sea stays near linear (the wave-sizes spec). */
+export const EDGE_DEPTH_PER_HS = 3.3;
+/** …and at most this share of the deep-water wavelength, keeping kh ≤ 2.5 where the solver's dispersion holds. */
+export const EDGE_DEPTH_MAX_WAVELENGTHS = 0.4;
+/** A deeper tank's relaxation zone is at least this share of the edge wavelength long. */
+export const ZONE_WAVELENGTHS = 0.75;
+/** The fine zone starts this far seaward of where the sets break, m. */
+export const SET_FINE_MARGIN = 40;
+/** The furthest a tank reaches offshore, m. */
+const TANK_REACH = -3000;
+/** A bed that gets no more than FLAT_RISE deeper anywhere within FLAT_REACH seaward has levelled off, m: the edge stops there. */
+const FLAT_REACH = 300;
+const FLAT_RISE = 0.1;
+
+/**
+ * The tank for a swell (the wave-sizes spec): today's for small days, Practice and the Canyon; for a big day,
+ * its edge where the take-off transect's bed first reaches the edge depth (or levels off short of it), and far
+ * enough out that the blend onto the spot's bed lies 20 m seaward of the fine zone, which starts 40 m seaward
+ * of where the sets break (Komar–Gaughan's H1/10 over the breaker index). The relaxation zone is at least 60 m
+ * and 0.75 of the edge wavelength long; the edge takes the bed's depth there, within the kh limit.
+ */
+export function tankLayout(config: SurfZoneConfig): TankLayout {
+  const today: TankLayout = { ...TANK, edgeDepth: OFFSHORE_DEPTH[config.spot] };
+  if (config.spot === 'canyon') return today;
+  const deepWavelength = (GRAVITY * config.peakPeriod ** 2) / (2 * Math.PI);
+  const wanted = Math.max(today.edgeDepth, Math.min(EDGE_DEPTH_PER_HS * config.significantHeight, EDGE_DEPTH_MAX_WAVELENGTHS * deepWavelength));
+  if (wanted <= today.edgeDepth) return today;
+  const spot = createSpot(config.spot, config.seed);
+  const depth = (z: number) => spot.depthAt(0, z);
+  const deepens = (z: number) => {
+    for (let ahead = 10; ahead <= FLAT_REACH; ahead += 10) if (depth(z - ahead) - depth(z) >= FLAT_RISE) return true;
+    return false;
+  };
+  // Out along the take-off transect until the bed is deep enough, or levels off short of it (a bar's flank is not level).
+  let reached = TANK.zoneInner;
+  while (depth(reached) < wanted && reached > TANK_REACH && deepens(reached)) reached -= 1;
+  if (Math.min(wanted, depth(reached)) <= today.edgeDepth) return today;
+  // Coming in from there, the sets break where the bed first reaches their breaker depth.
+  const setDepth = (SETS_OVER_TYPICAL * komarGaughan(config.significantHeight, config.peakPeriod)) / BREAKER_INDEX;
+  let setBreak = reached;
+  while (depth(setBreak) > setDepth && setBreak < TANK.fineFrom) setBreak += 1;
+  const fineFrom = Math.min(TANK.fineFrom, setBreak - SET_FINE_MARGIN);
+  const blend = TANK.blendEnd - TANK.zoneInner;
+  const zoneInner = Math.min(reached, fineFrom - 20 - blend);
+  const edgeDepth = Math.min(depth(zoneInner), EDGE_DEPTH_MAX_WAVELENGTHS * deepWavelength);
+  const zone = Math.max(TANK.zoneInner - TANK.offshore, ZONE_WAVELENGTHS * waveKinematics(config.peakPeriod, edgeDepth).wavelength);
+  return { offshore: zoneInner - zone, zoneInner, blendEnd: zoneInner + blend, fineFrom, shore: TANK.shore, edgeDepth };
+}
+
 /** Kennedy onset per spot (plan Q27): 0.35√(gh) on the barred beach, 0.65√(gh) on plain or steep beds. */
 export const BREAKING_ONSET: Record<SpotName, number> = { beach: 0.35, point: 0.65, reef: 0.65, canyon: 0.65 };
 
@@ -118,19 +183,37 @@ export function windOnsetScale(windSpeed: number, breakerDepth: number): number 
 }
 
 /**
- * The seeded sea a surf zone is built from, at the tank's offshore depth. Pure,
+ * Spots that take their swell at the tank's edge, as before the wave-sizes work: the Canyon (its seas are the
+ * riding reference and Surf School's), and the Reef until the Reef rework deepens its tank (its 10 m edge blew
+ * up under a shoaled 3–4 m, 18 s swell; the wave-sizes review).
+ */
+const EDGE_SWELL_SPOTS: readonly SpotName[] = ['canyon', 'reef'];
+
+/** The sea's Hs at the tank's edge, m: the buoy's deep-water height shoaled by linear theory, unless given at the edge. */
+export function edgeHeight(config: SurfZoneConfig, edgeDepth = OFFSHORE_DEPTH[config.spot]): number {
+  if (EDGE_SWELL_SPOTS.includes(config.spot) || config.heightAt === 'edge') return config.significantHeight;
+  return config.significantHeight * shoalingCoefficient(config.peakPeriod, edgeDepth + config.tide);
+}
+
+/**
+ * The seeded sea a surf zone is built from, at the tank's edge depth. Pure,
  * so the renderer can rebuild the same sea (for the far field) outside the worker.
+ * A deeper tank's sea travels at the stage 2 solver's own (Madsen–Sørensen)
+ * speeds, so its zone forces the waves the solver carries; today's tanks keep
+ * the shallow-water numbers they were built with.
  */
 export function surfZoneSea(config: SurfZoneConfig): SeaState {
+  const tank = tankLayout(config);
+  const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot] && (config.stage ?? 2) === 2;
   return SeaState.fromSpectrum({
-    significantHeight: config.significantHeight,
+    significantHeight: edgeHeight(config, tank.edgeDepth),
     peakPeriod: config.peakPeriod,
     direction: (config.directionDegrees * Math.PI) / 180,
     spreading: config.spreading,
     componentCount: config.componentCount ?? SEA_COMPONENTS,
-    depth: OFFSHORE_DEPTH[config.spot] + config.tide,
+    depth: tank.edgeDepth + config.tide,
     bandwidth: config.bandwidth,
-  }, config.seed, shallowWaterWaveNumber);
+  }, config.seed, deeper ? madsenSorensenWaveNumber : shallowWaterWaveNumber);
 }
 
 /**
@@ -140,6 +223,14 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
  * and moves with the swell's direction and period.
  */
 export const TAKE_OFF: Record<SpotName, 'centre' | 'focus'> = { beach: 'centre', point: 'centre', reef: 'centre', canyon: 'focus' };
+
+/**
+ * The breaker index a big day's take-off is placed with, per spot: the size report measures where each spot's
+ * sets break and sets these so the take-off lands there (the wave-sizes spec). Today's tanks keep BREAKER_INDEX;
+ * the Reef's is the Reef rework's to set. The Point's and the Beach's are fitted to their sets' measured breaks at
+ * 14 s (Point Hs 2–4 m: 1.05–1.16; Beach Hs 2–3 m: 1.08–1.20), before the side feed; they are refitted after it.
+ */
+export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.13, reef: BREAKER_INDEX, canyon: BREAKER_INDEX };
 
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */
 export const TAKE_OFF_EDGE_MARGIN = 30;
@@ -152,27 +243,30 @@ export const TAKE_OFF_EDGE_MARGIN = 30;
  */
 export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   const spot = createSpot(config.spot, config.seed);
-  const offshoreDepth = OFFSHORE_DEPTH[config.spot];
-  const target = breakerDepthFor(config.significantHeight, offshoreDepth + config.tide);
+  const tank = tankLayout(config);
+  const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
+  const target = breakerDepthFor(edgeHeight(config, tank.edgeDepth), tank.edgeDepth + config.tide, deeper ? TAKE_OFF_INDEX[config.spot] : BREAKER_INDEX);
   const breakZ = (x: number) => {
     // Scan the whole simulated bed from the relaxation zone inward.
-    for (let z = TANK.zoneInner; z < TANK.shore; z += 0.5) {
-      if (tankDepth(spot, offshoreDepth, x, z) + config.tide <= target) return z;
+    for (let z = tank.zoneInner; z < tank.shore; z += 0.5) {
+      if (tankDepth(spot, tank.edgeDepth, x, z, tank) + config.tide <= target) return z;
     }
-    return TANK.fineFrom;
+    return tank.fineFrom;
   };
   const reach = Math.max(0, (config.alongShore ?? ALONG_SHORE) / 2 - TAKE_OFF_EDGE_MARGIN);
   if (TAKE_OFF[config.spot] === 'centre' || reach === 0) return { x: 0, z: breakZ(0) };
-  const bed = (x: number, z: number) => tankDepth(spot, offshoreDepth, x, z) + config.tide;
+  const bed = (x: number, z: number) => tankDepth(spot, tank.edgeDepth, x, z, tank) + config.tide;
   const swell = { period: config.peakPeriod, direction: (config.directionDegrees * Math.PI) / 180 };
-  const x = focusX(bed, swell, TANK.zoneInner, breakZ(0), -reach, reach);
+  const x = focusX(bed, swell, tank.zoneInner, breakZ(0), -reach, reach);
   return { x, z: breakZ(x) };
 }
 
-/** Spot seabed with a flat offshore floor under the relaxation zone, blended over TANK.zoneInner…blendEnd. */
-export function tankDepth(spot: SurfSpot, offshoreDepth: number, x: number, z: number): number {
-  const toSpot = smoothstep(TANK.zoneInner, TANK.blendEnd, z);
-  return offshoreDepth + (spot.depthAt(x, z) - offshoreDepth) * toSpot;
+/** Spot seabed with a flat floor under the relaxation zone at the edge depth, blended over the layout's zoneInner…blendEnd. */
+export function tankDepth(
+  spot: SurfSpot, edgeDepth: number, x: number, z: number, layout: Pick<TankLayout, 'zoneInner' | 'blendEnd'> = TANK,
+): number {
+  const toSpot = smoothstep(layout.zoneInner, layout.blendEnd, z);
+  return edgeDepth + (spot.depthAt(x, z) - edgeDepth) * toSpot;
 }
 
 const WET = 0.01;
@@ -185,6 +279,8 @@ const WET = 0.01;
  */
 export class SurfZoneSimulation {
   readonly spot: SurfSpot;
+  /** The tank this swell needs (the wave-sizes spec). */
+  readonly tank: TankLayout;
   readonly sea: SeaState;
   readonly solver: ShallowWaterSolver;
   readonly plan: SetRunPlan;
@@ -236,14 +332,16 @@ export class SurfZoneSimulation {
 
   constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up') {
     this.spot = createSpot(config.spot, config.seed);
-    const offshoreDepth = OFFSHORE_DEPTH[config.spot];
+    const tank = tankLayout(config);
+    this.tank = tank;
+    const offshoreDepth = tank.edgeDepth;
     const alongShore = config.alongShore ?? ALONG_SHORE;
     const dx = config.dx ?? 1;
     const grid = {
       nx: Math.round(alongShore / dx), xMin: -alongShore / 2, dx, xBoundary: 'open' as const,
-      zEdges: stretchedEdges(TANK.offshore, TANK.shore, TANK.fineFrom, config.fineSpacing ?? 1, config.coarseSpacing ?? 4),
+      zEdges: stretchedEdges(tank.offshore, tank.shore, tank.fineFrom, config.fineSpacing ?? 1, config.coarseSpacing ?? 4),
     };
-    const depthAt = (x: number, z: number) => tankDepth(this.spot, offshoreDepth, x, z);
+    const depthAt = (x: number, z: number) => tankDepth(this.spot, offshoreDepth, x, z, tank);
     const onset = config.breakingOnset ?? BREAKING_ONSET[config.spot];
     this.solver = (config.stage ?? 2) === 2
       ? new BoussinesqSolver(grid, depthAt, { waterLevel: config.tide, breaking: { onset } })
@@ -251,11 +349,11 @@ export class SurfZoneSimulation {
     this.sea = surfZoneSea(config);
     if (this.solver instanceof BoussinesqSolver) this.solver.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     const spinUp = (config.spinUpPeriods ?? 2) * config.peakPeriod;
-    this.plan = planSetRun(this.sea, 0, TANK.zoneInner, 0, config.lead ?? 25, spinUp);
+    this.plan = planSetRun(this.sea, 0, tank.zoneInner, 0, config.lead ?? 25, spinUp);
     this.seaTimeOffset = config.startSeaTime !== undefined ? config.startSeaTime - spinUp : this.plan.warmStartSeaTime;
-    warmStart(this.solver, this.sea, { referenceZ: TANK.zoneInner, seaTime: this.seaTimeOffset });
+    warmStart(this.solver, this.sea, { referenceZ: tank.zoneInner, seaTime: this.seaTimeOffset });
     this.boundary = new SeaStateBoundary(
-      this.solver, this.sea, this.solver.zoneWeightsAlongZ(TANK.zoneInner, TANK.offshore), this.seaTimeOffset,
+      this.solver, this.sea, this.solver.zoneWeightsAlongZ(tank.zoneInner, tank.offshore), this.seaTimeOffset,
     );
     this.solver.addRelaxationZone(this.boundary);
     this.spinUpSeconds = spinUp;
@@ -441,7 +539,7 @@ export class SurfZoneSimulation {
 
   /** Still depth where the shoaled swell breaks, h_b = (Hs·D^¼/γ)^⅘, m. */
   breakerDepth(): number {
-    return breakerDepthFor(this.config.significantHeight, this.sea.depth);
+    return breakerDepthFor(edgeHeight(this.config, this.tank.edgeDepth), this.sea.depth);
   }
 
   /** Bore speed at the break, √(g h_b), m/s. */
@@ -452,8 +550,7 @@ export class SurfZoneSimulation {
   /** Breaker-point Iribarren number from the bed slope at the break line and H_b = γ h_b. */
   iribarren(): { value: number; type: BreakerType } {
     const point = this.breakPoint();
-    const offshoreDepth = OFFSHORE_DEPTH[this.config.spot];
-    const bed = (z: number) => tankDepth(this.spot, offshoreDepth, point.x, z);
+    const bed = (z: number) => tankDepth(this.spot, this.tank.edgeDepth, point.x, z, this.tank);
     const slope = Math.abs(bed(point.z - 2) - bed(point.z + 2)) / 4;
     const depth = this.breakerDepth();
     const readout = describeSwell({ height: BREAKER_INDEX * depth, period: this.config.peakPeriod, depth, bedSlope: slope });
@@ -469,7 +566,7 @@ export class SurfZoneSimulation {
     const { solver } = this;
     let wet = 0;
     let breaking = 0;
-    for (let iz = solver.rowBelow(TANK.fineFrom); iz < solver.nz; iz += 1) {
+    for (let iz = solver.rowBelow(this.tank.fineFrom); iz < solver.nz; iz += 1) {
       for (let ix = 0; ix < solver.nx; ix += 1) {
         const i = iz * solver.nx + ix;
         if (solver.h[i] <= WET) continue;
@@ -487,7 +584,7 @@ export class SurfZoneSimulation {
    */
   private markBreakingOnsets(): void {
     const { solver } = this;
-    const firstRow = solver.rowBelow(TANK.fineFrom);
+    const firstRow = solver.rowBelow(this.tank.fineFrom);
     for (let column = 0; column < solver.nx; column += 1) {
       let outer = Infinity;
       let row = -1;
@@ -588,7 +685,7 @@ export class SurfZoneSimulation {
       iribarren,
       slope,
       // The overturn fits' H0/h0: the incoming sea's height over the tank's offshore depth.
-      nonlinearity: this.config.significantHeight / (OFFSHORE_DEPTH[this.config.spot] + this.config.tide),
+      nonlinearity: edgeHeight(this.config, this.tank.edgeDepth) / (this.tank.edgeDepth + this.config.tide),
       breakerHeight: height,
       windOverCelerity: (this.config.windSpeed ?? 0) / Math.sqrt(GRAVITY * stillDepth),
       width: solver.dx,
@@ -634,10 +731,10 @@ export class SurfZoneSimulation {
     const width = this.solver.nx * this.solver.dx;
     return {
       xMin: this.windowXMin,
-      zMin: TANK.offshore,
+      zMin: this.tank.offshore,
       spacing,
       nx: Math.round(width / spacing) + 1,
-      nz: Math.round((TANK.shore - TANK.offshore) / spacing) + 1,
+      nz: Math.round((this.tank.shore - this.tank.offshore) / spacing) + 1,
     };
   }
 

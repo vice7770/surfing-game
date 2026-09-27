@@ -26,6 +26,11 @@ export function madsenSorensenCelerity(omega: number, depth: number, g = GRAVITY
   return omega / k;
 }
 
+/** The wave number ω/c the Madsen–Sørensen equations give at depth d, 1/m (a deep tank's boundary sea, the wave-sizes spec). */
+export function madsenSorensenWaveNumber(omega: number, depth: number, g = GRAVITY): number {
+  return omega / madsenSorensenCelerity(omega, depth, g);
+}
+
 /**
  * Kennedy et al. (2000) breaking: a cell breaks when its surface rises faster
  * than η_t*, which ramps from `onset` to `end` (fractions of √(gh), h the still

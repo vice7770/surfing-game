@@ -493,7 +493,7 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
 
     Whitewater forces on bodies and the player's tube camera (P12) stay in the Backlog.
 
-### P1 · Wave sizes — `Part A done; Part B next`
+### P1 · Wave sizes — `Parts A and B's machinery done; the side feed next`
 
 Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers/specs/2026-09-27-wave-sizes.md); [plan](docs/superpowers/plans/2026-09-27-wave-sizes.md). The user's complaint: 3 m waves don't look like 3 m. The Height slider was Hs at the tank's 5–10 m edge, and the spots were built for 1–2 m surf.
 
@@ -503,7 +503,16 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
   - [sources](docs/research/surf-size-sources.md): Komar & Gaughan's breaker height, Caldwell & Aucan's Hawaiian surf and scale;
   - the [size report](docs/research/size-report.md) (`npm run report:sizes`) measured today's tank: H1/3 is 40–66 % of Komar–Gaughan at the Beach (1.5–2.0 m faces at Hs 3 m, where its 5 m edge saturates), 61–85 % at the Point, 76–86 % at the Reef and 60–89 % at the Canyon. The forecast is fitted per spot to the surf at the take-off, where the readout measures.
 - **The Reef** is handed to the Teahupo'o Reef rework (the user's decision in that session, 2026-09-27): its bed stays here, and the report shows it ungated.
-- **Part B** (deep-water input shoaled to the edge, the tank sized to the swell, deeper outer beds, the take-off at the measured break, gated sizes) and **Part C** (a size sheet, the camera) follow.
+- **Part B · bigger surf, machinery (merged 2026-09-27):**
+  - the Height slider is a deep-water buoy Hs, shoaled to the tank's edge (Practice and the Canyon take theirs at the edge, and the Reef until its rework: its 10 m edge blew up under a shoaled 3–4 m, 18 s swell); the cap is 4 m (the Canyon and the Reef 3 m);
+  - the tank is sized to the swell: a deeper edge (3.3 Hs, within 0.4 of the deep-water wavelength), a longer zone, the 1 m zone from 40 m seaward of the sets' break, and Madsen–Sørensen wave numbers at the deeper edge;
+  - the Beach has a deeper outer bar (450 m out, crest 5 m deep) and the Point a longer shelf past 12 m; the [profiles' sources](docs/research/outer-profiles.md);
+  - the take-off is placed where the sets were measured to break (γ 1.13 at the Point, 1.14 at the Beach).
+  - Measured at 14 s, H1/3 now reaches 86 / 73 / 77 % of Komar–Gaughan at the Point (Hs 2 / 3 / 4 m) and 61 / 53 / 55 % at the Beach (Hs 2 / 3 / 4 m), up from 61–78 % and 40–54 % (Hs 2–3 m) on today's tanks.
+- **Why the gates aren't met yet (debugged 2026-09-27):** the window's open side edges let a directionally spread sea's energy drift out, and nothing enters from the neighbouring coast. Up to a third of the wave height is lost within ~150 m (the same sea on a straight slope, no breaking: 2.03 m with open sides against 2.78 m with periodic ones, from 3.01 m). It affects today's tanks too.
+  - **Next (the user's decision):** feed the sides with the incoming sea, shoaled and refracted over each column's bed, on every tank, on the CPU and the GPU (branch `claude/side-feed`, started). Then rerun the riding reports and Surf School's lesson waves, refit the forecast and the take-off, and gate the sizes.
+  - Short records mislead: judge heights against the input sea over the same ≥300 s record.
+- **Part C** (a size sheet, the camera) follows.
 
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 

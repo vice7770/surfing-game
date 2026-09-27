@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSpot } from './Bathymetry';
-import { BoussinesqSolver, madsenSorensenCelerity } from './BoussinesqSolver';
+import { BoussinesqSolver, madsenSorensenCelerity, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { GRAVITY } from './dispersion';
 import { ShallowWaterSolver, uniformEdges, type WaterTarget } from './ShallowWaterSolver';
 import { calmTarget, longWaveTarget, meanLag, upCrossings } from './shallowWaterTestSupport';
@@ -125,6 +125,11 @@ function measuredCelerity(kh: number, depth: number): { measured: number; omega:
 }
 
 describe('Boussinesq dispersion', () => {
+  it('gives the wave number of its own dispersion (wave sizes)', () => {
+    const omega = (2 * Math.PI) / 10;
+    expect(madsenSorensenWaveNumber(omega, 12)).toBeCloseTo(omega / madsenSorensenCelerity(omega, 12), 12);
+  });
+
   for (const kh of [0.5, 1, 2, 3]) {
     it(`carries a small wave at the phase speed its equations predict, at kh = ${kh}`, () => {
       const depth = 2;

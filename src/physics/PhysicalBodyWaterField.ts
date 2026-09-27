@@ -1,6 +1,6 @@
 import type { Vector3 } from 'three';
 import type { BodyWaterField, BodyWaterSample } from './DetachedSurfer';
-import { TANK, type SurfZoneSimulation } from '../wave/SurfZoneSimulation';
+import type { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
 
 const MIN_WET_DEPTH = 0.01;
 const MAX_HORIZONTAL_SPEED = 12;
@@ -35,7 +35,7 @@ export class PhysicalBodyWaterField implements BodyWaterField {
     const xMin = this.simulation.windowXMin;
     const outside = !Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)
       || x < xMin || x > xMin + solver.nx * solver.dx
-      || z < TANK.offshore || z > TANK.shore;
+      || z < this.simulation.tank.offshore || z > this.simulation.tank.shore;
     out.outsideDomain = outside;
     out.flow.set(0, 0, 0);
     out.breaking = 0;
@@ -73,8 +73,8 @@ export class PhysicalBodyWaterField implements BodyWaterField {
     const crossStep = solver.dz[row];
     const left = Math.max(xMin, x - horizontalStep);
     const right = Math.min(xMin + solver.nx * solver.dx, x + horizontalStep);
-    const seaward = Math.max(TANK.offshore, z - crossStep);
-    const shoreward = Math.min(TANK.shore, z + crossStep);
+    const seaward = Math.max(this.simulation.tank.offshore, z - crossStep);
+    const shoreward = Math.min(this.simulation.tank.shore, z + crossStep);
     const flowLeft = this.meanFlowAt(left, z);
     const flowRight = this.meanFlowAt(right, z);
     const flowSeaward = this.meanFlowAt(x, seaward);

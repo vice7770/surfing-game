@@ -17,7 +17,7 @@ import { DEFAULT_PHYSICAL_SETTINGS, PRACTICE_SWELL, spreadingFor } from '../src/
 import type { SpotName } from '../src/wave/Bathymetry';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from '../src/wave/SurfMeter';
 import { SurfZoneSimulation, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
-import { SIZE_BAND_WIDTH, SIZE_EDGE_MARGIN, SIZE_GRID, SIZE_SEA_SECONDS, sizeGates, sizeMarkdown, summariseRun, type SizeRun } from '../src/wave/sizeReport';
+import { SIZE_BAND_WIDTH, SIZE_EDGE_MARGIN, SIZE_GRID, SIZE_SEA_SECONDS, SMALL_DAY, sizeGates, sizeMarkdown, summariseRun, type SizeRun } from '../src/wave/sizeReport';
 import { fitForecast } from '../src/wave/surfForecast';
 
 const option = (name: string): string | undefined => {
@@ -32,6 +32,8 @@ const periods = list('periods', SIZE_GRID.periods);
 const seconds = Number(option('seconds') ?? SIZE_SEA_SECONDS);
 const gating = process.argv.includes('--gates');
 const withPractice = !process.argv.includes('--no-practice');
+/** `--kinds deep` or `edge`: which small-day runs a process makes (both by default). */
+const kinds = (option('kinds')?.split(',') ?? ['edge', 'deep']) as SizeRun['heightAt'][];
 const tag = option('tag');
 /** `--dir` writes a run's files (and its report) elsewhere, so long runs survive branch switches and probes leave the committed report alone. */
 const directory = option('dir') ?? 'docs/research/sizes';
@@ -73,11 +75,13 @@ mkdirSync(`${directory}/baseline`, { recursive: true });
 for (const spot of spots) {
   const started = Date.now();
   const runs: SizeRun[] = [];
-  // Today's tank takes every swell at its edge (Part A); Part B gives the buoy's height in deep water.
-  if (withPractice) runs.push(measure({ ...base(spot), ...PRACTICE_SWELL }, 'practice', 'edge'));
+  // Practice gives its groundswell at the edge; buoys give theirs in deep water. Small days also run at the edge,
+  // with today's edge height, for the gate against today's sizes; the Canyon always takes its swell at the edge.
+  if (withPractice) runs.push(measure({ ...base(spot), ...PRACTICE_SWELL, heightAt: 'edge' }, 'practice', 'edge'));
   for (const significantHeight of heights) {
     for (const peakPeriod of periods) {
-      runs.push(measure({ ...base(spot), significantHeight, peakPeriod }, 'buoy', 'edge'));
+      const given: SizeRun['heightAt'][] = spot === 'canyon' ? ['edge'] : significantHeight <= SMALL_DAY ? kinds : ['deep'];
+      for (const heightAt of given) runs.push(measure({ ...base(spot), significantHeight, peakPeriod, heightAt }, 'buoy', heightAt));
       console.log(`${spot} Hs ${significantHeight} Tp ${peakPeriod}: H1/3 ${runs.at(-1)!.typical.toFixed(2)} m (${((Date.now() - started) / 60000).toFixed(1)} min)`);
     }
   }
@@ -88,9 +92,9 @@ const read = (folder: string): SizeRun[] => (existsSync(folder) ? readdirSync(fo
 const all = read(directory);
 for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
   const runs = all.filter((run) => run.spot === spot);
-  // The forecast is fitted to the take-off's surf, which the game's readout measures.
+  // The forecast reads a buoy's deep-water height (the Canyon's is taken at its edge), at the take-off, where the readout measures.
   const atTakeOff = (run: SizeRun) => ({ ...run, typical: run.takeOffTypical ?? Number.NaN, sets: run.takeOffSets ?? Number.NaN });
-  const buoys = runs.filter((run) => run.source === 'buoy' && run.takeOffTypical !== undefined).map(atTakeOff);
+  const buoys = runs.filter((run) => run.source === 'buoy' && run.takeOffTypical !== undefined && (spot === 'canyon' || run.heightAt === 'deep')).map(atTakeOff);
   const practice = runs.find((run) => run.source === 'practice' && run.takeOffTypical !== undefined);
   if (!buoys.length) continue;
   const fit = fitForecast(buoys);

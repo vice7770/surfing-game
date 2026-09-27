@@ -5,7 +5,6 @@ import { sampleSurfaceFoam } from '../../scene/WaterSurface';
 import type { SurfWords } from '../../ui/surfHeight';
 import type { Units } from '../../ui/units';
 import type { SurfZoneStatus } from '../../wave/SurfZoneRunner';
-import { TANK } from '../../wave/SurfZoneSimulation';
 import type { SurfZoneInit } from '../SurfZoneHost';
 import { CrestTracker, type SurfaceField } from './crestTracker';
 import type { JumpPoint } from './FlyInput';
@@ -157,8 +156,9 @@ export class WaveLab {
     return {
       xMin: windowXMin - SIDE_MARGIN,
       xMax: windowXMin + (grid.nx - 1) * grid.spacing + SIDE_MARGIN,
-      zMin: TANK.offshore,
-      zMax: TANK.shore + BEACH_MARGIN,
+      // The render grid spans the whole tank, which grows with the swell (the wave-sizes spec).
+      zMin: grid.zMin,
+      zMax: grid.zMin + (grid.nz - 1) * grid.spacing + BEACH_MARGIN,
       yMax: CEILING,
       floor: (x, z) => host.bedAt(x, z),
     };

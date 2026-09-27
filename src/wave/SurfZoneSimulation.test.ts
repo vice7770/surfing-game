@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { REEF, createSpot } from './Bathymetry';
+import { REEF, createSpot, type SpotName } from './Bathymetry';
+import { madsenSorensenWaveNumber } from './BoussinesqSolver';
+import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
+import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
-import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TANK, takeOffPoint, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
+import {
+  FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, edgeHeight, surfZoneSea, takeOffPoint, tankDepth, tankLayout,
+  windOnsetScale, type SurfZoneConfig,
+} from './SurfZoneSimulation';
+import { shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
 import { rayConcentration } from './Refraction';
 import { crestSpeedAt } from './CrestKinematics';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
@@ -13,6 +20,34 @@ const small: Omit<SurfZoneConfig, 'spot'> = {
 };
 
 describe('SurfZoneSimulation', () => {
+  it('takes the Reef\'s swell at its edge, like the Canyon\'s, until the Reef rework deepens it (wave sizes review)', () => {
+    expect(edgeHeight({ ...small, spot: 'reef', significantHeight: 3, peakPeriod: 18 })).toBe(3);
+  });
+
+  it('keeps the water finite on the biggest swells the Reef and today\'s Point tank can be given (wave sizes review)', () => {
+    // The Reef at its 3 m cap and the Point on today's 8 m tank (2.4 m, shoaled to ~3.1 m), 18 s at high tide.
+    // (The Reef at 3 m / 18 s / high tide already blew up with seed 3 before the wave-sizes work; its tank is the Reef rework's.)
+    const big = { ...small, peakPeriod: 18, tide: 1, alongShore: 40, dx: 1, fineSpacing: 1, componentCount: 32 };
+    for (const config of [
+      { ...big, seed: 1, spot: 'reef' as const, significantHeight: 3 },
+      { ...big, seed: 1, spot: 'point' as const, significantHeight: 2.4 },
+      { ...big, seed: 3, spot: 'point' as const, significantHeight: 2.4 },
+    ]) {
+      const simulation = new SurfZoneSimulation(config);
+      for (let frame = 0; frame < 30 * 30; frame += 1) simulation.step(1 / 30);
+      for (const value of simulation.solver.h) expect(Number.isFinite(value)).toBe(true);
+    }
+  }, 600_000);
+
+  it('takes a buoy height in deep water and shoals it to the tank\'s edge (wave sizes)', () => {
+    const config: SurfZoneConfig = { ...small, spot: 'point', significantHeight: 2, peakPeriod: 12 };
+    expect(edgeHeight(config)).toBeCloseTo(2 * shoalingCoefficient(12, OFFSHORE_DEPTH.point), 12);
+    expect(surfZoneSea(config).components[0].amplitude).toBeCloseTo(edgeHeight(config) / Math.sqrt(8 * small.componentCount!), 12);
+    // Practice gives its height at the edge, and the Canyon always takes its swell there: their seas stay as they were.
+    expect(edgeHeight({ ...config, heightAt: 'edge' })).toBe(2);
+    expect(edgeHeight({ ...config, spot: 'canyon' })).toBe(2);
+  });
+
   it('warm-starts so the spun-up sea sits at a chosen sea time (a room\'s clock)', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'canyon', stage: 1, startSeaTime: 500 });
     expect(simulation.seaTime).toBeCloseTo(500, 6);
@@ -177,7 +212,7 @@ describe('SurfZoneSimulation', () => {
   it('finds the break line at the shoaled breaker depth', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'beach' });
     const point = simulation.breakPoint();
-    const depth = breakerDepthFor(1.4, simulation.sea.depth);
+    const depth = breakerDepthFor(edgeHeight(simulation.config), simulation.sea.depth);
     expect(simulation.breakerDepth()).toBeCloseTo(depth, 12);
     expect(tankDepth(simulation.spot, OFFSHORE_DEPTH.beach, point.x, point.z)).toBeCloseTo(depth, 1);
   });
@@ -484,5 +519,101 @@ describe('SurfZoneSimulation', () => {
       }
     }
     expect(wet).toBeGreaterThan(200);
+  });
+});
+
+describe('the tank sized to the swell (wave sizes)', () => {
+  const config = (spot: SpotName, significantHeight: number, peakPeriod = 14): SurfZoneConfig => ({ ...small, spot, significantHeight, peakPeriod });
+
+  it('keeps today\'s tank for small days, Practice and the Canyon', () => {
+    for (const spot of ['beach', 'point', 'reef'] as const) {
+      expect(tankLayout(config(spot, 1.5, 18))).toEqual({ ...TANK, edgeDepth: OFFSHORE_DEPTH[spot] });
+      expect(tankLayout({ ...config(spot, 1.4, 12), heightAt: 'edge' })).toEqual({ ...TANK, edgeDepth: OFFSHORE_DEPTH[spot] });
+    }
+    expect(tankLayout(config('canyon', 3))).toEqual({ ...TANK, edgeDepth: OFFSHORE_DEPTH.canyon });
+  });
+
+  it('deepens the edge to 3.3 Hs, within 0.4 of the deep-water wavelength, and lengthens the tank to reach it', () => {
+    const layout = tankLayout(config('beach', 3, 14));
+    expect(layout.edgeDepth).toBeGreaterThanOrEqual(9.9 - 0.05);
+    const spot = createSpot('beach', small.seed);
+    // The edge takes the bed's depth where the zone starts.
+    expect(spot.depthAt(0, layout.zoneInner)).toBeCloseTo(layout.edgeDepth, 6);
+    expect(layout.zoneInner - layout.offshore).toBeGreaterThanOrEqual(Math.max(60, 0.75 * waveKinematics(14, layout.edgeDepth).wavelength) - 1e-6);
+    expect(layout.blendEnd - layout.zoneInner).toBe(TANK.blendEnd - TANK.zoneInner);
+    // A short-period storm sea keeps kh ≤ 2.5 at the edge.
+    expect(tankLayout(config('point', 4, 6)).edgeDepth).toBeLessThanOrEqual(0.4 * (9.81 * 36) / (2 * Math.PI) + 1e-9);
+  });
+
+  it('places a big day\'s take-off by the spot\'s calibrated breaker index, and today\'s tanks as before', () => {
+    const big: SurfZoneConfig = { ...small, spot: 'point', significantHeight: 3, peakPeriod: 14, alongShore: 160 };
+    const tank = tankLayout(big);
+    expect(tank.edgeDepth).toBeGreaterThan(OFFSHORE_DEPTH.point);
+    const target = breakerDepthFor(edgeHeight(big, tank.edgeDepth), tank.edgeDepth + big.tide, TAKE_OFF_INDEX.point);
+    const point = takeOffPoint(big);
+    expect(tankDepth(createSpot('point', big.seed), tank.edgeDepth, point.x, point.z, tank)).toBeCloseTo(target, 0);
+    const todays: SurfZoneConfig = { ...small, spot: 'point', alongShore: 160 };
+    expect(tankDepth(createSpot('point', 1), OFFSHORE_DEPTH.point, 0, takeOffPoint(todays).z))
+      .toBeCloseTo(breakerDepthFor(edgeHeight(todays), OFFSHORE_DEPTH.point), 0);
+    // Only a swell-sized tank uses the calibrated index.
+    expect(Object.keys(TAKE_OFF_INDEX).sort()).toEqual(['beach', 'canyon', 'point', 'reef']);
+  });
+
+  it('reaches a 13.2 m edge for a 4 m Beach swell on its deepened outer shelf', () => {
+    const layout = tankLayout(config('beach', 4, 14));
+    expect(layout.edgeDepth).toBeGreaterThanOrEqual(13.2 - 0.05);
+  });
+
+  it('stops the edge where a bed levels off short of the depth it wants: the Reef keeps today\'s tank', () => {
+    // The Reef's 10 m channel runs flat for ~500 m (its bed belongs to the Reef rework).
+    expect(tankLayout(config('reef', 4, 14))).toEqual({ ...TANK, edgeDepth: OFFSHORE_DEPTH.reef });
+  });
+
+  it('starts the fine zone 40 m seaward of where the sets break, never shoreward of −150', () => {
+    // The Reef keeps today's tank (above); its bed belongs to the Reef rework.
+    for (const spot of ['beach', 'point'] as const) {
+      const layout = tankLayout(config(spot, 4, 18));
+      const sets = SETS_OVER_TYPICAL * komarGaughan(4, 18) / BREAKER_INDEX;
+      const bed = createSpot(spot, small.seed);
+      let setBreak = layout.blendEnd;
+      while (bed.depthAt(0, setBreak) > sets && setBreak < TANK.shore) setBreak += 1;
+      expect(layout.fineFrom).toBeLessThanOrEqual(Math.min(TANK.fineFrom, setBreak - 40) + 1);
+      // The blend onto the spot's bed stays clear of the breaking sets.
+      expect(layout.blendEnd).toBeLessThanOrEqual(layout.fineFrom - 20);
+    }
+  });
+
+  it('keeps every layout ordered with a finite bed', () => {
+    for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
+      for (const significantHeight of [0.3, 1, 2, 3, 4]) {
+        for (const peakPeriod of [6, 10, 14, 18]) {
+          const layout = tankLayout(config(spot, significantHeight, peakPeriod));
+          expect(layout.offshore).toBeLessThan(layout.zoneInner);
+          expect(layout.zoneInner).toBeLessThan(layout.blendEnd);
+          expect(layout.blendEnd).toBeLessThan(layout.fineFrom);
+          expect(layout.fineFrom).toBeLessThan(layout.shore);
+          expect(layout.zoneInner - layout.offshore).toBeGreaterThanOrEqual(60);
+          expect(Number.isFinite(tankDepth(createSpot(spot, 1), layout.edgeDepth, 0, layout.offshore, layout))).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('builds and steps the deepest Beach tank, its boundary forcing the solver\'s own waves', () => {
+    const deepest = { ...config('beach', 4, 18), alongShore: 20, dx: 2 };
+    const simulation = new SurfZoneSimulation(deepest);
+    expect(simulation.tank).toEqual(tankLayout(deepest));
+    expect(simulation.solver.zCenters[0]).toBeLessThan(simulation.tank.zoneInner);
+    const omega = simulation.sea.components[0].omega;
+    expect(simulation.sea.components[0].k).toBeCloseTo(madsenSorensenWaveNumber(omega, simulation.sea.depth), 10);
+    for (let frame = 0; frame < 60; frame += 1) simulation.step(1 / 30);
+    for (const value of simulation.solver.h) expect(Number.isFinite(value)).toBe(true);
+  }, 300_000);
+
+  it('builds today\'s tanks exactly as before', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'reef' });
+    expect(simulation.tank).toEqual({ ...TANK, edgeDepth: OFFSHORE_DEPTH.reef });
+    const omega = simulation.sea.components[0].omega;
+    expect(simulation.sea.components[0].k).toBe(shallowWaterWaveNumber(omega, simulation.sea.depth));
   });
 });
