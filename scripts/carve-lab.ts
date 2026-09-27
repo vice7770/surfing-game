@@ -262,6 +262,39 @@ function railChange(speed: number, from: 'flat' | 'carve', surface: 'flat' | 'cl
   return { wrong: -degrees(wrong), reversal, turned: degrees(turned), kept: board.velocity.length() / entry, attached: rider.attached, time };
 }
 
+/**
+ * A top turn or a cutback (the top-turn plan): a live rider on the face `across`
+ * degrees from its fall line at `speed`, then `steer` held with the weight at
+ * `trim` for `seconds`. The turn at 1 s and at the end, the peak yaw rate while
+ * the board still planes (above 3 m/s), the speed at 1 s, and whether and when
+ * the rider falls.
+ */
+function topTurn(across: number, speed: number, steer: number, trim: number, seconds: number) {
+  const { board, rider } = onFace(across, speed, 'standing');
+  for (let i = 0; i < 12; i += 1) board.step(STEP, water);
+  rider.steer = steer;
+  rider.trim = trim;
+  let last = heading(board);
+  let turned = 0;
+  let second = 0;
+  let speedAtSecond = 0;
+  let peak = 0;
+  let time = 0;
+  for (let i = 0; i < Math.round(seconds / STEP) && rider.attached; i += 1) {
+    board.step(STEP, water);
+    time += STEP;
+    const now = heading(board);
+    turned += Math.atan2(Math.sin(now - last), Math.cos(now - last));
+    last = now;
+    if (board.velocity.length() > 3) peak = Math.max(peak, Math.abs(board.angularVelocity.y));
+    if (i === Math.round(1 / STEP) - 1) {
+      second = turned;
+      speedAtSecond = board.velocity.length();
+    }
+  }
+  return { second: degrees(Math.abs(second)), turned: degrees(Math.abs(turned)), peak, speedAtSecond, attached: rider.attached, time };
+}
+
 /** A full-steer turn on flat water at 8 m/s for 1.2 s at a stance: the turn, the speed kept, and the board's mean pitch, sink and front-foot share. */
 function depthTurn(crouch: number, compress: number, trim: number) {
   const board = new BoardBody();
@@ -300,6 +333,15 @@ for (const surface of ['flat', 'climb'] as const) {
     for (const speed of [6, 8, 10]) {
       const c = railChange(speed, from, surface);
       changes.push(`| ${surface === 'flat' ? 'flat water' : 'climbing 150°'} | ${from === 'flat' ? 'riding flat' : 'carving the other way'} | ${speed} | ${fixed(c.wrong, 0)}° | ${c.reversal !== undefined ? `${fixed(c.reversal, 2)} s` : 'never'} | ${fixed(c.turned, 0)}° | ${fixed(c.kept, 2)} | ${c.attached ? 'on' : `fell at ${fixed(c.time, 2)} s`} |`);
+    }
+  }
+}
+const tops: string[] = [];
+for (const [label, across, steer, seconds] of [['top turn, climbing 150°', 150, 1, 1.5], ['cutback, across 80°', 80, -1, 2]] as const) {
+  for (const speed of across === 150 ? [6.7, 8] : [7, 9]) {
+    for (const [weight, trim] of [['level', 0], ['back 0.5', -0.5], ['back 1', -1]] as const) {
+      const t = topTurn(across, speed, steer, trim, seconds);
+      tops.push(`| ${label} | ${speed} | ${weight} | ${fixed(t.second, 0)}° | ${fixed(t.turned, 0)}° in ${seconds} s | ${fixed(t.peak, 2)} rad/s | ${fixed(t.speedAtSecond, 1)} | ${t.attached ? 'on' : `fell at ${fixed(t.time, 2)} s`} |`);
     }
   }
 }
@@ -400,6 +442,15 @@ A live rider, full steer the new way for 1.2 s: from riding flat, or from 0.6 s 
 | Water | From | Speed m/s | Wrong way | Reversal | Turned the new way | Speed kept | Rider |
 |---|---|---:|---:|---:|---:|---:|---|
 ${changes.join('\n')}
+
+## Top turns and cutbacks (the top-turn plan)
+
+A live rider on the 15° face, full steer back down from a climb 150° from the fall line, or back up and around from across it, with the weight level or back (W/S). The turn at 1 s and at the end, the peak yaw rate while the board planes (above 3 m/s; stalling, it spins), and the speed at 1 s. The face gives nothing back: every carve up it slows toward the end of planing (3 m/s).
+
+| Turn | Speed m/s | Weight | At 1 s | Turned | Peak yaw | Speed at 1 s | Rider |
+|---|---:|---|---:|---:|---:|---:|---|
+| Forsyth et al. 2024, cutbacks and top turns | 6.7 | — | 152° in 0.96 s | — | 3.0 rad/s | — | — |
+${tops.join('\n')}
 
 ## Depth and speed (the top-turn plan: why Compress bleeds speed)
 
