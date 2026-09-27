@@ -7,7 +7,7 @@ const DEG = Math.PI / 180;
 /** A wave travelling +z, the rider on its face riding along it toward +x. */
 const FRAME: WaveFrame = {
   valid: true, directionX: 0, directionZ: 1, aheadOfCrest: 4, crestSpeed: 5, faceHeight: 1.5, faceFraction: 0.5,
-  crestBreaking: 0, speedOverGround: 7, speedShoreward: 0, speedAlongCrest: 7, requiredSpeed: 7,
+  crestBreaking: 0, curlDistance: Infinity, speedOverGround: 7, speedShoreward: 0, speedAlongCrest: 7, requiredSpeed: 7,
 };
 
 type Part = Partial<Omit<RideSample, 'wave'>> & { wave?: Partial<WaveFrame> };

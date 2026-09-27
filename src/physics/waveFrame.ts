@@ -22,6 +22,11 @@ export interface WaveFrame {
   faceFraction: number;
   /** Breaking strength (the sample's `breaking`) at the crest near the rider: the most within ±4 m along the crest. */
   crestBreaking: number;
+  /**
+   * Metres along the crest from the rider's crest point to the curl: the nearest crest point breaking at least
+   * CURL_BREAKING, looked for CURL_REACH either side. 0 when the crest at the rider breaks, Infinity when none does.
+   */
+  curlDistance: number;
   /** Horizontal speed over ground, m/s, and its parts along the travel direction and along the crest (toward +x for a wave travelling +z). */
   speedOverGround: number;
   speedShoreward: number;
@@ -48,6 +53,10 @@ const MIN_FACE = 0.1;
 const CLOSE_OUT_DEGREES = 0.5;
 /** Places along the crest where breaking is read, m. */
 const CREST_OFFSETS = [0, -2, 2, -4, 4];
+/** The curl: crest water breaking at least this strongly, looked for this far along the crest either side, every step, m. */
+const CURL_BREAKING = 0.3;
+const CURL_REACH = 40;
+const CURL_STEP = 0.5;
 
 const COUNT = Math.round((BACK + CREST_AHEAD + TROUGH_SPAN) / SPACING) + 1;
 const CREST_LAST = Math.round((BACK + CREST_AHEAD) / SPACING);
@@ -66,7 +75,7 @@ export function requiredSpeed(crestSpeed: number, peelAngleDegrees: number): num
 
 function createWaveFrame(directionX: number, directionZ: number): WaveFrame {
   return {
-    valid: false, directionX, directionZ, aheadOfCrest: 0, crestSpeed: 0, faceHeight: 0, faceFraction: 0, crestBreaking: 0,
+    valid: false, directionX, directionZ, aheadOfCrest: 0, crestSpeed: 0, faceHeight: 0, faceFraction: 0, crestBreaking: 0, curlDistance: Infinity,
     speedOverGround: 0, speedShoreward: 0, speedAlongCrest: 0, requiredSpeed: Infinity,
   };
 }
@@ -153,6 +162,7 @@ export class WaveFrameGauge {
       frame.faceHeight = 0;
       frame.faceFraction = 0;
       frame.crestBreaking = 0;
+      frame.curlDistance = Infinity;
       frame.crestSpeed = this.speed;
       frame.requiredSpeed = requiredSpeed(this.speed, peelAngleDegrees);
       return frame;
@@ -191,7 +201,21 @@ export class WaveFrameGauge {
       if (sample.wet && !sample.outsideDomain) breaking = Math.max(breaking, sample.breaking);
     }
     frame.crestBreaking = breaking;
+    frame.curlDistance = Infinity;
+    for (let s = 0; s <= CURL_REACH; s += CURL_STEP) {
+      if (this.breaksAt(water, crestX + dz * s, crestHeight, crestZ - dx * s)
+        || (s > 0 && this.breaksAt(water, crestX - dz * s, crestHeight, crestZ + dx * s))) {
+        frame.curlDistance = s;
+        break;
+      }
+    }
     return frame;
+  }
+
+  /** Whether the crest water at (x, z) breaks as a curl does. */
+  private breaksAt(water: SurfWater, x: number, y: number, z: number): boolean {
+    const sample = water.sampleAt(x, y, z, this.sample);
+    return sample.wet && !sample.outsideDomain && sample.breaking >= CURL_BREAKING;
   }
 
   /** Turn the direction toward the way the surface falls at the rider, kept pointing the way the wave travels. */

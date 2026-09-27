@@ -4,7 +4,7 @@ import { Autopilot, type AutopilotOptions, type AutopilotView } from './Autopilo
 
 const wave = (overrides: Partial<WaveFrame> = {}): WaveFrame => ({
   valid: true, directionX: 0, directionZ: 1, aheadOfCrest: 3, crestSpeed: 5, faceHeight: 1.5, faceFraction: 0.5, crestBreaking: 0,
-  speedOverGround: 6, speedShoreward: 3, speedAlongCrest: 5, requiredSpeed: 7, ...overrides,
+  curlDistance: Infinity, speedOverGround: 6, speedShoreward: 3, speedAlongCrest: 5, requiredSpeed: 7, ...overrides,
 });
 
 type RideView = AutopilotView['ride'];
