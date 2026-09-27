@@ -26,12 +26,21 @@ import { SURFER_BODIES, type SurferSettings } from './game/SurferChoice';
 import { devFlag, devParam } from './devTools';
 import { RunHistory, type RunReport } from './game/RunHistory';
 import { simulatedSeconds } from './game/timeScale';
-import { DEFAULT_PHYSICAL_SETTINGS, PRACTICE_SWELL, PhysicalMode, spreadingFor, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, spreadingFor, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
+import { OnlinePlay, type OnlinePhase } from './game/OnlinePlay';
+import type { OnlineController } from './net/OnlineController';
+import { ONLINE_QUEUE } from './net/OnlinePacer';
+import { decompress } from './wave/surfZoneState';
+import { INTERPOLATION_DELAY, createRemoteState, type RemoteState } from './net/RemoteSurfers';
+import { RemoteSurferViews } from './scene/RemoteSurferViews';
+import { NameTags, type TagEntry } from './ui/NameTags';
+import { t } from './ui/strings';
 import { LocalSurfZone } from './game/SurfZoneHost';
 import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, type SurfConditions, type TimeOfDay } from './game/SurfConditions';
 import type { WaterLook } from './scene/water/waterLook';
 import type { RideView } from './scene/SpectatorCamera';
-import type { SurfZoneStatus } from './wave/SurfZoneRunner';
+import { RIDER_SNAPSHOT, type SurfZoneStatus } from './wave/SurfZoneRunner';
+import type { SurfZoneConfig } from './wave/SurfZoneSimulation';
 import type { RideFrame } from './game/RideTracker';
 import type { SoundFrame } from './audio/soundMapping';
 import type { ListenerPose } from './audio/AudioEngine';
@@ -106,6 +115,16 @@ function surfZoneFactory(rider: boolean): SurfZoneHostFactory {
   return inPage
     ? (config) => new LocalSurfZone(config, { rider, renderSpacing })
     : (config) => new WorkerSurfZone(config, undefined, { rider, renderSpacing });
+}
+/**
+ * Online (spec N1): the rider starts at `spawn` (m along shore from the take-off, and
+ * outside the break line), and the worker may queue enough steps to catch up with the
+ * room's clock.
+ */
+function onlineSurfZoneFactory(spawn: { spawnAlong: number; spawnOut: number }, sea?: Uint8Array): SurfZoneHostFactory {
+  return inPage
+    ? (config) => new LocalSurfZone(config, { rider: true, ...spawn }, sea)
+    : (config) => new WorkerSurfZone(config, undefined, { rider: true, ...spawn }, { maxQueuedSteps: ONLINE_QUEUE, ...(sea ? { sea } : {}) });
 }
 /** Only the worker steps on the GPU (plan P6), so only it gets the GPU tier's sea. */
 const gpuTier = inPage ? undefined : webGpuAvailable;
@@ -200,6 +219,12 @@ class SurfGame {
   private readonly listenerForward = new Vector3();
   /** The menu's waves or a Surf ride: their own sun, real time, and the Wave Lab's settings left as they were. */
   private surfScene = false;
+  /** Online play (spec N1): the session, its frame logic, and the other surfers as drawn with their tags. */
+  private online?: {
+    controller: OnlineController; play: OnlinePlay; views: RemoteSurferViews; tags: NameTags;
+    state: RemoteState; anchors: Vector3[]; rebuilding: boolean;
+  };
+  private showNameTags = true;
   /** The sun the environment shows now, whoever set it. */
   private shownSun = { height: DEFAULT_SETTINGS.sunHeight, direction: DEFAULT_SETTINGS.sunDirection };
   /** The graphics settings in force (plan P8); until applied, today's defaults. */
@@ -339,11 +364,17 @@ class SurfGame {
     // A new level recompiles every material, so only a change applies it.
     if (level !== this.shadows.currentLevel) this.shadows.setLevel(level, { surfaces: this.shadowSurfaces });
     this.physicalMode.surfer.setDetail(resolved.surferLodDistance, resolved.textureCap);
+    this.online?.views.setDetail(resolved.surferLodDistance, resolved.textureCap);
     this.applyWaterLook(resolved.waterLook);
   }
 
   /** R: in the physical mode, paddle out again from the lineup while the waves carry on; otherwise replay. */
   quickRetry = (): void => {
+    // Online, R counts down to a free spot in the lineup (spec N1).
+    if (this.online) {
+      this.online.play.respawn();
+      return;
+    }
     if (this.mode === 'physical') {
       this.physicalMode.retry();
       return;
@@ -445,9 +476,14 @@ class SurfGame {
   }
 
   /** Build the physical surf zone with its ridden board, and hide the legacy board, rider and HUD. */
-  private async startPhysical(seed: number, settings: PhysicalSettings, options: { sun?: { sunHeight: number; sunDirection: number }; rider?: boolean } = {}): Promise<boolean> {
-    const factory = surfZoneFactory(options.rider ?? true);
-    if (!(await this.physicalMode.start(settings, seed, this.water, {}, factory, this.graphics?.richSea === false ? undefined : gpuTier))) return false;
+  private async startPhysical(
+    seed: number, settings: PhysicalSettings,
+    options: { sun?: { sunHeight: number; sunDirection: number }; rider?: boolean; factory?: SurfZoneHostFactory; overrides?: Partial<SurfZoneConfig> } = {},
+  ): Promise<boolean> {
+    const factory = options.factory ?? surfZoneFactory(options.rider ?? true);
+    // An online room fixes its own sea (components included); otherwise the GPU tier decides.
+    const tier = options.overrides || this.graphics?.richSea === false ? undefined : gpuTier;
+    if (!(await this.physicalMode.start(settings, seed, this.water, options.overrides ?? {}, factory, tier))) return false;
     this.frozen = false;
     this.freezeIn = undefined;
     // The Wave Lab's sliders set its sun and time scale; the menu and Surf bring their own sun, run in real
@@ -490,6 +526,7 @@ class SurfGame {
    * seen by the cinematic sweep. On the Low preset it runs briefly, then holds still.
    */
   async showBackdrop(spot: SpotName): Promise<boolean> {
+    this.leaveOnline();
     this.physicalMode.idleView = 'cinematic';
     const water = { stage: this.graphics?.stage ?? 2, compute: this.graphics?.compute ?? 'auto' } as const;
     if (!(await this.startPhysical(this.seed, backdropSettings(spot, water), { sun: TIMES[BACKDROP_TIME], rider: false }))) return false;
@@ -499,6 +536,7 @@ class SurfGame {
 
   /** A Surf session (plan P8): the physical surf zone with the player's rider, in the chosen conditions and camera. */
   async startSurf(spot: SpotName, conditions: SurfConditions, seed: number, camera: RideView | 'overview'): Promise<boolean> {
+    this.leaveOnline();
     this.physicalMode.idleView = 'overview';
     this.physicalMode.defaultView = camera;
     const water = { stage: this.graphics?.stage ?? 2, compute: this.graphics?.compute ?? 'auto' } as const;
@@ -512,6 +550,7 @@ class SurfGame {
 
   /** The Wave Lab (plan P8): today's playable legacy wave, with every tool, reached from the menu. */
   enterWaveLab(): void {
+    this.leaveOnline();
     this.physicalMode.idleView = 'overview';
     this.frozen = false;
     this.freezeIn = undefined;
@@ -528,6 +567,70 @@ class SurfGame {
   /** The physical surf zone's readout rows, for the dev-tools telemetry overlay. */
   get readout(): ReadoutRow[] {
     return this.mode === 'physical' ? this.physicalMode.readout() : [];
+  }
+
+  /**
+   * Online (spec N1): the room's sea, built from its seed and conditions at the room's
+   * clock (stage 2 with the GPU tier's 64 components, whatever the graphics settings),
+   * with the rider waiting outside the break until the sea has caught up with the room.
+   * The sea is another player's, handed over through the server, whenever someone else
+   * is in the room (spec N1: late joiners' fresh seas break elsewhere); fresh otherwise.
+   * Called again to rebuild the sea when it falls behind.
+   */
+  async startOnline(controller: OnlineController, camera: RideView | 'overview' = 'front'): Promise<boolean> {
+    const room = controller.room;
+    if (!room) return false;
+    this.physicalMode.idleView = 'overview';
+    this.physicalMode.defaultView = camera;
+    const settings = physicalSettingsFor(room.spot, room.conditions, { stage: 2, compute: 'auto' });
+    const spawn = { spawnAlong: (Math.random() - 0.5) * 40, spawnOut: 10 + Math.random() * 15 };
+    const handed = await controller.requestSea();
+    const sea = handed ? await decompress(handed.bytes, handed.deflated) : undefined;
+    // Left the room while waiting for its sea: build nothing (it would replace the menu's waves).
+    if (controller.closed) return false;
+    // A handed-over sea brings its own clock and replaces everything a spin-up would build; a fresh one starts at the room's.
+    const overrides: Partial<SurfZoneConfig> = {
+      stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
+    };
+    const started = await this.startPhysical(room.seed, settings, {
+      sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea), overrides,
+    });
+    if (!started) return false;
+    if (this.online?.controller === controller) {
+      this.online.play.restart();
+      this.online.rebuilding = false;
+      return true;
+    }
+    this.leaveOnline();
+    const views = new RemoteSurferViews(this.scene);
+    if (this.graphics) views.setDetail(this.graphics.surferLodDistance, this.graphics.textureCap);
+    this.online = {
+      controller, play: new OnlinePlay(controller), views, tags: new NameTags(getElement('#app')),
+      state: createRemoteState(), anchors: [], rebuilding: false,
+    };
+    // Someone joining late takes this sea (spec N1).
+    controller.provideSea = async () => (this.online?.controller === controller ? this.physicalMode.host?.exportState() : undefined);
+    return true;
+  }
+
+  /** Leave online play: the other surfers and their tags go (the session is closed by whoever opened it). */
+  leaveOnline(): void {
+    const { online } = this;
+    if (!online) return;
+    online.views.dispose();
+    online.tags.dispose();
+    this.online = undefined;
+  }
+
+  /** Online play for the HUD: catching up, riding or rebuilding the sea, and a respawn's countdown. */
+  get onlineState(): { phase: OnlinePhase; behind: number; respawnIn?: number } | undefined {
+    const { online } = this;
+    return online && { phase: online.rebuilding ? 'resyncing' : online.play.phase, behind: online.play.behind, respawnIn: online.play.respawnIn };
+  }
+
+  /** Settings: names over the other surfers online. */
+  setNameTags(show: boolean): void {
+    this.showNameTags = show;
   }
 
   setPaused(paused: boolean): void {
@@ -884,7 +987,8 @@ class SurfGame {
     controls.poll();
     const rawElapsed = this.previousFrame === 0 ? 0 : (timestamp - this.previousFrame) / 1000;
     this.onFrame?.(rawElapsed * 1000, this.mode === 'physical' ? this.physicalMode.host?.snapshot.status : undefined);
-    if (this.paused) {
+    // Online the sea never pauses: the menu only takes the controls (spec N1).
+    if (this.paused && !this.online) {
       if (this.mode === 'physical') this.physicalRender(0, 0);
       else this.renderer.render(this.scene, this.cameraRig.camera);
       requestAnimationFrame(this.frame);
@@ -961,6 +1065,10 @@ class SurfGame {
 
   /** One frame of the physical surf zone: fixed solver steps with the player's input, render, 4 Hz readout. */
   private physicalFrame(elapsed: number, simElapsed: number): void {
+    if (this.online) {
+      this.onlineFrame(elapsed);
+      return;
+    }
     this.accumulator = Math.min(this.accumulator + simElapsed, this.fixedStep * 4);
     let steps = 0;
     while (this.accumulator >= this.fixedStep && steps < 3) {
@@ -977,11 +1085,69 @@ class SurfGame {
   }
 
   /**
+   * One online frame (spec N1): the sea follows the room's clock, the player's input
+   * reaches the rider unless a menu is open, and a sea that fell behind is rebuilt.
+   */
+  private onlineFrame(elapsed: number): void {
+    const online = this.online!;
+    const standing = this.physicalMode.host?.snapshot.status.ride?.phase === 'standing';
+    const request = this.paused ? undefined : controls.rideRequest(elapsed, standing);
+    const input = request && { ...request, steer: this.physicalMode.screenSteer(request.steer) };
+    const { resync } = online.play.step(this.physicalMode, elapsed, input);
+    if (request?.popUp) controls.consumeGetUp();
+    if (resync && !online.rebuilding) {
+      online.rebuilding = true;
+      void this.startOnline(online.controller, this.physicalMode.defaultView).then((started) => {
+        if (!started && this.online === online) online.rebuilding = false;
+      });
+    }
+    this.physicalRender(elapsed, elapsed);
+  }
+
+  /** The other surfers on this water, a little in the past, with their name tags and calls (spec N1). */
+  private drawOnline(): void {
+    const { online } = this;
+    const host = this.physicalMode.host;
+    if (!online || !host) return;
+    const { controller, views, tags, state, anchors } = online;
+    controller.prune();
+    const others = controller.players().filter((player) => player.id !== controller.you);
+    views.sync(others);
+    const camera = this.physicalMode.camera.camera;
+    const seaTime = host.snapshot.status.seaTime - INTERPOLATION_DELAY;
+    const surface = (x: number, z: number) => host.heightAt(x, z);
+    const entries: TagEntry[] = [];
+    const anchor = () => {
+      anchors[entries.length] ??= new Vector3();
+      return anchors[entries.length];
+    };
+    for (const player of others) {
+      const drawn = controller.remote.sample(player.id, seaTime, state);
+      views.update(player.id, drawn ? state : undefined, surface, camera.position);
+      const world = anchor();
+      if (!views.tagAnchor(player.id, world)) continue;
+      const call = controller.calls.get(player.id);
+      entries.push({ id: player.id, name: player.name, world, ...(call ? { call: t(`online.call.${call.call}`) } : {}) });
+    }
+    // The player's own call, over their own head.
+    const own = controller.you === undefined ? undefined : controller.calls.get(controller.you);
+    const rider = host.snapshot.rider;
+    if (own && rider[RIDER_SNAPSHOT.present] > 0) {
+      const head = RIDER_SNAPSHOT.points + 2 * 3;
+      const world = anchor().set(rider[head], rider[head + 1] + 0.45, rider[head + 2]);
+      entries.push({ id: controller.you!, name: '', world, call: t(`online.call.${own.call}`) });
+    }
+    const canvas = this.renderer.domElement;
+    tags.update(entries, camera, canvas.clientWidth, canvas.clientHeight, this.showNameTags);
+  }
+
+  /**
    * Draw the physical surf zone as it now stands, and refresh the readout at 4 Hz.
    * `camera` overrides the physical mode's own for this frame (the `?record` tool's shots).
    */
   private physicalRender(elapsed: number, simElapsed: number, camera?: PerspectiveCamera): void {
     this.physicalMode.update(simElapsed || this.fixedStep);
+    this.drawOnline();
     this.setUnderwater(this.physicalMode.cameraBelowSurface());
     this.drawPhysical(camera ?? this.physicalMode.camera.camera);
     this.readoutClock += elapsed;
@@ -1197,9 +1363,11 @@ const settings = new SettingsStore(availableStorage(), defaultSettings(reducedMo
 const applyGraphics = () => game.applyGraphics(resolveGraphics(settings.value.graphics, settings.value.detected, window.devicePixelRatio));
 applyGraphics();
 game.setSurfer(settings.value.surfer);
+game.setNameTags(settings.value.gameplay.nameTags);
 settings.subscribe((value, change) => {
   if (change === 'graphics' || change === 'detected') applyGraphics();
   if (change === 'surfer') game.setSurfer(value.surfer);
+  if (change === 'gameplay') game.setNameTags(value.gameplay.nameTags);
 });
 const controls = new Controls(() => settings.value.controls.bindings, {
   retry: () => {
@@ -1209,6 +1377,7 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   camera: () => game.cycleView(),
   pause: () => app.pause(),
   mute: () => app.toggleMute(),
+  call: (call) => app.call(call),
 });
 const app = new App(game, controls, settings, { startInWaveLab: physicalRequested || demoMode !== null || recordRequested || waterSheetRequested });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);

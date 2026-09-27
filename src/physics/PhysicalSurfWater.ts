@@ -58,6 +58,8 @@ export interface PhysicalSurfWaterOptions {
 export class PhysicalSurfWater implements SurfWater {
   /** Vertical impulse handed over but not representable in the depth-averaged water, N·s. */
   unappliedVerticalImpulse = 0;
+  /** This water's own horizontal reactions since the last `drainReaction`: weight Σ|J|, Σ|J|·x, Σ|J|·z, ΣJx, ΣJz. */
+  private readonly tally = { weight: 0, x: 0, z: 0, jx: 0, jz: 0 };
   private readonly spacing: number;
   private readonly omega: number;
   private readonly nodes = new Float64Array(16);
@@ -138,8 +140,40 @@ export class PhysicalSurfWater implements SurfWater {
   }
 
   addReaction(x: number, z: number, impulseX: number, impulseY: number, impulseZ: number): void {
-    const { solver } = this;
     this.unappliedVerticalImpulse += impulseY;
+    const weight = Math.hypot(impulseX, impulseZ);
+    const { tally } = this;
+    tally.weight += weight;
+    tally.x += x * weight;
+    tally.z += z * weight;
+    tally.jx += impulseX;
+    tally.jz += impulseZ;
+    this.push(x, z, impulseX, impulseZ);
+  }
+
+  /** Another player's board pushing on this water (spec N1): applied like a reaction, but not tallied as this player's own. */
+  applyRemoteReaction(x: number, z: number, impulseX: number, impulseZ: number): void {
+    this.push(x, z, impulseX, impulseZ);
+  }
+
+  /**
+   * This water's own reactions since the last drain, for the network (spec N1):
+   * `out` gets the impulse-weighted mean point (x, z) and the summed horizontal
+   * impulse (jx, jz), or zeros; the tally starts again.
+   */
+  drainReaction(out: Float64Array): void {
+    const { tally } = this;
+    const weight = tally.weight;
+    out[0] = weight > 0 ? tally.x / weight : 0;
+    out[1] = weight > 0 ? tally.z / weight : 0;
+    out[2] = tally.jx;
+    out[3] = tally.jz;
+    tally.weight = tally.x = tally.z = tally.jx = tally.jz = 0;
+  }
+
+  /** −J over the four nearest wet cells: Δq = −J/(ρA). */
+  private push(x: number, z: number, impulseX: number, impulseZ: number): void {
+    const { solver } = this;
     if (this.outside(x, z)) return;
     this.cellWeights(x, z);
     let wet = 0;

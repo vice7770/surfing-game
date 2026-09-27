@@ -15,7 +15,7 @@ Open the local URL printed by Vite. The game opens on its main menu, over live w
 
 - **Surf:** pick Beach, Point, Reef or Canyon and the conditions (swell, tide, wind and time of day), then paddle out on the physical surf zone. It starts at the Canyon, whose waves peel along the break; the other spots mostly close out.
   - Hold Space (or ↑) to paddle, and press Enter when "Pop up now" shows. Steer with ← → or A D.
-  - Standing, lean with ← → (A D) to carve. W or ↑ puts your weight forward to run down the line, and S or ↓ puts it back to slow and stall. Hold Shift to crouch: extending out of a turn pumps. Hold E to drag the wave-side hand in the face. With nothing held, the rider holds its line.
+  - Standing, lean with ← → (A D) to carve. W or ↑ puts your weight forward to run down the line, and S or ↓ puts it back to slow and stall. Hold Shift to crouch: extending out of a turn pumps. Hold E to drag the wave-side hand in the face. With nothing held, the rider holds its line. Press Enter again to lie back down on the board.
   - R paddles out again, C changes the camera, and Esc pauses.
   - On a gamepad: RT paddles, A pops up, and the left stick or D-pad steers. Standing, the left stick's up and down trims, LT crouches as far as you pull it, and X drags the hand. Y paddles out again, RB changes the camera, and Start pauses.
   - On a touch phone, use the Paddle, Pop up, Crouch and arrow buttons, and the pause button at the top right.
@@ -24,6 +24,11 @@ Open the local URL printed by Vite. The game opens on its main menu, over live w
   - Everything comes from the physics: the roar where the water breaks, lip crashes by the water they throw, distant surf with the swell, wind with the Wind setting, the board's rush with its speed, spray off the rail, paddle splashes, the pop-up and the plunge.
   - Underwater and under the pause menu it is muffled; slow motion slows it.
   - M (or the gamepad's Back button) mutes, and so does the speaker toggle in the menu and pause menu.
+- **Multiplayer:** surf one break with up to 50 friends ([spec](docs/superpowers/specs/2026-09-26-online-lineup.md)).
+  - Type your name, then **Create room** (spot, conditions and a player cap) or **Join** with a room's code. The page's address carries the room (`?room=CODE`): share it, and a friend's link opens Multiplayer with the code filled in. A browser needs WebGPU (a current Chrome or Safari).
+  - Everyone starts in the water outside the break and sees the others, with a name tag over each. Keys 1–4 shout "Left!", "Right!", "Party wave!" and "Nice one!". Rides of 3 s or more go to everyone's feed, and to your Logbook marked "online".
+  - The sea never pauses: Esc opens a menu with the room's players and link (the creator can kick), and R takes you back to a free spot in the lineup after 3 s.
+  - Each player runs the whole sea. Someone joining late takes the sea of the player who has been in the room longest, so every player's waves break in the same places.
 - **Logbook:** your last 50 rides, and your bests per spot.
 - **Settings:**
   - **Gameplay:** units, default camera, touch controls, the balance meter (on the Practice swell by default), and Score rides: a 0–10 score on the WSL criteria for each ride, with the session's best two.
@@ -47,6 +52,19 @@ The Wave Lab (a menu tile) is the original screen, around the legacy wave: the w
 The Wave Lab's ♪ Sound button opens the **sound check**: every sound's synthesised version and its candidate recordings on buttons, a gain per sound, and the bus levels; `public/assets/audio/sounds.json` picks the recordings. `npm run report:sound` logs the sound an autopilot ride makes and checks it follows its causes ([sound report](docs/research/sound-report.md)).
 
 The 3D lip is a local hybrid model, not a full fluid solver; its scope is recorded in [ADR 0003](docs/adr/0003-plunging-sheet-collision.md) and [ROADMAP.md](ROADMAP.md).
+
+## Online
+
+The room server is a small Node process in [server/](server/). It serves the built game and the rooms (`/ws`), holds the rooms in memory, and relays: it never runs the sea.
+
+```sh
+npm run server          # build the game and the server, then serve both on http://localhost:8787
+```
+
+Several tabs on `localhost` can share a room (WebGPU works on `localhost`, not on plain HTTP over a network). For development with Vite's hot reload, run `npm run dev` and, beside it, `npm run server:dev`; Vite forwards `/ws` to the room server.
+
+- **Dev bots:** `npm run bots:record` records an autopilot's track on the Canyon (about 5 minutes of sea), and `npm run server:bots` serves with bots. Open `/?bots=8` and create a room to fill it with 8 of them.
+- **Deploying to Fly.io:** once, create a Fly.io account, install `flyctl` and run `fly auth login` and `fly launch --no-deploy`. The launch picks the app's name and the region nearest you, which go in [fly.toml](fly.toml). Then `npm run deploy` builds the [Dockerfile](Dockerfile) and deploys. One small always-on machine serves the game and its rooms over HTTPS, and restarting it ends every room.
 
 ## Validate
 

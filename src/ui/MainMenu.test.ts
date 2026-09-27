@@ -7,9 +7,10 @@ describe('menuTiles', () => {
     expect(menuTiles(true).map((tile) => tile.id)).toEqual(['surf', 'waveLab', 'multiplayer', 'logbook', 'settings']);
   });
 
-  it('shows multiplayer as coming soon, and nothing else disabled', () => {
+  // N1: online play is here.
+  it('opens multiplayer like any other tile', () => {
     const tiles = menuTiles(true);
-    expect(tiles.filter((tile) => tile.disabled).map((tile) => tile.id)).toEqual(['multiplayer']);
-    expect(tiles.find((tile) => tile.id === 'multiplayer')?.badge).toBe('menu.comingSoon');
+    expect(tiles.filter((tile) => tile.disabled)).toEqual([]);
+    expect(tiles.find((tile) => tile.id === 'multiplayer')?.badge).toBeUndefined();
   });
 });

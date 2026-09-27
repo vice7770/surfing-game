@@ -31,6 +31,35 @@ describe('Catmull-Rom weights', () => {
 });
 
 describe('PhysicalSurfWater', () => {
+  it('tallies its own pushes on the water for the network, but not remote ones (spec N1)', () => {
+    const { water } = channel();
+    water.addReaction(2, 0, 0, 0, 0);
+    water.addReaction(4, 0, 6, 0, 0);
+    water.addReaction(-2, 0, 0, 5, 2);
+    water.applyRemoteReaction(3, 0, 100, 100);
+    const out = new Float64Array(4);
+    water.drainReaction(out);
+    // Weighted by the horizontal impulse: 6 at x = 4 and 2 at x = −2.
+    expect(out[0]).toBeCloseTo((6 * 4 + 2 * -2) / 8, 9);
+    expect(out[1]).toBeCloseTo(0, 9);
+    expect(out[2]).toBeCloseTo(6, 9);
+    expect(out[3]).toBeCloseTo(2, 9);
+    water.drainReaction(out);
+    expect([...out]).toEqual([0, 0, 0, 0]);
+  });
+
+  it('pushes the water with a remote board\'s reaction, conserving momentum', () => {
+    const { solver, water } = channel();
+    const momentum = () => {
+      let sum = 0;
+      for (let i = 0; i < solver.qx.length; i += 1) sum += solver.qx[i] * solver.dx * solver.dz[Math.floor(i / solver.nx)];
+      return sum * SEAWATER_DENSITY;
+    };
+    const before = momentum();
+    water.applyRemoteReaction(3, 0, 50, 0);
+    expect(momentum() - before).toBeCloseTo(-50, 6);
+  });
+
   it('agrees with the rendered surface and its shading normal at every render node', () => {
     const simulation = new SurfZoneSimulation(config);
     for (let step = 0; step < 120; step += 1) simulation.step(1 / 60);

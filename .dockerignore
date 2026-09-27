@@ -1,0 +1,13 @@
+node_modules
+dist
+dist-server
+.git
+.claude
+.superpowers
+recordings
+docs
+server/bots
+scripts/assets/.cache
+scripts/assets/.build
+*.tsbuildinfo
+.DS_Store

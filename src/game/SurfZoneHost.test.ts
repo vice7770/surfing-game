@@ -14,7 +14,7 @@ const config: SurfZoneConfig = {
 describe('LocalSurfZone', () => {
   it('keeps the practice Reef’s water steady while its tubes collapse (G9)', () => {
     // The water sheet's sea: collapsing a void while its jet still poured landed the rest of the pour on the crest,
-    // and the crest's water ran away within 1.5 s.
+    // and the crest's water ran away within 1.5 s. Its spin-up is most of the cost: minutes under a loaded full suite.
     const settings = { ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef' as const, source: 'practice' as const, compute: 'cpu' as const };
     const swell = swellFor(settings);
     const host = new LocalSurfZone({
@@ -34,7 +34,7 @@ describe('LocalSurfZone', () => {
     }
     expect(tubes).toBeGreaterThan(10);
     expect(fastest).toBeLessThan(10);
-  }, 120_000);
+  }, 300_000);
 
   it('is ready at once and snapshots the same surf zone a runner steps', async () => {
     const host = new LocalSurfZone(config);

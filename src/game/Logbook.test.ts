@@ -13,6 +13,17 @@ const ride = (overrides: Partial<LoggedRide> = {}): LoggedRide => ({
 });
 
 describe('Logbook', () => {
+  it('marks rides surfed online (N1), and nothing else as online', () => {
+    const storage = memory();
+    const log = new Logbook(storage);
+    log.add(ride({ online: true }));
+    log.add(ride());
+    const reloaded = new Logbook(storage);
+    expect(reloaded.recent.map((entry) => entry.online)).toEqual([undefined, true]);
+    const odd = new Logbook(memory({ [LOGBOOK_KEY]: JSON.stringify({ recent: [{ ...ride(), online: 'yes' }], bests: {} }) }));
+    expect(odd.recent[0].online).toBeUndefined();
+  });
+
   it('keeps the newest rides, up to its size', () => {
     const log = new Logbook(memory());
     for (let i = 0; i < LOGBOOK_SIZE + 5; i += 1) log.add(ride({ seed: i }));

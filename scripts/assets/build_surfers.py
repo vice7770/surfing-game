@@ -7,6 +7,8 @@ system asset pack (surfers.json "pack"; downloaded from "packUrl" if missing).
 MPFB calls used (MPFB build 20260722 under Blender 5.2), as found on this install:
 - the pack installs by extracting its zip into LocationService.get_user_data(), as mpfb.load_pack does;
 - HumanService.create_human(macro_detail_dict=…, scale=0.1) builds a body in metres, feet on the ground;
+- TargetService.bulk_load_targets(basemesh, [{"target": name, "value": v}, …]) adds a recipe's "targets" (MPFB target
+  file names such as "torso-vshape-incr") as shape keys, before the rig so its joints fit the final body;
 - HumanService.add_builtin_rig(basemesh, "mixamo") loads data/rigs/standard/rig.mixamo.json and its weights;
 - HumanService.set_character_skin(mhmat, basemesh, bodyproxy=…, skin_type="GAMEENGINE") gives image-texture
   materials that glTF exports;
@@ -61,6 +63,11 @@ def fit(path, basemesh, asset_type, material):
 def build(recipe):
     bpy.ops.wm.read_homefile(use_empty=True)
     basemesh = HumanService.create_human(macro_detail_dict=recipe["macros"], scale=0.1)
+    targets = recipe.get("targets", {})
+    missing = [name for name in targets if not TargetService.target_full_path(name)]
+    if missing:
+        raise SystemExit(f"{recipe['id']}: no MPFB target named {missing}")
+    TargetService.bulk_load_targets(basemesh, [{"target": name, "value": value} for name, value in targets.items()])
     rig = HumanService.add_builtin_rig(basemesh, RECIPES["rig"])
     fit(asset("eyes", "high-poly", "mhclo"), basemesh, "Eyes", "GAMEENGINE")
     fit(asset("eyebrows", recipe["eyebrows"], "mhclo"), basemesh, "Eyebrows", "GAMEENGINE")

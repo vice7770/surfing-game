@@ -3,7 +3,10 @@
  * Keys are `KeyboardEvent.code` values; buttons are indices in the Gamepad API's
  * standard mapping. Escape and Start always pause and cannot be rebound.
  */
-export const ACTIONS = ['paddle', 'popUp', 'steerLeft', 'steerRight', 'trimForward', 'trimBack', 'crouch', 'hand', 'retry', 'camera', 'mute', 'pause'] as const;
+export const ACTIONS = [
+  'paddle', 'popUp', 'steerLeft', 'steerRight', 'trimForward', 'trimBack', 'crouch', 'hand', 'retry', 'camera', 'mute',
+  'callLeft', 'callRight', 'callParty', 'callNice', 'pause',
+] as const;
 export type Action = (typeof ACTIONS)[number];
 
 /**
@@ -16,6 +19,7 @@ export const ACTION_CONTEXT: Record<Action, ActionContext> = {
   paddle: 'prone', popUp: 'always', steerLeft: 'always', steerRight: 'always',
   trimForward: 'standing', trimBack: 'standing', crouch: 'standing', hand: 'standing',
   retry: 'always', camera: 'always', mute: 'always', pause: 'always',
+  callLeft: 'always', callRight: 'always', callParty: 'always', callNice: 'always',
 };
 
 /** Whether two actions can be live at once, and so must not share an input. */
@@ -46,6 +50,11 @@ export const DEFAULT_BINDINGS: Bindings = {
     retry: ['KeyR'],
     camera: ['KeyC'],
     mute: ['KeyM'],
+    // Online (N1): the surf calls.
+    callLeft: ['Digit1'],
+    callRight: ['Digit2'],
+    callParty: ['Digit3'],
+    callNice: ['Digit4'],
     pause: ['Escape'],
   },
   gamepad: {
@@ -60,6 +69,10 @@ export const DEFAULT_BINDINGS: Bindings = {
     retry: [3],
     camera: [5],
     mute: [8],
+    callLeft: [10],
+    callRight: [11],
+    callParty: [4],
+    callNice: [1],
     pause: [9],
   },
 };

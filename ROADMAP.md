@@ -106,10 +106,52 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [S1 sound](
     Wind, rush, rail, the pop-up, the click and the chime stay synthesised.
   - **The user's listening playtest,** which tunes the mapping's provisional levels.
 
+### P1 · Online lineup (N1) — `Part A done (playtest open); Part B next`
+
+Grilled with the user on 2026-09-26 (Q1–Q20, every recommendation accepted). [Spec](docs/superpowers/specs/2026-09-26-online-lineup.md) · [plan](docs/superpowers/plans/2026-09-26-n1-online-lineup.md).
+
+Up to 50 friends share one break from a room link. Every player runs the whole sea and their own surfer. A small Node server keeps the room's clock and relays poses; it never runs water.
+
+- [x] **Drift gate** ([drift report](docs/research/drift-report.md)): two copies of the Canyon's sea stayed identical for 240 s under 32-bit rounding and under a paddler's pushes. Late joiners' fresh seas broke up to 2 s and 17 m off, so the user chose the **sea handover**.
+- [x] **Sea handover:** a joiner, or a player rebuilding a sea that fell behind, gets the longest-present player's sea through the server:
+  - it carries the water, breaking, predictors, foam and lip: 1.4 MB encoded, 763 KB deflated on the Canyon;
+  - a restored sea steps on bit-identically, and after 32-bit encoding it stays within 0.1 % of Hs;
+  - a donor that stalls is passed over after 10 s, and an empty room starts fresh.
+  A state probe found which arrays carry history.
+- [x] **Server** (`server/`, Node + `ws`):
+  - serves the built game and `/ws`, with rooms in memory;
+  - rooms have 8-character codes, a cap of 2–50, a pinned build and a creator's Kick;
+  - poses are bundled at 20 Hz;
+  - messages are rate-limited, and flooders are disconnected;
+  - an empty room closes after 5 minutes.
+- [x] **Game:**
+  - the sea follows the room's clock (NTP-style offset) and catches up after a join;
+  - it rebuilds when more than 1 s behind for 3 s, 5 s behind at once, or 30 s behind before catching up;
+  - poses are 76 bytes, and other surfers are interpolated 100 ms behind, drawn on this player's water in their own looks with name tags;
+  - their board pushes reach every player's water;
+  - spawns and respawns (3 s) go to a free spot in the lineup.
+- [x] **Screens:**
+  - **Multiplayer:** name, surfer, join by code or create with conditions and a cap; `?room=CODE` links; WebGPU is checked.
+  - **Online pause menu:** the sea runs on underneath; it shows the players, the link and Kick, and has Leave room.
+  - **During a ride:** surf calls on 1–4 (remappable), a ride feed, notices (catching up and how far, reconnecting, respawning), and online rides marked in the Logbook.
+- [x] **Dev bots** (`BOTS=1`, `?bots=N`) replaying an autopilot track, and **Fly.io packaging** (Dockerfile, `fly.toml`, `npm run deploy`).
+- **Record (2026-09-26):**
+  - **Checked live in the browser pane:**
+    - create, join by link, and relay;
+    - drawing another surfer with its tag;
+    - the handover (`seaSource: 'handed'` in the second tab);
+    - calls, the pause menu, and Leave room.
+  - **Not judged here:** this M1 Air was loaded (load 7–11, the pane's renderer using a full core), so a GPU step took 5–52 ms and a fresh room's catch-up took about 30 s. Frame times and bandwidth with bots wait for a machine that isn't loaded.
+- [ ] **Open:**
+  - the user's Fly.io account and first deploy;
+  - the playtest with about 5 friends;
+  - a bot-filled room measured on the M4 Pro;
+  - **Part B, physical collisions,** planned after the playtest.
+
 ### Later — `Backlog`
 
 Recorded in the same session; each gets its own grilling before work starts.
-1. **Multiplayer beach:** rooms with a player limit the host sets, players starting on the sand, and a beach bar to hang out in. Crowded lineups where surfers and boards collide physically are part of the fun, as on a real busy beach. Details wait for its grilling: room sizes, who hosts, board and body collisions, and whether solo play also starts on the sand.
+1. **Multiplayer beach:** players starting on the sand, and a beach bar to hang out in. Rooms, the relay and the shared sea now exist (N1); collisions are N1 Part B. Still to grill: the beach start and the bar, and whether solo play also starts on the sand.
 2. **Filmed menu background:** a sequence of waves forming and breaking, filmed with the `?record` tool once the waves are finished. It replaces the live menu background.
 3. **Music:** none in S1 (grilling, 2026-09-26). Good CC0 music is scarce; a CC-BY or paid track would need a credits screen.
 4. **A physical gamepad, checked by hand** (moved here by the user, 2026-09-26). The mapping is covered by unit tests.
@@ -366,7 +408,12 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
     - trim, stall, crouch, the hand in the face and heading hold;
     - pumping gains speed when timed with the path (Kogelbauer 2024), and nothing on flat water;
     - turns and ride ends read from the ride's trace, and a provisional 0–10 score on the WSL criteria.
-  - **Open: turns are about ten times too slow.** A full lean turns about 0.2 rad/s on a 9° rail, against Forsyth 2024's 1.9 rad/s on 42°. The upright body cannot bank into a turn. A rail-angle controller designed on a modal model of the board and a banked body is the next physics item, with the full-lock carve.
+  - **Turns redesigned** ([plan](docs/superpowers/plans/2026-09-26-turn-redesign.md), [findings](docs/superpowers/plans/2026-09-26-turn-redesign.md#findings), [carve lab](docs/research/carve-lab.md)):
+    - the standing body banks on its ankles as an eighth unknown in the board's solve; the balance caps the ankle where the feet reach their edges, and the upper body's swing takes the rest;
+    - the hard turn makes 66° in 1.2 s at 2.1 rad/s on a 50–60° rail (it made 13° at 0.2 rad/s; Forsyth 2024: 99° in 0.96 s at 1.9 rad/s on 42°), and the roll–yaw wobble decays at 7–11 m/s (ζ 0.05–0.07);
+    - the carve lab measured the plant: a planing board rights about the rider's load line (850–1,700 N·m/rad), and the turn follows the rail within 0.03 s;
+    - open: full-steer reversals after 1.5 s of carving up the plane face fall (the rail bogs past about 45–50° and the board stalls). The steer's 50° full bank was chosen with the user for the stronger turn;
+    - open (merged after the user's playtest, 2026-09-26): on the Canyon the autopilot's riders fall soon after standing, on a slow board below planing (7 stands and no ride of 3 s over two seeds, against 14 and 10 before the redesign; [ride report](docs/research/ride-report-practice.md)). Next: carry the body upright below planing, as the pop-up's landing now is.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
@@ -385,7 +432,7 @@ The user's original list of 15 mechanics (2026-09-26) is covered as follows:
 
 ### Later — `Backlog`
 
-Follow-ups from the open-edge fix (#14) and the test timeouts (#15), 2026-09-26. The full-lock carve is not repeated here; it is P9's next physics item.
+Follow-ups from the open-edge fix (#14) and the test timeouts (#15), 2026-09-26. The full-lock carve and slow turns were closed by the turn redesign.
 1. **Rerun the catch reports.** The Canyon's ghost-rider numbers (#12) and the other spots' rows were measured before the open-edge fix, which changes breaking near the window's edges: in the 40 m Point peel test, lip launches went 28 → 57 and the second wave now breaks in almost every column. Regenerate the [natural](docs/research/catch-report.md) and [practice](docs/research/catch-report-practice.md) reports and the numbers quoted above.
 2. **Checked (2026-09-26): the Point over several seeds.** Practice, 3 seeds × 2 min, 30 ghost riders, before P7 against now (tubes and the momentum fix):
    - stands fell 14 → 3 and rides of 3 s or more 4 → 2 (longest 13.7 → 5.5 s); by seed, stands went 13 / 1 / 0 → 2 / 0 / 1, so seed 1's lucky run carries most of the drop;
