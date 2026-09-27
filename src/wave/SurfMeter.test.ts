@@ -46,6 +46,16 @@ describe('SurfMeter', () => {
     expect(meter.reading(95, 30)!.waves).toBe(3);
   });
 
+  it('starts afresh when its clock goes back (a restored sea), and when cleared', () => {
+    const meter = new SurfMeter(band, 12);
+    for (const time of [60, 72, 84, 96]) meter.add({ time, x: 0, z: -100, face: 2 });
+    meter.add({ time: 25, x: 0, z: -100, face: 1 });
+    expect(meter.waves().map((wave) => wave.time)).toEqual([25]);
+    meter.clear();
+    expect(meter.waves()).toHaveLength(0);
+    expect(meter.reading(30)).toBeUndefined();
+  });
+
   it('forgets waves older than it keeps', () => {
     const meter = new SurfMeter(band, 10, 60);
     for (let i = 0; i < 20; i += 1) meter.add({ time: i * 10, x: 0, z: -100, face: 1 });

@@ -3,8 +3,33 @@ import type { SurfZoneConfig } from '../../wave/SurfZoneSimulation';
 import { decompress } from '../../wave/surfZoneState';
 import { LESSON_WAVES } from './lessonWaves';
 
-/** Where an attempt starts (spec L2): standing in the pocket, prone on a wave already carrying the board, or prone and waiting for it. */
-export type LessonStart = 'pocket' | 'caught' | 'waiting';
+/** A recorded start (spec L2): standing in the pocket, prone on a wave already carrying the board, or prone and waiting for it. */
+export type RecordedStart = 'pocket' | 'caught' | 'waiting';
+/** Where an attempt starts: a recorded start, or the inside (the wipeout spec's Duck-dive lesson), on the waiting start's sea. */
+export type LessonStart = RecordedStart | 'inside';
+
+/**
+ * The inside start: the waiting start's recorded sea, with the rider lying `along`
+ * m further in along the waves' travel, heading out to sea, at rest. Measured on
+ * the stage 2 recording: its broken water reaches there 6.0 s after the start,
+ * 1.1 m high, in about 1.7 m of water (a 1–1.5 m bore, as the spec's check).
+ */
+export const INSIDE = { sea: 'waiting', along: 33 } as const satisfies { sea: RecordedStart; along: number };
+
+/** The recorded start whose sea a start runs on. */
+export function recordedStart(start: LessonStart): RecordedStart {
+  return start === 'inside' ? INSIDE.sea : start;
+}
+
+/** Where the rider goes for a start. */
+export function startPlacement(wave: LessonWave, start: LessonStart): RiderPlacement {
+  if (start !== 'inside') return wave.placements[start];
+  const from = wave.placements[INSIDE.sea];
+  const radians = (wave.config.directionDegrees * Math.PI) / 180;
+  const x = Math.sin(radians);
+  const z = Math.cos(radians);
+  return { x: from.x + x * INSIDE.along, z: from.z + z * INSIDE.along, heading: Math.atan2(-x, -z), speed: 0, phase: 'prone' };
+}
 
 /**
  * The Surf School's wave (spec L2): one wave the autopilot rode, recorded at
@@ -30,12 +55,12 @@ export interface LessonWave {
     componentCount: number;
   };
   /** Each start's recorded state, deflated, under `public/`. */
-  assets: Record<LessonStart, string>;
-  placements: Record<LessonStart, RiderPlacement>;
+  assets: Record<RecordedStart, string>;
+  placements: Record<RecordedStart, RiderPlacement>;
   /** True until the riding work's reference wave backs the recording (a dev note says so). */
   provisional: boolean;
   /** What the recording script's autopilot got from each start. */
-  checks: Record<LessonStart, string>;
+  checks: Record<RecordedStart, string>;
 }
 
 /** The surf zone to build for a lesson wave: its recorded sea, no spin-up (the recorded state replaces it). */
@@ -57,7 +82,7 @@ export function schoolWave(waves: readonly LessonWave[] = LESSON_WAVES): LessonW
 
 /** A start's recorded sea, fetched and inflated: an encoded state for a surf zone's handover or restore. */
 export async function loadLessonSea(wave: LessonWave, start: LessonStart, fetcher: typeof fetch = globalThis.fetch.bind(globalThis)): Promise<Uint8Array> {
-  const asset = wave.assets[start];
+  const asset = wave.assets[recordedStart(start)];
   const response = await fetcher(asset);
   if (!response.ok) throw new Error(`The lesson wave ${asset} did not load (${response.status})`);
   return decompress(new Uint8Array(await response.arrayBuffer()), true);

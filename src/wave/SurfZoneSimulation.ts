@@ -182,9 +182,16 @@ export function windOnsetScale(windSpeed: number, breakerDepth: number): number 
   return u >= 0 ? Math.max(0.6, 1 - 0.1 * u) : Math.min(1.1, 1 - 0.05 * u);
 }
 
+/**
+ * Spots that take their swell at the tank's edge, as before the wave-sizes work: the Canyon (its seas are the
+ * riding reference and Surf School's), and the Reef until the Reef rework deepens its tank (its 10 m edge blew
+ * up under a shoaled 3–4 m, 18 s swell; the wave-sizes review).
+ */
+const EDGE_SWELL_SPOTS: readonly SpotName[] = ['canyon', 'reef'];
+
 /** The sea's Hs at the tank's edge, m: the buoy's deep-water height shoaled by linear theory, unless given at the edge. */
 export function edgeHeight(config: SurfZoneConfig, edgeDepth = OFFSHORE_DEPTH[config.spot]): number {
-  if (config.spot === 'canyon' || config.heightAt === 'edge') return config.significantHeight;
+  if (EDGE_SWELL_SPOTS.includes(config.spot) || config.heightAt === 'edge') return config.significantHeight;
   return config.significantHeight * shoalingCoefficient(config.peakPeriod, edgeDepth + config.tide);
 }
 
@@ -220,9 +227,10 @@ export const TAKE_OFF: Record<SpotName, 'centre' | 'focus'> = { beach: 'centre',
 /**
  * The breaker index a big day's take-off is placed with, per spot: the size report measures where each spot's
  * sets break and sets these so the take-off lands there (the wave-sizes spec). Today's tanks keep BREAKER_INDEX;
- * the Reef's is the Reef rework's to set.
+ * the Reef's is the Reef rework's to set. The Point's and the Beach's are fitted to their sets' measured breaks at
+ * 14 s (Point Hs 2–4 m: 1.05–1.16; Beach Hs 2–3 m: 1.08–1.20), before the side feed; they are refitted after it.
  */
-export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: BREAKER_INDEX, point: BREAKER_INDEX, reef: BREAKER_INDEX, canyon: BREAKER_INDEX };
+export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.13, reef: BREAKER_INDEX, canyon: BREAKER_INDEX };
 
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */
 export const TAKE_OFF_EDGE_MARGIN = 30;
@@ -356,7 +364,7 @@ export class SurfZoneSimulation {
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver);
     this.foam = new FoamField(this.solver, config.foamDecay ?? FOAM_DECAY[config.spot]);
-    this.aeration = new AerationField(this.solver);
+    this.aeration = new AerationField(this.solver, { period: config.peakPeriod });
     this.lip.onLand = (x, z, volume, vx, vy, vz, flight) => {
       this.foam.addSplash(x, z, volume);
       this.lipImpacts.push({ x, z, volume, vx, vy, vz, whole: flight?.volume ?? volume, kind: flight?.kind ?? 0 });
@@ -460,7 +468,11 @@ export class SurfZoneSimulation {
       if (!target || target.length !== values.length) throw new Error(`A sea state from another tank: ${name} does not fit`);
       target.set(values);
     }
+    // The turbulence is not handed over (it never feeds back into the water): the breaking stirs it afresh.
+    this.aeration.turbulence.fill(0);
     solver.time = state.solverTime;
+    // The surf is measured afresh from here (the wave-sizes spec): its waves belong to the sea that was replaced.
+    this.surf.clear();
     this.seaTimeOffset = state.seaTimeOffset;
     this.boundary.timeOffset = state.seaTimeOffset;
     this.lipLaunches = state.counters.lipLaunches;
@@ -773,6 +785,8 @@ export class SurfZoneSimulation {
       const still = restLevel - bed[i];
       const dissipation = strength[i] * boreDissipation(still, h[i]);
       if (dissipation > 0) this.aeration.addBore(i, dissipation, h[i] - still, dt);
+      // The wipeout spec, Part B: breaking stirs the water's turbulence.
+      this.aeration.stir(i, strength[i], dt);
     }
   }
 

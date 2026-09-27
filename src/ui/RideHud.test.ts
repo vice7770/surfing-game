@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Maneuver } from '../game/rideAnalysis';
-import { maneuverCallout, showsBalanceMeter } from './RideHud';
+import { breathVignette, heldDownNotice, maneuverCallout, showsBalanceMeter, showsBreathMeter } from './RideHud';
 
 // P9: on by default in Practice, off in natural seas (the spec).
 describe('showsBalanceMeter', () => {
@@ -26,5 +26,30 @@ describe('maneuverCallout', () => {
 
   it('forgets the last one between rides, so the next ride’s first turn is called', () => {
     expect(maneuverCallout(undefined, 'bottom turn@2.00')).toEqual({ key: '' });
+  });
+});
+
+// The wipeout spec, Part B: what the player sees of the breath.
+describe('the breath on the HUD', () => {
+  it('shows the breath meter by the balance meter\'s rule: Practice by default', () => {
+    expect(showsBreathMeter('practice', 'practice')).toBe(true);
+    expect(showsBreathMeter('practice', 'medium')).toBe(false);
+    expect(showsBreathMeter('always', 'big')).toBe(true);
+    expect(showsBreathMeter('never', 'practice')).toBe(false);
+  });
+
+  it('darkens the screen\'s edges as the breath falls below half, and not before', () => {
+    expect(breathVignette(1)).toBe(0);
+    expect(breathVignette(0.5)).toBe(0);
+    expect(breathVignette(0.3)).toBeGreaterThan(0);
+    expect(breathVignette(0.1)).toBeGreaterThan(breathVignette(0.3));
+    expect(breathVignette(0)).toBeLessThanOrEqual(0.85);
+  });
+
+  it('says "Held down too long" once for each rescue', () => {
+    const first = heldDownNotice(1, 0);
+    expect(first).toEqual({ seen: 1, text: 'HELD DOWN TOO LONG' });
+    expect(heldDownNotice(1, first.seen).text).toBeUndefined();
+    expect(heldDownNotice(2, first.seen).text).toBe('HELD DOWN TOO LONG');
   });
 });

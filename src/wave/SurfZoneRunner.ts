@@ -5,7 +5,9 @@ import type { PopUpReport, RiderSeparation } from '../physics/AttachedRider';
 import { BoardBody } from '../physics/BoardBody';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { RideSession, type RideInput, type RiderPlacement } from '../physics/RideSession';
+import type { StanceName } from '../physics/riderPosture';
 import { createWaterSample } from '../physics/SurfWater';
+import { inTakeOffWindow } from '../physics/takeOffCue';
 import { WaveFrameGauge, type WaveFrame } from '../physics/waveFrame';
 import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
@@ -100,6 +102,8 @@ export interface SurfZoneRunnerOptions {
   /** Online (spec N1): where the rider first waits, m along shore from the take-off and seaward of the break line. */
   spawnAlong?: number;
   spawnOut?: number;
+  /** The player's stance for the first ride (the stances spec); later rides take the request's. */
+  stance?: StanceName;
 }
 
 /** The player's request for a batch of steps: the ride's input, and a quick retry. */
@@ -111,12 +115,22 @@ export interface RideRequest extends RideInput {
   place?: RiderPlacement;
   /** The pocket reflex rides with the player (the riding-the-wave spec). */
   pocketReflex?: boolean;
+  /** The player's stance, taken up at the next ride (a retry or a placement), never mid-ride. */
+  stance?: StanceName;
 }
 
 /** The rider's phases in snapshot order, `fallen` once in the water. */
 export const RIDER_PHASES = ['prone', 'push', 'landing', 'standing', 'recover', 'fallen'] as const;
-/** Layout of a snapshot's rider array: seven drawn points (x, y, z each), then phase, cue, presence and heading. */
-export const RIDER_SNAPSHOT = { points: 0, phase: 21, cue: 22, present: 23, heading: 24, length: 25 } as const;
+/**
+ * Layout of a snapshot's rider array: seven drawn points (x, y, z each), then
+ * phase, cue, presence and heading; the duck-dive's press (0–1), the leash's
+ * plug (x, y, z), the leash's bits and the swimmer's bits, and the breath (the wipeout spec).
+ */
+export const RIDER_SNAPSHOT = { points: 0, phase: 21, cue: 22, present: 23, heading: 24, duck: 25, plug: 26, leash: 29, swim: 30, breath: 31, length: 32 } as const;
+/** `RIDER_SNAPSHOT.leash`: the leash is worn whole, has snapped, is being reeled in. */
+export const LEASH_BITS = { worn: 1, snapped: 2, reeling: 4 } as const;
+/** `RIDER_SNAPSHOT.swim`: the fallen surfer strokes, dives, has its head under. */
+export const SWIM_BITS = { stroking: 1, diving: 2, under: 4 } as const;
 
 const IDLE: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
 
@@ -159,6 +173,17 @@ export interface SurfZoneStatus {
     separation?: RiderSeparation; resets: number; wave: WaveFrame; live?: Maneuver; report?: RideReport & { id: number };
     /** The rider's balance reserve, 0–1 (0 once fallen). */
     balance: number;
+    /** The leash (the wipeout spec): snapped, its tension (N) and the ends' distance (m), and whether it is being reeled in. */
+    leash: { snapped: boolean; tension: number; distance: number; reeling: boolean };
+    /** The duck-dive's press, 0–1. */
+    duck: number;
+    /** Fallen, the board is within the grab's reach. */
+    boardInReach: boolean;
+    /** The hardest the board knocked the fallen surfer since the last snapshot, N·s (sound). */
+    knock: number;
+    /** The breath held, 1 full to 0 (Part B), and how often a rider held down too long was rescued. */
+    breath: number;
+    rescues: number;
   };
 }
 
@@ -226,6 +251,11 @@ export class SurfZoneRunner {
   private readonly lineup: Vector3;
   private readonly rideLineup: Vector3;
   private boardResets = 0;
+  /** The hardest board knock on the fallen surfer since the last snapshot, and at it, N·s. */
+  private knock = 0;
+  /** Riders held down too long and rescued to the lineup (Part B). */
+  private rescues = 0;
+  private snapshotKnock = 0;
   private boardMs = 0;
   /** The rider against the wave (spec P9 phase 0), and the peel angle it uses, refreshed once per simulated second. */
   private readonly gauge?: WaveFrameGauge;
@@ -257,7 +287,7 @@ export class SurfZoneRunner {
     if (options.rider) {
       const direction = (config.directionDegrees * Math.PI) / 180;
       this.gauge = new WaveFrameGauge({ directionX: Math.sin(direction), directionZ: Math.cos(direction) });
-      this.session = new RideSession();
+      this.session = new RideSession({ stance: options.stance });
       this.board = this.session.board;
     } else if (options.board) {
       this.board = new BoardBody();
@@ -346,6 +376,9 @@ export class SurfZoneRunner {
     if (session) {
       // A press (pop-up, retry) counts once per batch; held controls apply to every step.
       const request = step === 0 ? input : { ...input, popUp: false, retry: false, place: undefined };
+      // The stance changes between rides: at a retry or a placement, or while the rider is off the board (a fallen
+      // rider climbs back on without a retry, and nothing is drawn from the rider meanwhile).
+      if ((request.retry || request.place || !session.rider.attached) && request.stance) session.rider.stance = request.stance;
       if (request.retry) {
         if (request.spawnAt) this.rideLineup.set(request.spawnAt.x, 0, request.spawnAt.z);
         this.rideResets += 1;
@@ -362,11 +395,15 @@ export class SurfZoneRunner {
       const ridden = request.pocketReflex ? withPocketReflex(request, this.wave, session.phase) : request;
       session.step(SURF_ZONE_STEP, this.water, ridden);
       session.strike(this.simulation.lip);
+      if (session.surfer.active) this.knock = Math.max(this.knock, session.surfer.lastContacts.board.length());
       this.boardMs = performance.now() - start;
       const lost = session.board.outsideDomain || (session.surfer.active && session.surfer.outsideDomain)
         || !Number.isFinite(session.board.position.x + session.board.position.y + session.board.position.z);
-      if (lost) {
+      // Held down too long (Part B): rescued to the lineup, where R would put the rider.
+      const heldDown = !lost && session.breath.empty;
+      if (lost || heldDown) {
         this.rideResets += 1;
+        if (heldDown) this.rescues += 1;
         this.launchRide();
       }
       this.measureRide();
@@ -407,6 +444,17 @@ export class SurfZoneRunner {
   /** The rider against the wave after the latest step (the gauge's own frame, overwritten each step). */
   get waveFrame(): WaveFrame | undefined {
     return this.wave;
+  }
+
+  /**
+   * The pop-up cue the HUD shows, lying down: planing down a face (the rider's
+   * own cue), or caught by the wave high on it (the take-off window, read from
+   * the gauge's latest frame).
+   */
+  get cue(): boolean {
+    const { session } = this;
+    if (!session || session.phase !== 'prone') return false;
+    return session.rider.popUpCue || (this.wave !== undefined && inTakeOffWindow(this.wave));
   }
 
   /** The rider (on the board, or fallen) against the wave under it. */
@@ -516,11 +564,20 @@ export class SurfZoneRunner {
     if (session) {
       for (let i = 0; i < 7; i += 1) session.renderPoint(i, this.point).toArray(buffers.rider, RIDER_SNAPSHOT.points + i * 3);
       buffers.rider[RIDER_SNAPSHOT.phase] = RIDER_PHASES.indexOf(session.phase);
-      buffers.rider[RIDER_SNAPSHOT.cue] = session.rider.popUpCue ? 1 : 0;
+      buffers.rider[RIDER_SNAPSHOT.cue] = this.cue ? 1 : 0;
       buffers.rider[RIDER_SNAPSHOT.present] = 1;
       buffers.rider[RIDER_SNAPSHOT.heading] = session.heading;
+      buffers.rider[RIDER_SNAPSHOT.duck] = session.rider.attached ? session.rider.duck.press : 0;
+      buffers.rider[RIDER_SNAPSHOT.breath] = session.breath.level;
+      session.leashPlug(this.point).toArray(buffers.rider, RIDER_SNAPSHOT.plug);
+      const { leash, surfer } = session;
+      buffers.rider[RIDER_SNAPSHOT.leash] = (leash.snapped ? LEASH_BITS.snapped : LEASH_BITS.worn) | (leash.reeling ? LEASH_BITS.reeling : 0);
+      buffers.rider[RIDER_SNAPSHOT.swim] = !surfer.active ? 0
+        : (surfer.diving ? SWIM_BITS.diving : surfer.lastForces.swim.lengthSq() > 0 ? SWIM_BITS.stroking : 0) | (surfer.underwater ? SWIM_BITS.under : 0);
     }
     buffers.lipHitCount = this.lipHits.drain(buffers.lipHits);
+    this.snapshotKnock = this.knock;
+    this.knock = 0;
     buffers.strokeHitCount = this.strokeHits.drain(buffers.strokeHits);
     this.water.drainReaction(buffers.reaction);
     this.measureRoar(buffers.roar);
@@ -584,7 +641,7 @@ export class SurfZoneRunner {
         phase: this.session.phase,
         speed: Math.hypot(this.session.board.velocity.x, this.session.board.velocity.z),
         boardSpeed: this.session.board.velocity.length(),
-        cue: this.session.rider.popUpCue,
+        cue: this.cue,
         popUp: { ...this.session.rider.popUpReport },
         separation: this.session.separation,
         resets: this.rideResets,
@@ -592,6 +649,12 @@ export class SurfZoneRunner {
         live: this.analyzer?.latest && { ...this.analyzer.latest },
         report: this.rideReport && { ...this.rideReport, maneuvers: this.rideReport.maneuvers.map((maneuver) => ({ ...maneuver })) },
         balance: this.session.phase === 'fallen' ? 0 : this.session.rider.balanceReserve,
+        leash: { snapped: this.session.leash.snapped, tension: this.session.leash.tension, distance: this.session.leash.distance, reeling: this.session.leash.reeling },
+        duck: this.session.rider.attached ? this.session.rider.duck.press : 0,
+        boardInReach: this.session.surfer.active && this.session.recovery.state === 'free' && this.session.recovery.inReach(this.session.board),
+        knock: this.snapshotKnock,
+        breath: this.session.breath.level,
+        rescues: this.rescues,
       } : undefined,
     };
   }

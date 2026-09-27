@@ -20,6 +20,25 @@ const small: Omit<SurfZoneConfig, 'spot'> = {
 };
 
 describe('SurfZoneSimulation', () => {
+  it('takes the Reef\'s swell at its edge, like the Canyon\'s, until the Reef rework deepens it (wave sizes review)', () => {
+    expect(edgeHeight({ ...small, spot: 'reef', significantHeight: 3, peakPeriod: 18 })).toBe(3);
+  });
+
+  it('keeps the water finite on the biggest swells the Reef and today\'s Point tank can be given (wave sizes review)', () => {
+    // The Reef at its 3 m cap and the Point on today's 8 m tank (2.4 m, shoaled to ~3.1 m), 18 s at high tide.
+    // (The Reef at 3 m / 18 s / high tide already blew up with seed 3 before the wave-sizes work; its tank is the Reef rework's.)
+    const big = { ...small, peakPeriod: 18, tide: 1, alongShore: 40, dx: 1, fineSpacing: 1, componentCount: 32 };
+    for (const config of [
+      { ...big, seed: 1, spot: 'reef' as const, significantHeight: 3 },
+      { ...big, seed: 1, spot: 'point' as const, significantHeight: 2.4 },
+      { ...big, seed: 3, spot: 'point' as const, significantHeight: 2.4 },
+    ]) {
+      const simulation = new SurfZoneSimulation(config);
+      for (let frame = 0; frame < 30 * 30; frame += 1) simulation.step(1 / 30);
+      for (const value of simulation.solver.h) expect(Number.isFinite(value)).toBe(true);
+    }
+  }, 600_000);
+
   it('takes a buoy height in deep water and shoals it to the tank\'s edge (wave sizes)', () => {
     const config: SurfZoneConfig = { ...small, spot: 'point', significantHeight: 2, peakPeriod: 12 };
     expect(edgeHeight(config)).toBeCloseTo(2 * shoalingCoefficient(12, OFFSHORE_DEPTH.point), 12);

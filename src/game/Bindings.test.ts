@@ -7,8 +7,8 @@ const pad = (buttons: number[] = [], x = 0): PadState => ({
 
 describe('bindings', () => {
   it('reads the default keys and pad buttons as actions', () => {
-    expect(heldActions(new Set(['Space', 'KeyA']), [], DEFAULT_BINDINGS)).toEqual(new Set(['paddle', 'steerLeft']));
-    expect(heldActions(new Set(), [pad([7, 15])], DEFAULT_BINDINGS)).toEqual(new Set(['paddle', 'steerRight']));
+    expect(heldActions(new Set(['Space', 'KeyA']), [], DEFAULT_BINDINGS)).toEqual(new Set(['paddle', 'compress', 'steerLeft']));
+    expect(heldActions(new Set(), [pad([7, 15])], DEFAULT_BINDINGS)).toEqual(new Set(['paddle', 'compress', 'steerRight']));
   });
 
   it('swaps a key another action holds, so no key does two things', () => {
@@ -37,6 +37,25 @@ describe('bindings', () => {
     expect(rebind(DEFAULT_BINDINGS, 'keyboard', 'retry', 0, 'KeyE').keyboard.hand).toEqual(['KeyR']);
   });
 
+  // The stances spec: Compress on Space and the right trigger standing, where they paddle lying down; its own input
+  // standing, apart from the crouch's (Shift, the left trigger).
+  it('compresses on Space and the right trigger standing, which paddle lying down', () => {
+    expect(ACTION_CONTEXT.compress).toBe('standing');
+    expect(DEFAULT_BINDINGS.keyboard.compress).toEqual(['Space']);
+    expect(DEFAULT_BINDINGS.gamepad.compress).toEqual([7]);
+    expect(DEFAULT_BINDINGS.keyboard.paddle).toContain('Space');
+    expect(DEFAULT_BINDINGS.gamepad.paddle).toEqual([7]);
+    for (const action of REBINDABLE) {
+      if (action === 'compress' || ACTION_CONTEXT[action] === 'prone') continue;
+      expect(DEFAULT_BINDINGS.keyboard[action]).not.toContain('Space');
+      expect(DEFAULT_BINDINGS.gamepad[action]).not.toContain(7);
+    }
+    expect(REBINDABLE).toContain('compress');
+    const onShift = rebind(DEFAULT_BINDINGS, 'keyboard', 'compress', 0, 'ShiftLeft');
+    expect(onShift.keyboard.compress).toEqual(['ShiftLeft']);
+    expect(onShift.keyboard.crouch).toEqual(['Space', 'ShiftRight']);
+  });
+
   it('never binds Escape or Start, and never leaves an action without a key', () => {
     expect(rebind(DEFAULT_BINDINGS, 'keyboard', 'paddle', 0, 'Escape')).toBe(DEFAULT_BINDINGS);
     expect(rebind(DEFAULT_BINDINGS, 'gamepad', 'paddle', 0, 9)).toBe(DEFAULT_BINDINGS);
@@ -53,6 +72,10 @@ describe('bindings', () => {
     expect(heldActions(new Set(), [pad([17])], DEFAULT_BINDINGS)).toEqual(new Set(['hand']));
     expect(heldActions(new Set(), [pad([18])], DEFAULT_BINDINGS)).toEqual(new Set(['popUp']));
     expect(heldActions(new Set(), [pad([19]), pad([20])], DEFAULT_BINDINGS).size).toBe(0);
+  });
+
+  it('names nothing bound with a dash', () => {
+    expect(keyLabel(undefined)).toBe('—');
   });
 
   it('names keys and buttons for the screen, as printed on the pad used last', () => {

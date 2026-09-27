@@ -24,6 +24,8 @@ const MAX_PROFILE = 2;
  * backwash, or along the shore) carries none. Provisional.
  */
 const ROLLER_SHARE = 0.5;
+/** At the bed, the turbulence is this share of the surface's (provisional). */
+const NEAR_BED = 0.3;
 const MIN_ROLLER_FLOW = 0.05;
 const ROLLER_SHOREWARD = 0.5;
 const GRAVITY = 9.81;
@@ -48,6 +50,11 @@ export interface PhysicalSurfWaterOptions {
   breaking?: ArrayLike<number>;
   /** Render node spacing, m (the physical mode renders at 1 m). */
   nodeSpacing?: number;
+  /**
+   * The whitewater plume (G9's `AerationField`): each cell's void fraction and the
+   * plume's depth under the surface. Bodies sample its air (the wipeout spec, Part B).
+   */
+  aeration?: { voidFraction(cell: number): number; readonly depth: ArrayLike<number>; readonly turbulence?: ArrayLike<number> };
   /** Lowers the surface where a flying lip's void leaves it (the plunging lip's `carve`). */
   carve?: (x: number, z: number, surface: number) => number;
 }
@@ -89,6 +96,7 @@ export class PhysicalSurfWater implements SurfWater {
     const { lip } = simulation;
     return new PhysicalSurfWater(simulation.solver, {
       peakPeriod: simulation.config.peakPeriod, breaking: simulation.breaking.strength, carve: (x, z, surface) => lip.carve(x, z, surface),
+      aeration: simulation.aeration,
     });
   }
 
@@ -105,6 +113,8 @@ export class PhysicalSurfWater implements SurfWater {
     out.stillDepth = Math.max(0, solver.restLevel - bottom);
     out.wet = depth > WET;
     this.surface(x, z, out);
+    out.voidFraction = this.airAt(y, out.surfaceY);
+    out.turbulence = this.turbulenceAt(y, out.surfaceY, this.blend(bed));
     out.breaking = this.options.breaking ? this.blend(this.options.breaking) : 0;
     if (!out.wet) {
       out.flowX = 0;
@@ -316,7 +326,43 @@ export class PhysicalSurfWater implements SurfWater {
     return x < xMin || x > xMin + solver.nx * solver.dx || z < zMin || z > zMax;
   }
 
+  /**
+   * The plume's void fraction at height `y` under a surface at `surfaceY`: each of
+   * the four cells' own where the point lies within its plume's depth, blended by
+   * the cells' weights (from the latest `cellWeights`).
+   */
+  private airAt(y: number, surfaceY: number): number {
+    const plume = this.options.aeration;
+    if (!plume) return 0;
+    const below = surfaceY - y;
+    let air = 0;
+    for (let c = 0; c < 4; c += 1) {
+      const i = this.cells[c];
+      if (this.weights[c] === 0 || below > plume.depth[i]) continue;
+      air += this.weights[c] * plume.voidFraction(i);
+    }
+    return air;
+  }
+
+  /**
+   * The turbulence at height `y`: the cells' blended energy, strongest at the
+   * surface and falling to NEAR_BED of it at the bed (Ting & Kirby: the energy
+   * the roller injects decays with depth, though under bores eddies reach the bed).
+   */
+  private turbulenceAt(y: number, surfaceY: number, bedY: number): number {
+    const field = this.options.aeration?.turbulence;
+    if (!field) return 0;
+    let k = 0;
+    for (let c = 0; c < 4; c += 1) if (this.weights[c] > 0) k += this.weights[c] * field[this.cells[c]];
+    if (!(k > 0)) return 0;
+    const column = surfaceY - bedY;
+    const height = column > 0 ? Math.min(1, Math.max(0, (y - bedY) / column)) : 1;
+    return k * (NEAR_BED + (1 - NEAR_BED) * height);
+  }
+
   private flatSea(out: WaterSample): WaterSample {
+    out.voidFraction = 0;
+    out.turbulence = 0;
     out.surfaceY = this.solver.restLevel;
     out.stillDepth = 0;
     out.waterDepth = 0;

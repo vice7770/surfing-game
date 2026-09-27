@@ -13,7 +13,9 @@ const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpP
 describe('PhysicalMode', () => {
   it('lets buoys and storms reach 4 m, and the Canyon 3 m as before (wave sizes)', () => {
     expect(TANK_SWELL_LIMITS.height.max).toBe(4);
-    expect(swellHeightLimit('reef')).toBe(4);
+    expect(swellHeightLimit('point')).toBe(4);
+    // The Reef keeps its 3 m cap until the Reef rework deepens its tank (wave sizes review).
+    expect(swellHeightLimit('reef')).toBe(3);
     expect(swellHeightLimit('canyon')).toBe(3);
     const storm = { ...DEFAULT_PHYSICAL_SETTINGS, source: 'storm' as const, stormWindSpeed: 30, stormFetchKm: 2000, stormDurationHours: 96, stormDistanceKm: 0 };
     expect(swellFor({ ...storm, spot: 'point' }).significantHeight).toBe(4);
@@ -282,7 +284,8 @@ describe('PhysicalMode', () => {
       valid: true, directionX: 0, directionZ: 1, aheadOfCrest: 4.2, crestSpeed: 5.1, faceHeight: 1.2, faceFraction: 0.55, crestBreaking: 0,
       curlDistance: Infinity, curlSide: 0, speedOverGround: 6, speedShoreward: 3, speedAlongCrest: 5, requiredSpeed: 7.2,
     };
-    const ride = { phase: 'standing' as const, speed: 6, boardSpeed: 6.2, cue: false, popUp: { outcome: 'none' as const, duration: 0, landingPeak: 0, frontShare: 0 }, resets: 0, balance: 1, wave };
+    const ride = { phase: 'standing' as const, speed: 6, boardSpeed: 6.2, cue: false, popUp: { outcome: 'none' as const, duration: 0, landingPeak: 0, frontShare: 0 }, resets: 0, balance: 1, wave,
+      leash: { snapped: false, tension: 0, distance: 0, reeling: false }, duck: 0, boardInReach: false, knock: 0, breath: 1, rescues: 0 };
     const value = (rows: { label: string; value: string }[], label: string) => rows.find((row) => row.label === label)?.value;
     const rows = formatPhysicalReadout(mode.config!, { ...status, ride });
     expect(value(rows, 'CREST')).toBe('c 5.1 m/s · need 7.2 m/s');

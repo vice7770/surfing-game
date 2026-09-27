@@ -5,7 +5,7 @@ import { lessonById } from './lessons';
 const STEP = 1 / 30;
 const frame = (patch: Partial<FlowFrame> = {}): FlowFrame => ({
   dt: STEP, phase: 'standing', speed: 6, heading: 0,
-  input: { steer: 0, trim: 0, crouch: 0, hand: false, paddle: false },
+  input: { steer: 0, trim: 0, crouch: 0, compress: 0, hand: false, paddle: false },
   wave: { valid: true, faceFraction: 0.5, crestBreaking: 0.2, aheadOfCrest: 5 },
   ...patch,
 });
@@ -22,6 +22,18 @@ describe('lesson flow', () => {
     feed(flow, 2.1);
     expect(flow.state).toBe('passed');
     expect(flow.misses).toBe(0);
+  });
+
+  // The wipeout spec: a goal can miss for its own reason (the duck-dive pushed back too far).
+  it('misses when the goal says so, naming its reason', () => {
+    const flow = new LessonFlow(lessonById('duckDive'));
+    flow.start();
+    const at = (z: number, ahead: number) => frame({ phase: 'prone', x: 0, z, seaward: { x: 0, z: -1 }, wave: { valid: true, faceFraction: 0, crestBreaking: 0.8, aheadOfCrest: ahead } });
+    flow.frame(at(0, 6));
+    flow.frame(at(5, 0.5));
+    flow.frame(at(6, -2));
+    expect(flow.state).toBe('missed');
+    expect(flow.cause).toBe('lesson.duckDive.pushed');
   });
 
   it('misses on a fall, naming why, and restarts on the same wave two seconds later', () => {
