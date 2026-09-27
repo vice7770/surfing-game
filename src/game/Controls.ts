@@ -35,6 +35,8 @@ export interface ControlEnvironment {
 }
 
 const EDITABLE = new Set(['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA']);
+/** A trigger's travel below this is at rest, not a press. */
+const TRIGGER_REST = 0.05;
 const NO_INPUT: BoardInput = { paddle: false, steer: 0, getUp: false };
 
 /**
@@ -55,6 +57,8 @@ export class Controls {
   private touchRight = false;
   private touchCrouch = false;
   private touchCompress = false;
+  /** Compress held since lying down (Space and RT paddle): it waits for a fresh press standing. */
+  private compressStale = false;
   /** Keys held → the ride's axes, ramped (spec P9). */
   private readonly ramps = { steer: new AxisRamp(), trim: new AxisRamp(), crouch: new AxisRamp(), compress: new AxisRamp() };
   /** The latest ride request, for the hints to see what the player holds. */
@@ -124,9 +128,16 @@ export class Controls {
     const steerKeys = Number(has('steerRight') || touch(this.touchRight)) - Number(has('steerLeft') || touch(this.touchLeft));
     const trimKeys = standing ? Number(has('trimForward')) - Number(has('trimBack')) : 0;
     const crouchKeys = standing && (has('crouch') || touch(this.touchCrouch)) ? 1 : 0;
-    const compressKeys = standing && (has('compress') || touch(this.touchCompress)) ? 1 : 0;
+    // Compress takes a press made standing: the paddle's Space or RT held through the pop-up does not compress.
+    const compressHeld = has('compress') || touch(this.touchCompress) || (this.active && this.padCompressValue > 0);
+    if (!standing) this.compressStale = compressHeld;
+    else if (!compressHeld) this.compressStale = false;
+    const compressing = standing && !this.compressStale;
+    const compressKeys = compressing && (has('compress') || touch(this.touchCompress)) ? 1 : 0;
     const steer = this.ramps.steer.update(steerKeys, dt);
     const trim = this.ramps.trim.update(trimKeys, dt);
+    // Compress is at least the crouch's depth: taken over from the crouch it starts there, not from standing.
+    if (compressKeys) this.ramps.compress.raise(this.ramps.crouch.value);
     const crouch = this.ramps.crouch.update(crouchKeys, dt);
     const compress = this.ramps.compress.update(compressKeys, dt);
     const pad = this.active;
@@ -136,7 +147,7 @@ export class Controls {
       steer: pad && this.padSteerValue !== 0 ? this.padSteerValue : steer,
       trim: standing && pad && this.padTrimValue !== 0 ? this.padTrimValue : trim,
       crouch: standing && pad ? Math.max(this.padCrouchValue, crouch) : crouch,
-      compress: standing && pad ? Math.max(this.padCompressValue, compress) : compress,
+      compress: compressing && pad ? Math.max(this.padCompressValue, compress) : compress,
       hand: standing && has('hand'),
     };
     return this.lastRequest;
@@ -162,7 +173,9 @@ export class Controls {
       this.padSteerValue = sticks.steer;
       this.padTrimValue = sticks.trim;
       this.padCrouchValue = padValue(pads, this.bindings().gamepad.crouch[0]);
-      this.padCompressValue = padValue(pads, this.bindings().gamepad.compress[0]);
+      // A trigger resting just off its stop is not a press (the Steam Controller reports raw travel).
+      const compressValue = padValue(pads, this.bindings().gamepad.compress[0]);
+      this.padCompressValue = compressValue < TRIGGER_REST ? 0 : compressValue;
     }
     this.padPrevious = now;
   }
@@ -199,6 +212,7 @@ export class Controls {
     this.touchLeft = false;
     this.touchRight = false;
     this.touchCrouch = false;
+    this.touchCompress = false;
     this.getUpRequested = false;
   }
 

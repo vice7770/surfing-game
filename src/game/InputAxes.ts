@@ -16,6 +16,11 @@ export class AxisRamp {
     return this.current;
   }
 
+  /** Start from at least `value` (a ramp taking over from another without dipping). */
+  raise(value: number): void {
+    this.current = Math.max(this.current, Math.min(1, value));
+  }
+
   reset(): void {
     this.current = 0;
   }

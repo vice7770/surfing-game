@@ -126,6 +126,50 @@ describe('the ride request (P9)', () => {
     expect(standing.controls.rideRequest(0.2, true)).toMatchObject({ paddle: false, compress: 1, crouch: 0 });
   });
 
+  // The final review: letting go of Shift for Space crossed the two ramps at half depth, lifting the rider about
+  // 10 cm on the way to compressing.
+  it('goes from the crouch to Compress without rising in between', () => {
+    const { controls, key } = setup();
+    key('keydown', 'ShiftLeft');
+    controls.rideRequest(0.3, true);
+    key('keydown', 'Space');
+    key('keyup', 'ShiftLeft');
+    let lowest = 1;
+    for (let i = 0; i < 20; i += 1) {
+      const request = controls.rideRequest(1 / 60, true);
+      lowest = Math.min(lowest, Math.max(request.crouch ?? 0, request.compress ?? 0));
+    }
+    expect(lowest).toBeGreaterThan(0.99);
+  });
+
+  // The final review: paddling on Space and popping up on Enter, the player still holds Space as the rider lands.
+  it('compresses only on a press made standing, not on the paddle input held through the pop-up', () => {
+    const { controls, key } = setup();
+    key('keydown', 'Space');
+    expect(controls.rideRequest(0.2, false)).toMatchObject({ paddle: true, compress: 0 });
+    expect(controls.rideRequest(0.2, true).compress).toBe(0);
+    key('keyup', 'Space');
+    controls.rideRequest(0.2, true);
+    key('keydown', 'Space');
+    expect(controls.rideRequest(0.2, true).compress).toBe(1);
+  });
+
+  it('touches the stances with the touch buttons, and lets Compress go on a pause', () => {
+    const buttons = new Map<string, EventTarget & { setPointerCapture: () => void; classList: { add: () => void; remove: () => void } }>();
+    const page = {
+      getElementById: (id: string) => {
+        if (!buttons.has(id)) buttons.set(id, Object.assign(new EventTarget(), { setPointerCapture: () => {}, classList: { add: () => {}, remove: () => {} } }));
+        return buttons.get(id);
+      },
+    } as unknown as Document;
+    const controls = new Controls(() => DEFAULT_BINDINGS, { retry: vi.fn(), camera: vi.fn(), pause: vi.fn() }, { target: new EventTarget(), pads: () => [], document: page });
+    buttons.get('touch-compress')!.dispatchEvent(Object.assign(new Event('pointerdown'), { pointerId: 1 }));
+    expect(controls.rideRequest(0.2, true).compress).toBe(1);
+    controls.enabled = false;
+    controls.enabled = true;
+    expect(controls.rideRequest(0.2, true).compress).toBe(0);
+  });
+
   it('ramps keys in over 0.2 s; opposite keys cancel, and unbound keys do nothing', () => {
     const { controls, key } = setup();
     key('keydown', 'KeyW');
@@ -148,6 +192,15 @@ describe('the ride request (P9)', () => {
     controls.poll();
     expect(controls.rideRequest(1 / 60, true).compress).toBeCloseTo(0.5, 9);
     expect(controls.rideRequest(1 / 60, false)).toMatchObject({ compress: 0, paddle: false });
+  });
+
+  // The final review: a trigger resting a few hundredths in (the Steam Controller's reports raw travel) compressed a
+  // little, which also set the pocket reflex aside.
+  it('ignores a trigger resting just off its stop', () => {
+    const { controls, setPads } = setup();
+    setPads([analog({ 7: 0.04 })]);
+    controls.poll();
+    expect(controls.rideRequest(1 / 60, true).compress).toBe(0);
   });
 
   it('trims with the left stick when the player chooses it (C1)', () => {
