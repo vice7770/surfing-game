@@ -17,6 +17,20 @@ export const TUBE_CAPACITY = 256;
  */
 export const PEEL_GAP = 2;
 export const PEEL_ALIGNMENT = 0.5;
+/**
+ * A void's floor meets the surface over this much behind it (from the crest),
+ * m, instead of standing as a wall there, half the void's width deep: a height
+ * field draws a wall on a diagonal as a staircase, a column wide in the physics
+ * and a cell wide in the Rich water. Wider than the Rich patch's 0.25 m cell;
+ * the void only gives up its back edge. Its front, where the jet lands, is
+ * left as it is, so the jet lands where it did.
+ */
+export const TUBE_EDGE = 0.35;
+
+const smoothstep = (edge: number, x: number) => {
+  const t = Math.min(1, Math.max(0, x / edge));
+  return t * t * (3 - 2 * t);
+};
 
 const T = { crestX: 0, crestZ: 1, y: 2, dirX: 3, dirZ: 4, open: 5, length: 6, width: 7, tilt: 8, column: 9, scale: 10 } as const;
 
@@ -27,7 +41,7 @@ export function tubeFloor(table: ArrayLike<number>, tube: number, x: number, z: 
   const scale = table[o + T.scale];
   if (!(ahead >= 0 && ahead <= table[o + T.open]) || !(scale > 0)) return Number.NaN;
   const depth = tubeFloorDepth({ length: table[o + T.length] * scale, width: table[o + T.width] * scale, tilt: table[o + T.tilt] }, ahead);
-  return table[o + T.y] - depth;
+  return table[o + T.y] - depth * smoothstep(TUBE_EDGE, ahead);
 }
 
 const between = new Float64Array(TUBE_STRIDE);
