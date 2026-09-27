@@ -426,7 +426,7 @@ export const EN = {
   'lesson.duckDive.blurb': 'Under the whitewater, not through it',
   'lesson.duckDive.explain': 'Paddling out, broken waves push you back toward the beach. Push the board under instead: paddle at the whitewater, and when it is a body length or two away hold the duck-dive to press the nose down with straight arms; your knee follows onto the tail. Let go once the wave has passed over you, and the board floats you up behind it.',
   'lesson.duckDive.tip': 'Start pressing a body length or two before the whitewater, and hold until it has passed.',
-  'lesson.duckDive.prompt': 'Paddle out with {keys} and hold the duck-dive as the whitewater comes',
+  'lesson.duckDive.prompt': 'Paddle out, and duck-dive under the whitewater as it comes ({keys})',
   'lesson.duckDive.pushed': 'Pushed back too far — dive a little earlier',
   'lesson.popUp.title': 'Pop up',
   'lesson.popUp.blurb': 'From lying down to standing',
