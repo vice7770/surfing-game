@@ -867,7 +867,7 @@ export class App {
     const start = lesson?.start ?? freeStart;
     const view = lesson?.view ?? (start === 'pocket' ? 'behind' : 'front');
     this.setLoadingText('loading.school');
-    this.loading.classList.remove('is-hidden');
+    this.showLoading(true);
     let started = false;
     try {
       started = await this.game.school.enter(start, view, !lesson);
@@ -876,7 +876,7 @@ export class App {
       console.warn('The lesson wave did not load.', error);
       this.schoolError = t('school.loadError');
     } finally {
-      this.loading.classList.add('is-hidden');
+      this.showLoading(false);
       this.schoolBusy = false;
     }
     if (!started) {

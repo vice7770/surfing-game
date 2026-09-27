@@ -129,12 +129,21 @@ describe('SurfZoneWorkerCore', () => {
 describe('SurfZoneWorkerCore restore (L2)', () => {
   it('restores after the step under way, so the next advance starts from the restored sea', async () => {
     let release: (() => void) | undefined;
+    // The device spins the sea up freely; once it is ready, each step waits to be released.
+    let held = false;
     const replies: SurfZoneReply[] = [];
     const worker = new SurfZoneWorkerCore((reply) => replies.push(reply), async (solver) => ({
-      step: (dt: number) => new Promise<void>((resolve) => { release = () => { solver.step(dt); resolve(); }; }),
+      step: (dt: number) => {
+        if (!held) {
+          solver.step(dt);
+          return Promise.resolve();
+        }
+        return new Promise<void>((resolve) => { release = () => { solver.step(dt); resolve(); }; });
+      },
       dispose() {},
     }));
     await worker.handle({ type: 'start', config, options: {} });
+    held = true;
     const ready = replies[0];
     if (ready.type !== 'ready') throw new Error('expected ready');
     const local = new LocalSurfZone(config);
