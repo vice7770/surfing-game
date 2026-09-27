@@ -57,6 +57,14 @@ export const RIG_DETAIL = {
   lookAhead: 0.4,
   neckTurn: 80,
   lookPitch: 30,
+  /**
+   * Standing, the chest turns into a turn by the turn over `twistGain`, s, within
+   * `twistMost`, and the hips by `hipsTwistShare` of that: the shoulders lead the
+   * hips (de Sousa 2022: the trunk rotates, the chest toward the lip).
+   */
+  twistGain: 0.25,
+  twistMost: 35,
+  hipsTwistShare: 0.35,
 };
 
 /**
@@ -193,6 +201,12 @@ export class HumanoidRig {
     left.crossVectors(up, forward).normalize();
     this.turnTowardNose(hipsForward.copy(forward), upright ? RIG_DETAIL.hipsTurn : 0);
     this.turnTowardNose(this.facing.copy(forward), upright ? RIG_DETAIL.chestTurn : 0);
+    if (state.phase === 'standing') {
+      const most = (RIG_DETAIL.twistMost * Math.PI) / 180;
+      const twist = Math.max(-most, Math.min(most, RIG_DETAIL.twistGain * state.yawRate));
+      this.facing.applyAxisAngle(up, twist);
+      hipsForward.applyAxisAngle(up, RIG_DETAIL.hipsTwistShare * twist);
+    }
 
     // 2. The hips at the pelvis point (standing, raised to the model's extended legs), brought down if the legs cannot reach the feet.
     const hipsAt = this.hipsAt.copy(p[POINT.pelvis]);

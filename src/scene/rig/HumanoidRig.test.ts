@@ -240,3 +240,37 @@ describe('the head', () => {
     }
   });
 });
+
+// Part B: the trunk turns into the turn, the shoulders leading the hips (the reference's trunk rotation; the
+// riding-the-wave spec's torso and shoulders turning into turns). Standing only.
+describe('the trunk', () => {
+  const board = new Vector3(3, 0.1, -40);
+  const level = new Quaternion();
+  const twisted = (stance: 'regular' | 'goofy', yawRate: number) => {
+    const { bones } = createTestHumanoid();
+    const before = boneLengths(bones);
+    const rig = new HumanoidRig(bones);
+    const state = posturePoints('standing', stance, board, level, createRiderVisualState());
+    Object.assign(state, { yawRate, speed: 7 });
+    rig.solve(state);
+    for (const [name, length] of boneLengths(bones)) expect(length, name).toBeCloseTo(before.get(name)!, 9);
+    for (const side of SIDES) {
+      const foot = state.points[footPoint(side)];
+      expect(Math.hypot(rig.joints.ankle[side].x - foot.x, rig.joints.ankle[side].z - foot.z)).toBeCloseTo(rig.heelToMidfoot, 3);
+    }
+    const hips = rig.joints.hip.left.clone().sub(rig.joints.hip.right);
+    return { chest: yawOf(rig.facing), hips: yawOf(hips) };
+  };
+
+  it.each(['regular', 'goofy'] as const)('turns the chest into the turn and the hips less, %s', (stance) => {
+    const turn = (from: number, to: number) => ((((to - from) % 360) + 540) % 360) - 180;
+    const straight = twisted(stance, 0);
+    const left = twisted(stance, 2);
+    const right = twisted(stance, -2);
+    expect(turn(straight.chest, left.chest)).toBeGreaterThan(20);
+    expect(turn(right.chest, straight.chest)).toBeGreaterThan(20);
+    const hipsTurn = turn(straight.hips, left.hips);
+    expect(hipsTurn).toBeGreaterThan(0);
+    expect(hipsTurn).toBeLessThan(turn(straight.chest, left.chest));
+  });
+});
