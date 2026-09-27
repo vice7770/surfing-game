@@ -1,6 +1,7 @@
 import { Color, Mesh, Vector3, type Material, type Scene } from 'three';
 import type { StandRefusal } from '../physics/AttachedRider';
 import type { WaveFrame } from '../physics/waveFrame';
+import type { RiderPlacement } from '../physics/RideSession';
 import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
@@ -232,6 +233,8 @@ export class PhysicalMode {
   /** Whether the latest input paddles, which cups the drawn hands. */
   private paddling = false;
   private retryPending = false;
+  /** Where the next advance puts the rider (Surf School, spec L2). */
+  private placePending?: RiderPlacement;
   /** Where the pending retry puts the rider (online: a free spot in the lineup). */
   private spawnAt?: { x: number; z: number };
   /** The running surf zone, once it has spun up. */
@@ -479,16 +482,24 @@ export class PhysicalMode {
     this.spawnAt = spawnAt;
   }
 
+  /** Put the rider here on the next advance (a lesson's start, spec L2); the waves carry on from wherever they are. */
+  place(placement: RiderPlacement): void {
+    this.placePending = placement;
+  }
+
   /** Request `steps` fixed physics steps, with the player's input and (online) other boards' pushes on the water. */
   advance(steps: number, input?: Omit<RideRequest, 'retry'>, reactions?: ArrayLike<number>): void {
     const retry = this.retryPending;
     const spawnAt = retry ? this.spawnAt : undefined;
-    if (input || retry) {
+    const place = this.placePending;
+    if (input || retry || place) {
       this.retryPending = false;
       this.spawnAt = undefined;
+      this.placePending = undefined;
     }
     if (input) this.paddling = input.paddle;
-    const request = input || retry ? { paddle: false, popUp: false, steer: 0, ...input, retry, ...(spawnAt ? { spawnAt } : {}) } : undefined;
+    const request = input || retry || place
+      ? { paddle: false, popUp: false, steer: 0, ...input, retry, ...(spawnAt ? { spawnAt } : {}), ...(place ? { place } : {}) } : undefined;
     this.host?.advance(steps, request, reactions);
   }
 

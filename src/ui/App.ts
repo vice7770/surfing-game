@@ -30,6 +30,8 @@ import type { LabClock } from '../game/waveLab/labClock';
 import type { WaveInfo } from '../game/waveLab/waveInfo';
 import type { WaterLook } from '../scene/water/waterLook';
 import type { Units } from './units';
+import type { LessonStart } from '../game/school/lessonWave';
+import type { FlowFrame } from '../game/school/lessonFlow';
 import { OnlineHud, PlayersPanel, onlineHudModel, playersModel } from './OnlineHud';
 import { roomLink } from '../net/roomCode';
 import type { CallId } from '../net/protocol';
@@ -73,9 +75,26 @@ export interface LabHost {
   onAction?: (action: 'hide' | 'menu') => void;
 }
 
+/** The Surf School as the menus drive it (spec L2; implemented in main.ts). */
+export interface SchoolHost {
+  /** Build the lesson sea from its recording for `start`, the rider placed, in `camera`; false when superseded; throws when the wave will not load. */
+  enter(start: LessonStart, camera: RideView): Promise<boolean>;
+  /** The same wave again from `start`'s recording, the rider placed. */
+  restart(start: LessonStart): Promise<void>;
+  /** Slow motion at 0.5× (a pause-menu toggle). */
+  setSlowMotion(on: boolean): void;
+  readonly slowMotion: boolean;
+  /** This frame of the attempt, as the lesson's goal and flow read it; none without a rider. */
+  frame(): FlowFrame | undefined;
+  /** The recording is not yet the reference wave (a dev note). */
+  readonly provisional: boolean;
+  leave(): void;
+}
+
 /** What the menus ask of the game (implemented by `SurfGame` in main.ts). */
 export interface GameHost {
   readonly lab: LabHost;
+  readonly school: SchoolHost;
   readonly canvas: HTMLCanvasElement;
   readonly gl: WebGLRenderingContext | WebGL2RenderingContext;
   /** Whether the menu's waves are running (not spinning up, not a still frame). */
