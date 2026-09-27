@@ -63,9 +63,10 @@ describe('RemoteSurferViews', () => {
     }
     expect(views.riderStateOf(1)!.yawRate).toBeGreaterThan(0.9);
     views.update(1, undefined, () => 0, new Vector3(), 11);
-    const back = riding(0, 0);
+    // Back within a metre of where it was last drawn, so only the gap (not a jump) can start the motion over.
+    const back = riding(5 * Math.sin(0.5) + 0.5, 5 * Math.cos(0.5));
     back.heading = 2;
-    views.update(1, back, () => 0, new Vector3(), 12);
+    views.update(1, back, () => 0, new Vector3(), 11.02);
     expect(views.riderStateOf(1)!.yawRate).toBe(0);
   });
 
