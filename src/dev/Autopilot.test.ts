@@ -176,6 +176,14 @@ describe('autopilot turns', () => {
     expect(turning(20 * DEG).next(standing(20 * DEG, { faceFraction: 0.2 }, 1), 1 / 60).steer).toBe(1);
   });
 
+  // Traced on the reference wave: the curl showed on the other side halfway through a bottom turn, and the turn
+  // reversed at full lean. A turn keeps the direction it began with.
+  it('finishes a turn the way it began, though the curl shows on the other side', () => {
+    const autopilot = turning(20 * DEG);
+    expect(autopilot.next(standing(20 * DEG, { faceFraction: 0.2, curlDistance: 6, curlSide: 1 }), 1 / 60).steer).toBe(-1);
+    expect(autopilot.next(standing(0, { faceFraction: 0.2, curlDistance: 6, curlSide: -1 }), 1 / 60).steer).toBe(-1);
+  });
+
   it('bottom turns only at the foot of the face, not on the flat far ahead of it', () => {
     expect(turning(10 * DEG).next(standing(10 * DEG, { faceFraction: 0.1, aheadOfCrest: 7 }), 1 / 60).steer).toBe(0);
     expect(turning(10 * DEG).next(standing(10 * DEG, { faceFraction: 0.1, aheadOfCrest: 5 }), 1 / 60).steer).toBe(1);
