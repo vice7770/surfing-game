@@ -1,5 +1,7 @@
 import { PRACTICE_SWELL, swellFor, type PhysicalSettings } from '../game/PhysicalMode';
+import { forecastSurf } from '../wave/surfForecast';
 import { t } from './strings';
+import { formatSurfRange, type SurfScale } from './surfHeight';
 import { formatHeight, formatSpeed, type Units } from './units';
 
 /** The sea settings the lab's panel shows as sliders (spec L1). */
@@ -41,6 +43,12 @@ export function practiceNote(units: Units): string {
   return t('lab.practiceNote', {
     height: formatHeight(PRACTICE_SWELL.significantHeight, units), period: PRACTICE_SWELL.peakPeriod, direction: PRACTICE_SWELL.directionDegrees ?? 0,
   });
+}
+
+/** The surf a buoy swell will make at the spot (the wave-sizes spec), for the line under the swell sliders: "Surf 4.3–5.4 m (forecast)". */
+export function surfForecastNote(physical: PhysicalSettings, units: Units, scale: SurfScale): string {
+  const { typical, sets } = forecastSurf(physical.spot, physical.significantHeight, physical.peakPeriod);
+  return t('lab.surfForecast', { surf: formatSurfRange(typical, sets, units, scale) });
 }
 
 /** The sliders for these settings: the chosen swell source's own, the direction (fixed by Practice), tide and wind. */

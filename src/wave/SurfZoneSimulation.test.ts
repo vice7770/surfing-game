@@ -5,6 +5,7 @@ import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, T
 import { rayConcentration } from './Refraction';
 import { crestSpeedAt } from './CrestKinematics';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
+import { TAKE_OFF_BAND } from './SurfMeter';
 
 const small: Omit<SurfZoneConfig, 'spot'> = {
   seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -357,6 +358,26 @@ describe('SurfZoneSimulation', () => {
       last.set(column, time);
     }
   }, 60_000);
+
+  it('measures each wave breaking at the take-off: its face and where it broke (wave sizes)', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'point', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 });
+    const measured: { x: number; face: number; z: number }[] = [];
+    simulation.onBreak = (wave) => measured.push(wave);
+    expect(simulation.surf.reading(simulation.solver.time)).toBeUndefined();
+    // Sets reach the take-off every 12-16 s here: three have broken by 43 s.
+    for (let frame = 0; frame < 50 * 30; frame += 1) simulation.step(1 / 30);
+    expect(measured.length).toBeGreaterThan(0);
+    for (const wave of measured) {
+      expect(wave.face).toBeGreaterThan(0.2);
+      expect(wave.face).toBeLessThan(4);
+      expect(wave.z).toBeGreaterThan(TANK.fineFrom - 5);
+    }
+    const takeOff = simulation.breakPoint();
+    for (const wave of simulation.surf.waves()) expect(Math.abs(wave.x - takeOff.x)).toBeLessThanOrEqual(TAKE_OFF_BAND);
+    const reading = simulation.surf.reading(simulation.solver.time);
+    expect(reading).toBeDefined();
+    expect(reading!.sets).toBeGreaterThanOrEqual(reading!.typical);
+  }, 90_000);
 
   it('does not read the spin-up bores as one simultaneous close-out', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1 });

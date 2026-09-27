@@ -17,6 +17,11 @@ const config: SurfZoneConfig = {
 };
 
 describe('SurfZoneRunner', () => {
+  it('reports the measured surf, measuring until waves have broken (wave sizes)', () => {
+    const runner = new SurfZoneRunner({ ...config, spot: 'reef' });
+    expect(runner.status()).toHaveProperty('surf', undefined);
+  });
+
   it('steps the surf zone exactly like the simulation it wraps, at a fixed 1/60 s', () => {
     const runner = new SurfZoneRunner(config);
     const direct = new SurfZoneSimulation(config);
