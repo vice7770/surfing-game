@@ -8,7 +8,7 @@ const context = { devTools: false, detecting: false };
 describe('settingsModel', () => {
   it('offers telemetry only with the dev tools on', () => {
     const ids = (devTools: boolean) => settingsModel('gameplay', defaultSettings(), { ...context, devTools }).map((row) => row.id);
-    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'pocketReflex', 'scoreRides', 'nameTags']);
+    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'pocketReflex', 'stance', 'scoreRides', 'nameTags']);
     expect(ids(true)).toContain('showTelemetry');
   });
 
@@ -23,6 +23,14 @@ describe('settingsModel', () => {
     const help = (action: string) => rows.find((r) => r.kind === 'binding' && r.action === action && 'help' in r)?.['help' as never];
     for (const action of ['trimForward', 'trimBack', 'crouch', 'compress', 'hand']) expect(help(action)).toBeTruthy();
     expect(help('paddle')).toBeUndefined();
+  });
+
+  // The stances spec: Regular or Goofy, a Gameplay choice.
+  it('offers Regular or Goofy, Regular by default', () => {
+    const row = settingsModel('gameplay', defaultSettings(), context).find((r) => r.id === 'stance');
+    expect(row).toMatchObject({ kind: 'choice', value: 'regular' });
+    expect(row && row.kind === 'choice' && row.options.map((option) => option.value)).toEqual(['regular', 'goofy']);
+    expect(applyRow(defaultSettings(), 'stance', 'goofy')).toEqual({ tab: 'gameplay', patch: { stance: 'goofy' } });
   });
 
   // P9: a WSL-style score, only if the player wants it.

@@ -35,6 +35,15 @@ describe('SettingsStore', () => {
     expect(saved.value.gameplay.pocketReflex).toBe('practice');
   });
 
+  // The stances spec: Regular or Goofy, Regular by default.
+  it('rides Regular by default, and sanitizes the stance', () => {
+    expect(defaultSettings().gameplay.stance).toBe('regular');
+    const goofy = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { stance: 'goofy' } }) }));
+    expect(goofy.value.gameplay.stance).toBe('goofy');
+    const odd = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { stance: 'switch' } }) }));
+    expect(odd.value.gameplay.stance).toBe('regular');
+  });
+
   it('starts from the defaults with nothing stored, or with something that is not JSON', () => {
     expect(new SettingsStore(memory()).value).toEqual(defaultSettings());
     expect(new SettingsStore(memory({ [SETTINGS_KEY]: '{oops' })).value).toEqual(defaultSettings());

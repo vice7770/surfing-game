@@ -280,6 +280,20 @@ describe('SurfZoneRunner with a rider', () => {
     expect(runner.status().ride!.cue).toBe(false);
   });
 
+  // The stances spec, Review Focus 4: Regular or Goofy from the session's start; a change takes effect on the next
+  // ride (a retry or a Surf School restart), never mid-ride.
+  it('rides the stance it starts with, changing it only for the next ride', () => {
+    expect(new SurfZoneRunner(calm, { rider: true }).session!.rider.stance).toBe('regular');
+    const runner = new SurfZoneRunner(calm, { rider: true, stance: 'goofy' });
+    expect(runner.session!.rider.stance).toBe('goofy');
+    runner.advance(1, { ...idle, stance: 'regular' });
+    expect(runner.session!.rider.stance).toBe('goofy');
+    runner.advance(1, { ...idle, stance: 'regular', retry: true });
+    expect(runner.session!.rider.stance).toBe('regular');
+    runner.advance(1, { ...idle, stance: 'goofy', place: { x: runner.session!.board.position.x, z: runner.session!.board.position.z, heading: 0, speed: 0, phase: 'prone' } });
+    expect(runner.session!.rider.stance).toBe('goofy');
+  });
+
   it('lies a rider prone on the board in the lineup, and snapshots its render points and phase', () => {
     const runner = new SurfZoneRunner(calm, { rider: true });
     runner.advance(60, idle);
