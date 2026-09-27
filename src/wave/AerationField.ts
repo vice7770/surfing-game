@@ -88,7 +88,8 @@ export class AerationField {
     this.advect(dt);
     const { h } = this.solver;
     for (let i = 0; i < h.length; i += 1) {
-      if (h[i] <= WET) {
+      if (h[i] <= WET || this.air[i] === 0) {
+        // Dry water holds no air, and water with none has nothing to degas.
         this.air[i] = 0;
         this.depth[i] = 0;
         continue;
