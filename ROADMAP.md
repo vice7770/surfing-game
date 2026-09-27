@@ -457,6 +457,7 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
 - [ ] **P9 Riding** (`Playtest`, [plan](docs/superpowers/plans/2026-09-26-p9-riding.md), [findings](docs/superpowers/plans/2026-09-26-p9-riding.md#findings)):
   - **Part A, physics — done:**
     - phase 0: speed and position against the crest, speed over ground, a horizon-holding ride camera, an autopilot. It found that catching, not the rider, bounds the rides; the rider outruns closing-out waves onto the flats;
+    - the front view holds steady while waves pass a waiting rider (user report, 2026-09-27): its lean toward the crest fades in as a wave comes from 30 m to 15 m out, fades once the crest has passed, and eases. It had cut 5–14° in one frame twice a wave, where the wave gauge's window gains or loses a crest;
     - the rider stands on a leg (a spring and damper in the board's solve): it holds the load it feels, absorbs landings and crouches;
     - trim, stall, crouch, the hand in the face and heading hold;
     - pumping gains speed when timed with the path (Kogelbauer 2024), and nothing on flat water;
