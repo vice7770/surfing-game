@@ -8,9 +8,17 @@ import { applyRow, settingsModel } from './settingsModel';
 const context = { devTools: false, detecting: false };
 
 describe('settingsModel', () => {
+  it('offers the surf height as faces or the Hawaiian scale, after the units (wave sizes)', () => {
+    const rows = settingsModel('gameplay', defaultSettings(), context);
+    const index = rows.findIndex((row) => row.id === 'surfScale');
+    expect(rows[index - 1].id).toBe('units');
+    expect(rows[index]).toMatchObject({ kind: 'choice', value: 'face' });
+    expect(applyRow(defaultSettings(), 'surfScale', 'hawaiian')).toEqual({ tab: 'gameplay', patch: { surfScale: 'hawaiian' } });
+  });
+
   it('offers telemetry only with the dev tools on', () => {
     const ids = (devTools: boolean) => settingsModel('gameplay', defaultSettings(), { ...context, devTools }).map((row) => row.id);
-    expect(ids(false)).toEqual(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'breathMeter', 'pocketReflex', 'stance', 'scoreRides', 'nameTags']);
+    expect(ids(false)).toEqual(['units', 'surfScale', 'defaultCamera', 'touchControls', 'balanceMeter', 'breathMeter', 'pocketReflex', 'stance', 'scoreRides', 'nameTags']);
     expect(ids(true)).toContain('showTelemetry');
   });
 

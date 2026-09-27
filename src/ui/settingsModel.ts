@@ -101,6 +101,7 @@ export function settingsModel(tab: SettingsTab, settings: GameSettings, context:
     const g = settings.gameplay;
     return [
       { kind: 'choice', id: 'units', label: t('settings.units'), value: g.units, options: options('settings.units', ['metric', 'imperial']) },
+      { kind: 'choice', id: 'surfScale', label: t('settings.surfScale'), value: g.surfScale, options: options('settings.surfScale', ['face', 'hawaiian']) },
       { kind: 'choice', id: 'defaultCamera', label: t('settings.defaultCamera'), value: g.defaultCamera, options: options('view', ['front', 'behind', 'side', 'overview']) },
       { kind: 'choice', id: 'touchControls', label: t('settings.touchControls'), value: g.touchControls, options: options('settings.touch', ['auto', 'on', 'off']) },
       { kind: 'choice', id: 'balanceMeter', label: t('settings.balanceMeter'), value: g.balanceMeter, options: options('settings.balanceMeter', ['practice', 'always', 'never']) },
@@ -133,7 +134,7 @@ export function settingsModel(tab: SettingsTab, settings: GameSettings, context:
   ];
 }
 
-const GAMEPLAY = new Set(['units', 'defaultCamera', 'touchControls', 'balanceMeter', 'breathMeter', 'pocketReflex', 'stance', 'scoreRides', 'nameTags', 'showTelemetry']);
+const GAMEPLAY = new Set(['units', 'surfScale', 'defaultCamera', 'touchControls', 'balanceMeter', 'breathMeter', 'pocketReflex', 'stance', 'scoreRides', 'nameTags', 'showTelemetry']);
 const ACCESSIBILITY = new Set(['reducedMotion', 'uiScale', 'highContrastHud', 'monoAudio']);
 const AUDIO = new Set(['master', 'sea', 'board', 'ui', 'muteInBackground']);
 const CONTROLS = new Set(['handedness', 'trimStick', 'stickResponse', 'deadzoneSteam', 'deadzoneGamepad']);

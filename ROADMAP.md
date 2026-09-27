@@ -493,6 +493,18 @@ Requirements agreed in a grilling session on 2026-09-26: [G9 spec](docs/superpow
 
     Whitewater forces on bodies and the player's tube camera (P12) stay in the Backlog.
 
+### P1 · Wave sizes — `Part A done; Part B next`
+
+Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers/specs/2026-09-27-wave-sizes.md); [plan](docs/superpowers/plans/2026-09-27-wave-sizes.md). The user's complaint: 3 m waves don't look like 3 m. The Height slider was Hs at the tank's 5–10 m edge, and the spots were built for 1–2 m surf.
+
+- **Part A · measure (done, 2026-09-27):**
+  - each wave is measured as it starts to break at the take-off (its face, crest to the trough ahead); the surf reads H1/3–H1/10 over 2 minutes, with a body-relative name ("overhead") against the chosen surfer, in m, ft or the Hawaiian scale (a new Surf height setting);
+  - it shows as a Surf row on the Wave Lab's info card, beside the Height slider (forecast), on the Surf screen (forecast) and on the pause card (measured);
+  - [sources](docs/research/surf-size-sources.md): Komar & Gaughan's breaker height, Caldwell & Aucan's Hawaiian surf and scale;
+  - the [size report](docs/research/size-report.md) (`npm run report:sizes`) measured today's tank: H1/3 is 40–66 % of Komar–Gaughan at the Beach (1.5–2.0 m faces at Hs 3 m, where its 5 m edge saturates), 61–85 % at the Point, 76–86 % at the Reef and 60–89 % at the Canyon. The forecast is fitted per spot to the surf at the take-off, where the readout measures.
+- **The Reef** is handed to the Teahupo'o Reef rework (the user's decision in that session, 2026-09-27): its bed stays here, and the report shows it ungated.
+- **Part B** (deep-water input shoaled to the edge, the tank sized to the swell, deeper outer beds, the take-off at the measured break, gated sizes) and **Part C** (a size sheet, the camera) follow.
+
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 
 Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](docs/superpowers/specs/2026-09-26-gameplay-milestone.md), grounded in the [surf-science survey](docs/research/surf-gameplay-research.md).

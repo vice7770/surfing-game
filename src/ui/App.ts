@@ -6,7 +6,10 @@ import { BenchmarkRecorder, adapterName, needsDetection, withPreset } from '../g
 import { Logbook } from '../game/Logbook';
 import { RideTracker, type RideFrame, type RideResult } from '../game/RideTracker';
 import type { SettingsStore } from '../game/Settings';
-import { DEFAULT_CONDITIONS, DEFAULT_SPOT, nextBackdropSpot, type SurfConditions } from '../game/SurfConditions';
+import { DEFAULT_CONDITIONS, DEFAULT_SPOT, nextBackdropSpot, surfForecastText, type SurfConditions } from '../game/SurfConditions';
+import { surferHeight } from '../game/SurferChoice';
+import type { SurfReading } from '../wave/SurfMeter';
+import { describeSurf, type SurfWords } from './surfHeight';
 import type { RideView } from '../scene/SpectatorCamera';
 import { DEV_TOOLS } from '../devTools';
 import type { SpotName } from '../wave/Bathymetry';
@@ -76,7 +79,7 @@ export interface LabHost {
   readonly following: boolean;
   toggleFollow(): boolean;
   jump(point: JumpPoint): void;
-  info(units: Units): WaveInfo | undefined;
+  info(units: Units, words?: Omit<SurfWords, 'units'>): WaveInfo | undefined;
   /** The dev tools' physics readout. */
   readonly readout: ReadoutRow[];
   /** H or X (hide the interface) and Esc or Start (the pause menu), as the lab's input reports them. */
@@ -174,6 +177,8 @@ export class App {
   private readonly loading = document.getElementById('loading')!;
   private readonly loadingText = document.getElementById('loading-text');
   private surfChoice: SurfChoice = { spot: DEFAULT_SPOT, conditions: { ...DEFAULT_CONDITIONS } };
+  /** The running sea's measured surf, for the pause card (the wave-sizes spec). */
+  private surf?: SurfReading;
   /** The current wave's seed: Replay keeps it, New wave moves on. */
   private seed = 1 + Math.floor(Math.random() * 9999);
   private readonly rideHud: RideHud;
@@ -287,6 +292,7 @@ export class App {
   /** Called by the game once per rendered frame: the gamepad, and the Auto benchmark while the menu's waves run. */
   frame(intervalMs: number, status?: SurfZoneStatus): void {
     this.menuInput.poll();
+    this.surf = status?.surf;
     const dt = intervalMs / 1000;
     this.sound.frame(this.game.soundFrame(dt, this.stack.stack.includes('pause')), this.game.listenerPose, dt);
     if (intervalMs > 0 && intervalMs < 500) this.fps += (1000 / intervalMs - this.fps) * 0.1;
@@ -437,7 +443,7 @@ export class App {
         },
         paddleOut: () => void this.paddleOut(),
         back: () => this.back(),
-      }, card.root)];
+      }, card.root, (choice) => surfForecastText(choice, this.surfWords()))];
     }
     if (id === 'multiplayer') {
       this.askWebGpu();
@@ -563,7 +569,7 @@ export class App {
         settings: () => this.go('settings'),
         quit: () => this.quitToMenu(),
         sound: { muted: this.sound.muted, toggle: () => this.toggleMute() },
-      }, this.viewLabel())];
+      }, this.viewLabel(), describeSurf(this.surf, this.surfWords()))];
     }
     return [];
   }
@@ -1089,6 +1095,7 @@ export class App {
     const refresh = () => this.labScreen?.update(this.labView());
     this.labScreen = createWaveLabScreen({
       settings: draft, running: this.labStore.value, devTools: DEV_TOOLS, touch: this.touchActive(), units: this.settings.value.gameplay.units,
+      scale: this.settings.value.gameplay.surfScale,
     }, {
       change: (next) => {
         this.labDraft = next;
@@ -1121,11 +1128,17 @@ export class App {
     return this.labScreen.root;
   }
 
+  /** How this player reads surf (the wave-sizes spec): the chosen scale, against the chosen surfer's height. */
+  private surfWords(): SurfWords {
+    const { gameplay, surfer } = this.settings.value;
+    return { units: gameplay.units, scale: gameplay.surfScale, surferHeight: surferHeight(surfer.body) };
+  }
+
   private labView() {
     const { lab } = this.game;
     return {
       paused: lab.clock.paused, scale: lab.clock.scale, following: lab.following, uiHidden: this.labUiHidden,
-      info: lab.info(this.settings.value.gameplay.units), ...(DEV_TOOLS ? { readout: lab.readout } : {}),
+      info: lab.info(this.settings.value.gameplay.units, this.surfWords()), ...(DEV_TOOLS ? { readout: lab.readout } : {}),
     };
   }
 

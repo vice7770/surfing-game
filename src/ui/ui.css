@@ -110,6 +110,7 @@
 .spot-text small { color: var(--muted); font-size: .78em; line-height: 1.35; }
 .spot-card[aria-pressed='true'] { background: #fffdf4; box-shadow: inset 0 0 0 2px var(--accent); }
 .choice-rows { display: grid; gap: .7em; }
+.choice-note, .pause-note { margin: .2em 0 0; color: var(--muted); font-size: .85em; line-height: 1.4; }
 .surfer-card { display: grid; grid-template-columns: 11em 1fr; grid-template-areas: 'title title' 'preview rows'; align-items: center; gap: .5em 1em; padding-top: .8em; border-top: 1px solid var(--line); }
 .surfer-card h3 { grid-area: title; margin: 0; font: 600 .95em 'DM Sans', 'Avenir Next', sans-serif; }
 .surfer-preview { grid-area: preview; width: 100%; aspect-ratio: 3 / 4; border-radius: 12px; background: rgba(255, 253, 243, .45); }

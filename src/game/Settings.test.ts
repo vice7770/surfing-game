@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { PRESETS } from './Graphics';
-import { SETTINGS_KEY, SettingsStore, defaultSettings } from './Settings';
+import { SETTINGS_KEY, SettingsStore, defaultSettings, sanitizeSettings } from './Settings';
 
 function memory(initial: Record<string, string> = {}) {
   const data = new Map(Object.entries(initial));
@@ -8,6 +8,14 @@ function memory(initial: Record<string, string> = {}) {
 }
 
 describe('SettingsStore', () => {
+  it('reads surf as faces unless the player chose the Hawaiian scale, and old saves as faces (wave sizes)', () => {
+    const defaults = defaultSettings();
+    expect(defaults.gameplay.surfScale).toBe('face');
+    expect(sanitizeSettings({ gameplay: { surfScale: 'hawaiian' } }, defaults).gameplay.surfScale).toBe('hawaiian');
+    expect(sanitizeSettings({ gameplay: { units: 'imperial' } }, defaults).gameplay.surfScale).toBe('face');
+    expect(sanitizeSettings({ gameplay: { surfScale: 'feet' } }, defaults).gameplay.surfScale).toBe('face');
+  });
+
   // G8: the Rich water, and a saved Low player kept on the Classic water.
   it('defaults the water look to Rich and keeps an old Low save on Classic', () => {
     expect(defaultSettings().graphics.waterLook).toBe('rich');
