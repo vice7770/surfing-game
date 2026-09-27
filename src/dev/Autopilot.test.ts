@@ -84,6 +84,16 @@ describe('autopilot', () => {
     left.reset();
     expect(left.state).toBe('position');
   });
+
+  // The ride report (riding-the-wave Task 3): a crawling board is not the end; the ride analyzer says when it is.
+  it('can leave the ride\'s end to its caller', () => {
+    const pilot = riding(0, { stall: false });
+    for (let i = 0; i < 180; i += 1) pilot.next(view({ ride: ride({ phase: 'standing', speed: 0.5 }) }), 1 / 60);
+    expect(pilot.state).toBe('ride');
+    pilot.finish('wave died');
+    expect(pilot.state).toBe('done');
+    expect(pilot.outcome).toBe('wave died');
+  });
 });
 
 describe('autopilot turns', () => {

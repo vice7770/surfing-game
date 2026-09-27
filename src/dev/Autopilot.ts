@@ -45,6 +45,8 @@ export interface AutopilotOptions {
   giveUp?: number;
   /** Standing: hold a line along the face ('line'), or ride S-turns up and down it ('turns', spec P9). */
   style?: 'line' | 'turns';
+  /** Standing, end the ride when the board crawls (STALL for STALL_TIME); false leaves the end to the caller's ride analyzer. */
+  stall?: boolean;
 }
 
 export type AutopilotState = 'position' | 'wait' | 'go' | 'ride' | 'done';
@@ -106,6 +108,7 @@ export class Autopilot {
   private readonly giveUp: number;
   private clock = 0;
   private stalled = 0;
+  private readonly stall: boolean;
   private popped = false;
   private lastHeading = Number.NaN;
   private travel = 0;
@@ -121,6 +124,12 @@ export class Autopilot {
     this.line = ((options.lineDegrees ?? 60) * Math.PI) / 180;
     this.giveUp = options.giveUp ?? 8;
     this.style = options.style ?? 'line';
+    this.stall = options.stall ?? true;
+  }
+
+  /** End the ride from outside (the ride analyzer's end). */
+  finish(outcome: string): void {
+    if (this.state === 'ride') this.end(outcome);
   }
 
   reset(): void {
@@ -179,7 +188,7 @@ export class Autopilot {
         }
         this.rideTime += dt;
         this.stalled = ride.speed < STALL ? this.stalled + dt : 0;
-        if (this.stalled > STALL_TIME) {
+        if (this.stall && this.stalled > STALL_TIME) {
           this.end('the wave left');
           break;
         }

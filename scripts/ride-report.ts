@@ -36,12 +36,14 @@ const minutes = argument('minutes', 3);
 const spots = (option('spots')?.split(',') ?? ['point', 'reef']) as SpotName[];
 const output = option('out') ?? 'docs/research/ride-report.md';
 const practice = flag('practice');
+/** The practice swell's significant height, m, instead of PRACTICE_SWELL's (the reference-wave sweep, riding-the-wave Task 5). */
+const heightOverride = option('height');
 /** The autopilot's riding: a line along the face, or S-turns up and down it. */
 const style = option('style') === 'turns' ? 'turns' : 'line';
 /** Ghost riders beside the runner's own: metres along shore from the break point (`--ghosts`, as in the catch report). */
 const ghostAlongs = flag('ghosts') ? [-45, -25, -12, 12, 25, 45] : [];
 const settings = practice ? { ...DEFAULT_PHYSICAL_SETTINGS, source: 'practice' as const } : DEFAULT_PHYSICAL_SETTINGS;
-const swell = swellFor(settings);
+const swell = { ...swellFor(settings), ...(heightOverride ? { significantHeight: Number(heightOverride) } : {}) };
 const direction = swell.directionDegrees ?? settings.directionDegrees;
 /** A crest this far above still water within LOOK m behind the board starts a paddle. */
 const RISE = 0.25 * swell.significantHeight;
@@ -68,6 +70,9 @@ interface Ride {
   faceFraction: number;
   ahead: number;
   aheadP90: number;
+  /** Mean face height, m, and the peel angle, degrees, under the ride. */
+  faceHeight: number;
+  peel: number;
   outcome: string;
   /** The ride analyzer's reading of it, when the analyzer closed it. */
   analysis?: RideReport;
@@ -88,7 +93,7 @@ interface Bot {
   home: Vector3;
   autopilot: Autopilot;
   gauge: WaveFrameGauge;
-  trace: { speed: number; label: number; crest: number; required: number; face: number; ahead: number; x: number; z: number }[];
+  trace: { speed: number; label: number; crest: number; required: number; face: number; ahead: number; height: number; peel: number; x: number; z: number }[];
   request: { paddle: boolean; popUp: boolean; steer: number };
   retry: boolean;
   analyzer: RideAnalyzer;
@@ -97,7 +102,18 @@ interface Bot {
   windDown: number;
 }
 
-function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: number; stands: number; outcomes: Map<string, number> } {
+/** A spot's run: the rides of MIN_RIDE or more, and every closed ride's duration, share near the curl, and whether it lost the wave. */
+interface SpotRun {
+  rides: Ride[];
+  attempts: number;
+  stands: number;
+  outcomes: Map<string, number>;
+  durations: number[];
+  curlShares: number[];
+  lostWave: number;
+}
+
+function runSpot(spot: SpotName, seed: number): SpotRun {
   const runner = new SurfZoneRunner({
     spot, seed,
     significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod, directionDegrees: direction,
@@ -120,7 +136,7 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
   const radians = (direction * Math.PI) / 180;
   const bot = (session: RideSession, own: boolean, along: number): Bot => ({
     session, own, home: new Vector3(runner.focus.x + along, 0, runner.focus.z - 6),
-    autopilot: new Autopilot({ rise: RISE, style }), gauge: new WaveFrameGauge({ directionX: Math.sin(radians), directionZ: Math.cos(radians) }),
+    autopilot: new Autopilot({ rise: RISE, style, stall: false }), gauge: new WaveFrameGauge({ directionX: Math.sin(radians), directionZ: Math.cos(radians) }),
     trace: [], request: { paddle: false, popUp: false, steer: 0 }, retry: false, analyzer: new RideAnalyzer(), windDown: 0,
   });
   const bots: Bot[] = [bot(runner.session!, true, 0)];
@@ -133,6 +149,9 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
   const rides: Ride[] = [];
   let stands = 0;
   const outcomes = new Map<string, number>();
+  const durations: number[] = [];
+  const curlShares: number[] = [];
+  let lostWave = 0;
   let peelDirection = 0;
   let peelAngle = 0;
   let peelAge = Infinity;
@@ -172,7 +191,14 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
       if (closed) {
         b.analysis = closed;
         b.analyzer = new RideAnalyzer();
+        durations.push(closed.duration);
+        curlShares.push(closed.duration > 0 ? closed.curlTime / closed.duration : NaN);
+        if (closed.end === 'lost the wave') lostWave += 1;
+        // The analyzer's end is the ride's end (a fall the autopilot names itself, with its cause).
+        if (closed.end !== 'fell') autopilot.finish(closed.end);
       }
+      // A board relaunched lying down (out of the window) ends the ride under way.
+      if (autopilot.state === 'ride' && session.phase === 'prone') autopilot.finish('relaunched');
       const ride = {
         phase: session.phase, speed: Math.hypot(board.velocity.x, board.velocity.z), boardSpeed: board.velocity.length(),
         cue: session.rider.popUpCue, popUp: { ...session.rider.popUpReport }, separation: session.separation, resets: 0, wave: { ...wave },
@@ -189,7 +215,8 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
         if (before !== 'ride') stands += 1;
         b.trace.push({
           speed: ride.speed, label: ride.boardSpeed, crest: wave.valid ? wave.crestSpeed : NaN, required: wave.valid ? wave.requiredSpeed : NaN,
-          face: wave.valid ? wave.faceFraction : NaN, ahead: wave.valid ? wave.aheadOfCrest : NaN, x: board.position.x, z: board.position.z,
+          face: wave.valid ? wave.faceFraction : NaN, ahead: wave.valid ? wave.aheadOfCrest : NaN, height: wave.valid ? wave.faceHeight : NaN,
+          peel: peelAngle, x: board.position.x, z: board.position.z,
         });
       }
       b.request = input;
@@ -202,7 +229,7 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
         if (trace.length * SURF_ZONE_STEP >= MIN_RIDE) {
           let distance = 0;
           for (let i = 1; i < trace.length; i += 1) distance += Math.hypot(trace[i].x - trace[i - 1].x, trace[i].z - trace[i - 1].z);
-          const finite = (key: 'crest' | 'required' | 'face' | 'ahead') => trace.map((s) => s[key]).filter(Number.isFinite);
+          const finite = (key: 'crest' | 'required' | 'face' | 'ahead' | 'height') => trace.map((s) => s[key]).filter(Number.isFinite);
           const ratios = trace.filter((s) => Number.isFinite(s.required) && s.required > 0).map((s) => s.speed / s.required);
           rides.push({
             seconds: trace.length * SURF_ZONE_STEP, distance,
@@ -211,6 +238,7 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
             crestSpeed: mean(finite('crest')), required: mean(finite('required')), ratio: mean(ratios),
             fastShare: ratios.length ? ratios.filter((r) => r > 1.3).length / ratios.length : NaN,
             faceFraction: mean(finite('face')), ahead: mean(finite('ahead')), aheadP90: quantile(finite('ahead'), 0.9),
+            faceHeight: mean(finite('height')), peel: mean(trace.map((s) => s.peel)),
             outcome, analysis: b.analysis,
           });
         }
@@ -226,7 +254,7 @@ function runSpot(spot: SpotName, seed: number): { rides: Ride[]; attempts: numbe
       }
     }
   }
-  return { rides, attempts: bots.reduce((sum, b) => sum + b.autopilot.attempts, 0), stands, outcomes };
+  return { rides, attempts: bots.reduce((sum, b) => sum + b.autopilot.attempts, 0), stands, outcomes, durations, curlShares, lostWave };
 }
 
 /** Forsyth et al. 2024 (the survey's §8): accomplished surfers' turns, and the radius and lateral load they imply. */
@@ -277,15 +305,21 @@ for (const spot of spots) {
   let attempts = 0;
   let stands = 0;
   const outcomes = new Map<string, number>();
+  const durations: number[] = [];
+  const shares: number[] = [];
+  let lostWave = 0;
   for (let seed = 1; seed <= seedCount; seed += 1) {
     const run = runSpot(spot, seed);
     all.push(...run.rides);
     attempts += run.attempts;
     stands += run.stands;
+    durations.push(...run.durations);
+    shares.push(...run.curlShares.filter(Number.isFinite));
+    lostWave += run.lostWave;
     for (const [outcome, count] of run.outcomes) outcomes.set(outcome, (outcomes.get(outcome) ?? 0) + count);
     console.log(`${spot} seed ${seed}: ${run.attempts} attempts, ${run.stands} stands, ${run.rides.length} rides ≥ ${MIN_RIDE} s; ${[...run.outcomes].map(([o, c]) => `${o} ×${c}`).join(', ')}`);
   }
-  summary.push(`| ${spot} | ${attempts} | ${stands} | ${all.length} | ${fixed(mean(all.map((r) => r.seconds)))} | ${fixed(mean(all.map((r) => r.meanSpeed)))} | ${fixed(all.length ? Math.max(...all.map((r) => r.topSpeed)) : NaN)} | ${fixed(mean(all.map((r) => r.meanLabel)))} | ${fixed(mean(all.map((r) => r.crestSpeed)))} | ${fixed(mean(all.map((r) => r.required)))} | ${fixed(mean(all.map((r) => r.ratio)), 2)} | ${fixed(mean(all.map((r) => r.faceFraction)), 2)} | ${fixed(mean(all.map((r) => r.ahead)))} |`);
+  summary.push(`| ${spot} | ${attempts} | ${stands} | ${all.length} | ${fixed(quantile(durations, 0.5))} | ${fixed(durations.length ? Math.max(...durations) : NaN)} | ${lostWave} | ${fixed(mean(all.map((r) => r.meanSpeed)))} | ${fixed(all.length ? Math.max(...all.map((r) => r.topSpeed)) : NaN)} | ${shares.length ? `${fixed(mean(shares) * 100, 0)} %` : '—'} | ${fixed(mean(all.map((r) => r.faceHeight)), 2)} | ${fixed(mean(all.map((r) => r.peel)), 0)} | ${fixed(mean(all.map((r) => r.crestSpeed)))} | ${fixed(mean(all.map((r) => r.faceFraction)), 2)} | ${fixed(mean(all.map((r) => r.ahead)))} |`);
   sections.push(`### ${spot}\n\n${turnTables(all)}\n\nAttempt outcomes: ${[...outcomes].map(([o, c]) => `${o} ×${c}`).join(', ') || 'none'}.\n\n| Ride s | Distance m | Mean / top over ground m/s | Mean / top old label m/s | Crest c m/s | Required m/s | Over ground ÷ required | > 1.3 × required | Face fraction | Ahead of crest m (mean / p90) | Outcome | Turns | Score |\n|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|\n${all.map((r) => `| ${fixed(r.seconds)} | ${fixed(r.distance, 0)} | ${fixed(r.meanSpeed)} / ${fixed(r.topSpeed)} | ${fixed(r.meanLabel)} / ${fixed(r.topLabel)} | ${fixed(r.crestSpeed)} | ${fixed(r.required)} | ${fixed(r.ratio, 2)} | ${fixed(r.fastShare * 100, 0)} % | ${fixed(r.faceFraction, 2)} | ${fixed(r.ahead)} / ${fixed(r.aheadP90)} | ${r.outcome} | ${r.analysis ? r.analysis.maneuvers.length : '—'} | ${r.analysis ? fixed(scoreRide(r.analysis).score) : '—'} |`).join('\n') || '| — | | | | | | | | | | no ride | | |'}`);
 }
 
@@ -297,9 +331,11 @@ The runner's own rider rides, pushing back on the water${ghostAlongs.length ? `,
 
 **Research ranges** (the [surf-science survey](surf-gameplay-research.md) §1): accomplished surfers average 6.4 m/s and top out at 9.7 m/s (Forsyth et al. 2024); competitors peak at 9–12.5 m/s (Farley et al. 2012); the required speed is c / sin α (Walker 1974; Hutt et al. 2001); trim sits on the lower-to-mid face (Sugimoto 1998).
 
-| Spot | Attempts | Stands | Rides ≥ ${MIN_RIDE} s | Mean ride s | Mean speed over ground m/s | Top m/s | Mean old label m/s | Crest c m/s | Required m/s | Over ground ÷ required | Face fraction | Ahead of crest m |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Spot | Attempts | Stands | Rides ≥ ${MIN_RIDE} s | Median ride s | Best ride s | Lost the wave | Mean speed m/s | Top m/s | Near the curl | Face height m | Peel ° | Crest c m/s | Face fraction | Ahead of crest m |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 ${summary.join('\n')}
+
+Done when (the [riding-the-wave spec](../superpowers/specs/2026-09-27-riding-the-wave.md)): median ride ≥ 10 s; best 15–20 s; lost the wave 0; mean speed 6–9 m/s; near the curl (within 8 m along the crest) ≥ 50 %; bottom turns in Forsyth's ranges (the turn table). Median, best, lost and near the curl count every ride the analyzer closed; speeds, face and peel the rides of ${MIN_RIDE} s or more.
 
 "Old label" is |board velocity|, which the HUD showed before P9: it includes vertical motion down the face. Speed over ground is horizontal.
 
