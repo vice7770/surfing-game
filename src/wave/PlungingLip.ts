@@ -33,6 +33,22 @@ export const SPLASH_UP = { share: 0.3, vertical: 0.6, horizontal: 0.8, minImpact
  * but for the air's volume, which is conserved.
  */
 export const TUBE_AIR = { escape: 0.5 } as const;
+/** Densities of seawater and of air, kg/m³. */
+const WATER_DENSITY = 1025;
+const AIR_DENSITY = 1.2;
+
+/**
+ * The fastest a collapsing tube can blow its air out of its mouth, m/s. The
+ * roof falls on the air at about √(gW/2) (its free fall over the void's
+ * height W), so the air's pressure can rise no higher than the roof's dynamic
+ * pressure, ½ρ_w·gW/2; air driven by that leaves at √(ρ_w/ρ_a)·√(gW/2). Air
+ * the mouth cannot pass that fast bursts up through the lip instead. (G9,
+ * provisional: a mechanism, not a measurement.)
+ */
+export function spitSpeedLimit(width: number): number {
+  return Math.sqrt((WATER_DENSITY / AIR_DENSITY) * GRAVITY * width / 2);
+}
+
 /** A closing void's bubbles are spread over this many points along it (numerical). */
 const BUBBLE_POINTS = 4;
 /** A breaking roller's cross-section per H² (G9, κ_r; Svendsen 1984): the foam ball tumbling in a collapsing tube. */
@@ -891,10 +907,20 @@ export class PlungingLip implements LipParcelSource {
         const alongX = -tube.dirZ;
         const alongZ = tube.dirX;
         const outward = (centre.x - fed[m].x / rate) * alongX + (centre.z - fed[m].z / rate) * alongZ >= 0 ? 1 : -1;
+        // The mouth passes air no faster than the falling lip can drive it; the rest bursts up through the lip.
+        const area = LH82_AREA * tube.geometry.length * tube.geometry.width;
+        const spat = Math.min(rate, spitSpeedLimit(tube.geometry.width) * area);
         this.spits.push({
-          x: centre.x, y: centre.y, z: centre.z, dirX: outward * alongX, dirZ: outward * alongZ,
-          speed: rate / (LH82_AREA * tube.geometry.length * tube.geometry.width), airRate: rate,
+          x: centre.x, y: centre.y, z: centre.z, dirX: outward * alongX, dirZ: outward * alongZ, speed: spat / area, airRate: spat,
         });
+        const excess = rate - spat;
+        if (excess > 0) {
+          burst.rate += excess;
+          burst.x += (excess * fed[m].x) / rate;
+          burst.y += excess * tube.y;
+          burst.z += (excess * fed[m].z) / rate;
+          burst.speed += excess * Math.sqrt((GRAVITY * tube.geometry.width) / 2);
+        }
       });
       if (burst.rate > 0) {
         this.eruptions.push({

@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, ROLLER_AREA, SPLASH_UP, STRIP_PARCELS, TUBE_AIR, lipThrow, overturnArea, type TubeRoller } from './PlungingLip';
+import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, ROLLER_AREA, SPLASH_UP, STRIP_PARCELS, TUBE_AIR, lipThrow, overturnArea, spitSpeedLimit, type TubeRoller } from './PlungingLip';
 import { GRAVITY } from './dispersion';
 import { LH82_AREA, jetRelativeSpeed, overturn, overturnParameter, tubeFloorDepth, type TubeGeometry } from './Overturn';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
@@ -172,6 +172,31 @@ describe('the collapsing tube and its air (G9)', () => {
     expect(first!.width).toBe(1);
     expect(first!.dirZ).toBeCloseTo(1, 9);
     expect(first!.speed).toBe(3);
+  });
+
+  it('spits no faster than the falling lip can drive the air, and bursts the rest up through the lip', () => {
+    // Seven columns close together into one small, late tube at the end of the section.
+    const solver = basin();
+    const lip = new PlungingLip(solver, 512);
+    const small: TubeGeometry = { length: 0.3, width: 0.1, tilt: 0.3 };
+    const air = { bubbles: 0, spit: 0, erupted: 0, fastest: 0 };
+    lip.onAir = (_x, _z, volume) => (air.bubbles += volume);
+    for (let column = 0; column < 7; column += 1) lip.launch(solver.cellIndex(column + 0.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3, tube);
+    for (let frame = 0; frame < 2400; frame += 1) {
+      if (frame === 60) lip.launch(solver.cellIndex(7.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3, small, 2);
+      lip.step(1 / 240);
+      for (const spit of lip.spits) {
+        air.spit += spit.airRate / 240;
+        air.fastest = Math.max(air.fastest, spit.speed);
+      }
+      for (const eruption of lip.eruptions) air.erupted += eruption.airRate / 240;
+    }
+    expect(air.spit).toBeGreaterThan(0);
+    expect(air.fastest).toBeLessThanOrEqual(spitSpeedLimit(small.width) + 1e-9);
+    expect(air.erupted).toBeGreaterThan(0);
+    // Still every bit of the air: 7 big tubes and the small one.
+    const trapped = LH82_AREA * (7 * tube.length * tube.width + small.length * small.width);
+    expect(air.spit + air.erupted + air.bubbles).toBeCloseTo(trapped, 9);
   });
 
   it('erupts upward when the whole section closes at once, with no mouth to spit from', () => {
