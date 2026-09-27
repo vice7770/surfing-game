@@ -538,6 +538,14 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
       - online surfers pose the same way (wire format unchanged);
       - the surfer sheet's `?riding` view shows the moments.
       - Next: the user's playtest, then the top turn and cutback against the video.
+    - the top turn ([plan](docs/superpowers/plans/2026-09-27-top-turn.md), [study](docs/research/rail-change-study.md), [findings](docs/superpowers/plans/2026-09-27-top-turn.md#findings)):
+      - While steering, the feet never roll the board away from the lean asked for; the upper body throws the lean. The feet's counter-roll had turned the board the wrong way (the hull turns hard on a small roll) and thrown the body in.
+      - Top turns from a climb and rail changes from a carve now stay on, and carves are smooth. On the reference wave, rides of 3 s or more doubled (14 → 28; median 2.2 → 3.3 s, best 4.9 → 7.6 s), and top turns yaw 60° (38°), with a first snap. Bottom turns run at Forsyth's rate but yaw 73° (87°).
+      - The snap is drawn: with the weight on the back foot in a turn, the trunk twists further and the leading arm rises toward the lip (the sheet's `?riding` snap).
+      - Open for the user:
+        - The hard turn makes 52° (61° rode the feet's pumping).
+        - Snaps and cutbacks stall on the static lab face and are pinned with the deep U: the carve sheds its speed and bogs past its 48° bite.
+        - The frontside reaching hand is drawn 7 cm short.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
