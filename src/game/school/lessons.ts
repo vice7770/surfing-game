@@ -44,8 +44,12 @@ export interface Lesson {
 }
 
 // Provisional thresholds (spec L2): tuned on the reference wave once the riding work lands it.
-/** Lean: each way, the heading swings this far while that lean is held, rad. */
-const LEAN_SWING = (20 * Math.PI) / 180;
+/**
+ * Lean: each way, the heading swings this far while that lean is held, rad. The
+ * spec's 20° waits for the riding work's turn-rate fix: today a held lean turns
+ * the board about 8° before the wave turns it back.
+ */
+const LEAN_SWING = (8 * Math.PI) / 180;
 /** A lean or weight shift counts from this much input. */
 const HELD = 0.3;
 /** Trim: weight held this far forward (back) for TRIM_TIME s speeds (slows) the board by TRIM_SPEED m/s. */

@@ -13,6 +13,8 @@ export const ICONS = {
   back: svg('<path d="M14.5 5.5 8 12l6.5 6.5"/>'),
   sound: svg('<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>'),
   muted: svg('<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="m16 9.5 5 5M21 9.5l-5 5"/>'),
+  // The Surf School's tile (spec L2): a board with a mortarboard over it.
+  school: svg('<path d="M3 17.5c3.5 2 14.5 2 18 0"/><path d="M12 4 3 8l9 4 9-4z"/><path d="M7 10v3.5c1.5 1.3 8.5 1.3 10 0V10"/><path d="M21 8v4"/>'),
   // The Wave Lab's toolbar (spec L1).
   follow: svg('<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>'),
   play: svg('<path d="M8 5.5v13l10-6.5z"/>'),

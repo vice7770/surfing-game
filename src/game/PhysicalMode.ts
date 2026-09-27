@@ -439,6 +439,12 @@ export class PhysicalMode {
     return this.host && this.host.snapshot.rider[RIDER_SNAPSHOT.present] > 0 ? this.chosenView : this.idleView;
   }
 
+  /** A lesson's view (spec L2): this ride view now, and for the rest of the session. */
+  setRideView(view: RideView): void {
+    this.chosenView = view;
+    this.camera.setView(view);
+  }
+
   /** Cycle the camera: in front, behind, to the side of the rider, then the overview of the break. */
   nextView(): SpectatorView {
     const order: (RideView | 'overview')[] = [...RIDE_VIEWS, 'overview'];

@@ -708,6 +708,7 @@ class SurfGame {
       setSlowMotion: (on) => {
         this.schoolSlow = on;
       },
+      setView: (view) => this.physicalMode.setRideView(view),
       get slowMotion() {
         return game.schoolSlow;
       },
@@ -1017,10 +1018,7 @@ settings.subscribe((value, change) => {
   if (change === 'gameplay') game.setNameTags(value.gameplay.nameTags);
 });
 const controls = new Controls(() => settings.value.controls.bindings, {
-  retry: () => {
-    game.quickRetry();
-    app.noteRetry();
-  },
+  retry: () => app.retry(),
   camera: () => game.cycleView(),
   pause: () => app.pause(),
   mute: () => app.toggleMute(),
