@@ -188,9 +188,9 @@ Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [
     - It is recorded on stage 2, and the school runs stage 2 on every machine, the Fast water's included (the user's call: stage 1's recording could not be caught). A machine too slow for it plays the lesson slower than real time.
     - A lesson's sea is built from it with no spin-up, and every restart restores it in place (a new `restore` host request; the GPU re-uploads the breaking state).
     - `RideSession.place` puts the rider on the water standing or prone, the one new piece of rider code.
-  - **Provisional:** the recording and the thresholds wait for the riding work's reference wave (the lean's swing is 8°, not 20°, until the turn-rate fix), and a dev note says so in the lesson.
+  - **On the reference wave:** recorded on the riding work's Practice swell after it merged. A still rider stands 6.4 s from the pocket, a pop-up on the cue 6.1 s, and the autopilot 3.8 s from waiting. The goals' thresholds stay provisional (the lean's swing is 8°, not 20°, until the turn-rate fix).
 - [ ] **L2 open:**
-  - regenerate the lesson wave and tune the goals on the reference wave;
+  - tune the goals on the reference wave (the lean's swing first, after the turn-rate fix);
   - on a machine too slow for stage 2 (the Fast water's), how slow the lessons run has not been measured;
   - the user's playtest (the pass card and a live pass were not seen in the hidden pane);
   - trim and the hand have no touch buttons yet, so lessons 2 and 6 need a keyboard or a pad.

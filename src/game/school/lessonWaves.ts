@@ -7,7 +7,7 @@ export const LESSON_WAVES: readonly LessonWave[] = [
     "config": {
       "spot": "canyon",
       "seed": 1,
-      "significantHeight": 2,
+      "significantHeight": 1.4,
       "peakPeriod": 12,
       "directionDegrees": 10,
       "spreading": 40,
@@ -23,32 +23,32 @@ export const LESSON_WAVES: readonly LessonWave[] = [
     },
     "placements": {
       "pocket": {
-        "x": -2.17,
-        "z": -68.48,
-        "heading": -0.105,
-        "speed": 7.27,
+        "x": -8.2,
+        "z": -48.52,
+        "heading": -0.519,
+        "speed": 0.25,
         "phase": "standing"
       },
       "caught": {
-        "x": 0.81,
-        "z": -122.06,
-        "heading": 0.159,
+        "x": -6.29,
+        "z": -72.89,
+        "heading": -0.627,
         "speed": 2.39,
         "phase": "prone"
       },
       "waiting": {
-        "x": 0.19,
-        "z": -126.25,
-        "heading": 0.095,
-        "speed": 0.47,
+        "x": 0.47,
+        "z": -84.68,
+        "heading": 0.132,
+        "speed": 0.97,
         "phase": "prone"
       }
     },
-    "provisional": true,
+    "provisional": false,
     "checks": {
-      "pocket": "stood 3.5 s (attempt 3)",
-      "caught": "stood 5.5 s (attempt 7)",
-      "waiting": "stood 7.4 s (attempt 4)"
+      "pocket": "stood 6.4 s (attempt 1)",
+      "caught": "stood 6.1 s (attempt 18)",
+      "waiting": "stood 3.8 s (attempt 4)"
     }
   }
 ];
