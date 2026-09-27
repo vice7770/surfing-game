@@ -17,7 +17,7 @@ describe('surf conditions', () => {
     const settings = physicalSettingsFor('reef', { swell: 'big', tide: 'high', wind: 'onshore', time: 'dawn' }, { stage: 1, compute: 'cpu' });
     expect(settings).toMatchObject({
       spot: 'reef', source: 'buoy', significantHeight: REEF_SWELLS.big.significantHeight, peakPeriod: REEF_SWELLS.big.peakPeriod,
-      directionDegrees: 20, tide: 0.6, windSpeed: 6, stage: 2, compute: 'cpu',
+      directionDegrees: 20, tide: 0.6, windSpeed: 6, stage: 2, compute: 'auto',
     });
   });
 
@@ -33,7 +33,13 @@ describe('surf conditions', () => {
   });
 
   it('keeps the other spots on the water tier’s stage', () => {
-    expect(physicalSettingsFor('point', DEFAULT_CONDITIONS, { stage: 1, compute: 'cpu' }).stage).toBe(1);
+    expect(physicalSettingsFor('point', DEFAULT_CONDITIONS, { stage: 1, compute: 'cpu' })).toMatchObject({ stage: 1, compute: 'cpu' });
+  });
+
+  // The Fast tier steps stage 1 on the CPU only because stage 1 has no GPU path; raised to stage 2, the Reef asks for the GPU.
+  it('lets the Reef ask for the GPU when it raises the Fast tier’s stage', () => {
+    expect(physicalSettingsFor('reef', DEFAULT_CONDITIONS, { stage: 1, compute: 'cpu' })).toMatchObject({ stage: 2, compute: 'auto' });
+    expect(physicalSettingsFor('reef', DEFAULT_CONDITIONS, { stage: 2, compute: 'cpu' })).toMatchObject({ stage: 2, compute: 'cpu' });
   });
 
   it('keeps every choice within what the tank and the Wave Lab allow', () => {

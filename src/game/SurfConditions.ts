@@ -86,14 +86,22 @@ export function physicalSettingsFor(spot: SpotName, conditions: SurfConditions, 
   return {
     ...DEFAULT_PHYSICAL_SETTINGS,
     spot,
-    stage: solverStage(spot, water.stage),
-    compute: water.compute,
+    ...raisedWater(spot, water),
     source: swell ? 'buoy' : 'practice',
     ...(swell ? { significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod, spread: swell.spread } : {}),
     ...(swell?.directionDegrees !== undefined ? { directionDegrees: swell.directionDegrees } : {}),
     tide: TIDES[conditions.tide],
     windSpeed: WINDS[conditions.wind],
   };
+}
+
+/**
+ * The water tier for a spot: a spot that needs stage 2 raises the tier's stage, and then
+ * asks for the GPU (the Fast tier steps stage 1 on the CPU only because stage 1 has none).
+ */
+function raisedWater(spot: SpotName, water: WaterTier): WaterTier {
+  const stage = solverStage(spot, water.stage);
+  return { stage, compute: stage !== water.stage ? 'auto' : water.compute };
 }
 
 /** The menu's waves: the practice groundswell at mid tide in calm air. */

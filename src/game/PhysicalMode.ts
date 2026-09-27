@@ -366,8 +366,10 @@ export class PhysicalMode {
     const start = ++this.starts;
     const swell = swellFor(settings);
     // The GPU tier builds a richer sea; the page decides, so its far field matches the worker's tank.
+    // A spot that needs stage 2 raises a stage 1 tier, and then asks for the GPU (as SurfConditions' raisedWater).
     const stage = solverStage(settings.spot, settings.stage);
-    const tier = stage === 2 && settings.compute === 'auto' && gpuTier !== undefined && await gpuTier();
+    const compute = stage !== settings.stage ? 'auto' : settings.compute;
+    const tier = stage === 2 && compute === 'auto' && gpuTier !== undefined && await gpuTier();
     const config: SurfZoneConfig = {
       spot: settings.spot,
       seed,
@@ -379,7 +381,7 @@ export class PhysicalMode {
       tide: settings.tide,
       windSpeed: settings.windSpeed,
       stage,
-      compute: settings.compute,
+      compute,
       ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
       ...overrides,
     };

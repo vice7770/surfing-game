@@ -73,8 +73,10 @@ describe('PhysicalMode', () => {
       built.push(config);
       return new LocalSurfZone(config);
     };
-    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef', stage: 1 }, 5, water, quick, factory, gpuTier)).toBe(true);
+    // The Fast tier's water: stage 1 on the CPU.
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef', stage: 1, compute: 'cpu' }, 5, water, quick, factory, gpuTier)).toBe(true);
     expect(built[0].stage).toBe(2);
+    expect(built[0].compute).toBe('auto');
     expect(gpuTier).toHaveBeenCalled();
     mode.stop();
   }, 60_000);
