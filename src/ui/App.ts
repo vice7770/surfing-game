@@ -243,7 +243,9 @@ export class App {
     // Dev tools: the sound, for checks in the page and the sound check.
     if (DEV_TOOLS) (globalThis as unknown as { breaklineSound?: GameSound }).breaklineSound = this.sound;
     // Dev tools: the school's flow and frames, for checks in the page.
-    if (DEV_TOOLS) (globalThis as unknown as { breaklineSchool?: unknown }).breaklineSchool = { flow: () => this.lessonFlow, frame: () => this.game.school.frame() };
+    if (DEV_TOOLS) (globalThis as unknown as { breaklineSchool?: unknown }).breaklineSchool = {
+      flow: () => this.lessonFlow, frame: () => this.game.school.frame(), ride: () => this.game.rideStatus,
+    };
     // A quiet click for every menu button (S1).
     this.ui.addEventListener('click', (event) => {
       if ((event.target as Element | null)?.closest?.('button')) this.sound.playUi('click');
