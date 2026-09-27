@@ -261,6 +261,25 @@ describe('SurfZoneRunner with a rider', () => {
   const calm: SurfZoneConfig = { ...config, spot: 'beach', significantHeight: 0.02, peakPeriod: 10 };
   const idle = { paddle: false, popUp: false, steer: 0, retry: false };
 
+  // The take-off plan: the cue also lights when the wave has caught the paddler high on the face (the take-off
+  // window), in the status the HUD reads and in the snapshot; standing, it stays dark.
+  it('cues the pop-up in the take-off window, lying down only', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    runner.advance(1, idle);
+    expect(runner.status().ride!.cue).toBe(false);
+    const caught = {
+      valid: true, directionX: 0, directionZ: 1, aheadOfCrest: 2.7, crestSpeed: 6.5, faceHeight: 1.8, faceFraction: 0.8, crestBreaking: 0,
+      curlDistance: Infinity, curlSide: 0, speedOverGround: 5.2, speedShoreward: 5.2, speedAlongCrest: 0, requiredSpeed: Infinity,
+    };
+    (runner as unknown as { wave: typeof caught }).wave = caught;
+    expect(runner.status().ride!.cue).toBe(true);
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(buffers.rider[RIDER_SNAPSHOT.cue]).toBe(1);
+    runner.session!.rider.phase = 'standing';
+    expect(runner.status().ride!.cue).toBe(false);
+  });
+
   it('lies a rider prone on the board in the lineup, and snapshots its render points and phase', () => {
     const runner = new SurfZoneRunner(calm, { rider: true });
     runner.advance(60, idle);

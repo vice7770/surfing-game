@@ -6,6 +6,7 @@ import { BoardBody } from '../physics/BoardBody';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { RideSession, type RideInput, type RiderPlacement } from '../physics/RideSession';
 import { createWaterSample } from '../physics/SurfWater';
+import { inTakeOffWindow } from '../physics/takeOffCue';
 import { WaveFrameGauge, type WaveFrame } from '../physics/waveFrame';
 import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
@@ -406,6 +407,17 @@ export class SurfZoneRunner {
     return this.wave;
   }
 
+  /**
+   * The pop-up cue the HUD shows, lying down: planing down a face (the rider's
+   * own cue), or caught by the wave high on it (the take-off window, read from
+   * the gauge's latest frame).
+   */
+  get cue(): boolean {
+    const { session } = this;
+    if (!session || session.phase !== 'prone') return false;
+    return session.rider.popUpCue || (this.wave !== undefined && inTakeOffWindow(this.wave));
+  }
+
   /** The rider (on the board, or fallen) against the wave under it. */
   private measureRide(): void {
     const { session, gauge } = this;
@@ -513,7 +525,7 @@ export class SurfZoneRunner {
     if (session) {
       for (let i = 0; i < 7; i += 1) session.renderPoint(i, this.point).toArray(buffers.rider, RIDER_SNAPSHOT.points + i * 3);
       buffers.rider[RIDER_SNAPSHOT.phase] = RIDER_PHASES.indexOf(session.phase);
-      buffers.rider[RIDER_SNAPSHOT.cue] = session.rider.popUpCue ? 1 : 0;
+      buffers.rider[RIDER_SNAPSHOT.cue] = this.cue ? 1 : 0;
       buffers.rider[RIDER_SNAPSHOT.present] = 1;
       buffers.rider[RIDER_SNAPSHOT.heading] = session.heading;
     }
@@ -580,7 +592,7 @@ export class SurfZoneRunner {
         phase: this.session.phase,
         speed: Math.hypot(this.session.board.velocity.x, this.session.board.velocity.z),
         boardSpeed: this.session.board.velocity.length(),
-        cue: this.session.rider.popUpCue,
+        cue: this.cue,
         popUp: { ...this.session.rider.popUpReport },
         separation: this.session.separation,
         resets: this.rideResets,
