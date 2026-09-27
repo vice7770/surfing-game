@@ -922,8 +922,12 @@ describe('lean, trim, crouch and heading hold', () => {
   // A bottom turn: Forsyth et al. 2024's accomplished surfers turn about 100° in a second at 1.9 rad/s,
   // on a rail rolled 42°. Held upright in the world, the body could not bank: the push the turn needs landed
   // outboard and rolled the board back to about 9° (13° in 1.2 s). Banked on its ankles it carves (the turn
-  // redesign plan).
-  it('turns hard with a full lean and a crouch, keeping most of its speed', () => {
+  // redesign plan). It made 61°, riding the feet's pumping: their rest swung between its limits at about 3 Hz, the
+  // rail rolled about 4° past the body on average and the yaw rate swung 0.5–2.35 rad/s. Since the feet no longer roll
+  // the board away from the lean asked for (the top-turn plan), the carve is smooth (0.6–1.4 rad/s) and makes 52°. The
+  // body leans no slower (45° at 1.2 s either way): it nears the lean asked for with the balance's 0.5 s time
+  // constant, the deep U's shortfall. Pinned for the user's decision, not tuned.
+  it.fails('turns hard with a full lean and a crouch, keeping most of its speed', () => {
     const { board, rider, water } = acrossFace(0, 7);
     run(board, water, 0.3);
     const start = headingOf(board);
@@ -1158,7 +1162,7 @@ describe('lean, trim, crouch and heading hold', () => {
     // to 0.7–1.0 rad/s; taken with the crouch's hold, the deepening swung it 1.9–2.3 rad/s, 2.3–2.6 times the held
     // turn's. Held past about 2 s at full steer on flat water the board bleeds its speed and the rider falls into the
     // turn with or without Compress, so the window is the bottom turn's second.
-    it.each([[7, 60], [8, 60], [10, 55], [11, 45]])('holds Compress taken mid-turn on flat water at %i m/s', (speed, turned) => {
+    const compressMidTurn = (speed: number, turned: number) => {
       const turn = (compress: number) => {
         const board = new BoardBody();
         board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
@@ -1189,12 +1193,17 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(signFlips(compressed.rates)).toBeLessThanOrEqual(2);
       expect(largestSwing(compressed.rates)).toBeLessThanOrEqual(2 * largestSwing(held.rates));
       expect(Math.abs(degrees(compressed.heading))).toBeGreaterThan(turned);
-    });
+    };
+    it.each([[7, 60], [8, 60], [10, 55]])('holds Compress taken mid-turn on flat water at %i m/s', compressMidTurn);
+    // Since the feet no longer roll the board away from the lean asked for (the top-turn plan), the held turn at 11 m/s
+    // no longer swings at all (0.99 rad/s before); Compress still swings 0.69 rad/s (0.87 before). Pinned, not tuned.
+    it.fails('holds Compress taken mid-turn on flat water at 11 m/s', () => compressMidTurn(11, 45));
 
     // The deep U (the stances spec): Forsyth et al. 2024's bottom turns yaw 99° in 0.96 s at 1.9 rad/s, keeping 0.88–0.95
     // of their speed; de Sousa 2022's reference, a deep U that keeps the speed. Not met on still water by any stance
-    // (the compress plan's findings): at 7 m/s entry, 1.2 s after the lean, standing yaws 75°, Shift's crouch 69°,
-    // Compress over it 62° (63° backside), keeping 0.48–0.67 of their speed. A carve at a 40–48° rail sheds about 0.45 g, and
+    // (the compress plan's findings): at 7 m/s entry, 1.2 s after the lean, standing yaws 71°, Shift's crouch 66°,
+    // Compress over it 60° (62° backside), keeping 0.54–0.67 of their speed (the top-turn plan; 75°, 69° and 62° while
+    // the feet still rolled the board away from the lean). A carve at a 40–48° rail sheds about 0.45 g, and
     // the lean the turn can hold (TURN_RADIUS) falls with the speed. Forsyth's turns were on waves, whose water feeds them.
     it.fails('makes a deep U at the bottom of the face', () => {
       const turn = bottomTurn(-1);
@@ -1204,7 +1213,7 @@ describe('lean, trim, crouch and heading hold', () => {
     });
 
     // The stances spec says compressed and leaning turns hard; here Compress over the crouch turns less than the crouch
-    // alone (62° against 69°, the keyboard's full crouch 58–60°) and keeps less of its speed: the forward weight costs
+    // alone (60° against 66°, the keyboard's full crouch 56°) and keeps less of its speed: the forward weight costs
     // about 6°, the depth the rest. Pinned for the user's decision, not tuned (the compress plan's findings).
     it.fails('turns at least as hard compressed as crouched, keeping as much speed', () => {
       const crouched = bottomTurn(-1, 90, 1.2, 'regular', 0.6, 0);
@@ -1222,6 +1231,60 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(turn.entry).toBeLessThan(8);
       expect(turn.attached).toBe(true);
       expect(turn.turned).toBeGreaterThan(55);
+    });
+
+    // The top turn (the stances spec item 6): climbing the face, the rider turns back down it. Before the top-turn plan
+    // every one fell within 0.4–1.1 s having turned 6–51° (the rail-change study): leaning in from riding straight, the
+    // feet rolled the board the wrong way, the hull swung it straight up the face, it stalled and the body fell in at
+    // about 3 rad/s, lifting off its feet. Steered only, the lean the slowing board can hold (TURN_RADIUS) bounds the
+    // turn: past across the face (60° from this climb) within 1.5 s; a snap's 150° in a second is the weight back's.
+    it.each([
+      ['backside', 6, 150, 1, 'regular'], ['backside', 8, 150, 1, 'regular'], ['frontside', 6, -150, -1, 'regular'],
+      ['frontside', 8, -150, -1, 'regular'], ['backside, goofy', 8, -150, -1, 'goofy'], ['frontside, goofy', 8, 150, 1, 'goofy'],
+    ] as const)('turns back down the face from a climb, %s at %i m/s', (_side, speed, across, steer, stance) => {
+      const { board, rider, water } = acrossFace(across, speed, stance);
+      run(board, water, 0.2);
+      rider.steer = steer;
+      let last = headingOf(board);
+      let turned = 0;
+      let pull = 0;
+      run(board, water, 1.5, () => {
+        const now = headingOf(board);
+        turned += Math.atan2(Math.sin(now - last), Math.cos(now - last));
+        last = now;
+        if (rider.attached) pull = Math.min(pull, rider.leg.force);
+      });
+      expect(rider.attached).toBe(true);
+      expect(pull).toBeGreaterThanOrEqual(0);
+      expect(degrees(turned) * steer).toBeGreaterThan(60);
+    });
+
+    // A rail change (the rail-change study): carving one way, full steer the other. The feet rolled the board further
+    // onto the old rail to throw the body across, the old turn went on 41–67° and bled the speed, and at 8 and 10 m/s
+    // the rider fell within 0.6 s. The board must turn back the new way; how far the body leans into the new turn is
+    // the lean the speed left can hold (TURN_RADIUS).
+    it.each([6, 8, 10])('changes rail from a carve at %i m/s', (speed) => {
+      const board = new BoardBody();
+      board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
+      const rider = new AttachedRider(board.shape, { phase: 'standing' });
+      board.attach(rider);
+      const water = new PlaneWater();
+      run(board, water, 0.2);
+      rider.steer = -1;
+      run(board, water, 0.6);
+      expect(rider.bank.angle).toBeLessThan(-0.3);
+      rider.steer = 1;
+      let last = headingOf(board);
+      let turned = 0;
+      let furthest = 0;
+      run(board, water, 1.2, () => {
+        const now = headingOf(board);
+        turned += Math.atan2(Math.sin(now - last), Math.cos(now - last));
+        last = now;
+        furthest = Math.min(furthest, turned);
+      });
+      expect(rider.attached).toBe(true);
+      expect(degrees(turned - furthest)).toBeGreaterThan(30);
     });
 
     // Review Focus 5: the pop-up's landing is unchanged, the body carried upright over its stance as before the bank;

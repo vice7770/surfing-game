@@ -173,6 +173,16 @@ const UPRIGHT_RATE = 0.2;
  * uphill), eased in over REFERENCE_TIME, s, at up to REFERENCE_RATE, rad/s; the
  * heading hold and the hand ask for up to HOLD_BANK, rad. Past MAX_BANK the body
  * is off its posture.
+ *
+ * While the rider steers, the feet never roll the board away from the bank asked
+ * for; the upper body's swing throws the body into a lean, and the feet only
+ * catch it (the rail-change study). The planing hull turns hard on a small roll
+ * (a held board rolled 8° turns at 0.8 rad/s at 7 m/s). So the feet's push that
+ * threw the body into a new lean first swung the board the wrong way. At the top
+ * of the face that pointed it up to stall while the body fell in at 3 rad/s; in a
+ * rail change it dug the old rail; mid-carve it pumped the rail in the roll–yaw
+ * wobble. Unsteered, the heading hold, the hand and a shove keep the feet's whole
+ * range.
  */
 const ANKLE_STIFFNESS = 800;
 const ANKLE_DAMPING = 80;
@@ -1273,7 +1283,10 @@ export class AttachedRider {
     const wanted = BANK_GAIN * (this.bankReference - this.bank.angle) - BANK_RATE_GAIN * this.bank.rate;
     // Past the rail's bite the feet no longer roll the board further onto it.
     const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(roll) - RAIL_BITE) / RAIL_EASE);
-    const lean = roll > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
+    const reach = roll > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
+    // Steering, the feet never roll the board away from the bank asked for: the upper body throws the lean.
+    const asking = this.steer !== 0 ? Math.sign(this.bankReference) : 0;
+    const lean = reach * asking > 0 ? 0 : reach;
     this.swingStep(h, wanted - lean);
     this.ankleRest += (lean - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
     // Backward Euler on the ankle: over the substep the bank and the roll move at their rates after the solve.

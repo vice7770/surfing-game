@@ -55,3 +55,38 @@ The top-turn plan (`docs/superpowers/plans/2026-09-27-top-turn.md`), on the user
 - **In an S-turn the board must keep turning the old way to pass under the body.** That is the cross-under's geometry. The losses come from how the balance does it: the old rail digs, and the lean is started by pushing the board away.
 
 **Conclusion:** no principled governor fixes top turns without costing bottom turns. The next step is the cross-under: the way a lean is actuated.
+
+## The rule: the feet never roll the board away from the lean asked for
+
+**The trace.** An 8 m/s top turn, step by step:
+- The contact carries nothing from 0.33 s. The body falls into the new lean at 2.9 rad/s and lifts off its feet, and the unloaded board stops (7.6 → 2.8 m/s).
+- It falls in because the board first turned the wrong way at 1.75 rad/s, and that turn's centripetal pull threw the body in.
+- The hull turns hard on a small roll. A held board at 7 m/s rolled 8° turns at 0.84 rad/s, and at 15° at 1.86 rad/s. So the feet's counter-roll at a lean-in (the ankle's rest saturated at 0.25 rad) is the wrong-way turn.
+- The contact's own yaw moment is small (≤ 17 N·m).
+
+**The rule** (the user's first direction for the study: the upper body starts the new lean):
+- While the rider steers, the feet never roll the board away from the bank asked for. The upper body's swing throws the body into a lean, and the feet only catch it.
+- Unsteered, the heading hold, the hand and a shove keep the feet's whole range.
+- It is keyed on the eased reference, not the steer. Keyed on the steer, rail changes at 6 and 8 m/s fell: early in a change, the old turn's tightening is what lifts the body. Keyed on the reference always, the heading hold, the hand and the balance margin failed on their small references.
+- Allowing the counter-roll up to the body's own lean toward the reference ("flatten only") turns the same, but brings the crouch's mid-turn wobble back (2.66 rad/s at 11 m/s against 1.78).
+
+| | Committed | The rule |
+|---|---|---|
+| Rail changes from a carve, flat water, 6/8/10 m/s | on / fell / fell | on, on, on (kept 0.40–0.71) |
+| Top turns from a climb, 6/8 m/s, 1.2 s | fell / fell | 59° / 74°, on; past across by 1.5 s |
+| Top turn at 8 m/s, 2.5 s | — | 137° by 2.0 s, then stalls at 1.3 m/s and falls at 2.2 s |
+| A carve up the face, then the change | fell | fell (6, 8 m/s) |
+| Hard turn (7 m/s down the face, 1.2 s) | 61°, yaw rate 0.5–2.35 rad/s | 52°, 0.6–1.4 rad/s |
+| Compress over the crouch (carve lab) | fell at 1.9 s | on |
+| Bottom turns at the face's base, 1.2 s | standing 75°, crouch 69°, Compress 62° | 71°, 66°, 60° |
+| Mid-turn swing at 11 m/s (held / Compress / Shift crouch) | 0.99 / 0.87 / 2.52 rad/s | 0.00 / 0.69 / 1.78 rad/s |
+
+**Reading:**
+- The committed hard turn's extra 9° rode the feet's pumping. Their rest swung between its limits at about 3 Hz, and the rail rolled about 4° past the body on average.
+- The body's lean is the same either way (45–46° at 1.2 s). It nears the lean asked for with the balance's 0.5 s time constant (BANK_GAIN over BANK_RATE_GAIN), which is the deep U's shortfall. Speeding it up is a redesign of the balance on the roll model, not part of this rule.
+- In a steady carve the swing now holds the lean it threw (0.27 rad in a frontside Compress turn), so the drawn chest turns 5° out of the turn. The rig's reaching hand falls 6.9 cm short of the physics' hand in the water (2.8 cm before).
+
+Pinned, not tuned:
+- the hard turn's 60°;
+- Compress's mid-turn swing at 11 m/s against a held turn that no longer swings;
+- the frontside reaching hand's 5 cm.
