@@ -12,16 +12,15 @@ export interface MenuTile {
   badge?: StringKey;
 }
 
-/** The main menu's tiles (plan P8); the Wave Lab only with the dev tools on. */
-export function menuTiles(devTools: boolean): MenuTile[] {
-  const tiles: MenuTile[] = [
+/** The main menu's tiles (plan P8); the Wave Lab is for everyone (spec L1). */
+export function menuTiles(): MenuTile[] {
+  return [
     { id: 'surf', label: 'menu.surf', icon: 'surf', disabled: false },
     { id: 'waveLab', label: 'menu.waveLab', icon: 'waveLab', disabled: false },
     { id: 'multiplayer', label: 'menu.multiplayer', icon: 'multiplayer', disabled: false },
     { id: 'logbook', label: 'menu.logbook', icon: 'logbook', disabled: false },
     { id: 'settings', label: 'menu.settings', icon: 'settings', disabled: false },
   ];
-  return devTools ? tiles : tiles.filter((tile) => tile.id !== 'waveLab');
 }
 
 export type MainMenuHandlers = Record<MenuTileId, () => void>;
@@ -68,9 +67,9 @@ export function refreshSoundToggles(root: ParentNode, muted: boolean): void {
 
 export function createMainMenu(
   handlers: MainMenuHandlers,
-  options: { devTools: boolean; version: string; sound: { muted: boolean; toggle: () => void } },
+  options: { version: string; sound: { muted: boolean; toggle: () => void } },
 ): HTMLElement {
-  const tiles = menuTiles(options.devTools).map((tile) => el('button', {
+  const tiles = menuTiles().map((tile) => el('button', {
     class: tile.id === 'surf' ? 'tile tile-primary' : 'tile',
     attrs: { type: 'button', ...(tile.disabled ? { 'aria-disabled': 'true' } : {}) },
     dataset: tile.id === 'surf' ? { nav: '', navDefault: '' } : { nav: '' },

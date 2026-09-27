@@ -74,3 +74,29 @@ export function createPauseMenu(handlers: PauseHandlers, viewName: string): HTML
         soundToggle('pause-item', handlers.sound.muted, handlers.sound.toggle),
         item(t('pause.quit'), handlers.quit))));
 }
+
+export interface LabPauseHandlers {
+  resume(): void;
+  settings(): void;
+  quit(): void;
+  sound: { muted: boolean; toggle(): void };
+}
+
+/** The Wave Lab's pause menu (spec L1): the sea holds still; there is no ride to replay. */
+export function createLabPauseMenu(handlers: LabPauseHandlers): HTMLElement {
+  const item = (label: string, action: () => void, isDefault = false) => el('button', {
+    class: 'pause-item',
+    attrs: { type: 'button' },
+    dataset: isDefault ? { nav: '', navDefault: '' } : { nav: '' },
+    text: label,
+    on: { click: action },
+  });
+  return el('section', { class: 'screen screen-panel screen-pause', attrs: { 'aria-label': t('pause.title') } },
+    el('div', { class: 'panel panel-narrow' },
+      el('h2', { class: 'pause-title', text: t('pause.title') }),
+      el('div', { class: 'pause-items' },
+        item(t('pause.resume'), handlers.resume, true),
+        item(t('pause.settings'), handlers.settings),
+        soundToggle('pause-item', handlers.sound.muted, handlers.sound.toggle),
+        item(t('pause.quit'), handlers.quit))));
+}

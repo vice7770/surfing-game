@@ -132,6 +132,20 @@ _Avoid_: exit button
 A ride ended because the wave moved on and stopped carrying the board.
 _Avoid_: missed
 
+## Wave Lab
+
+**Wave Lab**:
+The mode for looking at waves: every sea setting, a free camera, and no rider.
+_Avoid_: sandbox, debug view
+
+**Follow**:
+The lab camera travelling with a breaking crest, shoreward and along the peel.
+_Avoid_: lock-on
+
+**Jump point**:
+A preset camera place in the lab: Overview, Profile, Below or Cinematic.
+_Avoid_: camera preset
+
 ## Online
 
 **Room**:

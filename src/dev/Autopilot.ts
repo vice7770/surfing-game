@@ -1,5 +1,6 @@
+import type { SurfZoneHost } from '../game/SurfZoneHost';
 import type { RideInput } from '../physics/RideSession';
-import type { SurfZoneStatus } from '../wave/SurfZoneRunner';
+import { RIDER_SNAPSHOT, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 
 /** What the autopilot sees each step: the ride's status, the peel, the board and the water behind it. */
 export interface AutopilotView {
@@ -12,6 +13,25 @@ export interface AutopilotView {
   focusZ: number;
   /** The highest surface within 14 m seaward of the board, m above still water (tide removed). */
   crestBehind: number;
+}
+
+/**
+ * The autopilot's view of a running surf zone with a rider (the recorder and `?demo`):
+ * the ride's status, the peel, the board, and the highest water within `look` m
+ * seaward of the board, tide removed. None without a rider.
+ */
+export function autopilotView(host: SurfZoneHost, focusZ: number, tide: number, look = 14): AutopilotView | undefined {
+  const { status, board, rider } = host.snapshot;
+  if (!status.ride) return undefined;
+  let crest = -Infinity;
+  for (let back = 2; back <= look; back += 2) crest = Math.max(crest, host.heightAt(board[0], board[2] - back));
+  return {
+    ride: status.ride,
+    peelDirection: status.peel?.direction ?? 0,
+    board: { x: board[0], z: board[2], heading: rider[RIDER_SNAPSHOT.heading] },
+    focusZ,
+    crestBehind: crest - tide,
+  };
 }
 
 export interface AutopilotOptions {
