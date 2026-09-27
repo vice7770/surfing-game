@@ -40,7 +40,7 @@ describe('RideTracker', () => {
   // P9: the worker reads each ride from its trace; its report ends the ride, once.
   describe('with the worker’s report', () => {
     const report = (id: number, end: RideReport['end']): RideReport & { id: number } => ({
-      id, duration: 2.9, distance: 14, topSpeed: 5.2, meanSpeed: 4.8, pocketTime: 0.5, maneuvers: [], end, timeScale: 1,
+      id, duration: 2.9, distance: 14, topSpeed: 5.2, meanSpeed: 4.8, pocketTime: 0.5, curlTime: 0, maneuvers: [], end, timeScale: 1,
     });
 
     it('ends a kicked-out ride with the report, and does not count the fall that follows as another', () => {
@@ -55,7 +55,7 @@ describe('RideTracker', () => {
     });
 
     it('names the worker’s other ends, and takes a fall both see as one ride', () => {
-      for (const [end, reason] of [['lost the face', 'ride.reason.lostFace'], ['inside', 'ride.reason.inside']] as const) {
+      for (const [end, reason] of [['wave died', 'ride.reason.waveDied'], ['lost the wave', 'ride.reason.lostWave']] as const) {
         const tracker = new RideTracker();
         const riding = frames('standing', 3, 5, start);
         const [result] = feed(tracker, [...riding, { ...riding.at(-1)!, seaTime: riding.at(-1)!.seaTime + STEP, report: report(1, end) }]);
@@ -71,7 +71,7 @@ describe('RideTracker', () => {
 
     it('ignores a report from an earlier ride', () => {
       const tracker = new RideTracker();
-      const stale = { ...start, report: report(4, 'inside') };
+      const stale = { ...start, report: report(4, 'wave died') };
       const riding = frames('standing', 3, 5, stale);
       const fallen = { ...riding.at(-1)!, phase: 'fallen' as const, separation: 'balance' as const, seaTime: riding.at(-1)!.seaTime + STEP };
       const [result] = feed(tracker, [stale, ...riding, fallen]);

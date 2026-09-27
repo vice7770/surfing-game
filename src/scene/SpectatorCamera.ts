@@ -1,6 +1,7 @@
 import { PerspectiveCamera, Vector3 } from 'three';
 
-export type SpectatorView = 'overview' | 'profile' | 'below' | 'cinematic' | RideView;
+/** `free`: the Wave Lab flies the camera itself (spec L1). */
+export type SpectatorView = 'overview' | 'profile' | 'below' | 'cinematic' | 'free' | RideView;
 
 /**
  * Views that follow the rider: in front (from the beach side, looking out at the
@@ -113,6 +114,8 @@ export class SpectatorCamera {
 
   update(scene: SpectatorScene, focus: { x: number; z: number }, dt: number, follow?: FollowTarget): void {
     const view = this.currentView;
+    // The lab's free camera (spec L1) is flown by its owner.
+    if (view === 'free') return;
     if (view === 'cinematic') {
       if (!this.reducedMotion) this.cinemaTime += dt;
       const sweep = Math.sin(CINEMA_RATE * this.cinemaTime);

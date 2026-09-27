@@ -129,3 +129,20 @@ describe('SpectatorCamera front ride view', () => {
     expect(steepest).toBeLessThan(0.5);
   });
 });
+
+describe('SpectatorCamera free view', () => {
+  it('leaves the camera where its owner put it', () => {
+    const spectator = new SpectatorCamera();
+    spectator.setView('free');
+    spectator.camera.position.set(3, 4, 5);
+    spectator.update(scene, { x: 0, z: 0 }, 1 / 60);
+    expect(spectator.camera.position.toArray()).toEqual([3, 4, 5]);
+  });
+
+  it('still cuts straight to a jump point', () => {
+    const spectator = new SpectatorCamera();
+    spectator.setView('overview');
+    spectator.update(scene, { x: 0, z: 0 }, 1 / 60);
+    expect(spectator.camera.position.toArray()).toEqual([70, 16, 95]);
+  });
+});

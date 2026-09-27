@@ -1,4 +1,4 @@
-import { PEEL_ALIGNMENT, PEEL_GAP, TUBE_CAPACITY, TUBE_STRIDE } from '../../wave/tubeTable';
+import { PEEL_ALIGNMENT, PEEL_GAP, TUBE_CAPACITY, TUBE_EDGE, TUBE_STRIDE } from '../../wave/tubeTable';
 import type { SurfaceGrid } from '../WaterSurface';
 
 /** Bisection steps the GPU takes along a void's floor curve (the CPU's `tubeFloorDepth` takes 40): millimetres off at most. */
@@ -92,7 +92,9 @@ float waterTubeFloorOf( vec4 a, vec4 b, vec4 c, vec2 xz ) {
   float ahead = ( xz.x - a.x ) * a.w + ( xz.y - a.y ) * b.x;
   if ( ahead < 0.0 || ahead > b.y || c.z <= 0.0 ) return 1e6;
   float depth = waterTubeFloorDepth( b.z * c.z, b.w * c.z, c.x, ahead );
-  return depth < 0.0 ? 1e6 : a.z - depth;
+  // The floor meets the surface over an edge behind it, not a wall (TUBE_EDGE).
+  float edge = smoothstep( 0.0, ${TUBE_EDGE.toFixed(3)}, ahead );
+  return depth < 0.0 ? 1e6 : a.z - depth * edge;
 }
 float waterTubeFloor( int k, vec2 xz ) {
   return waterTubeFloorOf( texelFetch( waterTubeMap, ivec2( 0, k ), 0 ), texelFetch( waterTubeMap, ivec2( 1, k ), 0 ), texelFetch( waterTubeMap, ivec2( 2, k ), 0 ), xz );

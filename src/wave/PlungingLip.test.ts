@@ -1,8 +1,10 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, STRIP_PARCELS, lipThrow, overturnArea } from './PlungingLip';
-import { jetRelativeSpeed, overturn, overturnParameter, tubeFloorDepth, type TubeGeometry } from './Overturn';
+import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, ROLLER_AREA, SPLASH_UP, STRIP_PARCELS, TUBE_AIR, lipThrow, overturnArea, spitSpeedLimit, type TubeRoller } from './PlungingLip';
+import { GRAVITY } from './dispersion';
+import { LH82_AREA, jetRelativeSpeed, overturn, overturnParameter, tubeFloorDepth, type TubeGeometry } from './Overturn';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
+import { TUBE_EDGE } from './tubeTable';
 
 function basin(): ShallowWaterSolver {
   const solver = new ShallowWaterSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 30, 30), xBoundary: 'wall' }, () => 2, { manning: 0 });
@@ -35,6 +37,274 @@ describe('PlungingLip tubes', () => {
   });
 });
 
+describe('the collapsing tube and its air (G9)', () => {
+  const tube: TubeGeometry = { length: 1.4, width: 0.6, tilt: 0.5 };
+  const trapped = LH82_AREA * tube.length * tube.width * 1;
+  const collapse = Math.sqrt((2 * tube.width) / GRAVITY);
+
+  /** Throw tubed jets in the given columns, `stagger` s apart; returns the lip and the air it breaks into bubbles. */
+  function peel(columns: number[], stagger: number) {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 512);
+    const bubbles = { volume: 0 };
+    lip.onAir = (_x, _z, volume) => (bubbles.volume += volume);
+    const escaped = { spit: 0, erupted: 0, spits: [] as { dirX: number; speed: number; airRate: number; x: number }[] };
+    const record = (dt: number) => {
+      for (const spit of lip.spits) {
+        escaped.spit += spit.airRate * dt;
+        escaped.spits.push({ dirX: spit.dirX, speed: spit.speed, airRate: spit.airRate, x: spit.x });
+      }
+      for (const eruption of lip.eruptions) escaped.erupted += eruption.airRate * dt;
+    };
+    columns.forEach((x, k) => {
+      if (k > 0) for (let frame = 0; frame < Math.round(stagger * 240); frame += 1) (lip.step(1 / 240), record(1 / 240));
+      lip.launch(solver.cellIndex(x, 12.5), { x: 0, z: 5 }, 3, 0.3, 3, tube);
+    });
+    return { lip, bubbles, escaped, run: (seconds: number) => { for (let frame = 0; frame < seconds * 240; frame += 1) (lip.step(1 / 240), record(1 / 240)); } };
+  }
+
+  it('holds a tube open while its jet still pours, and closes it once the jet has all landed', () => {
+    // A jet pouring for 0.8 s: its tip lands long before its last water leaves the crest.
+    const solver = basin();
+    const lip = new PlungingLip(solver, 512);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3, tube, 0.8);
+    const landed = { first: -1, last: -1 };
+    // Count the jet's own landings, not its splash-ups'.
+    let jet = 0;
+    lip.onLand = (_x, _z, _volume, _vx, _vy, _vz, flight) => {
+      if (flight?.kind === 0) jet += 1;
+    };
+    const table = new Float32Array(12 * 4);
+    for (let frame = 0; frame < 2400; frame += 1) {
+      lip.step(1 / 240);
+      if (jet > 0 && landed.first < 0) landed.first = frame;
+      if (jet === STRIP_PARCELS && landed.last < 0) landed.last = frame;
+      lip.writeTubes(table, 4);
+      // Until its last water is down the void stands whole, so the pour lands where its tube is, not on the crest.
+      if (landed.first >= 0 && landed.last < 0) expect(table[10]).toBe(1);
+    }
+    expect(landed.last - landed.first).toBeGreaterThan(60);
+  });
+
+  it('closes a tube once its jet has landed, and shrinks its void over its free-fall time', () => {
+    const { lip, run } = peel([3.5], 0);
+    let closed = -1;
+    for (let frame = 0; frame < 2400 && closed < 0; frame += 1) {
+      run(1 / 240);
+      const table = new Float32Array(12 * 4);
+      if (lip.writeTubes(table, 4) === 1 && table[10] < 1) closed = frame;
+    }
+    expect(closed).toBeGreaterThan(0);
+    const table = new Float32Array(12 * 4);
+    lip.writeTubes(table, 4);
+    expect(table[11]).toBeGreaterThan(0);
+    expect(table[11]).toBeLessThanOrEqual(trapped + 1e-9);
+    run(collapse / 2);
+    lip.writeTubes(table, 4);
+    expect(table[10]).toBeCloseTo(0.5, 1);
+    run(collapse);
+    expect(lip.writeTubes(table, 4)).toBe(0);
+  });
+
+  it('lets the air out as the drawn void shrinks: what it still holds is the void’s own volume', () => {
+    const { lip, run } = peel([3.5], 0);
+    const table = new Float32Array(12 * 4);
+    let checked = 0;
+    for (let frame = 0; frame < 2400; frame += 1) {
+      run(1 / 240);
+      if (lip.writeTubes(table, 4) !== 1 || !(table[10] < 1)) continue;
+      // The void's length and width both shrink with its scale: its volume, and so its air, go as scale².
+      expect(table[11] / trapped).toBeCloseTo(table[10] * table[10], 5);
+      checked += 1;
+    }
+    expect(checked).toBeGreaterThan(40);
+  });
+
+  it('accounts for every bit of a tube’s air: what escapes plus what breaks into bubbles is what it trapped', () => {
+    const { bubbles, escaped, run } = peel([2.5, 3.5, 4.5], 0.3);
+    run(6);
+    expect(escaped.spit + escaped.erupted + bubbles.volume).toBeCloseTo(3 * trapped, 9);
+    expect(escaped.spit + escaped.erupted).toBeCloseTo(3 * trapped * TUBE_AIR.escape, 9);
+  });
+
+  it('breaks the air into bubbles all along the collapsing void, not at one point', () => {
+    const { lip, run } = peel([3.5], 0);
+    const spans: number[] = [];
+    let step: number[] = [];
+    lip.onAir = (_x, z) => step.push(z);
+    for (let frame = 0; frame < 2400; frame += 1) {
+      step = [];
+      run(1 / 240);
+      if (step.length > 0) spans.push(Math.max(...step) - Math.min(...step));
+    }
+    expect(spans.length).toBeGreaterThan(10);
+    // Its first breath of bubbles spans most of the void's length, crest to jet tip.
+    expect(spans[0]).toBeGreaterThan(0.5 * tube.length * Math.cos(tube.tilt));
+  });
+
+  it('spits out of a peel’s open end, as fast as the collapsing air must leave through its mouth', () => {
+    const { escaped, run } = peel([2.5, 3.5, 4.5, 5.5], 0.25);
+    run(6);
+    expect(escaped.spit).toBeGreaterThan(0);
+    const first = escaped.spits[0];
+    // The older columns close first; the air leaves toward the newest, still open.
+    expect(first.dirX).toBeGreaterThan(0.9);
+    expect(first.speed).toBeCloseTo(first.airRate / (LH82_AREA * tube.length * tube.width), 9);
+  });
+
+  it('rolls a foam ball in a closing tube: a roller κ_r·H² in section over its column, riding with its crest, while the void collapses', () => {
+    const { lip, run } = peel([3.5], 0);
+    let drop = 0;
+    lip.onLand = (_x, _z, _volume, _vx, _vy, _vz, flight) => {
+      if (drop === 0 && flight) drop = Math.max(0.1, flight.launch.y - flight.y);
+    };
+    let steps = 0;
+    let first: TubeRoller | undefined;
+    for (let frame = 0; frame < 2400; frame += 1) {
+      run(1 / 240);
+      if (lip.rollers.length > 0) {
+        steps += 1;
+        first ??= { ...lip.rollers[0] };
+      }
+    }
+    expect(Math.abs(steps - collapse * 240)).toBeLessThanOrEqual(1.5);
+    expect(first!.area).toBeCloseTo(ROLLER_AREA * drop * drop, 9);
+    expect(first!.width).toBe(1);
+    expect(first!.dirZ).toBeCloseTo(1, 9);
+    expect(first!.speed).toBe(3);
+  });
+
+  it('counts the air its tubes have trapped, and what they still hold, so the air can be balanced at any moment', () => {
+    const { lip, bubbles, escaped, run } = peel([2.5, 3.5, 4.5], 0.3);
+    let checked = 0;
+    for (let frame = 0; frame < 6 * 240; frame += 1) {
+      run(1 / 240);
+      const out = escaped.spit + escaped.erupted + bubbles.volume;
+      expect(out + lip.heldAir).toBeCloseTo(lip.trappedAir, 9);
+      if (lip.heldAir > 0) checked += 1;
+    }
+    expect(checked).toBeGreaterThan(40);
+    expect(lip.trappedAir).toBeCloseTo(3 * trapped, 9);
+    expect(lip.heldAir).toBe(0);
+  });
+
+  it('spits no faster than the falling lip can drive the air, and bursts the rest up through the lip', () => {
+    // Seven columns close together into one small, late tube at the end of the section.
+    const solver = basin();
+    const lip = new PlungingLip(solver, 512);
+    const small: TubeGeometry = { length: 0.3, width: 0.1, tilt: 0.3 };
+    const air = { bubbles: 0, spit: 0, erupted: 0, fastest: 0 };
+    lip.onAir = (_x, _z, volume) => (air.bubbles += volume);
+    for (let column = 0; column < 7; column += 1) lip.launch(solver.cellIndex(column + 0.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3, tube);
+    for (let frame = 0; frame < 2400; frame += 1) {
+      if (frame === 60) lip.launch(solver.cellIndex(7.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3, small, 2);
+      lip.step(1 / 240);
+      for (const spit of lip.spits) {
+        air.spit += spit.airRate / 240;
+        air.fastest = Math.max(air.fastest, spit.speed);
+      }
+      for (const eruption of lip.eruptions) air.erupted += eruption.airRate / 240;
+    }
+    expect(air.spit).toBeGreaterThan(0);
+    expect(air.fastest).toBeLessThanOrEqual(spitSpeedLimit(small.width) + 1e-9);
+    expect(air.erupted).toBeGreaterThan(0);
+    // Still every bit of the air: 7 big tubes and the small one.
+    const trapped = LH82_AREA * (7 * tube.length * tube.width + small.length * small.width);
+    expect(air.spit + air.erupted + air.bubbles).toBeCloseTo(trapped, 9);
+  });
+
+  it('erupts upward when the whole section closes at once, with no mouth to spit from', () => {
+    const { escaped, run } = peel([2.5, 3.5, 4.5], 0);
+    run(6);
+    expect(escaped.erupted).toBeGreaterThan(0);
+    expect(escaped.spit).toBe(0);
+  });
+});
+
+describe('the splash-up’s landings (G9)', () => {
+  it('reports each drop of water landing once: the jet what stays, its splash-up the rest when it comes down', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 512);
+    let reported = 0;
+    lip.onLand = (_x, _z, volume) => (reported += volume);
+    const thrown = lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3);
+    for (let frame = 0; frame < 2400; frame += 1) lip.step(1 / 240);
+    expect(lip.airborneVolume()).toBe(0);
+    expect(reported).toBeCloseTo(thrown, 12);
+  });
+
+  it('tells a splash-up’s landing from a jet’s, so tube measurements can leave splash-ups out', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 512);
+    const kinds: number[] = [];
+    lip.onLand = (_x, _z, _volume, _vx, _vy, _vz, flight) => kinds.push(flight!.kind);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3);
+    for (let frame = 0; frame < 2400; frame += 1) lip.step(1 / 240);
+    expect(kinds.filter((kind) => kind === 0).length).toBe(STRIP_PARCELS);
+    expect(kinds.filter((kind) => kind === 1).length).toBe(STRIP_PARCELS);
+  });
+});
+
+describe('the splash-up (G9)', () => {
+  /** Step until the jet's first landing; returns what landed. */
+  function firstLanding(lip: PlungingLip) {
+    let landed: { volume: number; vx: number; vy: number; vz: number } | undefined;
+    lip.onLand = (_x, _z, volume, vx, vy, vz) => (landed ??= { volume, vx, vy, vz });
+    for (let frame = 0; frame < 600 && !landed; frame += 1) lip.step(1 / 240);
+    return landed!;
+  }
+
+  it('re-throws a share of a landing jet parcel up and on, and returns the rest to the water at once', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 3, 0.6);
+    const landed = firstLanding(lip);
+    const splashes: { volume: number; vx: number; vy: number; vz: number }[] = [];
+    lip.forEachActiveParcel((parcel) => {
+      if (parcel.kind === 1) splashes.push({ volume: parcel.volume, vx: parcel.vx, vy: parcel.vy, vz: parcel.vz });
+    });
+    expect(splashes).toHaveLength(1);
+    // The landing reports the water that stays, (1 − σ) of the parcel; its splash-up carries σ.
+    expect(splashes[0].volume).toBeCloseTo((SPLASH_UP.share / (1 - SPLASH_UP.share)) * landed.volume, 12);
+    expect(splashes[0].vz).toBeCloseTo(SPLASH_UP.horizontal * landed.vz, 9);
+    expect(splashes[0].vy).toBeCloseTo(SPLASH_UP.vertical * Math.abs(landed.vy), 9);
+  });
+
+  it('conserves the water and its forward momentum through the jet, its splash-up and their landings', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    const before = solver.totalVolume();
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 3, 0.6);
+    for (let frame = 0; frame < 2400 && lip.activeCount() > 0; frame += 1) {
+      lip.step(1 / 240);
+      expect((solver.totalVolume() + lip.airborneVolume()) / before).toBeCloseTo(1, 12);
+    }
+    expect(lip.activeCount()).toBe(0);
+    expect(momentumZ(solver)).toBeCloseTo(0, 9);
+  });
+
+  it('is never offered to a rider, and lands with no further splash-up', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 256);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 3, 0.6);
+    let splashesOnly = false;
+    for (let frame = 0; frame < 2400 && !splashesOnly; frame += 1) {
+      lip.step(1 / 240);
+      let jets = 0;
+      let splashes = 0;
+      lip.forEachActiveParcel((parcel) => (parcel.kind === 1 ? (splashes += 1) : (jets += 1)));
+      splashesOnly = splashes > 0 && jets === 0 && lip.activeCount() === splashes;
+    }
+    expect(splashesOnly).toBe(true);
+    let offered = 0;
+    lip.forEachContact(() => (offered += 1));
+    lip.forEachContactNear(new Vector3(3.5, 3, 15), 100, () => (offered += 1));
+    expect(offered).toBe(0);
+    for (let frame = 0; frame < 2400 && lip.activeCount() > 0; frame += 1) lip.step(1 / 240);
+    expect(lip.landings).toBe(2 * STRIP_PARCELS);
+  });
+});
+
 describe('PlungingLip', () => {
   it('conserves water volume through launch, flight and landing in a closed basin', () => {
     const solver = basin();
@@ -44,13 +314,14 @@ describe('PlungingLip', () => {
     expect(thrown).toBeCloseTo(0.6, 12);
     expect(lip.airborneVolume()).toBeCloseTo(0.6, 12);
     expect(solver.totalVolume() + lip.airborneVolume()).toBeCloseTo(before, 9);
-    for (let frame = 0; frame < 120; frame += 1) {
+    // Long enough for the jet and its splash-up (G9) to land.
+    for (let frame = 0; frame < 240; frame += 1) {
       solver.step(1 / 60);
       lip.step(1 / 60);
       expect((solver.totalVolume() + lip.airborneVolume()) / before).toBeCloseTo(1, 12);
     }
     expect(lip.activeCount()).toBe(0);
-    expect(lip.landings).toBe(STRIP_PARCELS);
+    expect(lip.landings).toBe(2 * STRIP_PARCELS);
   });
 
   it('takes from the crest the momentum its jet carries off', () => {
@@ -120,7 +391,8 @@ describe('PlungingLip', () => {
     const cell = solver.cellIndex(3.5, 12.5);
     const thrown = lip.launch(cell, { x: 0, z: 4 }, 3, 0.6);
     const landed: number[] = [];
-    for (let frame = 0; frame < 120 && lip.activeCount() > 0; frame += 1) lip.step(1 / 120);
+    // Long enough for its splash-up (G9) to land too.
+    for (let frame = 0; frame < 600 && lip.activeCount() > 0; frame += 1) lip.step(1 / 120);
     let ahead = 0;
     for (let iz = 0; iz < solver.nz; iz += 1) {
       if (solver.qz[iz * solver.nx + 3] > 0) landed.push(solver.zCenters[iz]);
@@ -209,9 +481,10 @@ describe('PlungingLip', () => {
       const solver = basin();
       const lip = new PlungingLip(solver, 256);
       throwOver(lip, solver);
-      lip.step(0.1);
-      const tip = speed * 0.1;
-      const ahead = tip / 2;
+      lip.step(0.2);
+      const tip = speed * 0.2;
+      // Past the void's back edge (G9: it meets the surface over TUBE_EDGE behind it) and short of the jet's tip.
+      const ahead = (TUBE_EDGE + tip) / 2;
       expect(lip.carve(3.5, crestZ(solver) + ahead, 5)).toBeCloseTo(0.8 - tubeFloorDepth(tube, ahead), 9);
       // Beyond the jet's tip, behind the crest, and in another column, the water is untouched.
       expect(lip.carve(3.5, crestZ(solver) + tip + 0.2, 5)).toBe(5);

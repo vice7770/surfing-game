@@ -9,6 +9,7 @@ import {
   LIP_HIT_STRIDE, LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea,
 } from './SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
+import { FOAM_BALL_VOLUME, SPRAY_CAPACITY, SPRAY_PER_AIR, SPRAY_STRIDE, WHITEWATER_CAPACITY } from './SprayCloud';
 
 const config: SurfZoneConfig = {
   spot: 'point', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 20, spreading: 24, tide: 0,
@@ -40,6 +41,23 @@ describe('SurfZoneRunner', () => {
     expect(fine.grid.spacing).toBe(0.5);
     expect(fine.grid.nx).toBe(2 * (coarse.grid.nx - 1) + 1);
     expect(fine.createBuffers().surface.length).toBe(fine.grid.nx * fine.grid.nz * 2);
+  });
+
+  it('carries the air breaking drives into the water: a landing lip aerates where it falls, and the snapshot holds it per node', () => {
+    const runner = new SurfZoneRunner(config);
+    runner.advance(120);
+    const crest = runner.simulation.solver.cellIndex(0, -60);
+    runner.simulation.lip.launch(crest, { x: 0, z: 4 }, runner.simulation.solver.surfaceAt(crest) + 1, 0.3);
+    runner.advance(60);
+    let air = 0;
+    for (const value of runner.simulation.aeration.air) air += value;
+    expect(air).toBeGreaterThan(0);
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    const expected = new Float32Array(buffers.aeration.length);
+    runner.simulation.writeUniformAeration(expected, runner.grid);
+    expect(Array.from(buffers.aeration)).toEqual(Array.from(expected));
+    expect(Math.max(...Array.from(buffers.aeration))).toBeGreaterThan(0);
   });
 
   it('fills a snapshot with the render surface, the current, the lip and the bubbles', () => {
@@ -110,7 +128,43 @@ describe('SurfZoneRunner', () => {
     const buffers = runner.createBuffers();
     runner.fill(buffers);
     expect(buffers.sprayCount).toBe(runner.spray.count);
-    expect(Array.from(buffers.spray.subarray(0, buffers.sprayCount * 5))).toEqual(Array.from(runner.spray.particles.subarray(0, runner.spray.count * 5)));
+    expect(Array.from(buffers.spray.subarray(0, buffers.sprayCount * SPRAY_STRIDE))).toEqual(Array.from(runner.spray.particles.subarray(0, runner.spray.count * SPRAY_STRIDE)));
+  });
+
+  it('breaks a closing tube’s air into the aeration field, and blows its spits, eruptions and foam balls into the spray (G9)', () => {
+    const twin = new SurfZoneRunner(config);
+    const runner = new SurfZoneRunner(config);
+    twin.advance(60);
+    runner.advance(60);
+    const { lip, aeration, solver } = runner.simulation;
+    const total = () => aeration.air.reduce((sum, value) => sum + value, 0);
+    const before = total();
+    lip.onAir!(0, -60, 0.5, 0.8);
+    expect(total()).toBeGreaterThan(before);
+    // This step's lip blows out 1 m³ of air each way: SPRAY_PER_AIR particles apiece.
+    const surface = solver.surfaceAt(solver.cellIndex(0, -60));
+    const step = lip.step.bind(lip);
+    lip.step = (dt: number) => {
+      step(dt);
+      lip.spits.push({ x: 0, y: surface + 1, z: -60, dirX: 1, dirZ: 0, speed: 5, airRate: 1 / SURF_ZONE_STEP });
+      lip.eruptions.push({ x: 2, y: surface + 1, z: -60, airRate: 1 / SURF_ZONE_STEP, speed: 3 });
+      lip.rollers.push({ id: 99, x: 4, y: surface, z: -60, dirX: 0, dirZ: 1, speed: 4, area: 1.5, width: 1 });
+    };
+    twin.advance(1);
+    runner.advance(1);
+    expect(runner.spray.count - twin.spray.count).toBeGreaterThanOrEqual(2 * SPRAY_PER_AIR - 10);
+    // The Point's own tubes are already rolling foam balls: count the extra roller's against the twin's.
+    const foamBalls = (of: SurfZoneRunner) => {
+      let balls = 0;
+      for (let k = 0; k < of.spray.count; k += 1) if (of.spray.particles[k * SPRAY_STRIDE + 5] === 2) balls += 1;
+      return balls;
+    };
+    expect(foamBalls(runner) - foamBalls(twin)).toBe(Math.round(1.5 / FOAM_BALL_VOLUME));
+    // The snapshot carries the spray's pool and the tube's whitewater's beside it.
+    const buffers = runner.createBuffers();
+    expect(buffers.spray.length).toBe((SPRAY_CAPACITY + WHITEWATER_CAPACITY) * SPRAY_STRIDE);
+    expect(runner.spray.capacity).toBe(SPRAY_CAPACITY);
+    expect(runner.spray.whitewaterCapacity).toBe(WHITEWATER_CAPACITY);
   });
 
   it('carries a bubble cloud in the runner, not in the renderer', () => {
@@ -228,6 +282,17 @@ describe('SurfZoneRunner with a rider', () => {
     expect(runner.status().ride!.resets).toBe(1);
   });
 
+  // L2: a lesson attempt places the rider; it counts as a restart.
+  it('places the rider where a lesson asks, standing, as a restart', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    const place = { x: runner.focus.x + 3, z: runner.focus.z - 2, heading: 0.3, speed: 3, phase: 'standing' as const };
+    runner.advance(1, { ...idle, place });
+    const ride = runner.status().ride!;
+    expect(ride.phase).toBe('standing');
+    expect(ride.resets).toBe(1);
+    expect(Math.hypot(runner.session!.board.position.x - place.x, runner.session!.board.position.z - place.z)).toBeLessThan(0.5);
+  });
+
   it('spawns the rider where asked, relative to the take-off (spec N1)', () => {
     const runner = new SurfZoneRunner(calm, { rider: true, spawnAlong: 12, spawnOut: 20 });
     const board = runner.session!.board.position;
@@ -278,7 +343,7 @@ describe('SurfZoneRunner with a rider', () => {
   });
 
   it('reads each ride from its trace, and reports the finished ride as plain data', () => {
-    // On a flat sea the break line, and the lineup just outside it, lie in the shallows: a ride there ends inside at once.
+    // On a flat sea the break line, and the lineup just outside it, lie in the shallows: the wave dies under a ride there at once.
     const runner = new SurfZoneRunner(calm, { rider: true });
     runner.advance(1);
     expect(runner.status().ride!.report).toBeUndefined();
@@ -296,7 +361,7 @@ describe('SurfZoneRunner with a rider', () => {
     };
     stand();
     const status = runner.status();
-    expect(status.ride!.report).toMatchObject({ id: 1, end: 'inside', maneuvers: [] });
+    expect(status.ride!.report).toMatchObject({ id: 1, end: 'wave died', maneuvers: [] });
     expect(structuredClone(status)).toEqual(status);
     stand();
     expect(runner.status().ride!.report!.id).toBe(2);
@@ -311,9 +376,11 @@ describe('SurfZoneRunner rider in waves', () => {
     const { velocity } = runner.session!.board;
     expect(ride.speed).toBeCloseTo(Math.hypot(velocity.x, velocity.z), 9);
     expect(ride.boardSpeed).toBeCloseTo(velocity.length(), 9);
-    const { requiredSpeed, ...rest } = ride.wave;
+    // The required speed is infinite for a close-out, and the curl's distance with no breaking crest in reach.
+    const { requiredSpeed, curlDistance, ...rest } = ride.wave;
     for (const [name, value] of Object.entries(rest)) if (typeof value === 'number') expect(Number.isFinite(value), name).toBe(true);
     expect(requiredSpeed).toBeGreaterThan(0);
+    expect(curlDistance).toBeGreaterThanOrEqual(0);
     expect(Math.hypot(ride.wave.directionX, ride.wave.directionZ)).toBeCloseTo(1, 9);
   });
 

@@ -1,11 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import surferManifest from '../../public/assets/surfers/surfers.json';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
-import { DEFAULT_SURFER, SUIT_COLORS, SURFER_BODIES, outfitFor, sanitizeSurfer } from './SurferChoice';
+import {
+  DEFAULT_SURFER, SUIT_COLORS, SURFER_BODIES, lookOf, looksFor, outfitFor, sanitizeSurfer, sexOf, surferBody,
+} from './SurferChoice';
 
 describe('the surfer choice', () => {
   it('offers the four committed bodies, each with its sex', () => {
     expect(SURFER_BODIES.map(({ id, sex }) => ({ id, sex }))).toEqual(surferManifest.surfers.map(({ id, sex }) => ({ id, sex })));
+  });
+
+  it('finds a body by its sex and look, and reads both back', () => {
+    expect(surferBody('female', 1)).toBe('surfer1');
+    expect(surferBody('male', 2)).toBe('surfer4');
+    for (const body of SURFER_BODIES) expect(surferBody(sexOf(body.id), lookOf(body.id))).toBe(body.id);
+    expect(looksFor('male')).toEqual([1, 2]);
+    // A look this sex does not have falls back to its first.
+    expect(surferBody('male', 9)).toBe('surfer3');
   });
 
   it('dresses a rash vest as a bikini on the women and boardshorts on the men', () => {

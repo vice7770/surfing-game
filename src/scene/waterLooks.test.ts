@@ -3,13 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { FarFieldOcean } from './FarFieldOcean';
 import { LipSheetMesh } from './LipSheetMesh';
 import { SprayPoints } from './SprayPoints';
+import { SPRAY_CAPACITY, SPRAY_STRIDE, WHITEWATER_CAPACITY } from '../wave/SprayCloud';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
 import { churnTexture } from './water/churnTexture';
 import { rippleStrength, rippleTexture } from './water/rippleTexture';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import { DEFAULT_WATER_CHOP } from './waterChop';
 import { CLASSIC_FOAM, WATER_BODY_GAIN, waterBodyFragment } from './waterOptics';
-import { RICH_REFLECTION, RICH_WATER } from './water/richWaterGlsl';
+import { PLUME_DENSITY, RICH_REFLECTION, RICH_WATER } from './water/richWaterGlsl';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -73,6 +74,9 @@ describe('Classic water parity', () => {
     const { vertex, fragment } = compiled(water.mesh.material);
     expect(vertex).toContain('waterCarvedCubic( waterXZ )');
     expect(fragment).toContain('waterCarvedCubic( vWaterWorld.xz )');
+    // G9: fresh churn shows where the plunge drove air in, from the aeration each snapshot carries.
+    expect(fragment).toContain('float waterFresh = waterFreshness( vWaterAir ) * waterFoamPattern;');
+    expect(vertex).toContain('vWaterAir = waterAerationAt( waterXZ ).x;');
     // The crest light marches through the carved surface: through a tube's void, not as if it were water.
     expect(fragment).toContain('float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;');
     expect(water.mesh.material.customProgramCacheKey()).toContain('rich');
@@ -160,6 +164,19 @@ describe('Classic water parity', () => {
     expect(shader.fragmentShader).toContain('totalEmissiveRadiance += 0.18 * waterFresh');
   });
 
+  it('whitens the Rich water where the bubble plume fills it, seen through the water above it, and plainly from below (G9)', () => {
+    const water = new WaterSurface({ ...source, cubic: true });
+    water.setLook('rich');
+    const { fragment } = compiled(water.mesh.material);
+    expect(fragment).toContain(`const float PLUME_DENSITY = ${PLUME_DENSITY.toFixed(3)};`);
+    expect(fragment).toContain('float waterPlume = 1.0 - exp( -PLUME_DENSITY * vWaterAir * min( vWaterPlumeDepth, vWaterDepth ) );');
+    expect(fragment).toContain('float waterPlumePath = faceDirection > 0.0 ? 0.5 * min( vWaterPlumeDepth, vWaterDepth ) / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;');
+    expect(fragment).toContain('vec3 waterUnder = mix( waterBody * waterBodyGain, waterFoamColor * exp( -waterAttenuation * waterPlumePath ), waterPlume );');
+    expect(fragment).toContain('diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );');
+    // A fully aerated metre of plume reads near white.
+    expect(1 - Math.exp(-PLUME_DENSITY * 0.2 * 1)).toBeGreaterThan(0.9);
+  });
+
   it('lights Rich mist toward the sun and fades spray into the water, and switches back to the Classic spray', () => {
     const spray = new SprayPoints();
     const classic = { vertex: spray.mesh.material.vertexShader, fragment: spray.mesh.material.fragmentShader };
@@ -178,6 +195,33 @@ describe('Classic water parity', () => {
     expect({ vertex: spray.mesh.material.vertexShader, fragment: spray.mesh.material.fragmentShader }).toEqual(classic);
   });
 
+  it('keeps the tube’s whitewater out of the Classic spray, and draws it in Rich: the foam ball as a ball of churn (G9)', () => {
+    const spray = new SprayPoints();
+    const particles = new Float32Array(5 * SPRAY_STRIDE);
+    particles.set([1, 2, 3, 0.1, 0.8, 0], 0);
+    particles.set([4, 5, 6, 0.6, 0.9, 2], SPRAY_STRIDE);
+    particles.set([7, 8, 9, 0.4, 0.25, 1], 2 * SPRAY_STRIDE);
+    particles.set([10, 11, 12, 0.1, 0.8, 3], 3 * SPRAY_STRIDE);
+    particles.set([13, 14, 15, 0.4, 0.25, 4], 4 * SPRAY_STRIDE);
+    spray.update({ particles, count: 5 });
+    expect(spray.mesh.geometry.drawRange.count).toBe(2);
+    expect(Array.from(spray.mesh.geometry.getAttribute('position').array.slice(0, 6))).toEqual([1, 2, 3, 7, 8, 9]);
+    spray.setLook('rich');
+    spray.update({ particles, count: 5 });
+    expect(spray.mesh.geometry.drawRange.count).toBe(5);
+    expect(Array.from(spray.mesh.geometry.getAttribute('kind').array.slice(0, 5))).toEqual([0, 2, 1, 3, 4]);
+    // The spit's mist (4) is mist, as the lip's (1) is; only kind 2 is a foam ball.
+    expect(spray.mesh.material.vertexShader).toContain('vMist = abs( kind - 1.0 ) < 0.5 || abs( kind - 4.0 ) < 0.5 ? 1.0 : 0.0;');
+    expect(spray.mesh.material.fragmentShader).toContain('if ( abs( vKind - 2.0 ) < 0.5 ) {');
+    expect(spray.mesh.material.fragmentShader).toContain('texture( waterChurnMap');
+    expect(spray.mesh.material.uniforms.waterChurnMap.value).toBe(churnTexture());
+    // Smoothstep with its edges in order (reversed edges are undefined in GLSL ES).
+    expect(spray.mesh.material.fragmentShader).toContain('( 1.0 - smoothstep( 0.55, 1.0, r ) )');
+    expect(spray.mesh.material.fragmentShader).not.toContain('smoothstep( 1.0, 0.55, r )');
+    // The Rich pool holds the spray and the tube's whitewater both.
+    expect(spray.capacity).toBe(SPRAY_CAPACITY + WHITEWATER_CAPACITY);
+  });
+
   it('gives the Rich far ocean the ripples and anti-aliased gloss, still, and switches back to Classic', () => {
     const ocean = new FarFieldOcean();
     const classic = compiled(ocean.mesh.material);
@@ -187,6 +231,9 @@ describe('Classic water parity', () => {
     ocean.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
     expect(shader.fragmentShader).toContain('waterRippleSlopeAt( vWaterWorld.xz, vec2( 0.0 ) )');
     expect(shader.fragmentShader).toContain('richRoughness( roughnessFactor, waterRippleVariance )');
+    // G9: the air in the water is the tank's; the far ocean declares no varyings its vertex shader never writes.
+    expect(shader.fragmentShader).not.toContain('vWaterAir');
+    expect(shader.fragmentShader).not.toContain('vWaterPlumeDepth');
     const uniforms = shader.uniforms as Record<string, { value: unknown }>;
     expect(uniforms.waterRippleMap.value).toBe(rippleTexture());
     expect(uniforms.waterRippleStrength.value).toBeCloseTo(rippleStrength(DEFAULT_WATER_CHOP), 9);

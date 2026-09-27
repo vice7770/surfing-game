@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SPRAY_STRIDE, SprayCloud, type LipImpact, type SprayScene, type StrokeSplash } from './SprayCloud';
+import { FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE, SprayCloud, splashLaunch, type LipImpact, type SprayScene, type StrokeSplash } from './SprayCloud';
+import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
 
 /** Flat water 2 m deep over 10 m × 40 m (1 m cells), still, with no bores; `crest` raises a steep shoreward-facing step. */
 function flatScene(windSpeed = 0, lipImpacts: LipImpact[] = [], crest = false): SprayScene {
@@ -68,6 +69,31 @@ describe('paddle splashes', () => {
 });
 
 describe('spray and mist', () => {
+  it('throws a lip impact’s drops at the splash-up’s speeds (G9), with a fifth either way of variety', () => {
+    for (const random of [0, 0.25, 0.5, 0.75, 0.999]) {
+      const { up, forward } = splashLaunch(6, random);
+      expect(up / (SPLASH_UP.vertical * 6)).toBeGreaterThanOrEqual(0.8 - 1e-12);
+      expect(up / (SPLASH_UP.vertical * 6)).toBeLessThanOrEqual(1.2);
+      expect(forward / SPLASH_UP.horizontal).toBeGreaterThanOrEqual(0.8 - 1e-12);
+      expect(forward / SPLASH_UP.horizontal).toBeLessThanOrEqual(1.2);
+    }
+  });
+
+  it('throws a lip impact’s drops up as fast as its splash-up sheet goes, from the downward impact speed (G9)', () => {
+    // Coming down at 4 m/s while moving on at 6: the sheet leaves up at ζ_v × 4, and so do its drops.
+    const cloud = new SprayCloud(21);
+    cloud.update(flatScene(0, [{ x: 5, z: 20, volume: 0.3, vx: 0, vy: -4, vz: 6 }]), 1 / 60);
+    const start = Array.from(cloud.particles.subarray(0, cloud.count * SPRAY_STRIDE));
+    const count = cloud.count;
+    expect(count).toBeGreaterThan(50);
+    const dt = 1e-4;
+    cloud.update(flatScene(), dt);
+    let up = 0;
+    for (let k = 0; k < count; k += 1) up += (cloud.particles[k * SPRAY_STRIDE + 1] - start[k * SPRAY_STRIDE + 1]) / dt / count;
+    expect(up / (SPLASH_UP.vertical * 4)).toBeGreaterThan(0.85);
+    expect(up / (SPLASH_UP.vertical * 4)).toBeLessThan(1.15);
+  });
+
   it('splashes drops up from a lip impact in proportion to its energy, which fall back into the water', () => {
     const small = new SprayCloud(3);
     small.update(flatScene(0, [impact(0.05)]), 1 / 60);
@@ -113,5 +139,124 @@ describe('spray and mist', () => {
     }
     expect(a.count).toBeLessThanOrEqual(64);
     expect(Array.from(a.particles.subarray(0, a.count * SPRAY_STRIDE))).toEqual(Array.from(b.particles.subarray(0, b.count * SPRAY_STRIDE)));
+  });
+});
+
+describe('the foam ball (G9)', () => {
+  const roller = (z = 20): TubeRoller => ({ id: 1, x: 5, y: 0.5, z, dirX: 0, dirZ: 1, speed: 4, area: 1.5, width: 1 });
+  const foamBalls = (cloud: SprayCloud) => Array.from({ length: cloud.count }, (_, k) => k).filter((k) => cloud.particles[k * SPRAY_STRIDE + 5] === 2);
+
+  it('keeps about A·w / v_s foam-ball sprites alive in a roller, each half a metre to 0.8 m across', () => {
+    const cloud = new SprayCloud(8);
+    for (let frame = 0; frame < 30; frame += 1) cloud.update({ ...flatScene(), rollers: [roller()] }, 1 / 60);
+    const balls = foamBalls(cloud);
+    expect(Math.abs(balls.length - 1.5 / FOAM_BALL_VOLUME)).toBeLessThanOrEqual(1);
+    for (const k of balls) {
+      expect(cloud.particles[k * SPRAY_STRIDE + 3]).toBeGreaterThanOrEqual(0.5);
+      expect(cloud.particles[k * SPRAY_STRIDE + 3]).toBeLessThanOrEqual(0.8);
+    }
+  });
+
+  it('holds them in its cross-section, riding with the crest and tumbling at its speed over its radius', () => {
+    const cloud = new SprayCloud(9);
+    const first = roller();
+    cloud.update({ ...flatScene(), rollers: [first] }, 1 / 60);
+    const radius = Math.sqrt(first.area / Math.PI);
+    const angle = (k: number, at: TubeRoller) => Math.atan2(cloud.particles[k * SPRAY_STRIDE + 1] - at.y, cloud.particles[k * SPRAY_STRIDE + 2] - at.z);
+    const balls = foamBalls(cloud);
+    expect(balls.length).toBeGreaterThan(5);
+    const before = balls.map((k) => angle(k, first));
+    const next = roller(first.z + first.speed / 60);
+    cloud.update({ ...flatScene(), rollers: [next] }, 1 / 60);
+    expect(foamBalls(cloud)).toEqual(balls);
+    balls.forEach((k, n) => {
+      const along = cloud.particles[k * SPRAY_STRIDE + 2] - next.z;
+      const up = cloud.particles[k * SPRAY_STRIDE + 1] - next.y;
+      expect(Math.hypot(along, up)).toBeLessThanOrEqual(radius + 1e-5);
+      expect(Math.abs(cloud.particles[k * SPRAY_STRIDE] - next.x)).toBeLessThanOrEqual(next.width / 2 + 1e-5);
+      if (Math.hypot(along, up) < 0.2) return;
+      // Its top rolls forward, the way the crest goes.
+      const turn = Math.atan2(Math.sin(angle(k, next) - before[n]), Math.cos(angle(k, next) - before[n]));
+      expect(turn).toBeCloseTo(-(next.speed / radius) / 60, 4);
+    });
+  });
+
+  it('lets them drift on for a second once the roller is gone', () => {
+    const cloud = new SprayCloud(10);
+    for (let frame = 0; frame < 10; frame += 1) cloud.update({ ...flatScene(), rollers: [roller()] }, 1 / 60);
+    const balls = foamBalls(cloud).length;
+    expect(balls).toBeGreaterThan(0);
+    for (let frame = 0; frame < 54; frame += 1) cloud.update(flatScene(), 1 / 60);
+    expect(foamBalls(cloud).length).toBe(balls);
+    for (let frame = 0; frame < 12; frame += 1) cloud.update(flatScene(), 1 / 60);
+    expect(foamBalls(cloud).length).toBe(0);
+  });
+
+  it('gives a closing tube’s whitewater its own room, so the spray keeps its whole pool and the foam ball its own', () => {
+    // 40 places for spray and mist, 30 for the tube's whitewater (drawn in Rich only).
+    const cloud = new SprayCloud(12, 40, 30);
+    const spit: TubeSpit = { x: 5, y: 1, z: 20, dirX: 1, dirZ: 0, speed: 6, airRate: 12 };
+    cloud.update({ ...flatScene(0, [impact(0.4)]), spits: [spit], rollers: [roller()] }, 1 / 60);
+    const kinds = Array.from({ length: cloud.count }, (_, k) => cloud.particles[k * SPRAY_STRIDE + 5]);
+    expect(kinds.filter((kind) => kind < 2).length).toBe(40);
+    expect(foamBalls(cloud).length).toBe(Math.round(1.5 / FOAM_BALL_VOLUME));
+    expect(kinds.filter((kind) => kind >= 2).length).toBeLessThanOrEqual(30);
+    expect(cloud.whitewaterCount).toBe(kinds.filter((kind) => kind >= 2).length);
+  });
+
+  it('marks a spit’s and an eruption’s drops as the tube’s own: spray 3, mist 4', () => {
+    const cloud = new SprayCloud(13);
+    const spit: TubeSpit = { x: 5, y: 1, z: 20, dirX: 1, dirZ: 0, speed: 6, airRate: 3 };
+    cloud.update({ ...flatScene(), spits: [spit], eruptions: [{ x: 5, y: 1, z: 20, airRate: 2, speed: 3 }] }, 0.5);
+    const kinds = new Set(Array.from({ length: cloud.count }, (_, k) => cloud.particles[k * SPRAY_STRIDE + 5]));
+    expect([...kinds].sort()).toEqual([3, 4]);
+  });
+
+  it('packs each particle’s kind after its opacity: spray 0, mist 1, foam ball 2', () => {
+    expect(SPRAY_STRIDE).toBe(6);
+    const cloud = new SprayCloud(3);
+    cloud.update({ ...flatScene(0, [impact(0.2)]), rollers: [roller()] }, 1 / 60);
+    const kinds = new Set(Array.from({ length: cloud.count }, (_, k) => cloud.particles[k * SPRAY_STRIDE + 5]));
+    expect([...kinds].sort()).toEqual([0, 1, 2]);
+  });
+});
+
+describe('the spit and the eruption (G9)', () => {
+  /** The particles' mean velocity over a step so short the drag has barely acted. */
+  function launchVelocity(cloud: SprayCloud): { x: number; y: number; z: number } {
+    const start = Array.from(cloud.particles.subarray(0, cloud.count * SPRAY_STRIDE));
+    const count = cloud.count;
+    const dt = 1e-4;
+    cloud.update(flatScene(), dt);
+    const mean = { x: 0, y: 0, z: 0 };
+    for (let k = 0; k < count; k += 1) {
+      mean.x += (cloud.particles[k * SPRAY_STRIDE] - start[k * SPRAY_STRIDE]) / dt / count;
+      mean.y += (cloud.particles[k * SPRAY_STRIDE + 1] - start[k * SPRAY_STRIDE + 1]) / dt / count;
+      mean.z += (cloud.particles[k * SPRAY_STRIDE + 2] - start[k * SPRAY_STRIDE + 2]) / dt / count;
+    }
+    return mean;
+  }
+
+  it('blows a spit’s spray and mist out of the mouth at its speed, s_a particles per m³ of air', () => {
+    const spit: TubeSpit = { x: 5, y: 1, z: 20, dirX: 1, dirZ: 0, speed: 6, airRate: 3 };
+    const cloud = new SprayCloud(6);
+    cloud.update({ ...flatScene(), spits: [spit] }, 0.5);
+    // 3 m³/s for half a second is 1.5 m³ of air.
+    expect(cloud.count).toBe(1.5 * SPRAY_PER_AIR);
+    const velocity = launchVelocity(cloud);
+    expect(velocity.x / spit.speed).toBeGreaterThan(0.85);
+    expect(velocity.x / spit.speed).toBeLessThan(1.15);
+    expect(Math.abs(velocity.z)).toBeLessThan(0.1 * spit.speed);
+  });
+
+  it('bursts an eruption’s spray and mist straight up', () => {
+    const eruption: TubeEruption = { x: 5, y: 1, z: 20, airRate: 2, speed: 3 };
+    const cloud = new SprayCloud(7);
+    cloud.update({ ...flatScene(), eruptions: [eruption] }, 0.5);
+    expect(cloud.count).toBe(SPRAY_PER_AIR);
+    const velocity = launchVelocity(cloud);
+    expect(velocity.y / eruption.speed).toBeGreaterThan(0.85);
+    expect(velocity.y / eruption.speed).toBeLessThan(1.15);
+    expect(Math.hypot(velocity.x, velocity.z)).toBeLessThan(0.1 * eruption.speed);
   });
 });
