@@ -3,6 +3,7 @@ import { AttachedRider, type RiderPhase, type RiderSeparation } from './Attached
 import { BoardBody } from './BoardBody';
 import { BoardRecovery } from './BoardRecovery';
 import { DetachedSurfer, type LipParcelSource } from './DetachedSurfer';
+import { BREATH, Breath } from './Breath';
 import { Leash } from './Leash';
 import { RIDER_PARTS, deckHeight, type StanceName } from './riderPosture';
 import { createWaterSample, type SurfWater } from './SurfWater';
@@ -72,6 +73,8 @@ export class RideSession {
   readonly remount = { before: new Vector3(), after: new Vector3(), count: 0 };
   /** The leash, from the back-foot ankle to the tail plug; a new one at each placement. */
   readonly leash = new Leash();
+  /** The breath the surfer holds under water (the wipeout spec, Part B); a new one at each placement. */
+  readonly breath = new Breath();
   private readonly plugLocal = new Vector3();
   private readonly ankle = new Vector3();
   private readonly plug = new Vector3();
@@ -148,6 +151,7 @@ export class RideSession {
     this.surfer.active = false;
     this.recovery.release();
     this.leash.reset();
+    this.breath.reset();
   }
 
   /** The drawn body's seven points (pelvis, torso, head, hands, feet), riding or fallen. */
@@ -183,7 +187,8 @@ export class RideSession {
     }
     board.step(dt, water);
     if (rider.attached) {
-      // On the board the cord hangs slack.
+      // On the board the breath comes back, and the cord hangs slack.
+      this.breath.step(dt, false, BREATH.relaxed);
       this.leash.tension = 0;
       this.leash.reeling = false;
     }
@@ -196,6 +201,9 @@ export class RideSession {
       // Diving lets go of a held board (the leash keeps it).
       if ((input.duckDive ?? 0) > 0.3 && this.recovery.state !== 'free') this.recovery.release();
       surfer.step(dt, this.bodyField(water), { stroke: input.paddle, steer: input.steer, dive: input.duckDive ?? 0 });
+      // Held under, the breath drains, faster swimming, diving or swimming up than letting the water have you.
+      const working = input.paddle || (input.duckDive ?? 0) > 0.05;
+      this.breath.step(dt, surfer.underwater, working ? BREATH.working : BREATH.relaxed);
       surfer.resolveBoardContact(board);
       const back = surfer.nodes[this.rider.stance === 'regular' ? 6 : 5];
       this.leash.step(dt, this.leashAnkle(this.ankle), back, this.leashPlug(this.plug), board, input.reel ?? false);

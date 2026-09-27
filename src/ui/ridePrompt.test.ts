@@ -5,7 +5,7 @@ import { ridePrompt } from './ridePrompt';
 type Ride = NonNullable<SurfZoneStatus['ride']>;
 const keys = { paddle: 'Space', popUp: 'Enter', retry: 'R' };
 const ride = (phase: Ride['phase'], cue = false, extra: Partial<Ride> = {}): Ride => ({
-  phase, cue, speed: 2, boardSpeed: 2, resets: 0, balance: 1, duck: 0, boardInReach: false, knock: 0,
+  phase, cue, speed: 2, boardSpeed: 2, resets: 0, balance: 1, duck: 0, boardInReach: false, knock: 0, breath: 1, rescues: 0,
   leash: { snapped: false, tension: 0, distance: 1, reeling: false }, ...extra,
   wave: {
     valid: false, directionX: 0, directionZ: 1, aheadOfCrest: 0, crestSpeed: 0, faceHeight: 0, faceFraction: 0, crestBreaking: 0,

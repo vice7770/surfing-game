@@ -310,3 +310,37 @@ describe('the leash in a ride', () => {
   });
 });
 
+// The wipeout spec, Part B: breath.
+describe('breath in a ride', () => {
+  it('never drains lying on the board, even with the deck under water', () => {
+    const session = new RideSession();
+    const water = new PlaneWater();
+    session.reset(new Vector3(0, 0, 0), 0, water);
+    for (let i = 0; i < 270; i += 1) session.step(STEP, water, { ...idle, duckDive: i < 90 ? 1 : 0 });
+    expect(session.rider.attached).toBe(true);
+    expect(session.breath.level).toBe(1);
+  });
+
+  it('drains while the fallen surfer is held under, faster diving than relaxed', () => {
+    const drained = (duckDive: number) => {
+      const session = new RideSession();
+      const water = new PlaneWater({ voidFraction: 0.18 });
+      session.reset(new Vector3(0, 0, 0), 0, water);
+      session.separate('balance');
+      for (let i = 0; i < 300; i += 1) session.step(STEP, water, { ...idle, duckDive });
+      return 1 - session.breath.level;
+    };
+    expect(drained(0)).toBeGreaterThan(0);
+    expect(drained(1)).toBeGreaterThan(drained(0));
+  });
+
+  it('comes back full on a relaunch', () => {
+    const session = new RideSession();
+    const water = new PlaneWater();
+    session.reset(new Vector3(0, 0, 0), 0, water);
+    session.breath.level = 0.2;
+    session.reset(new Vector3(0, 0, 0), 0, water);
+    expect(session.breath.level).toBe(1);
+  });
+});
+
