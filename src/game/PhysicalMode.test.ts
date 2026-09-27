@@ -4,13 +4,24 @@ import { WaterSurface } from '../scene/WaterSurface';
 import { FlatSurfaceSource } from '../scene/FlatSurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { stormSwell } from '../wave/StormSwell';
-import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, chopForWind, formatPhysicalReadout, spreadingFor, swellFor } from './PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, spreadingFor, swellFor, swellHeightLimit } from './PhysicalMode';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
 
 describe('PhysicalMode', () => {
+  it('lets buoys and storms reach 4 m, and the Canyon 3 m as before (wave sizes)', () => {
+    expect(TANK_SWELL_LIMITS.height.max).toBe(4);
+    expect(swellHeightLimit('reef')).toBe(4);
+    expect(swellHeightLimit('canyon')).toBe(3);
+    const storm = { ...DEFAULT_PHYSICAL_SETTINGS, source: 'storm' as const, stormWindSpeed: 30, stormFetchKm: 2000, stormDurationHours: 96, stormDistanceKm: 0 };
+    expect(swellFor({ ...storm, spot: 'point' }).significantHeight).toBe(4);
+    expect(swellFor({ ...storm, spot: 'canyon' }).significantHeight).toBe(3);
+    expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'buoy', spot: 'canyon', significantHeight: 3.8 }).significantHeight).toBe(3);
+    expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'buoy', spot: 'point', significantHeight: 3.8 }).significantHeight).toBe(3.8);
+  });
+
   it('gives Practice\'s groundswell at the tank\'s edge and a buoy\'s in deep water (wave sizes)', async () => {
     const water = new WaterSurface(new FlatSurfaceSource());
     const mode = new PhysicalMode(new Scene());
@@ -53,8 +64,8 @@ describe('PhysicalMode', () => {
 
   it('keeps a derived storm swell inside what the tank can carry', () => {
     const near = swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'storm', stormWindSpeed: 28, stormFetchKm: 2000, stormDurationHours: 96, stormDistanceKm: 200 });
-    expect(near.storm!.significantHeight).toBeGreaterThan(3);
-    expect(near.significantHeight).toBe(3);
+    expect(near.storm!.significantHeight).toBeGreaterThan(4);
+    expect(near.significantHeight).toBe(4);
     expect(near.peakPeriod).toBe(18);
   });
 

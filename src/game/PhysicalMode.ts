@@ -87,8 +87,13 @@ export async function webGpuAvailable(): Promise<boolean> {
   }
 }
 
-/** Largest swell the tank carries, matching the buoy sliders: deeper water would be needed beyond this. */
-export const TANK_SWELL_LIMITS = { height: { min: 0.3, max: 3 }, period: { min: 6, max: 18 } };
+/** Largest swell the tank carries, matching the buoy sliders; the tank deepens with the swell (the wave-sizes spec). */
+export const TANK_SWELL_LIMITS = { height: { min: 0.3, max: 4 }, period: { min: 6, max: 18 } };
+
+/** The Canyon keeps its tank and sea as they were (the wave-sizes spec), and so its 3 m cap. */
+export function swellHeightLimit(spot: SpotName): number {
+  return spot === 'canyon' ? 3 : TANK_SWELL_LIMITS.height.max;
+}
 
 function clamp(value: number, range: { min: number; max: number }): number {
   return Math.min(range.max, Math.max(range.min, value));
@@ -119,7 +124,7 @@ export function spreadingFor(spread: number): number {
 export function swellFor(settings: PhysicalSettings): SwellInput {
   if (settings.source === 'practice') return { ...PRACTICE_SWELL };
   if (settings.source !== 'storm') {
-    return { significantHeight: settings.significantHeight, peakPeriod: settings.peakPeriod, spreading: spreadingFor(settings.spread) };
+    return { significantHeight: Math.min(settings.significantHeight, swellHeightLimit(settings.spot)), peakPeriod: settings.peakPeriod, spreading: spreadingFor(settings.spread) };
   }
   const storm = stormSwell({
     windSpeed: settings.stormWindSpeed,
@@ -128,7 +133,7 @@ export function swellFor(settings: PhysicalSettings): SwellInput {
     distanceKm: settings.stormDistanceKm,
   });
   return {
-    significantHeight: clamp(storm.significantHeight, TANK_SWELL_LIMITS.height),
+    significantHeight: clamp(storm.significantHeight, { min: TANK_SWELL_LIMITS.height.min, max: swellHeightLimit(settings.spot) }),
     peakPeriod: clamp(storm.peakPeriod, TANK_SWELL_LIMITS.period),
     spreading: storm.spreading,
     bandwidth: storm.bandwidth,

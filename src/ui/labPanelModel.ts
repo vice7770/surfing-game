@@ -1,4 +1,4 @@
-import { PRACTICE_SWELL, swellFor, type PhysicalSettings } from '../game/PhysicalMode';
+import { PRACTICE_SWELL, swellFor, swellHeightLimit, type PhysicalSettings } from '../game/PhysicalMode';
 import { forecastSurf } from '../wave/surfForecast';
 import { t } from './strings';
 import { formatSurfRange, type SurfScale } from './surfHeight';
@@ -58,7 +58,7 @@ export function labSliders(physical: PhysicalSettings, units: Units, scale: Surf
   const sliders: LabSlider[] = [];
   if (physical.source === 'buoy') {
     sliders.push(
-      swell('significantHeight', t('lab.height'), 0.3, 3, 0.1, heightText(physical, units, scale)),
+      swell('significantHeight', t('lab.height'), 0.3, swellHeightLimit(physical.spot), 0.1, heightText(physical, units, scale)),
       swell('peakPeriod', t('lab.period'), 6, 18, 0.5, `${physical.peakPeriod.toFixed(1)} s`),
       swell('spread', t('lab.spread'), 0, 1, 0.05, spreadName(physical.spread)),
     );

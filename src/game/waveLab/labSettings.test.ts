@@ -8,6 +8,10 @@ const memory = () => {
 };
 
 describe('lab settings', () => {
+  it('keeps a saved 3.8 m swell, under the 4 m cap (wave sizes)', () => {
+    expect(sanitizeLabSettings({ physical: { significantHeight: 3.8 } }).physical.significantHeight).toBe(3.8);
+  });
+
   it('starts at the Canyon on the practice swell at midday, in the Rich look', () => {
     const lab = defaultLabSettings();
     expect(lab.physical).toMatchObject({ spot: 'canyon', source: 'practice' });
@@ -19,7 +23,7 @@ describe('lab settings', () => {
     const lab = sanitizeLabSettings({ physical: { spot: 'moon', source: 'storm', significantHeight: 99, tide: -7, stage: 3 }, sunHeight: 'x', waterLook: 'neon' });
     expect(lab.physical.spot).toBe('canyon');
     expect(lab.physical.source).toBe('storm');
-    expect(lab.physical.significantHeight).toBe(3);
+    expect(lab.physical.significantHeight).toBe(4);
     expect(lab.physical.tide).toBe(-1);
     expect(lab.physical.stage).toBe(2);
     expect(lab.sunHeight).toBe(defaultLabSettings().sunHeight);

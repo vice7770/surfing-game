@@ -5,6 +5,13 @@ import { labSliders, practiceNote, spreadName, stormArrives, windWords } from '.
 import { formatSurfRange } from './surfHeight';
 
 describe('lab panel model', () => {
+  it('lets the Height slider reach 4 m, and 3 m at the Canyon (wave sizes)', () => {
+    const height = (spot: 'reef' | 'canyon') => labSliders({ ...defaultLabSettings().physical, source: 'buoy', spot }, 'metric')
+      .find((slider) => slider.key === 'significantHeight')!.max;
+    expect(height('reef')).toBe(4);
+    expect(height('canyon')).toBe(3);
+  });
+
   it('shows the surf a buoy height will make beside the Height slider (wave sizes)', () => {
     const physical = { ...defaultLabSettings().physical, source: 'buoy' as const, spot: 'reef' as const, significantHeight: 3, peakPeriod: 14 };
     const height = labSliders(physical, 'metric').find((slider) => slider.key === 'significantHeight')!;
