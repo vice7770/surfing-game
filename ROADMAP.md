@@ -209,6 +209,18 @@ Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [
   - **Trimmed:** `SurfWater` loses its legacy adapter and the `surface` flow regime; `Surfer` keeps only the pose the physical rider falls back to; `BoardInput` moves into `Controls`; the legacy swell readout and board values go; the sky loses the coastline cards the physical sea always hid.
   - **Kept on purpose:** the test waters, test surfers and the report scripts' helpers, which the suite and the reports still use.
 
+### P1 · Performance (2026-09-27) — `Study done; two decisions open`
+
+From the user's M4 Pro frame-rate survey, re-run on the M1 Air: [performance study](docs/research/performance-study.md).
+- [x] **The M4 Pro holds 120 fps on every screen at every preset.** Its heaviest reading, the Surf screen, was the survey counting GPU time once per WebGL context. The surfer preview costs about 0.5 ms.
+- [x] **A paused game draws only when its view changes,** twice a second otherwise: 15 of 481 paused frames draw, against every frame, and the camera no longer glides after pausing.
+- [x] **Fixed separately:** the camera jumping as waves pass a waiting rider (PR #28), and the High Reef menu never coming up (PR #32).
+- [x] **Spin-up on the GPU** (PR #39, with the GPU step's guard against diverged water): on the M1 Air the menu's waves now come up in about 4–7 s and a ride in 3–6 s, against 19–44 s (see the P8 section).
+- [x] **The survey times the game's WebGL context alone** (PR #41), with the surfer preview's reported apart.
+- [ ] **Open:**
+  - decide what the menus' waves may cost (a 60 fps cap on faster displays, a lower scale, or holding them still);
+  - re-measure High on the M1 Air with no other session running, and have Auto weigh High's resolution if it misses 60 fps.
+
 ### Later — `Backlog`
 
 Recorded in the same session; each gets its own grilling before work starts.
