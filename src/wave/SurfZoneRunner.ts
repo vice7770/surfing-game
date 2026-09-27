@@ -10,7 +10,7 @@ import { WaveFrameGauge, type WaveFrame } from '../physics/waveFrame';
 import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { BubbleCloud } from './BubbleCloud';
-import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY } from './SprayCloud';
+import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type SprayLook } from './SprayCloud';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { SurfZoneSimulation, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
 import type { BreakerType } from './SwellReadout';
@@ -283,6 +283,11 @@ export class SurfZoneRunner {
       solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, windSpeed: this.config.windSpeed ?? 0, strokes,
       spits: simulation.lip.spits, eruptions: simulation.lip.eruptions, rollers: simulation.lip.rollers,
     };
+  }
+
+  /** The water look the spray is drawn in: Classic keeps its lip-impact drops as they were before G9. */
+  setSprayLook(look: SprayLook): void {
+    this.spray.look = look;
   }
 
   get windowXMin(): number {

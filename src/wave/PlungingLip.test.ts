@@ -243,6 +243,22 @@ describe('the splash-up’s landings (G9)', () => {
     expect(kinds.filter((kind) => kind === 0).length).toBe(STRIP_PARCELS);
     expect(kinds.filter((kind) => kind === 1).length).toBe(STRIP_PARCELS);
   });
+
+  it('tells each landing the parcel’s whole water as well as what stays, so Classic’s spray can keep to the whole jet', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 512);
+    const jets: { volume: number; whole: number }[] = [];
+    lip.onLand = (_x, _z, volume, _vx, _vy, _vz, flight) => {
+      if (flight!.kind === 0) jets.push({ volume, whole: flight!.volume });
+    };
+    const thrown = lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3);
+    for (let frame = 0; frame < 2400; frame += 1) lip.step(1 / 240);
+    expect(jets).toHaveLength(STRIP_PARCELS);
+    for (const jet of jets) {
+      expect(jet.whole).toBeCloseTo(thrown / STRIP_PARCELS, 12);
+      expect(jet.volume).toBeCloseTo((1 - SPLASH_UP.share) * jet.whole, 12);
+    }
+  });
 });
 
 describe('the splash-up (G9)', () => {

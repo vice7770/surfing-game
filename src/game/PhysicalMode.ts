@@ -23,6 +23,7 @@ import { MIXED_PEAK_FIT, skillForPeel } from '../wave/Breaking';
 import { stormSwell, type StormSwell } from '../wave/StormSwell';
 import type { ReadoutRow } from '../wave/SwellReadout';
 import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
+import type { SprayLook } from '../wave/SprayCloud';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
 import { OFFSHORE_DEPTH, SEA_COMPONENTS, TANK, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -242,6 +243,14 @@ export class PhysicalMode {
   private spawnAt?: { x: number; z: number };
   /** The running surf zone, once it has spun up. */
   host?: SurfZoneHost;
+  /** The water look the sea's spray is drawn in (G9: Classic keeps its lip-impact spray as it was). */
+  private sprayLook: SprayLook = 'rich';
+
+  /** Hand the water look to the running sea's spray, and to every sea started after. */
+  setSprayLook(look: SprayLook): void {
+    this.sprayLook = look;
+    this.host?.setSprayLook(look);
+  }
   config?: SurfZoneConfig;
   /** The storm behind the running sea, in storm mode. */
   storm?: StormSwell;
@@ -376,6 +385,7 @@ export class PhysicalMode {
     this.dropPending = undefined;
     this.stop();
     this.host = host;
+    host.setSprayLook(this.sprayLook);
     this.config = config;
     this.storm = swell.storm;
     this.practice = settings.source === 'practice';

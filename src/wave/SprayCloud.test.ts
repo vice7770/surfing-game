@@ -79,6 +79,32 @@ describe('spray and mist', () => {
     }
   });
 
+  it('keeps Classic’s impact spray as it was before G9: from the jet’s whole water, 30–80 % up and 20–60 % on, none from splash-ups', () => {
+    // A jet parcel of 0.3 m³ landed, 0.21 m³ of it staying (its splash-up took the rest), at (0, −4, 6) m/s.
+    const jet: LipImpact = { x: 5, z: 20, volume: 0.21, whole: 0.3, kind: 0, vx: 0, vy: -4, vz: 6 };
+    const speed = Math.hypot(4, 6);
+    const classic = new SprayCloud(22);
+    classic.look = 'classic';
+    classic.update(flatScene(0, [jet]), 1 / 60);
+    // As many drops as the whole parcel's energy gives.
+    expect(Math.abs(classic.count - 0.5 * 1025 * 0.3 * speed * speed * 0.05)).toBeLessThanOrEqual(1);
+    const start = Array.from(classic.particles.subarray(0, classic.count * SPRAY_STRIDE));
+    const count = classic.count;
+    const dt = 1e-4;
+    classic.update(flatScene(), dt);
+    for (let k = 0; k < count; k += 1) {
+      const up = (classic.particles[k * SPRAY_STRIDE + 1] - start[k * SPRAY_STRIDE + 1]) / dt;
+      // Up at 30–80 % of the impact speed (drag and gravity take a little over the step).
+      expect(up / speed).toBeGreaterThan(0.25);
+      expect(up / speed).toBeLessThan(0.81);
+    }
+    // A splash-up's landing throws no Classic spray.
+    const splashUp = new SprayCloud(23);
+    splashUp.look = 'classic';
+    splashUp.update(flatScene(0, [{ x: 5, z: 20, volume: 0.09, whole: 0.09, kind: 1, vx: 0, vy: -3, vz: 4 }]), 1 / 60);
+    expect(splashUp.count).toBe(0);
+  });
+
   it('throws a lip impact’s drops up as fast as its splash-up sheet goes, from the downward impact speed (G9)', () => {
     // Coming down at 4 m/s while moving on at 6: the sheet leaves up at ζ_v × 4, and so do its drops.
     const cloud = new SprayCloud(21);

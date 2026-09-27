@@ -2,7 +2,11 @@ import { GRAVITY } from './dispersion';
 import { seededRandom } from './random';
 import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
 
-/** A lip parcel falling back into the water: where, how much, and how fast. */
+/**
+ * A lip parcel falling back into the water: where, how much stays (its
+ * splash-up's share flies on, G9), and how fast; the parcel's whole water, and
+ * whether it was a jet's (0) or a splash-up's (1).
+ */
 export interface LipImpact {
   x: number;
   z: number;
@@ -10,7 +14,12 @@ export interface LipImpact {
   vx: number;
   vy: number;
   vz: number;
+  whole?: number;
+  kind?: number;
 }
+
+/** Which water look the spray is for: Classic keeps its spray as it was before G9, Rich follows the splash-up. */
+export type SprayLook = 'classic' | 'rich';
 
 /**
  * A paddling hand's pull during one step (G7): where it was, the impulse the
@@ -85,6 +94,9 @@ const FOAM_BALL_LINGER = 1;
 const FEATHER_ONSET = 4;
 const FEATHER_SLOPE = 0.25;
 const FEATHER_HEIGHT = 0.3;
+/** Classic's lip-impact drops (as before G9): up at these shares of the impact speed, and on at these of its horizontal speed. */
+const CLASSIC_SPLASH_UP = { min: 0.3, max: 0.8 };
+const CLASSIC_SPLASH_FORWARD = { min: 0.2, max: 0.6 };
 /** A paddle splash leaves at these shares of the hand's speed through the water: upward, and back along the water the hand pushed. */
 const STROKE_UP = { min: 0.3, max: 0.9 };
 const STROKE_BACK = { min: 0.3, max: 0.7 };
@@ -137,6 +149,8 @@ export class SprayCloud {
   count = 0;
   /** How many of them are a closing tube's whitewater. */
   whitewaterCount = 0;
+  /** The look the spray is drawn in: Classic's lip-impact drops are as they were before G9. */
+  look: SprayLook = 'rich';
   private readonly x: Float64Array;
   private readonly y: Float64Array;
   private readonly z: Float64Array;
@@ -231,6 +245,10 @@ export class SprayCloud {
 
   /** Splash-up where a lip parcel lands: drops launched up and on with its momentum, in proportion to its kinetic energy. */
   private splash(scene: SprayScene, impact: LipImpact): void {
+    if (this.look === 'classic') {
+      this.classicSplash(scene, impact);
+      return;
+    }
     const speed = Math.hypot(impact.vx, impact.vy, impact.vz);
     const energy = 0.5 * WATER_DENSITY * impact.volume * speed * speed;
     const expected = energy * SPRAY_PER_JOULE;
@@ -239,6 +257,34 @@ export class SprayCloud {
     const surface = scene.solver.h[cell] + scene.solver.bed[cell];
     for (; spawns > 0 && this.room(false); spawns -= 1) {
       const { up, forward } = splashLaunch(Math.abs(impact.vy), this.random());
+      const spread = 1.5;
+      const mist = this.random() < 0.2;
+      this.spawn(
+        mist ? MIST : SPRAY,
+        impact.x + (this.random() - 0.5) * 0.8, surface + 0.05, impact.z + (this.random() - 0.5) * 0.8,
+        impact.vx * forward + (this.random() - 0.5) * spread, up, impact.vz * forward + (this.random() - 0.5) * spread,
+      );
+    }
+  }
+
+  /**
+   * Classic's lip-impact drops, as before G9: from a jet parcel's whole water
+   * (Classic draws no splash-up, so a splash-up's landing throws none), in
+   * proportion to its kinetic energy, up at 30–80 % of its impact speed and
+   * on at 20–60 % of its horizontal speed.
+   */
+  private classicSplash(scene: SprayScene, impact: LipImpact): void {
+    if (impact.kind === 1) return;
+    const volume = impact.whole ?? impact.volume;
+    const speed = Math.hypot(impact.vx, impact.vy, impact.vz);
+    const energy = 0.5 * WATER_DENSITY * volume * speed * speed;
+    const expected = energy * SPRAY_PER_JOULE;
+    let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
+    const cell = scene.solver.cellIndex(impact.x, impact.z);
+    const surface = scene.solver.h[cell] + scene.solver.bed[cell];
+    for (; spawns > 0 && this.room(false); spawns -= 1) {
+      const up = speed * this.between(CLASSIC_SPLASH_UP);
+      const forward = this.between(CLASSIC_SPLASH_FORWARD);
       const spread = 1.5;
       const mist = this.random() < 0.2;
       this.spawn(

@@ -133,8 +133,9 @@ export interface LipSheetParcel {
 
 /**
  * A landed parcel's flight: where it left the crest, the height it came down
- * at (m), how long it flew (s), the speed of the crest it left (m/s), and
- * whether it was a jet's water (0) or a splash-up's (1, G9), which draws no tube.
+ * at (m), how long it flew (s), the speed of the crest it left (m/s),
+ * whether it was a jet's water (0) or a splash-up's (1, G9), which draws no
+ * tube, and the parcel's whole water, m³ (what landed and what its splash-up took).
  */
 export interface LipFlight {
   launch: { x: number; y: number; z: number };
@@ -142,6 +143,7 @@ export interface LipFlight {
   age: number;
   crestSpeed: number;
   kind: number;
+  volume: number;
 }
 
 export interface LipConditions {
@@ -345,7 +347,7 @@ export class PlungingLip implements LipParcelSource {
   private readonly linked: Uint32Array;
   private query = 0;
   private readonly near = { a: new Vector3(), b: new Vector3(), pa: new Vector3(), pb: new Vector3(), velocity: new Vector3() };
-  private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0, kind: 0 };
+  private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0, kind: 0, volume: 0 };
   private readonly free: number[] = [];
   /** The flying tubes as a `tubeTable` (G9), refreshed as the clock moves and strips come and go. */
   private tubes = new Float64Array(64 * TUBE_STRIDE);
@@ -814,6 +816,7 @@ export class PlungingLip implements LipParcelSource {
     flight.age = this.age[parcel];
     flight.crestSpeed = this.crestSpeed[parcel];
     flight.kind = this.kind[parcel];
+    flight.volume = volume;
     this.active[parcel] = 0;
     this.state[parcel] = 0;
     this.free.push(parcel);
