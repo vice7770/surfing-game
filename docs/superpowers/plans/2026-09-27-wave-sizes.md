@@ -34,7 +34,7 @@
 
 # Part A · Measure
 
-### Task A1: The surf meter
+### Task 1 (A1): The surf meter
 
 **Files:**
 - Create: `src/wave/SurfMeter.ts`
@@ -192,7 +192,7 @@ git add src/wave/SurfMeter.ts src/wave/SurfMeter.test.ts
 git commit -m "feat: measure breaking waves' faces into a surf reading"
 ```
 
-### Task A2: The surf zone measures its breaks
+### Task 2 (A2): The surf zone measures its breaks
 
 **Files:**
 - Modify: `src/wave/SurfZoneSimulation.ts` (constructor; `markBreakingOnsets`; new `measureBreak`)
@@ -313,7 +313,7 @@ git add src/wave/SurfZoneSimulation.ts src/wave/SurfZoneRunner.ts src/wave/SurfZ
 git commit -m "feat: measure the surf at the take-off as waves start to break"
 ```
 
-### Task A3: Surf in surfers' words
+### Task 3 (A3): Surf in surfers' words
 
 **Files:**
 - Create: `src/ui/surfHeight.ts`
@@ -498,7 +498,7 @@ git add src/ui/surfHeight.ts src/ui/surfHeight.test.ts src/game/SurferChoice.ts 
 git commit -m "feat: read surf as a face range and a body-relative name"
 ```
 
-### Task A4: The Surf height setting
+### Task 4 (A4): The Surf height setting
 
 **Files:**
 - Modify: `src/game/Settings.ts` (`GameplaySettings.surfScale`, defaults, sanitising)
@@ -560,7 +560,7 @@ git add src/game/Settings.ts src/ui/settingsModel.ts src/ui/strings.ts src/game/
 git commit -m "feat: a Surf height setting, faces or the Hawaiian scale"
 ```
 
-### Task A5: Sources and empirical surf heights
+### Task 5 (A5): Sources and empirical surf heights
 
 **Files:**
 - Create: `docs/research/surf-size-sources.md`
@@ -713,7 +713,7 @@ git add docs/research/surf-size-sources.md src/wave/surfForecast.ts src/wave/sur
 git commit -m "feat: empirical surf heights and a forecast fitted per spot"
 ```
 
-### Task A6: The size report
+### Task 6 (A6): The size report
 
 **Files:**
 - Create: `src/wave/sizeReport.ts` (pure: summarising a run, the Markdown, the gates)
@@ -1027,7 +1027,7 @@ git add src/wave/sizeReport.ts src/wave/sizeReport.test.ts scripts/size-report.t
 git commit -m "feat: a size report measuring each spot's surf against empirical breaker heights"
 ```
 
-### Task A7: Today's sizes, recorded and calibrated
+### Task 7 (A7): Today's sizes, recorded and calibrated
 
 **Files:**
 - Output: `docs/research/sizes/{beach,point,reef,canyon}.json`, `docs/research/sizes/baseline/*.json`, `docs/research/size-report.md`
@@ -1082,7 +1082,7 @@ git add docs/research/sizes docs/research/size-report.md src/wave/surfForecast.t
 git commit -m "docs: today's surf sizes per spot, and the forecast fitted to them"
 ```
 
-### Task A8: The readouts
+### Task 8 (A8): The readouts
 
 **Files:**
 - Modify: `src/game/waveLab/waveInfo.ts`, `src/game/waveLab/WaveLab.ts`, `src/main.ts` (one line), `src/ui/App.ts`, `src/ui/labPanelModel.ts`, `src/ui/WaveLabScreen.ts`, `src/game/SurfConditions.ts`, `src/ui/SurfScreen.ts`, `src/ui/PauseMenu.ts`, `src/ui/strings.ts`
@@ -1217,7 +1217,7 @@ git commit -m "feat: show the measured and forecast surf in the Wave Lab, the Su
 
 # Part B · Bigger surf
 
-### Task B1: Deep-water input, shoaled to the edge
+### Task 9 (B1): Deep-water input, shoaled to the edge
 
 **Files:**
 - Modify: `src/wave/dispersion.ts` (`shoalingCoefficient`)
@@ -1303,7 +1303,7 @@ git add src/wave/dispersion.ts src/wave/dispersion.test.ts src/wave/SurfZoneSimu
 git commit -m "feat: take the buoy's height in deep water and shoal it to the tank's edge"
 ```
 
-### Task B2: The 4 m storm cap
+### Task 10 (B2): The 4 m storm cap
 
 **Files:**
 - Modify: `src/game/PhysicalMode.ts` (`TANK_SWELL_LIMITS.height.max` 4, `swellHeightLimit(spot)`, the storm clamp)
@@ -1359,7 +1359,7 @@ git add src/game/PhysicalMode.ts src/game/PhysicalMode.test.ts src/game/waveLab 
 git commit -m "feat: raise the swell cap to 4 m, the Canyon staying at 3 m"
 ```
 
-### Task B3: The tank sized to the swell
+### Task 11 (B3): The tank sized to the swell
 
 **Files:**
 - Modify: `src/wave/SurfZoneSimulation.ts` (`TankLayout`, `tankLayout`, `tankDepth`'s layout parameter, every `TANK`/`OFFSHORE_DEPTH` use, the boundary's wave numbers, `readonly tank`)
@@ -1540,7 +1540,7 @@ git add src scripts
 git commit -m "feat: size the tank to the swell: a deeper edge, a longer zone, the fine zone from where sets break"
 ```
 
-### Task B4: Real outer profiles (research)
+### Task 12 (B4): Real outer profiles (research)
 
 **Files:**
 - Create: `docs/research/outer-profiles.md`
@@ -1561,7 +1561,7 @@ git add docs/research/outer-profiles.md
 git commit -m "docs: measured outer surf-zone profiles for the Beach, Point and Reef"
 ```
 
-### Task B5: Deeper outer bathymetry
+### Task 13 (B5): Deeper outer bathymetry
 
 **Files:**
 - Modify: `src/wave/Bathymetry.ts` (`BEACH_OUTER`, `POINT_OUTER`, `REEF_OUTER`; the beach, point and reef `depthAt`)
@@ -1666,7 +1666,7 @@ git add src/wave/Bathymetry.ts src/wave/Bathymetry.test.ts
 git commit -m "feat: deepen each spot's outer bed to real profiles, the inner bed unchanged"
 ```
 
-### Task B6: The take-off follows the measured break
+### Task 14 (B6): The take-off follows the measured break
 
 **Files:**
 - Modify: `src/wave/SurfZoneSimulation.ts` (`TAKE_OFF_INDEX`, `takeOffPoint`)
@@ -1716,7 +1716,7 @@ git add src/wave/SurfZoneSimulation.ts src/wave/SurfZoneSimulation.test.ts
 git commit -m "feat: place a big day's take-off by each spot's calibrated breaker index"
 ```
 
-### Task B7: Gate the sizes and calibrate
+### Task 15 (B7): Gate the sizes and calibrate
 
 **Files:**
 - Modify: `scripts/size-report.ts` (deep-water runs, small-day edge runs, `--gates`)
@@ -1769,7 +1769,7 @@ git commit -m "feat: gate the surf sizes against Komar-Gaughan and calibrate the
 
 # Part C · The size sheet and the camera
 
-### Task C1: The size sheet
+### Task 16 (C1): The size sheet
 
 **Files:**
 - Create: `src/dev/sizeSheet.ts` (the sheet), `src/dev/sizeSheetShots.ts` (pure helpers)
@@ -1873,7 +1873,7 @@ git add src/dev/sizeSheet.ts src/dev/sizeSheetShots.ts src/dev/sizeSheetShots.te
 git commit -m "feat: a size sheet with a surfer on a set wave's face, its height marked"
 ```
 
-### Task C2: The camera check
+### Task 17 (C2): The camera check
 
 **Files:**
 - Modify: `src/dev/sizeSheet.ts` (a row of the game's own ride views)
