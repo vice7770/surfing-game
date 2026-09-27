@@ -760,4 +760,34 @@ Open the PR (never enable auto-merge; merge only when the user asks) with: what 
 
 ## Findings
 
-(Filled in during execution.)
+**What the plan built** (branch `claude/riding-the-wave`):
+- The gauge finds the curl along the crest (its distance, and its side), rides end honestly (a fall, a kick-out, the wave dying, or leaving it: "lost the wave"), and the ride report reads the spec's done criteria.
+- Broken water carries a board: the surface roller's push in the sampler. The catch report's bots, which ride straight in, now ride the Canyon's whitewater for 6.7 s at the median at Hs 2 m.
+- The pocket reflex (Settings → Gameplay → Stay near the curl, Practice by default): weight only, sitting back only while the board planes and never in a hard turn (both learned from the traces below).
+- The reference wave: the Practice swell at Hs 1.4 m, 1.31 m faces on the Canyon ([reference wave](../../research/reference-wave.md)); every spot catches and stands more at it.
+- The autopilot rides away from the curl the gauge sees (latched for the ride), angles toward the open face while waiting, and bottom turns only within 6 m of the crest.
+
+**The done criteria on the reference wave** (the Canyon, Practice, two seeds × 5 min, S-turns with the reflex; [ride report](../../research/ride-report-practice.md)):
+
+| Criterion | Target | Measured |
+|---|---|---|
+| Median ride | ≥ 10 s | 2.6 s (51 stands) |
+| Best rides | 15–20 s | 4.7 s (7.5 s in a run before the waiting angle) |
+| Lost the wave | 0 | 5 |
+| Mean speed | 6–9 m/s | 4.8 m/s |
+| Near the curl (unbroken water) | ≥ 50 % | 15 % |
+| Bottom turns | Forsyth: 99° in 0.96 s at 1.9 rad/s, 42° rail | 44° in 0.55 s at 2.0 rad/s, 28° rail |
+
+The whitewater's push is what makes the rides there are: with the roller switched off (the same command, before the final review's fixes) the Canyon gave 17 stands and 1 ride of 3 s or more, against 49 and 21 with it (missed waves 278 against 226).
+
+Not met. Traced ride by ride, what ends the rides now:
+1. **The take-off puts the rider on the flat.** Most riders stand 7–9 m ahead of the crest with the face under them already flat (a 1.3 m wave's face is only a few metres long), heading 0–18° off the wave's travel: they drop straight down during the pop-up, faster than the crest. A paddler turns only about 7°/s at full steer (22° in 3 s on flat water), too slowly to angle the take-off; angled and late take-offs are P10's.
+2. **Out on the flat the board coasts and stalls.** From 7–9 m/s it slows to 1.5–3 m/s in 3–4 s (about 2 m/s² of drag with the crouch held), the wave catches up, and as the face passes under the slow board it tips 13–45° under an upright rider, who falls ("balance" with the body upright). Picking the wave back up there is the spec's re-catching, not yet met.
+3. **A crouched full-steer turn at 10 m/s wobbles in yaw** (about 2.3 Hz, five sign flips in 1.5 s on flat water), and with the weight back it throws the rider at 0.97 s; uncrouched it turns clean. Neither the balance's gains (scaled with the leg's length) nor the crouch's softer leg is the cause; half the crouch depth calms it. Open.
+4. **The curl stays 10–25 m away.** The ride report's peel estimate reads 5–8° at every height (one fit over the window), against the rideability report's 55–58° (per-period, clean waves only). Near the curl is 15 % on unbroken water.
+
+Fixed on the way, each with a test that failed first: the reflex held the weight back for most of every ride with the curl far, sinking a slowing board's tail (the nose 30–60° up), so it now fades out below 5–3 m/s; it sat back through hard turns, so steering at 0.5 or more it stands aside; the autopilot fell back on the peel estimate when the curl left the gauge's reach and reversed a full lean, so it keeps the side it saw; its bottom turn fired on the flat 8 m ahead and bled the speed, so it now waits for the face.
+
+The final review (a fresh reviewer on the whole branch) found no critical issue and three important ones, fixed with tests that failed first: lying down and standing again merged two rides into one report (inflating the end card and the Logbook's bests); a rider carried by a bore could be "lost" with a higher crest far behind; whitewater counted as near the curl. It also showed the roller boosting any current under breaking water, so a rip or longshore current could throw a board seaward or sideways; it now carries only a current within 60° of shoreward.
+
+Next, in the order that would lift the numbers most: a take-off that stays on the face (P10's prone steering and angled take-offs), a slow board picked up again by the face or the whitewater, the crouched wobble at speed, and the peel on the reference wave.

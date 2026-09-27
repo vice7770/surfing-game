@@ -21,7 +21,13 @@ import { createLogbookScreen, logbookModel } from './LogbookScreen';
 import { createSettingsScreen } from './SettingsScreen';
 import { createMainMenu, refreshSoundToggles } from './MainMenu';
 import { MenuInput } from './MenuInput';
-import { createLabPauseMenu, createOnlinePauseMenu, createPauseMenu } from './PauseMenu';
+import { createLabPauseMenu, createLessonPauseMenu, createOnlinePauseMenu, createPauseMenu } from './PauseMenu';
+import { LessonFlow, type FlowState } from '../game/school/lessonFlow';
+import { LESSONS, lessonById, type Lesson } from '../game/school/lessons';
+import { SchoolProgress } from '../game/school/schoolProgress';
+import { createSchoolScreen } from './SchoolScreen';
+import { createHowTo, createLessonCard, createPassCard } from './LessonCard';
+import { lessonCardModel, lessonHud, schoolListModel, type ActionLabel } from './schoolModel';
 import { createSoundCheck } from './SoundCheck';
 import { createWaveLabScreen, type WaveLabScreen } from './WaveLabScreen';
 import { LabStore, type WaveLabSettings } from '../game/waveLab/labSettings';
@@ -30,6 +36,8 @@ import type { LabClock } from '../game/waveLab/labClock';
 import type { WaveInfo } from '../game/waveLab/waveInfo';
 import type { WaterLook } from '../scene/water/waterLook';
 import type { Units } from './units';
+import type { LessonStart } from '../game/school/lessonWave';
+import type { FlowFrame } from '../game/school/lessonFlow';
 import { OnlineHud, PlayersPanel, onlineHudModel, playersModel } from './OnlineHud';
 import { roomLink } from '../net/roomCode';
 import type { CallId } from '../net/protocol';
@@ -73,9 +81,31 @@ export interface LabHost {
   onAction?: (action: 'hide' | 'menu') => void;
 }
 
+/** The Surf School as the menus drive it (spec L2; implemented in main.ts). */
+export interface SchoolHost {
+  /**
+   * Build the lesson sea from its recording for `start`, the rider placed, in `camera`; false when superseded;
+   * throws when the wave will not load. `freePractice` rides with the pocket reflex as its setting says; a lesson never does.
+   */
+  enter(start: LessonStart, camera: RideView, freePractice: boolean): Promise<boolean>;
+  /** The same wave again from `start`'s recording, the rider placed. */
+  restart(start: LessonStart): Promise<void>;
+  /** Slow motion at 0.5× (a pause-menu toggle). */
+  setSlowMotion(on: boolean): void;
+  /** The next lesson's view. */
+  setView(view: RideView): void;
+  readonly slowMotion: boolean;
+  /** This frame of the attempt, as the lesson's goal and flow read it; none without a rider. */
+  frame(): FlowFrame | undefined;
+  /** The recording is not yet the reference wave (a dev note). */
+  readonly provisional: boolean;
+  leave(): void;
+}
+
 /** What the menus ask of the game (implemented by `SurfGame` in main.ts). */
 export interface GameHost {
   readonly lab: LabHost;
+  readonly school: SchoolHost;
   readonly canvas: HTMLCanvasElement;
   readonly gl: WebGLRenderingContext | WebGL2RenderingContext;
   /** Whether the menu's waves are running (not spinning up, not a still frame). */
@@ -126,8 +156,8 @@ export class App {
   private readonly root = document.getElementById('app')!;
   private readonly ui = document.getElementById('ui')!;
   private readonly menuInput: MenuInput;
-  /** The scene the game shows now: the menu's waves, a ride, the Wave Lab, or the dev tools' bare stage. */
-  private scene?: 'backdrop' | 'ride' | 'wavelab' | 'stage';
+  /** The scene the game shows now: the menu's waves, a ride, the Wave Lab, a lesson, or the dev tools' bare stage. */
+  private scene?: 'backdrop' | 'ride' | 'wavelab' | 'lesson' | 'stage';
   private backdropSpot?: SpotName;
   /** The menu's own waves are up (not the ride or Wave Lab it replaced, still running while they spin up). */
   private backdropReady = false;
@@ -147,7 +177,21 @@ export class App {
   private readonly logbook = new Logbook(localStore());
   private endCard?: HTMLElement;
   /** One-time hints for the riding mechanics (P9). */
-  private readonly coach = new HintCoach(new HintBook(localStore()));
+  private readonly hintBook = new HintBook(localStore());
+  private readonly coach = new HintCoach(this.hintBook);
+  /**
+   * The Surf School (L2): lessons passed; the lesson (or Free Practice) under way
+   * and its start; what covers the wave (the card, the pass card or How to…);
+   * whether the sea still stands where it was placed; and why a lesson wave would
+   * not load.
+   */
+  private readonly schoolProgress = new SchoolProgress(localStore());
+  private lessonFlow?: LessonFlow;
+  private lessonStart: LessonStart = 'pocket';
+  private lessonOverlay?: 'card' | 'pass' | 'howto';
+  private lessonFresh = false;
+  private schoolError?: string;
+  private schoolBusy = false;
   /** This session's wave scores (P9), for the best two; a new spot or conditions start a new session. */
   private sessionScores: number[] = [];
   /** The dev tools' telemetry over a Surf ride: the physical readout and the frame rate, at 4 Hz. */
@@ -201,6 +245,10 @@ export class App {
     };
     // Dev tools: the sound, for checks in the page and the sound check.
     if (DEV_TOOLS) (globalThis as unknown as { breaklineSound?: GameSound }).breaklineSound = this.sound;
+    // Dev tools: the school's flow and frames, for checks in the page.
+    if (DEV_TOOLS) (globalThis as unknown as { breaklineSchool?: unknown }).breaklineSchool = {
+      flow: () => this.lessonFlow, frame: () => this.game.school.frame(), ride: () => this.game.rideStatus,
+    };
     // A quiet click for every menu button (S1).
     this.ui.addEventListener('click', (event) => {
       if ((event.target as Element | null)?.closest?.('button')) this.sound.playUi('click');
@@ -241,6 +289,7 @@ export class App {
         this.labScreen.update(this.labView());
       }
     }
+    if (this.stack.current === 'lesson' && this.lessonFlow) this.lessonFrame(dt);
     if (this.stack.current === 'ride') {
       const { gameplay, seen } = this.settings.value;
       const ride = this.game.rideStatus;
@@ -281,9 +330,20 @@ export class App {
     return this.benchmark !== undefined;
   }
 
-  /** Esc, Start or the pause button, during a ride or in the Wave Lab. */
+  /** Esc, Start or the pause button, during a ride, a lesson or in the Wave Lab. */
   pause(): void {
-    if (this.stack.current === 'ride' || this.stack.current === 'wavelab') this.go('pause');
+    const { current } = this.stack;
+    if (current === 'ride' || current === 'wavelab' || (current === 'lesson' && !this.lessonOverlay)) this.go('pause');
+  }
+
+  /** R: in the Surf School the same wave again; in Surf, paddle out again. */
+  retry(): void {
+    if (this.stack.base === 'lesson') {
+      if (!this.lessonOverlay && this.lessonFlow?.retry()) void this.restartAttempt();
+      return;
+    }
+    this.game.quickRetry();
+    this.noteRetry();
   }
 
   /** The player paddled out again (R): the ride in progress ends by choice, and the card goes. */
@@ -305,12 +365,14 @@ export class App {
     const { current, base } = this.stack;
     this.root.dataset.screen = current;
     this.root.dataset.base = base;
-    const playing = current === 'ride' || current === 'wavelab' || current === 'stage';
+    // A lesson rides when nothing covers its wave; its card and pass card hold the sea still.
+    const lessonRiding = current === 'lesson' && !this.lessonOverlay;
+    const playing = current === 'ride' || current === 'wavelab' || current === 'stage' || lessonRiding;
     // The ride's keys drive a rider; the Wave Lab flies its camera with its own input.
-    this.controls.enabled = current === 'ride';
+    this.controls.enabled = current === 'ride' || lessonRiding;
     this.game.lab.input.enabled = current === 'wavelab';
     this.menuInput.active = !playing;
-    this.game.setPaused(this.stack.stack.includes('pause'));
+    this.game.setPaused(this.stack.stack.includes('pause') || (current === 'lesson' && !lessonRiding));
     this.applyAccessibility();
     if (base !== 'menu') this.backdropReady = false;
     if (base === 'menu' && this.scene !== 'backdrop') this.openBackdrop();
@@ -329,10 +391,11 @@ export class App {
       return [createMainMenu({
         surf: () => this.go('surf'),
         multiplayer: () => this.go('multiplayer'),
+        school: () => this.go('school'),
         waveLab: () => void this.enterWaveLab(),
         logbook: () => this.go('logbook'),
         settings: () => this.go('settings'),
-      }, { version: packageJson.version, sound: { muted: this.sound.muted, toggle: () => this.toggleMute() } })];
+      }, { version: packageJson.version, schoolStarted: this.schoolProgress.started, sound: { muted: this.sound.muted, toggle: () => this.toggleMute() } })];
     }
     if (id === 'surf') {
       const card = createSurferCard(this.settings.value.surfer, this.surfChoice.conditions.time, {
@@ -407,6 +470,48 @@ export class App {
         sound: { muted: this.sound.muted, toggle: () => this.toggleMute() },
       }, this.viewLabel(), this.playersPanel.root)];
     }
+    if (id === 'school') {
+      return [createSchoolScreen(schoolListModel(this.schoolProgress, LESSONS), {
+        lesson: (lessonId) => void this.openLesson(lessonById(lessonId)),
+        freePractice: (start) => void this.openLesson(undefined, start),
+        back: () => this.back(),
+      }, this.schoolError)];
+    }
+    if (id === 'lesson') return this.lessonScreen();
+    if (id === 'pause' && this.stack.base === 'lesson') {
+      const flow = this.lessonFlow;
+      const { school } = this.game;
+      return [createLessonPauseMenu({
+        resume: () => this.back(),
+        restart: () => {
+          this.back();
+          void this.restartAttempt();
+        },
+        explain: () => {
+          this.lessonOverlay = 'card';
+          this.back();
+        },
+        slowMotion: () => {
+          school.setSlowMotion(!school.slowMotion);
+          return school.slowMotion;
+        },
+        slowMotionOn: school.slowMotion,
+        camera: () => {
+          this.game.cycleView();
+          return this.viewLabel();
+        },
+        settings: () => this.go('settings'),
+        ...(flow && !flow.lesson ? {
+          howTo: () => {
+            this.lessonOverlay = 'howto';
+            this.back();
+          },
+        } : {}),
+        lessons: () => this.toSchool(),
+        quit: () => this.quitToMenu(),
+        sound: { muted: this.sound.muted, toggle: () => this.toggleMute() },
+      }, this.viewLabel())];
+    }
     if (id === 'pause' && this.stack.base === 'wavelab') {
       return [createLabPauseMenu({
         resume: () => this.back(),
@@ -444,6 +549,7 @@ export class App {
   }
 
   private quitToMenu(): void {
+    this.leaveLesson();
     this.leaveWaveLab();
     this.leaveRoom();
     this.hideEndCard();
@@ -669,6 +775,180 @@ export class App {
       : id === 'trim' ? (pad ? t('hud.stick') : `${label('trimForward')} ${label('trimBack')}`)
         : label(id);
     return t(`hint.${id}`, { keys });
+  }
+
+  /** The key, button or stick each action is on for the device in use: the lesson card's keys and prompts (spec L2). */
+  private readonly actionLabel: ActionLabel = (action) => {
+    if (this.touchActive()) {
+      const touch: Partial<Record<Action, StringKey>> = {
+        paddle: 'touch.paddle', popUp: 'touch.popUp', crouch: 'touch.crouch', steerLeft: 'touch.left', steerRight: 'touch.right',
+      };
+      const key = touch[action];
+      return key ? t(key) : '—';
+    }
+    const { bindings } = this.settings.value.controls;
+    if (this.controls.lastDevice !== 'gamepad') return keyLabel(bindings.keyboard[action][0]);
+    const stick = action === 'steerLeft' || action === 'steerRight' || action === 'trimForward' || action === 'trimBack';
+    return stick ? t('hud.stick') : buttonLabel(bindings.gamepad[action][0]);
+  };
+
+  /** The lesson's scene: the ride HUD, and whatever covers the wave (the card, the pass card, How to…). */
+  private lessonScreen(): Node[] {
+    const flow = this.lessonFlow;
+    const nodes: Node[] = [this.rideHud.root];
+    if (DEV_TOOLS && this.game.school.provisional) nodes.push(el('p', { class: 'school-provisional', text: 'Provisional wave' }));
+    const lesson = flow?.lesson;
+    if (lesson && this.lessonOverlay === 'card') {
+      nodes.push(createLessonCard(lessonCardModel(lesson, this.actionLabel), {
+        go: () => void this.beginAttempt(),
+        list: () => this.toSchool(),
+      }, flow.state === 'attempt' ? 'pause.resume' : 'school.go'));
+    }
+    if (lesson && this.lessonOverlay === 'pass') {
+      const next = LESSONS[LESSONS.indexOf(lesson) + 1];
+      nodes.push(createPassCard(t(`lesson.${lesson.id}.title` as StringKey), {
+        ...(next ? { next: () => void this.switchLesson(next) } : {}),
+        again: () => void this.againLesson(),
+        list: () => this.toSchool(),
+      }));
+    }
+    if (this.lessonOverlay === 'howto') {
+      nodes.push(createHowTo(LESSONS.map((each) => lessonCardModel(each, this.actionLabel)), () => {
+        this.lessonOverlay = undefined;
+        this.show();
+      }));
+    }
+    return nodes;
+  }
+
+  /** A frame of the lesson: the attempt read against its goal, a miss's restart, and the HUD's two lines. */
+  private lessonFrame(seconds: number): void {
+    const flow = this.lessonFlow!;
+    if (!this.lessonOverlay) {
+      if (flow.state === 'attempt') {
+        const frame = this.game.school.frame();
+        if (frame) flow.frame(frame);
+        // The frame may have passed the lesson (the narrowing above cannot see it).
+        if ((flow.state as FlowState) === 'passed') this.lessonPassed();
+      } else if (flow.state === 'missed') {
+        const next = flow.tick(seconds);
+        if (next === 'restart') {
+          void this.restartAttempt();
+        } else if (next === 'card') {
+          this.lessonOverlay = 'card';
+          this.show();
+        }
+      }
+    }
+    const ride = this.game.rideStatus;
+    const keys = this.hintKeys();
+    const hud = lessonHud(flow, this.actionLabel, keys.retry);
+    // The ride's own "Pop up now" wins while it shows: it is the moment the pop-up and catch lessons teach.
+    const prompt = ride?.cue && flow.state === 'attempt' ? undefined : hud.prompt;
+    this.rideHud.update(ride, this.settings.value.gameplay.units, keys, false, true, hud.coach, prompt);
+  }
+
+  /**
+   * A lesson, or Free Practice (no lesson): its sea builds from the recording behind
+   * the loading card, then the lesson's card shows over it (Free Practice rides at
+   * once). A wave that will not load says so on the School screen.
+   */
+  private async openLesson(lesson: Lesson | undefined, freeStart: LessonStart = 'pocket'): Promise<void> {
+    if (this.schoolBusy) return;
+    this.schoolBusy = true;
+    const start = lesson?.start ?? freeStart;
+    const view = lesson?.view ?? (start === 'pocket' ? 'behind' : 'front');
+    this.setLoadingText('loading.school');
+    this.loading.classList.remove('is-hidden');
+    let started = false;
+    try {
+      started = await this.game.school.enter(start, view, !lesson);
+      this.schoolError = undefined;
+    } catch (error) {
+      console.warn('The lesson wave did not load.', error);
+      this.schoolError = t('school.loadError');
+    } finally {
+      this.loading.classList.add('is-hidden');
+      this.schoolBusy = false;
+    }
+    if (!started) {
+      if (this.stack.current === 'school') this.show();
+      return;
+    }
+    this.hideEndCard();
+    this.lessonStart = start;
+    this.lessonFlow = new LessonFlow(lesson, { start });
+    this.lessonFresh = true;
+    this.lessonOverlay = lesson ? 'card' : undefined;
+    if (!lesson) this.lessonFlow.start();
+    this.scene = 'lesson';
+    this.stack.reset('lesson');
+    this.show();
+  }
+
+  /** Start from the card (a fresh attempt, the wave restarted unless it still stands where it was placed), or back to the wave. */
+  private async beginAttempt(): Promise<void> {
+    const flow = this.lessonFlow;
+    if (!flow) return;
+    this.lessonOverlay = undefined;
+    if (flow.state !== 'attempt') {
+      if (!this.lessonFresh) await this.game.school.restart(this.lessonStart);
+      flow.start();
+    }
+    this.lessonFresh = false;
+    this.show();
+  }
+
+  /** The same wave again, now: a miss's restart, R, or Restart. */
+  private async restartAttempt(): Promise<void> {
+    const flow = this.lessonFlow;
+    if (!flow) return;
+    await this.game.school.restart(this.lessonStart);
+    flow.start();
+    this.lessonFresh = false;
+  }
+
+  /** Passed: remembered, the matching Surf hint retired, and the pass card over the held wave. */
+  private lessonPassed(): void {
+    const lesson = this.lessonFlow?.lesson;
+    if (!lesson) return;
+    this.schoolProgress.pass(lesson.id);
+    if (lesson.hint) this.hintBook.succeeded(lesson.hint);
+    this.sound.playUi('chime');
+    this.lessonOverlay = 'pass';
+    this.show();
+  }
+
+  private async againLesson(): Promise<void> {
+    this.lessonOverlay = undefined;
+    await this.restartAttempt();
+    this.show();
+  }
+
+  /** The next lesson on the same wave: no rebuild, the wave restarted for its start, its card. */
+  private async switchLesson(lesson: Lesson): Promise<void> {
+    this.lessonStart = lesson.start;
+    this.lessonFlow = new LessonFlow(lesson);
+    this.lessonOverlay = 'card';
+    this.game.school.setView(lesson.view);
+    await this.game.school.restart(lesson.start);
+    this.lessonFresh = true;
+    this.show();
+  }
+
+  /** Lessons: out of the lesson and back to the School's list. */
+  private toSchool(): void {
+    this.leaveLesson();
+    this.stack.reset('menu');
+    this.stack.push('school');
+    this.show();
+  }
+
+  private leaveLesson(): void {
+    if (!this.lessonFlow) return;
+    this.lessonFlow = undefined;
+    this.lessonOverlay = undefined;
+    this.game.school.leave();
   }
 
   /** The keys (or pad buttons) the prompts and hints name, from the player's bindings and last-used device. */

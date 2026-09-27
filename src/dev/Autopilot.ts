@@ -45,6 +45,8 @@ export interface AutopilotOptions {
   giveUp?: number;
   /** Standing: hold a line along the face ('line'), or ride S-turns up and down it ('turns', spec P9). */
   style?: 'line' | 'turns';
+  /** Standing, end the ride when the board crawls (STALL for STALL_TIME); false leaves the end to the caller's ride analyzer. */
+  stall?: boolean;
 }
 
 export type AutopilotState = 'position' | 'wait' | 'go' | 'ride' | 'done';
@@ -68,6 +70,14 @@ const STALL_TIME = 1;
  * toward the peel's source. No turn is held longer than TURN_LIMIT, s.
  */
 const DEG = Math.PI / 180;
+/**
+ * The take-off is angled this far from the wave's travel toward the open face,
+ * and a bottom turn starts no further ahead of the crest than BOTTOM_REACH, m
+ * (riding-the-wave Task 7: straight down a 1.3 m face the rider stood 8 m ahead
+ * of the crest, on the flat, where a full bottom turn bled its speed and it fell).
+ */
+const TAKEOFF_ANGLE = 35 * DEG;
+const BOTTOM_REACH = 6;
 const BOTTOM_FACE = 0.35;
 const BOTTOM_START = 90 * DEG;
 const BOTTOM_END = 120 * DEG;
@@ -106,6 +116,11 @@ export class Autopilot {
   private readonly giveUp: number;
   private clock = 0;
   private stalled = 0;
+  private readonly stall: boolean;
+  /** The open face the gauge last showed this attempt (away from the curl), 0 before it has shown one. */
+  private seenFace = 0;
+  /** The open face the latest attempt saw: a paddler turns only about 7°/s, so waiting it points that way already. */
+  private lastFace = 0;
   private popped = false;
   private lastHeading = Number.NaN;
   private travel = 0;
@@ -121,10 +136,17 @@ export class Autopilot {
     this.line = ((options.lineDegrees ?? 60) * Math.PI) / 180;
     this.giveUp = options.giveUp ?? 8;
     this.style = options.style ?? 'line';
+    this.stall = options.stall ?? true;
+  }
+
+  /** End the ride from outside (the ride analyzer's end). */
+  finish(outcome: string): void {
+    if (this.state === 'ride') this.end(outcome);
   }
 
   reset(): void {
     this.state = 'position';
+    this.seenFace = 0;
     this.outcome = undefined;
     this.rideTime = 0;
     this.lastHeading = Number.NaN;
@@ -144,7 +166,9 @@ export class Autopilot {
         if (ride.phase === 'prone' && view.focusZ - view.board.z > this.waitOutside) input.paddle = true;
         else this.state = 'wait';
         break;
-      case 'wait':
+      case 'wait': {
+        const face = this.lastFace || Math.sign(view.peelDirection);
+        if (face !== 0) input.steer = this.aim(this.travel + face * TAKEOFF_ANGLE, heading, yawRate);
         if (view.crestBehind > this.rise) {
           this.state = 'go';
           this.attempts += 1;
@@ -155,6 +179,7 @@ export class Autopilot {
           return this.next(view, 0);
         }
         break;
+      }
       case 'go':
         this.clock += dt;
         if (ride.phase === 'fallen' || ride.phase === 'recover') {
@@ -167,6 +192,8 @@ export class Autopilot {
             this.end('missed the wave');
           } else {
             input.paddle = true;
+            const open = this.openFace(view);
+            if (open !== 0) input.steer = this.aim(this.travel + open * TAKEOFF_ANGLE, heading, yawRate);
           }
         } else if (ride.phase === 'standing') {
           this.state = 'ride';
@@ -179,11 +206,11 @@ export class Autopilot {
         }
         this.rideTime += dt;
         this.stalled = ride.speed < STALL ? this.stalled + dt : 0;
-        if (this.stalled > STALL_TIME) {
+        if (this.stall && this.stalled > STALL_TIME) {
           this.end('the wave left');
           break;
         }
-        if (this.style === 'turns' && view.peelDirection !== 0) Object.assign(input, this.turns(view, heading, dt));
+        if (this.style === 'turns' && this.openFace(view) !== 0) Object.assign(input, this.turns(view, heading, dt));
         else input.steer = this.steer(view, heading, yawRate);
         break;
       }
@@ -197,19 +224,38 @@ export class Autopilot {
   private steer(view: AutopilotView, heading: number, yawRate: number): number {
     const { wave } = view.ride;
     let target = this.travel;
-    if (view.peelDirection !== 0) {
+    const open = this.openFace(view);
+    if (open !== 0) {
       let line = this.line;
       if (wave.valid && wave.faceFraction < FACE_LOW) line += (FACE_TURN * Math.PI) / 180;
       else if (wave.valid && wave.faceFraction > FACE_HIGH) line -= (FACE_TURN * Math.PI) / 180;
-      target += Math.sign(view.peelDirection) * line;
+      target += open * line;
     }
+    return this.aim(target, heading, yawRate);
+  }
+
+  /** The lean (or, lying down, the stroke) that turns the heading onto `target`. */
+  private aim(target: number, heading: number, yawRate: number): number {
     return Math.max(-1, Math.min(1, wrap(target - heading) / HEADING_GAIN - YAW_DAMPING * yawRate));
+  }
+
+  /**
+   * Which way along the crest the open face lies: away from the curl the gauge sees, or last saw this attempt (a
+   * curl gone out of reach mid-turn must not reverse it), else the break's peel.
+   */
+  private openFace(view: AutopilotView): number {
+    const { wave } = view.ride;
+    if (wave.valid && wave.curlSide !== 0) {
+      this.seenFace = -wave.curlSide;
+      this.lastFace = this.seenFace;
+    }
+    return this.seenFace !== 0 ? this.seenFace : Math.sign(view.peelDirection);
   }
 
   /** S-turns: the turn the face calls for, held to its end, and the pump between them. */
   private turns(view: AutopilotView, heading: number, dt: number): Pick<RideInput, 'steer' | 'trim' | 'crouch'> {
     const { wave } = view.ride;
-    const peel = Math.sign(view.peelDirection);
+    const peel = this.openFace(view);
     const angle = peel * wrap(heading - this.travel);
     if (this.turn) {
       this.turnTime += dt;
@@ -220,7 +266,7 @@ export class Autopilot {
     if (!this.turn && wave.valid) {
       const wanted: Turn | undefined = wave.aheadOfCrest > SHOULDER && angle > TOP_END ? 'cutback'
         : wave.faceFraction > TOP_FACE && angle > TOP_START ? 'top'
-          : wave.faceFraction < BOTTOM_FACE && angle < BOTTOM_START ? 'bottom' : undefined;
+          : wave.faceFraction < BOTTOM_FACE && angle < BOTTOM_START && wave.aheadOfCrest <= BOTTOM_REACH ? 'bottom' : undefined;
       if (wanted !== this.blocked) {
         this.turn = wanted;
         this.turnTime = 0;

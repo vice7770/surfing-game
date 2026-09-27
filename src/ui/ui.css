@@ -336,3 +336,37 @@
 @media (max-width: 620px) {
   .lab-info { bottom: 140px; }
 }
+
+/* L2: the Surf School. */
+.panel-school { width: min(100%, 38em); }
+.lesson-rows { display: grid; gap: .4em; }
+.lesson-row { display: grid; grid-template-columns: 2.2em 1fr 1.6em; align-items: center; gap: .8em; min-height: 3.4em; padding: .45em .8em; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 253, 243, .6); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.lesson-row:hover { background: #fffdf4; }
+.lesson-number { display: grid; place-items: center; width: 2.2em; height: 2.2em; border-radius: 50%; background: rgba(31, 73, 73, .08); font: 600 .85em var(--mono); }
+.lesson-row.is-passed .lesson-number { background: #173f43; color: #f6f1df; }
+.lesson-text { display: flex; flex-direction: column; gap: .15em; }
+.lesson-text strong { font-size: 1em; }
+.lesson-text small { color: var(--muted); font-size: .8em; line-height: 1.35; }
+.lesson-check { color: #2c7779; font-weight: 700; text-align: center; }
+.free-practice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8em; padding-top: .9em; border-top: 1px solid var(--line); }
+.free-practice-starts { display: flex; flex-wrap: wrap; gap: .5em; }
+.free-practice-starts button { min-height: 2.6em; padding: 0 1em; font-size: .88em; }
+.screen-lesson-card { background: rgba(15, 57, 64, .12); }
+.panel-lesson { width: min(100%, 28em); }
+.lesson-title { margin: 0; font: 400 1.7em Georgia, 'Times New Roman', serif; letter-spacing: -.03em; }
+.lesson-diagram { display: grid; place-items: center; padding: .6em; border-radius: 12px; background: rgba(255, 253, 243, .6); color: #1f5d60; }
+.lesson-diagram svg { width: min(100%, 15em); height: auto; }
+.lesson-explain { margin: 0; font-size: .95em; line-height: 1.55; }
+.lesson-keys { display: flex; flex-wrap: wrap; align-items: center; gap: .6em; margin: 0; color: var(--muted); font: .72em var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.lesson-keys .keycap { min-width: 2em; height: auto; padding: .3em .6em; color: var(--ink); font-size: 1.1em; letter-spacing: .04em; text-transform: none; }
+.lesson-pass .end-card-actions button { flex: 1 1 auto; }
+.school-provisional { position: absolute; left: max(12px, 2vw); top: max(12px, 2vh); margin: 0; padding: .3em .7em; border-radius: 99px; background: rgba(239, 128, 94, .85); color: #fff9ee; font: .66em var(--mono); letter-spacing: .1em; text-transform: uppercase; pointer-events: none; }
+.panel-how-to { display: grid; grid-template-columns: 11em 1fr; grid-template-areas: 'list detail' 'footer footer'; gap: 1em; width: min(100%, 46em); }
+.how-to-list { grid-area: list; display: flex; flex-direction: column; gap: .35em; }
+.how-to-list button { min-height: 2.4em; font-size: .85em; text-align: left; }
+.how-to-detail { grid-area: detail; display: flex; flex-direction: column; gap: .8em; }
+.panel-how-to .panel-footer { grid-area: footer; }
+@media (max-width: 620px) {
+  .panel-how-to { grid-template-columns: 1fr; grid-template-areas: 'detail' 'list' 'footer'; }
+  .free-practice-starts, .free-practice-starts button { width: 100%; }
+}

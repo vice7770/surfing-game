@@ -282,6 +282,17 @@ describe('SurfZoneRunner with a rider', () => {
     expect(runner.status().ride!.resets).toBe(1);
   });
 
+  // L2: a lesson attempt places the rider; it counts as a restart.
+  it('places the rider where a lesson asks, standing, as a restart', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    const place = { x: runner.focus.x + 3, z: runner.focus.z - 2, heading: 0.3, speed: 3, phase: 'standing' as const };
+    runner.advance(1, { ...idle, place });
+    const ride = runner.status().ride!;
+    expect(ride.phase).toBe('standing');
+    expect(ride.resets).toBe(1);
+    expect(Math.hypot(runner.session!.board.position.x - place.x, runner.session!.board.position.z - place.z)).toBeLessThan(0.5);
+  });
+
   it('spawns the rider where asked, relative to the take-off (spec N1)', () => {
     const runner = new SurfZoneRunner(calm, { rider: true, spawnAlong: 12, spawnOut: 20 });
     const board = runner.session!.board.position;
@@ -332,7 +343,7 @@ describe('SurfZoneRunner with a rider', () => {
   });
 
   it('reads each ride from its trace, and reports the finished ride as plain data', () => {
-    // On a flat sea the break line, and the lineup just outside it, lie in the shallows: a ride there ends inside at once.
+    // On a flat sea the break line, and the lineup just outside it, lie in the shallows: the wave dies under a ride there at once.
     const runner = new SurfZoneRunner(calm, { rider: true });
     runner.advance(1);
     expect(runner.status().ride!.report).toBeUndefined();
@@ -350,7 +361,7 @@ describe('SurfZoneRunner with a rider', () => {
     };
     stand();
     const status = runner.status();
-    expect(status.ride!.report).toMatchObject({ id: 1, end: 'inside', maneuvers: [] });
+    expect(status.ride!.report).toMatchObject({ id: 1, end: 'wave died', maneuvers: [] });
     expect(structuredClone(status)).toEqual(status);
     stand();
     expect(runner.status().ride!.report!.id).toBe(2);
@@ -365,9 +376,11 @@ describe('SurfZoneRunner rider in waves', () => {
     const { velocity } = runner.session!.board;
     expect(ride.speed).toBeCloseTo(Math.hypot(velocity.x, velocity.z), 9);
     expect(ride.boardSpeed).toBeCloseTo(velocity.length(), 9);
-    const { requiredSpeed, ...rest } = ride.wave;
+    // The required speed is infinite for a close-out, and the curl's distance with no breaking crest in reach.
+    const { requiredSpeed, curlDistance, ...rest } = ride.wave;
     for (const [name, value] of Object.entries(rest)) if (typeof value === 'number') expect(Number.isFinite(value), name).toBe(true);
     expect(requiredSpeed).toBeGreaterThan(0);
+    expect(curlDistance).toBeGreaterThanOrEqual(0);
     expect(Math.hypot(ride.wave.directionX, ride.wave.directionZ)).toBeCloseTo(1, 9);
   });
 

@@ -18,6 +18,7 @@
     "assets:skies": "rolldown scripts/assets/fetch-skies.ts -o dist/scripts/fetch-skies.mjs --format esm --platform node && node dist/scripts/fetch-skies.mjs",
     "assets:surfers": "/Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/assets/build_surfers.py && node scripts/assets/pack-surfers.mjs",
     "report:sound": "rolldown scripts/sound-report.ts -o dist/scripts/sound-report.mjs --format esm --platform node && node dist/scripts/sound-report.mjs",
+    "lesson:wave": "rolldown scripts/lesson-wave.ts -o dist/scripts/lesson-wave.mjs --format esm --platform node && node dist/scripts/lesson-wave.mjs",
     "report:whitewater": "rolldown scripts/whitewater-report.ts -o dist/scripts/whitewater-report.mjs --format esm --platform node && node dist/scripts/whitewater-report.mjs",
     "report:drift": "rolldown scripts/drift-report.ts -o dist/scripts/drift-report.mjs --format esm --platform node && node dist/scripts/drift-report.mjs",
     "server": "npm run build && npm run build:server && node dist-server/server.mjs",

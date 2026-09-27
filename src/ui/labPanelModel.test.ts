@@ -18,7 +18,7 @@ describe('lab panel model', () => {
   it('says what a storm delivers at the spot, and what the practice swell is', () => {
     const storm = { ...defaultLabSettings().physical, source: 'storm' as const };
     expect(stormArrives(storm, 'metric')).toMatch(/^Arrives at the spot as \d+\.\d m, \d+ s$/);
-    expect(practiceNote('metric')).toBe('A steady 2.0 m groundswell every 12 s, from 10°.');
+    expect(practiceNote('metric')).toBe('A steady 1.4 m groundswell every 12 s, from 10°.');
   });
 
   it('shows only the sliders of the chosen swell source, with the direction fixed for Practice', () => {
