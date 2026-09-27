@@ -30,6 +30,8 @@ export function roomSurfZoneConfig(room: RoomSea, startSeaTime: number, compute:
     windSpeed: settings.windSpeed,
     stage: 2,
     compute,
+    // Practice's groundswell is given at the tank's edge, as the Surf screen's is (the wave-sizes spec).
+    ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
     componentCount: GPU_TIER_COMPONENTS,
     startSeaTime,
   };

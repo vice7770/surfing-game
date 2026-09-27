@@ -11,6 +11,22 @@ import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
 
 describe('PhysicalMode', () => {
+  it('gives Practice\'s groundswell at the tank\'s edge and a buoy\'s in deep water (wave sizes)', async () => {
+    const water = new WaterSurface(new FlatSurfaceSource());
+    const mode = new PhysicalMode(new Scene());
+    const configs: SurfZoneConfig[] = [];
+    const capture = (config: SurfZoneConfig) => {
+      configs.push(config);
+      return { config, ready: new Promise<void>(() => {}), dispose: () => {} } as unknown as SurfZoneHost;
+    };
+    void mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'practice' }, 1, water, quick, capture);
+    void mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'buoy' }, 1, water, quick, capture);
+    await Promise.resolve();
+    mode.cancel();
+    expect(configs[0].heightAt).toBe('edge');
+    expect(configs[1].heightAt ?? 'deep').toBe('deep');
+  });
+
   it('maps the spread slider from groundswell to windswell spreading', () => {
     expect(spreadingFor(0)).toBeCloseTo(24, 12);
     expect(spreadingFor(1)).toBeCloseTo(4, 12);

@@ -366,6 +366,8 @@ export class PhysicalMode {
       windSpeed: settings.windSpeed,
       stage: settings.stage,
       compute: settings.compute,
+      // Practice's groundswell is given at the tank's edge, so its sea stays as it was (the wave-sizes spec).
+      ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
       ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
       ...overrides,
     };

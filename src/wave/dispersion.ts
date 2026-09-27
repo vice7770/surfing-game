@@ -65,6 +65,11 @@ export function shallowWaterWaveNumber(omega: number, depth: number, g = GRAVITY
   return omega / Math.sqrt(g * depth);
 }
 
+/** Linear shoaling from deep water to depth h at period T: K_s = √(c_g∞ / c_g(h)), c_g∞ = gT/4π (the wave-sizes spec). */
+export function shoalingCoefficient(period: number, depth: number, g = GRAVITY): number {
+  return Math.sqrt((g * period) / (4 * Math.PI) / waveKinematics(period, depth, g).groupSpeed);
+}
+
 /** Group speed dω/dk for any dispersion, by central difference in ω, m/s. */
 export function groupSpeed(waveNumberAt: WaveNumberFunction, omega: number, depth: number): number {
   const step = omega * 1e-4;

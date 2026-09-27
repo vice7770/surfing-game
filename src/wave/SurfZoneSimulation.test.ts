@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { REEF, createSpot } from './Bathymetry';
 import { breakerDepthFor } from './Breaking';
-import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TANK, takeOffPoint, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
+import { FOAM_DECAY, OFFSHORE_DEPTH, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TANK, edgeHeight, surfZoneSea, takeOffPoint, tankDepth, windOnsetScale, type SurfZoneConfig } from './SurfZoneSimulation';
+import { shoalingCoefficient } from './dispersion';
 import { rayConcentration } from './Refraction';
 import { crestSpeedAt } from './CrestKinematics';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
@@ -13,6 +14,15 @@ const small: Omit<SurfZoneConfig, 'spot'> = {
 };
 
 describe('SurfZoneSimulation', () => {
+  it('takes a buoy height in deep water and shoals it to the tank\'s edge (wave sizes)', () => {
+    const config: SurfZoneConfig = { ...small, spot: 'point', significantHeight: 2, peakPeriod: 12 };
+    expect(edgeHeight(config)).toBeCloseTo(2 * shoalingCoefficient(12, OFFSHORE_DEPTH.point), 12);
+    expect(surfZoneSea(config).components[0].amplitude).toBeCloseTo(edgeHeight(config) / Math.sqrt(8 * small.componentCount!), 12);
+    // Practice gives its height at the edge, and the Canyon always takes its swell there: their seas stay as they were.
+    expect(edgeHeight({ ...config, heightAt: 'edge' })).toBe(2);
+    expect(edgeHeight({ ...config, spot: 'canyon' })).toBe(2);
+  });
+
   it('warm-starts so the spun-up sea sits at a chosen sea time (a room\'s clock)', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'canyon', stage: 1, startSeaTime: 500 });
     expect(simulation.seaTime).toBeCloseTo(500, 6);
@@ -177,7 +187,7 @@ describe('SurfZoneSimulation', () => {
   it('finds the break line at the shoaled breaker depth', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'beach' });
     const point = simulation.breakPoint();
-    const depth = breakerDepthFor(1.4, simulation.sea.depth);
+    const depth = breakerDepthFor(edgeHeight(simulation.config), simulation.sea.depth);
     expect(simulation.breakerDepth()).toBeCloseTo(depth, 12);
     expect(tankDepth(simulation.spot, OFFSHORE_DEPTH.beach, point.x, point.z)).toBeCloseTo(depth, 1);
   });

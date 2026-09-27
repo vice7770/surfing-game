@@ -1,7 +1,7 @@
 import { createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
-import { GRAVITY, shallowWaterWaveNumber } from './dispersion';
+import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient } from './dispersion';
 import { AERATION, AerationField } from './AerationField';
 import { FoamField, boreDissipation, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
@@ -24,8 +24,13 @@ const WATER_DENSITY = 1025;
 export interface SurfZoneConfig {
   spot: SpotName;
   seed: number;
-  /** Offshore significant wave height Hs, m. */
+  /** Significant wave height Hs, m: the buoy's, in deep water, unless `heightAt` is 'edge'. */
   significantHeight: number;
+  /**
+   * Where Hs is given (the wave-sizes spec): in deep water, shoaled to the tank's edge by linear theory
+   * (the default), or at the edge (Practice's groundswell). The Canyon always takes it at the edge.
+   */
+  heightAt?: 'deep' | 'edge';
   peakPeriod: number;
   /** Mean direction from shore-normal, degrees (positive toward +x). */
   directionDegrees: number;
@@ -117,13 +122,19 @@ export function windOnsetScale(windSpeed: number, breakerDepth: number): number 
   return u >= 0 ? Math.max(0.6, 1 - 0.1 * u) : Math.min(1.1, 1 - 0.05 * u);
 }
 
+/** The sea's Hs at the tank's edge, m: the buoy's deep-water height shoaled by linear theory, unless given at the edge. */
+export function edgeHeight(config: SurfZoneConfig, edgeDepth = OFFSHORE_DEPTH[config.spot]): number {
+  if (config.spot === 'canyon' || config.heightAt === 'edge') return config.significantHeight;
+  return config.significantHeight * shoalingCoefficient(config.peakPeriod, edgeDepth + config.tide);
+}
+
 /**
  * The seeded sea a surf zone is built from, at the tank's offshore depth. Pure,
  * so the renderer can rebuild the same sea (for the far field) outside the worker.
  */
 export function surfZoneSea(config: SurfZoneConfig): SeaState {
   return SeaState.fromSpectrum({
-    significantHeight: config.significantHeight,
+    significantHeight: edgeHeight(config),
     peakPeriod: config.peakPeriod,
     direction: (config.directionDegrees * Math.PI) / 180,
     spreading: config.spreading,
@@ -153,7 +164,7 @@ export const TAKE_OFF_EDGE_MARGIN = 30;
 export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   const spot = createSpot(config.spot, config.seed);
   const offshoreDepth = OFFSHORE_DEPTH[config.spot];
-  const target = breakerDepthFor(config.significantHeight, offshoreDepth + config.tide);
+  const target = breakerDepthFor(edgeHeight(config), offshoreDepth + config.tide);
   const breakZ = (x: number) => {
     // Scan the whole simulated bed from the relaxation zone inward.
     for (let z = TANK.zoneInner; z < TANK.shore; z += 0.5) {
@@ -437,7 +448,7 @@ export class SurfZoneSimulation {
 
   /** Still depth where the shoaled swell breaks, h_b = (Hs·D^¼/γ)^⅘, m. */
   breakerDepth(): number {
-    return breakerDepthFor(this.config.significantHeight, this.sea.depth);
+    return breakerDepthFor(edgeHeight(this.config), this.sea.depth);
   }
 
   /** Bore speed at the break, √(g h_b), m/s. */
@@ -584,7 +595,7 @@ export class SurfZoneSimulation {
       iribarren,
       slope,
       // The overturn fits' H0/h0: the incoming sea's height over the tank's offshore depth.
-      nonlinearity: this.config.significantHeight / (OFFSHORE_DEPTH[this.config.spot] + this.config.tide),
+      nonlinearity: edgeHeight(this.config) / (OFFSHORE_DEPTH[this.config.spot] + this.config.tide),
       breakerHeight: height,
       windOverCelerity: (this.config.windSpeed ?? 0) / Math.sqrt(GRAVITY * stillDepth),
       width: solver.dx,
