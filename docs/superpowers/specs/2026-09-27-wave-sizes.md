@@ -2,6 +2,8 @@
 
 Agreed in a grilling session on 2026-09-27 (three rounds, Q1–Q14, every recommendation accepted). This is the requirements record; the plan follows it. Details the grilling left open, settled while writing it, are marked **(settled in the spec)**.
 
+**The Reef is handed to the Teahupo'o Reef rework** (the user's decision, 2026-09-27, in the session that owns `docs/superpowers/specs/2026-09-27-teahupoo-reef.md`): that work owns the whole Reef seabed, inner and outer, its own swell choices and Practice, and its sizes check. Here the Reef's bed stays exactly as it is, the Reef gets the machinery (deep-water input, the swell-sized tank, the meter and readouts), and the size report shows the Reef without gating it. The Reef work builds on Part B once it merges.
+
 ## Goal
 
 Surf in the game is as big as the swell says, and the game says how big it is the way surfers do.
@@ -49,12 +51,11 @@ Surf in the game is as big as the swell says, and the game says how big it is th
 
 ### Making the surf big enough
 
-- **Target** (Q8): sets to ~6 m faces at the Reef and Point on the biggest days (Hs 4 m, long period); 3–4 m close-outs at the Beach. Big-wave surf (10 m+, tow-in) goes to the Backlog.
+- **Target** (Q8): sets to ~6 m faces at the Point on the biggest days (Hs 4 m, long period); 3–4 m close-outs at the Beach. The Reef's targets are the Reef rework's (Practice ~1.5–2 m faces, Small 2–3, Medium 3–4, Big 5–6). Big-wave surf (10 m+, tow-in) goes to the Backlog.
 - **Deeper outer zones fitted to real profiles** (Q9). A research doc sources measured profiles and the generic shapes are fitted to them:
-  - the **Reef**: a steep drop from the channel to deep water (Pipeline, Teahupo'o-like);
   - the **Point**: a longer, deeper shelf off the headland;
   - the **Beach**: deeper outer bars (a double-barred beach like Duck, NC);
-  - the inner bathymetry (shoreward of −150, where small days break) is unchanged; the Canyon is untouched.
+  - the inner bathymetry (shoreward of −150, where small days break) is unchanged; the Canyon is untouched; the Reef's bed is unchanged here (the Reef rework replaces it).
 - **The tank is sized to the swell** (Q10): its edge sits where the bed is deep enough for the swell, and its 1 m zone starts where the sets break, so small days cost what they cost today. **Settled in the spec:**
   - edge depth = max(the spot's `OFFSHORE_DEPTH`, 3.3 Hs0), at most 0.4 L0(Tp): 3.3 is the largest ratio that leaves every Hs0 ≤ 1.5 m tank as it is, and keeps Hs0 within 0.3 of the edge depth on big days, so the zone's linear sea stays near linear; 0.4 L0 keeps kh ≤ 2.5, where the solver's dispersion is within 1 % of Airy;
   - a tank at its spot's `OFFSHORE_DEPTH` is today's tank, exactly;
@@ -67,7 +68,8 @@ Surf in the game is as big as the swell says, and the game says how big it is th
 ### Checks
 
 - **Size report** (Q12), per spot, Hs 1, 2, 3, 4 m × Tp 10, 14, 18 s, 4 minutes of sea each: measured H1/3 and H1/10 faces, the break's position, and the empirical breaker height from the sourced formulas.
-  - **Big days** (Hs ≥ 2 m): measured H1/3 within ±20 % of the empirical breaker height at the Beach, Point and Reef. **Settled in the spec:** the reference is Komar & Gaughan's H_b = 0.39 g^0.2 (T H0²)^0.4 at all three; Caldwell & Aucan's (2007) shoaling-and-refraction H1/10 for Hawaii's outer reefs is reported beside the Reef as the high-refraction bound, not gated (it gives ~10 m sets at Hs 4 m, the Backlog's big-wave surf).
+  - **Big days** (Hs ≥ 2 m): measured H1/3 within ±20 % of the empirical breaker height at the Beach and Point. **Settled in the spec:** the reference is Komar & Gaughan's H_b = 0.39 g^0.2 (T H0²)^0.4; Caldwell & Aucan's (2007) shoaling-and-refraction H1/10 for Hawaii's outer reefs is reported beside every spot as the high-refraction bound, not gated (it gives ~10 m sets at Hs 4 m, the Backlog's big-wave surf).
+  - **The Reef** is reported, not gated (its bed is about to change; the Reef rework checks its own sizes).
   - **Small days:** Practice, and every Hs ≤ 1.5 m sea entering today's tank, within ±5 % of today's H1/3 (the same edge sea; Part A records today's).
   - **Canyon:** unchanged (the same faces and seas, bit for bit where its sea is built).
   - **Take-off:** within 15 m across shore of the sets' measured median break.

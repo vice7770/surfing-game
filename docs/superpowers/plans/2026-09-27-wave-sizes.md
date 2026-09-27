@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-27-wave-sizes.md`
 
+**The Reef** (spec, top): its bed stays exactly as it is here, and the size report shows it ungated; the Teahupo'o Reef rework owns its bed, swells and sizes check, and builds on Part B.
+
 ## Global Constraints
 
 - Keep edits to `src/main.ts`, `src/game/PhysicalMode.ts` and the settings files small.
@@ -729,7 +731,7 @@ git commit -m "feat: empirical surf heights and a forecast fitted per spot"
   - `interface SizeRun { spot: SpotName; source: 'buoy' | 'practice'; significantHeight: number; period: number; heightAt: 'deep' | 'edge'; typical: number; sets: number; waves: number; setBreakZ: number; takeOffZ: number; stepMs: number; cells: number }`;
   - `summariseRun(input: Omit<SizeRun, 'typical' | 'sets' | 'waves' | 'setBreakZ'>, waves: readonly BreakingWave[], takeOffWaves: readonly BreakingWave[]): SizeRun`;
   - `interface SizeGate { name: string; pass: boolean; detail: string }`;
-  - `sizeGates(runs: readonly SizeRun[], baseline: readonly SizeRun[]): SizeGate[]` (used by Part B; Part A reports without gating);
+  - `UNGATED: readonly SpotName[] = ['reef']`; `sizeGates(runs: readonly SizeRun[], baseline: readonly SizeRun[]): SizeGate[]` (used by Part B; Part A reports without gating; the Reef never gated);
   - `sizeMarkdown(runs: readonly SizeRun[], gates: readonly SizeGate[] | undefined, command: string): string`.
   - `SizeRun.heightAt` is written `'edge'` for every Part A run (today's tank takes its swell at the edge).
 
@@ -742,7 +744,7 @@ import { sizeGates, sizeMarkdown, summariseRun, type SizeRun } from './sizeRepor
 import { komarGaughan } from './surfForecast';
 
 const wave = (time: number, face: number, z = -100): BreakingWave => ({ time, x: 0, z, face });
-const base = { spot: 'reef' as const, source: 'buoy' as const, significantHeight: 3, period: 12, heightAt: 'deep' as const, takeOffZ: -100, stepMs: 5, cells: 1000 };
+const base = { spot: 'beach' as const, source: 'buoy' as const, significantHeight: 3, period: 12, heightAt: 'deep' as const, takeOffZ: -100, stepMs: 5, cells: 1000 };
 
 describe('size report', () => {
   it('summarises a run: H1/3 and H1/10 of its waves, and where its sets broke at the take-off', () => {
@@ -760,24 +762,26 @@ describe('size report', () => {
     const kg = komarGaughan(3, 12);
     const near: SizeRun = { ...summariseRun(base, [], []), typical: 1.1 * kg, sets: 1.4 * kg, waves: 30, setBreakZ: -104 };
     const far: SizeRun = { ...near, spot: 'point', typical: 0.5 * kg };
-    const gates = sizeGates([near, far], []);
-    expect(gates.find((gate) => gate.name === 'reef Hs 3 m Tp 12 s')!.pass).toBe(true);
+    const gates = sizeGates([near, far, { ...near, spot: 'reef' }], []);
+    expect(gates.find((gate) => gate.name === 'beach Hs 3 m Tp 12 s')!.pass).toBe(true);
     expect(gates.find((gate) => gate.name === 'point Hs 3 m Tp 12 s')!.pass).toBe(false);
-    expect(gates.find((gate) => gate.name === 'reef Hs 3 m Tp 12 s take-off')!.pass).toBe(true);
+    expect(gates.find((gate) => gate.name === 'beach Hs 3 m Tp 12 s take-off')!.pass).toBe(true);
+    // The Reef is reported, not gated (its bed belongs to the Reef rework).
+    expect(gates.some((gate) => gate.name.startsWith('reef'))).toBe(false);
   });
 
   it('holds small days to within 5 % of the baseline, and the Canyon to the same faces', () => {
-    const small: SizeRun = { ...summariseRun({ ...base, significantHeight: 1, heightAt: 'edge' }, [], []), typical: 1.0, sets: 1.3, waves: 20, setBreakZ: -90 };
+    const small: SizeRun = { ...summariseRun({ ...base, spot: 'point', significantHeight: 1, heightAt: 'edge' }, [], []), typical: 1.0, sets: 1.3, waves: 20, setBreakZ: -90 };
     const canyon: SizeRun = { ...small, spot: 'canyon', significantHeight: 2, heightAt: 'edge' };
     const gates = sizeGates([{ ...small, typical: 1.04 }, { ...canyon, typical: 1.2 }], [small, canyon]);
-    expect(gates.find((gate) => gate.name === 'reef Hs 1 m Tp 12 s small day')!.pass).toBe(true);
+    expect(gates.find((gate) => gate.name === 'point Hs 1 m Tp 12 s small day')!.pass).toBe(true);
     expect(gates.find((gate) => gate.name === 'canyon Hs 2 m Tp 12 s unchanged')!.pass).toBe(false);
   });
 
   it('writes a table per spot with the empirical references', () => {
     const run: SizeRun = { ...summariseRun(base, [], []), typical: 4, sets: 5, waves: 30, setBreakZ: -104 };
     const markdown = sizeMarkdown([run], undefined, 'npm run report:sizes');
-    expect(markdown).toContain('## reef');
+    expect(markdown).toContain('## beach');
     expect(markdown).toContain(komarGaughan(3, 12).toFixed(2));
   });
 });
@@ -802,6 +806,8 @@ export const SIZE_SEA_SECONDS = 240;
 /** The report measures faces in bands this wide along shore, m, clear of the window's open edges by SIZE_EDGE_MARGIN. */
 export const SIZE_BAND_WIDTH = 20;
 export const SIZE_EDGE_MARGIN = 20;
+/** The Reef is reported, not gated: its bed belongs to the Teahupo'o Reef rework (the spec). */
+export const UNGATED: readonly SpotName[] = ['reef'];
 /** Gates: big days within 20 % of Komar–Gaughan, small days within 5 % of the baseline, the take-off within 15 m of the sets' break. */
 export const BIG_DAY = 2;
 export const SMALL_DAY = 1.5;
@@ -863,6 +869,7 @@ const same = (a: SizeRun, b: SizeRun) => a.spot === b.spot && a.source === b.sou
 export function sizeGates(runs: readonly SizeRun[], baseline: readonly SizeRun[]): SizeGate[] {
   const gates: SizeGate[] = [];
   for (const run of runs) {
+    if (UNGATED.includes(run.spot)) continue;
     const reference = baseline.find((old) => same(old, run));
     if (run.spot === 'canyon') {
       if (reference) {
@@ -1549,8 +1556,9 @@ git commit -m "feat: size the tank to the swell: a deeper edge, a longer zone, t
 
 Find measured cross-shore profiles (surveys, papers, agency data; cite each with its URL or DOI) for:
 - a **double-barred beach** (Duck, NC, USACE FRF; Birkemeier 1985 or Ruessink/Plant bar studies): outer bar crest depth, distance offshore, height; the offshore slope to 10–20 m;
-- a **point** (Rincon, Malibu, Jeffreys Bay, or similar): slope off the tip to 10–30 m, and where it flattens;
-- a **steep reef** (Pipeline/Ehukai, Teahupo'o, or similar): depths of the reef steps and the drop to 20–30 m, with distances.
+- a **point** (Rincon, Malibu, Jeffreys Bay, or similar): slope off the tip to 10–30 m, and where it flattens.
+
+(The Reef's profile is the Teahupo'o Reef rework's.)
 
 For each, state the range the shapes below must fall in, and whether the initial values in Task B5 are inside it. Where a value falls outside, give the in-range value Task B5 uses instead (and ledger a `Ruling:`).
 
@@ -1558,22 +1566,22 @@ For each, state the range the shapes below must fall in, and whether the initial
 
 ```bash
 git add docs/research/outer-profiles.md
-git commit -m "docs: measured outer surf-zone profiles for the Beach, Point and Reef"
+git commit -m "docs: measured outer surf-zone profiles for the Beach and Point"
 ```
 
 ### Task 13 (B5): Deeper outer bathymetry
 
 **Files:**
-- Modify: `src/wave/Bathymetry.ts` (`BEACH_OUTER`, `POINT_OUTER`, `REEF_OUTER`; the beach, point and reef `depthAt`)
+- Modify: `src/wave/Bathymetry.ts` (`BEACH_OUTER`, `POINT_OUTER`; the beach and point `depthAt`; the Reef untouched)
 - Test: `src/wave/Bathymetry.test.ts`
 
 **Interfaces:**
-- Produces: `BEACH_OUTER = { barOffshore: 320, barHeight: 1.3, barWidth: 45, maxDepth: 30 }`; `POINT_OUTER = { slope: 0.015, maxDepth: 30 }`; `REEF_OUTER = { start: -270, length: 120, depth: 30 }` (values as confirmed or replaced by Task B4's rulings).
+- Produces: `BEACH_OUTER = { barOffshore: 320, barHeight: 1.3, barWidth: 45, maxDepth: 30 }`; `POINT_OUTER = { slope: 0.015, maxDepth: 30 }` (values as confirmed or replaced by Task B4's rulings).
 
 - [ ] **Step 1: Write the failing tests**
 
 ```ts
-import { BEACH_BAR, BEACH_OUTER, POINT_HEADLAND, POINT_OUTER, REEF, REEF_OUTER, createSpot, deanDepth, reefEdgeZ, smoothstep } from './Bathymetry';
+import { BEACH_BAR, BEACH_OUTER, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, reefEdgeZ, smoothstep } from './Bathymetry';
 import { seededRandom } from './random';
 
 /** Today's beds, copied, for the inner zone that must not change. */
@@ -1601,15 +1609,15 @@ const todayReef = (x: number, z: number) => {
 };
 
 describe('outer bathymetry (wave sizes)', () => {
-  it('leaves every spot\'s bed shoreward of −150 m as it was', () => {
+  it('leaves the Beach and Point shoreward of −150 m, and the whole Reef, as they were', () => {
     const beach = createSpot('beach', 1);
     const beachToday = todayBeach(1);
     const point = createSpot('point', 1);
     const reef = createSpot('reef', 1);
     for (let x = -80; x <= 80; x += 8) {
+      for (let z = -1500; z <= 30; z += 3) expect(reef.depthAt(x, z)).toBeCloseTo(todayReef(x, z), 9);
       for (let z = -150; z <= 30; z += 3) {
         expect(point.depthAt(x, z)).toBeCloseTo(todayPoint(x, z), 9);
-        expect(reef.depthAt(x, z)).toBeCloseTo(todayReef(x, z), 9);
         // The outer bar's tail reaches the inner zone by under 1 cm.
         expect(Math.abs(beach.depthAt(x, z) - beachToday(x, z))).toBeLessThan(0.01);
       }
@@ -1624,12 +1632,9 @@ describe('outer bathymetry (wave sizes)', () => {
     expect(beach.depthAt(0, -1300)).toBeGreaterThan(13.2);
   });
 
-  it('carries the Point\'s shelf past 12 m on a gentler slope, and drops the Reef steeply seaward of −270 m', () => {
+  it('carries the Point\'s shelf past 12 m on a gentler slope', () => {
     const point = createSpot('point', 1);
     expect(point.depthAt(0, -400)).toBeCloseTo(12 + POINT_OUTER.slope * (-60 - -400 - 12 / POINT_HEADLAND.slope), 6);
-    const reef = createSpot('reef', 1);
-    expect(reef.depthAt(0, REEF_OUTER.start)).toBeCloseTo(REEF.channelDepth, 6);
-    expect(reef.depthAt(0, REEF_OUTER.start - REEF_OUTER.length)).toBeCloseTo(REEF_OUTER.depth, 6);
   });
 });
 ```
@@ -1646,24 +1651,21 @@ Expected: FAIL (the new constants are missing).
 export const BEACH_OUTER = { barOffshore: 320, barHeight: 1.3, barWidth: 45, maxDepth: 30 };
 /** The Point's shelf past its 12 m: a gentler slope to 30 m. */
 export const POINT_OUTER = { slope: 0.015, maxDepth: 30 };
-/** The Reef's drop from its 10 m channel to deep water, seaward of today's tank edge. */
-export const REEF_OUTER = { start: -270, length: 120, depth: 30 };
 ```
 
 - beach `depthAt`: `return deanDepth(offshore, 0.12, BEACH_OUTER.maxDepth) - bar - outerBar;` with `outerBar = BEACH_OUTER.barHeight * Math.exp(-(((offshore - BEACH_OUTER.barOffshore) / BEACH_OUTER.barWidth) ** 2));`
 - point `depthAt`: `if (offshore <= 0) return offshore * 0.06; const shelf = maxDepth / slope; return offshore <= shelf ? slope * offshore : Math.min(POINT_OUTER.maxDepth, maxDepth + POINT_OUTER.slope * (offshore - shelf));`
-- reef `depthAt`: after `channel`, `const drop = smoothstep(REEF_OUTER.start, REEF_OUTER.start - REEF_OUTER.length, z); const outer = channel + (Math.max(channel, REEF_OUTER.depth) - channel) * drop;` and use `outer` in place of `channel`.
 
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run src/wave`
-Expected: PASS, including the existing reef test "keeps the whole reef edge in the fine surf zone" (the drop starts at −270, outside it).
+Expected: PASS, including the existing reef test "keeps the whole reef edge in the fine surf zone".
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add src/wave/Bathymetry.ts src/wave/Bathymetry.test.ts
-git commit -m "feat: deepen each spot's outer bed to real profiles, the inner bed unchanged"
+git commit -m "feat: deepen the Beach's and Point's outer beds to real profiles, the inner bed unchanged"
 ```
 
 ### Task 14 (B6): The take-off follows the measured break
@@ -1735,7 +1737,7 @@ Expected: finishes; the Gates table lists every gate. Record the wall time and t
 
 - [ ] **Step 3: Calibrate the take-off**
 
-For each spot, set `TAKE_OFF_INDEX[spot]` to the median of `H_edge-shoaled breaker height / measured still depth at setBreakZ` over its big-day runs (compute it from the JSON in a scratch script; the depth at `setBreakZ` is `tankDepth` of the run's layout at the take-off x). Rerun that spot's big days. Expected: take-off gates pass.
+For the Beach and the Point (the Reef stays at `BREAKER_INDEX`; its take-off is the Reef rework's), set `TAKE_OFF_INDEX[spot]` to the median of `H_edge-shoaled breaker height / measured still depth at setBreakZ` over its big-day runs (compute it from the JSON in a scratch script; the depth at `setBreakZ` is `tankDepth` of the run's layout at the take-off x). Rerun that spot's big days. Expected: take-off gates pass.
 
 - [ ] **Step 4: Tune within the allowed knobs until the big-day gates pass**
 
@@ -1744,7 +1746,7 @@ Allowed, in this order, each change ledgered with its before/after gate results:
 2. `EDGE_DEPTH_PER_HS` from 3.3 up to 5 (small days must stay on today's tank: check the small-day gates after);
 3. `ZONE_WAVELENGTHS` from 0.75 up to 1.5.
 
-Not allowed: the inner bed (shoreward of −150), breaking or solver parameters, the Canyon, Practice. If the big-day gates still fail after these, stop and report to the user with the report (this is a physics question for them, per the spec's scope).
+Not allowed: the inner bed (shoreward of −150), the Reef's bed, breaking or solver parameters, the Canyon, Practice. If the big-day gates still fail after these, stop and report to the user with the report (this is a physics question for them, per the spec's scope).
 
 - [ ] **Step 5: Refit the forecast**
 
