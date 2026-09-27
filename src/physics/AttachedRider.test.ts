@@ -1383,6 +1383,52 @@ class WallWater extends PlaneWater {
   }
 }
 
+// Part B: the upper body's swing (the turn redesign's rotor about the forward axis) drawn. It turns against the
+// body, so a positive swing carries the upper body toward the heading's −x: chest, head and arms by SWING_DRAWN_CHEST of
+// it (the arms, held along the board, lie close to the axis and move little). The physics' parts do not move.
+describe('the swing drawn', () => {
+  const turning = () => {
+    const board = new BoardBody();
+    board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, 8));
+    const rider = new AttachedRider(board.shape, { phase: 'standing' });
+    board.attach(rider);
+    const water = new PlaneWater();
+    run(board, water, 0.3);
+    rider.steer = 1;
+    for (let i = 0; i < 120 && Math.abs(rider.swing.angle) < (50 * Math.PI) / 180; i += 1) board.step(STEP, water);
+    return { board, rider };
+  };
+
+  it('turns the drawn head and arms with the swing', () => {
+    const { board, rider } = turning();
+    expect(Math.abs(rider.swing.angle)).toBeGreaterThan((50 * Math.PI) / 180);
+    const heading = headingOf(board);
+    const across = new Vector3(Math.cos(heading), 0, -Math.sin(heading));
+    const toward = -Math.sign(rider.swing.angle);
+    const head = rider.renderPoint(2, board, new Vector3()).sub(rider.partPosition(2, new Vector3()));
+    expect(head.dot(across) * toward).toBeGreaterThan(0.1);
+    // The arms ride with the chest: toward the same side as without the swing.
+    const angle = rider.swing.angle;
+    for (const index of [3, 4]) {
+      const swung = rider.renderPoint(index, board, new Vector3());
+      rider.swing.angle = 0;
+      const unswung = rider.renderPoint(index, board, new Vector3());
+      rider.swing.angle = angle;
+      expect(swung.sub(unswung).dot(across) * toward).toBeGreaterThan(0);
+    }
+  });
+
+  it('draws the parts where they are with no swing, and lying down', () => {
+    const { board, rider } = mounted('standing');
+    run(board, new PlaneWater(), 0.2);
+    expect(rider.swing.angle).toBe(0);
+    for (const index of [0, 1, 2]) expect(rider.renderPoint(index, board, new Vector3()).distanceTo(rider.partPosition(index, new Vector3()))).toBe(0);
+    const prone = mounted('prone');
+    run(prone.board, new PlaneWater(), 0.2);
+    for (const index of [0, 1, 2]) expect(prone.rider.renderPoint(index, prone.board, new Vector3()).distanceTo(prone.rider.partPosition(index, new Vector3()))).toBe(0);
+  });
+});
+
 describe('a hand in the face', () => {
   const weight = REFERENCE_RIDER.mass * WATER.gravity;
   /** A board planing at 6 m/s along +z with a crouched rider, a wall of water 0.35 m to its left (+x). */

@@ -265,6 +265,14 @@ const MARGIN_TIME = 0.1;
 const ARM_SPREAD = 0.7;
 const ARM_ALARM = 0.8;
 /**
+ * The upper body's swing drawn (Part B): standing, the drawn chest, head and arms
+ * turn together about the forward axis through the pelvis by SWING_DRAWN_CHEST of
+ * the swing (at its ±69° range the trunk rolls 24°; the arms, held along the board,
+ * lie close to the axis and ride with the chest). The parts the physics solves
+ * with do not move; the drawn points carry it to online surfers.
+ */
+const SWING_DRAWN_CHEST = 0.35;
+/**
  * The leg's stiffness in the riding stance, N/m: between the upright body's
  * 87 kN/m (5.5 Hz) and the legs-bent 22 kN/m (2.75 Hz, RIDER_LEG) of Matsumoto &
  * Griffin 1998, for knees partly bent (3.9 Hz; provisional). At 22 kN/m the
@@ -678,6 +686,9 @@ export class AttachedRider {
   readonly swing = { angle: 0, rate: 0 };
   private readonly bodyFrame = new Quaternion();
   private readonly bankTurn = new Quaternion();
+  private readonly swingTurn = new Quaternion();
+  private readonly swingAxis = new Vector3();
+  private readonly swingPivot = new Vector3();
   private readonly across = new Vector3();
   private readonly rollAxis = new Vector3();
   /**
@@ -946,7 +957,7 @@ export class AttachedRider {
    * the rails, the feet on the deck while standing).
    */
   renderPoint(index: number, board: BoardBody, out: Vector3): Vector3 {
-    if (index < 3) return this.partPosition(index, out);
+    if (index < 3) return this.swung(index, this.partPosition(index, out), SWING_DRAWN_CHEST);
     const upright = this.phase === 'landing' || this.phase === 'standing';
     if (index === 3 || index === 4) {
       const side = index === 3 ? 0 : 1;
@@ -964,7 +975,8 @@ export class AttachedRider {
       if (this.handSide !== 0 && (index === 3) === (this.handSide > 0)) return out.copy(this.handPoint);
       this.partPosition(index, out);
       const spread = upright ? ARM_SPREAD + ARM_ALARM * (1 - this.balanceMargin) : ARM_SPREAD;
-      return out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread));
+      out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread));
+      return this.swung(index, out, SWING_DRAWN_CHEST);
     }
     if (upright) {
       const front = (index === 5) === (this.stance === 'regular');
@@ -974,6 +986,17 @@ export class AttachedRider {
     // Legs lying along the board: from the hips through the leg's centre to the feet.
     this.partPosition(index, out);
     return out.add(this.scratch2.copy(out).sub(this.partPosition(0, this.target)).multiplyScalar(0.9));
+  }
+
+  /**
+   * A drawn point of the upper body turned with the swing: about the forward axis
+   * through the pelvis by `share` of it (standing only; the swing is 0 otherwise).
+   */
+  private swung(index: number, out: Vector3, share: number): Vector3 {
+    if (index === 0 || this.phase !== 'standing' || this.swing.angle === 0) return out;
+    const pelvis = this.partPosition(0, this.swingPivot);
+    this.swingTurn.setFromAxisAngle(this.swingAxis.set(0, 0, 1).applyQuaternion(this.heading), share * this.swing.angle);
+    return out.sub(pelvis).applyQuaternion(this.swingTurn).add(pelvis);
   }
 
   private halfWidth(z: number): number {
