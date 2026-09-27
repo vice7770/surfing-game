@@ -52,6 +52,24 @@ describe('RemoteSurferViews', () => {
     expect(head.y).toBeGreaterThan(0.58);
   });
 
+  // Part B: remote surfers pose from their own motion, read from their poses over the room's sea time.
+  it('reads a remote surfer’s turn from its poses, and starts over after it was not drawn', () => {
+    const views = new RemoteSurferViews(new Scene());
+    views.sync([{ id: 1, look }]);
+    for (let t = 0; t <= 0.5 + 1e-9; t += 1 / 60) {
+      const state = riding(5 * Math.sin(t), 5 * Math.cos(t));
+      state.heading = t;
+      views.update(1, state, () => 0, new Vector3(), 10 + t);
+    }
+    expect(views.riderStateOf(1)!.yawRate).toBeGreaterThan(0.9);
+    views.update(1, undefined, () => 0, new Vector3(), 11);
+    // Back within a metre of where it was last drawn, so only the gap (not a jump) can start the motion over.
+    const back = riding(5 * Math.sin(0.5) + 0.5, 5 * Math.cos(0.5));
+    back.heading = 2;
+    views.update(1, back, () => 0, new Vector3(), 11.02);
+    expect(views.riderStateOf(1)!.yawRate).toBe(0);
+  });
+
   it('hides a player with nothing to draw, and shows the board alone with no rider', () => {
     const views = new RemoteSurferViews(new Scene());
     views.sync([{ id: 1, look }]);

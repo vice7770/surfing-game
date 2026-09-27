@@ -45,6 +45,8 @@ export class SurfMeter {
   add(wave: BreakingWave): void {
     const band = this.bands.find(({ xMin, xMax }) => wave.x >= xMin && wave.x <= xMax);
     if (!band) return;
+    // A clock that went back (a restored sea) starts the band afresh.
+    if (band.waves.length && wave.time < band.waves.at(-1)!.time) band.waves.length = 0;
     const last = band.waves.at(-1);
     if (last && wave.time - last.time < 0.5 * this.period) {
       if (wave.face > last.face) Object.assign(last, { x: wave.x, z: wave.z, face: wave.face });
@@ -52,6 +54,11 @@ export class SurfMeter {
     }
     band.waves.push({ ...wave });
     while (band.waves.length && band.waves[0].time < wave.time - this.keep) band.waves.shift();
+  }
+
+  /** Forget every wave measured (a sea taken over or restored starts measuring afresh). */
+  clear(): void {
+    for (const band of this.bands) band.waves.length = 0;
   }
 
   /** Every band's waves that started breaking at or after `since`. */

@@ -19,7 +19,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { Autopilot, autopilotView } from '../src/dev/Autopilot';
 import { LocalSurfZone } from '../src/game/SurfZoneHost';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, swellFor } from '../src/game/PhysicalMode';
-import type { LessonStart, LessonWave } from '../src/game/school/lessonWave';
+import type { LessonWave, RecordedStart } from '../src/game/school/lessonWave';
 import type { RiderPlacement } from '../src/physics/RideSession';
 import { createWaterSample } from '../src/physics/SurfWater';
 import { SURF_ZONE_STEP, type RideRequest } from '../src/wave/SurfZoneRunner';
@@ -89,7 +89,7 @@ function moment(host: LocalSurfZone, t: number, phase: RiderPlacement['phase']):
  * the autopilot paddles for the wave, pops up and rides. How long the rider stood,
  * and whether it stood at all.
  */
-function check(stage: 1 | 2, start: LessonStart, kept: Moment): { ride: number; stood: boolean; note: string } {
+function check(stage: 1 | 2, start: RecordedStart, kept: Moment): { ride: number; stood: boolean; note: string } {
   const host = new LocalSurfZone({ ...configFor(stage), spinUpPeriods: 0 }, { rider: true }, kept.state);
   const pilot = new Autopilot({ rise: 0.25 * sea.significantHeight, style: 'turns' });
   pilot.state = 'wait';
@@ -175,8 +175,8 @@ async function record(stage: 1 | 2): Promise<{ wave: LessonWave; rides: Ride[] }
   // can differ from the ride, and a moment good for one start may be poor for another. Each start still restores its
   // own recorded state every time, so each always meets the same wave.
   const longest = [...rides].sort((a, b) => b.seconds - a.seconds).slice(0, FINALISTS);
-  const best = {} as Record<LessonStart, { moment: Moment; ride: number; stood: boolean; note: string; attempt: number }>;
-  const consider = (start: LessonStart, moment: Moment | undefined, attempt: number) => {
+  const best = {} as Record<RecordedStart, { moment: Moment; ride: number; stood: boolean; note: string; attempt: number }>;
+  const consider = (start: RecordedStart, moment: Moment | undefined, attempt: number) => {
     if (!moment) return;
     const result = check(stage, start, moment);
     console.log(`stage ${stage} · attempt ${attempt} · ${start} replay: ${result.note}`);
@@ -194,10 +194,10 @@ async function record(stage: 1 | 2): Promise<{ wave: LessonWave; rides: Ride[] }
   for (const start of ['pocket', 'caught', 'waiting'] as const) {
     if (!best[start]) throw new Error(`No ${start} moment in ${seconds} s at stage ${stage}`);
   }
-  const checks = {} as Record<LessonStart, string>;
+  const checks = {} as Record<RecordedStart, string>;
   for (const start of ['pocket', 'caught', 'waiting'] as const) checks[start] = `${best[start].note} (attempt ${best[start].attempt})`;
-  const assets = {} as Record<LessonStart, string>;
-  const placements = {} as Record<LessonStart, RiderPlacement>;
+  const assets = {} as Record<RecordedStart, string>;
+  const placements = {} as Record<RecordedStart, RiderPlacement>;
   mkdirSync('public/lessons', { recursive: true });
   for (const start of ['pocket', 'caught', 'waiting'] as const) {
     const kept = best[start].moment;

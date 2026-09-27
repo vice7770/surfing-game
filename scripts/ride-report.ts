@@ -22,6 +22,7 @@ import { bestTwo, scoreRide } from '../src/game/waveScore';
 import type { LipParcelSource } from '../src/physics/DetachedSurfer';
 import { RideSession } from '../src/physics/RideSession';
 import { createWaterSample, type SurfWater } from '../src/physics/SurfWater';
+import { inTakeOffWindow } from '../src/physics/takeOffCue';
 import { WaveFrameGauge } from '../src/physics/waveFrame';
 import type { SpotName } from '../src/wave/Bathymetry';
 import { SURF_ZONE_STEP, SurfZoneRunner } from '../src/wave/SurfZoneRunner';
@@ -204,7 +205,7 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
       if (autopilot.state === 'ride' && session.phase === 'prone') autopilot.finish('relaunched');
       const ride = {
         phase: session.phase, speed: Math.hypot(board.velocity.x, board.velocity.z), boardSpeed: board.velocity.length(),
-        cue: session.rider.popUpCue, popUp: { ...session.rider.popUpReport }, separation: session.separation, resets: 0, wave: { ...wave },
+        cue: b.own ? runner.cue : session.rider.popUpCue || (session.phase === 'prone' && inTakeOffWindow(wave)), popUp: { ...session.rider.popUpReport }, separation: session.separation, resets: 0, wave: { ...wave },
         balance: session.phase === 'fallen' ? 0 : session.rider.balanceReserve,
       };
       let crest = -Infinity;

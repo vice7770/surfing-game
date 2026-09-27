@@ -13,7 +13,7 @@
  * | 10 | i16 ×4 quaternion ×32767 |
  * | 18 | i16 ×21 rider points relative to the board (cm) |
  * | 60 | u8 phase (255 = no rider) |
- * | 61 | u8 flags: 1 rider present, 2 board present, 4 paddling |
+ * | 61 | u8 flags: 1 rider present, 2 board present, 4 paddling, 8 leash snapped, 16 duck-diving, 32 diving (the wipeout spec; older readers ignore them) |
  * | 62 | i16 heading ×10000 |
  * | 64 | i16 ×2 reaction point x, z (cm) |
  * | 68 | f32 ×2 reaction impulse x, z (N·s) |
@@ -51,6 +51,9 @@ const BUNDLE_ENTRY = 2 + POSE_BYTES;
 const FLAG_PRESENT = 1;
 const FLAG_BOARD = 2;
 const FLAG_PADDLING = 4;
+const FLAG_LEASH_SNAPPED = 8;
+const FLAG_DUCKING = 16;
+const FLAG_DIVING = 32;
 const NO_RIDER = 255;
 
 export interface SurferPose {
@@ -71,6 +74,10 @@ export interface SurferPose {
   present: boolean;
   boardPresent: boolean;
   paddling: boolean;
+  /** The wipeout spec: the leash has snapped, the rider is duck-diving, the fallen surfer dives. */
+  leashSnapped: boolean;
+  ducking: boolean;
+  diving: boolean;
   heading: number;
   /** The board's push on the water since the last pose: its impulse-weighted point and summed impulse. */
   reaction: { x: number; z: number; jx: number; jz: number };
@@ -79,7 +86,8 @@ export interface SurferPose {
 export function createPose(): SurferPose {
   return {
     step: 0, x: 0, z: 0, lift: 0, qx: 0, qy: 0, qz: 0, qw: 1, points: new Float32Array(21), phase: -1,
-    present: false, boardPresent: false, paddling: false, heading: 0, reaction: { x: 0, z: 0, jx: 0, jz: 0 },
+    present: false, boardPresent: false, paddling: false, leashSnapped: false, ducking: false, diving: false, heading: 0,
+    reaction: { x: 0, z: 0, jx: 0, jz: 0 },
   };
 }
 
@@ -99,7 +107,8 @@ export function encodePose(pose: SurferPose, view: DataView, offset: number): vo
   view.setInt16(offset + 16, i16((pose.qw / norm) * 32767), true);
   for (let i = 0; i < 21; i += 1) view.setInt16(offset + 18 + i * 2, i16(pose.points[i] * 100), true);
   view.setUint8(offset + 60, pose.phase >= 0 && pose.phase < NO_RIDER ? Math.round(pose.phase) : NO_RIDER);
-  view.setUint8(offset + 61, (pose.present ? FLAG_PRESENT : 0) | (pose.boardPresent ? FLAG_BOARD : 0) | (pose.paddling ? FLAG_PADDLING : 0));
+  view.setUint8(offset + 61, (pose.present ? FLAG_PRESENT : 0) | (pose.boardPresent ? FLAG_BOARD : 0) | (pose.paddling ? FLAG_PADDLING : 0)
+    | (pose.leashSnapped ? FLAG_LEASH_SNAPPED : 0) | (pose.ducking ? FLAG_DUCKING : 0) | (pose.diving ? FLAG_DIVING : 0));
   view.setInt16(offset + 62, i16(pose.heading * 10000), true);
   view.setInt16(offset + 64, i16(pose.reaction.x * 100), true);
   view.setInt16(offset + 66, i16(pose.reaction.z * 100), true);
@@ -123,6 +132,9 @@ export function decodePose(view: DataView, offset: number, out: SurferPose): Sur
   out.present = (flags & FLAG_PRESENT) !== 0;
   out.boardPresent = (flags & FLAG_BOARD) !== 0;
   out.paddling = (flags & FLAG_PADDLING) !== 0;
+  out.leashSnapped = (flags & FLAG_LEASH_SNAPPED) !== 0;
+  out.ducking = (flags & FLAG_DUCKING) !== 0;
+  out.diving = (flags & FLAG_DIVING) !== 0;
   out.heading = view.getInt16(offset + 62, true) / 10000;
   out.reaction.x = view.getInt16(offset + 64, true) / 100;
   out.reaction.z = view.getInt16(offset + 66, true) / 100;

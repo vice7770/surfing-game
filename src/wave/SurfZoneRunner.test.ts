@@ -6,7 +6,7 @@ import { createWaterSample } from '../physics/SurfWater';
 import type { SpotName } from './Bathymetry';
 import { BubbleCloud } from './BubbleCloud';
 import {
-  LIP_HIT_STRIDE, LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea,
+  LEASH_BITS, LIP_HIT_STRIDE, LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, SWIM_BITS, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea,
 } from './SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
 import { FOAM_BALL_VOLUME, SPRAY_CAPACITY, SPRAY_PER_AIR, SPRAY_STRIDE, WHITEWATER_CAPACITY } from './SprayCloud';
@@ -266,6 +266,43 @@ describe('SurfZoneRunner with a rider', () => {
   const calm: SurfZoneConfig = { ...config, spot: 'beach', significantHeight: 0.02, peakPeriod: 10 };
   const idle = { paddle: false, popUp: false, steer: 0, retry: false };
 
+  // The take-off plan: the cue also lights when the wave has caught the paddler high on the face (the take-off
+  // window), in the status the HUD reads and in the snapshot; standing, it stays dark.
+  it('cues the pop-up in the take-off window, lying down only', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    runner.advance(1, idle);
+    expect(runner.status().ride!.cue).toBe(false);
+    const caught = {
+      valid: true, directionX: 0, directionZ: 1, aheadOfCrest: 2.7, crestSpeed: 6.5, faceHeight: 1.8, faceFraction: 0.8, crestBreaking: 0,
+      curlDistance: Infinity, curlSide: 0, speedOverGround: 5.2, speedShoreward: 5.2, speedAlongCrest: 0, requiredSpeed: Infinity,
+    };
+    (runner as unknown as { wave: typeof caught }).wave = caught;
+    expect(runner.status().ride!.cue).toBe(true);
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(buffers.rider[RIDER_SNAPSHOT.cue]).toBe(1);
+    runner.session!.rider.phase = 'standing';
+    expect(runner.status().ride!.cue).toBe(false);
+  });
+
+  // The stances spec, Review Focus 4: Regular or Goofy from the session's start; a change takes effect on the next
+  // ride (a retry or a Surf School restart), never mid-ride.
+  it('rides the stance it starts with, changing it only for the next ride', () => {
+    expect(new SurfZoneRunner(calm, { rider: true }).session!.rider.stance).toBe('regular');
+    const runner = new SurfZoneRunner(calm, { rider: true, stance: 'goofy' });
+    expect(runner.session!.rider.stance).toBe('goofy');
+    runner.advance(1, { ...idle, stance: 'regular' });
+    expect(runner.session!.rider.stance).toBe('goofy');
+    runner.advance(1, { ...idle, stance: 'regular', retry: true });
+    expect(runner.session!.rider.stance).toBe('regular');
+    runner.advance(1, { ...idle, stance: 'goofy', place: { x: runner.session!.board.position.x, z: runner.session!.board.position.z, heading: 0, speed: 0, phase: 'prone' } });
+    expect(runner.session!.rider.stance).toBe('goofy');
+    // The final review: in free surf a fallen rider climbs back on without a retry; off the board it takes the change.
+    runner.session!.separate();
+    runner.advance(1, { ...idle, stance: 'regular' });
+    expect(runner.session!.rider.stance).toBe('regular');
+  });
+
   it('lies a rider prone on the board in the lineup, and snapshots its render points and phase', () => {
     const runner = new SurfZoneRunner(calm, { rider: true });
     runner.advance(60, idle);
@@ -280,6 +317,58 @@ describe('SurfZoneRunner with a rider', () => {
       expect(point.distanceTo(session.board.position)).toBeLessThan(1.6);
     }
     expect(runner.status().ride?.phase).toBe('prone');
+  });
+
+  // The wipeout spec: the leash, the duck-dive and the swimmer, for the HUD, hints, rig, sound and others online.
+  it('snapshots the leash, the duck-dive and the swimmer', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    runner.advance(15, { ...idle, duckDive: 1 });
+    let buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(buffers.rider[RIDER_SNAPSHOT.duck]).toBeGreaterThan(0.5);
+    expect(runner.status().ride?.duck).toBeGreaterThan(0.5);
+    const session = runner.session!;
+    session.separate('balance');
+    runner.advance(30, { ...idle, paddle: true });
+    buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(buffers.rider[RIDER_SNAPSHOT.duck]).toBe(0);
+    const bits = buffers.rider[RIDER_SNAPSHOT.leash];
+    expect(bits & LEASH_BITS.worn).toBe(LEASH_BITS.worn);
+    expect(bits & LEASH_BITS.snapped).toBe(0);
+    const plug = new Vector3(buffers.rider[RIDER_SNAPSHOT.plug], buffers.rider[RIDER_SNAPSHOT.plug + 1], buffers.rider[RIDER_SNAPSHOT.plug + 2]);
+    expect(session.board.toLocal(plug, new Vector3()).z).toBeLessThan(-session.board.shape.length / 2 + 0.1);
+    const status = runner.status().ride!;
+    expect(status.leash).toMatchObject({ snapped: false, reeling: false });
+    expect(typeof status.boardInReach).toBe('boolean');
+    expect(status.knock).toBeGreaterThanOrEqual(0);
+    session.leash.snapped = true;
+    runner.advance(1, idle);
+    runner.fill(buffers);
+    expect(buffers.rider[RIDER_SNAPSHOT.leash] & LEASH_BITS.snapped).toBe(LEASH_BITS.snapped);
+    expect(runner.status().ride?.leash.snapped).toBe(true);
+    runner.advance(120, { ...idle, duckDive: 1 });
+    runner.fill(buffers);
+    expect(buffers.rider[RIDER_SNAPSHOT.swim] & SWIM_BITS.diving).toBe(SWIM_BITS.diving);
+  });
+
+  // The wipeout spec, Part B: held down too long, the rider is rescued to the lineup.
+  it('rescues a fallen rider whose breath runs out, back to the lineup with a full breath', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    runner.advance(5, idle);
+    const session = runner.session!;
+    session.separate('balance');
+    runner.advance(5, idle);
+    expect(runner.status().ride?.phase).toBe('fallen');
+    session.breath.level = -1;
+    runner.advance(1, idle);
+    const ride = runner.status().ride!;
+    expect(ride.rescues).toBe(1);
+    expect(ride.phase).toBe('prone');
+    expect(ride.breath).toBe(1);
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(buffers.rider[RIDER_SNAPSHOT.breath]).toBe(1);
   });
 
   it('starts the rider just outside the break line, where catches happen', () => {

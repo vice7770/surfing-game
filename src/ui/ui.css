@@ -139,6 +139,9 @@
 .hud-balance { display: flex; align-items: flex-end; width: .55em; height: 3.4em; overflow: hidden; border-radius: 99px; background: rgba(248, 246, 234, .35); }
 .hud-balance-fill { width: 100%; height: 100%; border-radius: 99px; background: #a7e3d3; transform-origin: bottom; transition: transform .1s linear; }
 .hud-balance.is-low .hud-balance-fill { background: var(--accent); }
+/* The wipeout spec, Part B: the breath meter beside the balance meter, and the edges darkening as the breath runs low. */
+.hud-breath .hud-balance-fill { background: #9fd0f0; }
+.hud-vignette { position: absolute; inset: 0; opacity: 0; pointer-events: none; background: radial-gradient(ellipse at center, rgba(4, 18, 24, 0) 45%, rgba(4, 18, 24, .95) 100%); transition: opacity .3s linear; }
 .ride-hud .hud-pause { position: absolute; top: max(12px, 2vh); right: max(12px, 2vw); display: grid; place-items: center; width: 2.8em; height: 2.8em; border: 1px solid rgba(248, 246, 234, .5); border-radius: 50%; background: rgba(23, 63, 67, .45); color: #fff8e9; cursor: pointer; backdrop-filter: blur(8px); pointer-events: auto; }
 .hud-pause svg { width: 1.3em; height: 1.3em; }
 .hud-hints { position: absolute; bottom: max(16px, 4vh); left: 50%; display: flex; gap: 1.2em; transform: translateX(-50%); color: #fff8e9; font: .7em var(--mono); letter-spacing: .1em; text-transform: uppercase; text-shadow: 0 1px 8px rgba(16, 58, 61, .6); white-space: nowrap; }
@@ -215,7 +218,7 @@
 .is-high-contrast .hud-balance.is-low .hud-balance-fill { background: #ff8a5c; }
 .is-high-contrast .hud-hints { padding: .4em .8em; border-radius: 10px; background: #0d2a2d; }
 .is-high-contrast .ride-hud .hud-pause { background: #0d2a2d; border-color: #fff; }
-.is-reduced-motion .hud-balance-fill, .is-reduced-motion .end-card { animation: none; transition: none; }
+.is-reduced-motion .hud-balance-fill, .is-reduced-motion .end-card, .is-reduced-motion .hud-vignette { animation: none; transition: none; }
 
 /* Touch controls during a ride. */
 #app[data-screen='ride'].has-touch .touch-controls { position: absolute; z-index: 5; left: 12px; right: 12px; bottom: 16px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; pointer-events: none; }
@@ -223,6 +226,8 @@
 #app[data-screen='ride'] .touch-button { min-width: 58px; height: 52px; padding: 0 12px; border: 1px solid rgba(251, 249, 231, .6); border-radius: 12px; background: rgba(20, 70, 73, .68); box-shadow: 0 4px 16px rgba(0, 35, 40, .17); color: #fff8e9; font: 19px var(--mono); touch-action: none; user-select: none; pointer-events: auto; }
 #app[data-screen='ride'] .touch-paddle, #app[data-screen='ride'] .touch-popup { flex: 1; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
 #app[data-screen='ride'] .touch-crouch { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+#app[data-screen='ride'][data-phase='standing'] .touch-paddle, #app[data-screen='ride']:not([data-phase='standing']) .touch-crouch { display: none; }
+@media (max-width: 420px) { #app[data-screen='ride'] .touch-button { min-width: 50px; padding: 0 8px; } }
 .hud-callout { position: absolute; left: 50%; top: 28%; margin: 0; transform: translateX(-50%); color: #fff8e9; font: 600 22px var(--mono); letter-spacing: .12em; text-shadow: 0 2px 12px rgba(0, 35, 40, .55); opacity: 0; pointer-events: none; }
 .hud-callout.is-shown { animation: hud-callout 1.6s ease-out forwards; }
 @keyframes hud-callout { 0% { opacity: 0; transform: translate(-50%, 6px); } 12% { opacity: 1; transform: translate(-50%, 0); } 70% { opacity: 1; } 100% { opacity: 0; } }

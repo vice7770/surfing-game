@@ -8,7 +8,7 @@ import type { WaterLook } from '../scene/water/waterLook';
 import type { ReadoutRow } from '../wave/SwellReadout';
 import { el, icon } from './dom';
 import { ICONS, type IconName } from './icons';
-import { labSliders, practiceNote, stormArrives } from './labPanelModel';
+import { labSliders, practiceNote, stormArrives, surfForecastNote } from './labPanelModel';
 import { PhysicsReadoutPanel } from './PhysicsReadoutPanel';
 import { t, type StringKey } from './strings';
 import type { SurfScale } from './surfHeight';
@@ -115,15 +115,18 @@ export function createWaveLabScreen(
   function renderPanel(): void {
     const focused = (document.activeElement as HTMLElement | null)?.dataset?.key;
     const { physical } = draft;
-    const sliders = labSliders(physical, units, scale);
+    const sliders = labSliders(physical, units);
     const sliderRows = (which: 'swell' | 'conditions') => sliders.filter((s) => s.group === which).map((s) => slider(s.label, s.min, s.max, s.step, s.value, s.text, (value, output) => {
       draft.physical[s.key] = value;
-      output.textContent = labSliders(draft.physical, units, scale).find((next) => next.key === s.key)?.text ?? '';
+      output.textContent = labSliders(draft.physical, units).find((next) => next.key === s.key)?.text ?? '';
       if (derived && physical.source === 'storm') derived.textContent = stormArrives(draft.physical, units);
+      // The forecast follows every swell slider, the period as much as the height (the wave-sizes spec).
+      if (derived && physical.source === 'buoy') derived.textContent = surfForecastNote(draft.physical, units, scale);
       edited(false);
     }, s.disabled));
     const derived = physical.source === 'storm' ? el('p', { class: 'lab-derived', text: stormArrives(physical, units) })
-      : physical.source === 'practice' ? el('p', { class: 'lab-note', text: practiceNote(units) }) : null;
+      : physical.source === 'practice' ? el('p', { class: 'lab-note', text: practiceNote(units) })
+        : el('p', { class: 'lab-derived', text: surfForecastNote(physical, units, scale) });
     const time = timeOfDayFor(draft);
     const sunHeight = slider(t('lab.sunHeight'), 0, 1, 0.05, draft.sunHeight, `${Math.round(draft.sunHeight * 100)} %`, (value, output) => {
       draft.sunHeight = value;

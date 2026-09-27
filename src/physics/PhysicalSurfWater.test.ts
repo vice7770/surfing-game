@@ -225,3 +225,36 @@ describe('PhysicalSurfWater', () => {
     expect(water.unappliedVerticalImpulse).toBe(900);
   });
 });
+
+// The wipeout spec, Part B: bodies in broken water feel its air (G9's plume).
+describe('PhysicalSurfWater in a whitewater plume', () => {
+  it('reports the plume\'s void fraction within its depth under the surface, and none below it or without one', () => {
+    const { solver, breaking } = channel();
+    const depth = new Float64Array(solver.h.length).fill(0.5);
+    const plume = { voidFraction: () => 0.15, depth };
+    const water = new PhysicalSurfWater(solver, { peakPeriod: 10, breaking, aeration: plume });
+    const out = createWaterSample();
+    const surface = water.sampleAt(0.2, 5, 0.3, out).surfaceY;
+    expect(water.sampleAt(0.2, surface - 0.2, 0.3, out).voidFraction).toBeCloseTo(0.15, 9);
+    expect(water.sampleAt(0.2, surface - 1, 0.3, out).voidFraction).toBe(0);
+    const clear = channel().water;
+    expect(clear.sampleAt(0.2, surface - 0.2, 0.3, out).voidFraction ?? 0).toBe(0);
+  });
+});
+
+describe('PhysicalSurfWater\'s turbulence', () => {
+  it('reports the plume\'s turbulence in the water column, strongest near the surface, and leaves the flow alone', () => {
+    const { solver, breaking } = channel();
+    const turbulence = new Float64Array(solver.h.length).fill(0.5);
+    const plume = { voidFraction: () => 0, depth: new Float64Array(solver.h.length), turbulence };
+    const water = new PhysicalSurfWater(solver, { peakPeriod: 10, breaking, aeration: plume });
+    const clear = channel().water;
+    const out = createWaterSample();
+    const surface = water.sampleAt(0.2, 5, 0.3, out).surfaceY;
+    const top = water.sampleAt(0.2, surface - 0.1, 0.3, out).turbulence ?? 0;
+    expect(top).toBeGreaterThan(0.4);
+    expect(water.sampleAt(0.2, -2.8, 0.3, out).turbulence ?? 0).toBeLessThan(top);
+    const flow = water.sampleAt(0.2, surface - 0.1, 0.3, out).flowX;
+    expect(flow).toBeCloseTo(clear.sampleAt(0.2, surface - 0.1, 0.3, out).flowX, 12);
+  });
+});

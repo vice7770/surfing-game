@@ -35,7 +35,7 @@ const withPractice = !process.argv.includes('--no-practice');
 /** `--kinds deep` or `edge`: which small-day runs a process makes (both by default). */
 const kinds = (option('kinds')?.split(',') ?? ['edge', 'deep']) as SizeRun['heightAt'][];
 const tag = option('tag');
-/** `--dir` writes a probe's files (and its report) elsewhere, so tuning runs leave the committed report alone. */
+/** `--dir` writes a run's files (and its report) elsewhere, so long runs survive branch switches and probes leave the committed report alone. */
 const directory = option('dir') ?? 'docs/research/sizes';
 const reportFile = option('dir') ? `${directory}/size-report.md` : 'docs/research/size-report.md';
 /** The worker's step, s. */
@@ -92,12 +92,13 @@ const read = (folder: string): SizeRun[] => (existsSync(folder) ? readdirSync(fo
 const all = read(directory);
 for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
   const runs = all.filter((run) => run.spot === spot);
-  // The forecast reads a buoy's deep-water height (the Canyon's is taken at its edge).
-  const buoys = runs.filter((run) => run.source === 'buoy' && (spot === 'canyon' || run.heightAt === 'deep'));
-  const practice = runs.find((run) => run.source === 'practice');
+  // The forecast reads a buoy's deep-water height (the Canyon's is taken at its edge), at the take-off, where the readout measures.
+  const atTakeOff = (run: SizeRun) => ({ ...run, typical: run.takeOffTypical ?? Number.NaN, sets: run.takeOffSets ?? Number.NaN });
+  const buoys = runs.filter((run) => run.source === 'buoy' && run.takeOffTypical !== undefined && (spot === 'canyon' || run.heightAt === 'deep')).map(atTakeOff);
+  const practice = runs.find((run) => run.source === 'practice' && run.takeOffTypical !== undefined);
   if (!buoys.length) continue;
   const fit = fitForecast(buoys);
-  console.log(`${spot}: { a: ${fit.a.toFixed(4)}, sets: ${fit.sets.toFixed(3)} }${practice ? `; practice { typical: ${practice.typical.toFixed(2)}, sets: ${practice.sets.toFixed(2)} }` : ''} (${buoys.length} runs)`);
+  console.log(`${spot}: { a: ${fit.a.toFixed(4)}, sets: ${fit.sets.toFixed(3)} }${practice ? `; practice { typical: ${practice.takeOffTypical!.toFixed(2)}, sets: ${practice.takeOffSets!.toFixed(2)} }` : ''} (${buoys.length} runs at the take-off)`);
 }
 const gates = gating ? sizeGates(all, read(`${directory}/baseline`)) : undefined;
 writeFileSync(reportFile, sizeMarkdown(all, gates, `npm run report:sizes -- ${process.argv.slice(2).join(' ')}`));

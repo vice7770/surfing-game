@@ -30,6 +30,10 @@ export interface SizeRun {
   waves: number;
   /** Median across-shore position where the take-off's sets (its highest third) started breaking, m. */
   setBreakZ: number;
+  /** The take-off's own surf, as the game's readout measures it (±10 m of the take-off): H1/3, H1/10, m, and its waves. */
+  takeOffTypical?: number;
+  takeOffSets?: number;
+  takeOffWaves?: number;
   takeOffZ: number;
   stepMs: number;
   cells: number;
@@ -44,7 +48,8 @@ const median = (values: number[]) => {
 
 /** A run's faces (every band) and its take-off's sets. */
 export function summariseRun(
-  input: Omit<SizeRun, 'typical' | 'sets' | 'waves' | 'setBreakZ'>, waves: readonly BreakingWave[], takeOffWaves: readonly BreakingWave[],
+  input: Omit<SizeRun, 'typical' | 'sets' | 'waves' | 'setBreakZ' | 'takeOffTypical' | 'takeOffSets' | 'takeOffWaves'>,
+  waves: readonly BreakingWave[], takeOffWaves: readonly BreakingWave[],
 ): SizeRun {
   const faces = waves.map((wave) => wave.face);
   const byFace = [...takeOffWaves].sort((a, b) => b.face - a.face);
@@ -55,6 +60,9 @@ export function summariseRun(
     sets: highestMean(faces, 1 / 10),
     waves: faces.length,
     setBreakZ: median(sets.map((wave) => wave.z)),
+    takeOffTypical: highestMean(byFace.map((wave) => wave.face), 1 / 3),
+    takeOffSets: highestMean(byFace.map((wave) => wave.face), 1 / 10),
+    takeOffWaves: byFace.length,
   };
 }
 
@@ -115,13 +123,14 @@ export function sizeMarkdown(runs: readonly SizeRun[], gates: readonly SizeGate[
     if (!rows.length) continue;
     lines.push(
       '', `## ${spot}`, '',
-      '| Sea | Given at | Waves | H1/3 (m) | H1/10 (m) | Komar–Gaughan H_b (m) | H1/3 ÷ K–G | Caldwell–Aucan H1/10 (m) | Sets break z (m) | Take-off z (m) | Cells | Step (ms) |',
-      '|---|---|---|---|---|---|---|---|---|---|---|---|',
+      '| Sea | Given at | Waves | H1/3 (m) | H1/10 (m) | Komar–Gaughan H_b (m) | H1/3 ÷ K–G | Caldwell–Aucan H1/10 (m) | Take-off H1/3 / H1/10 (m) | Sets break z (m) | Take-off z (m) | Cells | Step (ms) |',
+      '|---|---|---|---|---|---|---|---|---|---|---|---|---|',
     );
     for (const run of rows) {
       const kg = run.source === 'practice' ? Number.NaN : komarGaughan(run.significantHeight, run.period);
       const ca = run.source === 'practice' ? Number.NaN : caldwellAucan(run.significantHeight, run.period);
-      lines.push(`| ${label(run)} | ${run.heightAt} | ${run.waves} | ${cell(run.typical)} | ${cell(run.sets)} | ${cell(kg)} | ${cell(run.typical / kg)} | ${cell(ca)} | ${cell(run.setBreakZ, 0)} | ${cell(run.takeOffZ, 0)} | ${run.cells} | ${cell(run.stepMs, 1)} |`);
+      const takeOff = run.takeOffTypical === undefined ? '—' : `${cell(run.takeOffTypical)} / ${cell(run.takeOffSets ?? Number.NaN)} (${run.takeOffWaves})`;
+      lines.push(`| ${label(run)} | ${run.heightAt} | ${run.waves} | ${cell(run.typical)} | ${cell(run.sets)} | ${cell(kg)} | ${cell(run.typical / kg)} | ${cell(ca)} | ${takeOff} | ${cell(run.setBreakZ, 0)} | ${cell(run.takeOffZ, 0)} | ${run.cells} | ${cell(run.stepMs, 1)} |`);
     }
   }
   if (gates) {

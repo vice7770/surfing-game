@@ -27,12 +27,21 @@ export interface SoundFrame {
   windSpeed: number;
   /** The board, when there is one: its place, speed (m/s) and speed across its length (m/s). */
   board?: { x: number; y: number; z: number; speed: number; sideslip: number };
-  /** The rider, with the phase of the frame before, so a change is heard once. */
-  ride?: { phase: RiderPhase; previousPhase: RiderPhase; speed: number };
+  /**
+   * The rider, with the phase of the frame before, so a change is heard once; and
+   * for the wipeout spec the duck-dive's press (and the frame before's), whether
+   * the leash has snapped (and had), and the hardest board knock since, N·s.
+   */
+  ride?: {
+    phase: RiderPhase; previousPhase: RiderPhase; speed: number;
+    duck?: number; previousDuck?: number; leashSnapped?: boolean; previouslySnapped?: boolean; knock?: number;
+    /** The fallen rider's head is under water (Part B): the world muffles, as for the camera under water. */
+    headUnder?: boolean;
+  };
 }
 
 export type LoopId = 'roar' | 'distant' | 'wind' | 'rush' | 'rail' | 'bubbles';
-export type OneShotId = 'lipJet' | 'lipRoller' | 'paddle' | 'popUp' | 'plunge';
+export type OneShotId = 'lipJet' | 'lipRoller' | 'paddle' | 'popUp' | 'plunge' | 'leashSnap' | 'knock' | 'duckDive';
 type Position = { x: number; y: number; z: number };
 
 export interface SoundTargets {
@@ -54,7 +63,18 @@ export const ONE_SHOT_CAP = 32;
  * a paddling hand pulls for many steps: they gather into a few crashes a second
  * and one splash per stroke, each carrying the energy it gathered.
  */
-export const MIN_INTERVAL: Record<OneShotId, number> = { lipJet: 0.18, lipRoller: 0.25, paddle: 0.45, popUp: 0, plunge: 0 };
+export const MIN_INTERVAL: Record<OneShotId, number> = {
+  lipJet: 0.18, lipRoller: 0.25, paddle: 0.45, popUp: 0, plunge: 0, leashSnap: 0, knock: 0.15, duckDive: 0.5,
+};
+/**
+ * The wipeout spec's sounds (provisional, by ear): a board knock on the swimmer
+ * is heard from KNOCK_MIN, N·s, full at KNOCK_FULL; the snap and the duck-dive's
+ * plunge at their own levels.
+ */
+const KNOCK_MIN = 8;
+const KNOCK_FULL = 60;
+const SNAP_LEVEL = 0.85;
+const DUCK_LEVEL = 0.55;
 /** Landings this close together, m, along and across shore, are heard as one place. */
 const PLACE = 10;
 
@@ -149,6 +169,9 @@ function impulseGain(id: OneShotId, amount: number): number {
   if (id === 'lipJet' || id === 'lipRoller') return decibelsLike(amount, LIP_REF, LIP_DECADES);
   if (id === 'paddle') return decibelsLike(amount, PADDLE_REF, PADDLE_DECADES);
   if (id === 'popUp') return POP_UP_LEVEL;
+  if (id === 'leashSnap') return SNAP_LEVEL;
+  if (id === 'duckDive') return DUCK_LEVEL;
+  if (id === 'knock') return clamp01(0.25 + (0.75 * (amount - KNOCK_MIN)) / (KNOCK_FULL - KNOCK_MIN));
   return clamp01(0.4 + amount / 15);
 }
 
@@ -209,6 +232,12 @@ export function soundTargets(frame: SoundFrame, shaper = new OneShotShaper()): S
       if (ride.previousPhase === 'prone' && ride.phase === 'push') impulses.push({ id: 'popUp', key: 'popUp', amount: 1, ...where });
       if (ride.phase === 'fallen') impulses.push({ id: 'plunge', key: 'plunge', amount: ride.speed, ...where });
     }
+    if (ride) {
+      const where = boardPosition ?? { x: listener.x, y: listener.y, z: listener.z };
+      if (ride.leashSnapped && ride.previouslySnapped === false) impulses.push({ id: 'leashSnap', key: 'leashSnap', amount: 1, ...where });
+      if ((ride.knock ?? 0) >= KNOCK_MIN) impulses.push({ id: 'knock', key: 'knock', amount: ride.knock!, ...where });
+      if ((ride.duck ?? 0) >= 0.5 && (ride.previousDuck ?? 0) < 0.5) impulses.push({ id: 'duckDive', key: 'duckDive', amount: 1, ...where });
+    }
     for (const gathered of shaper.release(impulses, frame.dt)) {
       oneShots.push({
         id: gathered.id, rate: 1,
@@ -223,7 +252,7 @@ export function soundTargets(frame: SoundFrame, shaper = new OneShotShaper()): S
   return {
     loops,
     oneShots,
-    muffle: listener.underwater ? 1 : paused ? PAUSED_MUFFLE : 0,
+    muffle: listener.underwater || frame.ride?.headUnder ? 1 : paused ? PAUSED_MUFFLE : 0,
     playbackRate: frame.timeScale,
   };
 }

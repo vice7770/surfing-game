@@ -16,6 +16,10 @@ describe('size report', () => {
     expect(run.waves).toBe(6);
     // The sets are the take-off's highest third: 6 and 5, broken at −110 and −106.
     expect(run.setBreakZ).toBeCloseTo(-108, 12);
+    // The take-off's own surf, as the game's readout measures it: H1/3 and H1/10 of its waves.
+    expect(run.takeOffTypical).toBeCloseTo(5.5, 12);
+    expect(run.takeOffSets).toBe(6);
+    expect(run.takeOffWaves).toBe(6);
   });
 
   it('passes big days within 20 % of Komar-Gaughan and fails them outside', () => {

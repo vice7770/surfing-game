@@ -48,8 +48,8 @@ import { roomLink } from '../net/roomCode';
 import type { CallId } from '../net/protocol';
 import { createRideEndCard, endCardModel } from './RideEndCard';
 import { bestTwo, scoreRide } from '../game/waveScore';
-import { HintBook, HintCoach, type HintId } from '../game/hints';
-import { RideHud, showsBalanceMeter, type HintKeys } from './RideHud';
+import { HintBook, HintCoach, offersHint, type HintId } from '../game/hints';
+import { RideHud, showsBalanceMeter, showsBreathMeter, type HintKeys } from './RideHud';
 import { ScreenStack, type ScreenId } from './ScreenStack';
 import { EN, t, type StringKey } from './strings';
 import { createSurfScreen, type SurfChoice } from './SurfScreen';
@@ -314,13 +314,22 @@ export class App {
     if (this.stack.current === 'ride') {
       const { gameplay, seen } = this.settings.value;
       const ride = this.game.rideStatus;
+      // The touch buttons show for the rider's phase: paddle lying down, Crouch and Compress standing.
+      this.root.dataset.phase = ride?.phase ?? '';
+      // Broken water coming at the rider: a breaking crest seaward of it (the wipeout spec's duck-dive hint).
+      const coming = ride?.wave.valid && ride.wave.crestBreaking > 0.3 && ride.wave.aheadOfCrest > 0 ? ride.wave.aheadOfCrest : Infinity;
       const hint = this.coach.update(intervalMs / 1000, {
         standing: ride?.phase === 'standing',
         crestBreaking: ride?.wave.valid ? ride.wave.crestBreaking : 0,
         input: this.controls.lastRequest,
-      }, (id) => this.hintText(id) !== '');
+        phase: ride?.phase,
+        whitewaterAhead: coming,
+        leashIntact: ride ? !ride.leash.snapped : false,
+        boardInReach: ride?.boardInReach ?? false,
+      }, (id) => this.hintText(id) !== '' && offersHint(id, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell));
       this.rideHud.update(ride, gameplay.units, this.hintKeys(), !seen.rideHints,
-        showsBalanceMeter(gameplay.balanceMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell), hint ? this.hintText(hint) : '');
+        showsBalanceMeter(gameplay.balanceMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell), hint ? this.hintText(hint) : '', undefined,
+        showsBreathMeter(gameplay.breathMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell));
       this.trackRide();
     }
     const { online } = this;
@@ -799,6 +808,9 @@ export class App {
     if (this.touchActive()) {
       if (id === 'lean') return t('hint.lean', { keys: '← →' });
       if (id === 'crouch') return t('hint.crouch', { keys: t('touch.crouch') });
+      if (id === 'compress') return t('hint.compress', { keys: t('touch.compress') });
+      // Touch has no duck-dive (the milestone spec's touch subset); its pop-up button reels the leash.
+      if (id === 'reel') return t('hint.reel', { keys: t('touch.popUp') });
       return '';
     }
     const { bindings } = this.settings.value.controls;
@@ -808,7 +820,10 @@ export class App {
     const trimStick = t(stickOf('trimForward', this.settings.value.controls) === 'right' ? 'hud.rightStick' : 'hud.stick');
     const keys = id === 'lean' ? (pad ? t('hud.stick') : `${label('steerLeft')} ${label('steerRight')}`)
       : id === 'trim' ? (pad ? trimStick : `${label('trimForward')} ${label('trimBack')}`)
-        : label(id);
+        : id === 'reel' ? label('popUp')
+          : label(id);
+    // Nothing bound (an action newer than the player's saved bindings): no hint to give.
+    if (keys === '—') return '';
     return t(`hint.${id}`, { keys });
   }
 
@@ -816,7 +831,7 @@ export class App {
   private readonly actionLabel: ActionLabel = (action) => {
     if (this.touchActive()) {
       const touch: Partial<Record<Action, StringKey>> = {
-        paddle: 'touch.paddle', popUp: 'touch.popUp', crouch: 'touch.crouch', steerLeft: 'touch.left', steerRight: 'touch.right',
+        paddle: 'touch.paddle', popUp: 'touch.popUp', crouch: 'touch.crouch', compress: 'touch.compress', steerLeft: 'touch.left', steerRight: 'touch.right',
       };
       const key = touch[action];
       return key ? t(key) : '—';
@@ -1016,6 +1031,7 @@ export class App {
     label('touch-paddle', 'touch.paddle');
     label('touch-popup', 'touch.popUp');
     label('touch-crouch', 'touch.crouch');
+    label('touch-compress', 'touch.compress');
     label('touch-left', 'touch.left', true);
     label('touch-right', 'touch.right', true);
     document.getElementById('touch-popup')?.addEventListener('pointerdown', (event) => {

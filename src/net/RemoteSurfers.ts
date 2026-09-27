@@ -25,13 +25,17 @@ export interface RemoteState {
   present: boolean;
   boardPresent: boolean;
   paddling: boolean;
+  /** The wipeout spec: the leash has snapped, the rider is duck-diving, the fallen surfer dives. */
+  leashSnapped: boolean;
+  ducking: boolean;
+  diving: boolean;
   heading: number;
 }
 
 export function createRemoteState(): RemoteState {
   return {
     x: 0, z: 0, lift: 0, quaternion: [0, 0, 0, 1], points: new Float32Array(21), phase: -1,
-    present: false, boardPresent: false, paddling: false, heading: 0,
+    present: false, boardPresent: false, paddling: false, leashSnapped: false, ducking: false, diving: false, heading: 0,
   };
 }
 
@@ -60,6 +64,9 @@ function copyPose(pose: SurferPose, out: RemoteState): void {
   out.present = pose.present;
   out.boardPresent = pose.boardPresent;
   out.paddling = pose.paddling;
+  out.leashSnapped = pose.leashSnapped;
+  out.ducking = pose.ducking;
+  out.diving = pose.diving;
   out.heading = pose.heading;
 }
 

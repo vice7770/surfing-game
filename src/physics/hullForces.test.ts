@@ -173,3 +173,14 @@ describe('hull patch forces', () => {
     expect(out.pressureDamping).toBeGreaterThan(0);
   });
 });
+
+// The wipeout spec, Part B: a hull in aerated water floats and drags in a lighter mixture.
+describe('a hull patch in aerated water', () => {
+  it('scales its buoyancy, pressure and friction by the share of the water that is water', () => {
+    const patch: WorldPatch = { position: { x: 0, y: -0.02, z: 0 }, normal: { x: 0, y: -0.99, z: 0.14 }, area: 0.05, thickness: 0.05 };
+    const clear = patchForce(patch, still(), { x: 0, y: -0.5, z: 3 }, 1, createPatchForce());
+    const clearValues = [clear.buoyancy.y, clear.pressure.y, clear.friction.z];
+    const aerated = patchForce(patch, { ...still(), voidFraction: 0.2 }, { x: 0, y: -0.5, z: 3 }, 1, createPatchForce());
+    [aerated.buoyancy.y, aerated.pressure.y, aerated.friction.z].forEach((value, i) => expect(value).toBeCloseTo(0.8 * clearValues[i], 9));
+  });
+});
