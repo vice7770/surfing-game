@@ -1,5 +1,8 @@
 import { Quaternion, Vector3, type Bone } from 'three';
 import { describe, expect, it } from 'vitest';
+import { AttachedRider } from '../../physics/AttachedRider';
+import { BoardBody } from '../../physics/BoardBody';
+import { PlaneWater } from '../../physics/PlaneWater';
 import { BONES, type Side } from './humanoidBones';
 import { HumanoidRig } from './HumanoidRig';
 import { posturePoints } from './posturePoints';
@@ -138,5 +141,50 @@ describe('humanoid rig', () => {
       const { x, y, z, w } = bone.quaternion;
       expect(Number.isFinite(x + y + z + w), bone.name).toBe(true);
     }
+  });
+});
+
+/** The drawn state of a real rider, settled 1.5 s at 7 m/s on flat water with the given crouch and Compress. */
+function riderState(crouch: number, compress: number, stance: 'regular' | 'goofy' = 'regular') {
+  const board = new BoardBody();
+  board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, 7));
+  const rider = new AttachedRider(board.shape, { phase: 'standing', stance });
+  board.attach(rider);
+  const water = new PlaneWater();
+  rider.crouch = crouch;
+  rider.compress = compress;
+  for (let i = 0; i < 90; i += 1) board.step(1 / 60, water);
+  const state = createRiderVisualState();
+  for (let i = 0; i < 7; i += 1) rider.renderPoint(i, board, state.points[i]);
+  state.phase = 'standing';
+  state.heading = 0;
+  state.boardPosition.copy(board.position);
+  state.boardQuaternion.copy(board.orientation);
+  return state;
+}
+
+const kneeAngle = (rig: HumanoidRig, side: Side) =>
+  (rig.joints.hip[side].clone().sub(rig.joints.knee[side]).angleTo(rig.joints.ankle[side].clone().sub(rig.joints.knee[side])) * 180) / Math.PI;
+
+// Part B, de Sousa 2022: knees at 150° or more extended, 90–110° crouched on the drop, 90° or less compressed. The
+// physics' crouch lowers the pelvis; the rig maps its standing height to the model's extended legs. Planing at 7 m/s
+// the board rides about 12° nose-up, the front foot 12 cm above the rear, so the front knee always bends more: the
+// knees are judged by their mean, and standing by the straighter one too (before: 98°/136°, 65°/94°, 44°/81°).
+describe('knees from the physics', () => {
+  it.each([
+    ['standing', 0, 0, 120, 160],
+    ['crouched', 0.6, 0, 90, 115],
+    ['compressed', 0.6, 1, 0, 90],
+  ])('bends the knees %s', (label, crouch, compress, least, most) => {
+    const { bones } = createTestHumanoid();
+    const before = boneLengths(bones);
+    const rig = new HumanoidRig(bones);
+    rig.solve(riderState(crouch as number, compress as number));
+    const knees = SIDES.map((side) => kneeAngle(rig, side));
+    const mean = (knees[0] + knees[1]) / 2;
+    expect(mean).toBeGreaterThanOrEqual(least as number);
+    expect(mean).toBeLessThanOrEqual(most as number);
+    if (label === 'standing') expect(Math.max(...knees)).toBeGreaterThanOrEqual(150);
+    for (const [name, length] of boneLengths(bones)) expect(length, name).toBeCloseTo(before.get(name)!, 9);
   });
 });

@@ -1,6 +1,7 @@
 import { Quaternion, Vector3, type Bone } from 'three';
 import { BONES, MIDDLE_FINGER, REQUIRED_BONES, type Side } from './humanoidBones';
 import { orientBone } from './orientBone';
+import { STANDING_PELVIS } from './posturePoints';
 import { POINT, type RiderVisualState } from './riderVisualState';
 import { solveTwoBone } from './twoBoneIk';
 
@@ -41,6 +42,12 @@ export const RIG_DETAIL = {
   fallenReach: 0.92,
   /** Legs stop this short of straight when the hips come down to reach the feet. */
   legReach: 0.97,
+  /**
+   * The knees standing tall (de Sousa 2022: 150° or more extended): the physics'
+   * standing pelvis maps to the hips with both knees at this, so its crouch drop
+   * bends them from there (90–110° crouched, 90° or less compressed).
+   */
+  standingKnee: 155,
 };
 
 /**
@@ -73,6 +80,9 @@ export class HumanoidRig {
   private readonly lowerLeg: number;
   private readonly upperArm: number;
   private readonly lowerArm: number;
+  /** At rest, how far the hip joints sit below the hips bone and out from it, m. */
+  private readonly hipDrop: number;
+  private readonly hipHalfWidth: number;
   /** The foot's rest pitch: how far the ball sits below and ahead of the ankle. */
   private readonly footDrop: number;
   private readonly footRun: number;
@@ -86,6 +96,7 @@ export class HumanoidRig {
   private readonly chestUp = new Vector3();
   private readonly hipsForward = new Vector3();
   private readonly target = new Vector3();
+  private readonly hipsAt = new Vector3();
   private readonly pole = new Vector3();
   private readonly direction = new Vector3();
   private readonly hint = new Vector3();
@@ -135,6 +146,10 @@ export class HumanoidRig {
     this.upperArm = world(BONES.foreArm.left).distanceTo(world(BONES.arm.left));
     this.lowerArm = world(BONES.hand.left).distanceTo(world(BONES.foreArm.left));
     this.legLength = this.upperLeg + this.lowerLeg;
+    const hips = world(BONES.hips);
+    const hip = world(BONES.upLeg.left);
+    this.hipDrop = hips.y - hip.y;
+    this.hipHalfWidth = Math.hypot(hip.x - hips.x, hip.z - hips.z);
     this.armLength = this.upperArm + this.lowerArm;
     const ankle = world(BONES.foot.left);
     const ball = world(BONES.toe.left);
@@ -168,8 +183,10 @@ export class HumanoidRig {
     this.turnTowardNose(hipsForward.copy(forward), upright ? RIG_DETAIL.hipsTurn : 0);
     this.turnTowardNose(this.facing.copy(forward), upright ? RIG_DETAIL.chestTurn : 0);
 
-    // 2. The hips at the pelvis point, brought down if the legs cannot reach the feet.
-    this.placeHips(p[POINT.pelvis]);
+    // 2. The hips at the pelvis point (standing, raised to the model's extended legs), brought down if the legs cannot reach the feet.
+    const hipsAt = this.hipsAt.copy(p[POINT.pelvis]);
+    if (upright) hipsAt.addScaledVector(up, this.standingLift(state));
+    this.placeHips(hipsAt);
     if (upright) {
       let drop = 0;
       for (const side of SIDES) {
@@ -177,7 +194,7 @@ export class HumanoidRig {
         const hip = this.bones.get(BONES.upLeg[side])!.getWorldPosition(this.scratch);
         drop = Math.max(drop, this.dropToReach(hip, target, RIG_DETAIL.legReach * this.legLength));
       }
-      if (drop > 0) this.placeHips(this.scratch.copy(p[POINT.pelvis]).addScaledVector(up, -drop));
+      if (drop > 0) this.placeHips(hipsAt.addScaledVector(up, -drop));
     }
 
     // 3. Spine, neck and head: the chest turns toward the nose, the head looks where the board goes.
@@ -274,6 +291,26 @@ export class HumanoidRig {
       hips.parent.worldToLocal(hips.position);
     }
     this.orient(BONES.hips, this.up, this.hipsForward);
+  }
+
+  /**
+   * How far above the physics' pelvis the hips go standing: the model's hips over
+   * its ankles with both knees at `standingKnee` for this stance, less the
+   * physics' standing pelvis over its ankles (`STANDING_PELVIS`). Constant while
+   * the feet stay put, so the physics' crouch drop moves the hips as it comes.
+   */
+  private standingLift(state: RiderVisualState): number {
+    const { up, target, middle } = this;
+    const knee = (RIG_DETAIL.standingKnee * Math.PI) / 180;
+    const reach = Math.sqrt(this.upperLeg ** 2 + this.lowerLeg ** 2 - 2 * this.upperLeg * this.lowerLeg * Math.cos(knee));
+    let height = 0;
+    for (const side of SIDES) {
+      this.ankleTarget(state, side, target);
+      middle.copy(state.points[POINT.pelvis]).addScaledVector(this.left, side === 'left' ? this.hipHalfWidth : -this.hipHalfWidth).sub(target);
+      middle.addScaledVector(up, -middle.dot(up));
+      height += Math.sqrt(Math.max(0, reach * reach - middle.lengthSq())) + this.hipDrop;
+    }
+    return height / SIDES.length - (STANDING_PELVIS - this.soleHeight);
   }
 
   /** How far the hips must come down along the body's up for a hip to be `reach` from its ankle target. */
