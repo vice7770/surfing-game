@@ -31,13 +31,13 @@
       "file": "surfers/surfer3.glb",
       "sex": "male",
       "skin": "young_african_male",
-      "hair": "short02",
+      "hair": "short01",
       "lods": [
         "LOD0",
         "LOD1"
       ],
-      "height": 1.744,
-      "bytes": 1181876
+      "height": 1.734,
+      "bytes": 1545008
     },
     {
       "id": "surfer4",
@@ -49,8 +49,8 @@
         "LOD0",
         "LOD1"
       ],
-      "height": 1.721,
-      "bytes": 1229864
+      "height": 1.719,
+      "bytes": 1229872
     }
   ]
 }
