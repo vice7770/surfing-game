@@ -9,7 +9,7 @@ import { WATER } from './hullForces';
 import { PlaneWater } from './PlaneWater';
 import { stanceFeet } from './riderPosture';
 import { SwellWater } from './SwellWater';
-import type { SurfWater } from './SurfWater';
+import type { SurfWater, WaterSample } from './SurfWater';
 
 const STEP = 1 / 60;
 
@@ -621,6 +621,74 @@ const headingOf = (board: BoardBody) => {
   return Math.atan2(forward.x, forward.z);
 };
 
+/**
+ * A 15° face (down toward +z) easing over EASE m into flat, still water at z = 0, the trough a bottom turn is made
+ * in: a curve of about 15 m radius, about 0.3 g more at 7 m/s (a Practice wave's trough curves at about 60 m). Eased
+ * over 1 m (+1.35 g) the board slammed tail-down into the flat and any deepening from standing stalled it (Compress
+ * and Shift's crouch alike).
+ */
+class FaceToFlat implements SurfWater {
+  static readonly SLOPE = Math.tan((15 * Math.PI) / 180);
+  static readonly EASE = 4;
+  private readonly plane = new PlaneWater();
+
+  surfaceAt(_x: number, z: number): number {
+    const { SLOPE, EASE } = FaceToFlat;
+    if (z >= 0) return 0;
+    return z > -EASE ? (SLOPE * z * z) / (2 * EASE) : -SLOPE * z - (SLOPE * EASE) / 2;
+  }
+
+  private slopeAt(z: number): number {
+    const { SLOPE, EASE } = FaceToFlat;
+    return z >= 0 ? 0 : z > -EASE ? (SLOPE * z) / EASE : -SLOPE;
+  }
+
+  sampleAt(x: number, y: number, z: number, out: WaterSample): WaterSample {
+    this.plane.sampleAt(x, y, z, out);
+    const slopeZ = this.slopeAt(z);
+    const norm = Math.hypot(1, slopeZ);
+    return Object.assign(out, {
+      surfaceY: this.surfaceAt(x, z), bedY: this.surfaceAt(x, z) - 3, slopeX: 0, slopeZ, normalX: 0, normalY: 1 / norm, normalZ: -slopeZ / norm,
+    });
+  }
+
+  addReaction(): void {}
+}
+
+/**
+ * Forsyth et al. 2024's bottom turn: straight down the 15° face crouched (Shift's 0.6 by default), then 1 m before the
+ * flat full lean and Compress (steer −1 leans toward the board's −x, Regular's toes: frontside). For `seconds` after the
+ * lean: the yaw, the entry speed, and the speed and time when the yaw reached `yaw` degrees.
+ */
+function bottomTurn(steer: number, yaw = 90, seconds = 1.2, stance: 'regular' | 'goofy' = 'regular', crouch = 0.6) {
+  const water = new FaceToFlat();
+  const angle = Math.atan(FaceToFlat.SLOPE);
+  const normal = new Vector3(0, 1, FaceToFlat.SLOPE).normalize();
+  const fall = new Vector3(0, -Math.sin(angle), Math.cos(angle));
+  const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(new Vector3().crossVectors(normal, fall), normal, fall));
+  const board = new BoardBody();
+  const start = -8;
+  board.place(new Vector3(0, water.surfaceAt(0, start), start).addScaledVector(normal, board.shape.centerOfMass.y), orientation, fall.clone().multiplyScalar(7.3));
+  const rider = new AttachedRider(board.shape, { phase: 'standing', stance });
+  board.attach(rider);
+  rider.crouch = crouch;
+  for (let i = 0; i < 600 && board.position.z < -1; i += 1) board.step(STEP, water);
+  const entry = board.velocity.length();
+  rider.steer = steer;
+  rider.compress = 1;
+  let last = headingOf(board);
+  let turned = 0;
+  let reached: { time: number; speed: number } | undefined;
+  for (let i = 1; i <= Math.round(seconds / STEP); i += 1) {
+    board.step(STEP, water);
+    const now = headingOf(board);
+    turned += Math.atan2(Math.sin(now - last), Math.cos(now - last));
+    last = now;
+    if (!reached && Math.abs(turned) >= (yaw * Math.PI) / 180) reached = { time: i * STEP, speed: board.velocity.length() };
+  }
+  return { attached: rider.attached, entry, turned: (Math.abs(turned) * 180) / Math.PI, reached, exit: board.velocity.length() };
+}
+
 describe('lean, trim, crouch and heading hold', () => {
   const degrees = (radians: number) => (radians * 180) / Math.PI;
 
@@ -1121,6 +1189,29 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(signFlips(compressed.rates)).toBeLessThanOrEqual(2);
       expect(largestSwing(compressed.rates)).toBeLessThanOrEqual(2 * largestSwing(held.rates));
       expect(Math.abs(degrees(compressed.heading))).toBeGreaterThan(turned);
+    });
+
+    // The deep U (the stances spec): Forsyth et al. 2024's bottom turns yaw 99° in 0.96 s at 1.9 rad/s, keeping 0.88–0.95
+    // of their speed; de Sousa 2022's reference, a deep U that keeps the speed. Not met on still water by any stance
+    // (the compress plan's findings): at 7 m/s entry, 1.2 s after the lean, standing yaws 75°, Shift's crouch 69°,
+    // Compress over it 62° (63° backside), all near half their speed. A carve at a 40–48° rail sheds about 0.45 g, and
+    // the lean the turn can hold (TURN_RADIUS) falls with the speed. Forsyth's turns were on waves, whose water feeds them.
+    it.fails('makes a deep U at the bottom of the face', () => {
+      const turn = bottomTurn(-1);
+      expect(turn.attached).toBe(true);
+      expect(turn.reached).toBeDefined();
+      expect(turn.reached!.speed).toBeGreaterThanOrEqual(0.85 * turn.entry);
+    });
+
+    // Compress at the base of the bottom turn: from Shift's crouch on the drop either way, and on its own from standing.
+    // From standing the board fell away under the dropping legs: the leg, a spring both ways, pulled it up and the
+    // rider fell into the turn at about 1 s.
+    it.each([['frontside', -1, 0.6], ['backside', 1, 0.6], ['from standing', -1, 0]])('stays on through a compressed bottom turn, %s', (_how, steer, crouch) => {
+      const turn = bottomTurn(steer, 90, 1.2, 'regular', crouch);
+      expect(turn.entry).toBeGreaterThan(6.5);
+      expect(turn.entry).toBeLessThan(8);
+      expect(turn.attached).toBe(true);
+      expect(turn.turned).toBeGreaterThan(55);
     });
 
     // Review Focus 5: the pop-up's landing is unchanged, the body carried upright over its stance as before the bank;

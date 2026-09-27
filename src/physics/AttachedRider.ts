@@ -1313,6 +1313,13 @@ export class AttachedRider {
       LEG_FREQUENCY * LEG_FREQUENCY * (rest - this.leg.rest) - 2 * LEG_FREQUENCY * this.restRate));
     this.restRate = Math.max(-speedLimit * (1 - hold), Math.min(speedLimit, this.restRate + acceleration * h));
     this.leg.rest = Math.max(-CROUCH_DEPTH, Math.min(0, this.leg.rest + this.restRate * h));
+    // Feet on a deck only push: compressing, the legs fold no faster than the body falls onto them, so a board
+    // dropping or rolling away from under the rider unloads the feet rather than being pulled up by them.
+    const slack = this.leg.extension - this.legLoad / this.legStiffness;
+    if (compressing && this.leg.rest < slack) {
+      this.leg.rest = Math.min(0, slack);
+      this.restRate = Math.max(this.restRate, this.leg.rate);
+    }
     if (this.leg.rest === 0 || this.leg.rest === -CROUCH_DEPTH) this.restRate = 0;
     this.legStiffness = LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * -this.leg.rest) / CROUCH_DEPTH);
     this.legDamping = 2 * RIDER_LEG.axialDamping * Math.sqrt(this.legStiffness * this.mass);
