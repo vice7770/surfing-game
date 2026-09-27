@@ -308,10 +308,16 @@ export class App {
     if (this.stack.current === 'ride') {
       const { gameplay, seen } = this.settings.value;
       const ride = this.game.rideStatus;
+      // Broken water coming at the rider: a breaking crest seaward of it (the wipeout spec's duck-dive hint).
+      const coming = ride?.wave.valid && ride.wave.crestBreaking > 0.3 && ride.wave.aheadOfCrest > 0 ? ride.wave.aheadOfCrest : Infinity;
       const hint = this.coach.update(intervalMs / 1000, {
         standing: ride?.phase === 'standing',
         crestBreaking: ride?.wave.valid ? ride.wave.crestBreaking : 0,
         input: this.controls.lastRequest,
+        phase: ride?.phase,
+        whitewaterAhead: coming,
+        leashIntact: ride ? !ride.leash.snapped : false,
+        boardInReach: ride?.boardInReach ?? false,
       }, (id) => this.hintText(id) !== '');
       this.rideHud.update(ride, gameplay.units, this.hintKeys(), !seen.rideHints,
         showsBalanceMeter(gameplay.balanceMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell), hint ? this.hintText(hint) : '');
@@ -793,6 +799,8 @@ export class App {
     if (this.touchActive()) {
       if (id === 'lean') return t('hint.lean', { keys: '← →' });
       if (id === 'crouch') return t('hint.crouch', { keys: t('touch.crouch') });
+      // Touch has no duck-dive (the milestone spec's touch subset); its pop-up button reels the leash.
+      if (id === 'reel') return t('hint.reel', { keys: t('touch.popUp') });
       return '';
     }
     const { bindings } = this.settings.value.controls;
@@ -802,7 +810,8 @@ export class App {
     const trimStick = t(stickOf('trimForward', this.settings.value.controls) === 'right' ? 'hud.rightStick' : 'hud.stick');
     const keys = id === 'lean' ? (pad ? t('hud.stick') : `${label('steerLeft')} ${label('steerRight')}`)
       : id === 'trim' ? (pad ? trimStick : `${label('trimForward')} ${label('trimBack')}`)
-        : label(id);
+        : id === 'reel' ? label('popUp')
+          : label(id);
     return t(`hint.${id}`, { keys });
   }
 

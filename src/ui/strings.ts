@@ -333,6 +333,8 @@ export const EN = {
   'hint.trim': '{keys} move your weight along the board',
   'hint.crouch': 'Hold {keys} to crouch',
   'hint.hand': 'Hold {keys} to drag a hand in the face',
+  'hint.duckDive': 'Hold {keys} to duck-dive under the whitewater',
+  'hint.reel': 'Hold {keys} to pull the leash in',
   'action.retry': 'Paddle out again',
   'action.camera': 'Camera',
   'action.mute': 'Mute',

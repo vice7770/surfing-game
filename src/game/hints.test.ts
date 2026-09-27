@@ -68,3 +68,33 @@ describe('HintCoach', () => {
     expect(book.offer('crouch')).toBe(false);
   });
 });
+
+describe('HintCoach: the wipeout spec', () => {
+  const input = { steer: 0, trim: 0, crouch: 0, hand: false, duckDive: 0, reel: false };
+
+  it('offers the duck-dive when broken water comes at a prone rider, and retires it once used', () => {
+    const coach = new HintCoach(new HintBook());
+    const prone: HintState = { standing: false, phase: 'prone', crestBreaking: 0.8, whitewaterAhead: 6, leashIntact: true, boardInReach: false, input };
+    expect(coach.update(0.1, prone)).toBe('duckDive');
+    expect(coach.update(0.1, { ...prone, whitewaterAhead: Infinity })).toBeUndefined();
+    for (let i = 0; i < 6; i += 1) coach.update(0.1, { ...prone, input: { ...input, duckDive: 1 } });
+    expect(coach.update(0.1, prone)).toBeUndefined();
+  });
+
+  it('offers the reel after a wipeout while the board is out of reach and the leash whole, and retires it once used', () => {
+    const coach = new HintCoach(new HintBook());
+    const fallen: HintState = { standing: false, phase: 'fallen', crestBreaking: 0, whitewaterAhead: Infinity, leashIntact: true, boardInReach: false, input };
+    expect(coach.update(0.1, fallen)).toBe('reel');
+    expect(coach.update(0.1, { ...fallen, leashIntact: false })).toBeUndefined();
+    expect(coach.update(0.1, { ...fallen, boardInReach: true })).toBeUndefined();
+    for (let i = 0; i < 6; i += 1) coach.update(0.1, { ...fallen, input: { ...input, reel: true } });
+    expect(coach.update(0.1, fallen)).toBeUndefined();
+  });
+
+  it('remembers the new hints across visits', () => {
+    const storage = memory();
+    new HintBook(storage).succeeded('duckDive');
+    expect(new HintBook(storage).offer('duckDive')).toBe(false);
+    expect(new HintBook(storage).offer('reel')).toBe(true);
+  });
+});
