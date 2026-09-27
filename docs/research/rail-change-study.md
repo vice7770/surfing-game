@@ -90,3 +90,31 @@ Pinned, not tuned:
 - the hard turn's 60°;
 - Compress's mid-turn swing at 11 m/s against a held turn that no longer swings;
 - the frontside reaching hand's 5 cm.
+
+## The final review: the rule cut too wide
+
+The first rule kept the feet from any lean asked for while steering. The final review traced three consequences.
+
+**Partial steer.**
+- A steady carve across the face needs a small steady ankle rest toward the lean. The swing is a rotor and holds no steady torque, so it wound to its range in 0.7–2 s.
+- A held partial steer then turned the wrong way (+17 to +25° for −0.06 to −0.2 at 30° across, 8 m/s) or not at all.
+- A tiny steer inside the heading hold banked the body to 70° and fell.
+- The carve lab's own 9 m/s envelope showed it: steer 0.25 turned the wrong way.
+
+**The stall.** Below planing the lean asked for decays toward nothing but keeps its sign. The feet could not catch the body toppling out of the turn, and the legs pulled up to 4 body weights.
+
+**The sequence.** A bottom turn carried up the face into the top turn falls every time (it fell 15 of 16 times before the rule too):
+- carved to 100–135° and steered back, the leaning body carries the board on to 160–180°;
+- releasing the steer early (0.4–1.2 s neutral) or putting the weight back doesn't help;
+- the top turns that stay on start from a board placed on a straight climb.
+
+**The rule now** holds only while all three are true: steering past the heading hold's deadband (0.05), toward a lean past upright (UPRIGHT_BANK, 2°), that the body lags by more than the feet's linear range (ANKLE_REST_RANGE / BANK_GAIN, about 2°). Within that range the feet hold the carve.
+
+| Variant | Partial steer (30° across, 8 m/s: −0.06 / −0.2 / 0.3) | Tiny steer (45°, 7 m/s: 0.01 / 0.03) | Widest swing | Stall legs (4.5 m/s) | Top turns 6 / 8 m/s | Rail changes 8 / 10 |
+|---|---|---|---|---|---|---|
+| No rule (before the plan) | 0° / −30° / 53° | 2° / 11° | 0.00–0.06 | fell honestly | fell / fell | fell / fell |
+| The first rule | +17° / +25° / 45° | 13° / fell at 8 s | 1.2 (its range) | −2,982 N | on / on | on / on |
+| Gated, with a swing-limit fallback instead of the lag | 0° / −29° / 53° | 2° / 11° | 1.2 (winds to its range) | +476 N | on / on | on / on |
+| **The rule now** | 0° / −29° / 53° | 2° / 11° | ≤ 0.32 | +330 N | on / on | on / on |
+
+The hard turn stays at 52° with every variant of the rule. The 9 m/s envelope is back to its old values: steer 0.25 turns +0.10 rad/s on a 7° rail, steer 0.5 turns 0.38 rad/s on a 21° rail.

@@ -1210,7 +1210,7 @@ describe('lean, trim, crouch and heading hold', () => {
     // The deep U (the stances spec): Forsyth et al. 2024's bottom turns yaw 99° in 0.96 s at 1.9 rad/s, keeping 0.88–0.95
     // of their speed; de Sousa 2022's reference, a deep U that keeps the speed. Not met on still water by any stance
     // (the compress plan's findings): at 7 m/s entry, 1.2 s after the lean, standing yaws 71°, Shift's crouch 66°,
-    // Compress over it 60° (62° backside), keeping 0.54–0.67 of their speed (the top-turn plan; 75°, 69° and 62° while
+    // Compress over it 61° (62° backside), keeping 0.54–0.67 of their speed (the top-turn plan; 75°, 69° and 62° while
     // the feet still rolled the board away from the lean). A carve at a 40–48° rail sheds about 0.45 g, and
     // the lean the turn can hold (TURN_RADIUS) falls with the speed. Forsyth's turns were on waves, whose water feeds them.
     it.fails('makes a deep U at the bottom of the face', () => {
@@ -1221,7 +1221,7 @@ describe('lean, trim, crouch and heading hold', () => {
     });
 
     // The stances spec says compressed and leaning turns hard; here Compress over the crouch turns less than the crouch
-    // alone (60° against 66°, the keyboard's full crouch 56°) and keeps less of its speed: the forward weight costs
+    // alone (61° against 66°, the keyboard's full crouch 57°) and keeps less of its speed: the forward weight costs
     // about 6°, the depth the rest. Pinned for the user's decision, not tuned (the compress plan's findings).
     it.fails('turns at least as hard compressed as crouched, keeping as much speed', () => {
       const crouched = bottomTurn(-1, 90, 1.2, 'regular', 0.6, 0);
