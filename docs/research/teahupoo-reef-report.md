@@ -134,6 +134,13 @@ A compact sweep then ran on the fixed meter: the 45° ledge, the Small swell, 2 
 - **The rule:** it misses the plan's rule on raw cues (24 against 62) and, narrowly, on stands (13 against 14).
 - **The pick:** chosen as the best design on the user's instruction ("pick the best design and continue Part A"). The Reef's values already were this design, so no code changed.
 
+### The fixed meter on every spot
+
+The shared [rideability report](rideability-report.md) was regenerated with the fixed meter: Wave Lab defaults, 2 seeds × 12 periods.
+- **The Canyon.** It now reads a 10° median (27.9 m/s), where the old meter read 58° from 7 samples of 60. Recorded Canyon onsets agree: its clean fronts (r² 0.94–1.00) run 22–29 m/s (α 9–12°) at that swell, as the in-ride estimates (5–6°) of the reference-wave study already did.
+- **The Reef at the lab's default swell** (10 s from 10°) reads 30 m/s and closes out. It is built for its own swells, from 20° at 14–17 s.
+- **Known limitation:** a peak that breaks both ways (V-shaped onsets) is still fitted as one front, as by the old meter, and reads as a close-out or mixed peaks.
+
 ## Commands
 
 - `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "steep Reef holds"`
