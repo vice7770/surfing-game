@@ -124,6 +124,29 @@ describe('duck-dive', () => {
     expect(duckDive(1, 1.5, 3, big).deepest).toBeLessThan(0.5 * duckDive(1).deepest);
   });
 
+  /*
+   * Open check (the spec's "arms push the nose"; coaching sinks the nose 40–60 cm,
+   * survey §5): the press tips the board further nose-up, 9° to 13°, the tail
+   * sinking and the nose staying at the surface. Lying prone, the reference board
+   * is already fully under water (25.8 L, its buoyancy acting at z −0.056 m), and
+   * the rider, rigid on the deck, loads it through its centre of mass: the press
+   * brings that to z −0.067 m, level with the board's buoyancy, never onto the
+   * hands. A real press pivots the body on the hands, the hips and legs carried by
+   * the water. Tried: the legs trailing in the water (12.6°), an upward-dog press
+   * with the hips down (9.7°, no longer tipping up but not down). Not tuned into
+   * passing; see ROADMAP (P11, wipeout slice).
+   */
+  it.fails('the arms sink the nose first: the press tips the board nose-down and puts the nose under', () => {
+    const { water, board, rider } = proneRider();
+    const noseY = () => board.toWorld({ x: 0, y: deckHeight(board.shape, board.shape.length / 2 - 0.05), z: board.shape.length / 2 - 0.05 }, new Vector3()).y;
+    const pitch = () => Math.asin(new Vector3(0, 0, 1).applyQuaternion(board.orientation).y);
+    const [restPitch, restNose] = [pitch(), noseY()];
+    rider.duckDive = 1;
+    for (let i = 0; i < 18; i += 1) board.step(STEP, water); // 0.3 s: the press, before the knee lands
+    expect(pitch()).toBeLessThan(restPitch - (3 * Math.PI) / 180);
+    expect(noseY()).toBeLessThan(Math.min(0, restNose) - 0.1);
+  });
+
   it('the knee follows the arms about 0.3 s later, and both let go on release', () => {
     const { water, board, rider } = proneRider();
     rider.duckDive = 1;
