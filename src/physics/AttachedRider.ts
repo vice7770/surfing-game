@@ -331,7 +331,7 @@ const CROUCH_HOLD = 0.75;
  * Compressing deeper than the crouch, the legs drop as fast as the turn's load
  * lets them: the rest's downward acceleration is the specific force along the
  * leg above COMPRESS_KEEP of gravity, so the feet keep at least that share of
- * the rider's weight (about 0.2 g on flat water, more as a turn loads the legs)
+ * the rider's weight (about 0.1 g on flat water, more as a turn loads the legs)
  * and the crouch's hold is not needed. Surfers compress under a turn's load:
  * slowly as the rail sets, quickly once it loads them up.
  */

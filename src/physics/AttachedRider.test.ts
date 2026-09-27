@@ -660,7 +660,7 @@ class FaceToFlat implements SurfWater {
  * flat full lean and Compress (steer −1 leans toward the board's −x, Regular's toes: frontside). For `seconds` after the
  * lean: the yaw, the entry speed, and the speed and time when the yaw reached `yaw` degrees.
  */
-function bottomTurn(steer: number, yaw = 90, seconds = 1.2, stance: 'regular' | 'goofy' = 'regular', crouch = 0.6) {
+function bottomTurn(steer: number, yaw = 90, seconds = 1.2, stance: 'regular' | 'goofy' = 'regular', crouch = 0.6, compress = 1) {
   const water = new FaceToFlat();
   const angle = Math.atan(FaceToFlat.SLOPE);
   const normal = new Vector3(0, 1, FaceToFlat.SLOPE).normalize();
@@ -675,7 +675,7 @@ function bottomTurn(steer: number, yaw = 90, seconds = 1.2, stance: 'regular' | 
   for (let i = 0; i < 600 && board.position.z < -1; i += 1) board.step(STEP, water);
   const entry = board.velocity.length();
   rider.steer = steer;
-  rider.compress = 1;
+  rider.compress = compress;
   let last = headingOf(board);
   let turned = 0;
   let reached: { time: number; speed: number } | undefined;
@@ -1158,7 +1158,7 @@ describe('lean, trim, crouch and heading hold', () => {
     // to 0.7–1.0 rad/s; taken with the crouch's hold, the deepening swung it 1.9–2.3 rad/s, 2.3–2.6 times the held
     // turn's. Held past about 2 s at full steer on flat water the board bleeds its speed and the rider falls into the
     // turn with or without Compress, so the window is the bottom turn's second.
-    it.each([[8, 60], [10, 55], [11, 45]])('holds Compress taken mid-turn on flat water at %i m/s', (speed, turned) => {
+    it.each([[7, 60], [8, 60], [10, 55], [11, 45]])('holds Compress taken mid-turn on flat water at %i m/s', (speed, turned) => {
       const turn = (compress: number) => {
         const board = new BoardBody();
         board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
@@ -1194,7 +1194,7 @@ describe('lean, trim, crouch and heading hold', () => {
     // The deep U (the stances spec): Forsyth et al. 2024's bottom turns yaw 99° in 0.96 s at 1.9 rad/s, keeping 0.88–0.95
     // of their speed; de Sousa 2022's reference, a deep U that keeps the speed. Not met on still water by any stance
     // (the compress plan's findings): at 7 m/s entry, 1.2 s after the lean, standing yaws 75°, Shift's crouch 69°,
-    // Compress over it 62° (63° backside), all near half their speed. A carve at a 40–48° rail sheds about 0.45 g, and
+    // Compress over it 62° (63° backside), keeping 0.48–0.67 of their speed. A carve at a 40–48° rail sheds about 0.45 g, and
     // the lean the turn can hold (TURN_RADIUS) falls with the speed. Forsyth's turns were on waves, whose water feeds them.
     it.fails('makes a deep U at the bottom of the face', () => {
       const turn = bottomTurn(-1);
@@ -1203,10 +1203,20 @@ describe('lean, trim, crouch and heading hold', () => {
       expect(turn.reached!.speed).toBeGreaterThanOrEqual(0.85 * turn.entry);
     });
 
+    // The stances spec says compressed and leaning turns hard; here Compress over the crouch turns less than the crouch
+    // alone (62° against 69°, the keyboard's full crouch 58–60°) and keeps less of its speed: the forward weight costs
+    // about 6°, the depth the rest. Pinned for the user's decision, not tuned (the compress plan's findings).
+    it.fails('turns at least as hard compressed as crouched, keeping as much speed', () => {
+      const crouched = bottomTurn(-1, 90, 1.2, 'regular', 0.6, 0);
+      const compressed = bottomTurn(-1);
+      expect(compressed.turned).toBeGreaterThanOrEqual(crouched.turned);
+      expect(compressed.exit).toBeGreaterThanOrEqual(crouched.exit);
+    });
+
     // Compress at the base of the bottom turn: from Shift's crouch on the drop either way, and on its own from standing.
     // From standing the board fell away under the dropping legs: the leg, a spring both ways, pulled it up and the
     // rider fell into the turn at about 1 s.
-    it.each([['frontside', -1, 0.6], ['backside', 1, 0.6], ['from standing', -1, 0]])('stays on through a compressed bottom turn, %s', (_how, steer, crouch) => {
+    it.each([['frontside', -1, 0.6], ['backside', 1, 0.6], ['from standing', -1, 0], ['from Shift held down (the keyboard)', -1, 1]])('stays on through a compressed bottom turn, %s', (_how, steer, crouch) => {
       const turn = bottomTurn(steer, 90, 1.2, 'regular', crouch);
       expect(turn.entry).toBeGreaterThan(6.5);
       expect(turn.entry).toBeLessThan(8);

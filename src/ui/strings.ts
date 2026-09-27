@@ -329,7 +329,7 @@ export const EN = {
   'action.trimForward.help': 'Standing: weight forward, to run down the line',
   'action.trimBack.help': 'Standing: weight back, to slow down and stall',
   'action.crouch.help': 'Standing: get low; extend out of a turn to pump',
-  'action.compress.help': 'Standing: the bottom turn’s stance: all the way down, weight forward, lean to reach the water',
+  'action.compress.help': 'Standing, the bottom turn’s stance: all the way down, weight forward, lean to reach the water',
   'action.hand.help': 'Standing: drag the wave-side hand to slow in the pocket',
   'hint.lean': 'Lean with {keys} to carve',
   'hint.trim': '{keys} move your weight along the board',
