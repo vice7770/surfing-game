@@ -1162,33 +1162,33 @@ describe('lean, trim, crouch and heading hold', () => {
     // to 0.7–1.0 rad/s; taken with the crouch's hold, the deepening swung it 1.9–2.3 rad/s, 2.3–2.6 times the held
     // turn's. Held past about 2 s at full steer on flat water the board bleeds its speed and the rider falls into the
     // turn with or without Compress, so the window is the bottom turn's second.
-    const compressMidTurn = (speed: number, turned: number) => {
-      const turn = (compress: number) => {
-        const board = new BoardBody();
-        board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
-        const rider = new AttachedRider(board.shape, { phase: 'standing' });
-        board.attach(rider);
-        const water = new PlaneWater();
-        run(board, water, 0.3);
-        let last = headingOf(board);
-        let heading = 0;
-        const track = () => {
-          const now = headingOf(board);
-          heading += Math.atan2(Math.sin(now - last), Math.cos(now - last));
-          last = now;
-        };
-        rider.steer = 1;
-        run(board, water, 0.5, track);
-        rider.compress = compress;
-        const rates: number[] = [];
-        run(board, water, 1, () => {
-          track();
-          rates.push(board.angularVelocity.y);
-        });
-        return { attached: rider.attached, heading, rates };
+    const midTurn = (speed: number, compress: number) => {
+      const board = new BoardBody();
+      board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
+      const rider = new AttachedRider(board.shape, { phase: 'standing' });
+      board.attach(rider);
+      const water = new PlaneWater();
+      run(board, water, 0.3);
+      let last = headingOf(board);
+      let heading = 0;
+      const track = () => {
+        const now = headingOf(board);
+        heading += Math.atan2(Math.sin(now - last), Math.cos(now - last));
+        last = now;
       };
-      const held = turn(0);
-      const compressed = turn(1);
+      rider.steer = 1;
+      run(board, water, 0.5, track);
+      rider.compress = compress;
+      const rates: number[] = [];
+      run(board, water, 1, () => {
+        track();
+        rates.push(board.angularVelocity.y);
+      });
+      return { attached: rider.attached, heading, rates };
+    };
+    const compressMidTurn = (speed: number, turned: number) => {
+      const held = midTurn(speed, 0);
+      const compressed = midTurn(speed, 1);
       expect(compressed.attached).toBe(true);
       expect(signFlips(compressed.rates)).toBeLessThanOrEqual(2);
       expect(largestSwing(compressed.rates)).toBeLessThanOrEqual(2 * largestSwing(held.rates));
@@ -1196,8 +1196,16 @@ describe('lean, trim, crouch and heading hold', () => {
     };
     it.each([[7, 60], [8, 60], [10, 55]])('holds Compress taken mid-turn on flat water at %i m/s', compressMidTurn);
     // Since the feet no longer roll the board away from the lean asked for (the top-turn plan), the held turn at 11 m/s
-    // no longer swings at all (0.99 rad/s before); Compress still swings 0.69 rad/s (0.87 before). Pinned, not tuned.
+    // no longer swings at all (0.99 rad/s before); Compress still swings 0.71 rad/s (0.87 before). Pinned, not tuned,
+    // and guarded beside the pin: no worse than before the plan.
     it.fails('holds Compress taken mid-turn on flat water at 11 m/s', () => compressMidTurn(11, 45));
+    it('holds Compress taken mid-turn at 11 m/s no worse than before the top-turn plan', () => {
+      const compressed = midTurn(11, 1);
+      expect(compressed.attached).toBe(true);
+      expect(signFlips(compressed.rates)).toBeLessThanOrEqual(2);
+      expect(largestSwing(compressed.rates)).toBeLessThanOrEqual(0.87);
+      expect(Math.abs(degrees(compressed.heading))).toBeGreaterThan(45);
+    });
 
     // The deep U (the stances spec): Forsyth et al. 2024's bottom turns yaw 99° in 0.96 s at 1.9 rad/s, keeping 0.88–0.95
     // of their speed; de Sousa 2022's reference, a deep U that keeps the speed. Not met on still water by any stance
@@ -1354,6 +1362,27 @@ describe('lean, trim, crouch and heading hold', () => {
       });
       expect(rider.attached).toBe(true);
       expect(degrees(turned)).toBeGreaterThan(150);
+    });
+
+    // The spec's sequence (the final review): a bottom turn carried up the face into the top turn. The top turns above
+    // start from a board placed on a straight climb with the body upright, which no bottom turn leaves. Carved up to
+    // 120–135° from across at 8–11 m/s and steered back (full, after a neutral pause, or weight back), the leaning body
+    // carries the board on to 160–180° and the rider falls 0.3–1.1 s later; released early (100–110°, 0.4–1.2 s
+    // neutral) it still carries on up and falls. Before the top-turn plan it fell 15 of 16 times. The carve up the
+    // static face is the cutback's and the deep U's shortfall. Pinned, not tuned.
+    it.fails('carries a bottom turn up the face into a top turn back down it', () => {
+      const { board, rider, water } = acrossFace(90, 9);
+      run(board, water, 0.2);
+      const fromFallLine = () => Math.abs(degrees(headingOf(board)));
+      rider.steer = -1;
+      for (let i = 0; i < 180 && rider.attached && fromFallLine() < 120; i += 1) board.step(STEP, water);
+      rider.steer = 1;
+      let lowest = 180;
+      run(board, water, 2, () => {
+        if (rider.attached) lowest = Math.min(lowest, fromFallLine());
+      });
+      expect(rider.attached).toBe(true);
+      expect(lowest).toBeLessThan(90);
     });
 
     // A cutback: riding across the face away from the curl, a sustained turn back up the face and around toward it.
