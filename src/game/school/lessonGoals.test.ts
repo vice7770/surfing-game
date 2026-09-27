@@ -80,6 +80,33 @@ describe('lesson goals', () => {
       expect(run(turn, 1, climb({ crouch: 0.6, steer: 1 })).passed).toBe(false);
     });
 
+    // The final review's probes: Compress down the drop, with or without the crouch, is not the sequence.
+    it('does not pass compressing down the drop', () => {
+      const late = goal('bottomTurn');
+      run(late, 0.8, drop({ compress: 1 }));
+      run(late, 0.2, drop({ compress: 1, crouch: 0.6 }));
+      run(late, 0.5, bottom());
+      expect(run(late, 1, climb()).passed).toBe(false);
+      const both = goal('bottomTurn');
+      run(both, 1, drop({ crouch: 0.6, compress: 1 }));
+      run(both, 0.5, bottom());
+      expect(run(both, 1, climb()).passed).toBe(false);
+      const early = goal('bottomTurn');
+      run(early, 0.3, drop());
+      run(early, 0.7, (t) => ({ wave: wave(0.65 - 0.5 * t), input: input({ crouch: 0.6, compress: 1 }) }));
+      run(early, 0.5, bottom());
+      expect(run(early, 1, climb()).passed).toBe(false);
+    });
+
+    // The ride analysis keeps its latest manoeuvre: one named before this drop is not this turn.
+    it('counts only a bottom turn named after the drop', () => {
+      const turn = goal('bottomTurn');
+      run(turn, 1, (t) => ({ ...drop()(t), live: { kind: 'bottom turn', start: 1 } }));
+      run(turn, 0.5, (t) => ({ ...bottom()(t), live: { kind: 'bottom turn', start: 1 } }));
+      expect(run(turn, 1, (t) => ({ ...climb()(t), live: { kind: 'bottom turn', start: 1 } })).passed).toBe(false);
+      expect(run(turn, 0.1, (t) => ({ ...climb()(t + 1), live: { kind: 'bottom turn', start: 5 } })).passed).toBe(true);
+    });
+
     it('does not pass without releasing Compress up the face', () => {
       const turn = goal('bottomTurn');
       run(turn, 1, drop());

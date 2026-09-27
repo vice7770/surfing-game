@@ -63,9 +63,10 @@ const CROUCH_UP = 0.2;
 const PUMP_WINDOW = 8;
 /**
  * Bottom turn (the stances spec, de Sousa 2022's phases), in order in one ride: a crouch of at least DROP_CROUCH
- * while the face fraction falls (the drop); Compress of at least COMPRESS_HELD with a lean of at least BOTTOM_LEAN
- * no higher than BOTTOM_FACE on the face (the turn); Compress back under RELEASED while the face fraction rises
- * (the extension up the face); and the ride analysis names a bottom turn after the drop's crouch.
+ * without Compress while the face fraction falls (the drop); Compress of at least COMPRESS_HELD with a lean of at
+ * least BOTTOM_LEAN no higher than BOTTOM_FACE on the face (the turn; taken higher, the sequence starts over);
+ * Compress back under RELEASED while the face fraction rises (the extension up the face); and the ride analysis
+ * names a bottom turn begun after the drop's crouch.
  */
 const DROP_CROUCH = 0.5;
 const COMPRESS_HELD = 0.5;
@@ -173,6 +174,8 @@ class TurnGoal implements LessonGoal {
 class BottomTurnGoal implements LessonGoal {
   private stage = 0;
   private named = false;
+  /** The start of the ride's latest manoeuvre at the drop's crouch: a bottom turn must begin after it. */
+  private before = -Infinity;
   private face = Number.NaN;
   private passed = false;
 
@@ -181,6 +184,7 @@ class BottomTurnGoal implements LessonGoal {
       if (frame.phase !== 'standing' || !frame.wave.valid) {
         this.stage = 0;
         this.named = false;
+        this.before = -Infinity;
         this.face = Number.NaN;
       } else {
         const { input } = frame;
@@ -188,10 +192,15 @@ class BottomTurnGoal implements LessonGoal {
         const falling = face < this.face;
         const rising = face > this.face;
         this.face = face;
-        if (this.stage === 0 && falling && input.crouch >= DROP_CROUCH) this.stage = 1;
-        else if (this.stage === 1 && input.compress >= COMPRESS_HELD && Math.abs(input.steer) >= BOTTOM_LEAN && face <= BOTTOM_FACE) this.stage = 2;
-        else if (this.stage === 2 && rising && input.compress < RELEASED) this.stage = 3;
-        if (this.stage >= 1 && frame.live?.kind === 'bottom turn') this.named = true;
+        if (this.stage === 0 && falling && input.crouch >= DROP_CROUCH && input.compress < RELEASED) {
+          this.stage = 1;
+          this.before = frame.live?.start ?? -Infinity;
+        } else if (this.stage === 1 && input.compress >= COMPRESS_HELD) {
+          this.stage = face <= BOTTOM_FACE && Math.abs(input.steer) >= BOTTOM_LEAN ? 2 : face > BOTTOM_FACE ? 0 : 1;
+        } else if (this.stage === 2 && rising && input.compress < RELEASED) {
+          this.stage = 3;
+        }
+        if (this.stage >= 1 && frame.live?.kind === 'bottom turn' && frame.live.start > this.before) this.named = true;
         this.passed = this.stage === 3 && this.named;
       }
     }
