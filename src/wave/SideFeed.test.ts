@@ -77,28 +77,34 @@ describe('the side feed (wave sizes)', () => {
     expect(a).toEqual(b);
   });
 
-  it('keeps a directional sea\'s height where open sides lose a third of it', () => {
-    const run = (fed: boolean) => {
-      const solver = tank();
-      warmStart(solver, sea, { referenceZ: zoneInner, seaTime: 0 });
-      solver.addRelaxationZone(new SeaStateBoundary(solver, sea, solver.zoneWeightsAlongZ(zoneInner, -460), 0));
-      if (fed) solver.addRelaxationZone(new SideFeed(solver, sea, { referenceZ: zoneInner, timeOffset: 0 }));
-      solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(-120, -60), target: calmTarget });
-      const row = solver.rowBelow(zoneInner + 150);
+  // Measured against the same sea with periodic sides (right for a straight coast) over the same record: a
+  // short record's height swings ±30 % with the wave groups, so the input sea's Hs is no fair yardstick.
+  it('keeps a directional sea\'s height as periodic sides do, where open sides lose a quarter of it', () => {
+    const run = (tested: SurfZoneConfig, sides: 'open' | 'periodic', fed: boolean) => {
+      const directional = surfZoneSea(tested);
+      const inner = -700;
+      const depthAt = (_x: number, z: number) => (z < inner ? directional.depth : Math.max(4, directional.depth - (z - inner) / 100));
+      const solver = new BoussinesqSolver(
+        { nx: 40, xMin: -80, dx: 4, zEdges: uniformEdges(-800, -100, 175), xBoundary: sides }, depthAt, { manning: 0, breaking: false },
+      );
+      warmStart(solver, directional, { referenceZ: inner, seaTime: 0 });
+      solver.addRelaxationZone(new SeaStateBoundary(solver, directional, solver.zoneWeightsAlongZ(inner, -800), 0));
+      if (fed) solver.addRelaxationZone(new SideFeed(solver, directional, { referenceZ: inner, timeOffset: 0 }));
+      solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(-200, -100), target: calmTarget });
+      const rows = [100, 150, 200, 250, 300].map((d) => solver.rowBelow(inner + d));
       const middle = [...solver.xCenters.keys()].filter((ix) => Math.abs(solver.xCenters[ix]) <= 40);
-      let tank2 = 0;
-      let input2 = 0;
-      while (solver.time < 150) {
+      let sum2 = 0;
+      while (solver.time < 300) {
         solver.step(0.1);
         if (solver.time < 28) continue;
-        for (const ix of middle) {
-          tank2 += solver.surfaceAt(row * solver.nx + ix) ** 2;
-          input2 += sea.elevation(solver.xCenters[ix], zoneInner, solver.time) ** 2;
-        }
+        for (const row of rows) for (const ix of middle) sum2 += solver.surfaceAt(row * solver.nx + ix) ** 2;
       }
-      return Math.sqrt(tank2 / input2);
+      return Math.sqrt(sum2);
     };
-    expect(run(false)).toBeLessThan(0.8);
-    expect(run(true)).toBeGreaterThan(0.9);
+    for (const tested of [config, { ...config, seed: 3, directionDegrees: 25 }]) {
+      const periodic = run(tested, 'periodic', false);
+      expect(run(tested, 'open', false) / periodic).toBeLessThan(0.8);
+      expect(run(tested, 'open', true) / periodic).toBeGreaterThan(0.9);
+    }
   }, 900_000);
 });

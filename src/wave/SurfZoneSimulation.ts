@@ -13,6 +13,7 @@ import { jetFlightTime, tubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
+import { SideFeed } from './SideFeed';
 import type { SurfZoneState } from './surfZoneState';
 import type { LipImpact } from './SprayCloud';
 import { ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
@@ -316,6 +317,8 @@ export class SurfZoneSimulation {
   /** Sea time at solver time 0, s: set by the warm start, or taken over with a handed-over sea (spec N1). */
   private seaTimeOffset: number;
   private readonly boundary: SeaStateBoundary;
+  /** The incoming sea fed into the window's sides (the wave-sizes spec): open sides drained a directional sea. */
+  private readonly sideFeed: SideFeed;
   private takeOff?: { x: number; z: number };
   private mapping?: {
     grid: RenderGrid; xMin: number; columns: Int32Array; columnWeights: Float64Array;
@@ -356,6 +359,8 @@ export class SurfZoneSimulation {
       this.solver, this.sea, this.solver.zoneWeightsAlongZ(tank.zoneInner, tank.offshore), this.seaTimeOffset,
     );
     this.solver.addRelaxationZone(this.boundary);
+    this.sideFeed = new SideFeed(this.solver, this.sea, { referenceZ: tank.zoneInner, timeOffset: this.seaTimeOffset });
+    this.solver.addRelaxationZone(this.sideFeed);
     this.spinUpSeconds = spinUp;
     // Nothing below reads the water, so all of it can be built before the spin-up.
     this.breaking = new BreakingModel(this.solver, { onset });
@@ -475,6 +480,9 @@ export class SurfZoneSimulation {
     this.surf.clear();
     this.seaTimeOffset = state.seaTimeOffset;
     this.boundary.timeOffset = state.seaTimeOffset;
+    this.sideFeed.timeOffset = state.seaTimeOffset;
+    // A handed-over sea is mid-run: its break line came with it, so the next step's onsets count (throws included).
+    this.onsetsArmed = true;
     this.lipLaunches = state.counters.lipLaunches;
     this.lipVolume = state.counters.lipVolume;
     this.lipJets = state.counters.lipJets;

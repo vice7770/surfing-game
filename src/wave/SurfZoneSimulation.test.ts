@@ -13,6 +13,7 @@ import { rayConcentration } from './Refraction';
 import { crestSpeedAt } from './CrestKinematics';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { TAKE_OFF_BAND } from './SurfMeter';
+import { SideFeed } from './SideFeed';
 
 const small: Omit<SurfZoneConfig, 'spot'> = {
   seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -20,6 +21,16 @@ const small: Omit<SurfZoneConfig, 'spot'> = {
 };
 
 describe('SurfZoneSimulation', () => {
+  it('feeds the tank\'s sides with the incoming sea, on the clock of a handed-over sea (wave sizes)', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'point' });
+    const feed = simulation.solver.relaxationZones.find((zone) => zone instanceof SideFeed) as SideFeed | undefined;
+    expect(feed).toBeDefined();
+    const donor = new SurfZoneSimulation({ ...small, spot: 'point', startSeaTime: 500 });
+    const state = donor.exportState();
+    simulation.importState(state);
+    expect(feed!.timeOffset).toBe(state.seaTimeOffset);
+  });
+
   it('takes the Reef\'s swell at its edge, like the Canyon\'s, until the Reef rework deepens it (wave sizes review)', () => {
     expect(edgeHeight({ ...small, spot: 'reef', significantHeight: 3, peakPeriod: 18 })).toBe(3);
   });

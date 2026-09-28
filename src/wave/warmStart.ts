@@ -53,7 +53,8 @@ export function transformedSea(
   let previousKz = components.map((c) => c.kz);
   for (let c = 0; c < count; c += 1) {
     phase[c] = components[c].kx * x + components[c].kz * referenceZ + components[c].phase;
-    alive[c] = 1;
+    // A component spread past 90° from shore-normal travels offshore: it never reaches the columns inshore.
+    alive[c] = components[c].kz > 0 ? 1 : 0;
   }
   for (let iz = 0; iz < nz; iz += 1) {
     const i = iz * nx + ix;
