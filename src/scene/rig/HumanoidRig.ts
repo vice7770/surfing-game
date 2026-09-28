@@ -38,9 +38,10 @@ export const RIG_DETAIL = {
    * `elevationTall`° standing tall to `elevationDeep`° crouched (SurfDeeper:
    * hands over their rails, quiet, 20–60°; Kerr's drop: the lead arm about 55°),
    * the elbow soft at `elbow`° (Kerr's drop: 150–160°), keeping the physics'
-   * hand's heading about the trunk.
+   * hand's heading about the trunk. In a snap the trailing arm swings up toward
+   * `snapSwing`° (the Bali camp: the trailing arm swung around).
    */
-  arms: { share: 1, elevationTall: 40, elevationDeep: 55, elbow: 155 },
+  arms: { share: 1, elevationTall: 40, elevationDeep: 55, elbow: 155, snapSwing: 100 },
   /**
    * Standing, a clavicle follows its arm (step 3): lifting a `ratio` of the
    * arm's rise from the trunk's down above `from`° (the scapulohumeral rhythm,
@@ -67,10 +68,11 @@ export const RIG_DETAIL = {
   fallenReach: 0.92,
   /**
    * Legs stop this short of straight when the hips come down to reach the feet:
-   * a knee at about 164° (de Sousa 2022: 150° or more extending; at 0.97 the rig
-   * stopped it at 152°, the stance map's finding). Arms reach `armReach`.
+   * a knee at about 160°, soft, never locked (de Sousa 2022: 150° or more
+   * extending; SurfDeeper: avoid locking out; at 0.97 the rig stopped it at 152°,
+   * the stance map's finding). Arms reach `armReach`.
    */
-  legReach: 0.99,
+  legReach: 0.985,
   armReach: 0.97,
   /**
    * The knees standing tall (de Sousa 2022: 150° or more extended): the physics'
@@ -408,9 +410,9 @@ export class HumanoidRig {
       else if (fallen) target.subVectors(hand, shoulder).setLength(RIG_DETAIL.fallenReach * this.armLength).add(shoulder);
       else if (state.phase === 'prone' && state.duck > 0.3) this.straightOnRail(hand, shoulder, target);
       else target.copy(hand);
-      if (state.phase === 'standing') this.freeArm(state, shoulder, target, 1 - this.reachDepth(hand));
+      if (state.phase === 'standing') this.freeArm(state, side, shoulder, target, 1 - this.reachDepth(hand));
       if (state.phase === 'standing' && !this.isRearFoot(state, side)) this.leadArm(state, shoulder, target, 1 - this.reachDepth(hand));
-      if (state.phase === 'standing') this.driveClavicle(state, side, shoulder, target, chestUp);
+      if (state.phase === 'standing') this.driveClavicle(state, side, shoulder, target, chestUp, 1 - this.reachDepth(hand));
       solveTwoBone(shoulder, this.upperArm, this.lowerArm, target, pole, this.joints.elbow[side], this.joints.wrist[side]);
       this.aimLimb(BONES.arm[side], BONES.foreArm[side], shoulder, this.joints.elbow[side], this.joints.wrist[side], pole);
       this.orient(BONES.hand[side], this.direction.subVectors(this.joints.wrist[side], this.joints.elbow[side]), fallen ? this.facing : boardUp);
@@ -741,7 +743,7 @@ export class HumanoidRig {
    * chest's up with the arm's rise above `from`, forward with its reach forward;
    * moves `shoulder` with it.
    */
-  private driveClavicle(state: RiderVisualState, side: Side, shoulder: Vector3, target: Vector3, chestUp: Vector3): void {
+  private driveClavicle(state: RiderVisualState, side: Side, shoulder: Vector3, target: Vector3, chestUp: Vector3, free: number): void {
     const { clavicle } = RIG_DETAIL;
     const share = clavicle.share * state.standingBlend;
     if (share <= 0) return;
@@ -763,7 +765,10 @@ export class HumanoidRig {
     toward(this.facing, swing);
     this.orient(BONES.shoulder[side], along, chestUp);
     bone.updateMatrixWorld(true);
+    // A free hand goes where its shoulder goes (its target was set from the shoulder); a hand holding a point stays.
+    const before = this.middle.copy(shoulder);
     this.bones.get(BONES.arm[side])!.getWorldPosition(shoulder);
+    target.addScaledVector(before.sub(shoulder).negate(), free);
   }
 
   /**
@@ -772,7 +777,7 @@ export class HumanoidRig {
    * reach of a soft elbow, about the trunk as the physics' hand is; `share` of
    * it, none for a hand reaching down.
    */
-  private freeArm(state: RiderVisualState, shoulder: Vector3, target: Vector3, share: number): void {
+  private freeArm(state: RiderVisualState, side: Side, shoulder: Vector3, target: Vector3, share: number): void {
     const { arms } = RIG_DETAIL;
     const weight = arms.share * share * state.standingBlend;
     if (weight <= 0) return;
@@ -781,7 +786,11 @@ export class HumanoidRig {
     const out = this.nose.subVectors(target, shoulder).addScaledVector(down, -this.scratch.subVectors(target, shoulder).dot(down));
     if (out.lengthSq() < 1e-8) return;
     out.normalize();
-    const elevation = ((arms.elevationTall + (arms.elevationDeep - arms.elevationTall) * this.blend.depth) * Math.PI) / 180;
+    let degrees = arms.elevationTall + (arms.elevationDeep - arms.elevationTall) * this.blend.depth;
+    // In a snap the trailing arm swings up, as the weight goes back in the turn.
+    if (this.isRearFoot(state, side)) degrees += (arms.snapSwing - degrees) * this.back * Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
+    // The elevation is the upper arm's: the wrist aims above it by the soft elbow's half bend.
+    const elevation = ((degrees + (180 - arms.elbow) / 2) * Math.PI) / 180;
     const elbow = (arms.elbow * Math.PI) / 180;
     const reach = Math.sqrt(this.upperArm ** 2 + this.lowerArm ** 2 - 2 * this.upperArm * this.lowerArm * Math.cos(elbow));
     const aim = this.direction.copy(down).multiplyScalar(Math.cos(elevation)).addScaledVector(out, Math.sin(elevation));

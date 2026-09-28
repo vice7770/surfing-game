@@ -1,6 +1,7 @@
 import { Quaternion, Vector3 } from 'three';
 import { afterEach, describe, expect, it } from 'vitest';
-import { stanceState } from '../../dev/ridingPoses';
+import { drawnStance, stanceState } from '../../dev/ridingPoses';
+import { PosedBody } from './posedBody';
 import { BONES } from './humanoidBones';
 import { HumanoidRig, RIG_DETAIL } from './HumanoidRig';
 import { posturePoints } from './posturePoints';
@@ -33,6 +34,19 @@ describe('the free arms (the stance poses, step 3)', () => {
       expect(shaped[key], key).toBeLessThanOrEqual(60);
     }
     for (const key of ['leadElbow', 'trailElbow'] as const) expect(shaped[key], key).toBeLessThan(170);
+  });
+
+  it('puts the upper arm at the stance\'s elevation, the soft elbow below the wrist\'s line', () => {
+    const { read } = angles(stanceState('trim', 'regular', at, createRiderVisualState()).state, 1);
+    for (const key of ['leadArm', 'trailArm'] as const) expect(Math.abs(read[key] - RIG_DETAIL.arms.elevationTall), key).toBeLessThan(6);
+  });
+
+  it('swings the trailing arm up in the snap (the Bali camp: swung around)', () => {
+    const { bones } = createTestHumanoid();
+    const gauge = new StanceGauge(bones);
+    const body = new PosedBody(bones);
+    const { state } = drawnStance('snap-frontside', 'regular', at, (step) => body.update(step));
+    expect(gauge.measure(state, 'regular').trailArm).toBeGreaterThan(60);
   });
 
   it('bends the drop\'s leading elbow into Kerr\'s 140–170°', () => {

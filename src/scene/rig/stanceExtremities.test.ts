@@ -54,6 +54,19 @@ describe('the clavicles and the toes (the stance poses, step 3)', () => {
     expect(degrees(driven.right, still.right)).toBeLessThan(3);
   });
 
+  it('carries a free hand with its clavicle: the elbow keeps its soft bend', () => {
+    const state = stanceState('trim', 'regular', at, createRiderVisualState()).state;
+    const elbow = (share: number) => {
+      RIG_DETAIL.clavicle.share = share;
+      const probe = solve(state);
+      return probe.gauge.measure(state, 'regular');
+    };
+    const driven = elbow(1);
+    const still = elbow(0);
+    expect(Math.abs(driven.leadElbow - still.leadElbow)).toBeLessThan(3);
+    expect(Math.abs(driven.trailElbow - still.trailElbow)).toBeLessThan(3);
+  });
+
   it('lifts the heel past the ankle’s weight-bearing reach, the ball and the toes on the deck', () => {
     // The hand in the face on surfer1: its front ankle closes to 44° with the heel down.
     const bytes = readFileSync('public/assets/surfers/surfer1.glb');
