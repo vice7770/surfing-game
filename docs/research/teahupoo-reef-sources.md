@@ -165,7 +165,7 @@ The "friction coefficients of 0.1–0.2" measured on reef tops ([Nelson 1996](ht
 
 ### The Teahupo'o model's lagoon
 
-The 1:60 physical model of Teahupo'o ([zenodo 11392175](https://zenodo.org/records/11392175), CC-BY; Rodríguez-Burguette, Torres-Freyermuth et al.) has "a very steep slope (1/2.26)" at the forereef, and "a reef lagoon and planar slope (1/9.64) inland". The lagoon's depth and the reef flat's width are only in its profile file, `Profile_Teahupoo.txt`. Downloading it waits for the user's approval, so both stay provisional.
+The 1:60 physical model of Teahupo'o ([zenodo 11392175](https://zenodo.org/records/11392175), CC-BY; Rodríguez-Burguette, Torres-Freyermuth et al.) has "a very steep slope (1/2.26)" at the forereef, and "a reef lagoon and planar slope (1/9.64) inland". The lagoon's depth and the reef flat's width are only in its profile file, `Profile_Teahupoo.txt`. The user approved downloading it (2026-09-28), but the record's files are restricted: Zenodo releases them only to people the authors grant access, after logging in. The paper's open abstract doesn't give them either, so both stay provisional. Access is the user's to request, with their own account.
 
 ### The crash's pitch
 
@@ -180,5 +180,5 @@ A bubble rings at Minnaert's (1933) frequency, f₀ = (1/2πR)·√(3γp/ρ), in
 | Reef material | rock where the reef builds the bed: forereef, shelf, ledge, crest and reef flat; sand in the pass, the lagoon and on the beach | the spot's own shape |
 | A strike that ends a ride | the board meeting reef at 1 m/s or more along the bed's normal, within 0.6 s of the rider separating (a strike that knocks a standing rider off balance ends in a fall 0.4–0.55 s later) | **provisional** (by feel); injuries and hold-downs stay in P11 |
 | Inland slope | 1:9.64 | the Teahupo'o model ([zenodo 11392175](https://zenodo.org/records/11392175)) |
-| Reef flat width, lagoon depth | 20 m, 2.5 m | **provisional** until `Profile_Teahupoo.txt` is read (needs the user's approval) |
+| Reef flat width, lagoon depth | 20 m, 2.5 m | **provisional**: `Profile_Teahupoo.txt` is restricted on Zenodo (access by request to the authors) |
 | The crash's pitch | playback rate (2 m³ / V)^(1/3), from 1 down to 0.5, V the crash's biggest lip's own water | Minnaert 1933 for the exponent; the 2 m³ reference (above a Practice lip at every spot, so only heavy lips deepen) and the octave floor are **provisional** |
