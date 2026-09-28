@@ -153,4 +153,40 @@
 
 ## Findings
 
-(Filled in during execution.)
+**What the drawn body does now** (`src/scene/rig/armSwing.ts`, `breathing.ts`, in `HumanoidRig`):
+- **The free hands swing with the body** (Pontzer et al. 2009: the arms as passive mass dampers driven by the body):
+  - each is a mass on a critically damped spring about its cued place, at the arm's own pendulum: about 4.8 rad/s (0.76 Hz), from Winter 2009's segments on each skeleton's arm;
+  - the swing is driven by the shoulder's motion less its running mean over 0.5 s, so a pump leaves the hands trailing below the shoulders as the body rises, while a glide slowing or a carve's steady pull (the body leans against it) does not hold them off;
+  - a hand on a point keeps it, and lying, pushing and fallen the swing rests.
+- **The chest breathes:**
+  - 16 breaths a minute at rest, up to 36 at full work (Blackie et al. 1991);
+  - the upper chest grows 1.5 % to 21 % of its depth per breath (Yang et al. 2022), about 0.4° to 6° each way at the upper spine;
+  - the work comes from paddling, swimming, the legs pumping and a held breath; it rises within 5 s (Nicolò et al. 2017) and eases over 30 s;
+  - the breath is held under water and while duck-diving;
+  - the neck and head keep their world directions.
+- **Already given, now pinned:**
+  - the head's tilting is 0.08 of the chest's through a weave, 0.25 through a pump and 0.38 on chop (Part B's world-up head; Pozzo et al. 1990);
+  - the drawn hips follow the physics' leg over chop (correlation 0.93: P9's leg spring);
+  - the trunk's counter-motion is the physics' banked body and sway.
+
+**Measured** (the body film, `docs/research/body-fluidity.md`, the page's pipeline):
+- the free hands' swing about their shoulders through a pump: 12.6 and 10.6 cm RMS, against 8.4 and 7.4 cm before (then only the cue's elevation following the crouch);
+- breathing, gliding after 20 s of paddling: the head moves 13.3 mm RMS about the hips (0 before);
+- the head, the knees and the switches: unchanged; the switch tests pass at 60 and 120 Hz, a fall from a pump included.
+
+**Against the map:** 37 of 99 targets miss (step 3: 38). Three low-confidence arm targets are read mid-motion:
+- extending up the face, the trailing arm: 61° → 53°, now a miss;
+- pumping while extending, the lead arm: 42° → 40°, now met;
+- pumping while extending, the trailing arm: 43° → 32°, now met.
+
+Every medium and high target is unchanged (`stanceTargets.test.ts`).
+
+**Fixed on the way:** the body report's lag row had read 300 ms, the search's cap, for every pipeline since step 3: the drawn chest hinges and turns off the physics' torso roll, which no time shift matches. It now reads the drawn chest against the rig's own chest on the newest snapshot: 0 ms for the rig on the newest snapshot, 17 ms blended between physics steps, 34 ms with the switches blended out (step 1 read 0, 25 and 54 ms against the physics).
+
+**Open, for the user's eye and for later steps:**
+- **The arms are passive.** A surfer also swings them to drive a pump, and that active drive is not modelled.
+- **`armRate` stays.** The swing follows the body, not the cue, so a snap's arm reversing still needs step 3's rate. Without it the weave's hand turns at 24.6 rad/s.
+- **The drawn body differs a little from one display rate to another** (the hand about its shoulder, 4.3 cm at 30 vs 120 Hz through a pump, with no swing): step 3's hard rate limits chase a moving target step by step.
+- **A hand reaching the water still arrives through step 1's smoothing,** over about 0.15 s.
+- **Final review:** a self-review, not a fresh reviewer (below, in the PR).
+

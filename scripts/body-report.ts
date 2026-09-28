@@ -31,6 +31,10 @@ const after = (film: BodyFilm, from: number): BodyFilm => ({ rate: film.rate, fr
 const fixed = (value: number, digits = 1) => (Number.isFinite(value) ? value.toFixed(digits) : '—');
 const degrees = (radians: number) => (radians * 180) / Math.PI;
 
+// The drawing's lag is read against the rig's own chest on the newest snapshot: since step 3 the drawn chest hinges and
+// turns off the physics' torso roll, which no shift can match (the fit sat at its 0.3 s cap for every pipeline).
+const reference = filmBody(scenario('weave'), { drawer: latestDrawer, pose: rigAlone, rate: 120 }).frames.map((frame) => frame.chestRoll);
+
 const sections: string[] = [];
 for (const { name, options } of PIPELINES) {
   const pops: string[] = [];
@@ -49,7 +53,7 @@ for (const { name, options } of PIPELINES) {
   const jitter = shake({ rate: compressed.rate, frames: compressed.frames.filter((frame) => frame.time >= 1.3 && frame.time < 1.9) }, 4, 30);
   const straight = shake(after(filmBody(scenario('straight'), { ...options, rate: 120 }), 0.5));
   const weave = filmBody(scenario('weave'), { ...options, rate: 120 });
-  const lag = drawnLag(weave);
+  const lag = drawnLag({ rate: weave.rate, frames: weave.frames.map((frame, i) => ({ ...frame, physicsRoll: reference[i] })) });
   // Step 4's secondary motion.
   const pumping = filmBody(scenario('pumping'), { ...options, rate: 60 });
   const chop = filmBody(scenario('chop'), { ...options, rate: 60 });
@@ -64,7 +68,7 @@ for (const { name, options } of PIPELINES) {
 | Chest roll in the wobble band (1.5–4 Hz), compressed mid-turn at 10 m/s (steady, 1.3–1.9 s) | ${fixed(degrees(carve), 2)}° RMS |
 | Chest roll above it (4–30 Hz): jitter | ${fixed(degrees(jitter), 2)}° RMS |
 | The same, riding straight at 7 m/s | ${fixed(degrees(straight), 2)}° RMS |
-| The drawn chest's lag behind the physics (weaving at 8 m/s) | ${fixed(1000 * lag, 0)} ms |
+| The drawn chest's lag behind the rig's chest on the newest snapshot (weaving at 8 m/s) | ${fixed(1000 * lag, 0)} ms |
 | The head's tilting over the chest's: weaving, pumping, on chop (1: none held back) | ${fixed(headSteadiness(weave), 2)}, ${fixed(headSteadiness(pumping), 2)}, ${fixed(headSteadiness(chop), 2)} |
 | The free hands' swing about their shoulders, pumping (left, right) | ${fixed(100 * handSwing(pumping, 'left'), 1)}, ${fixed(100 * handSwing(pumping, 'right'), 1)} cm RMS |
 | The drawn hips following the physics' leg on chop (correlation) | ${fixed(kneeGive(chop, 0.5), 2)} |
