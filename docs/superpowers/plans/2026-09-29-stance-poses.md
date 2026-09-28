@@ -147,11 +147,13 @@
   - 147.5° standing tall down to 75° at Compress's depth (the map's middles: Weiss 2025 and SurfDeeper; de Sousa 2022);
   - the pelvis moves back over the heels as far as keeps the body's centre of mass where the upright body has it (Winter 2009's segments, solved on a model of the posed body: within 0.1 cm in trim and the drop, 1 cm in Compress);
   - backside, no further over the toes than the middle of Hobgood's ±20°, so the heel-side hand still reaches the water;
-  - no faster than a brisk trunk bend (4 rad/s).
-- **The legs** may straighten to about 160°, never locked (the rig had stopped them at 152°).
-- **Free arms take the stance's shape:** 40° from the trunk's down standing tall and 55° crouched, the elbow at 155°, keeping the physics' hand's heading about the trunk. Hands in the water, on a rail or in the face stay on their points.
+  - never so far that the trunk, the lean into the turn included, is more than 75° from the world's vertical (the map's Compress, 45–75°);
+  - no faster than a brisk trunk bend (4 rad/s);
+  - the hips then come down again, straight down, wherever the pelvis gone back has carried them past the legs' reach.
+- **The legs** may straighten to about 160°, never locked (the rig had stopped them at 152°), coming to it smoothly over the last few centimetres.
+- **Free arms take the stance's shape:** 40° from the trunk's down standing tall and 55° crouched, the elbow at 155°, keeping the physics' hand's heading about the trunk. Hands in the water, on a rail or in the face stay on their points. The arm's cues blend by direction and reach, never on a straight line that folds the elbow, and the arms come into a turn at most over a quarter second.
 - **The clavicles follow their arms:** a third of the arm's rise above 30° (the scapulohumeral rhythm), forward with a forward reach.
-- **Past 40° of loaded ankle flexion the heel lifts** about the ball, the toes flat on the deck (weight-bearing dorsiflexion: 30° or more healthy, about 40° typical). The gauge now reads the ankle as the joint's flexion, shin to foot.
+- **Past 40° of loaded ankle flexion the heel lifts** about the ball, the toes flat on the deck (weight-bearing dorsiflexion: 30° or more healthy, about 40° typical), eased in with the standing blend. The gauge now reads the ankle as the joint's flexion, shin to foot.
 - **In a snap the chest turns with the turn either way:**
   - the trim's opening toward the nose yields to the snap, and the snap's twist is 45°;
   - the backside snap's chest had faced the toes (Hobgood, the Bali camp).
@@ -164,11 +166,16 @@
   - the drop's leading elbow (180° → 155°);
   - the backside snap's chest (−1° → −24°);
   - Compress's head (75° → 67°) and trailing elbow;
-  - the hand in the face's lower hand.
-- **Low-confidence misses:** 21 → 13.
+  - the hand in the face's lower hand;
+  - trim's rear ankle, but only because the gauge now reads the joint's flexion (10–14°); the shin's tilt it read before is still 30–33° on every surfer.
+- **Low-confidence misses:** 21 → 13. Four are new:
+  - Compress frontside's leading elbow, 180° → 135° (the soft elbow);
+  - extension frontside's trunk from the vertical, 29° → 46° (the hinge on the physics' lean);
+  - trim's head yaw, just out;
+  - Compress backside's lean, −32° → −28°.
 - **Medium and high misses: 25 either way.** Two new ones come from the pelvis moving back:
   - Compress frontside's front knee, 69° against 70–90°;
-  - extension's rear knee, 147° against 150° or more.
+  - extension's rear knee, 145° against 150° or more (the physics' pelvis still rising, and the legs' smooth stop).
 - **The stance-target test** (`src/dev/stanceTargets.test.ts`) holds every medium or high target the drawn pose owns on surfer2, Regular and Goofy. Thirteen known misses are listed with their reasons (the physics' weight and timing, the backside trunk's conflict, the hand's blend, the landing's glide). A new miss or a fixed one fails it.
 
 **Fixed on the way:**
@@ -180,6 +187,13 @@
   - the free arm's elevation is the upper arm's, the soft elbow below the wrist's line;
   - in a snap the trailing arm swings up (the Bali camp), where the free arm had lowered it.
 - **The clavicles and toes return to rest when not driven,** and the smoothing layer blends them.
+
+**The final review's fixes** (five regressions a player would see, which the one-instant checks missed; each now has a check through the motion, `src/scene/rig/stanceMotion.test.ts`, or in the body film):
+- **Locked knees and lifted feet in top turns and snaps** (knees at 166°): the hinge's pelvis had gone back past the legs' reach. The hips now come down again after it.
+- **The heels popped on a crouched landing:** the heel lift now eases in with the standing blend (a new film case, the crouched pop-up).
+- **The pump's feet slid up to 13 cm:** the legs' hard stop at their reach made the knee stop dead, which the smoothing layer took for a jump. The legs now come to their reach smoothly, over 2.5 % of their length each side of it. Narrower still slid; wider shortened standing tall (trim's tallest knee reads about 5° under the hard stop's).
+- **A held Compress folded past horizontal** (the head below the hips after 1.3 s): the hinge stacked on the physics' growing lean. It now stops 75° from the world's vertical. The first version also unwound the hinge for a body falling back over its heels, where hinging forward lifts the trunk: the drawn chest lurched 11° before the weave's fall. The bound now reads which way the hinge tips the trunk.
+- **Folded, flicking arms and a spinning hand:** the cues now blend the arm by direction and reach; the hand's back turns to the chest's facing as the forearm comes along the deck's normal; the arms follow a turn's reversal over a quarter second (read straight from the yaw rate, the lead arm had whipped 150° in 0.12 s).
 
 **Open, for the user's eye and for later steps:**
 - **The snap's and top turn's raised leading arm bends sharply at the elbow,** an open hand up, which can read as a wave: Part B's leading-arm cue on top of the soft elbow.
