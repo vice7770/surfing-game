@@ -23,32 +23,32 @@ export const LESSON_WAVES: readonly LessonWave[] = [
     },
     "placements": {
       "pocket": {
-        "x": -8.2,
-        "z": -48.52,
-        "heading": -0.519,
-        "speed": 0.25,
+        "x": 2.94,
+        "z": -43.55,
+        "heading": 0.435,
+        "speed": 9.14,
         "phase": "standing"
       },
       "caught": {
-        "x": -6.29,
-        "z": -72.89,
-        "heading": -0.627,
-        "speed": 2.39,
+        "x": 3.87,
+        "z": -64.32,
+        "heading": 0.065,
+        "speed": 1.97,
         "phase": "prone"
       },
       "waiting": {
-        "x": 0.47,
-        "z": -84.68,
-        "heading": 0.132,
-        "speed": 0.97,
+        "x": 1.03,
+        "z": -84.26,
+        "heading": 0.011,
+        "speed": 1.29,
         "phase": "prone"
       }
     },
     "provisional": false,
     "checks": {
-      "pocket": "stood 6.4 s (attempt 1)",
-      "caught": "stood 6.1 s (attempt 18)",
-      "waiting": "stood 3.8 s (attempt 4)"
+      "pocket": "stood 3.8 s (attempt 17)",
+      "caught": "stood 4.9 s (attempt 4)",
+      "waiting": "stood 4.6 s (attempt 4)"
     }
   }
 ];

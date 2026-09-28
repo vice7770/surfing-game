@@ -1,12 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import type { BreakingWave } from './SurfMeter';
-import { sizeGates, sizeMarkdown, summariseRun, type SizeRun } from './sizeReport';
+import { breakerDepthFor } from './Breaking';
+import { sizeGates, sizeMarkdown, summariseRun, takeOffIndex, type SizeRun } from './sizeReport';
 import { komarGaughan } from './surfForecast';
 
 const wave = (time: number, face: number, z = -100): BreakingWave => ({ time, x: 0, z, face });
 const base = { spot: 'beach' as const, source: 'buoy' as const, significantHeight: 3, period: 12, heightAt: 'deep' as const, takeOffZ: -100, stepMs: 5, cells: 1000 };
 
 describe('size report', () => {
+  it('finds the breaker index that seats a take-off where the sets broke (the refit on every tank)', () => {
+    for (const index of [0.78, 1.14]) expect(takeOffIndex(3, 10, breakerDepthFor(3, 10, index))).toBeCloseTo(index, 12);
+    // Sets breaking in deeper water call for a smaller index.
+    expect(takeOffIndex(3, 10, 4)).toBeLessThan(takeOffIndex(3, 10, 3));
+  });
+
   it('summarises a run: H1/3 and H1/10 of its waves, and where its sets broke at the take-off', () => {
     const faces = [1, 2, 3, 4, 5, 6];
     const takeOff = [wave(0, 6, -110), wave(12, 5, -106), wave(24, 1, -60), wave(36, 2, -70), wave(48, 1.5, -65), wave(60, 1.2, -62)];
@@ -34,12 +41,11 @@ describe('size report', () => {
     expect(gates.some((gate) => gate.name.startsWith('reef'))).toBe(false);
   });
 
-  it('holds small days to within 5 % of the baseline, and the Canyon to the same faces', () => {
+  it('reports small days and the Canyon without gating them: the side feed changes them on purpose (wave sizes)', () => {
     const small: SizeRun = { ...summariseRun({ ...base, spot: 'point', significantHeight: 1, heightAt: 'edge' }, [], []), typical: 1.0, sets: 1.3, waves: 20, setBreakZ: -90 };
     const canyon: SizeRun = { ...small, spot: 'canyon', significantHeight: 2, heightAt: 'edge' };
-    const gates = sizeGates([{ ...small, typical: 1.04 }, { ...canyon, typical: 1.2 }], [small, canyon]);
-    expect(gates.find((gate) => gate.name === 'point Hs 1 m Tp 12 s small day')!.pass).toBe(true);
-    expect(gates.find((gate) => gate.name === 'canyon Hs 2 m Tp 12 s unchanged')!.pass).toBe(false);
+    const gates = sizeGates([{ ...small, typical: 1.4 }, { ...canyon, typical: 1.2 }], [small, canyon]);
+    expect(gates).toEqual([]);
   });
 
   it('writes a table per spot with the empirical references', () => {

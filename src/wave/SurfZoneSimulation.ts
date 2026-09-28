@@ -13,6 +13,7 @@ import { jetFlightTime, tubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
+import { SideFeed } from './SideFeed';
 import type { SurfZoneState } from './surfZoneState';
 import type { LipImpact } from './SprayCloud';
 import { ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
@@ -265,10 +266,11 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
 export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 'centre', point: 'centre', reef: 'peak', canyon: 'focus', padang: 'peak' };
 
 /**
- * The breaker index a big day's take-off is placed with, per spot: the size report measures where each spot's
- * sets break and sets these so the take-off lands there (the wave-sizes spec). Today's tanks keep BREAKER_INDEX;
- * the Reef's is the Reef rework's to set. The Point's and the Beach's are fitted to their sets' measured breaks at
- * 14 s (Point Hs 2–4 m: 1.05–1.16; Beach Hs 2–3 m: 1.08–1.20), before the side feed; they are refitted after it.
+ * The breaker index every take-off is placed with, per spot: the size report measures where each spot's sets
+ * break and sets these so the take-off lands there (the wave-sizes spec), on small days too, since the side feed
+ * grew today's seas (Practice's Beach sets broke 23 m outside a BREAKER_INDEX take-off). The Reef's is the Reef
+ * rework's to set; the Canyon keeps its focus take-off at BREAKER_INDEX. The Point's and the Beach's are fitted to
+ * their sets' measured breaks at 14 s (Point Hs 2–4 m: 1.05–1.16; Beach Hs 2–3 m: 1.08–1.20), before the side feed; they are refitted after it.
  */
 export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.13, reef: BREAKER_INDEX, canyon: BREAKER_INDEX, padang: BREAKER_INDEX };
 
@@ -289,8 +291,7 @@ export const TAKE_OFF_EDGE_MARGIN = 30;
 export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   const spot = createSpot(config.spot, config.seed);
   const tank = tankLayout(config);
-  const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
-  const target = breakerDepthFor(edgeHeight(config, tank.edgeDepth), tank.edgeDepth + config.tide, deeper ? TAKE_OFF_INDEX[config.spot] : BREAKER_INDEX);
+  const target = breakerDepthFor(edgeHeight(config, tank.edgeDepth), tank.edgeDepth + config.tide, TAKE_OFF_INDEX[config.spot]);
   const breakZ = (x: number) => {
     // Scan the whole simulated bed from the relaxation zone inward.
     for (let z = tank.zoneInner; z < tank.shore; z += 0.5) {
@@ -366,6 +367,8 @@ export class SurfZoneSimulation {
   /** Sea time at solver time 0, s: set by the warm start, or taken over with a handed-over sea (spec N1). */
   private seaTimeOffset: number;
   private readonly boundary: SeaStateBoundary;
+  /** The incoming sea fed into the window's sides (the wave-sizes spec): open sides drained a directional sea. */
+  private readonly sideFeed: SideFeed;
   private takeOff?: { x: number; z: number };
   private mapping?: {
     grid: RenderGrid; xMin: number; columns: Int32Array; columnWeights: Float64Array;
@@ -406,6 +409,8 @@ export class SurfZoneSimulation {
       this.solver, this.sea, this.solver.zoneWeightsAlongZ(tank.zoneInner, tank.offshore), this.seaTimeOffset,
     );
     this.solver.addRelaxationZone(this.boundary);
+    this.sideFeed = new SideFeed(this.solver, this.sea, { referenceZ: tank.zoneInner, timeOffset: this.seaTimeOffset });
+    this.solver.addRelaxationZone(this.sideFeed);
     this.spinUpSeconds = spinUp;
     // Nothing below reads the water, so all of it can be built before the spin-up.
     this.breaking = new BreakingModel(this.solver, { onset });
@@ -529,6 +534,9 @@ export class SurfZoneSimulation {
     this.surf.clear();
     this.seaTimeOffset = state.seaTimeOffset;
     this.boundary.timeOffset = state.seaTimeOffset;
+    this.sideFeed.timeOffset = state.seaTimeOffset;
+    // A handed-over sea is mid-run: its break line came with it, so the next step's onsets count (throws included).
+    this.onsetsArmed = true;
     this.lipLaunches = state.counters.lipLaunches;
     this.lipVolume = state.counters.lipVolume;
     this.lipJets = state.counters.lipJets;
