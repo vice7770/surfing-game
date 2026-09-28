@@ -624,8 +624,7 @@ describe('the reaching hand, in a compressed bottom turn', () => {
     for (const [name, length] of boneLengths(bones)) expect(length, name).toBeCloseTo(before.get(name)!, 9);
   };
   it.each([['regular'], ['goofy']] as const)('reaches the hand the physics puts at the water, %s backside turn', (stance) => reaches(stance, 'backside turn'));
-  // Frontside it falls 6.6 cm short (2.8 cm before the top-turn plan). The feet no longer roll the board away from a
-  // lean the body lags, so the upper body's swing throws the lean (about 0.27 rad here, 0 before): the drawn chest
-  // turns about 5° out of the turn, and the shoulder sits further from the hand in the water. Pinned, not tuned.
-  it.fails.each([['regular'], ['goofy']] as const)('reaches the hand the physics puts at the water, %s bottom turn', (stance) => reaches(stance, 'bottom turn'));
+  // Frontside it fell 6.6 cm short (the upper body's swing turned the chest out of the turn) until the trunk hinged at
+  // the hips (the riding-body plan, step 3): folded over the toes, the shoulder comes over the hand in the water.
+  it.each([['regular'], ['goofy']] as const)('reaches the hand the physics puts at the water, %s bottom turn', (stance) => reaches(stance, 'bottom turn'));
 });

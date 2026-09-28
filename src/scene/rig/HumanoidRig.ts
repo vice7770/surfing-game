@@ -3,7 +3,7 @@ import { BONES, MIDDLE_FINGER, REQUIRED_BONES, type Side } from './humanoidBones
 import { orientBone } from './orientBone';
 import { STANDING_PELVIS } from './posturePoints';
 import { POINT, type RiderVisualState } from './riderVisualState';
-import { weightBack } from './stanceBlend';
+import { stanceBlend, weightBack, type StanceBlend } from './stanceBlend';
 import { solveTwoBone } from './twoBoneIk';
 
 const SIDES: readonly Side[] = ['left', 'right'];
@@ -41,14 +41,45 @@ export const RIG_DETAIL = {
   fingerCurlStroke: 32,
   /** A fallen limb reaches this share of its length through its centre point. */
   fallenReach: 0.92,
-  /** Legs stop this short of straight when the hips come down to reach the feet. */
-  legReach: 0.97,
+  /**
+   * Legs stop this short of straight when the hips come down to reach the feet:
+   * a knee at about 164° (de Sousa 2022: 150° or more extending; at 0.97 the rig
+   * stopped it at 152°, the stance map's finding). Arms reach `armReach`.
+   */
+  legReach: 0.99,
+  armReach: 0.97,
   /**
    * The knees standing tall (de Sousa 2022: 150° or more extended): the physics'
    * standing pelvis maps to the hips with both knees at this, so its crouch drop
    * bends them from there (90–110° crouched, 90° or less compressed).
    */
   standingKnee: 155,
+  /**
+   * Standing, the trunk hinges at the hips toward the toes (the riding-body plan,
+   * step 3, from the stance map): until the hips' included angle, the mean of
+   * both, is `tall` standing tall and `deep` at the crouch's full depth, blended
+   * by the depth (Weiss 2025 and SurfDeeper: 130–165° in trim; de Sousa 2022:
+   * 90° or less compressed). The pelvis moves back along the level as the upper
+   * body comes forward, as far as keeps the body's centre of mass where the
+   * unhinged body has it (Winter 2009's segment shares, on the body the legs
+   * and the physics' hands give). At most `hingeMost`°.
+   */
+  hipAngle: { tall: 147.5, deep: 75 },
+  hingeMost: 80,
+  /**
+   * The hinge swings no faster than this, rad/s: a brisk trunk bend. A full
+   * Compress drops the hips in about 0.2 s, a swing of about 2.5 rad/s; faster
+   * is the physics' posture jumping in a step (the body thrown off the board),
+   * which the drawn trunk takes over the next frames.
+   */
+  hingeRate: 4,
+  /**
+   * Turning backside, the trunk bends over the toes no further than this, °, on
+   * the deck, blended in by the turn: the middle of the map's ±20° (Hobgood: the
+   * backside bottom turn rotated with the hips rather than leaning over), the
+   * inside hand reaching the water on the heels' side.
+   */
+  backsideLean: 0,
   /**
    * Standing, the head looks where the board goes: along its travel, led into a
    * turn by the turn over `lookAhead`, s, within `neckTurn` of the chest, and
@@ -149,6 +180,30 @@ export class HumanoidRig {
   private readonly fingerRests = new Map<Bone, Quaternion>();
   /** Standing, how far the weight is back for the snap, 0 to 1, this solve. */
   private back = 0;
+  /** Standing, how far the trunk hinges forward at the hips this solve, rad (step 3), and at which clock. */
+  private hingeAngle = 0;
+  private hingeClock = Number.NaN;
+  private readonly blend: StanceBlend = { stance: 'regular', depth: 0, turn: 0, back: 0 };
+  /** The skeleton's trunk at rest: the hips bone to the spine's base, the spine's base to the neck, the neck to the head, m. */
+  private readonly spineBase: number;
+  private readonly trunkLength: number;
+  private readonly neckLength: number;
+  private readonly unhinged = { up: new Vector3(), hipsForward: new Vector3(), facing: new Vector3(), hips: new Vector3(), chestUp: new Vector3(), mass: new Vector3() };
+  private readonly mass = {
+    sum: new Vector3(), point: new Vector3(), body: new Vector3(), spine: new Vector3(), neck: new Vector3(), hip: new Vector3(), modelHip: new Vector3(), knee: new Vector3(), ankle: new Vector3(), pole: new Vector3(),
+  };
+  /** Where the knees bend toward standing: the chest's facing before the trunk hinges. */
+  private readonly kneeFacing = new Vector3();
+  private readonly levelForward = new Vector3();
+  /** This solve's ankle targets and knee poles, for the hinge's model (they do not change as the trunk hinges). */
+  private readonly legAim = {
+    ankle: { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>,
+    pole: { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>,
+  };
+  /** How far back the pelvis goes per metre the upper body's swing brings it forward, this solve (fitted once). */
+  private backPerSwing = 0;
+  private readonly legKnee = new Vector3();
+  private readonly legAnkle = new Vector3();
   // Scratch, one per role so helpers never share one.
   private readonly up = new Vector3();
   private readonly forward = new Vector3();
@@ -221,6 +276,9 @@ export class HumanoidRig {
     const ankle = world(BONES.foot.left);
     const ball = world(BONES.toe.left);
     this.soleHeight = ankle.y;
+    this.spineBase = world(BONES.spine[0]).distanceTo(hips);
+    this.trunkLength = world(BONES.neck).distanceTo(world(BONES.spine[0]));
+    this.neckLength = world(BONES.head).distanceTo(world(BONES.neck));
     this.footDrop = ankle.y - ball.y;
     this.footRun = Math.hypot(ball.x - ankle.x, ball.z - ankle.z);
     this.heelToMidfoot = this.footRun / 2;
@@ -277,11 +335,17 @@ export class HumanoidRig {
       }
       if (drop > 0) this.placeHips(hipsAt.addScaledVector(up, -drop));
     }
+    this.kneeFacing.copy(this.facing);
+    const hinged = this.hingeAngle;
+    this.hingeAngle = 0;
+    if (state.phase === 'standing' && state.standingBlend > 0) this.hinge(state, hinged);
+    else this.hingeClock = state.clock;
 
     // 3. Spine, neck and head: the chest turns toward the nose, the head looks where the board goes.
     chestUp.subVectors(p[POINT.head], p[POINT.torso]);
     if (chestUp.lengthSq() < 1e-10) chestUp.copy(up);
     chestUp.normalize();
+    if (this.hingeAngle) chestUp.applyAxisAngle(left, this.hingeAngle);
     this.orientSpine(chestUp);
     if (state.phase === 'standing') this.bendToReach(state, chestUp);
     this.orient(BONES.neck, chestUp, this.facing);
@@ -324,7 +388,7 @@ export class HumanoidRig {
       const foot = p[side === 'left' ? POINT.leftFoot : POINT.rightFoot];
       if (upright) {
         this.ankleTarget(state, side, target);
-        pole.copy(this.facing);
+        pole.copy(this.kneeFacing);
         if (this.isRearFoot(state, side)) pole.addScaledVector(boardForward, RIG_DETAIL.rearKneeIn);
       } else {
         if (fallen) target.subVectors(foot, hip).setLength(RIG_DETAIL.fallenReach * this.legLength).add(hip);
@@ -349,6 +413,176 @@ export class HumanoidRig {
         this.orient(BONES.foot[side], this.direction, lying ? this.hint.copy(boardUp).negate() : this.facing);
       }
     }
+  }
+
+  /**
+   * Standing, hinges the trunk forward at the hips (about the body's left) to the
+   * stance's hip angle (`RIG_DETAIL.hipAngle` by the crouch's depth), the pelvis
+   * moving back along the level so the centre of mass stays, eased in by the
+   * standing blend. Never hinges back: a body already folded further is left.
+   */
+  private hinge(state: RiderVisualState, last: number): void {
+    const { unhinged, levelForward } = this;
+    const { depth } = stanceBlend(state, this.blend);
+    const wanted = RIG_DETAIL.hipAngle.tall + (RIG_DETAIL.hipAngle.deep - RIG_DETAIL.hipAngle.tall) * depth;
+    unhinged.up.copy(this.up);
+    unhinged.hipsForward.copy(this.hipsForward);
+    unhinged.facing.copy(this.facing);
+    this.bones.get(BONES.hips)!.getWorldPosition(unhinged.hips);
+    unhinged.chestUp.subVectors(state.points[POINT.head], state.points[POINT.torso]);
+    if (unhinged.chestUp.lengthSq() < 1e-10) unhinged.chestUp.copy(this.up);
+    unhinged.chestUp.normalize();
+    levelForward.copy(this.forward).setY(0);
+    if (levelForward.lengthSq() < 1e-8) return;
+    levelForward.normalize();
+    for (const side of SIDES) {
+      this.ankleTarget(state, side, this.legAim.ankle[side]);
+      this.legAim.pole[side].copy(this.kneeFacing);
+      if (this.isRearFoot(state, side)) this.legAim.pole[side].addScaledVector(this.boardForward, RIG_DETAIL.rearKneeIn);
+    }
+    this.massAt(state, 0, 0, unhinged.mass);
+    // The pelvis's way back grows with the upper body's swing forward: fitted at one angle, searched on the fit.
+    const probe = 0.6;
+    const swing = this.swingAt(probe);
+    this.backPerSwing = swing > 1e-6 ? this.backForMass(state, probe) / swing : 0;
+    // Backside, the trunk no further over the toes than `backsideLean` on the deck.
+    const toes = this.scratch.set(this.blend.stance === 'regular' ? -1 : 1, 0, 0).applyQuaternion(state.boardQuaternion);
+    const leaning = Math.atan2(unhinged.up.dot(toes), unhinged.up.dot(this.boardUp));
+    const backside = Math.max(0, -this.blend.turn);
+    const allowed = Math.PI / 2 + ((RIG_DETAIL.backsideLean * Math.PI) / 180 - Math.PI / 2) * backside - leaning;
+    const most = Math.max(0, Math.min((RIG_DETAIL.hingeMost * Math.PI) / 180, allowed));
+    // The hips close as the trunk hinges, smoothly: regula falsi (Illinois) within [0, most].
+    let angle = 0;
+    let low = 0;
+    let fLow = this.hipsAngleAt(0) - wanted;
+    if (fLow > 0) {
+      let high = most;
+      let fHigh = this.hipsAngleAt(most) - wanted;
+      if (fHigh >= 0) angle = most;
+      else {
+        let side = 0;
+        angle = high;
+        for (let i = 0; i < 8; i += 1) {
+          angle = (low * fHigh - high * fLow) / (fHigh - fLow);
+          const f = this.hipsAngleAt(angle) - wanted;
+          if (Math.abs(f) < 0.05) break;
+          if (f > 0) {
+            low = angle;
+            fLow = f;
+            if (side === -1) fHigh /= 2;
+            side = -1;
+          } else {
+            high = angle;
+            fHigh = f;
+            if (side === 1) fLow /= 2;
+            side = 1;
+          }
+        }
+      }
+    }
+    // No faster than a brisk trunk bend since the last solve (a fresh solve, or a clock standing still, takes it all).
+    let hinge = angle * state.standingBlend;
+    const dt = state.clock - this.hingeClock;
+    if (dt > 0 && dt < 0.25) hinge = last + Math.max(-RIG_DETAIL.hingeRate * dt, Math.min(RIG_DETAIL.hingeRate * dt, hinge - last));
+    this.hingeClock = state.clock;
+    this.hingeAngle = hinge;
+    this.poseHinge(state, this.hingeAngle, true);
+  }
+
+  /** How far the trunk's up swings forward along the level, hinged by `angle`: the pelvis's way back is proportional. */
+  private swingAt(angle: number): number {
+    return this.scratch.copy(this.unhinged.up).applyAxisAngle(this.left, angle).sub(this.unhinged.up).dot(this.levelForward);
+  }
+
+  /** Forgets the last solve's motion: the next hinges at once (a new tile of the surfer sheet, a teleport). */
+  reset(): void {
+    this.hingeClock = Number.NaN;
+    this.hingeAngle = 0;
+  }
+
+  /**
+   * Poses the hips and the trunk's frame hinged by `angle`, rad, the pelvis back
+   * as far as keeps the centre of mass (`exact`: solved; else from the fit).
+   */
+  private poseHinge(state: RiderVisualState, angle: number, exact = false): void {
+    const { unhinged, left, levelForward } = this;
+    this.up.copy(unhinged.up).applyAxisAngle(left, angle);
+    this.hipsForward.copy(unhinged.hipsForward).applyAxisAngle(left, angle);
+    this.facing.copy(unhinged.facing).applyAxisAngle(left, angle);
+    const back = angle <= 0 ? 0 : exact ? this.backForMass(state, angle) : this.backPerSwing * this.swingAt(angle);
+    this.placeHips(this.hipsAt.copy(unhinged.hips).addScaledVector(levelForward, -back));
+  }
+
+  /** How far back along the level the pelvis goes, m, for the body hinged by `angle` to keep its centre of mass (a secant search). */
+  private backForMass(state: RiderVisualState, angle: number): number {
+    const miss = (back: number) => this.scratch.subVectors(this.massAt(state, angle, back, this.middle), this.unhinged.mass).dot(this.levelForward);
+    let a = 0;
+    let fa = miss(a);
+    let b = 0.1;
+    let fb = miss(b);
+    for (let i = 0; i < 3 && Math.abs(fb) > 1e-4 && fb !== fa; i += 1) {
+      const next = b - (fb * (b - a)) / (fb - fa);
+      a = b;
+      fa = fb;
+      b = Math.max(0, Math.min(0.5, next));
+      fb = miss(b);
+    }
+    return b;
+  }
+
+  /**
+   * The body's centre of mass, hinged by `angle` with the pelvis `back` m along
+   * the level, from the skeleton's lengths, the legs' reach to their ankles and
+   * the physics' hands (Winter 2009's segment shares), into `out`. A model of the
+   * body the solve will draw, before it draws it.
+   */
+  private massAt(state: RiderVisualState, angle: number, back: number, out: Vector3): Vector3 {
+    const { unhinged, left, mass } = this;
+    const up = this.hint.copy(unhinged.up).applyAxisAngle(left, angle);
+    const chestUp = this.pole2.copy(unhinged.chestUp).applyAxisAngle(left, angle);
+    const hips = mass.body.copy(unhinged.hips).addScaledVector(this.levelForward, -back);
+    const sum = mass.sum.set(0, 0, 0);
+    let total = 0;
+    const add = (share: number, point: Vector3) => {
+      sum.addScaledVector(point, share);
+      total += share;
+    };
+    const spine = mass.spine.copy(hips).addScaledVector(up, this.spineBase);
+    const neck = mass.neck.copy(chestUp).add(up).normalize().multiplyScalar(this.trunkLength).add(spine);
+    add(0.081, this.direction.copy(neck).addScaledVector(chestUp, this.neckLength));
+    add(0.355, this.direction.copy(spine).add(neck).multiplyScalar(0.5));
+    for (const side of SIDES) {
+      const hip = mass.modelHip.copy(hips).addScaledVector(up, -this.hipDrop).addScaledVector(left, side === 'left' ? this.hipHalfWidth : -this.hipHalfWidth);
+      add(0.071, hip);
+      mass.ankle.copy(this.legAim.ankle[side]);
+      solveTwoBone(hip, this.upperLeg, this.lowerLeg, mass.ankle, this.legAim.pole[side], mass.knee, this.legAnkle);
+      add(0.1, this.direction.copy(hip).add(mass.knee).multiplyScalar(0.5));
+      add(0.0465, this.direction.copy(mass.knee).add(mass.ankle).multiplyScalar(0.5));
+      add(0.0145, mass.ankle);
+      // An arm from its shoulder (about the neck) to the physics' hand.
+      add(0.05, this.direction.copy(neck).add(state.points[side === 'left' ? POINT.leftHand : POINT.rightHand]).multiplyScalar(0.5));
+    }
+    return out.copy(sum).divideScalar(total);
+  }
+
+  /**
+   * The hips' mean included angle, degrees, with the trunk hinged by `angle`: the
+   * trunk against each thigh the legs would take, on the body's model (the
+   * bones are placed once, for the angle found).
+   */
+  private hipsAngleAt(angle: number): number {
+    const { unhinged, left, mass } = this;
+    const up = this.chestBase.copy(unhinged.up).applyAxisAngle(left, angle);
+    const back = this.backPerSwing * this.swingAt(angle);
+    const hips = mass.point.copy(unhinged.hips).addScaledVector(this.levelForward, -back);
+    let sum = 0;
+    for (const side of SIDES) {
+      const hip = mass.hip.copy(hips).addScaledVector(up, -this.hipDrop).addScaledVector(left, side === 'left' ? this.hipHalfWidth : -this.hipHalfWidth);
+      solveTwoBone(hip, this.upperLeg, this.lowerLeg, this.legAim.ankle[side], this.legAim.pole[side], this.legKnee, this.legAnkle);
+      const thigh = this.legKnee.sub(hip);
+      sum += (Math.atan2(this.scratch.crossVectors(up, thigh).length(), up.dot(thigh)) * 180) / Math.PI;
+    }
+    return sum / SIDES.length;
   }
 
   /** The spine from the hips' up to `chestUp`, turning from the hips' facing to the chest's. */
@@ -380,7 +614,7 @@ export class HumanoidRig {
     const { bendAxis, pivot, middle } = this;
     if (state.standingBlend <= 0) return;
     this.bones.get(BONES.hips)!.getWorldPosition(pivot);
-    const reach = RIG_DETAIL.legReach * this.armLength;
+    const reach = RIG_DETAIL.armReach * this.armLength;
     // The reaching hand farthest out of reach, weighed by how far it reaches down.
     let side: Side | undefined;
     let short = 0;
