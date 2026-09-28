@@ -681,10 +681,13 @@ export class DetachedSurfer implements DetachedRiderPose {
       const node = this.nodes[index];
       node.velocity.subVectors(node.position, this.previous[index]).divideScalar(dt);
       if (node.grounded && this.onReef[index]) {
-        // On rock only the bed's normal is held: friction acted on the positions.
+        // On rock the bed's normal is held, and its Coulomb friction (on the positions) comes on top of the damping
+        // sand's floor gives along the bed: rock grips at least as hard as sand (the Teahupo'o Reef, Part C).
         const n = this.bedNormal[index];
         const into = node.velocity.dot(n);
         if (into < 0) node.velocity.addScaledVector(n, -into);
+        const along = node.velocity.dot(n);
+        node.velocity.addScaledVector(n, -along).multiplyScalar(0.8).addScaledVector(n, along);
       } else if (node.grounded) {
         node.velocity.y = Math.max(0, node.velocity.y);
         node.velocity.x *= 0.8;

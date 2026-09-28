@@ -468,9 +468,35 @@ describe('the body on a solid reef (Teahupo\'o Reef, Part C)', () => {
     expect(Math.abs(body.linearMomentum().z / body.mass)).toBeLessThan(0.05);
   });
 
-  it('slides down reef steeper than its friction', () => {
-    // 45°: tan θ = 1 over REEF_FRICTION.body.
+  it('grips harder on reef than on sand: a body sliding across flat ground stops sooner', () => {
+    const flat = (bedMaterial: 'sand' | 'reef'): BodyWaterField => ({
+      sampleAt(position, out): void {
+        out.surfaceY = -10;
+        out.bedY = 0;
+        out.flow.set(0, 0, 0);
+        out.wet = false;
+        out.outsideDomain = false;
+        out.breaking = 0;
+        out.voidFraction = 0;
+        out.bedNormal = (out.bedNormal ?? new Vector3()).set(0, 1, 0);
+        out.bedMaterial = bedMaterial;
+      },
+    });
+    // A body lying along the bed, sliding at 5 m/s: a wiped-out rider thrown across the reef.
+    const slide = (bedMaterial: 'sand' | 'reef') => {
+      const body = new DetachedSurfer();
+      const prone = new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), Math.PI / 2);
+      body.start({ center: new Vector3(0, 0.2, 0), orientation: prone, velocity: new Vector3(0, 0, 5), angularVelocity: new Vector3() });
+      const start = body.centerOfMass().z;
+      advance(body, flat(bedMaterial), 180);
+      return body.centerOfMass().z - start;
+    };
+    expect(slide('reef')).toBeLessThan(slide('sand'));
+  });
+
+  it('creeps down reef steeper than its friction, where the vertical floor held it on any slope', () => {
+    // 45°: tan θ = 1 over REEF_FRICTION.body. Sand's damping along the bed, kept on reef, holds the creep slow.
     const body = settle(1, 120);
-    expect(body.linearMomentum().z / body.mass).toBeLessThan(-0.5);
+    expect(body.linearMomentum().z / body.mass).toBeLessThan(-0.03);
   });
 });
