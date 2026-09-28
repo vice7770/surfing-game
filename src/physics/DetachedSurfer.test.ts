@@ -470,7 +470,7 @@ describe('the body on a solid reef (Teahupo\'o Reef, Part C)', () => {
 
   it('grips harder on reef than on sand: a body sliding across flat ground stops sooner', () => {
     const flat = (bedMaterial: 'sand' | 'reef'): BodyWaterField => ({
-      sampleAt(position, out): void {
+      sampleAt(_position, out): void {
         out.surfaceY = -10;
         out.bedY = 0;
         out.flow.set(0, 0, 0);

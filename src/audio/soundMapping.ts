@@ -82,7 +82,7 @@ interface Impulse {
   id: OneShotId;
   key: string;
   amount: number;
-  /** A lip crash's water, m³ (the Teahupo'o Reef, Part C). */
+  /** A lip crash's own lip: the water its jet threw, m³ (the Teahupo'o Reef, Part C). */
   size?: number;
   x: number;
   y: number;
@@ -92,7 +92,7 @@ interface Impulse {
 interface Gathered {
   id: OneShotId;
   amount: number;
-  /** The water gathered, m³. */
+  /** The biggest lip gathered, m³. */
   size: number;
   /** Amount-weighted sums of the places and of the weights, so a crash sounds from where most of its water landed. */
   w: number;
@@ -117,7 +117,7 @@ export class OneShotShaper {
       const gathered = this.pending.get(impulse.key) ?? { id: impulse.id, amount: 0, size: 0, w: 0, wx: 0, wy: 0, wz: 0 };
       const weight = Math.max(impulse.amount, 1e-9);
       gathered.amount += impulse.amount;
-      gathered.size += impulse.size ?? 0;
+      gathered.size = Math.max(gathered.size, impulse.size ?? 0);
       gathered.w += weight;
       gathered.wx += impulse.x * weight;
       gathered.wy += impulse.y * weight;
@@ -170,11 +170,12 @@ const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 const decibelsLike = (value: number, reference: number, decades: number) => clamp01(Math.log10(1 + Math.max(0, value) / reference) / decades);
 
 /**
- * A crash's pitch falls as its water grows (the Teahupo'o Reef, Part C). A bubble rings at a frequency inversely
- * proportional to its radius (Minnaert 1933), and a lip's trapped air scales with its water, so the playback rate
- * goes as V^(−1/3) from the reference size down, no lower than an octave (reference and floor provisional).
+ * A crash's pitch falls as its lip grows (the Teahupo'o Reef, Part C). A bubble rings at a frequency inversely
+ * proportional to its radius (Minnaert 1933), and a lip's trapped air scales with its water V, so the playback rate
+ * goes as V^(−1/3) from the reference down, no lower than an octave. The reference sits above a Practice lip at
+ * every spot, so only heavy lips deepen (reference and floor provisional).
  */
-export const CRASH_SIZE_REFERENCE = 0.5;
+export const CRASH_SIZE_REFERENCE = 2;
 export const CRASH_RATE_MIN = 0.5;
 
 function crashRate(gathered: Gathered): number {
@@ -237,8 +238,9 @@ export function soundTargets(frame: SoundFrame, shaper = new OneShotShaper()): S
       const z = frame.lipHits[o + 1];
       const volume = frame.lipHits[o + 2];
       const impact = frame.lipHits[o + 3];
+      const lip = frame.lipHits[o + 4];
       const id: OneShotId = impact >= JET_SPEED ? 'lipJet' : 'lipRoller';
-      impulses.push({ id, key: `${id}:${Math.round(x / PLACE)}:${Math.round(z / PLACE)}`, amount: volume * impact * impact, size: volume, x, y: 0, z });
+      impulses.push({ id, key: `${id}:${Math.round(x / PLACE)}:${Math.round(z / PLACE)}`, amount: volume * impact * impact, size: lip, x, y: 0, z });
     }
     for (let i = 0; i < frame.strokeHitCount; i += 1) {
       const o = i * STROKE_HIT_STRIDE;

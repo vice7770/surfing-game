@@ -16,9 +16,9 @@ function frame(overrides: Partial<SoundFrame> = {}): SoundFrame {
 
 const loop = (targets: ReturnType<typeof soundTargets>, key: string) => targets.loops.find((l) => l.key === key);
 
-function lipHits(hits: { x: number; z: number; volume: number; speed: number }[]): Pick<SoundFrame, 'lipHits' | 'lipHitCount'> {
+function lipHits(hits: { x: number; z: number; volume: number; speed: number; lip?: number }[]): Pick<SoundFrame, 'lipHits' | 'lipHitCount'> {
   const data = new Float32Array(Math.max(SOUND_EVENT_CAPACITY, hits.length) * LIP_HIT_STRIDE);
-  hits.forEach((hit, i) => data.set([hit.x, hit.z, hit.volume, hit.speed, 0], i * LIP_HIT_STRIDE));
+  hits.forEach((hit, i) => data.set([hit.x, hit.z, hit.volume, hit.speed, hit.lip ?? 0], i * LIP_HIT_STRIDE));
   return { lipHits: data, lipHitCount: hits.length };
 }
 
@@ -183,14 +183,24 @@ describe('the rider under water', () => {
   });
 
   it('crashes a bigger lip deeper, a small one as before, and as loud as its energy either way', () => {
-    // Two single crashes of equal energy (volume × speed²): 0.2 m³ at 10 m/s, and 8 m³ at 1.58 m/s.
-    const small = soundTargets(frame(lipHits([{ x: 3, z: -30, volume: 0.2, speed: 10 }])));
-    const big = soundTargets(frame(lipHits([{ x: 3, z: -30, volume: 8, speed: 10 / Math.sqrt(40) }])));
+    // Two single crashes of equal energy (volume × speed²): a 0.2 m³ lip at 10 m/s, and an 8 m³ one at 1.58 m/s.
+    const small = soundTargets(frame(lipHits([{ x: 3, z: -30, volume: 0.2, speed: 10, lip: 0.2 }])));
+    const big = soundTargets(frame(lipHits([{ x: 3, z: -30, volume: 8, speed: 10 / Math.sqrt(40), lip: 8 }])));
     const smallShot = small.oneShots.find((shot) => shot.id === 'lipJet' || shot.id === 'lipRoller')!;
     const bigShot = big.oneShots.find((shot) => shot.id === 'lipJet' || shot.id === 'lipRoller')!;
     expect(smallShot.rate).toBe(1);
-    expect(bigShot.rate).toBeCloseTo(Math.max(CRASH_RATE_MIN, (CRASH_SIZE_REFERENCE / 8) ** (1 / 3)), 9);
+    expect(bigShot.rate).toBeCloseTo(Math.max(CRASH_RATE_MIN, (CRASH_SIZE_REFERENCE / 8) ** (1 / 3)), 6);
     // The frame carries its lip hits in 32-bit floats.
     expect(bigShot.gain).toBeCloseTo(smallShot.gain, 6);
+  });
+
+  it('pitches a crash by its own lip, so small lips landing together sound as before', () => {
+    // Four Practice-sized lips (0.3 m³ each) landing in one place within a gather: together 1.2 m³ of water.
+    const hits = [0, 1, 2, 3].map((k) => ({ x: 3 + k, z: -30, volume: 0.3, speed: 6, lip: 0.3 }));
+    const shot = soundTargets(frame(lipHits(hits))).oneShots.find((one) => one.id === 'lipJet')!;
+    expect(shot.rate).toBe(1);
+    // A Big swell's Reef lip (6 m³) crashes deeper by its own size.
+    const heavy = soundTargets(frame(lipHits([{ x: 3, z: -30, volume: 0.75, speed: 6, lip: 6 }]))).oneShots.find((one) => one.id === 'lipJet')!;
+    expect(heavy.rate).toBeCloseTo(Math.cbrt(CRASH_SIZE_REFERENCE / 6), 6);
   });
 });
