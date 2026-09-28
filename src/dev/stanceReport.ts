@@ -37,7 +37,7 @@ export interface StanceComparison {
 
 export const MEASURE_LABEL: Record<StanceMeasure, string> = {
   kneeFront: 'Front knee', kneeRear: 'Rear knee', hipFront: 'Front hip', hipRear: 'Rear hip', ankleFront: 'Front ankle', ankleRear: 'Rear ankle',
-  trunkFlexion: 'Trunk over the toes', trunkPitch: 'Trunk toward the nose', lean: 'Lean (world)', chestTwist: 'Chest twist', hipTwist: 'Pelvis twist',
+  trunkFlexion: 'Trunk over the toes', trunkPitch: 'Trunk toward the nose', trunkTilt: 'Trunk from the vertical', lean: 'Lean (world)', chestTwist: 'Chest twist', hipTwist: 'Pelvis twist',
   headYaw: 'Head yaw', headPitch: 'Head pitch (down +)', leadArm: 'Lead arm', trailArm: 'Trailing arm', leadElbow: 'Lead elbow', trailElbow: 'Trailing elbow',
   lowHand: 'Lower hand above the board', stanceWidth: 'Stance width', weight: 'Weight (rear 0 – front 1)',
 };
@@ -50,7 +50,7 @@ export const MEASURE_LABEL: Record<StanceMeasure, string> = {
  */
 export const MEASURE_OWNER: Record<StanceMeasure, 3 | 6> = {
   kneeFront: 3, kneeRear: 3, hipFront: 3, hipRear: 3, ankleFront: 3, ankleRear: 3,
-  trunkFlexion: 6, trunkPitch: 6, lean: 6, chestTwist: 3, hipTwist: 3, headYaw: 3, headPitch: 3,
+  trunkFlexion: 6, trunkPitch: 6, trunkTilt: 6, lean: 6, chestTwist: 3, hipTwist: 3, headYaw: 3, headPitch: 3,
   leadArm: 3, trailArm: 3, leadElbow: 3, trailElbow: 3, lowHand: 6, stanceWidth: 6, weight: 6,
 };
 

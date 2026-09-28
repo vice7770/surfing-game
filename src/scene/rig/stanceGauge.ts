@@ -43,6 +43,11 @@ export interface StanceAngles {
   trunkFlexion: number;
   /** The same, toward the nose (+) or tail. */
   trunkPitch: number;
+  /**
+   * The trunk from the world's vertical, toward the toes (+) or heels: what a
+   * picture of the rider shows, the lean into a turn included.
+   */
+  trunkTilt: number;
   /** The body (the feet's middle to the neck) from the world's vertical, toward the toes (+) or heels. */
   lean: number;
   /** Where the chest, the pelvis and the head face, on the deck: 0 toward the toes, + toward the nose. */
@@ -117,6 +122,7 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
   // The body's lean against the world: toward the toes' side, level.
   const toesLevel = toes.clone().applyQuaternion(board.boardQuaternion).projectOnPlane(WORLD_UP).normalize();
   const body = joints.neck.clone().sub(joints.ankle.left.clone().add(joints.ankle.right).multiplyScalar(0.5));
+  const worldTrunk = joints.neck.clone().sub(joints.spine);
   const head = direction(joints.headFacing);
   const frontAnkle = local(joints.ankle[front]);
   const rearAnkle = local(joints.ankle[rear]);
@@ -130,6 +136,7 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
     ankleRear: ankle(rear),
     trunkFlexion: Math.atan2(trunk.dot(toes), trunk.dot(DECK_UP)) * DEG,
     trunkPitch: Math.atan2(trunk.dot(NOSE), trunk.dot(DECK_UP)) * DEG,
+    trunkTilt: Math.atan2(worldTrunk.dot(toesLevel), worldTrunk.dot(WORLD_UP)) * DEG,
     lean: Math.atan2(body.dot(toesLevel), body.dot(WORLD_UP)) * DEG,
     chestTwist: twist(joints.chestFacing),
     hipTwist: twist(joints.pelvisFacing),

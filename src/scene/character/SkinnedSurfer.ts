@@ -116,6 +116,11 @@ export class SkinnedSurfer {
     this.setOutfit(this.outfit);
   }
 
+  /** Forgets the drawn body's motion: the next update is drawn as the rig solves it (the surfer sheet's tiles). */
+  resetMotion(): void {
+    this.body.reset();
+  }
+
   /** Poses the skeleton at the rider (the rig and the smoothing layer), and picks the body's level of detail from the camera's distance. */
   update(state: RiderVisualState, cameraPosition?: Vector3): void {
     this.body.update(state);

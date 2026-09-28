@@ -32,7 +32,7 @@ describe('the stance gauge', () => {
     const { measure } = standing('regular');
     const angles = measure();
     for (const key of ['kneeFront', 'kneeRear', 'hipFront', 'hipRear', 'leadElbow', 'trailElbow'] as const) expect(angles[key], key).toBeCloseTo(180, 3);
-    for (const key of ['ankleFront', 'ankleRear', 'trunkFlexion', 'trunkPitch', 'lean', 'chestTwist', 'hipTwist', 'headYaw', 'headPitch'] as const) expect(angles[key], key).toBeCloseTo(0, 3);
+    for (const key of ['ankleFront', 'ankleRear', 'trunkFlexion', 'trunkPitch', 'trunkTilt', 'lean', 'chestTwist', 'hipTwist', 'headYaw', 'headPitch'] as const) expect(angles[key], key).toBeCloseTo(0, 3);
     expect(angles.leadArm).toBeCloseTo(90, 3);
     expect(angles.trailArm).toBeCloseTo(90, 3);
     // The test humanoid's ankles are 0.18 m apart, its hips between them.
@@ -97,7 +97,9 @@ describe('the stance gauge', () => {
     onRail.root.updateMatrixWorld(true);
     angles = onRail.gauge.measure(rolled, 'regular');
     expect(angles.lean).toBeCloseTo(30, 3);
+    // Upright on the rolled deck, the trunk tilts 30° from the world's vertical (what a picture shows).
     expect(angles.trunkFlexion).toBeCloseTo(0, 3);
+    expect(angles.trunkTilt).toBeCloseTo(30, 3);
   });
 
   it('stays finite at a straight joint and a hanging arm', () => {

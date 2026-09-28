@@ -222,7 +222,7 @@ export interface MappedStance {
 /** Each measure's possible values (degrees, or metres for the hand and the width, a share for the weight). */
 export const MEASURE_DOMAIN: Record<StanceMeasure, [number, number]> = {
   kneeFront: [0, 180], kneeRear: [0, 180], hipFront: [0, 180], hipRear: [0, 180], ankleFront: [0, 90], ankleRear: [0, 90],
-  trunkFlexion: [-180, 180], trunkPitch: [-180, 180], lean: [-180, 180], chestTwist: [-180, 180], hipTwist: [-180, 180],
+  trunkFlexion: [-180, 180], trunkPitch: [-180, 180], trunkTilt: [-180, 180], lean: [-180, 180], chestTwist: [-180, 180], hipTwist: [-180, 180],
   headYaw: [-180, 180], headPitch: [-90, 90], leadArm: [0, 180], trailArm: [0, 180], leadElbow: [0, 180], trailElbow: [0, 180],
   lowHand: [-1, 3], stanceWidth: [0, 1.5], weight: [-0.5, 1.5],
 };
@@ -283,7 +283,7 @@ export const STANCES: readonly MappedStance[] = [
     targets: {
       kneeFront: { min: 90, max: 110, sources: ['desousa2022', 'kerr'], confidence: 'medium' },
       kneeRear: { min: 90, max: 110, sources: ['desousa2022', 'kerr'], confidence: 'medium' },
-      trunkFlexion: { min: 45, max: 65, sources: ['kerr'], confidence: 'low' },
+      trunkTilt: { min: 45, max: 65, sources: ['kerr'], confidence: 'low', note: 'read from the picture, so against the vertical' },
       headPitch: { min: 10, max: 40, sources: ['desousa2022'], confidence: 'low', note: 'the head toward the bottom of the wave' },
       leadArm: { min: 40, max: 70, sources: ['kerr'], confidence: 'low' },
       leadElbow: { min: 140, max: 170, sources: ['kerr'], confidence: 'low' },
@@ -302,7 +302,7 @@ export const STANCES: readonly MappedStance[] = [
       kneeRear: { min: 70, max: 90, sources: ['desousa2022', 'gudauskas'], confidence: 'medium' },
       hipFront: { min: 60, max: 90, sources: ['desousa2022'], confidence: 'medium' },
       hipRear: { min: 60, max: 90, sources: ['desousa2022'], confidence: 'medium' },
-      trunkFlexion: { min: 45, max: 75, sources: ['gudauskas'], confidence: 'low' },
+      trunkTilt: { min: 45, max: 75, sources: ['gudauskas'], confidence: 'low', note: 'read from the picture, the lean included' },
       lean: { min: 30, max: 50, sources: ['forsyth2024', 'moreira2014'], confidence: 'low', note: 'the rail at 39 ± 4°; that the body leans with it is the map\'s reading' },
       lowHand: { min: 0, max: 0.3, sources: ['desousa2022', 'gudauskas'], confidence: 'medium', note: 'the inside (trailing) hand nears the water; the number is the map\'s reading of "nears"' },
       headYaw: { min: 10, max: 70, sources: ['desousa2022'], confidence: 'low', note: 'the head turns toward the lip' },
@@ -338,7 +338,7 @@ export const STANCES: readonly MappedStance[] = [
     targets: {
       kneeFront: { min: 150, max: 180, sources: ['desousa2022'], confidence: 'medium', note: '150° or more' },
       kneeRear: { min: 150, max: 180, sources: ['desousa2022'], confidence: 'medium' },
-      trunkFlexion: { min: 10, max: 35, sources: ['gudauskas'], confidence: 'low' },
+      trunkTilt: { min: 10, max: 35, sources: ['gudauskas'], confidence: 'low', note: 'read from the picture' },
       headPitch: { min: -30, max: 5, sources: ['balisurfing', 'gudauskas'], confidence: 'low', note: 'looking at the lip, up the face' },
       leadArm: { min: 70, max: 120, sources: ['desousa2022', 'gudauskas'], confidence: 'low', note: 'the leading arm points at the lip' },
       trailArm: { min: 60, max: 110, sources: ['balisurfing', 'gudauskas'], confidence: 'low' },
@@ -433,7 +433,7 @@ export const STANCES: readonly MappedStance[] = [
     targets: {
       kneeFront: { min: 80, max: 100, sources: ['gudauskas'], confidence: 'low' },
       kneeRear: { min: 80, max: 100, sources: ['gudauskas'], confidence: 'low' },
-      trunkFlexion: { min: 40, max: 60, sources: ['gudauskas'], confidence: 'low' },
+      trunkTilt: { min: 40, max: 60, sources: ['gudauskas'], confidence: 'low', note: 'read from the picture, the lean included' },
       lowHand: { min: 0, max: 0.3, sources: ['gudauskas'], confidence: 'low', note: 'a hand dragging beside the rail' },
       stanceWidth: WIDTH,
     },

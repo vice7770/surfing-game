@@ -32,6 +32,12 @@ export class PosedBody {
     if (options.bones ?? inertia) this.inertia = new BodyInertia(bones);
   }
 
+  /** Forgets the motion: the next state is drawn as the rig solves it (a new tile of the surfer sheet, a teleport). */
+  reset(): void {
+    this.points?.reset();
+    this.inertia?.reset();
+  }
+
   update(state: RiderVisualState): void {
     this.points?.apply(state);
     this.rig.solve(state);
