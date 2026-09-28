@@ -49,6 +49,12 @@ describe('the stance map', () => {
     expect(CONFIDENCE_CAP.measured).toBe('high');
   });
 
+  it('follows the pump\'s source: extending downhill onto the front foot, compressing uphill onto the back', () => {
+    const weight = (id: string) => STANCES.find((stance) => stance.id === id)!.targets.weight!;
+    expect(weight('pump-extension').min).toBeGreaterThanOrEqual(0.5);
+    expect(weight('pump-compression').max).toBeLessThanOrEqual(0.5);
+  });
+
   it('holds the thirteen references the user approved (Q19), each linked', () => {
     expect(APPROVED).toHaveLength(13);
     for (const id of APPROVED) expect(SOURCES[id]?.url, id).toMatch(/^https:\/\//);

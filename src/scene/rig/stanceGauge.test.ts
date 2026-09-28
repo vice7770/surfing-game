@@ -4,7 +4,9 @@ import { describe, expect, it } from 'vitest';
 import type { StanceName } from '../../physics/riderPosture';
 import { readGlbSkeleton } from './glbSkeleton';
 import { BONES } from './humanoidBones';
-import { StanceGauge, measureJoints } from './stanceGauge';
+import { StanceGauge, measureJoints, measurePoints } from './stanceGauge';
+import { posturePoints } from './posturePoints';
+import { POINT, createRiderVisualState } from './riderVisualState';
 import { createTestHumanoid } from './testHumanoid';
 
 const UP = new Vector3(0, 1, 0);
@@ -100,6 +102,28 @@ describe('the stance gauge', () => {
     // Upright on the rolled deck, the trunk tilts 30° from the world's vertical (what a picture shows).
     expect(angles.trunkFlexion).toBeCloseTo(0, 3);
     expect(angles.trunkTilt).toBeCloseTo(30, 3);
+  });
+
+  it('reads the physics\' own points: its trunk, lean, hands, width and weight', () => {
+    const state = posturePoints('standing', 'regular', new Vector3(1, 0.03, -2), new Quaternion(), createRiderVisualState());
+    const read = measurePoints(state, 'regular');
+    // The physics' standing trunk is upright over the pelvis; its feet stand at the stance points.
+    expect(read.trunkFlexion).toBeCloseTo(0, 1);
+    expect(read.trunkTilt).toBeCloseTo(0, 1);
+    const along = state.points[POINT.leftFoot].z - state.points[POINT.rightFoot].z;
+    expect(read.stanceWidth).toBeCloseTo(Math.abs(along), 6);
+    expect(read.weight).toBeCloseTo((state.points[POINT.pelvis].z - state.points[POINT.rightFoot].z) / along, 6);
+    expect(read.lowHand).toBeCloseTo(Math.min(state.points[POINT.leftHand].y, state.points[POINT.rightHand].y) - 0.03, 6);
+  });
+
+  it('gives no weight while the feet stand together along the board (no stance to share it between)', () => {
+    const { gauge } = standing('regular');
+    const joints = gauge.joints();
+    joints.ankle.left.z = joints.ankle.right.z + 0.02;
+    expect(measureJoints(joints, board, 'regular').weight).toBeNaN();
+    const state = posturePoints('standing', 'regular', new Vector3(), new Quaternion(), createRiderVisualState());
+    state.points[POINT.leftFoot].z = state.points[POINT.rightFoot].z + 0.05;
+    expect(measurePoints(state, 'regular').weight).toBeNaN();
   });
 
   it('stays finite at a straight joint and a hanging arm', () => {

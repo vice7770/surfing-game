@@ -23,10 +23,10 @@ import { PhotoSky, type TimeOfDay } from '../scene/PhotoSky';
 import { ShadowRig, parseShadowLevel } from '../scene/ShadowRig';
 import { posturePoints } from '../scene/rig/posturePoints';
 import { POINT, createRiderVisualState, type RiderVisualState } from '../scene/rig/riderVisualState';
-import { StanceGauge, type StanceJoints } from '../scene/rig/stanceGauge';
+import { StanceGauge, measureJoints, type StanceJoints } from '../scene/rig/stanceGauge';
 import { STANCES } from '../scene/rig/stanceMap';
-import { RIDING_MOMENTS, ridingState, stanceState } from './ridingPoses';
-import { figureAngles, figureLengths, referenceJoints } from './stanceFigure';
+import { MOMENT_STANCE, RIDING_MOMENTS, drawnStance } from './ridingPoses';
+import { figureAngles, figureLengths, figurePlan, referenceJoints } from './stanceFigure';
 import { MEASURE_LABEL, compareStance, formatMeasure } from './stanceReport';
 
 const params = new URLSearchParams(window.location.search);
@@ -181,7 +181,7 @@ async function main(): Promise<void> {
   renderer.setScissorTest(true);
   const state = createRiderVisualState();
   if (stances) {
-    drawStances(surfers, single, scale, row, col, state);
+    drawStances(surfers, single, scale, row, col);
     status.textContent = `${entry.id} · stances · ${SURFERS[STANCE_SURFER]} ${STANCE_SIDE} · magenta: the map's reference figure · red: measures outside the map`;
     (window as unknown as { sheetReady: boolean }).sheetReady = true;
     return;
@@ -196,13 +196,15 @@ async function main(): Promise<void> {
       const shot: Shot = riding
         ? { pose: 'standing', eye: [stance === 'regular' ? -2.9 : 2.9, 1.5, 1.4], look: [0, 0.75, 0.2] }
         : SHOTS[c];
-      if (riding) {
-        ridingState(RIDING_MOMENTS[c], stance, boardPosition, state);
-        boards[r].quaternion.copy(state.boardQuaternion);
-      }
-      // Each tile is a still: nothing blends from the tile before.
+      // Each tile is a still: nothing blends from the tile before. Riding, the moment is drawn as the game draws it,
+      // every step of the run through the surfer's smoothing layer.
       surfers[r].resetMotion();
-      surfers[r].update(riding ? state : poseFor(shot, state), new Vector3(...shot.eye));
+      if (riding) {
+        const { state: drawn } = drawnStance(MOMENT_STANCE[RIDING_MOMENTS[c]], stance, boardPosition, (step) => surfers[r].update(step, new Vector3(...shot.eye)));
+        boards[r].quaternion.copy(drawn.boardQuaternion);
+      } else {
+        surfers[r].update(poseFor(shot, state), new Vector3(...shot.eye));
+      }
       camera.aspect = TILE.width / TILE.height;
       camera.fov = 40;
       camera.position.set(...shot.eye);
@@ -222,7 +224,7 @@ async function main(): Promise<void> {
 }
 
 /** The stances view: each stance of the map, drawn and measured, beside its reference figure. */
-function drawStances(surfers: SkinnedSurfer[], single: boolean, scale: number, row: string | null, col: string | null, state: RiderVisualState): void {
+function drawStances(surfers: SkinnedSurfer[], single: boolean, scale: number, row: string | null, col: string | null): void {
   const surfer = surfers[STANCE_SURFER];
   const bones = new Map<string, Bone>();
   surfer.group.traverse((object) => { if ((object as Bone).isBone) bones.set(object.name, object as Bone); });
@@ -236,17 +238,27 @@ function drawStances(surfers: SkinnedSurfer[], single: boolean, scale: number, r
     const c = i % COLUMNS;
     const r = Math.floor(i / COLUMNS);
     if (single && (r !== Number(row) || c !== Number(col))) return;
-    const { reached } = stanceState(stance.id, STANCE_SIDE, boardPosition, state);
-    boards[STANCE_SURFER].quaternion.copy(state.boardQuaternion);
+    // Drawn as the game draws it: every step of the run through the surfer's smoothing layer.
     surfer.resetMotion();
-    surfer.update(state, eye);
+    const { state, reached } = drawnStance(stance.id, STANCE_SIDE, boardPosition, (step) => surfer.update(step, eye));
+    boards[STANCE_SURFER].quaternion.copy(state.boardQuaternion);
     const drawn = gauge.measure(state, STANCE_SIDE);
     const inverse = state.boardQuaternion.clone().invert();
     const onBoard = (point: Vector3) => point.clone().sub(state.boardPosition).applyQuaternion(inverse);
     const joints = gauge.joints();
     const front = STANCE_SIDE === 'regular' ? 'left' : 'right';
     const feet = { front: onBoard(joints.ankle[front]), rear: onBoard(joints.ankle[front === 'left' ? 'right' : 'left']) };
-    showFigure(referenceJoints(figureAngles(stance, drawn), lengths, feet, STANCE_SIDE, state));
+    // The figure stands a stance: none for lying, the push, lying down or the water. What it cannot meet itself
+    // (targets that disagree: one trunk for two hips and a trunk angle) is listed apart.
+    let conflicts: string[] = [];
+    if (state.phase === 'standing' || state.phase === 'landing') {
+      const figure = referenceJoints(figureAngles(stance, drawn), lengths, feet, STANCE_SIDE, state, figurePlan(stance));
+      showFigure(figure);
+      conflicts = compareStance(stance, [{ surfer: 'figure', stance: STANCE_SIDE, reached: true, angles: measureJoints(figure, state, STANCE_SIDE) }]).rows
+        .filter((entry) => entry.status === 'out').map((entry) => MEASURE_LABEL[entry.measure].toLowerCase());
+    } else {
+      figureLines.visible = figureJoints.visible = false;
+    }
     camera.aspect = TILE.width / TILE.height;
     camera.fov = 40;
     camera.position.copy(eye);
@@ -262,7 +274,8 @@ function drawStances(surfers: SkinnedSurfer[], single: boolean, scale: number, r
       .map((entry) => `<span style="color:#ff7b72">${MEASURE_LABEL[entry.measure]} ${formatMeasure(entry.measure, entry.regular.count ? entry.regular.mean : entry.goofy.mean)} (${formatMeasure(entry.measure, entry.target.min)}–${formatMeasure(entry.measure, entry.target.max)})</span>`);
     const met = rows.filter((entry) => entry.status === 'in').length;
     label(single ? 0 : c, single ? 0 : r, single ? 1 : COLUMNS, single ? 1 : ROWS,
-      `<b>${stance.name}</b>${reached ? '' : ' <span style="color:#ff7b72">(not reached)</span>'}<br>${met} of ${rows.length} met${misses.length ? `<br>${misses.join('<br>')}` : ''}`);
+      `<b>${stance.name}</b>${reached ? '' : ' <span style="color:#ff7b72">(not reached)</span>'}<br>${met} of ${rows.length} met${misses.length ? `<br>${misses.join('<br>')}` : ''}`
+      + (conflicts.length ? `<br><span style="color:#b9a7c9">the figure cannot meet: ${conflicts.join(', ')}</span>` : ''));
   });
   figureLines.visible = figureJoints.visible = false;
 }

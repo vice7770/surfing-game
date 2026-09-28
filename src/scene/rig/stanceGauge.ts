@@ -1,6 +1,7 @@
 import { Quaternion, Vector3, type Bone, type Object3D } from 'three';
 import type { StanceName } from '../../physics/riderPosture';
 import { BONES, type Side } from './humanoidBones';
+import { POINT, type RiderVisualState } from './riderVisualState';
 
 /**
  * A posed body's joints, in the world (the stance map, the riding-body plan's
@@ -66,7 +67,7 @@ export interface StanceAngles {
   lowHand: number;
   /** The ankles apart along the stringer, m. */
   stanceWidth: number;
-  /** The hips' centre along the stringer from the rear ankle (0) to the front ankle (1). */
+  /** The hips' centre along the stringer from the rear ankle (0) to the front ankle (1); none (NaN) with the feet under `STANCE_MIN` apart. */
   weight: number;
 }
 
@@ -78,6 +79,8 @@ export interface BoardPose {
 }
 
 const SIDES: readonly Side[] = ['left', 'right'];
+/** Feet closer than this along the stringer, m, stand no stance to share the weight between (a landing's feet still arriving). */
+export const STANCE_MIN = 0.1;
 const DEG = 180 / Math.PI;
 const DECK_UP = new Vector3(0, 1, 0);
 const NOSE = new Vector3(0, 0, 1);
@@ -148,7 +151,41 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
     trailElbow: elbow(rear),
     lowHand: Math.min(...SIDES.map((side) => joints.wrist[side].clone().sub(board.boardPosition).dot(WORLD_UP))),
     stanceWidth: Math.abs(span),
-    weight: span !== 0 ? (local(joints.hips).z - rearAnkle.z) / span : 0.5,
+    weight: Math.abs(span) >= STANCE_MIN ? (local(joints.hips).z - rearAnkle.z) / span : Number.NaN,
+  };
+}
+
+/** The measures the physics' seven points set themselves: the rig follows them. */
+export type PointMeasure = 'trunkFlexion' | 'trunkPitch' | 'trunkTilt' | 'lean' | 'lowHand' | 'stanceWidth' | 'weight';
+export const POINT_MEASURES: readonly PointMeasure[] = ['trunkFlexion', 'trunkPitch', 'trunkTilt', 'lean', 'lowHand', 'stanceWidth', 'weight'];
+
+/**
+ * The same measures read from the physics' own points, before the rig: the
+ * trunk from the pelvis to the torso's centre, the lean from the feet to the
+ * head, the lower hand, the feet's spread and the pelvis between them. Where
+ * the drawn body misses a target these meet, the drawing moved it.
+ */
+export function measurePoints(state: RiderVisualState, stance: StanceName): Pick<StanceAngles, PointMeasure> {
+  const inverse = new Quaternion().copy(state.boardQuaternion).invert();
+  const local = (point: Vector3) => point.clone().sub(state.boardPosition).applyQuaternion(inverse);
+  const toes = new Vector3(stance === 'regular' ? -1 : 1, 0, 0);
+  const toesLevel = toes.clone().applyQuaternion(state.boardQuaternion).projectOnPlane(WORLD_UP).normalize();
+  const { points } = state;
+  const worldTrunk = points[POINT.torso].clone().sub(points[POINT.pelvis]);
+  const trunk = worldTrunk.clone().applyQuaternion(inverse);
+  const feet = points[POINT.leftFoot].clone().add(points[POINT.rightFoot]).multiplyScalar(0.5);
+  const body = points[POINT.head].clone().sub(feet);
+  const front = local(points[stance === 'regular' ? POINT.leftFoot : POINT.rightFoot]);
+  const rear = local(points[stance === 'regular' ? POINT.rightFoot : POINT.leftFoot]);
+  const span = front.z - rear.z;
+  return {
+    trunkFlexion: Math.atan2(trunk.dot(toes), trunk.dot(DECK_UP)) * DEG,
+    trunkPitch: Math.atan2(trunk.dot(NOSE), trunk.dot(DECK_UP)) * DEG,
+    trunkTilt: Math.atan2(worldTrunk.dot(toesLevel), worldTrunk.dot(WORLD_UP)) * DEG,
+    lean: Math.atan2(body.dot(toesLevel), body.dot(WORLD_UP)) * DEG,
+    lowHand: Math.min(points[POINT.leftHand].y, points[POINT.rightHand].y) - state.boardPosition.y,
+    stanceWidth: Math.abs(span),
+    weight: Math.abs(span) >= STANCE_MIN ? (local(points[POINT.pelvis]).z - rear.z) / span : Number.NaN,
   };
 }
 

@@ -1,8 +1,8 @@
 import { Vector3 } from 'three';
 import type { StanceName } from '../physics/riderPosture';
 import type { Side } from '../scene/rig/humanoidBones';
-import { createStanceJoints, type BoardPose, type StanceAngles, type StanceJoints, type StanceMeasure } from '../scene/rig/stanceGauge';
-import type { MappedStance } from '../scene/rig/stanceMap';
+import { createStanceJoints, measureJoints, type BoardPose, type StanceAngles, type StanceJoints, type StanceMeasure } from '../scene/rig/stanceGauge';
+import { PROVENANCE, SOURCES, type MappedStance, type StanceTarget } from '../scene/rig/stanceMap';
 
 /** A body's segment lengths, m, from its joints at rest. */
 export interface FigureLengths {
@@ -62,8 +62,47 @@ export const NEUTRAL_STANCE: StanceAngles = {
 export function figureAngles(stance: MappedStance, drawn: StanceAngles): StanceAngles {
   const angles = { ...drawn };
   for (const [measure, target] of Object.entries(stance.targets) as [StanceMeasure, { min: number; max: number }][]) angles[measure] = (target.min + target.max) / 2;
+  // No weight read (the feet together): the figure stands centred.
+  if (!Number.isFinite(angles.weight)) angles.weight = 0.5;
   if (stance.targets.trunkTilt && !stance.targets.trunkFlexion) angles.trunkFlexion = drawn.trunkFlexion + angles.trunkTilt - drawn.trunkTilt;
   return angles;
+}
+
+/** How the figure stands a stance: whether its trunk bends to meet the map's hip angles. */
+export interface FigurePlan {
+  trunkFromHips: boolean;
+}
+
+/**
+ * The figure bends its trunk to meet the hips' targets where the map has them
+ * and their best source ranks at least as high as the trunk's (Q20's order):
+ * one trunk cannot meet both a hip and a trunk target that disagree.
+ */
+export function figurePlan(stance: MappedStance): FigurePlan {
+  const rank = (targets: (StanceTarget | undefined)[]) => Math.min(...targets.flatMap((target) => (target ? [PROVENANCE.indexOf(SOURCES[target.sources[0]].kind)] : [])));
+  const hips = rank([stance.targets.hipFront, stance.targets.hipRear]);
+  const trunk = rank([stance.targets.trunkFlexion, stance.targets.trunkTilt]);
+  return { trunkFromHips: Number.isFinite(hips) && hips <= trunk };
+}
+
+/**
+ * A figure standing the stance `angles` on the board, its trunk bent to meet
+ * the hips' angles when `plan` says so (their mean: one trunk, two thighs).
+ * Returns the joints in the world (`buildFigure`).
+ */
+export function referenceJoints(angles: StanceAngles, lengths: FigureLengths, feet: { front: Vector3; rear: Vector3 }, stance: StanceName, board: BoardPose, plan?: FigurePlan): StanceJoints {
+  if (!plan?.trunkFromHips) return buildFigure(angles, lengths, feet, stance, board);
+  const wanted = (angles.hipFront + angles.hipRear) / 2;
+  const miss = (flexion: number) => {
+    const read = measureJoints(buildFigure({ ...angles, trunkFlexion: flexion }, lengths, feet, stance, board), board, stance);
+    return Math.abs((read.hipFront + read.hipRear) / 2 - wanted);
+  };
+  // The trunk's bend over the toes that closes the hips to their angle: a coarse sweep, then a finer one.
+  let best = 0;
+  for (let flexion = -30; flexion <= 85; flexion += 1) if (miss(flexion) < miss(best)) best = flexion;
+  const coarse = best;
+  for (let flexion = coarse - 1; flexion <= coarse + 1; flexion += 0.05) if (miss(flexion) < miss(best)) best = flexion;
+  return buildFigure({ ...angles, trunkFlexion: best }, lengths, feet, stance, board);
 }
 
 /**
@@ -76,7 +115,7 @@ export function figureAngles(stance: MappedStance, drawn: StanceAngles): StanceA
  * pelvis, chest and head at their angles; each arm raised outward from the
  * trunk's down and bent forward at the elbow. Returns the joints in the world.
  */
-export function referenceJoints(angles: StanceAngles, lengths: FigureLengths, feet: { front: Vector3; rear: Vector3 }, stance: StanceName, board: BoardPose): StanceJoints {
+function buildFigure(angles: StanceAngles, lengths: FigureLengths, feet: { front: Vector3; rear: Vector3 }, stance: StanceName, board: BoardPose): StanceJoints {
   const joints = createStanceJoints();
   const up = new Vector3(0, 1, 0);
   const nose = new Vector3(0, 0, 1);

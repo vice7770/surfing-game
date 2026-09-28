@@ -2,7 +2,11 @@ import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { POINT, createRiderVisualState, type RiderVisualState } from '../scene/rig/riderVisualState';
 import { STANCES } from '../scene/rig/stanceMap';
-import { STANCE_RECIPES, simulateStance, stanceState } from './ridingPoses';
+import { HumanoidRig } from '../scene/rig/HumanoidRig';
+import { PosedBody } from '../scene/rig/posedBody';
+import { StanceGauge } from '../scene/rig/stanceGauge';
+import { createTestHumanoid } from '../scene/rig/testHumanoid';
+import { STANCE_RECIPES, drawnStance, simulateStance, stanceState } from './ridingPoses';
 
 const at = new Vector3(0, 0.03, 0);
 /** A point in the board's frame: across, up from the board's centre, along the nose. */
@@ -44,6 +48,31 @@ describe('every mapped stance, simulated by the real rider', () => {
         expect(low, `${id}, ${stance}`).toBeLessThan(0.45);
       }
     }
+  });
+
+  it('draws a stance as the game does: every step through the smoothing layer, not the rig on the last step alone', () => {
+    // Compress, 0.4 s in: the physics' hand is at the water, the drawn hand still blending down to it.
+    const hand = (pose: 'drawn' | 'rig') => {
+      const { bones } = createTestHumanoid();
+      const gauge = new StanceGauge(bones);
+      if (pose === 'drawn') {
+        const posed = new PosedBody(bones);
+        const { state } = drawnStance('compress-frontside', 'regular', at, (step) => posed.update(step));
+        return gauge.measure(state, 'regular').lowHand;
+      }
+      const { state } = stanceState('compress-frontside', 'regular', at, createRiderVisualState());
+      new HumanoidRig(bones).solve(state);
+      return gauge.measure(state, 'regular').lowHand;
+    };
+    expect(hand('drawn')).toBeGreaterThan(hand('rig') + 0.1);
+  });
+
+  it('draws the same last state it reads, moved to the given point', () => {
+    const last = createRiderVisualState();
+    const { state } = drawnStance('compress-frontside', 'goofy', at, (step) => last.points.forEach((point, i) => point.copy(step.points[i])));
+    const read = stanceState('compress-frontside', 'goofy', at, createRiderVisualState()).state;
+    last.points.forEach((point, i) => expect(point.distanceTo(read.points[i])).toBeLessThan(1e-6));
+    expect(state.boardPosition.distanceTo(at)).toBeLessThan(1e-9);
   });
 
   it('reports a stance the rider fell out of as not reached', () => {

@@ -32,6 +32,24 @@ describe('the stance report', () => {
     expect(rows.find((row) => row.measure === 'weight')!.status).toBe('in');
   });
 
+  it('hands a gap to the drawn pose when the physics\' own points meet the target, to the physics when they miss too', () => {
+    const drawn = (physics: number): StanceReading => ({ surfer: 'surfer1', stance: 'regular', reached: true, angles: angles(100, 0.9), physics: { weight: physics } });
+    expect(compareStance(stance, [drawn(0.65)]).rows.find((row) => row.measure === 'weight')!.owner).toBe(3);
+    expect(compareStance(stance, [drawn(0.85)]).rows.find((row) => row.measure === 'weight')!.owner).toBe(6);
+    // The knees are the rig's own: the drawn pose's.
+    expect(compareStance(stance, [drawn(0.85)]).rows.find((row) => row.measure === 'kneeFront')!.owner).toBe(3);
+  });
+
+  it('leaves out a reading with no value (feet together: no weight)', () => {
+    const { rows } = compareStance(stance, [
+      { surfer: 'surfer1', stance: 'regular', reached: true, angles: angles(100, Number.NaN) },
+      { surfer: 'surfer2', stance: 'regular', reached: true, angles: angles(100, 0.7) },
+    ]);
+    const weight = rows.find((row) => row.measure === 'weight')!;
+    expect(weight.regular.count).toBe(1);
+    expect(weight.status).toBe('in');
+  });
+
   it('leaves a stance no surfer reached unmeasured, and says so', () => {
     const readings: StanceReading[] = [
       { surfer: 'surfer1', stance: 'regular', reached: false },
