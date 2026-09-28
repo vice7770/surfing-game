@@ -34,7 +34,8 @@
     "server:bots": "npm run build:server && BOTS=1 node dist-server/server.mjs",
     "deploy": "fly deploy --build-arg BUILD_ID=$(git rev-parse --short HEAD)",
     "report:body": "rolldown scripts/body-report.ts -o dist/scripts/body-report.mjs --format esm --platform node && node dist/scripts/body-report.mjs",
-    "report:stances": "rolldown scripts/stance-report.ts -o dist/scripts/stance-report.mjs --format esm --platform node && node dist/scripts/stance-report.mjs"
+    "report:stances": "rolldown scripts/stance-report.ts -o dist/scripts/stance-report.mjs --format esm --platform node && node dist/scripts/stance-report.mjs",
+    "report:tier-cpu": "rolldown scripts/tier-cpu.ts -o dist/scripts/tier-cpu.mjs --format esm --platform node && node dist/scripts/tier-cpu.mjs"
   },
   "dependencies": {
     "three": "^0.186.1",

@@ -73,7 +73,7 @@ The class of bug that made the GPU tier silent (a field the lip, foam or breakin
 
 Done, on branch `claude/gpu-tier-parity`:
 - the data-flow test (`src/wave/gpu/GpuBoussinesq.test.ts`) and the exported device field sets;
-- `?mode=lips` and `?mode=probes` on the GPU check page (`src/dev/tierParity*.ts`), posting each case to `&receiver=` as it finishes;
+- `?mode=lips` and `?mode=probes` on the GPU check page (`src/dev/tierParity*.ts`, cases in `src/dev/tierCases.ts`), posting each case to `&receiver=` as it finishes, and their CPU half in Node (`npm run report:tier-cpu`);
 - the water sheet's `&compute=gpu|cpu|auto` (and `&components=`);
 - the parity runs above for five of six cases, the CI probes on both tiers, and the tube and whitewater sheets.
 
@@ -82,8 +82,9 @@ Left:
   - rerun `?mode=lips&cases=reef-big`;
   - run `?mode=probes&cases=game-big,game-low,game-lower,game-minus,game-plus,edge-offshore` (both tiers; the CPU half is slow on the M1);
   - shoot `?inpage&waterSheet&whitewater&spot=reef` on the CPU (the 24-component pair), and compare the whitewater pairs pixel by pixel as the tube pairs were.
-- **Runs anywhere (Node):**
-  - the CI probes' CPU numbers in Node, to set against the browser's (19.6 and 22.4 m/s here, 22.0 and 28.7 in the Reef report);
+- **Runs anywhere (Node):** `npm run report:tier-cpu` runs the same cases' CPU half, recorded the same way (`scripts/tier-cpu.ts`).
+  - the CI probes' CPU numbers in Node (`-- --mode probes --cases ci-big,ci-low,ci-minus,ci-plus,ci-lagoon,ci-edge`), to set against the browser's (19.6 and 22.4 m/s here, 22.0 and 28.7 in the Reef report);
+  - the game-size probes' and the Reef Big parity case's CPU half (`-- --mode probes --cases game-big,…` and `-- --mode lips --cases reef-big`), to pair with the GPU halves above (the browser's `&tiers=gpu` runs only those);
   - the full test suite (`npx vitest run --dir src`);
   - finish this report, add a line to the ROADMAP's P6 section, and open the PR (the user merges).
 
@@ -93,4 +94,5 @@ Left:
 - `http://localhost:<port>/gpu-check.html?mode=lips` (all six cases; `&cases=`, `&seconds=`, `&seed=`, `&components=`, `&tiers=gpu|cpu`, `&receiver=http://localhost:<receiver port>`)
 - `http://localhost:<port>/gpu-check.html?mode=probes&cases=ci-big,ci-low,ci-minus,ci-plus,ci-lagoon,ci-edge`
 - `http://localhost:<port>/?inpage&waterSheet&spot=reef&compute=gpu` and without `&compute` (add `&whitewater` for the whitewater sheet, `&components=64` for the CPU on the M4's sea, `&receiver=` for the PNG)
+- `npm run report:tier-cpu -- --mode probes|lips [--cases …] [--seconds …] [--seed …] [--components …] [--out file.json]`
 - `npx vitest run --dir src src/wave/gpu src/dev/tierParity.test.ts`
