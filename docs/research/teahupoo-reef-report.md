@@ -301,12 +301,15 @@ Per throw, from the same runs:
     - the mound drained back to 0.42 m with q still near 10, which is 23.5 m/s;
     - the dispersive mask stayed on through the flash: the mound sat inside the depth switch's 0.2–1.8 d band;
     - Kennedy's breaking never saw it (B = 0): the lip adds its water between steps, so it never enters the rise rate.
-  - **Fix:** a landing holds its impact zone in shallow water.
-    - The zone runs from half the jet's drop behind where it lands to 1.5 drops ahead along its travel, one cell either side.
+  - **Fix:** a landing holds the young roller of the wave that threw it in shallow water.
+    - The zone runs from 0.5 H behind where the jet lands to 1.5 H ahead along its travel (H the breaking wave's height), one cell either side. It never reaches back past where the jet left the crest.
     - It holds for Kennedy's T* = 5√(d/g), on CPU and WGSL.
-    - The void behind the landing keeps its dispersion.
-    - Advice: the Water physics research session (the impact and splash-up, Chanson, Aoki & Maruyama 2002; the roller, Martins et al. 2018). A time cap ends a fixed impact zone; Tissier et al. (2012)'s Froude rule is for a zone that follows a bore.
-  - **Probe:** the oblique probes (60 m, ±25°) are back at 20 m/s. Their fastest water is now 13.1 m/s at +25° (was 23.5) and 11.6 m/s at −25° (was 11.3).
+    - The void behind the landing keeps its dispersion: that face breaks only when the void collapses.
+    - A splash-up's zone is its own short fall's, inside its jet's.
+    - **Why H and not the jet's fall:** the jets fall only 0.42 m at the median (1.84 m at p90), because they land on the solver's gentle face. A fall-sized zone missed the roller, about 2 H long (L tan θ ≈ H, Martins et al. 2018). It could also leave the outer cells of a thick lip's landing unheld.
+    - **Advice:** the water-physics advisor (the impact's rise to about 2.5 depths, Chanson, Aoki & Maruyama 2002; the roller, Martins et al. 2018). A time cap ends a fixed impact zone; Tissier et al. (2012)'s Froude rule is for a zone that follows a bore.
+  - **Probe:** the oblique probes (60 m, ±25°) are back at 20 m/s. Their fastest water is now 12.2 m/s at +25° (was 23.5) and 11.7 m/s at −25° (was 11.3).
+  - **Size:** on the Big swell from 20°, the zone holds at most 623 of the window's 16,140 cells (3.9 %), 242 on average while one is held.
   - **GPU:** `/gpu-check.html?plunge` holds the same zones on the CPU and the device. The water inside them agrees to 3e-5 m on the Reef and 1e-5 m on the Canyon over 8 s (without the WGSL change, 0.24 m).
   - **Noted, not changed:** Kennedy's test could count a landing's deposit as a rise rate, and the jets' 1.95× crest speed (above) inflates the momentum they land.
 - **The sea handover (on main).** A joiner did not watch for new breakers on its first step, so a wave starting to break then threw on the donor and not the copy. Online, lips must match: the donor's flag is now handed over with the state, so a sea handed over before its first step arms neither. The edge fix moved the handover test's realization onto it.
