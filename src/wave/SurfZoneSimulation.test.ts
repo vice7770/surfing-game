@@ -506,6 +506,65 @@ describe('SurfZoneSimulation', () => {
     }, 600_000);
   });
 
+  describe('Padang Padang holds', () => {
+    // Through the set's arrival: finite, never negative, no runaway (the Reef's once reached 112 m/s over a drained reef).
+    const run = (overrides: Partial<SurfZoneConfig>, fastestAllowed = 20) => {
+      const simulation = new SurfZoneSimulation({
+        ...small, spot: 'padang', significantHeight: PADANG_SWELLS.big.significantHeight, peakPeriod: PADANG_SWELLS.big.peakPeriod,
+        directionDegrees: PADANG_SWELLS.big.directionDegrees ?? 0, spreading: 24, alongShore: 160, dx: 1, fineSpacing: 1, ...overrides,
+      });
+      const { solver } = simulation;
+      let finite = true;
+      let fastest = 0;
+      for (let frame = 0; frame < 45 * 30; frame += 1) {
+        simulation.step(1 / 30);
+        for (let i = 0; i < solver.h.length; i += 1) {
+          finite &&= Number.isFinite(solver.h[i]) && solver.h[i] >= 0;
+          if (solver.h[i] > 0.05) fastest = Math.max(fastest, Math.hypot(solver.qx[i], solver.qz[i]) / solver.h[i]);
+        }
+      }
+      expect(finite).toBe(true);
+      expect(fastest).toBeLessThan(fastestAllowed);
+      expect(solver.maxStableStep()).toBeGreaterThan(1e-3);
+      return simulation;
+    };
+
+    it('stays finite and bounded under the Big swell, plunges, and peels left toward the channel', () => {
+      const simulation = run({});
+      expect(simulation.lipLaunches).toBeGreaterThan(0);
+      // A left: seen from a surfer facing the beach, it runs to their left, toward +x and the channel (the advisor's check).
+      expect(simulation.peelEstimate()?.direction).toBe(1);
+    }, 900_000);
+    // Review Focus 1: the lowest springs leave 5 cm over the reef flat.
+    it('stays finite over the nearly dry reef flat at the lowest spring tide', () => run({ tide: -1.2 }, 30), 900_000);
+    it('stays finite at high tide', () => run({ tide: PADANG_TIDES.high }), 900_000);
+    // Review Focus 2: oblique swells across the level −x edge, at the sweep's extremes and the real frame's wrapped 45°.
+    it('stays finite with the most oblique swells across the open −x edge', () => {
+      run({ directionDegrees: 0 });
+      run({ directionDegrees: 45 });
+    }, 1_800_000);
+  });
+
+  it('spins up the menu’s Padang Padang on the GPU tier’s sea without blowing up', () => {
+    for (const seed of [1, 2, 3]) {
+      const simulation = new SurfZoneSimulation({
+        spot: 'padang', seed, significantHeight: PADANG_PRACTICE_SWELL.significantHeight, peakPeriod: PADANG_PRACTICE_SWELL.peakPeriod,
+        heightAt: 'edge', directionDegrees: PADANG_PRACTICE_SWELL.directionDegrees ?? 0, spreading: PADANG_PRACTICE_SWELL.spreading,
+        bandwidth: PADANG_PRACTICE_SWELL.bandwidth, tide: 0, windSpeed: 0, stage: 2, componentCount: 64,
+      });
+      const { solver } = simulation;
+      let finite = true;
+      let deepest = 0;
+      for (let i = 0; i < solver.h.length; i += 1) {
+        finite &&= Number.isFinite(solver.h[i]);
+        deepest = Math.max(deepest, solver.h[i]);
+      }
+      expect(finite, `seed ${seed}`).toBe(true);
+      expect(deepest, `seed ${seed}`).toBeLessThan(OFFSHORE_DEPTH.padang + 10);
+      expect(solver.maxStableStep(), `seed ${seed}`).toBeGreaterThan(1e-3);
+    }
+  }, 900_000);
+
   it('throws lips from plunging waves on the reef edge', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 });
     // The Reef's 30 m tank brings the set onto its ledge ~35 s in; run until a lip has flown and landed.
