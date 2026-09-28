@@ -169,8 +169,13 @@ export class SideFeed implements RelaxationZone {
     const { nx, dx } = solver;
     this.weights.fill(0);
     this.where.fill(-1);
-    // Each strip takes at most a quarter of the window, so a narrow window keeps its middle half free.
-    const width = Math.min(SIDE_FEED.width, (nx * dx) / 4);
+    // Only full strips: narrower ones blend too sharply beside free water (the Reef's 160 m window, clean with
+    // 30 m strips, blew up with 2 to 15 m ones), so a window too narrow for four is not fed.
+    const width = SIDE_FEED.width;
+    if (nx * dx < 4 * width) {
+      this.strips = [];
+      return;
+    }
     const columns = Math.ceil(width / dx - 1e-9);
     const components = this.sea.components;
     this.strips = [0, nx - 1].map((edge, s): Strip => {

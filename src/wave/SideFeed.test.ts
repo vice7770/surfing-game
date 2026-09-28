@@ -64,16 +64,22 @@ describe('the side feed (wave sizes)', () => {
     for (const { iz } of shares.filter(({ iz }) => iz >= capped.iz)) expect(feed.weights[iz * solver.nx]).toBe(0);
   });
 
-  it('leaves the middle half of a narrow window free, and a 160 m window its middle 100 m', () => {
-    for (const [width, strip] of [[40, 10], [160, SIDE_FEED.width]] as const) {
-      const solver = tank(4, width);
-      const feed = new SideFeed(solver, sea, { referenceZ: zoneInner, timeOffset: 0 });
-      const row = solver.rowBelow(-300) * solver.nx;
-      for (let ix = 0; ix < solver.nx; ix += 1) {
-        const fromEdge = Math.min(ix + 0.5, solver.nx - ix - 0.5) * solver.dx;
-        if (fromEdge > strip) expect(feed.weights[row + ix]).toBe(0);
-        else expect(feed.weights[row + ix]).toBeGreaterThan(0);
-      }
+  it('feeds a window only with full 30 m strips, keeping the game\'s 160 m window\'s middle 100 m free', () => {
+    // Narrower strips blend too sharply beside free water: the Reef's 160 m window, clean with 30 m strips, blew up with
+    // 2-, 5-, 10- and 15-cell strips (an along-shore current at the strip's inner edge). A window too narrow for four
+    // strips (the tests' 8–60 m windows) is not fed, as before the side feed.
+    const wide = tank(4, 160);
+    const feed = new SideFeed(wide, sea, { referenceZ: zoneInner, timeOffset: 0 });
+    const row = wide.rowBelow(-300) * wide.nx;
+    for (let ix = 0; ix < wide.nx; ix += 1) {
+      const fromEdge = Math.min(ix + 0.5, wide.nx - ix - 0.5) * wide.dx;
+      if (fromEdge > SIDE_FEED.width) expect(feed.weights[row + ix]).toBe(0);
+      else expect(feed.weights[row + ix]).toBeGreaterThan(0);
+    }
+    for (const width of [40, 100]) {
+      const narrow = new SideFeed(tank(4, width), sea, { referenceZ: zoneInner, timeOffset: 0 });
+      expect(narrow.weights.every((weight) => weight === 0)).toBe(true);
+      expect(narrow.deviceShape().slots).toBe(0);
     }
   });
 

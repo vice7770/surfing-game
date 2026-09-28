@@ -21,7 +21,8 @@ describe('GpuBoussinesq host', () => {
   });
 
   it('packs the side feed so the device formula reproduces its target, after a slide too (wave sizes)', () => {
-    const sim = new SurfZoneSimulation(quick);
+    // The game's 160 m window: narrower ones are not fed.
+    const sim = new SurfZoneSimulation({ ...quick, alongShore: 160 });
     const { solver } = sim;
     const feed = solver.relaxationZones.find((zone) => zone instanceof SideFeed) as SideFeed;
     expect(feed).toBeInstanceOf(SideFeed);
