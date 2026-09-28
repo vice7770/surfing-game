@@ -71,7 +71,8 @@ export function reefSeaward(x: number, z: number): number {
 
 /**
  * Padang Padang (the Padang Padang spec): a left over a shallow coral shelf on the west coast of Bali's Bukit.
- * The swell arrives over a platform `platformDepth` deep (the tank's edge), then climbs a ramp at Mead & Black's
+ * The swell arrives in water `deep` deep (the tank's edge, where its linear sea is near-linear) and shoals up a
+ * shore-parallel forereef at `foreSlope` (rounded at its top and foot) onto a platform `platformDepth` deep, then climbs a ramp at Mead & Black's
  * orthogonal gradient, inferred from the measured vortex ratios of its tubes (about 1:19; Mead & Black 2001), to a
  * reef flat `crestDepth` deep that nearly dries at the lowest spring tides. The ramp's top edge (the crest line) runs
  * at `angle` degrees to the shoreline from the peak (x = peakX), so each wave breaks there first and peels toward +x
@@ -83,9 +84,18 @@ export function reefSeaward(x: number, z: number): number {
  * (`scripts/padangShape.ts`).
  */
 export const PADANG = {
-  platformDepth: 10, rampSlope: 1 / 19, crestDepth: 1.25, peakX: -50, peakZ: -90, angle: 35, levelWidth: 20,
-  channelX: 80, channelHalfWidth: 20, shoreSlope: 0.2, takeOffX: -40,
+  deep: 25, foreSlope: 1 / 20, foreRounding: 10, platformDepth: 10, rampSlope: 1 / 19, crestDepth: 1.25, peakX: -50, peakZ: -90, angle: 35,
+  levelWidth: 20, channelX: 80, channelHalfWidth: 20, shoreSlope: 0.2, takeOffX: -40,
 };
+
+/**
+ * Where Padang Padang's forereef tops out onto its platform: its rounding plus 1 m seaward of the ramp's most seaward foot, which is at
+ * the peak (the oblique ramp's footprint across shore is its width over cos(angle)), so the bed has no cliff.
+ */
+export function padangShelfEdge(): number {
+  const { peakZ, platformDepth, crestDepth, rampSlope, angle } = PADANG;
+  return peakZ - (platformDepth - crestDepth) / rampSlope / Math.cos((angle * Math.PI) / 180) - PADANG.foreRounding - 1;
+}
 
 /** The crest line's along-shore coordinate: x past the peak, eased (C¹) into a level strip `levelWidth` wide upcoast of it. */
 function padangAlong(x: number): number {
@@ -106,6 +116,13 @@ export function padangSeaward(x: number, z: number): number {
   // The line's local dz/dx: tan(angle) past the peak, easing to 0 across the level strip.
   const ease = x >= peakX ? 1 : Math.max(0, x - (peakX - levelWidth)) / levelWidth;
   return (padangCrestZ(x) - z) / Math.hypot(1, ease * Math.tan((angle * Math.PI) / 180));
+}
+
+/** max(0, d), rounded quadratically (C¹) over ±r: a ramp's knee without a slope break. */
+function rounded(d: number, r: number): number {
+  if (d <= -r) return 0;
+  if (d >= r) return d;
+  return ((d + r) * (d + r)) / (4 * r);
 }
 
 /** Whether Padang Padang's reef is ridden at along-shore position x: from its peak to where the channel begins (two half-widths from its axis). */
@@ -180,11 +197,17 @@ function padang(): SurfSpot {
     name: 'padang',
     depthAt(x, z) {
       const p = PADANG;
-      // The ramp from the reef flat down to the platform, across the crest line.
-      const reef = Math.min(p.platformDepth, p.crestDepth + Math.max(0, padangSeaward(x, z)) * p.rampSlope);
-      // The channel: no reef, as deep as the platform, flat across its axis at the window's edge.
+      // The shore-parallel forereef from deep water up to the platform.
+      const shelf = padangShelfEdge();
+      // Rounded (C¹) over foreRounding m at its top and its foot, so its slope breaks scatter no spurious harmonics.
+      const foot = shelf - (p.deep - p.platformDepth) / p.foreSlope;
+      const fore = p.platformDepth + (rounded(shelf - z, p.foreRounding) - rounded(foot - z, p.foreRounding)) * p.foreSlope;
+      // The ramp from the reef flat down to the platform, across the crest line, on the forereef's extra depth (the
+      // ramp's foot lies shoreward of the forereef's rounded top, so the two never overlap).
+      const reef = Math.min(p.platformDepth, p.crestDepth + Math.max(0, padangSeaward(x, z)) * p.rampSlope) + (fore - p.platformDepth);
+      // The channel: no reef, the platform and forereef beneath, flat across its axis at the window's edge.
       const channel = Math.exp(-(((x - p.channelX) / p.channelHalfWidth) ** 2));
-      const depth = reef + (p.platformDepth - reef) * channel;
+      const depth = reef + (fore - reef) * channel;
       // A beach face, and dry land shoreward of z = 0.
       return Math.min(depth, z < 0 ? -z * p.shoreSlope : -z * 0.06);
     },

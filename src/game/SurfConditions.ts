@@ -66,9 +66,9 @@ export const REEF_SWELLS: Record<'small' | 'medium' | 'big', SwellChoice> = {
  * Heights from Komar & Gaughan inverted to the faces; provisional until the size report calibrates them.
  */
 export const PADANG_SWELLS: Record<'small' | 'medium' | 'big', SwellChoice> = {
-  small: { significantHeight: 1.6, peakPeriod: 16, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 20 },
-  medium: { significantHeight: 2.2, peakPeriod: 17, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 20 },
-  big: { significantHeight: 3, peakPeriod: 18, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 20 },
+  small: { significantHeight: 1.6, peakPeriod: 16, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 30 },
+  medium: { significantHeight: 2.2, peakPeriod: 17, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 30 },
+  big: { significantHeight: 3, peakPeriod: 18, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 30 },
 };
 
 /** Spots with swells of their own; the rest take the shared buoy values. */

@@ -1,4 +1,4 @@
-import { PADANG, REEF, createSpot, padangReefAt, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
+import { PADANG, REEF, createSpot, padangReefAt, padangShelfEdge, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
@@ -103,9 +103,9 @@ export interface RenderGrid {
 /** Wave-tank layout across shore, m (z increases toward the beach). */
 export const TANK = { offshore: -330, zoneInner: -270, blendEnd: -190, fineFrom: -150, shore: 30 };
 
-/** Flat tank bed offshore of each spot's blend, m below datum: Padang Padang's is its platform, read live for the sweep. */
+/** Flat tank bed offshore of each spot's blend, m below datum: Padang Padang's is the deep water beyond its forereef, read live for the sweep. */
 export const OFFSHORE_DEPTH: Record<SpotName, number> = {
-  beach: 5, point: 8, reef: REEF.deep, canyon: 5, get padang() { return PADANG.platformDepth; },
+  beach: 5, point: 8, reef: REEF.deep, canyon: 5, get padang() { return PADANG.deep; },
 };
 
 /** A tank's layout across shore, m, and the still depth of its flat edge under the relaxation zone, m below datum. */
@@ -148,9 +148,11 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
     const zone = Math.max(TANK.zoneInner - TANK.offshore, ZONE_WAVELENGTHS * waveKinematics(config.peakPeriod, today.edgeDepth).wavelength);
     return { ...today, offshore: TANK.zoneInner - zone };
   }
-  // Padang Padang's edge is its platform (the Padang Padang spec). Its 1:19 ramp is wide, so the fine zone starts
-  // SET_FINE_MARGIN seaward of where its sets first reach their breaker depth anywhere in the window (never deeper
-  // than 0.9 of the platform's water: a bigger swell breaks at the ramp's foot), and the zone absorbs its long waves.
+  // Padang Padang's edge is the deep water beyond its forereef (the Padang Padang spec): injected on its 10 m platform, a
+  // 16 s swell (Ursell ~40) kept changing shape for 150–200 m and broke deeper at the reef's far end. Its 1:19 ramp is
+  // wide, so the fine zone starts SET_FINE_MARGIN seaward of where its sets first reach their breaker depth anywhere in
+  // the window (never deeper than 0.9 of the edge's water), the blend lies beyond the forereef's foot, and the zone
+  // absorbs its long waves.
   if (config.spot === 'padang') {
     const spot = createSpot('padang', config.seed);
     const sets = Math.min(0.9 * (today.edgeDepth + config.tide), (SETS_OVER_TYPICAL * komarGaughan(config.significantHeight, config.peakPeriod)) / BREAKER_INDEX);
@@ -163,7 +165,8 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
     }
     const fineFrom = Math.min(TANK.fineFrom, setBreak - SET_FINE_MARGIN);
     const blend = TANK.blendEnd - TANK.zoneInner;
-    const zoneInner = fineFrom - 20 - blend;
+    const foreFoot = padangShelfEdge() - (PADANG.deep - PADANG.platformDepth) / PADANG.foreSlope - PADANG.foreRounding;
+    const zoneInner = Math.min(fineFrom - 20 - blend, foreFoot - blend);
     const zone = Math.max(TANK.zoneInner - TANK.offshore, ZONE_WAVELENGTHS * waveKinematics(config.peakPeriod, today.edgeDepth).wavelength);
     return { offshore: zoneInner - zone, zoneInner, blendEnd: zoneInner + blend, fineFrom, shore: TANK.shore, edgeDepth: today.edgeDepth };
   }

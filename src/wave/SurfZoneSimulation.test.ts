@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PADANG, REEF, createSpot, padangReefAt, type SpotName } from './Bathymetry';
+import { PADANG, REEF, createSpot, padangReefAt, padangShelfEdge, type SpotName } from './Bathymetry';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
@@ -19,6 +19,7 @@ import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { TAKE_OFF_BAND } from './SurfMeter';
 import { SideFeed } from './SideFeed';
 
+const small_ = (): SurfZoneConfig => ({ ...small, spot: 'padang', alongShore: 160 });
 const small: Omit<SurfZoneConfig, 'spot'> = {
   seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
   componentCount: 12, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
@@ -102,8 +103,10 @@ describe('SurfZoneSimulation', () => {
       for (const tide of Object.values(PADANG_TIDES)) {
         const config: SurfZoneConfig = { ...small, spot: 'padang', alongShore: 160, tide, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod };
         const layout = tankLayout(config);
-        expect(layout.edgeDepth).toBe(PADANG.platformDepth);
-        const sets = Math.min(0.9 * (PADANG.platformDepth + tide), (SETS_OVER_TYPICAL * komarGaughan(swell.significantHeight, swell.peakPeriod)) / BREAKER_INDEX);
+        expect(layout.edgeDepth).toBe(PADANG.deep);
+        // The blend onto the spot's bed lies on the deep water beyond the forereef's foot.
+        expect(layout.blendEnd).toBeLessThanOrEqual(padangShelfEdge() - (PADANG.deep - PADANG.platformDepth) / PADANG.foreSlope + 1e-9);
+        const sets = Math.min(0.9 * (PADANG.deep + tide), (SETS_OVER_TYPICAL * komarGaughan(swell.significantHeight, swell.peakPeriod)) / BREAKER_INDEX);
         for (let x = -80; x <= 80; x += 5) {
           let z = layout.shore;
           while (z > -2000 && bed.depthAt(x, z) + tide < sets) z -= 1;
@@ -112,6 +115,22 @@ describe('SurfZoneSimulation', () => {
         expect(layout.blendEnd).toBeLessThanOrEqual(layout.fineFrom - 20);
         expect(layout.zoneInner - layout.offshore).toBeGreaterThanOrEqual(ZONE_WAVELENGTHS * waveKinematics(swell.peakPeriod, layout.edgeDepth).wavelength - 1e-9);
       }
+    }
+  });
+
+  // The root cause of Part A's peel discrepancy: a linear sea injected where it is strongly nonlinear releases free
+  // harmonics and keeps changing shape (Schäffer 1996). Schäffer's S = 4 a2/a1, the bound second harmonic over the
+  // first at Hm0 and Tp (Stokes, finite depth), is acceptable for first-order generation up to 1.2 (Eldrup & Andersen
+  // 2019, table 2). On the 10 m platform a 3 m, 18 s swell reached S ≈ 3.8.
+  it('injects Padang Padang’s sea where first-order generation holds: Schäffer’s S at the edge is at most 1.2 for every swell', () => {
+    for (const swell of Object.values(PADANG_SWELLS)) {
+      const config: SurfZoneConfig = { ...small_(), significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod };
+      const layout = tankLayout(config);
+      const a1 = edgeHeight(config, layout.edgeDepth) / 2;
+      const { wavelength } = waveKinematics(swell.peakPeriod, layout.edgeDepth);
+      const kh = ((2 * Math.PI) / wavelength) * layout.edgeDepth;
+      const a2OverA1 = (((2 * Math.PI) / wavelength) * a1 / 4) * Math.cosh(kh) * (2 + Math.cosh(2 * kh)) / Math.sinh(kh) ** 3;
+      expect(4 * a2OverA1, `Hs ${swell.significantHeight} m, Tp ${swell.peakPeriod} s`).toBeLessThanOrEqual(1.2);
     }
   });
 
@@ -543,15 +562,15 @@ describe('SurfZoneSimulation', () => {
       expect(simulation.lipLaunches).toBeGreaterThan(0);
       // A left: seen from a surfer facing the beach, it runs to their left, toward +x and the channel (the advisor's check).
       expect(simulation.peelEstimate()?.direction).toBe(1);
-    }, 900_000);
+    }, 1_800_000);
     // Review Focus 1: the lowest springs leave 5 cm over the reef flat.
-    it('stays finite over the nearly dry reef flat at the lowest spring tide', () => run({ tide: -1.2 }, 30), 900_000);
-    it('stays finite at high tide', () => run({ tide: PADANG_TIDES.high }), 900_000);
+    it('stays finite over the nearly dry reef flat at the lowest spring tide', () => run({ tide: -1.2 }, 30), 1_800_000);
+    it('stays finite at high tide', () => run({ tide: PADANG_TIDES.high }), 1_800_000);
     // Review Focus 2: oblique swells across the level −x edge, at the sweep's extremes and the real frame's wrapped 45°.
     it('stays finite with the most oblique swells across the open −x edge', () => {
       run({ directionDegrees: 0 });
       run({ directionDegrees: 45 });
-    }, 1_800_000);
+    }, 3_600_000);
   });
 
   it('spins up the menu’s Padang Padang on the GPU tier’s sea without blowing up', () => {

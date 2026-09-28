@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, BEACH_OUTER, CANYON, PADANG, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangCrestZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, BEACH_OUTER, CANYON, PADANG, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangCrestZ, padangReefAt, padangSeaward, padangShelfEdge, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
 import { seededRandom } from './random';
 import { PEEL_SKILL_MINIMUM, breakerDepthFor } from './Breaking';
 import { ledgePeel } from './ledgePeel';
@@ -133,8 +133,18 @@ describe('surf spot bathymetry', () => {
       const at = (n: number) => padang.depthAt(x + n * seaward.x, crest + n * seaward.z);
       expect((at(30) - at(10)) / 20).toBeCloseTo(PADANG.rampSlope, 9);
       expect(padangSeaward(x + 30 * seaward.x, crest + 30 * seaward.z)).toBeCloseTo(30, 9);
-      expect(padang.depthAt(x, crest - 400)).toBeCloseTo(PADANG.platformDepth, 12);
       expect(padang.depthAt(x, crest + 10)).toBeCloseTo(PADANG.crestDepth, 12);
+    });
+
+    // The tank's sea arrives near-linear in deep water and shoals onto the platform: injected at the platform, a
+    // 16 s swell kept changing shape for 150–200 m and broke deeper at the reef's far end (the Part A report).
+    it('rises from deep water up a shore-parallel forereef to its platform, seaward of the whole ramp', () => {
+      const shelf = padangShelfEdge();
+      for (let px = -80; px <= 80; px += 5) {
+        expect(padang.depthAt(px, shelf + PADANG.foreRounding + 0.5)).toBeCloseTo(PADANG.platformDepth, 9);
+        expect(slopeZ(padang, px, shelf - 2 * PADANG.foreRounding)).toBeCloseTo(PADANG.foreSlope, 9);
+        expect(padang.depthAt(px, shelf - (PADANG.deep - PADANG.platformDepth) / PADANG.foreSlope - PADANG.foreRounding - 1)).toBeCloseTo(PADANG.deep, 12);
+      }
     });
 
     it('runs its crest line at its angle from the peak toward +x, and along shore upcoast of it', () => {
@@ -150,6 +160,7 @@ describe('surf spot bathymetry', () => {
       expect(PADANG.channelX).toBe(edge);
       for (let z = -300; z <= -40; z += 20) expect(Math.abs(gradientX(padang, edge, z))).toBeLessThan(1e-3);
       expect(padang.depthAt(edge, -150)).toBeCloseTo(PADANG.platformDepth, 6);
+      expect(padang.depthAt(edge, padangShelfEdge() - 1000)).toBeCloseTo(PADANG.deep, 6);
     });
 
     it('rides its reef from the peak to the channel', () => {
@@ -161,7 +172,7 @@ describe('surf spot bathymetry', () => {
 
     it('has no cliff anywhere in the window', () => {
       for (let px = -80; px <= 80; px += 2) {
-        for (let z = -400; z <= 20; z += 2) {
+        for (let z = -700; z <= 20; z += 2) {
           expect(Math.abs(padang.depthAt(px, z + 0.5) - padang.depthAt(px, z))).toBeLessThan(0.25);
           expect(Math.abs(padang.depthAt(px + 0.5, z) - padang.depthAt(px, z))).toBeLessThan(0.25);
         }
