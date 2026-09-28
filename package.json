@@ -32,7 +32,8 @@
     "typecheck:server": "tsc -p server/tsconfig.json",
     "bots:record": "rolldown scripts/bot-tracks.ts -o dist/scripts/bot-tracks.mjs --format esm --platform node && node dist/scripts/bot-tracks.mjs",
     "server:bots": "npm run build:server && BOTS=1 node dist-server/server.mjs",
-    "deploy": "fly deploy --build-arg BUILD_ID=$(git rev-parse --short HEAD)"
+    "deploy": "fly deploy --build-arg BUILD_ID=$(git rev-parse --short HEAD)",
+    "report:body": "rolldown scripts/body-report.ts -o dist/scripts/body-report.mjs --format esm --platform node && node dist/scripts/body-report.mjs"
   },
   "dependencies": {
     "three": "^0.186.1",

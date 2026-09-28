@@ -73,11 +73,15 @@ export const RIG_DETAIL = {
    * inside hand) is the physics' own: the spine bends toward it, in the plane of
    * the shoulder and the hand, up to `reachBend`° (folding forward over the toes
    * frontside: the reference's hips flexed to 90° or less), until the arm reaches.
+   * The bend comes in, and the leading arm hands over to the physics' hand, over
+   * the first `reachFade` m below the hips (the riding-body plan: at once, the
+   * chest turned 58° in a frame).
    */
   leadReach: 0.9,
   leadRaise: 15,
   armLeadRate: 1.5,
   reachBend: 60,
+  reachFade: 0.1,
   /**
    * The snap (de Sousa 2022's final phase: the weight to the back foot, the trunk
    * rotating, the chest and the leading arm toward the lip; the stances spec's
@@ -312,7 +316,7 @@ export class HumanoidRig {
       else if (fallen) target.subVectors(hand, shoulder).setLength(RIG_DETAIL.fallenReach * this.armLength).add(shoulder);
       else if (state.phase === 'prone' && state.duck > 0.3) this.straightOnRail(hand, shoulder, target);
       else target.copy(hand);
-      if (state.phase === 'standing' && !this.reachingDown(hand) && !this.isRearFoot(state, side)) this.leadArm(state, shoulder, target);
+      if (state.phase === 'standing' && !this.isRearFoot(state, side)) this.leadArm(state, shoulder, target, 1 - this.reachDepth(hand));
       solveTwoBone(shoulder, this.upperArm, this.lowerArm, target, pole, this.joints.elbow[side], this.joints.wrist[side]);
       this.aimLimb(BONES.arm[side], BONES.foreArm[side], shoulder, this.joints.elbow[side], this.joints.wrist[side], pole);
       this.orient(BONES.hand[side], this.direction.subVectors(this.joints.wrist[side], this.joints.elbow[side]), fallen ? this.facing : boardUp);
@@ -363,9 +367,13 @@ export class HumanoidRig {
     });
   }
 
-  /** A hand below the hips reaches down (the physics' hand in the face or toward the water), not held out. */
-  private reachingDown(hand: Vector3): boolean {
-    return hand.y < this.hipsAt.y;
+  /**
+   * How far a hand reaches down, 0 to 1: a hand below the hips reaches (the
+   * physics' hand in the face or toward the water), not held out, coming in over
+   * `reachFade` m.
+   */
+  private reachDepth(hand: Vector3): number {
+    return Math.max(0, Math.min(1, (this.hipsAt.y - hand.y) / RIG_DETAIL.reachFade));
   }
 
   /**
@@ -381,16 +389,19 @@ export class HumanoidRig {
     if (state.standingBlend <= 0) return;
     this.bones.get(BONES.hips)!.getWorldPosition(pivot);
     const reach = RIG_DETAIL.legReach * this.armLength;
-    // The reaching hand farthest out of reach.
+    // The reaching hand farthest out of reach, weighed by how far it reaches down.
     let side: Side | undefined;
     let short = 0;
+    let depth = 0;
     for (const candidate of SIDES) {
       const hand = state.points[candidate === 'left' ? POINT.leftHand : POINT.rightHand];
-      if (!this.reachingDown(hand)) continue;
-      const gap = this.bones.get(BONES.arm[candidate])!.getWorldPosition(this.target).distanceTo(hand) - reach;
+      const down = this.reachDepth(hand);
+      if (down <= 0) continue;
+      const gap = (this.bones.get(BONES.arm[candidate])!.getWorldPosition(this.target).distanceTo(hand) - reach) * down;
       if (gap > short) {
         short = gap;
         side = candidate;
+        depth = down;
       }
     }
     if (!side) return;
@@ -409,22 +420,26 @@ export class HumanoidRig {
       const s = this.bend.copy(shoulder).addScaledVector(bendAxis, -shoulder.dot(bendAxis));
       const h = this.nose.copy(hand).addScaledVector(bendAxis, -hand.dot(bendAxis));
       const toward = Math.min(most - total, Math.max(0, Math.atan2(this.scratch.crossVectors(s, h).dot(bendAxis), s.dot(h))));
-      let best = 0;
-      let nearest = shoulder.distanceTo(hand);
-      for (let i = 1; i <= 12; i += 1) {
-        const angle = (toward * i) / 12;
-        const distance = this.hint.copy(shoulder).applyAxisAngle(bendAxis, angle).distanceTo(hand);
-        if (distance < nearest) {
-          nearest = distance;
-          best = angle;
+      // Turning toward the hand brings the shoulder nearer all the way to `toward`: the least turn that reaches, found
+      // by halving (a search in steps jumped between them, a jitter), or all of it if none reaches.
+      const distanceAt = (angle: number) => this.hint.copy(shoulder).applyAxisAngle(bendAxis, angle).distanceTo(hand);
+      let best = toward;
+      if (distanceAt(toward) <= reach) {
+        let low = 0;
+        let high = toward;
+        for (let i = 0; i < 24; i += 1) {
+          const middleAngle = (low + high) / 2;
+          if (distanceAt(middleAngle) <= reach) high = middleAngle;
+          else low = middleAngle;
         }
-        if (distance <= reach) break;
+        best = high;
       }
-      if (best <= 1e-4) break;
+      if (best <= 1e-6) break;
       total = Math.min(most, total + best);
       this.orientSpine(chestUp.copy(base).applyAxisAngle(bendAxis, total));
     }
-    if (total > 0 && state.standingBlend < 1) this.orientSpine(chestUp.copy(base).applyAxisAngle(bendAxis, state.standingBlend * total));
+    const eased = state.standingBlend * depth;
+    if (total > 0 && eased < 1) this.orientSpine(chestUp.copy(base).applyAxisAngle(bendAxis, eased * total));
   }
 
   /** Standing, how far the weight is back (`RIG_DETAIL.snapFrom`): where the pelvis sits over the stance, level, 0 to 1. */
@@ -441,9 +456,13 @@ export class HumanoidRig {
     return state.standingBlend * Math.max(0, Math.min(1, (RIG_DETAIL.snapFrom - ahead) / (RIG_DETAIL.snapFrom - RIG_DETAIL.snapFull)));
   }
 
-  /** Standing, the leading arm reaching where the head looks, blended in by the turn, raised with the weight back. */
-  private leadArm(state: RiderVisualState, shoulder: Vector3, target: Vector3): void {
-    const weight = state.standingBlend * Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
+  /**
+   * Standing, the leading arm reaching where the head looks, blended in by the
+   * turn, raised with the weight back; `share` of it, handing over to a hand
+   * reaching down.
+   */
+  private leadArm(state: RiderVisualState, shoulder: Vector3, target: Vector3, share: number): void {
+    const weight = share * state.standingBlend * Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
     if (weight <= 0) return;
     const raise = ((RIG_DETAIL.leadRaise + (RIG_DETAIL.snapRaise - RIG_DETAIL.leadRaise) * this.back) * Math.PI) / 180;
     const aim = this.pole2.copy(this.look).multiplyScalar(Math.cos(raise)).addScaledVector(WORLD_UP, Math.sin(raise)).normalize();

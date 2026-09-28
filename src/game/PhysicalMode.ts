@@ -8,6 +8,7 @@ import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SurferView } from '../scene/character/SurferView';
 import { RiderMotion } from '../scene/rig/riderMotion';
+import { SnapshotTrack } from './snapshotTrack';
 import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { LeashCord } from '../scene/board/LeashCord';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
@@ -259,6 +260,11 @@ export class PhysicalMode {
   private readonly riderState = createRiderVisualState();
   /** How the rider's board moves, for the drawn body (Part B). */
   private readonly riderMotion = new RiderMotion();
+  /** The snapshots the board, rider and camera target are drawn between, and the arrays drawn this frame. */
+  private readonly track = new SnapshotTrack();
+  private readonly drawnRider = new Float64Array(RIDER_SNAPSHOT.length);
+  private readonly drawnBoard = new Float64Array(8);
+  private trackedHost?: SurfZoneHost;
   /** Whether the latest input paddles, which cups the drawn hands. */
   private paddling = false;
   private retryPending = false;
@@ -307,12 +313,12 @@ export class PhysicalMode {
   private readonly followCrest = { x: 0, y: 0, z: 0 };
 
   /**
-   * The ride view's lead and lip: the followed point's velocity over the sea time
-   * between snapshots, and the crest of the wave under the rider (spec P9 phase 0).
+   * The ride view's lead and lip: the followed point's velocity over the drawn
+   * sea time between frames, and the crest of the wave under the rider (spec P9 phase 0).
    */
-  private followMotion(host: SurfZoneHost): void {
+  private followMotion(host: SurfZoneHost, seaTime: number): void {
     const { follow, followedAt } = this;
-    const { seaTime, ride } = host.snapshot.status;
+    const { ride } = host.snapshot.status;
     const elapsed = seaTime - followedAt.seaTime;
     const velocity = follow.velocity!;
     if (elapsed > 0 && elapsed < 0.5) {
@@ -564,8 +570,16 @@ export class PhysicalMode {
   update(dt: number): void {
     const { host } = this;
     if (!host) return;
-    const pose = host.snapshot.board;
-    const rider = host.snapshot.rider;
+    // The board, the rider and the camera's target are drawn between physics snapshots (the riding-body plan, step 1).
+    const { status } = host.snapshot;
+    if (host !== this.trackedHost) {
+      this.track.reset();
+      this.trackedHost = host;
+    }
+    this.track.push(status.seaTime, host.snapshot.rider, host.snapshot.board);
+    const time = this.track.sample(dt, this.drawnRider, this.drawnBoard) ?? status.seaTime;
+    const pose = this.drawnBoard;
+    const rider = this.drawnRider;
     const riding = rider[RIDER_SNAPSHOT.present] > 0;
     // Follow the rider's body once it is in the water, the board while it rides.
     const fallen = riding && rider[RIDER_SNAPSHOT.phase] === RIDER_PHASES.indexOf('fallen');
@@ -573,7 +587,7 @@ export class PhysicalMode {
     this.follow.position.y = fallen ? rider[RIDER_SNAPSHOT.points + 1] : pose[1];
     this.follow.position.z = fallen ? rider[RIDER_SNAPSHOT.points + 2] : pose[2];
     this.follow.heading = riding ? rider[RIDER_SNAPSHOT.heading] : 0;
-    this.followMotion(host);
+    this.followMotion(host, time);
     this.camera.update(host, this.focus, dt, pose[7] > 0 ? this.follow : undefined);
     this.farField.update(host.snapshot.status.seaTime);
     this.lipSheet.update(host.snapshot.lip, host.snapshot.lipCount, host.init.dx);
@@ -584,9 +598,9 @@ export class PhysicalMode {
     this.leash.object.visible = this.shown && riding && pose[7] > 0;
     if (riding) {
       readRiderSnapshot(rider, pose, this.riderState);
-      this.riderMotion.update(this.riderState, host.snapshot.status.seaTime);
+      this.riderMotion.update(this.riderState, time);
       this.riderState.stroking = this.paddling && this.riderState.phase === 'prone' ? 1 : 0;
-      this.riderState.clock = host.snapshot.status.seaTime;
+      this.riderState.clock = time;
       this.surfer.update(this.riderState, this.camera.camera.position);
       const { leash } = this.riderState;
       // The leash is on the back foot: the right regular, the left goofy (the stances spec's setting).
