@@ -533,8 +533,6 @@ export class SurfZoneSimulation {
     this.seaTimeOffset = state.seaTimeOffset;
     this.boundary.timeOffset = state.seaTimeOffset;
     this.sideFeed.timeOffset = state.seaTimeOffset;
-    // A handed-over sea is mid-run: its break line came with it, so the next step's onsets count (throws included).
-    this.onsetsArmed = true;
     this.lipLaunches = state.counters.lipLaunches;
     this.lipVolume = state.counters.lipVolume;
     this.lipJets = state.counters.lipJets;

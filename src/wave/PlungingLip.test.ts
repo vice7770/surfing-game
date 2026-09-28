@@ -62,8 +62,10 @@ describe('a jet\'s landing (Teahupo\'o Reef, Part B)', () => {
     const solver = basin();
     const lip = new PlungingLip(solver, 64);
     const cell = solver.cellIndex(3.5, 12.5);
-    // 1.5 m³ from the 1 m column: the crest's rows give 0.5 m each, leaving their surface at 0.3 m.
-    expect(lip.launch(cell, { x: 0, z: 5 }, 0.31, 1.5, 0, { length: voidLength, width: 0.4, tilt: 0.4 })).toBeCloseTo(1.5, 9);
+    // 1.5 m³ from a crest standing 2.5 m above the still level (a jet takes only that water): its rows give 0.5 m
+    // each, leaving their surface at 2 m.
+    for (const index of [cell - solver.nx, cell, cell + solver.nx]) solver.h[index] = 2 + 2.5;
+    expect(lip.launch(cell, { x: 0, z: 5 }, 2.01, 1.5, 0, { length: voidLength, width: 0.4, tilt: 0.4 })).toBeCloseTo(1.5, 9);
     const before = Float64Array.from(solver.h);
     // Two seconds bring every parcel down, splash-ups too.
     for (let k = 0; k < 480; k += 1) lip.step(1 / 240);

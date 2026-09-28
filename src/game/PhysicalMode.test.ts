@@ -159,7 +159,8 @@ describe('PhysicalMode', () => {
     expect(scene.children).toContain(mode.board);
     expect(mode.board.visible).toBe(true);
     expect(mode.board.position.toArray()).toEqual(board.position.toArray());
-    expect(mode.board.quaternion.toArray()).toEqual(board.orientation.toArray());
+    // To the last bits: drawing goes through a normalisation that can round the orientation by an ulp.
+    mode.board.quaternion.toArray().forEach((value, n) => expect(value).toBeCloseTo(board.orientation.toArray()[n], 12));
     // The rider lies prone on the board, drawn from the snapshot, and the ride camera follows.
     expect(scene.children).toContain(mode.surfer.group);
     expect(mode.surfer.group.visible).toBe(true);
