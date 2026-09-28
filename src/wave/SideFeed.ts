@@ -8,13 +8,43 @@ import { transformedSea } from './warmStart';
  * directionally spread sea's energy drift out, and nothing entered from the
  * neighbouring coast, so a 160 m window lost up to a third of its wave height
  * within 150 m. The outer `width` m of each side now relax toward the incoming
- * sea, shoaled and refracted over the column's bed as the warm start fills it,
- * from the offshore zone's inner edge while the shoaled Hs stays under
- * `breakingShare` of the depth (outside the surf zone), fading over `fade` m.
+ * sea, shoaled and refracted over the bed as the warm start fills it, from the
+ * offshore zone's inner edge while the shoaled Hs stays under `breakingShare`
+ * of the depth (outside the surf zone), fading over `fade` m.
  */
 export const SIDE_FEED = { width: 30, breakingShare: 0.45, fade: 40 };
 /** The warm start's depth-limited cap on the fed sea (McCowan γ). */
 const GAMMA = 0.78;
+
+/**
+ * One side's strip. Its sea is the edge column's transform (per row: amplitude
+ * and phase, as A cos Ψ and A sin Ψ, and the flux speeds), carried across the
+ * strip by each component's along-shore phase kx·(x − x_edge): the row ×
+ * column factoring the offshore zone uses, exact where the bed is uniform
+ * along shore, and a few MB even on the longest tanks.
+ */
+interface Strip {
+  edge: number;
+  /** +1 from the left edge inward, −1 from the right. */
+  step: number;
+  columns: number;
+  firstRow: number;
+  rows: number;
+  /** Per row × component: A cos Ψ, A sin Ψ, speed across (x) and along (z) the flux. */
+  rowTable: Float64Array;
+  /** Per column × component: cos and sin of kx·(x − x_edge). */
+  columnTable: Float64Array;
+}
+
+/** A strip cell as the device reads it: its cell, weight, and where its row's and column's factors start. */
+export interface SideFeedTables {
+  components: number;
+  omega: Float64Array;
+  /** Per slot: cell index, weight, row-table offset, column-table offset (into `rows` and `columns`). */
+  slots: Float64Array;
+  rows: Float64Array;
+  columns: Float64Array;
+}
 
 export class SideFeed implements RelaxationZone {
   readonly weights: Float64Array;
@@ -23,13 +53,9 @@ export class SideFeed implements RelaxationZone {
   private readonly referenceZ: number;
   private readonly count: number;
   private readonly omega: Float64Array;
-  /** Per solver cell, its slot in the coefficient arrays, or −1 outside the strips. */
-  private readonly slot: Int32Array;
-  /** Per slot and component: A cos Φ₀, A sin Φ₀, and the flux speeds across and along shore. */
-  private cosine = new Float64Array(0);
-  private sine = new Float64Array(0);
-  private speedX = new Float64Array(0);
-  private speedZ = new Float64Array(0);
+  private strips: Strip[] = [];
+  /** Per solver cell: which strip, row and column it is (strip + 2·(column + columns·row)), or −1. */
+  private readonly where: Int32Array;
   /** cos ωt and sin ωt of each component at the cached sea time. */
   private readonly timeCos: Float64Array;
   private readonly timeSin: Float64Array;
@@ -43,7 +69,7 @@ export class SideFeed implements RelaxationZone {
     this.timeCos = new Float64Array(this.count);
     this.timeSin = new Float64Array(this.count);
     this.weights = new Float64Array(solver.nx * solver.nz);
-    this.slot = new Int32Array(solver.nx * solver.nz);
+    this.where = new Int32Array(solver.nx * solver.nz);
     this.build();
   }
 
@@ -52,9 +78,16 @@ export class SideFeed implements RelaxationZone {
     this.build();
   }
 
+  /** How many strip cells the device steps, and the sea's components. */
+  deviceShape(): { slots: number; components: number } {
+    let slots = 0;
+    for (const weight of this.weights) if (weight > 0) slots += 1;
+    return { slots, components: this.count };
+  }
+
   target(_x: number, _z: number, t: number, out: WaterTarget, index: number): void {
-    const slot = index >= 0 ? this.slot[index] : -1;
-    if (slot < 0) {
+    const where = index >= 0 ? this.where[index] : -1;
+    if (where < 0) {
       out.eta = 0;
       out.qx = 0;
       out.qz = 0;
@@ -68,71 +101,118 @@ export class SideFeed implements RelaxationZone {
       }
       this.cachedSeaTime = seaTime;
     }
-    // cos(Φ₀ − ωt) = cos Φ₀ cos ωt + sin Φ₀ sin ωt.
+    const strip = this.strips[where % 2];
+    const cell = (where - (where % 2)) / 2;
+    const column = cell % strip.columns;
+    const row = (cell - column) / strip.columns;
+    const rowBase = row * this.count * 4;
+    const columnBase = column * this.count * 2;
+    const { rowTable, columnTable } = strip;
     let eta = 0;
     let qx = 0;
     let qz = 0;
-    const base = slot * this.count;
     for (let c = 0; c < this.count; c += 1) {
-      const value = this.cosine[base + c] * this.timeCos[c] + this.sine[base + c] * this.timeSin[c];
+      const r = rowBase + c * 4;
+      const k = columnBase + c * 2;
+      // A e^{i(Ψ + kx·Δx)}, then its real part at the sea time: cos(Φ − ωt) = cos Φ cos ωt + sin Φ sin ωt.
+      const real = rowTable[r] * columnTable[k] - rowTable[r + 1] * columnTable[k + 1];
+      const imaginary = rowTable[r] * columnTable[k + 1] + rowTable[r + 1] * columnTable[k];
+      const value = real * this.timeCos[c] + imaginary * this.timeSin[c];
       eta += value;
-      qx += this.speedX[base + c] * value;
-      qz += this.speedZ[base + c] * value;
+      qx += rowTable[r + 2] * value;
+      qz += rowTable[r + 3] * value;
     }
     out.eta = eta;
     out.qx = qx;
     out.qz = qz;
   }
 
+  /** The strips as flat tables for the device (GpuBoussinesq): every weighted cell, and each strip's factors. */
+  deviceTables(): SideFeedTables {
+    const rowOffsets: number[] = [];
+    const columnOffsets: number[] = [];
+    let rowsLength = 0;
+    let columnsLength = 0;
+    for (const strip of this.strips) {
+      rowOffsets.push(rowsLength);
+      columnOffsets.push(columnsLength);
+      rowsLength += strip.rowTable.length;
+      columnsLength += strip.columnTable.length;
+    }
+    const rows = new Float64Array(rowsLength);
+    const columns = new Float64Array(columnsLength);
+    this.strips.forEach((strip, s) => {
+      rows.set(strip.rowTable, rowOffsets[s]);
+      columns.set(strip.columnTable, columnOffsets[s]);
+    });
+    const slots: number[] = [];
+    for (let i = 0; i < this.weights.length; i += 1) {
+      if (!(this.weights[i] > 0)) continue;
+      const where = this.where[i];
+      const s = where % 2;
+      const strip = this.strips[s];
+      const cell = (where - s) / 2;
+      const column = cell % strip.columns;
+      const row = (cell - column) / strip.columns;
+      slots.push(i, this.weights[i], rowOffsets[s] + row * this.count * 4, columnOffsets[s] + column * this.count * 2);
+    }
+    return { components: this.count, omega: this.omega, slots: Float64Array.from(slots), rows, columns };
+  }
+
   private build(): void {
     const { solver, count } = this;
     const { nx, dx } = solver;
     this.weights.fill(0);
-    this.slot.fill(-1);
-    const cosine: number[] = [];
-    const sine: number[] = [];
-    const speedX: number[] = [];
-    const speedZ: number[] = [];
-    let slots = 0;
-    for (let ix = 0; ix < nx; ix += 1) {
-      const fromEdge = Math.min(ix + 0.5, nx - ix - 0.5) * dx;
-      if (fromEdge >= SIDE_FEED.width) continue;
-      const ramp = relaxationRamp(1 - fromEdge / SIDE_FEED.width);
-      // Where this column's shoaled sea first reaches the breaking share: the feed ends there.
-      const rows: { iz: number; scale: number; amplitude: Float64Array; phase: Float64Array; speedX: Float64Array; speedZ: Float64Array }[] = [];
+    this.where.fill(-1);
+    const columns = Math.min(Math.ceil(SIDE_FEED.width / dx), Math.floor(nx / 2));
+    const components = this.sea.components;
+    this.strips = [0, nx - 1].map((edge, s): Strip => {
+      const step = s === 0 ? 1 : -1;
+      // The edge column's sea, row by row, until its shoaled Hs reaches the breaking share of the depth.
+      const rows: { iz: number; values: Float64Array }[] = [];
       let end = Infinity;
-      transformedSea(solver, this.sea, this.referenceZ, ix, GAMMA, (iz, row) => {
+      transformedSea(solver, this.sea, this.referenceZ, edge, GAMMA, (iz, row) => {
         const z = solver.zCenters[iz];
         if (z <= this.referenceZ || end < Infinity) return;
         if (!(row.depth > 0) || row.hs >= SIDE_FEED.breakingShare * row.depth) {
           end = z;
           return;
         }
-        rows.push({
-          iz, scale: row.scale, amplitude: row.amplitude.slice(), phase: row.phase.slice(), speedX: row.speedX.slice(), speedZ: row.speedZ.slice(),
-        });
-      });
-      for (const row of rows) {
-        const z = solver.zCenters[row.iz];
-        const fade = end === Infinity ? 1 : smoothstep(end, end - SIDE_FEED.fade, z);
-        const weight = ramp * fade;
-        if (!(weight > 0)) continue;
-        const i = row.iz * nx + ix;
-        this.weights[i] = weight;
-        this.slot[i] = slots;
-        slots += 1;
+        const values = new Float64Array(count * 4);
         for (let c = 0; c < count; c += 1) {
           const amplitude = row.scale * row.amplitude[c];
-          cosine.push(amplitude * Math.cos(row.phase[c]));
-          sine.push(amplitude * Math.sin(row.phase[c]));
-          speedX.push(row.speedX[c]);
-          speedZ.push(row.speedZ[c]);
+          values[c * 4] = amplitude * Math.cos(row.phase[c]);
+          values[c * 4 + 1] = amplitude * Math.sin(row.phase[c]);
+          values[c * 4 + 2] = row.speedX[c];
+          values[c * 4 + 3] = row.speedZ[c];
+        }
+        rows.push({ iz, values });
+      });
+      const firstRow = rows.length ? rows[0].iz : 0;
+      const rowTable = new Float64Array(rows.length * count * 4);
+      rows.forEach((row, r) => rowTable.set(row.values, r * count * 4));
+      const columnTable = new Float64Array(columns * count * 2);
+      for (let j = 0; j < columns; j += 1) {
+        const offset = solver.xCenters[edge + step * j] - solver.xCenters[edge];
+        for (let c = 0; c < count; c += 1) {
+          columnTable[(j * count + c) * 2] = Math.cos(components[c].kx * offset);
+          columnTable[(j * count + c) * 2 + 1] = Math.sin(components[c].kx * offset);
         }
       }
-    }
-    this.cosine = Float64Array.from(cosine);
-    this.sine = Float64Array.from(sine);
-    this.speedX = Float64Array.from(speedX);
-    this.speedZ = Float64Array.from(speedZ);
+      // Weights: ramped across the strip like the offshore zone, faded in the last metres before the surf zone.
+      rows.forEach((row, r) => {
+        const z = solver.zCenters[row.iz];
+        const fade = end === Infinity ? 1 : smoothstep(end, end - SIDE_FEED.fade, z);
+        for (let j = 0; j < columns; j += 1) {
+          const fromEdge = (j + 0.5) * dx;
+          const weight = relaxationRamp(1 - fromEdge / SIDE_FEED.width) * fade;
+          if (!(weight > 0)) continue;
+          const i = row.iz * nx + edge + step * j;
+          this.weights[i] = weight;
+          this.where[i] = s + 2 * (j + columns * r);
+        }
+      });
+      return { edge, step, columns, firstRow, rows: rows.length, rowTable, columnTable };
+    });
   }
 }

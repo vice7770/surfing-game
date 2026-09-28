@@ -187,6 +187,9 @@ export interface SurfZoneStatus {
   };
 }
 
+/** How long a sea waits for its GPU device before stepping on the CPU, ms. */
+export const DEVICE_WAIT_MS = 15000;
+
 /**
  * Arrays a snapshot fills: the render grid's (height, foam) and (u, w), packed
  * lip and bubble positions, and the board's pose (position, quaternion x y z w,
@@ -359,11 +362,22 @@ export class SurfZoneRunner {
   }
 
   /** Step stage 2 water on a device from `create` (the GPU); false when it offers none and the CPU keeps stepping. */
-  async useDevice(create: (solver: BoussinesqSolver) => Promise<SolverDevice | undefined>): Promise<boolean> {
+  async useDevice(
+    create: (solver: BoussinesqSolver) => Promise<SolverDevice | undefined>, waitMs = DEVICE_WAIT_MS,
+  ): Promise<boolean> {
     const { solver } = this.simulation;
     if (!(solver instanceof BoussinesqSolver)) return false;
     try {
-      this.simulation.device = await create(solver);
+      // A GPU process that never answers (seen when WebGPU wedges) would leave the sea unbuilt: step on the CPU.
+      let late = false;
+      const request = create(solver);
+      const device = await Promise.race([request, new Promise<'late'>((resolve) => setTimeout(() => resolve('late'), waitMs))]);
+      if (device === 'late') {
+        late = true;
+        console.warn(`No surf zone device within ${waitMs} ms; stepping on the CPU.`);
+        void request.then((arrived) => arrived?.dispose(), () => undefined);
+      }
+      if (!late) this.simulation.device = device as SolverDevice | undefined;
     } catch (error) {
       console.warn('No surf zone device; stepping on the CPU.', error);
     }
