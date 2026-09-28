@@ -2,7 +2,7 @@ import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import type { LipContactParcel, LipParcelSource } from './DetachedSurfer';
 import { PlaneWater } from './PlaneWater';
-import { RideSession } from './RideSession';
+import { REEF_STRIKE_WINDOW, RideSession, type RideInput } from './RideSession';
 import { SwellWater } from './SwellWater';
 import { createWaterSample } from './SurfWater';
 
@@ -344,3 +344,58 @@ describe('breath in a ride', () => {
   });
 });
 
+describe('hitting the reef (Teahupo\'o Reef, Part C)', () => {
+  const idle: RideInput = { paddle: false, popUp: false, steer: 0 };
+
+  it('names a fall that comes as the board strikes the reef "reef", and one in open water by its own cause', () => {
+    const session = new RideSession();
+    session.place({ x: 0, z: 0, heading: 0, speed: 0, phase: 'standing' }, new PlaneWater({ depth: 3 }));
+    // The trough drains: dry reef 0.3 m below (water would brake the board before it struck). The board drops onto it:
+    // a strike, then the rider lets go in the same breath.
+    const reef = new PlaneWater({ level: -0.3, depth: 0, bedMaterial: 'reef' });
+    session.board.velocity.y = -3;
+    for (let t = 0; t < 0.1; t += 1 / 120) session.step(1 / 120, reef, idle);
+    session.separate('impact');
+    expect(session.separation).toBe('reef');
+    const open = new RideSession();
+    const deep = new PlaneWater({ depth: 3 });
+    open.place({ x: 0, z: 0, heading: 0, speed: 0, phase: 'standing' }, deep);
+    open.separate('balance');
+    expect(open.separation).toBe('balance');
+  });
+
+  it('names the fall a strike on the reef knocks the rider into, inside the ride\'s own step, and not one long after it', () => {
+    const reef = new PlaneWater({ level: -0.3, depth: 0, bedMaterial: 'reef' });
+    const standing = () => {
+      const session = new RideSession();
+      session.place({ x: 0, z: 0, heading: 0, speed: 0, phase: 'standing' }, new PlaneWater({ depth: 3 }));
+      session.board.velocity.y = -3;
+      return session;
+    };
+    // The board drops rolling onto dry reef 0.3 m below: the rider stays on through the strike and loses balance
+    // about half a second later.
+    const knocked = standing();
+    knocked.board.angularVelocity.z = 6;
+    for (let t = 0; t < 1.5 && knocked.phase !== 'fallen'; t += 1 / 120) knocked.step(1 / 120, reef, idle);
+    expect(knocked.separation).toBe('reef');
+    // A fall within the window after a strike is the reef's; one after it keeps its own cause.
+    const within = new RideSession();
+    within.place({ x: 0, z: 0, heading: 0, speed: 0, phase: 'standing' }, new PlaneWater({ depth: 3 }));
+    within.board.reefStrikeAge = REEF_STRIKE_WINDOW - 0.05;
+    within.separate('balance');
+    expect(within.separation).toBe('reef');
+    const after = new RideSession();
+    after.place({ x: 0, z: 0, heading: 0, speed: 0, phase: 'standing' }, new PlaneWater({ depth: 3 }));
+    after.board.reefStrikeAge = REEF_STRIKE_WINDOW + 0.05;
+    after.separate('balance');
+    expect(after.separation).toBe('balance');
+  });
+
+  it('ends nothing when a paddler\'s board just touches the reef', () => {
+    const session = new RideSession();
+    const shallow = new PlaneWater({ depth: 0.15, bedMaterial: 'reef' });
+    session.place({ x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' }, shallow);
+    for (let t = 0; t < 2; t += 1 / 120) session.step(1 / 120, shallow, { ...idle, paddle: true });
+    expect(session.phase).not.toBe('fallen');
+  });
+});

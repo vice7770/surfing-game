@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RIDER_SNAPSHOT } from '../wave/SurfZoneRunner';
+import { RIDER_PHASES, RIDER_SNAPSHOT } from '../wave/SurfZoneRunner';
 import { SnapshotTrack } from './snapshotTrack';
 
 const STEP = 1 / 60;
@@ -82,6 +82,33 @@ describe('the snapshot track', () => {
     // Before the jump the board is below 8.2 m; after it, beyond 28 m: nothing is drawn in between.
     expect(drawn.every((frame) => frame.x < 8.3 || frame.x > 27.9)).toBe(true);
     expect(drawn[drawn.length - 1].x).toBeGreaterThan(28);
+  });
+
+  it('never blends a riding body\'s points into a fallen one\'s (tips and limb centres are different points)', () => {
+    // The stance poses (the riding-body plan, step 3): blended across the fall, a "standing" rider was drawn with its
+    // feet half-way to the fallen legs' centres, a posture that is neither.
+    const track = new SnapshotTrack();
+    const rider = new Float64Array(RIDER_SNAPSHOT.length);
+    const board = new Float64Array(8);
+    const fallen = RIDER_PHASES.indexOf('fallen');
+    const standing = RIDER_PHASES.indexOf('standing');
+    let fell = false;
+    for (let i = 0; i <= 12; i += 1) {
+      const next = snapshot(i * 0.1);
+      next.rider[RIDER_SNAPSHOT.phase] = i < 6 ? standing : fallen;
+      // The feet: a tip standing, the leg's centre fallen, 0.4 m higher.
+      next.rider[RIDER_SNAPSHOT.points + 5 * 3 + 1] = i < 6 ? 0 : 0.4;
+      track.push(i * STEP, next.rider, next.board);
+      // Four frames a step (240 Hz), crossing the fall between the sixth and seventh snapshots.
+      for (let frame = 0; frame < 4; frame += 1) {
+        track.sample(STEP / 4, rider, board);
+        const foot = rider[RIDER_SNAPSHOT.points + 5 * 3 + 1];
+        expect(foot === 0 || foot === 0.4, `step ${i}, frame ${frame}: foot at ${foot}`).toBe(true);
+        expect(rider[RIDER_SNAPSHOT.phase] === fallen, `step ${i}, frame ${frame}`).toBe(foot === 0.4);
+        fell ||= foot === 0.4;
+      }
+    }
+    expect(fell).toBe(true);
   });
 
   it('holds the pose while the clock stands still', () => {

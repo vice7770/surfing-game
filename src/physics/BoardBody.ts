@@ -99,6 +99,10 @@ const BED_FRICTION = 0.6;
 const BED_BIAS = 0.2;
 const BED_SLOP = 0.002;
 const BED_ITERATIONS = 4;
+/** Wet reef grips harder than sand (the Teahupo'o Reef, Part C; provisional, docs/research/teahupoo-reef-sources.md). */
+export const REEF_FRICTION = { board: 0.8, body: 0.8 } as const;
+/** A strike on reef: the approach speed along the bed's normal that counts, m/s (Part C; provisional). */
+export const REEF_STRIKE_SPEED = 1;
 
 /** 3 × 3 row-major product R A Rᵀ, using `t` as scratch. */
 function rotateTensor(r: number[], a: number[], out: number[], t: number[]): void {
@@ -176,7 +180,8 @@ function solve6(a: Float64Array, b: Float64Array): void {
  * - **Contact seam:** it is the `BoardContactBody` the detached surfer strikes
  *   and grabs. The contact box is centred on the board's own centre of mass, and
  *   moves of `position` made between steps are carried into the body.
- * - **Not modelled yet:** fins and rail grip (P4e), and a sloping seabed normal.
+ * - **The seabed** pushes along its own normal, with sand's or wet reef's friction (the Teahupo'o Reef, Part C).
+ * - **Not modelled yet:** fins and rail grip (P4e).
  */
 export class BoardBody implements BoardContactBody {
   readonly shape: BoardShape;
@@ -258,6 +263,8 @@ export class BoardBody implements BoardContactBody {
   private readonly reaction: Float64Array;
   private readonly meanPosition: Float64Array;
   private readonly bedImpulse: Float64Array;
+  /** Seconds since a point of the board last struck reef faster than REEF_STRIKE_SPEED along the bed's normal (Part C). */
+  reefStrikeAge = Infinity;
   private readonly rotation = new Array<number>(9).fill(0);
   private readonly worldInertia = new Array<number>(9).fill(0);
   private readonly worldInverseInertia = new Array<number>(9).fill(0);
@@ -418,6 +425,7 @@ export class BoardBody implements BoardContactBody {
     this.angularVelocity.copy(angularVelocity);
     this.syncPosition();
     this.previousAddedMass.fill(0);
+    this.reefStrikeAge = Infinity;
     for (const key of Object.keys(this.work) as (keyof BoardWork)[]) this.work[key] = 0;
   }
 
@@ -1040,9 +1048,14 @@ export class BoardBody implements BoardContactBody {
     }
   }
 
-  /** Sequential impulses keeping the slab's bottom and deck points above the seabed (vertical normal). */
+  /**
+   * Sequential impulses keeping the slab's bottom and deck points above the seabed: along the bed's own normal, with
+   * Coulomb friction in its plane (sand's, or wet reef's, Part C). On a flat bed the normal is up and the tangents
+   * x and z, as before.
+   */
   private resolveBed(h: number): void {
     const { count, arm, normal, samples, bedImpulse } = this;
+    this.reefStrikeAge += h;
     bedImpulse.fill(0);
     let touching = false;
     for (let k = 0; k < count && !touching; k += 1) {
@@ -1055,42 +1068,61 @@ export class BoardBody implements BoardContactBody {
     const w = this.angularVelocity;
     for (let iteration = 0; iteration < BED_ITERATIONS; iteration += 1) {
       for (let k = 0; k < count; k += 1) {
-        const bed = samples[k].bedY;
+        const sample = samples[k];
+        const bed = sample.bedY;
+        const nx = sample.bedNormalX;
+        const ny = sample.bedNormalY;
+        const nz = sample.bedNormalZ;
+        const reef = sample.bedMaterial === 'reef';
+        const mu = reef ? REEF_FRICTION.board : BED_FRICTION;
+        // The bed's tangents: x with its part along n removed, then t2 = t1 × n (x and z on a flat bed).
+        let t1x = 1 - nx * nx;
+        let t1y = -nx * ny;
+        let t1z = -nx * nz;
+        const t1n = Math.hypot(t1x, t1y, t1z);
+        t1x /= t1n;
+        t1y /= t1n;
+        t1z /= t1n;
+        const t2x = t1y * nz - t1z * ny;
+        const t2y = t1z * nx - t1x * nz;
+        const t2z = t1x * ny - t1y * nx;
         for (let face = 0; face < 2; face += 1) {
           const t = face === 0 ? 0 : this.thickness[k];
           const rx = arm[k * 3] - normal[k * 3] * t;
           const ry = arm[k * 3 + 1] - normal[k * 3 + 1] * t;
           const rz = arm[k * 3 + 2] - normal[k * 3 + 2] * t;
           const slot = (k * 2 + face) * 3;
-          const penetration = bed - (this.centerOfMass.y + ry);
+          // How deep the point lies under the bed's plane, along its normal.
+          const penetration = (bed - (this.centerOfMass.y + ry)) * ny;
           if (!(penetration > 0) && bedImpulse[slot + 1] === 0) continue;
-          const vy = v.y + w.z * rx - w.x * rz;
+          const vn = (v.x + w.y * rz - w.z * ry) * nx + (v.y + w.z * rx - w.x * rz) * ny + (v.z + w.x * ry - w.y * rx) * nz;
+          if (reef && iteration === 0 && penetration > 0 && -vn > REEF_STRIKE_SPEED) this.reefStrikeAge = 0;
           const target = (BED_BIAS * Math.max(0, penetration - BED_SLOP)) / h;
-          const inverse = this.inverseEffective(rx, ry, rz, 0, 1, 0);
-          const total = Math.max(0, bedImpulse[slot + 1] + (target - vy) / inverse);
+          const inverse = this.inverseEffective(rx, ry, rz, nx, ny, nz);
+          const total = Math.max(0, bedImpulse[slot + 1] + (target - vn) / inverse);
           const normalImpulse = total - bedImpulse[slot + 1];
           bedImpulse[slot + 1] = total;
-          if (normalImpulse !== 0) this.bedWork(rx, ry, rz, 0, normalImpulse, 0);
-          // Coulomb friction in the bed plane, within the cone of the accumulated normal impulse.
-          const vx = v.x + w.y * rz - w.z * ry;
-          const vz = v.z + w.x * ry - w.y * rx;
-          const slip = Math.hypot(vx, vz);
-          if (!(slip > 0) && bedImpulse[slot] === 0 && bedImpulse[slot + 2] === 0) continue;
-          const inverseX = this.inverseEffective(rx, ry, rz, 1, 0, 0);
-          const inverseZ = this.inverseEffective(rx, ry, rz, 0, 0, 1);
-          let fx = bedImpulse[slot] - vx / inverseX;
-          let fz = bedImpulse[slot + 2] - vz / inverseZ;
-          const limit = BED_FRICTION * total;
-          const magnitude = Math.hypot(fx, fz);
+          if (normalImpulse !== 0) this.bedWork(rx, ry, rz, nx * normalImpulse, ny * normalImpulse, nz * normalImpulse);
+          // Coulomb friction in the bed's plane, within the cone of the accumulated normal impulse.
+          const px = v.x + w.y * rz - w.z * ry;
+          const py = v.y + w.z * rx - w.x * rz;
+          const pz = v.z + w.x * ry - w.y * rx;
+          const v1 = px * t1x + py * t1y + pz * t1z;
+          const v2 = px * t2x + py * t2y + pz * t2z;
+          if (!(Math.hypot(v1, v2) > 0) && bedImpulse[slot] === 0 && bedImpulse[slot + 2] === 0) continue;
+          let f1 = bedImpulse[slot] - v1 / this.inverseEffective(rx, ry, rz, t1x, t1y, t1z);
+          let f2 = bedImpulse[slot + 2] - v2 / this.inverseEffective(rx, ry, rz, t2x, t2y, t2z);
+          const limit = mu * total;
+          const magnitude = Math.hypot(f1, f2);
           if (magnitude > limit) {
-            fx *= limit / magnitude;
-            fz *= limit / magnitude;
+            f1 *= limit / magnitude;
+            f2 *= limit / magnitude;
           }
-          const ix = fx - bedImpulse[slot];
-          const iz = fz - bedImpulse[slot + 2];
-          bedImpulse[slot] = fx;
-          bedImpulse[slot + 2] = fz;
-          if (ix !== 0 || iz !== 0) this.bedWork(rx, ry, rz, ix, 0, iz);
+          const i1 = f1 - bedImpulse[slot];
+          const i2 = f2 - bedImpulse[slot + 2];
+          bedImpulse[slot] = f1;
+          bedImpulse[slot + 2] = f2;
+          if (i1 !== 0 || i2 !== 0) this.bedWork(rx, ry, rz, i1 * t1x + i2 * t2x, i1 * t1y + i2 * t2y, i1 * t1z + i2 * t2z);
         }
       }
     }

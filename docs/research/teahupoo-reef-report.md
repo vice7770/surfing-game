@@ -6,7 +6,7 @@ The [Teahupo'o Reef spec](../superpowers/specs/2026-09-27-teahupoo-reef.md). Par
 - the design sweep and its peel;
 - catching.
 
-Part B, slab tube physics: [its own section](#part-b-slab-tubes).
+Part B, slab tube physics: [its own section](#part-b-slab-tubes). Part C, the solid reef, the lagoon and the crash: [its own section](#part-c-the-solid-reef-the-lagoon-the-crash).
 
 Numbers are reported, not gated.
 
@@ -363,6 +363,91 @@ Per throw, from the same runs:
   - the 2.5 m band within Mead & Black's 2–3 m.
 - **Tube look:** stopped, on the user's decision to replace the carved void with a swept overturn surface.
 
+## Part C: the solid reef, the lagoon, the crash
+
+The [Part C plan](../superpowers/plans/2026-09-28-teahupoo-reef-part-c.md); the sources and rulings are in [teahupoo-reef-sources.md](teahupoo-reef-sources.md#part-c-the-solid-reef-the-lagoon-the-crash).
+
+The user decided to replace the lip strips and carved void with a swept overturn surface (2026-09-28). So Part C builds none of the tube's look: the lip's glow, the spit, the section collapsing as one. The step and the coral wait for the coral textures (download approval).
+
+### What changed
+
+- **The reef is solid.** Every water sample now says what the bed is made of and which way it faces. The Reef is rock where the reef builds the bed:
+  - the forereef;
+  - the shelf;
+  - the ledge;
+  - the crest;
+  - the flat, down its inner wall.
+
+  It is sand in the pass, the lagoon and on the beach; other spots are sand.
+  - **The board** meets the bed along its own normal, with Coulomb friction in its plane. That is sand's 0.6, or wet reef's 0.8, which is provisional: no measurement of a board or body on wet coral was found.
+    - The old contact was vertical, so a board never slid down any slope. Now it slides on sand steeper than its friction and holds on reef.
+    - On a flat bed the maths is exactly the old.
+  - **The body** in the water meets rock the same way (position-based Coulomb friction). It rests a full radius off the 1:2.29 ledge and slides only on reef steeper than its grip. Sand keeps its old floor.
+- **"Hit the reef".** A fall within 0.6 s of the board meeting reef faster than 1 m/s along its normal (both provisional) ends the ride "Hit the reef": a strike that knocks a standing rider off balance ends in a fall 0.4–0.55 s later.
+  - A paddler's board touching the reef ends nothing.
+  - Water brakes a board from 3 to 1.3 m/s in a step, so strikes come on reef a trough has drained, as at Teahupo'o.
+- **The lagoon.** Shoreward of its crest the Reef has:
+  - a 20 m reef flat at the crest's depth;
+  - an inner wall no steeper than its ledge;
+  - a 2.5 m lagoon (width and depth provisional until the lab profile is read);
+  - the Teahupo'o model's 1:9.64 inland slope up to the shore.
+
+  The slope rises from the shelf. Drawn from the shoreline, it had reached under the steep forereef and capped it, which is why Part A used 1:5. The ledge's ridden columns end at x = 25.5 (was 32.5).
+- **The crash** plays deeper as its lip grows: rate (2 m³ / V)^(1/3) by its biggest lip's own water, down to an octave (Minnaert's resonance; reference and floor provisional). Practice lips at every spot sound as before; the Reef's Big-swell lips (5–7 m³) drop by about a third. Loudness still follows its energy.
+
+### The pass and lagoon under the Big swell
+
+At game size (160 m window, 64 components, Hs 3 m at 17 s, s 18, 45 s past the hand-over), both on today's main (with the plunge-zone fix, #58):
+
+| Case | Main (1:5 face) | Part C (lagoon, 1:9.64) |
+|---|---:|---:|
+| Mid tide, from 20° | 18.5 m/s, on the shore at x 35.5 | 19.2 m/s, on the pass's inland slope at x 78.5 |
+| Tide −0.6 m | 23.7 m/s, on the pass's face | 11.9 m/s, on the ledge |
+| Tide −1.0 m | 21.4 m/s, on the pass's face | 12.5 m/s |
+| From −25° | 9.2 m/s | 10.2 m/s |
+| From +25° | 22.2 m/s, on the shore | 16.0 m/s |
+
+- **Every case stays finite.** The run-up past 20 m/s on the pass's steep face is gone: 21.4–23.7 m/s becomes 11.9–19.2.
+- **Before the plunge-zone fix,** the lagoon's mid-tide run ran away at the crest (NaN at 76 s). A thin cell kept its dispersion on across a lip's landing bore beside a 3 m pile, after 14–18 landings in a second. Main held only by its realization. That is the mechanism #58 fixed, and the lagoon ships on it.
+- **CI:** a new probe holds the lagoon at low tide (60 m window, tide −1.0).
+
+### Peel and catch on the new inner reef
+
+`npm run report:rideability -- --spots reef --hs 1.3 --tp 15 --direction 20 --spread 0.2 --seeds 2 --periods 12` (Small swell, 24 waves each):
+
+| | Close-out | Mixed | Pro | Beginner | Median α | Median peel speed | Lip throws / min |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Main | 50 % | 21 % | 29 % | 8 % | 15° | 20.5 m/s | 206 |
+| Part C | 63 % | 17 % | 21 % | 0 % | 16° | 19.5 m/s | 361 |
+
+- **The ledge peels as before:** α 15–16°, about 20 m/s. The close-outs differ by 3 waves of 24.
+- **The extra throws are at the shore:** the 1:9.64 slope plunges (ξ ≈ 1.9) where the 1:5 face surged (ξ ≈ 3.8).
+
+`npm run report:catch -- --practice --ghosts --spots reef --seeds 2 --minutes 3` (ghost riders on Practice):
+
+| | Attempts | Cues lit | Stood | Rides ≥ 3 s | Longest |
+|---|---:|---:|---:|---:|---:|
+| Main | 861 | 18 | 7 | 2 | 4.0 s |
+| Part C | 844 | 7 | 4 | 1 | 9.3 s |
+
+Fewer take-off cues lit. The counts are small, and why is not measured. One hypothesis: the gentle inland slope reflects less back to the take-off than the steep face did.
+
+### The CI probes after merging main
+
+With the plunge-zone fix merged in, the lagoon's seed 3 in the 40 m window flashes 22.0 m/s (from 20°) and 28.7 m/s (from 25°) for about a second.
+- **Where:** thin backwash (0.3–0.4 m over 2.1–2.4 m) runs down the ledge, seaward of where its jets left the crest, so outside the plunge zone by design. Each draining cell's dispersion switches off as it thins.
+- **Not systematic:** seeds 4–6 stay at 7.6–14.3 m/s, on main and on Part C (Part C lower in 4 of 6).
+- **The guard:** those two probes now guard against a runaway at 30 m/s, as the low-tide one does.
+- **The fix, split out:** a hold on the depth switch, so a draining cell doesn't flip.
+
+### Open
+
+- **The lab profile** (`Profile_Teahupoo.txt`): the lagoon's depth and the flat's width wait for the user's approval to download it.
+- **Fewer take-off cues** on Practice (18 against 7).
+- **A hold on the dispersion switch** in draining cells (split out), to bring the two probes back to 20 m/s.
+- **A ~21 m/s peak at the −x open edge far offshore** (Hs 3 m at the edge, 18 s, tide +1, seed 3, the default grid, t ≈ 95 s), found by the plunge-zone session. It occurs with or without that fix, and it isn't a landing: one for the edge treatments.
+- **The tube's look** (glow, spit, one section collapsing): with the swept overturn surface. **The step and coral:** with the coral textures.
+
 ## Commands
 
 - `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "steep Reef holds"`
@@ -371,3 +456,4 @@ Per throw, from the same runs:
 - `npm run report:rideability -- --spots reef --hs 1.3 --tp 15 --direction <dir> --spread 0.2 --seeds 2 --periods 12 --reef angle=<angle>`
 - `npm run report:catch -- --practice --ghosts --spots reef --seeds 2 --minutes 3` (baseline, in the `origin/main` worktree)
 - Part B: `npm run report:tubes -- --practice --spots reef --seeds 2 --periods 12`, `npm run report:tubes -- --spots reef --seeds 2 --periods 12`, `npm run report:tubes -- --spots beach,point,canyon --seeds 1 --periods 6` and `npm run report:whitewater -- --spots reef --periods 4`, here and in a detached `aa71add` worktree (the other spots' and whitewater runs predate the final review's gradient fix, which acts only on reef breaks)
+- Part C: a one-off game-size probe (the simulation stepped 45 s, the fastest water with depth over 5 cm recorded), here and in a detached `origin/main` worktree; `npm run report:rideability -- --spots reef --hs 1.3 --tp 15 --direction 20 --spread 0.2 --seeds 2 --periods 12` and `npm run report:catch -- --practice --ghosts --spots reef --seeds 2 --minutes 3`, both sides

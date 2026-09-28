@@ -3,6 +3,7 @@ import { sampleSurfaceNormal } from '../scene/WaterSurface';
 import { waveNumber } from '../wave/dispersion';
 import { ShallowWaterSolver, uniformEdges } from '../wave/ShallowWaterSolver';
 import { SurfZoneSimulation, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { reefCrestZ } from '../wave/Bathymetry';
 import { SEAWATER_DENSITY, PhysicalSurfWater, catmullRomWeights } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
 
@@ -257,4 +258,21 @@ describe('PhysicalSurfWater\'s turbulence', () => {
     const flow = water.sampleAt(0.2, surface - 0.1, 0.3, out).flowX;
     expect(flow).toBeCloseTo(clear.sampleAt(0.2, surface - 0.1, 0.3, out).flowX, 12);
   });
+  it('gives each sample its bed\'s normal and material: reef on the Reef\'s ledge, sand elsewhere', () => {
+    const simulation = new SurfZoneSimulation({ ...config, spot: 'reef' });
+    const water = PhysicalSurfWater.forSimulation(simulation);
+    const x = -10;
+    const z = reefCrestZ(x) - 4; // on the ledge, seaward of the crest
+    const sample = water.sampleAt(x, -1, z, createWaterSample());
+    const step = 0.5;
+    const gx = (simulation.bedAt(x + step, z) - simulation.bedAt(x - step, z)) / (2 * step);
+    const gz = (simulation.bedAt(x, z + step) - simulation.bedAt(x, z - step)) / (2 * step);
+    const norm = Math.hypot(gx, 1, gz);
+    expect(sample.bedNormalX).toBeCloseTo(-gx / norm, 2);
+    expect(sample.bedNormalY).toBeCloseTo(1 / norm, 2);
+    expect(sample.bedNormalZ).toBeCloseTo(-gz / norm, 2);
+    expect(sample.bedMaterial).toBe('reef');
+    const beach = PhysicalSurfWater.forSimulation(new SurfZoneSimulation({ ...config, spot: 'beach' }));
+    expect(beach.sampleAt(0, -1, -60, createWaterSample()).bedMaterial).toBe('sand');
+  }, 240_000);
 });

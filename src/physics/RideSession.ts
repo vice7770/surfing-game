@@ -10,6 +10,12 @@ import { createWaterSample, type SurfWater } from './SurfWater';
 import { SurfWaterBodyField } from './SurfWaterBodyField';
 
 /** What the player asks for in one step. */
+/**
+ * A separation within this long of the board striking reef is "Hit the reef", s (the Teahupo'o Reef, Part C; provisional):
+ * a strike that knocks a standing rider off balance ends in a fall 0.4–0.55 s later, after the rider tries to recover.
+ */
+export const REEF_STRIKE_WINDOW = 0.6;
+
 export interface RideInput {
   paddle: boolean;
   popUp: boolean;
@@ -169,11 +175,18 @@ export class RideSession {
   /** Let the rider go now, into the water. */
   separate(cause: RiderSeparation = 'balance'): void {
     this.rider.release(cause);
+    this.reefCause();
+  }
+
+  /** A separation that comes as the board strikes the reef is the reef's (Part C). */
+  private reefCause(): void {
+    if (this.board.reefStrikeAge <= REEF_STRIKE_WINDOW) this.rider.relabelSeparation('reef');
   }
 
   step(dt: number, water: SurfWater, input: RideInput): void {
     const { rider, board, surfer } = this;
     this.time += dt;
+    const wasAttached = rider.attached;
     if (rider.attached) {
       rider.paddle = input.paddle;
       rider.steer = input.steer;
@@ -212,6 +225,7 @@ export class RideSession {
       if ((input.popUp || input.reel) && this.recovery.state === 'free') this.recovery.tryGrab(board);
       if (this.recovery.state !== 'free' && this.recovery.step(dt, board) === 'prone-ready') this.climbOn();
     }
+    if (wasAttached && !rider.attached) this.reefCause();
   }
 
   /**
