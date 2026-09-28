@@ -418,6 +418,13 @@ export const FILM_SCENARIOS: readonly FilmScenario[] = [
     name: 'pumping', water: 'flat', seconds: 3, placement: { x: 0, z: 0, heading: 0, speed: 8, phase: 'standing' },
     input: (time) => ({ crouch: time >= 0.4 && time < 2.8 && Math.floor(time / 0.4) % 2 === 1 ? 1 : 0 }),
   },
+  {
+    name: 'pumping into a fall', water: 'flat', seconds: 2.5, placement: { x: 0, z: 0, heading: 0, speed: 8, phase: 'standing' },
+    input(time, session) {
+      if (once(time, 1.3) && session.rider.attached) session.separate('balance');
+      return { crouch: time >= 0.4 && Math.floor(time / 0.4) % 2 === 1 ? 1 : 0 };
+    },
+  },
   { name: 'chop', water: 'chop', seconds: 2.5, placement: { x: 0, z: 0, heading: 0, speed: 8, phase: 'standing' }, input: () => ({}) },
   {
     name: 'paddle then glide', water: 'flat', seconds: 30, placement: { x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' },

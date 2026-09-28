@@ -1,4 +1,5 @@
 import { Quaternion, Vector3, type Bone } from 'three';
+import { ArmSwing, armPendulum } from './armSwing';
 import { BONES, MIDDLE_FINGER, REQUIRED_BONES, type Side } from './humanoidBones';
 import { orientBone } from './orientBone';
 import { STANDING_PELVIS } from './posturePoints';
@@ -54,6 +55,16 @@ export const RIG_DETAIL = {
    * `snapSwing`° (the Bali camp: the trailing arm swung around).
    */
   arms: { share: 1, elevationTall: 40, elevationDeep: 55, elbow: 155, snapSwing: 100 },
+  /**
+   * Standing, a free hand swings with the body (step 4, `armSwing.ts`): a mass on
+   * a critically damped spring about its cued place, at the arm's own pendulum
+   * (Winter 2009's segments on the skeleton's arm, the hand taken as 0.74 of the
+   * forearm: Drillis & Contini's 0.108 H to 0.146 H), so the body's pump and
+   * turns leave it behind for a moment (Pontzer et al. 2009: the arms as passive
+   * mass dampers). `share` of it (0 in tests that hold the arms to their cues);
+   * within `most`° of the cued direction from the shoulder (provisional).
+   */
+  swing: { share: 1, most: 35 },
   /**
    * Standing, a clavicle follows its arm (step 3): lifting a `ratio` of the
    * arm's rise from the trunk's down above `from`° (the scapulohumeral rhythm,
@@ -271,6 +282,8 @@ export class HumanoidRig {
   /** How far back the pelvis goes per metre the upper body's swing brings it forward, this solve (fitted once). */
   private backPerSwing = 0;
   private readonly legKnee = new Vector3();
+  /** Standing, the free hands' swing (step 4). */
+  private readonly swing: ArmSwing;
   private readonly aimFrom = new Vector3();
   private readonly aimTo = new Vector3();
   private readonly handHint = new Vector3();
@@ -352,6 +365,7 @@ export class HumanoidRig {
     this.soleHeight = ankle.y;
     this.spineBase = world(BONES.spine[0]).distanceTo(hips);
     this.trunkLength = world(BONES.neck).distanceTo(world(BONES.spine[0]));
+    this.swing = new ArmSwing(armPendulum(this.upperArm, this.lowerArm, 0.74 * this.lowerArm), Math.PI);
     this.neckLength = world(BONES.head).distanceTo(world(BONES.neck));
     this.footDrop = ankle.y - ball.y;
     this.footRun = Math.hypot(ball.x - ankle.x, ball.z - ankle.z);
@@ -455,6 +469,11 @@ export class HumanoidRig {
       if (state.phase === 'standing') this.freeArm(state, side, shoulder, target, 1 - this.reachDepth(hand));
       if (state.phase === 'standing' && !this.isRearFoot(state, side)) this.leadArm(state, shoulder, target, 1 - this.reachDepth(hand));
       if (state.phase === 'standing') this.driveClavicle(state, side, shoulder, target, chestUp, 1 - this.reachDepth(hand));
+      // A free hand swings with the body; one on a point keeps it, and lying, pushing or fallen the swing rests.
+      if (state.phase === 'standing') {
+        const free = RIG_DETAIL.swing.share * state.standingBlend * (1 - this.reachDepth(hand));
+        this.swing.follow(side, shoulder, target, free, state.clock, (RIG_DETAIL.swing.most * Math.PI) / 180);
+      } else this.swing.still(side, shoulder, state.clock);
       solveTwoBone(shoulder, this.upperArm, this.lowerArm, target, pole, this.joints.elbow[side], this.joints.wrist[side]);
       this.aimLimb(BONES.arm[side], BONES.foreArm[side], shoulder, this.joints.elbow[side], this.joints.wrist[side], pole);
       // The hand's back toward the deck's normal, turning to the chest's facing as the forearm comes along the normal
@@ -658,6 +677,7 @@ export class HumanoidRig {
     this.hingeClock = Number.NaN;
     this.hingeAngle = 0;
     this.armClock = Number.NaN;
+    this.swing.reset();
     this.armTurn = 0;
   }
 

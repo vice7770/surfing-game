@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { Quaternion, Vector3, type Bone } from 'three';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { STANCE_RECIPES, drawnRecipe, type StanceRecipe } from '../../dev/ridingPoses';
 import { readGlbSkeleton } from './glbSkeleton';
 import { BONES } from './humanoidBones';
-import { HumanoidRig } from './HumanoidRig';
+import { HumanoidRig, RIG_DETAIL } from './HumanoidRig';
 import { PosedBody } from './posedBody';
 import { POINT, type RiderVisualState } from './riderVisualState';
 import { StanceGauge, type StanceAngles } from './stanceGauge';
@@ -111,6 +111,102 @@ describe('the stance poses through a motion (step 3\'s final review)', () => {
         }
       });
       expect(fastest, side).toBeLessThan(20);
+    }
+  }, 240_000);
+});
+
+/** Pearson's correlation of two series of the same length. */
+function correlation(a: readonly number[], b: readonly number[]): number {
+  const mean = (values: readonly number[]) => values.reduce((sum, value) => sum + value, 0) / values.length;
+  const [am, bm] = [mean(a), mean(b)];
+  let covariance = 0;
+  let av = 0;
+  let bv = 0;
+  a.forEach((value, i) => {
+    covariance += (value - am) * (b[i] - bm);
+    av += (value - am) ** 2;
+    bv += (b[i] - bm) ** 2;
+  });
+  return covariance / Math.sqrt(av * bv);
+}
+
+describe('the arms swing with the body (step 4; Pontzer et al. 2009)', () => {
+  const saved = RIG_DETAIL.swing.share;
+  afterEach(() => { RIG_DETAIL.swing.share = saved; });
+  const pump: StanceRecipe = {
+    ...STANCE_RECIPES['pump-compression'],
+    controls: [{ at: 0.4, crouch: 1 }, { at: 0.8, crouch: 0 }, { at: 1.2, crouch: 1 }, { at: 1.6, crouch: 0 }, { at: 2.0, crouch: 1 }, { at: 2.4, crouch: 0 }],
+    seconds: 2.8,
+  };
+  /** Each free hand's height about its shoulder and the shoulder's rising speed, and the hands' places, through `recipe`. */
+  const hands = (recipe: StanceRecipe, side: 'regular' | 'goofy', from: number) => {
+    const offsets: number[] = [];
+    const rises: number[] = [];
+    const places: Vector3[] = [];
+    const last = new Map<string, { at: Vector3; clock: number }>();
+    follow(recipe, side, ({ state, bones }) => {
+      for (const hand of ['left', 'right'] as const) {
+        const shoulder = world(bones, BONES.arm[hand]);
+        const before = last.get(hand);
+        if (before && state.clock >= from && state.clock > before.clock) {
+          offsets.push(world(bones, BONES.hand[hand]).y - shoulder.y);
+          rises.push((shoulder.y - before.at.y) / (state.clock - before.clock));
+          places.push(world(bones, BONES.hand[hand]));
+        }
+        last.set(hand, { at: shoulder, clock: state.clock });
+      }
+    });
+    return { offsets, rises, places };
+  };
+
+  it('trails the free hands below their shoulders as the body rises in a pump, and above as it drops', () => {
+    for (const side of ['regular', 'goofy'] as const) {
+      const { offsets, rises } = hands(pump, side, 0.6);
+      expect(correlation(offsets, rises), side).toBeLessThan(-0.5);
+    }
+  }, 240_000);
+
+  it('swings them a few centimetres, and lets them settle riding straight', () => {
+    for (const side of ['regular', 'goofy'] as const) {
+      const swung = hands(pump, side, 0.6).places;
+      RIG_DETAIL.swing.share = 0;
+      const held = hands(pump, side, 0.6).places;
+      RIG_DETAIL.swing.share = saved;
+      const rms = Math.sqrt(swung.reduce((sum, place, i) => sum + place.distanceToSquared(held[i]), 0) / swung.length);
+      expect(rms, side).toBeGreaterThan(0.02);
+      expect(rms, side).toBeLessThan(0.15);
+    }
+    const straight: StanceRecipe = { ...STANCE_RECIPES.trim, seconds: 2 };
+    const settled = hands(straight, 'regular', 1.9).places;
+    RIG_DETAIL.swing.share = 0;
+    const still = hands(straight, 'regular', 1.9).places;
+    settled.forEach((place, i) => expect(place.distanceTo(still[i])).toBeLessThan(0.01));
+  }, 240_000);
+
+  it('never moves a hand in the water or the face off where the rig holds it', () => {
+    for (const id of ['compress-frontside', 'hand-in-face']) {
+      for (const side of ['regular', 'goofy'] as const) {
+        /**
+         * The lower hand's place as the rig solves it (the smoothing layer blends a handover's speed as it always has),
+         * in each frame where the rig holds it to its point: past the reach's fade below the hips (step 3).
+         */
+        const anchored = () => {
+          const places: Vector3[] = [];
+          follow({ ...STANCE_RECIPES[id], seconds: STANCE_RECIPES[id].seconds + 0.5 }, side, ({ state, plain }) => {
+            const lower = state.points[POINT.leftHand].y < state.points[POINT.rightHand].y ? 'left' : 'right';
+            const point = state.points[lower === 'left' ? POINT.leftHand : POINT.rightHand];
+            if (world(plain, BONES.hips).y - point.y >= RIG_DETAIL.reachFade) places.push(world(plain, BONES.hand[lower]));
+          });
+          return places;
+        };
+        const swung = anchored();
+        RIG_DETAIL.swing.share = 0;
+        const held = anchored();
+        RIG_DETAIL.swing.share = saved;
+        expect(swung.length, `${id} ${side}: frames with the hand on its point`).toBeGreaterThan(10);
+        expect(swung.length, `${id} ${side}`).toBe(held.length);
+        swung.forEach((place, i) => expect(place.distanceTo(held[i]), `${id} ${side}`).toBeLessThan(0.01));
+      }
     }
   }, 240_000);
 });

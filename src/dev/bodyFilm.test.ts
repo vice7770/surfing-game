@@ -1,5 +1,6 @@
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
 import {
   ChopWater, FILM_JOINT, FILM_SCENARIOS, breathing, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, posed, repeatedFrames, rigAlone, shake, switchSpeeds,
   switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame,
@@ -35,7 +36,7 @@ describe('the body film', () => {
       }
     }
   };
-  it.each(['pop-up and landing', 'pop-up crouched', 'compress mid-turn, the hand reaching', 'a fall'])('blends the switches of %s out', blendsOut);
+  it.each(['pop-up and landing', 'pop-up crouched', 'compress mid-turn, the hand reaching', 'a fall', 'pumping into a fall'])('blends the switches of %s out', blendsOut);
   // Lying down, its switches blend out (the frames about each are smooth), but 0.23 s into the lie-down the left knee
   // swings through at up to 10 m/s (3.3 m/s over its neighbours, 3.8 at 120 Hz): the leg's pole jumps from the
   // standing one to the lying one at the switch, and the knee turns over only as the leg straightens. The rig's poles
@@ -212,5 +213,47 @@ describe('the body film\'s secondary-motion measures (step 4)', () => {
       const shot = filmBody(scenario(name), { rate: 30 });
       expect(shot.frames.some((frame) => frame.switched && frame.phase === 'fallen'), name).toBe(false);
     }
+  }, 240_000);
+});
+
+describe('the swing at any display rate (step 4)', () => {
+  /** Each free hand's place about its shoulder, on the board, at each of the film's frames. */
+  const offsets = (shot: BodyFilm) => shot.frames.map((frame) => (['left', 'right'] as const).map(
+    (side) => frame.joints[FILM_JOINT.hand[side]].clone().sub(frame.joints[FILM_JOINT.shoulder[side]]),
+  ));
+
+  it('swings the hands as much at 30, 60 and 120 Hz through a pump', () => {
+    // The swing's own part (the hands swung less the hands held to their cues): the drawn moments themselves differ
+    // a little from rate to rate (4 cm with no swing), which is not the swing's.
+    const swingAt = (rate: number) => {
+      const swung = offsets(filmBody(scenario('pumping'), { rate, drawer: trackDrawer, pose: posed() }));
+      RIG_DETAIL.swing.share = 0;
+      const held = offsets(filmBody(scenario('pumping'), { rate, drawer: trackDrawer, pose: posed() }));
+      RIG_DETAIL.swing.share = 1;
+      return swung.map((hands, i) => hands.map((hand, side) => hand.clone().sub(held[i][side])));
+    };
+    // Its size at each rate, from 0.5 s (the track's first frames show slightly different moments at each rate). The
+    // swing's step is exact at any rate for the same motion (armSwing.test.ts); the drawn body's own motion differs a
+    // little from rate to rate (4 cm with no swing), and the swing follows it.
+    const size = (swing: Vector3[][], rate: number) => {
+      const kept = swing.slice(Math.round(0.5 * rate)).flat();
+      return Math.sqrt(kept.reduce((sum, hand) => sum + hand.lengthSq(), 0) / kept.length);
+    };
+    const fast = size(swingAt(120), 120);
+    expect(fast).toBeGreaterThan(0.01);
+    for (const rate of [30, 60]) expect(Math.abs(size(swingAt(rate), rate) / fast - 1), `${rate} Hz`).toBeLessThan(0.2);
+  }, 240_000);
+
+  it('swings them smoothly from snapshots batched by three (an online surfer)', () => {
+    // The hands' acceleration about the shoulders, frame to frame: batched snapshots must not jerk them.
+    const jerk = (delivery: number) => {
+      const hands = offsets(filmBody(scenario('pumping'), { rate: 60, delivery, drawer: trackDrawer, pose: posed() }));
+      let most = 0;
+      for (let i = 2; i < hands.length; i += 1) {
+        for (const side of [0, 1]) most = Math.max(most, hands[i][side].clone().sub(hands[i - 1][side]).sub(hands[i - 1][side].clone().sub(hands[i - 2][side])).length() * 3600);
+      }
+      return most;
+    };
+    expect(jerk(3)).toBeLessThan(1.5 * jerk(1));
   }, 240_000);
 });
