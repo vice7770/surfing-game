@@ -8,7 +8,7 @@
  */
 import { writeFileSync } from 'node:fs';
 import {
-  FILM_SCENARIOS, drawnLag, filmBody, latestDrawer, repeatedFrames, rigAlone, shake, switchSpeeds, trackDrawer, unevenness,
+  FILM_SCENARIOS, drawnLag, filmBody, latestDrawer, posed, repeatedFrames, rigAlone, shake, switchSpeeds, switchSpikes, trackDrawer, unevenness,
   type BodyFilm, type FilmOptions,
 } from '../src/dev/bodyFilm';
 
@@ -23,6 +23,7 @@ const started = Date.now();
 const PIPELINES: { name: string; options: Omit<FilmOptions, 'rate' | 'delivery'> }[] = [
   { name: 'today (the newest snapshot, the rig alone)', options: { drawer: latestDrawer, pose: rigAlone } },
   { name: 'blended between physics steps', options: { drawer: trackDrawer, pose: rigAlone } },
+  { name: 'and the switches blended out (the points, then the bones)', options: { drawer: trackDrawer, pose: posed() } },
 ];
 
 const scenario = (name: string) => FILM_SCENARIOS.find((candidate) => candidate.name === name)!;
@@ -35,16 +36,17 @@ for (const { name, options } of PIPELINES) {
   const pops: string[] = [];
   for (const scene of ['pop-up and landing', 'compress mid-turn, the hand reaching', 'rail change', 'lying back down', 'a fall']) {
     const film = filmBody(scenario(scene), { ...options, rate: 60 });
-    for (const speed of switchSpeeds(film)) {
-      pops.push(`| ${scene} | ${fixed(speed.time, 2)} s | ${speed.phase} | ${fixed(speed.jointSpeed, 1)} | ${fixed(speed.rotationSpeed, 1)} |`);
-    }
+    const spikes = switchSpikes(film);
+    switchSpeeds(film).forEach((speed, i) => {
+      pops.push(`| ${scene} | ${fixed(speed.time, 2)} s | ${speed.phase} | ${fixed(spikes[i].jointSpeed, 1)} | ${fixed(spikes[i].rotationSpeed, 1)} | ${fixed(speed.jointSpeed, 1)} | ${fixed(speed.rotationSpeed, 1)} |`);
+    });
   }
   const repeated = repeatedFrames(filmBody(scenario('straight'), { ...options, rate: 120 }));
   const uneven = unevenness(filmBody(scenario('straight'), { ...options, rate: 60, delivery: 3 }));
   const evenly = unevenness(filmBody(scenario('straight'), { ...options, rate: 60 }));
   const compressed = filmBody(scenario('compress mid-turn, the hand reaching'), { ...options, rate: 120 });
-  const carve = shake({ rate: compressed.rate, frames: compressed.frames.filter((frame) => frame.time >= 1 && frame.time < 1.8) });
-  const jitter = shake({ rate: compressed.rate, frames: compressed.frames.filter((frame) => frame.time >= 1 && frame.time < 1.8) }, 4, 30);
+  const carve = shake({ rate: compressed.rate, frames: compressed.frames.filter((frame) => frame.time >= 1.3 && frame.time < 1.9) });
+  const jitter = shake({ rate: compressed.rate, frames: compressed.frames.filter((frame) => frame.time >= 1.3 && frame.time < 1.9) }, 4, 30);
   const straight = shake(after(filmBody(scenario('straight'), { ...options, rate: 120 }), 0.5));
   const lag = drawnLag(filmBody(scenario('weave'), { ...options, rate: 120 }));
   sections.push(`## ${name}
@@ -54,15 +56,15 @@ for (const { name, options } of PIPELINES) {
 | Frames drawn again at 120 Hz, riding straight | ${fixed(100 * repeated, 0)} % |
 | The board's travel unevenness, snapshots every step (60 Hz) | ${fixed(evenly, 2)} |
 | The same, snapshots batched by 3 (a late worker) | ${fixed(uneven, 2)} |
-| Chest roll in the wobble band (1.5–4 Hz), compressed mid-turn at 10 m/s | ${fixed(degrees(carve), 2)}° RMS |
+| Chest roll in the wobble band (1.5–4 Hz), compressed mid-turn at 10 m/s (steady, 1.3–1.9 s) | ${fixed(degrees(carve), 2)}° RMS |
 | Chest roll above it (4–30 Hz): jitter | ${fixed(degrees(jitter), 2)}° RMS |
 | The same, riding straight at 7 m/s | ${fixed(degrees(straight), 2)}° RMS |
 | The drawn chest's lag behind the physics (weaving at 8 m/s) | ${fixed(1000 * lag, 0)} ms |
 
-At each switch (60 Hz), the fastest drawn joint against the board (about the hips when fallen) and the fastest turning bone, within 0.3 s:
+At each switch (60 Hz), within 0.3 s: the largest one-frame spike of a joint (against the board, about the hips when fallen) and of a bone over the median of the three frames either side (a pop), and the fastest joint and bone (the physics' own transitions included):
 
-| Scenario | At | Phase | Joint m/s | Bone rad/s |
-|---|---:|---|---:|---:|
+| Scenario | At | Phase | Joint spike m/s | Bone spike rad/s | Fastest joint m/s | Fastest bone rad/s |
+|---|---:|---|---:|---:|---:|---:|
 ${pops.join('\n')}
 `);
 }

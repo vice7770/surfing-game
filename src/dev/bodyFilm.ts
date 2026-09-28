@@ -4,6 +4,7 @@ import { PlaneWater } from '../physics/PlaneWater';
 import { RideSession, type RideInput, type RiderPlacement } from '../physics/RideSession';
 import type { SurfWater } from '../physics/SurfWater';
 import { HumanoidRig } from '../scene/rig/HumanoidRig';
+import { PosedBody, type PosedBodyOptions } from '../scene/rig/posedBody';
 import { BONES, type Side } from '../scene/rig/humanoidBones';
 import { RiderMotion } from '../scene/rig/riderMotion';
 import { createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
@@ -91,6 +92,51 @@ export function switchSpeeds(film: BodyFilm, window = 0.3): SwitchSpeed[] {
     speeds.push({ time: frame.time, phase: frame.phase, jointSpeed, rotationSpeed });
   });
   return speeds;
+}
+
+/**
+ * At each switch, the largest one-frame spike within `window` s either side:
+ * a joint's (or bone's) speed in a frame over the median of its speeds in the
+ * three frames either side. A pop spikes; the physics' own transitions (a
+ * lie-down moving the feet at 6 m/s over 0.6 s) do not.
+ */
+export function switchSpikes(film: BodyFilm, window = 0.3): SwitchSpeed[] {
+  const { frames, rate } = film;
+  const reach = Math.round(window * rate);
+  // Every frame's speed of each joint and bone (against the board, or about the hips once fallen).
+  const joints = frames.map((now, t) => {
+    if (t === 0) return now.joints.map(() => 0);
+    const before = frames[t - 1];
+    const riding = !before.fallen && !now.fallen;
+    const [a, b] = riding ? [before.joints, now.joints] : [before.limbs, now.limbs];
+    return b.map((joint, j) => joint.distanceTo(a[j]) * rate);
+  });
+  const bones = frames.map((now, t) => {
+    if (t === 0) return now.bones.map(() => 0);
+    const before = frames[t - 1];
+    const riding = !before.fallen && !now.fallen;
+    const [a, b] = riding ? [before.bones, now.bones] : [before.worldBones, now.worldBones];
+    return b.map((bone, j) => angleBetween(bone, a[j]) * rate);
+  });
+  const spike = (series: number[][], t: number, j: number) => {
+    const around: number[] = [];
+    for (let k = t - 3; k <= t + 3; k += 1) if (k !== t && k >= 1 && k < series.length) around.push(series[k][j]);
+    around.sort((x, y) => x - y);
+    const median = around.length ? around[Math.floor(around.length / 2)] : 0;
+    return series[t][j] - median;
+  };
+  const spikes: SwitchSpeed[] = [];
+  frames.forEach((frame, index) => {
+    if (!frame.switched) return;
+    let jointSpeed = 0;
+    let rotationSpeed = 0;
+    for (let t = Math.max(1, index - reach); t <= Math.min(frames.length - 1, index + reach); t += 1) {
+      joints[t].forEach((_, j) => { jointSpeed = Math.max(jointSpeed, spike(joints, t, j)); });
+      bones[t].forEach((_, j) => { rotationSpeed = Math.max(rotationSpeed, spike(bones, t, j)); });
+    }
+    spikes.push({ time: frame.time, phase: frame.phase, jointSpeed, rotationSpeed });
+  });
+  return spikes;
 }
 
 /** The share of frames, while the rider moves, drawn with the hips exactly where the frame before drew them. */
@@ -295,6 +341,16 @@ export type FilmPose = (bones: Map<string, import('three').Bone>) => (state: Ret
 export const rigAlone: FilmPose = (bones) => {
   const rig = new HumanoidRig(bones);
   return (state) => rig.solve(state);
+};
+
+/** The page's posing (`PosedBody`: the rig and the smoothing layer), with its options. */
+export const posed = (options?: PosedBodyOptions): FilmPose => (bones) => {
+  const body = new PosedBody(bones, options);
+  const hips = bones.get(BONES.hips)!;
+  return (state) => {
+    body.update(state);
+    hips.updateMatrixWorld(true);
+  };
 };
 
 export interface FilmOptions {

@@ -1,6 +1,6 @@
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { FILM_SCENARIOS, drawnLag, filmBody, repeatedFrames, shake, switchSpeeds, unevenness, type BodyFilm, type FilmFrame } from './bodyFilm';
+import { FILM_SCENARIOS, drawnLag, filmBody, posed, repeatedFrames, shake, switchSpeeds, switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame } from './bodyFilm';
 
 const scenario = (name: string) => FILM_SCENARIOS.find((candidate) => candidate.name === name)!;
 
@@ -14,6 +14,42 @@ describe('the body film', () => {
     const fall = filmBody(scenario('a fall'), { rate: 60 });
     expect(fall.frames.some((frame) => frame.fallen)).toBe(true);
     expect(switchSpeeds(fall).some((speed) => speed.phase === 'fallen')).toBe(true);
+  });
+
+  // The plan, Task 3: a switch is blended out. It popped at 76–171 rad/s and up to 51 m/s in one frame (the baseline,
+  // docs/research/body-fluidity.md); blended, no joint or bone spikes in a frame above its neighbours by more than
+  // a brisk limb's pace within 0.3 s of it (the lie-down's drawn foot also hitched 5 cm mid-way: a point's jump).
+  // The physics' own transitions stay as fast as they are.
+  const blendsOut = (name: string) => {
+    for (const rate of [60, 120]) {
+      const raw = switchSpikes(filmBody(scenario(name), { rate }));
+      const spikes = switchSpikes(filmBody(scenario(name), { rate, drawer: trackDrawer, pose: posed() }));
+      expect(Math.max(...raw.map((spike) => spike.rotationSpeed))).toBeGreaterThan(20);
+      expect(spikes.length).toBeGreaterThan(0);
+      for (const spike of spikes) {
+        expect(spike.rotationSpeed, `${name} at ${spike.time.toFixed(2)} s, ${rate} Hz`).toBeLessThan(6);
+        expect(spike.jointSpeed, `${name} at ${spike.time.toFixed(2)} s, ${rate} Hz`).toBeLessThan(2);
+      }
+    }
+  };
+  it.each(['pop-up and landing', 'compress mid-turn, the hand reaching', 'a fall'])('blends the switches of %s out', blendsOut);
+  // Lying down, its switches blend out (the frames about each are smooth), but 0.23 s into the lie-down the left knee
+  // swings through at up to 10 m/s (3.3 m/s over its neighbours, 3.8 at 120 Hz): the leg's pole jumps from the
+  // standing one to the lying one at the switch, and the knee turns over only as the leg straightens. The rig's poles
+  // are the stance step's (step 3). Pinned, not tuned.
+  it.fails('blends the switches of lying back down out', () => blendsOut('lying back down'));
+
+  it('reads a one-frame pop as a spike, and a sustained fast motion as none', () => {
+    const pop = film(60, 60, (i, frame) => {
+      frame.joints[0].set(i === 30 ? 0.3 : 0, 0, 0);
+      frame.switched = i === 30;
+    });
+    expect(switchSpikes(pop)[0].jointSpeed).toBeCloseTo(18, 6);
+    const sweep = film(60, 60, (i, frame) => {
+      frame.joints[0].set(i * 0.1, 0, 0);
+      frame.switched = i === 30;
+    });
+    expect(switchSpikes(sweep)[0].jointSpeed).toBeCloseTo(0, 6);
   });
 
   it('draws the same pose twice at 120 Hz from 60 Hz snapshots, as the page does today', () => {

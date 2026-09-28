@@ -393,6 +393,34 @@ describe('the arms', () => {
     expect(aim(turning.rig, 'right', turning.state.points[POINT.rightHand].clone().sub(turning.rig.joints.shoulder.right))).toBeLessThan(3);
   });
 
+  // The riding-body plan, step 1: the bend switched on at once as the hand crossed the hips (the Compress hand's pop,
+  // 58° of chest in a frame), and its search stepped in twelfths of the angle (jitter).
+  it('bends continuously as a hand out of reach goes down past the hips', () => {
+    const { bones } = createTestHumanoid();
+    const rig = new HumanoidRig(bones);
+    const state = posturePoints('standing', 'regular', board, level, createRiderVisualState());
+    Object.assign(state, { yawRate: 0, speed: 7 });
+    rig.solve(state);
+    const shoulder = rig.joints.shoulder.right.clone();
+    const hipsY = bones.get(BONES.hips)!.getWorldPosition(new Vector3()).y;
+    const tail = new Vector3().subVectors(state.points[POINT.rightFoot], state.points[POINT.leftFoot]).setY(0).normalize();
+    const chest = bones.get(BONES.spine[2])!;
+    let previous: Quaternion | undefined;
+    let most = 0;
+    for (let drop = -0.1; drop <= 0.3 + 1e-9; drop += 0.01) {
+      // Out of the arm's reach, beside and behind the body, `drop` m below the hips.
+      const out = shoulder.clone().addScaledVector(tail, 0.5).setY(hipsY - drop);
+      out.add(new Vector3().subVectors(out, shoulder).setY(0).setLength(0.4));
+      state.points[POINT.rightHand].copy(out);
+      rig.solve(state);
+      const now = chest.getWorldQuaternion(new Quaternion());
+      if (previous) most = Math.max(most, (now.angleTo(previous) * 180) / Math.PI);
+      previous = now;
+    }
+    // Continuous: a large bend comes in over reachFade (about 6° a centimetre here), where it jumped 60°.
+    expect(most).toBeLessThan(10);
+  });
+
   it('bends toward a hand reaching down past the arm’s length, and reaches it', () => {
     let target = new Vector3();
     const { rig } = solved('regular', 0, (state, first) => {
