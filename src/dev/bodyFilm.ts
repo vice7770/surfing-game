@@ -350,15 +350,17 @@ export function breathing(film: BodyFilm, low = 0.15, high = 1): number {
 }
 
 /**
- * The balance cue (step 5): how the drawn hands' distance from their shoulders
- * follows the physics' alarm (1 − its balance reserve) over the standing
- * frames: the regression's slope, m per full alarm, and its correlation.
+ * The balance cue (step 5): how the drawn hands' height about their shoulders
+ * (in the world, the mean of the two) follows the physics' alarm (1 − its
+ * balance reserve) over the standing frames: the regression's slope, m per full
+ * alarm, and its correlation. The cue raises the arms toward outstretched; their
+ * height follows the elevation, where their span flattens near horizontal.
  */
 export function balanceCue(film: BodyFilm): { slope: number; correlation: number } {
   const frames = riding(film).filter((frame) => frame.phase === 'standing' && Number.isFinite(frame.balance));
   const alarm = frames.map((frame) => 1 - frame.balance);
   const spread = frames.map((frame) => (['left', 'right'] as const).reduce(
-    (sum, side) => sum + frame.joints[FILM_JOINT.hand[side]].distanceTo(frame.joints[FILM_JOINT.shoulder[side]]), 0,
+    (sum, side) => sum + frame.limbs[FILM_JOINT.hand[side]].y - frame.limbs[FILM_JOINT.shoulder[side]].y, 0,
   ) / 2);
   const mean = (values: number[]) => values.reduce((a, b) => a + b, 0) / values.length;
   const [am, sm] = [mean(alarm), mean(spread)];

@@ -3,7 +3,8 @@ import { ArmSwing, armPendulum } from './armSwing';
 import { Breathing } from './breathing';
 import { BONES, MIDDLE_FINGER, REQUIRED_BONES, type Side } from './humanoidBones';
 import { orientBone } from './orientBone';
-import { STANDING_PELVIS } from './posturePoints';
+import { ARM_ALARM, ARM_SPREAD } from '../../physics/AttachedRider';
+import { ARM_REST_OFFSET, STANDING_PELVIS } from './posturePoints';
 import { POINT, type RiderVisualState } from './riderVisualState';
 import { stanceBlend, weightBack, type StanceBlend } from './stanceBlend';
 import { solveTwoBone } from './twoBoneIk';
@@ -53,9 +54,14 @@ export const RIG_DETAIL = {
    * hands over their rails, quiet, 20–60°; Kerr's drop: the lead arm about 55°),
    * the elbow soft at `elbow`° (Kerr's drop: 150–160°), keeping the physics'
    * hand's heading about the trunk. In a snap the trailing arm swings up toward
-   * `snapSwing`° (the Bali camp: the trailing arm swung around).
+   * `snapSwing`° (the Bali camp: the trailing arm swung around). Losing balance
+   * (step 5), the free arms go out toward `alarmElevation`° and straighten toward
+   * `alarmElbow`° with the physics' alarm (`balanceAlarm`): outstretched arms
+   * steady a challenging stance (Patel et al. 2014, Neurosci Lett 579: 97–100),
+   * and restricting them impairs side-to-side balance (Objero et al. 2019, Gait
+   * Posture 74: 71–75). `alarmShare` of it (0 in tests that read the arms without it).
    */
-  arms: { share: 1, elevationTall: 40, elevationDeep: 55, elbow: 155, snapSwing: 100 },
+  arms: { share: 1, elevationTall: 40, elevationDeep: 55, elbow: 155, snapSwing: 100, alarmElevation: 90, alarmElbow: 175, alarmShare: 1 },
   /**
    * Standing, a free hand swings with the body (step 4, `armSwing.ts`): a mass on
    * a critically damped spring about its cued place, at the arm's own pendulum
@@ -269,6 +275,8 @@ export class HumanoidRig {
   private hingeClock = Number.NaN;
   /** Standing, the arms' share of the turn this solve, 0 to 1 (`armRate`), and at which clock. */
   private armTurn = 0;
+  /** Standing, how near the physics says the rider is to letting go, 0 (at ease) to 1, this solve (step 5). */
+  private alarm = 0;
   private armClock = Number.NaN;
   private readonly blend: StanceBlend = { stance: 'regular', depth: 0, turn: 0, back: 0 };
   /** The skeleton's trunk at rest: the hips bone to the spine's base, the spine's base to the neck, the neck to the head, m. */
@@ -470,6 +478,7 @@ export class HumanoidRig {
     else this.orient(BONES.head, chestUp, this.facing);
 
     this.followArmTurn(state);
+    this.alarm = state.phase === 'standing' ? RIG_DETAIL.arms.alarmShare * this.balanceAlarm(state) : 0;
     // 4. Arms.
     for (const side of SIDES) {
       const outward = this.scratch.copy(left).multiplyScalar(side === 'left' ? 1 : -1);
@@ -670,6 +679,21 @@ export class HumanoidRig {
     if (r < 1e-9 || (floor - c) / r >= 1) return Infinity;
     if (a + c <= floor && b <= 0) return most - Math.acos(Math.max(-1, Math.min(1, trunk.y)));
     return Math.atan2(b, a) + Math.acos(Math.max(-1, (floor - c) / r));
+  }
+
+  /**
+   * How near the physics says the rider is to letting go, 0–1, read back from
+   * its drawn hands (step 5): standing, the physics holds each free hand out from
+   * its torso by `ARM_SPREAD` of the arm's rest offset at ease and up to
+   * `ARM_ALARM` more with no margin left. The lesser of the two hands' readings
+   * (a hand the physics puts on a point reads anything). Online surfers send the
+   * same points: no wire change.
+   */
+  private balanceAlarm(state: RiderVisualState): number {
+    const torso = state.points[POINT.torso];
+    const read = (hand: Vector3) => (hand.distanceTo(torso) / ARM_REST_OFFSET - 1 - ARM_SPREAD) / ARM_ALARM;
+    const alarm = Math.min(read(state.points[POINT.leftHand]), read(state.points[POINT.rightHand]));
+    return Math.max(0, Math.min(1, alarm));
   }
 
   /**
@@ -879,7 +903,9 @@ export class HumanoidRig {
     if (weight <= 0) return;
     const raise = ((RIG_DETAIL.leadRaise + (RIG_DETAIL.snapRaise - RIG_DETAIL.leadRaise) * this.back) * Math.PI) / 180;
     const aim = this.pole2.copy(this.look).multiplyScalar(Math.cos(raise)).addScaledVector(WORLD_UP, Math.sin(raise)).normalize();
-    this.blendAim(shoulder, target, this.direction.copy(shoulder).addScaledVector(aim, RIG_DETAIL.leadReach * this.armLength), weight);
+    // Within the arm's reach, or the free arm's own where losing balance has straightened it (step 5).
+    const most = Math.max(RIG_DETAIL.armReach * this.armLength, this.scratch.subVectors(target, shoulder).length());
+    this.blendAim(shoulder, target, this.direction.copy(shoulder).addScaledVector(aim, RIG_DETAIL.leadReach * this.armLength), weight, most);
   }
 
   /**
@@ -887,10 +913,10 @@ export class HumanoidRig {
    * direction turned the short way and its reach eased, within the arm's reach
    * (a straight line between two targets passes inside it and folds the elbow).
    */
-  private blendAim(shoulder: Vector3, target: Vector3, toward: Vector3, weight: number): void {
+  private blendAim(shoulder: Vector3, target: Vector3, toward: Vector3, weight: number, most = RIG_DETAIL.armReach * this.armLength): void {
     const from = this.aimFrom.subVectors(target, shoulder);
     const to = this.aimTo.subVectors(toward, shoulder);
-    const reach = Math.min(RIG_DETAIL.armReach * this.armLength, from.length() + (to.length() - from.length()) * weight);
+    const reach = Math.min(most, from.length() + (to.length() - from.length()) * weight);
     const angle = from.angleTo(to);
     if (from.lengthSq() < 1e-12 || to.lengthSq() < 1e-12 || angle > Math.PI - 1e-3) {
       target.lerp(toward, weight);
@@ -956,12 +982,17 @@ export class HumanoidRig {
     let degrees = arms.elevationTall + (arms.elevationDeep - arms.elevationTall) * this.blend.depth;
     // In a snap the trailing arm swings up, as the weight goes back in the turn.
     if (this.isRearFoot(state, side)) degrees += (arms.snapSwing - degrees) * this.back * this.armTurn;
+    // Losing balance the arms go out, never lower than the turn has them.
+    degrees = Math.max(degrees, degrees + (arms.alarmElevation - degrees) * this.alarm);
+    const elbowDegrees = arms.elbow + (arms.alarmElbow - arms.elbow) * this.alarm;
     // The elevation is the upper arm's: the wrist aims above it by the soft elbow's half bend.
-    const elevation = ((degrees + (180 - arms.elbow) / 2) * Math.PI) / 180;
-    const elbow = (arms.elbow * Math.PI) / 180;
+    const elevation = ((degrees + (180 - elbowDegrees) / 2) * Math.PI) / 180;
+    const elbow = (elbowDegrees * Math.PI) / 180;
     const reach = Math.sqrt(this.upperArm ** 2 + this.lowerArm ** 2 - 2 * this.upperArm * this.lowerArm * Math.cos(elbow));
     const aim = this.direction.copy(down).multiplyScalar(Math.cos(elevation)).addScaledVector(out, Math.sin(elevation));
-    this.blendAim(shoulder, target, this.middle.copy(shoulder).addScaledVector(aim, reach), weight);
+    // Within the arm's reach at ease; losing balance, out to the straightening arm's own.
+    const most = RIG_DETAIL.armReach * this.armLength;
+    this.blendAim(shoulder, target, this.middle.copy(shoulder).addScaledVector(aim, reach), weight, most + Math.max(0, reach - most) * this.alarm);
   }
 
   /** Standing, the head along the board's travel led into the turn, within the neck's reach, pitched with the climb. */

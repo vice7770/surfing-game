@@ -289,23 +289,78 @@ describe('the drawn chest breathes (step 4)', () => {
 });
 
 describe('the balance cue\'s measure (step 5)', () => {
-  it('reads the drawn hands spreading 20 cm over the physics\' whole alarm as a slope of 0.2 m, fully correlated', () => {
-    const spread = film(30, 60, (i, frame) => {
+  it('reads the drawn hands rising 20 cm about their shoulders over the physics\' whole alarm as a slope of 0.2 m, fully correlated', () => {
+    // The cue raises the arms toward outstretched: the hands' height about the shoulders follows the elevation.
+    const rising = film(30, 60, (i, frame) => {
       const alarm = i / 59;
       frame.balance = 1 - alarm;
+      frame.limbs = Array.from({ length: 13 }, () => new Vector3());
       for (const side of ['left', 'right'] as const) {
-        frame.joints[FILM_JOINT.shoulder[side]].set(0, 1.4, 0);
-        frame.joints[FILM_JOINT.hand[side]].set(0.5 + 0.2 * alarm, 1.4, 0);
+        frame.limbs[FILM_JOINT.shoulder[side]].set(0, 0.5, 0);
+        frame.limbs[FILM_JOINT.hand[side]].set(0.4, 0.2 + 0.2 * alarm, 0);
       }
     });
-    const cue = balanceCue(spread);
+    const cue = balanceCue(rising);
     expect(cue.slope).toBeCloseTo(0.2, 6);
     expect(cue.correlation).toBeCloseTo(1, 6);
     const flat = film(30, 60, (i, frame) => {
       frame.balance = 1 - i / 59;
-      for (const side of ['left', 'right'] as const) frame.joints[FILM_JOINT.hand[side]].set(0.5, 0, 0);
+      frame.limbs = Array.from({ length: 13 }, () => new Vector3());
     });
     expect(balanceCue(flat).slope).toBeCloseTo(0, 6);
   });
+});
+
+describe('the balance cue on the drawn body (step 5; Patel et al. 2014, Objero et al. 2019)', () => {
+  it('raises the drawn arms as the physics\' balance runs out, through a weave', () => {
+    for (const rate of [30, 60]) {
+      const cue = balanceCue(filmBody(scenario('weave'), { rate, drawer: trackDrawer, pose: posed() }));
+      expect(cue.correlation, `${rate} Hz`).toBeGreaterThan(0.7);
+      expect(cue.slope, `${rate} Hz`).toBeGreaterThan(0.1);
+    }
+  }, 240_000);
+
+  it('takes the trailing arm the alarm\'s share of the way to outstretched, through a weave and a rail change', () => {
+    // The cue's own part: the same film with it on and off (the physics is the same), frame by frame. The arm goes
+    // from its pose toward 90° from the chest's down by the alarm; in a turn the leading arm is the turn's (Part B:
+    // reaching where the head looks, already out), and the film's surfer rides Regular: the right arm trails.
+    const elevation = (frame: FilmFrame) => {
+      const arm = frame.limbs[FILM_JOINT.hand.right].clone().sub(frame.limbs[FILM_JOINT.shoulder.right]);
+      return (arm.angleTo(new Vector3(0, -1, 0).applyQuaternion(frame.worldBones[1])) * 180) / Math.PI;
+    };
+    for (const name of ['weave', 'rail change']) {
+      for (const rate of [30, 60]) {
+        const on = filmBody(scenario(name), { rate, drawer: trackDrawer, pose: posed() });
+        RIG_DETAIL.arms.alarmShare = 0;
+        const off = filmBody(scenario(name), { rate, drawer: trackDrawer, pose: posed() });
+        RIG_DETAIL.arms.alarmShare = 1;
+        // The fraction of the way from the pose to outstretched, carried as a hand's height so balanceCue reads it
+        // against the alarm; from 0.5 s, past the stance's blend-in, and where the pose leaves room to rise.
+        const share: FilmFrame[] = [];
+        on.frames.forEach((frame, i) => {
+          const [swung, held] = [elevation(frame), elevation(off.frames[i])];
+          if (frame.time < 0.5 || held > 85) return;
+          const limbs = Array.from({ length: 13 }, () => new Vector3());
+          for (const side of ['left', 'right'] as const) limbs[FILM_JOINT.hand[side]].y = (swung - held) / (90 - held);
+          share.push({ ...frame, limbs });
+        });
+        const cue = balanceCue({ rate, frames: share });
+        expect(cue.correlation, `${name} at ${rate} Hz`).toBeGreaterThan(0.8);
+        expect(cue.slope, `${name} at ${rate} Hz: of the way per full alarm`).toBeGreaterThan(0.7);
+      }
+    }
+  }, 240_000);
+
+  it('spreads them smoothly from snapshots batched by three (an online surfer)', () => {
+    const jerk = (delivery: number) => {
+      const shot = filmBody(scenario('weave'), { rate: 60, delivery, drawer: trackDrawer, pose: posed() });
+      const riding = shot.frames.slice(0, Math.max(0, shot.frames.findIndex((frame) => frame.switched)) || undefined);
+      const span = riding.map((frame) => frame.joints[FILM_JOINT.hand.left].distanceTo(frame.joints[FILM_JOINT.hand.right]));
+      let most = 0;
+      for (let i = 2; i < span.length; i += 1) most = Math.max(most, Math.abs(span[i] - 2 * span[i - 1] + span[i - 2]) * 3600);
+      return most;
+    };
+    expect(jerk(3)).toBeLessThan(1.5 * jerk(1));
+  }, 240_000);
 });
 
