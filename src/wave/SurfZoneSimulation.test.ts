@@ -48,7 +48,10 @@ describe('SurfZoneSimulation', () => {
   it('takes a buoy height in deep water and shoals it to the tank\'s edge (wave sizes)', () => {
     const config: SurfZoneConfig = { ...small, spot: 'point', significantHeight: 2, peakPeriod: 12 };
     expect(edgeHeight(config)).toBeCloseTo(2 * shoalingCoefficient(12, OFFSHORE_DEPTH.point), 12);
-    expect(surfZoneSea(config).components[0].amplitude).toBeCloseTo(edgeHeight(config) / Math.sqrt(8 * small.componentCount!), 12);
+    // A 2 m, 12 s swell needs a deeper edge than the Point's 8 m (Schäffer's S): the sea is shoaled to the tank's edge.
+    const { edgeDepth } = tankLayout(config);
+    expect(edgeDepth).toBeGreaterThan(OFFSHORE_DEPTH.point);
+    expect(surfZoneSea(config).components[0].amplitude).toBeCloseTo(edgeHeight(config, edgeDepth) / Math.sqrt(8 * small.componentCount!), 12);
     // Practice gives its height at the edge, and the Canyon always takes its swell there: their seas stay as they were.
     expect(edgeHeight({ ...config, heightAt: 'edge' })).toBe(2);
     expect(edgeHeight({ ...config, spot: 'canyon' })).toBe(2);
