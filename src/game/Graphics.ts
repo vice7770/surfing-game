@@ -71,6 +71,15 @@ export interface ResolvedGraphics {
   textureCap: number;
 }
 
+/**
+ * The player's own surfer's detail (the riding-body plan, step 1): always the
+ * full body (the gameplay camera sits about 11 m off, past Medium's 8 m for the
+ * low-poly one), at the preset's textures. Online surfers keep the preset's.
+ */
+export function ownSurferDetail(resolved: ResolvedGraphics): { lodDistance: number; textureCap: number } {
+  return { lodDistance: Infinity, textureCap: resolved.textureCap };
+}
+
 /** The sharpest pixel ratio drawn at native density; beyond it the cost outweighs what shows. */
 const MAX_NATIVE_PIXEL_RATIO = 1.75;
 

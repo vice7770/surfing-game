@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defaultSettings, type Detection, type GraphicsSettings } from './Settings';
-import { BenchmarkRecorder, PRESETS, choosePreset, needsDetection, resolveGraphics, withAdvanced, withPreset } from './Graphics';
+import { BenchmarkRecorder, PRESETS, SURFER_DETAIL, choosePreset, needsDetection, ownSurferDetail, resolveGraphics, withAdvanced, withPreset } from './Graphics';
 
 const steady = (ms: number, n = 360) => Array.from({ length: n }, () => ms);
 
@@ -79,5 +79,15 @@ describe('graphics', () => {
     for (const preset of ['medium', 'high', 'ultra'] as const) expect(PRESETS[preset].waterLook).toBe('rich');
     expect(resolveGraphics({ preset: 'low', ...PRESETS.low }, undefined, 2).waterLook).toBe('classic');
     expect(resolveGraphics({ preset: 'high', ...PRESETS.high }, undefined, 2).waterLook).toBe('rich');
+  });
+
+  // The riding-body plan, step 1: the player's own surfer is always the full body (on Medium the camera's 11 m drew the
+  // low-poly one); online surfers keep the preset's distance.
+  it('draws your own surfer with the full body at every preset, at the preset\'s textures', () => {
+    for (const preset of ['low', 'medium', 'high', 'ultra'] as const) {
+      const resolved = resolveGraphics({ preset, ...PRESETS[preset] }, undefined, 2);
+      expect(ownSurferDetail(resolved)).toEqual({ lodDistance: Infinity, textureCap: SURFER_DETAIL[preset].textureCap });
+      expect(resolved.surferLodDistance).toBe(SURFER_DETAIL[preset].surferLodDistance);
+    }
   });
 });

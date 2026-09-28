@@ -573,6 +573,11 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
         - Snaps and cutbacks stall on the static lab face.
         - These are pinned with the deep U: the carve sheds its speed and bogs past its 48° bite.
         - The frontside reaching hand is drawn 6.6 cm short.
+    - the riding body, step 1: smoothing ([plan](docs/superpowers/plans/2026-09-28-body-smoothing.md), [findings](docs/superpowers/plans/2026-09-28-body-smoothing.md#findings), [body film](docs/research/body-fluidity.md), [web study](docs/research/body-animation-research.md)):
+      - the board, rider and camera are drawn between physics snapshots: no frame drawn twice at 120 Hz (50 % before), and a late worker's batches play out evenly;
+      - pops at a switch (the pop-up, the landing, Compress's hand, a fall) are blended out, on the board while riding: 21–51 m/s and 75–171 rad/s in one frame before, under 2 m/s and 6 rad/s now at 60 and 120 Hz (up to 3.1 m/s and 6.8 rad/s at 30 and 144 Hz), for 54 ms of lag (85 ms from a late worker); ordinary riding is drawn as the rig solves it at any rate;
+      - the reach bend fades in below the hips, which removes Compress's chest pop and its jitter (0.66 → 0.16°); your surfer draws on the full model at every preset;
+      - open: lying back down, the knee still swings through (step 3's poles). Next: step 2, the stance map, from the approved references.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
