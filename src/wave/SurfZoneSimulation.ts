@@ -1,4 +1,4 @@
-import { PADANG, REEF, createSpot, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
+import { PADANG, REEF, createSpot, padangReefAt, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
@@ -68,10 +68,11 @@ export interface SurfZoneConfig {
 export const ALONG_SHORE = 160;
 
 /**
- * Spots that always run stage 2 (the Teahupo'o Reef spec): shallow water steepens waves far too early
- * in the Reef's 30 m water, so a machine that cannot keep up runs it slower than real time instead.
+ * Spots that always run stage 2 (the Teahupo'o Reef and Padang Padang specs): shallow water steepens waves far
+ * too early in the Reef's 30 m water and under Padang Padang's 16–18 s swells, so a machine that cannot keep up
+ * runs them slower than real time instead.
  */
-export const STAGE_2_ONLY: readonly SpotName[] = ['reef'];
+export const STAGE_2_ONLY: readonly SpotName[] = ['reef', 'padang'];
 
 /** The solver stage a spot runs on: the asked one, or 2 where the spot needs it. */
 export function solverStage(spot: SpotName, stage: 1 | 2 | undefined): 1 | 2 {
@@ -145,6 +146,25 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
   if (config.spot === 'reef') {
     const zone = Math.max(TANK.zoneInner - TANK.offshore, ZONE_WAVELENGTHS * waveKinematics(config.peakPeriod, today.edgeDepth).wavelength);
     return { ...today, offshore: TANK.zoneInner - zone };
+  }
+  // Padang Padang's edge is its platform (the Padang Padang spec). Its 1:19 ramp is wide, so the fine zone starts
+  // SET_FINE_MARGIN seaward of where its sets first reach their breaker depth anywhere in the window (never deeper
+  // than 0.9 of the platform's water: a bigger swell breaks at the ramp's foot), and the zone absorbs its long waves.
+  if (config.spot === 'padang') {
+    const spot = createSpot('padang', config.seed);
+    const sets = Math.min(0.9 * (today.edgeDepth + config.tide), (SETS_OVER_TYPICAL * komarGaughan(config.significantHeight, config.peakPeriod)) / BREAKER_INDEX);
+    const reach = (config.alongShore ?? ALONG_SHORE) / 2;
+    let setBreak = TANK.fineFrom + SET_FINE_MARGIN;
+    for (let x = -reach; x <= reach; x += 5) {
+      let z = TANK.shore;
+      while (z > TANK_REACH && spot.depthAt(x, z) + config.tide < sets) z -= 1;
+      setBreak = Math.min(setBreak, z);
+    }
+    const fineFrom = Math.min(TANK.fineFrom, setBreak - SET_FINE_MARGIN);
+    const blend = TANK.blendEnd - TANK.zoneInner;
+    const zoneInner = fineFrom - 20 - blend;
+    const zone = Math.max(TANK.zoneInner - TANK.offshore, ZONE_WAVELENGTHS * waveKinematics(config.peakPeriod, today.edgeDepth).wavelength);
+    return { offshore: zoneInner - zone, zoneInner, blendEnd: zoneInner + blend, fineFrom, shore: TANK.shore, edgeDepth: today.edgeDepth };
   }
   const deepWavelength = (GRAVITY * config.peakPeriod ** 2) / (2 * Math.PI);
   const wanted = Math.max(today.edgeDepth, Math.min(EDGE_DEPTH_PER_HS * config.significantHeight, EDGE_DEPTH_MAX_WAVELENGTHS * deepWavelength));
@@ -233,7 +253,7 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
     componentCount: config.componentCount ?? SEA_COMPONENTS,
     depth: tank.edgeDepth + config.tide,
     bandwidth: config.bandwidth,
-  }, config.seed, deeper || config.spot === 'reef' ? madsenSorensenWaveNumber : shallowWaterWaveNumber);
+  }, config.seed, deeper || STAGE_2_ONLY.includes(config.spot) ? madsenSorensenWaveNumber : shallowWaterWaveNumber);
 }
 
 /**
@@ -391,8 +411,10 @@ export class SurfZoneSimulation {
     this.breaking = new BreakingModel(this.solver, { onset });
     this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     // The Reef's peel is its ledge's: breaks past it (the pass, the lagoon's beach face) are not its wave.
+    // Padang Padang's is its reef's, from the peak to the channel.
     const xCenters = this.solver.xCenters;
-    this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, config.spot === 'reef' ? (column) => reefLedgeAt(xCenters[column]) : undefined);
+    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : undefined;
+    this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver);
     this.foam = new FoamField(this.solver, config.foamDecay ?? FOAM_DECAY[config.spot]);

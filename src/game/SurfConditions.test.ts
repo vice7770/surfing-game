@@ -67,6 +67,11 @@ describe('surf conditions', () => {
   });
 
   // The Fast tier steps stage 1 on the CPU only because stage 1 has no GPU path; raised to stage 2, the Reef asks for the GPU.
+  it('lets Padang Padang ask for the GPU when it raises the Fast tier’s stage', () => {
+    expect(physicalSettingsFor('padang', DEFAULT_CONDITIONS, { stage: 1, compute: 'cpu' })).toMatchObject({ stage: 2, compute: 'auto' });
+    expect(physicalSettingsFor('padang', DEFAULT_CONDITIONS, { stage: 2, compute: 'cpu' })).toMatchObject({ stage: 2, compute: 'cpu' });
+  });
+
   it('lets the Reef ask for the GPU when it raises the Fast tier’s stage', () => {
     expect(physicalSettingsFor('reef', DEFAULT_CONDITIONS, { stage: 1, compute: 'cpu' })).toMatchObject({ stage: 2, compute: 'auto' });
     expect(physicalSettingsFor('reef', DEFAULT_CONDITIONS, { stage: 2, compute: 'cpu' })).toMatchObject({ stage: 2, compute: 'cpu' });
