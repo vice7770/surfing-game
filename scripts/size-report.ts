@@ -14,10 +14,10 @@
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { DEFAULT_PHYSICAL_SETTINGS, PRACTICE_SWELL, spreadingFor } from '../src/game/PhysicalMode';
-import type { SpotName } from '../src/wave/Bathymetry';
+import { createSpot, type SpotName } from '../src/wave/Bathymetry';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from '../src/wave/SurfMeter';
-import { SurfZoneSimulation, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
-import { SIZE_BAND_WIDTH, SIZE_EDGE_MARGIN, SIZE_GRID, SIZE_SEA_SECONDS, SMALL_DAY, sizeGates, sizeMarkdown, summariseRun, type SizeRun } from '../src/wave/sizeReport';
+import { SurfZoneSimulation, TAKE_OFF, edgeHeight, takeOffPoint, tankDepth, tankLayout, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
+import { SIZE_BAND_WIDTH, SIZE_EDGE_MARGIN, SIZE_GRID, SIZE_SEA_SECONDS, SMALL_DAY, sizeGates, sizeMarkdown, summariseRun, takeOffIndex, type SizeRun } from '../src/wave/sizeReport';
 import { fitForecast } from '../src/wave/surfForecast';
 
 const option = (name: string): string | undefined => {
@@ -89,7 +89,27 @@ for (const spot of spots) {
 }
 const read = (folder: string): SizeRun[] => (existsSync(folder) ? readdirSync(folder).filter((name) => name.endsWith('.json'))
   .flatMap((name) => JSON.parse(readFileSync(`${folder}/${name}`, 'utf8')) as SizeRun[]) : []);
-const all = read(directory);
+/** A run's sea, rebuilt from its record. */
+const configOf = (run: SizeRun): SurfZoneConfig => (run.source === 'practice'
+  ? { ...base(run.spot), ...PRACTICE_SWELL, heightAt: 'edge' }
+  : { ...base(run.spot), significantHeight: run.significantHeight, peakPeriod: run.period, heightAt: run.heightAt });
+// A take-off is a pure function of its sea and doesn't change the water, so the report places it with the current
+// code: a refitted TAKE_OFF_INDEX re-gates the stored runs without rerunning them. Centre take-offs only: their x,
+// where the take-off band measured, never moves.
+const all = read(directory).map((run) => (TAKE_OFF[run.spot] === 'centre' ? { ...run, takeOffZ: takeOffPoint(configOf(run)).z } : run));
+// The breaker index that seats each Beach and Point take-off where its sets broke; the median is TAKE_OFF_INDEX.
+for (const spot of ['beach', 'point'] as const) {
+  const indices = all.filter((run) => run.spot === spot && Number.isFinite(run.setBreakZ)).map((run) => {
+    const config = configOf(run);
+    const tank = tankLayout(config);
+    const depth = tankDepth(createSpot(spot, config.seed), tank.edgeDepth, 0, run.setBreakZ, tank) + config.tide;
+    return takeOffIndex(edgeHeight(config, tank.edgeDepth), tank.edgeDepth + config.tide, depth);
+  }).sort((a, b) => a - b);
+  if (indices.length) {
+    const median = indices.length % 2 ? indices[(indices.length - 1) / 2] : (indices[indices.length / 2 - 1] + indices[indices.length / 2]) / 2;
+    console.log(`${spot} take-off index: median ${median.toFixed(3)} (${indices.length} runs, ${indices[0].toFixed(2)}–${indices.at(-1)!.toFixed(2)})`);
+  }
+}
 for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
   const runs = all.filter((run) => run.spot === spot);
   // The forecast reads a buoy's deep-water height (the Canyon's is taken at its edge), at the take-off, where the readout measures.

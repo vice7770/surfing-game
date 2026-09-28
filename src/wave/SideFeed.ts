@@ -10,13 +10,16 @@ import { transformedSea } from './warmStart';
  * within 150 m. The outer `width` m of each side now relax toward the incoming
  * sea, shoaled and refracted over the bed as the warm start fills it, from the
  * offshore zone's inner edge while the shoaled Hs stays under `breakingShare`
- * of the depth (outside the surf zone) and the bed no steeper than `maxSlope`
- * (where the warm start's mild-slope transform holds: a reef's steep edge
- * reflects), fading over `fade` m.
+ * of the depth and the bed no steeper than `maxSlope` (where the warm start's
+ * mild-slope transform holds: a reef's steep edge reflects), fading over
+ * `fade` m. The share is the warm start's depth-limited cap (McCowan γ): the
+ * feed reaches where the sets break, because a big day's outer surf zone is
+ * hundreds of metres wide and stopping outside it (at 0.45 h) let it drain
+ * (the user's decision, 2026-09-28).
  */
-export const SIDE_FEED = { width: 30, breakingShare: 0.45, fade: 40, maxSlope: 0.06 };
 /** The warm start's depth-limited cap on the fed sea (McCowan γ). */
 const GAMMA = 0.78;
+export const SIDE_FEED = { width: 30, breakingShare: GAMMA, fade: 40, maxSlope: 0.06 };
 
 /**
  * One side's strip. Its sea is the edge column's transform (per row: amplitude

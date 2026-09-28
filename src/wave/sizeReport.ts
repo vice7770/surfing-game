@@ -45,6 +45,15 @@ const median = (values: number[]) => {
   return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
 };
 
+/**
+ * The breaker index γ that seats a take-off at still depth `breakDepth`, where a run's sets broke: the inverse of
+ * breakerDepthFor, h_b = (Hs·D^¼/γ)^⅘, for the edge height Hs over the edge depth D. The size report's median of it
+ * per spot is TAKE_OFF_INDEX (the take-off refit on every tank).
+ */
+export function takeOffIndex(edgeHeight: number, edgeDepth: number, breakDepth: number): number {
+  return (edgeHeight * Math.pow(edgeDepth, 0.25)) / Math.pow(breakDepth, 1.25);
+}
+
 /** A run's faces (every band) and its take-off's sets. */
 export function summariseRun(
   input: Omit<SizeRun, 'typical' | 'sets' | 'waves' | 'setBreakZ' | 'takeOffTypical' | 'takeOffSets' | 'takeOffWaves'>,

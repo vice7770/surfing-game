@@ -5,7 +5,7 @@ import { SeaStateBoundary } from './SeaStateBoundary';
 import { calmTarget } from './shallowWaterTestSupport';
 import { uniformEdges, type WaterTarget } from './ShallowWaterSolver';
 import { surfZoneSea, type SurfZoneConfig } from './SurfZoneSimulation';
-import { warmStart } from './warmStart';
+import { transformedSea, warmStart } from './warmStart';
 
 /** The game's directional sea: Hs 3 m at the edge, 14 s, spread 12, 10° (the wave-sizes spec's Part B debugging). */
 const config: SurfZoneConfig = {
@@ -24,7 +24,7 @@ function tank(shallowest = 4, width = 160) {
 }
 
 describe('the side feed (wave sizes)', () => {
-  it('weights only the outer strips, from the offshore zone to outside the surf zone, strongest at the edge', () => {
+  it('weights only the outer strips, from the offshore zone to where the sets break, strongest at the edge', () => {
     // A bed reaching 1 m, so the shoaled sea passes the breaking share before the shore.
     const solver = new BoussinesqSolver(
       { nx: 80, xMin: -80, dx: 2, zEdges: uniformEdges(-460, 400, 430), xBoundary: 'open' },
@@ -44,6 +44,24 @@ describe('the side feed (wave sizes)', () => {
       const depth = solver.restLevel - solver.bed[iz * nx];
       if (depth < (4 * 3) / (4 * SIDE_FEED.breakingShare) - 1) expect(feed.weights[iz * nx]).toBe(0);
     }
+  });
+
+  it('feeds a big day\'s outer surf zone, until the shoaled Hs reaches the warm start\'s 0.78 h cap (the user\'s decision, 2026-09-28)', () => {
+    const solver = new BoussinesqSolver(
+      { nx: 80, xMin: -80, dx: 2, zEdges: uniformEdges(-460, 400, 430), xBoundary: 'open' },
+      (_x, z) => (z < zoneInner ? sea.depth : Math.max(1, sea.depth - (z - zoneInner) / 80)), { manning: 0, breaking: false },
+    );
+    const feed = new SideFeed(solver, sea, { referenceZ: zoneInner, timeOffset: 0 });
+    const shares: { iz: number; share: number }[] = [];
+    transformedSea(solver, sea, zoneInner, 0, 0.78, (iz, row) => {
+      if (solver.zCenters[iz] > zoneInner && row.depth > 0) shares.push({ iz, share: row.hs / row.depth });
+    });
+    // Past the old 0.45 h stop, where a big day's biggest sets are already breaking, the edge column is still fed …
+    const outer = shares.find(({ share }) => share >= 0.6)!;
+    expect(feed.weights[outer.iz * solver.nx]).toBeGreaterThan(0);
+    // … and from the cap inward it is not.
+    const capped = shares.find(({ share }) => share >= 0.78)!;
+    for (const { iz } of shares.filter(({ iz }) => iz >= capped.iz)) expect(feed.weights[iz * solver.nx]).toBe(0);
   });
 
   it('leaves the middle half of a narrow window free, and a 160 m window its middle 100 m', () => {
