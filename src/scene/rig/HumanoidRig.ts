@@ -25,7 +25,7 @@ interface Rest {
  * direction from surf photography, not measured). Angles in degrees.
  */
 export const RIG_DETAIL = {
-  /** The hips and chest turn from the toe side toward the nose while upright. */
+  /** The hips and chest turn from the toe side toward the nose while upright, less as the weight goes back. */
   hipsTurn: 10,
   chestTurn: 25,
   /** The front foot turns toward the nose more than the rear foot. */
@@ -108,9 +108,10 @@ export const RIG_DETAIL = {
    * Standing, the head looks where the board goes: along its travel, led into a
    * turn by the turn over `lookAhead`, s, within `neckTurn` of the chest, and
    * pitched down the face or up it by the climb against the speed, within
-   * `lookPitch` (de Sousa 2022: the head toward the lip in the bottom turn).
+   * `lookPitch` (de Sousa 2022: the head toward the lip in the bottom turn; the
+   * stance map: 0.4 s left it at 75° from the toes in Compress, the lip within 70°).
    */
-  lookAhead: 0.4,
+  lookAhead: 0.6,
   neckTurn: 80,
   lookPitch: 30,
   /**
@@ -143,9 +144,10 @@ export const RIG_DETAIL = {
    * rotating, the chest and the leading arm toward the lip; the stances spec's
    * video). With the weight back (`stanceBlend.ts`'s `weightBack`), in a turn,
    * blended in as the leading arm is, the chest turns up to `snapTwist`° further
-   * into it and the leading arm rises to `snapRaise`°.
+   * into it (30° left the backside snap's chest facing the toes: the stance map,
+   * Hobgood) and the leading arm rises to `snapRaise`°.
    */
-  snapTwist: 30,
+  snapTwist: 45,
   snapRaise: 60,
   /**
    * The wipeout spec. Ducking, the head tucks down toward the deck and the arms
@@ -339,14 +341,17 @@ export class HumanoidRig {
     else forward.set(Math.sin(state.heading), 0, Math.cos(state.heading));
     this.perpendicular(forward, up);
     left.crossVectors(up, forward).normalize();
-    this.turnTowardNose(hipsForward.copy(forward), upright ? RIG_DETAIL.hipsTurn : 0);
-    this.turnTowardNose(this.facing.copy(forward), upright ? RIG_DETAIL.chestTurn : 0);
     this.back = state.phase === 'standing' ? state.standingBlend * weightBack(state) : 0;
+    // The trim's opening toward the nose yields to the snap (the weight back in a turn): the shoulders turn with the
+    // turn, either way (step 3; Hobgood, the Bali camp).
+    const snapping = this.back * Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
+    const opening = 1 - snapping;
+    this.turnTowardNose(hipsForward.copy(forward), upright ? RIG_DETAIL.hipsTurn * opening : 0);
+    this.turnTowardNose(this.facing.copy(forward), upright ? RIG_DETAIL.chestTurn * opening : 0);
     if (state.phase === 'standing') {
       const most = (RIG_DETAIL.twistMost * Math.PI) / 180;
-      const snap = this.back * Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
       const twist = state.standingBlend * Math.max(-most, Math.min(most, RIG_DETAIL.twistGain * state.yawRate))
-        + (Math.sign(state.yawRate) * snap * RIG_DETAIL.snapTwist * Math.PI) / 180;
+        + (Math.sign(state.yawRate) * snapping * RIG_DETAIL.snapTwist * Math.PI) / 180;
       this.facing.applyAxisAngle(up, twist);
       hipsForward.applyAxisAngle(up, RIG_DETAIL.hipsTwistShare * twist);
     }
