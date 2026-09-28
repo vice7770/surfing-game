@@ -269,7 +269,8 @@ fn wetAt(ix: i32, iz: i32) -> f32 {
   let dH = -halfDt * (massX * invDx + massZ * invDz);
   var dQx = -halfDt * (pressureX * invDx + shearZ * invDz);
   var dQz = -halfDt * (shearX * invDx + pressureZ * invDz);
-  if (P.dispersive == 1u) { dQx += halfDt * at(${FIELD.PREDX}u, i); dQz += halfDt * at(${FIELD.PREDZ}u, i); }
+  // The step before's acceleration, only where the cell still disperses (the mask kernel has run): one just switched to shallow water keeps none.
+  if (at(${FIELD.MASK}u, i) > 0.0) { dQx += halfDt * at(${FIELD.PREDX}u, i); dQz += halfDt * at(${FIELD.PREDZ}u, i); }
   var depth = hW + dH;
   if (depth > P.dryDepth) { put(${FIELD.XUW}u, i, (hW * uW + dQx) / depth); put(${FIELD.XWW}u, i, (hW * vW + dQz) / depth); }
   else { depth = max(depth, 0.0); put(${FIELD.XUW}u, i, 0.0); put(${FIELD.XWW}u, i, 0.0); }

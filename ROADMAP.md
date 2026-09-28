@@ -549,7 +549,8 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - the Reef's ledge crossing the window's open edge ran the Big swell to NaN, on main too; the solver now levels the bed across the two columns an open edge copies;
     - a sea handover's joiner missed lips thrown on its first step;
     - thick lips landing in one cell flashed the drained crest; they now land over their thickness;
-    - a lip's landing bore still drained at 23.5 m/s with dispersion on; the solver now holds the young roller in shallow water where jets land (0.5 H behind to 1.5 H ahead) for Kennedy's T* (CPU and WGSL; branch `claude/plunge-dispersion`).
+    - a lip's landing bore still drained at 23.5 m/s with dispersion on; the solver now holds the young roller in shallow water where jets land (0.5 H behind to 1.5 H ahead) for Kennedy's T* (CPU and WGSL; branch `claude/plunge-dispersion`);
+    - a cell just switched to shallow water still took the step before's dispersive push in its Hancock half step (−702 m²/s² in a Big swell trace); the half step now adds the predictor only where the cell disperses this step (CPU and WGSL; branch `claude/predictor-mask`).
   - **Measured:**
     - rounder tubes (width/length 0.71 → 0.77–0.80) that open wider;
     - jets 0.47 H² and 0.47 H thick;
