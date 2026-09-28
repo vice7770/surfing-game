@@ -1,7 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { measureRideability, rideability } from './Rideability';
+import { FASTEST_SURFER, measureRideability, rideability } from './Rideability';
 
 describe('rideability', () => {
+  it('reports the share of clean waves that outrun the fastest measured surfer', () => {
+    const stats = rideability([
+      { angleDegrees: 35, fit: 0.9, peelSpeed: 10 },
+      { angleDegrees: 25, fit: 0.9, peelSpeed: 14 },
+      { angleDegrees: 30, fit: 0.9, peelSpeed: 13 },
+      { angleDegrees: 20, fit: 0.1, peelSpeed: 40 },
+    ]);
+    expect(FASTEST_SURFER).toBe(12.5);
+    expect(stats.fastShare).toBeCloseTo(2 / 3, 12);
+    expect(rideability([{ angleDegrees: 35, fit: 0.9 }]).fastShare).toBeNaN();
+  });
+
   it('shares the measured waves among close-outs, mixed peaks and each skill level', () => {
     const stats = rideability([
       { angleDegrees: 5, fit: 0.9 },
