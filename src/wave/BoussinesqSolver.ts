@@ -11,12 +11,13 @@ const SWITCH_RATIO = 0.8;
 /**
  * The plunge zone: where a jet lands, the water is an impact, a plume and a splash-up, not the weakly nonlinear
  * wave the dispersive terms assume (on the Teahupo'o Reef a landing piled 0.4 m of water to 1.5 m, and the terms
- * drained it at 23.5 m/s). A landing holds shallow water from `behind` of the jet's drop behind where it lands
- * (the jet's thickness and the splash thrown back) to `ahead` of it beyond (the splash-up and the young roller:
- * Chanson, Aoki & Maruyama 2002; Martins et al. 2018), one cell either side of its travel, for Kennedy's
- * T* = `hold` √(d/g) after it lands. The void between the crest and the landing keeps its dispersion: that face
- * breaks only when the void collapses. A fixed impact zone ends on a time cap; a zone following a bore would end
- * where its Froude number falls below 1.3 (Tissier et al. 2012). Advice from the "Water physics research" session.
+ * drained it at 23.5 m/s). A landing holds shallow water over the young roller, about 2 H long (L tan θ ≈ H,
+ * Martins et al. 2018): from `behind` of the breaking wave's height H behind where it lands (the jet's thickness
+ * and the splash thrown back) to `ahead` of H beyond (the impact's rise, to about 2.5 depths: Chanson, Aoki &
+ * Maruyama 2002), one cell either side of its travel, for Kennedy's T* = `hold` √(d/g) after it lands. It never
+ * reaches back past where the jet left the crest: the void's face keeps its dispersion, since it breaks only when
+ * the void collapses. A fixed impact zone ends on a time cap; a zone following a bore would end where its Froude
+ * number falls below 1.3 (Tissier et al. 2012). Advice from the water-physics advisor (the wave-shape-advisor note).
  */
 const PLUNGE = { behind: 0.5, ahead: 1.5, hold: 5 } as const;
 
@@ -222,17 +223,18 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   }
 
   /**
-   * A jet `height` m high (its drop) landed at (x, z), travelling along (dirX, dirZ): hold its impact zone in
-   * shallow water (`PLUNGE`). A cell already held keeps the longer of its two holds.
+   * A jet from a breaking wave `height` m high landed at (x, z), travelling along (dirX, dirZ), `flown` m on from
+   * where it left the crest: hold its impact zone in shallow water (`PLUNGE`). A cell already held keeps the longer
+   * of its two holds.
    */
-  holdPlunge(x: number, z: number, dirX: number, dirZ: number, height: number): void {
+  holdPlunge(x: number, z: number, dirX: number, dirZ: number, height: number, flown = Infinity): void {
     const { nx, nz, dx, xCenters, zCenters, still, plungeHold, gravity: g } = this;
     this.refreshStillDepth();
     const travel = Math.hypot(dirX, dirZ);
     const ux = travel > 0 ? dirX / travel : 0;
     const uz = travel > 0 ? dirZ / travel : 0;
     const drop = Math.max(0, height);
-    const behind = PLUNGE.behind * drop;
+    const behind = Math.min(PLUNGE.behind * drop, Math.max(0, flown));
     const ahead = PLUNGE.ahead * drop;
     const reach = Math.max(behind, ahead) + dx;
     const first = Math.max(0, Math.ceil((x - reach - xCenters[0]) / dx));

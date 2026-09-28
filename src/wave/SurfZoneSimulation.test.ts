@@ -472,9 +472,11 @@ describe('SurfZoneSimulation', () => {
     simulation.step(1 / 30);
     expect(solver.mask[landing]).toBe(1);
     expect(solver.plungeHold[landing]).toBe(0);
-    // A jet parcel falls 2 m and lands moving toward the shore.
-    simulation.lip.onLand!(x, z, 0.3, 0, -6, 7, { launch: { x, y: 2, z: z - 3 }, y: 0, age: 0.6, crestSpeed: 6, kind: 0, volume: 0.3 });
+    // A jet parcel from a wave 4 m high falls only 0.3 m onto the face, moving toward the shore: its zone is the wave's
+    // roller, 1.5 H ahead, not its short fall's.
+    simulation.lip.onLand!(x, z, 0.3, 0, -2.4, 7, { launch: { x, y: 0.3, z: z - 3 }, y: 0, age: 0.6, crestSpeed: 6, kind: 0, volume: 0.3, waveHeight: 4 });
     expect(solver.plungeHold[landing]).toBeGreaterThan(0);
+    expect(solver.plungeHold[solver.cellIndex(x, z + 5)]).toBeGreaterThan(0);
     simulation.step(1 / 30);
     expect(solver.mask[landing]).toBe(0);
   }, 60_000);

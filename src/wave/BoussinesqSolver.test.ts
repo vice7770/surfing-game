@@ -200,6 +200,17 @@ describe('Boussinesq dispersion', () => {
     expect(solver.mask[cell(6.5, 20.5)]).toBe(1);
   });
 
+  it('never holds a plunge zone behind where its jet left the crest: the void\'s face keeps its dispersion', () => {
+    const grid = { nx: 12, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' as const };
+    const solver = new BoussinesqSolver(grid, () => 4, { manning: 0, breaking: false });
+    const cell = (x: number, z: number) => solver.cellIndex(x, z);
+    // From a wave 4 m high, half its height behind is 2 m; this jet left the crest only 0.4 m back.
+    solver.holdPlunge(6.5, 20.5, 0, 1, 4, 0.4);
+    expect(solver.plungeHold[cell(6.5, 19.5)]).toBeGreaterThan(0);
+    expect(solver.plungeHold[cell(6.5, 18.5)]).toBe(0);
+    expect(solver.plungeHold[cell(6.5, 26.5)]).toBeGreaterThan(0);
+  });
+
   it('reduces exactly to the shallow-water solver with dispersion off', () => {
     const grid = { nx: 3, xMin: 0, dx: 1, zEdges: uniformEdges(0, 200, 200), xBoundary: 'open' as const };
     const depthAt = (_x: number, z: number) => 4 - 0.015 * z;

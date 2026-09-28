@@ -419,8 +419,13 @@ export class SurfZoneSimulation {
       // Its impact's energy drives air down in proportion to how far it fell (G9).
       const drop = flight ? Math.max(0.1, flight.launch.y - flight.y) : 1;
       this.aeration.addPlunge(x, z, 0.5 * WATER_DENSITY * volume * (vx * vx + vy * vy + vz * vz), AERATION.plungeDepth * drop);
-      // Where it lands the water is an impact, not a dispersive wave: its impact zone is shallow water for a while.
-      if (this.solver instanceof BoussinesqSolver) this.solver.holdPlunge(x, z, vx, vz, drop);
+      // Where it lands the water is an impact, not a dispersive wave: its wave's young roller is shallow water for a
+      // while (a splash-up's short fall's zone lies inside its jet's), never back past where it left the crest.
+      if (this.solver instanceof BoussinesqSolver) {
+        const speed = Math.hypot(vx, vz);
+        const flown = flight && speed > 0 ? ((x - flight.launch.x) * vx + (z - flight.launch.z) * vz) / speed : Infinity;
+        this.solver.holdPlunge(x, z, vx, vz, flight && flight.waveHeight > 0 ? flight.waveHeight : drop, flown);
+      }
     };
     // A collapsing tube's air that does not blow out breaks into bubbles (G9).
     this.lip.onAir = (x, z, volume, penetration) => this.aeration.addAir(x, z, volume, penetration);
@@ -776,7 +781,7 @@ export class SurfZoneSimulation {
     // It keeps pouring from the crest until it lands, as measured jets do (Erinin et al. 2023).
     const thrown = this.lip.launch(
       crest, { x: along.x * speed, z: along.z * speed }, solver.surfaceAt(crest), shape.volume, motion.speed, tubeGeometry(shape.shape, height),
-      jetFlightTime(shape.shape, height),
+      jetFlightTime(shape.shape, height), height,
     );
     this.onThrow?.({
       asked: shape.volume, thrown, height, x, tube: tubeGeometry(shape.shape, height), vortexRatio: shape.reef?.vortexRatio, orthogonalGradient: orthogonal,

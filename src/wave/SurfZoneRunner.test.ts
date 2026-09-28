@@ -192,7 +192,7 @@ describe('SurfZoneRunner', () => {
     const runner = new SurfZoneRunner(config);
     const { simulation } = runner;
     simulation.lipImpacts.length = 0;
-    const flight = { launch: { x: 1, y: 2, z: -52 }, y: 0.4, age: 0.5, crestSpeed: 3, kind: 0, volume: 0.3 };
+    const flight = { launch: { x: 1, y: 2, z: -52 }, y: 0.4, age: 0.5, crestSpeed: 3, kind: 0, volume: 0.3, waveHeight: 1.5 };
     simulation.lip.onLand!(1, -50, 0.21, 0, -4, 6, flight);
     expect(simulation.lipImpacts[0]).toMatchObject({ volume: 0.21, whole: 0.3, kind: 0 });
     expect(runner.spray.look).toBe('rich');
