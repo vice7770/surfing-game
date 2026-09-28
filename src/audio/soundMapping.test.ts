@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LIP_HIT_STRIDE, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE } from '../wave/SurfZoneRunner';
-import { MIN_INTERVAL, ONE_SHOT_CAP, OneShotShaper, soundTargets, type SoundFrame } from './soundMapping';
+import { CRASH_RATE_MIN, CRASH_SIZE_REFERENCE, MIN_INTERVAL, ONE_SHOT_CAP, OneShotShaper, soundTargets, type SoundFrame } from './soundMapping';
 
 function frame(overrides: Partial<SoundFrame> = {}): SoundFrame {
   return {
@@ -180,5 +180,17 @@ describe('the rider under water', () => {
     const board = { x: 0, y: 0, z: 0, speed: 1, sideslip: 0 };
     expect(soundTargets(frame({ board, ride: { phase: 'fallen', previousPhase: 'fallen', speed: 1, headUnder: true } })).muffle).toBe(1);
     expect(soundTargets(frame({ board, ride: { phase: 'fallen', previousPhase: 'fallen', speed: 1, headUnder: false } })).muffle).toBe(0);
+  });
+
+  it('crashes a bigger lip deeper, a small one as before, and as loud as its energy either way', () => {
+    // Two single crashes of equal energy (volume × speed²): 0.2 m³ at 10 m/s, and 8 m³ at 1.58 m/s.
+    const small = soundTargets(frame(lipHits([{ x: 3, z: -30, volume: 0.2, speed: 10 }])));
+    const big = soundTargets(frame(lipHits([{ x: 3, z: -30, volume: 8, speed: 10 / Math.sqrt(40) }])));
+    const smallShot = small.oneShots.find((shot) => shot.id === 'lipJet' || shot.id === 'lipRoller')!;
+    const bigShot = big.oneShots.find((shot) => shot.id === 'lipJet' || shot.id === 'lipRoller')!;
+    expect(smallShot.rate).toBe(1);
+    expect(bigShot.rate).toBeCloseTo(Math.max(CRASH_RATE_MIN, (CRASH_SIZE_REFERENCE / 8) ** (1 / 3)), 9);
+    // The frame carries its lip hits in 32-bit floats.
+    expect(bigShot.gain).toBeCloseTo(smallShot.gain, 6);
   });
 });
