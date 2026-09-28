@@ -1,6 +1,6 @@
 # Padang Padang and the swept-surface barrel: specification
 
-Status: **agreed** in a grilling session with the user on 2026-09-28 (two rounds, Q1–Q16, every recommendation accepted). One question is still open: where Part B's overturn profiles come from (see Open question). This is the spec the Padang Padang plans argue from.
+Status: **agreed** in a grilling session with the user on 2026-09-28 (three rounds, Q1–Q19, every recommendation accepted). This is the spec the Padang Padang plans argue from.
 
 The [gameplay milestone spec](2026-09-26-gameplay-milestone.md)'s principles still hold:
 - physical inputs, not scripted moves;
@@ -187,9 +187,17 @@ These are reported, not gated, then the user's look. The other spots switch afte
 5. **Cost,** measured on the M1 Air, and on the M4 Pro when the user runs it.
 6. **Before each other spot switches,** its catch and ride reports are compared with today's.
 
-## Open question
+## Round 3 (2026-09-28, after the advisor's research)
 
-**Where the profiles come from.** Either published simulations are digitised (faster, fewer bed shapes), or we run our own offline 2D simulations on the game's beds (exact, more work). The user raised this in the doc's Overview. It is put to them, with the advisor's research, before Part B's plan. It doesn't affect Part A.
+19. **The profiles come from our own offline 2D runs, with Basilisk** (Q17). Basilisk is a two-phase fluid code that runs through the lip's impact, the splash-up and the air cavity; a boundary-element code stops at touchdown.
+    - Published profiles are the validation set, not the library: Pick & Feddersen's example output, Surf Ranch's void area (0.31 H²), and the void's length over width at Duck (1.70–3.15) and on a 1:10 lab reef (1.46–2.28).
+    - The user approved downloading and building Basilisk (basilisk.fr) and its two published templates (Mostert & Deike 2020; Feddersen et al. 2024).
+    - Both templates are benchmarked on the M1 first, while Part A's reports run, and the library's size (the advisor sketches 60–120 runs) is set from the measured cost. Heavy batches can run on the user's M4 Pro.
+20. **The reef's sections, in stages** (Q18). Mead's thesis (Waikato 2000) lists Padang Padang's components as ramp, focus, wedge and pinnacle, with no positions or sizes.
+    - The first sweep uses the plain wedge, for a peel and catch baseline.
+    - A second sweep adds a focus bump at the peak and one or two pinnacles along the wedge, their spacing and size provisional. They are kept only if they give 2–4 sections without hurting the catch report.
+    - The report shows what the sourced gradient does alone and what the provisional components add.
+21. **The real survey** (Q19). Shaw Mead's kayak survey of the reef was never published. The user asks eCoast for it; if it arrives, it replaces the provisional bed values.
 
 ## Delivery
 
@@ -208,7 +216,7 @@ Spec → plan → PRs. Each PR is left for the user to merge.
   6. the shading;
   7. the switch for every spot and the deletion of the old code.
 
-  Part B's plan follows the open question's answer.
+  Part B's plan follows the Basilisk benchmark.
 
 ## Risks
 
