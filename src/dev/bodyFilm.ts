@@ -53,6 +53,9 @@ export interface FilmFrame {
   /** The drawn hips and the physics' pelvis point, in the board's frame, m. */
   hipsOnBoard: Vector3;
   physicsPelvis: Vector3;
+  /** The physics' balance reserve (the balance meter's: 1 at ease, 0 letting go; NaN once detached), and its hand points about its torso point on the board, m (step 5). */
+  balance: number;
+  physicsHands: Vector3[];
 }
 
 /** Where the film's joints (`FilmFrame.joints`, `limbs`) keep the shoulders, the hands and the head; `worldBones` the chest (1) and the head (2). */
@@ -346,6 +349,30 @@ export function breathing(film: BodyFilm, low = 0.15, high = 1): number {
   return Math.hypot(band('x'), band('y'), band('z'));
 }
 
+/**
+ * The balance cue (step 5): how the drawn hands' distance from their shoulders
+ * follows the physics' alarm (1 − its balance reserve) over the standing
+ * frames: the regression's slope, m per full alarm, and its correlation.
+ */
+export function balanceCue(film: BodyFilm): { slope: number; correlation: number } {
+  const frames = riding(film).filter((frame) => frame.phase === 'standing' && Number.isFinite(frame.balance));
+  const alarm = frames.map((frame) => 1 - frame.balance);
+  const spread = frames.map((frame) => (['left', 'right'] as const).reduce(
+    (sum, side) => sum + frame.joints[FILM_JOINT.hand[side]].distanceTo(frame.joints[FILM_JOINT.shoulder[side]]), 0,
+  ) / 2);
+  const mean = (values: number[]) => values.reduce((a, b) => a + b, 0) / values.length;
+  const [am, sm] = [mean(alarm), mean(spread)];
+  let covariance = 0;
+  let av = 0;
+  let sv = 0;
+  alarm.forEach((a, i) => {
+    covariance += (a - am) * (spread[i] - sm);
+    av += (a - am) ** 2;
+    sv += (spread[i] - sm) ** 2;
+  });
+  return { slope: av > 1e-12 ? covariance / av : 0, correlation: av > 1e-12 && sv > 1e-12 ? covariance / Math.sqrt(av * sv) : 0 };
+}
+
 /** The film's chop (step 4): bumps CHOP.height high every CHOP.length m along z, with their slope. A test surface, not a sea state. */
 const CHOP = { height: 0.05, length: 4 };
 export class ChopWater extends PlaneWater {
@@ -616,5 +643,7 @@ function record(
     physicsRoll: roll(torso),
     hipsOnBoard: hips.clone().sub(boardPosition).applyQuaternion(boardInverse),
     physicsPelvis: state.points[POINT.pelvis].clone().sub(boardPosition).applyQuaternion(boardInverse),
+    balance: session.rider.attached ? session.rider.balanceReserve : Number.NaN,
+    physicsHands: [POINT.leftHand, POINT.rightHand].map((i) => state.points[i].clone().sub(state.points[POINT.torso]).applyQuaternion(boardInverse)),
   };
 }

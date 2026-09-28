@@ -2,7 +2,7 @@ import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
 import {
-  ChopWater, FILM_JOINT, FILM_SCENARIOS, breathing, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, posed, repeatedFrames, rigAlone, shake, switchSpeeds,
+  ChopWater, FILM_JOINT, FILM_SCENARIOS, balanceCue, breathing, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, posed, repeatedFrames, rigAlone, shake, switchSpeeds,
   switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame,
 } from './bodyFilm';
 
@@ -89,7 +89,7 @@ function film(rate: number, count: number, shape: (i: number, frame: FilmFrame) 
       time: i / rate, phase: 'standing', moving: true, switched: false, fallen: false,
       joints: Array.from({ length: 13 }, () => new Vector3()), limbs: [new Vector3()], hips: new Vector3(), board: new Vector3(),
       bones: [new Quaternion()], worldBones: Array.from({ length: 3 }, () => new Quaternion()),
-      chestRoll: 0, physicsRoll: 0, hipsOnBoard: new Vector3(), physicsPelvis: new Vector3(),
+      chestRoll: 0, physicsRoll: 0, hipsOnBoard: new Vector3(), physicsPelvis: new Vector3(), balance: 1, physicsHands: [new Vector3(), new Vector3()],
     };
     shape(i, frame);
     frames.push(frame);
@@ -286,5 +286,26 @@ describe('the drawn chest breathes (step 4)', () => {
     expect(breathes).toBeGreaterThan(0.003);
     expect(still).toBeLessThan(0.0005);
   }, 240_000);
+});
+
+describe('the balance cue\'s measure (step 5)', () => {
+  it('reads the drawn hands spreading 20 cm over the physics\' whole alarm as a slope of 0.2 m, fully correlated', () => {
+    const spread = film(30, 60, (i, frame) => {
+      const alarm = i / 59;
+      frame.balance = 1 - alarm;
+      for (const side of ['left', 'right'] as const) {
+        frame.joints[FILM_JOINT.shoulder[side]].set(0, 1.4, 0);
+        frame.joints[FILM_JOINT.hand[side]].set(0.5 + 0.2 * alarm, 1.4, 0);
+      }
+    });
+    const cue = balanceCue(spread);
+    expect(cue.slope).toBeCloseTo(0.2, 6);
+    expect(cue.correlation).toBeCloseTo(1, 6);
+    const flat = film(30, 60, (i, frame) => {
+      frame.balance = 1 - i / 59;
+      for (const side of ['left', 'right'] as const) frame.joints[FILM_JOINT.hand[side]].set(0.5, 0, 0);
+    });
+    expect(balanceCue(flat).slope).toBeCloseTo(0, 6);
+  });
 });
 
