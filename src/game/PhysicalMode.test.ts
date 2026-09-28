@@ -114,7 +114,10 @@ describe('PhysicalMode', () => {
     expect(mode.camera.camera.position.z).toBeGreaterThan(mode.board.position.z);
     expect(mode.farField.temporalPhases[0]).toBeCloseTo((simulation.sea.components[0].omega * simulation.seaTime) % (2 * Math.PI), 4);
     const crest = simulation.solver.cellIndex(0, -60);
-    simulation.lip.launch(crest, { x: 0, z: 5 }, simulation.solver.surfaceAt(crest) + 3, 0.5);
+    // A crest standing above the still level: a jet is made of that water.
+    const { solver } = simulation;
+    for (const index of [crest - solver.nx, crest, crest + solver.nx]) solver.h[index] = solver.restLevel - solver.bed[index] + 1;
+    simulation.lip.launch(crest, { x: 0, z: 5 }, solver.surfaceAt(crest) + 3, 0.5);
     // Once the strip has left the crest, the drawn sheet covers it.
     for (let step = 0; step < 18; step += 1) {
       mode.advance(1);

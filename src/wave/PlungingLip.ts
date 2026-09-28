@@ -91,7 +91,12 @@ export interface TubeEruption {
   airRate: number;
   speed: number;
 }
-/** Largest share of a source cell's water one throw may take. */
+/**
+ * Largest share of a source cell's crest one throw may take: its water above the still level, since the jet is the
+ * crest's fast surface water and water below the still level never enters it (Derakhti et al. 2020; Pick & Feddersen
+ * 2026). Taking from the whole column let throw after throw drain a steep reef edge's crest cells until the thin water
+ * left ran away (the wave-sizes side feed's 3 m Reef).
+ */
 const SOURCE_SHARE = 0.2;
 /** Parcels still airborne after this long land where they are, s. */
 const MAX_FLIGHT = 3;
@@ -449,7 +454,7 @@ export class PlungingLip implements LipParcelSource {
   /**
    * Throw up to `volume` m³ from `cell` at `height` (m above datum) with
    * horizontal `velocity` (m/s). Returns the volume actually thrown: 0 when the
-   * parcel pool is full or the crest is dry.
+   * parcel pool is full or no crest stands above the still level.
    */
   launch(
     cell: number, velocity: { x: number; z: number }, height: number, volume: number, crestSpeed = 0, tube?: TubeGeometry,
@@ -460,11 +465,12 @@ export class PlungingLip implements LipParcelSource {
     const { nx, h, qx, qz, dx, dz } = solver;
     const row = Math.floor(cell / nx);
     const sources: number[] = [];
+    const crest = (index: number) => Math.max(0, h[index] - Math.max(0, solver.restLevel - solver.bed[index]));
     let available = 0;
     for (const index of [cell - nx, cell, cell + nx]) {
       if (index < 0 || index >= h.length) continue;
       sources.push(index);
-      available += SOURCE_SHARE * h[index] * dx * dz[Math.floor(index / nx)];
+      available += SOURCE_SHARE * crest(index) * dx * dz[Math.floor(index / nx)];
     }
     if (!(available > 0)) return 0;
     const thrown = Math.min(volume, available);
@@ -472,7 +478,7 @@ export class PlungingLip implements LipParcelSource {
     for (const index of sources) {
       const depth = h[index];
       if (!(depth > 0)) continue;
-      const removed = share * SOURCE_SHARE * depth;
+      const removed = share * SOURCE_SHARE * crest(index);
       // The jet is the crest's fast surface water: the column keeps what is left of its momentum.
       qx[index] -= velocity.x * removed;
       qz[index] -= velocity.z * removed;

@@ -488,6 +488,8 @@ describe('SurfZoneSimulation', () => {
     foam.dense.fill(0);
     foam.residual.fill(0);
     const crest = solver.cellIndex(0, -60);
+    // A crest standing above the still level: a jet is made of that water.
+    for (const index of [crest - solver.nx, crest, crest + solver.nx]) solver.h[index] = solver.restLevel - solver.bed[index] + 0.6;
     expect(lip.launch(crest, { x: 0, z: 4 }, solver.surfaceAt(crest) + 1, 0.2)).toBeGreaterThan(0);
     // The whole strip leaves the crest and lands.
     for (let step = 0; step < 240 && lip.activeCount() > 0; step += 1) lip.step(1 / 60);

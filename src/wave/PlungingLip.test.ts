@@ -326,9 +326,10 @@ describe('PlungingLip', () => {
     const solver = basin();
     const lip = new PlungingLip(solver, 256);
     const before = solver.totalVolume();
-    const thrown = lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 3, 0.6);
-    expect(thrown).toBeCloseTo(0.6, 12);
-    expect(lip.airborneVolume()).toBeCloseTo(0.6, 12);
+    // Within the crest's 0.48 m³ above the still level (the sources' 0.8 m, a fifth of it, over three 1 m² cells).
+    const thrown = lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 3, 0.4);
+    expect(thrown).toBeCloseTo(0.4, 12);
+    expect(lip.airborneVolume()).toBeCloseTo(0.4, 12);
     expect(solver.totalVolume() + lip.airborneVolume()).toBeCloseTo(before, 9);
     // Long enough for the jet and its splash-up (G9) to land.
     for (let frame = 0; frame < 240; frame += 1) {
@@ -364,14 +365,21 @@ describe('PlungingLip', () => {
     lip.forEachActiveParcel((parcel) => expect(Number.isFinite(parcel.vx + parcel.vy + parcel.vz)).toBe(true));
   });
 
-  it('caps the volume taken from the crest at a fifth of the local water', () => {
+  it('takes a jet only from the crest above the still level, a fifth of it, so a drawn-down cell throws nothing', () => {
+    // The jet is the crest's fast surface water (Derakhti et al. 2020; Pick & Feddersen 2026): water below the still
+    // level never enters it. Taking from the whole column drained a steep reef edge's crest cells throw after throw.
     const solver = basin();
     const lip = new PlungingLip(solver, 256);
     const cell = solver.cellIndex(3.5, 12.5);
-    const depths = [cell - solver.nx, cell, cell + solver.nx].map((index) => solver.h[index]);
+    const sources = [cell - solver.nx, cell, cell + solver.nx];
+    const still = 2;
+    const depths = sources.map((index) => solver.h[index]);
     const thrown = lip.launch(cell, { x: 0, z: 4 }, 3, 100);
-    expect(thrown).toBeCloseTo(0.2 * depths.reduce((sum, depth) => sum + depth, 0) * solver.dx * solver.dz[0], 9);
-    [cell - solver.nx, cell, cell + solver.nx].forEach((index, n) => expect(solver.h[index]).toBeCloseTo(0.8 * depths[n], 9));
+    expect(thrown).toBeCloseTo(0.2 * depths.reduce((sum, depth) => sum + depth - still, 0) * solver.dx * solver.dz[0], 9);
+    sources.forEach((index, n) => expect(solver.h[index]).toBeCloseTo(depths[n] - 0.2 * (depths[n] - still), 9));
+    const drawnDown = basin();
+    for (const index of sources) drawnDown.h[index] = still - 0.3;
+    expect(new PlungingLip(drawnDown, 256).launch(cell, { x: 0, z: 4 }, 3, 100)).toBe(0);
   });
 
   it('offers each airborne parcel for contact, and a struck parcel lands with its changed momentum', () => {
