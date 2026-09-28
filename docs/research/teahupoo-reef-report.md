@@ -217,6 +217,19 @@ The air balance closes exactly.
 | Medium (1.9 m, 16 s) | 11.5 m/s, 33° | not run: Task 9 |
 | Big (3.0 m, 17 s) | 11.5 m/s, 41° | not run: Task 9 |
 
+## On the wave sizes tank (Part A, Task 9)
+
+Main's wave sizes Part B (PR #53) was merged in:
+- **The swell:** the Reef's 30 m edge now takes the buoy's deep-water swell, shoaled to it.
+- **The tank:** it keeps today's inner tank (its forereef lies inside it), with the relaxation zone lengthened to at least 0.75 of the edge wavelength. At 17 s that is about 200 m, against 60 m before.
+- **The cap:** 4 m.
+- **The take-off** stays at the peak.
+- **Calibration, held:** the faces are to be calibrated on `report:sizes` (Practice 1.5–2 m up to Big 5–6 m, Big raised to 3.5 m). This waits for the side feed (`claude/side-feed`), which the wave sizes session expects to make surf bigger everywhere. Until then the Surf screen's forecast for the Reef rests on the old bed's fit.
+
+**Low tide on the new tank.** The CI low-tide probe (40 m window, 12 components, Big swell, tide −0.6) now drains the ledge to 0.27 m of water at x −10, z −53 (still depth 2.1 m). The backwash reaches 22.7 m/s for about a second, then settles. This is the same class of event as the game-size probes' 21–26 m/s on the pass's beach face.
+- **Open:** thin, drained-trough flows run too fast for their depth.
+- **The probe:** it now guards against a runaway at 30 m/s (past runaways: 112 m/s, NaN). The mid-tide and oblique probes keep 20 m/s.
+
 ## Commands
 
 - `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "steep Reef holds"`
