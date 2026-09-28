@@ -8,6 +8,17 @@ const ALPHA = MADSEN_SORENSEN_B + 1 / 3;
 const DISPERSIVE_DEPTH = 0.05;
 /** Tonelli & Petti (2009), FUNWAVE-TVD's default: shallow water where the surface stands this high over the still depth (or a trough this deep below it). */
 const SWITCH_RATIO = 0.8;
+/**
+ * The plunge zone: where a jet lands, the water is an impact, a plume and a splash-up, not the weakly nonlinear
+ * wave the dispersive terms assume (on the Teahupo'o Reef a landing piled 0.4 m of water to 1.5 m, and the terms
+ * drained it at 23.5 m/s). A landing holds shallow water from `behind` of the jet's drop behind where it lands
+ * (the jet's thickness and the splash thrown back) to `ahead` of it beyond (the splash-up and the young roller:
+ * Chanson, Aoki & Maruyama 2002; Martins et al. 2018), one cell either side of its travel, for Kennedy's
+ * T* = `hold` √(d/g) after it lands. The void between the crest and the landing keeps its dispersion: that face
+ * breaks only when the void collapses. A fixed impact zone ends on a time cap; a zone following a bore would end
+ * where its Froude number falls below 1.3 (Tissier et al. 2012). Advice from the "Water physics research" session.
+ */
+const PLUNGE = { behind: 0.5, ahead: 1.5, hold: 5 } as const;
 
 /** Phase speed ω/k the Madsen–Sørensen equations give at depth d: ω² = g d k² (1 + B(kd)²)/(1 + α(kd)²). */
 export function madsenSorensenCelerity(omega: number, depth: number, g = GRAVITY): number {
@@ -105,7 +116,8 @@ function thomas(a: Float64Array, b: Float64Array, c: Float64Array, r: Float64Arr
  * solve per row and Q by one per column; the cross terms use the latest other
  * flux (the hybrid FV/FD structure of Celeris and FUNWAVE-TVD). Where the
  * water is thin or the surface stands above 0.8 of the still depth (Tonelli
- * and Petti 2009) a cell reverts to shallow water, so bores stay shock-captured.
+ * and Petti 2009), or a jet has just landed (`holdPlunge`), a cell reverts to
+ * shallow water, so bores stay shock-captured.
  */
 export class BoussinesqSolver extends ShallowWaterSolver {
   readonly dispersive: boolean;
@@ -137,6 +149,10 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   /** Still depth, m, and whether each cell disperses this step (1) or is shallow water (0). */
   readonly still: Float64Array;
   readonly mask: Float64Array;
+  /** Seconds each cell stays shallow water because a jet landed on it (`holdPlunge`); 0 elsewhere. */
+  readonly plungeHold: Float64Array;
+  /** Changes whenever a cell enters or leaves the plunge zone: a device uploads the zone again. */
+  plungeVersion = 0;
   private readonly pBar: Float64Array;
   private readonly qBar: Float64Array;
   private readonly sourceX: Float64Array;
@@ -174,7 +190,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     this.nextStrength = make(); this.nextAge = make(); this.viscousX = make(); this.viscousZ = make();
     this.columnUpper = make(); this.columnRight = make();
     this.finest = Math.min(this.dx, ...this.dz);
-    this.still = make(); this.mask = make();
+    this.still = make(); this.mask = make(); this.plungeHold = make();
     this.pBar = make(); this.qBar = make(); this.sourceX = make(); this.sourceZ = make(); this.halfEta = make();
     this.dX = make(); this.dZ = make();
     this.f1 = make(); this.f2 = make(); this.f3 = make(); this.f4 = make(); this.f5 = make(); this.f6 = make();
@@ -196,6 +212,55 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     if (this.dispersive) {
       this.predictorX = make();
       this.predictorZ = make();
+    }
+  }
+
+  /** Advance by `dt` seconds; the plunge zone ages once the water has moved (a device step ages it in `adoptDeviceStep`). */
+  override step(dt: number): void {
+    super.step(dt);
+    this.agePlunge(dt);
+  }
+
+  /**
+   * A jet `height` m high (its drop) landed at (x, z), travelling along (dirX, dirZ): hold its impact zone in
+   * shallow water (`PLUNGE`). A cell already held keeps the longer of its two holds.
+   */
+  holdPlunge(x: number, z: number, dirX: number, dirZ: number, height: number): void {
+    const { nx, nz, dx, xCenters, zCenters, still, plungeHold, gravity: g } = this;
+    this.refreshStillDepth();
+    const travel = Math.hypot(dirX, dirZ);
+    const ux = travel > 0 ? dirX / travel : 0;
+    const uz = travel > 0 ? dirZ / travel : 0;
+    const drop = Math.max(0, height);
+    const behind = PLUNGE.behind * drop;
+    const ahead = PLUNGE.ahead * drop;
+    const reach = Math.max(behind, ahead) + dx;
+    const first = Math.max(0, Math.ceil((x - reach - xCenters[0]) / dx));
+    const last = Math.min(nx - 1, Math.floor((x + reach - xCenters[0]) / dx));
+    for (let iz = 0; iz < nz; iz += 1) {
+      const across = zCenters[iz] - z;
+      if (Math.abs(across) > reach) continue;
+      for (let ix = first; ix <= last; ix += 1) {
+        const along = xCenters[ix] - x;
+        // The nearest point of its travel, from `behind` back to `ahead` on.
+        const s = Math.min(ahead, Math.max(-behind, along * ux + across * uz));
+        if (Math.hypot(along - s * ux, across - s * uz) > dx + 1e-9) continue;
+        const i = iz * nx + ix;
+        const hold = PLUNGE.hold * Math.sqrt(Math.max(DISPERSIVE_DEPTH, still[i]) / g);
+        if (!(plungeHold[i] > 0)) this.plungeVersion += 1;
+        if (hold > plungeHold[i]) plungeHold[i] = hold;
+      }
+    }
+  }
+
+  /** The plunge zone `dt` seconds on: cells whose hold has run out disperse again. */
+  private agePlunge(dt: number): void {
+    if (!(dt > 0)) return;
+    const { plungeHold } = this;
+    for (let i = 0; i < plungeHold.length; i += 1) {
+      if (!(plungeHold[i] > 0)) continue;
+      plungeHold[i] = Math.max(0, plungeHold[i] - dt);
+      if (plungeHold[i] === 0) this.plungeVersion += 1;
     }
   }
 
@@ -273,14 +338,15 @@ export class BoussinesqSolver extends ShallowWaterSolver {
 
   /**
    * Book a step of `elapsed` seconds that a device took and wrote back into h,
-   * qx, qz and the breaking and predictor fields: the clock, and the eddy
-   * viscosity's step limit from the viscosity it read back.
+   * qx, qz and the breaking and predictor fields: the clock, the eddy
+   * viscosity's step limit from the viscosity it read back, and the plunge zone.
    */
   adoptDeviceStep(elapsed: number): void {
     this.time += elapsed;
     let peak = 0;
     for (const nu of this.viscosity) if (nu > peak) peak = nu;
     this.viscosityPeak = peak;
+    this.agePlunge(elapsed);
   }
 
   /** The CFL step, and for breaking water the explicit eddy viscosity's limit. */
@@ -387,10 +453,11 @@ export class BoussinesqSolver extends ShallowWaterSolver {
    * depth, and its surface stands within the Tonelli–Petti ratio of still water:
    * no higher at a crest, and no deeper in a trough. The weakly nonlinear terms
    * fail as badly in a trough that has drained a reef ledge as at a breaking
-   * crest (the Teahupo'o Reef's backwash ran away at 0.07 m over 4 m).
+   * crest (the Teahupo'o Reef's backwash ran away at 0.07 m over 4 m). Nor does
+   * a cell disperse inside a jet's plunge zone (`holdPlunge`).
    */
   private updateMask(): void {
-    const { h, still, mask, f1: wet, f2: alongX, f3: box, f4: work } = this;
+    const { h, still, mask, plungeHold, f1: wet, f2: alongX, f3: box, f4: work } = this;
     this.refreshStillDepth();
     for (let i = 0; i < h.length; i += 1) wet[i] = h[i] > DISPERSIVE_DEPTH && still[i] > DISPERSIVE_DEPTH ? 1 : 0;
     // Erode the wet cells by the stencils' reach: two along each axis, and the 3 × 3 box for the diagonals.
@@ -400,7 +467,8 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     this.erodeZ(wet, work, 2);
     const on = this.dispersive ? 1 : 0;
     for (let i = 0; i < h.length; i += 1) {
-      mask[i] = wet[i] > 0 && alongX[i] > 0 && work[i] > 0 && box[i] > 0 && Math.abs(h[i] - still[i]) <= SWITCH_RATIO * still[i] ? on : 0;
+      const weak = !(plungeHold[i] > 0) && Math.abs(h[i] - still[i]) <= SWITCH_RATIO * still[i];
+      mask[i] = wet[i] > 0 && alongX[i] > 0 && work[i] > 0 && box[i] > 0 && weak ? on : 0;
     }
   }
 
@@ -459,11 +527,14 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     super.shiftAlongShore(columns);
     this.depthDirty = true;
     this.layoutVersion += 1;
-    // The breaking bores and the predictor's memory move with the water; new columns start quiet.
+    // The breaking bores, the plunge zone and the predictor's memory move with the water; new columns start quiet.
     const shift = Math.trunc(columns);
     if (shift === 0) return;
     const { nx, nz } = this;
-    const carried = [this.breakingStrength, this.breakingAge, this.viscosity, ...(this.predictorX && this.predictorZ ? [this.predictorX, this.predictorZ] : [])];
+    const carried = [
+      this.breakingStrength, this.breakingAge, this.viscosity, this.plungeHold,
+      ...(this.predictorX && this.predictorZ ? [this.predictorX, this.predictorZ] : []),
+    ];
     for (let iz = 0; iz < nz; iz += 1) {
       const row = iz * nx;
       for (const values of carried) {

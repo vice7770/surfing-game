@@ -419,6 +419,8 @@ export class SurfZoneSimulation {
       // Its impact's energy drives air down in proportion to how far it fell (G9).
       const drop = flight ? Math.max(0.1, flight.launch.y - flight.y) : 1;
       this.aeration.addPlunge(x, z, 0.5 * WATER_DENSITY * volume * (vx * vx + vy * vy + vz * vz), AERATION.plungeDepth * drop);
+      // Where it lands the water is an impact, not a dispersive wave: its impact zone is shallow water for a while.
+      if (this.solver instanceof BoussinesqSolver) this.solver.holdPlunge(x, z, vx, vz, drop);
     };
     // A collapsing tube's air that does not blow out breaks into bubbles (G9).
     this.lip.onAir = (x, z, volume, penetration) => this.aeration.addAir(x, z, volume, penetration);
@@ -482,6 +484,7 @@ export class SurfZoneSimulation {
     if (solver instanceof BoussinesqSolver) {
       arrays.breakingStrength = solver.breakingStrength;
       arrays.breakingAge = solver.breakingAge;
+      arrays.plungeHold = solver.plungeHold;
       const { predictor } = solver;
       if (predictor) {
         arrays['predictor.x'] = predictor.x;

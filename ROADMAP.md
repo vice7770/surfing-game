@@ -548,7 +548,8 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
   - **Found and fixed:**
     - the Reef's ledge crossing the window's open edge ran the Big swell to NaN, on main too; the solver now levels the bed across the two columns an open edge copies;
     - a sea handover's joiner missed lips thrown on its first step;
-    - thick lips landing in one cell flashed the drained crest; they now land over their thickness.
+    - thick lips landing in one cell flashed the drained crest; they now land over their thickness;
+    - a lip's landing bore still drained at 23.5 m/s with dispersion on; the solver now holds a plunge zone in shallow water where jets land, for Kennedy's T* (CPU and WGSL; branch `claude/plunge-dispersion`).
   - **Measured:**
     - rounder tubes (width/length 0.71 → 0.77–0.80) that open wider;
     - jets 0.47 H² and 0.47 H thick;
@@ -556,8 +557,7 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - jets leave at 1.95× crest speed against the lab's 1.25–1.32 (reported for the user).
   - **Open:**
     - validating the water against the open Teahupo'o lab dataset (download needs the user's OK);
-    - peel against makeability before Part D (the user's call);
-    - dispersion across a lip's landing bore (split out).
+    - peel against makeability before Part D (the user's call).
 - [ ] **Part C · the look, the sound and a solid reef:** the lip's glow, the step, the coral, spit, the section collapsing as one, the impact sound, and "hit the reef". The tube's look waits for the swept overturn surface that replaces the lip strips and carved void (the user's decision, 2026-09-28; the Padang Padang work builds it first).
 - [ ] **Part D · tube riding (P12):** rail grab, the tube camera, the foam ball and spit on the rider, and the Surf School Tube lesson. Waits on Compress, Regular/Goofy and the take-off (PR #43). Its contact with the swept surface is agreed with the Padang Padang session: the mouth, pocket depth, face normal and velocity, clearance, foam ball and spit forces.
 

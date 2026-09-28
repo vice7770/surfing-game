@@ -181,6 +181,25 @@ describe('Boussinesq dispersion', () => {
     expect(solver.mask[middle]).toBe(0);
   });
 
+  // A thick lip landing on the Reef's drained crest piled 0.4 m of water to 1.5 m, and the dispersive terms, still on
+  // across that bore, drained it at 23.5 m/s (Teahupo'o Reef Part B): where a jet lands the water is shallow water.
+  it('holds a plunging jet\'s roller in shallow water for Kennedy\'s T*, then disperses again', () => {
+    const grid = { nx: 12, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' as const };
+    const solver = new BoussinesqSolver(grid, () => 4, { manning: 0, breaking: false });
+    const cell = (x: number, z: number) => solver.cellIndex(x, z);
+    // A jet 2 m high lands at (6.5, 20.5), travelling toward +z.
+    solver.holdPlunge(6.5, 20.5, 0, 1, 2);
+    solver.step(1e-4);
+    for (const [x, z] of [[6.5, 20.5], [6.5, 19.5], [6.5, 23.5], [5.5, 20.5], [7.5, 22.5]]) expect(solver.mask[cell(x, z)]).toBe(0);
+    // Not along the crest past where it landed, not far ahead, and not far behind.
+    for (const [x, z] of [[4.5, 20.5], [8.5, 20.5], [6.5, 25.5], [6.5, 16.5]]) expect(solver.mask[cell(x, z)]).toBe(1);
+    const hold = 5 * Math.sqrt(4 / GRAVITY);
+    while (solver.time < 0.9 * hold) solver.step(0.05);
+    expect(solver.mask[cell(6.5, 20.5)]).toBe(0);
+    while (solver.time < 1.1 * hold) solver.step(0.05);
+    expect(solver.mask[cell(6.5, 20.5)]).toBe(1);
+  });
+
   it('reduces exactly to the shallow-water solver with dispersion off', () => {
     const grid = { nx: 3, xMin: 0, dx: 1, zEdges: uniformEdges(0, 200, 200), xBoundary: 'open' as const };
     const depthAt = (_x: number, z: number) => 4 - 0.015 * z;
@@ -517,6 +536,17 @@ describe('Boussinesq surf zone beds', () => {
     expect(state.predictorZ[row + 16]).toBe(57);
     expect(state.breakingAge[row + 19]).toBe(0);
     expect(state.predictorX[row + 17]).toBe(0);
+  });
+
+  it('moves a plunge zone with the water when the window slides', () => {
+    const solver = new BoussinesqSolver({ nx: 20, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' }, () => 3);
+    solver.holdPlunge(10.5, 20.5, 0, 1, 0);
+    const row = 20 * solver.nx;
+    expect(solver.plungeHold[row + 10]).toBeGreaterThan(0);
+    solver.shiftAlongShore(3);
+    // The column that was 10 is now column 7.
+    expect(solver.plungeHold[row + 7]).toBeGreaterThan(0);
+    expect(solver.plungeHold[row + 10]).toBe(0);
   });
 });
 

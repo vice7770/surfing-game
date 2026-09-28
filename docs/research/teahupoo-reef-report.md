@@ -295,10 +295,20 @@ Per throw, from the same runs:
   - **Fix:** the solver now levels the bed across the two columns an open edge copies, and restores the spot's bed as the window slides. Every bad case then held at 14–16 m/s, main's included.
   - **Test:** a new probe, "stays finite where the window's open edge cuts the ledge" (40 m, +25°), guards at 20 m/s.
 - **No lip in the edge columns** the boundary copies.
-- **A lip's landing bore (open).**
-  - **What happens:** a thick lip landing on the drained crest makes a bore the depth switch does not see. The dispersive terms stay on across it (modified momentum 23.8 against a recovered flux of 9.8 in a 0.42 m cell). As a cell thins past the trough threshold it flips to shallow water, and it flashes 23–29 m/s for about 0.1 s, then settles.
-  - **Probe:** the oblique probes (60 m, ±25°) now guard against a runaway at 30 m/s, as the low-tide probe does.
-  - **Root fix, split out:** switch dispersion off in a jet's plunge zone, on CPU and WGSL.
+- **A lip's landing bore (fixed: the plunge zone).**
+  - **What happened** (+25°, t 60.93 s, x 12.5, z −28.5, still depth 1.82 m):
+    - four jet parcels landed within 0.5–0.7 m of one cell in 0.27 s, and piled its 0.40 m of water to 1.47 m, with q 11.5–13.9 m²/s;
+    - the mound drained back to 0.42 m with q still near 10, which is 23.5 m/s;
+    - the dispersive mask stayed on through the flash: the mound sat inside the depth switch's 0.2–1.8 d band;
+    - Kennedy's breaking never saw it (B = 0): the lip adds its water between steps, so it never enters the rise rate.
+  - **Fix:** a landing holds its impact zone in shallow water.
+    - The zone runs from half the jet's drop behind where it lands to 1.5 drops ahead along its travel, one cell either side.
+    - It holds for Kennedy's T* = 5√(d/g), on CPU and WGSL.
+    - The void behind the landing keeps its dispersion.
+    - Advice: the Water physics research session (the impact and splash-up, Chanson, Aoki & Maruyama 2002; the roller, Martins et al. 2018). A time cap ends a fixed impact zone; Tissier et al. (2012)'s Froude rule is for a zone that follows a bore.
+  - **Probe:** the oblique probes (60 m, ±25°) are back at 20 m/s. Their fastest water is now 13.1 m/s at +25° (was 23.5) and 11.6 m/s at −25° (was 11.3).
+  - **GPU:** `/gpu-check.html?plunge` holds the same zones on the CPU and the device. The water inside them agrees to 3e-5 m on the Reef and 1e-5 m on the Canyon over 8 s (without the WGSL change, 0.24 m).
+  - **Noted, not changed:** Kennedy's test could count a landing's deposit as a rise rate, and the jets' 1.95× crest speed (above) inflates the momentum they land.
 - **The sea handover (on main).** A joiner did not watch for new breakers on its first step, so a wave starting to break then threw on the donor and not the copy. Online, lips must match: the donor's flag is now handed over with the state, so a sea handed over before its first step arms neither. The edge fix moved the handover test's realization onto it.
 - **The other spots:** they throw as on main except through the two edge treatments.
   - The Point with both the levelling and the edge-lip guard off matches main exactly (724 jets, 82 rollers, 5741 parcels).
