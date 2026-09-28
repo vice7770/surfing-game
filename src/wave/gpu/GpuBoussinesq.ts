@@ -5,11 +5,11 @@ import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, STEP_KER
 
 const WORKGROUP = 64;
 const TAU = 2 * Math.PI;
-/** Fields the CPU writes every frame (board reactions, lip landings), then reads back with the breaking and predictor state. */
+/** Fields the CPU writes every frame (board reactions, lip landings), then reads back with the breaking and predictor state and the depth switch's latch. */
 const UPLOAD = [FIELD.H, FIELD.QX, FIELD.QZ] as const;
-const READBACK = [FIELD.H, FIELD.QX, FIELD.QZ, FIELD.STRENGTH, FIELD.AGE, FIELD.NU, FIELD.PREDX, FIELD.PREDZ] as const;
+const READBACK = [FIELD.H, FIELD.QX, FIELD.QZ, FIELD.STRENGTH, FIELD.AGE, FIELD.NU, FIELD.PREDX, FIELD.PREDZ, FIELD.LATCH] as const;
 /** Fields that follow the bed, or that only the CPU's window shift changes between frames; the plunge zone is also sent when a cell enters or leaves it. */
-const LAYOUT = [FIELD.BED, FIELD.STILL, FIELD.DDX, FIELD.DDZ, FIELD.WEIGHT, FIELD.STRENGTH, FIELD.AGE, FIELD.PREDX, FIELD.PREDZ, FIELD.HOLD] as const;
+const LAYOUT = [FIELD.BED, FIELD.STILL, FIELD.DDX, FIELD.DDZ, FIELD.WEIGHT, FIELD.STRENGTH, FIELD.AGE, FIELD.PREDX, FIELD.PREDZ, FIELD.HOLD, FIELD.LATCH] as const;
 
 /** The one offshore zone a device step blends toward: its rows and its sea's components. */
 interface DeviceZone {
@@ -107,9 +107,9 @@ export function writeParams(
  * 32-bit floats. Each frame uploads h, qx and qz (the board and the lip change
  * them on the CPU), plus the bed and carried state after a window shift and the
  * plunge zone when it changed, runs
- * the CFL substeps, and reads the new water, breaking and predictor state back
- * into the solver, whose CPU consumers (breaking model, lip, foam, board) then
- * run as before.
+ * the CFL substeps, and reads the new water, breaking and predictor state and
+ * the depth switch's latch back into the solver, whose CPU consumers (breaking
+ * model, lip, foam, board) then run as before.
  */
 export class GpuBoussinesq {
   private readonly n: number;
@@ -270,6 +270,7 @@ export class GpuBoussinesq {
       case FIELD.NU: return solver.viscosity;
       case FIELD.PREDX: return solver.predictor!.x;
       case FIELD.PREDZ: return solver.predictor!.z;
+      case FIELD.LATCH: return solver.switchLatch;
       default: throw new RangeError(`No solver array for field ${index}`);
     }
   }
@@ -284,7 +285,7 @@ export class GpuBoussinesq {
         : index === FIELD.DDX ? layout.slopeX : index === FIELD.DDZ ? layout.slopeZ
           : index === FIELD.WEIGHT ? weights : index === FIELD.STRENGTH ? solver.breakingStrength
             : index === FIELD.AGE ? solver.breakingAge : index === FIELD.PREDX ? predictor?.x
-              : index === FIELD.PREDZ ? predictor?.z : solver.plungeHold;
+              : index === FIELD.PREDZ ? predictor?.z : index === FIELD.HOLD ? solver.plungeHold : solver.switchLatch;
       if (source) field.set(source);
       else field.fill(0);
       device.queue.writeBuffer(this.fields, index * n * 4, field);

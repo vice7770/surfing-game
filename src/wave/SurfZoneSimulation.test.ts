@@ -430,11 +430,12 @@ describe('SurfZoneSimulation', () => {
       return simulation;
     };
 
-    // With the lagoon (Part C) this seed's first Big set sends thin backwash down the ledge, seaward of where its jets
-    // left the crest (outside the plunge zone, by design), at 22–29 m/s for about a second while each draining cell's
-    // dispersion switches off: seeds 4–6 stay at 8–14 m/s here and on main. As at low tide, a runaway guard.
+    // With the lagoon (Part C) this seed's first Big set sent thin backwash (0.3–0.4 m over 2.1–2.7 m) down the ledge,
+    // seaward of where its jets left the crest, at 22–29 m/s for about a second: draining cells flipped in and out of
+    // dispersion at the trough threshold, and a cell dispersing beside drained ones had its flux pinned by theirs. A
+    // drained trough now stays latched in shallow water until it refills, and counts as dry for its neighbours' stencils.
     it('stays finite and bounded under the Big swell, and plunges', () => {
-      expect(run({}, 30).lipLaunches).toBeGreaterThan(0);
+      expect(run({}).lipLaunches).toBeGreaterThan(0);
     }, 300_000);
     // At low tide a Big trough drains the ledge to ~0.3 m and its backwash briefly reaches ~23 m/s before settling: an
     // open issue (docs/research/teahupoo-reef-report.md). Here it guards against a runaway (past ones: 112 m/s, NaN).
@@ -448,7 +449,7 @@ describe('SurfZoneSimulation', () => {
     // The pass and inner reef end in a lagoon and a 1:9.64 inland slope (Part C), where the Big swell ran up a 1:5 face.
     it('stays finite over the lagoon at low tide', () => run({ tide: -1.0, alongShore: 60 }, 30), 300_000);
     // The 40 m window's open −x edge cuts the ledge: over a bed sloping across it, main (aa71add) ran this to NaN (Part B).
-    it('stays finite where the window\'s open edge cuts the ledge', () => run({ directionDegrees: 25 }, 30), 300_000);
+    it('stays finite where the window\'s open edge cuts the ledge', () => run({ directionDegrees: 25 }), 300_000);
   });
 
   it('throws the Reef\'s ledge breaks as reef breaks and every other spot\'s by Pick & Feddersen', () => {

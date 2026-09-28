@@ -1,4 +1,4 @@
-import { MADSEN_SORENSEN_B } from '../BoussinesqSolver';
+import { MADSEN_SORENSEN_B, SWITCH_RELEASE } from '../BoussinesqSolver';
 
 /**
  * WGSL for the stage 2 step on the GPU (plan P6). Every kernel mirrors the CPU
@@ -13,9 +13,9 @@ export const FIELD = {
   ZHS: 22, ZHN: 23, ZETAS: 24, ZETAN: 25, ZWS: 26, ZWN: 27, ZUS: 28, ZUN: 29,
   HALF: 30, SRCX: 31, SRCZ: 32, PREDX: 33, PREDZ: 34, STARTP: 35, STARTQ: 36,
   STRENGTH: 37, AGE: 38, NEXTSTRENGTH: 39, NEXTAGE: 40, NU: 41, VISCX: 42, VISCZ: 43, SHEAR: 44,
-  DDX: 45, DDZ: 46, WET: 47, TC: 48, TR: 49, WEIGHT: 50, RISE: 51, HOLD: 52,
+  DDX: 45, DDZ: 46, WET: 47, TC: 48, TR: 49, WEIGHT: 50, RISE: 51, HOLD: 52, LATCH: 53,
 } as const;
-export const FIELD_COUNT = 53;
+export const FIELD_COUNT = 54;
 
 /** Grid buffer layout: x centres (nx), then per row: z centre, dz, below, above, gap. */
 export const ROW_STRIDE = 5;
@@ -54,6 +54,7 @@ const ALPHA: f32 = ${f(ALPHA)};
 const BCOEF: f32 = ${f(B)};
 const DISPERSIVE_DEPTH: f32 = 0.05;
 const SWITCH_RATIO: f32 = 0.8;
+const SWITCH_RELEASE: f32 = ${f(SWITCH_RELEASE)};
 const BREAKING_DEPTH: f32 = 0.05;
 const MAX_EDDY: f32 = 0.3;
 
@@ -163,7 +164,8 @@ fn hll(hL: f32, etaL: f32, uL: f32, vL: f32, hR: f32, etaR: f32, uR: f32, vR: f3
   return out;
 }
 
-// K1: the step's start: P and Q kept for the predictor's memory, velocities, surface, wet cells.
+// K1: the step's start: P and Q kept for the predictor's memory, velocities, surface, the depth switch's latch on drained
+// troughs, and the cells the dispersive stencils may reach (wet, and not a latched trough).
 @compute @workgroup_size(64) fn begin(@builtin(global_invocation_id) id: vec3<u32>) {
   let i = cellOf(id); if (i >= P.n) { return; }
   let h = at(${FIELD.H}u, i);
@@ -173,7 +175,11 @@ fn hll(hL: f32, etaL: f32, uL: f32, vL: f32, hR: f32, etaR: f32, uR: f32, vR: f3
   put(${FIELD.U}u, i, select(0.0, at(${FIELD.QX}u, i) / h, wet));
   put(${FIELD.W}u, i, select(0.0, at(${FIELD.QZ}u, i) / h, wet));
   put(${FIELD.ETA}u, i, h + at(${FIELD.BED}u, i));
-  put(${FIELD.WET}u, i, select(0.0, 1.0, h > DISPERSIVE_DEPTH && at(${FIELD.STILL}u, i) > DISPERSIVE_DEPTH));
+  let d = at(${FIELD.STILL}u, i);
+  let drained = d - h;
+  let latched = drained > SWITCH_RATIO * d || (at(${FIELD.LATCH}u, i) > 0.0 && drained > SWITCH_RELEASE * d);
+  put(${FIELD.LATCH}u, i, select(0.0, 1.0, latched));
+  put(${FIELD.WET}u, i, select(0.0, 1.0, h > DISPERSIVE_DEPTH && d > DISPERSIVE_DEPTH && !latched));
 }
 
 fn wetAt(ix: i32, iz: i32) -> f32 {
@@ -184,12 +190,12 @@ fn wetAt(ix: i32, iz: i32) -> f32 {
   return at(${FIELD.WET}u, u32(cz) * P.nx + u32(cx));
 }
 
-// K2: the dispersive mask (BoussinesqSolver.updateMask): every cell the stencils reach is wet, within the Tonelli–Petti ratio
-// (crest and trough), and outside a jet's plunge zone.
+// K2: the dispersive mask (BoussinesqSolver.updateMask): every cell the stencils reach is wet and not a latched trough, the
+// cell's crest within the Tonelli–Petti ratio, and outside a jet's plunge zone.
 @compute @workgroup_size(64) fn mask(@builtin(global_invocation_id) id: vec3<u32>) {
   let i = cellOf(id); if (i >= P.n) { return; }
   let ix = i32(i % P.nx); let iz = i32(i / P.nx);
-  let weak = !(at(${FIELD.HOLD}u, i) > 0.0) && abs(at(${FIELD.H}u, i) - at(${FIELD.STILL}u, i)) <= SWITCH_RATIO * at(${FIELD.STILL}u, i);
+  let weak = at(${FIELD.H}u, i) - at(${FIELD.STILL}u, i) <= SWITCH_RATIO * at(${FIELD.STILL}u, i) && !(at(${FIELD.HOLD}u, i) > 0.0);
   var dispersing = at(${FIELD.WET}u, i) > 0.0 && weak;
   for (var k = -2; k <= 2; k++) { dispersing = dispersing && wetAt(ix + k, iz) > 0.0 && wetAt(ix, iz + k) > 0.0; }
   for (var a = -1; a <= 1; a++) { for (var b = -1; b <= 1; b++) { dispersing = dispersing && wetAt(ix + a, iz + b) > 0.0; } }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
+import { BoussinesqSolver } from './BoussinesqSolver';
 import { decodeSurfZoneState, encodeSurfZoneState } from './surfZoneState';
 
 // A small breaking tank (the Point, 40 m of shore) whose lip throws within seconds.
@@ -80,6 +81,22 @@ describe('surf zone state (spec N1: the sea handover)', () => {
     }
     expect(Math.sqrt(sum / count) / config.significantHeight).toBeLessThan(1e-3);
     expect(joiner.lipLaunches).toBe(donor.lipLaunches);
+  });
+
+  it('hands over a trough refilling in shallow water: the depth switch\'s latch goes with it', () => {
+    const donor = new SurfZoneSimulation(config);
+    const solver = donor.solver as BoussinesqSolver;
+    let cell = -1;
+    for (let i = 0; i < solver.h.length && cell < 0; i += 1) if (solver.mask[i] > 0 && solver.still[i] > 2) cell = i;
+    // Drained past the switch, it has refilled to 0.3 of its still depth: still latched until 0.45.
+    solver.h[cell] = 0.3 * solver.still[cell];
+    solver.switchLatch[cell] = 1;
+    const joiner = new SurfZoneSimulation({ ...config, startSeaTime: 1000, spinUpPeriods: 0 });
+    joiner.importState(donor.exportState());
+    donor.step(STEP);
+    joiner.step(STEP);
+    expect((joiner.solver as BoussinesqSolver).mask[cell]).toBe(0);
+    expect(fingerprint(joiner)).toEqual(fingerprint(donor));
   });
 
   it('refuses a state from a different tank', () => {

@@ -181,6 +181,72 @@ describe('Boussinesq dispersion', () => {
     expect(solver.mask[middle]).toBe(0);
   });
 
+  /** A 4 m flat tank and a 5 × 5 patch of it set to `depth` at rest and stepped once: its middle cell's mask. */
+  function patchMask() {
+    const grid = { nx: 12, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' as const };
+    const solver = new BoussinesqSolver(grid, () => 4, { manning: 0, breaking: false });
+    const middle = solver.cellIndex(6.5, 20.5);
+    return (depth: number) => {
+      for (let z = 18.5; z <= 22.5; z += 1) {
+        for (let x = 4.5; x <= 8.5; x += 1) {
+          const i = solver.cellIndex(x, z);
+          solver.h[i] = depth;
+          solver.qx[i] = 0;
+          solver.qz[i] = 0;
+        }
+      }
+      solver.step(1e-4);
+      return solver.mask[middle];
+    };
+  }
+
+  // Thin backwash hovering at the trough threshold on the Reef's ledge flipped each cell's dispersion off and on 5–10
+  // times, and a cell switched back on while still thin ran it at 22–29 m/s (Teahupo'o Reef Part C). A drained cell is
+  // released only once back within 0.55 of its still depth (Tonelli & Petti's 2011–12 release).
+  it('keeps a drained trough in shallow water until it refills to within 0.55 of its still depth', () => {
+    const settle = patchMask();
+    // Over 4 m of still water: off below 0.8 m of water, back on from 1.8 m.
+    expect(settle(0.5)).toBe(0);
+    // Back inside the 0.8 band, but not yet within the release: still shallow water.
+    expect(settle(1.7)).toBe(0);
+    expect(settle(1.9)).toBe(1);
+    // Released, it switches off again only below 0.8 m.
+    expect(settle(1.7)).toBe(1);
+  });
+
+  // Released on its own level, a cell beside still-drained ones had its flux pinned by theirs through the row solve while
+  // it drained, and reached 67 m/s (the Reef's Big swell from 25°): a drained trough counts as dry for the stencils.
+  it('keeps dispersion clear of a drained trough by its stencils\' reach, as of a dry cell, until it refills', () => {
+    const grid = { nx: 12, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' as const };
+    const solver = new BoussinesqSolver(grid, () => 4, { manning: 0, breaking: false });
+    const trough = solver.cellIndex(6.5, 20.5);
+    const masks = (depth: number) => {
+      solver.h[trough] = depth;
+      solver.qx[trough] = 0;
+      solver.qz[trough] = 0;
+      solver.step(1e-4);
+      // Two cells along each axis and the diagonal neighbours; then just beyond those reaches.
+      const near = [[6.5, 22.5], [6.5, 18.5], [8.5, 20.5], [4.5, 20.5], [7.5, 21.5], [5.5, 19.5]];
+      const beyond = [[6.5, 23.5], [9.5, 20.5], [8.5, 21.5], [7.5, 22.5]];
+      return {
+        near: near.map(([x, z]) => solver.mask[solver.cellIndex(x, z)]),
+        beyond: beyond.map(([x, z]) => solver.mask[solver.cellIndex(x, z)]),
+      };
+    };
+    expect(masks(0.5)).toEqual({ near: [0, 0, 0, 0, 0, 0], beyond: [1, 1, 1, 1] });
+    // Refilled past the 0.8 switch but not the release, it still keeps its neighbours in shallow water.
+    expect(masks(1.7).near).toEqual([0, 0, 0, 0, 0, 0]);
+    expect(masks(1.9).near).toEqual([1, 1, 1, 1, 1, 1]);
+  });
+
+  // Kennedy's eddy viscosity breaks the crests, with its own release; latching them in shallow water too raised the
+  // setup (Bacigaluppi et al. 2019) and moved the 1:40 beach's pre-break troughs 1 % of the depth lower.
+  it('switches a crest back to dispersion as soon as it is within the Tonelli–Petti ratio', () => {
+    const settle = patchMask();
+    expect(settle(7.5)).toBe(0);
+    expect(settle(6.3)).toBe(1);
+  });
+
   // A thick lip landing on the Reef's drained crest piled 0.4 m of water to 1.5 m, and the dispersive terms, still on
   // across that bore, drained it at 23.5 m/s (Teahupo'o Reef Part B): where a jet lands the water is shallow water.
   it('holds a plunging jet\'s roller in shallow water for Kennedy\'s T*, then disperses again', () => {
@@ -558,6 +624,19 @@ describe('Boussinesq surf zone beds', () => {
     // The column that was 10 is now column 7.
     expect(solver.plungeHold[row + 7]).toBeGreaterThan(0);
     expect(solver.plungeHold[row + 10]).toBe(0);
+  });
+
+  it('moves the depth switch\'s latch with the water when the window slides', () => {
+    const solver = new BoussinesqSolver({ nx: 20, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' }, () => 3);
+    const row = 20 * solver.nx;
+    solver.h[row + 10] = 0.2;
+    solver.step(1e-4);
+    expect(solver.switchLatch[row + 10]).toBe(1);
+    expect(solver.switchLatch[row + 13]).toBe(0);
+    solver.shiftAlongShore(3);
+    // The column that was 10 is now column 7.
+    expect(solver.switchLatch[row + 7]).toBe(1);
+    expect(solver.switchLatch[row + 10]).toBe(0);
   });
 });
 

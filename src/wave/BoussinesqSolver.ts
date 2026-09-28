@@ -20,6 +20,18 @@ const SWITCH_RATIO = 0.8;
  * number falls below 1.3 (Tissier et al. 2012). Advice from the water-physics advisor (the wave-shape-advisor note).
  */
 const PLUNGE = { behind: 0.5, ahead: 1.5, hold: 5 } as const;
+/**
+ * The depth switch's release in a trough: a cell drained to under 0.2 of its still depth (a trough 0.8 of it deep)
+ * stays latched in shallow water until its surface is back within this share of the still depth. Switched per step,
+ * thin backwash hovering at that threshold on the Teahupo'o Reef's ledge flipped each cell's dispersion off and on
+ * 5–10 times, and a cell switched back on while still thin ran it at 22–29 m/s (Part C). The value is Tonelli & Petti's
+ * (2011, 2012) release for crests, extended to troughs: provisional. A state, not a clock, as Tissier et al. (2012)
+ * release theirs: a timer would still hold a drained trough as the next face arrives, the cross-shore strip without
+ * dispersion that once broke the peel. Crests are not latched: Kennedy's eddy viscosity breaks them with its own
+ * release (FUNWAVE-TVD drops the switch altogether under viscosity breaking), and latching them raised the setup
+ * (Bacigaluppi et al. 2019). Advice from the water-physics advisor.
+ */
+export const SWITCH_RELEASE = 0.55;
 
 /** Phase speed ω/k the Madsen–Sørensen equations give at depth d: ω² = g d k² (1 + B(kd)²)/(1 + α(kd)²). */
 export function madsenSorensenCelerity(omega: number, depth: number, g = GRAVITY): number {
@@ -117,8 +129,10 @@ function thomas(a: Float64Array, b: Float64Array, c: Float64Array, r: Float64Arr
  * solve per row and Q by one per column; the cross terms use the latest other
  * flux (the hybrid FV/FD structure of Celeris and FUNWAVE-TVD). Where the
  * water is thin or the surface stands above 0.8 of the still depth (Tonelli
- * and Petti 2009), or a jet has just landed (`holdPlunge`), a cell reverts to
- * shallow water, so bores stay shock-captured.
+ * and Petti 2009), or a trough within its stencils has drained that deep and
+ * not yet refilled to within 0.55 (`SWITCH_RELEASE`), or a jet has just landed
+ * (`holdPlunge`), a cell reverts to shallow water, so bores stay
+ * shock-captured.
  */
 export class BoussinesqSolver extends ShallowWaterSolver {
   readonly dispersive: boolean;
@@ -154,6 +168,8 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   readonly plungeHold: Float64Array;
   /** Changes whenever a cell enters or leaves the plunge zone: a device uploads the zone again. */
   plungeVersion = 0;
+  /** 1 where the depth switch holds a drained cell in shallow water until it refills to within its release (`SWITCH_RELEASE`); 0 elsewhere. */
+  readonly switchLatch: Float64Array;
   private readonly pBar: Float64Array;
   private readonly qBar: Float64Array;
   private readonly sourceX: Float64Array;
@@ -191,7 +207,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     this.nextStrength = make(); this.nextAge = make(); this.viscousX = make(); this.viscousZ = make();
     this.columnUpper = make(); this.columnRight = make();
     this.finest = Math.min(this.dx, ...this.dz);
-    this.still = make(); this.mask = make(); this.plungeHold = make();
+    this.still = make(); this.mask = make(); this.plungeHold = make(); this.switchLatch = make();
     this.pBar = make(); this.qBar = make(); this.sourceX = make(); this.sourceZ = make(); this.halfEta = make();
     this.dX = make(); this.dZ = make();
     this.f1 = make(); this.f2 = make(); this.f3 = make(); this.f4 = make(); this.f5 = make(); this.f6 = make();
@@ -455,21 +471,33 @@ export class BoussinesqSolver extends ShallowWaterSolver {
    * depth, and its surface stands within the Tonelli–Petti ratio of still water:
    * no higher at a crest, and no deeper in a trough. The weakly nonlinear terms
    * fail as badly in a trough that has drained a reef ledge as at a breaking
-   * crest (the Teahupo'o Reef's backwash ran away at 0.07 m over 4 m). Nor does
-   * a cell disperse inside a jet's plunge zone (`holdPlunge`).
+   * crest (the Teahupo'o Reef's backwash ran away at 0.07 m over 4 m). A
+   * drained cell stays latched in shallow water until it refills to within the
+   * release (`SWITCH_RELEASE`), and counts as dry for its neighbours' stencils;
+   * a crest switches back as soon as it is within the ratio. Nor does a cell
+   * disperse inside a jet's plunge zone (`holdPlunge`).
    */
   private updateMask(): void {
-    const { h, still, mask, plungeHold, f1: wet, f2: alongX, f3: box, f4: work } = this;
+    const { h, still, mask, plungeHold, switchLatch, f1: wet, f2: alongX, f3: box, f4: work } = this;
     this.refreshStillDepth();
-    for (let i = 0; i < h.length; i += 1) wet[i] = h[i] > DISPERSIVE_DEPTH && still[i] > DISPERSIVE_DEPTH ? 1 : 0;
-    // Erode the wet cells by the stencils' reach: two along each axis, and the 3 × 3 box for the diagonals.
+    for (let i = 0; i < h.length; i += 1) {
+      const drained = still[i] - h[i];
+      const latched = drained > SWITCH_RATIO * still[i] || (switchLatch[i] > 0 && drained > SWITCH_RELEASE * still[i]);
+      switchLatch[i] = latched ? 1 : 0;
+      wet[i] = h[i] > DISPERSIVE_DEPTH && still[i] > DISPERSIVE_DEPTH && !latched ? 1 : 0;
+    }
+    // Erode the wet cells by the stencils' reach: two along each axis, and the 3 × 3 box for the diagonals. Released on
+    // its own level beside drained cells, a cell's row solve pinned its flux to theirs while it drained (67 m/s on the
+    // Reef), so a latched trough counts as dry here: FUNWAVE-TVD disperses only where all 3 × 3 neighbours are wet,
+    // Celeris keeps dispersion 3 cells from dry bed, and Kazolea & Ricchiuto (2018) drop the terms in thin "troubled"
+    // cells. Counting a drained trough as dry is this game's extension (provisional).
     this.erodeX(wet, alongX, 2);
     this.erodeX(wet, work, 1);
     this.erodeZ(work, box, 1);
     this.erodeZ(wet, work, 2);
     const on = this.dispersive ? 1 : 0;
     for (let i = 0; i < h.length; i += 1) {
-      const weak = !(plungeHold[i] > 0) && Math.abs(h[i] - still[i]) <= SWITCH_RATIO * still[i];
+      const weak = h[i] - still[i] <= SWITCH_RATIO * still[i] && !(plungeHold[i] > 0);
       mask[i] = wet[i] > 0 && alongX[i] > 0 && work[i] > 0 && box[i] > 0 && weak ? on : 0;
     }
   }
@@ -529,12 +557,13 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     super.shiftAlongShore(columns);
     this.depthDirty = true;
     this.layoutVersion += 1;
-    // The breaking bores, the plunge zone and the predictor's memory move with the water; new columns start quiet.
+    // The breaking bores, the plunge zone, the depth switch's latch and the predictor's memory move with the water;
+    // new columns start quiet.
     const shift = Math.trunc(columns);
     if (shift === 0) return;
     const { nx, nz } = this;
     const carried = [
-      this.breakingStrength, this.breakingAge, this.viscosity, this.plungeHold,
+      this.breakingStrength, this.breakingAge, this.viscosity, this.plungeHold, this.switchLatch,
       ...(this.predictorX && this.predictorZ ? [this.predictorX, this.predictorZ] : []),
     ];
     for (let iz = 0; iz < nz; iz += 1) {

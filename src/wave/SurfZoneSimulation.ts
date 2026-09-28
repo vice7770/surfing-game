@@ -490,6 +490,7 @@ export class SurfZoneSimulation {
       arrays.breakingStrength = solver.breakingStrength;
       arrays.breakingAge = solver.breakingAge;
       arrays.plungeHold = solver.plungeHold;
+      arrays.switchLatch = solver.switchLatch;
       const { predictor } = solver;
       if (predictor) {
         arrays['predictor.x'] = predictor.x;

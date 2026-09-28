@@ -4,7 +4,10 @@
  * the device, and the page reports how far the device's surface and fluxes
  * drift from the CPU reference, and what each step costs. With `&plunge`, both
  * hold the same jet plunge zones (`holdPlunge`) on the most strongly breaking
- * water every half second, and the drift inside them is reported too.
+ * water every half second, and the drift inside them is reported too. Every
+ * report also counts the drained troughs the depth switch latches in shallow
+ * water (`switchLatch`), where the two disagree on it, and the drift there;
+ * `&hs=` and `&period=` choose the swell (the Reef's Big: `?spot=reef&hs=3&period=17`).
  */
 import { DataUtils, WebGLRenderer } from 'three';
 import { FftChop } from './scene/FftChop';
@@ -23,7 +26,12 @@ const say = (line: string) => {
   log.textContent = lines.join('\n');
 };
 
-function drift(reference: BoussinesqSolver, device: BoussinesqSolver): { eta: number; etaRms: number; flux: number; breaking: number; held: number; heldCells: number } {
+interface Drift {
+  eta: number; etaRms: number; flux: number; breaking: number; held: number; heldCells: number;
+  switched: number; switchedCells: number; switchDisagrees: number;
+}
+
+function drift(reference: BoussinesqSolver, device: BoussinesqSolver): Drift {
   let worst = 0;
   let squared = 0;
   let signal = 0;
@@ -32,6 +40,9 @@ function drift(reference: BoussinesqSolver, device: BoussinesqSolver): { eta: nu
   let wet = 0;
   let held = 0;
   let heldCells = 0;
+  let switched = 0;
+  let switchedCells = 0;
+  let switchDisagrees = 0;
   for (let i = 0; i < reference.h.length; i += 1) {
     if (reference.h[i] <= 0.01 && device.h[i] <= 0.01) continue;
     wet += 1;
@@ -46,8 +57,16 @@ function drift(reference: BoussinesqSolver, device: BoussinesqSolver): { eta: nu
       heldCells += 1;
       held = Math.max(held, Math.abs(difference));
     }
+    if ((reference.switchLatch[i] > 0) !== (device.switchLatch[i] > 0)) switchDisagrees += 1;
+    if (reference.switchLatch[i] > 0) {
+      switchedCells += 1;
+      switched = Math.max(switched, Math.abs(difference));
+    }
   }
-  return { eta: worst, etaRms: Math.sqrt(squared / Math.max(1, signal)), flux, breaking: breaking / Math.max(1, wet), held, heldCells };
+  return {
+    eta: worst, etaRms: Math.sqrt(squared / Math.max(1, signal)), flux, breaking: breaking / Math.max(1, wet), held, heldCells,
+    switched, switchedCells, switchDisagrees,
+  };
 }
 
 /** Hold the same plunge zone in both solvers, on the reference's most strongly breaking wet cell, along its flow. */
@@ -66,8 +85,10 @@ async function run(): Promise<void> {
   const spot = (new URLSearchParams(location.search).get('spot') ?? 'point') as SurfZoneConfig['spot'];
   const seconds = Number(new URLSearchParams(location.search).get('seconds') ?? 10);
   const plunge = new URLSearchParams(location.search).has('plunge');
-  const config: SurfZoneConfig = { spot, seed: 1, significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0 };
-  say(`Spot ${spot}: building two surf zones…`);
+  const significantHeight = Number(new URLSearchParams(location.search).get('hs') ?? 1.4);
+  const peakPeriod = Number(new URLSearchParams(location.search).get('period') ?? 10);
+  const config: SurfZoneConfig = { spot, seed: 1, significantHeight, peakPeriod, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0 };
+  say(`Spot ${spot}, Hs ${significantHeight} m, ${peakPeriod} s: building two surf zones…`);
   const reference = new SurfZoneSimulation(config);
   const mirrored = new SurfZoneSimulation(config);
   const cpu = reference.solver as BoussinesqSolver;
@@ -93,7 +114,8 @@ async function run(): Promise<void> {
     if (frame % 60 === 0 || frame === 1) {
       const d = drift(cpu, solver);
       const held = plunge ? ` · plunge zone ${d.heldCells} cells, max |Δh| there ${d.held.toExponential(2)} m` : '';
-      say(`t ${(frame * SURF_ZONE_STEP).toFixed(2)} s · max |Δh| ${d.eta.toExponential(2)} m · rms Δh / rms η ${d.etaRms.toExponential(2)} · max |Δq| ${d.flux.toExponential(2)} m²/s · breaking disagrees on ${(d.breaking * 100).toFixed(2)} % of wet cells${held}`);
+      const switched = ` · depth switch latches ${d.switchedCells} cells (disagrees on ${d.switchDisagrees}), max |Δh| there ${d.switched.toExponential(2)} m`;
+      say(`t ${(frame * SURF_ZONE_STEP).toFixed(2)} s · max |Δh| ${d.eta.toExponential(2)} m · rms Δh / rms η ${d.etaRms.toExponential(2)} · max |Δq| ${d.flux.toExponential(2)} m²/s · breaking disagrees on ${(d.breaking * 100).toFixed(2)} % of wet cells${held}${switched}`);
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
   }
