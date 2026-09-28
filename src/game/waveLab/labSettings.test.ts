@@ -67,4 +67,9 @@ describe('lab settings', () => {
     failing.save(applied);
     expect(failing.value.physical.spot).toBe('reef');
   });
+
+  it('keeps a saved Padang Padang spot, and still falls back from an unknown one', () => {
+    expect(sanitizeLabSettings({ physical: { spot: 'padang' } }).physical.spot).toBe('padang');
+    expect(sanitizeLabSettings({ physical: { spot: 'bells' } }).physical.spot).toBe('canyon');
+  });
 });

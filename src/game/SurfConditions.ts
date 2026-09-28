@@ -6,7 +6,7 @@ import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalSettings } from './PhysicalMode
 import { solverStage } from '../wave/SurfZoneSimulation';
 
 /** The Surf screen's few choices (plan P8), turned into the Wave Lab's physical settings. */
-export const SURF_SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon'];
+export const SURF_SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon', 'padang'];
 /**
  * Where a new player paddles out: the Canyon, whose bed gathers the swell so its
  * waves peel (median 58°) and catch best. The Beach, Point and Reef mostly close

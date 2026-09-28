@@ -50,8 +50,10 @@ const breathe = () => new Promise<void>((resolve) => {
 interface Shot { name: string; eye: Vector3; target: Vector3 }
 
 const PARAMETERS = new URLSearchParams(window.location.search);
-/** `?waterSheet&spot=reef` (G9): the practice Reef, held on an open tube, with tube shots in place of the face and bore. */
-const SPOT = PARAMETERS.get('spot') === 'reef' ? 'reef' : PARAMETERS.get('spot') === 'beach' ? 'beach' : 'point';
+/** `?waterSheet&spot=reef` or `padang` (G9): the practice Reef or Padang Padang, held on an open tube, with tube shots in place of the face and bore. */
+const SPOT = (['reef', 'beach', 'padang'] as const).find((spot) => spot === PARAMETERS.get('spot')) ?? 'point';
+/** Reef breaks: the sheet holds them on an open tube. */
+const TUBE_SPOT = SPOT === 'reef' || SPOT === 'padang';
 /** `&whitewater` (G9): hold on a collapsing tube's foam ball, and shoot its whitewater in place of the face and bore. */
 const WHITEWATER = PARAMETERS.has('whitewater');
 /** The whitewater sheet holds once this many foam-ball sprites tumble in the snapshot. */
@@ -201,20 +203,20 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   let simulated = 0;
   while (simulated < MAX_SETTLE) {
     // A tube flies about a second: once settled, the Reef looks for one every 0.2 s.
-    const chunk = (SPOT === 'reef' || WHITEWATER) && simulated >= MIN_SETTLE ? 12 : 60;
+    const chunk = (TUBE_SPOT || WHITEWATER) && simulated >= MIN_SETTLE ? 12 : 60;
     for (let k = 0; k < chunk; k += 1) hooks.step(idle);
     simulated += chunk * STEP;
     if (simulated >= MIN_SETTLE) {
       hooks.render(0);
       const held = WHITEWATER
         ? (foamBall(hooks.mode)?.count ?? 0) >= FOAM_BALL_HOLD
-        : SPOT === 'reef' ? (openTube(hooks.mode)?.reach ?? 0) >= TUBE_OPEN : steepestFace(hooks.water, hooks.mode.focus).slope >= FACE_SLOPE;
+        : TUBE_SPOT ? (openTube(hooks.mode)?.reach ?? 0) >= TUBE_OPEN : steepestFace(hooks.water, hooks.mode.focus).slope >= FACE_SLOPE;
       if (held) break;
     }
     await breathe();
   }
   hooks.render(0);
-  const tube = SPOT === 'reef' && !WHITEWATER ? openTube(hooks.mode) : undefined;
+  const tube = TUBE_SPOT && !WHITEWATER ? openTube(hooks.mode) : undefined;
   const ball = WHITEWATER ? foamBall(hooks.mode) : undefined;
   const shots = findShots(hooks.water, hooks.mode.focus).flatMap((shot) => {
     if (shot.name === 'face') return ball ? whitewaterShots(hooks.water, ball.centre) : tube ? tubeShots(hooks.mode, tube) : [shot];

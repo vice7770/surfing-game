@@ -13,7 +13,9 @@
  * A process writes docs/research/sizes/<spot>[-<tag>].json; the report and the fits read every file.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { DEFAULT_PHYSICAL_SETTINGS, PRACTICE_SWELL, spreadingFor } from '../src/game/PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, practiceSwell, spreadingFor } from '../src/game/PhysicalMode';
+import { swellChoice } from '../src/game/SurfConditions';
+import { applyPadangShape } from './padangShape';
 import type { SpotName } from '../src/wave/Bathymetry';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from '../src/wave/SurfMeter';
 import { SurfZoneSimulation, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
@@ -26,7 +28,9 @@ const option = (name: string): string | undefined => {
 };
 const list = (name: string, fallback: readonly number[]) => option(name)?.split(',').map(Number) ?? [...fallback];
 /** `--summary` runs nothing: it rebuilds the report and prints the fits from the files there. */
-const spots = (process.argv.includes('--summary') ? [] : option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon']) as SpotName[];
+const spots = (process.argv.includes('--summary') ? [] : option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon', 'padang']) as SpotName[];
+// Reshape Padang Padang for this run: `--padang angle=40,platformDepth=9`.
+applyPadangShape(option('padang'));
 const heights = list('heights', SIZE_GRID.heights);
 const periods = list('periods', SIZE_GRID.periods);
 const seconds = Number(option('seconds') ?? SIZE_SEA_SECONDS);
@@ -68,8 +72,10 @@ function measure(config: SurfZoneConfig, source: SizeRun['source'], heightAt: Si
 }
 
 const settings = DEFAULT_PHYSICAL_SETTINGS;
+/** Each spot's own swell direction (the Reef's and Padang Padang's come from their peak's side), else the Wave Lab's default. */
+const directionFor = (spot: SpotName) => swellChoice(spot, 'medium').directionDegrees ?? settings.directionDegrees;
 const base = (spot: SpotName): Omit<SurfZoneConfig, 'significantHeight' | 'peakPeriod'> => ({
-  spot, seed: 1, directionDegrees: settings.directionDegrees, spreading: spreadingFor(settings.spread), tide: 0, windSpeed: 0,
+  spot, seed: 1, directionDegrees: directionFor(spot), spreading: spreadingFor(settings.spread), tide: 0, windSpeed: 0,
 });
 mkdirSync(`${directory}/baseline`, { recursive: true });
 for (const spot of spots) {
@@ -77,7 +83,7 @@ for (const spot of spots) {
   const runs: SizeRun[] = [];
   // Practice gives its groundswell at the edge; buoys give theirs in deep water. Small days also run at the edge,
   // with today's edge height, for the gate against today's sizes; the Canyon always takes its swell at the edge.
-  if (withPractice) runs.push(measure({ ...base(spot), ...PRACTICE_SWELL, heightAt: 'edge' }, 'practice', 'edge'));
+  if (withPractice) runs.push(measure({ ...base(spot), ...practiceSwell(spot), heightAt: 'edge' }, 'practice', 'edge'));
   for (const significantHeight of heights) {
     for (const peakPeriod of periods) {
       const given: SizeRun['heightAt'][] = spot === 'canyon' ? ['edge'] : significantHeight <= SMALL_DAY ? kinds : ['deep'];
@@ -90,7 +96,7 @@ for (const spot of spots) {
 const read = (folder: string): SizeRun[] => (existsSync(folder) ? readdirSync(folder).filter((name) => name.endsWith('.json'))
   .flatMap((name) => JSON.parse(readFileSync(`${folder}/${name}`, 'utf8')) as SizeRun[]) : []);
 const all = read(directory);
-for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
+for (const spot of ['beach', 'point', 'reef', 'canyon', 'padang'] as const) {
   const runs = all.filter((run) => run.spot === spot);
   // The forecast reads a buoy's deep-water height (the Canyon's is taken at its edge), at the take-off, where the readout measures.
   const atTakeOff = (run: SizeRun) => ({ ...run, typical: run.takeOffTypical ?? Number.NaN, sets: run.takeOffSets ?? Number.NaN });

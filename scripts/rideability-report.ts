@@ -10,6 +10,7 @@
 import { writeFileSync } from 'node:fs';
 import { DEFAULT_PHYSICAL_SETTINGS, spreadingFor } from '../src/game/PhysicalMode';
 import type { SpotName } from '../src/wave/Bathymetry';
+import { applyPadangShape } from './padangShape';
 import { applyReefShape } from './reefShape';
 import { PEEL_SKILL_MINIMUM } from '../src/wave/Breaking';
 import { measureRideability, rideability, type PeelSample } from '../src/wave/Rideability';
@@ -21,7 +22,7 @@ const option = (name: string): string | undefined => {
 const argument = (name: string, fallback: number): number => Number(option(name) ?? fallback);
 const seedCount = argument('seeds', 3);
 const periods = argument('periods', 20);
-const spots = (option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon']) as SpotName[];
+const spots = (option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon', 'padang']) as SpotName[];
 const output = option('out') ?? 'docs/research/rideability-report.md';
 const stage = argument('stage', 2) === 1 ? 1 : 2;
 const settings = {
@@ -36,6 +37,7 @@ const custom = settings.significantHeight !== DEFAULT_PHYSICAL_SETTINGS.signific
 const percent = (share: number) => `${Math.round(share * 100)} %`;
 // Reshape the Reef for this run: `--reef angle=50,crestZ=-125`.
 applyReefShape(option('reef'));
+applyPadangShape(option('padang'));
 
 const rows: string[] = [];
 const histograms: string[] = [];

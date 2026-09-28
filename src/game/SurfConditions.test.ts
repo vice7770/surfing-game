@@ -88,8 +88,8 @@ describe('surf conditions', () => {
     for (const wind of Object.values(WINDS)) expect(Math.abs(wind)).toBeLessThanOrEqual(12);
   });
 
-  it('offers all four spots, the Canyon included now that its catch cue works', () => {
-    expect(SURF_SPOTS).toEqual(['beach', 'point', 'reef', 'canyon']);
+  it('offers all five spots, Padang Padang last', () => {
+    expect(SURF_SPOTS).toEqual(['beach', 'point', 'reef', 'canyon', 'padang']);
   });
 
   // The Canyon's waves peel (median 58°) and catch best; the other spots mostly close out (median 12–15°).

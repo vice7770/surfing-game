@@ -23,6 +23,10 @@ describe('protocol', () => {
     expect(parseRoomSettings(null)).toBeUndefined();
   });
 
+  it('accepts a Padang Padang room and still accepts every older spot', () => {
+    for (const spot of ['beach', 'point', 'reef', 'canyon', 'padang']) expect(parseRoomSettings({ ...settings, spot })?.spot).toBe(spot);
+  });
+
   it('parses client messages and drops anything else', () => {
     expect(parseClientMessage('{"type":"ping","t":12.5}')).toEqual({ type: 'ping', t: 12.5 });
     expect(parseClientMessage('{"type":"call","call":"party"}')).toEqual({ type: 'call', call: 'party' });
