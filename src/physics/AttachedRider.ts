@@ -331,7 +331,7 @@ const COMPRESS_WEIGHT = 0.5;
  * MAX_LEG_SPEED, m/s (a countermovement jump's take-off speed, so a jump stays
  * possible), and softens toward the legs-bent 22 kN/m (provisional).
  */
-const CROUCH_DEPTH = 0.3;
+export const CROUCH_DEPTH = 0.3;
 const MAX_LEG_SPEED = 2.5;
 const CROUCH_SOFTENING = 0.5;
 /**

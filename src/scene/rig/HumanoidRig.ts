@@ -3,6 +3,7 @@ import { BONES, MIDDLE_FINGER, REQUIRED_BONES, type Side } from './humanoidBones
 import { orientBone } from './orientBone';
 import { STANDING_PELVIS } from './posturePoints';
 import { POINT, type RiderVisualState } from './riderVisualState';
+import { weightBack } from './stanceBlend';
 import { solveTwoBone } from './twoBoneIk';
 
 const SIDES: readonly Side[] = ['left', 'right'];
@@ -85,17 +86,10 @@ export const RIG_DETAIL = {
   /**
    * The snap (de Sousa 2022's final phase: the weight to the back foot, the trunk
    * rotating, the chest and the leading arm toward the lip; the stances spec's
-   * video). The weight is where the pelvis sits over the stance, level, as a
-   * share of the stance from its middle: the body rides upright, so riding level
-   * it sits over the middle, with the weight fully back (S) 31 % behind, and
-   * climbing the face nose-up it sits back over the tail whatever the weight
-   * (read along the pitched board, its pitch read as weight: the final review).
-   * From `snapFrom` to `snapFull` the weight goes onto the back foot. In a turn,
+   * video). With the weight back (`stanceBlend.ts`'s `weightBack`), in a turn,
    * blended in as the leading arm is, the chest turns up to `snapTwist`° further
    * into it and the leading arm rises to `snapRaise`°.
    */
-  snapFrom: -0.05,
-  snapFull: -0.3,
   snapTwist: 30,
   snapRaise: 60,
   /**
@@ -161,8 +155,6 @@ export class HumanoidRig {
   private readonly left = new Vector3();
   private readonly boardUp = new Vector3();
   private readonly boardForward = new Vector3();
-  /** The board's forward, level. */
-  private readonly level = new Vector3();
   private readonly chestUp = new Vector3();
   private readonly hipsForward = new Vector3();
   private readonly target = new Vector3();
@@ -262,7 +254,7 @@ export class HumanoidRig {
     left.crossVectors(up, forward).normalize();
     this.turnTowardNose(hipsForward.copy(forward), upright ? RIG_DETAIL.hipsTurn : 0);
     this.turnTowardNose(this.facing.copy(forward), upright ? RIG_DETAIL.chestTurn : 0);
-    this.back = state.phase === 'standing' ? this.weightBack(state) : 0;
+    this.back = state.phase === 'standing' ? state.standingBlend * weightBack(state) : 0;
     if (state.phase === 'standing') {
       const most = (RIG_DETAIL.twistMost * Math.PI) / 180;
       const snap = this.back * Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
@@ -440,20 +432,6 @@ export class HumanoidRig {
     }
     const eased = state.standingBlend * depth;
     if (total > 0 && eased < 1) this.orientSpine(chestUp.copy(base).applyAxisAngle(bendAxis, eased * total));
-  }
-
-  /** Standing, how far the weight is back (`RIG_DETAIL.snapFrom`): where the pelvis sits over the stance, level, 0 to 1. */
-  private weightBack(state: RiderVisualState): number {
-    const p = state.points;
-    const f = this.level.copy(this.boardForward).setY(0);
-    if (f.lengthSq() < 1e-8) return 0;
-    f.normalize();
-    const left = p[POINT.leftFoot].dot(f);
-    const right = p[POINT.rightFoot].dot(f);
-    const span = Math.abs(left - right);
-    if (span < 1e-3) return 0;
-    const ahead = (p[POINT.pelvis].dot(f) - (left + right) / 2) / span;
-    return state.standingBlend * Math.max(0, Math.min(1, (RIG_DETAIL.snapFrom - ahead) / (RIG_DETAIL.snapFrom - RIG_DETAIL.snapFull)));
   }
 
   /**
