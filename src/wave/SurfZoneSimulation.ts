@@ -501,7 +501,7 @@ export class SurfZoneSimulation {
     const arrays = Object.fromEntries(Object.entries(this.stateArrays()).map(([name, array]) => [name, array.slice()]));
     return {
       nx: this.solver.nx, nz: this.solver.nz, solverTime: this.solver.time, seaTimeOffset: this.seaTimeOffset, arrays,
-      counters: { lipLaunches: this.lipLaunches, lipVolume: this.lipVolume, lipJets: this.lipJets, lipRollers: this.lipRollers },
+      counters: { lipLaunches: this.lipLaunches, lipVolume: this.lipVolume, lipJets: this.lipJets, lipRollers: this.lipRollers, onsetsArmed: this.onsetsArmed },
       lip: this.lip.exportState(),
     };
   }
@@ -519,9 +519,10 @@ export class SurfZoneSimulation {
     // The turbulence is not handed over (it never feeds back into the water): the breaking stirs it afresh.
     this.aeration.turbulence.fill(0);
     solver.time = state.solverTime;
-    // The outer break line came over as the donor last measured it: a donor that has stepped watches for new
-    // breakers from its next step on, and so does its copy (a wave starting to break then throws on both).
-    this.onsetsArmed = state.solverTime > 0;
+    // The outer break line came over as the donor last measured it, so the copy watches for new breakers when the
+    // donor does (a wave starting to break then throws on both). A spun-up donor that has not stepped yet does not:
+    // its line is unmeasured. States from before the flag was handed over had always stepped.
+    this.onsetsArmed = state.counters.onsetsArmed ?? state.solverTime > 0;
     // The surf is measured afresh from here (the wave-sizes spec): its waves belong to the sea that was replaced.
     this.surf.clear();
     this.seaTimeOffset = state.seaTimeOffset;
