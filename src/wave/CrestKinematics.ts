@@ -12,10 +12,10 @@ const MIN_FACE_SLOPE = 0.005;
  * 1974): a plunging jet for 0.4 ≤ ξ ≤ 2, a spilling roller below, and above
  * it a surging wave that throws nothing. Surging needs the slope to run up to
  * the still-water line; over a submerged crest (a reef ledge levelling off
- * under water) the wave cannot surge and plunges instead: over reefs the
- * breaker is set by the water over the crest, and less of it plunges harder
- * (Yao et al. 2013; Blenkinsopp & Chaplin 2008). Provisional until the slab
- * sources of the Teahupo'o Reef spec's Part B.
+ * under water) the wave cannot surge and plunges instead (Yao et al. 2013;
+ * Blenkinsopp & Chaplin 2008). The lip of such a reef break takes its shape
+ * from `reefOverturn` (Mead & Black 2001; the Teahupo'o Reef, Part B); this
+ * flag keeps the readout's breaker type in step with it.
  */
 export function breakerForm(localIribarren: number, overSubmergedCrest = false): 'jet' | 'roller' | 'none' {
   if (localIribarren < 0.4) return 'roller';

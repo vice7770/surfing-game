@@ -113,6 +113,14 @@ Via Scarfe, Elwany, Mead & Black (2003), ["The Science of Surfing Waves and Surf
 - **The data:** plunging waves at 28 "world-class" surf breaks.
 - **The fit:** a cubic curve was fitted to each barrel (the "vortex"), and the ratio of its two dimensions (the vortex ratio) plotted against the orthogonal seabed gradient: Y = 0.065 X + 0.821, R² = 0.71.
 - **Classes:** breaking intensity is classed medium, medium/high, high, very high and extreme, "defined by the breaking intensity range based on Equation 1". The limits themselves were not found in any copy reachable here.
+
+Read directly on 2026-09-28 by the user's wave-shape advisor (the "Water physics research" session), from the chapter itself: Mead & Black (2001), J. Coastal Research SI 29, ch. 6, ["Predicting the Breaking Intensity of Surfing Waves"](http://joas.free.fr/studies/bei/g2s/predicting_the_breaking_waves_intensity.pdf).
+- **Class limits (their Table 6.2):** extreme 1.6–1.9, very high 1.91–2.2, high 2.21–2.5, medium/high 2.51–2.8, medium 2.81–3.1.
+- **Collapse:** "Waves of greater than extreme are likely to collapse (although an exact limit to vortex ratio is yet to be established) and are therefore unsurfable." No threshold is given.
+- **The measured range is 1.42–3.43.** Shark Island is the lowest (1.42) and the steepest bed in the set; The Wedge 1.80, Backdoor 2.02–2.21. Surfed waves already go past "extreme".
+  - By the fit, 1.42 is about 1:9. Teahupo'o's 1:2.29 is about four times steeper than any of their data, so its Y = 0.97 is an extrapolation.
+- **How X was measured:** "given as the horizontal distance to one vertical unit" (1:X). The gradient is not one cell's slope: "The seabed gradient 2-3 m shallower and 2-3 m deeper than the resulting breaking depth was then averaged", with the breaking depth from H_b/d = 0.78. The band absorbs height and tide errors; it is not a physical constant.
+- **Collapse and surge** (Battjes 1974's surf-similarity bands; Grilli 1997, where no solitary wave breaks on plane slopes steeper than 12°) are for slopes that run up to the shore. A wave over a crest 1.5 m deep cannot surge: it breaks depth-limited over the crest (the advisor's reading).
 - **The orthogonal gradient is the dominant control** of breaking intensity. The shallower water's gradient matters more than the deeper water's. The effect of steps in the profile is "still relatively unknown", a caveat for a slab.
 - **Iribarren-type measures do not fit surfing waves:** they "have not been found to be appropriate for surfing rides". So a reef break's shape follows Mead & Black here, not the plane-beach Iribarren bands.
 - **Wind:** offshore winds increase breaking intensity (the overturn's wind shift, Feddersen et al. 2023, is kept).
@@ -127,12 +135,16 @@ Via Scarfe, Elwany, Mead & Black (2003), ["The Science of Surfing Waves and Surf
 
 ### Rulings (Part B)
 
+The collapse and gradient rows were revised in Task 3 on the advisor's reading above. The first ruling, "Y < 1 collapses", made most of the Reef's Big-swell breaks throw no lip.
+
 | Value | Game value | Source |
 |---|---|---|
-| Vortex ratio | Y = 0.065 X + 0.821, X = 1 / orthogonal gradient | Mead & Black 2001 (X read as 1:X, provisional) |
+| Vortex ratio | Y = 0.065 X + 0.821, X = 1 / orthogonal gradient | Mead & Black 2001 (X is 1:X, their definition) |
+| Orthogonal gradient | the bed's average along the crest's travel, from 2.5 m shallower (not above the shoreline) to 2.5 m deeper than h_b = H / 0.78; the path ends where the window does | Mead & Black 2001's method; 2.5 m is the middle of their stated 2–3 m band (a band chosen to absorb height and tide errors) |
 | Tube aspect (width / length) | 1 / Y | the same |
-| Collapse below | Y < 1 (a vortex taller than long) | **provisional**: beyond "extreme" waves collapse (Mead & Black); the class limits were not found |
-| Gentlest gradient the fit covers | 1:50 | **provisional**: surfed breaks average Y ≈ 3 (X ≈ 33) |
+| Roundest tube | Y held at 1.42 on steeper beds (W/L ≤ 0.70); no collapse over a submerged crest | the roundest they measured (Shark Island). Rounder, up to W/L = 1, would be a look choice for the user, not a source |
+| Gentlest gradient the fit covers | Y ≤ 3.43 (about 1:40); gentler breaks follow the plane-slope rule | the gentlest they measured |
 | Void area | 0.43 H² | **provisional**: Pick & Feddersen's steepest fit, until a slab source (Blenkinsopp & Chaplin) |
-| Lip thickness | 0.5 H | Shand 2024; thicker jets on steeper slopes (Chanson & Lee 1997). **provisional** until a measurement |
+| Lip thickness | 0.5 H | Shand 2024; thicker jets on steeper slopes (Chanson & Lee 1997). **provisional**: "about 0.5 H" is an article's description, not a measurement (the advisor) |
 | Void tilt | 23° | **provisional**: Pick & Feddersen's tilt at their steepest fit |
+| Where a jet lands | over its sheet's thickness (its water over the void's length) along its travel | geometry: a 0.5 H lip lands over as much of the face. Pick & Feddersen's 0.22 H sheets are thinner than a cell at the other spots' sizes and land as before |

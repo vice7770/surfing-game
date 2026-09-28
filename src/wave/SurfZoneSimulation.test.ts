@@ -9,6 +9,7 @@ import {
   windOnsetScale, type SurfZoneConfig,
 } from './SurfZoneSimulation';
 import { BoussinesqSolver } from './BoussinesqSolver';
+import { REEF_OVERTURN } from './Overturn';
 import { shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
 import { REEF_SWELLS } from '../game/SurfConditions';
 import { REEF_PRACTICE_SWELL } from '../game/PhysicalMode';
@@ -439,7 +440,27 @@ describe('SurfZoneSimulation', () => {
       run({ directionDegrees: -25, alongShore: 60 });
       run({ directionDegrees: 25, alongShore: 60 });
     }, 600_000);
+    // The 40 m window's open −x edge cuts the ledge: over a bed sloping across it, main (aa71add) ran this to NaN (Part B).
+    it('stays finite where the window\'s open edge cuts the ledge', () => run({ directionDegrees: 25 }), 300_000);
   });
+
+  it('throws the Reef\'s ledge breaks as reef breaks and every other spot\'s by Pick & Feddersen', () => {
+    const reef = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 });
+    const ratios: number[] = [];
+    reef.onThrow = (event) => { if (event.vortexRatio !== undefined) ratios.push(event.vortexRatio); };
+    for (let frame = 0; frame < 60 * 30 && ratios.length === 0; frame += 1) reef.step(1 / 30);
+    expect(ratios.length).toBeGreaterThan(0);
+    for (const ratio of ratios) {
+      expect(ratio).toBeGreaterThanOrEqual(REEF_OVERTURN.roundestRatio);
+      expect(ratio).toBeLessThanOrEqual(REEF_OVERTURN.gentlestRatio);
+    }
+    const point = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, directionDegrees: 20, spreading: 24 });
+    let reefBreaks = 0;
+    point.onThrow = (event) => { if (event.vortexRatio !== undefined) reefBreaks += 1; };
+    for (let frame = 0; frame < 20 * 30; frame += 1) point.step(1 / 30);
+    expect(point.lipLaunches).toBeGreaterThan(0);
+    expect(reefBreaks).toBe(0);
+  }, 240_000);
 
   it('throws lips from plunging waves on the reef edge', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 });

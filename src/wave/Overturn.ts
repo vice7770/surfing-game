@@ -45,24 +45,34 @@ export function overturn(psi: number): OverturnShape {
 /**
  * A reef break's overturn (the Teahupo'o Reef spec, Part B; docs/research/teahupoo-reef-sources.md): the
  * tube's width over its length is 1 / Mead & Black's (2001) vortex ratio for the gradient the wave climbs,
- * the lip is `lipThickness` of the wave's height thick (Shand 2024) over the void's length, and the void's
- * area and tilt are Pick & Feddersen's at their steepest fit (provisional). Beyond `extremeRatio` a vortex
- * would stand taller than long: the wave collapses without a tube. Gentler than 1:`gentlestRun` the fit
- * does not reach, and the break is a plane slope's.
+ * held within the ratios they measured at surfed breaks, 1.42 (Shark Island, their steepest bed) to 3.43.
+ * The fit has no data beyond them, and nothing says a break over a submerged crest collapses (collapse and
+ * surge are for slopes that reach the shore), so a steeper bed throws the roundest tube measured and a
+ * gentler one breaks as a plane slope does. Inside Pick & Feddersen's fits (ψ0 within their range, slopes to
+ * about 1:10) their void area, jet and tilt are sourced, and only the roundness is Mead & Black's. Beyond them,
+ * where Teahupo'o's ledge lies, the lip is `lipThickness` of the wave's height thick (Shand 2024) over the
+ * void's length, and the void's area and tilt are Pick & Feddersen's at their steepest fit (provisional). The
+ * gradient is averaged `band` m above and below the breaking depth: Mead & Black's stated 2–3 m band absorbs
+ * height and tide errors, and 2.5 m is the game's pick within it.
  */
-export const REEF_OVERTURN = { area: 0.43, lipThickness: 0.5, tiltDegrees: 23, extremeRatio: 1, gentlestRun: 50 };
+export const REEF_OVERTURN = { area: 0.43, lipThickness: 0.5, tiltDegrees: 23, roundestRatio: 1.42, gentlestRatio: 3.43, band: 2.5 };
 
 /** Mead & Black's (2001) vortex ratio, the tube's length over its width, for an orthogonal gradient (rise over run). */
 export function vortexRatio(orthogonalGradient: number): number {
   return 0.065 * (1 / orthogonalGradient) + 0.821;
 }
 
-/** A reef break's overturn for the gradient it climbs, 'collapse' beyond extreme, or undefined where the fit does not reach. */
-export function reefOverturn(orthogonalGradient: number): OverturnShape | 'collapse' | undefined {
-  if (!(orthogonalGradient > 1 / REEF_OVERTURN.gentlestRun)) return undefined;
-  const ratio = vortexRatio(orthogonalGradient);
-  if (ratio < REEF_OVERTURN.extremeRatio) return 'collapse';
-  const aspect = 1 / ratio;
+/**
+ * A reef break's overturn for the gradient it climbs, under a sea `nonlinearity` (H0/h0) high, or undefined
+ * where it is gentler than any measured.
+ */
+export function reefOverturn(orthogonalGradient: number, nonlinearity: number): OverturnShape | undefined {
+  if (!(orthogonalGradient > 0)) return undefined;
+  const fit = vortexRatio(orthogonalGradient);
+  if (fit > REEF_OVERTURN.gentlestRatio) return undefined;
+  const aspect = 1 / Math.max(REEF_OVERTURN.roundestRatio, fit);
+  const psi = overturnParameter(orthogonalGradient, nonlinearity);
+  if (psi <= PSI_RANGE.max) return { ...overturn(psi), aspect };
   const lengthOverHeight = Math.sqrt(REEF_OVERTURN.area / (LH82_AREA * aspect));
   return {
     area: REEF_OVERTURN.area,
@@ -70,6 +80,36 @@ export function reefOverturn(orthogonalGradient: number): OverturnShape | 'colla
     aspect,
     tilt: (REEF_OVERTURN.tiltDegrees * Math.PI) / 180,
   };
+}
+
+/**
+ * Mead & Black's (2001) orthogonal gradient, rise over run: the bed's average gradient along the wave's path
+ * from `REEF_OVERTURN.band` shallower (no shallower than the shoreline) to as much deeper than its breaking
+ * depth. `depthAhead(s)` is the still depth s m ahead of the break along its travel (behind it for s < 0),
+ * NaN off the water it is sampled from, taken every `step` m out to `reach` m each way; a path that runs out
+ * first ends where it does.
+ */
+export function orthogonalGradient(depthAhead: (s: number) => number, breakingDepth: number, step: number, reach: number): number {
+  const shallow = Math.max(0, breakingDepth - REEF_OVERTURN.band);
+  const deep = breakingDepth + REEF_OVERTURN.band;
+  const ahead = contour(depthAhead, 1, shallow, step, reach);
+  const behind = contour(depthAhead, -1, deep, step, reach);
+  const run = ahead.distance + behind.distance;
+  return run > 0 ? (behind.depth - ahead.depth) / run : 0;
+}
+
+/** Where the path, walked `direction`, first reaches the `target` depth (shallower ahead, deeper behind): between samples, or at its reach. */
+function contour(depthAhead: (s: number) => number, direction: 1 | -1, target: number, step: number, reach: number): { distance: number; depth: number } {
+  const reached = (depth: number) => (direction > 0 ? depth <= target : depth >= target);
+  let previous = depthAhead(0);
+  if (reached(previous)) return { distance: 0, depth: previous };
+  for (let k = 1; k * step <= reach; k += 1) {
+    const depth = depthAhead(direction * k * step);
+    if (!Number.isFinite(depth)) return { distance: (k - 1) * step, depth: previous };
+    if (reached(depth)) return { distance: (k - 1 + (target - previous) / (depth - previous)) * step, depth: target };
+    previous = depth;
+  }
+  return { distance: reach, depth: depthAhead(direction * reach) };
 }
 
 /** The void's length along its long axis and its width across it, m, under a wave H m high. */

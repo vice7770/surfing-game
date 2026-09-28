@@ -2,7 +2,7 @@ import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, ROLLER_AREA, SPLASH_UP, STRIP_PARCELS, TUBE_AIR, lipThrow, overturnArea, spitSpeedLimit, type TubeRoller } from './PlungingLip';
 import { GRAVITY } from './dispersion';
-import { LH82_AREA, jetRelativeSpeed, overturn, overturnParameter, tubeFloorDepth, type TubeGeometry } from './Overturn';
+import { LH82_AREA, REEF_OVERTURN, jetRelativeSpeed, overturn, overturnParameter, reefOverturn, tubeFloorDepth, vortexRatio, type OverturnShape, type TubeGeometry } from './Overturn';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
 import { TUBE_EDGE } from './tubeTable';
 
@@ -21,6 +21,61 @@ function momentumZ(solver: ShallowWaterSolver): number {
   }
   return total;
 }
+
+describe('a reef break\'s lip (Teahupo\'o Reef, Part B)', () => {
+  const base = { iribarren: 3, slope: 0.44, nonlinearity: 0.05, breakerHeight: 4, windOverCelerity: 0, width: 1 };
+
+  it('throws a reef break\'s lip from the reef overturn, and a plane slope\'s exactly as before', () => {
+    const reef = lipThrow({ ...base, reef: { orthogonalGradient: 1 / 12 } })!;
+    const shape = reefOverturn(1 / 12, base.nonlinearity) as OverturnShape;
+    expect(reef.shape.aspect).toBeCloseTo(shape.aspect, 12);
+    expect(reef.volume).toBeCloseTo(shape.jetArea * 16, 9);
+    expect(reef.reef?.vortexRatio).toBeCloseTo(vortexRatio(1 / 12), 12);
+    // Without `reef`, a surging ξ throws nothing, as always; a plunging ξ follows Pick & Feddersen.
+    expect(lipThrow(base)).toBeUndefined();
+    const plane = lipThrow({ ...base, iribarren: 1, slope: 0.08 })!;
+    expect(plane.shape).toEqual(overturn(overturnParameter(0.08, 0.05)));
+    expect(plane.reef).toBeUndefined();
+  });
+
+  it('throws a steeper ledge\'s lip from the roundest tube measured, and never collapses it', () => {
+    const steep = lipThrow({ ...base, reef: { orthogonalGradient: 1 / 2.29 } })!;
+    expect(steep.shape.aspect).toBeCloseTo(1 / REEF_OVERTURN.roundestRatio, 12);
+    expect(steep.reef?.vortexRatio).toBeCloseTo(REEF_OVERTURN.roundestRatio, 12);
+  });
+});
+
+describe('a jet\'s landing (Teahupo\'o Reef, Part B)', () => {
+  // Its water over the void's length is the sheet's thickness: a thick lip lands over as much of the face.
+  const land = (voidLength: number) => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 64);
+    const cell = solver.cellIndex(3.5, 12.5);
+    // 1.5 m³ from the 1 m column: the crest's rows give 0.5 m each, leaving their surface at 0.3 m.
+    expect(lip.launch(cell, { x: 0, z: 5 }, 0.31, 1.5, 0, { length: voidLength, width: 0.4, tilt: 0.4 })).toBeCloseTo(1.5, 9);
+    const before = Float64Array.from(solver.h);
+    // Two seconds bring every parcel down, splash-ups too.
+    for (let k = 0; k < 480; k += 1) lip.step(1 / 240);
+    return Array.from(solver.h, (depth, i) => depth - before[i]);
+  };
+  const total = (landed: number[]) => landed.reduce((sum, depth) => sum + depth, 0);
+
+  it('lands a sheet thicker than a cell over its thickness along its travel', () => {
+    // 1.5 m³ over a 0.5 m void is a sheet 3 m thick: its jet comes down evenly across three cells (its
+    // splash-ups, thrown up and on, land whole in the last).
+    const landed = land(0.5);
+    expect(total(landed)).toBeCloseTo(1.5, 9);
+    expect(landed[11 * 8 + 3]).toBeGreaterThan(0.25);
+    expect(landed[12 * 8 + 3]).toBeCloseTo(landed[11 * 8 + 3], 9);
+    expect(landed[13 * 8 + 3]).toBeGreaterThan(landed[11 * 8 + 3]);
+  });
+
+  it('lands a sheet no thicker than a cell in its cell, as before', () => {
+    const landed = land(2);
+    expect(total(landed)).toBeCloseTo(1.5, 9);
+    expect(Math.max(...landed)).toBeGreaterThan(0.55 * 1.5);
+  });
+});
 
 describe('PlungingLip tubes', () => {
   it('writes the newest tubes when more fly than a snapshot holds: they are at the peel’s front, where the rider is', () => {

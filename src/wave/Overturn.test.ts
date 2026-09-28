@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { GRAVITY } from './dispersion';
 import {
-  LH82_AREA, PSI_RANGE, REEF_OVERTURN, jetFlightTime, jetRelativeSpeed, overturn, overturnParameter, overturnSize, reefOverturn, tubeFloorDepth, tubeGeometry,
-  vortexRatio,
+  LH82_AREA, PSI_RANGE, REEF_OVERTURN, jetFlightTime, jetRelativeSpeed, orthogonalGradient, overturn, overturnParameter, overturnSize, reefOverturn,
+  tubeFloorDepth, tubeGeometry, vortexRatio,
 } from './Overturn';
 
 describe('the overturn of a plunging wave (Pick & Feddersen 2026)', () => {
@@ -93,41 +93,74 @@ describe('the overturn of a plunging wave (Pick & Feddersen 2026)', () => {
 });
 
 describe('the reef overturn (Teahupo\'o Reef, Part B)', () => {
+  // A sea whose H0/h0 puts a 1:12 gradient beyond Pick & Feddersen's fits (ψ0 0.18) and a 1:30 one inside (0.07).
+  const STEEP_SEA = 0.05;
+
+  it('takes the void, jet and tilt from Pick & Feddersen inside their fits, and only the roundness from Mead & Black', () => {
+    const psi = overturnParameter(1 / 30, STEEP_SEA);
+    expect(psi).toBeLessThan(PSI_RANGE.max);
+    const shape = reefOverturn(1 / 30, STEEP_SEA)!;
+    expect(shape).toEqual({ ...overturn(psi), aspect: 1 / vortexRatio(1 / 30) });
+  });
+
+  // Mead & Black's surfed breaks measured vortex ratios 1.42 (Shark Island, their steepest bed) to 3.43: 1:9.2 to 1:40.
   it('rounds the tube by Mead & Black\'s vortex ratio for the gradient the wave climbs', () => {
-    expect(vortexRatio(1 / 4)).toBeCloseTo(0.065 * 4 + 0.821, 12);
-    const shape = reefOverturn(1 / 4);
-    if (shape === 'collapse' || shape === undefined) throw new Error('expected a tube');
-    expect(shape.aspect).toBeCloseTo(1 / vortexRatio(1 / 4), 12);
+    expect(vortexRatio(1 / 12)).toBeCloseTo(0.065 * 12 + 0.821, 12);
+    const shape = reefOverturn(1 / 12, STEEP_SEA)!;
+    expect(shape.aspect).toBeCloseTo(1 / vortexRatio(1 / 12), 12);
     expect(shape.area).toBe(REEF_OVERTURN.area);
     expect(shape.tilt).toBeCloseTo((REEF_OVERTURN.tiltDegrees * Math.PI) / 180, 12);
   });
 
   it('throws a lip as thick as its sourced share of the wave, over the void\'s length', () => {
-    const shape = reefOverturn(1 / 4);
-    if (shape === 'collapse' || shape === undefined) throw new Error('expected a tube');
+    const shape = reefOverturn(1 / 12, STEEP_SEA)!;
     const lengthOverHeight = Math.sqrt(shape.area / (LH82_AREA * shape.aspect));
     expect(shape.jetArea).toBeCloseTo(REEF_OVERTURN.lipThickness * lengthOverHeight, 12);
   });
 
-  it('collapses without a tube beyond extreme, where a vortex would stand taller than long', () => {
-    expect(vortexRatio(1 / 2.29)).toBeLessThan(REEF_OVERTURN.extremeRatio);
-    expect(reefOverturn(1 / 2.29)).toBe('collapse');
+  it('holds a steeper bed\'s tube at the roundest one measured: nothing says a break over a submerged crest collapses', () => {
+    for (const gradient of [1 / 9, 1 / 2.29, 1]) {
+      const shape = reefOverturn(gradient, STEEP_SEA)!;
+      expect(shape.aspect).toBeCloseTo(1 / REEF_OVERTURN.roundestRatio, 12);
+      expect(shape.jetArea).toBeGreaterThan(0);
+    }
   });
 
-  it('leaves gradients gentler than the fit covers, and none at all, to the plane-slope rule', () => {
-    expect(reefOverturn(1 / (REEF_OVERTURN.gentlestRun + 1))).toBeUndefined();
-    expect(reefOverturn(0)).toBeUndefined();
-    expect(reefOverturn(-0.1)).toBeUndefined();
-    expect(reefOverturn(Number.NaN)).toBeUndefined();
+  it('leaves gradients gentler than any measured, and none at all, to the plane-slope rule', () => {
+    expect(reefOverturn(1 / 40, STEEP_SEA)).toBeDefined();
+    expect(reefOverturn(1 / 41, STEEP_SEA)).toBeUndefined();
+    expect(reefOverturn(0, STEEP_SEA)).toBeUndefined();
+    expect(reefOverturn(-0.1, STEEP_SEA)).toBeUndefined();
+    expect(reefOverturn(Number.NaN, STEEP_SEA)).toBeUndefined();
   });
 
-  it('draws a finite void floor along a round tube\'s whole length', () => {
-    const shape = reefOverturn(1 / 3);
-    if (shape === 'collapse' || shape === undefined) throw new Error('expected a tube');
+  it('draws a finite void floor along the roundest tube\'s whole length', () => {
+    const shape = reefOverturn(1 / 2.29, STEEP_SEA)!;
     expect(shape.aspect).toBeLessThanOrEqual(1);
     const tube = tubeGeometry(shape, 4);
     for (let ahead = 0; ahead <= tube.length * Math.cos(tube.tilt); ahead += 0.1) {
       expect(Number.isFinite(tubeFloorDepth(tube, ahead))).toBe(true);
     }
+  });
+});
+
+describe('the orthogonal gradient, measured as Mead & Black did', () => {
+  // They averaged the bed's gradient along the wave's path from 2–3 m shallower to 2–3 m deeper than its breaking depth.
+  it('reads a plane slope\'s own gradient, down to the shoreline for a small wave', () => {
+    const plane = (s: number) => 4 - s / 4;
+    expect(orthogonalGradient(plane, 4, 0.5, 100)).toBeCloseTo(1 / 4, 9);
+    expect(orthogonalGradient(plane, 2, 0.5, 100)).toBeCloseTo(1 / 4, 9);
+  });
+
+  it('averages in the reef top when the band reaches past the ledge, and ends where the path does', () => {
+    // A 1:2.29 ledge breaking at 4 m, topping out at 1.5 m; the band's shallow end (0.7 m) lies beyond the reach.
+    const ledge = (s: number) => Math.max(1.5, 4 - s / 2.29);
+    const deepEnd = (5.7 - 4) * 2.29;
+    expect(orthogonalGradient(ledge, 3.2, 0.5, 60)).toBeCloseTo((5.7 - 1.5) / (60 + deepEnd), 9);
+    // A bigger wave's band lies on the ledge alone.
+    expect(orthogonalGradient(ledge, 5, 0.5, 60)).toBeCloseTo(1 / 2.29, 9);
+    // A path leaving the water it is sampled from (NaN) ends at its last sample.
+    const window = (s: number) => (s > 20 ? Number.NaN : ledge(s));
+    expect(orthogonalGradient(window, 3.2, 0.5, 60)).toBeCloseTo((5.7 - 1.5) / (20 + deepEnd), 9);
   });
 });
