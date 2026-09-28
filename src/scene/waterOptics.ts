@@ -37,6 +37,9 @@ export const SPOT_OPTICS: Record<SpotName, WaterOptics> = {
   point: { turbidity: 1, bedAlbedo: [0.36, 0.33, 0.24] },
   reef: { turbidity: 0.15, bedAlbedo: [0.5, 0.47, 0.36] },
   canyon: { turbidity: 1, bedAlbedo: [0.42, 0.36, 0.24] },
+  // Clear water as the Reef's (nothing measured on the Bukit's west coast), over live coral: about 8 % at
+  // 550–650 nm and 2.5 % at 400–500 nm (Hochberg & Atkinson 2003). docs/research/padang-padang-sources.md.
+  padang: { turbidity: 0.15, bedAlbedo: [0.08, 0.08, 0.025] },
 };
 
 const perChannel = (value: (channel: number) => number): Rgb => [value(0), value(1), value(2)];

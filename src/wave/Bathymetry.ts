@@ -1,6 +1,6 @@
 import { seededRandom } from './random';
 
-export type SpotName = 'beach' | 'point' | 'reef' | 'canyon';
+export type SpotName = 'beach' | 'point' | 'reef' | 'canyon' | 'padang';
 
 /**
  * Still-water depth below datum, m; negative on dry land. +x runs along shore,
@@ -68,6 +68,50 @@ export function reefLedgeAt(x: number): boolean {
 export function reefSeaward(x: number, z: number): number {
   return (reefCrestZ(x) - z) * Math.cos((REEF.angle * Math.PI) / 180);
 }
+
+/**
+ * Padang Padang (the Padang Padang spec): a left over a shallow coral shelf on the west coast of Bali's Bukit.
+ * The swell arrives over a platform `platformDepth` deep (the tank's edge), then climbs a ramp at Mead & Black's
+ * orthogonal gradient, inferred from the measured vortex ratios of its tubes (about 1:19; Mead & Black 2001), to a
+ * reef flat `crestDepth` deep that nearly dries at the lowest spring tides. The ramp's top edge (the crest line) runs
+ * at `angle` degrees to the shoreline from the peak (x = peakX), so each wave breaks there first and peels toward +x
+ * (a left) at the platform's celerity over the sine of the crest's angle to the edge (`ledgePeel`). A channel as
+ * deep as the platform runs along the window's +x open edge, level across its axis, where the left ends. Upcoast of
+ * the peak the crest line eases to run along shore, so the bed is level along shore at the window's −x open edge
+ * (an open edge copies its neighbours: a bed sloping across it ran the Reef's Big swell to NaN). A planar beach face
+ * caps it all. Sources and provisional values: docs/research/padang-padang-sources.md. Mutable for the design sweep
+ * (`scripts/padangShape.ts`).
+ */
+export const PADANG = {
+  platformDepth: 10, rampSlope: 1 / 19, crestDepth: 1.25, peakX: -50, peakZ: -90, angle: 35, levelWidth: 20,
+  channelX: 80, channelHalfWidth: 20, shoreSlope: 0.2, takeOffX: -40,
+};
+
+/** The crest line's along-shore coordinate: x past the peak, eased (C¹) into a level strip `levelWidth` wide upcoast of it. */
+function padangAlong(x: number): number {
+  const { peakX, levelWidth } = PADANG;
+  if (x >= peakX) return x;
+  const into = Math.max(0, x - (peakX - levelWidth));
+  return peakX - levelWidth / 2 + (into * into) / (2 * levelWidth);
+}
+
+/** Where Padang Padang's crest line (the top of its ramp) crosses along-shore position x. */
+export function padangCrestZ(x: number): number {
+  return PADANG.peakZ + (padangAlong(x) - PADANG.peakX) * Math.tan((PADANG.angle * Math.PI) / 180);
+}
+
+/** Distance seaward of Padang Padang's crest line, m, measured across it (negative shoreward of it). */
+export function padangSeaward(x: number, z: number): number {
+  const { peakX, levelWidth, angle } = PADANG;
+  // The line's local dz/dx: tan(angle) past the peak, easing to 0 across the level strip.
+  const ease = x >= peakX ? 1 : Math.max(0, x - (peakX - levelWidth)) / levelWidth;
+  return (padangCrestZ(x) - z) / Math.hypot(1, ease * Math.tan((angle * Math.PI) / 180));
+}
+
+/** Whether Padang Padang's reef is ridden at along-shore position x: from its peak to where the channel begins (two half-widths from its axis). */
+export function padangReefAt(x: number): boolean {
+  return x >= PADANG.peakX && x < PADANG.channelX - 2 * PADANG.channelHalfWidth;
+}
 /**
  * A canyon cut through the shelf. It bends the swell off its axis, leaving a
  * shadow over it, and gathers it on its flank: 60–130 m from the axis at the
@@ -131,6 +175,22 @@ function reef(): SurfSpot {
   };
 }
 
+function padang(): SurfSpot {
+  return {
+    name: 'padang',
+    depthAt(x, z) {
+      const p = PADANG;
+      // The ramp from the reef flat down to the platform, across the crest line.
+      const reef = Math.min(p.platformDepth, p.crestDepth + Math.max(0, padangSeaward(x, z)) * p.rampSlope);
+      // The channel: no reef, as deep as the platform, flat across its axis at the window's edge.
+      const channel = Math.exp(-(((x - p.channelX) / p.channelHalfWidth) ** 2));
+      const depth = reef + (p.platformDepth - reef) * channel;
+      // A beach face, and dry land shoreward of z = 0.
+      return Math.min(depth, z < 0 ? -z * p.shoreSlope : -z * 0.06);
+    },
+  };
+}
+
 function canyon(): SurfSpot {
   return {
     name: 'canyon',
@@ -148,5 +208,6 @@ export function createSpot(name: SpotName, seed: number): SurfSpot {
     case 'point': return point();
     case 'reef': return reef();
     case 'canyon': return canyon();
+    case 'padang': return padang();
   }
 }

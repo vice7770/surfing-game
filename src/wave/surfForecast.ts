@@ -51,6 +51,8 @@ export const SURF_FORECAST: Record<SpotName, ForecastFit> = {
   point: { a: 0.4772, sets: 1.056 },
   reef: { a: 0.5125, sets: 1.184 },
   canyon: { a: 0.4994, sets: 1.110 },
+  // Komar & Gaughan's own forecast and a Rayleigh sea's sets, until the size report fits Padang Padang (its plan, Task 8).
+  padang: { a: 0.616, sets: 1.27 },
 };
 
 /** The practice groundswell's measured surf at each spot's take-off (the size report, 2026-09-27). */
@@ -59,6 +61,8 @@ export const PRACTICE_SURF: Record<SpotName, SurfForecast> = {
   point: { typical: 2.27, sets: 2.39 },
   reef: { typical: 2.08, sets: 2.27 },
   canyon: { typical: 2.85, sets: 3.08 },
+  // The spec's Practice target until the size report measures it (the Padang Padang plan, Task 8).
+  padang: { typical: 2, sets: 2.5 },
 };
 
 /** The surf a buoy swell will make at a spot, from its calibrated fit. */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, BEACH_OUTER, CANYON, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, BEACH_OUTER, CANYON, PADANG, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangCrestZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
 import { seededRandom } from './random';
 import { breakerDepthFor } from './Breaking';
 import { ledgePeel } from './ledgePeel';
@@ -120,6 +120,63 @@ describe('surf spot bathymetry', () => {
     });
   });
 
+  describe('Padang Padang', () => {
+    const padang = createSpot('padang', 1);
+    const radians = (PADANG.angle * Math.PI) / 180;
+    // At x = −40 the crest line is past the peak, oblique, and well clear of the beach face and the channel.
+    const x = -40;
+
+    it('climbs from its platform up its ramp to the reef flat, across its crest line', () => {
+      const crest = padangCrestZ(x);
+      expect(padang.depthAt(x, crest)).toBeCloseTo(PADANG.crestDepth, 9);
+      const seaward = { x: Math.sin(radians), z: -Math.cos(radians) };
+      const at = (n: number) => padang.depthAt(x + n * seaward.x, crest + n * seaward.z);
+      expect((at(30) - at(10)) / 20).toBeCloseTo(PADANG.rampSlope, 9);
+      expect(padangSeaward(x + 30 * seaward.x, crest + 30 * seaward.z)).toBeCloseTo(30, 9);
+      expect(padang.depthAt(x, crest - 400)).toBeCloseTo(PADANG.platformDepth, 12);
+      expect(padang.depthAt(x, crest + 10)).toBeCloseTo(PADANG.crestDepth, 12);
+    });
+
+    it('runs its crest line at its angle from the peak toward +x, and along shore upcoast of it', () => {
+      expect((padangCrestZ(0) - padangCrestZ(-40)) / 40).toBeCloseTo(Math.tan(radians), 12);
+      expect(padangCrestZ(-80)).toBeCloseTo(padangCrestZ(PADANG.peakX - PADANG.levelWidth), 12);
+      expect(padangCrestZ(-80)).toBeLessThan(padangCrestZ(PADANG.peakX));
+      // Level along shore at the window's −x open edge (an open edge copies its neighbours).
+      for (let z = -300; z <= -20; z += 10) expect(Math.abs(gradientX(padang, -79, z))).toBeLessThan(1e-9);
+    });
+
+    it('opens a channel along the window’s +x edge, level across it and as deep as the platform', () => {
+      const edge = ALONG_SHORE / 2;
+      expect(PADANG.channelX).toBe(edge);
+      for (let z = -300; z <= -40; z += 20) expect(Math.abs(gradientX(padang, edge, z))).toBeLessThan(1e-3);
+      expect(padang.depthAt(edge, -150)).toBeCloseTo(PADANG.platformDepth, 6);
+    });
+
+    it('rides its reef from the peak to the channel', () => {
+      expect(padangReefAt(PADANG.peakX)).toBe(true);
+      expect(padangReefAt(PADANG.peakX - 1)).toBe(false);
+      expect(padangReefAt(PADANG.channelX - 2 * PADANG.channelHalfWidth)).toBe(false);
+      expect(PADANG.channelX - 2 * PADANG.channelHalfWidth - PADANG.peakX).toBeGreaterThanOrEqual(50);
+    });
+
+    it('has no cliff anywhere in the window', () => {
+      for (let px = -80; px <= 80; px += 2) {
+        for (let z = -400; z <= 20; z += 2) {
+          expect(Math.abs(padang.depthAt(px, z + 0.5) - padang.depthAt(px, z))).toBeLessThan(0.25);
+          expect(Math.abs(padang.depthAt(px + 0.5, z) - padang.depthAt(px, z))).toBeLessThan(0.25);
+        }
+      }
+    });
+
+    it('meets a beach face and dry land shoreward of z = 0, with the crest line seaward of the face', () => {
+      for (let px = -80; px <= 80; px += 10) {
+        expect(padang.depthAt(px, 5)).toBeLessThan(0);
+        expect(padang.depthAt(px, -3)).toBeLessThanOrEqual(3 * PADANG.shoreSlope + 1e-12);
+        if (padangReefAt(px)) expect(padangCrestZ(px)).toBeLessThan(-PADANG.crestDepth / PADANG.shoreSlope);
+      }
+    });
+  });
+
   it('cuts a canyon that is far deeper on its axis and fades before the offshore boundary', () => {
     const canyon = createSpot('canyon', 1);
     expect(canyon.depthAt(CANYON.axisX, -200) - canyon.depthAt(CANYON.axisX + 120, -200)).toBeGreaterThan(8);
@@ -135,7 +192,7 @@ describe('surf spot bathymetry', () => {
   });
 
   it('puts dry land shoreward of every shoreline and stays finite', () => {
-    for (const name of ['beach', 'point', 'reef', 'canyon'] as const) {
+    for (const name of ['beach', 'point', 'reef', 'canyon', 'padang'] as const) {
       const spot = createSpot(name, 3);
       for (let x = -300; x <= 300; x += 25) {
         expect(spot.depthAt(x, 20)).toBeLessThan(0);
