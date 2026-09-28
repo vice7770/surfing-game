@@ -11,7 +11,8 @@ export interface SurfZoneState {
   solverTime: number;
   seaTimeOffset: number;
   arrays: Record<string, Float64Array | Float32Array>;
-  counters: { lipLaunches: number; lipVolume: number; lipJets: number; lipRollers: number };
+  /** `onsetsArmed`: whether the donor watches for new breakers (absent from states before Part B of the Teahupo'o Reef). */
+  counters: { lipLaunches: number; lipVolume: number; lipJets: number; lipRollers: number; onsetsArmed?: boolean };
   lip: LipState;
 }
 

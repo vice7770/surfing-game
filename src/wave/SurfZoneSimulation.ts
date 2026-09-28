@@ -8,19 +8,36 @@ import { FoamField, boreDissipation, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
 import { TUBE_CAPACITY, carveGrid } from './tubeTable';
 import { focusX } from './Refraction';
-import { breakerForm, crestMotion, submergedCrest, waveHeightAt } from './CrestKinematics';
-import { jetFlightTime, tubeGeometry } from './Overturn';
+import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotion } from './CrestKinematics';
+import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import type { SurfZoneState } from './surfZoneState';
 import type { LipImpact } from './SprayCloud';
-import { ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
+import { OPEN_EDGE_REACH, ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
 
 /** Sea water, kg/m³ (the lip's impact energy for the aeration, G9). */
 const WATER_DENSITY = 1025;
+
+/** One lip throw (the tube report's measure, Part B). */
+export interface LipThrowEvent {
+  /** The jet's water the overturn asked for, and what the crest gave, m³. */
+  asked: number;
+  thrown: number;
+  /** The breaking wave's height, m. */
+  height: number;
+  /** Where along shore the crest threw, m. */
+  x: number;
+  tube: TubeGeometry;
+  /** A reef break's vortex ratio (Mead & Black 2001), within the range they measured, and the gradient it climbs. */
+  vortexRatio?: number;
+  orthogonalGradient?: number;
+  /** The jet's speed over its crest's. */
+  speedOverCrest: number;
+}
 
 export interface SurfZoneConfig {
   spot: SpotName;
@@ -63,6 +80,12 @@ export interface SurfZoneConfig {
   /** Online (spec N1): warm start so the sea, once spun up, sits at this sea time (the room's clock). */
   startSeaTime?: number;
 }
+
+/** Columns at each open along-shore edge where no lip is thrown: the reach of the solver's stencils. */
+const OPEN_EDGE_COLUMNS = OPEN_EDGE_REACH;
+
+/** How far a breaking crest's path is followed for the gradient it climbs, m: past any window's bounds, which end it first. */
+const REEF_PATH_REACH = 400;
 
 /** Along-shore window width unless the config says otherwise, m. */
 export const ALONG_SHORE = 160;
@@ -320,6 +343,8 @@ export class SurfZoneSimulation {
   /** Breaks since the start that threw a plunging jet, and that spilled as a roller (plan P7). */
   lipJets = 0;
   lipRollers = 0;
+  /** Each throw, for reports: the jet asked for and thrown, the wave, its void and, for a reef break, its vortex ratio. */
+  onThrow?: (event: LipThrowEvent) => void;
   readonly peel: PeelTracker;
   /** The waves breaking at the take-off, as surf reports measure them (the wave-sizes spec). */
   readonly surf: SurfMeter;
@@ -476,7 +501,7 @@ export class SurfZoneSimulation {
     const arrays = Object.fromEntries(Object.entries(this.stateArrays()).map(([name, array]) => [name, array.slice()]));
     return {
       nx: this.solver.nx, nz: this.solver.nz, solverTime: this.solver.time, seaTimeOffset: this.seaTimeOffset, arrays,
-      counters: { lipLaunches: this.lipLaunches, lipVolume: this.lipVolume, lipJets: this.lipJets, lipRollers: this.lipRollers },
+      counters: { lipLaunches: this.lipLaunches, lipVolume: this.lipVolume, lipJets: this.lipJets, lipRollers: this.lipRollers, onsetsArmed: this.onsetsArmed },
       lip: this.lip.exportState(),
     };
   }
@@ -494,6 +519,10 @@ export class SurfZoneSimulation {
     // The turbulence is not handed over (it never feeds back into the water): the breaking stirs it afresh.
     this.aeration.turbulence.fill(0);
     solver.time = state.solverTime;
+    // The outer break line came over as the donor last measured it, so the copy watches for new breakers when the
+    // donor does (a wave starting to break then throws on both). A spun-up donor that has not stepped yet does not:
+    // its line is unmeasured. States from before the flag was handed over had always stepped.
+    this.onsetsArmed = state.counters.onsetsArmed ?? state.solverTime > 0;
     // The surf is measured afresh from here (the wave-sizes spec): its waves belong to the sea that was replaced.
     this.surf.clear();
     this.seaTimeOffset = state.seaTimeOffset;
@@ -684,6 +713,9 @@ export class SurfZoneSimulation {
     const { solver } = this;
     const { nx, nz, bed, zCenters } = solver;
     if (solver.time - this.lastThrow[column] < 0.7 * this.config.peakPeriod) return;
+    // The window's along-shore edges are open: their columns are what the boundary copies, within the
+    // solver stencils' two columns. Lip water and momentum dropped there ran the oblique Reef away (Part B).
+    if (column < OPEN_EDGE_COLUMNS || column >= nx - OPEN_EDGE_COLUMNS) return;
     let crest = row * nx + column;
     for (let iz = row - 1; iz >= Math.max(1, row - 4); iz -= 1) {
       if (solver.surfaceAt(iz * nx + column) > solver.surfaceAt(crest)) crest = iz * nx + column;
@@ -701,15 +733,28 @@ export class SurfZoneSimulation {
     const overCrest = submergedCrest(
       (ahead) => solver.restLevel - solver.sampleCentered(bed, x, zCenters[crestRow] + ahead), stillDepth, Math.abs(slopeZ),
     );
-    // Over a submerged crest a steep break plunges at the top of the plunging band (`breakerForm`).
-    const iribarren = Math.min(slope / Math.sqrt(breakerHeight / deepWavelength), overCrest ? 2 : Infinity);
-    const form = breakerForm(iribarren, overCrest);
+    // A break over a submerged crest is a reef break: its shape follows Mead & Black by the gradient it climbs
+    // along its travel (the Teahupo'o Reef, Part B); every other break keeps the plane-slope rule.
+    const iribarren = slope / Math.sqrt(breakerHeight / deepWavelength);
+    let motion: CrestMotion | undefined;
+    let height = 0;
+    let orthogonal: number | undefined;
+    // Mead & Black's fit is of plunging waves: a spilling break over a crest (a bar's) stays a roller.
+    if (overCrest && iribarren >= 0.4) {
+      motion = crestMotion(solver, crest);
+      if (!motion) return;
+      height = this.breakingWaveHeight(crest, motion);
+      const gradient = this.orthogonalGradient(x, zCenters[crestRow], motion, height);
+      if (reefOverturn(gradient, edgeHeight(this.config, this.tank.edgeDepth) / (this.tank.edgeDepth + this.config.tide))) orthogonal = gradient;
+    }
+    const form = orthogonal !== undefined ? 'jet' : breakerForm(iribarren);
     if (form === 'roller') this.lipRollers += 1;
     if (form !== 'jet') return;
-    const motion = crestMotion(solver, crest);
-    if (!motion) return;
-    // The overturn scales with the wave the solver has: its crest over the trough half a wavelength ahead.
-    const height = waveHeightAt(solver, crest, 0.5 * motion.speed * this.config.peakPeriod);
+    if (!motion) {
+      motion = crestMotion(solver, crest);
+      if (!motion) return;
+      height = this.breakingWaveHeight(crest, motion);
+    }
     const shape = lipThrow({
       iribarren,
       slope,
@@ -718,6 +763,7 @@ export class SurfZoneSimulation {
       breakerHeight: height,
       windOverCelerity: (this.config.windSpeed ?? 0) / Math.sqrt(GRAVITY * stillDepth),
       width: solver.dx,
+      reef: orthogonal !== undefined ? { orthogonalGradient: orthogonal } : undefined,
     });
     if (!shape) return;
     // The jet leaves the way the crest travels, measured from the crest's own motion, and outruns it
@@ -729,11 +775,38 @@ export class SurfZoneSimulation {
       crest, { x: along.x * speed, z: along.z * speed }, solver.surfaceAt(crest), shape.volume, motion.speed, tubeGeometry(shape.shape, height),
       jetFlightTime(shape.shape, height),
     );
+    this.onThrow?.({
+      asked: shape.volume, thrown, height, x, tube: tubeGeometry(shape.shape, height), vortexRatio: shape.reef?.vortexRatio, orthogonalGradient: orthogonal,
+      speedOverCrest: speed / motion.speed,
+    });
     if (thrown > 0) {
       this.lipLaunches += 1;
       this.lipJets += 1;
       this.lipVolume += thrown;
     }
+  }
+
+  /** The overturn scales with the wave the solver has: its crest over the trough half a wavelength ahead. */
+  private breakingWaveHeight(crest: number, motion: CrestMotion): number {
+    return waveHeightAt(this.solver, crest, 0.5 * motion.speed * this.config.peakPeriod);
+  }
+
+  /**
+   * The gradient a breaking crest climbs, as Mead & Black (2001) measured it: along its travel, across the band
+   * about its breaking depth (H / 0.78), over the window's own seabed (not the level strips at its open edges).
+   */
+  private orthogonalGradient(x: number, z: number, motion: CrestMotion, height: number): number {
+    const { solver } = this;
+    const { nx, nz, xCenters, zCenters, bed, dx } = solver;
+    const [west, east] = [xCenters[OPEN_EDGE_REACH], xCenters[nx - 1 - OPEN_EDGE_REACH]];
+    const [south, north] = [zCenters[0], zCenters[nz - 1]];
+    const { direction } = motion;
+    const depthAhead = (s: number) => {
+      const px = x + s * direction.x;
+      const pz = z + s * direction.z;
+      return px < west || px > east || pz < south || pz > north ? Number.NaN : solver.restLevel - solver.sampleCentered(bed, px, pz);
+    };
+    return orthogonalGradient(depthAhead, height / BREAKER_INDEX, 0.5 * dx, REEF_PATH_REACH);
   }
 
   /** The flying tubes as a `tubeTable` (G9); returns how many. */

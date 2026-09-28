@@ -46,6 +46,19 @@ describe('surf zone state (spec N1: the sea handover)', () => {
     expect(fingerprint(joiner)).toEqual(fingerprint(donor));
   });
 
+  it('hands over a sea spun up but not yet stepped: the copy throws as the original does', () => {
+    // A host answers a joiner as soon as its sea is ready, before its first step; waves already break by then.
+    const donor = new SurfZoneSimulation({ ...config, spinUpPeriods: 6 });
+    const joiner = new SurfZoneSimulation({ ...config, startSeaTime: 1000, spinUpPeriods: 0 });
+    joiner.importState(decodeSurfZoneState(encodeSurfZoneState(donor.exportState())));
+    for (let i = 0; i < 60; i += 1) {
+      donor.step(STEP);
+      joiner.step(STEP);
+    }
+    expect(joiner.lipLaunches).toBe(donor.lipLaunches);
+    expect(joiner.lipRollers).toBe(donor.lipRollers);
+  });
+
   it('survives 32-bit encoding closely enough to break where the donor breaks', () => {
     const donor = new SurfZoneSimulation(config);
     untilAirborne(donor);
