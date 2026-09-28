@@ -324,17 +324,19 @@ Per throw, from the same runs:
   - **Fix:** the half step adds it only where this step's mask is on (the mask is updated first), on the CPU and in WGSL. A masked cell's half step is plain shallow water.
   - **Also dropped:** in a masked cell the stored value is exactly that step's eddy-viscosity term (the recovery is the identity there; measured to 1e-12), up to about 1000 m²/s² at breaking crests. The half step no longer carries it; the corrector applies ν as before.
     - A variant that kept it for masked cells, gating only the dispersive part, took the +25° 40 m probe to 24.0 m/s, over its 20 m/s bar. That is one seed and may be chaotic divergence, not a cause.
-  - **Probes** (seed 3, fastest wet speed, main → gated):
+  - **Probes** (seed 3, fastest wet speed, m/s), on main before Part C (0efc9fa) and after it (d13d0a8), without and with the gate:
 
-    | Probe | main, m/s | gated, m/s |
-    |---|---:|---:|
-    | Big, from 20° | 15.5 | 14.1 |
-    | Low tide | 14.2 | 14.1 |
-    | −25°, 60 m | 11.7 | 11.6 |
-    | +25°, 60 m | 12.2 | 12.3 |
-    | +25°, 40 m | 18.8 | 17.9 |
+    | Probe | before C | gated | after C | gated |
+    |---|---:|---:|---:|---:|
+    | Big, from 20° | 15.5 | 14.1 | 22.0 | 19.2 |
+    | Low tide | 14.2 | 14.1 | 14.9 | 15.3 |
+    | −25°, 60 m | 11.7 | 11.6 | 12.0 | 11.2 |
+    | +25°, 60 m | 12.2 | 12.3 | 15.2 | 14.1 |
+    | +25°, 40 m | 18.8 | 17.9 | 28.7 | 19.5 |
+    | Lagoon, tide −1.0, 60 m | – | – | 14.6 | 13.2 |
 
-    Single runs are chaotic. On seeds 4 and 5 the +25° 40 m probe differs by under 0.2 m/s between main and the gate.
+    - After Part C, the two flashes the 30 m/s guards were raised for fall back under 20 m/s. Main's 28.7 m/s (x 9.5, z −33.5, t 41.60 s) sits beside that run's largest stale push, 288 m²/s² (x 10.5, z −32.5, t 41.62 s).
+    - Single runs are chaotic, so the guards stay at 30 m/s. Before Part C, seeds 4 and 5 of the +25° 40 m probe differ by under 0.2 m/s between main and the gate.
   - **Breaking:** onsets and breaker heights stay as on main:
     - on the plane beach, H/d at onset is 0.9765 (main 0.9764);
     - the Point, the Reef at 1.8 m, the Beach and the Canyon are identical;
