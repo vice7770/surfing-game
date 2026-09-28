@@ -257,3 +257,22 @@ describe('the swing at any display rate (step 4)', () => {
     expect(jerk(3)).toBeLessThan(1.5 * jerk(1));
   }, 240_000);
 });
+
+describe('the head and the knees follow the physics (step 4)', () => {
+  it('holds the head steadier than the chest through a weave, a pump and chop (Pozzo et al. 1990)', () => {
+    for (const rate of [30, 60]) {
+      for (const name of ['weave', 'pumping', 'chop']) {
+        const shot = filmBody(scenario(name), { rate, drawer: trackDrawer, pose: posed() });
+        expect(headSteadiness(shot), `${name} at ${rate} Hz`).toBeLessThan(0.7);
+      }
+    }
+  }, 240_000);
+
+  it('gives at the knees as the physics\' leg does, over chop', () => {
+    for (const rate of [30, 60]) {
+      const shot = filmBody(scenario('chop'), { rate, drawer: trackDrawer, pose: posed() });
+      expect(kneeGive(shot, 0.5), `${rate} Hz`).toBeGreaterThan(0.8);
+    }
+  }, 240_000);
+});
+
