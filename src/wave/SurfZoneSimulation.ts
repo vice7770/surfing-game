@@ -35,6 +35,8 @@ export interface LipThrowEvent {
   /** A reef break's vortex ratio (Mead & Black 2001), within the range they measured, and the gradient it climbs. */
   vortexRatio?: number;
   orthogonalGradient?: number;
+  /** The jet's speed over its crest's. */
+  speedOverCrest: number;
 }
 
 export interface SurfZoneConfig {
@@ -774,6 +776,7 @@ export class SurfZoneSimulation {
     );
     this.onThrow?.({
       asked: shape.volume, thrown, height, x, tube: tubeGeometry(shape.shape, height), vortexRatio: shape.reef?.vortexRatio, orthogonalGradient: orthogonal,
+      speedOverCrest: speed / motion.speed,
     });
     if (thrown > 0) {
       this.lipLaunches += 1;

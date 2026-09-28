@@ -144,7 +144,8 @@ The collapse and gradient rows were revised in Task 3 on the advisor's reading a
 | Tube aspect (width / length) | 1 / Y | the same |
 | Roundest tube | Y held at 1.42 on steeper beds (W/L ≤ 0.70); no collapse over a submerged crest | the roundest they measured (Shark Island). Rounder, up to W/L = 1, would be a look choice for the user, not a source |
 | Gentlest gradient the fit covers | Y ≤ 3.43 (about 1:40); gentler breaks follow the plane-slope rule | the gentlest they measured |
-| Void area | 0.43 H² | **provisional**: Pick & Feddersen's steepest fit, until a slab source (Blenkinsopp & Chaplin) |
-| Lip thickness | 0.5 H | Shand 2024; thicker jets on steeper slopes (Chanson & Lee 1997). **provisional**: "about 0.5 H" is an article's description, not a measurement (the advisor) |
-| Void tilt | 23° | **provisional**: Pick & Feddersen's tilt at their steepest fit |
+| Inside Pick & Feddersen's fits (ψ0 ≤ 0.0889, slopes to about 1:10) | their void area, jet area and tilt for the gradient and sea; only the aspect from Mead & Black | Pick & Feddersen 2026 (sourced where they reach, the advisor's ruling); Mead & Black measured such reefs (Padang Padang 1.97–2.14) |
+| Void area, beyond the fits | 0.43 H² | **provisional**: Pick & Feddersen's steepest fit, until a slab source (Blenkinsopp & Chaplin) |
+| Lip thickness, beyond the fits | 0.5 H | Shand 2024; thicker jets on steeper slopes (Chanson & Lee 1997). **provisional**: "about 0.5 H" is an article's description, not a measurement (the advisor) |
+| Void tilt, beyond the fits | 23° | **provisional**: Pick & Feddersen's tilt at their steepest fit |
 | Where a jet lands | over its sheet's thickness (its water over the void's length) along its travel | geometry: a 0.5 H lip lands over as much of the face. Pick & Feddersen's 0.22 H sheets are thinner than a cell at the other spots' sizes and land as before |
