@@ -6,11 +6,11 @@ import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, STEP_KER
 const WORKGROUP = 64;
 const TAU = 2 * Math.PI;
 /** Fields the CPU writes every frame (board reactions, lip landings), then reads back with the breaking and predictor state. */
-const UPLOAD = [FIELD.H, FIELD.QX, FIELD.QZ] as const;
+export const DEVICE_UPLOAD = [FIELD.H, FIELD.QX, FIELD.QZ] as const;
 /** Fields read back after a step: the water, its breaking and predictor state, and η_t, which a lip's crest motion reads. */
 export const DEVICE_READBACK = [FIELD.H, FIELD.QX, FIELD.QZ, FIELD.RATEH, FIELD.STRENGTH, FIELD.AGE, FIELD.NU, FIELD.PREDX, FIELD.PREDZ] as const;
 /** Fields that follow the bed, or that only the CPU's window shift changes between frames; the plunge zone is also sent when a cell enters or leaves it. */
-const LAYOUT = [FIELD.BED, FIELD.STILL, FIELD.DDX, FIELD.DDZ, FIELD.WEIGHT, FIELD.STRENGTH, FIELD.AGE, FIELD.PREDX, FIELD.PREDZ, FIELD.HOLD] as const;
+export const DEVICE_LAYOUT = [FIELD.BED, FIELD.STILL, FIELD.DDX, FIELD.DDZ, FIELD.WEIGHT, FIELD.STRENGTH, FIELD.AGE, FIELD.PREDX, FIELD.PREDZ, FIELD.HOLD] as const;
 
 /** The one offshore zone a device step blends toward: its rows and its sea's components. */
 interface DeviceZone {
@@ -165,7 +165,7 @@ export class GpuBoussinesq {
     this.sea = device.createBuffer({ size: this.components.byteLength, usage: storage });
     this.params = device.createBuffer({ size: PARAM_WORDS * 4, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
     this.staging = device.createBuffer({ size: DEVICE_READBACK.length * this.n * 4, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
-    this.upload = new Float32Array(UPLOAD.length * this.n);
+    this.upload = new Float32Array(DEVICE_UPLOAD.length * this.n);
     this.field = new Float32Array(this.n);
     const bindLayout = device.createBindGroupLayout({
       entries: [
@@ -224,7 +224,7 @@ export class GpuBoussinesq {
       device.queue.writeBuffer(this.fields, FIELD.HOLD * n * 4, this.field);
     }
     this.plungeVersion = solver.plungeVersion;
-    UPLOAD.forEach((index, k) => {
+    DEVICE_UPLOAD.forEach((index, k) => {
       const source = index === FIELD.H ? solver.h : index === FIELD.QX ? solver.qx : solver.qz;
       this.upload.set(source, k * n);
     });
@@ -281,7 +281,7 @@ export class GpuBoussinesq {
     const { solver, device, n, field } = this;
     const weights = this.zone?.boundary.weights;
     const predictor = solver.predictor;
-    for (const index of LAYOUT) {
+    for (const index of DEVICE_LAYOUT) {
       const source = index === FIELD.BED ? solver.bed : index === FIELD.STILL ? layout.still
         : index === FIELD.DDX ? layout.slopeX : index === FIELD.DDZ ? layout.slopeZ
           : index === FIELD.WEIGHT ? weights : index === FIELD.STRENGTH ? solver.breakingStrength
