@@ -645,6 +645,10 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
       - free arms lower and soft at the elbow (40–55°, 155°), the clavicles following their arms, the heel lifting past 40° of ankle flexion with the toes on the deck, the chest turning with the snap either way, the head leading the turn;
       - the frontside Compress hand now reaches the water (Part B's 6.6 cm miss); the snapshot track no longer blends a riding body into a fallen one;
       - against the map 38 of 99 miss (46 before), 61 met (53); a test holds the drawn pose's medium and high targets but thirteen known misses (the physics' weight and timing, the landing's glide). Next: step 4, secondary motion.
+    - the riding body, step 4: secondary motion and breathing ([plan](docs/superpowers/plans/2026-09-30-secondary-motion.md), [findings](docs/superpowers/plans/2026-09-30-secondary-motion.md#findings)):
+      - the free hands swing with the body, at the arm's own pendulum (about 0.76 Hz, Winter's segments) and critically damped, driven by the shoulder's motion less its sustained part: a pump leaves them trailing as the body rises (Pontzer et al. 2009); hands on points keep them;
+      - the chest breathes, 16 breaths a minute at rest to 36 at full work (Blackie et al. 1991), 1.5 % to 21 % of the chest's depth per breath (Yang et al. 2022), the work read from paddling, swimming, the legs pumping and a held breath; held under water;
+      - the head already holds steady against the chest (Pozzo et al. 1990) and the knees give with the physics' leg: now pinned; the body film measures all four. Next: step 5, feedback cues.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
