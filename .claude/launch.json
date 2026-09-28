@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "steam-controller", "runtimeExecutable": "npx", "runtimeArgs": ["vite", "--port", "5187", "--strictPort"], "port": 5187 }
+  ]
+}
