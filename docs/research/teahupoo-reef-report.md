@@ -317,6 +317,31 @@ Per throw, from the same runs:
   - The Point with both the levelling and the edge-lip guard off matches main exactly (724 jets, 82 rollers, 5741 parcels).
   - The Canyon with the levelling off matches too (13 jets).
   - The Beach also throws 3 reef breaks on its bar, a submerged crest.
+- **The predictor's stale push (fixed: this step's mask gates it).**
+  - **What happened:** the Hancock half step adds the acceleration beyond shallow water that the step before measured (`predictorX/Z`), and it added it whether or not the cell disperses in the new step. A cell just switched to shallow water (by the depth switch or a plunge zone) still took the step before's dispersive push for one step:
+    - −702 m²/s² in a trace of the Big swell from 25° (seed 3, x 3.5, z −41.5, t ≈ 42 s);
+    - peaks of 370–520 m²/s² in the cells just switched, in every probe.
+  - **Fix:** the half step adds it only where this step's mask is on (the mask is updated first), on the CPU and in WGSL. A masked cell's half step is plain shallow water.
+  - **Also dropped:** in a masked cell the stored value is exactly that step's eddy-viscosity term (the recovery is the identity there; measured to 1e-12), up to about 1000 m²/s² at breaking crests. The half step no longer carries it; the corrector applies ν as before.
+    - A variant that kept it for masked cells, gating only the dispersive part, took the +25° 40 m probe to 24.0 m/s, over its 20 m/s bar. That is one seed and may be chaotic divergence, not a cause.
+  - **Probes** (seed 3, fastest wet speed, main → gated):
+
+    | Probe | main, m/s | gated, m/s |
+    |---|---:|---:|
+    | Big, from 20° | 15.5 | 14.1 |
+    | Low tide | 14.2 | 14.1 |
+    | −25°, 60 m | 11.7 | 11.6 |
+    | +25°, 60 m | 12.2 | 12.3 |
+    | +25°, 40 m | 18.8 | 17.9 |
+
+    Single runs are chaotic. On seeds 4 and 5 the +25° 40 m probe differs by under 0.2 m/s between main and the gate.
+  - **Breaking:** onsets and breaker heights stay as on main:
+    - on the plane beach, H/d at onset is 0.9765 (main 0.9764);
+    - the Point, the Reef at 1.8 m, the Beach and the Canyon are identical;
+    - the Big Reef diverges only after its first set.
+  - **GPU:** `/gpu-check.html?spot=reef&hs=3&period=17&plunge` now reports the drift in the reference's shallow-water cells. Until breaking sets in (t ≤ 4 s), that drift is as on main (at most 1.4e-4 m). Gating the CPU alone gives 1–2e-2 m.
+  - **Advice:** the water-physics advisor. FUNWAVE-TVD recomputes its mask after every Runge–Kutta stage and adds only the terms the current mask has on; it never pairs Kennedy's ν with a shallow-water switch.
+  - **Open:** the drained ledge's backwash at x 14.5, z −28.5 (a dispersing cell with 0.36 m of water) is the fastest water in the +25° 40 m probe: 18.8 m/s on main. It, and the eddy-viscosity term in thin water, are follow-ups.
 
 ### Open
 
