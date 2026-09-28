@@ -18,7 +18,7 @@ import { addPadSource } from './game/Bindings';
 import { Controls } from './game/Controls';
 import { SteamControllerDriver } from './game/steam/SteamControllerDriver';
 import { frameDue } from './game/frameLimit';
-import { resolveGraphics, type ResolvedGraphics } from './game/Graphics';
+import { ownSurferDetail, resolveGraphics, type ResolvedGraphics } from './game/Graphics';
 import { schoolPocketReflex, showsPocketReflex } from './game/pocketReflex';
 import type { StanceName } from './physics/riderPosture';
 import { SettingsStore, defaultSettings, type GameplaySettings } from './game/Settings';
@@ -334,7 +334,8 @@ class SurfGame {
     const level = parseShadowLevel(window.location.search, resolved.shadows);
     // A new level recompiles every material, so only a change applies it.
     if (level !== this.shadows.currentLevel) this.shadows.setLevel(level, { surfaces: this.shadowSurfaces });
-    this.physicalMode.surfer.setDetail(resolved.surferLodDistance, resolved.textureCap);
+    const own = ownSurferDetail(resolved);
+    this.physicalMode.surfer.setDetail(own.lodDistance, own.textureCap);
     this.online?.views.setDetail(resolved.surferLodDistance, resolved.textureCap);
     this.applyWaterLook(resolved.waterLook);
   }
