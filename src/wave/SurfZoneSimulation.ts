@@ -137,10 +137,42 @@ export interface TankLayout {
   edgeDepth: number;
 }
 
-/** A big day's edge is this many buoy heights deep, so the zone's linear sea stays near linear (the wave-sizes spec). */
+/** A big day's edge is at least this many buoy heights deep (the wave-sizes spec). */
 export const EDGE_DEPTH_PER_HS = 3.3;
 /** …and at most this share of the deep-water wavelength, keeping kh ≤ 2.5 where the solver's dispersion holds. */
 export const EDGE_DEPTH_MAX_WAVELENGTHS = 0.4;
+/**
+ * The relaxation zone is a first-order wavemaker: a linear sea injected where it is strongly nonlinear releases free
+ * second harmonics and keeps changing shape with distance from the edge (Schäffer 1996). Schäffer's S, the bound
+ * second harmonic over the first (`secondHarmonicRatio`), is acceptable for first-order generation of irregular waves
+ * up to this (Eldrup & Andersen 2019, J. Mar. Sci. Eng. 7(1) 14, table 2). On the Beach's 3.3 Hs edge (9.9 m) a 3 m,
+ * 18 s swell sat at 4.8.
+ */
+export const FIRST_ORDER_LIMIT = 1.2;
+/** Swells above this buoy height, m, get an edge deep enough for first-order generation; smaller days keep today's tanks. */
+export const FIRST_ORDER_FROM = 1.5;
+
+/** Schäffer's S = 4 a2/a1 for a sea of height hm0 (a1 = hm0/2) at a period and still depth: Stokes' finite-depth second order. */
+export function secondHarmonicRatio(hm0: number, period: number, depth: number): number {
+  const { k, kh } = waveKinematics(period, depth);
+  return ((k * hm0) / 2) * (Math.cosh(kh) * (2 + Math.cosh(2 * kh))) / Math.sinh(kh) ** 3;
+}
+
+/** The shallowest edge (still depth below datum, m, to 1 cm) where the swell shoaled there has S ≤ FIRST_ORDER_LIMIT, at most `deepest`. */
+function firstOrderDepth(config: SurfZoneConfig, deepest: number): number {
+  const ratio = (depth: number) => secondHarmonicRatio(edgeHeight(config, depth), config.peakPeriod, depth + config.tide);
+  // S falls as the edge deepens: the bound harmonic goes as 1/sinh³ kh, while the shoaled height changes by a few per cent.
+  let shallow = OFFSHORE_DEPTH[config.spot];
+  let deep = deepest;
+  if (ratio(shallow) <= FIRST_ORDER_LIMIT) return shallow;
+  if (ratio(deep) > FIRST_ORDER_LIMIT) return deep;
+  while (deep - shallow > 0.01) {
+    const middle = (shallow + deep) / 2;
+    if (ratio(middle) <= FIRST_ORDER_LIMIT) deep = middle;
+    else shallow = middle;
+  }
+  return deep;
+}
 /** A deeper tank's relaxation zone is at least this share of the edge wavelength long. */
 export const ZONE_WAVELENGTHS = 0.75;
 /** The fine zone starts this far seaward of where the sets break, m. */
@@ -155,8 +187,9 @@ const FLAT_RISE = 0.1;
  * The tank for a swell (the wave-sizes spec): today's for small days, Practice and the Canyon; for a big day,
  * its edge where the take-off transect's bed first reaches the edge depth (or levels off short of it), and far
  * enough out that the blend onto the spot's bed lies 20 m seaward of the fine zone, which starts 40 m seaward
- * of where the sets break (Komar–Gaughan's H1/10 over the breaker index). The relaxation zone is at least 60 m
- * and 0.75 of the edge wavelength long; the edge takes the bed's depth there, within the kh limit.
+ * of where the sets break (Komar–Gaughan's H1/10 over the breaker index). The edge depth is 3.3 Hs, or deeper
+ * where the zone's linear sea would not hold its shape (Schäffer's S above 1.2 at the tide), within the kh limit.
+ * The relaxation zone is at least 60 m and 0.75 of the edge wavelength long; the edge takes the bed's depth there.
  */
 export function tankLayout(config: SurfZoneConfig): TankLayout {
   const today: TankLayout = { ...TANK, edgeDepth: OFFSHORE_DEPTH[config.spot] };
@@ -168,7 +201,9 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
     return { ...today, offshore: TANK.zoneInner - zone };
   }
   const deepWavelength = (GRAVITY * config.peakPeriod ** 2) / (2 * Math.PI);
-  const wanted = Math.max(today.edgeDepth, Math.min(EDGE_DEPTH_PER_HS * config.significantHeight, EDGE_DEPTH_MAX_WAVELENGTHS * deepWavelength));
+  const deepest = EDGE_DEPTH_MAX_WAVELENGTHS * deepWavelength;
+  const firstOrder = config.significantHeight > FIRST_ORDER_FROM ? firstOrderDepth(config, deepest) : 0;
+  const wanted = Math.max(today.edgeDepth, Math.min(Math.max(EDGE_DEPTH_PER_HS * config.significantHeight, firstOrder), deepest));
   if (wanted <= today.edgeDepth) return today;
   const spot = createSpot(config.spot, config.seed);
   const depth = (z: number) => spot.depthAt(0, z);
@@ -187,7 +222,7 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
   const fineFrom = Math.min(TANK.fineFrom, setBreak - SET_FINE_MARGIN);
   const blend = TANK.blendEnd - TANK.zoneInner;
   const zoneInner = Math.min(reached, fineFrom - 20 - blend);
-  const edgeDepth = Math.min(depth(zoneInner), EDGE_DEPTH_MAX_WAVELENGTHS * deepWavelength);
+  const edgeDepth = Math.min(depth(zoneInner), deepest);
   const zone = Math.max(TANK.zoneInner - TANK.offshore, ZONE_WAVELENGTHS * waveKinematics(config.peakPeriod, edgeDepth).wavelength);
   return { offshore: zoneInner - zone, zoneInner, blendEnd: zoneInner + blend, fineFrom, shore: TANK.shore, edgeDepth };
 }

@@ -11,7 +11,7 @@ import {
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { REEF_OVERTURN } from './Overturn';
 import { shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
-import { REEF_SWELLS } from '../game/SurfConditions';
+import { REEF_SWELLS, TIDES } from '../game/SurfConditions';
 import { REEF_PRACTICE_SWELL } from '../game/PhysicalMode';
 import { rayConcentration } from './Refraction';
 import { crestSpeedAt } from './CrestKinematics';
@@ -679,6 +679,40 @@ describe('the tank sized to the swell (wave sizes)', () => {
   it('reaches a 13.2 m edge for a 4 m Beach swell on its deepened outer shelf', () => {
     const layout = tankLayout(config('beach', 4, 14));
     expect(layout.edgeDepth).toBeGreaterThanOrEqual(13.2 - 0.05);
+  });
+
+  // The relaxation zone is a first-order wavemaker: a linear sea injected where it is strongly nonlinear releases free
+  // second harmonics and keeps changing shape with distance (Schäffer 1996). Schäffer's S = 4 a2/a1, the bound second
+  // harmonic over the first at Hm0 and Tp (Stokes, finite depth), is acceptable for first-order generation of irregular
+  // waves up to 1.2 (Eldrup & Andersen 2019, J. Mar. Sci. Eng. 7(1) 14, table 2). On the Beach's 3.3 Hs edge (9.9 m) a
+  // 3 m, 18 s swell sat at 4.8.
+  const schaffer = (hm0: number, period: number, depth: number) => {
+    const { k, kh } = waveKinematics(period, depth);
+    return 4 * ((k * hm0) / 8) * (Math.cosh(kh) * (2 + Math.cosh(2 * kh))) / Math.sinh(kh) ** 3;
+  };
+
+  it('sizes a big day\'s edge for first-order generation: Schäffer\'s S at most 1.2 there, at every tide', () => {
+    for (const spot of ['beach', 'point'] as const) {
+      for (const significantHeight of [2, 3, 4]) {
+        for (const peakPeriod of [10, 14, 18]) {
+          for (const tide of Object.values(TIDES)) {
+            const swell = { ...config(spot, significantHeight, peakPeriod), tide };
+            const { edgeDepth } = tankLayout(swell);
+            expect(schaffer(edgeHeight(swell, edgeDepth), peakPeriod, edgeDepth + tide), `${spot} Hs ${significantHeight} m, Tp ${peakPeriod} s, tide ${tide} m`)
+              .toBeLessThanOrEqual(1.2);
+          }
+        }
+      }
+    }
+  });
+
+  it('takes the shallowest such edge where the tank reaches it, not a deeper one', () => {
+    for (const [spot, significantHeight, peakPeriod] of [['point', 3, 18], ['beach', 2, 14]] as const) {
+      const swell = config(spot, significantHeight, peakPeriod);
+      const { edgeDepth } = tankLayout(swell);
+      expect(schaffer(edgeHeight(swell, edgeDepth), peakPeriod, edgeDepth)).toBeLessThanOrEqual(1.2);
+      expect(schaffer(edgeHeight(swell, edgeDepth - 0.25), peakPeriod, edgeDepth - 0.25)).toBeGreaterThan(1.2);
+    }
   });
 
   it('gives the Reef today\'s inner tank at its 30 m edge, with a zone three quarters of the edge wavelength long', () => {
