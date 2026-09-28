@@ -540,6 +540,16 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
 - [ ] **Part C · the look, the sound and a solid reef:** the lip's glow, the step, the coral, spit, the section collapsing as one, the impact sound, and "hit the reef".
 - [ ] **Part D · tube riding (P12):** rail grab, the tube camera, the foam ball and spit on the rider, and the Surf School Tube lesson. Waits on Compress, Regular/Goofy and the take-off (PR #43).
 
+### P1 · Padang Padang and the swept barrel — `Spec agreed; Part A next`
+
+Requirements agreed in a grilling session on 2026-09-28 (Q1–Q16, every recommendation accepted): [spec](docs/superpowers/specs/2026-09-28-padang-padang.md). A fifth spot, Padang Padang (Bali), tuned to its real conditions, is the testbed and showcase for a new barrel: one surface swept along the crest from simulated 2D overturn profiles, both drawn and collided, replacing the lip strips and the carved void.
+- [ ] **Part A · the spot:**
+  - a sourced bed (Mead & Black's inferred 1:18–1:20 gradient, the reef's orientation and components), with a sweep for the unsourced values, marked provisional;
+  - its own long-period SSW–SW swells for faces of 2–2.5 / 2.5–3.5 / 3.5–4.5 / 4.5–6 m, Bali's tides (Low −0.8, Mid 0, High +0.9 m) and winds;
+  - stage 2 always; everywhere but Surf School;
+  - judged by the peel, catch, ride and size reports, the tube against Mead & Black's Padang Padang ratio (1.97–2.14), and the user's look.
+- [ ] **Part B · the swept barrel:** a slice clock along the breaking front, a crest-speed onset, a library of simulated 2D overturn profiles, one swept mesh drawn in both looks and collided, and parcels only for the pour, splash-up and spray. Padang Padang first, behind a per-spot switch; every spot switches after the user's look. **Open:** whether the profiles are digitised from published simulations or come from our own 2D runs.
+
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 
 Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](docs/superpowers/specs/2026-09-26-gameplay-milestone.md), grounded in the [surf-science survey](docs/research/surf-gameplay-research.md).
