@@ -376,7 +376,7 @@ describe('the arms', () => {
       rig.solve(state);
     }
     for (const [name, length] of boneLengths(bones)) expect(length, name).toBeCloseTo(before.get(name)!, 9);
-    return { rig, state };
+    return { rig, state, bones };
   };
   const aim = (rig: HumanoidRig, side: Side, toward: Vector3) =>
     (rig.joints.wrist[side].clone().sub(rig.joints.shoulder[side]).angleTo(toward) * 180) / Math.PI;
@@ -386,11 +386,18 @@ describe('the arms', () => {
     expect(aim(rig, lead, rig.look)).toBeLessThan(25);
   });
 
-  it('keeps the physics’ hands going straight, and the rear hand in a turn', () => {
+  // The riding-body plan, step 3: a free arm takes the stance's shape (lower, the elbow soft), keeping only the
+  // physics' hand's heading about the trunk, so the heading is what stays.
+  it('keeps the heading of the physics’ hands going straight, and of the rear hand in a turn', () => {
+    const heading = (rig: HumanoidRig, bones: Map<string, Bone>, side: Side, toward: Vector3) => {
+      const trunk = bones.get(BONES.neck)!.getWorldPosition(new Vector3()).sub(bones.get(BONES.hips)!.getWorldPosition(new Vector3())).normalize();
+      const arm = rig.joints.wrist[side].clone().sub(rig.joints.shoulder[side]).projectOnPlane(trunk);
+      return (arm.angleTo(toward.clone().projectOnPlane(trunk)) * 180) / Math.PI;
+    };
     const straight = solved('regular', 0);
-    for (const side of SIDES) expect(aim(straight.rig, side, straight.state.points[handPoint(side)].clone().sub(straight.rig.joints.shoulder[side]))).toBeLessThan(3);
+    for (const side of SIDES) expect(heading(straight.rig, straight.bones, side, straight.state.points[handPoint(side)].clone().sub(straight.rig.joints.shoulder[side]))).toBeLessThan(8);
     const turning = solved('regular', -2);
-    expect(aim(turning.rig, 'right', turning.state.points[POINT.rightHand].clone().sub(turning.rig.joints.shoulder.right))).toBeLessThan(3);
+    expect(heading(turning.rig, turning.bones, 'right', turning.state.points[POINT.rightHand].clone().sub(turning.rig.joints.shoulder.right))).toBeLessThan(8);
   });
 
   // The riding-body plan, step 1: the bend switched on at once as the hand crossed the hips (the Compress hand's pop,

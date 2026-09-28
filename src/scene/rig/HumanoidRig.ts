@@ -31,6 +31,16 @@ export const RIG_DETAIL = {
   /** The front foot turns toward the nose more than the rear foot. */
   frontFootTurn: 20,
   rearFootTurn: 5,
+  /**
+   * Standing, a free arm (its hand not reaching down) takes the stance's shape
+   * over the physics' held-out hand, by `share` (the riding-body plan, step 3,
+   * from the stance map; all low confidence): raised from the trunk's down
+   * `elevationTall`° standing tall to `elevationDeep`° crouched (SurfDeeper:
+   * hands over their rails, quiet, 20–60°; Kerr's drop: the lead arm about 55°),
+   * the elbow soft at `elbow`° (Kerr's drop: 150–160°), keeping the physics'
+   * hand's heading about the trunk.
+   */
+  arms: { share: 1, elevationTall: 40, elevationDeep: 55, elbow: 155 },
   /** Standing elbows drop below the line from shoulder to hand, a little behind it. */
   elbowDrop: 1,
   elbowBack: 0.3,
@@ -372,6 +382,7 @@ export class HumanoidRig {
       else if (fallen) target.subVectors(hand, shoulder).setLength(RIG_DETAIL.fallenReach * this.armLength).add(shoulder);
       else if (state.phase === 'prone' && state.duck > 0.3) this.straightOnRail(hand, shoulder, target);
       else target.copy(hand);
+      if (state.phase === 'standing') this.freeArm(state, shoulder, target, 1 - this.reachDepth(hand));
       if (state.phase === 'standing' && !this.isRearFoot(state, side)) this.leadArm(state, shoulder, target, 1 - this.reachDepth(hand));
       solveTwoBone(shoulder, this.upperArm, this.lowerArm, target, pole, this.joints.elbow[side], this.joints.wrist[side]);
       this.aimLimb(BONES.arm[side], BONES.foreArm[side], shoulder, this.joints.elbow[side], this.joints.wrist[side], pole);
@@ -679,6 +690,28 @@ export class HumanoidRig {
     const raise = ((RIG_DETAIL.leadRaise + (RIG_DETAIL.snapRaise - RIG_DETAIL.leadRaise) * this.back) * Math.PI) / 180;
     const aim = this.pole2.copy(this.look).multiplyScalar(Math.cos(raise)).addScaledVector(WORLD_UP, Math.sin(raise)).normalize();
     target.lerp(this.direction.copy(shoulder).addScaledVector(aim, RIG_DETAIL.leadReach * this.armLength), weight);
+  }
+
+  /**
+   * Standing, a free arm toward the stance's shape (`RIG_DETAIL.arms`): the
+   * hand's target raised to the stance's elevation from the trunk's down, at the
+   * reach of a soft elbow, about the trunk as the physics' hand is; `share` of
+   * it, none for a hand reaching down.
+   */
+  private freeArm(state: RiderVisualState, shoulder: Vector3, target: Vector3, share: number): void {
+    const { arms } = RIG_DETAIL;
+    const weight = arms.share * share * state.standingBlend;
+    if (weight <= 0) return;
+    const down = this.bend.copy(this.up).negate();
+    // The physics' hand's heading about the trunk: its direction from the shoulder, off the trunk's axis.
+    const out = this.nose.subVectors(target, shoulder).addScaledVector(down, -this.scratch.subVectors(target, shoulder).dot(down));
+    if (out.lengthSq() < 1e-8) return;
+    out.normalize();
+    const elevation = ((arms.elevationTall + (arms.elevationDeep - arms.elevationTall) * this.blend.depth) * Math.PI) / 180;
+    const elbow = (arms.elbow * Math.PI) / 180;
+    const reach = Math.sqrt(this.upperArm ** 2 + this.lowerArm ** 2 - 2 * this.upperArm * this.lowerArm * Math.cos(elbow));
+    const aim = this.direction.copy(down).multiplyScalar(Math.cos(elevation)).addScaledVector(out, Math.sin(elevation));
+    target.lerp(this.middle.copy(shoulder).addScaledVector(aim, reach), weight);
   }
 
   /** Standing, the head along the board's travel led into the turn, within the neck's reach, pitched with the climb. */
