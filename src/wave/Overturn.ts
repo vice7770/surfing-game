@@ -42,6 +42,36 @@ export function overturn(psi: number): OverturnShape {
   };
 }
 
+/**
+ * A reef break's overturn (the Teahupo'o Reef spec, Part B; docs/research/teahupoo-reef-sources.md): the
+ * tube's width over its length is 1 / Mead & Black's (2001) vortex ratio for the gradient the wave climbs,
+ * the lip is `lipThickness` of the wave's height thick (Shand 2024) over the void's length, and the void's
+ * area and tilt are Pick & Feddersen's at their steepest fit (provisional). Beyond `extremeRatio` a vortex
+ * would stand taller than long: the wave collapses without a tube. Gentler than 1:`gentlestRun` the fit
+ * does not reach, and the break is a plane slope's.
+ */
+export const REEF_OVERTURN = { area: 0.43, lipThickness: 0.5, tiltDegrees: 23, extremeRatio: 1, gentlestRun: 50 };
+
+/** Mead & Black's (2001) vortex ratio, the tube's length over its width, for an orthogonal gradient (rise over run). */
+export function vortexRatio(orthogonalGradient: number): number {
+  return 0.065 * (1 / orthogonalGradient) + 0.821;
+}
+
+/** A reef break's overturn for the gradient it climbs, 'collapse' beyond extreme, or undefined where the fit does not reach. */
+export function reefOverturn(orthogonalGradient: number): OverturnShape | 'collapse' | undefined {
+  if (!(orthogonalGradient > 1 / REEF_OVERTURN.gentlestRun)) return undefined;
+  const ratio = vortexRatio(orthogonalGradient);
+  if (ratio < REEF_OVERTURN.extremeRatio) return 'collapse';
+  const aspect = 1 / ratio;
+  const lengthOverHeight = Math.sqrt(REEF_OVERTURN.area / (LH82_AREA * aspect));
+  return {
+    area: REEF_OVERTURN.area,
+    jetArea: REEF_OVERTURN.lipThickness * lengthOverHeight,
+    aspect,
+    tilt: (REEF_OVERTURN.tiltDegrees * Math.PI) / 180,
+  };
+}
+
 /** The void's length along its long axis and its width across it, m, under a wave H m high. */
 export function overturnSize(shape: OverturnShape, height: number): { length: number; width: number } {
   const length = height * Math.sqrt(shape.area / (LH82_AREA * shape.aspect));

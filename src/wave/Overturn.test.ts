@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { GRAVITY } from './dispersion';
-import { LH82_AREA, PSI_RANGE, jetFlightTime, jetRelativeSpeed, overturn, overturnParameter, overturnSize, tubeFloorDepth, tubeGeometry } from './Overturn';
+import {
+  LH82_AREA, PSI_RANGE, REEF_OVERTURN, jetFlightTime, jetRelativeSpeed, overturn, overturnParameter, overturnSize, reefOverturn, tubeFloorDepth, tubeGeometry,
+  vortexRatio,
+} from './Overturn';
 
 describe('the overturn of a plunging wave (Pick & Feddersen 2026)', () => {
   it('reproduces the published fits at the ends of their range', () => {
@@ -85,6 +88,46 @@ describe('the overturn of a plunging wave (Pick & Feddersen 2026)', () => {
       const ratio = 1 + jetRelativeSpeed(overturn(psi), height) / crest;
       expect(ratio).toBeGreaterThan(1.15);
       expect(ratio).toBeLessThan(1.8);
+    }
+  });
+});
+
+describe('the reef overturn (Teahupo\'o Reef, Part B)', () => {
+  it('rounds the tube by Mead & Black\'s vortex ratio for the gradient the wave climbs', () => {
+    expect(vortexRatio(1 / 4)).toBeCloseTo(0.065 * 4 + 0.821, 12);
+    const shape = reefOverturn(1 / 4);
+    if (shape === 'collapse' || shape === undefined) throw new Error('expected a tube');
+    expect(shape.aspect).toBeCloseTo(1 / vortexRatio(1 / 4), 12);
+    expect(shape.area).toBe(REEF_OVERTURN.area);
+    expect(shape.tilt).toBeCloseTo((REEF_OVERTURN.tiltDegrees * Math.PI) / 180, 12);
+  });
+
+  it('throws a lip as thick as its sourced share of the wave, over the void\'s length', () => {
+    const shape = reefOverturn(1 / 4);
+    if (shape === 'collapse' || shape === undefined) throw new Error('expected a tube');
+    const lengthOverHeight = Math.sqrt(shape.area / (LH82_AREA * shape.aspect));
+    expect(shape.jetArea).toBeCloseTo(REEF_OVERTURN.lipThickness * lengthOverHeight, 12);
+  });
+
+  it('collapses without a tube beyond extreme, where a vortex would stand taller than long', () => {
+    expect(vortexRatio(1 / 2.29)).toBeLessThan(REEF_OVERTURN.extremeRatio);
+    expect(reefOverturn(1 / 2.29)).toBe('collapse');
+  });
+
+  it('leaves gradients gentler than the fit covers, and none at all, to the plane-slope rule', () => {
+    expect(reefOverturn(1 / (REEF_OVERTURN.gentlestRun + 1))).toBeUndefined();
+    expect(reefOverturn(0)).toBeUndefined();
+    expect(reefOverturn(-0.1)).toBeUndefined();
+    expect(reefOverturn(Number.NaN)).toBeUndefined();
+  });
+
+  it('draws a finite void floor along a round tube\'s whole length', () => {
+    const shape = reefOverturn(1 / 3);
+    if (shape === 'collapse' || shape === undefined) throw new Error('expected a tube');
+    expect(shape.aspect).toBeLessThanOrEqual(1);
+    const tube = tubeGeometry(shape, 4);
+    for (let ahead = 0; ahead <= tube.length * Math.cos(tube.tilt); ahead += 0.1) {
+      expect(Number.isFinite(tubeFloorDepth(tube, ahead))).toBe(true);
     }
   });
 });
