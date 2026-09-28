@@ -58,9 +58,23 @@ export const REEF_SWELLS: Record<'small' | 'medium' | 'big', SwellChoice> = {
   big: { significantHeight: 3, peakPeriod: 17, spread: 0.15, directionDegrees: 20 },
 };
 
-/** A spot's swell for a Surf screen choice: the Reef's own, or the shared buoy values. */
+/**
+ * Padang Padang's own swells (the Padang Padang spec, decision 4): long-period SSW–SW groundswells (periods
+ * often over 16 s) for faces of 2.5–3.5 / 3.5–4.5 / 4.5–6 m, arriving on its platform from the peak's side.
+ * Heights from Komar & Gaughan inverted to the faces; provisional until the size report calibrates them.
+ */
+export const PADANG_SWELLS: Record<'small' | 'medium' | 'big', SwellChoice> = {
+  small: { significantHeight: 1.6, peakPeriod: 16, spread: 0.2, directionDegrees: 20 },
+  medium: { significantHeight: 2.2, peakPeriod: 17, spread: 0.2, directionDegrees: 20 },
+  big: { significantHeight: 3, peakPeriod: 18, spread: 0.15, directionDegrees: 20 },
+};
+
+/** Spots with swells of their own; the rest take the shared buoy values. */
+const SPOT_SWELLS: Partial<Record<SpotName, Record<'small' | 'medium' | 'big', SwellChoice>>> = { reef: REEF_SWELLS, padang: PADANG_SWELLS };
+
+/** A spot's swell for a Surf screen choice: its own, or the shared buoy values. */
 export function swellChoice(spot: SpotName, swell: Exclude<SwellSize, 'practice'>): SwellChoice {
-  return spot === 'reef' ? REEF_SWELLS[swell] : SWELLS[swell];
+  return SPOT_SWELLS[spot]?.[swell] ?? SWELLS[swell];
 }
 
 /** The surf a swell size makes at a spot (the wave-sizes spec): the practice groundswell as measured, the others forecast. */
@@ -79,6 +93,29 @@ export function surfForecastText(choice: { spot: SpotName; conditions: SurfCondi
 export const TIDES: Record<TideLevel, number> = { low: -0.6, mid: 0, high: 0.6 };
 /** Local wind, m/s, positive onshore. */
 export const WINDS: Record<WindKind, number> = { offshore: -5, calm: 0, onshore: 6 };
+
+/**
+ * Padang Padang's tides, m (the Padang Padang spec, decision 5): Bali's spring range is about ±1.2 m (the Benoa
+ * gauge's highest ranges, 2.3–2.46 m). Low is a normal low, where the best barrels are. Provisional (the advisor's ruling).
+ */
+export const PADANG_TIDES: Record<TideLevel, number> = { low: -0.8, mid: 0, high: 0.9 };
+
+/** A spot's tide for a level: Padang Padang's own, or the shared ones. */
+export function tideFor(spot: SpotName, level: TideLevel): number {
+  return (spot === 'padang' ? PADANG_TIDES : TIDES)[level];
+}
+
+/**
+ * Padang Padang's winds, m/s, positive onshore (decision 6): the dry season's SSE–SE trade by day, about 4.6 m/s at
+ * Ngurah Rai (Windfinder) and nearly straight offshore on the Bukit's west coast; the wet season's westerlies, about
+ * 2.5–3 m/s (MERRA-2), onshore. Provisional: docs/research/padang-padang-sources.md.
+ */
+export const PADANG_WINDS: Record<WindKind, number> = { offshore: -5, calm: 0, onshore: 3 };
+
+/** A spot's wind for a kind: Padang Padang's own, or the shared ones. */
+export function windFor(spot: SpotName, kind: WindKind): number {
+  return (spot === 'padang' ? PADANG_WINDS : WINDS)[kind];
+}
 /**
  * The sun for each time of day: height 0–1 and direction, degrees, as on the
  * Wave Lab's sliders. Heights match the photographed skies' measured suns
@@ -105,8 +142,8 @@ export function physicalSettingsFor(spot: SpotName, conditions: SurfConditions, 
     source: swell ? 'buoy' : 'practice',
     ...(swell ? { significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod, spread: swell.spread } : {}),
     ...(swell?.directionDegrees !== undefined ? { directionDegrees: swell.directionDegrees } : {}),
-    tide: TIDES[conditions.tide],
-    windSpeed: WINDS[conditions.wind],
+    tide: tideFor(spot, conditions.tide),
+    windSpeed: windFor(spot, conditions.wind),
   };
 }
 

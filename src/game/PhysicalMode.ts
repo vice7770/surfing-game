@@ -87,9 +87,16 @@ export const PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1.4, pe
  */
 export const REEF_PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1, peakPeriod: 14, spreading: 40, bandwidth: 0.08, directionDegrees: 20 };
 
-/** A spot's practice groundswell: the Reef's own, or the shared one. */
+/**
+ * Padang Padang's practice groundswell: the Practice swell's narrow band and spread at a Padang Padang period,
+ * from the peak's side, given at its platform edge, for faces of 2–2.5 m (the Padang Padang spec). It "works from
+ * about 4 ft" (about 2.4 m faces), so this is its smallest honest size. Provisional until the size report.
+ */
+export const PADANG_PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1.5, peakPeriod: 16, spreading: 40, bandwidth: 0.08, directionDegrees: 20 };
+
+/** A spot's practice groundswell: the Reef's or Padang Padang's own, or the shared one. */
 export function practiceSwell(spot: SpotName): Readonly<SwellInput> {
-  return spot === 'reef' ? REEF_PRACTICE_SWELL : PRACTICE_SWELL;
+  return spot === 'reef' ? REEF_PRACTICE_SWELL : spot === 'padang' ? PADANG_PRACTICE_SWELL : PRACTICE_SWELL;
 }
 
 /** The GPU tier's sea (plan P6): more components, so sets repeat less often. */

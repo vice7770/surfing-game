@@ -52,3 +52,15 @@ export function ledgePeel(input: LedgePeelInput): LedgePeel {
     angleDegrees: peelSpeed === Infinity ? 0 : (Math.asin(Math.min(1, breaker / peelSpeed)) * 180) / Math.PI,
   };
 }
+
+/**
+ * The ray's angle to the edge's normal where the still depth is `depth` on the ramp, degrees: the along-edge wave
+ * number is conserved, so sin β / c(depth) = sin φ / c_shelf (Snell along the edge). Mead & Black's gradient is
+ * the bed's slope along this ray: the ramp's steepest slope times cos β.
+ */
+export function rayAngleAt(input: LedgePeelInput, depth: number): number {
+  const omega = (2 * Math.PI) / input.period;
+  const { crestToLedgeDegrees } = ledgePeel(input);
+  const sine = (Math.sin((crestToLedgeDegrees * Math.PI) / 180) * madsenSorensenCelerity(omega, depth)) / madsenSorensenCelerity(omega, input.shelfDepth);
+  return (Math.asin(Math.min(1, Math.abs(sine))) * 180) / Math.PI;
+}

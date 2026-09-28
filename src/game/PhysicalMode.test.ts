@@ -4,7 +4,7 @@ import { WaterSurface } from '../scene/WaterSurface';
 import { FlatSurfaceSource } from '../scene/FlatSurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { stormSwell } from '../wave/StormSwell';
-import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, spreadingFor, swellFor, swellHeightLimit } from './PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, spreadingFor, swellFor, swellHeightLimit } from './PhysicalMode';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 
@@ -84,6 +84,12 @@ describe('PhysicalMode', () => {
     expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'canyon', source: 'practice' })).toEqual(PRACTICE_SWELL);
     expect(REEF_PRACTICE_SWELL.bandwidth).toBeLessThan(0.1);
     expect(REEF_PRACTICE_SWELL.directionDegrees).toBe(20);
+  });
+
+  it('practises Padang Padang on its own long-period groundswell', () => {
+    expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'padang', source: 'practice' })).toEqual(PADANG_PRACTICE_SWELL);
+    expect(PADANG_PRACTICE_SWELL.bandwidth).toBeLessThan(0.1);
+    expect(PADANG_PRACTICE_SWELL.peakPeriod).toBeGreaterThanOrEqual(16);
   });
 
   it('roughens the chop more under onshore than offshore wind', () => {

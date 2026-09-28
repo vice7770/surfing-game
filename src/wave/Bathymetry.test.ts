@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { BEACH_BAR, BEACH_OUTER, CANYON, PADANG, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangCrestZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
 import { seededRandom } from './random';
-import { breakerDepthFor } from './Breaking';
+import { PEEL_SKILL_MINIMUM, breakerDepthFor } from './Breaking';
 import { ledgePeel } from './ledgePeel';
-import { REEF_SWELLS } from '../game/SurfConditions';
-import { ALONG_SHORE } from './SurfZoneSimulation';
+import { PADANG_SWELLS, REEF_SWELLS } from '../game/SurfConditions';
+import { ALONG_SHORE, OFFSHORE_DEPTH, edgeHeight } from './SurfZoneSimulation';
 
 /** Offshore bed slope: depth increase per metre toward −z. */
 function slopeZ(spot: SurfSpot, x: number, z: number, step = 0.5): number {
@@ -174,6 +174,16 @@ describe('surf spot bathymetry', () => {
         expect(padang.depthAt(px, -3)).toBeLessThanOrEqual(3 * PADANG.shoreSlope + 1e-12);
         if (padangReefAt(px)) expect(padangCrestZ(px)).toBeLessThan(-PADANG.crestDepth / PADANG.shoreSlope);
       }
+    });
+
+    it('is designed to peel fast but makeable on the Small swell (phase matching)', () => {
+      const small = PADANG_SWELLS.small;
+      const config = { spot: 'padang' as const, seed: 1, significantHeight: small.significantHeight, peakPeriod: small.peakPeriod, directionDegrees: 0, spreading: 24, tide: 0 };
+      const peel = ledgePeel({
+        period: small.peakPeriod, deepDepth: OFFSHORE_DEPTH.padang, shelfDepth: PADANG.platformDepth,
+        breakDepth: breakerDepthFor(edgeHeight(config), OFFSHORE_DEPTH.padang), swellDegrees: small.directionDegrees ?? 0, ledgeDegrees: PADANG.angle,
+      });
+      expect(peel.angleDegrees).toBeGreaterThanOrEqual(PEEL_SKILL_MINIMUM.professional);
     });
   });
 

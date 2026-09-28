@@ -3,8 +3,8 @@ import { TANK_SWELL_LIMITS } from './PhysicalMode';
 import skyManifest from '../../public/assets/skies/skies.json';
 import { nearestSky, sunElevationFromSlider, type SkyEntry } from '../scene/PhotoSky';
 import {
-  DEFAULT_CONDITIONS, DEFAULT_SPOT, REEF_SWELLS, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings, nextBackdropSpot, physicalSettingsFor,
-  surfForecastFor, surfForecastText, swellChoice,
+  DEFAULT_CONDITIONS, DEFAULT_SPOT, PADANG_SWELLS, PADANG_TIDES, PADANG_WINDS, REEF_SWELLS, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings,
+  nextBackdropSpot, physicalSettingsFor, surfForecastFor, surfForecastText, swellChoice, tideFor, windFor,
 } from './SurfConditions';
 import { PRACTICE_SURF, forecastSurf } from '../wave/surfForecast';
 import { surfName as describeName } from '../ui/surfHeight';
@@ -32,6 +32,33 @@ describe('surf conditions', () => {
       expect(swell.significantHeight).toBeLessThanOrEqual(TANK_SWELL_LIMITS.height.max);
       expect(swell.peakPeriod).toBeGreaterThanOrEqual(14);
       expect(swell.peakPeriod).toBeLessThanOrEqual(TANK_SWELL_LIMITS.period.max);
+    }
+  });
+
+  it('gives Padang Padang its own long-period swells, tides and winds', () => {
+    const settings = physicalSettingsFor('padang', { swell: 'medium', tide: 'low', wind: 'offshore', time: 'midday' }, water);
+    expect(settings).toMatchObject({
+      source: 'buoy', significantHeight: PADANG_SWELLS.medium.significantHeight, peakPeriod: PADANG_SWELLS.medium.peakPeriod,
+      directionDegrees: PADANG_SWELLS.medium.directionDegrees, tide: PADANG_TIDES.low, windSpeed: PADANG_WINDS.offshore,
+    });
+    for (const swell of Object.values(PADANG_SWELLS)) {
+      expect(swell.significantHeight).toBeLessThanOrEqual(TANK_SWELL_LIMITS.height.max);
+      expect(swell.peakPeriod).toBeGreaterThanOrEqual(16);
+      expect(swell.peakPeriod).toBeLessThanOrEqual(TANK_SWELL_LIMITS.period.max);
+    }
+    // Bali's range (the Benoa gauge): lower and higher than the shared tides, within the Wave Lab's −1…1 m slider.
+    expect(PADANG_TIDES.low).toBeLessThan(TIDES.low);
+    expect(PADANG_TIDES.high).toBeGreaterThan(TIDES.high);
+    for (const tide of Object.values(PADANG_TIDES)) expect(Math.abs(tide)).toBeLessThanOrEqual(1);
+    for (const wind of Object.values(PADANG_WINDS)) expect(Math.abs(wind)).toBeLessThanOrEqual(12);
+    expect(PADANG_WINDS.offshore).toBeLessThan(0);
+    expect(PADANG_WINDS.onshore).toBeGreaterThan(0);
+  });
+
+  it('keeps every other spot on the shared tides and winds', () => {
+    for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
+      for (const level of ['low', 'mid', 'high'] as const) expect(tideFor(spot, level)).toBe(TIDES[level]);
+      for (const kind of ['offshore', 'calm', 'onshore'] as const) expect(windFor(spot, kind)).toBe(WINDS[kind]);
     }
   });
 
