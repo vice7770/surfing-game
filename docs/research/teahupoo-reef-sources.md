@@ -102,3 +102,37 @@ Phase matching, derived in `src/wave/ledgePeel.ts`:
 | Peel speed target along the ledge | 10–13 m/s | **provisional**; pros measured 8.9–10.9 m/s top speed on a point break. The chosen design measures 13.6 m/s |
 | Faces: Practice / Small / Medium / Big | 1.5–2 / 2–3 / 3–4 / 5–6 m | the spec (decision 4) |
 | Swell periods | 14–17 s (Practice 14) | Shand (14–20 s), WSL (14–18 s best) |
+
+## Part B: slab tubes
+
+Researched 2026-09-28 (Part B, Task 1).
+
+### Mead & Black (2001)
+
+Via Scarfe, Elwany, Mead & Black (2003), ["The Science of Surfing Waves and Surfing Breaks: A Review"](https://escholarship.org/uc/item/6h72j1fz), Scripps technical report; two of its authors are Mead & Black.
+- **The data:** plunging waves at 28 "world-class" surf breaks.
+- **The fit:** a cubic curve was fitted to each barrel (the "vortex"), and the ratio of its two dimensions (the vortex ratio) plotted against the orthogonal seabed gradient: Y = 0.065 X + 0.821, R² = 0.71.
+- **Classes:** breaking intensity is classed medium, medium/high, high, very high and extreme, "defined by the breaking intensity range based on Equation 1". The limits themselves were not found in any copy reachable here.
+- **The orthogonal gradient is the dominant control** of breaking intensity. The shallower water's gradient matters more than the deeper water's. The effect of steps in the profile is "still relatively unknown", a caveat for a slab.
+- **Iribarren-type measures do not fit surfing waves:** they "have not been found to be appropriate for surfing rides". So a reef break's shape follows Mead & Black here, not the plane-beach Iribarren bands.
+- **Wind:** offshore winds increase breaking intensity (the overturn's wind shift, Feddersen et al. 2023, is kept).
+
+### Other sources
+
+- **Blenkinsopp & Chaplin (2008):** less crest submergence plunges harder, measured by the air cavity under the jet. Their cavity-size numbers were not reachable here, so the reef void's area stays provisional.
+- **The lip's thickness:**
+  - Shand (2024) gives about half the wave's height at Teahupo'o;
+  - Chanson & Lee (1997), ["Plunging jet characteristics of plunging breakers"](https://www.sciencedirect.com/science/article/abs/pii/S0378383996000567), Coastal Engineering 31, find steeper slopes throw thicker jets (qualitative here; the full text was not reachable).
+- **The jet's water:** Pick & Feddersen's jet area is the water of the overturning crest. The game takes it from the crest across the overturn's length, each cell giving at most 20 % of its water (numerical, the P7 bound). Whether the crest holds enough is measured, not assumed (Part B, Task 5).
+
+### Rulings (Part B)
+
+| Value | Game value | Source |
+|---|---|---|
+| Vortex ratio | Y = 0.065 X + 0.821, X = 1 / orthogonal gradient | Mead & Black 2001 (X read as 1:X, provisional) |
+| Tube aspect (width / length) | 1 / Y | the same |
+| Collapse below | Y < 1 (a vortex taller than long) | **provisional**: beyond "extreme" waves collapse (Mead & Black); the class limits were not found |
+| Gentlest gradient the fit covers | 1:50 | **provisional**: surfed breaks average Y ≈ 3 (X ≈ 33) |
+| Void area | 0.43 H² | **provisional**: Pick & Feddersen's steepest fit, until a slab source (Blenkinsopp & Chaplin) |
+| Lip thickness | 0.5 H | Shand 2024; thicker jets on steeper slopes (Chanson & Lee 1997). **provisional** until a measurement |
+| Void tilt | 23° | **provisional**: Pick & Feddersen's tilt at their steepest fit |
