@@ -837,8 +837,11 @@ Then SendMessage the Reef session ("Waves, tubing, and Reef section") in one lin
       return simulation;
     };
 
-    it('stays finite and bounded under the Big swell, and plunges', () => {
-      expect(run({}).lipLaunches).toBeGreaterThan(0);
+    it('stays finite and bounded under the Big swell, plunges, and peels left toward the channel', () => {
+      const simulation = run({});
+      expect(simulation.lipLaunches).toBeGreaterThan(0);
+      // A left: seen from a surfer facing the beach, it runs to their left, toward +x and the channel (the advisor's check).
+      expect(simulation.peelEstimate()?.direction).toBe(1);
     }, 600_000);
     // Review Focus 1: the lowest springs leave 5 cm over the reef flat.
     it('stays finite over the nearly dry reef flat at the lowest spring tide', () => run({ tide: -1.2 }, 30), 600_000);
@@ -906,6 +909,31 @@ git commit -m "test: Padang Padang holds under the Big swell, at the lowest spri
 - Modify: `docs/research/padang-padang-report.md` (the sweep), `docs/research/padang-padang-sources.md` (rulings)
 - Modify: `src/wave/Bathymetry.ts`, `src/game/SurfConditions.ts`, `src/game/PhysicalMode.ts` (the winning values)
 
+- [ ] **Step 0: Report the share of waves too fast to make**
+
+The advisor (2026-09-28): a rider needs the break point's speed, and GPS-tracked competitive surfers peak at 9.3 m/s on average and 12.5 m/s at most (Farley, Harris & Kilding 2012). In `src/wave/Rideability.ts`:
+- add `export const FASTEST_SURFER = 12.5;` with that source;
+- add to `RideabilityStats`: `/** Share of clean waves whose break point outruns the fastest measured surfer (FASTEST_SURFER), 0–1 (NaN without speeds). */ fastShare: number;`;
+- compute it from the clean waves' `peelSpeed`s.
+
+Test first, in `Rideability.test.ts`:
+
+```ts
+  it('reports the share of clean waves that outrun the fastest measured surfer', () => {
+    const stats = rideability([
+      { angleDegrees: 35, fit: 0.9, peelSpeed: 10 },
+      { angleDegrees: 25, fit: 0.9, peelSpeed: 14 },
+      { angleDegrees: 30, fit: 0.9, peelSpeed: 13 },
+      { angleDegrees: 20, fit: 0.1, peelSpeed: 40 },
+    ]);
+    expect(FASTEST_SURFER).toBe(12.5);
+    expect(stats.fastShare).toBeCloseTo(2 / 3, 12);
+    expect(rideability([{ angleDegrees: 35, fit: 0.9 }]).fastShare).toBeNaN();
+  });
+```
+
+Run `npx vitest run src/wave/Rideability.test.ts` and see it fail, then implement it and see it pass. Add a "Faster than 12.5 m/s" column to `scripts/rideability-report.ts` (`percent(stats.fastShare)`) after the peel-speed column and in its header rows. Commit: `feat: report the share of waves that outrun the fastest measured surfer`.
+
 - [ ] **Step 1: Screen the candidates with the predictor**
 
 With a scratch script over `ledgePeel` and `rayAngleAt` (bundled with rolldown into the scratchpad), tabulate every combination of:
@@ -919,7 +947,7 @@ at each Padang Padang swell. Use `deepDepth = shelfDepth = platformDepth` and th
 - the ramp slope that gives a 1:19 orthogonal gradient at the Medium swell: `(1 / 19) / cos β_b`.
 
 Keep candidates that meet both:
-- the Small swell's predicted α ≥ 29° (advanced), and the Medium's too;
+- a predicted α of 30–40° on the Small and Medium swells. This is the advisor's target, a ruling in the ledger: a median near 27° would leave most of the wave unmakeable at the speeds surfers reach;
 - `platformDepth ≥` the Big sets' breaking depth plus 1 m (Mead & Black's band stays on the ramp).
 
 - [ ] **Step 2: Run the kept candidates in the solver**
@@ -942,13 +970,14 @@ Also run the same with `--swell medium` in place of `--practice`, and `npm run r
 
 A candidate qualifies when:
 - all its runs stay finite;
-- its measured median peel angle is ≥ 27° on the Small swell;
-- its close-out share is ≤ 50 %;
+- its measured median peel angle is 30–40° on the Small swell (the advisor's target: sections may drop to about 27°);
+- its close-out share (clean waves under 27°) is ≤ 50 %;
+- report its `fastShare` beside the others (not a gate);
 - on Practice and on the Medium swell, the catch report stands riders at least as often per attempt as the Reef's Part A report (14 of 871 on its Practice).
 
 Among qualifiers, the most rides of 3 s or more wins. Ties go to the design closest to the rulings' starting point (10 m, 35°, 20°).
 
-**Stop rule:** if none qualifies, stop. Bring the user the sweep table and the options: a shallower platform than any source supports, a swell direction beyond the sourced SSW–SW, a wider window, or accepting a faster peel (true to life if the sources say Padang Padang is faster than 27°).
+**Stop rule:** if none qualifies, stop. Bring the user the sweep table and the options: a shallower platform than any source supports, a swell direction beyond the sourced SSW–SW, a wider window, or accepting a faster peel (true to life if the sources say Padang Padang is faster than the target).
 
 - [ ] **Step 5: Check the choice with the advisor, then set it**
 
@@ -1038,7 +1067,8 @@ For each swell, the report gives:
 - the predicted and measured peel speed and angle, and the close-out share;
 - the ride's length along the reef, against 50–150 m, and how many barrel sections were counted;
 - the tube's width over length from the tube report, against Mead & Black's Padang Padang ratio of 1.97–2.14. State plainly that the gradient was inferred from that ratio, so this checks the bed, and that Part B's simulated profiles give the independent check;
-- the orthogonal gradient the waves climb (the design's β_b), against 1:18–1:20.
+- the orthogonal gradient the waves climb (the design's β_b), against 1:18–1:20;
+- how far the ride stays from each open edge. ADR 0004 asks for a wavelength (about 150 m at 16 s on the platform), which a 160 m window cannot give any spot; the report says so, with the side feed and a wider window as the ways to get closer.
 
 - [ ] **Step 2: The reference clip (the spec's judging)**
 
