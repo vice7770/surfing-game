@@ -1,5 +1,6 @@
 import { Matrix3, Quaternion, Vector3 } from 'three';
 import type { BedMaterial } from '../wave/Bathymetry';
+import { REEF_FRICTION } from './BoardBody';
 
 /** World-space sample at one body point. The water implementation owns the interpolation. */
 export interface BodyWaterSample {
@@ -256,6 +257,10 @@ export class DetachedSurfer implements DetachedRiderPose {
   private readonly contactedLipIds = new Set<number>();
   private readonly previous: Vector3[];
   private readonly bedY: number[];
+  /** Each node's bed normal and whether it is reef (the Teahupo'o Reef, Part C). */
+  private readonly bedNormal: Vector3[];
+  private readonly onReef: boolean[];
+  private readonly slideScratch = new Vector3();
   private readonly sample: BodyWaterSample = {
     surfaceY: 0, bedY: 0, flow: new Vector3(), wet: false, outsideDomain: false, breaking: 0,
   };
@@ -306,6 +311,8 @@ export class DetachedSurfer implements DetachedRiderPose {
     });
     this.previous = this.nodes.map(() => new Vector3());
     this.bedY = this.nodes.map(() => -Infinity);
+    this.bedNormal = this.nodes.map(() => new Vector3(0, 1, 0));
+    this.onReef = this.nodes.map(() => false);
     this.forces = this.nodes.map(() => new Vector3());
   }
 
@@ -541,6 +548,10 @@ export class DetachedSurfer implements DetachedRiderPose {
       water.sampleAt(node.position, this.sample);
       this.previous[index].copy(node.position);
       this.bedY[index] = this.sample.outsideDomain ? -Infinity : this.sample.bedY;
+      const reef = !this.sample.outsideDomain && this.sample.bedMaterial === 'reef';
+      this.onReef[index] = reef;
+      if (reef && this.sample.bedNormal) this.bedNormal[index].copy(this.sample.bedNormal);
+      else this.bedNormal[index].set(0, 1, 0);
       node.grounded = false;
       if (this.sample.outsideDomain) {
         this.outsideDomain = true;
@@ -643,6 +654,21 @@ export class DetachedSurfer implements DetachedRiderPose {
       }
       for (let index = 0; index < this.nodes.length; index += 1) {
         const node = this.nodes[index];
+        if (this.onReef[index]) {
+          // Rock: out along the bed's normal, with Coulomb friction on the move along it (position-based, Müller et al. 2007).
+          const n = this.bedNormal[index];
+          const penetration = node.radius - n.y * (node.position.y - this.bedY[index]);
+          if (penetration > 0) {
+            node.position.addScaledVector(n, penetration);
+            node.grounded = true;
+            const moved = this.slideScratch.subVectors(node.position, this.previous[index]);
+            moved.addScaledVector(n, -moved.dot(n));
+            const slide = moved.length();
+            const hold = REEF_FRICTION.body * penetration;
+            if (slide > 0) node.position.addScaledVector(moved, -(slide <= hold ? 1 : hold / slide));
+          }
+          continue;
+        }
         const floor = this.bedY[index] + node.radius;
         if (node.position.y < floor) {
           node.position.y = floor;
@@ -654,7 +680,12 @@ export class DetachedSurfer implements DetachedRiderPose {
     for (let index = 0; index < this.nodes.length; index += 1) {
       const node = this.nodes[index];
       node.velocity.subVectors(node.position, this.previous[index]).divideScalar(dt);
-      if (node.grounded) {
+      if (node.grounded && this.onReef[index]) {
+        // On rock only the bed's normal is held: friction acted on the positions.
+        const n = this.bedNormal[index];
+        const into = node.velocity.dot(n);
+        if (into < 0) node.velocity.addScaledVector(n, -into);
+      } else if (node.grounded) {
         node.velocity.y = Math.max(0, node.velocity.y);
         node.velocity.x *= 0.8;
         node.velocity.z *= 0.8;
