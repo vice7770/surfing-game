@@ -92,6 +92,15 @@ describe('surf spot bathymetry', () => {
       expect(reefLedgeAt(REEF.passX)).toBe(false);
     });
 
+    it('is reef where the reef builds the bed, and sand in the pass and on the beach', () => {
+      expect(reef.materialAt!(-40, reefCrestZ(-40))).toBe('reef');
+      expect(reef.materialAt!(0, -120)).toBe('reef'); // the shelf
+      expect(reef.materialAt!(0, REEF.shelfEdge - 20)).toBe('reef'); // the forereef
+      expect(reef.materialAt!(REEF.passX, -140)).toBe('sand');
+      expect(reef.materialAt!(0, -2)).toBe('sand');
+      expect(createSpot('beach', 1).materialAt).toBeUndefined();
+    });
+
     it('has no cliff anywhere in the window', () => {
       // The steepest faces are the 1:2.29 forereef and ledge: 0.22 m over half a metre.
       for (let x = -80; x <= 80; x += 2) {

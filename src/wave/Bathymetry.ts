@@ -6,9 +6,14 @@ export type SpotName = 'beach' | 'point' | 'reef' | 'canyon';
  * Still-water depth below datum, m; negative on dry land. +x runs along shore,
  * +z toward the beach, and z = 0 is the shoreline at x = 0.
  */
+/** What a bed is made of, for contact (the Teahupo'o Reef, Part C). */
+export type BedMaterial = 'sand' | 'reef';
+
 export interface SurfSpot {
   readonly name: SpotName;
   depthAt(x: number, z: number): number;
+  /** What the bed is made of; absent, sand everywhere. */
+  materialAt?(x: number, z: number): BedMaterial;
 }
 
 export function smoothstep(edge0: number, edge1: number, value: number): number {
@@ -112,21 +117,33 @@ function point(): SurfSpot {
   };
 }
 
+/** The Reef's bed in its parts: the pass's weight, the reef's own depth, and the beach face's. */
+function reefTerms(x: number, z: number): { pass: number; onReef: number; fore: number; beachFace: number } {
+  const r = REEF;
+  // The shore-parallel forereef up to the shelf; on the shelf, the ledge rising from it to the crest.
+  // The crest line keeps the ledge's foot shoreward of the shelf's edge (at the peak they meet), so the bed has no cliff.
+  const fore = z >= r.shelfEdge ? r.shelfDepth : Math.min(r.deep, r.shelfDepth + (r.shelfEdge - z) * r.foreSlope);
+  const ledge = r.crestDepth + Math.max(0, reefSeaward(x, z)) * r.ledgeSlope;
+  const onReef = z >= r.shelfEdge ? Math.min(r.shelfDepth, ledge) : fore;
+  // The pass: no reef, the shelf deepened to passDepth; flat across its axis at the window's edge.
+  const pass = Math.exp(-(((x - r.passX) / r.passHalfWidth) ** 2));
+  // A 1:5 beach face (steep enough to stay shoreward of the forereef), and dry land shoreward of z = 0.
+  const beachFace = z < 0 ? -z * r.shoreSlope : -z * 0.06;
+  return { pass, onReef, fore, beachFace };
+}
+
 function reef(): SurfSpot {
   return {
     name: 'reef',
     depthAt(x, z) {
-      const r = REEF;
-      // The shore-parallel forereef up to the shelf; on the shelf, the ledge rising from it to the crest.
-      // The crest line keeps the ledge's foot shoreward of the shelf's edge (at the peak they meet), so the bed has no cliff.
-      const fore = z >= r.shelfEdge ? r.shelfDepth : Math.min(r.deep, r.shelfDepth + (r.shelfEdge - z) * r.foreSlope);
-      const ledge = r.crestDepth + Math.max(0, reefSeaward(x, z)) * r.ledgeSlope;
-      const onReef = z >= r.shelfEdge ? Math.min(r.shelfDepth, ledge) : fore;
-      // The pass: no reef, the shelf deepened to passDepth; flat across its axis at the window's edge.
-      const pass = Math.exp(-(((x - r.passX) / r.passHalfWidth) ** 2));
-      const depth = onReef + (Math.max(fore, r.passDepth) - onReef) * pass;
-      // A 1:5 beach face (steep enough to stay shoreward of the forereef), and dry land shoreward of z = 0.
-      return Math.min(depth, z < 0 ? -z * r.shoreSlope : -z * 0.06);
+      const { pass, onReef, fore, beachFace } = reefTerms(x, z);
+      const depth = onReef + (Math.max(fore, REEF.passDepth) - onReef) * pass;
+      return Math.min(depth, beachFace);
+    },
+    // Rock where the reef builds the bed (Part C): out of the pass, seaward of the beach.
+    materialAt(x, z) {
+      const { pass, onReef, beachFace } = reefTerms(x, z);
+      return pass < 0.5 && onReef < beachFace ? 'reef' : 'sand';
     },
   };
 }

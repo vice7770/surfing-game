@@ -1,4 +1,5 @@
 import { Matrix3, Quaternion, Vector3 } from 'three';
+import type { BedMaterial } from '../wave/Bathymetry';
 
 /** World-space sample at one body point. The water implementation owns the interpolation. */
 export interface BodyWaterSample {
@@ -12,6 +13,9 @@ export interface BodyWaterSample {
   voidFraction?: number;
   /** Horizontal depth profile is reconstructed from solver-averaged momentum. */
   flowModel?: 'reconstructed' | 'dry' | 'outside';
+  /** The seabed's unit normal and what it is made of (the Teahupo'o Reef, Part C); absent: up, and sand. */
+  bedNormal?: Vector3;
+  bedMaterial?: BedMaterial;
 }
 
 export interface BodyWaterField {

@@ -30,5 +30,7 @@ export class SurfWaterBodyField implements BodyWaterField {
     out.breaking = sample.breaking;
     out.voidFraction = sample.voidFraction ?? 0;
     out.flowModel = sample.outsideDomain ? 'outside' : sample.wet ? 'reconstructed' : 'dry';
+    out.bedNormal = (out.bedNormal ?? new Vector3()).set(sample.bedNormalX, sample.bedNormalY, sample.bedNormalZ);
+    out.bedMaterial = sample.bedMaterial ?? 'sand';
   }
 }
