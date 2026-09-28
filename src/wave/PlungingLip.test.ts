@@ -56,6 +56,37 @@ describe('a reef break\'s lip (Teahupo\'o Reef, Part B)', () => {
   });
 });
 
+describe('the wave a landing came from (the plunge zone)', () => {
+  const heights = (lip: PlungingLip) => {
+    const seen: { kind: number; waveHeight: number }[] = [];
+    lip.onLand = (_x, _z, _volume, _vx, _vy, _vz, flight) => { if (flight) seen.push({ kind: flight.kind, waveHeight: flight.waveHeight }); };
+    return seen;
+  };
+
+  it('tells each landing of a jet the height of the wave that threw it, and a splash-up none', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, 64);
+    const seen = heights(lip);
+    lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3, { length: 1, width: 0.4, tilt: 0.4 }, undefined, 2.5);
+    for (let k = 0; k < 480; k += 1) lip.step(1 / 240);
+    expect(seen.filter(({ kind }) => kind === 0).length).toBeGreaterThan(0);
+    expect(seen.filter(({ kind }) => kind === 1).length).toBeGreaterThan(0);
+    for (const { kind, waveHeight } of seen) expect(waveHeight).toBe(kind === 0 ? 2.5 : 0);
+  });
+
+  it('keeps it through a sea handover', () => {
+    const solver = basin();
+    const donor = new PlungingLip(solver, 64);
+    donor.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 5 }, 3, 0.3, 3, { length: 1, width: 0.4, tilt: 0.4 }, undefined, 2.5);
+    donor.step(1 / 60);
+    const joiner = new PlungingLip(solver, 64);
+    joiner.importState(JSON.parse(JSON.stringify(donor.exportState())));
+    const seen = heights(joiner);
+    for (let k = 0; k < 480; k += 1) joiner.step(1 / 240);
+    expect(seen.some(({ kind, waveHeight }) => kind === 0 && waveHeight === 2.5)).toBe(true);
+  });
+});
+
 describe('a jet\'s landing (Teahupo\'o Reef, Part B)', () => {
   // Its water over the void's length is the sheet's thickness: a thick lip lands over as much of the face.
   const land = (voidLength: number) => {

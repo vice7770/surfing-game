@@ -135,7 +135,9 @@ export interface LipSheetParcel {
  * A landed parcel's flight: where it left the crest, the height it came down
  * at (m), how long it flew (s), the speed of the crest it left (m/s),
  * whether it was a jet's water (0) or a splash-up's (1, G9), which draws no
- * tube, and the parcel's whole water, m³ (what landed and what its splash-up took).
+ * tube, the parcel's whole water, m³ (what landed and what its splash-up took),
+ * and the height of the breaking wave that threw its jet, m (0 for a splash-up,
+ * or when the thrower did not say).
  */
 export interface LipFlight {
   launch: { x: number; y: number; z: number };
@@ -144,6 +146,7 @@ export interface LipFlight {
   crestSpeed: number;
   kind: number;
   volume: number;
+  waveHeight: number;
 }
 
 export interface LipConditions {
@@ -220,6 +223,8 @@ interface LipStrip {
   parcels: number[];
   live: number;
   kind: 0 | 1;
+  /** The breaking wave's height that threw it, m (0 for a splash-up's strip). */
+  waveHeight: number;
   tube?: FlyingTube;
   /** A jet's splash-up strip, once it has one. */
   splash?: number;
@@ -258,6 +263,7 @@ interface LipStripState {
   parcels: number[];
   live: number;
   kind?: 0 | 1;
+  waveHeight?: number;
   splash?: number;
   tube?: Omit<FlyingTube, 'closedAt'> & { closedAt: number | null };
 }
@@ -367,7 +373,7 @@ export class PlungingLip implements LipParcelSource {
   private readonly linked: Uint32Array;
   private query = 0;
   private readonly near = { a: new Vector3(), b: new Vector3(), pa: new Vector3(), pb: new Vector3(), velocity: new Vector3() };
-  private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0, kind: 0, volume: 0 };
+  private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0, kind: 0, volume: 0, waveHeight: 0 };
   private readonly free: number[] = [];
   /** The flying tubes as a `tubeTable` (G9), refreshed as the clock moves and strips come and go. */
   private tubes = new Float64Array(64 * TUBE_STRIDE);
@@ -423,6 +429,7 @@ export class PlungingLip implements LipParcelSource {
       free: [...this.free], slots, fields,
       strips: [...this.strips].map(([id, strip]): [number, LipStripState] => [id, {
         column: strip.column, launchTime: strip.launchTime, parcels: [...strip.parcels], live: strip.live, kind: strip.kind,
+        waveHeight: strip.waveHeight,
         ...(strip.splash === undefined ? {} : { splash: strip.splash }),
         ...(strip.tube ? {
           tube: { ...strip.tube, geometry: { ...strip.tube.geometry }, closedAt: Number.isNaN(strip.tube.closedAt) ? null : strip.tube.closedAt },
@@ -448,6 +455,7 @@ export class PlungingLip implements LipParcelSource {
       const { tube } = strip;
       this.strips.set(id, {
         column: strip.column, launchTime: strip.launchTime, parcels: [...strip.parcels], live: strip.live, kind: strip.kind ?? 0,
+        waveHeight: strip.waveHeight ?? 0,
         ...(strip.splash === undefined ? {} : { splash: strip.splash }),
         ...(tube ? {
           tube: {
@@ -468,12 +476,13 @@ export class PlungingLip implements LipParcelSource {
 
   /**
    * Throw up to `volume` m³ from `cell` at `height` (m above datum) with
-   * horizontal `velocity` (m/s). Returns the volume actually thrown: 0 when the
-   * parcel pool is full or the crest is dry.
+   * horizontal `velocity` (m/s), from a breaking wave `waveHeight` m high (its
+   * landings say so). Returns the volume actually thrown: 0 when the parcel
+   * pool is full or the crest is dry.
    */
   launch(
     cell: number, velocity: { x: number; z: number }, height: number, volume: number, crestSpeed = 0, tube?: TubeGeometry,
-    releaseTime = JET_RELEASE_TIME,
+    releaseTime = JET_RELEASE_TIME, waveHeight = 0,
   ): number {
     if (this.free.length < STRIP_PARCELS || !(volume > 0)) return 0;
     const { solver } = this;
@@ -503,7 +512,7 @@ export class PlungingLip implements LipParcelSource {
     const stripId = this.nextStrip;
     this.nextStrip += 1;
     const column = Math.round(x / dx - 0.5);
-    const strip: LipStrip = { column, launchTime: this.time, parcels: [], live: STRIP_PARCELS, kind: 0 };
+    const strip: LipStrip = { column, launchTime: this.time, parcels: [], live: STRIP_PARCELS, kind: 0, waveHeight };
     const spacing = releaseTime / (STRIP_PARCELS - 1);
     // The crest moves on at its own speed, the way the jet leaves.
     const jetSpeed = Math.hypot(velocity.x, velocity.z);
@@ -847,6 +856,7 @@ export class PlungingLip implements LipParcelSource {
     flight.crestSpeed = this.crestSpeed[parcel];
     flight.kind = this.kind[parcel];
     flight.volume = volume;
+    flight.waveHeight = strip?.waveHeight ?? 0;
     this.active[parcel] = 0;
     this.state[parcel] = 0;
     this.free.push(parcel);
@@ -1050,7 +1060,7 @@ export class PlungingLip implements LipParcelSource {
     if (!splash) {
       splashId = this.nextStrip;
       this.nextStrip += 1;
-      splash = { column: jet.column, launchTime: this.time, parcels: [], live: 0, kind: 1 };
+      splash = { column: jet.column, launchTime: this.time, parcels: [], live: 0, kind: 1, waveHeight: 0 };
       this.strips.set(splashId, splash);
       const inColumn = this.byColumn.get(jet.column);
       if (inColumn) inColumn.push(splashId);
