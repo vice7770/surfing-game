@@ -59,7 +59,7 @@ export class SwellWater implements SurfWater {
     const vertical = (a * this.omega * Math.sinh(level)) / Math.sinh(kd);
     const along = Math.cos(phase);
     Object.assign(out, {
-      surfaceY: surface, stillDepth: d, waterDepth: d + surface, bedY: -d, wet: true, outsideDomain: false,
+      surfaceY: surface, stillDepth: d, waterDepth: d + surface, bedY: -d, wet: true, outsideDomain: false, bedNormalX: 0, bedNormalY: 1, bedNormalZ: 0, bedMaterial: 'sand' as const,
       slopeX, slopeZ, normalX: -slopeX / norm, normalY: 1 / norm, normalZ: -slopeZ / norm,
       flowX: (horizontal * along * this.kx) / this.k, flowY: vertical * Math.sin(phase), flowZ: (horizontal * along * this.kz) / this.k,
       regime: 'profile', breaking: 0,

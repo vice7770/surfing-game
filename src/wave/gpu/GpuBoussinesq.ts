@@ -7,15 +7,32 @@ const WORKGROUP = 64;
 const TAU = 2 * Math.PI;
 /** Fields the CPU writes every frame (board reactions, lip landings), then reads back with the breaking and predictor state. */
 const UPLOAD = [FIELD.H, FIELD.QX, FIELD.QZ] as const;
-const READBACK = [FIELD.H, FIELD.QX, FIELD.QZ, FIELD.STRENGTH, FIELD.AGE, FIELD.NU, FIELD.PREDX, FIELD.PREDZ] as const;
-/** Fields that follow the bed, or that only the CPU's window shift changes between frames. */
-const LAYOUT = [FIELD.BED, FIELD.STILL, FIELD.DDX, FIELD.DDZ, FIELD.WEIGHT, FIELD.STRENGTH, FIELD.AGE, FIELD.PREDX, FIELD.PREDZ] as const;
+/** Fields read back after a step: the water, its breaking and predictor state, and η_t, which a lip's crest motion reads. */
+export const DEVICE_READBACK = [FIELD.H, FIELD.QX, FIELD.QZ, FIELD.RATEH, FIELD.STRENGTH, FIELD.AGE, FIELD.NU, FIELD.PREDX, FIELD.PREDZ] as const;
+/** Fields that follow the bed, or that only the CPU's window shift changes between frames; the plunge zone is also sent when a cell enters or leaves it. */
+const LAYOUT = [FIELD.BED, FIELD.STILL, FIELD.DDX, FIELD.DDZ, FIELD.WEIGHT, FIELD.STRENGTH, FIELD.AGE, FIELD.PREDX, FIELD.PREDZ, FIELD.HOLD] as const;
 
 /** The one offshore zone a device step blends toward: its rows and its sea's components. */
 interface DeviceZone {
   boundary: SeaStateBoundary;
   firstRow: number;
   rows: number;
+}
+
+/** The solver array a device field reads back into. */
+export function readbackTarget(solver: BoussinesqSolver, index: number): Float64Array {
+  switch (index) {
+    case FIELD.H: return solver.h;
+    case FIELD.QX: return solver.qx;
+    case FIELD.QZ: return solver.qz;
+    case FIELD.RATEH: return solver.surfaceRiseRate;
+    case FIELD.STRENGTH: return solver.breakingStrength;
+    case FIELD.AGE: return solver.breakingAge;
+    case FIELD.NU: return solver.viscosity;
+    case FIELD.PREDX: return solver.predictor!.x;
+    case FIELD.PREDZ: return solver.predictor!.z;
+    default: throw new RangeError(`No solver array for field ${index}`);
+  }
 }
 
 /** Why the device step cannot run this solver, or undefined when it can. */
@@ -105,7 +122,8 @@ export function writeParams(
 /**
  * Stage 2 step on the GPU (plan P6): the same kernels as BoussinesqSolver in
  * 32-bit floats. Each frame uploads h, qx and qz (the board and the lip change
- * them on the CPU), plus the bed and carried state after a window shift, runs
+ * them on the CPU), plus the bed and carried state after a window shift and the
+ * plunge zone when it changed, runs
  * the CFL substeps, and reads the new water, breaking and predictor state back
  * into the solver, whose CPU consumers (breaking model, lip, foam, board) then
  * run as before.
@@ -125,6 +143,7 @@ export class GpuBoussinesq {
   private readonly components: Float32Array<ArrayBuffer>;
   private readonly zone?: DeviceZone;
   private version = -1;
+  private plungeVersion = -1;
   private disposed = false;
   /** Wall time of the last frame's device work, ms. */
   lastStepMs = 0;
@@ -145,7 +164,7 @@ export class GpuBoussinesq {
     this.components = new Float32Array(count * COMPONENT_STRIDE);
     this.sea = device.createBuffer({ size: this.components.byteLength, usage: storage });
     this.params = device.createBuffer({ size: PARAM_WORDS * 4, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-    this.staging = device.createBuffer({ size: READBACK.length * this.n * 4, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
+    this.staging = device.createBuffer({ size: DEVICE_READBACK.length * this.n * 4, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
     this.upload = new Float32Array(UPLOAD.length * this.n);
     this.field = new Float32Array(this.n);
     const bindLayout = device.createBindGroupLayout({
@@ -199,7 +218,12 @@ export class GpuBoussinesq {
     if (layout.version !== this.version) {
       this.writeLayout(layout);
       this.version = layout.version;
+    } else if (solver.plungeVersion !== this.plungeVersion) {
+      // A cell entered or left the plunge zone: the mask reads only whether its hold is running.
+      this.field.set(solver.plungeHold);
+      device.queue.writeBuffer(this.fields, FIELD.HOLD * n * 4, this.field);
     }
+    this.plungeVersion = solver.plungeVersion;
     UPLOAD.forEach((index, k) => {
       const source = index === FIELD.H ? solver.h : index === FIELD.QX ? solver.qx : solver.qz;
       this.upload.set(source, k * n);
@@ -229,7 +253,7 @@ export class GpuBoussinesq {
       }
       pass.end();
       if (s === substeps - 1 && this.readback) {
-        READBACK.forEach((index, k) => encoder.copyBufferToBuffer(this.fields, index * n * 4, this.staging, k * n * 4, n * 4));
+        DEVICE_READBACK.forEach((index, k) => encoder.copyBufferToBuffer(this.fields, index * n * 4, this.staging, k * n * 4, n * 4));
       }
       device.queue.submit([encoder.finish()]);
     }
@@ -242,32 +266,17 @@ export class GpuBoussinesq {
     }
     await this.staging.mapAsync(GPUMapMode.READ);
     const back = new Float32Array(this.staging.getMappedRange());
-    READBACK.forEach((index, k) => {
+    DEVICE_READBACK.forEach((index, k) => {
       const view = back.subarray(k * n, (k + 1) * n);
-      this.target(index).set(view);
+      readbackTarget(solver, index).set(view);
     });
     this.staging.unmap();
     solver.adoptDeviceStep(dt);
     this.lastStepMs = performance.now() - started;
   }
 
-  /** The solver array a device field reads back into. */
-  private target(index: number): Float64Array {
-    const { solver } = this;
-    switch (index) {
-      case FIELD.H: return solver.h;
-      case FIELD.QX: return solver.qx;
-      case FIELD.QZ: return solver.qz;
-      case FIELD.STRENGTH: return solver.breakingStrength;
-      case FIELD.AGE: return solver.breakingAge;
-      case FIELD.NU: return solver.viscosity;
-      case FIELD.PREDX: return solver.predictor!.x;
-      case FIELD.PREDZ: return solver.predictor!.z;
-      default: throw new RangeError(`No solver array for field ${index}`);
-    }
-  }
 
-  /** Bed, still depth and slopes, zone weights, and the carried breaking and predictor state (after a window shift). */
+  /** Bed, still depth and slopes, zone weights, the carried breaking and predictor state and the plunge zone (after a window shift). */
   private writeLayout(layout: BoussinesqDeviceLayout): void {
     const { solver, device, n, field } = this;
     const weights = this.zone?.boundary.weights;
@@ -276,7 +285,8 @@ export class GpuBoussinesq {
       const source = index === FIELD.BED ? solver.bed : index === FIELD.STILL ? layout.still
         : index === FIELD.DDX ? layout.slopeX : index === FIELD.DDZ ? layout.slopeZ
           : index === FIELD.WEIGHT ? weights : index === FIELD.STRENGTH ? solver.breakingStrength
-            : index === FIELD.AGE ? solver.breakingAge : index === FIELD.PREDX ? predictor?.x : predictor?.z;
+            : index === FIELD.AGE ? solver.breakingAge : index === FIELD.PREDX ? predictor?.x
+              : index === FIELD.PREDZ ? predictor?.z : solver.plungeHold;
       if (source) field.set(source);
       else field.fill(0);
       device.queue.writeBuffer(this.fields, index * n * 4, field);

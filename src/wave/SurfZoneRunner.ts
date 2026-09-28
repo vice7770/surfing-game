@@ -1,3 +1,4 @@
+import { STRIP_PARCELS } from './PlungingLip';
 import { Vector3 } from 'three';
 import { withPocketReflex } from '../game/pocketReflex';
 import { RideAnalyzer, type Maneuver, type RideReport } from '../game/rideAnalysis';
@@ -36,8 +37,9 @@ export const ROAR_SECTORS = 8;
 
 /**
  * Events for sound between two snapshots (S1). Past its capacity an event is
- * merged into the nearest one kept: its amount is added and its peak kept, so a
- * burst of landings keeps all its water in fewer, louder places.
+ * merged into the nearest one kept: its amount is added and its peak (and its
+ * largest, a lip's own water) kept, so a burst of landings keeps all its water in
+ * fewer, louder places.
  */
 class SoundEvents {
   readonly data: Float32Array;
@@ -47,7 +49,7 @@ class SoundEvents {
     this.data = new Float32Array(capacity * stride);
   }
 
-  add(x: number, z: number, amount: number, peak = 0): void {
+  add(x: number, z: number, amount: number, peak = 0, largest = 0): void {
     const { data, stride } = this;
     if (this.count < this.capacity) {
       const o = this.count * stride;
@@ -55,6 +57,7 @@ class SoundEvents {
       data[o + 1] = z;
       data[o + 2] = amount;
       data[o + 3] = peak;
+      if (stride > 4) data[o + 4] = largest;
       this.count += 1;
       return;
     }
@@ -69,6 +72,7 @@ class SoundEvents {
     }
     data[nearest * stride + 2] += amount;
     data[nearest * stride + 3] = Math.max(data[nearest * stride + 3], peak);
+    if (stride > 4) data[nearest * stride + 4] = Math.max(data[nearest * stride + 4], largest);
   }
 
   /** Copy the events into a snapshot's buffer and start afresh; returns how many. */
@@ -445,7 +449,9 @@ export class SurfZoneRunner {
   /** Each step's lip landings and paddle strokes, kept for the next snapshot's sound (S1). */
   private collectSounds(): void {
     for (const impact of this.simulation.lipImpacts) {
-      this.lipHits.add(impact.x, impact.z, impact.volume, Math.hypot(impact.vx, impact.vy, impact.vz));
+      // The lip's own water for the crash's pitch (Part C): a jet parcel's share of its strip; a splash-up none.
+      const lip = (impact.kind ?? 0) === 0 ? (impact.whole ?? impact.volume) * STRIP_PARCELS : 0;
+      this.lipHits.add(impact.x, impact.z, impact.volume, Math.hypot(impact.vx, impact.vy, impact.vz), lip);
     }
     if (this.session?.rider.attached) {
       for (const stroke of this.session.rider.strokes) {

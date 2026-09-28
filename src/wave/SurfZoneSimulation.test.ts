@@ -9,6 +9,7 @@ import {
   windOnsetScale, type SurfZoneConfig,
 } from './SurfZoneSimulation';
 import { BoussinesqSolver } from './BoussinesqSolver';
+import { REEF_OVERTURN } from './Overturn';
 import { shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
 import { REEF_SWELLS } from '../game/SurfConditions';
 import { REEF_PRACTICE_SWELL } from '../game/PhysicalMode';
@@ -429,17 +430,61 @@ describe('SurfZoneSimulation', () => {
       return simulation;
     };
 
+    // With the lagoon (Part C) this seed's first Big set sends thin backwash down the ledge, seaward of where its jets
+    // left the crest (outside the plunge zone, by design), at 22–29 m/s for about a second while each draining cell's
+    // dispersion switches off: seeds 4–6 stay at 8–14 m/s here and on main. As at low tide, a runaway guard.
     it('stays finite and bounded under the Big swell, and plunges', () => {
-      expect(run({}).lipLaunches).toBeGreaterThan(0);
+      expect(run({}, 30).lipLaunches).toBeGreaterThan(0);
     }, 300_000);
     // At low tide a Big trough drains the ledge to ~0.3 m and its backwash briefly reaches ~23 m/s before settling: an
     // open issue (docs/research/teahupoo-reef-report.md). Here it guards against a runaway (past ones: 112 m/s, NaN).
     it('stays finite over the drying reef flat at low tide', () => run({ tide: -0.6 }, 30), 300_000);
+    // A thick lip landing on the drained crest piled 0.4 m of water to 1.5 m in 0.1 s: a bore the depth switch did not
+    // see, drained at 23.5 m/s with the dispersive terms on (+25°, t 60.9 s). The plunge zone holds it in shallow water.
     it('stays finite with oblique swells across the open −x edge', () => {
       run({ directionDegrees: -25, alongShore: 60 });
       run({ directionDegrees: 25, alongShore: 60 });
     }, 600_000);
+    // The pass and inner reef end in a lagoon and a 1:9.64 inland slope (Part C), where the Big swell ran up a 1:5 face.
+    it('stays finite over the lagoon at low tide', () => run({ tide: -1.0, alongShore: 60 }, 30), 300_000);
+    // The 40 m window's open −x edge cuts the ledge: over a bed sloping across it, main (aa71add) ran this to NaN (Part B).
+    it('stays finite where the window\'s open edge cuts the ledge', () => run({ directionDegrees: 25 }, 30), 300_000);
   });
+
+  it('throws the Reef\'s ledge breaks as reef breaks and every other spot\'s by Pick & Feddersen', () => {
+    const reef = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 });
+    const ratios: number[] = [];
+    reef.onThrow = (event) => { if (event.vortexRatio !== undefined) ratios.push(event.vortexRatio); };
+    for (let frame = 0; frame < 60 * 30 && ratios.length === 0; frame += 1) reef.step(1 / 30);
+    expect(ratios.length).toBeGreaterThan(0);
+    for (const ratio of ratios) {
+      expect(ratio).toBeGreaterThanOrEqual(REEF_OVERTURN.roundestRatio);
+      expect(ratio).toBeLessThanOrEqual(REEF_OVERTURN.gentlestRatio);
+    }
+    const point = new SurfZoneSimulation({ ...small, spot: 'point', dx: 1, fineSpacing: 1, directionDegrees: 20, spreading: 24 });
+    let reefBreaks = 0;
+    point.onThrow = (event) => { if (event.vortexRatio !== undefined) reefBreaks += 1; };
+    for (let frame = 0; frame < 20 * 30; frame += 1) point.step(1 / 30);
+    expect(point.lipLaunches).toBeGreaterThan(0);
+    expect(reefBreaks).toBe(0);
+  }, 240_000);
+
+  it('holds the water where its lip lands in shallow water', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 });
+    const solver = simulation.solver as BoussinesqSolver;
+    const { x, z } = simulation.breakPoint();
+    const landing = solver.cellIndex(x, z);
+    simulation.step(1 / 30);
+    expect(solver.mask[landing]).toBe(1);
+    expect(solver.plungeHold[landing]).toBe(0);
+    // A jet parcel from a wave 4 m high falls only 0.3 m onto the face, moving toward the shore: its zone is the wave's
+    // roller, 1.5 H ahead, not its short fall's.
+    simulation.lip.onLand!(x, z, 0.3, 0, -2.4, 7, { launch: { x, y: 0.3, z: z - 3 }, y: 0, age: 0.6, crestSpeed: 6, kind: 0, volume: 0.3, waveHeight: 4 });
+    expect(solver.plungeHold[landing]).toBeGreaterThan(0);
+    expect(solver.plungeHold[solver.cellIndex(x, z + 5)]).toBeGreaterThan(0);
+    simulation.step(1 / 30);
+    expect(solver.mask[landing]).toBe(0);
+  }, 60_000);
 
   it('throws lips from plunging waves on the reef edge', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 });

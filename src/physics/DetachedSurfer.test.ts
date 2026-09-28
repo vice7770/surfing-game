@@ -435,3 +435,68 @@ describe('a swimmer in aerated water', () => {
     expect(settle(0.15)).toBeLessThan(-2);
   });
 });
+
+describe('the body on a solid reef (Teahupo\'o Reef, Part C)', () => {
+  // Dry reef rising toward +z at `slope`.
+  const reefSlope = (slope: number): BodyWaterField => ({
+    sampleAt(position, out): void {
+      out.surfaceY = -10; // dry: the water lies far below
+      out.bedY = slope * position.z;
+      out.flow.set(0, 0, 0);
+      out.wet = false;
+      out.outsideDomain = false;
+      out.breaking = 0;
+      out.voidFraction = 0;
+      out.bedNormal = (out.bedNormal ?? new Vector3()).set(0, 1, -slope).normalize();
+      out.bedMaterial = 'reef';
+    },
+  });
+  const settle = (slope: number, frames: number) => {
+    const body = new DetachedSurfer();
+    // Dropped from 1.2 m over the slope at z = 0.
+    launch(body, new Vector3(0, 1.2, 0));
+    advance(body, reefSlope(slope), frames);
+    return body;
+  };
+
+  it('rests on the steep ledge a full radius off it along its normal, gripping', () => {
+    const slope = 0.44; // the 1:2.29 ledge: μ 0.8 > tan 23.7° holds it
+    const body = settle(slope, 180);
+    expect(Number.isFinite(body.centerOfMass().y)).toBe(true);
+    const n = new Vector3(0, 1, -slope).normalize();
+    for (const node of body.nodes) expect(n.y * (node.position.y - slope * node.position.z)).toBeGreaterThan(node.radius - 0.005);
+    expect(Math.abs(body.linearMomentum().z / body.mass)).toBeLessThan(0.05);
+  });
+
+  it('grips harder on reef than on sand: a body sliding across flat ground stops sooner', () => {
+    const flat = (bedMaterial: 'sand' | 'reef'): BodyWaterField => ({
+      sampleAt(_position, out): void {
+        out.surfaceY = -10;
+        out.bedY = 0;
+        out.flow.set(0, 0, 0);
+        out.wet = false;
+        out.outsideDomain = false;
+        out.breaking = 0;
+        out.voidFraction = 0;
+        out.bedNormal = (out.bedNormal ?? new Vector3()).set(0, 1, 0);
+        out.bedMaterial = bedMaterial;
+      },
+    });
+    // A body lying along the bed, sliding at 5 m/s: a wiped-out rider thrown across the reef.
+    const slide = (bedMaterial: 'sand' | 'reef') => {
+      const body = new DetachedSurfer();
+      const prone = new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), Math.PI / 2);
+      body.start({ center: new Vector3(0, 0.2, 0), orientation: prone, velocity: new Vector3(0, 0, 5), angularVelocity: new Vector3() });
+      const start = body.centerOfMass().z;
+      advance(body, flat(bedMaterial), 180);
+      return body.centerOfMass().z - start;
+    };
+    expect(slide('reef')).toBeLessThan(slide('sand'));
+  });
+
+  it('creeps down reef steeper than its friction, where the vertical floor held it on any slope', () => {
+    // 45°: tan θ = 1 over REEF_FRICTION.body. Sand's damping along the bed, kept on reef, holds the creep slow.
+    const body = settle(1, 120);
+    expect(body.linearMomentum().z / body.mass).toBeLessThan(-0.03);
+  });
+});

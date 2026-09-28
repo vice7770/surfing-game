@@ -6,9 +6,14 @@ export type SpotName = 'beach' | 'point' | 'reef' | 'canyon';
  * Still-water depth below datum, m; negative on dry land. +x runs along shore,
  * +z toward the beach, and z = 0 is the shoreline at x = 0.
  */
+/** What a bed is made of, for contact (the Teahupo'o Reef, Part C). */
+export type BedMaterial = 'sand' | 'reef';
+
 export interface SurfSpot {
   readonly name: SpotName;
   depthAt(x: number, z: number): number;
+  /** What the bed is made of; absent, sand everywhere. */
+  materialAt?(x: number, z: number): BedMaterial;
 }
 
 export function smoothstep(edge0: number, edge1: number, value: number): number {
@@ -47,7 +52,10 @@ export const POINT_OUTER = { slope: 0.015, maxDepth: 30 };
 export const REEF = {
   deep: 30, foreSlope: 1 / 2.29, shelfEdge: -150, shelfDepth: 10,
   ledgeSlope: 1 / 2.29, crestDepth: 1.5, crestX: -80, crestZ: -120, angle: 45,
-  passX: 80, passHalfWidth: 25, passDepth: 12, shoreSlope: 0.2, takeOffX: -50,
+  passX: 80, passHalfWidth: 25, passDepth: 12, takeOffX: -50,
+  // Shoreward of the crest (Part C): a reef flat, a lagoon, and the Teahupo'o model's 1:9.64 inland slope
+  // (zenodo 11392175). The flat's width and the lagoon's depth are provisional until its profile is read.
+  flatWidth: 20, lagoonDepth: 2.5, inlandSlope: 1 / 9.64,
 };
 
 /** Where the Reef's crest line (the top of its ledge) crosses along-shore position x. */
@@ -57,11 +65,11 @@ export function reefCrestZ(x: number): number {
 
 /**
  * Whether the Reef's ledge is ridden at along-shore position x: out of the pass (beyond two of its
- * half-widths from its axis) and where the crest still lies seaward of the beach face's crest depth.
+ * half-widths from its axis) and where the crest still lies seaward of the inland slope's crest depth.
  * Past it, waves break on the beach face in the pass and the lagoon: not the Reef's wave.
  */
 export function reefLedgeAt(x: number): boolean {
-  return x < REEF.passX - 2 * REEF.passHalfWidth && reefCrestZ(x) < -REEF.crestDepth / REEF.shoreSlope;
+  return x < REEF.passX - 2 * REEF.passHalfWidth && reefCrestZ(x) < -REEF.crestDepth / REEF.inlandSlope;
 }
 
 /** Distance seaward of the Reef's crest line, m, measured across it (negative shoreward of it). */
@@ -112,21 +120,40 @@ function point(): SurfSpot {
   };
 }
 
+/** The Reef's bed in its parts: the pass's weight, the reef's own depth, how far inside its crest, and the shore's. */
+function reefTerms(x: number, z: number): { pass: number; onReef: number; fore: number; inside: number; beachFace: number } {
+  const r = REEF;
+  // The shore-parallel forereef up to the shelf; on the shelf, the ledge rising from it to the crest.
+  // The crest line keeps the ledge's foot shoreward of the shelf's edge (at the peak they meet), so the bed has no cliff.
+  const fore = z >= r.shelfEdge ? r.shelfDepth : Math.min(r.deep, r.shelfDepth + (r.shelfEdge - z) * r.foreSlope);
+  const seaward = reefSeaward(x, z);
+  const ledge = r.crestDepth + Math.max(0, seaward) * r.ledgeSlope;
+  // Shoreward of the crest: the reef flat at the crest's depth, then its inner edge falling to the lagoon, no steeper than the ledge.
+  const inside = Math.max(0, -seaward);
+  const lagoon = Math.min(r.lagoonDepth, r.crestDepth + Math.max(0, inside - r.flatWidth) * r.ledgeSlope);
+  const onReef = z >= r.shelfEdge ? Math.min(r.shelfDepth, seaward >= 0 ? ledge : lagoon) : fore;
+  // The pass: no reef, the shelf deepened to passDepth; flat across its axis at the window's edge.
+  const pass = Math.exp(-(((x - r.passX) / r.passHalfWidth) ** 2));
+  // The inland slope up to the shore, and dry land shoreward of z = 0. It rises from the shelf, not under the forereef:
+  // at the shelf's edge the plane is still deeper than the shelf, so it ends there without a step.
+  const beachFace = z >= 0 ? -z * 0.06 : z >= r.shelfEdge ? -z * r.inlandSlope : Infinity;
+  return { pass, onReef, fore, inside, beachFace };
+}
+
 function reef(): SurfSpot {
   return {
     name: 'reef',
     depthAt(x, z) {
+      const { pass, onReef, fore, beachFace } = reefTerms(x, z);
+      const depth = onReef + (Math.max(fore, REEF.passDepth) - onReef) * pass;
+      return Math.min(depth, beachFace);
+    },
+    // Rock where the reef builds the bed (Part C): out of the pass, seaward of the shore, down to the lagoon's floor.
+    materialAt(x, z) {
       const r = REEF;
-      // The shore-parallel forereef up to the shelf; on the shelf, the ledge rising from it to the crest.
-      // The crest line keeps the ledge's foot shoreward of the shelf's edge (at the peak they meet), so the bed has no cliff.
-      const fore = z >= r.shelfEdge ? r.shelfDepth : Math.min(r.deep, r.shelfDepth + (r.shelfEdge - z) * r.foreSlope);
-      const ledge = r.crestDepth + Math.max(0, reefSeaward(x, z)) * r.ledgeSlope;
-      const onReef = z >= r.shelfEdge ? Math.min(r.shelfDepth, ledge) : fore;
-      // The pass: no reef, the shelf deepened to passDepth; flat across its axis at the window's edge.
-      const pass = Math.exp(-(((x - r.passX) / r.passHalfWidth) ** 2));
-      const depth = onReef + (Math.max(fore, r.passDepth) - onReef) * pass;
-      // A 1:5 beach face (steep enough to stay shoreward of the forereef), and dry land shoreward of z = 0.
-      return Math.min(depth, z < 0 ? -z * r.shoreSlope : -z * 0.06);
+      const { pass, onReef, inside, beachFace } = reefTerms(x, z);
+      const reefWall = r.flatWidth + (r.lagoonDepth - r.crestDepth) / r.ledgeSlope;
+      return pass < 0.5 && onReef < beachFace && inside < reefWall ? 'reef' : 'sand';
     },
   };
 }

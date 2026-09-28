@@ -2,7 +2,7 @@ import { Vector3 } from 'three';
 import type { LipContactParcel, LipParcelSource } from '../physics/DetachedSurfer';
 import { GRAVITY } from './dispersion';
 import { AERATION } from './AerationField';
-import { LH82_AREA, jetRelativeSpeed, overturn, overturnParameter, type OverturnShape, type TubeGeometry } from './Overturn';
+import { LH82_AREA, REEF_OVERTURN, jetRelativeSpeed, overturn, overturnParameter, reefOverturn, type OverturnShape, type TubeGeometry } from './Overturn';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 import { TUBE_STRIDE, carveAt } from './tubeTable';
 
@@ -135,7 +135,9 @@ export interface LipSheetParcel {
  * A landed parcel's flight: where it left the crest, the height it came down
  * at (m), how long it flew (s), the speed of the crest it left (m/s),
  * whether it was a jet's water (0) or a splash-up's (1, G9), which draws no
- * tube, and the parcel's whole water, m³ (what landed and what its splash-up took).
+ * tube, the parcel's whole water, m³ (what landed and what its splash-up took),
+ * and the height of the breaking wave that threw its jet, m (0 for a splash-up,
+ * or when the thrower did not say).
  */
 export interface LipFlight {
   launch: { x: number; y: number; z: number };
@@ -144,6 +146,7 @@ export interface LipFlight {
   crestSpeed: number;
   kind: number;
   volume: number;
+  waveHeight: number;
 }
 
 export interface LipConditions {
@@ -159,6 +162,8 @@ export interface LipConditions {
   windOverCelerity: number;
   /** Crest length the throw covers, m. */
   width: number;
+  /** A break over a submerged crest (a reef break): the gradient it climbs along its travel, rise over run. */
+  reef?: { orthogonalGradient: number };
 }
 
 export interface LipThrow {
@@ -168,6 +173,8 @@ export interface LipThrow {
   relativeSpeed: number;
   /** The overturn, wind included. */
   shape: OverturnShape;
+  /** A reef break's vortex ratio (Mead & Black 2001), within the range they measured. */
+  reef?: { vortexRatio: number };
 }
 
 /**
@@ -179,6 +186,22 @@ export interface LipThrow {
  */
 export function lipThrow(conditions: LipConditions): LipThrow | undefined {
   const { iribarren, slope, nonlinearity, breakerHeight, windOverCelerity, width } = conditions;
+  // A reef break follows Mead & Black by the gradient it climbs (the Teahupo'o Reef, Part B). Their tubes were
+  // photographed in offshore wind, so the wind reshapes the void as it does a plane slope's (Feddersen et al.
+  // 2023) only from theirs, and a stronger offshore wind rounds it no further.
+  if (conditions.reef && breakerHeight > 0) {
+    const reef = reefOverturn(conditions.reef.orthogonalGradient, nonlinearity);
+    if (reef) {
+      const wind = Math.max(windOverCelerity, REEF_OVERTURN.windOverCelerity) - REEF_OVERTURN.windOverCelerity;
+      const shape: OverturnShape = { ...reef, aspect: clamp(reef.aspect - 0.18 * wind, 0.2, 1) };
+      return {
+        volume: shape.jetArea * breakerHeight * breakerHeight * width,
+        relativeSpeed: jetRelativeSpeed(shape, breakerHeight),
+        shape,
+        reef: { vortexRatio: 1 / reef.aspect },
+      };
+    }
+  }
   if (!(iribarren >= 0.4 && iribarren <= 2) || !(breakerHeight > 0)) return undefined;
   const calm = overturn(overturnParameter(slope, nonlinearity));
   const shape: OverturnShape = {
@@ -200,6 +223,8 @@ interface LipStrip {
   parcels: number[];
   live: number;
   kind: 0 | 1;
+  /** The breaking wave's height that threw it, m (0 for a splash-up's strip). */
+  waveHeight: number;
   tube?: FlyingTube;
   /** A jet's splash-up strip, once it has one. */
   splash?: number;
@@ -238,6 +263,7 @@ interface LipStripState {
   parcels: number[];
   live: number;
   kind?: 0 | 1;
+  waveHeight?: number;
   splash?: number;
   tube?: Omit<FlyingTube, 'closedAt'> & { closedAt: number | null };
 }
@@ -347,7 +373,7 @@ export class PlungingLip implements LipParcelSource {
   private readonly linked: Uint32Array;
   private query = 0;
   private readonly near = { a: new Vector3(), b: new Vector3(), pa: new Vector3(), pb: new Vector3(), velocity: new Vector3() };
-  private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0, kind: 0, volume: 0 };
+  private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0, kind: 0, volume: 0, waveHeight: 0 };
   private readonly free: number[] = [];
   /** The flying tubes as a `tubeTable` (G9), refreshed as the clock moves and strips come and go. */
   private tubes = new Float64Array(64 * TUBE_STRIDE);
@@ -403,6 +429,7 @@ export class PlungingLip implements LipParcelSource {
       free: [...this.free], slots, fields,
       strips: [...this.strips].map(([id, strip]): [number, LipStripState] => [id, {
         column: strip.column, launchTime: strip.launchTime, parcels: [...strip.parcels], live: strip.live, kind: strip.kind,
+        waveHeight: strip.waveHeight,
         ...(strip.splash === undefined ? {} : { splash: strip.splash }),
         ...(strip.tube ? {
           tube: { ...strip.tube, geometry: { ...strip.tube.geometry }, closedAt: Number.isNaN(strip.tube.closedAt) ? null : strip.tube.closedAt },
@@ -428,6 +455,7 @@ export class PlungingLip implements LipParcelSource {
       const { tube } = strip;
       this.strips.set(id, {
         column: strip.column, launchTime: strip.launchTime, parcels: [...strip.parcels], live: strip.live, kind: strip.kind ?? 0,
+        waveHeight: strip.waveHeight ?? 0,
         ...(strip.splash === undefined ? {} : { splash: strip.splash }),
         ...(tube ? {
           tube: {
@@ -448,12 +476,13 @@ export class PlungingLip implements LipParcelSource {
 
   /**
    * Throw up to `volume` m³ from `cell` at `height` (m above datum) with
-   * horizontal `velocity` (m/s). Returns the volume actually thrown: 0 when the
-   * parcel pool is full or the crest is dry.
+   * horizontal `velocity` (m/s), from a breaking wave `waveHeight` m high (its
+   * landings say so). Returns the volume actually thrown: 0 when the parcel
+   * pool is full or the crest is dry.
    */
   launch(
     cell: number, velocity: { x: number; z: number }, height: number, volume: number, crestSpeed = 0, tube?: TubeGeometry,
-    releaseTime = JET_RELEASE_TIME,
+    releaseTime = JET_RELEASE_TIME, waveHeight = 0,
   ): number {
     if (this.free.length < STRIP_PARCELS || !(volume > 0)) return 0;
     const { solver } = this;
@@ -483,7 +512,7 @@ export class PlungingLip implements LipParcelSource {
     const stripId = this.nextStrip;
     this.nextStrip += 1;
     const column = Math.round(x / dx - 0.5);
-    const strip: LipStrip = { column, launchTime: this.time, parcels: [], live: STRIP_PARCELS, kind: 0 };
+    const strip: LipStrip = { column, launchTime: this.time, parcels: [], live: STRIP_PARCELS, kind: 0, waveHeight };
     const spacing = releaseTime / (STRIP_PARCELS - 1);
     // The crest moves on at its own speed, the way the jet leaves.
     const jetSpeed = Math.hypot(velocity.x, velocity.z);
@@ -803,11 +832,21 @@ export class PlungingLip implements LipParcelSource {
     const [vx, vy, vz] = [this.vx[parcel], this.vy[parcel], this.vz[parcel]];
     const volume = this.volume[parcel];
     const splash = this.kind[parcel] === 0 && -vy > SPLASH_UP.minImpact ? SPLASH_UP.share * volume : 0;
-    const cell = solver.cellIndex(x, z);
-    const area = solver.dx * solver.dz[Math.floor(cell / solver.nx)];
-    solver.h[cell] += (volume - splash) / area;
-    solver.qx[cell] += (volume * vx - splash * SPLASH_UP.horizontal * vx) / area;
-    solver.qz[cell] += (volume * vz - splash * SPLASH_UP.horizontal * vz) / area;
+    const stripId = this.strip[parcel];
+    const strip = this.strips.get(stripId);
+    // A jet comes down as thick as its sheet, its water over the void's length (a thick lip over more than one
+    // cell), spread along its travel (Part B). A splash-up, and a sheet no thicker than a cell, land in one.
+    const thickness = this.kind[parcel] === 0 && strip?.tube ? (STRIP_PARCELS * volume) / solver.dx / strip.tube.geometry.length : 0;
+    const speed = Math.hypot(vx, vz);
+    const pieces = speed > 0 ? Math.max(1, Math.ceil(thickness / solver.dx - 1e-9)) : 1;
+    for (let k = 0; k < pieces; k += 1) {
+      const along = ((k + 0.5) / pieces - 0.5) * thickness;
+      const cell = pieces > 1 ? solver.cellIndex(x + (vx / speed) * along, z + (vz / speed) * along) : solver.cellIndex(x, z);
+      const area = pieces * solver.dx * solver.dz[Math.floor(cell / solver.nx)];
+      solver.h[cell] += (volume - splash) / area;
+      solver.qx[cell] += (volume * vx - splash * SPLASH_UP.horizontal * vx) / area;
+      solver.qz[cell] += (volume * vz - splash * SPLASH_UP.horizontal * vz) / area;
+    }
     const { flight } = this;
     flight.launch.x = this.lx[parcel];
     flight.launch.y = this.ly[parcel];
@@ -817,12 +856,11 @@ export class PlungingLip implements LipParcelSource {
     flight.crestSpeed = this.crestSpeed[parcel];
     flight.kind = this.kind[parcel];
     flight.volume = volume;
+    flight.waveHeight = strip?.waveHeight ?? 0;
     this.active[parcel] = 0;
     this.state[parcel] = 0;
     this.free.push(parcel);
     this.landings += 1;
-    const stripId = this.strip[parcel];
-    const strip = this.strips.get(stripId);
     if (strip) {
       // Its slot is free for other throws now.
       strip.parcels[strip.parcels.indexOf(parcel)] = -1;
@@ -1022,7 +1060,7 @@ export class PlungingLip implements LipParcelSource {
     if (!splash) {
       splashId = this.nextStrip;
       this.nextStrip += 1;
-      splash = { column: jet.column, launchTime: this.time, parcels: [], live: 0, kind: 1 };
+      splash = { column: jet.column, launchTime: this.time, parcels: [], live: 0, kind: 1, waveHeight: 0 };
       this.strips.set(splashId, splash);
       const inColumn = this.byColumn.get(jet.column);
       if (inColumn) inColumn.push(splashId);

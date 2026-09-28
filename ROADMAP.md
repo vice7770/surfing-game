@@ -514,10 +514,10 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
   - Short records mislead: judge heights against the input sea over the same ≥300 s record.
 - **Part C** (a size sheet, the camera) follows.
 
-### P1 · Teahupo'o Reef — `Part A in review (PR); Parts B–D next`
+### P1 · Teahupo'o Reef — `Parts A (#54) and B (#57) merged; Part C in review (PR); Part D next`
 
-Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers/specs/2026-09-27-teahupoo-reef.md); [Part A plan](docs/superpowers/plans/2026-09-27-teahupoo-reef-part-a.md). The A-frame Reef becomes a Teahupo'o-style heavy left: sourced thick lips and round tubes, a solid reef, and P12 tube riding brought ahead of P11.
-- [ ] **Part A · the bed and its peel** (branch `claude/teahupoo-reef`):
+Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers/specs/2026-09-27-teahupoo-reef.md); [Part A plan](docs/superpowers/plans/2026-09-27-teahupoo-reef-part-a.md); [Part B plan](docs/superpowers/plans/2026-09-28-teahupoo-reef-part-b.md). The A-frame Reef becomes a Teahupo'o-style heavy left: sourced thick lips and round tubes, a solid reef, and P12 tube riding brought ahead of P11.
+- [x] **Part A · the bed and its peel** (merged as #54):
   - **The bed:** Teahupo'o's published shape ([sources and rulings](docs/research/teahupoo-reef-sources.md)):
     - 30 m of water up a 1:2.29 forereef (Rodríguez-Burguette et al. 2025);
     - a 10 m shelf (Shand 2024);
@@ -536,9 +536,40 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - the Reef's faces calibrated on the size report (Practice 1.5–2 up to Big 5–6 m), held until the side feed (`claude/side-feed`) lands and its forecast refitted;
     - the Big swell running up the pass's steep beach face at up to 26 m/s (the pass should end in a lagoon; Part C);
     - the user's look.
-- [ ] **Part B · slab tube physics:** the thick lip and round tube from slab sources (Mead & Black 2001; Blenkinsopp & Chaplin 2008), replacing the provisional submerged-crest rule.
-- [ ] **Part C · the look, the sound and a solid reef:** the lip's glow, the step, the coral, spit, the section collapsing as one, the impact sound, and "hit the reef".
-- [ ] **Part D · tube riding (P12):** rail grab, the tube camera, the foam ball and spit on the rider, and the Surf School Tube lesson. Waits on Compress, Regular/Goofy and the take-off (PR #43).
+- [x] **Part B · slab tube physics** (merged as #57, [report](docs/research/teahupoo-reef-report.md#part-b-slab-tubes)):
+  - **A reef break's tube** (a break over a submerged crest, ξ ≥ 0.4) follows Mead & Black's (2001) vortex ratio for the gradient it climbs:
+    - the gradient is measured their way, along its travel across the breaking depth ± 2.5 m;
+    - the ratio is held within the 1.42–3.43 they measured;
+    - inside Pick & Feddersen's fits their void, jet and tilt stand; beyond them, the provisional 0.43 H² void, 0.5 H lip and 23° tilt;
+    - there is no collapse over a submerged crest;
+    - the wind counts from Mead & Black's offshore photos.
+
+    Ruled with the user's shape advisor.
+  - **Found and fixed:**
+    - the Reef's ledge crossing the window's open edge ran the Big swell to NaN, on main too; the solver now levels the bed across the two columns an open edge copies;
+    - a sea handover's joiner missed lips thrown on its first step;
+    - thick lips landing in one cell flashed the drained crest; they now land over their thickness;
+    - a lip's landing bore still drained at 23.5 m/s with dispersion on; the solver now holds the young roller in shallow water where jets land (0.5 H behind to 1.5 H ahead) for Kennedy's T* (CPU and WGSL; branch `claude/plunge-dispersion`).
+  - **Measured:**
+    - rounder tubes (width/length 0.71 → 0.77–0.80) that open wider;
+    - jets 0.47 H² and 0.47 H thick;
+    - the crest gives the whole jet except on the Big swell's biggest waves;
+    - jets leave at 1.95× crest speed against the lab's 1.25–1.32 (reported for the user).
+  - **Open:**
+    - validating the water against the open Teahupo'o lab dataset (download needs the user's OK);
+    - peel against makeability before Part D (the user's call).
+- [ ] **Part C · the look, the sound and a solid reef** (branch `claude/teahupoo-reef-c`, [plan](docs/superpowers/plans/2026-09-28-teahupoo-reef-part-c.md), [report](docs/research/teahupoo-reef-report.md#part-c-the-solid-reef-the-lagoon-the-crash)):
+  - **Done:**
+    - the reef is solid: the board and the body meet it along the bed's own normal, and wet reef grips harder than sand (0.8 against 0.6, provisional);
+    - a fall that comes as the board strikes the reef ends the ride "Hit the reef";
+    - the pass and inner reef end in a lagoon, with the Teahupo'o model's 1:9.64 inland slope in place of the 1:5 face the Big swell ran up;
+    - a bigger lip's crash sounds deeper (Minnaert's resonance).
+  - **Waiting:**
+    - the lip's glow, the spit and the section collapsing as one wait for the swept overturn surface that replaces the lip strips and carved void (the user's decision, 2026-09-28; the Padang Padang work builds it first);
+    - the step and the coral wait for the coral textures (download approval);
+    - the lagoon's depth and the flat's width wait for the lab profile (download approval).
+  - **Open:** the film beside the reference, and the user's look.
+- [ ] **Part D · tube riding (P12):** rail grab, the tube camera, the foam ball and spit on the rider, and the Surf School Tube lesson. Waits on Compress, Regular/Goofy and the take-off (PR #43). Its contact with the swept surface is agreed with the Padang Padang session: the mouth, pocket depth, face normal and velocity, clearance, foam ball and spit forces.
 
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 

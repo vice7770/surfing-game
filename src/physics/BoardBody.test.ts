@@ -1,7 +1,7 @@
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { AttachedRider } from './AttachedRider';
-import { BoardBody, type BoardPayload } from './BoardBody';
+import { BoardBody, REEF_FRICTION, type BoardPayload } from './BoardBody';
 import { REFERENCE_BOARD, REFERENCE_RIDER } from './boardReference';
 import { buildBoardShape } from './boardShape';
 import { DetachedSurfer } from './DetachedSurfer';
@@ -311,5 +311,38 @@ describe('a standing rider on the board', () => {
     expect(coarse.attached && fine.attached).toBe(true);
     expect(Math.abs(coarse.speed - fine.speed) / fine.speed).toBeLessThan(0.02);
     expect(Math.abs(coarse.heading - fine.heading)).toBeLessThan((2 * Math.PI) / 180);
+  });
+});
+
+describe('the board on a solid reef (Teahupo\'o Reef, Part C)', () => {
+  // A board lying along dry ground that rises toward +z at `slope`, nose up the slope, for `seconds`.
+  const settle = (slope: number, bedMaterial: 'sand' | 'reef', seconds = 3) => {
+    const water = new PlaneWater({ slopeZ: slope, depth: 0, bedMaterial });
+    const board = new BoardBody();
+    board.place(new Vector3(0, 0.12, 0), new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), -Math.atan(slope)));
+    for (let t = 0; t < seconds; t += 1 / 120) board.step(1 / 120, water);
+    return board;
+  };
+
+  it('slides down sand steeper than its friction, and holds on reef that grips harder: the bed pushes along its own normal', () => {
+    // Between the two frictions: tan θ = 0.7, over sand's 0.6 and under reef's REEF_FRICTION.board.
+    const slope = (0.6 + REEF_FRICTION.board) / 2;
+    const onSand = settle(slope, 'sand');
+    const onReef = settle(slope, 'reef');
+    expect(onSand.velocity.z).toBeLessThan(-0.5);
+    expect(Math.abs(onReef.velocity.z)).toBeLessThan(0.05);
+    expect(Number.isFinite(onReef.centerOfMass.y)).toBe(true);
+  });
+
+  it('marks a strike on reef, and not a landing on sand', () => {
+    const drop = (bedMaterial: 'sand' | 'reef') => {
+      const water = new PlaneWater({ depth: 0, bedMaterial });
+      const board = new BoardBody();
+      board.place(new Vector3(0, 1.2, 0));
+      for (let t = 0; t < 1; t += 1 / 120) board.step(1 / 120, water);
+      return board.reefStrikeAge;
+    };
+    expect(drop('reef')).toBeLessThan(1);
+    expect(drop('sand')).toBe(Infinity);
   });
 });

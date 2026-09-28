@@ -2,7 +2,9 @@
  * Browser check for the GPU stage 2 step (plan P6, dev only: /gpu-check.html).
  * Two identical surf zones step side by side, one on the CPU solver and one on
  * the device, and the page reports how far the device's surface and fluxes
- * drift from the CPU reference, and what each step costs.
+ * drift from the CPU reference, and what each step costs. With `&plunge`, both
+ * hold the same jet plunge zones (`holdPlunge`) on the most strongly breaking
+ * water every half second, and the drift inside them is reported too.
  */
 import { DataUtils, WebGLRenderer } from 'three';
 import { FftChop } from './scene/FftChop';
@@ -21,13 +23,15 @@ const say = (line: string) => {
   log.textContent = lines.join('\n');
 };
 
-function drift(reference: BoussinesqSolver, device: BoussinesqSolver): { eta: number; etaRms: number; flux: number; breaking: number } {
+function drift(reference: BoussinesqSolver, device: BoussinesqSolver): { eta: number; etaRms: number; flux: number; breaking: number; held: number; heldCells: number } {
   let worst = 0;
   let squared = 0;
   let signal = 0;
   let flux = 0;
   let breaking = 0;
   let wet = 0;
+  let held = 0;
+  let heldCells = 0;
   for (let i = 0; i < reference.h.length; i += 1) {
     if (reference.h[i] <= 0.01 && device.h[i] <= 0.01) continue;
     wet += 1;
@@ -38,13 +42,30 @@ function drift(reference: BoussinesqSolver, device: BoussinesqSolver): { eta: nu
     signal += eta * eta;
     flux = Math.max(flux, Math.abs(device.qx[i] - reference.qx[i]), Math.abs(device.qz[i] - reference.qz[i]));
     if ((reference.breakingStrength[i] > 0) !== (device.breakingStrength[i] > 0)) breaking += 1;
+    if (reference.plungeHold[i] > 0) {
+      heldCells += 1;
+      held = Math.max(held, Math.abs(difference));
+    }
   }
-  return { eta: worst, etaRms: Math.sqrt(squared / Math.max(1, signal)), flux, breaking: breaking / Math.max(1, wet) };
+  return { eta: worst, etaRms: Math.sqrt(squared / Math.max(1, signal)), flux, breaking: breaking / Math.max(1, wet), held, heldCells };
+}
+
+/** Hold the same plunge zone in both solvers, on the reference's most strongly breaking wet cell, along its flow. */
+function plungeBoth(reference: BoussinesqSolver, device: BoussinesqSolver): void {
+  let cell = -1;
+  for (let i = 0; i < reference.h.length; i += 1) {
+    if (reference.h[i] > 0.1 && reference.breakingStrength[i] > (cell < 0 ? 0 : reference.breakingStrength[cell])) cell = i;
+  }
+  if (cell < 0) return;
+  const x = reference.xCenters[cell % reference.nx];
+  const z = reference.zCenters[Math.floor(cell / reference.nx)];
+  for (const solver of [reference, device]) solver.holdPlunge(x, z, reference.qx[cell], reference.qz[cell], 2);
 }
 
 async function run(): Promise<void> {
   const spot = (new URLSearchParams(location.search).get('spot') ?? 'point') as SurfZoneConfig['spot'];
   const seconds = Number(new URLSearchParams(location.search).get('seconds') ?? 10);
+  const plunge = new URLSearchParams(location.search).has('plunge');
   const config: SurfZoneConfig = { spot, seed: 1, significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0 };
   say(`Spot ${spot}: building two surf zones…`);
   const reference = new SurfZoneSimulation(config);
@@ -62,6 +83,7 @@ async function run(): Promise<void> {
   let gpuMs = 0;
   const frames = Math.round(seconds / SURF_ZONE_STEP);
   for (let frame = 1; frame <= frames; frame += 1) {
+    if (plunge && frame % 30 === 0) plungeBoth(cpu, solver);
     let start = performance.now();
     cpu.step(SURF_ZONE_STEP);
     cpuMs += performance.now() - start;
@@ -70,7 +92,8 @@ async function run(): Promise<void> {
     gpuMs += performance.now() - start;
     if (frame % 60 === 0 || frame === 1) {
       const d = drift(cpu, solver);
-      say(`t ${(frame * SURF_ZONE_STEP).toFixed(2)} s · max |Δh| ${d.eta.toExponential(2)} m · rms Δh / rms η ${d.etaRms.toExponential(2)} · max |Δq| ${d.flux.toExponential(2)} m²/s · breaking disagrees on ${(d.breaking * 100).toFixed(2)} % of wet cells`);
+      const held = plunge ? ` · plunge zone ${d.heldCells} cells, max |Δh| there ${d.held.toExponential(2)} m` : '';
+      say(`t ${(frame * SURF_ZONE_STEP).toFixed(2)} s · max |Δh| ${d.eta.toExponential(2)} m · rms Δh / rms η ${d.etaRms.toExponential(2)} · max |Δq| ${d.flux.toExponential(2)} m²/s · breaking disagrees on ${(d.breaking * 100).toFixed(2)} % of wet cells${held}`);
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
   }

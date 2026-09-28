@@ -1,3 +1,4 @@
+import type { BedMaterial } from '../wave/Bathymetry';
 import type { SurfWater, WaterSample } from './SurfWater';
 
 export interface PlaneOptions {
@@ -11,6 +12,8 @@ export interface PlaneOptions {
   inside?: (x: number, z: number) => boolean;
   /** The share of the water that is air, 0–1 (the wipeout spec, Part B). */
   voidFraction?: number;
+  /** What the bed (parallel to the surface) is made of; sand when absent (the Teahupo'o Reef, Part C). */
+  bedMaterial?: BedMaterial;
 }
 
 /**
@@ -39,6 +42,7 @@ export class PlaneWater implements SurfWater {
       surfaceY: depth > 0 ? surface : surface - 0.05, stillDepth: depth, waterDepth: depth, bedY: inside ? surface - depth : -Infinity,
       wet: inside && depth > 0.01, outsideDomain: !inside, slopeX, slopeZ, normalX: -slopeX / norm, normalY: 1 / norm, normalZ: -slopeZ / norm,
       flowX: flow.x, flowY: flow.y, flowZ: flow.z, regime: inside ? (depth > 0.01 ? 'profile' : 'dry') : 'outside', breaking: 0, voidFraction: this.o.voidFraction ?? 0,
+      bedNormalX: -slopeX / norm, bedNormalY: 1 / norm, bedNormalZ: -slopeZ / norm, bedMaterial: this.o.bedMaterial ?? 'sand',
     });
     return out;
   }

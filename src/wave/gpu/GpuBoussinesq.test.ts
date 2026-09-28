@@ -4,7 +4,7 @@ import { SeaStateBoundary } from '../SeaStateBoundary';
 import { uniformEdges, type WaterTarget } from '../ShallowWaterSolver';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
 import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, boussinesqWgsl } from './boussinesqWgsl';
-import { deviceStepRefusal, packComponents, packGrid, writeParams } from './GpuBoussinesq';
+import { DEVICE_READBACK, deviceStepRefusal, packComponents, packGrid, readbackTarget, writeParams } from './GpuBoussinesq';
 
 const quick = { spot: 'point' as const, seed: 3, significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0,
   alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
@@ -69,6 +69,14 @@ describe('GpuBoussinesq host', () => {
     expect(floats[10]).toBeCloseTo(layout.breaking!.onset, 6);
     expect([words[14], words[15], words[16], words[18]]).toEqual([1, 1, (layout.zones[0] as SeaStateBoundary).sea.components.length, 12]);
     expect(floats[19]).toBeCloseTo(0.04, 7);
+  });
+
+  it('reads back the surface rise rate, which a lip needs to find its crest\'s motion', () => {
+    // Without it a device step left η_t stale (zero after a device spin-up), so no lip was ever thrown on the GPU.
+    const solver = new SurfZoneSimulation(quick).solver as BoussinesqSolver;
+    expect(DEVICE_READBACK).toContain(FIELD.RATEH);
+    expect(readbackTarget(solver, FIELD.RATEH)).toBe(solver.surfaceRiseRate);
+    for (const index of DEVICE_READBACK) expect(readbackTarget(solver, index)).toHaveLength(solver.nx * solver.nz);
   });
 
   it('refuses setups the kernels do not cover', () => {
