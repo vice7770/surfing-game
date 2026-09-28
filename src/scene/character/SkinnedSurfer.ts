@@ -2,7 +2,7 @@ import { BufferAttribute, Group, Matrix4, Texture, Vector3, type Bone, type Mate
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { HumanoidRig } from '../rig/HumanoidRig';
+import { PosedBody } from '../rig/posedBody';
 import type { RiderVisualState } from '../rig/riderVisualState';
 import { computeOutfitCoverage, type OutfitId } from './outfits';
 import { DEFAULT_COLORS, dressMaterial, setOutfitColors, wetMaterial, type OutfitColors } from './surferMaterial';
@@ -50,7 +50,7 @@ export function capTextures(root: Object3D, cap: number, resize: ResizeImage = c
 
 export class SkinnedSurfer {
   readonly group = new Group();
-  private readonly rig: HumanoidRig;
+  private readonly body: PosedBody;
   private readonly bodies: SkinnedMesh[] = [];
   private outfit: OutfitId = 'fullsuit';
   /** Beyond this camera distance the low-poly body is drawn, m (the graphics preset's level of detail). */
@@ -111,14 +111,19 @@ export class SkinnedSurfer {
       }
     });
     if (!this.bodies.length) throw new Error('The surfer model has no skinned body (LOD0/LOD1).');
-    this.rig = new HumanoidRig(bones);
+    this.body = new PosedBody(bones);
     this.group.add(scene);
     this.setOutfit(this.outfit);
   }
 
-  /** Poses the skeleton at the rider, and picks the body's level of detail from the camera's distance. */
+  /** Forgets the drawn body's motion: the next update is drawn as the rig solves it (the surfer sheet's tiles). */
+  resetMotion(): void {
+    this.body.reset();
+  }
+
+  /** Poses the skeleton at the rider (the rig and the smoothing layer), and picks the body's level of detail from the camera's distance. */
   update(state: RiderVisualState, cameraPosition?: Vector3): void {
-    this.rig.solve(state);
+    this.body.update(state);
     if (!cameraPosition) return;
     const far = cameraPosition.distanceTo(state.boardPosition) > this.lodDistance;
     for (const body of this.bodies) body.visible = body.name === 'LOD1' ? far : !far;

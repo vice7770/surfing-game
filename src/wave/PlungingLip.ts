@@ -2,7 +2,7 @@ import { Vector3 } from 'three';
 import type { LipContactParcel, LipParcelSource } from '../physics/DetachedSurfer';
 import { GRAVITY } from './dispersion';
 import { AERATION } from './AerationField';
-import { LH82_AREA, jetRelativeSpeed, overturn, overturnParameter, type OverturnShape, type TubeGeometry } from './Overturn';
+import { LH82_AREA, REEF_OVERTURN, jetRelativeSpeed, overturn, overturnParameter, reefOverturn, type OverturnShape, type TubeGeometry } from './Overturn';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 import { TUBE_STRIDE, carveAt } from './tubeTable';
 
@@ -164,6 +164,8 @@ export interface LipConditions {
   windOverCelerity: number;
   /** Crest length the throw covers, m. */
   width: number;
+  /** A break over a submerged crest (a reef break): the gradient it climbs along its travel, rise over run. */
+  reef?: { orthogonalGradient: number };
 }
 
 export interface LipThrow {
@@ -173,6 +175,8 @@ export interface LipThrow {
   relativeSpeed: number;
   /** The overturn, wind included. */
   shape: OverturnShape;
+  /** A reef break's vortex ratio (Mead & Black 2001), within the range they measured. */
+  reef?: { vortexRatio: number };
 }
 
 /**
@@ -184,6 +188,22 @@ export interface LipThrow {
  */
 export function lipThrow(conditions: LipConditions): LipThrow | undefined {
   const { iribarren, slope, nonlinearity, breakerHeight, windOverCelerity, width } = conditions;
+  // A reef break follows Mead & Black by the gradient it climbs (the Teahupo'o Reef, Part B). Their tubes were
+  // photographed in offshore wind, so the wind reshapes the void as it does a plane slope's (Feddersen et al.
+  // 2023) only from theirs, and a stronger offshore wind rounds it no further.
+  if (conditions.reef && breakerHeight > 0) {
+    const reef = reefOverturn(conditions.reef.orthogonalGradient, nonlinearity);
+    if (reef) {
+      const wind = Math.max(windOverCelerity, REEF_OVERTURN.windOverCelerity) - REEF_OVERTURN.windOverCelerity;
+      const shape: OverturnShape = { ...reef, aspect: clamp(reef.aspect - 0.18 * wind, 0.2, 1) };
+      return {
+        volume: shape.jetArea * breakerHeight * breakerHeight * width,
+        relativeSpeed: jetRelativeSpeed(shape, breakerHeight),
+        shape,
+        reef: { vortexRatio: 1 / reef.aspect },
+      };
+    }
+  }
   if (!(iribarren >= 0.4 && iribarren <= 2) || !(breakerHeight > 0)) return undefined;
   const calm = overturn(overturnParameter(slope, nonlinearity));
   const shape: OverturnShape = {
@@ -809,11 +829,21 @@ export class PlungingLip implements LipParcelSource {
     const [vx, vy, vz] = [this.vx[parcel], this.vy[parcel], this.vz[parcel]];
     const volume = this.volume[parcel];
     const splash = this.kind[parcel] === 0 && -vy > SPLASH_UP.minImpact ? SPLASH_UP.share * volume : 0;
-    const cell = solver.cellIndex(x, z);
-    const area = solver.dx * solver.dz[Math.floor(cell / solver.nx)];
-    solver.h[cell] += (volume - splash) / area;
-    solver.qx[cell] += (volume * vx - splash * SPLASH_UP.horizontal * vx) / area;
-    solver.qz[cell] += (volume * vz - splash * SPLASH_UP.horizontal * vz) / area;
+    const stripId = this.strip[parcel];
+    const strip = this.strips.get(stripId);
+    // A jet comes down as thick as its sheet, its water over the void's length (a thick lip over more than one
+    // cell), spread along its travel (Part B). A splash-up, and a sheet no thicker than a cell, land in one.
+    const thickness = this.kind[parcel] === 0 && strip?.tube ? (STRIP_PARCELS * volume) / solver.dx / strip.tube.geometry.length : 0;
+    const speed = Math.hypot(vx, vz);
+    const pieces = speed > 0 ? Math.max(1, Math.ceil(thickness / solver.dx - 1e-9)) : 1;
+    for (let k = 0; k < pieces; k += 1) {
+      const along = ((k + 0.5) / pieces - 0.5) * thickness;
+      const cell = pieces > 1 ? solver.cellIndex(x + (vx / speed) * along, z + (vz / speed) * along) : solver.cellIndex(x, z);
+      const area = pieces * solver.dx * solver.dz[Math.floor(cell / solver.nx)];
+      solver.h[cell] += (volume - splash) / area;
+      solver.qx[cell] += (volume * vx - splash * SPLASH_UP.horizontal * vx) / area;
+      solver.qz[cell] += (volume * vz - splash * SPLASH_UP.horizontal * vz) / area;
+    }
     const { flight } = this;
     flight.launch.x = this.lx[parcel];
     flight.launch.y = this.ly[parcel];
@@ -827,8 +857,6 @@ export class PlungingLip implements LipParcelSource {
     this.state[parcel] = 0;
     this.free.push(parcel);
     this.landings += 1;
-    const stripId = this.strip[parcel];
-    const strip = this.strips.get(stripId);
     if (strip) {
       // Its slot is free for other throws now.
       strip.parcels[strip.parcels.indexOf(parcel)] = -1;

@@ -87,6 +87,9 @@ export const WALL = 0;
 export const PERIODIC = 1;
 export const OPEN = 2;
 
+/** How many columns the solver stencils reach across an open along-shore edge. */
+export const OPEN_EDGE_REACH = 2;
+
 /** A stable step this short, s (about a thousandth of the surf zone's usual), means the water has diverged. */
 const COLLAPSED_STEP = 1e-5;
 
@@ -263,6 +266,7 @@ export class ShallowWaterSolver {
         this.h[i] = Math.max(0, this.restLevel - this.bed[i]);
       }
     }
+    this.levelOpenEdges(true);
   }
 
   surfaceAt(index: number): number {
@@ -402,6 +406,8 @@ export class ShallowWaterSolver {
     if (shift === 0) return;
     const { nx, nz } = this;
     if (Math.abs(shift) >= nx) throw new RangeError(`Cannot shift ${shift} columns in a ${nx}-column window`);
+    // The edges move: their columns get the spot's seabed back before they slide inside.
+    this.levelOpenEdges(false);
     for (let ix = 0; ix < nx; ix += 1) this.xCenters[ix] += shift * this.dx;
     const arrays = [this.bed, this.h, this.qx, this.qz, ...this.zones.map((entry) => entry.zone.weights)];
     for (let iz = 0; iz < nz; iz += 1) {
@@ -429,7 +435,36 @@ export class ShallowWaterSolver {
         for (const entry of this.zones) entry.zone.weights[i] = entry.zone.weights[keptEdge];
       }
     }
+    this.levelOpenEdges(true);
+    // The zones rebuild over the bed now under them, levelled edges included (the side feed's strips).
     for (const entry of this.zones) entry.zone.afterShift?.();
+  }
+
+  /**
+   * An open edge copies its neighbours, so over a bed sloping across it the copy stands on the wrong bed: the
+   * Reef's Big swell ran away where the window's edge cut its ledge (Part B), as the Canyon's once did across
+   * its wall. The columns the stencils reach from each open edge take their inner neighbour's bed (`level`),
+   * or the spot's again (not `level`); the surface stays where it was, at the still level where dry.
+   */
+  private levelOpenEdges(level: boolean): void {
+    const { nx, nz, bed, h, qx, qz } = this;
+    if (this.xBoundary !== OPEN || nx <= 2 * OPEN_EDGE_REACH) return;
+    for (let iz = 0; iz < nz; iz += 1) {
+      const row = iz * nx;
+      for (let k = 0; k < OPEN_EDGE_REACH; k += 1) {
+        for (const [ix, inner] of [[k, OPEN_EDGE_REACH], [nx - 1 - k, nx - 1 - OPEN_EDGE_REACH]]) {
+          const i = row + ix;
+          const wet = h[i] > this.dryDepth;
+          const surface = wet ? h[i] + bed[i] : this.restLevel;
+          bed[i] = level ? bed[row + inner] : -this.depthAt(this.xCenters[ix], this.zCenters[iz]);
+          const depth = Math.max(0, surface - bed[i]);
+          const scale = wet ? depth / h[i] : 0;
+          h[i] = depth;
+          qx[i] *= scale;
+          qz[i] *= scale;
+        }
+      }
+    }
   }
 
   /** Blend relaxation zones toward their prescribed water after each sub-step. */

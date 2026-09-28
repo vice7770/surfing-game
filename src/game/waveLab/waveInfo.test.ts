@@ -12,14 +12,14 @@ describe('wave info', () => {
   });
 
   it('sums up a peeling wave in surfers’ words', () => {
-    const info = waveInfo({ ...base, peel: { angleDegrees: 52, direction: 1, peelSpeed: 6, columns: 40, fit: 0.9 } }, 'metric');
+    const info = waveInfo({ ...base, peel: { angleDegrees: 52, direction: 1, peelSpeed: 6, columns: 40, fit: 0.9, lineSlope: 0 } }, 'metric');
     expect(info.summary).toBe('Plunging · a left at 52° · good for surfing');
     expect(info.rows.map((row) => row.value)).toEqual(['measuring…', '1.5 m', '12 s', 'Plunging', 'a left at 52°', '18 %', 'in 42 s']);
   });
 
   it('calls a right a right, and a close-out a close-out', () => {
-    expect(waveInfo({ ...base, peel: { angleDegrees: 40, direction: -1, peelSpeed: 6, columns: 40, fit: 0.9 } }, 'metric').summary).toContain('a right at 40°');
-    expect(waveInfo({ ...base, peel: { angleDegrees: 8, direction: 1, peelSpeed: 30, columns: 40, fit: 0.9 } }, 'metric').summary).toContain('closes out');
+    expect(waveInfo({ ...base, peel: { angleDegrees: 40, direction: -1, peelSpeed: 6, columns: 40, fit: 0.9, lineSlope: 0 } }, 'metric').summary).toContain('a right at 40°');
+    expect(waveInfo({ ...base, peel: { angleDegrees: 8, direction: 1, peelSpeed: 30, columns: 40, fit: 0.9, lineSlope: 0 } }, 'metric').summary).toContain('closes out');
   });
 
   it('says so when there is no face, no break yet, or a steady swell', () => {

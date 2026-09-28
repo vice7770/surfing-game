@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, BEACH_OUTER, CANYON, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, reefEdgeZ, smoothstep, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, BEACH_OUTER, CANYON, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
 import { seededRandom } from './random';
+import { breakerDepthFor } from './Breaking';
+import { ledgePeel } from './ledgePeel';
+import { REEF_SWELLS } from '../game/SurfConditions';
 import { ALONG_SHORE } from './SurfZoneSimulation';
 
 /** Offshore bed slope: depth increase per metre toward −z. */
@@ -51,33 +54,70 @@ describe('surf spot bathymetry', () => {
     expect(angle).toBeLessThan(34);
   });
 
-  it("sets the angle of the reef edge's arms by its obliquity", () => {
-    const along = (a: number, b: number) => (reefEdgeZ(REEF.apexX + b) - reefEdgeZ(REEF.apexX + a)) / (b - a);
-    expect(along(20, 60)).toBeCloseTo(Math.tan((REEF.obliquity * Math.PI) / 180), 12);
-    expect(along(-60, -20)).toBeCloseTo(-Math.tan((REEF.obliquity * Math.PI) / 180), 12);
-    expect(reefEdgeZ(REEF.apexX + REEF.halfWidth + 10)).toBe(REEF.edge);
-  });
-
-  it('runs a single-arm reef edge straight across at its obliquity through its middle point', () => {
-    const saved = { ...REEF };
-    Object.assign(REEF, { arms: 1, obliquity: 30, edgeMid: -90 });
-    try {
-      expect(reefEdgeZ(REEF.apexX)).toBeCloseTo(-90, 12);
-      expect((reefEdgeZ(40) - reefEdgeZ(-40)) / 80).toBeCloseTo(-Math.tan(Math.PI / 6), 12);
-    } finally {
-      Object.assign(REEF, saved);
-    }
-  });
-
-  it('raises the reef shelf steeply enough to plunge', () => {
+  describe("the Teahupo'o Reef", () => {
     const reef = createSpot('reef', 1);
-    const apex = reefEdgeZ(REEF.apexX);
-    let steepest = 0;
-    for (let z = apex - REEF.edgeWidth; z <= apex + REEF.edgeWidth / 2; z += 0.5) steepest = Math.max(steepest, slopeZ(reef, REEF.apexX, z));
-    expect(steepest).toBeGreaterThan(0.1);
-    expect(steepest).toBeLessThan(0.2);
-    expect(reef.depthAt(REEF.apexX, apex + REEF.edgeWidth)).toBeCloseTo(REEF.shelfDepth, 1);
-    expect(reef.depthAt(REEF.apexX, apex - REEF.edgeWidth)).toBeCloseTo(REEF.channelDepth, 1);
+    // At x = 0 the ledge lies well shoreward of the shelf's edge: shelf, forereef and deep water in turn.
+    it('drops from a 10 m shelf down a 1:2.29 forereef to deep water', () => {
+      expect(reef.depthAt(0, -120)).toBeCloseTo(REEF.shelfDepth, 3);
+      expect(slopeZ(reef, 0, REEF.shelfEdge - 20)).toBeCloseTo(REEF.foreSlope, 9);
+      expect(reef.depthAt(0, -260)).toBeCloseTo(REEF.deep, 12);
+    });
+
+    it('rises from the shelf to its crest up a ledge running at its angle to the shoreline, furthest out toward −x', () => {
+      // At x = −40 the crest lies 80 m out, clear of the beach face.
+      const crest = reefCrestZ(-40);
+      // The pass's Gaussian adds ~1e-9 m this far from its axis.
+      expect(reef.depthAt(-40, crest)).toBeCloseTo(REEF.crestDepth, 6);
+      const radians = (REEF.angle * Math.PI) / 180;
+      const seaward = { x: Math.sin(radians), z: -Math.cos(radians) };
+      const at = (n: number) => reef.depthAt(-40 + n * seaward.x, crest + n * seaward.z);
+      expect((at(8) - at(4)) / 4).toBeCloseTo(REEF.ledgeSlope, 6);
+      expect((reefCrestZ(-40) - reefCrestZ(-80)) / 40).toBeCloseTo(Math.tan(radians), 12);
+      expect(reefCrestZ(-80)).toBeLessThan(reefCrestZ(0));
+    });
+
+    it('opens a pass along the window’s +x edge, level across it', () => {
+      const edge = ALONG_SHORE / 2;
+      expect(REEF.passX).toBe(edge);
+      for (let z = -260; z <= -40; z += 20) expect(Math.abs(gradientX(reef, edge, z))).toBeLessThan(1e-3);
+      expect(reef.depthAt(edge, -140)).toBeCloseTo(REEF.passDepth, 6);
+    });
+
+    it('says where the ledge is ridden: out of the pass, with its crest still under water off the beach', () => {
+      expect(reefLedgeAt(-60)).toBe(true);
+      expect(reefLedgeAt(0)).toBe(true);
+      // The crest meets the beach face's 1.5 m depth at z = −7.5, x = 32.5; the pass reaches in from x = 30.
+      expect(reefLedgeAt(29)).toBe(true);
+      expect(reefLedgeAt(35)).toBe(false);
+      expect(reefLedgeAt(REEF.passX)).toBe(false);
+    });
+
+    it('has no cliff anywhere in the window', () => {
+      // The steepest faces are the 1:2.29 forereef and ledge: 0.22 m over half a metre.
+      for (let x = -80; x <= 80; x += 2) {
+        for (let z = -300; z <= 20; z += 2) {
+          expect(Math.abs(reef.depthAt(x, z + 0.5) - reef.depthAt(x, z))).toBeLessThan(0.25);
+          expect(Math.abs(reef.depthAt(x + 0.5, z) - reef.depthAt(x, z))).toBeLessThan(0.25);
+        }
+      }
+    });
+
+    it('meets a beach face and dry land shoreward of z = 0', () => {
+      for (let x = -80; x <= 80; x += 10) {
+        expect(reef.depthAt(x, 5)).toBeLessThan(0);
+        expect(reef.depthAt(x, -3)).toBeLessThanOrEqual(3 * REEF.shoreSlope + 1e-12);
+      }
+    });
+
+    it('is designed to peel fast but makeable on the Small swell (phase matching)', () => {
+      const small = REEF_SWELLS.small;
+      const peel = ledgePeel({
+        period: small.peakPeriod, deepDepth: REEF.deep, shelfDepth: REEF.shelfDepth,
+        breakDepth: breakerDepthFor(small.significantHeight, REEF.deep), swellDegrees: small.directionDegrees ?? 0, ledgeDegrees: REEF.angle,
+      });
+      expect(peel.peelSpeed).toBeGreaterThanOrEqual(10);
+      expect(peel.peelSpeed).toBeLessThanOrEqual(13);
+    });
   });
 
   it('cuts a canyon that is far deeper on its axis and fades before the offshore boundary', () => {
@@ -121,22 +161,14 @@ const todayPoint = (x: number, z: number) => {
   const offshore = -protrusion * smoothstep(center + halfWidth, center - halfWidth, x) - z;
   return offshore <= 0 ? offshore * 0.06 : Math.min(12, slope * offshore);
 };
-const todayReef = (x: number, z: number) => {
-  const edgeZ = reefEdgeZ(x);
-  const onReef = smoothstep(edgeZ - REEF.edgeWidth / 2, edgeZ + REEF.edgeWidth / 2, z);
-  const channel = Math.max(deanDepth(-z), REEF.channelDepth);
-  const shelf = Math.min(deanDepth(-z, REEF.beachA), REEF.shelfDepth);
-  return channel + (shelf - channel) * onReef;
-};
 
 describe('outer bathymetry (wave sizes)', () => {
-  it('leaves the Beach and Point shoreward of −150 m, and the whole Reef, as they were', () => {
+  // The Reef is the Teahupo'o Reef rework's (its own tests, above).
+  it('leaves the Beach and Point shoreward of −150 m as they were', () => {
     const beach = createSpot('beach', 1);
     const beachToday = todayBeach(1);
     const point = createSpot('point', 1);
-    const reef = createSpot('reef', 1);
     for (let x = -80; x <= 80; x += 8) {
-      for (let z = -1500; z <= 30; z += 3) expect(reef.depthAt(x, z)).toBeCloseTo(todayReef(x, z), 9);
       for (let z = -150; z <= 30; z += 3) {
         expect(point.depthAt(x, z)).toBeCloseTo(todayPoint(x, z), 9);
         // The outer bar's tail reaches the inner zone by under 1 cm.

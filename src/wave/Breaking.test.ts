@@ -97,6 +97,51 @@ describe('PeelTracker', () => {
     expect(estimate.angleDegrees).toBeCloseTo((Math.asin(celerity / peelSpeed) * 180) / Math.PI, 0);
   });
 
+  it('measures the peel along an oblique break line, not along the shore', () => {
+    const tracker = new PeelTracker(xs, 10);
+    const lineSlope = 0.8;
+    const alongLine = 10;
+    const celerity = 5;
+    const secondsPerX = Math.hypot(1, lineSlope) / alongLine;
+    xs.forEach((x, column) => tracker.markOnset(column, 1 + (x + 60) * secondsPerX, lineSlope * x));
+    const estimate = tracker.estimate(1 + 120 * secondsPerX, celerity)!;
+    expect(estimate.lineSlope).toBeCloseTo(lineSlope, 9);
+    expect(estimate.peelSpeed).toBeCloseTo(alongLine, 9);
+    expect(estimate.angleDegrees).toBeCloseTo((Math.asin(celerity / alongLine) * 180) / Math.PI, 9);
+    expect(estimate.direction).toBe(1);
+  });
+
+  it('reads a shore-parallel break line exactly as before', () => {
+    const tracker = new PeelTracker(xs, 10);
+    xs.forEach((x, column) => tracker.markOnset(column, 1 + (x + 60) / 8));
+    const estimate = tracker.estimate(16, 4.2)!;
+    expect(estimate.lineSlope).toBe(0);
+    expect(estimate.peelSpeed).toBeCloseTo(8, 9);
+  });
+
+  // A peel along a long ledge takes about a period, so the next wave starts at the peak while the last still breaks
+  // inside: the window then holds two waves, and one fit across both reads neither (the Teahupo'o Reef's sweep).
+  it('measures one wave’s front when the next wave starts before the last has finished peeling', () => {
+    const tracker = new PeelTracker(xs, 10);
+    const peelSpeed = 10;
+    const celerity = 5;
+    // The first wave peels the whole window from t = 0; the next starts 10 s later and has reached a third of it.
+    xs.forEach((x, column) => tracker.markOnset(column, (x + 60) / peelSpeed));
+    xs.forEach((x, column) => { if (x < -20) tracker.markOnset(column, 10 + (x + 60) / peelSpeed); });
+    const estimate = tracker.estimate(14, celerity)!;
+    expect(estimate.peelSpeed).toBeCloseTo(peelSpeed, 9);
+    expect(estimate.direction).toBe(1);
+    expect(estimate.fit).toBeCloseTo(1, 9);
+  });
+
+  it('measures only the columns it is told to', () => {
+    const tracker = new PeelTracker(xs, 10, 0.8, (column) => xs[column] < 20);
+    xs.forEach((x, column) => tracker.markOnset(column, x < 20 ? 1 + (x + 60) / 8 : 1 + (x - 20) / 2));
+    const estimate = tracker.estimate(16, 4.2)!;
+    expect(estimate.peelSpeed).toBeCloseTo(8, 9);
+    expect(tracker.measures(xs.findIndex((x) => x > 30))).toBe(false);
+  });
+
   it('reports a close-out when the whole crest breaks at once', () => {
     const tracker = new PeelTracker(xs, 10);
     for (let step = 0; step <= 60; step += 1) {

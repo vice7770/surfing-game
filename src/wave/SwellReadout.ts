@@ -14,6 +14,8 @@ export interface SwellConditions {
   depth: number;
   /** Steepest bed slope tanβ; 0 means a flat bed. */
   bedSlope: number;
+  /** The slope ends in a submerged crest (a reef ledge), where a break cannot surge (`submergedCrest`). */
+  submergedCrest?: boolean;
 }
 
 export interface SwellReadout {
@@ -34,16 +36,16 @@ export interface ReadoutRow {
   value: string;
 }
 
-export function describeSwell({ height, period, depth, bedSlope }: SwellConditions): SwellReadout {
+export function describeSwell({ height, period, depth, bedSlope, submergedCrest = false }: SwellConditions): SwellReadout {
   const kinematics = waveKinematics(period, depth);
   const deepWavelength = (GRAVITY * period * period) / (2 * Math.PI);
   const breakerDepth = height / BREAKER_INDEX;
   const slope = Math.max(0, bedSlope);
   const iribarren = slope > 0 && height > 0 ? slope / Math.sqrt(height / deepWavelength) : 0;
-  // Battjes breaker-point thresholds for ξ_b.
+  // Battjes breaker-point thresholds for ξ_b; over a submerged crest a steep break plunges (`breakerForm`).
   const breakerType: BreakerType = iribarren <= 0 ? 'none'
     : iribarren < 0.4 ? 'spilling'
-      : iribarren <= 2 ? 'plunging' : 'surging';
+      : iribarren <= 2 || submergedCrest ? 'plunging' : 'surging';
   return {
     deepWavelength,
     wavelength: kinematics.wavelength,

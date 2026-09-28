@@ -10,11 +10,31 @@ const MIN_FACE_SLOPE = 0.005;
 /**
  * How a breaking crest goes, from the local Iribarren number under it (Battjes
  * 1974): a plunging jet for 0.4 ≤ ξ ≤ 2, a spilling roller below, and above
- * it a surging wave that throws nothing.
+ * it a surging wave that throws nothing. Surging needs the slope to run up to
+ * the still-water line; over a submerged crest (a reef ledge levelling off
+ * under water) the wave cannot surge and plunges instead (Yao et al. 2013;
+ * Blenkinsopp & Chaplin 2008). The lip of such a reef break takes its shape
+ * from `reefOverturn` (Mead & Black 2001; the Teahupo'o Reef, Part B); this
+ * flag keeps the readout's breaker type in step with it.
  */
-export function breakerForm(localIribarren: number): 'jet' | 'roller' | 'none' {
+export function breakerForm(localIribarren: number, overSubmergedCrest = false): 'jet' | 'roller' | 'none' {
   if (localIribarren < 0.4) return 'roller';
-  return localIribarren <= 2 ? 'jet' : 'none';
+  return localIribarren <= 2 || overSubmergedCrest ? 'jet' : 'none';
+}
+
+/** Still water this thin is the shoreline, m. */
+const SHORELINE = 0.01;
+
+/**
+ * Whether the slope under a break ends in a submerged crest: where the local
+ * slope, carried on as a plane, would reach the still-water line (stillDepth /
+ * slope ahead), the bed is still under water. A plane beach face reaches it; a
+ * reef ledge has levelled off below it. `depthAhead(d)` is the still depth d m
+ * shoreward of the break.
+ */
+export function submergedCrest(depthAhead: (ahead: number) => number, stillDepth: number, slope: number): boolean {
+  if (!(slope > 0) || !(stillDepth > 0)) return false;
+  return depthAhead(stillDepth / slope) > SHORELINE;
 }
 
 export interface CrestMotion {

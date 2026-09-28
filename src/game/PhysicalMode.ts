@@ -8,6 +8,7 @@ import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SurferView } from '../scene/character/SurferView';
 import { RiderMotion } from '../scene/rig/riderMotion';
+import { SnapshotTrack } from './snapshotTrack';
 import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { LeashCord } from '../scene/board/LeashCord';
 import { FarFieldOcean } from '../scene/FarFieldOcean';
@@ -28,7 +29,7 @@ import type { ReadoutRow } from '../wave/SwellReadout';
 import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { SprayLook } from '../wave/SprayCloud';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
-import { SEA_COMPONENTS, surfZoneSea, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { SEA_COMPONENTS, solverStage, surfZoneSea, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
@@ -78,6 +79,19 @@ export interface SwellInput {
  */
 export const PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1.4, peakPeriod: 12, spreading: 40, bandwidth: 0.08, directionDegrees: 10 };
 
+/**
+ * The Reef's practice groundswell: the Practice swell's narrow band and spread at a
+ * Teahupo'o period, from the peak's side, for ~1.5–2 m faces (the Teahupo'o Reef spec).
+ * The Reef stays fast when small: its break runs along the ledge at no less than the
+ * shelf's celerity (src/wave/ledgePeel.ts). Provisional until the size report calibrates it.
+ */
+export const REEF_PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1, peakPeriod: 14, spreading: 40, bandwidth: 0.08, directionDegrees: 20 };
+
+/** A spot's practice groundswell: the Reef's own, or the shared one. */
+export function practiceSwell(spot: SpotName): Readonly<SwellInput> {
+  return spot === 'reef' ? REEF_PRACTICE_SWELL : PRACTICE_SWELL;
+}
+
 /** The GPU tier's sea (plan P6): more components, so sets repeat less often. */
 export const GPU_TIER_COMPONENTS = 64;
 
@@ -93,12 +107,9 @@ export async function webGpuAvailable(): Promise<boolean> {
 /** Largest swell the tank carries, matching the buoy sliders; the tank deepens with the swell (the wave-sizes spec). */
 export const TANK_SWELL_LIMITS = { height: { min: 0.3, max: 4 }, period: { min: 6, max: 18 } };
 
-/**
- * The Canyon keeps its tank and sea as they were (the wave-sizes spec), and so its 3 m cap; the Reef keeps its
- * cap too until the Reef rework deepens its tank (the wave-sizes review).
- */
+/** The Canyon keeps its tank and sea as they were (the wave-sizes spec), and so its 3 m cap. */
 export function swellHeightLimit(spot: SpotName): number {
-  return spot === 'canyon' || spot === 'reef' ? 3 : TANK_SWELL_LIMITS.height.max;
+  return spot === 'canyon' ? 3 : TANK_SWELL_LIMITS.height.max;
 }
 
 function clamp(value: number, range: { min: number; max: number }): number {
@@ -128,7 +139,7 @@ export function spreadingFor(spread: number): number {
 
 /** Buoy values as set, the practice groundswell, or the swell a storm delivers to the spot, kept within TANK_SWELL_LIMITS. */
 export function swellFor(settings: PhysicalSettings): SwellInput {
-  if (settings.source === 'practice') return { ...PRACTICE_SWELL };
+  if (settings.source === 'practice') return { ...practiceSwell(settings.spot) };
   if (settings.source !== 'storm') {
     return { significantHeight: Math.min(settings.significantHeight, swellHeightLimit(settings.spot)), peakPeriod: settings.peakPeriod, spreading: spreadingFor(settings.spread) };
   }
@@ -249,6 +260,11 @@ export class PhysicalMode {
   private readonly riderState = createRiderVisualState();
   /** How the rider's board moves, for the drawn body (Part B). */
   private readonly riderMotion = new RiderMotion();
+  /** The snapshots the board, rider and camera target are drawn between, and the arrays drawn this frame. */
+  private readonly track = new SnapshotTrack();
+  private readonly drawnRider = new Float64Array(RIDER_SNAPSHOT.length);
+  private readonly drawnBoard = new Float64Array(8);
+  private trackedHost?: SurfZoneHost;
   /** Whether the latest input paddles, which cups the drawn hands. */
   private paddling = false;
   private retryPending = false;
@@ -297,12 +313,12 @@ export class PhysicalMode {
   private readonly followCrest = { x: 0, y: 0, z: 0 };
 
   /**
-   * The ride view's lead and lip: the followed point's velocity over the sea time
-   * between snapshots, and the crest of the wave under the rider (spec P9 phase 0).
+   * The ride view's lead and lip: the followed point's velocity over the drawn
+   * sea time between frames, and the crest of the wave under the rider (spec P9 phase 0).
    */
-  private followMotion(host: SurfZoneHost): void {
+  private followMotion(host: SurfZoneHost, seaTime: number): void {
     const { follow, followedAt } = this;
-    const { seaTime, ride } = host.snapshot.status;
+    const { ride } = host.snapshot.status;
     const elapsed = seaTime - followedAt.seaTime;
     const velocity = follow.velocity!;
     if (elapsed > 0 && elapsed < 0.5) {
@@ -371,7 +387,10 @@ export class PhysicalMode {
     const start = ++this.starts;
     const swell = swellFor(settings);
     // The GPU tier builds a richer sea; the page decides, so its far field matches the worker's tank.
-    const tier = settings.stage === 2 && settings.compute === 'auto' && gpuTier !== undefined && await gpuTier();
+    // A spot that needs stage 2 raises a stage 1 tier, and then asks for the GPU (as SurfConditions' raisedWater).
+    const stage = solverStage(settings.spot, settings.stage);
+    const compute = stage !== settings.stage ? 'auto' : settings.compute;
+    const tier = stage === 2 && compute === 'auto' && gpuTier !== undefined && await gpuTier();
     const config: SurfZoneConfig = {
       spot: settings.spot,
       seed,
@@ -382,8 +401,8 @@ export class PhysicalMode {
       bandwidth: swell.bandwidth,
       tide: settings.tide,
       windSpeed: settings.windSpeed,
-      stage: settings.stage,
-      compute: settings.compute,
+      stage,
+      compute,
       // Practice's groundswell is given at the tank's edge, so its sea stays as it was (the wave-sizes spec).
       ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
       ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
@@ -551,8 +570,16 @@ export class PhysicalMode {
   update(dt: number): void {
     const { host } = this;
     if (!host) return;
-    const pose = host.snapshot.board;
-    const rider = host.snapshot.rider;
+    // The board, the rider and the camera's target are drawn between physics snapshots (the riding-body plan, step 1).
+    const { status } = host.snapshot;
+    if (host !== this.trackedHost) {
+      this.track.reset();
+      this.trackedHost = host;
+    }
+    this.track.push(status.seaTime, host.snapshot.rider, host.snapshot.board);
+    const time = this.track.sample(dt, this.drawnRider, this.drawnBoard) ?? status.seaTime;
+    const pose = this.drawnBoard;
+    const rider = this.drawnRider;
     const riding = rider[RIDER_SNAPSHOT.present] > 0;
     // Follow the rider's body once it is in the water, the board while it rides.
     const fallen = riding && rider[RIDER_SNAPSHOT.phase] === RIDER_PHASES.indexOf('fallen');
@@ -560,7 +587,7 @@ export class PhysicalMode {
     this.follow.position.y = fallen ? rider[RIDER_SNAPSHOT.points + 1] : pose[1];
     this.follow.position.z = fallen ? rider[RIDER_SNAPSHOT.points + 2] : pose[2];
     this.follow.heading = riding ? rider[RIDER_SNAPSHOT.heading] : 0;
-    this.followMotion(host);
+    this.followMotion(host, time);
     this.camera.update(host, this.focus, dt, pose[7] > 0 ? this.follow : undefined);
     this.farField.update(host.snapshot.status.seaTime);
     this.lipSheet.update(host.snapshot.lip, host.snapshot.lipCount, host.init.dx);
@@ -571,9 +598,9 @@ export class PhysicalMode {
     this.leash.object.visible = this.shown && riding && pose[7] > 0;
     if (riding) {
       readRiderSnapshot(rider, pose, this.riderState);
-      this.riderMotion.update(this.riderState, host.snapshot.status.seaTime);
+      this.riderMotion.update(this.riderState, time);
       this.riderState.stroking = this.paddling && this.riderState.phase === 'prone' ? 1 : 0;
-      this.riderState.clock = host.snapshot.status.seaTime;
+      this.riderState.clock = time;
       this.surfer.update(this.riderState, this.camera.camera.position);
       const { leash } = this.riderState;
       // The leash is on the back foot: the right regular, the left goofy (the stances spec's setting).
