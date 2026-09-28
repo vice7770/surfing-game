@@ -514,6 +514,32 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
   - Short records mislead: judge heights against the input sea over the same ≥300 s record.
 - **Part C** (a size sheet, the camera) follows.
 
+### P1 · Teahupo'o Reef — `Part A in review (PR); Parts B–D next`
+
+Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers/specs/2026-09-27-teahupoo-reef.md); [Part A plan](docs/superpowers/plans/2026-09-27-teahupoo-reef-part-a.md). The A-frame Reef becomes a Teahupo'o-style heavy left: sourced thick lips and round tubes, a solid reef, and P12 tube riding brought ahead of P11.
+- [ ] **Part A · the bed and its peel** (branch `claude/teahupoo-reef`):
+  - **The bed:** Teahupo'o's published shape ([sources and rulings](docs/research/teahupoo-reef-sources.md)):
+    - 30 m of water up a 1:2.29 forereef (Rodríguez-Burguette et al. 2025);
+    - a 10 m shelf (Shand 2024);
+    - a ledge at 45° to the shore, rising to a crest 1.5 m under the surface (WSL);
+    - a pass at the end of the left.
+
+    The Reef always runs stage 2, with the solver's own waves at its 30 m edge, its own long-period swells and Practice, and its riders take off at the peak.
+  - **Found and fixed** ([report](docs/research/teahupoo-reef-report.md)):
+    - the plane-beach Iribarren bands read the steep ledge as surging and threw no lips. A break over a submerged crest now plunges (provisional until Part B);
+    - the Big swell drained the ledge to 0.07 m and ran its backwash to NaN. Dispersion now switches off in a drained trough as at a high crest, on CPU and WGSL;
+    - the peel meter measured along x, mixed two waves in a long peel, and counted breaks past the reef's end. It now fits one wave's front along its break line, and the Reef only on its ledge.
+  - **The design:** chosen by a sweep of ledge angle, swell direction and shelf depth. It peels a median 13.6 m/s (α 23°) on the Small swell, against today's A-frame's 11° close-outs. About half its waves close out: fast, often made only through the tube.
+  - **Catching** on its Practice: as many riders stand as on today's Reef (14; from 871 attempts against 1018), with the Reef's first rides of 3 s or more (longest 6.1 s, against 2.6 s); it lights fewer take-off cues (23 against 62).
+  - **On the wave sizes tank:** the Reef's 30 m edge takes the buoy's deep-water swell shoaled to it, its zone is lengthened to 0.75 of the edge wavelength, and its cap is 4 m.
+  - **Open:**
+    - the Reef's faces calibrated on the size report (Practice 1.5–2 up to Big 5–6 m), held until the side feed (`claude/side-feed`) lands and its forecast refitted;
+    - the Big swell running up the pass's steep beach face at up to 26 m/s (the pass should end in a lagoon; Part C);
+    - the user's look.
+- [ ] **Part B · slab tube physics:** the thick lip and round tube from slab sources (Mead & Black 2001; Blenkinsopp & Chaplin 2008), replacing the provisional submerged-crest rule.
+- [ ] **Part C · the look, the sound and a solid reef:** the lip's glow, the step, the coral, spit, the section collapsing as one, the impact sound, and "hit the reef".
+- [ ] **Part D · tube riding (P12):** rail grab, the tube camera, the foam ball and spit on the rider, and the Surf School Tube lesson. Waits on Compress, Regular/Goofy and the take-off (PR #43).
+
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 
 Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](docs/superpowers/specs/2026-09-26-gameplay-milestone.md), grounded in the [surf-science survey](docs/research/surf-gameplay-research.md).

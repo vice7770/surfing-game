@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BoussinesqSolver, madsenSorensenCelerity } from './BoussinesqSolver';
-import { breakerForm, crestSpeedAt, waveHeightAt } from './CrestKinematics';
+import { breakerForm, crestSpeedAt, submergedCrest, waveHeightAt } from './CrestKinematics';
 import { uniformEdges } from './ShallowWaterSolver';
 import { waveNumber } from './dispersion';
 
@@ -48,5 +48,16 @@ describe('crest kinematics', () => {
     expect(breakerForm(0.2)).toBe('roller');
     expect(breakerForm(0.8)).toBe('jet');
     expect(breakerForm(3)).toBe('none');
+  });
+
+  // A reef ledge levels off under water, so a break on it cannot surge (Yao et al. 2013; Blenkinsopp & Chaplin 2008).
+  it('plunges instead of surging where a steep slope ends in a submerged crest', () => {
+    expect(breakerForm(3, true)).toBe('jet');
+    expect(breakerForm(0.2, true)).toBe('roller');
+    const planeBeach = (ahead: number) => 3 - 0.2 * ahead;
+    const reefLedge = (ahead: number) => Math.max(1.5, 3 - 0.44 * ahead);
+    expect(submergedCrest(planeBeach, 3, 0.2)).toBe(false);
+    expect(submergedCrest(reefLedge, 3, 0.44)).toBe(true);
+    expect(submergedCrest(reefLedge, 3, 0)).toBe(false);
   });
 });

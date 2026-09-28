@@ -44,7 +44,7 @@ export function surfModel(choice: SurfChoice): SurfModel {
 const SKETCHES: Record<SpotName, string> = {
   beach: '<path d="M4 38c10-4 20 4 30 0s20-4 30 0 10 2 12 1"/><path d="M14 26c6-3 12-3 18 0M48 24c6-3 12-3 18 0" stroke-dasharray="3 3"/><path d="M4 12c12 2 24-2 36 0s24 2 36 0" opacity=".45"/>',
   point: '<path d="M4 42h24c10 0 14-8 20-16s12-14 28-16"/><path d="M34 34c6-8 14-16 30-18" stroke-dasharray="3 3"/><path d="M4 12c12 2 24-2 36 0s24 2 36 0" opacity=".45"/>',
-  reef: '<path d="M4 42c14-2 24-2 36-2s22 0 36 2"/><path d="M22 30c6-8 12-10 18-10s12 2 18 10" stroke-dasharray="3 3"/><path d="M4 12c12 2 24-2 36 0s24 2 36 0" opacity=".45"/>',
+  reef: '<path d="M4 42c14-2 24-2 36-2s22 0 36 2"/><path d="M8 20L50 40" stroke-dasharray="3 3"/><path d="M60 40V20M70 40V20" stroke-dasharray="3 3" opacity=".6"/><path d="M4 12c12 2 24-2 36 0s24 2 36 0" opacity=".45"/>',
   canyon: '<path d="M4 42c14-2 24-2 36-2s22 0 36 2"/><path d="M36 42V14M44 42V14" stroke-dasharray="3 3"/><path d="M4 12c12 2 24-2 36 0s24 2 36 0" opacity=".45"/>',
 };
 

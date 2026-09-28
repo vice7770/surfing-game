@@ -5,6 +5,8 @@ export interface PeelSample {
   angleDegrees: number;
   /** r² of the onset-time fit. */
   fit: number;
+  /** The break point's speed along its line, m/s. */
+  peelSpeed?: number;
 }
 
 type RiderSkill = keyof typeof PEEL_SKILL_MINIMUM;
@@ -23,6 +25,13 @@ export interface RideabilityStats {
   histogram: number[];
   /** Median peel angle of clean waves, degrees (NaN without any). */
   medianAngle: number;
+  /** Median break-point speed of clean waves, m/s (NaN without any). */
+  medianPeelSpeed: number;
+}
+
+function median(sorted: readonly number[]): number {
+  const middle = sorted.length >> 1;
+  return sorted.length === 0 ? Number.NaN : sorted.length % 2 ? sorted[middle] : 0.5 * (sorted[middle - 1] + sorted[middle]);
 }
 
 /**
@@ -33,12 +42,13 @@ export interface RideabilityStats {
  */
 export function rideability(samples: readonly (PeelSample | undefined)[]): RideabilityStats {
   const waves = samples.filter((sample): sample is PeelSample => sample !== undefined);
-  const clean = waves.filter((wave) => wave.fit >= MIXED_PEAK_FIT).map((wave) => wave.angleDegrees).sort((a, b) => a - b);
+  const cleanWaves = waves.filter((wave) => wave.fit >= MIXED_PEAK_FIT);
+  const clean = cleanWaves.map((wave) => wave.angleDegrees).sort((a, b) => a - b);
+  const speeds = cleanWaves.flatMap((wave) => (wave.peelSpeed === undefined ? [] : [wave.peelSpeed])).sort((a, b) => a - b);
   const share = (count: number) => (waves.length > 0 ? count / waves.length : 0);
   const atLeast = (minimum: number) => share(clean.filter((angle) => angle >= minimum).length);
   const histogram = new Array<number>(9).fill(0);
   for (const angle of clean) histogram[Math.min(8, Math.floor(angle / 10))] += 1;
-  const middle = clean.length >> 1;
   return {
     samples: samples.length,
     waves: waves.length,
@@ -51,7 +61,8 @@ export function rideability(samples: readonly (PeelSample | undefined)[]): Ridea
       professional: atLeast(PEEL_SKILL_MINIMUM.professional),
     },
     histogram,
-    medianAngle: clean.length === 0 ? Number.NaN : clean.length % 2 ? clean[middle] : 0.5 * (clean[middle - 1] + clean[middle]),
+    medianAngle: median(clean),
+    medianPeelSpeed: median(speeds),
   };
 }
 
@@ -75,7 +86,7 @@ export function measureRideability(config: SurfZoneConfig, options: { periods: n
   for (let period = 0; period < options.periods; period += 1) {
     for (let index = 0; index < stepsPerPeriod; index += 1) simulation.step(step);
     const estimate = simulation.peelEstimate();
-    samples.push(estimate && { angleDegrees: estimate.angleDegrees, fit: estimate.fit });
+    samples.push(estimate && { angleDegrees: estimate.angleDegrees, fit: estimate.fit, peelSpeed: estimate.peelSpeed });
     breaking += simulation.breakingFraction();
   }
   return {

@@ -6,7 +6,7 @@ export const MADSEN_SORENSEN_B = 1 / 15;
 const ALPHA = MADSEN_SORENSEN_B + 1 / 3;
 /** A cell disperses only where it and its neighbours hold at least this much water, over this much still depth, m. */
 const DISPERSIVE_DEPTH = 0.05;
-/** Tonelli & Petti (2009), FUNWAVE-TVD's default: shallow water where the surface stands this high over the still depth. */
+/** Tonelli & Petti (2009), FUNWAVE-TVD's default: shallow water where the surface stands this high over the still depth (or a trough this deep below it). */
 const SWITCH_RATIO = 0.8;
 
 /** Phase speed ω/k the Madsen–Sørensen equations give at depth d: ω² = g d k² (1 + B(kd)²)/(1 + α(kd)²). */
@@ -384,7 +384,10 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   /**
    * Still depth and the dispersive mask. A cell disperses when every cell its
    * stencils reach (two along each axis, one diagonally) holds water over still
-   * depth, and its surface stands below the Tonelli–Petti ratio.
+   * depth, and its surface stands within the Tonelli–Petti ratio of still water:
+   * no higher at a crest, and no deeper in a trough. The weakly nonlinear terms
+   * fail as badly in a trough that has drained a reef ledge as at a breaking
+   * crest (the Teahupo'o Reef's backwash ran away at 0.07 m over 4 m).
    */
   private updateMask(): void {
     const { h, still, mask, f1: wet, f2: alongX, f3: box, f4: work } = this;
@@ -397,7 +400,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     this.erodeZ(wet, work, 2);
     const on = this.dispersive ? 1 : 0;
     for (let i = 0; i < h.length; i += 1) {
-      mask[i] = wet[i] > 0 && alongX[i] > 0 && work[i] > 0 && box[i] > 0 && h[i] - still[i] <= SWITCH_RATIO * still[i] ? on : 0;
+      mask[i] = wet[i] > 0 && alongX[i] > 0 && work[i] > 0 && box[i] > 0 && Math.abs(h[i] - still[i]) <= SWITCH_RATIO * still[i] ? on : 0;
     }
   }
 

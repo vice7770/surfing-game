@@ -148,7 +148,7 @@ export const EN = {
   'spot.point': 'Point',
   'spot.point.blurb': 'Long lines along a headland',
   'spot.reef': 'Reef',
-  'spot.reef.blurb': 'Steep shelf, fast and hollow',
+  'spot.reef.blurb': 'Heavy left slab over shallow coral',
   'spot.canyon': 'Canyon',
   'spot.canyon.blurb': 'Waves focused by a deep channel',
   'cond.swell': 'Swell',
