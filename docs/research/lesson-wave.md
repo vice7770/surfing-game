@@ -14,7 +14,7 @@ Recorded on the riding work's reference wave (the Practice swell). The lessons' 
 | 2 | 1 | 0.0 s | missed the wave | waiting |
 | 2 | 2 | 0.0 s | missed the wave | waiting |
 | 2 | 3 | 0.0 s | missed the wave | waiting |
-| 2 | 4 | 2.9 s | fell · balance | waiting, caught, pocket ×3 |
+| 2 | 4 | 3.6 s | fell · lost board | waiting, caught, pocket ×3 |
 | 2 | 5 | 0.0 s | missed the wave | waiting |
 | 2 | 6 | 0.0 s | missed the wave | waiting |
 | 2 | 7 | 0.0 s | missed the wave | waiting |
@@ -22,15 +22,17 @@ Recorded on the riding work's reference wave (the Practice swell). The lessons' 
 | 2 | 9 | 0.0 s | missed the wave | waiting |
 | 2 | 10 | 0.0 s | missed the wave | waiting |
 | 2 | 11 | 0.0 s | missed the wave | waiting |
-| 2 | 12 | 0.0 s | fell · lost board | waiting, caught |
+| 2 | 12 | 0.0 s | missed the wave | waiting |
+| 2 | 13 | 0.0 s | missed the wave | waiting |
 | 2 | 14 | 0.0 s | missed the wave | waiting |
-| 2 | 15 | 0.0 s | fell · lost board | waiting |
-| 2 | 16 | 0.0 s | fell · lost board | waiting, caught |
-| 2 | 17 | 0.0 s | missed the wave | waiting |
-| 2 | 18 | 0.0 s | fell · lost board | waiting |
-| 2 | 19 | 3.7 s | fell · balance | waiting, caught, pocket ×3 |
-| 2 | 20 | 5.0 s | fell · balance | waiting, caught, pocket ×3 |
-| 2 | 21 | 0.0 s | fell · lost board | waiting, caught |
+| 2 | 15 | 0.0 s | fell · lost board | waiting, caught |
+| 2 | 17 | 5.0 s | fell · balance | waiting, caught, pocket ×3 |
+| 2 | 18 | 0.0 s | missed the wave | waiting |
+| 2 | 19 | 0.0 s | fell · impact | waiting, caught |
+| 2 | 20 | 0.0 s | fell · lost board | waiting |
+| 2 | 21 | 0.0 s | missed the wave | waiting |
 | 2 | 22 | 0.0 s | fell · lost board | waiting |
+| 2 | 23 | 0.0 s | missed the wave | waiting |
+| 2 | 24 | 0.0 s | fell · balance | waiting, caught |
 
-Checks of the chosen moments: stage 2: pocket stood 6.3 s (attempt 20); caught stood 4.4 s (attempt 20); waiting stood 3.7 s (attempt 4).
+Checks of the chosen moments: stage 2: pocket stood 3.8 s (attempt 17); caught stood 4.9 s (attempt 4); waiting stood 4.6 s (attempt 4).
