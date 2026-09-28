@@ -443,6 +443,8 @@ describe('SurfZoneSimulation', () => {
       run({ directionDegrees: -25, alongShore: 60 }, 30);
       run({ directionDegrees: 25, alongShore: 60 }, 30);
     }, 600_000);
+    // The pass and inner reef end in a lagoon and a 1:9.64 inland slope (Part C), where the Big swell ran up a 1:5 face.
+    it('stays finite over the lagoon at low tide', () => run({ tide: -1.0, alongShore: 60 }, 30), 300_000);
     // The 40 m window's open −x edge cuts the ledge: over a bed sloping across it, main (aa71add) ran this to NaN (Part B).
     it('stays finite where the window\'s open edge cuts the ledge', () => run({ directionDegrees: 25 }), 300_000);
   });

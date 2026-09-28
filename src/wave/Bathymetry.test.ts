@@ -86,9 +86,9 @@ describe('surf spot bathymetry', () => {
     it('says where the ledge is ridden: out of the pass, with its crest still under water off the beach', () => {
       expect(reefLedgeAt(-60)).toBe(true);
       expect(reefLedgeAt(0)).toBe(true);
-      // The crest meets the beach face's 1.5 m depth at z = −7.5, x = 32.5; the pass reaches in from x = 30.
-      expect(reefLedgeAt(29)).toBe(true);
-      expect(reefLedgeAt(35)).toBe(false);
+      // The crest meets the 1:9.64 inland slope's 1.5 m depth at z = −14.46, x = 25.5 (Part C); the pass reaches in from x = 30.
+      expect(reefLedgeAt(24)).toBe(true);
+      expect(reefLedgeAt(27)).toBe(false);
       expect(reefLedgeAt(REEF.passX)).toBe(false);
     });
 
@@ -99,6 +99,21 @@ describe('surf spot bathymetry', () => {
       expect(reef.materialAt!(REEF.passX, -140)).toBe('sand');
       expect(reef.materialAt!(0, -2)).toBe('sand');
       expect(createSpot('beach', 1).materialAt).toBeUndefined();
+    });
+
+    it('falls from its crest across a reef flat into a lagoon, then rises to the shore at 1:9.64', () => {
+      const x = -60;
+      const crest = reefCrestZ(x);
+      const radians = (REEF.angle * Math.PI) / 180;
+      const shoreward = (d: number) => ({ x: x - d * Math.sin(radians), z: crest + d * Math.cos(radians) });
+      const onFlat = shoreward(REEF.flatWidth / 2);
+      expect(reef.depthAt(onFlat.x, onFlat.z)).toBeCloseTo(REEF.crestDepth, 6);
+      expect(reef.materialAt!(onFlat.x, onFlat.z)).toBe('reef');
+      const inLagoon = shoreward(REEF.flatWidth + 20);
+      expect(reef.depthAt(inLagoon.x, inLagoon.z)).toBeCloseTo(REEF.lagoonDepth, 3);
+      expect(reef.materialAt!(inLagoon.x, inLagoon.z)).toBe('sand');
+      // The inland slope: 1:9.64 up to the shoreline at z = 0 (the Teahupo'o model's).
+      expect(reef.depthAt(-60, -5)).toBeCloseTo(5 * REEF.inlandSlope, 9);
     });
 
     it('has no cliff anywhere in the window', () => {
@@ -114,7 +129,7 @@ describe('surf spot bathymetry', () => {
     it('meets a beach face and dry land shoreward of z = 0', () => {
       for (let x = -80; x <= 80; x += 10) {
         expect(reef.depthAt(x, 5)).toBeLessThan(0);
-        expect(reef.depthAt(x, -3)).toBeLessThanOrEqual(3 * REEF.shoreSlope + 1e-12);
+        expect(reef.depthAt(x, -3)).toBeLessThanOrEqual(3 * REEF.inlandSlope + 1e-12);
       }
     });
 
