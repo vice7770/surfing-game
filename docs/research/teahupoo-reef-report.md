@@ -358,7 +358,7 @@ The user decided to replace the lip strips and carved void with a swept overturn
     - The old contact was vertical, so a board never slid down any slope. Now it slides on sand steeper than its friction and holds on reef.
     - On a flat bed the maths is exactly the old.
   - **The body** in the water meets rock the same way (position-based Coulomb friction). It rests a full radius off the 1:2.29 ledge and slides only on reef steeper than its grip. Sand keeps its old floor.
-- **"Hit the reef".** A fall within 0.25 s of the board meeting reef faster than 1 m/s along its normal (both provisional) ends the ride "Hit the reef".
+- **"Hit the reef".** A fall within 0.6 s of the board meeting reef faster than 1 m/s along its normal (both provisional) ends the ride "Hit the reef": a strike that knocks a standing rider off balance ends in a fall 0.4–0.55 s later.
   - A paddler's board touching the reef ends nothing.
   - Water brakes a board from 3 to 1.3 m/s in a step, so strikes come on reef a trough has drained, as at Teahupo'o.
 - **The lagoon.** Shoreward of its crest the Reef has:

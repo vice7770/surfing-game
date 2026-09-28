@@ -10,8 +10,11 @@ import { createWaterSample, type SurfWater } from './SurfWater';
 import { SurfWaterBodyField } from './SurfWaterBodyField';
 
 /** What the player asks for in one step. */
-/** A separation within this long of the board striking reef is "Hit the reef", s (the Teahupo'o Reef, Part C; provisional). */
-export const REEF_STRIKE_WINDOW = 0.25;
+/**
+ * A separation within this long of the board striking reef is "Hit the reef", s (the Teahupo'o Reef, Part C; provisional):
+ * a strike that knocks a standing rider off balance ends in a fall 0.4–0.55 s later, after the rider tries to recover.
+ */
+export const REEF_STRIKE_WINDOW = 0.6;
 
 export interface RideInput {
   paddle: boolean;

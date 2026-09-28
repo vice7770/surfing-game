@@ -178,7 +178,7 @@ A bubble rings at Minnaert's (1933) frequency, f₀ = (1/2πR)·√(3γp/ρ), in
 | Board on wet reef, Coulomb μ | 0.8, against sand's 0.6 | **provisional**: no measurement found; "grippier than sand" (the spec); rubber on wet rough surfaces 0.25–0.75, neoprene on wet steel 1.4–1.6 |
 | Body on wet reef, Coulomb μ | 0.8 | **provisional**, as above |
 | Reef material | rock where the reef builds the bed: forereef, shelf, ledge, crest and reef flat; sand in the pass, the lagoon and on the beach | the spot's own shape |
-| A strike that ends a ride | the board meeting reef at 1 m/s or more along the bed's normal, within 0.25 s of the rider separating | **provisional** (by feel); injuries and hold-downs stay in P11 |
+| A strike that ends a ride | the board meeting reef at 1 m/s or more along the bed's normal, within 0.6 s of the rider separating (a strike that knocks a standing rider off balance ends in a fall 0.4–0.55 s later) | **provisional** (by feel); injuries and hold-downs stay in P11 |
 | Inland slope | 1:9.64 | the Teahupo'o model ([zenodo 11392175](https://zenodo.org/records/11392175)) |
 | Reef flat width, lagoon depth | 20 m, 2.5 m | **provisional** until `Profile_Teahupoo.txt` is read (needs the user's approval) |
 | The crash's pitch | playback rate (0.5 m³ / V)^(1/3), from 1 down to 0.5 | Minnaert 1933 for the exponent; the 0.5 m³ reference (about a Practice lip's gathered water) and the octave floor are **provisional** |
