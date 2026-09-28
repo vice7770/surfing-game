@@ -276,3 +276,15 @@ describe('the head and the knees follow the physics (step 4)', () => {
   }, 240_000);
 });
 
+describe('the drawn chest breathes (step 4)', () => {
+  it('rises and falls about the hips gliding after 20 s of paddling, and not at all with the breathing off', () => {
+    const glide = (shot: BodyFilm): BodyFilm => ({ rate: shot.rate, frames: shot.frames.filter((frame) => frame.time > 21) });
+    const breathes = breathing(glide(filmBody(scenario('paddle then glide'), { rate: 30, drawer: trackDrawer, pose: posed() })));
+    RIG_DETAIL.breath.share = 0;
+    const still = breathing(glide(filmBody(scenario('paddle then glide'), { rate: 30, drawer: trackDrawer, pose: posed() })));
+    RIG_DETAIL.breath.share = 1;
+    expect(breathes).toBeGreaterThan(0.003);
+    expect(still).toBeLessThan(0.0005);
+  }, 240_000);
+});
+

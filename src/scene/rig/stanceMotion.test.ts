@@ -210,3 +210,36 @@ describe('the arms swing with the body (step 4; Pontzer et al. 2009)', () => {
     }
   }, 240_000);
 });
+
+describe('breathing leaves the stance as step 3 drew it (step 4)', () => {
+  const savedBreath = RIG_DETAIL.breath.share;
+  afterEach(() => { RIG_DETAIL.breath.share = savedBreath; });
+
+  it('reads trim and Compress the same on average over a whole breath', () => {
+    for (const id of ['trim', 'compress-frontside']) {
+      /** The gauge's readings at each 1/60 s over one breath at rest (16 a minute), the state held still. */
+      const readings = () => {
+        const drawn = skeleton();
+        const gauge = new StanceGauge(drawn.bones);
+        const rig = new HumanoidRig(drawn.bones);
+        const { state } = drawnRecipe(STANCE_RECIPES[id], 'regular', at, () => {});
+        const sums = new Map<string, number>();
+        const count = Math.round((60 / 16) * 60);
+        for (let i = 0; i < count; i += 1) {
+          state.clock = 10 + i / 60;
+          rig.solve(state);
+          drawn.root.updateMatrixWorld(true);
+          const angles = gauge.measure(state, 'regular') as unknown as Record<string, number>;
+          for (const [key, value] of Object.entries(angles)) if (Number.isFinite(value)) sums.set(key, (sums.get(key) ?? 0) + value / count);
+        }
+        return sums;
+      };
+      const breathing = readings();
+      RIG_DETAIL.breath.share = 0;
+      const still = readings();
+      RIG_DETAIL.breath.share = savedBreath;
+      for (const [key, value] of breathing) expect(Math.abs(value - still.get(key)!), `${id} ${key}`).toBeLessThan(0.5);
+    }
+  }, 240_000);
+});
+

@@ -1,5 +1,6 @@
 import { Quaternion, Vector3, type Bone } from 'three';
 import { ArmSwing, armPendulum } from './armSwing';
+import { Breathing } from './breathing';
 import { BONES, MIDDLE_FINGER, REQUIRED_BONES, type Side } from './humanoidBones';
 import { orientBone } from './orientBone';
 import { STANDING_PELVIS } from './posturePoints';
@@ -65,6 +66,13 @@ export const RIG_DETAIL = {
    * within `most`° of the cued direction from the shoulder (provisional).
    */
   swing: { share: 1, most: 35 },
+  /**
+   * The chest breathes (step 4, `breathing.ts`): the upper spine turns back and
+   * forth about the body's left, its two bones taking half each, faster and
+   * deeper with the physics' work; the neck and head keep their world directions.
+   * `share` of it (0 in tests that hold the chest still).
+   */
+  breath: { share: 1 },
   /**
    * Standing, a clavicle follows its arm (step 3): lifting a `ratio` of the
    * arm's rise from the trunk's down above `from`° (the scapulohumeral rhythm,
@@ -284,6 +292,11 @@ export class HumanoidRig {
   private readonly legKnee = new Vector3();
   /** Standing, the free hands' swing (step 4). */
   private readonly swing: ArmSwing;
+  /** The chest's breathing (step 4), and turning scratch. */
+  private readonly breathing = new Breathing();
+  private readonly turnWorld = new Quaternion();
+  private readonly turnBy = new Quaternion();
+  private readonly turnParent = new Quaternion();
   private readonly aimFrom = new Vector3();
   private readonly aimTo = new Vector3();
   private readonly handHint = new Vector3();
@@ -439,6 +452,12 @@ export class HumanoidRig {
     if (this.hingeAngle) chestUp.applyAxisAngle(left, this.hingeAngle);
     this.orientSpine(chestUp);
     if (state.phase === 'standing') this.bendToReach(state, chestUp);
+    // The chest breathes: the upper spine turned back (inhaling) and forward about the body's left, half at each bone.
+    const breath = RIG_DETAIL.breath.share * this.breathing.update(state, this.trunkLength / 2);
+    if (breath) {
+      this.turnBone(BONES.spine[1], left, -breath / 2);
+      this.turnBone(BONES.spine[2], left, -breath / 2);
+    }
     this.orient(BONES.neck, chestUp, this.facing);
     if (lying) {
       // Ducking, the head tucks from looking ahead to facing the deck, crown toward the nose.
@@ -678,6 +697,7 @@ export class HumanoidRig {
     this.hingeAngle = 0;
     this.armClock = Number.NaN;
     this.swing.reset();
+    this.breathing.reset();
     this.armTurn = 0;
   }
 
@@ -1003,6 +1023,15 @@ export class HumanoidRig {
     const discriminant = along * along - (offset.lengthSq() - reach * reach);
     const t = discriminant > 0 ? Math.max(0, -along + Math.sqrt(discriminant)) : 0;
     return out.copy(hand).addScaledVector(this.boardForward, t);
+  }
+
+  /** Turns a bone by `angle` rad about the world's `axis`, its children with it. */
+  private turnBone(name: string, axis: Vector3, angle: number): void {
+    const bone = this.bones.get(name)!;
+    const world = bone.getWorldQuaternion(this.turnWorld);
+    const turned = this.turnBy.setFromAxisAngle(axis, angle).multiply(world);
+    bone.quaternion.copy(bone.parent!.getWorldQuaternion(this.turnParent).invert().multiply(turned));
+    bone.updateMatrixWorld(true);
   }
 
   private orient(name: string, direction: Vector3, hint: Vector3): void {
