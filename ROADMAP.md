@@ -548,7 +548,8 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
   - **Found and fixed:**
     - the Reef's ledge crossing the window's open edge ran the Big swell to NaN, on main too; the solver now levels the bed across the two columns an open edge copies;
     - a sea handover's joiner missed lips thrown on its first step;
-    - thick lips landing in one cell flashed the drained crest; they now land over their thickness.
+    - thick lips landing in one cell flashed the drained crest; they now land over their thickness;
+    - a lip's landing bore still drained at 23.5 m/s with dispersion on; the solver now holds the young roller in shallow water where jets land (0.5 H behind to 1.5 H ahead) for Kennedy's T* (CPU and WGSL; branch `claude/plunge-dispersion`).
   - **Measured:**
     - rounder tubes (width/length 0.71 → 0.77–0.80) that open wider;
     - jets 0.47 H² and 0.47 H thick;
@@ -556,8 +557,7 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - jets leave at 1.95× crest speed against the lab's 1.25–1.32 (reported for the user).
   - **Open:**
     - validating the water against the open Teahupo'o lab dataset (download needs the user's OK);
-    - peel against makeability before Part D (the user's call);
-    - dispersion across a lip's landing bore (split out).
+    - peel against makeability before Part D (the user's call).
 - [ ] **Part C · the look, the sound and a solid reef** (branch `claude/teahupoo-reef-c`, [plan](docs/superpowers/plans/2026-09-28-teahupoo-reef-part-c.md), [report](docs/research/teahupoo-reef-report.md#part-c-the-solid-reef-the-lagoon-the-crash)):
   - **Done:**
     - the reef is solid: the board and the body meet it along the bed's own normal, and wet reef grips harder than sand (0.8 against 0.6, provisional);
