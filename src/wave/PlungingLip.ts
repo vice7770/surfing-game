@@ -2,7 +2,7 @@ import { Vector3 } from 'three';
 import type { LipContactParcel, LipParcelSource } from '../physics/DetachedSurfer';
 import { GRAVITY } from './dispersion';
 import { AERATION } from './AerationField';
-import { LH82_AREA, jetRelativeSpeed, overturn, overturnParameter, reefOverturn, type OverturnShape, type TubeGeometry } from './Overturn';
+import { LH82_AREA, REEF_OVERTURN, jetRelativeSpeed, overturn, overturnParameter, reefOverturn, type OverturnShape, type TubeGeometry } from './Overturn';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 import { TUBE_STRIDE, carveAt } from './tubeTable';
 
@@ -183,12 +183,14 @@ export interface LipThrow {
  */
 export function lipThrow(conditions: LipConditions): LipThrow | undefined {
   const { iribarren, slope, nonlinearity, breakerHeight, windOverCelerity, width } = conditions;
-  // A reef break follows Mead & Black by the gradient it climbs (the Teahupo'o Reef, Part B); the wind
-  // reshapes its void as it does a plane slope's (Feddersen et al. 2023).
+  // A reef break follows Mead & Black by the gradient it climbs (the Teahupo'o Reef, Part B). Their tubes were
+  // photographed in offshore wind, so the wind reshapes the void as it does a plane slope's (Feddersen et al.
+  // 2023) only from theirs, and a stronger offshore wind rounds it no further.
   if (conditions.reef && breakerHeight > 0) {
     const reef = reefOverturn(conditions.reef.orthogonalGradient, nonlinearity);
     if (reef) {
-      const shape: OverturnShape = { ...reef, aspect: clamp(reef.aspect - 0.18 * windOverCelerity, 0.2, 1) };
+      const wind = Math.max(windOverCelerity, REEF_OVERTURN.windOverCelerity) - REEF_OVERTURN.windOverCelerity;
+      const shape: OverturnShape = { ...reef, aspect: clamp(reef.aspect - 0.18 * wind, 0.2, 1) };
       return {
         volume: shape.jetArea * breakerHeight * breakerHeight * width,
         relativeSpeed: jetRelativeSpeed(shape, breakerHeight),

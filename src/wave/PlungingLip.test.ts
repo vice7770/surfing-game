@@ -26,7 +26,8 @@ describe('a reef break\'s lip (Teahupo\'o Reef, Part B)', () => {
   const base = { iribarren: 3, slope: 0.44, nonlinearity: 0.05, breakerHeight: 4, windOverCelerity: 0, width: 1 };
 
   it('throws a reef break\'s lip from the reef overturn, and a plane slope\'s exactly as before', () => {
-    const reef = lipThrow({ ...base, reef: { orthogonalGradient: 1 / 12 } })!;
+    // In the offshore wind Mead & Black's photos were taken in, the tube is theirs.
+    const reef = lipThrow({ ...base, windOverCelerity: REEF_OVERTURN.windOverCelerity, reef: { orthogonalGradient: 1 / 12 } })!;
     const shape = reefOverturn(1 / 12, base.nonlinearity) as OverturnShape;
     expect(reef.shape.aspect).toBeCloseTo(shape.aspect, 12);
     expect(reef.volume).toBeCloseTo(shape.jetArea * 16, 9);
@@ -38,8 +39,18 @@ describe('a reef break\'s lip (Teahupo\'o Reef, Part B)', () => {
     expect(plane.reef).toBeUndefined();
   });
 
+  it('reads Mead & Black\'s roundness as the offshore wind their photos were taken in, and shifts only from there', () => {
+    const measured = (reefOverturn(1 / 12, base.nonlinearity) as OverturnShape).aspect;
+    const aspect = (windOverCelerity: number) => lipThrow({ ...base, windOverCelerity, reef: { orthogonalGradient: 1 / 12 } })!.shape.aspect;
+    expect(aspect(REEF_OVERTURN.windOverCelerity)).toBeCloseTo(measured, 12);
+    // Stronger offshore wind rounds it no further (the effect saturates); calm and onshore flatten it.
+    expect(aspect(2 * REEF_OVERTURN.windOverCelerity)).toBeCloseTo(measured, 12);
+    expect(aspect(0)).toBeCloseTo(measured + 0.18 * REEF_OVERTURN.windOverCelerity, 12);
+    expect(aspect(0.3)).toBeLessThan(aspect(0));
+  });
+
   it('throws a steeper ledge\'s lip from the roundest tube measured, and never collapses it', () => {
-    const steep = lipThrow({ ...base, reef: { orthogonalGradient: 1 / 2.29 } })!;
+    const steep = lipThrow({ ...base, windOverCelerity: REEF_OVERTURN.windOverCelerity, reef: { orthogonalGradient: 1 / 2.29 } })!;
     expect(steep.shape.aspect).toBeCloseTo(1 / REEF_OVERTURN.roundestRatio, 12);
     expect(steep.reef?.vortexRatio).toBeCloseTo(REEF_OVERTURN.roundestRatio, 12);
   });

@@ -148,4 +148,5 @@ The collapse and gradient rows were revised in Task 3 on the advisor's reading a
 | Void area, beyond the fits | 0.43 H² | **provisional**: Pick & Feddersen's steepest fit, until a slab source (Blenkinsopp & Chaplin) |
 | Lip thickness, beyond the fits | 0.5 H | Shand 2024; thicker jets on steeper slopes (Chanson & Lee 1997). **provisional**: "about 0.5 H" is an article's description, not a measurement (the advisor) |
 | Void tilt, beyond the fits | 23° | **provisional**: Pick & Feddersen's tilt at their steepest fit |
+| Wind on a reef break's tube | Feddersen et al. 2023's shift (aspect − 0.18 U/C), counted from U/C = −0.4, not from calm; stronger offshore wind rounds it no further | Mead & Black's ratios come from surf-magazine photos, almost surely offshore days (**provisional**, the shape advisor's ruling, raised by the Padang Padang session): without this the offshore wind was counted twice |
 | Where a jet lands | over its sheet's thickness (its water over the void's length) along its travel | geometry: a 0.5 H lip lands over as much of the face. Pick & Feddersen's 0.22 H sheets are thinner than a cell at the other spots' sizes and land as before |

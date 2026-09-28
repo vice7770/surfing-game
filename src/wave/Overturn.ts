@@ -55,7 +55,14 @@ export function overturn(psi: number): OverturnShape {
  * gradient is averaged `band` m above and below the breaking depth: Mead & Black's stated 2–3 m band absorbs
  * height and tide errors, and 2.5 m is the game's pick within it.
  */
-export const REEF_OVERTURN = { area: 0.43, lipThickness: 0.5, tiltDegrees: 23, roundestRatio: 1.42, gentlestRatio: 3.43, band: 2.5 };
+export const REEF_OVERTURN = {
+  area: 0.43, lipThickness: 0.5, tiltDegrees: 23, roundestRatio: 1.42, gentlestRatio: 3.43, band: 2.5,
+  /**
+   * The wind over celerity Mead & Black's ratios were measured in: surf-magazine photos, almost surely offshore
+   * days, taken as a moderate offshore wind where its rounding saturates (provisional, the shape advisor's).
+   */
+  windOverCelerity: -0.4,
+};
 
 /** Mead & Black's (2001) vortex ratio, the tube's length over its width, for an orthogonal gradient (rise over run). */
 export function vortexRatio(orthogonalGradient: number): number {
