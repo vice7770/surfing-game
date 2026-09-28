@@ -368,7 +368,7 @@ The user decided to replace the lip strips and carved void with a swept overturn
   - the Teahupo'o model's 1:9.64 inland slope up to the shore.
 
   The slope rises from the shelf. Drawn from the shoreline, it had reached under the steep forereef and capped it, which is why Part A used 1:5. The ledge's ridden columns end at x = 25.5 (was 32.5).
-- **The crash** plays deeper as its water grows: rate (0.5 m³ / V)^(1/3), down to an octave (Minnaert's resonance; reference and floor provisional). Loudness still follows its energy.
+- **The crash** plays deeper as its lip grows: rate (2 m³ / V)^(1/3) by its biggest lip's own water, down to an octave (Minnaert's resonance; reference and floor provisional). Practice lips at every spot sound as before; the Reef's Big-swell lips (5–7 m³) drop by about a third. Loudness still follows its energy.
 
 ### The pass and lagoon under the Big swell
 

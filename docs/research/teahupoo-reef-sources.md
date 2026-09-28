@@ -181,4 +181,4 @@ A bubble rings at Minnaert's (1933) frequency, f₀ = (1/2πR)·√(3γp/ρ), in
 | A strike that ends a ride | the board meeting reef at 1 m/s or more along the bed's normal, within 0.6 s of the rider separating (a strike that knocks a standing rider off balance ends in a fall 0.4–0.55 s later) | **provisional** (by feel); injuries and hold-downs stay in P11 |
 | Inland slope | 1:9.64 | the Teahupo'o model ([zenodo 11392175](https://zenodo.org/records/11392175)) |
 | Reef flat width, lagoon depth | 20 m, 2.5 m | **provisional** until `Profile_Teahupoo.txt` is read (needs the user's approval) |
-| The crash's pitch | playback rate (0.5 m³ / V)^(1/3), from 1 down to 0.5 | Minnaert 1933 for the exponent; the 0.5 m³ reference (about a Practice lip's gathered water) and the octave floor are **provisional** |
+| The crash's pitch | playback rate (2 m³ / V)^(1/3), from 1 down to 0.5, V the crash's biggest lip's own water | Minnaert 1933 for the exponent; the 2 m³ reference (above a Practice lip at every spot, so only heavy lips deepen) and the octave floor are **provisional** |
