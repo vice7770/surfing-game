@@ -46,6 +46,19 @@ describe('the side feed (wave sizes)', () => {
     }
   });
 
+  it('leaves the middle half of a narrow window free, and a 160 m window its middle 100 m', () => {
+    for (const [width, strip] of [[40, 10], [160, SIDE_FEED.width]] as const) {
+      const solver = tank(4, width);
+      const feed = new SideFeed(solver, sea, { referenceZ: zoneInner, timeOffset: 0 });
+      const row = solver.rowBelow(-300) * solver.nx;
+      for (let ix = 0; ix < solver.nx; ix += 1) {
+        const fromEdge = Math.min(ix + 0.5, solver.nx - ix - 0.5) * solver.dx;
+        if (fromEdge > strip) expect(feed.weights[row + ix]).toBe(0);
+        else expect(feed.weights[row + ix]).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it('feeds the warm start\'s sea: the incoming waves shoaled and refracted over the column', () => {
     const solver = tank();
     const feed = new SideFeed(solver, sea, { referenceZ: zoneInner, timeOffset: 40 });

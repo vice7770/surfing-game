@@ -10,9 +10,11 @@ import { transformedSea } from './warmStart';
  * within 150 m. The outer `width` m of each side now relax toward the incoming
  * sea, shoaled and refracted over the bed as the warm start fills it, from the
  * offshore zone's inner edge while the shoaled Hs stays under `breakingShare`
- * of the depth (outside the surf zone), fading over `fade` m.
+ * of the depth (outside the surf zone) and the bed no steeper than `maxSlope`
+ * (where the warm start's mild-slope transform holds: a reef's steep edge
+ * reflects), fading over `fade` m.
  */
-export const SIDE_FEED = { width: 30, breakingShare: 0.45, fade: 40 };
+export const SIDE_FEED = { width: 30, breakingShare: 0.45, fade: 40, maxSlope: 0.06 };
 /** The warm start's depth-limited cap on the fed sea (McCowan γ). */
 const GAMMA = 0.78;
 
@@ -164,17 +166,22 @@ export class SideFeed implements RelaxationZone {
     const { nx, dx } = solver;
     this.weights.fill(0);
     this.where.fill(-1);
-    const columns = Math.min(Math.ceil(SIDE_FEED.width / dx), Math.floor(nx / 2));
+    // Each strip takes at most a quarter of the window, so a narrow window keeps its middle half free.
+    const width = Math.min(SIDE_FEED.width, (nx * dx) / 4);
+    const columns = Math.ceil(width / dx - 1e-9);
     const components = this.sea.components;
     this.strips = [0, nx - 1].map((edge, s): Strip => {
       const step = s === 0 ? 1 : -1;
       // The edge column's sea, row by row, until its shoaled Hs reaches the breaking share of the depth.
       const rows: { iz: number; values: Float64Array }[] = [];
       let end = Infinity;
+      let previous: { z: number; depth: number } | undefined;
       transformedSea(solver, this.sea, this.referenceZ, edge, GAMMA, (iz, row) => {
         const z = solver.zCenters[iz];
         if (z <= this.referenceZ || end < Infinity) return;
-        if (!(row.depth > 0) || row.hs >= SIDE_FEED.breakingShare * row.depth) {
+        const slope = previous ? (previous.depth - row.depth) / (z - previous.z) : 0;
+        previous = { z, depth: row.depth };
+        if (!(row.depth > 0) || row.hs >= SIDE_FEED.breakingShare * row.depth || slope > SIDE_FEED.maxSlope) {
           end = z;
           return;
         }
@@ -205,7 +212,7 @@ export class SideFeed implements RelaxationZone {
         const fade = end === Infinity ? 1 : smoothstep(end, end - SIDE_FEED.fade, z);
         for (let j = 0; j < columns; j += 1) {
           const fromEdge = (j + 0.5) * dx;
-          const weight = relaxationRamp(1 - fromEdge / SIDE_FEED.width) * fade;
+          const weight = relaxationRamp(1 - fromEdge / width) * fade;
           if (!(weight > 0)) continue;
           const i = row.iz * nx + edge + step * j;
           this.weights[i] = weight;
