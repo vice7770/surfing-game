@@ -379,16 +379,21 @@ export class ShallowWaterSolver {
   }
 
   addRelaxationZone(zone: RelaxationZone): void {
+    this.zones.push({ zone, ...this.rowSpan(zone.weights) });
+  }
+
+  /** The rows a zone weights: the relax step visits only these. */
+  private rowSpan(weights: Float64Array): { firstRow: number; lastRow: number } {
     let firstRow = this.nz;
     let lastRow = -1;
     for (let iz = 0; iz < this.nz; iz += 1) {
       for (let ix = 0; ix < this.nx; ix += 1) {
-        if (zone.weights[iz * this.nx + ix] <= 0) continue;
+        if (weights[iz * this.nx + ix] <= 0) continue;
         firstRow = Math.min(firstRow, iz);
         lastRow = Math.max(lastRow, iz);
       }
     }
-    this.zones.push({ zone, firstRow, lastRow });
+    return { firstRow, lastRow };
   }
 
   /** Weights for a zone spanning z from `inner` (weight 0) to `outer` (weight 1). */
@@ -443,8 +448,13 @@ export class ShallowWaterSolver {
       }
     }
     this.levelOpenEdges(true);
-    // The zones rebuild over the bed now under them, levelled edges included (the side feed's strips).
-    for (const entry of this.zones) entry.zone.afterShift?.();
+    // The zones rebuild over the bed now under them, levelled edges included (the side feed's strips), and may now
+    // reach other rows.
+    for (const entry of this.zones) {
+      if (!entry.zone.afterShift) continue;
+      entry.zone.afterShift();
+      Object.assign(entry, this.rowSpan(entry.zone.weights));
+    }
   }
 
   /**

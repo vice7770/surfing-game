@@ -7,6 +7,21 @@ import { calmTarget, longWaveTarget } from './shallowWaterTestSupport';
 const STOKER = { left: 2, right: 0.5, middle: 1.1035, shockSpeed: 4.1663, tailSpeed: -1.0116 };
 
 describe('ShallowWaterSolver', () => {
+  it('relaxes the rows a zone holds after a slide, not only those it held when added (wave sizes review)', () => {
+    // A side strip rebuilt over the bed under it after a slide can reach rows it did not reach before.
+    const solver = new ShallowWaterSolver({ nx: 4, xMin: 0, dx: 1, zEdges: uniformEdges(0, 10, 10), xBoundary: 'open' }, () => 6, { manning: 0 });
+    const weights = new Float64Array(40);
+    weights.fill(1, 0, 4);
+    solver.addRelaxationZone({
+      weights,
+      target: (_x, _z, _t, out) => { out.eta = 0.5; out.qx = 0; out.qz = 0; },
+      afterShift: () => { weights.fill(0); weights.fill(1, 20, 24); },
+    });
+    solver.shiftAlongShore(1);
+    solver.step(1e-3);
+    for (let i = 20; i < 24; i += 1) expect(solver.surfaceAt(i)).toBeCloseTo(0.5, 6);
+  });
+
   it('relaxes toward the rest level, never below half the still depth, carrying the target\'s flow in the water the cell holds (wave sizes)', () => {
     const grid = { nx: 4, xMin: 0, dx: 1, zEdges: uniformEdges(0, 10, 10), xBoundary: 'periodic' as const };
     // At +1 m tide the zones held the water at the tide-0 level, and the tank drained out through them.
