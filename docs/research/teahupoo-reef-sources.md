@@ -150,3 +150,35 @@ The collapse and gradient rows were revised in Task 3 on the advisor's reading a
 | Void tilt, beyond the fits | 23° | **provisional**: Pick & Feddersen's tilt at their steepest fit |
 | Wind on a reef break's tube | Feddersen et al. 2023's shift (aspect − 0.18 U/C), counted from U/C = −0.4, not from calm; stronger offshore wind rounds it no further | Mead & Black's ratios come from surf-magazine photos, almost surely offshore days (**provisional**, the shape advisor's ruling, raised by the Padang Padang session): without this the offshore wind was counted twice |
 | Where a jet lands | over its sheet's thickness (its water over the void's length) along its travel | geometry: a 0.5 H lip lands over as much of the face. Pick & Feddersen's 0.22 H sheets are thinner than a cell at the other spots' sizes and land as before |
+
+## Part C: the solid reef, the lagoon, the crash
+
+Researched 2026-09-28 (Part C, Task 1).
+
+### Friction on wet reef
+
+No measurement was found of a surfboard (waxed fibreglass or epoxy, foam), neoprene or skin sliding on wet coral or reef rock. The nearest:
+- rubber on wet, rough road surfaces: kinetic μ ≈ 0.25–0.75, set by how the water seals the surface's roughness (Persson et al., ["Sealing is at the origin of rubber slipping on wet roads"](https://arxiv.org/pdf/cond-mat/0412045));
+- neoprene on wet steel: μ 1.58 static, 1.40 kinetic ([table](https://www.researchgate.net/figure/Coefficient-of-friction-of-neoprene-rubber-with-different-part-materials_tbl1_223593062)).
+
+The "friction coefficients of 0.1–0.2" measured on reef tops ([Nelson 1996](https://www.sciencedirect.com/science/article/abs/pii/S0141118797000060)) are hydraulic roughness for the water, not Coulomb friction for a body. Reef rock is rugose, a surface rough on many scales at once, so it interlocks where sand shears. The spec's "harder and grippier than sand" stands, with the value provisional.
+
+### The Teahupo'o model's lagoon
+
+The 1:60 physical model of Teahupo'o ([zenodo 11392175](https://zenodo.org/records/11392175), CC-BY; Rodríguez-Burguette, Torres-Freyermuth et al.) has "a very steep slope (1/2.26)" at the forereef, and "a reef lagoon and planar slope (1/9.64) inland". The lagoon's depth and the reef flat's width are only in its profile file, `Profile_Teahupoo.txt`. Downloading it waits for the user's approval, so both stay provisional.
+
+### The crash's pitch
+
+A bubble rings at Minnaert's (1933) frequency, f₀ = (1/2πR)·√(3γp/ρ), inversely proportional to its radius. A plunging lip's roar comes from the air it traps, and for the same shape that air's size R grows as its water's cube root. So the crash's pitch falls as V^(−1/3). The reference size and how deep it may go are by ear.
+
+### Rulings (Part C)
+
+| Value | Game value | Source |
+|---|---|---|
+| Board on wet reef, Coulomb μ | 0.8, against sand's 0.6 | **provisional**: no measurement found; "grippier than sand" (the spec); rubber on wet rough surfaces 0.25–0.75, neoprene on wet steel 1.4–1.6 |
+| Body on wet reef, Coulomb μ | 0.8 | **provisional**, as above |
+| Reef material | rock where the reef builds the bed: forereef, shelf, ledge, crest and reef flat; sand in the pass, the lagoon and on the beach | the spot's own shape |
+| A strike that ends a ride | the board meeting reef at 1 m/s or more along the bed's normal, within 0.25 s of the rider separating | **provisional** (by feel); injuries and hold-downs stay in P11 |
+| Inland slope | 1:9.64 | the Teahupo'o model ([zenodo 11392175](https://zenodo.org/records/11392175)) |
+| Reef flat width, lagoon depth | 20 m, 2.5 m | **provisional** until `Profile_Teahupoo.txt` is read (needs the user's approval) |
+| The crash's pitch | playback rate (0.5 m³ / V)^(1/3), from 1 down to 0.5 | Minnaert 1933 for the exponent; the 0.5 m³ reference (about a Practice lip's gathered water) and the octave floor are **provisional** |
