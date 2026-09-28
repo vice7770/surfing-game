@@ -164,24 +164,30 @@ Measured by the body film (`npm run report:body`, [body-fluidity.md](../../resea
 |---|---:|---:|
 | Frames drawn again at 120 Hz, riding straight | 50 % | 0 % |
 | Board travel unevenness, snapshots batched by 3 (a late worker) | 2.29 | 0.15 |
-| Largest one-frame pop at a switch (pop-up, landing, Compress's hand, a fall), 60 Hz; 120 Hz after | 21–51 m/s, 75–171 rad/s | ≤ 0.8 m/s, ≤ 3.6 rad/s; < 2 m/s, < 6 rad/s (the tests' bounds) |
-| Lying back down (the knee, pinned) | 16 m/s, 170 rad/s | 3.3 m/s, 4.3 rad/s |
-| Compress mid-turn: chest jitter (4–30 Hz) | 0.66° | 0.16° |
+| Largest one-frame pop at a switch (pop-up, landing, Compress's hand, a fall), 60 Hz | 21–51 m/s, 75–171 rad/s | ≤ 0.8 m/s, ≤ 3.6 rad/s |
+| The same at 120 Hz; at 30 and 144 Hz | | < 2 m/s, < 6 rad/s; up to 3.1 m/s, 6.8 rad/s |
+| Lying back down (the knee, pinned) | 16 m/s, 170 rad/s | 3.3 m/s, 4.2 rad/s |
+| Compress mid-turn: chest jitter (4–30 Hz) | 0.66° (0.17° with the reach fix alone) | 0.16° |
 | Compress mid-turn: chest wobble (1.5–4 Hz) | 0.82° | 0.62° |
-| The drawn chest's lag behind the physics | 0 ms | 53 ms (budget 100) |
+| Riding a rail change or weave, 30–144 Hz and batched: the drawn chest off the rig's | — | < 1° (45° with the first threshold) |
+| The drawn chest's lag behind the physics; snapshots batched by 3 | 0 ms | 54 ms; 85 ms (budget 100) |
 
 - **Between physics steps** (`SnapshotTrack`): the board, rider and camera are drawn one step behind the newest snapshot and blended between the two either side, so a 120 or 144 Hz display draws a new pose every frame and a late worker's batch plays out evenly. A teleport (a new present, a board jump over 2 m) is drawn at once.
 - **The switches blended out**, in two layers (Holden's dead blending: a jump off the predicted path is kept as an offset that decays with a critically damped spring, no faster than a limb moves):
-  - the physics' seven points, before the rig, on the board while riding and in the world once fallen, carried across the fall;
-  - the rig's bones, in world rotations (blending against the parents let an arm's joints add up to 16–18 rad/s), and the hips' place.
-  - A jump drawn over the frames between two steps carries on at most 2 frames; then the rate is learned again. 1 frame let 120 Hz pops through at 29 m/s; 3 added lag.
+  - the physics' seven points, before the rig;
+  - the rig's bones, whole rotations (blending against the parents let an arm's joints add up to 16–18 rad/s), and the hips' place;
+  - both on the board while riding and in the world once fallen, carried across the fall. On the board, a board that turns or jumps (a retry nearby, an online surfer's correction) keeps the body on it.
+  - A point leaving its predicted path faster than 3 m/s has jumped (bones 6 rad/s, hips 3 m/s). A jump drawn over the frames between two steps carries on at most 2 frames; then the rate is learned again. 1 frame let 120 Hz pops through at 29 m/s; 3 added lag.
+  - A jump that would carry the body more than 1.5 m (a retry from the water onto a board nearby) starts over: switches carry 0.7–1 m at most.
+- **The final review** (a fresh reviewer, found before merge): the point layer's first threshold, 1 m/s, took a hand turning back in a rail change (about 1.2 m/s within a step) for a jump and carried it on, and the bones compounded it. The chest lurched 10–45° at 30–100 Hz and online (only 120 and 165 Hz were clean, the rates first checked). Now 3 m/s, with a film test across 30–144 Hz and batched snapshots. The bones blended in the world, so a retry within 3 m swept the body across the sea and an online surfer's corrected board left its body behind; they now blend on the board. A fall on the first frame after a start drew the body 600 m away; the fall now carries over in any frame.
 - **The rig's reach**: the bend that takes a hand below the hips was found in twelfths of its angle and switched on at the hips, which popped Compress's chest 60° and made its jitter. It now fades in over 10 cm and is found by bisection.
 - **Your surfer** draws on the full model at every preset (`ownSurferDetail`); others keep their levels of detail.
-- **Dropped:** Task 4's upper-body springs. With the layers above there was nothing left for them: riding straight shakes 0.00°, and the jitter's cause was fixed at its root. They would only add lag. Revisit if the user's eye sees the board's wobble in the upper body.
+- **Dropped:** Task 4's upper-body springs. Riding straight shakes 0.00°, and the jitter's cause was fixed at its root. The Compress wobble fell 24 % without them (0.82 → 0.62°), short of the third the springs were to take; springs would add lag for the rest. Revisit if the user's eye sees the board's wobble in the upper body.
 - **No clip:** the session recorder (`npm run record:session`, on the M1) paddled three attempts each at the Canyon and the Beach within its 110 s of film and never got the pop-up cue, so there is no ride to film. The film's measures stand in; the user's eye on the M4 Pro is the check.
 - **Open:**
   - lying back down, the left knee still swings through at up to 10 m/s 0.23 s in: the leg's pole switches from the standing one to the lying one. Pinned (`it.fails`) for step 3, which owns the rig's poles;
   - the physics draws a 5 cm foot hitch mid lie-down (the lying legs extend past parts that shift with balance), now blended out;
   - `RideSession.place` on a sloped face rolls a standing rider to 61° within 0.6 s (a placement artefact), so the film rides flat water; check it before the stance steps;
-  - `AttachedRider.renderPoint` writes into `this.target` (harmless now: the physics recomputes it before reading).
+  - `AttachedRider.renderPoint` writes into `this.target` (harmless now: the physics recomputes it before reading);
+  - the water (far field, lip, bubbles, spray) is drawn from the newest snapshot, one step ahead of the board: spray starts about 13 cm ahead of the board at 8 m/s. For the user's eye.
 - **Next:** step 2, the stance map, waits on the user's approval of the reference set and the provenance rule.

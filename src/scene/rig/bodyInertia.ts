@@ -31,6 +31,8 @@ const JUMP_TRAVEL = 3;
 const JUMP_SPREAD = 2;
 /** The body's pelvis point this far, m, from the last frame's: a teleport (a retry, a placement), drawn at once. */
 const TELEPORT = 3;
+/** A jump that would carry the hips further than this, m, starts over instead (a retry from the water onto a board nearby). */
+const FARTHEST = 1.5;
 /** A frame longer than this, s (or none), starts over: nothing to blend from. */
 const LONGEST_FRAME = 0.25;
 
@@ -74,13 +76,15 @@ interface Track {
   bone: Bone;
   /** Whether this bone's drawn world rotation is set this frame (a child's walk up to its parent reads it). */
   blended: boolean;
-  /** The rig's world rotation for the bone this frame, and last frame, and its rate, rad/s. */
+  /** The rig's rotation for the bone this frame (on the board while riding, in the world once fallen), and last frame, and its rate, rad/s. */
   target: Quaternion;
   goal: Quaternion;
   goalRate: Vector3;
-  /** The world rotation drawn last frame, and its rate. */
+  /** The rotation drawn last frame, and its rate. */
   drawn: Quaternion;
   drawnRate: Vector3;
+  /** The drawn rotation in the world, this frame. */
+  world: Quaternion;
   /** The offset from the rig's world rotation to the drawn one (a rotation vector), its rate, and how fast it decays, 1/s. */
   offset: Vector3;
   offsetRate: Vector3;
@@ -95,6 +99,12 @@ const drawnQ = new Quaternion();
 const parentQ = new Quaternion();
 const scratchV = new Vector3();
 const scratchV2 = new Vector3();
+const placeV = new Vector3();
+/** The frame the body blends in this frame: the board's pose while riding, the world's once fallen. */
+const frameQ = new Quaternion();
+const frameInverse = new Quaternion();
+const frameP = new Vector3();
+const boardInverse = new Quaternion();
 
 /**
  * The drawn body's switches blended out (the riding-body plan, step 1;
@@ -102,9 +112,12 @@ const scratchV2 = new Vector3();
  * rig solves, each blended bone that jumped (off the path its last motion
  * predicts, or at a phase change) keeps the jump as an offset that decays, so
  * the drawn bone moves on from where it was; a bone moving smoothly is drawn
- * exactly as the rig solved it. A teleport starts over. The bones blend in the
- * world, not against their parents: an arm's switch decaying joint by joint
- * added up to a forearm turning three times a limb's pace.
+ * exactly as the rig solved it. A teleport, or a jump that would carry the
+ * body across the sea, starts over. The bones blend whole, not against their
+ * parents (an arm's switch decaying joint by joint added up to a forearm
+ * turning three times a limb's pace), and on the board while riding, so a
+ * board that turns or jumps (a retry nearby, an online surfer corrected) keeps
+ * the body standing on it; once fallen, in the world, the fall carried over.
  */
 export class BodyInertia {
   private readonly tracks: Track[];
@@ -122,6 +135,7 @@ export class BodyInertia {
   private readonly hipsWorld = new Vector3();
   private clock = Number.NaN;
   private phase = '';
+  private fallen = false;
   /** Just started over: the next frame only learns how the pose moves (a jump is measured against that motion). */
   private learning = false;
 
@@ -129,7 +143,7 @@ export class BodyInertia {
     this.hips = bones.get(BONES.hips)!;
     this.tracks = BLENDED.map((name) => ({
       bone: bones.get(name)!, blended: false, target: new Quaternion(), goal: new Quaternion(), goalRate: new Vector3(),
-      drawn: new Quaternion(), drawnRate: new Vector3(), offset: new Vector3(), offsetRate: new Vector3(), decay: 0, spread: 0,
+      drawn: new Quaternion(), drawnRate: new Vector3(), world: new Quaternion(), offset: new Vector3(), offsetRate: new Vector3(), decay: 0, spread: 0,
     }));
     for (const track of this.tracks) this.byBone.set(track.bone, track);
   }
@@ -142,15 +156,29 @@ export class BodyInertia {
   /** After the rig's solve: blends the bones' jumps out, over the time since the last frame (from `state.clock`). */
   apply(state: RiderVisualState): void {
     const dt = state.clock - this.clock;
-    const fresh = !(dt >= 0 && dt <= LONGEST_FRAME) || state.points[POINT.pelvis].distanceTo(this.pelvis) > TELEPORT;
+    const fallen = state.phase === 'fallen';
+    let fresh = !(dt >= 0 && dt <= LONGEST_FRAME) || state.points[POINT.pelvis].distanceTo(this.pelvis) > TELEPORT;
     this.pelvis.copy(state.points[POINT.pelvis]);
     this.clock = state.clock;
-    // The rig's pose in the world: the hips' place (the skeleton's parent may be scaled) and every bone's rotation.
-    const goal = this.worldHips(this.hipsWorld);
+    if (fallen) {
+      frameQ.identity();
+      frameP.set(0, 0, 0);
+    } else {
+      frameQ.copy(state.boardQuaternion);
+      frameP.copy(state.boardPosition);
+    }
+    frameInverse.copy(frameQ).invert();
+    // The body leaving the board (or climbing back on): what was drawn carries over into the other frame.
+    if (!fresh && fallen !== this.fallen) this.changeFrame(state, fallen);
+    this.fallen = fallen;
+    // The rig's pose in the frame: the hips' place (the skeleton's parent may be scaled) and every bone's rotation.
+    const goal = this.worldHips(this.hipsWorld).sub(frameP).applyQuaternion(frameInverse);
     this.hips.updateMatrixWorld(true);
-    for (const track of this.tracks) track.bone.getWorldQuaternion(track.target);
+    for (const track of this.tracks) track.bone.getWorldQuaternion(track.target).premultiply(frameInverse);
     const switched = state.phase !== this.phase;
     this.phase = state.phase;
+    // Carried on from where they were drawn, the hips would land this far from the rig's: too far is no switch.
+    if (!fresh && dt > 0 && !this.learning) fresh = scratchV.copy(this.hipsDrawn).addScaledVector(this.hipsDrawnRate, dt).distanceTo(goal) > FARTHEST;
     if (fresh) {
       this.start(goal);
       return;
@@ -217,25 +245,54 @@ export class BodyInertia {
   }
 
   /**
-   * Poses the skeleton as drawn: the hips at `hips` in the world, and each
-   * blended bone at its drawn world rotation, parents first; a bone between
-   * (a clavicle) keeps the rig's turn against its drawn parent.
+   * Poses the skeleton as drawn: the hips at `hips` in the frame, and each
+   * blended bone at its drawn rotation, parents first; a bone between (a
+   * clavicle) keeps the rig's turn against its drawn parent.
    */
   private draw(hips: Vector3): void {
     for (const track of this.tracks) track.blended = false;
     for (const track of this.tracks) {
+      track.world.copy(frameQ).multiply(track.drawn);
       this.drawnWorld(track.bone.parent, parentQ);
-      track.bone.quaternion.copy(parentQ.invert().multiply(track.drawn));
+      track.bone.quaternion.copy(parentQ.invert().multiply(track.world));
       track.blended = true;
     }
-    this.placeHips(hips);
+    this.placeHips(placeV.copy(hips).applyQuaternion(frameQ).add(frameP));
+  }
+
+  /**
+   * Moves the tracks from the board's frame into the world's (`toWorld`), or
+   * back, at the board's present pose and motion (its turn left out: a frame's
+   * worth, a degree or two).
+   */
+  private changeFrame(state: RiderVisualState, toWorld: boolean): void {
+    const board = state.boardQuaternion;
+    boardInverse.copy(board).invert();
+    const turn = toWorld ? board : boardInverse;
+    for (const track of this.tracks) {
+      track.goal.premultiply(turn);
+      track.drawn.premultiply(turn);
+      for (const vector of [track.goalRate, track.drawnRate, track.offset, track.offsetRate]) vector.applyQuaternion(turn);
+    }
+    const velocity = scratchV.copy(state.travel).multiplyScalar(state.speed);
+    velocity.y = state.climb;
+    for (const place of [this.hipsGoal, this.hipsDrawn]) {
+      if (toWorld) place.applyQuaternion(board).add(state.boardPosition);
+      else place.sub(state.boardPosition).applyQuaternion(boardInverse);
+    }
+    for (const rate of [this.hipsGoalRate, this.hipsDrawnRate]) {
+      if (toWorld) rate.applyQuaternion(board).add(velocity);
+      else rate.sub(velocity).applyQuaternion(boardInverse);
+    }
+    this.hipsOffset.applyQuaternion(turn);
+    this.hipsOffsetRate.applyQuaternion(turn);
   }
 
   /** A node's world rotation as drawn this frame: a blended bone's own, or the rig's turn on its drawn parent. */
   private drawnWorld(node: Object3D | null, out: Quaternion): Quaternion {
     if (!node) return out.identity();
     const track = node instanceof Bone ? this.byBone.get(node) : undefined;
-    if (track?.blended) return out.copy(track.drawn);
+    if (track?.blended) return out.copy(track.world);
     if (!(node instanceof Bone) || !(node.parent instanceof Bone)) return node.getWorldQuaternion(out);
     return this.drawnWorld(node.parent, out).multiply(node.quaternion);
   }

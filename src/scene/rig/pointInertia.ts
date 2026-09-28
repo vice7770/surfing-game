@@ -9,8 +9,13 @@ import { POINT, type RiderVisualState } from './riderVisualState';
  */
 export const POINT_INERTIA_HALF_LIFE = 0.05;
 export const POINT_INERTIA_TRAVEL = 2;
-/** A point leaving the path its motion predicts faster than this, m/s, has jumped. */
-const JUMP = 1;
+/**
+ * A point leaving the path its motion predicts faster than this, m/s, has
+ * jumped. A limb turning back is no jump: a hand reverses by about 1.2 m/s
+ * within a step in a rail change, and an online surfer's poses, joined every
+ * 50 ms, turn the hand by as much; the pops are 15–50 m/s.
+ */
+const JUMP = 3;
 /**
  * A jump drawn between physics steps spreads over the display frames between
  * them: it may carry on this many frames after it began (a step over three
@@ -19,6 +24,12 @@ const JUMP = 1;
 const JUMP_SPREAD = 2;
 /** The pelvis point this far, m, from the last frame's: a teleport, drawn at once. */
 const TELEPORT = 3;
+/**
+ * A jump that would carry a point further than this, m, starts over instead
+ * (a retry from the water back onto a board nearby): the landing's feet, the
+ * farthest a switch moves one, come about 0.85 m.
+ */
+const FARTHEST = 1.5;
 /** A frame longer than this, s (or none), starts over. */
 const LONGEST_FRAME = 0.25;
 const LN2 = Math.log(2);
@@ -54,7 +65,8 @@ function decay(x: Vector3, v: Vector3, y: number, dt: number): void {
  * seven points that left its predicted path (or all of them at a phase change)
  * keeps the jump as an offset that decays, on the board while riding (where a
  * standing body is still) and in the world once fallen (the fall carries over).
- * A point moving smoothly is left as it is; a teleport starts over.
+ * A point moving smoothly is left as it is; a teleport, or a jump that would
+ * carry the body across the sea, starts over.
  */
 export class PointInertia {
   private readonly tracks: Track[] = Array.from({ length: 7 }, () => ({
@@ -91,19 +103,26 @@ export class PointInertia {
   apply(state: RiderVisualState): void {
     const dt = state.clock - this.clock;
     const fallen = state.phase === 'fallen';
-    const fresh = !(dt >= 0 && dt <= LONGEST_FRAME) || state.points[POINT.pelvis].distanceTo(this.pelvis) > TELEPORT;
+    let fresh = !(dt >= 0 && dt <= LONGEST_FRAME) || state.points[POINT.pelvis].distanceTo(this.pelvis) > TELEPORT;
     this.pelvis.copy(state.points[POINT.pelvis]);
     this.clock = state.clock;
     // Riding, the points on the board; fallen, in the world.
     inverse.copy(state.boardQuaternion).invert();
     // The body leaving the board (or climbing back on): what was drawn carries over into the other frame, moving on
     // with the board's motion, so the fall blends like any other switch.
-    if (!fresh && !this.learning && fallen !== this.fallen) this.changeFrame(state, fallen);
+    if (!fresh && fallen !== this.fallen) this.changeFrame(state, fallen);
     this.fallen = fallen;
     const switched = state.phase !== this.phase;
     this.phase = state.phase;
     const toFrame = (point: Vector3, out: Vector3) => (fallen ? out.copy(point) : out.copy(point).sub(state.boardPosition).applyQuaternion(inverse));
     const fromFrame = (point: Vector3, out: Vector3) => (fallen ? out.copy(point) : out.copy(point).applyQuaternion(state.boardQuaternion).add(state.boardPosition));
+    // Carried on from where it was drawn, a point would land this far from the physics' place: too far is no switch.
+    if (!fresh && dt > 0 && !this.learning) {
+      fresh = state.points.some((point, i) => {
+        const track = this.tracks[i];
+        return scratch2.copy(track.drawn).addScaledVector(track.drawnRate, dt).distanceTo(toFrame(point, scratch)) > FARTHEST;
+      });
+    }
     if (fresh) {
       this.learning = true;
       state.points.forEach((point, i) => {

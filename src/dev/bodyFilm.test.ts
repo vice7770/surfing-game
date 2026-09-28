@@ -1,6 +1,6 @@
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { FILM_SCENARIOS, drawnLag, filmBody, posed, repeatedFrames, shake, switchSpeeds, switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame } from './bodyFilm';
+import { FILM_SCENARIOS, drawnLag, filmBody, posed, repeatedFrames, rigAlone, shake, switchSpeeds, switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame } from './bodyFilm';
 
 const scenario = (name: string) => FILM_SCENARIOS.find((candidate) => candidate.name === name)!;
 
@@ -38,6 +38,25 @@ describe('the body film', () => {
   // standing one to the lying one at the switch, and the knee turns over only as the leg straightens. The rig's poles
   // are the stance step's (step 3). Pinned, not tuned.
   it.fails('blends the switches of lying back down out', () => blendsOut('lying back down'));
+
+  // The final review: riding through a rail change or a weave, until a switch (the weave ends in a fall at 1.94 s),
+  // nothing is blended and the drawn body follows the rig at any display rate. Taken for a jump, a hand turning back
+  // (about 1.2 m/s within a step) lurched the chest 10–45° at 30–100 Hz. Snapshots batched by 3 stand in for an
+  // online surfer's poses (20 Hz).
+  it.each(['rail change', 'weave'])('draws %s as the rig does, at any display rate', (name) => {
+    const runs = [...[30, 50, 60, 75, 90, 100, 120, 144].map((rate) => ({ rate, delivery: 1 })), { rate: 60, delivery: 3 }];
+    for (const { rate, delivery } of runs) {
+      const plain = filmBody(scenario(name), { rate, delivery, drawer: trackDrawer, pose: rigAlone });
+      const drawn = filmBody(scenario(name), { rate, delivery, drawer: trackDrawer, pose: posed() });
+      const riding = drawn.frames.findIndex((frame) => frame.switched);
+      let worst = 0;
+      drawn.frames.slice(0, riding < 0 ? undefined : riding).forEach((frame, i) => {
+        if (frame.phase === 'standing') worst = Math.max(worst, Math.abs(frame.chestRoll - plain.frames[i].chestRoll));
+      });
+      expect(riding < 0 ? drawn.frames.length : riding, `${name} at ${rate} Hz: rides at least 1.5 s`).toBeGreaterThan(1.5 * rate);
+      expect((worst * 180) / Math.PI, `${name} at ${rate} Hz, delivered by ${delivery}`).toBeLessThan(1);
+    }
+  });
 
   it('reads a one-frame pop as a spike, and a sustained fast motion as none', () => {
     const pop = film(60, 60, (i, frame) => {

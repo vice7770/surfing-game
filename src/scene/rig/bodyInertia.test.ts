@@ -82,6 +82,50 @@ describe('the body inertia', () => {
     expect(hips.getWorldPosition(new Vector3()).x).toBeGreaterThan(19);
   });
 
+  it('keeps the body on a board that jumps a little: a retry nearby, an online surfer corrected', () => {
+    for (const { phase, speed, jump } of [{ phase: 'prone', speed: 1.5, jump: -1.5 }, { phase: 'standing', speed: 8, jump: 0.3 }] as const) {
+      const { draw, rotations, hips } = body();
+      const { bones: plainBones } = createTestHumanoid();
+      const rig = new HumanoidRig(plainBones);
+      const plainHips = plainBones.get(BONES.hips)!;
+      const goal = () => [...plainBones.values()].filter((bone) => !bone.name.includes('Hand') || bone.name.endsWith('Hand')).map((bone) => bone.getWorldQuaternion(new Quaternion()));
+      let z = 0;
+      let clock = 0;
+      for (let i = 0; i < 60; i += 1) draw(posture(phase, new Vector3(0, 0, (z += speed * STEP)), (clock += STEP)));
+      z += jump;
+      for (let i = 0; i < 30; i += 1) {
+        const state = () => posture(phase, new Vector3(0, 0, z), clock);
+        z += speed * STEP;
+        clock += STEP;
+        draw(state());
+        rig.solve(state());
+        plainHips.updateMatrixWorld(true);
+        const [drawn, expected] = [rotations(), goal()];
+        drawn.forEach((q, j) => expect(2 * Math.acos(Math.min(1, Math.abs(q.dot(expected[j]))))).toBeLessThan(1e-3));
+        expect(hips.getWorldPosition(new Vector3()).distanceTo(plainHips.getWorldPosition(new Vector3())), `${phase}, frame ${i}`).toBeLessThan(0.01);
+      }
+    }
+  });
+
+  it('starts over where a switch would carry the body across the sea (a retry from the water)', () => {
+    const { draw, hips } = body();
+    const { bones: plainBones } = createTestHumanoid();
+    const rig = new HumanoidRig(plainBones);
+    const plainHips = plainBones.get(BONES.hips)!;
+    let clock = 0;
+    for (let i = 0; i < 10; i += 1) {
+      const swimming = posture('standing', new Vector3(), (clock += STEP));
+      swimming.phase = 'fallen';
+      draw(swimming);
+    }
+    // R: back on the board 2 m away, lying down.
+    const back = () => posture('prone', new Vector3(2, 0, 0), clock + STEP);
+    draw(back());
+    rig.solve(back());
+    plainHips.updateMatrixWorld(true);
+    expect(hips.getWorldPosition(new Vector3()).distanceTo(plainHips.getWorldPosition(new Vector3()))).toBeLessThan(0.01);
+  });
+
   it('holds while the clock stands still', () => {
     const { draw, rotations } = body();
     let clock = 0;

@@ -62,16 +62,16 @@ At each switch (60 Hz), within 0.3 s: the largest one-frame spike of a joint (ag
 | Chest roll in the wobble band (1.5–4 Hz), compressed mid-turn at 10 m/s (steady, 1.3–1.9 s) | 0.62° RMS |
 | Chest roll above it (4–30 Hz): jitter | 0.16° RMS |
 | The same, riding straight at 7 m/s | 0.00° RMS |
-| The drawn chest's lag behind the physics (weaving at 8 m/s) | 53 ms |
+| The drawn chest's lag behind the physics (weaving at 8 m/s) | 54 ms |
 
 At each switch (60 Hz), within 0.3 s: the largest one-frame spike of a joint (against the board, about the hips when fallen) and of a bone over the median of the three frames either side (a pop), and the fastest joint and bone (the physics' own transitions included):
 
 | Scenario | At | Phase | Joint spike m/s | Bone spike rad/s | Fastest joint m/s | Fastest bone rad/s |
 |---|---:|---|---:|---:|---:|---:|
-| pop-up and landing | 0.50 s | prone | 0.1 | 0.3 | 1.4 | 6.3 |
+| pop-up and landing | 0.50 s | prone | 0.1 | 0.3 | 1.5 | 6.3 |
 | pop-up and landing | 1.22 s | push | 0.8 | 3.6 | 5.2 | 14.9 |
 | pop-up and landing | 1.70 s | landing | 0.8 | 3.6 | 5.2 | 14.9 |
-| compress mid-turn, the hand reaching | 0.80 s | standing | 0.4 | 1.1 | 2.1 | 4.7 |
-| lying back down | 1.00 s | standing | 3.3 | 1.2 | 10.0 | 39.9 |
-| lying back down | 1.60 s | recover | 1.3 | 4.3 | 8.0 | 18.8 |
+| compress mid-turn, the hand reaching | 0.80 s | standing | 0.4 | 1.4 | 2.3 | 4.8 |
+| lying back down | 1.00 s | standing | 3.3 | 1.2 | 10.0 | 39.8 |
+| lying back down | 1.60 s | recover | 1.3 | 4.2 | 8.0 | 18.7 |
 | a fall | 1.00 s | standing | 0.1 | 1.0 | 6.2 | 8.3 |
