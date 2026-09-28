@@ -34,12 +34,11 @@ describe('size report', () => {
     expect(gates.some((gate) => gate.name.startsWith('reef'))).toBe(false);
   });
 
-  it('holds small days to within 5 % of the baseline, and the Canyon to the same faces', () => {
+  it('reports small days and the Canyon without gating them: the side feed changes them on purpose (wave sizes)', () => {
     const small: SizeRun = { ...summariseRun({ ...base, spot: 'point', significantHeight: 1, heightAt: 'edge' }, [], []), typical: 1.0, sets: 1.3, waves: 20, setBreakZ: -90 };
     const canyon: SizeRun = { ...small, spot: 'canyon', significantHeight: 2, heightAt: 'edge' };
-    const gates = sizeGates([{ ...small, typical: 1.04 }, { ...canyon, typical: 1.2 }], [small, canyon]);
-    expect(gates.find((gate) => gate.name === 'point Hs 1 m Tp 12 s small day')!.pass).toBe(true);
-    expect(gates.find((gate) => gate.name === 'canyon Hs 2 m Tp 12 s unchanged')!.pass).toBe(false);
+    const gates = sizeGates([{ ...small, typical: 1.4 }, { ...canyon, typical: 1.2 }], [small, canyon]);
+    expect(gates).toEqual([]);
   });
 
   it('writes a table per spot with the empirical references', () => {
