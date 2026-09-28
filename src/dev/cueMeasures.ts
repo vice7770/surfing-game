@@ -34,11 +34,12 @@ export function stanceMarks(id: string, side: StanceName, skeleton: { root: Obje
 
 /**
  * How far a cue moves the drawn body between two readings along an axis of the
- * board: the largest shift of the hips, the head and the hands, m. At the front
- * view (about 11 m, a 52° field of view) 10 cm is about 10 pixels at 1080p.
+ * board: the largest shift of the chosen points (the hips, the head, the
+ * hands), m. At the front view (about 11 m, a 52° field of view) 10 cm is about
+ * 10 pixels at 1080p.
  */
-export function cueShift(a: CueMarks, b: CueMarks, axis: 'x' | 'y' | 'z'): number {
-  const points = (marks: CueMarks) => [marks.hips, marks.head, ...marks.hands];
+export function cueShift(a: CueMarks, b: CueMarks, axis: 'x' | 'y' | 'z', watched: readonly ('hips' | 'head' | 'hands')[] = ['hips', 'head', 'hands']): number {
+  const points = (marks: CueMarks) => watched.flatMap((part) => (part === 'hands' ? marks.hands : [marks[part]]));
   const [from, to] = [points(a), points(b)];
   return Math.max(...from.map((point, i) => Math.abs(to[i][axis] - point[axis])));
 }
