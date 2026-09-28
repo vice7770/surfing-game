@@ -142,4 +142,52 @@
 
 ## Findings
 
-(Filled in during execution.)
+**What the drawn body does now** (the rig, `src/scene/rig/HumanoidRig.ts`; its blend of the physics' state, `stanceBlend.ts`):
+- **The trunk hinges at the hips toward the stance's hip angle:**
+  - 147.5° standing tall down to 75° at Compress's depth (the map's middles: Weiss 2025 and SurfDeeper; de Sousa 2022);
+  - the pelvis moves back over the heels as far as keeps the body's centre of mass where the upright body has it (Winter 2009's segments, solved on a model of the posed body: within 0.1 cm in trim and the drop, 1 cm in Compress);
+  - backside, no further over the toes than the middle of Hobgood's ±20°, so the heel-side hand still reaches the water;
+  - no faster than a brisk trunk bend (4 rad/s).
+- **The legs** may straighten to about 160°, never locked (the rig had stopped them at 152°).
+- **Free arms take the stance's shape:** 40° from the trunk's down standing tall and 55° crouched, the elbow at 155°, keeping the physics' hand's heading about the trunk. Hands in the water, on a rail or in the face stay on their points.
+- **The clavicles follow their arms:** a third of the arm's rise above 30° (the scapulohumeral rhythm), forward with a forward reach.
+- **Past 40° of loaded ankle flexion the heel lifts** about the ball, the toes flat on the deck (weight-bearing dorsiflexion: 30° or more healthy, about 40° typical). The gauge now reads the ankle as the joint's flexion, shin to foot.
+- **In a snap the chest turns with the turn either way:**
+  - the trim's opening toward the nose yields to the snap, and the snap's twist is 45°;
+  - the backside snap's chest had faced the toes (Hobgood, the Bali camp).
+  - The head leads a turn over 0.6 s, toward the lip in the frontside bottom turn (de Sousa 2022).
+
+**Against the map:** 38 of 99 targets miss, against step 2's 46; 61 are met, against 53 ([stance-map.md](../../research/stance-map.md)).
+- **Newly met:**
+  - Compress frontside's front hip (127° → 73°) and rear knee (97° → 88°);
+  - trim's trunk over the toes (0° → 14°), rear hip, ankles and arms;
+  - the drop's leading elbow (180° → 155°);
+  - the backside snap's chest (−1° → −24°);
+  - Compress's head (75° → 67°) and trailing elbow;
+  - the hand in the face's lower hand.
+- **Low-confidence misses:** 21 → 13.
+- **Medium and high misses: 25 either way.** Two new ones come from the pelvis moving back:
+  - Compress frontside's front knee, 69° against 70–90°;
+  - extension's rear knee, 147° against 150° or more.
+- **The stance-target test** (`src/dev/stanceTargets.test.ts`) holds every medium or high target the drawn pose owns on surfer2, Regular and Goofy. Thirteen known misses are listed with their reasons (the physics' weight and timing, the backside trunk's conflict, the hand's blend, the landing's glide). A new miss or a fixed one fails it.
+
+**Fixed on the way:**
+- **The frontside Compress hand now reaches the water.** It was Part B's pinned 6.6 cm miss; folded over the toes, the shoulder comes over the hand.
+- **The snapshot track no longer blends a riding body's points into a fallen one's across the fall.** Tips and limb centres are different points, and the blend drew a "standing" body with its feet half-way to the fallen legs' centres (step 1's).
+- **The arm no longer reads its shoulder from last frame's clavicle.**
+- **Found by the regenerated map:**
+  - a free hand now moves with its clavicle (the clavicle had closed the arm on its own target: the lead elbow at 97° in Compress);
+  - the free arm's elevation is the upper arm's, the soft elbow below the wrist's line;
+  - in a snap the trailing arm swings up (the Bali camp), where the free arm had lowered it.
+- **The clavicles and toes return to rest when not driven,** and the smoothing layer blends them.
+
+**Open, for the user's eye and for later steps:**
+- **The snap's and top turn's raised leading arm bends sharply at the elbow,** an open hand up, which can read as a wave: Part B's leading-arm cue on top of the soft elbow.
+- **The pump's arms,** pushing down as it extends and pulling up as it compresses, need to know whether the body is rising or falling: step 4.
+- **The drawn Compress hand still blends down to the water** 0.4 s in (0.39 m where the physics' is at 0.12 m): step 1's point blend carries the hand's switch.
+- **The landing's feet glide apart** for about 0.6 s after it (the physics jumps them from the lying legs): step 6, then the blend.
+- **The physics' weight sits forward.** Trim reads 0.64, extending 0.71 against the thesis's 0.35–0.45, and the pump's extension 0.78; this bends the front knees in trim and extension (step 6).
+- **The backside Compress hips** stay at 97–143° against the thesis's 90° or less: the upright trunk Hobgood's cue asks for, a conflict between sources.
+- **Compress's front ankle floats 2 cm above its target** on the 47° rail, with or without the hinge.
+- **Performance:** the hinge costs about 1.6× a plain solve, a fraction of a millisecond per surfer.
+- **Under load, the heavy film tests take minutes.** Their timeout is 240 s.
