@@ -37,7 +37,7 @@ describe('the stance map', () => {
     const ids = STANCES.map((stance) => stance.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const stance of STANCES) expect(stance.reach.length, stance.id).toBeGreaterThan(10);
-    for (const turn of ['compress', 'extension', 'snap']) {
+    for (const turn of ['compress', 'extension', 'top-turn', 'snap']) {
       expect(ids, turn).toContain(`${turn}-frontside`);
       expect(ids, turn).toContain(`${turn}-backside`);
     }

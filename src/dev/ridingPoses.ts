@@ -11,7 +11,7 @@ import { RIDER_SNAPSHOT, writeRiderSnapshot } from '../wave/SurfZoneRunner';
 export type RidingMoment = 'straight' | 'drop' | 'bottom turn' | 'backside turn' | 'top turn' | 'snap';
 export const RIDING_MOMENTS: readonly RidingMoment[] = ['straight', 'drop', 'bottom turn', 'backside turn', 'top turn', 'snap'];
 const MOMENT_STANCE: Record<RidingMoment, string> = {
-  straight: 'trim', drop: 'drop', 'bottom turn': 'compress-frontside', 'backside turn': 'compress-backside', 'top turn': 'extension-frontside', snap: 'snap-frontside',
+  straight: 'trim', drop: 'drop', 'bottom turn': 'compress-frontside', 'backside turn': 'compress-backside', 'top turn': 'top-turn-frontside', snap: 'snap-frontside',
 };
 
 const STEP = 1 / 60;
@@ -58,8 +58,15 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   drop: standing([{ at: 0, crouch: 0.6 }], 1, { water: 'face', speed: 5 }),
   'compress-frontside': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, steer: 1 }, { at: 0.7, compress: 1 }], 1.1),
   'compress-backside': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, steer: -1 }, { at: 0.7, compress: 1 }], 1.1),
-  'extension-frontside': standing([{ at: 0.4, steer: -1, trim: -0.5 }], 1),
-  'extension-backside': standing([{ at: 0.4, steer: 1, trim: -0.5 }], 1),
+  // The bottom turn's release up the face (the thesis's final phase): the rail easing, the legs extending, the weight back.
+  'extension-frontside': standing([
+    { at: 0, crouch: 0.6 }, { at: 0.4, steer: 1 }, { at: 0.7, compress: 1 }, { at: 1.1, compress: 0, crouch: 0, steer: 0.3, trim: -0.5 },
+  ], 1.4),
+  'extension-backside': standing([
+    { at: 0, crouch: 0.6 }, { at: 0.4, steer: -1 }, { at: 0.7, compress: 1 }, { at: 1.1, compress: 0, crouch: 0, steer: -0.3, trim: -0.5 },
+  ], 1.4),
+  'top-turn-frontside': standing([{ at: 0.4, steer: -1, trim: -0.5 }], 1),
+  'top-turn-backside': standing([{ at: 0.4, steer: 1, trim: -0.5 }], 1),
   'snap-frontside': standing([{ at: 0.4, steer: -1, trim: -1 }], 0.9),
   'snap-backside': standing([{ at: 0.4, steer: 1, trim: -1 }], 0.9),
   'cutback-frontside': standing([{ at: 0, crouch: 0.5 }, { at: 0.4, steer: -1, trim: -0.7 }], 1.2),

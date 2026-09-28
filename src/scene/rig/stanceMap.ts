@@ -332,8 +332,8 @@ export const STANCES: readonly MappedStance[] = [
   },
   {
     id: 'extension-frontside',
-    name: 'Extension up the face, frontside (the top turn begins)',
-    reach: 'Standing, steering onto the heels\' rail with trim −0.5 at 8 m/s: the thesis\'s final phase into the top turn (phase standing).',
+    name: 'Extension up the face, frontside',
+    reach: 'Compress, frontside, then releasing: Compress and the crouch let go, the steer easing to 0.3 on the toes\' rail, trim −0.5, read 0.3 s on: the thesis\'s final phase (phase standing).',
     sides: 'frontside',
     targets: {
       kneeFront: { min: 150, max: 180, sources: ['desousa2022'], confidence: 'medium', note: '150° or more' },
@@ -351,7 +351,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'extension-backside',
     name: 'Extension up the face, backside',
-    reach: 'Standing, steering onto the toes\' rail with trim −0.5 at 8 m/s (phase standing).',
+    reach: 'Compress, backside, then releasing onto a heels\' rail easing to 0.3, trim −0.5, read 0.3 s on (phase standing).',
     sides: 'backside',
     targets: {
       kneeFront: { min: 150, max: 180, sources: ['desousa2022'], confidence: 'medium' },
@@ -360,6 +360,30 @@ export const STANCES: readonly MappedStance[] = [
       weight: { min: 0.35, max: 0.45, sources: ['desousa2022', 'cornishwave'], confidence: 'medium' },
     },
     gaps: 'The upper body: no backside frame read yet (Hobgood).',
+  },
+  {
+    id: 'top-turn-frontside',
+    name: 'Top turn, frontside',
+    reach: 'Standing, steering onto the heels\' rail with trim −0.5 at 8 m/s: the turn off the top (phase standing).',
+    sides: 'frontside',
+    targets: {
+      headPitch: { min: -30, max: 5, sources: ['balisurfing'], confidence: 'low', note: 'keep looking at the lip to spot the section' },
+      trailArm: { min: 60, max: 150, sources: ['balisurfing'], confidence: 'low', note: 'the trailing arm swung around to lead the heelside carve' },
+      stanceWidth: WIDTH,
+      weight: { min: 0.35, max: 0.45, sources: ['cornishwave'], confidence: 'medium', note: '40/60 onto the back foot in top turns' },
+    },
+    gaps: 'The legs\' depth and the rotation\'s angles (Reyes not read yet).',
+  },
+  {
+    id: 'top-turn-backside',
+    name: 'Top turn, backside',
+    reach: 'Standing, steering onto the toes\' rail with trim −0.5 at 8 m/s (phase standing).',
+    sides: 'backside',
+    targets: {
+      stanceWidth: WIDTH,
+      weight: { min: 0.35, max: 0.45, sources: ['cornishwave'], confidence: 'medium' },
+    },
+    gaps: 'The upper body: Hobgood not read yet.',
   },
   {
     id: 'snap-frontside',

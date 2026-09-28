@@ -578,6 +578,11 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
       - pops at a switch (the pop-up, the landing, Compress's hand, a fall) are blended out, on the board while riding: 21–51 m/s and 75–171 rad/s in one frame before, under 2 m/s and 6 rad/s now at 60 and 120 Hz (up to 3.1 m/s and 6.8 rad/s at 30 and 144 Hz), for 54 ms of lag (85 ms from a late worker); ordinary riding is drawn as the rig solves it at any rate;
       - the reach bend fades in below the hips, which removes Compress's chest pop and its jitter (0.66 → 0.16°); your surfer draws on the full model at every preset;
       - open: lying back down, the knee still swings through (step 3's poles). Next: step 2, the stance map, from the approved references.
+    - the riding body, step 2: the stance map ([plan](docs/superpowers/plans/2026-09-28-stance-map.md), [findings](docs/superpowers/plans/2026-09-28-stance-map.md#findings), [the map](docs/research/stance-map.md)):
+      - 20 stances and 94 target angles, each with its sources and confidence (measured studies, the thesis, coaching, then frames read by eye); gaps listed, never filled from the drawn body;
+      - a stance gauge, the four surfers' skeletons read in node, and every stance simulated by the real rider: `npm run report:stances` writes today's drawn body against the map;
+      - the surfer sheet's `?stances` draws each stance beside a reference figure built from the targets; every sheet now resets the drawn body between tiles (since step 1 each tile had drawn the one before);
+      - today 39 of 94 miss. The physics' trunk never hinges (0° where surfers bend 10–65°), the front knee bends more than the rear, the weight stays forward when Compress releases (0.75, target 0.35–0.45), and Compress folds the knees but not the hips. Next: step 3, the stance poses.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
