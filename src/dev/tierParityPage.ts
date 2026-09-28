@@ -14,7 +14,9 @@
  * Big swell at game size) on both tiers: the fastest water, where and when,
  * and any water that broke. `&cases=` picks from PROBE_CASES.
  *
- * `&tiers=gpu` (or `cpu`) runs one tier only. Results land in `window.gpuCheck`.
+ * `&tiers=gpu` (or `cpu`) runs one tier only. Results land in `window.gpuCheck`,
+ * and with `&receiver=<url>` (the ride recorder's receiver) each case is posted
+ * as JSON as it finishes, so long runs outlive the page.
  */
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, swellFor, type PhysicalSettings } from '../game/PhysicalMode';
 import { physicalSettingsFor, type SwellSize } from '../game/SurfConditions';
@@ -214,13 +216,20 @@ function tiersFrom(params: URLSearchParams): Tier[] {
   return asked === 'gpu' || asked === 'cpu' ? [asked] : ['cpu', 'gpu'];
 }
 
-async function runCases(log: PageLog, mode: string, cases: TierCase[], tiers: Tier[]): Promise<void> {
+/** Post a finished case to the receiver (`&receiver=`), when there is one. */
+async function post(receiver: string | null, name: string, body: unknown): Promise<void> {
+  if (!receiver) return;
+  await fetch(`${receiver}/upload?name=${encodeURIComponent(name)}`, { method: 'POST', body: JSON.stringify(body, null, 1) }).catch(() => undefined);
+}
+
+async function runCases(log: PageLog, mode: string, cases: TierCase[], tiers: Tier[], receiver: string | null): Promise<void> {
   const results: CaseResult[] = [];
   (window as unknown as { gpuCheck: unknown }).gpuCheck = { mode, done: false, results };
   for (const tierCase of cases) {
     const result = await runCase(log, tierCase, tiers);
     results.push(result);
     table(log, result, tierCase);
+    await post(receiver, `gpu-check-${mode}-${tierCase.name}.json`, { ...result, seconds: tierCase.seconds, shape: tierCase.shape, step: tierCase.step });
   }
   log.live('');
   log.say(`\nSummary (${mode}):`);
@@ -247,7 +256,7 @@ export async function lipParity(log: PageLog, params: URLSearchParams): Promise<
     cases.push({ name, config: gameConfig(settings, seed, components), shape: 'game', step: SURF_ZONE_STEP, seconds });
   }
   log.say(`Lip, tube and whitewater parity: ${cases.length} cases, ${seconds} s each on ${tiersFrom(params).map((tier) => tier.toUpperCase()).join(' and ')}.`);
-  await runCases(log, 'lips', cases, tiersFrom(params));
+  await runCases(log, 'lips', cases, tiersFrom(params), params.get('receiver'));
 }
 
 /** `?mode=probes`: the Reef's risky cases on both tiers. */
@@ -264,5 +273,5 @@ export async function probeParity(log: PageLog, params: URLSearchParams): Promis
     cases.push(tierCase);
   }
   log.say(`The Reef's stability probes: ${cases.length} cases on ${tiersFrom(params).map((tier) => tier.toUpperCase()).join(' and ')}.`);
-  await runCases(log, 'probes', cases, tiersFrom(params));
+  await runCases(log, 'probes', cases, tiersFrom(params), params.get('receiver'));
 }
