@@ -1,4 +1,4 @@
-import { createSpot, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
+import { REEF, createSpot, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
@@ -8,7 +8,7 @@ import { FoamField, boreDissipation, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
 import { TUBE_CAPACITY, carveGrid } from './tubeTable';
 import { focusX } from './Refraction';
-import { breakerForm, crestMotion, waveHeightAt } from './CrestKinematics';
+import { breakerForm, crestMotion, submergedCrest, waveHeightAt } from './CrestKinematics';
 import { jetFlightTime, tubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
@@ -67,6 +67,17 @@ export interface SurfZoneConfig {
 /** Along-shore window width unless the config says otherwise, m. */
 export const ALONG_SHORE = 160;
 
+/**
+ * Spots that always run stage 2 (the Teahupo'o Reef spec): shallow water steepens waves far too early
+ * in the Reef's 30 m water, so a machine that cannot keep up runs it slower than real time instead.
+ */
+export const STAGE_2_ONLY: readonly SpotName[] = ['reef'];
+
+/** The solver stage a spot runs on: the asked one, or 2 where the spot needs it. */
+export function solverStage(spot: SpotName, stage: 1 | 2 | undefined): 1 | 2 {
+  return STAGE_2_ONLY.includes(spot) ? 2 : stage ?? 2;
+}
+
 /** Swell components the tank's sea is built from, unless the config says otherwise. */
 export const SEA_COMPONENTS = 24;
 
@@ -91,7 +102,7 @@ export interface RenderGrid {
 export const TANK = { offshore: -330, zoneInner: -270, blendEnd: -190, fineFrom: -150, shore: 30 };
 
 /** Flat tank bed offshore of each spot's blend, m below datum. */
-export const OFFSHORE_DEPTH: Record<SpotName, number> = { beach: 5, point: 8, reef: 10, canyon: 5 };
+export const OFFSHORE_DEPTH: Record<SpotName, number> = { beach: 5, point: 8, reef: REEF.deep, canyon: 5 };
 
 /** A tank's layout across shore, m, and the still depth of its flat edge under the relaxation zone, m below datum. */
 export interface TankLayout {
@@ -127,6 +138,12 @@ const FLAT_RISE = 0.1;
 export function tankLayout(config: SurfZoneConfig): TankLayout {
   const today: TankLayout = { ...TANK, edgeDepth: OFFSHORE_DEPTH[config.spot] };
   if (config.spot === 'canyon') return today;
+  // The Reef's edge is always deep (REEF.deep, the Teahupo'o Reef spec): today's inner tank, whose forereef
+  // lies inside it, with the zone lengthened to absorb its long waves.
+  if (config.spot === 'reef') {
+    const zone = Math.max(TANK.zoneInner - TANK.offshore, ZONE_WAVELENGTHS * waveKinematics(config.peakPeriod, today.edgeDepth).wavelength);
+    return { ...today, offshore: TANK.zoneInner - zone };
+  }
   const deepWavelength = (GRAVITY * config.peakPeriod ** 2) / (2 * Math.PI);
   const wanted = Math.max(today.edgeDepth, Math.min(EDGE_DEPTH_PER_HS * config.significantHeight, EDGE_DEPTH_MAX_WAVELENGTHS * deepWavelength));
   if (wanted <= today.edgeDepth) return today;
@@ -184,10 +201,9 @@ export function windOnsetScale(windSpeed: number, breakerDepth: number): number 
 
 /**
  * Spots that take their swell at the tank's edge, as before the wave-sizes work: the Canyon (its seas are the
- * riding reference and Surf School's), and the Reef until the Reef rework deepens its tank (its 10 m edge blew
- * up under a shoaled 3–4 m, 18 s swell; the wave-sizes review).
+ * riding reference and Surf School's). The Reef's 30 m edge takes the buoy's deep-water swell shoaled to it.
  */
-const EDGE_SWELL_SPOTS: readonly SpotName[] = ['canyon', 'reef'];
+const EDGE_SWELL_SPOTS: readonly SpotName[] = ['canyon'];
 
 /** The sea's Hs at the tank's edge, m: the buoy's deep-water height shoaled by linear theory, unless given at the edge. */
 export function edgeHeight(config: SurfZoneConfig, edgeDepth = OFFSHORE_DEPTH[config.spot]): number {
@@ -204,7 +220,7 @@ export function edgeHeight(config: SurfZoneConfig, edgeDepth = OFFSHORE_DEPTH[co
  */
 export function surfZoneSea(config: SurfZoneConfig): SeaState {
   const tank = tankLayout(config);
-  const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot] && (config.stage ?? 2) === 2;
+  const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot] && solverStage(config.spot, config.stage) === 2;
   return SeaState.fromSpectrum({
     significantHeight: edgeHeight(config, tank.edgeDepth),
     peakPeriod: config.peakPeriod,
@@ -213,7 +229,7 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
     componentCount: config.componentCount ?? SEA_COMPONENTS,
     depth: tank.edgeDepth + config.tide,
     bandwidth: config.bandwidth,
-  }, config.seed, deeper ? madsenSorensenWaveNumber : shallowWaterWaveNumber);
+  }, config.seed, deeper || config.spot === 'reef' ? madsenSorensenWaveNumber : shallowWaterWaveNumber);
 }
 
 /**
@@ -222,7 +238,7 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
  * shadow it casts (as measured over the Scripps canyon, Magne et al. 2007),
  * and moves with the swell's direction and period.
  */
-export const TAKE_OFF: Record<SpotName, 'centre' | 'focus'> = { beach: 'centre', point: 'centre', reef: 'centre', canyon: 'focus' };
+export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 'centre', point: 'centre', reef: 'peak', canyon: 'focus' };
 
 /**
  * The breaker index a big day's take-off is placed with, per spot: the size report measures where each spot's
@@ -255,6 +271,11 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   };
   const reach = Math.max(0, (config.alongShore ?? ALONG_SHORE) / 2 - TAKE_OFF_EDGE_MARGIN);
   if (TAKE_OFF[config.spot] === 'centre' || reach === 0) return { x: 0, z: breakZ(0) };
+  // The Reef's riders wait at its peak, where each wave first breaks.
+  if (TAKE_OFF[config.spot] === 'peak') {
+    const x = Math.min(reach, Math.max(-reach, REEF.takeOffX));
+    return { x, z: breakZ(x) };
+  }
   const bed = (x: number, z: number) => tankDepth(spot, tank.edgeDepth, x, z, tank) + config.tide;
   const swell = { period: config.peakPeriod, direction: (config.directionDegrees * Math.PI) / 180 };
   const x = focusX(bed, swell, tank.zoneInner, breakZ(0), -reach, reach);
@@ -343,7 +364,7 @@ export class SurfZoneSimulation {
     };
     const depthAt = (x: number, z: number) => tankDepth(this.spot, offshoreDepth, x, z, tank);
     const onset = config.breakingOnset ?? BREAKING_ONSET[config.spot];
-    this.solver = (config.stage ?? 2) === 2
+    this.solver = solverStage(config.spot, config.stage) === 2
       ? new BoussinesqSolver(grid, depthAt, { waterLevel: config.tide, breaking: { onset } })
       : new ShallowWaterSolver(grid, depthAt, { waterLevel: config.tide });
     this.sea = surfZoneSea(config);
@@ -360,7 +381,9 @@ export class SurfZoneSimulation {
     // Nothing below reads the water, so all of it can be built before the spin-up.
     this.breaking = new BreakingModel(this.solver, { onset });
     this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
-    this.peel = new PeelTracker(this.solver.xCenters, config.peakPeriod);
+    // The Reef's peel is its ledge's: breaks past it (the pass, the lagoon's beach face) are not its wave.
+    const xCenters = this.solver.xCenters;
+    this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, config.spot === 'reef' ? (column) => reefLedgeAt(xCenters[column]) : undefined);
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver);
     this.foam = new FoamField(this.solver, config.foamDecay ?? FOAM_DECAY[config.spot]);
@@ -553,7 +576,8 @@ export class SurfZoneSimulation {
     const bed = (z: number) => tankDepth(this.spot, this.tank.edgeDepth, point.x, z, this.tank);
     const slope = Math.abs(bed(point.z - 2) - bed(point.z + 2)) / 4;
     const depth = this.breakerDepth();
-    const readout = describeSwell({ height: BREAKER_INDEX * depth, period: this.config.peakPeriod, depth, bedSlope: slope });
+    const overCrest = submergedCrest((ahead) => bed(point.z + ahead) + this.config.tide, depth, slope);
+    const readout = describeSwell({ height: BREAKER_INDEX * depth, period: this.config.peakPeriod, depth, bedSlope: slope, submergedCrest: overCrest });
     return { value: readout.iribarren, type: readout.breakerType };
   }
 
@@ -599,7 +623,7 @@ export class SurfZoneSimulation {
       this.outerBreak[column] = outer;
       if (this.onsetsArmed && outer < previous - 5 && this.newBreaker(column, row)) {
         this.lastOnset[column] = solver.time;
-        this.peel.markOnset(column, solver.time);
+        this.peel.markOnset(column, solver.time, outer);
         this.measureBreak(column, row);
         this.throwLip(column, row);
       }
@@ -673,8 +697,13 @@ export class SurfZoneSimulation {
     const breakerHeight = BREAKER_INDEX * stillDepth;
     const deepWavelength = (GRAVITY * this.config.peakPeriod ** 2) / (2 * Math.PI);
     const slope = Math.hypot(slopeX, slopeZ);
-    const iribarren = slope / Math.sqrt(breakerHeight / deepWavelength);
-    const form = breakerForm(iribarren);
+    const x = solver.xCenters[column];
+    const overCrest = submergedCrest(
+      (ahead) => solver.restLevel - solver.sampleCentered(bed, x, zCenters[crestRow] + ahead), stillDepth, Math.abs(slopeZ),
+    );
+    // Over a submerged crest a steep break plunges at the top of the plunging band (`breakerForm`).
+    const iribarren = Math.min(slope / Math.sqrt(breakerHeight / deepWavelength), overCrest ? 2 : Infinity);
+    const form = breakerForm(iribarren, overCrest);
     if (form === 'roller') this.lipRollers += 1;
     if (form !== 'jet') return;
     const motion = crestMotion(solver, crest);

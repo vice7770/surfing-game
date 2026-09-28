@@ -1,4 +1,5 @@
-import { PRACTICE_SWELL, swellFor, swellHeightLimit, type PhysicalSettings } from '../game/PhysicalMode';
+import { practiceSwell, swellFor, swellHeightLimit, type PhysicalSettings } from '../game/PhysicalMode';
+import type { SpotName } from '../wave/Bathymetry';
 import { forecastSurf } from '../wave/surfForecast';
 import { t } from './strings';
 import { formatSurfRange, type SurfScale } from './surfHeight';
@@ -38,10 +39,11 @@ export function stormArrives(physical: PhysicalSettings, units: Units): string {
   return t('lab.stormArrives', { height: formatHeight(swell.significantHeight, units), period: Math.round(swell.peakPeriod) });
 }
 
-/** The practice groundswell, in words. */
-export function practiceNote(units: Units): string {
+/** A spot's practice groundswell, in words. */
+export function practiceNote(units: Units, spot: SpotName): string {
+  const swell = practiceSwell(spot);
   return t('lab.practiceNote', {
-    height: formatHeight(PRACTICE_SWELL.significantHeight, units), period: PRACTICE_SWELL.peakPeriod, direction: PRACTICE_SWELL.directionDegrees ?? 0,
+    height: formatHeight(swell.significantHeight, units), period: swell.peakPeriod, direction: swell.directionDegrees ?? 0,
   });
 }
 
@@ -70,7 +72,10 @@ export function labSliders(physical: PhysicalSettings, units: Units): LabSlider[
       swell('stormDistanceKm', t('lab.distance'), 0, 10000, 100, `${physical.stormDistanceKm} km`),
     );
   }
-  sliders.push({ ...swell('directionDegrees', t('lab.direction'), -40, 40, 5, `${physical.directionDegrees}°`), disabled: physical.source === 'practice' });
+  // Practice fixes the direction: show the one its swell really comes from (the Reef's is its own).
+  const practice = physical.source === 'practice';
+  const direction = practice ? practiceSwell(physical.spot).directionDegrees ?? physical.directionDegrees : physical.directionDegrees;
+  sliders.push({ ...swell('directionDegrees', t('lab.direction'), -40, 40, 5, `${direction}°`), value: direction, disabled: practice });
   sliders.push(
     { key: 'tide', group: 'conditions', label: t('lab.tide'), min: -1, max: 1, step: 0.1, value: physical.tide, text: formatHeight(physical.tide, units) },
     { key: 'windSpeed', group: 'conditions', label: t('lab.wind'), min: -12, max: 12, step: 1, value: physical.windSpeed, text: windWords(physical.windSpeed, units) },

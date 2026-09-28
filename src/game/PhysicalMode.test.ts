@@ -4,7 +4,7 @@ import { WaterSurface } from '../scene/WaterSurface';
 import { FlatSurfaceSource } from '../scene/FlatSurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { stormSwell } from '../wave/StormSwell';
-import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, spreadingFor, swellFor, swellHeightLimit } from './PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, spreadingFor, swellFor, swellHeightLimit } from './PhysicalMode';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 
@@ -14,8 +14,8 @@ describe('PhysicalMode', () => {
   it('lets buoys and storms reach 4 m, and the Canyon 3 m as before (wave sizes)', () => {
     expect(TANK_SWELL_LIMITS.height.max).toBe(4);
     expect(swellHeightLimit('point')).toBe(4);
-    // The Reef keeps its 3 m cap until the Reef rework deepens its tank (wave sizes review).
-    expect(swellHeightLimit('reef')).toBe(3);
+    // The Reef's 30 m edge (the Teahupo'o Reef) carries the 4 m cap.
+    expect(swellHeightLimit('reef')).toBe(4);
     expect(swellHeightLimit('canyon')).toBe(3);
     const storm = { ...DEFAULT_PHYSICAL_SETTINGS, source: 'storm' as const, stormWindSpeed: 30, stormFetchKm: 2000, stormDurationHours: 96, stormDistanceKm: 0 };
     expect(swellFor({ ...storm, spot: 'point' }).significantHeight).toBe(4);
@@ -79,11 +79,36 @@ describe('PhysicalMode', () => {
     expect(practice.directionDegrees).toBeDefined();
   });
 
+  it('practises the Reef on its own groundswell and every other spot on the shared one', () => {
+    expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef', source: 'practice' })).toEqual(REEF_PRACTICE_SWELL);
+    expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'canyon', source: 'practice' })).toEqual(PRACTICE_SWELL);
+    expect(REEF_PRACTICE_SWELL.bandwidth).toBeLessThan(0.1);
+    expect(REEF_PRACTICE_SWELL.directionDegrees).toBe(20);
+  });
+
   it('roughens the chop more under onshore than offshore wind', () => {
     expect(chopForWind(12)).toBeGreaterThan(chopForWind(-12));
     expect(chopForWind(-12)).toBeGreaterThan(chopForWind(0));
     expect(chopForWind(0)).toBeGreaterThan(0);
   });
+
+  it('builds the Reef on stage 2 even when the water tier or a dev asks for stage 1', async () => {
+    const scene = new Scene();
+    const water = new WaterSurface(new FlatSurfaceSource());
+    const mode = new PhysicalMode(scene);
+    const built: SurfZoneConfig[] = [];
+    const gpuTier = vi.fn(async () => false);
+    const factory = (config: SurfZoneConfig): SurfZoneHost => {
+      built.push(config);
+      return new LocalSurfZone(config);
+    };
+    // The Fast tier's water: stage 1 on the CPU.
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef', stage: 1, compute: 'cpu' }, 5, water, quick, factory, gpuTier)).toBe(true);
+    expect(built[0].stage).toBe(2);
+    expect(built[0].compute).toBe('auto');
+    expect(gpuTier).toHaveBeenCalled();
+    mode.stop();
+  }, 60_000);
 
   it('shows the physical sea on the shared water surface and frames its break', async () => {
     const scene = new Scene();

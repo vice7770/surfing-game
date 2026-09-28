@@ -29,7 +29,7 @@ import type { ReadoutRow } from '../wave/SwellReadout';
 import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { SprayLook } from '../wave/SprayCloud';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
-import { SEA_COMPONENTS, surfZoneSea, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { SEA_COMPONENTS, solverStage, surfZoneSea, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
@@ -79,6 +79,19 @@ export interface SwellInput {
  */
 export const PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1.4, peakPeriod: 12, spreading: 40, bandwidth: 0.08, directionDegrees: 10 };
 
+/**
+ * The Reef's practice groundswell: the Practice swell's narrow band and spread at a
+ * Teahupo'o period, from the peak's side, for ~1.5–2 m faces (the Teahupo'o Reef spec).
+ * The Reef stays fast when small: its break runs along the ledge at no less than the
+ * shelf's celerity (src/wave/ledgePeel.ts). Provisional until the size report calibrates it.
+ */
+export const REEF_PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1, peakPeriod: 14, spreading: 40, bandwidth: 0.08, directionDegrees: 20 };
+
+/** A spot's practice groundswell: the Reef's own, or the shared one. */
+export function practiceSwell(spot: SpotName): Readonly<SwellInput> {
+  return spot === 'reef' ? REEF_PRACTICE_SWELL : PRACTICE_SWELL;
+}
+
 /** The GPU tier's sea (plan P6): more components, so sets repeat less often. */
 export const GPU_TIER_COMPONENTS = 64;
 
@@ -94,12 +107,9 @@ export async function webGpuAvailable(): Promise<boolean> {
 /** Largest swell the tank carries, matching the buoy sliders; the tank deepens with the swell (the wave-sizes spec). */
 export const TANK_SWELL_LIMITS = { height: { min: 0.3, max: 4 }, period: { min: 6, max: 18 } };
 
-/**
- * The Canyon keeps its tank and sea as they were (the wave-sizes spec), and so its 3 m cap; the Reef keeps its
- * cap too until the Reef rework deepens its tank (the wave-sizes review).
- */
+/** The Canyon keeps its tank and sea as they were (the wave-sizes spec), and so its 3 m cap. */
 export function swellHeightLimit(spot: SpotName): number {
-  return spot === 'canyon' || spot === 'reef' ? 3 : TANK_SWELL_LIMITS.height.max;
+  return spot === 'canyon' ? 3 : TANK_SWELL_LIMITS.height.max;
 }
 
 function clamp(value: number, range: { min: number; max: number }): number {
@@ -129,7 +139,7 @@ export function spreadingFor(spread: number): number {
 
 /** Buoy values as set, the practice groundswell, or the swell a storm delivers to the spot, kept within TANK_SWELL_LIMITS. */
 export function swellFor(settings: PhysicalSettings): SwellInput {
-  if (settings.source === 'practice') return { ...PRACTICE_SWELL };
+  if (settings.source === 'practice') return { ...practiceSwell(settings.spot) };
   if (settings.source !== 'storm') {
     return { significantHeight: Math.min(settings.significantHeight, swellHeightLimit(settings.spot)), peakPeriod: settings.peakPeriod, spreading: spreadingFor(settings.spread) };
   }
@@ -377,7 +387,10 @@ export class PhysicalMode {
     const start = ++this.starts;
     const swell = swellFor(settings);
     // The GPU tier builds a richer sea; the page decides, so its far field matches the worker's tank.
-    const tier = settings.stage === 2 && settings.compute === 'auto' && gpuTier !== undefined && await gpuTier();
+    // A spot that needs stage 2 raises a stage 1 tier, and then asks for the GPU (as SurfConditions' raisedWater).
+    const stage = solverStage(settings.spot, settings.stage);
+    const compute = stage !== settings.stage ? 'auto' : settings.compute;
+    const tier = stage === 2 && compute === 'auto' && gpuTier !== undefined && await gpuTier();
     const config: SurfZoneConfig = {
       spot: settings.spot,
       seed,
@@ -388,8 +401,8 @@ export class PhysicalMode {
       bandwidth: swell.bandwidth,
       tide: settings.tide,
       windSpeed: settings.windSpeed,
-      stage: settings.stage,
-      compute: settings.compute,
+      stage,
+      compute,
       // Practice's groundswell is given at the tank's edge, so its sea stays as it was (the wave-sizes spec).
       ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
       ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),

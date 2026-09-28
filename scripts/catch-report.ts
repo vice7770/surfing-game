@@ -18,6 +18,8 @@ import type { LipParcelSource } from '../src/physics/DetachedSurfer';
 import { RideSession } from '../src/physics/RideSession';
 import type { SurfWater } from '../src/physics/SurfWater';
 import type { SpotName } from '../src/wave/Bathymetry';
+import { applyReefShape } from './reefShape';
+import { alongShift } from './botSpots';
 import { SURF_ZONE_STEP, SurfZoneRunner } from '../src/wave/SurfZoneRunner';
 
 const option = (name: string): string | undefined => {
@@ -32,6 +34,8 @@ const ghosts = flag('ghosts');
 /** Where the bots wait: metres along shore from the break point, and metres outside the break line (negative: inside). */
 const alongs = ghosts ? [-45, -25, -5, 15, 35] : [0];
 const offsets = ghosts ? [-8, -4, 0, 4, 8, 12] : [argument('offset', 3)];
+// Reshape the Reef for this run: `--reef angle=50,crestZ=-125` (the design sweep).
+applyReefShape(option('reef'));
 const spots = (option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon']) as SpotName[];
 const output = option('out') ?? 'docs/research/catch-report.md';
 const practice = flag('practice');
@@ -41,11 +45,13 @@ const settings = practice ? { ...DEFAULT_PHYSICAL_SETTINGS, source: 'practice' a
   peakPeriod: argument('tp', DEFAULT_PHYSICAL_SETTINGS.peakPeriod),
   spread: argument('spread', DEFAULT_PHYSICAL_SETTINGS.spread),
 };
-const swell = swellFor(settings);
-const direction = swell.directionDegrees ?? settings.directionDegrees;
+/** Each spot's swell: its own Practice when practising (the Reef has one). */
+const swellAt = (spot: SpotName) => swellFor({ ...settings, spot });
+/** The swell's direction, or `--direction` (the Reef's design sweep). */
+const directionAt = (spot: SpotName) => option('direction') !== undefined ? Number(option('direction')) : swellAt(spot).directionDegrees ?? settings.directionDegrees;
 
 /** A crest this far above still water within LOOK m behind the board starts a paddle; the bot gives up after GIVE_UP s without a cue. */
-const RISE = 0.25 * swell.significantHeight;
+const riseAt = (spot: SpotName) => 0.25 * swellAt(spot).significantHeight;
 const LOOK = argument('look', 14);
 const GIVE_UP = 8;
 /** Standing, the ride ends when the board is this slow, m/s, for RIDE_END s. */
@@ -76,6 +82,9 @@ interface Bot {
 }
 
 function runSpot(spot: SpotName, seed: number): { attempts: Attempt[]; seconds: number } {
+  const swell = swellAt(spot);
+  const direction = directionAt(spot);
+  const rise = riseAt(spot);
   const runner = new SurfZoneRunner({
     spot,
     seed,
@@ -102,9 +111,12 @@ function runSpot(spot: SpotName, seed: number): { attempts: Attempt[]; seconds: 
     }),
   };
   const bots: Bot[] = [];
+  // Near an open edge (the Reef's peak) the row slides along shore to keep every bot inside the window.
+  const shift = alongShift(runner, alongs);
+  if (shift !== 0) console.error(`${spot} seed ${seed}: bots slid ${shift.toFixed(1)} m along shore to stay inside the window`);
   for (const along of alongs) {
     for (const offset of offsets) {
-      const bot: Bot = { session: new RideSession(), home: new Vector3(runner.focus.x + along, 0, runner.focus.z - offset), offset, clock: 0, stalled: 0 };
+      const bot: Bot = { session: new RideSession(), home: new Vector3(runner.focus.x + along + shift, 0, runner.focus.z - offset), offset, clock: 0, stalled: 0 };
       bot.session.reset(bot.home, 0, water);
       bots.push(bot);
     }
@@ -134,7 +146,7 @@ function runSpot(spot: SpotName, seed: number): { attempts: Attempt[]; seconds: 
         // Watch behind: a crest rising within LOOK m seaward of the board.
         let crest = -Infinity;
         for (let back = 2; back <= LOOK; back += 2) crest = Math.max(crest, water.surfaceAt(board.position.x, board.position.z - back));
-        if (crest - settings.tide > RISE) {
+        if (crest - settings.tide > rise) {
           attempt = bot.attempt = { offset: bot.offset, cue: false, popUp: false, stood: false, ride: 0, topSpeed: 0, outcome: 'no cue' };
           bot.clock = 0;
           bot.stalled = 0;
@@ -218,9 +230,13 @@ for (const spot of spots) {
   causes.push(`| ${spot} | ${[...tally.entries()].map(([key, count]) => `${key}: ${count}`).join(', ') || '—'} |`);
 }
 
-const sea = practice
-  ? `Practice mode: the narrow-band groundswell (Hs ${swell.significantHeight} m, Tp ${swell.peakPeriod} s, spreading s ${swell.spreading}, band ±${Math.round(swell.bandwidth! * 100)} %, ${direction}° from shore-normal), tide ${settings.tide} m, calm wind`
-  : `A buoy swell: Hs ${swell.significantHeight} m, Tp ${swell.peakPeriod} s, ${direction}° from shore-normal, spreading s ${swell.spreading.toFixed(0)}, tide ${settings.tide} m, calm wind`;
+const seaAt = (spot: SpotName) => {
+  const swell = swellAt(spot);
+  return practice
+    ? `${spot}: the narrow-band practice groundswell (Hs ${swell.significantHeight} m, Tp ${swell.peakPeriod} s, spreading s ${swell.spreading}, band ±${Math.round(swell.bandwidth! * 100)} %, ${directionAt(spot)}° from shore-normal)`
+    : `${spot}: a buoy swell, Hs ${swell.significantHeight} m, Tp ${swell.peakPeriod} s, ${directionAt(spot)}° from shore-normal, spreading s ${swell.spreading.toFixed(0)}`;
+};
+const sea = `${practice ? 'Practice mode' : 'Buoy swells'}, tide ${settings.tide} m, calm wind. ${spots.map(seaAt).join('; ')}`;
 const where = ghosts
   ? `${bots} bots share the sea, at ${alongs.join(', ')} m along shore from the break point and ${offsets.join(', ')} m outside the break line (negative: inside)`
   : `One bot waits ${offsets[0]} m outside the break line`;
@@ -230,7 +246,7 @@ Generated by \`npm run report:catch -- ${process.argv.slice(2).join(' ')}\` on $
 
 **Conditions.** ${sea}. Stage 2 (Boussinesq) surf zone. ${seedCount === 1 ? 'Seed 1' : `Seeds 1–${seedCount}`}, ${minutes} min each.
 
-**The bots.** ${where}, prone, nose to the beach. The bots are ghosts: they feel the water and the lip, but neither feels them. A bot paddles when a crest more than ${fixed(RISE, 2)} m above still water rises within ${LOOK} m behind it. It pops up the moment the cue lights and gives up after ${GIVE_UP} s without one. Standing, it rides straight with no steering until it falls, or until the board has been slower than ${STALL} m/s for ${RIDE_END} s. After every attempt it goes back to its spot in the lineup.
+**The bots.** ${where}, prone, nose to the beach. The bots are ghosts: they feel the water and the lip, but neither feels them. A bot paddles when a crest more than a quarter of the swell's height above still water (${spots.map((spot) => `${spot} ${fixed(riseAt(spot), 2)} m`).join(', ')}) rises within ${LOOK} m behind it. It pops up the moment the cue lights and gives up after ${GIVE_UP} s without one. Standing, it rides straight with no steering until it falls, or until the board has been slower than ${STALL} m/s for ${RIDE_END} s. After every attempt it goes back to its spot in the lineup.
 
 | Spot | Attempts | Cue lit | Pop-ups | Stood | Rides ≥ 3 s | Median ride, s | 90th percentile, s | Longest, s | Top speed, m/s | Attempts / bot / min |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
