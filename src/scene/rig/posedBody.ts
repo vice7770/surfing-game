@@ -34,6 +34,7 @@ export class PosedBody {
 
   /** Forgets the motion: the next state is drawn as the rig solves it (a new tile of the surfer sheet, a teleport). */
   reset(): void {
+    this.rig.reset();
     this.points?.reset();
     this.inertia?.reset();
   }

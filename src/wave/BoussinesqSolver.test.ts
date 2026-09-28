@@ -266,6 +266,27 @@ describe('Boussinesq dispersion', () => {
     expect(solver.mask[cell(6.5, 20.5)]).toBe(1);
   });
 
+  // The predictor is the dispersive acceleration of the step before: in the Reef's Big swell (25°) it reached
+  // −702 m²/s² in a cell that had just switched to shallow water, and pushed that cell's half step all the same.
+  it('gives a cell held in shallow water none of the step before\'s dispersive push in its half step', () => {
+    const grid = { nx: 12, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' as const };
+    const held = new BoussinesqSolver(grid, () => 4, { manning: 0, breaking: false });
+    const free = new BoussinesqSolver(grid, () => 4, { manning: 0, breaking: false });
+    held.holdPlunge(6.5, 20.5, 0, 1, 2);
+    const cell = held.cellIndex(6.5, 20.5);
+    // A lake at rest, with the push of the trace left in the predictor of one cell.
+    for (const solver of [held, free]) {
+      solver.predictor!.x[cell] = -700;
+      solver.step(0.01);
+    }
+    const moved = (solver: BoussinesqSolver) => Math.max(...Array.from(solver.h, (h) => Math.abs(h - 4)));
+    expect(free.mask[cell]).toBe(1);
+    expect(moved(free)).toBeGreaterThan(1e-3);
+    expect(held.mask[cell]).toBe(0);
+    expect(moved(held)).toBeLessThan(1e-12);
+    expect(Math.max(...Array.from(held.qx, Math.abs))).toBeLessThan(1e-12);
+  });
+
   it('never holds a plunge zone behind where its jet left the crest: the void\'s face keeps its dispersion', () => {
     const grid = { nx: 12, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' as const };
     const solver = new BoussinesqSolver(grid, () => 4, { manning: 0, breaking: false });

@@ -317,6 +317,33 @@ Per throw, from the same runs:
   - The Point with both the levelling and the edge-lip guard off matches main exactly (724 jets, 82 rollers, 5741 parcels).
   - The Canyon with the levelling off matches too (13 jets).
   - The Beach also throws 3 reef breaks on its bar, a submerged crest.
+- **The predictor's stale push (fixed: this step's mask gates it).**
+  - **What happened:** the Hancock half step adds the acceleration beyond shallow water that the step before measured (`predictorX/Z`), and it added it whether or not the cell disperses in the new step. A cell just switched to shallow water (by the depth switch or a plunge zone) still took the step before's dispersive push for one step:
+    - −702 m²/s² in a trace of the Big swell from 25° (seed 3, x 3.5, z −41.5, t ≈ 42 s);
+    - peaks of 370–520 m²/s² in the cells just switched, in every probe.
+  - **Fix:** the half step adds it only where this step's mask is on (the mask is updated first), on the CPU and in WGSL. A masked cell's half step is plain shallow water.
+  - **Also dropped:** in a masked cell the stored value is exactly that step's eddy-viscosity term (the recovery is the identity there; measured to 1e-12), up to about 1000 m²/s² at breaking crests. The half step no longer carries it; the corrector applies ν as before.
+    - A variant that kept it for masked cells, gating only the dispersive part, took the +25° 40 m probe to 24.0 m/s, over its 20 m/s bar. That is one seed and may be chaotic divergence, not a cause.
+  - **Probes** (seed 3, fastest wet speed, m/s), on main before Part C (0efc9fa) and after it (d13d0a8), without and with the gate:
+
+    | Probe | before C | gated | after C | gated |
+    |---|---:|---:|---:|---:|
+    | Big, from 20° | 15.5 | 14.1 | 22.0 | 19.2 |
+    | Low tide | 14.2 | 14.1 | 14.9 | 15.3 |
+    | −25°, 60 m | 11.7 | 11.6 | 12.0 | 11.2 |
+    | +25°, 60 m | 12.2 | 12.3 | 15.2 | 14.1 |
+    | +25°, 40 m | 18.8 | 17.9 | 28.7 | 19.5 |
+    | Lagoon, tide −1.0, 60 m | – | – | 14.6 | 13.2 |
+
+    - After Part C, the two flashes the 30 m/s guards were raised for fall back under 20 m/s. Main's 28.7 m/s (x 9.5, z −33.5, t 41.60 s) sits beside that run's largest stale push, 288 m²/s² (x 10.5, z −32.5, t 41.62 s).
+    - Single runs are chaotic, so the gate alone left the guards at 30 m/s; the latch on drained troughs (Part C, below) brought them back to 20. Before Part C, seeds 4 and 5 of the +25° 40 m probe differ by under 0.2 m/s between main and the gate.
+  - **Breaking:** onsets and breaker heights stay as on main:
+    - on the plane beach, H/d at onset is 0.9765 (main 0.9764);
+    - the Point, the Reef at 1.8 m, the Beach and the Canyon are identical;
+    - the Big Reef diverges only after its first set.
+  - **GPU:** `/gpu-check.html?spot=reef&hs=3&period=17&plunge` now reports the drift in the reference's shallow-water cells. Until breaking sets in (t ≤ 4 s), that drift is as on main (at most 1.4e-4 m). Gating the CPU alone gives 1–2e-2 m.
+  - **Advice:** the water-physics advisor. FUNWAVE-TVD recomputes its mask after every Runge–Kutta stage and adds only the terms the current mask has on; it never pairs Kennedy's ν with a shallow-water switch.
+  - **Open:** the drained ledge's backwash at x 14.5, z −28.5 (a dispersing cell with 0.36 m of water) is the fastest water in the +25° 40 m probe: 18.8 m/s on main. It, and the eddy-viscosity term in thin water, are follow-ups.
 
 ### Open
 
@@ -409,24 +436,53 @@ Fewer take-off cues lit. The counts are small, and why is not measured. One hypo
 
 ### The CI probes after merging main
 
-With the plunge-zone fix merged in, the lagoon's seed 3 in the 40 m window flashes 22.0 m/s (from 20°) and 28.7 m/s (from 25°) for about a second.
+With the plunge-zone fix merged in, the lagoon's seed 3 in the 40 m window flashed 22.0 m/s (from 20°) and 28.7 m/s (from 25°) for about a second.
 - **Where:** thin backwash (0.3–0.4 m over 2.1–2.4 m) runs down the ledge, seaward of where its jets left the crest, so outside the plunge zone by design. Each draining cell's dispersion switches off as it thins.
 - **Not systematic:** seeds 4–6 stay at 7.6–14.3 m/s, on main and on Part C (Part C lower in 4 of 6).
-- **The guard:** those two probes now guard against a runaway at 30 m/s, as the low-tide one does.
-- **The fix, split out:** a hold on the depth switch, so a draining cell doesn't flip.
+- **The guard:** those two probes guarded against a runaway at 30 m/s, as the low-tide one does, until the fix below.
+
+#### Fixed: the depth switch latches drained troughs (branch `claude/switch-hold`)
+
+Both probes guard at 20 m/s again. Ruled with the water-physics advisor.
+- **Why a hold alone did not do it:**
+  - Each peak cell flipped in and out of dispersion 5–10 times at the trough threshold (0.2 of its still depth), and was dispersing in the substep that spiked.
+  - A latch releasing at 0.55 d made the probes worse: 29.4 and 67.1 m/s.
+  - Traced substep by substep (25°, x 3.5, z −41.5): the cell released on its own level (1.39 m over 3.04 m) while its shoreward neighbours were still drained (0.1–0.9 m). The row solve (α d² ≈ 3.7 m² on the 1 m grid) pinned its flux to theirs at −15 m²/s, and it drained to 0.21 m in 0.05 s: 67 m/s.
+- **The fix:**
+  - **The latch:** a trough drained past the switch stays latched in shallow water until it refills to within 0.55 of its still depth. That is Tonelli & Petti's (2011, 2012) release, written for crests; for troughs it is provisional.
+  - **The dry count:** a latched trough counts as dry for its neighbours' stencils, as a dry cell already does. FUNWAVE-TVD disperses only where all 3 × 3 neighbours are wet, Celeris keeps dispersion 3 cells from dry bed, and Kazolea & Ricchiuto (2018) drop the terms in thin "troubled" cells. Counting a drained trough as dry is this game's extension: provisional.
+  - **Crests still switch every step:** Kennedy's eddy viscosity breaks them (FUNWAVE-TVD drops the switch under viscosity breaking). Latching them raised the setup (Bacigaluppi et al. 2019), and on the 1:40 test beach it lowered the pre-break troughs by 1 % of the depth.
+  - **Not a timer:** Kennedy's T* (2.5 s here) also calmed the probes (14.9 and 11.6 m/s). It has no source for this switch, and it would still hold a drained trough as the next face arrives.
+- **The backwash** (45 s, the CI probes' 40 m window and Big swell, peak speed in m/s):
+
+  | | Seed 3, 20° | Seed 3, 25° | Seeds 4–6, 20° | Tide −0.6 | Lagoon, tide −1.0, 60 m |
+  |---|---:|---:|---:|---:|---:|
+  | Before | 22.0 | 28.7 | 8.2 / 8.8 / 14.3 | 14.9 | 14.6 |
+  | Latched | 14.0 | 13.0 | 7.4 / 7.9 / 8.7 | 12.1 | 12.9 |
+  | Predictor gate only (Part B, above) | 19.2 | 19.5 | – | 15.3 | 13.2 |
+  | Latched, with the gate | 12.4 | 13.5 | 7.5 / 8.0 / 8.6 | 10.4 | 12.1 |
+
+  - **The latch does most of it.** The predictor gate, merged first, stops a just-switched cell from taking the last step's dispersive push. The latch stops the flipping and the pinned release.
+  - **Together** they are within 1 m/s of the latch alone, and lower in 4 of 6 probes. The oblique 60 m probes read 15.3 m/s from −25° (latched 14.7, neither 12.0) and 11.0 from +25° (11.5, 15.2).
+  - **Throws with the gate:** 107 / 94 / 85 / 108 for seeds 3–6, against 106 / 96 / 80 / 108 latched alone.
+
+- **The breaking** (the same runs, seeds 3–6 from 20°): more waves throw (78 / 65 / 44 / 107 become 106 / 96 / 80 / 108), and they are smaller (median H 2.2–3.6 m against 2.6–4.4 m).
+  - No column throws twice within half a period, before or after.
+  - Each throw is no bigger (2.6–3.7 m³ against 2.7–3.9 m³).
+  - Onsets do not move seaward: their median distance seaward of the reef's crest is 6.4–12.0 m against 9.2–13.4 m, and the 90th percentile moves by at most 1.4 m (15.6–22.6 m).
+- **On the GPU** (`/gpu-check.html?spot=reef&hs=3&period=17&seconds=45`): the device and the CPU latch the same cells to within 3 of 20–296. The drift matches the run without the latch: rms Δh / rms η ends at 3.9 × 10⁻³, against 3.7 × 10⁻³.
 
 ### Open
 
 - **The lab profile** (`Profile_Teahupoo.txt`): the lagoon's depth and the flat's width wait for the user's approval to download it.
 - **Fewer take-off cues** on Practice (18 against 7).
-- **A hold on the dispersion switch** in draining cells (split out), to bring the two probes back to 20 m/s.
 - **A ~21 m/s peak at the −x open edge far offshore** (Hs 3 m at the edge, 18 s, tide +1, seed 3, the default grid, t ≈ 95 s), found by the plunge-zone session. It occurs with or without that fix, and it isn't a landing: one for the edge treatments.
 - **The tube's look** (glow, spit, one section collapsing): with the swept overturn surface. **The step and coral:** with the coral textures.
 
 ## Commands
 
 - `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "steep Reef holds"`
-- `http://localhost:<port>/gpu-check.html?spot=reef`, from `npx vite --port <port> --strictPort --host localhost` in the worktree
+- `http://localhost:<port>/gpu-check.html?spot=reef` (add `&hs=3&period=17&seconds=45` for the Big swell, where troughs drain), from `npx vite --port <port> --strictPort --host localhost` in the worktree
 - `npm run report:tubes -- --spots reef --seeds 1 --periods 4 --out <file>`, here and in a detached `origin/main` worktree
 - `npm run report:rideability -- --spots reef --hs 1.3 --tp 15 --direction <dir> --spread 0.2 --seeds 2 --periods 12 --reef angle=<angle>`
 - `npm run report:catch -- --practice --ghosts --spots reef --seeds 2 --minutes 3` (baseline, in the `origin/main` worktree)

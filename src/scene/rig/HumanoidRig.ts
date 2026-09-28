@@ -1,8 +1,11 @@
 import { Quaternion, Vector3, type Bone } from 'three';
+import { ArmSwing, armPendulum } from './armSwing';
+import { Breathing } from './breathing';
 import { BONES, MIDDLE_FINGER, REQUIRED_BONES, type Side } from './humanoidBones';
 import { orientBone } from './orientBone';
 import { STANDING_PELVIS } from './posturePoints';
 import { POINT, type RiderVisualState } from './riderVisualState';
+import { stanceBlend, weightBack, type StanceBlend } from './stanceBlend';
 import { solveTwoBone } from './twoBoneIk';
 
 const SIDES: readonly Side[] = ['left', 'right'];
@@ -11,6 +14,18 @@ const REST_FORWARD = new Vector3(0, 0, 1);
 const REST_BACK = new Vector3(0, 0, -1);
 const REST_UP = new Vector3(0, 1, 0);
 const WORLD_UP = new Vector3(0, 1, 0);
+
+/**
+ * `value` brought smoothly under `cap`: unchanged up to `band` below it, then
+ * slowing at a steady rate to stop at the cap `band` past it (a hard stop kinks
+ * the motion, which the smoothing layer takes for a jump).
+ */
+function softCap(value: number, cap: number, band: number): number {
+  const start = cap - band;
+  if (value <= start) return value;
+  const past = Math.min(value - start, 2 * band);
+  return start + past - (past * past) / (4 * band);
+}
 
 /** A driven bone's rest data: its axis toward its child and a body direction, both in its own frame. */
 interface Rest {
@@ -24,12 +39,54 @@ interface Rest {
  * direction from surf photography, not measured). Angles in degrees.
  */
 export const RIG_DETAIL = {
-  /** The hips and chest turn from the toe side toward the nose while upright. */
+  /** The hips and chest turn from the toe side toward the nose while upright, less as the weight goes back. */
   hipsTurn: 10,
   chestTurn: 25,
   /** The front foot turns toward the nose more than the rear foot. */
   frontFootTurn: 20,
   rearFootTurn: 5,
+  /**
+   * Standing, a free arm (its hand not reaching down) takes the stance's shape
+   * over the physics' held-out hand, by `share` (the riding-body plan, step 3,
+   * from the stance map; all low confidence): raised from the trunk's down
+   * `elevationTall`° standing tall to `elevationDeep`° crouched (SurfDeeper:
+   * hands over their rails, quiet, 20–60°; Kerr's drop: the lead arm about 55°),
+   * the elbow soft at `elbow`° (Kerr's drop: 150–160°), keeping the physics'
+   * hand's heading about the trunk. In a snap the trailing arm swings up toward
+   * `snapSwing`° (the Bali camp: the trailing arm swung around).
+   */
+  arms: { share: 1, elevationTall: 40, elevationDeep: 55, elbow: 155, snapSwing: 100 },
+  /**
+   * Standing, a free hand swings with the body (step 4, `armSwing.ts`): a mass on
+   * a critically damped spring about its cued place, at the arm's own pendulum
+   * (Winter 2009's segments on the skeleton's arm, the hand taken as 0.74 of the
+   * forearm: Drillis & Contini's 0.108 H to 0.146 H), so the body's pump and
+   * turns leave it behind for a moment (Pontzer et al. 2009: the arms as passive
+   * mass dampers). `share` of it (0 in tests that hold the arms to their cues);
+   * within `most`° of the cued direction from the shoulder (provisional).
+   */
+  swing: { share: 1, most: 35 },
+  /**
+   * The chest breathes (step 4, `breathing.ts`): the upper spine turns back and
+   * forth about the body's left, its two bones taking half each, faster and
+   * deeper with the physics' work; the neck and head keep their world directions.
+   * `share` of it (0 in tests that hold the chest still).
+   */
+  breath: { share: 1 },
+  /**
+   * Standing, a clavicle follows its arm (step 3): lifting a `ratio` of the
+   * arm's rise from the trunk's down above `from`° (the scapulohumeral rhythm,
+   * Inman et al. 1944: about 2:1, the arm to the shoulder blade), and swinging
+   * forward up to `protract`° as the arm reaches forward; `share` of it.
+   */
+  clavicle: { share: 1, from: 30, ratio: 1 / 3, protract: 15 },
+  /**
+   * Standing, the ankle bends no further than this under load, °: past it the
+   * heel lifts, the foot turning about the ball, the toes flat on the deck
+   * (step 3; weight-bearing dorsiflexion: 30° or more in healthy adults, about
+   * 40° typical in the weight-bearing lunge test).
+   */
+  maxDorsiflexion: 40,
   /** Standing elbows drop below the line from shoulder to hand, a little behind it. */
   elbowDrop: 1,
   elbowBack: 0.3,
@@ -40,8 +97,23 @@ export const RIG_DETAIL = {
   fingerCurlStroke: 32,
   /** A fallen limb reaches this share of its length through its centre point. */
   fallenReach: 0.92,
-  /** Legs stop this short of straight when the hips come down to reach the feet. */
-  legReach: 0.97,
+  /**
+   * Legs stop this short of straight when the hips come down to reach the feet:
+   * a knee at about 160°, soft, never locked (de Sousa 2022: 150° or more
+   * extending; SurfDeeper: avoid locking out; at 0.97 the rig stopped it at 152°,
+   * the stance map's finding). Arms reach `armReach`.
+   */
+  legReach: 0.985,
+  /**
+   * The legs come to their reach smoothly over this share of their length each
+   * side of it (`softCap`): a hard stop kinked the knee's motion, which the
+   * smoothing layer took for a jump and eased the leg off its foot (a pump's
+   * rear foot slid 13 cm; it still slid at 0.015). The narrowest that held the
+   * pump's feet, so standing tall gives up least (trim-back's front knee 159° →
+   * 154.5° on the test humanoid).
+   */
+  legEase: 0.025,
+  armReach: 0.97,
   /**
    * The knees standing tall (de Sousa 2022: 150° or more extended): the physics'
    * standing pelvis maps to the hips with both knees at this, so its crouch drop
@@ -49,12 +121,45 @@ export const RIG_DETAIL = {
    */
   standingKnee: 155,
   /**
+   * Standing, the trunk hinges at the hips toward the toes (the riding-body plan,
+   * step 3, from the stance map): until the hips' included angle, the mean of
+   * both, is `tall` standing tall and `deep` at the crouch's full depth, blended
+   * by the depth (Weiss 2025 and SurfDeeper: 130–165° in trim; de Sousa 2022:
+   * 90° or less compressed). The pelvis moves back along the level as the upper
+   * body comes forward, as far as keeps the body's centre of mass where the
+   * unhinged body has it (Winter 2009's segment shares, on the body the legs
+   * and the physics' hands give). At most `hingeMost`°.
+   */
+  hipAngle: { tall: 147.5, deep: 75 },
+  hingeMost: 80,
+  /**
+   * The hinge stops where the trunk is this far, °, from the world's vertical,
+   * the lean into a turn included (the map's Compress: 45–75° read from pictures;
+   * held longer the trunk had folded past horizontal, the head below the hips).
+   */
+  trunkTiltMost: 75,
+  /**
+   * The hinge swings no faster than this, rad/s: a brisk trunk bend. A full
+   * Compress drops the hips in about 0.2 s, a swing of about 2.5 rad/s; faster
+   * is the physics' posture jumping in a step (the body thrown off the board),
+   * which the drawn trunk takes over the next frames.
+   */
+  hingeRate: 4,
+  /**
+   * Turning backside, the trunk bends over the toes no further than this, °, on
+   * the deck, blended in by the turn: the middle of the map's ±20° (Hobgood: the
+   * backside bottom turn rotated with the hips rather than leaning over), the
+   * inside hand reaching the water on the heels' side.
+   */
+  backsideLean: 0,
+  /**
    * Standing, the head looks where the board goes: along its travel, led into a
    * turn by the turn over `lookAhead`, s, within `neckTurn` of the chest, and
    * pitched down the face or up it by the climb against the speed, within
-   * `lookPitch` (de Sousa 2022: the head toward the lip in the bottom turn).
+   * `lookPitch` (de Sousa 2022: the head toward the lip in the bottom turn; the
+   * stance map: 0.4 s left it at 75° from the toes in Compress, the lip within 70°).
    */
-  lookAhead: 0.4,
+  lookAhead: 0.6,
   neckTurn: 80,
   lookPitch: 30,
   /**
@@ -80,23 +185,25 @@ export const RIG_DETAIL = {
   leadReach: 0.9,
   leadRaise: 15,
   armLeadRate: 1.5,
+  /**
+   * The arms' share of the turn (the leading arm's reach, the trailing arm's
+   * swing) follows the turn no faster than this, per second: a full swing in a
+   * quarter second, the pace of the hinge's Compress. Read straight from the yaw
+   * rate the arm whipped 150° in 0.12 s as a weave reversed (step 3's review);
+   * step 4's secondary motion is the fuller answer.
+   */
+  armRate: 4,
   reachBend: 60,
   reachFade: 0.1,
   /**
    * The snap (de Sousa 2022's final phase: the weight to the back foot, the trunk
    * rotating, the chest and the leading arm toward the lip; the stances spec's
-   * video). The weight is where the pelvis sits over the stance, level, as a
-   * share of the stance from its middle: the body rides upright, so riding level
-   * it sits over the middle, with the weight fully back (S) 31 % behind, and
-   * climbing the face nose-up it sits back over the tail whatever the weight
-   * (read along the pitched board, its pitch read as weight: the final review).
-   * From `snapFrom` to `snapFull` the weight goes onto the back foot. In a turn,
+   * video). With the weight back (`stanceBlend.ts`'s `weightBack`), in a turn,
    * blended in as the leading arm is, the chest turns up to `snapTwist`° further
-   * into it and the leading arm rises to `snapRaise`°.
+   * into it (30° left the backside snap's chest facing the toes: the stance map,
+   * Hobgood) and the leading arm rises to `snapRaise`°.
    */
-  snapFrom: -0.05,
-  snapFull: -0.3,
-  snapTwist: 30,
+  snapTwist: 45,
   snapRaise: 60,
   /**
    * The wipeout spec. Ducking, the head tucks down toward the deck and the arms
@@ -153,16 +260,53 @@ export class HumanoidRig {
   private readonly footDrop: number;
   private readonly footRun: number;
   private readonly fingerRests = new Map<Bone, Quaternion>();
+  /** The clavicles' and toes' rest turns against their parents: where they return when not driven. */
+  private readonly localRests = new Map<Bone, Quaternion>();
   /** Standing, how far the weight is back for the snap, 0 to 1, this solve. */
   private back = 0;
+  /** Standing, how far the trunk hinges forward at the hips this solve, rad (step 3), and at which clock. */
+  private hingeAngle = 0;
+  private hingeClock = Number.NaN;
+  /** Standing, the arms' share of the turn this solve, 0 to 1 (`armRate`), and at which clock. */
+  private armTurn = 0;
+  private armClock = Number.NaN;
+  private readonly blend: StanceBlend = { stance: 'regular', depth: 0, turn: 0, back: 0 };
+  /** The skeleton's trunk at rest: the hips bone to the spine's base, the spine's base to the neck, the neck to the head, m. */
+  private readonly spineBase: number;
+  private readonly trunkLength: number;
+  private readonly neckLength: number;
+  private readonly unhinged = { up: new Vector3(), hipsForward: new Vector3(), facing: new Vector3(), hips: new Vector3(), chestUp: new Vector3(), mass: new Vector3() };
+  private readonly mass = {
+    sum: new Vector3(), point: new Vector3(), body: new Vector3(), spine: new Vector3(), neck: new Vector3(), hip: new Vector3(), modelHip: new Vector3(), knee: new Vector3(), ankle: new Vector3(), pole: new Vector3(),
+  };
+  /** Where the knees bend toward standing: the chest's facing before the trunk hinges. */
+  private readonly kneeFacing = new Vector3();
+  private readonly levelForward = new Vector3();
+  /** This solve's ankle targets and knee poles, for the hinge's model (they do not change as the trunk hinges). */
+  private readonly legAim = {
+    ankle: { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>,
+    pole: { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>,
+  };
+  /** How far back the pelvis goes per metre the upper body's swing brings it forward, this solve (fitted once). */
+  private backPerSwing = 0;
+  private readonly legKnee = new Vector3();
+  /** Standing, the free hands' swing (step 4). */
+  private readonly swing: ArmSwing;
+  /** The chest's breathing (step 4), and turning scratch. */
+  private readonly breathing = new Breathing();
+  private readonly turnWorld = new Quaternion();
+  private readonly turnBy = new Quaternion();
+  private readonly turnParent = new Quaternion();
+  private readonly aimFrom = new Vector3();
+  private readonly aimTo = new Vector3();
+  private readonly handHint = new Vector3();
+  private readonly legAnkle = new Vector3();
   // Scratch, one per role so helpers never share one.
   private readonly up = new Vector3();
   private readonly forward = new Vector3();
   private readonly left = new Vector3();
   private readonly boardUp = new Vector3();
   private readonly boardForward = new Vector3();
-  /** The board's forward, level. */
-  private readonly level = new Vector3();
   private readonly chestUp = new Vector3();
   private readonly hipsForward = new Vector3();
   private readonly target = new Vector3();
@@ -205,6 +349,9 @@ export class HumanoidRig {
       capture(BONES.upLeg[side], BONES.leg[side], REST_FORWARD);
       capture(BONES.leg[side], BONES.foot[side], REST_FORWARD);
       capture(BONES.foot[side], BONES.toe[side], REST_UP);
+      capture(BONES.shoulder[side], BONES.arm[side], REST_UP);
+      capture(BONES.toe[side], REST_FORWARD, REST_UP);
+      for (const name of [BONES.shoulder[side], BONES.toe[side]]) this.localRests.set(bones.get(name)!, bones.get(name)!.quaternion.clone());
       // Elbows point backward at rest.
       capture(BONES.arm[side], BONES.foreArm[side], REST_BACK);
       capture(BONES.foreArm[side], BONES.hand[side], REST_BACK);
@@ -229,6 +376,10 @@ export class HumanoidRig {
     const ankle = world(BONES.foot.left);
     const ball = world(BONES.toe.left);
     this.soleHeight = ankle.y;
+    this.spineBase = world(BONES.spine[0]).distanceTo(hips);
+    this.trunkLength = world(BONES.neck).distanceTo(world(BONES.spine[0]));
+    this.swing = new ArmSwing(armPendulum(this.upperArm, this.lowerArm, 0.74 * this.lowerArm), Math.PI);
+    this.neckLength = world(BONES.head).distanceTo(world(BONES.neck));
     this.footDrop = ankle.y - ball.y;
     this.footRun = Math.hypot(ball.x - ankle.x, ball.z - ankle.z);
     this.heelToMidfoot = this.footRun / 2;
@@ -260,14 +411,17 @@ export class HumanoidRig {
     else forward.set(Math.sin(state.heading), 0, Math.cos(state.heading));
     this.perpendicular(forward, up);
     left.crossVectors(up, forward).normalize();
-    this.turnTowardNose(hipsForward.copy(forward), upright ? RIG_DETAIL.hipsTurn : 0);
-    this.turnTowardNose(this.facing.copy(forward), upright ? RIG_DETAIL.chestTurn : 0);
-    this.back = state.phase === 'standing' ? this.weightBack(state) : 0;
+    this.back = state.phase === 'standing' ? state.standingBlend * weightBack(state) : 0;
+    // The trim's opening toward the nose yields to the snap (the weight back in a turn): the shoulders turn with the
+    // turn, either way (step 3; Hobgood, the Bali camp).
+    const snapping = this.back * Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
+    const opening = 1 - snapping;
+    this.turnTowardNose(hipsForward.copy(forward), upright ? RIG_DETAIL.hipsTurn * opening : 0);
+    this.turnTowardNose(this.facing.copy(forward), upright ? RIG_DETAIL.chestTurn * opening : 0);
     if (state.phase === 'standing') {
       const most = (RIG_DETAIL.twistMost * Math.PI) / 180;
-      const snap = this.back * Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
       const twist = state.standingBlend * Math.max(-most, Math.min(most, RIG_DETAIL.twistGain * state.yawRate))
-        + (Math.sign(state.yawRate) * snap * RIG_DETAIL.snapTwist * Math.PI) / 180;
+        + (Math.sign(state.yawRate) * snapping * RIG_DETAIL.snapTwist * Math.PI) / 180;
       this.facing.applyAxisAngle(up, twist);
       hipsForward.applyAxisAngle(up, RIG_DETAIL.hipsTwistShare * twist);
     }
@@ -285,13 +439,25 @@ export class HumanoidRig {
       }
       if (drop > 0) this.placeHips(hipsAt.addScaledVector(up, -drop));
     }
+    this.kneeFacing.copy(this.facing);
+    const hinged = this.hingeAngle;
+    this.hingeAngle = 0;
+    if (state.phase === 'standing' && state.standingBlend > 0) this.hinge(state, hinged);
+    else this.hingeClock = state.clock;
 
     // 3. Spine, neck and head: the chest turns toward the nose, the head looks where the board goes.
     chestUp.subVectors(p[POINT.head], p[POINT.torso]);
     if (chestUp.lengthSq() < 1e-10) chestUp.copy(up);
     chestUp.normalize();
+    if (this.hingeAngle) chestUp.applyAxisAngle(left, this.hingeAngle);
     this.orientSpine(chestUp);
     if (state.phase === 'standing') this.bendToReach(state, chestUp);
+    // The chest breathes: the upper spine turned back (inhaling) and forward about the body's left, half at each bone.
+    const breath = RIG_DETAIL.breath.share * this.breathing.update(state, this.trunkLength / 2);
+    if (breath) {
+      this.turnBone(BONES.spine[1], left, -breath / 2);
+      this.turnBone(BONES.spine[2], left, -breath / 2);
+    }
     this.orient(BONES.neck, chestUp, this.facing);
     if (lying) {
       // Ducking, the head tucks from looking ahead to facing the deck, crown toward the nose.
@@ -303,6 +469,7 @@ export class HumanoidRig {
     else if (upright) this.orient(BONES.head, WORLD_UP, this.hint.copy(boardForward).lerp(this.facing, 0.25));
     else this.orient(BONES.head, chestUp, this.facing);
 
+    this.followArmTurn(state);
     // 4. Arms.
     for (const side of SIDES) {
       const outward = this.scratch.copy(left).multiplyScalar(side === 'left' ? 1 : -1);
@@ -310,16 +477,34 @@ export class HumanoidRig {
       else if (state.phase === 'push') pole.copy(boardForward).negate().addScaledVector(boardUp, 0.3);
       else if (upright) pole.copy(WORLD_UP).multiplyScalar(-RIG_DETAIL.elbowDrop).addScaledVector(this.facing, -RIG_DETAIL.elbowBack);
       else pole.copy(this.facing).negate();
+      // The clavicle at rest against the chest (it follows its arm below, standing): the shoulder read from this solve.
+      this.restLocal(BONES.shoulder[side]);
       const shoulder = this.bones.get(BONES.arm[side])!.getWorldPosition(this.joints.shoulder[side]);
       const hand = p[side === 'left' ? POINT.leftHand : POINT.rightHand];
       if (fallen && state.swim.stroking) this.crawlHand(state, side, shoulder, target);
       else if (fallen) target.subVectors(hand, shoulder).setLength(RIG_DETAIL.fallenReach * this.armLength).add(shoulder);
       else if (state.phase === 'prone' && state.duck > 0.3) this.straightOnRail(hand, shoulder, target);
       else target.copy(hand);
+      if (state.phase === 'standing') this.freeArm(state, side, shoulder, target, 1 - this.reachDepth(hand));
       if (state.phase === 'standing' && !this.isRearFoot(state, side)) this.leadArm(state, shoulder, target, 1 - this.reachDepth(hand));
+      if (state.phase === 'standing') this.driveClavicle(state, side, shoulder, target, chestUp, 1 - this.reachDepth(hand));
+      // A free hand swings with the body; one on a point keeps it, and lying, pushing or fallen the swing rests.
+      if (state.phase === 'standing') {
+        const free = RIG_DETAIL.swing.share * state.standingBlend * (1 - this.reachDepth(hand));
+        this.swing.follow(side, shoulder, target, free, state.clock, (RIG_DETAIL.swing.most * Math.PI) / 180);
+      } else this.swing.still(side, shoulder, state.clock);
       solveTwoBone(shoulder, this.upperArm, this.lowerArm, target, pole, this.joints.elbow[side], this.joints.wrist[side]);
       this.aimLimb(BONES.arm[side], BONES.foreArm[side], shoulder, this.joints.elbow[side], this.joints.wrist[side], pole);
-      this.orient(BONES.hand[side], this.direction.subVectors(this.joints.wrist[side], this.joints.elbow[side]), fallen ? this.facing : boardUp);
+      // The hand's back toward the deck's normal, turning to the chest's facing as the forearm comes along the normal
+      // (a hint along the forearm spun the hand).
+      const forearm = this.direction.subVectors(this.joints.wrist[side], this.joints.elbow[side]).normalize();
+      const handHint = this.handHint.copy(fallen ? this.facing : boardUp);
+      if (!fallen) {
+        const off = this.scratch.copy(boardUp).addScaledVector(forearm, -boardUp.dot(forearm)).length();
+        const keep = Math.min(1, Math.max(0, (off - 0.15) / 0.2));
+        handHint.multiplyScalar(keep).addScaledVector(this.facing, 1 - keep);
+      }
+      this.orient(BONES.hand[side], forearm, handHint);
       const curl = state.phase === 'prone'
         ? RIG_DETAIL.fingerCurlRelaxed + (RIG_DETAIL.fingerCurlStroke - RIG_DETAIL.fingerCurlRelaxed) * state.stroking
         : RIG_DETAIL.fingerCurlRelaxed;
@@ -332,7 +517,7 @@ export class HumanoidRig {
       const foot = p[side === 'left' ? POINT.leftFoot : POINT.rightFoot];
       if (upright) {
         this.ankleTarget(state, side, target);
-        pole.copy(this.facing);
+        pole.copy(this.kneeFacing);
         if (this.isRearFoot(state, side)) pole.addScaledVector(boardForward, RIG_DETAIL.rearKneeIn);
       } else {
         if (fallen) target.subVectors(foot, hip).setLength(RIG_DETAIL.fallenReach * this.legLength).add(hip);
@@ -345,18 +530,260 @@ export class HumanoidRig {
         pole.copy(lying ? this.scratch.copy(boardUp).negate() : this.facing);
       }
       solveTwoBone(hip, this.upperLeg, this.lowerLeg, target, pole, this.joints.knee[side], this.joints.ankle[side]);
+      // The ball, where the flat foot meets the deck ahead of the ankle.
+      const ball = this.pivot;
+      if (upright) {
+        this.footForward(state, side, this.footDirection);
+        ball.copy(target).addScaledVector(this.footDirection, this.footRun).addScaledVector(boardUp, -this.footDrop);
+        // Past the ankle's reach under load the heel lifts, the foot turning about the ball (step 3): the ankle's
+        // flexion is how far the shin has closed on the flat foot from their angle at rest.
+        const shin = this.direction.subVectors(this.joints.knee[side], this.joints.ankle[side]);
+        const foot = this.scratch.subVectors(ball, this.joints.ankle[side]);
+        const flexion = Math.PI / 2 + Math.atan2(this.footDrop, this.footRun) - shin.angleTo(foot);
+        const lift = state.phase === 'standing'
+          ? state.standingBlend * Math.max(0, Math.min(Math.PI / 4, flexion - (RIG_DETAIL.maxDorsiflexion * Math.PI) / 180))
+          : 0;
+        if (lift > 0) {
+          const axis = this.bendAxis.crossVectors(boardUp, this.footDirection).normalize();
+          target.sub(ball).applyAxisAngle(axis, lift).add(ball);
+          solveTwoBone(hip, this.upperLeg, this.lowerLeg, target, pole, this.joints.knee[side], this.joints.ankle[side]);
+        }
+      }
       this.aimLimb(BONES.upLeg[side], BONES.leg[side], hip, this.joints.knee[side], this.joints.ankle[side], pole);
       if (upright) {
-        // The sole flat on the deck: the foot keeps its rest pitch along the stance direction.
-        this.footForward(state, side, this.footDirection);
-        this.direction.copy(this.footDirection).multiplyScalar(this.footRun).addScaledVector(boardUp, -this.footDrop);
-        this.orient(BONES.foot[side], this.direction, boardUp);
+        // The sole on the deck: from the ankle to the ball (its rest pitch standing flat), the toes along the deck.
+        this.orient(BONES.foot[side], this.direction.subVectors(ball, this.joints.ankle[side]), boardUp);
+        this.orient(BONES.toe[side], this.footDirection, boardUp);
       } else {
         // Toes pointed along the shin; lying, the top of the foot faces the deck.
         this.direction.subVectors(this.joints.ankle[side], this.joints.knee[side]);
         this.orient(BONES.foot[side], this.direction, lying ? this.hint.copy(boardUp).negate() : this.facing);
+        this.restLocal(BONES.toe[side]);
       }
     }
+  }
+
+  /**
+   * Standing, hinges the trunk forward at the hips (about the body's left) to the
+   * stance's hip angle (`RIG_DETAIL.hipAngle` by the crouch's depth), the pelvis
+   * moving back along the level so the centre of mass stays, eased in by the
+   * standing blend. Never hinges back: a body already folded further is left.
+   */
+  private hinge(state: RiderVisualState, last: number): void {
+    const { unhinged, levelForward } = this;
+    const { depth } = stanceBlend(state, this.blend);
+    const wanted = RIG_DETAIL.hipAngle.tall + (RIG_DETAIL.hipAngle.deep - RIG_DETAIL.hipAngle.tall) * depth;
+    unhinged.up.copy(this.up);
+    unhinged.hipsForward.copy(this.hipsForward);
+    unhinged.facing.copy(this.facing);
+    this.bones.get(BONES.hips)!.getWorldPosition(unhinged.hips);
+    unhinged.chestUp.subVectors(state.points[POINT.head], state.points[POINT.torso]);
+    if (unhinged.chestUp.lengthSq() < 1e-10) unhinged.chestUp.copy(this.up);
+    unhinged.chestUp.normalize();
+    levelForward.copy(this.forward).setY(0);
+    if (levelForward.lengthSq() < 1e-8) return;
+    levelForward.normalize();
+    for (const side of SIDES) {
+      this.ankleTarget(state, side, this.legAim.ankle[side]);
+      this.legAim.pole[side].copy(this.kneeFacing);
+      if (this.isRearFoot(state, side)) this.legAim.pole[side].addScaledVector(this.boardForward, RIG_DETAIL.rearKneeIn);
+    }
+    this.massAt(state, 0, 0, unhinged.mass);
+    // The pelvis's way back grows with the upper body's swing forward: fitted at one angle, searched on the fit.
+    const probe = 0.6;
+    const swing = this.swingAt(probe);
+    this.backPerSwing = swing > 1e-6 ? this.backForMass(state, probe) / swing : 0;
+    // Backside, the trunk no further over the toes than `backsideLean` on the deck.
+    const toes = this.scratch.set(this.blend.stance === 'regular' ? -1 : 1, 0, 0).applyQuaternion(state.boardQuaternion);
+    const leaning = Math.atan2(unhinged.up.dot(toes), unhinged.up.dot(this.boardUp));
+    const backside = Math.max(0, -this.blend.turn);
+    const allowed = Math.PI / 2 + ((RIG_DETAIL.backsideLean * Math.PI) / 180 - Math.PI / 2) * backside - leaning;
+    // Nor further than keeps the trunk (the model's, between the body's up and the chest's) within `trunkTiltMost` of
+    // the world's vertical, the lean into the turn included.
+    const room = this.tiltRoom(this.aimFrom.copy(unhinged.up).add(unhinged.chestUp).normalize());
+    const most = Math.max(0, Math.min((RIG_DETAIL.hingeMost * Math.PI) / 180, allowed));
+    // The hips close as the trunk hinges, smoothly: regula falsi (Illinois) within [0, most].
+    let angle = 0;
+    let low = 0;
+    let fLow = this.hipsAngleAt(0) - wanted;
+    if (fLow > 0) {
+      let high = most;
+      let fHigh = this.hipsAngleAt(most) - wanted;
+      if (fHigh >= 0) angle = most;
+      else {
+        let side = 0;
+        angle = high;
+        for (let i = 0; i < 8; i += 1) {
+          angle = (low * fHigh - high * fLow) / (fHigh - fLow);
+          const f = this.hipsAngleAt(angle) - wanted;
+          if (Math.abs(f) < 0.05) break;
+          if (f > 0) {
+            low = angle;
+            fLow = f;
+            if (side === -1) fHigh /= 2;
+            side = -1;
+          } else {
+            high = angle;
+            fHigh = f;
+            if (side === 1) fLow /= 2;
+            side = 1;
+          }
+        }
+      }
+    }
+    // No faster than a brisk trunk bend since the last solve; a clock standing still keeps the last (a display frame drawn
+    // twice from one snapshot), a fresh solve takes it all.
+    angle = Math.max(0, Math.min(angle, room));
+    let hinge = angle * state.standingBlend;
+    const dt = state.clock - this.hingeClock;
+    if (dt === 0) hinge = last;
+    else if (dt > 0 && dt < 0.25) hinge = last + Math.max(-RIG_DETAIL.hingeRate * dt, Math.min(RIG_DETAIL.hingeRate * dt, hinge - last));
+    this.hingeClock = state.clock;
+    this.hingeAngle = hinge;
+    this.poseHinge(state, this.hingeAngle, true);
+    // The pelvis gone back may carry the hips past the legs' reach: they come down again, straight down, which leaves
+    // the centre of mass where the hinge kept it.
+    let drop = 0;
+    for (const side of SIDES) {
+      const hip = this.bones.get(BONES.upLeg[side])!.getWorldPosition(this.scratch);
+      drop = Math.max(drop, this.dropToReach(hip, this.legAim.ankle[side], RIG_DETAIL.legReach * this.legLength, WORLD_UP));
+    }
+    if (drop > 0) this.placeHips(this.hipsAt.addScaledVector(WORLD_UP, -drop));
+  }
+
+  /**
+   * How far, rad, the trunk `trunk` may turn forward about the body's left
+   * before it is `trunkTiltMost` from the world's vertical; negative, how far it
+   * is past, turning further over. Turned by θ its height is a·cos θ + b·sin θ + c
+   * (Rodrigues), coming down to the bound at φ + acos. A trunk leaning back
+   * rises as it turns forward (b > 0): its room runs to where it comes down on
+   * the far side; one the turn never brings within the bound is not bounded.
+   */
+  private tiltRoom(trunk: Vector3): number {
+    const { left } = this;
+    const most = (RIG_DETAIL.trunkTiltMost * Math.PI) / 180;
+    const floor = Math.cos(most);
+    const c = left.dot(trunk) * left.y;
+    const a = trunk.y - c;
+    const b = this.aimTo.crossVectors(left, trunk).y;
+    const r = Math.hypot(a, b);
+    if (r < 1e-9 || (floor - c) / r >= 1) return Infinity;
+    if (a + c <= floor && b <= 0) return most - Math.acos(Math.max(-1, Math.min(1, trunk.y)));
+    return Math.atan2(b, a) + Math.acos(Math.max(-1, (floor - c) / r));
+  }
+
+  /**
+   * The arms' share of the turn, by the yaw rate over `armLeadRate`, followed at
+   * `armRate` since the last solve; a clock standing still keeps it, a fresh solve
+   * takes it all.
+   */
+  private followArmTurn(state: RiderVisualState): void {
+    const now = Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
+    const dt = state.clock - this.armClock;
+    const most = RIG_DETAIL.armRate * dt;
+    if (dt > 0 && dt < 0.25) this.armTurn += Math.max(-most, Math.min(most, now - this.armTurn));
+    else if (dt !== 0) this.armTurn = now;
+    this.armClock = state.clock;
+  }
+
+  /** How far the trunk's up swings forward along the level, hinged by `angle`: the pelvis's way back is proportional. */
+  private swingAt(angle: number): number {
+    return this.scratch.copy(this.unhinged.up).applyAxisAngle(this.left, angle).sub(this.unhinged.up).dot(this.levelForward);
+  }
+
+  /** Forgets the last solve's motion: the next hinges, and swings its arms, at once (a new tile of the surfer sheet, a teleport). */
+  reset(): void {
+    this.hingeClock = Number.NaN;
+    this.hingeAngle = 0;
+    this.armClock = Number.NaN;
+    this.swing.reset();
+    this.breathing.reset();
+    this.armTurn = 0;
+  }
+
+  /**
+   * Poses the hips and the trunk's frame hinged by `angle`, rad, the pelvis back
+   * as far as keeps the centre of mass (`exact`: solved; else from the fit).
+   */
+  private poseHinge(state: RiderVisualState, angle: number, exact = false): void {
+    const { unhinged, left, levelForward } = this;
+    this.up.copy(unhinged.up).applyAxisAngle(left, angle);
+    this.hipsForward.copy(unhinged.hipsForward).applyAxisAngle(left, angle);
+    this.facing.copy(unhinged.facing).applyAxisAngle(left, angle);
+    const back = angle <= 0 ? 0 : exact ? this.backForMass(state, angle) : this.backPerSwing * this.swingAt(angle);
+    this.placeHips(this.hipsAt.copy(unhinged.hips).addScaledVector(levelForward, -back));
+  }
+
+  /** How far back along the level the pelvis goes, m, for the body hinged by `angle` to keep its centre of mass (a secant search). */
+  private backForMass(state: RiderVisualState, angle: number): number {
+    const miss = (back: number) => this.scratch.subVectors(this.massAt(state, angle, back, this.middle), this.unhinged.mass).dot(this.levelForward);
+    let a = 0;
+    let fa = miss(a);
+    let b = 0.1;
+    let fb = miss(b);
+    for (let i = 0; i < 3 && Math.abs(fb) > 1e-4 && fb !== fa; i += 1) {
+      const next = b - (fb * (b - a)) / (fb - fa);
+      a = b;
+      fa = fb;
+      b = Math.max(0, Math.min(0.5, next));
+      fb = miss(b);
+    }
+    return b;
+  }
+
+  /**
+   * The body's centre of mass, hinged by `angle` with the pelvis `back` m along
+   * the level, from the skeleton's lengths, the legs' reach to their ankles and
+   * the physics' hands (Winter 2009's segment shares), into `out`. A model of the
+   * body the solve will draw, before it draws it.
+   */
+  private massAt(state: RiderVisualState, angle: number, back: number, out: Vector3): Vector3 {
+    const { unhinged, left, mass } = this;
+    const up = this.hint.copy(unhinged.up).applyAxisAngle(left, angle);
+    const chestUp = this.pole2.copy(unhinged.chestUp).applyAxisAngle(left, angle);
+    const hips = mass.body.copy(unhinged.hips).addScaledVector(this.levelForward, -back);
+    const sum = mass.sum.set(0, 0, 0);
+    let total = 0;
+    const add = (share: number, point: Vector3) => {
+      sum.addScaledVector(point, share);
+      total += share;
+    };
+    const spine = mass.spine.copy(hips).addScaledVector(up, this.spineBase);
+    const neck = mass.neck.copy(chestUp).add(up).normalize().multiplyScalar(this.trunkLength).add(spine);
+    add(0.081, this.direction.copy(neck).addScaledVector(chestUp, this.neckLength));
+    add(0.355, this.direction.copy(spine).add(neck).multiplyScalar(0.5));
+    for (const side of SIDES) {
+      const hip = mass.modelHip.copy(hips).addScaledVector(up, -this.hipDrop).addScaledVector(left, side === 'left' ? this.hipHalfWidth : -this.hipHalfWidth);
+      add(0.071, hip);
+      mass.ankle.copy(this.legAim.ankle[side]);
+      solveTwoBone(hip, this.upperLeg, this.lowerLeg, mass.ankle, this.legAim.pole[side], mass.knee, this.legAnkle);
+      add(0.1, this.direction.copy(hip).add(mass.knee).multiplyScalar(0.5));
+      add(0.0465, this.direction.copy(mass.knee).add(mass.ankle).multiplyScalar(0.5));
+      add(0.0145, mass.ankle);
+      // An arm from its shoulder (about the neck) to the physics' hand.
+      add(0.05, this.direction.copy(neck).add(state.points[side === 'left' ? POINT.leftHand : POINT.rightHand]).multiplyScalar(0.5));
+    }
+    return out.copy(sum).divideScalar(total);
+  }
+
+  /**
+   * The hips' mean included angle, degrees, with the trunk hinged by `angle`: the
+   * trunk against each thigh the legs would take, on the body's model (the
+   * bones are placed once, for the angle found).
+   */
+  private hipsAngleAt(angle: number): number {
+    const { unhinged, left, mass } = this;
+    const up = this.chestBase.copy(unhinged.up).applyAxisAngle(left, angle);
+    const back = this.backPerSwing * this.swingAt(angle);
+    const hips = mass.point.copy(unhinged.hips).addScaledVector(this.levelForward, -back);
+    let sum = 0;
+    for (const side of SIDES) {
+      const hip = mass.hip.copy(hips).addScaledVector(up, -this.hipDrop).addScaledVector(left, side === 'left' ? this.hipHalfWidth : -this.hipHalfWidth);
+      solveTwoBone(hip, this.upperLeg, this.lowerLeg, this.legAim.ankle[side], this.legAim.pole[side], this.legKnee, this.legAnkle);
+      const thigh = this.legKnee.sub(hip);
+      sum += (Math.atan2(this.scratch.crossVectors(up, thigh).length(), up.dot(thigh)) * 180) / Math.PI;
+    }
+    return sum / SIDES.length;
   }
 
   /** The spine from the hips' up to `chestUp`, turning from the hips' facing to the chest's. */
@@ -388,7 +815,7 @@ export class HumanoidRig {
     const { bendAxis, pivot, middle } = this;
     if (state.standingBlend <= 0) return;
     this.bones.get(BONES.hips)!.getWorldPosition(pivot);
-    const reach = RIG_DETAIL.legReach * this.armLength;
+    const reach = RIG_DETAIL.armReach * this.armLength;
     // The reaching hand farthest out of reach, weighed by how far it reaches down.
     let side: Side | undefined;
     let short = 0;
@@ -442,31 +869,99 @@ export class HumanoidRig {
     if (total > 0 && eased < 1) this.orientSpine(chestUp.copy(base).applyAxisAngle(bendAxis, eased * total));
   }
 
-  /** Standing, how far the weight is back (`RIG_DETAIL.snapFrom`): where the pelvis sits over the stance, level, 0 to 1. */
-  private weightBack(state: RiderVisualState): number {
-    const p = state.points;
-    const f = this.level.copy(this.boardForward).setY(0);
-    if (f.lengthSq() < 1e-8) return 0;
-    f.normalize();
-    const left = p[POINT.leftFoot].dot(f);
-    const right = p[POINT.rightFoot].dot(f);
-    const span = Math.abs(left - right);
-    if (span < 1e-3) return 0;
-    const ahead = (p[POINT.pelvis].dot(f) - (left + right) / 2) / span;
-    return state.standingBlend * Math.max(0, Math.min(1, (RIG_DETAIL.snapFrom - ahead) / (RIG_DETAIL.snapFrom - RIG_DETAIL.snapFull)));
-  }
-
   /**
    * Standing, the leading arm reaching where the head looks, blended in by the
    * turn, raised with the weight back; `share` of it, handing over to a hand
    * reaching down.
    */
   private leadArm(state: RiderVisualState, shoulder: Vector3, target: Vector3, share: number): void {
-    const weight = share * state.standingBlend * Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
+    const weight = share * state.standingBlend * this.armTurn;
     if (weight <= 0) return;
     const raise = ((RIG_DETAIL.leadRaise + (RIG_DETAIL.snapRaise - RIG_DETAIL.leadRaise) * this.back) * Math.PI) / 180;
     const aim = this.pole2.copy(this.look).multiplyScalar(Math.cos(raise)).addScaledVector(WORLD_UP, Math.sin(raise)).normalize();
-    target.lerp(this.direction.copy(shoulder).addScaledVector(aim, RIG_DETAIL.leadReach * this.armLength), weight);
+    this.blendAim(shoulder, target, this.direction.copy(shoulder).addScaledVector(aim, RIG_DETAIL.leadReach * this.armLength), weight);
+  }
+
+  /**
+   * Blends a hand's target about its shoulder toward `toward` by `weight`: its
+   * direction turned the short way and its reach eased, within the arm's reach
+   * (a straight line between two targets passes inside it and folds the elbow).
+   */
+  private blendAim(shoulder: Vector3, target: Vector3, toward: Vector3, weight: number): void {
+    const from = this.aimFrom.subVectors(target, shoulder);
+    const to = this.aimTo.subVectors(toward, shoulder);
+    const reach = Math.min(RIG_DETAIL.armReach * this.armLength, from.length() + (to.length() - from.length()) * weight);
+    const angle = from.angleTo(to);
+    if (from.lengthSq() < 1e-12 || to.lengthSq() < 1e-12 || angle > Math.PI - 1e-3) {
+      target.lerp(toward, weight);
+      return;
+    }
+    from.normalize();
+    to.normalize();
+    if (angle > 1e-6) {
+      const s = Math.sin(angle);
+      from.multiplyScalar(Math.sin((1 - weight) * angle) / s).addScaledVector(to, Math.sin(weight * angle) / s);
+    }
+    target.copy(shoulder).addScaledVector(from.normalize(), reach);
+  }
+
+  /**
+   * Standing, turns a clavicle with its arm (`RIG_DETAIL.clavicle`): up toward the
+   * chest's up with the arm's rise above `from`, forward with its reach forward;
+   * moves `shoulder` with it.
+   */
+  private driveClavicle(state: RiderVisualState, side: Side, shoulder: Vector3, target: Vector3, chestUp: Vector3, free: number): void {
+    const { clavicle } = RIG_DETAIL;
+    const share = clavicle.share * state.standingBlend;
+    if (share <= 0) return;
+    const bone = this.bones.get(BONES.shoulder[side])!;
+    const reach = this.direction.subVectors(target, shoulder);
+    if (reach.lengthSq() < 1e-8) return;
+    reach.normalize();
+    const rise = Math.atan2(this.scratch.crossVectors(reach, this.up).length(), -reach.dot(this.up));
+    const lift = share * clavicle.ratio * Math.max(0, rise - (clavicle.from * Math.PI) / 180);
+    const swing = (share * clavicle.protract * Math.PI * Math.max(0, reach.dot(this.facing))) / 180;
+    if (lift <= 0 && swing <= 0) return;
+    const along = this.hint.subVectors(shoulder, bone.getWorldPosition(this.chestBase)).normalize();
+    const toward = (direction: Vector3, angle: number) => {
+      const perpendicular = this.bendAxis.copy(direction).addScaledVector(along, -direction.dot(along));
+      if (perpendicular.lengthSq() < 1e-8) return;
+      along.multiplyScalar(Math.cos(angle)).addScaledVector(perpendicular.normalize(), Math.sin(angle));
+    };
+    toward(chestUp, lift);
+    toward(this.facing, swing);
+    this.orient(BONES.shoulder[side], along, chestUp);
+    bone.updateMatrixWorld(true);
+    // A free hand goes where its shoulder goes (its target was set from the shoulder); a hand holding a point stays.
+    const before = this.middle.copy(shoulder);
+    this.bones.get(BONES.arm[side])!.getWorldPosition(shoulder);
+    target.addScaledVector(before.sub(shoulder).negate(), free);
+  }
+
+  /**
+   * Standing, a free arm toward the stance's shape (`RIG_DETAIL.arms`): the
+   * hand's target raised to the stance's elevation from the trunk's down, at the
+   * reach of a soft elbow, about the trunk as the physics' hand is; `share` of
+   * it, none for a hand reaching down.
+   */
+  private freeArm(state: RiderVisualState, side: Side, shoulder: Vector3, target: Vector3, share: number): void {
+    const { arms } = RIG_DETAIL;
+    const weight = arms.share * share * state.standingBlend;
+    if (weight <= 0) return;
+    const down = this.bend.copy(this.up).negate();
+    // The physics' hand's heading about the trunk: its direction from the shoulder, off the trunk's axis.
+    const out = this.nose.subVectors(target, shoulder).addScaledVector(down, -this.scratch.subVectors(target, shoulder).dot(down));
+    if (out.lengthSq() < 1e-8) return;
+    out.normalize();
+    let degrees = arms.elevationTall + (arms.elevationDeep - arms.elevationTall) * this.blend.depth;
+    // In a snap the trailing arm swings up, as the weight goes back in the turn.
+    if (this.isRearFoot(state, side)) degrees += (arms.snapSwing - degrees) * this.back * this.armTurn;
+    // The elevation is the upper arm's: the wrist aims above it by the soft elbow's half bend.
+    const elevation = ((degrees + (180 - arms.elbow) / 2) * Math.PI) / 180;
+    const elbow = (arms.elbow * Math.PI) / 180;
+    const reach = Math.sqrt(this.upperArm ** 2 + this.lowerArm ** 2 - 2 * this.upperArm * this.lowerArm * Math.cos(elbow));
+    const aim = this.direction.copy(down).multiplyScalar(Math.cos(elevation)).addScaledVector(out, Math.sin(elevation));
+    this.blendAim(shoulder, target, this.middle.copy(shoulder).addScaledVector(aim, reach), weight);
   }
 
   /** Standing, the head along the board's travel led into the turn, within the neck's reach, pitched with the climb. */
@@ -530,6 +1025,15 @@ export class HumanoidRig {
     return out.copy(hand).addScaledVector(this.boardForward, t);
   }
 
+  /** Turns a bone by `angle` rad about the world's `axis`, its children with it. */
+  private turnBone(name: string, axis: Vector3, angle: number): void {
+    const bone = this.bones.get(name)!;
+    const world = bone.getWorldQuaternion(this.turnWorld);
+    const turned = this.turnBy.setFromAxisAngle(axis, angle).multiply(world);
+    bone.quaternion.copy(bone.parent!.getWorldQuaternion(this.turnParent).invert().multiply(turned));
+    bone.updateMatrixWorld(true);
+  }
+
   private orient(name: string, direction: Vector3, hint: Vector3): void {
     const rest = this.rest.get(name)!;
     orientBone(rest.bone, rest.axis, rest.hint, direction, hint);
@@ -585,13 +1089,18 @@ export class HumanoidRig {
     return height / SIDES.length - (STANDING_PELVIS - this.soleHeight);
   }
 
-  /** How far the hips must come down along the body's up for a hip to be `reach` from its ankle target. */
-  private dropToReach(hip: Vector3, target: Vector3, reach: number): number {
+  /**
+   * How far the hips must come down along `axis` (the body's up) for a hip to be
+   * within `reach` of its ankle target, the leg's stretch brought under `reach`
+   * smoothly (`softCap` over `legEase` of the leg's length).
+   */
+  private dropToReach(hip: Vector3, target: Vector3, reach: number, axis: Vector3 = this.up): number {
     const offset = this.middle.subVectors(hip, target);
-    const distanceSq = offset.lengthSq();
-    if (distanceSq <= reach * reach) return 0;
-    const along = offset.dot(this.up);
-    const discriminant = along * along - (distanceSq - reach * reach);
+    const distance = offset.length();
+    const wanted = softCap(distance, reach, RIG_DETAIL.legEase * this.legLength);
+    if (wanted >= distance) return 0;
+    const along = offset.dot(axis);
+    const discriminant = along * along - (distance * distance - wanted * wanted);
     return Math.max(0, discriminant >= 0 ? along - Math.sqrt(discriminant) : along);
   }
 
@@ -625,6 +1134,13 @@ export class HumanoidRig {
     if (bend.lengthSq() < 1e-10) bend.copy(pole);
     this.orient(upperName, this.direction.subVectors(mid, root), bend);
     this.orient(lowerName, this.direction.subVectors(end, mid), bend);
+  }
+
+  /** Returns a bone to its rest turn against its parent (a clavicle or toes not driven this solve). */
+  private restLocal(name: string): void {
+    const bone = this.bones.get(name)!;
+    bone.quaternion.copy(this.localRests.get(bone)!);
+    bone.updateMatrixWorld(true);
   }
 
   /** Curls each finger joint by `degrees` about its local x axis from its rest. */

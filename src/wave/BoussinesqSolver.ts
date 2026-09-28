@@ -229,6 +229,8 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     if (this.dispersive) {
       this.predictorX = make();
       this.predictorZ = make();
+      // `advance` updates the mask before the predictor reads it.
+      this.predictorMask = this.mask;
     }
   }
 

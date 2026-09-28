@@ -1,5 +1,5 @@
 import { Quaternion } from 'three';
-import { RIDER_SNAPSHOT } from '../wave/SurfZoneRunner';
+import { RIDER_PHASES, RIDER_SNAPSHOT } from '../wave/SurfZoneRunner';
 
 /** The physics' fixed step, s (`SURF_ZONE_STEP`). */
 const STEP = 1 / 60;
@@ -12,6 +12,7 @@ const CATCH_UP = 0.1;
 const SNAP_GAP = 4 * STEP;
 /** Neighbours whose boards are this far apart, m, are a teleport (a retry, a placement), never blended across. */
 const TELEPORT = 2;
+const FALLEN = RIDER_PHASES.indexOf('fallen');
 
 /** The rider's fields that blend between snapshots; every other field is taken from the nearer one. */
 const BLENDED = [
@@ -93,6 +94,20 @@ export class SnapshotTrack {
       // Never swept across: the newer is drawn.
       outRider.set(b.rider);
       outBoard.set(b.board);
+      return this.renderTime;
+    }
+    if ((a.rider[RIDER_SNAPSHOT.phase] === FALLEN) !== (b.rider[RIDER_SNAPSHOT.phase] === FALLEN)) {
+      // Across the fall a rider's points change meaning (the hands' and feet's tips, then the limbs' centres): never
+      // blended, the nearer's are drawn, carried along with the board as it glides on, and the smoothing layer takes
+      // the switch.
+      const near = t < 0.5 ? a : b;
+      outRider.set(near.rider);
+      outBoard.set(near.board);
+      for (let i = 0; i < 3; i += 1) outBoard[i] = a.board[i] + (b.board[i] - a.board[i]) * t;
+      qa.fromArray(a.board, 3).slerp(qb.fromArray(b.board, 3), t).toArray(outBoard, 3);
+      for (let point = 0; point < 7; point += 1) {
+        for (let i = 0; i < 3; i += 1) outRider[RIDER_SNAPSHOT.points + point * 3 + i] += outBoard[i] - near.board[i];
+      }
       return this.renderTime;
     }
     outRider.set(t < 0.5 ? a.rider : b.rider);
