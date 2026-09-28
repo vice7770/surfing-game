@@ -78,11 +78,13 @@ const startRide = devFlag('physical') || demoMode !== null;
 const recordRequested = devFlag('record');
 /** `?waterSheet`: a dev tool renders fixed water shots, Classic beside Rich, under each sky (src/dev/waterSheet.ts; G8). */
 const waterSheetRequested = devFlag('waterSheet');
+/** `?waterSheet&compute=gpu` (or `auto`): the sheet's sea steps in the worker, on the GPU as the game's does, even beside `inpage`. */
+const waterSheetOnDevice = waterSheetRequested && ['gpu', 'auto'].includes(devParam('compute') ?? '');
 /**
  * The surf zone runs in a Web Worker (plan §3.2, P4a); `?inpage`, or a browser
  * without workers, runs it on the main thread instead.
  */
-const inPage = typeof Worker === 'undefined' || devFlag('inpage');
+const inPage = typeof Worker === 'undefined' || (devFlag('inpage') && !waterSheetOnDevice);
 /** A surf zone with a rider the player controls, or none (the menu's waves, plan P8). */
 function surfZoneFactory(rider: boolean, stance: StanceName): SurfZoneHostFactory {
   // `?renderSpacing=0.5` draws the water on a finer grid, for close recordings (dev flag).
@@ -278,8 +280,9 @@ class SurfGame {
    */
   get recording() {
     return {
-      start: async (settings: PhysicalSettings) => {
-        await this.startPhysical(this.seed, settings);
+      /** `overrides` fix the sea (the water sheet's GPU tier takes the GPU tier's components whatever the graphics preset). */
+      start: async (settings: PhysicalSettings, overrides?: Partial<SurfZoneConfig>) => {
+        await this.startPhysical(this.seed, settings, overrides ? { overrides } : {});
         getElement<HTMLElement>('#loading').classList.add('is-hidden');
       },
       step: (input: { paddle: boolean; popUp: boolean; steer: number }) => this.physicalMode.advance(1, input),
