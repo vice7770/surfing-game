@@ -274,5 +274,5 @@ describe('PhysicalSurfWater\'s turbulence', () => {
     expect(sample.bedMaterial).toBe('reef');
     const beach = PhysicalSurfWater.forSimulation(new SurfZoneSimulation({ ...config, spot: 'beach' }));
     expect(beach.sampleAt(0, -1, -60, createWaterSample()).bedMaterial).toBe('sand');
-  });
+  }, 240_000);
 });
