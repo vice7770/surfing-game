@@ -502,7 +502,7 @@ function minimumJerkRate(s: number): number {
 }
 
 /** Why a rider left the board: tipped off its support, slipped, lost the board, or buckled under load. */
-export type RiderSeparation = 'balance' | 'foot slip' | 'lost board' | 'impact';
+export type RiderSeparation = 'balance' | 'foot slip' | 'lost board' | 'impact' | 'reef';
 
 /** Which limit last bound the contact impulse. */
 type ContactLimit = 'none' | 'flight' | 'tip' | 'slip' | 'impact';
@@ -1867,6 +1867,11 @@ export class AttachedRider {
       if (this.limitTime[limit] > this.limitTime[best]) best = limit;
     }
     return best;
+  }
+
+  /** Name a separation by what it came with (a strike on the reef, the Teahupo'o Reef's Part C); only once separated. */
+  relabelSeparation(cause: RiderSeparation): void {
+    if (!this.attached) this.separation = cause;
   }
 
   private separate(cause: RiderSeparation): void {

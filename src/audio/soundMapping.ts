@@ -82,6 +82,8 @@ interface Impulse {
   id: OneShotId;
   key: string;
   amount: number;
+  /** A lip crash's own lip: the water its jet threw, m³ (the Teahupo'o Reef, Part C). */
+  size?: number;
   x: number;
   y: number;
   z: number;
@@ -90,6 +92,8 @@ interface Impulse {
 interface Gathered {
   id: OneShotId;
   amount: number;
+  /** The biggest lip gathered, m³. */
+  size: number;
   /** Amount-weighted sums of the places and of the weights, so a crash sounds from where most of its water landed. */
   w: number;
   wx: number;
@@ -110,9 +114,10 @@ export class OneShotShaper {
   release(impulses: readonly Impulse[], dt: number): Gathered[] {
     this.clock += dt;
     for (const impulse of impulses) {
-      const gathered = this.pending.get(impulse.key) ?? { id: impulse.id, amount: 0, w: 0, wx: 0, wy: 0, wz: 0 };
+      const gathered = this.pending.get(impulse.key) ?? { id: impulse.id, amount: 0, size: 0, w: 0, wx: 0, wy: 0, wz: 0 };
       const weight = Math.max(impulse.amount, 1e-9);
       gathered.amount += impulse.amount;
+      gathered.size = Math.max(gathered.size, impulse.size ?? 0);
       gathered.w += weight;
       gathered.wx += impulse.x * weight;
       gathered.wy += impulse.y * weight;
@@ -163,6 +168,20 @@ const PAUSED_MUFFLE = 0.85;
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 const decibelsLike = (value: number, reference: number, decades: number) => clamp01(Math.log10(1 + Math.max(0, value) / reference) / decades);
+
+/**
+ * A crash's pitch falls as its lip grows (the Teahupo'o Reef, Part C). A bubble rings at a frequency inversely
+ * proportional to its radius (Minnaert 1933), and a lip's trapped air scales with its water V, so the playback rate
+ * goes as V^(−1/3) from the reference down, no lower than an octave. The reference sits above a Practice lip at
+ * every spot, so only heavy lips deepen (reference and floor provisional).
+ */
+export const CRASH_SIZE_REFERENCE = 2;
+export const CRASH_RATE_MIN = 0.5;
+
+function crashRate(gathered: Gathered): number {
+  if (gathered.id !== 'lipJet' && gathered.id !== 'lipRoller') return 1;
+  return Math.min(1, Math.max(CRASH_RATE_MIN, Math.cbrt(CRASH_SIZE_REFERENCE / Math.max(gathered.size, 1e-9))));
+}
 
 /** The impulse's loudness: lip crashes by their energy (volume × speed²), strokes by their work, the plunge by the speed. */
 function impulseGain(id: OneShotId, amount: number): number {
@@ -219,8 +238,9 @@ export function soundTargets(frame: SoundFrame, shaper = new OneShotShaper()): S
       const z = frame.lipHits[o + 1];
       const volume = frame.lipHits[o + 2];
       const impact = frame.lipHits[o + 3];
+      const lip = frame.lipHits[o + 4];
       const id: OneShotId = impact >= JET_SPEED ? 'lipJet' : 'lipRoller';
-      impulses.push({ id, key: `${id}:${Math.round(x / PLACE)}:${Math.round(z / PLACE)}`, amount: volume * impact * impact, x, y: 0, z });
+      impulses.push({ id, key: `${id}:${Math.round(x / PLACE)}:${Math.round(z / PLACE)}`, amount: volume * impact * impact, size: lip, x, y: 0, z });
     }
     for (let i = 0; i < frame.strokeHitCount; i += 1) {
       const o = i * STROKE_HIT_STRIDE;
@@ -240,7 +260,7 @@ export function soundTargets(frame: SoundFrame, shaper = new OneShotShaper()): S
     }
     for (const gathered of shaper.release(impulses, frame.dt)) {
       oneShots.push({
-        id: gathered.id, rate: 1,
+        id: gathered.id, rate: crashRate(gathered),
         gain: impulseGain(gathered.id, gathered.amount),
         position: { x: gathered.wx / gathered.w, y: gathered.wy / gathered.w, z: gathered.wz / gathered.w },
       });

@@ -383,6 +383,7 @@ export const EN = {
   'ride.reason.footSlip': 'Feet slipped',
   'ride.reason.lostBoard': 'Lost the board',
   'ride.reason.impact': 'Hit by the lip',
+  'ride.reason.reef': 'Hit the reef',
   'ride.reason.retry': 'Paddled back out',
   'ride.reason.outOfWave': 'Rode it out',
   'ride.reason.lostFace': 'The wave moved on',

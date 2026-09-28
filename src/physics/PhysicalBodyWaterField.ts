@@ -1,4 +1,4 @@
-import type { Vector3 } from 'three';
+import { Vector3 } from 'three';
 import type { BodyWaterField, BodyWaterSample } from './DetachedSurfer';
 import type { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
 
@@ -40,6 +40,8 @@ export class PhysicalBodyWaterField implements BodyWaterField {
     out.flow.set(0, 0, 0);
     out.breaking = 0;
     out.wet = false;
+    out.bedNormal = (out.bedNormal ?? new Vector3()).set(0, 1, 0);
+    out.bedMaterial = 'sand';
     if (outside) {
       out.surfaceY = 0;
       out.bedY = -Infinity;
@@ -49,6 +51,13 @@ export class PhysicalBodyWaterField implements BodyWaterField {
 
     const depth = Math.max(0, solver.sampleCentered(solver.h, x, z));
     out.bedY = this.simulation.bedAt(x, z);
+    // The bed's normal across half a cell each way, as the board's water gives it (the Teahupo'o Reef, Part C).
+    const half = 0.5 * solver.dx;
+    out.bedNormal.set(
+      -(this.simulation.bedAt(x + half, z) - this.simulation.bedAt(x - half, z)) / (2 * half), 1,
+      -(this.simulation.bedAt(x, z + half) - this.simulation.bedAt(x, z - half)) / (2 * half),
+    ).normalize();
+    out.bedMaterial = this.simulation.spot.materialAt?.(x, z) ?? 'sand';
     out.surfaceY = out.bedY + depth;
     out.wet = depth > MIN_WET_DEPTH;
     if (!out.wet) {
