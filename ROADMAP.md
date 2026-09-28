@@ -514,7 +514,7 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
   - Short records mislead: judge heights against the input sea over the same ≥300 s record.
 - **Part C** (a size sheet, the camera) follows.
 
-### P1 · Teahupo'o Reef — `Part A merged (#54); Part B in review (PR); Parts C–D next`
+### P1 · Teahupo'o Reef — `Parts A (#54) and B (#57) merged; Part C in review (PR); Part D next`
 
 Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers/specs/2026-09-27-teahupoo-reef.md); [Part A plan](docs/superpowers/plans/2026-09-27-teahupoo-reef-part-a.md); [Part B plan](docs/superpowers/plans/2026-09-28-teahupoo-reef-part-b.md). The A-frame Reef becomes a Teahupo'o-style heavy left: sourced thick lips and round tubes, a solid reef, and P12 tube riding brought ahead of P11.
 - [x] **Part A · the bed and its peel** (merged as #54):
@@ -536,7 +536,7 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - the Reef's faces calibrated on the size report (Practice 1.5–2 up to Big 5–6 m), held until the side feed (`claude/side-feed`) lands and its forecast refitted;
     - the Big swell running up the pass's steep beach face at up to 26 m/s (the pass should end in a lagoon; Part C);
     - the user's look.
-- [ ] **Part B · slab tube physics** (branch `claude/teahupoo-reef-b`, [report](docs/research/teahupoo-reef-report.md#part-b-slab-tubes)):
+- [x] **Part B · slab tube physics** (merged as #57, [report](docs/research/teahupoo-reef-report.md#part-b-slab-tubes)):
   - **A reef break's tube** (a break over a submerged crest, ξ ≥ 0.4) follows Mead & Black's (2001) vortex ratio for the gradient it climbs:
     - the gradient is measured their way, along its travel across the breaking depth ± 2.5 m;
     - the ratio is held within the 1.42–3.43 they measured;
@@ -558,7 +558,17 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - validating the water against the open Teahupo'o lab dataset (download needs the user's OK);
     - peel against makeability before Part D (the user's call);
     - dispersion across a lip's landing bore (split out).
-- [ ] **Part C · the look, the sound and a solid reef:** the lip's glow, the step, the coral, spit, the section collapsing as one, the impact sound, and "hit the reef". The tube's look waits for the swept overturn surface that replaces the lip strips and carved void (the user's decision, 2026-09-28; the Padang Padang work builds it first).
+- [ ] **Part C · the look, the sound and a solid reef** (branch `claude/teahupoo-reef-c`, [plan](docs/superpowers/plans/2026-09-28-teahupoo-reef-part-c.md), [report](docs/research/teahupoo-reef-report.md#part-c-the-solid-reef-the-lagoon-the-crash)):
+  - **Done:**
+    - the reef is solid: the board and the body meet it along the bed's own normal, and wet reef grips harder than sand (0.8 against 0.6, provisional);
+    - a fall that comes as the board strikes the reef ends the ride "Hit the reef";
+    - the pass and inner reef end in a lagoon, with the Teahupo'o model's 1:9.64 inland slope in place of the 1:5 face the Big swell ran up;
+    - a bigger lip's crash sounds deeper (Minnaert's resonance).
+  - **Waiting:**
+    - the lip's glow, the spit and the section collapsing as one wait for the swept overturn surface that replaces the lip strips and carved void (the user's decision, 2026-09-28; the Padang Padang work builds it first);
+    - the step and the coral wait for the coral textures (download approval);
+    - the lagoon's depth and the flat's width wait for the lab profile (download approval).
+  - **Open:** the film beside the reference, and the user's look.
 - [ ] **Part D · tube riding (P12):** rail grab, the tube camera, the foam ball and spit on the rider, and the Surf School Tube lesson. Waits on Compress, Regular/Goofy and the take-off (PR #43). Its contact with the swept surface is agreed with the Padang Padang session: the mouth, pocket depth, face normal and velocity, clearance, foam ball and spit forces.
 
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
