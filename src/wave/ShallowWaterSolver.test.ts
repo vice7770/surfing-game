@@ -1,12 +1,31 @@
 import { describe, expect, it } from 'vitest';
 import { createSpot } from './Bathymetry';
 import { ShallowWaterSolver, cflSubsteps, stretchedEdges, uniformEdges } from './ShallowWaterSolver';
-import { longWaveTarget } from './shallowWaterTestSupport';
+import { calmTarget, longWaveTarget } from './shallowWaterTestSupport';
 
 // Stoker's wet-bed dam break for 2.0 m → 0.5 m (computed by bisection on the Riemann invariants).
 const STOKER = { left: 2, right: 0.5, middle: 1.1035, shockSpeed: 4.1663, tailSpeed: -1.0116 };
 
 describe('ShallowWaterSolver', () => {
+  it('relaxes toward the rest level, never below half the still depth, carrying the target\'s flow in the water the cell holds (wave sizes)', () => {
+    const grid = { nx: 4, xMin: 0, dx: 1, zEdges: uniformEdges(0, 10, 10), xBoundary: 'periodic' as const };
+    // At +1 m tide the zones held the water at the tide-0 level, and the tank drained out through them.
+    const tide = new ShallowWaterSolver(grid, () => 6, { waterLevel: 1, manning: 0 });
+    tide.addRelaxationZone({ weights: new Float64Array(40).fill(1), target: calmTarget });
+    tide.step(1e-3);
+    for (let i = 0; i < 40; i += 1) expect(tide.surfaceAt(i)).toBeCloseTo(1, 6);
+    // A linear trough that empties the cell, with a flux far too fast for what is left: a fed sea at the break ran a
+    // nearly dry edge cell to 300 m/s. The cell keeps half its still depth, and its flow the long-wave speed.
+    const thin = new ShallowWaterSolver(grid, () => 6, { manning: 0 });
+    thin.addRelaxationZone({ weights: new Float64Array(40).fill(0.5), target: (_x, _z, _t, out) => { out.eta = -5.95; out.qx = 30; out.qz = 0; } });
+    for (let step = 0; step < 20; step += 1) thin.step(1e-3);
+    for (let i = 0; i < 40; i += 1) {
+      expect(thin.h[i]).toBeGreaterThanOrEqual(3 - 1e-9);
+      // Within the solver step's own motion between blends.
+      expect(Math.abs(thin.qx[i]) / thin.h[i]).toBeLessThanOrEqual(1.001 * Math.sqrt(9.81 * thin.h[i]));
+    }
+  });
+
   it('keeps a lake at rest over every spot, including its dry shoreline', () => {
     for (const name of ['beach', 'point', 'reef', 'canyon'] as const) {
       const spot = createSpot(name, 1);

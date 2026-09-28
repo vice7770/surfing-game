@@ -1,4 +1,5 @@
 import { MADSEN_SORENSEN_B } from '../BoussinesqSolver';
+import { SEA_DEPTH_FLOOR } from '../ShallowWaterSolver';
 
 /**
  * WGSL for the stage 2 step on the GPU (plan P6). Every kernel mirrors the CPU
@@ -54,6 +55,7 @@ const OPEN: u32 = 2u;
 const ALPHA: f32 = ${f(ALPHA)};
 const BCOEF: f32 = ${f(B)};
 const DISPERSIVE_DEPTH: f32 = 0.05;
+const SEA_DEPTH_FLOOR: f32 = ${f(SEA_DEPTH_FLOOR)};
 const SWITCH_RATIO: f32 = 0.8;
 const BREAKING_DEPTH: f32 = 0.05;
 const MAX_EDDY: f32 = 0.3;
@@ -570,6 +572,25 @@ fn secondXAtZ(ix: u32, iz: i32) -> f32 {
   put(${FIELD.QX}u, i, qx); put(${FIELD.QZ}u, i, qz);
 }
 
+// The relaxation blend (ShallowWaterSolver.relax): toward the rest level plus the target's surface, never below
+// SEA_DEPTH_FLOOR of the still depth, and the target's velocity (at most the long-wave speed) in the water the cell holds.
+fn blendToward(i: u32, weight: f32, eta: f32, qx: f32, qz: f32) {
+  let bed = at(${FIELD.BED}u, i);
+  let still = max(0.0, P.restLevel - bed);
+  let goal = max(max(SEA_DEPTH_FLOOR * still, P.restLevel + eta - bed), 0.0);
+  var h = at(${FIELD.H}u, i);
+  h += weight * (goal - h);
+  put(${FIELD.H}u, i, h);
+  let wet = h > P.dryDepth;
+  var ux = select(0.0, qx / goal, goal > P.dryDepth);
+  var uz = select(0.0, qz / goal, goal > P.dryDepth);
+  let speed = sqrt(ux * ux + uz * uz);
+  let limit = sqrt(P.g * goal);
+  if (speed > limit) { ux *= limit / speed; uz *= limit / speed; }
+  put(${FIELD.QX}u, i, select(0.0, at(${FIELD.QX}u, i) + weight * (h * ux - at(${FIELD.QX}u, i)), wet));
+  put(${FIELD.QZ}u, i, select(0.0, at(${FIELD.QZ}u, i) + weight * (h * uz - at(${FIELD.QZ}u, i)), wet));
+}
+
 // K16: the offshore relaxation zone blends toward the linear sea (SeaStateBoundary.target).
 @compute @workgroup_size(64) fn relax(@builtin(global_invocation_id) id: vec3<u32>) {
   let local = id.x; if (local >= P.zoneRows * P.nx) { return; }
@@ -583,14 +604,7 @@ fn secondXAtZ(ix: u32, iz: i32) -> f32 {
     let value = S[o] * cos(S[o + 1u] * x + S[o + 2u] * z + S[o + 5u] - S[o + 6u] * P.tau);
     eta += value; qx += S[o + 3u] * value; qz += S[o + 4u] * value;
   }
-  let bed = at(${FIELD.BED}u, i);
-  let goal = max(0.0, eta - bed);
-  var h = at(${FIELD.H}u, i);
-  h += weight * (goal - h);
-  put(${FIELD.H}u, i, h);
-  let wet = h > P.dryDepth;
-  put(${FIELD.QX}u, i, select(0.0, at(${FIELD.QX}u, i) + weight * (qx - at(${FIELD.QX}u, i)), wet));
-  put(${FIELD.QZ}u, i, select(0.0, at(${FIELD.QZ}u, i) + weight * (qz - at(${FIELD.QZ}u, i)), wet));
+  blendToward(i, weight, eta, qx, qz);
 }
 
 // K17: the side strips blend toward the incoming sea (SideFeed.target, the wave-sizes spec). Per slot: cell,
@@ -615,14 +629,7 @@ fn secondXAtZ(ix: u32, iz: i32) -> f32 {
     let value = real * timeCos + imaginary * timeSin;
     eta += value; qx += D[r + 2u] * value; qz += D[r + 3u] * value;
   }
-  let bed = at(${FIELD.BED}u, i);
-  let goal = max(0.0, eta - bed);
-  var h = at(${FIELD.H}u, i);
-  h += weight * (goal - h);
-  put(${FIELD.H}u, i, h);
-  let wet = h > P.dryDepth;
-  put(${FIELD.QX}u, i, select(0.0, at(${FIELD.QX}u, i) + weight * (qx - at(${FIELD.QX}u, i)), wet));
-  put(${FIELD.QZ}u, i, select(0.0, at(${FIELD.QZ}u, i) + weight * (qz - at(${FIELD.QZ}u, i)), wet));
+  blendToward(i, weight, eta, qx, qz);
 }
 `;
 }

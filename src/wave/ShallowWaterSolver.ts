@@ -26,6 +26,7 @@ export interface SolverOptions {
 }
 
 export interface WaterTarget {
+  /** Surface elevation above the rest level (the tide), m. */
   eta: number;
   qx: number;
   qz: number;
@@ -38,6 +39,12 @@ export interface RelaxationZone {
   /** Called after the window slides along shore, once the arrays (weights included) have moved. */
   afterShift?(): void;
 }
+
+/**
+ * The least share of its still depth a relaxation zone or the warm start leaves a cell under a linear trough: a
+ * linear sea capped only in Hs has troughs that nearly empty a cell (the wave-sizes spec's blow-ups).
+ */
+export const SEA_DEPTH_FLOOR = 0.5;
 
 /** Jacobsen et al. (2012) ramp: 0 at the zone's inner edge, 1 at its outer boundary. */
 export function relaxationRamp(s: number): number {
@@ -476,11 +483,22 @@ export class ShallowWaterSolver {
           const weight = zone.weights[i];
           if (weight <= 0) continue;
           zone.target(this.xCenters[ix], this.zCenters[iz], this.time, this.target, i);
-          const targetDepth = Math.max(0, this.target.eta - this.bed[i]);
-          this.h[i] += weight * (targetDepth - this.h[i]);
+          // The target's surface stands on the rest level (the tide), and a linear trough never empties the cell.
+          const still = Math.max(0, this.restLevel - this.bed[i]);
+          const goal = Math.max(SEA_DEPTH_FLOOR * still, this.restLevel + this.target.eta - this.bed[i], 0);
+          this.h[i] += weight * (goal - this.h[i]);
           const wet = this.h[i] > this.dryDepth;
-          this.qx[i] = wet ? this.qx[i] + weight * (this.target.qx - this.qx[i]) : 0;
-          this.qz[i] = wet ? this.qz[i] + weight * (this.target.qz - this.qz[i]) : 0;
+          // The target's velocity, no faster than the long-wave speed at its depth, carried by the water the cell holds.
+          let ux = goal > this.dryDepth ? this.target.qx / goal : 0;
+          let uz = goal > this.dryDepth ? this.target.qz / goal : 0;
+          const speed = Math.hypot(ux, uz);
+          const limit = Math.sqrt(this.gravity * goal);
+          if (speed > limit) {
+            ux *= limit / speed;
+            uz *= limit / speed;
+          }
+          this.qx[i] = wet ? this.qx[i] + weight * (this.h[i] * ux - this.qx[i]) : 0;
+          this.qz[i] = wet ? this.qz[i] + weight * (this.h[i] * uz - this.qz[i]) : 0;
         }
       }
     }
