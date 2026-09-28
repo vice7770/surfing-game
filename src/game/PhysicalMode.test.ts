@@ -14,8 +14,8 @@ describe('PhysicalMode', () => {
   it('lets buoys and storms reach 4 m, and the Canyon 3 m as before (wave sizes)', () => {
     expect(TANK_SWELL_LIMITS.height.max).toBe(4);
     expect(swellHeightLimit('point')).toBe(4);
-    // The Reef keeps its 3 m cap until the Reef rework deepens its tank (wave sizes review).
-    expect(swellHeightLimit('reef')).toBe(3);
+    // The Reef's 30 m edge (the Teahupo'o Reef) carries the 4 m cap.
+    expect(swellHeightLimit('reef')).toBe(4);
     expect(swellHeightLimit('canyon')).toBe(3);
     const storm = { ...DEFAULT_PHYSICAL_SETTINGS, source: 'storm' as const, stormWindSpeed: 30, stormFetchKm: 2000, stormDurationHours: 96, stormDistanceKm: 0 };
     expect(swellFor({ ...storm, spot: 'point' }).significantHeight).toBe(4);

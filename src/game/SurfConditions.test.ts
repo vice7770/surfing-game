@@ -4,7 +4,7 @@ import skyManifest from '../../public/assets/skies/skies.json';
 import { nearestSky, sunElevationFromSlider, type SkyEntry } from '../scene/PhotoSky';
 import {
   DEFAULT_CONDITIONS, DEFAULT_SPOT, REEF_SWELLS, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings, nextBackdropSpot, physicalSettingsFor,
-  surfForecastFor, surfForecastText,
+  surfForecastFor, surfForecastText, swellChoice,
 } from './SurfConditions';
 import { PRACTICE_SURF, forecastSurf } from '../wave/surfForecast';
 import { surfName as describeName } from '../ui/surfHeight';
@@ -64,7 +64,8 @@ describe('surf conditions', () => {
   it('forecasts each swell size\'s surf at each spot, the practice groundswell as measured (wave sizes)', () => {
     for (const spot of SURF_SPOTS) {
       expect(surfForecastFor(spot, 'practice')).toEqual(PRACTICE_SURF[spot]);
-      expect(surfForecastFor(spot, 'big')).toEqual(forecastSurf(spot, SWELLS.big.significantHeight, SWELLS.big.peakPeriod));
+      const big = swellChoice(spot, 'big');
+      expect(surfForecastFor(spot, 'big')).toEqual(forecastSurf(spot, big.significantHeight, big.peakPeriod));
       expect(surfForecastFor(spot, 'big').typical).toBeGreaterThan(surfForecastFor(spot, 'small').typical);
     }
   });
