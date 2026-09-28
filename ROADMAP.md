@@ -514,10 +514,10 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
   - Short records mislead: judge heights against the input sea over the same ≥300 s record.
 - **Part C** (a size sheet, the camera) follows.
 
-### P1 · Teahupo'o Reef — `Part A in review (PR); Parts B–D next`
+### P1 · Teahupo'o Reef — `Parts A (#54) and B (#57) merged; Part C in review (PR); Part D next`
 
-Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers/specs/2026-09-27-teahupoo-reef.md); [Part A plan](docs/superpowers/plans/2026-09-27-teahupoo-reef-part-a.md). The A-frame Reef becomes a Teahupo'o-style heavy left: sourced thick lips and round tubes, a solid reef, and P12 tube riding brought ahead of P11.
-- [ ] **Part A · the bed and its peel** (branch `claude/teahupoo-reef`):
+Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers/specs/2026-09-27-teahupoo-reef.md); [Part A plan](docs/superpowers/plans/2026-09-27-teahupoo-reef-part-a.md); [Part B plan](docs/superpowers/plans/2026-09-28-teahupoo-reef-part-b.md). The A-frame Reef becomes a Teahupo'o-style heavy left: sourced thick lips and round tubes, a solid reef, and P12 tube riding brought ahead of P11.
+- [x] **Part A · the bed and its peel** (merged as #54):
   - **The bed:** Teahupo'o's published shape ([sources and rulings](docs/research/teahupoo-reef-sources.md)):
     - 30 m of water up a 1:2.29 forereef (Rodríguez-Burguette et al. 2025);
     - a 10 m shelf (Shand 2024);
@@ -536,9 +536,40 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - the Reef's faces calibrated on the size report (Practice 1.5–2 up to Big 5–6 m), held until the side feed (`claude/side-feed`) lands and its forecast refitted;
     - the Big swell running up the pass's steep beach face at up to 26 m/s (the pass should end in a lagoon; Part C);
     - the user's look.
-- [ ] **Part B · slab tube physics:** the thick lip and round tube from slab sources (Mead & Black 2001; Blenkinsopp & Chaplin 2008), replacing the provisional submerged-crest rule.
-- [ ] **Part C · the look, the sound and a solid reef:** the lip's glow, the step, the coral, spit, the section collapsing as one, the impact sound, and "hit the reef".
-- [ ] **Part D · tube riding (P12):** rail grab, the tube camera, the foam ball and spit on the rider, and the Surf School Tube lesson. Waits on Compress, Regular/Goofy and the take-off (PR #43).
+- [x] **Part B · slab tube physics** (merged as #57, [report](docs/research/teahupoo-reef-report.md#part-b-slab-tubes)):
+  - **A reef break's tube** (a break over a submerged crest, ξ ≥ 0.4) follows Mead & Black's (2001) vortex ratio for the gradient it climbs:
+    - the gradient is measured their way, along its travel across the breaking depth ± 2.5 m;
+    - the ratio is held within the 1.42–3.43 they measured;
+    - inside Pick & Feddersen's fits their void, jet and tilt stand; beyond them, the provisional 0.43 H² void, 0.5 H lip and 23° tilt;
+    - there is no collapse over a submerged crest;
+    - the wind counts from Mead & Black's offshore photos.
+
+    Ruled with the user's shape advisor.
+  - **Found and fixed:**
+    - the Reef's ledge crossing the window's open edge ran the Big swell to NaN, on main too; the solver now levels the bed across the two columns an open edge copies;
+    - a sea handover's joiner missed lips thrown on its first step;
+    - thick lips landing in one cell flashed the drained crest; they now land over their thickness;
+    - a lip's landing bore still drained at 23.5 m/s with dispersion on; the solver now holds the young roller in shallow water where jets land (0.5 H behind to 1.5 H ahead) for Kennedy's T* (CPU and WGSL; branch `claude/plunge-dispersion`).
+  - **Measured:**
+    - rounder tubes (width/length 0.71 → 0.77–0.80) that open wider;
+    - jets 0.47 H² and 0.47 H thick;
+    - the crest gives the whole jet except on the Big swell's biggest waves;
+    - jets leave at 1.95× crest speed against the lab's 1.25–1.32 (reported for the user).
+  - **Open:**
+    - validating the water against the open Teahupo'o lab dataset (download needs the user's OK);
+    - peel against makeability before Part D (the user's call).
+- [ ] **Part C · the look, the sound and a solid reef** (branch `claude/teahupoo-reef-c`, [plan](docs/superpowers/plans/2026-09-28-teahupoo-reef-part-c.md), [report](docs/research/teahupoo-reef-report.md#part-c-the-solid-reef-the-lagoon-the-crash)):
+  - **Done:**
+    - the reef is solid: the board and the body meet it along the bed's own normal, and wet reef grips harder than sand (0.8 against 0.6, provisional);
+    - a fall that comes as the board strikes the reef ends the ride "Hit the reef";
+    - the pass and inner reef end in a lagoon, with the Teahupo'o model's 1:9.64 inland slope in place of the 1:5 face the Big swell ran up;
+    - a bigger lip's crash sounds deeper (Minnaert's resonance).
+  - **Waiting:**
+    - the lip's glow, the spit and the section collapsing as one wait for the swept overturn surface that replaces the lip strips and carved void (the user's decision, 2026-09-28; the Padang Padang work builds it first);
+    - the step and the coral wait for the coral textures (download approval);
+    - the lagoon's depth and the flat's width wait for the lab profile (download approval).
+  - **Open:** the film beside the reference, and the user's look.
+- [ ] **Part D · tube riding (P12):** rail grab, the tube camera, the foam ball and spit on the rider, and the Surf School Tube lesson. Waits on Compress, Regular/Goofy and the take-off (PR #43). Its contact with the swept surface is agreed with the Padang Padang session: the mouth, pocket depth, face normal and velocity, clearance, foam ball and spit forces.
 
 ### P1 · Padang Padang and the swept barrel — `Spec agreed; Part A next`
 
@@ -614,6 +645,16 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
       - pops at a switch (the pop-up, the landing, Compress's hand, a fall) are blended out, on the board while riding: 21–51 m/s and 75–171 rad/s in one frame before, under 2 m/s and 6 rad/s now at 60 and 120 Hz (up to 3.1 m/s and 6.8 rad/s at 30 and 144 Hz), for 54 ms of lag (85 ms from a late worker); ordinary riding is drawn as the rig solves it at any rate;
       - the reach bend fades in below the hips, which removes Compress's chest pop and its jitter (0.66 → 0.16°); your surfer draws on the full model at every preset;
       - open: lying back down, the knee still swings through (step 3's poles). Next: step 2, the stance map, from the approved references.
+    - the riding body, step 2: the stance map ([plan](docs/superpowers/plans/2026-09-28-stance-map.md), [findings](docs/superpowers/plans/2026-09-28-stance-map.md#findings), [the map](docs/research/stance-map.md)):
+      - 20 stances and 99 target angles, each with its sources and confidence (measured studies, the thesis, coaching and the pros' spoken cues, then frames read by eye); gaps listed, never filled from the drawn body;
+      - a stance gauge, the four surfers' skeletons read in node, and every stance simulated by the real rider: `npm run report:stances` writes today's drawn body against the map;
+      - the surfer sheet's `?stances` draws each stance beside a reference figure built from the targets; every sheet now resets the drawn body between tiles (since step 1 each tile had drawn the one before);
+      - today 46 of 99 miss, measured on the body as the game draws it. The physics' trunk does not hinge (0° in trim and the drop, where surfers bend 10–65°), the weight goes forward where it should go back (0.71 releasing Compress, target 0.35–0.45), the front knee bends more than the rear (the hips sit forward), Compress folds the knees but not the hips, and the landing's feet glide apart for 0.6 s. Next: step 3, the stance poses.
+    - the riding body, step 3: the stance poses ([plan](docs/superpowers/plans/2026-09-29-stance-poses.md), [findings](docs/superpowers/plans/2026-09-29-stance-poses.md#findings)):
+      - standing, the trunk hinges at the hips toward the map's hip angle (147.5° tall to 75° at full depth; 84° at the physics' Compress depth), the trunk no further than 75° from the vertical, the pelvis back over the heels so the centre of mass stays; backside no further over the toes than Hobgood's upright trunk; at a brisk trunk bend's pace at most;
+      - free arms lower and soft at the elbow (40–55°, 155°), the clavicles following their arms, the heel lifting past 40° of ankle flexion with the toes on the deck, the chest turning with the snap either way, the head leading the turn;
+      - the frontside Compress hand now reaches the water (Part B's 6.6 cm miss); the snapshot track no longer blends a riding body into a fallen one;
+      - against the map 38 of 99 miss (46 before), 61 met (53); a test holds the drawn pose's medium and high targets but thirteen known misses (the physics' weight and timing, the landing's glide). Next: step 4, secondary motion.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;

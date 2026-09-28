@@ -1,3 +1,4 @@
+import type { BedMaterial } from '../wave/Bathymetry';
 import { waveNumber } from '../wave/dispersion';
 import type { ShallowWaterSolver } from '../wave/ShallowWaterSolver';
 import type { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
@@ -50,6 +51,8 @@ export interface PhysicalSurfWaterOptions {
   breaking?: ArrayLike<number>;
   /** Render node spacing, m (the physical mode renders at 1 m). */
   nodeSpacing?: number;
+  /** What the bed is made of at (x, z), from the spot (the Teahupo'o Reef, Part C); sand when absent. */
+  materialAt?: (x: number, z: number) => BedMaterial;
   /**
    * The whitewater plume (G9's `AerationField`): each cell's void fraction and the
    * plume's depth under the surface. Bodies sample its air (the wipeout spec, Part B).
@@ -96,7 +99,7 @@ export class PhysicalSurfWater implements SurfWater {
     const { lip } = simulation;
     return new PhysicalSurfWater(simulation.solver, {
       peakPeriod: simulation.config.peakPeriod, breaking: simulation.breaking.strength, carve: (x, z, surface) => lip.carve(x, z, surface),
-      aeration: simulation.aeration,
+      aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
     });
   }
 
@@ -110,6 +113,15 @@ export class PhysicalSurfWater implements SurfWater {
     out.outsideDomain = false;
     out.waterDepth = depth;
     out.bedY = bottom;
+    // The bed's normal from its gradient across half a cell each way (the solver's own bed, levelled at open edges).
+    const half = 0.5 * solver.dx;
+    const gx = (solver.sampleCentered(bed, x + half, z) - solver.sampleCentered(bed, x - half, z)) / (2 * half);
+    const gz = (solver.sampleCentered(bed, x, z + half) - solver.sampleCentered(bed, x, z - half)) / (2 * half);
+    const norm = Math.hypot(gx, 1, gz);
+    out.bedNormalX = -gx / norm;
+    out.bedNormalY = 1 / norm;
+    out.bedNormalZ = -gz / norm;
+    out.bedMaterial = this.options.materialAt ? this.options.materialAt(x, z) : 'sand';
     out.stillDepth = Math.max(0, solver.restLevel - bottom);
     out.wet = depth > WET;
     this.surface(x, z, out);
@@ -367,6 +379,10 @@ export class PhysicalSurfWater implements SurfWater {
     out.stillDepth = 0;
     out.waterDepth = 0;
     out.bedY = -Infinity;
+    out.bedNormalX = 0;
+    out.bedNormalY = 1;
+    out.bedNormalZ = 0;
+    out.bedMaterial = 'sand';
     out.wet = false;
     out.outsideDomain = true;
     out.slopeX = 0;

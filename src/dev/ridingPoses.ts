@@ -1,22 +1,106 @@
 import { Matrix4, Quaternion, Vector3 } from 'three';
-import { AttachedRider } from '../physics/AttachedRider';
+import { AttachedRider, type RiderPhase } from '../physics/AttachedRider';
 import { BoardBody } from '../physics/BoardBody';
 import { PlaneWater } from '../physics/PlaneWater';
+import { RideSession } from '../physics/RideSession';
 import type { StanceName } from '../physics/riderPosture';
-import type { RiderVisualState } from '../scene/rig/riderVisualState';
+import { RiderMotion } from '../scene/rig/riderMotion';
+import { createRiderVisualState, readRiderSnapshot, type RiderVisualState } from '../scene/rig/riderVisualState';
+import { RIDER_SNAPSHOT, writeRiderSnapshot } from '../wave/SurfZoneRunner';
 
-/** Riding moments for the surfer sheet (Part B), each simulated by the real rider. */
+/** Riding moments for the surfer sheet (Part B), each simulated by the real rider: stances of the map. */
 export type RidingMoment = 'straight' | 'drop' | 'bottom turn' | 'backside turn' | 'top turn' | 'snap';
 export const RIDING_MOMENTS: readonly RidingMoment[] = ['straight', 'drop', 'bottom turn', 'backside turn', 'top turn', 'snap'];
+/** Each riding moment's stance of the map. */
+export const MOMENT_STANCE: Record<RidingMoment, string> = {
+  straight: 'trim', drop: 'drop', 'bottom turn': 'compress-frontside', 'backside turn': 'compress-backside', 'top turn': 'top-turn-frontside', snap: 'snap-frontside',
+};
 
 const STEP = 1 / 60;
 const FACE = (15 * Math.PI) / 180;
 
-/** A standing rider on water: flat, or down a 15° face heading down its fall line. */
-function mount(speed: number, stance: StanceName, face: boolean) {
+/** From `at` s the rider holds these controls; steer and the hand count toward the toes' rail (+1), whichever the stance. */
+interface Controls {
+  at: number;
+  steer?: number;
+  trim?: number;
+  crouch?: number;
+  compress?: number;
+  hand?: boolean;
+  /** A press for one step (the pop-up; standing, Enter lies the rider down). */
+  popUp?: boolean;
+}
+
+/** How the real rider reaches a stance of the map (`stanceMap.ts`). */
+export interface StanceRecipe {
+  /** The phase the stance is read in. */
+  phase: RiderPhase | 'fallen';
+  /** Flat water; down a 15° face along its fall line; or across one, the face rising on the toes' side (frontside). */
+  water: 'flat' | 'face' | 'across';
+  /** Standing on a board already moving, or lying on it (the pop-up), m/s. */
+  start: 'standing' | 'prone';
+  speed: number;
+  controls: Controls[];
+  /** Read at this time, s; or, with `after`, this long after the phase is first reached (within `seconds`). */
+  seconds: number;
+  after?: number;
+  /** The rider lets go (a fall) at this time, s. */
+  separate?: number;
+}
+
+const standing = (controls: Controls[], seconds: number, extra: Partial<StanceRecipe> = {}): StanceRecipe => ({
+  phase: 'standing', water: 'flat', start: 'standing', speed: 8, controls, seconds, ...extra,
+});
+
+/** The map's stances as the game reaches them (each stance's `reach`). */
+export const STANCE_RECIPES: Record<string, StanceRecipe> = {
+  trim: standing([], 1),
+  'trim-forward': standing([{ at: 0.4, trim: 1 }], 1),
+  'trim-back': standing([{ at: 0.4, trim: -1 }], 1),
+  drop: standing([{ at: 0, crouch: 0.6 }], 1, { water: 'face', speed: 5 }),
+  'compress-frontside': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, steer: 1 }, { at: 0.7, compress: 1 }], 1.1),
+  'compress-backside': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, steer: -1 }, { at: 0.7, compress: 1 }], 1.1),
+  // The bottom turn's release up the face (the thesis's final phase): the rail easing, the legs extending, the weight back.
+  'extension-frontside': standing([
+    { at: 0, crouch: 0.6 }, { at: 0.4, steer: 1 }, { at: 0.7, compress: 1 }, { at: 1.1, compress: 0, crouch: 0, steer: 0.3, trim: -0.5 },
+  ], 1.4),
+  'extension-backside': standing([
+    { at: 0, crouch: 0.6 }, { at: 0.4, steer: -1 }, { at: 0.7, compress: 1 }, { at: 1.1, compress: 0, crouch: 0, steer: -0.3, trim: -0.5 },
+  ], 1.4),
+  'top-turn-frontside': standing([{ at: 0.4, steer: -1, trim: -0.5 }], 1),
+  'top-turn-backside': standing([{ at: 0.4, steer: 1, trim: -0.5 }], 1),
+  'snap-frontside': standing([{ at: 0.4, steer: -1, trim: -1 }], 0.9),
+  'snap-backside': standing([{ at: 0.4, steer: 1, trim: -1 }], 0.9),
+  'cutback-frontside': standing([{ at: 0, crouch: 0.5 }, { at: 0.4, steer: -1, trim: -0.7 }], 1.2),
+  'pump-compression': standing([{ at: 0.4, crouch: 1 }], 0.8, { speed: 7 }),
+  'pump-extension': standing([{ at: 0.4, crouch: 1 }, { at: 0.8, crouch: 0 }], 1.1, { speed: 7 }),
+  'hand-in-face': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, hand: true }], 1, { water: 'across', speed: 6 }),
+  // Lying on a board towed at 6 m/s, as the wave would carry it (the body film's pop-up).
+  'pop-up': { phase: 'push', water: 'flat', start: 'prone', speed: 6, controls: [{ at: 0.5, popUp: true }], seconds: 3, after: 0.3 },
+  // Read at the landing's end (it lasts 0.5 s): the drawn feet are still spreading to the stance until then.
+  landing: { phase: 'landing', water: 'flat', start: 'prone', speed: 6, controls: [{ at: 0.5, popUp: true }], seconds: 3, after: 0.45 },
+  'lying-down': standing([{ at: 0.5, popUp: true }], 3, { speed: 6, after: 0.2, phase: 'recover' }),
+  'fall-start': standing([], 3, { speed: 7, separate: 0.5, after: 0.15, phase: 'fallen' }),
+};
+
+/** The recipe's water for a Regular or Goofy rider: across a face, it rises on the toes' side (−x Regular, +x Goofy). */
+function waterFor(kind: StanceRecipe['water'], stance: StanceName): PlaneWater {
+  if (kind === 'face') return new PlaneWater({ slopeZ: -Math.tan(FACE) });
+  if (kind === 'across') return new PlaneWater({ slopeX: (stance === 'regular' ? -1 : 1) * Math.tan(FACE) });
+  return new PlaneWater();
+}
+
+/** A standing rider on water: flat, down a 15° face along its fall line, or across it lying on its slope. */
+function mount(speed: number, stance: StanceName, kind: StanceRecipe['water']) {
   const board = new BoardBody();
-  const water = face ? new PlaneWater({ slopeZ: -Math.tan(FACE) }) : new PlaneWater();
-  if (face) {
+  const water = waterFor(kind, stance);
+  if (kind === 'across') {
+    const slopeX = (stance === 'regular' ? -1 : 1) * Math.tan(FACE);
+    const normal = new Vector3(-slopeX, 1, 0).normalize();
+    const forward = new Vector3(0, 0, 1);
+    const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(new Vector3().crossVectors(normal, forward), normal, forward));
+    board.place(normal.clone().multiplyScalar(board.shape.centerOfMass.y), orientation, forward.multiplyScalar(speed));
+  } else if (kind === 'face') {
     const normal = new Vector3(0, 1, Math.tan(FACE)).normalize();
     const fall = new Vector3(0, -Math.sin(FACE), Math.cos(FACE));
     const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(new Vector3().crossVectors(normal, fall), normal, fall));
@@ -29,52 +113,186 @@ function mount(speed: number, stance: StanceName, face: boolean) {
   return { board, rider, water };
 }
 
+/** The controls held at `time`, s: each field as last set. */
+function controlsAt(recipe: StanceRecipe, time: number): Omit<Controls, 'at'> {
+  const held: Omit<Controls, 'at'> = {};
+  for (const { at, popUp: _press, ...rest } of recipe.controls) if (at <= time + 1e-9) Object.assign(held, rest);
+  held.popUp = recipe.controls.some((control) => control.popUp && Math.abs(time - control.at) < STEP / 2);
+  return held;
+}
+
+interface Run {
+  board: BoardBody;
+  rider: AttachedRider;
+  session?: RideSession;
+  reached: boolean;
+}
+
 /**
- * The drawn state of `moment` for `stance`, moved so the board sits at `at`
- * pointing +z (its roll and pitch kept), with the board's motion as the rig reads it.
+ * Plays `recipe` with the real rider for a Regular or Goofy `stance`: standing
+ * stances on the rider alone (the sheet's riding moments), the pop-up, lying
+ * down and a fall through a ride session. `visit` sees the world's drawn state
+ * after every step. `reached` is false when the rider ended in another phase
+ * (it fell, or never got there).
  */
-export function ridingState(moment: RidingMoment, stance: StanceName, at: Vector3, out: RiderVisualState): RiderVisualState {
-  // Regular faces the board's −x rail: leaning that way is toward the toes (frontside).
+function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVisualState, time: number) => void): Run {
   const toes = stance === 'regular' ? -1 : 1;
-  const { board, rider, water } = mount(moment === 'drop' ? 5 : 8, stance, moment === 'drop');
-  const run = (seconds: number) => {
-    for (let i = 0; i < Math.round(seconds / STEP); i += 1) board.step(STEP, water);
-  };
-  // The bottom turn's sequence: crouched first, then the lean, then Compress at the turn's base.
-  if (moment !== 'straight' && moment !== 'top turn' && moment !== 'snap') rider.crouch = 0.6;
-  run(0.4);
-  if (moment === 'drop') {
-    run(0.6);
-  } else if (moment === 'bottom turn' || moment === 'backside turn') {
-    rider.steer = moment === 'bottom turn' ? toes : -toes;
-    run(0.3);
-    rider.compress = 1;
-    run(0.4);
-  } else if (moment === 'top turn') {
-    rider.steer = -toes;
-    rider.trim = -0.5;
-    run(0.6);
-  } else if (moment === 'snap') {
-    // The top-turn plan's snap: the weight on the back foot and full steer.
-    rider.steer = -toes;
-    rider.trim = -1;
-    run(0.5);
-  } else {
-    run(0.6);
+  const water = waterFor(recipe.water, stance);
+  const session = recipe.start === 'prone' || recipe.after !== undefined || recipe.separate !== undefined ? new RideSession({ stance }) : undefined;
+  const mounted = session ? undefined : mount(recipe.speed, stance, recipe.water);
+  if (session) session.place({ x: 0, z: 0, heading: 0, speed: recipe.start === 'prone' ? 0 : recipe.speed, phase: recipe.start }, water);
+  const board = session?.board ?? mounted!.board;
+  const rider = session?.rider ?? mounted!.rider;
+  const run: Run = { board, rider, session, reached: false };
+  const phase = () => (rider.attached ? rider.phase : 'fallen');
+  const world = visit && createRiderVisualState();
+  let reachedAt: number | undefined;
+  let time = 0;
+  const end = Math.round(recipe.seconds / STEP);
+  for (let i = 0; i < end; i += 1) {
+    const controls = controlsAt(recipe, time);
+    const steer = (controls.steer ?? 0) * toes;
+    if (session) {
+      if (recipe.separate !== undefined && Math.abs(time - recipe.separate) < STEP / 2 && rider.attached) session.separate('balance');
+      // Lying down, towed as the wave would carry the board.
+      if (recipe.start === 'prone' && rider.attached && rider.phase !== 'standing') {
+        board.velocity.z = recipe.speed;
+        rider.velocity.z = recipe.speed;
+      }
+      session.step(STEP, water, {
+        paddle: false, popUp: controls.popUp === true, steer, trim: controls.trim, crouch: controls.crouch, compress: controls.compress, hand: controls.hand,
+      });
+    } else {
+      rider.steer = steer;
+      rider.trim = controls.trim ?? 0;
+      rider.crouch = controls.crouch ?? 0;
+      rider.compress = controls.compress ?? 0;
+      rider.hand = controls.hand ?? false;
+      board.step(STEP, water);
+    }
+    time += STEP;
+    if (visit && world) visit(worldState(run, world), time);
+    if (recipe.after !== undefined) {
+      if (reachedAt === undefined && phase() === recipe.phase) reachedAt = time;
+      if (reachedAt !== undefined && time >= reachedAt + recipe.after - 1e-9) break;
+    }
   }
-  const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
-  const heading = Math.atan2(forward.x, forward.z);
-  const unturn = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), -heading);
-  for (let i = 0; i < 7; i += 1) rider.renderPoint(i, board, out.points[i]).sub(board.position).applyQuaternion(unturn).add(at);
-  out.phase = rider.attached ? rider.phase : 'fallen';
-  out.heading = 0;
-  out.boardPosition.copy(at);
-  out.boardQuaternion.copy(unturn).multiply(board.orientation);
+  run.reached = phase() === recipe.phase && (recipe.after === undefined || reachedAt !== undefined);
+  return run;
+}
+
+/** The run's drawn state in the world: the seven points, the phase, the heading and the board's pose. */
+function worldState({ board, rider, session }: Run, out: RiderVisualState): RiderVisualState {
+  const pose = new Float64Array(8);
+  board.position.toArray(pose, 0);
+  board.orientation.toArray(pose, 3);
+  if (session) {
+    const snapshot = new Float64Array(RIDER_SNAPSHOT.length);
+    writeRiderSnapshot(session, false, snapshot, new Vector3());
+    readRiderSnapshot(snapshot, pose, out);
+  } else {
+    for (let i = 0; i < 7; i += 1) rider.renderPoint(i, board, out.points[i]);
+    out.phase = rider.attached ? rider.phase : 'fallen';
+    const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+    out.heading = Math.atan2(forward.x, forward.z);
+    out.boardPosition.copy(board.position);
+    out.boardQuaternion.copy(board.orientation);
+  }
   out.stroking = 0;
-  const velocity = board.velocity.clone().applyQuaternion(unturn);
-  out.yawRate = board.angularVelocity.y;
+  return out;
+}
+
+/** The move that sets the run's last board at `at` with its nose along +z (its roll and pitch kept). */
+function frameAt(board: BoardBody, at: Vector3) {
+  const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+  const yaw = Math.atan2(forward.x, forward.z);
+  return { from: board.position.clone(), at: at.clone(), yaw, unturn: new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), -yaw) };
+}
+
+/** Moves a drawn state rigidly by `frame`. */
+function moveBy(state: RiderVisualState, frame: ReturnType<typeof frameAt>): RiderVisualState {
+  const move = (point: Vector3) => point.sub(frame.from).applyQuaternion(frame.unturn).add(frame.at);
+  for (const point of state.points) move(point);
+  move(state.leash.plug);
+  move(state.boardPosition);
+  state.boardQuaternion.premultiply(frame.unturn);
+  state.heading -= frame.yaw;
+  return state;
+}
+
+/**
+ * Runs `recipe` with the real rider for a Regular or Goofy `stance` (`play`)
+ * and writes its last drawn state into `out`, moved so the board sits at `at`
+ * with its nose along +z, with the board's motion as the rig reads it: the
+ * physics' stance, as a held still.
+ */
+export function simulateStance(recipe: StanceRecipe, stance: StanceName, at: Vector3, out: RiderVisualState): { state: RiderVisualState; reached: boolean } {
+  const run = play(recipe, stance);
+  const frame = frameAt(run.board, at);
+  moveBy(worldState(run, out), frame);
+  out.heading = 0;
+  const velocity = run.board.velocity.clone().applyQuaternion(frame.unturn);
+  out.yawRate = run.board.angularVelocity.y;
   out.speed = Math.hypot(velocity.x, velocity.z);
   out.climb = velocity.y;
-  out.travel.set(velocity.x, 0, velocity.z).normalize();
-  return out;
+  out.travel.set(velocity.x, 0, velocity.z);
+  if (out.travel.lengthSq() > 1e-12) out.travel.normalize();
+  else out.travel.set(0, 0, 1);
+  return { state: out, reached: run.reached };
+}
+
+/**
+ * The map's stance `id` as the game draws it: every step of the run, moved so
+ * its last board sits at `at`, goes through the page's motion estimate
+ * (`RiderMotion`) and its clock to `draw` (a posed body, a surfer), so the
+ * smoothing layer's blends are those the player sees at that instant. Returns
+ * the last state drawn.
+ */
+export function drawnStance(id: string, stance: StanceName, at: Vector3, draw: (state: RiderVisualState) => void): { state: RiderVisualState; reached: boolean } {
+  const recipe = STANCE_RECIPES[id];
+  if (!recipe) throw new Error(`No recipe for the stance ${id}.`);
+  return drawnRecipe(recipe, stance, at, draw);
+}
+
+/** Any recipe as the game draws it (`drawnStance`): for a motion followed over time, not only a held stance. */
+export function drawnRecipe(recipe: StanceRecipe, stance: StanceName, at: Vector3, draw: (state: RiderVisualState) => void): { state: RiderVisualState; reached: boolean } {
+  // The physics is deterministic: a first run finds where the last board lies, the second draws the moved run.
+  const frame = frameAt(play(recipe, stance).board, at);
+  const motion = new RiderMotion();
+  const last = createRiderVisualState();
+  const run = play(recipe, stance, (world, time) => {
+    moveBy(world, frame);
+    motion.update(world, time);
+    world.clock = time;
+    draw(world);
+    copyState(world, last);
+  });
+  return { state: last, reached: run.reached };
+}
+
+/** Copies what the rig reads from one drawn state into another. */
+function copyState(from: RiderVisualState, to: RiderVisualState): void {
+  from.points.forEach((point, i) => to.points[i].copy(point));
+  Object.assign(to, {
+    phase: from.phase, heading: from.heading, stroking: from.stroking, yawRate: from.yawRate, speed: from.speed, climb: from.climb,
+    uprightBlend: from.uprightBlend, standingBlend: from.standingBlend, duck: from.duck, clock: from.clock, breath: from.breath,
+  });
+  to.boardPosition.copy(from.boardPosition);
+  to.boardQuaternion.copy(from.boardQuaternion);
+  to.travel.copy(from.travel);
+  to.leash.plug.copy(from.leash.plug);
+  Object.assign(to.leash, { worn: from.leash.worn, snapped: from.leash.snapped, reeling: from.leash.reeling });
+  Object.assign(to.swim, from.swim);
+}
+
+/** The map's stance `id` for a Regular or Goofy `stance` (`simulateStance`). */
+export function stanceState(id: string, stance: StanceName, at: Vector3, out: RiderVisualState): { state: RiderVisualState; reached: boolean } {
+  const recipe = STANCE_RECIPES[id];
+  if (!recipe) throw new Error(`No recipe for the stance ${id}.`);
+  return simulateStance(recipe, stance, at, out);
+}
+
+/** The drawn state of a riding moment (the sheet's `?riding`), its stance of the map. */
+export function ridingState(moment: RidingMoment, stance: StanceName, at: Vector3, out: RiderVisualState): RiderVisualState {
+  return stanceState(MOMENT_STANCE[moment], stance, at, out).state;
 }

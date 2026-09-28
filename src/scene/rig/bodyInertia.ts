@@ -40,7 +40,9 @@ const SIDES: readonly Side[] = ['left', 'right'];
 /** The bones the rig drives and the inertia blends, parents first: the trunk, the neck and head, and the limbs. */
 const BLENDED = [
   BONES.hips, ...BONES.spine, BONES.neck, BONES.head,
-  ...SIDES.flatMap((side) => [BONES.arm[side], BONES.foreArm[side], BONES.hand[side], BONES.upLeg[side], BONES.leg[side], BONES.foot[side]]),
+  ...SIDES.flatMap((side) => [
+    BONES.shoulder[side], BONES.arm[side], BONES.foreArm[side], BONES.hand[side], BONES.upLeg[side], BONES.leg[side], BONES.foot[side], BONES.toe[side],
+  ]),
 ];
 const LN2 = Math.log(2);
 

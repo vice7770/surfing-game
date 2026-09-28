@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { RideReport } from './rideAnalysis';
-import { RideTracker, type RideFrame } from './RideTracker';
+import { FALL_REASONS, RideTracker, type RideFrame } from './RideTracker';
 
 const STEP = 1 / 60;
 
@@ -111,5 +111,11 @@ describe('RideTracker', () => {
     const riding = frames('standing', 2, 3, start);
     const fallen = { ...riding.at(-1)!, phase: 'fallen' as const, separation: 'balance' as const };
     expect(feed(tracker, [...riding, fallen, fallen, { ...fallen, seaTime: fallen.seaTime + 1 }])).toHaveLength(1);
+  });
+});
+
+describe('hitting the reef (Teahupo\'o Reef, Part C)', () => {
+  it('ends a ride that struck the reef "Hit the reef"', () => {
+    expect(FALL_REASONS.reef).toBe('ride.reason.reef');
   });
 });

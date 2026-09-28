@@ -6,7 +6,7 @@ import { calmTarget } from '../shallowWaterTestSupport';
 import { uniformEdges, type WaterTarget } from '../ShallowWaterSolver';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
 import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, boussinesqWgsl } from './boussinesqWgsl';
-import { deviceStepRefusal, packComponents, packGrid, packSideFeed, packSideTimes, writeParams } from './GpuBoussinesq';
+import { DEVICE_READBACK, deviceStepRefusal, packComponents, packGrid, packSideFeed, packSideTimes, readbackTarget, writeParams } from './GpuBoussinesq';
 
 const quick = { spot: 'point' as const, seed: 3, significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0,
   alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
@@ -118,6 +118,14 @@ describe('GpuBoussinesq host', () => {
     const feed = layout.zones[1] as SideFeed;
     writeParams(solver, layout, { boundary: layout.zones[0] as SeaStateBoundary, firstRow: 0, rows: 12, feed }, 0.02, 0.04, bytes);
     expect([words[20], words[21]]).toEqual([feed.deviceShape().slots, feed.deviceShape().components]);
+  });
+
+  it('reads back the surface rise rate, which a lip needs to find its crest\'s motion', () => {
+    // Without it a device step left η_t stale (zero after a device spin-up), so no lip was ever thrown on the GPU.
+    const solver = new SurfZoneSimulation(quick).solver as BoussinesqSolver;
+    expect(DEVICE_READBACK).toContain(FIELD.RATEH);
+    expect(readbackTarget(solver, FIELD.RATEH)).toBe(solver.surfaceRiseRate);
+    for (const index of DEVICE_READBACK) expect(readbackTarget(solver, index)).toHaveLength(solver.nx * solver.nz);
   });
 
   it('refuses setups the kernels do not cover', () => {

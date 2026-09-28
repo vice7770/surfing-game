@@ -98,6 +98,31 @@ describe('ShallowWaterSolver', () => {
     expect(excessEnergy('open')).toBeLessThan(0.1 * excessEnergy('wall'));
   });
 
+  it('levels the bed across open along-shore edges as far as the stencils reach, wherever the window slides', () => {
+    // An open edge copies its neighbours, so a bed sloping across it gives the copy the wrong bed: the Reef's Big
+    // swell ran away where the window's edge cuts its ledge (Part B). Walls and wrap-around copy nothing.
+    const depthAt = (x: number, z: number) => 6 - 0.3 * x - 0.02 * z;
+    const grid = { nx: 12, xMin: -12, dx: 2, zEdges: uniformEdges(-40, 0, 10) };
+    const level = (solver: ShallowWaterSolver) => {
+      const { nx } = solver;
+      for (let iz = 0; iz < solver.nz; iz += 1) {
+        const row = iz * nx;
+        for (const ix of [0, 1]) expect(solver.bed[row + ix]).toBe(solver.bed[row + 2]);
+        for (const ix of [nx - 2, nx - 1]) expect(solver.bed[row + ix]).toBe(solver.bed[row + nx - 3]);
+        for (let ix = 2; ix < nx - 2; ix += 1) expect(solver.bed[row + ix]).toBe(-depthAt(solver.xCenters[ix], solver.zCenters[iz]));
+        for (let ix = 0; ix < nx; ix += 1) expect(solver.h[row + ix]).toBeCloseTo(Math.max(0, -solver.bed[row + ix]), 12);
+      }
+    };
+    const open = new ShallowWaterSolver({ ...grid, xBoundary: 'open' }, depthAt);
+    level(open);
+    open.shiftAlongShore(3);
+    level(open);
+    open.shiftAlongShore(-5);
+    level(open);
+    const wall = new ShallowWaterSolver({ ...grid, xBoundary: 'wall' }, depthAt);
+    expect(wall.bed[0]).toBe(-depthAt(wall.xCenters[0], wall.zCenters[0]));
+  });
+
   it('stretches cross-shore cells smoothly from fine to coarse', () => {
     const edges = stretchedEdges(-300, 30, -150, 1, 4);
     expect(edges[0]).toBe(-300);
@@ -128,16 +153,25 @@ describe('ShallowWaterSolver', () => {
     for (let i = 0; i < solver.h.length; i += 1) if (solver.h[i] > 0) solver.h[i] += 0.1 * Math.sin(i * 0.37);
     for (let frame = 0; frame < 30; frame += 1) solver.step(1 / 15);
     const before = Float64Array.from(solver.h);
-    const edgeSurface = (iz: number) => before[iz * solver.nx + solver.nx - 1] + solver.bed[iz * solver.nx + solver.nx - 1];
-    const edges = Array.from({ length: solver.nz }, (_, iz) => edgeSurface(iz));
-    const edgeWet = Array.from({ length: solver.nz }, (_, iz) => before[iz * solver.nx + solver.nx - 1] > 1e-4);
+    const beforeSurface = Array.from(before, (depth, i) => depth + solver.bed[i]);
+    const { nx } = solver;
+    const edges = Array.from({ length: solver.nz }, (_, iz) => beforeSurface[iz * nx + nx - 1]);
+    const edgeWet = Array.from({ length: solver.nz }, (_, iz) => before[iz * nx + nx - 1] > 1e-4);
     solver.shiftAlongShore(5);
     expect(solver.xCenters[0]).toBeCloseTo(-60 + 5 * 4 + 2, 12);
+    // Columns within the stencils' reach of an edge stand on a level bed (their inner neighbour's): their surface stays.
+    const seabed = (ix: number, iz: number) => -spot.depthAt(solver.xCenters[ix], solver.zCenters[Math.min(iz, solver.nz - 1)]);
+    const bedAt = (ix: number, iz: number) => seabed(Math.min(Math.max(ix, 2), nx - 3), iz);
     for (let iz = 0; iz < solver.nz; iz += 1) {
-      for (let ix = 0; ix < solver.nx - 5; ix += 1) expect(solver.h[iz * solver.nx + ix]).toBe(before[iz * solver.nx + ix + 5]);
-      for (let ix = solver.nx - 5; ix < solver.nx; ix += 1) {
-        const i = iz * solver.nx + ix;
-        expect(solver.bed[i]).toBe(-spot.depthAt(solver.xCenters[ix], solver.zCenters[iz]));
+      for (let ix = 0; ix < nx; ix += 1) expect(solver.bed[iz * nx + ix]).toBe(bedAt(ix, iz));
+      for (let ix = 0; ix < nx - 5; ix += 1) {
+        const i = iz * nx + ix;
+        const old = i + 5;
+        if (ix >= 2 && ix + 5 < nx - 2) expect(solver.h[i]).toBe(before[old]);
+        else if (before[old] > 1e-4) expect(solver.h[i]).toBeCloseTo(Math.max(0, beforeSurface[old] - solver.bed[i]), 12);
+      }
+      for (let ix = nx - 5; ix < nx; ix += 1) {
+        const i = iz * nx + ix;
         const surface = edgeWet[iz] ? edges[iz] : 0.2;
         expect(solver.h[i]).toBeCloseTo(Math.max(0, surface - solver.bed[i]), 12);
       }

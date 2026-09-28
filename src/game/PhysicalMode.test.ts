@@ -168,7 +168,8 @@ describe('PhysicalMode', () => {
     expect(scene.children).toContain(mode.board);
     expect(mode.board.visible).toBe(true);
     expect(mode.board.position.toArray()).toEqual(board.position.toArray());
-    expect(mode.board.quaternion.toArray()).toEqual(board.orientation.toArray());
+    // The drawn pose is interpolated between snapshots: equal to the physics board's to rounding.
+    mode.board.quaternion.toArray().forEach((value, k) => expect(value).toBeCloseTo(board.orientation.toArray()[k], 12));
     // The rider lies prone on the board, drawn from the snapshot, and the ride camera follows.
     expect(scene.children).toContain(mode.surfer.group);
     expect(mode.surfer.group.visible).toBe(true);

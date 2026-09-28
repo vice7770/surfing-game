@@ -13,9 +13,9 @@ export const FIELD = {
   ZHS: 22, ZHN: 23, ZETAS: 24, ZETAN: 25, ZWS: 26, ZWN: 27, ZUS: 28, ZUN: 29,
   HALF: 30, SRCX: 31, SRCZ: 32, PREDX: 33, PREDZ: 34, STARTP: 35, STARTQ: 36,
   STRENGTH: 37, AGE: 38, NEXTSTRENGTH: 39, NEXTAGE: 40, NU: 41, VISCX: 42, VISCZ: 43, SHEAR: 44,
-  DDX: 45, DDZ: 46, WET: 47, TC: 48, TR: 49, WEIGHT: 50, RISE: 51,
+  DDX: 45, DDZ: 46, WET: 47, TC: 48, TR: 49, WEIGHT: 50, RISE: 51, HOLD: 52,
 } as const;
-export const FIELD_COUNT = 52;
+export const FIELD_COUNT = 53;
 
 /** Grid buffer layout: x centres (nx), then per row: z centre, dz, below, above, gap. */
 export const ROW_STRIDE = 5;
@@ -185,11 +185,13 @@ fn wetAt(ix: i32, iz: i32) -> f32 {
   return at(${FIELD.WET}u, u32(cz) * P.nx + u32(cx));
 }
 
-// K2: the dispersive mask (BoussinesqSolver.updateMask): every cell the stencils reach is wet, within the Tonelli–Petti ratio (crest and trough).
+// K2: the dispersive mask (BoussinesqSolver.updateMask): every cell the stencils reach is wet, within the Tonelli–Petti ratio
+// (crest and trough), and outside a jet's plunge zone.
 @compute @workgroup_size(64) fn mask(@builtin(global_invocation_id) id: vec3<u32>) {
   let i = cellOf(id); if (i >= P.n) { return; }
   let ix = i32(i % P.nx); let iz = i32(i / P.nx);
-  var dispersing = at(${FIELD.WET}u, i) > 0.0 && abs(at(${FIELD.H}u, i) - at(${FIELD.STILL}u, i)) <= SWITCH_RATIO * at(${FIELD.STILL}u, i);
+  let weak = !(at(${FIELD.HOLD}u, i) > 0.0) && abs(at(${FIELD.H}u, i) - at(${FIELD.STILL}u, i)) <= SWITCH_RATIO * at(${FIELD.STILL}u, i);
+  var dispersing = at(${FIELD.WET}u, i) > 0.0 && weak;
   for (var k = -2; k <= 2; k++) { dispersing = dispersing && wetAt(ix + k, iz) > 0.0 && wetAt(ix, iz + k) > 0.0; }
   for (var a = -1; a <= 1; a++) { for (var b = -1; b <= 1; b++) { dispersing = dispersing && wetAt(ix + a, iz + b) > 0.0; } }
   put(${FIELD.MASK}u, i, select(0.0, 1.0, dispersing && P.dispersive == 1u));

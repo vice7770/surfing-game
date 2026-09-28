@@ -77,7 +77,7 @@ export class BoreWater implements SurfWater {
     const inRoller = roller > 0 ? Math.min(1, Math.max(0, (y - (rise - roller)) / roller)) : 0;
     const flow = current + inRoller * (speed - current);
     Object.assign(out, {
-      surfaceY: rise, stillDepth: depth, waterDepth: depth + rise, bedY: -depth,
+      surfaceY: rise, stillDepth: depth, waterDepth: depth + rise, bedY: -depth, bedNormalX: 0, bedNormalY: 1, bedNormalZ: 0, bedMaterial: 'sand' as const,
       wet: true, outsideDomain: false, slopeX: 0, slopeZ, normalX: 0, normalY: 1 / norm, normalZ: -slopeZ / norm,
       flowX: 0, flowY: 0, flowZ: flow, regime: 'profile', breaking: breaking ? 1 : 0,
     });
