@@ -82,11 +82,15 @@ describe('the trunk hinged at the hips (the stance poses, step 3)', () => {
   });
 
   it('leaves the feet where they were and a reaching hand on its point', () => {
+    // The hinge alone: the heel lifts with the knees the hinge moves (the ankle's reach), in both runs held flat.
+    const reach = RIG_DETAIL.maxDorsiflexion;
+    RIG_DETAIL.maxDorsiflexion = 90;
     const state = stanceState('compress-frontside', 'regular', at, createRiderVisualState()).state;
     const { bones } = posed(state);
     without();
     const plain = posed(state).bones;
     Object.assign(RIG_DETAIL.hipAngle, saved);
+    RIG_DETAIL.maxDorsiflexion = reach;
     for (const side of SIDES) {
       const ankle = (all: Map<string, Bone>) => all.get(BONES.foot[side])!.getWorldPosition(new Vector3());
       expect(ankle(bones).distanceTo(ankle(plain)), side).toBeLessThan(0.005);

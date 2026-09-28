@@ -37,7 +37,11 @@ export interface StanceAngles {
   /** Included at the hip, between the trunk and the thigh: 180° standing straight. */
   hipFront: number;
   hipRear: number;
-  /** The shin's tilt from the deck's normal: the ankle's flexion with the foot flat on the deck. */
+  /**
+   * The ankle's flexion: how far the shin has closed on the foot from its rest
+   * (a skeleton's gauge); from joints alone, the shin's tilt from the deck's
+   * normal (the foot flat on the deck).
+   */
   ankleFront: number;
   ankleRear: number;
   /** The trunk (the spine's base to the neck) from the deck's normal, toward the toes (+) or heels. */
@@ -103,7 +107,7 @@ export function createStanceJoints(): StanceJoints {
 }
 
 /** The stance's angles from a body's joints (`measure` for a posed skeleton). */
-export function measureJoints(joints: StanceJoints, board: BoardPose, stance: StanceName): StanceAngles {
+export function measureJoints(joints: StanceJoints, board: BoardPose, stance: StanceName, restAnkle?: number): StanceAngles {
   const inverse = new Quaternion().copy(board.boardQuaternion).invert();
   const local = (point: Vector3) => point.clone().sub(board.boardPosition).applyQuaternion(inverse);
   const direction = (vector: Vector3) => vector.clone().applyQuaternion(inverse);
@@ -119,7 +123,10 @@ export function measureJoints(joints: StanceJoints, board: BoardPose, stance: St
   const down = scratch.copy(joints.spine).sub(joints.neck).clone();
   const knee = (side: Side) => angle(joints.hip[side].clone().sub(joints.knee[side]), joints.ankle[side].clone().sub(joints.knee[side]));
   const hip = (side: Side) => angle(joints.neck.clone().sub(joints.spine), joints.knee[side].clone().sub(joints.hip[side]));
-  const ankle = (side: Side) => angle(direction(joints.knee[side].clone().sub(joints.ankle[side])), DECK_UP);
+  const ankle = (side: Side) => {
+    const shin = joints.knee[side].clone().sub(joints.ankle[side]);
+    return restAnkle === undefined ? angle(direction(shin), DECK_UP) : restAnkle - angle(shin, joints.toe[side].clone().sub(joints.ankle[side]));
+  };
   const arm = (side: Side) => angle(joints.elbow[side].clone().sub(joints.shoulder[side]), down);
   const elbow = (side: Side) => angle(joints.shoulder[side].clone().sub(joints.elbow[side]), joints.wrist[side].clone().sub(joints.elbow[side]));
   // The body's lean against the world: toward the toes' side, level.
@@ -204,6 +211,8 @@ function rootOf(node: Object3D): Object3D {
  */
 export class StanceGauge {
   private readonly restFacing = { pelvis: new Vector3(), chest: new Vector3(), head: new Vector3() };
+  /** The ankle's included angle at rest, shin to foot, degrees. */
+  private readonly restAnkle: number;
 
   constructor(private readonly bones: ReadonlyMap<string, Bone>) {
     rootOf(this.bone(BONES.hips)).updateMatrixWorld(true);
@@ -214,6 +223,8 @@ export class StanceGauge {
     carry(BONES.hips, this.restFacing.pelvis);
     carry(BONES.spine[2], this.restFacing.chest);
     carry(BONES.head, this.restFacing.head);
+    const joints = this.joints();
+    this.restAnkle = SIDES.reduce((sum, side) => sum + angle(joints.knee[side].clone().sub(joints.ankle[side]), joints.toe[side].clone().sub(joints.ankle[side])), 0) / SIDES.length;
   }
 
   /** The skeleton's joints as posed now. */
@@ -242,7 +253,7 @@ export class StanceGauge {
 
   /** The stance's angles as posed now, on `board`, for a Regular or Goofy rider. */
   measure(board: BoardPose, stance: StanceName): StanceAngles {
-    return measureJoints(this.joints(), board, stance);
+    return measureJoints(this.joints(), board, stance, this.restAnkle);
   }
 
   private bone(name: string): Bone {

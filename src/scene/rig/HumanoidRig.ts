@@ -41,6 +41,20 @@ export const RIG_DETAIL = {
    * hand's heading about the trunk.
    */
   arms: { share: 1, elevationTall: 40, elevationDeep: 55, elbow: 155 },
+  /**
+   * Standing, a clavicle follows its arm (step 3): lifting a `ratio` of the
+   * arm's rise from the trunk's down above `from`° (the scapulohumeral rhythm,
+   * Inman et al. 1944: about 2:1, the arm to the shoulder blade), and swinging
+   * forward up to `protract`° as the arm reaches forward; `share` of it.
+   */
+  clavicle: { share: 1, from: 30, ratio: 1 / 3, protract: 15 },
+  /**
+   * Standing, the ankle bends no further than this under load, °: past it the
+   * heel lifts, the foot turning about the ball, the toes flat on the deck
+   * (step 3; weight-bearing dorsiflexion: 30° or more in healthy adults, about
+   * 40° typical in the weight-bearing lunge test).
+   */
+  maxDorsiflexion: 40,
   /** Standing elbows drop below the line from shoulder to hand, a little behind it. */
   elbowDrop: 1,
   elbowBack: 0.3,
@@ -188,6 +202,8 @@ export class HumanoidRig {
   private readonly footDrop: number;
   private readonly footRun: number;
   private readonly fingerRests = new Map<Bone, Quaternion>();
+  /** The clavicles' and toes' rest turns against their parents: where they return when not driven. */
+  private readonly localRests = new Map<Bone, Quaternion>();
   /** Standing, how far the weight is back for the snap, 0 to 1, this solve. */
   private back = 0;
   /** Standing, how far the trunk hinges forward at the hips this solve, rad (step 3), and at which clock. */
@@ -262,6 +278,9 @@ export class HumanoidRig {
       capture(BONES.upLeg[side], BONES.leg[side], REST_FORWARD);
       capture(BONES.leg[side], BONES.foot[side], REST_FORWARD);
       capture(BONES.foot[side], BONES.toe[side], REST_UP);
+      capture(BONES.shoulder[side], BONES.arm[side], REST_UP);
+      capture(BONES.toe[side], REST_FORWARD, REST_UP);
+      for (const name of [BONES.shoulder[side], BONES.toe[side]]) this.localRests.set(bones.get(name)!, bones.get(name)!.quaternion.clone());
       // Elbows point backward at rest.
       capture(BONES.arm[side], BONES.foreArm[side], REST_BACK);
       capture(BONES.foreArm[side], BONES.hand[side], REST_BACK);
@@ -376,6 +395,8 @@ export class HumanoidRig {
       else if (state.phase === 'push') pole.copy(boardForward).negate().addScaledVector(boardUp, 0.3);
       else if (upright) pole.copy(WORLD_UP).multiplyScalar(-RIG_DETAIL.elbowDrop).addScaledVector(this.facing, -RIG_DETAIL.elbowBack);
       else pole.copy(this.facing).negate();
+      // The clavicle at rest against the chest (it follows its arm below, standing): the shoulder read from this solve.
+      this.restLocal(BONES.shoulder[side]);
       const shoulder = this.bones.get(BONES.arm[side])!.getWorldPosition(this.joints.shoulder[side]);
       const hand = p[side === 'left' ? POINT.leftHand : POINT.rightHand];
       if (fallen && state.swim.stroking) this.crawlHand(state, side, shoulder, target);
@@ -384,6 +405,7 @@ export class HumanoidRig {
       else target.copy(hand);
       if (state.phase === 'standing') this.freeArm(state, shoulder, target, 1 - this.reachDepth(hand));
       if (state.phase === 'standing' && !this.isRearFoot(state, side)) this.leadArm(state, shoulder, target, 1 - this.reachDepth(hand));
+      if (state.phase === 'standing') this.driveClavicle(state, side, shoulder, target, chestUp);
       solveTwoBone(shoulder, this.upperArm, this.lowerArm, target, pole, this.joints.elbow[side], this.joints.wrist[side]);
       this.aimLimb(BONES.arm[side], BONES.foreArm[side], shoulder, this.joints.elbow[side], this.joints.wrist[side], pole);
       this.orient(BONES.hand[side], this.direction.subVectors(this.joints.wrist[side], this.joints.elbow[side]), fallen ? this.facing : boardUp);
@@ -412,16 +434,33 @@ export class HumanoidRig {
         pole.copy(lying ? this.scratch.copy(boardUp).negate() : this.facing);
       }
       solveTwoBone(hip, this.upperLeg, this.lowerLeg, target, pole, this.joints.knee[side], this.joints.ankle[side]);
+      // The ball, where the flat foot meets the deck ahead of the ankle.
+      const ball = this.pivot;
+      if (upright) {
+        this.footForward(state, side, this.footDirection);
+        ball.copy(target).addScaledVector(this.footDirection, this.footRun).addScaledVector(boardUp, -this.footDrop);
+        // Past the ankle's reach under load the heel lifts, the foot turning about the ball (step 3): the ankle's
+        // flexion is how far the shin has closed on the flat foot from their angle at rest.
+        const shin = this.direction.subVectors(this.joints.knee[side], this.joints.ankle[side]);
+        const foot = this.scratch.subVectors(ball, this.joints.ankle[side]);
+        const flexion = Math.PI / 2 + Math.atan2(this.footDrop, this.footRun) - shin.angleTo(foot);
+        const lift = state.phase === 'standing' ? Math.max(0, Math.min(Math.PI / 4, flexion - (RIG_DETAIL.maxDorsiflexion * Math.PI) / 180)) : 0;
+        if (lift > 0) {
+          const axis = this.bendAxis.crossVectors(boardUp, this.footDirection).normalize();
+          target.sub(ball).applyAxisAngle(axis, lift).add(ball);
+          solveTwoBone(hip, this.upperLeg, this.lowerLeg, target, pole, this.joints.knee[side], this.joints.ankle[side]);
+        }
+      }
       this.aimLimb(BONES.upLeg[side], BONES.leg[side], hip, this.joints.knee[side], this.joints.ankle[side], pole);
       if (upright) {
-        // The sole flat on the deck: the foot keeps its rest pitch along the stance direction.
-        this.footForward(state, side, this.footDirection);
-        this.direction.copy(this.footDirection).multiplyScalar(this.footRun).addScaledVector(boardUp, -this.footDrop);
-        this.orient(BONES.foot[side], this.direction, boardUp);
+        // The sole on the deck: from the ankle to the ball (its rest pitch standing flat), the toes along the deck.
+        this.orient(BONES.foot[side], this.direction.subVectors(ball, this.joints.ankle[side]), boardUp);
+        this.orient(BONES.toe[side], this.footDirection, boardUp);
       } else {
         // Toes pointed along the shin; lying, the top of the foot faces the deck.
         this.direction.subVectors(this.joints.ankle[side], this.joints.knee[side]);
         this.orient(BONES.foot[side], this.direction, lying ? this.hint.copy(boardUp).negate() : this.facing);
+        this.restLocal(BONES.toe[side]);
       }
     }
   }
@@ -693,6 +732,36 @@ export class HumanoidRig {
   }
 
   /**
+   * Standing, turns a clavicle with its arm (`RIG_DETAIL.clavicle`): up toward the
+   * chest's up with the arm's rise above `from`, forward with its reach forward;
+   * moves `shoulder` with it.
+   */
+  private driveClavicle(state: RiderVisualState, side: Side, shoulder: Vector3, target: Vector3, chestUp: Vector3): void {
+    const { clavicle } = RIG_DETAIL;
+    const share = clavicle.share * state.standingBlend;
+    if (share <= 0) return;
+    const bone = this.bones.get(BONES.shoulder[side])!;
+    const reach = this.direction.subVectors(target, shoulder);
+    if (reach.lengthSq() < 1e-8) return;
+    reach.normalize();
+    const rise = Math.atan2(this.scratch.crossVectors(reach, this.up).length(), -reach.dot(this.up));
+    const lift = share * clavicle.ratio * Math.max(0, rise - (clavicle.from * Math.PI) / 180);
+    const swing = (share * clavicle.protract * Math.PI * Math.max(0, reach.dot(this.facing))) / 180;
+    if (lift <= 0 && swing <= 0) return;
+    const along = this.hint.subVectors(shoulder, bone.getWorldPosition(this.chestBase)).normalize();
+    const toward = (direction: Vector3, angle: number) => {
+      const perpendicular = this.bendAxis.copy(direction).addScaledVector(along, -direction.dot(along));
+      if (perpendicular.lengthSq() < 1e-8) return;
+      along.multiplyScalar(Math.cos(angle)).addScaledVector(perpendicular.normalize(), Math.sin(angle));
+    };
+    toward(chestUp, lift);
+    toward(this.facing, swing);
+    this.orient(BONES.shoulder[side], along, chestUp);
+    bone.updateMatrixWorld(true);
+    this.bones.get(BONES.arm[side])!.getWorldPosition(shoulder);
+  }
+
+  /**
    * Standing, a free arm toward the stance's shape (`RIG_DETAIL.arms`): the
    * hand's target raised to the stance's elevation from the trunk's down, at the
    * reach of a soft elbow, about the trunk as the physics' hand is; `share` of
@@ -870,6 +939,13 @@ export class HumanoidRig {
     if (bend.lengthSq() < 1e-10) bend.copy(pole);
     this.orient(upperName, this.direction.subVectors(mid, root), bend);
     this.orient(lowerName, this.direction.subVectors(end, mid), bend);
+  }
+
+  /** Returns a bone to its rest turn against its parent (a clavicle or toes not driven this solve). */
+  private restLocal(name: string): void {
+    const bone = this.bones.get(name)!;
+    bone.quaternion.copy(this.localRests.get(bone)!);
+    bone.updateMatrixWorld(true);
   }
 
   /** Curls each finger joint by `degrees` about its local x axis from its rest. */
