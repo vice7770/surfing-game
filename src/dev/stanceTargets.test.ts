@@ -18,7 +18,7 @@ import { compareStance, type StanceReading } from './stanceReport';
 const KNOWN_MISSES: Record<string, string> = {
   'trim.kneeFront': 'the physics sits the hips forward (its weight 0.64, over 0.50–0.62): the front knee bends for it (step 6)',
   'compress-frontside.kneeFront': 'the knees follow the physics\' full crouch, a little deeper than the thesis\'s 70–90° (step 6)',
-  'compress-frontside.hipRear': 'the hinge meets the hips\' mean (75°); the rear thigh, more upright, leaves its hip at 94°',
+  'compress-frontside.hipRear': 'the hinge brings the hips\' mean to the depth\'s angle (84° at the physics\' Compress depth, 0.87) and meets it; the rear thigh, more upright, leaves its hip at about 95°: one angle for both hips, the rig\'s mapping (it could reach this)',
   'compress-frontside.lowHand': 'the drawn hand still blending down to the physics\' (0.12 m) 0.4 s into Compress: step 1\'s point blend carries the switch',
   'compress-backside.hipFront': 'backside the hinge stops at Hobgood\'s upright trunk so the heel-side hand reaches the water: the thesis\'s hips cannot fold with it',
   'compress-backside.hipRear': 'as the front hip: the upright backside trunk',

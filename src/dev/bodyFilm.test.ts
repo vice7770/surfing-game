@@ -32,7 +32,7 @@ describe('the body film', () => {
       }
     }
   };
-  it.each(['pop-up and landing', 'compress mid-turn, the hand reaching', 'a fall'])('blends the switches of %s out', blendsOut);
+  it.each(['pop-up and landing', 'pop-up crouched', 'compress mid-turn, the hand reaching', 'a fall'])('blends the switches of %s out', blendsOut);
   // Lying down, its switches blend out (the frames about each are smooth), but 0.23 s into the lie-down the left knee
   // swings through at up to 10 m/s (3.3 m/s over its neighbours, 3.8 at 120 Hz): the leg's pole jumps from the
   // standing one to the lying one at the switch, and the knee turns over only as the leg straightens. The rig's poles

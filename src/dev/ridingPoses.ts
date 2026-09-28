@@ -251,6 +251,11 @@ export function simulateStance(recipe: StanceRecipe, stance: StanceName, at: Vec
 export function drawnStance(id: string, stance: StanceName, at: Vector3, draw: (state: RiderVisualState) => void): { state: RiderVisualState; reached: boolean } {
   const recipe = STANCE_RECIPES[id];
   if (!recipe) throw new Error(`No recipe for the stance ${id}.`);
+  return drawnRecipe(recipe, stance, at, draw);
+}
+
+/** Any recipe as the game draws it (`drawnStance`): for a motion followed over time, not only a held stance. */
+export function drawnRecipe(recipe: StanceRecipe, stance: StanceName, at: Vector3, draw: (state: RiderVisualState) => void): { state: RiderVisualState; reached: boolean } {
   // The physics is deterministic: a first run finds where the last board lies, the second draws the moved run.
   const frame = frameAt(play(recipe, stance).board, at);
   const motion = new RiderMotion();
