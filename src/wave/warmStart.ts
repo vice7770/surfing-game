@@ -1,4 +1,4 @@
-import { groupSpeed } from './dispersion';
+import { GRAVITY, groupSpeed } from './dispersion';
 import type { SeaState } from './SeaState';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 
@@ -97,6 +97,9 @@ export function transformedSea(
   }
 }
 
+/** The least share of its still depth a warm-started cell keeps under a trough (wave sizes). */
+const WARM_DEPTH_FLOOR = 0.5;
+
 /**
  * Fill the solver with the linear sea shoaled and refracted along each column
  * (`transformedSea`), capped at γh, so the spin-up only has to settle the nonlinear shape.
@@ -120,7 +123,20 @@ export function warmStart(solver: ShallowWaterSolver, sea: SeaState, options: Wa
         qx += row.speedX[c] * value;
         qz += row.speedZ[c] * value;
       }
-      const total = Math.max(0, solver.restLevel + eta - solver.bed[i]);
+      const still = solver.restLevel - solver.bed[i];
+      let total = Math.max(0, solver.restLevel + eta - solver.bed[i]);
+      if (still > 0) {
+        // A linear sea capped only in Hs still has troughs that nearly empty a cell, with fluxes too fast for the
+        // water left (a long swell's tank blew up in its first seconds): each cell keeps WARM_DEPTH_FLOOR of its still
+        // depth, and its flow stays below the local long-wave speed. The spin-up settles the difference.
+        total = Math.max(total, WARM_DEPTH_FLOOR * still);
+        const speed = Math.hypot(qx, qz) / total;
+        const limit = Math.sqrt(GRAVITY * total);
+        if (speed > limit) {
+          qx *= limit / speed;
+          qz *= limit / speed;
+        }
+      }
       const wet = total > 1e-4;
       solver.h[i] = total;
       solver.qx[i] = wet ? qx : 0;

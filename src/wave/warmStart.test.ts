@@ -22,6 +22,29 @@ describe('warmStart', () => {
     for (const value of solver.qz) expect(Number.isFinite(value)).toBe(true);
   });
 
+  it('keeps every cell at least half its still depth, flowing no faster than its wave speed, where a long swell shoals to its cap (wave sizes)', () => {
+    // A linear sea capped only in Hs still has troughs that nearly empty a cell, with fluxes too fast for the water left:
+    // the Beach's 3 m, 18 s tank blew up in its first seconds (a cell of 1.5 m over 4.4 m moving at 12.6 m/s).
+    const solver = new ShallowWaterSolver(
+      { nx: 40, xMin: 0, dx: 2, zEdges: uniformEdges(0, 600, 300), xBoundary: 'open' }, (_x, z) => Math.max(0.5, 10 - z / 60),
+    );
+    const sea = SeaState.fromSpectrum(
+      { significantHeight: 3, peakPeriod: 18, direction: 0.17, spreading: 12, componentCount: 24, depth: 10 }, 1, shallowWaterWaveNumber,
+    );
+    let shallowest = Infinity;
+    let fastest = 0;
+    for (const seaTime of [0, 7, 13, 21, 34]) {
+      warmStart(solver, sea, { referenceZ: 0, seaTime });
+      for (let i = 0; i < solver.h.length; i += 1) {
+        const still = solver.restLevel - solver.bed[i];
+        if (!(still > 0)) continue;
+        shallowest = Math.min(shallowest, solver.h[i] / still);
+        if (solver.h[i] > 0) fastest = Math.max(fastest, Math.hypot(solver.qx[i], solver.qz[i]) / solver.h[i] / Math.sqrt(9.81 * solver.h[i]));
+      }
+    }
+    expect([shallowest >= 0.5 - 1e-12, fastest <= 1 + 1e-9], `shallowest ${shallowest}, fastest Froude ${fastest}`).toEqual([true, true]);
+  });
+
   it('reproduces the analytic sea exactly over a flat bed', () => {
     const solver = new ShallowWaterSolver({ nx: 16, xMin: -40, dx: 5, zEdges: uniformEdges(-100, 100, 40), xBoundary: 'open' }, () => 8);
     const sea = SeaState.fromSpectrum(
