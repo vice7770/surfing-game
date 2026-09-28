@@ -12,7 +12,7 @@ import {
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
 import { PADANG_SWELLS, PADANG_TIDES, REEF_SWELLS } from '../game/SurfConditions';
-import { PADANG_PRACTICE_SWELL, REEF_PRACTICE_SWELL } from '../game/PhysicalMode';
+import { PADANG_PRACTICE_SWELL, PADANG_SPREADING, REEF_PRACTICE_SWELL } from '../game/PhysicalMode';
 import { rayConcentration } from './Refraction';
 import { crestSpeedAt } from './CrestKinematics';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
@@ -511,7 +511,7 @@ describe('SurfZoneSimulation', () => {
     const run = (overrides: Partial<SurfZoneConfig>, fastestAllowed = 20) => {
       const simulation = new SurfZoneSimulation({
         ...small, spot: 'padang', significantHeight: PADANG_SWELLS.big.significantHeight, peakPeriod: PADANG_SWELLS.big.peakPeriod,
-        directionDegrees: PADANG_SWELLS.big.directionDegrees ?? 0, spreading: 24, alongShore: 160, dx: 1, fineSpacing: 1, ...overrides,
+        directionDegrees: PADANG_SWELLS.big.directionDegrees ?? 0, spreading: PADANG_SPREADING, alongShore: 160, dx: 1, fineSpacing: 1, ...overrides,
       });
       const { solver } = simulation;
       let finite = true;

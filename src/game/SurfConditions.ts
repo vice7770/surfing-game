@@ -2,7 +2,7 @@ import { t } from '../ui/strings';
 import { describeSurf, type SurfWords } from '../ui/surfHeight';
 import type { SpotName } from '../wave/Bathymetry';
 import { PRACTICE_SURF, forecastSurf, type SurfForecast } from '../wave/surfForecast';
-import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalSettings } from './PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, PADANG_SPREADING, type PhysicalSettings } from './PhysicalMode';
 import { solverStage } from '../wave/SurfZoneSimulation';
 
 /** The Surf screen's few choices (plan P8), turned into the Wave Lab's physical settings. */
@@ -45,6 +45,8 @@ export interface SwellChoice {
   peakPeriod: number;
   spread: number;
   directionDegrees?: number;
+  /** The cos-2s spreading exponent itself, for a spot whose swell arrives narrower than the spread slider reaches. */
+  spreading?: number;
 }
 
 /**
@@ -64,9 +66,9 @@ export const REEF_SWELLS: Record<'small' | 'medium' | 'big', SwellChoice> = {
  * Heights from Komar & Gaughan inverted to the faces; provisional until the size report calibrates them.
  */
 export const PADANG_SWELLS: Record<'small' | 'medium' | 'big', SwellChoice> = {
-  small: { significantHeight: 1.6, peakPeriod: 16, spread: 0.2, directionDegrees: 20 },
-  medium: { significantHeight: 2.2, peakPeriod: 17, spread: 0.2, directionDegrees: 20 },
-  big: { significantHeight: 3, peakPeriod: 18, spread: 0.15, directionDegrees: 20 },
+  small: { significantHeight: 1.6, peakPeriod: 16, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 20 },
+  medium: { significantHeight: 2.2, peakPeriod: 17, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 20 },
+  big: { significantHeight: 3, peakPeriod: 18, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 20 },
 };
 
 /** Spots with swells of their own; the rest take the shared buoy values. */
@@ -142,6 +144,7 @@ export function physicalSettingsFor(spot: SpotName, conditions: SurfConditions, 
     source: swell ? 'buoy' : 'practice',
     ...(swell ? { significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod, spread: swell.spread } : {}),
     ...(swell?.directionDegrees !== undefined ? { directionDegrees: swell.directionDegrees } : {}),
+    ...(swell?.spreading !== undefined ? { spreading: swell.spreading } : {}),
     tide: tideFor(spot, conditions.tide),
     windSpeed: windFor(spot, conditions.wind),
   };

@@ -90,6 +90,12 @@ describe('PhysicalMode', () => {
     expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'padang', source: 'practice' })).toEqual(PADANG_PRACTICE_SWELL);
     expect(PADANG_PRACTICE_SWELL.bandwidth).toBeLessThan(0.1);
     expect(PADANG_PRACTICE_SWELL.peakPeriod).toBeGreaterThanOrEqual(16);
+    expect(PADANG_PRACTICE_SWELL.spreading).toBeGreaterThanOrEqual(75);
+  });
+
+  it('takes a spot’s own spreading when it sets one, and the spread slider’s otherwise', () => {
+    expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'padang', source: 'buoy', spreading: 150 }).spreading).toBe(150);
+    expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'buoy' }).spreading).toBe(spreadingFor(DEFAULT_PHYSICAL_SETTINGS.spread));
   });
 
   it('roughens the chop more under onshore than offshore wind', () => {

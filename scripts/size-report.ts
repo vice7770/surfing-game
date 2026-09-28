@@ -75,7 +75,7 @@ const settings = DEFAULT_PHYSICAL_SETTINGS;
 /** Each spot's own swell direction (the Reef's and Padang Padang's come from their peak's side), else the Wave Lab's default. */
 const directionFor = (spot: SpotName) => swellChoice(spot, 'medium').directionDegrees ?? settings.directionDegrees;
 const base = (spot: SpotName): Omit<SurfZoneConfig, 'significantHeight' | 'peakPeriod'> => ({
-  spot, seed: 1, directionDegrees: directionFor(spot), spreading: spreadingFor(settings.spread), tide: 0, windSpeed: 0,
+  spot, seed: 1, directionDegrees: directionFor(spot), spreading: swellChoice(spot, 'medium').spreading ?? spreadingFor(settings.spread), tide: 0, windSpeed: 0,
 });
 mkdirSync(`${directory}/baseline`, { recursive: true });
 for (const spot of spots) {

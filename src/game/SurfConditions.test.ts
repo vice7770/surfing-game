@@ -40,7 +40,11 @@ describe('surf conditions', () => {
     expect(settings).toMatchObject({
       source: 'buoy', significantHeight: PADANG_SWELLS.medium.significantHeight, peakPeriod: PADANG_SWELLS.medium.peakPeriod,
       directionDegrees: PADANG_SWELLS.medium.directionDegrees, tide: PADANG_TIDES.low, windSpeed: PADANG_WINDS.offshore,
+      spreading: PADANG_SWELLS.medium.spreading,
     });
+    // A groundswell refracted into 10 m is long-crested: never below Goda's s_max for long-decay swell (Goda et al. 1978).
+    for (const swell of Object.values(PADANG_SWELLS)) expect(swell.spreading).toBeGreaterThanOrEqual(75);
+    expect(physicalSettingsFor('point', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, water).spreading).toBeUndefined();
     for (const swell of Object.values(PADANG_SWELLS)) {
       expect(swell.significantHeight).toBeLessThanOrEqual(TANK_SWELL_LIMITS.height.max);
       expect(swell.peakPeriod).toBeGreaterThanOrEqual(16);
