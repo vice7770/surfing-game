@@ -240,7 +240,7 @@ The [Part B plan](../superpowers/plans/2026-09-28-teahupoo-reef-part-b.md); the 
 
 A break over a submerged crest with ξ ≥ 0.4 is a reef break:
 - **Roundness:** its tube's length over width is Mead & Black's vortex ratio for the gradient it climbs. The ratio is held within the 1.42–3.43 they measured at surfed breaks; gentler than 1:40, the break is a plane slope's.
-- **The gradient:** measured their way, averaged along the crest's travel from 2.5 m shallower to 2.5 m deeper than the breaking depth (H / 0.78).
+- **The gradient:** measured their way, averaged along the crest's travel from 2.5 m shallower to 2.5 m deeper than the breaking depth (H / 0.78). A band reaching past the crest ends at the crest, and one reaching below the shelf ends at the shelf: that is the gradient the wave climbs. Before the final review's fix, a small wave's band walked on across the reef flat, and its roundness depended on the window's size.
 - **Inside Pick & Feddersen's fits** (ψ0 ≤ 0.0889): their void area, jet area and tilt, with only the roundness from Mead & Black. Beyond the fits (the Teahupo'o ledge): the provisional 0.43 H² void, 0.5 H lip and 23° tilt.
 - **Wind:** it reshapes the tube from U/C = −0.4 (Mead & Black's photos were offshore days), not from calm.
 - **No collapse over a submerged crest.** The plan's first rule, "Y < 1 collapses", made 74 of 87 Big-swell ledge breaks throw nothing. On the 1:2.29 ledge Y ≥ 0.97, so any crest within ~34° of the ledge's normal fell under it, and no source supports it.
@@ -253,12 +253,12 @@ A break over a submerged crest with ξ ≥ 0.4 is a reef break:
 
 | Run | Jets | Rollers | Median tube length | 90th percentile | Measured width / length | Opening, 90th percentile | Largest opening | Close-out | Mixed | Median peel |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Practice (1.0 m, 14 s, 20°), Part A's baseline | 1964 | 1582 | 1.25 m | 2.80 m | 0.71 | 1.25 m | 3.09 m | | | |
-| Practice, Part B | 1737 | 1643 | 1.18 m | 2.38 m | 0.80 | 1.48 m | 2.60 m | 46 % | 42 % | 16° |
+| Practice (1.0 m, 14 s, 20°), main (aa71add) | 1787 | 1675 | 1.28 m | 2.90 m | 0.71 | 1.29 m | 2.40 m | 50 % | 33 % | 11° |
+| Practice, Part B | 1745 | 1652 | 1.16 m | 2.40 m | 0.80 | 1.51 m | 2.67 m | 46 % | 42 % | 16° |
 | Wave Lab defaults (1.4 m, 10 s), main (aa71add) | 976 | 1616 | 1.20 m | 1.96 m | 0.71 | 1.01 m | 1.32 m | 75 % | 13 % | 9° |
-| Wave Lab defaults, Part B | 1033 | 1547 | 1.04 m | 1.62 m | 0.77 | 1.12 m | 1.39 m | 67 % | 13 % | 11° |
+| Wave Lab defaults, Part B | 1047 | 1539 | 1.02 m | 1.61 m | 0.76 | 1.12 m | 1.39 m | 67 % | 17 % | 11° |
 
-The measured width / length is each landed lip parcel's drop over how far ahead of its crest it landed. The tubes are rounder (0.71 → 0.77–0.80) and open wider under the lip at the 90th percentile (1.01 → 1.12 m, 1.25 → 1.48 m), but shorter: a rounder void of the same area is shorter.
+The measured width / length is each landed lip parcel's drop over how far ahead of its crest it landed. The tubes are rounder (0.71 → 0.76–0.80) and open wider under the lip at the 90th percentile (1.01 → 1.12 m, 1.29 → 1.51 m), but shorter: a rounder void of the same area is shorter. Part A's Practice baseline (1964 jets) was measured on older code. Main today throws 1787, so Part B's 1745 is the realization, not lost throws.
 
 ### The jets against the sources
 
@@ -266,10 +266,10 @@ Per throw, from the same runs:
 
 | Run | Reef breaks | Given / asked | Jet area / H² | Sheet / H | Jet / crest speed | Median fit Y | Held at 1.42 | Tube L / W as thrown |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Practice | 1736 of 1737 | 1.00 | 0.47 | 0.47 | 1.96 | 1.16 | 65 % | 1.58 |
-| Wave Lab defaults | 1032 of 1033 | 1.00 | 0.47 | 0.47 | 1.95 | 1.43 | 49 % | 1.60 |
+| Practice | 1741 of 1745 | 1.00 | 0.47 | 0.47 | 1.96 | 1.16 | 68 % | 1.58 |
+| Wave Lab defaults | 1046 of 1047 | 1.00 | 0.47 | 0.47 | 1.94 | 1.32 | 52 % | 1.58 |
 
-- **Tube shape:** Mead & Black's fit for the Reef's gradients reads 1.16–1.43. On about half the breaks that is rounder than anything they measured, so it is held at 1.42. In calm wind (these runs) it throws at 1.58–1.60, 0.07 flatter than their offshore-day tubes.
+- **Tube shape:** Mead & Black's fit for the Reef's gradients reads a median 1.16–1.32. On half to two-thirds of the breaks that is rounder than anything they measured, so it is held at 1.42. In calm wind (these runs) it throws at 1.58, 0.07 flatter than their offshore-day tubes.
 - **The water:** at these sizes the crest gives the whole jet it is asked for. On the Big swell (60 m window, +25°, seed 3) the median crest still gives 92 %, but 21 of the 27 waves over 4 m gave under 90 %, often about half (6.4 of 12.5 m³): the crest's water limits the biggest lips. The source share was not raised (the spec's "never thicker than its water").
 - **Jet area:** 0.47 H², against Pick & Feddersen's 0.13–0.27 H² at their fitted slopes. The Reef's ledge lies beyond their fits, where the jet comes from the provisional 0.5 H lip.
 - **Sheet thickness:** 0.47 H. That is Shand's "about half the wave height", an article's description, **provisional**. Measured and modelled lips are thinner: tips about 0.07–0.08 H (Feddersen et al. 2024, Surf Ranch), roots 0.10–0.21 H (jet area over void length). The advisor's reading: 0.5 H describes the lip's root at most.
@@ -299,7 +299,7 @@ Per throw, from the same runs:
   - **What happens:** a thick lip landing on the drained crest makes a bore the depth switch does not see. The dispersive terms stay on across it (modified momentum 23.8 against a recovered flux of 9.8 in a 0.42 m cell). As a cell thins past the trough threshold it flips to shallow water, and it flashes 23–29 m/s for about 0.1 s, then settles.
   - **Probe:** the oblique probes (60 m, ±25°) now guard against a runaway at 30 m/s, as the low-tide probe does.
   - **Root fix, split out:** switch dispersion off in a jet's plunge zone, on CPU and WGSL.
-- **The sea handover (on main).** A joiner did not watch for new breakers on its first step, so a wave starting to break then threw on the donor and not the copy. Online, lips must match; a joiner now arms from its first step. The edge fix moved the handover test's realization onto it.
+- **The sea handover (on main).** A joiner did not watch for new breakers on its first step, so a wave starting to break then threw on the donor and not the copy. Online, lips must match: the donor's flag is now handed over with the state, so a sea handed over before its first step arms neither. The edge fix moved the handover test's realization onto it.
 - **The other spots:** they throw as on main except through the two edge treatments.
   - The Point with both the levelling and the edge-lip guard off matches main exactly (724 jets, 82 rollers, 5741 parcels).
   - The Canyon with the levelling off matches too (13 jets).
@@ -332,4 +332,4 @@ Per throw, from the same runs:
 - `npm run report:tubes -- --spots reef --seeds 1 --periods 4 --out <file>`, here and in a detached `origin/main` worktree
 - `npm run report:rideability -- --spots reef --hs 1.3 --tp 15 --direction <dir> --spread 0.2 --seeds 2 --periods 12 --reef angle=<angle>`
 - `npm run report:catch -- --practice --ghosts --spots reef --seeds 2 --minutes 3` (baseline, in the `origin/main` worktree)
-- Part B: `npm run report:tubes -- --practice --spots reef --seeds 2 --periods 12`, `npm run report:tubes -- --spots reef --seeds 2 --periods 12`, `npm run report:tubes -- --spots beach,point,canyon --seeds 1 --periods 6` and `npm run report:whitewater -- --spots reef --periods 4`, here and in a detached `aa71add` worktree
+- Part B: `npm run report:tubes -- --practice --spots reef --seeds 2 --periods 12`, `npm run report:tubes -- --spots reef --seeds 2 --periods 12`, `npm run report:tubes -- --spots beach,point,canyon --seeds 1 --periods 6` and `npm run report:whitewater -- --spots reef --periods 4`, here and in a detached `aa71add` worktree (the other spots' and whitewater runs predate the final review's gradient fix, which acts only on reef breaks)

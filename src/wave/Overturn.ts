@@ -93,8 +93,8 @@ export function reefOverturn(orthogonalGradient: number, nonlinearity: number): 
  * Mead & Black's (2001) orthogonal gradient, rise over run: the bed's average gradient along the wave's path
  * from `REEF_OVERTURN.band` shallower (no shallower than the shoreline) to as much deeper than its breaking
  * depth. `depthAhead(s)` is the still depth s m ahead of the break along its travel (behind it for s < 0),
- * NaN off the water it is sampled from, taken every `step` m out to `reach` m each way; a path that runs out
- * first ends where it does.
+ * NaN off the water it is sampled from, taken every `step` m out to `reach` m each way. A band reaching past a
+ * crest or below a shelf ends there; a path that runs out first ends where it does.
  */
 export function orthogonalGradient(depthAhead: (s: number) => number, breakingDepth: number, step: number, reach: number): number {
   const shallow = Math.max(0, breakingDepth - REEF_OVERTURN.band);
@@ -105,15 +105,25 @@ export function orthogonalGradient(depthAhead: (s: number) => number, breakingDe
   return run > 0 ? (behind.depth - ahead.depth) / run : 0;
 }
 
-/** Where the path, walked `direction`, first reaches the `target` depth (shallower ahead, deeper behind): between samples, or at its reach. */
+/**
+ * Where the path, walked `direction`, first reaches the `target` depth (shallower ahead, deeper behind): between
+ * samples. Where the bed stops climbing (ahead) or falling (behind) for a band's width first, at a crest or a shelf,
+ * the path ends there: the gradient is the one the wave climbs, not the flat beyond it. Otherwise it ends at its
+ * reach, or where the water it is sampled from does.
+ */
 function contour(depthAhead: (s: number) => number, direction: 1 | -1, target: number, step: number, reach: number): { distance: number; depth: number } {
   const reached = (depth: number) => (direction > 0 ? depth <= target : depth >= target);
+  const beyond = (depth: number, than: number) => (direction > 0 ? depth < than : depth > than);
   let previous = depthAhead(0);
   if (reached(previous)) return { distance: 0, depth: previous };
+  let extreme = { distance: 0, depth: previous };
   for (let k = 1; k * step <= reach; k += 1) {
-    const depth = depthAhead(direction * k * step);
+    const distance = k * step;
+    const depth = depthAhead(direction * distance);
     if (!Number.isFinite(depth)) return { distance: (k - 1) * step, depth: previous };
     if (reached(depth)) return { distance: (k - 1 + (target - previous) / (depth - previous)) * step, depth: target };
+    if (beyond(depth, extreme.depth)) extreme = { distance, depth };
+    else if (distance - extreme.distance > REEF_OVERTURN.band) return extreme;
     previous = depth;
   }
   return { distance: reach, depth: depthAhead(direction * reach) };

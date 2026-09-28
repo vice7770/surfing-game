@@ -152,15 +152,24 @@ describe('the orthogonal gradient, measured as Mead & Black did', () => {
     expect(orthogonalGradient(plane, 2, 0.5, 100)).toBeCloseTo(1 / 4, 9);
   });
 
-  it('averages in the reef top when the band reaches past the ledge, and ends where the path does', () => {
-    // A 1:2.29 ledge breaking at 4 m, topping out at 1.5 m; the band's shallow end (0.7 m) lies beyond the reach.
+  it('ends a band reaching past the ledge at its crest, whatever lies beyond: the gradient the wave climbs', () => {
+    // A 1:2.29 ledge breaking at 4 m, topping out at a 1.5 m reef flat; the band's shallow end (0.7 m) is never reached.
     const ledge = (s: number) => Math.max(1.5, 4 - s / 2.29);
-    const deepEnd = (5.7 - 4) * 2.29;
-    expect(orthogonalGradient(ledge, 3.2, 0.5, 60)).toBeCloseTo((5.7 - 1.5) / (60 + deepEnd), 9);
+    // The crest is found at the samples (every 0.5 m): within a step of where it is.
+    const ledgeGradient = (gradient: number) => expect(Math.abs(gradient * 2.29 - 1)).toBeLessThan(0.03);
+    const open = orthogonalGradient(ledge, 3.2, 0.5, 60);
+    ledgeGradient(open);
+    // The same wherever the water it is sampled from ends (NaN), past the crest or before it.
+    expect(orthogonalGradient((s) => (s > 20 ? Number.NaN : ledge(s)), 3.2, 0.5, 60)).toBe(open);
+    ledgeGradient(orthogonalGradient((s) => (s > 4 ? Number.NaN : ledge(s)), 3.2, 0.5, 60));
     // A bigger wave's band lies on the ledge alone.
     expect(orthogonalGradient(ledge, 5, 0.5, 60)).toBeCloseTo(1 / 2.29, 9);
-    // A path leaving the water it is sampled from (NaN) ends at its last sample.
-    const window = (s: number) => (s > 20 ? Number.NaN : ledge(s));
-    expect(orthogonalGradient(window, 3.2, 0.5, 60)).toBeCloseTo((5.7 - 1.5) / (20 + deepEnd), 9);
+  });
+
+  it('ends a band reaching deeper than the shelf at the shelf, and starts one at the break when it is already shallower', () => {
+    // Up a 1:2.29 face from a 10 m shelf; a 9 m breaking depth's band (6.5–11.5 m) reaches below the shelf.
+    const face = (s: number) => (s < 0 ? Math.min(10, 4 - s / 2.29) : Math.max(1.5, 4 - s / 2.29));
+    // The shelf's edge is found at the samples, within a step of where it is.
+    expect(Math.abs(orthogonalGradient(face, 9, 0.5, 200) * 2.29 - 1)).toBeLessThan(0.03);
   });
 });
