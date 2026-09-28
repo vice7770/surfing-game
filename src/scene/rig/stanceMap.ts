@@ -417,7 +417,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'pop-up',
     name: 'The pop-up\'s push',
-    reach: 'Lying on a board gliding at 2 m/s, then the pop-up (the push phase).',
+    reach: 'Lying on a board towed at 6 m/s (as a wave carries it), then the pop-up (the push phase).',
     sides: 'both',
     targets: {
       leadElbow: { min: 90, max: 130, sources: ['borgonovo2021'], confidence: 'medium', note: '110–112 ± 18° at the push\'s peak force (the convention is not stated)' },
