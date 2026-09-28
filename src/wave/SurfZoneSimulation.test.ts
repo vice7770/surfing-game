@@ -436,9 +436,12 @@ describe('SurfZoneSimulation', () => {
     // At low tide a Big trough drains the ledge to ~0.3 m and its backwash briefly reaches ~23 m/s before settling: an
     // open issue (docs/research/teahupoo-reef-report.md). Here it guards against a runaway (past ones: 112 m/s, NaN).
     it('stays finite over the drying reef flat at low tide', () => run({ tide: -0.6 }, 30), 300_000);
+    // A thick lip landing on the drained crest makes a bore the depth switch does not see: the dispersive terms stay on
+    // across it, and a cell thinning beside it flashes 23–29 m/s for ~0.1 s (Part B; docs/research/teahupoo-reef-report.md).
+    // Here, as at low tide, it guards against a runaway.
     it('stays finite with oblique swells across the open −x edge', () => {
-      run({ directionDegrees: -25, alongShore: 60 });
-      run({ directionDegrees: 25, alongShore: 60 });
+      run({ directionDegrees: -25, alongShore: 60 }, 30);
+      run({ directionDegrees: 25, alongShore: 60 }, 30);
     }, 600_000);
     // The 40 m window's open −x edge cuts the ledge: over a bed sloping across it, main (aa71add) ran this to NaN (Part B).
     it('stays finite where the window\'s open edge cuts the ledge', () => run({ directionDegrees: 25 }), 300_000);

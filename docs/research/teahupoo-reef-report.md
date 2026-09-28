@@ -1,10 +1,12 @@
-# Teahupo'o Reef: Part A report
+# Teahupo'o Reef report
 
-The [Teahupo'o Reef spec](../superpowers/specs/2026-09-27-teahupoo-reef.md), Part A:
+The [Teahupo'o Reef spec](../superpowers/specs/2026-09-27-teahupoo-reef.md). Part A ([below](#stability)):
 - the Reef's new bed (sources and rulings: [teahupoo-reef-sources.md](teahupoo-reef-sources.md));
 - whether the solver holds on it;
 - the design sweep and its peel;
 - catching.
+
+Part B, slab tube physics: [its own section](#part-b-slab-tubes).
 
 Numbers are reported, not gated.
 
@@ -230,6 +232,99 @@ Main's wave sizes Part B (PR #53) was merged in:
 - **Open:** thin, drained-trough flows run too fast for their depth.
 - **The probe:** it now guards against a runaway at 30 m/s (past runaways: 112 m/s, NaN). The mid-tide and oblique probes keep 20 m/s.
 
+## Part B: slab tubes
+
+The [Part B plan](../superpowers/plans/2026-09-28-teahupoo-reef-part-b.md); the sources and rulings are in [teahupoo-reef-sources.md](teahupoo-reef-sources.md#part-b-slab-tubes). The user's shape advisor (the "Water physics research" session) ruled on the tube's shape. It read Mead & Black's chapter directly.
+
+### What a reef break throws now
+
+A break over a submerged crest with ξ ≥ 0.4 is a reef break:
+- **Roundness:** its tube's length over width is Mead & Black's vortex ratio for the gradient it climbs. The ratio is held within the 1.42–3.43 they measured at surfed breaks; gentler than 1:40, the break is a plane slope's.
+- **The gradient:** measured their way, averaged along the crest's travel from 2.5 m shallower to 2.5 m deeper than the breaking depth (H / 0.78).
+- **Inside Pick & Feddersen's fits** (ψ0 ≤ 0.0889): their void area, jet area and tilt, with only the roundness from Mead & Black. Beyond the fits (the Teahupo'o ledge): the provisional 0.43 H² void, 0.5 H lip and 23° tilt.
+- **Wind:** it reshapes the tube from U/C = −0.4 (Mead & Black's photos were offshore days), not from calm.
+- **No collapse over a submerged crest.** The plan's first rule, "Y < 1 collapses", made 74 of 87 Big-swell ledge breaks throw nothing. On the 1:2.29 ledge Y ≥ 0.97, so any crest within ~34° of the ledge's normal fell under it, and no source supports it.
+- **Landing:** a jet lands over its sheet's thickness along its travel, not in one cell.
+- **Not done:** drawing the jet's water from the crest across the overturn's length (the plan's Task 4) was dropped. The user decided to replace the lip strips and carved void with a swept overturn surface (another session), and this would change only code being replaced.
+
+### Tubes
+
+`npm run report:tubes`, two seeds × 12 peak periods.
+
+| Run | Jets | Rollers | Median tube length | 90th percentile | Measured width / length | Opening, 90th percentile | Largest opening | Close-out | Mixed | Median peel |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Practice (1.0 m, 14 s, 20°), Part A's baseline | 1964 | 1582 | 1.25 m | 2.80 m | 0.71 | 1.25 m | 3.09 m | | | |
+| Practice, Part B | 1737 | 1643 | 1.18 m | 2.38 m | 0.80 | 1.48 m | 2.60 m | 46 % | 42 % | 16° |
+| Wave Lab defaults (1.4 m, 10 s), main (aa71add) | 976 | 1616 | 1.20 m | 1.96 m | 0.71 | 1.01 m | 1.32 m | 75 % | 13 % | 9° |
+| Wave Lab defaults, Part B | 1033 | 1547 | 1.04 m | 1.62 m | 0.77 | 1.12 m | 1.39 m | 67 % | 13 % | 11° |
+
+The measured width / length is each landed lip parcel's drop over how far ahead of its crest it landed. The tubes are rounder (0.71 → 0.77–0.80) and open wider under the lip at the 90th percentile (1.01 → 1.12 m, 1.25 → 1.48 m), but shorter: a rounder void of the same area is shorter.
+
+### The jets against the sources
+
+Per throw, from the same runs:
+
+| Run | Reef breaks | Given / asked | Jet area / H² | Sheet / H | Jet / crest speed | Median fit Y | Held at 1.42 | Tube L / W as thrown |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Practice | 1736 of 1737 | 1.00 | 0.47 | 0.47 | 1.96 | 1.16 | 65 % | 1.58 |
+| Wave Lab defaults | 1032 of 1033 | 1.00 | 0.47 | 0.47 | 1.95 | 1.43 | 49 % | 1.60 |
+
+- **Tube shape:** Mead & Black's fit for the Reef's gradients reads 1.16–1.43. On about half the breaks that is rounder than anything they measured, so it is held at 1.42. In calm wind (these runs) it throws at 1.58–1.60, 0.07 flatter than their offshore-day tubes.
+- **The water:** at these sizes the crest gives the whole jet it is asked for. On the Big swell (60 m window, +25°, seed 3) the median crest still gives 92 %, but 21 of the 27 waves over 4 m gave under 90 %, often about half (6.4 of 12.5 m³): the crest's water limits the biggest lips. The source share was not raised (the spec's "never thicker than its water").
+- **Jet area:** 0.47 H², against Pick & Feddersen's 0.13–0.27 H² at their fitted slopes. The Reef's ledge lies beyond their fits, where the jet comes from the provisional 0.5 H lip.
+- **Sheet thickness:** 0.47 H. That is Shand's "about half the wave height", an article's description, **provisional**. Measured and modelled lips are thinner: tips about 0.07–0.08 H (Feddersen et al. 2024, Surf Ranch), roots 0.10–0.21 H (jet area over void length). The advisor's reading: 0.5 H describes the lip's root at most.
+- **Jet speed:** 1.95–1.96 times the crest's, against lab jet tips landing at 1.25–1.32 in total, about 1.16–1.17 horizontally (Erinin et al. 2023). The 1.68–1.73 figures the game's range cites are against linear phase speed, which runs 10–25 % below crest speed near breaking. This is reported, not changed: it moves where the pour lands and has to stay momentum-conserving, so it waits for the user's decision.
+
+### Whitewater
+
+`npm run report:whitewater -- --spots reef --periods 4`, the Wave Lab defaults, main (aa71add) against Part B:
+
+| | Jets | Splash-up, median | Tubes closed | Collapse, median | Spits | Spit speed, median | Eruption steps | Surveys at α_max | Plume, median | Deepest | Escaped |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| main | 298 | 0.39 m | 296 | 0.35 s | 920 | 5.38 m/s | 555 | 9 % | 0.97 m | 1.50 m | 50 % |
+| Part B | 307 | 0.32 m | 300 | 0.33 s | 1019 | 5.82 m/s | 607 | 17 % | 0.96 m | 1.28 m | 50 % |
+
+- **Air balance:** closes exactly on both.
+- **Changes:** the thicker jets drive more spit and eruption, and more surveys reach the void-fraction cap. Splash-ups are lower, because a jet spread over its thickness strikes less at any one point.
+- **Fastest spit:** 59 m/s on both, from before Part B.
+
+### Stability
+
+- **The open edge (on main too).**
+  - **Cause:** the Reef's 1:2.29 ledge crosses the window's −x open edge, and an open edge copies its neighbours onto a sloping bed. Main runs a 40 m window from +25° to NaN, and a 20° seed-3 run reached 30.2 m/s at the edge with no lip near.
+  - **Fix:** the solver now levels the bed across the two columns an open edge copies, and restores the spot's bed as the window slides. Every bad case then held at 14–16 m/s, main's included.
+  - **Test:** a new probe, "stays finite where the window's open edge cuts the ledge" (40 m, +25°), guards at 20 m/s.
+- **No lip in the edge columns** the boundary copies.
+- **A lip's landing bore (open).**
+  - **What happens:** a thick lip landing on the drained crest makes a bore the depth switch does not see. The dispersive terms stay on across it (modified momentum 23.8 against a recovered flux of 9.8 in a 0.42 m cell). As a cell thins past the trough threshold it flips to shallow water, and it flashes 23–29 m/s for about 0.1 s, then settles.
+  - **Probe:** the oblique probes (60 m, ±25°) now guard against a runaway at 30 m/s, as the low-tide probe does.
+  - **Root fix, split out:** switch dispersion off in a jet's plunge zone, on CPU and WGSL.
+- **The sea handover (on main).** A joiner did not watch for new breakers on its first step, so a wave starting to break then threw on the donor and not the copy. Online, lips must match; a joiner now arms from its first step. The edge fix moved the handover test's realization onto it.
+- **The other spots:** they throw as on main except through the two edge treatments.
+  - The Point with both the levelling and the edge-lip guard off matches main exactly (724 jets, 82 rollers, 5741 parcels).
+  - The Canyon with the levelling off matches too (13 jets).
+  - The Beach also throws 3 reef breaks on its bar, a submerged crest.
+
+### Open
+
+- **Validate the water on the steep forereef (needs the user's approval to download).** The Madsen–Sørensen equations were derived for mild slopes. An open CC-BY dataset of the 1:60 Teahupo'o physical model (Rodríguez-Burguette, Torres-Freyermuth et al.; zenodo 11392175, 10826397), with a 1/2.26 forereef and gauges, exists to test numerical models on steep slopes. It checks the water, not the tube.
+- **Peel against makeability, before Part D (the user's decision).**
+  - At α 23° and 13.6 m/s along the ledge, a rider needs about 13.6–14.8 m/s.
+  - GPS-tracked competitive surfers peak at 9.3 m/s on average and 12.5 m/s at most (Farley, Harris & Kilding 2012).
+  - That is faithful to the spec (fast, often made only through the tube), but Part D's done-criteria may not be reachable on it. The choice: relax the targets, or look for a ledge and swell geometry that peels at 35–45° on Small.
+- **Part D's contact:** agreed with the swept-surface session:
+  - the mouth's position and facing;
+  - the pocket depth;
+  - the face's normal and velocity at the hand and rail;
+  - the clearance above a crouched rider;
+  - the foam ball's and spit's forces;
+  - the same result from a handed-over sea.
+- **Provisional:**
+  - the 0.5 H lip, the 0.43 H² void and the 23° tilt beyond Pick & Feddersen's fits;
+  - the −0.4 wind reference;
+  - the 2.5 m band within Mead & Black's 2–3 m.
+- **Tube look:** stopped, on the user's decision to replace the carved void with a swept overturn surface.
+
 ## Commands
 
 - `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "steep Reef holds"`
@@ -237,3 +332,4 @@ Main's wave sizes Part B (PR #53) was merged in:
 - `npm run report:tubes -- --spots reef --seeds 1 --periods 4 --out <file>`, here and in a detached `origin/main` worktree
 - `npm run report:rideability -- --spots reef --hs 1.3 --tp 15 --direction <dir> --spread 0.2 --seeds 2 --periods 12 --reef angle=<angle>`
 - `npm run report:catch -- --practice --ghosts --spots reef --seeds 2 --minutes 3` (baseline, in the `origin/main` worktree)
+- Part B: `npm run report:tubes -- --practice --spots reef --seeds 2 --periods 12`, `npm run report:tubes -- --spots reef --seeds 2 --periods 12`, `npm run report:tubes -- --spots beach,point,canyon --seeds 1 --periods 6` and `npm run report:whitewater -- --spots reef --periods 4`, here and in a detached `aa71add` worktree
