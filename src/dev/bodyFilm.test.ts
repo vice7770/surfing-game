@@ -32,7 +32,7 @@ describe('the body film', () => {
       }
     }
   };
-  it.each(['pop-up and landing', 'compress mid-turn, the hand reaching', 'a fall'])('blends the switches of %s out', blendsOut);
+  it.each(['pop-up and landing', 'pop-up crouched', 'compress mid-turn, the hand reaching', 'a fall'])('blends the switches of %s out', blendsOut);
   // Lying down, its switches blend out (the frames about each are smooth), but 0.23 s into the lie-down the left knee
   // swings through at up to 10 m/s (3.3 m/s over its neighbours, 3.8 at 120 Hz): the leg's pole jumps from the
   // standing one to the lying one at the switch, and the knee turns over only as the leg straightens. The rig's poles
@@ -43,6 +43,7 @@ describe('the body film', () => {
   // nothing is blended and the drawn body follows the rig at any display rate. Taken for a jump, a hand turning back
   // (about 1.2 m/s within a step) lurched the chest 10–45° at 30–100 Hz. Snapshots batched by 3 stand in for an
   // online surfer's poses (20 Hz).
+  // Eighteen films each: a busy machine takes minutes.
   it.each(['rail change', 'weave'])('draws %s as the rig does, at any display rate', (name) => {
     const runs = [...[30, 50, 60, 75, 90, 100, 120, 144].map((rate) => ({ rate, delivery: 1 })), { rate: 60, delivery: 3 }];
     for (const { rate, delivery } of runs) {
@@ -56,7 +57,7 @@ describe('the body film', () => {
       expect(riding < 0 ? drawn.frames.length : riding, `${name} at ${rate} Hz: rides at least 1.5 s`).toBeGreaterThan(1.5 * rate);
       expect((worst * 180) / Math.PI, `${name} at ${rate} Hz, delivered by ${delivery}`).toBeLessThan(1);
     }
-  });
+  }, 240_000);
 
   it('reads a one-frame pop as a spike, and a sustained fast motion as none', () => {
     const pop = film(60, 60, (i, frame) => {

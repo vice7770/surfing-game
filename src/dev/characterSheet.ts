@@ -8,7 +8,10 @@
  * `?stances` draws every stance of the stance map for one surfer
  * (`&surfer=0–3`, `&side=goofy`), each beside its reference figure (magenta,
  * built from the map's targets on the surfer's own proportions) with the
- * measures the drawn body misses listed under it.
+ * measures the drawn body misses listed under it. `?motion=id,id…` plays stance
+ * recipes one after another in real time on one surfer (`&surfer`, `&side`),
+ * the camera riding beside the board; `&record` films it from the canvas for
+ * scripts/browser/motion-clip.mjs.
  */
 import {
   BufferGeometry, DirectionalLight, Float32BufferAttribute, LineBasicMaterial, LineSegments, Mesh, MeshPhysicalMaterial, NeutralToneMapping, PerspectiveCamera,
@@ -25,7 +28,7 @@ import { posturePoints } from '../scene/rig/posturePoints';
 import { POINT, createRiderVisualState, type RiderVisualState } from '../scene/rig/riderVisualState';
 import { StanceGauge, measureJoints, type StanceJoints } from '../scene/rig/stanceGauge';
 import { STANCES } from '../scene/rig/stanceMap';
-import { MOMENT_STANCE, RIDING_MOMENTS, drawnStance } from './ridingPoses';
+import { MOMENT_STANCE, RIDING_MOMENTS, STANCE_RECIPES, drawnRecipe, drawnStance, type StanceRecipe } from './ridingPoses';
 import { figureAngles, figureLengths, figurePlan, referenceJoints } from './stanceFigure';
 import { MEASURE_LABEL, compareStance, formatMeasure } from './stanceReport';
 
@@ -171,6 +174,11 @@ async function main(): Promise<void> {
     surfer.group.visible = false;
     scene.add(surfer.group);
   });
+  const motion = params.get('motion');
+  if (motion) {
+    await playMotion(surfers, motion.split(','), entry.id);
+    return;
+  }
   const row = params.get('row');
   const col = params.get('col');
   const single = row !== null && col !== null;
@@ -278,6 +286,149 @@ function drawStances(surfers: SkinnedSurfer[], single: boolean, scale: number, r
       + (conflicts.length ? `<br><span style="color:#b9a7c9">the figure cannot meet: ${conflicts.join(', ')}</span>` : ''));
   });
   figureLines.visible = figureJoints.visible = false;
+}
+
+/** Motions for the films beside the map's stances: a pump's three pulses, a held bottom turn released, a weave with the weight back. */
+const FILM_RECIPES: Record<string, StanceRecipe> = {
+  pumping: {
+    ...STANCE_RECIPES['pump-compression'],
+    controls: [{ at: 0.4, crouch: 1 }, { at: 0.8, crouch: 0 }, { at: 1.2, crouch: 1 }, { at: 1.6, crouch: 0 }, { at: 2.0, crouch: 1 }, { at: 2.4, crouch: 0 }],
+    seconds: 2.8,
+  },
+  'bottom-turn': {
+    ...STANCE_RECIPES['extension-frontside'],
+    controls: [{ at: 0, crouch: 0.6 }, { at: 0.4, steer: 1 }, { at: 0.7, compress: 1 }, { at: 1.7, compress: 0, crouch: 0, steer: 0.3, trim: -0.5 }],
+    seconds: 2.3,
+  },
+  weave: { ...STANCE_RECIPES.trim, controls: [{ at: 0.3, trim: -1, steer: 1 }, { at: 1.1, steer: -1 }, { at: 1.9, steer: 1 }], seconds: 2.4 },
+};
+
+interface MotionFrame { time: number; label: string; yaw: number; board: { position: Vector3; quaternion: Quaternion }; bones: { position: Vector3; quaternion: Quaternion }[] }
+
+/**
+ * The motion view: each recipe drawn as the game draws it (every step through the
+ * surfer's smoothing layer) and kept, then played back at its own pace, the camera
+ * riding beside the board on the chest's side; with `&record`, the canvas filmed
+ * with the recipe's name into `window.motionFilm` (a data URL).
+ */
+async function playMotion(surfers: SkinnedSurfer[], ids: string[], skyName: string): Promise<void> {
+  const surfer = surfers[STANCE_SURFER];
+  const board = boards[STANCE_SURFER];
+  surfers.forEach((other, i) => { other.group.visible = i === STANCE_SURFER; });
+  boards.forEach((other, i) => { other.visible = i === STANCE_SURFER; });
+  const bones: Bone[] = [];
+  surfer.group.traverse((object) => { if ((object as Bone).isBone) bones.push(object as Bone); });
+  const side = STANCE_SIDE === 'regular' ? -1 : 1;
+  const offset = new Vector3(3.4 * side, 1.5, 1.6);
+  const frames: MotionFrame[] = [];
+  const segments: string[] = [];
+  let start = 0;
+  for (const id of ids) {
+    const recipe = FILM_RECIPES[id] ?? STANCE_RECIPES[id];
+    if (!recipe) throw new Error(`No recipe ${id}`);
+    surfer.resetMotion();
+    let first = Number.NaN;
+    let last = 0;
+    drawnRecipe(recipe, STANCE_SIDE, boardPosition, (step) => {
+      surfer.update(step, step.boardPosition.clone().add(offset));
+      // A recipe begins standing with no history: kept from when the standing blend is whole (the game's comes from the pop-up).
+      if (Number.isNaN(first) && recipe.start === 'standing' && step.standingBlend < 1) return;
+      if (Number.isNaN(first)) first = step.clock;
+      last = start + step.clock - first;
+      const nose = new Vector3(0, 0, 1).applyQuaternion(step.boardQuaternion);
+      frames.push({
+        time: last, label: id, yaw: Math.atan2(nose.x, nose.z),
+        board: { position: step.boardPosition.clone(), quaternion: step.boardQuaternion.clone() },
+        bones: bones.map((bone) => ({ position: bone.position.clone(), quaternion: bone.quaternion.clone() })),
+      });
+    });
+    segments.push(`${id} ${(start).toFixed(1)}–${last.toFixed(1)} s`);
+    // A beat on the recipe's last frame before the next.
+    start = last + 0.5;
+  }
+  // The camera turns with the board's heading, eased over about half a second so a snap doesn't swing it.
+  const headings = frames.map((frame, i) => {
+    let sin = 0;
+    let cos = 0;
+    for (const other of frames) {
+      if (other.label !== frame.label || Math.abs(other.time - frames[i].time) > 0.25) continue;
+      sin += Math.sin(other.yaw);
+      cos += Math.cos(other.yaw);
+    }
+    return Math.atan2(sin, cos);
+  });
+  const up = new Vector3(0, 1, 0);
+  const width = 1280;
+  const height = 720;
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
+  camera.fov = 40;
+  camera.updateProjectionMatrix();
+  const film = document.createElement('canvas');
+  film.width = width;
+  film.height = height;
+  const context = film.getContext('2d')!;
+  const show = (index: number) => {
+    const frame = frames[index];
+    frame.bones.forEach((pose, i) => { bones[i].position.copy(pose.position); bones[i].quaternion.copy(pose.quaternion); });
+    board.position.copy(frame.board.position);
+    board.quaternion.copy(frame.board.quaternion);
+    camera.position.copy(frame.board.position).add(offset.clone().applyAxisAngle(up, headings[index]));
+    camera.lookAt(frame.board.position.clone().add(new Vector3(0, 0.8, 0.3)));
+    shadows.follow(frame.board.position, sun.position.clone().normalize(), 0);
+    renderer.render(scene, camera);
+    context.drawImage(canvas, 0, 0);
+    context.font = '600 26px system-ui, sans-serif';
+    context.fillStyle = 'rgba(13,17,23,0.55)';
+    context.fillRect(16, 16, context.measureText(frame.label).width + 24, 42);
+    context.fillStyle = '#ffffff';
+    context.fillText(frame.label, 28, 46);
+  };
+  status.textContent = `${skyName} · motion · ${SURFERS[STANCE_SURFER]} ${STANCE_SIDE} · ${segments.join(', ')}`;
+  canvas.style.display = 'none';
+  canvas.after(film);
+  // `&at=seconds`: that moment alone, a still for scripts/browser/sheet-shot.mjs.
+  const at = params.get('at');
+  if (at !== null) {
+    const index = Math.max(0, frames.findIndex((frame) => frame.time >= Number(at)));
+    show(index);
+    (window as unknown as { sheetReady: boolean }).sheetReady = true;
+    return;
+  }
+  const recording = params.has('record');
+  const chunks: Blob[] = [];
+  const type = ['video/mp4;codecs=avc1', 'video/webm;codecs=vp9', 'video/webm'].find((kind) => MediaRecorder.isTypeSupported(kind)) ?? 'video/webm';
+  const recorder = recording ? new MediaRecorder(film.captureStream(60), { mimeType: type, videoBitsPerSecond: 12_000_000 }) : undefined;
+  if (recorder) {
+    recorder.ondataavailable = (event) => chunks.push(event.data);
+    show(0);
+    recorder.start();
+  }
+  const total = frames[frames.length - 1].time + 0.5;
+  await new Promise<void>((resolve) => {
+    const began = performance.now();
+    let index = 0;
+    const tick = () => {
+      const time = (performance.now() - began) / 1000;
+      while (index + 1 < frames.length && frames[index + 1].time <= time) index += 1;
+      show(index);
+      if (time < total) requestAnimationFrame(tick);
+      else resolve();
+    };
+    requestAnimationFrame(tick);
+  });
+  if (recorder) {
+    const stopped = new Promise((resolve) => { recorder.onstop = resolve; });
+    recorder.stop();
+    await stopped;
+    const reader = new FileReader();
+    const url = await new Promise<string>((resolve) => {
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(new Blob(chunks, { type }));
+    });
+    (window as unknown as { motionFilm: string }).motionFilm = url;
+  }
+  (window as unknown as { sheetReady: boolean }).sheetReady = true;
 }
 
 main().catch((error: unknown) => {

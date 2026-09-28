@@ -18,6 +18,18 @@ export const STANDING_PELVIS = (() => {
 })();
 
 /**
+ * How high the pelvis point stands above the deck under the stance's middle, m,
+ * in the board's frame: `STANDING_PELVIS` standing tall, lower as the physics
+ * crouches.
+ */
+export function pelvisOverDeck(state: RiderVisualState): number {
+  const inverse = state.boardQuaternion.clone().invert();
+  const local = (point: Vector3) => point.clone().sub(state.boardPosition).applyQuaternion(inverse).add(centre);
+  const middle = (local(state.points[5]).z + local(state.points[6]).z) / 2;
+  return local(state.points[0]).y - deckHeight(shape, middle);
+}
+
+/**
  * The seven drawn points of a physics posture on a board at a pose, by
  * `AttachedRider.renderPoint`'s rules: trunk centres; upright arms held out
  * 0.7 past their centres; prone hands beside the rails, push hands on them;

@@ -269,6 +269,18 @@ export const FILM_SCENARIOS: readonly FilmScenario[] = [
       return { popUp: once(time, 0.5) };
     },
   },
+  {
+    // The pop-up with the crouch held (a steep take-off): the body lands crouched (step 3's final review: the heel's
+    // lift switched on at once as the landing became standing).
+    name: 'pop-up crouched', water: 'flat', seconds: 2.5, placement: { x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' },
+    input(time, session) {
+      if (session.rider.attached && session.rider.phase !== 'standing') {
+        session.board.velocity.z = 6;
+        session.rider.velocity.z = 6;
+      }
+      return { popUp: once(time, 0.5), crouch: 1 };
+    },
+  },
   { name: 'straight', water: 'flat', seconds: 3, placement: { x: 0, z: 0, heading: 0, speed: 7, phase: 'standing' }, input: () => ({}) },
   {
     // Compress taken mid-turn at 10 m/s (the stances spec's wobble case): the inside hand reaches for the water.
