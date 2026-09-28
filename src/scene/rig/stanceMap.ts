@@ -19,6 +19,8 @@ export type Confidence = 'high' | 'medium' | 'low';
 export const CONFIDENCE_CAP: Record<SourceKind, Confidence> = { measured: 'high', thesis: 'medium', coaching: 'medium', video: 'low' };
 
 export interface Source {
+  /** For tables. */
+  short: string;
   kind: SourceKind;
   cite: string;
   url?: string;
@@ -32,60 +34,70 @@ export interface Source {
 
 const SOURCE_LIST = {
   weiss2025: {
+    short: 'Weiss 2025',
     kind: 'measured',
     cite: 'Weiss et al. 2025, Simulating surfing with optimal control: sensor fusion for biomechanical analysis (Multibody System Dynamics), Figs 6–7',
     url: 'https://doi.org/10.1007/s11044-025-10071-3',
     gives: '7 surfers on a river wave, IMUs and pose estimation: peak flexion from straight, hip 55.0° rear / 50.0° front, knee 51.1° / 44.7°, ankle 21.1° / 18.3°. A river wave is less crouched than an ocean bottom turn.',
   },
   borgonovo2021: {
+    short: 'Borgonovo-Santos 2021',
     kind: 'measured',
     cite: 'Borgonovo-Santos et al. 2021, Are the kinetics and kinematics of the surf pop-up related to the anthropometric characteristics of the surfer? (Sensors 21:1783)',
     url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7961430',
     gives: 'The pop-up: 1.20 s (0.71 s pushing, 0.48 s reaching); feet 0.63 ± 0.10 m apart; 72 ± 8 % on the front foot at the reach; knees 99 ± 20° front, 101 ± 14° rear at the reach\'s peak force (the angle\'s convention is not stated); elbows 110–112 ± 18° at the push\'s peak force; the stance a half-squat, knees flexed 30–80° (citing earlier work).',
   },
   forsyth2024: {
+    short: 'Forsyth 2024',
     kind: 'measured',
     cite: 'Forsyth et al. 2024, turns measured on ocean waves',
     url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11021506/',
     gives: 'Bottom turn 101 ± 7° in 0.96 s at 1.9 rad/s, rail 39 ± 4°; cutback 156 ± 7°, rail 76 ± 5°, pitch 45°.',
   },
   moreira2014: {
+    short: 'Moreira 2014',
     kind: 'measured',
     cite: 'Moreira and Peixoto 2014, qualitative biomechanical analysis of surfing manoeuvres',
     url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4234763',
     gives: 'The trunk leans to the inside of a turn; trimming, the front foot sits over the board\'s centre of buoyancy. Directions only, no angles.',
   },
   desousa2022: {
+    short: 'de Sousa 2022',
     kind: 'thesis',
     cite: 'de Sousa 2022, Development of an observation tool for the Bottom-Turn manoeuvre in surfers (master\'s thesis, Faculdade de Motricidade Humana, Universidade de Lisboa), validated with seven national coaches',
     held: 'Not online: the user holds a copy. Its phases are quoted in docs/superpowers/specs/2026-09-27-stances.md.',
     gives: 'Preparation: head toward the bottom, trunk over the front foot, knees 90–110°. Fundamental: head toward the lip, knees and hips at 90° or less, the body leaning in until the inside hand nears the water. Final: the hand leaves the water, the trunk rotates, knees to 150° or more and hips extend, the chest and leading arm point at the lip. Weight over the front foot flexed, to the back foot extending.',
   },
   surfdeeper: {
+    short: 'SurfDeeper',
     kind: 'coaching',
     cite: 'SurfDeeper, Stance',
     url: 'https://www.surfdeeper.com/skill/stance',
     gives: 'Feet about shoulder width, back foot square, front foot at 30–45°; a soft knee bend, the front leg straighter than the back; hinge at the hips, tall through the spine; the chest faces forward, not fully side-on; eyes where you want to go; hands and elbows over their rails, quiet hands; weight centred.',
   },
   cornishwave: {
+    short: 'Cornish Wave',
     kind: 'coaching',
     cite: 'Cornish Wave, The importance of stance',
     url: 'https://cornishwave.com/beginners-guide-to-surfing/the-importance-of-stance/',
     gives: 'Weight 60/40 onto the front foot at rest, 70/30 into the bottom turn, 40/60 onto the back foot in top turns and cutbacks.',
   },
   rapturecutback: {
+    short: 'Rapture, cutback',
     kind: 'coaching',
     cite: 'Rapture Surfcamps, The cutback',
     url: 'https://www.rapturecamps.com/learn-to-surf/surf-maneuvers/cutback',
     gives: 'Weight 65/35 to 70/30 onto the back foot in the cutback.',
   },
   rapturespeed: {
+    short: 'Rapture, speed',
     kind: 'coaching',
     cite: 'Rapture Surfcamps, Speed generation',
     url: 'https://www.rapturecamps.com/learn-to-surf/surf-maneuvers/speed-generation',
     gives: 'About one pump a second, 55/45 alternating, the arms pushing down on the extension.',
   },
   balisurfing: {
+    short: 'Bali Surfing Camp',
     kind: 'coaching',
     cite: 'Bali Surfing Camp, Frontside top turn',
     url: 'https://www.balisurfingcamp.com/blog/frontside-top-turn',
@@ -93,60 +105,70 @@ const SOURCE_LIST = {
   },
   // The approved reference set (Q19), cited by timestamp; the frames read are the video targets' sources.
   snapshort: {
+    short: 'the snap video',
     kind: 'video',
     cite: 'Surfers of Bali, Snap In The Lip Over Shallow Reef (YouTube short xTgYU5ShueI)',
     url: 'https://www.youtube.com/shorts/xTgYU5ShueI',
     gives: 'The flow: trim, compress into the bottom turn, extend to the lip, snap (the trunk twisting, an arm up), compress back down. 360 × 640 and far off: the sequence only, no angles read.',
   },
   kerr: {
+    short: 'Kerr video',
     kind: 'video',
     cite: 'SURFER, Surfing 201: How to bottom turn like a pro, with Josh Kerr',
     url: 'https://www.youtube.com/watch?v=IEmH9lRgPsU',
     gives: 'Read at 0:58–1:00 (the drop, frontside, side-on, annotated): trunk flexed about 50–65°, knees about 100–115°, the lead arm forward and low (about 50–60° from the trunk), elbows about 150–160°, the head up along the line. Large waves from 2:40, not read.',
   },
   gudauskas: {
+    short: 'Gudauskas video',
     kind: 'video',
     cite: 'Aloha Visuals, How to bottom turn with Patrick Gudauskas',
     url: 'https://www.youtube.com/watch?v=rhCoXhDLkO4',
     gives: 'Read at 2:32 and 2:36 (compressed at the turn\'s base): trunk about 60–70°, the lead arm reaching forward and down near straight (elbow about 160–170°), the trailing elbow about 90° by the hip, knees about 80° or less, the lead hand at the water. At 3:20.5 (frontside, a hand dragging): trunk about 45–55°, knees about 80–90°, the head down toward the water ahead. At 3:21.5 (extending up the face): both arms wide, about 80–100° out, elbows about 140–160°, trunk about 20–30°, knees about 120–140°, looking up the face.',
   },
   whitaker: {
+    short: 'Whitaker video',
     kind: 'video',
     cite: 'Surfline, Tom Whitaker: the bottom turn',
     url: 'https://www.youtube.com/watch?v=lfxVAZGqCXY',
     gives: 'Pro bottom turns from 3:08. Not read yet.',
   },
   reyes: {
+    short: 'Reyes video',
     kind: 'video',
     cite: 'Surfline, Timmy Reyes: carve to snap',
     url: 'https://www.youtube.com/watch?v=nZqUTSrVELs',
     gives: 'Carve to snap. Not read yet.',
   },
   hobgood: {
+    short: 'Hobgood video',
     kind: 'video',
     cite: 'Surfline, Damien Hobgood: the backside snap',
     url: 'https://www.youtube.com/watch?v=ay3Q4_Gtskk',
     gives: 'The backside snap, for mirroring. Not read yet.',
   },
   knox: {
+    short: 'Knox video',
     kind: 'video',
     cite: 'Surfline, Taylor Knox: the cutback',
     url: 'https://www.youtube.com/watch?v=TmiotynMuvc',
     gives: 'The cutback. Not read yet.',
   },
   brock: {
+    short: 'Brock video',
     kind: 'video',
     cite: 'Kale Brock: the cutback\'s phases',
     url: 'https://www.youtube.com/watch?v=JytkE4cyXCo',
     gives: 'The cutback\'s phases at 1:15, 3:15 and 5:15. Not read yet.',
   },
   fanning: {
+    short: 'Fanning video',
     kind: 'video',
     cite: 'Surfline, Mick Fanning: generating speed',
     url: 'https://www.youtube.com/watch?v=FEUM4fCde40',
     gives: 'Trim and pumping. Not read yet.',
   },
   barefootpopup: {
+    short: 'Barefoot Surf pop-up',
     kind: 'video',
     cite: 'Barefoot Surf: the pop-up; and Swell Surf Camp\'s photo sequence',
     url: 'https://www.youtube.com/watch?v=9rz-ucDwjVU',
@@ -154,12 +176,14 @@ const SOURCE_LIST = {
     gives: 'The pop-up. Not read yet.',
   },
   robcase: {
+    short: 'Rob Case video',
     kind: 'video',
     cite: 'Rob Case on Kelly Slater\'s paddle stroke',
     url: 'https://www.youtube.com/watch?v=bwFBojLeUt8',
     gives: 'Paddling, for step 8. Not read yet.',
   },
   barefootduckdive: {
+    short: 'Barefoot Surf duck-dive',
     kind: 'video',
     cite: 'Barefoot Surf: the duck-dive',
     url: 'https://www.youtube.com/watch?v=yEI8IVZV46s',
@@ -404,7 +428,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'hand-in-face',
     name: 'The hand in the face (E), frontside',
-    reach: 'Crouched on a 15° face at 5 m/s with the hand out (E) (phase standing).',
+    reach: 'Crouched, riding across a 15° face at 6 m/s (the face rising on the toes\' side) with the hand out (E) (phase standing).',
     sides: 'frontside',
     targets: {
       kneeFront: { min: 80, max: 100, sources: ['gudauskas'], confidence: 'low' },

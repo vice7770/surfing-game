@@ -35,6 +35,17 @@ describe('every mapped stance, simulated by the real rider', () => {
     expect(along('trim-forward')).toBeGreaterThan(along('trim'));
   });
 
+  it('puts a hand toward the wave for the hand in the face, as Compress does', () => {
+    // The physics reaches for the wave's side, where the water stands higher: riding down the fall line there is none.
+    for (const id of ['hand-in-face', 'compress-frontside']) {
+      for (const stance of ['regular', 'goofy'] as const) {
+        const { state } = stanceState(id, stance, at, createRiderVisualState());
+        const low = Math.min(state.points[POINT.leftHand].y, state.points[POINT.rightHand].y) - state.boardPosition.y;
+        expect(low, `${id}, ${stance}`).toBeLessThan(0.45);
+      }
+    }
+  });
+
   it('reports a stance the rider fell out of as not reached', () => {
     const { reached, state } = simulateStance({ ...STANCE_RECIPES.trim, separate: 0.3 }, 'regular', at, createRiderVisualState());
     expect(state.phase).toBe('fallen');

@@ -33,7 +33,8 @@ interface Controls {
 export interface StanceRecipe {
   /** The phase the stance is read in. */
   phase: RiderPhase | 'fallen';
-  water: 'flat' | 'face';
+  /** Flat water; down a 15° face along its fall line; or across one, the face rising on the toes' side (frontside). */
+  water: 'flat' | 'face' | 'across';
   /** Standing on a board already moving, or lying on it (the pop-up), m/s. */
   start: 'standing' | 'prone';
   speed: number;
@@ -64,7 +65,7 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   'cutback-frontside': standing([{ at: 0, crouch: 0.5 }, { at: 0.4, steer: -1, trim: -0.7 }], 1.2),
   'pump-compression': standing([{ at: 0.4, crouch: 1 }], 0.8, { speed: 7 }),
   'pump-extension': standing([{ at: 0.4, crouch: 1 }, { at: 0.8, crouch: 0 }], 1.1, { speed: 7 }),
-  'hand-in-face': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, hand: true }], 1, { water: 'face', speed: 5 }),
+  'hand-in-face': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, hand: true }], 1, { water: 'across', speed: 6 }),
   // Lying on a board towed at 6 m/s, as the wave would carry it (the body film's pop-up).
   'pop-up': { phase: 'push', water: 'flat', start: 'prone', speed: 6, controls: [{ at: 0.5, popUp: true }], seconds: 3, after: 0.3 },
   landing: { phase: 'landing', water: 'flat', start: 'prone', speed: 6, controls: [{ at: 0.5, popUp: true }], seconds: 3, after: 0.05 },
@@ -72,11 +73,24 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   'fall-start': standing([], 3, { speed: 7, separate: 0.5, after: 0.15, phase: 'fallen' }),
 };
 
-/** A standing rider on water: flat, or down a 15° face heading down its fall line. */
-function mount(speed: number, stance: StanceName, face: boolean) {
+/** The recipe's water for a Regular or Goofy rider: across a face, it rises on the toes' side (−x Regular, +x Goofy). */
+function waterFor(kind: StanceRecipe['water'], stance: StanceName): PlaneWater {
+  if (kind === 'face') return new PlaneWater({ slopeZ: -Math.tan(FACE) });
+  if (kind === 'across') return new PlaneWater({ slopeX: (stance === 'regular' ? -1 : 1) * Math.tan(FACE) });
+  return new PlaneWater();
+}
+
+/** A standing rider on water: flat, down a 15° face along its fall line, or across it lying on its slope. */
+function mount(speed: number, stance: StanceName, kind: StanceRecipe['water']) {
   const board = new BoardBody();
-  const water = face ? new PlaneWater({ slopeZ: -Math.tan(FACE) }) : new PlaneWater();
-  if (face) {
+  const water = waterFor(kind, stance);
+  if (kind === 'across') {
+    const slopeX = (stance === 'regular' ? -1 : 1) * Math.tan(FACE);
+    const normal = new Vector3(-slopeX, 1, 0).normalize();
+    const forward = new Vector3(0, 0, 1);
+    const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(new Vector3().crossVectors(normal, forward), normal, forward));
+    board.place(normal.clone().multiplyScalar(board.shape.centerOfMass.y), orientation, forward.multiplyScalar(speed));
+  } else if (kind === 'face') {
     const normal = new Vector3(0, 1, Math.tan(FACE)).normalize();
     const fall = new Vector3(0, -Math.sin(FACE), Math.cos(FACE));
     const orientation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(new Vector3().crossVectors(normal, fall), normal, fall));
@@ -107,9 +121,9 @@ function controlsAt(recipe: StanceRecipe, time: number): Omit<Controls, 'at'> {
  */
 export function simulateStance(recipe: StanceRecipe, stance: StanceName, at: Vector3, out: RiderVisualState): { state: RiderVisualState; reached: boolean } {
   const toes = stance === 'regular' ? -1 : 1;
-  const water = recipe.water === 'face' ? new PlaneWater({ slopeZ: -Math.tan(FACE) }) : new PlaneWater();
+  const water = waterFor(recipe.water, stance);
   const session = recipe.start === 'prone' || recipe.after !== undefined || recipe.separate !== undefined ? new RideSession({ stance }) : undefined;
-  const mounted = session ? undefined : mount(recipe.speed, stance, recipe.water === 'face');
+  const mounted = session ? undefined : mount(recipe.speed, stance, recipe.water);
   if (session) session.place({ x: 0, z: 0, heading: 0, speed: recipe.start === 'prone' ? 0 : recipe.speed, phase: recipe.start }, water);
   const board = session?.board ?? mounted!.board;
   const rider = session?.rider ?? mounted!.rider;
