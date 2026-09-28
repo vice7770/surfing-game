@@ -29,7 +29,7 @@ import type { ReadoutRow } from '../wave/SwellReadout';
 import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { SprayLook } from '../wave/SprayCloud';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
-import { OFFSHORE_DEPTH, SEA_COMPONENTS, TANK, surfZoneSea, tankDepth, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { SEA_COMPONENTS, surfZoneSea, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
@@ -91,8 +91,16 @@ export async function webGpuAvailable(): Promise<boolean> {
   }
 }
 
-/** Largest swell the tank carries, matching the buoy sliders: deeper water would be needed beyond this. */
-export const TANK_SWELL_LIMITS = { height: { min: 0.3, max: 3 }, period: { min: 6, max: 18 } };
+/** Largest swell the tank carries, matching the buoy sliders; the tank deepens with the swell (the wave-sizes spec). */
+export const TANK_SWELL_LIMITS = { height: { min: 0.3, max: 4 }, period: { min: 6, max: 18 } };
+
+/**
+ * The Canyon keeps its tank and sea as they were (the wave-sizes spec), and so its 3 m cap; the Reef keeps its
+ * cap too until the Reef rework deepens its tank (the wave-sizes review).
+ */
+export function swellHeightLimit(spot: SpotName): number {
+  return spot === 'canyon' || spot === 'reef' ? 3 : TANK_SWELL_LIMITS.height.max;
+}
 
 function clamp(value: number, range: { min: number; max: number }): number {
   return Math.min(range.max, Math.max(range.min, value));
@@ -123,7 +131,7 @@ export function spreadingFor(spread: number): number {
 export function swellFor(settings: PhysicalSettings): SwellInput {
   if (settings.source === 'practice') return { ...PRACTICE_SWELL };
   if (settings.source !== 'storm') {
-    return { significantHeight: settings.significantHeight, peakPeriod: settings.peakPeriod, spreading: spreadingFor(settings.spread) };
+    return { significantHeight: Math.min(settings.significantHeight, swellHeightLimit(settings.spot)), peakPeriod: settings.peakPeriod, spreading: spreadingFor(settings.spread) };
   }
   const storm = stormSwell({
     windSpeed: settings.stormWindSpeed,
@@ -132,7 +140,7 @@ export function swellFor(settings: PhysicalSettings): SwellInput {
     distanceKm: settings.stormDistanceKm,
   });
   return {
-    significantHeight: clamp(storm.significantHeight, TANK_SWELL_LIMITS.height),
+    significantHeight: clamp(storm.significantHeight, { min: TANK_SWELL_LIMITS.height.min, max: swellHeightLimit(settings.spot) }),
     peakPeriod: clamp(storm.peakPeriod, TANK_SWELL_LIMITS.period),
     spreading: storm.spreading,
     bandwidth: storm.bandwidth,
@@ -382,6 +390,8 @@ export class PhysicalMode {
       windSpeed: settings.windSpeed,
       stage: settings.stage,
       compute: settings.compute,
+      // Practice's groundswell is given at the tank's edge, so its sea stays as it was (the wave-sizes spec).
+      ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
       ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
       ...overrides,
     };
@@ -412,33 +422,35 @@ export class PhysicalMode {
     this.farField.setOptics(SPOT_OPTICS[settings.spot]);
     this.lipSheet.setOptics(SPOT_OPTICS[settings.spot]);
     const spot = createSpot(config.spot, config.seed);
-    const offshoreDepth = OFFSHORE_DEPTH[settings.spot];
+    // The tank this swell needs (the wave-sizes spec): the far field and seabed start at its edge.
+    const tank = tankLayout(config);
+    const offshoreDepth = tank.edgeDepth;
     const windowMin = init.windowXMin;
     const windowMax = windowMin + (init.grid.nx - 1) * init.grid.spacing;
     const leftX = windowMin + init.dx / 2;
     const rightX = windowMax - init.dx / 2;
     // Beyond the window the world continues each edge column's seabed; offshore it deepens to FAR_DEPTH.
-    const offshoreBed = (z: number) => offshoreDepth + (FAR_DEPTH - offshoreDepth) * smoothstep(TANK.offshore, TANK.offshore - FAR_SLOPE_LENGTH, z);
+    const offshoreBed = (z: number) => offshoreDepth + (FAR_DEPTH - offshoreDepth) * smoothstep(tank.offshore, tank.offshore - FAR_SLOPE_LENGTH, z);
     const bedDepth = (x: number, z: number) => {
-      if (z < TANK.offshore) return offshoreBed(z);
-      return tankDepth(spot, offshoreDepth, x < windowMin ? leftX : x > windowMax ? rightX : x, z);
+      if (z < tank.offshore) return offshoreBed(z);
+      return tankDepth(spot, offshoreDepth, x < windowMin ? leftX : x > windowMax ? rightX : x, z, tank);
     };
     this.focus = { ...init.focus };
-    const hole = { xMin: windowMin, xMax: windowMax, zMin: TANK.offshore, zMax: TANK.shore };
+    const hole = { xMin: windowMin, xMax: windowMax, zMin: tank.offshore, zMax: tank.shore };
     this.seabed.setDepthOnGrid(
       bedDepth,
       gradedAxis(this.focus.x - 600, this.focus.x + 600, windowMin, windowMax, 2, 30),
-      gradedAxis(-900, TANK.shore + 30, TANK.offshore, TANK.shore, 2, 30),
+      gradedAxis(Math.min(-900, tank.offshore - 300), tank.shore + 30, tank.offshore, tank.shore, 2, 30),
     );
     const profile = new FarFieldProfile(surfZoneSea(config), {
-      referenceZ: TANK.offshore,
-      shoreZ: TANK.shore,
-      offshoreZ: TANK.offshore - (FAR_EXTENT - 330),
+      referenceZ: tank.offshore,
+      shoreZ: tank.shore,
+      offshoreZ: Math.min(-FAR_EXTENT, tank.offshore - 300),
       shoreSamples: 181,
       offshoreSamples: 391,
       offshoreDepth: (z) => offshoreBed(z) + settings.tide,
-      leftDepth: (z) => tankDepth(spot, offshoreDepth, leftX, z) + settings.tide,
-      rightDepth: (z) => tankDepth(spot, offshoreDepth, rightX, z) + settings.tide,
+      leftDepth: (z) => tankDepth(spot, offshoreDepth, leftX, z, tank) + settings.tide,
+      rightDepth: (z) => tankDepth(spot, offshoreDepth, rightX, z, tank) + settings.tide,
     });
     this.farField.setProfile(profile, hole, this.focus, { extent: FAR_EXTENT });
     this.farField.setChop(chopForWind(settings.windSpeed));

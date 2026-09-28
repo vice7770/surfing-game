@@ -120,7 +120,7 @@ interface SpotRun {
 function runSpot(spot: SpotName, seed: number): SpotRun {
   const runner = new SurfZoneRunner({
     spot, seed,
-    significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod, directionDegrees: direction,
+    significantHeight: swell.significantHeight, heightAt: (settings.source === 'practice' ? 'edge' : 'deep') as 'edge' | 'deep', peakPeriod: swell.peakPeriod, directionDegrees: direction,
     spreading: swell.spreading, bandwidth: swell.bandwidth, tide: settings.tide, windSpeed: settings.windSpeed,
   }, { rider: true });
   // Ghosts: the water's reactions and the lip's recoil are dropped, as in the catch report.

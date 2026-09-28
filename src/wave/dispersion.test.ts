@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { GRAVITY, depthClass, exactWaveNumber, waveKinematics, waveNumber } from './dispersion';
+import { GRAVITY, depthClass, exactWaveNumber, shoalingCoefficient, waveKinematics, waveNumber } from './dispersion';
 
 describe('linear dispersion', () => {
+  it('shoals a deep-water wave by √(cg∞ / cg(h)): about 1 in deep water, dipping in between, growing in shallow water', () => {
+    expect(shoalingCoefficient(8, 500)).toBeCloseTo(1, 6);
+    expect(shoalingCoefficient(12, 30)).toBeLessThan(1);
+    const shallow = shoalingCoefficient(12, 5);
+    const deepGroup = (GRAVITY * 12) / (4 * Math.PI);
+    expect(shallow).toBeCloseTo(Math.sqrt(deepGroup / waveKinematics(12, 5).groupSpeed), 12);
+    expect(shallow).toBeGreaterThan(1.1);
+  });
+
   it('solves ω² = g k tanh(kh) exactly', () => {
     for (const period of [3, 8, 18]) {
       for (const depth of [0.4, 4, 40, 400]) {
