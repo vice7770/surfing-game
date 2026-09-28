@@ -1,6 +1,9 @@
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { FILM_SCENARIOS, drawnLag, filmBody, posed, repeatedFrames, rigAlone, shake, switchSpeeds, switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame } from './bodyFilm';
+import {
+  ChopWater, FILM_JOINT, FILM_SCENARIOS, breathing, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, posed, repeatedFrames, rigAlone, shake, switchSpeeds,
+  switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame,
+} from './bodyFilm';
 
 const scenario = (name: string) => FILM_SCENARIOS.find((candidate) => candidate.name === name)!;
 
@@ -83,8 +86,9 @@ function film(rate: number, count: number, shape: (i: number, frame: FilmFrame) 
   for (let i = 0; i < count; i += 1) {
     const frame: FilmFrame = {
       time: i / rate, phase: 'standing', moving: true, switched: false, fallen: false,
-      joints: [new Vector3()], limbs: [new Vector3()], hips: new Vector3(), board: new Vector3(), bones: [new Quaternion()], worldBones: [new Quaternion()],
-      chestRoll: 0, physicsRoll: 0,
+      joints: Array.from({ length: 13 }, () => new Vector3()), limbs: [new Vector3()], hips: new Vector3(), board: new Vector3(),
+      bones: [new Quaternion()], worldBones: Array.from({ length: 3 }, () => new Quaternion()),
+      chestRoll: 0, physicsRoll: 0, hipsOnBoard: new Vector3(), physicsPelvis: new Vector3(),
     };
     shape(i, frame);
     frames.push(frame);
@@ -153,4 +157,60 @@ describe('the body film measures', () => {
     });
     expect(drawnLag(lagged)).toBeCloseTo(0.1, 3);
   });
+});
+
+describe('the body film\'s secondary-motion measures (step 4)', () => {
+  const turning = (frame: FilmFrame, index: number, angle: number) => frame.worldBones[index].setFromAxisAngle(new Vector3(1, 0, 0), angle);
+
+  it('reads a head held still while the chest rocks as steady, and one riding with it as not', () => {
+    const rock = (i: number) => 0.2 * Math.sin(2 * Math.PI * (i / 60));
+    const held = film(60, 240, (i, frame) => turning(frame, 1, rock(i)));
+    expect(headSteadiness(held)).toBeCloseTo(0, 6);
+    const riding = film(60, 240, (i, frame) => { turning(frame, 1, rock(i)); turning(frame, 2, rock(i)); });
+    expect(headSteadiness(riding)).toBeCloseTo(1, 6);
+  });
+
+  it('reads a hand fixed to its shoulder as no swing, and a 2 Hz swing of 5 cm as its RMS', () => {
+    const fixed = film(60, 240, (i, frame) => {
+      frame.joints[FILM_JOINT.shoulder.left].set(0.2, 1.4 + 0.1 * Math.sin(i / 7), 0);
+      frame.joints[FILM_JOINT.hand.left].set(0.5, 1.1 + 0.1 * Math.sin(i / 7), 0);
+    });
+    expect(handSwing(fixed, 'left')).toBeCloseTo(0, 6);
+    const swinging = film(60, 240, (i, frame) => {
+      frame.joints[FILM_JOINT.shoulder.left].set(0.2, 1.4, 0);
+      frame.joints[FILM_JOINT.hand.left].set(0.5, 1.1 + 0.05 * Math.sin(2 * Math.PI * 2 * (i / 60)), 0);
+    });
+    expect(handSwing(swinging, 'left')).toBeCloseTo(0.05 / Math.SQRT2, 2);
+  });
+
+  it('reads the drawn hips heaving with the physics\' pelvis as full give, and held still as none', () => {
+    const heave = (i: number) => 0.9 + 0.03 * Math.sin(2 * Math.PI * 2 * (i / 60));
+    const following = film(60, 240, (i, frame) => { frame.physicsPelvis.set(0, heave(i), 0); frame.hipsOnBoard.set(0, heave(i) + 0.1, 0); });
+    expect(kneeGive(following)).toBeCloseTo(1, 6);
+    const locked = film(60, 240, (i, frame) => { frame.physicsPelvis.set(0, heave(i), 0); frame.hipsOnBoard.set(0, 1, 0); });
+    expect(kneeGive(locked)).toBeCloseTo(0, 6);
+  });
+
+  it('reads the head rising 1 cm about the hips at 0.3 Hz as breathing, and a still body as none', () => {
+    const breath = film(60, 1200, (i, frame) => frame.joints[FILM_JOINT.head].set(0, 1.6 + 0.01 * Math.sin(2 * Math.PI * 0.3 * (i / 60)), 0));
+    expect(breathing(breath)).toBeCloseTo(0.01 / Math.SQRT2, 3);
+    const still = film(60, 1200, (_i, frame) => frame.joints[FILM_JOINT.head].set(0, 1.6, 0));
+    expect(breathing(still)).toBeCloseTo(0, 6);
+  });
+
+  it('rides chop: bumps 5 cm high every 4 m along the travel, with their slope', () => {
+    const chop = new ChopWater();
+    expect(chop.surfaceAt(0, 1)).toBeCloseTo(0.05, 6);
+    expect(chop.surfaceAt(3, 3)).toBeCloseTo(-0.05, 6);
+    const sample = chop.sampleAt(0, 0, 0, {} as never);
+    expect(sample.slopeZ).toBeCloseTo(0.05 * (2 * Math.PI) / 4, 6);
+    expect(sample.normalY).toBeGreaterThan(0.9);
+  });
+
+  it('films pumping, chop and a paddle then a glide, riding throughout', () => {
+    for (const name of ['pumping', 'chop', 'paddle then glide']) {
+      const shot = filmBody(scenario(name), { rate: 30 });
+      expect(shot.frames.some((frame) => frame.switched && frame.phase === 'fallen'), name).toBe(false);
+    }
+  }, 240_000);
 });

@@ -1,13 +1,14 @@
 import { Quaternion, Vector3 } from 'three';
 import { SnapshotTrack } from '../game/snapshotTrack';
 import { PlaneWater } from '../physics/PlaneWater';
+import type { WaterSample } from '../physics/SurfWater';
 import { RideSession, type RideInput, type RiderPlacement } from '../physics/RideSession';
 import type { SurfWater } from '../physics/SurfWater';
 import { HumanoidRig } from '../scene/rig/HumanoidRig';
 import { PosedBody, type PosedBodyOptions } from '../scene/rig/posedBody';
 import { BONES, type Side } from '../scene/rig/humanoidBones';
 import { RiderMotion } from '../scene/rig/riderMotion';
-import { createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
+import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { createTestHumanoid } from '../scene/rig/testHumanoid';
 import { RIDER_SNAPSHOT, writeRiderSnapshot } from '../wave/SurfZoneRunner';
 
@@ -49,7 +50,14 @@ export interface FilmFrame {
   /** The drawn chest's roll across the board's heading, rad, and the physics' own (its torso point over its pelvis). */
   chestRoll: number;
   physicsRoll: number;
+  /** The drawn hips and the physics' pelvis point, in the board's frame, m. */
+  hipsOnBoard: Vector3;
+  physicsPelvis: Vector3;
 }
+
+/** Where the film's joints (`FilmFrame.joints`, `limbs`) keep the shoulders, the hands and the head; `worldBones` the chest (1) and the head (2). */
+export const FILM_JOINT = { shoulder: { left: 3, right: 9 }, hand: { left: 5, right: 11 }, head: 12 } as const;
+const WORLD_BONE = { chest: 1, head: 2 } as const;
 
 export interface BodyFilm {
   /** Display rate, Hz. */
@@ -245,7 +253,7 @@ export function drawnLag(film: BodyFilm, most = 0.3): number {
 
 export interface FilmScenario {
   name: string;
-  water: 'flat' | 'face';
+  water: 'flat' | 'face' | 'chop';
   placement: RiderPlacement;
   seconds: number;
   /** The input at `time` s; it may also act on the session (a tow, a separation). */
@@ -255,6 +263,105 @@ export interface FilmScenario {
 const FACE = (15 * Math.PI) / 180;
 /** True in the one step nearest `at` s: a key pressed for a step. */
 const once = (time: number, at: number) => Math.abs(time - at) < STEP / 2;
+
+/** The frames riding (not fallen, not at a switch). */
+const riding = (film: BodyFilm) => film.frames.filter((frame) => !frame.fallen && !frame.switched);
+
+/**
+ * The RMS of a measured bone's tilting speed in the world, rad/s, between riding
+ * frames: how fast its long axis (its local y) turns, leaving out its turn about
+ * that axis (a head turning to look).
+ */
+function tiltingRms(film: BodyFilm, bone: number): number {
+  const axis = (q: Quaternion) => new Vector3(0, 1, 0).applyQuaternion(q);
+  let sum = 0;
+  let count = 0;
+  for (let i = 1; i < film.frames.length; i += 1) {
+    const [a, b] = [film.frames[i - 1], film.frames[i]];
+    if (a.fallen || b.fallen || b.switched) continue;
+    sum += (axis(a.worldBones[bone]).angleTo(axis(b.worldBones[bone])) * film.rate) ** 2;
+    count += 1;
+  }
+  return count ? Math.sqrt(sum / count) : 0;
+}
+
+/**
+ * How much of the chest's tilting reaches the head (step 4): the RMS of the
+ * head's tilting speed in the world over the chest's; 1 when the head rides
+ * with the chest, under 1 when it holds steadier (Pozzo et al. 1990: the head's
+ * pitch held near the horizontal while the body moves). Looking about (yaw) is
+ * left out.
+ */
+export function headSteadiness(film: BodyFilm): number {
+  const chest = tiltingRms(film, WORLD_BONE.chest);
+  return chest > 1e-12 ? tiltingRms(film, WORLD_BONE.head) / chest : 0;
+}
+
+/**
+ * How far a hand swings about its shoulder (step 4), m: the RMS of its place
+ * relative to the shoulder, on the board, less its running mean over `window` s:
+ * 0 for an arm held to its cue, however the cue moves slowly.
+ */
+export function handSwing(film: BodyFilm, side: Side, window = 1): number {
+  const offsets = riding(film).map((frame) => frame.joints[FILM_JOINT.hand[side]].clone().sub(frame.joints[FILM_JOINT.shoulder[side]]));
+  const half = Math.round((window * film.rate) / 2);
+  let sum = 0;
+  offsets.forEach((offset, i) => {
+    const mean = new Vector3();
+    const from = Math.max(0, i - half);
+    const to = Math.min(offsets.length - 1, i + half);
+    for (let j = from; j <= to; j += 1) mean.add(offsets[j]);
+    sum += offset.clone().sub(mean.divideScalar(to - from + 1)).lengthSq();
+  });
+  return offsets.length ? Math.sqrt(sum / offsets.length) : 0;
+}
+
+/**
+ * How the drawn hips follow the physics' leg (step 4): the correlation of their
+ * heights on the deck while standing from `from` s (past the stance's blend-in),
+ * 1 following it, 0 when the drawn hips hold still.
+ */
+export function kneeGive(film: BodyFilm, from = 0): number {
+  const standing = riding(film).filter((frame) => frame.phase === 'standing' && frame.time >= from);
+  const drawn = standing.map((frame) => frame.hipsOnBoard.y);
+  const physics = standing.map((frame) => frame.physicsPelvis.y);
+  const mean = (values: number[]) => values.reduce((a, b) => a + b, 0) / values.length;
+  const [dm, pm] = [mean(drawn), mean(physics)];
+  let covariance = 0;
+  let dv = 0;
+  let pv = 0;
+  drawn.forEach((d, i) => {
+    covariance += (d - dm) * (physics[i] - pm);
+    dv += (d - dm) ** 2;
+    pv += (physics[i] - pm) ** 2;
+  });
+  return dv > 1e-12 && pv > 1e-12 ? covariance / Math.sqrt(dv * pv) : 0;
+}
+
+/** The head's rise and fall about the hips on the board between `low` and `high` Hz (breathing's band, step 4), RMS, m. */
+export function breathing(film: BodyFilm, low = 0.15, high = 1): number {
+  const frames = riding(film);
+  const head = frames.map((frame) => frame.joints[FILM_JOINT.head].clone().sub(frame.hipsOnBoard));
+  const band = (axis: 'x' | 'y' | 'z') => bandRms(head.map((v) => v[axis]), film.rate, low, high);
+  return Math.hypot(band('x'), band('y'), band('z'));
+}
+
+/** The film's chop (step 4): bumps CHOP.height high every CHOP.length m along z, with their slope. A test surface, not a sea state. */
+const CHOP = { height: 0.05, length: 4 };
+export class ChopWater extends PlaneWater {
+  surfaceAt(_x: number, z: number): number {
+    return CHOP.height * Math.sin((2 * Math.PI * z) / CHOP.length);
+  }
+
+  sampleAt(x: number, y: number, z: number, out: WaterSample): WaterSample {
+    super.sampleAt(x, y, z, out);
+    const k = (2 * Math.PI) / CHOP.length;
+    const slopeZ = CHOP.height * k * Math.cos(k * z);
+    const norm = Math.hypot(1, slopeZ);
+    Object.assign(out, { slopeX: 0, slopeZ, normalX: 0, normalY: 1 / norm, normalZ: -slopeZ / norm });
+    return out;
+  }
+}
 
 /** The film's scenarios: every switch of the riding body, and its steady riding. */
 export const FILM_SCENARIOS: readonly FilmScenario[] = [
@@ -305,6 +412,16 @@ export const FILM_SCENARIOS: readonly FilmScenario[] = [
       if (once(time, 1) && session.rider.attached) session.separate('balance');
       return {};
     },
+  },
+  // Step 4's secondary motion: three pump pulses; straight over chop; paddling for 20 s, then gliding still.
+  {
+    name: 'pumping', water: 'flat', seconds: 3, placement: { x: 0, z: 0, heading: 0, speed: 8, phase: 'standing' },
+    input: (time) => ({ crouch: time >= 0.4 && time < 2.8 && Math.floor(time / 0.4) % 2 === 1 ? 1 : 0 }),
+  },
+  { name: 'chop', water: 'chop', seconds: 2.5, placement: { x: 0, z: 0, heading: 0, speed: 8, phase: 'standing' }, input: () => ({}) },
+  {
+    name: 'paddle then glide', water: 'flat', seconds: 30, placement: { x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' },
+    input: (time) => ({ paddle: time < 20 }),
   },
 ];
 
@@ -384,7 +501,7 @@ function boardPose(session: RideSession, out: Float64Array): Float64Array {
 /** Runs `scenario` and films its drawn body. */
 export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm {
   const delivery = options.delivery ?? 1;
-  const water: SurfWater = scenario.water === 'face' ? new PlaneWater({ slopeZ: -Math.tan(FACE) }) : new PlaneWater();
+  const water: SurfWater = scenario.water === 'face' ? new PlaneWater({ slopeZ: -Math.tan(FACE) }) : scenario.water === 'chop' ? new ChopWater() : new PlaneWater();
   const session = new RideSession();
   session.place(scenario.placement, water);
   const drawer = (options.drawer ?? latestDrawer)();
@@ -400,6 +517,7 @@ export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm
   let steps = 0;
   let accumulator = 0;
   let pending = false;
+  let paddling = false;
   let last: { phase: number; points: Vector3[] } | undefined;
   const deliver = () => {
     const rider = new Float64Array(RIDER_SNAPSHOT.length);
@@ -423,7 +541,9 @@ export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm
     while (accumulator >= STEP - 1e-12 && taken < 3) {
       accumulator -= STEP;
       taken += 1;
-      session.step(STEP, water, { paddle: false, popUp: false, steer: 0, ...scenario.input(simTime, session) });
+      const input: RideInput = { paddle: false, popUp: false, steer: 0, ...scenario.input(simTime, session) };
+      paddling = input.paddle;
+      session.step(STEP, water, input);
       simTime += STEP;
       steps += 1;
       if (steps % delivery === 0) deliver();
@@ -433,7 +553,8 @@ export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm
     readRiderSnapshot(drawn.rider, drawn.board, state);
     motion.update(state, drawn.time);
     state.clock = drawn.time;
-    state.stroking = 0;
+    // As the page does (`PhysicalMode`): the hands pull while paddling lying down.
+    state.stroking = paddling && state.phase === 'prone' ? 1 : 0;
     pose(state);
     film.frames.push(record(f / options.rate, state, session, rig, measured, pending));
     pending = false;
@@ -486,5 +607,7 @@ function record(
     worldBones,
     chestRoll: roll(chestUp),
     physicsRoll: roll(torso),
+    hipsOnBoard: hips.clone().sub(boardPosition).applyQuaternion(boardInverse),
+    physicsPelvis: state.points[POINT.pelvis].clone().sub(boardPosition).applyQuaternion(boardInverse),
   };
 }
