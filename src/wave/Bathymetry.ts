@@ -83,8 +83,10 @@ export function reefSeaward(x: number, z: number): number {
  * Bingin beds (1999; Mead 2000, ch. 5). The swell arrives square to the tank in water `deep` deep (the tank's edge,
  * where its linear sea is near-linear; the Bukit's terrace has already wrapped it), climbs a shore-parallel forereef
  * at `foreSlope` to a knee `kneeDepth` deep, then Mead's ramp at `rampSlope`, level along shore. From the ramp rises
- * the wedge at Mead & Black's orthogonal gradient, inferred from the measured vortex ratios of its tubes (about 1:19;
- * Mead & Black 2001), to a reef flat `crestDepth` deep that nearly dries at the lowest spring tides. The wedge's top
+ * the wedge to a reef flat `crestDepth` deep that nearly dries at the lowest spring tides. The wave climbs it at Mead &
+ * Black's orthogonal gradient along its own path, inferred from the measured vortex ratios of its tubes (about 1:19;
+ * Mead & Black 2001), so `wedgeSlope`, measured across the crest line, is steeper by the path's angle to it (the
+ * owner's decision, 2026-09-29: docs/research/water-physics/basilisk-profiles.md). The wedge's top
  * edge (the crest line) runs at `angle` degrees to the ramp's contours from the peak (x = peakX, where the wedge's base
  * is `baseDepth` deep), so each wave breaks there first and peels toward +x (a left) at the celerity over the wedge's
  * base over the sine of that angle (phase matching). A spur on the swell's line through the peak (Mead's focus) draws
@@ -97,7 +99,14 @@ export function reefSeaward(x: number, z: number): number {
  */
 export const PADANG = {
   deep: 25, foreSlope: 1 / 20, foreRounding: 10, kneeDepth: 12, rampSlope: 1 / 80,
-  baseDepth: 7, wedgeSlope: 1 / 19, crestDepth: 1.25, peakX: -60, peakZ: -170, angle: 40, endWidth: 20,
+  /**
+   * The wedge's slope across its crest line: 1:19 along the swell's path, which crosses the 40° line obliquely (1:14.6
+   * as the swell arrives square, about 1:15.8 once refraction turns it toward the wedge's normal). At 1:19 across the line
+   * the swell climbed 1:24.8: in Basilisk (level 11) the peak's face went vertical 16 m before the flat and threw a tube
+   * of 0.125 H²; at 1:19 along the path, 3.6 m before it, the lip landing on the flat and the tube 0.208 H², 1.7 × larger.
+   */
+  wedgeSlope: 1 / 15,
+  baseDepth: 7, crestDepth: 1.25, peakX: -60, peakZ: -170, angle: 40, endWidth: 20,
   alongShore: 320, channelX: 160, channelHalfWidth: 45, shoreSlope: 0.2, takeOffX: -50,
   /**
    * Mead's focus: a spur along the incoming swell through the peak, `focusRelief` m above the bed where it meets the

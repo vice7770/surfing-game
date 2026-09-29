@@ -169,6 +169,14 @@ describe('surf spot bathymetry', () => {
       expect(padang.depthAt(x, crest + 10)).toBeCloseTo(PADANG.crestDepth, 6);
     });
 
+    // Mead & Black's orthogonal gradient is along the wave's path (1:18–1:20, inferred from Padang Padang's measured vortex
+    // ratios; Mead & Black 2001), not across the 40° crest line: the owner's decision, 2026-09-29.
+    it('climbs its wedge at Mead & Black’s 1:18–1:20 along the swell’s path, square to the tank', () => {
+      const along = slopeZ(padang, x, padangCrestZ(x) - 30);
+      expect(along).toBeGreaterThanOrEqual(1 / 20);
+      expect(along).toBeLessThanOrEqual(1 / 18);
+    });
+
     // Mead's components for Padang Padang: ramp, focus, wedge, pinnacle, and no platform (Mead 2000, table 4.1). The tank's
     // sea arrives near-linear in deep water: injected on a 10 m platform, a 16 s swell kept changing shape for 150–200 m.
     it('rises from deep water up a shore-parallel forereef, then Mead’s ramp, to the wedge’s base at the peak', () => {
