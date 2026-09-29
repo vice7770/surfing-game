@@ -1,4 +1,4 @@
-import { SURF_ZONE_STEP } from '../wave/SurfZoneRunner';
+import { RIDER_PHASES, SURF_ZONE_STEP } from '../wave/SurfZoneRunner';
 import { createPose, decodePose, readBundle, type SurferPose } from './poseCodec';
 import type { PlayerInfo } from './protocol';
 
@@ -10,6 +10,17 @@ export const EXTRAPOLATE_LIMIT = 0.25;
 export const VANISH_SECONDS = 5;
 /** Poses kept per player. */
 const KEPT = 8;
+/** Boards further apart than this per physics step, m, are a teleport (a retry, a placement), never blended across: as the local track. */
+const TELEPORT = 2;
+/**
+ * A point whose velocity between two poses departs from its velocity between
+ * the poses either side by more than this, m/s, has jumped: as the drawn
+ * body's smoothing reads a jump (`pointInertia`). A limb turning back changes
+ * by about 1.2 m/s from one 50 ms pose to the next; the reach's hand, 0.7 m
+ * within a step, by 14.
+ */
+const JUMP = 3;
+const FALLEN = RIDER_PHASES.indexOf('fallen');
 
 /** Another surfer at one moment, ready to draw on this player's water. */
 export interface RemoteState {
@@ -49,6 +60,67 @@ interface Remote {
 
 function wrapAngle(angle: number): number {
   return Math.atan2(Math.sin(angle), Math.cos(angle));
+}
+
+/** Two poses the surfer did not jump between: blended, else the newer is drawn whole. */
+function continuous(a: SurferPose, b: SurferPose): boolean {
+  return a.present === b.present && a.boardPresent === b.boardPresent
+    && Math.hypot(b.x - a.x, b.z - a.z) <= TELEPORT * (b.step - a.step);
+}
+
+/** Whether the poses at `i` and `i + 1` blend: the surfer did not jump between them, and their points mean the same. */
+function joined(poses: readonly SurferPose[], i: number): boolean {
+  const a = poses[i];
+  const b = poses[i + 1];
+  return a !== undefined && b !== undefined && continuous(a, b) && a.phase === b.phase;
+}
+
+/** The difference, m/s, between point `p`'s velocities from pose `i` to `i + 1` and from `j` to `j + 1`. */
+function change(poses: readonly SurferPose[], i: number, j: number, p: number): number {
+  const spanI = (poses[i + 1].step - poses[i].step) * SURF_ZONE_STEP;
+  const spanJ = (poses[j + 1].step - poses[j].step) * SURF_ZONE_STEP;
+  let sum = 0;
+  for (let k = 3 * p; k < 3 * p + 3; k += 1) {
+    const v = (poses[i + 1].points[k] - poses[i].points[k]) / spanI;
+    const w = (poses[j + 1].points[k] - poses[j].points[k]) / spanJ;
+    sum += (v - w) ** 2;
+  }
+  return Math.sqrt(sum);
+}
+
+/**
+ * Whether point `p` jumps between the joined poses at `i` and `i + 1`: its
+ * velocity departs from each joined neighbour's by more than `JUMP`. With no
+ * neighbour a jump is not told from motion. Fallen, the points are measured
+ * from a board tumbling away (the drawn body's smoothing reads them in the
+ * world): none is read.
+ */
+function jumps(poses: readonly SurferPose[], i: number, p: number): boolean {
+  if (poses[i].phase === FALLEN) return false;
+  let compared = false;
+  for (const j of [i - 1, i + 1]) {
+    if (!joined(poses, j)) continue;
+    compared = true;
+    if (change(poses, i, j, p) <= JUMP) return false;
+  }
+  return compared;
+}
+
+/**
+ * A point's slope at pose `b`, per step, from its neighbours `before` and
+ * `after` steps away (0: none, the one chord there is). Steffen's monotone
+ * slope (1990, A&A 239: 443): the three-point formula on uneven steps (exact
+ * for an even acceleration), held within twice either chord and zero at a turn,
+ * so the curve never overshoots the poses (a jump rests either side of it).
+ */
+function slope(a: number, b: number, c: number, before: number, after: number): number {
+  if (!(before > 0)) return (c - b) / after;
+  if (!(after > 0)) return (b - a) / before;
+  const s0 = (b - a) / before;
+  const s1 = (c - b) / after;
+  if (s0 * s1 <= 0) return 0;
+  const p = (s0 * after + s1 * before) / (before + after);
+  return Math.sign(p) * Math.min(2 * Math.abs(s0), 2 * Math.abs(s1), Math.abs(p));
 }
 
 function copyPose(pose: SurferPose, out: RemoteState): void {
@@ -137,7 +209,8 @@ export class RemoteSurfers {
     if (t >= last.step) {
       copyPose(last, out);
       const previous = poses[poses.length - 2];
-      if (previous) {
+      // After a teleport the last two poses give no velocity to carry on at: held.
+      if (previous && continuous(previous, last)) {
         const ahead = Math.min(t - last.step, EXTRAPOLATE_LIMIT / SURF_ZONE_STEP);
         const span = last.step - previous.step;
         out.x += ((last.x - previous.x) / span) * ahead;
@@ -149,13 +222,49 @@ export class RemoteSurfers {
     while (poses[index + 1].step <= t) index += 1;
     const a = poses[index];
     const b = poses[index + 1];
-    const f = (t - a.step) / (b.step - a.step);
+    if (!continuous(a, b)) {
+      // A retry or a placement: never swept across the sea, the newer is drawn.
+      copyPose(b, out);
+      return true;
+    }
+    const span = b.step - a.step;
+    const f = (t - a.step) / span;
     const near = f < 0.5 ? a : b;
     copyPose(near, out);
     out.x = a.x + (b.x - a.x) * f;
     out.z = a.z + (b.z - a.z) * f;
     out.lift = a.lift + (b.lift - a.lift) * f;
-    for (let i = 0; i < 21; i += 1) out.points[i] = a.points[i] + (b.points[i] - a.points[i]) * f;
+    if (a.phase === b.phase) {
+      // Each point on a cubic through the poses either side (a monotone Catmull-Rom, on uneven steps): at 20 poses a
+      // second its speed carries on across each pose, where the chords turned it at every pose. A point that jumps
+      // (the reach's hand), like every point across a phase switch (the fall's tips to limbs' centres, the landing's
+      // feet from where the legs lay), is the nearer pose's: the jump lands in one frame, mid-way, as the local track
+      // draws it within a step, and the drawn body's smoothing takes it (spread over the 50 ms it would read as motion).
+      // The board glides on under the nearer's points.
+      const before = poses[index - 1];
+      const after = poses[index + 2];
+      const from = joined(poses, index - 1) ? a.step - before.step : 0;
+      const to = joined(poses, index + 1) ? after.step - b.step : 0;
+      const f2 = f * f;
+      const f3 = f2 * f;
+      const ha = 2 * f3 - 3 * f2 + 1;
+      const hb = 1 - ha;
+      const hsa = (f3 - 2 * f2 + f) * span;
+      const hsb = (f3 - f2) * span;
+      for (let p = 0; p < 7; p += 1) {
+        if (jumps(poses, index, p)) continue;
+        // Nor is a curve bent by a neighbour's jump.
+        const fromHere = from && !jumps(poses, index - 1, p) ? from : 0;
+        const toHere = to && !jumps(poses, index + 1, p) ? to : 0;
+        for (let i = 3 * p; i < 3 * p + 3; i += 1) {
+          const pa = a.points[i];
+          const pb = b.points[i];
+          const sa = slope(fromHere ? before.points[i] : pa, pa, pb, fromHere, span);
+          const sb = slope(pa, pb, toHere ? after.points[i] : pb, span, toHere);
+          out.points[i] = ha * pa + hb * pb + hsa * sa + hsb * sb;
+        }
+      }
+    }
     out.heading = a.heading + wrapAngle(b.heading - a.heading) * f;
     // Normalised linear interpolation along the shorter arc.
     const sign = a.qx * b.qx + a.qy * b.qy + a.qz * b.qz + a.qw * b.qw < 0 ? -1 : 1;

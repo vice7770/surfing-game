@@ -62,6 +62,19 @@ const REACH = 0.45;
 const HIP = -0.45;
 const HAND_DEPTH = 0.25;
 const HAND_OUTSIDE_RAIL = 0.08;
+/**
+ * Swinging forward over the water (the riding-body plan, step 8; only the pull
+ * pushes on the water), the drawn hand at mid-swing, m:
+ * - this far out past its pulling line: the stroke's width, as Nessler et al.
+ *   2015 measure it (170 ± 67 mm), where the pull's line beside the rail alone
+ *   gives about 90 mm;
+ * - this high over the deck, skimming the water: the wrist through about 370 mm
+ *   up and down (Nessler et al. 2015: 424 ± 78). At 0.25 m, about the shoulder's
+ *   height, the arm folded tight to pass it, turning fast enough that a 30 Hz
+ *   display's smoothing read the turn as a jump.
+ */
+const RECOVERY_SWING = 0.1;
+const RECOVERY_HEIGHT = 0.12;
 const HAND_RADIUS = 0.08;
 const HAND_DRAG_AREA = 0.066;
 /**
@@ -279,8 +292,8 @@ const LEG_EXTENSION = 0.1;
 /** The balance margin's smoothing, s. */
 const MARGIN_TIME = 0.1;
 /** The drawn arms reach out ARM_SPREAD of their length at ease, and ARM_ALARM more with no margin left. */
-const ARM_SPREAD = 0.7;
-const ARM_ALARM = 0.8;
+export const ARM_SPREAD = 0.7;
+export const ARM_ALARM = 0.8;
 /**
  * The upper body's swing drawn (Part B): standing, the drawn chest, head and arms
  * turn together about the forward axis through the pelvis by SWING_DRAWN_CHEST of
@@ -1108,6 +1121,7 @@ export class AttachedRider {
     const phase = (this.strokeTime / ARM_CYCLE + side * 0.5) % 1;
     let z: number;
     let height: number;
+    let swing = 0;
     let along = 0;
     if (phase < PULL_SHARE) {
       const s = phase / PULL_SHARE;
@@ -1115,11 +1129,15 @@ export class AttachedRider {
       height = -HAND_DEPTH;
       along = ((HIP - REACH) * Math.PI * Math.sin(Math.PI * s)) / (2 * PULL_SHARE * ARM_CYCLE);
     } else {
+      // Out of the water at the hip, over it and out, and back in at the reach, rising and settling with no speed at
+      // either end, so the drawn hand neither jumps nor jerks (the riding-body plan, step 8).
       const s = (phase - PULL_SHARE) / (1 - PULL_SHARE);
       z = HIP + ((REACH - HIP) * (1 - Math.cos(Math.PI * s))) / 2;
-      height = 0.25 * Math.sin(Math.PI * s);
+      const arc = (1 - Math.cos(2 * Math.PI * s)) / 2;
+      height = -HAND_DEPTH + (HAND_DEPTH + RECOVERY_HEIGHT) * arc;
+      swing = RECOVERY_SWING * arc;
     }
-    out.set((side === 0 ? 1 : -1) * (this.halfWidth(z) + HAND_OUTSIDE_RAIL), deckHeight(this.shape, z) + height, z);
+    out.set((side === 0 ? 1 : -1) * (this.halfWidth(z) + HAND_OUTSIDE_RAIL + swing), deckHeight(this.shape, z) + height, z);
     return along;
   }
 

@@ -5,18 +5,23 @@
  * tiles. It steps and renders on its own, like the ride recorder.
  * `&whitewater` (G9) holds on a collapsing tube's foam ball instead, at the
  * Reef or the Beach (`&spot=beach`), and shoots its whitewater.
+ * `&compute=gpu` (or `auto`) steps the sea in the game's worker, on the GPU as
+ * an M4 player's does (the GPU tier's 64-component sea); `cpu`, the default,
+ * steps it in the page as before.
  */
 import { PerspectiveCamera, Vector3 } from 'three';
-import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
 import type { TimeOfDay } from '../game/SurfConditions';
 import type { WaterLook } from '../scene/water/waterLook';
 import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
 import { tubeFloorDepth } from '../wave/Overturn';
 import { SPRAY_STRIDE } from '../wave/SprayCloud';
+import { SEA_COMPONENTS, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { TUBE_STRIDE } from '../wave/tubeTable';
+import { advance, breathe } from './devStepping';
 
 interface SheetHooks {
-  start(settings: PhysicalSettings): Promise<void>;
+  start(settings: PhysicalSettings, overrides?: Partial<SurfZoneConfig>): Promise<void>;
   step(input: { paddle: boolean; popUp: boolean; steer: number }): void;
   render(seconds: number): void;
   resize(width: number, height: number): void;
@@ -40,13 +45,6 @@ const FACE_SLOPE = 0.35;
 /** Where the finished sheet is posted as a PNG (`npm run record:ride` runs the receiver), so it can be read without the page on screen. */
 const RECEIVER = new URLSearchParams(window.location.search).get('receiver') ?? 'http://localhost:5199';
 
-/** Yield to the event loop without a timer (timers are throttled in hidden pages). */
-const breathe = () => new Promise<void>((resolve) => {
-  const channel = new MessageChannel();
-  channel.port1.onmessage = () => resolve();
-  channel.port2.postMessage(0);
-});
-
 interface Shot { name: string; eye: Vector3; target: Vector3 }
 
 const PARAMETERS = new URLSearchParams(window.location.search);
@@ -54,6 +52,14 @@ const PARAMETERS = new URLSearchParams(window.location.search);
 const SPOT = PARAMETERS.get('spot') === 'reef' ? 'reef' : PARAMETERS.get('spot') === 'beach' ? 'beach' : 'point';
 /** `&whitewater` (G9): hold on a collapsing tube's foam ball, and shoot its whitewater in place of the face and bore. */
 const WHITEWATER = PARAMETERS.has('whitewater');
+/** `&compute=gpu|auto`: the sea steps in the game's worker, on its GPU tier (main.ts leaves `inpage` for it); `cpu` in the page. */
+const COMPUTE = PARAMETERS.get('compute') === 'gpu' ? 'gpu' : PARAMETERS.get('compute') === 'auto' ? 'auto' : 'cpu';
+/**
+ * The sea's components (`&components=`). On the GPU it is the GPU tier's rich sea, as an M4 on High plays it, whatever
+ * this page's own graphics preset would pick; in the page, the page's sea as before.
+ */
+const COMPONENTS = Number(PARAMETERS.get('components')) || (COMPUTE === 'cpu' ? undefined : GPU_TIER_COMPONENTS);
+
 /** The whitewater sheet holds once this many foam-ball sprites tumble in the snapshot. */
 const FOAM_BALL_HOLD = 8;
 
@@ -194,15 +200,15 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   status.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:1000;padding:6px 10px;background:#0d1117;color:#d6dde6;font:12px ui-monospace,monospace';
   status.textContent = 'Water sheet: settling the sea…';
   document.body.append(status);
-  const settings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS, spot: SPOT, source: 'practice', compute: 'cpu' };
-  await hooks.start(settings);
+  const settings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS, spot: SPOT, source: 'practice', compute: COMPUTE === 'cpu' ? 'cpu' : 'auto' };
+  await hooks.start(settings, COMPONENTS ? { componentCount: COMPONENTS } : undefined);
   hooks.resize(RENDER.width, RENDER.height);
   const idle = { paddle: false, popUp: false, steer: 0 };
   let simulated = 0;
   while (simulated < MAX_SETTLE) {
     // A tube flies about a second: once settled, the Reef looks for one every 0.2 s.
     const chunk = (SPOT === 'reef' || WHITEWATER) && simulated >= MIN_SETTLE ? 12 : 60;
-    for (let k = 0; k < chunk; k += 1) hooks.step(idle);
+    await advance(hooks, chunk, idle);
     simulated += chunk * STEP;
     if (simulated >= MIN_SETTLE) {
       hooks.render(0);
@@ -247,7 +253,10 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       column += 1;
     }
   }
-  status.textContent = `Water sheet: ${SPOT} practice${ball ? `, ${ball.count} foam-ball sprites` : ''}, ${simulated.toFixed(0)} s settled · columns ${TIMES.map((t) => LOOKS.map((l) => `${l} ${t}`).join(', ')).join(', ')} · rows ${shots.map((s) => s.name).join(', ')}`;
+  // Which tier stepped the sea: asked for the GPU and given the CPU (no WebGPU) must not pass for the GPU's water.
+  const stepped = hooks.mode.host?.snapshot.status.compute ?? 'cpu';
+  const tier = `water on the ${stepped.toUpperCase()}, ${hooks.mode.config?.componentCount ?? SEA_COMPONENTS} components${COMPUTE === 'gpu' && stepped !== 'gpu' ? ' (ASKED FOR THE GPU)' : ''}`;
+  status.textContent = `Water sheet: ${SPOT} practice${ball ? `, ${ball.count} foam-ball sprites` : ''}, ${simulated.toFixed(0)} s settled, ${tier} · columns ${TIMES.map((t) => LOOKS.map((l) => `${l} ${t}`).join(', ')).join(', ')} · rows ${shots.map((s) => s.name).join(', ')}`;
   const face = steepestFace(hooks.water, hooks.mode.focus);
   status.textContent += ` · face slope ${face.slope.toFixed(2)} · program ${hooks.water.mesh.material.customProgramCacheKey()}`;
   /** One shot at full size, posted as water-shot.png: for close checks from the console once the sheet is done. */
@@ -295,8 +304,8 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     times.sort((a, b) => a - b);
     return { median: times[Math.floor(times.length / 2)], p90: times[Math.floor(times.length * 0.9)] };
   };
-  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime });
-  await post(sheet, 'water-sheet.png');
+  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped });
+  await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 
 async function post(canvas: HTMLCanvasElement, name: string): Promise<void> {

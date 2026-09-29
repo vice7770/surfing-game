@@ -91,7 +91,7 @@ On the board: x across, y the deck's normal, z the nose. Regular faces −x (the
 - **Trunk:** its tilt from the deck's normal, toward the toes and toward the nose; and from the world's vertical toward the toes (**trunk from the vertical**, as a picture shows it, the lean into a turn included). **Lean:** the feet's middle to the neck, from the world's vertical toward the toes.
 - **Twists and head yaw:** where the chest, the pelvis and the head face, on the deck: 0° toward the toes, + toward the nose. **Head pitch:** below the deck's plane.
 - **Arms:** the upper arm from the trunk's down: 0° hanging, 90° out, 180° overhead.
-- **Lower hand:** the lower wrist's height above the board's centre (about the waterline). **Stance width:** the ankles apart along the stringer. **Weight:** the hips' centre between the rear ankle (0) and the front ankle (1), standing in for the share of weight on the front foot.
+- **Lower hand:** the lower wrist's height above the board's centre (about the waterline). **Stance width:** the ankles apart along the stringer. **Weight:** the hips' centre between the rear ankle (0) and the front ankle (1), standing in for the share of weight on the front foot. On the flat-water recipes it reads forward of what the targets describe (the feet's pressure, which a surfer feels): on the real wave the physics' feet pressure matches the targets in trim, descending and the bottom turn (step 6, [the physics posture](../superpowers/plans/2026-10-02-physics-posture.md)).
 
 ## Sources
 

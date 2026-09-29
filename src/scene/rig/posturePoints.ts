@@ -18,6 +18,17 @@ export const STANDING_PELVIS = (() => {
 })();
 
 /**
+ * How far the physics' arm parts sit from its torso part in the standing
+ * posture, m: the offset its drawn hands spread out along (`AttachedRider`'s
+ * `ARM_SPREAD` at ease, `ARM_ALARM` more with no margin left).
+ */
+export const ARM_REST_OFFSET = (() => {
+  const { parts } = riderPose(shape, 'standing', 'regular');
+  const offset = (arm: number) => Math.hypot(parts[arm * 3] - parts[3], parts[arm * 3 + 1] - parts[4], parts[arm * 3 + 2] - parts[5]);
+  return (offset(3) + offset(4)) / 2;
+})();
+
+/**
  * How high the pelvis point stands above the deck under the stance's middle, m,
  * in the board's frame: `STANDING_PELVIS` standing tall, lower as the physics
  * crouches.
