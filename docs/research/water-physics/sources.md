@@ -103,3 +103,9 @@ The pages below were opened, not just searched; the full notes tag every finding
 - [Aagaard et al. 2021, JMSE](https://doi.org/10.3390/jmse9111300): near-bed flow and sand suspension under breakers
 - [Garcez Faria 1997](https://calhoun.nps.edu/server/api/core/bitstreams/7a30faa6-893a-4ede-af9a-5f711de8fe8c/content), [van der Zanden et al. 2018](https://ris.utwente.nl/ws/files/29784531/Zanden_et_al_2018_Journal_of_Geophysical_Research_Oceans.pdf) and [MacMahan et al. 2005](https://calhoun.nps.edu/server/api/core/bitstreams/b2de88ce-653b-4133-9d3e-bf1d78390d59/content): undertow and rip currents
 - [Crest's underwater docs](https://crest.readthedocs.io/en/stable/user/underwater.html), [Unity HDRP underwater](https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@17.0/manual/water-underwater-view.html) and [Finding Nemo's water, AWN](https://www.awn.com/animationworld/finding-right-cg-water-and-fish-nemo): how games and film draw it
+
+## Basilisk runs (round 6)
+
+- [Basilisk source and wiki mirror](https://github.com/comphy-lab/basilisk-C), synced 2026-09-28: the solver (GPL-3.0, from its `src/COPYING`), and both published setups, Mostert & Deike's `sandbox/wmostert/shallow.c` and Feddersen et al.'s `sandbox/ffeddersen/shoal_RE0_BO4000.c`. basilisk.fr itself is blocked in the cloud session.
+- Pick & Feddersen's fits and domain, Mead & Black's roundness fit and the Surf Ranch open-curl lengths, as recorded in rounds 1–2; their PDFs could not be reopened from the cloud session.
+- Padang Padang's bed: `PADANG` in `src/wave/Bathymetry.ts` on branch `claude/padang-padang` (f132989).
