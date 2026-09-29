@@ -451,6 +451,37 @@ describe('SurfZoneSimulation', () => {
     it('stays finite where the window\'s open edge cuts the ledge', () => run({ directionDegrees: 25 }, 30), 300_000);
   });
 
+  // The game's own tank (160 m, 1 m cells, the GPU tier's 64 components) through the Reef's Big sets at high tide, as
+  // far as they ran before: every cell finite, never negative, and nowhere faster than 30 m/s.
+  describe('the Reef\'s Big swell at high tide holds by its open edges', () => {
+    const run = (overrides: Partial<SurfZoneConfig>, until: number) => {
+      const simulation = new SurfZoneSimulation({
+        spot: 'reef', seed: 3, significantHeight: 3, peakPeriod: 17, directionDegrees: 20, spreading: 24, tide: 0.6,
+        componentCount: 64, ...overrides,
+      });
+      const { solver } = simulation;
+      let finite = true;
+      let fastest = 0;
+      while (finite && solver.time < until) {
+        simulation.step(1 / 30);
+        for (let i = 0; i < solver.h.length; i += 1) {
+          finite &&= Number.isFinite(solver.h[i] + solver.qx[i] + solver.qz[i]) && solver.h[i] >= 0;
+          if (solver.h[i] > 0.05) fastest = Math.max(fastest, Math.hypot(solver.qx[i], solver.qz[i]) / solver.h[i]);
+        }
+      }
+      expect(finite).toBe(true);
+      expect(fastest).toBeLessThan(30);
+    };
+
+    // A breaking crest's face read 40–66 m/s in 10 m of water (water piling up, not a travelling crest), and the jet's
+    // momentum taken from the water ran it away (t 70 s); once that was bounded, a dispersive cell beside a bore on the
+    // ledge 8 m inside the −x edge kept the bore's flux as it drained, to NaN (t 84 s).
+    it('stays finite through its sets', () => run({}, 90), 600_000);
+    // Given at the edge, a trough drawn down to 1.5 m over the ledge where the −x edge cuts it drew the edge's inflow
+    // from 20 to 40 m/s, then NaN (t 78–83 s).
+    it('stays finite through a trough drawn down at the −x edge', () => run({ heightAt: 'edge', peakPeriod: 18, tide: 1, componentCount: 24 }, 90), 600_000);
+  });
+
   it('throws the Reef\'s ledge breaks as reef breaks and every other spot\'s by Pick & Feddersen', () => {
     const reef = new SurfZoneSimulation({ ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 });
     const ratios: number[] = [];
