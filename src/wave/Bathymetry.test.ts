@@ -194,6 +194,14 @@ describe('surf spot bathymetry', () => {
       expect(PADANG.channelX - 2 * PADANG.channelHalfWidth - PADANG.peakX).toBeGreaterThanOrEqual(50);
     });
 
+    it('is reef where the reef builds the bed, and sand in the channel and on the beach', () => {
+      expect(padang.materialAt!(0, padangCrestZ(0))).toBe('reef');
+      expect(padang.materialAt!(0, padangCrestZ(0) + 10)).toBe('reef'); // the reef flat
+      expect(padang.materialAt!(0, padangShelfEdge() - 20)).toBe('reef'); // the forereef
+      expect(padang.materialAt!(PADANG.channelX, -150)).toBe('sand');
+      expect(padang.materialAt!(0, -2)).toBe('sand'); // the beach face
+    });
+
     it('has no cliff anywhere in the window', () => {
       for (let px = -80; px <= 80; px += 2) {
         for (let z = -700; z <= 20; z += 2) {

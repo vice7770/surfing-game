@@ -82,6 +82,7 @@ From the advisor's notes (`.claude/water-physics/research_notes/Barrel profile l
 | Level strip upcoast of the peak | 20 m | numerical: open edges copy their neighbours |
 | Channel | axis at the +x edge, half-width 20 m, platform-deep | **provisional**: the real one is 200–300 m wide (depth unknown); the +x open edge stands in for most of it |
 | Beach face | 1:5 | **provisional** (as the Reef's) |
+| Bed material | coral (the Reef's `reef`) everywhere but the channel and the beach face, which are sand | the reef flat and its seaward edge are mapped as reef (Allen Coral Atlas, geomorphic layer); the channel is unmapped there, so sand is **provisional**; the cove's beach is sand |
 | Swell direction at the tank's edge | 20° | **provisional**: the swell wraps about 90° around Uluwatu and arrives from the −x side; about 40° in the real frame, the sweep's choice (Task 7) |
 | Swells, buoy Hs / Tp / spread | Small 1.6 m / 16 s / 0.2; Medium 2.2 m / 17 s / 0.2; Big 3.0 m / 18 s / 0.15 | Komar & Gaughan inverted to the face targets; **provisional** until the size report (Task 8) |
 | Practice | Hs 1.5 m at the edge, 16 s, band ±8 %, spreading s 40 | **provisional** until the size report (Task 8) |

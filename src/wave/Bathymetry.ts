@@ -219,24 +219,34 @@ function reef(): SurfSpot {
   };
 }
 
+/** Padang Padang's bed in its parts: the channel's weight, the depth beneath the beach face, and the beach face's. */
+function padangTerms(x: number, z: number): { channel: number; depth: number; beachFace: number } {
+  const p = PADANG;
+  // The shore-parallel forereef from deep water up to the platform.
+  const shelf = padangShelfEdge();
+  // Rounded (C¹) over foreRounding m at its top and its foot, so its slope breaks scatter no spurious harmonics.
+  const foot = shelf - (p.deep - p.platformDepth) / p.foreSlope;
+  const fore = p.platformDepth + (rounded(shelf - z, p.foreRounding) - rounded(foot - z, p.foreRounding)) * p.foreSlope;
+  // The ramp from the reef flat down to the platform, across the crest line, on the forereef's extra depth (the
+  // ramp's foot lies shoreward of the forereef's rounded top, so the two never overlap).
+  const reef = Math.min(p.platformDepth, p.crestDepth + Math.max(0, padangSeaward(x, z)) * p.rampSlope) + (fore - p.platformDepth);
+  // The channel: no reef, the platform and forereef beneath, flat across its axis at the window's edge.
+  const channel = Math.exp(-(((x - p.channelX) / p.channelHalfWidth) ** 2));
+  // A beach face, and dry land shoreward of z = 0.
+  return { channel, depth: reef + (fore - reef) * channel, beachFace: z < 0 ? -z * p.shoreSlope : -z * 0.06 };
+}
+
 function padang(): SurfSpot {
   return {
     name: 'padang',
     depthAt(x, z) {
-      const p = PADANG;
-      // The shore-parallel forereef from deep water up to the platform.
-      const shelf = padangShelfEdge();
-      // Rounded (C¹) over foreRounding m at its top and its foot, so its slope breaks scatter no spurious harmonics.
-      const foot = shelf - (p.deep - p.platformDepth) / p.foreSlope;
-      const fore = p.platformDepth + (rounded(shelf - z, p.foreRounding) - rounded(foot - z, p.foreRounding)) * p.foreSlope;
-      // The ramp from the reef flat down to the platform, across the crest line, on the forereef's extra depth (the
-      // ramp's foot lies shoreward of the forereef's rounded top, so the two never overlap).
-      const reef = Math.min(p.platformDepth, p.crestDepth + Math.max(0, padangSeaward(x, z)) * p.rampSlope) + (fore - p.platformDepth);
-      // The channel: no reef, the platform and forereef beneath, flat across its axis at the window's edge.
-      const channel = Math.exp(-(((x - p.channelX) / p.channelHalfWidth) ** 2));
-      const depth = reef + (fore - reef) * channel;
-      // A beach face, and dry land shoreward of z = 0.
-      return Math.min(depth, z < 0 ? -z * p.shoreSlope : -z * 0.06);
+      const { depth, beachFace } = padangTerms(x, z);
+      return Math.min(depth, beachFace);
+    },
+    // Coral where the reef builds the bed, as the Reef's rock: out of the channel (unmapped by the coral atlas) and off the sand beach.
+    materialAt(x, z) {
+      const { channel, depth, beachFace } = padangTerms(x, z);
+      return channel < 0.5 && depth < beachFace ? 'reef' : 'sand';
     },
   };
 }
