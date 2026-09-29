@@ -24,3 +24,15 @@ The owner decided (2026-09-29) to run Padang's peak on a 1:19 wedge along the wa
 **A coarser run:** `LEVEL=12` (about 4× cheaper) or `LEVEL=11` (the round 6 level) set before any command.
 
 Set `BASILISK_HOME` to use an existing Basilisk build elsewhere.
+
+## The Reef's ledge
+
+`tools/basilisk/run_reef.sh` runs the Reef's peak in two cases, both from the 10 m shelf to the 1.5 m reef crest:
+- **reef42:** the ledge at 1:4.2 along the wave's path, the steepest crossing the Teahupo'o Reef report measured;
+- **reef60:** at 1:6, near the median of the game's own readings.
+
+The owner asked for them (2026-09-30) to source the Reef's lip and tube, which are provisional beyond Pick & Feddersen's fits.
+- **Commands:** `run`, `status` and `analyse`, as for Padang.
+- **Level:** 11 by default. Each case uses one core.
+- **Where it has run:** on the owner's M1 on 2026-09-30, alongside other work. `LEVEL=12` or `13` refines it on the M4 Pro.
+- **Disk:** the Basilisk mirror takes about 2.8 GB in `~/basilisk-C`. On macOS its checkout reports errors outside `basilisk-source/src`, which doesn't matter here.
