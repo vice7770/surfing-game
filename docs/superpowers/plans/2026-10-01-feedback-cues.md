@@ -95,4 +95,31 @@
 
 ## Findings
 
-(Filled in during execution.)
+**The balance cue had been lost, and is back:**
+- Since step 3 the free arms kept only the physics' hands' heading and set their own reach. The physics spreads its hands from 79 cm off the torso at ease to 110 cm with no margin left, but the drawn hands stayed 49–52 cm from their shoulders at any balance. Their height followed the turn cues, correlating 0.30–0.37 with the alarm.
+- **The rig now reads the physics' alarm back from its hand points:** their distance from the torso over the arm's rest offset in the physics posture, the lesser of the two hands. Online surfers send the same points, so there is no wire change.
+- **Each free arm goes that share of the way to outstretched (90°) and straight (175°).** Outstretched arms steady a challenging stance (Patel et al. 2014), and the arms matter most when side-to-side balance is challenged (Objero et al. 2019). In a turn the leading arm stays the turn's, reaching where the head looks; the trailing arm shows the balance.
+- **Measured through the weave:** the hands rise 29 cm per full alarm, correlating 0.77. The trailing arm goes the alarm's share of the way to outstretched (0.85 through the weave, 0.95 through the rail change). Batched snapshots don't jerk it.
+- **At ease, step 3's arms are unchanged:** the stance targets hold.
+
+**Weight, edge and depth already read well** at the hips and head (the front view: about 100 pixels per metre at 11 m), on all four surfers:
+- weight, trim back to forward: 30 cm along the board;
+- edge, Compress frontside to backside: 20–24 cm across it;
+- depth, trim to Compress: 36–38 cm.
+
+No exaggeration was needed.
+
+**Against the map:** 39 of 99 targets miss (step 4: 37). Two low-confidence arm targets moved:
+- the pump's extending lead arm, 40° → 56°;
+- the pump's extending trailing arm, 32° → 50°.
+
+The physics' balance margin falls to about 0.05 at each pump extension, and the cue shows it. The coaching cue has the arms pushing down on the extension, an active drive the arms don't have (step 4). Every medium and high target is unchanged.
+
+**Clips:** the surfer sheet's motion view films the same motions with the cue on and off (`&alarm=0`): pumping, trim back and forward, and Compress frontside and backside.
+
+**Open, for the user's eye and for later steps:**
+- **A pump reads as a near fall.** The physics' margin nearly empties at each extension. Whether it should is step 6's (the physics posture).
+- **The arms' active drive** (pushing down to pump) is not modelled.
+- **Speed and ride phase** (the nice-to-haves) are not drawn as cues.
+- **While a hand is in the face,** the balance shows only as far as the placed hand's reading allows (the lesser of the two).
+

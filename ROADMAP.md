@@ -650,6 +650,9 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
       - the free hands swing with the body, at the arm's own pendulum (about 0.76 Hz, Winter's segments) and critically damped, driven by the shoulder's motion less its sustained part: a pump leaves them trailing as the body rises (Pontzer et al. 2009); hands on points keep them;
       - the chest breathes, 16 breaths a minute at rest to 36 at full work (Blackie et al. 1991), 1.5 % to 21 % of the chest's depth per breath (Yang et al. 2022), the work read from paddling, swimming, the legs pumping and a held breath; held under water;
       - the head already holds steady against the chest (Pozzo et al. 1990) and the knees give with the physics' leg: now pinned; the body film measures all four. Next: step 5, feedback cues.
+    - the riding body, step 5: feedback cues ([plan](docs/superpowers/plans/2026-10-01-feedback-cues.md), [findings](docs/superpowers/plans/2026-10-01-feedback-cues.md#findings)):
+      - the balance cue is back: step 3's free arms had hidden the physics' hands spreading as the margin runs out; the rig reads the alarm back from the hand points (remote surfers too) and takes the free arms that share of the way to outstretched and straight (Patel et al. 2014; Objero et al. 2019), the leading arm staying the turn's in a turn;
+      - weight (30 cm), edge (20–24 cm) and depth (36–38 cm) already read at the front view, pinned by tests; the map reads 39 of 99 (the pump's arms now rise with the physics' near-empty margin). Next: step 6, the physics posture.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;
