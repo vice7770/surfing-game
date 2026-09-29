@@ -44,6 +44,17 @@ describe('crest kinematics', () => {
     expect(crestSpeedAt(solver, 20 * solver.nx + 1)).toBeUndefined();
   });
 
+  // Water piling up in place (a lip landing, bores meeting) rises with no face to travel down: on the Reef's Big swell
+  // such readings gave 40–66 m/s crests in 10 m of water, and the jet's momentum taken from the water ran it away.
+  it('reads no crest motion from a face rising faster than any crest travels', () => {
+    const { solver, crest } = travellingWave();
+    const cell = crest * solver.nx + 1;
+    expect(crestSpeedAt(solver, cell)).toBeDefined();
+    const rise = solver.surfaceRiseRate;
+    for (let iz = crest + 1; iz < solver.nz; iz += 1) rise[iz * solver.nx + 1] *= 5;
+    expect(crestSpeedAt(solver, cell)).toBeUndefined();
+  });
+
   it('throws a jet only on plunging bed slopes', () => {
     expect(breakerForm(0.2)).toBe('roller');
     expect(breakerForm(0.8)).toBe('jet');

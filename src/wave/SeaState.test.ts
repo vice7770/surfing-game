@@ -52,6 +52,18 @@ describe('SeaState spectrum', () => {
     expect(narrowDirections.reduce((sum, value) => sum + value, 0) / narrowDirections.length).toBeCloseTo(0.3, 1);
   });
 
+  // Spread about an oblique mean, a draw could point offshore: the Reef's Big swell at 20°, seed 3, drew one at 97°
+  // and its warm start went non-finite before the first step.
+  it('draws every direction shoreward about an oblique mean', () => {
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+      const sea = SeaState.fromSpectrum({ ...swell, spreading: 2, componentCount: 64, direction: (20 * Math.PI) / 180 }, seed);
+      for (const component of sea.components) {
+        expect(Math.abs(component.direction)).toBeLessThan(Math.PI / 2);
+        expect(component.kz).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it('narrows component frequencies around the peak when given a bandwidth', () => {
     const relative = (params: SpectrumParams) => SeaState.fromSpectrum({ ...params, componentCount: 64 }, 7).components
       .map((component) => (component.omega * 8) / (2 * Math.PI));

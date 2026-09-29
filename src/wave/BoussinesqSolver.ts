@@ -9,6 +9,15 @@ const DISPERSIVE_DEPTH = 0.05;
 /** Tonelli & Petti (2009), FUNWAVE-TVD's default: shallow water where the surface stands this high over the still depth (or a trough this deep below it). */
 const SWITCH_RATIO = 0.8;
 /**
+ * …or where the water runs faster than this many long-wave speeds √(g h): strongly supercritical flow (a bore's, a
+ * draining ledge's backwash, an edge's inflow into a trough) is not the weakly nonlinear wave the terms assume. At 1,
+ * or 1.5, it caught the water under plunging crests too, and the reef edge's tubes came out too thin. On the Reef's
+ * Big swell at high tide, by the open −x edge, a dispersive cell beside a shallow-water bore had its flux held up by
+ * the bore's through the implicit recovery while the bore's outflow drained it (19 m/s at Froude 4, then NaN), and
+ * a trough drawn down to 1.5 m over the ledge where the window cuts it drew the edge's inflow from 20 to 40 m/s.
+ */
+const SWITCH_FROUDE = 2;
+/**
  * The plunge zone: where a jet lands, the water is an impact, a plume and a splash-up, not the weakly nonlinear
  * wave the dispersive terms assume (on the Teahupo'o Reef a landing piled 0.4 m of water to 1.5 m, and the terms
  * drained it at 23.5 m/s). A landing holds shallow water over the young roller, about 2 H long (L tan θ ≈ H,
@@ -505,13 +514,14 @@ export class BoussinesqSolver extends ShallowWaterSolver {
    * Still depth and the dispersive mask. A cell disperses when every cell its
    * stencils reach (two along each axis, one diagonally) holds water over still
    * depth, and its surface stands within the Tonelli–Petti ratio of still water:
-   * no higher at a crest, and no deeper in a trough. The weakly nonlinear terms
+   * no higher at a crest, and no deeper in a trough, and its water runs no
+   * faster than `SWITCH_FROUDE` long-wave speeds. The weakly nonlinear terms
    * fail as badly in a trough that has drained a reef ledge as at a breaking
    * crest (the Teahupo'o Reef's backwash ran away at 0.07 m over 4 m). Nor does
    * a cell disperse inside a jet's plunge zone (`holdPlunge`).
    */
   private updateMask(): void {
-    const { h, still, mask, plungeHold, f1: wet, f2: alongX, f3: box, f4: work } = this;
+    const { h, qx, qz, still, mask, plungeHold, gravity, f1: wet, f2: alongX, f3: box, f4: work } = this;
     this.refreshStillDepth();
     for (let i = 0; i < h.length; i += 1) wet[i] = h[i] > DISPERSIVE_DEPTH && still[i] > DISPERSIVE_DEPTH ? 1 : 0;
     // Erode the wet cells by the stencils' reach: two along each axis, and the 3 × 3 box for the diagonals.
@@ -521,7 +531,9 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     this.erodeZ(wet, work, 2);
     const on = this.dispersive ? 1 : 0;
     for (let i = 0; i < h.length; i += 1) {
-      const weak = !(plungeHold[i] > 0) && Math.abs(h[i] - still[i]) <= SWITCH_RATIO * still[i];
+      const flux = qx[i] * qx[i] + qz[i] * qz[i];
+      const weak = !(plungeHold[i] > 0) && Math.abs(h[i] - still[i]) <= SWITCH_RATIO * still[i]
+        && flux <= SWITCH_FROUDE * SWITCH_FROUDE * gravity * h[i] * h[i] * h[i];
       mask[i] = wet[i] > 0 && alongX[i] > 0 && work[i] > 0 && box[i] > 0 && weak ? on : 0;
     }
   }

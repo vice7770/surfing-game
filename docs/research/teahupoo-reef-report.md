@@ -446,9 +446,20 @@ With the plunge-zone fix merged in, the lagoon's seed 3 in the 40 m window flash
 
 - **The lab profile** (`Profile_Teahupoo.txt`): the lagoon's depth and the flat's width wait for the user's approval to download it.
 - **Fewer take-off cues** on Practice (18 against 7).
-- **A hold on the dispersion switch** in draining cells (split out, PR #63, now a draft): it brought the two probes back to 20 m/s, but spiked the Big swell at high tide to 200+ m/s ("The biggest seas", below).
-- **A ~21 m/s peak at the −x open edge far offshore** (Hs 3 m at the edge, 18 s, tide +1, seed 3, the default grid), found by the plunge-zone session. At game size that sea went non-finite at 46 s; the edge ramp fixes it ("The biggest seas", below).
+- ~~**A hold on the dispersion switch** in draining cells~~: the Froude switch did it (below); every probe peaks at 9.5–11.8 m/s and all guard at 20 m/s.
+- ~~**A ~21 m/s peak at the −x open edge far offshore**~~: resolved below ("The Big swell at high tide by the open edges").
 - **The tube's look** (glow, spit, one section collapsing): with the swept overturn surface. **The step and coral:** with the coral textures.
+
+### The Big swell at high tide by the open edges
+
+The game's tank (160 m, 1 m cells, 64 components) under the Big swell at high tide (seed 3) ran to non-finite water on both tiers, near the −x open edge, 90–135 m seaward of the shore. Four causes, found by stepping to each blow-up and following its terms:
+
+- **An offshore sea component.** Spread about a 20° mean, the cos-2s draw can point past 90°: one at 97° made the warm start's flux ratio negative, and the whole tank non-finite before its first step. Fix: `SeaState.fromSpectrum` draws such a direction again (the cos-2s truncated to shoreward travel); seas that drew none are unchanged.
+- **Crest speeds from water piling up.** `crestMotion` reads c = η_t/|∇η|; in a landing-churned plunge zone it read 40–66 m/s in 10 m of water, and `launch` took the jet's momentum at that speed from three cells (qx +160 m²/s in one step), which the dispersive terms ran away (t 70 s). Fix: a face rising faster than 2 √(g h) of the crest's water is not a travelling crest (a strong bore into water a tenth as deep runs at 2.3; thrown crests measure up to 1.4–1.7), so no jet is thrown from it.
+- **A dispersive cell beside a bore.** On the ledge 8 m inside the −x edge, the implicit recovery Q = (Q̄ + A(Q_down + Q_up))/(1 + 2A), A = αd²/dz² ≈ 1.8, held a dispersive cell's flux at the neighbouring shallow-water bore's while the bore's outflow drained it: 19 m/s at Froude 4, then NaN (t 84 s).
+- **An edge's inflow into a trough.** A Big trough drawn down to 1.5 m over the ledge where the window cuts it drew the edge's inflow from 20 to 40 m/s in two seconds with its dispersion on, then NaN (Hs 3 m at the edge, 18 s, tide +1, t 78 s).
+
+Both of the last are strongly supercritical water with its dispersion on. Fix: a cell whose water runs faster than 2 √(g h) (Froude 2) is shallow water (`SWITCH_FROUDE`, CPU and WGSL). At Froude 1 or 1.5 it also caught the water under plunging crests: the reef edge's tubes came out at W/L 0.09–0.20, under the measured 0.25. Tried and dropped: eroding the dispersive mask by the stencils' reach (the interface moved and new 100 m/s spikes appeared), and holding the open edges' two levelled columns in shallow water (it fixed the edge, but broke peel and break-position measurements on the 40 m test windows). Across five configurations (the game's Big preset, 20° s 18.3; 20° s 24; 10° and −10° s 11.8; and Hs 3 m at the edge, 18 s, tide +1) the tank now runs to 154 s, fastest 7.8–12.2 m/s. Guards: `the Reef's Big swell at high tide holds by its open edges` in `SurfZoneSimulation.test.ts`, at 20 m/s. The steep Reef's six probes, which reached 22–29 m/s in draining backwash (guarded at 30), now peak at 9.5–11.8 m/s and guard at 20. On the GPU (headless Chromium, SwiftShader): the Reef's Big swell drifts 5×10⁻⁴ m from the CPU in 3 s, and a cell at 2.01 critical steps within 8×10⁻⁶ of the CPU's (0.98 from the CPU's at 0.99), so the WGSL switch matches.
 
 ## The biggest seas
 

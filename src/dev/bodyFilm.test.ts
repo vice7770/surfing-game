@@ -1,9 +1,9 @@
-import { Quaternion, Vector3 } from 'three';
+import { Euler, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
 import {
-  ChopWater, FILM_JOINT, FILM_SCENARIOS, breathing, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, posed, repeatedFrames, rigAlone, shake, switchSpeeds,
-  switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame,
+  ChopWater, FILM_JOINT, FILM_SCENARIOS, balanceCue, boardMotion, breathing, crawlRate, remoteDrawer, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, paddleStroke, posed,
+  repeatedFrames, rigAlone, shake, swimRoll, swimRolls, switchSpeeds, switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame,
 } from './bodyFilm';
 
 const scenario = (name: string) => FILM_SCENARIOS.find((candidate) => candidate.name === name)!;
@@ -37,11 +37,10 @@ describe('the body film', () => {
     }
   };
   it.each(['pop-up and landing', 'pop-up crouched', 'compress mid-turn, the hand reaching', 'a fall', 'pumping into a fall'])('blends the switches of %s out', blendsOut);
-  // Lying down, its switches blend out (the frames about each are smooth), but 0.23 s into the lie-down the left knee
-  // swings through at up to 10 m/s (3.3 m/s over its neighbours, 3.8 at 120 Hz): the leg's pole jumps from the
-  // standing one to the lying one at the switch, and the knee turns over only as the leg straightens. The rig's poles
-  // are the stance step's (step 3). Pinned, not tuned.
-  it.fails('blends the switches of lying back down out', () => blendsOut('lying back down'));
+  // Lying down: 0.23 s into the lie-down the left knee swung through at up to 10 m/s (3.3 m/s over its neighbours, 3.8
+  // at 120 Hz). Lying, the legs' side was the deck's down, along the standing leg at the switch, so the knee turned to
+  // whichever side, and swung back over as the leg straightened.
+  it('blends the switches of lying back down out', () => blendsOut('lying back down'));
 
   // The final review: riding through a rail change or a weave, until a switch (the weave ends in a fall at 1.94 s),
   // nothing is blended and the drawn body follows the rig at any display rate. Taken for a jump, a hand turning back
@@ -87,9 +86,9 @@ function film(rate: number, count: number, shape: (i: number, frame: FilmFrame) 
   for (let i = 0; i < count; i += 1) {
     const frame: FilmFrame = {
       time: i / rate, phase: 'standing', moving: true, switched: false, fallen: false,
-      joints: Array.from({ length: 13 }, () => new Vector3()), limbs: [new Vector3()], hips: new Vector3(), board: new Vector3(),
+      joints: Array.from({ length: 13 }, () => new Vector3()), limbs: Array.from({ length: 13 }, () => new Vector3()), hips: new Vector3(), board: new Vector3(), boardTurn: new Quaternion(),
       bones: [new Quaternion()], worldBones: Array.from({ length: 3 }, () => new Quaternion()),
-      chestRoll: 0, physicsRoll: 0, hipsOnBoard: new Vector3(), physicsPelvis: new Vector3(),
+      chestRoll: 0, physicsRoll: 0, hipsOnBoard: new Vector3(), physicsPelvis: new Vector3(), balance: 1, physicsHands: [new Vector3(), new Vector3()],
     };
     shape(i, frame);
     frames.push(frame);
@@ -288,3 +287,303 @@ describe('the drawn chest breathes (step 4)', () => {
   }, 240_000);
 });
 
+describe('the balance cue\'s measure (step 5)', () => {
+  it('reads the drawn hands rising 20 cm about their shoulders over the physics\' whole alarm as a slope of 0.2 m, fully correlated', () => {
+    // The cue raises the arms toward outstretched: the hands' height about the shoulders follows the elevation.
+    const rising = film(30, 60, (i, frame) => {
+      const alarm = i / 59;
+      frame.balance = 1 - alarm;
+      frame.limbs = Array.from({ length: 13 }, () => new Vector3());
+      for (const side of ['left', 'right'] as const) {
+        frame.limbs[FILM_JOINT.shoulder[side]].set(0, 0.5, 0);
+        frame.limbs[FILM_JOINT.hand[side]].set(0.4, 0.2 + 0.2 * alarm, 0);
+      }
+    });
+    const cue = balanceCue(rising);
+    expect(cue.slope).toBeCloseTo(0.2, 6);
+    expect(cue.correlation).toBeCloseTo(1, 6);
+    const flat = film(30, 60, (i, frame) => {
+      frame.balance = 1 - i / 59;
+      frame.limbs = Array.from({ length: 13 }, () => new Vector3());
+    });
+    expect(balanceCue(flat).slope).toBeCloseTo(0, 6);
+  });
+});
+
+describe('the balance cue on the drawn body (step 5; Patel et al. 2014, Objero et al. 2019)', () => {
+  it('raises the drawn arms as the physics\' balance runs out, through a weave', () => {
+    for (const rate of [30, 60]) {
+      const cue = balanceCue(filmBody(scenario('weave'), { rate, drawer: trackDrawer, pose: posed() }));
+      expect(cue.correlation, `${rate} Hz`).toBeGreaterThan(0.7);
+      expect(cue.slope, `${rate} Hz`).toBeGreaterThan(0.1);
+    }
+  }, 240_000);
+
+  it('takes the trailing arm the alarm\'s share of the way to outstretched, through a weave and a rail change', () => {
+    // The cue's own part: the same film with it on and off (the physics is the same), frame by frame. The arm goes
+    // from its pose toward 90° from the chest's down by the alarm; in a turn the leading arm is the turn's (Part B:
+    // reaching where the head looks, already out), and the film's surfer rides Regular: the right arm trails.
+    const elevation = (frame: FilmFrame) => {
+      const arm = frame.limbs[FILM_JOINT.hand.right].clone().sub(frame.limbs[FILM_JOINT.shoulder.right]);
+      return (arm.angleTo(new Vector3(0, -1, 0).applyQuaternion(frame.worldBones[1])) * 180) / Math.PI;
+    };
+    for (const name of ['weave', 'rail change']) {
+      for (const rate of [30, 60]) {
+        const on = filmBody(scenario(name), { rate, drawer: trackDrawer, pose: posed() });
+        RIG_DETAIL.arms.alarmShare = 0;
+        const off = filmBody(scenario(name), { rate, drawer: trackDrawer, pose: posed() });
+        RIG_DETAIL.arms.alarmShare = 1;
+        // The fraction of the way from the pose to outstretched, carried as a hand's height so balanceCue reads it
+        // against the alarm; from 0.5 s, past the stance's blend-in, and where the pose leaves room to rise.
+        const share: FilmFrame[] = [];
+        on.frames.forEach((frame, i) => {
+          const [swung, held] = [elevation(frame), elevation(off.frames[i])];
+          if (frame.time < 0.5 || held > 85) return;
+          const limbs = Array.from({ length: 13 }, () => new Vector3());
+          for (const side of ['left', 'right'] as const) limbs[FILM_JOINT.hand[side]].y = (swung - held) / (90 - held);
+          share.push({ ...frame, limbs });
+        });
+        const cue = balanceCue({ rate, frames: share });
+        expect(cue.correlation, `${name} at ${rate} Hz`).toBeGreaterThan(0.8);
+        expect(cue.slope, `${name} at ${rate} Hz: of the way per full alarm`).toBeGreaterThan(0.7);
+      }
+    }
+  }, 240_000);
+
+  it('spreads them smoothly from snapshots batched by three (an online surfer)', () => {
+    const jerk = (delivery: number) => {
+      const shot = filmBody(scenario('weave'), { rate: 60, delivery, drawer: trackDrawer, pose: posed() });
+      const riding = shot.frames.slice(0, Math.max(0, shot.frames.findIndex((frame) => frame.switched)) || undefined);
+      const span = riding.map((frame) => frame.joints[FILM_JOINT.hand.left].distanceTo(frame.joints[FILM_JOINT.hand.right]));
+      let most = 0;
+      for (let i = 2; i < span.length; i += 1) most = Math.max(most, Math.abs(span[i] - 2 * span[i - 1] + span[i - 2]) * 3600);
+      return most;
+    };
+    expect(jerk(3)).toBeLessThan(1.5 * jerk(1));
+  }, 240_000);
+});
+
+describe('another player\'s surfer (step 7)', () => {
+  it('draws the local body 0.1 s later from the poses the game sends (20 Hz, in millimetres, sampled in the past)', () => {
+    const local = filmBody(scenario('straight'), { rate: 60, drawer: trackDrawer, pose: posed() });
+    const remote = filmBody(scenario('straight'), { rate: 60, drawer: remoteDrawer, pose: posed() });
+    // Six frames at 60 Hz: the remote draws INTERPOLATION_DELAY in the past. From 1 s, past the stance's blend-in.
+    let most = 0;
+    remote.frames.forEach((frame, i) => {
+      if (frame.time < 1 || i < 6) return;
+      frame.joints.forEach((joint, j) => { most = Math.max(most, joint.distanceTo(local.frames[i - 6].joints[j])); });
+    });
+    expect(most).toBeLessThan(0.02);
+  }, 240_000);
+
+  it('blends the switches out as the local body does', () => {
+    // The same films as the local body's. Across a phase switch, or where a point jumps (the reach's hand), the poses'
+    // 50 ms spread the jump into what the smoothing reads as motion: the sampler draws it at once, as the local track does.
+    for (const name of ['pop-up and landing', 'pop-up crouched', 'compress mid-turn, the hand reaching', 'a fall', 'pumping into a fall']) {
+      for (const rate of [60, 120]) {
+        const spikes = switchSpikes(filmBody(scenario(name), { rate, drawer: remoteDrawer, pose: posed() }));
+        expect(spikes.length).toBeGreaterThan(0);
+        for (const spike of spikes) {
+          expect(spike.rotationSpeed, `${name} at ${spike.time.toFixed(2)} s, ${rate} Hz`).toBeLessThan(6);
+          expect(spike.jointSpeed, `${name} at ${spike.time.toFixed(2)} s, ${rate} Hz`).toBeLessThan(2);
+        }
+      }
+    }
+  }, 240_000);
+
+  it('shows the balance and the breath from what is sent', () => {
+    // The balance: read back from the hands' spread, which the points carry.
+    const weave = balanceCue(filmBody(scenario('weave'), { rate: 60, drawer: remoteDrawer, pose: posed() }));
+    expect(weave.correlation).toBeGreaterThan(0.7);
+    expect(weave.slope).toBeGreaterThan(0.1);
+    // The breath: from the paddling the pose carries.
+    const paddle = filmBody(scenario('paddle then glide'), { rate: 30, drawer: remoteDrawer, pose: posed() });
+    expect(breathing({ rate: paddle.rate, frames: paddle.frames.filter((frame) => frame.time > 21) })).toBeGreaterThan(0.003);
+  }, 240_000);
+
+  it('rides no shakier than the local body', () => {
+    // At 20 poses a second, the points drawn on a cubic through the poses; the reach's jump drawn at once. Before, the
+    // chords' corners and the spread reach shook the compressed carve at 6.5° (4–30 Hz) against the local 3.1°.
+    for (const rate of [30, 120]) {
+      for (const name of ['straight', 'compress mid-turn, the hand reaching']) {
+        const shot = (drawer: typeof remoteDrawer | typeof trackDrawer) => {
+          const film = filmBody(scenario(name), { rate, drawer, pose: posed() });
+          return { rate: film.rate, frames: film.frames.filter((frame) => frame.time >= 0.5 && !frame.fallen) };
+        };
+        const [local, remote] = [shot(trackDrawer), shot(remoteDrawer)];
+        expect(shake(remote), `${name} at ${rate} Hz: the wobble band`).toBeLessThan(1.5 * shake(local) + 0.002);
+        expect(shake(remote, 4, 30), `${name} at ${rate} Hz: jitter`).toBeLessThan(1.5 * shake(local, 4, 30) + 0.002);
+      }
+    }
+  }, 240_000);
+});
+
+describe('the paddle and the swim measures (step 8)', () => {
+  it('reads a hand\'s stroke on the board and its strokes a minute', () => {
+    // A hand circling 0.5 m along and 0.2 m up and down, drifting 0.1 m across, once a second, lying down.
+    const stroke = film(60, 600, (i, frame) => {
+      const angle = (2 * Math.PI * i) / 60;
+      frame.phase = 'prone';
+      frame.joints[FILM_JOINT.hand.left].set(0.05 * Math.sin(angle), 0.1 * Math.sin(angle), 0.25 * Math.cos(angle));
+    });
+    const read = paddleStroke(stroke, 'left');
+    expect(read.along).toBeCloseTo(0.5, 3);
+    expect(read.across).toBeCloseTo(0.1, 3);
+    expect(read.vertical).toBeCloseTo(0.2, 3);
+    expect(read.perMinute).toBeCloseTo(60, 0);
+  });
+
+  it('reads the board\'s pitch and its roll through each stroke', () => {
+    const rocking = film(60, 600, (i, frame) => {
+      const roll = (10 * Math.PI) / 180 * Math.sin((2 * Math.PI * i) / 60);
+      frame.boardTurn.setFromEuler(new Euler(-(12 * Math.PI) / 180, 0, roll, 'YXZ'));
+    });
+    const read = boardMotion(rocking, 1);
+    expect(read.pitch).toBeCloseTo(12, 0);
+    expect(read.roll).toBeCloseTo(20, 0);
+  });
+
+  it('reads a swimmer\'s roll about its long axis, and its arm cycles', () => {
+    // Lying face down along +z, rolling 50° with the left shoulder up and 30° with the right, once a cycle, the left hand
+    // circling its shoulder.
+    const swim = film(60, 600, (i, frame) => {
+      const wave = Math.sin((2 * Math.PI * i) / 150);
+      const roll = ((wave >= 0 ? 50 : 30) * Math.PI) / 180 * wave;
+      frame.limbs[FILM_JOINT.head].set(0, 0, 0.6);
+      frame.limbs[FILM_JOINT.shoulder.left].set(0.18 * Math.cos(roll), 0.18 * Math.sin(roll), 0.45);
+      frame.limbs[FILM_JOINT.shoulder.right].set(-0.18 * Math.cos(roll), -0.18 * Math.sin(roll), 0.45);
+      frame.limbs[FILM_JOINT.hand.left].set(0.18, 0.18 * Math.sin(roll) + 0.5 * Math.sin((2 * Math.PI * i) / 150), 0.45);
+    });
+    const read = swimRoll(swim);
+    expect(read.left).toBeCloseTo(50, 0);
+    expect(read.right).toBeCloseTo(30, 0);
+    expect(read.mean).toBeCloseTo((50 - 30) / Math.PI, 0);
+    expect(crawlRate(swim, 'left')).toBeCloseTo(0.4, 1);
+    // Face up reads half a turn, and pitching the chest (the head up) adds no roll.
+    const back = film(60, 10, (_, frame) => {
+      frame.limbs[FILM_JOINT.head].set(0, 0, 0.6);
+      frame.limbs[FILM_JOINT.shoulder.left].set(-0.18, 0, 0.45);
+      frame.limbs[FILM_JOINT.shoulder.right].set(0.18, 0, 0.45);
+    });
+    expect(Math.abs(swimRolls(back)[0])).toBeCloseTo(180, 0);
+    const pitched = film(60, 10, (_, frame) => {
+      frame.limbs[FILM_JOINT.head].set(0, 0.1, 0.6);
+      frame.limbs[FILM_JOINT.shoulder.left].set(0.18, 0.08, 0.45);
+      frame.limbs[FILM_JOINT.shoulder.right].set(-0.18, 0.08, 0.45);
+    });
+    expect(swimRolls(pitched)[0]).toBeCloseTo(0, 3);
+  });
+});
+
+describe('the paddler and the swimmer (step 8)', () => {
+  const steady = (rate: number): BodyFilm => {
+    const paddle = filmBody(scenario('paddle then glide'), { rate, drawer: trackDrawer, pose: posed() });
+    return { rate, frames: paddle.frames.filter((frame) => frame.time >= 5 && frame.time < 18) };
+  };
+
+  it('paddles with no jump, its stroke drawn alike at any display rate', () => {
+    // The physics' stroke put the hand back on the deck as it left the water, and back under it at the reach: 25 cm
+    // each time, which the drawing took differently at 30, 60 and 120 Hz (the hand's path 53, 22–26 and 8–11 cm across).
+    // Then the drawn arm's own solve: the elbow snapping straight at the arm's reach, and flipping (with the hand) where
+    // its side met the arm head on; and the arm folding tight past the shoulder, turning fast enough for a 30 Hz
+    // display's smoothing to read the turn as a jump.
+    const films = [30, 60, 120].map(steady);
+    for (const shot of films) {
+      expect(shot.frames.filter((frame) => frame.switched).length, `${shot.rate} Hz`).toBe(0);
+      // The physics' hand peaks at about 4.4 m/s against the board, as in fast front-crawl strokes: the drawn hand no
+      // faster (the arm's solve flipped the elbow and spun the hand as the arm passed under the shoulder).
+      for (const side of ['left', 'right'] as const) {
+        let fastest = 0;
+        for (let i = 1; i < shot.frames.length; i += 1) {
+          const [a, b] = [shot.frames[i - 1].joints[FILM_JOINT.hand[side]], shot.frames[i].joints[FILM_JOINT.hand[side]]];
+          fastest = Math.max(fastest, a.distanceTo(b) * shot.rate);
+        }
+        expect(fastest, `${side} hand at ${shot.rate} Hz`).toBeLessThan(5);
+      }
+    }
+    for (const side of ['left', 'right'] as const) {
+      const [slow, even, fast] = films.map((shot) => paddleStroke(shot, side));
+      for (const axis of ['along', 'across', 'vertical'] as const) {
+        expect(Math.abs(slow[axis] - even[axis]), `${side} ${axis}, 30 Hz`).toBeLessThan(0.02);
+        expect(Math.abs(fast[axis] - even[axis]), `${side} ${axis}, 120 Hz`).toBeLessThan(0.02);
+      }
+    }
+  }, 240_000);
+
+  // Nessler et al. 2015 (± 1 SD, the wetsuit and the bare arm): the stroke 970 ± 77 mm long and 170 ± 67 mm wide, the
+  // wrist through 424 ± 78 to 468 ± 92 mm up and down. Nessler et al. 2019: the board pitched 12.3 ± 2.3°.
+  it('paddles a stroke as wide and as deep as a real one, the board pitched as a real one', () => {
+    const shot = steady(60);
+    for (const side of ['left', 'right'] as const) {
+      const stroke = paddleStroke(shot, side);
+      expect(stroke.across, `${side} across`).toBeGreaterThan(0.103);
+      expect(stroke.across, `${side} across`).toBeLessThan(0.237);
+      expect(stroke.vertical, `${side} vertical`).toBeGreaterThan(0.346);
+      expect(stroke.vertical, `${side} vertical`).toBeLessThan(0.56);
+    }
+    const board = boardMotion(shot, 1);
+    expect(board.pitch).toBeGreaterThan(10);
+    expect(board.pitch).toBeLessThan(14.6);
+  }, 240_000);
+  const swimming = (rate: number): BodyFilm => {
+    const swim = filmBody(scenario('swimming'), { rate, drawer: trackDrawer, pose: posed() });
+    return { rate, frames: swim.frames.filter((frame) => frame.time >= 4) };
+  };
+
+  it('swims facing the water, rolling to each arm as swimmers do, at an adult\'s stroke rate', () => {
+    // It lay on its side or face up, wherever its spine leaned (from face up at −157° to its other side at +86°), and
+    // crawled at 0.8 cycles a second without rolling. Payton et al. 1999: 57 ± 4° and 66 ± 5° each way; Barden and
+    // Barber 2022: 45–54° at the hips, slower. Kjendlie et al. 2004: 0.38 ± 0.04 cycles a second at 1.0 m/s.
+    const shot = swimming(60);
+    const roll = swimRoll(shot);
+    expect(Math.abs(roll.mean)).toBeLessThan(10);
+    expect(roll.left).toBeGreaterThan(45);
+    expect(roll.left).toBeLessThan(70);
+    expect(roll.right).toBeGreaterThan(45);
+    expect(roll.right).toBeLessThan(70);
+    expect(crawlRate(shot, 'left')).toBeGreaterThan(0.34);
+    expect(crawlRate(shot, 'left')).toBeLessThan(0.42);
+  }, 240_000);
+
+  it('rolls smoothly at 30 and 120 Hz, with no pop once it strokes', () => {
+    for (const rate of [30, 120]) {
+      const shot = swimming(rate);
+      const rolls = swimRolls(shot);
+      let fastest = 0;
+      for (let i = 1; i < rolls.length; i += 1) fastest = Math.max(fastest, Math.abs(rolls[i] - rolls[i - 1]) * rate);
+      // The roll peaks near 2π × 0.38 × 66 ≈ 160°/s: no faster than twice that.
+      expect(fastest, `${rate} Hz`).toBeLessThan(320);
+      // From the first stroke (1 s); the fall off the board before it is the physics' own (step 8's findings).
+      const swim = filmBody(scenario('swimming'), { rate, drawer: trackDrawer, pose: posed() });
+      for (const spike of switchSpikes(swim).filter((spike) => spike.time >= 1)) {
+        expect(spike.rotationSpeed, `${rate} Hz at ${spike.time.toFixed(2)} s`).toBeLessThan(6);
+        expect(spike.jointSpeed, `${rate} Hz at ${spike.time.toFixed(2)} s`).toBeLessThan(2);
+      }
+    }
+  }, 240_000);
+
+  it('draws another player\'s paddler and swimmer as the local ones, from what the game sends', () => {
+    const swim = (drawer: typeof trackDrawer | typeof remoteDrawer) => {
+      const film = filmBody(scenario('swimming'), { rate: 60, drawer, pose: posed() });
+      return swimRoll({ rate: 60, frames: film.frames.filter((frame) => frame.time >= 4) });
+    };
+    const [local, remote] = [swim(trackDrawer), swim(remoteDrawer)];
+    expect(Math.abs(remote.left - local.left)).toBeLessThan(3);
+    expect(Math.abs(remote.right - local.right)).toBeLessThan(3);
+    const paddle = (drawer: typeof trackDrawer | typeof remoteDrawer) => {
+      const film = filmBody(scenario('paddle then glide'), { rate: 60, drawer, pose: posed() });
+      return paddleStroke({ rate: 60, frames: film.frames.filter((frame) => frame.time >= 5 && frame.time < 18) }, 'left');
+    };
+    const [here, there] = [paddle(trackDrawer), paddle(remoteDrawer)];
+    for (const axis of ['along', 'across', 'vertical'] as const) expect(Math.abs(there[axis] - here[axis]), axis).toBeLessThan(0.01);
+  }, 240_000);
+
+  // Its length is short: 73 cm. The physics' hand enters 0.7 m from the drawn shoulder and leaves as far behind it,
+  // past the drawn arm's reach, so the drawn hand stops short at both ends. Real paddlers reach with the shoulder and
+  // roll with the board (27–45° a stroke, Nessler et al. 2019; the physics rolls it 7°): a question for the physics
+  // posture, with the stroke rate (60 a minute a side, where 1.7 m/s gives about 50). Pinned, not tuned.
+  it.fails('paddles a stroke as long as a real one', () => {
+    const shot = steady(60);
+    for (const side of ['left', 'right'] as const) expect(paddleStroke(shot, side).along, `${side} along`).toBeGreaterThan(0.893);
+  }, 240_000);
+});

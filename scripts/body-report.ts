@@ -8,8 +8,8 @@
  */
 import { writeFileSync } from 'node:fs';
 import {
-  FILM_SCENARIOS, breathing, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, latestDrawer, posed, repeatedFrames, rigAlone, shake,
-  switchSpeeds, switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmOptions,
+  FILM_SCENARIOS, balanceCue, boardMotion, breathing, crawlRate, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, latestDrawer, paddleStroke, posed,
+  repeatedFrames, rigAlone, shake, swimRoll, switchSpeeds, switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmOptions,
 } from '../src/dev/bodyFilm';
 
 const option = (name: string): string | undefined => {
@@ -58,6 +58,17 @@ for (const { name, options } of PIPELINES) {
   const pumping = filmBody(scenario('pumping'), { ...options, rate: 60 });
   const chop = filmBody(scenario('chop'), { ...options, rate: 60 });
   const glide = after(filmBody(scenario('paddle then glide'), { ...options, rate: 60 }), 21);
+  // Step 5's balance cue.
+  const balance = balanceCue(filmBody(scenario('weave'), { ...options, rate: 60 }));
+  // Step 8's paddle (steady, 5–18 s) at each display rate, and the swim once stroking.
+  const paddles = [30, 60, 120].map((rate) => {
+    const film = filmBody(scenario('paddle then glide'), { ...options, rate });
+    return { rate, frames: film.frames.filter((frame) => frame.time >= 5 && frame.time < 18) };
+  });
+  const strokes = paddles.map((film) => paddleStroke(film, 'left'));
+  const board = boardMotion(paddles[1], 1);
+  const swim = after(filmBody(scenario('swimming'), { ...options, rate: 60 }), 4);
+  const roll = swimRoll(swim);
   sections.push(`## ${name}
 
 | Measure | Value |
@@ -73,6 +84,10 @@ for (const { name, options } of PIPELINES) {
 | The free hands' swing about their shoulders, pumping (left, right) | ${fixed(100 * handSwing(pumping, 'left'), 1)}, ${fixed(100 * handSwing(pumping, 'right'), 1)} cm RMS |
 | The drawn hips following the physics' leg on chop (correlation) | ${fixed(kneeGive(chop, 0.5), 2)} |
 | Breathing: the head about the hips at 0.15–1 Hz, gliding after 20 s of paddling | ${fixed(1000 * breathing(glide), 1)} mm RMS |
+| The balance cue: the hands' height about the shoulders per full alarm, weaving (correlation) | ${fixed(100 * balance.slope, 1)} cm (${fixed(balance.correlation, 2)}) |
+| The paddle's left hand on the board at 30, 60 and 120 Hz: along, across, up and down (Nessler et al. 2015: 97, 17, 42–47 cm) | ${strokes.map((stroke) => `${fixed(100 * stroke.along, 0)}, ${fixed(100 * stroke.across, 0)}, ${fixed(100 * stroke.vertical, 0)}`).join('; ')} cm |
+| Its strokes a minute, and the board's pitch and roll through a stroke (Nessler et al. 2019: about 50 a side at 1.7 m/s, 12°, 27–45°) | ${fixed(strokes[1].perMinute, 0)}, ${fixed(board.pitch, 1)}°, ${fixed(board.roll, 1)}° |
+| The swimmer's roll each way and its mean, and its arm cycles a second (Payton et al. 1999: 57°, 66°; Kjendlie et al. 2004: 0.38) | ${fixed(roll.left, 0)}°, ${fixed(roll.right, 0)}°, ${fixed(roll.mean, 0)}°; ${fixed(crawlRate(swim, 'left'), 2)} |
 
 At each switch (60 Hz), within 0.3 s: the largest one-frame spike of a joint (against the board, about the hips when fallen) and of a bone over the median of the three frames either side (a pop), and the fastest joint and bone (the physics' own transitions included):
 
