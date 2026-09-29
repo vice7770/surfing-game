@@ -110,6 +110,8 @@ export const PADANG = {
   alongShore: 320, channelX: 160, channelHalfWidth: 45, shoreSlope: 0.2, takeOffX: -50,
   /** How far the channel is deepened from the ramp toward the knee's depth: its crests ran ahead over it and tilted the reef's down-reef crests (the design sweep's). */
   channelDeepening: 1,
+  /** How far seaward the channel is deepened, z (−Infinity: from the knee); the design sweep's. */
+  channelFrom: -Infinity,
   /**
    * Mead's focus: a spur along the incoming swell through the peak, `focusRelief` m above the bed where it meets the
    * wedge's base, tapering (cos²) to nothing `focusLength` m seaward and `focusInset` m up the wedge, `focusHalfWidth` m
@@ -266,9 +268,11 @@ function padangTerms(x: number, z: number): { channel: number; depth: number; be
   const bare = ramp - Math.max(0, ramp - wedge) * smoothstep(p.peakX - p.endWidth, p.peakX, x);
   const reef = bare - p.focusRelief * padangFocusShape(x, z);
   // The channel: no reef, level across its axis at the window's edge, over the ramp deepened toward the knee's depth by
-  // `channelDeepening` (1: the knee's depth to the shore; 0: the bare ramp).
+  // `channelDeepening` (1: the knee's depth to the shore; 0: the bare ramp), shoreward of `channelFrom` (rounded over
+  // the forereef's rounding; −Infinity: from the knee).
   const channel = Math.exp(-(((x - p.channelX) / p.channelHalfWidth) ** 2));
-  const floor = ramp + (fore - ramp) * p.channelDeepening;
+  const inshore = p.channelFrom === -Infinity ? 1 : smoothstep(p.channelFrom - r, p.channelFrom + r, z);
+  const floor = ramp + (fore - ramp) * p.channelDeepening * inshore;
   // A beach face, and dry land shoreward of z = 0.
   return { channel, depth: reef + (floor - reef) * channel, beachFace: z < 0 ? -z * p.shoreSlope : -z * 0.06 };
 }
