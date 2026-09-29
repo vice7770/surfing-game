@@ -218,6 +218,14 @@ describe('autopilot turns', () => {
     expect(autopilot.next(standing(20 * DEG, { faceFraction: 0.45 }), 1 / 60).steer).toBe(0);
   });
 
+  it('holds a turn longer when given a longer limit (the recorder\'s turnLimit)', () => {
+    const autopilot = riding(20 * DEG, { style: 'turns', turnLimit: 2.5 });
+    for (let i = 0; i < 95; i += 1) autopilot.next(standing(20 * DEG, { faceFraction: 0.2 }), 1 / 60);
+    expect(autopilot.next(standing(20 * DEG, { faceFraction: 0.45 }), 1 / 60).steer).toBe(1);
+    for (let i = 0; i < 60; i += 1) autopilot.next(standing(20 * DEG, { faceFraction: 0.2 }), 1 / 60);
+    expect(autopilot.next(standing(20 * DEG, { faceFraction: 0.45 }), 1 / 60).steer).toBe(0);
+  });
+
   // The recorder's overlay and log: what the rider is doing, and each turn's size, time and speed kept.
   it('names the phase it rides and records each turn: how far, how long, the speed kept, and whether it finished', () => {
     const autopilot = turning(20 * DEG);
