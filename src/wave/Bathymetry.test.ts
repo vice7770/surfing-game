@@ -240,10 +240,13 @@ describe('surf spot bathymetry', () => {
       expect(crest(0)).toBeGreaterThan(breakerDepthFor(edgeHeight(config), OFFSHORE_DEPTH.padang));
     });
 
-    it('opens a channel along the window’s +x edge, level across it and as deep as the knee', () => {
+    it('opens a channel along the window’s +x edge, level across it, as deep as the knee inshore of its line', () => {
       expect(PADANG.channelX).toBe(edge);
       for (let z = -600; z <= -40; z += 20) expect(Math.abs(gradientX(padang, edge, z))).toBeLessThan(1e-3);
-      expect(padang.depthAt(edge, -150)).toBeCloseTo(PADANG.kneeDepth, 6);
+      expect(padang.depthAt(edge, PADANG.channelFrom + 40)).toBeCloseTo(PADANG.kneeDepth, 6);
+      // Seaward of the line, the bare ramp: the crests cross it as they do along the reef.
+      const seaward = PADANG.channelFrom - 40;
+      expect(padang.depthAt(edge, seaward)).toBeCloseTo(PADANG.kneeDepth - (seaward - padangKneeZ()) * PADANG.rampSlope, 6);
       expect(padang.depthAt(edge, padangForeFootZ() - 100)).toBeCloseTo(PADANG.deep, 6);
     });
 

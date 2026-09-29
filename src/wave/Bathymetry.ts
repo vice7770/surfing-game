@@ -92,9 +92,9 @@ export function reefSeaward(x: number, z: number): number {
  * base over the sine of that angle (phase matching). A spur on the swell's line through the peak (Mead's focus) draws
  * the waves' energy onto it, so it breaks first. Upcoast of the peak the wedge fades out over `endWidth` m, so the
  * bed is the bare ramp, level along shore, at the window's −x open edge (an open edge copies its neighbours: a bed
- * sloping across it ran the Reef's Big swell to NaN); a channel `kneeDepth` deep runs along the +x open edge, level
- * across its axis, where the left ends. A planar beach face caps it all. The window is `alongShore` m wide, so the
- * peak stands clear of the −x side feed. Sources and provisional values: docs/research/padang-padang-sources.md.
+ * sloping across it ran the Reef's Big swell to NaN); a channel runs along the +x open edge, level across its axis,
+ * where the left ends, `kneeDepth` deep shoreward of `channelFrom`. A planar beach face caps it all. The window is
+ * `alongShore` m wide, so the peak stands clear of the −x side feed. Sources and provisional values: docs/research/padang-padang-sources.md.
  * Mutable for the design sweep (`scripts/padangShape.ts`).
  */
 export const PADANG = {
@@ -110,8 +110,14 @@ export const PADANG = {
   alongShore: 320, channelX: 160, channelHalfWidth: 45, shoreSlope: 0.2, takeOffX: -50,
   /** How far the channel is deepened from the ramp toward the knee's depth: its crests ran ahead over it and tilted the reef's down-reef crests (the design sweep's). */
   channelDeepening: 1,
-  /** How far seaward the channel is deepened, z (−Infinity: from the knee); the design sweep's. */
-  channelFrom: -Infinity,
+  /**
+   * How far seaward the channel is deepened, z (−Infinity: from the knee). Held at the knee's depth all the way out, its
+   * crests ran ahead and tilted the down-reef crests about 11° before the wedge (the advisor, 2026-09-29), a peel of
+   * 15.9 m/s against 10.7 without it. Deepened only shoreward of where the ramp is about 5 m deep (the wedge base's depth
+   * at the ride's end), the crests offshore of it cross the bare ramp as they do along the reef: 22 clean waves at 11.3
+   * m/s, the two halves of each alike (docs/research/padang-padang-report.md). The line is the sweep's, provisional.
+   */
+  channelFrom: -138,
   /**
    * Mead's focus: a spur along the incoming swell through the peak, `focusRelief` m above the bed where it meets the
    * wedge's base, tapering (cos²) to nothing `focusLength` m seaward and `focusInset` m up the wedge, `focusHalfWidth` m
@@ -269,9 +275,9 @@ function padangTerms(x: number, z: number): { channel: number; depth: number; be
   const reef = bare - p.focusRelief * padangFocusShape(x, z);
   // The channel: no reef, level across its axis at the window's edge, over the ramp deepened toward the knee's depth by
   // `channelDeepening` (1: the knee's depth to the shore; 0: the bare ramp), shoreward of `channelFrom` (rounded over
-  // the forereef's rounding; −Infinity: from the knee).
+  // twice the forereef's rounding, so its seaward end is no cliff; −Infinity: from the knee).
   const channel = Math.exp(-(((x - p.channelX) / p.channelHalfWidth) ** 2));
-  const inshore = p.channelFrom === -Infinity ? 1 : smoothstep(p.channelFrom - r, p.channelFrom + r, z);
+  const inshore = p.channelFrom === -Infinity ? 1 : smoothstep(p.channelFrom - 2 * r, p.channelFrom + 2 * r, z);
   const floor = ramp + (fore - ramp) * p.channelDeepening * inshore;
   // A beach face, and dry land shoreward of z = 0.
   return { channel, depth: reef + (floor - reef) * channel, beachFace: z < 0 ? -z * p.shoreSlope : -z * 0.06 };
