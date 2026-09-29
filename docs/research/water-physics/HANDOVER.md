@@ -37,17 +37,12 @@ The "Water physics research" session moved from the owner's Mac to the cloud on 
 
 ## Open decisions for the owner
 
-1. **Rich foam:** draw foam as a layer that only adds light (prototyped: the Reef lace went from 0.92× to 1.14× the water), and decide how to apply Rich's 4× body gain.
-2. **Roller:** whether Classic draws it (this reopens "Classic unchanged"), the roller's density, whether aerated water raises the surface, and its roughness.
-3. **Spray and mist:**
-   - physical optics, or a readability minimum;
-   - haze above water;
-   - the budget: a bigger CPU pool or GPU spray;
-   - rainbows;
-   - the order (recommended: shading and haze now, new emission after the swept surface).
-4. **The peel meter:** use the solver's measured crest speed instead of √(g·h_b). Every spot's reported angle moves 5–7° toward easier. It's a separate task chip.
-5. **The Basilisk benchmark** (2D profile runs for the swept barrel): not started. It's on the Padang Padang session's plan, and it's the critical path for the tube rebuild.
-6. **PRs:** #67 (this folder) is merged. #63 (the switch latch) is held as a draft, because it made the high-tide Big swell worse.
+All settled on 2026-09-29: Rich foam, the roller, spray and mist, the peel meter, the solver, round 6's Basilisk choices, water colour and the underwater view. They are listed in [README.md](README.md), under "The owner's decisions".
+
+**Still open or waiting (2026-09-29, night):**
+- **The level-13 Padang run:** it needs the M4 Pro (`tools/basilisk/run_padang.sh`, see `tools/basilisk/README.md`). It ran end to end in the cloud on a coarse grid, but not yet on a Mac. The owner's Mac that the advisor runs on is an M1, which is not the machine meant for this run.
+- **The new peel meter:** decided, but not built. `SurfZoneSimulation.breakerCelerity()` still returns √(g·h_b).
+- **PR #63** (the switch latch): held as a draft.
 
 ## Work in flight elsewhere at the move
 
@@ -113,9 +108,19 @@ The move to the cloud worked on the second try. The session now works on branch 
   - Doc exports (blobs) can't be read back here, so pages are mirrored by hand.
   - The container is reclaimed whenever the session idles, killing background jobs. Long simulations (the level-13 Padang run) need a machine that stays up.
 
+## Back on the Mac (2026-09-29, night)
+
+The owner asked the local session to continue from the cloud session's handover. It did three things:
+- **Relayed three items to the Padang Padang session,** which the cloud session couldn't message:
+  - the wedge at 1:19 along the path, about 1:14.6 across the crest line at β 40°, then re-check the peel;
+  - its murkier water, per [underwater-colour.md](underwater-colour.md);
+  - the new peel meter: decided, not yet built.
+- **Told the Padang Padang and predictor-gate sessions** they can message the advisor directly again.
+- **Left the level-13 Basilisk run for the M4 Pro.**
+
 ## How other sessions consult now
 
-- A cloud session can receive messages, but can't reply to sessions on the owner's Mac.
+- The advisor is back on the owner's Mac, so local sessions can SendMessage "Water physics research" again. A cloud session can receive messages, but can't reply to sessions on the Mac.
 - Local sessions should spawn the `water-physics` agent (`.claude/agents/water-physics.md` on this branch; a user-scope copy is on the owner's Mac), which reads this folder.
 - Log the consult here.
 

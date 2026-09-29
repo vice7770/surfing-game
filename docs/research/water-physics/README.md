@@ -62,10 +62,9 @@ They tag each finding as measured, modelled or inferred, and cite `path:line` in
 
 ## Handover
 
-The advisor session moved to the cloud on 2026-09-29. [HANDOVER.md](HANDOVER.md) has its working state:
-- the open decisions;
+The advisor session worked in the cloud on the evening of 2026-09-29 and is back on the owner's Mac. [HANDOVER.md](HANDOVER.md) has its working state:
+- what is still open;
 - the consults in flight;
-- the underwater research round to restart;
 - how to keep this folder in step with the doc.
 
 ## Keeping this folder current
