@@ -6,10 +6,17 @@
 import type { PhysicalMode } from '../game/PhysicalMode';
 import { MAX_QUEUED_STEPS } from '../game/WorkerSurfZone';
 
+/**
+ * One channel for every yield: `advance` yields thousands of times a second while the worker steps on the GPU, and
+ * a channel apiece held native memory the collector never saw (the GPU water sheet's page grew ~150 MB/s to 12 GB).
+ */
+const channel = new MessageChannel();
+const waiting: (() => void)[] = [];
+channel.port1.onmessage = () => waiting.shift()?.();
+
 /** Yield to the event loop without a timer (timers are throttled in hidden pages). */
 export const breathe = () => new Promise<void>((resolve) => {
-  const channel = new MessageChannel();
-  channel.port1.onmessage = () => resolve();
+  waiting.push(resolve);
   channel.port2.postMessage(0);
 });
 

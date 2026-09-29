@@ -129,6 +129,8 @@ describe('compareTiers', () => {
     const findings = compareTiers(busy(), busy({ throws: 0, jetLandings: 0, splashLandings: 0, tubeSeconds: 0 }));
     expect(findings.filter((finding) => finding.kind === 'silent').map((finding) => finding.metric)).toEqual(['throws', 'jetLandings', 'splashLandings', 'tubeSeconds']);
     expect(findings.find((finding) => finding.metric === 'throws')!.detail).toMatch(/GPU/);
+    // One stray roller a minute on one tier is not a silent one.
+    expect(compareTiers(busy({ rollers: 0 }), busy({ rollers: 1 }))).toEqual([]);
   });
 
   it('flags a metric more than twice as busy on one tier, once there is enough of it', () => {

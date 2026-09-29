@@ -11,6 +11,12 @@ import { SPRAY_STRIDE } from '../wave/SprayCloud';
 export const PROBE_DEPTH = 0.05;
 /** The Reef's stability probes guard at this speed, m/s (docs/research/teahupoo-reef-report.md). */
 export const PROBE_SPEED = 20;
+/**
+ * A tier is silent on a metric when it shows none of it while the other makes at least this much a minute: a stray
+ * event is not a silent tier (the Reef's Big swell spilled one roller a minute on the GPU and none on the CPU, beside
+ * 486 throws a minute on each), while the GPU's missing lips were hundreds a minute.
+ */
+const SILENT_FLOOR = 3;
 /** One tier more than this many times as busy as the other diverges… */
 const DIVERGENCE = 2;
 /** …once the busier makes at least this much of it per minute (events, or tubes or particles on average × 60 s). */
@@ -180,7 +186,7 @@ export function compareTiers(cpu: TierActivity, gpu: TierActivity): TierFinding[
   for (const metric of COMPARED) {
     const onCpu = perMinute(cpu[metric], cpu.seconds);
     const onGpu = perMinute(gpu[metric], gpu.seconds);
-    if ((onCpu > 0) !== (onGpu > 0)) {
+    if ((onCpu > 0) !== (onGpu > 0) && Math.max(onCpu, onGpu) >= SILENT_FLOOR) {
       findings.push({ kind: 'silent', metric, detail: `${onCpu > 0 ? 'GPU' : 'CPU'} has none; the other ${(onCpu || onGpu).toFixed(1)}/min` });
     } else if (Math.max(onCpu, onGpu) >= DIVERGENCE_FLOOR && Math.max(onCpu, onGpu) > DIVERGENCE * Math.min(onCpu, onGpu)) {
       findings.push({ kind: 'diverges', metric, detail: `CPU ${onCpu.toFixed(1)}/min, GPU ${onGpu.toFixed(1)}/min` });
