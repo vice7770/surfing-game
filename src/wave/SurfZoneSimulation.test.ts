@@ -585,24 +585,31 @@ describe('SurfZoneSimulation', () => {
       const { solver } = simulation;
       let finite = true;
       let fastest = 0;
+      // The peel meter's way, every 6 s, where its fit holds (r² over 0.8).
+      const directions: number[] = [];
       for (let frame = 0; frame < 45 * 30; frame += 1) {
         simulation.step(1 / 30);
         for (let i = 0; i < solver.h.length; i += 1) {
           finite &&= Number.isFinite(solver.h[i]) && solver.h[i] >= 0;
           if (solver.h[i] > 0.05) fastest = Math.max(fastest, Math.hypot(solver.qx[i], solver.qz[i]) / solver.h[i]);
         }
+        const estimate = frame % 180 === 179 ? simulation.peelEstimate() : undefined;
+        if (estimate && estimate.fit > 0.8) directions.push(estimate.direction);
       }
       expect(finite).toBe(true);
       expect(fastest).toBeLessThan(fastestAllowed);
       expect(solver.maxStableStep()).toBeGreaterThan(1e-3);
-      return simulation;
+      return { simulation, directions };
     };
 
+    // A left: seen from a surfer facing the beach, it runs to their left, toward +x and the channel (the advisor's check).
+    // A single estimate can fit a window holding the tail of one wave and the head of the next (a 130 m peel takes about
+    // a period), so most well-fitted estimates must run that way.
     it('stays finite and bounded under the Big swell, plunges, and peels left toward the channel', () => {
-      const simulation = run({});
+      const { simulation, directions } = run({});
       expect(simulation.lipLaunches).toBeGreaterThan(0);
-      // A left: seen from a surfer facing the beach, it runs to their left, toward +x and the channel (the advisor's check).
-      expect(simulation.peelEstimate()?.direction).toBe(1);
+      expect(directions.length).toBeGreaterThan(0);
+      expect(directions.filter((direction) => direction === 1).length).toBeGreaterThan(directions.length / 2);
     }, 1_800_000);
     // Review Focus 1: the lowest springs leave 5 cm over the reef flat.
     it('stays finite over the nearly dry reef flat at the lowest spring tide', () => run({ tide: -1.2 }, 30), 1_800_000);
