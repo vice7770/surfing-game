@@ -103,7 +103,9 @@ export const PROBE_CASES: Record<string, () => TierCase> = {
   'game-lower': () => gameProbe('game-lower', { tide: -1 }),
   'game-minus': () => gameProbe('game-minus', { directionDegrees: -25 }),
   'game-plus': () => gameProbe('game-plus', { directionDegrees: 25 }),
-  // The open edge's offshore peak (Hs 3 m at the edge, 18 s, tide +1, seed 3, the default sea; ~21 m/s at t ≈ 95 s on the CPU).
+  // The Surf screen's Big swell at high tide (+0.6 m): the water ran away near the open −x edge offshore on both tiers at t ≈ 84 s (docs/research/gpu-tier-parity.md).
+  'game-high': () => gameProbe('game-high', { tide: 0.6 }, 60),
+  // The open edge's offshore peak (Hs 3 m at the edge, 18 s, tide +1, seed 3, the default sea; ~21 m/s at t ≈ 95 s on the CPU once, now a runaway at t ≈ 80 s on both tiers).
   'edge-offshore': () => gameProbe('edge-offshore', { significantHeight: 3, heightAt: 'edge', peakPeriod: 18, tide: 1, componentCount: 24 }, 100),
 };
 const DEFAULT_PROBES = Object.keys(PROBE_CASES);
