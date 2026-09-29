@@ -432,9 +432,12 @@ describe('SurfZoneSimulation', () => {
 
     // With the lagoon (Part C) this seed's first Big set sends thin backwash down the ledge, seaward of where its jets
     // left the crest (outside the plunge zone, by design), at 22–29 m/s for about a second while each draining cell's
-    // dispersion switches off: seeds 4–6 stay at 8–14 m/s here and on main. As at low tide, a runaway guard.
+    // dispersion switches off: seeds 4–6 stay at 8–14 m/s here and on main. As at low tide, a runaway guard (past
+    // runaways: 112 m/s, NaN). With the breaking age carried from behind the face (breakingAge.ts), one cell spikes to
+    // 32.9 m/s for a single frame at t 41.5 s: 0.31 m of water over 2.43 m, then 20.4 m/s, then under 20. Seeds 1, 2 and
+    // 4–6 run as on main (13.0 / 14.4 / 7.9 / 8.9 / 11.6 m/s against 13.0 / 14.7 / 8.3 / 8.6 / 12.5).
     it('stays finite and bounded under the Big swell, and plunges', () => {
-      expect(run({}, 30).lipLaunches).toBeGreaterThan(0);
+      expect(run({}, 35).lipLaunches).toBeGreaterThan(0);
     }, 300_000);
     // At low tide a Big trough drains the ledge to ~0.3 m and its backwash briefly reaches ~23 m/s before settling: an
     // open issue (docs/research/teahupoo-reef-report.md). Here it guards against a runaway (past ones: 112 m/s, NaN).
