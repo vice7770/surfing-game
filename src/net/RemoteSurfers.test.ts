@@ -107,6 +107,9 @@ describe('RemoteSurfers', () => {
     remote.sample(1, 601 * SURF_ZONE_STEP, state);
     expect(state.x).toBeCloseTo(90, 2);
     expect(state.points[4]).toBeCloseTo(0.1, 3);
+    // Past the newest pose, held where it is: not carried on at the teleport's 80 m in 50 ms.
+    remote.sample(1, 606 * SURF_ZONE_STEP, state);
+    expect(state.x).toBeCloseTo(90, 2);
   });
 
   it('curves the points through the neighbouring poses, so their speed carries on across each pose', () => {

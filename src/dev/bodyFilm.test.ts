@@ -365,7 +365,7 @@ describe('the balance cue on the drawn body (step 5; Patel et al. 2014, Objero e
 });
 
 describe('another player\'s surfer (step 7)', () => {
-  it('draws the local body 0.1 s later from the poses the game sends (20 Hz, float32, sampled in the past)', () => {
+  it('draws the local body 0.1 s later from the poses the game sends (20 Hz, in millimetres, sampled in the past)', () => {
     const local = filmBody(scenario('straight'), { rate: 60, drawer: trackDrawer, pose: posed() });
     const remote = filmBody(scenario('straight'), { rate: 60, drawer: remoteDrawer, pose: posed() });
     // Six frames at 60 Hz: the remote draws INTERPOLATION_DELAY in the past. From 1 s, past the stance's blend-in.

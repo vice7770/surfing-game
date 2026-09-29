@@ -496,11 +496,10 @@ export function latestDrawer(): FilmDrawer {
   };
 }
 
-/** The page's local rider since the smoothing layer: drawn between snapshots on the simulated clock (`SnapshotTrack`). */
 /**
  * Another player's surfer (step 7): the snapshots sent as the game sends its own
  * pose (`OwnPoseTracker`, every 1/`POSE_HZ` s of sea time), through the pose
- * codec (float32 points) and the real `RemoteSurfers`, sampled
+ * codec (the points in millimetres) and the real `RemoteSurfers`, sampled
  * `INTERPOLATION_DELAY` in the past on the room's clock, and rebuilt by
  * `RemoteSurferViews`' own code on the same water.
  */
@@ -539,6 +538,7 @@ export function remoteDrawer(context: FilmContext): FilmDrawer {
   };
 }
 
+/** The page's local rider since the smoothing layer: drawn between snapshots on the simulated clock (`SnapshotTrack`). */
 export function trackDrawer(): FilmDrawer {
   const track = new SnapshotTrack();
   const rider = new Float64Array(RIDER_SNAPSHOT.length);

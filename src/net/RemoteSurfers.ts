@@ -209,7 +209,8 @@ export class RemoteSurfers {
     if (t >= last.step) {
       copyPose(last, out);
       const previous = poses[poses.length - 2];
-      if (previous) {
+      // After a teleport the last two poses give no velocity to carry on at: held.
+      if (previous && continuous(previous, last)) {
         const ahead = Math.min(t - last.step, EXTRAPOLATE_LIMIT / SURF_ZONE_STEP);
         const span = last.step - previous.step;
         out.x += ((last.x - previous.x) / span) * ahead;

@@ -6,7 +6,7 @@
 
 **Architecture:** the body film gains a remote drawer that takes the local session's snapshots the way the game sends them:
 - an own pose every third physics step (`POSE_HZ` 20), written by `OwnPoseTracker`;
-- encoded into a bundle (`poseCodec`, float32 points);
+- encoded into a bundle (`poseCodec`; the plan assumed float32 points, but they went as i16 centimetres: see Findings, 1);
 - received and sampled by the real `RemoteSurfers`, 100 ms in the past (`INTERPOLATION_DELAY`);
 - turned into the drawn state by `RemoteSurferViews`' own code, extracted into a shared function.
 
@@ -26,7 +26,7 @@ The same scenarios are then filmed locally and remotely and compared.
 
 1. **The phase switch between two poses:** the phase comes from the nearer pose, so a switch lands mid-interval; it must still blend out.
 2. **A retry or a teleport** between poses: the remote body starts over, with no fling across the sea.
-3. **The float32 points:** no jitter in the drawn body from quantisation.
+3. **The points' quantisation** (i16 on the wire): no jitter in the drawn body from it.
 4. **The display rate:** remote bodies at 30 and 120 Hz.
 5. **What is not sent** (the breath held, the balance margin): which cues still show.
 
