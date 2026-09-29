@@ -26,6 +26,8 @@ export interface FrontPoint {
   /** The slice's clock, s from its lip's throw (sliceClock). */
   tau: number;
   thrown: boolean;
+  /** The clock as drawn: τ tapered to 0 at the front's ends (sliceClock). */
+  sliceTau: number;
   /** When it was last seen, s. */
   seen: number;
 }
@@ -80,6 +82,7 @@ export class BreakingFront {
         height: s.eta,
         tau: best ? best.tau : 0,
         thrown: best ? best.thrown : false,
+        sliceTau: best ? best.sliceTau : 0,
         seen: time,
       });
     }
