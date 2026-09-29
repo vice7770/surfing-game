@@ -39,7 +39,9 @@ export function warmStart(solver: ShallowWaterSolver, sea: SeaState, options: Wa
     let previousKz = components.map((c) => c.kz);
     for (let c = 0; c < count; c += 1) {
       phase[c] = components[c].kx * x + components[c].kz * referenceZ + components[c].phase;
-      alive[c] = 1;
+      // A component heading along or away from the shore (a spread swell from 30° or more) brings no energy flux
+      // across the reference line: shoreward of it, it is not there.
+      alive[c] = components[c].kz > 0 ? 1 : 0;
     }
     for (let iz = 0; iz < nz; iz += 1) {
       const i = iz * nx + ix;

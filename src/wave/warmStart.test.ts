@@ -41,6 +41,25 @@ describe('warmStart', () => {
     expect(capped).toBeLessThanOrEqual((0.78 * depthCap * Math.SQRT2) / 4 + 1e-9);
   });
 
+  // A spread swell from 30° or more reaches past along-shore (the Reef at 30°, seed 3: one component at 93.6°), and
+  // its cross-shore flux a² c_g cosθ is not positive: the Green's-law ratio went NaN and filled the whole tank.
+  it('leaves out a component heading along or away from the shore, which brings no energy in', () => {
+    const grid = { nx: 8, xMin: -20, dx: 5, zEdges: uniformEdges(-50, 395, 445), xBoundary: 'open' as const };
+    const towards = { amplitude: 0.2, omega: (2 * Math.PI) / 12, direction: 0.3, phase: 0 };
+    const away = { amplitude: 0.1, omega: (2 * Math.PI) / 9, direction: 1.7, phase: 0.5 };
+    const both = new ShallowWaterSolver(grid, slope);
+    warmStart(both, new SeaState([towards, away], 8, shallowWaterWaveNumber), { referenceZ: -50, seaTime: 7 });
+    const alone = new ShallowWaterSolver(grid, slope);
+    warmStart(alone, new SeaState([towards], 8, shallowWaterWaveNumber), { referenceZ: -50, seaTime: 7 });
+    for (let iz = 0; iz < both.nz; iz += 1) {
+      for (let ix = 0; ix < both.nx; ix += 1) {
+        const i = iz * both.nx + ix;
+        expect(Number.isFinite(both.h[i]) && Number.isFinite(both.qx[i]) && Number.isFinite(both.qz[i])).toBe(true);
+        if (both.zCenters[iz] > -50) expect(both.h[i]).toBeCloseTo(alone.h[i], 12);
+      }
+    }
+  });
+
   it('starts close to a solution so the spin-up stays calm', () => {
     const solver = new ShallowWaterSolver({ nx: 40, xMin: -80, dx: 4, zEdges: uniformEdges(-100, 380, 240), xBoundary: 'open' }, slope);
     const sea = new SeaState([{ amplitude: 0.25, omega: (2 * Math.PI) / 10, direction: 0.3, phase: 0.4 }], 8, shallowWaterWaveNumber);

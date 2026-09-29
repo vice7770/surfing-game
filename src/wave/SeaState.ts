@@ -104,7 +104,7 @@ export class SeaState {
 
   /**
    * Split a JONSWAP spectrum into equal-energy frequency bins and draw each bin's
-   * frequency, direction (cos-2s, clipped to shoreward travel), and phase from the
+   * frequency, direction (cos-2s, within 90° of the mean), and phase from the
    * seed. Equal energy per component makes the realized Hs exact.
    */
   static fromSpectrum(params: SpectrumParams, seed: number, waveNumberAt: WaveNumberFunction = exactWaveNumber): SeaState {
