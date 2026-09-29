@@ -107,9 +107,14 @@ export async function webGpuAvailable(): Promise<boolean> {
 /** Largest swell the tank carries, matching the buoy sliders; the tank deepens with the swell (the wave-sizes spec). */
 export const TANK_SWELL_LIMITS = { height: { min: 0.3, max: 4 }, period: { min: 6, max: 18 } };
 
-/** The Canyon keeps its tank and sea as they were (the wave-sizes spec), and so its 3 m cap. */
+/**
+ * The Canyon keeps its tank and sea as they were (the wave-sizes spec), and so its 3 m cap. The Reef's water ran
+ * away at 4 m, 18 s and high tide (the P/Q recovery pins thin dispersing water; see BoussinesqSolver's Froude
+ * cap) but stays clean at 3.5 m from −40° to 40°: that is its cap until the dispersion is rewritten in velocity form.
+ */
 export function swellHeightLimit(spot: SpotName): number {
-  return spot === 'canyon' ? 3 : TANK_SWELL_LIMITS.height.max;
+  if (spot === 'canyon') return 3;
+  return spot === 'reef' ? 3.5 : TANK_SWELL_LIMITS.height.max;
 }
 
 function clamp(value: number, range: { min: number; max: number }): number {

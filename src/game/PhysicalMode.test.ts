@@ -11,16 +11,19 @@ import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
 
 describe('PhysicalMode', () => {
-  it('lets buoys and storms reach 4 m, and the Canyon 3 m as before (wave sizes)', () => {
+  it('lets buoys and storms reach 4 m, the Reef 3.5 m and the Canyon 3 m (wave sizes)', () => {
     expect(TANK_SWELL_LIMITS.height.max).toBe(4);
     expect(swellHeightLimit('point')).toBe(4);
-    // The Reef's 30 m edge (the Teahupo'o Reef) carries the 4 m cap.
-    expect(swellHeightLimit('reef')).toBe(4);
+    // The Reef's water ran away at 4 m, 18 s and high tide (the P/Q recovery pinning thin dispersing water); at 3.5 m
+    // it stays clean from −40° to 40°. That is its limit until the dispersion is rewritten in velocity form.
+    expect(swellHeightLimit('reef')).toBe(3.5);
     expect(swellHeightLimit('canyon')).toBe(3);
     const storm = { ...DEFAULT_PHYSICAL_SETTINGS, source: 'storm' as const, stormWindSpeed: 30, stormFetchKm: 2000, stormDurationHours: 96, stormDistanceKm: 0 };
     expect(swellFor({ ...storm, spot: 'point' }).significantHeight).toBe(4);
     expect(swellFor({ ...storm, spot: 'canyon' }).significantHeight).toBe(3);
+    expect(swellFor({ ...storm, spot: 'reef' }).significantHeight).toBe(3.5);
     expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'buoy', spot: 'canyon', significantHeight: 3.8 }).significantHeight).toBe(3);
+    expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'buoy', spot: 'reef', significantHeight: 3.8 }).significantHeight).toBe(3.5);
     expect(swellFor({ ...DEFAULT_PHYSICAL_SETTINGS, source: 'buoy', spot: 'point', significantHeight: 3.8 }).significantHeight).toBe(3.8);
   });
 
