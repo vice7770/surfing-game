@@ -42,6 +42,8 @@ On SwiftShader's WebGPU in headless Chromium, in a cloud container with no GPU: 
 
 **One flag, a false alarm.** The Reef's Big swell spilled one roller on the GPU and none on the CPU, and the page called the CPU silent. A tier is now silent only when the other makes at least 3 a minute of something (`SILENT_FLOOR` in `src/dev/tierParity.ts`); the GPU's missing lips were hundreds a minute.
 
+**After merging main's predictor gate** (#61: the dispersive predictor added only where a cell disperses, on both tiers), a 30 s rerun still matches. Reef Big: 540 against 538 throws a minute, tubes 13.1 against 13.6, the same fastest water (9.6 m/s, same cell). Beach: 142 against 142 throws, tubes 2.5 · 42 on both. No findings.
+
 ## Stability with lips thrown (`?mode=probes`)
 
 The Reef's CI probes (40 m window, 60 m for the oblique and lagoon ones, 12 components, seed 3, 1/30 s steps, 45 s) and its Big swell at game size (160 m window, 64 components, seed 3, the game's runner, 45 s). The fastest water deeper than 5 cm; "broken" counts steps that left water not finite or below zero.
