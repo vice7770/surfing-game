@@ -1,4 +1,5 @@
 import { BoussinesqSolver } from './BoussinesqSolver';
+import { inheritedAge } from './breakingAge';
 import { GRAVITY } from './dispersion';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 import { BREAKER_INDEX } from './SwellReadout';
@@ -36,8 +37,8 @@ export function boreStrength(slope: number, relativeHeight: number, scale = 1): 
  * Kennedy et al. (2000) rise-rate test and the stage 1 bore criterion
  * (`boreStrength`). A cell breaks when its surface rises faster than η_t*; η_t* starts at
  * the onset fraction of √(gh) and ramps to the end fraction over T* = 5√(h/g).
- * A cell inherits the breaking age of breaking neighbours, so a travelling
- * bore keeps its age. In stage 1 this is an indicator for rendering, readouts
+ * A cell inherits the breaking age from behind its front face (`inheritedAge`),
+ * so a travelling bore keeps its age. In stage 1 this is an indicator for rendering, readouts
  * and the lip only; the shock-capturing solver already dissipates the bore.
  */
 export class BreakingModel {
@@ -90,6 +91,7 @@ export class BreakingModel {
       this.primed = true;
       return;
     }
+    const periodic = this.solver.periodicAlongShore;
     const onset = this.options.onset * this.onsetScale;
     const end = this.options.end ?? 0.15;
     const transition = this.options.transition ?? 5;
@@ -105,18 +107,24 @@ export class BreakingModel {
           this.nextAge[i] = 0;
           continue;
         }
-        let inherited = this.strength[i] > 0 ? this.age[i] : 0;
-        if (ix > 0 && this.strength[i - 1] > 0) inherited = Math.max(inherited, this.age[i - 1]);
-        if (ix < nx - 1 && this.strength[i + 1] > 0) inherited = Math.max(inherited, this.age[i + 1]);
-        if (iz > 0 && this.strength[i - nx] > 0) inherited = Math.max(inherited, this.age[i - nx]);
-        if (iz < nz - 1 && this.strength[i + nx] > 0) inherited = Math.max(inherited, this.age[i + nx]);
+        // The surface's slope: the front face the breaking age comes from behind, and (interior cells) the bore test's
+        // steepness. Across the window's edges it wraps when periodic, else it is one-sided.
+        const interior = ix > 0 && ix < nx - 1 && iz > 0 && iz < nz - 1;
+        const row = iz * nx;
+        const left = ix > 0 ? i - 1 : periodic ? row + nx - 1 : i;
+        const right = ix < nx - 1 ? i + 1 : periodic ? row : i;
+        const down = iz > 0 ? i - nx : i;
+        const up = iz < nz - 1 ? i + nx : i;
+        const spanX = (right === i || left === i ? 1 : 2) * dx;
+        const spanZ = zCenters[up === i ? iz : iz + 1] - zCenters[down === i ? iz : iz - 1];
+        const slopeX = right === left ? 0 : (h[right] + bed[right] - h[left] - bed[left]) / spanX;
+        const slopeZ = up === down ? 0 : (h[up] + bed[up] - h[down] - bed[down]) / spanZ;
+        const inherited = inheritedAge(i, ix, iz, nx, nz, slopeX, slopeZ, this.strength, this.age);
         const ramp = Math.min(1, inherited / (transition * Math.sqrt(depth / GRAVITY)));
         const threshold = Math.sqrt(GRAVITY * depth) * (onset + (end - onset) * ramp);
         let breaking = Math.min(1, Math.max(0, rise / threshold - 1));
         const stillDepth = restLevel - bed[i];
-        if (rise > 0 && stillDepth > 0.1 && ix > 0 && ix < nx - 1 && iz > 0 && iz < nz - 1) {
-          const slopeX = (h[i + 1] + bed[i + 1] - h[i - 1] - bed[i - 1]) / (2 * dx);
-          const slopeZ = (h[i + nx] + bed[i + nx] - h[i - nx] - bed[i - nx]) / (zCenters[iz + 1] - zCenters[iz - 1]);
+        if (rise > 0 && stillDepth > 0.1 && interior) {
           breaking = Math.max(breaking, boreStrength(Math.hypot(slopeX, slopeZ), (surface - restLevel) / stillDepth, this.onsetScale));
         }
         this.nextStrength[i] = breaking;

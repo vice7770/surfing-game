@@ -218,7 +218,11 @@ $$\nu_b = B\,\delta^2\,(h+\eta)\,\eta_t,\qquad B=\begin{cases}1 & \eta_t\ge 2\et
 
   - The threshold $\eta_t^*$ ramps from onset $\eta_t^{(I)}$ to end $\eta_t^{(F)} = 0.15\sqrt{gh}$ over $T^* = 5\sqrt{h/g}$ after onset, with **δ = 1.2**.
   - **Onset is set per spot:** $0.35\sqrt{gh}$ for Beach (bar and trough), $0.65\sqrt{gh}$ for Point, Reef and Canyon (plain or steep slopes).
-  - Each cell carries a **breaking age**, advected with the flow, which drives the ramp.
+  - Each cell carries a **breaking age**, which drives the ramp. It travels with the wave, from behind the front face only (2026-09-29, `breakingAge.ts`):
+    - A rising cell takes the oldest age of its breaking parents. The parents are the cell up the surface's slope along its main axis, and that cell's two diagonals.
+    - The direction comes from the face's downslope, −∇η, which is FUNWAVE-TVD's direction in `breaker.F`. The flux is not used: it runs seaward on a face and in backwash.
+    - The stencil is Celeris WebGPU's `Pass_Breaking` stencil.
+    - It never takes an age from the cells beside it along the crest. Taking it from any neighbour let breaking run along a crest at the grid's speed, about 60 m/s: Padang Padang's reef peeled at 2–5 times phase matching.
   - Celeris-WebGPU ships a variant (onset 0.50, δ = 2.0, δ not squared). It is recorded as an alternative to compare against, not the default.
 - **Stability backstop.** The solver switches to NLSW wherever $H/h > 0.8$ (Tonelli & Petti 2009; the FUNWAVE-TVD default). Bores then stay shock-captured.
 - **In stage 1**, the same Kennedy $B$ is computed as a **breaking flag** (the NLSW solver already dissipates at bores). Lip spawning, foam, board instability and readouts use one signal in both stages.
