@@ -16,9 +16,12 @@ const COS_45 = Math.SQRT1_2;
 /**
  * Swap the method in. `upstream` inherits from the neighbour the cell's flux points from, within 45°; `across` inherits
  * from both neighbours on the axis nearer the flux's (the crest's normal, either sign), never the two along the crest;
+ * `face1` and `face3` are the water-physics advisor's rule A (2026-09-29): a rising cell inherits only from behind its
+ * front face, the face's downslope n = −∇η (FUNWAVE-TVD's direction, breaker.F) picking the neighbour behind along n's
+ * main axis (face1), or it and its two diagonals (face3, Celeris's stencil); with no face (|∇η| ≈ 0), nothing.
  * `all` keeps every neighbour, as the solver's own does (to check the copy).
  */
-export function inheritOnlyFromUpstream(mode: 'upstream' | 'across' | 'all' = 'upstream'): void {
+export function inheritOnlyFromUpstream(mode: 'upstream' | 'across' | 'face1' | 'face3' | 'all' = 'upstream'): void {
   const cos = mode === 'all' ? -Infinity : COS_45;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (BoussinesqSolver.prototype as any).breakingTerms = function breakingTerms(this: any, dt: number): void {
@@ -47,7 +50,38 @@ export function inheritOnlyFromUpstream(mode: 'upstream' | 'across' | 'all' = 'u
         }
         let inherited = strength[i] > 0 ? age[i] : 0;
         const flux = Math.hypot(P[i], Q[i]);
-        {
+        if ((mode === 'face1' || mode === 'face3') && rise > 0) {
+          const eta = (k: number) => h[k] - this.still[k];
+          const gx = ((ix < nx - 1 ? eta(i + 1) : eta(i)) - (ix > 0 ? eta(i - 1) : eta(i))) / ((ix > 0 && ix < nx - 1 ? 2 : 1) * this.dx);
+          const up = iz < nz - 1 ? eta(i + nx) : eta(i);
+          const downEta = iz > 0 ? eta(i - nx) : eta(i);
+          const gz = (up - downEta) / ((iz < nz - 1 ? this.above[iz] : 0) + (iz > 0 ? this.below[iz] : 0));
+          const faceX = -gx;
+          const faceZ = -gz;
+          if (Math.hypot(faceX, faceZ) > 1e-6) {
+            const parents: number[] = [];
+            if (Math.abs(faceX) >= Math.abs(faceZ)) {
+              const bx = ix - Math.sign(faceX);
+              if (bx >= 0 && bx < nx) {
+                parents.push(iz * nx + bx);
+                if (mode === 'face3') {
+                  if (iz > 0) parents.push((iz - 1) * nx + bx);
+                  if (iz < nz - 1) parents.push((iz + 1) * nx + bx);
+                }
+              }
+            } else {
+              const bz = iz - Math.sign(faceZ);
+              if (bz >= 0 && bz < nz) {
+                parents.push(bz * nx + ix);
+                if (mode === 'face3') {
+                  if (ix > 0) parents.push(bz * nx + ix - 1);
+                  if (ix < nx - 1) parents.push(bz * nx + ix + 1);
+                }
+              }
+            }
+            for (const j of parents) if (strength[j] > 0) inherited = Math.max(inherited, age[j]);
+          }
+        } else if (mode !== 'face1' && mode !== 'face3') {
           let px = flux > 0 ? P[i] / flux : 0;
           let pz = flux > 0 ? Q[i] / flux : 0;
           if (mode === 'across') {

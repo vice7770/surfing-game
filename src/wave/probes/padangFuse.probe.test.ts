@@ -10,7 +10,8 @@ import { PADANG, padangReefAt } from '../Bathymetry';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
 
 it.skipIf(!process.env.PROBE)('classifies Padang Padang’s breaking onsets', () => {
-  if (process.env.INHERIT === 'upstream' || process.env.INHERIT === 'across') inheritOnlyFromUpstream(process.env.INHERIT);
+  const inherit = process.env.INHERIT;
+  if (inherit === 'upstream' || inherit === 'across' || inherit === 'face1' || inherit === 'face3') inheritOnlyFromUpstream(inherit);
   for (const pair of (process.env.PADANG ?? '').split(',').filter(Boolean)) {
     const [key, value] = pair.split('=');
     (PADANG as Record<string, number>)[key] = Number(value);
