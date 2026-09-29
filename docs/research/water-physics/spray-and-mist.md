@@ -52,3 +52,5 @@ The M1 timings were taken in Chrome on a loaded machine, ±50 %. M4 Pro figures 
 4. **Unmeasured spit and veil:** accept provisional models, or fund a 3D Basilisk run for the spit.
 5. **Rainbows:** in or out.
 6. **Order:** my recommendation is shading and haze now, and new emission once the swept surface exists.
+
+**Decided 2026-09-29, as recommended:** physical optics with a readability minimum; salt haze that follows the sets; a 16k CPU pool now and GPU spray later; the provisional spit and veil models accepted; rainbows in. The order is shading and haze now, and new emission once the swept barrel exists.

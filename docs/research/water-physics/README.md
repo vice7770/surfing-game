@@ -51,16 +51,14 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 
 They tag each finding as measured, modelled or inferred, and cite `path:line` in the code of their day. Where a note and a page differ, the page and the consult log are newer. Long quotations have been shortened to their opening words; follow the links for the full text.
 
-## Open for the owner (2026-09-29)
+## The owner's decisions (2026-09-29)
 
-- **Rich foam:** draw foam as a layer that adds light (prototyped), and how to apply Rich's body gain.
-- **Roller:** Classic drawing it, roller density, surface rise, roughness.
+- **Rich foam, the roller, spray and mist (decided 2026-09-29):** all as recommended; see each page's closing note.
 - **Solver (decided 2026-09-29):** depth-aware dispersion plus a Froude cap and a smooth edge ramp, being built; PR #63 is on hold as a draft.
-- **The peel meter:** measure peel with the solver's real crest speed. It moves every spot's skill rating (a task chip).
-- **Spray and mist:** optics, haze above water, the budget, rainbows and the order (see [spray-and-mist.md](spray-and-mist.md)).
+- **The peel meter (decided 2026-09-29):** measure peel with the solver's real crest speed; every spot's angle moves 5–7° easier.
 - **Basilisk profiles (round 6, decided 2026-09-29):** Padang's wedge at 1:19 along the path, a level-13 Padang rerun (to run on the M4 Pro with `tools/basilisk/run_padang.sh`), and the GPL setup file in `tools/basilisk/`. Also as recommended: each run's grid puts at least 6 cells across the lip, the tube hands over to the roller at touchdown, and periodic swell comes later (see [basilisk-profiles.md](basilisk-profiles.md)).
 - **Water colour (decided 2026-09-29):** as recommended, with the Point's water following Snapper Rocks (see [underwater-colour.md](underwater-colour.md)).
-- **Underwater (decided 2026-09-29):** a 6–8 m readability floor, the ride camera underwater in Rich only, haze and sand drawn only, the recommended order. The prototype's three follow-ups were settled as recommended: an exposure gain, the 7 m floor wherever water is murkier, and a sourced colour term (being researched) (see [underwater-prototype.md](underwater-prototype.md)).
+- **Underwater (decided 2026-09-29):** a 6–8 m readability floor, the ride camera underwater in Rich only, haze and sand drawn only, the recommended order. The prototype's three follow-ups were settled as recommended: an exposure gain, the 7 m floor wherever water is murkier, and a sourced colour term, now in [underwater-colour.md](underwater-colour.md) (see [underwater-prototype.md](underwater-prototype.md)).
 
 ## Handover
 
