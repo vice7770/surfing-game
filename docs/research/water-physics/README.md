@@ -30,6 +30,7 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 | [solver-rewrite-sketch.md](solver-rewrite-sketch.md) | What option (a)'s rewrite would take, following FUNWAVE-TVD's form |
 | [foam-and-whitewater.md](foam-and-whitewater.md) | Foam contrast and ageing, persistence, the roller, spray |
 | [roller.md](roller.md) and [roller-build.md](roller-build.md) | The roller's measured shape and effect on riders, and how to build it on the barrel's loft |
+| [spray-and-mist.md](spray-and-mist.md) | Spray, spit, the offshore veil and haze: why they read as dots, the numbers, and what to change |
 | [graphics.md](graphics.md) | Lip glow, the tube interior, break-up, spray and the tube camera |
 | [consult-log.md](consult-log.md) | Every consult and decision, newest first, including advice that turned out wrong |
 | [sources.md](sources.md) | Every source, opened and read, by topic |
@@ -40,6 +41,7 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 - Round 1: breaking, foam and tubes.
 - Round 2: barrel profiles, along the crest, Padang Padang, the roller.
 - Round 3: the whitewater build.
+- Round 4: spray and mist.
 
 They tag each finding as measured, modelled or inferred, and cite `path:line` in the code of their day. Where a note and a page differ, the page and the consult log are newer. Long quotations have been shortened to their opening words; follow the links for the full text.
 

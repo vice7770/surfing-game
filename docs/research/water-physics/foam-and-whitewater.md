@@ -25,3 +25,5 @@ The game's whitewater drivers are sound: dissipation makes foam, the jet's impac
 | 7 | **Streaks and rip plumes.** Let converging flow pack foam into lines, stretched by the flow rather than by a fixed factor on steep faces, so rips show as dark gaps with foam plumes beyond the break | Low |
 
 The roller's measured shape, and what it does to a board and rider: Roller.
+
+Spray, spit, the offshore veil and haze, with their numbers and your decisions: Spray and mist.

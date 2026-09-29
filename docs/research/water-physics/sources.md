@@ -80,3 +80,14 @@ The pages below were opened, not just searched; the full notes tag every finding
 - [Tissier et al. 2013, Coastal Dynamics (GLOBEX)](https://hydralab.eu/uploads/TAdocuments/213_tissier_marion.pdf): individual surf-zone wave celerity; linear theory underestimates it; the bore model does best
 - [Scarfe et al. 2009, J. Coastal Res. review](https://bioone.org/journals/journal-of-coastal-research/volume-2009/issue-253/07-0958.1/Research-Based-Surfing-Literature-for-Coastal-Management-and-the-Science/10.2112/07-0958.1.full): the peel angle defined as a geometric angle (Walker & Palmer 1971)
 - Mead 2000, ch. 5 (Mead & Black 1999, Bingin): the ray-model experiments with and without platform, focus and rotated wedge
+
+## Spray and mist
+
+- [Erinin et al. 2023, Part 1](https://arxiv.org/pdf/2210.01925) and [Part 2](https://arxiv.org/pdf/2210.01923): plunging-breaker drops, their sizes, speeds and timing
+- [Mostert, Popinet & Deike 2022](https://arxiv.org/pdf/2103.05851): drop production in simulated breaking waves
+- [Veron 2015, Annual Review of Fluid Mechanics](https://bpb-us-w2.wpmucdn.com/sites.udel.edu/dist/b/10612/files/2020/12/Veron-2015-spray-annurev.pdf): ocean spray
+- [Troitskaya et al. 2017, Scientific Reports](https://www.nature.com/articles/s41598-017-01673-9): wind-torn spray (bag breakup)
+- [Wüthrich, Shi & Chanson 2021, JFM](https://staff.civil.uq.edu.au/h.chanson/reprints/Wuthrich_Shi_Chanson_jfm_2021.pdf): drops thrown by a bore front
+- [Bohren 1987](https://patarnott.com/atms749/pdf/BohrenMultipleScattOpus.pdf) and [Jendersie & d'Eon 2023](https://research.nvidia.com/labs/rtr/approximate-mie/publications/approximate-mie.pdf): multiple scattering and fast Mie phase functions
+- [Atmospheric Optics: the sea-water rainbow](https://atoptics.co.uk/blog/sea-water-rainbow/) and [IALA: meteorological optical range](https://www.iala.int/wiki/dictionary/index.php/Meteorological_Optical_Range)
+- [Moana: Crashing Waves](https://media.disneyanimation.com/uploads/production/publication_asset/164/asset/Moana_Crashing_Waves.pdf), [Thomas, GDC 2014](https://media.gdcvault.com/GDC2014/Presentations/Gareth_Thomas_Compute-based_GPU_Particle.pdf), [GPU Gems 3, ch. 23](https://developer.nvidia.com/gpugems/gpugems3/part-iv-image-effects/chapter-23-high-speed-screen-particles) and [McGuire's weighted blended transparency](https://casual-effects.blogspot.com/2014/03/weighted-blended-order-independent.html): how films and games draw spray
