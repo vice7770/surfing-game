@@ -70,7 +70,7 @@ The "Water physics research" session moved from the owner's Mac to the cloud on 
   - The ramp's inner end sits 10 m from the Reef's take-off, so the Reef reports must check the take-off and go to the Reef session.
 - **GPU parity:** done (PR #66). It ran on SwiftShader, not on the M4 itself.
 
-## Research round 5: the underwater view (restart it)
+## Research round 5: the underwater view (done)
 
 The owner asked (2026-09-29) to work on "below water and mass carried bodies of water that create that beautiful effect of water moving under water". The round was started and stopped by the move. Restart it with a water-physics agent covering:
 
@@ -100,11 +100,7 @@ The owner asked (2026-09-29) to work on "below water and mass carried bodies of 
 
 Output: notes in `notes/round5-underwater/`, and a one-page "Underwater" tab.
 
-**Status, 2026-09-29 15:30:** the move to the cloud failed (the service returned 503, and the app couldn't read the cloud environments). So round 5 was restarted on the Mac.
-- Today's two underwater views are in `img/underwater-today.jpg`, at the Reef in Rich at midday:
-  - looking up through the plume: the foam lace painted on the surface's underside, the lip's facets, square point bubbles, flat teal fog;
-  - the plain view up: a flat blue gradient.
-- If the session moves before the agent reports, restart the round from the brief above.
+**Status, 2026-09-29 16:30:** delivered as [underwater.md](underwater.md), with notes in `notes/round5-underwater/`. PR #67 was merged, so this folder is on main. Later updates go through new PRs (branch claude/water-physics-underwater for this round).
 
 ## How other sessions consult now
 
