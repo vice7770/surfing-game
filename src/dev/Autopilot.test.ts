@@ -218,6 +218,33 @@ describe('autopilot turns', () => {
     expect(autopilot.next(standing(20 * DEG, { faceFraction: 0.45 }), 1 / 60).steer).toBe(0);
   });
 
+  // The recorder's overlay and log: what the rider is doing, and each turn's size, time and speed kept.
+  it('names the phase it rides and records each turn: how far, how long, the speed kept, and whether it finished', () => {
+    const autopilot = turning(20 * DEG);
+    autopilot.next(standing(20 * DEG, { faceFraction: 0.2 }), 1 / 60);
+    expect(autopilot.phase).toBe('BOTTOM TURN · COMPRESSED');
+    autopilot.next(standing(80 * DEG, { faceFraction: 0.45 }), 1 / 60);
+    expect(autopilot.phase).toBe('BOTTOM TURN · EXTENDING');
+    autopilot.next({ ...standing(125 * DEG, { faceFraction: 0.5 }), ride: ride({ phase: 'standing', speed: 5.4, wave: wave({ faceFraction: 0.5 }) }) }, 1 / 60);
+    expect(autopilot.phase).toBe('CLIMBING · EXTENDED');
+    expect(autopilot.turnRecords).toHaveLength(1);
+    const [turn] = autopilot.turnRecords;
+    expect(turn).toMatchObject({ kind: 'bottom', completed: true, speedIn: 6, speedOut: 5.4 });
+    expect(turn.degrees).toBeCloseTo(105, 6);
+    expect(turn.seconds).toBeCloseTo(2 / 60, 9);
+    // A turn given up at its limit is recorded unfinished; a fall mid-turn too; a new attempt starts a new list.
+    const held = turning(20 * DEG);
+    for (let i = 0; i < 95; i += 1) held.next(standing(20 * DEG, { faceFraction: 0.2 }), 1 / 60);
+    expect(held.turnRecords[0]).toMatchObject({ kind: 'bottom', completed: false });
+    const falling = turning(20 * DEG);
+    falling.next(standing(20 * DEG, { faceFraction: 0.2 }), 1 / 60);
+    falling.next(view({ board: { x: 0, z: -20, heading: 30 * DEG }, ride: ride({ phase: 'fallen', speed: 2 }) }), 1 / 60);
+    expect(falling.turnRecords[0]).toMatchObject({ kind: 'bottom', completed: false, speedOut: 2 });
+    falling.reset();
+    expect(falling.turnRecords).toHaveLength(0);
+    expect(falling.phase).toBe('');
+  });
+
   // Task 8's rule: extend through the hollow (the bottom turn), crouch over the top and on the way down.
   it('pumps with the turns: crouched from the top down to the bottom turn, extended climbing', () => {
     expect(turning(20 * DEG).next(standing(20 * DEG, { faceFraction: 0.5 }), 1 / 60)).toMatchObject({ crouch: 0.6, compress: 0 });
