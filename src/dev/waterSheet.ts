@@ -12,13 +12,13 @@
 import { PerspectiveCamera, Vector3 } from 'three';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
 import type { TimeOfDay } from '../game/SurfConditions';
-import { MAX_QUEUED_STEPS } from '../game/WorkerSurfZone';
 import type { WaterLook } from '../scene/water/waterLook';
 import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
 import { tubeFloorDepth } from '../wave/Overturn';
 import { SPRAY_STRIDE } from '../wave/SprayCloud';
 import { SEA_COMPONENTS, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { TUBE_STRIDE } from '../wave/tubeTable';
+import { advance, breathe } from './devStepping';
 
 interface SheetHooks {
   start(settings: PhysicalSettings, overrides?: Partial<SurfZoneConfig>): Promise<void>;
@@ -45,13 +45,6 @@ const FACE_SLOPE = 0.35;
 /** Where the finished sheet is posted as a PNG (`npm run record:ride` runs the receiver), so it can be read without the page on screen. */
 const RECEIVER = new URLSearchParams(window.location.search).get('receiver') ?? 'http://localhost:5199';
 
-/** Yield to the event loop without a timer (timers are throttled in hidden pages). */
-const breathe = () => new Promise<void>((resolve) => {
-  const channel = new MessageChannel();
-  channel.port1.onmessage = () => resolve();
-  channel.port2.postMessage(0);
-});
-
 interface Shot { name: string; eye: Vector3; target: Vector3 }
 
 const PARAMETERS = new URLSearchParams(window.location.search);
@@ -67,24 +60,6 @@ const COMPUTE = PARAMETERS.get('compute') === 'gpu' ? 'gpu' : PARAMETERS.get('co
  */
 const COMPONENTS = Number(PARAMETERS.get('components')) || (COMPUTE === 'cpu' ? undefined : GPU_TIER_COMPONENTS);
 
-type Idle = Parameters<SheetHooks['step']>[0];
-
-/**
- * `steps` more steps of the sea, shown in the snapshot: the page's own surf zone takes them at once; the worker's
- * (`&compute=gpu`) queues only a few at a time, so they are fed as it takes them, and waited for.
- */
-async function advance(hooks: SheetHooks, steps: number, input: Idle): Promise<void> {
-  const outstanding = () => hooks.mode.host?.outstandingSteps ?? 0;
-  for (let asked = 0; asked < steps;) {
-    if (outstanding() < MAX_QUEUED_STEPS) {
-      hooks.step(input);
-      asked += 1;
-    } else {
-      await breathe();
-    }
-  }
-  while (outstanding() > 0) await breathe();
-}
 /** The whitewater sheet holds once this many foam-ball sprites tumble in the snapshot. */
 const FOAM_BALL_HOLD = 8;
 
