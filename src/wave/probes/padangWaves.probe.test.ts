@@ -49,34 +49,46 @@ it.skipIf(!process.env.PROBE)('fits Padang Padang’s peel wave by wave', () => 
     else waves.push([onset]);
   }
   const breakerCelerity = simulation.breakerCelerity();
-  const speeds: number[] = [];
-  const geometric: number[] = [];
-  log(`PADANG ${JSON.stringify(PADANG)}; ${onsets.length} onsets on ${columns.length} reef columns, t ${from}–${until} s; guess ${guess} m/s along x; √(g h_b) ${breakerCelerity.toFixed(2)} m/s`);
-  for (const wave of waves) {
-    const xsOf = [...new Set(wave.map((onset) => onset.x))];
-    if (xsOf.length < 20) continue;
-    const n = wave.length;
-    const mx = wave.reduce((sum, onset) => sum + onset.x, 0) / n;
-    const mt = wave.reduce((sum, onset) => sum + onset.t, 0) / n;
-    const mz = wave.reduce((sum, onset) => sum + onset.z, 0) / n;
+  /** A set of onsets' break line: speed along it, its dz/dx, the r² of time against x, and which way it peels. */
+  const fitOf = (set: typeof keyed) => {
+    const n = set.length;
+    const mx = set.reduce((sum, onset) => sum + onset.x, 0) / n;
+    const mt = set.reduce((sum, onset) => sum + onset.t, 0) / n;
+    const mz = set.reduce((sum, onset) => sum + onset.z, 0) / n;
     let sxx = 0; let sxt = 0; let stt = 0; let sxz = 0;
-    for (const onset of wave) {
+    for (const onset of set) {
       const dx = onset.x - mx;
       sxx += dx * dx; sxt += dx * (onset.t - mt); stt += (onset.t - mt) ** 2; sxz += dx * (onset.z - mz);
     }
     const slope = sxt / sxx;
     const line = sxz / sxx;
-    const speed = Math.hypot(1, line) / Math.abs(slope);
-    const fit = (sxt * sxt) / (sxx * stt);
-    const depth = wave.reduce((sum, onset) => sum + bed.depthAt(onset.x, onset.z), 0) / n;
-    const meter = (Math.asin(Math.min(1, breakerCelerity / speed)) * 180) / Math.PI;
-    const photo = (Math.asin(Math.min(1, (1.2 * breakerCelerity) / speed)) * 180) / Math.PI;
-    if (fit > 0.8 && slope > 0) {
-      speeds.push(speed);
-      geometric.push(photo);
-    }
-    log(`wave at t ${mt.toFixed(0)} s: ${xsOf.length} columns, x ${Math.min(...xsOf).toFixed(0)}…${Math.max(...xsOf).toFixed(0)}, ${speed.toFixed(1)} m/s along a line of dz/dx ${line.toFixed(2)} (fit ${fit.toFixed(2)}, ${slope > 0 ? 'toward +x' : 'toward −x'}), onset depth ${depth.toFixed(1)} m; α ${meter.toFixed(0)}° on the meter, ${photo.toFixed(0)}° geometric`);
+    return { mt, speed: Math.hypot(1, line) / Math.abs(slope), line, fit: (sxt * sxt) / (sxx * stt), leftward: slope > 0 };
+  };
+  const angle = (speed: number, factor: number) => (Math.asin(Math.min(1, (factor * breakerCelerity) / speed)) * 180) / Math.PI;
+  const clean: { speed: number; peak: number; down: number }[] = [];
+  log(`PADANG ${JSON.stringify(PADANG)}; ${onsets.length} onsets on ${columns.length} reef columns, t ${from}–${until} s; guess ${guess} m/s along x; √(g h_b) ${breakerCelerity.toFixed(2)} m/s`);
+  for (const wave of waves) {
+    const xsOf = [...new Set(wave.map((onset) => onset.x))];
+    if (xsOf.length < 20) continue;
+    const whole = fitOf(wave);
+    const depth = wave.reduce((sum, onset) => sum + bed.depthAt(onset.x, onset.z), 0) / wave.length;
+    // The peak's half and the down-reef half apart: crests reaching the down-reef half already tilted peel faster there.
+    const peakHalf = wave.filter((onset) => onset.x < 0);
+    const downHalf = wave.filter((onset) => onset.x >= 0);
+    const half = (set: typeof keyed) => (new Set(set.map((onset) => onset.x)).size >= 10 ? fitOf(set) : undefined);
+    const peak = half(peakHalf);
+    const down = half(downHalf);
+    const halfText = (label: string, h: ReturnType<typeof fitOf> | undefined) => (h ? `${label} ${h.speed.toFixed(1)} m/s (fit ${h.fit.toFixed(2)})` : `${label} -`);
+    if (whole.fit > 0.8 && whole.leftward) clean.push({ speed: whole.speed, peak: peak?.speed ?? Number.NaN, down: down?.speed ?? Number.NaN });
+    log(`wave at t ${whole.mt.toFixed(0)} s: ${xsOf.length} columns, x ${Math.min(...xsOf).toFixed(0)}…${Math.max(...xsOf).toFixed(0)}, ${whole.speed.toFixed(1)} m/s along a line of dz/dx ${whole.line.toFixed(2)} (fit ${whole.fit.toFixed(2)}, ${whole.leftward ? 'toward +x' : 'toward −x'}), onset depth ${depth.toFixed(1)} m; α ${angle(whole.speed, 1).toFixed(0)}° on the meter, ${angle(whole.speed, 1.2).toFixed(0)}° geometric | ${halfText('peak half', peak)}, ${halfText('down-reef half', down)}`);
   }
-  const median = (values: number[]) => [...values].sort((p, q) => p - q)[Math.floor(values.length / 2)] ?? Number.NaN;
-  log(`clean waves (fit > 0.8, peeling toward +x): ${speeds.length}; median ${median(speeds).toFixed(1)} m/s, geometric α ${median(geometric).toFixed(0)}° (≥ 27°: ${geometric.filter((a) => a >= 27).length}, 30–40°: ${geometric.filter((a) => a >= 30 && a <= 40).length})`);
+  // The middle value, or the mean of the middle two.
+  const median = (values: number[]) => {
+    const sorted = values.filter((value) => Number.isFinite(value)).sort((p, q) => p - q);
+    const m = sorted.length / 2;
+    return sorted.length === 0 ? Number.NaN : sorted.length % 2 ? sorted[Math.floor(m)] : (sorted[m - 1] + sorted[m]) / 2;
+  };
+  const speeds = clean.map((wave) => wave.speed);
+  const geometric = speeds.map((speed) => angle(speed, 1.2));
+  log(`clean waves (fit > 0.8, peeling toward +x): ${clean.length}; median ${median(speeds).toFixed(1)} m/s (geometric α ${angle(median(speeds), 1.2).toFixed(0)}°; ≥ 27°: ${geometric.filter((a) => a >= 27).length}, 30–40°: ${geometric.filter((a) => a >= 30 && a <= 40).length}); peak half ${median(clean.map((wave) => wave.peak)).toFixed(1)} m/s, down-reef half ${median(clean.map((wave) => wave.down)).toFixed(1)} m/s`);
 }, 7_200_000);
