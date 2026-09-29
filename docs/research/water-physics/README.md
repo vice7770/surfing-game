@@ -51,6 +51,15 @@ They tag each finding as measured, modelled or inferred, and cite `path:line` in
 - **Roller:** Classic drawing it, roller density, surface rise, roughness.
 - **Solver (decided 2026-09-29):** depth-aware dispersion plus a Froude cap and a smooth edge ramp, being built; PR #63 is on hold as a draft.
 - **The peel meter:** measure peel with the solver's real crest speed. It moves every spot's skill rating (a task chip).
+- **Spray and mist:** optics, haze above water, the budget, rainbows and the order (see [spray-and-mist.md](spray-and-mist.md)).
+
+## Handover
+
+The advisor session moved to the cloud on 2026-09-29. [HANDOVER.md](HANDOVER.md) has its working state:
+- the open decisions;
+- the consults in flight;
+- the underwater research round to restart;
+- how to keep this folder in step with the doc.
 
 ## Keeping this folder current
 
