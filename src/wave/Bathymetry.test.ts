@@ -171,6 +171,28 @@ describe('surf spot bathymetry', () => {
       }
     });
 
+    // Mead's ramp in place of the platform (the design sweep's): the approach shoals at approachSlope from the
+    // forereef's top (its line through the knee's centre), shore-parallel, and the wedge rises from it.
+    it('can rise toward the shore from its forereef’s top, the ramp beneath its wedge and its channel', () => {
+      const saved = PADANG.approachSlope;
+      PADANG.approachSlope = 1 / 60;
+      try {
+        const shelf = padangShelfEdge();
+        const edge = ALONG_SHORE / 2;
+        const inshore = shelf + PADANG.foreRounding + 100;
+        expect(padang.depthAt(edge, inshore)).toBeCloseTo(PADANG.platformDepth - (inshore - shelf) / 60, 9);
+        expect(slopeZ(padang, edge, inshore)).toBeCloseTo(1 / 60, 9); // deepening seaward
+        expect(Math.abs(gradientX(padang, edge, inshore))).toBeLessThan(1e-3);
+        // The wedge, where it is the shallower; the ramp beyond its foot.
+        const x = 0;
+        const crest = padangCrestZ(x);
+        expect(padang.depthAt(x, crest - 20)).toBeCloseTo(PADANG.crestDepth + padangSeaward(x, crest - 20) * PADANG.rampSlope, 5); // the channel's tail: 5e-7 m
+        expect(padang.depthAt(x, shelf + PADANG.foreRounding + 1)).toBeCloseTo(PADANG.platformDepth - (PADANG.foreRounding + 1) / 60, 9);
+      } finally {
+        PADANG.approachSlope = saved;
+      }
+    });
+
     it('runs its crest line at its angle from the peak toward +x, and along shore upcoast of it', () => {
       expect((padangCrestZ(0) - padangCrestZ(-40)) / 40).toBeCloseTo(Math.tan(radians), 12);
       expect(padangCrestZ(-80)).toBeCloseTo(padangCrestZ(PADANG.peakX - PADANG.levelWidth), 12);

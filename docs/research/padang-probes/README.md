@@ -17,4 +17,4 @@ Raw output of the probes in `src/wave/probes/`, run in a cloud session on the br
 
 Peel lines read: time, the meter's estimate (V, α, the onset line's dz/dx, fit, columns, direction), then for every tenth column `x:onset time relative to now s@onset z`.
 
-Rerun any of them with `PROBE=1 LOG=<file> [PADANG=key=value,...] [DIRECTION=…] [SPREADING=…] [NOFEED=1] npx vitest run src/wave/probes/<probe>`.
+Rerun any of them with `PROBE=1 LOG=<file> [PADANG=key=value,...] [DIRECTION=…] [SPREADING=…] [HS=…] [NOFEED=1] npx vitest run src/wave/probes/<probe>`.

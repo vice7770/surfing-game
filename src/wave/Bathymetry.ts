@@ -94,6 +94,8 @@ export function reefSeaward(x: number, z: number): number {
 export const PADANG = {
   deep: 25, foreSlope: 1 / 20, foreRounding: 10, platformDepth: 10, rampSlope: 1 / 19, crestDepth: 1.25, peakX: -50, peakZ: -90, angle: 35,
   levelWidth: 20, channelX: 80, channelHalfWidth: 20, shoreSlope: 0.2, takeOffX: -40,
+  /** Mead's ramp (1:40–1:80) in place of the level platform, rising shoreward from the forereef's top; 0 keeps the platform. The design sweep's. */
+  approachSlope: 0,
 };
 
 /**
@@ -227,13 +229,15 @@ function padangTerms(x: number, z: number): { channel: number; depth: number; be
   // Rounded (C¹) over foreRounding m at its top and its foot, so its slope breaks scatter no spurious harmonics.
   const foot = shelf - (p.deep - p.platformDepth) / p.foreSlope;
   const fore = p.platformDepth + (rounded(shelf - z, p.foreRounding) - rounded(foot - z, p.foreRounding)) * p.foreSlope;
+  // Shoreward of the forereef's top, the platform, or Mead's ramp rising from it (rounded into the same knee).
+  const approach = -rounded(z - shelf, p.foreRounding) * p.approachSlope;
   // The ramp from the reef flat down to the platform, across the crest line, on the forereef's extra depth (the
   // ramp's foot lies shoreward of the forereef's rounded top, so the two never overlap).
-  const reef = Math.min(p.platformDepth, p.crestDepth + Math.max(0, padangSeaward(x, z)) * p.rampSlope) + (fore - p.platformDepth);
+  const reef = Math.min(p.platformDepth + approach, p.crestDepth + Math.max(0, padangSeaward(x, z)) * p.rampSlope) + (fore - p.platformDepth);
   // The channel: no reef, the platform and forereef beneath, flat across its axis at the window's edge.
   const channel = Math.exp(-(((x - p.channelX) / p.channelHalfWidth) ** 2));
   // A beach face, and dry land shoreward of z = 0.
-  return { channel, depth: reef + (fore - reef) * channel, beachFace: z < 0 ? -z * p.shoreSlope : -z * 0.06 };
+  return { channel, depth: reef + (fore + approach - reef) * channel, beachFace: z < 0 ? -z * p.shoreSlope : -z * 0.06 };
 }
 
 function padang(): SurfSpot {

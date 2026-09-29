@@ -3,7 +3,7 @@ import { appendFileSync } from 'node:fs';
 const log = (text: string) => appendFileSync(process.env.LOG ?? '/dev/stderr', `${text}\n`);
 import { it } from 'vitest';
 import { SIDE_FEED } from '../SideFeed';
-import { PADANG, padangCrestZ } from '../Bathymetry';
+import { PADANG, padangCrestZ, padangSeaward, padangShelfEdge } from '../Bathymetry';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
 import { ledgePeel } from '../ledgePeel';
 import { breakerDepthFor } from '../Breaking';
@@ -20,11 +20,20 @@ it.skipIf(!process.env.PROBE)('probes Padang Padang’s peel', () => {
   PADANG.angle = Number(process.env.ANGLE ?? PADANG.angle);
   PADANG.platformDepth = Number(process.env.PLATFORM ?? PADANG.platformDepth);
   if (process.env.NOCHANNEL) PADANG.channelHalfWidth = 1e-3;
-  const config = { spot: 'padang' as const, seed: 1, significantHeight: 1.6, peakPeriod: 16, directionDegrees: direction, spreading, tide: 0, windSpeed: 0, componentCount: 24, ...(process.env.BANDWIDTH ? { bandwidth: Number(process.env.BANDWIDTH) } : {}) };
+  const config = { spot: 'padang' as const, seed: 1, significantHeight: Number(process.env.HS ?? 1.6), peakPeriod: 16, directionDegrees: direction, spreading, tide: 0, windSpeed: 0, componentCount: 24, ...(process.env.BANDWIDTH ? { bandwidth: Number(process.env.BANDWIDTH) } : {}) };
   const simulation = new SurfZoneSimulation(config);
   const hb = breakerDepthFor(edgeHeight(config, PADANG.deep), PADANG.deep);
-  const predicted = ledgePeel({ period: 16, deepDepth: PADANG.deep, shelfDepth: PADANG.platformDepth, breakDepth: hb, swellDegrees: direction, ledgeDegrees: PADANG.angle });
-  log(`predicted: V ${predicted.peelSpeed.toFixed(1)} m/s, α ${predicted.angleDegrees.toFixed(0)}°, h_b ${hb.toFixed(2)} m, crest line dz/dx ${Math.tan((PADANG.angle * Math.PI) / 180).toFixed(2)}; tank ${JSON.stringify(simulation.tank)}`);
+  // Where the wedge rises from the bed beneath it, mid-reef (x 0): the platform, or Mead's ramp shoaling toward it.
+  let toe = PADANG.platformDepth;
+  if (PADANG.approachSlope > 0) {
+    const shelf = padangShelfEdge();
+    for (let z = padangCrestZ(0); z > shelf; z -= 0.25) {
+      const approach = PADANG.platformDepth - Math.max(0, z - shelf) * PADANG.approachSlope;
+      if (PADANG.crestDepth + padangSeaward(0, z) * PADANG.rampSlope >= approach) { toe = approach; break; }
+    }
+  }
+  const predicted = ledgePeel({ period: 16, deepDepth: PADANG.deep, shelfDepth: toe, breakDepth: hb, swellDegrees: direction, ledgeDegrees: PADANG.angle });
+  log(`predicted: V ${predicted.peelSpeed.toFixed(1)} m/s, α ${predicted.angleDegrees.toFixed(0)}°, h_b ${hb.toFixed(2)} m, toe ${toe.toFixed(1)} m, crest line dz/dx ${Math.tan((PADANG.angle * Math.PI) / 180).toFixed(2)}; tank ${JSON.stringify(simulation.tank)}`);
   log(`crest z at x −40 / 0 / 30: ${padangCrestZ(-40).toFixed(0)} / ${padangCrestZ(0).toFixed(0)} / ${padangCrestZ(30).toFixed(0)}`);
   for (let period = 0; period < Number(process.env.PERIODS ?? 10); period += 1) {
     for (let k = 0; k < 16 * 30; k += 1) simulation.step(1 / 30);
