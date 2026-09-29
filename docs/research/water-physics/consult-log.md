@@ -4,6 +4,7 @@ What other sessions asked about wave shape, the advice they got and what came of
 
 | Date | Session | Question | Advice and outcome |
 | --- | --- | --- | --- |
+| 2026-09-29 | You | Water colour decisions, and the Basilisk setup file | Colour as recommended: provisional values now, a blue Reef, the Canyon as Nazaré, Rich above water later, and the grey particle absorption replaced. The Point's reference (Jeffreys Bay or Snapper Rocks) is still open. The setup file is committed under GPL-3.0 in tools/basilisk/, with a script to run the level-13 Padang transect on the M4 Pro |
 | 2026-09-29 | Level-13 Padang run | Can it finish in the cloud session? | No. The container is reclaimed whenever the session idles, and checkpoints only save progress while the session is active: it reached t = 0.39 of 25. Run it on a machine that stays up, such as the M4 Pro |
 | 2026-09-29 | Water colour (underwater) | Which sourced colour term per spot? | Plankton and dissolved organics from satellite chlorophyll and ocean-optics model code turn the Beach and Point sea green; the Reef stays blue, its green coming from the bed. Replace the grey particle absorption rather than adding to it. Values provisional until checked against the journals. See Water colour |
 | 2026-09-29 | You | The underwater prototype's three decisions | All as recommended: one underwater exposure gain back to today's level brightness; the 7 m floor wherever water is murkier, the Point included; and a sourced per-spot water colour term, now being researched |

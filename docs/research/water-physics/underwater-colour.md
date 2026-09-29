@@ -20,13 +20,13 @@ Adding dissolved organic matter and plankton turns the Beach and the Point sea g
 - **Where it goes:** its own underwater uniforms, not the shared optics call, which drives Classic's above-water look (`src/scene/waterOptics.ts:246`).
 - **Padang:** the satellite sees its water as much murkier than the Reef's (Kd490 0.12 against 0.026 m⁻¹), though reflection off its shallow reef may inflate that. The Padang session should know.
 
-## Your decisions
+## Your decisions (settled 2026-09-29, as recommended)
 
-1. **Accept these as sourced, or have them checked against the journals.** Recommended: use them now as provisional, and check them when a session with journal access is free.
-2. **A blue Reef.** Recommended: accept it; the green comes from the bed, which the prototype already lights.
-3. **The Point's reference: Jeffreys Bay (green) or Snapper Rocks (cyan).** Your call; the README lists both.
-4. **The Canyon as Nazaré.** Recommended: confirm, or name its real reference.
-5. **Rich above water too.** Recommended: yes, later, so the surface colour matches what you see below.
-6. **Replace the grey absorption.** Recommended: yes, as above.
+1. **Accept these as sourced, or have them checked against the journals.** Decided: use them now as provisional, and check them when a session with journal access is free.
+2. **A blue Reef.** Decided: accept it; the green comes from the bed, which the prototype already lights.
+3. **The Point's reference: Jeffreys Bay (green) or Snapper Rocks (cyan).** Open: you left this one; the README lists both.
+4. **The Canyon as Nazaré.** Decided: Nazaré.
+5. **Rich above water too.** Decided: yes, later, so the surface colour matches what you see below.
+6. **Replace the grey absorption.** Decided: yes, as above.
 
 Notes and every value: [notes/round5-underwater/water-colour.md](notes/round5-underwater/water-colour.md).
