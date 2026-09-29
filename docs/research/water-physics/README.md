@@ -24,6 +24,7 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 | [along-the-crest.md](along-the-crest.md) | How a barrel changes down the line: the slice clock, open-tube length, lip taper, makeable peel angles |
 | [tubes.md](tubes.md) | Why the tube reads wrong, and the swept-surface fix |
 | [swept-barrel-build.md](swept-barrel-build.md) | Where the profiles come from and how to loft, seam and collide the barrel in real time |
+| [basilisk-profiles.md](basilisk-profiles.md) | The first Basilisk runs: validation against Pick & Feddersen, Padang Padang's first tube, library cost, the profile format |
 | [padang-padang.md](padang-padang.md) and [padang-padang-build-sheet.md](padang-padang-build-sheet.md) | The break, and its sourced bed, bearings, tide, swell and wind |
 | [breaking.md](breaking.md) | Why the solver's face stays near 17°, the crest-speed trigger, the stop rule, directional spread |
 | [solver-stability.md](solver-stability.md) | Why the biggest Reef swells blow up, what published models do, and the options |
@@ -31,6 +32,9 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 | [foam-and-whitewater.md](foam-and-whitewater.md) | Foam contrast and ageing, persistence, the roller, spray |
 | [roller.md](roller.md) and [roller-build.md](roller-build.md) | The roller's measured shape and effect on riders, and how to build it on the barrel's loft |
 | [spray-and-mist.md](spray-and-mist.md) | Spray, spit, the offshore veil and haze: why they read as dots, the numbers, and what to change |
+| [underwater.md](underwater.md) | The view below water: colour and fog, the sky seen from below, the water mass moving, bubble plumes and sand |
+| [underwater-prototype.md](underwater-prototype.md) | A throwaway prototype of underwater items 1–2, measured against the targets, and what a real PR must do |
+| [underwater-colour.md](underwater-colour.md) | Sourced water colour per spot: plankton and dissolved organics, the hue and sighting they give |
 | [graphics.md](graphics.md) | Lip glow, the tube interior, break-up, spray and the tube camera |
 | [consult-log.md](consult-log.md) | Every consult and decision, newest first, including advice that turned out wrong |
 | [sources.md](sources.md) | Every source, opened and read, by topic |
@@ -42,16 +46,19 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 - Round 2: barrel profiles, along the crest, Padang Padang, the roller.
 - Round 3: the whitewater build.
 - Round 4: spray and mist.
+- Round 5: the underwater view.
+- Round 6: tube profiles simulated in Basilisk (install, benchmark, validation, Padang Padang's first transect).
 
 They tag each finding as measured, modelled or inferred, and cite `path:line` in the code of their day. Where a note and a page differ, the page and the consult log are newer. Long quotations have been shortened to their opening words; follow the links for the full text.
 
-## Open for the owner (2026-09-29)
+## The owner's decisions (2026-09-29)
 
-- **Rich foam:** draw foam as a layer that adds light (prototyped), and how to apply Rich's body gain.
-- **Roller:** Classic drawing it, roller density, surface rise, roughness.
+- **Rich foam, the roller, spray and mist (decided 2026-09-29):** all as recommended; see each page's closing note.
 - **Solver (decided 2026-09-29):** depth-aware dispersion plus a Froude cap and a smooth edge ramp, being built; PR #63 is on hold as a draft.
-- **The peel meter:** measure peel with the solver's real crest speed. It moves every spot's skill rating (a task chip).
-- **Spray and mist:** optics, haze above water, the budget, rainbows and the order (see [spray-and-mist.md](spray-and-mist.md)).
+- **The peel meter (decided 2026-09-29):** measure peel with the solver's real crest speed; every spot's angle moves 5–7° easier.
+- **Basilisk profiles (round 6, decided 2026-09-29):** Padang's wedge at 1:19 along the path, a level-13 Padang rerun (to run on the M4 Pro with `tools/basilisk/run_padang.sh`), and the GPL setup file in `tools/basilisk/`. Also as recommended: each run's grid puts at least 6 cells across the lip, the tube hands over to the roller at touchdown, and periodic swell comes later (see [basilisk-profiles.md](basilisk-profiles.md)).
+- **Water colour (decided 2026-09-29):** as recommended, with the Point's water following Snapper Rocks (see [underwater-colour.md](underwater-colour.md)).
+- **Underwater (decided 2026-09-29):** a 6–8 m readability floor, the ride camera underwater in Rich only, haze and sand drawn only, the recommended order. The prototype's three follow-ups were settled as recommended: an exposure gain, the 7 m floor wherever water is murkier, and a sourced colour term, now in [underwater-colour.md](underwater-colour.md) (see [underwater-prototype.md](underwater-prototype.md)).
 
 ## Handover
 
@@ -63,4 +70,4 @@ The advisor session moved to the cloud on 2026-09-29. [HANDOVER.md](HANDOVER.md)
 
 ## Keeping this folder current
 
-When a tab of the Claude Doc changes, export it as Markdown and replace its page here. Add a row to the consult log for each new consult.
+When a tab of the Claude Doc changes, export it as Markdown and replace its page here, or edit the page by hand to match. Add a row to the consult log for each new consult.

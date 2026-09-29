@@ -47,7 +47,7 @@ The "Water physics research" session moved from the owner's Mac to the cloud on 
    - the order (recommended: shading and haze now, new emission after the swept surface).
 4. **The peel meter:** use the solver's measured crest speed instead of √(g·h_b). Every spot's reported angle moves 5–7° toward easier. It's a separate task chip.
 5. **The Basilisk benchmark** (2D profile runs for the swept barrel): not started. It's on the Padang Padang session's plan, and it's the critical path for the tube rebuild.
-6. **PRs:** #67 (this folder) awaits merge. #63 (the switch latch) is held as a draft, because it made the high-tide Big swell worse.
+6. **PRs:** #67 (this folder) is merged. #63 (the switch latch) is held as a draft, because it made the high-tide Big swell worse.
 
 ## Work in flight elsewhere at the move
 
@@ -70,7 +70,7 @@ The "Water physics research" session moved from the owner's Mac to the cloud on 
   - The ramp's inner end sits 10 m from the Reef's take-off, so the Reef reports must check the take-off and go to the Reef session.
 - **GPU parity:** done (PR #66). It ran on SwiftShader, not on the M4 itself.
 
-## Research round 5: the underwater view (restart it)
+## Research round 5: the underwater view (done)
 
 The owner asked (2026-09-29) to work on "below water and mass carried bodies of water that create that beautiful effect of water moving under water". The round was started and stopped by the move. Restart it with a water-physics agent covering:
 
@@ -100,11 +100,18 @@ The owner asked (2026-09-29) to work on "below water and mass carried bodies of 
 
 Output: notes in `notes/round5-underwater/`, and a one-page "Underwater" tab.
 
-**Status, 2026-09-29 15:30:** the move to the cloud failed (the service returned 503, and the app couldn't read the cloud environments). So round 5 was restarted on the Mac.
-- Today's two underwater views are in `img/underwater-today.jpg`, at the Reef in Rich at midday:
-  - looking up through the plume: the foam lace painted on the surface's underside, the lip's facets, square point bubbles, flat teal fog;
-  - the plain view up: a flat blue gradient.
-- If the session moves before the agent reports, restart the round from the brief above.
+**Status, 2026-09-29 16:30:** delivered as [underwater.md](underwater.md), with notes in `notes/round5-underwater/`. PR #67 was merged, so this folder is on main. Later updates go through new PRs (branch claude/water-physics-underwater for this round).
+
+## In the cloud (2026-09-29, evening)
+
+The move to the cloud worked on the second try. The session now works on branch `main-2ylbec`.
+- **Round 5** was merged (PR #72). The owner settled its four decisions (see [underwater.md](underwater.md)).
+- **Items 1–2** were prototyped and measured: [underwater-prototype.md](underwater-prototype.md). That raised three more decisions for the owner.
+- **Round 6 (done):** our own Basilisk 2D barrel profiles, in [basilisk-profiles.md](basilisk-profiles.md), with notes in `notes/round6-tube-profiles/`. It raised six decisions for the owner, the Padang wedge slope first. The runs and scripts (177 MB) were in the session's scratchpad, which is temporary; the notes' §7 rebuilds them.
+- **Cloud limits:**
+  - basilisk.fr is blocked by the environment's network policy, so Basilisk comes from the GitHub mirror `comphy-lab/basilisk-C`.
+  - Doc exports (blobs) can't be read back here, so pages are mirrored by hand.
+  - The container is reclaimed whenever the session idles, killing background jobs. Long simulations (the level-13 Padang run) need a machine that stays up.
 
 ## How other sessions consult now
 

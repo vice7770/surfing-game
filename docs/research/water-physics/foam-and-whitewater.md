@@ -27,3 +27,5 @@ The game's whitewater drivers are sound: dissipation makes foam, the jet's impac
 The roller's measured shape, and what it does to a board and rider: Roller.
 
 Spray, spit, the offshore veil and haze, with their numbers and your decisions: Spray and mist.
+
+**Decided 2026-09-29, as recommended:** in Rich, foam is drawn as a layer that adds light to the water under it, and Rich's 4× gain applies to the whole picture through exposure, not to the water alone. Classic is unchanged.

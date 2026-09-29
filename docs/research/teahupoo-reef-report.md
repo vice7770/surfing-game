@@ -461,6 +461,48 @@ The game's tank (160 m, 1 m cells, 64 components) under the Big swell at high ti
 
 Both of the last are strongly supercritical water with its dispersion on. Fix: a cell whose water runs faster than 2 √(g h) (Froude 2) is shallow water (`SWITCH_FROUDE`, CPU and WGSL). At Froude 1 or 1.5 it also caught the water under plunging crests: the reef edge's tubes came out at W/L 0.09–0.20, under the measured 0.25. Tried and dropped: eroding the dispersive mask by the stencils' reach (the interface moved and new 100 m/s spikes appeared), and holding the open edges' two levelled columns in shallow water (it fixed the edge, but broke peel and break-position measurements on the 40 m test windows). Across five configurations (the game's Big preset, 20° s 18.3; 20° s 24; 10° and −10° s 11.8; and Hs 3 m at the edge, 18 s, tide +1) the tank now runs to 154 s, fastest 7.8–12.2 m/s. Guards: `the Reef's Big swell at high tide holds by its open edges` in `SurfZoneSimulation.test.ts`, at 20 m/s. The steep Reef's six probes, which reached 22–29 m/s in draining backwash (guarded at 30), now peak at 9.5–11.8 m/s and guard at 20. On the GPU (headless Chromium, SwiftShader): the Reef's Big swell drifts 5×10⁻⁴ m from the CPU in 3 s, and a cell at 2.01 critical steps within 8×10⁻⁶ of the CPU's (0.98 from the CPU's at 0.99), so the WGSL switch matches.
 
+### The edge ramp and the Froude cap
+
+Traced independently while the Froude switch above was in review: the same pin. The P/Q recovery sets a dispersing cell's flux near its neighbours' average (α d² ≈ 17 m² on the 1 m grid). A thin dispersing cell (0.5–3 m of water over 2.5–6 m) beside shallow-water cells was held at their flux, and its water ran at u = P/h: 18 → 223 m/s in 0.27 s at the −x corner.
+
+With the switch, main holds even the Wave Lab's largest Reef sea (Hs 4 m, 18 s, tide +1: 12.5 m/s). Two things stay.
+
+- **The edge ramp.** Levelling only the two copied columns left a kink where the 45° ledge's slope resumed at the −x edge, and that corner still peaked there with the switch.
+  - **The fix:** in a window at least eight ramps wide (the game's), the bed now eases over 20 m (smootherstep) from the spot's own to its profile 20 m in, uniform where the stencils copy the edge. Smaller windows (the CI probes) level as before.
+  - **Curvature:** a 0.15 slope bent 0.15 in one cell before, and under 0.05 now.
+- **FUNWAVE-TVD's Froude cap** (FroudeCap 10, Shi et al. 2011, CACR-11-04): a wet cell's speed stays under 10 √(g h), from its 1 cm wet depth, and a capped cell's predictor is dropped.
+  - It is the net under the switch. `froudeCapsInWater` counts the caps deeper than 5 cm: none on any sea below.
+
+Game size (160 m, 64 components), 110 s, fastest wet speed:
+
+| Sea | Main (with the switch) | Ramp + cap |
+|---|---:|---:|
+| Hs 3 m at the edge, 18 s, tide +1 | 17.7 m/s (the −x corner) | 10.0 m/s |
+| Buoy Hs 4 m, 18 s, tide +1 | 12.5 m/s | 12.4 m/s |
+| Buoy Hs 3.5 m, 18 s, tide +1, from 40° | 10.8 m/s | 11.8 m/s |
+| Big, high tide, 20° (seed 1) | 10.0 m/s | 9.6 m/s |
+| Big, high tide, 25° | 10.6 m/s | 11.0 m/s |
+| Big, mid tide | — | 7.7 m/s |
+
+- **Peel and catch** (measured with the ramp before the switch merged):
+  - The Small swell's peel held: close-outs 63 % → 54 %, makeable 21 % → 33 %, median α 18° → 17°, 355 → 354 lips a minute.
+  - Catch on Practice, seed 1: 420 attempts and 2 stood → 432 and 2.
+  - The ramp's inner end sits 10 m from the take-off.
+
+**Tried and dropped** (recorded so they are not retried):
+- **Eroding short dispersing runs to shallow water:** spikes of 60–1300 m/s.
+- **A Neumann closure at mask interfaces:** non-finite at 7.9 s. The coupling that pins thin cells also holds dispersing regions together.
+- **The operator on u = P/H inside the flux-form stepping:** unstable, and it failed the shoaling test.
+- **Levelling five edge columns:** the blow-up moved to column 6.
+- **The dispersive terms seeing min(d, 2h):**
+  - It helped before the switch, but showed no gain with it.
+  - It also changes drained troughs' dispersion.
+- **Capping the Reef's swell at 3.5 m:** unneeded once the switch holds 4 m.
+
+**Open:**
+- **The root fix** recovers velocity, not flux, as fully nonlinear models do (FUNWAVE-TVD; improved Green–Naghdi). It is sketched in `docs/research/water-physics/solver-rewrite-sketch.md`. The switch makes it less urgent.
+- **Jets** draw 0.2 of the whole column, and pile 1–2.5 m of water a second into the edge columns. The wave-sizes rule (only water above still level) would throw about a third as much.
+
 ## Commands
 
 - `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "steep Reef holds"`
