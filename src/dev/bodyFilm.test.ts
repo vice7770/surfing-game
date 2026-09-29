@@ -445,9 +445,11 @@ describe('the paddle and the swim measures (step 8)', () => {
   });
 
   it('reads a swimmer\'s roll about its long axis, and its arm cycles', () => {
-    // Lying face down along +z, rolling 50° each way twice a second... once a cycle, the left hand circling its shoulder.
+    // Lying face down along +z, rolling 50° with the left shoulder up and 30° with the right, once a cycle, the left hand
+    // circling its shoulder.
     const swim = film(60, 600, (i, frame) => {
-      const roll = (50 * Math.PI) / 180 * Math.sin((2 * Math.PI * i) / 150);
+      const wave = Math.sin((2 * Math.PI * i) / 150);
+      const roll = ((wave >= 0 ? 50 : 30) * Math.PI) / 180 * wave;
       frame.limbs[FILM_JOINT.head].set(0, 0, 0.6);
       frame.limbs[FILM_JOINT.shoulder.left].set(0.18 * Math.cos(roll), 0.18 * Math.sin(roll), 0.45);
       frame.limbs[FILM_JOINT.shoulder.right].set(-0.18 * Math.cos(roll), -0.18 * Math.sin(roll), 0.45);
@@ -455,8 +457,8 @@ describe('the paddle and the swim measures (step 8)', () => {
     });
     const read = swimRoll(swim);
     expect(read.left).toBeCloseTo(50, 0);
-    expect(read.right).toBeCloseTo(50, 0);
-    expect(Math.abs(read.mean)).toBeLessThan(1);
+    expect(read.right).toBeCloseTo(30, 0);
+    expect(read.mean).toBeCloseTo((50 - 30) / Math.PI, 0);
     expect(crawlRate(swim, 'left')).toBeCloseTo(0.4, 1);
     // Face up reads half a turn, and pitching the chest (the head up) adds no roll.
     const back = film(60, 10, (_, frame) => {

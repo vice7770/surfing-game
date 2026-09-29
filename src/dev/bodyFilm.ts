@@ -373,9 +373,8 @@ export function swimRolls(film: BodyFilm): number[] {
     facing.crossVectors(across, spine);
     facing.addScaledVector(spine, -facing.dot(spine));
     down.set(0, -1, 0).addScaledVector(spine, spine.y);
-    // Signed about the spine: from down to the facing, positive turning the chest toward the right (the left shoulder up).
-    const angle = Math.atan2(turn.crossVectors(down, facing).dot(spine), down.dot(facing));
-    return (-angle * 180) / Math.PI;
+    // Signed about the spine, from down to the facing: turning the chest toward the right, the left shoulder up, is positive.
+    return (Math.atan2(turn.crossVectors(down, facing).dot(spine), down.dot(facing)) * 180) / Math.PI;
   });
 }
 
