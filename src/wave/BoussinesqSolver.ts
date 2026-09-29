@@ -1,4 +1,5 @@
 import { GRAVITY } from './dispersion';
+import { inheritedAge } from './breakingAge';
 import { OPEN, PERIODIC, ShallowWaterSolver, WALL, type DepthFunction, type RelaxationZone, type SolverGrid, type SolverOptions } from './ShallowWaterSolver';
 
 /** Madsen & Sørensen (1992) dispersion coefficient: the [2,2] Padé fit to Airy. */
@@ -375,6 +376,11 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     const { nx, nz, h, rateH, breakingStrength: strength, breakingAge: age, nextStrength, nextAge, riseRate, viscosity: nu, gravity: g } = this;
     const onset = kennedy.onset * this.onsetScale;
     const mixing = kennedy.delta * kennedy.delta;
+    // The front faces' slopes, from the half-step surface the dispersive terms use (the device's HALF field): a breaking
+    // event's age comes only from behind its face (`inheritedAge`).
+    const { halfEta, f1: slopeX, f2: slopeZ } = this;
+    this.derivativeX(halfEta, slopeX, false);
+    this.derivativeZ(halfEta, slopeZ, false);
     let peak = 0;
     for (let iz = 0; iz < nz; iz += 1) {
       for (let ix = 0; ix < nx; ix += 1) {
@@ -388,11 +394,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
           nu[i] = 0;
           continue;
         }
-        let inherited = strength[i] > 0 ? age[i] : 0;
-        if (ix > 0 && strength[i - 1] > 0) inherited = Math.max(inherited, age[i - 1]);
-        if (ix < nx - 1 && strength[i + 1] > 0) inherited = Math.max(inherited, age[i + 1]);
-        if (iz > 0 && strength[i - nx] > 0) inherited = Math.max(inherited, age[i - nx]);
-        if (iz < nz - 1 && strength[i + nx] > 0) inherited = Math.max(inherited, age[i + nx]);
+        const inherited = inheritedAge(i, ix, iz, nx, nz, slopeX[i], slopeZ[i], strength, age);
         // Thresholds scale with the still depth (Kennedy et al. 2000); the mixing acts over the whole column.
         const still = Math.max(BREAKING_DEPTH, this.still[i]);
         const ramp = Math.min(1, inherited / (kennedy.transition * Math.sqrt(still / g)));
