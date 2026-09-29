@@ -49,36 +49,37 @@ The water-physics advisor's rule A (`src/wave/breakingAge.ts`):
 - A white-box test. On a face running +z, the cells ahead and diagonally ahead inherit; those beside it and behind it do not. The same holds in backwash, and with the face running −x. With no face, only the breaking cell carries on. The old rule fails this test.
 - An endless oblique crest at 20° and 40°, on the 1:40 plane beach, breaks where its height reaches 0.6–1.0 of the depth, as the head-on one does.
 
-**Full suite:** 1,663 tests pass. One guard moved:
-- The Reef's Big-swell probe, seed 3, spikes one cell to 32.9 m/s for a single frame: 0.31 m of water over 2.43 m at t 41.5 s, then 20.4 m/s, then under 20.
-- Its runaway guard is now 35 m/s. Past runaways reached 112 m/s and NaN.
-- The other seeds run as on main:
+**Full suite**, on main with the Froude switch (390bf72): 1,671 pass, 13 expected fail. The Reef's stability probes hold under main's 20 m/s guard.
 
-| Seed | 1 | 2 | 3 | 4 | 5 | 6 |
-|---|---:|---:|---:|---:|---:|---:|
-| main, fastest water, m/s | 13.0 | 14.7 | 19.2 | 8.3 | 8.6 | 12.5 |
-| face rule, m/s | 13.0 | 14.4 | 32.9 (one frame) | 7.9 | 8.9 | 11.6 |
+Before main's Froude switch, one of them had broken its then 30 m/s guard, on seed 3:
+- the Reef's Big-swell probe spiked one cell to 32.9 m/s for a single frame (0.31 m of water over 2.43 m), then 20.4, then under 20;
+- the other seeds ran as on main (13.0 / 14.4 / 7.9 / 8.9 / 11.6 m/s against 13.0 / 14.7 / 8.3 / 8.6 / 12.5).
+
+The switch, which turns supercritical water into shallow water, holds that thin backwash.
 
 **GPU parity** (`/gpu-check.html`, WebGPU on the M1, 1/60 s frames):
 
 | Case | Max \|Δh\| | rms Δh / rms η | Breaking disagrees | GPU ms / frame |
 |---|---:|---:|---:|---:|
-| Point, Hs 1.4 m, 10 s, 10 s run: face rule | 6.2e-5 m | 3.6e-5 | 0.00 % | 3.5 |
-| Reef, Big (Hs 3 m, 17 s), plunge zones, 20 s run: main | 0.27 m (shallow-water cells, t 18 s) | 0.7–1.9e-3 | 0.00–0.02 % | 4.3 |
-| Reef, Big, plunge zones, 20 s run: face rule | 0.33 m (shallow-water cells, t 6 s) | 1.2–2.4e-3 | 0.00–0.01 % | 4.3 |
+| Point, Hs 1.4 m, 10 s, 10 s run | 6.2e-5 m | 3.6e-5 | 0.00 % | 3.5 |
+| Reef, Big (Hs 3 m, 17 s), plunge zones, 20 s run, before the Froude switch: main | 0.27 m (shallow-water cells) | 0.7–1.9e-3 | 0.00–0.02 % | 4.3 |
+| The same, before the Froude switch: face rule | 0.33 m (shallow-water cells) | 1.2–2.4e-3 | 0.00–0.01 % | 4.3 |
+| The same, with the Froude switch: face rule | 0.032 m | 0.4–9.5e-4 | 0.00–0.01 % | 4.1 |
 
-The rule costs nothing measurable on the device. The largest drift sits in the shallow-water bore cells on both.
+The rule costs nothing measurable on the device.
 
 ## Before and after, every spot
 
-The rideability report (`npm run report:rideability -- --seeds 2 --periods 12`), bundled once from main (e513af9) and once from this change, at the Wave Lab defaults (Hs 1.4 m, Tp 10 s, 10°, s 12). The peel angles are the meter's, which uses √(g h_b): they read low (see below).
+The rideability report (`npm run report:rideability -- --seeds 2 --periods 12`), run on the same seeds at the Wave Lab defaults (Hs 1.4 m, Tp 10 s, 10°, s 12). It was bundled once from main (390bf72, with the Froude switch) and once from this change. The peel angles are the meter's, which uses √(g h_b), so they read low (see Open).
 
 | Spot | Close-out | Makeable by a pro | Median α | Median peel speed | Lip throws / min | Periods with a break |
 |---|---|---|---|---|---|---|
 | Beach | 46 % → 29 % | 17 % → 42 % | 14° → 34° | 20.0 → 8.7 m/s | 156 → 98 | 24 → 24 |
-| Point | 88 % → 61 % | 13 % → 35 % | 11° → 22° | 25.7 → 13.3 m/s | 708 → 562 | 24 → 23 |
-| Reef | 61 % → 31 % | 30 % → 69 % | 20° → 33° | 15.5 → 10.1 m/s | 480 → 302 | 23 → 16 |
-| Canyon | 57 % → 31 % | 7 % → 31 % | 9° → 25° | 28.3 → 12.1 m/s | 10 → 3 | 14 → 13 |
+| Point | 88 % → 61 % | 13 % → 35 % | 11° → 22° | 25.5 → 13.3 m/s | 703 → 564 | 24 → 23 |
+| Reef | 70 % → 28 % | 17 % → 72 % | 17° → 34° | 18.0 → 9.7 m/s | 479 → 305 | 23 → 18 |
+| Canyon | 64 % → 31 % | 7 % → 31 % | 9° → 25° | 29.1 → 12.1 m/s | 10 → 2 | 14 → 13 |
+
+Against main before its Froude switch (e513af9) the change was the same: close-outs fell from 46 / 88 / 61 / 57 % to 29 / 61 / 31 / 31 %.
 
 **What it shows:**
 - The fuse roughly doubled every spot's peel speed. Part of what the Point's close-outs were blamed on was the fuse; its bed and refraction remain the main cause.
