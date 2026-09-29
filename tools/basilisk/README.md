@@ -24,3 +24,21 @@ The owner decided (2026-09-29) to run Padang's peak on a 1:19 wedge along the wa
 **A coarser run:** `LEVEL=12` (about 4× cheaper) or `LEVEL=11` (the round 6 level) set before any command.
 
 Set `BASILISK_HOME` to use an existing Basilisk build elsewhere.
+
+## The barrel library's other swell sizes
+
+The swept barrel blends cases by H0/h0 (the wave's height at the wedge's base over its 7 m depth), so the library holds three at level 12: 0.2, 0.3 (the owner's case) and 0.45. Each has its own output window, from level-10 scouts on the M1 (2026-09-30; a crude facet reader counting where the surface folds over, so ±0.3):
+
+| A0 | Lip first folds over | Where | Touchdown | TOUT0 | TMAX |
+|---|---|---|---|---|---|
+| 0.2 | t ≈ 24.6 | on the reef flat, about 1 h0 past its edge | t ≈ 25.2 | 21.5 | 28 |
+| 0.3 | t ≈ 21.45 (level 11) | at the reef flat's edge | t ≈ 22.45 | 18.5 | 25 |
+| 0.45 | t ≈ 17.9 | on the wedge, about 2.6 h0 before the flat | t ≈ 19.1 | 15 | 21.5 |
+
+```
+LEVEL=12 A0=0.2 TOUT0=21.5 TMAX=28 NAME=pad19_a20_L12 tools/basilisk/run_padang.sh
+LEVEL=12 A0=0.3 TOUT0=18.5 TMAX=25 NAME=pad19_a30_L12 tools/basilisk/run_padang.sh
+LEVEL=12 A0=0.45 TOUT0=15 TMAX=21.5 NAME=pad19_a45_L12 tools/basilisk/run_padang.sh
+```
+
+The same variables, with `status` or `analyse`, check on or analyse each. Then `npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --flat 0.1785714` turns them into the game's cases (`docs/research/barrel-library.md`).
