@@ -104,6 +104,14 @@ The pages below were opened, not just searched; the full notes tag every finding
 - [Garcez Faria 1997](https://calhoun.nps.edu/server/api/core/bitstreams/7a30faa6-893a-4ede-af9a-5f711de8fe8c/content), [van der Zanden et al. 2018](https://ris.utwente.nl/ws/files/29784531/Zanden_et_al_2018_Journal_of_Geophysical_Research_Oceans.pdf) and [MacMahan et al. 2005](https://calhoun.nps.edu/server/api/core/bitstreams/b2de88ce-653b-4133-9d3e-bf1d78390d59/content): undertow and rip currents
 - [Crest's underwater docs](https://crest.readthedocs.io/en/stable/user/underwater.html), [Unity HDRP underwater](https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@17.0/manual/water-underwater-view.html) and [Finding Nemo's water, AWN](https://www.awn.com/animationworld/finding-right-cg-water-and-fish-nemo): how games and film draw it
 
+## Water colour
+
+- [Bricaud, Ciotti & Gentili 2012, Global Biogeochemical Cycles](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010GB003952), full text: the dissolved-and-detrital absorption rules (Table 1), fitted to SeaWiFS retrievals
+- [Bricaud et al. 1998, JGR Oceans](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/98JC02712), abstract only: its particle absorption laws cover all particles, 25–30 % of it non-algal
+- The ocean-optics model code that implements the published absorption shapes: [OSOAA](https://github.com/CNES/RadiativeTransferCode-OSOAA), [POLYMER](https://github.com/hygeos/polymer) and [IOPmodel](https://github.com/bishun945/IOPmodel)
+- [NOAA-20 VIIRS ocean colour, 2023](https://noaa-jpss.s3.amazonaws.com/index.html#NOAA20/VIIRS/): chlorophyll and Kd490 off each spot
+- [colour-science](https://github.com/colour-science/colour): the CIE 1931 observer and D65, for hue and sighting
+
 ## Basilisk runs (round 6)
 
 - [Basilisk source and wiki mirror](https://github.com/comphy-lab/basilisk-C), synced 2026-09-28: the solver (GPL-3.0, from its `src/COPYING`), and both published setups, Mostert & Deike's `sandbox/wmostert/shallow.c` and Feddersen et al.'s `sandbox/ffeddersen/shoal_RE0_BO4000.c`. basilisk.fr itself is blocked in the cloud session.

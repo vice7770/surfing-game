@@ -11,7 +11,7 @@ Adding dissolved organic matter and plankton turns the Beach and the Point sea g
 | Canyon (Nazaré, assumed) | 1.7 | 0.12 | 210° → 149–152°, green | 4.1–4.3 m, floor applies |
 | Beach (Supertubos) | 1.6 | 0.11 | 203° → 151–156°, sea green | 2.2 m, floor applies |
 
-*Chlorophyll: NOAA-20 VIIRS, 2023, about 3–5 km off each break, not in the surf zone. Dissolved organics are estimated from that chlorophyll (Bricaud 2012), not measured. Absorption shapes: from open-source ocean-optics model code that implements the published papers ([OSOAA](https://github.com/CNES/RadiativeTransferCode-OSOAA), [POLYMER](https://github.com/hygeos/polymer), [IOPmodel](https://github.com/bishun945/IOPmodel)). The papers themselves are blocked from the cloud session, so these values are provisional until someone checks them against the journals.*
+*Chlorophyll: NOAA-20 VIIRS, 2023, about 3–5 km off each break, not in the surf zone. Dissolved organics are estimated from that chlorophyll (Bricaud 2012), not measured. Absorption shapes: from open-source ocean-optics model code that implements the published papers ([OSOAA](https://github.com/CNES/RadiativeTransferCode-OSOAA), [POLYMER](https://github.com/hygeos/polymer), [IOPmodel](https://github.com/bishun945/IOPmodel)). The cloud session couldn't open the papers; the Mac session checked them against the journals on 2026-09-30 (below).*
 
 ## What to build
 
@@ -24,7 +24,7 @@ Adding dissolved organic matter and plankton turns the Beach and the Point sea g
 
 From the Mac session, which can open the papers the cloud couldn't:
 
-- **The detrital-colour rule is confirmed.** a_cdm(443) = 0.069·Chl^1.070 and S = 0.00262·a^−0.448 are the November 2007 fits in Table 1 of [Bricaud, Ciotti & Gentili 2012](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010GB003952). Other months give 0.068–0.075·Chl^1.07–1.11. The authors warn the fits are "not designed for use in predictive applications or models", so they stay provisional.
+- **The detrital-colour rule is confirmed.** a_cdm(443) = 0.069·Chl^1.070 and S = 0.00262·a^−0.448 are the November 2007 fits in Table 1 of [Bricaud, Ciotti & Gentili 2012](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010GB003952). They are fits to values retrieved from SeaWiFS satellite data, not measured in the water. Other months give 0.068–0.075·Chl^1.07–1.11. The authors warn the fits are "not designed for use in predictive applications or models", so they stay provisional.
 - **The particle term counts detritus twice.**
   - The coefficients used (0.052·Chl^0.635 at 440 nm) are for total particulate absorption, which already includes non-algal particles, 25–30 % of it on average ([Bricaud et al. 1998](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/98JC02712), abstract).
   - The 2012 table gives the phytoplankton-only law as 0.0375·Chl^0.620 at 443 nm, about 0.72× at 1 mg/m³.
