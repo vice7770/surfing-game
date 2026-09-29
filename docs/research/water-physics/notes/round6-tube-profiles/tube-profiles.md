@@ -11,7 +11,7 @@ Written 2026-09-29 for Breakline's water-physics knowledge base. It is the first
 ## 0. The answer in brief
 
 - **It builds and runs.** Basilisk compiled from the public GitHub mirror in about 40 s (qcc and the CPU grids; only the GPU backends failed, as expected). basilisk.fr, falk.ucsd.edu, cambridge.org and zenodo.org were all blocked by the network policy (HTTP 403), but the mirror also carries the Basilisk wiki, **including both sandbox setups** (`sandbox/wmostert/shallow.c` and `sandbox/ffeddersen/shoal_RE0_BO4000.c`), so nothing had to be rebuilt from the papers. [measured]
-- **Licence:** the mirror's `basilisk-source/src/COPYING` is the **GNU GPL version 3**. That settles the round-2 "reportedly GPL (unverified)" note. The runs' output (profiles) is data, not code. The setup file `slope.c` is a derivative of Mostert's sandbox file and so is GPL-3.0 too; it is kept out of the repo until the owner decides (§8). [measured]
+- **Licence:** the mirror's `basilisk-source/src/COPYING` is the **GNU GPL version 3**. That settles the round-2 "reportedly GPL (unverified)" note. The runs' output (profiles) is data, not code. The setup file `slope.c` is a derivative of Mostert's sandbox file and so is GPL-3.0 too; it is kept out of the repo until the owner decides (§6). [measured]
 - **Cost.** One solitary-wave run from rest to about 5 √(h0/g) after touchdown took **207 s at level 10 and 1331 s at level 11** (4 OpenMP threads, clean machine). That is a factor of 6.4 per level. The published converged resolution (Δx/h0 ≈ 6×10⁻³) needs level 13 on a 40 h0 domain, which extrapolates to **6–15 h per run** here. [measured; extrapolation inferred]
 - **Validation (T1), s = 1/15, H0/h0 = 0.6, level 11:** overturn area A_O/H_I² 0.316 against Pick & Feddersen's fit of 0.360; jet area 0.229 against 0.188; aspect W_O/L_O 0.435 against 0.424; angle θ_O 32.6° against 32.5°; breaker index 2.13 against 2.14. **All four are inside the round-2 tolerance** (±0.05 area, ±0.1 aspect, ±5°). The second case, s = 1/30, fails on area (0.083 against 0.158) and angle (38.6° against 48.7°) at level 11. There the jet is only about 2 cells thick, so it needs level 12–13. [measured against modelled]
 - **Padang Padang (T2), the game's own transect at the peak, H0/h0 = 0.3 at the 7 m wedge base, level 11:**
@@ -19,12 +19,12 @@ Written 2026-09-29 for Breakline's water-physics knowledge base. It is the first
   - At touchdown the tube is **2.0 m long, 0.80 m wide and 1.5 m high, tilted 48°, L/W 2.46** (inside Mead & Black's 1.42–3.43), with H_I = 2.8 m.
   - It is **small for its height**: A_O/H_I² is 0.125, about half of what the planar-slope fit gives (0.247). Part of that is probably resolution: its jet is about 2.4 cells thick, as in the failed s = 1/30 case.
   - Treat Padang's sizes as provisional until it is rerun at level 13. [measured; interpretation inferred]
-- **The game's wedge is 1:24.8 along the wave's path, not 1:19.** The branch's `PADANG` bed puts the 1:19 across the 40° crest line, so the swell, fed square to the tank, climbs it at 1:19/cos 40° = 1:24.8. A 1:19 run was started for comparison (§4.4). [measured from the game's bed code]
+- **The game's wedge is 1:24.8 along the wave's path, not 1:19.** The branch's `PADANG` bed puts the 1:19 across the 40° crest line, so the swell, fed square to the tank, climbs it at 1:19/cos 40° = 1:24.8. Rerun at 1:19 along the path, the face goes vertical just 3.6 m before the ledge, the lip lands on the reef flat, and the tube grows to A_O/H_I² 0.208: 2.3 × 0.90 m at H_I 2.5 m, tilted 32°, L/W 2.60 (§4.4). [measured]
 - **Landmarks:**
   - Crest, lip tip, throat and toe are found automatically in **92–100 % of open-tube frames** (vertical face to touchdown) and 76–89 % of the frames before vertical, where the "lip" is only the steepest point and jitters.
   - **After touchdown the outer-surface landmarks fail from the first frame.** The tube becomes an enclosed air cavity, found in 94–100 % of those frames. The surface splits around splash-up, droplets and bubbles (up to 34 loose pieces per frame).
   - The loft needs a rule for what the swept surface follows after touchdown (§5). [measured]
-- **Owner decisions:** grid level against compute (§6); whether to rerun Padang at level 13 (overnight here); the 1:19 versus 1:24.8 wedge; periodic runs; where the GPL setup file lives (§8).
+- **Owner decisions:** grid level against compute (§6); whether to rerun Padang at level 13 (overnight here); the 1:19 versus 1:24.8 wedge; periodic runs; where the GPL setup file lives (§6, item 6).
 
 ---
 
@@ -70,6 +70,7 @@ Same case throughout the benchmark: s = 1/15, H0/h0 = 0.6, a 40 h0 domain (solit
   - Padang level 10: 868 s to t = 36.
   - Padang level 11: vertical at 1369 s, touchdown at 1597 s, t = 31 at 3141 s.
   - s = 1/30 level 11: vertical at 676 s, touchdown at 933 s, stopped at t = 20.95 after 2201 s.
+  - Padang 1:19 level 11: vertical at 1750 s, touchdown at 2042 s, stopped at t = 23.3 after 2321 s.
 
 ### 1.4 Extrapolated cost [inferred from the measured rows]
 - **One run at the published converged resolution.** Δx/h0 ≈ 6×10⁻³ is level 13 on a 40–48 h0 domain (4.9–5.9×10⁻³). Multiplying the level-11 time by 4–6.4 per level gives, on this 4-core box with 4 threads: level 12 = **1.5–2.4 h**, level 13 = **6–15 h** per run through splash-up; level 13 to touchdown only = 2.4–6 h.
@@ -114,7 +115,8 @@ Same case throughout the benchmark: s = 1/15, H0/h0 = 0.6, a 40 h0 domain (solit
 | s = 1/15, H0/h0 = 0.6 | 0.0757 | 11 (0.0195) | ≈ 6 | **0.316 / 0.360** | 0.229 / 0.188 | **0.435 / 0.424** | **32.6° / 32.5°** | 2.13 / 2.14 | **yes** (area −0.044, jet +0.041, aspect +0.011, angle +0.1°) |
 | s = 1/15, H0/h0 = 0.6 | 0.0757 | 10 (0.039) | ≈ 3 | 0.317 / 0.360 | 0.275 / 0.188 | 0.352 / 0.424 | 23.5° / 32.5° | — | area and aspect yes; jet +0.09 and angle −9° no |
 | s = 1/30, H0/h0 = 0.6 | 0.0379 | 11 (0.0273) | ≈ 2 | 0.083 / 0.158 | 0.148 / 0.051 | 0.359 / 0.361 | 38.6° / 48.7° | 1.36 / 1.37 | **no** (area −0.075, jet +0.10, angle −10°; aspect fine) |
-| Padang ray (1:24.8, flat at 0.179), H0/h0 = 0.3 | 0.0570 | 11 (0.0234) | ≈ 2.4 | 0.125 / (0.247) | 0.128 / (0.098) | 0.407 / (0.388) | 48.0° / (43.6°) | 1.70 / 1.66 | Not a like-for-like test: the flat is 3.6× deeper than the fits' (in brackets) |
+| Padang ray (1:24.8, flat at 0.179), H0/h0 = 0.3 | 0.0545 | 11 (0.0234) | ≈ 2.4 | 0.125 / (0.247) | 0.128 / (0.098) | 0.407 / (0.388) | 48.0° / (43.6°) | 1.70 / 1.66 | Not a like-for-like test: the flat is 3.6× deeper than the fits' (in brackets) |
+| Padang 1:19 along the path, H0/h0 = 0.3 | 0.0711 | 11 (0.0234) | ≈ 3.8 | 0.208 / (0.335) | 0.228 / (0.166) | 0.385 / (0.416) | 32.4° / (35.4°) | 2.09 / 2.03 | As above: not a like-for-like test |
 
 Other published numbers for the nearest case: Surf Ranch slope 0.0693, H0/h0 = 0.6, flat at 0.371. There Feddersen et al.'s 2024 Basilisk DNS gives A_O/H² 0.352, W/L 0.300, A_J/H² 0.219, θ 29° [modelled], and the field lidar gives A/H² 0.2–0.42 and W/L 0.26–0.5 [measured]. My s = 1/15 level-11 result sits between them.
 
@@ -188,7 +190,26 @@ At native scale (h0 = 7 m), level 11:
 *Left: void length over width against Mead & Black's field range. Right: void length and height in metres, scaled so H_I = 2 m, and the open curl's crest length at Surf Ranch's along-crest speed against the lidar's 2.7–3.6 m. Circles are the open tube (void at least 20 % of its touchdown area; earlier slivers are dropped); squares are the enclosed cavity after touchdown. The dotted line is touchdown.*
 
 ### 4.4 The 1:19 wedge
-PENDING_1_19
+Same run, with the wedge set to 1:19 along the wave's path (S1 = 0.0526; the flat's edge moves to x = 32.61), level 11. It ran on 2 contended threads: vertical at 1750 s, touchdown at 2042 s, stopped at t = 23.3 after 2321 s. [measured]
+
+| At h0 = 7 m | Game wedge, 1:24.8 along the path | 1:19 along the path |
+|---|---|---|
+| Face vertical | 16 m before the flat's edge, 1.9 m deep | **3.6 m before the flat's edge, 1.44 m deep** |
+| Crest height before breaking | 3.2 m (H/h 1.70; fit 1.66) | 3.0 m (H/h 2.09; fit 2.03) |
+| Jet lands | On the wedge, 1.55 m deep | **On the reef flat, 1.25 m deep** |
+| T_open (vertical to touchdown) | 0.82 s | 0.85 s |
+| H_I | 2.8 m | 2.5 m |
+| Tube at touchdown: L × W, height | 2.0 × 0.80 m, 1.5 m | **2.3 × 0.90 m, 1.4 m** |
+| Tube area; A_O/H_I² (planar fit) | 0.99 m²; 0.125 (0.247) | 1.32 m²; **0.208** (0.335) |
+| Jet A_J/H_I² (fit) | 0.128 (0.098) | 0.228 (0.166) |
+| W/L; L/W (Mead & Black fit) | 0.407; 2.46 (2.43) | 0.385; 2.60 (2.06) |
+| Tilt θ_O (fit) | 48° (44°) | 32° (35°) |
+| Jet thickness in cells | ≈ 2.4 | ≈ 3.8 |
+
+- [measured] **The steeper wedge breaks later and closer to the ledge, lands the lip on the reef flat, and throws a tube 1.7× larger relative to its height, tilted 16° flatter.** That is closer to the "very steep/hollow" reef Mead describes.
+- [measured] Landmarks are clean in all 39 open-tube frames.
+- [inferred] Part of the difference may be resolution: this run's jet is better resolved (3.8 cells against 2.4). Both stay below the planar fits, whose shallow 0.05 flat makes the wave run further before it lands.
+- [inferred] **Which bed Padang should have is a design question for the Padang session and the owner:** today's 1:24.8 along the path, or 1:19 along the path, which means a wedge about 1.3× steeper across the crest line. Both are level-11 results; confirm at level 13 before building on either.
 
 ### 4.5 Limits of this first pass [inferred]
 - 2D: the cavity after touchdown is an idealised 2D air tube; in 3D it breaks up within about a wave period (round 2).
@@ -228,6 +249,7 @@ A frame counts as clean when:
 | s = 1/15, level 10 | 44 / 47 | 29 / 29 | 35 / 128 | 121 / 128 |
 | s = 1/30, level 11 | (no fine output) | 29 / 29 | 85 / 171 | 168 / 171 |
 | Padang, level 11 | 70 / 92 (76 %) | 36 / 39 (92 %) | 92 / 230 (40 %) | 229 / 230 |
+| Padang 1:19, level 11 (stopped at t = 23.3) | 76 / 99 (77 %) | 39 / 39 (100 %) | 27 / 35 | 32 / 35 |
 
 **Where it breaks:**
 1. **Before vertical,** the "lip" is the steepest point of a gently curved face. Its maximum is flat, so it jitters along the face by up to 0.35 h0 between frames. The shape is right, but the parameterisation along the curve jumps, and blending such frames could smear. A fix: define the pre-vertical lip by a fixed fraction of arc length between crest and toe [inferred].

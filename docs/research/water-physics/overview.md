@@ -10,6 +10,8 @@ The waves form well, but everything after the break sits on a surface that canno
 
 **Open for you (2026-09-29):** the biggest Reef swells can still blow the solver up, and the fix is an architecture choice: Solver stability.
 
+**Round 6 (2026-09-29):** our own Basilisk barrel profiles now run and match published shapes on a 1:15 slope. Six decisions are in [basilisk-profiles.md](basilisk-profiles.md).
+
 ## Why it doesn't read as a real surf wave
 
 Everything after the break is added beside a surface that cannot fold, and each piece is drawn on its own, so they never read as one wave.
