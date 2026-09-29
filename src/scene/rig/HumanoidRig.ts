@@ -599,7 +599,8 @@ export class HumanoidRig {
           const beat = Math.cos(2 * Math.PI * (RIG_DETAIL.kickRate * state.clock + (side === 'left' ? 0 : 0.5)));
           target.addScaledVector(this.facing, RIG_DETAIL.kick * beat);
         }
-        pole.copy(lying ? this.scratch.copy(boardUp).negate() : this.facing);
+        if (lying) this.lyingKnees(state, pole);
+        else pole.copy(this.facing);
       }
       solveTwoBone(hip, this.upperLeg, this.lowerLeg, target, pole, this.joints.knee[side], this.joints.ankle[side]);
       // The ball, where the flat foot meets the deck ahead of the ankle.
@@ -1135,6 +1136,22 @@ export class HumanoidRig {
     if (!(step > 0 && step < 0.5)) return;
     const breath = Math.min(1, Math.max(0, state.breath));
     this.crawlPhase = (this.crawlPhase + step * RIG_DETAIL.crawlRate * (1 + RIG_DETAIL.panic * (1 - breath))) % 1;
+  }
+
+  /**
+   * Lying, the knees' side: down toward the deck, and toward the side the feet's
+   * line turns (their line crossed with the deck's normal, as the standing chest
+   * faces): the toes' side while the feet stand in the stance, the nose's once
+   * they lie side by side. Lying down from standing (and popping up) the leg
+   * sweeps from under the body to behind it, and the deck's down alone lay along
+   * the standing leg at the switch: the knee turned to whichever side and swung
+   * back over as the leg straightened (up to 10 m/s). This stays 45° or more off
+   * the leg's every way.
+   */
+  private lyingKnees(state: RiderVisualState, out: Vector3): Vector3 {
+    const feet = this.scratch.subVectors(state.points[POINT.leftFoot], state.points[POINT.rightFoot]).cross(this.boardUp);
+    out.copy(this.boardUp).negate();
+    return feet.lengthSq() > 1e-8 ? out.add(feet.normalize()) : out;
   }
 
   /** Lying, the hand's point brought within the arm's reach smoothly (`armEase`): along the line from the shoulder. */
