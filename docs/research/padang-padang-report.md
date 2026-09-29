@@ -92,3 +92,23 @@ The new bed (952ec39):
 - a 320 m window, and the swells square to it.
 Phase matching gives V ≈ 12.7 m/s at the peak: α 33–35° geometric, 26.9° on today's meter.
 
+
+**The breaking age's fuse (PR #76).** On the new bed about 90 % of the reef's onsets inherited a neighbour's breaking age, and only 1–3 % broke on their own. Kennedy's age ran along the crests at about 60 m/s, so a wave's whole length broke within a second. The solver now carries the age only from behind the front face: the cell up the surface's slope and its two diagonals (FUNWAVE-TVD's direction, Celeris's stencil). Every spot's close-outs fell, and every spot's median peel speed roughly halved (`docs/research/breaking-age.md`). At Padang Padang one set then broke along its wedge at 10.6 m/s (design 11.6), the focus making the peak its biggest crest.
+
+**Measuring wave by wave** (`padangWaves`). The peel meter fits one line through every onset in its period window. On a slow peel along 130 m of reef, that window holds two waves' onsets, and the fit reads a close-out. The probe groups onsets into waves by t − x/8 m/s, fits each wave's line, and fits each half (x < 0, the peak; x ≥ 0, down the reef). A wave counts as clean when its fit's r² exceeds 0.8 and it peels toward +x. Geometric α takes the crest at breaking as 1.2 × √(g h_b) (Tissier et al. 2013, the advisor's lower bound).
+
+**The wedge at 1:19 along the path** (the owner, 2026-09-29; `docs/research/water-physics/basilisk-profiles.md`). `wedgeSlope` was applied across the crest line, so the swell climbed 1:24.8. It is now 1:15 across the line (1:14.6 as the swell arrives square, about 1:15.8 once refraction turns it). In Basilisk (level 11), 1:19 along the path breaks 3.6 m before the reef flat and lands the lip on it, with a tube 1.7 × larger relative to its height.
+
+**The channel.** On the 1:15 wedge, the down-reef half ran about half as fast again as the peak's. The +x channel, held at the knee's 12 m to the shore, runs its crests ahead and tilts the down-reef crests about 11° before they reach the wedge (the crest probe; the advisor's diagnosis). The Small swell (Hs 1.6 m, Tp 16 s, s = 150), 544 s of sea, one seed:
+
+| Bed | Clean waves | Median peel | Geometric α (median) | Clean waves at 30–40° | Peak half | Down-reef half |
+|---|---:|---:|---:|---:|---:|---:|
+| β 40°, the channel 12 m to the shore | 10 | 15.9 m/s | 26° | 2 | 15.2 m/s | 23.7 m/s |
+| β 40°, no channel (the bare ramp) | 21 | 10.7 m/s | 40° | 11 | 10.1 m/s | 10.9 m/s |
+| β 35°, no channel | 21 | 10.8 m/s | 40° | 12 | 10.6 m/s | 11.8 m/s |
+| β 35°, the channel deepened only inshore of z −138 | 22 | 11.3 m/s | 38° | 13 | 10.9 m/s | 12.1 m/s |
+
+- The channel, not the wedge's angle, sets the peel. With it gone or kept inshore, the two halves run at the same speed, which is what phase matching predicts.
+- β barely matters here: at 35° and at 40° the median wave is 40° geometric. Refraction over the 1:80 ramp turns the crests before they reach the wedge, so the crest line's angle is not the angle they meet it at.
+- The inshore channel keeps a deep lane beside the reef for paddling back out without tilting the crests offshore of it.
+- The Big swell (Hs 3 m, Tp 18 s) peels left on the 1:15 wedge even with the full channel: 13 clean waves, all toward +x, median 12.5 m/s (geometric α 46°), onsets in 3.1–5.7 m of water. The stability tests pass on the 1:15 wedge, all finite. The Big swell's direction test now takes most of the well-fitted estimates, not the last one.
