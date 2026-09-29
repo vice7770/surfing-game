@@ -29,6 +29,8 @@ interface Controls {
   hand?: boolean;
   /** A press for one step (the pop-up; standing, Enter lies the rider down). */
   popUp?: boolean;
+  /** Paddling while held, lying down. */
+  paddle?: boolean;
 }
 
 /** How the real rider reaches a stance of the map (`stanceMap.ts`). */
@@ -155,12 +157,12 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
     if (session) {
       if (recipe.separate !== undefined && Math.abs(time - recipe.separate) < STEP / 2 && rider.attached) session.separate('balance');
       // Lying down, towed as the wave would carry the board.
-      if (recipe.start === 'prone' && rider.attached && rider.phase !== 'standing') {
+      if (recipe.start === 'prone' && !controls.paddle && rider.attached && rider.phase !== 'standing') {
         board.velocity.z = recipe.speed;
         rider.velocity.z = recipe.speed;
       }
       session.step(STEP, water, {
-        paddle: false, popUp: controls.popUp === true, steer, trim: controls.trim, crouch: controls.crouch, compress: controls.compress, hand: controls.hand,
+        paddle: controls.paddle === true, popUp: controls.popUp === true, steer, trim: controls.trim, crouch: controls.crouch, compress: controls.compress, hand: controls.hand,
       });
     } else {
       rider.steer = steer;

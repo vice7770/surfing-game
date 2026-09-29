@@ -28,7 +28,7 @@ import { PhotoSky, type TimeOfDay } from '../scene/PhotoSky';
 import { ShadowRig, parseShadowLevel } from '../scene/ShadowRig';
 import { posturePoints } from '../scene/rig/posturePoints';
 import { POINT, createRiderVisualState, type RiderVisualState } from '../scene/rig/riderVisualState';
-import { StanceGauge, measureJoints, type StanceJoints } from '../scene/rig/stanceGauge';
+import { StanceGauge, measureJoints, measurePoints, type StanceJoints } from '../scene/rig/stanceGauge';
 import { STANCES } from '../scene/rig/stanceMap';
 import { MOMENT_STANCE, RIDING_MOMENTS, STANCE_RECIPES, drawnRecipe, drawnStance, type StanceRecipe } from './ridingPoses';
 import { figureAngles, figureLengths, figurePlan, referenceJoints } from './stanceFigure';
@@ -302,10 +302,25 @@ const FILM_RECIPES: Record<string, StanceRecipe> = {
     controls: [{ at: 0, crouch: 0.6 }, { at: 0.4, steer: 1 }, { at: 0.7, compress: 1 }, { at: 1.7, compress: 0, crouch: 0, steer: 0.3, trim: -0.5 }],
     seconds: 2.3,
   },
+  // Lying on flat water from rest, stroking: the board's roll, the stroke's rate and length (step 8's references).
+  paddling: { phase: 'prone', water: 'flat', start: 'prone', speed: 0, controls: [{ at: 0, paddle: true }], seconds: 6 },
   weave: { ...STANCE_RECIPES.trim, controls: [{ at: 0.3, trim: -1, steer: 1 }, { at: 1.1, steer: -1 }, { at: 1.9, steer: 1 }], seconds: 2.4 },
 };
 
-interface MotionFrame { time: number; label: string; yaw: number; board: { position: Vector3; quaternion: Quaternion }; bones: { position: Vector3; quaternion: Quaternion }[] }
+interface MotionFrame { time: number; label: string; yaw: number; readout: string; board: { position: Vector3; quaternion: Quaternion }; bones: { position: Vector3; quaternion: Quaternion }[] }
+
+/** `&readout`: the board's roll (+ toward the toes' rail) and, standing, the weight over the front foot (0 rear, 1 front). */
+function motionReadout(step: RiderVisualState): string {
+  const toes = STANCE_SIDE === 'regular' ? -1 : 1;
+  const side = new Vector3(toes, 0, 0).applyQuaternion(step.boardQuaternion);
+  const roll = (Math.asin(Math.max(-1, Math.min(1, side.y))) * 180) / Math.PI;
+  const parts = [`roll ${roll >= 0 ? '+' : ''}${roll.toFixed(0).padStart(3)}°`, `${step.speed.toFixed(1)} m/s`];
+  if (step.phase === 'standing') {
+    const weight = measurePoints(step, STANCE_SIDE).weight;
+    if (Number.isFinite(weight)) parts.push(`weight front ${(weight * 100).toFixed(0)}%`);
+  }
+  return parts.join('  ');
+}
 
 /**
  * The motion view: each recipe drawn as the game draws it (every step through the
@@ -340,7 +355,7 @@ async function playMotion(surfers: SkinnedSurfer[], ids: string[], skyName: stri
       last = start + step.clock - first;
       const nose = new Vector3(0, 0, 1).applyQuaternion(step.boardQuaternion);
       frames.push({
-        time: last, label: id, yaw: Math.atan2(nose.x, nose.z),
+        time: last, label: id, yaw: Math.atan2(nose.x, nose.z), readout: motionReadout(step),
         board: { position: step.boardPosition.clone(), quaternion: step.boardQuaternion.clone() },
         bones: bones.map((bone) => ({ position: bone.position.clone(), quaternion: bone.quaternion.clone() })),
       });
@@ -386,10 +401,28 @@ async function playMotion(surfers: SkinnedSurfer[], ids: string[], skyName: stri
     context.fillRect(16, 16, context.measureText(frame.label).width + 24, 42);
     context.fillStyle = '#ffffff';
     context.fillText(frame.label, 28, 46);
+    if (params.has('readout')) {
+      context.font = '500 20px ui-monospace, monospace';
+      const text = `${(frame.time).toFixed(2)} s  ${frame.readout}`;
+      context.fillStyle = 'rgba(13,17,23,0.55)';
+      context.fillRect(16, 66, context.measureText(text).width + 24, 34);
+      context.fillStyle = '#ffffff';
+      context.fillText(text, 28, 90);
+    }
   };
   status.textContent = `${skyName} · motion · ${SURFERS[STANCE_SURFER]} ${STANCE_SIDE} · ${segments.join(', ')}`;
   canvas.style.display = 'none';
   canvas.after(film);
+  // Offline filming (scripts/browser/motion-frames.mjs): any moment drawn on demand, for renderers too slow to film live.
+  Object.assign(window, {
+    motionLength: frames[frames.length - 1].time + 0.5,
+    motionAt: (seconds: number) => {
+      let index = 0;
+      while (index + 1 < frames.length && frames[index + 1].time <= seconds) index += 1;
+      show(index);
+      return film.toDataURL('image/jpeg', 0.92);
+    },
+  });
   // `&at=seconds`: that moment alone, a still for scripts/browser/sheet-shot.mjs.
   const at = params.get('at');
   if (at !== null) {
