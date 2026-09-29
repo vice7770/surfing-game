@@ -77,3 +77,6 @@ The pages below were opened, not just searched; the full notes tag every finding
 - [Shi et al., FUNWAVE-TVD report CACR-11-04 v2.1](https://www1.udel.edu/kirby/papers/shi-etal-cacr-11-04-version2.1.pdf): fully nonlinear equations on total depth, velocity recovered by the tridiagonal solve, the 0.8 switch, Froude cap 5–10
 - [DHI, MIKE 21 BW Scientific Documentation](https://manuals.mikepoweredbydhi.help/2017/Coast_and_Sea/MIKE21BW_Sci_Doc.pdf): the Madsen–Sørensen flux equations with roller breaking and a slot shoreline, with no switch
 - [Delestre et al. 2012](https://arxiv.org/abs/1206.4986): the hydrostatic reconstruction's thin-layer error slows flow on steep steps
+- [Tissier et al. 2013, Coastal Dynamics (GLOBEX)](https://hydralab.eu/uploads/TAdocuments/213_tissier_marion.pdf): individual surf-zone wave celerity; linear theory underestimates it; the bore model does best
+- [Scarfe et al. 2009, J. Coastal Res. review](https://bioone.org/journals/journal-of-coastal-research/volume-2009/issue-253/07-0958.1/Research-Based-Surfing-Literature-for-Coastal-Management-and-the-Science/10.2112/07-0958.1.full): the peel angle defined as a geometric angle (Walker & Palmer 1971)
+- Mead 2000, ch. 5 (Mead & Black 1999, Bingin): the ray-model experiments with and without platform, focus and rotated wedge

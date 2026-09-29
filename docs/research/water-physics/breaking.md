@@ -8,6 +8,7 @@ The solver's face angle is set by its breaking model, not by its grid. It is rig
 - **The face clamp:** a rise rate is a face slope times the wave's speed. So these thresholds allow about 27–33° at onset, then damp any face steeper than about 13–17° once breaking is under way. That is an inference from the constants, and it matches what I measured: the Reef face peaks near 27°, the Point near 21°.
 - **The shallow-water switch:** where the surface stands above 0.8 of the still depth, the solver drops its dispersive terms, so bores stay sharp (Tonelli & Petti 2009).
 - **The type switch:** at onset, each 1 m column either throws one lip (plunging) or nothing (spilling).
+- **The peel meter reads angles too fast.** It turns the break point's speed V into a peel angle with sin α = √(g·h\_b)/V (`Breaking.ts`). But the skill ladder (27° pro, 29° advanced) is made of angles measured on photos (Hutt 1997), and a real breaking crest outruns √(g·h): linear theory "generally underestimates" surf-zone celerity ([Tissier et al. 2013](https://hydralab.eu/uploads/TAdocuments/213_tissier_marion.pdf)). So reported angles run about 5–7° low: a meter 24° is about 30° on a photo.
 
 ## What real breaking does
 
@@ -25,6 +26,7 @@ The solver's face angle is set by its breaking model, not by its grid. It is rig
 3. **Make breaking a continuum.** The profile library runs from a small spilling curl to a heavy plunge. Spilling waves then get a crest that tumbles and a roller, not just foam.
 4. **Add a stop rule.** Where the bore's Froude number falls below about 1.3, thin the roller and let the wave reform.
 5. **Narrow the swell's spread at shallow tank edges, for realism rather than peel.** The game seeds its 5–8 m tank edges with s = 12–24. By refraction, real swell there is narrower than s = 100 ([Goda, Takayama & Suzuki 1978](https://icce-ojs-tamu.tdl.org/icce/article/download/3297/2965/14059)). Tested at the Point, narrower spread did not reduce close-outs (88 % at s = 12, 96 % at s = 150): peel needs a shaped bed. On a shaped reef it should let the break follow the reef edge; Padang Padang is testing s = 150.
+6. **Measure peel with the real crest speed.** Divide V into the solver's own measured crest speed at the breaking columns, the same tracking that gives the crest-speed trigger. Keep the skill thresholds as they are. Every spot's rating moves toward easier, so it is its own change (your call).
 
 **What you would see:**
 
