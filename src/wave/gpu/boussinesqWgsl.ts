@@ -1,4 +1,4 @@
-import { MADSEN_SORENSEN_B } from '../BoussinesqSolver';
+import { DRAINED_DEPTH, FROUDE_CAP, MADSEN_SORENSEN_B } from '../BoussinesqSolver';
 
 /**
  * WGSL for the stage 2 step on the GPU (plan P6). Every kernel mirrors the CPU
@@ -13,9 +13,9 @@ export const FIELD = {
   ZHS: 22, ZHN: 23, ZETAS: 24, ZETAN: 25, ZWS: 26, ZWN: 27, ZUS: 28, ZUN: 29,
   HALF: 30, SRCX: 31, SRCZ: 32, PREDX: 33, PREDZ: 34, STARTP: 35, STARTQ: 36,
   STRENGTH: 37, AGE: 38, NEXTSTRENGTH: 39, NEXTAGE: 40, NU: 41, VISCX: 42, VISCZ: 43, SHEAR: 44,
-  DDX: 45, DDZ: 46, WET: 47, TC: 48, TR: 49, WEIGHT: 50, RISE: 51, HOLD: 52,
+  DDX: 45, DDZ: 46, WET: 47, TC: 48, TR: 49, WEIGHT: 50, RISE: 51, HOLD: 52, DEPTH: 53, DEPTHX: 54, DEPTHZ: 55,
 } as const;
-export const FIELD_COUNT = 53;
+export const FIELD_COUNT = 56;
 
 /** Grid buffer layout: x centres (nx), then per row: z centre, dz, below, above, gap. */
 export const ROW_STRIDE = 5;
@@ -55,6 +55,9 @@ const BCOEF: f32 = ${f(B)};
 const DISPERSIVE_DEPTH: f32 = 0.05;
 const SWITCH_RATIO: f32 = 0.8;
 const BREAKING_DEPTH: f32 = 0.05;
+const DRAINED_DEPTH: f32 = ${f(DRAINED_DEPTH)};
+const FROUDE_CAP: f32 = ${f(FROUDE_CAP.froude)};
+const FROUDE_WET_DEPTH: f32 = ${f(FROUDE_CAP.wetDepth)};
 const MAX_EDDY: f32 = 0.3;
 
 fn at(field: u32, i: u32) -> f32 { return F[field * P.n + i]; }
@@ -196,13 +199,28 @@ fn wetAt(ix: i32, iz: i32) -> f32 {
   put(${FIELD.MASK}u, i, select(0.0, 1.0, dispersing && P.dispersive == 1u));
 }
 
+// K2b: the depth the dispersive terms see (BoussinesqSolver.dispersiveDepth): at most twice a dispersing cell's water.
+@compute @workgroup_size(64) fn depth(@builtin(global_invocation_id) id: vec3<u32>) {
+  let i = cellOf(id); if (i >= P.n) { return; }
+  let d = at(${FIELD.STILL}u, i);
+  put(${FIELD.DEPTH}u, i, select(d, min(d, DRAINED_DEPTH * at(${FIELD.H}u, i)), at(${FIELD.MASK}u, i) > 0.0));
+}
+
+// K2c: its slopes, as the still depth's.
+@compute @workgroup_size(64) fn slopes(@builtin(global_invocation_id) id: vec3<u32>) {
+  let i = cellOf(id); if (i >= P.n) { return; }
+  let ix = i % P.nx; let iz = i / P.nx;
+  put(${FIELD.DEPTHX}u, i, ddx(${FIELD.DEPTH}u, ix, iz, false));
+  put(${FIELD.DEPTHZ}u, i, ddz(${FIELD.DEPTH}u, ix, iz, false));
+}
+
 // K3: P̄ and Q̄ (BoussinesqSolver.modifiedFluxes).
 @compute @workgroup_size(64) fn modified(@builtin(global_invocation_id) id: vec3<u32>) {
   let i = cellOf(id); if (i >= P.n) { return; }
   let ix = i % P.nx; let iz = i / P.nx;
   let p = at(${FIELD.QX}u, i); let q = at(${FIELD.QZ}u, i);
   if (at(${FIELD.MASK}u, i) <= 0.0) { put(${FIELD.PBAR}u, i, p); put(${FIELD.QBAR}u, i, q); return; }
-  let d = at(${FIELD.STILL}u, i); let dx = at(${FIELD.DDX}u, i); let dz = at(${FIELD.DDZ}u, i);
+  let d = at(${FIELD.DEPTH}u, i); let dx = at(${FIELD.DEPTHX}u, i); let dz = at(${FIELD.DEPTHZ}u, i);
   let pxx = ddxx(${FIELD.QX}u, ix, iz, true);
   let px = ddx(${FIELD.QX}u, ix, iz, true);
   let qy = ddz(${FIELD.QZ}u, ix, iz, true);
@@ -352,7 +370,7 @@ fn wetAt(ix: i32, iz: i32) -> f32 {
   let i = cellOf(id); if (i >= P.n) { return; }
   let ix = i % P.nx; let iz = i / P.nx;
   if (at(${FIELD.MASK}u, i) <= 0.0) { put(${FIELD.SRCX}u, i, 0.0); put(${FIELD.SRCZ}u, i, 0.0); return; }
-  let d = at(${FIELD.STILL}u, i); let dx = at(${FIELD.DDX}u, i); let dz = at(${FIELD.DDZ}u, i);
+  let d = at(${FIELD.DEPTH}u, i); let dx = at(${FIELD.DEPTHX}u, i); let dz = at(${FIELD.DEPTHZ}u, i);
   let exx = etaXX(ix, iz);
   let ezz = ddzz(${FIELD.HALF}u, ix, iz, false);
   let exz = dxOfDz(${FIELD.HALF}u, ix, iz, false, false);
@@ -468,7 +486,7 @@ fn secondXAtZ(ix: u32, iz: i32) -> f32 {
   let ix = i % P.nx; let iz = i / P.nx;
   var a = 0.0; var b = 1.0; var c = 0.0; var r = at(${FIELD.PBAR}u, i);
   if (at(${FIELD.MASK}u, i) > 0.0) {
-    let d = at(${FIELD.STILL}u, i); let dx = at(${FIELD.DDX}u, i); let dz = at(${FIELD.DDZ}u, i);
+    let d = at(${FIELD.DEPTH}u, i); let dx = at(${FIELD.DEPTHX}u, i); let dz = at(${FIELD.DEPTHZ}u, i);
     let A = ALPHA * d * d / (P.dx * P.dx);
     let E = (d * dx / 3.0) / (2.0 * P.dx);
     a = -(A - E); b = 1.0 + 2.0 * A; c = -(A + E);
@@ -513,7 +531,7 @@ fn secondXAtZ(ix: u32, iz: i32) -> f32 {
   var a = 0.0; var b = 1.0; var c = 0.0; var r = at(${FIELD.QBAR}u, i);
   if (at(${FIELD.MASK}u, i) > 0.0) {
     let m = belowr(iz); let p = abover(iz); let s = m + p;
-    let d = at(${FIELD.STILL}u, i); let dx = at(${FIELD.DDX}u, i); let dz = at(${FIELD.DDZ}u, i);
+    let d = at(${FIELD.DEPTH}u, i); let dx = at(${FIELD.DEPTHX}u, i); let dz = at(${FIELD.DEPTHZ}u, i);
     let A = ALPHA * d * d; let E = d * dz / 3.0;
     a = -(A * (2.0 / (m * s)) + E * (-p / (m * s)));
     b = 1.0 - (A * (-2.0 / (m * p)) + E * ((p - m) / (p * m)));
@@ -565,6 +583,13 @@ fn secondXAtZ(ix: u32, iz: i32) -> f32 {
       let damping = 1.0 + (P.dt * P.g * P.manning * P.manning * speed) / (h * pow(h, 1.0 / 3.0));
       qx /= damping; qz /= damping;
     }
+    // FUNWAVE-TVD's Froude cap (BoussinesqSolver.capFroude): under ten wave speeds, from its 1 cm wet depth.
+    let limit = FROUDE_CAP * sqrt(P.g * h);
+    let speed = sqrt(qx * qx + qz * qz) / h;
+    if (h >= FROUDE_WET_DEPTH && speed > limit) {
+      qx *= limit / speed; qz *= limit / speed;
+      put(${FIELD.PREDX}u, i, 0.0); put(${FIELD.PREDZ}u, i, 0.0);
+    }
   } else {
     qx = 0.0; qz = 0.0;
     put(${FIELD.PREDX}u, i, 0.0); put(${FIELD.PREDZ}u, i, 0.0);
@@ -598,4 +623,4 @@ fn secondXAtZ(ix: u32, iz: i32) -> f32 {
 }
 
 /** Entry points in the order one substep runs them (the relaxation zone after, as on the CPU). */
-export const STEP_KERNELS = ['begin', 'mask', 'modified', 'predict', 'rates', 'sources', 'breaking', 'shear', 'viscous', 'update', 'rowTerms', 'rows', 'columnTerms', 'columns', 'finish', 'relax'] as const;
+export const STEP_KERNELS = ['begin', 'mask', 'depth', 'slopes', 'modified', 'predict', 'rates', 'sources', 'breaking', 'shear', 'viscous', 'update', 'rowTerms', 'rows', 'columnTerms', 'columns', 'finish', 'relax'] as const;

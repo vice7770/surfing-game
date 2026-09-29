@@ -24,14 +24,14 @@ const PLUNGE = { behind: 0.5, ahead: 1.5, hold: 5 } as const;
  * FUNWAVE-TVD's Froude cap (`capFroude`): the largest Froude number a wet cell keeps, the depth under which it is
  * left alone (FUNWAVE's wet depth, MinDepth), and the depth above which a capped cell counts as water, m.
  */
-const FROUDE_CAP = { froude: 10, wetDepth: 0.01, countDepth: 0.05 } as const;
+export const FROUDE_CAP = { froude: 10, wetDepth: 0.01, countDepth: 0.05 } as const;
 /**
  * The dispersive terms see at most this many times a cell's water depth (`dispersiveDepth`). They are written in
  * still depth d, and in water drained below d/2 (|η| > d/2, outside the weakly nonlinear terms' range) their operator
  * α d² was over four times too stiff for the water under it. The direction is fully nonlinear Boussinesq's (Kennedy
  * et al. 2001; FUNWAVE-TVD's reference level moving with the surface); the factor is this game's stability choice.
  */
-const DRAINED_DEPTH = 2;
+export const DRAINED_DEPTH = 2;
 
 /** Phase speed ω/k the Madsen–Sørensen equations give at depth d: ω² = g d k² (1 + B(kd)²)/(1 + α(kd)²). */
 export function madsenSorensenCelerity(omega: number, depth: number, g = GRAVITY): number {
