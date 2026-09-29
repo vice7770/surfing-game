@@ -8,6 +8,8 @@
  * report also gives the drift in the cells the reference holds in shallow water
  * this step (its mask off); `&hs=` and `&period=` choose the swell (the Reef's
  * Big: `?spot=reef&hs=3&period=17`).
+ * `?mode=lips` and `?mode=probes` hold the tiers' lips, tubes, whitewater and
+ * stability side by side (src/dev/tierParityPage.ts).
  */
 import { DataUtils, WebGLRenderer } from 'three';
 import { FftChop } from './scene/FftChop';
@@ -18,12 +20,22 @@ import { SURF_ZONE_STEP } from './wave/SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './wave/SurfZoneSimulation';
 import { createSurfZoneWorker } from './game/WorkerSurfZone';
 import { transferables } from './game/SurfZoneWorkerCore';
+import { lipParity, probeParity } from './dev/tierParityPage';
 
 const log = document.querySelector<HTMLPreElement>('#log')!;
 const lines: string[] = [];
+/** A line kept under the log, replaced as long runs progress. */
+let liveLine = '';
+const render = () => {
+  log.textContent = (liveLine ? [...lines, liveLine] : lines).join('\n');
+};
 const say = (line: string) => {
   lines.push(line);
-  log.textContent = lines.join('\n');
+  render();
+};
+const live = (text: string) => {
+  liveLine = text;
+  render();
 };
 
 function drift(reference: BoussinesqSolver, device: BoussinesqSolver): {
@@ -240,5 +252,11 @@ async function fine(): Promise<void> {
   device.dispose();
 }
 
-const mode = new URLSearchParams(location.search).get('mode');
-(mode === 'worker' ? throughput() : mode === 'chop' ? chop() : mode === 'fine' ? fine() : run()).catch((error: unknown) => say(`FAILED: ${error instanceof Error ? error.message : String(error)}`));
+const parameters = new URLSearchParams(location.search);
+const mode = parameters.get('mode');
+const checks: Record<string, () => Promise<void>> = {
+  worker: throughput, chop, fine,
+  lips: () => lipParity({ say, live }, parameters),
+  probes: () => probeParity({ say, live }, parameters),
+};
+(checks[mode ?? ''] ?? run)().catch((error: unknown) => say(`FAILED: ${error instanceof Error ? error.message : String(error)}`));

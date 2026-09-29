@@ -18,7 +18,7 @@ import { addPadSource } from './game/Bindings';
 import { Controls } from './game/Controls';
 import { SteamControllerDriver } from './game/steam/SteamControllerDriver';
 import { frameDue } from './game/frameLimit';
-import { ownSurferDetail, resolveGraphics, type ResolvedGraphics } from './game/Graphics';
+import { ownSurferDetail, PRESETS, resolveGraphics, withPreset, type ResolvedGraphics } from './game/Graphics';
 import { schoolPocketReflex, showsPocketReflex } from './game/pocketReflex';
 import type { StanceName } from './physics/riderPosture';
 import { SettingsStore, defaultSettings, type GameplaySettings } from './game/Settings';
@@ -78,11 +78,13 @@ const startRide = devFlag('physical') || demoMode !== null;
 const recordRequested = devFlag('record');
 /** `?waterSheet`: a dev tool renders fixed water shots, Classic beside Rich, under each sky (src/dev/waterSheet.ts; G8). */
 const waterSheetRequested = devFlag('waterSheet');
+/** `?waterSheet&compute=gpu` (or `auto`, and the same on `?record`): the sea steps in the worker, on the GPU as the game's does, even beside `inpage`. */
+const devToolOnDevice = (waterSheetRequested || recordRequested) && ['gpu', 'auto'].includes(devParam('compute') ?? '');
 /**
  * The surf zone runs in a Web Worker (plan §3.2, P4a); `?inpage`, or a browser
  * without workers, runs it on the main thread instead.
  */
-const inPage = typeof Worker === 'undefined' || devFlag('inpage');
+const inPage = typeof Worker === 'undefined' || (devFlag('inpage') && !devToolOnDevice);
 /** A surf zone with a rider the player controls, or none (the menu's waves, plan P8). */
 function surfZoneFactory(rider: boolean, stance: StanceName): SurfZoneHostFactory {
   // `?renderSpacing=0.5` draws the water on a finer grid, for close recordings (dev flag).
@@ -278,8 +280,9 @@ class SurfGame {
    */
   get recording() {
     return {
-      start: async (settings: PhysicalSettings) => {
-        await this.startPhysical(this.seed, settings);
+      /** `overrides` fix the sea (the water sheet's GPU tier takes the GPU tier's components whatever the graphics preset). */
+      start: async (settings: PhysicalSettings, overrides?: Partial<SurfZoneConfig>) => {
+        await this.startPhysical(this.seed, settings, overrides ? { overrides } : {});
         getElement<HTMLElement>('#loading').classList.add('is-hidden');
       },
       step: (input: { paddle: boolean; popUp: boolean; steer: number }) => this.physicalMode.advance(1, input),
@@ -1085,7 +1088,11 @@ if (recordRequested) void import('./dev/rideRecorder').then(({ recordRide }) => 
 if (waterSheetRequested) void import('./dev/waterSheet').then(({ renderWaterSheet }) => renderWaterSheet(game.recording));
 const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const settings = new SettingsStore(availableStorage(), defaultSettings(reducedMotion));
-const applyGraphics = () => game.applyGraphics(resolveGraphics(settings.value.graphics, settings.value.detected, window.devicePixelRatio));
+/** `?graphics=low|medium|high|ultra` (dev): films and sheets under a preset without touching the saved settings. */
+const graphicsPreset = Object.keys(PRESETS).find((preset) => preset === devParam('graphics')) as keyof typeof PRESETS | undefined;
+const applyGraphics = () => game.applyGraphics(resolveGraphics(
+  graphicsPreset ? withPreset(settings.value.graphics, graphicsPreset) : settings.value.graphics, settings.value.detected, window.devicePixelRatio,
+));
 applyGraphics();
 game.setSurfer(settings.value.surfer);
 game.setNameTags(settings.value.gameplay.nameTags);
