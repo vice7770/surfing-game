@@ -257,6 +257,11 @@ export class Autopilot {
     return this.seenFace !== 0 ? this.seenFace : Math.sign(view.peelDirection);
   }
 
+  /** The turn under way in S-turns, if any (the ride recorder's overlay). */
+  get currentTurn(): Turn | undefined {
+    return this.turn;
+  }
+
   /** S-turns: the turn the face calls for, held to its end, and the pump between them. */
   private turns(view: AutopilotView, heading: number, dt: number): Pick<RideInput, 'steer' | 'trim' | 'crouch' | 'compress'> {
     const { wave } = view.ride;

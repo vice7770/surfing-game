@@ -16,6 +16,7 @@ import { PerspectiveCamera, Vector3 } from 'three';
 import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
 import { SEA_COMPONENTS, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LIP_STRIDE } from '../wave/SurfZoneRunner';
+import type { RideInput } from '../physics/RideSession';
 import { Autopilot, autopilotView } from './Autopilot';
 import { advance, breathe } from './devStepping';
 
@@ -66,6 +67,12 @@ const log = (text: string) => post('/log', text);
 /** `&compute=gpu|auto`: the sea steps in the game's worker, on its GPU tier (main.ts leaves `inpage` for it); `cpu` in the page. */
 const COMPUTE = params.get('compute') === 'gpu' ? 'gpu' : params.get('compute') === 'auto' ? 'auto' : 'cpu';
 const COMPONENTS = Number(params.get('components')) || undefined;
+/** `&camera=beach`: the ride filmed from shoreward and ahead of the rider, as from the beach, instead of the game's camera. */
+const BEACH = params.get('camera') === 'beach';
+/** The beach camera's stand-off: shoreward of the board, ahead of it along the peel, and above the water, m. */
+const BEACH_SHOREWARD = Number(params.get('shore') ?? 16);
+const BEACH_AHEAD = Number(params.get('ahead') ?? 7);
+const BEACH_HEIGHT = 2.2;
 
 /** H.264, or VP9 where the browser has no H.264 encoder (Chromium on Linux): chosen once in `recordRide`. */
 const CODECS = { avc: 'avc1.640028', vp9: 'vp09.00.40.08' } as const;
@@ -134,6 +141,8 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
 
   let clip = new Clip();
   let previous = autopilot.state;
+  const beach = BEACH ? new BeachCamera() : undefined;
+  let peel = 1;
   let waited = 0;
   let after = 0;
   let simulated = 0;
@@ -144,7 +153,10 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
     let input = { paddle: false, popUp: false, steer: 0 };
     // Watch behind: the highest water within LOOK m seaward of the board.
     const view = autopilotView(host, hooks.mode.focus.z, settings.tide, LOOK);
-    if (view) input = autopilot.next(view, STEP);
+    if (view) {
+      input = autopilot.next(view, STEP);
+      if (view.peelDirection !== 0) peel = Math.sign(view.peelDirection);
+    }
     const { state } = autopilot;
     if (state === 'wait' && previous !== 'wait') {
       // Film only the last few seconds of waiting before a wave.
@@ -161,7 +173,7 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
       }
     }
     previous = state;
-    const label = labelFor(autopilot, riding?.speed ?? 0, input.popUp);
+    const label = labelFor(autopilot, riding?.speed ?? 0, input.popUp, (input as RideInput).compress ?? 0);
     if (state === 'done') {
       after += STEP;
       if (after > AFTER) {
@@ -184,7 +196,12 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
     simulated += STEP;
     step += 1;
     if (step % STEPS_PER_FRAME === 0) {
-      hooks.render(STEPS_PER_FRAME * STEP);
+      if (beach) {
+        const board = host.snapshot.board;
+        hooks.render(STEPS_PER_FRAME * STEP, beach.follow(board[0], board[1], board[2], peel, (x, z) => host.heightAt(x, z), STEPS_PER_FRAME * STEP));
+      } else {
+        hooks.render(STEPS_PER_FRAME * STEP);
+      }
       context.drawImage(hooks.canvas, 0, 0, WIDTH, HEIGHT);
       drawOverlay(context, spot, source, label, autopilot.attempts);
       await clip.add(composite);
@@ -195,13 +212,42 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
 }
 
 /** The overlay's line for what the autopilot is doing. */
-function labelFor(autopilot: Autopilot, speed: number, poppingUp: boolean): string {
+function labelFor(autopilot: Autopilot, speed: number, poppingUp: boolean, compress = 0): string {
   switch (autopilot.state) {
     case 'position': return 'PADDLING INTO POSITION';
     case 'wait': return 'WAITING FOR A WAVE';
     case 'go': return poppingUp ? 'POP-UP' : 'PADDLING';
-    case 'ride': return `RIDING ${(speed * 3.6).toFixed(0)} km/h · ${autopilot.rideTime.toFixed(1)} s`;
+    case 'ride': {
+      const turn = autopilot.currentTurn;
+      const move = turn === 'bottom' ? (compress > 0 ? ' · BOTTOM TURN · COMPRESS' : ' · BOTTOM TURN · RELEASE') : turn ? ` · ${turn.toUpperCase()} TURN` : '';
+      return `RIDING ${(speed * 3.6).toFixed(0)} km/h · ${autopilot.rideTime.toFixed(1)} s${move}`;
+    }
     case 'done': return autopilot.rideTime > 0 ? `RODE ${autopilot.rideTime.toFixed(1)} s · ${autopilot.outcome}` : (autopilot.outcome ?? '').toUpperCase();
+  }
+}
+
+/** A filmer on the beach: shoreward of the rider and ahead along the peel, panning and walking with them, eased. */
+class BeachCamera {
+  private readonly camera = new PerspectiveCamera(38, WIDTH / HEIGHT, 0.1, 3000);
+  private readonly aim = new Vector3();
+  private readonly stand = new Vector3();
+  private placed = false;
+
+  follow(x: number, y: number, z: number, peel: number, heightAt: (x: number, z: number) => number, dt: number): PerspectiveCamera {
+    const target = new Vector3(x, y + 0.7, z);
+    const at = new Vector3(x + peel * BEACH_AHEAD, 0, z + BEACH_SHOREWARD);
+    at.y = Math.max(heightAt(at.x, at.z), 0) + BEACH_HEIGHT;
+    if (!this.placed) {
+      this.aim.copy(target);
+      this.stand.copy(at);
+      this.placed = true;
+    }
+    // The pan keeps up within about 0.1 s; the filmer walks within about 1 s.
+    this.aim.lerp(target, 1 - Math.exp(-dt / 0.1));
+    this.stand.lerp(at, 1 - Math.exp(-dt / 1));
+    this.camera.position.copy(this.stand);
+    this.camera.lookAt(this.aim);
+    return this.camera;
   }
 }
 
