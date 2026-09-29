@@ -4,8 +4,9 @@
  * every ride is measured against the wave under it: speed over ground against
  * the crest's speed and the peel's required speed c / sin α, and where on the
  * face it rode. Each ride is also read by the ride analyzer (turns and how the
- * ride ended), and its turns are set beside Forsyth et al. 2024's. Writes
- * docs/research/ride-report.md.
+ * ride ended), and its turns are set beside Forsyth et al. 2024's. The physics'
+ * weight on the board is read every standing step, by manoeuvre (the riding-body
+ * plan, step 6). Writes docs/research/ride-report.md.
  *
  *   npm run report:ride -- --practice --seeds 2 --minutes 3
  *   npm run report:ride -- --practice --ghosts --minutes 5
@@ -13,7 +14,7 @@
  *   npm run report:ride -- --practice --ghosts --style turns
  */
 import { writeFileSync } from 'node:fs';
-import { Vector3 } from 'three';
+import { Quaternion, Vector3 } from 'three';
 import { Autopilot } from '../src/dev/Autopilot';
 import { DEFAULT_PHYSICAL_SETTINGS, swellFor } from '../src/game/PhysicalMode';
 import { withPocketReflex } from '../src/game/pocketReflex';
@@ -117,6 +118,41 @@ interface Bot {
   /** The analyzer's latest closed ride, and how long the rider has drifted since the autopilot ended its ride. */
   analysis?: RideReport;
   windDown: number;
+  /** Standing, the physics' weight at each step of the ride under way, the ride's start (as the analyzer's), and the last phase. */
+  weights: { t: number; weight: number; share: number; climb: number }[];
+  rideStart: number;
+  lastPhase: string;
+}
+
+/** The board's climb, m/s, past which a step outside a manoeuvre counts as climbing or descending the face. */
+const CLIMB = 0.3;
+/** The stance map's weight targets for each place a step is read (docs/research/stance-map.md). */
+const WEIGHT_TARGETS: Record<string, string> = {
+  level: '0.50–0.62 (trim)',
+  descending: '0.50–0.60 (a pump downhill)',
+  climbing: '0.40–0.50 (a pump uphill); 0.35–0.45 (extending off the bottom)',
+  'bottom turn': '0.60–0.75 (Compress, driving)',
+  'top turn': '0.35–0.45',
+  snap: '0.35–0.45 (the top turn\'s)',
+  cutback: '0.30–0.40',
+};
+const inverse = new Quaternion();
+const point = new Vector3();
+const [pelvis, front, rear] = [new Vector3(), new Vector3(), new Vector3()];
+/**
+ * The physics' weight on the board (the stance gauge's reading): its pelvis point
+ * between the rear foot (0) and the front foot (1) along the board.
+ */
+function physicsWeight(session: RideSession): number {
+  const { board } = session;
+  inverse.copy(board.orientation).invert();
+  const along = (index: number, out: Vector3) => out.copy(session.renderPoint(index, point)).sub(board.position).applyQuaternion(inverse);
+  const regular = session.rider.stance === 'regular';
+  along(0, pelvis);
+  along(regular ? 5 : 6, front);
+  along(regular ? 6 : 5, rear);
+  const span = front.z - rear.z;
+  return Math.abs(span) > 0.2 ? (pelvis.z - rear.z) / span : Number.NaN;
 }
 
 /** A spot's run: the rides of MIN_RIDE or more, and every closed ride's duration, share near the curl, and whether it lost the wave. */
@@ -128,6 +164,9 @@ interface SpotRun {
   durations: number[];
   curlShares: number[];
   lostWave: number;
+  /** The physics' weight at each standing step of the closed rides, by where it was read: its pelvis point's, and the feet's pressure's. */
+  weights: Map<string, number[]>;
+  shares: Map<string, number[]>;
 }
 
 function runSpot(spot: SpotName, seed: number): SpotRun {
@@ -160,6 +199,7 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
     session, own, home: new Vector3(runner.focus.x + along + (own ? 0 : shift), 0, runner.focus.z - 6),
     autopilot: new Autopilot({ rise: riseAt(spot), style, stall: false }), gauge: new WaveFrameGauge({ directionX: Math.sin(radians), directionZ: Math.cos(radians) }),
     trace: [], request: { paddle: false, popUp: false, steer: 0 }, retry: false, analyzer: new RideAnalyzer(), windDown: 0,
+    weights: [], rideStart: 0, lastPhase: 'prone',
   });
   const bots: Bot[] = [bot(runner.session!, true, 0)];
   for (const along of ghostAlongs) {
@@ -174,6 +214,8 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
   const durations: number[] = [];
   const curlShares: number[] = [];
   let lostWave = 0;
+  const weights = new Map<string, number[]>();
+  const shares = new Map<string, number[]>();
   let peelDirection = 0;
   let peelAngle = 0;
   let peelAge = Infinity;
@@ -204,6 +246,17 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
       const wave = b.gauge.update(b.own ? runner.water : ghostWater, body, velocity, SURF_ZONE_STEP, peelAngle);
       runner.water.sampleAt(body.x, body.y, body.z, here);
       left.set(1, 0, 0).applyQuaternion(board.orientation);
+      // The physics' weight, standing, from the ride's start as the analyzer marks it.
+      const phase = session.phase;
+      if (phase === 'standing' && b.lastPhase !== 'standing' && b.lastPhase !== 'fallen') {
+        b.weights = [];
+        b.rideStart = runner.simulation.seaTime;
+      }
+      if (phase === 'standing') {
+        const share = session.rider.contact.load > 0.1 ? session.rider.contact.frontShare : Number.NaN;
+        b.weights.push({ t: runner.simulation.seaTime, weight: physicsWeight(session), share, climb: velocity.y });
+      }
+      b.lastPhase = phase;
       b.analyzer.push({
         t: runner.simulation.seaTime, x: body.x, z: body.z, heading: session.heading, speed: Math.hypot(velocity.x, velocity.z),
         roll: Math.asin(Math.max(-1, Math.min(1, left.y))), load: session.rider.contact.load, phase: session.phase, wave,
@@ -216,6 +269,19 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
         durations.push(closed.duration);
         curlShares.push(closed.duration > 0 ? closed.curlTime / closed.duration : NaN);
         if (closed.end === 'lost the wave') lostWave += 1;
+        for (const sample of b.weights) {
+          const at = sample.t - b.rideStart;
+          if (at > closed.duration || !Number.isFinite(sample.weight)) continue;
+          const turn = closed.maneuvers.find((m) => at >= m.start && at <= m.end);
+          const where = turn ? turn.kind : sample.climb > CLIMB ? 'climbing' : sample.climb < -CLIMB ? 'descending' : 'level';
+          if (!weights.has(where)) weights.set(where, []);
+          weights.get(where)!.push(sample.weight);
+          if (Number.isFinite(sample.share)) {
+            if (!shares.has(where)) shares.set(where, []);
+            shares.get(where)!.push(sample.share);
+          }
+        }
+        b.weights = [];
         // The analyzer's end is the ride's end (a fall the autopilot names itself, with its cause).
         if (closed.end !== 'fell') autopilot.finish(closed.end);
       }
@@ -277,7 +343,7 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
       }
     }
   }
-  return { rides, attempts: bots.reduce((sum, b) => sum + b.autopilot.attempts, 0), stands, outcomes, durations, curlShares, lostWave };
+  return { rides, attempts: bots.reduce((sum, b) => sum + b.autopilot.attempts, 0), stands, outcomes, durations, curlShares, lostWave, weights, shares };
 }
 
 /** Forsyth et al. 2024 (the survey's §8): accomplished surfers' turns, and the radius and lateral load they imply. */
@@ -331,6 +397,8 @@ for (const spot of spots) {
   const durations: number[] = [];
   const shares: number[] = [];
   let lostWave = 0;
+  const weights = new Map<string, number[]>();
+  const feetShares = new Map<string, number[]>();
   for (let seed = 1; seed <= seedCount; seed += 1) {
     const run = runSpot(spot, seed);
     all.push(...run.rides);
@@ -339,11 +407,19 @@ for (const spot of spots) {
     durations.push(...run.durations);
     shares.push(...run.curlShares.filter(Number.isFinite));
     lostWave += run.lostWave;
+    for (const [where, values] of run.weights) weights.set(where, [...(weights.get(where) ?? []), ...values]);
+    for (const [where, values] of run.shares) feetShares.set(where, [...(feetShares.get(where) ?? []), ...values]);
     for (const [outcome, count] of run.outcomes) outcomes.set(outcome, (outcomes.get(outcome) ?? 0) + count);
     console.log(`${spot} seed ${seed}: ${run.attempts} attempts, ${run.stands} stands, ${run.rides.length} rides ≥ ${MIN_RIDE} s; ${[...run.outcomes].map(([o, c]) => `${o} ×${c}`).join(', ')}`);
   }
   summary.push(`| ${spot} | ${attempts} | ${stands} | ${all.length} | ${fixed(quantile(durations, 0.5))} | ${fixed(durations.length ? Math.max(...durations) : NaN)} | ${lostWave} | ${fixed(mean(all.map((r) => r.meanSpeed)))} | ${fixed(all.length ? Math.max(...all.map((r) => r.topSpeed)) : NaN)} | ${shares.length ? `${fixed(mean(shares) * 100, 0)} %` : '—'} | ${fixed(mean(all.map((r) => r.faceHeight)), 2)} | ${fixed(mean(all.map((r) => r.peel)), 0)} | ${fixed(mean(all.map((r) => r.crestSpeed)))} | ${fixed(mean(all.map((r) => r.faceFraction)), 2)} | ${fixed(mean(all.map((r) => r.ahead)))} |`);
-  sections.push(`### ${spot}\n\n${turnTables(all)}\n\nAttempt outcomes: ${[...outcomes].map(([o, c]) => `${o} ×${c}`).join(', ') || 'none'}.\n\n| Ride s | Distance m | Mean / top over ground m/s | Mean / top old label m/s | Crest c m/s | Required m/s | Over ground ÷ required | > 1.3 × required | Face fraction | Ahead of crest m (mean / p90) | Outcome | Turns | Score |\n|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|\n${all.map((r) => `| ${fixed(r.seconds)} | ${fixed(r.distance, 0)} | ${fixed(r.meanSpeed)} / ${fixed(r.topSpeed)} | ${fixed(r.meanLabel)} / ${fixed(r.topLabel)} | ${fixed(r.crestSpeed)} | ${fixed(r.required)} | ${fixed(r.ratio, 2)} | ${fixed(r.fastShare * 100, 0)} % | ${fixed(r.faceFraction, 2)} | ${fixed(r.ahead)} / ${fixed(r.aheadP90)} | ${r.outcome} | ${r.analysis ? r.analysis.maneuvers.length : '—'} | ${r.analysis ? fixed(scoreRide(r.analysis).score) : '—'} |`).join('\n') || '| — | | | | | | | | | | no ride | | |'}`);
+  const weightRows = Object.keys(WEIGHT_TARGETS).map((where) => {
+    const values = weights.get(where) ?? [];
+    const feet = feetShares.get(where) ?? [];
+    return `| ${where} | ${fixed(values.length * SURF_ZONE_STEP)} | ${fixed(mean(values), 2)} | ${fixed(quantile(values, 0.1), 2)}–${fixed(quantile(values, 0.9), 2)} | ${fixed(mean(feet), 2)} | ${fixed(quantile(feet, 0.1), 2)}–${fixed(quantile(feet, 0.9), 2)} | ${WEIGHT_TARGETS[where]} |`;
+  });
+  const weightTable = `The physics' weight on the board (the riding-body plan, step 6), every standing step of the closed rides, by the analyzer's manoeuvres and, outside them, by the board's climb (past ±${CLIMB} m/s), beside the stance map's targets: its pelvis point between the rear foot (0) and the front foot (1), as the stance map reads it, and the feet's own pressure there (the contact's centre of pressure, the share on the front foot):\n\n| Where | Seconds | Pelvis mean | Pelvis p10–p90 | Feet's pressure mean | Feet's p10–p90 | The map's target |\n|---|---:|---:|---:|---:|---:|---|\n${weightRows.join('\n')}`;
+  sections.push(`### ${spot}\n\n${turnTables(all)}\n\n${weightTable}\n\nAttempt outcomes: ${[...outcomes].map(([o, c]) => `${o} ×${c}`).join(', ') || 'none'}.\n\n| Ride s | Distance m | Mean / top over ground m/s | Mean / top old label m/s | Crest c m/s | Required m/s | Over ground ÷ required | > 1.3 × required | Face fraction | Ahead of crest m (mean / p90) | Outcome | Turns | Score |\n|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|\n${all.map((r) => `| ${fixed(r.seconds)} | ${fixed(r.distance, 0)} | ${fixed(r.meanSpeed)} / ${fixed(r.topSpeed)} | ${fixed(r.meanLabel)} / ${fixed(r.topLabel)} | ${fixed(r.crestSpeed)} | ${fixed(r.required)} | ${fixed(r.ratio, 2)} | ${fixed(r.fastShare * 100, 0)} % | ${fixed(r.faceFraction, 2)} | ${fixed(r.ahead)} / ${fixed(r.aheadP90)} | ${r.outcome} | ${r.analysis ? r.analysis.maneuvers.length : '—'} | ${r.analysis ? fixed(scoreRide(r.analysis).score) : '—'} |`).join('\n') || '| — | | | | | | | | | | no ride | | |'}`);
 }
 
 const report = `# Ride report

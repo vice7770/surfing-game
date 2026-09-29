@@ -1,13 +1,19 @@
 import { Quaternion, Vector3 } from 'three';
 import { SnapshotTrack } from '../game/snapshotTrack';
+import { INTERPOLATION_DELAY, RemoteSurfers, createRemoteState } from '../net/RemoteSurfers';
+import { OwnPoseTracker } from '../net/ownPose';
+import { POSE_BYTES, createPose, encodeBundle, encodePose } from '../net/poseCodec';
+import { POSE_HZ } from '../net/protocol';
 import { PlaneWater } from '../physics/PlaneWater';
+import type { WaterSample } from '../physics/SurfWater';
 import { RideSession, type RideInput, type RiderPlacement } from '../physics/RideSession';
 import type { SurfWater } from '../physics/SurfWater';
 import { HumanoidRig } from '../scene/rig/HumanoidRig';
+import { remoteBoardPose, remoteRiderState } from '../scene/RemoteSurferViews';
 import { PosedBody, type PosedBodyOptions } from '../scene/rig/posedBody';
 import { BONES, type Side } from '../scene/rig/humanoidBones';
 import { RiderMotion } from '../scene/rig/riderMotion';
-import { createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
+import { POINT, createRiderVisualState, readRiderSnapshot } from '../scene/rig/riderVisualState';
 import { createTestHumanoid } from '../scene/rig/testHumanoid';
 import { RIDER_SNAPSHOT, writeRiderSnapshot } from '../wave/SurfZoneRunner';
 
@@ -40,16 +46,27 @@ export interface FilmFrame {
   joints: Vector3[];
   /** The drawn joints relative to the drawn hips, in the world's axes, m. */
   limbs: Vector3[];
-  /** The drawn hips and board in the world, m. */
+  /** The drawn hips and board in the world, m, and the drawn board's orientation. */
   hips: Vector3;
   board: Vector3;
+  boardTurn: Quaternion;
   /** The measured bones' world rotations relative to the drawn board, and in the world. */
   bones: Quaternion[];
   worldBones: Quaternion[];
   /** The drawn chest's roll across the board's heading, rad, and the physics' own (its torso point over its pelvis). */
   chestRoll: number;
   physicsRoll: number;
+  /** The drawn hips and the physics' pelvis point, in the board's frame, m. */
+  hipsOnBoard: Vector3;
+  physicsPelvis: Vector3;
+  /** The physics' balance reserve (the balance meter's: 1 at ease, 0 letting go; NaN once detached), and its hand points about its torso point on the board, m (step 5). */
+  balance: number;
+  physicsHands: Vector3[];
 }
+
+/** Where the film's joints (`FilmFrame.joints`, `limbs`) keep the shoulders, the hands and the head; `worldBones` the chest (1) and the head (2). */
+export const FILM_JOINT = { shoulder: { left: 3, right: 9 }, hand: { left: 5, right: 11 }, head: 12 } as const;
+const WORLD_BONE = { chest: 1, head: 2 } as const;
 
 export interface BodyFilm {
   /** Display rate, Hz. */
@@ -245,7 +262,7 @@ export function drawnLag(film: BodyFilm, most = 0.3): number {
 
 export interface FilmScenario {
   name: string;
-  water: 'flat' | 'face';
+  water: 'flat' | 'face' | 'chop';
   placement: RiderPlacement;
   seconds: number;
   /** The input at `time` s; it may also act on the session (a tow, a separation). */
@@ -255,6 +272,218 @@ export interface FilmScenario {
 const FACE = (15 * Math.PI) / 180;
 /** True in the one step nearest `at` s: a key pressed for a step. */
 const once = (time: number, at: number) => Math.abs(time - at) < STEP / 2;
+
+/** The frames riding (not fallen, not at a switch). */
+const riding = (film: BodyFilm) => film.frames.filter((frame) => !frame.fallen && !frame.switched);
+
+/**
+ * The RMS of a measured bone's tilting speed in the world, rad/s, between riding
+ * frames: how fast its long axis (its local y) turns, leaving out its turn about
+ * that axis (a head turning to look).
+ */
+function tiltingRms(film: BodyFilm, bone: number): number {
+  const axis = (q: Quaternion) => new Vector3(0, 1, 0).applyQuaternion(q);
+  let sum = 0;
+  let count = 0;
+  for (let i = 1; i < film.frames.length; i += 1) {
+    const [a, b] = [film.frames[i - 1], film.frames[i]];
+    if (a.fallen || b.fallen || b.switched) continue;
+    sum += (axis(a.worldBones[bone]).angleTo(axis(b.worldBones[bone])) * film.rate) ** 2;
+    count += 1;
+  }
+  return count ? Math.sqrt(sum / count) : 0;
+}
+
+/**
+ * How much of the chest's tilting reaches the head (step 4): the RMS of the
+ * head's tilting speed in the world over the chest's; 1 when the head rides
+ * with the chest, under 1 when it holds steadier (Pozzo et al. 1990: the head's
+ * pitch held near the horizontal while the body moves). Looking about (yaw) is
+ * left out.
+ */
+export function headSteadiness(film: BodyFilm): number {
+  const chest = tiltingRms(film, WORLD_BONE.chest);
+  return chest > 1e-12 ? tiltingRms(film, WORLD_BONE.head) / chest : 0;
+}
+
+/** A cycle's rate, per second: the rising crossings of `values` over their mean, from the first to the last (between frames). */
+function cycleRate(values: readonly number[], rate: number): number {
+  if (values.length < 2) return 0;
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  const crossings: number[] = [];
+  for (let i = 1; i < values.length; i += 1) {
+    if (values[i - 1] < mean && values[i] >= mean) crossings.push(i - 1 + (mean - values[i - 1]) / (values[i] - values[i - 1]));
+  }
+  return crossings.length < 2 ? 0 : ((crossings.length - 1) * rate) / (crossings[crossings.length - 1] - crossings[0]);
+}
+
+/**
+ * The paddler's stroke (step 8): the drawn hand's path on the board (its
+ * extent along it, across it and up and down, m) and its strokes a minute,
+ * lying down. Nessler et al. 2015 measure the hand's path; Nessler et al. 2019
+ * the strokes a minute per arm.
+ */
+export function paddleStroke(film: BodyFilm, side: Side): { along: number; across: number; vertical: number; perMinute: number } {
+  const hands = film.frames.filter((frame) => frame.phase === 'prone').map((frame) => frame.joints[FILM_JOINT.hand[side]]);
+  const extent = (axis: 'x' | 'y' | 'z') => (hands.length ? Math.max(...hands.map((h) => h[axis])) - Math.min(...hands.map((h) => h[axis])) : 0);
+  return { along: extent('z'), across: extent('x'), vertical: extent('y'), perMinute: 60 * cycleRate(hands.map((h) => h.z), film.rate) };
+}
+
+/**
+ * The drawn board's motion under a paddler (step 8), degrees: its mean pitch
+ * (nose up) and its mean roll range over each `cycle` s (one arm's stroke).
+ * Nessler et al. 2019 measure both on a short board in a flume.
+ */
+export function boardMotion(film: BodyFilm, cycle: number): { pitch: number; roll: number } {
+  const forward = new Vector3();
+  const side = new Vector3();
+  const pitch: number[] = [];
+  const roll: number[] = [];
+  for (const frame of film.frames) {
+    forward.set(0, 0, 1).applyQuaternion(frame.boardTurn);
+    side.set(1, 0, 0).applyQuaternion(frame.boardTurn);
+    pitch.push((Math.asin(Math.max(-1, Math.min(1, forward.y))) * 180) / Math.PI);
+    roll.push((Math.asin(Math.max(-1, Math.min(1, side.y))) * 180) / Math.PI);
+  }
+  const span = Math.max(1, Math.round(cycle * film.rate));
+  const ranges: number[] = [];
+  for (let from = 0; from + span <= roll.length; from += span) {
+    const window = roll.slice(from, from + span);
+    ranges.push(Math.max(...window) - Math.min(...window));
+  }
+  const mean = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0);
+  return { pitch: mean(pitch), roll: mean(ranges) };
+}
+
+/**
+ * The swimmer's roll (step 8), degrees, per frame: how far the drawn chest
+ * faces away from straight down about the body's long axis (its pitch left
+ * out), positive with the left shoulder up. The chest faces the shoulders' line
+ * (right to left) crossed with the spine (hips to head).
+ */
+export function swimRolls(film: BodyFilm): number[] {
+  const across = new Vector3();
+  const spine = new Vector3();
+  const facing = new Vector3();
+  const down = new Vector3();
+  const turn = new Vector3();
+  return film.frames.map((frame) => {
+    across.subVectors(frame.limbs[FILM_JOINT.shoulder.left], frame.limbs[FILM_JOINT.shoulder.right]);
+    spine.copy(frame.limbs[FILM_JOINT.head]).normalize();
+    facing.crossVectors(across, spine);
+    facing.addScaledVector(spine, -facing.dot(spine));
+    down.set(0, -1, 0).addScaledVector(spine, spine.y);
+    // Signed about the spine, from down to the facing: turning the chest toward the right, the left shoulder up, is positive.
+    return (Math.atan2(turn.crossVectors(down, facing).dot(spine), down.dot(facing)) * 180) / Math.PI;
+  });
+}
+
+/** The swimmer's roll (step 8): its peak each way (positive, the left shoulder up) and its mean, degrees. */
+export function swimRoll(film: BodyFilm): { left: number; right: number; mean: number } {
+  const rolls = swimRolls(film);
+  return {
+    left: rolls.length ? Math.max(...rolls) : 0,
+    right: rolls.length ? -Math.min(...rolls) : 0,
+    mean: rolls.length ? rolls.reduce((a, b) => a + b, 0) / rolls.length : 0,
+  };
+}
+
+/** The swimmer's arm cycles a second (step 8): the drawn hand's height about its shoulder. */
+export function crawlRate(film: BodyFilm, side: Side): number {
+  return cycleRate(film.frames.map((frame) => frame.limbs[FILM_JOINT.hand[side]].y - frame.limbs[FILM_JOINT.shoulder[side]].y), film.rate);
+}
+
+/**
+ * How far a hand swings about its shoulder (step 4), m: the RMS of its place
+ * relative to the shoulder, on the board, less its running mean over `window` s:
+ * 0 for an arm held to its cue, however the cue moves slowly.
+ */
+export function handSwing(film: BodyFilm, side: Side, window = 1): number {
+  const offsets = riding(film).map((frame) => frame.joints[FILM_JOINT.hand[side]].clone().sub(frame.joints[FILM_JOINT.shoulder[side]]));
+  const half = Math.round((window * film.rate) / 2);
+  let sum = 0;
+  offsets.forEach((offset, i) => {
+    const mean = new Vector3();
+    const from = Math.max(0, i - half);
+    const to = Math.min(offsets.length - 1, i + half);
+    for (let j = from; j <= to; j += 1) mean.add(offsets[j]);
+    sum += offset.clone().sub(mean.divideScalar(to - from + 1)).lengthSq();
+  });
+  return offsets.length ? Math.sqrt(sum / offsets.length) : 0;
+}
+
+/**
+ * How the drawn hips follow the physics' leg (step 4): the correlation of their
+ * heights on the deck while standing from `from` s (past the stance's blend-in),
+ * 1 following it, 0 when the drawn hips hold still.
+ */
+export function kneeGive(film: BodyFilm, from = 0): number {
+  const standing = riding(film).filter((frame) => frame.phase === 'standing' && frame.time >= from);
+  const drawn = standing.map((frame) => frame.hipsOnBoard.y);
+  const physics = standing.map((frame) => frame.physicsPelvis.y);
+  const mean = (values: number[]) => values.reduce((a, b) => a + b, 0) / values.length;
+  const [dm, pm] = [mean(drawn), mean(physics)];
+  let covariance = 0;
+  let dv = 0;
+  let pv = 0;
+  drawn.forEach((d, i) => {
+    covariance += (d - dm) * (physics[i] - pm);
+    dv += (d - dm) ** 2;
+    pv += (physics[i] - pm) ** 2;
+  });
+  return dv > 1e-12 && pv > 1e-12 ? covariance / Math.sqrt(dv * pv) : 0;
+}
+
+/** The head's rise and fall about the hips on the board between `low` and `high` Hz (breathing's band, step 4), RMS, m. */
+export function breathing(film: BodyFilm, low = 0.15, high = 1): number {
+  const frames = riding(film);
+  const head = frames.map((frame) => frame.joints[FILM_JOINT.head].clone().sub(frame.hipsOnBoard));
+  const band = (axis: 'x' | 'y' | 'z') => bandRms(head.map((v) => v[axis]), film.rate, low, high);
+  return Math.hypot(band('x'), band('y'), band('z'));
+}
+
+/**
+ * The balance cue (step 5): how the drawn hands' height about their shoulders
+ * (in the world, the mean of the two) follows the physics' alarm (1 − its
+ * balance reserve) over the standing frames: the regression's slope, m per full
+ * alarm, and its correlation. The cue raises the arms toward outstretched; their
+ * height follows the elevation, where their span flattens near horizontal.
+ */
+export function balanceCue(film: BodyFilm): { slope: number; correlation: number } {
+  const frames = riding(film).filter((frame) => frame.phase === 'standing' && Number.isFinite(frame.balance));
+  const alarm = frames.map((frame) => 1 - frame.balance);
+  const spread = frames.map((frame) => (['left', 'right'] as const).reduce(
+    (sum, side) => sum + frame.limbs[FILM_JOINT.hand[side]].y - frame.limbs[FILM_JOINT.shoulder[side]].y, 0,
+  ) / 2);
+  const mean = (values: number[]) => values.reduce((a, b) => a + b, 0) / values.length;
+  const [am, sm] = [mean(alarm), mean(spread)];
+  let covariance = 0;
+  let av = 0;
+  let sv = 0;
+  alarm.forEach((a, i) => {
+    covariance += (a - am) * (spread[i] - sm);
+    av += (a - am) ** 2;
+    sv += (spread[i] - sm) ** 2;
+  });
+  return { slope: av > 1e-12 ? covariance / av : 0, correlation: av > 1e-12 && sv > 1e-12 ? covariance / Math.sqrt(av * sv) : 0 };
+}
+
+/** The film's chop (step 4): bumps CHOP.height high every CHOP.length m along z, with their slope. A test surface, not a sea state. */
+const CHOP = { height: 0.05, length: 4 };
+export class ChopWater extends PlaneWater {
+  surfaceAt(_x: number, z: number): number {
+    return CHOP.height * Math.sin((2 * Math.PI * z) / CHOP.length);
+  }
+
+  sampleAt(x: number, y: number, z: number, out: WaterSample): WaterSample {
+    super.sampleAt(x, y, z, out);
+    const k = (2 * Math.PI) / CHOP.length;
+    const slopeZ = CHOP.height * k * Math.cos(k * z);
+    const norm = Math.hypot(1, slopeZ);
+    Object.assign(out, { slopeX: 0, slopeZ, normalX: 0, normalY: 1 / norm, normalZ: -slopeZ / norm });
+    return out;
+  }
+}
 
 /** The film's scenarios: every switch of the riding body, and its steady riding. */
 export const FILM_SCENARIOS: readonly FilmScenario[] = [
@@ -306,6 +535,31 @@ export const FILM_SCENARIOS: readonly FilmScenario[] = [
       return {};
     },
   },
+  // Step 4's secondary motion: three pump pulses; straight over chop; paddling for 20 s, then gliding still.
+  {
+    name: 'pumping', water: 'flat', seconds: 3, placement: { x: 0, z: 0, heading: 0, speed: 8, phase: 'standing' },
+    input: (time) => ({ crouch: time >= 0.4 && time < 2.8 && Math.floor(time / 0.4) % 2 === 1 ? 1 : 0 }),
+  },
+  {
+    name: 'pumping into a fall', water: 'flat', seconds: 2.5, placement: { x: 0, z: 0, heading: 0, speed: 8, phase: 'standing' },
+    input(time, session) {
+      if (once(time, 1.3) && session.rider.attached) session.separate('balance');
+      return { crouch: time >= 0.4 && Math.floor(time / 0.4) % 2 === 1 ? 1 : 0 };
+    },
+  },
+  { name: 'chop', water: 'chop', seconds: 2.5, placement: { x: 0, z: 0, heading: 0, speed: 8, phase: 'standing' }, input: () => ({}) },
+  {
+    name: 'paddle then glide', water: 'flat', seconds: 30, placement: { x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' },
+    input: (time) => ({ paddle: time < 20 }),
+  },
+  // Step 8: off the board lying down, then swimming in calm water.
+  {
+    name: 'swimming', water: 'flat', seconds: 12, placement: { x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' },
+    input(time, session) {
+      if (once(time, 0.5) && session.rider.attached) session.separate('balance');
+      return { paddle: time > 1 };
+    },
+  },
 ];
 
 /** One delivered snapshot: the sea time and the page's arrays. */
@@ -313,6 +567,12 @@ export interface FilmSnapshot {
   seaTime: number;
   rider: Float64Array;
   board: Float64Array;
+}
+
+/** What a drawer may read of the film: the water's surface (another player's board is floated on it), and whether the rider paddles. */
+export interface FilmContext {
+  surfaceAt(x: number, z: number): number;
+  paddling(): boolean;
 }
 
 /** The page's drawing of the rider from delivered snapshots, one display frame at a time. */
@@ -329,6 +589,48 @@ export function latestDrawer(): FilmDrawer {
   return {
     deliver(snapshot) { latest = snapshot; },
     frame: () => latest && { rider: latest.rider, board: latest.board, time: latest.seaTime },
+  };
+}
+
+/**
+ * Another player's surfer (step 7): the snapshots sent as the game sends its own
+ * pose (`OwnPoseTracker`, every 1/`POSE_HZ` s of sea time), through the pose
+ * codec (the points in millimetres) and the real `RemoteSurfers`, sampled
+ * `INTERPOLATION_DELAY` in the past on the room's clock, and rebuilt by
+ * `RemoteSurferViews`' own code on the same water.
+ */
+export function remoteDrawer(context: FilmContext): FilmDrawer {
+  const id = 1;
+  const remotes = new RemoteSurfers();
+  remotes.join({ id, name: 'film', look: { body: 'surfer1', outfit: 'fullsuit', color: 'blue', board: 'classic' } });
+  const tracker = new OwnPoseTracker();
+  const pose = createPose();
+  const bytes = new Uint8Array(POSE_BYTES);
+  const remote = createRemoteState();
+  const drawn = createRiderVisualState();
+  const rider = new Float64Array(RIDER_SNAPSHOT.length);
+  const board = new Float64Array(8);
+  let nextSend = Number.NEGATIVE_INFINITY;
+  let clock = Number.NaN;
+  return {
+    deliver(snapshot) {
+      if (Number.isNaN(clock)) clock = snapshot.seaTime;
+      if (snapshot.seaTime + 1e-9 < nextSend) return;
+      nextSend = snapshot.seaTime + 1 / POSE_HZ;
+      tracker.write(snapshot, context.surfaceAt, snapshot.seaTime, context.paddling(), pose);
+      encodePose(pose, new DataView(bytes.buffer), 0);
+      const bundle = encodeBundle([{ id, pose: bytes }]);
+      remotes.receiveBundle(bundle.buffer.slice(bundle.byteOffset, bundle.byteOffset + bundle.byteLength) as ArrayBuffer, 0, []);
+    },
+    frame(dt) {
+      if (Number.isNaN(clock)) return undefined;
+      clock += dt;
+      const time = clock - INTERPOLATION_DELAY;
+      if (!remotes.sample(id, time, remote) || !remote.present) return undefined;
+      remoteBoardPose(remote, context.surfaceAt, board);
+      remoteRiderState(remote, board, rider, drawn);
+      return { rider, board, time };
+    },
   };
 }
 
@@ -370,7 +672,7 @@ export interface FilmOptions {
   rate: number;
   /** Physics steps per delivered snapshot: 1, or 3 for a worker whose replies arrive late and batched. */
   delivery?: number;
-  drawer?: () => FilmDrawer;
+  drawer?: (context: FilmContext) => FilmDrawer;
   pose?: FilmPose;
 }
 
@@ -384,10 +686,11 @@ function boardPose(session: RideSession, out: Float64Array): Float64Array {
 /** Runs `scenario` and films its drawn body. */
 export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm {
   const delivery = options.delivery ?? 1;
-  const water: SurfWater = scenario.water === 'face' ? new PlaneWater({ slopeZ: -Math.tan(FACE) }) : new PlaneWater();
+  const water: SurfWater = scenario.water === 'face' ? new PlaneWater({ slopeZ: -Math.tan(FACE) }) : scenario.water === 'chop' ? new ChopWater() : new PlaneWater();
   const session = new RideSession();
   session.place(scenario.placement, water);
-  const drawer = (options.drawer ?? latestDrawer)();
+  let paddling = false;
+  const drawer = (options.drawer ?? latestDrawer)({ surfaceAt: (x, z) => water.surfaceAt(x, z), paddling: () => paddling });
   const { bones } = createTestHumanoid();
   const pose = (options.pose ?? rigAlone)(bones);
   const rig = poseRig(bones);
@@ -423,7 +726,9 @@ export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm
     while (accumulator >= STEP - 1e-12 && taken < 3) {
       accumulator -= STEP;
       taken += 1;
-      session.step(STEP, water, { paddle: false, popUp: false, steer: 0, ...scenario.input(simTime, session) });
+      const input: RideInput = { paddle: false, popUp: false, steer: 0, ...scenario.input(simTime, session) };
+      paddling = input.paddle;
+      session.step(STEP, water, input);
       simTime += STEP;
       steps += 1;
       if (steps % delivery === 0) deliver();
@@ -433,7 +738,8 @@ export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm
     readRiderSnapshot(drawn.rider, drawn.board, state);
     motion.update(state, drawn.time);
     state.clock = drawn.time;
-    state.stroking = 0;
+    // As the page does (`PhysicalMode`): the hands pull while paddling lying down.
+    state.stroking = paddling && state.phase === 'prone' ? 1 : 0;
     pose(state);
     film.frames.push(record(f / options.rate, state, session, rig, measured, pending));
     pending = false;
@@ -482,9 +788,14 @@ function record(
     limbs: world.map((p) => p.clone().sub(hips)),
     hips,
     board: boardPosition.clone(),
+    boardTurn: state.boardQuaternion.clone(),
     bones: worldBones.map((q) => boardInverse.clone().multiply(q)),
     worldBones,
     chestRoll: roll(chestUp),
     physicsRoll: roll(torso),
+    hipsOnBoard: hips.clone().sub(boardPosition).applyQuaternion(boardInverse),
+    physicsPelvis: state.points[POINT.pelvis].clone().sub(boardPosition).applyQuaternion(boardInverse),
+    balance: session.rider.attached ? session.rider.balanceReserve : Number.NaN,
+    physicsHands: [POINT.leftHand, POINT.rightHand].map((i) => state.points[i].clone().sub(state.points[POINT.torso]).applyQuaternion(boardInverse)),
   };
 }

@@ -220,10 +220,12 @@ export class ShallowWaterSolver {
   private readonly zones: ZoneEntry[] = [];
   /**
    * Accelerations of qx and qz beyond the shallow-water terms (a dispersive
-   * solver's), added to the Hancock predictor's half step; absent in stage 1.
+   * solver's), added to the Hancock predictor's half step of the cells
+   * `predictorMask` has on this step; absent in stage 1.
    */
   protected predictorX?: Float64Array;
   protected predictorZ?: Float64Array;
+  protected predictorMask?: Float64Array;
   private readonly target: WaterTarget = { eta: 0, qx: 0, qz: 0 };
 
   constructor(grid: SolverGrid, depthAt: DepthFunction, options: SolverOptions = {}) {
@@ -538,7 +540,7 @@ export class ShallowWaterSolver {
    * at rest predicts no change.
    */
   protected predictFaces(half: number): void {
-    const { nx, nz, h, qx, qz, bed, u, w, eta, dz, zGaps, dryDepth, gravity: g, predictorX, predictorZ } = this;
+    const { nx, nz, h, qx, qz, bed, u, w, eta, dz, zGaps, dryDepth, gravity: g, predictorX, predictorZ, predictorMask } = this;
     const { xhW, xhE, xetaW, xetaE, xuW, xuE, xwW, xwE, zhS, zhN, zetaS, zetaN, zwS, zwN, zuS, zuN } = this;
     for (let i = 0; i < h.length; i += 1) {
       const wet = h[i] > dryDepth;
@@ -610,7 +612,8 @@ export class ShallowWaterSolver {
         const dH = -half * (massX * invDx + massZ * invDz);
         let dQx = -half * (pressureX * invDx + shearZ * invDz);
         let dQz = -half * (shearX * invDx + pressureZ * invDz);
-        if (predictorX && predictorZ) {
+        // The step before's acceleration, only where the cell still disperses: one just switched to shallow water keeps none.
+        if (predictorX && predictorZ && predictorMask && predictorMask[i] > 0) {
           dQx += half * predictorX[i];
           dQz += half * predictorZ[i];
         }

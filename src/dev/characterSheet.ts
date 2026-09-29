@@ -11,7 +11,8 @@
  * measures the drawn body misses listed under it. `?motion=id,id…` plays stance
  * recipes one after another in real time on one surfer (`&surfer`, `&side`),
  * the camera riding beside the board; `&record` films it from the canvas for
- * scripts/browser/motion-clip.mjs.
+ * scripts/browser/motion-clip.mjs, and `&alarm=0` draws it without step 5's
+ * balance cue (the arms as step 4 left them).
  */
 import {
   BufferGeometry, DirectionalLight, Float32BufferAttribute, LineBasicMaterial, LineSegments, Mesh, MeshPhysicalMaterial, NeutralToneMapping, PerspectiveCamera,
@@ -21,6 +22,7 @@ import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SkinnedSurfer } from '../scene/character/SkinnedSurfer';
+import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
 import type { OutfitId } from '../scene/character/outfits';
 import { PhotoSky, type TimeOfDay } from '../scene/PhotoSky';
 import { ShadowRig, parseShadowLevel } from '../scene/ShadowRig';
@@ -312,6 +314,7 @@ interface MotionFrame { time: number; label: string; yaw: number; board: { posit
  * with the recipe's name into `window.motionFilm` (a data URL).
  */
 async function playMotion(surfers: SkinnedSurfer[], ids: string[], skyName: string): Promise<void> {
+  if (params.get('alarm') === '0') RIG_DETAIL.arms.alarmShare = 0;
   const surfer = surfers[STANCE_SURFER];
   const board = boards[STANCE_SURFER];
   surfers.forEach((other, i) => { other.group.visible = i === STANCE_SURFER; });

@@ -4,12 +4,53 @@ import { SeaStateBoundary } from '../SeaStateBoundary';
 import { SideFeed } from '../SideFeed';
 import { calmTarget } from '../shallowWaterTestSupport';
 import { uniformEdges, type WaterTarget } from '../ShallowWaterSolver';
-import { SurfZoneSimulation } from '../SurfZoneSimulation';
+import { SurfZoneSimulation, type SolverDevice } from '../SurfZoneSimulation';
 import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, boussinesqWgsl } from './boussinesqWgsl';
-import { DEVICE_READBACK, deviceStepRefusal, packComponents, packGrid, packSideFeed, packSideTimes, readbackTarget, writeParams } from './GpuBoussinesq';
+import {
+  DEVICE_LAYOUT, DEVICE_READBACK, DEVICE_UPLOAD, deviceStepRefusal, packComponents, packGrid, packSideFeed, packSideTimes, readbackTarget, writeParams,
+} from './GpuBoussinesq';
 
 const quick = { spot: 'point' as const, seed: 3, significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0,
   alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
+
+/**
+ * A stand-in for the GPU (plan P6): a second solver, stepped on the CPU, is the device's memory, and each frame it
+ * exchanges with the surf zone's solver exactly the fields GpuBoussinesq sends and reads back, when it does. A surf
+ * zone on it sees what one on the GPU sees, in doubles: anything its lip, foam or breaking read that the device does
+ * not return goes stale, as η_t did on the GPU until 33fae37.
+ */
+class ShadowDevice implements SolverDevice {
+  private version = -1;
+  private plungeVersion = -1;
+
+  constructor(private readonly solver: BoussinesqSolver, private readonly memory: BoussinesqSolver, private readonly readback: readonly number[] = DEVICE_READBACK) {}
+
+  async step(dt: number): Promise<void> {
+    const { solver, memory } = this;
+    const layout = solver.deviceLayout();
+    if (layout.version !== this.version) {
+      for (const index of DEVICE_LAYOUT) this.send(index);
+      this.version = layout.version;
+    } else if (solver.plungeVersion !== this.plungeVersion) {
+      this.send(FIELD.HOLD);
+    }
+    this.plungeVersion = solver.plungeVersion;
+    for (const index of DEVICE_UPLOAD) this.send(index);
+    memory.time = solver.time;
+    memory.step(dt);
+    for (const index of this.readback) readbackTarget(solver, index).set(readbackTarget(memory, index));
+    solver.adoptDeviceStep(dt);
+  }
+
+  dispose(): void {}
+
+  /** One field into the device's memory. The bed, and the still depth, slopes and zone weights that follow it, match already. */
+  private send(index: number): void {
+    const { solver, memory } = this;
+    if (index === FIELD.HOLD) memory.plungeHold.set(solver.plungeHold);
+    else if (![FIELD.BED, FIELD.STILL, FIELD.DDX, FIELD.DDZ, FIELD.WEIGHT].includes(index as never)) readbackTarget(memory, index).set(readbackTarget(solver, index));
+  }
+}
 
 describe('GpuBoussinesq host', () => {
   it('lays every field out once inside the packed buffer', () => {
@@ -126,6 +167,53 @@ describe('GpuBoussinesq host', () => {
     expect(DEVICE_READBACK).toContain(FIELD.RATEH);
     expect(readbackTarget(solver, FIELD.RATEH)).toBe(solver.surfaceRiseRate);
     for (const index of DEVICE_READBACK) expect(readbackTarget(solver, index)).toHaveLength(solver.nx * solver.nz);
+  });
+
+  describe('the device tier\'s data flow', () => {
+    // The Point on 1 m cells throws within a second of its spin-up.
+    const config = { ...quick, dx: 1, fineSpacing: 1 };
+    const seconds = 3;
+    const step = 1 / 30;
+    let reference: Promise<SurfZoneSimulation> | undefined;
+    /** The surf zone on the CPU alone, spun up there, as the CPU tier runs. */
+    const onCpu = () => {
+      reference ??= (async () => {
+        const simulation = new SurfZoneSimulation(config);
+        for (let frame = 0; frame < seconds / step; frame += 1) simulation.step(step);
+        return simulation;
+      })();
+      return reference;
+    };
+    /** The same surf zone on a device exchanging `readback`, spun up on it, as the worker's GPU tier runs. */
+    const onDevice = async (readback?: readonly number[]) => {
+      const simulation = new SurfZoneSimulation(config, 'warm');
+      const memory = new SurfZoneSimulation(config, 'warm').solver as BoussinesqSolver;
+      expect(memory.bed).toEqual(simulation.solver.bed);
+      const device = new ShadowDevice(simulation.solver as BoussinesqSolver, memory, readback);
+      simulation.device = device;
+      await simulation.spinUp();
+      for (let frame = 0; frame < seconds / step; frame += 1) await simulation.stepAsync(step);
+      // A device that throws is dropped for the CPU without a word: this one must have stepped it all.
+      expect(simulation.device).toBe(device);
+      return simulation;
+    };
+
+    it('steps the surf zone as the CPU does, lips and all, on the fields it sends and reads back', async () => {
+      const cpu = await onCpu();
+      const device = await onDevice();
+      expect(cpu.lipLaunches).toBeGreaterThan(0);
+      expect(device.lipLaunches).toBe(cpu.lipLaunches);
+      expect(device.lip.landings).toBe(cpu.lip.landings);
+      expect(device.solver.h).toEqual(cpu.solver.h);
+      expect(device.solver.qx).toEqual(cpu.solver.qx);
+    }, 300_000);
+
+    it('goes silent without η_t read back, as the GPU tier did before 33fae37', async () => {
+      const cpu = await onCpu();
+      const device = await onDevice(DEVICE_READBACK.filter((index) => index !== FIELD.RATEH));
+      expect(cpu.lipLaunches).toBeGreaterThan(0);
+      expect(device.lipLaunches).toBe(0);
+    }, 300_000);
   });
 
   it('refuses setups the kernels do not cover', () => {

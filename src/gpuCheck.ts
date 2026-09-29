@@ -4,7 +4,12 @@
  * the device, and the page reports how far the device's surface and fluxes
  * drift from the CPU reference, and what each step costs. With `&plunge`, both
  * hold the same jet plunge zones (`holdPlunge`) on the most strongly breaking
- * water every half second, and the drift inside them is reported too.
+ * water every half second, and the drift inside them is reported too. Every
+ * report also gives the drift in the cells the reference holds in shallow water
+ * this step (its mask off); `&hs=` and `&period=` choose the swell (the Reef's
+ * Big: `?spot=reef&hs=3&period=17`).
+ * `?mode=lips` and `?mode=probes` hold the tiers' lips, tubes, whitewater and
+ * stability side by side (src/dev/tierParityPage.ts).
  */
 import { DataUtils, WebGLRenderer } from 'three';
 import { FftChop } from './scene/FftChop';
@@ -15,15 +20,27 @@ import { SURF_ZONE_STEP } from './wave/SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './wave/SurfZoneSimulation';
 import { createSurfZoneWorker } from './game/WorkerSurfZone';
 import { transferables } from './game/SurfZoneWorkerCore';
+import { lipParity, probeParity } from './dev/tierParityPage';
 
 const log = document.querySelector<HTMLPreElement>('#log')!;
 const lines: string[] = [];
+/** A line kept under the log, replaced as long runs progress. */
+let liveLine = '';
+const render = () => {
+  log.textContent = (liveLine ? [...lines, liveLine] : lines).join('\n');
+};
 const say = (line: string) => {
   lines.push(line);
-  log.textContent = lines.join('\n');
+  render();
+};
+const live = (text: string) => {
+  liveLine = text;
+  render();
 };
 
-function drift(reference: BoussinesqSolver, device: BoussinesqSolver): { eta: number; etaRms: number; flux: number; breaking: number; held: number; heldCells: number } {
+function drift(reference: BoussinesqSolver, device: BoussinesqSolver): {
+  eta: number; etaRms: number; flux: number; breaking: number; held: number; heldCells: number; shallow: number; shallowCells: number;
+} {
   let worst = 0;
   let squared = 0;
   let signal = 0;
@@ -32,6 +49,8 @@ function drift(reference: BoussinesqSolver, device: BoussinesqSolver): { eta: nu
   let wet = 0;
   let held = 0;
   let heldCells = 0;
+  let shallow = 0;
+  let shallowCells = 0;
   for (let i = 0; i < reference.h.length; i += 1) {
     if (reference.h[i] <= 0.01 && device.h[i] <= 0.01) continue;
     wet += 1;
@@ -46,8 +65,12 @@ function drift(reference: BoussinesqSolver, device: BoussinesqSolver): { eta: nu
       heldCells += 1;
       held = Math.max(held, Math.abs(difference));
     }
+    if (!(reference.mask[i] > 0)) {
+      shallowCells += 1;
+      shallow = Math.max(shallow, Math.abs(difference));
+    }
   }
-  return { eta: worst, etaRms: Math.sqrt(squared / Math.max(1, signal)), flux, breaking: breaking / Math.max(1, wet), held, heldCells };
+  return { eta: worst, etaRms: Math.sqrt(squared / Math.max(1, signal)), flux, breaking: breaking / Math.max(1, wet), held, heldCells, shallow, shallowCells };
 }
 
 /** Hold the same plunge zone in both solvers, on the reference's most strongly breaking wet cell, along its flow. */
@@ -66,8 +89,10 @@ async function run(): Promise<void> {
   const spot = (new URLSearchParams(location.search).get('spot') ?? 'point') as SurfZoneConfig['spot'];
   const seconds = Number(new URLSearchParams(location.search).get('seconds') ?? 10);
   const plunge = new URLSearchParams(location.search).has('plunge');
-  const config: SurfZoneConfig = { spot, seed: 1, significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0 };
-  say(`Spot ${spot}: building two surf zones…`);
+  const significantHeight = Number(new URLSearchParams(location.search).get('hs') ?? 1.4);
+  const peakPeriod = Number(new URLSearchParams(location.search).get('period') ?? 10);
+  const config: SurfZoneConfig = { spot, seed: 1, significantHeight, peakPeriod, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0 };
+  say(`Spot ${spot}, Hs ${significantHeight} m, ${peakPeriod} s: building two surf zones…`);
   const reference = new SurfZoneSimulation(config);
   const mirrored = new SurfZoneSimulation(config);
   const cpu = reference.solver as BoussinesqSolver;
@@ -93,7 +118,8 @@ async function run(): Promise<void> {
     if (frame % 60 === 0 || frame === 1) {
       const d = drift(cpu, solver);
       const held = plunge ? ` · plunge zone ${d.heldCells} cells, max |Δh| there ${d.held.toExponential(2)} m` : '';
-      say(`t ${(frame * SURF_ZONE_STEP).toFixed(2)} s · max |Δh| ${d.eta.toExponential(2)} m · rms Δh / rms η ${d.etaRms.toExponential(2)} · max |Δq| ${d.flux.toExponential(2)} m²/s · breaking disagrees on ${(d.breaking * 100).toFixed(2)} % of wet cells${held}`);
+      const shallow = ` · shallow water ${d.shallowCells} cells, max |Δh| there ${d.shallow.toExponential(2)} m`;
+      say(`t ${(frame * SURF_ZONE_STEP).toFixed(2)} s · max |Δh| ${d.eta.toExponential(2)} m · rms Δh / rms η ${d.etaRms.toExponential(2)} · max |Δq| ${d.flux.toExponential(2)} m²/s · breaking disagrees on ${(d.breaking * 100).toFixed(2)} % of wet cells${held}${shallow}`);
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
   }
@@ -226,5 +252,11 @@ async function fine(): Promise<void> {
   device.dispose();
 }
 
-const mode = new URLSearchParams(location.search).get('mode');
-(mode === 'worker' ? throughput() : mode === 'chop' ? chop() : mode === 'fine' ? fine() : run()).catch((error: unknown) => say(`FAILED: ${error instanceof Error ? error.message : String(error)}`));
+const parameters = new URLSearchParams(location.search);
+const mode = parameters.get('mode');
+const checks: Record<string, () => Promise<void>> = {
+  worker: throughput, chop, fine,
+  lips: () => lipParity({ say, live }, parameters),
+  probes: () => probeParity({ say, live }, parameters),
+};
+(checks[mode ?? ''] ?? run)().catch((error: unknown) => say(`FAILED: ${error instanceof Error ? error.message : String(error)}`));
