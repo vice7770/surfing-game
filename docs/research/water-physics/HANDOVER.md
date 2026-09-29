@@ -102,6 +102,17 @@ Output: notes in `notes/round5-underwater/`, and a one-page "Underwater" tab.
 
 **Status, 2026-09-29 16:30:** delivered as [underwater.md](underwater.md), with notes in `notes/round5-underwater/`. PR #67 was merged, so this folder is on main. Later updates go through new PRs (branch claude/water-physics-underwater for this round).
 
+## In the cloud (2026-09-29, evening)
+
+The move to the cloud worked on the second try. The session now works on branch `main-2ylbec`.
+- **Round 5** was merged (PR #72). The owner settled its four decisions (see [underwater.md](underwater.md)).
+- **Items 1–2** were prototyped and measured: [underwater-prototype.md](underwater-prototype.md). That raised three more decisions for the owner.
+- **Round 6 (done):** our own Basilisk 2D barrel profiles, in [basilisk-profiles.md](basilisk-profiles.md), with notes in `notes/round6-tube-profiles/`. It raised six decisions for the owner, the Padang wedge slope first. The runs and scripts (177 MB) were in the session's scratchpad, which is temporary; the notes' §7 rebuilds them.
+- **Cloud limits:**
+  - basilisk.fr is blocked by the environment's network policy, so Basilisk comes from the GitHub mirror `comphy-lab/basilisk-C`.
+  - Doc exports (blobs) can't be read back here, so pages are mirrored by hand.
+  - The container is reclaimed whenever the session idles, killing background jobs. Long simulations (the level-13 Padang run) need a machine that stays up.
+
 ## How other sessions consult now
 
 - A cloud session can receive messages, but can't reply to sessions on the owner's Mac.
