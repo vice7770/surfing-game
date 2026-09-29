@@ -1,6 +1,10 @@
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { FILM_SCENARIOS, drawnLag, filmBody, posed, repeatedFrames, rigAlone, shake, switchSpeeds, switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame } from './bodyFilm';
+import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
+import {
+  ChopWater, FILM_JOINT, FILM_SCENARIOS, breathing, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, posed, repeatedFrames, rigAlone, shake, switchSpeeds,
+  switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame,
+} from './bodyFilm';
 
 const scenario = (name: string) => FILM_SCENARIOS.find((candidate) => candidate.name === name)!;
 
@@ -32,7 +36,7 @@ describe('the body film', () => {
       }
     }
   };
-  it.each(['pop-up and landing', 'pop-up crouched', 'compress mid-turn, the hand reaching', 'a fall'])('blends the switches of %s out', blendsOut);
+  it.each(['pop-up and landing', 'pop-up crouched', 'compress mid-turn, the hand reaching', 'a fall', 'pumping into a fall'])('blends the switches of %s out', blendsOut);
   // Lying down, its switches blend out (the frames about each are smooth), but 0.23 s into the lie-down the left knee
   // swings through at up to 10 m/s (3.3 m/s over its neighbours, 3.8 at 120 Hz): the leg's pole jumps from the
   // standing one to the lying one at the switch, and the knee turns over only as the leg straightens. The rig's poles
@@ -83,8 +87,9 @@ function film(rate: number, count: number, shape: (i: number, frame: FilmFrame) 
   for (let i = 0; i < count; i += 1) {
     const frame: FilmFrame = {
       time: i / rate, phase: 'standing', moving: true, switched: false, fallen: false,
-      joints: [new Vector3()], limbs: [new Vector3()], hips: new Vector3(), board: new Vector3(), bones: [new Quaternion()], worldBones: [new Quaternion()],
-      chestRoll: 0, physicsRoll: 0,
+      joints: Array.from({ length: 13 }, () => new Vector3()), limbs: [new Vector3()], hips: new Vector3(), board: new Vector3(),
+      bones: [new Quaternion()], worldBones: Array.from({ length: 3 }, () => new Quaternion()),
+      chestRoll: 0, physicsRoll: 0, hipsOnBoard: new Vector3(), physicsPelvis: new Vector3(),
     };
     shape(i, frame);
     frames.push(frame);
@@ -154,3 +159,132 @@ describe('the body film measures', () => {
     expect(drawnLag(lagged)).toBeCloseTo(0.1, 3);
   });
 });
+
+describe('the body film\'s secondary-motion measures (step 4)', () => {
+  const turning = (frame: FilmFrame, index: number, angle: number) => frame.worldBones[index].setFromAxisAngle(new Vector3(1, 0, 0), angle);
+
+  it('reads a head held still while the chest rocks as steady, and one riding with it as not', () => {
+    const rock = (i: number) => 0.2 * Math.sin(2 * Math.PI * (i / 60));
+    const held = film(60, 240, (i, frame) => turning(frame, 1, rock(i)));
+    expect(headSteadiness(held)).toBeCloseTo(0, 6);
+    const riding = film(60, 240, (i, frame) => { turning(frame, 1, rock(i)); turning(frame, 2, rock(i)); });
+    expect(headSteadiness(riding)).toBeCloseTo(1, 6);
+  });
+
+  it('reads a hand fixed to its shoulder as no swing, and a 2 Hz swing of 5 cm as its RMS', () => {
+    const fixed = film(60, 240, (i, frame) => {
+      frame.joints[FILM_JOINT.shoulder.left].set(0.2, 1.4 + 0.1 * Math.sin(i / 7), 0);
+      frame.joints[FILM_JOINT.hand.left].set(0.5, 1.1 + 0.1 * Math.sin(i / 7), 0);
+    });
+    expect(handSwing(fixed, 'left')).toBeCloseTo(0, 6);
+    const swinging = film(60, 240, (i, frame) => {
+      frame.joints[FILM_JOINT.shoulder.left].set(0.2, 1.4, 0);
+      frame.joints[FILM_JOINT.hand.left].set(0.5, 1.1 + 0.05 * Math.sin(2 * Math.PI * 2 * (i / 60)), 0);
+    });
+    expect(handSwing(swinging, 'left')).toBeCloseTo(0.05 / Math.SQRT2, 2);
+  });
+
+  it('reads the drawn hips heaving with the physics\' pelvis as full give, and held still as none', () => {
+    const heave = (i: number) => 0.9 + 0.03 * Math.sin(2 * Math.PI * 2 * (i / 60));
+    const following = film(60, 240, (i, frame) => { frame.physicsPelvis.set(0, heave(i), 0); frame.hipsOnBoard.set(0, heave(i) + 0.1, 0); });
+    expect(kneeGive(following)).toBeCloseTo(1, 6);
+    const locked = film(60, 240, (i, frame) => { frame.physicsPelvis.set(0, heave(i), 0); frame.hipsOnBoard.set(0, 1, 0); });
+    expect(kneeGive(locked)).toBeCloseTo(0, 6);
+  });
+
+  it('reads the head rising 1 cm about the hips at 0.3 Hz as breathing, and a still body as none', () => {
+    const breath = film(60, 1200, (i, frame) => frame.joints[FILM_JOINT.head].set(0, 1.6 + 0.01 * Math.sin(2 * Math.PI * 0.3 * (i / 60)), 0));
+    expect(breathing(breath)).toBeCloseTo(0.01 / Math.SQRT2, 3);
+    const still = film(60, 1200, (_i, frame) => frame.joints[FILM_JOINT.head].set(0, 1.6, 0));
+    expect(breathing(still)).toBeCloseTo(0, 6);
+  });
+
+  it('rides chop: bumps 5 cm high every 4 m along the travel, with their slope', () => {
+    const chop = new ChopWater();
+    expect(chop.surfaceAt(0, 1)).toBeCloseTo(0.05, 6);
+    expect(chop.surfaceAt(3, 3)).toBeCloseTo(-0.05, 6);
+    const sample = chop.sampleAt(0, 0, 0, {} as never);
+    expect(sample.slopeZ).toBeCloseTo(0.05 * (2 * Math.PI) / 4, 6);
+    expect(sample.normalY).toBeGreaterThan(0.9);
+  });
+
+  it('films pumping, chop and a paddle then a glide, riding throughout', () => {
+    for (const name of ['pumping', 'chop', 'paddle then glide']) {
+      const shot = filmBody(scenario(name), { rate: 30 });
+      expect(shot.frames.some((frame) => frame.switched && frame.phase === 'fallen'), name).toBe(false);
+    }
+  }, 240_000);
+});
+
+describe('the swing at any display rate (step 4)', () => {
+  /** Each free hand's place about its shoulder, on the board, at each of the film's frames. */
+  const offsets = (shot: BodyFilm) => shot.frames.map((frame) => (['left', 'right'] as const).map(
+    (side) => frame.joints[FILM_JOINT.hand[side]].clone().sub(frame.joints[FILM_JOINT.shoulder[side]]),
+  ));
+
+  it('swings the hands as much at 30, 60 and 120 Hz through a pump', () => {
+    // The swing's own part (the hands swung less the hands held to their cues): the drawn moments themselves differ
+    // a little from rate to rate (4 cm with no swing), which is not the swing's.
+    const swingAt = (rate: number) => {
+      const swung = offsets(filmBody(scenario('pumping'), { rate, drawer: trackDrawer, pose: posed() }));
+      RIG_DETAIL.swing.share = 0;
+      const held = offsets(filmBody(scenario('pumping'), { rate, drawer: trackDrawer, pose: posed() }));
+      RIG_DETAIL.swing.share = 1;
+      return swung.map((hands, i) => hands.map((hand, side) => hand.clone().sub(held[i][side])));
+    };
+    // Its size at each rate, from 0.5 s (the track's first frames show slightly different moments at each rate). The
+    // swing's step is exact at any rate for the same motion (armSwing.test.ts); the drawn body's own motion differs a
+    // little from rate to rate (4 cm with no swing), and the swing follows it.
+    const size = (swing: Vector3[][], rate: number) => {
+      const kept = swing.slice(Math.round(0.5 * rate)).flat();
+      return Math.sqrt(kept.reduce((sum, hand) => sum + hand.lengthSq(), 0) / kept.length);
+    };
+    const fast = size(swingAt(120), 120);
+    expect(fast).toBeGreaterThan(0.01);
+    for (const rate of [30, 60]) expect(Math.abs(size(swingAt(rate), rate) / fast - 1), `${rate} Hz`).toBeLessThan(0.2);
+  }, 240_000);
+
+  it('swings them smoothly from snapshots batched by three (an online surfer)', () => {
+    // The hands' acceleration about the shoulders, frame to frame: batched snapshots must not jerk them.
+    const jerk = (delivery: number) => {
+      const hands = offsets(filmBody(scenario('pumping'), { rate: 60, delivery, drawer: trackDrawer, pose: posed() }));
+      let most = 0;
+      for (let i = 2; i < hands.length; i += 1) {
+        for (const side of [0, 1]) most = Math.max(most, hands[i][side].clone().sub(hands[i - 1][side]).sub(hands[i - 1][side].clone().sub(hands[i - 2][side])).length() * 3600);
+      }
+      return most;
+    };
+    expect(jerk(3)).toBeLessThan(1.5 * jerk(1));
+  }, 240_000);
+});
+
+describe('the head and the knees follow the physics (step 4)', () => {
+  it('holds the head steadier than the chest through a weave, a pump and chop (Pozzo et al. 1990)', () => {
+    for (const rate of [30, 60]) {
+      for (const name of ['weave', 'pumping', 'chop']) {
+        const shot = filmBody(scenario(name), { rate, drawer: trackDrawer, pose: posed() });
+        expect(headSteadiness(shot), `${name} at ${rate} Hz`).toBeLessThan(0.7);
+      }
+    }
+  }, 240_000);
+
+  it('gives at the knees as the physics\' leg does, over chop', () => {
+    for (const rate of [30, 60]) {
+      const shot = filmBody(scenario('chop'), { rate, drawer: trackDrawer, pose: posed() });
+      expect(kneeGive(shot, 0.5), `${rate} Hz`).toBeGreaterThan(0.8);
+    }
+  }, 240_000);
+});
+
+describe('the drawn chest breathes (step 4)', () => {
+  it('rises and falls about the hips gliding after 20 s of paddling, and not at all with the breathing off', () => {
+    const glide = (shot: BodyFilm): BodyFilm => ({ rate: shot.rate, frames: shot.frames.filter((frame) => frame.time > 21) });
+    const breathes = breathing(glide(filmBody(scenario('paddle then glide'), { rate: 30, drawer: trackDrawer, pose: posed() })));
+    RIG_DETAIL.breath.share = 0;
+    const still = breathing(glide(filmBody(scenario('paddle then glide'), { rate: 30, drawer: trackDrawer, pose: posed() })));
+    RIG_DETAIL.breath.share = 1;
+    expect(breathes).toBeGreaterThan(0.003);
+    expect(still).toBeLessThan(0.0005);
+  }, 240_000);
+});
+

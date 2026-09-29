@@ -549,7 +549,8 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - the Reef's ledge crossing the window's open edge ran the Big swell to NaN, on main too; the solver now levels the bed across the two columns an open edge copies;
     - a sea handover's joiner missed lips thrown on its first step;
     - thick lips landing in one cell flashed the drained crest; they now land over their thickness;
-    - a lip's landing bore still drained at 23.5 m/s with dispersion on; the solver now holds the young roller in shallow water where jets land (0.5 H behind to 1.5 H ahead) for Kennedy's T* (CPU and WGSL; branch `claude/plunge-dispersion`).
+    - a lip's landing bore still drained at 23.5 m/s with dispersion on; the solver now holds the young roller in shallow water where jets land (0.5 H behind to 1.5 H ahead) for Kennedy's T* (CPU and WGSL; branch `claude/plunge-dispersion`);
+    - a cell just switched to shallow water still took the step before's dispersive push in its Hancock half step (−702 m²/s² in a Big swell trace); the half step now adds the predictor only where the cell disperses this step (CPU and WGSL; branch `claude/predictor-mask`).
   - **Measured:**
     - rounder tubes (width/length 0.71 → 0.77–0.80) that open wider;
     - jets 0.47 H² and 0.47 H thick;
@@ -645,6 +646,10 @@ Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](doc
       - free arms lower and soft at the elbow (40–55°, 155°), the clavicles following their arms, the heel lifting past 40° of ankle flexion with the toes on the deck, the chest turning with the snap either way, the head leading the turn;
       - the frontside Compress hand now reaches the water (Part B's 6.6 cm miss); the snapshot track no longer blends a riding body into a fallen one;
       - against the map 38 of 99 miss (46 before), 61 met (53); a test holds the drawn pose's medium and high targets but thirteen known misses (the physics' weight and timing, the landing's glide). Next: step 4, secondary motion.
+    - the riding body, step 4: secondary motion and breathing ([plan](docs/superpowers/plans/2026-09-30-secondary-motion.md), [findings](docs/superpowers/plans/2026-09-30-secondary-motion.md#findings)):
+      - the free hands swing with the body, at the arm's own pendulum (about 0.76 Hz, Winter's segments) and critically damped, driven by the shoulder's motion less its sustained part: a pump leaves them trailing as the body rises (Pontzer et al. 2009); hands on points keep them;
+      - the chest breathes, 16 breaths a minute at rest to 36 at full work (Blackie et al. 1991), 1.5 % to 21 % of the chest's depth per breath (Yang et al. 2022), the work read from paddling, swimming, the legs pumping and a held breath; held under water;
+      - the head already holds steady against the chest (Pozzo et al. 1990) and the knees give with the physics' leg: now pinned; the body film measures all four. Next: step 5, feedback cues.
   - **Part B, player-facing — done:**
     - trim (W/S, the stick), crouch (Shift, LT's travel, a touch button) and the hand (E, X), ramped, with context bindings (↑ paddles lying down and trims standing);
     - the end card's time in the pocket, turns with the speed kept, and slow motion; Score rides, with the session's best two and a best per spot in the Logbook; turn callouts;

@@ -91,7 +91,14 @@ describe('the body inertia', () => {
       const goal = () => [...plainBones.values()].filter((bone) => !bone.name.includes('Hand') || bone.name.endsWith('Hand')).map((bone) => bone.getWorldQuaternion(new Quaternion()));
       let z = 0;
       let clock = 0;
-      for (let i = 0; i < 60; i += 1) draw(posture(phase, new Vector3(0, 0, (z += speed * STEP)), (clock += STEP)));
+      // The plain rig rides the same run: the rig keeps state over its clock (step 3's hinge, step 4's breath).
+      for (let i = 0; i < 60; i += 1) {
+        const state = () => posture(phase, new Vector3(0, 0, z + speed * STEP), clock + STEP);
+        draw(state());
+        rig.solve(state());
+        z += speed * STEP;
+        clock += STEP;
+      }
       z += jump;
       for (let i = 0; i < 30; i += 1) {
         const state = () => posture(phase, new Vector3(0, 0, z), clock);
