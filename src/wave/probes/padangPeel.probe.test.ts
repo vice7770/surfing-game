@@ -2,7 +2,6 @@
 import { appendFileSync } from 'node:fs';
 const log = (text: string) => appendFileSync(process.env.LOG ?? '/dev/stderr', `${text}\n`);
 import { it } from 'vitest';
-import { inheritOnlyFromUpstream } from './upstreamBreaking';
 import { SIDE_FEED } from '../SideFeed';
 import { PADANG, createSpot, padangCrestZ, padangFocusShape, padangReefAt, padangSeaward } from '../Bathymetry';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
@@ -11,8 +10,6 @@ import { breakerDepthFor } from '../Breaking';
 import { edgeHeight } from '../SurfZoneSimulation';
 
 it.skipIf(!process.env.PROBE)('probes Padang Padang’s peel', () => {
-  const inherit = process.env.INHERIT;
-  if (inherit === 'upstream' || inherit === 'across' || inherit === 'face1' || inherit === 'face3') inheritOnlyFromUpstream(inherit);
   for (const pair of (process.env.PADANG ?? '').split(',').filter(Boolean)) {
     const [key, value] = pair.split('=');
     (PADANG as Record<string, number>)[key] = Number(value);
