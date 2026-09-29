@@ -61,4 +61,53 @@ The same scenarios are then filmed locally and remotely and compared.
 
 ## Findings
 
-(Filled in during execution.)
+The remote drawer films the local session through the game's own path:
+- an own pose every third step (`OwnPoseTracker`);
+- the codec and a bundle;
+- the real `RemoteSurfers`, sampled `INTERPOLATION_DELAY` in the past;
+- `RemoteSurferViews`' state building, extracted as `remoteBoardPose` and `remoteRiderState` (the view calls them and draws as before).
+
+On the straight ride it draws the local body 0.1 s later within 2 cm at every joint.
+
+Three faults were remote-only. All three are fixed, and only one needed the wire.
+
+1. **Centimetres on the wire shook the body.** The points went as i16 centimetres. A centimetre's step at a foot or the pelvis tilted the drawn chest by up to 1.7°, and the straight ride's wobble read 0.41° against the local 0.045°.
+   - **The wire change you approved:** the points now go in millimetres (flag 64) whenever every point is within 32.767 m of the board, else in centimetres as before (a swimmer far from a lost board).
+   - Poses without the flag still read as centimetres, so the server's bots replay their recorded tracks unchanged.
+   - A room admits only its own build (`BUILD_ID`), so no older reader meets the flag.
+   - With millimetres the straight wobble reads 0.054° against 0.045°.
+   - Putting the upright feet back on the deck was tried first, for the centimetres. With millimetres it changes nothing measurable (0.049° against 0.054°), so it was removed.
+2. **Switches spread over 50 ms.** Locally a phase switch jumps the points within one physics step, and the drawn body's smoothing blends out a jump that lands on the switch's frame. Remotely the sampler blended the points across the 50 ms between poses. The fall's joint spike read 2.01 m/s (limit 2), and the pop-up's landing feet overshot by 6 cm either side.
+   - **Fix:** across a phase switch, the nearer pose's points are drawn whole, on the board as it glides on. This is what the local track draws at 60 Hz, so the jump lands on the switch's frame.
+   - A retry or a placement (a board further than 2 m per step, or presence changing) draws the newer pose whole, never swept across the sea, as the local track does.
+3. **The compressed carve shook: 6.5° (4–30 Hz) against the local 3.1°.** This was not the corners of linear interpolation at 20 Hz; the excess was broadband from 3 to 15 Hz. It was the reach.
+   - The physics moves the reaching hand 0.7 m to the water within one step.
+   - Locally, the point inertia reads that as a jump and eases it over about a third of a second.
+   - Remotely, spread over 50 ms, the same jump read as motion at 14 m/s. The drawn hand reached the water in four frames, the chest whipped 65° in 25 ms, and then it wobbled.
+   - **Fix:** a point whose velocity between two poses departs by more than 3 m/s from its velocity between each neighbouring pair of poses has jumped (the smoothing's own threshold, `pointInertia`'s `JUMP`; a limb turning back changes by about 1.2 m/s from one pose to the next). It is drawn at once, mid-way, as the local track draws it.
+   - Fallen, the points are measured from a board tumbling away, so no jump is read from them.
+   - **Between the poses,** each point now follows a monotone cubic through its neighbours (Catmull-Rom's slopes on uneven steps, held by Steffen 1990 so it never overshoots). Its speed carries on across each pose, where the chords turned it at every pose. A jump bends neither neighbour's curve.
+
+Remote against local (local / remote), the settled ride from 0.5 s:
+
+| Display | Film | Wobble (1.5–4 Hz) | Jitter (4–30 Hz) |
+|---|---|---:|---:|
+| 30 Hz | straight | 0.05° / 0.05° | 0.01° / 0.05° |
+| 30 Hz | weave | 2.88° / 2.85° | 0.61° / 0.63° |
+| 30 Hz | compress, the hand reaching | 7.94° / 7.72° | 2.05° / 2.30° |
+| 120 Hz | straight | 0.04° / 0.05° | 0.01° / 0.05° |
+| 120 Hz | weave | 2.72° / 2.86° | 0.58° / 0.60° |
+| 120 Hz | compress, the hand reaching | 7.10° / 7.31° | 3.13° / 2.81° |
+
+| Switch film | Joint spike, 60 Hz | Joint spike, 120 Hz |
+|---|---:|---:|
+| pop-up and landing | 0.88 / 0.94 m/s | 0.87 / 1.11 m/s |
+| a fall | 0.13 / 0.40 m/s | 0.48 / 0.31 m/s |
+| pumping into a fall | 0.69 / 0.83 m/s | 0.61 / 0.58 m/s |
+
+**What is not sent** (the Review Focus):
+- **The balance cue** still shows. The rig reads it back from the hands' spread, which the points carry. The weave's cue correlates 0.73 remotely against 0.80 locally, with slope 0.27 against 0.34.
+- **The breath** is not sent, so another player's is drawn full at rest. The paddle film still breathes from the paddling the pose carries.
+- **Weight, edge and depth** come from the points and the board, which are sent.
+
+**The straight ride's jitter** reads 0.05° remotely against 0.01° locally, at every display rate. It is a twentieth of a degree, far under what the eye sees, and inside the test's allowance. It is likely the board's orientation, still blended linearly between poses. Left as it is.
