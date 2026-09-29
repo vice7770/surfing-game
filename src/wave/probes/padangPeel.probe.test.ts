@@ -4,7 +4,7 @@ const log = (text: string) => appendFileSync(process.env.LOG ?? '/dev/stderr', `
 import { it } from 'vitest';
 import { inheritOnlyFromUpstream } from './upstreamBreaking';
 import { SIDE_FEED } from '../SideFeed';
-import { PADANG, createSpot, padangCrestZ, padangReefAt, padangSeaward } from '../Bathymetry';
+import { PADANG, createSpot, padangCrestZ, padangFocusShape, padangReefAt, padangSeaward } from '../Bathymetry';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
 import { ledgePeel } from '../ledgePeel';
 import { breakerDepthFor } from '../Breaking';
@@ -23,10 +23,12 @@ it.skipIf(!process.env.PROBE)('probes Padang Padang’s peel', () => {
   const simulation = new SurfZoneSimulation(config);
   const bed = createSpot('padang', 1);
   // The wedge's base at along-shore position x: the most seaward z, walking seaward from the crest, where the bed still follows the wedge.
+  // The focus's spur lifted off, so its base is the wedge's own.
+  const unfocused = (x: number, z: number) => bed.depthAt(x, z) + PADANG.focusRelief * padangFocusShape(x, z);
   const baseZ = (x: number): number => {
     let z = padangCrestZ(x);
     const wedge = (zz: number) => PADANG.crestDepth + padangSeaward(x, zz) * PADANG.wedgeSlope;
-    while (bed.depthAt(x, z - 0.25) - wedge(z - 0.25) > -1e-6) z -= 0.25;
+    while (unfocused(x, z - 0.25) - wedge(z - 0.25) > -1e-6) z -= 0.25;
     return z;
   };
   const toe = bed.depthAt(0, baseZ(0));
