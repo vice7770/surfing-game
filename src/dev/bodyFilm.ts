@@ -46,9 +46,10 @@ export interface FilmFrame {
   joints: Vector3[];
   /** The drawn joints relative to the drawn hips, in the world's axes, m. */
   limbs: Vector3[];
-  /** The drawn hips and board in the world, m. */
+  /** The drawn hips and board in the world, m, and the drawn board's orientation. */
   hips: Vector3;
   board: Vector3;
+  boardTurn: Quaternion;
   /** The measured bones' world rotations relative to the drawn board, and in the world. */
   bones: Quaternion[];
   worldBones: Quaternion[];
@@ -305,6 +306,93 @@ export function headSteadiness(film: BodyFilm): number {
   return chest > 1e-12 ? tiltingRms(film, WORLD_BONE.head) / chest : 0;
 }
 
+/** A cycle's rate, per second: the rising crossings of `values` over their mean, from the first to the last (between frames). */
+function cycleRate(values: readonly number[], rate: number): number {
+  if (values.length < 2) return 0;
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  const crossings: number[] = [];
+  for (let i = 1; i < values.length; i += 1) {
+    if (values[i - 1] < mean && values[i] >= mean) crossings.push(i - 1 + (mean - values[i - 1]) / (values[i] - values[i - 1]));
+  }
+  return crossings.length < 2 ? 0 : ((crossings.length - 1) * rate) / (crossings[crossings.length - 1] - crossings[0]);
+}
+
+/**
+ * The paddler's stroke (step 8): the drawn hand's path on the board (its
+ * extent along it, across it and up and down, m) and its strokes a minute,
+ * lying down. Nessler et al. 2015 measure the hand's path; Nessler et al. 2019
+ * the strokes a minute per arm.
+ */
+export function paddleStroke(film: BodyFilm, side: Side): { along: number; across: number; vertical: number; perMinute: number } {
+  const hands = film.frames.filter((frame) => frame.phase === 'prone').map((frame) => frame.joints[FILM_JOINT.hand[side]]);
+  const extent = (axis: 'x' | 'y' | 'z') => (hands.length ? Math.max(...hands.map((h) => h[axis])) - Math.min(...hands.map((h) => h[axis])) : 0);
+  return { along: extent('z'), across: extent('x'), vertical: extent('y'), perMinute: 60 * cycleRate(hands.map((h) => h.z), film.rate) };
+}
+
+/**
+ * The drawn board's motion under a paddler (step 8), degrees: its mean pitch
+ * (nose up) and its mean roll range over each `cycle` s (one arm's stroke).
+ * Nessler et al. 2019 measure both on a short board in a flume.
+ */
+export function boardMotion(film: BodyFilm, cycle: number): { pitch: number; roll: number } {
+  const forward = new Vector3();
+  const side = new Vector3();
+  const pitch: number[] = [];
+  const roll: number[] = [];
+  for (const frame of film.frames) {
+    forward.set(0, 0, 1).applyQuaternion(frame.boardTurn);
+    side.set(1, 0, 0).applyQuaternion(frame.boardTurn);
+    pitch.push((Math.asin(Math.max(-1, Math.min(1, forward.y))) * 180) / Math.PI);
+    roll.push((Math.asin(Math.max(-1, Math.min(1, side.y))) * 180) / Math.PI);
+  }
+  const span = Math.max(1, Math.round(cycle * film.rate));
+  const ranges: number[] = [];
+  for (let from = 0; from + span <= roll.length; from += span) {
+    const window = roll.slice(from, from + span);
+    ranges.push(Math.max(...window) - Math.min(...window));
+  }
+  const mean = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0);
+  return { pitch: mean(pitch), roll: mean(ranges) };
+}
+
+/**
+ * The swimmer's roll (step 8), degrees, per frame: how far the drawn chest
+ * faces away from straight down about the body's long axis (its pitch left
+ * out), positive with the left shoulder up. The chest faces the shoulders' line
+ * (right to left) crossed with the spine (hips to head).
+ */
+export function swimRolls(film: BodyFilm): number[] {
+  const across = new Vector3();
+  const spine = new Vector3();
+  const facing = new Vector3();
+  const down = new Vector3();
+  const turn = new Vector3();
+  return film.frames.map((frame) => {
+    across.subVectors(frame.limbs[FILM_JOINT.shoulder.left], frame.limbs[FILM_JOINT.shoulder.right]);
+    spine.copy(frame.limbs[FILM_JOINT.head]).normalize();
+    facing.crossVectors(across, spine);
+    facing.addScaledVector(spine, -facing.dot(spine));
+    down.set(0, -1, 0).addScaledVector(spine, spine.y);
+    // Signed about the spine, from down to the facing: turning the chest toward the right, the left shoulder up, is positive.
+    return (Math.atan2(turn.crossVectors(down, facing).dot(spine), down.dot(facing)) * 180) / Math.PI;
+  });
+}
+
+/** The swimmer's roll (step 8): its peak each way (positive, the left shoulder up) and its mean, degrees. */
+export function swimRoll(film: BodyFilm): { left: number; right: number; mean: number } {
+  const rolls = swimRolls(film);
+  return {
+    left: rolls.length ? Math.max(...rolls) : 0,
+    right: rolls.length ? -Math.min(...rolls) : 0,
+    mean: rolls.length ? rolls.reduce((a, b) => a + b, 0) / rolls.length : 0,
+  };
+}
+
+/** The swimmer's arm cycles a second (step 8): the drawn hand's height about its shoulder. */
+export function crawlRate(film: BodyFilm, side: Side): number {
+  return cycleRate(film.frames.map((frame) => frame.limbs[FILM_JOINT.hand[side]].y - frame.limbs[FILM_JOINT.shoulder[side]].y), film.rate);
+}
+
 /**
  * How far a hand swings about its shoulder (step 4), m: the RMS of its place
  * relative to the shoulder, on the board, less its running mean over `window` s:
@@ -463,6 +551,14 @@ export const FILM_SCENARIOS: readonly FilmScenario[] = [
   {
     name: 'paddle then glide', water: 'flat', seconds: 30, placement: { x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' },
     input: (time) => ({ paddle: time < 20 }),
+  },
+  // Step 8: off the board lying down, then swimming in calm water.
+  {
+    name: 'swimming', water: 'flat', seconds: 12, placement: { x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' },
+    input(time, session) {
+      if (once(time, 0.5) && session.rider.attached) session.separate('balance');
+      return { paddle: time > 1 };
+    },
   },
 ];
 
@@ -692,6 +788,7 @@ function record(
     limbs: world.map((p) => p.clone().sub(hips)),
     hips,
     board: boardPosition.clone(),
+    boardTurn: state.boardQuaternion.clone(),
     bones: worldBones.map((q) => boardInverse.clone().multiply(q)),
     worldBones,
     chestRoll: roll(chestUp),

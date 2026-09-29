@@ -121,6 +121,15 @@ export const RIG_DETAIL = {
   legEase: 0.025,
   armReach: 0.97,
   /**
+   * Lying, the arms come to their reach smoothly over this share of their length
+   * each side of it (`softCap`; step 8). The paddle's hand is out of the drawn
+   * arm's reach through most of the pull: at a hard stop the elbow snapped from
+   * straight to 150° in a frame each time the hand came within it (four times a
+   * stroke), which the smoothing took for jumps. The hand moves at up to 4.4 m/s,
+   * so the band is wider than the legs'.
+   */
+  armEase: 0.1,
+  /**
    * The knees standing tall (de Sousa 2022: 150° or more extended): the physics'
    * standing pelvis maps to the hips with both knees at this, so its crouch drop
    * bends them from there (90–110° crouched, 90° or less compressed).
@@ -219,7 +228,36 @@ export const RIG_DETAIL = {
    * `kick` m at `kickRate` a second.
    */
   duckArmReach: 0.97,
-  crawlRate: 0.8,
+  /**
+   * The crawl's arm cycles a second: an adult's at 1.0 m/s (Kjendlie et al.
+   * 2004: 0.38 ± 0.04), the physics' swimmer's own speed (step 8; it drew 0.8).
+   */
+  crawlRate: 0.38,
+  /**
+   * Swimming, the body's roll about its spine, degrees (step 8): at most `away`
+   * toward the side the swimmer does not breathe to and `breath` toward the side
+   * it does (Payton et al. 1999: 57 ± 4° and 66 ± 5° at race pace), breathing
+   * each cycle to its right (provisional: a recreational swimmer's habit); the
+   * hips roll `hips` as far (Barden and Barber 2022: 45–54° at the hips).
+   */
+  crawlRoll: { away: 57, breath: 66, hips: 0.8 },
+  /**
+   * Lying, the elbow's side through the paddle stroke (step 8): high, out and
+   * trailing the hand, as a paddler's high elbow. The arm sweeps forward, down
+   * under the shoulder and back to the hip, then forward again out beside the
+   * shoulder: this stays 36° or more off every way it points. An elbow pointing
+   * up met the arm head on under the shoulder, one pointing out beside it, and
+   * each flipped the elbow in a frame.
+   */
+  strokeElbow: { out: 1, up: 1, forward: -1 },
+  /**
+   * Lying, the hand's back through the stroke (step 8): up, out and toward the
+   * nose, so the palm pushes back while pulling and faces the water swinging
+   * forward, 36° or more off the forearm's every way. The deck's normal, falling
+   * back to the chest's facing (the deck, lying), spun the hand half a turn as
+   * the forearm passed under the shoulder.
+   */
+  strokeHand: { out: 1, up: 1, forward: 1 },
   /** Short of breath the crawl quickens, up to (1 + `panic`) times at none (Part B's body cue). */
   panic: 1,
   crawlReach: 0.85,
@@ -246,6 +284,10 @@ export class HumanoidRig {
   };
   /** Where the chest faces after `solve`. */
   readonly facing = new Vector3();
+  /** Swimming, the facing before the crawl's roll, the head's share of the roll, rad, and the rolled body's back (step 8). */
+  private readonly swimFacing = new Vector3();
+  private headRoll = 0;
+  private readonly crawlBack = new Vector3();
   /** Standing, where the head looks after `solve` (unit). */
   readonly look = new Vector3();
   /** The ankle's height above the sole at rest (MPFB stands the body on y = 0), m. */
@@ -321,6 +363,7 @@ export class HumanoidRig {
   private readonly hipsAt = new Vector3();
   private readonly bendAxis = new Vector3();
   private readonly pivot = new Vector3();
+  private readonly strokeOffset = new Vector3();
   private readonly pole2 = new Vector3();
   private readonly headHint = new Vector3();
   private readonly chestBase = new Vector3();
@@ -416,7 +459,16 @@ export class HumanoidRig {
       this.scratch.subVectors(p[POINT.leftFoot], p[POINT.rightFoot]);
       forward.crossVectors(this.scratch, up);
     } else if (lying) forward.copy(boardUp).negate();
-    else forward.set(Math.sin(state.heading), 0, Math.cos(state.heading));
+    else {
+      // Fallen: the heading square to the spine, as far as the spine rises, and the water's down square to it. Upright
+      // the heading leads, lying flat or diving the down: a swimmer faces the water (step 8: the heading alone vanished
+      // as the spine lay along it, and the swimmer faced wherever its spine leaned, on its side or up). Rising in the
+      // heading's plane the two agree, so neither cancels the other.
+      const rise = Math.max(0, up.y);
+      forward.set(Math.sin(state.heading), 0, Math.cos(state.heading));
+      forward.addScaledVector(up, -forward.dot(up)).multiplyScalar(rise);
+      forward.add(this.scratch.set(0, -1, 0).addScaledVector(up, up.y));
+    }
     this.perpendicular(forward, up);
     left.crossVectors(up, forward).normalize();
     this.back = state.phase === 'standing' ? state.standingBlend * weightBack(state) : 0;
@@ -432,6 +484,16 @@ export class HumanoidRig {
         + (Math.sign(state.yawRate) * snapping * RIG_DETAIL.snapTwist * Math.PI) / 180;
       this.facing.applyAxisAngle(up, twist);
       hipsForward.applyAxisAngle(up, RIG_DETAIL.hipsTwistShare * twist);
+    }
+    // Swimming, the body rolls about its spine toward each pulling arm (step 8); the head keeps the unrolled facing,
+    // turning with the roll only to breathe.
+    this.swimFacing.copy(this.facing);
+    this.headRoll = 0;
+    if (fallen && state.swim.stroking) {
+      const { roll, head } = this.crawlRoll(state);
+      this.headRoll = head;
+      this.facing.applyAxisAngle(up, roll);
+      hipsForward.applyAxisAngle(up, roll * RIG_DETAIL.crawlRoll.hips);
     }
 
     // 2. The hips at the pelvis point (standing, raised to the model's extended legs), brought down if the legs cannot reach the feet.
@@ -475,24 +537,24 @@ export class HumanoidRig {
     }
     else if (state.phase === 'standing') this.lookWhereGoing(state);
     else if (upright) this.orient(BONES.head, WORLD_UP, this.hint.copy(boardForward).lerp(this.facing, 0.25));
-    else this.orient(BONES.head, chestUp, this.facing);
+    else this.orient(BONES.head, chestUp, this.direction.copy(this.swimFacing).applyAxisAngle(up, this.headRoll));
 
     this.followArmTurn(state);
     this.alarm = state.phase === 'standing' ? RIG_DETAIL.arms.alarmShare * this.balanceAlarm(state) : 0;
     // 4. Arms.
     for (const side of SIDES) {
-      const outward = this.scratch.copy(left).multiplyScalar(side === 'left' ? 1 : -1);
-      if (state.phase === 'prone') pole.copy(boardUp).addScaledVector(outward, 0.5);
-      else if (state.phase === 'push') pole.copy(boardForward).negate().addScaledVector(boardUp, 0.3);
+      if (state.phase === 'push') pole.copy(boardForward).negate().addScaledVector(boardUp, 0.3);
       else if (upright) pole.copy(WORLD_UP).multiplyScalar(-RIG_DETAIL.elbowDrop).addScaledVector(this.facing, -RIG_DETAIL.elbowBack);
       else pole.copy(this.facing).negate();
       // The clavicle at rest against the chest (it follows its arm below, standing): the shoulder read from this solve.
       this.restLocal(BONES.shoulder[side]);
       const shoulder = this.bones.get(BONES.arm[side])!.getWorldPosition(this.joints.shoulder[side]);
       const hand = p[side === 'left' ? POINT.leftHand : POINT.rightHand];
+      if (state.phase === 'prone') this.strokeSide(side, RIG_DETAIL.strokeElbow, pole);
       if (fallen && state.swim.stroking) this.crawlHand(state, side, shoulder, target);
       else if (fallen) target.subVectors(hand, shoulder).setLength(RIG_DETAIL.fallenReach * this.armLength).add(shoulder);
       else if (state.phase === 'prone' && state.duck > 0.3) this.straightOnRail(hand, shoulder, target);
+      else if (state.phase === 'prone') this.softReach(shoulder, hand, target);
       else target.copy(hand);
       if (state.phase === 'standing') this.freeArm(state, side, shoulder, target, 1 - this.reachDepth(hand));
       if (state.phase === 'standing' && !this.isRearFoot(state, side)) this.leadArm(state, shoulder, target, 1 - this.reachDepth(hand));
@@ -508,7 +570,8 @@ export class HumanoidRig {
       // (a hint along the forearm spun the hand).
       const forearm = this.direction.subVectors(this.joints.wrist[side], this.joints.elbow[side]).normalize();
       const handHint = this.handHint.copy(fallen ? this.facing : boardUp);
-      if (!fallen) {
+      if (state.phase === 'prone') this.strokeSide(side, RIG_DETAIL.strokeHand, handHint);
+      else if (!fallen) {
         const off = this.scratch.copy(boardUp).addScaledVector(forearm, -boardUp.dot(forearm)).length();
         const keep = Math.min(1, Math.max(0, (off - 0.15) / 0.2));
         handHint.multiplyScalar(keep).addScaledVector(this.facing, 1 - keep);
@@ -1025,6 +1088,16 @@ export class HumanoidRig {
   }
 
   /**
+   * Lying, a direction on the arm's side of the board (step 8): `out` from the
+   * body, `up` off the deck and `forward` toward the nose (negative: toward the
+   * tail), in the board's frame.
+   */
+  private strokeSide(side: Side, direction: { out: number; up: number; forward: number }, result: Vector3): Vector3 {
+    const outward = this.strokeOffset.copy(this.left).multiplyScalar(side === 'left' ? 1 : -1);
+    return result.copy(outward).multiplyScalar(direction.out).addScaledVector(this.boardUp, direction.up).addScaledVector(this.boardForward, direction.forward);
+  }
+
+  /**
    * The swimmer's crawl: the hand circles the shoulder in the plane of the
    * heading and the vertical, reaching forward, pulling down and back under the
    * body, recovering over the water; the arms half a stroke apart.
@@ -1033,7 +1106,26 @@ export class HumanoidRig {
     const angle = 2 * Math.PI * (this.crawlPhase + (side === 'left' ? 0 : 0.5));
     const reach = RIG_DETAIL.crawlReach * this.armLength;
     this.nose.set(Math.sin(state.heading), 0, Math.cos(state.heading));
-    return out.copy(shoulder).addScaledVector(this.nose, reach * Math.cos(angle)).addScaledVector(WORLD_UP, reach * Math.sin(angle));
+    // The circle in the plane of the heading and the rolled body's back (step 8): swinging forward, the arm goes out
+    // over the water as the body rolls away from it.
+    const back = this.crawlBack.copy(this.facing).negate();
+    return out.copy(shoulder).addScaledVector(this.nose, reach * Math.cos(angle)).addScaledVector(back, reach * Math.sin(angle));
+  }
+
+  /**
+   * The swimmer's roll about its spine now, rad (positive: the left shoulder up),
+   * and the head's share of it (step 8, `RIG_DETAIL.crawlRoll`): toward each arm
+   * as its hand passes under its shoulder, further toward the breathing side,
+   * where the head turns with the body; the head stays down otherwise, and
+   * holding its breath (under water or diving) it never turns, and the roll is
+   * even.
+   */
+  private crawlRoll(state: RiderVisualState): { roll: number; head: number } {
+    const { away, breath } = RIG_DETAIL.crawlRoll;
+    const held = state.swim.under || state.swim.diving;
+    const wave = Math.sin(2 * Math.PI * this.crawlPhase);
+    const roll = ((wave >= 0 || held ? away : breath) * Math.PI * wave) / 180;
+    return { roll, head: held ? 0 : Math.min(0, roll) };
   }
 
   /** The crawl advances with the clock, quicker as the breath runs low; a jump in the clock restarts nothing. */
@@ -1043,6 +1135,15 @@ export class HumanoidRig {
     if (!(step > 0 && step < 0.5)) return;
     const breath = Math.min(1, Math.max(0, state.breath));
     this.crawlPhase = (this.crawlPhase + step * RIG_DETAIL.crawlRate * (1 + RIG_DETAIL.panic * (1 - breath))) % 1;
+  }
+
+  /** Lying, the hand's point brought within the arm's reach smoothly (`armEase`): along the line from the shoulder. */
+  private softReach(shoulder: Vector3, hand: Vector3, out: Vector3): Vector3 {
+    const offset = out.subVectors(hand, shoulder);
+    const distance = offset.length();
+    if (distance < 1e-9) return out.copy(hand);
+    const reach = softCap(distance, RIG_DETAIL.armReach * this.armLength, RIG_DETAIL.armEase * this.armLength);
+    return offset.multiplyScalar(reach / distance).add(shoulder);
   }
 
   /** Ducking, a hand on its rail slid forward along the board until the arm from the shoulder is straight. */
