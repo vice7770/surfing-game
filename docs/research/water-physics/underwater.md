@@ -51,6 +51,8 @@ All of this goes in Rich only, is cosmetic online, and runs only while the camer
 
 Items 1–2 come first: moving tracers in a flat fog still read flat. The whole package is estimated at 0.6–1.3 ms on the M4 Pro.
 
+Items 1–2 were prototyped on 2026-09-29: [underwater-prototype.md](underwater-prototype.md).
+
 ## Showing the water move
 
 Move tracers with the same flow that pushes the rider:
@@ -63,9 +65,9 @@ Move tracers with the same flow that pushes the rider:
 
 The surge, a slow shoreward creep at the top and a seaward drift along the bed then appear on their own. Each tracer shows something different: specks show the surge and the rips, bubbles the roller and the vortex, sand the vortices striking the bed. Finding Nemo called the same idea floating "particulate".
 
-## Your decisions
+## Your decisions (settled 2026-09-29)
 
-1. **Visibility:** physical (2.2 m at the Beach, white-outs inside plumes), or a minimum for readability, as Subnautica chose.
-2. **Ride camera:** does the camera follow the rider underwater in duck-dives and hold-downs? If so, does Classic get the new underwater look too?
-3. **Haze and sand:** drawn only (recommended), or simulated so they affect the rider and must match online.
-4. **Order:** 1–2 now, 3 next, 4 with 6, then 5; 7 once you decide 2; 8 after the swept barrel.
+1. **Visibility:** physical colours and fading with a readability floor of about 6–8 m, as Subnautica chose. Plumes still white out briefly.
+2. **Ride camera:** follows the rider underwater in duck-dives and hold-downs, with a waterline splitting the frame, in Rich only. Classic stays unchanged.
+3. **Haze and sand:** drawn only, cosmetic, and allowed to differ between online players.
+4. **Order:** 1–2 now, 3 next, 4 with 6, then 5; 7 after that; 8 after the swept barrel.

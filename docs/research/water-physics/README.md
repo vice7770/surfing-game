@@ -32,6 +32,7 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 | [roller.md](roller.md) and [roller-build.md](roller-build.md) | The roller's measured shape and effect on riders, and how to build it on the barrel's loft |
 | [spray-and-mist.md](spray-and-mist.md) | Spray, spit, the offshore veil and haze: why they read as dots, the numbers, and what to change |
 | [underwater.md](underwater.md) | The view below water: colour and fog, the sky seen from below, the water mass moving, bubble plumes and sand |
+| [underwater-prototype.md](underwater-prototype.md) | A throwaway prototype of underwater items 1–2, measured against the targets, and what a real PR must do |
 | [graphics.md](graphics.md) | Lip glow, the tube interior, break-up, spray and the tube camera |
 | [consult-log.md](consult-log.md) | Every consult and decision, newest first, including advice that turned out wrong |
 | [sources.md](sources.md) | Every source, opened and read, by topic |
@@ -54,7 +55,7 @@ They tag each finding as measured, modelled or inferred, and cite `path:line` in
 - **Solver (decided 2026-09-29):** depth-aware dispersion plus a Froude cap and a smooth edge ramp, being built; PR #63 is on hold as a draft.
 - **The peel meter:** measure peel with the solver's real crest speed. It moves every spot's skill rating (a task chip).
 - **Spray and mist:** optics, haze above water, the budget, rainbows and the order (see [spray-and-mist.md](spray-and-mist.md)).
-- **Underwater:** visibility (physical or a readability minimum), an underwater ride camera, and whether haze and sand are drawn only (see [underwater.md](underwater.md)).
+- **Underwater (decided 2026-09-29):** a 6–8 m readability floor, the ride camera underwater in Rich only, haze and sand drawn only, the recommended order. The prototype raised three more: an underwater exposure gain, the floor at the Point, and a water colour term (see [underwater-prototype.md](underwater-prototype.md)).
 
 ## Handover
 
@@ -66,4 +67,4 @@ The advisor session moved to the cloud on 2026-09-29. [HANDOVER.md](HANDOVER.md)
 
 ## Keeping this folder current
 
-When a tab of the Claude Doc changes, export it as Markdown and replace its page here. Add a row to the consult log for each new consult.
+When a tab of the Claude Doc changes, export it as Markdown and replace its page here, or edit the page by hand to match. Add a row to the consult log for each new consult.

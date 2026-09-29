@@ -1,0 +1,471 @@
+diff --git a/src/main.ts b/src/main.ts
+index dba756c..e2fc479 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -49,6 +49,7 @@ import { Environment } from './scene/Environment';
+ import { PhotoSky, sunElevationFromSlider } from './scene/PhotoSky';
+ import { ShadowRig, parseShadowLevel } from './scene/ShadowRig';
+ import { WaterSurface } from './scene/WaterSurface';
++import { UnderwaterPass, eyeAttenuation, underwaterIrradiance, underwaterUniforms } from './scene/underwater';
+ import { CAUSTIC_WINDOW, CausticMap } from './scene/CausticMap';
+ import { FftChop } from './scene/FftChop';
+ import { FlatSurfaceSource } from './scene/FlatSurfaceSource';
+@@ -165,6 +166,9 @@ class SurfGame {
+   private isBelowSurface = false;
+   private readonly underwaterFog = new FogExp2('#367e83', 0.035);
+   private readonly underwaterColor = new Color('#367e83');
++  /** PROTOTYPE (underwater items 1–2): Rich under water fogs per channel in one composite instead of the FogExp2. */
++  private underwaterPass?: UnderwaterPass;
++  private readonly black = new Color(0, 0, 0);
+   private readonly skyColor = new Color('#b8e3e5');
+   private readonly physicalMode: PhysicalMode;
+   private physicalSettings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
+@@ -959,7 +963,13 @@ class SurfGame {
+     const { board } = this.physicalMode;
+     const nose = this.shadowNose.set(0, 0, 1).applyQuaternion(board.quaternion);
+     this.shadows.follow(board.position, this.currentSunDirection(), board.position.y - 0.04, Math.atan2(nose.x, nose.z));
+-    this.renderer.render(this.scene, view);
++    if (underwaterUniforms.uwActive.value > 0 && host) {
++      this.refreshUnderwater();
++      this.underwaterPass ??= new UnderwaterPass(this.water.causticSource as never);
++      this.underwaterPass.render(this.renderer, this.scene, view, host.heightAt(view.position.x, view.position.z) - view.position.y);
++    } else {
++      this.renderer.render(this.scene, view);
++    }
+   }
+ 
+   /** The water look (G8) on every water drawing: the tank, the far ocean and the spray. */
+@@ -1060,13 +1070,30 @@ class SurfGame {
+ 
+   private setUnderwater(below: boolean): void {
+     this.isBelowSurface = below;
+-    if (this.environment.group.visible === below) {
+-      this.scene.fog = below ? this.underwaterFog : null;
+-      this.scene.background = below ? this.underwaterColor : (this.photoSky.background ?? this.skyColor);
+-      this.environment.group.visible = !below;
++    // PROTOTYPE: Rich under water takes the composite fog (the background is the water's own radiance there); Classic keeps the FogExp2.
++    const rich = below && this.water.look === 'rich';
++    underwaterUniforms.uwActive.value = rich ? 1 : 0;
++    if (below) {
++      this.scene.fog = rich ? null : this.underwaterFog;
++      this.scene.background = rich ? this.black : this.underwaterColor;
++      this.environment.group.visible = false;
++    } else if (!this.environment.group.visible) {
++      this.scene.fog = null;
++      this.scene.background = this.photoSky.background ?? this.skyColor;
++      this.environment.group.visible = true;
+     }
+   }
+ 
++  /** PROTOTYPE: the light under the surface from the sun and sky shown now, and the spot's eye-path attenuation with its floor. */
++  private refreshUnderwater(): void {
++    const sky = this.photoSky.ready ? this.photoSky.environmentIntensity * this.photoSky.skyIrradiance : this.ambient.intensity * Math.PI;
++    const light = underwaterIrradiance(this.currentSunDirection(), this.sunlight.color.clone().multiplyScalar(this.sunlight.intensity), sky);
++    underwaterUniforms.uwSunIrradiance.value.copy(light.sun);
++    underwaterUniforms.uwSkyIrradiance.value.copy(light.sky);
++    underwaterUniforms.uwSunWater.value.copy(light.sunWater);
++    underwaterUniforms.uwEyeAttenuation.value.copy(eyeAttenuation(this.water.attenuation.value as Vector3));
++  }
++
+   private focusGame(): void {
+     this.renderer.domElement.focus({ preventScroll: true });
+   }
+diff --git a/src/scene/PhotoSky.ts b/src/scene/PhotoSky.ts
+index 4434f9d..5d84f89 100644
+--- a/src/scene/PhotoSky.ts
++++ b/src/scene/PhotoSky.ts
+@@ -143,6 +143,11 @@ export class PhotoSky {
+     return this.environment !== undefined;
+   }
+ 
++  /** PROTOTYPE (underwater): the photo's horizontal sky irradiance without the sun, in the HDR's units (× environmentIntensity for the scene's). */
++  get skyIrradiance(): number {
++    return this.current?.skyIrradiance ?? 0;
++  }
++
+   get timeOfDay(): TimeOfDay | undefined {
+     return this.current?.timeOfDay;
+   }
+diff --git a/src/scene/SpotSeabed.ts b/src/scene/SpotSeabed.ts
+index aece72e..f9cbe30 100644
+--- a/src/scene/SpotSeabed.ts
++++ b/src/scene/SpotSeabed.ts
+@@ -1,6 +1,8 @@
+ import { BufferAttribute, BufferGeometry, Color, Mesh, MeshBasicMaterial } from 'three';
+ import { causticLookupPars, type CausticUniforms } from './CausticMap';
+ import { buildGridGeometry } from './gridGeometry';
++import { underwaterPars, underwaterUniforms } from './underwater';
++import { PLUME_DENSITY } from './water/richWaterGlsl';
+ import { WATER_IOR } from './waterOptics';
+ 
+ /** Share of the sand's light that is direct sun, which the caustics gather and spread (a rendering choice). */
+@@ -26,7 +28,8 @@ export class SpotSeabed {
+   useCaustics(caustics: CausticUniforms, water: { waterAttenuation: { value: unknown }; waterSunDirection: { value: unknown } }): void {
+     const material = this.mesh.material;
+     material.onBeforeCompile = (shader) => {
+-      Object.assign(shader.uniforms, caustics, { waterAttenuation: water.waterAttenuation, waterSunDirection: water.waterSunDirection });
++      // PROTOTYPE: all the water's uniforms (the surface, foam and air textures, the optics) and the underwater light.
++      Object.assign(shader.uniforms, water, caustics, underwaterUniforms);
+       shader.vertexShader = shader.vertexShader
+         .replace('#include <common>', '#include <common>\nvarying vec3 vSeabedWorld;')
+         .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSeabedWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
+@@ -35,7 +38,27 @@ export class SpotSeabed {
+ varying vec3 vSeabedWorld;
+ uniform vec3 waterAttenuation;
+ uniform vec3 waterSunDirection;
+-${causticLookupPars}`)
++const float PLUME_DENSITY = ${PLUME_DENSITY.toFixed(3)};
++uniform vec3 waterDiffuseAttenuation;
++uniform vec3 waterDeepReflectance;
++uniform vec3 waterBedAlbedo;
++uniform sampler2D waterSurface;
++uniform sampler2D waterAeration;
++uniform vec4 waterGrid;
++uniform vec2 waterGridSize;
++${underwaterPars}
++${causticLookupPars}
++// (height, foam) and (void fraction, plume depth) at xz, bilinear like the water's own lookups.
++vec4 seabedWaterAt( vec2 xz ) {
++  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
++  ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
++  vec2 t = g - vec2( c );
++  vec4 top = mix( vec4( texelFetch( waterSurface, c, 0 ).rg, texelFetch( waterAeration, c, 0 ).rg ),
++    vec4( texelFetch( waterSurface, c + ivec2( 1, 0 ), 0 ).rg, texelFetch( waterAeration, c + ivec2( 1, 0 ), 0 ).rg ), t.x );
++  vec4 bottom = mix( vec4( texelFetch( waterSurface, c + ivec2( 0, 1 ), 0 ).rg, texelFetch( waterAeration, c + ivec2( 0, 1 ), 0 ).rg ),
++    vec4( texelFetch( waterSurface, c + ivec2( 1, 1 ), 0 ).rg, texelFetch( waterAeration, c + ivec2( 1, 1 ), 0 ).rg ), t.x );
++  return mix( top, bottom, t.y );
++}`)
+         .replace('#include <color_fragment>', `#include <color_fragment>
+ {
+   float seabedSun = clamp( waterSunDirection.y, 0.05, 1.0 );
+@@ -43,6 +66,18 @@ ${causticLookupPars}`)
+   vec3 seabedReach = exp( -waterAttenuation * max( 0.0, -vSeabedWorld.y ) / seabedCos );
+   float seabedLight = causticLightAt( vSeabedWorld.xz );
+   diffuseColor.rgb *= mix( vec3( 1.0 ), vec3( seabedLight ), ${DIRECT_SHARE.toFixed(2)} * seabedReach );
++  // PROTOTYPE (underwater item 1): under water, a Lambertian bed of the spot's albedo lit by the real sun and sky,
++  // E_d(z)/π, the direct sun through the caustics. Under foam or a plume the sun turns diffuse: no caustics, and
++  // 0.45 of the light gets through [est, Koepke's 55 % foam reflectance].
++  if ( uwActive > 0.5 ) {
++    vec4 seabedWater = seabedWaterAt( vSeabedWorld.xz );
++    float seabedDepth = max( 0.0, seabedWater.x - vSeabedWorld.y );
++    float seabedWhite = clamp( max( seabedWater.y, 1.0 - exp( -PLUME_DENSITY * seabedWater.z * seabedWater.w ) ), 0.0, 1.0 );
++    vec3 seabedSun = uwSunIrradiance * exp( -waterDiffuseAttenuation * seabedDepth / max( uwSunWater.y, 0.2 ) );
++    vec3 seabedSky = uwSkyIrradiance * exp( -waterDiffuseAttenuation * 1.2 * seabedDepth );
++    vec3 seabedClear = seabedSun * causticLightAt( vSeabedWorld.xz ) + seabedSky;
++    diffuseColor.rgb = waterBedAlbedo * mix( seabedClear, 0.45 * ( seabedSun + seabedSky ), seabedWhite ) / PI;
++  }
+ }`);
+     };
+     material.customProgramCacheKey = () => 'breakline-spot-seabed-caustics';
+diff --git a/src/scene/WaterSurface.ts b/src/scene/WaterSurface.ts
+index 0db5853..893115a 100644
+--- a/src/scene/WaterSurface.ts
++++ b/src/scene/WaterSurface.ts
+@@ -18,7 +18,7 @@ import {
+   Vector4,
+ } from 'three';
+ import type { WaterLook } from './water/waterLook';
+-import { RICH_FOAM, RICH_REFLECTION, RICH_WATER, richAerationFragmentPars, richAerationVertexPars, richBeginNormal, richFragmentPars, richReflectionPars, richNormalFragment, richVertexHeight, waterCubicPars } from './water/richWaterGlsl';
++import { RICH_FOAM, RICH_REFLECTION_TANK, RICH_WATER, richAerationFragmentPars, richAerationVertexPars, richBeginNormal, richFragmentPars, richReflectionPars, richNormalFragment, richVertexHeight, waterCubicPars } from './water/richWaterGlsl';
+ import {
+   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
+ } from './water/richPatch';
+@@ -31,6 +31,7 @@ import { TUBE_CAPACITY, TUBE_STRIDE } from '../wave/tubeTable';
+ import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
+ import { foamPatternPars, foamTileTexture } from './foamPattern';
+ import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
++import { underwaterPars, underwaterUniforms } from './underwater';
+ import {
+   WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
+ } from './waterOptics';
+@@ -276,6 +277,7 @@ export class WaterSurface {
+       waterTubeCount: { value: 0 },
+       waterAeration: { value: this.aerationTexture },
+       waterReflection: { value: RICH_WATER.reflection },
++      ...underwaterUniforms,
+     };
+     // One air–water interface: Fresnel from n = 1.333 (F0 = 0.020), no clearcoat.
+     const material = new MeshPhysicalMaterial({
+@@ -295,14 +297,14 @@ export class WaterSurface {
+           .replace('#include <beginnormal_vertex>', richBeginNormal)
+           .replace('#include <begin_vertex>', richVertexHeight);
+         shader.fragmentShader = shader.fragmentShader
+-          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}`)
++          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${underwaterPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}`)
+           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}`)
+           // The crest light marches through the carved surface (G9): through a tube's void, not water.
+           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')
+           .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true, churn: true }))
+           .replace('#include <color_fragment>', '')
+           .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true, RICH_FOAM))
+-          .replace('#include <lights_fragment_maps>', RICH_REFLECTION);
++          .replace('#include <lights_fragment_maps>', RICH_REFLECTION_TANK);
+         return;
+       }
+       shader.vertexShader = shader.vertexShader
+diff --git a/src/scene/underwater.ts b/src/scene/underwater.ts
+new file mode 100644
+index 0000000..681160f
+--- /dev/null
++++ b/src/scene/underwater.ts
+@@ -0,0 +1,179 @@
++/**
++ * PROTOTYPE (throwaway, underwater items 1–2 of docs/research/water-physics/underwater.md).
++ * Rich only, only while the camera is under the surface:
++ *  - item 1: fog and colour from the spot's own water, per channel, with a readability floor,
++ *    brightest looking up and dimming with depth, and a seabed lit by the actual sun and sky;
++ *  - item 2: the surface from below (in richWaterGlsl.ts): Snell's window, the mirror beyond it,
++ *    foam and plume as a glowing ceiling; no caustics under whitewater (in SpotSeabed.ts).
++ * Tags: [sourced] from a cited value; [est] an estimate or rendering choice.
++ */
++import {
++  Color, DepthTexture, HalfFloatType, Mesh, OrthographicCamera, PlaneGeometry, type PerspectiveCamera, Scene,
++  ShaderMaterial, Vector2, Vector3, type WebGLRenderer, WebGLRenderTarget,
++} from 'three';
++import { WATER_IOR, schlickFresnel } from './waterOptics';
++
++/** The owner's readability floor: a black object stays visible at least this far, m (decision 2026-09-29: 6–8 m). */
++export const VISIBILITY_FLOOR = 7;
++/** A black target vanishes at 4.8/c (Davies-Colley 1988; Zaneveld & Pegau 2003: within ~10 %) [sourced]. */
++export const SIGHTING = 4.8;
++/** Tyler 1960 (Lake Pend Oreille, 6.1 m): zenith 25× the horizontal, horizontal 7× the nadir (175/25) [sourced]. */
++export const TYLER = { zenithOverLevel: 25, levelOverNadir: 7 } as const;
++/** Mean path stretch of diffuse sky light, 1/μ̄_d with μ̄_d ≈ 0.83 [est]. */
++const DIFFUSE_STRETCH = 1.2;
++/** Fresnel reflectance of uniform diffuse sky light entering water, ≈ 0.066 for n = 1.333 [sourced, textbook]. */
++const DIFFUSE_FRESNEL = 0.066;
++
++/**
++ * The eye path's beam attenuation, per channel: the spot's own c, scaled down (all channels alike, keeping the hue)
++ * so the green channel's black-target sighting 4.8/c_G is never shorter than the floor. Light from above keeps the
++ * physical K (Subnautica decoupled the sun's attenuation from the eye path's the same way).
++ */
++export function eyeAttenuation(beam: Vector3, floor = VISIBILITY_FLOOR): Vector3 {
++  const scale = Math.min(1, SIGHTING / floor / Math.max(1e-6, beam.y));
++  return beam.clone().multiplyScalar(scale);
++}
++
++/** Irradiance on a level plane just under the surface: the direct sun and the sky, after Fresnel. */
++export function underwaterIrradiance(sunDirection: Vector3, sunRadiance: Color, skyIrradiance: number): { sun: Vector3; sky: Vector3; sunWater: Vector3 } {
++  const mu = Math.max(0, sunDirection.y);
++  const direct = mu * (1 - schlickFresnel(mu));
++  // Toward the sun under water: the refracted ray reversed; its height is the refracted cosine.
++  const muWater = Math.sqrt(1 - (1 - mu * mu) / (WATER_IOR * WATER_IOR));
++  const horizontal = new Vector2(sunDirection.x, sunDirection.z);
++  const sine = Math.sqrt(Math.max(0, 1 - muWater * muWater));
++  if (horizontal.lengthSq() > 1e-9) horizontal.normalize().multiplyScalar(sine);
++  return {
++    sun: new Vector3(sunRadiance.r, sunRadiance.g, sunRadiance.b).multiplyScalar(direct),
++    // The sky's colour is not in the sky manifest: taken grey [est].
++    sky: new Vector3(1, 1, 1).multiplyScalar(skyIrradiance * (1 - DIFFUSE_FRESNEL)),
++    sunWater: new Vector3(horizontal.x, muWater, horizontal.y),
++  };
++}
++
++/** Shared by the Rich water, the seabed and the composite pass. */
++export const underwaterUniforms = {
++  uwActive: { value: 0 },
++  uwSunIrradiance: { value: new Vector3() },
++  uwSkyIrradiance: { value: new Vector3() },
++  uwSunWater: { value: new Vector3(0, 1, 0) },
++  uwEyeAttenuation: { value: new Vector3(0.2, 0.2, 0.2) },
++};
++
++/**
++ * GLSL shared by every underwater user. Needs `waterDiffuseAttenuation`, `waterDeepReflectance`, `waterBedAlbedo`.
++ * uwDownwelling: E_d(z) = E_sun e^{−K z/μ_w} + E_sky e^{−1.2 K z} (Gordon's K, the game's `diffuseAttenuation`).
++ * uwRadiance: the water's own radiance along `dir` at depth z (what fills a long path):
++ *  - level: 7 × the nadir radiance R∞ E_d/π (Morel & Prieur R∞, Q = π [est], Tyler's level/nadir = 7);
++ *  - down to the nadir: falls to R∞ E_d/π;
++ *  - up: rises toward the zenith, Tyler's 25× level, capped at what the sky can send through the window
++ *    (n² (1 − F) E_d/π for a uniform sky), interpolated in log space as μ^1.5 [est shape].
++ */
++export const underwaterPars = /* glsl */ `
++uniform float uwActive;
++uniform vec3 uwSunIrradiance;
++uniform vec3 uwSkyIrradiance;
++uniform vec3 uwSunWater;
++uniform vec3 uwEyeAttenuation;
++
++vec3 uwDownwelling( float z ) {
++  z = max( z, 0.0 );
++  return uwSunIrradiance * exp( -waterDiffuseAttenuation * z / max( uwSunWater.y, 0.2 ) )
++    + uwSkyIrradiance * exp( -waterDiffuseAttenuation * ${DIFFUSE_STRETCH.toFixed(2)} * z );
++}
++
++vec3 uwRadiance( vec3 dir, float z ) {
++  vec3 ed = uwDownwelling( z ) / PI;
++  vec3 level = ${TYLER.levelOverNadir.toFixed(1)} * waterDeepReflectance * ed;
++  float mu = dir.y;
++  if ( mu <= 0.0 ) return level * pow( ${(1 / TYLER.levelOverNadir).toFixed(4)}, -mu );
++  vec3 zenith = min( ${TYLER.zenithOverLevel.toFixed(1)} * level, ${(WATER_IOR * WATER_IOR * (1 - 0.02)).toFixed(3)} * ed );
++  float w = pow( mu, 1.5 );
++  return exp( mix( log( max( level, vec3( 1e-6 ) ) ), log( max( zenith, vec3( 1e-6 ) ) ), w ) );
++}
++
++// The Lambertian seabed at depth z, lit from above (no caustics).
++vec3 uwBedRadiance( float z ) {
++  return waterBedAlbedo * uwDownwelling( z ) / PI;
++}
++`;
++
++/**
++ * The fog as one composite: the scene drawn into a float target, then each pixel faded by e^{−c d} along its own
++ * view distance toward the water's radiance in its direction (Crest's per-channel form). A real implementation should
++ * do this inside the materials (tile GPUs, round 5 §4.3); a composite was quicker to prototype.
++ */
++export class UnderwaterPass {
++  private target?: WebGLRenderTarget;
++  private readonly size = new Vector2();
++  private readonly camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
++  private readonly quad: Mesh<PlaneGeometry, ShaderMaterial>;
++  private readonly composite: Scene;
++
++  constructor(optics: Record<string, { value: unknown }>) {
++    const material = new ShaderMaterial({
++      uniforms: {
++        ...optics,
++        ...underwaterUniforms,
++        tColor: { value: null },
++        tDepth: { value: null },
++        uwProjectionInverse: { value: null },
++        uwCameraWorld: { value: null },
++        uwCameraDepth: { value: 0 },
++      },
++      vertexShader: /* glsl */ `
++varying vec2 vUv;
++void main() { vUv = uv; gl_Position = vec4( position.xy, 0.0, 1.0 ); }`,
++      fragmentShader: /* glsl */ `
++#include <common>
++uniform vec3 waterDiffuseAttenuation;
++uniform vec3 waterDeepReflectance;
++uniform vec3 waterBedAlbedo;
++${underwaterPars}
++uniform sampler2D tColor;
++uniform sampler2D tDepth;
++uniform mat4 uwProjectionInverse;
++uniform mat4 uwCameraWorld;
++uniform float uwCameraDepth;
++varying vec2 vUv;
++void main() {
++  float depth = texture2D( tDepth, vUv ).x;
++  vec4 view = uwProjectionInverse * vec4( vUv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0 );
++  view /= view.w;
++  float distance = depth >= 1.0 ? 1e4 : length( view.xyz );
++  vec3 dir = normalize( ( uwCameraWorld * vec4( normalize( view.xyz ), 0.0 ) ).xyz );
++  // The in-scatter comes mostly from within 1/c of the eye: take the water's radiance at that depth [est].
++  float reach = min( distance, 1.0 / max( uwEyeAttenuation.g, 1e-3 ) );
++  vec3 far = uwRadiance( dir, uwCameraDepth - dir.y * reach );
++  vec3 through = exp( -uwEyeAttenuation * distance );
++  gl_FragColor = vec4( texture2D( tColor, vUv ).rgb * through + far * ( 1.0 - through ), 1.0 );
++  #include <tonemapping_fragment>
++  #include <colorspace_fragment>
++}`,
++      depthTest: false,
++      depthWrite: false,
++    });
++    this.quad = new Mesh(new PlaneGeometry(2, 2), material);
++    this.quad.frustumCulled = false;
++    this.composite = new Scene();
++    this.composite.add(this.quad);
++  }
++
++  render(renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera, cameraDepth: number): void {
++    renderer.getDrawingBufferSize(this.size);
++    if (!this.target || this.target.width !== this.size.x || this.target.height !== this.size.y) {
++      this.target?.dispose();
++      this.target = new WebGLRenderTarget(this.size.x, this.size.y, { type: HalfFloatType, depthTexture: new DepthTexture(this.size.x, this.size.y) });
++    }
++    renderer.setRenderTarget(this.target);
++    renderer.render(scene, camera);
++    renderer.setRenderTarget(null);
++    const uniforms = this.quad.material.uniforms;
++    uniforms.tColor.value = this.target.texture;
++    uniforms.tDepth.value = this.target.depthTexture;
++    uniforms.uwProjectionInverse.value = camera.projectionMatrixInverse;
++    uniforms.uwCameraWorld.value = camera.matrixWorld;
++    uniforms.uwCameraDepth.value = cameraDepth;
++    renderer.render(this.composite, this.camera);
++  }
++}
+diff --git a/src/scene/water/richWaterGlsl.ts b/src/scene/water/richWaterGlsl.ts
+index 444ac32..3656002 100644
+--- a/src/scene/water/richWaterGlsl.ts
++++ b/src/scene/water/richWaterGlsl.ts
+@@ -5,7 +5,7 @@
+ import { waterCubicPars } from './cubicSurface';
+ import { PATCH_SKIRT } from './richPatch';
+ import { RICH_SPECULAR } from './specular';
+-import { CLASSIC_FOAM } from '../waterOptics';
++import { CLASSIC_FOAM, WATER_IOR } from '../waterOptics';
+ 
+ export { waterCubicPars };
+ 
+@@ -66,6 +66,44 @@ vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;
+ vPatch = onPatch;
+ vWaterSkirt = skirt;`;
+ 
++/**
++ * PROTOTYPE (underwater item 2): the surface seen from below while the camera is under (uwActive), all emitted:
++ * - the view refracted out with n = 1.333: inside the 97.2° window the sky map and the sun, × (1 − F) × n²
++ *   (radiance gains n² entering the denser medium) [sourced, Snell and radiometry];
++ * - the rest, and everything past the critical angle 48.6° (F = 1), mirrors the water below: its own radiance
++ *   and, through vWaterDepth of it, the lit seabed [sourced physics; the water radiance is underwater.ts's model];
++ * - foam and plume are diffusers: they pass light in every direction, so they glow across the whole ceiling,
++ *   window or not: foam 0.45 E_d/π (Koepke's 55 % reflectance, little absorbed [est]); a plume by two-stream
++ *   transmission 1/(1 + 0.75(1 − g)τ), g = 0.85, τ = 3α/(2a)·depth with a = 1 mm [round 5 §3.5].
++ * The camera above water (the tube's roof from inside) keeps today's shading.
++ */
++const UNDERSIDE = /* glsl */ `  if ( uwActive > 0.5 && faceDirection < 0.0 ) {
++    vec3 uwUp = -waterN;
++    vec3 uwOut = refract( -waterV, waterN, ${WATER_IOR.toFixed(3)} );
++    vec3 uwMirrorDir = reflect( -waterV, waterN );
++    uwMirrorDir.y = min( uwMirrorDir.y, -0.02 );
++    float uwPath = vWaterDepth / max( 0.05, -uwMirrorDir.y );
++    vec3 uwMirror = mix( uwRadiance( uwMirrorDir, 0.0 ), uwBedRadiance( vWaterDepth ), exp( -uwEyeAttenuation * uwPath ) );
++    vec3 uwCeiling = uwMirror;
++    if ( dot( uwOut, uwOut ) > 0.5 ) {
++      float uwF = waterFresnel( dot( uwOut, uwUp ) );
++      vec3 uwSky = vec3( 0.0 );
++      #ifdef USE_ENVMAP
++        uwSky = textureCubeUV( envMap, envMapRotation * uwOut, 0.0 ).rgb * envMapIntensity;
++      #endif
++      // The sun, spread over a pow(cos, 800) lobe of 2π/801 sr so it stays a small bright disc [est].
++      uwSky += waterSunRadiance * pow( max( 0.0, dot( uwOut, waterSunDirection ) ), 800.0 ) * ( 801.0 / ( 2.0 * PI ) );
++      uwCeiling = uwF * uwMirror + ( 1.0 - uwF ) * ${(WATER_IOR * WATER_IOR).toFixed(3)} * uwSky;
++    }
++    vec3 uwBelowSurface = uwSunIrradiance + uwSkyIrradiance;
++    float uwTau = 1500.0 * vWaterAir * min( vWaterPlumeDepth, vWaterDepth );
++    vec3 uwPlumeGlow = waterFoamColor * uwBelowSurface / PI / ( 1.0 + 0.75 * 0.15 * uwTau );
++    uwCeiling = mix( uwCeiling, uwPlumeGlow, waterPlume );
++    uwCeiling = mix( uwCeiling, waterFoamColor * 0.45 * uwBelowSurface / PI, waterCover );
++    diffuseColor.rgb = vec3( 0.0 );
++    totalEmissiveRadiance = uwCeiling;
++  }`;
++
+ /**
+  * The Rich foam composition for `waterBodyFragment`: fresh whitewater as dense
+  * churn, creased between its clumps, opening into the lace as it ages; the
+@@ -87,7 +125,8 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
+   diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );
+   ${RICH_SPECULAR}
+   roughnessFactor = mix( roughnessFactor, 0.7, waterCover );
+-  totalEmissiveRadiance += 0.18 * waterFresh * ( 1.0 - waterChurn.x ) * pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 6.0 ) * waterSunRadiance;`;
++  totalEmissiveRadiance += 0.18 * waterFresh * ( 1.0 - waterChurn.x ) * pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 6.0 ) * waterSunRadiance;
++${UNDERSIDE}`;
+ 
+ /**
+  * The Rich look's own balance (G8, tuned on the water sheet against the
+@@ -106,6 +145,12 @@ export const RICH_REFLECTION = `#include <lights_fragment_maps>
+   radiance *= waterReflection;
+ #endif`;
+ 
++/** PROTOTYPE: the tank's, where the underside seen from under water emits all its light (UNDERSIDE) and mirrors no sky. */
++export const RICH_REFLECTION_TANK = `${RICH_REFLECTION}
++#if defined( RE_IndirectSpecular )
++  if ( uwActive > 0.5 && faceDirection < 0.0 ) radiance = vec3( 0.0 );
++#endif`;
++
+ /** The far ocean's Rich foam: Classic's composition with the Rich gloss (it has no churn or streaks). */
+ export const RICH_FAR_FOAM = CLASSIC_FOAM.replace(
+   'roughnessFactor = mix( roughnessFactor, 0.9, waterCover );',
