@@ -104,4 +104,50 @@
 
 ## Findings
 
-(Filled in during execution.)
+### The paddler
+
+The measures found more than the plan expected. The drawn paddle stroke depended on the display rate: its hand's path was 53 cm across the board at 30 Hz, 22–26 at 60 and 8–11 at 120, and it popped at 120 Hz (10 m/s at a joint, 16 rad/s at a bone). Four causes, each fixed where it arose:
+
+1. **The physics' drawn hand path jumped 25 cm** at each end of the pull. The recovery started at the deck's height, not where the pull left the hand under the water.
+   - The recovery now leaves the water at the hip and re-enters at the reach with no speed at either end, low (0.12 m over the deck) and swinging 10 cm out over the water.
+   - This path is only drawn: the physics pushes on the water during the pull alone, as before. The physics and riding suites are unchanged.
+2. **The arm snapped straight** four times a stroke. The physics' hand is out of the drawn arm's reach through most of the pull, and a two-bone arm's elbow turns infinitely fast at full reach. Lying, the arm now comes to its reach smoothly (`armEase`, a tenth of its length), as step 3's legs do.
+3. **The elbow and the hand flipped.** The elbow's side (up and a little out) met the arm head on as the pull passed under the shoulder. The hand's back fell back to the chest's facing, which faces the deck lying down, and spun half a turn.
+   - Lying, the elbow is now high, out and trailing, as a paddler's high elbow. The hand's back points up, out and forward.
+   - Both stay 36° or more off every way the arm points through the stroke.
+4. **The arm folded tight past the shoulder.** A recovery at the shoulder's height passed the hand 12 cm from it, and the fold turned the arm fast enough for a 30 Hz display's smoothing to read the turn as a jump.
+   - The low, wide recovery (above) keeps the hand clear.
+   - Its width matches Nessler et al. 2015: 19 cm, against 17 ± 7.
+
+**Tried and reverted:** counting the smoothing's jump spread in time rather than frames. It fixed the rate dependence here, but broke the pop-up's switch blend, which relies on three frames. So the fix went to the source signals instead.
+
+**The stroke now,** the same at 30, 60 and 120 Hz, and for another player's paddler:
+
+| Measure | Drawn | Reference |
+|---|---:|---|
+| Hand path along the board | 73 cm | 97 ± 8 (Nessler 2015) — **short, pinned** |
+| Across | 19 cm | 17 ± 7 |
+| Up and down | 37 cm | 42 ± 8 to 47 ± 9 |
+| Fastest hand frame | 4.4–4.6 m/s | the physics' 4.4 |
+| Board pitch | 10.3° | 12.3 ± 2.3° (Nessler 2019) |
+
+### The swimmer
+
+- **It faced wherever its spine leaned.** A fallen body faced its heading made square to its spine, which vanishes when the spine lies along the heading, so the swimmer drifted from face up (−157°) to one side and the other. It now faces the water lying flat or diving, and its heading upright, turning smoothly between.
+- **The crawl as swimmers swim it:**
+  - **Rate:** 0.38 cycles a second, where it drew 0.8. That's Kjendlie et al. 2004's adults at 1.0 m/s, the physics' own swim speed.
+  - **Roll:** the body rolls toward each pulling arm, 66° toward the breathing side and 49° the other way. The rig asks for Payton et al. 1999's 57° and 66°. The film reads 49° because the physics' spine leans as it swims, and the rig rolls about it. That's within Barden and Barber 2022's 45–54° at a submaximal pace.
+  - **Head and arms:** the head turns with the roll only to breathe, and stays down with the breath held. The arms circle in the rolled body's plane.
+- **Another player's swimmer** matches the local one within a degree.
+
+### Open, for you
+
+- **The physics posture of the paddle** (the plan's rule: the physics changes only as its own measured step). Three gaps go together:
+  - **The board's roll:** 7° through a stroke, against 27–45° (Nessler 2019 on a short board; less on bigger boards).
+  - **The stroke rate:** 60 a minute a side, where Nessler's line gives about 50 at the game's 1.7 m/s.
+  - **The drawn stroke's length:** 73 cm against 97. The physics' hand enters and leaves 0.7 m from the drawn shoulder, past the arm's reach. Real paddlers reach with the shoulder and roll with the board.
+- **The swimmer breathes each cycle to its right:** a provisional choice, no source.
+- **Falling off the board while lying down** flings the drawn arms at 5–8 m/s. The switch spike reads 2.3 m/s at 120 Hz, over the 2 m/s limit; it read 2.4 before this step. It's the fall's own, not the swim's: open.
+- **Another player's swimmer under water** still turns its head to breathe, because the pose doesn't carry the head being under. No wire change.
+- **The flutter kick** still beats twice a second. A six-beat kick at 0.38 cycles would be about 1.1 a second per leg. Out of scope.
+- **The duck-dive** stays parked (memory `wipeout-duck-dive-requirements`: the rigid rider can't dive).

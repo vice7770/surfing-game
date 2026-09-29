@@ -563,6 +563,22 @@ describe('the paddler and the swimmer (step 8)', () => {
     }
   }, 240_000);
 
+  it('draws another player\'s paddler and swimmer as the local ones, from what the game sends', () => {
+    const swim = (drawer: typeof trackDrawer | typeof remoteDrawer) => {
+      const film = filmBody(scenario('swimming'), { rate: 60, drawer, pose: posed() });
+      return swimRoll({ rate: 60, frames: film.frames.filter((frame) => frame.time >= 4) });
+    };
+    const [local, remote] = [swim(trackDrawer), swim(remoteDrawer)];
+    expect(Math.abs(remote.left - local.left)).toBeLessThan(3);
+    expect(Math.abs(remote.right - local.right)).toBeLessThan(3);
+    const paddle = (drawer: typeof trackDrawer | typeof remoteDrawer) => {
+      const film = filmBody(scenario('paddle then glide'), { rate: 60, drawer, pose: posed() });
+      return paddleStroke({ rate: 60, frames: film.frames.filter((frame) => frame.time >= 5 && frame.time < 18) }, 'left');
+    };
+    const [here, there] = [paddle(trackDrawer), paddle(remoteDrawer)];
+    for (const axis of ['along', 'across', 'vertical'] as const) expect(Math.abs(there[axis] - here[axis]), axis).toBeLessThan(0.01);
+  }, 240_000);
+
   // Its length is short: 73 cm. The physics' hand enters 0.7 m from the drawn shoulder and leaves as far behind it,
   // past the drawn arm's reach, so the drawn hand stops short at both ends. Real paddlers reach with the shoulder and
   // roll with the board (27–45° a stroke, Nessler et al. 2019; the physics rolls it 7°): a question for the physics
