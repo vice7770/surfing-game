@@ -52,6 +52,20 @@ export interface AutopilotOptions {
 export type AutopilotState = 'position' | 'wait' | 'go' | 'ride' | 'done';
 type Turn = 'bottom' | 'top' | 'cutback';
 
+/** A turn the autopilot rode (style 'turns'), for the recorder's log: when, how far, how long, and the speed it kept. */
+export interface TurnRecord {
+  kind: Turn;
+  /** Seconds into the ride it began. */
+  at: number;
+  seconds: number;
+  /** The heading turned, degrees. */
+  degrees: number;
+  speedIn: number;
+  speedOut: number;
+  /** It reached its end (not given up at TURN_LIMIT, nor ended by a fall). */
+  completed: boolean;
+}
+
 /** Standing, how far the heading error and yaw rate turn the lean: rad per full lean, and s of yaw rate. */
 const HEADING_GAIN = 0.35;
 const YAW_DAMPING = 0.25;
@@ -113,6 +127,10 @@ export class Autopilot {
   attempts = 0;
   /** Seconds standing in the attempt under way. */
   rideTime = 0;
+  /** Riding S-turns, what the rider is doing now, for the recorder's overlay (empty otherwise). */
+  phase = '';
+  /** The turns ridden this attempt. */
+  readonly turnRecords: TurnRecord[] = [];
   private readonly waitOutside: number;
   private readonly rise: number;
   private readonly line: number;
@@ -134,6 +152,11 @@ export class Autopilot {
   /** The open face a turn under way began toward: it finishes that way (the curl showing on the other side mid-turn reversed it). */
   private turnFace = 0;
   private blocked?: Turn;
+  /** The turn under way: the heading turned so far, the last heading, and its start's time and speed. */
+  private turnYaw = 0;
+  private turnHeading = 0;
+  private turnStart = 0;
+  private turnSpeed = 0;
 
   constructor(options: AutopilotOptions = {}) {
     this.waitOutside = options.waitOutside ?? 5;
@@ -157,6 +180,8 @@ export class Autopilot {
     this.lastHeading = Number.NaN;
     this.turn = undefined;
     this.blocked = undefined;
+    this.phase = '';
+    this.turnRecords.length = 0;
   }
 
   next(view: AutopilotView, dt: number): RideInput {
@@ -206,6 +231,7 @@ export class Autopilot {
         break;
       case 'ride': {
         if (ride.phase === 'fallen') {
+          this.closeTurn(false, ride.speed);
           this.end(`fell · ${ride.separation ?? 'balance'}`);
           break;
         }
@@ -263,10 +289,12 @@ export class Autopilot {
     const open = this.openFace(view);
     if (this.turn) {
       this.turnTime += dt;
+      this.turnYaw += wrap(heading - this.turnHeading);
+      this.turnHeading = heading;
       const angle = this.turnFace * wrap(heading - this.travel);
       const done = this.turn === 'bottom' ? angle > BOTTOM_END : this.turn === 'top' ? angle < TOP_END : angle < CUTBACK_END;
       if (!done && this.turnTime > TURN_LIMIT) this.blocked = this.turn;
-      if (done || this.turnTime > TURN_LIMIT) this.turn = undefined;
+      if (done || this.turnTime > TURN_LIMIT) this.closeTurn(done, view.ride.speed);
     }
     if (!this.turn && wave.valid) {
       const angle = open * wrap(heading - this.travel);
@@ -277,6 +305,10 @@ export class Autopilot {
         this.turn = wanted;
         this.turnTime = 0;
         this.turnFace = open;
+        this.turnYaw = 0;
+        this.turnHeading = heading;
+        this.turnStart = this.rideTime;
+        this.turnSpeed = view.ride.speed;
       }
       if (wanted === undefined) this.blocked = undefined;
     }
@@ -284,14 +316,29 @@ export class Autopilot {
     const angle = peel * wrap(heading - this.travel);
     switch (this.turn) {
       case 'bottom':
+        this.phase = angle < EXTEND_FROM ? 'BOTTOM TURN · COMPRESSED' : 'BOTTOM TURN · EXTENDING';
         return { steer: peel, trim: 0, crouch: angle < EXTEND_FROM ? TURN_CROUCH : 0, compress: angle < EXTEND_FROM ? 1 : 0 };
       case 'top':
-      case 'cutback':
-        return { steer: -peel, trim: wave.crestBreaking > SNAP_BREAKING ? SNAP_TRIM : TOP_TRIM, crouch: TURN_CROUCH, compress: 0 };
+      case 'cutback': {
+        const snap = wave.crestBreaking > SNAP_BREAKING;
+        this.phase = this.turn === 'cutback' ? 'CUTBACK · WEIGHT BACK' : snap ? 'SNAP · WEIGHT BACK' : 'TOP TURN · WEIGHT BACK';
+        return { steer: -peel, trim: snap ? SNAP_TRIM : TOP_TRIM, crouch: TURN_CROUCH, compress: 0 };
+      }
       default:
         // Between turns: crouched heading down into the next bottom turn, extended climbing.
+        this.phase = angle < BOTTOM_START ? 'DROPPING · CROUCHED' : 'CLIMBING · EXTENDED';
         return { steer: 0, trim: 0, crouch: angle < BOTTOM_START ? TURN_CROUCH : 0, compress: 0 };
     }
+  }
+
+  /** The turn under way, recorded and ended: `completed` when it reached its end. */
+  private closeTurn(completed: boolean, speed: number): void {
+    if (!this.turn) return;
+    this.turnRecords.push({
+      kind: this.turn, at: this.turnStart, seconds: this.turnTime, degrees: (Math.abs(this.turnYaw) * 180) / Math.PI,
+      speedIn: this.turnSpeed, speedOut: speed, completed,
+    });
+    this.turn = undefined;
   }
 
   private end(outcome: string): void {

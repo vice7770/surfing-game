@@ -16,7 +16,7 @@ import { PerspectiveCamera, Vector3 } from 'three';
 import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
 import { SEA_COMPONENTS, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LIP_STRIDE } from '../wave/SurfZoneRunner';
-import { Autopilot, autopilotView } from './Autopilot';
+import { Autopilot, autopilotView, type TurnRecord } from './Autopilot';
 import { advance, breathe } from './devStepping';
 
 interface RecordingHooks {
@@ -49,6 +49,14 @@ const LEAD = 4;
 const AFTER = 2.5;
 const MAX_SIM_SECONDS = Number(params.get('maxMinutes') ?? 20) * 60;
 const STYLE = params.get('style') === 'line' ? 'line' : 'turns';
+/**
+ * `need=bottom`: keep only a ride with a bottom turn in it (and at least MIN_RIDE s long): one that reached its end,
+ * heading up the face, or with `&turn=D`, one that turned at least D degrees.
+ */
+const NEED = params.get('need');
+const NEED_TURN = params.has('turn') ? Number(params.get('turn')) : undefined;
+/** `bitrate=B`: the film's bits a second (8 Mbit/s by default). */
+const BITRATE = Number(params.get('bitrate') ?? 8_000_000);
 /** `watch=S`: film S s of lips flying near the take-off, from beside them, instead of a ride (`waves.mp4`). */
 const WATCH = Number(params.get('watch') ?? 0);
 /** The watching camera looks along the crest into the tube it follows, from this far along it and this far inshore, m. */
@@ -81,7 +89,7 @@ class Clip {
       output: (chunk, meta) => this.muxer.addVideoChunk(chunk, meta),
       error: (error) => void log(`encoder error ${error.message}`),
     });
-    this.encoder.configure({ codec: CODECS[codec], width: WIDTH, height: HEIGHT, bitrate: 8_000_000, framerate: FPS });
+    this.encoder.configure({ codec: CODECS[codec], width: WIDTH, height: HEIGHT, bitrate: BITRATE, framerate: FPS });
   }
 
   async add(canvas: HTMLCanvasElement): Promise<void> {
@@ -165,13 +173,16 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
     if (state === 'done') {
       after += STEP;
       if (after > AFTER) {
-        if (autopilot.rideTime >= MIN_RIDE) {
+        const needed = NEED !== 'bottom' || autopilot.turnRecords.some((turn) => turn.kind === 'bottom'
+          && (NEED_TURN === undefined ? turn.completed : turn.degrees >= NEED_TURN));
+        if (autopilot.rideTime >= MIN_RIDE && needed) {
           const video = await clip.finish();
           await post('/upload?name=ride.mp4', video);
           await log(`saved a ${autopilot.rideTime.toFixed(1)} s ride after ${autopilot.attempts} attempts, ${(simulated / 60).toFixed(1)} min simulated, ${clip.frames} frames`);
+          await log(`turns (the film starts ${(clip.frames / FPS - autopilot.rideTime - AFTER).toFixed(1)} s before standing): ${turnLines(autopilot.turnRecords)}`);
           return;
         }
-        await log(`attempt ${autopilot.attempts}: ${label} (${(simulated / 60).toFixed(1)} min simulated)`);
+        await log(`attempt ${autopilot.attempts}: ${label} (${(simulated / 60).toFixed(1)} min simulated); turns: ${turnLines(autopilot.turnRecords)}`);
         clip.drop();
         clip = new Clip();
         hooks.retry();
@@ -194,13 +205,20 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
   await log(`no ride of ${MIN_RIDE} s in ${autopilot.attempts} attempts`);
 }
 
+/** The turns ridden, one line each: when, which, how far and long, and the speed kept. */
+function turnLines(turns: readonly TurnRecord[]): string {
+  if (!turns.length) return 'none';
+  return turns.map((turn) => `${turn.kind} at ${turn.at.toFixed(2)} s: ${turn.degrees.toFixed(0)}° in ${turn.seconds.toFixed(2)} s, `
+    + `${(turn.speedIn * 3.6).toFixed(0)} → ${(turn.speedOut * 3.6).toFixed(0)} km/h (${(turn.speedOut / Math.max(1e-6, turn.speedIn)).toFixed(2)})${turn.completed ? '' : ', unfinished'}`).join('; ');
+}
+
 /** The overlay's line for what the autopilot is doing. */
 function labelFor(autopilot: Autopilot, speed: number, poppingUp: boolean): string {
   switch (autopilot.state) {
     case 'position': return 'PADDLING INTO POSITION';
     case 'wait': return 'WAITING FOR A WAVE';
     case 'go': return poppingUp ? 'POP-UP' : 'PADDLING';
-    case 'ride': return `RIDING ${(speed * 3.6).toFixed(0)} km/h · ${autopilot.rideTime.toFixed(1)} s`;
+    case 'ride': return `RIDING ${(speed * 3.6).toFixed(0)} km/h · ${autopilot.rideTime.toFixed(1)} s${autopilot.phase ? ` · ${autopilot.phase}` : ''}`;
     case 'done': return autopilot.rideTime > 0 ? `RODE ${autopilot.rideTime.toFixed(1)} s · ${autopilot.outcome}` : (autopilot.outcome ?? '').toUpperCase();
   }
 }
@@ -290,9 +308,12 @@ function tier(hooks: RecordingHooks): string {
 function drawOverlay(context: CanvasRenderingContext2D, spot: string, source: string, label: string, attempt: number, activity = `AUTOPILOT · ATTEMPT ${attempt}`): void {
   const detail = `${spot.toUpperCase()} · ${source === 'practice' ? 'PRACTICE GROUNDSWELL' : source.toUpperCase()} · BOUSSINESQ · ${activity}`;
   context.save();
-  // The box grows to the detail line (the watching film's names its tier), never narrower than it was.
+  // The box grows to its lines (the watching film's detail names its tier; a ride's label names its turn), never
+  // narrower than it was.
   context.font = '15px ui-monospace, Menlo, monospace';
-  const width = Math.max(560, context.measureText(detail).width + 32);
+  const detailWidth = context.measureText(detail).width;
+  context.font = '600 22px ui-monospace, Menlo, monospace';
+  const width = Math.max(560, detailWidth + 32, context.measureText(label).width + 32);
   context.fillStyle = 'rgba(8, 24, 32, 0.55)';
   context.fillRect(24, 24, width, 74);
   context.fillStyle = '#e8f4f2';
