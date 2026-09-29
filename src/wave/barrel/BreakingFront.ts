@@ -23,11 +23,11 @@ export interface FrontPoint {
   bRate: number;
   /** The crest's height above still water, m. */
   height: number;
-  /** The slice's clock, s from its lip's throw (sliceClock). */
-  tau: number;
+  /** Whether its B has reached the throw, and when, s (sliceClock). */
   thrown: boolean;
-  /** The clock as drawn: τ tapered to 0 at the front's ends (sliceClock). */
-  sliceTau: number;
+  onset: number;
+  /** The slice's clock as drawn, s from its lip's throw: smoothed along the front, never running back (sliceClock). */
+  tau: number;
   /** When it was last seen, s. */
   seen: number;
 }
@@ -80,9 +80,9 @@ export class BreakingFront {
         b: s.b,
         bRate: best && time > best.seen ? (s.b - best.b) / (time - best.seen) : 0,
         height: s.eta,
-        tau: best ? best.tau : 0,
         thrown: best ? best.thrown : false,
-        sliceTau: best ? best.sliceTau : 0,
+        onset: best ? best.onset : 0,
+        tau: best ? best.tau : 0,
         seen: time,
       });
     }
