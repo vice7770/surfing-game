@@ -24,5 +24,6 @@ The swell reaches Padang Padang only by wrapping around the Bukit's western tip.
 - Feed the tank from its west-north-west side with the wrapped swell, not from the south-west.
 - Build ramp, focus and wedge, with pinnacles for the sections.
 - Anchor the size presets on face heights, because the wrap makes local heights differ from offshore ones.
+- Build it the way Mead & Black's Bingin experiments point to (Mead's thesis, pp. 91–100): a ramp aligned with the swell running straight into the oblique wedge, with no flat platform. Keep the wedge base deeper than breaking along the whole ride, put a focus at the take-off, and add pinnacles for sections. The platform variant closes out in the game's solver, because crests steepen more where the platform is wider.
 
 No depths of Padang Padang itself are published. Mead's raw survey exists but is unpublished; asking eCoast (Shaw Mead) is the only route to real soundings.
