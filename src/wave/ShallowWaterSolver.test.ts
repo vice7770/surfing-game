@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSpot } from './Bathymetry';
-import { OPEN_EDGE_RAMP, ShallowWaterSolver, cflSubsteps, stretchedEdges, uniformEdges } from './ShallowWaterSolver';
+import { ShallowWaterSolver, cflSubsteps, stretchedEdges, uniformEdges } from './ShallowWaterSolver';
 import { longWaveTarget } from './shallowWaterTestSupport';
 
 // Stoker's wet-bed dam break for 2.0 m → 0.5 m (computed by bisection on the Riemann invariants).
@@ -98,39 +98,59 @@ describe('ShallowWaterSolver', () => {
     expect(excessEnergy('open')).toBeLessThan(0.1 * excessEnergy('wall'));
   });
 
-  it('ramps the bed smoothly to uniform along shore at open edges, wherever the window slides', () => {
+  it('levels the bed across open along-shore edges as far as the stencils reach, wherever the window slides', () => {
     // An open edge copies its neighbours, so a bed sloping across it gives the copy the wrong bed: the Reef's Big
-    // swell ran away where the window's edge cuts its ledge (Part B). Levelling only the copied columns left a kink
-    // where the slope resumed, and the Reef's biggest seas drained that corner and ran away there. Over 20 m the bed
-    // eases (smootherstep) from the spot's own to its profile 20 m in. Walls and wrap-around copy nothing.
-    const depthAt = (x: number, z: number) => 20 - 0.3 * x - 0.02 * z;
-    const grid = { nx: 60, xMin: -30, dx: 1, zEdges: uniformEdges(-40, 0, 10) };
+    // swell ran away where the window's edge cuts its ledge (Part B). Walls and wrap-around copy nothing.
+    const depthAt = (x: number, z: number) => 6 - 0.3 * x - 0.02 * z;
+    const grid = { nx: 12, xMin: -12, dx: 2, zEdges: uniformEdges(-40, 0, 10) };
+    const level = (solver: ShallowWaterSolver) => {
+      const { nx } = solver;
+      for (let iz = 0; iz < solver.nz; iz += 1) {
+        const row = iz * nx;
+        for (const ix of [0, 1]) expect(solver.bed[row + ix]).toBe(solver.bed[row + 2]);
+        for (const ix of [nx - 2, nx - 1]) expect(solver.bed[row + ix]).toBe(solver.bed[row + nx - 3]);
+        for (let ix = 2; ix < nx - 2; ix += 1) expect(solver.bed[row + ix]).toBe(-depthAt(solver.xCenters[ix], solver.zCenters[iz]));
+        for (let ix = 0; ix < nx; ix += 1) expect(solver.h[row + ix]).toBeCloseTo(Math.max(0, -solver.bed[row + ix]), 12);
+      }
+    };
+    const open = new ShallowWaterSolver({ ...grid, xBoundary: 'open' }, depthAt);
+    level(open);
+    open.shiftAlongShore(3);
+    level(open);
+    open.shiftAlongShore(-5);
+    level(open);
+    const wall = new ShallowWaterSolver({ ...grid, xBoundary: 'wall' }, depthAt);
+    expect(wall.bed[0]).toBe(-depthAt(wall.xCenters[0], wall.zCenters[0]));
+  });
+
+  it('eases the bed to uniform along shore over 20 m at the open edges of a window as wide as the game\'s', () => {
+    // Levelling only the copied columns left a kink where the slope resumed: the Reef's biggest seas drained that
+    // corner (its 45° ledge ends on the game window's −x edge) until a thin cell ran away there.
+    const depthAt = (x: number, z: number) => 30 - 0.15 * x - 0.02 * z;
+    const grid = { nx: 160, xMin: -80, dx: 1, zEdges: uniformEdges(-40, 0, 10), xBoundary: 'open' as const };
     const ramped = (solver: ShallowWaterSolver) => {
       const { nx } = solver;
       let sharpest = 0;
       for (let iz = 0; iz < solver.nz; iz += 1) {
         const row = iz * nx;
-        // Uniform where the stencils copy the edge.
+        // Uniform where the stencils copy the edge, the spot's own bed from 20 m in.
         for (const ix of [0, 1]) expect(solver.bed[row + ix]).toBeCloseTo(solver.bed[row + 2], 12);
         for (const ix of [nx - 2, nx - 1]) expect(solver.bed[row + ix]).toBeCloseTo(solver.bed[row + nx - 3], 12);
-        // The spot's own bed from 20 m in.
         for (let ix = 20; ix < nx - 20; ix += 1) expect(solver.bed[row + ix]).toBe(-depthAt(solver.xCenters[ix], solver.zCenters[iz]));
         for (let ix = 1; ix < nx - 1; ix += 1) {
           sharpest = Math.max(sharpest, Math.abs(solver.bed[row + ix + 1] - 2 * solver.bed[row + ix] + solver.bed[row + ix - 1]));
         }
         for (let ix = 0; ix < nx; ix += 1) expect(solver.h[row + ix]).toBeCloseTo(Math.max(0, -solver.bed[row + ix]), 12);
       }
-      // No kink: levelling two columns bent a 0.3 slope by 0.3 in one cell.
-      expect(sharpest).toBeLessThan(0.1);
+      // No kink: levelling the copied columns bent this 0.15 slope by 0.15 in one cell.
+      expect(sharpest).toBeLessThan(0.05);
     };
-    const open = new ShallowWaterSolver({ ...grid, xBoundary: 'open' }, depthAt);
-    ramped(open);
-    open.shiftAlongShore(3);
-    ramped(open);
-    open.shiftAlongShore(-5);
-    ramped(open);
-    const wall = new ShallowWaterSolver({ ...grid, xBoundary: 'wall' }, depthAt);
-    expect(wall.bed[0]).toBe(-depthAt(wall.xCenters[0], wall.zCenters[0]));
+    const solver = new ShallowWaterSolver(grid, depthAt);
+    ramped(solver);
+    solver.shiftAlongShore(3);
+    ramped(solver);
+    solver.shiftAlongShore(-5);
+    ramped(solver);
   });
 
   it('stretches cross-shore cells smoothly from fine to coarse', () => {
@@ -169,16 +189,15 @@ describe('ShallowWaterSolver', () => {
     const edgeWet = Array.from({ length: solver.nz }, (_, iz) => before[iz * nx + nx - 1] > 1e-4);
     solver.shiftAlongShore(5);
     expect(solver.xCenters[0]).toBeCloseTo(-60 + 5 * 4 + 2, 12);
-    // Columns within the edge ramp (OPEN_EDGE_RAMP, five 4 m columns) stand on its eased bed: their surface stays.
-    // Past it the bed is the spot's and overlapping water is kept exactly.
-    const ramp = Math.round(OPEN_EDGE_RAMP / solver.dx);
+    // Columns within the stencils' reach of an edge stand on a level bed (their inner neighbour's): their surface stays.
     const seabed = (ix: number, iz: number) => -spot.depthAt(solver.xCenters[ix], solver.zCenters[Math.min(iz, solver.nz - 1)]);
+    const bedAt = (ix: number, iz: number) => seabed(Math.min(Math.max(ix, 2), nx - 3), iz);
     for (let iz = 0; iz < solver.nz; iz += 1) {
-      for (let ix = ramp; ix < nx - ramp; ix += 1) expect(solver.bed[iz * nx + ix]).toBe(seabed(ix, iz));
+      for (let ix = 0; ix < nx; ix += 1) expect(solver.bed[iz * nx + ix]).toBe(bedAt(ix, iz));
       for (let ix = 0; ix < nx - 5; ix += 1) {
         const i = iz * nx + ix;
         const old = i + 5;
-        if (ix >= ramp && ix + 5 < nx - ramp) expect(solver.h[i]).toBe(before[old]);
+        if (ix >= 2 && ix + 5 < nx - 2) expect(solver.h[i]).toBe(before[old]);
         else if (before[old] > 1e-4) expect(solver.h[i]).toBeCloseTo(Math.max(0, beforeSurface[old] - solver.bed[i]), 12);
       }
       for (let ix = nx - 5; ix < nx; ix += 1) {

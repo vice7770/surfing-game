@@ -87,7 +87,7 @@ export const OPEN = 2;
 
 /** How many columns the solver stencils reach across an open along-shore edge. */
 export const OPEN_EDGE_REACH = 2;
-/** Metres over which an open edge eases the bed to uniform along shore (`levelOpenEdges`), fewer on a small grid. */
+/** Metres over which an open edge eases the bed to uniform along shore (`levelOpenEdges`), in a window eight times as wide. */
 export const OPEN_EDGE_RAMP = 20;
 
 /** A stable step this short, s (about a thousandth of the surf zone's usual), means the water has diverged. */
@@ -444,15 +444,18 @@ export class ShallowWaterSolver {
    * An open edge copies its neighbours, so over a bed sloping across it the copy stands on the wrong bed: the
    * Reef's Big swell ran away where the window's edge cut its ledge (Part B), as the Canyon's once did across
    * its wall. Levelling only the columns the stencils reach left a kink where the slope resumed, and the Reef's
-   * biggest seas drained that corner until a thin cell ran away there. So over `OPEN_EDGE_RAMP` metres the bed eases
-   * (smootherstep, continuous in slope and curvature) from the spot's own to its profile that far in, uniform
-   * along shore where the stencils copy the edge (`level`), or takes the spot's again (not `level`). The surface
-   * stays where it was, at the still level where dry.
+   * biggest seas drained that corner until a thin cell ran away there. So in a window wide enough (the game's) the
+   * bed eases over `OPEN_EDGE_RAMP` metres (smootherstep, continuous in slope and curvature) from the spot's own to
+   * its profile that far in, uniform along shore where the stencils copy the edge (`level`); a smaller window levels
+   * just the copied columns. Not `level`, it takes the spot's again. The surface stays where it was, at the still
+   * level where dry.
    */
   private levelOpenEdges(level: boolean): void {
     const { nx, nz, bed, h, qx, qz } = this;
     if (this.xBoundary !== OPEN || nx <= 2 * OPEN_EDGE_REACH) return;
-    const ramp = Math.max(OPEN_EDGE_REACH, Math.min(Math.round(OPEN_EDGE_RAMP / this.dx), Math.floor(nx / 2) - 1));
+    // A ramp squeezed into a small window bends the bed harder than the kink: there the copied columns level as before.
+    const columns = Math.round(OPEN_EDGE_RAMP / this.dx);
+    const ramp = columns > OPEN_EDGE_REACH && 8 * columns <= nx ? columns : OPEN_EDGE_REACH;
     for (let iz = 0; iz < nz; iz += 1) {
       const row = iz * nx;
       const z = this.zCenters[iz];
