@@ -62,6 +62,20 @@ function ownerOf(measure: StanceMeasure, target: { min: number; max: number }, p
 
 const METRES: ReadonlySet<StanceMeasure> = new Set(['lowHand', 'stanceWidth']);
 
+/**
+ * The weight a stance's targets describe is the feet's pressure (60/40, 70/30 on
+ * the front foot: what a surfer feels), which only the physics carries: its
+ * contact's centre of pressure between the feet (step 6). The pelvis between the
+ * ankles had stood in for it, and read 0.1–0.25 forward of the pressure (the
+ * body ahead of its feet on a board that slows). Sets `weight` on a reading's
+ * drawn angles and its physics' to the pressure.
+ */
+export function weighByPressure(reading: StanceReading, pressure: number): StanceReading {
+  if (reading.angles) reading.angles.weight = pressure;
+  if (reading.physics) reading.physics.weight = pressure;
+  return reading;
+}
+
 /** A value in the measure's unit: degrees, metres, or the weight's share. */
 export function formatMeasure(measure: StanceMeasure, value: number): string {
   if (!Number.isFinite(value)) return '—';
