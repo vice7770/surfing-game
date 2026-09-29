@@ -55,6 +55,8 @@ const STYLE = params.get('style') === 'line' ? 'line' : 'turns';
  */
 const NEED = params.get('need');
 const NEED_TURN = params.has('turn') ? Number(params.get('turn')) : undefined;
+/** `turnLimit=S`: the longest the autopilot holds a turn, s (1.5 by default). */
+const TURN_LIMIT = Number(params.get('turnLimit')) || undefined;
 /** `bitrate=B`: the film's bits a second (8 Mbit/s by default). */
 const BITRATE = Number(params.get('bitrate') ?? 8_000_000);
 /** `watch=S`: film S s of lips flying near the take-off, from beside them, instead of a ride (`waves.mp4`). */
@@ -138,7 +140,7 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
     return;
   }
   const rise = 0.25 * (source === 'practice' ? 2 : settings.significantHeight);
-  const autopilot = new Autopilot({ waitOutside: WAIT_OUTSIDE, rise, giveUp: GIVE_UP, style: STYLE });
+  const autopilot = new Autopilot({ waitOutside: WAIT_OUTSIDE, rise, giveUp: GIVE_UP, style: STYLE, ...(TURN_LIMIT ? { turnLimit: TURN_LIMIT } : {}) });
 
   let clip = new Clip();
   let previous = autopilot.state;
