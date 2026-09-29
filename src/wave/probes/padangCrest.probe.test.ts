@@ -1,4 +1,4 @@
-// Probe (opt-in: PROBE=1 LOG=<file> npx vitest run <this file>): follow Padang Padang's crests across its ramp: where each column's crest is, how high, over what depth.
+// Probe (opt-in: PROBE=1 LOG=<file> npx vitest run <this file>): follow Padang Padang's crests across its wedge: where each column's crest is, how high, over what depth.
 import { appendFileSync } from 'node:fs';
 const log = (text: string) => appendFileSync(process.env.LOG ?? '/dev/stderr', `${text}\n`);
 import { it } from 'vitest';
@@ -12,12 +12,12 @@ it.skipIf(!process.env.PROBE)('follows Padang Padang’s crests', () => {
   }
   const config = {
     spot: 'padang' as const, seed: Number(process.env.SEED ?? 1), significantHeight: Number(process.env.HS ?? 1.6), peakPeriod: Number(process.env.TP ?? 16),
-    directionDegrees: Number(process.env.DIRECTION ?? 30), spreading: Number(process.env.SPREADING ?? 150), tide: 0, windSpeed: 0, componentCount: 24,
+    directionDegrees: Number(process.env.DIRECTION ?? 0), spreading: Number(process.env.SPREADING ?? 150), tide: 0, windSpeed: 0, componentCount: 24,
     ...(process.env.BANDWIDTH ? { bandwidth: Number(process.env.BANDWIDTH) } : {}),
   };
   const simulation = new SurfZoneSimulation(config);
   const { solver } = simulation;
-  const xs = [-50, -30, -10, 10, 30, 50];
+  const xs = [-60, -40, -20, 0, 20, 40, 60];
   const columns = xs.map((x) => Math.round((x - solver.xCenters[0]) / solver.dx));
   const eta = (i: number) => solver.h[i] + solver.bed[i] - solver.restLevel;
   const depth = (i: number) => solver.restLevel - solver.bed[i];
@@ -32,7 +32,7 @@ it.skipIf(!process.env.PROBE)('follows Padang Padang’s crests', () => {
       const crests: string[] = [];
       for (let iz = 2; iz < solver.nz - 2; iz += 1) {
         const z = solver.zCenters[iz];
-        if (z < -260 || z > -5) continue;
+        if (z < -400 || z > -5) continue;
         const i = iz * solver.nx + column;
         const e = eta(i);
         if (e > 0.4 && e >= eta(i - solver.nx) && e > eta(i + solver.nx) && e >= eta(i - 2 * solver.nx) && e > eta(i + 2 * solver.nx)) {

@@ -44,7 +44,7 @@ The rideability report's wall time for one seed and four peak periods, the two s
 
 Padang Padang's longer tank (its 1:19 ramp is wide) is paid for by its shallower edge: 10 m of water allows a longer stable step than the Reef's 30 m.
 
-## The peel investigation (open, 2026-09-29)
+## The peel investigation (2026-09-29)
 
 After merging main (the Reef's Parts B and C, the plunge-zone hold of #58), the Big swell from 45° runs finite with its fastest water at 8.8 m/s (it ran to NaN before). The peel is the open problem: on the current design (edge 25 m, platform 10 m, 1:19 ramp, crest line 35°, swell 30° at the edge, s = 150, Hs 1.6 m, Tp 16 s) `ledgePeel` predicts 11.9 m/s (α 29°), and the peel meter reads 30–57 m/s (α 6–11°): a close-out. The onsets fall on a line almost parallel to the shore (z ≈ −110 to −120 for x −50 to 11), so the waves break at depths from about 2.4 m at the peak to 4.8 m down the reef.
 
@@ -70,9 +70,25 @@ The probes are in `src/wave/probes/` (opt-in: `PROBE=1 LOG=<file> npx vitest run
 
 **A rotated frame, first look.** Swell at 0° at the edge and the crest line at 55° (peak at z −150), the same predicted peel (11.8 m/s, α 29°): some sets peel on target (9.9–11.5 m/s, α 30–35°, t 176–192 s), but most still read 19–49 m/s, their breaks on a line well seaward of the crest line (z ≈ −210). With the feed off it still reads 15–27 m/s over the first periods (the run was stopped at 112 s). So removing the drift is not enough on its own.
 
-**Open questions, for the advisor and the next session:**
+**The advisor's answers (2026-09-29), and the redesign.**
 
-- Should the side feed stop where the linear sea stops holding (an Ursell or Schäffer S limit, as the tank's offshore edge now does), rather than at the breaking share of the depth? That is the wave-sizes session's machinery and would change every spot's strips.
-- Should the peak move further from the −x strip (for example x −30), at the cost of a shorter reef (the ride stays within 50–150 m)?
-- Is a peel set by crest steepness growing down the reef (Ursell about 40 on a 10 m platform at 16 s) partly real? A long flat 10 m platform ahead of an oblique ramp gives the far end a longer run in shallow water. The build sheet says Padang Padang has no platform (ramp, focus, wedge), so a design whose forereef runs straight into the ramp belongs in the sweep, though phase matching then gives a faster peel (about 16 m/s from 25 m at 30°).
-- The sweep (plan Task 7) waits on these answers.
+- *Q1, the bed:* Mead's ramp and wedge, with no platform. Mead & Black ran exactly this experiment on idealised Bingin beds (1999; Mead 2000, ch. 5, pp. 91–100):
+  - with a platform the wedge holds about 35° for all heights and directions;
+  - without one, a wedge whose base shoals to breaking lets the ramp break the waves first (a close-out);
+  - Padang Padang is their deeper, more rotated wedge plus a focus and pinnacles.
+  A plane bed oblique all the way from the edge cannot peel slowly: Snell conserves the along-contour phase speed, so V ≥ c(25 m) ≈ 15 m/s at 16 s whatever the angle. The crests must meet the wedge at a larger angle than Snell from deep water allows, which a shore-parallel ramp does.
+- *Q2, the side feed:* with the swell square to the tank nothing drifts in, but the strip's linear sea still spreads sideways (about 0.12 D over the approach at s = 150). So the peak stands at least strip + fade + 0.12 D (about 95 m) from the −x edge, and the window widens to 320 m. Stopping the feed by an Ursell or Schäffer limit is left to the wave-sizes session (it changes every spot).
+- *Q3, the swell:* square to the tank. The reef's angle carries the obliquity; side edges are clean only when conditions are uniform along shore. Robustness is checked from −10° to +20°.
+- *Q4, the down-reef steepening:* mostly not real. At a Mead-type reef the focus peak is the biggest and breaks first; shoaling adds a few per cent down the line. The target is crest heights within about ±15 % along the wedge, the peak largest.
+- *The base's depth:* two planes this alike in slope meet where the base moves fast. Moving the crest line Δz shoreward moves the base by Δz / (1/(m_w cos β) − 1/m_r): Δz/27 at 1:50, Δz/55 at 1:80. The ramp is 1:80, so the base runs from 7 m at the peak to about 5 m at the ride's end, deeper than the Small swell breaks.
+- *The peel angle:* the skill ladder's angles are geometric (measured on aerial photos). The peel meter's √(g h_b) is slower than surf-zone crests (Tissier et al. 2013; about 1.2–1.27 × at H/h 0.6–0.8), so the meter reads α about 5–7° low at every spot. The design is sized on the geometric α; the meter's fix is a separate change, put to the user.
+
+The new bed (952ec39):
+- a 1:20 forereef from 25 m to a 12 m knee, then Mead's ramp at 1:80;
+- the 1:19 wedge rising from the ramp, its base 7 m deep at the peak (x −60, z −170);
+- the crest line at β = 40° to the ramp's contours, to the channel at x 70;
+- the wedge fading out over 20 m upcoast of the peak;
+- a 12 m channel at the +x edge;
+- a 320 m window, and the swells square to it.
+Phase matching gives V ≈ 12.7 m/s at the peak: α 33–35° geometric, 26.9° on today's meter.
+

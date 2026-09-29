@@ -4,13 +4,14 @@ const log = (text: string) => appendFileSync(process.env.LOG ?? '/dev/stderr', `
 import { it } from 'vitest';
 import { PADANG_SWELLS } from '../../game/SurfConditions';
 import { PADANG_SPREADING } from '../../game/PhysicalMode';
+import { PADANG } from '../Bathymetry';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
 
 it.skipIf(!process.env.PROBE)('finds where Padang Padang’s oblique Big swell goes bad', () => {
-  const direction = Number(process.env.DIRECTION ?? 45);
+  const direction = Number(process.env.DIRECTION ?? 20);
   const simulation = new SurfZoneSimulation({
     spot: 'padang', seed: 3, significantHeight: PADANG_SWELLS.big.significantHeight, peakPeriod: PADANG_SWELLS.big.peakPeriod, directionDegrees: direction,
-    spreading: PADANG_SPREADING, tide: 0, componentCount: 12, alongShore: 160, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1,
+    spreading: PADANG_SPREADING, tide: 0, componentCount: 12, alongShore: PADANG.alongShore, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1,
   });
   const { solver } = simulation;
   log(`direction ${direction}°: tank ${JSON.stringify(simulation.tank)}, grid ${solver.nx} × ${solver.nz}`);
