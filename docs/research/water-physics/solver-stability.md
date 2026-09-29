@@ -29,3 +29,5 @@ On the biggest Reef swells (Hs 3–4 m, 17–18 s, high tide) the sea can go non
 | **(c) Cap the Reef's Wave Lab swell and tide** | Hours | Teahupo'o's biggest days would be out of reach |
 
 **My recommendation:** the guard now, so no player ever sees a broken sea, then decide between (c) and the rewrite. The rewrite is the only option that fixes the cause. Hold PR #63 either way: it makes the Big swell at high tide worse (16 → 233 m/s).
+
+What option (a)'s rewrite would take, following FUNWAVE-TVD's form: Rewrite sketch.

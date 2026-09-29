@@ -27,6 +27,7 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 | [padang-padang.md](padang-padang.md) and [padang-padang-build-sheet.md](padang-padang-build-sheet.md) | The break, and its sourced bed, bearings, tide, swell and wind |
 | [breaking.md](breaking.md) | Why the solver's face stays near 17°, the crest-speed trigger, the stop rule, directional spread |
 | [solver-stability.md](solver-stability.md) | Why the biggest Reef swells blow up, what published models do, and the options |
+| [solver-rewrite-sketch.md](solver-rewrite-sketch.md) | What option (a)'s rewrite would take, following FUNWAVE-TVD's form |
 | [foam-and-whitewater.md](foam-and-whitewater.md) | Foam contrast and ageing, persistence, the roller, spray |
 | [roller.md](roller.md) and [roller-build.md](roller-build.md) | The roller's measured shape and effect on riders, and how to build it on the barrel's loft |
 | [graphics.md](graphics.md) | Lip glow, the tube interior, break-up, spray and the tube camera |
