@@ -57,6 +57,14 @@ export function bandwidthWindow(omega: number, peakOmega: number, bandwidth = In
 
 /** Frequency range the spectrum is sampled over, as multiples of ω_p. */
 export const SPECTRUM_RANGE = { low: 0.5, high: 4 };
+/** Draws of a direction that points offshore before one is clamped to shoreward travel (never reached at the game's spreads). */
+const MAX_REDRAWS = 64;
+/** The most oblique shoreward direction a clamped draw takes, rad. */
+const SHOREWARD_LIMIT = Math.PI / 2 - 1e-3;
+
+function clamp(value: number, low: number, high: number): number {
+  return Math.min(high, Math.max(low, value));
+}
 
 /** Tabulated inverse CDF of `density` on [lo, hi] (trapezoid rule, linear inversion). */
 function inverseCdf(lo: number, hi: number, samples: number, density: (x: number) => number): (u: number) => number {
@@ -120,7 +128,13 @@ export class SeaState {
     const components: WaveComponent[] = [];
     for (let index = 0; index < count; index += 1) {
       const omega = frequencyAt((index + 0.25 + 0.5 * random()) / count);
-      const direction = params.direction + directionAt(random());
+      // Spread about an oblique mean, a draw can point offshore: it is drawn again (a cos-2s sea truncated to
+      // shoreward travel). The warm start's flux ratio is negative for it, and its shoal went non-finite.
+      let direction = params.direction + directionAt(random());
+      for (let redraw = 0; redraw < MAX_REDRAWS && !(Math.abs(direction) < halfWidth); redraw += 1) {
+        direction = params.direction + directionAt(random());
+      }
+      if (!(Math.abs(direction) < halfWidth)) direction = clamp(direction, -SHOREWARD_LIMIT, SHOREWARD_LIMIT);
       components.push({ amplitude, omega, direction, phase: 2 * Math.PI * random() });
     }
     return new SeaState(components, params.depth, waveNumberAt);

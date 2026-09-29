@@ -54,6 +54,7 @@ const ALPHA: f32 = ${f(ALPHA)};
 const BCOEF: f32 = ${f(B)};
 const DISPERSIVE_DEPTH: f32 = 0.05;
 const SWITCH_RATIO: f32 = 0.8;
+const SWITCH_FROUDE: f32 = 2.0;
 const BREAKING_DEPTH: f32 = 0.05;
 const MAX_EDDY: f32 = 0.3;
 
@@ -185,11 +186,13 @@ fn wetAt(ix: i32, iz: i32) -> f32 {
 }
 
 // K2: the dispersive mask (BoussinesqSolver.updateMask): every cell the stencils reach is wet, within the Tonelli–Petti ratio
-// (crest and trough), and outside a jet's plunge zone.
+// (crest and trough), subcritical, and outside a jet's plunge zone.
 @compute @workgroup_size(64) fn mask(@builtin(global_invocation_id) id: vec3<u32>) {
   let i = cellOf(id); if (i >= P.n) { return; }
   let ix = i32(i % P.nx); let iz = i32(i / P.nx);
-  let weak = !(at(${FIELD.HOLD}u, i) > 0.0) && abs(at(${FIELD.H}u, i) - at(${FIELD.STILL}u, i)) <= SWITCH_RATIO * at(${FIELD.STILL}u, i);
+  let h = at(${FIELD.H}u, i); let p = at(${FIELD.QX}u, i); let q = at(${FIELD.QZ}u, i);
+  let weak = !(at(${FIELD.HOLD}u, i) > 0.0) && abs(h - at(${FIELD.STILL}u, i)) <= SWITCH_RATIO * at(${FIELD.STILL}u, i)
+    && p * p + q * q <= SWITCH_FROUDE * SWITCH_FROUDE * P.g * h * h * h;
   var dispersing = at(${FIELD.WET}u, i) > 0.0 && weak;
   for (var k = -2; k <= 2; k++) { dispersing = dispersing && wetAt(ix + k, iz) > 0.0 && wetAt(ix, iz + k) > 0.0; }
   for (var a = -1; a <= 1; a++) { for (var b = -1; b <= 1; b++) { dispersing = dispersing && wetAt(ix + a, iz + b) > 0.0; } }
