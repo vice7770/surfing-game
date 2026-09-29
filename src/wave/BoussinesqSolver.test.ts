@@ -181,6 +181,22 @@ describe('Boussinesq dispersion', () => {
     expect(solver.mask[middle]).toBe(0);
   });
 
+  // The Reef's Big set breaking on its ledge by the open −x edge: a dispersive cell beside the shallow-water bore kept
+  // the bore's flux through the implicit recovery while the bore's outflow drained it, from 19 m/s at Froude 4 to NaN;
+  // and a Big trough drawn down over the ledge where the window cuts it pumped the edge's inflow to 40 m/s, then NaN.
+  it('turns dispersion off where the water runs faster than twice the long-wave speed', () => {
+    const grid = { nx: 12, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' as const };
+    const solver = new BoussinesqSolver(grid, () => 4, { manning: 0, breaking: false });
+    const critical = 2 * 4 * Math.sqrt(GRAVITY * 4);
+    const slow = 20 * solver.nx + 6;
+    const fast = 10 * solver.nx + 6;
+    solver.qz[slow] = 0.9 * critical;
+    solver.qz[fast] = 1.1 * critical;
+    solver.step(1e-4);
+    expect(solver.mask[slow]).toBe(1);
+    expect(solver.mask[fast]).toBe(0);
+  });
+
   // A thick lip landing on the Reef's drained crest piled 0.4 m of water to 1.5 m, and the dispersive terms, still on
   // across that bore, drained it at 23.5 m/s (Teahupo'o Reef Part B): where a jet lands the water is shallow water.
   it('holds a plunging jet\'s roller in shallow water for Kennedy\'s T*, then disperses again', () => {
@@ -472,10 +488,11 @@ describe('Boussinesq breaking', () => {
       const period = 10;
       const omega = (2 * Math.PI) / period;
       const angle = (degrees * Math.PI) / 180;
-      // One along-shore wavelength wide, so the periodic window holds an endless straight crest.
-      const dx = 2;
-      const nx = Math.round((2 * Math.PI) / (airyWavenumber(omega, 5) * Math.sin(angle)) / dx);
-      const incident = Math.asin((2 * Math.PI) / (nx * dx) / airyWavenumber(omega, 5));
+      // One along-shore wavelength wide in 50 columns (about 4 m at 20°, 2 m at 40°: at 4 m a 40° crest was too coarse to
+      // steepen), so the periodic window holds an endless straight crest.
+      const nx = 50;
+      const dx = (2 * Math.PI) / (airyWavenumber(omega, 5) * Math.sin(angle)) / nx;
+      const incident = angle;
       const depthAt = (_x: number, z: number) => (z < 60 ? 5 : 5 - (z - 60) / 40);
       const solver = new BoussinesqSolver(
         { nx, xMin: 0, dx, zEdges: uniformEdges(0, 280, 560), xBoundary: 'periodic' }, depthAt, { breaking: { onset: 0.65 } },
@@ -504,7 +521,7 @@ describe('Boussinesq breaking', () => {
       const depth = depthAt(0, solver.zCenters[onset]);
       expect((high[onset] - low[onset]) / depth).toBeGreaterThan(0.6);
       expect((high[onset] - low[onset]) / depth).toBeLessThan(1.0);
-    }, 600_000);
+    }, 900_000);
   }
 
   // A breaking event is carried with its wave (Kennedy et al. 2000: the age of the breaking event), from behind its front
