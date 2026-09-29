@@ -37,11 +37,10 @@ describe('the body film', () => {
     }
   };
   it.each(['pop-up and landing', 'pop-up crouched', 'compress mid-turn, the hand reaching', 'a fall', 'pumping into a fall'])('blends the switches of %s out', blendsOut);
-  // Lying down, its switches blend out (the frames about each are smooth), but 0.23 s into the lie-down the left knee
-  // swings through at up to 10 m/s (3.3 m/s over its neighbours, 3.8 at 120 Hz): the leg's pole jumps from the
-  // standing one to the lying one at the switch, and the knee turns over only as the leg straightens. The rig's poles
-  // are the stance step's (step 3). Pinned, not tuned.
-  it.fails('blends the switches of lying back down out', () => blendsOut('lying back down'));
+  // Lying down: 0.23 s into the lie-down the left knee swung through at up to 10 m/s (3.3 m/s over its neighbours, 3.8
+  // at 120 Hz). Lying, the legs' side was the deck's down, along the standing leg at the switch, so the knee turned to
+  // whichever side, and swung back over as the leg straightened.
+  it('blends the switches of lying back down out', () => blendsOut('lying back down'));
 
   // The final review: riding through a rail change or a weave, until a switch (the weave ends in a fall at 1.94 s),
   // nothing is blended and the drawn body follows the rig at any display rate. Taken for a jump, a hand turning back

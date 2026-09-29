@@ -1,3 +1,4 @@
+import { GRAVITY } from './dispersion';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 
 /** Crests over thinner water are shore swash, not waves, m. */
@@ -6,6 +7,13 @@ const WET = 0.05;
 const FACE_REACH = 10;
 /** A flatter face does not show the crest's motion. */
 const MIN_FACE_SLOPE = 0.005;
+/**
+ * No crest outruns this many long-wave speeds √(g h) of the water under it: a strong bore into water a tenth as
+ * deep runs at 2.3 of them; the game's thrown crests measure up to 1.4–1.7. A face rising faster than that is water
+ * piling up in place (a lip landing, bores meeting), not a travelling form: on the Reef's Big swell such readings
+ * gave 40–66 m/s crests in 10 m of water, and the jet's momentum taken from the water ran it away.
+ */
+const MAX_CREST_FROUDE = 2;
 
 /**
  * How a breaking crest goes, from the local Iribarren number under it (Battjes
@@ -50,7 +58,8 @@ export interface CrestMotion {
  * the surface falls ahead of it, so c = η_t / |∇η| at the steepest point of
  * the face within FACE_REACH shoreward, and it travels down that gradient.
  * The depth-averaged water cannot give the crest's speed: at a breaking crest
- * it moves at about half of it. Undefined without a rising, sloping face.
+ * it moves at about half of it. Undefined without a rising, sloping face that
+ * travels no faster than MAX_CREST_FROUDE long-wave speeds of the crest's water.
  */
 export function crestMotion(solver: ShallowWaterSolver, crest: number): CrestMotion | undefined {
   const { nx, nz, zCenters, dx, h } = solver;
@@ -60,13 +69,14 @@ export function crestMotion(solver: ShallowWaterSolver, crest: number): CrestMot
   const eta = (i: number) => h[i] + solver.bed[i];
   let best: CrestMotion | undefined;
   let steepest = MIN_FACE_SLOPE;
+  const fastest = MAX_CREST_FROUDE * Math.sqrt(GRAVITY * Math.max(0, h[crest]));
   for (let row = crestRow + 1; row < nz - 1 && zCenters[row] - zCenters[crestRow] <= FACE_REACH; row += 1) {
     const cell = row * nx + column;
     if (!(h[cell] > WET) || !(rise[cell] > 0)) continue;
     const slopeZ = (eta(cell + nx) - eta(cell - nx)) / (zCenters[row + 1] - zCenters[row - 1]);
     const slopeX = column > 0 && column < nx - 1 ? (eta(cell + 1) - eta(cell - 1)) / (2 * dx) : 0;
     const slope = Math.hypot(slopeX, slopeZ);
-    if (!(slopeZ < 0) || slope <= steepest) continue;
+    if (!(slopeZ < 0) || slope <= steepest || !(rise[cell] <= fastest * slope)) continue;
     steepest = slope;
     best = { speed: rise[cell] / slope, direction: { x: -slopeX / slope, z: -slopeZ / slope } };
   }
