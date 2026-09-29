@@ -76,3 +76,23 @@ describe('the free arms (the stance poses, step 3)', () => {
     }
   });
 });
+
+describe('the free arms losing balance (step 5)', () => {
+  it('raises and straightens a free arm as the physics spreads its hands, and leaves it at ease', () => {
+    const at = stanceState('trim', 'regular', new Vector3(0, 0.03, 0), createRiderVisualState()).state;
+    const ease = angles(at, 1).read;
+    // The physics' hands with no margin left: ARM_SPREAD + ARM_ALARM, from the ease's ARM_SPREAD.
+    const alarmed = stanceState('trim', 'regular', new Vector3(0, 0.03, 0), createRiderVisualState()).state;
+    for (const hand of [POINT.leftHand, POINT.rightHand]) {
+      const torso = alarmed.points[POINT.torso];
+      alarmed.points[hand].sub(torso).multiplyScalar(2.5 / 1.7).add(torso);
+    }
+    const out = angles(alarmed, 1).read;
+    for (const [arm, elbow] of [['leadArm', 'leadElbow'], ['trailArm', 'trailElbow']] as const) {
+      expect(out[arm], arm).toBeGreaterThan(ease[arm] + 25);
+      expect(out[arm], arm).toBeLessThan(100);
+      expect(out[elbow], elbow).toBeGreaterThan(ease[elbow] + 10);
+    }
+  });
+});
+

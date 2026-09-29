@@ -279,8 +279,8 @@ const LEG_EXTENSION = 0.1;
 /** The balance margin's smoothing, s. */
 const MARGIN_TIME = 0.1;
 /** The drawn arms reach out ARM_SPREAD of their length at ease, and ARM_ALARM more with no margin left. */
-const ARM_SPREAD = 0.7;
-const ARM_ALARM = 0.8;
+export const ARM_SPREAD = 0.7;
+export const ARM_ALARM = 0.8;
 /**
  * The upper body's swing drawn (Part B): standing, the drawn chest, head and arms
  * turn together about the forward axis through the pelvis by SWING_DRAWN_CHEST of
