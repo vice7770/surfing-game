@@ -34,13 +34,6 @@ const PLUNGE = { behind: 0.5, ahead: 1.5, hold: 5 } as const;
  * left alone (FUNWAVE's wet depth, MinDepth), and the depth above which a capped cell counts as water, m.
  */
 export const FROUDE_CAP = { froude: 10, wetDepth: 0.01, countDepth: 0.05 } as const;
-/**
- * The dispersive terms see at most this many times a cell's water depth (`dispersiveDepth`). They are written in
- * still depth d, and in water drained below d/2 (|η| > d/2, outside the weakly nonlinear terms' range) their operator
- * α d² was over four times too stiff for the water under it. The direction is fully nonlinear Boussinesq's (Kennedy
- * et al. 2001; FUNWAVE-TVD's reference level moving with the surface); the factor is this game's stability choice.
- */
-export const DRAINED_DEPTH = 2;
 
 /** Phase speed ω/k the Madsen–Sørensen equations give at depth d: ω² = g d k² (1 + B(kd)²)/(1 + α(kd)²). */
 export function madsenSorensenCelerity(omega: number, depth: number, g = GRAVITY): number {
@@ -204,10 +197,6 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   /** P and Q as the step began, to measure the acceleration beyond shallow water for the next predictor. */
   private readonly startP: Float64Array;
   private readonly startQ: Float64Array;
-  /** The depth the dispersive terms see this step, min(d, 2h) where a cell disperses, and its slopes. */
-  private readonly depth: Float64Array;
-  private readonly depthX: Float64Array;
-  private readonly depthZ: Float64Array;
 
   constructor(grid: SolverGrid, depthAt: DepthFunction, options: BoussinesqOptions = {}) {
     super(grid, depthAt, options);
@@ -238,9 +227,6 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     this.spare = new Float64Array(longest);
     this.startP = make();
     this.startQ = make();
-    this.depth = make();
-    this.depthX = make();
-    this.depthZ = make();
     if (this.dispersive) {
       this.predictorX = make();
       this.predictorZ = make();
@@ -308,7 +294,6 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     this.startP.set(qx);
     this.startQ.set(qz);
     this.updateMask();
-    this.dispersiveDepth();
     this.modifiedFluxes();
     this.computeRates(dt);
     this.halfStepSurface();
@@ -347,8 +332,10 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   /**
    * FUNWAVE-TVD's Froude cap (FroudeCap, 5–10; Shi et al. 2011, CACR-11-04): a wet cell's speed stays under ten
    * times its shallow-water wave speed. The P/Q recovery can pin a thin dispersing cell's flux to its held
-   * neighbours', and u = P/h then runs away (the Reef's biggest seas). Water under FUNWAVE's 1 cm wet depth is
-   * left to friction. A capped cell's predictor is dropped: its step was not the dispersive terms'.
+   * neighbours', and u = P/h then runs away (the Reef's biggest seas). `SWITCH_FROUDE` takes such water out of the
+   * dispersion first; this is the net under it, counted so a report shows if it ever holds real water. Water under
+   * FUNWAVE's 1 cm wet depth is left to friction. A capped cell's predictor is dropped: its step was not the
+   * dispersive terms'.
    */
   private capFroude(): void {
     const { h, qx, qz, predictorX, predictorZ, gravity: g } = this;
@@ -538,14 +525,6 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     }
   }
 
-  /** The depth the dispersive terms see this step (`DRAINED_DEPTH`), from the water as it begins, and its slopes. */
-  private dispersiveDepth(): void {
-    const { h, still, mask, depth } = this;
-    for (let i = 0; i < h.length; i += 1) depth[i] = mask[i] > 0 ? Math.min(still[i], DRAINED_DEPTH * h[i]) : still[i];
-    this.derivativeX(depth, this.depthX, false);
-    this.derivativeZ(depth, this.depthZ, false);
-  }
-
   private refreshStillDepth(): void {
     if (!this.depthDirty) return;
     const { bed, restLevel, still } = this;
@@ -625,7 +604,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
 
   /** P̄ and Q̄ from P and Q. */
   private modifiedFluxes(): void {
-    const { qx: P, qz: Q, pBar, qBar, depth: d, depthX: dX, depthZ: dZ, mask, f1, f2, f3, f4, f5, f6 } = this;
+    const { qx: P, qz: Q, pBar, qBar, still: d, dX, dZ, mask, f1, f2, f3, f4, f5, f6 } = this;
     // P_xx, P_x, Q_y, then Q_xy = ∂x(Q_y), and Q_x.
     this.secondX(P, f1, true);
     this.derivativeX(P, f2, true);
@@ -656,7 +635,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
 
   /** Bg d³(η_xxx + η_xyy) + Bg d² d_x(2η_xx + η_yy) + Bg d² d_y η_xy, and its y twin. */
   private dispersiveSources(): void {
-    const { halfEta: eta, depth: d, depthX: dX, depthZ: dZ, mask, sourceX, sourceZ, f1, f2, f3, f4, f5, f6, gravity: g } = this;
+    const { halfEta: eta, still: d, dX, dZ, mask, sourceX, sourceZ, f1, f2, f3, f4, f5, f6, gravity: g } = this;
     this.secondX(eta, f1, false);
     this.carryCurvatureAcrossOpenEdges(f1);
     this.secondZ(eta, f2, false);
@@ -711,7 +690,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
    * the cross terms from the current Q.
    */
   private recoverRows(): void {
-    const { nx, nz, qx: P, qz: Q, pBar, depth: d, depthX: dX, depthZ: dZ, mask, f3, f4, f5 } = this;
+    const { nx, nz, qx: P, qz: Q, pBar, still: d, dX, dZ, mask, f3, f4, f5 } = this;
     const { lowerBand: a, diagonal: b, upperBand: c, right: r, scratch } = this;
     this.derivativeZ(Q, f3, true);
     this.derivativeX(f3, f4, false);
@@ -762,7 +741,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
    * with walls (Q odd) at both cross-shore ends.
    */
   private recoverColumns(): void {
-    const { nx, nz, qx: P, qz: Q, qBar, depth: d, depthX: dX, depthZ: dZ, mask, below, above, f2, f4, f6, columnUpper: upper, columnRight: right } = this;
+    const { nx, nz, qx: P, qz: Q, qBar, still: d, dX, dZ, mask, below, above, f2, f4, f6, columnUpper: upper, columnRight: right } = this;
     this.derivativeX(P, f2, true);
     this.derivativeZ(f2, f4, false);
     this.derivativeZ(P, f6, false);
