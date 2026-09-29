@@ -1,9 +1,9 @@
-import { Quaternion, Vector3 } from 'three';
+import { Euler, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
 import {
-  ChopWater, FILM_JOINT, FILM_SCENARIOS, balanceCue, breathing, remoteDrawer, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, posed, repeatedFrames, rigAlone, shake, switchSpeeds,
-  switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame,
+  ChopWater, FILM_JOINT, FILM_SCENARIOS, balanceCue, boardMotion, breathing, crawlRate, remoteDrawer, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, paddleStroke, posed,
+  repeatedFrames, rigAlone, shake, swimRoll, switchSpeeds, switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame,
 } from './bodyFilm';
 
 const scenario = (name: string) => FILM_SCENARIOS.find((candidate) => candidate.name === name)!;
@@ -87,7 +87,7 @@ function film(rate: number, count: number, shape: (i: number, frame: FilmFrame) 
   for (let i = 0; i < count; i += 1) {
     const frame: FilmFrame = {
       time: i / rate, phase: 'standing', moving: true, switched: false, fallen: false,
-      joints: Array.from({ length: 13 }, () => new Vector3()), limbs: [new Vector3()], hips: new Vector3(), board: new Vector3(),
+      joints: Array.from({ length: 13 }, () => new Vector3()), limbs: Array.from({ length: 13 }, () => new Vector3()), hips: new Vector3(), board: new Vector3(), boardTurn: new Quaternion(),
       bones: [new Quaternion()], worldBones: Array.from({ length: 3 }, () => new Quaternion()),
       chestRoll: 0, physicsRoll: 0, hipsOnBoard: new Vector3(), physicsPelvis: new Vector3(), balance: 1, physicsHands: [new Vector3(), new Vector3()],
     };
@@ -419,3 +419,111 @@ describe('another player\'s surfer (step 7)', () => {
   }, 240_000);
 });
 
+describe('the paddle and the swim measures (step 8)', () => {
+  it('reads a hand\'s stroke on the board and its strokes a minute', () => {
+    // A hand circling 0.5 m along and 0.2 m up and down, drifting 0.1 m across, once a second, lying down.
+    const stroke = film(60, 600, (i, frame) => {
+      const angle = (2 * Math.PI * i) / 60;
+      frame.phase = 'prone';
+      frame.joints[FILM_JOINT.hand.left].set(0.05 * Math.sin(angle), 0.1 * Math.sin(angle), 0.25 * Math.cos(angle));
+    });
+    const read = paddleStroke(stroke, 'left');
+    expect(read.along).toBeCloseTo(0.5, 3);
+    expect(read.across).toBeCloseTo(0.1, 3);
+    expect(read.vertical).toBeCloseTo(0.2, 3);
+    expect(read.perMinute).toBeCloseTo(60, 0);
+  });
+
+  it('reads the board\'s pitch and its roll through each stroke', () => {
+    const rocking = film(60, 600, (i, frame) => {
+      const roll = (10 * Math.PI) / 180 * Math.sin((2 * Math.PI * i) / 60);
+      frame.boardTurn.setFromEuler(new Euler(-(12 * Math.PI) / 180, 0, roll, 'YXZ'));
+    });
+    const read = boardMotion(rocking, 1);
+    expect(read.pitch).toBeCloseTo(12, 0);
+    expect(read.roll).toBeCloseTo(20, 0);
+  });
+
+  it('reads a swimmer\'s roll about its long axis, and its arm cycles', () => {
+    // Lying face down along +z, rolling 50° each way twice a second... once a cycle, the left hand circling its shoulder.
+    const swim = film(60, 600, (i, frame) => {
+      const roll = (50 * Math.PI) / 180 * Math.sin((2 * Math.PI * i) / 150);
+      frame.limbs[FILM_JOINT.head].set(0, 0, 0.6);
+      frame.limbs[FILM_JOINT.shoulder.left].set(0.18 * Math.cos(roll), 0.18 * Math.sin(roll), 0.45);
+      frame.limbs[FILM_JOINT.shoulder.right].set(-0.18 * Math.cos(roll), -0.18 * Math.sin(roll), 0.45);
+      frame.limbs[FILM_JOINT.hand.left].set(0.18, 0.18 * Math.sin(roll) + 0.5 * Math.sin((2 * Math.PI * i) / 150), 0.45);
+    });
+    const read = swimRoll(swim);
+    expect(read.left).toBeCloseTo(50, 0);
+    expect(read.right).toBeCloseTo(50, 0);
+    expect(Math.abs(read.mean)).toBeLessThan(1);
+    expect(crawlRate(swim, 'left')).toBeCloseTo(0.4, 1);
+    // Face up reads 180°.
+    const back = film(60, 10, (_, frame) => {
+      frame.limbs[FILM_JOINT.head].set(0, 0, 0.6);
+      frame.limbs[FILM_JOINT.shoulder.left].set(-0.18, 0, 0.45);
+      frame.limbs[FILM_JOINT.shoulder.right].set(0.18, 0, 0.45);
+    });
+    expect(swimRoll(back).left).toBeCloseTo(180, 0);
+  });
+});
+
+describe('the paddler and the swimmer (step 8)', () => {
+  const steady = (rate: number): BodyFilm => {
+    const paddle = filmBody(scenario('paddle then glide'), { rate, drawer: trackDrawer, pose: posed() });
+    return { rate, frames: paddle.frames.filter((frame) => frame.time >= 5 && frame.time < 18) };
+  };
+
+  it('paddles with no jump, its stroke drawn alike at any display rate', () => {
+    // The physics' stroke put the hand back on the deck as it left the water, and back under it at the reach: 25 cm
+    // each time, which the drawing took differently at 30, 60 and 120 Hz (the hand's path 53, 22–26 and 8–11 cm across).
+    // Then the drawn arm's own solve: the elbow snapping straight at the arm's reach, and flipping (with the hand) where
+    // its side met the arm head on; and the arm folding tight past the shoulder, turning fast enough for a 30 Hz
+    // display's smoothing to read the turn as a jump.
+    const films = [30, 60, 120].map(steady);
+    for (const shot of films) {
+      expect(shot.frames.filter((frame) => frame.switched).length, `${shot.rate} Hz`).toBe(0);
+      // The physics' hand peaks at about 4.4 m/s against the board, as in fast front-crawl strokes: the drawn hand no
+      // faster (the arm's solve flipped the elbow and spun the hand as the arm passed under the shoulder).
+      for (const side of ['left', 'right'] as const) {
+        let fastest = 0;
+        for (let i = 1; i < shot.frames.length; i += 1) {
+          const [a, b] = [shot.frames[i - 1].joints[FILM_JOINT.hand[side]], shot.frames[i].joints[FILM_JOINT.hand[side]]];
+          fastest = Math.max(fastest, a.distanceTo(b) * shot.rate);
+        }
+        expect(fastest, `${side} hand at ${shot.rate} Hz`).toBeLessThan(5);
+      }
+    }
+    for (const side of ['left', 'right'] as const) {
+      const [slow, even, fast] = films.map((shot) => paddleStroke(shot, side));
+      for (const axis of ['along', 'across', 'vertical'] as const) {
+        expect(Math.abs(slow[axis] - even[axis]), `${side} ${axis}, 30 Hz`).toBeLessThan(0.02);
+        expect(Math.abs(fast[axis] - even[axis]), `${side} ${axis}, 120 Hz`).toBeLessThan(0.02);
+      }
+    }
+  }, 240_000);
+
+  // Nessler et al. 2015 (± 1 SD, the wetsuit and the bare arm): the stroke 970 ± 77 mm long and 170 ± 67 mm wide, the
+  // wrist through 424 ± 78 to 468 ± 92 mm up and down. Nessler et al. 2019: the board pitched 12.3 ± 2.3°.
+  it('paddles a stroke as wide and as deep as a real one, the board pitched as a real one', () => {
+    const shot = steady(60);
+    for (const side of ['left', 'right'] as const) {
+      const stroke = paddleStroke(shot, side);
+      expect(stroke.across, `${side} across`).toBeGreaterThan(0.103);
+      expect(stroke.across, `${side} across`).toBeLessThan(0.237);
+      expect(stroke.vertical, `${side} vertical`).toBeGreaterThan(0.346);
+      expect(stroke.vertical, `${side} vertical`).toBeLessThan(0.56);
+    }
+    const board = boardMotion(shot, 1);
+    expect(board.pitch).toBeGreaterThan(10);
+    expect(board.pitch).toBeLessThan(14.6);
+  }, 240_000);
+  // Its length is short: 73 cm. The physics' hand enters 0.7 m from the drawn shoulder and leaves as far behind it,
+  // past the drawn arm's reach, so the drawn hand stops short at both ends. Real paddlers reach with the shoulder and
+  // roll with the board (27–45° a stroke, Nessler et al. 2019; the physics rolls it 7°): a question for the physics
+  // posture, with the stroke rate (60 a minute a side, where 1.7 m/s gives about 50). Pinned, not tuned.
+  it.fails('paddles a stroke as long as a real one', () => {
+    const shot = steady(60);
+    for (const side of ['left', 'right'] as const) expect(paddleStroke(shot, side).along, `${side} along`).toBeGreaterThan(0.893);
+  }, 240_000);
+});

@@ -121,6 +121,15 @@ export const RIG_DETAIL = {
   legEase: 0.025,
   armReach: 0.97,
   /**
+   * Lying, the arms come to their reach smoothly over this share of their length
+   * each side of it (`softCap`; step 8). The paddle's hand is out of the drawn
+   * arm's reach through most of the pull: at a hard stop the elbow snapped from
+   * straight to 150° in a frame each time the hand came within it (four times a
+   * stroke), which the smoothing took for jumps. The hand moves at up to 4.4 m/s,
+   * so the band is wider than the legs'.
+   */
+  armEase: 0.1,
+  /**
    * The knees standing tall (de Sousa 2022: 150° or more extended): the physics'
    * standing pelvis maps to the hips with both knees at this, so its crouch drop
    * bends them from there (90–110° crouched, 90° or less compressed).
@@ -220,6 +229,23 @@ export const RIG_DETAIL = {
    */
   duckArmReach: 0.97,
   crawlRate: 0.8,
+  /**
+   * Lying, the elbow's side through the paddle stroke (step 8): high, out and
+   * trailing the hand, as a paddler's high elbow. The arm sweeps forward, down
+   * under the shoulder and back to the hip, then forward again out beside the
+   * shoulder: this stays 36° or more off every way it points. An elbow pointing
+   * up met the arm head on under the shoulder, one pointing out beside it, and
+   * each flipped the elbow in a frame.
+   */
+  strokeElbow: { out: 1, up: 1, forward: -1 },
+  /**
+   * Lying, the hand's back through the stroke (step 8): up, out and toward the
+   * nose, so the palm pushes back while pulling and faces the water swinging
+   * forward, 36° or more off the forearm's every way. The deck's normal, falling
+   * back to the chest's facing (the deck, lying), spun the hand half a turn as
+   * the forearm passed under the shoulder.
+   */
+  strokeHand: { out: 1, up: 1, forward: 1 },
   /** Short of breath the crawl quickens, up to (1 + `panic`) times at none (Part B's body cue). */
   panic: 1,
   crawlReach: 0.85,
@@ -321,6 +347,7 @@ export class HumanoidRig {
   private readonly hipsAt = new Vector3();
   private readonly bendAxis = new Vector3();
   private readonly pivot = new Vector3();
+  private readonly strokeOffset = new Vector3();
   private readonly pole2 = new Vector3();
   private readonly headHint = new Vector3();
   private readonly chestBase = new Vector3();
@@ -481,18 +508,18 @@ export class HumanoidRig {
     this.alarm = state.phase === 'standing' ? RIG_DETAIL.arms.alarmShare * this.balanceAlarm(state) : 0;
     // 4. Arms.
     for (const side of SIDES) {
-      const outward = this.scratch.copy(left).multiplyScalar(side === 'left' ? 1 : -1);
-      if (state.phase === 'prone') pole.copy(boardUp).addScaledVector(outward, 0.5);
-      else if (state.phase === 'push') pole.copy(boardForward).negate().addScaledVector(boardUp, 0.3);
+      if (state.phase === 'push') pole.copy(boardForward).negate().addScaledVector(boardUp, 0.3);
       else if (upright) pole.copy(WORLD_UP).multiplyScalar(-RIG_DETAIL.elbowDrop).addScaledVector(this.facing, -RIG_DETAIL.elbowBack);
       else pole.copy(this.facing).negate();
       // The clavicle at rest against the chest (it follows its arm below, standing): the shoulder read from this solve.
       this.restLocal(BONES.shoulder[side]);
       const shoulder = this.bones.get(BONES.arm[side])!.getWorldPosition(this.joints.shoulder[side]);
       const hand = p[side === 'left' ? POINT.leftHand : POINT.rightHand];
+      if (state.phase === 'prone') this.strokeSide(side, RIG_DETAIL.strokeElbow, pole);
       if (fallen && state.swim.stroking) this.crawlHand(state, side, shoulder, target);
       else if (fallen) target.subVectors(hand, shoulder).setLength(RIG_DETAIL.fallenReach * this.armLength).add(shoulder);
       else if (state.phase === 'prone' && state.duck > 0.3) this.straightOnRail(hand, shoulder, target);
+      else if (state.phase === 'prone') this.softReach(shoulder, hand, target);
       else target.copy(hand);
       if (state.phase === 'standing') this.freeArm(state, side, shoulder, target, 1 - this.reachDepth(hand));
       if (state.phase === 'standing' && !this.isRearFoot(state, side)) this.leadArm(state, shoulder, target, 1 - this.reachDepth(hand));
@@ -508,7 +535,8 @@ export class HumanoidRig {
       // (a hint along the forearm spun the hand).
       const forearm = this.direction.subVectors(this.joints.wrist[side], this.joints.elbow[side]).normalize();
       const handHint = this.handHint.copy(fallen ? this.facing : boardUp);
-      if (!fallen) {
+      if (state.phase === 'prone') this.strokeSide(side, RIG_DETAIL.strokeHand, handHint);
+      else if (!fallen) {
         const off = this.scratch.copy(boardUp).addScaledVector(forearm, -boardUp.dot(forearm)).length();
         const keep = Math.min(1, Math.max(0, (off - 0.15) / 0.2));
         handHint.multiplyScalar(keep).addScaledVector(this.facing, 1 - keep);
@@ -1025,6 +1053,16 @@ export class HumanoidRig {
   }
 
   /**
+   * Lying, a direction on the arm's side of the board (step 8): `out` from the
+   * body, `up` off the deck and `forward` toward the nose (negative: toward the
+   * tail), in the board's frame.
+   */
+  private strokeSide(side: Side, direction: { out: number; up: number; forward: number }, result: Vector3): Vector3 {
+    const outward = this.strokeOffset.copy(this.left).multiplyScalar(side === 'left' ? 1 : -1);
+    return result.copy(outward).multiplyScalar(direction.out).addScaledVector(this.boardUp, direction.up).addScaledVector(this.boardForward, direction.forward);
+  }
+
+  /**
    * The swimmer's crawl: the hand circles the shoulder in the plane of the
    * heading and the vertical, reaching forward, pulling down and back under the
    * body, recovering over the water; the arms half a stroke apart.
@@ -1043,6 +1081,15 @@ export class HumanoidRig {
     if (!(step > 0 && step < 0.5)) return;
     const breath = Math.min(1, Math.max(0, state.breath));
     this.crawlPhase = (this.crawlPhase + step * RIG_DETAIL.crawlRate * (1 + RIG_DETAIL.panic * (1 - breath))) % 1;
+  }
+
+  /** Lying, the hand's point brought within the arm's reach smoothly (`armEase`): along the line from the shoulder. */
+  private softReach(shoulder: Vector3, hand: Vector3, out: Vector3): Vector3 {
+    const offset = out.subVectors(hand, shoulder);
+    const distance = offset.length();
+    if (distance < 1e-9) return out.copy(hand);
+    const reach = softCap(distance, RIG_DETAIL.armReach * this.armLength, RIG_DETAIL.armEase * this.armLength);
+    return offset.multiplyScalar(reach / distance).add(shoulder);
   }
 
   /** Ducking, a hand on its rail slid forward along the board until the arm from the shoulder is straight. */
