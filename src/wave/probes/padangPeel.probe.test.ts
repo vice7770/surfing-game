@@ -42,12 +42,23 @@ it.skipIf(!process.env.PROBE)('probes Padang Padang’s peel', () => {
     return row;
   });
   log(`reef columns x: ${reefColumns.map((c) => xs[c].toFixed(0)).join('/')}; base z ${baseRows.map((r) => solver.zCenters[r].toFixed(0)).join('/')}, base depth ${reefColumns.map((c, k) => bed.depthAt(xs[c], solver.zCenters[baseRows[k]]).toFixed(1)).join('/')} m`);
+  // A contour on the wedge, climbing from its base (CONTOUR m, 4.5 by default): the first row shoreward of the base that shallow.
+  const contour = Number(process.env.CONTOUR ?? 4.5);
+  const contourRows = reefColumns.map((column, k) => {
+    let row = baseRows[k];
+    while (row < solver.nz - 1 && bed.depthAt(xs[column], solver.zCenters[row]) > contour) row += 1;
+    return row;
+  });
   const eta = (i: number) => solver.h[i] + solver.bed[i] - solver.restLevel;
   for (let period = 0; period < Number(process.env.PERIODS ?? 12); period += 1) {
     const top = reefColumns.map(() => -Infinity);
+    const onContour = reefColumns.map(() => -Infinity);
     for (let k = 0; k < 16 * 30; k += 1) {
       simulation.step(1 / 30);
-      reefColumns.forEach((column, n) => { top[n] = Math.max(top[n], eta(baseRows[n] * solver.nx + column)); });
+      reefColumns.forEach((column, n) => {
+        top[n] = Math.max(top[n], eta(baseRows[n] * solver.nx + column));
+        onContour[n] = Math.max(onContour[n], eta(contourRows[n] * solver.nx + column));
+      });
     }
     const estimate = simulation.peelEstimate();
     const onsets: string[] = [];
@@ -58,6 +69,6 @@ it.skipIf(!process.env.PROBE)('probes Padang Padang’s peel', () => {
       const where = Number.isFinite(z) && z !== 0 ? `${bed.depthAt(xs[column], z).toFixed(1)}m${z < baseZ(xs[column]) ? 'R' : 'W'}` : '-';
       onsets.push(`${xs[column].toFixed(0)}:${(tracker.onset[column] - solver.time).toFixed(1)}s@${z.toFixed(0)}/${where}`);
     }
-    log(`t ${solver.time.toFixed(0)} s: ${estimate ? `V ${estimate.peelSpeed.toFixed(1)} α ${estimate.angleDegrees.toFixed(0)}° line ${estimate.lineSlope.toFixed(2)} fit ${estimate.fit.toFixed(2)} n ${estimate.columns} dir ${estimate.direction}` : 'none'} | ${onsets.join(' ')} | crest top at base ${top.map((v) => v.toFixed(2)).join('/')}`);
+    log(`t ${solver.time.toFixed(0)} s: ${estimate ? `V ${estimate.peelSpeed.toFixed(1)} α ${estimate.angleDegrees.toFixed(0)}° line ${estimate.lineSlope.toFixed(2)} fit ${estimate.fit.toFixed(2)} n ${estimate.columns} dir ${estimate.direction}` : 'none'} | ${onsets.join(' ')} | crest top at base ${top.map((v) => v.toFixed(2)).join('/')} | at ${contour} m ${onContour.map((v) => v.toFixed(2)).join('/')}`);
   }
 }, 3_600_000);
