@@ -357,20 +357,25 @@ export function boardMotion(film: BodyFilm, cycle: number): { pitch: number; rol
 
 /**
  * The swimmer's roll (step 8), degrees, per frame: how far the drawn chest
- * faces away from straight down about the body's long axis, positive with the
- * left shoulder up. The chest faces the shoulders' line (right to left) crossed
- * with the spine (hips to head).
+ * faces away from straight down about the body's long axis (its pitch left
+ * out), positive with the left shoulder up. The chest faces the shoulders' line
+ * (right to left) crossed with the spine (hips to head).
  */
 export function swimRolls(film: BodyFilm): number[] {
   const across = new Vector3();
   const spine = new Vector3();
   const facing = new Vector3();
+  const down = new Vector3();
+  const turn = new Vector3();
   return film.frames.map((frame) => {
     across.subVectors(frame.limbs[FILM_JOINT.shoulder.left], frame.limbs[FILM_JOINT.shoulder.right]);
     spine.copy(frame.limbs[FILM_JOINT.head]).normalize();
-    facing.crossVectors(across, spine).normalize();
-    const away = (Math.acos(Math.max(-1, Math.min(1, -facing.y))) * 180) / Math.PI;
-    return across.y >= 0 ? away : -away;
+    facing.crossVectors(across, spine);
+    facing.addScaledVector(spine, -facing.dot(spine));
+    down.set(0, -1, 0).addScaledVector(spine, spine.y);
+    // Signed about the spine: from down to the facing, positive turning the chest toward the right (the left shoulder up).
+    const angle = Math.atan2(turn.crossVectors(down, facing).dot(spine), down.dot(facing));
+    return (-angle * 180) / Math.PI;
   });
 }
 

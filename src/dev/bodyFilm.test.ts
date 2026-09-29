@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
 import {
   ChopWater, FILM_JOINT, FILM_SCENARIOS, balanceCue, boardMotion, breathing, crawlRate, remoteDrawer, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, paddleStroke, posed,
-  repeatedFrames, rigAlone, shake, swimRoll, switchSpeeds, switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame,
+  repeatedFrames, rigAlone, shake, swimRoll, swimRolls, switchSpeeds, switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame,
 } from './bodyFilm';
 
 const scenario = (name: string) => FILM_SCENARIOS.find((candidate) => candidate.name === name)!;
@@ -458,13 +458,19 @@ describe('the paddle and the swim measures (step 8)', () => {
     expect(read.right).toBeCloseTo(50, 0);
     expect(Math.abs(read.mean)).toBeLessThan(1);
     expect(crawlRate(swim, 'left')).toBeCloseTo(0.4, 1);
-    // Face up reads 180°.
+    // Face up reads half a turn, and pitching the chest (the head up) adds no roll.
     const back = film(60, 10, (_, frame) => {
       frame.limbs[FILM_JOINT.head].set(0, 0, 0.6);
       frame.limbs[FILM_JOINT.shoulder.left].set(-0.18, 0, 0.45);
       frame.limbs[FILM_JOINT.shoulder.right].set(0.18, 0, 0.45);
     });
-    expect(swimRoll(back).left).toBeCloseTo(180, 0);
+    expect(Math.abs(swimRolls(back)[0])).toBeCloseTo(180, 0);
+    const pitched = film(60, 10, (_, frame) => {
+      frame.limbs[FILM_JOINT.head].set(0, 0.1, 0.6);
+      frame.limbs[FILM_JOINT.shoulder.left].set(0.18, 0.08, 0.45);
+      frame.limbs[FILM_JOINT.shoulder.right].set(-0.18, 0.08, 0.45);
+    });
+    expect(swimRolls(pitched)[0]).toBeCloseTo(0, 3);
   });
 });
 
@@ -523,10 +529,36 @@ describe('the paddler and the swimmer (step 8)', () => {
     return { rate, frames: swim.frames.filter((frame) => frame.time >= 4) };
   };
 
-  it('swims facing the water', () => {
-    // It lay on its side or face up, wherever its spine leaned (from face up at −157° to its other side at +86°).
-    const roll = swimRoll(swimming(60));
+  it('swims facing the water, rolling to each arm as swimmers do, at an adult\'s stroke rate', () => {
+    // It lay on its side or face up, wherever its spine leaned (from face up at −157° to its other side at +86°), and
+    // crawled at 0.8 cycles a second without rolling. Payton et al. 1999: 57 ± 4° and 66 ± 5° each way; Barden and
+    // Barber 2022: 45–54° at the hips, slower. Kjendlie et al. 2004: 0.38 ± 0.04 cycles a second at 1.0 m/s.
+    const shot = swimming(60);
+    const roll = swimRoll(shot);
     expect(Math.abs(roll.mean)).toBeLessThan(10);
+    expect(roll.left).toBeGreaterThan(45);
+    expect(roll.left).toBeLessThan(70);
+    expect(roll.right).toBeGreaterThan(45);
+    expect(roll.right).toBeLessThan(70);
+    expect(crawlRate(shot, 'left')).toBeGreaterThan(0.34);
+    expect(crawlRate(shot, 'left')).toBeLessThan(0.42);
+  }, 240_000);
+
+  it('rolls smoothly at 30 and 120 Hz, with no pop once it strokes', () => {
+    for (const rate of [30, 120]) {
+      const shot = swimming(rate);
+      const rolls = swimRolls(shot);
+      let fastest = 0;
+      for (let i = 1; i < rolls.length; i += 1) fastest = Math.max(fastest, Math.abs(rolls[i] - rolls[i - 1]) * rate);
+      // The roll peaks near 2π × 0.38 × 66 ≈ 160°/s: no faster than twice that.
+      expect(fastest, `${rate} Hz`).toBeLessThan(320);
+      // From the first stroke (1 s); the fall off the board before it is the physics' own (step 8's findings).
+      const swim = filmBody(scenario('swimming'), { rate, drawer: trackDrawer, pose: posed() });
+      for (const spike of switchSpikes(swim).filter((spike) => spike.time >= 1)) {
+        expect(spike.rotationSpeed, `${rate} Hz at ${spike.time.toFixed(2)} s`).toBeLessThan(6);
+        expect(spike.jointSpeed, `${rate} Hz at ${spike.time.toFixed(2)} s`).toBeLessThan(2);
+      }
+    }
   }, 240_000);
 
   // Its length is short: 73 cm. The physics' hand enters 0.7 m from the drawn shoulder and leaves as far behind it,

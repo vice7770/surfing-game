@@ -4,7 +4,7 @@ import { AttachedRider } from '../../physics/AttachedRider';
 import { BoardBody } from '../../physics/BoardBody';
 import { PlaneWater } from '../../physics/PlaneWater';
 import { BONES, type Side } from './humanoidBones';
-import { HumanoidRig } from './HumanoidRig';
+import { HumanoidRig, RIG_DETAIL } from './HumanoidRig';
 import { posturePoints } from './posturePoints';
 import { POINT, createRiderVisualState } from './riderVisualState';
 import { RIDING_MOMENTS, ridingState, type RidingMoment } from '../../dev/ridingPoses';
@@ -244,6 +244,64 @@ describe('humanoid rig', () => {
       expect(travel(0.1)).toBeGreaterThan(1.4 * travel(1));
     });
 
+    // The riding body, step 8: the crawl as swimmers swim it.
+    describe('the crawl (step 8)', () => {
+      /** A swimmer lying flat along +z, face down, stroking; its body's roll each frame over `seconds` (positive, the left shoulder up), the crawl's cycles, and its face's angle from straight down. */
+      const crawl = (seconds: number, under = false) => {
+        const { bones } = createTestHumanoid();
+        const rig = new HumanoidRig(bones);
+        const state = createRiderVisualState();
+        state.phase = 'fallen';
+        state.heading = 0;
+        const flat = [[0, 0, 0], [0, 0, 0.3], [0, 0, 0.6], [0.3, 0, 0.5], [-0.3, 0, 0.5], [0.1, 0, -0.45], [-0.1, 0, -0.45]];
+        flat.forEach(([x, y, z], i) => state.points[i].set(x, y, z));
+        state.swim.stroking = true;
+        state.swim.under = under;
+        state.breath = 1;
+        const rolls: number[] = [];
+        const faces: number[] = [];
+        const heights: number[] = [];
+        for (let i = 0; i <= seconds * 50; i += 1) {
+          state.clock = i / 50;
+          rig.solve(state);
+          const across = rig.joints.shoulder.left.clone().sub(rig.joints.shoulder.right);
+          const hips = rig.joints.hip.left.clone().add(rig.joints.hip.right).multiplyScalar(0.5);
+          const spine = rig.joints.shoulder.left.clone().add(rig.joints.shoulder.right).multiplyScalar(0.5).sub(hips).normalize();
+          const facing = across.clone().cross(spine).normalize();
+          const away = (Math.acos(Math.max(-1, Math.min(1, -facing.y))) * 180) / Math.PI;
+          rolls.push(across.y >= 0 ? away : -away);
+          faces.push((faceOf(bones).angleTo(new Vector3(0, -1, 0)) * 180) / Math.PI);
+          heights.push(rig.joints.wrist.left.y - rig.joints.shoulder.left.y);
+        }
+        let crossings = 0;
+        const mean = heights.reduce((a, b) => a + b, 0) / heights.length;
+        for (let i = 1; i < heights.length; i += 1) if (heights[i - 1] < mean && heights[i] >= mean) crossings += 1;
+        return { rolls, faces, cycles: crossings / seconds };
+      };
+
+      it('rolls toward each pulling arm, further to the breathing side (Payton et al. 1999)', () => {
+        const { rolls } = crawl(8);
+        expect(Math.max(...rolls)).toBeGreaterThan(51);
+        expect(Math.max(...rolls)).toBeLessThan(63);
+        expect(-Math.min(...rolls)).toBeGreaterThan(60);
+        expect(-Math.min(...rolls)).toBeLessThan(72);
+      });
+
+      it('strokes 0.38 cycles a second, an adult\'s crawl at the swimmer\'s 1 m/s (Kjendlie et al. 2004)', () => {
+        expect(crawl(21).cycles).toBeCloseTo(0.38, 1);
+      });
+
+      it('turns the head up to breathe on one side only, and keeps it down holding its breath', () => {
+        const breathing = crawl(8).faces;
+        expect(Math.max(...breathing)).toBeGreaterThan(55);
+        const held = crawl(8, true);
+        expect(Math.max(...held.faces)).toBeLessThan(20);
+        // Held, the body still rolls, evenly (no breathing side).
+        expect(Math.max(...held.rolls)).toBeGreaterThan(51);
+        expect(-Math.min(...held.rolls)).toBeLessThan(63);
+      });
+    });
+
     it('swimming, strokes the arms round in a crawl and kicks the feet', () => {
       const { bones } = createTestHumanoid();
       const rig = new HumanoidRig(bones);
@@ -254,17 +312,21 @@ describe('humanoid rig', () => {
       rig.solve(state);
       const hand = rig.joints.wrist.left.clone();
       const ankle = rig.joints.ankle.left.clone();
-      state.clock = 0.25;
-      rig.solve(state);
+      // A fifth of an arm's cycle, frame by frame.
+      while (state.clock < 0.2 / RIG_DETAIL.crawlRate) {
+        state.clock += 0.02;
+        rig.solve(state);
+      }
       expect(rig.joints.wrist.left.distanceTo(hand)).toBeGreaterThan(0.2);
       expect(rig.joints.ankle.left.distanceTo(ankle)).toBeGreaterThan(0.05);
       state.swim.stroking = false;
-      state.clock = 0.5;
+      state.clock += 0.25;
       rig.solve(state);
       const still = rig.joints.wrist.left.clone();
-      state.clock = 0.75;
+      state.clock += 0.25;
       rig.solve(state);
-      expect(rig.joints.wrist.left.distanceTo(still)).toBeLessThan(1e-9);
+      // Held, but for the chest's breath (step 4), a fraction of a millimetre at the hand.
+      expect(rig.joints.wrist.left.distanceTo(still)).toBeLessThan(0.002);
     });
   });
 });

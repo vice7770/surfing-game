@@ -228,7 +228,19 @@ export const RIG_DETAIL = {
    * `kick` m at `kickRate` a second.
    */
   duckArmReach: 0.97,
-  crawlRate: 0.8,
+  /**
+   * The crawl's arm cycles a second: an adult's at 1.0 m/s (Kjendlie et al.
+   * 2004: 0.38 ± 0.04), the physics' swimmer's own speed (step 8; it drew 0.8).
+   */
+  crawlRate: 0.38,
+  /**
+   * Swimming, the body's roll about its spine, degrees (step 8): at most `away`
+   * toward the side the swimmer does not breathe to and `breath` toward the side
+   * it does (Payton et al. 1999: 57 ± 4° and 66 ± 5° at race pace), breathing
+   * each cycle to its right (provisional: a recreational swimmer's habit); the
+   * hips roll `hips` as far (Barden and Barber 2022: 45–54° at the hips).
+   */
+  crawlRoll: { away: 57, breath: 66, hips: 0.8 },
   /**
    * Lying, the elbow's side through the paddle stroke (step 8): high, out and
    * trailing the hand, as a paddler's high elbow. The arm sweeps forward, down
@@ -272,6 +284,10 @@ export class HumanoidRig {
   };
   /** Where the chest faces after `solve`. */
   readonly facing = new Vector3();
+  /** Swimming, the facing before the crawl's roll, the head's share of the roll, rad, and the rolled body's back (step 8). */
+  private readonly swimFacing = new Vector3();
+  private headRoll = 0;
+  private readonly crawlBack = new Vector3();
   /** Standing, where the head looks after `solve` (unit). */
   readonly look = new Vector3();
   /** The ankle's height above the sole at rest (MPFB stands the body on y = 0), m. */
@@ -469,6 +485,16 @@ export class HumanoidRig {
       this.facing.applyAxisAngle(up, twist);
       hipsForward.applyAxisAngle(up, RIG_DETAIL.hipsTwistShare * twist);
     }
+    // Swimming, the body rolls about its spine toward each pulling arm (step 8); the head keeps the unrolled facing,
+    // turning with the roll only to breathe.
+    this.swimFacing.copy(this.facing);
+    this.headRoll = 0;
+    if (fallen && state.swim.stroking) {
+      const { roll, head } = this.crawlRoll(state);
+      this.headRoll = head;
+      this.facing.applyAxisAngle(up, roll);
+      hipsForward.applyAxisAngle(up, roll * RIG_DETAIL.crawlRoll.hips);
+    }
 
     // 2. The hips at the pelvis point (standing, raised to the model's extended legs), brought down if the legs cannot reach the feet.
     const hipsAt = this.hipsAt.copy(p[POINT.pelvis]);
@@ -511,7 +537,7 @@ export class HumanoidRig {
     }
     else if (state.phase === 'standing') this.lookWhereGoing(state);
     else if (upright) this.orient(BONES.head, WORLD_UP, this.hint.copy(boardForward).lerp(this.facing, 0.25));
-    else this.orient(BONES.head, chestUp, this.facing);
+    else this.orient(BONES.head, chestUp, this.direction.copy(this.swimFacing).applyAxisAngle(up, this.headRoll));
 
     this.followArmTurn(state);
     this.alarm = state.phase === 'standing' ? RIG_DETAIL.arms.alarmShare * this.balanceAlarm(state) : 0;
@@ -1080,7 +1106,26 @@ export class HumanoidRig {
     const angle = 2 * Math.PI * (this.crawlPhase + (side === 'left' ? 0 : 0.5));
     const reach = RIG_DETAIL.crawlReach * this.armLength;
     this.nose.set(Math.sin(state.heading), 0, Math.cos(state.heading));
-    return out.copy(shoulder).addScaledVector(this.nose, reach * Math.cos(angle)).addScaledVector(WORLD_UP, reach * Math.sin(angle));
+    // The circle in the plane of the heading and the rolled body's back (step 8): swinging forward, the arm goes out
+    // over the water as the body rolls away from it.
+    const back = this.crawlBack.copy(this.facing).negate();
+    return out.copy(shoulder).addScaledVector(this.nose, reach * Math.cos(angle)).addScaledVector(back, reach * Math.sin(angle));
+  }
+
+  /**
+   * The swimmer's roll about its spine now, rad (positive: the left shoulder up),
+   * and the head's share of it (step 8, `RIG_DETAIL.crawlRoll`): toward each arm
+   * as its hand passes under its shoulder, further toward the breathing side,
+   * where the head turns with the body; the head stays down otherwise, and
+   * holding its breath (under water or diving) it never turns, and the roll is
+   * even.
+   */
+  private crawlRoll(state: RiderVisualState): { roll: number; head: number } {
+    const { away, breath } = RIG_DETAIL.crawlRoll;
+    const held = state.swim.under || state.swim.diving;
+    const wave = Math.sin(2 * Math.PI * this.crawlPhase);
+    const roll = ((wave >= 0 || held ? away : breath) * Math.PI * wave) / 180;
+    return { roll, head: held ? 0 : Math.min(0, roll) };
   }
 
   /** The crawl advances with the clock, quicker as the breath runs low; a jump in the clock restarts nothing. */
