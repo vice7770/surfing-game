@@ -17,7 +17,7 @@
 
 **The baseline** (measured before this plan, at 60 Hz):
 - **Paddling at 1.69 m/s:**
-  - the drawn hand's path is 940 mm along the board, 220–260 mm across and 510 mm vertically: within one SD of Nessler 2015;
+  - the drawn hand's path is 940 mm along the board, 220–260 mm across and 510 mm vertically at 60 Hz: within one SD of Nessler 2015 but for the right hand's width (1.4 SD over); the measures then found it differs at each display rate (the Findings);
   - 60 strokes a minute per arm, where Nessler 2019's line gives about 50 at 1.69 m/s;
   - the board pitches 10.3°, within one SD of 12.3°;
   - it rolls only 7° through each stroke, against 27–45°.
