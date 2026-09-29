@@ -550,7 +550,8 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - a sea handover's joiner missed lips thrown on its first step;
     - thick lips landing in one cell flashed the drained crest; they now land over their thickness;
     - a lip's landing bore still drained at 23.5 m/s with dispersion on; the solver now holds the young roller in shallow water where jets land (0.5 H behind to 1.5 H ahead) for Kennedy's T* (CPU and WGSL; branch `claude/plunge-dispersion`);
-    - a cell just switched to shallow water still took the step before's dispersive push in its Hancock half step (−702 m²/s² in a Big swell trace); the half step now adds the predictor only where the cell disperses this step (CPU and WGSL; branch `claude/predictor-mask`).
+    - a cell just switched to shallow water still took the step before's dispersive push in its Hancock half step (−702 m²/s² in a Big swell trace); the half step now adds the predictor only where the cell disperses this step (CPU and WGSL; branch `claude/predictor-mask`);
+    - the Big swell at high tide and the Wave Lab's largest seas blew up: the P/Q recovery pinned thin dispersing water beside cells held in shallow water. The solver now caps the Froude number at 10 (FUNWAVE-TVD), lets the dispersive terms see at most twice a cell's water, and eases the bed over 20 m at the game window's open edges; the Reef's swell stops at 3.5 m (CPU and WGSL; branch `claude/reef-stability`).
   - **Measured:**
     - rounder tubes (width/length 0.71 → 0.77–0.80) that open wider;
     - jets 0.47 H² and 0.47 H thick;

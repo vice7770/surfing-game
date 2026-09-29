@@ -446,9 +446,68 @@ With the plunge-zone fix merged in, the lagoon's seed 3 in the 40 m window flash
 
 - **The lab profile** (`Profile_Teahupoo.txt`): the lagoon's depth and the flat's width wait for the user's approval to download it.
 - **Fewer take-off cues** on Practice (18 against 7).
-- **A hold on the dispersion switch** in draining cells (split out), to bring the two probes back to 20 m/s.
-- **A ~21 m/s peak at the −x open edge far offshore** (Hs 3 m at the edge, 18 s, tide +1, seed 3, the default grid, t ≈ 95 s), found by the plunge-zone session. It occurs with or without that fix, and it isn't a landing: one for the edge treatments.
+- **A hold on the dispersion switch** in draining cells (split out, PR #63, now a draft): it brought the two probes back to 20 m/s, but spiked the Big swell at high tide to 200+ m/s ("The biggest seas", below).
+- **A ~21 m/s peak at the −x open edge far offshore** (Hs 3 m at the edge, 18 s, tide +1, seed 3, the default grid), found by the plunge-zone session. At game size that sea went non-finite at 46 s; the edge ramp fixes it ("The biggest seas", below).
 - **The tube's look** (glow, spit, one section collapsing): with the swept overturn surface. **The step and coral:** with the coral textures.
+
+## The biggest seas
+
+The Surf screen's Big swell at high tide, and the Wave Lab's largest seas, blew up at game size (160 m window, 64 components).
+
+| Sea (seed 3, 110 s) | Main | Now |
+|---|---|---|
+| Hs 3 m at the edge, 18 s, tide +1 | non-finite at 46 s (the −x corner) | 15.1 m/s |
+| Big (3 m, 17 s), high tide (+0.6), 20° | 21.5 m/s (seed 1: 16.1) | 15.3 m/s (seed 1: 19.1) |
+| Big, high tide, 25° (Wave Lab) | non-finite at 49 s | 16.1 m/s |
+| Big, mid tide | 10.7 m/s | 8.3 m/s |
+| Buoy Hs 3.5 m, 18 s, tide +1, from −40°, 20°, 30°, 40° | — | 15–21 m/s |
+| Buoy Hs 4 m, 18 s, tide +1 (the Wave Lab's largest) | non-finite at 48 s | degenerates: now capped at 3.5 m |
+
+### What ran away
+
+Traced substep by substep, every blow-up was one mechanism.
+- **The pin:** the P/Q recovery's rows are (1 − α d² ∂²) with α d² ≈ 17 m² on the 1 m grid, so a dispersing cell's flux is close to its neighbours' average. A thin dispersing cell (0.5–3 m of water over 2.5–6 m) beside cells held in shallow water had its flux pinned to theirs (P − P̄ of hundreds of m²/s). Its thin water carried that flux at u = P/h, drained, and ran away: 18 → 223 m/s in 0.27 s at the −x corner, and the same along z on the ledge top.
+- **What set it up:**
+  - **The window's −x edge:** the 45° ledge ends on it at (−80, −120). Levelling only the two copied columns left a kink where the slope resumed, and the corner drained to 0.06–0.44 m over 5 m.
+  - **Thin water on the ledge top and flat** in the biggest seas. The landings piled 1–2.5 m of water a second into the edge columns, since a jet draws 0.2 of the whole column.
+
+### The fixes
+
+Advice from the water-physics research session throughout.
+- **FUNWAVE-TVD's Froude cap** (FroudeCap 10, Shi et al. 2011, CACR-11-04): a wet cell's speed stays under 10 √(g h), from its 1 cm wet depth. A capped cell's predictor is dropped.
+  - `froudeCaps` counts the caps, and `froudeCapsInWater` those deeper than 5 cm: 0–19 per 110 s run on the Surf screen's seas, up to 283–666 from ±40° in the Wave Lab.
+- **The depth the dispersive terms see:** min(d, 2h) where a cell disperses, from the water as the step begins; with it, its slopes.
+  - **Why:** in water drained below d/2 (|η| > d/2, outside the weakly nonlinear terms' range) the still-depth operator was over four times too stiff.
+  - **Sources:** the direction is fully nonlinear Boussinesq's, where the reference level moves with the surface (Kennedy et al. 2001; FUNWAVE-TVD, Eq. 4). The factor of 2 is our stability choice, provisional.
+  - **Test:** a wave on water drained to 0.4 of its still depth disperses as over twice the water's depth (the terms over still depth give 5 % more wavenumber).
+- **The edge ramp:** in a window at least eight ramps wide (the game's), the bed eases over 20 m (smootherstep) from the spot's own to its profile 20 m in, uniform where the stencils copy the edge. Smaller windows (the CI probes) level the copied columns as before.
+  - **Curvature:** a 0.15 slope bent 0.15 in one cell before, and is now under 0.05.
+- **The Wave Lab and storms** stop the Reef at 3.5 m.
+- **Also fixed:** the warm start of any Reef swell set from 30° to 40° (PR #71), found while measuring these limits.
+
+### Checked
+
+- **Peel on the Small swell** (`report:rideability`, 2 seeds × 12 periods): close-outs 63 % → 54 %, makeable 21 % → 33 %, median α 18° → 17°, peel speed 17.6 → 18.1 m/s, 355 → 354 lips a minute. The ramp's inner end sits 10 m from the take-off; the peel near it holds.
+- **Catch on Practice:** seed 1, 420 attempts with 2 stood against 432 with 2.
+- **Breaking:** the solver's shoaling, breaking and dispersion tests all pass unchanged.
+- **GPU parity** (`/gpu-check.html?spot=reef&hs=3&period=17&seconds=45&plunge`): the new kernels (`depth`, `slopes`, and the cap in `finish`) keep the device within its usual f32 drift.
+  - At 45 s: max |Δh| 1.9 × 10⁻² m, rms Δh / rms η 1.8 × 10⁻³, where main has 3.6 × 10⁻² and 3.5 × 10⁻³.
+  - Early on it matches main (shallow-water cells 3.3 × 10⁻⁶ m at 1 s).
+
+### What did not work
+
+These are recorded so they are not retried.
+- **Eroding short dispersing runs to shallow water** (5 cells, or max(5, 1.3 d/Δ)): spikes of 60–1300 m/s.
+- **A Neumann closure at mask interfaces** (ghost = the cell's own P in P̄ and the recovery): the edge case went non-finite at 7.9 s. The coupling that pins thin cells also holds dispersing regions together.
+- **The operator on u = P/H inside the flux-form stepping:** broadly unstable, and it failed the shoaling test.
+- **Levelling five edge columns:** the blow-up moved to column 6.
+- **PR #63's latch:** its dry count added interfaces.
+
+### Open
+
+- **The Wave Lab's 4 m at 18 s:** a thin dispersing cell near the take-off (1.5–3 m over its still depth) is still pinned, and the cap holds it at 10 √(g h) while the sea degenerates. The root fix recovers velocity, not flux, as fully nonlinear models do (FUNWAVE-TVD; improved Green–Naghdi). That is a rewrite of the dispersive terms, sketched in `docs/research/water-physics/solver-rewrite-sketch.md` (PR #67's branch).
+- **Watch `froudeCapsInWater` in CI:** if it climbs, the pin is spreading.
+- **Jets draw from the whole column:** the wave-sizes rule (only water above still level) would throw about a third as much onto a landing.
 
 ## Commands
 
