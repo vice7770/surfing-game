@@ -60,7 +60,7 @@ Levels 10–11 were timed on the 1:15 case; finer levels are extrapolated at 4�
 ## Your decisions
 
 1. **Padang's wedge.** Decided 2026-09-29: 1:19 along the path, about 1:15 across the crest line, the sourced value. The Padang session would then re-check its peel.
-2. **Padang at level 13.** Decided 2026-09-29: running now on the 1:19 bed, with checkpoints so a container restart only resumes it. Don't tune the game to today's sizes.
+2. **Padang at level 13.** Decided 2026-09-29, but blocked here: the cloud container is reclaimed whenever the session idles, so the run only reached t = 0.39 of 25. It needs a machine that stays up, such as the M4 Pro (about 3–8 h on 10 cores with Homebrew's OpenMP, or 8–35 h on one core; estimates). Don't tune the game to today's sizes.
 3. **Grid level for the library.** Recommended: pick per case so that at least 6 cells span the lip. That means level 12 for steep and reef cases, level 13 for gentle beaches, and level 11 only for quick design sweeps.
 4. **After touchdown.** Recommended: what the roller build already plans ([roller-build.md](roller-build.md)). The library's tube ends at touchdown and blends into the roller on the same loft, and droplets and bubbles go to the particle layer.
 5. **Periodic swell.** Recommended: later. Padang's 14–17 s swell over a shallow reef is close to a train of solitary waves; beaches with shorter swell will need it.

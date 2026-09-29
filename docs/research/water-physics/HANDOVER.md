@@ -111,6 +111,7 @@ The move to the cloud worked on the second try. The session now works on branch 
 - **Cloud limits:**
   - basilisk.fr is blocked by the environment's network policy, so Basilisk comes from the GitHub mirror `comphy-lab/basilisk-C`.
   - Doc exports (blobs) can't be read back here, so pages are mirrored by hand.
+  - The container is reclaimed whenever the session idles, killing background jobs. Long simulations (the level-13 Padang run) need a machine that stays up.
 
 ## How other sessions consult now
 

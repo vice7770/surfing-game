@@ -34,6 +34,7 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 | [spray-and-mist.md](spray-and-mist.md) | Spray, spit, the offshore veil and haze: why they read as dots, the numbers, and what to change |
 | [underwater.md](underwater.md) | The view below water: colour and fog, the sky seen from below, the water mass moving, bubble plumes and sand |
 | [underwater-prototype.md](underwater-prototype.md) | A throwaway prototype of underwater items 1–2, measured against the targets, and what a real PR must do |
+| [underwater-colour.md](underwater-colour.md) | Sourced water colour per spot: plankton and dissolved organics, the hue and sighting they give |
 | [graphics.md](graphics.md) | Lip glow, the tube interior, break-up, spray and the tube camera |
 | [consult-log.md](consult-log.md) | Every consult and decision, newest first, including advice that turned out wrong |
 | [sources.md](sources.md) | Every source, opened and read, by topic |
