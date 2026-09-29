@@ -47,7 +47,8 @@ They tag each finding as measured, modelled or inferred, and cite `path:line` in
 
 - **Rich foam:** draw foam as a layer that adds light (prototyped), and how to apply Rich's body gain.
 - **Roller:** Classic drawing it, roller density, surface rise, roughness.
-- **Solver:** a Froude-cap guard now, then a product cap on the Reef's biggest swells or a velocity-form solver rewrite. Hold PR #63 either way.
+- **Solver (decided 2026-09-29):** depth-aware dispersion plus a Froude cap and a smooth edge ramp, being built; PR #63 is on hold as a draft.
+- **The peel meter:** measure peel with the solver's real crest speed. It moves every spot's skill rating (a task chip).
 
 ## Keeping this folder current
 

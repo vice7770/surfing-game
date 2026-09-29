@@ -2,6 +2,21 @@
 
 On the biggest Reef swells (Hs 3–4 m, 17–18 s, high tide) the sea can go non-finite within a minute. The predictor-gate session traced every case to one mechanism, and three patches in a row failed or made it worse: thinning the dispersive strips, cutting the coupling at the switch, and levelling the edge. So this is an architecture question for you.
 
+**Decided (2026-09-29): depth-aware dispersion, plus the guard.** The predictor session is building three changes, test-first on CPU and GPU:
+
+- dispersion sized for the water actually there where a trough drains below half its still depth (d\_eff = min(d, 2h), provisional);
+- a Froude cap of 10, as in FUNWAVE-TVD, counting its trips;
+- a smooth 20-column edge ramp.
+
+Together they held every sea tested:
+
+- the edge case (which blew up) ran at 14.8 m/s;
+- the high-tide Big swell at 20° fell from 21.5 to 14.4 m/s;
+- at 25° (which blew up) it ran at 18.8 m/s, with 13 cap trips in real water;
+- the Wave Lab maximum was still running.
+
+Two cheaper routes failed: depth-aware dispersion alone, and a naive velocity form. The full rewrite below stays the long-term option. PR #63 (the latch) is on hold as a draft.
+
 ## What goes wrong
 
 - The solver switches breaking or drained cells to plain shallow-water maths, and keeps the wave's dispersion maths elsewhere.
