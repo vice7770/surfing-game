@@ -226,10 +226,8 @@ function moveBy(state: RiderVisualState, frame: ReturnType<typeof frameAt>): Rid
  * with its nose along +z, with the board's motion as the rig reads it: the
  * physics' stance, as a held still.
  */
-export function simulateStance(recipe: StanceRecipe, stance: StanceName, at: Vector3, out: RiderVisualState): { state: RiderVisualState; reached: boolean; pressure: number } {
+export function simulateStance(recipe: StanceRecipe, stance: StanceName, at: Vector3, out: RiderVisualState): { state: RiderVisualState; reached: boolean } {
   const run = play(recipe, stance);
-  // The feet's own pressure at the read (step 6): the share on the front foot where the contact carries the rider.
-  const pressure = run.rider.attached && run.rider.contact.load > 0.1 ? run.rider.contact.frontShare : Number.NaN;
   const frame = frameAt(run.board, at);
   moveBy(worldState(run, out), frame);
   out.heading = 0;
@@ -240,7 +238,7 @@ export function simulateStance(recipe: StanceRecipe, stance: StanceName, at: Vec
   out.travel.set(velocity.x, 0, velocity.z);
   if (out.travel.lengthSq() > 1e-12) out.travel.normalize();
   else out.travel.set(0, 0, 1);
-  return { state: out, reached: run.reached, pressure };
+  return { state: out, reached: run.reached };
 }
 
 /**
@@ -288,7 +286,7 @@ function copyState(from: RiderVisualState, to: RiderVisualState): void {
 }
 
 /** The map's stance `id` for a Regular or Goofy `stance` (`simulateStance`). */
-export function stanceState(id: string, stance: StanceName, at: Vector3, out: RiderVisualState): { state: RiderVisualState; reached: boolean; pressure: number } {
+export function stanceState(id: string, stance: StanceName, at: Vector3, out: RiderVisualState): { state: RiderVisualState; reached: boolean } {
   const recipe = STANCE_RECIPES[id];
   if (!recipe) throw new Error(`No recipe for the stance ${id}.`);
   return simulateStance(recipe, stance, at, out);

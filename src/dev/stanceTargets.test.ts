@@ -7,7 +7,7 @@ import { createRiderVisualState } from '../scene/rig/riderVisualState';
 import { StanceGauge, measurePoints } from '../scene/rig/stanceGauge';
 import { STANCES } from '../scene/rig/stanceMap';
 import { drawnStance, stanceState } from './ridingPoses';
-import { compareStance, weighByPressure, type StanceReading } from './stanceReport';
+import { compareStance, type StanceReading } from './stanceReport';
 
 /**
  * The stance map's targets of medium or high confidence the drawn pose owns
@@ -28,6 +28,7 @@ const KNOWN_MISSES: Record<string, string> = {
   'extension-frontside.kneeRear': 'as the front knee: the physics\' pelvis still rising',
   'extension-backside.kneeFront': 'as frontside: the physics\' pelvis still low and forward',
   'landing.stanceWidth': 'the drawn feet still gliding apart at the landing\'s end: the physics jumps them from the lying legs (step 6), step 1 blends the jump',
+  'landing.weight': 'as the width: the front foot not yet arrived',
 };
 
 const bytes = readFileSync('public/assets/surfers/surfer2.glb');
@@ -40,13 +41,12 @@ describe('the stance map\'s targets, on the drawn body (the stance poses, step 3
     for (const stance of STANCES) {
       const readings: StanceReading[] = [];
       for (const side of ['regular', 'goofy'] as const) {
-        const { state: physicsState, pressure } = stanceState(stance.id, side, at, createRiderVisualState());
-        const physics = measurePoints(physicsState, side);
+        const physics = measurePoints(stanceState(stance.id, side, at, createRiderVisualState()).state, side);
         const bones = skeleton();
         const gauge = new StanceGauge(bones);
         const body = new PosedBody(bones);
         const { state, reached } = drawnStance(stance.id, side, at, (step) => body.update(step));
-        readings.push(reached ? weighByPressure({ surfer: 'surfer2', stance: side, reached, angles: gauge.measure(state, side), physics: { ...physics } }, pressure) : { surfer: 'surfer2', stance: side, reached });
+        readings.push(reached ? { surfer: 'surfer2', stance: side, reached, angles: gauge.measure(state, side), physics } : { surfer: 'surfer2', stance: side, reached });
       }
       for (const row of compareStance(stance, readings).rows) {
         if (row.status === 'out' && row.owner === 3 && row.target.confidence !== 'low') {

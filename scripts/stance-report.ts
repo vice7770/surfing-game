@@ -13,7 +13,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { Vector3 } from 'three';
 import { drawnStance, stanceState } from '../src/dev/ridingPoses';
-import { weighByPressure, MEASURE_LABEL, compareStance, formatMeasure, stanceSection, type StanceReading, type StanceRow } from '../src/dev/stanceReport';
+import { MEASURE_LABEL, compareStance, formatMeasure, stanceSection, type StanceReading, type StanceRow } from '../src/dev/stanceReport';
 import { readGlbSkeleton } from '../src/scene/rig/glbSkeleton';
 import { PosedBody } from '../src/scene/rig/posedBody';
 import { createRiderVisualState } from '../src/scene/rig/riderVisualState';
@@ -39,16 +39,15 @@ const outs: { stance: string; row: StanceRow }[] = [];
 for (const stance of STANCES) {
   const readings: StanceReading[] = [];
   for (const side of ['regular', 'goofy'] as const) {
-    // The physics' stance at the read: its own points, before any drawing, and its feet's pressure.
-    const { state: physicsState, pressure } = stanceState(stance.id, side, at, createRiderVisualState());
-    const physics = measurePoints(physicsState, side);
+    // The physics' stance at the read: its own points, before any drawing.
+    const physics = measurePoints(stanceState(stance.id, side, at, createRiderVisualState()).state, side);
     for (const surfer of SURFERS) {
       // A fresh skeleton at rest for each reading: the gauge takes its facings from the rest pose.
       const { bones } = readGlbSkeleton(glbs.get(surfer.id)!);
       const gauge = new StanceGauge(bones);
       const body = new PosedBody(bones);
       const { state, reached } = drawnStance(stance.id, side, at, (step) => body.update(step));
-      readings.push(reached ? weighByPressure({ surfer: surfer.id, stance: side, reached, angles: gauge.measure(state, side), physics: { ...physics } }, pressure) : { surfer: surfer.id, stance: side, reached });
+      readings.push(reached ? { surfer: surfer.id, stance: side, reached, angles: gauge.measure(state, side), physics } : { surfer: surfer.id, stance: side, reached });
     }
   }
   const comparison = compareStance(stance, readings);
@@ -92,7 +91,7 @@ On the board: x across, y the deck's normal, z the nose. Regular faces −x (the
 - **Trunk:** its tilt from the deck's normal, toward the toes and toward the nose; and from the world's vertical toward the toes (**trunk from the vertical**, as a picture shows it, the lean into a turn included). **Lean:** the feet's middle to the neck, from the world's vertical toward the toes.
 - **Twists and head yaw:** where the chest, the pelvis and the head face, on the deck: 0° toward the toes, + toward the nose. **Head pitch:** below the deck's plane.
 - **Arms:** the upper arm from the trunk's down: 0° hanging, 90° out, 180° overhead.
-- **Lower hand:** the lower wrist's height above the board's centre (about the waterline). **Stance width:** the ankles apart along the stringer. **Weight:** the share of the physics' feet pressure on the front foot (its contact's centre of pressure between the rear foot, 0, and the front foot, 1): what the targets' 60/40 and 70/30 describe. The drawn body carries no pressure; the hips between the ankles, which stood in for it before step 6, sit 0.1–0.25 forward of it (the body ahead of its feet on a board that slows).
+- **Lower hand:** the lower wrist's height above the board's centre (about the waterline). **Stance width:** the ankles apart along the stringer. **Weight:** the hips' centre between the rear ankle (0) and the front ankle (1), standing in for the share of weight on the front foot. On the flat-water recipes it reads forward of what the targets describe (the feet's pressure, which a surfer feels): on the real wave the physics' feet pressure matches the targets in trim, descending and the bottom turn (step 6, [the physics posture](../superpowers/plans/2026-10-02-physics-posture.md)).
 
 ## Sources
 
