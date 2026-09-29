@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEACH_BAR, BEACH_OUTER, CANYON, PADANG, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
+import { BEACH_BAR, BEACH_OUTER, CANYON, PADANG, POINT_HEADLAND, POINT_OUTER, REEF, createSpot, deanDepth, padangBaseZ, padangCrestZ, padangFocusShape, padangForeFootZ, padangKneeZ, padangReefAt, padangSeaward, reefCrestZ, reefLedgeAt, smoothstep, type SurfSpot } from './Bathymetry';
 import { seededRandom } from './random';
 import { PEEL_SKILL_MINIMUM, breakerDepthFor } from './Breaking';
 import { ledgePeel } from './ledgePeel';
@@ -178,12 +178,15 @@ describe('surf spot bathymetry', () => {
         expect(slopeZ(padang, px, (knee + padangBaseZ()) / 2)).toBeCloseTo(PADANG.rampSlope, 5);
         expect(padang.depthAt(px, padangForeFootZ() - PADANG.foreRounding - 1)).toBeCloseTo(PADANG.deep, 9);
       }
-      expect(padang.depthAt(PADANG.peakX, padangBaseZ())).toBeCloseTo(PADANG.baseDepth, 6);
+      // The wedge's base at the peak, beneath the focus's crest.
+      expect(padang.depthAt(PADANG.peakX, padangBaseZ()) + PADANG.focusRelief).toBeCloseTo(PADANG.baseDepth, 6);
     });
 
     it('runs its crest line at its angle from the peak toward +x, the wedge fading out upcoast to the bare ramp at the −x open edge', () => {
       expect((padangCrestZ(0) - padangCrestZ(-40)) / 40).toBeCloseTo(Math.tan(radians), 12);
-      const bare = PADANG.peakX - PADANG.endWidth;
+      // Past the wedge's fade and the focus's flank.
+      const bare = Math.min(PADANG.peakX - PADANG.endWidth, PADANG.peakX - PADANG.focusHalfWidth);
+      expect(bare).toBeGreaterThan(-edge);
       const knee = padangKneeZ();
       for (let z = -600; z <= -20; z += 10) {
         // The bare ramp, level along shore (an open edge copies its neighbours).
@@ -195,11 +198,38 @@ describe('surf spot bathymetry', () => {
     // Mead & Black's idealised Bingin (1999; Mead 2000, ch. 5): with no platform, a wedge whose base shoals to breaking lets
     // the waves break on the ramp ahead of it, a close-out. The Small swell's sets must meet the wedge first all along the ride.
     it('keeps its wedge’s base deeper than the Small swell breaks along the whole ride', () => {
+      const relief = PADANG.focusRelief;
+      PADANG.focusRelief = 0; // the wedge's own base; the focus below
+      try {
       const small = PADANG_SWELLS.small;
       const config = { spot: 'padang' as const, seed: 1, significantHeight: small.significantHeight, peakPeriod: small.peakPeriod, directionDegrees: 0, spreading: 24, tide: 0 };
       const breakDepth = breakerDepthFor(edgeHeight(config), OFFSHORE_DEPTH.padang);
       expect(baseDepth(PADANG.peakX)).toBeCloseTo(PADANG.baseDepth, 1);
       for (let px = PADANG.peakX; padangReefAt(px); px += 10) expect(baseDepth(px), `x ${px}`).toBeGreaterThan(breakDepth);
+      } finally {
+        PADANG.focusRelief = relief;
+      }
+    });
+
+    // Mead's focus "breaks earlier than any other part of the wave" (Mead 2000): a spur on the swell's line through the peak.
+    it('raises a focus on the swell’s line through its peak, highest at the wedge’s base, tapering to nothing seaward, up the wedge and to the sides', () => {
+      const base = padangBaseZ();
+      const shape = (px: number, z: number) => padangFocusShape(px, z);
+      expect(shape(PADANG.peakX, base)).toBe(1);
+      expect(padang.depthAt(PADANG.peakX, base)).toBeCloseTo(PADANG.baseDepth - PADANG.focusRelief, 6);
+      expect(shape(PADANG.peakX, base - PADANG.focusLength)).toBe(0);
+      expect(shape(PADANG.peakX, base + PADANG.focusInset)).toBe(0);
+      expect(shape(PADANG.peakX + PADANG.focusHalfWidth, base)).toBe(0);
+      expect(shape(PADANG.peakX - PADANG.focusHalfWidth, base)).toBe(0);
+      // Its crest deepens seaward at 1:20–1:40 over its seaward half (Mead's focus gradients are 1:10–1:80).
+      const crest = (u: number) => padang.depthAt(PADANG.peakX, base - u);
+      const gradient = (crest(PADANG.focusLength / 2) - crest(0)) / (PADANG.focusLength / 2);
+      expect(gradient).toBeGreaterThanOrEqual(1 / 40);
+      expect(gradient).toBeLessThanOrEqual(1 / 20);
+      // Deeper than the Small swell breaks where it meets the wedge's base, so the peak breaks on the wedge, first.
+      const small = PADANG_SWELLS.small;
+      const config = { spot: 'padang' as const, seed: 1, significantHeight: small.significantHeight, peakPeriod: small.peakPeriod, directionDegrees: 0, spreading: 24, tide: 0 };
+      expect(crest(0)).toBeGreaterThan(breakerDepthFor(edgeHeight(config), OFFSHORE_DEPTH.padang));
     });
 
     it('opens a channel along the window’s +x edge, level across it and as deep as the knee', () => {

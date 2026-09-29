@@ -87,7 +87,8 @@ export function reefSeaward(x: number, z: number): number {
  * Mead & Black 2001), to a reef flat `crestDepth` deep that nearly dries at the lowest spring tides. The wedge's top
  * edge (the crest line) runs at `angle` degrees to the ramp's contours from the peak (x = peakX, where the wedge's base
  * is `baseDepth` deep), so each wave breaks there first and peels toward +x (a left) at the celerity over the wedge's
- * base over the sine of that angle (phase matching). Upcoast of the peak the wedge fades out over `endWidth` m, so the
+ * base over the sine of that angle (phase matching). A spur on the swell's line through the peak (Mead's focus) draws
+ * the waves' energy onto it, so it breaks first. Upcoast of the peak the wedge fades out over `endWidth` m, so the
  * bed is the bare ramp, level along shore, at the window's −x open edge (an open edge copies its neighbours: a bed
  * sloping across it ran the Reef's Big swell to NaN); a channel `kneeDepth` deep runs along the +x open edge, level
  * across its axis, where the left ends. A planar beach face caps it all. The window is `alongShore` m wide, so the
@@ -98,6 +99,14 @@ export const PADANG = {
   deep: 25, foreSlope: 1 / 20, foreRounding: 10, kneeDepth: 12, rampSlope: 1 / 80,
   baseDepth: 7, wedgeSlope: 1 / 19, crestDepth: 1.25, peakX: -60, peakZ: -170, angle: 40, endWidth: 20,
   alongShore: 320, channelX: 160, channelHalfWidth: 45, shoreSlope: 0.2, takeOffX: -50,
+  /**
+   * Mead's focus: a spur along the incoming swell through the peak, `focusRelief` m above the bed where it meets the
+   * wedge's base, tapering (cos²) to nothing `focusLength` m seaward and `focusInset` m up the wedge, `focusHalfWidth` m
+   * to either side of the peak. The advisor's ruling (2026-09-29, from Mead 2000, figs 5.1–5.2): about a wavelength
+   * across (a narrower shoal diffracts rather than focuses), its crest deepening seaward at 1:20–1:40 inside Mead's
+   * focus gradients (1:10–1:80). All provisional.
+   */
+  focusRelief: 2, focusLength: 150, focusInset: 80, focusHalfWidth: 70,
 };
 
 /** Where Padang Padang's wedge rises from the ramp at its peak: `baseDepth` deep, (baseDepth − crestDepth) / wedgeSlope across the crest line. */
@@ -220,6 +229,18 @@ function reef(): SurfSpot {
   };
 }
 
+/** cos²(π/2 · d/reach) inside ±reach, 0 beyond: a bump's profile, C¹ at its centre and its edge. */
+function bump(d: number, reach: number): number {
+  return Math.abs(d) >= reach ? 0 : Math.cos((Math.PI / 2) * (d / reach)) ** 2;
+}
+
+/** Padang Padang's focus, 0–1: 1 on the swell's line through the peak where it crosses the wedge's base. */
+export function padangFocusShape(x: number, z: number): number {
+  const p = PADANG;
+  const seaward = padangBaseZ() - z;
+  return bump(x - p.peakX, p.focusHalfWidth) * bump(seaward, seaward >= 0 ? p.focusLength : p.focusInset);
+}
+
 /** Padang Padang's bed in its parts: the channel's weight, the depth beneath the beach face, and the beach face's. */
 function padangTerms(x: number, z: number): { channel: number; depth: number; beachFace: number } {
   const p = PADANG;
@@ -231,7 +252,8 @@ function padangTerms(x: number, z: number): { channel: number; depth: number; be
   const ramp = fore - rounded(z - knee, r) * p.rampSlope;
   // The wedge, where it is shallower than the ramp, faded out upcoast of the peak.
   const wedge = p.crestDepth + Math.max(0, padangSeaward(x, z)) * p.wedgeSlope;
-  const reef = ramp - Math.max(0, ramp - wedge) * smoothstep(p.peakX - p.endWidth, p.peakX, x);
+  const bare = ramp - Math.max(0, ramp - wedge) * smoothstep(p.peakX - p.endWidth, p.peakX, x);
+  const reef = bare - p.focusRelief * padangFocusShape(x, z);
   // The channel: no reef, level across its axis at the window's edge.
   const channel = Math.exp(-(((x - p.channelX) / p.channelHalfWidth) ** 2));
   // A beach face, and dry land shoreward of z = 0.
