@@ -621,3 +621,79 @@ describe('Boussinesq open along-shore edges', () => {
     expect(solver.time).toBeGreaterThan(90 - 1e-9);
   }, 60_000);
 });
+
+describe('Boussinesq stability guards', () => {
+  // The Reef's biggest seas pinned a thin dispersing cell's flux to its held neighbours' through the P/Q recovery,
+  // and u = P/h ran away (hundreds of m/s in 0.5–3 m of water). FUNWAVE-TVD caps the Froude number where it
+  // recovers the velocity (FroudeCap, 5–10; Shi et al. 2011, CACR-11-04).
+  it('caps a wet cell\'s speed at ten times its shallow-water wave speed', () => {
+    const grid = { nx: 12, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' as const };
+    const solver = new BoussinesqSolver(grid, () => 4, { manning: 0, breaking: false });
+    const cell = solver.cellIndex(6.5, 20.5);
+    // 100 m/s in 4 m of water, where ten wave speeds are 62.6 m/s.
+    solver.qx[cell] = 4 * 100;
+    solver.step(1e-4);
+    const limit = 10 * Math.sqrt(GRAVITY * solver.h[cell]);
+    expect(Math.hypot(solver.qx[cell], solver.qz[cell]) / solver.h[cell]).toBeLessThanOrEqual(limit * (1 + 1e-9));
+    expect(solver.froudeCaps).toBe(1);
+  });
+
+  // The weakly nonlinear terms are written in still depth d: in water drained to h < d/2 their operator (α d²) is
+  // over four times too stiff for the water under it. There they take twice the water's depth (the direction of
+  // Kennedy et al. 2001 and FUNWAVE-TVD's moving reference level; the factor is a stability choice). Linearised
+  // about water h deep, the phase speed is c² = g (h + B de³ k²)/(1 + α de² k²), de the depth the terms see.
+  it('disperses a wave on water drained below half its still depth as over twice the water\'s depth', () => {
+    const still = 5;
+    const water = 2;
+    const k = 1;
+    const B = 1 / 15;
+    const celerity = (de: number) => Math.sqrt((GRAVITY * (water + B * de ** 3 * k * k)) / (1 + (B + 1 / 3) * de * de * k * k));
+    const omega = k * celerity(2 * water);
+    const wavelength = (2 * Math.PI) / k;
+    const length = 12 * wavelength;
+    const solver = new BoussinesqSolver(
+      { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(0, length, 40 * 12), xBoundary: 'periodic' }, () => still, { manning: 0, breaking: false },
+    );
+    // The surface stands 3 m under the still level: a trough drained to 0.4 of its still depth, still dispersing.
+    const level = water - still;
+    solver.h.fill(water);
+    const amplitude = 0.001 * water;
+    solver.addRelaxationZone({
+      weights: solver.zoneWeightsAlongZ(2 * wavelength, 0),
+      target: (_x, z, t, out) => {
+        const eta = amplitude * Math.cos(k * z - omega * t);
+        out.eta = level + eta;
+        out.qx = 0;
+        out.qz = (omega / k) * eta;
+      },
+    });
+    solver.addRelaxationZone({
+      weights: solver.zoneWeightsAlongZ(8 * wavelength, length),
+      target: (_x, _z, _t, out) => { out.eta = level; out.qx = 0; out.qz = 0; },
+    });
+    const rows: number[] = [];
+    for (let iz = 0; iz < solver.nz; iz += 1) if (solver.zCenters[iz] > 3 * wavelength && solver.zCenters[iz] < 7 * wavelength) rows.push(iz);
+    const period = (2 * Math.PI) / omega;
+    const settle = length / (0.4 * Math.sqrt(GRAVITY * water)) + 5 * period;
+    const fit = new PhaseFit(solver, rows, omega);
+    while (solver.time < settle - 1e-9) solver.step(period / 40);
+    while (solver.time < settle + 10 * period - 1e-9) {
+      solver.step(period / 40);
+      fit.sample();
+    }
+    expect(solver.mask[solver.cellIndex(0.5, 5 * wavelength)]).toBe(1);
+    // Over still depth the terms would give 5 % more: k = 1.05.
+    expect(Math.abs(fit.wavenumber() / k - 1)).toBeLessThan(0.01);
+  }, 60_000);
+
+  // FUNWAVE-TVD's cap never sees a cell under its 1 cm wet depth (MinDepth); the solver's friction governs those.
+  it('leaves water under a centimetre deep uncapped', () => {
+    const grid = { nx: 12, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' as const };
+    const solver = new BoussinesqSolver(grid, () => 0.005, { manning: 0, breaking: false });
+    const cell = solver.cellIndex(6.5, 20.5);
+    // 20 m/s in 5 mm of water: nine times the cap of 2.2 m/s, but too thin to count.
+    solver.qx[cell] = 0.005 * 20;
+    solver.step(1e-6);
+    expect(solver.froudeCaps).toBe(0);
+  });
+});
