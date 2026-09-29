@@ -33,11 +33,11 @@ Typecheck and all 199 test files pass, the same as untouched main.
 - **Up ÷ level misses 25×.** Tyler's ratio is for an overcast lake. Under a sun, the level view gets brighter while the zenith does not. A real build should fit sunny measurements instead.
 - **Smaller gaps.** Dusk is only 43 % darker, because the photo sky already dims low suns. The Beach window stays sharp where turbid water should blur it. Nothing was timed, since the renderer here is software.
 
-## Your decisions
+## Your decisions (settled 2026-09-29, as recommended)
 
-1. **An underwater exposure gain.** Recommended: yes, one gain that brings the level view back to today's brightness. The physics shapes stay, as with the gains you accepted for Rich above water.
-2. **The floor at the Point.** Its water is physically 4.3 m. Recommended: apply the 7 m floor wherever the water is murkier than that, since the floor exists for readability.
-3. **Water colour.** Accept the blue Reef and grey Beach, or fund a sourced per-spot absorption term. Recommended: fund it; the per-frame cost is a few numbers per spot (estimate).
+1. **An underwater exposure gain.** Decided: yes, one gain that brings the level view back to today's brightness. The physics shapes stay, as with the gains you accepted for Rich above water.
+2. **The floor at the Point.** Its water is physically 4.3 m. Decided: apply the 7 m floor wherever the water is murkier than that, since the floor exists for readability.
+3. **Water colour.** Accept the blue Reef and grey Beach, or fund a sourced per-spot absorption term. Decided: fund it; the per-frame cost is a few numbers per spot (estimate). The sourcing is under way.
 
 ## What a real PR must do differently
 

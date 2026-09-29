@@ -58,7 +58,7 @@ They tag each finding as measured, modelled or inferred, and cite `path:line` in
 - **The peel meter:** measure peel with the solver's real crest speed. It moves every spot's skill rating (a task chip).
 - **Spray and mist:** optics, haze above water, the budget, rainbows and the order (see [spray-and-mist.md](spray-and-mist.md)).
 - **Basilisk profiles (round 6):** Padang's wedge slope, a level-13 Padang rerun, the library's grid level, what the barrel follows after touchdown, periodic swell, and the GPL setup file (see [basilisk-profiles.md](basilisk-profiles.md)).
-- **Underwater (decided 2026-09-29):** a 6–8 m readability floor, the ride camera underwater in Rich only, haze and sand drawn only, the recommended order. The prototype raised three more: an underwater exposure gain, the floor at the Point, and a water colour term (see [underwater-prototype.md](underwater-prototype.md)).
+- **Underwater (decided 2026-09-29):** a 6–8 m readability floor, the ride camera underwater in Rich only, haze and sand drawn only, the recommended order. The prototype's three follow-ups were settled as recommended: an exposure gain, the 7 m floor wherever water is murkier, and a sourced colour term (being researched) (see [underwater-prototype.md](underwater-prototype.md)).
 
 ## Handover
 
