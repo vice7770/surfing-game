@@ -430,15 +430,15 @@ describe('SurfZoneSimulation', () => {
       return simulation;
     };
 
-    // With the lagoon (Part C) this seed's first Big set sends thin backwash down the ledge, seaward of where its jets
-    // left the crest (outside the plunge zone, by design), at 22–29 m/s for about a second while each draining cell's
-    // dispersion switches off: seeds 4–6 stay at 8–14 m/s here and on main. As at low tide, a runaway guard.
+    // With the lagoon (Part C) this seed's first Big set sent thin backwash down the ledge, seaward of where its jets
+    // left the crest (outside the plunge zone, by design), at 22–29 m/s while each draining cell kept its dispersion
+    // until it thinned; supercritical water is shallow water now (SWITCH_FROUDE), and it peaks at 9.5 m/s.
     it('stays finite and bounded under the Big swell, and plunges', () => {
-      expect(run({}, 30).lipLaunches).toBeGreaterThan(0);
+      expect(run({}).lipLaunches).toBeGreaterThan(0);
     }, 300_000);
-    // At low tide a Big trough drains the ledge to ~0.3 m and its backwash briefly reaches ~23 m/s before settling: an
-    // open issue (docs/research/teahupoo-reef-report.md). Here it guards against a runaway (past ones: 112 m/s, NaN).
-    it('stays finite over the drying reef flat at low tide', () => run({ tide: -0.6 }, 30), 300_000);
+    // At low tide a Big trough drains the ledge to ~0.3 m; its backwash reached ~23 m/s before SWITCH_FROUDE, 10 m/s
+    // since (past runaways: 112 m/s, NaN).
+    it('stays finite over the drying reef flat at low tide', () => run({ tide: -0.6 }), 300_000);
     // A thick lip landing on the drained crest piled 0.4 m of water to 1.5 m in 0.1 s: a bore the depth switch did not
     // see, drained at 23.5 m/s with the dispersive terms on (+25°, t 60.9 s). The plunge zone holds it in shallow water.
     it('stays finite with oblique swells across the open −x edge', () => {
@@ -446,13 +446,13 @@ describe('SurfZoneSimulation', () => {
       run({ directionDegrees: 25, alongShore: 60 });
     }, 600_000);
     // The pass and inner reef end in a lagoon and a 1:9.64 inland slope (Part C), where the Big swell ran up a 1:5 face.
-    it('stays finite over the lagoon at low tide', () => run({ tide: -1.0, alongShore: 60 }, 30), 300_000);
+    it('stays finite over the lagoon at low tide', () => run({ tide: -1.0, alongShore: 60 }), 300_000);
     // The 40 m window's open −x edge cuts the ledge: over a bed sloping across it, main (aa71add) ran this to NaN (Part B).
-    it('stays finite where the window\'s open edge cuts the ledge', () => run({ directionDegrees: 25 }, 30), 300_000);
+    it('stays finite where the window\'s open edge cuts the ledge', () => run({ directionDegrees: 25 }), 300_000);
   });
 
   // The game's own tank (160 m, 1 m cells, the GPU tier's 64 components) through the Reef's Big sets at high tide, as
-  // far as they ran before: every cell finite, never negative, and nowhere faster than 30 m/s.
+  // far as they ran before: every cell finite, never negative, and nowhere faster than 20 m/s (they peak at 8–12).
   describe('the Reef\'s Big swell at high tide holds by its open edges', () => {
     const run = (overrides: Partial<SurfZoneConfig>, until: number) => {
       const simulation = new SurfZoneSimulation({
@@ -470,7 +470,7 @@ describe('SurfZoneSimulation', () => {
         }
       }
       expect(finite).toBe(true);
-      expect(fastest).toBeLessThan(30);
+      expect(fastest).toBeLessThan(20);
     };
 
     // A breaking crest's face read 40–66 m/s in 10 m of water (water piling up, not a travelling crest), and the jet's
