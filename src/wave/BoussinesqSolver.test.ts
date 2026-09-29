@@ -465,6 +465,105 @@ describe('Boussinesq breaking', () => {
     }
   }, 120_000);
 
+  // A long straight crest breaks along its whole length at once, oblique or not: its parents behind the face carry the
+  // same age as the cells beside it, so carrying the age from behind the face (breakingAge.ts) leaves it as it was.
+  for (const degrees of [20, 40]) {
+    it(`breaks an oblique shoaling wave at ${degrees}° where its height reaches 0.6–1.0 of the depth`, () => {
+      const period = 10;
+      const omega = (2 * Math.PI) / period;
+      const angle = (degrees * Math.PI) / 180;
+      // One along-shore wavelength wide, so the periodic window holds an endless straight crest.
+      const dx = 2;
+      const nx = Math.round((2 * Math.PI) / (airyWavenumber(omega, 5) * Math.sin(angle)) / dx);
+      const incident = Math.asin((2 * Math.PI) / (nx * dx) / airyWavenumber(omega, 5));
+      const depthAt = (_x: number, z: number) => (z < 60 ? 5 : 5 - (z - 60) / 40);
+      const solver = new BoussinesqSolver(
+        { nx, xMin: 0, dx, zEdges: uniformEdges(0, 280, 560), xBoundary: 'periodic' }, depthAt, { breaking: { onset: 0.65 } },
+      );
+      solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(50, 0), target: airyTarget(0.3, period, 5, incident) });
+      const rows = solver.nz;
+      const high = new Float64Array(rows).fill(-Infinity);
+      const low = new Float64Array(rows).fill(Infinity);
+      const broke = new Float64Array(rows);
+      let finite = true;
+      while (solver.time < 160) {
+        solver.step(0.05);
+        if (solver.time < 110) continue;
+        for (let iz = 0; iz < rows; iz += 1) {
+          const i = iz * solver.nx;
+          const surface = solver.surfaceAt(i);
+          finite &&= Number.isFinite(surface);
+          high[iz] = Math.max(high[iz], surface);
+          low[iz] = Math.min(low[iz], surface);
+          if (solver.breakingStrength[i] > 0.3) broke[iz] = 1;
+        }
+      }
+      expect(finite).toBe(true);
+      const onset = solver.zCenters.findIndex((z, iz) => z > 60 && broke[iz] > 0);
+      expect(onset).toBeGreaterThan(0);
+      const depth = depthAt(0, solver.zCenters[onset]);
+      expect((high[onset] - low[onset]) / depth).toBeGreaterThan(0.6);
+      expect((high[onset] - low[onset]) / depth).toBeLessThan(1.0);
+    }, 600_000);
+  }
+
+  // A breaking event is carried with its wave (Kennedy et al. 2000: the age of the breaking event), from behind its front
+  // face, never along its crest (breakingAge.ts): inherited from any neighbour, breaking ran along a crest as a fuse at
+  // the grid's speed (the Padang Padang probes: about 90 % of a reef's onsets were inherited; it peeled at 2–5 times
+  // phase matching). The face's downslope sets the way, not the flux, which runs seaward in a trough and in backwash.
+  it('carries a breaking age from behind its front face to the cells ahead, never along its crest', () => {
+    const depth = 3;
+    const solver = new BoussinesqSolver({ nx: 20, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'open' }, () => depth, { breaking: { onset: 0.65 } });
+    const state = solver as unknown as {
+      breakingStrength: Float64Array; breakingAge: Float64Array; rateH: Float64Array; halfEta: Float64Array; qx: Float64Array; qz: Float64Array;
+      still: Float64Array; breakingTerms(dt: number): void;
+    };
+    // The still depth a step would have refreshed.
+    state.still.fill(depth);
+    /** One old breaking cell on a face sloping up toward (upX, upZ), every cell rising at 0.4 √(g h): past the end threshold (0.15), short of the onset (0.65). */
+    const run = (upX: number, upZ: number, flowX = 0, flowZ = 0) => {
+      state.rateH.fill(0.4 * Math.sqrt(GRAVITY * depth));
+      for (let i = 0; i < state.halfEta.length; i += 1) {
+        state.halfEta[i] = 0.05 * (upX * solver.xCenters[i % solver.nx] + upZ * solver.zCenters[Math.floor(i / solver.nx)]);
+      }
+      state.qx.fill(flowX);
+      state.qz.fill(flowZ);
+      state.breakingStrength.fill(0);
+      state.breakingAge.fill(0);
+      const centre = 20 * solver.nx + 10;
+      state.breakingStrength[centre] = 1;
+      state.breakingAge[centre] = 10;
+      state.breakingTerms(0.01);
+      return (dx: number, dz: number) => state.breakingStrength[centre + dz * solver.nx + dx];
+    };
+    // Running +z (the face sloping up toward −z): the cells ahead, and diagonally ahead, carry the event on.
+    const shoreward = run(0, -1);
+    expect(shoreward(0, 0)).toBeGreaterThan(0);
+    expect(shoreward(0, 1)).toBeGreaterThan(0);
+    expect(shoreward(-1, 1)).toBeGreaterThan(0);
+    expect(shoreward(1, 1)).toBeGreaterThan(0);
+    // Beside it along the crest, and behind it, nothing.
+    expect(shoreward(-1, 0)).toBe(0);
+    expect(shoreward(1, 0)).toBe(0);
+    expect(shoreward(0, -1)).toBe(0);
+    // The same face in backwash (the flux seaward): the face, not the flux, sets the way.
+    const backwash = run(0, -1, 0, -1.5);
+    expect(backwash(0, 1)).toBeGreaterThan(0);
+    expect(backwash(0, -1)).toBe(0);
+    expect(backwash(1, 0)).toBe(0);
+    // Running −x (the face sloping up toward +x): along z is along the crest.
+    const alongShore = run(1, 0);
+    expect(alongShore(-1, 0)).toBeGreaterThan(0);
+    expect(alongShore(1, 0)).toBe(0);
+    expect(alongShore(0, 1)).toBe(0);
+    expect(alongShore(0, -1)).toBe(0);
+    // No face, no parent: only the breaking cell itself carries on.
+    const flat = run(0, 0);
+    expect(flat(0, 0)).toBeGreaterThan(0);
+    expect(flat(0, 1)).toBe(0);
+    expect(flat(1, 0)).toBe(0);
+  });
+
   it('runs a breaking wave up a dry beach without negative depth or non-finite state', () => {
     const depthAt = (_x: number, z: number) => (z < 0 ? 4 : 4 - 0.05 * z);
     const solver = new BoussinesqSolver(

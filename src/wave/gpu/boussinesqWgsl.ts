@@ -1,4 +1,5 @@
 import { MADSEN_SORENSEN_B } from '../BoussinesqSolver';
+import { FACE_SLOPE } from '../breakingAge';
 
 /**
  * WGSL for the stage 2 step on the GPU (plan P6). Every kernel mirrors the CPU
@@ -396,6 +397,11 @@ fn secondXAtZ(ix: u32, iz: i32) -> f32 {
   return etaXX(ix, u32(clamp(iz, 0, nz - 1)));
 }
 
+// A breaking parent's age, if it is older than what the cell carries.
+fn parentAge(current: f32, j: u32) -> f32 {
+  return select(current, max(current, at(${FIELD.AGE}u, j)), at(${FIELD.STRENGTH}u, j) > 0.0);
+}
+
 // K7: Kennedy breaking from the step's rise rate (BoussinesqSolver.breakingTerms, first half).
 @compute @workgroup_size(64) fn breaking(@builtin(global_invocation_id) id: vec3<u32>) {
   let i = cellOf(id); if (i >= P.n) { return; }
@@ -403,11 +409,29 @@ fn secondXAtZ(ix: u32, iz: i32) -> f32 {
   let depth = at(${FIELD.H}u, i); let rise = at(${FIELD.RATEH}u, i);
   put(${FIELD.RISE}u, i, rise);
   if (P.breaks == 0u || depth <= BREAKING_DEPTH) { put(${FIELD.NEXTSTRENGTH}u, i, 0.0); put(${FIELD.NEXTAGE}u, i, 0.0); put(${FIELD.NU}u, i, 0.0); return; }
+  // The breaking age comes only from behind the cell's front face, up the half-step surface's slope (breakingAge.ts).
   var inherited = select(0.0, at(${FIELD.AGE}u, i), at(${FIELD.STRENGTH}u, i) > 0.0);
-  if (ix > 0u && at(${FIELD.STRENGTH}u, i - 1u) > 0.0) { inherited = max(inherited, at(${FIELD.AGE}u, i - 1u)); }
-  if (ix < nx - 1u && at(${FIELD.STRENGTH}u, i + 1u) > 0.0) { inherited = max(inherited, at(${FIELD.AGE}u, i + 1u)); }
-  if (iz > 0u && at(${FIELD.STRENGTH}u, i - nx) > 0.0) { inherited = max(inherited, at(${FIELD.AGE}u, i - nx)); }
-  if (iz < P.nz - 1u && at(${FIELD.STRENGTH}u, i + nx) > 0.0) { inherited = max(inherited, at(${FIELD.AGE}u, i + nx)); }
+  let sx = ddx(${FIELD.HALF}u, ix, iz, false);
+  let sz = ddz(${FIELD.HALF}u, ix, iz, false);
+  if (sx * sx + sz * sz > ${f(FACE_SLOPE * FACE_SLOPE)}) {
+    if (abs(sx) >= abs(sz)) {
+      let bx = i32(ix) + i32(sign(sx));
+      if (bx >= 0 && bx < i32(nx)) {
+        let j = iz * nx + u32(bx);
+        inherited = parentAge(inherited, j);
+        if (iz > 0u) { inherited = parentAge(inherited, j - nx); }
+        if (iz < P.nz - 1u) { inherited = parentAge(inherited, j + nx); }
+      }
+    } else {
+      let bz = i32(iz) + i32(sign(sz));
+      if (bz >= 0 && bz < i32(P.nz)) {
+        let j = u32(bz) * nx + ix;
+        inherited = parentAge(inherited, j);
+        if (ix > 0u) { inherited = parentAge(inherited, j - 1u); }
+        if (ix < nx - 1u) { inherited = parentAge(inherited, j + 1u); }
+      }
+    }
+  }
   let still = max(BREAKING_DEPTH, at(${FIELD.STILL}u, i));
   let ramp = min(1.0, inherited / (P.transition * sqrt(still / g)));
   let threshold = sqrt(g * still) * (P.onset + (P.endShare - P.onset) * ramp);
