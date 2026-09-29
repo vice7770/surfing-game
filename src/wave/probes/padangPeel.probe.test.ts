@@ -2,6 +2,7 @@
 import { appendFileSync } from 'node:fs';
 const log = (text: string) => appendFileSync(process.env.LOG ?? '/dev/stderr', `${text}\n`);
 import { it } from 'vitest';
+import { inheritOnlyFromUpstream } from './upstreamBreaking';
 import { SIDE_FEED } from '../SideFeed';
 import { PADANG, createSpot, padangCrestZ, padangReefAt, padangSeaward } from '../Bathymetry';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
@@ -10,6 +11,7 @@ import { breakerDepthFor } from '../Breaking';
 import { edgeHeight } from '../SurfZoneSimulation';
 
 it.skipIf(!process.env.PROBE)('probes Padang Padang’s peel', () => {
+  if (process.env.INHERIT === 'upstream') inheritOnlyFromUpstream();
   for (const pair of (process.env.PADANG ?? '').split(',').filter(Boolean)) {
     const [key, value] = pair.split('=');
     (PADANG as Record<string, number>)[key] = Number(value);
@@ -69,6 +71,17 @@ it.skipIf(!process.env.PROBE)('probes Padang Padang’s peel', () => {
       const where = Number.isFinite(z) && z !== 0 ? `${bed.depthAt(xs[column], z).toFixed(1)}m${z < baseZ(xs[column]) ? 'R' : 'W'}` : '-';
       onsets.push(`${xs[column].toFixed(0)}:${(tracker.onset[column] - solver.time).toFixed(1)}s@${z.toFixed(0)}/${where}`);
     }
-    log(`t ${solver.time.toFixed(0)} s: ${estimate ? `V ${estimate.peelSpeed.toFixed(1)} α ${estimate.angleDegrees.toFixed(0)}° line ${estimate.lineSlope.toFixed(2)} fit ${estimate.fit.toFixed(2)} n ${estimate.columns} dir ${estimate.direction}` : 'none'} | ${onsets.join(' ')} | crest top at base ${top.map((v) => v.toFixed(2)).join('/')} | at ${contour} m ${onContour.map((v) => v.toFixed(2)).join('/')}`);
+    // The advisor's diagnostic: the break's speed over x ≥ 20 alone, fitted to the onsets in this period.
+    let n = 0; let sx = 0; let st = 0; let sz = 0;
+    const down = Array.from(xs, (_, column) => column).filter((column) => xs[column] >= 20 && simulation.peel.measures(column) && tracker.onset[column] >= solver.time - 16);
+    for (const column of down) { n += 1; sx += xs[column]; st += tracker.onset[column]; sz += tracker.onsetZ[column]; }
+    let downReef = '-';
+    if (n >= 8) {
+      let sxx = 0; let sxt = 0; let sxz = 0;
+      for (const column of down) { const dx = xs[column] - sx / n; sxx += dx * dx; sxt += dx * (tracker.onset[column] - st / n); sxz += dx * (tracker.onsetZ[column] - sz / n); }
+      const slope = sxt / sxx;
+      downReef = `${(Math.hypot(1, sxz / sxx) / Math.abs(slope)).toFixed(1)} m/s over ${n} columns`;
+    }
+    log(`t ${solver.time.toFixed(0)} s: x ≥ 20: ${downReef} | ${estimate ? `V ${estimate.peelSpeed.toFixed(1)} α ${estimate.angleDegrees.toFixed(0)}° line ${estimate.lineSlope.toFixed(2)} fit ${estimate.fit.toFixed(2)} n ${estimate.columns} dir ${estimate.direction}` : 'none'} | ${onsets.join(' ')} | crest top at base ${top.map((v) => v.toFixed(2)).join('/')} | at ${contour} m ${onContour.map((v) => v.toFixed(2)).join('/')}`);
   }
 }, 3_600_000);

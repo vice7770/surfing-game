@@ -5,10 +5,12 @@
 import { appendFileSync } from 'node:fs';
 const log = (text: string) => appendFileSync(process.env.LOG ?? '/dev/stderr', `${text}\n`);
 import { it } from 'vitest';
+import { inheritOnlyFromUpstream } from './upstreamBreaking';
 import { PADANG, padangReefAt } from '../Bathymetry';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
 
 it.skipIf(!process.env.PROBE)('classifies Padang Padang’s breaking onsets', () => {
+  if (process.env.INHERIT === 'upstream') inheritOnlyFromUpstream();
   for (const pair of (process.env.PADANG ?? '').split(',').filter(Boolean)) {
     const [key, value] = pair.split('=');
     (PADANG as Record<string, number>)[key] = Number(value);
