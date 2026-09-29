@@ -30,6 +30,11 @@ const SWITCH_FROUDE = 2;
  * number falls below 1.3 (Tissier et al. 2012). Advice from the water-physics advisor (the wave-shape-advisor note).
  */
 const PLUNGE = { behind: 0.5, ahead: 1.5, hold: 5 } as const;
+/**
+ * FUNWAVE-TVD's Froude cap (`capFroude`): the largest Froude number a wet cell keeps, the depth under which it is
+ * left alone (FUNWAVE's wet depth, MinDepth), and the depth above which a capped cell counts as water, m.
+ */
+export const FROUDE_CAP = { froude: 10, wetDepth: 0.01, countDepth: 0.05 } as const;
 
 /** Phase speed ω/k the Madsen–Sørensen equations give at depth d: ω² = g d k² (1 + B(kd)²)/(1 + α(kd)²). */
 export function madsenSorensenCelerity(omega: number, depth: number, g = GRAVITY): number {
@@ -164,6 +169,9 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   readonly plungeHold: Float64Array;
   /** Changes whenever a cell enters or leaves the plunge zone: a device uploads the zone again. */
   plungeVersion = 0;
+  /** Cells the Froude cap has slowed so far, and those among them deeper than 5 cm (a health metric). */
+  froudeCaps = 0;
+  froudeCapsInWater = 0;
   private readonly pBar: Float64Array;
   private readonly qBar: Float64Array;
   private readonly sourceX: Float64Array;
@@ -319,6 +327,35 @@ export class BoussinesqSolver extends ShallowWaterSolver {
       }
     }
     this.applyFriction(dt);
+    this.capFroude();
+  }
+
+  /**
+   * FUNWAVE-TVD's Froude cap (FroudeCap, 5–10; Shi et al. 2011, CACR-11-04): a wet cell's speed stays under ten
+   * times its shallow-water wave speed. The P/Q recovery can pin a thin dispersing cell's flux to its held
+   * neighbours', and u = P/h then runs away (the Reef's biggest seas). `SWITCH_FROUDE` takes such water out of the
+   * dispersion first; this is the net under it, counted so a report shows if it ever holds real water. Water under
+   * FUNWAVE's 1 cm wet depth is left to friction. A capped cell's predictor is dropped: its step was not the
+   * dispersive terms'.
+   */
+  private capFroude(): void {
+    const { h, qx, qz, predictorX, predictorZ, gravity: g } = this;
+    for (let i = 0; i < h.length; i += 1) {
+      const depth = h[i];
+      if (!(depth >= FROUDE_CAP.wetDepth)) continue;
+      const speed = Math.hypot(qx[i], qz[i]) / depth;
+      const limit = FROUDE_CAP.froude * Math.sqrt(g * depth);
+      if (!(speed > limit)) continue;
+      const scale = limit / speed;
+      qx[i] *= scale;
+      qz[i] *= scale;
+      if (predictorX && predictorZ) {
+        predictorX[i] = 0;
+        predictorZ[i] = 0;
+      }
+      this.froudeCaps += 1;
+      if (depth > FROUDE_CAP.countDepth) this.froudeCapsInWater += 1;
+    }
   }
 
   /** The dispersive acceleration the next Hancock predictor adds, per cell; absent without dispersion. */

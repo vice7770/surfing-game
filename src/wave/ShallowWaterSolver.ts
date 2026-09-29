@@ -87,6 +87,8 @@ export const OPEN = 2;
 
 /** How many columns the solver stencils reach across an open along-shore edge. */
 export const OPEN_EDGE_REACH = 2;
+/** Metres over which an open edge eases the bed to uniform along shore (`levelOpenEdges`), in a window eight times as wide. */
+export const OPEN_EDGE_RAMP = 20;
 
 /** A stable step this short, s (about a thousandth of the surf zone's usual), means the water has diverged. */
 const COLLAPSED_STEP = 1e-5;
@@ -446,20 +448,31 @@ export class ShallowWaterSolver {
   /**
    * An open edge copies its neighbours, so over a bed sloping across it the copy stands on the wrong bed: the
    * Reef's Big swell ran away where the window's edge cut its ledge (Part B), as the Canyon's once did across
-   * its wall. The columns the stencils reach from each open edge take their inner neighbour's bed (`level`),
-   * or the spot's again (not `level`); the surface stays where it was, at the still level where dry.
+   * its wall. Levelling only the columns the stencils reach left a kink where the slope resumed, and the Reef's
+   * biggest seas drained that corner until a thin cell ran away there. So in a window wide enough (the game's) the
+   * bed eases over `OPEN_EDGE_RAMP` metres (smootherstep, continuous in slope and curvature) from the spot's own to
+   * its profile that far in, uniform along shore where the stencils copy the edge (`level`); a smaller window levels
+   * just the copied columns. Not `level`, it takes the spot's again. The surface stays where it was, at the still
+   * level where dry.
    */
   private levelOpenEdges(level: boolean): void {
     const { nx, nz, bed, h, qx, qz } = this;
     if (this.xBoundary !== OPEN || nx <= 2 * OPEN_EDGE_REACH) return;
+    // A ramp squeezed into a small window bends the bed harder than the kink: there the copied columns level as before.
+    const columns = Math.round(OPEN_EDGE_RAMP / this.dx);
+    const ramp = columns > OPEN_EDGE_REACH && 8 * columns <= nx ? columns : OPEN_EDGE_REACH;
     for (let iz = 0; iz < nz; iz += 1) {
       const row = iz * nx;
-      for (let k = 0; k < OPEN_EDGE_REACH; k += 1) {
-        for (const [ix, inner] of [[k, OPEN_EDGE_REACH], [nx - 1 - k, nx - 1 - OPEN_EDGE_REACH]]) {
+      const z = this.zCenters[iz];
+      for (let k = 0; k < ramp; k += 1) {
+        const s = ramp > OPEN_EDGE_REACH ? Math.min(1, Math.max(0, (k - OPEN_EDGE_REACH) / (ramp - OPEN_EDGE_REACH))) : 0;
+        const own = s * s * s * (s * (6 * s - 15) + 10);
+        for (const [ix, inner] of [[k, ramp], [nx - 1 - k, nx - 1 - ramp]]) {
           const i = row + ix;
           const wet = h[i] > this.dryDepth;
           const surface = wet ? h[i] + bed[i] : this.restLevel;
-          bed[i] = level ? bed[row + inner] : -this.depthAt(this.xCenters[ix], this.zCenters[iz]);
+          const spot = -this.depthAt(this.xCenters[ix], z);
+          bed[i] = level ? own * spot + (1 - own) * -this.depthAt(this.xCenters[inner], z) : spot;
           const depth = Math.max(0, surface - bed[i]);
           const scale = wet ? depth / h[i] : 0;
           h[i] = depth;

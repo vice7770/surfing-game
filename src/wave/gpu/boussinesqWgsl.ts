@@ -1,4 +1,4 @@
-import { MADSEN_SORENSEN_B } from '../BoussinesqSolver';
+import { FROUDE_CAP, MADSEN_SORENSEN_B } from '../BoussinesqSolver';
 import { FACE_SLOPE } from '../breakingAge';
 
 /**
@@ -57,6 +57,8 @@ const DISPERSIVE_DEPTH: f32 = 0.05;
 const SWITCH_RATIO: f32 = 0.8;
 const SWITCH_FROUDE: f32 = 2.0;
 const BREAKING_DEPTH: f32 = 0.05;
+const FROUDE_CAP: f32 = ${f(FROUDE_CAP.froude)};
+const FROUDE_WET_DEPTH: f32 = ${f(FROUDE_CAP.wetDepth)};
 const MAX_EDDY: f32 = 0.3;
 
 fn at(field: u32, i: u32) -> f32 { return F[field * P.n + i]; }
@@ -591,6 +593,13 @@ fn parentAge(current: f32, j: u32) -> f32 {
       let speed = sqrt(qx * qx + qz * qz) / h;
       let damping = 1.0 + (P.dt * P.g * P.manning * P.manning * speed) / (h * pow(h, 1.0 / 3.0));
       qx /= damping; qz /= damping;
+    }
+    // FUNWAVE-TVD's Froude cap (BoussinesqSolver.capFroude): under ten wave speeds, from its 1 cm wet depth.
+    let limit = FROUDE_CAP * sqrt(P.g * h);
+    let speed = sqrt(qx * qx + qz * qz) / h;
+    if (h >= FROUDE_WET_DEPTH && speed > limit) {
+      qx *= limit / speed; qz *= limit / speed;
+      put(${FIELD.PREDX}u, i, 0.0); put(${FIELD.PREDZ}u, i, 0.0);
     }
   } else {
     qx = 0.0; qz = 0.0;
