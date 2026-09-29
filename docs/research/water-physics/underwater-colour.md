@@ -24,7 +24,7 @@ Adding dissolved organic matter and plankton turns the Beach and the Point sea g
 
 1. **Accept these as sourced, or have them checked against the journals.** Decided: use them now as provisional, and check them when a session with journal access is free.
 2. **A blue Reef.** Decided: accept it; the green comes from the bed, which the prototype already lights.
-3. **The Point's reference: Jeffreys Bay (green) or Snapper Rocks (cyan).** Open: you left this one; the README lists both.
+3. **The Point's reference: Jeffreys Bay (green) or Snapper Rocks (cyan).** Decided: Snapper Rocks (cyan).
 4. **The Canyon as Nazaré.** Decided: Nazaré.
 5. **Rich above water too.** Decided: yes, later, so the surface colour matches what you see below.
 6. **Replace the grey absorption.** Decided: yes, as above.
