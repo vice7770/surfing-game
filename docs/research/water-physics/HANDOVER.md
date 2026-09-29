@@ -100,6 +100,12 @@ The owner asked (2026-09-29) to work on "below water and mass carried bodies of 
 
 Output: notes in `notes/round5-underwater/`, and a one-page "Underwater" tab.
 
+**Status, 2026-09-29 15:30:** the move to the cloud failed (the service returned 503, and the app couldn't read the cloud environments). So round 5 was restarted on the Mac.
+- Today's two underwater views are in `img/underwater-today.jpg`, at the Reef in Rich at midday:
+  - looking up through the plume: the foam lace painted on the surface's underside, the lip's facets, square point bubbles, flat teal fog;
+  - the plain view up: a flat blue gradient.
+- If the session moves before the agent reports, restart the round from the brief above.
+
 ## How other sessions consult now
 
 - A cloud session can receive messages, but can't reply to sessions on the owner's Mac.
