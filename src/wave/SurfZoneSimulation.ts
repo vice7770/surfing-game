@@ -1,4 +1,4 @@
-import { PADANG, REEF, createSpot, padangReefAt, padangShelfEdge, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
+import { PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
@@ -88,8 +88,13 @@ const OPEN_EDGE_COLUMNS = OPEN_EDGE_REACH;
 /** How far a breaking crest's path is followed for the gradient it climbs, m: past any window's bounds, which end it first. */
 const REEF_PATH_REACH = 400;
 
-/** Along-shore window width unless the config says otherwise, m. */
+/** Along-shore window width unless the config or the spot says otherwise, m. */
 export const ALONG_SHORE = 160;
+
+/** The window's along-shore width, m: the config's, else Padang Padang's own (its peak clear of the side feed), else ALONG_SHORE. */
+export function alongShoreOf(config: Pick<SurfZoneConfig, 'spot' | 'alongShore'>): number {
+  return config.alongShore ?? (config.spot === 'padang' ? PADANG.alongShore : ALONG_SHORE);
+}
 
 /**
  * Spots that always run stage 2 (the Teahupo'o Reef and Padang Padang specs): shallow water steepens waves far
@@ -171,15 +176,15 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
     const zone = Math.max(TANK.zoneInner - TANK.offshore, ZONE_WAVELENGTHS * waveKinematics(config.peakPeriod, today.edgeDepth).wavelength);
     return { ...today, offshore: TANK.zoneInner - zone };
   }
-  // Padang Padang's edge is the deep water beyond its forereef (the Padang Padang spec): injected on its 10 m platform, a
-  // 16 s swell (Ursell ~40) kept changing shape for 150–200 m and broke deeper at the reef's far end. Its 1:19 ramp is
+  // Padang Padang's edge is the deep water beyond its forereef (the Padang Padang spec): injected on a 10 m platform, a
+  // 16 s swell (Ursell ~40) kept changing shape for 150–200 m and broke deeper at the reef's far end. Its 1:19 wedge is
   // wide, so the fine zone starts SET_FINE_MARGIN seaward of where its sets first reach their breaker depth anywhere in
   // the window (never deeper than 0.9 of the edge's water), the blend lies beyond the forereef's foot, and the zone
   // absorbs its long waves.
   if (config.spot === 'padang') {
     const spot = createSpot('padang', config.seed);
     const sets = Math.min(0.9 * (today.edgeDepth + config.tide), (SETS_OVER_TYPICAL * komarGaughan(config.significantHeight, config.peakPeriod)) / BREAKER_INDEX);
-    const reach = (config.alongShore ?? ALONG_SHORE) / 2;
+    const reach = alongShoreOf(config) / 2;
     let setBreak = TANK.fineFrom + SET_FINE_MARGIN;
     for (let x = -reach; x <= reach; x += 5) {
       let z = TANK.shore;
@@ -188,7 +193,7 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
     }
     const fineFrom = Math.min(TANK.fineFrom, setBreak - SET_FINE_MARGIN);
     const blend = TANK.blendEnd - TANK.zoneInner;
-    const foreFoot = padangShelfEdge() - (PADANG.deep - PADANG.platformDepth) / PADANG.foreSlope - PADANG.foreRounding;
+    const foreFoot = padangForeFootZ() - PADANG.foreRounding;
     const zoneInner = Math.min(fineFrom - 20 - blend, foreFoot - blend);
     const zone = Math.max(TANK.zoneInner - TANK.offshore, ZONE_WAVELENGTHS * waveKinematics(config.peakPeriod, today.edgeDepth).wavelength);
     return { offshore: zoneInner - zone, zoneInner, blendEnd: zoneInner + blend, fineFrom, shore: TANK.shore, edgeDepth: today.edgeDepth };
@@ -325,7 +330,7 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
     }
     return tank.fineFrom;
   };
-  const reach = Math.max(0, (config.alongShore ?? ALONG_SHORE) / 2 - TAKE_OFF_EDGE_MARGIN);
+  const reach = Math.max(0, alongShoreOf(config) / 2 - TAKE_OFF_EDGE_MARGIN);
   if (TAKE_OFF[config.spot] === 'centre' || reach === 0) return { x: 0, z: breakZ(0) };
   // The Reef's and Padang Padang's riders wait at their peak, where each wave first breaks.
   if (TAKE_OFF[config.spot] === 'peak') {
@@ -416,7 +421,7 @@ export class SurfZoneSimulation {
     const tank = tankLayout(config);
     this.tank = tank;
     const offshoreDepth = tank.edgeDepth;
-    const alongShore = config.alongShore ?? ALONG_SHORE;
+    const alongShore = alongShoreOf(config);
     const dx = config.dx ?? 1;
     const grid = {
       nx: Math.round(alongShore / dx), xMin: -alongShore / 2, dx, xBoundary: 'open' as const,

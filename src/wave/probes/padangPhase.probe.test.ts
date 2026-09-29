@@ -18,7 +18,7 @@ it.skipIf(!process.env.PROBE)('probes the phase and height along Padang Padangâ€
   const config = { spot: 'padang' as const, seed: 1, significantHeight: 1.6, peakPeriod: 16, directionDegrees: direction, spreading, tide: 0, windSpeed: 0, componentCount: 24, ...(process.env.BANDWIDTH ? { bandwidth: Number(process.env.BANDWIDTH) } : {}) };
   const simulation = new SurfZoneSimulation(config);
   const { solver } = simulation;
-  const predicted = ledgePeel({ period: 16, deepDepth: PADANG.platformDepth, shelfDepth: PADANG.platformDepth, breakDepth: 3, swellDegrees: direction, ledgeDegrees: PADANG.angle });
+  const predicted = ledgePeel({ period: 16, deepDepth: PADANG.deep, shelfDepth: PADANG.baseDepth, breakDepth: 3, swellDegrees: direction, ledgeDegrees: PADANG.angle });
   const xs = [-50, -30, -10, 10, 30];
   const depths = (process.env.DEPTHS ?? '5,3').split(',').map(Number);
   // Where each contour crosses each x: scanning in from the edge, the first z at that still depth.

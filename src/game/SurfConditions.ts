@@ -62,13 +62,15 @@ export const REEF_SWELLS: Record<'small' | 'medium' | 'big', SwellChoice> = {
 
 /**
  * Padang Padang's own swells (the Padang Padang spec, decision 4): long-period SSW–SW groundswells (periods
- * often over 16 s) for faces of 2.5–3.5 / 3.5–4.5 / 4.5–6 m, arriving on its platform from the peak's side.
- * Heights from Komar & Gaughan inverted to the faces; provisional until the size report calibrates them.
+ * often over 16 s) for faces of 2.5–3.5 / 3.5–4.5 / 4.5–6 m. They arrive square to the tank, already wrapped by
+ * the Bukit's terrace; the reef's angle carries the obliquity, so nothing drifts in from the side feed (the
+ * advisor's ruling, 2026-09-29). Heights from Komar & Gaughan inverted to the faces; provisional until the size
+ * report calibrates them.
  */
 export const PADANG_SWELLS: Record<'small' | 'medium' | 'big', SwellChoice> = {
-  small: { significantHeight: 1.6, peakPeriod: 16, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 30 },
-  medium: { significantHeight: 2.2, peakPeriod: 17, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 30 },
-  big: { significantHeight: 3, peakPeriod: 18, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 30 },
+  small: { significantHeight: 1.6, peakPeriod: 16, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 0 },
+  medium: { significantHeight: 2.2, peakPeriod: 17, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 0 },
+  big: { significantHeight: 3, peakPeriod: 18, spread: 0, spreading: PADANG_SPREADING, directionDegrees: 0 },
 };
 
 /** Spots with swells of their own; the rest take the shared buoy values. */

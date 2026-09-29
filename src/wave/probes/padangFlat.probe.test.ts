@@ -1,12 +1,14 @@
-// Probe (opt-in: PROBE=1 LOG=<file> npx vitest run <this file>): does a swell injected at a 10 m edge keep its shape over a flat 10 m bed?
+// Probe (opt-in: PROBE=1 LOG=<file> npx vitest run <this file>): does a swell keep its shape over a flat bed at the knee’s depth?
 import { appendFileSync } from 'node:fs';
 const log = (text: string) => appendFileSync(process.env.LOG ?? '/dev/stderr', `${text}\n`);
 import { it } from 'vitest';
 import { PADANG } from '../Bathymetry';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
 
-it.skipIf(!process.env.PROBE)('probes a 16 s swell over a flat 10 m bed, by distance from the tank’s edge', () => {
-  PADANG.crestDepth = PADANG.platformDepth;
+it.skipIf(!process.env.PROBE)('probes a 16 s swell over a flat bed at the knee’s depth, by distance from the tank’s edge', () => {
+  // Level at the knee's depth shoreward of the knee: the reef flat and the wedge's base at it, the ramp all but level.
+  PADANG.crestDepth = PADANG.baseDepth = PADANG.kneeDepth;
+  PADANG.rampSlope = 1e-9;
   const config = {
     spot: 'padang' as const, seed: 1, significantHeight: 1.6, peakPeriod: 16, directionDegrees: 0, spreading: 150, tide: 0, windSpeed: 0, componentCount: 24,
     ...(process.env.BANDWIDTH ? { bandwidth: Number(process.env.BANDWIDTH) } : {}),
@@ -45,5 +47,5 @@ it.skipIf(!process.env.PROBE)('probes a 16 s swell over a flat 10 m bed, by dist
     const skew = series.reduce((p, q) => p + (q - mean) ** 3, 0) / series.length / ((hm0 / 4) ** 3);
     return `${d} m in: Hm0 ${hm0.toFixed(2)}, crest ${third(crests).toFixed(2)}, trough ${third(troughs).toFixed(2)}, skewness ${skew.toFixed(2)}`;
   });
-  log(`flat ${PADANG.platformDepth} m bed, 16 s, Hs 1.6 m deep: \n${rows.join('\n')}`);
+  log(`flat ${PADANG.kneeDepth} m bed, 16 s, Hs 1.6 m deep: \n${rows.join('\n')}`);
 }, 3_600_000);

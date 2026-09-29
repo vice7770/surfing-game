@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PADANG, REEF, createSpot, padangReefAt, padangShelfEdge, type SpotName } from './Bathymetry';
+import { PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, type SpotName } from './Bathymetry';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
@@ -20,7 +20,7 @@ import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { TAKE_OFF_BAND } from './SurfMeter';
 import { SideFeed } from './SideFeed';
 
-const small_ = (): SurfZoneConfig => ({ ...small, spot: 'padang', alongShore: 160 });
+const small_ = (): SurfZoneConfig => ({ ...small, spot: 'padang', alongShore: PADANG.alongShore });
 const small: Omit<SurfZoneConfig, 'spot'> = {
   seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
   componentCount: 12, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
@@ -97,18 +97,18 @@ describe('SurfZoneSimulation', () => {
     expect(padang.sea.components[0].k).toBeCloseTo(madsenSorensenWaveNumber(omega, padang.sea.depth), 10);
   });
 
-  it('gives Padang Padang a tank on its platform whose fine zone reaches past its sets’ first break at every tide', () => {
+  it('gives Padang Padang a tank beyond its forereef whose fine zone reaches past its sets’ first break at every tide', () => {
     const bed = createSpot('padang', 1);
     const swells = [{ ...PADANG_PRACTICE_SWELL, heightAt: 'edge' as const }, ...Object.values(PADANG_SWELLS)];
     for (const swell of swells) {
       for (const tide of Object.values(PADANG_TIDES)) {
-        const config: SurfZoneConfig = { ...small, spot: 'padang', alongShore: 160, tide, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod };
+        const config: SurfZoneConfig = { ...small, spot: 'padang', alongShore: PADANG.alongShore, tide, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod };
         const layout = tankLayout(config);
         expect(layout.edgeDepth).toBe(PADANG.deep);
         // The blend onto the spot's bed lies on the deep water beyond the forereef's foot.
-        expect(layout.blendEnd).toBeLessThanOrEqual(padangShelfEdge() - (PADANG.deep - PADANG.platformDepth) / PADANG.foreSlope + 1e-9);
+        expect(layout.blendEnd).toBeLessThanOrEqual(padangForeFootZ() + 1e-9);
         const sets = Math.min(0.9 * (PADANG.deep + tide), (SETS_OVER_TYPICAL * komarGaughan(swell.significantHeight, swell.peakPeriod)) / BREAKER_INDEX);
-        for (let x = -80; x <= 80; x += 5) {
+        for (let x = -PADANG.alongShore / 2; x <= PADANG.alongShore / 2; x += 5) {
           let z = layout.shore;
           while (z > -2000 && bed.depthAt(x, z) + tide < sets) z -= 1;
           expect(z, `x ${x}`).toBeGreaterThanOrEqual(layout.fineFrom + SET_FINE_MARGIN - 1);
@@ -135,13 +135,13 @@ describe('SurfZoneSimulation', () => {
     }
   });
 
-  it('finds Padang Padang’s break on its ramp inside the fine surf zone, and it plunges', () => {
-    const simulation = new SurfZoneSimulation({ ...small, spot: 'padang', alongShore: 160, significantHeight: PADANG_SWELLS.small.significantHeight, peakPeriod: PADANG_SWELLS.small.peakPeriod });
+  it('finds Padang Padang’s break on its wedge inside the fine surf zone, and it plunges', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'padang', alongShore: PADANG.alongShore, significantHeight: PADANG_SWELLS.small.significantHeight, peakPeriod: PADANG_SWELLS.small.peakPeriod });
     const point = simulation.breakPoint();
     const bed = (z: number) => tankDepth(simulation.spot, OFFSHORE_DEPTH.padang, point.x, z, simulation.tank);
     expect(point.z).toBeGreaterThan(simulation.tank.fineFrom);
     expect(bed(point.z)).toBeGreaterThan(PADANG.crestDepth);
-    expect(bed(point.z)).toBeLessThan(PADANG.platformDepth);
+    expect(bed(point.z)).toBeLessThan(PADANG.baseDepth);
     expect(simulation.iribarren().type).toBe('plunging');
   });
 
@@ -151,7 +151,7 @@ describe('SurfZoneSimulation', () => {
     for (const swell of swells) {
       for (const tide of Object.values(PADANG_TIDES)) {
         const config: SurfZoneConfig = {
-          ...small, spot: 'padang', alongShore: 160, tide, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod,
+          ...small, spot: 'padang', alongShore: PADANG.alongShore, tide, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod,
           ...('heightAt' in swell ? { heightAt: swell.heightAt } : {}),
         };
         const tank = tankLayout(config);
@@ -160,13 +160,13 @@ describe('SurfZoneSimulation', () => {
         expect(point.x).toBe(PADANG.takeOffX);
         expect(padangReefAt(point.x)).toBe(true);
         expect(depth).toBeGreaterThanOrEqual(0.4 * breakerDepthFor(edgeHeight(config, tank.edgeDepth), tank.edgeDepth + tide));
-        expect(depth).toBeLessThan(PADANG.platformDepth + tide);
+        expect(depth).toBeLessThan(PADANG.baseDepth + tide);
       }
     }
   });
 
   it('measures Padang Padang’s peel on its reef only', () => {
-    const simulation = new SurfZoneSimulation({ ...small, spot: 'padang', alongShore: 160 });
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'padang', alongShore: PADANG.alongShore });
     const xs = simulation.solver.xCenters;
     for (let column = 0; column < xs.length; column += 1) expect(simulation.peel.measures(column)).toBe(padangReefAt(xs[column]));
   });
@@ -549,7 +549,7 @@ describe('SurfZoneSimulation', () => {
     const run = (overrides: Partial<SurfZoneConfig>, fastestAllowed = 20) => {
       const simulation = new SurfZoneSimulation({
         ...small, spot: 'padang', significantHeight: PADANG_SWELLS.big.significantHeight, peakPeriod: PADANG_SWELLS.big.peakPeriod,
-        directionDegrees: PADANG_SWELLS.big.directionDegrees ?? 0, spreading: PADANG_SPREADING, alongShore: 160, dx: 1, fineSpacing: 1, ...overrides,
+        directionDegrees: PADANG_SWELLS.big.directionDegrees ?? 0, spreading: PADANG_SPREADING, alongShore: PADANG.alongShore, dx: 1, fineSpacing: 1, ...overrides,
       });
       const { solver } = simulation;
       let finite = true;
@@ -576,10 +576,11 @@ describe('SurfZoneSimulation', () => {
     // Review Focus 1: the lowest springs leave 5 cm over the reef flat.
     it('stays finite over the nearly dry reef flat at the lowest spring tide', () => run({ tide: -1.2 }, 30), 1_800_000);
     it('stays finite at high tide', () => run({ tide: PADANG_TIDES.high }), 1_800_000);
-    // Review Focus 2: oblique swells across the level −x edge, at the sweep's extremes and the real frame's wrapped 45°.
-    it('stays finite with the most oblique swells across the open −x edge', () => {
-      run({ directionDegrees: 0 });
-      run({ directionDegrees: 45 });
+    // Review Focus 2: oblique swells across the open side edges, over the advisor's robustness range (Mead & Black's
+    // Bingin held its peel from −10° to +20°; the swell arrives square by default).
+    it('stays finite with the most oblique swells across the open side edges', () => {
+      run({ directionDegrees: -10 });
+      run({ directionDegrees: 20 });
     }, 3_600_000);
   });
 

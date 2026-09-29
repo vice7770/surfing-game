@@ -90,7 +90,7 @@ export const PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1.4, pe
 export const REEF_PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1, peakPeriod: 14, spreading: 40, bandwidth: 0.08, directionDegrees: 20 };
 
 /**
- * Padang Padang's directional spreading, the cos-2s exponent s at its platform edge: a Southern Ocean groundswell
+ * Padang Padang's directional spreading, the cos-2s exponent s at its edge: a Southern Ocean groundswell
  * is Goda's long-decay swell (s_max 75), and refraction into 10 m narrows it further, past 100 by h/L0 ≈ 0.025
  * (Goda, Takayama & Suzuki 1978, eq. 17 and fig. 5); the Bukit's tip also filters the directions that wrap round.
  * Provisional (the advisor's ruling, 2026-09-28): swept over 100–250, never below 75.
@@ -99,10 +99,10 @@ export const PADANG_SPREADING = 150;
 
 /**
  * Padang Padang's practice groundswell: the Practice swell's narrow band and spread at a Padang Padang period,
- * from the peak's side, given at its platform edge, for faces of 2–2.5 m (the Padang Padang spec). It "works from
+ * square to the tank as its swells, given at its edge, for faces of 2–2.5 m (the Padang Padang spec). It "works from
  * about 4 ft" (about 2.4 m faces), so this is its smallest honest size. Provisional until the size report.
  */
-export const PADANG_PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1.5, peakPeriod: 16, spreading: PADANG_SPREADING, bandwidth: 0.08, directionDegrees: 30 };
+export const PADANG_PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1.5, peakPeriod: 16, spreading: PADANG_SPREADING, bandwidth: 0.08, directionDegrees: 0 };
 
 /** A spot's practice groundswell: the Reef's or Padang Padang's own, or the shared one. */
 export function practiceSwell(spot: SpotName): Readonly<SwellInput> {
