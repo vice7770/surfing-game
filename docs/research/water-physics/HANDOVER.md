@@ -47,7 +47,7 @@ The "Water physics research" session moved from the owner's Mac to the cloud on 
    - the order (recommended: shading and haze now, new emission after the swept surface).
 4. **The peel meter:** use the solver's measured crest speed instead of √(g·h_b). Every spot's reported angle moves 5–7° toward easier. It's a separate task chip.
 5. **The Basilisk benchmark** (2D profile runs for the swept barrel): not started. It's on the Padang Padang session's plan, and it's the critical path for the tube rebuild.
-6. **PRs:** #67 (this folder) awaits merge. #63 (the switch latch) is held as a draft, because it made the high-tide Big swell worse.
+6. **PRs:** #67 (this folder) is merged. #63 (the switch latch) is held as a draft, because it made the high-tide Big swell worse.
 
 ## Work in flight elsewhere at the move
 
