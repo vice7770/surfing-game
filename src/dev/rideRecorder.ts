@@ -288,14 +288,18 @@ function tier(hooks: RecordingHooks): string {
 }
 
 function drawOverlay(context: CanvasRenderingContext2D, spot: string, source: string, label: string, attempt: number, activity = `AUTOPILOT · ATTEMPT ${attempt}`): void {
+  const detail = `${spot.toUpperCase()} · ${source === 'practice' ? 'PRACTICE GROUNDSWELL' : source.toUpperCase()} · BOUSSINESQ · ${activity}`;
   context.save();
+  // The box grows to the detail line (the watching film's names its tier), never narrower than it was.
+  context.font = '15px ui-monospace, Menlo, monospace';
+  const width = Math.max(560, context.measureText(detail).width + 32);
   context.fillStyle = 'rgba(8, 24, 32, 0.55)';
-  context.fillRect(24, 24, 560, 74);
+  context.fillRect(24, 24, width, 74);
   context.fillStyle = '#e8f4f2';
   context.font = '600 22px ui-monospace, Menlo, monospace';
   context.fillText(label, 40, 56);
   context.font = '15px ui-monospace, Menlo, monospace';
   context.fillStyle = 'rgba(232, 244, 242, 0.8)';
-  context.fillText(`${spot.toUpperCase()} · ${source === 'practice' ? 'PRACTICE GROUNDSWELL' : source.toUpperCase()} · BOUSSINESQ · ${activity}`, 40, 84);
+  context.fillText(detail, 40, 84);
   context.restore();
 }
