@@ -25,11 +25,15 @@ Adding dissolved organic matter and plankton turns the Beach and the Point sea g
 From the Mac session, which can open the papers the cloud couldn't:
 
 - **The detrital-colour rule is confirmed.** a_cdm(443) = 0.069·Chl^1.070 and S = 0.00262·a^−0.448 are the November 2007 fits in Table 1 of [Bricaud, Ciotti & Gentili 2012](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010GB003952). They are fits to values retrieved from SeaWiFS satellite data, not measured in the water. Other months give 0.068–0.075·Chl^1.07–1.11. The authors warn the fits are "not designed for use in predictive applications or models", so they stay provisional.
-- **The particle term counts detritus twice.**
-  - The coefficients used (0.052·Chl^0.635 at 440 nm) are for total particulate absorption, which already includes non-algal particles, 25–30 % of it on average ([Bricaud et al. 1998](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/98JC02712), abstract).
-  - The 2012 table gives the phytoplankton-only law as 0.0375·Chl^0.620 at 443 nm, about 0.72× at 1 mg/m³.
-  - Since the detrital term already includes detritus, the fix is to scale the particle term by about 0.72, or to use phytoplankton-only coefficients.
-  - At the Beach that trims about a tenth of the added blue absorption, a degree or two of hue; the fit to the satellite's Kd490 absorbs the rest [inferred].
+- **The particle term counted detritus twice. Use the phytoplankton-only coefficients.**
+  - The table used is total particle absorption, detritus included. The Ocean Optics Web Book defines it that way ([Mobley](https://www.oceanopticsbook.info/view/optical-constituents-of-the-ocean/level-2/new-iop-model-case-1-water), Eq. 1) and pairs it with dissolved matter only; OceanOptics.jl mislabels it as phytoplankton. Non-algal particles make up 25–30 % of it ([Bricaud et al. 1998](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/98JC02712), abstract). Bricaud 2012's term already includes detritus.
+  - The same study's phytoplankton-only columns (Aphi, Ephi) are what POLYMER and NASA's l2gen read; [ocpy](https://github.com/ocean-colour/ocpy/blob/main/ocpy/data/phytoplankton/aph_bricaud_1998.txt) has a public copy. At 650, 550 and 450 nm: A = 0.00778, 0.00703 and 0.0350 m²/mg, with E = 0.815, 0.931 and 0.599. At 443 nm they match the 2012 paper's quote of the law, 0.0375·Chl^0.620, within 1 %.
+  - A flat ×0.72 won't do: the phytoplankton share is 0.72–0.77 in blue and red, but 0.46–0.64 in green.
+  - The exponent convention is settled too: a = A·Chl^E (Mobley's Eq. 1, ocpy's header, NASA's code). OceanOptics.jl's A·Chl^(1−E) is wrong.
+- **What it changes** [inferred: a rerun of the cloud session's model, which reproduces its table within 1–3°]:
+  - Every hue moves 2–4° bluer, and no spot changes its look: the Beach 152° → 155° (sea green), Snapper 196° → 198° (cyan), the Reef 224° → 226° (blue), all with variant (b).
+  - Sighting distances move less than 1 %.
+  - Variant (b) now matches the satellite better: the Beach's Kd490 drops from 0.179 to 0.165 m⁻¹ (VIIRS 0.161), and the Reef's from 0.029 to 0.027 (0.026). Elsewhere the fit keeps a small flat term, 0.004–0.015 m⁻¹ (Padang 0.040).
 
 ## Your decisions (settled 2026-09-29, as recommended)
 

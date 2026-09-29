@@ -43,6 +43,12 @@ All settled on 2026-09-29: Rich foam, the roller, spray and mist, the peel meter
 - **The level-13 Padang run:** it needs the M4 Pro (`tools/basilisk/run_padang.sh`, see `tools/basilisk/README.md`). It ran end to end in the cloud on a coarse grid, but not yet on a Mac. The owner's Mac that the advisor runs on is an M1, which is not the machine meant for this run.
 - **The new peel meter:** decided, but not built. `SurfZoneSimulation.breakerCelerity()` still returns √(g·h_b).
 - **PR #63** (the switch latch): held as a draft.
+- **The Reef's lip (the owner's call, raised 2026-09-30):**
+  - Its jet ask of 0.47 H² is provisional: a 0.5 H lip, from an article's description (Shand 2024), beyond Pick & Feddersen's fitted slopes. Their 0.27 H² is where the fit stops, not a physical cap.
+  - At game size, the predictor session measured that the solver's crest supplies only part of it from above still level.
+  - A Basilisk run on the Reef's own transect would source it, under the owner's tube rule.
+- **The lip-jet source (consult in flight):** the predictor session is measuring the upper-half crest window; see [consult-log.md](consult-log.md).
+- **Water colour:** checked against the journals. The builder uses the phytoplankton-only coefficients in [underwater-colour.md](underwater-colour.md).
 
 ## Work in flight elsewhere at the move
 

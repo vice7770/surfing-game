@@ -108,6 +108,8 @@ The pages below were opened, not just searched; the full notes tag every finding
 
 - [Bricaud, Ciotti & Gentili 2012, Global Biogeochemical Cycles](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010GB003952), full text: the dissolved-and-detrital absorption rules (Table 1), fitted to SeaWiFS retrievals
 - [Bricaud et al. 1998, JGR Oceans](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/98JC02712), abstract only: its particle absorption laws cover all particles, 25–30 % of it non-algal
+- [Mobley, "A New IOP Model for Case 1 Water", Ocean Optics Web Book](https://www.oceanopticsbook.info/view/optical-constituents-of-the-ocean/level-2/new-iop-model-case-1-water): the Bricaud table as particle absorption, a = A·Chl^E
+- [ocpy's copy of the Bricaud 1998 table](https://github.com/ocean-colour/ocpy/blob/main/ocpy/data/phytoplankton/aph_bricaud_1998.txt) (BSD-3, commit 18f8ee2): particle and phytoplankton-only columns, the layout POLYMER and NASA's l2gen read
 - The ocean-optics model code that implements the published absorption shapes: [OSOAA](https://github.com/CNES/RadiativeTransferCode-OSOAA), [POLYMER](https://github.com/hygeos/polymer) and [IOPmodel](https://github.com/bishun945/IOPmodel)
 - [NOAA-20 VIIRS ocean colour, 2023](https://noaa-jpss.s3.amazonaws.com/index.html#NOAA20/VIIRS/): chlorophyll and Kd490 off each spot
 - [colour-science](https://github.com/colour-science/colour): the CIE 1931 observer and D65, for hue and sighting
