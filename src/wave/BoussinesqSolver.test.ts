@@ -472,10 +472,11 @@ describe('Boussinesq breaking', () => {
       const period = 10;
       const omega = (2 * Math.PI) / period;
       const angle = (degrees * Math.PI) / 180;
-      // One along-shore wavelength wide, so the periodic window holds an endless straight crest.
-      const dx = 2;
-      const nx = Math.round((2 * Math.PI) / (airyWavenumber(omega, 5) * Math.sin(angle)) / dx);
-      const incident = Math.asin((2 * Math.PI) / (nx * dx) / airyWavenumber(omega, 5));
+      // One along-shore wavelength wide in 50 columns (about 4 m at 20°, 2 m at 40°: at 4 m a 40° crest was too coarse to
+      // steepen), so the periodic window holds an endless straight crest.
+      const nx = 50;
+      const dx = (2 * Math.PI) / (airyWavenumber(omega, 5) * Math.sin(angle)) / nx;
+      const incident = angle;
       const depthAt = (_x: number, z: number) => (z < 60 ? 5 : 5 - (z - 60) / 40);
       const solver = new BoussinesqSolver(
         { nx, xMin: 0, dx, zEdges: uniformEdges(0, 280, 560), xBoundary: 'periodic' }, depthAt, { breaking: { onset: 0.65 } },
@@ -504,7 +505,7 @@ describe('Boussinesq breaking', () => {
       const depth = depthAt(0, solver.zCenters[onset]);
       expect((high[onset] - low[onset]) / depth).toBeGreaterThan(0.6);
       expect((high[onset] - low[onset]) / depth).toBeLessThan(1.0);
-    }, 600_000);
+    }, 900_000);
   }
 
   // A breaking event is carried with its wave (Kennedy et al. 2000: the age of the breaking event), from behind its front
