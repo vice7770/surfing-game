@@ -192,3 +192,10 @@ The game's channels are R, G and B = 650, 550 and 450 nm (`src/scene/waterOptics
   - Bricaud, Morel & Prieur 1981, https://doi.org/10.4319/lo.1981.26.1.0043
   - Bricaud, Ciotti & Gentili 2012, GBC, https://doi.org/10.1029/2010GB003952 (DOI not verified)
   - Babin et al. 2003, https://doi.org/10.1029/2001JC000882
+
+## 5. Journal check (2026-09-30, from the Mac session)
+
+- [measured, paper opened] **Bricaud, Ciotti & Gentili 2012, GBC 26, GB1010, Table 1** (free access on AGU): log a_cdm(443) = 1.070·log Chl − 1.161 (November 2007; Feb 1.095/−1.153, May 1.067/−1.169, Aug 1.109/−1.128), and log S_cdm = −0.448·log a_cdm(443) − 2.581 (Nov; Feb −0.448/−2.574, May −0.426/−2.534, Aug −0.419/−2.519). POLYMER's rule is the November fit. The paper defines CDM as including both CDOM and particulate detrital matter, and says its relationships are "not designed for use in predictive applications or models" (§34).
+- [measured, abstract opened] **Bricaud et al. 1998, JGR 103(C13):31033**: its power laws are for total particulate absorption a_p(λ); non-algal particles average 25–30 % of it, with an exponential slope of 0.011 ± 0.0025 nm⁻¹. The same 2012 table gives Bricaud 1998's phytoplankton-only law as log a_phy(443) = 0.620·log Chl − 1.426, so a_phy(443) = 0.0375·Chl^0.620.
+- [inferred] **So the §1 table (A(440) = 0.05202, E = 0.635) is a_p, not a_phy**, and a_p + a_CDM counts the non-algal particles twice. Fix it by scaling the particle term by about 0.72 (a_phy/a_p at 443 nm, Chl 1), or by using phytoplankton-only coefficients. At the Beach this removes about 11 % of the added blue absorption and shifts the hue by a degree or two. Variant (b)'s fit to the satellite's Kd490 takes up the total.
+- **Not opened:** the 1998 paper's full coefficient table (the PDF is bot-protected for scripts and the in-browser reader did not render), and Bricaud, Morel & Prieur 1981.

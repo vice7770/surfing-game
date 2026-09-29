@@ -20,6 +20,17 @@ Adding dissolved organic matter and plankton turns the Beach and the Point sea g
 - **Where it goes:** its own underwater uniforms, not the shared optics call, which drives Classic's above-water look (`src/scene/waterOptics.ts:246`).
 - **Padang:** the satellite sees its water as much murkier than the Reef's (Kd490 0.12 against 0.026 m⁻¹), though reflection off its shallow reef may inflate that. The Padang session should know.
 
+## Checked against the journals (2026-09-30)
+
+From the Mac session, which can open the papers the cloud couldn't:
+
+- **The detrital-colour rule is confirmed.** a_cdm(443) = 0.069·Chl^1.070 and S = 0.00262·a^−0.448 are the November 2007 fits in Table 1 of [Bricaud, Ciotti & Gentili 2012](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010GB003952). Other months give 0.068–0.075·Chl^1.07–1.11. The authors warn the fits are "not designed for use in predictive applications or models", so they stay provisional.
+- **The particle term counts detritus twice.**
+  - The coefficients used (0.052·Chl^0.635 at 440 nm) are for total particulate absorption, which already includes non-algal particles, 25–30 % of it on average ([Bricaud et al. 1998](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/98JC02712), abstract).
+  - The 2012 table gives the phytoplankton-only law as 0.0375·Chl^0.620 at 443 nm, about 0.72× at 1 mg/m³.
+  - Since the detrital term already includes detritus, the fix is to scale the particle term by about 0.72, or to use phytoplankton-only coefficients.
+  - At the Beach that trims about a tenth of the added blue absorption, a degree or two of hue; the fit to the satellite's Kd490 absorbs the rest [inferred].
+
 ## Your decisions (settled 2026-09-29, as recommended)
 
 1. **Accept these as sourced, or have them checked against the journals.** Decided: use them now as provisional, and check them when a session with journal access is free.
