@@ -64,8 +64,13 @@ describe('the stance gauge', () => {
     // The lead (left) arm hanging; the trailing elbow bent 60°.
     expect(turned(BONES.arm.left, new Vector3(0, 0, 1), -90).leadArm).toBeCloseTo(0, 3);
     expect(turned(BONES.foreArm.right, UP, 60).trailElbow).toBeCloseTo(120, 3);
-    // The front shin tipped 20° from the deck's normal: the ankle's flexion with the foot flat.
-    expect(turned(BONES.leg.left, new Vector3(1, 0, 0), -20).ankleFront).toBeCloseTo(20, 3);
+    // The front shin tipped 20° forward over the foot kept flat: the ankle flexed 20° (the shin closing on the foot).
+    const flexed = standing('regular');
+    flexed.turn(BONES.leg.left, new Vector3(1, 0, 0), 20);
+    flexed.turn(BONES.foot.left, new Vector3(1, 0, 0), -20);
+    expect(flexed.measure().ankleFront).toBeCloseTo(20, 3);
+    // The foot turned with the shin (the heel lifting as the shin tips) leaves the ankle as it was.
+    expect(turned(BONES.leg.left, new Vector3(1, 0, 0), -20).ankleFront).toBeCloseTo(0, 3);
   });
 
   it('mirrors for Goofy: the right side leads', () => {

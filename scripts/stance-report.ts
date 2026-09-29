@@ -87,7 +87,7 @@ ${STANCES.length} stances, ${measured} targets. Each target is a range of a join
 On the board: x across, y the deck's normal, z the nose. Regular faces −x (the toes' rail) with the left foot forward; Goofy faces +x, the right foot forward. The lead arm is the front foot's side.
 
 - **Knees, hips, elbows:** included angles, 180° straight. The hip is between the trunk (the spine's base to the neck) and the thigh, so it includes the lower back.
-- **Ankles:** the shin's tilt from the deck's normal (the ankle's flexion with the foot flat).
+- **Ankles:** the ankle's flexion from the skeleton's rest, the shin closing on the foot (with the foot flat on the deck, the shin's tilt from the deck's normal; the heel lifting takes some of it).
 - **Trunk:** its tilt from the deck's normal, toward the toes and toward the nose; and from the world's vertical toward the toes (**trunk from the vertical**, as a picture shows it, the lean into a turn included). **Lean:** the feet's middle to the neck, from the world's vertical toward the toes.
 - **Twists and head yaw:** where the chest, the pelvis and the head face, on the deck: 0° toward the toes, + toward the nose. **Head pitch:** below the deck's plane.
 - **Arms:** the upper arm from the trunk's down: 0° hanging, 90° out, 180° overhead.
