@@ -8,13 +8,15 @@ The waves form well, but everything after the break sits on a surface that canno
 
 **Decided on 2026-09-28:** build the swept surface (row 1 below). A new Padang Padang spot, built in its own session, is its first testbed. The Reef session keeps its reef-shape values for it.
 
+**Open for you (2026-09-29):** the biggest Reef swells can still blow the solver up, and the fix is an architecture choice: Solver stability.
+
 ## Why it doesn't read as a real surf wave
 
 Everything after the break is added beside a surface that cannot fold, and each piece is drawn on its own, so they never read as one wave.
 
 ![The Reef practice wave today: tube from beside, inside the tube, whitewater, behind the break](img/reef-practice-wave-today.jpg)
 
-*The Reef practice wave, Rich look, midday, from the game's water-sheet view on latest main, which runs the CPU tier. Until a fix on 2026-09-28 (commit 33fae37), the GPU tier the M4 plays on threw no lips at all: no tubes, splash-ups or lip crashes.*
+*The Reef practice wave, Rich look, midday, from the game's water-sheet view on latest main, which runs the CPU tier. Until a fix on 2026-09-28 (commit 33fae37), the GPU tier the M4 plays on threw no lips at all; since PR #66 it is checked to match the CPU tier event for event.*
 
 - **The face never stands up.** The solver's breaking model damps any face steeper than about 13–17° once breaking is under way. That is right for a broken bore, but a plunging face goes vertical. This Reef wave peaks near 27°.
 - **The tube has the right size but no wall.** Its void is close to measured sizes for these beds, about 0.8–1.1 m long at Hs 1.4 m ([Pick & Feddersen 2026](https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/scaling-the-shape-of-shoaling-and-overturning-solitary-waves/D43EDB6346C8975E77258A291CFCB4EF)). Only the lower half of the overturn is cut, though, so its back wall is the slope and it reads as a pocket high on the face (shot 1).
