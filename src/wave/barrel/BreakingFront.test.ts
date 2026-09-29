@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { BreakingFront } from './BreakingFront';
 import type { CrestSample } from './crestOnset';
 
-/** A crest sample over breaking water (B past the face's threshold) at one-metre columns. */
-function sample(column: number, z: number, b = 0.7): CrestSample {
-  return { column, row: Math.floor(z), x: column + 0.5, z, eta: 1, b, speed: 5, dirX: 0, dirZ: 1 };
+/** A crest sample at one-metre columns, breaking (its segment's strength past the join) for `age` s by default. */
+function sample(column: number, z: number, strength = 0.6, age = 0.1): CrestSample {
+  return { column, row: Math.floor(z), x: column + 0.5, z, eta: 1, strength, age, b: 0.3, speed: 5 };
 }
 
 /** An oblique straight crest over `columns`, z = z0 + slope · x. */
-function line(columns: readonly number[], z0: number, slope: number, b = 0.7): CrestSample[] {
-  return columns.map((column) => sample(column, z0 + slope * (column + 0.5), b));
+function line(columns: readonly number[], z0: number, slope: number, strength = 0.6, age = 0.1): CrestSample[] {
+  return columns.map((column) => sample(column, z0 + slope * (column + 0.5), strength, age));
 }
 
 const range = (from: number, to: number) => Array.from({ length: to - from }, (_, k) => from + k);
@@ -25,21 +25,29 @@ describe('the breaking front as lines', () => {
     front.points.forEach((point, k) => expect(point.sigma).toBeCloseTo(k * Math.sqrt(1 + 0.5 ** 2), 9));
   });
 
-  it('keeps every point’s ID when the crest moves 0.3 m shoreward', () => {
+  it('keeps every point’s ID, onset and clock when the crest moves 0.3 m shoreward into new cells', () => {
     const front = new BreakingFront();
     const first = line(range(0, 20), 10, 0.5);
     front.update(first, first.length, 0);
     const ids = front.points.map((point) => point.id);
-    front.points.forEach((point) => { point.tau = 0.25; point.thrown = true; });
-    const next = line(range(0, 20), 10.3, 0.5);
+    front.points.forEach((point) => { point.tau = 0.25; });
+    // The new cells' own age says nothing of when this crest broke: the point carries its own.
+    const next = line(range(0, 20), 10.3, 0.5, 0.6, 0.02);
     front.update(next, next.length, 0.1);
     expect(front.points.map((point) => point.id)).toEqual(ids);
-    expect(front.points.every((point) => point.tau === 0.25 && point.thrown)).toBe(true);
+    expect(front.points.every((point) => point.tau === 0.25 && point.onset === -0.1)).toBe(true);
   });
 
-  it('leaves out crests whose B has not reached the face', () => {
+  it('backdates a joining crest’s onset to when its breaking age began', () => {
     const front = new BreakingFront();
-    const samples = line(range(0, 20), 10, 0.5, 0.5);
+    const samples = line(range(0, 3), 10, 0, 0.4, 0.15);
+    front.update(samples, samples.length, 7);
+    for (const point of front.points) expect(point.onset).toBeCloseTo(6.85, 12);
+  });
+
+  it('leaves out crests whose segment is not breaking past the join', () => {
+    const front = new BreakingFront();
+    const samples = line(range(0, 20), 10, 0.5, 0.3);
     front.update(samples, samples.length, 0);
     expect(front.points).toHaveLength(0);
   });
@@ -87,15 +95,6 @@ describe('the breaking front as lines', () => {
     for (let t = 0.3; t < 1; t += 0.1) front.update(gap, gap.length, t);
     front.update(whole, whole.length, 1);
     expect(front.points[2].id).not.toBe(id);
-  });
-
-  it('rates B’s rise per second from one step to the next', () => {
-    const front = new BreakingFront();
-    const before = line(range(0, 3), 10, 0, 0.7);
-    front.update(before, before.length, 0);
-    const after = line(range(0, 3), 10.2, 0, 0.72);
-    front.update(after, after.length, 0.1);
-    for (const point of front.points) expect(point.bRate).toBeCloseTo(0.2, 9);
   });
 
   it('carries its state through export and import', () => {

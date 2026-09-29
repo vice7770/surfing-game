@@ -17,14 +17,11 @@ export interface FrontPoint {
   sigma: number;
   x: number;
   z: number;
-  /** U/C (crestOnset). */
+  /** U/C, a diagnostic (crestOnset); NaN unmeasured. */
   b: number;
-  /** How fast b rose over the last step, per s. */
-  bRate: number;
   /** The crest's height above still water, m. */
   height: number;
-  /** Whether its B has reached the throw, and when, s (sliceClock). */
-  thrown: boolean;
+  /** When its crest began breaking, s: its Kennedy age's start, carried with the crest from when it joined. */
   onset: number;
   /** The slice's clock as drawn, s from its lip's throw: smoothed along the front, never running back (sliceClock). */
   tau: number;
@@ -41,10 +38,13 @@ export interface FrontState {
 }
 
 /**
- * The breaking front as lines of points (swept-barrel-build.md, "Front line"; Thürey et al. 2007). A crest whose B
- * has reached the face joins a front; crests in neighbouring columns within LINK_REACH in z link, and a column's own
- * crests never do, so two crests in a column are two fronts and an empty column splits one. A point matched to last
- * step's in its column keeps its ID and clock. Columns go in order, with no randomness, for online determinism.
+ * The breaking front as lines of points (swept-barrel-build.md, "Front line"; Thürey et al. 2007). A crest whose
+ * segment is breaking (`ONSET.join`) joins a front, its onset backdated to when its breaking age began (the advisor,
+ * 2026-09-30: the strength passes the join level after the age starts). Crests in neighbouring columns within
+ * LINK_REACH in z link, and a column's own crests never do, so two crests in a column are two fronts and an empty
+ * column splits one. A point matched to last step's in its column keeps its ID, onset and clock: the crest carries its
+ * own age, with no reset as it crosses into new cells. Columns go in order, with no randomness, and only + − × ÷ and
+ * √, for online determinism.
  */
 export class BreakingFront {
   /** This step's points, by front (in order of their −x ends) and σ. */
@@ -55,7 +55,6 @@ export class BreakingFront {
   private nextFront = 0;
 
   update(samples: readonly CrestSample[], count: number, time: number): void {
-    const joining = ONSET.face * ONSET.depthAveraged;
     const previous = [...this.points, ...this.held];
     const byColumn = new Map<number, FrontPoint[]>();
     for (const old of previous) byColumn.set(old.column, [...(byColumn.get(old.column) ?? []), old]);
@@ -63,7 +62,7 @@ export class BreakingFront {
     const points: FrontPoint[] = [];
     for (let k = 0; k < count; k += 1) {
       const s = samples[k];
-      if (!(s.b >= joining)) continue;
+      if (!(s.strength > ONSET.join)) continue;
       let best: FrontPoint | undefined;
       for (const old of byColumn.get(s.column) ?? []) {
         if (matched.has(old) || !(Math.abs(old.z - s.z) < MATCH_REACH)) continue;
@@ -78,10 +77,8 @@ export class BreakingFront {
         x: s.x,
         z: s.z,
         b: s.b,
-        bRate: best && time > best.seen ? (s.b - best.b) / (time - best.seen) : 0,
         height: s.eta,
-        thrown: best ? best.thrown : false,
-        onset: best ? best.onset : 0,
+        onset: best ? best.onset : time - s.age,
         tau: best ? best.tau : 0,
         seen: time,
       });
@@ -111,7 +108,9 @@ export class BreakingFront {
         }
         if (best) {
           const tail = best.at(-1)!;
-          point.sigma = tail.sigma + Math.hypot(point.x - tail.x, point.z - tail.z);
+          const dx = point.x - tail.x;
+          const dz = point.z - tail.z;
+          point.sigma = tail.sigma + Math.sqrt(dx * dx + dz * dz);
           best.push(point);
         } else {
           chains.push([point]);

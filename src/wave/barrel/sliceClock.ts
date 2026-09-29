@@ -1,64 +1,43 @@
 import type { FrontPoint } from './BreakingFront';
-import { ONSET } from './crestOnset';
 
 /**
  * The slice clock's constants (the advisor, 2026-09-30):
  * - `smoothing`, m: the onsets are smoothed along the front over a 2 m standard deviation, about a quarter of
  *   Padang Padang's open curl (V_p ≈ 9–10 m/s over the 0.82–0.85 s open phase of round 6's run: 7–8 m);
  * - `bunched`, m²: below this weighted variance of σ (two points under about 0.6 m apart; two a column apart are
- *   0.25), a fit's slope is meaningless and the mean is used;
- * - `endTaper`, m: τ tapers to 0 over an unbroken shoulder's last metres, so slices appear there unseen
- *   (swept-barrel-build.md). All provisional.
+ *   0.25), a fit's slope is meaningless and the mean is used. Both provisional.
  */
-export const CLOCK = { smoothing: 2, bunched: 0.1, endTaper: 3 } as const;
+export const CLOCK = { smoothing: 2, bunched: 0.1 } as const;
 
 /** The biweight kernel's radius: its standard deviation is radius/√7. */
 const RADIUS = CLOCK.smoothing * Math.sqrt(7);
 
 /**
- * Advances every front point's clock to `time` s (swept-barrel-build.md, "Smooth clock"; the advisor's ruling,
- * 2026-09-30). Returns how many shown clocks paused this step rather than run back.
+ * Sets every front point's clock at `time` s (swept-barrel-build.md, "Smooth clock"; the advisor's ruling,
+ * 2026-09-30). Returns how many clocks paused this step rather than run back.
  *
- * - **The throw.** A point throws when its B first reaches `ONSET.throw × ONSET.depthAveraged`. Its onset is then,
- *   less the part of the last step since B crossed it (read from B's rise, at most `dt`).
- * - **Smoothing.** Along each front, a broken point's onset is read from a local line through its broken
- *   neighbours' onsets, weighted by a biweight (1 − u²)² of 2 m standard deviation in σ. That turns the solver's
- *   grouped onsets (a staircase of small close-outs) into a ramp at their mean gradient, the physical peel, and
- *   reproduces a steady peel exactly, to its leading edge. One point uses its own onset, and points bunched within
- *   about a metre their weighted mean. The fit is clamped to the window's onsets, so it never extrapolates.
- * - **Causality.** Only broken points count, unbroken ones show τ = 0, and a shown τ never falls: when a later
- *   neighbour moves the fit, the lip pauses rather than retracts.
- * - **Ends.** τ tapers to 0 over `CLOCK.endTaper` m toward an unbroken shoulder only. At a broken end the tube
- *   hands over to the roller (the owner's round-6 decision), so it is not tapered.
+ * - **Smoothing.** Along each front, a point's onset is read from a local line through its neighbours' onsets,
+ *   weighted by a biweight (1 − u²)² of 2 m standard deviation in σ. That turns the solver's grouped onsets (a
+ *   staircase of small close-outs) into a ramp at their mean gradient, the physical peel, and reproduces a steady peel
+ *   exactly, to its leading edge, where a weighted mean would sit 0.31 of the radius behind. One point uses its own
+ *   onset, and points bunched within about half a metre their weighted mean. The fit is clamped to the window's
+ *   onsets, so it never extrapolates.
+ * - **Causality.** τ = time − the fitted onset, at least 0, and never falling: when a later neighbour moves the fit,
+ *   the lip pauses rather than retracts. Frequent pauses would mean the onsets are still noisy at the 2 m scale.
+ * - **Ends.** No taper: a front holds only breaking crests, so its leading end is its newest break, near τ = 0, where
+ *   slices appear unseen; its other end hands over to the roller (the owner's round-6 decision).
  *
  * Only + − × ÷ and loops over points in σ order, for online determinism.
  */
-export function advanceClocks(points: FrontPoint[], time: number, dt: number): number {
-  const threshold = ONSET.throw * ONSET.depthAveraged;
-  for (const point of points) {
-    if (point.thrown || !(point.b >= threshold)) continue;
-    point.thrown = true;
-    point.onset = time - (point.bRate > 0 ? Math.min(dt, (point.b - threshold) / point.bRate) : 0);
-  }
+export function advanceClocks(points: FrontPoint[], time: number): number {
   let pauses = 0;
   let start = 0;
   while (start < points.length) {
     let end = start + 1;
     while (end < points.length && points[end].front === points[start].front) end += 1;
-    const first = points[start];
-    const last = points[end - 1];
     for (let k = start; k < end; k += 1) {
       const point = points[k];
-      if (!point.thrown) {
-        point.tau = 0;
-        continue;
-      }
-      let shown = Math.max(0, time - smoothedOnset(points, start, end, k));
-      const toShoulder = Math.min(
-        first.thrown ? Infinity : point.sigma - first.sigma,
-        last.thrown ? Infinity : last.sigma - point.sigma,
-      );
-      if (toShoulder < CLOCK.endTaper) shown = (shown * toShoulder) / CLOCK.endTaper;
+      const shown = Math.max(0, time - smoothedOnset(points, start, end, k));
       if (shown < point.tau) pauses += 1;
       else point.tau = shown;
     }
@@ -67,7 +46,7 @@ export function advanceClocks(points: FrontPoint[], time: number, dt: number): n
   return pauses;
 }
 
-/** Point k's onset from a biweight-weighted line through the broken onsets of points[start, end) near it. */
+/** Point k's onset from a biweight-weighted line through the onsets of points[start, end) near it. */
 function smoothedOnset(points: readonly FrontPoint[], start: number, end: number, k: number): number {
   const centre = points[k].sigma;
   let s0 = 0;
@@ -81,7 +60,6 @@ function smoothedOnset(points: readonly FrontPoint[], start: number, end: number
   while (from > start && centre - points[from - 1].sigma < RADIUS) from -= 1;
   for (let j = from; j < end && points[j].sigma - centre < RADIUS; j += 1) {
     const other = points[j];
-    if (!other.thrown) continue;
     const d = other.sigma - centre;
     const u = d / RADIUS;
     const w = (1 - u * u) * (1 - u * u);
