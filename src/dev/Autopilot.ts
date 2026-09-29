@@ -47,6 +47,8 @@ export interface AutopilotOptions {
   style?: 'line' | 'turns';
   /** Standing, end the ride when the board crawls (STALL for STALL_TIME); false leaves the end to the caller's ride analyzer. */
   stall?: boolean;
+  /** Riding S-turns, the longest a turn is held, s (TURN_LIMIT by default). */
+  turnLimit?: number;
 }
 
 export type AutopilotState = 'position' | 'wait' | 'go' | 'ride' | 'done';
@@ -138,6 +140,7 @@ export class Autopilot {
   private clock = 0;
   private stalled = 0;
   private readonly stall: boolean;
+  private readonly turnLimit: number;
   /** The open face the gauge last showed this attempt (away from the curl), 0 before it has shown one. */
   private seenFace = 0;
   /** The open face the latest attempt saw: a paddler turns only about 7°/s, so waiting it points that way already. */
@@ -165,6 +168,7 @@ export class Autopilot {
     this.giveUp = options.giveUp ?? 8;
     this.style = options.style ?? 'line';
     this.stall = options.stall ?? true;
+    this.turnLimit = options.turnLimit ?? TURN_LIMIT;
   }
 
   /** End the ride from outside (the ride analyzer's end). */
@@ -293,8 +297,8 @@ export class Autopilot {
       this.turnHeading = heading;
       const angle = this.turnFace * wrap(heading - this.travel);
       const done = this.turn === 'bottom' ? angle > BOTTOM_END : this.turn === 'top' ? angle < TOP_END : angle < CUTBACK_END;
-      if (!done && this.turnTime > TURN_LIMIT) this.blocked = this.turn;
-      if (done || this.turnTime > TURN_LIMIT) this.closeTurn(done, view.ride.speed);
+      if (!done && this.turnTime > this.turnLimit) this.blocked = this.turn;
+      if (done || this.turnTime > this.turnLimit) this.closeTurn(done, view.ride.speed);
     }
     if (!this.turn && wave.valid) {
       const angle = open * wrap(heading - this.travel);
