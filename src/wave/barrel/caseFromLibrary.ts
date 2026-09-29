@@ -10,14 +10,26 @@ export interface LibraryFrame {
   flags: string[];
   /** The crest's height above still water, h0. */
   H: number;
-  /** PROFILE_POINTS (x, y) pairs, h0. */
-  profile: [number, number][];
+  /** PROFILE_POINTS (x, y) pairs, h0; null where the resampling failed. */
+  profile: [number, number][] | null;
 }
 
 /** A whole `library.py` output: the run's parameters and its frames. */
 export interface LibraryJson {
   run: { level: number; dx_h0: number; slope: number; A0: number; h0_m: number; time_scale_s: number; t_vertical: number; t_impact: number };
   frames: LibraryFrame[];
+}
+
+const RUN_FIELDS = ['level', 'dx_h0', 'slope', 'A0', 'h0_m', 'time_scale_s', 't_vertical', 't_impact'] as const;
+
+/**
+ * library.py writes the run's fields at the top level (and `run` as its directory); the repo's samples
+ * (export_sample.py) nest them under `run`. Either, as LibraryJson.
+ */
+export function libraryJson(raw: Record<string, unknown>): LibraryJson {
+  if (typeof raw.run === 'object' && raw.run !== null) return raw as unknown as LibraryJson;
+  const run = Object.fromEntries(RUN_FIELDS.map((field) => [field, raw[field]])) as LibraryJson['run'];
+  return { run, frames: raw.frames as LibraryFrame[] };
 }
 
 /**
@@ -29,7 +41,13 @@ export interface LibraryJson {
 export function caseFromLibrary(json: LibraryJson, id: string, flatDepth: number): { barrel: BarrelCase; refilled: number } {
   const firstPost = json.frames.findIndex((frame) => frame.phase === 'post');
   const kept = json.frames.slice(0, firstPost < 0 ? json.frames.length : firstPost + 1);
-  const clean = kept.map((frame) => frame.flags.length === 0);
+  const step = kept.length > 1 ? kept[1].tau - kept[0].tau : 1;
+  kept.forEach((frame, i) => {
+    // Frames before library.py's TMIN come at the coarse output interval; the case needs one step throughout.
+    if (Math.abs(frame.tau - kept[0].tau - i * step) > 0.01 * step) throw new Error(`${id}: frame ${i} breaks the τ step ${step}; pass library.py the fine output's start`);
+  });
+  const clean = kept.map((frame) => frame.flags.length === 0 && frame.profile !== null);
+  if (!clean.some(Boolean)) throw new Error(`${id}: no frame up to touchdown passed its landmark checks`);
   const nearestClean = (i: number, step: 1 | -1) => {
     for (let j = i + step; j >= 0 && j < kept.length; j += step) if (clean[j]) return j;
     return -1;
@@ -50,15 +68,14 @@ export function caseFromLibrary(json: LibraryJson, id: string, flatDepth: number
       t = a === b ? 0 : (i - a) / (b - a);
     }
     for (let p = 0; p < PROFILE_POINTS; p += 1) {
-      const [xa, ya] = kept[a].profile[p];
-      const [xb, yb] = kept[b].profile[p];
+      const [xa, ya] = kept[a].profile![p];
+      const [xb, yb] = kept[b].profile![p];
       frames[i * floats + 2 * p] = xa + t * (xb - xa);
       frames[i * floats + 2 * p + 1] = ya + t * (yb - ya);
     }
   }
   // The crest at τ = 0, linear between the two frames either side, as ProfileLibrary reads them.
-  const tauStep = kept.length > 1 ? kept[1].tau - kept[0].tau : 1;
-  const position = Math.min(kept.length - 1, Math.max(0, (0 - kept[0].tau) / tauStep));
+  const position = Math.min(kept.length - 1, Math.max(0, (0 - kept[0].tau) / step));
   const f = Math.floor(position);
   const next = Math.min(kept.length - 1, f + 1);
   const crestAt = (frame: number) => frames[frame * floats + 2 * LANDMARK.crest];
@@ -72,7 +89,7 @@ export function caseFromLibrary(json: LibraryJson, id: string, flatDepth: number
       nonlinearity: json.run.A0,
       flatDepth,
       breakerHeight: lastOpen.H,
-      tauStep,
+      tauStep: step,
       tauStart: kept[0].tau,
       touchdown: json.run.t_impact - json.run.t_vertical,
       frames,

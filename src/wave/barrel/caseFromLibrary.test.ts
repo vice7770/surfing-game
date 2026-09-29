@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { caseFromLibrary, type LibraryJson } from './caseFromLibrary';
+import { caseFromLibrary, libraryJson, type LibraryJson } from './caseFromLibrary';
 import { LANDMARK, PROFILE_POINTS } from './ProfileLibrary';
 
 // Round 6's Padang Padang sample: level 11 on the 1:24.8 wedge, every second output from τ = −0.6 to 3.0.
@@ -36,5 +36,16 @@ describe('a Basilisk library as a barrel case', () => {
     const kept = sample.frames.slice(0, count);
     expect(refilled).toBe(kept.filter((frame) => frame.flags.length > 0).length);
     expect(barrel.frames.every((v) => Number.isFinite(v))).toBe(true);
+  });
+
+  it('reads library.py’s own layout, the run’s fields at the top level', () => {
+    const flat = { ...sample.run, run: 'tools/basilisk/runs/pad19_L11', frames: sample.frames };
+    expect(caseFromLibrary(libraryJson(flat), 'padang-ray-l11', 0.1785714).barrel).toEqual(barrel);
+    expect(libraryJson(sample as unknown as Record<string, unknown>)).toBe(sample);
+  });
+
+  it('refuses frames off the τ step, as a run analysed without its fine output’s start gives', () => {
+    const coarse = { ...sample, frames: [{ ...sample.frames[0], tau: sample.frames[0].tau - 1 }, ...sample.frames] };
+    expect(() => caseFromLibrary(coarse, 'coarse', 0.1785714)).toThrow(/τ step/);
   });
 });
