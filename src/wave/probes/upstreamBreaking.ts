@@ -13,8 +13,12 @@ const BREAKING_DEPTH = 0.05;
 const MAX_EDDY = 0.3;
 const COS_45 = Math.SQRT1_2;
 
-/** Swap the method in; `all` keeps every neighbour, as the solver's own does (to check the copy). */
-export function inheritOnlyFromUpstream(mode: 'upstream' | 'all' = 'upstream'): void {
+/**
+ * Swap the method in. `upstream` inherits from the neighbour the cell's flux points from, within 45°; `across` inherits
+ * from both neighbours on the axis nearer the flux's (the crest's normal, either sign), never the two along the crest;
+ * `all` keeps every neighbour, as the solver's own does (to check the copy).
+ */
+export function inheritOnlyFromUpstream(mode: 'upstream' | 'across' | 'all' = 'upstream'): void {
   const cos = mode === 'all' ? -Infinity : COS_45;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (BoussinesqSolver.prototype as any).breakingTerms = function breakingTerms(this: any, dt: number): void {
@@ -44,8 +48,21 @@ export function inheritOnlyFromUpstream(mode: 'upstream' | 'all' = 'upstream'): 
         let inherited = strength[i] > 0 ? age[i] : 0;
         const flux = Math.hypot(P[i], Q[i]);
         {
-          const px = flux > 0 ? P[i] / flux : 0;
-          const pz = flux > 0 ? Q[i] / flux : 0;
+          let px = flux > 0 ? P[i] / flux : 0;
+          let pz = flux > 0 ? Q[i] / flux : 0;
+          if (mode === 'across') {
+            // Sign-free: the axis nearer the flux takes both its neighbours; still water keeps all four.
+            const alongX = flux === 0 || Math.abs(px) >= Math.abs(pz);
+            const alongZ = flux === 0 || Math.abs(pz) >= Math.abs(px);
+            px = alongX ? 1 : 0;
+            pz = alongZ ? 1 : 0;
+            if (px && ix > 0 && strength[i - 1] > 0) inherited = Math.max(inherited, age[i - 1]);
+            if (px && ix < nx - 1 && strength[i + 1] > 0) inherited = Math.max(inherited, age[i + 1]);
+            if (pz && iz > 0 && strength[i - nx] > 0) inherited = Math.max(inherited, age[i - nx]);
+            if (pz && iz < nz - 1 && strength[i + nx] > 0) inherited = Math.max(inherited, age[i + nx]);
+            px = 0;
+            pz = 0;
+          }
           if (ix > 0 && strength[i - 1] > 0 && px >= cos) inherited = Math.max(inherited, age[i - 1]);
           if (ix < nx - 1 && strength[i + 1] > 0 && -px >= cos) inherited = Math.max(inherited, age[i + 1]);
           if (iz > 0 && strength[i - nx] > 0 && pz >= cos) inherited = Math.max(inherited, age[i - nx]);

@@ -11,7 +11,7 @@ import { breakerDepthFor } from '../Breaking';
 import { edgeHeight } from '../SurfZoneSimulation';
 
 it.skipIf(!process.env.PROBE)('probes Padang Padang’s peel', () => {
-  if (process.env.INHERIT === 'upstream') inheritOnlyFromUpstream();
+  if (process.env.INHERIT === 'upstream' || process.env.INHERIT === 'across') inheritOnlyFromUpstream(process.env.INHERIT);
   for (const pair of (process.env.PADANG ?? '').split(',').filter(Boolean)) {
     const [key, value] = pair.split('=');
     (PADANG as Record<string, number>)[key] = Number(value);
