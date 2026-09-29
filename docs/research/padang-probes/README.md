@@ -14,7 +14,9 @@ Raw output of the probes in `src/wave/probes/`, run in a cloud session on the br
 | `crest-d0a55.txt` | `padangCrest` | crest line 55°, peak z −150, swell 0° | the rotated frame's crests, t 60–130 s |
 | `peel-d0a55.txt` | `padangPeel` | crest line 55°, peak z −150, swell 0° | predicted 11.8 m/s; measured 19–49 m/s, with 9.9–11.5 m/s (α 30–35°) at t 176–192 s |
 | `peel-d0a55-nofeed.txt` | `padangPeel` | as above, side feed off | 15–27 m/s over the first periods; stopped at 112 s |
+| `wedge-b45.txt` | `padangPeel` (local, M1) | ramp-and-wedge bed (952ec39), β 45°, peak z −170, swell 0° | onsets all on the wedge; break depth 1.7–2.5 m at the peak rising to 3.7–4.4 m by x 20 then level; 15–72 m/s after 144 s (predicted 10.6), one period on target (11.2 m/s, 31°); crest tops at the base within about ±30 %, the peak lowest |
+| `wedge-b35.txt` | `padangPeel` (local, M1) | as above, β 35°, peak z −140 | the same pattern: 21–65 m/s after 144 s (predicted 13.4) |
 
-Peel lines read: time, the meter's estimate (V, α, the onset line's dz/dx, fit, columns, direction), then for every tenth column `x:onset time relative to now s@onset z`.
+Peel lines read: time, the meter's estimate (V, α, the onset line's dz/dx, fit, columns, direction), then for every tenth column `x:onset time relative to now s@onset z`; the wedge runs add the still depth at onset, W on the wedge or R on the ramp ahead of it, and each reef column's highest crest over the period at the wedge's base.
 
 Rerun any of them with `PROBE=1 LOG=<file> [PADANG=key=value,...] [DIRECTION=…] [SPREADING=…] [HS=…] [NOFEED=1] npx vitest run src/wave/probes/<probe>`.
