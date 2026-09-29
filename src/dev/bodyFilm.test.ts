@@ -518,6 +518,17 @@ describe('the paddler and the swimmer (step 8)', () => {
     expect(board.pitch).toBeGreaterThan(10);
     expect(board.pitch).toBeLessThan(14.6);
   }, 240_000);
+  const swimming = (rate: number): BodyFilm => {
+    const swim = filmBody(scenario('swimming'), { rate, drawer: trackDrawer, pose: posed() });
+    return { rate, frames: swim.frames.filter((frame) => frame.time >= 4) };
+  };
+
+  it('swims facing the water', () => {
+    // It lay on its side or face up, wherever its spine leaned (from face up at −157° to its other side at +86°).
+    const roll = swimRoll(swimming(60));
+    expect(Math.abs(roll.mean)).toBeLessThan(10);
+  }, 240_000);
+
   // Its length is short: 73 cm. The physics' hand enters 0.7 m from the drawn shoulder and leaves as far behind it,
   // past the drawn arm's reach, so the drawn hand stops short at both ends. Real paddlers reach with the shoulder and
   // roll with the board (27–45° a stroke, Nessler et al. 2019; the physics rolls it 7°): a question for the physics

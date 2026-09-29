@@ -147,6 +147,48 @@ describe('humanoid rig', () => {
     }
   });
 
+  // The riding body, step 8: the fallen body faced its heading made square to its spine, which vanishes as the spine
+  // lies along the heading. A swimmer lying flat faced wherever its spine leaned: on its side, or up.
+  describe('the fallen body\'s facing', () => {
+    /** A fallen body heading +z, its spine `rise` rad up from level and leaning `lean` m to its left at the head. */
+    const fallen = (rise: number, lean: number) => {
+      const state = createRiderVisualState();
+      state.phase = 'fallen';
+      state.heading = 0;
+      const spine = new Vector3(0, Math.sin(rise), Math.cos(rise));
+      state.points[POINT.pelvis].set(0, 0, 0);
+      state.points[POINT.torso].copy(spine).multiplyScalar(0.3).setX(lean / 2);
+      state.points[POINT.head].copy(spine).multiplyScalar(0.6).setX(lean);
+      state.points[POINT.leftHand].set(0.3, 0, 0).addScaledVector(spine, 0.3);
+      state.points[POINT.rightHand].set(-0.3, 0, 0).addScaledVector(spine, 0.3);
+      state.points[POINT.leftFoot].set(0.1, 0, 0).addScaledVector(spine, -0.4);
+      state.points[POINT.rightFoot].set(-0.1, 0, 0).addScaledVector(spine, -0.4);
+      return state;
+    };
+
+    it('faces the water lying flat, and its heading upright', () => {
+      const { bones } = createTestHumanoid();
+      const rig = new HumanoidRig(bones);
+      for (const lean of [-0.2, 0, 0.2]) {
+        rig.solve(fallen(0.05, lean));
+        expect(rig.facing.y, `lying, leaning ${lean} m`).toBeLessThan(-0.9);
+      }
+      rig.solve(fallen(Math.PI / 2 - 0.05, 0.05));
+      expect(rig.facing.z).toBeGreaterThan(0.9);
+    });
+
+    it('turns smoothly from one to the other as the spine rises', () => {
+      const { bones } = createTestHumanoid();
+      const rig = new HumanoidRig(bones);
+      let last: Vector3 | undefined;
+      for (let degrees = -10; degrees <= 90; degrees += 1) {
+        rig.solve(fallen((degrees * Math.PI) / 180, 0.1));
+        if (last) expect((rig.facing.angleTo(last) * 180) / Math.PI, `at ${degrees}°`).toBeLessThan(3);
+        last = rig.facing.clone();
+      }
+    });
+  });
+
   // The wipeout spec: the duck-dive and the swimmer, posed in code on the physics' points.
   describe('duck-dive and swimming', () => {
     /** The visual state of a rider duck-diving on flat water for `seconds`. */

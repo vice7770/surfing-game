@@ -443,7 +443,16 @@ export class HumanoidRig {
       this.scratch.subVectors(p[POINT.leftFoot], p[POINT.rightFoot]);
       forward.crossVectors(this.scratch, up);
     } else if (lying) forward.copy(boardUp).negate();
-    else forward.set(Math.sin(state.heading), 0, Math.cos(state.heading));
+    else {
+      // Fallen: the heading square to the spine, as far as the spine rises, and the water's down square to it. Upright
+      // the heading leads, lying flat or diving the down: a swimmer faces the water (step 8: the heading alone vanished
+      // as the spine lay along it, and the swimmer faced wherever its spine leaned, on its side or up). Rising in the
+      // heading's plane the two agree, so neither cancels the other.
+      const rise = Math.max(0, up.y);
+      forward.set(Math.sin(state.heading), 0, Math.cos(state.heading));
+      forward.addScaledVector(up, -forward.dot(up)).multiplyScalar(rise);
+      forward.add(this.scratch.set(0, -1, 0).addScaledVector(up, up.y));
+    }
     this.perpendicular(forward, up);
     left.crossVectors(up, forward).normalize();
     this.back = state.phase === 'standing' ? state.standingBlend * weightBack(state) : 0;
