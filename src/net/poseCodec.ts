@@ -11,9 +11,9 @@
  * | 4 | i16 ×2 board x, z (cm) |
  * | 8 | i16 lift above the owner's water (mm) |
  * | 10 | i16 ×4 quaternion ×32767 |
- * | 18 | i16 ×21 rider points relative to the board (cm) |
+ * | 18 | i16 ×21 rider points relative to the board: mm with flag 64, else cm (the bots' recorded tracks, and a swimmer beyond 32 m of a lost board) |
  * | 60 | u8 phase (255 = no rider) |
- * | 61 | u8 flags: 1 rider present, 2 board present, 4 paddling, 8 leash snapped, 16 duck-diving, 32 diving (the wipeout spec; older readers ignore them) |
+ * | 61 | u8 flags: 1 rider present, 2 board present, 4 paddling, 8 leash snapped, 16 duck-diving, 32 diving (the wipeout spec; older readers ignore them), 64 the points in mm (the riding-body plan, step 7: centimetres tilted a drawn chest 1.7° a step) |
  * | 62 | i16 heading ×10000 |
  * | 64 | i16 ×2 reaction point x, z (cm) |
  * | 68 | f32 ×2 reaction impulse x, z (N·s) |
@@ -54,6 +54,9 @@ const FLAG_PADDLING = 4;
 const FLAG_LEASH_SNAPPED = 8;
 const FLAG_DUCKING = 16;
 const FLAG_DIVING = 32;
+const FLAG_MILLIMETRES = 64;
+/** Beyond this from the board, m, a point does not fit millimetres in an i16: the pose's points go in centimetres. */
+const MILLIMETRE_REACH = 32.767;
 const NO_RIDER = 255;
 
 export interface SurferPose {
@@ -105,10 +108,12 @@ export function encodePose(pose: SurferPose, view: DataView, offset: number): vo
   view.setInt16(offset + 12, i16((pose.qy / norm) * 32767), true);
   view.setInt16(offset + 14, i16((pose.qz / norm) * 32767), true);
   view.setInt16(offset + 16, i16((pose.qw / norm) * 32767), true);
-  for (let i = 0; i < 21; i += 1) view.setInt16(offset + 18 + i * 2, i16(pose.points[i] * 100), true);
+  const near = pose.points.every((value) => Math.abs(value) <= MILLIMETRE_REACH);
+  const scale = near ? 1000 : 100;
+  for (let i = 0; i < 21; i += 1) view.setInt16(offset + 18 + i * 2, i16(pose.points[i] * scale), true);
   view.setUint8(offset + 60, pose.phase >= 0 && pose.phase < NO_RIDER ? Math.round(pose.phase) : NO_RIDER);
   view.setUint8(offset + 61, (pose.present ? FLAG_PRESENT : 0) | (pose.boardPresent ? FLAG_BOARD : 0) | (pose.paddling ? FLAG_PADDLING : 0)
-    | (pose.leashSnapped ? FLAG_LEASH_SNAPPED : 0) | (pose.ducking ? FLAG_DUCKING : 0) | (pose.diving ? FLAG_DIVING : 0));
+    | (pose.leashSnapped ? FLAG_LEASH_SNAPPED : 0) | (pose.ducking ? FLAG_DUCKING : 0) | (pose.diving ? FLAG_DIVING : 0) | (near ? FLAG_MILLIMETRES : 0));
   view.setInt16(offset + 62, i16(pose.heading * 10000), true);
   view.setInt16(offset + 64, i16(pose.reaction.x * 100), true);
   view.setInt16(offset + 66, i16(pose.reaction.z * 100), true);
@@ -125,10 +130,11 @@ export function decodePose(view: DataView, offset: number, out: SurferPose): Sur
   out.qy = view.getInt16(offset + 12, true) / 32767;
   out.qz = view.getInt16(offset + 14, true) / 32767;
   out.qw = view.getInt16(offset + 16, true) / 32767;
-  for (let i = 0; i < 21; i += 1) out.points[i] = view.getInt16(offset + 18 + i * 2, true) / 100;
   const phase = view.getUint8(offset + 60);
   out.phase = phase === NO_RIDER ? -1 : phase;
   const flags = view.getUint8(offset + 61);
+  const scale = (flags & FLAG_MILLIMETRES) !== 0 ? 1000 : 100;
+  for (let i = 0; i < 21; i += 1) out.points[i] = view.getInt16(offset + 18 + i * 2, true) / scale;
   out.present = (flags & FLAG_PRESENT) !== 0;
   out.boardPresent = (flags & FLAG_BOARD) !== 0;
   out.paddling = (flags & FLAG_PADDLING) !== 0;

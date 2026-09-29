@@ -1,10 +1,15 @@
 import { Quaternion, Vector3 } from 'three';
 import { SnapshotTrack } from '../game/snapshotTrack';
+import { INTERPOLATION_DELAY, RemoteSurfers, createRemoteState } from '../net/RemoteSurfers';
+import { OwnPoseTracker } from '../net/ownPose';
+import { POSE_BYTES, createPose, encodeBundle, encodePose } from '../net/poseCodec';
+import { POSE_HZ } from '../net/protocol';
 import { PlaneWater } from '../physics/PlaneWater';
 import type { WaterSample } from '../physics/SurfWater';
 import { RideSession, type RideInput, type RiderPlacement } from '../physics/RideSession';
 import type { SurfWater } from '../physics/SurfWater';
 import { HumanoidRig } from '../scene/rig/HumanoidRig';
+import { remoteBoardPose, remoteRiderState } from '../scene/RemoteSurferViews';
 import { PosedBody, type PosedBodyOptions } from '../scene/rig/posedBody';
 import { BONES, type Side } from '../scene/rig/humanoidBones';
 import { RiderMotion } from '../scene/rig/riderMotion';
@@ -468,6 +473,12 @@ export interface FilmSnapshot {
   board: Float64Array;
 }
 
+/** What a drawer may read of the film: the water's surface (another player's board is floated on it), and whether the rider paddles. */
+export interface FilmContext {
+  surfaceAt(x: number, z: number): number;
+  paddling(): boolean;
+}
+
 /** The page's drawing of the rider from delivered snapshots, one display frame at a time. */
 export interface FilmDrawer {
   /** A snapshot arrives from the physics. */
@@ -486,6 +497,48 @@ export function latestDrawer(): FilmDrawer {
 }
 
 /** The page's local rider since the smoothing layer: drawn between snapshots on the simulated clock (`SnapshotTrack`). */
+/**
+ * Another player's surfer (step 7): the snapshots sent as the game sends its own
+ * pose (`OwnPoseTracker`, every 1/`POSE_HZ` s of sea time), through the pose
+ * codec (float32 points) and the real `RemoteSurfers`, sampled
+ * `INTERPOLATION_DELAY` in the past on the room's clock, and rebuilt by
+ * `RemoteSurferViews`' own code on the same water.
+ */
+export function remoteDrawer(context: FilmContext): FilmDrawer {
+  const id = 1;
+  const remotes = new RemoteSurfers();
+  remotes.join({ id, name: 'film', look: { body: 'surfer1', outfit: 'fullsuit', color: 'blue', board: 'classic' } });
+  const tracker = new OwnPoseTracker();
+  const pose = createPose();
+  const bytes = new Uint8Array(POSE_BYTES);
+  const remote = createRemoteState();
+  const drawn = createRiderVisualState();
+  const rider = new Float64Array(RIDER_SNAPSHOT.length);
+  const board = new Float64Array(8);
+  let nextSend = Number.NEGATIVE_INFINITY;
+  let clock = Number.NaN;
+  return {
+    deliver(snapshot) {
+      if (Number.isNaN(clock)) clock = snapshot.seaTime;
+      if (snapshot.seaTime + 1e-9 < nextSend) return;
+      nextSend = snapshot.seaTime + 1 / POSE_HZ;
+      tracker.write(snapshot, context.surfaceAt, snapshot.seaTime, context.paddling(), pose);
+      encodePose(pose, new DataView(bytes.buffer), 0);
+      const bundle = encodeBundle([{ id, pose: bytes }]);
+      remotes.receiveBundle(bundle.buffer.slice(bundle.byteOffset, bundle.byteOffset + bundle.byteLength) as ArrayBuffer, 0, []);
+    },
+    frame(dt) {
+      if (Number.isNaN(clock)) return undefined;
+      clock += dt;
+      const time = clock - INTERPOLATION_DELAY;
+      if (!remotes.sample(id, time, remote) || !remote.present) return undefined;
+      remoteBoardPose(remote, context.surfaceAt, board);
+      remoteRiderState(remote, board, rider, drawn);
+      return { rider, board, time };
+    },
+  };
+}
+
 export function trackDrawer(): FilmDrawer {
   const track = new SnapshotTrack();
   const rider = new Float64Array(RIDER_SNAPSHOT.length);
@@ -523,7 +576,7 @@ export interface FilmOptions {
   rate: number;
   /** Physics steps per delivered snapshot: 1, or 3 for a worker whose replies arrive late and batched. */
   delivery?: number;
-  drawer?: () => FilmDrawer;
+  drawer?: (context: FilmContext) => FilmDrawer;
   pose?: FilmPose;
 }
 
@@ -540,7 +593,8 @@ export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm
   const water: SurfWater = scenario.water === 'face' ? new PlaneWater({ slopeZ: -Math.tan(FACE) }) : scenario.water === 'chop' ? new ChopWater() : new PlaneWater();
   const session = new RideSession();
   session.place(scenario.placement, water);
-  const drawer = (options.drawer ?? latestDrawer)();
+  let paddling = false;
+  const drawer = (options.drawer ?? latestDrawer)({ surfaceAt: (x, z) => water.surfaceAt(x, z), paddling: () => paddling });
   const { bones } = createTestHumanoid();
   const pose = (options.pose ?? rigAlone)(bones);
   const rig = poseRig(bones);
@@ -553,7 +607,6 @@ export function filmBody(scenario: FilmScenario, options: FilmOptions): BodyFilm
   let steps = 0;
   let accumulator = 0;
   let pending = false;
-  let paddling = false;
   let last: { phase: number; points: Vector3[] } | undefined;
   const deliver = () => {
     const rider = new Float64Array(RIDER_SNAPSHOT.length);

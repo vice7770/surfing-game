@@ -12,6 +12,55 @@ import { SurferView } from './character/SurferView';
 import { RiderMotion } from './rig/riderMotion';
 import { POINT, createRiderVisualState, readRiderSnapshot, type RiderVisualState } from './rig/riderVisualState';
 
+const SHAPE = buildBoardShape();
+/** The tail plug in the board's frame, from its centre of mass (the pose's position), where the physics places it. */
+const PLUG = (() => {
+  const z = -SHAPE.length / 2 + 0.05;
+  const c = SHAPE.centerOfMass;
+  return new Vector3(-c.x, deckHeight(SHAPE, z) - c.y, z - c.z);
+})();
+const turn = new Quaternion();
+const plugAt = new Vector3();
+
+/** A remote pose's board pose (position, then quaternion x y z w, then 1) on this water, its height from `surfaceAt` (spec N1). */
+export function remoteBoardPose(state: RemoteState, surfaceAt: (x: number, z: number) => number, out: Float64Array): Float64Array {
+  out[0] = state.x;
+  out[1] = surfaceAt(state.x, state.z) + state.lift;
+  out[2] = state.z;
+  for (let i = 0; i < 4; i += 1) out[3 + i] = state.quaternion[i];
+  out[7] = 1;
+  return out;
+}
+
+/**
+ * The drawn rider of a remote pose on its board pose (`board`, from
+ * `remoteBoardPose`): the snapshot's rider array rebuilt in `rider` from what
+ * the pose carries, and read into `out` (spec N1; the body film's remote drawer
+ * uses the same). What is not sent is drawn as at rest: the breath is full.
+ */
+export function remoteRiderState(state: RemoteState, board: Float64Array, rider: Float64Array, out: RiderVisualState): RiderVisualState {
+  for (let i = 0; i < 21; i += 1) rider[RIDER_SNAPSHOT.points + i] = board[i % 3] + state.points[i];
+  rider[RIDER_SNAPSHOT.phase] = state.phase;
+  rider[RIDER_SNAPSHOT.present] = 1;
+  rider[RIDER_SNAPSHOT.heading] = state.heading;
+  // The wipeout spec: the duck-dive, the leash's plug and bits, and the swimmer, from the pose's flags.
+  const fallen = state.phase === RIDER_PHASES.indexOf('fallen');
+  rider[RIDER_SNAPSHOT.duck] = state.ducking ? 1 : 0;
+  // Another player's breath is not sent: drawn as full.
+  rider[RIDER_SNAPSHOT.breath] = 1;
+  turn.set(board[3], board[4], board[5], board[6]);
+  plugAt.copy(PLUG).applyQuaternion(turn);
+  plugAt.x += board[0];
+  plugAt.y += board[1];
+  plugAt.z += board[2];
+  plugAt.toArray(rider, RIDER_SNAPSHOT.plug);
+  rider[RIDER_SNAPSHOT.leash] = state.leashSnapped ? LEASH_BITS.snapped : LEASH_BITS.worn;
+  rider[RIDER_SNAPSHOT.swim] = fallen ? (state.diving ? SWIM_BITS.diving : state.paddling ? SWIM_BITS.stroking : 0) : 0;
+  readRiderSnapshot(rider, board, out);
+  out.stroking = state.paddling && out.phase === 'prone' ? 1 : 0;
+  return out;
+}
+
 /** The tag floats this far above the head, m. */
 const TAG_ABOVE_HEAD = 0.45;
 /** With no rider drawn, the tag floats this far above the board, m. */
@@ -49,15 +98,7 @@ function disposeMeshes(root: Group, geometries: boolean): void {
 export class RemoteSurferViews {
   readonly root = new Group();
   private readonly views = new Map<number, RemoteView>();
-  private readonly shape = buildBoardShape();
-  /** The tail plug in the board's frame, from its centre of mass (the pose's position), where the physics places it. */
-  private readonly plug = (() => {
-    const z = -this.shape.length / 2 + 0.05;
-    const c = this.shape.centerOfMass;
-    return new Vector3(-c.x, deckHeight(this.shape, z) - c.y, z - c.z);
-  })();
-  private readonly turn = new Quaternion();
-  private readonly scratch = new Vector3();
+  private readonly shape = SHAPE;
   private detail?: { lodDistance: number; textureCap: number };
 
   constructor(scene: Scene) {
@@ -122,10 +163,7 @@ export class RemoteSurferViews {
       return;
     }
     const { pose, rider } = view;
-    pose[0] = state.x;
-    pose[1] = surfaceAt(state.x, state.z) + state.lift;
-    pose[2] = state.z;
-    for (let i = 0; i < 4; i += 1) pose[3 + i] = state.quaternion[i];
+    remoteBoardPose(state, surfaceAt, pose);
     view.board.position.set(pose[0], pose[1], pose[2]);
     view.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
     view.surfer.group.visible = state.present;
@@ -134,22 +172,8 @@ export class RemoteSurferViews {
       view.motion.reset();
       return;
     }
-    for (let i = 0; i < 21; i += 1) rider[RIDER_SNAPSHOT.points + i] = pose[i % 3] + state.points[i];
-    rider[RIDER_SNAPSHOT.phase] = state.phase;
-    rider[RIDER_SNAPSHOT.present] = 1;
-    rider[RIDER_SNAPSHOT.heading] = state.heading;
-    // The wipeout spec: the duck-dive, the leash's plug and bits, and the swimmer, from the pose's flags.
-    const fallen = state.phase === RIDER_PHASES.indexOf('fallen');
-    rider[RIDER_SNAPSHOT.duck] = state.ducking ? 1 : 0;
-    // Another player's breath is not sent: drawn as full.
-    rider[RIDER_SNAPSHOT.breath] = 1;
-    this.turn.set(pose[3], pose[4], pose[5], pose[6]);
-    this.scratch.copy(this.plug).applyQuaternion(this.turn).add(view.board.position).toArray(rider, RIDER_SNAPSHOT.plug);
-    rider[RIDER_SNAPSHOT.leash] = state.leashSnapped ? LEASH_BITS.snapped : LEASH_BITS.worn;
-    rider[RIDER_SNAPSHOT.swim] = fallen ? (state.diving ? SWIM_BITS.diving : state.paddling ? SWIM_BITS.stroking : 0) : 0;
-    readRiderSnapshot(rider, pose, view.state);
+    remoteRiderState(state, pose, rider, view.state);
     view.motion.update(view.state, time);
-    view.state.stroking = state.paddling && view.state.phase === 'prone' ? 1 : 0;
     view.state.clock = performance.now() / 1000;
     view.surfer.update(view.state, camera);
     view.leash.update(view.state.points[POINT.rightFoot], view.state.leash.plug, { snapped: view.state.leash.snapped });

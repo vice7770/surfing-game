@@ -2,7 +2,7 @@ import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
 import {
-  ChopWater, FILM_JOINT, FILM_SCENARIOS, balanceCue, breathing, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, posed, repeatedFrames, rigAlone, shake, switchSpeeds,
+  ChopWater, FILM_JOINT, FILM_SCENARIOS, balanceCue, breathing, remoteDrawer, drawnLag, filmBody, handSwing, headSteadiness, kneeGive, posed, repeatedFrames, rigAlone, shake, switchSpeeds,
   switchSpikes, trackDrawer, unevenness, type BodyFilm, type FilmFrame,
 } from './bodyFilm';
 
@@ -361,6 +361,61 @@ describe('the balance cue on the drawn body (step 5; Patel et al. 2014, Objero e
       return most;
     };
     expect(jerk(3)).toBeLessThan(1.5 * jerk(1));
+  }, 240_000);
+});
+
+describe('another player\'s surfer (step 7)', () => {
+  it('draws the local body 0.1 s later from the poses the game sends (20 Hz, float32, sampled in the past)', () => {
+    const local = filmBody(scenario('straight'), { rate: 60, drawer: trackDrawer, pose: posed() });
+    const remote = filmBody(scenario('straight'), { rate: 60, drawer: remoteDrawer, pose: posed() });
+    // Six frames at 60 Hz: the remote draws INTERPOLATION_DELAY in the past. From 1 s, past the stance's blend-in.
+    let most = 0;
+    remote.frames.forEach((frame, i) => {
+      if (frame.time < 1 || i < 6) return;
+      frame.joints.forEach((joint, j) => { most = Math.max(most, joint.distanceTo(local.frames[i - 6].joints[j])); });
+    });
+    expect(most).toBeLessThan(0.02);
+  }, 240_000);
+
+  it('blends the switches out as the local body does', () => {
+    // The same films as the local body's. Across a phase switch, or where a point jumps (the reach's hand), the poses'
+    // 50 ms spread the jump into what the smoothing reads as motion: the sampler draws it at once, as the local track does.
+    for (const name of ['pop-up and landing', 'pop-up crouched', 'compress mid-turn, the hand reaching', 'a fall', 'pumping into a fall']) {
+      for (const rate of [60, 120]) {
+        const spikes = switchSpikes(filmBody(scenario(name), { rate, drawer: remoteDrawer, pose: posed() }));
+        expect(spikes.length).toBeGreaterThan(0);
+        for (const spike of spikes) {
+          expect(spike.rotationSpeed, `${name} at ${spike.time.toFixed(2)} s, ${rate} Hz`).toBeLessThan(6);
+          expect(spike.jointSpeed, `${name} at ${spike.time.toFixed(2)} s, ${rate} Hz`).toBeLessThan(2);
+        }
+      }
+    }
+  }, 240_000);
+
+  it('shows the balance and the breath from what is sent', () => {
+    // The balance: read back from the hands' spread, which the points carry.
+    const weave = balanceCue(filmBody(scenario('weave'), { rate: 60, drawer: remoteDrawer, pose: posed() }));
+    expect(weave.correlation).toBeGreaterThan(0.7);
+    expect(weave.slope).toBeGreaterThan(0.1);
+    // The breath: from the paddling the pose carries.
+    const paddle = filmBody(scenario('paddle then glide'), { rate: 30, drawer: remoteDrawer, pose: posed() });
+    expect(breathing({ rate: paddle.rate, frames: paddle.frames.filter((frame) => frame.time > 21) })).toBeGreaterThan(0.003);
+  }, 240_000);
+
+  it('rides no shakier than the local body', () => {
+    // At 20 poses a second, the points drawn on a cubic through the poses; the reach's jump drawn at once. Before, the
+    // chords' corners and the spread reach shook the compressed carve at 6.5° (4–30 Hz) against the local 3.1°.
+    for (const rate of [30, 120]) {
+      for (const name of ['straight', 'compress mid-turn, the hand reaching']) {
+        const shot = (drawer: typeof remoteDrawer | typeof trackDrawer) => {
+          const film = filmBody(scenario(name), { rate, drawer, pose: posed() });
+          return { rate: film.rate, frames: film.frames.filter((frame) => frame.time >= 0.5 && !frame.fallen) };
+        };
+        const [local, remote] = [shot(trackDrawer), shot(remoteDrawer)];
+        expect(shake(remote), `${name} at ${rate} Hz: the wobble band`).toBeLessThan(1.5 * shake(local) + 0.002);
+        expect(shake(remote, 4, 30), `${name} at ${rate} Hz: jitter`).toBeLessThan(1.5 * shake(local, 4, 30) + 0.002);
+      }
+    }
   }, 240_000);
 });
 

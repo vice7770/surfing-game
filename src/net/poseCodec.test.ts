@@ -29,7 +29,8 @@ describe('pose codec', () => {
     expect(back.lift).toBeCloseTo(pose.lift, 3);
     expect(back.qy).toBeCloseTo(pose.qy / norm, 4);
     expect(back.qw).toBeCloseTo(pose.qw / norm, 4);
-    for (let i = 0; i < 21; i += 1) expect(Math.abs(back.points[i] - pose.points[i])).toBeLessThanOrEqual(0.005 + 1e-9);
+    // Millimetres near the board (the riding-body plan, step 7: centimetres tilted a drawn chest 1.7° a step).
+    for (let i = 0; i < 21; i += 1) expect(Math.abs(back.points[i] - pose.points[i])).toBeLessThanOrEqual(0.0005 + 1e-9);
     expect(back).toMatchObject({ phase: 3, present: true, boardPresent: true, paddling: false });
     expect(back.heading).toBeCloseTo(-2.5, 3);
     expect(back.reaction.x).toBeCloseTo(-41.9, 2);
@@ -82,7 +83,26 @@ describe('pose flags (the wipeout spec)', () => {
     encodePose(pose, view, 0);
     const back = decodePose(view, 0, createPose());
     expect(back).toMatchObject({ leashSnapped: true, ducking: true, diving: false, present: true, boardPresent: true });
-    view.setUint8(61, view.getUint8(61) | 64);
+    view.setUint8(61, view.getUint8(61) | 128);
     expect(decodePose(view, 0, createPose())).toMatchObject({ leashSnapped: true, ducking: true, present: true });
   });
 });
+
+describe('the rider\'s points on the wire (the riding-body plan, step 7)', () => {
+  it('falls back to centimetres when a point is beyond the millimetres\' 32 m (a swimmer far from a lost board)', () => {
+    const pose = samplePose();
+    pose.points[0] = 40.123;
+    const back = roundTrip(pose);
+    expect(back.points[0]).toBeCloseTo(40.12, 2);
+    for (let i = 1; i < 21; i += 1) expect(Math.abs(back.points[i] - pose.points[i])).toBeLessThanOrEqual(0.005 + 1e-9);
+  });
+
+  it('reads a pose without the millimetres\' flag in centimetres (the bots\' recorded tracks)', () => {
+    const view = new DataView(new ArrayBuffer(POSE_BYTES));
+    for (let i = 0; i < 21; i += 1) view.setInt16(18 + i * 2, 100 + i, true);
+    view.setUint8(61, 1);
+    const back = decodePose(view, 0, createPose());
+    for (let i = 0; i < 21; i += 1) expect(back.points[i]).toBeCloseTo((100 + i) / 100, 6);
+  });
+});
+
