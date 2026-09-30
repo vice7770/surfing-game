@@ -25,7 +25,7 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 | [tubes.md](tubes.md) | Why the tube reads wrong, and the swept-surface fix |
 | [swept-barrel-build.md](swept-barrel-build.md) | Where the profiles come from and how to loft, seam and collide the barrel in real time |
 | [basilisk-profiles.md](basilisk-profiles.md) | The first Basilisk runs: validation against Pick & Feddersen, Padang Padang's first tube, library cost, the profile format |
-| [reef-ledge-runs.md](reef-ledge-runs.md) | The Reef's own ledge in Basilisk: a thick lip, but a solitary wave breaks on the flat, so the Reef needs periodic runs |
+| [reef-ledge-runs.md](reef-ledge-runs.md) | The Reef's own ledge in Basilisk, with periodic waves: the step, the thick lip and jet, the tube's time course, Padang's swell lag |
 | [padang-padang.md](padang-padang.md) and [padang-padang-build-sheet.md](padang-padang-build-sheet.md) | The break, and its sourced bed, bearings, tide, swell and wind |
 | [breaking.md](breaking.md) | Why the solver's face stays near 17°, the crest-speed trigger, the stop rule, directional spread |
 | [solver-stability.md](solver-stability.md) | Why the biggest Reef swells blow up, what published models do, and the options |

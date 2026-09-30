@@ -1,28 +1,36 @@
 # The Reef's ledge in Basilisk
 
-You asked (2026-09-30) for the Reef's own transect to be run, to source its provisional lip and tube. The runs work and resolve the lip, but a solitary wave doesn't break where the Reef does: it climbs the ledge whole and overturns on the reef flat. So they source the lip's thickness, not the jet or tube at the ledge. That needs periodic swell.
+You asked for the Reef's own transect, then for periodic waves. The periodic runs work. The second wave of a train breaks at the ledge top, into the trough the first one drained: the step. They source the Reef's thick lip and its jet, close to the game's provisional values, and they support the tube it draws. They also give Padang's lag for swell.
 
-*Basilisk 2D at level 11 (14 cm cells), on your M1 alongside other work, about 1.5 hours per case. The bed is the Reef's peak (`REEF` in `src/wave/Bathymetry.ts`) along the wave's path, from the 10 m shelf up the ledge to the 1.5 m reef flat, with a 3 m solitary wave that breaks at about the Big swell's height. The ledge climbs 1:2.29 across its crest line. The game's waves cross it obliquely, so the runs take 1:4.2 (the steepest crossing the Teahupo'o report measured) and 1:6 (near the game's median reading).*
+*Basilisk 2D, with a train of two cnoidal waves: 3 m at 14 s on the Reef's 10 m shelf, and 2.1 m at 16 s on Padang's 7 m foot. The second wave is the one studied. The runs use level 10 until it nears the break, then level 12 (12 cm cells) around it, giving 11–12 cells across the Reef's lip and 5.6 across Padang's. Each took about 2 hours on your M1, alongside other work.*
 
-![The Reef's ledge at 1:4.2 and 1:6: a 3 m solitary wave climbs the ledge unbroken and overturns on the flat, 18–21 m past the ledge top](img/reef-ledge-overturn.png)
+![The second wave of a train on the Reef's ledge at 1:4.2 and 1:6, and on Padang's wedge: the step drains, the face goes vertical at the ledge top, the lip flies 10–12 m and lands](img/periodic-plunges.png)
 
-| Along the path | Jet ÷ H² | Lip thickness | Tube ÷ H² | Tube length ÷ width | Tilt | Open, vertical to touchdown | Cells across the lip |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1:4.2 | 0.20 | 0.41 H | 0.085 | 1.74 | 48° | 0.80 s | 9 |
-| 1:6 | 0.17 | 0.28 H | 0.089 | 2.12 | 49° | 0.92 s | 6 |
-| The game today (provisional) | 0.44–0.47 | 0.5 H | 0.43 | 1.42 (held) | 23° |  |  |
+| Per breaking height H | Reef 1:4.2 | Reef 1:6 | The game's Reef (provisional) |
+| --- | --- | --- | --- |
+| Breaking height H | 2.9 m | 3.5 m |  |
+| Jet | 0.55 H² | 0.62 H² | 0.44–0.47 H² |
+| Lip thickness | 0.46 H | 0.41 H | 0.5 H |
+| Tube at 85 % of its flight: area, length ÷ width, tilt | 0.34 H², 1.48, 19° | 0.45 H², 1.80, 19° | 0.43 H², 1.42, 23° |
+| Tube just before the lip lands | 0.26 H², 3.3, 6° | 0.26 H², 4.0, 9° |  |
+| Open, face vertical to touchdown | 1.6 s | 1.8 s |  |
 
 ## What the runs show
 
-- **The wave breaks on the flat, not the ledge.** It goes vertical 18–21 m past the ledge top, and its lip lands on still water 1.5 m deep. Solitary waves don't break on slopes steeper than 12° ([Grilli et al. 1997](https://digitalcommons.uri.edu/oce_facpubs/207/)); 1:4.2 is 13.4°. The Reef, and the game's Reef, throw at the ledge into a drained trough, the step, which only periodic swell produces.
-- **The lip is thick:** 0.28–0.41 H, thicker on the steeper crossing. That supports the thick lip Shand describes at Teahupo'o ("about half the wave height"), though not yet as a measurement at the ledge.
-- **The tube is small and steep,** because the lip lands on the face about 1 m above still water, with no trough to fall into. Its length over width, 1.7–2.1, sits inside Blenkinsopp & Chaplin's lab reef (1.46–2.28) and the field's 1.70–3.15 at closure, both as quoted by [O'Dea et al. 2021](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2021GL093664).
-- **Level 11 resolves it:** 6–9 cells across the lip, where round 6 found about 6 enough. The level-9 test, at 1.6 cells, overstated the jet by half and the tube by 80 %.
-- **For the lip-jet source:** the jet is 8–9 % of the water above the trough within a tapered ±2H window, the window the predictor session now uses.
+- **The step is real, and it moves the break to the ledge.** The first wave's backwash drains the ledge to about 2 m below still level. The second wave's face steps where the backwash meets it, then goes vertical at the ledge top and throws its lip 10–12 m. A single solitary wave instead broke on the flat, 18–21 m past the top.
+- **The thick lip is sourced:** 0.41–0.46 H, near Shand's "about half the wave height".
+- **The jet is a little bigger than the game asks:** 0.55–0.62 H² against 0.47.
+  - It takes 57–64 % of the crest's top water within ±2H, while the lip-jet source lets a cell give at most 20 %.
+  - On main, 48–62 % of the Reef's throws already fall short at 0.47.
+- **The tube as drawn is supported.** It is round for most of its flight: 0.34–0.45 H² and 1.5–1.8 times as long as wide at 85 %. It flattens only as the lip lands (3.3–4.0). The swept barrel should take that time course from the profile library.
+- **Padang:**
+  - Jet 0.15 H², tilt 37° and length ÷ width 2.5, all near the plane-slope fits. Its tube is 0.18 H², half the fit, capped by the flat.
+  - Its lag for swell is 2.32 √(h0/g), about 2 s, 16 % under the solitary value. The Padang session now uses it.
+  - Two more Padang cases, a bigger and a smaller swell, are running to pin that table's ends.
 
 ## Your decisions
 
-1. **Periodic swell for the Reef (recommended).** Sourcing the Reef's jet and tube at the ledge needs a wave train with its trough, the step. That means a wavemaker or a periodic initial wave in Basilisk: your "periodic swell later", now needed here. My estimate is about a day of setup, then a few hours per case at level 11–12 on the M4 Pro. The same runs would give Padang's swept barrel its onset lag for swell; today it uses the solitary lag as an upper bound.
-2. **Until then, keep the Reef's provisional values** (jet 0.47 H², tube 0.43 H², tilt 23°, length over width 1.42). These runs don't break where the Reef does, so they can't replace them; the lip thickness is the one value they support.
+1. **The Reef's jet.** Recommended: raise it to about 0.55–0.6 H², now sourced. If you do, also let the lip-jet source take up to about 30 % of a cell's water on the Reef (from 20 %), or more throws will fall short.
+2. **The Reef's tube and lip.** Recommended: keep them. The provisional 0.43 H², 1.42 and 23°, and the 0.5 H lip, are supported by the runs.
 
-Scripts: `tools/basilisk/run_reef.sh`. Notes: [notes/round6-tube-profiles/reef-ledge.md](notes/round6-tube-profiles/reef-ledge.md).
+The solitary runs, their limits and every number are in [notes/round6-tube-profiles/reef-ledge.md](notes/round6-tube-profiles/reef-ledge.md) and [periodic-runs.md](notes/round6-tube-profiles/periodic-runs.md). The solitary runs' figure: [img/reef-ledge-overturn.png](img/reef-ledge-overturn.png). Scripts: `tools/basilisk/run_periodic.sh` and `analysis/plunge_measure.py`.

@@ -47,8 +47,12 @@ All settled on 2026-09-29: Rich foam, the roller, spray and mist, the peel meter
   - Its jet ask of 0.47 H² is provisional: a 0.5 H lip, from an article's description (Shand 2024), beyond Pick & Feddersen's fitted slopes. Their 0.27 H² is where the fit stops, not a physical cap.
   - At game size, the predictor session measured that the solver's crest supplies only part of it from above still level.
   - A Basilisk run on the Reef's own transect would source it, under the owner's tube rule.
-  - **Run on the M1, 2026-09-30** ([reef-ledge-runs.md](reef-ledge-runs.md)). The lip comes out 0.28–0.41 H thick, supporting a thick lip. But the solitary wave breaks on the flat, not the ledge, so the jet and tube at the ledge need periodic-wave runs; the provisional values stay until then.
-- **Periodic Basilisk runs (recommended to the owner, 2026-09-30):** needed for the Reef's jet and tube at the ledge ([reef-ledge-runs.md](reef-ledge-runs.md)) and for Padang's onset lag for swell. The swept barrel uses the solitary lag, 2.2–2.8 √(h0/g), as an upper bound until then.
+  - **Run on the M1, 2026-09-30** ([reef-ledge-runs.md](reef-ledge-runs.md)). The solitary wave broke on the flat, so the owner approved periodic runs.
+  - **Periodic runs (same day):** the second wave breaks at the ledge top into the step. Jet 0.55–0.62 H², lip 0.41–0.46 H; the tube is round through its flight (0.34–0.45 H² at 85 %) and flattens as the lip lands.
+  - **Open for the owner:** raise the jet ask to about 0.55–0.6 H², with the lip-jet source's cap raised to about 0.3 on the Reef; keep the tube and lip.
+- **Periodic Basilisk runs (approved and run, 2026-09-30):** the Reef results above.
+  - Padang's swell lag is 2.32 √(h0/g) at 16 s (the Padang session's table is scaled around it).
+  - Two more Padang cases (2.5 m at 18 s, 1.2 m at 14 s) are running to pin that table's ends.
 - **The lip-jet source (consult in flight):** the predictor session is measuring the upper-half crest window; see [consult-log.md](consult-log.md).
 - **Water colour:** checked against the journals. The builder uses the phytoplankton-only coefficients in [underwater-colour.md](underwater-colour.md).
 
