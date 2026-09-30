@@ -5,7 +5,7 @@ import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
-  FOAM_DECAY, OFFSHORE_DEPTH, SET_FINE_MARGIN, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight, solverStage, surfZoneSea, takeOffPoint,
+  FOAM_DECAY, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight, solverStage, surfZoneSea, takeOffPoint,
   tankDepth, tankLayout,
   windOnsetScale, type SurfZoneConfig,
 } from './SurfZoneSimulation';
@@ -27,14 +27,23 @@ const small: Omit<SurfZoneConfig, 'spot'> = {
 };
 
 describe('SurfZoneSimulation', () => {
-  it('feeds the tank\'s sides with the incoming sea, on the clock of a handed-over sea (wave sizes)', () => {
-    const simulation = new SurfZoneSimulation({ ...small, spot: 'point' });
+  it('feeds Padang Padang\'s sides with the incoming sea, on the clock of a handed-over sea (wave sizes)', () => {
+    expect(SIDE_FEED_SPOTS).toEqual(['padang']);
+    const simulation = new SurfZoneSimulation(small_(), 'warm');
     const feed = simulation.solver.relaxationZones.find((zone) => zone instanceof SideFeed) as SideFeed | undefined;
     expect(feed).toBeDefined();
-    const donor = new SurfZoneSimulation({ ...small, spot: 'point', startSeaTime: 500 });
+    const donor = new SurfZoneSimulation({ ...small_(), startSeaTime: 500 }, 'warm');
     const state = donor.exportState();
     simulation.importState(state);
     expect(feed!.timeOffset).toBe(state.seaTimeOffset);
+  });
+
+  // Every other spot keeps main's open sides until the feed's own rollout (the owner, 2026-09-30).
+  it('feeds no other spot\'s sides', () => {
+    for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
+      const simulation = new SurfZoneSimulation({ ...small, spot }, 'warm');
+      expect(simulation.solver.relaxationZones.some((zone) => zone instanceof SideFeed)).toBe(false);
+    }
   });
 
   it('takes the Reef\'s swell at its edge, like the Canyon\'s, until the Reef rework deepens it (wave sizes review)', () => {
@@ -321,12 +330,12 @@ describe('SurfZoneSimulation', () => {
     expect(dryChecked).toBeGreaterThan(5);
   });
 
-  it('finds the break line at the shoaled breaker depth, and seats the take-off where the sets break', () => {
+  it('finds the break line at the shoaled breaker depth', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'beach' });
     const point = simulation.breakPoint();
-    expect(simulation.breakerDepth()).toBeCloseTo(breakerDepthFor(edgeHeight(simulation.config), simulation.sea.depth), 12);
-    const sets = breakerDepthFor(edgeHeight(simulation.config), simulation.sea.depth, TAKE_OFF_INDEX.beach);
-    expect(tankDepth(simulation.spot, OFFSHORE_DEPTH.beach, point.x, point.z)).toBeCloseTo(sets, 1);
+    const depth = breakerDepthFor(edgeHeight(simulation.config), simulation.sea.depth);
+    expect(simulation.breakerDepth()).toBeCloseTo(depth, 12);
+    expect(tankDepth(simulation.spot, OFFSHORE_DEPTH.beach, point.x, point.z)).toBeCloseTo(depth, 1);
   });
 
   it('breaks waves in the surf zone, measures the peel and paints whitewater', () => {
@@ -858,19 +867,17 @@ describe('the tank sized to the swell (wave sizes)', () => {
     expect(tankLayout(config('point', 4, 6)).edgeDepth).toBeLessThanOrEqual(0.4 * (9.81 * 36) / (2 * Math.PI) + 1e-9);
   });
 
-  it('places every take-off by the spot\'s calibrated breaker index, small days too (the fed sea breaks further out)', () => {
+  it('places a big day\'s take-off by the spot\'s calibrated breaker index, and today\'s tanks as before', () => {
     const big: SurfZoneConfig = { ...small, spot: 'point', significantHeight: 3, peakPeriod: 14, alongShore: 160 };
     const tank = tankLayout(big);
     expect(tank.edgeDepth).toBeGreaterThan(OFFSHORE_DEPTH.point);
     const target = breakerDepthFor(edgeHeight(big, tank.edgeDepth), tank.edgeDepth + big.tide, TAKE_OFF_INDEX.point);
     const point = takeOffPoint(big);
     expect(tankDepth(createSpot('point', big.seed), tank.edgeDepth, point.x, point.z, tank)).toBeCloseTo(target, 0);
-    for (const spot of ['beach', 'point'] as const) {
-      const todays: SurfZoneConfig = { ...small, spot, alongShore: 160 };
-      expect(tankLayout(todays).edgeDepth).toBe(OFFSHORE_DEPTH[spot]);
-      expect(tankDepth(createSpot(spot, 1), OFFSHORE_DEPTH[spot], 0, takeOffPoint(todays).z))
-        .toBeCloseTo(breakerDepthFor(edgeHeight(todays), OFFSHORE_DEPTH[spot], TAKE_OFF_INDEX[spot]), 0);
-    }
+    const todays: SurfZoneConfig = { ...small, spot: 'point', alongShore: 160 };
+    expect(tankDepth(createSpot('point', 1), OFFSHORE_DEPTH.point, 0, takeOffPoint(todays).z))
+      .toBeCloseTo(breakerDepthFor(edgeHeight(todays), OFFSHORE_DEPTH.point), 0);
+    // Only a swell-sized tank uses the calibrated index.
     expect(Object.keys(TAKE_OFF_INDEX).sort()).toEqual(['beach', 'canyon', 'padang', 'point', 'reef']);
   });
 
