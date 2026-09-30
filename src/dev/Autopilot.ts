@@ -51,6 +51,11 @@ export interface AutopilotOptions {
   turnLimit?: number;
   /** Riding S-turns, the height on the face below which a bottom turn starts (BOTTOM_FACE by default). */
   bottomFace?: number;
+  /**
+   * Riding S-turns, ease off below this speed over ground, m/s: end the turn, stand and put the weight forward to
+   * run until EASE_RECOVER faster (0, the default, never).
+   */
+  easeBelow?: number;
 }
 
 export type AutopilotState = 'position' | 'wait' | 'go' | 'ride' | 'done';
@@ -115,6 +120,13 @@ const TURN_CROUCH = 0.6;
 const EXTEND_FROM = 60 * DEG;
 const TOP_TRIM = -0.5;
 const SNAP_TRIM = -1;
+/**
+ * Easing off (`easeBelow`): the body-lean study's falls came after the board slowed off the plane (4 m/s on, 3 off)
+ * while the rider still leaned into a turn or crouched. Easing off stands with the weight EASE_TRIM forward, and turns
+ * again once EASE_RECOVER m/s faster than it eased.
+ */
+const EASE_TRIM = 0.5;
+const EASE_RECOVER = 1;
 
 /**
  * A dev autopilot for the recorder and the ride report (spec P9 phase 0). It
@@ -144,6 +156,8 @@ export class Autopilot {
   private readonly stall: boolean;
   private readonly turnLimit: number;
   private readonly bottomFace: number;
+  private readonly easeBelow: number;
+  private easing = false;
   /** The open face the gauge last showed this attempt (away from the curl), 0 before it has shown one. */
   private seenFace = 0;
   /** The open face the latest attempt saw: a paddler turns only about 7°/s, so waiting it points that way already. */
@@ -173,6 +187,7 @@ export class Autopilot {
     this.stall = options.stall ?? true;
     this.turnLimit = options.turnLimit ?? TURN_LIMIT;
     this.bottomFace = options.bottomFace ?? BOTTOM_FACE;
+    this.easeBelow = options.easeBelow ?? 0;
   }
 
   /** End the ride from outside (the ride analyzer's end). */
@@ -188,6 +203,7 @@ export class Autopilot {
     this.lastHeading = Number.NaN;
     this.turn = undefined;
     this.blocked = undefined;
+    this.easing = false;
     this.phase = '';
     this.turnRecords.length = 0;
   }
@@ -295,6 +311,17 @@ export class Autopilot {
   private turns(view: AutopilotView, heading: number, dt: number): Pick<RideInput, 'steer' | 'trim' | 'crouch' | 'compress'> {
     const { wave } = view.ride;
     const open = this.openFace(view);
+    const speed = view.ride.speed;
+    if (this.easing ? speed < this.easeBelow + EASE_RECOVER : speed < this.easeBelow) {
+      this.easing = true;
+      if (this.turn) {
+        this.turnTime += dt;
+        this.closeTurn(false, speed);
+      }
+      this.phase = 'EASING OFF · WEIGHT FORWARD';
+      return { steer: 0, trim: EASE_TRIM, crouch: 0, compress: 0 };
+    }
+    this.easing = false;
     if (this.turn) {
       this.turnTime += dt;
       this.turnYaw += wrap(heading - this.turnHeading);

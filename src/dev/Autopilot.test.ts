@@ -226,6 +226,31 @@ describe('autopilot turns', () => {
     expect(autopilot.next(standing(20 * DEG, { faceFraction: 0.45 }), 1 / 60).steer).toBe(0);
   });
 
+  // The body-lean study: standing falls came after the board slowed off the plane while the rider still leaned into a
+  // turn. Easing off, it ends the turn and stands with its weight forward, and turns again once faster.
+  it('eases off below its speed: ends the turn, stands and runs with the weight forward, and turns again once faster', () => {
+    const autopilot = riding(20 * DEG, { style: 'turns', easeBelow: 4.5 });
+    const slow = (speed: number) => view({
+      board: { x: 0, z: -20, heading: 20 * DEG }, peelDirection: 1, ride: ride({ phase: 'standing', speed, wave: wave({ faceFraction: 0.2 }) }),
+    });
+    expect(autopilot.next(slow(6), 1 / 60).steer).toBe(1);
+    const eased = autopilot.next(slow(4), 1 / 60);
+    expect(eased).toMatchObject({ steer: 0, crouch: 0, compress: 0 });
+    expect(eased.trim).toBeGreaterThan(0);
+    expect(autopilot.phase).toBe('EASING OFF · WEIGHT FORWARD');
+    expect(autopilot.turnRecords.at(-1)).toMatchObject({ kind: 'bottom', completed: false });
+    // Not until a metre per second faster than it eased.
+    expect(autopilot.next(slow(5), 1 / 60).steer).toBe(0);
+    expect(autopilot.next(slow(5.6), 1 / 60).steer).toBe(1);
+  });
+
+  it('never eases off by default', () => {
+    const autopilot = turning(20 * DEG);
+    expect(autopilot.next(view({
+      board: { x: 0, z: -20, heading: 20 * DEG }, peelDirection: 1, ride: ride({ phase: 'standing', speed: 2, wave: wave({ faceFraction: 0.2 }) }),
+    }), 1 / 60).steer).toBe(1);
+  });
+
   // The recorder's overlay and log: what the rider is doing, and each turn's size, time and speed kept.
   it('names the phase it rides and records each turn: how far, how long, the speed kept, and whether it finished', () => {
     const autopilot = turning(20 * DEG);

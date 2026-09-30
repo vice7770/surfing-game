@@ -40,6 +40,8 @@ const option = (name: string): string | undefined => {
 const argument = (name: string, fallback: number): number => Number(option(name) ?? fallback);
 const flag = (name: string): boolean => process.argv.includes(`--${name}`);
 const seedCount = argument('seeds', 2);
+/** `--first-seed N` starts at seed N, so seeds can run in parallel processes. */
+const firstSeed = argument('first-seed', 1);
 const minutes = argument('minutes', 3);
 // Reshape the Reef for this run: `--reef angle=50,crestZ=-125` (the design sweep).
 applyReefShape(option('reef'));
@@ -55,10 +57,14 @@ const heightOverride = option('height');
 const reflex = flag('reflex');
 /** The autopilot's riding: a line along the face, or S-turns up and down it. */
 const style = option('style') === 'turns' ? 'turns' : 'line';
-/** Riding S-turns, `--bottom-face F` starts the bottom turn below F of the face, and `--turn-limit S` holds a turn up to S s. */
+/**
+ * Riding S-turns, `--bottom-face F` starts the bottom turn below F of the face, `--turn-limit S` holds a turn up to
+ * S s, and `--ease-below V` eases off below V m/s.
+ */
 const autopilotTurns = {
   ...(option('bottom-face') ? { bottomFace: Number(option('bottom-face')) } : {}),
   ...(option('turn-limit') ? { turnLimit: Number(option('turn-limit')) } : {}),
+  ...(option('ease-below') ? { easeBelow: Number(option('ease-below')) } : {}),
 };
 /** Ghost riders beside the runner's own: metres along shore from the break point (`--ghosts`, as in the catch report). */
 const ghostAlongs = flag('ghosts') ? [-45, -25, -12, 12, 25, 45] : [];
@@ -412,7 +418,7 @@ for (const spot of spots) {
   let lostWave = 0;
   const weights = new Map<string, number[]>();
   const feetShares = new Map<string, number[]>();
-  for (let seed = 1; seed <= seedCount; seed += 1) {
+  for (let seed = firstSeed; seed < firstSeed + seedCount; seed += 1) {
     const run = runSpot(spot, seed);
     all.push(...run.rides);
     attempts += run.attempts;
