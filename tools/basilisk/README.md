@@ -36,3 +36,13 @@ The owner asked for them (2026-09-30) to source the Reef's lip and tube, which a
 - **Level:** 11 by default. Each case uses one core.
 - **Where it has run:** on the owner's M1 on 2026-09-30, alongside other work. `LEVEL=12` or `13` refines it on the M4 Pro.
 - **Disk:** the Basilisk mirror takes about 2.8 GB in `~/basilisk-C`. On macOS its checkout reports errors outside `basilisk-source/src`, which doesn't matter here.
+- **What it found:** a solitary wave climbs the Reef's ledge unbroken and breaks on the flat, so it can't source the Reef's ledge plunge.
+
+## Periodic waves
+
+`tools/basilisk/run_periodic.sh` runs a train of cnoidal waves, so the wave studied, the second crest, breaks into the trough its predecessor leaves. The owner approved these runs on 2026-09-30. A level-9 test on the Reef's 1:4.2 ledge shows the step: the first wave's backwash drains the ledge to about 1.8 m below still level, and the second crest breaks at the ledge top.
+- **`periodic.c`:** `slope.c` with the solitary wave replaced by the train in `train.dat`, written by `analysis/cnoidal_train.py` (first-order cnoidal theory). It dumps `final` at the end, so a finer build can continue from it, and can keep its finest two levels inside a window (`XWIN0`, `XWIN1`).
+- **Two phases per case:** level 10 until the second crest nears the break, then level 12 inside a window around it.
+- **Cases:** `reef42`, `reef60` and `padang19`. Padang's gives the swept barrel its onset lag for swell.
+- **Commands:** `run`, `status` and `analyse`, optionally with case names. Set `PYTHON` to a Python with numpy, scipy and matplotlib.
+- **Overview figure:** `analysis/train_overview.py` draws a run's surface along the whole domain at chosen times.
