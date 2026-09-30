@@ -309,9 +309,18 @@ export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 
  * sets break and sets these so the take-off lands there (the wave-sizes spec). Today's tanks keep BREAKER_INDEX;
  * the Reef's is the Reef rework's to set. The Point's and the Beach's are fitted to their sets' measured breaks at
  * 14 s (Point Hs 2–4 m: 1.05–1.16; Beach Hs 2–3 m: 1.08–1.20), before the side feed; they are refitted after it.
- * Padang Padang's Small swell's take-off lands within 4 m of its sets' measured break at BREAKER_INDEX (the size report).
+ * Padang Padang's take-off follows PADANG_TAKE_OFF_INDEX instead.
  */
 export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.13, reef: BREAKER_INDEX, canyon: BREAKER_INDEX, padang: BREAKER_INDEX };
+
+/**
+ * Padang Padang's take-off index against the swell's height at its edge, m: on its wedge a bigger set breaks shallower
+ * for its height, so one index seated Practice's and Small's take-offs where their sets broke but left Medium's 23 m
+ * and Big's 89 m seaward of theirs. The size report's sets broke, at mid tide, where γ is 0.57, 0.70, 0.90 and 1.20
+ * for Practice, Small, Medium and Big (Hs at the edge 0.60, 1.18, 2.21 and 3.89 m): a least-squares line through
+ * them (provisional; refit when the sizes change).
+ */
+export const PADANG_TAKE_OFF_INDEX = { intercept: 0.47, perMetre: 0.19 } as const;
 
 /** Where a peak take-off waits along shore: at the Reef's or Padang Padang's own peak. */
 export function peakTakeOffX(spot: SpotName): number {
@@ -331,7 +340,10 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   const spot = createSpot(config.spot, config.seed);
   const tank = tankLayout(config);
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
-  const target = breakerDepthFor(edgeHeight(config, tank.edgeDepth), tank.edgeDepth + config.tide, deeper ? TAKE_OFF_INDEX[config.spot] : BREAKER_INDEX);
+  const height = edgeHeight(config, tank.edgeDepth);
+  const index = config.spot === 'padang' ? PADANG_TAKE_OFF_INDEX.intercept + PADANG_TAKE_OFF_INDEX.perMetre * height
+    : deeper ? TAKE_OFF_INDEX[config.spot] : BREAKER_INDEX;
+  const target = breakerDepthFor(height, tank.edgeDepth + config.tide, index);
   const breakZ = (x: number) => {
     // Scan the whole simulated bed from the relaxation zone inward.
     for (let z = tank.zoneInner; z < tank.shore; z += 0.5) {

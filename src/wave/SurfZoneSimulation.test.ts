@@ -46,8 +46,10 @@ describe('SurfZoneSimulation', () => {
     }
   });
 
-  it('takes the Reef\'s swell at its edge, like the Canyon\'s, until the Reef rework deepens it (wave sizes review)', () => {
-    expect(edgeHeight({ ...small, spot: 'reef', significantHeight: 3, peakPeriod: 18 })).toBe(3);
+  it('takes the Reef\'s buoy swell in deep water, shoaled to its 30 m edge, and the Canyon\'s at its edge', () => {
+    expect(edgeHeight({ ...small, spot: 'reef', significantHeight: 3, peakPeriod: 18 }, OFFSHORE_DEPTH.reef))
+      .toBeCloseTo(3 * shoalingCoefficient(18, OFFSHORE_DEPTH.reef + small.tide), 9);
+    expect(edgeHeight({ ...small, spot: 'canyon', significantHeight: 3, peakPeriod: 18 })).toBe(3);
   });
 
   it('keeps the water finite on the biggest swells the Reef and today\'s Point tank can be given (wave sizes review)', () => {
@@ -152,6 +154,23 @@ describe('SurfZoneSimulation', () => {
     expect(bed(point.z)).toBeGreaterThan(PADANG.crestDepth);
     expect(bed(point.z)).toBeLessThan(PADANG.baseDepth);
     expect(simulation.iribarren().type).toBe('plunging');
+  });
+
+  // The wave-sizes spec's Q11: the take-off follows the measured break (docs/research/size-report.md, seed 1, mid tide).
+  it('seats Padang Padang’s take-off within 15 m of where each swell’s sets broke in the size report', () => {
+    const measured = [
+      { swell: { ...PADANG_PRACTICE_SWELL, heightAt: 'edge' as const }, setBreakZ: -176 },
+      { swell: PADANG_SWELLS.small, setBreakZ: -194 },
+      { swell: PADANG_SWELLS.medium, setBreakZ: -216 },
+      { swell: PADANG_SWELLS.big, setBreakZ: -266 },
+    ];
+    for (const { swell, setBreakZ } of measured) {
+      const point = takeOffPoint({
+        ...small, seed: 1, spot: 'padang', alongShore: PADANG.alongShore, tide: 0, significantHeight: swell.significantHeight,
+        peakPeriod: swell.peakPeriod, ...('heightAt' in swell ? { heightAt: swell.heightAt } : {}),
+      });
+      expect(Math.abs(point.z - setBreakZ), `Hs ${swell.significantHeight} m`).toBeLessThanOrEqual(15);
+    }
   });
 
   // Review Focus 5.
@@ -611,6 +630,7 @@ describe('SurfZoneSimulation', () => {
       return { simulation, directions };
     };
 
+    // The time limits are generous: a Big-swell run took 80 min on a loaded M1 Air (performance is measured, never a gate).
     // A left: seen from a surfer facing the beach, it runs to their left, toward +x and the channel (the advisor's check).
     // A single estimate can fit a window holding the tail of one wave and the head of the next (a 130 m peel takes about
     // a period), so most well-fitted estimates must run that way.
@@ -619,16 +639,16 @@ describe('SurfZoneSimulation', () => {
       expect(simulation.lipLaunches).toBeGreaterThan(0);
       expect(directions.length).toBeGreaterThan(0);
       expect(directions.filter((direction) => direction === 1).length).toBeGreaterThan(directions.length / 2);
-    }, 1_800_000);
+    }, 7_200_000);
     // Review Focus 1: the lowest springs leave 5 cm over the reef flat.
-    it('stays finite over the nearly dry reef flat at the lowest spring tide', () => run({ tide: -1.2 }, 30), 1_800_000);
-    it('stays finite at high tide', () => run({ tide: PADANG_TIDES.high }), 1_800_000);
+    it('stays finite over the nearly dry reef flat at the lowest spring tide', () => run({ tide: -1.2 }, 30), 7_200_000);
+    it('stays finite at high tide', () => run({ tide: PADANG_TIDES.high }), 7_200_000);
     // Review Focus 2: oblique swells across the open side edges, over the advisor's robustness range (Mead & Black's
     // Bingin held its peel from −10° to +20°; the swell arrives square by default).
     it('stays finite with the most oblique swells across the open side edges', () => {
       run({ directionDegrees: -10 });
       run({ directionDegrees: 20 });
-    }, 3_600_000);
+    }, 14_400_000);
   });
 
   it('spins up the menu’s Padang Padang on the GPU tier’s sea without blowing up', () => {
