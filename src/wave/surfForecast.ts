@@ -51,8 +51,9 @@ export const SURF_FORECAST: Record<SpotName, ForecastFit> = {
   point: { a: 0.4772, sets: 1.056 },
   reef: { a: 0.5125, sets: 1.184 },
   canyon: { a: 0.4994, sets: 1.110 },
-  // Fitted by the size report on Padang Padang's calibrated swells (its plan, Task 8, 2026-09-30).
-  padang: { a: 0.6419, sets: 1.076 },
+  // Fitted by the size report on Padang Padang's calibrated swells, Medium and Big at the take-offs that follow their
+  // breaks (its plan, Task 8, 2026-09-30).
+  padang: { a: 0.6318, sets: 1.080 },
 };
 
 /** The practice groundswell's measured surf at each spot's take-off (the size report, 2026-09-27). */

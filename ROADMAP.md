@@ -581,11 +581,12 @@ Requirements agreed in a grilling session on 2026-09-28 (Q1–Q16, every recomme
   - the bed: Mead's ramp (1:80) and a wedge at 1:19 along the swell's path (the owner's decision) rising 7 m → 1.25 m, its crest line at 40°, a focus spur, and a channel at the +x edge deepened only inshore;
   - its own long-period swells, calibrated to their take-off faces (Practice 0.6, Small 1.2, Medium 2.2, Big 3.8 m); Bali's tides and winds; stage 2 always; everywhere but Surf School;
   - the peel: 22 clean waves at 11.5 m/s (37° geometric) wave by wave, against the design's 11.6 m/s; close-outs 38–54 % on the per-period meter;
+  - the take-off follows each swell's measured break (a breaker index rising with the swell, within 1 m of every size's sets at mid tide);
   - the side feed feeds Padang Padang's sides only (the owner's call); the solver's breaking age now travels only from behind the face (PR #76);
-  - **open:** Practice is marginal, true to the spot (1 ride of 3 s in 877 catch attempts); the Big swell's take-off sits 89 m outside its sets; today's tube is narrow (length/width 2.97 against the spot's 1.97–2.14), Part B's "before"; the user's look.
+  - **open:** Practice is marginal, true to the spot (1 ride of 3 s in 877 catch attempts); today's tube is narrow (length/width 2.97 against the spot's 1.97–2.14), Part B's "before"; the user's look.
 - [ ] **Part B · the swept barrel** ([plan](docs/superpowers/plans/2026-09-29-padang-padang-part-b.md)): one surface swept along the crest from our own 2D Basilisk runs, drawn in both looks and collided; Padang Padang first, behind a per-spot switch.
-  - PR 1, the profile library (level-12 runs of three swell sizes): built, its cases being converted;
-  - PR 2, the breaking front and slice clock: built. Crests join where the solver first breaks swell of their size, and throw a measured lag later (Basilisk; 2.3 √(h0/g) for swell); on the chosen bed the barrel peels at 12.6 m/s against the whitewater's 11.0 and the design's 11.6;
+  - PR 1, the profile library: built from level-12 runs of three swell sizes (466 KB); their tubes match Padang Padang's length over width;
+  - PR 2, the breaking front and slice clock: built. Crests join where the solver first breaks swell of their size, and their lips throw where the Navier–Stokes wave of their height goes vertical (the advisor's periodic Basilisk runs);
   - PRs 3–7: the mesh, the contact, the crash curve, the shading and the rollout.
 
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`

@@ -5,15 +5,15 @@
   "significantHeight": 2.2,
   "period": 17,
   "heightAt": "deep",
-  "takeOffZ": -238.59137870490895,
-  "stepMs": 1107.9848725495804,
+  "takeOffZ": -217.09137870490895,
+  "stepMs": 406.4786759111098,
   "cells": 197440,
-  "typical": 2.92432048603977,
-  "sets": 3.5631499982471784,
-  "waves": 174,
+  "typical": 2.894575462837748,
+  "sets": 3.539218459983456,
+  "waves": 178,
   "setBreakZ": -215.5,
-  "takeOffTypical": 3.608250205020667,
-  "takeOffSets": 3.8846571271406045,
+  "takeOffTypical": 3.588796390859694,
+  "takeOffSets": 3.8685711470725517,
   "takeOffWaves": 9
  }
 ]

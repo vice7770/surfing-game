@@ -21,17 +21,17 @@ Frame costs in the browser's GPU check, on the loaded M1:
 
 ### Probes
 
-Tests in `src/wave/SurfZoneSimulation.test.ts` ("Padang Padang holds"). Unlike the Reef's CI probes they run the game's whole 160 m window, with 1 m cells and 12 swell components, so the level strip at the −x edge and the channel at the +x edge are both inside. Each runs the Big swell (Hs 3 m, Tp 18 s) through its set's arrival, 45 s after the hand-over:
+Tests in `src/wave/SurfZoneSimulation.test.ts` ("Padang Padang holds"). Unlike the Reef's CI probes they run the game's whole 320 m window, with 1 m cells and 12 swell components, so the −x edge's side-feed strip and the channel at the +x edge are both inside. Each runs the calibrated Big swell (Hs 3.8 m, Tp 18 s, square to the tank) through its set's arrival, 45 s after the hand-over (rerun 2026-09-30 on the merged branch):
 
-| Case | Result |
-|---|---|
-| Big swell, from 20° | finite, under 20 m/s; throws lips; the peel runs toward +x, the channel: a left |
-| The lowest spring tide, −1.2 m (5 cm over the reef flat) | finite, under 30 m/s |
-| High tide, +0.9 m | finite, under 20 m/s |
-| Swells from 0° and from 45° (the real frame's wrapped swell) across the open −x edge | finite, under 20 m/s |
-| The menu's Padang Padang: its Practice on the GPU tier's 64 components, seeds 1–3 | spins up finite, every column within 10 m of the platform |
+| Case | Result | Wall time |
+|---|---|---:|
+| Big swell | finite, under 20 m/s; throws lips; most well-fitted peel estimates run toward +x, the channel: a left | 39 min |
+| The lowest spring tide, −1.2 m (5 cm over the reef flat) | finite, under 30 m/s | 42 min |
+| High tide, +0.9 m | finite, under 20 m/s | 37 min |
+| Swells from −10° and +20° (the advisor's robustness range) across the open side edges | finite, under 20 m/s | 62 min for both |
+| The menu's Padang Padang: its Practice on the GPU tier's 64 components, seeds 1–3 | spins up finite, no column's water over 10 m deeper than the edge's | part of the suite |
 
-The five took 716 s together on the loaded M1.
+Wall times on the M1 Air with the four runs and the rest of the suite side by side (load about 25): performance is measured, never a gate, so the tests' limits are generous (2 h a run).
 
 ### Cost
 
@@ -126,11 +126,13 @@ Part A carries the wave-sizes work's side feed (the incoming sea relaxed into th
 |---|---:|---:|---|---|---|
 | Practice (at the edge) | 0.6 m | 16 s | 2.22 / 2.35 m | 2–2.5 m | −167 against −176 m |
 | Small | 1.2 m | 16 s | 3.0 / 3.4 m | 2.5–3.5 m | −190 against −194 m |
-| Medium | 2.2 m | 17 s | 3.6 / 3.9 m | 3.5–4.5 m | −239 against −216 m |
-| Big | 3.8 m | 18 s | 4.6 / 4.8 m | 4.5–6 m | −355 against −266 m |
+| Medium | 2.2 m | 17 s | 3.6 / 3.9 m | 3.5–4.5 m | −217 against −216 m |
+| Big | 3.8 m | 18 s | 4.45 / 4.6 m | 4.5–6 m | −265 against −270 m |
 
-- The faces grow only as about Hs^0.2–0.4: only a small swell's biggest waves break at the take-off. The surf forecast (Komar–Gaughan's Hs^0.8) spans the three swells within 30 %: Small 25 % low, Big 28 % high (`SURF_FORECAST.padang` a 0.6419, sets 1.076).
-- The take-off keeps BREAKER_INDEX, which seats the Small swell's take-off within 4 m of its sets' break (the plan's test). The Big swell's take-off sits 89 m seaward of where its sets break, so on Big days a rider waits well outside: one index cannot serve every swell here. **Open.**
+- The faces grow only as about Hs^0.2–0.4: only a small swell's biggest waves break at the take-off. The surf forecast (Komar–Gaughan's Hs^0.8) spans the three swells within 30 % (`SURF_FORECAST.padang` a 0.6318, sets 1.080, refitted after the re-measure).
+- **The take-off follows each swell's break** (`PADANG_TAKE_OFF_INDEX`). BREAKER_INDEX seated Practice's and Small's take-offs within 9 m of their sets' break, but Medium's 23 m and Big's 89 m seaward of theirs; at low tide Big's stood 6.9 m deep, past the wedge's foot. On this wedge a bigger set breaks shallower for its height: the index at the measured breaks, at mid tide, is 0.57, 0.70, 0.90 and 1.20 from Practice to Big. A line in the edge height (γ = 0.47 + 0.19 Hs) seats every size within 1 m of its sets at mid tide, and Big's at low tide 4.8 m deep, on the wedge. A test pins each size within 15 m.
+- Medium and Big were then re-measured at their new take-offs (their faces had been read ±10 m around the old ones). Medium stays at 3.6 / 3.9 m, inside its band. Big reads 4.45 / 4.6 m (13 waves) against 4.64 / 4.75 m out at the old take-off: 1 % under its band's 4.5 m floor, inside the scatter of 13 waves. About 3.95 m would centre it, since faces grow as Hs^0.2–0.4; that is left for the playtest.
+- At high tide Practice's 0.6 m swell reaches its breaker depth only past the 2.15 m-deep flat, so its take-off falls on the inner beach: small swell at high tide barely breaks on the reef, as at the real spot. **Open** for the lineup (P11).
 
 ## Rideability, catch, ride and tubes (Task 9)
 
@@ -153,7 +155,7 @@ Catch and ride (`npm run report:catch -- --ghosts`, `npm run report:ride -- --pr
 | Hs 0.9 m (faces 2.8 m, the advisor's 2.4–3 m) | 894 | 74 | 12 | 0 | 1.3 s |
 | Ride report, Hs 0.6 m (the autopilot) | 188 | — | 5 | 0 | 1.0 s |
 
-**Practice Padang Padang is marginal, true to the spot**; the Medium swell catches and rides (25 rides of 3 s or more, median 8.9 s), so it is Practice's size, not the bed (an expert break that needs a solid swell; it works from about 4 ft). Practice stays at 0.6 m, its faces in band. Most attempts get no cue (the crest never lifts the board onto the face). The advisor's level-9 Basilisk test hints that the game's small Padang waves break later and shallower than real ones; its fine run will say why. The "no support (lost board)" ends on the steep faces (122 at 0.9 m) are a question for the ride physics, not the bed or the size.
+The Medium swell's catch and ride ran with the rider at the old take-off, 23 m seaward of its sets' break; rerunning them at the new one is **open**. **Practice Padang Padang is marginal, true to the spot**; the Medium swell catches and rides (25 rides of 3 s or more, median 8.9 s), so it is Practice's size, not the bed (an expert break that needs a solid swell; it works from about 4 ft). Practice stays at 0.6 m, its faces in band. Most attempts get no cue (the crest never lifts the board onto the face). The advisor's level-9 Basilisk test hints that the game's small Padang waves break later and shallower than real ones; its fine run will say why. The "no support (lost board)" ends on the steep faces (122 at 0.9 m) are a question for the ride physics, not the bed or the size.
 
 Tubes, today's lip before Part B (`npm run report:tubes -- --practice`): 2,554 jets, a median tube 1.04 m long (90th percentile 2.19 m), width over length 0.65 (97 % inside 0.25–1). On the reef breaks the tube's length over width is **2.97, narrower than Mead & Black's Padang Padang ratio of 1.97–2.14** (their fit for the gradient climbed: 2.45; 28 % held at the roundest 1.42). As the spec expected, today's tube is narrow: it is Part B's "before".
 
