@@ -99,26 +99,66 @@ export function buildRichLipSheet(parcels: Float32Array, count: number, width: n
       hasLeft.add(best);
     }
   }
-  const out = { positions: [] as number[], normals: [] as number[], foam: [] as number[], thickness: [] as number[], indices: [] as number[] };
+  const out = sheet.clear();
   for (const start of strips.values()) {
     if (hasLeft.has(start)) continue;
     const chain: Strip[] = [start];
     for (let next = right.get(start); next; next = right.get(next)) chain.push(next);
     emitChain(chain, width, out, subdivisions);
   }
-  return {
-    positions: new Float32Array(out.positions),
-    normals: new Float32Array(out.normals),
-    foam: new Float32Array(out.foam),
-    thickness: new Float32Array(out.thickness),
-    indices: new Uint32Array(out.indices),
-  };
+  return out.geometry();
 }
 
-type Out = { positions: number[]; normals: number[]; foam: number[]; thickness: number[]; indices: number[] };
+/**
+ * The sheet as it is built: typed arrays grown as they fill and kept from build
+ * to build, so a build makes its five buffers rather than an array for every
+ * point (the page rebuilds the sheet for every snapshot).
+ */
+class SheetOut {
+  positions = new Float32Array(3 * 1024);
+  normals = new Float32Array(3 * 1024);
+  foam = new Float32Array(1024);
+  thickness = new Float32Array(1024);
+  indices = new Uint32Array(6 * 1024);
+  vertices = 0;
+  indexCount = 0;
+
+  /** Room for `vertices` more vertices and `indices` more indices. */
+  reserve(vertices: number, indices: number): void {
+    const grow = <T extends Float32Array | Uint32Array>(array: T, needed: number): T => {
+      if (needed <= array.length) return array;
+      const larger = new (array.constructor as new (length: number) => T)(Math.max(needed, 2 * array.length));
+      larger.set(array);
+      return larger;
+    };
+    const total = this.vertices + vertices;
+    this.positions = grow(this.positions, 3 * total);
+    this.normals = grow(this.normals, 3 * total);
+    this.foam = grow(this.foam, total);
+    this.thickness = grow(this.thickness, total);
+    this.indices = grow(this.indices, this.indexCount + indices);
+  }
+
+  clear(): this {
+    this.vertices = 0;
+    this.indexCount = 0;
+    return this;
+  }
+
+  geometry(): RichLipGeometry {
+    return {
+      positions: this.positions.slice(0, 3 * this.vertices),
+      normals: this.normals.slice(0, 3 * this.vertices),
+      foam: this.foam.slice(0, this.vertices),
+      thickness: this.thickness.slice(0, this.vertices),
+      indices: this.indices.slice(0, this.indexCount),
+    };
+  }
+}
+const sheet = new SheetOut();
 
 /** One chain as a grid of nodes, a phantom half-column ribbon edge at each open end, drawn cell by cell. */
-function emitChain(chain: Strip[], width: number, out: Out, subdivisions: number): void {
+function emitChain(chain: Strip[], width: number, out: SheetOut, subdivisions: number): void {
   const length = Math.max(...chain.map((strip) => strip.nodes.length));
   const shifted = (strip: Strip, dx: number): (Node | undefined)[] =>
     strip.nodes.map((node) => node && { ...node, p: [node.p[0] + dx, node.p[1], node.p[2]] as Vec });
@@ -155,78 +195,122 @@ function emitChain(chain: Strip[], width: number, out: Out, subdivisions: number
   }
 }
 
-function emitCell(net: Vec[][], corners: Node[], open: { left: boolean; right: boolean; front: boolean; back: boolean }, out: Out, subdivisions: number): void {
+/** One cell's points (at most (LIP_SUBDIVISIONS + 2)² of them), reused from cell to cell. */
+function cellPoints(size: number) {
+  const make = () => new Float64Array(size);
+  return {
+    midX: make(), midY: make(), midZ: make(), normalX: make(), normalY: make(), normalZ: make(),
+    outX: make(), outY: make(), outZ: make(), taper: make(), thick: make(), white: make(),
+  };
+}
+let cell = cellPoints((LIP_SUBDIVISIONS + 2) ** 2);
+/** A point's position and its slopes across (s) and along (t) the sheet, per axis. */
+const point = new Float64Array(3);
+const slopeS = new Float64Array(3);
+const slopeT = new Float64Array(3);
+/** For each line of points along a cell (its t), the control net's four rows at t and their slopes, per axis: they hold across the cell. */
+let rowsAt = new Float64Array((LIP_SUBDIVISIONS + 2) * 3 * 8);
+
+function emitCell(net: Vec[][], corners: Node[], open: { left: boolean; right: boolean; front: boolean; back: boolean }, out: SheetOut, subdivisions: number): void {
   const n = subdivisions + 1;
-  const mid: Vec[][] = [];
-  const normal: Vec[][] = [];
-  const outward: Vec[][] = [];
-  const taper: number[][] = [];
-  const thick: number[][] = [];
-  const white: number[][] = [];
+  const points = (n + 1) * (n + 1);
+  if (cell.midX.length < points) cell = cellPoints(points);
+  const { midX, midY, midZ, normalX, normalY, normalZ, outX, outY, outZ, taper, thick, white } = cell;
+  const [row0, row1, row2, row3] = net;
+  const [c00, c10, c01, c11] = corners;
+  // Along each row of the control net first: the same for every point at that t.
+  if (rowsAt.length < (n + 1) * 24) rowsAt = new Float64Array((n + 1) * 24);
+  for (let b = 0; b <= n; b += 1) {
+    const t = b / n;
+    for (let axis = 0; axis < 3; axis += 1) {
+      const o = (b * 3 + axis) * 8;
+      rowsAt[o] = cr(row0[0][axis], row0[1][axis], row0[2][axis], row0[3][axis], t);
+      rowsAt[o + 1] = cr(row1[0][axis], row1[1][axis], row1[2][axis], row1[3][axis], t);
+      rowsAt[o + 2] = cr(row2[0][axis], row2[1][axis], row2[2][axis], row2[3][axis], t);
+      rowsAt[o + 3] = cr(row3[0][axis], row3[1][axis], row3[2][axis], row3[3][axis], t);
+      rowsAt[o + 4] = crSlope(row0[0][axis], row0[1][axis], row0[2][axis], row0[3][axis], t);
+      rowsAt[o + 5] = crSlope(row1[0][axis], row1[1][axis], row1[2][axis], row1[3][axis], t);
+      rowsAt[o + 6] = crSlope(row2[0][axis], row2[1][axis], row2[2][axis], row2[3][axis], t);
+      rowsAt[o + 7] = crSlope(row3[0][axis], row3[1][axis], row3[2][axis], row3[3][axis], t);
+    }
+  }
   for (let a = 0; a <= n; a += 1) {
-    mid[a] = [];
-    normal[a] = [];
-    outward[a] = [];
-    taper[a] = [];
-    thick[a] = [];
-    white[a] = [];
     const s = a / n;
     for (let b = 0; b <= n; b += 1) {
       const t = b / n;
-      const p: Vec = [0, 0, 0];
-      const ds: Vec = [0, 0, 0];
-      const dt: Vec = [0, 0, 0];
+      const j = a * (n + 1) + b;
       for (let axis = 0; axis < 3; axis += 1) {
-        const along = [0, 1, 2, 3].map((row) => cr(net[row][0][axis], net[row][1][axis], net[row][2][axis], net[row][3][axis], t));
-        const alongSlope = [0, 1, 2, 3].map((row) => crSlope(net[row][0][axis], net[row][1][axis], net[row][2][axis], net[row][3][axis], t));
-        p[axis] = cr(along[0], along[1], along[2], along[3], s);
-        ds[axis] = crSlope(along[0], along[1], along[2], along[3], s);
-        dt[axis] = cr(alongSlope[0], alongSlope[1], alongSlope[2], alongSlope[3], s);
+        // Then across the rows.
+        const o = (b * 3 + axis) * 8;
+        point[axis] = cr(rowsAt[o], rowsAt[o + 1], rowsAt[o + 2], rowsAt[o + 3], s);
+        slopeS[axis] = crSlope(rowsAt[o], rowsAt[o + 1], rowsAt[o + 2], rowsAt[o + 3], s);
+        slopeT[axis] = cr(rowsAt[o + 4], rowsAt[o + 5], rowsAt[o + 6], rowsAt[o + 7], s);
       }
-      const cx = ds[1] * dt[2] - ds[2] * dt[1];
-      const cy = ds[2] * dt[0] - ds[0] * dt[2];
-      const cz = ds[0] * dt[1] - ds[1] * dt[0];
+      const cx = slopeS[1] * slopeT[2] - slopeS[2] * slopeT[1];
+      const cy = slopeS[2] * slopeT[0] - slopeS[0] * slopeT[2];
+      const cz = slopeS[0] * slopeT[1] - slopeS[1] * slopeT[0];
       const size = Math.hypot(cx, cy, cz);
-      mid[a][b] = p;
-      normal[a][b] = size > 1e-9 ? [cx / size, cy / size, cz / size] : [0, 1, 0];
+      midX[j] = point[0];
+      midY[j] = point[1];
+      midZ[j] = point[2];
+      const flat = !(size > 1e-9);
+      normalX[j] = flat ? 0 : cx / size;
+      normalY[j] = flat ? 1 : cy / size;
+      normalZ[j] = flat ? 0 : cz / size;
       // A rounded edge: toward an open edge the sheet thins as √(distance), and its normals turn outward.
-      const sizeS = Math.hypot(...ds) || 1;
-      const sizeT = Math.hypot(...dt) || 1;
-      const [fl, fr, ff, fb] = [open.left ? Math.sqrt(s) : 1, open.right ? Math.sqrt(1 - s) : 1, open.front ? Math.sqrt(t) : 1, open.back ? Math.sqrt(1 - t) : 1];
-      taper[a][b] = fl * fr * ff * fb;
-      outward[a][b] = [0, 1, 2].map((axis) =>
-        (ds[axis] / sizeS) * ((1 - fr) - (1 - fl)) + (dt[axis] / sizeT) * ((1 - fb) - (1 - ff))) as Vec;
-      const [c00, c10, c01, c11] = corners;
-      thick[a][b] = taper[a][b] * ((c00.thickness * (1 - s) + c10.thickness * s) * (1 - t) + (c01.thickness * (1 - s) + c11.thickness * s) * t);
-      white[a][b] = (c00.foam * (1 - s) + c10.foam * s) * (1 - t) + (c01.foam * (1 - s) + c11.foam * s) * t;
+      const sizeS = Math.hypot(slopeS[0], slopeS[1], slopeS[2]) || 1;
+      const sizeT = Math.hypot(slopeT[0], slopeT[1], slopeT[2]) || 1;
+      const fl = open.left ? Math.sqrt(s) : 1;
+      const fr = open.right ? Math.sqrt(1 - s) : 1;
+      const ff = open.front ? Math.sqrt(t) : 1;
+      const fb = open.back ? Math.sqrt(1 - t) : 1;
+      taper[j] = fl * fr * ff * fb;
+      const across = (1 - fr) - (1 - fl);
+      const lengthwise = (1 - fb) - (1 - ff);
+      outX[j] = (slopeS[0] / sizeS) * across + (slopeT[0] / sizeT) * lengthwise;
+      outY[j] = (slopeS[1] / sizeS) * across + (slopeT[1] / sizeT) * lengthwise;
+      outZ[j] = (slopeS[2] / sizeS) * across + (slopeT[2] / sizeT) * lengthwise;
+      thick[j] = taper[j] * ((c00.thickness * (1 - s) + c10.thickness * s) * (1 - t) + (c01.thickness * (1 - s) + c11.thickness * s) * t);
+      white[j] = (c00.foam * (1 - s) + c10.foam * s) * (1 - t) + (c01.foam * (1 - s) + c11.foam * s) * t;
     }
   }
-  const face = (side: number): number => {
-    const first = out.positions.length / 3;
-    for (let a = 0; a <= n; a += 1) {
-      for (let b = 0; b <= n; b += 1) {
-        const [px, py, pz] = mid[a][b];
-        const [nx, ny, nz] = normal[a][b];
-        const h = (side * thick[a][b]) / 2;
-        out.positions.push(px + nx * h, py + ny * h, pz + nz * h);
-        const [ox, oy, oz] = outward[a][b];
-        const k = side * taper[a][b];
-        const [sx, sy, sz] = [nx * k + ox, ny * k + oy, nz * k + oz];
-        const size = Math.hypot(sx, sy, sz) || 1;
-        out.normals.push(sx / size, sy / size, sz / size);
-        out.foam.push(white[a][b]);
-        out.thickness.push(thick[a][b]);
-      }
+  const face = (side: number): void => {
+    out.reserve(points, 6 * n * n);
+    const first = out.vertices;
+    const { positions, normals, foam, thickness, indices } = out;
+    for (let j = 0; j < points; j += 1) {
+      const v = out.vertices;
+      const h = (side * thick[j]) / 2;
+      positions[3 * v] = midX[j] + normalX[j] * h;
+      positions[3 * v + 1] = midY[j] + normalY[j] * h;
+      positions[3 * v + 2] = midZ[j] + normalZ[j] * h;
+      const k = side * taper[j];
+      const sx = normalX[j] * k + outX[j];
+      const sy = normalY[j] * k + outY[j];
+      const sz = normalZ[j] * k + outZ[j];
+      const size = Math.hypot(sx, sy, sz) || 1;
+      normals[3 * v] = sx / size;
+      normals[3 * v + 1] = sy / size;
+      normals[3 * v + 2] = sz / size;
+      foam[v] = white[j];
+      thickness[v] = thick[j];
+      out.vertices += 1;
     }
     for (let a = 0; a < n; a += 1) {
       for (let b = 0; b < n; b += 1) {
-        const v = first + a * (n + 1) + b;
-        const [p, q, r, u] = [v, v + n + 1, v + 1, v + n + 2];
-        if (side > 0) out.indices.push(p, q, r, q, u, r);
-        else out.indices.push(p, r, q, q, r, u);
+        const p = first + a * (n + 1) + b;
+        const q = p + n + 1;
+        const r = p + 1;
+        const u = p + n + 2;
+        const o = out.indexCount;
+        if (side > 0) {
+          indices[o] = p; indices[o + 1] = q; indices[o + 2] = r; indices[o + 3] = q; indices[o + 4] = u; indices[o + 5] = r;
+        } else {
+          indices[o] = p; indices[o + 1] = r; indices[o + 2] = q; indices[o + 3] = q; indices[o + 4] = r; indices[o + 5] = u;
+        }
+        out.indexCount += 6;
       }
     }
-    return first;
   };
   // The faces meet along every open edge (the taper), so the lip closes with no rim.
   face(1);
