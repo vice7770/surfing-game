@@ -141,8 +141,9 @@ const isMist = (kind: number) => kind === MIST || kind === TUBE_MIST;
  * whitewater has its own pool (`whitewaterCapacity`) beside the spray's
  * (`capacity`), so neither crowds the other out. They fly ballistically with quadratic air drag toward the
  * wind, and end when they fall back through the surface or their time is up.
- * Visual only, with no rendering dependency, so it runs in the worker beside
- * the water; `SprayPoints` draws it.
+ * The Particles setting (`setLevel`) spawns a share of them into a share of
+ * the pools. Visual only, with no rendering dependency, so it runs in the
+ * worker beside the water; `SprayPoints` draws it.
  */
 export class SprayCloud {
   /** Per live particle: x, y, z, size, opacity, kind (`SPRAY_STRIDE`), packed at the front. */
