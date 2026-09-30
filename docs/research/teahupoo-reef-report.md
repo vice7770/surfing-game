@@ -505,7 +505,7 @@ Game size (160 m, 64 components), 110 s, fastest wet speed:
 
 ### Jets that come down past the open edges
 
-Measuring the jet source's tapers (PR #88) turned up a steep step at the +x open edge: dη/dz 4.22 between row neighbours, in 7.35 m of water, on the Big swell at high tide (seed 3, main 2e81512). It appeared with both alternative jet weights too, so the source was not the cause. The water-physics advisor routed it to the edge ramp's owner.
+Measuring the jet source's tapers (PR #88, below) turned up a steep step at the +x open edge: dη/dz 4.22 between row neighbours, in 7.35 m of water, on the Big swell at high tide (seed 3, main 2e81512). It appeared with both alternative jet weights too, so the source was not the cause. The water-physics advisor routed it to the edge ramp's owner.
 
 **What it was:** jets that fly out of the window through its open edge.
 - **Where:** the last column (x 79.5), at z −31.5, t 111.47 s. That is the pass, on its 1:9.64 beach face, where the bed is uniform along shore; the edge ramp changes nothing there.
@@ -648,7 +648,7 @@ Game size (160 m, 64 components), 110 s, seeds 1–4 on each sea: 48 runs, all f
 - **The half-height weight:** it starves at 0.27 H² and roughens the steps elsewhere.
 
 **Open:**
-- **Seed 3's +x edge column:** dη/dz about 4 near t 110 s, in about 7 m of water, under both rules. It belongs with the edge ramp and Froude cap above.
+- ~~**Seed 3's +x edge column:** dη/dz about 4 near t 110 s, in about 7 m of water, under both rules.~~ Jets that came down past the edge, clamped into its last column: fixed in "Jets that come down past the open edges" above.
 - **The Reef's jet ask:** 0.55–0.62 H² from the advisor's periodic runs, against the provisional 0.47.
 
 ## Commands
