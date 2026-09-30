@@ -373,6 +373,19 @@ export class ShallowWaterSolver {
     return this.xBoundary === PERIODIC;
   }
 
+  /** Whether the along-shore edges are open: water leaves the window through them. */
+  get openAlongShore(): boolean {
+    return this.xBoundary === OPEN;
+  }
+
+  /**
+   * Whether along-shore position x lies past an open edge: what comes down there has left the window, and nothing
+   * of it belongs in the edge column the grid's lookups clamp it to.
+   */
+  beyondOpenEdge(x: number): boolean {
+    return this.openAlongShore && (x < this.xCenters[0] - this.dx / 2 || x > this.xCenters[this.nx - 1] + this.dx / 2);
+  }
+
   /** The relaxation zones, in the order they blend. */
   get relaxationZones(): readonly RelaxationZone[] {
     return this.zones.map((entry) => entry.zone);

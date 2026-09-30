@@ -503,6 +503,63 @@ Game size (160 m, 64 components), 110 s, fastest wet speed:
 - **The root fix** recovers velocity, not flux, as fully nonlinear models do (FUNWAVE-TVD; improved Green–Naghdi). It is sketched in `docs/research/water-physics/solver-rewrite-sketch.md`. The switch makes it less urgent.
 - **Jets** draw 0.2 of the whole column, and pile 1–2.5 m of water a second into the edge columns. Fixed below.
 
+### Jets that come down past the open edges
+
+Measuring the jet source's tapers (PR #88) turned up a steep step at the +x open edge: dη/dz 4.22 between row neighbours, in 7.35 m of water, on the Big swell at high tide (seed 3, main 2e81512). It appeared with both alternative jet weights too, so the source was not the cause. The water-physics advisor routed it to the edge ramp's owner.
+
+**What it was:** jets that fly out of the window through its open edge.
+- **Where:** the last column (x 79.5), at z −31.5, t 111.47 s. That is the pass, on its 1:9.64 beach face, where the bed is uniform along shore; the edge ramp changes nothing there.
+- **The step is a one-cell spike.** The cell stood at η +4.09 m, with −0.13 and +1.44 in its row neighbours and +1.88 in column 158.
+- **What made it:** jets thrown along shore from about x 77 came down at x ≈ 82.4, past the edge at x 80.
+  - `cellIndex` clamps a position into the grid, so `PlungingLip.land` put each parcel's whole water (0.71 m³ into a 1 m² cell) and its momentum into column 159.
+  - Seven landings brought 4.96 m³ in 0.4 s. The spike's step grew 2.1 → 3.3 → 3.5 → 4.2 with them, and it fell back within 0.3 s.
+- **How rare:** 8 landings past the edge in the run, 6 m³ of 3,819 m³ landed. Every edge-column step over 1.8 on that sea had one within 1 s and 4 m.
+  - Where none landed near an edge, the edge columns peaked at 2.0–2.3, the interior's level.
+- **The edge's own terms were not involved:** no Froude cap held water, the fastest water was 11.5 m/s, and nothing went non-finite. The dispersion switch took the piled cell out of the dispersion on the next step (it stood more than 0.8 of its still depth high), and the bore it made spread.
+- **#86's 2.97** (column 143, on a branch without #76) was inside the window, so this does not explain it.
+
+**The fix** (ruled with the water-physics advisor, 2026-09-30): water that comes down past an open edge has left the window, as water running out through that edge does.
+- **The convention:** particle–mesh models delete a particle at an open boundary, wrap it at a periodic one, and reflect it at a wall (LEoPart, Maljaars et al., §3.3.2–3.3.4; OceanParcels' out-of-bounds recovery for regional domains). Here a wall keeps the water in its column, as before, and a periodic edge brings it in on the far side.
+- **Each piece is tested:** a thick sheet lands over its thickness (Part B), so a sheet centred just inside the edge can put a piece past it. Only the outside pieces leave, each with its share of the water and momentum.
+- **No splash-up** rises from a landing past the edge.
+- **No foam or aeration either.** The foam would have painted the edge cell white. The aeration would have put all of a plunge's air there, lightening the water under a rider (the void fraction sets the water's density).
+- **Kept at the real landing point:** the plunge zone's shallow-water hold, which already marks cells by their true distance, and the spray and sound.
+- **Counted:** `escapedLandings` and `escapedVolume` on the lip. Thrown water = landed + in flight + escaped.
+- Jets are still thrown up to two columns from the edge. Stopping throws whose flight would leave the window would leave the crests near the edge taller than the interior's.
+- Landings are written on the CPU and uploaded to the GPU tier each frame, so one change covers both tiers.
+
+Game size (160 m, 64 components), 110 s, main → the fix. Every run is identical to main until water first comes down past an edge. A state hash taken just before the first landing past it matches on 9 of the 11 seas that had one; on the other two a thick sheet's piece had left 0.1 s earlier. Seas where none did are identical throughout and listed once.
+
+| Sea | Steepest step | In the edge columns | Fastest water | Caps in water | Past the edge (main's landings → water that left) |
+|---|---:|---:|---:|---:|---:|
+| Big, high tide, seed 1 | 2.61 → 2.60 | 2.29 → 2.30 | 9.1 → 9.1 m/s | 0 | 3 (2.2 m³) → 1.6 m³ |
+| Big, high tide, seed 2 | 2.30 | 2.05 | 9.1 m/s | 0 | none |
+| Big, high tide, seed 3 | **4.22 → 2.75** | **4.22 → 1.79** | 11.5 → 10.1 m/s | 0 | 8 (5.7 m³) → 7.1 m³ |
+| Big, high tide, seed 4 | 1.96 | 1.96 | 9.3 m/s | 0 | none |
+| Big, tide +1, seeds 1–3 | 2.09–2.55 | 2.06–2.16 | 10.1–11.2 m/s | 0 | none |
+| Big, tide +1, seed 4 | 2.06 → 2.06 | 1.82 → 1.82 | 10.2 → 10.2 m/s | 0 | 3 (1.0 m³) → 1.0 m³ |
+| Wave Lab max, 20°, seed 1 | 3.07 → 3.07 | 2.41 → 2.59 | 13.8 → 13.8 m/s | 48 → 111 | 27 (23.1 m³) → 47.4 m³ |
+| Wave Lab max, 20°, seed 2 | **5.58 → 3.13** | **5.58 → 2.42** | 14.7 → 13.9 m/s | 0 | 48 (32.4 m³) → 27.5 m³ |
+| Wave Lab max, 20°, seed 3 | 3.89 → 3.89 | 2.33 → 2.32 | 14.4 → 14.4 m/s | 0 | 4 (3.1 m³) → 3.1 m³ |
+| Wave Lab max, 20°, seed 4 | 1.95 | 1.92 | 10.7 m/s | 0 | none |
+| Wave Lab max, 10°, spread 0.4, seed 1 | 2.69 → 2.98 | 2.49 → 2.83 | 12.2 → 12.1 m/s | 0 | 31 (12.5 m³) → 6.6 m³ |
+| Big, mid tide, seeds 1–3 | 1.99–2.33 → 1.99–2.33 | 1.79–2.23 → 1.80–2.24 | 8.9–10.4 → 8.6–10.3 m/s | 0 | 1–16 (0.4–11.7 m³) → 0.4–2.5 m³ |
+| Medium, mid tide, seed 1 | 1.54 → 1.55 | 1.44 → 1.44 | 6.9 → 6.9 m/s | 0 | 2 (0.4 m³) → 0.4 m³ |
+| Small (seeds 1–4), Medium (2–4), Big (4), mid tide | 1.16–1.97 | 1.03–1.63 | 5.2–9.3 m/s | 0 | none |
+
+The Wave Lab's largest sea is the buoy's Hs 4 m at 18 s and tide +1, from the Big swell's 20° with its 0.15 spread, and from 10° with the sliders' default 0.4.
+
+- **The spike was bigger on the Wave Lab's largest sea.** On seed 2 the jets past the edge stood a 5.58 step in the last column (x 79.5, z −67.5, t 91.7 s); with the fix its edge peaks at 2.42.
+- **The edge columns now peak within the interior's range** on every sea. Where the fix's edge peak is higher (2.41 → 2.59, 2.49 → 2.83) it is after the seas have parted, and still under that run's steepest step.
+- **The Froude cap:** only the Wave Lab's seed 1 holds water with it, on main and with the fix alike.
+  - It is one swash's tip, 17–30 m up the dry beach at t 50–52 s, 5.0–6.7 cm deep at 7–7.8 m/s.
+  - That is Ritter's tip: a dam-break front runs up dry ground at 2 √(g h₀) as its depth goes to zero, so its Froude number has no bound there. A 1.5 m bore gives 7.7 m/s. Trimming it is what FUNWAVE's cap is for (the advisor).
+  - Its count (48 → 111) is one event on seas that parted 5 s before it. #75's "none" predates #76 and #86.
+- **The water that leaves** is 0.4–7.1 m³ a run on the Surf screen's seas; 7.1 m³ is 0.2 % of the 3,819 m³ that lands on the Big swell at high tide (seed 3). On the Wave Lab's largest it is up to 47 m³ a run.
+
+**Open:**
+- **The pass holds the sea's steepest steps.** Of the runs whose steepest step tops 2.3 (2.3–3.9), all but one have it in the pass (x 58–75, 17–77 m from shore). The exception is main's Wave Lab run from 10°, at 2.69 mid-window. The waves run up the pass's beach face there, where the bed is uniform along shore, so it is not the edge ramp. This fix does not change them.
+
 ### Where a jet's water comes from
 
 A throw took up to 0.2 of the whole column in the crest cell and its two across-shore neighbours. Over the 10 m shelf that is water from metres below still level: on the Big swell a jet carried 1.7–6 times the crest's water above still level in those cells. Taking the jet's momentum from them drove 1–2 source cells backwards per jet (800–1,700 reversed flows a run).
@@ -554,6 +611,7 @@ Game size (160 m, 64 components), 110 s:
 ## Commands
 
 - `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "steep Reef holds"`
+- Jets past the open edges: a one-off game-size probe stepping the Surf screen's Reef seas and the Wave Lab's largest 110 s at 30 Hz. It records the steepest step between dispersive row neighbours deeper than 0.5 m, the fastest water, where the Froude cap holds water, the landings past the edges and a state hash before the first. Main's clamping is put back by overriding `openAlongShore` on the solver.
 - `http://localhost:<port>/gpu-check.html?spot=reef`, from `npx vite --port <port> --strictPort --host localhost` in the worktree
 - `npm run report:tubes -- --spots reef --seeds 1 --periods 4 --out <file>`, here and in a detached `origin/main` worktree
 - `npm run report:rideability -- --spots reef --hs 1.3 --tp 15 --direction <dir> --spread 0.2 --seeds 2 --periods 12 --reef angle=<angle>`

@@ -337,6 +337,9 @@ export class PlungingLip implements LipParcelSource {
   /** Throws whose crest carried less momentum along the jet than the jet takes, and what it could not give, m⁴/s. */
   momentumClamps = 0;
   unplacedMomentum = 0;
+  /** Landings that came down past an open along-shore edge, whole or in part, and the water they took out of the window, m³. */
+  escapedLandings = 0;
+  escapedVolume = 0;
   /** Air its tubes have trapped as they closed, m³ (G9; a running total for the air's balance). */
   trappedAir = 0;
   /**
@@ -915,7 +918,8 @@ export class PlungingLip implements LipParcelSource {
     const [x, y, z] = [this.x[parcel], this.y[parcel], this.z[parcel]];
     const [vx, vy, vz] = [this.vx[parcel], this.vy[parcel], this.vz[parcel]];
     const volume = this.volume[parcel];
-    const splash = this.kind[parcel] === 0 && -vy > SPLASH_UP.minImpact ? SPLASH_UP.share * volume : 0;
+    // Past an open edge it has left the window: no splash-up rises there.
+    const splash = this.kind[parcel] === 0 && -vy > SPLASH_UP.minImpact && !solver.beyondOpenEdge(x) ? SPLASH_UP.share * volume : 0;
     const stripId = this.strip[parcel];
     const strip = this.strips.get(stripId);
     // A jet comes down as thick as its sheet, its water over the void's length (a thick lip over more than one
@@ -923,13 +927,17 @@ export class PlungingLip implements LipParcelSource {
     const thickness = this.kind[parcel] === 0 && strip?.tube ? (STRIP_PARCELS * volume) / solver.dx / strip.tube.geometry.length : 0;
     const speed = Math.hypot(vx, vz);
     const pieces = speed > 0 ? Math.max(1, Math.ceil(thickness / solver.dx - 1e-9)) : 1;
+    let escaped = 0;
     for (let k = 0; k < pieces; k += 1) {
       const along = ((k + 0.5) / pieces - 0.5) * thickness;
-      const cell = pieces > 1 ? solver.cellIndex(x + (vx / speed) * along, z + (vz / speed) * along) : solver.cellIndex(x, z);
-      const area = pieces * solver.dx * solver.dz[Math.floor(cell / solver.nx)];
-      solver.h[cell] += (volume - splash) / area;
-      solver.qx[cell] += (volume * vx - splash * SPLASH_UP.horizontal * vx) / area;
-      solver.qz[cell] += (volume * vz - splash * SPLASH_UP.horizontal * vz) / area;
+      const [px, pz] = pieces > 1 ? [x + (vx / speed) * along, z + (vz / speed) * along] : [x, z];
+      const momentumX = volume * vx - splash * SPLASH_UP.horizontal * vx;
+      const momentumZ = volume * vz - splash * SPLASH_UP.horizontal * vz;
+      if (!this.deposit(px, pz, volume - splash, momentumX, momentumZ, pieces)) escaped += (volume - splash) / pieces;
+    }
+    if (escaped > 0) {
+      this.escapedLandings += 1;
+      this.escapedVolume += escaped;
     }
     const { flight } = this;
     flight.launch.x = this.lx[parcel];
@@ -965,6 +973,30 @@ export class PlungingLip implements LipParcelSource {
     // Each drop is told of once: the splash-up's share when it comes down itself, unless it could not fly.
     const flies = splash > 0 && this.throwSplash(strip, x, y, z, splash, vx, vy, vz);
     this.onLand?.(x, z, flies ? volume - splash : volume, vx, vy, vz, flight);
+  }
+
+  /**
+   * Return one of `pieces` equal shares of `volume` m³ of water, with its momentum (`momentumX`, `momentumZ`, m⁴/s),
+   * to the cell it comes down in; false if it has left the window. Past an open along-shore edge it has, as water
+   * running out through that edge does (a particle-mesh model's rule: deleted at open boundaries, wrapped at periodic
+   * ones, kept by walls). Clamped into the edge column instead, the jets a Big set threw out past the Reef's +x edge
+   * piled 5 m³ into three cells in 0.4 s: a one-cell spike 4 m high there (dη/dz 4.2 in 7 m of water).
+   */
+  private deposit(x: number, z: number, volume: number, momentumX: number, momentumZ: number, pieces = 1): boolean {
+    const { solver } = this;
+    const { nx, dx, xCenters } = solver;
+    if (solver.beyondOpenEdge(x)) return false;
+    let along = x;
+    if (solver.periodicAlongShore) {
+      const west = xCenters[0] - dx / 2;
+      along = west + ((((x - west) % (nx * dx)) + nx * dx) % (nx * dx));
+    }
+    const cell = solver.cellIndex(along, z);
+    const area = pieces * dx * solver.dz[Math.floor(cell / nx)];
+    solver.h[cell] += volume / area;
+    solver.qx[cell] += momentumX / area;
+    solver.qz[cell] += momentumZ / area;
+    return true;
   }
 
   private removeStrip(stripId: number, strip: LipStrip): void {
@@ -1132,11 +1164,10 @@ export class PlungingLip implements LipParcelSource {
     const parcel = jet ? this.free.pop() : undefined;
     if (!jet || parcel === undefined) {
       // No room in the pool (or no jet to gather it with): the water lands after all.
-      const cell = this.solver.cellIndex(x, z);
-      const area = this.solver.dx * this.solver.dz[Math.floor(cell / this.solver.nx)];
-      this.solver.h[cell] += volume / area;
-      this.solver.qx[cell] += (volume * SPLASH_UP.horizontal * vx) / area;
-      this.solver.qz[cell] += (volume * SPLASH_UP.horizontal * vz) / area;
+      if (!this.deposit(x, z, volume, volume * SPLASH_UP.horizontal * vx, volume * SPLASH_UP.horizontal * vz)) {
+        this.escapedLandings += 1;
+        this.escapedVolume += volume;
+      }
       return false;
     }
     let splashId = jet.splash;
