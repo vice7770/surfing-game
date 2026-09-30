@@ -4,14 +4,15 @@ import { GRAVITY } from '../dispersion';
 
 /**
  * When a crest's slices open (the Padang Padang spec, 13.3; the advisor, 2026-09-30): at the solver's own Kennedy
- * onset, whose threshold is calibrated so model breaking starts where flume waves broke (Kennedy et al. 2000), and
- * whose age since PR #76 rides behind the face, so a breaking crest carries it along the front. A crest joins its
- * front when its segment's strength passes `join` (the level every breaking readout uses), and its clock starts
- * when its age began. B = U/C is not the trigger: with the depth-averaged ū, Padang Padang's breaking crests read
+ * onset, whose threshold is calibrated so model breaking starts where flume waves broke (Kennedy et al. 2000). A crest
+ * joins its front when its own segment first breaks (`join`: any strength), so its onset is the moment it joins. Its
+ * breaking age would not do: a newly breaking cell takes the oldest age of the breaking cells behind its face, one
+ * column along the crest included, so along a peeling crest every column carries the first break's age (a probe,
+ * 2026-09-30: onsets equal to 0.03 s along 60–90 m of crest). B = U/C is not the trigger either: with the depth-averaged ū, Padang Padang's breaking crests read
  * 0.1–0.5, no different from calm ones (a probe, 2026-09-30), since q ≈ cη makes U/C ≈ η/(h + η); Derakhti's 0.85
  * and 1.0, and Bacigaluppi's 0.75, are for the surface velocity. It is kept as a diagnostic, above a crest-speed floor.
  */
-export const ONSET = { join: 0.3 } as const;
+export const ONSET = { join: 0 } as const;
 
 /** Crests over thinner water are shore swash, not waves, m (as CrestKinematics). */
 const WET = 0.05;
@@ -29,18 +30,17 @@ export interface CrestSample {
   eta: number;
   /** The Kennedy breaking strength over the crest's segment (the crest to FACE_REACH shoreward): its largest. */
   strength: number;
-  /** Seconds since breaking began for the segment's oldest breaking water: its age. */
-  age: number;
+  /** The still depth under the crest, m. */
+  depth: number;
   /** U/C, the depth-averaged water's speed along the crest's travel over the crest's (a diagnostic); NaN unmeasured. */
   b: number;
   /** The crest's speed, m/s (0 unmeasured). */
   speed: number;
 }
 
-/** The solver's breaking, per cell: `BreakingModel`'s strength and age. */
+/** The solver's breaking strength per cell (`BreakingModel`'s). */
 export interface BreakingField {
   readonly strength: ArrayLike<number>;
-  readonly age: ArrayLike<number>;
 }
 
 /**
@@ -60,23 +60,20 @@ export function columnCrests(
       const eta = h[i] + bed[i];
       if (!(eta - restLevel > minHeight) || !(eta > h[i - nx] + bed[i - nx]) || !(eta > h[i + nx] + bed[i + nx])) continue;
       let strength = 0;
-      let age = 0;
       for (let row = iz; row < nz && zCenters[row] - zCenters[iz] <= FACE_REACH; row += 1) {
         const cell = row * nx + ix;
-        if (!(h[cell] > WET) || !(breaking.strength[cell] > 0)) continue;
-        strength = Math.max(strength, breaking.strength[cell]);
-        age = Math.max(age, breaking.age[cell]);
+        if (h[cell] > WET && breaking.strength[cell] > strength) strength = breaking.strength[cell];
       }
       const found = crestMotion(solver, i);
       const motion = found && found.speed >= MIN_CREST_FROUDE * Math.sqrt(GRAVITY * h[i]) ? found : undefined;
-      const sample = (out[count] ??= { column: 0, row: 0, x: 0, z: 0, eta: 0, strength: 0, age: 0, b: NaN, speed: 0 });
+      const sample = (out[count] ??= { column: 0, row: 0, x: 0, z: 0, eta: 0, strength: 0, depth: 0, b: NaN, speed: 0 });
       sample.column = ix;
       sample.row = iz;
       sample.x = xCenters[ix];
       sample.z = zCenters[iz];
       sample.eta = eta - restLevel;
       sample.strength = strength;
-      sample.age = age;
+      sample.depth = restLevel - bed[i];
       sample.b = motion ? (qx[i] * motion.direction.x + qz[i] * motion.direction.z) / h[i] / motion.speed : NaN;
       sample.speed = motion ? motion.speed : 0;
       count += 1;

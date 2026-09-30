@@ -29,7 +29,7 @@ function bumps(peaks: readonly number[], amplitude = 0.5, width = 4, speed = Mat
     }
   }
   const size = solver.nx * solver.nz;
-  return { solver, breaking: { strength: new Float64Array(size), age: new Float64Array(size) } };
+  return { solver, breaking: { strength: new Float64Array(size) } };
 }
 
 describe('each column’s crests, their breaking and their U/C', () => {
@@ -39,24 +39,21 @@ describe('each column’s crests, their breaking and their U/C', () => {
     const count = columnCrests(solver, breaking, 0, 0.1, out);
     expect(count).toBe(solver.nx);
     for (let k = 0; k < count; k += 1) {
-      expect(out[k]).toMatchObject({ column: k, row: 30, strength: 0, age: 0 });
+      expect(out[k]).toMatchObject({ column: k, row: 30, strength: 0, depth: DEPTH });
       expect(out[k].z).toBeCloseTo(30.5, 9);
       expect(out[k].eta).toBeCloseTo(0.5, 9);
     }
   });
 
-  it('reads the breaking over the crest’s segment: its strongest, and its oldest', () => {
+  it('reads the breaking over the crest’s segment: its strongest', () => {
     const { solver, breaking } = bumps([30.5]);
     const column = 4;
     // Breaking on the face, 3 and 6 m shoreward of the crest; behind it and past the face's reach it does not count.
-    for (const [row, strength, age] of [[33, 0.6, 0.2], [36, 0.4, 0.5], [29, 0.9, 3], [45, 0.9, 3]]) {
-      breaking.strength[row * solver.nx + column] = strength;
-      breaking.age[row * solver.nx + column] = age;
-    }
+    for (const [row, strength] of [[33, 0.6], [36, 0.4], [29, 0.9], [45, 0.9]]) breaking.strength[row * solver.nx + column] = strength;
     const out: CrestSample[] = [];
     columnCrests(solver, breaking, 0, 0.1, out);
-    expect(out[column]).toMatchObject({ strength: 0.6, age: 0.5 });
-    expect(out[column + 1]).toMatchObject({ strength: 0, age: 0 });
+    expect(out[column].strength).toBe(0.6);
+    expect(out[column + 1].strength).toBe(0);
   });
 
   it('logs U/C: the water’s speed along the crest’s travel over the crest’s own', () => {

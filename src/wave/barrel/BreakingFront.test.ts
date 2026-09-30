@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { BreakingFront } from './BreakingFront';
 import type { CrestSample } from './crestOnset';
 
-/** A crest sample at one-metre columns, breaking (its segment's strength past the join) for `age` s by default. */
-function sample(column: number, z: number, strength = 0.6, age = 0.1): CrestSample {
-  return { column, row: Math.floor(z), x: column + 0.5, z, eta: 1, strength, age, b: 0.3, speed: 5 };
+/** A crest sample at one-metre columns, breaking (its segment's strength past the join) over `depth` m by default. */
+function sample(column: number, z: number, strength = 0.6, depth = 2.5): CrestSample {
+  return { column, row: Math.floor(z), x: column + 0.5, z, eta: 1, strength, depth, b: 0.3, speed: 5 };
 }
 
 /** An oblique straight crest over `columns`, z = z0 + slope · x. */
-function line(columns: readonly number[], z0: number, slope: number, strength = 0.6, age = 0.1): CrestSample[] {
-  return columns.map((column) => sample(column, z0 + slope * (column + 0.5), strength, age));
+function line(columns: readonly number[], z0: number, slope: number, strength = 0.6, depth = 2.5): CrestSample[] {
+  return columns.map((column) => sample(column, z0 + slope * (column + 0.5), strength, depth));
 }
 
 const range = (from: number, to: number) => Array.from({ length: to - from }, (_, k) => from + k);
@@ -25,31 +25,41 @@ describe('the breaking front as lines', () => {
     front.points.forEach((point, k) => expect(point.sigma).toBeCloseTo(k * Math.sqrt(1 + 0.5 ** 2), 9));
   });
 
-  it('keeps every point’s ID, onset and clock when the crest moves 0.3 m shoreward into new cells', () => {
+  it('keeps every point’s ID, join and clock when the crest moves 0.3 m shoreward into shallower water', () => {
     const front = new BreakingFront();
     const first = line(range(0, 20), 10, 0.5);
     front.update(first, first.length, 0);
     const ids = front.points.map((point) => point.id);
     front.points.forEach((point) => { point.tau = 0.25; });
-    // The new cells' own age says nothing of when this crest broke: the point carries its own.
-    const next = line(range(0, 20), 10.3, 0.5, 0.6, 0.02);
+    const next = line(range(0, 20), 10.3, 0.5, 0.6, 2.4);
     front.update(next, next.length, 0.1);
     expect(front.points.map((point) => point.id)).toEqual(ids);
-    expect(front.points.every((point) => point.tau === 0.25 && point.onset === -0.1)).toBe(true);
+    expect(front.points.every((point) => point.tau === 0.25 && point.joined === 0 && point.depth === 2.5)).toBe(true);
   });
 
-  it('backdates a joining crest’s onset to when its breaking age began', () => {
+  it('records when a crest joins, and the still depth under it then', () => {
     const front = new BreakingFront();
-    const samples = line(range(0, 3), 10, 0, 0.4, 0.15);
+    const samples = line(range(0, 3), 10, 0, 0.01, 3.1);
     front.update(samples, samples.length, 7);
-    for (const point of front.points) expect(point.onset).toBeCloseTo(6.85, 12);
+    expect(front.points.map((point) => [point.joined, point.depth])).toEqual([[7, 3.1], [7, 3.1], [7, 3.1]]);
   });
 
-  it('leaves out crests whose segment is not breaking past the join', () => {
+  it('leaves out crests whose segment is not breaking', () => {
     const front = new BreakingFront();
-    const samples = line(range(0, 20), 10, 0.5, 0.3);
+    const samples = line(range(0, 20), 10, 0.5, 0);
     front.update(samples, samples.length, 0);
     expect(front.points).toHaveLength(0);
+  });
+
+  it('follows a crest across a whole row on a coarser grid', () => {
+    const front = new BreakingFront(2);
+    const first = range(0, 10).map((column) => ({ ...sample(column, 20), x: 2 * column + 1 }));
+    front.update(first, first.length, 0);
+    const ids = front.points.map((point) => point.id);
+    expect(new Set(front.points.map((point) => point.front)).size).toBe(1);
+    const next = first.map((s) => ({ ...s, z: 22 }));
+    front.update(next, next.length, 0.1);
+    expect(front.points.map((point) => point.id)).toEqual(ids);
   });
 
   // Review Focus 5: two crests in the same columns are two fronts.

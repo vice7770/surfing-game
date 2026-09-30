@@ -1,8 +1,8 @@
 import { ONSET, type CrestSample } from './crestOnset';
 
-/** Crests in neighbouring columns this close in z are one front, m (provisional: three 1 m cells). */
-const LINK_REACH = 3;
-/** A crest this close in z to last step's in its column is the same point, m (provisional: 20 m/s × 0.1 s). */
+/** Crests in neighbouring columns this many rows apart in z are one front (provisional). */
+const LINK_ROWS = 3;
+/** A crest this close in z to last step's in its column is the same point, m (provisional: 20 m/s × 0.1 s), plus a row, its cell's jump. */
 const MATCH_REACH = 2;
 /** A point unseen this long is gone, s. */
 const HOLD = 0.5;
@@ -21,8 +21,9 @@ export interface FrontPoint {
   b: number;
   /** The crest's height above still water, m. */
   height: number;
-  /** When its crest began breaking, s: its Kennedy age's start, carried with the crest from when it joined. */
-  onset: number;
+  /** When its crest's segment first broke (it joined), s, and the still depth under it then, m: its clock's start. */
+  joined: number;
+  depth: number;
   /** The slice's clock as drawn, s from its lip's throw: smoothed along the front, never running back (sliceClock). */
   tau: number;
   /** When it was last seen, s. */
@@ -38,13 +39,11 @@ export interface FrontState {
 }
 
 /**
- * The breaking front as lines of points (swept-barrel-build.md, "Front line"; Thürey et al. 2007). A crest whose
- * segment is breaking (`ONSET.join`) joins a front, its onset backdated to when its breaking age began (the advisor,
- * 2026-09-30: the strength passes the join level after the age starts). Crests in neighbouring columns within
- * LINK_REACH in z link, and a column's own crests never do, so two crests in a column are two fronts and an empty
- * column splits one. A point matched to last step's in its column keeps its ID, onset and clock: the crest carries its
- * own age, with no reset as it crosses into new cells. Columns go in order, with no randomness, and only + − × ÷ and
- * √, for online determinism.
+ * The breaking front as lines of points (swept-barrel-build.md, "Front line"; Thürey et al. 2007). A crest whose own
+ * segment breaks (`ONSET.join`) joins a front. Crests in neighbouring columns within LINK_ROWS rows in z link, and a
+ * column's own crests never do, so two crests in a column are two fronts and an empty column splits one. A point
+ * matched to last step's in its column keeps its ID, its join and its clock, with no reset as its crest crosses into
+ * new cells. Columns go in order, with no randomness, and only + − × ÷ and √, for online determinism.
  */
 export class BreakingFront {
   /** This step's points, by front (in order of their −x ends) and σ. */
@@ -53,6 +52,14 @@ export class BreakingFront {
   private held: FrontPoint[] = [];
   private nextId = 0;
   private nextFront = 0;
+  private readonly linkReach: number;
+  private readonly matchReach: number;
+
+  /** `cell`: the rows' spacing where fronts form, m. */
+  constructor(cell = 1) {
+    this.linkReach = LINK_ROWS * cell;
+    this.matchReach = MATCH_REACH + cell;
+  }
 
   update(samples: readonly CrestSample[], count: number, time: number): void {
     const previous = [...this.points, ...this.held];
@@ -65,7 +72,7 @@ export class BreakingFront {
       if (!(s.strength > ONSET.join)) continue;
       let best: FrontPoint | undefined;
       for (const old of byColumn.get(s.column) ?? []) {
-        if (matched.has(old) || !(Math.abs(old.z - s.z) < MATCH_REACH)) continue;
+        if (matched.has(old) || !(Math.abs(old.z - s.z) < this.matchReach)) continue;
         if (!best || Math.abs(old.z - s.z) < Math.abs(best.z - s.z)) best = old;
       }
       if (best) matched.add(best);
@@ -78,7 +85,8 @@ export class BreakingFront {
         z: s.z,
         b: s.b,
         height: s.eta,
-        onset: best ? best.onset : time - s.age,
+        joined: best ? best.joined : time,
+        depth: best ? best.depth : s.depth,
         tau: best ? best.tau : 0,
         seen: time,
       });
@@ -103,7 +111,7 @@ export class BreakingFront {
         let best: FrontPoint[] | undefined;
         for (const chain of before) {
           const tail = chain.at(-1)!;
-          if (tail.column !== column - 1 || !(Math.abs(tail.z - point.z) < LINK_REACH)) continue;
+          if (tail.column !== column - 1 || !(Math.abs(tail.z - point.z) < this.linkReach)) continue;
           if (!best || Math.abs(tail.z - point.z) < Math.abs(best.at(-1)!.z - point.z)) best = chain;
         }
         if (best) {
