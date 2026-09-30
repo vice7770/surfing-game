@@ -271,6 +271,26 @@ const TWIST_RANGE = (45 * Math.PI) / 180;
 const TWIST_FREQUENCY = 7;
 const TWIST_TORQUE = 120;
 const TWIST_GRIP_RADIUS = 0.15;
+/**
+ * The compressed turn's assist (the movement-flow spec's Q4 and Q16, a
+ * gameplay rule, not physics). Compress is the sharp turn's stance, and a real
+ * bottom turn comes round 99° in 0.96 s (Forsyth et al. 2024). Here every
+ * stance took about 1.45 s: the body needs about half a second to lean in
+ * before the hull's pull builds, since leaning in first means pushing the feet
+ * out. The lower body of Compress, and the twist, changed nothing.
+ *
+ * So while Compress goes deeper than the crouch, the board planes and the
+ * rider steers, the body is pulled into the turn. The pull acts at its centre
+ * of mass, level and across the board's path, so it does no work on that path.
+ * It is COMPRESS_PULL of the pull the lean asked for balances: m g tan of the
+ * bank reference, scaled by Compress. It leads the body's lean, which it
+ * leans in.
+ *
+ * On flat water at 7 m/s this brings the bottom turn round 90° in 1.0 s,
+ * either side, keeping about 0.6 of the speed (0.36 before). At 0.7 a rider
+ * compressing from standing fell after 100°. Riding straight it does nothing.
+ */
+const COMPRESS_PULL = 0.5;
 /** Below this load, in body weights, the centre of pressure says nothing and the rider does not rebalance. */
 const BALANCE_LOAD = 0.1;
 /** The fastest the body shifts, m/s, and accelerates, m/s² (so balance never jerks the contact), and how long the centre of pressure it reacts to is smoothed, s. */
@@ -556,6 +576,8 @@ export interface RiderWork {
   contact: number;
   /** Done by lip parcels striking the body. */
   lip: number;
+  /** Done by the compressed turn's assist (COMPRESS_PULL), a gameplay rule's. */
+  assist: number;
 }
 
 type V3 = { x: number; y: number; z: number };
@@ -614,7 +636,7 @@ export class AttachedRider {
   flightTime = 0;
   /** Distance of the centre of mass from where the posture puts it, m. */
   postureError = 0;
-  readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0 };
+  readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0, assist: 0 };
   /** Impulse the lip gave the body since the latest step began, N·s. */
   readonly lastLipImpulse = new Vector3();
   /** The water's latest force on each stroking hand (left, right), N. */
@@ -814,6 +836,8 @@ export class AttachedRider {
   protected swingTorque = 0;
   /** The hips' torque on the upper body's twist, N·m about the leg; the board takes its reaction through the feet. */
   private twistTorque = 0;
+  /** The compressed turn's assist on the body, N (world): COMPRESS_PULL. */
+  private readonly assistForce = new Vector3();
 
   constructor(shape: BoardShape, options: AttachedRiderOptions = {}) {
     this.shape = shape;
@@ -1020,6 +1044,7 @@ export class AttachedRider {
     this.work.water = 0;
     this.work.contact = 0;
     this.work.lip = 0;
+    this.work.assist = 0;
     this.struckBy.clear();
     this.lastLipImpulse.set(0, 0, 0);
     this.sway.set(0, 0, 0);
@@ -1361,7 +1386,8 @@ export class AttachedRider {
     if (error.lengthSq() > 0) this.drive.addScaledVector(error.normalize(), correction);
     this.gravity.set(0, -this.mass * WATER.gravity, 0);
     this.waterForces(h, board, water);
-    this.external.copy(this.gravity).add(this.waterForce);
+    this.compressAssist(board);
+    this.external.copy(this.gravity).add(this.waterForce).add(this.assistForce);
     if (this.upright) {
       this.prepareLeg(h, board, water);
       this.twistStep(h);
@@ -1467,6 +1493,21 @@ export class AttachedRider {
       this.twist.angle = Math.sign(this.twist.angle) * TWIST_RANGE;
       if (this.twist.rate * this.twist.angle > 0) this.twist.rate = 0;
     }
+  }
+
+  /** COMPRESS_PULL: compressing into a turn, planing, the body is pulled in across the board's path by the lean asked for. */
+  private compressAssist(board: BoardBody): void {
+    this.assistForce.set(0, 0, 0);
+    const crouch = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
+    const compress = Math.max(0, Math.min(1, this.compress));
+    if (!this.upright || !this.banking || !this.planing || compress <= crouch || Math.abs(this.steer) <= STEER_DEADBAND) return;
+    const along = this.scratch.set(board.velocity.x, 0, board.velocity.z);
+    if (along.lengthSq() < 1e-6) return;
+    along.normalize();
+    // Toward the lean's side of the path: the board's +x is its left, and the left of a path along v is up × v.
+    const lean = Math.min(Math.abs(this.bankReference), MAX_BANK);
+    this.assistForce.crossVectors(Y, along)
+      .multiplyScalar(Math.sign(this.bankReference) * compress * COMPRESS_PULL * this.mass * WATER.gravity * Math.tan(lean));
   }
 
   private resetTwist(): void {
@@ -1891,6 +1932,7 @@ export class AttachedRider {
     const mean = before.add(this.velocity).multiplyScalar(0.5);
     this.work.gravity += h * this.gravity.dot(mean);
     this.work.water += h * this.waterForce.dot(mean);
+    this.work.assist += h * this.assistForce.dot(mean);
     if (this.upright && this.feasible && this.swingTorque !== 0) {
       // The swing's couple, which the board did not take with the push along the line of force.
       board.work.rider -= (h * this.swingTorque * this.rollAxis.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;
