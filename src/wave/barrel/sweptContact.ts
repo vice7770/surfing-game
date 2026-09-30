@@ -54,6 +54,8 @@ export function createContactHit(): ContactHit {
 
 const S = LOFT_SAMPLES;
 const E = LOFT.extensionSamples;
+/** How far a point exactly on a slice's ray is moved into its strip, m: far above rounding at 100 m, far below a cell. */
+const NUDGE = 1e-9;
 
 /**
  * The swept barrel's contact (the Padang Padang spec, Part B, PR 4; the advisor's rulings, 2026-09-30): the loft the
@@ -213,7 +215,10 @@ export class SweptContact {
       if (sideA < 0) continue;
       const sideB = (x - p[3 * b]) * loft.sliceRayZ[s + 1] - (z - p[3 * b + 2]) * loft.sliceRayX[s + 1];
       if (sideB >= 0) continue;
-      if (this.crossings(loft, s, x, z) > 0) return s;
+      // On ray s itself, the strip owns the point, but its edges along the ray are shared with the strip before, whose
+      // triangles' ties may take them: step a nanometre into the strip, along its tangent, so its own triangles do.
+      const nudge = sideA === 0 ? NUDGE : 0;
+      if (this.crossings(loft, s, x + nudge * loft.sliceRayZ[s], z - nudge * loft.sliceRayX[s]) > 0) return s;
     }
     return -1;
   }

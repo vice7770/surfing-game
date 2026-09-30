@@ -133,6 +133,19 @@ describe('the swept contact', () => {
     expect(hit.inWater).toBe(false);
   });
 
+  it('reads a point exactly on a slice’s ray as the strip it opens (the ray’s own edges included)', () => {
+    const contact = contactAt(0.1);
+    const on = createContactHit();
+    const beside = createContactHit();
+    // Slices every half metre from σ −1.5: x = σ + 0.5, so x = 10 is slice σ 9.5's ray.
+    for (const y of [0, 2.5, (UNDER + TOP) / 2, 9]) {
+      expect(contact.query(10, y, -93, on)).toBe(true);
+      contact.query(10.001, y, -93, beside);
+      expect(on.inWater).toBe(beside.inWater);
+      expect(on.surfaceY).toBeCloseTo(beside.surfaceY, 3);
+    }
+  });
+
   it('gives the tube’s state from its clock, and none before the throw', () => {
     expect(tubeState(Number.NaN)).toBeUndefined();
     expect(tubeState(0.2)).toBe('open');
