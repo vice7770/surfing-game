@@ -22,5 +22,12 @@ export const BARREL_CASES: readonly BarrelCaseEntry[] = [
     "nonlinearity": 0.45,
     "flatDepth": 0.1785714,
     "asset": "barrels/pad19-a45-l12.bin"
+  },
+  {
+    "id": "periodic-padang19s-l12",
+    "slope": 0.0526316,
+    "nonlinearity": 0.1414,
+    "flatDepth": 0.1785714,
+    "asset": "barrels/periodic-padang19s-l12.bin"
   }
 ];
