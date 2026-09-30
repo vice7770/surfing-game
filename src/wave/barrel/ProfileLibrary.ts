@@ -5,8 +5,9 @@ import { GRAVITY } from '../dispersion';
  * tools/basilisk) resampled to 128 points with crest, lip tip, throat and toe at fixed indices, so profiles blend
  * point by point (docs/research/water-physics/swept-barrel-build.md). Each case holds its frames in h0 (the depth at
  * the slope's foot) and τ in √(h0/g) from the face going vertical. A slice picks the nearest slope's cases, blends
- * the two bracketing its H0/h0, and scales them by Froude to the solver's breaking height. It never extrapolates:
- * outside the cases it clamps and says so. Only + − × ÷ and √, for online determinism.
+ * the two bracketing its H0/h0 (its foot crest over its foot depth), and scales them by Froude to the slice's foot
+ * crest (h0 = η_foot / A0, the advisor 2026-09-30): its foot depth inside the cases, the nearest case's own A0 outside.
+ * It never extrapolates: outside the cases it clamps and says so. Only + − × ÷ and √, for online determinism.
  */
 export const PROFILE_POINTS = 128;
 export const LANDMARK = { back: 0, crest: 32, lip: 64, throat: 88, toe: 112, front: 127 } as const;
@@ -32,9 +33,9 @@ export interface BarrelCase {
 
 export interface ProfileQuery {
   slope: number;
-  nonlinearity: number;
-  /** The solver's breaking height, m. */
-  height: number;
+  /** The slice's crest height at the slope's foot, m, and the still depth there, m: H0/h0 is their ratio. */
+  footHeight: number;
+  footDepth: number;
   /** τ, s. */
   seconds: number;
 }
@@ -46,6 +47,9 @@ export interface ProfileLookup {
   /** h0, m: the length the case's units scale to. */
   scale: number;
   phase: 'pre' | 'open' | 'post';
+  /** τ at touchdown, and between two frames, s. */
+  touchdownSeconds: number;
+  frameSeconds: number;
 }
 
 const FLOATS = 2 * PROFILE_POINTS;
@@ -69,28 +73,30 @@ export class ProfileLibrary {
       if (Math.abs(candidate[0].slope - query.slope) < Math.abs(group[0].slope - query.slope)) group = candidate;
     }
     let clamped = Math.abs(group[0].slope - query.slope) > SLOPE_TOLERANCE * query.slope;
+    const a0 = query.footHeight / query.footDepth;
     let lower = group[0];
     let upper = group[group.length - 1];
     let weight = 0;
-    if (query.nonlinearity <= lower.nonlinearity) {
-      clamped ||= query.nonlinearity < lower.nonlinearity;
+    if (a0 <= lower.nonlinearity) {
+      clamped ||= a0 < lower.nonlinearity;
       upper = lower;
-    } else if (query.nonlinearity >= upper.nonlinearity) {
-      clamped ||= query.nonlinearity > upper.nonlinearity;
+    } else if (a0 >= upper.nonlinearity) {
+      clamped ||= a0 > upper.nonlinearity;
       lower = upper;
     } else {
       for (let k = 0; k + 1 < group.length; k += 1) {
-        if (group[k].nonlinearity <= query.nonlinearity && query.nonlinearity <= group[k + 1].nonlinearity) {
+        if (group[k].nonlinearity <= a0 && a0 <= group[k + 1].nonlinearity) {
           lower = group[k];
           upper = group[k + 1];
-          weight = (query.nonlinearity - lower.nonlinearity) / (upper.nonlinearity - lower.nonlinearity);
+          weight = (a0 - lower.nonlinearity) / (upper.nonlinearity - lower.nonlinearity);
           break;
         }
       }
     }
-    const breakerHeight = lower.breakerHeight + weight * (upper.breakerHeight - lower.breakerHeight);
-    const scale = query.height / breakerHeight;
-    const tau = query.seconds / Math.sqrt(scale / GRAVITY);
+    // One case: the slice's foot crest is its; a blend: A0 is the slice's own, so h0 is its foot depth.
+    const scale = lower === upper ? query.footHeight / lower.nonlinearity : query.footDepth;
+    const unit = Math.sqrt(scale / GRAVITY);
+    const tau = query.seconds / unit;
     this.frameAt(lower, tau, out);
     if (upper !== lower) {
       this.frameAt(upper, tau, this.scratch);
@@ -99,7 +105,8 @@ export class ProfileLibrary {
     for (let i = 0; i < FLOATS; i += 1) out[i] *= scale;
     const touchdown = lower.touchdown + weight * (upper.touchdown - lower.touchdown);
     const phase = tau < 0 ? 'pre' : tau <= touchdown ? 'open' : 'post';
-    return { caseId: weight < 0.5 ? lower.id : upper.id, clamped, scale, phase };
+    const frameStep = lower.tauStep + weight * (upper.tauStep - lower.tauStep);
+    return { caseId: weight < 0.5 ? lower.id : upper.id, clamped, scale, phase, touchdownSeconds: touchdown * unit, frameSeconds: frameStep * unit };
   }
 
   /** One case's profile at τ (√(h0/g)), linear between its two nearest frames, clamped to its first and last. */

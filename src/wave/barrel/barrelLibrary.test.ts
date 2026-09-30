@@ -15,7 +15,7 @@ describe('loading the barrel library', () => {
     const fetcher = async () => ({ ok: true, status: 200, arrayBuffer: async () => bytes.slice().buffer }) as unknown as Response;
     const library = await loadBarrelLibrary([entry], fetcher as typeof fetch);
     const out = new Float32Array(2 * PROFILE_POINTS);
-    const lookup = library.profileAt({ slope: barrel.slope, nonlinearity: barrel.nonlinearity, height: 2, seconds: 0.2 }, out);
+    const lookup = library.profileAt({ slope: barrel.slope, footHeight: barrel.nonlinearity * 7, footDepth: 7, seconds: 0.2 }, out);
     expect(lookup).toMatchObject({ caseId: 'test', clamped: false, phase: 'open' });
     expect(out.every((v) => Number.isFinite(v))).toBe(true);
   });
