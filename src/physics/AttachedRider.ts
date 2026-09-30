@@ -291,6 +291,14 @@ const TWIST_GRIP_RADIUS = 0.15;
  * compressing from standing fell after 100°. Riding straight it does nothing.
  */
 const COMPRESS_PULL = 0.5;
+/**
+ * The pull leads the lean in, and must never carry the body past it: it fades out as the body leans past the
+ * lean asked for by up to PULL_OVERLEAN, rad, and as the board slows from PULL_FULL_SPEED to PLANING_DROP, m/s.
+ * Held into a cutback with the weight back, the board pivoted at 4 rad/s, bogged from 7 to 3 m/s, and the pull
+ * kept tipping the body in (70° against 15° asked) until it fell.
+ */
+const PULL_OVERLEAN = (10 * Math.PI) / 180;
+const PULL_FULL_SPEED = 5;
 /** Below this load, in body weights, the centre of pressure says nothing and the rider does not rebalance. */
 const BALANCE_LOAD = 0.1;
 /** The fastest the body shifts, m/s, and accelerates, m/s² (so balance never jerks the contact), and how long the centre of pressure it reacts to is smoothed, s. */
@@ -1503,11 +1511,14 @@ export class AttachedRider {
     if (!this.upright || !this.banking || !this.planing || compress <= crouch || Math.abs(this.steer) <= STEER_DEADBAND) return;
     const along = this.scratch.set(board.velocity.x, 0, board.velocity.z);
     if (along.lengthSq() < 1e-6) return;
-    along.normalize();
+    const speed = along.length();
+    along.divideScalar(speed);
     // Toward the lean's side of the path: the board's +x is its left, and the left of a path along v is up × v.
     const lean = Math.min(Math.abs(this.bankReference), MAX_BANK);
+    const past = Math.max(0, this.bank.angle * Math.sign(this.bankReference) - lean);
+    const fade = Math.max(0, 1 - past / PULL_OVERLEAN) * Math.min(1, Math.max(0, (speed - PLANING_DROP) / (PULL_FULL_SPEED - PLANING_DROP)));
     this.assistForce.crossVectors(Y, along)
-      .multiplyScalar(Math.sign(this.bankReference) * compress * COMPRESS_PULL * this.mass * WATER.gravity * Math.tan(lean));
+      .multiplyScalar(Math.sign(this.bankReference) * fade * compress * COMPRESS_PULL * this.mass * WATER.gravity * Math.tan(lean));
   }
 
   private resetTwist(): void {
