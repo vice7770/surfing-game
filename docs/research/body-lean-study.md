@@ -94,3 +94,40 @@ On "continue" after the reading above. The Canyon's practice sea with the same s
    - **the rider's recovery:** how a banked body stands back up as its board drops off the plane. It already stands back on its ankles before the upright carry takes over. An immediate carry is on the don't-retry list: it tipped the slowing board.
 
 The probe is a patch on `scripts/ride-report.ts` (`ride-report-feet-edge-probe.patch`, with a `--first-seed` flag to run seeds in parallel), kept in the session's scratchpad.
+
+## Where on the wave the falls happen, and two tries at technique (2026-09-30)
+
+The same Canyon settings, seeds 1 + 2 × 3 minutes, on main at 084f060. For each standing attempt, the last standing step's place on the wave.
+
+**The falls are high on the face, not on the flats.** The 29 standing falls, at their last standing step:
+
+- **ahead of the crest:** within 0.4–4.5 m for most; 8 were 1.2–2.5 m behind it, going over the back; 3 were 6.9–8.1 m out;
+- **height on the face:** 0.57–0.99 for most, a few at 0.33–0.48;
+- **breaking water under the rider:** 0.5–1.0 on 15 of them;
+- **speed:** 1.5–4.4 m/s. The crest moved at 4–8 m/s.
+
+So the rider slowed in or after the bottom turn below the crest's speed, and the wave caught it: lifted to the top of the face, into the breaking crest or over the back. The stall of the section above is this, and it is the stances memory's old "a bottom turn carried up into a top turn falls" root. The rides that did not end in a fall were kick-outs and lost waves (7 of 36 stands).
+
+Two tries at the autopilot's technique, measured against the same code without them (seeds 1 + 2):
+
+| | Without | Easing off below 4.5 m/s (end the turn, stand, weight forward) | Turning back down below 4.5 m/s (end a slowing bottom turn, top-turn a slowing climb from 0.3 of the face) |
+|---|---:|---:|---:|
+| Attempts, stands, rides ≥ 3 s | 216, 36, 18 | 216, 35, 18 | 213, 40, 18 |
+| Falls, all causes | 75 | 75 | 71 |
+| Stands that did not end in a fall | 7 | about 3 | 8 |
+| Top turns begin at | 2.8 / 1.0 m/s | 5.1 / 2.4 m/s | 3.0 / 3.1 m/s |
+
+- **Neither helps.** Easing off keeps the heading hold's line, straight on up into the lip. Turning back down starts too slow to outrun the crest.
+- The bottom turns leave at 5.5–5.9 m/s, about the crest's speed (6 m/s), and the climb takes the rest. Whatever the rider does next, the wave arrives.
+- Both options were dropped. The ride report keeps `--first-seed`, so seeds can run in parallel.
+
+### Reading
+
+1. **Every thread of the bottom turn ends at its speed.** A 9 m, 0.7 g arc on the flats at full lean drags the board below the wave's speed (the carve-drag study: planing theory's drag). Then the wave catches the rider high on the face.
+2. The autopilot's technique cannot fix it on this wave: not where the turn starts (option B), not easing off, not turning back sooner.
+3. What would, for the user:
+   - a quicker turn, so less time dragging. It is limited by the balance's lean-in, about a 0.5 s time constant; faster gains broke rail changes and the wobble (the don't-retry list).
+   - more wave energy: a steeper, peeling face (the wave sessions' work; the practice Canyon peels at about 11°).
+   - accepting it: a real rider slower than the wave is caught too.
+
+The probes are patches on `scripts/ride-report.ts` in the session's scratchpad: `ride-report-where-probe.patch`, and the feet probe above.
