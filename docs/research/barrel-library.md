@@ -89,4 +89,11 @@ The swept barrel as drawn (Part B, PR 3; `src/wave/barrel/sweptLoft.ts`). The `p
 
   The advisor asked to hear past about 2 m. The profile throws where the Navier–Stokes wave goes vertical and runs forward as the library's lip does, while the solver's crest moves on its own after it breaks.
 - **Every lookup was clamped on this swell.** Its foot crests stand under the library's smallest case (A0 about 0.14 against 0.2), so they scale the A0 0.2 case by their own foot crest, as ruled. A smaller case (A0 0.1–0.15) would cover the Small swell and Practice.
-- **Slices after touchdown** stay on the front while the solver's bore breaks on. They are lofted at zero weight, invisible and unmasked, and they are what fills the budget at the big sets.
+- **Slices after touchdown** stay on the front while the solver's bore breaks on. Lofted at zero weight, invisible and unmasked, they filled the budget at the big sets.
+
+The advisor's follow-ups (2026-09-30), rerun on the same sea [measured]:
+- **Faded slices are dropped** from the loft and its budget. The loft fell to 0.50 ms a frame, 0.3 % of the step. The most vertices at once was 15,544, and no clock was clamped.
+- **The drawn crest's distance from the solver's is soft-capped:** its own up to 1.5 m, then 1.5 + x/(1 + x) with x the excess in metres, so at most 2.5 m. That is the rational twin of the advisor's tanh, since the loft stays + − × ÷ √.
+  - 1,809 of 17,773 open slices were capped. Their median life was 0.76 of the open time.
+  - By fifths of the open time they fell 78 / 124 / 309 / 505 / 793, so 44 % in the last fifth.
+- **So the anchor starts back to the solver's crest at 80 % of the open time,** over the 0.3 s handover, where the lip collapses and the crest landmark is least defined (the advisor's rule).

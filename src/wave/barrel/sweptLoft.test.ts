@@ -68,6 +68,13 @@ describe('the swept loft', () => {
     expect(thrown.caps).toBe(0);
   });
 
+  it('hands the anchor back to the solver’s crest from 80 % of the open time, where the capped slices cluster (the advisor, 2026-09-30)', () => {
+    // Thrown at z −106 the drawn crest stands at −99, the solver's at −100: held until 0.8 of the touchdown time,
+    // then halfway back 0.15 s (half the handover) later.
+    expect(crestZ(loftOf(() => 0.5 * TOUCHDOWN, 21, -106))).toBeCloseTo(-99, 4);
+    expect(crestZ(loftOf(() => 0.8 * TOUCHDOWN + LOFT.handover / 2, 21, -106))).toBeCloseTo(-99.5, 4);
+  });
+
   it('soft-caps the drawn crest’s distance from the solver’s at 2.5 m, and counts the caps (the advisor, 2026-09-30)', () => {
     // Thrown at z −100.2, the crest would stand 6.8 m ahead: drawn at 1.5 + 5.3 / (1 + 5.3) m.
     const loft = loftOf(() => 0.1);

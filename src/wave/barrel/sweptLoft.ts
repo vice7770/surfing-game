@@ -16,11 +16,14 @@ import { LANDMARK, PROFILE_POINTS, type ProfileLibrary } from './ProfileLibrary'
  * - `handover`, s: after touchdown a slice's anchor returns to the solver's crest and its surface fades into the water
  *   over this long, a stand-in until the roller; a faded slice is dropped [inferred];
  * - `offsetKnee`, `offsetReach`, m: the drawn crest's distance from the solver's is its own below the knee and
- *   saturates `offsetReach` past it (the advisor, 2026-09-30: 5 % of open slices ran over 2 m on the Small swell).
+ *   saturates `offsetReach` past it (the advisor, 2026-09-30: 5 % of open slices ran over 2 m on the Small swell);
+ * - `handoverStart`: the anchor starts back to the solver's crest at this share of the open time, where the lip
+ *   collapses and the crest landmark is least defined: the capped slices clustered there (44 % in the last fifth of
+ *   the open time on the Small swell; the advisor's rule, 2026-09-30).
  */
 export const LOFT = {
   spacing: 0.5, fine: 0.25, frames: 3, budget: 40_000, pinned: 6, extension: 1.5, extensionSamples: 3, band: 1, endBlend: 2.5, handover: 0.3,
-  offsetKnee: 1.5, offsetReach: 1,
+  offsetKnee: 1.5, offsetReach: 1, handoverStart: 0.8,
 } as const;
 /** Vertices per slice: the profile and its extensions over the water at each end. */
 export const LOFT_SAMPLES = PROFILE_POINTS + 2 * LOFT.extensionSamples;
@@ -331,12 +334,13 @@ export class SweptLoft {
           r.caps += 1;
         }
         life = tau / touchdown;
-        if (tau <= touchdown) {
+        if (tau <= touchdown) offset = raw;
+        const start = LOFT.handoverStart * touchdown;
+        if (tau <= start) {
           ax = throwX;
           az = throwZ;
-          offset = raw;
         } else {
-          const u = Math.min(1, (tau - touchdown) / LOFT.handover);
+          const u = Math.min(1, (tau - start) / LOFT.handover);
           ax = throwX + u * (crestX - throwX);
           az = throwZ + u * (crestZ - throwZ);
         }
