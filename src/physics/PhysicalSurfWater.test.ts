@@ -4,6 +4,10 @@ import { waveNumber } from '../wave/dispersion';
 import { ShallowWaterSolver, uniformEdges } from '../wave/ShallowWaterSolver';
 import { SurfZoneSimulation, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { reefCrestZ } from '../wave/Bathymetry';
+import { FRONT_FIELD, FRONT_STRIDE } from '../wave/barrel/frontRecords';
+import { ProfileLibrary } from '../wave/barrel/ProfileLibrary';
+import { SweptContact } from '../wave/barrel/sweptContact';
+import { tubeCase } from '../wave/barrel/toyCase';
 import { SEAWATER_DENSITY, PhysicalSurfWater, catmullRomWeights } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
 
@@ -275,4 +279,65 @@ describe('PhysicalSurfWater\'s turbulence', () => {
     const beach = PhysicalSurfWater.forSimulation(new SurfZoneSimulation({ ...config, spot: 'beach' }));
     expect(beach.sampleAt(0, -1, -60, createWaterSample()).bedMaterial).toBe('sand');
   }, 240_000);
+});
+
+/** The toy tube (h0 3 m: foot crest 0.9 m at A0 0.3) on a straight front along +x at z = 0, thrown there. */
+function sweptChannel() {
+  const { solver, breaking } = channel(3, 1);
+  const contact = new SweptContact(new ProfileLibrary([tubeCase(0.3)]), 0.05);
+  const water = new PhysicalSurfWater(solver, { peakPeriod: 10, breaking, swept: contact });
+  const n = 17;
+  const records = new Float32Array(n * FRONT_STRIDE);
+  for (let k = 0; k < n; k += 1) {
+    const o = k * FRONT_STRIDE;
+    records[o + FRONT_FIELD.x] = k - 8; records[o + FRONT_FIELD.z] = 0; records[o + FRONT_FIELD.front] = 1; records[o + FRONT_FIELD.sigma] = k;
+    records[o + FRONT_FIELD.tau] = 0.05; records[o + FRONT_FIELD.footHeight] = 0.9; records[o + FRONT_FIELD.footDepth] = 3;
+    records[o + FRONT_FIELD.throwZ] = 0;
+  }
+  contact.update(records, n, solver.restLevel, (x, z) => water.plainSurfaceAt(x, z));
+  return { water, solver };
+}
+// At x = 0.9 h0 = 2.7 m ahead (z 2.7): the flat below, the underside at 0.55 h0 and the top at 0.575 h0 over still
+// water; the top crosses there at profile index 32 + 32 × 0.75, three quarters of the way to the tip.
+const UNDER = 0.55 * 3;
+const TOP = 0.575 * 3;
+
+describe('the swept contact through the water (Padang Padang, Part B, PR 4)', () => {
+  it('answers the tube’s air with the face below and the curl above, covered and open', () => {
+    const { water, solver } = sweptChannel();
+    const sample = water.sampleAt(0, solver.restLevel + 1, 2.7, createWaterSample());
+    expect(sample.surfaceY).toBeCloseTo(water.plainSurfaceAt(0, 2.7), 2);
+    expect(sample.ceilingY).toBeCloseTo(solver.restLevel + UNDER, 2);
+    expect(sample.ceilingTopY).toBeCloseTo(solver.restLevel + TOP, 2);
+    expect(sample.clearance).toBeCloseTo(sample.ceilingY! - (solver.restLevel + 1), 6);
+    expect(sample.covered).toBe(true);
+    expect(sample.tube).toBe('open');
+    expect(sample.waterFloorY).toBeUndefined();
+    expect(water.surfaceAt(0, 2.7)).toBeCloseTo(sample.surfaceY, 4);
+  });
+
+  it('gives the curl’s water the lip’s flow across the crest, keeping the solver’s along it', () => {
+    const { water, solver } = sweptChannel();
+    const y = solver.restLevel + (UNDER + TOP) / 2;
+    const sample = water.sampleAt(0, y, 2.7, createWaterSample());
+    expect(sample.surfaceY).toBeCloseTo(solver.restLevel + TOP, 2);
+    expect(sample.waterFloorY).toBeCloseTo(solver.restLevel + UNDER, 2);
+    expect(sample.covered).toBe(false);
+    const plain = new PhysicalSurfWater(solver, { peakPeriod: 10 }).sampleAt(0, y, 2.7, createWaterSample());
+    // Along the crest (x) the solver's flow is kept; across it, 3/4 of the way to the tip's 0.9 √(g h0) shoreward, and down.
+    expect(sample.flowX).toBeCloseTo(plain.flowX, 6);
+    expect(sample.flowZ).toBeCloseTo(0.25 * plain.flowZ + 0.75 * 0.9 * Math.sqrt(9.81 * 3), 1);
+    expect(sample.flowY).toBeLessThan(0);
+  });
+
+  it('leaves every field out where the loft is not, and clears them from a reused sample', () => {
+    const { water, solver } = sweptChannel();
+    const sample = water.sampleAt(0, solver.restLevel + 1, 2.7, createWaterSample());
+    water.sampleAt(0, 0, 9.5, sample);
+    expect(sample.ceilingY).toBeUndefined();
+    expect(sample.clearance).toBeUndefined();
+    expect(sample.covered).toBeUndefined();
+    expect(sample.tube).toBeUndefined();
+    expect(sample.surfaceY).toBe(water.plainSurfaceAt(0, 9.5));
+  });
 });

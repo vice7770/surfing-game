@@ -1,4 +1,5 @@
 import type { BedMaterial } from '../wave/Bathymetry';
+import { createContactHit, tubeState, type SweptContact } from '../wave/barrel/sweptContact';
 import { waveNumber } from '../wave/dispersion';
 import type { ShallowWaterSolver } from '../wave/ShallowWaterSolver';
 import type { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
@@ -30,6 +31,8 @@ const NEAR_BED = 0.3;
 const MIN_ROLLER_FLOW = 0.05;
 const ROLLER_SHOREWARD = 0.5;
 const GRAVITY = 9.81;
+/** A swept contact normal's least upward part: the slope stays under 10 on a vertical or overhanging face [inferred]. */
+const MIN_NORMAL_Y = 0.1;
 
 /** Catmull-Rom weights for nodes −1, 0, 1, 2 at fraction t of the way from node 0 to node 1. */
 export function catmullRomWeights(t: number): [number, number, number, number] {
@@ -60,6 +63,11 @@ export interface PhysicalSurfWaterOptions {
   aeration?: { voidFraction(cell: number): number; readonly depth: ArrayLike<number>; readonly turbulence?: ArrayLike<number> };
   /** Lowers the surface where a flying lip's void leaves it (the plunging lip's `carve`). */
   carve?: (x: number, z: number, surface: number) => number;
+  /**
+   * The swept barrel's contact (the Padang Padang spec, Part B, PR 4): where its loft is, it answers the surface, the
+   * curl's layers and the lip's flow, in place of a carve.
+   */
+  swept?: SweptContact;
 }
 
 /**
@@ -89,22 +97,27 @@ export class PhysicalSurfWater implements SurfWater {
   private readonly nodes = new Float64Array(16);
   private readonly cells = new Int32Array(4);
   private readonly weights = new Float64Array(4);
+  private readonly hit = createContactHit();
 
   constructor(private readonly solver: ShallowWaterSolver, private readonly options: PhysicalSurfWaterOptions) {
     this.spacing = options.nodeSpacing ?? 1;
     this.omega = (2 * Math.PI) / options.peakPeriod;
   }
 
-  static forSimulation(simulation: SurfZoneSimulation): PhysicalSurfWater {
+  /** The simulation's water; with the swept barrel's contact, that in place of the lip's carve (Part B, PR 4). */
+  static forSimulation(simulation: SurfZoneSimulation, swept?: SweptContact): PhysicalSurfWater {
     const { lip } = simulation;
     return new PhysicalSurfWater(simulation.solver, {
-      peakPeriod: simulation.config.peakPeriod, breaking: simulation.breaking.strength, carve: (x, z, surface) => lip.carve(x, z, surface),
+      peakPeriod: simulation.config.peakPeriod, breaking: simulation.breaking.strength,
+      ...(swept ? { swept } : { carve: (x: number, z: number, surface: number) => lip.carve(x, z, surface) }),
       aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
     });
   }
 
   sampleAt(x: number, y: number, z: number, out: WaterSample): WaterSample {
     const { solver } = this;
+    const { swept } = this.options;
+    if (swept) this.clearLayers(out);
     if (this.outside(x, z)) return this.flatSea(out);
     const { h, bed, qx, qz } = solver;
     this.cellWeights(x, z);
@@ -125,6 +138,8 @@ export class PhysicalSurfWater implements SurfWater {
     out.stillDepth = Math.max(0, solver.restLevel - bottom);
     out.wet = depth > WET;
     this.surface(x, z, out);
+    const contact = swept !== undefined && swept.query(x, y, z, this.hit);
+    if (contact) this.fromContact(y, out);
     out.voidFraction = this.airAt(y, out.surfaceY);
     out.turbulence = this.turbulenceAt(y, out.surfaceY, this.blend(bed));
     out.breaking = this.options.breaking ? this.blend(this.options.breaking) : 0;
@@ -168,10 +183,21 @@ export class PhysicalSurfWater implements SurfWater {
     out.flowX = u * horizontal;
     out.flowZ = w * horizontal;
     out.flowY = rise * vertical;
+    if (contact && out.waterFloorY !== undefined) this.lipFlow(out);
     return out;
   }
 
   surfaceAt(x: number, z: number): number {
+    const { swept } = this.options;
+    if (swept && !this.outside(x, z)) {
+      const floor = swept.floorAt(x, z);
+      if (floor === floor) return floor;
+    }
+    return this.plainSurfaceAt(x, z);
+  }
+
+  /** The render nodes' surface, never the swept contact's: what the contact lofts over. */
+  plainSurfaceAt(x: number, z: number): number {
     if (this.outside(x, z)) return this.solver.restLevel;
     const { nodes } = this;
     const { gx, gz } = this.gatherNodes(x, z);
@@ -292,6 +318,49 @@ export class PhysicalSurfWater implements SurfWater {
     out.normalX = -slopeX / length;
     out.normalY = 1 / length;
     out.normalZ = -slopeZ / length;
+  }
+
+  /** A reused sample leaves the swept layers of its last point behind: clear them. */
+  private clearLayers(out: WaterSample): void {
+    out.waterFloorY = undefined;
+    out.ceilingY = undefined;
+    out.ceilingTopY = undefined;
+    out.covered = undefined;
+    out.clearance = undefined;
+    out.tube = undefined;
+  }
+
+  /** The swept surface in place of the render nodes' (the Padang Padang spec, Part B, PR 4). */
+  private fromContact(y: number, out: WaterSample): void {
+    const { hit } = this;
+    out.surfaceY = hit.surfaceY;
+    const up = Math.max(MIN_NORMAL_Y, hit.normalY);
+    out.slopeX = -hit.normalX / up;
+    out.slopeZ = -hit.normalZ / up;
+    out.normalX = hit.normalX;
+    out.normalY = hit.normalY;
+    out.normalZ = hit.normalZ;
+    if (hit.waterFloorY === hit.waterFloorY) out.waterFloorY = hit.waterFloorY;
+    if (hit.ceilingY === hit.ceilingY) {
+      out.ceilingY = hit.ceilingY;
+      out.ceilingTopY = hit.ceilingTopY;
+      out.clearance = hit.ceilingY - y;
+    }
+    out.tube = tubeState(hit.life);
+    out.covered = !hit.inWater && hit.ceilingY === hit.ceilingY && !(hit.life >= 1);
+  }
+
+  /**
+   * The curl's water moves with its lip (the advisor's ruling 1): across the crest and up, the solver's flow ramps to
+   * the tip's velocity by where the curl's top is (crest landmark 0, tip 1); along the crest the solver's is kept.
+   */
+  private lipFlow(out: WaterSample): void {
+    const { lipShare: r, tangentX: tx, tangentZ: tz, lipVX, lipVY, lipVZ } = this.hit;
+    const along = out.flowX * tx + out.flowZ * tz;
+    const lipAlong = lipVX * tx + lipVZ * tz;
+    out.flowX = along * tx + (1 - r) * (out.flowX - along * tx) + r * (lipVX - lipAlong * tx);
+    out.flowZ = along * tz + (1 - r) * (out.flowZ - along * tz) + r * (lipVZ - lipAlong * tz);
+    out.flowY = (1 - r) * out.flowY + r * lipVY;
   }
 
   /** The four cells and bilinear weights `sampleCentered` would use at (x, z). */
