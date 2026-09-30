@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
-import { LOFT, LOFT_SAMPLES, SweptLoft } from './sweptLoft';
-import { toyCase } from './toyCase';
+import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
+import { toyCase, tubeCase } from './toyCase';
 
 const flat = () => 0.5;
 /** A straight front along +x at z = −100, 1 m apart, every point at τ `tau(k)`, thrown at z `throwZ` once τ ≥ 0. */
@@ -154,5 +154,72 @@ describe('the swept loft', () => {
     expect(times).toEqual({
       scale: lookup.scale, clamped: lookup.clamped, touchdownSeconds: lookup.touchdownSeconds, frameSeconds: lookup.frameSeconds, clearSeconds: lookup.clearSeconds,
     });
+  });
+});
+
+const tubes = () => new ProfileLibrary([tubeCase(0.3)]);
+/** The toy tube's τ unit at h0 = 7 m, s: its touchdown is 0.5 of it, its last clear frame 0.25. */
+const TUBE_UNIT = Math.sqrt(7 / 9.81);
+/** The slice at σ in a loft. */
+const sliceAt = (loft: LoftResult, sigma: number) => {
+  for (let s = 0; s < loft.sliceCount; s += 1) if (Math.abs(loft.sliceSigma[s] - sigma) < 1e-4) return s;
+  throw new Error(`no slice at σ ${sigma}`);
+};
+
+describe('the loft’s slices, for the contact', () => {
+  it('records each slice’s ray, weight, joins and whether it overhangs', () => {
+    const loft = new SweptLoft(tubes(), 0.05).build(records(21, () => 0.1), 21, 0.5, flat);
+    const middle = sliceAt(loft, 10);
+    expect(loft.sliceRayX[middle]).toBeCloseTo(0, 6);
+    expect(loft.sliceRayZ[middle]).toBeCloseTo(1, 6);
+    expect(loft.sliceWeight[middle]).toBe(1);
+    expect(loft.sliceOverturned[middle]).toBe(1);
+    expect(loft.sliceJoined[middle]).toBe(1);
+    expect(loft.sliceJoined[loft.sliceCount - 1]).toBe(0);
+    const tent = new SweptLoft(tubes(), 0.05).build(records(21, () => -0.3), 21, 0.5, flat);
+    expect(tent.sliceOverturned[sliceAt(tent, 10)]).toBe(0);
+  });
+
+  it('carries the tip’s velocity, and the anchor’s while it hands over', () => {
+    const open = new SweptLoft(tubes(), 0.05).build(records(21, () => 0.1), 21, 0.5, flat);
+    const middle = sliceAt(open, 10);
+    expect(open.sliceTipAlong[middle]).toBeCloseTo(0.9 * Math.sqrt(9.81 * 7), 3);
+    expect(open.sliceTipUp[middle]).toBeCloseTo(-0.3 * Math.sqrt(9.81 * 7), 3);
+    expect(open.sliceAnchorVZ[middle]).toBe(0);
+    // Thrown 3 m behind the solver's crest (soft-capped to 2.1 m), handing over: the anchor runs to the crest over 0.3 s.
+    const handing = new SweptLoft(tubes(), 0.05).build(records(21, () => 0.85 * 0.5 * TUBE_UNIT, -103), 21, 0.5, flat);
+    expect(handing.sliceAnchorVZ[sliceAt(handing, 10)]).toBeCloseTo(2.1 / LOFT.handover, 3);
+  });
+
+  it('asks the water’s height only where a vertex rests on it', () => {
+    let calls = 0;
+    const counted = (x: number, z: number) => {
+      calls += 1;
+      return flat(x, z);
+    };
+    const loft = new SweptLoft(tubes(), 0.05).build(records(21, () => 0.1), 21, 0.5, counted);
+    expect(calls).toBeLessThan(loft.vertexCount / 2);
+    const crest = sliceAt(loft, 10) * LOFT_SAMPLES + LOFT.extensionSamples + 32;
+    expect(loft.positions[3 * crest + 1]).toBeCloseTo(0.5 + 0.8 * 7, 5);
+  });
+
+  it('in contact mode cuts overturned slices under full weight at 0.5, and counts them', () => {
+    const drawn = new SweptLoft(tubes(), 0.05).build(records(21, () => 0.1), 21, 0.5, flat);
+    const contact = new SweptLoft(tubes(), 0.05, { contact: true }).build(records(21, () => 0.1), 21, 0.5, flat);
+    expect(contact.cuts).toBeGreaterThan(0);
+    expect(contact.sliceCount).toBeLessThan(drawn.sliceCount);
+    for (let s = 0; s < contact.sliceCount; s += 1) if (contact.sliceOverturned[s]) expect(contact.sliceWeight[s]).toBe(1);
+    expect(drawn.cuts).toBe(0);
+  });
+
+  it('in contact mode holds the geometry at the last clear frame after touchdown, but keeps the clock', () => {
+    const late = new SweptLoft(tubes(), 0.05, { contact: true }).build(records(21, () => 0.5 * TUBE_UNIT + 0.1, -100), 21, 0.5, flat);
+    const held = new SweptLoft(tubes(), 0.05, { contact: true }).build(records(21, () => 0.25 * TUBE_UNIT, -100), 21, 0.5, flat);
+    const a = sliceAt(late, 10);
+    const b = sliceAt(held, 10);
+    expect(late.sliceTau[a]).toBeCloseTo(0.5 * TUBE_UNIT + 0.1, 5);
+    expect(late.slicePhase[a]).toBe(2);
+    const at = (loft: LoftResult, s: number) => Array.from(loft.positions.subarray(3 * s * LOFT_SAMPLES, 3 * (s + 1) * LOFT_SAMPLES));
+    expect(at(late, a)).toEqual(at(held, b));
   });
 });

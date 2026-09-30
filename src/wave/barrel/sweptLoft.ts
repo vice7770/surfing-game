@@ -57,6 +57,25 @@ export interface LoftResult {
   clampedLookups: number;
   /** Slices whose drawn crest's distance from the solver's was soft-capped. */
   caps: number;
+  /** Per slice, 1 when it is triangulated to the next (the same run of live slices). */
+  sliceJoined: Uint8Array;
+  /** Per slice, its ray (the front's shoreward normal, x and z), its weight on the water, and 1 if its profile overhangs. */
+  sliceRayX: Float32Array;
+  sliceRayZ: Float32Array;
+  sliceWeight: Float32Array;
+  sliceOverturned: Uint8Array;
+  /** Per slice, the lip tip's velocity along the ray and up, m/s, and the anchor's own (x, z) while it hands over. */
+  sliceTipAlong: Float32Array;
+  sliceTipUp: Float32Array;
+  sliceAnchorVX: Float32Array;
+  sliceAnchorVZ: Float32Array;
+  /** Contact mode: overturned slices under full weight made whole (from half) or dropped (below). */
+  cuts: number;
+}
+
+export interface LoftOptions {
+  /** Build for the contact (Part B, PR 4): see `SweptLoft`. */
+  contact?: boolean;
 }
 
 const MAX_SLICES = Math.floor(LOFT.budget / LOFT_SAMPLES);
@@ -94,6 +113,10 @@ interface Sample {
  *   and each vertex carries the mask's value: 1 over the profile, 0 a `band` past it.
  * - **Resampling** (ruling 4): `spacing`, refined to `fine` where neighbouring clocks differ by more than `frames`
  *   frames, within `budget` vertices.
+ * - **Contact mode** (PR 4, the advisor's ruling 2): each slice's geometry is held at its last clear frame after
+ *   touchdown (its clock and phase run on), so it never self-crosses; and an overturned slice under full weight is
+ *   whole from half weight and dropped below, counted in `cuts`: a squashed lip is no water.
+ * A vertex resting on the water asks its height; one lifted fully off it is still level plus the profile.
  * Only + − × ÷ and √, for online determinism: PR 4's contact runs the same code in the worker.
  */
 export class SweptLoft {
@@ -105,14 +128,21 @@ export class SweptLoft {
   private readonly sample: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
   private readonly probe: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
 
-  constructor(private readonly library: ProfileLibrary, private readonly slope: number) {
+  private readonly contact: boolean;
+
+  constructor(private readonly library: ProfileLibrary, private readonly slope: number, options: LoftOptions = {}) {
+    this.contact = options.contact ?? false;
     const vertices = (MAX_SLICES + 1) * LOFT_SAMPLES;
+    const slices = MAX_SLICES + 1;
     this.result = {
       positions: new Float32Array(3 * vertices), normals: new Float32Array(3 * vertices), mask: new Float32Array(vertices), lift: new Float32Array(vertices),
-      indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * (MAX_SLICES + 1)), vertexCount: 0, indexCount: 0, sliceCount: 0,
-      sliceFront: new Int32Array(MAX_SLICES + 1), sliceSigma: new Float32Array(MAX_SLICES + 1), sliceTau: new Float32Array(MAX_SLICES + 1),
-      slicePhase: new Uint8Array(MAX_SLICES + 1), sliceCrestOffset: new Float32Array(MAX_SLICES + 1), sliceLife: new Float32Array(MAX_SLICES + 1),
+      indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * slices), vertexCount: 0, indexCount: 0, sliceCount: 0,
+      sliceFront: new Int32Array(slices), sliceSigma: new Float32Array(slices), sliceTau: new Float32Array(slices),
+      slicePhase: new Uint8Array(slices), sliceCrestOffset: new Float32Array(slices), sliceLife: new Float32Array(slices),
       clamps: 0, clampedLookups: 0, caps: 0,
+      sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
+      sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
+      sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices), cuts: 0,
     };
   }
 
@@ -124,6 +154,7 @@ export class SweptLoft {
     r.clamps = 0;
     r.clampedLookups = 0;
     r.caps = 0;
+    r.cuts = 0;
     const fronts = this.fronts(records, count);
     // The spacing that fits the budget, and whether refining would overrun it: faded slices are dropped, so only the
     // live ones count.
@@ -300,12 +331,37 @@ export class SweptLoft {
         if (clamped !== tau) r.clamps += 1;
         tau = clamped;
       }
-      const lookup = this.library.profileAt({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth, seconds: tau }, profile);
+      // The contact holds its geometry at the last clear frame, never self-crossing (the advisor's ruling 2); its clock runs on.
+      const shapeTau = this.contact
+        ? Math.min(tau, this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth }).clearSeconds)
+        : tau;
+      const lookup = this.library.profileAt({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth, seconds: shapeTau }, profile);
       const touchdown = lookup.touchdownSeconds;
       const wFade = tau <= touchdown ? 1 : Math.max(0, 1 - (tau - touchdown) / LOFT.handover);
       if (wFade === 0) {
         closeRun();
         continue;
+      }
+      // The weights: into the water at the front's ends, and after touchdown.
+      const d = Math.min(sigma - f.first, f.last - sigma);
+      const r0 = Math.min(1, d / LOFT.endBlend);
+      const wEnd = d <= 0 ? 0 : r0 * r0 * (3 - 2 * r0);
+      let w = wEnd * wFade;
+      let overturned = 0;
+      for (let i = LOFT.pinned; i < LAST - LOFT.pinned; i += 1) {
+        if (profile[2 * (i + 1)] < profile[2 * i]) {
+          overturned = 1;
+          break;
+        }
+      }
+      if (this.contact && overturned && w < 1) {
+        // A squashed lip is no water: whole from half weight, gone below (the advisor's ruling 2).
+        r.cuts += 1;
+        if (w < 0.5) {
+          closeRun();
+          continue;
+        }
+        w = 1;
       }
       if (r.sliceCount >= MAX_SLICES) break;
       if (runStart < 0) runStart = r.sliceCount;
@@ -319,6 +375,8 @@ export class SweptLoft {
       let az = crestZ;
       let offset = Number.NaN;
       let life = Number.NaN;
+      let anchorVX = 0;
+      let anchorVZ = 0;
       if (tau >= 0 && s.throwZ === s.throwZ) {
         // The throw's anchor, its drawn crest at most `offsetKnee` + `offsetReach` from the solver's (a soft cap).
         const ox = crest * nx;
@@ -343,21 +401,30 @@ export class SweptLoft {
           const u = Math.min(1, (tau - start) / LOFT.handover);
           ax = throwX + u * (crestX - throwX);
           az = throwZ + u * (crestZ - throwZ);
+          // The anchor's own motion while it hands over; the solver's crest's is left out (a ledger ruling).
+          if (u < 1) {
+            anchorVX = (crestX - throwX) / LOFT.handover;
+            anchorVZ = (crestZ - throwZ) / LOFT.handover;
+          }
         }
       }
-      // The weights: into the water at the front's ends, and after touchdown.
-      const d = Math.min(sigma - f.first, f.last - sigma);
-      const r0 = Math.min(1, d / LOFT.endBlend);
-      const wEnd = d <= 0 ? 0 : r0 * r0 * (3 - 2 * r0);
-      const w = wEnd * wFade;
       const maskSlice = wFade > 0 ? Math.min(1, Math.max(0, 1 + d / LOFT.band)) : 0;
       const slice = r.sliceCount;
       r.sliceFront[slice] = f.id;
       r.sliceSigma[slice] = sigma;
       r.sliceTau[slice] = tau;
-      r.slicePhase[slice] = PHASE[lookup.phase];
+      r.slicePhase[slice] = tau > touchdown ? PHASE.post : PHASE[lookup.phase];
       r.sliceCrestOffset[slice] = offset;
       r.sliceLife[slice] = life;
+      r.sliceJoined[slice] = 0;
+      r.sliceRayX[slice] = nx;
+      r.sliceRayZ[slice] = nz;
+      r.sliceWeight[slice] = w;
+      r.sliceOverturned[slice] = overturned;
+      r.sliceTipAlong[slice] = lookup.tipAlong;
+      r.sliceTipUp[slice] = lookup.tipUp;
+      r.sliceAnchorVX[slice] = anchorVX;
+      r.sliceAnchorVZ[slice] = anchorVZ;
       for (let j = 0; j < LOFT_SAMPLES; j += 1) {
         let along: number;
         let above = 0;
@@ -379,10 +446,14 @@ export class SweptLoft {
         const v = slice * LOFT_SAMPLES + j;
         const px = ax + along * nx;
         const pz = az + along * nz;
-        const h = heightAt(px, pz);
         const e = w * (1 - pin);
         r.positions[3 * v] = px;
-        r.positions[3 * v + 1] = e === 0 ? h : h + e * (stillLevel + above - h);
+        if (e === 1) {
+          r.positions[3 * v + 1] = stillLevel + above;
+        } else {
+          const h = heightAt(px, pz);
+          r.positions[3 * v + 1] = e === 0 ? h : h + e * (stillLevel + above - h);
+        }
         r.positions[3 * v + 2] = pz;
         r.mask[v] = maskSlice * maskAlong;
         r.lift[v] = e;
@@ -398,6 +469,7 @@ export class SweptLoft {
     const r = this.result;
     this.normals(firstSlice, lastSlice);
     for (let s = firstSlice; s < lastSlice; s += 1) {
+      r.sliceJoined[s] = 1;
       for (let j = 0; j < LOFT_SAMPLES - 1; j += 1) {
         const v00 = s * LOFT_SAMPLES + j;
         const v10 = v00 + LOFT_SAMPLES;
