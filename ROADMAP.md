@@ -557,8 +557,11 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - rounder tubes (width/length 0.71 → 0.77–0.80) that open wider;
     - jets 0.47 H² and 0.47 H thick;
     - the crest gives the whole jet except on the Big swell's biggest waves;
-    - jets leave at 1.95× crest speed against the lab's 1.25–1.32 (reported for the user).
+    - jets leave at 1.95× crest speed against the lab's 1.25–1.32 (reported for the user);
+    - easing a jet's source in at its upper half's edge (smoothstep from H/2 to 3H/4 above the trough, or the water above H/2 only) did not change the steps near throws: they sit at the wave's mid-face whatever the source does. Not kept (the water-physics advisor; branch `claude/jet-half-taper`, [report](docs/research/teahupoo-reef-report.md#a-softer-edge-at-half-height-measured-not-kept)).
   - **Open:**
+    - the Reef's jet ask: the advisor's periodic Basilisk runs give 0.55–0.62 H² against the provisional 0.47, where 48–62 % of throws on main already fall short (the owner's call);
+    - seed 3's +x edge column reaching dη/dz 4 near t 110 s under the Big swell ([report](docs/research/teahupoo-reef-report.md#a-softer-edge-at-half-height-measured-not-kept));
     - validating the water against the open Teahupo'o lab dataset (download needs the user's OK);
     - peel against makeability before Part D (the user's call).
 - [ ] **Part C · the look, the sound and a solid reef** (branch `claude/teahupoo-reef-c`, [plan](docs/superpowers/plans/2026-09-28-teahupoo-reef-part-c.md), [report](docs/research/teahupoo-reef-report.md#part-c-the-solid-reef-the-lagoon-the-crash)):
