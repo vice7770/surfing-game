@@ -1,4 +1,5 @@
-"""A periodic run's main plunge: face vertical, touchdown, the jet and tube just before touchdown.
+"""A periodic run's main plunge: face vertical, touchdown, the jet and tube just before touchdown
+(the last overturned frame with the jet at least 3 cells off the face).
 
 The water level ahead is the local trough (the step), not still water, and the crest is looked for
 only at x >= XMIN (h0), past the steps the backwash throws on the face. Areas are per the breaking
@@ -34,11 +35,14 @@ for t, f in list_frames(run):
         continue
     ang = metrics.face_angle(m, lm)
     loops = [l for l in fr["closed"] if abs(l[:, 0].mean() - m[lm["lip"], 0]) < 1.2 and abs(poly_area(l)) > 0.002]
+    g = metrics.gap(m, lm) if lm["overturned"] else None
     rows.append(dict(t=t, f=f, crest=float(m[lm["crest"], 1]), cx=float(m[lm["crest"], 0]), tr=tr, ang=ang,
-                     ov=lm["overturned"], loop=bool(loops)))
+                     ov=lm["overturned"], loop=bool(loops), gap=g))
 tv = next((r["t"] for r in rows if r["ang"] >= 90), None)
 td = next((r for r in rows if tv and r["t"] > tv and r["loop"]), None)
-pre = max((r for r in rows if td and r["t"] < td["t"] and r["ov"]), key=lambda r: r["t"], default=None)
+# the last overturned frame before touchdown with the jet at least 3 cells off the face (closer, the void reads as a sliver)
+pre = max((r for r in rows if td and r["t"] < td["t"] and r["ov"] and (r["gap"] is None or r["gap"] >= 3 * dx)),
+          key=lambda r: r["t"], default=None)
 out = {"run": run, "t_vertical": tv, "t_touchdown": td["t"] if td else None}
 if tv:
     rv = next(r for r in rows if r["t"] == tv)

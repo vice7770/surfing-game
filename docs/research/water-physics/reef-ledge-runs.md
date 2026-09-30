@@ -24,7 +24,7 @@ You asked for the Reef's own transect, then for periodic waves. The periodic run
   - On main, 48–62 % of the Reef's throws already fall short at 0.47.
 - **The tube as drawn is supported.** It is round for most of its flight: 0.34–0.45 H² and 1.5–1.8 times as long as wide at 85 %. It flattens only as the lip lands (3.3–4.0). The swept barrel should take that time course from the profile library.
 - **Padang:**
-  - Jet 0.15 H², tilt 37° and length ÷ width 2.5, all near the plane-slope fits. Its tube is 0.18 H², half the fit, capped by the flat.
+  - Jet 0.15 H², tilt 40° and length ÷ width 2.4, all near the plane-slope fits. Its tube is 0.18 H², half the fit, capped by the flat.
   - Its lag for swell is 2.32 √(h0/g), about 2 s, 16 % under the solitary value. The Padang session now uses it.
   - Two more cases give lags of 0.22 √(h0/g) for a small 14 s swell and 1.60 for a big 18 s one. The lag isn't a clean function of depth: the small wave breaks right where the solver onsets it. So the Padang session may key the throw on the Navier–Stokes breaking depth instead.
 

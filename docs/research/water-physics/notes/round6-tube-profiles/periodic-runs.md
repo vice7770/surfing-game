@@ -56,10 +56,11 @@ Measured by `analysis/plunge_measure.py`, the plunge_measure JSON files in `data
 | Lip thickness | 0.46 H (11 cells) | 0.41 H (12 cells) | 0.18 H (5.6 cells) | 0.5 H |
 | Tube at 70 % of the flight | 0.30 H², L/W 1.26, 50° | 0.46 H², 1.39, 46° | 0.12 H², 1.16, 61° | |
 | Tube at 85 % of the flight | 0.34 H², L/W 1.48, 19° | 0.45 H², 1.80, 19° | 0.17 H², 1.91, 46° | 0.43 H², 1.42, 23° |
-| Tube just before touchdown | 0.26 H², L/W 3.3, 6° | 0.26 H², 4.0, 9° | 0.18 H², 2.5, 37° | |
+| Tube just before touchdown | 0.26 H², L/W 3.3, 6° | 0.26 H², 4.0, 9° | 0.18 H², 2.4, 40° | |
 
 - **Per H at touchdown** the Reef's numbers grow (1:6: jet 1.18 H²), because the crest falls as the lip leaves. The game's H is the breaking wave's, so per H at breaking is the comparison.
 - **Padang against Pick & Feddersen's plane-slope fits at its ψ0 (0.071):** jet 0.165 H², tilt 35°, length over width 2.4, tube 0.34 H². Jet, tilt and shape agree, and the tube is about half, as round 6 found (the reef flat caps it).
+- **"Just before touchdown"** is the last overturned frame with the jet at least 3 cells off the face; closer than that the void reads as a sliver. The Padang session found this in its level-12 library runs. The guard moved only the 16 s Padang case (length over width 2.51 → 2.44, tilt 37° → 40°) and the 14 s case (§7).
 - **The tube's shape changes through its life.** It is round for most of the flight (length over width 1.2–1.8) and stretches flat only as the lip lands. Mead & Black's surfed-break photos (1.42–3.43, roundest on steep reefs) catch it in flight; O'Dea et al.'s field closures run 1.70–3.15.
 
 ## 4. Padang's onset lag for swell [measured]
@@ -103,8 +104,8 @@ Same transect and method, level 12 (`padang19b`: domain 72 h0, switch 32 → 42,
 
 | Case | Foot crest | Solver onset depth (d/h0) | Basilisk vertical depth | Lag | Jet, tube per H at breaking | Length ÷ width, tilt, open | Lip |
 |---|---|---|---|---|---|---|---|
-| 14 s, H/h0 0.24 | 1.22 m | 2.51 m (0.358) | 2.45 m (H 2.74 m) | 0.22 √(h0/g), 0.18 s | 0.065, 0.051 | 3.0, 59°, 0.78 s | 0.14 H, 3.4 cells: under-resolved |
-| 16 s, H/h0 0.30 | 1.65 m | 3.17 m (0.453) | 2.38 m (H 3.41 m) | 2.30, 1.94 s | 0.15, 0.18 | 2.5, 37°, 0.99 s | 0.18 H, 5.6 cells |
+| 14 s, H/h0 0.24 | 1.22 m | 2.51 m (0.358) | 2.45 m (H 2.74 m) | 0.22 √(h0/g), 0.18 s | 0.052, 0.038 | 1.8, 71°, 0.78 s | 0.15 H, 3.6 cells: under-resolved |
+| 16 s, H/h0 0.30 | 1.65 m | 3.17 m (0.453) | 2.38 m (H 3.41 m) | 2.30, 1.94 s | 0.15, 0.18 | 2.4, 40°, 0.99 s | 0.18 H, 5.6 cells |
 | 18 s, H/h0 0.42 | 2.50 m | 3.62 m (0.517) | 2.97 m (H 4.17 m) | 1.60, 1.35 s | 0.12, 0.115 | 2.4, 40°, 1.06 s | 0.18 H, 6.2 cells |
 
 - **The lag isn't a clean function of join depth** [inferred]. The small 14 s wave goes vertical almost exactly where the solver onsets it; the larger ones go vertical 0.65–0.8 m shallower.
