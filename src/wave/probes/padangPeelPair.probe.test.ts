@@ -1,6 +1,7 @@
 // Probe (opt-in: PROBE=1 LOG=<file> npx vitest run <this file>): Padang Padang's two peels, wave by wave (the advisor,
 // 2026-09-30). The whitewater's: the solver's breaking onsets per reef column (the peel meter's, as the waves probe
-// reads them). The barrel's: the swept barrel's front joins. Both grouped into waves the waves probe's way (time
+// reads them). The barrel's: the swept barrel's front joins, and its lips' throws (where each crest crosses its throw
+// depth). All grouped into waves the waves probe's way (time
 // shifted along the reef at a guessed speed) and fitted on their own, speed along each break line, then paired by wave
 // and set beside the design's 11.6 m/s (the build sheet). Seed and swell as the waves probe; FROM, SECONDS.
 import { appendFileSync } from 'node:fs';
@@ -51,7 +52,9 @@ it.skipIf(!process.env.PROBE)('pairs Padang Padang’s whitewater and barrel pee
   const last = new Float64Array(xs.length).fill(Number.NaN);
   const whitewater: Onset[] = [];
   const barrel: Onset[] = [];
+  const throws: Onset[] = [];
   const known = new Set<number>();
+  const thrown = new Set<number>();
   const from = Number(process.env.FROM ?? 144);
   const until = from + Number(process.env.SECONDS ?? 300);
   while (solver.time < until) {
@@ -63,28 +66,45 @@ it.skipIf(!process.env.PROBE)('pairs Padang Padang’s whitewater and barrel pee
       if (t >= from) whitewater.push({ x: xs[column], t, z: tracker.onsetZ[column] });
     }
     for (const point of simulation.front!.points) {
-      if (known.has(point.id)) continue;
-      known.add(point.id);
-      if (point.joined >= from && padangReefAt(point.x)) barrel.push({ x: point.x, t: point.joined, z: point.z });
+      if (!known.has(point.id)) {
+        known.add(point.id);
+        if (point.joined >= from && padangReefAt(point.x)) barrel.push({ x: point.x, t: point.joined, z: point.z });
+      }
+      if (point.thrown === null || thrown.has(point.id)) continue;
+      thrown.add(point.id);
+      if (point.thrown >= from && padangReefAt(point.x)) throws.push({ x: point.x, t: point.thrown, z: point.z });
     }
   }
   const guess = Number(process.env.GUESS ?? 8);
   const white = waves(whitewater, guess, period).filter((wave) => new Set(wave.map((o) => o.x)).size >= 20);
   const barrelWaves = waves(barrel, guess, period).filter((wave) => new Set(wave.map((o) => o.x)).size >= 10);
-  log(`${whitewater.length} whitewater onsets and ${barrel.length} barrel joins on ${columns.length} reef columns, t ${from}–${until} s; the design's peel 11.6 m/s`);
+  const throwWaves = waves(throws, guess, period).filter((wave) => new Set(wave.map((o) => o.x)).size >= 10);
+  log(`${whitewater.length} whitewater onsets, ${barrel.length} barrel joins and ${throws.length} throws on ${columns.length} reef columns, t ${from}–${until} s; the design's peel 11.6 m/s`);
   const pairs: { white: number; barrel: number }[] = [];
+  const throwPairs: { white: number; thrown: number; lead: number }[] = [];
+  const keyOf = (wave: readonly { key: number }[]) => wave.reduce((sum, o) => sum + o.key, 0) / wave.length;
+  const columnsOf = (wave: readonly Onset[]) => new Set(wave.map((o) => o.x)).size;
   for (const wave of white) {
     const w = fitOf(wave);
-    const key = wave.reduce((sum, o) => sum + o.key, 0) / wave.length;
-    const match = barrelWaves.find((candidate) => Math.abs(candidate.reduce((sum, o) => sum + o.key, 0) / candidate.length - key) < period / 3);
+    const key = keyOf(wave);
+    const match = barrelWaves.find((candidate) => Math.abs(keyOf(candidate) - key) < period / 3);
     const b = match ? fitOf(match) : undefined;
     const clean = w.fit > 0.8 && w.leftward && b && b.fit > 0.8 && b.leftward;
     if (clean) pairs.push({ white: w.speed, barrel: b.speed });
-    log(`wave at t ${w.mt.toFixed(0)} s: whitewater ${w.speed.toFixed(1)} m/s (fit ${w.fit.toFixed(2)}, ${new Set(wave.map((o) => o.x)).size} columns)` +
-      (b ? `, barrel ${b.speed.toFixed(1)} m/s (fit ${b.fit.toFixed(2)}, ${new Set(match!.map((o) => o.x)).size} columns)${clean ? `, barrel/whitewater ${(b.speed / w.speed).toFixed(2)}` : ''}` : ', no barrel'));
+    const lips = throwWaves.find((candidate) => Math.abs(keyOf(candidate) - key) < period / 3);
+    const t = lips ? fitOf(lips) : undefined;
+    // How long after the whitewater's onset the lips throw, on average over the wave, s.
+    const lead = t ? t.mt - w.mt : NaN;
+    if (w.fit > 0.8 && w.leftward && t && t.fit > 0.8 && t.leftward) throwPairs.push({ white: w.speed, thrown: t.speed, lead });
+    log(`wave at t ${w.mt.toFixed(0)} s: whitewater ${w.speed.toFixed(1)} m/s (fit ${w.fit.toFixed(2)}, ${columnsOf(wave)} columns)` +
+      (b ? `, barrel joins ${b.speed.toFixed(1)} m/s (fit ${b.fit.toFixed(2)}, ${columnsOf(match!)} columns)${clean ? `, joins/whitewater ${(b.speed / w.speed).toFixed(2)}` : ''}` : ', no barrel') +
+      (t ? `, throws ${t.speed.toFixed(1)} m/s (fit ${t.fit.toFixed(2)}, ${columnsOf(lips!)} columns, ${lead.toFixed(2)} s after the whitewater)` : ', no throws'));
   }
   const median = (values: number[]) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
   if (pairs.length) {
-    log(`clean pairs (both fits > 0.8, peeling toward +x): ${pairs.length}; median whitewater ${median(pairs.map((p) => p.white)).toFixed(1)} m/s, barrel ${median(pairs.map((p) => p.barrel)).toFixed(1)} m/s, ratio ${median(pairs.map((p) => p.barrel / p.white)).toFixed(2)}; the design 11.6 m/s`);
+    log(`clean pairs (both fits > 0.8, peeling toward +x): ${pairs.length}; median whitewater ${median(pairs.map((p) => p.white)).toFixed(1)} m/s, barrel joins ${median(pairs.map((p) => p.barrel)).toFixed(1)} m/s, ratio ${median(pairs.map((p) => p.barrel / p.white)).toFixed(2)}; the design 11.6 m/s`);
   } else log('no clean pairs');
+  if (throwPairs.length) {
+    log(`clean throw pairs: ${throwPairs.length}; median whitewater ${median(throwPairs.map((p) => p.white)).toFixed(1)} m/s, throws ${median(throwPairs.map((p) => p.thrown)).toFixed(1)} m/s, ratio ${median(throwPairs.map((p) => p.thrown / p.white)).toFixed(2)}, throws ${median(throwPairs.map((p) => p.lead)).toFixed(2)} s after the whitewater`);
+  } else log('no clean throw pairs');
 }, 7_200_000);

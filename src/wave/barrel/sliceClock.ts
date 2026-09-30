@@ -13,25 +13,25 @@ import { GRAVITY } from '../dispersion';
 export const CLOCK = { smoothing: 2, bunched: 0.1, earliest: -3 } as const;
 
 /**
- * How long after the solver's Kennedy onset the lip throws, √(h0/g), against the still depth under the crest at the
- * onset, h0 (the kennedyLag probe, 2026-09-30): the game's solver at 1 m on round 6's Padang Padang transect (h0 7 m,
- * 1:19 to a 1.25 m flat), each soliton's onset against Basilisk's face going vertical (A0 0.3 at level 11; 0.2 and
- * 0.45 from level-10 scouts, ±0.3). The crests stand where Basilisk's do at the vertical time (about 1 m apart): the
- * trigger fires early, at η/h ≈ 0.9, while the crest still shoals. For swell the advisor's periodic run (a 16 s
- * cnoidal train, crest 1.66 m at the foot, level 12, 2026-09-30) measured 2.32 ± 0.5 at the join depth of 0.454 h0,
- * where the solitary runs give 2.75: swell's lag is 0.84 of a soliton's. So the solitary rows (0.237 → 2.34, 0.35 →
- * 2.60, 0.5 → 2.82) are scaled by 0.84, keeping their trend with depth and anchored on the one periodic point; every
- * row but 0.454 is scaled, not measured (the advisor). Provisional until more periodic cases are run.
+ * Where the lip throws: the still depth under the crest where the Navier–Stokes wave's face goes vertical (the
+ * library's τ = 0), against the crest's height at the wedge's foot, h0 = 7 m (the advisor's periodic Basilisk runs on
+ * round 6's Padang Padang transect, level 12, 2026-09-30: 14 s 1.22 m → 2.45 m, 16 s 1.65 m → 2.38 m, 18 s 2.50 m →
+ * 2.97 m). The lag after the solver's onset read 0.22, 2.30 and 1.60 √(h0/g) in those runs, no function of depth (the
+ * kennedyLag probe's solitary lags ran 2.3–2.8), so the throw is keyed on the Navier–Stokes depth itself and the
+ * solver's onset only has to lead it (the advisor's option b). Breaking depth is set mainly by height (d_b ≈ H_b/γ),
+ * and the three runs confound height with period (the taller were the longer), so one line in height through all
+ * three, residuals −0.11, +0.16 and −0.05 m [inferred], clamped to the measured heights: past a 2.5 m foot crest it
+ * would extrapolate. Period dependence is untested (the next run: the same height at another period). Provisional.
  */
-const ONSET_LAG: readonly (readonly [depth: number, lag: number])[] = [[0.237, 1.97], [0.35, 2.19], [0.454, 2.32], [0.5, 2.37]];
+const THROW_DEPTH = { intercept: 1.8, slope: 0.45, heights: [1.22, 2.5] } as const;
 
 /**
  * Where the game's solver first breaks swell, fresh, on the same transect (the periodicOnset probe, 2026-09-30): one
  * column wide, regular waves driven in the foot's 7 m, each wave's crest height as its highest over BAND (6 to 5 m,
  * nearer the break than the foot, still seaward of every onset: refraction and the spur change a crest's height
  * between the foot and the break in 2D, and one reading jitters; the advisor) against the still depth under its crest where Kennedy's fresh test first
- * fired (η_t ≥ 0.65 √(g d)), medians over 12 waves, per period, m. The join sits where the solver itself onsets, so the
- * lag keeps its meaning (the advisor, 2026-09-30); a soliton's depths (1.66 m at A0 0.2) sat well shoreward of swell's.
+ * fired (η_t ≥ 0.65 √(g d)), medians over 12 waves, per period, m. The join sits where the solver itself onsets, ahead
+ * of the throw (the advisor, 2026-09-30); a soliton's depths (1.66 m at A0 0.2) sat well shoreward of swell's.
  * Crests under about 1.2 m over the band seldom broke fresh on the wedge (1 wave in 12, near the flat's edge): they
  * clamp to the first row and join only if the solver breaks them there, so small swell mostly draws no barrel, as at
  * a reef pass (the advisor: one wave is no table row). Measured at h0 = 7 m, provisional.
@@ -62,28 +62,30 @@ function interpolate(table: readonly (readonly [number, number])[], x: number): 
 /**
  * A bed's onset timing: its wedge's foot `h0`, m, where crests are first followed; the band of still depth, deeper and
  * shallower, over which their height is read (its highest), m; the still depth where a crest that stood `height` m
- * high over the band joins its front, m; when its lip throws after it joins, s, from that depth; how long after it
- * joins the solver may start breaking it and still give it a barrel, s (the measured lag, however `lag` is scaled);
- * and the earliest τ, s.
+ * high over the band joins its front, m; the still depth where a crest `footHeight` m high at the foot goes vertical
+ * in Navier–Stokes, m, which the solver must break it before for it to join; whether its lip throws there (`lagged`),
+ * or where it joins; and the earliest τ, s.
  */
 export interface OnsetTiming {
   h0: number;
   band: readonly [deeper: number, shallower: number];
   joinDepth(height: number): number;
-  lag(depth: number): number;
-  window(depth: number): number;
+  throwDepth(footHeight: number): number;
+  lagged: boolean;
   earliest: number;
 }
 
 /**
  * The onset timing for a bed whose slope rises from `h0` m (the library cases' foot depth) under swell of `period` s:
- * the join depth from SWELL_ONSET (linear in height, then between the two nearest periods, clamped; scaled from its
- * 7 m foot to h0 by depth), and the lag from ONSET_LAG in units of √(h0/g), times `lag`: 1 for the measured upper
- * bound, 0 for none (the true lag for swell is probably well below the soliton's; PR 3's loft shows both).
+ * the join depth from SWELL_ONSET (linear in height, then between the two nearest periods, clamped) and the throw depth
+ * from THROW_DEPTH (linear in foot height, clamped), both scaled from their 7 m foot to h0 by depth (about ±7 % for
+ * a ±0.5 m tide). `lagged` throws where the Navier–Stokes wave goes vertical (the default); unlagged throws at the join
+ * (PR 3's loft shows both).
  */
-export function onsetTiming(h0: number, period: number, lag = 1): OnsetTiming {
+export function onsetTiming(h0: number, period: number, lagged = true): OnsetTiming {
   const unit = Math.sqrt(h0 / GRAVITY);
   const scale = h0 / SWELL_ONSET_H0;
+  const [lowest, highest] = THROW_DEPTH.heights;
   const joinAt = (measured: number) => {
     const height = measured / scale;
     const first = SWELL_ONSET[0];
@@ -99,8 +101,8 @@ export function onsetTiming(h0: number, period: number, lag = 1): OnsetTiming {
     h0,
     band: [BAND[0] * scale, BAND[1] * scale],
     joinDepth: (height) => joinAt(height) * scale,
-    lag: (depth) => lag * interpolate(ONSET_LAG, depth / h0) * unit,
-    window: (depth) => interpolate(ONSET_LAG, depth / h0) * unit,
+    throwDepth: (footHeight) => (THROW_DEPTH.intercept + THROW_DEPTH.slope * Math.min(highest, Math.max(lowest, footHeight / scale))) * scale,
+    lagged,
     earliest: CLOCK.earliest * unit,
   };
 }
@@ -112,10 +114,11 @@ const RADIUS = CLOCK.smoothing * Math.sqrt(7);
  * Sets every front point's clock at `time` s: τ, the time since its lip threw (swept-barrel-build.md, "Smooth clock";
  * the advisor's rulings, 2026-09-30). Returns how many clocks paused this step rather than run back.
  *
- * - **The throw.** A point's lip throws `timing.lag` after it joined the front (at its breaking depth, where the
- *   solver's fresh onset leads the Navier–Stokes wave's vertical face), and never before the solver broke it. Until then τ is negative: the library's steepening frames, from
- *   `timing.earliest`. So the front's newest end reads the earliest frames, where the loft blends into the height
- *   field, with no taper.
+ * - **The throw.** A point's lip throws when its crest crosses its throw depth, where the Navier–Stokes wave its size
+ *   goes vertical (BreakingFront, `timing.throwDepth`), and never before the solver broke it; unlagged, when it joined.
+ *   Till then τ is negative, the library's steepening frames from `timing.earliest`, its throw foreseen at the pace
+ *   its crest has come shoreward since it joined. So the front's newest end reads the earliest frames, where the loft
+ *   blends into the height field, with no taper.
  * - **Smoothing.** Along each front, a point's throw time is read from a local line through its neighbours',
  *   weighted by a biweight (1 − u²)² of 2 m standard deviation in σ. That turns the solver's grouped onsets (a
  *   staircase of small close-outs) into a ramp at their mean gradient, the physical peel, and reproduces a steady peel
@@ -135,7 +138,7 @@ export function advanceClocks(points: FrontPoint[], time: number, timing: OnsetT
     while (end < points.length && points[end].front === points[start].front) end += 1;
     for (let k = start; k < end; k += 1) {
       const point = points[k];
-      const shown = Math.max(timing.earliest, time - fittedThrow(points, start, end, k, timing));
+      const shown = Math.max(timing.earliest, time - fittedThrow(points, start, end, k, time, timing));
       if (shown < point.tau) pauses += 1;
       else point.tau = shown;
     }
@@ -144,8 +147,22 @@ export function advanceClocks(points: FrontPoint[], time: number, timing: OnsetT
   return pauses;
 }
 
+/**
+ * When `point`'s lip throws, s, as known at `time`: when its crest crossed its throw depth, or, before it has, when it
+ * will at the pace it has come shoreward since it joined, no later than its clock's earliest frame from now (a crest
+ * not yet moving throws no sooner than that); unlagged, when it joined. Never before the solver broke it.
+ */
+function throwTime(point: FrontPoint, time: number, timing: OnsetTiming): number {
+  if (!timing.lagged) return Math.max(point.joined, point.broke);
+  if (point.thrown !== null) return Math.max(point.thrown, point.broke);
+  const latest = time - timing.earliest;
+  const come = point.depth - point.crestDepth;
+  const foreseen = come > 0 ? point.joined + ((point.depth - point.throwDepth) * (time - point.joined)) / come : latest;
+  return Math.max(Math.min(foreseen, latest), point.broke);
+}
+
 /** Point k's throw time from a biweight-weighted line through the throw times of points[start, end) near it. */
-function fittedThrow(points: readonly FrontPoint[], start: number, end: number, k: number, timing: OnsetTiming): number {
+function fittedThrow(points: readonly FrontPoint[], start: number, end: number, k: number, time: number, timing: OnsetTiming): number {
   const centre = points[k].sigma;
   let s0 = 0;
   let s1 = 0;
@@ -158,8 +175,7 @@ function fittedThrow(points: readonly FrontPoint[], start: number, end: number, 
   while (from > start && centre - points[from - 1].sigma < RADIUS) from -= 1;
   for (let j = from; j < end && points[j].sigma - centre < RADIUS; j += 1) {
     const other = points[j];
-    // Never before the solver breaks it: with no lag, a crest the solver breaks late throws when it does.
-    const thrown = Math.max(other.joined + timing.lag(other.depth), other.broke);
+    const thrown = throwTime(other, time, timing);
     const d = other.sigma - centre;
     const u = d / RADIUS;
     const w = (1 - u * u) * (1 - u * u);

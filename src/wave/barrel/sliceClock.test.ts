@@ -4,13 +4,15 @@ import type { FrontPoint } from './BreakingFront';
 import { advanceClocks, CLOCK, onsetTiming, type OnsetTiming } from './sliceClock';
 
 const DT = 1 / 30;
-/** No lag, a second of steepening frames: the throw is the join. */
-const AT_ONCE: OnsetTiming = { h0: 7, band: [6, 5], joinDepth: () => 2.45, lag: () => 0, window: () => 2, earliest: -1 };
+/** Unlagged, a second of steepening frames: the throw is the join. */
+const AT_ONCE: OnsetTiming = { h0: 7, band: [6, 5], joinDepth: () => 2.5, throwDepth: () => 2.5, lagged: false, earliest: -1 };
+/** Lagged: the lip throws 0.5 m shoreward of the join. */
+const LAGGED: OnsetTiming = { ...AT_ONCE, throwDepth: () => 2, lagged: true };
 
 /** A crest line of `n` points one metre apart, their clocks at the earliest frame as BreakingFront starts them. */
 function crest(n: number, id = 0): FrontPoint[] {
   return Array.from({ length: n }, (_, k) => ({
-    id: k, front: id, column: k, sigma: k, x: k + 0.5, z: 10, b: NaN, height: 1, joined: 0, depth: 2.5, broke: 0, tau: AT_ONCE.earliest, seen: 0, fresh: null,
+    id: k, front: id, column: k, sigma: k, x: k + 0.5, z: 10, b: NaN, height: 1, joined: 0, depth: 2.5, throwDepth: 2.5, crestDepth: 2.5, thrown: null, broke: 0, tau: AT_ONCE.earliest, seen: 0, fresh: null,
   }));
 }
 
@@ -40,16 +42,19 @@ function run(
 }
 
 describe('the slice clock', () => {
-  it('throws a point’s lip its lag after it joins, reading the steepening frames till then', () => {
+  it('throws a point’s lip where its crest crosses its throw depth, foreseen from its pace till then', () => {
     const points = crest(1);
-    const timing: OnsetTiming = { ...AT_ONCE, lag: () => 0.5 };
-    points[0].joined = 5;
-    advanceClocks(points, 5, timing);
+    Object.assign(points[0], { joined: 5, broke: 5, depth: 2.5, throwDepth: 2, crestDepth: 2.5 });
+    // Not yet moving: no sooner than the earliest frame from now.
+    advanceClocks(points, 5, LAGGED);
+    expect(points[0].tau).toBe(-1);
+    // A quarter metre in half a second: the other quarter in another half.
+    points[0].crestDepth = 2.25;
+    advanceClocks(points, 5.5, LAGGED);
     expect(points[0].tau).toBeCloseTo(-0.5, 12);
-    advanceClocks(points, 5.1, timing);
-    expect(points[0].tau).toBeCloseTo(-0.4, 12);
-    advanceClocks(points, 6, timing);
-    expect(points[0].tau).toBeCloseTo(0.5, 12);
+    points[0].thrown = 6.1;
+    advanceClocks(points, 6.5, LAGGED);
+    expect(points[0].tau).toBeCloseTo(0.4, 12);
   });
 
   it('never throws before the solver breaks the crest, with no lag', () => {
@@ -62,11 +67,12 @@ describe('the slice clock', () => {
 
   it('reads no earlier than the library’s first frame', () => {
     const points = crest(1);
-    const timing: OnsetTiming = { ...AT_ONCE, lag: () => 3 };
-    points[0].joined = 5;
-    advanceClocks(points, 5, timing);
+    Object.assign(points[0], { joined: 5, broke: 5, depth: 2.5, throwDepth: 2, crestDepth: 2.45 });
+    // A tenth of the way in half a second: its throw 4.5 s off.
+    advanceClocks(points, 5.5, LAGGED);
     expect(points[0].tau).toBe(-1);
-    advanceClocks(points, 7.5, timing);
+    points[0].thrown = 7;
+    advanceClocks(points, 6.5, LAGGED);
     expect(points[0].tau).toBeCloseTo(-0.5, 12);
   });
 
@@ -119,18 +125,12 @@ describe('the slice clock', () => {
     expect(points[11].tau).toBeCloseTo(points[0].tau - 0.5, 9);
   });
 
-  it('joins and times the throw by the measured tables, interpolated and never extrapolated', () => {
+  it('joins and throws by the measured tables, interpolated and never extrapolated', () => {
     const h0 = 7;
     const unit = Math.sqrt(h0 / GRAVITY);
     const timing = onsetTiming(h0, 16);
     expect(timing.earliest).toBeCloseTo(CLOCK.earliest * unit, 12);
-    expect(timing.lag(2.45)).toBeCloseTo(2.19 * unit, 12);
-    expect(timing.lag(((0.237 + 0.35) / 2) * h0)).toBeCloseTo(((1.97 + 2.19) / 2) * unit, 12);
-    expect(timing.lag(0.5)).toBeCloseTo(1.97 * unit, 12);
-    // The periodic run's point, and the scaled solitary trend past it, clamped.
-    expect(timing.lag(0.454 * h0)).toBeCloseTo(2.32 * unit, 12);
-    expect(timing.lag(20)).toBeCloseTo(2.37 * unit, 12);
-    // And where a crest joins, by its highest over 6–5 m and the period: the solver's own swell onsets.
+    // Where a crest joins, by its highest over 6–5 m and the period: the solver's own swell onsets.
     expect(timing.band).toEqual([6, 5]);
     expect(timing.joinDepth(1.6)).toBeCloseTo(3.18, 12);
     expect(timing.joinDepth(1.395)).toBeCloseTo((2.61 + 3.18) / 2, 12);
@@ -140,11 +140,16 @@ describe('the slice clock', () => {
     expect(onsetTiming(h0, 16.5).joinDepth(1.6)).toBeCloseTo((3.18 + at17) / 2, 12);
     expect(onsetTiming(h0, 12).joinDepth(1.2)).toBeCloseTo(2.29, 12);
     expect(onsetTiming(h0, 20).joinDepth(3.3)).toBeCloseTo(3.82, 12);
-    // A higher tide scales it by depth, the reference too; no lag, for the loft's comparison.
+    // Where its lip throws, by its height at the foot, whatever the period: the Navier–Stokes runs' line, clamped.
+    expect(timing.lagged).toBe(true);
+    expect(timing.throwDepth(1.65)).toBeCloseTo(1.8 + 0.45 * 1.65, 12);
+    expect(onsetTiming(h0, 14).throwDepth(1.65)).toBe(timing.throwDepth(1.65));
+    expect(timing.throwDepth(1)).toBeCloseTo(1.8 + 0.45 * 1.22, 12);
+    expect(timing.throwDepth(3)).toBeCloseTo(1.8 + 0.45 * 2.5, 12);
+    // A higher tide scales both by depth, the reference too; unlagged, for the loft's comparison.
     expect(onsetTiming(8, 16).joinDepth((1.6 * 8) / 7)).toBeCloseTo((3.18 * 8) / 7, 12);
     expect(onsetTiming(8, 16).band[1]).toBeCloseTo((5 * 8) / 7, 12);
-    expect(onsetTiming(h0, 16, 0).lag(3)).toBe(0);
-    // The join window is the measured lag whatever the lag is scaled to.
-    expect(onsetTiming(h0, 16, 0).window(2.45)).toBeCloseTo(2.19 * unit, 12);
+    expect(onsetTiming(8, 16).throwDepth((1.65 * 8) / 7)).toBeCloseTo(((1.8 + 0.45 * 1.65) * 8) / 7, 12);
+    expect(onsetTiming(h0, 16, false).lagged).toBe(false);
   });
 });

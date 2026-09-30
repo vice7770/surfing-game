@@ -3,10 +3,14 @@ import { BreakingFront } from './BreakingFront';
 import type { CrestSample } from './crestOnset';
 import { onsetTiming } from './sliceClock';
 
-/** A 7 m wedge foot under 16 s swell: a crest 1.6 m high over 6–5 m joins where the solver first breaks it, 3.18 m deep. */
+/**
+ * A 7 m wedge foot under 16 s swell: a crest 1.6 m high over 6–5 m joins where the solver first breaks it, 3.18 m deep,
+ * and, 1.6 m at the foot too, throws 2.52 m deep.
+ */
 const TIMING = onsetTiming(7, 16);
 const FOOT = 1.6;
 const JOIN = TIMING.joinDepth(FOOT);
+const THROW = TIMING.throwDepth(FOOT);
 
 /** A crest sample at one-metre columns. */
 function sample(column: number, z: number, depth: number, strength: number, eta = FOOT): CrestSample {
@@ -57,20 +61,40 @@ describe('the breaking front as lines', () => {
   });
 
   it('joins at the crossing when the solver breaks it before its throw, and never after', () => {
-    // At 3.18 m (0.454 h0) the swell's measured lag is 2.32 √(7/g) = 1.96 s: the window.
-    expect(TIMING.window(JOIN)).toBeCloseTo(1.96, 2);
+    expect(JOIN).toBeCloseTo(3.18, 12);
+    expect(THROW).toBeCloseTo(2.52, 12);
     const late = new BreakingFront(1, TIMING);
     late.update([sample(0, 10, 7, 0)], 1, 0);
     late.update([sample(0, 12, JOIN, 0)], 1, 1);
-    late.update([sample(0, 13, 2, 0.5)], 1, 1.8);
+    late.update([sample(0, 13, 2.8, 0.5)], 1, 1.8);
     expect(late.points).toHaveLength(1);
-    expect(late.points[0].joined).toBeCloseTo(1, 12);
+    expect(late.points[0]).toMatchObject({ joined: 1, depth: JOIN, throwDepth: THROW, crestDepth: 2.8, thrown: null });
+    // Broken in the step its crest reaches its throw depth: just in time, thrown as it crossed.
+    const justInTime = new BreakingFront(1, TIMING);
+    justInTime.update([sample(0, 10, 7, 0)], 1, 0);
+    justInTime.update([sample(0, 12, JOIN, 0)], 1, 1);
+    justInTime.update([sample(0, 13, 2.42, 0.5)], 1, 1.2);
+    expect(justInTime.points).toHaveLength(1);
+    expect(justInTime.points[0].thrown).toBeCloseTo(1 + ((JOIN - THROW) / (JOIN - 2.42)) * 0.2, 12);
+    // Past it a step unbroken: no barrel, however soon the solver breaks it after.
     const never = new BreakingFront(1, TIMING);
     never.update([sample(0, 10, 7, 0)], 1, 0);
     never.update([sample(0, 12, JOIN, 0)], 1, 1);
-    never.update([sample(0, 13, 2, 0)], 1, 3.4);
-    never.update([sample(0, 14, 1.5, 0.5)], 1, 3.5);
+    never.update([sample(0, 13, 2.42, 0)], 1, 1.2);
+    never.update([sample(0, 14, 2.4, 0.5)], 1, 1.3);
     expect(never.points).toHaveLength(0);
+    expect(never.unbroken).toBe(1);
+  });
+
+  it('throws no deeper than it joins', () => {
+    // 2.5 m at the foot would throw 2.93 m deep; 1.19 m over the band joins at 2.61, and throws as it joins.
+    const front = new BreakingFront(1, TIMING);
+    front.update([sample(0, 10, 7, 0, 2.5)], 1, 0);
+    front.update([sample(0, 11, 5.5, 0, 1.19)], 1, 0.5);
+    front.update([sample(0, 12, 2.5, 0.5, 1.19)], 1, 1);
+    expect(front.points).toHaveLength(1);
+    expect(front.points[0].throwDepth).toBeCloseTo(2.61, 12);
+    expect(front.points[0].thrown).toBe(front.points[0].joined);
   });
 
   it('never joins a crest first seen past the foot, unsized', () => {
@@ -98,6 +122,8 @@ describe('the breaking front as lines', () => {
     front.update(next, next.length, 1.1);
     expect(front.points.map((point) => point.id)).toEqual(ids);
     expect(front.points.every((point) => point.tau === 0.25 && point.joined === 1 && point.depth === JOIN)).toBe(true);
+    // Past its throw depth, it records when its crest crossed.
+    expect(front.points[0].thrown).toBeCloseTo(1 + ((JOIN - THROW) / (JOIN - 2.2)) * 0.1, 12);
     const calm = line(range(0, 20), 10.6, 0.5, 2, 0);
     front.update(calm, calm.length, 1.2);
     expect(front.points).toHaveLength(0);

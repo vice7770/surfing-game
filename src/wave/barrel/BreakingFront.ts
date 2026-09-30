@@ -58,6 +58,10 @@ export interface FrontPoint {
   /** When its crest crossed its join depth (it joined), s, and that depth, m: its clock's start. */
   joined: number;
   depth: number;
+  /** The still depth where its lip throws, m (no deeper than its join), under its crest at its last step, m, and when its crest crossed it, s; null until then. */
+  throwDepth: number;
+  crestDepth: number;
+  thrown: number | null;
   /** When the solver was first seen breaking its segment, s: its lip never throws before (sliceClock). */
   broke: number;
   /** The slice's clock as drawn, s from its lip's throw: smoothed along the front, never running back (sliceClock). */
@@ -84,8 +88,9 @@ export interface FrontState {
  * - **The join, by depth** (the advisor, 2026-09-30). Each crest is followed from where it crosses the wedge's foot
  *   (the timing's h0), and sized by its highest over a band of depth nearer the break (the timing's), before anything
  *   near it breaks. It joins where it crosses the depth at which the solver first breaks swell that size fresh (the 1D runs,
- *   `OnsetTiming.joinDepth`), at the moment it crosses, provided the solver breaks its segment before its lip would
- *   throw (`OnsetTiming.window`). A crest reads its own place, not its rise: once a neighbour
+ *   `OnsetTiming.joinDepth`), at the moment it crosses, provided the solver breaks its segment before it reaches the
+ *   depth where its lip throws, where the Navier–Stokes wave its foot height goes vertical (`OnsetTiming.throwDepth`),
+ *   at the latest in the step it gets there. A crest reads its own place, not its rise: once a neighbour
  *   breaks, the eddy viscosity damps a column's rise (fresh crossings came ~2 s late, or never) and its inherited age
  *   is the event's, so neither can time a peel. Here the peel is each column's crest reaching its breaking depth in
  *   turn, from the bed.
@@ -117,7 +122,7 @@ export class BreakingFront {
   private readonly linkReach: number;
   private readonly matchReach: number;
 
-  /** `cell`: the rows' spacing where fronts form, m; `timing`: the wedge's foot and the join depths (sliceClock). */
+  /** `cell`: the rows' spacing where fronts form, m; `timing`: the wedge’s foot, the join and throw depths (sliceClock). */
   constructor(cell: number, private readonly timing: OnsetTiming) {
     this.linkReach = LINK_ROWS * cell;
     this.matchReach = MATCH_REACH + cell;
@@ -140,7 +145,8 @@ export class BreakingFront {
         if (!(s.strength > 0)) continue;
         matched.add(point);
         const fresh = point.fresh ?? (s.rise >= FRESH ? s.depth : null);
-        points.push({ ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, seen: time, fresh });
+        const thrown = point.thrown ?? crossing(point.crestDepth, point.seen, s.depth, time, point.throwDepth);
+        points.push({ ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, crestDepth: s.depth, thrown, seen: time, fresh });
         continue;
       }
       const track = this.nearest(tracksOf.get(s.column), followed, s.z, TRACK_REACH);
@@ -161,27 +167,25 @@ export class BreakingFront {
       if (track.footHeight !== null && s.depth <= deeper && (s.depth >= shallower || next.refHeight === null)) {
         next.refHeight = Math.max(next.refHeight ?? s.eta, s.eta);
       }
-      if (next.refHeight !== null && s.depth < shallower) {
+      if (next.footHeight !== null && next.refHeight !== null && s.depth < shallower) {
         const joinDepth = this.timing.joinDepth(next.refHeight);
-        if (track.crossed === null && s.depth <= joinDepth) {
-          // When it crossed, linear in depth between the last step and this one.
-          const f = track.depth > s.depth ? Math.min(1, Math.max(0, (track.depth - joinDepth) / (track.depth - s.depth))) : 1;
-          next.crossed = track.seen + f * (time - track.seen);
-        }
-        // It joins if the solver breaks it before its lip would throw (within the measured lag of the crossing), so a
-        // tube never throws off water the solver has not broken (the advisor, 2026-09-30).
-        const window = this.timing.window(joinDepth);
-        if (next.crossed !== null && s.strength > 0 && time - next.crossed <= window) {
+        const throwDepth = Math.min(joinDepth, this.timing.throwDepth(next.footHeight));
+        next.crossed ??= crossing(track.depth, track.seen, s.depth, time, joinDepth);
+        // It joins if the solver breaks it before its lip would throw (at the latest in the step its crest reaches the
+        // depth), so a tube never throws off water the solver has not broken (the advisor, 2026-09-30).
+        if (next.crossed !== null && s.strength > 0 && track.depth > throwDepth) {
           this.joins += 1;
           points.push({
             id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
+            joined: next.crossed, depth: joinDepth, throwDepth, crestDepth: s.depth,
+            thrown: crossing(track.depth, track.seen, s.depth, time, throwDepth),
             // Its clock starts at the library's earliest frame; the first advance puts it where the fit does.
-            joined: next.crossed, depth: joinDepth, broke: time, tau: this.timing.earliest, seen: time, fresh: next.fresh,
+            broke: time, tau: this.timing.earliest, seen: time, fresh: next.fresh,
           });
           continue;
         }
-        // Crossed and not broken before its throw: the solver spilled it, broke it late or not at all, so it has no barrel.
-        if (next.crossed !== null && time - next.crossed > window) {
+        // Past its throw depth and not broken: the solver spilled it, broke it late or not at all, so it has no barrel.
+        if (next.crossed !== null && track.depth <= throwDepth) {
           this.unbroken += 1;
           continue;
         }
@@ -266,6 +270,13 @@ export class BreakingFront {
     this.held = state.held.map((p) => ({ ...p }));
     this.tracks = (state.tracks ?? []).map((t) => ({ ...t }));
   }
+}
+
+/** When a crest at `fromDepth` at `fromTime` and at `depth` at `time` crossed `at`, linear in depth between; null if it has not. */
+function crossing(fromDepth: number, fromTime: number, depth: number, time: number, at: number): number | null {
+  if (depth > at) return null;
+  const f = fromDepth > depth ? Math.min(1, Math.max(0, (fromDepth - at) / (fromDepth - depth))) : 1;
+  return fromTime + f * (time - fromTime);
 }
 
 function byColumn<T extends { column: number }>(items: readonly T[]): Map<number, T[]> {

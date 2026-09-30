@@ -128,7 +128,15 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
         const sxx = newest.reduce((sum, p) => sum + (p.x - mx) ** 2, 0);
         const stt = newest.reduce((sum, p) => sum + (p.joined - mt) ** 2, 0);
         const fit = sxt * sxt / (sxx * stt);
-        appendFileSync(log, `  newest front: ${n} points, x ${newest[0].x.toFixed(0)}…${newest.at(-1)!.x.toFixed(0)}, joins peel at ${(sxx / sxt).toFixed(1)} m/s along x (r² ${fit.toFixed(2)})\n`);
+        // And the lips' peel, through the throws so far.
+        const lips = newest.filter((p) => p.thrown !== null);
+        const lx = lips.reduce((sum, p) => sum + p.x, 0) / lips.length;
+        const lt = lips.reduce((sum, p) => sum + p.thrown!, 0) / lips.length;
+        const lxt = lips.reduce((sum, p) => sum + (p.x - lx) * (p.thrown! - lt), 0);
+        const lxx = lips.reduce((sum, p) => sum + (p.x - lx) ** 2, 0);
+        const ltt = lips.reduce((sum, p) => sum + (p.thrown! - lt) ** 2, 0);
+        const thrown = lips.length >= 5 ? `, ${lips.length} thrown peel at ${(lxx / lxt).toFixed(1)} m/s (r² ${(lxt * lxt / (lxx * ltt)).toFixed(2)}), ${(lt - lips.reduce((sum, p) => sum + p.joined, 0) / lips.length).toFixed(2)} s after they joined` : '';
+        appendFileSync(log, `  newest front: ${n} points, x ${newest[0].x.toFixed(0)}…${newest.at(-1)!.x.toFixed(0)}, joins peel at ${(sxx / sxt).toFixed(1)} m/s along x (r² ${fit.toFixed(2)})${thrown}\n`);
         const every = Math.max(1, Math.floor(newest.length / 8));
         appendFileSync(log, `  newest front (x, joined, τ): ${newest.filter((_, k) => k % every === 0).map((p) => `(${p.x.toFixed(0)}, ${p.joined.toFixed(2)}, ${p.tau.toFixed(2)})`).join(' ')}\n`);
       }
