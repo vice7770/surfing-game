@@ -193,9 +193,9 @@ describe('the loft’s slices, for the contact', () => {
 
   it('asks the water’s height only where a vertex rests on it', () => {
     let calls = 0;
-    const counted = (x: number, z: number) => {
+    const counted = () => {
       calls += 1;
-      return flat(x, z);
+      return flat();
     };
     const loft = new SweptLoft(tubes(), 0.05).build(records(21, () => 0.1), 21, 0.5, counted);
     expect(calls).toBeLessThan(loft.vertexCount / 2);
