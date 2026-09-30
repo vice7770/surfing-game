@@ -497,7 +497,9 @@ describe('a Basilisk library as a barrel case', () => {
 
 Write the detailed plans for PRs 3–7 (the mesh, the contact, the crash curve, the shading, the rollout) from the library and clock as built. PR 3's loft takes Mihalef's rule from the clock (the advisor, 2026-09-30):
 - neighbouring loft slices differ by at most 2–4 library frames, met by resampling the front finer (0.5 m, down to 0.25 m where the open curl spans under about 8 slices), not by clamping the clock;
-- only when the vertex budget would be exceeded is |dτ/dσ| clamped to T_open/(4·Δσ) (at least 4 slices across the curl), and each clamp is counted. Consult the water-physics advisor before settling any shape value (the lip glow's k, the seam's band width, the contact's softness). PR 4's interface is agreed with the Reef session, which owns tube riding (Part D):
+- only when the vertex budget would be exceeded is |dτ/dσ| clamped to T_open/(4·Δσ) (at least 4 slices across the curl), and each clamp is counted. Consult the water-physics advisor before settling any shape value (the lip glow's k, the seam's band width, the contact's softness). Open item from the onset's lag (the advisor, 2026-09-30): the solver's Kennedy onset leads the lip by about 2 s and 20 m on Padang Padang's wedge, and the foam, aeration, Kennedy-driven whitewater and crash sound all key on it. Where the swept barrel runs, Rich's whitewater and the sound should start from the barrel's clock (foam from touchdown, as in the roller handover). That is visuals only, so one-water is unaffected. Agree it with the whitewater (G9) owner before building; it belongs with PR 5 or PR 6.
+
+PR 4's interface is agreed with the Reef session, which owns tube riding (Part D):
 - water or air at a point, with the surface's height, normal and velocity;
 - whether the rider is covered, and the clearance;
 - the tube's state at the rider's slice;
