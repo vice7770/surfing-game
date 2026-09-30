@@ -13,6 +13,7 @@
  *   npm run report:ride -- --spots point --minutes 5 --out /tmp/point.md
  *   npm run report:ride -- --practice --ghosts --style turns
  *   npm run report:ride -- --practice --ghosts --style turns --spots canyon --bottom-face 0.55 --turn-limit 3
+ *   npm run report:ride -- --practice --ghosts --style turns --spots canyon --seeds 1 --first-seed 2 (seeds in parallel)
  */
 import { writeFileSync } from 'node:fs';
 import { Quaternion, Vector3 } from 'three';
@@ -57,14 +58,10 @@ const heightOverride = option('height');
 const reflex = flag('reflex');
 /** The autopilot's riding: a line along the face, or S-turns up and down it. */
 const style = option('style') === 'turns' ? 'turns' : 'line';
-/**
- * Riding S-turns, `--bottom-face F` starts the bottom turn below F of the face, `--turn-limit S` holds a turn up to
- * S s, and `--ease-below V` eases off below V m/s.
- */
+/** Riding S-turns, `--bottom-face F` starts the bottom turn below F of the face, and `--turn-limit S` holds a turn up to S s. */
 const autopilotTurns = {
   ...(option('bottom-face') ? { bottomFace: Number(option('bottom-face')) } : {}),
   ...(option('turn-limit') ? { turnLimit: Number(option('turn-limit')) } : {}),
-  ...(option('ease-below') ? { easeBelow: Number(option('ease-below')) } : {}),
 };
 /** Ghost riders beside the runner's own: metres along shore from the break point (`--ghosts`, as in the catch report). */
 const ghostAlongs = flag('ghosts') ? [-45, -25, -12, 12, 25, 45] : [];
