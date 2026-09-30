@@ -36,9 +36,12 @@ export interface Maneuver {
   peakYawRate: number;
   speedIn: number;
   speedOut: number;
-  /** m, speed / yaw rate at the peak. */
+  /**
+   * m, the path's mean radius over the turn: its length over the angle it turned. Not speed / yaw rate: a board
+   * that pivots, or rides moving water, swings its heading about its path (the angulation study).
+   */
   radius: number;
-  /** g, speed × yaw rate / 9.81 at the peak. */
+  /** g, the path's mean pull over the turn: its mean speed times its turn rate, over 9.81. */
   lateralG: number;
   /** Peak |roll|, rad. */
   roll: number;
@@ -134,9 +137,11 @@ interface Turn {
   speedOut: number;
   alongIn: number;
   alongOut: number;
+  /** The path's own turn, rad, and its length, m, over the turn. */
+  pathYaw: number;
+  pathLength: number;
   roll: number;
   peak: number;
-  peakSpeed: number;
   wave: Pick<WaveFrame, 'valid' | 'directionX' | 'directionZ' | 'faceFraction' | 'crestBreaking'>;
 }
 
@@ -149,6 +154,8 @@ interface Previous {
   speed: number;
   roll: number;
   along: number;
+  /** Which way the path ran into this sample, radians from +z toward +x (none before it has moved). */
+  course?: number;
   phase: RideSample['phase'];
 }
 
@@ -230,9 +237,12 @@ export class RideAnalyzer {
   }
 
   private remember(sample: RideSample): void {
+    const previous = this.previous;
+    const moved = previous ? Math.hypot(sample.x - previous.x, sample.z - previous.z) : 0;
     this.previous = {
       t: sample.t, x: sample.x, z: sample.z, heading: sample.heading, speed: sample.speed, roll: sample.roll,
       along: sample.wave.speedAlongCrest, phase: sample.phase,
+      course: moved > 1e-9 ? Math.atan2(sample.x - previous!.x, sample.z - previous!.z) : previous?.course,
     };
   }
 
@@ -246,17 +256,23 @@ export class RideAnalyzer {
     this.turn ??= {
       start: previous.t, end: previous.t, sign: Math.sign(rate), startHeading: previous.heading, yaw: 0,
       speedIn: previous.speed, speedOut: previous.speed, alongIn: previous.along, alongOut: previous.along,
-      roll: Math.abs(previous.roll), peak: 0, peakSpeed: 0, wave: { ...wave },
+      pathYaw: 0, pathLength: 0, roll: Math.abs(previous.roll), peak: 0, wave: { ...wave },
     };
     const turn = this.turn;
     turn.yaw += rate * dt;
+    // The path: this step's course against the last one's.
+    const moved = Math.hypot(sample.x - previous.x, sample.z - previous.z);
+    if (moved > 1e-9) {
+      const course = Math.atan2(sample.x - previous.x, sample.z - previous.z);
+      if (previous.course !== undefined) turn.pathYaw += wrap(course - previous.course);
+      turn.pathLength += moved;
+    }
     turn.end = sample.t;
     turn.speedOut = sample.speed;
     turn.alongOut = wave.speedAlongCrest;
     turn.roll = Math.max(turn.roll, Math.abs(sample.roll));
     if (Math.abs(rate) > turn.peak) {
       turn.peak = Math.abs(rate);
-      turn.peakSpeed = sample.speed;
       turn.wave = {
         valid: wave.valid, directionX: wave.directionX, directionZ: wave.directionZ,
         faceFraction: wave.faceFraction, crestBreaking: wave.crestBreaking,
@@ -284,7 +300,8 @@ export class RideAnalyzer {
     this.maneuvers.push({
       kind, start: turn.start - this.startTime, end: turn.end - this.startTime, yaw: turn.yaw, peakYawRate: turn.peak,
       speedIn: turn.speedIn, speedOut: turn.speedOut,
-      radius: turn.peakSpeed / turn.peak, lateralG: (turn.peakSpeed * turn.peak) / GRAVITY, roll: turn.roll,
+      radius: Math.abs(turn.pathYaw) > 1e-9 ? turn.pathLength / Math.abs(turn.pathYaw) : Infinity,
+      lateralG: (turn.pathLength * Math.abs(turn.pathYaw)) / (duration * duration * GRAVITY), roll: turn.roll,
       faceFraction: turn.wave.faceFraction,
       pocket: turn.wave.faceFraction >= POCKET_FACE && turn.wave.crestBreaking >= POCKET_BREAKING,
     });
