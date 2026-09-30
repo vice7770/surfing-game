@@ -155,6 +155,8 @@ for (const spot of spots) {
   const width = simulation.solver.dx;
   const steps = Math.round(seconds / STEP);
   let stepMs = 0;
+  /** The machine's 1-minute load average through the run: on a shared machine the times follow it. */
+  const loads: number[] = [];
   const lipCounts: number[] = [];
   for (let step = 0; step < steps; step += 1) {
     simulation.step(STEP);
@@ -199,7 +201,10 @@ for (const spot of spots) {
         run.fragments[index].push(fragments(spray, camera, screen.width, screen.height));
       });
     }
-    if (step % 600 === 0) console.error(`${spot} ${(step * STEP).toFixed(0)} s: ${runs.map((run) => `${run.level} ${run.spray.count}/${run.bubbles.count}`).join(', ')}`);
+    if (step % 600 === 0) {
+      loads.push(loadavg()[0]);
+      console.error(`${spot} ${(step * STEP).toFixed(0)} s: ${runs.map((run) => `${run.level} ${run.spray.count}/${run.bubbles.count}`).join(', ')}`);
+    }
   }
   const rows = runs.map((run) => {
     const kinds = run.kindsAtPeak.join(' / ');
@@ -208,7 +213,7 @@ for (const spot of spots) {
   const classic = runs[0].classicLipMs;
   sections.push(`## ${spot[0].toUpperCase()}${spot.slice(1)} · ${swellSize} swell
 
-Hs ${config.significantHeight} m at ${config.peakPeriod} s, ${simulation.solver.nx} × ${simulation.solver.nz} cells, ${seconds} s of sea; the solver took ${fixed(stepMs / steps, 1)} ms a step. The lip threw up to ${Math.max(...lipCounts)} parcels at once (median ${quantile(lipCounts, 0.5)} while any flew); the Classic sheet took ${fixed(quantile(classic, 0.5))} ms to build (95th percentile ${fixed(quantile(classic, 0.95))}, at most ${fixed(Math.max(...classic))}) at every level.
+Hs ${config.significantHeight} m at ${config.peakPeriod} s, ${simulation.solver.nx} × ${simulation.solver.nz} cells, ${seconds} s of sea; the solver took ${fixed(stepMs / steps, 1)} ms a step, while the machine's 1-minute load average ran ${fixed(Math.min(...loads), 0)}–${fixed(Math.max(...loads), 0)}. The lip threw up to ${Math.max(...lipCounts)} parcels at once (median ${quantile(lipCounts, 0.5)} while any flew); the Classic sheet took ${fixed(quantile(classic, 0.5))} ms to build (95th percentile ${fixed(quantile(classic, 0.95))}, at most ${fixed(Math.max(...classic))}) at every level.
 
 | Particles | Spray, median | 95th percentile | Peak (${KINDS.join(' / ')}) | Pool full | Bubbles, median | Worker spray, ms (median) | 95th | Worker bubbles, ms (median) | 95th | Page spray buffers, ms | Rich lip sheet, ms (median) | 95th | Most | Fragments at ${SCREENS[0].name}, M (median / 95th / most) | At ${SCREENS[1].name} |
 |---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|
