@@ -69,9 +69,10 @@ export class FoamField {
     return this.dense[index] + this.residual[index];
   }
 
-  /** Cover the cell a lip parcel of `volume` m³ lands in. */
+  /** Cover the cell a lip parcel of `volume` m³ lands in; none past an open edge, where it has left the window. */
   addSplash(x: number, z: number, volume: number): void {
     const { solver } = this;
+    if (solver.beyondOpenEdge(x)) return;
     const cell = solver.cellIndex(x, z);
     const area = solver.dx * solver.dz[Math.floor(cell / solver.nx)];
     this.dense[cell] = Math.min(1, this.dense[cell] + volume / (area * SPLASH_DEPTH));
