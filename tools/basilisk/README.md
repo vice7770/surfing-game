@@ -51,4 +51,4 @@ The runs (M1 Air, level 12, one core each, all three at once, 2026-09-29/30), at
 | `pad19_a30_L12` | 282 min | 21.24, 22.43 | 0.19 / 0.34 | 0.47 / 0.42 | 41° / 35° | 2.11 | 106/110, 47/47, 42/104 |
 | `pad19_a45_L12` | 298 min | 17.68, 19.05 | 0.23 / 0.30 | 0.44 / 0.40 | 40° / 39° | 2.30 | 98/108, 54/54, 49/99 |
 
-Why the tubes run smaller than the plane-slope fits (the reef flat): `docs/research/barrel-library.md`. Then `npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --flat 0.1785714` turns them into the game's cases (`docs/research/barrel-library.md`).
+Why the tubes run smaller than the plane-slope fits (small waves make small, steep tubes on this wedge): `docs/research/barrel-library.md`. Then `npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --flat 0.1785714` turns them into the game's cases (`docs/research/barrel-library.md`).
