@@ -3,9 +3,9 @@ import { BreakingFront } from './BreakingFront';
 import type { CrestSample } from './crestOnset';
 import { onsetTiming } from './sliceClock';
 
-/** A 7 m wedge foot under 16 s swell: a crest 1.66 m high there joins where the solver first breaks it, 3.18 m deep. */
+/** A 7 m wedge foot under 16 s swell: a crest 1.57 m high at the 5.5 m reference joins where the solver first breaks it, 3.18 m deep. */
 const TIMING = onsetTiming(7, 16);
-const FOOT = 1.66;
+const FOOT = 1.57;
 const JOIN = TIMING.joinDepth(FOOT);
 
 /** A crest sample at one-metre columns. */
@@ -30,15 +30,15 @@ const range = (from: number, to: number) => Array.from({ length: to - from }, (_
 const fronts = (front: BreakingFront) => new Set(front.points.map((point) => point.front)).size;
 
 describe('the breaking front as lines', () => {
-  it('joins a crest where it reaches its breaking depth, sized by its height at the foot', () => {
+  it('joins a crest where it reaches its breaking depth, sized by its height at the reference depth', () => {
     expect(JOIN).toBeCloseTo(3.18, 12);
     const front = new BreakingFront(1, TIMING);
-    // 1.41 m at the foot breaks halfway between the table's 2.61 and 3.18 m: crossed between 4 m and 2 m.
+    // 1.375 m as it passes the 5.5 m reference breaks halfway between the table's 2.61 and 3.18 m: crossed between 4 and 2 m.
     const depth = (2.61 + 3.18) / 2;
-    front.update([sample(0, 10, 7, 0, 1.41)], 1, 0);
-    front.update([sample(0, 11, 4, 0, 1.41)], 1, 0.1);
+    front.update([sample(0, 10, 7, 0, 1.1)], 1, 0);
+    front.update([sample(0, 11, 4, 0, 1.375)], 1, 0.1);
     expect(front.points).toHaveLength(0);
-    front.update([sample(0, 12, 2, 0.4, 1.41)], 1, 0.2);
+    front.update([sample(0, 12, 2, 0.4, 1.6)], 1, 0.2);
     expect(front.points).toHaveLength(1);
     expect(front.points[0].joined).toBeCloseTo(0.1 + ((4 - depth) / (4 - 2)) * 0.1, 12);
     expect(front.points[0].depth).toBeCloseTo(depth, 12);

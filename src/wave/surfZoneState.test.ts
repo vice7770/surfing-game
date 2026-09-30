@@ -92,7 +92,7 @@ describe('surf zone state (spec N1: the sea handover)', () => {
       joined: 51.23456789, depth: 2.4567, tau: -0.4321, seen: 55.1, fresh: 3.01,
     };
     state.front = { nextId: 12, nextFront: 3, points: [point], held: [{ ...point, id: 8, tau: 0 }],
-      tracks: [{ column: 12, z: -260.5, footHeight: null, depth: 6.4, seen: 55.1, crossed: null, fresh: null }, { column: 13, z: -180.5, footHeight: 1.9, depth: 2.3, seen: 55.1, crossed: 54.97, fresh: 2.9 }],
+      tracks: [{ column: 12, z: -260.5, footHeight: null, refHeight: null, depth: 6.4, seen: 55.1, crossed: null, fresh: null }, { column: 13, z: -180.5, footHeight: 1.9, refHeight: 2.05, depth: 2.3, seen: 55.1, crossed: 54.97, fresh: 2.9 }],
     };
     expect(decodeSurfZoneState(encodeSurfZoneState(state)).front).toEqual(state.front);
   });
