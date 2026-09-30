@@ -29,14 +29,19 @@ export function shapeAxis(value: number, deadzone: number, response: StickRespon
   return Math.sign(value) * shaped;
 }
 
-/** Steering from the left stick (positive right) and trim from the chosen stick (up for forward), with the pad's own dead zone. */
-export function padSticks(pad: PadState | undefined, stick: StickSettings): { steer: number; trim: number } {
-  if (!pad) return { steer: 0, trim: 0 };
+/**
+ * Steering from the left stick (positive right), trim from the chosen stick (up for forward) and the upper body's
+ * rotation from the right stick across (positive right: where the rider looks, the movement-flow spec), with the
+ * pad's own dead zone.
+ */
+export function padSticks(pad: PadState | undefined, stick: StickSettings): { steer: number; trim: number; rotate: number } {
+  if (!pad) return { steer: 0, trim: 0, rotate: 0 };
   const deadzone = pad.kind === 'steam' ? stick.deadzoneSteam : stick.deadzoneGamepad;
   const trimAxis = stick.trimStick === 'right' ? 3 : 1;
   return {
     steer: shapeAxis(pad.axes[0] ?? 0, deadzone, stick.stickResponse),
     trim: shapeAxis(-(pad.axes[trimAxis] ?? 0), deadzone, stick.stickResponse),
+    rotate: shapeAxis(pad.axes[2] ?? 0, deadzone, stick.stickResponse),
   };
 }
 

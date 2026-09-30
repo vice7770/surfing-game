@@ -50,6 +50,7 @@ export class Controls {
   private padPrevious = new Set<Action>();
   private padSteerValue = 0;
   private padTrimValue = 0;
+  private padRotateValue = 0;
   private padCrouchValue = 0;
   private padCompressValue = 0;
   private padDuckValue = 0;
@@ -121,7 +122,9 @@ export class Controls {
    * pop-up key's hold (the reel, in the water) lying down; trim, crouch, Compress
    * and the hand standing; steering always. Keys and touch ramp in and out over
    * RAMP_TIME, so a digital input feels analog; a pad's stick and trigger pass
-   * straight through. Disabled, every axis ramps back to rest.
+   * straight through. Disabled, every axis ramps back to rest. The upper body's
+   * rotation is the pad's alone (the movement-flow spec): standing, while the pad
+   * was used last; otherwise undefined, and the body turns with the ride by itself.
    */
   rideRequest(dt: number, standing: boolean): RideInput {
     const keys = this.active ? heldActions(this.held, [], this.bindings()) : new Set<Action>();
@@ -154,6 +157,7 @@ export class Controls {
       crouch: standing && pad ? Math.max(this.padCrouchValue, crouch) : crouch,
       compress: compressing && pad ? Math.max(this.padCompressValue, compress) : compress,
       hand: standing && has('hand'),
+      rotate: standing && pad && this.lastDevice === 'gamepad' ? this.padRotateValue : undefined,
       duckDive: standing ? 0 : Math.max(pad ? this.padDuckValue : 0, duck),
       reel: !standing && has('popUp'),
     };
@@ -179,6 +183,7 @@ export class Controls {
       const sticks = padSticks(pads.find((pad, index) => padKey(pad, index) === this.driving), this.stick());
       this.padSteerValue = sticks.steer;
       this.padTrimValue = sticks.trim;
+      this.padRotateValue = sticks.rotate;
       this.padCrouchValue = padValue(pads, this.bindings().gamepad.crouch[0]);
       // A trigger resting just off its stop is not a press (the Steam Controller reports raw travel).
       const compressValue = padValue(pads, this.bindings().gamepad.compress[0]);
@@ -214,6 +219,7 @@ export class Controls {
     this.padHeld = new Set();
     this.padSteerValue = 0;
     this.padTrimValue = 0;
+    this.padRotateValue = 0;
     this.padCrouchValue = 0;
     this.padCompressValue = 0;
     this.padDuckValue = 0;

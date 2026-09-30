@@ -24,7 +24,17 @@ describe('sticks (C1)', () => {
     expect(padSticks(pad, DEFAULT_STICK).steer).toBeCloseTo((0.5 - 0.15) / 0.85, 6);
     expect(padSticks(pad, DEFAULT_STICK).trim).toBeCloseTo((0.6 - 0.15) / 0.85, 6);
     expect(padSticks(pad, { ...DEFAULT_STICK, trimStick: 'left' }).trim).toBeCloseTo((0.9 - 0.15) / 0.85, 6);
-    expect(padSticks(undefined, DEFAULT_STICK)).toEqual({ steer: 0, trim: 0 });
+    expect(padSticks(undefined, DEFAULT_STICK)).toEqual({ steer: 0, trim: 0, rotate: 0 });
+  });
+
+  // The movement-flow spec: the right stick across turns the upper body, positive right, whichever stick trims;
+  // a stick resting just off centre rotates nothing (Review Focus 2).
+  it('rotates the upper body with the right stick across, past its dead zone', () => {
+    const pad: PadState = { kind: 'standard', buttons: [], axes: [0, 0, 0.8, -0.6] };
+    expect(padSticks(pad, DEFAULT_STICK).rotate).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
+    expect(padSticks(pad, { ...DEFAULT_STICK, trimStick: 'left' }).rotate).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
+    expect(padSticks({ ...pad, axes: [0, 0, -0.1, 0] }, DEFAULT_STICK).rotate).toBe(0);
+    expect(padSticks({ ...pad, axes: [0, 0, -1, 0] }, DEFAULT_STICK).rotate).toBe(-1);
   });
 
   it('gives the Steam Controller its own, smaller dead zone', () => {

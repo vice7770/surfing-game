@@ -216,6 +216,18 @@ describe('the ride request (P9)', () => {
     expect(controls.rideRequest(0.2, true).compress).toBe(0);
   });
 
+  // The movement-flow spec: the pad's right stick across turns the upper body, standing; the keyboard leaves the body
+  // to turn with the ride by itself, so a key pressed after the pad hands the rotation back (Review Focus 3).
+  it('asks for the upper body\'s rotation from the pad\'s right stick, standing, until a key is pressed', () => {
+    const { controls, key, setPads } = setup();
+    setPads([{ buttons: Array.from({ length: 17 }, () => false), axes: [0, 0, 0.8, 0] }]);
+    controls.poll();
+    expect(controls.rideRequest(1 / 60, true).rotate).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
+    expect(controls.rideRequest(1 / 60, false).rotate).toBeUndefined();
+    key('keydown', 'KeyW');
+    expect(controls.rideRequest(1 / 60, true).rotate).toBeUndefined();
+  });
+
   it('ramps keys in over 0.2 s; opposite keys cancel, and unbound keys do nothing', () => {
     const { controls, key } = setup();
     key('keydown', 'KeyW');

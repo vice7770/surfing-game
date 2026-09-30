@@ -29,6 +29,11 @@ export interface RideInput {
   compress?: number;
   /** Standing, the wave-side hand in the water. */
   hand?: boolean;
+  /**
+   * Standing, the upper body's rotation asked for (the movement-flow spec): −1 (right) to 1 (left), as `steer`,
+   * the way the rider looks. Undefined, the body turns with the ride by itself (the keyboard and touch).
+   */
+  rotate?: number;
   /** Lying down or swimming, the Duck-dive action: 0 to 1 (analog). */
   duckDive?: number;
   /** In the water, the pop-up key held: reel the leash in, and grab the board once it is in reach. */

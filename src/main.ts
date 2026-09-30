@@ -62,7 +62,7 @@ import { labWater, type WaveLabSettings } from './game/waveLab/labSettings';
 import { SchoolSession } from './game/school/SchoolSession';
 import { lessonConfig, startPlacement } from './game/school/lessonWave';
 import type { FlowFrame } from './game/school/lessonFlow';
-import type { RiderPlacement } from './physics/RideSession';
+import type { RideInput, RiderPlacement } from './physics/RideSession';
 import './style.css';
 import './ui/ui.css';
 
@@ -678,9 +678,15 @@ class SurfGame {
     const request = controls.rideRequest(simElapsed, standing);
     const pocketReflex = this.schoolActive ? schoolPocketReflex(this.pocketReflex, this.schoolFreePractice)
       : showsPocketReflex(this.pocketReflex, this.surfSwell);
-    this.physicalMode.advance(steps, { ...request, steer: this.physicalMode.screenSteer(request.steer), pocketReflex });
+    this.physicalMode.advance(steps, { ...request, ...this.boardAxes(request), pocketReflex });
     if (request.popUp) controls.consumeGetUp();
     this.physicalRender(simElapsed);
+  }
+
+  /** The steer and the rotation, asked toward the screen's left or right, as the board's (the rotation looks the way it steers). */
+  private boardAxes(request: RideInput): Pick<RideInput, 'steer' | 'rotate'> {
+    const { physicalMode } = this;
+    return { steer: physicalMode.screenSteer(request.steer), rotate: request.rotate === undefined ? undefined : physicalMode.screenSteer(request.rotate) };
   }
 
   /** The Wave Lab's frame (spec L1): the camera flies, and the sea steps on the lab's clock (paused, slowed or stepped). */
@@ -865,7 +871,7 @@ class SurfGame {
     const online = this.online!;
     const standing = this.physicalMode.host?.snapshot.status.ride?.phase === 'standing';
     const request = this.paused ? undefined : controls.rideRequest(elapsed, standing);
-    const input = request && { ...request, steer: this.physicalMode.screenSteer(request.steer) };
+    const input = request && { ...request, ...this.boardAxes(request) };
     const { resync } = online.play.step(this.physicalMode, elapsed, input);
     if (request?.popUp) controls.consumeGetUp();
     if (resync && !online.rebuilding) {
