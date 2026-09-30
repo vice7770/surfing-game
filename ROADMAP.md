@@ -573,15 +573,19 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
   - **Open:** the film beside the reference, and the user's look.
 - [ ] **Part D · tube riding (P12):** rail grab, the tube camera, the foam ball and spit on the rider, and the Surf School Tube lesson. Waits on Compress, Regular/Goofy and the take-off (PR #43). Its contact with the swept surface is agreed with the Padang Padang session: the mouth, pocket depth, face normal and velocity, clearance, foam ball and spit forces.
 
-### P1 · Padang Padang and the swept barrel — `Spec agreed; Part A next`
+### P1 · Padang Padang and the swept barrel — `Part A in review; Part B in progress`
 
 Requirements agreed in a grilling session on 2026-09-28 (Q1–Q16, every recommendation accepted): [spec](docs/superpowers/specs/2026-09-28-padang-padang.md). A fifth spot, Padang Padang (Bali), tuned to its real conditions, is the testbed and showcase for a new barrel: one surface swept along the crest from simulated 2D overturn profiles, both drawn and collided, replacing the lip strips and the carved void.
-- [ ] **Part A · the spot:**
-  - a sourced bed (Mead & Black's inferred 1:18–1:20 gradient, the reef's orientation and components), with a sweep for the unsourced values, marked provisional;
-  - its own long-period SSW–SW swells for faces of 2–2.5 / 2.5–3.5 / 3.5–4.5 / 4.5–6 m, Bali's tides (Low −0.8, Mid 0, High +0.9 m) and winds;
-  - stage 2 always; everywhere but Surf School;
-  - judged by the peel, catch, ride and size reports, the tube against Mead & Black's Padang Padang ratio (1.97–2.14), and the user's look.
-- [ ] **Part B · the swept barrel:** a slice clock along the breaking front, a crest-speed onset, a library of simulated 2D overturn profiles, one swept mesh drawn in both looks and collided, and parcels only for the pour, splash-up and spray. Padang Padang first, behind a per-spot switch; every spot switches after the user's look. **Open:** whether the profiles are digitised from published simulations or come from our own 2D runs.
+- [x] **Part A · the spot** ([report](docs/research/padang-padang-report.md)):
+  - the bed: Mead's ramp (1:80) and a wedge at 1:19 along the swell's path (the owner's decision) rising 7 m → 1.25 m, its crest line at 40°, a focus spur, and a channel at the +x edge deepened only inshore;
+  - its own long-period swells, calibrated to their take-off faces (Practice 0.6, Small 1.2, Medium 2.2, Big 3.8 m); Bali's tides and winds; stage 2 always; everywhere but Surf School;
+  - the peel: 22 clean waves at 11.5 m/s (37° geometric) wave by wave, against the design's 11.6 m/s; close-outs 38–54 % on the per-period meter;
+  - the side feed feeds Padang Padang's sides only (the owner's call); the solver's breaking age now travels only from behind the face (PR #76);
+  - **open:** Practice is marginal, true to the spot (1 ride of 3 s in 877 catch attempts); the Big swell's take-off sits 89 m outside its sets; today's tube is narrow (length/width 2.97 against the spot's 1.97–2.14), Part B's "before"; the user's look.
+- [ ] **Part B · the swept barrel** ([plan](docs/superpowers/plans/2026-09-29-padang-padang-part-b.md)): one surface swept along the crest from our own 2D Basilisk runs, drawn in both looks and collided; Padang Padang first, behind a per-spot switch.
+  - PR 1, the profile library (level-12 runs of three swell sizes): built, its cases being converted;
+  - PR 2, the breaking front and slice clock: built. Crests join where the solver first breaks swell of their size, and throw a measured lag later (Basilisk; 2.3 √(h0/g) for swell); on the chosen bed the barrel peels at 12.6 m/s against the whitewater's 11.0 and the design's 11.6;
+  - PRs 3–7: the mesh, the contact, the crash curve, the shading and the rollout.
 
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 

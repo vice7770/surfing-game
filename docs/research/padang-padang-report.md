@@ -113,3 +113,51 @@ Phase matching gives V ≈ 12.7 m/s at the peak: α 33–35° geometric, 26.9° 
 - β barely matters here: at 35° and at 40° the median wave is 40° geometric. Refraction over the 1:80 ramp turns the crests before they reach the wedge, so the crest line's angle is not the angle they meet it at.
 - The inshore channel keeps a deep lane beside the reef for paddling back out without tilting the crests offshore of it. The bed keeps β at 40° (the advisor's 37–40°) with it (de23435).
 - The Big swell (Hs 3 m, Tp 18 s) peels left on the 1:15 wedge even with the full channel: 13 clean waves, all toward +x, median 12.5 m/s (geometric α 46°), onsets in 3.1–5.7 m of water. The stability tests pass on the 1:15 wedge, all finite. The Big swell's direction test now takes most of the well-fitted estimates, not the last one.
+
+## The side feed: Padang Padang only (the owner, 2026-09-30)
+
+Part A carries the wave-sizes work's side feed (the incoming sea relaxed into the window's open sides), which has no PR of its own. Merged for every spot it ran the Reef's Big swell to 64 m/s on the test's 40 m window (9.8 m/s with it off, as on main) and moved every spot's take-off. The owner's call: it feeds Padang Padang's sides only (`SIDE_FEED_SPOTS`), whose 320 m window and peak are laid out around it; every other spot keeps main's open sides, take-offs and handover. The feed's own rollout comes later.
+
+## Sizes (Task 8, 2026-09-30)
+
+`npm run report:sizes` on the chosen bed, two rounds of calibration (heights only, the periods kept), faces at the take-off as H1/3 / H1/10:
+
+| Swell | Hs | Tp | Take-off faces | Target | Take-off z against the sets' break |
+|---|---:|---:|---|---|---|
+| Practice (at the edge) | 0.6 m | 16 s | 2.22 / 2.35 m | 2–2.5 m | −167 against −176 m |
+| Small | 1.2 m | 16 s | 3.0 / 3.4 m | 2.5–3.5 m | −190 against −194 m |
+| Medium | 2.2 m | 17 s | 3.6 / 3.9 m | 3.5–4.5 m | −239 against −216 m |
+| Big | 3.8 m | 18 s | 4.6 / 4.8 m | 4.5–6 m | −355 against −266 m |
+
+- The faces grow only as about Hs^0.2–0.4: only a small swell's biggest waves break at the take-off. The surf forecast (Komar–Gaughan's Hs^0.8) spans the three swells within 30 %: Small 25 % low, Big 28 % high (`SURF_FORECAST.padang` a 0.6419, sets 1.076).
+- The take-off keeps BREAKER_INDEX, which seats the Small swell's take-off within 4 m of its sets' break (the plan's test). The Big swell's take-off sits 89 m seaward of where its sets break, so on Big days a rider waits well outside: one index cannot serve every swell here. **Open.**
+
+## Rideability, catch, ride and tubes (Task 9)
+
+Rideability, `npm run report:rideability` (2 seeds × 12 periods, spreading s 150, 0°). The meter samples once per period, so on a slow peel along 130 m of reef it mixes two waves' onsets and reads more close-outs than the wave-by-wave probe; its angles use √(g h_b), 5–7° low against the ladder's photo angles:
+
+| Swell | Close-out | Pro | Advanced | Intermediate | Beginner | Median α (meter) | Median peel | Faster than 12.5 m/s |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Small (1.2 m, 16 s) | 54 % | 42 % | 29 % | 25 % | 13 % | 26° | 11.7 m/s | 48 % |
+| Medium (2.2 m, 17 s) | 38 % | 58 % | 54 % | 13 % | 4 % | 32° | 12.5 m/s | 52 % |
+| Big (3.8 m, 18 s) | 38 % | 63 % | 58 % | 33 % | 4 % | 33° | 15.1 m/s | 67 % |
+
+Wave by wave on the chosen bed (the Small swell at 1.6 m, `padangWaves`): 22 clean waves at a median 11.5 m/s, 37° geometric, 14 of them at 30–40°; the design's phase matching gives 11.6 m/s. On the calibrated 1.2 m Small swell the design predicts 29–31° geometric: the ladder's fast end, makeable.
+
+Catch and ride on Practice (`npm run report:catch -- --practice --ghosts`, `npm run report:ride -- --practice --ghosts`, 2 seeds × 3 min):
+
+| Practice | Attempts | Cue lit | Stood | Rides ≥ 3 s | Longest |
+|---|---:|---:|---:|---:|---:|
+| Hs 0.6 m (faces 2.2 m) | 877 | 52 | 12 | 1 | 4.3 s |
+| Hs 0.9 m (faces 2.8 m, the advisor's 2.4–3 m) | 894 | 74 | 12 | 0 | 1.3 s |
+| Ride report, Hs 0.6 m (the autopilot) | 188 | — | 5 | 0 | 1.0 s |
+
+**Practice Padang Padang is marginal, true to the spot** (an expert break that needs a solid swell; it works from about 4 ft). Practice stays at 0.6 m, its faces in band. Most attempts get no cue (the crest never lifts the board onto the face). The advisor's level-9 Basilisk test hints that the game's small Padang waves break later and shallower than real ones; its fine run will say why. The "no support (lost board)" ends on the steep faces (122 at 0.9 m) are a question for the ride physics, not the bed or the size.
+
+Tubes, today's lip before Part B (`npm run report:tubes -- --practice`): 2,554 jets, a median tube 1.04 m long (90th percentile 2.19 m), width over length 0.65 (97 % inside 0.25–1). On the reef breaks the tube's length over width is **2.97, narrower than Mead & Black's Padang Padang ratio of 1.97–2.14** (their fit for the gradient climbed: 2.45; 28 % held at the roundest 1.42). As the spec expected, today's tube is narrow: it is Part B's "before".
+
+Open edges: the peak (x −60) stands 100 m inside the window's −x edge, and the ride ends where the channel begins (x 70), 90 m inside the +x edge. The side feed keeps the −x strip's sea the incoming one (ADR 0004 asks for a wavelength, about 150 m at 16 s on the ramp; a 320 m window gives it at the peak).
+
+## The reference clip (for Part B's film, the owner to approve)
+
+The 2026 Rip Curl Cup Padang Padang ran in all-time conditions on 20 August 2026, a full day of tube riding: the [official playlist](https://www.youtube.com/playlist?list=PL6gIcanRGetr9sW7kvootB8kc0i-i_p2o), with [Stab's re-watch](https://stabmag.com/news/live-now-the-rip-curl-padang-padang-cup/) as a backup. Not downloaded.
