@@ -56,6 +56,17 @@ describe('each column’s crests, their breaking and their U/C', () => {
     expect(out[column + 1].strength).toBe(0);
   });
 
+  it('reads the segment’s steepest rise over √(g d), Kennedy’s fresh test', () => {
+    const { solver, breaking } = bumps([30.5]);
+    const out: CrestSample[] = [];
+    columnCrests(solver, breaking, 0, 0.1, out);
+    let steepest = 0;
+    for (let row = 30; row <= 40; row += 1) steepest = Math.max(steepest, solver.surfaceRiseRate[row * solver.nx + 3] / Math.sqrt(GRAVITY * DEPTH));
+    expect(out[3].rise).toBeCloseTo(steepest, 12);
+    // The bump's face, √2 A e^(−½)/w steep, rising at c times that: 0.107 √(g d).
+    expect(out[3].rise).toBeCloseTo((Math.SQRT2 * 0.5 * Math.exp(-0.5)) / 4, 2);
+  });
+
   it('logs U/C: the water’s speed along the crest’s travel over the crest’s own', () => {
     const { solver, breaking } = bumps([30.5]);
     const out: CrestSample[] = [];

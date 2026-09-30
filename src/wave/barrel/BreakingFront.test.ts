@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { BreakingFront } from './BreakingFront';
 import type { CrestSample } from './crestOnset';
 
-/** A crest sample at one-metre columns, breaking (its segment's strength past the join) over `depth` m by default. */
-function sample(column: number, z: number, strength = 0.6, depth = 2.5): CrestSample {
-  return { column, row: Math.floor(z), x: column + 0.5, z, eta: 1, strength, depth, b: 0.3, speed: 5 };
+/** A crest sample at one-metre columns whose segment rises past Kennedy's fresh onset (`rise`), over `depth` m. */
+function sample(column: number, z: number, rise = 0.8, depth = 2.5): CrestSample {
+  return { column, row: Math.floor(z), x: column + 0.5, z, eta: 1, strength: 0.5, rise, depth, b: 0.3, speed: 5 };
 }
 
 /** An oblique straight crest over `columns`, z = z0 + slope · x. */
-function line(columns: readonly number[], z0: number, slope: number, strength = 0.6, depth = 2.5): CrestSample[] {
-  return columns.map((column) => sample(column, z0 + slope * (column + 0.5), strength, depth));
+function line(columns: readonly number[], z0: number, slope: number, rise = 0.8, depth = 2.5): CrestSample[] {
+  return columns.map((column) => sample(column, z0 + slope * (column + 0.5), rise, depth));
 }
 
 const range = (from: number, to: number) => Array.from({ length: to - from }, (_, k) => from + k);
@@ -31,7 +31,7 @@ describe('the breaking front as lines', () => {
     front.update(first, first.length, 0);
     const ids = front.points.map((point) => point.id);
     front.points.forEach((point) => { point.tau = 0.25; });
-    const next = line(range(0, 20), 10.3, 0.5, 0.6, 2.4);
+    const next = line(range(0, 20), 10.3, 0.5, 0.8, 2.4);
     front.update(next, next.length, 0.1);
     expect(front.points.map((point) => point.id)).toEqual(ids);
     expect(front.points.every((point) => point.tau === 0.25 && point.joined === 0 && point.depth === 2.5)).toBe(true);
@@ -39,14 +39,15 @@ describe('the breaking front as lines', () => {
 
   it('records when a crest joins, and the still depth under it then', () => {
     const front = new BreakingFront();
-    const samples = line(range(0, 3), 10, 0, 0.01, 3.1);
+    const samples = line(range(0, 3), 10, 0, 0.65, 3.1);
     front.update(samples, samples.length, 7);
     expect(front.points.map((point) => [point.joined, point.depth])).toEqual([[7, 3.1], [7, 3.1], [7, 3.1]]);
   });
 
-  it('leaves out crests whose segment is not breaking', () => {
+  // An inheriting column's solver breaking starts at a threshold lowered by its neighbour's age: not a join.
+  it('leaves out crests whose segment has not reached Kennedy’s fresh onset, breaking or not', () => {
     const front = new BreakingFront();
-    const samples = line(range(0, 20), 10, 0.5, 0);
+    const samples = line(range(0, 20), 10, 0.5, 0.64);
     front.update(samples, samples.length, 0);
     expect(front.points).toHaveLength(0);
   });

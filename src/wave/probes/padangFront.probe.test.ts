@@ -39,6 +39,10 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
     let calmB: number[] = [];
     let breakingC: number[] = [];
     let breakingEtaH: number[] = [];
+    // The reef's breaking crests: how many are on a front (joined, now or before), and how many rise at the fresh onset now.
+    let breakingCrests = 0;
+    let onFront = 0;
+    let freshNow = 0;
 
     for (let frame = 0; frame < seconds * 30; frame += 1) {
       simulation.step(1 / 30);
@@ -48,6 +52,11 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
         // The reef, from the peak to the channel.
         if (s.x < PADANG.peakX - 30 || s.x > PADANG.channelX - PADANG.channelHalfWidth) continue;
         const i = s.row * solver.nx + s.column;
+        if (simulation.breaking.strength[i] > 0.3) {
+          breakingCrests += 1;
+          if (s.rise >= 0.65) freshNow += 1;
+          if (simulation.front!.points.some((p) => p.column === s.column && Math.abs(p.z - s.z) < 3 * dx)) onFront += 1;
+        }
         if (!Number.isFinite(s.b)) continue;
         if (simulation.breaking.strength[i] > 0.3) {
           breakingB.push(s.b);
@@ -76,8 +85,11 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
         return `[${f.length} pts x ${f[0].x.toFixed(0)}…${f.at(-1)!.x.toFixed(0)} z ${f[0].z.toFixed(0)}…${f.at(-1)!.z.toFixed(0)}, ` +
           `τ ${Math.min(...taus).toFixed(2)}…${Math.max(...taus).toFixed(2)} s, neighbour step ≤ ${step.toFixed(2)}]`;
       });
-      appendFileSync(log, `t ${solver.time.toFixed(0)} s | reef crests breaking: B ${spread(breakingB)}; C ${spread(breakingC)} m/s; η/h ${spread(breakingEtaH)} | not breaking: B ${spread(calmB)} | ${points.length} points on ${fronts.size} fronts; pauses ${simulation.frontPauses} ${described.join(' ')}\n`);
+      appendFileSync(log, `t ${solver.time.toFixed(0)} s | ${breakingCrests} breaking reef crests: ${breakingCrests ? ((100 * onFront) / breakingCrests).toFixed(0) : '-'} % on a front, ${breakingCrests ? ((100 * freshNow) / breakingCrests).toFixed(0) : '-'} % at the fresh onset now | reef crests breaking: B ${spread(breakingB)}; C ${spread(breakingC)} m/s; η/h ${spread(breakingEtaH)} | not breaking: B ${spread(calmB)} | ${points.length} points on ${fronts.size} fronts; pauses ${simulation.frontPauses} ${described.join(' ')}\n`);
       breakingB = [];
+      breakingCrests = 0;
+      onFront = 0;
+      freshNow = 0;
       calmB = [];
       breakingC = [];
       breakingEtaH = [];

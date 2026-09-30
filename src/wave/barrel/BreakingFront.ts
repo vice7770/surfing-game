@@ -39,8 +39,8 @@ export interface FrontState {
 }
 
 /**
- * The breaking front as lines of points (swept-barrel-build.md, "Front line"; Thürey et al. 2007). A crest whose own
- * segment breaks (`ONSET.join`) joins a front. Crests in neighbouring columns within LINK_ROWS rows in z link, and a
+ * The breaking front as lines of points (swept-barrel-build.md, "Front line"; Thürey et al. 2007). A crest whose
+ * segment reaches Kennedy's fresh onset (`ONSET.join`) joins a front. Crests in neighbouring columns within LINK_ROWS rows in z link, and a
  * column's own crests never do, so two crests in a column are two fronts and an empty column splits one. A point
  * matched to last step's in its column keeps its ID, its join and its clock, with no reset as its crest crosses into
  * new cells. Columns go in order, with no randomness, and only + − × ÷ and √, for online determinism.
@@ -69,7 +69,7 @@ export class BreakingFront {
     const points: FrontPoint[] = [];
     for (let k = 0; k < count; k += 1) {
       const s = samples[k];
-      if (!(s.strength > ONSET.join)) continue;
+      if (!(s.rise >= ONSET.join)) continue;
       let best: FrontPoint | undefined;
       for (const old of byColumn.get(s.column) ?? []) {
         if (matched.has(old) || !(Math.abs(old.z - s.z) < this.matchReach)) continue;
