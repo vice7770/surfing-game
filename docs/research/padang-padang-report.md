@@ -144,15 +144,16 @@ Rideability, `npm run report:rideability` (2 seeds × 12 periods, spreading s 15
 
 Wave by wave on the chosen bed (the Small swell at 1.6 m, `padangWaves`): 22 clean waves at a median 11.5 m/s, 37° geometric, 14 of them at 30–40°; the design's phase matching gives 11.6 m/s. On the calibrated 1.2 m Small swell the design predicts 29–31° geometric: the ladder's fast end, makeable.
 
-Catch and ride on Practice (`npm run report:catch -- --practice --ghosts`, `npm run report:ride -- --practice --ghosts`, 2 seeds × 3 min):
+Catch and ride (`npm run report:catch -- --ghosts`, `npm run report:ride -- --practice --ghosts`, 2 seeds × 3 min):
 
-| Practice | Attempts | Cue lit | Stood | Rides ≥ 3 s | Longest |
+| Sea | Attempts | Cue lit | Stood | Rides ≥ 3 s | Longest |
 |---|---:|---:|---:|---:|---:|
+| Medium swell (2.2 m, 17 s; median ride 8.9 s, top speed 16.1 m/s) | 795 | 56 | 37 | 25 | 12.0 s |
 | Hs 0.6 m (faces 2.2 m) | 877 | 52 | 12 | 1 | 4.3 s |
 | Hs 0.9 m (faces 2.8 m, the advisor's 2.4–3 m) | 894 | 74 | 12 | 0 | 1.3 s |
 | Ride report, Hs 0.6 m (the autopilot) | 188 | — | 5 | 0 | 1.0 s |
 
-**Practice Padang Padang is marginal, true to the spot** (an expert break that needs a solid swell; it works from about 4 ft). Practice stays at 0.6 m, its faces in band. Most attempts get no cue (the crest never lifts the board onto the face). The advisor's level-9 Basilisk test hints that the game's small Padang waves break later and shallower than real ones; its fine run will say why. The "no support (lost board)" ends on the steep faces (122 at 0.9 m) are a question for the ride physics, not the bed or the size.
+**Practice Padang Padang is marginal, true to the spot**; the Medium swell catches and rides (25 rides of 3 s or more, median 8.9 s), so it is Practice's size, not the bed (an expert break that needs a solid swell; it works from about 4 ft). Practice stays at 0.6 m, its faces in band. Most attempts get no cue (the crest never lifts the board onto the face). The advisor's level-9 Basilisk test hints that the game's small Padang waves break later and shallower than real ones; its fine run will say why. The "no support (lost board)" ends on the steep faces (122 at 0.9 m) are a question for the ride physics, not the bed or the size.
 
 Tubes, today's lip before Part B (`npm run report:tubes -- --practice`): 2,554 jets, a median tube 1.04 m long (90th percentile 2.19 m), width over length 0.65 (97 % inside 0.25–1). On the reef breaks the tube's length over width is **2.97, narrower than Mead & Black's Padang Padang ratio of 1.97–2.14** (their fit for the gradient climbed: 2.45; 28 % held at the roundest 1.42). As the spec expected, today's tube is narrow: it is Part B's "before".
 
