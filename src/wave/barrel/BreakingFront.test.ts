@@ -118,12 +118,16 @@ describe('the breaking front as lines', () => {
     joinAt(front, range(0, 20), 10, 0.5, 1);
     const ids = front.points.map((point) => point.id);
     front.points.forEach((point) => { point.tau = 0.25; });
+    expect(front.points.every((point) => point.throwZ === null)).toBe(true);
     const next = line(range(0, 20), 10.3, 0.5, 2.2, 0.1);
     front.update(next, next.length, 1.1);
     expect(front.points.map((point) => point.id)).toEqual(ids);
     expect(front.points.every((point) => point.tau === 0.25 && point.joined === 1 && point.depth === JOIN)).toBe(true);
     // Past its throw depth, it records when its crest crossed.
     expect(front.points[0].thrown).toBeCloseTo(1 + ((JOIN - THROW) / (JOIN - 2.2)) * 0.1, 12);
+    // The foot crest and the throw point travel with the point (PR 3's loft).
+    expect(front.points.every((point) => point.footHeight === FOOT && point.footDepth === TIMING.h0)).toBe(true);
+    expect(front.points[0].throwZ).toBeCloseTo(10 + 0.5 * 0.5 + (0.3 * (JOIN - THROW)) / (JOIN - 2.2), 12);
     const calm = line(range(0, 20), 10.6, 0.5, 2, 0);
     front.update(calm, calm.length, 1.2);
     expect(front.points).toHaveLength(0);

@@ -15,6 +15,7 @@ import { BoussinesqSolver } from './BoussinesqSolver';
 import { BubbleCloud } from './BubbleCloud';
 import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type SprayLook } from './SprayCloud';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
+import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from './barrel/frontRecords';
 import { SurfZoneSimulation, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
 import type { BreakerType } from './SwellReadout';
 import type { SurfReading } from './SurfMeter';
@@ -247,6 +248,9 @@ export interface SurfZoneBuffers {
   roar: Float32Array;
   /** Online (spec N1): the board's push on the water since the last snapshot: its point (x, z) and impulse (jx, jz). */
   reaction: Float64Array;
+  /** The swept barrel's front points (the Padang Padang spec, Part B, PR 3): `FRONT_STRIDE` floats each. */
+  front: Float32Array;
+  frontCount: number;
 }
 
 /**
@@ -562,6 +566,8 @@ export class SurfZoneRunner {
       strokeHitCount: 0,
       roar: new Float32Array(ROAR_SECTORS * 3),
       reaction: new Float64Array(REACTION_STRIDE),
+      front: new Float32Array(FRONT_CAPACITY * FRONT_STRIDE),
+      frontCount: 0,
     };
   }
 
@@ -607,6 +613,7 @@ export class SurfZoneRunner {
     buffers.strokeHitCount = this.strokeHits.drain(buffers.strokeHits);
     this.water.drainReaction(buffers.reaction);
     this.measureRoar(buffers.roar);
+    buffers.frontCount = simulation.front ? writeFrontRecords(simulation.front.points, buffers.front) : 0;
   }
 
   /**

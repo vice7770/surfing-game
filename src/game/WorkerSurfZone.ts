@@ -47,6 +47,8 @@ function emptyLike(snapshot: SurfZoneBuffers): SurfZoneBuffers {
     strokeHitCount: 0,
     roar: new Float32Array(snapshot.roar.length),
     reaction: new Float64Array(snapshot.reaction.length),
+    front: new Float32Array(snapshot.front.length),
+    frontCount: 0,
   };
 }
 

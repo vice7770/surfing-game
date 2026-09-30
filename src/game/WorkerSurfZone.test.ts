@@ -65,6 +65,7 @@ describe('SurfZoneWorkerCore', () => {
     expect(replies[1].transfer).toEqual([
       buffers.surface.buffer, buffers.flow.buffer, buffers.lip.buffer, buffers.bubbles.buffer, buffers.spray.buffer, buffers.board.buffer, buffers.rider.buffer,
       buffers.lipHits.buffer, buffers.strokeHits.buffer, buffers.roar.buffer, buffers.tubes.buffer, buffers.reaction.buffer, buffers.aeration.buffer,
+      buffers.front.buffer,
     ]);
     // S1: the paddler's strokes reach the snapshot for sound, as the in-page surf zone reports them.
     expect(snapshot.snapshot.strokeHitCount).toBe(local.snapshot.strokeHitCount);

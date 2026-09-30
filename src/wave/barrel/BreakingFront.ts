@@ -62,6 +62,11 @@ export interface FrontPoint {
   throwDepth: number;
   crestDepth: number;
   thrown: number | null;
+  /** Its crest's z where it crossed its throw depth, m, as `thrown` is interpolated: the τ = 0 crest the loft anchors on; null until then. */
+  throwZ: number | null;
+  /** Its crest's height at the wedge's foot, m, and the still depth there, m: they size and scale its profile (the loft). */
+  footHeight: number;
+  footDepth: number;
   /** When the solver was first seen breaking its segment, s: its lip never throws before (sliceClock). */
   broke: number;
   /** The slice's clock as drawn, s from its lip's throw: smoothed along the front, never running back (sliceClock). */
@@ -145,8 +150,15 @@ export class BreakingFront {
         if (!(s.strength > 0)) continue;
         matched.add(point);
         const fresh = point.fresh ?? (s.rise >= FRESH ? s.depth : null);
-        const thrown = point.thrown ?? crossing(point.crestDepth, point.seen, s.depth, time, point.throwDepth);
-        points.push({ ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, crestDepth: s.depth, thrown, seen: time, fresh });
+        let { thrown, throwZ } = point;
+        if (thrown === null) {
+          const f = crossingFraction(point.crestDepth, s.depth, point.throwDepth);
+          if (f !== null) {
+            thrown = point.seen + f * (time - point.seen);
+            throwZ = point.z + f * (s.z - point.z);
+          }
+        }
+        points.push({ ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, crestDepth: s.depth, thrown, throwZ, seen: time, fresh });
         continue;
       }
       const track = this.nearest(tracksOf.get(s.column), followed, s.z, TRACK_REACH);
@@ -170,15 +182,21 @@ export class BreakingFront {
       if (next.footHeight !== null && next.refHeight !== null && s.depth < shallower) {
         const joinDepth = this.timing.joinDepth(next.refHeight);
         const throwDepth = Math.min(joinDepth, this.timing.throwDepth(next.footHeight));
-        next.crossed ??= crossing(track.depth, track.seen, s.depth, time, joinDepth);
+        if (next.crossed === null) {
+          const joinF = crossingFraction(track.depth, s.depth, joinDepth);
+          if (joinF !== null) next.crossed = track.seen + joinF * (time - track.seen);
+        }
         // It joins if the solver breaks it before its lip would throw (at the latest in the step its crest reaches the
         // depth), so a tube never throws off water the solver has not broken (the advisor, 2026-09-30).
         if (next.crossed !== null && s.strength > 0 && track.depth > throwDepth) {
           this.joins += 1;
+          const throwF = crossingFraction(track.depth, s.depth, throwDepth);
           points.push({
             id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
             joined: next.crossed, depth: joinDepth, throwDepth, crestDepth: s.depth,
-            thrown: crossing(track.depth, track.seen, s.depth, time, throwDepth),
+            thrown: throwF === null ? null : track.seen + throwF * (time - track.seen),
+            throwZ: throwF === null ? null : track.z + throwF * (s.z - track.z),
+            footHeight: next.footHeight, footDepth: this.timing.h0,
             // Its clock starts at the library's earliest frame; the first advance puts it where the fit does.
             broke: time, tau: this.timing.earliest, seen: time, fresh: next.fresh,
           });
@@ -272,11 +290,10 @@ export class BreakingFront {
   }
 }
 
-/** When a crest at `fromDepth` at `fromTime` and at `depth` at `time` crossed `at`, linear in depth between; null if it has not. */
-function crossing(fromDepth: number, fromTime: number, depth: number, time: number, at: number): number | null {
+/** How far between a crest at `fromDepth` and at `depth` it crossed `at`, 0–1, linear in depth; null if it has not. */
+function crossingFraction(fromDepth: number, depth: number, at: number): number | null {
   if (depth > at) return null;
-  const f = fromDepth > depth ? Math.min(1, Math.max(0, (fromDepth - at) / (fromDepth - depth))) : 1;
-  return fromTime + f * (time - fromTime);
+  return fromDepth > depth ? Math.min(1, Math.max(0, (fromDepth - at) / (fromDepth - depth))) : 1;
 }
 
 function byColumn<T extends { column: number }>(items: readonly T[]): Map<number, T[]> {

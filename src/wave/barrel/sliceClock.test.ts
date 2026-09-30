@@ -12,7 +12,7 @@ const LAGGED: OnsetTiming = { ...AT_ONCE, throwDepth: () => 2, lagged: true };
 /** A crest line of `n` points one metre apart, their clocks at the earliest frame as BreakingFront starts them. */
 function crest(n: number, id = 0): FrontPoint[] {
   return Array.from({ length: n }, (_, k) => ({
-    id: k, front: id, column: k, sigma: k, x: k + 0.5, z: 10, b: NaN, height: 1, joined: 0, depth: 2.5, throwDepth: 2.5, crestDepth: 2.5, thrown: null, broke: 0, tau: AT_ONCE.earliest, seen: 0, fresh: null,
+    id: k, front: id, column: k, sigma: k, x: k + 0.5, z: 10, b: NaN, height: 1, joined: 0, depth: 2.5, throwDepth: 2.5, crestDepth: 2.5, thrown: null, throwZ: null, footHeight: 1.6, footDepth: 7, broke: 0, tau: AT_ONCE.earliest, seen: 0, fresh: null,
   }));
 }
 
