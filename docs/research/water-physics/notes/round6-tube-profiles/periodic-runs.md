@@ -129,3 +129,22 @@ The Padang session's library had no case under A0 0.2, so every Small-swell look
 - **The throw-depth line, refitted through all four Padang cases:** Navier–Stokes vertical depth = 1.56 + 0.56 × η_foot (m at h0 7 m).
   - The four points (foot crest → depth): 0.99 → 1.99, 1.22 → 2.45, 1.65 → 2.38 and 2.50 → 2.97.
   - Residuals are within 0.21 m, over foot crests of 1.0–2.5 m. The earlier three-point line put the Small wave 0.26 m too deep.
+
+## 9. The Reef's libraries, for PR 7 [measured]
+
+Built 2026-10-01 from the two level-12 periodic Reef runs, with `analysis/periodic_library.py`, for the Reef's swept barrel (PR 7).
+- **`data/periodic_reef42_L12_library.json`** (the ledge at 1:4.2) and **`data/periodic_reef60_L12_library.json`** (1:6).
+  - Both have A0 0.2127: the train's crest over the 10 m shelf.
+  - Frames start about 3 √(h0/g) before vertical (TMIN 18.0 and 19.9).
+  - The crest is looked for at x ≥ 23 h0. It sits at x 24–29 through those frames, ahead of the steps on the face behind it.
+- **reef42:** 281 frames; open tube 65 frames, 62 clean.
+- **reef60:** 285 frames; open tube 70 frames, 49 clean.
+  - 14 early open frames (τ 0.05–0.48) are flagged `surface_torn_in_window`, with landmark jumps.
+  - The cause: the step drains the flat ahead of the crest until it runs dry. The traced surface then breaks ahead of the toe, while the lip and tube are traced whole.
+  - The converter should keep those frames' lip and tube, or skip them, and say which.
+
+```bash
+P=python3   # with numpy, scipy and matplotlib
+$P tools/basilisk/analysis/periodic_library.py tools/basilisk/runs/periodic_reef42_L12 12 48 0.238095 0.2127 10 18.0 23.0
+$P tools/basilisk/analysis/periodic_library.py tools/basilisk/runs/periodic_reef60_L12 12 48 0.166667 0.2127 10 19.9 23.0
+```
