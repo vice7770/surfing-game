@@ -108,3 +108,32 @@ The advisor's follow-ups (2026-09-30), rerun on the same sea [measured]:
   - 1,809 of 17,773 open slices were capped. Their median life was 0.76 of the open time.
   - By fifths of the open time they fell 78 / 124 / 309 / 505 / 793, so 44 % in the last fifth.
 - **So the anchor starts back to the solver's crest at 80 % of the open time,** over the 0.3 s handover, where the lip collapses and the crest landmark is least defined (the advisor's rule).
+
+## The contact
+
+The swept barrel as ridden (Part B, PR 4; `src/wave/barrel/sweptContact.ts`), from the advisor's rulings of 2026-09-30.
+
+**How it answers.** The worker builds the same loft each step from the same front records, in a contact mode, over the physics' own uncarved surface. A point is water or air by the parity of the lofted triangles a vertical line crosses above it.
+- **Closed down to the seabed** past the pinned ends by vertical walls, which a vertical line never crosses, so the crossings alone decide (ruling 2).
+- **Half-open:** a crossing at or below the point counts as below. A point on an edge two triangles share counts in exactly one; on a fold (the lip's tip), in both or neither. A point exactly on a slice's ray steps a nanometre into its strip, so its own triangles take the ray's edges.
+- **Layers.** In water, the surface is the nearest crossing above, and a crossing below is the curl's underside (`waterFloorY`). In air, it is the nearest crossing below, and the two above are the curl's underside and top (`ceilingY`, `ceilingTopY`). `surfaceAt` is the lowest crossing, the face, as the carve returned the void's floor.
+- **Normals** are the loft's vertex normals by the crossing's weights. The slope takes n_y ≥ 0.1 [inferred], so a vertical face slopes 10 at most.
+- **Where two fronts' strips overlap,** the first front's answers (a ledger ruling).
+
+**Contact mode** (ruling 2).
+- After touchdown each slice holds its last clear frame (one before touchdown in each case it blends: the jet ≥ 2 cells off the face at level 12), so the curve never self-crosses. Its clock and phase run on. The cases keep only one frame past touchdown, so the jet's trim and cavity loop have nothing to trim yet (a ledger ruling, sent to the advisor).
+- An overturned slice under full weight is whole from half weight and dropped below, and counted: a squashed lip is no water.
+
+**The lip's flow** (ruling 1). The converter stores the tip landmark's velocity per frame: a least-squares line over ±4 frames, in √(g h0) (format BRL2; table in [barrel-cases.md](barrel-cases.md)). The lookup scales it by √(g h0) of the slice; the clock's rate is 1 (τ runs with time; pauses hold it). In the curl's water, from the crest landmark (0) to the tip (1) by where the curl's top is, the solver's flow across the crest and up ramps to the tip's, plus the anchor's own motion while it hands over; along the crest the solver's is kept.
+
+**The rider** (ruling 4).
+- No new trigger. At a swept spot the solver's lip parcels no longer strike (their strips are off).
+- A body part in the tube's air whose sphere reaches the curl's underside takes its share between the underside and the top, with the curl's water's flow. A part in the curl's water subtracts the air below it, as the deck is.
+- The pop-up's "feet under water" ignores a foot in the curl's water with air beneath it; it is the attached rider's only submersion rule.
+
+**Part D's fields** on the sample: `covered` (in the curl's air before touchdown), `clearance` (up to the underside), `tube` ('open', 'closing' from 0.8 T_open [provisional], 'closed' from touchdown until the slice goes; none before the throw). The Reef's session has yet to agree them.
+
+**Measured** (the `padangContact` probe, 2026-09-30, on the M1 Air under another session's load: load average 30–88, so every time here reads high) [measured]:
+- **A standing rider samples the water 2,656 times a 1/60 s step**: 32 substeps × its hull points, foils and body parts (ruling 3's count).
+- **A query through a tube** (a toy tube on a 40 m front: its strips have the sea's 133 quads each) took **6.4 µs**; the toy's update (10k vertices, flat water) 11.7 ms. So a standing rider wholly inside a tube would add about 17 ms a step on this loaded machine: heavy enough to take the advisor's fallback (each body's slice built once a step, lerped per substep) if an unloaded run agrees.
+- **On the Small swell**, 20 s of sea from the spin-up: the contact's update took 0.37 ms a step against the step's 613 ms (0.1 %). No tube had opened yet, so the sea gave no query timing; rerun it longer (`PROBE=1 SECONDS=180`) on an unloaded machine.
