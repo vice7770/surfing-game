@@ -14,9 +14,14 @@ import { LANDMARK, PROFILE_POINTS, type ProfileLibrary } from './ProfileLibrary'
  * - `band`, m: the dithered overlap at the mask's edge [inferred];
  * - `endBlend`, m: a front's ends blend into the water over this length [inferred];
  * - `handover`, s: after touchdown a slice's anchor returns to the solver's crest and its surface fades into the water
- *   over this long, a stand-in until the roller [inferred].
+ *   over this long, a stand-in until the roller; a faded slice is dropped [inferred];
+ * - `offsetKnee`, `offsetReach`, m: the drawn crest's distance from the solver's is its own below the knee and
+ *   saturates `offsetReach` past it (the advisor, 2026-09-30: 5 % of open slices ran over 2 m on the Small swell).
  */
-export const LOFT = { spacing: 0.5, fine: 0.25, frames: 3, budget: 40_000, pinned: 6, extension: 1.5, extensionSamples: 3, band: 1, endBlend: 2.5, handover: 0.3 } as const;
+export const LOFT = {
+  spacing: 0.5, fine: 0.25, frames: 3, budget: 40_000, pinned: 6, extension: 1.5, extensionSamples: 3, band: 1, endBlend: 2.5, handover: 0.3,
+  offsetKnee: 1.5, offsetReach: 1,
+} as const;
 /** Vertices per slice: the profile and its extensions over the water at each end. */
 export const LOFT_SAMPLES = PROFILE_POINTS + 2 * LOFT.extensionSamples;
 /** The library's runs' slope along the wave's path, per spot drawn with the swept barrel (the owner's 1:19 at Padang Padang). */
@@ -42,9 +47,13 @@ export interface LoftResult {
   sliceTau: Float32Array;
   slicePhase: Uint8Array;
   sliceCrestOffset: Float32Array;
+  /** Per slice, τ over its touchdown time once thrown (NaN before): where in its tube's life it is. */
+  sliceLife: Float32Array;
   /** Neighbouring slices' τ clamped to T_open/4 because the budget was reached; lookups outside the library's cases. */
   clamps: number;
   clampedLookups: number;
+  /** Slices whose drawn crest's distance from the solver's was soft-capped. */
+  caps: number;
 }
 
 const MAX_SLICES = Math.floor(LOFT.budget / LOFT_SAMPLES);
@@ -99,7 +108,8 @@ export class SweptLoft {
       positions: new Float32Array(3 * vertices), normals: new Float32Array(3 * vertices), mask: new Float32Array(vertices), lift: new Float32Array(vertices),
       indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * (MAX_SLICES + 1)), vertexCount: 0, indexCount: 0, sliceCount: 0,
       sliceFront: new Int32Array(MAX_SLICES + 1), sliceSigma: new Float32Array(MAX_SLICES + 1), sliceTau: new Float32Array(MAX_SLICES + 1),
-      slicePhase: new Uint8Array(MAX_SLICES + 1), sliceCrestOffset: new Float32Array(MAX_SLICES + 1), clamps: 0, clampedLookups: 0,
+      slicePhase: new Uint8Array(MAX_SLICES + 1), sliceCrestOffset: new Float32Array(MAX_SLICES + 1), sliceLife: new Float32Array(MAX_SLICES + 1),
+      clamps: 0, clampedLookups: 0, caps: 0,
     };
   }
 
@@ -110,26 +120,23 @@ export class SweptLoft {
     r.sliceCount = 0;
     r.clamps = 0;
     r.clampedLookups = 0;
+    r.caps = 0;
     const fronts = this.fronts(records, count);
-    // The spacing that fits the budget, and whether refining would overrun it.
-    let length = 0;
-    let slices = 0;
+    // The spacing that fits the budget, and whether refining would overrun it: faded slices are dropped, so only the
+    // live ones count.
+    let live = 0;
+    let extra = 0;
     for (const f of fronts) {
-      const span = f.last - f.first + 2 * LOFT.extension;
-      length += span;
-      slices += Math.ceil(span / LOFT.spacing) + 1;
+      const survey = this.survey(records, f);
+      live += survey.live;
+      extra += survey.extra;
     }
     let spacing: number = LOFT.spacing;
-    let budgeted = slices > MAX_SLICES;
-    if (budgeted) spacing = length / Math.max(1, MAX_SLICES - 2 * fronts.length);
-    else {
-      let extra = 0;
-      for (const f of fronts) extra += this.refinements(records, f, spacing, false);
-      budgeted = slices + extra > MAX_SLICES;
-    }
+    let budgeted = live + extra > MAX_SLICES;
+    if (live > MAX_SLICES) spacing = (LOFT.spacing * live) / Math.max(1, MAX_SLICES - 2 * fronts.length);
     for (const f of fronts) {
-      const n = budgeted ? this.baseSlices(f, spacing, this.sigmas) : this.refinements(records, f, spacing, true);
-      if (r.sliceCount + n > MAX_SLICES) break;
+      if (r.sliceCount >= MAX_SLICES) break;
+      const n = budgeted ? this.baseSlices(f, spacing, this.sigmas) : this.refinements(records, f, spacing);
       this.loftFront(records, f, n, budgeted, stillLevel, heightAt);
     }
     return r;
@@ -162,27 +169,45 @@ export class SweptLoft {
   }
 
   /**
-   * The midpoints a front's base slices need (neighbouring clocks more than `frames` frames apart). With `write`, the
-   * refined σ go to `sigmas` and their count is returned; without, just how many midpoints there would be.
+   * A front's base slices at `spacing` that have not faded after touchdown (the rest are dropped), and the midpoints
+   * the live ones need (neighbouring clocks more than `frames` frames apart).
    */
-  private refinements(records: Float32Array, f: Front, spacing: number, write: boolean): number {
+  private survey(records: Float32Array, f: Front): { live: number; extra: number } {
+    const n = this.baseSlices(f, LOFT.spacing, this.base);
+    let live = 0;
+    let extra = 0;
+    let previous = Number.NaN;
+    let previousFrame = 0;
+    for (let k = 0; k < n; k += 1) {
+      const s = this.at(records, f, this.base[k], this.probe);
+      const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
+      if (s.tau >= times.touchdownSeconds + LOFT.handover) {
+        previous = Number.NaN;
+        continue;
+      }
+      live += 1;
+      if (Math.abs(s.tau - previous) > LOFT.frames * Math.min(times.frameSeconds, previousFrame)) extra += 1;
+      previous = s.tau;
+      previousFrame = times.frameSeconds;
+    }
+    return { live, extra };
+  }
+
+  /** A front's base slices, with the midpoints where neighbouring clocks differ by more than `frames` frames, into `sigmas`; how many. */
+  private refinements(records: Float32Array, f: Front, spacing: number): number {
     const n = this.baseSlices(f, spacing, this.base);
     let out = 0;
-    let extra = 0;
     let previousTau = 0;
     let previousFrame = 0;
     for (let k = 0; k < n; k += 1) {
       const s = this.at(records, f, this.base[k], this.probe);
       const frame = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth }).frameSeconds;
-      if (k > 0 && Math.abs(s.tau - previousTau) > LOFT.frames * Math.min(frame, previousFrame)) {
-        extra += 1;
-        if (write) this.sigmas[out++] = (this.base[k - 1] + this.base[k]) / 2;
-      }
-      if (write) this.sigmas[out++] = this.base[k];
+      if (k > 0 && Math.abs(s.tau - previousTau) > LOFT.frames * Math.min(frame, previousFrame)) this.sigmas[out++] = (this.base[k - 1] + this.base[k]) / 2;
+      this.sigmas[out++] = this.base[k];
       previousTau = s.tau;
       previousFrame = frame;
     }
-    return write ? out : extra;
+    return out;
   }
 
   /** Front f's values at σ (see `Sample`), into `into`. */
@@ -238,7 +263,12 @@ export class SweptLoft {
   ): void {
     const r = this.result;
     const { profile } = this;
-    const firstSlice = r.sliceCount;
+    // Runs of live slices: a faded slice is dropped, and the slices either side of it are never joined.
+    let runStart = -1;
+    const closeRun = () => {
+      if (runStart >= 0) this.finishRun(runStart, r.sliceCount - 1);
+      runStart = -1;
+    };
     let previousTau = 0;
     for (let k = 0; k < n; k += 1) {
       const sigma = this.sigmas[k];
@@ -261,16 +291,23 @@ export class SweptLoft {
       const nx = -tz;
       const nz = tx;
       let tau = s.tau;
-      if (budgeted && k > 0) {
+      if (budgeted && runStart >= 0) {
         const limit = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth }).touchdownSeconds / 4;
         const clamped = Math.min(previousTau + limit, Math.max(previousTau - limit, tau));
         if (clamped !== tau) r.clamps += 1;
         tau = clamped;
       }
-      previousTau = tau;
       const lookup = this.library.profileAt({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth, seconds: tau }, profile);
-      if (lookup.clamped) r.clampedLookups += 1;
       const touchdown = lookup.touchdownSeconds;
+      const wFade = tau <= touchdown ? 1 : Math.max(0, 1 - (tau - touchdown) / LOFT.handover);
+      if (wFade === 0) {
+        closeRun();
+        continue;
+      }
+      if (r.sliceCount >= MAX_SLICES) break;
+      if (runStart < 0) runStart = r.sliceCount;
+      previousTau = tau;
+      if (lookup.clamped) r.clampedLookups += 1;
       // The anchor: the profile's x origin in the world.
       const crest = profile[2 * LANDMARK.crest];
       const crestX = s.x - crest * nx;
@@ -278,24 +315,36 @@ export class SweptLoft {
       let ax = crestX;
       let az = crestZ;
       let offset = Number.NaN;
+      let life = Number.NaN;
       if (tau >= 0 && s.throwZ === s.throwZ) {
+        // The throw's anchor, its drawn crest at most `offsetKnee` + `offsetReach` from the solver's (a soft cap).
+        const ox = crest * nx;
+        const oz = s.throwZ + crest * nz - s.z;
+        const raw = Math.sqrt(ox * ox + oz * oz);
+        let throwX = s.x;
+        let throwZ = s.throwZ;
+        if (raw > LOFT.offsetKnee) {
+          const beyond = (raw - LOFT.offsetKnee) / LOFT.offsetReach;
+          const scale = (LOFT.offsetKnee + (LOFT.offsetReach * beyond) / (1 + beyond)) / raw;
+          throwX = crestX + scale * ox;
+          throwZ = crestZ + scale * oz;
+          r.caps += 1;
+        }
+        life = tau / touchdown;
         if (tau <= touchdown) {
-          ax = s.x;
-          az = s.throwZ;
-          const ox = ax + crest * nx - s.x;
-          const oz = az + crest * nz - s.z;
-          offset = Math.sqrt(ox * ox + oz * oz);
+          ax = throwX;
+          az = throwZ;
+          offset = raw;
         } else {
           const u = Math.min(1, (tau - touchdown) / LOFT.handover);
-          ax = s.x + u * (crestX - s.x);
-          az = s.throwZ + u * (crestZ - s.throwZ);
+          ax = throwX + u * (crestX - throwX);
+          az = throwZ + u * (crestZ - throwZ);
         }
       }
       // The weights: into the water at the front's ends, and after touchdown.
       const d = Math.min(sigma - f.first, f.last - sigma);
       const r0 = Math.min(1, d / LOFT.endBlend);
       const wEnd = d <= 0 ? 0 : r0 * r0 * (3 - 2 * r0);
-      const wFade = tau <= touchdown ? 1 : Math.max(0, 1 - (tau - touchdown) / LOFT.handover);
       const w = wEnd * wFade;
       const maskSlice = wFade > 0 ? Math.min(1, Math.max(0, 1 + d / LOFT.band)) : 0;
       const slice = r.sliceCount;
@@ -304,6 +353,7 @@ export class SweptLoft {
       r.sliceTau[slice] = tau;
       r.slicePhase[slice] = PHASE[lookup.phase];
       r.sliceCrestOffset[slice] = offset;
+      r.sliceLife[slice] = life;
       for (let j = 0; j < LOFT_SAMPLES; j += 1) {
         let along: number;
         let above = 0;
@@ -335,7 +385,13 @@ export class SweptLoft {
       }
       r.sliceCount += 1;
     }
-    const lastSlice = r.sliceCount - 1;
+    closeRun();
+    r.vertexCount = r.sliceCount * LOFT_SAMPLES;
+  }
+
+  /** A run of consecutive slices: its normals, and two triangles per quad between them. */
+  private finishRun(firstSlice: number, lastSlice: number): void {
+    const r = this.result;
     this.normals(firstSlice, lastSlice);
     for (let s = firstSlice; s < lastSlice; s += 1) {
       for (let j = 0; j < LOFT_SAMPLES - 1; j += 1) {
@@ -351,7 +407,6 @@ export class SweptLoft {
         r.indexCount += 6;
       }
     }
-    r.vertexCount = r.sliceCount * LOFT_SAMPLES;
   }
 
   /** Each vertex's normal: across the profile × along the front, by central differences (one-sided at the edges). */

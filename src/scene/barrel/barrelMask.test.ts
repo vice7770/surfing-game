@@ -9,7 +9,7 @@ function quad(): LoftResult {
   return {
     positions, normals: new Float32Array(12), mask: new Float32Array([1, 0, 1, 0]), lift: new Float32Array(4), indices: new Uint32Array([0, 1, 2, 1, 3, 2]),
     vertexCount: 4, indexCount: 6, sliceCount: 2, sliceFront: new Int32Array(2), sliceSigma: new Float32Array(2), sliceTau: new Float32Array(2),
-    slicePhase: new Uint8Array(2), sliceCrestOffset: new Float32Array(2), clamps: 0, clampedLookups: 0,
+    slicePhase: new Uint8Array(2), sliceCrestOffset: new Float32Array(2), sliceLife: new Float32Array(2), clamps: 0, clampedLookups: 0, caps: 0,
   };
 }
 

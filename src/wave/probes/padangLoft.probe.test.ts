@@ -3,7 +3,7 @@ import { describe, it } from 'vitest';
 import { PADANG } from '../Bathymetry';
 import { loadBarrelLibrary } from '../barrel/barrelLibrary';
 import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from '../barrel/frontRecords';
-import { BARREL_SLOPE, SweptLoft } from '../barrel/sweptLoft';
+import { BARREL_SLOPE, LOFT, SweptLoft } from '../barrel/sweptLoft';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
 import { sampleSurfaceHeight } from '../../scene/WaterSurface';
 import { PADANG_SPREADING } from '../../game/PhysicalMode';
@@ -47,6 +47,9 @@ describe.runIf(process.env.PROBE)('Padang Padang loft probe', () => {
     let frames = 0;
     let over2 = 0;
     let openSlices = 0;
+    // Capped slices, and where in their tube's life (τ over the touchdown time) they fell: the advisor asks whether
+    // they cluster past 0.8, where the handover would then start.
+    const cappedLives: number[] = [];
     let offsets: number[] = [];
     let curls: number[] = [];
     let steps: number[] = [];
@@ -71,6 +74,7 @@ describe.runIf(process.env.PROBE)('Padang Padang loft probe', () => {
           if (Number.isFinite(offset)) {
             offsets.push(offset);
             if (offset > 2) over2 += 1;
+            if (offset > LOFT.offsetKnee) cappedLives.push(result.sliceLife[s]);
           }
         }
         const sameFront = s > 0 && result.sliceFront[s] === result.sliceFront[s - 1];
@@ -89,5 +93,8 @@ describe.runIf(process.env.PROBE)('Padang Padang loft probe', () => {
       steps = [];
     }
     appendFileSync(log, `the loft ${(loftMs / frames).toFixed(2)} ms a frame against the step's ${(stepMs / frames).toFixed(1)} ms (${((100 * loftMs) / stepMs).toFixed(1)} %); open slices with the crest over 2 m off: ${over2} of ${openSlices}\n`);
+    const late = cappedLives.filter((life) => life > 0.8).length;
+    const fifths = [0, 1, 2, 3, 4].map((k) => cappedLives.filter((life) => life >= k / 5 && (k === 4 ? life <= 1 : life < (k + 1) / 5)).length);
+    appendFileSync(log, `capped open slices: ${cappedLives.length} of ${openSlices}; their life (τ / T_open) ${quantiles(cappedLives)}; by fifth of the open time ${fifths.join(' / ')}; past 0.8: ${late}\n`);
   }, 7_200_000);
 });

@@ -5,19 +5,21 @@ import { LOFT, LOFT_SAMPLES, SweptLoft } from './sweptLoft';
 import { toyCase } from './toyCase';
 
 const flat = () => 0.5;
-/** A straight front along +x at z = −100, 1 m apart, every point at τ `tau(k)`, thrown at z −100.2 once τ ≥ 0. */
-function records(n: number, tau: (k: number) => number): Float32Array {
+/** A straight front along +x at z = −100, 1 m apart, every point at τ `tau(k)`, thrown at z `throwZ` once τ ≥ 0. */
+function records(n: number, tau: (k: number) => number, throwZ = -100.2): Float32Array {
   const out = new Float32Array(n * FRONT_STRIDE);
   for (let k = 0; k < n; k += 1) {
     const o = k * FRONT_STRIDE;
     out[o + FRONT_FIELD.x] = k + 0.5; out[o + FRONT_FIELD.z] = -100; out[o + FRONT_FIELD.front] = 1; out[o + FRONT_FIELD.sigma] = k;
     out[o + FRONT_FIELD.tau] = tau(k); out[o + FRONT_FIELD.footHeight] = 2.1; out[o + FRONT_FIELD.footDepth] = 7;
-    out[o + FRONT_FIELD.throwZ] = tau(k) >= 0 ? -100.2 : Number.NaN;
+    out[o + FRONT_FIELD.throwZ] = tau(k) >= 0 ? throwZ : Number.NaN;
   }
   return out;
 }
 const library = () => new ProfileLibrary([toyCase(0.2, 0), toyCase(0.4, 0.2)]);
-const loftOf = (tau: (k: number) => number, n = 21) => new SweptLoft(library(), 0.05).build(records(n, tau), n, 0.5, flat);
+const loftOf = (tau: (k: number) => number, n = 21, throwZ = -100.2) => new SweptLoft(library(), 0.05).build(records(n, tau, throwZ), n, 0.5, flat);
+/** The toy's touchdown, s: 0.5 √(7/g). */
+const TOUCHDOWN = 0.5 * Math.sqrt(7 / 9.81);
 
 describe('the swept loft', () => {
   it('lofts a front every half metre, 1.5 m past each end, 134 vertices a slice', () => {
@@ -51,16 +53,28 @@ describe('the swept loft', () => {
     expect(loft.lift[LOFT.extensionSamples + 32]).toBe(0);
   });
 
+  const crestZ = (loft: ReturnType<typeof loftOf>) => loft.positions[3 * (Math.floor(loft.sliceCount / 2) * LOFT_SAMPLES + LOFT.extensionSamples + 32) + 2];
+
   it('anchors the τ = 0 crest at the throw point, and before the throw on the solver’s crest', () => {
-    const thrown = loftOf(() => 0.1);
+    // The toy's crest sits at x = 1 h0 = 7 m at every τ; thrown at z −106, it stands at −99, 1 m ahead of the solver's.
+    const thrown = loftOf(() => 0.1, 21, -106);
     const early = loftOf(() => -0.1);
-    const crestZ = (loft: ReturnType<typeof loftOf>) => loft.positions[3 * (Math.floor(loft.sliceCount / 2) * LOFT_SAMPLES + LOFT.extensionSamples + 32) + 2];
-    // The toy's crest sits at x = 1 h0 at every τ; thrown, its τ = 0 origin is the throw point, before, the crest is the solver's.
-    expect(crestZ(thrown)).toBeCloseTo(-100.2 + 7 * 1, 4);
+    expect(crestZ(thrown)).toBeCloseTo(-99, 4);
     expect(crestZ(early)).toBeCloseTo(-100, 4);
     const middle = Math.floor(thrown.sliceCount / 2);
-    expect(thrown.sliceCrestOffset[middle]).toBeCloseTo(6.8, 4);
+    expect(thrown.sliceCrestOffset[middle]).toBeCloseTo(1, 4);
+    expect(thrown.sliceLife[middle]).toBeCloseTo(0.1 / TOUCHDOWN, 4);
     expect(early.sliceCrestOffset[middle]).toBeNaN();
+    expect(thrown.caps).toBe(0);
+  });
+
+  it('soft-caps the drawn crest’s distance from the solver’s at 2.5 m, and counts the caps (the advisor, 2026-09-30)', () => {
+    // Thrown at z −100.2, the crest would stand 6.8 m ahead: drawn at 1.5 + 5.3 / (1 + 5.3) m.
+    const loft = loftOf(() => 0.1);
+    const middle = Math.floor(loft.sliceCount / 2);
+    expect(crestZ(loft)).toBeCloseTo(-100 + 1.5 + 5.3 / 6.3, 4);
+    expect(loft.sliceCrestOffset[middle]).toBeCloseTo(6.8, 4);
+    expect(loft.caps).toBe(loft.sliceCount);
   });
 
   it('blends into the water over 2.5 m at each end, and masks 1 m past them', () => {
@@ -72,20 +86,32 @@ describe('the swept loft', () => {
     expect(loft.mask[Math.floor(loft.sliceCount / 2) * LOFT_SAMPLES + first]).toBe(1);
   });
 
-  it('fades a slice into the water after touchdown and drops its mask', () => {
-    // The toy's touchdown is 0.5 √(7/g) ≈ 0.42 s; just past the 0.3 s handover it is gone.
-    const loft = loftOf(() => 0.5 * Math.sqrt(7 / 9.81) + LOFT.handover + 0.01);
-    const middle = Math.floor(loft.sliceCount / 2) * LOFT_SAMPLES;
-    expect(loft.positions[3 * (middle + LOFT.extensionSamples + 32) + 1]).toBe(0.5);
-    expect(loft.mask[middle + LOFT.extensionSamples + 32]).toBe(0);
-    expect(loft.slicePhase[Math.floor(loft.sliceCount / 2)]).toBe(2);
+  it('fades a slice into the water over the handover after touchdown', () => {
+    // Halfway through the 0.3 s handover the toy's 3.5 m crest stands half as high over the 0.5 m water.
+    const loft = loftOf(() => TOUCHDOWN + LOFT.handover / 2);
+    const middle = Math.floor(loft.sliceCount / 2);
+    expect(loft.positions[3 * (middle * LOFT_SAMPLES + LOFT.extensionSamples + 32) + 1]).toBeCloseTo(0.5 + 0.5 * 3.5, 4);
+    expect(loft.slicePhase[middle]).toBe(2);
+  });
+
+  it('drops a slice once it has faded into the water, and never joins the slices either side of it (the advisor, 2026-09-30)', () => {
+    expect(loftOf(() => TOUCHDOWN + LOFT.handover + 0.01).vertexCount).toBe(0);
+    // Points 0–9 open, 10–20 long faded: only the open part is lofted, as one run.
+    const loft = loftOf((k) => (k < 10 ? 0.1 : 5));
+    const whole = loftOf(() => 0.1);
+    expect(loft.sliceCount).toBeGreaterThan(0);
+    expect(loft.sliceCount).toBeLessThan(whole.sliceCount);
+    expect(loft.vertexCount).toBe(loft.sliceCount * LOFT_SAMPLES);
+    for (let s = 0; s < loft.sliceCount; s += 1) expect(loft.sliceTau[s]).toBeLessThan(TOUCHDOWN + LOFT.handover);
+    expect(loft.indexCount).toBe(6 * (LOFT_SAMPLES - 1) * (loft.sliceCount - 1));
   });
 
   it('refines where neighbouring clocks differ by more than three frames', () => {
-    // A frame is 0.25 √(7/g) = 0.21 s, so three are 0.63 s; a clock stepping 1.5 s per metre differs by 0.75 s a slice.
+    // A frame is 0.25 √(7/g) = 0.21 s, so three are 0.63 s; a clock jumping 1.5 s between two points differs by 0.75 s
+    // across each of the two slices over the jump, so each gets a midpoint.
     const coarse = loftOf(() => 0);
-    const steep = loftOf((k) => k * 1.5);
-    expect(steep.sliceCount).toBeGreaterThan(coarse.sliceCount);
+    const steep = loftOf((k) => (k < 10 ? -1 : 0.5));
+    expect(steep.sliceCount).toBe(coarse.sliceCount + 2);
   });
 
   // Review Focus 1.
@@ -108,7 +134,7 @@ describe('the swept loft', () => {
   });
 
   it('keeps to its budget on a long front, clamping the clock steps it must', () => {
-    const loft = loftOf((k) => (k % 2) * 2, 400);
+    const loft = loftOf((k) => (k % 2) * 0.6, 400);
     expect(loft.vertexCount).toBeLessThanOrEqual(LOFT.budget);
     expect(loft.clamps).toBeGreaterThan(0);
   });
