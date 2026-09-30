@@ -9,6 +9,7 @@ The pages below were opened, not just searched; the full notes tag every finding
 - [O'Dea, Brodie & Elgar 2021, GRL](https://www2.whoi.edu/staff/elgar/wp-content/uploads/sites/153/2021/08/145.pdf): field lidar of voids at closure
 - [Mead & Black 2001, J. Coastal Res. SI 29](http://joas.free.fr/studies/bei/g2s/predicting_the_breaking_waves_intensity.pdf): vortex ratio against seabed gradient, intensity classes, Padang Padang and Pipeline
 - [Derakhti et al. 2020, JGR Oceans](https://arxiv.org/pdf/1911.06896): onset at crest speed ratio 0.85
+- [Bjørkavåg & Kalisch 2016, arXiv](https://arxiv.org/pdf/1601.06822): Table 8 quotes Grilli et al. 1997's solitary-wave breaking index on 1:35, H_b/h_b 1.38–1.40
 - [Erinin et al. 2023, J. Fluid Mech. 967 A35](https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/plunging-breakers-part-1-analysis-of-an-ensemble-of-wave-profiles/9DA630A5718361A3579618BB022B8F35): plunging jet speeds and impact
 - [Drazen, Melville & Lenain 2008, J. Fluid Mech. 611](https://airsea.ucsd.edu/wp-content/uploads/sites/10/2019/06/2008_Drazen_Melville_Lenain-Journal_of_Fluid_Mechanics_vol_611.pdf): the jet's toe in free fall
 - [Chanson, Aoki & Maruyama 2002, Coastal Eng. 46](https://staff.civil.uq.edu.au/h.chanson/reprints/coastal02.pdf): jet impact, air entrainment, plume
