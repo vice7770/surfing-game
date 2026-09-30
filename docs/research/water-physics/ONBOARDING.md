@@ -93,7 +93,12 @@ Read in this order:
   - Parts A–C are merged (#54, #57, #60).
   - Part D, tube riding, isn't started. It takes its contact fields from Padang's PR 4: covered, clearance and the tube's state.
 - **The Reef's +x edge spike, fixed:** lip jets were landing past the open edge and getting clamped into the edge column. The fix is on branch `claude/edge-landings`, its PR next when this was written: landings past open edges are dropped with their foam and aeration, walls still clamp, and periodic edges wrap. It passed both criteria in 58 game-size runs (seed 3's edge 4.22 → 1.79). Open: the pass's steps above 2.3 on the beach face (x 58–75), where a cheap check (monotonic fronts or alternating) was advised before any trace.
-- **Particle load:** the owner found the foam particles too heavy. A background agent was measuring them and adding a Low/Medium/High particle setting; look for its PR.
+- **Particle load, PR #94** (`claude/particle-settings`, waiting for the owner's merge):
+  - It adds Graphics › Advanced › Particles, Low / Medium / High. High, the default, is bit-identical to before.
+  - It rebuilds the Rich lip sheet 3–5 times faster, with the same output.
+  - Its findings: the spray's GPU cost is fill rate, not particle count. About 90 % of the fragments are wide mist sprites, and the foam balls add more near Padang Padang's throws.
+  - The report is `docs/research/particle-report.md`.
+  - Its recommendations wait for the owner: Medium particles for Auto's Medium result, and no spray stepping while Spray and mist is off.
 
 ## Open decisions for the owner
 
