@@ -437,13 +437,14 @@ describe('a Basilisk library as a barrel case', () => {
 - `FrontState = { nextId, nextFront, points, held }`.
 
 **The rule:**
-- A crest whose segment breaks joins a front. It records `joined` (the time) and `depth` (the still depth under it).
+- A crest joins a front when its segment reaches Kennedy's fresh onset (η_t ≥ 0.65 √(g d)). It records `joined` (the time) and `depth` (the still depth under it), and it stays on the front while its segment breaks at all (hysteresis: dissipation lowers its rise).
+- Neighbours whose joins differ by more than 1 s per metre are two waves (a peel under 1 m/s, θ > 79°), so they form two fronts, which are never smoothed across. The splits are counted.
 - Neighbouring columns within 3 rows link; a column's own crests never do.
 - A point within 2 m plus one row of last step's point in its column keeps its ID, join and clock.
 - A point unseen for 0.5 s is dropped. σ is the arc length from the −x end.
 - Only + − × ÷ and √.
 
-- [x] **Tests:** an oblique line is one front, σ its arc length; IDs, joins and clocks kept as the crest moves; joins and depths recorded; no join without breaking; a whole-row jump on a 2 m grid kept; two crests are two fronts; a split at five empty columns keeps both sides' IDs; flicker held for 0.5 s, then dropped; export and import.
+- [x] **Tests:** an oblique line is one front, σ its arc length; IDs, joins and clocks kept as the crest moves; joins and depths recorded; no join below the fresh onset, breaking or not; a joined crest kept while it breaks, dropped when it stops; two waves' crests split; a whole-row jump on a 2 m grid kept; two crests are two fronts; a split at five empty columns keeps both sides' IDs; flicker held for 0.5 s, then dropped; export and import.
 
 ### Task 6: The slice clock
 
