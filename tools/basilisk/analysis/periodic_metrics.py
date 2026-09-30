@@ -5,7 +5,8 @@ onto still water. In a wave train the water ahead of the crest has drained below
 (at a reef, the step), so H here is the crest's height over the lowest surface within AHEAD h0
 in front of it, as the game takes H (crest minus the trough ahead). Both are reported.
 
-usage: python3 periodic_metrics.py RUN_DIR LEVEL DOMAIN SLOPE A0 TMIN H0_M [AHEAD]
+usage: python3 periodic_metrics.py RUN_DIR LEVEL DOMAIN SLOPE A0 TMIN H0_M [AHEAD] [XMIN]
+XMIN (h0): look for the crest only at x >= XMIN, to skip steps and curls behind the break.
 writes RUN_DIR_pmetrics.json and prints a summary.
 """
 import json
@@ -14,8 +15,13 @@ import sys
 
 import numpy as np
 
+import functools
+
+import interface
 import metrics
-from interface import frame, landmarks, list_frames
+from interface import frame, list_frames
+
+landmarks = interface.landmarks
 
 
 def trough_ahead(main, lm, ahead):
@@ -29,10 +35,15 @@ def main():
     run, level, L0, slope, a0, tmin, h0 = (sys.argv[1], int(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4]),
                                            float(sys.argv[5]), float(sys.argv[6]), float(sys.argv[7]))
     ahead = float(sys.argv[8]) if len(sys.argv) > 8 else 3.0
+    xmin = float(sys.argv[9]) if len(sys.argv) > 9 else None
+    global landmarks
+    if xmin is not None:
+        landmarks = functools.partial(interface.landmarks, xmin_search=xmin)
+        metrics.landmarks = landmarks
     o = metrics.analyse(run, level, L0, slope, a0, tmin=tmin)
     dx = L0 / 2 ** level
     frames = dict(list_frames(run))
-    out = {"run": run, "level": level, "dx_h0": dx, "h0_m": h0, "slope": slope, "ahead_h0": ahead,
+    out = {"run": run, "level": level, "dx_h0": dx, "h0_m": h0, "slope": slope, "ahead_h0": ahead, "xmin_h0": xmin,
            "t_vertical": o["t_vertical"], "t_impact": o["t_impact"], "pre_impact_t": o["pre_impact_t"]}
     ts = math.sqrt(h0 / 9.81)
     if o["t_vertical"] is not None:
