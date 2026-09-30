@@ -1,5 +1,7 @@
 # Water physics advisor: handover (2026-09-29)
 
+**Superseded as the starting point by [ONBOARDING.md](ONBOARDING.md) (2026-09-30).** This page is kept as the history; its "still open" items are as of 2026-09-29 and 2026-09-30 morning.
+
 The "Water physics research" session moved from the owner's Mac to the cloud on 2026-09-29, at the owner's request. This file carries what that session kept in its local memory, so whoever continues can pick up without it. Read [README.md](README.md) first for the owner's decisions and the page index.
 
 ## The role

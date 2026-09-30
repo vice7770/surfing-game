@@ -4,6 +4,8 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 
 **Asking for advice:** before settling a breaking, lip, tube, roller or foam shape, message the "Water physics research" session (ListAgents, then SendMessage). If it isn't running, spawn the `water-physics` agent (`.claude/agents/water-physics.md`), which reads this folder. Log each consult in [consult-log.md](consult-log.md).
 
+**Taking over the advisor role** (a new session or machine): start with [ONBOARDING.md](ONBOARDING.md).
+
 ## The owner's standing decisions
 
 - **Realism (2026-09-28):** every shape is sourced from measurements or physics simulations, or marked provisional. It need not come from the game's own solver: a precomputed 2D breaking simulation swept along the crest qualifies. Hand-authored shapes don't.
