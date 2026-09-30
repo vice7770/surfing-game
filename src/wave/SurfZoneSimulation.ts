@@ -1,4 +1,4 @@
-import { REEF, createSpot, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
+import { PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
@@ -13,6 +13,7 @@ import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type Tub
 import { SeaState } from './SeaState';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
+import { SideFeed } from './SideFeed';
 import type { SurfZoneState } from './surfZoneState';
 import type { LipImpact } from './SprayCloud';
 import { OPEN_EDGE_REACH, ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
@@ -87,14 +88,20 @@ const OPEN_EDGE_COLUMNS = OPEN_EDGE_REACH;
 /** How far a breaking crest's path is followed for the gradient it climbs, m: past any window's bounds, which end it first. */
 const REEF_PATH_REACH = 400;
 
-/** Along-shore window width unless the config says otherwise, m. */
+/** Along-shore window width unless the config or the spot says otherwise, m. */
 export const ALONG_SHORE = 160;
 
+/** The window's along-shore width, m: the config's, else Padang Padang's own (its peak clear of the side feed), else ALONG_SHORE. */
+export function alongShoreOf(config: Pick<SurfZoneConfig, 'spot' | 'alongShore'>): number {
+  return config.alongShore ?? (config.spot === 'padang' ? PADANG.alongShore : ALONG_SHORE);
+}
+
 /**
- * Spots that always run stage 2 (the Teahupo'o Reef spec): shallow water steepens waves far too early
- * in the Reef's 30 m water, so a machine that cannot keep up runs it slower than real time instead.
+ * Spots that always run stage 2 (the Teahupo'o Reef and Padang Padang specs): shallow water steepens waves far
+ * too early in the Reef's 30 m water and under Padang Padang's 16–18 s swells, so a machine that cannot keep up
+ * runs them slower than real time instead.
  */
-export const STAGE_2_ONLY: readonly SpotName[] = ['reef'];
+export const STAGE_2_ONLY: readonly SpotName[] = ['reef', 'padang'];
 
 /** The solver stage a spot runs on: the asked one, or 2 where the spot needs it. */
 export function solverStage(spot: SpotName, stage: 1 | 2 | undefined): 1 | 2 {
@@ -124,8 +131,10 @@ export interface RenderGrid {
 /** Wave-tank layout across shore, m (z increases toward the beach). */
 export const TANK = { offshore: -330, zoneInner: -270, blendEnd: -190, fineFrom: -150, shore: 30 };
 
-/** Flat tank bed offshore of each spot's blend, m below datum. */
-export const OFFSHORE_DEPTH: Record<SpotName, number> = { beach: 5, point: 8, reef: REEF.deep, canyon: 5 };
+/** Flat tank bed offshore of each spot's blend, m below datum: Padang Padang's is the deep water beyond its forereef, read live for the sweep. */
+export const OFFSHORE_DEPTH: Record<SpotName, number> = {
+  beach: 5, point: 8, reef: REEF.deep, canyon: 5, get padang() { return PADANG.deep; },
+};
 
 /** A tank's layout across shore, m, and the still depth of its flat edge under the relaxation zone, m below datum. */
 export interface TankLayout {
@@ -167,6 +176,28 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
     const zone = Math.max(TANK.zoneInner - TANK.offshore, ZONE_WAVELENGTHS * waveKinematics(config.peakPeriod, today.edgeDepth).wavelength);
     return { ...today, offshore: TANK.zoneInner - zone };
   }
+  // Padang Padang's edge is the deep water beyond its forereef (the Padang Padang spec): injected on a 10 m platform, a
+  // 16 s swell (Ursell ~40) kept changing shape for 150–200 m and broke deeper at the reef's far end. Its 1:19 wedge is
+  // wide, so the fine zone starts SET_FINE_MARGIN seaward of where its sets first reach their breaker depth anywhere in
+  // the window (never deeper than 0.9 of the edge's water), the blend lies beyond the forereef's foot, and the zone
+  // absorbs its long waves.
+  if (config.spot === 'padang') {
+    const spot = createSpot('padang', config.seed);
+    const sets = Math.min(0.9 * (today.edgeDepth + config.tide), (SETS_OVER_TYPICAL * komarGaughan(config.significantHeight, config.peakPeriod)) / BREAKER_INDEX);
+    const reach = alongShoreOf(config) / 2;
+    let setBreak = TANK.fineFrom + SET_FINE_MARGIN;
+    for (let x = -reach; x <= reach; x += 5) {
+      let z = TANK.shore;
+      while (z > TANK_REACH && spot.depthAt(x, z) + config.tide < sets) z -= 1;
+      setBreak = Math.min(setBreak, z);
+    }
+    const fineFrom = Math.min(TANK.fineFrom, setBreak - SET_FINE_MARGIN);
+    const blend = TANK.blendEnd - TANK.zoneInner;
+    const foreFoot = padangForeFootZ() - PADANG.foreRounding;
+    const zoneInner = Math.min(fineFrom - 20 - blend, foreFoot - blend);
+    const zone = Math.max(TANK.zoneInner - TANK.offshore, ZONE_WAVELENGTHS * waveKinematics(config.peakPeriod, today.edgeDepth).wavelength);
+    return { offshore: zoneInner - zone, zoneInner, blendEnd: zoneInner + blend, fineFrom, shore: TANK.shore, edgeDepth: today.edgeDepth };
+  }
   const deepWavelength = (GRAVITY * config.peakPeriod ** 2) / (2 * Math.PI);
   const wanted = Math.max(today.edgeDepth, Math.min(EDGE_DEPTH_PER_HS * config.significantHeight, EDGE_DEPTH_MAX_WAVELENGTHS * deepWavelength));
   if (wanted <= today.edgeDepth) return today;
@@ -192,8 +223,16 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
   return { offshore: zoneInner - zone, zoneInner, blendEnd: zoneInner + blend, fineFrom, shore: TANK.shore, edgeDepth };
 }
 
+/**
+ * Spots whose tank sides are fed with the incoming sea (the wave-sizes work: open sides drained a directional sea).
+ * Padang Padang only, for now (the owner, 2026-09-30): its 320 m window and its peak are laid out around the feed, and
+ * on the other spots the feed is not finished (on a 40 m window it ran the Reef's Big swell to 64 m/s, and it moves
+ * their take-offs), so they keep main's open sides until the feed's own rollout.
+ */
+export const SIDE_FEED_SPOTS: readonly SpotName[] = ['padang'];
+
 /** Kennedy onset per spot (plan Q27): 0.35√(gh) on the barred beach, 0.65√(gh) on plain or steep beds. */
-export const BREAKING_ONSET: Record<SpotName, number> = { beach: 0.35, point: 0.65, reef: 0.65, canyon: 0.65 };
+export const BREAKING_ONSET: Record<SpotName, number> = { beach: 0.35, point: 0.65, reef: 0.65, canyon: 0.65, padang: 0.65 };
 
 /**
  * Foam e-folding times per spot, s (plan §2.4, G4). Dense whitewater decays like
@@ -207,6 +246,8 @@ export const FOAM_DECAY: Record<SpotName, FoamDecay> = {
   point: { dense: 3, residual: 12 },
   reef: { dense: 3, residual: 8 },
   canyon: { dense: 3, residual: 15 },
+  // A reef's foam lasts at least as long as the Beach's (the advisor's Foam tab; Callaghan et al. 2012, 2013).
+  padang: { dense: 3, residual: 20 },
 };
 
 /**
@@ -252,7 +293,7 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
     componentCount: config.componentCount ?? SEA_COMPONENTS,
     depth: tank.edgeDepth + config.tide,
     bandwidth: config.bandwidth,
-  }, config.seed, deeper || config.spot === 'reef' ? madsenSorensenWaveNumber : shallowWaterWaveNumber);
+  }, config.seed, deeper || STAGE_2_ONLY.includes(config.spot) ? madsenSorensenWaveNumber : shallowWaterWaveNumber);
 }
 
 /**
@@ -261,15 +302,30 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
  * shadow it casts (as measured over the Scripps canyon, Magne et al. 2007),
  * and moves with the swell's direction and period.
  */
-export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 'centre', point: 'centre', reef: 'peak', canyon: 'focus' };
+export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 'centre', point: 'centre', reef: 'peak', canyon: 'focus', padang: 'peak' };
 
 /**
  * The breaker index a big day's take-off is placed with, per spot: the size report measures where each spot's
  * sets break and sets these so the take-off lands there (the wave-sizes spec). Today's tanks keep BREAKER_INDEX;
  * the Reef's is the Reef rework's to set. The Point's and the Beach's are fitted to their sets' measured breaks at
  * 14 s (Point Hs 2–4 m: 1.05–1.16; Beach Hs 2–3 m: 1.08–1.20), before the side feed; they are refitted after it.
+ * Padang Padang's take-off follows PADANG_TAKE_OFF_INDEX instead.
  */
-export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.13, reef: BREAKER_INDEX, canyon: BREAKER_INDEX };
+export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.13, reef: BREAKER_INDEX, canyon: BREAKER_INDEX, padang: BREAKER_INDEX };
+
+/**
+ * Padang Padang's take-off index against the swell's height at its edge, m: on its wedge a bigger set breaks shallower
+ * for its height, so one index seated Practice's and Small's take-offs where their sets broke but left Medium's 23 m
+ * and Big's 89 m seaward of theirs. The size report's sets broke, at mid tide, where γ is 0.57, 0.70, 0.90 and 1.20
+ * for Practice, Small, Medium and Big (Hs at the edge 0.60, 1.18, 2.21 and 3.89 m): a least-squares line through
+ * them (provisional; refit when the sizes change).
+ */
+export const PADANG_TAKE_OFF_INDEX = { intercept: 0.47, perMetre: 0.19 } as const;
+
+/** Where a peak take-off waits along shore: at the Reef's or Padang Padang's own peak. */
+export function peakTakeOffX(spot: SpotName): number {
+  return spot === 'padang' ? PADANG.takeOffX : REEF.takeOffX;
+}
 
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */
 export const TAKE_OFF_EDGE_MARGIN = 30;
@@ -284,7 +340,10 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   const spot = createSpot(config.spot, config.seed);
   const tank = tankLayout(config);
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
-  const target = breakerDepthFor(edgeHeight(config, tank.edgeDepth), tank.edgeDepth + config.tide, deeper ? TAKE_OFF_INDEX[config.spot] : BREAKER_INDEX);
+  const height = edgeHeight(config, tank.edgeDepth);
+  const index = config.spot === 'padang' ? PADANG_TAKE_OFF_INDEX.intercept + PADANG_TAKE_OFF_INDEX.perMetre * height
+    : deeper ? TAKE_OFF_INDEX[config.spot] : BREAKER_INDEX;
+  const target = breakerDepthFor(height, tank.edgeDepth + config.tide, index);
   const breakZ = (x: number) => {
     // Scan the whole simulated bed from the relaxation zone inward.
     for (let z = tank.zoneInner; z < tank.shore; z += 0.5) {
@@ -292,11 +351,11 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
     }
     return tank.fineFrom;
   };
-  const reach = Math.max(0, (config.alongShore ?? ALONG_SHORE) / 2 - TAKE_OFF_EDGE_MARGIN);
+  const reach = Math.max(0, alongShoreOf(config) / 2 - TAKE_OFF_EDGE_MARGIN);
   if (TAKE_OFF[config.spot] === 'centre' || reach === 0) return { x: 0, z: breakZ(0) };
-  // The Reef's riders wait at its peak, where each wave first breaks.
+  // The Reef's and Padang Padang's riders wait at their peak, where each wave first breaks.
   if (TAKE_OFF[config.spot] === 'peak') {
-    const x = Math.min(reach, Math.max(-reach, REEF.takeOffX));
+    const x = Math.min(reach, Math.max(-reach, peakTakeOffX(config.spot)));
     return { x, z: breakZ(x) };
   }
   const bed = (x: number, z: number) => tankDepth(spot, tank.edgeDepth, x, z, tank) + config.tide;
@@ -362,6 +421,8 @@ export class SurfZoneSimulation {
   /** Sea time at solver time 0, s: set by the warm start, or taken over with a handed-over sea (spec N1). */
   private seaTimeOffset: number;
   private readonly boundary: SeaStateBoundary;
+  /** The incoming sea fed into the window's sides (the wave-sizes spec): open sides drained a directional sea. */
+  private readonly sideFeed?: SideFeed;
   private takeOff?: { x: number; z: number };
   private mapping?: {
     grid: RenderGrid; xMin: number; columns: Int32Array; columnWeights: Float64Array;
@@ -381,7 +442,7 @@ export class SurfZoneSimulation {
     const tank = tankLayout(config);
     this.tank = tank;
     const offshoreDepth = tank.edgeDepth;
-    const alongShore = config.alongShore ?? ALONG_SHORE;
+    const alongShore = alongShoreOf(config);
     const dx = config.dx ?? 1;
     const grid = {
       nx: Math.round(alongShore / dx), xMin: -alongShore / 2, dx, xBoundary: 'open' as const,
@@ -402,13 +463,19 @@ export class SurfZoneSimulation {
       this.solver, this.sea, this.solver.zoneWeightsAlongZ(tank.zoneInner, tank.offshore), this.seaTimeOffset,
     );
     this.solver.addRelaxationZone(this.boundary);
+    if (SIDE_FEED_SPOTS.includes(config.spot)) {
+      this.sideFeed = new SideFeed(this.solver, this.sea, { referenceZ: tank.zoneInner, timeOffset: this.seaTimeOffset });
+      this.solver.addRelaxationZone(this.sideFeed);
+    }
     this.spinUpSeconds = spinUp;
     // Nothing below reads the water, so all of it can be built before the spin-up.
     this.breaking = new BreakingModel(this.solver, { onset });
     this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     // The Reef's peel is its ledge's: breaks past it (the pass, the lagoon's beach face) are not its wave.
+    // Padang Padang's is its reef's, from the peak to the channel.
     const xCenters = this.solver.xCenters;
-    this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, config.spot === 'reef' ? (column) => reefLedgeAt(xCenters[column]) : undefined);
+    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : undefined;
+    this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver);
     this.foam = new FoamField(this.solver, config.foamDecay ?? FOAM_DECAY[config.spot]);
@@ -535,6 +602,7 @@ export class SurfZoneSimulation {
     this.surf.clear();
     this.seaTimeOffset = state.seaTimeOffset;
     this.boundary.timeOffset = state.seaTimeOffset;
+    if (this.sideFeed) this.sideFeed.timeOffset = state.seaTimeOffset;
     this.lipLaunches = state.counters.lipLaunches;
     this.lipVolume = state.counters.lipVolume;
     this.lipJets = state.counters.lipJets;

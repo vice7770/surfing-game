@@ -13,6 +13,7 @@
  *   npm run report:ride -- --spots point --minutes 5 --out /tmp/point.md
  *   npm run report:ride -- --practice --ghosts --style turns
  *   npm run report:ride -- --practice --ghosts --style turns --spots canyon --bottom-face 0.55 --turn-limit 3
+ *   npm run report:ride -- --practice --ghosts --style turns --spots canyon --seeds 1 --first-seed 2 (seeds in parallel)
  */
 import { writeFileSync } from 'node:fs';
 import { Quaternion, Vector3 } from 'three';
@@ -27,7 +28,9 @@ import { createWaterSample, type SurfWater } from '../src/physics/SurfWater';
 import { inTakeOffWindow } from '../src/physics/takeOffCue';
 import { WaveFrameGauge } from '../src/physics/waveFrame';
 import type { SpotName } from '../src/wave/Bathymetry';
+import { applyPadangShape } from './padangShape';
 import { applyReefShape } from './reefShape';
+import { chosenSwell, swellSizeOption } from './spotSwell';
 import { alongShift } from './botSpots';
 import { SURF_ZONE_STEP, SurfZoneRunner } from '../src/wave/SurfZoneRunner';
 
@@ -38,9 +41,14 @@ const option = (name: string): string | undefined => {
 const argument = (name: string, fallback: number): number => Number(option(name) ?? fallback);
 const flag = (name: string): boolean => process.argv.includes(`--${name}`);
 const seedCount = argument('seeds', 2);
+/** `--first-seed N` starts at seed N, so seeds can run in parallel processes. */
+const firstSeed = argument('first-seed', 1);
 const minutes = argument('minutes', 3);
 // Reshape the Reef for this run: `--reef angle=50,crestZ=-125` (the design sweep).
 applyReefShape(option('reef'));
+applyPadangShape(option('padang'));
+/** `--swell small|medium|big`: each spot's own buoy swell for that size. */
+const swellSize = swellSizeOption(option('swell'));
 const spots = (option('spots')?.split(',') ?? ['point', 'reef']) as SpotName[];
 const output = option('out') ?? 'docs/research/ride-report.md';
 const practice = flag('practice');
@@ -58,8 +66,10 @@ const autopilotTurns = {
 /** Ghost riders beside the runner's own: metres along shore from the break point (`--ghosts`, as in the catch report). */
 const ghostAlongs = flag('ghosts') ? [-45, -25, -12, 12, 25, 45] : [];
 const settings = practice ? { ...DEFAULT_PHYSICAL_SETTINGS, source: 'practice' as const } : DEFAULT_PHYSICAL_SETTINGS;
-/** Each spot's swell: its own Practice when practising (the Reef has one), with `--height` on top. */
-const swellAt = (spot: SpotName) => ({ ...swellFor({ ...settings, spot }), ...(heightOverride ? { significantHeight: Number(heightOverride) } : {}) });
+/** Each spot's swell: its own Practice when practising (the Reef and Padang Padang have one), or its own buoy swell for `--swell`, with `--height` on top. */
+const swellAt = (spot: SpotName) => ({
+  ...(swellSize && !practice ? chosenSwell(spot, swellSize) : swellFor({ ...settings, spot })), ...(heightOverride ? { significantHeight: Number(heightOverride) } : {}),
+});
 /** The swell's direction, or `--direction` (the Reef's design sweep). */
 const directionAt = (spot: SpotName) => option('direction') !== undefined ? Number(option('direction')) : swellAt(spot).directionDegrees ?? settings.directionDegrees;
 /** A crest this far above still water within LOOK m behind the board starts a paddle. */
@@ -405,7 +415,7 @@ for (const spot of spots) {
   let lostWave = 0;
   const weights = new Map<string, number[]>();
   const feetShares = new Map<string, number[]>();
-  for (let seed = 1; seed <= seedCount; seed += 1) {
+  for (let seed = firstSeed; seed < firstSeed + seedCount; seed += 1) {
     const run = runSpot(spot, seed);
     all.push(...run.rides);
     attempts += run.attempts;

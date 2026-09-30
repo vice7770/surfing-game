@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { madsenSorensenCelerity } from './BoussinesqSolver';
 import { GRAVITY } from './dispersion';
-import { ledgePeel } from './ledgePeel';
+import { ledgePeel, rayAngleAt } from './ledgePeel';
 
 const design = { period: 15, deepDepth: 30, shelfDepth: 10, breakDepth: 2.97, swellDegrees: 20, ledgeDegrees: 45 };
 const rad = (degrees: number) => (degrees * Math.PI) / 180;
@@ -30,5 +30,14 @@ describe('ledgePeel', () => {
     const straight = ledgePeel({ ...design, swellDegrees: 0, ledgeDegrees: 0 });
     expect(straight.peelSpeed).toBe(Infinity);
     expect(straight.angleDegrees).toBe(0);
+  });
+
+  it('turns the ray toward the edge’s normal as the wave climbs the ramp (Snell along the edge)', () => {
+    const omega = (2 * Math.PI) / design.period;
+    const peel = ledgePeel(design);
+    expect(rayAngleAt(design, design.shelfDepth)).toBeCloseTo(peel.crestToLedgeDegrees, 9);
+    const sine = Math.sin((rayAngleAt(design, 3) * Math.PI) / 180);
+    expect(sine / madsenSorensenCelerity(omega, 3)).toBeCloseTo(Math.sin((peel.crestToLedgeDegrees * Math.PI) / 180) / madsenSorensenCelerity(omega, design.shelfDepth), 12);
+    expect(rayAngleAt(design, 3)).toBeLessThan(peel.crestToLedgeDegrees);
   });
 });

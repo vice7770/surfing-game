@@ -24,3 +24,31 @@ The owner decided (2026-09-29) to run Padang's peak on a 1:19 wedge along the wa
 **A coarser run:** `LEVEL=12` (about 4× cheaper) or `LEVEL=11` (the round 6 level) set before any command.
 
 Set `BASILISK_HOME` to use an existing Basilisk build elsewhere.
+
+## The barrel library's other swell sizes
+
+The swept barrel blends cases by H0/h0 (the wave's height at the wedge's base over its 7 m depth), so the library holds three at level 12: 0.2, 0.3 (the owner's case) and 0.45. Each has its own output window, from level-10 scouts on the M1 (2026-09-30; a crude facet reader counting where the surface folds over, so ±0.3):
+
+| A0 | Lip first folds over | Where | Touchdown | TOUT0 | TMAX |
+|---|---|---|---|---|---|
+| 0.2 | t ≈ 24.6 | on the reef flat, about 1 h0 past its edge | t ≈ 25.2 | 21.5 | 28 |
+| 0.3 | t ≈ 21.45 (level 11) | at the reef flat's edge | t ≈ 22.45 | 18.5 | 25 |
+| 0.45 | t ≈ 17.9 | on the wedge, about 2.6 h0 before the flat | t ≈ 19.1 | 15 | 21.5 |
+
+```
+LEVEL=12 A0=0.2 TOUT0=21.5 TMAX=28 NAME=pad19_a20_L12 tools/basilisk/run_padang.sh
+LEVEL=12 A0=0.3 TOUT0=18.5 TMAX=25 NAME=pad19_a30_L12 tools/basilisk/run_padang.sh
+LEVEL=12 A0=0.45 TOUT0=15 TMAX=21.5 NAME=pad19_a45_L12 tools/basilisk/run_padang.sh
+```
+
+The same variables, with `status` or `analyse`, check on or analyse each (`analyse` needs Python with numpy, scipy and matplotlib). Then `npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --flat 0.1785714` turns them into the game's cases (`docs/research/barrel-library.md`).
+
+The runs (M1 Air, level 12, one core each, all three at once, 2026-09-29/30), at the last output before touchdown against Pick & Feddersen's fits, and their landmarks clean per phase (before vertical / open tube / after touchdown):
+
+| Run | Wall | Vertical, touchdown (t) | A_O/H_I² | W_O/L_O | θ_O | L/W | Clean |
+|---|---|---|---|---|---|---|---|
+| `pad19_a20_L12` | 265 min | 24.40, 25.10 | 0.05 / 0.38 | 0.50 / 0.43 | 57° / 31° | 2.01 | 116/117, 27/27, 48/117 |
+| `pad19_a30_L12` | 282 min | 21.24, 22.43 | 0.19 / 0.34 | 0.47 / 0.42 | 41° / 35° | 2.11 | 106/110, 47/47, 42/104 |
+| `pad19_a45_L12` | 298 min | 17.68, 19.05 | 0.23 / 0.30 | 0.44 / 0.40 | 40° / 39° | 2.30 | 98/108, 54/54, 49/99 |
+
+Why the tubes run smaller than the plane-slope fits (small waves make small, steep tubes on this wedge): `docs/research/barrel-library.md`.

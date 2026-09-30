@@ -8,7 +8,7 @@ const STOKER = { left: 2, right: 0.5, middle: 1.1035, shockSpeed: 4.1663, tailSp
 
 describe('ShallowWaterSolver', () => {
   it('keeps a lake at rest over every spot, including its dry shoreline', () => {
-    for (const name of ['beach', 'point', 'reef', 'canyon'] as const) {
+    for (const name of ['beach', 'point', 'reef', 'canyon', 'padang'] as const) {
       const spot = createSpot(name, 1);
       const solver = new ShallowWaterSolver(
         { nx: 40, xMin: -80, dx: 4, zEdges: uniformEdges(-300, 30, 110) }, spot.depthAt, { waterLevel: 0.3 },

@@ -558,8 +558,11 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - rounder tubes (width/length 0.71 → 0.77–0.80) that open wider;
     - jets 0.47 H² and 0.47 H thick;
     - the crest gives the whole jet except on the Big swell's biggest waves;
-    - jets leave at 1.95× crest speed against the lab's 1.25–1.32 (reported for the user).
+    - jets leave at 1.95× crest speed against the lab's 1.25–1.32 (reported for the user);
+    - easing a jet's source in at its upper half's edge (smoothstep from H/2 to 3H/4 above the trough, or the water above H/2 only) did not change the steps near throws: they sit at the wave's mid-face whatever the source does. Not kept (the water-physics advisor; branch `claude/jet-half-taper`, [report](docs/research/teahupoo-reef-report.md#a-softer-edge-at-half-height-measured-not-kept)).
   - **Open:**
+    - the Reef's jet ask: the advisor's periodic Basilisk runs give 0.55–0.62 H² against the provisional 0.47, where 48–62 % of throws on main already fall short (the owner's call);
+    - seed 3's +x edge column reaching dη/dz 4 near t 110 s under the Big swell ([report](docs/research/teahupoo-reef-report.md#a-softer-edge-at-half-height-measured-not-kept));
     - validating the water against the open Teahupo'o lab dataset (download needs the user's OK);
     - peel against makeability before Part D (the user's call).
 - [ ] **Part C · the look, the sound and a solid reef** (branch `claude/teahupoo-reef-c`, [plan](docs/superpowers/plans/2026-09-28-teahupoo-reef-part-c.md), [report](docs/research/teahupoo-reef-report.md#part-c-the-solid-reef-the-lagoon-the-crash)):
@@ -574,6 +577,21 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - the lagoon's depth and the flat's width wait for the lab profile (download approval).
   - **Open:** the film beside the reference, and the user's look.
 - [ ] **Part D · tube riding (P12):** rail grab, the tube camera, the foam ball and spit on the rider, and the Surf School Tube lesson. Waits on Compress, Regular/Goofy and the take-off (PR #43). Its contact with the swept surface is agreed with the Padang Padang session: the mouth, pocket depth, face normal and velocity, clearance, foam ball and spit forces.
+
+### P1 · Padang Padang and the swept barrel — `Part A in review; Part B in progress`
+
+Requirements agreed in a grilling session on 2026-09-28 (Q1–Q16, every recommendation accepted): [spec](docs/superpowers/specs/2026-09-28-padang-padang.md). A fifth spot, Padang Padang (Bali), tuned to its real conditions, is the testbed and showcase for a new barrel: one surface swept along the crest from simulated 2D overturn profiles, both drawn and collided, replacing the lip strips and the carved void.
+- [x] **Part A · the spot** ([report](docs/research/padang-padang-report.md)):
+  - the bed: Mead's ramp (1:80) and a wedge at 1:19 along the swell's path (the owner's decision) rising 7 m → 1.25 m, its crest line at 40°, a focus spur, and a channel at the +x edge deepened only inshore;
+  - its own long-period swells, calibrated to their take-off faces (Practice 0.6, Small 1.2, Medium 2.2, Big 3.8 m); Bali's tides and winds; stage 2 always; everywhere but Surf School;
+  - the peel: 22 clean waves at 11.5 m/s (37° geometric) wave by wave, against the design's 11.6 m/s; close-outs 38–54 % on the per-period meter;
+  - the take-off follows each swell's measured break (a breaker index rising with the swell, within 1 m of every size's sets at mid tide);
+  - the side feed feeds Padang Padang's sides only (the owner's call); the solver's breaking age now travels only from behind the face (PR #76);
+  - **open:** Practice is marginal, true to the spot (1 ride of 3 s in 877 catch attempts); today's tube is narrow (length/width 2.97 against the spot's 1.97–2.14), Part B's "before"; the user's look.
+- [ ] **Part B · the swept barrel** ([plan](docs/superpowers/plans/2026-09-29-padang-padang-part-b.md)): one surface swept along the crest from our own 2D Basilisk runs, drawn in both looks and collided; Padang Padang first, behind a per-spot switch.
+  - PR 1, the profile library: built from level-12 runs of three swell sizes (466 KB); their tubes match Padang Padang's length over width;
+  - PR 2, the breaking front and slice clock: built. Crests join where the solver first breaks swell of their size, and their lips throw where the Navier–Stokes wave of their height goes vertical (the advisor's periodic Basilisk runs);
+  - PRs 3–7: the mesh, the contact, the crash curve, the shading and the rollout.
 
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 

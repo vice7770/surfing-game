@@ -1,0 +1,53 @@
+[
+ {
+  "spot": "padang",
+  "source": "practice",
+  "significantHeight": 0.6,
+  "period": 16,
+  "heightAt": "edge",
+  "takeOffZ": -167.09137870490895,
+  "stepMs": 193.05831867986058,
+  "cells": 163200,
+  "typical": 1.8092317629315786,
+  "sets": 2.1171175886640605,
+  "waves": 150,
+  "setBreakZ": -176,
+  "takeOffTypical": 2.2243218526789295,
+  "takeOffSets": 2.3499212368362414,
+  "takeOffWaves": 16
+ },
+ {
+  "spot": "padang",
+  "source": "buoy",
+  "significantHeight": 1.2,
+  "period": 16,
+  "heightAt": "edge",
+  "takeOffZ": -189.59137870490895,
+  "stepMs": 197.85512668582922,
+  "cells": 170880,
+  "typical": 2.2720704762939827,
+  "sets": 2.877784428384683,
+  "waves": 188,
+  "setBreakZ": -193.5,
+  "takeOffTypical": 3.0154604559744635,
+  "takeOffSets": 3.4422542017278603,
+  "takeOffWaves": 20
+ },
+ {
+  "spot": "padang",
+  "source": "buoy",
+  "significantHeight": 1.2,
+  "period": 16,
+  "heightAt": "deep",
+  "takeOffZ": -189.09137870490895,
+  "stepMs": 196.27079507389163,
+  "cells": 170880,
+  "typical": 2.2718264953372294,
+  "sets": 2.8517828790220197,
+  "waves": 183,
+  "setBreakZ": -193.5,
+  "takeOffTypical": 2.989432955243575,
+  "takeOffSets": 3.3804234554192165,
+  "takeOffWaves": 20
+ }
+]

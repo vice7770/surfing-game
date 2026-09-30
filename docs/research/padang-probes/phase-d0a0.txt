@@ -1,0 +1,22 @@
+predicted along-edge phase speed Infinity m/s (φ 0°); contours: 9 m at z -237/-237/-237/-237/-237; 6 m at z -180/-180/-180/-180/-180; 4 m at z -142/-142/-142/-142/-142
+9 m contour: Hm0 by x -50:1.71 -30:1.69 -10:1.70 10:1.72 30:1.73 | crest top (highest third) 1.01/1.13/1.25/1.30/1.22 | steepest rise 0.53/0.72/0.82/0.87/0.81 m/s | path over the platform from the edge ?????
+  crest at 42.6 s: arrivals 0.0/-0.2/-0.2/-0.3/-0.5 s → along-contour speed -181.8 m/s
+  crest at 56.2 s: arrivals 0.0/-0.5/-0.6/-0.7/-1.1 s → along-contour speed -83.3 m/s
+  crest at 70.9 s: arrivals 0.0/-0.3/-0.2/0.0/0.0 s → along-contour speed 666.7 m/s
+  crest at 120.3 s: lost after 2 points
+  crest at 140.4 s: arrivals 0.0/-0.5/-0.3/-0.3/-0.3 s → along-contour speed -500.0 m/s
+  crest at 154.7 s: arrivals 0.0/-0.2/-0.1/0.0/0.0 s → along-contour speed 1000.0 m/s
+6 m contour: Hm0 by x -50:1.73 -30:1.68 -10:1.68 10:1.75 30:1.81 | crest top (highest third) 0.97/1.25/1.39/1.32/1.29 | steepest rise 0.76/1.07/1.15/1.05/1.00 m/s | path over the platform from the edge ?????
+  crest at 49.3 s: arrivals 0.0/-0.3/-0.4/-0.6/-0.7 s → along-contour speed -117.6 m/s
+  crest at 61.7 s: arrivals 0.0/-0.1/-0.2/-0.3/-0.5 s → along-contour speed -166.7 m/s
+  crest at 76.6 s: arrivals 0.0/0.0/0.4/0.5/0.4 s → along-contour speed 153.8 m/s
+  crest at 126.7 s: arrivals 0.0/0.2/0.1/-0.1/-0.4 s → along-contour speed -181.8 m/s
+  crest at 145.7 s: arrivals 0.0/0.1/0.4/0.5/0.3 s → along-contour speed 200.0 m/s
+4 m contour: Hm0 by x -50:1.94 -30:1.87 -10:1.90 10:2.00 30:2.07 | crest top (highest third) 1.16/1.58/1.77/1.92/1.67 | steepest rise 1.34/2.21/2.02/2.29/1.87 m/s | path over the platform from the edge ?????
+  crest at 21.3 s: arrivals 0.0/0.2/0.2/0.1/-0.5 s → along-contour speed -181.8 m/s
+  crest at 36.6 s: arrivals 0.0/-1.2/-1.1/-1.5/-0.5 s → along-contour speed -153.8 m/s
+  crest at 54.7 s: arrivals 0.0/-0.3/-0.6/-0.6/-1.0 s → along-contour speed -87.0 m/s
+  crest at 66.7 s: arrivals 0.0/-0.1/-0.2/-0.5/-0.8 s → along-contour speed -100.0 m/s
+  crest at 69.1 s: lost after 3 points
+  crest at 81.4 s: arrivals 0.0/0.6/0.8/0.7/0.2 s → along-contour speed 400.0 m/s
+  crest at 85.6 s: lost after 3 points

@@ -151,6 +151,8 @@ export const EN = {
   'spot.reef.blurb': 'Heavy left slab over shallow coral',
   'spot.canyon': 'Canyon',
   'spot.canyon.blurb': 'Waves focused by a deep channel',
+  'spot.padang': 'Padang Padang',
+  'spot.padang.blurb': 'Hollow left over sharp coral, Bali',
   'cond.swell': 'Swell',
   'cond.swell.practice': 'Practice',
   'cond.swell.small': 'Small',

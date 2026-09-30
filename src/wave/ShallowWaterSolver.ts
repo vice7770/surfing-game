@@ -35,6 +35,8 @@ export interface RelaxationZone {
   /** Per-step blend weight for each cell (index iz * nx + ix): 0 leaves it free, 1 prescribes it. */
   weights: Float64Array;
   target(x: number, z: number, t: number, out: WaterTarget, index: number): void;
+  /** Called after the window slides along shore, once the arrays (weights included) have moved. */
+  afterShift?(): void;
 }
 
 /** Jacobsen et al. (2012) ramp: 0 at the zone's inner edge, 1 at its outer boundary. */
@@ -456,6 +458,8 @@ export class ShallowWaterSolver {
       }
     }
     this.levelOpenEdges(true);
+    // After the levelling, so the side feed's strips see the bed the solver steps.
+    for (const entry of this.zones) entry.zone.afterShift?.();
   }
 
   /**

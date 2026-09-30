@@ -17,6 +17,14 @@ const config: SurfZoneConfig = {
 };
 
 describe('SurfZoneRunner', () => {
+  it('steps on the CPU when the GPU device never arrives, instead of waiting forever (wave sizes)', async () => {
+    const runner = new SurfZoneRunner({ ...config, spot: 'point' }, {}, 'warm');
+    const started = Date.now();
+    expect(await runner.useDevice(() => new Promise(() => {}), 50)).toBe(false);
+    expect(runner.simulation.device).toBeUndefined();
+    expect(Date.now() - started).toBeLessThan(5000);
+  });
+
   it('reports the measured surf, measuring until waves have broken (wave sizes)', () => {
     const runner = new SurfZoneRunner({ ...config, spot: 'reef' });
     expect(runner.status()).toHaveProperty('surf', undefined);
