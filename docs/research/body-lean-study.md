@@ -62,3 +62,35 @@ The Canyon's practice sea with the ride report's turn settings (turns, the pocke
    - whether that is the falls' cause.
 
 The probes: `src/dev/zz-body-lean.test.ts` (the deep U; `leanReading` reads a step) and a patch on `scripts/ride-report.ts` (`ride-report-body-lean-probe.patch`), both kept in the session's scratchpad and not committed.
+
+## Where the feet reach their edge, and the falls (2026-09-30)
+
+On "continue" after the reading above. The Canyon's practice sea with the same settings, seeds 1 and 2 × 3 minutes, on main at dacd4e4. Every standing step is tagged with what the autopilot was doing. Each fall from standing is read over its last 0.5 s. The feet are "at their edge" with the centre of pressure 0.12 m or more across, of their 0.13 m.
+
+| What the rider was doing | Seconds (seed 1 + 2) | At the edge | Of those, on the lean's side | Tipping | Contact failing |
+|---|---:|---:|---:|---:|---:|
+| Bottom turn, compressed | 29.1 + 11.8 | 13% / 7% | 77% / 96% | 9% / 9% | 29% / 25% |
+| Dropping, crouched | 19.1 + 12.4 | 5% / 6% | 94% / 49% | 8% / 10% | 55% / 32% |
+| Cutback | 7.1 + 2.9 | 31% / 40% | 61% / 75% | 22% / 30% | 37% / 42% |
+| Climbing, extended | 3.0 + 2.0 | 19% / 16% | 59% / 40% | 19% / 20% | 38% / 33% |
+| Top turn | 1.1 + 1.1 | 23% / 63% | 100% / 100% | 24% / 17% | 50% / 66% |
+
+- The feet reach their edge most in the turns back down the face (cutbacks and top turns), and least in the drop.
+- It is the lean's side: the body falling into its turn, not flung out of it. A rail change within 0.4 s is rare (0–17% of the steps).
+
+**The 28 falls from standing** (20 `balance`, 8 `lost board`; the attempts' other `lost board` falls came before the rider stood):
+
+- **The board had slowed below planing.** 25 of 28 fell below 4 m/s and 18 below 3 m/s; the median was 2.7 m/s. At the fall the feet carried almost nothing (0.00–0.2 body weights in most).
+- **16 had the feet at their edge** in the last 0.5 s, 14 of them on the lean's side. The body, still banked, fell into a turn the slowing board no longer pulled. They ended bottom turns (6), top turns and cutbacks (6), drops and climbs (4).
+- **About 10 tipped with the feet well inside across,** so at their ends along the board. The body pitched over a stopping board, mostly in drops (at 0.8–2.8 m/s, still loaded 0.5–0.7).
+- The board's heave in the last 0.5 s stayed mostly within −0.6 to +0.6 g. The water was not throwing the rider.
+
+### Reading
+
+1. **The feet at their edge are the symptom; the stall is the cause.** Nearly every standing fall comes after the board has dropped off the plane (4 m/s on, 3 m/s off). The body is still banked for a pull that is gone, or pitching over a board that has stopped.
+2. This is the riding memory's old lead ("standing falls at ±70° bank at 1.4–2.3 m/s over ground"), now counted. Its root is the turns' lost speed: the long, wide bottom turns on the flats (the carve-drag study) and the climbs they end in.
+3. Two ways at it, for the user:
+   - **the autopilot's technique:** ease the steer and stand up as the board slows below planing, rather than hold a hard turn into a stall (a dev-tool change, measured with the ride report);
+   - **the rider's recovery:** how a banked body stands back up as its board drops off the plane. It already stands back on its ankles before the upright carry takes over. An immediate carry is on the don't-retry list: it tipped the slowing board.
+
+The probe is a patch on `scripts/ride-report.ts` (`ride-report-feet-edge-probe.patch`, with a `--first-seed` flag to run seeds in parallel), kept in the session's scratchpad.
