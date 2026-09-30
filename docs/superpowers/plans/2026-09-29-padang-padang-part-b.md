@@ -438,7 +438,7 @@ describe('a Basilisk library as a barrel case', () => {
 - `FrontState = { nextId, nextFront, points, held }`.
 
 **The rule:**
-- A crest is followed from where it crosses the wedge's foot (h0), its height there sizing it; crests first seen past the foot (reformed and broken water) are never sized. It joins as it crosses its join depth (`OnsetTiming.joinDepth(footHeight)`), if its segment breaks within 1 s, recording `joined` (the crossing, interpolated) and `depth`. It stays on the front while its segment breaks at all. Crests on their way in match within 10 m (a broad swell crest's highest cell jumps).
+- A crest is followed from where it crosses the wedge's foot (h0), its height there sizing it; crests first seen past the foot (reformed and broken water) are never sized. Its height is its highest while the still depth falls from 6 to 5 m (both in 2D and in the 1D runs that built the table). It joins as it crosses its join depth (`OnsetTiming.joinDepth(height)`) if the solver breaks its segment before its lip would throw (within the measured lag, `OnsetTiming.window`), recording `joined` (the crossing, interpolated), `depth` and `broke` (when the solver was first seen breaking it). Small swell under the table's first row clamps to it and draws no barrel unless the solver breaks it there. It stays on the front while its segment breaks at all. Crests on their way in match within 10 m (a broad swell crest's highest cell jumps).
 - Neighbours whose joins differ by more than 1 s per metre are two waves (a peel under 1 m/s, θ > 79°), so they form two fronts, which are never smoothed across. The splits are counted.
 - Neighbouring columns within 3 rows link; a column's own crests never do.
 - A point within 2 m plus one row of last step's point in its column keeps its ID, join and clock.
@@ -457,7 +457,7 @@ describe('a Basilisk library as a barrel case', () => {
 - `advanceClocks(points, time, timing): number` returns the pauses.
 
 **The rule:**
-- A point throws at `joined + lag(depth)`. Before that, τ is negative, floored at the library's earliest frame. The front's newest end therefore reads the steepening frames, and PR 3 blends it into the height field over 2–3 m; there is no taper.
+- A point throws at the later of `joined + lag(depth)` and `broke`: never before the solver breaks it (with no lag, a late-breaking crest throws when it breaks). Before that, τ is negative, floored at the library's earliest frame. The front's newest end therefore reads the steepening frames, and PR 3 blends it into the height field over 2–3 m; there is no taper.
 - Throw times are fitted along each front by a biweight-weighted local line (2 m standard deviation), clamped to the window's throws. A single point uses its own throw; bunched points use the mean.
 - τ = time − the fitted throw. A new point starts there; after that τ never falls, and every pause is counted.
 
@@ -500,7 +500,7 @@ describe('a Basilisk library as a barrel case', () => {
 Write the detailed plans for PRs 3–7 (the mesh, the contact, the crash curve, the shading, the rollout) from the library and clock as built. PR 3's loft takes Mihalef's rule from the clock (the advisor, 2026-09-30):
 - neighbouring loft slices differ by at most 2–4 library frames, met by resampling the front finer (0.5 m, down to 0.25 m where the open curl spans under about 8 slices), not by clamping the clock;
 - only when the vertex budget would be exceeded is |dτ/dσ| clamped to T_open/(4·Δσ) (at least 4 slices across the curl), and each clamp is counted. Consult the water-physics advisor before settling any shape value (the lip glow's k, the seam's band width, the contact's softness). Open numbers from PR 2's probes (1 m, Padang's Small swell, the join keyed on the crest's height at 5.5 m):
-- **Join depth against a seed crest's own fresh onset:** set waves within −0.03…+0.19 m, outliers to +1.1 m. Small waves, under the table's first row (≈1.15 m at 5.5 m), clamp to 2.6 m and join ≈0.9 m too deep. The advisor hoped for ±0.3 m.
+- **Join depth against a seed crest's own fresh onset:** set waves within −0.04…+0.14 m. The outliers (+0.7…+1.4 m) are crests the 2D solver breaks later than the 1D table predicts: the table predicts earlier onsets than the 2D solver makes on some crests. Small waves, under the table's first row (≈1.2 m over the band), clamp to 2.6 m and join ≈0.9 m deep when the solver breaks them. The advisor hoped for ±0.3 m.
 - **The peels, wave by wave on the final bed** (`padangPeelPair`, 11 clean pairs): whitewater median 11.0 m/s, barrel 12.6 m/s (ratio 1.17, mostly 1.05–1.18); the design is 11.6 m/s. 5 of 18 waves, the smaller ones, drew no barrel.
 
 PR 3's loft shows whether either is visible.
