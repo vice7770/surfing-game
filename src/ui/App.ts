@@ -6,7 +6,7 @@ import { BenchmarkRecorder, adapterName, needsDetection, withPreset } from '../g
 import { Logbook } from '../game/Logbook';
 import { RideTracker, type RideFrame, type RideResult } from '../game/RideTracker';
 import type { SettingsStore } from '../game/Settings';
-import { DEFAULT_CONDITIONS, DEFAULT_SPOT, nextBackdropSpot, surfForecastText, type SurfConditions } from '../game/SurfConditions';
+import { DEFAULT_CONDITIONS, DEFAULT_SPOT, nextBackdropSpot, ridesAsPractice, surfForecastText, type SurfConditions, type SwellSize } from '../game/SurfConditions';
 import { surferHeight } from '../game/SurferChoice';
 import type { SurfReading } from '../wave/SurfMeter';
 import { describeSurf, type SurfWords } from './surfHeight';
@@ -326,10 +326,10 @@ export class App {
         whitewaterAhead: coming,
         leashIntact: ride ? !ride.leash.snapped : false,
         boardInReach: ride?.boardInReach ?? false,
-      }, (id) => this.hintText(id) !== '' && offersHint(id, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell));
+      }, (id) => this.hintText(id) !== '' && offersHint(id, this.practiceSwell));
       this.rideHud.update(ride, gameplay.units, this.hintKeys(), !seen.rideHints,
-        showsBalanceMeter(gameplay.balanceMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell), hint ? this.hintText(hint) : '', undefined,
-        showsBreathMeter(gameplay.breathMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell));
+        showsBalanceMeter(gameplay.balanceMeter, this.practiceSwell), hint ? this.hintText(hint) : '', undefined,
+        showsBreathMeter(gameplay.breathMeter, this.practiceSwell));
       this.rideHud.updateStance(this.controls.lastRequest, ride?.phase === 'standing', gameplay.stanceReadout);
       this.trackRide();
     }
@@ -359,6 +359,12 @@ export class App {
 
   get detecting(): boolean {
     return this.benchmark !== undefined;
+  }
+
+  /** The swell the ride's practice aids go by (the online room's, else the Surf choice's): Practice at the Wave Pool, whatever its size. */
+  private get practiceSwell(): SwellSize {
+    const choice = this.online?.room ?? this.surfChoice;
+    return ridesAsPractice(choice.spot, choice.conditions.swell) ? 'practice' : choice.conditions.swell;
   }
 
   /** Esc, Start or the pause button, during a ride, a lesson or in the Wave Lab. */

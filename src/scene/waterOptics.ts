@@ -40,6 +40,10 @@ export const SPOT_OPTICS: Record<SpotName, WaterOptics> = {
   // Clear water as the Reef's (nothing measured on the Bukit's west coast), over live coral: about 8 % at
   // 550–650 nm and 2.5 % at 400–500 nm (Hochberg & Atkinson 2003). docs/research/padang-padang-sources.md.
   padang: { turbidity: 0.15, bedAlbedo: [0.08, 0.08, 0.025] },
+  // The Wave Pool (the movement-flow spec): filtered water, clearer than any reef's, over a pale painted concrete
+  // floor (fresh concrete reflects about 0.4–0.55; a light pool paint more), so the water's own absorption turns it
+  // turquoise and the floor shows through.
+  pool: { turbidity: 0.05, bedAlbedo: [0.6, 0.66, 0.68] },
 };
 
 const perChannel = (value: (channel: number) => number): Rgb => [value(0), value(1), value(2)];

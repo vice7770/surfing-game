@@ -19,7 +19,7 @@ export type SpotBests = Partial<Record<BestKind, number>>;
 export const LOGBOOK_KEY = 'breakline.logbook.v1';
 export const LOGBOOK_SIZE = 50;
 
-const SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon', 'padang'];
+const SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon', 'padang', 'pool'];
 const OUTCOMES = ['wipeout', 'complete', 'ended'];
 const BEST_KINDS: readonly BestKind[] = ['distance', 'topSpeed', 'seconds', 'score'];
 

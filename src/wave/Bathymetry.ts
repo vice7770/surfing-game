@@ -1,6 +1,7 @@
+import { poolSpot } from './pool';
 import { seededRandom } from './random';
 
-export type SpotName = 'beach' | 'point' | 'reef' | 'canyon' | 'padang';
+export type SpotName = 'beach' | 'point' | 'reef' | 'canyon' | 'padang' | 'pool';
 
 /**
  * Still-water depth below datum, m; negative on dry land. +x runs along shore,
@@ -316,5 +317,6 @@ export function createSpot(name: SpotName, seed: number): SurfSpot {
     case 'reef': return reef();
     case 'canyon': return canyon();
     case 'padang': return padang();
+    case 'pool': return poolSpot();
   }
 }

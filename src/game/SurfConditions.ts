@@ -4,16 +4,33 @@ import type { SpotName } from '../wave/Bathymetry';
 import { PRACTICE_SURF, forecastSurf, type SurfForecast } from '../wave/surfForecast';
 import { DEFAULT_PHYSICAL_SETTINGS, PADANG_SPREADING, type PhysicalSettings } from './PhysicalMode';
 import { solverStage } from '../wave/SurfZoneSimulation';
+import { POOL, POOL_EDGE_HEIGHT, POOL_FACES, regularSignificantHeight, type PoolSize } from '../wave/pool';
 
-/** The Surf screen's few choices (plan P8), turned into the Wave Lab's physical settings. */
-export const SURF_SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon', 'padang'];
+/** The Surf screen's few choices (plan P8), turned into the Wave Lab's physical settings: the Wave Pool first, where the riding is learned. */
+export const SURF_SPOTS: readonly SpotName[] = ['pool', 'beach', 'point', 'reef', 'canyon', 'padang'];
 /**
- * Where a new player paddles out: the Canyon, whose bed gathers the swell so its
- * waves peel (median 58°) and catch best. The Beach, Point and Reef mostly close
- * out (median 12–15°): their swell refracts parallel to the contours before it
- * breaks (the wave-and-turns findings).
+ * Where a new player paddles out: the Wave Pool (the movement-flow spec), whose
+ * machine sends the same A-frame every ten seconds to practise on. Before it the
+ * Canyon, whose bed gathers the swell so its waves peel (median 58°) and catch
+ * best; the Beach, Point and Reef mostly close out (median 12–15°).
  */
-export const DEFAULT_SPOT: SpotName = 'canyon';
+export const DEFAULT_SPOT: SpotName = 'pool';
+
+/**
+ * The Wave Pool's size for a swell choice (the movement-flow spec): Small, Medium and Big are its 1.0, 1.25 and
+ * 1.5 m faces; it has no practice groundswell, so Practice rides Medium.
+ */
+export function poolSize(swell: SwellSize): PoolSize {
+  return swell === 'practice' ? 'medium' : swell;
+}
+
+/**
+ * Whether a choice rides as practice (the balance meter, the pocket reflex, the hints): the Practice swell, or
+ * the Wave Pool at any size, since the pool is where the riding is practised.
+ */
+export function ridesAsPractice(spot: SpotName, swell: SwellSize): boolean {
+  return swell === 'practice' || spot === 'pool';
+}
 
 export type SwellSize = 'practice' | 'small' | 'medium' | 'big';
 export type TideLevel = 'low' | 'mid' | 'high';
@@ -84,6 +101,8 @@ export function swellChoice(spot: SpotName, swell: Exclude<SwellSize, 'practice'
 
 /** The surf a swell size makes at a spot (the wave-sizes spec): the practice groundswell as measured, the others forecast. */
 export function surfForecastFor(spot: SpotName, swell: SwellSize): SurfForecast {
+  // The Wave Pool's faces are its sizes: every wave the same.
+  if (spot === 'pool') return { typical: POOL_FACES[poolSize(swell)], sets: POOL_FACES[poolSize(swell)] };
   if (swell === 'practice') return { ...PRACTICE_SURF[spot] };
   const { significantHeight, peakPeriod } = swellChoice(spot, swell);
   return forecastSurf(spot, significantHeight, peakPeriod);
@@ -139,6 +158,14 @@ export const BACKDROP_TIME: TimeOfDay = 'sunset';
 type WaterTier = { stage: 1 | 2; compute: 'auto' | 'cpu' };
 
 export function physicalSettingsFor(spot: SpotName, conditions: SurfConditions, water: WaterTier): PhysicalSettings {
+  // The Wave Pool's machine: one regular wave of the size's height, square to the tank, in still air at a fixed level.
+  if (spot === 'pool') {
+    return {
+      ...DEFAULT_PHYSICAL_SETTINGS, spot, ...raisedWater(spot, water), source: 'buoy',
+      significantHeight: regularSignificantHeight(POOL_EDGE_HEIGHT[poolSize(conditions.swell)]), peakPeriod: POOL.period,
+      directionDegrees: 0, spread: 0, tide: 0, windSpeed: 0,
+    };
+  }
   const swell = conditions.swell === 'practice' ? undefined : swellChoice(spot, conditions.swell);
   return {
     ...DEFAULT_PHYSICAL_SETTINGS,

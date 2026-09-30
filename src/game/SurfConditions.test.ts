@@ -4,7 +4,7 @@ import skyManifest from '../../public/assets/skies/skies.json';
 import { nearestSky, sunElevationFromSlider, type SkyEntry } from '../scene/PhotoSky';
 import {
   DEFAULT_CONDITIONS, DEFAULT_SPOT, PADANG_SWELLS, PADANG_TIDES, PADANG_WINDS, REEF_SWELLS, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings,
-  nextBackdropSpot, physicalSettingsFor, surfForecastFor, surfForecastText, swellChoice, tideFor, windFor,
+  nextBackdropSpot, physicalSettingsFor, ridesAsPractice, surfForecastFor, surfForecastText, swellChoice, tideFor, windFor,
 } from './SurfConditions';
 import { PRACTICE_SURF, forecastSurf } from '../wave/surfForecast';
 import { surfName as describeName } from '../ui/surfHeight';
@@ -92,13 +92,13 @@ describe('surf conditions', () => {
     for (const wind of Object.values(WINDS)) expect(Math.abs(wind)).toBeLessThanOrEqual(12);
   });
 
-  it('offers all five spots, Padang Padang last', () => {
-    expect(SURF_SPOTS).toEqual(['beach', 'point', 'reef', 'canyon', 'padang']);
+  it('offers all six spots, the Wave Pool first and Padang Padang last', () => {
+    expect(SURF_SPOTS).toEqual(['pool', 'beach', 'point', 'reef', 'canyon', 'padang']);
   });
 
   // The Canyon's waves peel (median 58°) and catch best; the other spots mostly close out (median 12–15°).
   it('forecasts each swell size\'s surf at each spot, the practice groundswell as measured (wave sizes)', () => {
-    for (const spot of SURF_SPOTS) {
+    for (const spot of SURF_SPOTS.filter((s) => s !== 'pool')) {
       expect(surfForecastFor(spot, 'practice')).toEqual(PRACTICE_SURF[spot]);
       const big = swellChoice(spot, 'big');
       expect(surfForecastFor(spot, 'big')).toEqual(forecastSurf(spot, big.significantHeight, big.peakPeriod));
@@ -113,8 +113,22 @@ describe('surf conditions', () => {
       .toBe(`Surf: ${surf.typical.toFixed(1)}–${surf.sets.toFixed(1)} m · ${describeName(surf.typical)}`);
   });
 
-  it('starts a new player at the Canyon', () => {
-    expect(DEFAULT_SPOT).toBe('canyon');
+  // The movement-flow spec (Q26): the pool is where the riding is learned.
+  it('starts a new player at the Wave Pool', () => {
+    expect(DEFAULT_SPOT).toBe('pool');
+  });
+
+  // The movement-flow spec: the pool's faces are its sizes, Practice rides Medium, and every size is practice.
+  it('gives the Wave Pool its three sizes, one regular wave in still air, ridden as practice', () => {
+    expect(surfForecastFor('pool', 'small')).toEqual({ typical: 1, sets: 1 });
+    expect(surfForecastFor('pool', 'practice')).toEqual({ typical: 1.25, sets: 1.25 });
+    expect(surfForecastFor('pool', 'big')).toEqual({ typical: 1.5, sets: 1.5 });
+    const settings = physicalSettingsFor('pool', { swell: 'big', tide: 'high', wind: 'onshore', time: 'dawn' }, water);
+    expect(settings).toMatchObject({ spot: 'pool', stage: 2, source: 'buoy', directionDegrees: 0, tide: 0, windSpeed: 0 });
+    expect(settings.significantHeight).toBeGreaterThan(physicalSettingsFor('pool', { ...DEFAULT_CONDITIONS, swell: 'small' }, water).significantHeight);
+    expect(ridesAsPractice('pool', 'big')).toBe(true);
+    expect(ridesAsPractice('beach', 'big')).toBe(false);
+    expect(ridesAsPractice('beach', 'practice')).toBe(true);
   });
 
   it('shows the menu a different spot each time, on calm practice water', () => {

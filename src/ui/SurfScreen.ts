@@ -1,4 +1,4 @@
-import { SURF_SPOTS, type SurfConditions } from '../game/SurfConditions';
+import { SURF_SPOTS, poolSize, type SurfConditions } from '../game/SurfConditions';
 import type { SpotName } from '../wave/Bathymetry';
 import { el, icon } from './dom';
 import { ICONS } from './icons';
@@ -24,19 +24,34 @@ export interface SurfModel {
   rows: { id: ConditionId; label: StringKey; options: { value: string; label: StringKey; selected: boolean }[] }[];
 }
 
-/** The Surf screen as data (plan P8): the spots on offer and the four condition rows, with the choices marked. */
+/**
+ * The Surf screen as data (plan P8): the spots on offer and the four condition rows, with the choices marked. The
+ * Wave Pool (the movement-flow spec) has its sizes in place of the swell and no tide or wind: its machine sends the
+ * same wave in still air.
+ */
 export function surfModel(choice: SurfChoice): SurfModel {
+  const pool = choice.spot === 'pool';
+  const ids = (Object.keys(CONDITION_OPTIONS) as ConditionId[]).filter((id) => !pool || (id !== 'tide' && id !== 'wind'));
   return {
     spots: SURF_SPOTS.map((id) => ({
       id, name: `spot.${id}` as StringKey, blurb: `spot.${id}.blurb` as StringKey, selected: id === choice.spot,
     })),
-    rows: (Object.keys(CONDITION_OPTIONS) as ConditionId[]).map((id) => ({
-      id,
-      label: `cond.${id}` as StringKey,
-      options: CONDITION_OPTIONS[id].map((value) => ({
-        value, label: `cond.${id}.${value}` as StringKey, selected: choice.conditions[id] === value,
-      })),
-    })),
+    rows: ids.map((id) => {
+      if (pool && id === 'swell') {
+        const size = poolSize(choice.conditions.swell);
+        return {
+          id, label: 'cond.size' as StringKey,
+          options: (['small', 'medium', 'big'] as const).map((value) => ({ value, label: `cond.swell.pool.${value}` as StringKey, selected: size === value })),
+        };
+      }
+      return {
+        id,
+        label: `cond.${id}` as StringKey,
+        options: CONDITION_OPTIONS[id].map((value) => ({
+          value, label: `cond.${id}.${value}` as StringKey, selected: choice.conditions[id] === value,
+        })),
+      };
+    }),
   };
 }
 
@@ -47,6 +62,7 @@ const SKETCHES: Record<SpotName, string> = {
   reef: '<path d="M4 42c14-2 24-2 36-2s22 0 36 2"/><path d="M8 20L50 40" stroke-dasharray="3 3"/><path d="M60 40V20M70 40V20" stroke-dasharray="3 3" opacity=".6"/><path d="M4 12c12 2 24-2 36 0s24 2 36 0" opacity=".45"/>',
   canyon: '<path d="M4 42c14-2 24-2 36-2s22 0 36 2"/><path d="M36 42V14M44 42V14" stroke-dasharray="3 3"/><path d="M4 12c12 2 24-2 36 0s24 2 36 0" opacity=".45"/>',
   padang: '<path d="M4 42c10-6 22-8 36-8s26 2 36 8"/><path d="M4 18h14L58 34" stroke-dasharray="3 3"/><path d="M64 40V16M74 40V16" stroke-dasharray="3 3" opacity=".6"/><path d="M4 10c12 2 24-2 36 0s24 2 36 0" opacity=".45"/>',
+  pool: '<rect x="4" y="4" width="72" height="40" rx="2"/><path d="M12 38L40 18L68 38" stroke-dasharray="3 3"/><path d="M8 12h64" opacity=".45"/>',
 };
 
 function sketch(spot: SpotName): Element {
@@ -73,6 +89,30 @@ export function createSurfChoices(
     change(next);
   };
   const spots = el('div', { class: 'spot-cards', attrs: { role: 'group', 'aria-label': t('surf.title') } });
+  const rowsBox = el('div', { class: 'choice-rows' });
+  // The rows as the spot has them: rebuilt when the spot changes (the Wave Pool has its own).
+  const renderRows = () => {
+    const rows = surfModel(choice).rows.map((row) => {
+      const group = el('div', { class: 'segmented', attrs: { role: 'group', 'aria-label': t(row.label) } });
+      for (const option of row.options) {
+        const button = el('button', {
+          attrs: { type: 'button', 'aria-pressed': String(option.selected) },
+          dataset: { nav: '' },
+          text: t(option.label),
+          on: {
+            click: () => {
+              (choice.conditions as unknown as Record<string, string>)[row.id] = option.value;
+              press(group, button);
+              changed({ ...choice, conditions: { ...choice.conditions } });
+            },
+          },
+        });
+        group.append(button);
+      }
+      return el('div', { class: 'choice-row' }, el('span', { class: 'choice-label', text: t(row.label) }), group);
+    });
+    rowsBox.replaceChildren(...rows, ...(note ? [note] : []));
+  };
   for (const spot of model.spots) {
     const card = el('button', {
       class: 'spot-card',
@@ -80,34 +120,18 @@ export function createSurfChoices(
       dataset: { nav: '' },
       on: {
         click: () => {
+          const rebuild = (choice.spot === 'pool') !== (spot.id === 'pool');
           choice.spot = spot.id;
           press(spots, card);
+          if (rebuild) renderRows();
           changed({ ...choice, conditions: { ...choice.conditions } });
         },
       },
     }, sketch(spot.id), el('span', { class: 'spot-text' }, el('strong', { text: t(spot.name) }), el('small', { text: t(spot.blurb) })));
     spots.append(card);
   }
-  const rows = model.rows.map((row) => {
-    const group = el('div', { class: 'segmented', attrs: { role: 'group', 'aria-label': t(row.label) } });
-    for (const option of row.options) {
-      const button = el('button', {
-        attrs: { type: 'button', 'aria-pressed': String(option.selected) },
-        dataset: { nav: '' },
-        text: t(option.label),
-        on: {
-          click: () => {
-            (choice.conditions as unknown as Record<string, string>)[row.id] = option.value;
-            press(group, button);
-            changed({ ...choice, conditions: { ...choice.conditions } });
-          },
-        },
-      });
-      group.append(button);
-    }
-    return el('div', { class: 'choice-row' }, el('span', { class: 'choice-label', text: t(row.label) }), group);
-  });
-  return [spots, el('div', { class: 'choice-rows' }, ...rows, ...(note ? [note] : []))];
+  renderRows();
+  return [spots, rowsBox];
 }
 
 /** Pick a spot and the conditions (and, in `surfer`, who rides), then paddle out. */

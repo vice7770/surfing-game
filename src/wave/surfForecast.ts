@@ -54,6 +54,9 @@ export const SURF_FORECAST: Record<SpotName, ForecastFit> = {
   // Fitted by the size report on Padang Padang's calibrated swells, Medium and Big at the take-offs that follow their
   // breaks (its plan, Task 8, 2026-09-30).
   padang: { a: 0.6318, sets: 1.080 },
+  // The Wave Pool's faces are its sizes (POOL_FACES); this fit only turns the Wave Lab's sliders into a line, through
+  // Medium's face (1.25 m from Hs 1.27 m at 10 s), with every wave the same.
+  pool: { a: 0.41, sets: 1 },
 };
 
 /** The practice groundswell's measured surf at each spot's take-off (the size report, 2026-09-27). */
@@ -64,6 +67,8 @@ export const PRACTICE_SURF: Record<SpotName, SurfForecast> = {
   canyon: { typical: 2.85, sets: 3.08 },
   // Padang Padang's own practice groundswell, measured by the size report (its plan, Task 8, 2026-09-30).
   padang: { typical: 2.22, sets: 2.35 },
+  // The Wave Pool has no practice groundswell: Practice rides its Medium size.
+  pool: { typical: 1.25, sets: 1.25 },
 };
 
 /** The surf a buoy swell will make at a spot, from its calibrated fit. */

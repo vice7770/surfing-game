@@ -36,7 +36,7 @@ import { NameTags, type TagEntry } from './ui/NameTags';
 import { t } from './ui/strings';
 import { LocalSurfZone } from './game/SurfZoneHost';
 import { StillFrameGate } from './game/StillFrameGate';
-import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, type SurfConditions, type SwellSize, type TimeOfDay } from './game/SurfConditions';
+import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, ridesAsPractice, type SurfConditions, type SwellSize, type TimeOfDay } from './game/SurfConditions';
 import type { WaterLook } from './scene/water/waterLook';
 import type { RideView } from './scene/SpectatorCamera';
 import { RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS, type SurfZoneStatus } from './wave/SurfZoneRunner';
@@ -403,7 +403,8 @@ class SurfGame {
   /** A Surf session (plan P8): the physical surf zone with the player's rider, in the chosen conditions and camera. */
   async startSurf(spot: SpotName, conditions: SurfConditions, seed: number, camera: RideView | 'overview'): Promise<boolean> {
     this.leaveOnline();
-    this.surfSwell = conditions.swell;
+    // The Wave Pool rides as practice at every size (the movement-flow spec).
+    this.surfSwell = ridesAsPractice(spot, conditions.swell) ? 'practice' : conditions.swell;
     this.physicalMode.idleView = 'overview';
     this.physicalMode.defaultView = camera;
     const water = { stage: this.graphics?.stage ?? 2, compute: this.graphics?.compute ?? 'auto' } as const;

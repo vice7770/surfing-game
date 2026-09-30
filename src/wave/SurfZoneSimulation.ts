@@ -11,6 +11,7 @@ import { focusX } from './Refraction';
 import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotion } from './CrestKinematics';
 import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
+import { POOL, poolSea } from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import { SideFeed } from './SideFeed';
@@ -93,7 +94,7 @@ export const ALONG_SHORE = 160;
 
 /** The window's along-shore width, m: the config's, else Padang Padang's own (its peak clear of the side feed), else ALONG_SHORE. */
 export function alongShoreOf(config: Pick<SurfZoneConfig, 'spot' | 'alongShore'>): number {
-  return config.alongShore ?? (config.spot === 'padang' ? PADANG.alongShore : ALONG_SHORE);
+  return config.alongShore ?? (config.spot === 'padang' ? PADANG.alongShore : config.spot === 'pool' ? POOL.alongShore : ALONG_SHORE);
 }
 
 /**
@@ -101,7 +102,7 @@ export function alongShoreOf(config: Pick<SurfZoneConfig, 'spot' | 'alongShore'>
  * too early in the Reef's 30 m water and under Padang Padang's 16–18 s swells, so a machine that cannot keep up
  * runs them slower than real time instead.
  */
-export const STAGE_2_ONLY: readonly SpotName[] = ['reef', 'padang'];
+export const STAGE_2_ONLY: readonly SpotName[] = ['reef', 'padang', 'pool'];
 
 /** The solver stage a spot runs on: the asked one, or 2 where the spot needs it. */
 export function solverStage(spot: SpotName, stage: 1 | 2 | undefined): 1 | 2 {
@@ -133,7 +134,7 @@ export const TANK = { offshore: -330, zoneInner: -270, blendEnd: -190, fineFrom:
 
 /** Flat tank bed offshore of each spot's blend, m below datum: Padang Padang's is the deep water beyond its forereef, read live for the sweep. */
 export const OFFSHORE_DEPTH: Record<SpotName, number> = {
-  beach: 5, point: 8, reef: REEF.deep, canyon: 5, get padang() { return PADANG.deep; },
+  beach: 5, point: 8, reef: REEF.deep, canyon: 5, get padang() { return PADANG.deep; }, get pool() { return POOL.generatorDepth; },
 };
 
 /** A tank's layout across shore, m, and the still depth of its flat edge under the relaxation zone, m below datum. */
@@ -169,7 +170,8 @@ const FLAT_RISE = 0.1;
  */
 export function tankLayout(config: SurfZoneConfig): TankLayout {
   const today: TankLayout = { ...TANK, edgeDepth: OFFSHORE_DEPTH[config.spot] };
-  if (config.spot === 'canyon') return today;
+  // The Wave Pool's machine sits at today's edge, its floor as deep as its channels (the movement-flow spec).
+  if (config.spot === 'canyon' || config.spot === 'pool') return today;
   // The Reef's edge is always deep (REEF.deep, the Teahupo'o Reef spec): today's inner tank, whose forereef
   // lies inside it, with the zone lengthened to absorb its long waves.
   if (config.spot === 'reef') {
@@ -232,7 +234,7 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
 export const SIDE_FEED_SPOTS: readonly SpotName[] = ['padang'];
 
 /** Kennedy onset per spot (plan Q27): 0.35√(gh) on the barred beach, 0.65√(gh) on plain or steep beds. */
-export const BREAKING_ONSET: Record<SpotName, number> = { beach: 0.35, point: 0.65, reef: 0.65, canyon: 0.65, padang: 0.65 };
+export const BREAKING_ONSET: Record<SpotName, number> = { beach: 0.35, point: 0.65, reef: 0.65, canyon: 0.65, padang: 0.65, pool: 0.65 };
 
 /**
  * Foam e-folding times per spot, s (plan §2.4, G4). Dense whitewater decays like
@@ -248,6 +250,8 @@ export const FOAM_DECAY: Record<SpotName, FoamDecay> = {
   canyon: { dense: 3, residual: 15 },
   // A reef's foam lasts at least as long as the Beach's (the advisor's Foam tab; Callaghan et al. 2012, 2013).
   padang: { dense: 3, residual: 20 },
+  // A pool's clean water holds no lace for long (a game value, as the Reef's).
+  pool: { dense: 3, residual: 8 },
 };
 
 /**
@@ -267,7 +271,7 @@ export function windOnsetScale(windSpeed: number, breakerDepth: number): number 
  * Spots that take their swell at the tank's edge, as before the wave-sizes work: the Canyon (its seas are the
  * riding reference and Surf School's). The Reef's 30 m edge takes the buoy's deep-water swell shoaled to it.
  */
-const EDGE_SWELL_SPOTS: readonly SpotName[] = ['canyon'];
+const EDGE_SWELL_SPOTS: readonly SpotName[] = ['canyon', 'pool'];
 
 /** The sea's Hs at the tank's edge, m: the buoy's deep-water height shoaled by linear theory, unless given at the edge. */
 export function edgeHeight(config: SurfZoneConfig, edgeDepth = OFFSHORE_DEPTH[config.spot]): number {
@@ -284,6 +288,8 @@ export function edgeHeight(config: SurfZoneConfig, edgeDepth = OFFSHORE_DEPTH[co
  */
 export function surfZoneSea(config: SurfZoneConfig): SeaState {
   const tank = tankLayout(config);
+  // The Wave Pool's machine: one regular wave, the same every time (the movement-flow spec).
+  if (config.spot === 'pool') return poolSea(edgeHeight(config, tank.edgeDepth), tank.edgeDepth + config.tide, madsenSorensenWaveNumber);
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot] && solverStage(config.spot, config.stage) === 2;
   return SeaState.fromSpectrum({
     significantHeight: edgeHeight(config, tank.edgeDepth),
@@ -302,7 +308,7 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
  * shadow it casts (as measured over the Scripps canyon, Magne et al. 2007),
  * and moves with the swell's direction and period.
  */
-export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 'centre', point: 'centre', reef: 'peak', canyon: 'focus', padang: 'peak' };
+export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 'centre', point: 'centre', reef: 'peak', canyon: 'focus', padang: 'peak', pool: 'centre' };
 
 /**
  * The breaker index a big day's take-off is placed with, per spot: the size report measures where each spot's
@@ -311,7 +317,7 @@ export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 
  * 14 s (Point Hs 2–4 m: 1.05–1.16; Beach Hs 2–3 m: 1.08–1.20), before the side feed; they are refitted after it.
  * Padang Padang's take-off follows PADANG_TAKE_OFF_INDEX instead.
  */
-export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.13, reef: BREAKER_INDEX, canyon: BREAKER_INDEX, padang: BREAKER_INDEX };
+export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.13, reef: BREAKER_INDEX, canyon: BREAKER_INDEX, padang: BREAKER_INDEX, pool: BREAKER_INDEX };
 
 /**
  * Padang Padang's take-off index against the swell's height at its edge, m: on its wedge a bigger set breaks shallower

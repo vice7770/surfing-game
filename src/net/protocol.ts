@@ -30,7 +30,7 @@ export const MAX_BOTS = ROOM_CAP.max - 1;
 export const CALLS = ['left', 'right', 'party', 'nice'] as const;
 export type CallId = (typeof CALLS)[number];
 
-const SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon', 'padang'];
+const SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon', 'padang', 'pool'];
 const SWELLS: readonly SwellSize[] = ['practice', 'small', 'medium', 'big'];
 const TIDES: readonly TideLevel[] = ['low', 'mid', 'high'];
 const WINDS: readonly WindKind[] = ['offshore', 'calm', 'onshore'];
@@ -44,7 +44,7 @@ export interface RoomSettings {
 }
 
 export const DEFAULT_ROOM_SETTINGS: RoomSettings = {
-  spot: 'canyon', conditions: { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, cap: ROOM_CAP.max,
+  spot: 'pool', conditions: { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, cap: ROOM_CAP.max,
 };
 
 /** A running room: its settings, the sea's seed, the build it runs, and its clock (server ms at creation, and the sea time then). */
