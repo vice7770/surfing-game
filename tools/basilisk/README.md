@@ -41,4 +41,14 @@ LEVEL=12 A0=0.3 TOUT0=18.5 TMAX=25 NAME=pad19_a30_L12 tools/basilisk/run_padang.
 LEVEL=12 A0=0.45 TOUT0=15 TMAX=21.5 NAME=pad19_a45_L12 tools/basilisk/run_padang.sh
 ```
 
-The same variables, with `status` or `analyse`, check on or analyse each. Then `npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --flat 0.1785714` turns them into the game's cases (`docs/research/barrel-library.md`).
+The same variables, with `status` or `analyse`, check on or analyse each (`analyse` needs Python with numpy, scipy and matplotlib).
+
+The runs (M1 Air, level 12, one core each, all three at once, 2026-09-29/30), at the last output before touchdown against Pick & Feddersen's fits, and their landmarks clean per phase (before vertical / open tube / after touchdown):
+
+| Run | Wall | Vertical, touchdown (t) | A_O/H_I² | W_O/L_O | θ_O | L/W | Clean |
+|---|---|---|---|---|---|---|---|
+| `pad19_a20_L12` | 265 min | 24.40, 25.10 | 0.05 / 0.38 | 0.50 / 0.43 | 57° / 31° | 2.01 | 116/117, 27/27, 48/117 |
+| `pad19_a30_L12` | 282 min | 21.24, 22.43 | 0.19 / 0.34 | 0.47 / 0.42 | 41° / 35° | 2.11 | 106/110, 47/47, 42/104 |
+| `pad19_a45_L12` | 298 min | 17.68, 19.05 | 0.23 / 0.30 | 0.44 / 0.40 | 40° / 39° | 2.30 | 98/108, 54/54, 49/99 |
+
+Why the tubes run smaller than the plane-slope fits (the reef flat): `docs/research/barrel-library.md`. Then `npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --flat 0.1785714` turns them into the game's cases (`docs/research/barrel-library.md`).
