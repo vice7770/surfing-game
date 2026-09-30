@@ -17,7 +17,7 @@ const FALLEN = RIDER_PHASES.indexOf('fallen');
 /** The rider's fields that blend between snapshots; every other field is taken from the nearer one. */
 const BLENDED = [
   ...Array.from({ length: 21 }, (_, i) => RIDER_SNAPSHOT.points + i),
-  RIDER_SNAPSHOT.duck, RIDER_SNAPSHOT.plug, RIDER_SNAPSHOT.plug + 1, RIDER_SNAPSHOT.plug + 2, RIDER_SNAPSHOT.breath,
+  RIDER_SNAPSHOT.duck, RIDER_SNAPSHOT.plug, RIDER_SNAPSHOT.plug + 1, RIDER_SNAPSHOT.plug + 2, RIDER_SNAPSHOT.breath, RIDER_SNAPSHOT.twist,
 ];
 
 interface Slot {

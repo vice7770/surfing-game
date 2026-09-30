@@ -354,13 +354,14 @@ const kneeAngle = (rig: HumanoidRig, side: Side) =>
   (rig.joints.hip[side].clone().sub(rig.joints.knee[side]).angleTo(rig.joints.ankle[side].clone().sub(rig.joints.knee[side])) * 180) / Math.PI;
 
 // Part B, de Sousa 2022: knees at 150° or more extended, 90–110° crouched on the drop, 90° or less compressed. The
-// physics' crouch lowers the pelvis; the rig maps its standing height to the model's extended legs. Planing at 7 m/s
+// physics' crouch lowers the pelvis; the rig maps its standing height to the model's extended legs. The full crouch
+// is the pumping stance, about two thirds of Compress's depth (the movement-flow spec). Planing at 7 m/s
 // the board rides about 12° nose-up, the front foot 12 cm above the rear, so the front knee always bends more: the
 // knees are judged by their mean, and standing by the straighter one too (before: 98°/136°, 65°/94°, 44°/81°).
 describe('knees from the physics', () => {
   it.each([
     ['standing', 0, 0, 120, 160],
-    ['crouched', 0.6, 0, 90, 115],
+    ['crouched', 1, 0, 90, 115],
     ['compressed', 0.6, 1, 0, 90],
   ])('bends the knees %s', (label, crouch, compress, least, most) => {
     const { bones } = createTestHumanoid();

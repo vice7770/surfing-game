@@ -251,6 +251,26 @@ const SWING_RANGE = 1.2;
 const SWING_SERIES = 430;
 const SWING_FREQUENCY = 1.5;
 const SWING_RELEASE = 0.05;
+/**
+ * The upper body's twist (the movement-flow spec), asked for by the pad's
+ * rotation: the trunk, arms and head turn about the leg as a rotor of
+ * TWIST_INERTIA, kg·m² (de Leva 1996's segments, the arms held off the trunk),
+ * within ±TWIST_RANGE, rad (the spine's axial rotation, about 40–50°: Neumann,
+ * Kinesiology of the Musculoskeletal System), toward the rotation asked for,
+ * critically damped at TWIST_FREQUENCY, rad/s. The hips turn it with at most
+ * TWIST_TORQUE, N·m (peak trunk axial rotation, about 100–150 N·m), and no more
+ * than the feet's grip holds on the deck, FOOT_FRICTION times the leg's load
+ * at TWIST_GRIP_RADIUS, m. Their reaction turns the board through the feet: a
+ * short-lived yaw, since the body's angular momentum stays its own, first away
+ * from the twist and then, as it stops, toward it. Nothing asked for (the
+ * keyboard and touch), the rotor rests and the body turns with the ride. The
+ * body's rigid inertia still counts the upper body (provisional).
+ */
+const TWIST_INERTIA = 1.5;
+const TWIST_RANGE = (45 * Math.PI) / 180;
+const TWIST_FREQUENCY = 7;
+const TWIST_TORQUE = 120;
+const TWIST_GRIP_RADIUS = 0.15;
 /** Below this load, in body weights, the centre of pressure says nothing and the rider does not rebalance. */
 const BALANCE_LOAD = 0.1;
 /** The fastest the body shifts, m/s, and accelerates, m/s² (so balance never jerks the contact), and how long the centre of pressure it reacts to is smoothed, s. */
@@ -624,6 +644,8 @@ export class AttachedRider {
   crouch = 0;
   /** Standing, Compress: 0 (none) to 1 (full depth, weight forward), taken alone or over the crouch. */
   compress = 0;
+  /** Standing, the upper body's rotation asked for (`RideInput.rotate`), −1 to 1 toward the board's +x; NaN when none is (the body turns with the ride). */
+  rotate = Number.NaN;
   /** Standing, the wave-side hand reaches for the water. */
   hand = false;
   /** Standing, the requested weight shift: −1 (toward board −x, its right) to 1 (toward +x, its left). */
@@ -765,6 +787,8 @@ export class AttachedRider {
   readonly bank = { angle: 0, rate: 0 };
   /** Standing, the upper body's swing about the forward axis against the body, rad and rad/s (the turn redesign). */
   readonly swing = { angle: 0, rate: 0 };
+  /** Standing, the upper body's twist about the leg (TWIST_RANGE), rad, positive toward the board's +x (its left), and its rate. */
+  readonly twist = { angle: 0, rate: 0 };
   private readonly bodyFrame = new Quaternion();
   private readonly bankTurn = new Quaternion();
   private readonly swingTurn = new Quaternion();
@@ -788,6 +812,8 @@ export class AttachedRider {
   private ankleRest = 0;
   private ankleTorque = 0;
   protected swingTorque = 0;
+  /** The hips' torque on the upper body's twist, N·m about the leg; the board takes its reaction through the feet. */
+  private twistTorque = 0;
 
   constructor(shape: BoardShape, options: AttachedRiderOptions = {}) {
     this.shape = shape;
@@ -978,6 +1004,7 @@ export class AttachedRider {
     this.swingTorque = 0;
     this.swing.angle = 0;
     this.swing.rate = 0;
+    this.resetTwist();
     this.frame(board, false);
     this.position.copy(this.target);
     this.velocity.copy(this.drive.set(0, 0, 0)).add(board.velocityAt(this.target, this.scratch2));
@@ -1337,6 +1364,7 @@ export class AttachedRider {
     this.external.copy(this.gravity).add(this.waterForce);
     if (this.upright) {
       this.prepareLeg(h, board, water);
+      this.twistStep(h);
       if (this.banking) {
         this.prepareBank(h, board);
       } else {
@@ -1422,6 +1450,29 @@ export class AttachedRider {
       this.swing.angle = Math.sign(this.swing.angle) * SWING_RANGE;
       if (this.swing.rate * this.swing.angle > 0) this.swing.rate = 0;
     }
+  }
+
+  /**
+   * The upper body's twist (TWIST_RANGE): toward the rotation asked for while standing, back to rest otherwise, with
+   * the hips' torque no more than they give and the feet's grip holds.
+   */
+  private twistStep(h: number): void {
+    const asked = this.phase === 'standing' && !Number.isNaN(this.rotate) ? Math.max(-1, Math.min(1, this.rotate)) * TWIST_RANGE : 0;
+    const most = Math.min(TWIST_TORQUE, FOOT_FRICTION * this.legLoad * TWIST_GRIP_RADIUS);
+    const wanted = TWIST_INERTIA * (TWIST_FREQUENCY * TWIST_FREQUENCY * (asked - this.twist.angle) - 2 * TWIST_FREQUENCY * this.twist.rate);
+    this.twistTorque = Math.max(-most, Math.min(most, wanted));
+    this.twist.rate += (h * this.twistTorque) / TWIST_INERTIA;
+    this.twist.angle += h * this.twist.rate;
+    if (Math.abs(this.twist.angle) > TWIST_RANGE) {
+      this.twist.angle = Math.sign(this.twist.angle) * TWIST_RANGE;
+      if (this.twist.rate * this.twist.angle > 0) this.twist.rate = 0;
+    }
+  }
+
+  private resetTwist(): void {
+    this.twist.angle = 0;
+    this.twist.rate = 0;
+    this.twistTorque = 0;
   }
 
   /** Standing: the leg's state and load before the board's solve. */
@@ -1775,6 +1826,10 @@ export class AttachedRider {
     rhs[3] -= h * this.swingTorque * this.rollAxis.x;
     rhs[4] -= h * this.swingTorque * this.rollAxis.y;
     rhs[5] -= h * this.swingTorque * this.rollAxis.z;
+    // The twist's hips turn the board the other way through the feet.
+    rhs[3] -= h * this.twistTorque * n.x;
+    rhs[4] -= h * this.twistTorque * n.y;
+    rhs[5] -= h * this.twistTorque * n.z;
   }
 
   /** Standing, after the 8 x 8 solve: the contact impulse the motion needs, and whether feet on a deck can give it (as `settle`). */
@@ -1839,6 +1894,10 @@ export class AttachedRider {
     if (this.upright && this.feasible && this.swingTorque !== 0) {
       // The swing's couple, which the board did not take with the push along the line of force.
       board.work.rider -= (h * this.swingTorque * this.rollAxis.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;
+    }
+    if (this.upright && this.feasible && this.twistTorque !== 0) {
+      // The twist's reaction, which turned the board through the feet.
+      board.work.rider -= (h * this.twistTorque * this.up.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;
     }
     if (this.upright && this.feasible && this.handYaw !== 0) {
       // The hand's moment turned the board through the feet.
@@ -1933,6 +1992,7 @@ export class AttachedRider {
       this.swing.angle = 0;
       this.swing.rate = 0;
       this.swingTorque = 0;
+      this.resetTwist();
       this.up.set(0, 1, 0).applyQuaternion(board.orientation);
       board.toWorld(this.localCenter, this.target);
     }

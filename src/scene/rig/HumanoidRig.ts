@@ -480,8 +480,11 @@ export class HumanoidRig {
     this.turnTowardNose(this.facing.copy(forward), upright ? RIG_DETAIL.chestTurn * opening : 0);
     if (state.phase === 'standing') {
       const most = (RIG_DETAIL.twistMost * Math.PI) / 180;
-      const twist = state.standingBlend * Math.max(-most, Math.min(most, RIG_DETAIL.twistGain * state.yawRate))
+      // The pad's twist turns the shoulders on top of the turn's (the movement-flow spec), within both reaches.
+      const bound = ((RIG_DETAIL.twistMost + RIG_DETAIL.snapTwist) * Math.PI) / 180;
+      const turned = state.standingBlend * (Math.max(-most, Math.min(most, RIG_DETAIL.twistGain * state.yawRate)) + state.twist)
         + (Math.sign(state.yawRate) * snapping * RIG_DETAIL.snapTwist * Math.PI) / 180;
+      const twist = Math.max(-bound, Math.min(bound, turned));
       this.facing.applyAxisAngle(up, twist);
       hipsForward.applyAxisAngle(up, RIG_DETAIL.hipsTwistShare * twist);
     }
@@ -1065,7 +1068,8 @@ export class HumanoidRig {
     look.copy(state.travel).setY(0);
     if (look.lengthSq() < 1e-8) look.copy(this.boardForward).setY(0);
     if (look.lengthSq() < 1e-8) look.set(0, 0, 1);
-    look.normalize().applyAxisAngle(WORLD_UP, RIG_DETAIL.lookAhead * state.yawRate);
+    // The head looks where the pad's twist turns the shoulders, too (the movement-flow spec).
+    look.normalize().applyAxisAngle(WORLD_UP, RIG_DETAIL.lookAhead * state.yawRate + state.standingBlend * state.twist);
     hint.copy(this.facing).setY(0);
     if (hint.lengthSq() > 1e-8) {
       hint.normalize();

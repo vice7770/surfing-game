@@ -37,6 +37,8 @@ export interface RiderVisualState {
   clock: number;
   /** The breath held, 1 full to 0 (Part B): short of it, the swimmer's stroke quickens. */
   breath: number;
+  /** Standing, the upper body's twist asked for by the pad, rad about the up, as `yawRate` turns (the movement-flow spec); 0 without. */
+  twist: number;
 }
 
 export function createRiderVisualState(): RiderVisualState {
@@ -58,6 +60,7 @@ export function createRiderVisualState(): RiderVisualState {
     swim: { stroking: false, diving: false, under: false },
     clock: 0,
     breath: 1,
+    twist: 0,
   };
 }
 
@@ -77,6 +80,7 @@ export function readRiderSnapshot(rider: ArrayLike<number>, board: ArrayLike<num
   out.leash.snapped = (leash & LEASH_BITS.snapped) !== 0;
   out.leash.reeling = (leash & LEASH_BITS.reeling) !== 0;
   out.breath = rider[RIDER_SNAPSHOT.breath] ?? 1;
+  out.twist = rider[RIDER_SNAPSHOT.twist] ?? 0;
   const swim = rider[RIDER_SNAPSHOT.swim] ?? 0;
   out.swim.stroking = (swim & SWIM_BITS.stroking) !== 0;
   out.swim.diving = (swim & SWIM_BITS.diving) !== 0;

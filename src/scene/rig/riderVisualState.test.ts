@@ -35,6 +35,13 @@ describe('rider visual state', () => {
     expect(state.swim).toEqual({ stroking: true, diving: false, under: true });
   });
 
+  it('decodes the upper body\'s twist, and reads none from a snapshot made before it (the movement-flow spec)', () => {
+    const rider = new Float64Array(RIDER_SNAPSHOT.length);
+    rider[RIDER_SNAPSHOT.twist] = 0.5;
+    expect(readRiderSnapshot(rider, [0, 0, 0, 0, 0, 0, 1, 1], createRiderVisualState()).twist).toBe(0.5);
+    expect(readRiderSnapshot(new Float64Array(RIDER_SNAPSHOT.twist), [0, 0, 0, 0, 0, 0, 1, 1], createRiderVisualState()).twist).toBe(0);
+  });
+
   it('puts a standing regular rider’s left foot forward on the deck, and a goofy rider’s right', () => {
     const regular = posturePoints('standing', 'regular', new Vector3(), new Quaternion(), createRiderVisualState());
     expect(regular.points[POINT.leftFoot].z).toBeGreaterThan(regular.points[POINT.rightFoot].z);

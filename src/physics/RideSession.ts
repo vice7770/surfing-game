@@ -198,6 +198,7 @@ export class RideSession {
       rider.trim = input.trim ?? 0;
       rider.crouch = input.crouch ?? 0;
       rider.compress = input.compress ?? 0;
+      rider.rotate = input.rotate ?? Number.NaN;
       rider.hand = input.hand ?? false;
       rider.duckDive = input.duckDive ?? 0;
       // The pop-up key stands the rider up, or lies it back down (the playtest: only the player lies it down).
