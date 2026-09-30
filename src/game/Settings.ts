@@ -35,6 +35,8 @@ export interface GameplaySettings {
   showTelemetry: boolean;
   /** Names over the other surfers online (spec N1). */
   nameTags: boolean;
+  /** The stance readout while standing (the movement-flow spec): the height, weight and rotation asked for. */
+  stanceReadout: boolean;
 }
 
 /** Online (spec N1): the name others see, and this player's token for each room they were in (the last ONLINE_ROOMS_KEPT). */
@@ -122,7 +124,7 @@ function copyBindings(bindings: Bindings): Bindings {
 
 export function defaultSettings(prefersReducedMotion = false): GameSettings {
   return {
-    gameplay: { units: 'metric', surfScale: 'face', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', breathMeter: 'practice', pocketReflex: 'practice', stance: 'regular', scoreRides: false, showTelemetry: false, nameTags: true },
+    gameplay: { units: 'metric', surfScale: 'face', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', breathMeter: 'practice', pocketReflex: 'practice', stance: 'regular', scoreRides: false, showTelemetry: false, nameTags: true, stanceReadout: true },
     // The Medium preset's values (Graphics.PRESETS.medium; a test keeps the two equal).
     graphics: {
       preset: 'auto', renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto',
@@ -235,6 +237,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       scoreRides: flag(gameplay.scoreRides, defaults.gameplay.scoreRides),
       showTelemetry: flag(gameplay.showTelemetry, defaults.gameplay.showTelemetry),
       nameTags: flag(gameplay.nameTags, defaults.gameplay.nameTags),
+      stanceReadout: flag(gameplay.stanceReadout, defaults.gameplay.stanceReadout),
     },
     graphics: {
       preset,

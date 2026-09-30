@@ -517,6 +517,13 @@ export const EN = {
   'settings.nameTags': 'Name tags',
   'log.online': 'Online',
   'settings.nameTags.hint': 'Names over the other surfers online',
+  'settings.stanceReadout': 'Stance readout',
+  'hud.stance': 'Stance',
+  'hud.stance.normal': 'Normal',
+  'hud.stance.crouch': 'Crouch',
+  'hud.stance.compress': 'Compress',
+  'hud.stance.weight': 'Weight',
+  'hud.stance.rotation': 'Turn',
 } as const;
 
 export type StringKey = keyof typeof EN;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Maneuver } from '../game/rideAnalysis';
-import { breathVignette, heldDownNotice, maneuverCallout, showsBalanceMeter, showsBreathMeter } from './RideHud';
+import { breathVignette, heldDownNotice, maneuverCallout, showsBalanceMeter, showsBreathMeter, stanceReadout } from './RideHud';
 
 // P9: on by default in Practice, off in natural seas (the spec).
 describe('showsBalanceMeter', () => {
@@ -51,5 +51,20 @@ describe('the breath on the HUD', () => {
     expect(first).toEqual({ seen: 1, text: 'HELD DOWN TOO LONG' });
     expect(heldDownNotice(1, first.seen).text).toBeUndefined();
     expect(heldDownNotice(2, first.seen).text).toBe('HELD DOWN TOO LONG');
+  });
+});
+
+// The movement-flow spec: the stance readout shows what the player asks for, never a manoeuvre's name.
+describe('stanceReadout', () => {
+  it('reads the height from Compress past half, then the crouch, else normal', () => {
+    expect(stanceReadout({ crouch: 1, compress: 0.6 }).level).toBe('compress');
+    expect(stanceReadout({ crouch: 0.4, compress: 0.2 }).level).toBe('crouch');
+    expect(stanceReadout({ crouch: 0.1 }).level).toBe('normal');
+    expect(stanceReadout({}).level).toBe('normal');
+  });
+
+  it('shows the weight always, and the rotation only when the pad asks for one', () => {
+    expect(stanceReadout({ trim: -1.4 })).toEqual({ level: 'normal', weight: -1 });
+    expect(stanceReadout({ trim: 0.5, rotate: 0.3 })).toEqual({ level: 'normal', weight: 0.5, rotate: 0.3 });
   });
 });

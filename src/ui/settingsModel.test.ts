@@ -18,7 +18,7 @@ describe('settingsModel', () => {
 
   it('offers telemetry only with the dev tools on', () => {
     const ids = (devTools: boolean) => settingsModel('gameplay', defaultSettings(), { ...context, devTools }).map((row) => row.id);
-    expect(ids(false)).toEqual(['units', 'surfScale', 'defaultCamera', 'touchControls', 'balanceMeter', 'breathMeter', 'pocketReflex', 'stance', 'scoreRides', 'nameTags']);
+    expect(ids(false)).toEqual(['units', 'surfScale', 'defaultCamera', 'touchControls', 'balanceMeter', 'breathMeter', 'pocketReflex', 'stance', 'scoreRides', 'nameTags', 'stanceReadout']);
     expect(ids(true)).toContain('showTelemetry');
   });
 

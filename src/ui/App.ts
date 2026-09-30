@@ -330,6 +330,7 @@ export class App {
       this.rideHud.update(ride, gameplay.units, this.hintKeys(), !seen.rideHints,
         showsBalanceMeter(gameplay.balanceMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell), hint ? this.hintText(hint) : '', undefined,
         showsBreathMeter(gameplay.breathMeter, this.online?.room?.conditions.swell ?? this.surfChoice.conditions.swell));
+      this.rideHud.updateStance(this.controls.lastRequest, ride?.phase === 'standing', gameplay.stanceReadout);
       this.trackRide();
     }
     const { online } = this;
@@ -897,6 +898,7 @@ export class App {
     // The ride's own "Pop up now" wins while it shows: it is the moment the pop-up and catch lessons teach.
     const prompt = ride?.cue && flow.state === 'attempt' ? undefined : hud.prompt;
     this.rideHud.update(ride, this.settings.value.gameplay.units, keys, false, true, hud.coach, prompt);
+    this.rideHud.updateStance(this.controls.lastRequest, ride?.phase === 'standing', this.settings.value.gameplay.stanceReadout);
   }
 
   /**

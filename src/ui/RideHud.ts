@@ -1,4 +1,5 @@
 import type { Maneuver } from '../game/rideAnalysis';
+import type { RideInput } from '../physics/RideSession';
 import type { GameplaySettings } from '../game/Settings';
 import type { SurfConditions } from '../game/SurfConditions';
 import type { SurfZoneStatus } from '../wave/SurfZoneRunner';
@@ -40,6 +41,21 @@ export function maneuverCallout(live: Maneuver | undefined, shown: string): { ke
   return key === shown ? { key } : { key, text: t(MANEUVER_LABELS[live.kind]).toUpperCase() };
 }
 
+/** The stance readout's height: Compress past half its travel, the crouch past CROUCH_SHOWN, else normal. */
+const CROUCH_SHOWN = 0.3;
+export type StanceLevel = 'normal' | 'crouch' | 'compress';
+
+/**
+ * What the stance readout shows (the movement-flow spec): the height asked for, the weight (−1 back to 1 forward)
+ * and the rotation (−1 left to 1 right, as the stick is pushed; undefined when the body turns by itself). Inputs
+ * only: it names no manoeuvre.
+ */
+export function stanceReadout(input: Pick<RideInput, 'crouch' | 'compress' | 'trim' | 'rotate'>): { level: StanceLevel; weight: number; rotate?: number } {
+  const level = (input.compress ?? 0) >= 0.5 ? 'compress' : (input.crouch ?? 0) >= CROUCH_SHOWN ? 'crouch' : 'normal';
+  const clamp = (x: number) => Math.max(-1, Math.min(1, x));
+  return { level, weight: clamp(input.trim ?? 0), ...(input.rotate === undefined ? {} : { rotate: clamp(input.rotate) }) };
+}
+
 /** The balance meter turns to the accent colour below this reserve. */
 const LOW_BALANCE = 0.3;
 
@@ -72,10 +88,21 @@ export class RideHud {
   private readonly breathFill = el('div', { class: 'hud-balance-fill' });
   private readonly vignette = el('div', { class: 'hud-vignette', attrs: { 'aria-hidden': 'true' } });
   private rescuesSeen = -1;
+  /** The stance readout (the movement-flow spec): the height, and the weight and rotation as a dot on a track. */
+  private readonly stance = el('div', { class: 'hud-stance', attrs: { role: 'group', 'aria-label': t('hud.stance') } });
+  private readonly stanceLevel = el('span', { class: 'hud-stance-level' });
+  private readonly weightDot = el('i');
+  private readonly rotateDot = el('i');
+  private readonly rotateRow = el('div', { class: 'hud-stance-row' });
+  private stanceText = '';
 
   constructor(onPause: () => void) {
     this.balance.append(this.balanceFill);
     this.breath.append(this.breathFill);
+    this.rotateRow.append(el('small', { text: t('hud.stance.rotation') }), el('span', { class: 'hud-track' }, this.rotateDot));
+    this.stance.append(this.stanceLevel,
+      el('div', { class: 'hud-stance-row' }, el('small', { text: t('hud.stance.weight') }), el('span', { class: 'hud-track' }, this.weightDot)),
+      this.rotateRow);
     this.root = el('section', { class: 'ride-hud', attrs: { 'aria-label': t('hud.speed') } },
       this.vignette,
       this.prompt,
@@ -84,9 +111,27 @@ export class RideHud {
       el('div', { class: 'hud-readout' },
         this.balance,
         this.breath,
-        el('div', { class: 'hud-speed' }, this.speedValue, this.speedUnit)),
+        el('div', { class: 'hud-speed' }, this.speedValue, this.speedUnit),
+        this.stance),
       el('button', { class: 'hud-pause', attrs: { type: 'button', 'aria-label': t('hud.pause') }, on: { click: onPause } }, icon(ICONS.pause)),
       this.hints);
+  }
+
+  /** The stance readout, while standing and shown: the height asked for, the weight, and the pad's rotation. */
+  updateStance(input: RideInput | undefined, standing: boolean, show: boolean): void {
+    this.stance.hidden = !show || !standing || !input;
+    if (this.stance.hidden || !input) return;
+    const { level, weight, rotate } = stanceReadout(input);
+    const text = t(`hud.stance.${level}`);
+    if (text !== this.stanceText) {
+      this.stanceText = text;
+      this.stanceLevel.textContent = text;
+      this.stance.dataset.level = level;
+    }
+    // The dots sit on their tracks from 0 (back, left) to 100 % (forward, right).
+    this.weightDot.style.left = `${(50 + 50 * weight).toFixed(1)}%`;
+    this.rotateRow.hidden = rotate === undefined;
+    if (rotate !== undefined) this.rotateDot.style.left = `${(50 + 50 * rotate).toFixed(1)}%`;
   }
 
   /** `promptOverride`: the Surf School's own line in place of the ride's prompt (spec L2). */

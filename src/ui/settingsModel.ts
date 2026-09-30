@@ -110,6 +110,7 @@ export function settingsModel(tab: SettingsTab, settings: GameSettings, context:
       { kind: 'choice', id: 'stance', label: t('settings.stance'), value: g.stance, options: options('settings.stance', ['regular', 'goofy']) },
       { kind: 'toggle', id: 'scoreRides', label: t('settings.scoreRides'), value: g.scoreRides },
       { kind: 'toggle', id: 'nameTags', label: t('settings.nameTags'), value: g.nameTags },
+      { kind: 'toggle', id: 'stanceReadout', label: t('settings.stanceReadout'), value: g.stanceReadout },
       ...(context.devTools ? [{ kind: 'toggle' as const, id: 'showTelemetry', label: t('settings.showTelemetry'), value: g.showTelemetry }] : []),
     ];
   }
@@ -134,7 +135,7 @@ export function settingsModel(tab: SettingsTab, settings: GameSettings, context:
   ];
 }
 
-const GAMEPLAY = new Set(['units', 'surfScale', 'defaultCamera', 'touchControls', 'balanceMeter', 'breathMeter', 'pocketReflex', 'stance', 'scoreRides', 'nameTags', 'showTelemetry']);
+const GAMEPLAY = new Set(['units', 'surfScale', 'defaultCamera', 'touchControls', 'balanceMeter', 'breathMeter', 'pocketReflex', 'stance', 'scoreRides', 'nameTags', 'stanceReadout', 'showTelemetry']);
 const ACCESSIBILITY = new Set(['reducedMotion', 'uiScale', 'highContrastHud', 'monoAudio']);
 const AUDIO = new Set(['master', 'sea', 'board', 'ui', 'muteInBackground']);
 const CONTROLS = new Set(['handedness', 'trimStick', 'stickResponse', 'deadzoneSteam', 'deadzoneGamepad']);

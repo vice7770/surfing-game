@@ -201,6 +201,8 @@ describe('SettingsStore online (N1)', () => {
   it('shows name tags by default, starts with no name, and loads an older save without them', () => {
     const store = new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ gameplay: { units: 'imperial' } }) }));
     expect(store.value.gameplay.nameTags).toBe(true);
+    // The movement-flow spec: a save from before the stance readout shows it (Review Focus 5).
+    expect(store.value.gameplay.stanceReadout).toBe(true);
     expect(store.value.online).toEqual({ name: '', tokens: {} });
   });
 
