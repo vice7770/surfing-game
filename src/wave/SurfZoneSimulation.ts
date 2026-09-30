@@ -92,6 +92,11 @@ export interface SurfZoneConfig {
 /** Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run. */
 export const SWEPT_BARREL: readonly SpotName[] = ['padang'];
 
+/** Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL. */
+export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel'>): boolean {
+  return config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot);
+}
+
 /** A crest joins a breaking front from this share of the edge's wave height above still water (provisional). */
 const FRONT_MIN_HEIGHT = 0.25;
 
@@ -518,7 +523,7 @@ export class SurfZoneSimulation {
     this.lip.onAir = (x, z, volume, penetration) => this.aeration.addAir(x, z, volume, penetration);
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
-    if (config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot)) {
+    if (sweptBarrelOn(config)) {
       this.onsetTiming = onsetTiming(PADANG.baseDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none');
       this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming);
     }

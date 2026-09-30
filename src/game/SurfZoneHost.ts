@@ -125,7 +125,11 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
 
 /** A host's snapshots in the shape `PhysicalSurfaceSource` resamples: copies of the render data. */
 export class SnapshotSurfZone implements RenderableSurfZone {
-  constructor(private readonly host: SurfZoneHost) {}
+  /**
+   * `sweptBarrel`: the spot draws the swept barrel (the Padang Padang spec, Part B, PR 3), so the drawn water is never
+   * carved and gets no tubes; the physics keeps its own carve for the contact until PR 4.
+   */
+  constructor(private readonly host: SurfZoneHost, private readonly options: { sweptBarrel?: boolean } = {}) {}
 
   get windowXMin(): number {
     return this.host.init.windowXMin;
@@ -144,10 +148,11 @@ export class SnapshotSurfZone implements RenderableSurfZone {
   writeUniformSurface(data: Float32Array, grid: SurfaceGrid, carve = true): void {
     const { snapshot, init } = this.host;
     data.set(snapshot.surface);
-    if (carve) carveGrid(data, grid, snapshot.tubes, snapshot.tubeCount, init.dx);
+    if (carve && !this.options.sweptBarrel) carveGrid(data, grid, snapshot.tubes, snapshot.tubeCount, init.dx);
   }
 
   writeTubes(into: Float32Array): number {
+    if (this.options.sweptBarrel) return 0;
     const { tubes, tubeCount } = this.host.snapshot;
     const count = Math.min(tubeCount, Math.floor(into.length / TUBE_STRIDE));
     into.set(tubes.subarray(0, count * TUBE_STRIDE));

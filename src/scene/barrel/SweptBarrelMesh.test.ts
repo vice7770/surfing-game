@@ -16,7 +16,7 @@ function compiled(material: { onBeforeCompile: (shader: WebGLProgramParametersWi
 function oneQuad(): LoftResult {
   return {
     positions: new Float32Array([0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1]), normals: new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
-    mask: new Float32Array(4).fill(1), indices: new Uint32Array([0, 2, 1, 1, 2, 3]), vertexCount: 4, indexCount: 6, sliceCount: 2,
+    mask: new Float32Array(4).fill(1), lift: new Float32Array(4), indices: new Uint32Array([0, 2, 1, 1, 2, 3]), vertexCount: 4, indexCount: 6, sliceCount: 2,
     sliceFront: new Int32Array(2), sliceSigma: new Float32Array(2), sliceTau: new Float32Array(2), slicePhase: new Uint8Array(2),
     sliceCrestOffset: new Float32Array(2), clamps: 0, clampedLookups: 0,
   };
@@ -29,6 +29,8 @@ describe('the swept barrel’s mesh', () => {
       swept.setLook(look);
       const { vertex, fragment } = compiled(swept.mesh.material);
       expect(vertex).toContain('vec3 objectNormal = vec3( normal );');
+      // The curl takes the water's foam only where it lies on the water.
+      expect(vertex).toContain('vWaterFoam = ( 1.0 - sweptLift ) * waterFoamAt( position.xz );');
       expect(vertex).toContain('vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
       expect(fragment).toContain(SWEPT_BARREL_DISCARD);
       expect(mirrorsBarrelDither(fragment)).toBe(true);

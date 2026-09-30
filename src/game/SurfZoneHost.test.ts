@@ -5,7 +5,7 @@ import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { carveAt, TUBE_STRIDE } from '../wave/tubeTable';
 import { BoussinesqSolver } from '../wave/BoussinesqSolver';
 import { encodeSurfZoneState } from '../wave/surfZoneState';
-import { LocalSurfZone, SnapshotSurfZone } from './SurfZoneHost';
+import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { DEFAULT_PHYSICAL_SETTINGS, swellFor } from './PhysicalMode';
 
 const config: SurfZoneConfig = {
@@ -150,5 +150,19 @@ describe('LocalSurfZone', () => {
     const rawHeight = sampleSurfaceHeight(host.snapshot.surface, host.init.grid, x, z);
     expect(host.heightAt(x, z)).toBe(carveAt(t, host.snapshot.tubeCount, host.init.dx, x, z, rawHeight));
     expect(host.heightAt(x, z)).toBeLessThan(rawHeight);
+  });
+});
+
+describe('SnapshotSurfZone at a swept spot (Padang Padang, Part B, PR 3)', () => {
+  it('draws the water uncarved and hands the water no tubes, where the swept barrel draws the tube', () => {
+    const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 4, nz: 4 };
+    const surface = new Float32Array(32).map((_, k) => k);
+    const host = { init: { grid, dx: 1 }, snapshot: { surface, tubes: new Float32Array(2 * TUBE_STRIDE), tubeCount: 1 } } as unknown as SurfZoneHost;
+    const swept = new SnapshotSurfZone(host, { sweptBarrel: true });
+    const data = new Float32Array(32);
+    swept.writeUniformSurface(data, grid, true);
+    expect(Array.from(data)).toEqual(Array.from(surface));
+    expect(swept.writeTubes(new Float32Array(2 * TUBE_STRIDE))).toBe(0);
+    expect(new SnapshotSurfZone(host).writeTubes(new Float32Array(2 * TUBE_STRIDE))).toBe(1);
   });
 });

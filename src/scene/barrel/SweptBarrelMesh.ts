@@ -14,9 +14,12 @@ const VERTICES = LOFT.budget + LOFT_SAMPLES;
 const INDICES = 6 * (LOFT_SAMPLES - 1) * Math.ceil(VERTICES / LOFT_SAMPLES);
 
 // The loft's vertices are world positions and normals: the water's depth, foam and current are read where each lies.
+// The curl takes the water's foam only as far as it lies on the water: the solver breaks where the tube is, so its
+// roller's whitewater there is the tube's water, not foam on it; the tube's own foam comes with the crash curve (PR 5).
+const sweptVertexPars = /* glsl */ `attribute float sweptLift;`;
 const sweptBeginNormal = /* glsl */ `vec3 objectNormal = vec3( normal );
 vWaterDepth = max( 0.0, position.y - waterBedAt( position.xz ) );
-vWaterFoam = waterFoamAt( position.xz );
+vWaterFoam = ( 1.0 - sweptLift ) * waterFoamAt( position.xz );
 vWaterFlow = waterFlowAt( position.xz );`;
 const sweptBeginVertex = /* glsl */ `vec3 transformed = vec3( position );
 vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;`;
@@ -31,6 +34,7 @@ export class SweptBarrelMesh {
   readonly mesh: Mesh<BufferGeometry, MeshPhysicalMaterial>;
   private readonly positions = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
   private readonly normals = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
+  private readonly lift = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly index = new BufferAttribute(new Uint32Array(INDICES), 1).setUsage(DynamicDrawUsage);
   private look: WaterLook = 'classic';
 
@@ -38,6 +42,7 @@ export class SweptBarrelMesh {
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', this.positions);
     geometry.setAttribute('normal', this.normals);
+    geometry.setAttribute('sweptLift', this.lift);
     geometry.setIndex(this.index);
     geometry.setDrawRange(0, 0);
     const material = new MeshPhysicalMaterial({ color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide });
@@ -45,7 +50,7 @@ export class SweptBarrelMesh {
       Object.assign(shader.uniforms, uniforms);
       const rich = this.look === 'rich';
       shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', `#include <common>\n${waterVertexPars}`)
+        .replace('#include <common>', `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
         .replace('#include <beginnormal_vertex>', sweptBeginNormal)
         .replace('#include <begin_vertex>', sweptBeginVertex);
       shader.fragmentShader = shader.fragmentShader
@@ -83,15 +88,19 @@ export class SweptBarrelMesh {
     const indices = Math.min(loft.indexCount, INDICES);
     (this.positions.array as Float32Array).set(loft.positions.subarray(0, 3 * vertices));
     (this.normals.array as Float32Array).set(loft.normals.subarray(0, 3 * vertices));
+    (this.lift.array as Float32Array).set(loft.lift.subarray(0, vertices));
     (this.index.array as Uint32Array).set(loft.indices.subarray(0, indices));
     this.positions.clearUpdateRanges();
     this.positions.addUpdateRange(0, 3 * vertices);
     this.normals.clearUpdateRanges();
     this.normals.addUpdateRange(0, 3 * vertices);
+    this.lift.clearUpdateRanges();
+    this.lift.addUpdateRange(0, vertices);
     this.index.clearUpdateRanges();
     this.index.addUpdateRange(0, indices);
     this.positions.needsUpdate = true;
     this.normals.needsUpdate = true;
+    this.lift.needsUpdate = true;
     this.index.needsUpdate = true;
     this.mesh.geometry.setDrawRange(0, indices);
     this.mesh.visible = true;

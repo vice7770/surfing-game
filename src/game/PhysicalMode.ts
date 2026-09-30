@@ -29,7 +29,8 @@ import type { ReadoutRow } from '../wave/SwellReadout';
 import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { SprayLook } from '../wave/SprayCloud';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
-import { SEA_COMPONENTS, solverStage, surfZoneSea, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { SEA_COMPONENTS, solverStage, surfZoneSea, sweptBarrelOn, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { SweptBarrel } from '../scene/barrel/SweptBarrel';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
@@ -259,6 +260,9 @@ export type SurfZoneHostFactory = (config: SurfZoneConfig) => SurfZoneHost;
 /** Runs the surf zone in the page (tests, and browsers without Web Workers). */
 export const localSurfZone: SurfZoneHostFactory = (config) => new LocalSurfZone(config, { rider: true });
 
+/** No front points: the swept barrel draws nothing. */
+const NO_FRONT = new Float32Array(0);
+
 export class PhysicalMode {
   readonly camera = new SpectatorCamera();
   readonly seabed = new SpotSeabed();
@@ -315,6 +319,10 @@ export class PhysicalMode {
   /** Lets go of the surf zone still spinning up, when a later start or a cancel supersedes it. */
   private dropPending?: () => void;
   private shown = true;
+  /** The swept barrel (the Padang Padang spec, Part B, PR 3): built with the water on the first start, on at a swept spot. */
+  private sweptBarrel?: SweptBarrel;
+  private swept = false;
+  private readonly scene: Scene;
   /** Graphics setting (plan P8): spray and mist are still simulated, only not drawn. */
   private sprayShown = true;
   private chosenView: RideView | 'overview' = 'front';
@@ -364,6 +372,7 @@ export class PhysicalMode {
   }
 
   constructor(scene: Scene) {
+    this.scene = scene;
     scene.add(this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group, this.leash.object);
     this.leash.object.visible = false;
     this.board.visible = false;
@@ -450,7 +459,15 @@ export class PhysicalMode {
     this.storm = swell.storm;
     this.practice = settings.source === 'practice';
     const { init } = host;
-    water.setSource(new PhysicalSurfaceSource(new SnapshotSurfZone(host), init.grid.spacing));
+    // A swept spot draws its barrel as one lofted surface: its water is never carved, and its lip strips are off.
+    this.swept = sweptBarrelOn(config);
+    water.setSource(new PhysicalSurfaceSource(new SnapshotSurfZone(host, { sweptBarrel: this.swept }), init.grid.spacing));
+    if (!this.sweptBarrel) {
+      this.sweptBarrel = new SweptBarrel(water);
+      this.scene.add(this.sweptBarrel.mesh.mesh);
+    }
+    this.sweptBarrel.setSpot(this.swept ? config.spot : undefined);
+    this.lipSheet.mesh.visible = this.shown && !this.swept;
     water.setChop(chopForWind(settings.windSpeed));
     water.setOptics(SPOT_OPTICS[settings.spot]);
     this.farField.setOptics(SPOT_OPTICS[settings.spot]);
@@ -504,6 +521,8 @@ export class PhysicalMode {
   stop(): void {
     this.host?.dispose();
     this.host = undefined;
+    this.swept = false;
+    this.sweptBarrel?.setSpot(undefined);
     this.board.visible = false;
     this.surfer.group.visible = false;
     this.leash.object.visible = false;
@@ -611,7 +630,7 @@ export class PhysicalMode {
     this.followMotion(host, time);
     this.camera.update(host, this.focus, dt, pose[7] > 0 ? this.follow : undefined);
     this.farField.update(host.snapshot.status.seaTime);
-    this.lipSheet.update(host.snapshot.lip, host.snapshot.lipCount, host.init.dx);
+    if (!this.swept) this.lipSheet.update(host.snapshot.lip, host.snapshot.lipCount, host.init.dx);
     this.board.visible = this.shown && pose[7] > 0;
     this.board.position.set(pose[0], pose[1], pose[2]);
     this.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
@@ -633,6 +652,20 @@ export class PhysicalMode {
     }
     this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
     this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount });
+  }
+
+  /**
+   * The swept barrel (the Padang Padang spec, Part B, PR 3), lofted over the water as drawn: the page calls this once
+   * the water has uploaded this frame's heights. Hidden, or at a spot without it, it draws nothing and masks nothing.
+   */
+  drawBarrel(): void {
+    const { host, sweptBarrel } = this;
+    if (!sweptBarrel) return;
+    if (!host || !this.swept || !this.shown) {
+      sweptBarrel.draw(NO_FRONT, 0, 0);
+      return;
+    }
+    sweptBarrel.draw(host.snapshot.front, host.snapshot.frontCount, this.config?.tide ?? 0);
   }
 
   /** The Wave Lab rows for the running surf zone. */
@@ -658,7 +691,7 @@ export class PhysicalMode {
     this.leash.object.visible = this.surfer.group.visible && (this.host?.snapshot.board[7] ?? 0) > 0;
     this.seabed.mesh.visible = visible;
     this.farField.mesh.visible = visible;
-    this.lipSheet.mesh.visible = visible;
+    this.lipSheet.mesh.visible = visible && !this.swept;
     this.bubbles.mesh.visible = visible;
     this.spray.mesh.visible = visible && this.sprayShown;
   }

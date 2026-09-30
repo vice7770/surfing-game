@@ -41,6 +41,16 @@ describe('the swept loft', () => {
     expect(loft.normals[3 * (middle + 1) + 1]).toBeCloseTo(1, 6);
   });
 
+  it('lifts the profile off the water but not its pinned ends, so the curl takes none of the water’s foam', () => {
+    const loft = loftOf(() => 0);
+    const middle = Math.floor(loft.sliceCount / 2) * LOFT_SAMPLES;
+    expect(loft.lift[middle]).toBe(0);
+    expect(loft.lift[middle + LOFT.extensionSamples]).toBe(0);
+    expect(loft.lift[middle + LOFT.extensionSamples + 32]).toBe(1);
+    // A front's blended end lies on the water.
+    expect(loft.lift[LOFT.extensionSamples + 32]).toBe(0);
+  });
+
   it('anchors the τ = 0 crest at the throw point, and before the throw on the solver’s crest', () => {
     const thrown = loftOf(() => 0.1);
     const early = loftOf(() => -0.1);

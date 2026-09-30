@@ -26,8 +26,9 @@ export interface LoftResult {
   /** xyz per vertex, and its normal. */
   positions: Float32Array;
   normals: Float32Array;
-  /** 0–1 per vertex: the seam mask's value there. */
+  /** 0–1 per vertex: the seam mask's value there, and how far the vertex is lifted off the water (the curl's weight). */
   mask: Float32Array;
+  lift: Float32Array;
   indices: Uint32Array;
   vertexCount: number;
   indexCount: number;
@@ -95,7 +96,7 @@ export class SweptLoft {
   constructor(private readonly library: ProfileLibrary, private readonly slope: number) {
     const vertices = (MAX_SLICES + 1) * LOFT_SAMPLES;
     this.result = {
-      positions: new Float32Array(3 * vertices), normals: new Float32Array(3 * vertices), mask: new Float32Array(vertices),
+      positions: new Float32Array(3 * vertices), normals: new Float32Array(3 * vertices), mask: new Float32Array(vertices), lift: new Float32Array(vertices),
       indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * (MAX_SLICES + 1)), vertexCount: 0, indexCount: 0, sliceCount: 0,
       sliceFront: new Int32Array(MAX_SLICES + 1), sliceSigma: new Float32Array(MAX_SLICES + 1), sliceTau: new Float32Array(MAX_SLICES + 1),
       slicePhase: new Uint8Array(MAX_SLICES + 1), sliceCrestOffset: new Float32Array(MAX_SLICES + 1), clamps: 0, clampedLookups: 0,
@@ -330,6 +331,7 @@ export class SweptLoft {
         r.positions[3 * v + 1] = e === 0 ? h : h + e * (stillLevel + above - h);
         r.positions[3 * v + 2] = pz;
         r.mask[v] = maskSlice * maskAlong;
+        r.lift[v] = e;
       }
       r.sliceCount += 1;
     }

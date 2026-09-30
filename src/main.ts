@@ -943,6 +943,8 @@ class SurfGame {
   /** The water, sea and shadows around `view`, drawn from it (the physical camera, or a water sheet shot). */
   private drawPhysical(view: PerspectiveCamera): void {
     this.water.update();
+    // The swept barrel lofts over the heights the water just uploaded (Padang Padang, Part B, PR 3).
+    this.physicalMode.drawBarrel();
     // Caustics where the view looks: a window a third of its width ahead of the camera.
     const ahead = view.getWorldDirection(this.causticAhead).setY(0);
     if (ahead.lengthSq() > 1e-6) ahead.normalize();
