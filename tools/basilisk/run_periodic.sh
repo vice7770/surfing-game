@@ -19,6 +19,7 @@
 #              (round 6's transect; gives the swept barrel its onset lag for swell)
 #   padang19b  the same with a 2.5 m foot crest at 18 s (H/h0 0.42), for the lag table's deep end
 #   padang19c  the same with a 1.2 m foot crest at 14 s (H/h0 0.24), for its shallow end
+#   padang19s  the Small swell: a 1.0 m foot crest at 16 s (H/h0 0.195, A0 about 0.14), for the barrel library
 # Each case uses one core. Safe to rerun: each phase resumes from its checkpoint.
 set -euo pipefail
 
@@ -31,7 +32,7 @@ export PATH="$PATH:$BASILISK"
 PY="${PYTHON:-python3}"   # needs numpy, scipy and matplotlib
 
 # name:h0 m:H/h0:period s:slope:flat depth/h0:domain/h0:switch t:end t:window from:window to (h0 and sqrt(h0/g))
-CASES_ALL="reef42:10:0.3:14:0.238095:0.15:48:17:25:20:36 reef60:10:0.3:14:0.166667:0.15:48:18:27:21:38 padang19:7:0.3:16:0.0526316:0.1785714:64:31:41:37:56 padang19b:7:0.42:18:0.0526316:0.1785714:72:32:42:45:64 padang19c:7:0.24:14:0.0526316:0.1785714:64:31:41:38:52"
+CASES_ALL="reef42:10:0.3:14:0.238095:0.15:48:17:25:20:36 reef60:10:0.3:14:0.166667:0.15:48:18:27:21:38 padang19:7:0.3:16:0.0526316:0.1785714:64:31:41:37:56 padang19b:7:0.42:18:0.0526316:0.1785714:72:32:42:45:64 padang19c:7:0.24:14:0.0526316:0.1785714:64:31:41:38:52 padang19s:7:0.195:16:0.0526316:0.1785714:64:35:46:42:56"
 
 build_basilisk() {
   [ -x "$BASILISK/qcc" ] && return
