@@ -5,6 +5,12 @@ import type { OnsetTiming } from './sliceClock';
 const LINK_ROWS = 3;
 /** A crest this close in z to last step's in its column is the same point, m (provisional: 20 m/s × 0.1 s), plus a row, its cell's jump. */
 const MATCH_REACH = 2;
+/**
+ * A crest on its way in, not yet breaking, is the same one this close, m: a long swell's crest is broad and flat on
+ * the ramp, so its highest cell jumps metres between steps, while crests there stand a wavelength (100 m and more) apart
+ * (provisional).
+ */
+const TRACK_REACH = 10;
 /** A point unseen this long is gone, s. */
 const HOLD = 0.5;
 /**
@@ -97,6 +103,10 @@ export class BreakingFront {
   private tracks: CrestTrack[] = [];
   /** Links refused since the start because the two crests joined too far apart to be one wave (a diagnostic). */
   splits = 0;
+  /** Crests followed from past the foot unsized, dropped having crossed without breaking, and lost unjoined (diagnostics). */
+  unsized = 0;
+  unbroken = 0;
+  lost = 0;
   private readonly linkReach: number;
   private readonly matchReach: number;
 
@@ -126,11 +136,12 @@ export class BreakingFront {
         points.push({ ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, seen: time, fresh });
         continue;
       }
-      const track = this.nearest(tracksOf.get(s.column), followed, s.z);
+      const track = this.nearest(tracksOf.get(s.column), followed, s.z, TRACK_REACH);
       if (!track) {
         // A new crest past the foot: followed from here, sized by its height if it is at the foot.
         if (s.depth <= h0) {
           const footHeight = s.depth >= h0 - FOOT_BAND ? s.eta : null;
+          if (footHeight === null) this.unsized += 1;
           tracks.push({ column: s.column, z: s.z, footHeight, depth: s.depth, seen: time, crossed: null, fresh: s.rise >= FRESH ? s.depth : null });
         }
         continue;
@@ -153,20 +164,25 @@ export class BreakingFront {
           continue;
         }
         // Crossed and never broken: the solver spilled or did not break it, so it has no barrel.
-        if (next.crossed !== null && time - next.crossed > JOIN_WINDOW) continue;
+        if (next.crossed !== null && time - next.crossed > JOIN_WINDOW) {
+          this.unbroken += 1;
+          continue;
+        }
       }
       tracks.push(next);
     }
     this.points = this.link(points);
     this.held = previous.filter((old) => !matched.has(old) && time - old.seen <= HOLD);
-    this.tracks = [...tracks, ...this.tracks.filter((old) => !followed.has(old) && time - old.seen <= HOLD)];
+    const kept = this.tracks.filter((old) => !followed.has(old) && time - old.seen <= HOLD);
+    this.lost += this.tracks.length - followed.size - kept.length;
+    this.tracks = [...tracks, ...kept];
   }
 
   /** The unclaimed one of `candidates` nearest `z` within the match reach. */
-  private nearest<T extends { z: number }>(candidates: readonly T[] | undefined, claimed: Set<T>, z: number): T | undefined {
+  private nearest<T extends { z: number }>(candidates: readonly T[] | undefined, claimed: Set<T>, z: number, reach = this.matchReach): T | undefined {
     let best: T | undefined;
     for (const candidate of candidates ?? []) {
-      if (claimed.has(candidate) || !(Math.abs(candidate.z - z) < this.matchReach)) continue;
+      if (claimed.has(candidate) || !(Math.abs(candidate.z - z) < reach)) continue;
       if (!best || Math.abs(candidate.z - z) < Math.abs(best.z - z)) best = candidate;
     }
     return best;
