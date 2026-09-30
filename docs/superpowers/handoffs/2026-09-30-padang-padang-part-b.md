@@ -21,7 +21,7 @@ Padang Padang (Bali) is the game's fifth surf spot. **Part A** built the spot, a
 | PR 1 library, #90 | `claude/padang-barrel` | main | merged (a later commit, the Small swell's periodic case, rides in #91) |
 | PR 2 front and slice clock, #91 | `claude/padang-clock` | `claude/padang-barrel` | **open**, the user merges |
 | PR 3 drawn mesh, #92 | `claude/padang-mesh` | `claude/padang-clock` | **open**, the user merges; screenshots of a tube in both looks still owed |
-| PR 4 contact | `claude/padang-contact` | `claude/padang-mesh` | pushed; see "PR 4" below |
+| PR 4 contact, #95 | `claude/padang-contact` | `claude/padang-mesh` | **open**, the user merges; see "PR 4" below |
 | PR 5 crash curve, parcels, sound | — | — | not started |
 | PR 6 shading (Rich: lip glow, dark throat) | — | — | not started |
 | PR 7 switch every spot, delete the old code | — | — | not started |
@@ -94,7 +94,6 @@ Deferred minors:
 - The page's `SnapshotSurfZone` doesn't know the contact (page-side only).
 
 **Still to do for PR 4:**
-- [ ] Open the PR if it isn't open yet (base `claude/padang-mesh`).
 - [ ] Rerun the probe on an unloaded machine long enough for tubes to open: `PROBE=1 SECONDS=180 LOG=padang-contact.txt npx vitest run src/wave/probes/padangContact.probe.test.ts`.
   - It logs the update per step, µs per query through open tubes, and a standing rider's cost (2,656 samples a step × µs).
   - On the loaded M1 the toy tube gave 6.4 µs a query, about 17 ms a step for a rider wholly in a tube. If an unloaded run agrees it is heavy, take the advisor's fallback: build each body's slice once a step and lerp per substep. Or precompute each quad's along range per update to shorten the query's scan.
