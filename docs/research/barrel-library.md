@@ -73,3 +73,20 @@ Where each slice's clock starts and when its lip throws (Part B, PR 2; `src/wave
 - **The throw** is where the Navier–Stokes wave's face goes vertical: d = 1.80 + 0.45 η_foot at h0 = 7 m, clamped to foot crests of 1.22–2.50 m and scaled by h0/7 for the tide. It comes from the advisor's periodic Basilisk runs at level 12: 1.22 m → 2.45 m (14 s), 1.65 m → 2.38 m (16 s) and 2.50 m → 2.97 m (18 s) [measured, NS]. The line through them is [inferred]: the runs confound height with period, and period dependence is untested.
 - **Why the throw is not a lag after the join.** Kennedy's onset leads a soliton's vertical face by 2.3–2.8 √(h0/g) (`kennedyLag` probe) [measured]. For swell, the three periodic runs read 0.22, 2.30 and 1.60, no function of depth. So a crest joins only if the solver breaks it before it reaches its throw depth.
 - **The cost** is 6.0 ms per frame against a 529 ms step, 1.1 %, on Padang Padang's Small swell at 1 m cells (320 × 574) with 203 front points on average. That was on the M1 Air while the three Basilisk runs shared it; the ratio is the number to keep [measured].
+
+## The loft
+
+The swept barrel as drawn (Part B, PR 3; `src/wave/barrel/sweptLoft.ts`). The `padangLoft` probe ran Padang Padang's Small swell (Hs 1.2 m, 16 s) at 1 m cells for 180 s of sea, lofting every front every step over the Classic look's heights [measured]:
+
+- **Cost.** 0.89 ms a frame against the step's 158.8 ms, 0.6 %, in Node on the M1 Air. Up to 39,664 vertices at once, for a 140 m front: the budget was reached at the biggest sets, with 4–15 clock steps clamped then.
+- **The open curl** ran 3–9 m along the crest at the median, up to 13 m, against the checklist's 3–10 m.
+- **Neighbouring clocks** differed by 1.4–2.8 library frames at the median, 2–3.8 at the 90th percentile, within the 3-frame stage.
+  - Spikes of 10–20 frames came now and then, most likely where a front's newest points join beside thrown ones [inferred].
+  - The refinement halves such a step but cannot close it, so it stays a tooth until PR 2's fit covers the joining point.
+- **The anchored crest against the solver's crest**, over open slices:
+  - 0.3–1.0 m at the median and 0.6–2.5 m at the 90th percentile;
+  - 928 of 17,082 open slices (5.4 %) sat over 2 m off, the most 4.8 m.
+
+  The advisor asked to hear past about 2 m. The profile throws where the Navier–Stokes wave goes vertical and runs forward as the library's lip does, while the solver's crest moves on its own after it breaks.
+- **Every lookup was clamped on this swell.** Its foot crests stand under the library's smallest case (A0 about 0.14 against 0.2), so they scale the A0 0.2 case by their own foot crest, as ruled. A smaller case (A0 0.1–0.15) would cover the Small swell and Practice.
+- **Slices after touchdown** stay on the front while the solver's bore breaks on. They are lofted at zero weight, invisible and unmasked, and they are what fills the budget at the big sets.

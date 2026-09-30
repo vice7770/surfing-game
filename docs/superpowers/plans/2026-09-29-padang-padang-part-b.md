@@ -60,7 +60,7 @@ The advice it builds on, in `docs/research/water-physics/` on `main`:
 
 1. **The profile library.** This plan, Tasks 1–3.
 2. **The slice clock and onset.** This plan, Tasks 4–7.
-3. **The drawn mesh.** The loft, the seam and the mask.
+3. **The drawn mesh.** The loft, the seam and the mask. Planned in `2026-09-30-padang-padang-part-b-pr3.md` and built (branch `claude/padang-mesh`); measured on the Small swell: the loft 0.6 % of the step, the open curl 3–9 m at the median, 5.4 % of open slices' crests over 2 m from the solver's, every lookup clamped under the library's smallest case (`docs/research/barrel-library.md`, "The loft").
 4. **The contact.** Wave-attached signed distance, and the Reef's Part D interface.
 5. **The crash curve, parcels and sound.**
 6. **The shading** (Rich only): the lip glow and the dark throat.
