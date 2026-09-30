@@ -31,6 +31,9 @@ import type { SprayLook } from '../wave/SprayCloud';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
 import { SEA_COMPONENTS, solverStage, surfZoneSea, sweptBarrelOn, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { SweptBarrel } from '../scene/barrel/SweptBarrel';
+import { SWEPT_BARREL_VIEWS, type SweptBarrelMesh } from '../scene/barrel/SweptBarrelMesh';
+import { devParam } from '../devTools';
+import type { LoftResult } from '../wave/barrel/sweptLoft';
 import { libraryFromBytes, loadBarrelCaseBytes } from '../wave/barrel/barrelLibrary';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
@@ -492,11 +495,13 @@ export class PhysicalMode {
     this.swept = sweptBarrelOn(config);
     water.setSource(new PhysicalSurfaceSource(new SnapshotSurfZone(host, { sweptBarrel: this.swept }), init.grid.spacing));
     if (!this.sweptBarrel) {
+      // `?barrelView=phase|front`: the curl flat-coloured by its slices' phase or front (a dev view, the tube review).
+      const view = SWEPT_BARREL_VIEWS.find((candidate) => candidate === devParam('barrelView'));
       this.sweptBarrel = new SweptBarrel(water, async () => {
         const bytes = await barrelCaseBytes();
         if (!bytes) throw new Error('No barrel case files');
         return libraryFromBytes(bytes);
-      });
+      }, view);
       this.scene.add(this.sweptBarrel.mesh.mesh);
     }
     this.sweptBarrel.setSpot(this.swept ? config.spot : undefined);
@@ -699,6 +704,16 @@ export class PhysicalMode {
       return;
     }
     sweptBarrel.draw(host.snapshot.front, host.snapshot.frontCount, this.config?.tide ?? 0);
+  }
+
+  /** The swept barrel's loft as last drawn, at a swept spot (the water sheet's curl shots). */
+  get barrelLoft(): LoftResult | undefined {
+    return this.sweptBarrel?.lastLoft;
+  }
+
+  /** The swept barrel's mesh, once a swept spot has made it (the water sheet's views and before-and-after). */
+  get barrelMesh(): SweptBarrelMesh | undefined {
+    return this.sweptBarrel?.mesh;
   }
 
   /** The Wave Lab rows for the running surf zone. */

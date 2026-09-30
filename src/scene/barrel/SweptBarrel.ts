@@ -6,7 +6,7 @@ import { sampleCubicSurface } from '../water/cubicSurface';
 import type { WaterLook } from '../water/waterLook';
 import { sampleSurfaceHeight, type WaterSurface } from '../WaterSurface';
 import { rasterizeBarrelMask } from './barrelMask';
-import { SweptBarrelMesh } from './SweptBarrelMesh';
+import { SweptBarrelMesh, type SweptBarrelView } from './SweptBarrelMesh';
 
 /**
  * The swept barrel at a spot (the Padang Padang spec, Part B, PR 3). It loads the profile library once, and each frame,
@@ -27,8 +27,9 @@ export class SweptBarrel {
   private mask = new Uint8Array(0);
   private look?: WaterLook;
 
-  constructor(private readonly water: WaterSurface, private readonly load: () => Promise<ProfileLibrary> = () => loadBarrelLibrary()) {
-    this.mesh = new SweptBarrelMesh(water.materialUniforms);
+  /** `view`: a dev view of the curl in place of its shading (`SweptBarrelView`). */
+  constructor(private readonly water: WaterSurface, private readonly load: () => Promise<ProfileLibrary> = () => loadBarrelLibrary(), view?: SweptBarrelView) {
+    this.mesh = new SweptBarrelMesh(water.materialUniforms, view);
     this.ready = new Promise((resolve) => {
       this.resolveReady = resolve;
     });

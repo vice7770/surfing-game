@@ -17,6 +17,8 @@ import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
 import { tubeFloorDepth } from '../wave/Overturn';
 import { SPRAY_STRIDE } from '../wave/SprayCloud';
 import { SEA_COMPONENTS, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { LANDMARK } from '../wave/barrel/ProfileLibrary';
+import { LOFT, LOFT_SAMPLES } from '../wave/barrel/sweptLoft';
 import { TUBE_STRIDE } from '../wave/tubeTable';
 import { advance, breathe } from './devStepping';
 
@@ -52,6 +54,8 @@ const PARAMETERS = new URLSearchParams(window.location.search);
 const SPOT = (['reef', 'beach', 'padang'] as const).find((spot) => spot === PARAMETERS.get('spot')) ?? 'point';
 /** Reef breaks: the sheet holds them on an open tube. */
 const TUBE_SPOT = SPOT === 'reef' || SPOT === 'padang';
+/** Padang Padang draws the swept barrel (Part B): its sheet holds on the swept curl, not the old lip's tube. */
+const SWEPT_SPOT = SPOT === 'padang';
 /** `&whitewater` (G9): hold on a collapsing tube's foam ball, and shoot its whitewater in place of the face and bore. */
 const WHITEWATER = PARAMETERS.has('whitewater');
 /** `&compute=gpu|auto`: the sea steps in the game's worker, on its GPU tier (main.ts leaves `inpage` for it); `cpu` in the page. */
@@ -98,6 +102,68 @@ function whitewaterShots(water: WaterSurface, ball: Vector3): Shot[] {
 }
 /** The Reef sheet holds once a tube is open this far ahead of its crest, m. */
 const TUBE_OPEN = 0.8;
+/** Padang Padang's sheet holds once the swept curl is open over this much crest, m (the checklist's 3–10 m). */
+const CURL_OPEN = 3;
+
+/** The swept barrel's longest open run (Padang Padang, Part B): its slices, middle slice and length along the crest, m. */
+interface OpenCurl { first: number; last: number; middle: number; length: number; shoulder: 1 | -1 }
+
+/** The drawn loft's longest run of joined, standing, open slices on one front; the shoulder is the side whose clocks are younger. */
+function openCurl(mode: PhysicalMode): OpenCurl | undefined {
+  const loft = mode.barrelLoft;
+  if (!loft) return undefined;
+  let best: OpenCurl | undefined;
+  let first = -1;
+  const close = (last: number) => {
+    if (first < 0) return;
+    const length = loft.sliceSigma[last] - loft.sliceSigma[first];
+    if (!best || length > best.length) {
+      // Younger (smaller τ) slices lie toward the shoulder, the way it peels.
+      const shoulder = loft.sliceTau[first] < loft.sliceTau[last] ? -1 : 1;
+      best = { first, last, middle: Math.round((first + last) / 2), length, shoulder };
+    }
+    first = -1;
+  };
+  for (let s = 0; s < loft.sliceCount; s += 1) {
+    const open = loft.slicePhase[s] === 1 && loft.sliceWeight[s] >= 0.5;
+    const continues = first >= 0 && loft.sliceFront[s] === loft.sliceFront[first] && loft.sliceJoined[s - 1] === 1;
+    if (first >= 0 && (!open || !continues)) close(s - 1);
+    if (open && first < 0) first = s;
+  }
+  close(loft.sliceCount - 1);
+  return best;
+}
+
+/** A landmark of a loft slice, in the world. */
+function landmark(mode: PhysicalMode, slice: number, index: number): Vector3 {
+  const loft = mode.barrelLoft!;
+  const v = 3 * (slice * LOFT_SAMPLES + LOFT.extensionSamples + index);
+  return new Vector3(loft.positions[v], loft.positions[v + 1], loft.positions[v + 2]);
+}
+
+/**
+ * Shots of the swept curl's middle open slice: from the channel (down the line on the shoulder side, in front of the
+ * face, looking back into the tube), square on from in front of the face, from behind the wave, and inside the tube at
+ * half its height looking out along the crest toward the shoulder.
+ */
+function curlShots(mode: PhysicalMode, curl: OpenCurl): Shot[] {
+  const loft = mode.barrelLoft!;
+  const [rx, rz] = [loft.sliceRayX[curl.middle], loft.sliceRayZ[curl.middle]];
+  // Along the crest toward the shoulder: the front's tangent (the ray turned back a right angle), signed.
+  const [sx, sz] = [rz * curl.shoulder, -rx * curl.shoulder];
+  const crest = landmark(mode, curl.middle, LANDMARK.crest);
+  const tip = landmark(mode, curl.middle, LANDMARK.lip);
+  const throat = landmark(mode, curl.middle, LANDMARK.throat);
+  const toe = landmark(mode, curl.middle, LANDMARK.toe);
+  const mouth = tip.clone().add(throat).multiplyScalar(0.5);
+  const inside = new Vector3((throat.x + toe.x) / 2, (throat.y + toe.y) / 2, (throat.z + toe.z) / 2).lerp(mouth, 0.3);
+  return [
+    { name: 'curl-channel', eye: new Vector3(tip.x + sx * 14 + rx * 6, crest.y - 0.5, tip.z + sz * 14 + rz * 6), target: mouth },
+    { name: 'curl-front', eye: new Vector3(crest.x + rx * 12 + sx * 2, crest.y - 0.5, crest.z + rz * 12 + sz * 2), target: mouth },
+    { name: 'curl-behind', eye: new Vector3(crest.x - rx * 9 + sx * 5, crest.y + 3, crest.z - rz * 9 + sz * 5), target: tip },
+    { name: 'curl-inside', eye: inside, target: new Vector3(inside.x + sx * 8, inside.y, inside.z + sz * 8) },
+  ];
+}
 
 /** The most open flying tube in the snapshot: its row and how far its void reaches ahead of the crest, m. */
 function openTube(mode: PhysicalMode): { row: number; reach: number } | undefined {
@@ -207,27 +273,44 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   hooks.resize(RENDER.width, RENDER.height);
   const idle = { paddle: false, popUp: false, steer: 0 };
   let simulated = 0;
-  while (simulated < MAX_SETTLE) {
-    // A tube flies about a second: once settled, the Reef looks for one every 0.2 s.
-    const chunk = (TUBE_SPOT || WHITEWATER) && simulated >= MIN_SETTLE ? 12 : 60;
-    await advance(hooks, chunk, idle);
-    simulated += chunk * STEP;
-    if (simulated >= MIN_SETTLE) {
-      hooks.render(0);
-      const held = WHITEWATER
-        ? (foamBall(hooks.mode)?.count ?? 0) >= FOAM_BALL_HOLD
-        : TUBE_SPOT ? (openTube(hooks.mode)?.reach ?? 0) >= TUBE_OPEN : steepestFace(hooks.water, hooks.mode.focus).slope >= FACE_SLOPE;
-      if (held) break;
+  /** Steps the sea until the spot's hold (after at least `least` s more), or MAX_SETTLE in all. */
+  const settle = async (least: number) => {
+    const until = simulated + least;
+    while (simulated < MAX_SETTLE + until - MIN_SETTLE) {
+      // A tube flies about a second: once settled, the Reef looks for one every 0.2 s.
+      const chunk = (TUBE_SPOT || WHITEWATER) && simulated >= MIN_SETTLE ? 12 : 60;
+      await advance(hooks, chunk, idle);
+      simulated += chunk * STEP;
+      if (simulated >= until) {
+        hooks.render(0);
+        const held = WHITEWATER
+          ? (foamBall(hooks.mode)?.count ?? 0) >= FOAM_BALL_HOLD
+          : SWEPT_SPOT ? (openCurl(hooks.mode)?.length ?? 0) >= CURL_OPEN
+            : TUBE_SPOT ? (openTube(hooks.mode)?.reach ?? 0) >= TUBE_OPEN : steepestFace(hooks.water, hooks.mode.focus).slope >= FACE_SLOPE;
+        if (held) break;
+      }
+      await breathe();
     }
-    await breathe();
-  }
-  hooks.render(0);
-  const tube = TUBE_SPOT && !WHITEWATER ? openTube(hooks.mode) : undefined;
-  const ball = WHITEWATER ? foamBall(hooks.mode) : undefined;
-  const shots = findShots(hooks.water, hooks.mode.focus).flatMap((shot) => {
-    if (shot.name === 'face') return ball ? whitewaterShots(hooks.water, ball.centre) : tube ? tubeShots(hooks.mode, tube) : [shot];
-    return (tube || ball) && shot.name === 'bore' ? [] : [shot];
-  });
+    hooks.render(0);
+  };
+  await settle(MIN_SETTLE);
+  const heldShots = () => {
+    const curl = SWEPT_SPOT ? openCurl(hooks.mode) : undefined;
+    const tube = TUBE_SPOT && !SWEPT_SPOT && !WHITEWATER ? openTube(hooks.mode) : undefined;
+    const ball = WHITEWATER ? foamBall(hooks.mode) : undefined;
+    const found = findShots(hooks.water, hooks.mode.focus).flatMap((shot) => {
+      if (shot.name === 'face') {
+        // Padang Padang's swept curl, when one is open at the hold (beside the whitewater's, with `&whitewater`).
+        const curlOnes = curl ? curlShots(hooks.mode, curl) : [];
+        return [...(ball ? whitewaterShots(hooks.water, ball.centre) : tube ? tubeShots(hooks.mode, tube) : curl ? [] : [shot]), ...curlOnes];
+      }
+      return (tube || ball || curl) && shot.name === 'bore' ? [] : [shot];
+    });
+    return { shots: found, curl, ball };
+  };
+  let held = heldShots();
+  let { shots } = held;
+  const { ball } = held;
   const sheet = document.createElement('canvas');
   sheet.width = TILE.width * TIMES.length * LOOKS.length;
   sheet.height = TILE.height * shots.length;
@@ -306,7 +389,32 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     times.sort((a, b) => a - b);
     return { median: times[Math.floor(times.length / 2)], p90: times[Math.floor(times.length * 0.9)] };
   };
-  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped });
+  /**
+   * The held curl (Padang Padang): its open run, and the slices of its front as drawn (σ, τ, phase, weight), for
+   * reading a still against the loft.
+   */
+  const waterSheetCurl = () => {
+    const loft = hooks.mode.barrelLoft;
+    const curl = held.curl;
+    if (!loft || !curl) return undefined;
+    const front = loft.sliceFront[curl.middle];
+    const slices = [];
+    for (let s = 0; s < loft.sliceCount; s += 1) {
+      if (loft.sliceFront[s] !== front) continue;
+      slices.push({ s, sigma: +loft.sliceSigma[s].toFixed(2), tau: +loft.sliceTau[s].toFixed(3), phase: loft.slicePhase[s], weight: +loft.sliceWeight[s].toFixed(2), joined: loft.sliceJoined[s] });
+    }
+    const fronts = new Set(Array.from(loft.sliceFront.subarray(0, loft.sliceCount)));
+    return { ...curl, front, fronts: [...fronts], sliceCount: loft.sliceCount, slices };
+  };
+  /** Steps the sea on (at least `seconds`) to the next hold, and shoots from there; the new shots' names. */
+  const waterSheetAdvance = async (seconds = 1) => {
+    await settle(seconds);
+    held = heldShots();
+    shots = held.shots;
+    Object.assign(window, { waterSheetShots: shots });
+    return shots.map((shot) => shot.name);
+  };
+  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetBarrel: hooks.mode.barrelMesh });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 

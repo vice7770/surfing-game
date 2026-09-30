@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { LoftResult } from '../../wave/barrel/sweptLoft';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
-import { SweptBarrelMesh } from './SweptBarrelMesh';
+import { SweptBarrelMesh, sweptViewColours } from './SweptBarrelMesh';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -51,5 +51,29 @@ describe('the swept barrel’s mesh', () => {
     expect(swept.mesh.visible).toBe(false);
     swept.update(undefined);
     expect(swept.mesh.visible).toBe(false);
+  });
+
+  it('draws a dev view only when asked, in its own program, and back to the water’s', () => {
+    const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+    const plain = compiled(swept.mesh.material);
+    expect(plain.vertex).not.toContain('sweptView');
+    expect(swept.mesh.geometry.getAttribute('sweptView')).toBeUndefined();
+    swept.setView('phase');
+    expect(swept.mesh.material.customProgramCacheKey()).toBe('breakline-swept-barrel-classic-view-phase');
+    const viewed = compiled(swept.mesh.material);
+    expect(viewed.vertex).toContain('vSweptView = sweptView;');
+    expect(viewed.fragment).toContain('gl_FragColor = vec4( vSweptView');
+    swept.setView(undefined);
+    expect(swept.mesh.material.customProgramCacheKey()).toBe('breakline-swept-barrel-classic');
+    expect(compiled(swept.mesh.material)).toEqual(plain);
+  });
+
+  it('colours the phase view by each slice’s phase, dimmed where it rests on the water', () => {
+    const loft = { ...oneQuad(), lift: new Float32Array([1, 1, 0, 1]), slicePhase: new Uint8Array([2, 0]) };
+    const out = new Float32Array(12);
+    sweptViewColours('phase', loft, out);
+    // After touchdown red; resting on the water, dimmed to 0.3 of it.
+    expect(Array.from(out.slice(0, 3))).toEqual([1, 0.15, 0.1].map((c) => Math.fround(c)));
+    expect(out[6]).toBeCloseTo(0.3, 6);
   });
 });
