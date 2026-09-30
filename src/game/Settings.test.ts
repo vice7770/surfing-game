@@ -36,6 +36,27 @@ describe('SettingsStore', () => {
     expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: oldCustom, detected: medium }) })).value.graphics.waterLook).toBe('rich');
   });
 
+  // The Particles setting: High (the game as it was) by default, and a save from before it takes its preset's.
+  it('defaults the particles to High, takes an old save’s preset’s, and sanitizes them', () => {
+    expect(defaultSettings().graphics.particles).toBe('high');
+    const load = (graphics: object, detected?: object) =>
+      new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics, ...(detected ? { detected } : {}) }) })).value.graphics.particles;
+    const { particles: _low, ...oldLow } = { preset: 'low', ...PRESETS.low };
+    expect(load(oldLow)).toBe('low');
+    for (const preset of ['medium', 'high', 'ultra'] as const) {
+      const { particles: _preset, ...old } = { preset, ...PRESETS[preset] };
+      expect(load(old)).toBe('high');
+    }
+    const { particles: _auto, ...oldAuto } = { preset: 'auto', ...PRESETS.medium };
+    expect(load(oldAuto)).toBe('high');
+    expect(load(oldAuto, { preset: 'low', water: 'fast', lowPerformance: true, adapter: 'test' })).toBe('low');
+    const { particles: _custom, ...oldCustom } = { preset: 'custom', ...PRESETS.medium };
+    expect(load(oldCustom)).toBe('high');
+    expect(load(oldCustom, { preset: 'low', water: 'fast', lowPerformance: true, adapter: 'test' })).toBe('low');
+    expect(load({ ...oldCustom, particles: 'medium' })).toBe('medium');
+    expect(load({ ...oldCustom, particles: 'ultra' })).toBe('high');
+  });
+
   // C1: the stick settings, with their defaults and ranges.
   it('keeps the stick settings within their ranges', () => {
     expect(defaultSettings().controls).toMatchObject({ trimStick: 'right', stickResponse: 'linear', deadzoneSteam: 0.05, deadzoneGamepad: 0.15 });

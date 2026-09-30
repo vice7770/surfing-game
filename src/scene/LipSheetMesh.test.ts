@@ -27,6 +27,22 @@ describe('lip sheet mesh', () => {
     expect(rich.positions.length / 3).toBe(2 * 2 * 7 * perCell);
   });
 
+  // The Particles setting: the Rich sheet's spline points between parcels, fewer at its lower levels.
+  it('draws the Rich sheet with the spline points it is set to, from its next build', () => {
+    const { parcels, count } = strips({ column: 4, launchTime: 1 }, { column: 5, launchTime: 1.2 });
+    const lip = new LipSheetMesh();
+    lip.setLook('rich');
+    lip.update(parcels, count, 1);
+    const vertices = () => lip.mesh.geometry.getAttribute('position').count;
+    expect(vertices()).toBe(buildRichLipSheet(parcels, count, 1).positions.length / 3);
+    for (const subdivisions of [2, 1]) {
+      lip.setSubdivisions(subdivisions);
+      lip.update(parcels, count, 1);
+      // Each cell draws (subdivisions + 2)² points a face; the same cells as before.
+      expect(vertices()).toBe((buildRichLipSheet(parcels, count, 1).positions.length / 3 / (LIP_SUBDIVISIONS + 2) ** 2) * (subdivisions + 2) ** 2);
+    }
+  });
+
   it('rebuilds only when a new snapshot brings different parcels, in either look', () => {
     for (const look of ['classic', 'rich'] as const) {
       const lip = new LipSheetMesh();

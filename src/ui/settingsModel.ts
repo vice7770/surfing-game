@@ -29,7 +29,7 @@ const options = (prefix: string, values: readonly string[]): Option[] =>
   values.map((value) => ({ value, label: t(`${prefix}.${value}` as StringKey) }));
 
 const ADVANCED: readonly (keyof AdvancedGraphics)[] = [
-  'renderScale', 'nativePixelDensity', 'frameLimit', 'waterSimulation', 'seaDetail', 'waterLook', 'caustics', 'sprayMist', 'oceanView', 'foam',
+  'renderScale', 'nativePixelDensity', 'frameLimit', 'waterSimulation', 'seaDetail', 'waterLook', 'caustics', 'sprayMist', 'particles', 'oceanView', 'foam',
 ];
 
 function graphicsRows(settings: GameSettings, context: SettingsContext): Row[] {
@@ -54,6 +54,7 @@ function graphicsRows(settings: GameSettings, context: SettingsContext): Row[] {
     { kind: 'choice', id: 'waterLook', label: t('settings.waterLook'), value: g.waterLook, options: options('settings.waterLook', ['classic', 'rich']) },
     { kind: 'toggle', id: 'caustics', label: t('settings.caustics'), value: g.caustics },
     { kind: 'toggle', id: 'sprayMist', label: t('settings.sprayMist'), value: g.sprayMist },
+    { kind: 'choice', id: 'particles', label: t('settings.particles'), help: t('settings.particles.help'), value: g.particles, options: options('settings.particles', ['low', 'medium', 'high']) },
     { kind: 'choice', id: 'oceanView', label: t('settings.oceanView'), value: g.oceanView, options: options('settings.ocean', ['near', 'far']) },
     { kind: 'choice', id: 'foam', label: t('settings.foam'), value: g.foam, options: options('settings.foam', ['simple', 'detailed']) },
   ];

@@ -4,6 +4,7 @@ import { WaterSurface } from '../scene/WaterSurface';
 import { FlatSurfaceSource } from '../scene/FlatSurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { stormSwell } from '../wave/StormSwell';
+import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, spreadingFor, swellFor, swellHeightLimit } from './PhysicalMode';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
@@ -227,6 +228,19 @@ describe('PhysicalMode', () => {
     expect(host.runner.spray.look).toBe('classic');
     mode.setSprayLook('rich');
     expect(host.runner.spray.look).toBe('rich');
+  });
+
+  it('gives the sea it starts the Particles level, the running sea every change, and draws the lip sheet at its detail', async () => {
+    const water = new WaterSurface(new FlatSurfaceSource());
+    const mode = new PhysicalMode(new Scene());
+    mode.setParticleLevel('low');
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick, (config) => new LocalSurfZone(config, {}))).toBe(true);
+    const host = mode.host as LocalSurfZone;
+    expect([host.runner.spray.level, host.runner.bubbles.level]).toEqual(['low', 'low']);
+    expect((mode.lipSheet as unknown as { subdivisions: number }).subdivisions).toBe(PARTICLE_BUDGETS.low.lipSubdivisions);
+    mode.setParticleLevel('high');
+    expect([host.runner.spray.level, host.runner.bubbles.level]).toEqual(['high', 'high']);
+    expect((mode.lipSheet as unknown as { subdivisions: number }).subdivisions).toBe(PARTICLE_BUDGETS.high.lipSubdivisions);
   });
 
   it('frames a riderless sea from its idle view, and a ride from the default view', async () => {

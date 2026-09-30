@@ -1,7 +1,7 @@
 import { BufferAttribute, BufferGeometry, Color, DoubleSide, Mesh, MeshPhysicalMaterial, ShaderMaterial, Vector3 } from 'three';
 import { LINK_TIME } from '../wave/PlungingLip';
 import { LIP_STRIDE } from '../wave/SurfZoneRunner';
-import { RICH_LIP_REFLECTION, buildRichLipSheet, richLipBeginVertex, richLipBody, richLipFragmentPars, richLipVertexPars } from './water/richLip';
+import { LIP_SUBDIVISIONS, RICH_LIP_REFLECTION, buildRichLipSheet, richLipBeginVertex, richLipBody, richLipFragmentPars, richLipVertexPars } from './water/richLip';
 import { RICH_WATER } from './water/richWaterGlsl';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import type { WaterLook } from './water/waterLook';
@@ -153,6 +153,8 @@ export class LipSheetMesh {
   private currentLook: WaterLook = 'classic';
   /** What the drawn sheet was built from: its parcels' buffer, count and a sum of them (G9: rebuild only on a new snapshot). */
   private built = { parcels: undefined as Float32Array | undefined, count: -1, sum: 0 };
+  /** Spline points the Rich sheet draws between parcels (the Particles setting draws fewer at its lower levels). */
+  private subdivisions = LIP_SUBDIVISIONS;
 
   constructor() {
     const material = new ShaderMaterial({
@@ -201,6 +203,13 @@ export class LipSheetMesh {
     return this.currentLook;
   }
 
+  /** The Particles setting: the Rich sheet's spline points between parcels, from its next build. Its parcels, the lip's water, are untouched. */
+  setSubdivisions(subdivisions: number): void {
+    if (subdivisions === this.subdivisions) return;
+    this.subdivisions = subdivisions;
+    this.built.count = -1;
+  }
+
   /** `direction` points toward the sun; `radiance` is the sun light's colour × intensity (the Rich lip). */
   setSun(direction: Vector3, radiance: Color): void {
     applySun(this.richUniforms, direction, radiance);
@@ -220,7 +229,7 @@ export class LipSheetMesh {
     if (parcels === this.built.parcels && count === this.built.count && sum === this.built.sum) return;
     this.built = { parcels, count, sum };
     if (this.currentLook === 'rich') {
-      const lip = buildRichLipSheet(parcels, count, width);
+      const lip = buildRichLipSheet(parcels, count, width, this.subdivisions);
       const geometry = this.mesh.geometry;
       geometry.setAttribute('position', new BufferAttribute(lip.positions, 3));
       geometry.setAttribute('normal', new BufferAttribute(lip.normals, 3));

@@ -78,6 +78,8 @@ const startRide = devFlag('physical') || demoMode !== null;
 const recordRequested = devFlag('record');
 /** `?waterSheet`: a dev tool renders fixed water shots, Classic beside Rich, under each sky (src/dev/waterSheet.ts; G8). */
 const waterSheetRequested = devFlag('waterSheet');
+/** `?particleBench`: a dev tool times the whitewater's particles on a heavy sea (src/dev/particleBench.ts). */
+const particleBenchRequested = devFlag('particleBench');
 /** `?waterSheet&compute=gpu` (or `auto`, and the same on `?record`): the sea steps in the worker, on the GPU as the game's does, even beside `inpage`. */
 const devToolOnDevice = (waterSheetRequested || recordRequested) && ['gpu', 'auto'].includes(devParam('compute') ?? '');
 /**
@@ -270,7 +272,7 @@ class SurfGame {
     window.addEventListener('resize', () => this.resize());
     // The app shows the loading card whenever a scene builds.
     getElement<HTMLElement>('#loading').classList.add('is-hidden');
-    if (!recordRequested && !waterSheetRequested) requestAnimationFrame(this.frame);
+    if (!recordRequested && !waterSheetRequested && !particleBenchRequested) requestAnimationFrame(this.frame);
   }
 
   /**
@@ -331,6 +333,7 @@ class SurfGame {
     this.resize();
     if (!resolved.caustics) this.caustics.disable();
     this.physicalMode.setSprayVisible(resolved.sprayMist);
+    this.physicalMode.setParticleLevel(resolved.particles);
     this.physicalMode.farField.setViewDistance(resolved.oceanView);
     this.water.setFoamDetail(resolved.detailedFoam);
     // The preset's shadow and surfer detail (G7 Part B); `?shadows=` still picks the level.
@@ -1086,6 +1089,7 @@ class SurfGame {
 const game = new SurfGame();
 if (recordRequested) void import('./dev/rideRecorder').then(({ recordRide }) => recordRide(game.recording));
 if (waterSheetRequested) void import('./dev/waterSheet').then(({ renderWaterSheet }) => renderWaterSheet(game.recording));
+if (particleBenchRequested) void import('./dev/particleBench').then(({ runParticleBench }) => runParticleBench(game.recording));
 const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const settings = new SettingsStore(availableStorage(), defaultSettings(reducedMotion));
 /** `?graphics=low|medium|high|ultra` (dev): films and sheets under a preset without touching the saved settings. */
@@ -1118,5 +1122,5 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   mute: () => app.toggleMute(),
   call: (call) => app.call(call),
 }, { stick: () => settings.value.controls });
-const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested ? 'stage' : startRide ? 'ride' : 'menu', steam: steamController });
+const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested || particleBenchRequested ? 'stage' : startRide ? 'ride' : 'menu', steam: steamController });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);

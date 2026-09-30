@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LIP_STRIDE } from '../../wave/SurfZoneRunner';
-import { buildRichLipSheet, lipThickness } from './richLip';
+import { LIP_SUBDIVISIONS, buildRichLipSheet, lipThickness } from './richLip';
 
 /** Packs parcels as a snapshot does: x, y, z, column, index, launch time, age, volume. */
 function pack(parcels: number[][]): Float32Array {
@@ -76,6 +76,18 @@ describe('the Rich lip', () => {
     const sheet = buildRichLipSheet(pack(strip(3, () => 2, 0.05, [3, 4, 5, 6, 7])), 5, 1);
     const zs = vertices(sheet.positions).map(([, , z]) => z);
     expect(Math.min(...zs)).toBeGreaterThan(2.99);
+  });
+
+  // The Particles setting draws fewer spline points between parcels at its lower levels.
+  it('draws the spline points it is asked for between parcels, through every parcel still', () => {
+    const parcels = strip(3, (k) => 2 + Math.sin(k * 0.7), 0);
+    for (const subdivisions of [LIP_SUBDIVISIONS, 2, 1]) {
+      const sheet = buildRichLipSheet(pack(parcels), 8, 1, subdivisions);
+      // Two ribbon cells across, seven along; two faces of (subdivisions + 2)² points each.
+      expect(sheet.positions.length / 3).toBe(2 * 7 * 2 * (subdivisions + 2) ** 2);
+      const drawn = vertices(sheet.positions);
+      for (const [x, y, z] of parcels) expect(drawn.some(([dx, dy, dz]) => Math.hypot(dx - x, dy - y, dz - z) < 1e-5)).toBe(true);
+    }
   });
 
   it('builds nothing from no parcels', () => {

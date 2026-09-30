@@ -43,13 +43,14 @@ function crSlope(p0: number, p1: number, p2: number, p3: number, t: number): num
 /**
  * The lip sheet in the Rich look (G9): its parcels' strips, chained across
  * columns where they were thrown within LINK_TIME, as one smooth Catmull-Rom
- * surface (LIP_SUBDIVISIONS points between parcels both ways), with two faces
+ * surface (LIP_SUBDIVISIONS points between parcels both ways, or
+ * `subdivisions`: the Particles setting draws fewer), with two faces
  * half the water's thickness either side, meeting in a rounded edge wherever
  * the sheet ends. A strip's
  * side with no linked neighbour gets a half-column ribbon, as the Classic
  * sheet has. Only flying parcels are drawn; a strip breaks where they landed.
  */
-export function buildRichLipSheet(parcels: Float32Array, count: number, width: number): RichLipGeometry {
+export function buildRichLipSheet(parcels: Float32Array, count: number, width: number, subdivisions = LIP_SUBDIVISIONS): RichLipGeometry {
   const strips = new Map<string, Strip>();
   for (let i = 0; i < count; i += 1) {
     const o = i * LIP_STRIDE;
@@ -103,7 +104,7 @@ export function buildRichLipSheet(parcels: Float32Array, count: number, width: n
     if (hasLeft.has(start)) continue;
     const chain: Strip[] = [start];
     for (let next = right.get(start); next; next = right.get(next)) chain.push(next);
-    emitChain(chain, width, out);
+    emitChain(chain, width, out, subdivisions);
   }
   return {
     positions: new Float32Array(out.positions),
@@ -117,7 +118,7 @@ export function buildRichLipSheet(parcels: Float32Array, count: number, width: n
 type Out = { positions: number[]; normals: number[]; foam: number[]; thickness: number[]; indices: number[] };
 
 /** One chain as a grid of nodes, a phantom half-column ribbon edge at each open end, drawn cell by cell. */
-function emitChain(chain: Strip[], width: number, out: Out): void {
+function emitChain(chain: Strip[], width: number, out: Out, subdivisions: number): void {
   const length = Math.max(...chain.map((strip) => strip.nodes.length));
   const shifted = (strip: Strip, dx: number): (Node | undefined)[] =>
     strip.nodes.map((node) => node && { ...node, p: [node.p[0] + dx, node.p[1], node.p[2]] as Vec });
@@ -149,13 +150,13 @@ function emitChain(chain: Strip[], width: number, out: Out): void {
       }
       emitCell(net, [at(i, k)!, at(i + 1, k)!, at(i, k + 1)!, at(i + 1, k + 1)!], {
         left: !cellPresent(i - 1, k), right: !cellPresent(i + 1, k), front: !cellPresent(i, k - 1), back: !cellPresent(i, k + 1),
-      }, out);
+      }, out, subdivisions);
     }
   }
 }
 
-function emitCell(net: Vec[][], corners: Node[], open: { left: boolean; right: boolean; front: boolean; back: boolean }, out: Out): void {
-  const n = LIP_SUBDIVISIONS + 1;
+function emitCell(net: Vec[][], corners: Node[], open: { left: boolean; right: boolean; front: boolean; back: boolean }, out: Out, subdivisions: number): void {
+  const n = subdivisions + 1;
   const mid: Vec[][] = [];
   const normal: Vec[][] = [];
   const outward: Vec[][] = [];

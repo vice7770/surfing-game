@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { BUBBLE_RISE_SPEED, BubbleCloud } from './BubbleCloud';
 import { FoamField } from './FoamField';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
+import { PARTICLE_BUDGETS } from './particleBudget';
+import { busyWhitewater } from './particleTestSupport';
 
 function breakingTank() {
   const solver = new ShallowWaterSolver({ nx: 20, xMin: -10, dx: 1, zEdges: uniformEdges(-10, 10, 20), xBoundary: 'open' }, () => 2);
@@ -59,5 +61,42 @@ describe('BubbleCloud', () => {
     expect(run(3)).toEqual(run(3));
     expect(run(3)).not.toEqual(run(4));
     expect(run(3).length).toBeLessThanOrEqual(64);
+  });
+});
+
+describe('the Particles setting', () => {
+  const run = (bubbles: BubbleCloud, frames = 240) => {
+    for (let frame = 0; frame < frames; frame += 1) bubbles.update(busyWhitewater(frame), 1 / 60);
+    return bubbles;
+  };
+
+  it('keeps the bubbles exactly as they were at High, the default', () => {
+    // Pinned from the code before the Particles setting: the same scene, seed and pool, 240 frames.
+    const bubbles = run(new BubbleCloud(3));
+    expect(bubbles.count).toBe(2142);
+    let sum = 0;
+    for (let i = 0; i < bubbles.count * 3; i += 1) sum += bubbles.positions[i] * ((i % 5) + 1);
+    expect(sum).toBeCloseTo(254815.23696799576, 6);
+    const high = new BubbleCloud(3);
+    high.setLevel('high');
+    run(high);
+    expect(Array.from(high.positions.subarray(0, high.count * 3))).toEqual(Array.from(bubbles.positions.subarray(0, bubbles.count * 3)));
+  });
+
+  it('entrains a share of the bubbles into a share of the pool at Medium and Low', () => {
+    const high = run(new BubbleCloud(3)).count;
+    for (const level of ['medium', 'low'] as const) {
+      const bubbles = new BubbleCloud(3);
+      bubbles.setLevel(level);
+      run(bubbles);
+      // A share of them, give or take the random draws.
+      expect(Math.abs(bubbles.count / high - PARTICLE_BUDGETS[level].bubbles)).toBeLessThan(0.05);
+      const { solver, foam } = breakingTank();
+      const full = new BubbleCloud(1, 64);
+      full.setLevel(level);
+      foam.source.fill(400);
+      full.update({ solver, foam }, 0.1);
+      expect(full.count).toBe(64 * PARTICLE_BUDGETS[level].pool);
+    }
   });
 });
