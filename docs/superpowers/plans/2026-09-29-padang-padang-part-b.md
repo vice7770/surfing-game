@@ -499,7 +499,11 @@ describe('a Basilisk library as a barrel case', () => {
 
 Write the detailed plans for PRs 3–7 (the mesh, the contact, the crash curve, the shading, the rollout) from the library and clock as built. PR 3's loft takes Mihalef's rule from the clock (the advisor, 2026-09-30):
 - neighbouring loft slices differ by at most 2–4 library frames, met by resampling the front finer (0.5 m, down to 0.25 m where the open curl spans under about 8 slices), not by clamping the clock;
-- only when the vertex budget would be exceeded is |dτ/dσ| clamped to T_open/(4·Δσ) (at least 4 slices across the curl), and each clamp is counted. Consult the water-physics advisor before settling any shape value (the lip glow's k, the seam's band width, the contact's softness). Open numbers from PR 2's probes (1 m, Padang's Small swell): the table's join depth against a seed crest's own fresh onset spreads ±0.5 m, sometimes to ±0.9 m (the advisor hoped for ±0.3); the barrel's peel along its longer fronts runs 14–18 m/s against the whitewater's 10.5–12.4 (the bed's peel against the solver's sideways spread). PR 3's loft shows whether either is visible.
+- only when the vertex budget would be exceeded is |dτ/dσ| clamped to T_open/(4·Δσ) (at least 4 slices across the curl), and each clamp is counted. Consult the water-physics advisor before settling any shape value (the lip glow's k, the seam's band width, the contact's softness). Open numbers from PR 2's probes (1 m, Padang's Small swell, the join keyed on the crest's height at 5.5 m):
+- **Join depth against a seed crest's own fresh onset:** set waves within −0.03…+0.19 m, outliers to +1.1 m. Small waves, under the table's first row (≈1.15 m at 5.5 m), clamp to 2.6 m and join ≈0.9 m too deep. The advisor hoped for ±0.3 m.
+- **The peels, wave by wave on the final bed** (`padangPeelPair`, 11 clean pairs): whitewater median 11.0 m/s, barrel 12.6 m/s (ratio 1.17, mostly 1.05–1.18); the design is 11.6 m/s. 5 of 18 waves, the smaller ones, drew no barrel.
+
+PR 3's loft shows whether either is visible.
 
 Open item from the onset's lag (the advisor, 2026-09-30): the solver's Kennedy onset leads the lip by about 2 s and 20 m on Padang Padang's wedge, and the foam, aeration, Kennedy-driven whitewater and crash sound all key on it. Where the swept barrel runs, Rich's whitewater and the sound should start from the barrel's clock (foam from touchdown, as in the roller handover). That is visuals only, so one-water is unaffected. Agree it with the whitewater (G9) owner before building; it belongs with PR 5 or PR 6.
 
