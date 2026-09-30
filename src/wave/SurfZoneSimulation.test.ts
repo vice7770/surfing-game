@@ -5,7 +5,7 @@ import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
-  FOAM_DECAY, OFFSHORE_DEPTH, SET_FINE_MARGIN, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight, solverStage, surfZoneSea, takeOffPoint,
+  FOAM_DECAY, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight, solverStage, surfZoneSea, takeOffPoint,
   tankDepth, tankLayout,
   windOnsetScale, type SurfZoneConfig,
 } from './SurfZoneSimulation';
@@ -19,6 +19,7 @@ import { crestSpeedAt } from './CrestKinematics';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { TAKE_OFF_BAND } from './SurfMeter';
 import { SideFeed } from './SideFeed';
+import { JET_RELEASE_TIME } from './PlungingLip';
 
 const small_ = (): SurfZoneConfig => ({ ...small, spot: 'padang', alongShore: PADANG.alongShore });
 const small: Omit<SurfZoneConfig, 'spot'> = {
@@ -27,18 +28,29 @@ const small: Omit<SurfZoneConfig, 'spot'> = {
 };
 
 describe('SurfZoneSimulation', () => {
-  it('feeds the tank\'s sides with the incoming sea, on the clock of a handed-over sea (wave sizes)', () => {
-    const simulation = new SurfZoneSimulation({ ...small, spot: 'point' });
+  it('feeds Padang Padang\'s sides with the incoming sea, on the clock of a handed-over sea (wave sizes)', () => {
+    expect(SIDE_FEED_SPOTS).toEqual(['padang']);
+    const simulation = new SurfZoneSimulation(small_(), 'warm');
     const feed = simulation.solver.relaxationZones.find((zone) => zone instanceof SideFeed) as SideFeed | undefined;
     expect(feed).toBeDefined();
-    const donor = new SurfZoneSimulation({ ...small, spot: 'point', startSeaTime: 500 });
+    const donor = new SurfZoneSimulation({ ...small_(), startSeaTime: 500 }, 'warm');
     const state = donor.exportState();
     simulation.importState(state);
     expect(feed!.timeOffset).toBe(state.seaTimeOffset);
   });
 
-  it('takes the Reef\'s swell at its edge, like the Canyon\'s, until the Reef rework deepens it (wave sizes review)', () => {
-    expect(edgeHeight({ ...small, spot: 'reef', significantHeight: 3, peakPeriod: 18 })).toBe(3);
+  // Every other spot keeps main's open sides until the feed's own rollout (the owner, 2026-09-30).
+  it('feeds no other spot\'s sides', () => {
+    for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
+      const simulation = new SurfZoneSimulation({ ...small, spot }, 'warm');
+      expect(simulation.solver.relaxationZones.some((zone) => zone instanceof SideFeed)).toBe(false);
+    }
+  });
+
+  it('takes the Reef\'s buoy swell in deep water, shoaled to its 30 m edge, and the Canyon\'s at its edge', () => {
+    expect(edgeHeight({ ...small, spot: 'reef', significantHeight: 3, peakPeriod: 18 }, OFFSHORE_DEPTH.reef))
+      .toBeCloseTo(3 * shoalingCoefficient(18, OFFSHORE_DEPTH.reef + small.tide), 9);
+    expect(edgeHeight({ ...small, spot: 'canyon', significantHeight: 3, peakPeriod: 18 })).toBe(3);
   });
 
   it('keeps the water finite on the biggest swells the Reef and today\'s Point tank can be given (wave sizes review)', () => {
@@ -143,6 +155,23 @@ describe('SurfZoneSimulation', () => {
     expect(bed(point.z)).toBeGreaterThan(PADANG.crestDepth);
     expect(bed(point.z)).toBeLessThan(PADANG.baseDepth);
     expect(simulation.iribarren().type).toBe('plunging');
+  });
+
+  // The wave-sizes spec's Q11: the take-off follows the measured break (docs/research/size-report.md, seed 1, mid tide).
+  it('seats Padang Padang’s take-off within 15 m of where each swell’s sets broke in the size report', () => {
+    const measured = [
+      { swell: { ...PADANG_PRACTICE_SWELL, heightAt: 'edge' as const }, setBreakZ: -176 },
+      { swell: PADANG_SWELLS.small, setBreakZ: -194 },
+      { swell: PADANG_SWELLS.medium, setBreakZ: -216 },
+      { swell: PADANG_SWELLS.big, setBreakZ: -266 },
+    ];
+    for (const { swell, setBreakZ } of measured) {
+      const point = takeOffPoint({
+        ...small, seed: 1, spot: 'padang', alongShore: PADANG.alongShore, tide: 0, significantHeight: swell.significantHeight,
+        peakPeriod: swell.peakPeriod, ...('heightAt' in swell ? { heightAt: swell.heightAt } : {}),
+      });
+      expect(Math.abs(point.z - setBreakZ), `Hs ${swell.significantHeight} m`).toBeLessThanOrEqual(15);
+    }
   });
 
   // Review Focus 5.
@@ -321,12 +350,12 @@ describe('SurfZoneSimulation', () => {
     expect(dryChecked).toBeGreaterThan(5);
   });
 
-  it('finds the break line at the shoaled breaker depth, and seats the take-off where the sets break', () => {
+  it('finds the break line at the shoaled breaker depth', () => {
     const simulation = new SurfZoneSimulation({ ...small, spot: 'beach' });
     const point = simulation.breakPoint();
-    expect(simulation.breakerDepth()).toBeCloseTo(breakerDepthFor(edgeHeight(simulation.config), simulation.sea.depth), 12);
-    const sets = breakerDepthFor(edgeHeight(simulation.config), simulation.sea.depth, TAKE_OFF_INDEX.beach);
-    expect(tankDepth(simulation.spot, OFFSHORE_DEPTH.beach, point.x, point.z)).toBeCloseTo(sets, 1);
+    const depth = breakerDepthFor(edgeHeight(simulation.config), simulation.sea.depth);
+    expect(simulation.breakerDepth()).toBeCloseTo(depth, 12);
+    expect(tankDepth(simulation.spot, OFFSHORE_DEPTH.beach, point.x, point.z)).toBeCloseTo(depth, 1);
   });
 
   it('breaks waves in the surf zone, measures the peel and paints whitewater', () => {
@@ -602,6 +631,7 @@ describe('SurfZoneSimulation', () => {
       return { simulation, directions };
     };
 
+    // The time limits are generous: a Big-swell run took 80 min on a loaded M1 Air (performance is measured, never a gate).
     // A left: seen from a surfer facing the beach, it runs to their left, toward +x and the channel (the advisor's check).
     // A single estimate can fit a window holding the tail of one wave and the head of the next (a 130 m peel takes about
     // a period), so most well-fitted estimates must run that way.
@@ -610,16 +640,16 @@ describe('SurfZoneSimulation', () => {
       expect(simulation.lipLaunches).toBeGreaterThan(0);
       expect(directions.length).toBeGreaterThan(0);
       expect(directions.filter((direction) => direction === 1).length).toBeGreaterThan(directions.length / 2);
-    }, 1_800_000);
+    }, 7_200_000);
     // Review Focus 1: the lowest springs leave 5 cm over the reef flat.
-    it('stays finite over the nearly dry reef flat at the lowest spring tide', () => run({ tide: -1.2 }, 30), 1_800_000);
-    it('stays finite at high tide', () => run({ tide: PADANG_TIDES.high }), 1_800_000);
+    it('stays finite over the nearly dry reef flat at the lowest spring tide', () => run({ tide: -1.2 }, 30), 7_200_000);
+    it('stays finite at high tide', () => run({ tide: PADANG_TIDES.high }), 7_200_000);
     // Review Focus 2: oblique swells across the open side edges, over the advisor's robustness range (Mead & Black's
     // Bingin held its peel from −10° to +20°; the swell arrives square by default).
     it('stays finite with the most oblique swells across the open side edges', () => {
       run({ directionDegrees: -10 });
       run({ directionDegrees: 20 });
-    }, 3_600_000);
+    }, 14_400_000);
   });
 
   it('spins up the menu’s Padang Padang on the GPU tier’s sea without blowing up', () => {
@@ -790,7 +820,8 @@ describe('SurfZoneSimulation', () => {
     foam.dense.fill(0);
     foam.residual.fill(0);
     const crest = solver.cellIndex(0, -60);
-    expect(lip.launch(crest, { x: 0, z: 4 }, solver.surfaceAt(crest) + 1, 0.2)).toBeGreaterThan(0);
+    // From a 1 m wave: a jet takes the water above its trough.
+    expect(lip.launch(crest, { x: 0, z: 4 }, solver.surfaceAt(crest) + 1, 0.2, 0, undefined, JET_RELEASE_TIME, 1)).toBeGreaterThan(0);
     // The whole strip leaves the crest and lands.
     for (let step = 0; step < 240 && lip.activeCount() > 0; step += 1) lip.step(1 / 60);
     expect(lip.landings).toBeGreaterThan(0);
@@ -858,19 +889,17 @@ describe('the tank sized to the swell (wave sizes)', () => {
     expect(tankLayout(config('point', 4, 6)).edgeDepth).toBeLessThanOrEqual(0.4 * (9.81 * 36) / (2 * Math.PI) + 1e-9);
   });
 
-  it('places every take-off by the spot\'s calibrated breaker index, small days too (the fed sea breaks further out)', () => {
+  it('places a big day\'s take-off by the spot\'s calibrated breaker index, and today\'s tanks as before', () => {
     const big: SurfZoneConfig = { ...small, spot: 'point', significantHeight: 3, peakPeriod: 14, alongShore: 160 };
     const tank = tankLayout(big);
     expect(tank.edgeDepth).toBeGreaterThan(OFFSHORE_DEPTH.point);
     const target = breakerDepthFor(edgeHeight(big, tank.edgeDepth), tank.edgeDepth + big.tide, TAKE_OFF_INDEX.point);
     const point = takeOffPoint(big);
     expect(tankDepth(createSpot('point', big.seed), tank.edgeDepth, point.x, point.z, tank)).toBeCloseTo(target, 0);
-    for (const spot of ['beach', 'point'] as const) {
-      const todays: SurfZoneConfig = { ...small, spot, alongShore: 160 };
-      expect(tankLayout(todays).edgeDepth).toBe(OFFSHORE_DEPTH[spot]);
-      expect(tankDepth(createSpot(spot, 1), OFFSHORE_DEPTH[spot], 0, takeOffPoint(todays).z))
-        .toBeCloseTo(breakerDepthFor(edgeHeight(todays), OFFSHORE_DEPTH[spot], TAKE_OFF_INDEX[spot]), 0);
-    }
+    const todays: SurfZoneConfig = { ...small, spot: 'point', alongShore: 160 };
+    expect(tankDepth(createSpot('point', 1), OFFSHORE_DEPTH.point, 0, takeOffPoint(todays).z))
+      .toBeCloseTo(breakerDepthFor(edgeHeight(todays), OFFSHORE_DEPTH.point), 0);
+    // Only a swell-sized tank uses the calibrated index.
     expect(Object.keys(TAKE_OFF_INDEX).sort()).toEqual(['beach', 'canyon', 'padang', 'point', 'reef']);
   });
 

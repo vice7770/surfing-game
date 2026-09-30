@@ -100,9 +100,10 @@ export const PADANG_SPREADING = 150;
 /**
  * Padang Padang's practice groundswell: the Practice swell's narrow band and spread at a Padang Padang period,
  * square to the tank as its swells, given at its edge, for faces of 2–2.5 m (the Padang Padang spec). It "works from
- * about 4 ft" (about 2.4 m faces), so this is its smallest honest size. Provisional until the size report.
+ * about 4 ft" (about 2.4 m faces), so this is its smallest honest size. The size report: 1.5 m gave faces of 3.3 m at the
+ * take-off, 0.9 m gave 2.8 m, so 0.6 m (round 2); provisional.
  */
-export const PADANG_PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1.5, peakPeriod: 16, spreading: PADANG_SPREADING, bandwidth: 0.08, directionDegrees: 0 };
+export const PADANG_PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 0.6, peakPeriod: 16, spreading: PADANG_SPREADING, bandwidth: 0.08, directionDegrees: 0 };
 
 /** A spot's practice groundswell: the Reef's or Padang Padang's own, or the shared one. */
 export function practiceSwell(spot: SpotName): Readonly<SwellInput> {

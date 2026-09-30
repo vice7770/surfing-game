@@ -14,10 +14,11 @@ export const SIZE_EDGE_MARGIN = 20;
  * against its own face targets (its spec), not Komar–Gaughan's gate.
  */
 export const UNGATED: readonly SpotName[] = ['reef', 'padang'];
-/** Gates: big days within 20 % of Komar–Gaughan and their take-off within 15 m of the sets' break; small days are reported. */
+/** Gates: big days within 20 % of Komar–Gaughan, small days within 5 % of the baseline, the take-off within 15 m of the sets' break. */
 export const BIG_DAY = 2;
 export const SMALL_DAY = 1.5;
 export const BIG_TOLERANCE = 0.2;
+export const SMALL_TOLERANCE = 0.05;
 export const TAKE_OFF_TOLERANCE = 15;
 
 export interface SizeRun {
@@ -84,25 +85,39 @@ export interface SizeGate {
 }
 
 const label = (run: SizeRun) => (run.source === 'practice' ? `${run.spot} practice` : `${run.spot} Hs ${run.significantHeight} m Tp ${run.period} s`);
+const same = (a: SizeRun, b: SizeRun) => a.spot === b.spot && a.source === b.source && a.significantHeight === b.significantHeight
+  && a.period === b.period && a.heightAt === b.heightAt;
 
-/**
- * The spec's gates, for the runs they apply to: big days (Hs ≥ 2 m, given in deep water) within 20 % of
- * Komar–Gaughan, and their take-off within 15 m of the sets' break. Small days and the Canyon are reported,
- * not gated: the side feed changes them on purpose (the spec, Checks); `baseline` stays for the report's reader.
- */
-export function sizeGates(runs: readonly SizeRun[], _baseline: readonly SizeRun[]): SizeGate[] {
+/** The spec's gates, for the runs they apply to. */
+export function sizeGates(runs: readonly SizeRun[], baseline: readonly SizeRun[]): SizeGate[] {
   const gates: SizeGate[] = [];
   for (const run of runs) {
-    if (UNGATED.includes(run.spot) || run.spot === 'canyon') continue;
-    if (!(run.source === 'buoy' && run.heightAt === 'deep' && run.significantHeight >= BIG_DAY)) continue;
-    const empirical = komarGaughan(run.significantHeight, run.period);
-    const ratio = run.typical / empirical;
-    gates.push({
-      name: label(run), pass: Math.abs(ratio - 1) <= BIG_TOLERANCE,
-      detail: `H1/3 ${run.typical.toFixed(2)} m, ${(ratio * 100).toFixed(0)} % of Komar–Gaughan ${empirical.toFixed(2)} m`,
-    });
-    const off = Math.abs(run.setBreakZ - run.takeOffZ);
-    gates.push({ name: `${label(run)} take-off`, pass: off <= TAKE_OFF_TOLERANCE, detail: `take-off ${off.toFixed(0)} m from the sets' break` });
+    if (UNGATED.includes(run.spot)) continue;
+    const reference = baseline.find((old) => same(old, run));
+    if (run.spot === 'canyon') {
+      if (reference) {
+        const pass = run.typical === reference.typical && run.sets === reference.sets && run.waves === reference.waves;
+        gates.push({ name: `${label(run)} unchanged`, pass, detail: `H1/3 ${run.typical.toFixed(3)} against ${reference.typical.toFixed(3)} m` });
+      }
+      continue;
+    }
+    if (run.source === 'buoy' && run.heightAt === 'deep' && run.significantHeight >= BIG_DAY) {
+      const empirical = komarGaughan(run.significantHeight, run.period);
+      const ratio = run.typical / empirical;
+      gates.push({
+        name: label(run), pass: Math.abs(ratio - 1) <= BIG_TOLERANCE,
+        detail: `H1/3 ${run.typical.toFixed(2)} m, ${(ratio * 100).toFixed(0)} % of Komar–Gaughan ${empirical.toFixed(2)} m`,
+      });
+      const off = Math.abs(run.setBreakZ - run.takeOffZ);
+      gates.push({ name: `${label(run)} take-off`, pass: off <= TAKE_OFF_TOLERANCE, detail: `take-off ${off.toFixed(0)} m from the sets' break` });
+    }
+    if ((run.source === 'practice' || (run.heightAt === 'edge' && run.significantHeight <= SMALL_DAY)) && reference) {
+      const ratio = run.typical / reference.typical;
+      gates.push({
+        name: run.source === 'practice' ? label(run) : `${label(run)} small day`, pass: Math.abs(ratio - 1) <= SMALL_TOLERANCE,
+        detail: `H1/3 ${run.typical.toFixed(2)} m, ${(ratio * 100).toFixed(1)} % of today's ${reference.typical.toFixed(2)} m`,
+      });
+    }
   }
   return gates;
 }
