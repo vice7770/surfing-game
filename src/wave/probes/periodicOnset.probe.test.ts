@@ -15,7 +15,7 @@ import { BREAKING_ONSET } from '../SurfZoneSimulation';
 describe.runIf(process.env.PROBE)('periodic onset on the Padang Padang transect', () => {
   it('logs the onset depth per height and period', () => {
     const log = process.env.LOG ?? 'periodic-onset.txt';
-    writeFileSync(log, 'T s | H at 7 m | η at the foot (median, waves) | fresh onset: still depth under the crest (median, 10–90 %)\n');
+    writeFileSync(log, 'T s | H at 7 m | η at the foot (median, waves) | η at 5.5 m | fresh onset: still depth under the crest (median, 10–90 %)\n');
     const heights = (process.env.HEIGHTS ?? '1,1.5,2,2.5,3,3.5').split(',').map(Number);
     const periods = (process.env.PERIODS ?? '14,16,17,18').split(',').map(Number);
     for (const period of periods) for (const height of heights) appendFileSync(log, `${run(height, period)}\n`);
@@ -32,6 +32,9 @@ const END = TOP + 150;
 const ABSORB = 60;
 const LENGTH = END + ABSORB;
 const depthAt = (z: number) => (z < TOE ? H0 : z < TOP ? H0 - SLOPE * (z - TOE) : FLAT);
+/** The reference depth nearer the break, still seaward of every onset (the advisor, 2026-09-30), m, and where it is. */
+const REFERENCE = 5.5;
+const REFERENCE_Z = TOE + (H0 - REFERENCE) / SLOPE;
 
 function run(height: number, period: number): string {
   const dz = 1;
@@ -67,6 +70,9 @@ function run(height: number, period: number): string {
   const toeRow = solver.rowBelow(TOE);
   const eta = (row: number) => solver.h[row * nx + column] + solver.bed[row * nx + column];
   const feet: number[] = [];
+  const references: number[] = [];
+  const referenceRow = solver.rowBelow(REFERENCE_Z);
+  let referenceCrest = -Infinity;
   const onsets: number[] = [];
   let footCrest = -Infinity;
   let footPeriod = Math.floor(solver.time / period);
@@ -78,11 +84,16 @@ function run(height: number, period: number): string {
     // The crest passing the foot: the largest η at the toe in each period.
     const n = Math.floor(solver.time / period);
     if (n !== footPeriod) {
-      if (solver.time > settled + period) feet.push(footCrest);
+      if (solver.time > settled + period) {
+        feet.push(footCrest);
+        references.push(referenceCrest);
+      }
       footCrest = -Infinity;
+      referenceCrest = -Infinity;
       footPeriod = n;
     }
     footCrest = Math.max(footCrest, eta(toeRow));
+    referenceCrest = Math.max(referenceCrest, eta(referenceRow));
     // The most seaward cell on the wedge rising at the fresh onset: a new wave's when it jumps seaward.
     let face = -1;
     for (let row = toeRow; row < solver.rowBelow(END); row += 1) {
@@ -107,5 +118,5 @@ function run(height: number, period: number): string {
     const sorted = [...values].sort((a, b) => a - b);
     return sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))] : NaN;
   };
-  return `${period} | ${height} | ${q(feet, 0.5).toFixed(2)} m (${feet.length}) | ${q(onsets, 0.5).toFixed(2)} m (${q(onsets, 0.1).toFixed(2)}–${q(onsets, 0.9).toFixed(2)}, ${onsets.length} waves)`;
+  return `${period} | ${height} | ${q(feet, 0.5).toFixed(2)} m (${feet.length}) | ${q(references, 0.5).toFixed(2)} m | ${q(onsets, 0.5).toFixed(2)} m (${q(onsets, 0.1).toFixed(2)}–${q(onsets, 0.9).toFixed(2)}, ${onsets.length} waves)`;
 }
