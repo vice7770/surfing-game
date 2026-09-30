@@ -29,7 +29,7 @@ export PATH="$PATH:$BASILISK"
 PY="${PYTHON:-python3}"   # needs numpy, scipy and matplotlib
 
 # name:h0 m:H/h0:period s:slope:flat depth/h0:domain/h0:switch t:end t:window from:window to (h0 and sqrt(h0/g))
-CASES_ALL="reef42:10:0.3:14:0.238095:0.15:48:17:25:20:36 reef60:10:0.3:14:0.166667:0.15:48:18:27:21:38 padang19:7:0.3:16:0.0526316:0.1785714:64:33:43:36:58"
+CASES_ALL="reef42:10:0.3:14:0.238095:0.15:48:17:25:20:36 reef60:10:0.3:14:0.166667:0.15:48:18:27:21:38 padang19:7:0.3:16:0.0526316:0.1785714:64:31:41:37:56"
 
 build_basilisk() {
   [ -x "$BASILISK/qcc" ] && return
