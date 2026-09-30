@@ -8,10 +8,21 @@ Each case at the last output before touchdown, simulated / fitted. The fits are 
 
 | Case | Level | Slope along the path | H0/h0 | ψ0 | H_I | A_O/H_I² | A_J/H_I² | W_O/L_O | θ_O (°) | L/W (fit) | Void L × W (m) | t vertical / τ touchdown | Frames kept | Wall | Size |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| pad19-a20-l12 | 12 | 1:19.0 | 0.2 | 0.0787 | 0.281 (1.97 m) | 0.052 / 0.376 ✗ | 0.109 / 0.203 ✗ | 0.496 / 0.429 ✓ | 57.0 / 30.5 ✗ | 2.01 (2.06) Padang ✓ | 0.90 × 0.45 | 24.401 / 0.699 | 145 (2 refilled) | 265 min | 145 KB |
-| pad19-a30-l12 | 12 | 1:19.0 | 0.3 | 0.0711 | 0.368 (2.58 m) | 0.191 / 0.335 ✗ | 0.212 / 0.166 ✓ | 0.474 / 0.416 ✓ | 40.6 / 35.4 ✗ | 2.11 (2.06) Padang ✓ | 2.11 × 1.00 | 21.241 / 1.184 | 158 (5 refilled) | 282 min | 158 KB |
-| pad19-a45-l12 | 12 | 1:19.0 | 0.45 | 0.0643 | 0.524 (3.67 m) | 0.230 / 0.299 ✗ | 0.176 / 0.135 ✓ | 0.435 / 0.405 ✓ | 40.3 / 39.1 ✓ | 2.30 (2.06) reefs ✓ | 3.34 × 1.45 | 17.681 / 1.369 | 163 (11 refilled) | 298 min | 163 KB |
-| periodic-padang19s-l12 | 12 | 1:19.0 | 0.1414 | 0.0858 | 0.320 (2.24 m) | 0.035 / 0.414 ✗ | 0.077 / 0.243 ✗ | 0.454 / 0.441 ✓ | 39.3 / 25.4 ✗ | 2.20 (2.06) reefs ✓ | 0.86 × 0.39 | 39.400 / 0.975 | 176 (9 refilled) | — | 176 KB |
+| pad19-a20-l12 | 12 | 1:19.0 | 0.2 | 0.0787 | 0.281 (1.97 m) | 0.052 / 0.376 ✗ | 0.109 / 0.203 ✗ | 0.496 / 0.429 ✓ | 57.0 / 30.5 ✗ | 2.01 (2.06) Padang ✓ | 0.90 × 0.45 | 24.401 / 0.699 | 145 (2 refilled) | 265 min | 146 KB |
+| pad19-a30-l12 | 12 | 1:19.0 | 0.3 | 0.0711 | 0.368 (2.58 m) | 0.191 / 0.335 ✗ | 0.212 / 0.166 ✓ | 0.474 / 0.416 ✓ | 40.6 / 35.4 ✗ | 2.11 (2.06) Padang ✓ | 2.11 × 1.00 | 21.241 / 1.184 | 158 (5 refilled) | 282 min | 159 KB |
+| pad19-a45-l12 | 12 | 1:19.0 | 0.45 | 0.0643 | 0.524 (3.67 m) | 0.230 / 0.299 ✗ | 0.176 / 0.135 ✓ | 0.435 / 0.405 ✓ | 40.3 / 39.1 ✓ | 2.30 (2.06) reefs ✓ | 3.34 × 1.45 | 17.681 / 1.369 | 163 (11 refilled) | 298 min | 164 KB |
+| periodic-padang19s-l12 | 12 | 1:19.0 | 0.1414 | 0.0858 | 0.320 (2.24 m) | 0.035 / 0.414 ✗ | 0.077 / 0.243 ✗ | 0.454 / 0.441 ✓ | 39.3 / 25.4 ✗ | 2.20 (2.06) reefs ✓ | 0.86 × 0.39 | 39.400 / 0.975 | 176 (9 refilled) | — | 178 KB |
+
+## The lip tip
+
+The tip landmark's velocity over the open time, a local line over ±4 frames (the contact's lip flow; the advisor's ruling 1, 2026-09-30), in √(g h0), and its fall in g (a line through its vertical velocity). The advisor measured padang19s's crest at C = 0.83 √(g h0), its tip at 0.87–0.98 C horizontally and falling at about 0.57 g; Erinin 2023's lips run at 1.1–1.3 C [measured, lab].
+
+| Case | Median horizontal | Largest \|v\| | Fall (g) |
+|---|---|---|---|
+| pad19-a20-l12 | 0.94 | 1.17 | 0.64 |
+| pad19-a30-l12 | 1.17 | 1.32 | 0.66 |
+| pad19-a45-l12 | 1.42 | 1.59 | 0.71 |
+| periodic-padang19s-l12 | 0.77 | 0.89 | 0.55 |
 
 ## Landmarks
 

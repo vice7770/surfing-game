@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { caseFromLibrary, libraryJson, type LibraryJson } from './caseFromLibrary';
+import { caseFromLibrary, libraryJson, TIP_FIT_FRAMES, tipVelocities, type LibraryJson } from './caseFromLibrary';
 import { LANDMARK, PROFILE_POINTS } from './ProfileLibrary';
 
 // Round 6's Padang Padang sample: level 11 on the 1:24.8 wedge, every second output from τ = −0.6 to 3.0.
@@ -32,6 +32,11 @@ describe('a Basilisk library as a barrel case', () => {
     expect(Math.abs(crest(f) + (position - f) * (crest(f + 1) - crest(f)))).toBeLessThan(1e-5);
   });
 
+  it('stores the lip tip’s velocity, two floats a frame', () => {
+    expect(barrel.tipVelocity!.length).toBe(2 * count);
+    expect(Array.from(barrel.tipVelocity!).every(Number.isFinite)).toBe(true);
+  });
+
   it('refills flagged frames from their clean neighbours, and counts them', () => {
     const kept = sample.frames.slice(0, count);
     expect(refilled).toBe(kept.filter((frame) => frame.flags.length > 0).length);
@@ -47,5 +52,32 @@ describe('a Basilisk library as a barrel case', () => {
   it('refuses frames off the τ step, as a run analysed without its fine output’s start gives', () => {
     const coarse = { ...sample, frames: [{ ...sample.frames[0], tau: sample.frames[0].tau - 1 }, ...sample.frames] };
     expect(() => caseFromLibrary(coarse, 'coarse', 0.1785714)).toThrow(/τ step/);
+  });
+});
+
+describe('the lip tip’s velocity', () => {
+  it('recovers a steady tip’s velocity by a local line, one-sided at the ends', () => {
+    const count = 12;
+    const step = 0.025;
+    const frames = new Float32Array(count * 2 * PROFILE_POINTS);
+    for (let f = 0; f < count; f += 1) {
+      frames[f * 2 * PROFILE_POINTS + 2 * LANDMARK.lip] = 0.8 * f * step;
+      frames[f * 2 * PROFILE_POINTS + 2 * LANDMARK.lip + 1] = 1 - 0.3 * f * step;
+    }
+    const v = tipVelocities(frames, step);
+    for (let f = 0; f < count; f += 1) {
+      expect(v[2 * f]).toBeCloseTo(0.8, 4);
+      expect(v[2 * f + 1]).toBeCloseTo(-0.3, 4);
+    }
+    expect(TIP_FIT_FRAMES).toBe(4);
+  });
+
+  it('smooths a tip that steps a cell at a time', () => {
+    const count = 20;
+    const frames = new Float32Array(count * 2 * PROFILE_POINTS);
+    // A landmark stepping 0.01 h0 every other frame: 0.2 h0/τ on average at a 0.025 step.
+    for (let f = 0; f < count; f += 1) frames[f * 2 * PROFILE_POINTS + 2 * LANDMARK.lip] = 0.01 * Math.floor(f / 2);
+    const v = tipVelocities(frames, 0.025);
+    for (let f = TIP_FIT_FRAMES; f < count - TIP_FIT_FRAMES; f += 1) expect(v[2 * f]).toBeCloseTo(0.2, 1);
   });
 });

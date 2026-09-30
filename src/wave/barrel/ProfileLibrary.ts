@@ -29,6 +29,8 @@ export interface BarrelCase {
   touchdown: number;
   /** Per frame, PROFILE_POINTS (x, y) pairs in h0: x forward from the crest at τ = 0, y up from still water. */
   frames: Float32Array;
+  /** Per frame, the lip tip's velocity (along x, up) in √(g h0), a local line over ±4 frames; absent in a BRL1 file (zero). */
+  tipVelocity?: Float32Array;
 }
 
 export interface ProfileQuery {
@@ -50,6 +52,14 @@ export interface ProfileLookup {
   /** τ at touchdown, and between two frames, s. */
   touchdownSeconds: number;
   frameSeconds: number;
+  /** The lip tip's velocity, m/s: along the profile's x (the slice's shoreward ray) and up (the advisor's ruling 1). */
+  tipAlong: number;
+  tipUp: number;
+  /**
+   * The last τ, s, one frame before touchdown in each case the slice blends: its frames there stand clear of the face
+   * (the jet ≥ 2 cells off at level 12), so the contact holds its geometry there after touchdown, never self-crossing.
+   */
+  clearSeconds: number;
 }
 
 const FLOATS = 2 * PROFILE_POINTS;
@@ -59,6 +69,8 @@ const SLOPE_TOLERANCE = 0.2;
 export class ProfileLibrary {
   private readonly bySlope: BarrelCase[][];
   private readonly scratch = new Float32Array(FLOATS);
+  private readonly tipLower = new Float64Array(2);
+  private readonly tipUpper = new Float64Array(2);
 
   constructor(cases: readonly BarrelCase[]) {
     const groups = new Map<number, BarrelCase[]>();
@@ -76,17 +88,29 @@ export class ProfileLibrary {
       for (let i = 0; i < FLOATS; i += 1) out[i] += b.weight * (this.scratch[i] - out[i]);
     }
     for (let i = 0; i < FLOATS; i += 1) out[i] *= b.scale;
+    const tip = this.tipLower;
+    this.tipAt(b.lower, tau, tip);
+    if (b.upper !== b.lower) {
+      this.tipAt(b.upper, tau, this.tipUpper);
+      tip[0] += b.weight * (this.tipUpper[0] - tip[0]);
+      tip[1] += b.weight * (this.tipUpper[1] - tip[1]);
+    }
+    // √(g h0), the cases' velocity unit.
+    const speed = b.scale / b.unit;
     const phase = tau < 0 ? 'pre' : tau <= b.touchdown ? 'open' : 'post';
     return {
       caseId: b.weight < 0.5 ? b.lower.id : b.upper.id, clamped: b.clamped, scale: b.scale, phase,
       touchdownSeconds: b.touchdown * b.unit, frameSeconds: b.frameStep * b.unit,
+      tipAlong: tip[0] * speed, tipUp: tip[1] * speed, clearSeconds: b.clear * b.unit,
     };
   }
 
   /** A slice's scale and times, s, as `profileAt` finds them, without building its profile (the loft's refinement and budget). */
-  profileTimes(query: Omit<ProfileQuery, 'seconds'>): { scale: number; clamped: boolean; touchdownSeconds: number; frameSeconds: number } {
+  profileTimes(query: Omit<ProfileQuery, 'seconds'>): { scale: number; clamped: boolean; touchdownSeconds: number; frameSeconds: number; clearSeconds: number } {
     const b = this.bracket(query);
-    return { scale: b.scale, clamped: b.clamped, touchdownSeconds: b.touchdown * b.unit, frameSeconds: b.frameStep * b.unit };
+    return {
+      scale: b.scale, clamped: b.clamped, touchdownSeconds: b.touchdown * b.unit, frameSeconds: b.frameStep * b.unit, clearSeconds: b.clear * b.unit,
+    };
   }
 
   /** The cases a slice blends (the nearest slope's two bracketing its A0), its scale (h0, m) and τ's unit, s. */
@@ -122,6 +146,7 @@ export class ProfileLibrary {
       lower, upper, weight, clamped, scale, unit: Math.sqrt(scale / GRAVITY),
       touchdown: lower.touchdown + weight * (upper.touchdown - lower.touchdown),
       frameStep: lower.tauStep + weight * (upper.tauStep - lower.tauStep),
+      clear: Math.min(lower.touchdown - lower.tauStep, upper.touchdown - upper.tauStep),
     };
   }
 
@@ -136,5 +161,19 @@ export class ProfileLibrary {
       const a = c.frames[f * FLOATS + i];
       out[i] = a + t * (c.frames[next * FLOATS + i] - a);
     }
+  }
+
+  /** One case's tip velocity at τ, √(g h0), linear between frames as `frameAt` (zero for a BRL1 case). */
+  private tipAt(c: BarrelCase, tau: number, into: Float64Array): void {
+    into[0] = 0;
+    into[1] = 0;
+    if (!c.tipVelocity) return;
+    const count = c.tipVelocity.length / 2;
+    const position = Math.min(count - 1, Math.max(0, (tau - c.tauStart) / c.tauStep));
+    const f = Math.floor(position);
+    const next = Math.min(count - 1, f + 1);
+    const t = position - f;
+    into[0] = c.tipVelocity[2 * f] + t * (c.tipVelocity[2 * next] - c.tipVelocity[2 * f]);
+    into[1] = c.tipVelocity[2 * f + 1] + t * (c.tipVelocity[2 * next + 1] - c.tipVelocity[2 * f + 1]);
   }
 }

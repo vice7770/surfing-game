@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { decodeCase, encodeCase } from './profileFormat';
 import { LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
-import { toyCase } from './toyCase';
+import { GRAVITY } from '../dispersion';
+import { toyCase, tubeCase } from './toyCase';
 
 describe('the barrel profile library', () => {
   it('round-trips a case through its binary form', () => {
@@ -54,5 +55,33 @@ describe('the barrel profile library', () => {
     library.profileAt({ slope: 0.05, footHeight: 0.0105, footDepth: 0.035, seconds: 3 }, out);
     expect(out.every((v) => Number.isFinite(v))).toBe(true);
     expect(out[2 * LANDMARK.crest]).toBeLessThan(out[2 * LANDMARK.toe]);
+  });
+
+  it('round-trips a case with its tip velocities (BRL2), and reads a BRL1 file with none', () => {
+    const c = tubeCase(0.3);
+    const back = decodeCase(encodeCase(c));
+    expect(Array.from(back.frames)).toEqual(Array.from(c.frames));
+    expect(Array.from(back.tipVelocity!)).toEqual(Array.from(c.tipVelocity!));
+    const old = encodeCase(c).slice();
+    new DataView(old.buffer).setUint32(0, 0x42524c31, true);
+    const legacy = decodeCase(old.subarray(0, old.length - c.tipVelocity!.length * 4));
+    expect(Array.from(legacy.frames)).toEqual(Array.from(c.frames));
+    expect(legacy.tipVelocity).toBeUndefined();
+  });
+
+  it('gives the tip’s velocity in m/s, scaled by √(g h0), and the last clear time a frame before touchdown', () => {
+    const c = tubeCase(0.3);
+    const library = new ProfileLibrary([c]);
+    const out = new Float32Array(2 * PROFILE_POINTS);
+    const lookup = library.profileAt({ slope: c.slope, footHeight: 2.1, footDepth: 7, seconds: 0.1 }, out);
+    // One case: h0 = 2.1 / 0.3 = 7 m.
+    expect(lookup.tipAlong).toBeCloseTo(0.9 * Math.sqrt(GRAVITY * 7), 4);
+    expect(lookup.tipUp).toBeCloseTo(-0.3 * Math.sqrt(GRAVITY * 7), 4);
+    expect(lookup.clearSeconds).toBeCloseTo((c.touchdown - c.tauStep) * Math.sqrt(7 / GRAVITY), 6);
+    expect(library.profileTimes({ slope: c.slope, footHeight: 2.1, footDepth: 7 }).clearSeconds).toBe(lookup.clearSeconds);
+    // A BRL1 case has none: zero.
+    const legacy = new ProfileLibrary([toyCase(0.3, 0.1)]).profileAt({ slope: 0.05, footHeight: 2.1, footDepth: 7, seconds: 0.1 }, out);
+    expect(legacy.tipAlong).toBe(0);
+    expect(legacy.tipUp).toBe(0);
   });
 });

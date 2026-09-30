@@ -151,6 +151,8 @@ describe('the swept loft', () => {
     const query = { slope: 0.05, footHeight: 2.1, footDepth: 7 };
     const lookup = library().profileAt({ ...query, seconds: 0.2 }, out);
     const times = library().profileTimes(query);
-    expect(times).toEqual({ scale: lookup.scale, clamped: lookup.clamped, touchdownSeconds: lookup.touchdownSeconds, frameSeconds: lookup.frameSeconds });
+    expect(times).toEqual({
+      scale: lookup.scale, clamped: lookup.clamped, touchdownSeconds: lookup.touchdownSeconds, frameSeconds: lookup.frameSeconds, clearSeconds: lookup.clearSeconds,
+    });
   });
 });

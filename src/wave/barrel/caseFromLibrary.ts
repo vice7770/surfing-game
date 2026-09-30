@@ -20,6 +20,38 @@ export interface LibraryJson {
   frames: LibraryFrame[];
 }
 
+/** The tip's fit: a least-squares line over ±this many frames (±0.1 τ at the cases' 0.025 step; the advisor, 2026-09-30). */
+export const TIP_FIT_FRAMES = 4;
+
+/**
+ * The lip tip's velocity per frame, in √(g h0) (h0 per √(h0/g)): the slope of a least-squares line through its positions
+ * over ±TIP_FIT_FRAMES frames, fewer at the ends. Landmarks step a cell at a time, so frame-to-frame differences
+ * quantise at about 0.33 C (the advisor's ruling 1, 2026-09-30).
+ */
+export function tipVelocities(frames: Float32Array, step: number): Float32Array {
+  const floats = 2 * PROFILE_POINTS;
+  const count = frames.length / floats;
+  const out = new Float32Array(2 * count);
+  for (let i = 0; i < count; i += 1) {
+    const from = Math.max(0, i - TIP_FIT_FRAMES);
+    const to = Math.min(count - 1, i + TIP_FIT_FRAMES);
+    if (to === from) continue;
+    const mean = (from + to) / 2;
+    let sxx = 0;
+    let sx = 0;
+    let sy = 0;
+    for (let k = from; k <= to; k += 1) {
+      const d = k - mean;
+      sxx += d * d;
+      sx += d * frames[k * floats + 2 * LANDMARK.lip];
+      sy += d * frames[k * floats + 2 * LANDMARK.lip + 1];
+    }
+    out[2 * i] = sx / sxx / step;
+    out[2 * i + 1] = sy / sxx / step;
+  }
+  return out;
+}
+
 const RUN_FIELDS = ['level', 'dx_h0', 'slope', 'A0', 'h0_m', 'time_scale_s', 't_vertical', 't_impact'] as const;
 
 /**
@@ -37,6 +69,7 @@ export function libraryJson(raw: Record<string, unknown>): LibraryJson {
  * the roller later (basilisk-profiles.md, decision 4), and after touchdown the landmarks lose their meaning (round 6
  * §5.2), so the case keeps its frames up to one past touchdown. x is re-origined on the crest as the face goes
  * vertical (between the two frames either side of τ = 0). Frames whose landmark checks failed are refilled linearly from their nearest clean neighbours, and counted.
+ * The lip tip's velocity is fitted per frame (`tipVelocities`), for the contact's lip flow.
  */
 export function caseFromLibrary(json: LibraryJson, id: string, flatDepth: number): { barrel: BarrelCase; refilled: number } {
   const firstPost = json.frames.findIndex((frame) => frame.phase === 'post');
@@ -93,6 +126,7 @@ export function caseFromLibrary(json: LibraryJson, id: string, flatDepth: number
       tauStart: kept[0].tau,
       touchdown: json.run.t_impact - json.run.t_vertical,
       frames,
+      tipVelocity: tipVelocities(frames, step),
     },
     refilled,
   };

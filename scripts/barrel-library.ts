@@ -100,6 +100,7 @@ mkdirSync('public/barrels', { recursive: true });
 const entries: BarrelCaseEntry[] = [];
 const rows: string[] = [];
 const cleanliness: string[] = [];
+const tips: string[] = [];
 for (const run of runs) {
   const library = libraryJson(JSON.parse(readFileSync(`${runsDir}/${run}_library.json`, 'utf8')) as Record<string, unknown>);
   const a0 = a0Overrides.get(run);
@@ -136,6 +137,19 @@ for (const run of runs) {
     wall === undefined ? '—' : `${(wall / 60).toFixed(0)} min`,
     `${(bytes.length / 1024).toFixed(0)} KB`,
   ].join(' | '));
+  // The lip tip over the open time (the contact's lip flow), √(g h0), and its fall, g: a line through its vertical velocity.
+  const open = library.frames.slice(0, kept).map((frame, i) => ({ frame, i })).filter(({ frame }) => frame.phase === 'open');
+  const velocity = barrel.tipVelocity!;
+  const horizontal = open.map(({ i }) => velocity[2 * i]).sort((a, b) => a - b);
+  const largest = Math.max(...open.map(({ i }) => Math.hypot(velocity[2 * i], velocity[2 * i + 1])));
+  const meanTau = open.reduce((sum, { frame }) => sum + frame.tau, 0) / open.length;
+  let stt = 0;
+  let stv = 0;
+  for (const { frame, i } of open) {
+    stt += (frame.tau - meanTau) ** 2;
+    stv += (frame.tau - meanTau) * velocity[2 * i + 1];
+  }
+  tips.push(`| ${id} | ${fixed(horizontal[Math.floor(horizontal.length / 2)], 2)} | ${fixed(largest, 2)} | ${fixed(stt > 0 ? -stv / stt : null, 2)} |`);
   for (const phase of ['pre', 'open', 'post'] as const) {
     const frames = library.frames.filter((frame) => frame.phase === phase);
     const flags = new Map<string, number>();
@@ -167,6 +181,14 @@ Each case at the last output before touchdown, simulated / fitted. The fits are 
 | Case | Level | Slope along the path | H0/h0 | ψ0 | H_I | A_O/H_I² | A_J/H_I² | W_O/L_O | θ_O (°) | L/W (fit) | Void L × W (m) | t vertical / τ touchdown | Frames kept | Wall | Size |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 ${rows.map((row) => `| ${row} |`).join('\n')}
+
+## The lip tip
+
+The tip landmark's velocity over the open time, a local line over ±4 frames (the contact's lip flow; the advisor's ruling 1, 2026-09-30), in √(g h0), and its fall in g (a line through its vertical velocity). The advisor measured padang19s's crest at C = 0.83 √(g h0), its tip at 0.87–0.98 C horizontally and falling at about 0.57 g; Erinin 2023's lips run at 1.1–1.3 C [measured, lab].
+
+| Case | Median horizontal | Largest \\|v\\| | Fall (g) |
+|---|---|---|---|
+${tips.join('\n')}
 
 ## Landmarks
 
