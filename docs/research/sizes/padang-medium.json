@@ -1,0 +1,19 @@
+[
+ {
+  "spot": "padang",
+  "source": "buoy",
+  "significantHeight": 2.2,
+  "period": 17,
+  "heightAt": "deep",
+  "takeOffZ": -238.59137870490895,
+  "stepMs": 1107.9848725495804,
+  "cells": 197440,
+  "typical": 2.92432048603977,
+  "sets": 3.5631499982471784,
+  "waves": 174,
+  "setBreakZ": -215.5,
+  "takeOffTypical": 3.608250205020667,
+  "takeOffSets": 3.8846571271406045,
+  "takeOffWaves": 9
+ }
+]
