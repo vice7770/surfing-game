@@ -87,7 +87,7 @@ The physics, dev and game suites (754 tests) with the curve on, against today's 
 | **A 1.5, near 15°** | **6: the rail change from a carve at 8 m/s (falls), the held rider settling (0.32 against 0.15), and four drawn-body, online-body and HUD checks** | **2** |
 | A 1.5, near 20° (rider tests) | 2: the rail change at 6 m/s (turns 18°, not 30°), mid-turn Compress at 11 m/s (0.99 against 0.87 rad/s) | 2 |
 | A 2.0, near 15–20° (rider tests) | 5–8: rail changes, the crouched turn at 11 m/s, top turns at 8 m/s | 2 |
-| A 1.5, near 5°, only leaning further to the same side | 8 | 2 |
+| A 1.5, near 5°, only leaning further to the same side (rider tests) | 8 | 2 |
 
 The two pinned tests the curve passes are the hard turn ("turns hard with a full lean and a crouch, keeping most of its speed") and Compress taken mid-turn at 11 m/s.
 
