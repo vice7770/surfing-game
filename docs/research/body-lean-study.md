@@ -81,8 +81,8 @@ On "continue" after the reading above. The Canyon's practice sea with the same s
 **The 28 falls from standing** (20 `balance`, 8 `lost board`; the attempts' other `lost board` falls came before the rider stood):
 
 - **The board had slowed below planing.** 25 of 28 fell below 4 m/s and 18 below 3 m/s; the median was 2.7 m/s. At the fall the feet carried almost nothing (0.00–0.2 body weights in most).
-- **16 had the feet at their edge** in the last 0.5 s, 14 of them on the lean's side. The body, still banked, fell into a turn the slowing board no longer pulled. They ended bottom turns (6), top turns and cutbacks (6), drops and climbs (4).
-- **About 10 tipped with the feet well inside across,** so at their ends along the board. The body pitched over a stopping board, mostly in drops (at 0.8–2.8 m/s, still loaded 0.5–0.7).
+- **16 had the feet at their edge** in the last 0.5 s, 14 of them on the lean's side. The body, still banked, fell into a turn the slowing board no longer pulled. They ended bottom turns (7), top turns and cutbacks (5), drops and climbs (4).
+- **9 tipped with the feet well inside across,** so at their ends along the board. The body pitched over a stopping board, mostly in drops and just after standing (4 and 2), at 0.8–3.1 m/s, still loaded 0.5–0.7 in all but one.
 - The board's heave in the last 0.5 s stayed mostly within −0.6 to +0.6 g. The water was not throwing the rider.
 
 ### Reading
