@@ -664,7 +664,7 @@ export class AttachedRider {
   trim = 0;
   /** Standing, how deep the crouch: 0 (riding stance) to 1 (deepest). */
   crouch = 0;
-  /** Standing, Compress: 0 (none) to 1 (full depth, weight forward), taken alone or over the crouch. */
+  /** Standing, Compress: 0 (none) to 1 (full depth; the weight stays the trim's), taken alone or over the crouch. */
   compress = 0;
   /** Standing, the upper body's rotation asked for (`RideInput.rotate`), −1 to 1 toward the board's +x; NaN when none is (the body turns with the ride). */
   rotate = Number.NaN;
