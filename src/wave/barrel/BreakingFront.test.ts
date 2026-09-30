@@ -5,7 +5,7 @@ import { onsetTiming } from './sliceClock';
 
 /**
  * A 7 m wedge foot under 16 s swell: a crest 1.6 m high over 6–5 m joins where the solver first breaks it, 3.18 m deep,
- * and, 1.6 m at the foot too, throws 2.52 m deep.
+ * and, 1.6 m at the foot too, throws 2.456 m deep.
  */
 const TIMING = onsetTiming(7, 16);
 const FOOT = 1.6;
@@ -62,7 +62,7 @@ describe('the breaking front as lines', () => {
 
   it('joins at the crossing when the solver breaks it before its throw, and never after', () => {
     expect(JOIN).toBeCloseTo(3.18, 12);
-    expect(THROW).toBeCloseTo(2.52, 12);
+    expect(THROW).toBeCloseTo(2.456, 12);
     const late = new BreakingFront(1, TIMING);
     late.update([sample(0, 10, 7, 0)], 1, 0);
     late.update([sample(0, 12, JOIN, 0)], 1, 1);

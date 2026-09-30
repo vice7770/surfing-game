@@ -15,15 +15,16 @@ export const CLOCK = { smoothing: 2, bunched: 0.1, earliest: -3 } as const;
 /**
  * Where the lip throws: the still depth under the crest where the Navier–Stokes wave's face goes vertical (the
  * library's τ = 0), against the crest's height at the wedge's foot, h0 = 7 m (the advisor's periodic Basilisk runs on
- * round 6's Padang Padang transect, level 12, 2026-09-30: 14 s 1.22 m → 2.45 m, 16 s 1.65 m → 2.38 m, 18 s 2.50 m →
- * 2.97 m). The lag after the solver's onset read 0.22, 2.30 and 1.60 √(h0/g) in those runs, no function of depth (the
- * kennedyLag probe's solitary lags ran 2.3–2.8), so the throw is keyed on the Navier–Stokes depth itself and the
- * solver's onset only has to lead it (the advisor's option b). Breaking depth is set mainly by height (d_b ≈ H_b/γ),
- * and the three runs confound height with period (the taller were the longer), so one line in height through all
- * three, residuals −0.11, +0.16 and −0.05 m [inferred], clamped to the measured heights: past a 2.5 m foot crest it
- * would extrapolate. Period dependence is untested (the next run: the same height at another period). Provisional.
+ * round 6's Padang Padang transect, level 12, 2026-09-30: 16 s 0.99 m → 1.99 m, 14 s 1.22 m → 2.45 m, 16 s 1.65 m →
+ * 2.38 m, 18 s 2.50 m → 2.97 m). The lag after the solver's onset read 0.22, 2.30 and 1.60 √(h0/g) in the first runs,
+ * no function of depth (the kennedyLag probe's solitary lags ran 2.3–2.8), so the throw is keyed on the Navier–Stokes
+ * depth itself and the solver's onset only has to lead it (the advisor's option b). Breaking depth is set mainly by
+ * height (d_b ≈ H_b/γ), and the runs confound height with period, so one line in height through all four, residuals
+ * within 0.21 m [inferred] (the three-point line put the Small wave 0.26 m too deep), clamped to the measured heights:
+ * past them it would extrapolate. Period dependence is untested (the next run: the same height at another period).
+ * Provisional.
  */
-const THROW_DEPTH = { intercept: 1.8, slope: 0.45, heights: [1.22, 2.5] } as const;
+const THROW_DEPTH = { intercept: 1.56, slope: 0.56, heights: [0.99, 2.5] } as const;
 
 /**
  * Where the game's solver first breaks swell, fresh, on the same transect (the periodicOnset probe, 2026-09-30): one
