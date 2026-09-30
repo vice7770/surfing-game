@@ -66,10 +66,32 @@ A "Water physics research" session advises on every lip, tube, contact or foam s
 - Their consult log is `docs/research/water-physics/consult-log.md` on their branch (PR #82). Never edit it.
 - Read their files only through `git fetch origin claude/water-physics-advisor-local` then `git show origin/claude/water-physics-advisor-local:<path>`.
 
-**Questions sent 2026-09-30, answer pending** (decide on their reply):
-1. **The cut at 0.5.** As ruled, an overturned slice with weight < 1 is whole from 0.5 and dropped below. But the drawn weight is a vertical lerp at the same (x, z), which keeps a lip over its face, so the contact could follow the drawing exactly. The cut makes a full lip end abruptly at a front's 2.5 m end blend and at the fade. The switch is one `if` in `SweptLoft.loftFront` (contact mode).
-2. **After touchdown.** The contact holds each slice's last clear frame (one before touchdown) instead of trimming the jet into a cavity loop, because the cases keep only one frame past touchdown. Alternatively, the drawing could hold it too, so drawing = contact exactly.
-3. The anchor's motion enters the lip flow only while it hands over, and where fronts overlap the first front's strip wins.
+**The advisor's answers on PR 4 (2026-09-30), to build next on this branch.** They confirmed the rest as written: parity, half-open ties and folds, the floor and ceiling fields, `surfaceAt` as the lowest crossing, the lip flow, the tube states, covered and clearance.
+
+1. **After touchdown: keep the contact's hold.**
+   - The contact holds the last clear frame (the jet ≥ 2 cells off the face).
+   - The drawing keeps the touchdown frame. It's the visual event, and one frame is below what a body part resolves. Don't hold the drawing too: at bigger scales the slit would show (2 cells ≈ 0.2 m at h0 7 m, 0.3 m at 10 m).
+   - Neither may outlast the pocket. From touchdown, fade the slice, drawing and contact together, over the game's own collapse time for that tube, √(2W/g) with W the void's height. That is `PlungingLip`'s `collapsed`, the roof's free fall.
+     - It comes to about 0.3 s for the Small swell's void (W ≈ 0.5 m) and 0.6 s for a Reef-sized one (1.9 m). It is provisional: G9's mechanism, not a measurement.
+     - This replaces `LOFT.handover`'s 0.3 s fade after touchdown.
+     - W per slice needs the case's void height: add `W_O` from the metrics to the case header, scaled by h0, or measure it on the held frame (the throat's underside over the face).
+   - During the collapse, keep the held frame's jet velocity, blended by the same weight: the water is still coming down.
+2. **Follow the drawing; drop the 0.5 cut.**
+   - The lerp toward the same h by the same e preserves order (y1 − y2 becomes e(y1 − y2)), so parity holds and the lip shrinks as drawn.
+   - Remove the contact-mode cut in `SweptLoft.loftFront` and `LoftResult.cuts`, and rewrite its test.
+   - Blend the lip's velocity toward the solver's flow by the same e (per slice, from `sliceWeight`).
+   - Add a test: the per-vertex lerp keeps order only where e and h change slowly across a triangle, so sample lerped slices along vertical lines and assert face < underside < top. The tip's shared vertices keep the fold safe.
+3. **Overlapping fronts:** first-front-wins is fine only if the drawing uses the same rule; today the drawing shows both. Count the overlaps in `SweptContact.stats`. If they turn out common, prefer the front whose crest is nearer the point along the ray.
+4. **The slope clamp (flag 1):** raise `MIN_NORMAL_Y` in `PhysicalSurfWater` from 0.1 to 0.5 (|s| ≤ 1.73, at most 2 × support), provisional.
+   - Buoyancy is support × (−s_x, 1, −s_z), which grows as 1/n_y, so 0.1 pushes a body sideways at up to 10 × its buoyancy on the tube's back wall.
+   - Better still: clamp at the steepest slopes the height field already gives under riders on the same seas.
+   - Keep the unclamped normal (`normalX/Y/Z`) for anything that plans off the face.
+5. **No buoyancy in the lip's water (flag 2).** A falling jet's pressure is near atmospheric, so its share takes drag only.
+   - This applies to the ceiling share and to a part in the curl's water (`waterFloorY` defined). In `AttachedRider.wetForce`, pass a flag that zeroes `support`.
+   - It replaces their earlier "leave it", which held only while the slope stayed small.
+6. **Check the anchor velocity (flag 3).** During a handover, compare the stored-velocity lip with a finite difference of the drawn tip over a step; they should agree within the smoothing. If not, the missing term is the blend weight × (the solver crest's speed − the library crest's).
+
+They asked for the tip table (in `barrel-cases.md`, sent) and the cost numbers (sent; the unloaded rerun is still owed).
 
 ## PR 4, the contact (this branch)
 
@@ -98,7 +120,7 @@ Deferred minors:
   - It logs the update per step, µs per query through open tubes, and a standing rider's cost (2,656 samples a step × µs).
   - On the loaded M1 the toy tube gave 6.4 µs a query, about 17 ms a step for a rider wholly in a tube. If an unloaded run agrees it is heavy, take the advisor's fallback: build each body's slice once a step and lerp per substep. Or precompute each quad's along range per update to shorten the query's scan.
 - [ ] Ride a tube by hand at Padang Padang, and take the screenshots owed from #92 (both looks). The browser pane must be shown: a hidden pane throttles the game to about 1.5 fps.
-- [ ] Put the advisor's answers to the pending questions into the code and the doc.
+- [ ] Build the advisor's six answers above, with tests, and update `docs/research/barrel-library.md` ("The contact") and PR #95's description.
 - [ ] Agree Part D's fields (`covered`, `clearance`, `tube`) with the Reef owner's session when it runs.
 
 ## Next PRs
