@@ -93,7 +93,8 @@ Read in this order:
   - **The curl's colour fix,** from [tube-colour-fix.md](tube-colour-fix.md), then PR 6 (the Rich lip glow and dark throat), on `claude/padang-curl-colour` and `claude/padang-rich-shading`. It diagnoses the curl's ribbons and slab first.
   - **PR 4's remaining items** (the handoff's advisor items 1–7, and the probe rerun) on `claude/padang-contact` (#95).
   - **PR 5,** the crash curve, parcels and sound, on `claude/padang-crash`. Its plan comes to the advisor first.
-  - **PR 7** waits for the owner's look at Padang Padang and for the Reef session's agreement. Every other spot then needs its own library cases.
+  - **PR 7's preparation** is on `claude/padang-every-spot`, with no change in behaviour: each spot's cases and `BARREL_SLOPE`, the switch mechanics, and the deletion map. The Reef's two libraries are built (`periodic-runs.md` §9); the Canyon, Point and Beach need runs, and gentle beaches need level 13 on the M4 Pro. The flip itself waits for the owner's look and the Reef session, and the deletion waits for PR 5.
+  - **Merges:** the auto-mode check refuses this session's `gh pr merge`, even after a review and the owner's standing "check and merge" (2026-10-01). The owner merges, or adds a Bash allow rule for `gh pr merge`.
   - **One advisor branch:** on 2026-09-30/10-01 a second advisor session on the other machine wrote the colour fix on `main-sshdns`, and it was merged into this branch (d72cbe8). Before continuing, merge any other advisor branch's commits, so the consult log stays one record.
 - **The Reef (Teahupo'o):**
   - Parts A–C are merged (#54, #57, #60).
