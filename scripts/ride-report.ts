@@ -339,10 +339,14 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
   return { rides, attempts: bots.reduce((sum, b) => sum + b.autopilot.attempts, 0), stands, outcomes, durations, curlShares, lostWave, weights, shares };
 }
 
-/** Forsyth et al. 2024 (the survey's §8): accomplished surfers' turns, and the radius and lateral load they imply. */
+/**
+ * Forsyth et al. 2024 (the survey's §8): accomplished surfers' turns. They measured no radius or pull: the
+ * bracketed ones are speed / yaw rate and speed × yaw rate, which read the heading's turn and so overstate the path's
+ * pull on a board that pivots (the angulation study); the analyzer's own columns read the path.
+ */
 const FORSYTH: Partial<Record<ManeuverKind, string>> = {
-  'bottom turn': '| Forsyth 2024 bottom turn | 3.8 per wave | 0.96 | 99 | 1.9 | 7.3 | 3.8 | 1.41 | 42 | — |',
-  cutback: '| Forsyth 2024 cutback / top turn | | 0.96 | 152 | 3.0 | 6.7 | 2.2 | 2.05 | 75 | — |',
+  'bottom turn': '| Forsyth 2024 bottom turn | 3.8 per wave | 0.96 | 99 | 1.9 | 7.3 | (3.8) | (1.41) | 42 | — |',
+  cutback: '| Forsyth 2024 cutback / top turn | | 0.96 | 152 | 3.0 | 6.7 | (2.2) | (2.05) | 75 | — |',
 };
 
 /** The analyzer's reading of the rides: how they ended, their turns beside Forsyth's, and the speed kept from bottom turn to top turn. */
@@ -372,9 +376,11 @@ function turnTables(rides: Ride[]): string {
 
 Ride ends (the ride analyzer): ${[...ends].map(([e, c]) => `${e} ×${c}`).join(', ') || 'none'}${unread ? `; ${unread} ride(s) still open when the rider was relaunched` : ''}. Turns per ride ${fixed(maneuvers.length / Math.max(1, analyses.length))}.
 
-| Turn | Count | Duration s | Yaw ° | Peak yaw rate rad/s | Speed in m/s | Radius m | Lateral g | Rail ° | In the pocket |
+| Turn | Count | Duration s | Yaw ° | Peak yaw rate rad/s | Speed in m/s | Path's radius m | Path's pull g | Rail ° | In the pocket |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 ${rows.join('\n')}
+
+The radius and the pull are the path's, as the rider rode it, averaged over the turn; Forsyth's, in brackets, are speed / yaw rate and speed × yaw rate (they measured neither), which overstate a pivoting board's pull.
 
 Speed kept from a bottom turn into the next top turn: ${fixed(mean(kept), 2)} (${kept.length} pair(s)); Forsyth 2024's "turn flow" is 0.88–0.95.`;
 }
