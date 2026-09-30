@@ -103,10 +103,14 @@ export class BreakingFront {
   private tracks: CrestTrack[] = [];
   /** Links refused since the start because the two crests joined too far apart to be one wave (a diagnostic). */
   splits = 0;
-  /** Crests followed from past the foot unsized, dropped having crossed without breaking, and lost unjoined (diagnostics). */
-  unsized = 0;
+  /**
+   * Crests followed from the foot that joined, crossed their join depth without breaking, and were lost before either;
+   * and crests first seen past the foot (reformed and broken water), never sized (diagnostics).
+   */
+  joins = 0;
   unbroken = 0;
   lost = 0;
+  unsized = 0;
   private readonly linkReach: number;
   private readonly matchReach: number;
 
@@ -156,6 +160,7 @@ export class BreakingFront {
           next.crossed = track.seen + f * (time - track.seen);
         }
         if (next.crossed !== null && s.strength > 0 && time - next.crossed <= JOIN_WINDOW) {
+          this.joins += 1;
           points.push({
             id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
             // Its clock starts at the library's earliest frame; the first advance puts it where the fit does.
@@ -174,7 +179,7 @@ export class BreakingFront {
     this.points = this.link(points);
     this.held = previous.filter((old) => !matched.has(old) && time - old.seen <= HOLD);
     const kept = this.tracks.filter((old) => !followed.has(old) && time - old.seen <= HOLD);
-    this.lost += this.tracks.length - followed.size - kept.length;
+    for (const old of this.tracks) if (!followed.has(old) && !kept.includes(old) && old.footHeight !== null) this.lost += 1;
     this.tracks = [...tracks, ...kept];
   }
 
