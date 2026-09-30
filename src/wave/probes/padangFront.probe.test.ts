@@ -1,6 +1,7 @@
 import { appendFileSync, writeFileSync } from 'node:fs';
 import { describe, it } from 'vitest';
 import { PADANG } from '../Bathymetry';
+import type { FrontPoint } from '../barrel/BreakingFront';
 import { columnCrests, type CrestSample } from '../barrel/crestOnset';
 import { SurfZoneSimulation, edgeHeight } from '../SurfZoneSimulation';
 import { PADANG_SPREADING } from '../../game/PhysicalMode';
@@ -49,7 +50,8 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
     const holding = new Map<number, number>();
     const lastTau = new Map<number, number>();
     const holds: number[] = [];
-    let splitsBefore = 0;
+    // The join gaps across this second's split boundaries (neighbouring columns within the link reach, on two fronts).
+    let gaps: number[] = [];
 
     for (let frame = 0; frame < seconds * 30; frame += 1) {
       simulation.step(1 / 30);
@@ -91,6 +93,13 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
         holding.delete(id);
       }
       for (const id of [...lastTau.keys()]) if (!seenNow.has(id)) lastTau.delete(id);
+      const byColumn = new Map<number, FrontPoint[]>();
+      for (const point of simulation.front!.points) byColumn.set(point.column, [...(byColumn.get(point.column) ?? []), point]);
+      for (const point of simulation.front!.points) {
+        for (const other of byColumn.get(point.column + 1) ?? []) {
+          if (other.front !== point.front && Math.abs(other.z - point.z) < 3 * dx) gaps.push(Math.abs(other.joined - point.joined));
+        }
+      }
       if (frame % 30 !== 29) continue;
       const points = simulation.front!.points;
       // The newest big front: its joins and clocks along x.
@@ -110,13 +119,13 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
         return `[${f.length} pts x ${f[0].x.toFixed(0)}…${f.at(-1)!.x.toFixed(0)} z ${f[0].z.toFixed(0)}…${f.at(-1)!.z.toFixed(0)}, ` +
           `τ ${Math.min(...taus).toFixed(2)}…${Math.max(...taus).toFixed(2)} s, neighbour step ≤ ${step.toFixed(2)}]`;
       });
-      appendFileSync(log, `t ${solver.time.toFixed(0)} s | ${breakingCrests} breaking reef crests: ${breakingCrests ? ((100 * onFront) / breakingCrests).toFixed(0) : '-'} % on a front, ${breakingCrests ? ((100 * freshNow) / breakingCrests).toFixed(0) : '-'} % at the fresh onset now, off a front ${breakingCrests ? ((100 * flank) / breakingCrests).toFixed(0) : '-'} % flank and ${breakingCrests ? ((100 * (breakingCrests - onFront - flank)) / breakingCrests).toFixed(0) : '-'} % isolated; splits ${simulation.front!.splits - splitsBefore} | reef crests breaking: B ${spread(breakingB)}; C ${spread(breakingC)} m/s; η/h ${spread(breakingEtaH)} | not breaking: B ${spread(calmB)} | ${points.length} points on ${fronts.size} fronts; pauses ${simulation.frontPauses} ${described.join(' ')}\n`);
+      appendFileSync(log, `t ${solver.time.toFixed(0)} s | ${breakingCrests} breaking reef crests: ${breakingCrests ? ((100 * onFront) / breakingCrests).toFixed(0) : '-'} % on a front, ${breakingCrests ? ((100 * freshNow) / breakingCrests).toFixed(0) : '-'} % at the fresh onset now, off a front ${breakingCrests ? ((100 * flank) / breakingCrests).toFixed(0) : '-'} % flank and ${breakingCrests ? ((100 * (breakingCrests - onFront - flank)) / breakingCrests).toFixed(0) : '-'} % isolated; split gaps ${gaps.length ? `${gaps.length}: ${[0.1, 0.5, 0.9].map((q) => [...gaps].sort((a, b) => a - b)[Math.floor(q * gaps.length)].toFixed(1)).join(' / ')} s` : '0'} | reef crests breaking: B ${spread(breakingB)}; C ${spread(breakingC)} m/s; η/h ${spread(breakingEtaH)} | not breaking: B ${spread(calmB)} | ${points.length} points on ${fronts.size} fronts; pauses ${simulation.frontPauses} ${described.join(' ')}\n`);
       breakingB = [];
       breakingCrests = 0;
       onFront = 0;
       freshNow = 0;
       flank = 0;
-      splitsBefore = simulation.front!.splits;
+      gaps = [];
       calmB = [];
       breakingC = [];
       breakingEtaH = [];
