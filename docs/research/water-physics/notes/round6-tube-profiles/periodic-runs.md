@@ -95,6 +95,21 @@ python3 tools/basilisk/analysis/plunge_measure.py tools/basilisk/runs/periodic_p
 
 Phase 2 doesn't write `bed.dat` (it restarts past step 1); copy phase 1's for the figures.
 
-## 7. Queued
+## 7. Two more Padang cases (for the lag table's ends) [measured]
 
-Two more Padang cases, for the lag table's ends: a 2.5 m foot crest at 18 s (H/h0 0.42, domain 72 h0) and a 1.2 m crest at 14 s (H/h0 0.24). Level-9 tests are running.
+Same transect and method, level 12 (`padang19b`: domain 72 h0, switch 32 → 42, window 45–64 h0; `padang19c`: 64 h0, 31 → 41, 38–52 h0). Each fine phase took 29–38 minutes, the Mac being quieter by then.
+- **The foot crest** is the crest's height as it passes the 7 m foot, measured in each run (not the train's starting height).
+- **The solver's onset depth** comes from the Padang session's per-period 1D table, keyed on that height and interpolated.
+
+| Case | Foot crest | Solver onset depth (d/h0) | Basilisk vertical depth | Lag | Jet, tube per H at breaking | Length ÷ width, tilt, open | Lip |
+|---|---|---|---|---|---|---|---|
+| 14 s, H/h0 0.24 | 1.22 m | 2.51 m (0.358) | 2.45 m (H 2.74 m) | 0.22 √(h0/g), 0.18 s | 0.065, 0.051 | 3.0, 59°, 0.78 s | 0.14 H, 3.4 cells: under-resolved |
+| 16 s, H/h0 0.30 | 1.65 m | 3.17 m (0.453) | 2.38 m (H 3.41 m) | 2.30, 1.94 s | 0.15, 0.18 | 2.5, 37°, 0.99 s | 0.18 H, 5.6 cells |
+| 18 s, H/h0 0.42 | 2.50 m | 3.62 m (0.517) | 2.97 m (H 4.17 m) | 1.60, 1.35 s | 0.12, 0.115 | 2.4, 40°, 1.06 s | 0.18 H, 6.2 cells |
+
+- **The lag isn't a clean function of join depth** [inferred]. The small 14 s wave goes vertical almost exactly where the solver onsets it; the larger ones go vertical 0.65–0.8 m shallower.
+  - The spread (0.2–2.3) exceeds each lag's ±0.5 √(h0/g) uncertainty.
+  - The 0.358 row sits near the table's thin small-wave end (the solver seldom breaks such waves fresh on the wedge).
+- **Two ways to use it,** offered to the Padang session:
+  - (a) replace the scaled rows with these three;
+  - (b) key the throw directly on the Navier–Stokes breaking depth by foot crest and period, dropping the lag and one error source.
