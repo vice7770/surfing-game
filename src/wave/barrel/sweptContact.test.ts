@@ -159,6 +159,54 @@ describe('the swept contact', () => {
     expect(hit.life).toBeNaN();
   });
 
+  describe('the quads’ buckets along each strip’s ray (the advisor, 2026-09-30)', () => {
+    /** A fixed sequence (a linear congruential generator), so reruns draw the same points. */
+    const sequence = (seed: number) => () => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return seed / 2147483648;
+    };
+
+    it('answers exactly as a scan of every quad, through the tube, its lip, its edges and folds', () => {
+      const bucketed = contactAt(0.1);
+      const scanned = new SweptContact(library(), 0.05, { bucket: Infinity });
+      scanned.update(records(21, 0.1), 21, STILL, flat);
+      const loft = bucketed.last!;
+      const random = sequence(99);
+      const points: number[][] = [];
+      for (let k = 0; k < 4000; k += 1) points.push([-2 + 25 * random(), -1 + 8 * random(), -118 + 36 * random()]);
+      // On the loft's own vertices (the rays, the shared edges, the tip's fold), just above and below them.
+      for (let v = 0; v < loft.vertexCount; v += 7) {
+        for (const dy of [-0.01, 0, 0.01]) points.push([loft.positions[3 * v], loft.positions[3 * v + 1] + dy, loft.positions[3 * v + 2]]);
+      }
+      const a = createContactHit();
+      const b = createContactHit();
+      let answered = 0;
+      for (const [x, y, z] of points) {
+        const hit = bucketed.query(x, y, z, a);
+        expect(hit).toBe(scanned.query(x, y, z, b));
+        if (hit) {
+          expect(a).toEqual(b);
+          answered += 1;
+        }
+      }
+      expect(answered).toBeGreaterThan(3000);
+      expect(bucketed.stats).toMatchObject({ queries: scanned.stats.queries, hits: scanned.stats.hits, anomalies: scanned.stats.anomalies });
+      // The scan tests all 133 quads of every strip it looks in; the buckets a handful.
+      expect(10 * bucketed.stats.quads).toBeLessThan(scanned.stats.quads);
+    });
+
+    it('tests a few quads a layer through the tube, and none for a point outside every front’s footprint', () => {
+      const contact = contactAt(0.1);
+      const hit = createContactHit();
+      expect(contact.query(10.3, 0, -150, hit)).toBe(false);
+      expect(contact.query(60, 0, -93, hit)).toBe(false);
+      expect(contact.stats.quads).toBe(0);
+      // Three layers over x = 1 h0 (the face, the underside, the top); the quads run about 0.2–0.3 m along the ray there.
+      for (const y of [0, 2.5, (UNDER + TOP) / 2, 9]) expect(contact.query(10.3, y, -93, hit)).toBe(true);
+      expect(contact.stats.quads / 4).toBeLessThanOrEqual(12);
+    });
+  });
+
   it('holds no state of its own: the same records answer the same in a fresh contact', () => {
     const a = contactAt(0.3);
     const b = contactAt(0.1);
