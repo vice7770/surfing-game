@@ -120,3 +120,5 @@ The pages below were opened, not just searched; the full notes tag every finding
 - [Basilisk source and wiki mirror](https://github.com/comphy-lab/basilisk-C), synced 2026-09-28: the solver (GPL-3.0, from its `src/COPYING`), and both published setups, Mostert & Deike's `sandbox/wmostert/shallow.c` and Feddersen et al.'s `sandbox/ffeddersen/shoal_RE0_BO4000.c`. basilisk.fr itself is blocked in the cloud session.
 - Pick & Feddersen's fits and domain, Mead & Black's roundness fit and the Surf Ranch open-curl lengths, as recorded in rounds 1–2; their PDFs could not be reopened from the cloud session.
 - Padang Padang's bed: `PADANG` in `src/wave/Bathymetry.ts` on branch `claude/padang-padang` (f132989).
+- [Grilli, Svendsen & Subramanya 1997, abstract](https://digitalcommons.uri.edu/oce_facpubs/207/): solitary waves don't break on plane slopes steeper than 12°
+- [O'Dea, Brodie & Elgar 2021, GRL](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2021GL093664): field void shapes at closure (length over width 1.70–3.15), and Blenkinsopp & Chaplin's lab-reef 1.46–2.28
