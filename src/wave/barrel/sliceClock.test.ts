@@ -10,7 +10,7 @@ const AT_ONCE: OnsetTiming = { h0: 7, joinDepth: () => 2.45, lag: () => 0, earli
 /** A crest line of `n` points one metre apart, their clocks at the earliest frame as BreakingFront starts them. */
 function crest(n: number, id = 0): FrontPoint[] {
   return Array.from({ length: n }, (_, k) => ({
-    id: k, front: id, column: k, sigma: k, x: k + 0.5, z: 10, b: NaN, height: 1, joined: 0, depth: 2.5, tau: AT_ONCE.earliest, seen: 0,
+    id: k, front: id, column: k, sigma: k, x: k + 0.5, z: 10, b: NaN, height: 1, joined: 0, depth: 2.5, tau: AT_ONCE.earliest, seen: 0, fresh: null,
   }));
 }
 
@@ -113,16 +113,23 @@ describe('the slice clock', () => {
   it('joins and times the throw by the measured tables, interpolated and never extrapolated', () => {
     const h0 = 7;
     const unit = Math.sqrt(h0 / GRAVITY);
-    const timing = onsetTiming(h0);
+    const timing = onsetTiming(h0, 16);
     expect(timing.earliest).toBeCloseTo(CLOCK.earliest * unit, 12);
     expect(timing.lag(2.45)).toBeCloseTo(2.6 * unit, 12);
     expect(timing.lag(((0.237 + 0.35) / 2) * h0)).toBeCloseTo(((2.34 + 2.6) / 2) * unit, 12);
     expect(timing.lag(0.5)).toBeCloseTo(2.34 * unit, 12);
     expect(timing.lag(20)).toBeCloseTo(2.82 * unit, 12);
-    // And where a crest joins, by its height at the foot: A0 0.3 at 0.35 h0, between the rows linearly, clamped.
-    expect(timing.joinDepth(0.3 * h0)).toBeCloseTo(0.35 * h0, 12);
-    expect(timing.joinDepth(0.375 * h0)).toBeCloseTo(((0.35 + 0.5) / 2) * h0, 12);
-    expect(timing.joinDepth(0.1 * h0)).toBeCloseTo(0.237 * h0, 12);
-    expect(timing.joinDepth(h0)).toBeCloseTo(0.5 * h0, 12);
+    // And where a crest joins, by its height at the foot and the period: the solver's own swell onsets.
+    expect(timing.joinDepth(1.66)).toBeCloseTo(3.18, 12);
+    expect(timing.joinDepth(1.41)).toBeCloseTo((2.61 + 3.18) / 2, 12);
+    expect(timing.joinDepth(0.5)).toBeCloseTo(2.61, 12);
+    expect(timing.joinDepth(4)).toBeCloseTo(4.55, 12);
+    const at17 = 2.61 + ((1.66 - 1.19) / (1.72 - 1.19)) * (3.13 - 2.61);
+    expect(onsetTiming(h0, 16.5).joinDepth(1.66)).toBeCloseTo((3.18 + at17) / 2, 12);
+    expect(onsetTiming(h0, 12).joinDepth(1.07)).toBeCloseTo(2.29, 12);
+    expect(onsetTiming(h0, 20).joinDepth(3.09)).toBeCloseTo(3.82, 12);
+    // A higher tide scales it by depth; no lag, for the loft's comparison.
+    expect(onsetTiming(8, 16).joinDepth((1.66 * 8) / 7)).toBeCloseTo((3.18 * 8) / 7, 12);
+    expect(onsetTiming(h0, 16, 0).lag(3)).toBe(0);
   });
 });

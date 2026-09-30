@@ -50,6 +50,12 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
     const holding = new Map<number, number>();
     const lastTau = new Map<number, number>();
     const holds: number[] = [];
+    // Seeds (joined with no front point beside them the step before) and the rest: the join table's depth against
+    // where each crest's own fresh test fired, m.
+    let previousPoints: FrontPoint[] = [];
+    const knownIds = new Set<number>();
+    let seedGaps: number[] = [];
+    let otherGaps: number[] = [];
     // The join gaps across this second's split boundaries (neighbouring columns within the link reach, on two fronts).
     let gaps: number[] = [];
 
@@ -76,6 +82,13 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
           calmB.push(s.b);
         }
       }
+      for (const point of simulation.front!.points) {
+        if (knownIds.has(point.id)) continue;
+        knownIds.add(point.id);
+        const seed = !previousPoints.some((p) => Math.abs(p.column - point.column) === 1 && Math.abs(p.z - point.z) < 3 * dx);
+        if (point.fresh !== null) (seed ? seedGaps : otherGaps).push(point.fresh - point.depth);
+      }
+      previousPoints = simulation.front!.points.map((p) => ({ ...p }));
       const seenNow = new Set<number>();
       for (const point of simulation.front!.points) {
         seenNow.add(point.id);
@@ -128,13 +141,15 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
         return `[${f.length} pts x ${f[0].x.toFixed(0)}…${f.at(-1)!.x.toFixed(0)} z ${f[0].z.toFixed(0)}…${f.at(-1)!.z.toFixed(0)}, ` +
           `τ ${Math.min(...taus).toFixed(2)}…${Math.max(...taus).toFixed(2)} s, neighbour step ≤ ${step.toFixed(2)}]`;
       });
-      appendFileSync(log, `t ${solver.time.toFixed(0)} s | ${breakingCrests} breaking reef crests: ${breakingCrests ? ((100 * onFront) / breakingCrests).toFixed(0) : '-'} % on a front, ${breakingCrests ? ((100 * freshNow) / breakingCrests).toFixed(0) : '-'} % at the fresh onset now, off a front ${breakingCrests ? ((100 * flank) / breakingCrests).toFixed(0) : '-'} % flank and ${breakingCrests ? ((100 * (breakingCrests - onFront - flank)) / breakingCrests).toFixed(0) : '-'} % isolated; split gaps ${gaps.length ? `${gaps.length}: ${[0.1, 0.5, 0.9].map((q) => [...gaps].sort((a, b) => a - b)[Math.floor(q * gaps.length)].toFixed(1)).join(' / ')} s` : '0'} | reef crests breaking: B ${spread(breakingB)}; C ${spread(breakingC)} m/s; η/h ${spread(breakingEtaH)} | not breaking: B ${spread(calmB)} | ${points.length} points on ${fronts.size} fronts; pauses ${simulation.frontPauses} ${described.join(' ')}\n`);
+      appendFileSync(log, `t ${solver.time.toFixed(0)} s | ${breakingCrests} breaking reef crests: ${breakingCrests ? ((100 * onFront) / breakingCrests).toFixed(0) : '-'} % on a front, ${breakingCrests ? ((100 * freshNow) / breakingCrests).toFixed(0) : '-'} % at the fresh onset now, off a front ${breakingCrests ? ((100 * flank) / breakingCrests).toFixed(0) : '-'} % flank and ${breakingCrests ? ((100 * (breakingCrests - onFront - flank)) / breakingCrests).toFixed(0) : '-'} % isolated; fresh − join depth: seeds ${seedGaps.length ? `${seedGaps.length}: ${[0.1, 0.5, 0.9].map((q) => [...seedGaps].sort((a, b) => a - b)[Math.floor(q * seedGaps.length)].toFixed(2)).join(' / ')} m` : '0'}, others ${otherGaps.length ? `${otherGaps.length}: ${[0.1, 0.5, 0.9].map((q) => [...otherGaps].sort((a, b) => a - b)[Math.floor(q * otherGaps.length)].toFixed(2)).join(' / ')} m` : '0'}; split gaps ${gaps.length ? `${gaps.length}: ${[0.1, 0.5, 0.9].map((q) => [...gaps].sort((a, b) => a - b)[Math.floor(q * gaps.length)].toFixed(1)).join(' / ')} s` : '0'} | reef crests breaking: B ${spread(breakingB)}; C ${spread(breakingC)} m/s; η/h ${spread(breakingEtaH)} | not breaking: B ${spread(calmB)} | ${points.length} points on ${fronts.size} fronts; pauses ${simulation.frontPauses} ${described.join(' ')}\n`);
       breakingB = [];
       breakingCrests = 0;
       onFront = 0;
       freshNow = 0;
       flank = 0;
       gaps = [];
+      seedGaps = [];
+      otherGaps = [];
       calmB = [];
       breakingC = [];
       breakingEtaH = [];

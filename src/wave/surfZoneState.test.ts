@@ -89,10 +89,10 @@ describe('surf zone state (spec N1: the sea handover)', () => {
     expect(state.front).toBeUndefined();
     const point = {
       id: 7, front: 2, column: 11, sigma: 3.1622776601683795, x: -8.5, z: -140.25, b: 0.3123456789, height: 1.7,
-      joined: 51.23456789, depth: 2.4567, tau: -0.4321, seen: 55.1,
+      joined: 51.23456789, depth: 2.4567, tau: -0.4321, seen: 55.1, fresh: 3.01,
     };
     state.front = { nextId: 12, nextFront: 3, points: [point], held: [{ ...point, id: 8, tau: 0 }],
-      tracks: [{ column: 12, z: -260.5, footHeight: null, depth: 6.4, seen: 55.1, crossed: null }, { column: 13, z: -180.5, footHeight: 1.9, depth: 2.3, seen: 55.1, crossed: 54.97 }],
+      tracks: [{ column: 12, z: -260.5, footHeight: null, depth: 6.4, seen: 55.1, crossed: null, fresh: null }, { column: 13, z: -180.5, footHeight: 1.9, depth: 2.3, seen: 55.1, crossed: 54.97, fresh: 2.9 }],
     };
     expect(decodeSurfZoneState(encodeSurfZoneState(state)).front).toEqual(state.front);
   });

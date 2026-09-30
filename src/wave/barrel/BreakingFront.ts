@@ -17,6 +17,8 @@ const SPLIT = 1;
 const FOOT_BAND = 1;
 /** A crest that crossed its join depth joins if its segment breaks within this long, s; else the solver never broke it (the advisor, provisional). */
 const JOIN_WINDOW = 1;
+/** Kennedy's fresh onset for Padang Padang, η_t over √(g d): the swell table's own condition (a diagnostic here). */
+const FRESH = 0.65;
 
 /** A crest followed shoreward from the wedge's foot until it joins a front, or is dropped. */
 export interface CrestTrack {
@@ -29,6 +31,8 @@ export interface CrestTrack {
   seen: number;
   /** When it crossed its join depth, s; null until then. */
   crossed: number | null;
+  /** The still depth where its segment first rose at Kennedy's fresh onset, m; null until then (a diagnostic). */
+  fresh: number | null;
 }
 
 export interface FrontPoint {
@@ -50,6 +54,8 @@ export interface FrontPoint {
   depth: number;
   /** The slice's clock as drawn, s from its lip's throw: smoothed along the front, never running back (sliceClock). */
   tau: number;
+  /** The still depth where its crest first rose at Kennedy's fresh onset, m; null until then (a diagnostic of the join table). */
+  fresh: number | null;
   /** When it was last seen, s. */
   seen: number;
 }
@@ -116,17 +122,21 @@ export class BreakingFront {
       if (point) {
         if (!(s.strength > 0)) continue;
         matched.add(point);
-        points.push({ ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, seen: time });
+        const fresh = point.fresh ?? (s.rise >= FRESH ? s.depth : null);
+        points.push({ ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, seen: time, fresh });
         continue;
       }
       const track = this.nearest(tracksOf.get(s.column), followed, s.z);
       if (!track) {
         // A new crest past the foot: followed from here, sized by its height if it is at the foot.
-        if (s.depth <= h0) tracks.push({ column: s.column, z: s.z, footHeight: s.depth >= h0 - FOOT_BAND ? s.eta : null, depth: s.depth, seen: time, crossed: null });
+        if (s.depth <= h0) {
+          const footHeight = s.depth >= h0 - FOOT_BAND ? s.eta : null;
+          tracks.push({ column: s.column, z: s.z, footHeight, depth: s.depth, seen: time, crossed: null, fresh: s.rise >= FRESH ? s.depth : null });
+        }
         continue;
       }
       followed.add(track);
-      const next: CrestTrack = { ...track, z: s.z, depth: s.depth, seen: time };
+      const next: CrestTrack = { ...track, z: s.z, depth: s.depth, seen: time, fresh: track.fresh ?? (s.rise >= FRESH ? s.depth : null) };
       if (track.footHeight !== null) {
         const joinDepth = this.timing.joinDepth(track.footHeight);
         if (track.crossed === null && s.depth <= joinDepth) {
@@ -138,7 +148,7 @@ export class BreakingFront {
           points.push({
             id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
             // Its clock starts at the library's earliest frame; the first advance puts it where the fit does.
-            joined: next.crossed, depth: joinDepth, tau: this.timing.earliest, seen: time,
+            joined: next.crossed, depth: joinDepth, tau: this.timing.earliest, seen: time, fresh: next.fresh,
           });
           continue;
         }

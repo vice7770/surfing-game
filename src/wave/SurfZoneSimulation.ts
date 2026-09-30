@@ -85,6 +85,8 @@ export interface SurfZoneConfig {
   startSeaTime?: number;
   /** Whether the swept barrel's breaking front runs (the Padang Padang spec, Part B); defaults to SWEPT_BARREL. */
   sweptBarrel?: boolean;
+  /** The swept barrel's lip throw after the solver's onset: the measured upper bound (the default), or none. */
+  barrelLag?: 'measured' | 'none';
 }
 
 /** Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run. */
@@ -494,7 +496,7 @@ export class SurfZoneSimulation {
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
     if (config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot)) {
-      this.onsetTiming = onsetTiming(PADANG.baseDepth + config.tide);
+      this.onsetTiming = onsetTiming(PADANG.baseDepth + config.tide, config.peakPeriod, config.barrelLag === 'none' ? 0 : 1);
       this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming);
     }
     const takeOff = this.breakPoint();

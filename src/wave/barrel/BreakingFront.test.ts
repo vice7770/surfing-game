@@ -3,9 +3,9 @@ import { BreakingFront } from './BreakingFront';
 import type { CrestSample } from './crestOnset';
 import { onsetTiming } from './sliceClock';
 
-/** A 7 m wedge foot: a crest 2.1 m high there (A0 0.3) joins where the water is 0.35 × 7 = 2.45 m deep. */
-const TIMING = onsetTiming(7);
-const FOOT = 2.1;
+/** A 7 m wedge foot under 16 s swell: a crest 1.66 m high there joins where the solver first breaks it, 3.18 m deep. */
+const TIMING = onsetTiming(7, 16);
+const FOOT = 1.66;
 const JOIN = TIMING.joinDepth(FOOT);
 
 /** A crest sample at one-metre columns. */
@@ -31,17 +31,17 @@ const fronts = (front: BreakingFront) => new Set(front.points.map((point) => poi
 
 describe('the breaking front as lines', () => {
   it('joins a crest where it reaches its breaking depth, sized by its height at the foot', () => {
-    expect(JOIN).toBeCloseTo(2.45, 12);
+    expect(JOIN).toBeCloseTo(3.18, 12);
     const front = new BreakingFront(1, TIMING);
-    // 1.4 m at the foot (A0 0.2) breaks in 0.237 × 7 = 1.659 m of water: crossed between 3 m and 1 m, 67 % of the way.
-    front.update([sample(0, 10, 7, 0, 1.4)], 1, 0);
-    front.update([sample(0, 11, 3, 0, 1.4)], 1, 0.1);
+    // 1.41 m at the foot breaks halfway between the table's 2.61 and 3.18 m: crossed between 4 m and 2 m.
+    const depth = (2.61 + 3.18) / 2;
+    front.update([sample(0, 10, 7, 0, 1.41)], 1, 0);
+    front.update([sample(0, 11, 4, 0, 1.41)], 1, 0.1);
     expect(front.points).toHaveLength(0);
-    front.update([sample(0, 12, 1, 0.4, 1.4)], 1, 0.2);
+    front.update([sample(0, 12, 2, 0.4, 1.41)], 1, 0.2);
     expect(front.points).toHaveLength(1);
-    const crossed = 0.1 + ((3 - 0.237 * 7) / (3 - 1)) * 0.1;
-    expect(front.points[0].joined).toBeCloseTo(crossed, 12);
-    expect(front.points[0].depth).toBeCloseTo(0.237 * 7, 12);
+    expect(front.points[0].joined).toBeCloseTo(0.1 + ((4 - depth) / (4 - 2)) * 0.1, 12);
+    expect(front.points[0].depth).toBeCloseTo(depth, 12);
   });
 
   it('joins at the crossing when the segment breaks within a second of it, and never after', () => {

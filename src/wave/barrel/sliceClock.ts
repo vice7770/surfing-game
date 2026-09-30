@@ -24,11 +24,21 @@ export const CLOCK = { smoothing: 2, bunched: 0.1, earliest: -3 } as const;
 const ONSET_LAG: readonly (readonly [depth: number, lag: number])[] = [[0.237, 2.34], [0.35, 2.6], [0.5, 2.82]];
 
 /**
- * Where the same runs first broke, fresh, against the wave's height at the wedge's foot, both over h0 (A0 0.2, 0.3,
- * 0.45: the still depth under the crest at the onset, 1.66, 2.45 and 3.50 m of 7 m). A peel is each section of crest
- * reaching its breaking depth in turn (the advisor, 2026-09-30). Measured, provisional.
+ * Where the game's solver first breaks swell, fresh, on the same transect (the periodicOnset probe, 2026-09-30): one
+ * column wide, regular waves driven in the foot's 7 m, each wave's crest height at the foot against the still depth
+ * under its crest where Kennedy's fresh test first fired (η_t ≥ 0.65 √(g d)), medians over 12 waves, per period, m.
+ * The join sits where the solver itself onsets, so the lag keeps its meaning (the advisor, 2026-09-30); a soliton's
+ * depths (1.66 m at A0 0.2) sat well shoreward of swell's. Crests under about 1.1 m at the foot seldom broke fresh on
+ * the wedge; they clamp to the first row and join only if the solver breaks them. Measured at h0 = 7 m, provisional.
  */
-const ONSET_DEPTH: readonly (readonly [height: number, depth: number])[] = [[0.2, 0.237], [0.3, 0.35], [0.45, 0.5]];
+const SWELL_ONSET: readonly { period: number; rows: readonly (readonly [height: number, depth: number])[] }[] = [
+  { period: 14, rows: [[1.07, 2.29], [1.44, 2.82], [1.85, 3.24], [2.25, 3.61], [2.76, 3.92]] },
+  { period: 16, rows: [[1.16, 2.61], [1.66, 3.18], [2.04, 3.66], [2.36, 4.13], [2.45, 4.55]] },
+  { period: 17, rows: [[1.19, 2.61], [1.72, 3.13], [2.21, 3.5], [2.63, 3.82], [3.08, 3.92]] },
+  { period: 18, rows: [[1.15, 2.55], [1.67, 2.92], [2.17, 3.34], [2.61, 3.71], [3.09, 3.82]] },
+];
+/** The foot's depth the swell table was measured at, m. */
+const SWELL_ONSET_H0 = 7;
 
 /** Linear in x between the table's rows, clamped at its ends: never extrapolated. */
 function interpolate(table: readonly (readonly [number, number])[], x: number): number {
@@ -55,15 +65,29 @@ export interface OnsetTiming {
 }
 
 /**
- * The onset timing for a bed whose slope rises from `h0` m (the library cases' foot depth): ONSET_DEPTH and ONSET_LAG
- * interpolated over h0, in units of √(h0/g).
+ * The onset timing for a bed whose slope rises from `h0` m (the library cases' foot depth) under swell of `period` s:
+ * the join depth from SWELL_ONSET (linear in height, then between the two nearest periods, clamped; scaled from its
+ * 7 m foot to h0 by depth), and the lag from ONSET_LAG in units of √(h0/g), times `lag`: 1 for the measured upper
+ * bound, 0 for none (the true lag for swell is probably well below the soliton's; PR 3's loft shows both).
  */
-export function onsetTiming(h0: number): OnsetTiming {
+export function onsetTiming(h0: number, period: number, lag = 1): OnsetTiming {
   const unit = Math.sqrt(h0 / GRAVITY);
+  const scale = h0 / SWELL_ONSET_H0;
+  const joinAt = (footHeight: number) => {
+    const height = footHeight / scale;
+    const first = SWELL_ONSET[0];
+    const last = SWELL_ONSET[SWELL_ONSET.length - 1];
+    if (period <= first.period) return interpolate(first.rows, height);
+    if (period >= last.period) return interpolate(last.rows, height);
+    const k = SWELL_ONSET.findIndex((entry) => entry.period >= period);
+    const [below, above] = [SWELL_ONSET[k - 1], SWELL_ONSET[k]];
+    const t = (period - below.period) / (above.period - below.period);
+    return interpolate(below.rows, height) + t * (interpolate(above.rows, height) - interpolate(below.rows, height));
+  };
   return {
     h0,
-    joinDepth: (footHeight) => interpolate(ONSET_DEPTH, footHeight / h0) * h0,
-    lag: (depth) => interpolate(ONSET_LAG, depth / h0) * unit,
+    joinDepth: (footHeight) => joinAt(footHeight) * scale,
+    lag: (depth) => lag * interpolate(ONSET_LAG, depth / h0) * unit,
     earliest: CLOCK.earliest * unit,
   };
 }
