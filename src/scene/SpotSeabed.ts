@@ -12,6 +12,12 @@ export class SpotSeabed {
   private readonly shallow = new Color('#d6c69c');
   private readonly deep = new Color('#2f5f66');
 
+  /** The floor's colours, shallow to deep: sand by default, a pool's painted concrete (the movement-flow spec). */
+  setPalette(shallow: string, deep: string): void {
+    this.shallow.set(shallow);
+    this.deep.set(deep);
+  }
+
   constructor() {
     this.mesh = new Mesh(new BufferGeometry(), new MeshBasicMaterial({ vertexColors: true, fog: true }));
     this.mesh.visible = false;

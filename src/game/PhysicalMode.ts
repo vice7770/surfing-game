@@ -19,6 +19,8 @@ import { LipSheetMesh } from '../scene/LipSheetMesh';
 import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera, type FollowTarget } from '../scene/SpectatorCamera';
 import { SpotSeabed } from '../scene/SpotSeabed';
+import { PoolScenery } from '../scene/PoolScenery';
+import { POOL, poolDeckZ } from '../wave/pool';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import type { WaterSurface } from '../scene/WaterSurface';
 import { createSpot, smoothstep, type SpotName } from '../wave/Bathymetry';
@@ -263,6 +265,9 @@ export class PhysicalMode {
   readonly camera = new SpectatorCamera();
   readonly seabed = new SpotSeabed();
   readonly farField = new FarFieldOcean();
+  /** The Wave Pool's walls, deck and machine hall (the movement-flow spec); the open ocean stays hidden there. */
+  readonly poolScenery = new PoolScenery();
+  private atPool = false;
   /** The thrown lip, drawn as one sheet (plan P7). */
   readonly lipSheet = new LipSheetMesh();
   /** Bubbles entrained under breaking bores, seen from below the surface. */
@@ -364,7 +369,7 @@ export class PhysicalMode {
   }
 
   constructor(scene: Scene) {
-    scene.add(this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group, this.leash.object);
+    scene.add(this.poolScenery.group, this.seabed.mesh, this.farField.mesh, this.lipSheet.mesh, this.bubbles.mesh, this.spray.mesh, this.board, this.surfer.group, this.leash.object);
     this.leash.object.visible = false;
     this.board.visible = false;
     this.surfer.group.visible = false;
@@ -471,6 +476,16 @@ export class PhysicalMode {
     };
     this.focus = { ...init.focus };
     const hole = { xMin: windowMin, xMax: windowMax, zMin: tank.offshore, zMax: tank.shore };
+    // The Wave Pool: walls and a deck around the window, no open ocean beyond, and a painted concrete floor.
+    this.atPool = config.spot === 'pool';
+    if (this.atPool) {
+      this.poolScenery.show({ xMin: windowMin, xMax: windowMax, zBack: tank.offshore, zFront: poolDeckZ(), deck: POOL.deck, floor: POOL.feedDepth + 0.5 });
+      this.seabed.setPalette('#dfe6e4', '#a9c3c6');
+    } else {
+      this.poolScenery.hide();
+      this.seabed.setPalette('#d6c69c', '#2f5f66');
+    }
+    this.farField.mesh.visible = this.shown && !this.atPool;
     this.seabed.setDepthOnGrid(
       bedDepth,
       gradedAxis(this.focus.x - 600, this.focus.x + 600, windowMin, windowMax, 2, 30),
@@ -657,7 +672,8 @@ export class PhysicalMode {
     this.surfer.group.visible = visible && (this.host?.snapshot.rider[RIDER_SNAPSHOT.present] ?? 0) > 0;
     this.leash.object.visible = this.surfer.group.visible && (this.host?.snapshot.board[7] ?? 0) > 0;
     this.seabed.mesh.visible = visible;
-    this.farField.mesh.visible = visible;
+    this.farField.mesh.visible = visible && !this.atPool;
+    this.poolScenery.group.visible = visible && this.atPool;
     this.lipSheet.mesh.visible = visible;
     this.bubbles.mesh.visible = visible;
     this.spray.mesh.visible = visible && this.sprayShown;

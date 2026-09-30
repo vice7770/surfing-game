@@ -46,10 +46,13 @@ const whole = (value: number) => Math.max(0, Math.round(value));
 export function formatSurfRange(low: number, high: number, units: Units, scale: SurfScale): string {
   const from = Math.max(0, Math.min(low, high));
   const to = Math.max(0, low, high);
+  // Every wave the same (the Wave Pool): one height, to the centimetre it is set in.
+  const single = to - from < 0.005;
   if (scale === 'hawaiian') {
     return t('surf.hawaiian', { low: whole(from * FEET_PER_METRE * HAWAIIAN_SHARE), high: whole(to * FEET_PER_METRE * HAWAIIAN_SHARE) });
   }
-  if (units === 'imperial') return `${whole(from * FEET_PER_METRE)}–${whole(to * FEET_PER_METRE)} ft`;
+  if (units === 'imperial') return single ? `${whole(from * FEET_PER_METRE)} ft` : `${whole(from * FEET_PER_METRE)}–${whole(to * FEET_PER_METRE)} ft`;
+  if (single) return `${Math.abs(from * 10 - Math.round(from * 10)) < 0.01 ? from.toFixed(1) : from.toFixed(2)} m`;
   return `${from.toFixed(1)}–${to.toFixed(1)} m`;
 }
 

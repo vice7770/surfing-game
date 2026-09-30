@@ -11,7 +11,7 @@ import { focusX } from './Refraction';
 import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotion } from './CrestKinematics';
 import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
-import { POOL, poolSea } from './pool';
+import { POOL, poolSea, poolTankLayout } from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import { SideFeed } from './SideFeed';
@@ -134,7 +134,7 @@ export const TANK = { offshore: -330, zoneInner: -270, blendEnd: -190, fineFrom:
 
 /** Flat tank bed offshore of each spot's blend, m below datum: Padang Padang's is the deep water beyond its forereef, read live for the sweep. */
 export const OFFSHORE_DEPTH: Record<SpotName, number> = {
-  beach: 5, point: 8, reef: REEF.deep, canyon: 5, get padang() { return PADANG.deep; }, get pool() { return POOL.generatorDepth; },
+  beach: 5, point: 8, reef: REEF.deep, canyon: 5, get padang() { return PADANG.deep; }, get pool() { return POOL.feedDepth; },
 };
 
 /** A tank's layout across shore, m, and the still depth of its flat edge under the relaxation zone, m below datum. */
@@ -170,8 +170,9 @@ const FLAT_RISE = 0.1;
  */
 export function tankLayout(config: SurfZoneConfig): TankLayout {
   const today: TankLayout = { ...TANK, edgeDepth: OFFSHORE_DEPTH[config.spot] };
-  // The Wave Pool's machine sits at today's edge, its floor as deep as its channels (the movement-flow spec).
-  if (config.spot === 'canyon' || config.spot === 'pool') return today;
+  if (config.spot === 'canyon') return today;
+  // The Wave Pool's machine: its own layout, fed where its regular wave is near linear (the movement-flow spec).
+  if (config.spot === 'pool') return { ...poolTankLayout(TANK.shore), edgeDepth: today.edgeDepth };
   // The Reef's edge is always deep (REEF.deep, the Teahupo'o Reef spec): today's inner tank, whose forereef
   // lies inside it, with the zone lengthened to absorb its long waves.
   if (config.spot === 'reef') {

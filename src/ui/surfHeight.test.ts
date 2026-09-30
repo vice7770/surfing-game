@@ -19,12 +19,16 @@ describe('surf in surfers\' words', () => {
   it('gives the range in metres, feet, or the Hawaiian scale (half the face in feet)', () => {
     expect(formatSurfRange(2.14, 2.71, 'metric', 'face')).toBe('2.1–2.7 m');
     expect(formatSurfRange(2.14, 2.71, 'imperial', 'face')).toBe('7–9 ft');
+    // The Wave Pool's waves are all the same (the movement-flow spec): one height.
+    expect(formatSurfRange(1.25, 1.25, 'metric', 'face')).toBe('1.25 m');
+    expect(formatSurfRange(1, 1, 'metric', 'face')).toBe('1.0 m');
+    expect(formatSurfRange(1.5, 1.5, 'imperial', 'face')).toBe('5 ft');
     expect(formatSurfRange(3.05, 3.9, 'metric', 'hawaiian')).toBe('5–6 ft Hawaiian');
   });
 
   it('never reads small surf as negative, NaN or backwards', () => {
     expect(formatSurfRange(0.1, 0.3, 'imperial', 'hawaiian')).toBe('0–0 ft Hawaiian');
-    expect(formatSurfRange(0.3, 0.3, 'imperial', 'face')).toBe('1–1 ft');
+    expect(formatSurfRange(0.3, 0.3, 'imperial', 'face')).toBe('1 ft');
     expect(formatSurfRange(0.04, 0.3, 'metric', 'face')).toBe('0.0–0.3 m');
     expect(formatSurfRange(0.5, 0.4, 'metric', 'face')).toBe('0.4–0.5 m');
   });
