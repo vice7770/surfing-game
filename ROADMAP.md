@@ -593,6 +593,21 @@ Requirements agreed in a grilling session on 2026-09-28 (Q1–Q16, every recomme
   - PR 2, the breaking front and slice clock: built. Crests join where the solver first breaks swell of their size, and their lips throw where the Navier–Stokes wave of their height goes vertical (the advisor's periodic Basilisk runs);
   - PRs 3–7: the mesh, the contact, the crash curve, the shading and the rollout.
 
+### P0 · The movement flow and the Wave Pool (final prototype) — `In Progress`
+
+Agreed with the user on 2026-09-30 ([spec](docs/superpowers/specs/2026-09-30-movement-flow-wave-pool.md)): the bottom turn → projection → cutback flow, with pumping, works on a pad first; a Wave Pool spot with stable 1–1.5 m A-frames to practise it. The user does the gameplay testing; the checks are fast unit tests, a build and a browser look.
+- [x] **Step 1 · Compress** ([plan](docs/superpowers/plans/2026-09-30-compress-ladder.md)):
+  - the height ladder: the crouch reaches about two thirds of the depth, Compress all of it, as fast;
+  - the weight stays on W/S;
+  - the pad's right stick twists the upper body;
+  - a HUD stance readout;
+  - a compressed turn comes round 90° in about 1 s. This is a gameplay assist: physics alone left every stance at about 1.45 s.
+- [ ] **Step 2 · the Wave Pool**: a default spot, an A-frame peeling both ways, faces of 1.0 / 1.25 / 1.5 m, and the Surf School on it.
+- [ ] **Step 3 · pumping**, checked on the pool.
+- [ ] **Step 4 · bottom turn → projection**.
+- [ ] **Step 5 · cutback**.
+- [ ] **Step 6 · the user's playtest**.
+
 ### P1 · Gameplay milestone (P9–P12) — `In Progress`
 
 Requirements agreed in a grilling session on 2026-09-26: the [gameplay spec](docs/superpowers/specs/2026-09-26-gameplay-milestone.md), grounded in the [surf-science survey](docs/research/surf-gameplay-research.md).
