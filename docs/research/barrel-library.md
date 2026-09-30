@@ -58,3 +58,12 @@ The owner's level-13 run of A0 0.3 on the M4 Pro (`run_padang.sh` at its default
 3. Analyse it with the same variables and `analyse`.
 4. Rebuild the whole library, naming every run each time. The index lists exactly the runs named. For example: `npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --flat 0.1785714`. The flat is the reef flat's depth in h0.
 5. Commit `public/barrels/*.bin`, the index and `barrel-cases.md`. Record the run in the README's table.
+
+## The front's join and throw
+
+Where each slice's clock starts and when its lip throws (Part B, PR 2; `src/wave/barrel/sliceClock.ts`):
+
+- **The join** is where the game's solver first breaks swell of that size, fresh. The `periodicOnset` probe drove regular waves up one column of the transect, at 14, 16, 17 and 18 s. A crest joins by its highest over the 6–5 m band of still depth, at 2.3–4.6 m [measured in the model].
+- **The throw** is where the Navier–Stokes wave's face goes vertical: d = 1.80 + 0.45 η_foot at h0 = 7 m, clamped to foot crests of 1.22–2.50 m and scaled by h0/7 for the tide. It comes from the advisor's periodic Basilisk runs at level 12: 1.22 m → 2.45 m (14 s), 1.65 m → 2.38 m (16 s) and 2.50 m → 2.97 m (18 s) [measured, NS]. The line through them is [inferred]: the runs confound height with period, and period dependence is untested.
+- **Why the throw is not a lag after the join.** Kennedy's onset leads a soliton's vertical face by 2.3–2.8 √(h0/g) (`kennedyLag` probe) [measured]. For swell, the three periodic runs read 0.22, 2.30 and 1.60, no function of depth. So a crest joins only if the solver breaks it before it reaches its throw depth.
+- **The cost** is 6.0 ms per frame against a 529 ms step, 1.1 %, on Padang Padang's Small swell at 1 m cells (320 × 574) with 203 front points on average. That was on the M1 Air while the three Basilisk runs shared it; the ratio is the number to keep [measured].
