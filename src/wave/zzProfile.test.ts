@@ -14,7 +14,8 @@ const coarse = Number(process.env.PROBE_COARSE ?? 4);
 const onset = process.env.PROBE_ONSET ? Number(process.env.PROBE_ONSET) : undefined;
 
 /** Hm0 = 4σ of the surface, averaged along shore, at rows across the tank, against linear shoaling from the edge. */
-it('profile', () => {
+// A diagnostic probe from the side-feed work: opt-in, like src/wave/probes (PROBE=1).
+it.skipIf(!process.env.PROBE)('profile', () => {
   const config: SurfZoneConfig = { spot, seed: 1, significantHeight: Hs, peakPeriod: Tp, directionDegrees: direction, spreading, tide: 0, windSpeed: 0, alongShore, coarseSpacing: coarse, breakingOnset: onset };
   const simulation = new SurfZoneSimulation(config);
   const { solver, tank } = simulation;

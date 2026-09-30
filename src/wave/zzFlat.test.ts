@@ -21,7 +21,8 @@ const width = Number(process.env.FLAT_WIDTH ?? 160);
 const direction = Number(process.env.FLAT_DIR ?? 10);
 const sides = (process.env.FLAT_SIDES ?? 'periodic') as 'open' | 'periodic';
 
-it('flat probe', () => {
+// A diagnostic probe from the side-feed work: opt-in, like src/wave/probes (PROBE=1).
+it.skipIf(!process.env.PROBE)('flat probe', () => {
   const config: SurfZoneConfig = {
     spot: 'point', seed: 1, significantHeight: Hs, peakPeriod: Tp, directionDegrees: direction, spreading, tide: 0, windSpeed: 0, heightAt: 'edge',
   };
