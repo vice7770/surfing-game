@@ -43,6 +43,13 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
     let breakingCrests = 0;
     let onFront = 0;
     let freshNow = 0;
+    // Off a front: beside a joined point of the same wave (a flank), or on their own.
+    let flank = 0;
+    // How long each clock holds still (pauses rather than runs back), s; and the splits since the last line.
+    const holding = new Map<number, number>();
+    const lastTau = new Map<number, number>();
+    const holds: number[] = [];
+    let splitsBefore = 0;
 
     for (let frame = 0; frame < seconds * 30; frame += 1) {
       simulation.step(1 / 30);
@@ -56,6 +63,7 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
           breakingCrests += 1;
           if (s.rise >= 0.65) freshNow += 1;
           if (simulation.front!.points.some((p) => p.column === s.column && Math.abs(p.z - s.z) < 3 * dx)) onFront += 1;
+          else if (simulation.front!.points.some((p) => Math.abs(p.column - s.column) <= 2 && Math.abs(p.z - s.z) < 3 * dx)) flank += 1;
         }
         if (!Number.isFinite(s.b)) continue;
         if (simulation.breaking.strength[i] > 0.3) {
@@ -66,6 +74,23 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
           calmB.push(s.b);
         }
       }
+      const seenNow = new Set<number>();
+      for (const point of simulation.front!.points) {
+        seenNow.add(point.id);
+        const held = lastTau.get(point.id) === point.tau && point.joined !== solver.time;
+        if (held) holding.set(point.id, (holding.get(point.id) ?? 0) + 1);
+        else if (holding.has(point.id)) {
+          holds.push(holding.get(point.id)! / 30);
+          holding.delete(point.id);
+        }
+        lastTau.set(point.id, point.tau);
+      }
+      for (const [id, steps] of holding) {
+        if (seenNow.has(id)) continue;
+        holds.push(steps / 30);
+        holding.delete(id);
+      }
+      for (const id of [...lastTau.keys()]) if (!seenNow.has(id)) lastTau.delete(id);
       if (frame % 30 !== 29) continue;
       const points = simulation.front!.points;
       // The newest big front: its joins and clocks along x.
@@ -85,14 +110,19 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
         return `[${f.length} pts x ${f[0].x.toFixed(0)}…${f.at(-1)!.x.toFixed(0)} z ${f[0].z.toFixed(0)}…${f.at(-1)!.z.toFixed(0)}, ` +
           `τ ${Math.min(...taus).toFixed(2)}…${Math.max(...taus).toFixed(2)} s, neighbour step ≤ ${step.toFixed(2)}]`;
       });
-      appendFileSync(log, `t ${solver.time.toFixed(0)} s | ${breakingCrests} breaking reef crests: ${breakingCrests ? ((100 * onFront) / breakingCrests).toFixed(0) : '-'} % on a front, ${breakingCrests ? ((100 * freshNow) / breakingCrests).toFixed(0) : '-'} % at the fresh onset now | reef crests breaking: B ${spread(breakingB)}; C ${spread(breakingC)} m/s; η/h ${spread(breakingEtaH)} | not breaking: B ${spread(calmB)} | ${points.length} points on ${fronts.size} fronts; pauses ${simulation.frontPauses} ${described.join(' ')}\n`);
+      appendFileSync(log, `t ${solver.time.toFixed(0)} s | ${breakingCrests} breaking reef crests: ${breakingCrests ? ((100 * onFront) / breakingCrests).toFixed(0) : '-'} % on a front, ${breakingCrests ? ((100 * freshNow) / breakingCrests).toFixed(0) : '-'} % at the fresh onset now, off a front ${breakingCrests ? ((100 * flank) / breakingCrests).toFixed(0) : '-'} % flank and ${breakingCrests ? ((100 * (breakingCrests - onFront - flank)) / breakingCrests).toFixed(0) : '-'} % isolated; splits ${simulation.front!.splits - splitsBefore} | reef crests breaking: B ${spread(breakingB)}; C ${spread(breakingC)} m/s; η/h ${spread(breakingEtaH)} | not breaking: B ${spread(calmB)} | ${points.length} points on ${fronts.size} fronts; pauses ${simulation.frontPauses} ${described.join(' ')}\n`);
       breakingB = [];
       breakingCrests = 0;
       onFront = 0;
       freshNow = 0;
+      flank = 0;
+      splitsBefore = simulation.front!.splits;
       calmB = [];
       breakingC = [];
       breakingEtaH = [];
     }
+    const sorted = [...holds].sort((a, b) => a - b);
+    const at = (q: number) => (sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] : NaN);
+    appendFileSync(log, `holds: ${sorted.length}, median ${at(0.5).toFixed(3)} s, 95th percentile ${at(0.95).toFixed(3)} s, max ${(sorted.at(-1) ?? NaN).toFixed(3)} s; splits ${simulation.front!.splits}\n`);
   }, 3_600_000);
 });

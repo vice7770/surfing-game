@@ -6,6 +6,12 @@ const LINK_ROWS = 3;
 const MATCH_REACH = 2;
 /** A point unseen this long is gone, s. */
 const HOLD = 0.5;
+/**
+ * Neighbours whose joins differ by more than this per metre between them are two waves, not a peel: 1 s/m is a peel
+ * under 1 m/s, a crest running almost straight up the contours (θ > 79° at c ≈ 5 m/s), where Padang Padang peels at
+ * 0.1–0.2 s/m and consecutive waves join most of a 16 s period apart (the advisor, 2026-09-30).
+ */
+const SPLIT = 1;
 
 export interface FrontPoint {
   /** Fixed while the point is matched step to step. */
@@ -40,7 +46,8 @@ export interface FrontState {
 
 /**
  * The breaking front as lines of points (swept-barrel-build.md, "Front line"; Thürey et al. 2007). A crest whose
- * segment reaches Kennedy's fresh onset (`ONSET.join`) joins a front, and stays on it while its segment breaks. Crests in neighbouring columns within LINK_ROWS rows in z link, and a
+ * segment reaches Kennedy's fresh onset (`ONSET.join`) joins a front, and stays on it while its segment breaks. Neighbours
+ * whose joins differ by more than SPLIT per metre are two waves, and two fronts, smoothed apart. Crests in neighbouring columns within LINK_ROWS rows in z link, and a
  * column's own crests never do, so two crests in a column are two fronts and an empty column splits one. A point
  * matched to last step's in its column keeps its ID, its join and its clock, with no reset as its crest crosses into
  * new cells. Columns go in order, with no randomness, and only + − × ÷ and √, for online determinism.
@@ -52,6 +59,8 @@ export class BreakingFront {
   private held: FrontPoint[] = [];
   private nextId = 0;
   private nextFront = 0;
+  /** Links refused since the start because the two crests joined too far apart to be one wave (a diagnostic). */
+  splits = 0;
   private readonly linkReach: number;
   private readonly matchReach: number;
 
@@ -115,6 +124,12 @@ export class BreakingFront {
         for (const chain of before) {
           const tail = chain.at(-1)!;
           if (tail.column !== column - 1 || !(Math.abs(tail.z - point.z) < this.linkReach)) continue;
+          const dx = point.x - tail.x;
+          const dz = point.z - tail.z;
+          if (Math.abs(point.joined - tail.joined) > SPLIT * Math.sqrt(dx * dx + dz * dz)) {
+            this.splits += 1;
+            continue;
+          }
           if (!best || Math.abs(tail.z - point.z) < Math.abs(best.at(-1)!.z - point.z)) best = chain;
         }
         if (best) {

@@ -106,6 +106,19 @@ describe('the breaking front as lines', () => {
     expect(right[0].sigma).toBe(0);
   });
 
+  it('splits a front where neighbours joined too far apart to be one wave, and counts the splits', () => {
+    const front = new BreakingFront();
+    const older = line(range(0, 10), 10, 0);
+    front.update(older, older.length, 0);
+    // Five seconds on, a newer crest breaks in the next ten columns, level with the older one's reformed crest.
+    const both = [...line(range(0, 10), 10.5, 0), ...line(range(10, 20), 10.5, 0)];
+    front.update(both, both.length, 5);
+    const byFront = new Map<number, number[]>();
+    for (const point of front.points) byFront.set(point.front, [...(byFront.get(point.front) ?? []), point.column]);
+    expect([...byFront.values()]).toEqual([range(0, 10), range(10, 20)]);
+    expect(front.splits).toBe(1);
+  });
+
   it('holds a point missing for a moment, and drops it after half a second', () => {
     const front = new BreakingFront();
     const whole = line(range(0, 5), 10, 0);
