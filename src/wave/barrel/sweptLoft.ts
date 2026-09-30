@@ -1,0 +1,394 @@
+import type { SpotName } from '../Bathymetry';
+import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
+import { LANDMARK, PROFILE_POINTS, type ProfileLibrary } from './ProfileLibrary';
+
+/**
+ * The swept loft's constants (the Padang Padang spec, Part B, PR 3; docs/research/water-physics/swept-barrel-build.md,
+ * "Lofting" and "The seam"; the advisor's rulings, 2026-09-30):
+ * - `spacing`, `fine`, m: slices every half metre along the front, a quarter where neighbouring clocks differ by more
+ *   than `frames` library frames (the advisor: 2–4, so neighbours stay within a stage);
+ * - `budget`, vertices: past it the spacing widens and neighbouring clocks are clamped to T_open/4 (the advisor);
+ * - `pinned`: samples at each end of a profile blended onto the water, never reaching the lip or throat [inferred];
+ * - `extension`, `extensionSamples`: the surface runs on over the water this far past each end, m, in this many
+ *   samples, so the seam's band always has both surfaces [inferred];
+ * - `band`, m: the dithered overlap at the mask's edge [inferred];
+ * - `endBlend`, m: a front's ends blend into the water over this length [inferred];
+ * - `handover`, s: after touchdown a slice's anchor returns to the solver's crest and its surface fades into the water
+ *   over this long, a stand-in until the roller [inferred].
+ */
+export const LOFT = { spacing: 0.5, fine: 0.25, frames: 3, budget: 40_000, pinned: 6, extension: 1.5, extensionSamples: 3, band: 1, endBlend: 2.5, handover: 0.3 } as const;
+/** Vertices per slice: the profile and its extensions over the water at each end. */
+export const LOFT_SAMPLES = PROFILE_POINTS + 2 * LOFT.extensionSamples;
+/** The library's runs' slope along the wave's path, per spot drawn with the swept barrel (the owner's 1:19 at Padang Padang). */
+export const BARREL_SLOPE: Partial<Record<SpotName, number>> = { padang: 1 / 19 };
+
+export interface LoftResult {
+  /** xyz per vertex, and its normal. */
+  positions: Float32Array;
+  normals: Float32Array;
+  /** 0–1 per vertex: the seam mask's value there. */
+  mask: Float32Array;
+  indices: Uint32Array;
+  vertexCount: number;
+  indexCount: number;
+  sliceCount: number;
+  /**
+   * Per slice: its front, σ (m), τ (s), phase (0 before vertical, 1 open, 2 after touchdown), and the anchored crest's
+   * distance from the solver's, m (NaN where the anchor is the crest).
+   */
+  sliceFront: Int32Array;
+  sliceSigma: Float32Array;
+  sliceTau: Float32Array;
+  slicePhase: Uint8Array;
+  sliceCrestOffset: Float32Array;
+  /** Neighbouring slices' τ clamped to T_open/4 because the budget was reached; lookups outside the library's cases. */
+  clamps: number;
+  clampedLookups: number;
+}
+
+const MAX_SLICES = Math.floor(LOFT.budget / LOFT_SAMPLES);
+const E = LOFT.extensionSamples;
+const EXTENSION_STEP = LOFT.extension / E;
+const LAST = PROFILE_POINTS - 1;
+const PHASE = { pre: 0, open: 1, post: 2 } as const;
+
+interface Front {
+  id: number;
+  /** Its records [start, end). */
+  start: number;
+  end: number;
+  first: number;
+  last: number;
+}
+
+/** A front's crest and its point's values at σ: linear between points, running on along the end segments past them. */
+interface Sample {
+  x: number;
+  z: number;
+  tau: number;
+  footHeight: number;
+  footDepth: number;
+  throwZ: number;
+}
+
+/**
+ * The swept barrel's loft (the Padang Padang spec, Part B, PR 3): each breaking front's profiles, looked up by its
+ * points' foot crests and clocks, stood along its shoreward normal and sewn into the water.
+ * - **Anchor** (the advisor's ruling 2): before the throw the profile's crest sits on the solver's crest; from the throw,
+ *   its τ = 0 crest sits where the crest crossed its throw depth; after touchdown it returns to the solver's crest over
+ *   the handover. The anchored crest's distance from the solver's is kept per slice for the advisor.
+ * - **Seam** (ruling 3): a profile's first and last `pinned` samples blend onto the water, the extensions lie on it,
+ *   and each vertex carries the mask's value: 1 over the profile, 0 a `band` past it.
+ * - **Resampling** (ruling 4): `spacing`, refined to `fine` where neighbouring clocks differ by more than `frames`
+ *   frames, within `budget` vertices.
+ * Only + − × ÷ and √, for online determinism: PR 4's contact runs the same code in the worker.
+ */
+export class SweptLoft {
+  private readonly result: LoftResult;
+  private readonly profile = new Float32Array(2 * PROFILE_POINTS);
+  /** Per front, its slices' σ, before and after refinement. */
+  private readonly base = new Float64Array(2 * MAX_SLICES + 8);
+  private readonly sigmas = new Float64Array(2 * MAX_SLICES + 8);
+  private readonly sample: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
+  private readonly probe: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
+
+  constructor(private readonly library: ProfileLibrary, private readonly slope: number) {
+    const vertices = (MAX_SLICES + 1) * LOFT_SAMPLES;
+    this.result = {
+      positions: new Float32Array(3 * vertices), normals: new Float32Array(3 * vertices), mask: new Float32Array(vertices),
+      indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * (MAX_SLICES + 1)), vertexCount: 0, indexCount: 0, sliceCount: 0,
+      sliceFront: new Int32Array(MAX_SLICES + 1), sliceSigma: new Float32Array(MAX_SLICES + 1), sliceTau: new Float32Array(MAX_SLICES + 1),
+      slicePhase: new Uint8Array(MAX_SLICES + 1), sliceCrestOffset: new Float32Array(MAX_SLICES + 1), clamps: 0, clampedLookups: 0,
+    };
+  }
+
+  build(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number): LoftResult {
+    const r = this.result;
+    r.vertexCount = 0;
+    r.indexCount = 0;
+    r.sliceCount = 0;
+    r.clamps = 0;
+    r.clampedLookups = 0;
+    const fronts = this.fronts(records, count);
+    // The spacing that fits the budget, and whether refining would overrun it.
+    let length = 0;
+    let slices = 0;
+    for (const f of fronts) {
+      const span = f.last - f.first + 2 * LOFT.extension;
+      length += span;
+      slices += Math.ceil(span / LOFT.spacing) + 1;
+    }
+    let spacing: number = LOFT.spacing;
+    let budgeted = slices > MAX_SLICES;
+    if (budgeted) spacing = length / Math.max(1, MAX_SLICES - 2 * fronts.length);
+    else {
+      let extra = 0;
+      for (const f of fronts) extra += this.refinements(records, f, spacing, false);
+      budgeted = slices + extra > MAX_SLICES;
+    }
+    for (const f of fronts) {
+      const n = budgeted ? this.baseSlices(f, spacing, this.sigmas) : this.refinements(records, f, spacing, true);
+      if (r.sliceCount + n > MAX_SLICES) break;
+      this.loftFront(records, f, n, budgeted, stillLevel, heightAt);
+    }
+    return r;
+  }
+
+  /** The records' fronts, in order; one of fewer than two points, or all at one σ, has no tangent and is left out. */
+  private fronts(records: Float32Array, count: number): Front[] {
+    const fronts: Front[] = [];
+    let start = 0;
+    while (start < count) {
+      const id = records[start * FRONT_STRIDE + FRONT_FIELD.front];
+      let end = start + 1;
+      while (end < count && records[end * FRONT_STRIDE + FRONT_FIELD.front] === id) end += 1;
+      const first = records[start * FRONT_STRIDE + FRONT_FIELD.sigma];
+      const last = records[(end - 1) * FRONT_STRIDE + FRONT_FIELD.sigma];
+      if (end - start >= 2 && last - first > 1e-6) fronts.push({ id, start, end, first, last });
+      start = end;
+    }
+    return fronts;
+  }
+
+  /** A front's slices every `spacing` or less, evenly from one extension's end to the other's, into `out`; how many. */
+  private baseSlices(f: Front, spacing: number, out: Float64Array): number {
+    const from = f.first - LOFT.extension;
+    const span = f.last - f.first + 2 * LOFT.extension;
+    const n = Math.ceil(span / spacing) + 1;
+    const step = span / (n - 1);
+    for (let k = 0; k < n; k += 1) out[k] = from + k * step;
+    return n;
+  }
+
+  /**
+   * The midpoints a front's base slices need (neighbouring clocks more than `frames` frames apart). With `write`, the
+   * refined σ go to `sigmas` and their count is returned; without, just how many midpoints there would be.
+   */
+  private refinements(records: Float32Array, f: Front, spacing: number, write: boolean): number {
+    const n = this.baseSlices(f, spacing, this.base);
+    let out = 0;
+    let extra = 0;
+    let previousTau = 0;
+    let previousFrame = 0;
+    for (let k = 0; k < n; k += 1) {
+      const s = this.at(records, f, this.base[k], this.probe);
+      const frame = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth }).frameSeconds;
+      if (k > 0 && Math.abs(s.tau - previousTau) > LOFT.frames * Math.min(frame, previousFrame)) {
+        extra += 1;
+        if (write) this.sigmas[out++] = (this.base[k - 1] + this.base[k]) / 2;
+      }
+      if (write) this.sigmas[out++] = this.base[k];
+      previousTau = s.tau;
+      previousFrame = frame;
+    }
+    return write ? out : extra;
+  }
+
+  /** Front f's values at σ (see `Sample`), into `into`. */
+  private at(records: Float32Array, f: Front, sigma: number, into: Sample): Sample {
+    const field = (k: number, name: keyof typeof FRONT_FIELD) => records[k * FRONT_STRIDE + FRONT_FIELD[name]];
+    const copy = (k: number) => {
+      into.x = field(k, 'x');
+      into.z = field(k, 'z');
+      into.tau = field(k, 'tau');
+      into.footHeight = field(k, 'footHeight');
+      into.footDepth = field(k, 'footDepth');
+      into.throwZ = field(k, 'throwZ');
+    };
+    const runOn = (from: number, to: number, beyond: number) => {
+      // Past an end, the crest runs on along its end segment; the rest keeps the end's values.
+      const dx = field(to, 'x') - field(from, 'x');
+      const dz = field(to, 'z') - field(from, 'z');
+      const length = Math.sqrt(dx * dx + dz * dz);
+      if (length > 1e-9) {
+        into.x += (beyond * dx) / length;
+        into.z += (beyond * dz) / length;
+      }
+    };
+    if (sigma <= f.first) {
+      copy(f.start);
+      runOn(f.start + 1, f.start, f.first - sigma);
+      return into;
+    }
+    if (sigma >= f.last) {
+      copy(f.end - 1);
+      runOn(f.end - 2, f.end - 1, sigma - f.last);
+      return into;
+    }
+    let k = f.start;
+    while (k + 2 < f.end && field(k + 1, 'sigma') < sigma) k += 1;
+    const s0 = field(k, 'sigma');
+    const s1 = field(k + 1, 'sigma');
+    const t = s1 - s0 > 1e-12 ? (sigma - s0) / (s1 - s0) : 0;
+    const lerp = (name: keyof typeof FRONT_FIELD) => field(k, name) + t * (field(k + 1, name) - field(k, name));
+    into.x = lerp('x');
+    into.z = lerp('z');
+    into.tau = lerp('tau');
+    into.footHeight = lerp('footHeight');
+    into.footDepth = lerp('footDepth');
+    const z0 = field(k, 'throwZ');
+    const z1 = field(k + 1, 'throwZ');
+    into.throwZ = z0 === z0 && z1 === z1 ? z0 + t * (z1 - z0) : Number.NaN;
+    return into;
+  }
+
+  private loftFront(
+    records: Float32Array, f: Front, n: number, budgeted: boolean, stillLevel: number, heightAt: (x: number, z: number) => number,
+  ): void {
+    const r = this.result;
+    const { profile } = this;
+    const firstSlice = r.sliceCount;
+    let previousTau = 0;
+    for (let k = 0; k < n; k += 1) {
+      const sigma = this.sigmas[k];
+      const s = this.at(records, f, sigma, this.sample);
+      // The ray: the front's shoreward normal, from its tangent over ±2 m.
+      const ahead = this.at(records, f, sigma + 2, this.probe);
+      let tx = ahead.x;
+      let tz = ahead.z;
+      const behind = this.at(records, f, sigma - 2, this.probe);
+      tx -= behind.x;
+      tz -= behind.z;
+      const t = Math.sqrt(tx * tx + tz * tz);
+      if (t > 1e-9) {
+        tx /= t;
+        tz /= t;
+      } else {
+        tx = 1;
+        tz = 0;
+      }
+      const nx = -tz;
+      const nz = tx;
+      let tau = s.tau;
+      if (budgeted && k > 0) {
+        const limit = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth }).touchdownSeconds / 4;
+        const clamped = Math.min(previousTau + limit, Math.max(previousTau - limit, tau));
+        if (clamped !== tau) r.clamps += 1;
+        tau = clamped;
+      }
+      previousTau = tau;
+      const lookup = this.library.profileAt({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth, seconds: tau }, profile);
+      if (lookup.clamped) r.clampedLookups += 1;
+      const touchdown = lookup.touchdownSeconds;
+      // The anchor: the profile's x origin in the world.
+      const crest = profile[2 * LANDMARK.crest];
+      const crestX = s.x - crest * nx;
+      const crestZ = s.z - crest * nz;
+      let ax = crestX;
+      let az = crestZ;
+      let offset = Number.NaN;
+      if (tau >= 0 && s.throwZ === s.throwZ) {
+        if (tau <= touchdown) {
+          ax = s.x;
+          az = s.throwZ;
+          const ox = ax + crest * nx - s.x;
+          const oz = az + crest * nz - s.z;
+          offset = Math.sqrt(ox * ox + oz * oz);
+        } else {
+          const u = Math.min(1, (tau - touchdown) / LOFT.handover);
+          ax = s.x + u * (crestX - s.x);
+          az = s.throwZ + u * (crestZ - s.throwZ);
+        }
+      }
+      // The weights: into the water at the front's ends, and after touchdown.
+      const d = Math.min(sigma - f.first, f.last - sigma);
+      const r0 = Math.min(1, d / LOFT.endBlend);
+      const wEnd = d <= 0 ? 0 : r0 * r0 * (3 - 2 * r0);
+      const wFade = tau <= touchdown ? 1 : Math.max(0, 1 - (tau - touchdown) / LOFT.handover);
+      const w = wEnd * wFade;
+      const maskSlice = wFade > 0 ? Math.min(1, Math.max(0, 1 + d / LOFT.band)) : 0;
+      const slice = r.sliceCount;
+      r.sliceFront[slice] = f.id;
+      r.sliceSigma[slice] = sigma;
+      r.sliceTau[slice] = tau;
+      r.slicePhase[slice] = PHASE[lookup.phase];
+      r.sliceCrestOffset[slice] = offset;
+      for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+        let along: number;
+        let above = 0;
+        let pin = 1;
+        let maskAlong = 1;
+        if (j < E) {
+          along = profile[0] - (E - j) * EXTENSION_STEP;
+          maskAlong = Math.max(0, 1 - ((E - j) * EXTENSION_STEP) / LOFT.band);
+        } else if (j < E + PROFILE_POINTS) {
+          const i = j - E;
+          along = profile[2 * i];
+          above = profile[2 * i + 1];
+          pin = i < LOFT.pinned ? (LOFT.pinned - i) / LOFT.pinned : i > LAST - LOFT.pinned ? (i - (LAST - LOFT.pinned)) / LOFT.pinned : 0;
+        } else {
+          const beyond = (j - E - LAST) * EXTENSION_STEP;
+          along = profile[2 * LAST] + beyond;
+          maskAlong = Math.max(0, 1 - beyond / LOFT.band);
+        }
+        const v = slice * LOFT_SAMPLES + j;
+        const px = ax + along * nx;
+        const pz = az + along * nz;
+        const h = heightAt(px, pz);
+        const e = w * (1 - pin);
+        r.positions[3 * v] = px;
+        r.positions[3 * v + 1] = e === 0 ? h : h + e * (stillLevel + above - h);
+        r.positions[3 * v + 2] = pz;
+        r.mask[v] = maskSlice * maskAlong;
+      }
+      r.sliceCount += 1;
+    }
+    const lastSlice = r.sliceCount - 1;
+    this.normals(firstSlice, lastSlice);
+    for (let s = firstSlice; s < lastSlice; s += 1) {
+      for (let j = 0; j < LOFT_SAMPLES - 1; j += 1) {
+        const v00 = s * LOFT_SAMPLES + j;
+        const v10 = v00 + LOFT_SAMPLES;
+        const i = r.indexCount;
+        r.indices[i] = v00;
+        r.indices[i + 1] = v10;
+        r.indices[i + 2] = v00 + 1;
+        r.indices[i + 3] = v00 + 1;
+        r.indices[i + 4] = v10;
+        r.indices[i + 5] = v10 + 1;
+        r.indexCount += 6;
+      }
+    }
+    r.vertexCount = r.sliceCount * LOFT_SAMPLES;
+  }
+
+  /** Each vertex's normal: across the profile × along the front, by central differences (one-sided at the edges). */
+  private normals(firstSlice: number, lastSlice: number): void {
+    const { positions: p, normals } = this.result;
+    for (let s = firstSlice; s <= lastSlice; s += 1) {
+      const sBack = Math.max(firstSlice, s - 1);
+      const sAhead = Math.min(lastSlice, s + 1);
+      for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+        const jBack = Math.max(0, j - 1);
+        const jAhead = Math.min(LOFT_SAMPLES - 1, j + 1);
+        const a0 = 3 * (s * LOFT_SAMPLES + jBack);
+        const a1 = 3 * (s * LOFT_SAMPLES + jAhead);
+        const b0 = 3 * (sBack * LOFT_SAMPLES + j);
+        const b1 = 3 * (sAhead * LOFT_SAMPLES + j);
+        const ax = p[a1] - p[a0];
+        const ay = p[a1 + 1] - p[a0 + 1];
+        const az = p[a1 + 2] - p[a0 + 2];
+        const bx = p[b1] - p[b0];
+        const by = p[b1 + 1] - p[b0 + 1];
+        const bz = p[b1 + 2] - p[b0 + 2];
+        let cx = ay * bz - az * by;
+        let cy = az * bx - ax * bz;
+        let cz = ax * by - ay * bx;
+        const length = Math.sqrt(cx * cx + cy * cy + cz * cz);
+        if (length > 1e-12) {
+          cx /= length;
+          cy /= length;
+          cz /= length;
+        } else {
+          cx = 0;
+          cy = 1;
+          cz = 0;
+        }
+        const o = 3 * (s * LOFT_SAMPLES + j);
+        normals[o] = cx;
+        normals[o + 1] = cy;
+        normals[o + 2] = cz;
+      }
+    }
+  }
+}

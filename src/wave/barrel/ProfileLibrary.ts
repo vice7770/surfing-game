@@ -68,6 +68,29 @@ export class ProfileLibrary {
 
   /** The profile for a slice, in metres, into `out` (PROFILE_POINTS (x, y) pairs). */
   profileAt(query: ProfileQuery, out: Float32Array): ProfileLookup {
+    const b = this.bracket(query);
+    const tau = query.seconds / b.unit;
+    this.frameAt(b.lower, tau, out);
+    if (b.upper !== b.lower) {
+      this.frameAt(b.upper, tau, this.scratch);
+      for (let i = 0; i < FLOATS; i += 1) out[i] += b.weight * (this.scratch[i] - out[i]);
+    }
+    for (let i = 0; i < FLOATS; i += 1) out[i] *= b.scale;
+    const phase = tau < 0 ? 'pre' : tau <= b.touchdown ? 'open' : 'post';
+    return {
+      caseId: b.weight < 0.5 ? b.lower.id : b.upper.id, clamped: b.clamped, scale: b.scale, phase,
+      touchdownSeconds: b.touchdown * b.unit, frameSeconds: b.frameStep * b.unit,
+    };
+  }
+
+  /** A slice's scale and times, s, as `profileAt` finds them, without building its profile (the loft's refinement and budget). */
+  profileTimes(query: Omit<ProfileQuery, 'seconds'>): { scale: number; clamped: boolean; touchdownSeconds: number; frameSeconds: number } {
+    const b = this.bracket(query);
+    return { scale: b.scale, clamped: b.clamped, touchdownSeconds: b.touchdown * b.unit, frameSeconds: b.frameStep * b.unit };
+  }
+
+  /** The cases a slice blends (the nearest slope's two bracketing its A0), its scale (h0, m) and τ's unit, s. */
+  private bracket(query: Omit<ProfileQuery, 'seconds'>) {
     let group = this.bySlope[0];
     for (const candidate of this.bySlope) {
       if (Math.abs(candidate[0].slope - query.slope) < Math.abs(group[0].slope - query.slope)) group = candidate;
@@ -95,18 +118,11 @@ export class ProfileLibrary {
     }
     // One case: the slice's foot crest is its; a blend: A0 is the slice's own, so h0 is its foot depth.
     const scale = lower === upper ? query.footHeight / lower.nonlinearity : query.footDepth;
-    const unit = Math.sqrt(scale / GRAVITY);
-    const tau = query.seconds / unit;
-    this.frameAt(lower, tau, out);
-    if (upper !== lower) {
-      this.frameAt(upper, tau, this.scratch);
-      for (let i = 0; i < FLOATS; i += 1) out[i] += weight * (this.scratch[i] - out[i]);
-    }
-    for (let i = 0; i < FLOATS; i += 1) out[i] *= scale;
-    const touchdown = lower.touchdown + weight * (upper.touchdown - lower.touchdown);
-    const phase = tau < 0 ? 'pre' : tau <= touchdown ? 'open' : 'post';
-    const frameStep = lower.tauStep + weight * (upper.tauStep - lower.tauStep);
-    return { caseId: weight < 0.5 ? lower.id : upper.id, clamped, scale, phase, touchdownSeconds: touchdown * unit, frameSeconds: frameStep * unit };
+    return {
+      lower, upper, weight, clamped, scale, unit: Math.sqrt(scale / GRAVITY),
+      touchdown: lower.touchdown + weight * (upper.touchdown - lower.touchdown),
+      frameStep: lower.tauStep + weight * (upper.tauStep - lower.tauStep),
+    };
   }
 
   /** One case's profile at τ (√(h0/g)), linear between its two nearest frames, clamped to its first and last. */
