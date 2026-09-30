@@ -44,6 +44,19 @@ describe('the breaking front as lines', () => {
     expect(front.points.map((point) => [point.joined, point.depth])).toEqual([[7, 3.1], [7, 3.1], [7, 3.1]]);
   });
 
+  it('keeps a joined crest on its front while it breaks, its rise falling below the onset', () => {
+    const front = new BreakingFront();
+    const first = line(range(0, 5), 10, 0);
+    front.update(first, first.length, 0);
+    const ids = front.points.map((point) => point.id);
+    const dissipating = line(range(0, 5), 10.3, 0, 0.3);
+    front.update(dissipating, dissipating.length, 0.1);
+    expect(front.points.map((point) => [point.id, point.joined])).toEqual(ids.map((id) => [id, 0]));
+    const calm = line(range(0, 5), 10.6, 0, 0.3).map((s) => ({ ...s, strength: 0 }));
+    front.update(calm, calm.length, 0.2);
+    expect(front.points).toHaveLength(0);
+  });
+
   // An inheriting column's solver breaking starts at a threshold lowered by its neighbour's age: not a join.
   it('leaves out crests whose segment has not reached Kennedy’s fresh onset, breaking or not', () => {
     const front = new BreakingFront();

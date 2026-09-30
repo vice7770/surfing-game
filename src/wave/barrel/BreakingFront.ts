@@ -40,7 +40,7 @@ export interface FrontState {
 
 /**
  * The breaking front as lines of points (swept-barrel-build.md, "Front line"; Thürey et al. 2007). A crest whose
- * segment reaches Kennedy's fresh onset (`ONSET.join`) joins a front. Crests in neighbouring columns within LINK_ROWS rows in z link, and a
+ * segment reaches Kennedy's fresh onset (`ONSET.join`) joins a front, and stays on it while its segment breaks. Crests in neighbouring columns within LINK_ROWS rows in z link, and a
  * column's own crests never do, so two crests in a column are two fronts and an empty column splits one. A point
  * matched to last step's in its column keeps its ID, its join and its clock, with no reset as its crest crosses into
  * new cells. Columns go in order, with no randomness, and only + − × ÷ and √, for online determinism.
@@ -69,12 +69,15 @@ export class BreakingFront {
     const points: FrontPoint[] = [];
     for (let k = 0; k < count; k += 1) {
       const s = samples[k];
-      if (!(s.rise >= ONSET.join)) continue;
+      // A crest joins at Kennedy's fresh onset; once on a front it stays while it breaks at all, its rise falling as
+      // the solver dissipates it.
+      if (!(s.rise >= ONSET.join) && !(s.strength > 0)) continue;
       let best: FrontPoint | undefined;
       for (const old of byColumn.get(s.column) ?? []) {
         if (matched.has(old) || !(Math.abs(old.z - s.z) < this.matchReach)) continue;
         if (!best || Math.abs(old.z - s.z) < Math.abs(best.z - s.z)) best = old;
       }
+      if (!best && !(s.rise >= ONSET.join)) continue;
       if (best) matched.add(best);
       points.push({
         id: best ? best.id : this.nextId++,
