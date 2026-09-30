@@ -13,8 +13,8 @@ import { LANDMARK, PROFILE_POINTS, type ProfileLibrary } from './ProfileLibrary'
  *   samples, so the seam's band always has both surfaces [inferred];
  * - `band`, m: the dithered overlap at the mask's edge [inferred];
  * - `endBlend`, m: a front's ends blend into the water over this length [inferred];
- * - `handover`, s: after touchdown a slice's anchor returns to the solver's crest and its surface fades into the water
- *   over this long, a stand-in until the roller; a faded slice is dropped [inferred];
+ * - `handover`, s: the anchor returns to the solver's crest over this long [inferred]. (After touchdown a slice fades
+ *   into the water over its tube's own collapse, `ProfileLookup.collapseSeconds`, and a faded slice is dropped.)
  * - `offsetKnee`, `offsetReach`, m: the drawn crest's distance from the solver's is its own below the knee and
  *   saturates `offsetReach` past it (the advisor, 2026-09-30: 5 % of open slices ran over 2 m on the Small swell);
  * - `handoverStart`: the anchor starts back to the solver's crest at this share of the open time, where the lip
@@ -52,6 +52,12 @@ export interface LoftResult {
   sliceCrestOffset: Float32Array;
   /** Per slice, τ over its touchdown time once thrown (NaN before): where in its tube's life it is. */
   sliceLife: Float32Array;
+  /**
+   * Per slice, its tube's collapse time after touchdown, s (√(2W/g)), and how much of it is left, 1 before touchdown to 0
+   * when the slice goes: the fade the drawing and the contact share (the advisor, 2026-09-30).
+   */
+  sliceCollapse: Float32Array;
+  sliceFade: Float32Array;
   /** Neighbouring slices' τ clamped to T_open/4 because the budget was reached; lookups outside the library's cases. */
   clamps: number;
   clampedLookups: number;
@@ -84,6 +90,15 @@ const EXTENSION_STEP = LOFT.extension / E;
 const LAST = PROFILE_POINTS - 1;
 const PHASE = { pre: 0, open: 1, post: 2 } as const;
 
+/**
+ * A slice's fade after touchdown: 1 until then, falling to 0 over its tube's collapse, √(2W/g) (the advisor,
+ * 2026-09-30: neither the drawing nor the contact may outlast the pocket); a tube without a void goes at touchdown.
+ */
+export function collapseFade(tau: number, touchdown: number, collapse: number): number {
+  if (tau <= touchdown) return 1;
+  return collapse > 0 ? Math.max(0, 1 - (tau - touchdown) / collapse) : 0;
+}
+
 interface Front {
   id: number;
   /** Its records [start, end). */
@@ -107,15 +122,18 @@ interface Sample {
  * The swept barrel's loft (the Padang Padang spec, Part B, PR 3): each breaking front's profiles, looked up by its
  * points' foot crests and clocks, stood along its shoreward normal and sewn into the water.
  * - **Anchor** (the advisor's ruling 2): before the throw the profile's crest sits on the solver's crest; from the throw,
- *   its τ = 0 crest sits where the crest crossed its throw depth; after touchdown it returns to the solver's crest over
- *   the handover. The anchored crest's distance from the solver's is kept per slice for the advisor.
+ *   its τ = 0 crest sits where the crest crossed its throw depth; from 80 % of the open time it returns to the solver's
+ *   crest over the handover. The anchored crest's distance from the solver's is kept per slice for the advisor.
+ * - **After touchdown** (the advisor, 2026-09-30): the drawing keeps the touchdown frame, the visual event; the slice
+ *   fades into the water over its tube's collapse, √(2W/g), and is dropped once faded.
  * - **Seam** (ruling 3): a profile's first and last `pinned` samples blend onto the water, the extensions lie on it,
  *   and each vertex carries the mask's value: 1 over the profile, 0 a `band` past it.
  * - **Resampling** (ruling 4): `spacing`, refined to `fine` where neighbouring clocks differ by more than `frames`
  *   frames, within `budget` vertices.
- * - **Contact mode** (PR 4, the advisor's ruling 2): each slice's geometry is held at its last clear frame after
- *   touchdown (its clock and phase run on), so it never self-crosses; and an overturned slice under full weight is
- *   whole from half weight and dropped below, counted in `cuts`: a squashed lip is no water.
+ * - **Contact mode** (PR 4, the advisor's ruling 2): each slice's geometry is held at its last clear frame
+ *   (`ProfileLookup.clearSeconds`: the jet off the face, the void open) through touchdown and its collapse (its clock
+ *   and phase run on), so it never self-crosses; and an overturned slice under full weight is whole from half weight
+ *   and dropped below, counted in `cuts`: a squashed lip is no water.
  * A vertex resting on the water asks its height; one lifted fully off it is still level plus the profile.
  * Only + − × ÷ and √, for online determinism: PR 4's contact runs the same code in the worker.
  */
@@ -139,7 +157,7 @@ export class SweptLoft {
       indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * slices), vertexCount: 0, indexCount: 0, sliceCount: 0,
       sliceFront: new Int32Array(slices), sliceSigma: new Float32Array(slices), sliceTau: new Float32Array(slices),
       slicePhase: new Uint8Array(slices), sliceCrestOffset: new Float32Array(slices), sliceLife: new Float32Array(slices),
-      clamps: 0, clampedLookups: 0, caps: 0,
+      sliceCollapse: new Float32Array(slices), sliceFade: new Float32Array(slices), clamps: 0, clampedLookups: 0, caps: 0,
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
       sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices), cuts: 0,
@@ -215,7 +233,7 @@ export class SweptLoft {
     for (let k = 0; k < n; k += 1) {
       const s = this.at(records, f, this.base[k], this.probe);
       const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
-      if (s.tau >= times.touchdownSeconds + LOFT.handover) {
+      if (collapseFade(s.tau, times.touchdownSeconds, times.collapseSeconds) === 0) {
         previous = Number.NaN;
         continue;
       }
@@ -331,13 +349,13 @@ export class SweptLoft {
         if (clamped !== tau) r.clamps += 1;
         tau = clamped;
       }
-      // The contact holds its geometry at the last clear frame, never self-crossing (the advisor's ruling 2); its clock runs on.
-      const shapeTau = this.contact
-        ? Math.min(tau, this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth }).clearSeconds)
-        : tau;
+      // The contact holds its geometry at the last clear frame, never self-crossing (the advisor's ruling 2); the drawing
+      // keeps the touchdown frame, the visual event (the advisor, 2026-09-30). Both clocks run on.
+      const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
+      const shapeTau = Math.min(tau, this.contact ? times.clearSeconds : times.touchdownSeconds);
       const lookup = this.library.profileAt({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth, seconds: shapeTau }, profile);
       const touchdown = lookup.touchdownSeconds;
-      const wFade = tau <= touchdown ? 1 : Math.max(0, 1 - (tau - touchdown) / LOFT.handover);
+      const wFade = collapseFade(tau, touchdown, lookup.collapseSeconds);
       if (wFade === 0) {
         closeRun();
         continue;
@@ -416,6 +434,8 @@ export class SweptLoft {
       r.slicePhase[slice] = tau > touchdown ? PHASE.post : PHASE[lookup.phase];
       r.sliceCrestOffset[slice] = offset;
       r.sliceLife[slice] = life;
+      r.sliceCollapse[slice] = lookup.collapseSeconds;
+      r.sliceFade[slice] = wFade;
       r.sliceJoined[slice] = 0;
       r.sliceRayX[slice] = nx;
       r.sliceRayZ[slice] = nz;
