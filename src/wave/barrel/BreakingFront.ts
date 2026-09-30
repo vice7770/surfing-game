@@ -21,8 +21,6 @@ const HOLD = 0.5;
 const SPLIT = 1;
 /** A crest first seen this far shoreward of the wedge's foot has no foot height to size it by, m (provisional). */
 const FOOT_BAND = 1;
-/** A crest that crossed its join depth joins if its segment breaks within this long, s; else the solver never broke it (the advisor, provisional). */
-const JOIN_WINDOW = 1;
 /** Kennedy's fresh onset for Padang Padang, η_t over √(g d): the swell table's own condition (a diagnostic here). */
 const FRESH = 0.65;
 
@@ -60,6 +58,8 @@ export interface FrontPoint {
   /** When its crest crossed its join depth (it joined), s, and that depth, m: its clock's start. */
   joined: number;
   depth: number;
+  /** When the solver was first seen breaking its segment, s: its lip never throws before (sliceClock). */
+  broke: number;
   /** The slice's clock as drawn, s from its lip's throw: smoothed along the front, never running back (sliceClock). */
   tau: number;
   /** The still depth where its crest first rose at Kennedy's fresh onset, m; null until then (a diagnostic of the join table). */
@@ -84,7 +84,8 @@ export interface FrontState {
  * - **The join, by depth** (the advisor, 2026-09-30). Each crest is followed from where it crosses the wedge's foot
  *   (the timing's h0), and sized by its highest over a band of depth nearer the break (the timing's), before anything
  *   near it breaks. It joins where it crosses the depth at which the solver first breaks swell that size fresh (the 1D runs,
- *   `OnsetTiming.joinDepth`), at the moment it crosses, provided its segment breaks within JOIN_WINDOW. A crest reads its own place, not its rise: once a neighbour
+ *   `OnsetTiming.joinDepth`), at the moment it crosses, provided the solver breaks its segment before its lip would
+ *   throw (`OnsetTiming.window`). A crest reads its own place, not its rise: once a neighbour
  *   breaks, the eddy viscosity damps a column's rise (fresh crossings came ~2 s late, or never) and its inherited age
  *   is the event's, so neither can time a peel. Here the peel is each column's crest reaching its breaking depth in
  *   turn, from the bed.
@@ -167,17 +168,20 @@ export class BreakingFront {
           const f = track.depth > s.depth ? Math.min(1, Math.max(0, (track.depth - joinDepth) / (track.depth - s.depth))) : 1;
           next.crossed = track.seen + f * (time - track.seen);
         }
-        if (next.crossed !== null && s.strength > 0 && time - next.crossed <= JOIN_WINDOW) {
+        // It joins if the solver breaks it before its lip would throw (within the measured lag of the crossing), so a
+        // tube never throws off water the solver has not broken (the advisor, 2026-09-30).
+        const window = this.timing.window(joinDepth);
+        if (next.crossed !== null && s.strength > 0 && time - next.crossed <= window) {
           this.joins += 1;
           points.push({
             id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
             // Its clock starts at the library's earliest frame; the first advance puts it where the fit does.
-            joined: next.crossed, depth: joinDepth, tau: this.timing.earliest, seen: time, fresh: next.fresh,
+            joined: next.crossed, depth: joinDepth, broke: time, tau: this.timing.earliest, seen: time, fresh: next.fresh,
           });
           continue;
         }
-        // Crossed and never broken: the solver spilled or did not break it, so it has no barrel.
-        if (next.crossed !== null && time - next.crossed > JOIN_WINDOW) {
+        // Crossed and not broken before its throw: the solver spilled it, broke it late or not at all, so it has no barrel.
+        if (next.crossed !== null && time - next.crossed > window) {
           this.unbroken += 1;
           continue;
         }

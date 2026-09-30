@@ -5,12 +5,12 @@ import { advanceClocks, CLOCK, onsetTiming, type OnsetTiming } from './sliceCloc
 
 const DT = 1 / 30;
 /** No lag, a second of steepening frames: the throw is the join. */
-const AT_ONCE: OnsetTiming = { h0: 7, band: [6, 5], joinDepth: () => 2.45, lag: () => 0, earliest: -1 };
+const AT_ONCE: OnsetTiming = { h0: 7, band: [6, 5], joinDepth: () => 2.45, lag: () => 0, window: () => 2, earliest: -1 };
 
 /** A crest line of `n` points one metre apart, their clocks at the earliest frame as BreakingFront starts them. */
 function crest(n: number, id = 0): FrontPoint[] {
   return Array.from({ length: n }, (_, k) => ({
-    id: k, front: id, column: k, sigma: k, x: k + 0.5, z: 10, b: NaN, height: 1, joined: 0, depth: 2.5, tau: AT_ONCE.earliest, seen: 0, fresh: null,
+    id: k, front: id, column: k, sigma: k, x: k + 0.5, z: 10, b: NaN, height: 1, joined: 0, depth: 2.5, broke: 0, tau: AT_ONCE.earliest, seen: 0, fresh: null,
   }));
 }
 
@@ -30,6 +30,7 @@ function run(
       if (joined.has(point)) continue;
       joined.add(point);
       point.joined = time;
+      point.broke = time;
       point.tau = timing.earliest;
     }
     pauses += advanceClocks(front, time, timing);
@@ -48,6 +49,14 @@ describe('the slice clock', () => {
     advanceClocks(points, 5.1, timing);
     expect(points[0].tau).toBeCloseTo(-0.4, 12);
     advanceClocks(points, 6, timing);
+    expect(points[0].tau).toBeCloseTo(0.5, 12);
+  });
+
+  it('never throws before the solver breaks the crest, with no lag', () => {
+    const points = crest(1);
+    points[0].joined = 5;
+    points[0].broke = 6;
+    advanceClocks(points, 6.5, AT_ONCE);
     expect(points[0].tau).toBeCloseTo(0.5, 12);
   });
 
@@ -133,5 +142,7 @@ describe('the slice clock', () => {
     expect(onsetTiming(8, 16).joinDepth((1.6 * 8) / 7)).toBeCloseTo((3.18 * 8) / 7, 12);
     expect(onsetTiming(8, 16).band[1]).toBeCloseTo((5 * 8) / 7, 12);
     expect(onsetTiming(h0, 16, 0).lag(3)).toBe(0);
+    // The join window is the measured lag whatever the lag is scaled to.
+    expect(onsetTiming(h0, 16, 0).window(2.45)).toBeCloseTo(2.6 * unit, 12);
   });
 });

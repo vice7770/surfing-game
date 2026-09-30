@@ -60,14 +60,16 @@ function interpolate(table: readonly (readonly [number, number])[], x: number): 
 /**
  * A bed's onset timing: its wedge's foot `h0`, m, where crests are first followed; the band of still depth, deeper and
  * shallower, over which their height is read (its highest), m; the still depth where a crest that stood `height` m
- * high over the band joins its front, m;
- * when its lip throws after it joins, s, from that depth; and the earliest τ, s.
+ * high over the band joins its front, m; when its lip throws after it joins, s, from that depth; how long after it
+ * joins the solver may start breaking it and still give it a barrel, s (the measured lag, however `lag` is scaled);
+ * and the earliest τ, s.
  */
 export interface OnsetTiming {
   h0: number;
   band: readonly [deeper: number, shallower: number];
   joinDepth(height: number): number;
   lag(depth: number): number;
+  window(depth: number): number;
   earliest: number;
 }
 
@@ -96,6 +98,7 @@ export function onsetTiming(h0: number, period: number, lag = 1): OnsetTiming {
     band: [BAND[0] * scale, BAND[1] * scale],
     joinDepth: (height) => joinAt(height) * scale,
     lag: (depth) => lag * interpolate(ONSET_LAG, depth / h0) * unit,
+    window: (depth) => interpolate(ONSET_LAG, depth / h0) * unit,
     earliest: CLOCK.earliest * unit,
   };
 }
@@ -108,7 +111,7 @@ const RADIUS = CLOCK.smoothing * Math.sqrt(7);
  * the advisor's rulings, 2026-09-30). Returns how many clocks paused this step rather than run back.
  *
  * - **The throw.** A point's lip throws `timing.lag` after it joined the front (at its breaking depth, where the
- *   solver's fresh onset leads the Navier–Stokes wave's vertical face). Until then τ is negative: the library's steepening frames, from
+ *   solver's fresh onset leads the Navier–Stokes wave's vertical face), and never before the solver broke it. Until then τ is negative: the library's steepening frames, from
  *   `timing.earliest`. So the front's newest end reads the earliest frames, where the loft blends into the height
  *   field, with no taper.
  * - **Smoothing.** Along each front, a point's throw time is read from a local line through its neighbours',
@@ -153,7 +156,8 @@ function fittedThrow(points: readonly FrontPoint[], start: number, end: number, 
   while (from > start && centre - points[from - 1].sigma < RADIUS) from -= 1;
   for (let j = from; j < end && points[j].sigma - centre < RADIUS; j += 1) {
     const other = points[j];
-    const thrown = other.joined + timing.lag(other.depth);
+    // Never before the solver breaks it: with no lag, a crest the solver breaks late throws when it does.
+    const thrown = Math.max(other.joined + timing.lag(other.depth), other.broke);
     const d = other.sigma - centre;
     const u = d / RADIUS;
     const w = (1 - u * u) * (1 - u * u);

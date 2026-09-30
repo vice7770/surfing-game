@@ -56,7 +56,9 @@ describe('the breaking front as lines', () => {
     expect(front.points[0].depth).toBeCloseTo(joinDepth, 12);
   });
 
-  it('joins at the crossing when the segment breaks within a second of it, and never after', () => {
+  it('joins at the crossing when the solver breaks it before its throw, and never after', () => {
+    // At 3.18 m the lag is 2.75 √(7/g) = 2.33 s: the window.
+    expect(TIMING.window(JOIN)).toBeCloseTo(2.33, 2);
     const late = new BreakingFront(1, TIMING);
     late.update([sample(0, 10, 7, 0)], 1, 0);
     late.update([sample(0, 12, JOIN, 0)], 1, 1);
@@ -66,8 +68,8 @@ describe('the breaking front as lines', () => {
     const never = new BreakingFront(1, TIMING);
     never.update([sample(0, 10, 7, 0)], 1, 0);
     never.update([sample(0, 12, JOIN, 0)], 1, 1);
-    never.update([sample(0, 13, 2, 0)], 1, 2.1);
-    never.update([sample(0, 14, 1.5, 0.5)], 1, 2.2);
+    never.update([sample(0, 13, 2, 0)], 1, 3.4);
+    never.update([sample(0, 14, 1.5, 0.5)], 1, 3.5);
     expect(never.points).toHaveLength(0);
   });
 
