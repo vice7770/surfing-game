@@ -15,8 +15,11 @@ import { BoussinesqSolver } from './BoussinesqSolver';
 import { BubbleCloud } from './BubbleCloud';
 import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type SprayLook } from './SprayCloud';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
+import { libraryFromBytes } from './barrel/barrelLibrary';
 import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from './barrel/frontRecords';
-import { SurfZoneSimulation, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
+import { SweptContact } from './barrel/sweptContact';
+import { BARREL_SLOPE } from './barrel/sweptLoft';
+import { SurfZoneSimulation, sweptBarrelOn, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
 import type { BreakerType } from './SwellReadout';
 import type { SurfReading } from './SurfMeter';
 
@@ -109,6 +112,12 @@ export interface SurfZoneRunnerOptions {
   spawnOut?: number;
   /** The player's stance for the first ride (the stances spec); later rides take the request's. */
   stance?: StanceName;
+  /**
+   * The barrel library's case files (public/barrels, in the index's order). At a swept spot the board and rider
+   * collide with the swept surface the page draws (the Padang Padang spec, Part B, PR 4); without them they ride the
+   * carved water, as before.
+   */
+  barrelCases?: readonly Uint8Array[];
 }
 
 /** The player's request for a batch of steps: the ride's input, and a quick retry. */
@@ -272,6 +281,11 @@ export class SurfZoneRunner {
   readonly board?: BoardBody;
   /** The board, its rider and the rider's fall body, when the player rides. */
   readonly session?: RideSession;
+  /** The swept barrel's contact at a swept spot, given the barrel files (the Padang Padang spec, Part B, PR 4). */
+  readonly contact?: SweptContact;
+  /** The contact's last update, ms. */
+  contactMs = 0;
+  private readonly contactRecords = new Float32Array(FRONT_CAPACITY * FRONT_STRIDE);
   private rideResets = 0;
   private readonly lipHits = new SoundEvents(LIP_HIT_STRIDE);
   private readonly strokeHits = new SoundEvents(STROKE_HIT_STRIDE);
@@ -313,7 +327,11 @@ export class SurfZoneRunner {
     this.focus = this.simulation.breakPoint();
     this.breaker = this.simulation.iribarren();
     this.breakDepth = this.simulation.spot.depthAt(this.focus.x, this.focus.z) + config.tide;
-    this.water = PhysicalSurfWater.forSimulation(this.simulation);
+    const slope = BARREL_SLOPE[config.spot];
+    if (options.barrelCases && (options.rider || options.board) && sweptBarrelOn(config) && slope !== undefined && this.simulation.front) {
+      this.contact = new SweptContact(libraryFromBytes(options.barrelCases), slope);
+    }
+    this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contact);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
     this.rideLineup = new Vector3(this.focus.x + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? RIDE_LINEUP_OFFSET));
     if (options.rider) {
@@ -413,9 +431,23 @@ export class SurfZoneRunner {
     return this.simulation.device !== undefined;
   }
 
+  /**
+   * The swept surface after the water's step, before any body samples it: once a step, no extra substeps (the
+   * advisor's ruling 3).
+   */
+  private updateContact(): void {
+    const { contact, simulation } = this;
+    if (!contact || !simulation.front) return;
+    const start = performance.now();
+    const count = writeFrontRecords(simulation.front.points, this.contactRecords);
+    contact.update(this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z));
+    this.contactMs = performance.now() - start;
+  }
+
   /** The board, rider and particles after the water's step `step` of a batch. */
   private afterWater(step: number, input: RideRequest): void {
     const { board, session } = this;
+    this.updateContact();
     if (session) {
       // A press (pop-up, retry) counts once per batch; held controls apply to every step.
       const request = step === 0 ? input : { ...input, popUp: false, retry: false, place: undefined };
@@ -437,7 +469,9 @@ export class SurfZoneRunner {
       const start = performance.now();
       const ridden = request.pocketReflex ? withPocketReflex(request, this.wave, session.phase) : request;
       session.step(SURF_ZONE_STEP, this.water, ridden);
-      session.strike(this.simulation.lip);
+      // At a swept spot the lip strikes through the contact; its parcels' strips are off, so they would strike from
+      // where nothing is drawn (the advisor's ruling 4).
+      if (!this.contact) session.strike(this.simulation.lip);
       if (session.surfer.active) this.knock = Math.max(this.knock, session.surfer.lastContacts.board.length());
       this.boardMs = performance.now() - start;
       const lost = session.board.outsideDomain || (session.surfer.active && session.surfer.outsideDomain)

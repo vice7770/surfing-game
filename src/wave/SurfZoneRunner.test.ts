@@ -1,9 +1,10 @@
 import { Vector3 } from 'three';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { REFERENCE_BOARD } from '../physics/boardReference';
 import { WATER } from '../physics/hullForces';
 import { createWaterSample } from '../physics/SurfWater';
 import type { SpotName } from './Bathymetry';
+import { readBarrelCases } from './barrel/nodeBarrelCases';
 import { BubbleCloud } from './BubbleCloud';
 import {
   LEASH_BITS, LIP_HIT_STRIDE, LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, SWIM_BITS, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea,
@@ -588,4 +589,31 @@ describe('SurfZoneRunner sound events', () => {
     expect(buffers.strokeHitCount).toBeGreaterThan(0);
     for (let i = 0; i < buffers.strokeHitCount; i += 1) expect(buffers.strokeHits[i * STROKE_HIT_STRIDE + 2]).toBeGreaterThan(0);
   });
+});
+
+// The swept barrel's contact (the Padang Padang spec, Part B, PR 4), on a small Padang Padang sea.
+describe('the swept contact in the surf zone', () => {
+  const padang: SurfZoneConfig = {
+    spot: 'padang', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
+    componentCount: 12, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
+  };
+
+  it('rides the swept surface at Padang Padang with the cases, and the lip parcels strike no one', () => {
+    const runner = new SurfZoneRunner(padang, { rider: true, barrelCases: readBarrelCases() });
+    expect(runner.contact).toBeDefined();
+    const strike = vi.spyOn(runner.session!, 'strike');
+    runner.advance(30);
+    expect(strike).not.toHaveBeenCalled();
+    expect(runner.contact!.last).toBeDefined();
+    expect(runner.contactMs).toBeGreaterThanOrEqual(0);
+  }, 600_000);
+
+  it('rides the carved water, struck by parcels, without the cases or away from a swept spot', () => {
+    const plain = new SurfZoneRunner(padang, { rider: true });
+    expect(plain.contact).toBeUndefined();
+    const strike = vi.spyOn(plain.session!, 'strike');
+    plain.advance(2);
+    expect(strike).toHaveBeenCalled();
+    expect(new SurfZoneRunner({ ...padang, spot: 'point' }, { rider: true, barrelCases: readBarrelCases() }).contact).toBeUndefined();
+  }, 600_000);
 });

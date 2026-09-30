@@ -90,8 +90,8 @@ function surfZoneFactory(rider: boolean, stance: StanceName): SurfZoneHostFactor
   // `?renderSpacing=0.5` draws the water on a finer grid, for close recordings (dev flag).
   const renderSpacing = Number(devParam('renderSpacing')) || undefined;
   return inPage
-    ? (config) => new LocalSurfZone(config, { rider, renderSpacing, stance })
-    : (config) => new WorkerSurfZone(config, undefined, { rider, renderSpacing, stance });
+    ? (config, extra) => new LocalSurfZone(config, { rider, renderSpacing, stance, ...extra })
+    : (config, extra) => new WorkerSurfZone(config, undefined, { rider, renderSpacing, stance, ...extra });
 }
 /**
  * Online (spec N1): the rider starts at `spawn` (m along shore from the take-off, and
@@ -101,13 +101,13 @@ function surfZoneFactory(rider: boolean, stance: StanceName): SurfZoneHostFactor
 /** Surf School (spec L2): a surf zone with the player's rider, starting from a recorded sea. */
 function recordedSurfZoneFactory(sea: Uint8Array, stance: StanceName): SurfZoneHostFactory {
   return inPage
-    ? (config) => new LocalSurfZone(config, { rider: true, stance }, sea)
-    : (config) => new WorkerSurfZone(config, undefined, { rider: true, stance }, { sea });
+    ? (config, extra) => new LocalSurfZone(config, { rider: true, stance, ...extra }, sea)
+    : (config, extra) => new WorkerSurfZone(config, undefined, { rider: true, stance, ...extra }, { sea });
 }
 function onlineSurfZoneFactory(spawn: { spawnAlong: number; spawnOut: number }, sea: Uint8Array | undefined, stance: StanceName): SurfZoneHostFactory {
   return inPage
-    ? (config) => new LocalSurfZone(config, { rider: true, stance, ...spawn }, sea)
-    : (config) => new WorkerSurfZone(config, undefined, { rider: true, stance, ...spawn }, { maxQueuedSteps: ONLINE_QUEUE, ...(sea ? { sea } : {}) });
+    ? (config, extra) => new LocalSurfZone(config, { rider: true, stance, ...spawn, ...extra }, sea)
+    : (config, extra) => new WorkerSurfZone(config, undefined, { rider: true, stance, ...spawn, ...extra }, { maxQueuedSteps: ONLINE_QUEUE, ...(sea ? { sea } : {}) });
 }
 /** Only the worker steps on the GPU (plan P6), so only it gets the GPU tier's sea. */
 const gpuTier = inPage ? undefined : webGpuAvailable;

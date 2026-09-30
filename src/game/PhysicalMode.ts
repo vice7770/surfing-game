@@ -31,6 +31,7 @@ import type { SprayLook } from '../wave/SprayCloud';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
 import { SEA_COMPONENTS, solverStage, surfZoneSea, sweptBarrelOn, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { SweptBarrel } from '../scene/barrel/SweptBarrel';
+import { libraryFromBytes, loadBarrelCaseBytes } from '../wave/barrel/barrelLibrary';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
@@ -255,10 +256,35 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
  * the shared water surface, a seabed mesh from the spot, a spectator camera,
  * and the rider who paddles, pops up and rides these waves.
  */
-export type SurfZoneHostFactory = (config: SurfZoneConfig) => SurfZoneHost;
+export type SurfZoneHostFactory = (config: SurfZoneConfig, extra?: HostExtras) => SurfZoneHost;
+
+/** What a start hands its surf zone beyond the config: the barrel case files at a swept spot (Part B, PR 4). */
+export interface HostExtras {
+  barrelCases?: readonly Uint8Array[];
+}
 
 /** Runs the surf zone in the page (tests, and browsers without Web Workers). */
-export const localSurfZone: SurfZoneHostFactory = (config) => new LocalSurfZone(config, { rider: true });
+export const localSurfZone: SurfZoneHostFactory = (config, extra) => new LocalSurfZone(config, { rider: true, ...extra });
+
+let barrelBytes: Promise<Uint8Array[] | undefined> | undefined;
+
+/**
+ * The barrel case files, fetched once for the page's drawing and the surf zone's contact (the Padang Padang spec,
+ * Part B, PR 4). A failed fetch leaves the swept barrel off for that start and is tried again at the next.
+ */
+export function barrelCaseBytes(): Promise<Uint8Array[] | undefined> {
+  barrelBytes ??= loadBarrelCaseBytes().catch((error: unknown) => {
+    console.warn('The barrel library did not load; the swept barrel stays off.', error);
+    barrelBytes = undefined;
+    return undefined;
+  });
+  return barrelBytes;
+}
+
+/** Forget the fetched files (tests). */
+export function resetBarrelCaseBytes(): void {
+  barrelBytes = undefined;
+}
 
 /** No front points: the swept barrel draws nothing. */
 const NO_FRONT = new Float32Array(0);
@@ -440,7 +466,10 @@ export class PhysicalMode {
     };
     // Superseded while asking for the GPU: never build it, and never drop the newer start's spin-up.
     if (start !== this.starts) return false;
-    const host = createHost(config);
+    // A swept spot's contact needs the barrel files in the surf zone (Part B, PR 4).
+    const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes() : undefined;
+    if (start !== this.starts) return false;
+    const host = createHost(config, barrelCases ? { barrelCases } : undefined);
     // A superseded spin-up is let go at once, so its worker stops competing with the next one.
     this.dropPending?.();
     const dropped = new Promise<'dropped'>((resolve) => {
@@ -463,7 +492,11 @@ export class PhysicalMode {
     this.swept = sweptBarrelOn(config);
     water.setSource(new PhysicalSurfaceSource(new SnapshotSurfZone(host, { sweptBarrel: this.swept }), init.grid.spacing));
     if (!this.sweptBarrel) {
-      this.sweptBarrel = new SweptBarrel(water);
+      this.sweptBarrel = new SweptBarrel(water, async () => {
+        const bytes = await barrelCaseBytes();
+        if (!bytes) throw new Error('No barrel case files');
+        return libraryFromBytes(bytes);
+      });
       this.scene.add(this.sweptBarrel.mesh.mesh);
     }
     this.sweptBarrel.setSpot(this.swept ? config.spot : undefined);
