@@ -411,7 +411,8 @@ describe('a Basilisk library as a barrel case', () => {
 
 > **Revised 2026-09-30, as built (the advisor's rulings and three probes).** Tasks 4–6 changed in four ways:
 > - **The onset is the solver's own Kennedy onset, not B = U/C.** At Padang Padang's breaking crests the depth-averaged U/C reads 0.1–0.5, no different from calm crests: q ≈ cη makes U/C ≈ η/(h + η). Derakhti's 0.85/1.0 and Bacigaluppi's 0.75 are for the reconstructed surface velocity (`padangFront` probe).
-> - **The breaking age records the event, not the column.** A newly breaking cell takes the oldest age behind its face, including one column along the crest, so age-backdated onsets were equal along 60–90 m of peeling crest. A point's onset is therefore when its own segment first breaks.
+> - **The breaking age records the event, not the column.** A newly breaking cell takes the oldest age behind its face, including one column along the crest, so age-backdated onsets were equal along 60–90 m of peeling crest.
+> - **The rise is contaminated too.** Once a neighbour breaks, its eddy viscosity damps a column's rise, so the fresh test (η_t ≥ 0.65 √(g d)) fired ~2 s late or never, and the 1 s/m split then cut single waves. So a crest joins by where it is: followed from the wedge's 7 m foot, where its height sizes it, it joins as it crosses the depth where the solver first breaks swell that size fresh (the `periodicOnset` probe: one-column periodic runs of our solver on the transect, per period). A soliton's depths sat well shoreward of swell's.
 > - **The throw lags the onset.** On round 6's transect the solver's crest stands where Basilisk's does, but Kennedy fires 2.3–2.8 √(h0/g) before the face goes vertical (`kennedyLag` probe). This is an upper bound for swell (solitary waves break higher: Grilli et al. 1997).
 > - **No stage clamp on the clock.** Mihalef's rule is for the loft's slices (PR 3).
 
@@ -437,7 +438,7 @@ describe('a Basilisk library as a barrel case', () => {
 - `FrontState = { nextId, nextFront, points, held }`.
 
 **The rule:**
-- A crest joins a front when its segment reaches Kennedy's fresh onset (η_t ≥ 0.65 √(g d)). It records `joined` (the time) and `depth` (the still depth under it), and it stays on the front while its segment breaks at all (hysteresis: dissipation lowers its rise).
+- A crest is followed from where it crosses the wedge's foot (h0), its height there sizing it; crests first seen past the foot (reformed and broken water) are never sized. It joins as it crosses its join depth (`OnsetTiming.joinDepth(footHeight)`), if its segment breaks within 1 s, recording `joined` (the crossing, interpolated) and `depth`. It stays on the front while its segment breaks at all. Crests on their way in match within 10 m (a broad swell crest's highest cell jumps).
 - Neighbours whose joins differ by more than 1 s per metre are two waves (a peel under 1 m/s, θ > 79°), so they form two fronts, which are never smoothed across. The splits are counted.
 - Neighbouring columns within 3 rows link; a column's own crests never do.
 - A point within 2 m plus one row of last step's point in its column keeps its ID, join and clock.
@@ -452,7 +453,7 @@ describe('a Basilisk library as a barrel case', () => {
 
 **Interfaces:**
 - `CLOCK = { smoothing: 2, bunched: 0.1, earliest: -3 } as const`.
-- `onsetTiming(h0): OnsetTiming = { lag(depth), earliest }`. The measured lag (0.237 → 2.34, 0.35 → 2.60, 0.50 → 2.82 √(h0/g), keyed on the join's depth over h0) is interpolated, never extrapolated.
+- `onsetTiming(h0, period, lag = 1): OnsetTiming = { h0, joinDepth(footHeight), lag(depth), earliest }`. The join depth is the solver's own swell onset (periods 14–18 s, crest heights 1.1–3.1 m at the foot → 2.3–4.6 m). The lag is the soliton-measured upper bound (0.237 → 2.34, 0.35 → 2.60, 0.50 → 2.82 √(h0/g)), times `lag`: `barrelLag: 'none'` gives 0, for PR 3 to show both. Both tables are interpolated and never extrapolated.
 - `advanceClocks(points, time, timing): number` returns the pauses.
 
 **The rule:**
@@ -498,7 +499,9 @@ describe('a Basilisk library as a barrel case', () => {
 
 Write the detailed plans for PRs 3–7 (the mesh, the contact, the crash curve, the shading, the rollout) from the library and clock as built. PR 3's loft takes Mihalef's rule from the clock (the advisor, 2026-09-30):
 - neighbouring loft slices differ by at most 2–4 library frames, met by resampling the front finer (0.5 m, down to 0.25 m where the open curl spans under about 8 slices), not by clamping the clock;
-- only when the vertex budget would be exceeded is |dτ/dσ| clamped to T_open/(4·Δσ) (at least 4 slices across the curl), and each clamp is counted. Consult the water-physics advisor before settling any shape value (the lip glow's k, the seam's band width, the contact's softness). Open item from the onset's lag (the advisor, 2026-09-30): the solver's Kennedy onset leads the lip by about 2 s and 20 m on Padang Padang's wedge, and the foam, aeration, Kennedy-driven whitewater and crash sound all key on it. Where the swept barrel runs, Rich's whitewater and the sound should start from the barrel's clock (foam from touchdown, as in the roller handover). That is visuals only, so one-water is unaffected. Agree it with the whitewater (G9) owner before building; it belongs with PR 5 or PR 6.
+- only when the vertex budget would be exceeded is |dτ/dσ| clamped to T_open/(4·Δσ) (at least 4 slices across the curl), and each clamp is counted. Consult the water-physics advisor before settling any shape value (the lip glow's k, the seam's band width, the contact's softness). Open numbers from PR 2's probes (1 m, Padang's Small swell): the table's join depth against a seed crest's own fresh onset spreads ±0.5 m, sometimes to ±0.9 m (the advisor hoped for ±0.3); the barrel's peel along its longer fronts runs 14–18 m/s against the whitewater's 10.5–12.4 (the bed's peel against the solver's sideways spread). PR 3's loft shows whether either is visible.
+
+Open item from the onset's lag (the advisor, 2026-09-30): the solver's Kennedy onset leads the lip by about 2 s and 20 m on Padang Padang's wedge, and the foam, aeration, Kennedy-driven whitewater and crash sound all key on it. Where the swept barrel runs, Rich's whitewater and the sound should start from the barrel's clock (foam from touchdown, as in the roller handover). That is visuals only, so one-water is unaffected. Agree it with the whitewater (G9) owner before building; it belongs with PR 5 or PR 6.
 
 PR 4's interface is agreed with the Reef session, which owns tube riding (Part D):
 - water or air at a point, with the surface's height, normal and velocity;
