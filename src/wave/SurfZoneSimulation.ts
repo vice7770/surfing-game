@@ -19,6 +19,9 @@ import type { LipImpact } from './SprayCloud';
 import { OPEN_EDGE_REACH, ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
+import { BreakingFront } from './barrel/BreakingFront';
+import { columnCrests, type CrestSample } from './barrel/crestOnset';
+import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
 
 /** Sea water, kg/m³ (the lip's impact energy for the aeration, G9). */
 const WATER_DENSITY = 1025;
@@ -80,7 +83,15 @@ export interface SurfZoneConfig {
   compute?: 'auto' | 'cpu';
   /** Online (spec N1): warm start so the sea, once spun up, sits at this sea time (the room's clock). */
   startSeaTime?: number;
+  /** Whether the swept barrel's breaking front runs (the Padang Padang spec, Part B); defaults to SWEPT_BARREL. */
+  sweptBarrel?: boolean;
 }
+
+/** Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run. */
+export const SWEPT_BARREL: readonly SpotName[] = ['padang'];
+
+/** A crest joins a breaking front from this share of the edge's wave height above still water (provisional). */
+const FRONT_MIN_HEIGHT = 0.25;
 
 /** Columns at each open along-shore edge where no lip is thrown: the reach of the solver's stencils. */
 const OPEN_EDGE_COLUMNS = OPEN_EDGE_REACH;
@@ -388,6 +399,13 @@ export class SurfZoneSimulation {
   readonly surf: SurfMeter;
   /** Called with every wave measured starting to break, anywhere in the window (reports listen here). */
   onBreak?: (wave: BreakingWave) => void;
+  /** The swept barrel's breaking front and its slice clocks, on SWEPT_BARREL spots only. It reads the water, never writes it. */
+  readonly front?: BreakingFront;
+  /** Shown slice clocks that paused rather than ran back, since the start (the advisor's check on the onsets' noise). */
+  frontPauses = 0;
+  private readonly crestSamples: CrestSample[] = [];
+  /** When a front's lips throw after the solver's onset: Padang Padang's library transect, its wedge's foot at the tide. */
+  private readonly onsetTiming?: OnsetTiming;
   lastStepMs = 0;
   /** Most offshore breaking cell per column last step (Infinity when none). */
   private readonly outerBreak: Float64Array;
@@ -475,6 +493,10 @@ export class SurfZoneSimulation {
     this.lip.onAir = (x, z, volume, penetration) => this.aeration.addAir(x, z, volume, penetration);
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
+    if (config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot)) {
+      this.front = new BreakingFront(config.fineSpacing ?? 1);
+      this.onsetTiming = onsetTiming(PADANG.baseDepth + config.tide);
+    }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);
     if (start === 'spun-up') {
@@ -555,6 +577,7 @@ export class SurfZoneSimulation {
       nx: this.solver.nx, nz: this.solver.nz, solverTime: this.solver.time, seaTimeOffset: this.seaTimeOffset, arrays,
       counters: { lipLaunches: this.lipLaunches, lipVolume: this.lipVolume, lipJets: this.lipJets, lipRollers: this.lipRollers, onsetsArmed: this.onsetsArmed },
       lip: this.lip.exportState(),
+      ...(this.front ? { front: this.front.exportState() } : {}),
     };
   }
 
@@ -587,6 +610,8 @@ export class SurfZoneSimulation {
     this.lipJets = state.counters.lipJets;
     this.lipRollers = state.counters.lipRollers;
     this.lip.importState(state.lip);
+    // A donor without a front (an older build) hands over none: this one starts afresh.
+    this.front?.importState(state.front ?? { nextId: 0, nextFront: 0, points: [], held: [] });
     if (solver instanceof BoussinesqSolver) solver.invalidateDeviceLayout();
   }
 
@@ -637,11 +662,22 @@ export class SurfZoneSimulation {
   private afterWater(dt: number, start: number): void {
     this.breaking.update(dt);
     this.markBreakingOnsets();
+    this.advanceFront();
     this.lip.step(dt);
     this.foam.update(dt, this.breaking.strength);
     this.aerateBores(dt);
     this.aeration.update(dt);
     this.lastStepMs = performance.now() - start;
+  }
+
+  /** The swept barrel's front (Part B): the crests breaking in the fine zone, linked into lines, and their clocks. */
+  private advanceFront(): void {
+    const { front, solver } = this;
+    if (!front) return;
+    const minHeight = FRONT_MIN_HEIGHT * edgeHeight(this.config, this.tank.edgeDepth);
+    const count = columnCrests(solver, this.breaking, solver.rowBelow(this.tank.fineFrom), minHeight, this.crestSamples);
+    front.update(this.crestSamples, count, solver.time);
+    this.frontPauses += advanceClocks(front.points, solver.time, this.onsetTiming!);
   }
 
   /** Still depth where the shoaled swell breaks, h_b = (Hs·D^¼/γ)^⅘, m. */

@@ -82,6 +82,19 @@ describe('surf zone state (spec N1: the sea handover)', () => {
     expect(joiner.lipLaunches).toBe(donor.lipLaunches);
   });
 
+  // The Padang Padang spec, Part B: the swept barrel's front rides in the header, exactly.
+  it('carries a breaking front through its bytes exactly, and hands over none where the spot runs none', () => {
+    const donor = new SurfZoneSimulation({ ...config, stage: 1 });
+    const state = donor.exportState();
+    expect(state.front).toBeUndefined();
+    const point = {
+      id: 7, front: 2, column: 11, sigma: 3.1622776601683795, x: -8.5, z: -140.25, b: 0.3123456789, height: 1.7,
+      joined: 51.23456789, depth: 2.4567, tau: -0.4321, seen: 55.1,
+    };
+    state.front = { nextId: 12, nextFront: 3, points: [point], held: [{ ...point, id: 8, tau: 0 }] };
+    expect(decodeSurfZoneState(encodeSurfZoneState(state)).front).toEqual(state.front);
+  });
+
   it('refuses a state from a different tank', () => {
     const donor = new SurfZoneSimulation({ ...config, stage: 1 });
     const other = new SurfZoneSimulation({ ...config, stage: 1, alongShore: 60 });

@@ -5,7 +5,7 @@ import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
-  FOAM_DECAY, OFFSHORE_DEPTH, SET_FINE_MARGIN, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight, solverStage, surfZoneSea, takeOffPoint,
+  FOAM_DECAY, OFFSHORE_DEPTH, SET_FINE_MARGIN, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight, solverStage, surfZoneSea, takeOffPoint,
   tankDepth, tankLayout,
   windOnsetScale, type SurfZoneConfig,
 } from './SurfZoneSimulation';
@@ -833,6 +833,56 @@ describe('SurfZoneSimulation', () => {
     }
     expect(wet).toBeGreaterThan(200);
   });
+});
+
+describe('the swept barrel’s breaking front (the Padang Padang spec, Part B)', () => {
+  const padang = (overrides: Partial<SurfZoneConfig> = {}): SurfZoneConfig => ({
+    ...small_(), significantHeight: PADANG_SWELLS.small.significantHeight, peakPeriod: PADANG_SWELLS.small.peakPeriod,
+    directionDegrees: 0, spreading: PADANG_SPREADING, ...overrides,
+  });
+
+  it('runs on Padang Padang only', () => {
+    expect(SWEPT_BARREL).toEqual(['padang']);
+    expect(new SurfZoneSimulation({ ...small, spot: 'canyon' }, 'warm').front).toBeUndefined();
+    expect(new SurfZoneSimulation(padang(), 'warm').front).toBeDefined();
+    expect(new SurfZoneSimulation(padang({ sweptBarrel: false }), 'warm').front).toBeUndefined();
+  });
+
+  // Every other spot, and Padang Padang's water, unchanged: the front reads the water and never writes it.
+  it('leaves the water, its breaking and its lips exactly as with the front off', () => {
+    const on = new SurfZoneSimulation(padang());
+    const off = new SurfZoneSimulation(padang({ sweptBarrel: false }));
+    for (let frame = 0; frame < 30 * 30; frame += 1) {
+      on.step(1 / 30);
+      off.step(1 / 30);
+    }
+    const [a, b] = [on.exportState(), off.exportState()];
+    expect(a.arrays).toEqual(b.arrays);
+    expect(a.counters).toEqual(b.counters);
+    expect(a.lip).toEqual(b.lip);
+  }, 900_000);
+
+  it('links the breaking crests into fronts whose clocks run on, and hands them over exactly', () => {
+    const donor = new SurfZoneSimulation(padang());
+    let spanned = 0;
+    for (let frame = 0; frame < 30 * 30; frame += 1) {
+      donor.step(1 / 30);
+      const byFront = new Map<number, number[]>();
+      for (const point of donor.front!.points) byFront.set(point.front, [...(byFront.get(point.front) ?? []), point.tau]);
+      for (const taus of byFront.values()) if (taus.length >= 5) spanned = Math.max(spanned, Math.max(...taus) - Math.min(...taus));
+    }
+    // Some front's slices stand at clearly different stages: the peel, not a close-out.
+    expect(spanned).toBeGreaterThan(0.5);
+    expect(donor.front!.points.length).toBeGreaterThan(0);
+    // Review Focus 3: a joiner steps on with the donor's front, point for point.
+    const joiner = new SurfZoneSimulation({ ...padang(), startSeaTime: 1000, spinUpPeriods: 0 });
+    joiner.importState(donor.exportState());
+    for (let frame = 0; frame < 5 * 30; frame += 1) {
+      donor.step(1 / 30);
+      joiner.step(1 / 30);
+    }
+    expect(joiner.front!.points).toEqual(donor.front!.points);
+  }, 1_800_000);
 });
 
 describe('the tank sized to the swell (wave sizes)', () => {
