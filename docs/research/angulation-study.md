@@ -181,7 +181,7 @@ The same run's turn table (speed × yaw rate, as the ride report prints it): 9 b
 
 - **Speed × yaw rate reads 1.5 times the path's pull.** The heading swings about 6° about the path as the board pivots and its water moves. So the ride report's "Lateral g" and "Radius" columns, and the 1.41 g we derived for Forsyth, read the heading's turn, not the pull.
 - **The board already out-pulls a level hull against the horizontal.** It pulls 0.91 g on a 32° rail while climbing at 0.06 g, where a hull on still, level water gives tan 32° × 1.06 ≈ 0.66 g. The face's tilt (about 5°) and its moving water (1.1 m/s) give the rest; there is no grip term. That is what the angulation was meant to add, and on waves the model has it.
-- **The body leans less than its rail:** 25° over 32°, where 0.91 g would balance a 40° lean. The ankle holds it upright against its pull. This is the balance's slow lean (the entry study's 0.49 s time constant) in turns of about a second, not a missing hull force.
+- **The body leans less than its rail:** 25° over 32°, where 0.91 g would balance a 40° lean. The ankle holds it upright against its pull. This is the balance's slow lean (the entry study's 0.49 s time constant) in turns of about a second, not a missing hull force. *Corrected by `body-lean-study.md`: this compared the body with the board's path. Against its own force line the body leans on it (3° past it on average on waves); what is thin in wave turns is the feet's reach.*
 
 ### Reading
 
@@ -189,7 +189,7 @@ The same run's turn table (speed × yaw rate, as the ride report prints it): 9 b
 2. **The angulation target was our own arithmetic.** Forsyth et al. measured the rail and the yaw rate. Speed × yaw rate overstates a turning board's pull by about half, on the model's waves at least. Held to what Forsyth measured, the model's bottom turns on waves match: 2.2 against 1.9 rad/s, a 46° against a 42° rail, 1.2 against 0.96 s.
 3. **Option A closes here.** What remains of the bottom turn:
    - the speed kept (0.38 against Forsyth's turn flow of 0.88–0.95): the top turns start at 2.5 m/s;
-   - the body's lean, 15° short of its pull in hard turns on waves: the entry study's slow lean-in.
+   - ~~the body's lean, 15° short of its pull in hard turns on waves~~ (not so: see `body-lean-study.md`; what is thin is the feet's reach in wave turns).
 4. **The ride report's "Lateral g" and "Radius" columns should read the path's turn** (the velocity's change), not speed × yaw rate. `surf-gameplay-research.md`'s derived bottom-turn and cutback loads carry the same caveat.
 
 The probe that measured the waves is a patch on `scripts/ride-report.ts`, kept in the session's scratchpad (`ride-report-angulation-probe.patch`).
