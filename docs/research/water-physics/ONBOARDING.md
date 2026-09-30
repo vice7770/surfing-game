@@ -85,7 +85,7 @@ Read in this order:
 
   #91 and #92 still target the Padang branches below them. Change each base to main, then merge, #91 first.
 - **Padang Padang Part B, the swept barrel** (the Padang Padang session builds it):
-  - **PR 4, the rider's contact with the drawn barrel:** being built on `claude/padang-contact` (plan: `docs/superpowers/plans/2026-09-30-padang-padang-part-b-pr4.md`). The advisor's rulings are the two newest PR 4 rows in the consult log. Due from the session: the jet-tip speed table for all four library cases, and the contact's cost.
+  - **PR 4 (#95), the rider's contact with the drawn barrel:** built on `claude/padang-contact` (plan: `docs/superpowers/plans/2026-09-30-padang-padang-part-b-pr4.md`). It is moving to another machine too; its handoff, with the advisor's rulings as its next items, is `docs/superpowers/handoffs/2026-09-30-padang-padang-part-b.md` on that branch. The rulings are the PR 4 rows in the consult log. Still owed: bucketing the quads by along-ray range, and the contact's cost measured unloaded.
   - **PR 5:** the crash curve, parcels and sound.
   - **PR 6:** the Rich shading, a lip glow and a dark throat.
   - **PR 7:** every spot switches, and the old lip and tube code is deleted. The Reef switches only after the Reef session agrees and the owner has looked.
@@ -109,11 +109,8 @@ Read in this order:
 
 ## Threads to pick up
 
-- **The library's jet runs slow on the Small case.**
-  - Its tip moves at about 0.94 C (up to 1.07 C near touchdown) and falls at about 0.57 g.
-  - Erinin et al. 2023 measured 1.1–1.3 C, falling close to free fall.
-  - Check the tip table for the A0 0.3 and 0.45 cases. If they run slow too, suspect resolution: about 4 cells across the lip at level 12. The level-13 run will tell.
-- **PR 4's contact:** check the tip table and the costs when they arrive, then the shapes of PR 5's crash curve and parcels.
+- **The library's jet speed (settled 2026-09-30):** normalised by each case's own crest speed, the four cases throw at 0.93–1.08 C (median horizontal), peak at 1.08–1.23 C, and fall at 0.58–0.71 g. That's the low end of Erinin et al. 2023's 1.1–1.3 C, falling close to free fall; the Small periodic case is the slowest. The level-13 run should nudge them up; recheck it then.
+- **PR 4's contact:** check its unloaded cost once the quads are bucketed, then the shapes of PR 5's crash curve and parcels.
 - **The Reef edge fix:** on the seas that had landings outside the window, the edge columns' steps should peak at the interior's 2.0–2.3. The left-the-window counter should match the trace: 8 landings, 6 m³ in a 110 s run.
 
 ## How other sessions reach the advisor
