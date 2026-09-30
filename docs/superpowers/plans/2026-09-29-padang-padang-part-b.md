@@ -413,7 +413,8 @@ describe('a Basilisk library as a barrel case', () => {
 > - **The onset is the solver's own Kennedy onset, not B = U/C.** At Padang Padang's breaking crests the depth-averaged U/C reads 0.1–0.5, no different from calm crests: q ≈ cη makes U/C ≈ η/(h + η). Derakhti's 0.85/1.0 and Bacigaluppi's 0.75 are for the reconstructed surface velocity (`padangFront` probe).
 > - **The breaking age records the event, not the column.** A newly breaking cell takes the oldest age behind its face, including one column along the crest, so age-backdated onsets were equal along 60–90 m of peeling crest.
 > - **The rise is contaminated too.** Once a neighbour breaks, its eddy viscosity damps a column's rise, so the fresh test (η_t ≥ 0.65 √(g d)) fired ~2 s late or never, and the 1 s/m split then cut single waves. So a crest joins by where it is: followed from the wedge's 7 m foot, where its height sizes it, it joins as it crosses the depth where the solver first breaks swell that size fresh (the `periodicOnset` probe: one-column periodic runs of our solver on the transect, per period). A soliton's depths sat well shoreward of swell's.
-> - **The throw lags the onset.** On round 6's transect the solver's crest stands where Basilisk's does, but Kennedy fires 2.3–2.8 √(h0/g) before the face goes vertical (`kennedyLag` probe). This is an upper bound for swell (solitary waves break higher: Grilli et al. 1997).
+> - **The throw lags the onset.** On round 6's transect the solver's crest stands where Basilisk's does, but Kennedy fires 2.3–2.8 √(h0/g) before a soliton's face goes vertical (`kennedyLag` probe).
+> - **The throw is keyed on depth, not lag.** The advisor's periodic Basilisk runs (level 12) read lags of 0.22, 2.30 and 1.60 √(h0/g) at 14, 16 and 18 s: no function of depth. So a lip throws where its crest crosses the depth at which the Navier–Stokes wave goes vertical: d = 1.80 + 0.45 η_foot at h0 = 7 m, one line in foot height through the three runs (1.22 → 2.45, 1.65 → 2.38, 2.50 → 2.97 m), clamped to the measured heights, scaled by h0/7, never deeper than the join (the advisor's option b, 2026-09-30). Period dependence is untested.
 > - **No stage clamp on the clock.** Mihalef's rule is for the loft's slices (PR 3).
 
 ### Task 4: The crest and its breaking, column by column
@@ -434,11 +435,11 @@ describe('a Basilisk library as a barrel case', () => {
 **Interfaces:**
 - `new BreakingFront(cell)`, where `cell` is the rows' spacing, m.
 - `update(samples, count, time)`, `points`, `exportState()` and `importState(state)`.
-- `FrontPoint = { id, front, column, sigma, x, z, b, height, joined, depth, tau, seen }`.
+- `FrontPoint = { id, front, column, sigma, x, z, b, height, joined, depth, throwDepth, crestDepth, thrown, broke, tau, seen, fresh }`.
 - `FrontState = { nextId, nextFront, points, held }`.
 
 **The rule:**
-- A crest is followed from where it crosses the wedge's foot (h0), its height there sizing it; crests first seen past the foot (reformed and broken water) are never sized. Its height is its highest while the still depth falls from 6 to 5 m (both in 2D and in the 1D runs that built the table). It joins as it crosses its join depth (`OnsetTiming.joinDepth(height)`) if the solver breaks its segment before its lip would throw (within the measured lag, `OnsetTiming.window`), recording `joined` (the crossing, interpolated), `depth` and `broke` (when the solver was first seen breaking it). Small swell under the table's first row clamps to it and draws no barrel unless the solver breaks it there. It stays on the front while its segment breaks at all. Crests on their way in match within 10 m (a broad swell crest's highest cell jumps).
+- A crest is followed from where it crosses the wedge's foot (h0), its height there sizing it; crests first seen past the foot (reformed and broken water) are never sized. Its height is its highest while the still depth falls from 6 to 5 m (both in 2D and in the 1D runs that built the table). It joins as it crosses its join depth (`OnsetTiming.joinDepth(height)`) if the solver breaks its segment before its crest reaches its throw depth (`OnsetTiming.throwDepth(footHeight)`, no deeper than the join; at the latest in the step it gets there), recording `joined` (the crossing, interpolated), `depth`, `throwDepth`, `broke` (when the solver was first seen breaking it), and, each step, `crestDepth` and `thrown` (when its crest crossed its throw depth, interpolated). Small swell under the table's first row clamps to it and draws no barrel unless the solver breaks it there. It stays on the front while its segment breaks at all. Crests on their way in match within 10 m (a broad swell crest's highest cell jumps).
 - Neighbours whose joins differ by more than 1 s per metre are two waves (a peel under 1 m/s, θ > 79°), so they form two fronts, which are never smoothed across. The splits are counted.
 - Neighbouring columns within 3 rows link; a column's own crests never do.
 - A point within 2 m plus one row of last step's point in its column keeps its ID, join and clock.
@@ -453,15 +454,15 @@ describe('a Basilisk library as a barrel case', () => {
 
 **Interfaces:**
 - `CLOCK = { smoothing: 2, bunched: 0.1, earliest: -3 } as const`.
-- `onsetTiming(h0, period, lag = 1): OnsetTiming = { h0, joinDepth(footHeight), lag(depth), earliest }`. The join depth is the solver's own swell onset (periods 14–18 s, crest heights 1.1–3.1 m at the foot → 2.3–4.6 m). The lag is the soliton-measured upper bound (0.237 → 2.34, 0.35 → 2.60, 0.50 → 2.82 √(h0/g)), times `lag`: `barrelLag: 'none'` gives 0, for PR 3 to show both. Both tables are interpolated and never extrapolated.
+- `onsetTiming(h0, period, lagged = true): OnsetTiming = { h0, band, joinDepth(height), throwDepth(footHeight), lagged, earliest }`. The join depth is the solver's own swell onset (periods 14–18 s, crest heights 1.2–3.3 m over the 6–5 m band → 2.3–4.6 m). The throw depth is the Navier–Stokes vertical depth by foot height (above). `barrelLag: 'none'` makes it unlagged (the throw at the join), for PR 3 to show both. Both tables are interpolated and never extrapolated.
 - `advanceClocks(points, time, timing): number` returns the pauses.
 
 **The rule:**
-- A point throws at the later of `joined + lag(depth)` and `broke`: never before the solver breaks it (with no lag, a late-breaking crest throws when it breaks). Before that, τ is negative, floored at the library's earliest frame. The front's newest end therefore reads the steepening frames, and PR 3 blends it into the height field over 2–3 m; there is no taper.
+- A point throws at the later of `thrown` and `broke` (unlagged, of `joined` and `broke`): never before the solver breaks it. Before its crest reaches its throw depth, the throw is foreseen at the pace its crest has come shoreward since it joined, no later than the earliest frame from now; τ is negative, floored at the library's earliest frame. The front's newest end therefore reads the steepening frames, and PR 3 blends it into the height field over 2–3 m; there is no taper.
 - Throw times are fitted along each front by a biweight-weighted local line (2 m standard deviation), clamped to the window's throws. A single point uses its own throw; bunched points use the mean.
 - τ = time − the fitted throw. A new point starts there; after that τ never falls, and every pause is counted.
 
-- [x] **Tests:** the throw a lag after the join; the earliest-frame floor; a steady 10 m/s peel exact to its leading edge with no pauses; grouped joins become a 0.1 s/m ramp; never back, pauses counted; one point, and bunched points; fronts independent; the lag table interpolated and clamped.
+- [x] **Tests:** the throw where the crest crosses its throw depth, foreseen from its pace till then; the earliest-frame floor; a steady 10 m/s peel exact to its leading edge with no pauses; grouped joins become a 0.1 s/m ramp; never back, pauses counted; one point, and bunched points; fronts independent; the join and throw tables interpolated and clamped, the throw independent of period.
 
 ### Task 7: Padang Padang's front in the simulation, and in the handover
 
@@ -505,7 +506,7 @@ Write the detailed plans for PRs 3–7 (the mesh, the contact, the crash curve, 
 
 PR 3's loft shows whether either is visible.
 
-Open item from the onset's lag (the advisor, 2026-09-30): the solver's Kennedy onset leads the lip by about 2 s and 20 m on Padang Padang's wedge, and the foam, aeration, Kennedy-driven whitewater and crash sound all key on it. Where the swept barrel runs, Rich's whitewater and the sound should start from the barrel's clock (foam from touchdown, as in the roller handover). That is visuals only, so one-water is unaffected. Agree it with the whitewater (G9) owner before building; it belongs with PR 5 or PR 6.
+Open item from the onset's lead (the advisor, 2026-09-30): the solver's Kennedy onset leads the lip by up to about 2 s and 20 m on Padang Padang's wedge, and the foam, aeration, Kennedy-driven whitewater and crash sound all key on it. Where the swept barrel runs, Rich's whitewater and the sound should start from the barrel's clock (foam from touchdown, as in the roller handover). That is visuals only, so one-water is unaffected. Agree it with the whitewater (G9) owner before building; it belongs with PR 5 or PR 6.
 
 PR 4's interface is agreed with the Reef session, which owns tube riding (Part D):
 - water or air at a point, with the surface's height, normal and velocity;
