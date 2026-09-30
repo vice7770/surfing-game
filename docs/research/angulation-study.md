@@ -2,6 +2,8 @@
 
 On the user's choice of option A after the carve-drag study (2026-09-29): the body leaning past the rail in a hard carve, as Forsyth et al. 2024's surfers do (a 55° lean over a 42° rail at 1.41 g). Measured on the carve lab's plant, a held rider (`HeldRider`) towed along its heading on flat water. The last 0.5 s of 1.5 s held are read. Work stopped here when the user took it on locally.
 
+**Outcome (2026-09-30):** no angulation is missing. Forsyth et al. measured the rail and the yaw rate; the 1.41 g and the 55° lean were derived here from speed × yaw rate, which overstates a turning board's pull. Planing hulls banked into a turn give no grip along their beam. See the last section.
+
 ## The hull alone cannot angulate
 
 A couple at the feet flattening the board under a held 22° lean, at 7 m/s:
@@ -127,3 +129,67 @@ Two tries within today's physics, reverted:
 5. Twisting through the feet, standing back, and the hand all fall short. The hand gives 10 N·m at a light touch.
 
 The probes are `src/dev/zz-angulation.test.ts` (trim, stance and hand sweeps added to `held`) and `src/dev/zz-angulation-turn.test.ts` (the deep U traced), left uncommitted in the session's worktree like the first.
+
+## Rail grip, from the sources, and what Forsyth measured (2026-09-30)
+
+The user's pick after the section above: rail grip, studied before it is built. The sources do not support it, and the angulation it was meant to give was never measured.
+
+### A planing hull banked into its turn pushes along its own normal
+
+Brown & Klosinski (1994, Davidson Laboratory) towed prismatic planing hulls (20° deadrise, free to heave) at a drift angle and a heel. Marleaux, Simonis & Abdel-Maksoud (2024, 35th Symposium on Naval Hydrodynamics, [PDF](https://d-nb.info/1348087765/34)) plot their data against a 2D+t model. At 5° of drift, the side force along the hull's own beam (body-fixed y″), as a share of the weight:
+
+| Heel | 3° trim, F_nB 3 | 6° trim, F_nB 3 | 3° trim, F_nB 4 |
+|---|---:|---:|---:|
+| 10° away from the turn (the leading chine down) | 0.38 | 0.28 | 0.47 |
+| level | 0.18 | 0.12 | 0.22 |
+| 10° into the turn (the trailing chine down, as a carve) | 0.01 | 0.00 | 0.04 |
+
+- A planing boat's steady turn is banked into it, with the bow inside the path (positive drift, positive heel; Katayama et al. 2006, as the paper cites). That is a carve's state, and its side force along the hull is about nothing.
+- Its horizontal side force there (0.19 of the weight at 10°) is the planing lift tilted: sin 10° ≈ 0.17.
+- A hull grips along its beam in two ways, and a carve uses neither:
+  - the spray root rising on the leading side (strongest heeled away from the turn);
+  - spray reattaching to the leading chine's wall ("side wetting").
+
+  A surfboard, nearly flat with round rails, has less of the first to begin with.
+- Surf Simply's rail suction was watched in trim (a front-footed glide) with ribbons, not measured in turns, and it gives no force.
+
+So a pull per rail of 1 on still water is planing physics, and the model's is right. A rail grip sized to give 1.5 would have no source.
+
+### Forsyth measured the rail and the yaw rate, not the pull
+
+Forsyth et al. 2024 (Sci Rep 14:8734, [PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC11021506/); a TraceUp GPS at 10 Hz and IMU at 200 Hz, flush in the deck) report each turn's magnitude, duration, speed, angular velocity and rail angle. They give no g-force and no body lean.
+
+- The "1.41 g" and the "55° lean over a 42° rail" in these studies are our own arithmetic (`surf-gameplay-research.md`, tagged [D]): speed × yaw rate ÷ g, and atan of that.
+- That holds only if the board's heading turns with its path on still water. A board that pivots, or rides moving water, turns its heading faster than its path.
+
+### The model's turns on waves, measured both ways
+
+The Canyon's practice sea (the ride report's settings: turns, the pocket reflex, ghosts), every standing step turning faster than 1 rad/s above 4 m/s.
+
+| Hard-turn steps (yaw rate over 1 rad/s, over 4 m/s) | All (471) | Past 1.2 g by speed × yaw rate (276) |
+|---|---:|---:|
+| Speed × yaw rate ÷ g | 1.38 g | 1.71 g |
+| The path's pull over ground (from the velocity's change) | 0.91 g | 1.14 g |
+| The pull through the water (the velocity through the water's turn) | 0.92 g | 1.13 g |
+| The heading off the path | 5.8° | 6.1° |
+| Rail from the horizontal / from the water's surface | 32° / 33° | 34° / 34° |
+| The surface's tilt | 5.5° | 5.2° |
+| The board's upward acceleration | 0.06 g | 0.12 g |
+| The body's bank from the vertical | 25° | 26° |
+
+The same run's turn table (speed × yaw rate, as the ride report prints it): 9 bottom turns, 1.18 s, 83°, 2.2 rad/s peak at 8.5 m/s, "1.46 g", 46° rail. Speed kept into the next top turn 0.38 (4 pairs); the top turns began at 2.5 m/s. A first run of 3 minutes gave the same: 1.31 g by speed × yaw rate at a 33° rail, the body at 28°.
+
+- **Speed × yaw rate reads 1.5 times the path's pull.** The heading swings about 6° about the path as the board pivots and its water moves. So the ride report's "Lateral g" and "Radius" columns, and the 1.41 g we derived for Forsyth, read the heading's turn, not the pull.
+- **The board already out-pulls a level hull against the horizontal.** It pulls 0.91 g on a 32° rail while climbing at 0.06 g, where a hull on still, level water gives tan 32° × 1.06 ≈ 0.66 g. The face's tilt (about 5°) and its moving water (1.1 m/s) give the rest; there is no grip term. That is what the angulation was meant to add, and on waves the model has it.
+- **The body leans less than its rail:** 25° over 32°, where 0.91 g would balance a 40° lean. The ankle holds it upright against its pull. This is the balance's slow lean (the entry study's 0.49 s time constant) in turns of about a second, not a missing hull force.
+
+### Reading
+
+1. **Don't build rail grip.** Planing hulls banked into their turn push along their own normal (Brown & Klosinski), and the model's still-water pull per rail of 1 is theirs. A grip term would have no source.
+2. **The angulation target was our own arithmetic.** Forsyth et al. measured the rail and the yaw rate. Speed × yaw rate overstates a turning board's pull by about half, on the model's waves at least. Held to what Forsyth measured, the model's bottom turns on waves match: 2.2 against 1.9 rad/s, a 46° against a 42° rail, 1.2 against 0.96 s.
+3. **Option A closes here.** What remains of the bottom turn:
+   - the speed kept (0.38 against Forsyth's turn flow of 0.88–0.95): the top turns start at 2.5 m/s;
+   - the body's lean, 15° short of its pull in hard turns on waves: the entry study's slow lean-in.
+4. **The ride report's "Lateral g" and "Radius" columns should read the path's turn** (the velocity's change), not speed × yaw rate. `surf-gameplay-research.md`'s derived bottom-turn and cutback loads carry the same caveat.
+
+The probe that measured the waves is a patch on `scripts/ride-report.ts`, kept in the session's scratchpad (`ride-report-angulation-probe.patch`).
