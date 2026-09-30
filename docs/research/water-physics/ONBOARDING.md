@@ -115,6 +115,8 @@ Read in this order:
 - **PR 4's contact:** check its unloaded cost once the quads are bucketed, then the shapes of PR 5's crash curve and parcels.
 - **Wave Lab max's one-cell troughs (from 20°):** if the owner wants them traced, first check the dispersive mask at each dip: the mask interface against the onset trigger.
 
+- **The Wave Pool spot (the "Movement mapping prototype" session, spec `docs/superpowers/specs/2026-09-30-movement-flow-wave-pool.md` on `claude/wave-pool`):** ruled on 2026-10-01 (see the consult log). Waiting for its sweep: the arms' angle against the peel meter, faces left and right, and whether the waves stay identical over 5 minutes.
+
 ## How other sessions reach the advisor
 
 - **On the same machine:** ListAgents, then SendMessage "Water physics research".

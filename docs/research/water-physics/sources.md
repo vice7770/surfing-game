@@ -122,3 +122,16 @@ The pages below were opened, not just searched; the full notes tag every finding
 - Padang Padang's bed: `PADANG` in `src/wave/Bathymetry.ts` on branch `claude/padang-padang` (f132989).
 - [Grilli, Svendsen & Subramanya 1997, abstract](https://digitalcommons.uri.edu/oce_facpubs/207/): solitary waves don't break on plane slopes steeper than 12°
 - [O'Dea, Brodie & Elgar 2021, GRL](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2021GL093664): field void shapes at closure (length over width 1.70–3.15), and Blenkinsopp & Chaplin's lab-reef 1.46–2.28
+
+## Wave pools and surfing skill (the Wave Pool consult, 2026-10-01)
+
+- [Scarfe et al. 2009, J. Coastal Res. 25(3), review; its figure adapted from Scarfe 2002](https://www.researchgate.net/figure/Range-of-peel-angles-suitable-for-different-surfing-maneuvers-adapted-from-Scarfe-2002_fig4_232294869): peel angles per manoeuvre. 46–55° lets intermediates do standard manoeuvres; 20–45° is for experts; 56–70° for beginners.
+- [Hutt, Black & Mead 2001, J. Coastal Res. SI 29, 66–81](https://www.semanticscholar.org/paper/Classification-of-Surf-Breaks-in-Relation-to-Skillt-Huttf-Blackt/48c92e986ea02085bb4ccf0c77ea0877c2b4e3e3): peel angle and wave height against a 1–10 skill scale; 30–70° suits most surfers.
+- [Wavegarden Cove, Raised Water Research](https://raisedwaterresearch.com/wavegarden-cove/):
+  - one wave per side every 8 s;
+  - Reef faces to 2.4 m, the Peak about half that with open faces for turns;
+  - rides 10–15 s (Bay 80 m / 16 s).
+- [Surf Ranch facts, Surfertoday](https://www.surfertoday.com/surfing/the-facts-and-figures-behind-kelly-slater-surf-ranch): a 700 m pool, rides about 45 s, and 3–4 minutes for the water to calm between waves.
+- Surf-pool current control, US patents [10,449,433](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/10449433) (wave energy and rip-current control) and [11,966,239](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/11966239) (current control): pools manage set-up and return flow.
+- Battjes 1974 (ICCE): the Iribarren breaker classes. Weggel 1972: the breaker index on slopes. Beji & Battjes 1993: free harmonics released by a regular train over a bar.
+
