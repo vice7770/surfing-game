@@ -3,18 +3,14 @@ import type { ShallowWaterSolver } from '../ShallowWaterSolver';
 import { GRAVITY } from '../dispersion';
 
 /**
- * When a crest's slices open (the Padang Padang spec, 13.3; the advisor, 2026-09-30): at the solver's own Kennedy
- * onset, whose threshold is calibrated so model breaking starts where flume waves broke (Kennedy et al. 2000), taken
- * fresh. A crest joins its front when its segment's surface first rises at `join` √(gd): Kennedy's onset for a cell
- * with no breaking age, the condition the throw's lag was measured from (sliceClock). The solver's own strength would
- * not do: a cell inherits the breaking age of the cells behind its face, one column along the crest included, and its
- * threshold ramps down with that age, so along a peel most columns start breaking early in their own shoaling (the
- * advisor). Nor would the age, which is the event's (a probe, 2026-09-30: equal along 60–90 m of peeling crest).
- * B = U/C is not the trigger either: with the depth-averaged ū, Padang Padang's breaking crests read
- * 0.1–0.5, no different from calm ones (a probe, 2026-09-30), since q ≈ cη makes U/C ≈ η/(h + η); Derakhti's 0.85
- * and 1.0, and Bacigaluppi's 0.75, are for the surface velocity. It is kept as a diagnostic, above a crest-speed floor.
+ * Each column's crests for the swept barrel's front (the Padang Padang spec, 13.3). The front joins a crest by where it
+ * is (BreakingFront: its breaking depth, from its height at the wedge's foot), not by how its surface moves: once a
+ * neighbour breaks, the solver's eddy viscosity damps a column's rise, and its breaking age is the event's (the
+ * advisor and three probes, 2026-09-30). The segment's breaking strength gates the join; its fresh rise (Kennedy's
+ * test, η_t over √(g d)) and B = U/C are diagnostics. B is no trigger: with the depth-averaged ū, Padang Padang's
+ * breaking crests read 0.1–0.5, no different from calm ones, since q ≈ cη makes U/C ≈ η/(h + η); Derakhti's 0.85 and
+ * 1.0, and Bacigaluppi's 0.75, are for the surface velocity.
  */
-export const ONSET = { join: 0.65 } as const;
 
 /** Crests over thinner water are shore swash, not waves, m (as CrestKinematics). */
 const WET = 0.05;
@@ -34,7 +30,7 @@ export interface CrestSample {
   eta: number;
   /** The Kennedy breaking strength over the crest's segment (the crest to FACE_REACH shoreward): its largest. */
   strength: number;
-  /** The segment's steepest rise, η_t over √(g d) with d the still depth: its largest. */
+  /** The segment's steepest rise, η_t over √(g d) with d the still depth: its largest (Kennedy's fresh test, a diagnostic). */
   rise: number;
   /** The still depth under the crest, m. */
   depth: number;

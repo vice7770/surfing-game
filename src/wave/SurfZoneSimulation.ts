@@ -494,8 +494,8 @@ export class SurfZoneSimulation {
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
     if (config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot)) {
-      this.front = new BreakingFront(config.fineSpacing ?? 1);
       this.onsetTiming = onsetTiming(PADANG.baseDepth + config.tide);
+      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming);
     }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);
@@ -611,7 +611,7 @@ export class SurfZoneSimulation {
     this.lipRollers = state.counters.lipRollers;
     this.lip.importState(state.lip);
     // A donor without a front (an older build) hands over none: this one starts afresh.
-    this.front?.importState(state.front ?? { nextId: 0, nextFront: 0, points: [], held: [] });
+    this.front?.importState(state.front ?? { nextId: 0, nextFront: 0, points: [], held: [], tracks: [] });
     if (solver instanceof BoussinesqSolver) solver.invalidateDeviceLayout();
   }
 

@@ -1,4 +1,5 @@
-import { ONSET, type CrestSample } from './crestOnset';
+import type { CrestSample } from './crestOnset';
+import type { OnsetTiming } from './sliceClock';
 
 /** Crests in neighbouring columns this many rows apart in z are one front (provisional). */
 const LINK_ROWS = 3;
@@ -12,6 +13,23 @@ const HOLD = 0.5;
  * 0.1–0.2 s/m and consecutive waves join most of a 16 s period apart (the advisor, 2026-09-30).
  */
 const SPLIT = 1;
+/** A crest first seen this far shoreward of the wedge's foot has no foot height to size it by, m (provisional). */
+const FOOT_BAND = 1;
+/** A crest that crossed its join depth joins if its segment breaks within this long, s; else the solver never broke it (the advisor, provisional). */
+const JOIN_WINDOW = 1;
+
+/** A crest followed shoreward from the wedge's foot until it joins a front, or is dropped. */
+export interface CrestTrack {
+  column: number;
+  z: number;
+  /** Its height above still water as it crossed the foot, m; null when first seen past the foot band (it never joins). */
+  footHeight: number | null;
+  /** The still depth under it at its last step, m, and when that was, s. */
+  depth: number;
+  seen: number;
+  /** When it crossed its join depth, s; null until then. */
+  crossed: number | null;
+}
 
 export interface FrontPoint {
   /** Fixed while the point is matched step to step. */
@@ -27,7 +45,7 @@ export interface FrontPoint {
   b: number;
   /** The crest's height above still water, m. */
   height: number;
-  /** When its crest's segment first broke (it joined), s, and the still depth under it then, m: its clock's start. */
+  /** When its crest crossed its join depth (it joined), s, and that depth, m: its clock's start. */
   joined: number;
   depth: number;
   /** The slice's clock as drawn, s from its lip's throw: smoothed along the front, never running back (sliceClock). */
@@ -42,15 +60,26 @@ export interface FrontState {
   /** The points seen at the last update, then those held unseen. */
   points: FrontPoint[];
   held: FrontPoint[];
+  /** Crests followed from the foot, not yet joined. */
+  tracks: CrestTrack[];
 }
 
 /**
- * The breaking front as lines of points (swept-barrel-build.md, "Front line"; Thürey et al. 2007). A crest whose
- * segment reaches Kennedy's fresh onset (`ONSET.join`) joins a front, and stays on it while its segment breaks. Neighbours
- * whose joins differ by more than SPLIT per metre are two waves, and two fronts, smoothed apart. Crests in neighbouring columns within LINK_ROWS rows in z link, and a
- * column's own crests never do, so two crests in a column are two fronts and an empty column splits one. A point
- * matched to last step's in its column keeps its ID, its join and its clock, with no reset as its crest crosses into
- * new cells. Columns go in order, with no randomness, and only + − × ÷ and √, for online determinism.
+ * The breaking front as lines of points (swept-barrel-build.md, "Front line"; Thürey et al. 2007).
+ *
+ * - **The join, by depth** (the advisor, 2026-09-30). Each crest is followed from where it crosses the wedge's foot
+ *   (the timing's h0), its height there sizing it before anything near it breaks. It joins where it crosses the depth
+ *   at which a wave that size first breaks fresh (the 1D runs, `OnsetTiming.joinDepth`), at the moment it crosses,
+ *   provided its segment breaks within JOIN_WINDOW. A crest reads its own place, not its rise: once a neighbour
+ *   breaks, the eddy viscosity damps a column's rise (fresh crossings came ~2 s late, or never) and its inherited age
+ *   is the event's, so neither can time a peel. Here the peel is each column's crest reaching its breaking depth in
+ *   turn, from the bed.
+ * - **On the front** a crest stays while its segment breaks. Crests in neighbouring columns within LINK_ROWS rows in
+ *   z link, a column's own never do (two crests in a column are two fronts, an empty column splits one), and
+ *   neighbours whose joins differ by more than SPLIT per metre are two waves: two fronts, smoothed apart. A point
+ *   matched to last step's in its column keeps its ID, join and clock.
+ *
+ * Columns go in order, with no randomness, and only + − × ÷ and √, for online determinism.
  */
 export class BreakingFront {
   /** This step's points, by front (in order of their −x ends) and σ. */
@@ -59,52 +88,77 @@ export class BreakingFront {
   private held: FrontPoint[] = [];
   private nextId = 0;
   private nextFront = 0;
+  private tracks: CrestTrack[] = [];
   /** Links refused since the start because the two crests joined too far apart to be one wave (a diagnostic). */
   splits = 0;
   private readonly linkReach: number;
   private readonly matchReach: number;
 
-  /** `cell`: the rows' spacing where fronts form, m. */
-  constructor(cell = 1) {
+  /** `cell`: the rows' spacing where fronts form, m; `timing`: the wedge's foot and the join depths (sliceClock). */
+  constructor(cell: number, private readonly timing: OnsetTiming) {
     this.linkReach = LINK_ROWS * cell;
     this.matchReach = MATCH_REACH + cell;
   }
 
   update(samples: readonly CrestSample[], count: number, time: number): void {
     const previous = [...this.points, ...this.held];
-    const byColumn = new Map<number, FrontPoint[]>();
-    for (const old of previous) byColumn.set(old.column, [...(byColumn.get(old.column) ?? []), old]);
+    const pointsOf = byColumn(previous);
+    const tracksOf = byColumn(this.tracks);
     const matched = new Set<FrontPoint>();
+    const followed = new Set<CrestTrack>();
     const points: FrontPoint[] = [];
+    const tracks: CrestTrack[] = [];
+    const { h0 } = this.timing;
     for (let k = 0; k < count; k += 1) {
       const s = samples[k];
-      // A crest joins at Kennedy's fresh onset; once on a front it stays while it breaks at all, its rise falling as
-      // the solver dissipates it.
-      if (!(s.rise >= ONSET.join) && !(s.strength > 0)) continue;
-      let best: FrontPoint | undefined;
-      for (const old of byColumn.get(s.column) ?? []) {
-        if (matched.has(old) || !(Math.abs(old.z - s.z) < this.matchReach)) continue;
-        if (!best || Math.abs(old.z - s.z) < Math.abs(best.z - s.z)) best = old;
+      // On a front: it stays while its segment breaks at all.
+      const point = this.nearest(pointsOf.get(s.column), matched, s.z);
+      if (point) {
+        if (!(s.strength > 0)) continue;
+        matched.add(point);
+        points.push({ ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, seen: time });
+        continue;
       }
-      if (!best && !(s.rise >= ONSET.join)) continue;
-      if (best) matched.add(best);
-      points.push({
-        id: best ? best.id : this.nextId++,
-        front: best ? best.front : -1,
-        column: s.column,
-        sigma: 0,
-        x: s.x,
-        z: s.z,
-        b: s.b,
-        height: s.eta,
-        joined: best ? best.joined : time,
-        depth: best ? best.depth : s.depth,
-        tau: best ? best.tau : 0,
-        seen: time,
-      });
+      const track = this.nearest(tracksOf.get(s.column), followed, s.z);
+      if (!track) {
+        // A new crest past the foot: followed from here, sized by its height if it is at the foot.
+        if (s.depth <= h0) tracks.push({ column: s.column, z: s.z, footHeight: s.depth >= h0 - FOOT_BAND ? s.eta : null, depth: s.depth, seen: time, crossed: null });
+        continue;
+      }
+      followed.add(track);
+      const next: CrestTrack = { ...track, z: s.z, depth: s.depth, seen: time };
+      if (track.footHeight !== null) {
+        const joinDepth = this.timing.joinDepth(track.footHeight);
+        if (track.crossed === null && s.depth <= joinDepth) {
+          // When it crossed, linear in depth between the last step and this one.
+          const f = track.depth > s.depth ? Math.min(1, Math.max(0, (track.depth - joinDepth) / (track.depth - s.depth))) : 1;
+          next.crossed = track.seen + f * (time - track.seen);
+        }
+        if (next.crossed !== null && s.strength > 0 && time - next.crossed <= JOIN_WINDOW) {
+          points.push({
+            id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
+            joined: next.crossed, depth: joinDepth, tau: 0, seen: time,
+          });
+          continue;
+        }
+        // Crossed and never broken: the solver spilled or did not break it, so it has no barrel.
+        if (next.crossed !== null && time - next.crossed > JOIN_WINDOW) continue;
+      }
+      tracks.push(next);
     }
     this.points = this.link(points);
     this.held = previous.filter((old) => !matched.has(old) && time - old.seen <= HOLD);
+    this.tracks = [...tracks, ...this.tracks.filter((old) => !followed.has(old) && time - old.seen <= HOLD)];
+  }
+
+  /** The unclaimed one of `candidates` nearest `z` within the match reach. */
+  private nearest<T extends { z: number }>(candidates: readonly T[] | undefined, claimed: Set<T>, z: number): T | undefined {
+    let best: T | undefined;
+    for (const candidate of candidates ?? []) {
+      if (claimed.has(candidate) || !(Math.abs(candidate.z - z) < this.matchReach)) continue;
+      if (!best || Math.abs(candidate.z - z) < Math.abs(best.z - z)) best = candidate;
+    }
+    return best;
   }
 
   /** Chains the points column to column into fronts, each numbered as its first matched point's was. */
@@ -155,7 +209,10 @@ export class BreakingFront {
   }
 
   exportState(): FrontState {
-    return { nextId: this.nextId, nextFront: this.nextFront, points: this.points.map((p) => ({ ...p })), held: this.held.map((p) => ({ ...p })) };
+    return {
+      nextId: this.nextId, nextFront: this.nextFront, points: this.points.map((p) => ({ ...p })), held: this.held.map((p) => ({ ...p })),
+      tracks: this.tracks.map((t) => ({ ...t })),
+    };
   }
 
   importState(state: FrontState): void {
@@ -163,5 +220,16 @@ export class BreakingFront {
     this.nextFront = state.nextFront;
     this.points = state.points.map((p) => ({ ...p }));
     this.held = state.held.map((p) => ({ ...p }));
+    this.tracks = (state.tracks ?? []).map((t) => ({ ...t }));
   }
+}
+
+function byColumn<T extends { column: number }>(items: readonly T[]): Map<number, T[]> {
+  const map = new Map<number, T[]>();
+  for (const item of items) {
+    const list = map.get(item.column);
+    if (list) list.push(item);
+    else map.set(item.column, [item]);
+  }
+  return map;
 }

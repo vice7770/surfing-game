@@ -23,31 +23,47 @@ export const CLOCK = { smoothing: 2, bunched: 0.1, earliest: -3 } as const;
  */
 const ONSET_LAG: readonly (readonly [depth: number, lag: number])[] = [[0.237, 2.34], [0.35, 2.6], [0.5, 2.82]];
 
-/** When a point's lip throws after its onset, s, from the still depth under it then, m; and the earliest τ, s. */
+/**
+ * Where the same runs first broke, fresh, against the wave's height at the wedge's foot, both over h0 (A0 0.2, 0.3,
+ * 0.45: the still depth under the crest at the onset, 1.66, 2.45 and 3.50 m of 7 m). A peel is each section of crest
+ * reaching its breaking depth in turn (the advisor, 2026-09-30). Measured, provisional.
+ */
+const ONSET_DEPTH: readonly (readonly [height: number, depth: number])[] = [[0.2, 0.237], [0.3, 0.35], [0.45, 0.5]];
+
+/** Linear in x between the table's rows, clamped at its ends: never extrapolated. */
+function interpolate(table: readonly (readonly [number, number])[], x: number): number {
+  if (x <= table[0][0]) return table[0][1];
+  for (let k = 1; k < table.length; k += 1) {
+    const [x1, y1] = table[k];
+    if (x <= x1) {
+      const [x0, y0] = table[k - 1];
+      return y0 + ((x - x0) / (x1 - x0)) * (y1 - y0);
+    }
+  }
+  return table[table.length - 1][1];
+}
+
+/**
+ * A bed's onset timing: its wedge's foot `h0`, m; the still depth where a crest that stood `footHeight` m high at the
+ * foot joins its front, m; when its lip throws after it joins, s, from that depth; and the earliest τ, s.
+ */
 export interface OnsetTiming {
+  h0: number;
+  joinDepth(footHeight: number): number;
   lag(depth: number): number;
   earliest: number;
 }
 
 /**
- * The onset timing for a bed whose slope rises from `h0` m (the library cases' foot depth): ONSET_LAG interpolated
- * linearly by the join's depth over h0, clamped at its ends (never extrapolated), in units of √(h0/g).
+ * The onset timing for a bed whose slope rises from `h0` m (the library cases' foot depth): ONSET_DEPTH and ONSET_LAG
+ * interpolated over h0, in units of √(h0/g).
  */
 export function onsetTiming(h0: number): OnsetTiming {
   const unit = Math.sqrt(h0 / GRAVITY);
   return {
-    lag(depth: number): number {
-      const d = depth / h0;
-      if (d <= ONSET_LAG[0][0]) return ONSET_LAG[0][1] * unit;
-      for (let k = 1; k < ONSET_LAG.length; k += 1) {
-        const [d1, lag1] = ONSET_LAG[k];
-        if (d <= d1) {
-          const [d0, lag0] = ONSET_LAG[k - 1];
-          return (lag0 + ((d - d0) / (d1 - d0)) * (lag1 - lag0)) * unit;
-        }
-      }
-      return ONSET_LAG[ONSET_LAG.length - 1][1] * unit;
-    },
+    h0,
+    joinDepth: (footHeight) => interpolate(ONSET_DEPTH, footHeight / h0) * h0,
+    lag: (depth) => interpolate(ONSET_LAG, depth / h0) * unit,
     earliest: CLOCK.earliest * unit,
   };
 }
@@ -59,8 +75,8 @@ const RADIUS = CLOCK.smoothing * Math.sqrt(7);
  * Sets every front point's clock at `time` s: τ, the time since its lip threw (swept-barrel-build.md, "Smooth clock";
  * the advisor's rulings, 2026-09-30). Returns how many clocks paused this step rather than run back.
  *
- * - **The throw.** A point's lip throws `timing.lag` after it joined the front (the solver's onset, which leads the
- *   Navier–Stokes wave's vertical face). Until then τ is negative: the library's steepening frames, from
+ * - **The throw.** A point's lip throws `timing.lag` after it joined the front (at its breaking depth, where the
+ *   solver's fresh onset leads the Navier–Stokes wave's vertical face). Until then τ is negative: the library's steepening frames, from
  *   `timing.earliest`. So the front's newest end reads the earliest frames, where the loft blends into the height
  *   field, with no taper.
  * - **Smoothing.** Along each front, a point's throw time is read from a local line through its neighbours',

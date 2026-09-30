@@ -23,8 +23,8 @@ describe.runIf(process.env.PROBE)('Padang Padang front cost', () => {
       alongShore: PADANG.alongShore, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, sweptBarrel: false,
     });
     const { solver } = simulation;
-    const front = new BreakingFront(1);
     const timing = onsetTiming(PADANG.baseDepth);
+    const front = new BreakingFront(1, timing);
     const samples: CrestSample[] = [];
     const minHeight = 0.25 * edgeHeight(simulation.config, simulation.tank.edgeDepth);
     const fromRow = solver.rowBelow(simulation.tank.fineFrom);

@@ -1,86 +1,101 @@
 import { describe, expect, it } from 'vitest';
 import { BreakingFront } from './BreakingFront';
 import type { CrestSample } from './crestOnset';
+import { onsetTiming } from './sliceClock';
 
-/** A crest sample at one-metre columns whose segment rises past Kennedy's fresh onset (`rise`), over `depth` m. */
-function sample(column: number, z: number, rise = 0.8, depth = 2.5): CrestSample {
-  return { column, row: Math.floor(z), x: column + 0.5, z, eta: 1, strength: 0.5, rise, depth, b: 0.3, speed: 5 };
+/** A 7 m wedge foot: a crest 2.1 m high there (A0 0.3) joins where the water is 0.35 × 7 = 2.45 m deep. */
+const TIMING = onsetTiming(7);
+const FOOT = 2.1;
+const JOIN = TIMING.joinDepth(FOOT);
+
+/** A crest sample at one-metre columns. */
+function sample(column: number, z: number, depth: number, strength: number, eta = FOOT): CrestSample {
+  return { column, row: Math.floor(z), x: column + 0.5, z, eta, strength, rise: 0.5, depth, b: 0.3, speed: 5 };
 }
 
 /** An oblique straight crest over `columns`, z = z0 + slope · x. */
-function line(columns: readonly number[], z0: number, slope: number, rise = 0.8, depth = 2.5): CrestSample[] {
-  return columns.map((column) => sample(column, z0 + slope * (column + 0.5), rise, depth));
+function line(columns: readonly number[], z0: number, slope: number, depth: number, strength: number, eta = FOOT): CrestSample[] {
+  return columns.map((column) => sample(column, z0 + slope * (column + 0.5), depth, strength, eta));
+}
+
+/** Follows a crest from the foot (0.2 s before `time`), then brings it to its join depth, breaking, at `time`. */
+function joinAt(front: BreakingFront, columns: readonly number[], z0: number, slope: number, time: number): void {
+  const foot = line(columns, z0 - 0.4, slope, TIMING.h0, 0);
+  front.update(foot, foot.length, time - 0.2);
+  const joining = line(columns, z0, slope, JOIN, 0.5);
+  front.update(joining, joining.length, time);
 }
 
 const range = (from: number, to: number) => Array.from({ length: to - from }, (_, k) => from + k);
 const fronts = (front: BreakingFront) => new Set(front.points.map((point) => point.front)).size;
 
 describe('the breaking front as lines', () => {
+  it('joins a crest where it reaches its breaking depth, sized by its height at the foot', () => {
+    expect(JOIN).toBeCloseTo(2.45, 12);
+    const front = new BreakingFront(1, TIMING);
+    // 1.4 m at the foot (A0 0.2) breaks in 0.237 × 7 = 1.659 m of water: crossed between 3 m and 1 m, 67 % of the way.
+    front.update([sample(0, 10, 7, 0, 1.4)], 1, 0);
+    front.update([sample(0, 11, 3, 0, 1.4)], 1, 0.1);
+    expect(front.points).toHaveLength(0);
+    front.update([sample(0, 12, 1, 0.4, 1.4)], 1, 0.2);
+    expect(front.points).toHaveLength(1);
+    const crossed = 0.1 + ((3 - 0.237 * 7) / (3 - 1)) * 0.1;
+    expect(front.points[0].joined).toBeCloseTo(crossed, 12);
+    expect(front.points[0].depth).toBeCloseTo(0.237 * 7, 12);
+  });
+
+  it('joins at the crossing when the segment breaks within a second of it, and never after', () => {
+    const late = new BreakingFront(1, TIMING);
+    late.update([sample(0, 10, 7, 0)], 1, 0);
+    late.update([sample(0, 12, JOIN, 0)], 1, 1);
+    late.update([sample(0, 13, 2, 0.5)], 1, 1.8);
+    expect(late.points).toHaveLength(1);
+    expect(late.points[0].joined).toBeCloseTo(1, 12);
+    const never = new BreakingFront(1, TIMING);
+    never.update([sample(0, 10, 7, 0)], 1, 0);
+    never.update([sample(0, 12, JOIN, 0)], 1, 1);
+    never.update([sample(0, 13, 2, 0)], 1, 2.1);
+    never.update([sample(0, 14, 1.5, 0.5)], 1, 2.2);
+    expect(never.points).toHaveLength(0);
+  });
+
+  it('never joins a crest first seen past the foot, unsized', () => {
+    const front = new BreakingFront(1, TIMING);
+    front.update([sample(0, 10, 5, 0)], 1, 0);
+    front.update([sample(0, 12, JOIN, 0.8)], 1, 0.2);
+    front.update([sample(0, 13, 2, 0.8)], 1, 0.4);
+    expect(front.points).toHaveLength(0);
+  });
+
   it('links an oblique straight crest into one front, σ its arc length from the −x end', () => {
-    const front = new BreakingFront();
-    const samples = line(range(0, 20), 10, 0.5);
-    front.update(samples, samples.length, 0);
+    const front = new BreakingFront(1, TIMING);
+    joinAt(front, range(0, 20), 10, 0.5, 1);
     expect(front.points).toHaveLength(20);
     expect(fronts(front)).toBe(1);
     front.points.forEach((point, k) => expect(point.sigma).toBeCloseTo(k * Math.sqrt(1 + 0.5 ** 2), 9));
   });
 
-  it('keeps every point’s ID, join and clock when the crest moves 0.3 m shoreward into shallower water', () => {
-    const front = new BreakingFront();
-    const first = line(range(0, 20), 10, 0.5);
-    front.update(first, first.length, 0);
+  it('keeps every point’s ID, join and clock while its crest breaks on into shallower water, and drops it when it stops', () => {
+    const front = new BreakingFront(1, TIMING);
+    joinAt(front, range(0, 20), 10, 0.5, 1);
     const ids = front.points.map((point) => point.id);
     front.points.forEach((point) => { point.tau = 0.25; });
-    const next = line(range(0, 20), 10.3, 0.5, 0.8, 2.4);
-    front.update(next, next.length, 0.1);
+    const next = line(range(0, 20), 10.3, 0.5, 2.2, 0.1);
+    front.update(next, next.length, 1.1);
     expect(front.points.map((point) => point.id)).toEqual(ids);
-    expect(front.points.every((point) => point.tau === 0.25 && point.joined === 0 && point.depth === 2.5)).toBe(true);
-  });
-
-  it('records when a crest joins, and the still depth under it then', () => {
-    const front = new BreakingFront();
-    const samples = line(range(0, 3), 10, 0, 0.65, 3.1);
-    front.update(samples, samples.length, 7);
-    expect(front.points.map((point) => [point.joined, point.depth])).toEqual([[7, 3.1], [7, 3.1], [7, 3.1]]);
-  });
-
-  it('keeps a joined crest on its front while it breaks, its rise falling below the onset', () => {
-    const front = new BreakingFront();
-    const first = line(range(0, 5), 10, 0);
-    front.update(first, first.length, 0);
-    const ids = front.points.map((point) => point.id);
-    const dissipating = line(range(0, 5), 10.3, 0, 0.3);
-    front.update(dissipating, dissipating.length, 0.1);
-    expect(front.points.map((point) => [point.id, point.joined])).toEqual(ids.map((id) => [id, 0]));
-    const calm = line(range(0, 5), 10.6, 0, 0.3).map((s) => ({ ...s, strength: 0 }));
-    front.update(calm, calm.length, 0.2);
+    expect(front.points.every((point) => point.tau === 0.25 && point.joined === 1 && point.depth === JOIN)).toBe(true);
+    const calm = line(range(0, 20), 10.6, 0.5, 2, 0);
+    front.update(calm, calm.length, 1.2);
     expect(front.points).toHaveLength(0);
-  });
-
-  // An inheriting column's solver breaking starts at a threshold lowered by its neighbour's age: not a join.
-  it('leaves out crests whose segment has not reached Kennedy’s fresh onset, breaking or not', () => {
-    const front = new BreakingFront();
-    const samples = line(range(0, 20), 10, 0.5, 0.64);
-    front.update(samples, samples.length, 0);
-    expect(front.points).toHaveLength(0);
-  });
-
-  it('follows a crest across a whole row on a coarser grid', () => {
-    const front = new BreakingFront(2);
-    const first = range(0, 10).map((column) => ({ ...sample(column, 20), x: 2 * column + 1 }));
-    front.update(first, first.length, 0);
-    const ids = front.points.map((point) => point.id);
-    expect(new Set(front.points.map((point) => point.front)).size).toBe(1);
-    const next = first.map((s) => ({ ...s, z: 22 }));
-    front.update(next, next.length, 0.1);
-    expect(front.points.map((point) => point.id)).toEqual(ids);
   });
 
   // Review Focus 5: two crests in the same columns are two fronts.
   it('makes two fronts of two crests 15 m apart in the same columns', () => {
-    const front = new BreakingFront();
-    const samples = range(0, 20).flatMap((column) => [sample(column, 10), sample(column, 25)]);
-    front.update(samples, samples.length, 0);
+    const front = new BreakingFront(1, TIMING);
+    const foot = range(0, 20).flatMap((column) => [sample(column, 9.6, 7, 0), sample(column, 24.6, 7, 0)]);
+    front.update(foot, foot.length, 0.8);
+    const joining = range(0, 20).flatMap((column) => [sample(column, 10, JOIN, 0.5), sample(column, 25, JOIN, 0.5)]);
+    front.update(joining, joining.length, 1);
     expect(front.points).toHaveLength(40);
     expect(fronts(front)).toBe(2);
     for (const id of new Set(front.points.map((point) => point.front))) {
@@ -90,12 +105,11 @@ describe('the breaking front as lines', () => {
 
   // Review Focus 2: a front that breaks apart keeps each side's points.
   it('splits a front at five empty columns, each side keeping its IDs', () => {
-    const front = new BreakingFront();
-    const whole = line(range(0, 20), 10, 0.5);
-    front.update(whole, whole.length, 0);
+    const front = new BreakingFront(1, TIMING);
+    joinAt(front, range(0, 20), 10, 0.5, 1);
     const idOf = new Map(front.points.map((point) => [point.column, point.id]));
-    const split = line([...range(0, 8), ...range(13, 20)], 10.2, 0.5);
-    front.update(split, split.length, 0.1);
+    const split = line([...range(0, 8), ...range(13, 20)], 10.2, 0.5, 2.3, 0.5);
+    front.update(split, split.length, 1.1);
     expect(fronts(front)).toBe(2);
     for (const point of front.points) expect(point.id).toBe(idOf.get(point.column));
     const left = front.points.filter((point) => point.column < 8);
@@ -107,12 +121,14 @@ describe('the breaking front as lines', () => {
   });
 
   it('splits a front where neighbours joined too far apart to be one wave, and counts the splits', () => {
-    const front = new BreakingFront();
-    const older = line(range(0, 10), 10, 0);
-    front.update(older, older.length, 0);
-    // Five seconds on, a newer crest breaks in the next ten columns, level with the older one's reformed crest.
-    const both = [...line(range(0, 10), 10.5, 0), ...line(range(10, 20), 10.5, 0)];
-    front.update(both, both.length, 5);
+    const front = new BreakingFront(1, TIMING);
+    joinAt(front, range(0, 10), 10, 0, 1);
+    // Five seconds on, a newer crest joins in the next ten columns, level with the older one's still-breaking crest.
+    const older = line(range(0, 10), 10.5, 0, 2, 0.5);
+    const foot = line(range(10, 20), 10.1, 0, TIMING.h0, 0);
+    front.update([...older, ...foot], 20, 5.8);
+    const joining = [...line(range(0, 10), 10.5, 0, 2, 0.5), ...line(range(10, 20), 10.5, 0, JOIN, 0.5)];
+    front.update(joining, joining.length, 6);
     const byFront = new Map<number, number[]>();
     for (const point of front.points) byFront.set(point.front, [...(byFront.get(point.front) ?? []), point.column]);
     expect([...byFront.values()]).toEqual([range(0, 10), range(10, 20)]);
@@ -120,31 +136,47 @@ describe('the breaking front as lines', () => {
   });
 
   it('holds a point missing for a moment, and drops it after half a second', () => {
-    const front = new BreakingFront();
-    const whole = line(range(0, 5), 10, 0);
-    front.update(whole, whole.length, 0);
+    const front = new BreakingFront(1, TIMING);
+    joinAt(front, range(0, 5), 10, 0, 1);
+    const whole = line(range(0, 5), 10, 0, 2.4, 0.5);
     const id = front.points[2].id;
-    const gap = line([0, 1, 3, 4], 10, 0);
-    front.update(gap, gap.length, 0.1);
+    const gap = line([0, 1, 3, 4], 10, 0, 2.4, 0.5);
+    front.update(gap, gap.length, 1.1);
     expect(front.points.map((point) => point.column)).toEqual([0, 1, 3, 4]);
-    front.update(whole, whole.length, 0.2);
+    front.update(whole, whole.length, 1.2);
     expect(front.points[2].id).toBe(id);
-    for (let t = 0.3; t < 1; t += 0.1) front.update(gap, gap.length, t);
-    front.update(whole, whole.length, 1);
-    expect(front.points[2].id).not.toBe(id);
+    for (let t = 1.3; t < 2; t += 0.1) front.update(gap, gap.length, t);
+    front.update(whole, whole.length, 2);
+    // Gone, and its crest, seen again past the foot, is not sized to join.
+    expect(front.points.map((point) => point.column)).toEqual([0, 1, 3, 4]);
   });
 
-  it('carries its state through export and import', () => {
-    const front = new BreakingFront();
-    const whole = line(range(0, 20), 10, 0.5);
-    front.update(whole, whole.length, 0);
-    const gap = line(range(0, 18), 10.1, 0.5);
-    front.update(gap, gap.length, 0.1);
-    const copy = new BreakingFront();
-    copy.importState(structuredClone(front.exportState()));
+  it('follows a crest across a whole row on a coarser grid', () => {
+    const front = new BreakingFront(2, TIMING);
+    const foot = range(0, 10).map((column) => ({ ...sample(column, 18, 7, 0), x: 2 * column + 1 }));
+    front.update(foot, foot.length, 0.8);
+    const first = range(0, 10).map((column) => ({ ...sample(column, 20, JOIN, 0.5), x: 2 * column + 1 }));
+    front.update(first, first.length, 1);
+    const ids = front.points.map((point) => point.id);
+    expect(new Set(front.points.map((point) => point.front)).size).toBe(1);
+    const next = first.map((s) => ({ ...s, z: 22 }));
+    front.update(next, next.length, 1.1);
+    expect(front.points.map((point) => point.id)).toEqual(ids);
+  });
+
+  it('carries its state through export and import, crests on their way in included', () => {
+    const front = new BreakingFront(1, TIMING);
+    joinAt(front, range(0, 20), 10, 0.5, 1);
+    const byPlace = (a: CrestSample, b: CrestSample) => a.column - b.column || a.z - b.z;
+    const next = [...line(range(0, 18), 10.1, 0.5, 2.4, 0.5), ...line(range(0, 20), 30, 0.5, TIMING.h0, 0)].sort(byPlace);
+    front.update(next, next.length, 1.1);
+    const copy = new BreakingFront(1, TIMING);
+    copy.importState(JSON.parse(JSON.stringify(front.exportState())));
     expect(copy.points).toEqual(front.points);
-    front.update(whole, whole.length, 0.2);
-    copy.update(whole, whole.length, 0.2);
-    expect(copy.points).toEqual(front.points);
+    const later = [...line(range(0, 20), 10.4, 0.5, 2.3, 0.5), ...line(range(0, 20), 31, 0.5, JOIN, 0.5)].sort(byPlace);
+    front.update(later, later.length, 1.3);
+    copy.update(later, later.length, 1.3);
+    expect(copy.exportState()).toEqual(front.exportState());
+    expect(front.points.length).toBeGreaterThan(20);
   });
 });

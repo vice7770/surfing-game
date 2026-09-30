@@ -5,7 +5,7 @@ import { advanceClocks, CLOCK, onsetTiming, type OnsetTiming } from './sliceCloc
 
 const DT = 1 / 30;
 /** No lag, a second of steepening frames: the throw is the join. */
-const AT_ONCE: OnsetTiming = { lag: () => 0, earliest: -1 };
+const AT_ONCE: OnsetTiming = { h0: 7, joinDepth: () => 2.45, lag: () => 0, earliest: -1 };
 
 /** A crest line of `n` points one metre apart. */
 function crest(n: number, id = 0): FrontPoint[] {
@@ -40,7 +40,7 @@ function run(
 describe('the slice clock', () => {
   it('throws a point’s lip its lag after it joins, reading the steepening frames till then', () => {
     const points = crest(1);
-    const timing: OnsetTiming = { lag: () => 0.5, earliest: -1 };
+    const timing: OnsetTiming = { ...AT_ONCE, lag: () => 0.5 };
     points[0].joined = 5;
     advanceClocks(points, 5, timing);
     expect(points[0].tau).toBeCloseTo(-0.5, 12);
@@ -52,7 +52,7 @@ describe('the slice clock', () => {
 
   it('reads no earlier than the library’s first frame', () => {
     const points = crest(1);
-    const timing: OnsetTiming = { lag: () => 3, earliest: -1 };
+    const timing: OnsetTiming = { ...AT_ONCE, lag: () => 3 };
     points[0].joined = 5;
     advanceClocks(points, 5, timing);
     expect(points[0].tau).toBe(-1);
@@ -109,7 +109,7 @@ describe('the slice clock', () => {
     expect(points[11].tau).toBeCloseTo(points[0].tau - 0.5, 9);
   });
 
-  it('times the throw by the measured lag, interpolated by the depth at the join and never extrapolated', () => {
+  it('joins and times the throw by the measured tables, interpolated and never extrapolated', () => {
     const h0 = 7;
     const unit = Math.sqrt(h0 / GRAVITY);
     const timing = onsetTiming(h0);
@@ -118,5 +118,10 @@ describe('the slice clock', () => {
     expect(timing.lag(((0.237 + 0.35) / 2) * h0)).toBeCloseTo(((2.34 + 2.6) / 2) * unit, 12);
     expect(timing.lag(0.5)).toBeCloseTo(2.34 * unit, 12);
     expect(timing.lag(20)).toBeCloseTo(2.82 * unit, 12);
+    // And where a crest joins, by its height at the foot: A0 0.3 at 0.35 h0, between the rows linearly, clamped.
+    expect(timing.joinDepth(0.3 * h0)).toBeCloseTo(0.35 * h0, 12);
+    expect(timing.joinDepth(0.375 * h0)).toBeCloseTo(((0.35 + 0.5) / 2) * h0, 12);
+    expect(timing.joinDepth(0.1 * h0)).toBeCloseTo(0.237 * h0, 12);
+    expect(timing.joinDepth(h0)).toBeCloseTo(0.5 * h0, 12);
   });
 });

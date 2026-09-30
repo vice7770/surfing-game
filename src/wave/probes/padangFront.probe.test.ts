@@ -107,6 +107,15 @@ describe.runIf(process.env.PROBE)('Padang Padang front probe', () => {
       for (const point of points) byFront.set(point.front, [...(byFront.get(point.front) ?? []), point]);
       const newest = [...byFront.values()].filter((f) => f.length >= 10).sort((a, b) => Math.max(...b.map((p) => p.joined)) - Math.max(...a.map((p) => p.joined)))[0];
       if (newest) {
+        // The barrel's peel along x: a line through the joins (dx/dt), against the solver's own (the waves probe).
+        const n = newest.length;
+        const mx = newest.reduce((sum, p) => sum + p.x, 0) / n;
+        const mt = newest.reduce((sum, p) => sum + p.joined, 0) / n;
+        const sxt = newest.reduce((sum, p) => sum + (p.x - mx) * (p.joined - mt), 0);
+        const sxx = newest.reduce((sum, p) => sum + (p.x - mx) ** 2, 0);
+        const stt = newest.reduce((sum, p) => sum + (p.joined - mt) ** 2, 0);
+        const fit = sxt * sxt / (sxx * stt);
+        appendFileSync(log, `  newest front: ${n} points, x ${newest[0].x.toFixed(0)}…${newest.at(-1)!.x.toFixed(0)}, joins peel at ${(sxx / sxt).toFixed(1)} m/s along x (r² ${fit.toFixed(2)})\n`);
         const every = Math.max(1, Math.floor(newest.length / 8));
         appendFileSync(log, `  newest front (x, joined, τ): ${newest.filter((_, k) => k % every === 0).map((p) => `(${p.x.toFixed(0)}, ${p.joined.toFixed(2)}, ${p.tau.toFixed(2)})`).join(' ')}\n`);
       }
