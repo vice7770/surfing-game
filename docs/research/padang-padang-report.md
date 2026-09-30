@@ -107,8 +107,9 @@ Phase matching gives V ≈ 12.7 m/s at the peak: α 33–35° geometric, 26.9° 
 | β 40°, no channel (the bare ramp) | 21 | 10.7 m/s | 40° | 11 | 10.1 m/s | 10.9 m/s |
 | β 35°, no channel | 21 | 10.8 m/s | 40° | 12 | 10.6 m/s | 11.8 m/s |
 | β 35°, the channel deepened only inshore of z −138 | 22 | 11.3 m/s | 38° | 13 | 10.9 m/s | 12.1 m/s |
+| **β 40°, the channel deepened only inshore of z −138: the bed chosen** (rounded over 10 m here; the committed bed over 20 m, for no cliff) | 22 | 11.5 m/s | 37° | 14 | 10.5 m/s | 12.4 m/s |
 
 - The channel, not the wedge's angle, sets the peel. With it gone or kept inshore, the two halves run at the same speed, which is what phase matching predicts.
 - β barely matters here: at 35° and at 40° the median wave is 40° geometric. Refraction over the 1:80 ramp turns the crests before they reach the wedge, so the crest line's angle is not the angle they meet it at.
-- The inshore channel keeps a deep lane beside the reef for paddling back out without tilting the crests offshore of it.
+- The inshore channel keeps a deep lane beside the reef for paddling back out without tilting the crests offshore of it. The bed keeps β at 40° (the advisor's 37–40°) with it (de23435).
 - The Big swell (Hs 3 m, Tp 18 s) peels left on the 1:15 wedge even with the full channel: 13 clean waves, all toward +x, median 12.5 m/s (geometric α 46°), onsets in 3.1–5.7 m of water. The stability tests pass on the 1:15 wedge, all finite. The Big swell's direction test now takes most of the well-fitted estimates, not the last one.
