@@ -127,7 +127,9 @@ describe('the slice clock', () => {
     expect(timing.lag(2.45)).toBeCloseTo(2.6 * unit, 12);
     expect(timing.lag(((0.237 + 0.35) / 2) * h0)).toBeCloseTo(((2.34 + 2.6) / 2) * unit, 12);
     expect(timing.lag(0.5)).toBeCloseTo(2.34 * unit, 12);
-    expect(timing.lag(20)).toBeCloseTo(2.82 * unit, 12);
+    // Deeper than the periodic run's join, its swell lag, clamped.
+    expect(timing.lag(0.454 * h0)).toBeCloseTo(2.32 * unit, 12);
+    expect(timing.lag(20)).toBeCloseTo(2.32 * unit, 12);
     // And where a crest joins, by its highest over 6–5 m and the period: the solver's own swell onsets.
     expect(timing.band).toEqual([6, 5]);
     expect(timing.joinDepth(1.6)).toBeCloseTo(3.18, 12);

@@ -57,8 +57,8 @@ describe('the breaking front as lines', () => {
   });
 
   it('joins at the crossing when the solver breaks it before its throw, and never after', () => {
-    // At 3.18 m the lag is 2.75 √(7/g) = 2.33 s: the window.
-    expect(TIMING.window(JOIN)).toBeCloseTo(2.33, 2);
+    // At 3.18 m (0.454 h0) the swell's measured lag is 2.32 √(7/g) = 1.96 s: the window.
+    expect(TIMING.window(JOIN)).toBeCloseTo(1.96, 2);
     const late = new BreakingFront(1, TIMING);
     late.update([sample(0, 10, 7, 0)], 1, 0);
     late.update([sample(0, 12, JOIN, 0)], 1, 1);

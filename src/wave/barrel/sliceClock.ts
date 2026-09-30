@@ -17,11 +17,13 @@ export const CLOCK = { smoothing: 2, bunched: 0.1, earliest: -3 } as const;
  * onset, h0 (the kennedyLag probe, 2026-09-30): the game's solver at 1 m on round 6's Padang Padang transect (h0 7 m,
  * 1:19 to a 1.25 m flat), each soliton's onset against Basilisk's face going vertical (A0 0.3 at level 11; 0.2 and
  * 0.45 from level-10 scouts, ±0.3). The crests stand where Basilisk's do at the vertical time (about 1 m apart): the
- * trigger fires early, at η/h ≈ 0.9, while the crest still shoals. Solitary waves break far higher than swell (H/h
- * 1.38–1.40 on 1:35, Grilli et al. 1997, against 0.6–0.8), so for Padang Padang's swell this is an upper bound until
- * periodic runs exist. Measured, provisional.
+ * trigger fires early, at η/h ≈ 0.9, while the crest still shoals. For swell the advisor's periodic run (a 16 s
+ * cnoidal train, crest 1.66 m at the foot, level 12, 2026-09-30) measured 2.32 ± 0.5 at the join depth of 0.454 h0,
+ * against the solitary rows' 2.75 there: about 16 % shorter. So swell's measured row replaces the solitary ones from
+ * there deeper (clamped: the solitary A0 0.45 row, 2.82 at 0.5, would read a soliton's longer lag again), and the
+ * solitary rows stand for shallower joins until more periodic cases are run. Measured, provisional.
  */
-const ONSET_LAG: readonly (readonly [depth: number, lag: number])[] = [[0.237, 2.34], [0.35, 2.6], [0.5, 2.82]];
+const ONSET_LAG: readonly (readonly [depth: number, lag: number])[] = [[0.237, 2.34], [0.35, 2.6], [0.454, 2.32]];
 
 /**
  * Where the game's solver first breaks swell, fresh, on the same transect (the periodicOnset probe, 2026-09-30): one
