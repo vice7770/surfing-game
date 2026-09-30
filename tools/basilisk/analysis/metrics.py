@@ -81,7 +81,9 @@ def analyse(run_dir, level, L0, slope, a0, hs=0.05, tmin=0.0):
         if seen_ov and closed_now:
             ti = r["t"]
             break
-        if r.get("overturned"):
+        # the metrics' frame: the last overturned one whose jet is at least 3 dx off the face (at level 12 the
+        # frame before touchdown can hold the jet 2 dx off, where the landmarks take a sliver for the void)
+        if r.get("overturned") and r.get("gap") is not None and r["gap"] >= 3 * dx:
             pre = r
     out = {"run": run_dir, "level": level, "dx": dx, "slope": slope, "A0": a0,
            "psi0": slope / a0 ** 0.25, "t_vertical": tv, "t_impact": ti,
