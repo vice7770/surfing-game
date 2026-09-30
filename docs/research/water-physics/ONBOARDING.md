@@ -89,6 +89,12 @@ Read in this order:
   - **PR 5:** the crash curve, parcels and sound.
   - **PR 6:** the Rich shading, a lip glow and a dark throat.
   - **PR 7:** every spot switches, and the old lip and tube code is deleted. The Reef switches only after the Reef session agrees and the owner has looked.
+- **The rest of Part B, handed to agents on the M1 (2026-10-01, at the owner's request):**
+  - **The curl's colour fix,** from [tube-colour-fix.md](tube-colour-fix.md), then PR 6 (the Rich lip glow and dark throat), on `claude/padang-curl-colour` and `claude/padang-rich-shading`. It diagnoses the curl's ribbons and slab first.
+  - **PR 4's remaining items** (the handoff's advisor items 1–7, and the probe rerun) on `claude/padang-contact` (#95).
+  - **PR 5,** the crash curve, parcels and sound, on `claude/padang-crash`. Its plan comes to the advisor first.
+  - **PR 7** waits for the owner's look at Padang Padang and for the Reef session's agreement. Every other spot then needs its own library cases.
+  - **One advisor branch:** on 2026-09-30/10-01 a second advisor session on the other machine wrote the colour fix on `main-sshdns`, and it was merged into this branch (d72cbe8). Before continuing, merge any other advisor branch's commits, so the consult log stays one record.
 - **The Reef (Teahupo'o):**
   - Parts A–C are merged (#54, #57, #60).
   - Part D, tube riding, isn't started. It takes its contact fields from Padang's PR 4: covered, clearance and the tube's state.
