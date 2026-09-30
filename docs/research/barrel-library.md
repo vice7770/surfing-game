@@ -1,0 +1,60 @@
+# The barrel library
+
+The swept barrel (the Padang Padang spec, Part B) draws its tube from 2D overturn profiles simulated in Navier–Stokes. They are swept along the breaking front, each slice at its own clock (τ, from the throw). This note covers the library's cases, how they check against the published fits and the field, what they cost, and how to add one. The per-case table is generated: [barrel-cases.md](barrel-cases.md).
+
+Tags: **[measured]** in the model, or in the lab or field where said; **[modelled]** from a published simulation or fit; **[inferred]** my reasoning.
+
+## The cases
+
+Three runs of the advisor's Basilisk setup (`tools/basilisk`, GPL-3.0, run apart from the game) on round 6's Padang Padang transect: a solitary wave of height A0·h0 at the wedge's 7 m base, up a 1:19 slope along its path to a reef flat 1.25 m deep (0.179 h0), at level 12 (1.2 cm cells at h0 = 1). The game blends them by H0/h0 at the foot.
+
+| Case | H0/h0 | Where it overturns | H_I at h0 = 7 m | Void L × W just before touchdown | Open tube, vertical to touchdown | Frames | Asset |
+|---|---|---|---|---|---|---|---|
+| `pad19-a20-l12` | 0.2 | on the reef flat, about 1 h0 past its edge | 1.97 m | 0.90 × 0.45 m | 0.59 s | 145 | 145 KB |
+| `pad19-a30-l12` | 0.3 (the owner's case) | at the reef flat's edge | 2.58 m | 2.11 × 1.00 m | 1.00 s | 158 | 158 KB |
+| `pad19-a45-l12` | 0.45 | on the wedge, about 2.6 h0 before the flat | 3.67 m | 3.34 × 1.45 m | 1.16 s | 163 | 163 KB |
+
+All [measured] in the model. Each case holds 128 points per frame, in h0, from 2.7–2.9 √(h0/g) before its face goes vertical (the clock's earliest frame, −3, clamps to the first) to one frame past touchdown, in the `BRL1` form (`src/wave/barrel/profileFormat.ts`), and loads from `public/barrels/` through `src/wave/barrel/barrelLibraryIndex.ts`.
+
+## Validation
+
+Each case at its last output before touchdown, against Pick & Feddersen's fits in ψ0 = s/(H0/h0)^¼ [modelled], within round 2's tolerances (areas ±0.05, W/L ±0.1, θ ±5°), and against Mead & Black's field survey [measured, field]:
+
+- **The tube's shape matches.** W/L is 0.50, 0.47 and 0.44 against the fits' 0.43, 0.42 and 0.40, all inside. L/W is 2.01, 2.11 and 2.30: the two smaller cases fall inside Padang Padang's own 1.97–2.14, the largest inside the reefs' 1.42–3.43.
+- **The tube's size is smaller than the fits'.** A_O/H_I² is 0.05, 0.19 and 0.23 against the fits' 0.38, 0.34 and 0.30. The fits are for plane slopes, where the smaller wave's larger ψ0 gives the rounder tube. This transect ends in a reef flat, and here the tube grows with the wave instead: the small wave reaches the flat before it overturns and barely curls. That is Blenkinsopp & Chaplin's trend on a 1:10 lab reef, where A_O/H² rose from 0.05 to 0.35 with the wave's height over the reef crest's depth [measured, lab]. The three cases sit inside that range and O'Dea et al.'s field range of 0.05–0.3 [measured, field]. The flat explains the gap [inferred]; no plane-slope case was run to show the fits hold here otherwise.
+- **The jet.** A_J/H_I² is 0.11, 0.21 and 0.18 against 0.20, 0.17 and 0.14. The larger two are inside the tolerance.
+- **The tilt.** θ_O is 57°, 41° and 40° against 31°, 35° and 39°. Only the largest case is inside, but the two larger are inside Padang Padang's 29–41° [measured, field].
+
+**The level-12 impact frame.** `metrics.py` measures at the last overturned frame whose jet stands at least 3 cells off the face. At level 12, the frame before touchdown can hold the jet 2 cells off, and there the landmarks took a sliver for the void: A0 0.3 read 0.001 H_I², against a steady 0.19 over the 0.3 s before.
+
+## Cost
+
+- **Wall time** [measured]: 265, 282 and 298 min for A0 0.2, 0.3 and 0.45. Each ran on one core of the M1 Air, all three at once while the game's probes ran beside them.
+- **Analysis:** `analyse` needs Python with numpy, scipy and matplotlib. It takes a few minutes per run.
+- **Size in the game:** 145–163 KB per case, 466 KB for the three. They load once, when the spot does.
+
+## Landmark cleanliness
+
+Frames whose landmark checks passed, by phase [measured]:
+
+| Case | Before the face is vertical | Open tube | After touchdown |
+|---|---|---|---|
+| A0 0.2 | 116 / 117 | 27 / 27 | 48 / 117 |
+| A0 0.3 | 106 / 110 | 47 / 47 | 42 / 104 |
+| A0 0.45 | 98 / 108 | 54 / 54 | 49 / 99 |
+
+- Every open-tube frame is clean.
+- Before the face goes vertical, the only flags are the lip landmark jumping (1, 4 and 10 frames). Those frames are refilled linearly from their clean neighbours.
+- After touchdown, the splash-up tears the surface inside the window. A case keeps only one frame past touchdown, so the torn frames never reach the game.
+
+## The level-13 comparison
+
+The owner's level-13 run of A0 0.3 on the M4 Pro (`run_padang.sh` at its defaults) will show whether level 12 has converged. Until it lands, the level-12 values above are provisional.
+
+## Adding a case
+
+1. Scout the case's window at level 10, as in `tools/basilisk/README.md`: set `LEVEL=10` and the amplitude, then find when the lip folds over and touches down.
+2. Run it at level 12 with `TOUT0` about 3 s before the fold and `TMAX` 3 s past touchdown. For example: `LEVEL=12 A0=0.3 TOUT0=18.5 TMAX=25 NAME=pad19_a30_L12 tools/basilisk/run_padang.sh`.
+3. Analyse it with the same variables and `analyse`.
+4. Rebuild the whole library, naming every run each time. The index lists exactly the runs named. For example: `npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --flat 0.1785714`. The flat is the reef flat's depth in h0.
+5. Commit `public/barrels/*.bin`, the index and `barrel-cases.md`. Record the run in the README's table.
