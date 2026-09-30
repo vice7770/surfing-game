@@ -11,6 +11,7 @@ import { RICH_BASE_ROUGHNESS } from './water/specular';
 import { DEFAULT_WATER_CHOP } from './waterChop';
 import { CLASSIC_FOAM, WATER_BODY_GAIN, waterBodyFragment } from './waterOptics';
 import { PLUME_DENSITY, RICH_REFLECTION, RICH_WATER } from './water/richWaterGlsl';
+import { mirrorsBarrelDither } from './barrel/barrelMaskGlsl';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -329,3 +330,33 @@ const GLSL_RESERVED = new Set(
   union enum typedef template this goto inline noinline public static extern external interface long short double half fixed
   unsigned superp input output filter sizeof cast namespace using`.split(/\s+/),
 );
+
+describe('the swept barrel’s seam in the water (Padang Padang, Part B, PR 3)', () => {
+  it('leaves the water’s program exactly as before unless a swept spot turns the mask on', () => {
+    const water = new WaterSurface(source);
+    const before = compiled(water.mesh.material);
+    water.setBarrelEnabled(true);
+    expect(water.mesh.material.customProgramCacheKey()).toContain('-barrel');
+    const on = compiled(water.mesh.material);
+    expect(mirrorsBarrelDither(on.fragment)).toBe(true);
+    expect(mirrorsBarrelDither(before.fragment)).toBe(false);
+    water.setBarrelEnabled(false);
+    expect(compiled(water.mesh.material)).toEqual(before);
+    // The Rich look draws only over a source whose bodies ride its cubic surface.
+    const rich = new WaterSurface({ ...source, cubic: true });
+    rich.setLook('rich');
+    expect(rich.drawnLook).toBe('rich');
+    rich.setBarrelEnabled(true);
+    expect(mirrorsBarrelDither(compiled(rich.mesh.material).fragment)).toBe(true);
+  });
+
+  it('switches the discard with the mask', () => {
+    const water = new WaterSurface(source);
+    water.setBarrelEnabled(true);
+    expect(water.barrelMaskActive).toBe(false);
+    water.setBarrelMask(new Uint8Array(grid.nx * grid.nz).fill(255));
+    expect(water.barrelMaskActive).toBe(true);
+    water.setBarrelMask(null);
+    expect(water.barrelMaskActive).toBe(false);
+  });
+});
