@@ -91,7 +91,13 @@ A "Water physics research" session advises on every lip, tube, contact or foam s
    - It replaces their earlier "leave it", which held only while the slope stayed small.
 6. **Check the anchor velocity (flag 3).** During a handover, compare the stored-velocity lip with a finite difference of the drawn tip over a step; they should agree within the smoothing. If not, the missing term is the blend weight × (the solver crest's speed − the library crest's).
 
-They asked for the tip table (in `barrel-cases.md`, sent) and the cost numbers (sent; the unloaded rerun is still owed).
+7. **The query's cost first (their follow-up, 2026-09-30).** The 6.4 µs is a linear scan over all 133 quads of a strip, so do this before the unloaded rerun.
+   - In `SweptContact.update`, precompute each quad's along-ray range and bucket the strip's quads by s at about 0.5 m over the profile's ~23 m.
+   - A vertical line then tests only its bucket's quads: one per layer, three at most in the overturn. That's about 10–20× fewer tests, well under 1 µs a query even on the loaded M1, so a rider wholly in a tube costs about 1–2 ms a step there, not 17.
+   - Keep the early-out: a point outside every front's footprint goes straight to the height field.
+   - The lerp-per-substep fallback only saves slice rebuilds (0.37 ms a step), which aren't the cost; don't build it.
+   - Take the 180 s rerun when `uptime` shows the load low.
+8. **The tip table checks out.** Normalised by each case's own crest speed, the four cases agree: 1.0–1.1 C thrown, about 1.2 C at the peak, falling at about 2/3 g, the periodic case about 10 % slower. It is recorded in `docs/research/barrel-library.md` ("The contact") as the library's values, provisional, beside Erinin 2023's 1.1–1.3 C.
 
 ## PR 4, the contact (this branch)
 
@@ -118,9 +124,9 @@ Deferred minors:
 **Still to do for PR 4:**
 - [ ] Rerun the probe on an unloaded machine long enough for tubes to open: `PROBE=1 SECONDS=180 LOG=padang-contact.txt npx vitest run src/wave/probes/padangContact.probe.test.ts`.
   - It logs the update per step, µs per query through open tubes, and a standing rider's cost (2,656 samples a step × µs).
-  - On the loaded M1 the toy tube gave 6.4 µs a query, about 17 ms a step for a rider wholly in a tube. If an unloaded run agrees it is heavy, take the advisor's fallback: build each body's slice once a step and lerp per substep. Or precompute each quad's along range per update to shorten the query's scan.
+  - On the loaded M1 the toy tube gave 6.4 µs a query, about 17 ms a step for a rider wholly in a tube. Build the quad buckets first (the advisor's item 7), then rerun.
 - [ ] Ride a tube by hand at Padang Padang, and take the screenshots owed from #92 (both looks). The browser pane must be shown: a hidden pane throttles the game to about 1.5 fps.
-- [ ] Build the advisor's six answers above, with tests, and update `docs/research/barrel-library.md` ("The contact") and PR #95's description.
+- [ ] Build the advisor's answers 1–6 above, with tests, and the query's buckets (7) before the rerun. Update `docs/research/barrel-library.md` ("The contact") and PR #95's description.
 - [ ] Agree Part D's fields (`covered`, `clearance`, `tube`) with the Reef owner's session when it runs.
 
 ## Next PRs

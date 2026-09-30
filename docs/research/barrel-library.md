@@ -124,7 +124,21 @@ The swept barrel as ridden (Part B, PR 4; `src/wave/barrel/sweptContact.ts`), fr
 - After touchdown each slice holds its last clear frame (one before touchdown in each case it blends: the jet ≥ 2 cells off the face at level 12), so the curve never self-crosses. Its clock and phase run on. The cases keep only one frame past touchdown, so the jet's trim and cavity loop have nothing to trim yet (a ledger ruling, sent to the advisor).
 - An overturned slice under full weight is whole from half weight and dropped below, and counted: a squashed lip is no water.
 
-**The lip's flow** (ruling 1). The converter stores the tip landmark's velocity per frame: a least-squares line over ±4 frames, in √(g h0) (format BRL2; table in [barrel-cases.md](barrel-cases.md)). The lookup scales it by √(g h0) of the slice; the clock's rate is 1 (τ runs with time; pauses hold it). In the curl's water, from the crest landmark (0) to the tip (1) by where the curl's top is, the solver's flow across the crest and up ramps to the tip's, plus the anchor's own motion while it hands over; along the crest the solver's is kept.
+**The lip's flow** (ruling 1). The converter stores the tip landmark's velocity per frame: a least-squares line over ±4 frames, in √(g h0) (format BRL2; table in [barrel-cases.md](barrel-cases.md)).
+
+The advisor normalised the tips by each case's own crest speed C: the crest landmark's speed over the last 1.0 τ before vertical, decoded from `public/barrels/*.bin` (2026-09-30). These are the library's values, provisional [measured, model]:
+
+| Case | C (√(g h0)) | Median horizontal | Largest \|v\| | Fall |
+|---|---|---|---|---|
+| `pad19-a20-l12` | 0.95 | 0.99 C | 1.23 C | 0.68 g |
+| `pad19-a30-l12` | 1.11 | 1.06 C | 1.19 C | 0.67 g |
+| `pad19-a45-l12` | 1.31 | 1.08 C | 1.21 C | 0.71 g |
+| `periodic-padang19s-l12` | 0.83 | 0.93 C | 1.08 C | 0.58 g |
+
+- Against their own crests the solitaries throw at about 1.0–1.1 C and peak near 1.2 C, the low end of Erinin 2023's 1.1–1.3 C [measured, lab]. They look faster with A0 only because C grows.
+- They fall at about 2/3 g, not near free fall. Partly the fit spans the whole open time, including the jet's supported start; partly the resolution, about 4 cells across the lip at level 12.
+- The Small swell's periodic case is about 10 % slower still: a weak plunger.
+- Good enough to drive the contact. The level-13 run should nudge these up. The lookup scales it by √(g h0) of the slice; the clock's rate is 1 (τ runs with time; pauses hold it). In the curl's water, from the crest landmark (0) to the tip (1) by where the curl's top is, the solver's flow across the crest and up ramps to the tip's, plus the anchor's own motion while it hands over; along the crest the solver's is kept.
 
 **The rider** (ruling 4).
 - No new trigger. At a swept spot the solver's lip parcels no longer strike (their strips are off).
@@ -135,5 +149,7 @@ The swept barrel as ridden (Part B, PR 4; `src/wave/barrel/sweptContact.ts`), fr
 
 **Measured** (the `padangContact` probe, 2026-09-30, on the M1 Air under another session's load: load average 30–88, so every time here reads high) [measured]:
 - **A standing rider samples the water 2,656 times a 1/60 s step**: 32 substeps × its hull points, foils and body parts (ruling 3's count).
-- **A query through a tube** (a toy tube on a 40 m front: its strips have the sea's 133 quads each) took **6.4 µs**; the toy's update (10k vertices, flat water) 11.7 ms. So a standing rider wholly inside a tube would add about 17 ms a step on this loaded machine: heavy enough to take the advisor's fallback (each body's slice built once a step, lerped per substep) if an unloaded run agrees.
+- **A query through a tube** (a toy tube on a 40 m front: its strips have the sea's 133 quads each) took **6.4 µs**; the toy's update (10k vertices, flat water) 11.7 ms. So a standing rider wholly inside a tube would add about 17 ms a step on this loaded machine.
+  - The query scans all 133 quads of its strip. Bucketing each strip's quads by their along-ray range (about 0.5 m) leaves one quad per layer to test, so well under 1 µs a query (the advisor, 2026-09-30).
+  - Per-substep lerping would only save the slice rebuilds, which aren't the cost.
 - **On the Small swell**, 20 s of sea from the spin-up: the contact's update took 0.37 ms a step against the step's 613 ms (0.1 %). No tube had opened yet, so the sea gave no query timing; rerun it longer (`PROBE=1 SECONDS=180`) on an unloaded machine.
