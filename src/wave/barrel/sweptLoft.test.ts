@@ -70,9 +70,9 @@ describe('the swept loft', () => {
 
   it('hands the anchor back to the solver’s crest from 80 % of the open time, where the capped slices cluster (the advisor, 2026-09-30)', () => {
     // Thrown at z −106 the drawn crest stands at −99, the solver's at −100: held until 0.8 of the touchdown time,
-    // then halfway back 0.15 s (half the handover) later.
+    // then a sixth of the way back 0.05 s (a sixth of the handover) later.
     expect(crestZ(loftOf(() => 0.5 * TOUCHDOWN, 21, -106))).toBeCloseTo(-99, 4);
-    expect(crestZ(loftOf(() => 0.8 * TOUCHDOWN + LOFT.handover / 2, 21, -106))).toBeCloseTo(-99.5, 4);
+    expect(crestZ(loftOf(() => 0.8 * TOUCHDOWN + LOFT.handover / 6, 21, -106))).toBeCloseTo(-99 - 1 / 6, 4);
   });
 
   it('soft-caps the drawn crest’s distance from the solver’s at 2.5 m, and counts the caps (the advisor, 2026-09-30)', () => {
@@ -93,31 +93,45 @@ describe('the swept loft', () => {
     expect(loft.mask[Math.floor(loft.sliceCount / 2) * LOFT_SAMPLES + first]).toBe(1);
   });
 
-  it('fades a slice into the water over the handover after touchdown', () => {
-    // Halfway through the 0.3 s handover the toy's 3.5 m crest stands half as high over the 0.5 m water.
-    const loft = loftOf(() => TOUCHDOWN + LOFT.handover / 2);
-    const middle = Math.floor(loft.sliceCount / 2);
-    expect(loft.positions[3 * (middle * LOFT_SAMPLES + LOFT.extensionSamples + 32) + 1]).toBeCloseTo(0.5 + 0.5 * 3.5, 4);
-    expect(loft.slicePhase[middle]).toBe(2);
+  it('fades a slice into the water over its tube’s collapse after touchdown, drawing the touchdown frame (the advisor, 2026-09-30)', () => {
+    // The toy tube at h0 7 m: its void 0.567 h0 tall, so it collapses over √(2 × 3.97 m / g) = 0.90 s. Halfway through,
+    // its 5.6 m crest stands half as high over the 0.5 m water, where the touchdown frame put it.
+    const times = tubes().profileTimes({ slope: 0.05, footHeight: 2.1, footDepth: 7 });
+    expect(times.collapseSeconds).toBeCloseTo(Math.sqrt((2 * (0.6 - 0.2 / 6) * 7) / 9.81), 4);
+    const loftAt = (tau: number) => new SweptLoft(tubes(), 0.05).build(records(21, () => tau, -100), 21, 0.5, flat);
+    const touchdown = loftAt(times.touchdownSeconds);
+    const halfway = loftAt(times.touchdownSeconds + times.collapseSeconds / 2);
+    const middle = sliceAt(halfway, 10);
+    const crest = middle * LOFT_SAMPLES + LOFT.extensionSamples + 32;
+    expect(halfway.positions[3 * crest + 1]).toBeCloseTo(0.5 + 0.5 * 0.8 * 7, 4);
+    expect(halfway.slicePhase[middle]).toBe(2);
+    expect(halfway.sliceFade[middle]).toBeCloseTo(0.5, 5);
+    expect(halfway.sliceCollapse[middle]).toBeCloseTo(times.collapseSeconds, 5);
+    // The drawing keeps the touchdown frame: the vertices stand where they did at touchdown, only lowered.
+    const at = (loft: LoftResult, s: number, k: number) => Array.from(loft.positions.subarray(3 * s * LOFT_SAMPLES, 3 * (s + 1) * LOFT_SAMPLES)).filter((_, i) => i % 3 === k);
+    for (const k of [0, 2]) expect(at(halfway, middle, k)).toEqual(at(touchdown, sliceAt(touchdown, 10), k));
+    // Gone once it has collapsed.
+    expect(loftAt(times.touchdownSeconds + times.collapseSeconds + 0.01).vertexCount).toBe(0);
   });
 
   it('drops a slice once it has faded into the water, and never joins the slices either side of it (the advisor, 2026-09-30)', () => {
-    expect(loftOf(() => TOUCHDOWN + LOFT.handover + 0.01).vertexCount).toBe(0);
+    // The toys have no void, so their slices go at touchdown.
+    expect(loftOf(() => TOUCHDOWN + 0.01).vertexCount).toBe(0);
     // Points 0–9 open, 10–20 long faded: only the open part is lofted, as one run.
     const loft = loftOf((k) => (k < 10 ? 0.1 : 5));
     const whole = loftOf(() => 0.1);
     expect(loft.sliceCount).toBeGreaterThan(0);
     expect(loft.sliceCount).toBeLessThan(whole.sliceCount);
     expect(loft.vertexCount).toBe(loft.sliceCount * LOFT_SAMPLES);
-    for (let s = 0; s < loft.sliceCount; s += 1) expect(loft.sliceTau[s]).toBeLessThan(TOUCHDOWN + LOFT.handover);
+    for (let s = 0; s < loft.sliceCount; s += 1) expect(loft.sliceTau[s]).toBeLessThanOrEqual(TOUCHDOWN);
     expect(loft.indexCount).toBe(6 * (LOFT_SAMPLES - 1) * (loft.sliceCount - 1));
   });
 
   it('refines where neighbouring clocks differ by more than three frames', () => {
-    // A frame is 0.25 √(7/g) = 0.21 s, so three are 0.63 s; a clock jumping 1.5 s between two points differs by 0.75 s
-    // across each of the two slices over the jump, so each gets a midpoint.
+    // A frame is 0.25 √(7/g) = 0.21 s, so three are 0.63 s; a clock jumping 1.4 s between two points differs by 0.7 s
+    // across each of the two slices over the jump, so each gets a midpoint (0.4 s is before the toy's touchdown).
     const coarse = loftOf(() => 0);
-    const steep = loftOf((k) => (k < 10 ? -1 : 0.5));
+    const steep = loftOf((k) => (k < 10 ? -1 : 0.4));
     expect(steep.sliceCount).toBe(coarse.sliceCount + 2);
   });
 
@@ -153,6 +167,7 @@ describe('the swept loft', () => {
     const times = library().profileTimes(query);
     expect(times).toEqual({
       scale: lookup.scale, clamped: lookup.clamped, touchdownSeconds: lookup.touchdownSeconds, frameSeconds: lookup.frameSeconds, clearSeconds: lookup.clearSeconds,
+      collapseSeconds: lookup.collapseSeconds,
     });
   });
 });
