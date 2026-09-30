@@ -142,14 +142,14 @@ describe('the slice clock', () => {
     expect(onsetTiming(h0, 20).joinDepth(3.3)).toBeCloseTo(3.82, 12);
     // Where its lip throws, by its height at the foot, whatever the period: the Navier–Stokes runs' line, clamped.
     expect(timing.lagged).toBe(true);
-    expect(timing.throwDepth(1.65)).toBeCloseTo(1.8 + 0.45 * 1.65, 12);
+    expect(timing.throwDepth(1.65)).toBeCloseTo(1.56 + 0.56 * 1.65, 12);
     expect(onsetTiming(h0, 14).throwDepth(1.65)).toBe(timing.throwDepth(1.65));
-    expect(timing.throwDepth(1)).toBeCloseTo(1.8 + 0.45 * 1.22, 12);
-    expect(timing.throwDepth(3)).toBeCloseTo(1.8 + 0.45 * 2.5, 12);
+    expect(timing.throwDepth(0.8)).toBeCloseTo(1.56 + 0.56 * 0.99, 12);
+    expect(timing.throwDepth(3)).toBeCloseTo(1.56 + 0.56 * 2.5, 12);
     // A higher tide scales both by depth, the reference too; unlagged, for the loft's comparison.
     expect(onsetTiming(8, 16).joinDepth((1.6 * 8) / 7)).toBeCloseTo((3.18 * 8) / 7, 12);
     expect(onsetTiming(8, 16).band[1]).toBeCloseTo((5 * 8) / 7, 12);
-    expect(onsetTiming(8, 16).throwDepth((1.65 * 8) / 7)).toBeCloseTo(((1.8 + 0.45 * 1.65) * 8) / 7, 12);
+    expect(onsetTiming(8, 16).throwDepth((1.65 * 8) / 7)).toBeCloseTo(((1.56 + 0.56 * 1.65) * 8) / 7, 12);
     expect(onsetTiming(h0, 16, false).lagged).toBe(false);
   });
 });
