@@ -91,13 +91,29 @@ export interface TubeEruption {
   airRate: number;
   speed: number;
 }
-/** Largest share of a source cell's water one throw may take. */
+/**
+ * Largest share of its water above the wave's trough a source cell may give one throw (the P7 bound), so the
+ * crest is never cut flat. The throw's ask sets the jet; this only caps it. Round 6's Basilisk jet at Padang's
+ * peak is about a fifth of the water above still level within 1.5 m of its crest (the water-physics advisor,
+ * 2026-09-29).
+ */
 const SOURCE_SHARE = 0.2;
+/**
+ * How far from its crest a jet's water may come, in wave heights: its share tapers from the crest to none at
+ * ±2H. Basilisk's jet water sits within about ±0.5 H of its crest; the solver's crest is about twice as broad,
+ * and ±2H leaves margin (the water-physics advisor, 2026-09-29).
+ */
+const SOURCE_REACH = 2;
 /** Parcels still airborne after this long land where they are, s. */
 const MAX_FLIGHT = 3;
 
 function clamp(value: number, low: number, high: number): number {
   return Math.min(high, Math.max(low, value));
+}
+
+/** A column's water above a level `levelDepth` m above its bed, m: all of it when the level is below the bed. */
+function aboveLevel(depth: number, levelDepth: number): number {
+  return Math.max(0, depth - Math.max(0, levelDepth));
 }
 
 /**
@@ -315,6 +331,12 @@ export class PlungingLip implements LipParcelSource {
   readonly volume: Float64Array;
   /** Landings since the lip was created. */
   landings = 0;
+  /** Throws their crest could not fill, and the water they fell short by, m³. */
+  starvedThrows = 0;
+  starvedVolume = 0;
+  /** Throws whose crest carried less momentum along the jet than the jet takes, and what it could not give, m⁴/s. */
+  momentumClamps = 0;
+  unplacedMomentum = 0;
   /** Air its tubes have trapped as they closed, m³ (G9; a running total for the air's balance). */
   trappedAir = 0;
   /**
@@ -475,38 +497,100 @@ export class PlungingLip implements LipParcelSource {
   }
 
   /**
+   * Take up to `volume` m³ of jet from the crest at `cell` of a breaking wave `waveHeight` m high (the
+   * water-physics advisor, 2026-09-29), and return what was taken. The jet is the top of the wave: it comes
+   * from the wave's upper half, the cells across shore through the crest standing at least H/2 above its
+   * trough (crest − H, where the wave's height is measured to), within SOURCE_REACH wave heights of the crest.
+   * Each gives its water above the trough, tapered as 1 − (d / 2H)² with its distance d from the crest, times
+   * one share, at most SOURCE_SHARE: most from the crest's top, and none at the window's ends. The trough, not
+   * still level: at the Reef's step the trough drains metres below still level ahead of crests standing at
+   * or below it. Told no wave height, it measures the wave from still level.
+   *
+   * The jet's momentum (volume × jet velocity) comes from the wave's forward-moving upper half, nearest the
+   * crest first: out from the crest a cell each way at a time until their flow along the jet covers it, and
+   * never past the upper half. Each cell reached gives in proportion to its own flow along the jet and is
+   * never reversed; what the upper half cannot give is counted. The jet's extra speed comes from the crest's
+   * pressure, acting over the moving crest, not only the cells its water leaves; at the Reef's step the
+   * depth-mean flow under the crest runs seaward as the trough drains back beneath it.
+   */
+  private drawFromCrest(cell: number, velocity: { x: number; z: number }, volume: number, waveHeight: number): number {
+    const { nx, nz, h, qx, qz, dx, dz, bed, restLevel, zCenters } = this.solver;
+    const surface = (index: number) => h[index] + bed[index];
+    const height = waveHeight > 0 ? waveHeight : surface(cell) - restLevel;
+    if (!(height > 0) || !(h[cell] > 0)) return 0;
+    const trough = surface(cell) - height;
+    const reach = SOURCE_REACH * height;
+    const column = cell % nx;
+    const row = Math.floor(cell / nx);
+    const area = (index: number) => dx * dz[Math.floor(index / nx)];
+    // The wave's upper half through the crest, in rings a cell further out each way.
+    const inUpperHalf = (iz: number) => iz >= 0 && iz < nz && h[iz * nx + column] > 0 && surface(iz * nx + column) - trough >= 0.5 * height;
+    const rings: number[][] = [[cell]];
+    for (let k = 1, back = true, ahead = true; back || ahead; k += 1) {
+      back &&= inUpperHalf(row - k);
+      ahead &&= inUpperHalf(row + k);
+      const ring = [...(back ? [(row - k) * nx + column] : []), ...(ahead ? [(row + k) * nx + column] : [])];
+      if (ring.length > 0) rings.push(ring);
+    }
+    // Its water: within SOURCE_REACH wave heights of the crest, tapered to none there.
+    const window: number[] = [];
+    const weights: number[] = [];
+    let water = 0;
+    for (const index of rings.flat()) {
+      const distance = Math.abs(zCenters[Math.floor(index / nx)] - zCenters[row]);
+      if (distance >= reach) continue;
+      const weight = aboveLevel(h[index], trough - bed[index]) * (1 - (distance / reach) ** 2);
+      window.push(index);
+      weights.push(weight);
+      water += weight * area(index);
+    }
+    if (!(water > 0)) return 0;
+    const share = Math.min(SOURCE_SHARE, volume / water);
+    const thrown = share * water;
+    if (thrown < volume) {
+      this.starvedThrows += 1;
+      this.starvedVolume += volume - thrown;
+    }
+    // Its momentum: from the rings out to where their flow along the jet covers it, nearest first.
+    for (const [q, speed] of [[qx, velocity.x], [qz, velocity.z]] as const) {
+      const wanted = Math.abs(thrown * speed);
+      if (!(wanted > 0)) continue;
+      const sign = Math.sign(speed);
+      let carried = 0;
+      let reached = 0;
+      for (; reached < rings.length && carried < wanted; reached += 1) {
+        for (const index of rings[reached]) carried += Math.max(0, sign * q[index]) * area(index);
+      }
+      const taken = Math.min(wanted, carried);
+      if (taken < wanted) {
+        this.momentumClamps += 1;
+        this.unplacedMomentum += wanted - taken;
+      }
+      if (!(carried > 0)) continue;
+      for (const index of rings.slice(0, reached).flat()) q[index] -= (sign * taken * Math.max(0, sign * q[index])) / carried;
+    }
+    window.forEach((index, n) => {
+      h[index] -= share * weights[n];
+    });
+    return thrown;
+  }
+
+  /**
    * Throw up to `volume` m³ from `cell` at `height` (m above datum) with
    * horizontal `velocity` (m/s), from a breaking wave `waveHeight` m high (its
-   * landings say so). Returns the volume actually thrown: 0 when the parcel
-   * pool is full or the crest is dry.
+   * landings say so). Returns the volume actually thrown (`drawFromCrest`): 0
+   * when the parcel pool is full or the crest holds no water above its trough.
    */
   launch(
     cell: number, velocity: { x: number; z: number }, height: number, volume: number, crestSpeed = 0, tube?: TubeGeometry,
     releaseTime = JET_RELEASE_TIME, waveHeight = 0,
   ): number {
     if (this.free.length < STRIP_PARCELS || !(volume > 0)) return 0;
+    const thrown = this.drawFromCrest(cell, velocity, volume, waveHeight);
+    if (!(thrown > 0)) return 0;
     const { solver } = this;
-    const { nx, h, qx, qz, dx, dz } = solver;
+    const { nx, dx } = solver;
     const row = Math.floor(cell / nx);
-    const sources: number[] = [];
-    let available = 0;
-    for (const index of [cell - nx, cell, cell + nx]) {
-      if (index < 0 || index >= h.length) continue;
-      sources.push(index);
-      available += SOURCE_SHARE * h[index] * dx * dz[Math.floor(index / nx)];
-    }
-    if (!(available > 0)) return 0;
-    const thrown = Math.min(volume, available);
-    const share = thrown / available;
-    for (const index of sources) {
-      const depth = h[index];
-      if (!(depth > 0)) continue;
-      const removed = share * SOURCE_SHARE * depth;
-      // The jet is the crest's fast surface water: the column keeps what is left of its momentum.
-      qx[index] -= velocity.x * removed;
-      qz[index] -= velocity.z * removed;
-      h[index] = depth - removed;
-    }
     const x = solver.xCenters[cell - row * nx];
     const z = solver.zCenters[row];
     const stripId = this.nextStrip;

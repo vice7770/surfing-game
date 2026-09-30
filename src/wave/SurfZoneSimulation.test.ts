@@ -17,6 +17,7 @@ import { rayConcentration } from './Refraction';
 import { crestSpeedAt } from './CrestKinematics';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { TAKE_OFF_BAND } from './SurfMeter';
+import { JET_RELEASE_TIME } from './PlungingLip';
 
 const small: Omit<SurfZoneConfig, 'spot'> = {
   seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
@@ -630,7 +631,8 @@ describe('SurfZoneSimulation', () => {
     foam.dense.fill(0);
     foam.residual.fill(0);
     const crest = solver.cellIndex(0, -60);
-    expect(lip.launch(crest, { x: 0, z: 4 }, solver.surfaceAt(crest) + 1, 0.2)).toBeGreaterThan(0);
+    // From a 1 m wave: a jet takes the water above its trough.
+    expect(lip.launch(crest, { x: 0, z: 4 }, solver.surfaceAt(crest) + 1, 0.2, 0, undefined, JET_RELEASE_TIME, 1)).toBeGreaterThan(0);
     // The whole strip leaves the crest and lands.
     for (let step = 0; step < 240 && lip.activeCount() > 0; step += 1) lip.step(1 / 60);
     expect(lip.landings).toBeGreaterThan(0);

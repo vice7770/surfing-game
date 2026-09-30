@@ -552,6 +552,7 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - a lip's landing bore still drained at 23.5 m/s with dispersion on; the solver now holds the young roller in shallow water where jets land (0.5 H behind to 1.5 H ahead) for Kennedy's T* (CPU and WGSL; branch `claude/plunge-dispersion`);
     - a cell just switched to shallow water still took the step before's dispersive push in its Hancock half step (−702 m²/s² in a Big swell trace); the half step now adds the predictor only where the cell disperses this step (CPU and WGSL; branch `claude/predictor-mask`);
     - the −x corner, where the Reef's 45° ledge meets the game window's open edge, still peaked at 17.7 m/s with the Froude switch; the bed now eases over 20 m to uniform along shore there (10.0 m/s), and FUNWAVE-TVD's Froude cap is the counted net under the switch (CPU and WGSL; branch `claude/reef-stability`).
+    - a lip's jet took a fifth of the whole column under its crest, water from metres below still level, and drove its source cells' flow backwards; it now takes the wave's top: its upper half above its own trough, within ±2H of the crest and tapered, and its momentum from the forward-moving upper half nearest the crest, never reversing a cell (ruled with the water-physics advisor; branch `claude/jet-source`, [report](docs/research/teahupoo-reef-report.md#where-a-jets-water-comes-from)).
   - **Measured:**
     - rounder tubes (width/length 0.71 → 0.77–0.80) that open wider;
     - jets 0.47 H² and 0.47 H thick;
