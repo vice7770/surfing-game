@@ -81,7 +81,7 @@ it.skipIf(!process.env.PROBE)('pairs Padang Padang’s whitewater and barrel pee
   const throwWaves = waves(throws, guess, period).filter((wave) => new Set(wave.map((o) => o.x)).size >= 10);
   log(`${whitewater.length} whitewater onsets, ${barrel.length} barrel joins and ${throws.length} throws on ${columns.length} reef columns, t ${from}–${until} s; the design's peel 11.6 m/s`);
   const pairs: { white: number; barrel: number }[] = [];
-  const throwPairs: { white: number; thrown: number; lead: number }[] = [];
+  const throwPairs: { white: number; thrown: number }[] = [];
   const keyOf = (wave: readonly { key: number }[]) => wave.reduce((sum, o) => sum + o.key, 0) / wave.length;
   const columnsOf = (wave: readonly Onset[]) => new Set(wave.map((o) => o.x)).size;
   for (const wave of white) {
@@ -93,18 +93,16 @@ it.skipIf(!process.env.PROBE)('pairs Padang Padang’s whitewater and barrel pee
     if (clean) pairs.push({ white: w.speed, barrel: b.speed });
     const lips = throwWaves.find((candidate) => Math.abs(keyOf(candidate) - key) < period / 3);
     const t = lips ? fitOf(lips) : undefined;
-    // How long after the whitewater's onset the lips throw, on average over the wave, s.
-    const lead = t ? t.mt - w.mt : NaN;
-    if (w.fit > 0.8 && w.leftward && t && t.fit > 0.8 && t.leftward) throwPairs.push({ white: w.speed, thrown: t.speed, lead });
+    if (w.fit > 0.8 && w.leftward && t && t.fit > 0.8 && t.leftward) throwPairs.push({ white: w.speed, thrown: t.speed });
     log(`wave at t ${w.mt.toFixed(0)} s: whitewater ${w.speed.toFixed(1)} m/s (fit ${w.fit.toFixed(2)}, ${columnsOf(wave)} columns)` +
       (b ? `, barrel joins ${b.speed.toFixed(1)} m/s (fit ${b.fit.toFixed(2)}, ${columnsOf(match!)} columns)${clean ? `, joins/whitewater ${(b.speed / w.speed).toFixed(2)}` : ''}` : ', no barrel') +
-      (t ? `, throws ${t.speed.toFixed(1)} m/s (fit ${t.fit.toFixed(2)}, ${columnsOf(lips!)} columns, ${lead.toFixed(2)} s after the whitewater)` : ', no throws'));
+      (t ? `, throws ${t.speed.toFixed(1)} m/s (fit ${t.fit.toFixed(2)}, ${columnsOf(lips!)} columns)` : ', no throws'));
   }
   const median = (values: number[]) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
   if (pairs.length) {
     log(`clean pairs (both fits > 0.8, peeling toward +x): ${pairs.length}; median whitewater ${median(pairs.map((p) => p.white)).toFixed(1)} m/s, barrel joins ${median(pairs.map((p) => p.barrel)).toFixed(1)} m/s, ratio ${median(pairs.map((p) => p.barrel / p.white)).toFixed(2)}; the design 11.6 m/s`);
   } else log('no clean pairs');
   if (throwPairs.length) {
-    log(`clean throw pairs: ${throwPairs.length}; median whitewater ${median(throwPairs.map((p) => p.white)).toFixed(1)} m/s, throws ${median(throwPairs.map((p) => p.thrown)).toFixed(1)} m/s, ratio ${median(throwPairs.map((p) => p.thrown / p.white)).toFixed(2)}, throws ${median(throwPairs.map((p) => p.lead)).toFixed(2)} s after the whitewater`);
+    log(`clean throw pairs: ${throwPairs.length}; median whitewater ${median(throwPairs.map((p) => p.white)).toFixed(1)} m/s, throws ${median(throwPairs.map((p) => p.thrown)).toFixed(1)} m/s, ratio ${median(throwPairs.map((p) => p.thrown / p.white)).toFixed(2)}`);
   } else log('no clean throw pairs');
 }, 7_200_000);
