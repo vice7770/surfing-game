@@ -26,7 +26,7 @@ You asked for the Reef's own transect, then for periodic waves. The periodic run
 - **Padang:**
   - Jet 0.15 H², tilt 37° and length ÷ width 2.5, all near the plane-slope fits. Its tube is 0.18 H², half the fit, capped by the flat.
   - Its lag for swell is 2.32 √(h0/g), about 2 s, 16 % under the solitary value. The Padang session now uses it.
-  - Two more Padang cases, a bigger and a smaller swell, are running to pin that table's ends.
+  - Two more cases give lags of 0.22 √(h0/g) for a small 14 s swell and 1.60 for a big 18 s one. The lag isn't a clean function of depth: the small wave breaks right where the solver onsets it. So the Padang session may key the throw on the Navier–Stokes breaking depth instead.
 
 ## Your decisions
 

@@ -52,7 +52,7 @@ All settled on 2026-09-29: Rich foam, the roller, spray and mist, the peel meter
   - **Open for the owner:** raise the jet ask to about 0.55–0.6 H², with the lip-jet source's cap raised to about 0.3 on the Reef; keep the tube and lip.
 - **Periodic Basilisk runs (approved and run, 2026-09-30):** the Reef results above.
   - Padang's swell lag is 2.32 √(h0/g) at 16 s (the Padang session's table is scaled around it).
-  - Two more Padang cases (2.5 m at 18 s, 1.2 m at 14 s) are running to pin that table's ends.
+  - Two more Padang cases give lags of 0.22 (1.2 m crest, 14 s) and 1.60 (2.5 m, 18 s). Not a clean function of join depth; offered: key the throw on the Navier–Stokes breaking depth instead.
 - **The lip-jet source (consult in flight):** the predictor session is measuring the upper-half crest window; see [consult-log.md](consult-log.md).
 - **Water colour:** checked against the journals. The builder uses the phytoplankton-only coefficients in [underwater-colour.md](underwater-colour.md).
 
