@@ -114,3 +114,18 @@ Same transect and method, level 12 (`padang19b`: domain 72 h0, switch 32 → 42,
 - **Two ways to use it,** offered to the Padang session:
   - (a) replace the scaled rows with these three;
   - (b) key the throw directly on the Navier–Stokes breaking depth by foot crest and period, dropping the lag and one error source.
+
+## 8. Padang's Small swell, for the swept barrel's library [measured]
+
+The Padang session's library had no case under A0 0.2, so every Small-swell lookup was clamped. At its request, a periodic case at the Small swell's own size:
+- **The case:** `padang19s`, a 16 s train with H/h0 0.195 and a measured foot crest of 0.99 m (A0 ≈ 0.14). Level 12, fine phase from t 35 to 46 in a window of 42–56 h0; about 20 minutes on the M1 by then.
+- **The break:** the face goes vertical at t = 39.4 √(h0/g), at x = 334.9 m in 1.99 m still depth, 14 m before the flat. H is 2.22 m (crest +1.60 m, trough ahead −0.62 m). Touchdown comes at t = 40.375, so the tube is open 0.82 s.
+- **Per H at breaking:** jet 0.078 H², tube 0.036 H² (0.18 m²), length ÷ width 2.2, tilt 39°, lip 0.20 H.
+- **Resolution:** the lip spans only 4.1 cells, so the areas may run slightly high; a level-13 fine phase would resolve it.
+- **Delivered for the barrel library:**
+  - `data/periodic_padang19s_L12_library.json`: 401 frames, all 39 open-tube frames clean. It uses library.py's format, built by `analysis/periodic_library.py`.
+  - `data/periodic_padang19s_L12_metrics.json`: the times it used.
+  - **How the times were taken:** by `plunge_measure.py`. The water level is the local trough ahead of the crest; the crest is looked for at x ≥ 45 h0, past the face's steps; touchdown is the first frame with an enclosed tube near the lip; the pre-touchdown frame is the last with the jet at least 3 cells off the face.
+- **The throw-depth line, refitted through all four Padang cases:** Navier–Stokes vertical depth = 1.56 + 0.56 × η_foot (m at h0 7 m).
+  - The four points (foot crest → depth): 0.99 → 1.99, 1.22 → 2.45, 1.65 → 2.38 and 2.50 → 2.97.
+  - Residuals are within 0.21 m, over foot crests of 1.0–2.5 m. The earlier three-point line put the Small wave 0.26 m too deep.
