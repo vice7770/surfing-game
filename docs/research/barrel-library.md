@@ -99,7 +99,7 @@ The swept barrel as drawn (Part B, PR 3; `src/wave/barrel/sweptLoft.ts`). The `p
   - 928 of 17,082 open slices (5.4 %) sat over 2 m off, the most 4.8 m.
 
   The advisor asked to hear past about 2 m. The profile throws where the Navier–Stokes wave goes vertical and runs forward as the library's lip does, while the solver's crest moves on its own after it breaks.
-- **Every lookup was clamped on this swell.** Its foot crests stand under the library's smallest case (A0 about 0.14 against 0.2), so they scale the A0 0.2 case by their own foot crest, as ruled. A smaller case (A0 0.1–0.15) would cover the Small swell and Practice.
+- **Every lookup was clamped on this swell** while the library held only the solitaries: its foot crests (A0 about 0.14) stood under the smallest case (0.2), so they scaled that case by their own foot crest, as ruled. The Small swell's own periodic case (A0 0.141, above) now covers them.
 - **Slices after touchdown** stay on the front while the solver's bore breaks on. Lofted at zero weight, invisible and unmasked, they filled the budget at the big sets.
 
 The advisor's follow-ups (2026-09-30), rerun on the same sea [measured]:
