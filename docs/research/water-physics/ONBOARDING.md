@@ -92,10 +92,7 @@ Read in this order:
 - **The Reef (Teahupo'o):**
   - Parts A–C are merged (#54, #57, #60).
   - Part D, tube riding, isn't started. It takes its contact fields from Padang's PR 4: covered, clearance and the tube's state.
-- **The Reef's +x edge spike:**
-  - **Cause:** traced by its own session to lip jets landing past the open edge, which get clamped into the edge column.
-  - **The fix:** on branch `claude/edge-landings`, not yet pushed when this was written. Landings past open edges are dropped, with their foam and aeration; walls still clamp.
-  - Its measurements are pending.
+- **The Reef's +x edge spike, fixed:** lip jets were landing past the open edge and getting clamped into the edge column. The fix is on branch `claude/edge-landings`, its PR next when this was written: landings past open edges are dropped with their foam and aeration, walls still clamp, and periodic edges wrap. It passed both criteria in 58 game-size runs (seed 3's edge 4.22 → 1.79). Open: the pass's steps above 2.3 on the beach face (x 58–75), where a cheap check (monotonic fronts or alternating) was advised before any trace.
 - **Particle load:** the owner found the foam particles too heavy. A background agent was measuring them and adding a Low/Medium/High particle setting; look for its PR.
 
 ## Open decisions for the owner
@@ -111,7 +108,7 @@ Read in this order:
 
 - **The library's jet speed (settled 2026-09-30):** normalised by each case's own crest speed, the four cases throw at 0.93–1.08 C (median horizontal), peak at 1.08–1.23 C, and fall at 0.58–0.71 g. That's the low end of Erinin et al. 2023's 1.1–1.3 C, falling close to free fall; the Small periodic case is the slowest. The level-13 run should nudge them up; recheck it then.
 - **PR 4's contact:** check its unloaded cost once the quads are bucketed, then the shapes of PR 5's crash curve and parcels.
-- **The Reef edge fix:** on the seas that had landings outside the window, the edge columns' steps should peak at the interior's 2.0–2.3. The left-the-window counter should match the trace: 8 landings, 6 m³ in a 110 s run.
+- **The Reef's pass:** if the edge session's check finds steps alternating in sign on the beach face, rule on the trace.
 
 ## How other sessions reach the advisor
 
