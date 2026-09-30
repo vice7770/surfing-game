@@ -6,12 +6,20 @@ import { LH82_AREA, REEF_OVERTURN, jetRelativeSpeed, overturn, overturnParameter
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
 import { TUBE_EDGE } from './tubeTable';
 
-function basin(): ShallowWaterSolver {
+/** 2 m of still water with a `hump` m hump over rows 10–13. */
+function basin(hump = 0.8): ShallowWaterSolver {
   const solver = new ShallowWaterSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 30, 30), xBoundary: 'wall' }, () => 2, { manning: 0 });
   for (let iz = 10; iz < 14; iz += 1) {
-    for (let ix = 0; ix < solver.nx; ix += 1) solver.h[iz * solver.nx + ix] += 0.8;
+    for (let ix = 0; ix < solver.nx; ix += 1) solver.h[iz * solver.nx + ix] += hump;
   }
   return solver;
+}
+
+/** Sets the basin's hump moving shoreward at 1.5 m/s, as a breaking crest carries its jet's momentum. */
+function flowingCrest(solver: ShallowWaterSolver): void {
+  for (let iz = 10; iz < 14; iz += 1) {
+    for (let ix = 0; ix < solver.nx; ix += 1) solver.qz[iz * solver.nx + ix] = 1.5 * solver.h[iz * solver.nx + ix];
+  }
 }
 
 function momentumZ(solver: ShallowWaterSolver): number {
@@ -90,11 +98,11 @@ describe('the wave a landing came from (the plunge zone)', () => {
 describe('a jet\'s landing (Teahupo\'o Reef, Part B)', () => {
   // Its water over the void's length is the sheet's thickness: a thick lip lands over as much of the face.
   const land = (voidLength: number) => {
-    const solver = basin();
+    const solver = basin(2.5);
     const lip = new PlungingLip(solver, 64);
     const cell = solver.cellIndex(3.5, 12.5);
-    // 1.5 m³ from the 1 m column: the crest's rows give 0.5 m each, leaving their surface at 0.3 m.
-    expect(lip.launch(cell, { x: 0, z: 5 }, 0.31, 1.5, 0, { length: voidLength, width: 0.4, tilt: 0.4 })).toBeCloseTo(1.5, 9);
+    // 1.5 m³ from the 1 m column: the crest's four rows give 0.375 m each, leaving their surface at 2.125 m.
+    expect(lip.launch(cell, { x: 0, z: 5 }, 2.135, 1.5, 0, { length: voidLength, width: 0.4, tilt: 0.4 })).toBeCloseTo(1.5, 9);
     const before = Float64Array.from(solver.h);
     // Two seconds bring every parcel down, splash-ups too.
     for (let k = 0; k < 480; k += 1) lip.step(1 / 240);
@@ -385,15 +393,17 @@ describe('the splash-up (G9)', () => {
 
   it('conserves the water and its forward momentum through the jet, its splash-up and their landings', () => {
     const solver = basin();
+    flowingCrest(solver);
     const lip = new PlungingLip(solver, 256);
     const before = solver.totalVolume();
+    const momentum = momentumZ(solver);
     lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 3, 0.6);
     for (let frame = 0; frame < 2400 && lip.activeCount() > 0; frame += 1) {
       lip.step(1 / 240);
       expect((solver.totalVolume() + lip.airborneVolume()) / before).toBeCloseTo(1, 12);
     }
     expect(lip.activeCount()).toBe(0);
-    expect(momentumZ(solver)).toBeCloseTo(0, 9);
+    expect(momentumZ(solver)).toBeCloseTo(momentum, 9);
   });
 
   it('is never offered to a rider, and lands with no further splash-up', () => {
@@ -423,9 +433,9 @@ describe('PlungingLip', () => {
     const solver = basin();
     const lip = new PlungingLip(solver, 256);
     const before = solver.totalVolume();
-    const thrown = lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 3, 0.6);
-    expect(thrown).toBeCloseTo(0.6, 12);
-    expect(lip.airborneVolume()).toBeCloseTo(0.6, 12);
+    const thrown = lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 4 }, 3, 0.3);
+    expect(thrown).toBeCloseTo(0.3, 12);
+    expect(lip.airborneVolume()).toBeCloseTo(0.3, 12);
     expect(solver.totalVolume() + lip.airborneVolume()).toBeCloseTo(before, 9);
     // Long enough for the jet and its splash-up (G9) to land.
     for (let frame = 0; frame < 240; frame += 1) {
@@ -461,14 +471,129 @@ describe('PlungingLip', () => {
     lip.forEachActiveParcel((parcel) => expect(Number.isFinite(parcel.vx + parcel.vy + parcel.vz)).toBe(true));
   });
 
-  it('caps the volume taken from the crest at a fifth of the local water', () => {
-    const solver = basin();
-    const lip = new PlungingLip(solver, 256);
-    const cell = solver.cellIndex(3.5, 12.5);
-    const depths = [cell - solver.nx, cell, cell + solver.nx].map((index) => solver.h[index]);
-    const thrown = lip.launch(cell, { x: 0, z: 4 }, 3, 100);
-    expect(thrown).toBeCloseTo(0.2 * depths.reduce((sum, depth) => sum + depth, 0) * solver.dx * solver.dz[0], 9);
-    [cell - solver.nx, cell, cell + solver.nx].forEach((index, n) => expect(solver.h[index]).toBeCloseTo(0.8 * depths[n], 9));
+  describe('the water a jet takes (the water-physics advisor, 2026-09-29)', () => {
+    /** 2 m of still water under a 1 m wave, its crest in row 11 and its trough at still level: its upper half is rows 9–12. */
+    const PROFILE: Record<number, number> = { 8: 0.2, 9: 0.5, 10: 0.9, 11: 1, 12: 0.8, 13: 0.4, 14: 0.1 };
+    const crest = () => {
+      const solver = basin(0);
+      for (const [row, eta] of Object.entries(PROFILE)) {
+        for (let ix = 0; ix < solver.nx; ix += 1) solver.h[Number(row) * solver.nx + ix] = 2 + eta;
+      }
+      return { solver, lip: new PlungingLip(solver, 256), cell: solver.cellIndex(3.5, 11.5) };
+    };
+    const rowOf = (solver: ShallowWaterSolver, row: number) => row * solver.nx + 3;
+    /** A row's water above the trough, tapered to none 2H = 2 m from the crest: row 9 sits there and gives none. */
+    const weight = (row: number) => PROFILE[row] * (1 - ((row - 11) / 2) ** 2);
+    const WINDOW = weight(10) + weight(11) + weight(12);
+    /** Throw `volume` m³ shoreward at 4 m/s from `cell`, a breaking wave `waveHeight` m high. */
+    const throwFrom = (lip: PlungingLip, cell: number, volume: number, waveHeight = 1) =>
+      lip.launch(cell, { x: 0, z: 4 }, 3, volume, 0, undefined, JET_RELEASE_TIME, waveHeight);
+
+    it('takes it from the wave\'s upper half within 2H of its crest, most from its top, a fifth at most', () => {
+      const { solver, lip, cell } = crest();
+      expect(throwFrom(lip, cell, 100)).toBeCloseTo(0.2 * WINDOW, 9);
+      for (const row of [10, 11, 12]) expect(solver.h[rowOf(solver, row)]).toBeCloseTo(2 + PROFILE[row] - 0.2 * weight(row), 9);
+      // Behind or ahead of the upper half, or 2H from the crest, the water stays.
+      for (const row of [8, 9, 13, 14]) expect(solver.h[rowOf(solver, row)]).toBe(2 + PROFILE[row]);
+    });
+
+    it('takes only what the throw asks, in the same proportions', () => {
+      const { solver, lip, cell } = crest();
+      expect(throwFrom(lip, cell, 0.1 * WINDOW)).toBeCloseTo(0.1 * WINDOW, 9);
+      for (const row of [10, 11, 12]) expect(solver.h[rowOf(solver, row)]).toBeCloseTo(2 + PROFILE[row] - 0.1 * weight(row), 9);
+      expect(lip.starvedThrows).toBe(0);
+    });
+
+    it('counts a throw its crest cannot fill, and by how much', () => {
+      const { lip, cell } = crest();
+      throwFrom(lip, cell, 1);
+      expect(lip.starvedThrows).toBe(1);
+      expect(lip.starvedVolume).toBeCloseTo(1 - 0.2 * WINDOW, 9);
+    });
+
+    it('reaches further from the crest of a taller wave', () => {
+      const { solver, lip, cell } = crest();
+      // A 2 m wave whose trough is 1 m below still level: its upper half is the whole column, clipped at 2H = 4 m to rows 8–14.
+      throwFrom(lip, cell, 100, 2);
+      for (const row of [8, 9, 10, 11, 12, 13, 14]) expect(solver.h[rowOf(solver, row)]).toBeLessThan(2 + PROFILE[row]);
+      for (const row of [7, 15]) expect(solver.h[rowOf(solver, row)]).toBe(2);
+    });
+
+    it('measures from the wave\'s own trough, so a crest standing below still level over a drained trough still throws', () => {
+      // The Teahupo'o step: 4 m of still water drawn down ahead of a 2 m wave whose crest is 0.3 m below still level.
+      const solver = new ShallowWaterSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 30, 30), xBoundary: 'wall' }, () => 4, { manning: 0 });
+      const drawn: Record<number, number> = { 8: -1.8, 9: -1.1, 10: -0.6, 11: -0.3, 12: -0.8, 13: -1.6, 14: -2.3 };
+      for (const [row, eta] of Object.entries(drawn)) solver.h[rowOf(solver, Number(row))] = 4 + eta;
+      const lip = new PlungingLip(solver, 256);
+      const cell = solver.cellIndex(3.5, 11.5);
+      // Its trough is 2.3 m below still level, and its upper half rows 9–12, tapered over 2H = 4 m.
+      const above = (row: number) => (drawn[row] + 2.3) * (1 - ((row - 11) / 4) ** 2);
+      expect(throwFrom(lip, cell, 100, 2)).toBeCloseTo(0.2 * (above(9) + above(10) + above(11) + above(12)), 9);
+      for (const row of [9, 10, 11, 12]) expect(solver.h[rowOf(solver, row)]).toBeCloseTo(4 + drawn[row] - 0.2 * above(row), 9);
+      for (const row of [8, 13, 14]) expect(solver.h[rowOf(solver, row)]).toBe(4 + drawn[row]);
+    });
+
+    it('measures from still level when told no wave height, and throws nothing from water at or below it', () => {
+      const solver = basin();
+      const lip = new PlungingLip(solver, 256);
+      const flat = solver.cellIndex(3.5, 4.5);
+      expect(lip.launch(flat, { x: 0, z: 4 }, 2, 1)).toBe(0);
+      expect(solver.h[flat]).toBe(2);
+    });
+
+    it('draws water whose trough is below the reef whole, as all of it stands above the trough', () => {
+      const solver = new ShallowWaterSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 30, 30), xBoundary: 'wall' }, () => -0.5, { manning: 0 });
+      solver.h.fill(0.4);
+      solver.h[solver.cellIndex(3.5, 12.5)] = 0.6;
+      const lip = new PlungingLip(solver, 256);
+      // A 1 m wave over reef 0.5 m above still level: its trough is below the reef, and within 2H its neighbours give all their 0.4 m.
+      const thrown = lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 1 }, 1.1, 100, 0, undefined, JET_RELEASE_TIME, 1);
+      expect(thrown).toBeCloseTo(0.2 * (0.6 + 2 * 0.4 * (1 - 0.5 ** 2)), 9);
+    });
+
+    /** The jet's momentum when it takes a tenth of the window's water at 4 m/s. */
+    const MOMENTUM = 0.1 * WINDOW * 4;
+
+    it('takes the jet\'s momentum from its crest\'s own flow when that carries enough', () => {
+      const { solver, lip, cell } = crest();
+      const flows: Record<number, number> = { 9: 3, 10: 1.5, 11: 2, 12: 1 };
+      for (const [row, flow] of Object.entries(flows)) solver.qz[rowOf(solver, Number(row))] = flow;
+      throwFrom(lip, cell, 0.1 * WINDOW);
+      expect(solver.qz[rowOf(solver, 11)]).toBeCloseTo(2 - MOMENTUM, 9);
+      for (const row of [9, 10, 12]) expect(solver.qz[rowOf(solver, row)]).toBe(flows[row]);
+      expect(lip.momentumClamps).toBe(0);
+    });
+
+    it('reaches out from the crest a cell each way at a time until the flow covers it, taking in proportion to each cell\'s own', () => {
+      const { solver, lip, cell } = crest();
+      const flows: Record<number, number> = { 9: 3, 10: 0.3, 11: 0.5, 12: 0.4 };
+      for (const [row, flow] of Object.entries(flows)) solver.qz[rowOf(solver, Number(row))] = flow;
+      throwFrom(lip, cell, 0.1 * WINDOW);
+      // The crest and its two neighbours carry 1.2 m³/s along the jet, enough: row 9 keeps its flow.
+      for (const row of [10, 11, 12]) expect(solver.qz[rowOf(solver, row)]).toBeCloseTo(flows[row] * (1 - MOMENTUM / 1.2), 9);
+      expect(solver.qz[rowOf(solver, 9)]).toBe(3);
+    });
+
+    it('reaches past where the water comes from, but never past the wave\'s upper half', () => {
+      const { solver, lip, cell } = crest();
+      // Row 9 gives no water (2H from the crest) but is in the upper half; rows 8 and 13 are below it.
+      const flows: Record<number, number> = { 8: 5, 9: 2, 10: 0.1, 11: 0.2, 12: 0.1, 13: 5 };
+      for (const [row, flow] of Object.entries(flows)) solver.qz[rowOf(solver, Number(row))] = flow;
+      throwFrom(lip, cell, 0.1 * WINDOW);
+      for (const row of [9, 10, 11, 12]) expect(solver.qz[rowOf(solver, row)]).toBeCloseTo(flows[row] * (1 - MOMENTUM / 2.4), 9);
+      for (const row of [8, 13]) expect(solver.qz[rowOf(solver, row)]).toBe(5);
+    });
+
+    it('never reverses a cell\'s flow: what the upper half cannot carry is counted, and flow against the jet is left alone', () => {
+      const { solver, lip, cell } = crest();
+      for (const row of [9, 10, 11]) solver.qz[rowOf(solver, row)] = 0.1;
+      solver.qz[rowOf(solver, 12)] = -0.2;
+      throwFrom(lip, cell, 0.1 * WINDOW);
+      for (const row of [9, 10, 11]) expect(solver.qz[rowOf(solver, row)]).toBeCloseTo(0, 12);
+      expect(solver.qz[rowOf(solver, 12)]).toBe(-0.2);
+      expect(lip.momentumClamps).toBe(1);
+      expect(lip.unplacedMomentum).toBeCloseTo(MOMENTUM - 0.3, 9);
+    });
   });
 
   it('offers each airborne parcel for contact, and a struck parcel lands with its changed momentum', () => {
@@ -500,21 +625,24 @@ describe('PlungingLip', () => {
 
   it('lands ahead of the crest and hands its forward momentum to the water there', () => {
     const solver = basin();
+    flowingCrest(solver);
     const lip = new PlungingLip(solver, 256);
     const cell = solver.cellIndex(3.5, 12.5);
+    const momentum = momentumZ(solver);
     const thrown = lip.launch(cell, { x: 0, z: 4 }, 3, 0.6);
+    const launched = Float64Array.from(solver.qz);
     const landed: number[] = [];
     // Long enough for its splash-up (G9) to land too.
     for (let frame = 0; frame < 600 && lip.activeCount() > 0; frame += 1) lip.step(1 / 120);
     let ahead = 0;
     for (let iz = 0; iz < solver.nz; iz += 1) {
-      if (solver.qz[iz * solver.nx + 3] > 0) landed.push(solver.zCenters[iz]);
+      if (solver.qz[iz * solver.nx + 3] > launched[iz * solver.nx + 3]) landed.push(solver.zCenters[iz]);
       if (solver.zCenters[iz] > 13.5) for (let ix = 0; ix < solver.nx; ix += 1) ahead += solver.qz[iz * solver.nx + ix] * solver.dx * solver.dz[iz];
     }
     expect(Math.min(...landed)).toBeGreaterThan(13.5);
     // The crest lost what the jet carried off, and the water where it landed gained it.
     expect(ahead).toBeCloseTo(thrown * 4, 9);
-    expect(momentumZ(solver)).toBeCloseTo(0, 9);
+    expect(momentumZ(solver)).toBeCloseTo(momentum, 9);
   });
 
   it('keeps a bounded number of parcels, refusing a whole strip it cannot hold', () => {
