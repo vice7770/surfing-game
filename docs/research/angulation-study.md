@@ -164,7 +164,7 @@ Forsyth et al. 2024 (Sci Rep 14:8734, [PMC](https://pmc.ncbi.nlm.nih.gov/article
 
 ### The model's turns on waves, measured both ways
 
-The Canyon's practice sea (the ride report's settings: turns, the pocket reflex, ghosts), every standing step turning faster than 1 rad/s above 4 m/s.
+The Canyon's practice sea (the ride report's settings: turns, the pocket reflex, ghosts; 1 seed × 2 minutes, on d1a01d7, before #76's breaking-age fix), every standing step turning faster than 1 rad/s above 4 m/s.
 
 | Hard-turn steps (yaw rate over 1 rad/s, over 4 m/s) | All (471) | Past 1.2 g by speed × yaw rate (276) |
 |---|---:|---:|
