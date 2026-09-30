@@ -124,12 +124,12 @@ describe('the slice clock', () => {
     const unit = Math.sqrt(h0 / GRAVITY);
     const timing = onsetTiming(h0, 16);
     expect(timing.earliest).toBeCloseTo(CLOCK.earliest * unit, 12);
-    expect(timing.lag(2.45)).toBeCloseTo(2.6 * unit, 12);
-    expect(timing.lag(((0.237 + 0.35) / 2) * h0)).toBeCloseTo(((2.34 + 2.6) / 2) * unit, 12);
-    expect(timing.lag(0.5)).toBeCloseTo(2.34 * unit, 12);
-    // Deeper than the periodic run's join, its swell lag, clamped.
+    expect(timing.lag(2.45)).toBeCloseTo(2.19 * unit, 12);
+    expect(timing.lag(((0.237 + 0.35) / 2) * h0)).toBeCloseTo(((1.97 + 2.19) / 2) * unit, 12);
+    expect(timing.lag(0.5)).toBeCloseTo(1.97 * unit, 12);
+    // The periodic run's point, and the scaled solitary trend past it, clamped.
     expect(timing.lag(0.454 * h0)).toBeCloseTo(2.32 * unit, 12);
-    expect(timing.lag(20)).toBeCloseTo(2.32 * unit, 12);
+    expect(timing.lag(20)).toBeCloseTo(2.37 * unit, 12);
     // And where a crest joins, by its highest over 6–5 m and the period: the solver's own swell onsets.
     expect(timing.band).toEqual([6, 5]);
     expect(timing.joinDepth(1.6)).toBeCloseTo(3.18, 12);
@@ -145,6 +145,6 @@ describe('the slice clock', () => {
     expect(onsetTiming(8, 16).band[1]).toBeCloseTo((5 * 8) / 7, 12);
     expect(onsetTiming(h0, 16, 0).lag(3)).toBe(0);
     // The join window is the measured lag whatever the lag is scaled to.
-    expect(onsetTiming(h0, 16, 0).window(2.45)).toBeCloseTo(2.6 * unit, 12);
+    expect(onsetTiming(h0, 16, 0).window(2.45)).toBeCloseTo(2.19 * unit, 12);
   });
 });

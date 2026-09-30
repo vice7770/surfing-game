@@ -19,11 +19,11 @@ export const CLOCK = { smoothing: 2, bunched: 0.1, earliest: -3 } as const;
  * 0.45 from level-10 scouts, ±0.3). The crests stand where Basilisk's do at the vertical time (about 1 m apart): the
  * trigger fires early, at η/h ≈ 0.9, while the crest still shoals. For swell the advisor's periodic run (a 16 s
  * cnoidal train, crest 1.66 m at the foot, level 12, 2026-09-30) measured 2.32 ± 0.5 at the join depth of 0.454 h0,
- * against the solitary rows' 2.75 there: about 16 % shorter. So swell's measured row replaces the solitary ones from
- * there deeper (clamped: the solitary A0 0.45 row, 2.82 at 0.5, would read a soliton's longer lag again), and the
- * solitary rows stand for shallower joins until more periodic cases are run. Measured, provisional.
+ * where the solitary runs give 2.75: swell's lag is 0.84 of a soliton's. So the solitary rows (0.237 → 2.34, 0.35 →
+ * 2.60, 0.5 → 2.82) are scaled by 0.84, keeping their trend with depth and anchored on the one periodic point; every
+ * row but 0.454 is scaled, not measured (the advisor). Provisional until more periodic cases are run.
  */
-const ONSET_LAG: readonly (readonly [depth: number, lag: number])[] = [[0.237, 2.34], [0.35, 2.6], [0.454, 2.32]];
+const ONSET_LAG: readonly (readonly [depth: number, lag: number])[] = [[0.237, 1.97], [0.35, 2.19], [0.454, 2.32], [0.5, 2.37]];
 
 /**
  * Where the game's solver first breaks swell, fresh, on the same transect (the periodicOnset probe, 2026-09-30): one
