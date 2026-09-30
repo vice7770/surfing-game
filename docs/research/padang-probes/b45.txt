@@ -1,0 +1,11 @@
+direction 45°: tank {"offshore":-894.3873078023169,"zoneInner":-693.9537753815921,"blendEnd":-613.9537753815921,"fineFrom":-279,"shore":30,"edgeDepth":25}, grid 160 × 471
+t 18.03 s: fastest 6.1 m/s at x 29.5, z 14.5, still depth -0.87; stable step 1.75e-2
+t 23.03 s: fastest 5.4 m/s at x 79.5, z -9.5, still depth 1.90; stable step 2.64e-2
+t 28.03 s: fastest 6.3 m/s at x 64.5, z -6.5, still depth 1.30; stable step 2.70e-2
+t 33.03 s: fastest 6.0 m/s at x 38.5, z -4.5, still depth 0.90; stable step 1.61e-2
+t 38.03 s: fastest 5.1 m/s at x 10.5, z -0.5, still depth 0.10; stable step 1.51e-2
+t 43.03 s: fastest 5.0 m/s at x 78.5, z -18.5, still depth 3.70; stable step 2.47e-2
+t 48.03 s: fastest 5.1 m/s at x 60.5, z -9.5, still depth 1.90; stable step 2.55e-2
+t 53.03 s: fastest 5.4 m/s at x 42.5, z -2.5, still depth 0.50; stable step 1.30e-2
+t 58.03 s: fastest 4.5 m/s at x -61.5, z -2.5, still depth 0.50; stable step 1.90e-2
+finite to the end; fastest 8.8 m/s

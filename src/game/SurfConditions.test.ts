@@ -3,8 +3,8 @@ import { TANK_SWELL_LIMITS } from './PhysicalMode';
 import skyManifest from '../../public/assets/skies/skies.json';
 import { nearestSky, sunElevationFromSlider, type SkyEntry } from '../scene/PhotoSky';
 import {
-  DEFAULT_CONDITIONS, DEFAULT_SPOT, REEF_SWELLS, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings, nextBackdropSpot, physicalSettingsFor,
-  surfForecastFor, surfForecastText, swellChoice,
+  DEFAULT_CONDITIONS, DEFAULT_SPOT, PADANG_SWELLS, PADANG_TIDES, PADANG_WINDS, REEF_SWELLS, SURF_SPOTS, SWELLS, TIDES, TIMES, WINDS, backdropSettings,
+  nextBackdropSpot, physicalSettingsFor, surfForecastFor, surfForecastText, swellChoice, tideFor, windFor,
 } from './SurfConditions';
 import { PRACTICE_SURF, forecastSurf } from '../wave/surfForecast';
 import { surfName as describeName } from '../ui/surfHeight';
@@ -35,11 +35,47 @@ describe('surf conditions', () => {
     }
   });
 
+  it('gives Padang Padang its own long-period swells, tides and winds', () => {
+    const settings = physicalSettingsFor('padang', { swell: 'medium', tide: 'low', wind: 'offshore', time: 'midday' }, water);
+    expect(settings).toMatchObject({
+      source: 'buoy', significantHeight: PADANG_SWELLS.medium.significantHeight, peakPeriod: PADANG_SWELLS.medium.peakPeriod,
+      directionDegrees: PADANG_SWELLS.medium.directionDegrees, tide: PADANG_TIDES.low, windSpeed: PADANG_WINDS.offshore,
+      spreading: PADANG_SWELLS.medium.spreading,
+    });
+    // A groundswell refracted into 10 m is long-crested: never below Goda's s_max for long-decay swell (Goda et al. 1978).
+    for (const swell of Object.values(PADANG_SWELLS)) expect(swell.spreading).toBeGreaterThanOrEqual(75);
+    expect(physicalSettingsFor('point', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, water).spreading).toBeUndefined();
+    for (const swell of Object.values(PADANG_SWELLS)) {
+      expect(swell.significantHeight).toBeLessThanOrEqual(TANK_SWELL_LIMITS.height.max);
+      expect(swell.peakPeriod).toBeGreaterThanOrEqual(16);
+      expect(swell.peakPeriod).toBeLessThanOrEqual(TANK_SWELL_LIMITS.period.max);
+    }
+    // Bali's range (the Benoa gauge): lower and higher than the shared tides, within the Wave Lab's −1…1 m slider.
+    expect(PADANG_TIDES.low).toBeLessThan(TIDES.low);
+    expect(PADANG_TIDES.high).toBeGreaterThan(TIDES.high);
+    for (const tide of Object.values(PADANG_TIDES)) expect(Math.abs(tide)).toBeLessThanOrEqual(1);
+    for (const wind of Object.values(PADANG_WINDS)) expect(Math.abs(wind)).toBeLessThanOrEqual(12);
+    expect(PADANG_WINDS.offshore).toBeLessThan(0);
+    expect(PADANG_WINDS.onshore).toBeGreaterThan(0);
+  });
+
+  it('keeps every other spot on the shared tides and winds', () => {
+    for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
+      for (const level of ['low', 'mid', 'high'] as const) expect(tideFor(spot, level)).toBe(TIDES[level]);
+      for (const kind of ['offshore', 'calm', 'onshore'] as const) expect(windFor(spot, kind)).toBe(WINDS[kind]);
+    }
+  });
+
   it('keeps the other spots on the water tier’s stage', () => {
     expect(physicalSettingsFor('point', DEFAULT_CONDITIONS, { stage: 1, compute: 'cpu' })).toMatchObject({ stage: 1, compute: 'cpu' });
   });
 
   // The Fast tier steps stage 1 on the CPU only because stage 1 has no GPU path; raised to stage 2, the Reef asks for the GPU.
+  it('lets Padang Padang ask for the GPU when it raises the Fast tier’s stage', () => {
+    expect(physicalSettingsFor('padang', DEFAULT_CONDITIONS, { stage: 1, compute: 'cpu' })).toMatchObject({ stage: 2, compute: 'auto' });
+    expect(physicalSettingsFor('padang', DEFAULT_CONDITIONS, { stage: 2, compute: 'cpu' })).toMatchObject({ stage: 2, compute: 'cpu' });
+  });
+
   it('lets the Reef ask for the GPU when it raises the Fast tier’s stage', () => {
     expect(physicalSettingsFor('reef', DEFAULT_CONDITIONS, { stage: 1, compute: 'cpu' })).toMatchObject({ stage: 2, compute: 'auto' });
     expect(physicalSettingsFor('reef', DEFAULT_CONDITIONS, { stage: 2, compute: 'cpu' })).toMatchObject({ stage: 2, compute: 'cpu' });
@@ -56,8 +92,8 @@ describe('surf conditions', () => {
     for (const wind of Object.values(WINDS)) expect(Math.abs(wind)).toBeLessThanOrEqual(12);
   });
 
-  it('offers all four spots, the Canyon included now that its catch cue works', () => {
-    expect(SURF_SPOTS).toEqual(['beach', 'point', 'reef', 'canyon']);
+  it('offers all five spots, Padang Padang last', () => {
+    expect(SURF_SPOTS).toEqual(['beach', 'point', 'reef', 'canyon', 'padang']);
   });
 
   // The Canyon's waves peel (median 58°) and catch best; the other spots mostly close out (median 12–15°).

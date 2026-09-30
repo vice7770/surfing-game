@@ -38,7 +38,7 @@ struct Params {
   manning: f32, restLevel: f32, onset: f32, endShare: f32,
   transition: f32, mixing: f32, dispersive: u32, breaks: u32,
   components: u32, zoneFirst: u32, zoneRows: u32, tau: f32,
-  pad0: f32, pad1: f32, pad2: f32, pad3: f32,
+  feedSlots: u32, feedComponents: u32, pad2: f32, pad3: f32,
   pad4: f32, pad5: f32, pad6: f32, pad7: f32,
   pad8: f32, pad9: f32, pad10: f32, pad11: f32,
 };
@@ -47,6 +47,7 @@ struct Params {
 @group(0) @binding(1) var<storage, read> G: array<f32>;
 @group(0) @binding(2) var<storage, read> S: array<f32>;
 @group(0) @binding(3) var<uniform> P: Params;
+@group(0) @binding(4) var<storage, read> D: array<f32>;
 
 const WALL: u32 = 0u;
 const PERIODIC: u32 = 1u;
@@ -630,8 +631,40 @@ fn parentAge(current: f32, j: u32) -> f32 {
   put(${FIELD.QX}u, i, select(0.0, at(${FIELD.QX}u, i) + weight * (qx - at(${FIELD.QX}u, i)), wet));
   put(${FIELD.QZ}u, i, select(0.0, at(${FIELD.QZ}u, i) + weight * (qz - at(${FIELD.QZ}u, i)), wet));
 }
+
+// K17: the side strips blend toward the incoming sea (SideFeed.target, the wave-sizes spec). Per slot: cell,
+// weight, row factors' start, column factors' start; per component: cos ωs and sin ωs at the frame's start, and ω.
+@compute @workgroup_size(64) fn relaxSides(@builtin(global_invocation_id) id: vec3<u32>) {
+  let slot = id.x; if (slot >= P.feedSlots) { return; }
+  let record = P.feedComponents * 3u + slot * 4u;
+  let i = u32(D[record]);
+  let weight = D[record + 1u];
+  let rowAt = u32(D[record + 2u]);
+  let columnAt = u32(D[record + 3u]);
+  var eta = 0.0; var qx = 0.0; var qz = 0.0;
+  for (var c = 0u; c < P.feedComponents; c++) {
+    let c0 = D[c * 3u]; let s0 = D[c * 3u + 1u];
+    let angle = D[c * 3u + 2u] * P.tau;
+    let ca = cos(angle); let sa = sin(angle);
+    let timeCos = c0 * ca - s0 * sa;
+    let timeSin = s0 * ca + c0 * sa;
+    let r = rowAt + c * 4u; let k = columnAt + c * 2u;
+    let real = D[r] * D[k] - D[r + 1u] * D[k + 1u];
+    let imaginary = D[r] * D[k + 1u] + D[r + 1u] * D[k];
+    let value = real * timeCos + imaginary * timeSin;
+    eta += value; qx += D[r + 2u] * value; qz += D[r + 3u] * value;
+  }
+  let bed = at(${FIELD.BED}u, i);
+  let goal = max(0.0, eta - bed);
+  var h = at(${FIELD.H}u, i);
+  h += weight * (goal - h);
+  put(${FIELD.H}u, i, h);
+  let wet = h > P.dryDepth;
+  put(${FIELD.QX}u, i, select(0.0, at(${FIELD.QX}u, i) + weight * (qx - at(${FIELD.QX}u, i)), wet));
+  put(${FIELD.QZ}u, i, select(0.0, at(${FIELD.QZ}u, i) + weight * (qz - at(${FIELD.QZ}u, i)), wet));
+}
 `;
 }
 
 /** Entry points in the order one substep runs them (the relaxation zone after, as on the CPU). */
-export const STEP_KERNELS = ['begin', 'mask', 'modified', 'predict', 'rates', 'sources', 'breaking', 'shear', 'viscous', 'update', 'rowTerms', 'rows', 'columnTerms', 'columns', 'finish', 'relax'] as const;
+export const STEP_KERNELS = ['begin', 'mask', 'modified', 'predict', 'rates', 'sources', 'breaking', 'shear', 'viscous', 'update', 'rowTerms', 'rows', 'columnTerms', 'columns', 'finish', 'relax', 'relaxSides'] as const;

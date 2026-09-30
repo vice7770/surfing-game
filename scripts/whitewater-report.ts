@@ -25,7 +25,7 @@ const option = (name: string): string | undefined => {
 const argument = (name: string, fallback: number): number => Number(option(name) ?? fallback);
 const seedCount = argument('seeds', 2);
 const periods = argument('periods', 12);
-const spots = (option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon']) as SpotName[];
+const spots = (option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon', 'padang']) as SpotName[];
 const output = option('out') ?? 'docs/research/whitewater-report.md';
 const settings = DEFAULT_PHYSICAL_SETTINGS;
 const swell = swellFor(settings);

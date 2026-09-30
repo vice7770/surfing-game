@@ -46,6 +46,7 @@ const SKETCHES: Record<SpotName, string> = {
   point: '<path d="M4 42h24c10 0 14-8 20-16s12-14 28-16"/><path d="M34 34c6-8 14-16 30-18" stroke-dasharray="3 3"/><path d="M4 12c12 2 24-2 36 0s24 2 36 0" opacity=".45"/>',
   reef: '<path d="M4 42c14-2 24-2 36-2s22 0 36 2"/><path d="M8 20L50 40" stroke-dasharray="3 3"/><path d="M60 40V20M70 40V20" stroke-dasharray="3 3" opacity=".6"/><path d="M4 12c12 2 24-2 36 0s24 2 36 0" opacity=".45"/>',
   canyon: '<path d="M4 42c14-2 24-2 36-2s22 0 36 2"/><path d="M36 42V14M44 42V14" stroke-dasharray="3 3"/><path d="M4 12c12 2 24-2 36 0s24 2 36 0" opacity=".45"/>',
+  padang: '<path d="M4 42c10-6 22-8 36-8s26 2 36 8"/><path d="M4 18h14L58 34" stroke-dasharray="3 3"/><path d="M64 40V16M74 40V16" stroke-dasharray="3 3" opacity=".6"/><path d="M4 10c12 2 24-2 36 0s24 2 36 0" opacity=".45"/>',
 };
 
 function sketch(spot: SpotName): Element {

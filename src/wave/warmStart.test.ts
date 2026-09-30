@@ -8,6 +8,20 @@ import { planSetRun, warmStart } from './warmStart';
 const slope = (_x: number, z: number) => (z < 0 ? 8 : 8 - 0.02 * z);
 
 describe('warmStart', () => {
+  it('lets a component travelling away from shore die out instead of filling the tank with NaN (wave sizes)', () => {
+    // A spread around a 25° mean can put a component past 90°: it travels offshore and never reaches the shore.
+    const omega = (2 * Math.PI) / 14;
+    const sea = new SeaState([
+      { amplitude: 0.8, omega, direction: (10 * Math.PI) / 180, phase: 0 },
+      { amplitude: 0.5, omega: 1.1 * omega, direction: (110 * Math.PI) / 180, phase: 1 },
+    ], 10);
+    expect(sea.components[1].kz).toBeLessThan(0);
+    const solver = new ShallowWaterSolver({ nx: 20, xMin: 0, dx: 4, zEdges: uniformEdges(0, 400, 100), xBoundary: 'open' }, (_x, z) => Math.max(2, 10 - z / 50));
+    warmStart(solver, sea, { referenceZ: 40, seaTime: 0 });
+    for (const value of solver.h) expect(Number.isFinite(value)).toBe(true);
+    for (const value of solver.qz) expect(Number.isFinite(value)).toBe(true);
+  });
+
   it('reproduces the analytic sea exactly over a flat bed', () => {
     const solver = new ShallowWaterSolver({ nx: 16, xMin: -40, dx: 5, zEdges: uniformEdges(-100, 100, 40), xBoundary: 'open' }, () => 8);
     const sea = SeaState.fromSpectrum(

@@ -30,7 +30,7 @@ export const MAX_BOTS = ROOM_CAP.max - 1;
 export const CALLS = ['left', 'right', 'party', 'nice'] as const;
 export type CallId = (typeof CALLS)[number];
 
-const SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon'];
+const SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon', 'padang'];
 const SWELLS: readonly SwellSize[] = ['practice', 'small', 'medium', 'big'];
 const TIDES: readonly TideLevel[] = ['low', 'mid', 'high'];
 const WINDS: readonly WindKind[] = ['offshore', 'calm', 'onshore'];

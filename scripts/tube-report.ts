@@ -11,7 +11,9 @@
 import { writeFileSync } from 'node:fs';
 import { DEFAULT_PHYSICAL_SETTINGS, swellFor } from '../src/game/PhysicalMode';
 import type { SpotName } from '../src/wave/Bathymetry';
+import { applyPadangShape } from './padangShape';
 import { applyReefShape } from './reefShape';
+import { chosenSwell, swellSizeOption } from './spotSwell';
 import { rideability, type PeelSample } from '../src/wave/Rideability';
 import { SurfZoneSimulation } from '../src/wave/SurfZoneSimulation';
 import { measureTube } from '../src/wave/TubeShape';
@@ -27,11 +29,14 @@ const periods = argument('periods', 12);
 const practice = process.argv.includes('--practice');
 // Reshape the Reef for this run: `--reef angle=50,crestZ=-125` (the design sweep).
 applyReefShape(option('reef'));
-const spots = (option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon']) as SpotName[];
+applyPadangShape(option('padang'));
+/** `--swell small|medium|big`: each spot's own buoy swell for that size. */
+const swellSize = swellSizeOption(option('swell'));
+const spots = (option('spots')?.split(',') ?? ['beach', 'point', 'reef', 'canyon', 'padang']) as SpotName[];
 const output = option('out') ?? 'docs/research/tube-report.md';
 const settings = practice ? { ...DEFAULT_PHYSICAL_SETTINGS, source: 'practice' as const } : DEFAULT_PHYSICAL_SETTINGS;
-/** Each spot's swell: its own Practice when practising (the Reef has one). */
-const swellAt = (spot: SpotName) => swellFor({ ...settings, spot });
+/** Each spot's swell: its own Practice when practising (the Reef and Padang Padang have one), or its own buoy swell for `--swell`. */
+const swellAt = (spot: SpotName) => (swellSize && !practice ? chosenSwell(spot, swellSize) : swellFor({ ...settings, spot }));
 const STEP = 1 / 30;
 /** A lip landing less than this far ahead of the crest draws no tube, m. */
 const MIN_TUBE_LENGTH = 0.1;
