@@ -10,7 +10,9 @@
  *   npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --flat 0.1785714
  *
  * --runs names the directory holding the runs (tools/basilisk/runs by default); --flat is the reef flat's
- * depth beyond the slope, in h0 (Padang Padang: 1.25 m over 7 m).
+ * depth beyond the slope, in h0 (Padang Padang: 1.25 m over 7 m). --a0 NAME=VALUE sets a run's H0/h0, the key cases
+ * blend by, to its crest at the slope's foot over h0 where its own A0 is something else: a periodic train's is its
+ * wave height (the advisor's plunge_measure.py runs; their metrics are read in that form too).
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { caseFromLibrary, libraryJson } from '../src/wave/barrel/caseFromLibrary';
@@ -22,6 +24,10 @@ const options = (name: string): string[] =>
 const runs = options('run');
 const runsDir = options('runs')[0] ?? 'tools/basilisk/runs';
 const flat = Number(options('flat')[0]);
+const a0Overrides = new Map(options('a0').map((pair) => {
+  const [name, value] = pair.split('=');
+  return [name, Number(value)] as const;
+}));
 if (runs.length === 0 || !Number.isFinite(flat)) {
   console.error('usage: npm run barrels -- --run NAME [--run NAME …] --flat DEPTH_OVER_H0 [--runs DIR]');
   process.exit(1);
@@ -35,6 +41,40 @@ interface Metrics {
   t_impact: number | null;
   impact?: { H_I: number; L_O: number | null; W_O: number | null; theta_O: number | null; 'A_O/H2': number | null; 'A_J/H2': number | null; 'W/L': number | null; 'L/W': number | null };
   fits: { 'A_O/H2': number; 'A_J/H2': number; 'W/L': number; theta_O: number };
+}
+
+/** plunge_measure.py's output (the advisor's periodic runs): the times, and the tube just before touchdown, in metres. */
+interface PeriodicMetrics {
+  t_vertical: number;
+  t_impact: number;
+  pre_touchdown: {
+    H_m: number;
+    tube_L_m: number;
+    tube_W_m: number;
+    'L/W': number;
+    tilt_deg: number;
+    'per H at touchdown': { jet: number; tube: number };
+  };
+}
+
+/** Pick & Feddersen's fits in ψ0, as metrics.py writes them (round 2's record). */
+function fitsFor(psi0: number): Metrics['fits'] {
+  return { 'A_O/H2': 5.319 * psi0 - 0.043, 'A_J/H2': 37.072 * psi0 * psi0 - 0.587 * psi0 + 0.02, 'W/L': 1.661 * psi0 + 0.298, theta_O: -5746.4 * psi0 * psi0 + 225.2 * psi0 + 48.4 };
+}
+
+/** A run's metrics in metrics.py's form: as written, or from plunge_measure.py's (the height over the trough ahead as H_I). */
+function asMetrics(raw: Metrics | PeriodicMetrics, level: number, slope: number, a0: number, h0: number): Metrics {
+  if (!('pre_touchdown' in raw)) return raw;
+  const pre = raw.pre_touchdown;
+  const psi0 = slope / Math.pow(a0, 0.25);
+  return {
+    level, psi0, t_vertical: raw.t_vertical, t_impact: raw.t_impact,
+    impact: {
+      H_I: pre.H_m / h0, L_O: pre.tube_L_m / h0, W_O: pre.tube_W_m / h0, theta_O: pre.tilt_deg,
+      'A_O/H2': pre['per H at touchdown'].tube, 'A_J/H2': pre['per H at touchdown'].jet, 'W/L': pre.tube_W_m / pre.tube_L_m, 'L/W': pre['L/W'],
+    },
+    fits: fitsFor(psi0),
+  };
 }
 
 /** Round 2's tolerance on Pick & Feddersen's fits (round 6 §0): areas ±0.05, the aspect ±0.1, the angle ±5°. */
@@ -62,7 +102,12 @@ const rows: string[] = [];
 const cleanliness: string[] = [];
 for (const run of runs) {
   const library = libraryJson(JSON.parse(readFileSync(`${runsDir}/${run}_library.json`, 'utf8')) as Record<string, unknown>);
-  const metrics = JSON.parse(readFileSync(`${runsDir}/${run}_metrics.json`, 'utf8')) as Metrics;
+  const a0 = a0Overrides.get(run);
+  if (a0 !== undefined) library.run.A0 = a0;
+  const metrics = asMetrics(
+    JSON.parse(readFileSync(`${runsDir}/${run}_metrics.json`, 'utf8')) as Metrics | PeriodicMetrics,
+    library.run.level, library.run.slope, library.run.A0, library.run.h0_m,
+  );
   const id = run.toLowerCase().replaceAll('_', '-');
   const { barrel, refilled } = caseFromLibrary(library, id, flat);
   const asset = `barrels/${id}.bin`;

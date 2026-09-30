@@ -6,13 +6,19 @@ Tags: **[measured]** in the model, or in the lab or field where said; **[modelle
 
 ## The cases
 
-Three runs of the advisor's Basilisk setup (`tools/basilisk`, GPL-3.0, run apart from the game) on round 6's Padang Padang transect: a solitary wave of height A0·h0 at the wedge's 7 m base, up a 1:19 slope along its path to a reef flat 1.25 m deep (0.179 h0), at level 12 (1.2 cm cells at h0 = 1). The game blends them by H0/h0 at the foot.
+Four runs of the advisor's Basilisk setup (`tools/basilisk`, GPL-3.0, run apart from the game) on round 6's Padang Padang transect, up a 1:19 slope along the wave's path to a reef flat 1.25 m deep (0.179 h0), at level 12. The game blends them by H0/h0, the crest at the wedge's 7 m foot over the depth there:
+- three solitary waves of height A0·h0 at the foot;
+- the Small swell's case, below the solitaries' range: the second crest of a 16 s cnoidal train (H/h0 0.195), its crest at the foot 0.99 m, so A0 = 0.141.
+  - The advisor ran and analysed it (2026-09-30; `periodic_library.py`, times by `plunge_measure.py` with the local trough as the water level and a crest window past the backwash's steps).
+  - Swell breaks on the wedge where a soliton that small would run on to the flat, so a periodic run stands for Small (the advisor).
+  - It is built with `--a0 periodic_padang19s_L12=0.1414`, since its own A0 is the train's height.
 
 | Case | H0/h0 | Where it overturns | H_I at h0 = 7 m | Void L × W just before touchdown | Open tube, vertical to touchdown | Frames | Asset |
 |---|---|---|---|---|---|---|---|
 | `pad19-a20-l12` | 0.2 | on the reef flat, about 1 h0 past its edge | 1.97 m | 0.90 × 0.45 m | 0.59 s | 145 | 145 KB |
 | `pad19-a30-l12` | 0.3 (the owner's case) | at the reef flat's edge | 2.58 m | 2.11 × 1.00 m | 1.00 s | 158 | 158 KB |
 | `pad19-a45-l12` | 0.45 | on the wedge, about 2.6 h0 before the flat | 3.67 m | 3.34 × 1.45 m | 1.16 s | 163 | 163 KB |
+| `periodic-padang19s-l12` | 0.141 (the Small swell's crest) | on the wedge, 14 m before the flat, in 1.99 m | 2.24 m over the trough ahead | 0.86 × 0.39 m | 0.82 s | 176 | 176 KB |
 
 All [measured] in the model. Each case holds 128 points per frame, in h0, from 2.7–2.9 √(h0/g) before its face goes vertical (the clock's earliest frame, −3, clamps to the first) to one frame past touchdown, in the `BRL1` form (`src/wave/barrel/profileFormat.ts`), and loads from `public/barrels/` through `src/wave/barrel/barrelLibraryIndex.ts`.
 
@@ -24,6 +30,7 @@ Each case at its last output before touchdown, against Pick & Feddersen's fits i
 - **The tube's size is smaller than the fits'.** A_O/H_I² is 0.05, 0.19 and 0.23 against the fits' 0.38, 0.34 and 0.30. The fits are for plane slopes, where a smaller wave's larger ψ0 gives the rounder tube. On this wedge the tube grows with the wave instead, and a small wave makes a small, steep tube:
   - A0 0.2 overturns over the flat and barely curls.
   - The advisor's periodic 14 s wave (1.22 m foot crest, level 12) broke on the wedge 15 m before the flat, and still made a tube of about 0.04 H² at about 70° [measured, NS].
+  - The library's own Small-swell case (16 s, 0.99 m at the foot) went vertical 14 m before the flat. Just before touchdown its tube is 0.035 H² over the trough ahead, W/L 0.45 (fit 0.44, inside), L/W 2.20 and tilt 39°, inside Padang Padang's 29–41° [measured, NS]. Its lip spans only 4.1 cells, under the 6 the grid rule asks for, so its areas may read slightly high; the advisor can rerun its fine phase at level 13.
   - So small tubes are what small waves do here, not only the flat folding a solitary wave [inferred]. The periodic and solitary shapes at Padang agree within about ×2 in area and a few degrees in tilt, so the solitary library serves for the shapes; the periodic runs mattered for timing (the advisor).
   - The direction matches Blenkinsopp & Chaplin's flume reef, a 1:10 wedge dropping to deeper water, where breaking intensified as the crest's submergence fell (their abstract).
   - Pick & Feddersen (2026, §4.1) restate that reef's A_O/H² as 0.05–0.35, rising with H0/h_c, and O'Dea et al.'s field A_O/H² as 0.05–0.3. The three cases sit inside both. Those ranges are as restated; neither original paper was opened [not opened].
@@ -37,7 +44,7 @@ Each case at its last output before touchdown, against Pick & Feddersen's fits i
 
 - **Wall time** [measured]: 265, 282 and 298 min for A0 0.2, 0.3 and 0.45. Each ran on one core of the M1 Air, all three at once while the game's probes ran beside them.
 - **Analysis:** `analyse` needs Python with numpy, scipy and matplotlib. It takes a few minutes per run.
-- **Size in the game:** 145–163 KB per case, 466 KB for the three. They load once, when the spot does.
+- **Size in the game:** 145–176 KB per case, 642 KB for the four. They load once, when the spot does.
 
 ## Landmark cleanliness
 
@@ -48,9 +55,10 @@ Frames whose landmark checks passed, by phase [measured]:
 | A0 0.2 | 116 / 117 | 27 / 27 | 48 / 117 |
 | A0 0.3 | 106 / 110 | 47 / 47 | 42 / 104 |
 | A0 0.45 | 98 / 108 | 54 / 54 | 49 / 99 |
+| Small swell (periodic) | 127 / 136 | 39 / 39 | 61 / 226 |
 
 - Every open-tube frame is clean.
-- Before the face goes vertical, the only flags are the lip landmark jumping (1, 4 and 10 frames). Those frames are refilled linearly from their clean neighbours.
+- Before the face goes vertical, the only flags are the lip landmark jumping (1, 4, 10 and 9 frames). Those frames are refilled linearly from their clean neighbours.
 - After touchdown, the splash-up tears the surface inside the window. A case keeps only one frame past touchdown, so the torn frames never reach the game.
 
 ## The level-13 comparison
@@ -62,7 +70,10 @@ The owner's level-13 run of A0 0.3 on the M4 Pro (`run_padang.sh` at its default
 1. Scout the case's window at level 10, as in `tools/basilisk/README.md`: set `LEVEL=10` and the amplitude, then find when the lip folds over and touches down.
 2. Run it at level 12 with `TOUT0` about 3 s before the fold and `TMAX` 3 s past touchdown. For example: `LEVEL=12 A0=0.3 TOUT0=18.5 TMAX=25 NAME=pad19_a30_L12 tools/basilisk/run_padang.sh`.
 3. Analyse it with the same variables and `analyse`.
-4. Rebuild the whole library, naming every run each time. The index lists exactly the runs named. For example: `npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --flat 0.1785714`. The flat is the reef flat's depth in h0.
+4. Rebuild the whole library, naming every run each time. The index lists exactly the runs named. For example: `npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --run periodic_padang19s_L12 --a0 periodic_padang19s_L12=0.1414 --flat 0.1785714`.
+   - The flat is the reef flat's depth in h0.
+   - A periodic run's `--a0` is its crest at the foot over h0, and its metrics are read in `plunge_measure.py`'s form.
+   - The advisor's periodic files live on their branch, under `docs/research/water-physics/notes/round6-tube-profiles/data/`; copy them into the runs directory.
 5. Commit `public/barrels/*.bin`, the index and `barrel-cases.md`. Record the run in the README's table.
 
 ## The front's join and throw
