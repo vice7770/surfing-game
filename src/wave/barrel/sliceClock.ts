@@ -85,8 +85,8 @@ const RADIUS = CLOCK.smoothing * Math.sqrt(7);
  *   exactly, to its leading edge, where a weighted mean would sit 0.31 of the radius behind. One point uses its own,
  *   and points bunched within about half a metre their weighted mean. The fit is clamped to the window's throw
  *   times, so it never extrapolates.
- * - **Causality.** A point's τ starts where the fit puts it and never falls after: when a later neighbour moves the
- *   fit, the lip pauses rather than retracts. Frequent pauses would mean the onsets are still noisy at the 2 m scale.
+ * - **Causality.** A point's τ starts at the earliest frame (BreakingFront), and never falls: when a later neighbour
+ *   moves the fit, the lip pauses rather than retracts. Frequent pauses would mean the onsets are still noisy at the 2 m scale.
  *
  * Only + − × ÷ and loops over points in σ order, for online determinism.
  */
@@ -99,9 +99,7 @@ export function advanceClocks(points: FrontPoint[], time: number, timing: OnsetT
     for (let k = start; k < end; k += 1) {
       const point = points[k];
       const shown = Math.max(timing.earliest, time - fittedThrow(points, start, end, k, timing));
-      // A point that joined this step starts where the fit puts it.
-      if (point.joined === time) point.tau = shown;
-      else if (shown < point.tau) pauses += 1;
+      if (shown < point.tau) pauses += 1;
       else point.tau = shown;
     }
     start = end;

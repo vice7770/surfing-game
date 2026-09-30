@@ -137,7 +137,8 @@ export class BreakingFront {
         if (next.crossed !== null && s.strength > 0 && time - next.crossed <= JOIN_WINDOW) {
           points.push({
             id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
-            joined: next.crossed, depth: joinDepth, tau: 0, seen: time,
+            // Its clock starts at the library's earliest frame; the first advance puts it where the fit does.
+            joined: next.crossed, depth: joinDepth, tau: this.timing.earliest, seen: time,
           });
           continue;
         }

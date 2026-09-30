@@ -7,10 +7,10 @@ const DT = 1 / 30;
 /** No lag, a second of steepening frames: the throw is the join. */
 const AT_ONCE: OnsetTiming = { h0: 7, joinDepth: () => 2.45, lag: () => 0, earliest: -1 };
 
-/** A crest line of `n` points one metre apart. */
+/** A crest line of `n` points one metre apart, their clocks at the earliest frame as BreakingFront starts them. */
 function crest(n: number, id = 0): FrontPoint[] {
   return Array.from({ length: n }, (_, k) => ({
-    id: k, front: id, column: k, sigma: k, x: k + 0.5, z: 10, b: NaN, height: 1, joined: 0, depth: 2.5, tau: 0, seen: 0,
+    id: k, front: id, column: k, sigma: k, x: k + 0.5, z: 10, b: NaN, height: 1, joined: 0, depth: 2.5, tau: AT_ONCE.earliest, seen: 0,
   }));
 }
 
@@ -30,6 +30,7 @@ function run(
       if (joined.has(point)) continue;
       joined.add(point);
       point.joined = time;
+      point.tau = timing.earliest;
     }
     pauses += advanceClocks(front, time, timing);
     each?.(time);
