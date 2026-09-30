@@ -49,6 +49,8 @@ export interface AutopilotOptions {
   stall?: boolean;
   /** Riding S-turns, the longest a turn is held, s (TURN_LIMIT by default). */
   turnLimit?: number;
+  /** Riding S-turns, the height on the face below which a bottom turn starts (BOTTOM_FACE by default). */
+  bottomFace?: number;
 }
 
 export type AutopilotState = 'position' | 'wait' | 'go' | 'ride' | 'done';
@@ -141,6 +143,7 @@ export class Autopilot {
   private stalled = 0;
   private readonly stall: boolean;
   private readonly turnLimit: number;
+  private readonly bottomFace: number;
   /** The open face the gauge last showed this attempt (away from the curl), 0 before it has shown one. */
   private seenFace = 0;
   /** The open face the latest attempt saw: a paddler turns only about 7°/s, so waiting it points that way already. */
@@ -169,6 +172,7 @@ export class Autopilot {
     this.style = options.style ?? 'line';
     this.stall = options.stall ?? true;
     this.turnLimit = options.turnLimit ?? TURN_LIMIT;
+    this.bottomFace = options.bottomFace ?? BOTTOM_FACE;
   }
 
   /** End the ride from outside (the ride analyzer's end). */
@@ -304,7 +308,7 @@ export class Autopilot {
       const angle = open * wrap(heading - this.travel);
       const wanted: Turn | undefined = wave.aheadOfCrest > SHOULDER && angle > TOP_END ? 'cutback'
         : wave.faceFraction > TOP_FACE && angle > TOP_START ? 'top'
-          : wave.faceFraction < BOTTOM_FACE && angle < BOTTOM_START && wave.aheadOfCrest <= BOTTOM_REACH ? 'bottom' : undefined;
+          : wave.faceFraction < this.bottomFace && angle < BOTTOM_START && wave.aheadOfCrest <= BOTTOM_REACH ? 'bottom' : undefined;
       if (wanted !== this.blocked) {
         this.turn = wanted;
         this.turnTime = 0;

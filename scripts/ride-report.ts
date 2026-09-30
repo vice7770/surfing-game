@@ -12,6 +12,7 @@
  *   npm run report:ride -- --practice --ghosts --minutes 5
  *   npm run report:ride -- --spots point --minutes 5 --out /tmp/point.md
  *   npm run report:ride -- --practice --ghosts --style turns
+ *   npm run report:ride -- --practice --ghosts --style turns --spots canyon --bottom-face 0.55 --turn-limit 3
  */
 import { writeFileSync } from 'node:fs';
 import { Quaternion, Vector3 } from 'three';
@@ -49,6 +50,11 @@ const heightOverride = option('height');
 const reflex = flag('reflex');
 /** The autopilot's riding: a line along the face, or S-turns up and down it. */
 const style = option('style') === 'turns' ? 'turns' : 'line';
+/** Riding S-turns, `--bottom-face F` starts the bottom turn below F of the face, and `--turn-limit S` holds a turn up to S s. */
+const autopilotTurns = {
+  ...(option('bottom-face') ? { bottomFace: Number(option('bottom-face')) } : {}),
+  ...(option('turn-limit') ? { turnLimit: Number(option('turn-limit')) } : {}),
+};
 /** Ghost riders beside the runner's own: metres along shore from the break point (`--ghosts`, as in the catch report). */
 const ghostAlongs = flag('ghosts') ? [-45, -25, -12, 12, 25, 45] : [];
 const settings = practice ? { ...DEFAULT_PHYSICAL_SETTINGS, source: 'practice' as const } : DEFAULT_PHYSICAL_SETTINGS;
@@ -190,7 +196,7 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
   if (shift !== 0) console.error(`${spot} seed ${seed}: ghosts slid ${shift.toFixed(1)} m along shore to stay inside the window`);
   const bot = (session: RideSession, own: boolean, along: number): Bot => ({
     session, own, home: new Vector3(runner.focus.x + along + (own ? 0 : shift), 0, runner.focus.z - 6),
-    autopilot: new Autopilot({ rise: riseAt(spot), style, stall: false }), gauge: new WaveFrameGauge({ directionX: Math.sin(radians), directionZ: Math.cos(radians) }),
+    autopilot: new Autopilot({ rise: riseAt(spot), style, stall: false, ...autopilotTurns }), gauge: new WaveFrameGauge({ directionX: Math.sin(radians), directionZ: Math.cos(radians) }),
     trace: [], request: { paddle: false, popUp: false, steer: 0 }, retry: false, analyzer: new RideAnalyzer(), windDown: 0,
     weights: [], rideStart: 0, lastPhase: 'prone',
   });
@@ -345,8 +351,8 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
  * pull on a board that pivots (the angulation study); the analyzer's own columns read the path.
  */
 const FORSYTH: Partial<Record<ManeuverKind, string>> = {
-  'bottom turn': '| Forsyth 2024 bottom turn | 3.8 per wave | 0.96 | 99 | 1.9 | 7.3 | (3.8) | (1.41) | 42 | — |',
-  cutback: '| Forsyth 2024 cutback / top turn | | 0.96 | 152 | 3.0 | 6.7 | (2.2) | (2.05) | 75 | — |',
+  'bottom turn': '| Forsyth 2024 bottom turn | 3.8 per wave | 0.96 | 99 | 1.9 | 7.3 | | | (3.8) | (1.41) | 42 | — |',
+  cutback: '| Forsyth 2024 cutback / top turn | | 0.96 | 152 | 3.0 | 6.7 | | | (2.2) | (2.05) | 75 | — |',
 };
 
 /** The analyzer's reading of the rides: how they ended, their turns beside Forsyth's, and the speed kept from bottom turn to top turn. */
@@ -358,8 +364,9 @@ function turnTables(rides: Ride[]): string {
   const rows: string[] = [];
   for (const kind of ['bottom turn', 'top turn', 'snap', 'cutback'] as ManeuverKind[]) {
     const of = maneuvers.filter((m) => m.kind === kind);
-    const average = (value: (m: (typeof of)[number]) => number, digits = 1) => fixed(mean(of.map(value)), digits);
-    rows.push(`| ${kind} | ${of.length} | ${average((m) => m.end - m.start, 2)} | ${average((m) => Math.abs(m.yaw) * 180 / Math.PI, 0)} | ${average((m) => m.peakYawRate)} | ${average((m) => m.speedIn)} | ${average((m) => m.radius)} | ${average((m) => m.lateralG, 2)} | ${average((m) => m.roll * 180 / Math.PI, 0)} | ${of.length ? `${fixed((of.filter((m) => m.pocket).length / of.length) * 100, 0)} %` : '—'} |`);
+    // A path that did not turn has no radius: averaged over the turns that did.
+    const average = (value: (m: (typeof of)[number]) => number, digits = 1) => fixed(mean(of.map(value).filter(Number.isFinite)), digits);
+    rows.push(`| ${kind} | ${of.length} | ${average((m) => m.end - m.start, 2)} | ${average((m) => Math.abs(m.yaw) * 180 / Math.PI, 0)} | ${average((m) => m.peakYawRate)} | ${average((m) => m.speedIn)} | ${average((m) => m.speedOut)} | ${average((m) => m.faceFraction, 2)} | ${average((m) => m.radius)} | ${average((m) => m.lateralG, 2)} | ${average((m) => m.roll * 180 / Math.PI, 0)} | ${of.length ? `${fixed((of.filter((m) => m.pocket).length / of.length) * 100, 0)} %` : '—'} |`);
     if (FORSYTH[kind]) rows.push(FORSYTH[kind]!);
   }
   // Speed kept: a bottom turn's entry speed against the next top turn's (Forsyth's "turn flow").
@@ -376,8 +383,8 @@ function turnTables(rides: Ride[]): string {
 
 Ride ends (the ride analyzer): ${[...ends].map(([e, c]) => `${e} ×${c}`).join(', ') || 'none'}${unread ? `; ${unread} ride(s) still open when the rider was relaunched` : ''}. Turns per ride ${fixed(maneuvers.length / Math.max(1, analyses.length))}.
 
-| Turn | Count | Duration s | Yaw ° | Peak yaw rate rad/s | Speed in m/s | Path's radius m | Path's pull g | Rail ° | In the pocket |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Turn | Count | Duration s | Yaw ° | Peak yaw rate rad/s | Speed in m/s | Speed out m/s | Face at the peak | Path's radius m | Path's pull g | Rail ° | In the pocket |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 ${rows.join('\n')}
 
 The radius and the pull are the path's, as the rider rode it, averaged over the turn; Forsyth's, in brackets, are speed / yaw rate and speed × yaw rate (they measured neither), which overstate a pivoting board's pull.
