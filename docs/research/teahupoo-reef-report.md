@@ -559,6 +559,12 @@ The Wave Lab's largest sea is the buoy's Hs 4 m at 18 s and tide +1, from the Bi
 
 **Open:**
 - **The pass holds the sea's steepest steps.** Of the runs whose steepest step tops 2.3 (2.3–3.9), all but one have it in the pass (x 58–75, 17–77 m from shore). The exception is main's Wave Lab run from 10°, at 2.69 mid-window. The waves run up the pass's beach face there, where the bed is uniform along shore, so it is not the edge ramp. This fix does not change them.
+  - **What they are** (the advisor's check): every step over 2.3 between dispersive row neighbours, frame by frame, with the fix, is sorted by the rows either side: one front, or a flip in sign.
+  - **On the Surf screen's Big seas** (high tide seeds 1 and 3, tide +1 seed 1), all 155 are one-sided fronts.
+    - 147 are at breaking cells (B = 1) beside shallow-water cells. Those are the model's shock-captured bores on the beach face: a 2–4 m bore over a cell or two steps 2–4 per metre. Their look is the roller's job, not the solver's.
+    - The other 8 (seed 3) are a steep unbroken face in 7 m of water.
+  - **On the Wave Lab's largest** (20° seeds 2 and 3, 10° seed 1), 1,360 of 1,430 are fronts, and most lie outside the pass (250 in it).
+    - 70 (5 %, all from 20°) have a one-cell trough at a front's foot, unbroken. That pattern looks numerical and is worth a trace: the owner's call.
 
 ### Where a jet's water comes from
 
