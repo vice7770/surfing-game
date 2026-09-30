@@ -368,6 +368,11 @@ export class ShallowWaterSolver {
     return this.rateH;
   }
 
+  /** Whether the along-shore edges wrap onto each other. */
+  get periodicAlongShore(): boolean {
+    return this.xBoundary === PERIODIC;
+  }
+
   /** The relaxation zones, in the order they blend. */
   get relaxationZones(): readonly RelaxationZone[] {
     return this.zones.map((entry) => entry.zone);
