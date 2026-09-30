@@ -15,7 +15,7 @@ import { BREAKING_ONSET } from '../SurfZoneSimulation';
 describe.runIf(process.env.PROBE)('periodic onset on the Padang Padang transect', () => {
   it('logs the onset depth per height and period', () => {
     const log = process.env.LOG ?? 'periodic-onset.txt';
-    writeFileSync(log, 'T s | H at 7 m | η at the foot (median, waves) | η at 5.5 m | fresh onset: still depth under the crest (median, 10–90 %)\n');
+    writeFileSync(log, 'T s | H at 7 m | η at the foot (median, waves) | η in 6–5 m (its highest) | fresh onset: still depth under the crest (median, 10–90 %)\n');
     const heights = (process.env.HEIGHTS ?? '1,1.5,2,2.5,3,3.5').split(',').map(Number);
     const periods = (process.env.PERIODS ?? '14,16,17,18').split(',').map(Number);
     for (const period of periods) for (const height of heights) appendFileSync(log, `${run(height, period)}\n`);
@@ -32,9 +32,16 @@ const END = TOP + 150;
 const ABSORB = 60;
 const LENGTH = END + ABSORB;
 const depthAt = (z: number) => (z < TOE ? H0 : z < TOP ? H0 - SLOPE * (z - TOE) : FLAT);
-/** The reference depth nearer the break, still seaward of every onset (the advisor, 2026-09-30), m, and where it is. */
-const REFERENCE = 5.5;
-const REFERENCE_Z = TOE + (H0 - REFERENCE) / SLOPE;
+/** The reference band nearer the break, still seaward of every onset (the advisor, 2026-09-30): still depth 6 to 5 m. */
+const BAND = [6, 5] as const;
+const bandRows = (solver: BoussinesqSolver) => {
+  const rows: number[] = [];
+  for (let row = 0; row < solver.nz; row += 1) {
+    const d = depthAt(solver.zCenters[row]);
+    if (solver.zCenters[row] >= TOE && d <= BAND[0] && d >= BAND[1]) rows.push(row);
+  }
+  return rows;
+};
 
 function run(height: number, period: number): string {
   const dz = 1;
@@ -71,7 +78,7 @@ function run(height: number, period: number): string {
   const eta = (row: number) => solver.h[row * nx + column] + solver.bed[row * nx + column];
   const feet: number[] = [];
   const references: number[] = [];
-  const referenceRow = solver.rowBelow(REFERENCE_Z);
+  const referenceRows = bandRows(solver);
   let referenceCrest = -Infinity;
   const onsets: number[] = [];
   let footCrest = -Infinity;
@@ -93,7 +100,7 @@ function run(height: number, period: number): string {
       footPeriod = n;
     }
     footCrest = Math.max(footCrest, eta(toeRow));
-    referenceCrest = Math.max(referenceCrest, eta(referenceRow));
+    for (const row of referenceRows) referenceCrest = Math.max(referenceCrest, eta(row));
     // The most seaward cell on the wedge rising at the fresh onset: a new wave's when it jumps seaward.
     let face = -1;
     for (let row = toeRow; row < solver.rowBelow(END); row += 1) {
