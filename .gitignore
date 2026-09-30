@@ -8,3 +8,4 @@ scripts/assets/.build/
 .superpowers/
 dist-server/
 server/bots/*.bin
+tools/basilisk/runs/

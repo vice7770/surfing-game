@@ -123,6 +123,36 @@ describe('ShallowWaterSolver', () => {
     expect(wall.bed[0]).toBe(-depthAt(wall.xCenters[0], wall.zCenters[0]));
   });
 
+  it('eases the bed to uniform along shore over 20 m at the open edges of a window as wide as the game\'s', () => {
+    // Levelling only the copied columns left a kink where the slope resumed: the Reef's biggest seas drained that
+    // corner (its 45° ledge ends on the game window's −x edge) until a thin cell ran away there.
+    const depthAt = (x: number, z: number) => 30 - 0.15 * x - 0.02 * z;
+    const grid = { nx: 160, xMin: -80, dx: 1, zEdges: uniformEdges(-40, 0, 10), xBoundary: 'open' as const };
+    const ramped = (solver: ShallowWaterSolver) => {
+      const { nx } = solver;
+      let sharpest = 0;
+      for (let iz = 0; iz < solver.nz; iz += 1) {
+        const row = iz * nx;
+        // Uniform where the stencils copy the edge, the spot's own bed from 20 m in.
+        for (const ix of [0, 1]) expect(solver.bed[row + ix]).toBeCloseTo(solver.bed[row + 2], 12);
+        for (const ix of [nx - 2, nx - 1]) expect(solver.bed[row + ix]).toBeCloseTo(solver.bed[row + nx - 3], 12);
+        for (let ix = 20; ix < nx - 20; ix += 1) expect(solver.bed[row + ix]).toBe(-depthAt(solver.xCenters[ix], solver.zCenters[iz]));
+        for (let ix = 1; ix < nx - 1; ix += 1) {
+          sharpest = Math.max(sharpest, Math.abs(solver.bed[row + ix + 1] - 2 * solver.bed[row + ix] + solver.bed[row + ix - 1]));
+        }
+        for (let ix = 0; ix < nx; ix += 1) expect(solver.h[row + ix]).toBeCloseTo(Math.max(0, -solver.bed[row + ix]), 12);
+      }
+      // No kink: levelling the copied columns bent this 0.15 slope by 0.15 in one cell.
+      expect(sharpest).toBeLessThan(0.05);
+    };
+    const solver = new ShallowWaterSolver(grid, depthAt);
+    ramped(solver);
+    solver.shiftAlongShore(3);
+    ramped(solver);
+    solver.shiftAlongShore(-5);
+    ramped(solver);
+  });
+
   it('stretches cross-shore cells smoothly from fine to coarse', () => {
     const edges = stretchedEdges(-300, 30, -150, 1, 4);
     expect(edges[0]).toBe(-300);

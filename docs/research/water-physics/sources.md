@@ -91,3 +91,21 @@ The pages below were opened, not just searched; the full notes tag every finding
 - [Bohren 1987](https://patarnott.com/atms749/pdf/BohrenMultipleScattOpus.pdf) and [Jendersie & d'Eon 2023](https://research.nvidia.com/labs/rtr/approximate-mie/publications/approximate-mie.pdf): multiple scattering and fast Mie phase functions
 - [Atmospheric Optics: the sea-water rainbow](https://atoptics.co.uk/blog/sea-water-rainbow/) and [IALA: meteorological optical range](https://www.iala.int/wiki/dictionary/index.php/Meteorological_Optical_Range)
 - [Moana: Crashing Waves](https://media.disneyanimation.com/uploads/production/publication_asset/164/asset/Moana_Crashing_Waves.pdf), [Thomas, GDC 2014](https://media.gdcvault.com/GDC2014/Presentations/Gareth_Thomas_Compute-based_GPU_Particle.pdf), [GPU Gems 3, ch. 23](https://developer.nvidia.com/gpugems/gpugems3/part-iv-image-effects/chapter-23-high-speed-screen-particles) and [McGuire's weighted blended transparency](https://casual-effects.blogspot.com/2014/03/weighted-blended-order-independent.html): how films and games draw spray
+
+## Underwater
+
+- [Tyler 1960, Scripps Visibility Lab](https://misclab.umeoce.maine.edu/education/VisibilityLab/reports/SIO_60-9.pdf): how light is spread over directions underwater
+- [Lynch 2014, Applied Optics](https://doi.org/10.1364/ao.54.0000b8): Snell's window on wavy water
+- [Dera & Stramski 1986](http://www.iopan.gda.pl/oceanologia/OC_23/OC_23_15-42.pdf) and [Darecki et al. 2011, JGR](https://doi.org/10.1029/2011JC007338): light flashes near the surface
+- [Deane & Stokes 2002, Nature](https://pdodds.w3.uvm.edu/files/papers/others/2002/deane2002.pdf): bubble creation in breaking waves
+- [Watanabe et al. 2005, JFM](https://eprints.lib.hokudai.ac.jp/dspace/bitstream/2115/1425/1/JFM545.pdf): vortices and splash-up cycles under plunging breakers
+- [Leifer et al. 2006](https://publications.tno.nl/publication/34610132/xa5thE/leifer-2006-bubbles2.pdf): bubble rise speeds by size
+- [Aagaard et al. 2021, JMSE](https://doi.org/10.3390/jmse9111300): near-bed flow and sand suspension under breakers
+- [Garcez Faria 1997](https://calhoun.nps.edu/server/api/core/bitstreams/7a30faa6-893a-4ede-af9a-5f711de8fe8c/content), [van der Zanden et al. 2018](https://ris.utwente.nl/ws/files/29784531/Zanden_et_al_2018_Journal_of_Geophysical_Research_Oceans.pdf) and [MacMahan et al. 2005](https://calhoun.nps.edu/server/api/core/bitstreams/b2de88ce-653b-4133-9d3e-bf1d78390d59/content): undertow and rip currents
+- [Crest's underwater docs](https://crest.readthedocs.io/en/stable/user/underwater.html), [Unity HDRP underwater](https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@17.0/manual/water-underwater-view.html) and [Finding Nemo's water, AWN](https://www.awn.com/animationworld/finding-right-cg-water-and-fish-nemo): how games and film draw it
+
+## Basilisk runs (round 6)
+
+- [Basilisk source and wiki mirror](https://github.com/comphy-lab/basilisk-C), synced 2026-09-28: the solver (GPL-3.0, from its `src/COPYING`), and both published setups, Mostert & Deike's `sandbox/wmostert/shallow.c` and Feddersen et al.'s `sandbox/ffeddersen/shoal_RE0_BO4000.c`. basilisk.fr itself is blocked in the cloud session.
+- Pick & Feddersen's fits and domain, Mead & Black's roundness fit and the Surf Ranch open-curl lengths, as recorded in rounds 1–2; their PDFs could not be reopened from the cloud session.
+- Padang Padang's bed: `PADANG` in `src/wave/Bathymetry.ts` on branch `claude/padang-padang` (f132989).

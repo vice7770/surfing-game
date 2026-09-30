@@ -62,3 +62,5 @@ The roller becomes the swept barrel's second stage. Once a slice's tube has gone
 - it needs the barrel's Part B;
 - the solver's bore shape shows through;
 - a hard barrel contact would let boards stand on froth, so the lens must be soft (agree this with the Padang Padang session).
+
+**Decided 2026-09-29, as recommended:** Classic draws the roller too, since the rider hits it. The void fraction is 0.25, the middle of the sourced 0.13–0.4. Aerated water behind the roller does not raise the surface: a few centimetres at most, and it would complicate the online match [inferred]. Roughness starts mid-range and is tuned on film, and the lens shape comes from the Basilisk runs.
