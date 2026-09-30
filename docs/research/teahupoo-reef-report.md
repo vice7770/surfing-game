@@ -562,9 +562,12 @@ The Wave Lab's largest sea is the buoy's Hs 4 m at 18 s and tide +1, from the Bi
   - **What they are** (the advisor's check): every step over 2.3 between dispersive row neighbours, frame by frame, with the fix, is sorted by the rows either side: one front, or a flip in sign.
   - **On the Surf screen's Big seas** (high tide seeds 1 and 3, tide +1 seed 1), all 155 are one-sided fronts.
     - 147 are at breaking cells (B = 1) beside shallow-water cells. Those are the model's shock-captured bores on the beach face: a 2–4 m bore over a cell or two steps 2–4 per metre. Their look is the roller's job, not the solver's.
-    - The other 8 (seed 3) are a steep unbroken face in 7 m of water.
+    - The other 8 (seed 3) are a face steepening toward breaking in 7 m of water, before its flag is set: the moment a throw keys on (the advisor).
   - **On the Wave Lab's largest** (20° seeds 2 and 3, 10° seed 1), 1,360 of 1,430 are fronts, and most lie outside the pass (250 in it).
-    - 70 (5 %, all from 20°) have a one-cell trough at a front's foot, unbroken. That pattern looks numerical and is worth a trace: the owner's call.
+    - 70 (5 %, all from 20°) have a one-cell trough at a front's foot, unbroken (e.g. η 1.82, −0.79, 1.55). A trough one cell wide is grid-scale (2Δ) noise, far shorter than any real ripple behind a bore, so it is numerical. It shows only on the extreme sea, and every run stayed finite. Whether to trace it is the owner's call.
+    - **Where a trace would start** (the advisor): read the dispersive mask at each dip cell and its row neighbours.
+      - If the dip sits where a shallow-water cell meets a dispersing one, it is the mask interface: the P/Q recovery's pinning behind the Reef's blow-ups, smaller.
+      - If it sits in dispersing water on an unflagged steep front, it is the dispersive terms' central differences on a near-discontinuity with no Kennedy damping, and the breaking onset is the lever.
 
 ### Where a jet's water comes from
 
