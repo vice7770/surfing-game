@@ -92,7 +92,7 @@ Read in this order:
 - **The Reef (Teahupo'o):**
   - Parts A–C are merged (#54, #57, #60).
   - Part D, tube riding, isn't started. It takes its contact fields from Padang's PR 4: covered, clearance and the tube's state.
-- **The Reef's +x edge spike, fixed:** lip jets were landing past the open edge and getting clamped into the edge column. The fix is on branch `claude/edge-landings`, its PR next when this was written: landings past open edges are dropped with their foam and aeration, walls still clamp, and periodic edges wrap. It passed both criteria in 58 game-size runs (seed 3's edge 4.22 → 1.79). Open: the pass's steps above 2.3 on the beach face (x 58–75), where a cheap check (monotonic fronts or alternating) was advised before any trace.
+- **The Reef's +x edge spike, fixed:** lip jets were landing past the open edge and getting clamped into the edge column. The fix is PR #99 (`claude/edge-landings`, waiting for the owner's merge): landings past open edges are dropped with their foam and aeration, walls still clamp, and periodic edges wrap. It passed both criteria in 60 game-size runs (seed 3's edge 4.22 → 1.79). The pass's steep steps are bores and faces about to break, which are expected, except 70 one-cell troughs on Wave Lab max from 20°. Those are numerical; tracing them is the owner's call (the hypothesis is in the consult log).
 - **Particle load, PR #94** (`claude/particle-settings`, waiting for the owner's merge):
   - It adds Graphics › Advanced › Particles, Low / Medium / High. High, the default, is bit-identical to before.
   - It rebuilds the Rich lip sheet 3–5 times faster, with the same output.
@@ -113,7 +113,7 @@ Read in this order:
 
 - **The library's jet speed (settled 2026-09-30):** normalised by each case's own crest speed, the four cases throw at 0.93–1.08 C (median horizontal), peak at 1.08–1.23 C, and fall at 0.58–0.71 g. That's the low end of Erinin et al. 2023's 1.1–1.3 C, falling close to free fall; the Small periodic case is the slowest. The level-13 run should nudge them up; recheck it then.
 - **PR 4's contact:** check its unloaded cost once the quads are bucketed, then the shapes of PR 5's crash curve and parcels.
-- **The Reef's pass:** if the edge session's check finds steps alternating in sign on the beach face, rule on the trace.
+- **Wave Lab max's one-cell troughs (from 20°):** if the owner wants them traced, first check the dispersive mask at each dip: the mask interface against the onset trigger.
 
 ## How other sessions reach the advisor
 
