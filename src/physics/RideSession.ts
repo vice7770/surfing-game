@@ -23,9 +23,9 @@ export interface RideInput {
   steer: number;
   /** Standing, weight along the board: −1 back to 1 forward (spec P9). */
   trim?: number;
-  /** Standing, the crouch: 0 riding stance to 1 deepest. */
+  /** Standing, the crouch (the pumping stance): 0 riding stance to 1, about two thirds of Compress's depth. */
   crouch?: number;
-  /** Standing, Compress (the bottom turn's stance): 0 none to 1 full depth with the weight forward. */
+  /** Standing, Compress (the sharp turn's stance): 0 none to 1 full depth; the weight stays the trim's. */
   compress?: number;
   /** Standing, the wave-side hand in the water. */
   hand?: boolean;

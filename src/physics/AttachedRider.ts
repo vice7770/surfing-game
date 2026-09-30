@@ -333,18 +333,19 @@ const STEER_DEADBAND = 0.05;
 /** Trim: the upper body shifts fore or aft by up to this much, m, moving the load along the board (provisional). */
 const TRIM_SHIFT = 0.25;
 /**
- * Compress (the stances spec), the bottom turn's stance: the crouch's full depth
- * with the weight over the front foot, COMPRESS_WEIGHT of the trim's range forward
- * (de Sousa 2022: the trunk over the front foot while the knees are flexed).
- */
-const COMPRESS_WEIGHT = 0.5;
-/**
- * Crouch: the leg shortens by up to CROUCH_DEPTH, m, to about two thirds of the
- * standing height (0.6-0.7 in the survey, for tube clearance), at most
- * MAX_LEG_SPEED, m/s (a countermovement jump's take-off speed, so a jump stays
- * possible), and softens toward the legs-bent 22 kN/m (provisional).
+ * The height ladder (the movement-flow spec): standing, the crouch (the pumping
+ * stance) and Compress (the sharp turn's). Compress shortens the leg by up to
+ * CROUCH_DEPTH, m, to about two thirds of the standing height (0.6-0.7 in the
+ * survey, for tube clearance; knees and hips at 90° or less), the crouch by
+ * CROUCH_SHARE of it (knees about 100–110°: the stances spec's crouch of 0.6
+ * bent them to 106°). The leg moves at most MAX_LEG_SPEED, m/s (a
+ * countermovement jump's take-off speed, so a jump stays possible), and softens
+ * toward the legs-bent 22 kN/m (provisional). The weight stays the trim's in
+ * every stance: W/S put it on the front foot for a bottom turn, the back foot
+ * for a cutback.
  */
 export const CROUCH_DEPTH = 0.3;
+export const CROUCH_SHARE = 0.65;
 const MAX_LEG_SPEED = 2.5;
 const CROUCH_SOFTENING = 0.5;
 /**
@@ -368,12 +369,13 @@ const EXTEND_ACCELERATION = 15;
  */
 const CROUCH_HOLD = 0.75;
 /**
- * Compressing deeper than the crouch, the legs drop as fast as the turn's load
- * lets them: the rest's downward acceleration is the specific force along the
- * leg above COMPRESS_KEEP of gravity, so the feet keep at least that share of
- * the rider's weight (about 0.1 g on flat water, more as a turn loads the legs)
- * and the crouch's hold is not needed. Surfers compress under a turn's load:
- * slowly as the rail sets, quickly once it loads them up.
+ * Compressing deeper than the crouch, the legs drop at least as fast as the
+ * crouch's, and faster as a turn loads them: the specific force along the leg
+ * above COMPRESS_KEEP of gravity, so under a turn's load the feet keep that
+ * share of the rider's weight. The crouch's hold is not needed. Paced by the
+ * load alone (about 0.1 g on flat water), Compress took about a second to reach
+ * its depth riding straight, and the player saw nothing happen (the
+ * movement-flow spec's Q1).
  */
 const COMPRESS_KEEP = 0.9;
 /**
@@ -1443,11 +1445,13 @@ export class AttachedRider {
     // The crouch: a shorter leg, reached no faster than the legs can move, and softer.
     // Critically damped, and going down no harder than keeps the feet loaded: a sudden drop of the leg would
     // have to pull the body down, and unloaded feet lose their grip.
-    const rest = -Math.max(0, Math.min(1, Math.max(this.crouch, this.compress))) * CROUCH_DEPTH;
+    const crouch = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
+    const compress = Math.max(0, Math.min(1, this.compress));
+    const rest = -Math.max(crouch, compress) * CROUCH_DEPTH;
     const down = rest < this.leg.rest;
-    const compressing = this.compress > this.crouch;
+    const compressing = compress > crouch;
     const accelerationLimit = !down ? EXTEND_ACCELERATION
-      : compressing ? Math.max(0, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
+      : compressing ? Math.max(CROUCH_ACCELERATION, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
     const speedLimit = down ? CROUCH_SPEED : MAX_LEG_SPEED;
     // While the feet brake the body's bank near their edges, the crouch's legs hold rather than drop (CROUCH_HOLD).
     const hold = this.banking && !compressing
@@ -2169,8 +2173,7 @@ export class AttachedRider {
     }
     // Carried upright, the steering lean (with the heading hold and the hand); banked, steering is the bank. The trim, standing only.
     const lean = this.upright && !this.banking ? Math.max(-1, Math.min(1, this.steer + this.standingHold + HAND_BEND * this.handBend)) * MAX_LEAN : 0;
-    const compress = Math.max(0, Math.min(1, this.compress));
-    const trim = this.upright ? Math.max(-1, Math.min(1, this.trim + COMPRESS_WEIGHT * compress)) * TRIM_SHIFT : 0;
+    const trim = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
     this.leanAxis('x', lean, h);
     this.leanAxis('z', trim, h);
   }
