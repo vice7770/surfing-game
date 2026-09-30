@@ -22,7 +22,7 @@ You asked (2026-09-30) for the Reef's own transect to be run, to source its prov
 
 ## Your decisions
 
-1. **Periodic swell for the Reef (recommended).** Sourcing the Reef's jet and tube at the ledge needs a wave train with its trough, the step. That means a wavemaker or a periodic initial wave in Basilisk: your "periodic swell later", now needed here. My estimate is about a day of setup, then a few hours per case at level 11–12 on the M4 Pro.
+1. **Periodic swell for the Reef (recommended).** Sourcing the Reef's jet and tube at the ledge needs a wave train with its trough, the step. That means a wavemaker or a periodic initial wave in Basilisk: your "periodic swell later", now needed here. My estimate is about a day of setup, then a few hours per case at level 11–12 on the M4 Pro. The same runs would give Padang's swept barrel its onset lag for swell; today it uses the solitary lag as an upper bound.
 2. **Until then, keep the Reef's provisional values** (jet 0.47 H², tube 0.43 H², tilt 23°, length over width 1.42). These runs don't break where the Reef does, so they can't replace them; the lip thickness is the one value they support.
 
 Scripts: `tools/basilisk/run_reef.sh`. Notes: [notes/round6-tube-profiles/reef-ledge.md](notes/round6-tube-profiles/reef-ledge.md).

@@ -48,6 +48,7 @@ All settled on 2026-09-29: Rich foam, the roller, spray and mist, the peel meter
   - At game size, the predictor session measured that the solver's crest supplies only part of it from above still level.
   - A Basilisk run on the Reef's own transect would source it, under the owner's tube rule.
   - **Run on the M1, 2026-09-30** ([reef-ledge-runs.md](reef-ledge-runs.md)). The lip comes out 0.28–0.41 H thick, supporting a thick lip. But the solitary wave breaks on the flat, not the ledge, so the jet and tube at the ledge need periodic-wave runs; the provisional values stay until then.
+- **Periodic Basilisk runs (recommended to the owner, 2026-09-30):** needed for the Reef's jet and tube at the ledge ([reef-ledge-runs.md](reef-ledge-runs.md)) and for Padang's onset lag for swell. The swept barrel uses the solitary lag, 2.2–2.8 √(h0/g), as an upper bound until then.
 - **The lip-jet source (consult in flight):** the predictor session is measuring the upper-half crest window; see [consult-log.md](consult-log.md).
 - **Water colour:** checked against the journals. The builder uses the phytoplankton-only coefficients in [underwater-colour.md](underwater-colour.md).
 
