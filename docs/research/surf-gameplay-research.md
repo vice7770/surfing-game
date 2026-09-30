@@ -425,6 +425,8 @@ Turns per wave 3.8. "Turn flow" (≈ cutback speed / bottom-turn speed) 0.88–0
 
 These fit the measured rail angles of 42° and 75°, given that the rail angle is measured relative to a sloping face.
 
+Caveat (2026-09-30, `angulation-study.md`): R = v/ω and a = vω hold only if the board's heading turns with its path. A board that pivots, or rides moving water, swings its heading about its path. On the game's waves speed × yaw rate reads about 1.5 times the path's pull (1.38 g against 0.91 g), so these loads and the coordinated bank are upper bounds, not measurements.
+
 **Other turn and manoeuvre data:**
 - Whitting 2024 (already cited): critical features of the frontside bottom turn.
 - Moreira 2020: manoeuvres last 2.45 ± 0.75 s.

@@ -1,5 +1,6 @@
 import { BoussinesqSolver, type BoussinesqDeviceLayout } from '../BoussinesqSolver';
 import { SeaStateBoundary } from '../SeaStateBoundary';
+import { SideFeed } from '../SideFeed';
 import { PERIODIC, WALL, cflSubsteps } from '../ShallowWaterSolver';
 import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, STEP_KERNELS, boussinesqWgsl } from './boussinesqWgsl';
 
@@ -12,11 +13,13 @@ export const DEVICE_READBACK = [FIELD.H, FIELD.QX, FIELD.QZ, FIELD.RATEH, FIELD.
 /** Fields that follow the bed, or that only the CPU's window shift changes between frames; the plunge zone is also sent when a cell enters or leaves it. */
 export const DEVICE_LAYOUT = [FIELD.BED, FIELD.STILL, FIELD.DDX, FIELD.DDZ, FIELD.WEIGHT, FIELD.STRENGTH, FIELD.AGE, FIELD.PREDX, FIELD.PREDZ, FIELD.HOLD] as const;
 
-/** The one offshore zone a device step blends toward: its rows and its sea's components. */
+/** The one offshore zone a device step blends toward (its rows and its sea's components), and the side feed if any. */
 interface DeviceZone {
   boundary: SeaStateBoundary;
   firstRow: number;
   rows: number;
+  /** The window's side strips fed with the incoming sea (the wave-sizes spec). */
+  feed?: SideFeed;
 }
 
 /** The solver array a device field reads back into. */
@@ -40,7 +43,9 @@ export function deviceStepRefusal(solver: BoussinesqSolver): string | undefined 
   const layout = solver.deviceLayout();
   if (layout.xBoundary === PERIODIC) return 'periodic along shore (cyclic solves stay on the CPU)';
   if (!layout.dispersive && !layout.breaking) return 'stage 1 (no dispersion or breaking)';
-  if (layout.zones.length > 1 || layout.zones.some((zone) => !(zone instanceof SeaStateBoundary))) return 'relaxation zones other than one linear sea';
+  const [first, second, ...rest] = layout.zones;
+  const covered = (!first || first instanceof SeaStateBoundary) && (!second || second instanceof SideFeed) && rest.length === 0;
+  if (!covered) return 'relaxation zones other than one linear sea and its side feed';
   return undefined;
 }
 
@@ -56,7 +61,41 @@ function zoneOf(solver: BoussinesqSolver, layout: BoussinesqDeviceLayout): Devic
       last = iz;
     }
   }
-  return last >= first ? { boundary, firstRow: first, rows: last - first + 1 } : undefined;
+  const feed = layout.zones[1] instanceof SideFeed ? layout.zones[1] : undefined;
+  return last >= first ? { boundary, firstRow: first, rows: last - first + 1, feed } : undefined;
+}
+
+/**
+ * The side feed for the device (the wave-sizes spec): per component the time block (written each frame by
+ * `packSideTimes`), then per strip cell its cell index, weight, and where its row's and column's factors start,
+ * then the strips' row factors (A cos Ψ, A sin Ψ, speedX, speedZ per component) and column factors (cos, sin of kx·Δx).
+ */
+export function packSideFeed(feed: SideFeed): Float32Array<ArrayBuffer> {
+  const tables = feed.deviceTables();
+  const slots = tables.slots.length / 4;
+  const rowsBase = tables.components * 3 + slots * 4;
+  const columnsBase = rowsBase + tables.rows.length;
+  const packed = new Float32Array(columnsBase + tables.columns.length);
+  for (let slot = 0; slot < slots; slot += 1) {
+    const o = tables.components * 3 + slot * 4;
+    packed[o] = tables.slots[slot * 4];
+    packed[o + 1] = tables.slots[slot * 4 + 1];
+    packed[o + 2] = rowsBase + tables.slots[slot * 4 + 2];
+    packed[o + 3] = columnsBase + tables.slots[slot * 4 + 3];
+  }
+  packed.set(tables.rows, rowsBase);
+  packed.set(tables.columns, columnsBase);
+  return packed;
+}
+
+/** The side feed's time block for a frame starting at solver time `start`: cos ωs, sin ωs (in double precision) and ω. */
+export function packSideTimes(feed: SideFeed, start: number, out: Float32Array<ArrayBuffer>): void {
+  const seaTime = start + feed.timeOffset;
+  feed.sea.components.forEach((component, c) => {
+    out[c * 3] = Math.cos(component.omega * seaTime);
+    out[c * 3 + 1] = Math.sin(component.omega * seaTime);
+    out[c * 3 + 2] = component.omega;
+  });
 }
 
 /** The grid buffer: x centres relative to the first, then per row its centre, height, neighbour distances and gap. */
@@ -117,6 +156,8 @@ export function writeParams(
   words[16] = zone ? zone.boundary.sea.components.length : 0;
   words[17] = zone?.firstRow ?? 0; words[18] = zone?.rows ?? 0;
   floats[19] = tau;
+  const feed = zone?.feed?.deviceShape();
+  words[20] = feed?.slots ?? 0; words[21] = feed?.components ?? 0;
 }
 
 /**
@@ -135,13 +176,18 @@ export class GpuBoussinesq {
   private readonly sea: GPUBuffer;
   private readonly params: GPUBuffer;
   private readonly staging: GPUBuffer;
-  private readonly bindGroup: GPUBindGroup;
   private readonly pipelines: Map<string, GPUComputePipeline>;
   private readonly paramBytes = new ArrayBuffer(PARAM_WORDS * 4);
   private readonly upload: Float32Array<ArrayBuffer>;
   private readonly field: Float32Array<ArrayBuffer>;
   private readonly components: Float32Array<ArrayBuffer>;
   private readonly zone?: DeviceZone;
+  /** The side feed's buffer (a placeholder word without one), its packed tables, and how many slots it steps. */
+  private feedBuffer: GPUBuffer;
+  private feedPacked = new Float32Array(1);
+  private feedSlots = 0;
+  private bindGroup: GPUBindGroup;
+  private readonly bindLayout: GPUBindGroupLayout;
   private version = -1;
   private plungeVersion = -1;
   private disposed = false;
@@ -173,20 +219,42 @@ export class GpuBoussinesq {
         { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } },
         { binding: 2, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } },
         { binding: 3, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } },
+        { binding: 4, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'read-only-storage' } },
       ],
     });
+    this.bindLayout = bindLayout;
     const pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [bindLayout] });
     this.pipelines = new Map(STEP_KERNELS.map((entryPoint) => [entryPoint, device.createComputePipeline({ layout: pipelineLayout, compute: { module, entryPoint } })]));
-    this.bindGroup = device.createBindGroup({
-      layout: bindLayout,
+    this.feedBuffer = device.createBuffer({ size: 4, usage: storage });
+    this.bindGroup = this.bind();
+    device.queue.writeBuffer(this.grid, 0, packGrid(solver, layout));
+  }
+
+  private bind(): GPUBindGroup {
+    return this.device.createBindGroup({
+      layout: this.bindLayout,
       entries: [
         { binding: 0, resource: { buffer: this.fields } },
         { binding: 1, resource: { buffer: this.grid } },
         { binding: 2, resource: { buffer: this.sea } },
         { binding: 3, resource: { buffer: this.params } },
+        { binding: 4, resource: { buffer: this.feedBuffer } },
       ],
     });
-    device.queue.writeBuffer(this.grid, 0, packGrid(solver, layout));
+  }
+
+  /** Pack and upload the side feed's tables (after a slide they are rebuilt), growing its buffer when it must. */
+  private writeFeed(): void {
+    const feed = this.zone?.feed;
+    if (!feed) return;
+    this.feedPacked = packSideFeed(feed);
+    this.feedSlots = feed.deviceShape().slots;
+    if (this.feedPacked.byteLength > this.feedBuffer.size) {
+      this.feedBuffer.destroy();
+      this.feedBuffer = this.device.createBuffer({ size: this.feedPacked.byteLength, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST });
+      this.bindGroup = this.bind();
+    }
+    this.device.queue.writeBuffer(this.feedBuffer, 0, this.feedPacked);
   }
 
   /** A device step for `solver`, or undefined where WebGPU or the solver's setup rules it out. */
@@ -233,6 +301,11 @@ export class GpuBoussinesq {
       packComponents(this.zone.boundary, solver.time, solver.xCenters[0], this.components);
       device.queue.writeBuffer(this.sea, 0, this.components);
     }
+    if (this.zone?.feed && this.feedSlots > 0) {
+      // Only the time block changes from frame to frame.
+      packSideTimes(this.zone.feed, solver.time, this.feedPacked);
+      device.queue.writeBuffer(this.feedBuffer, 0, this.feedPacked, 0, this.zone.feed.deviceShape().components * 3);
+    }
     const substeps = cflSubsteps(dt, solver.maxStableStep());
     const sub = dt / substeps;
     const cells = Math.ceil(n / WORKGROUP);
@@ -244,10 +317,12 @@ export class GpuBoussinesq {
       pass.setBindGroup(0, this.bindGroup);
       for (const kernel of this.kernels) {
         if (kernel === 'relax' && !this.zone) continue;
+        if (kernel === 'relaxSides' && !(this.feedSlots > 0)) continue;
         pass.setPipeline(this.pipelines.get(kernel)!);
         const groups = kernel === 'rows' ? Math.ceil(solver.nz / WORKGROUP)
           : kernel === 'columns' ? Math.ceil(solver.nx / WORKGROUP)
             : kernel === 'relax' ? Math.ceil((this.zone!.rows * solver.nx) / WORKGROUP)
+              : kernel === 'relaxSides' ? Math.ceil(this.feedSlots / WORKGROUP)
               : cells;
         pass.dispatchWorkgroups(groups);
       }
@@ -292,6 +367,7 @@ export class GpuBoussinesq {
       device.queue.writeBuffer(this.fields, index * n * 4, field);
     }
     device.queue.writeBuffer(this.grid, 0, packGrid(solver, layout));
+    this.writeFeed();
   }
 
   dispose(): void {

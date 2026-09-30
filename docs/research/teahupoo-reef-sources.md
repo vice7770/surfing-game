@@ -131,7 +131,7 @@ Read directly on 2026-09-28 by the user's wave-shape advisor (the "Water physics
 - **The lip's thickness:**
   - Shand (2024) gives about half the wave's height at Teahupo'o;
   - Chanson & Lee (1997), ["Plunging jet characteristics of plunging breakers"](https://www.sciencedirect.com/science/article/abs/pii/S0378383996000567), Coastal Engineering 31, find steeper slopes throw thicker jets (qualitative here; the full text was not reachable).
-- **The jet's water:** Pick & Feddersen's jet area is the water of the overturning crest. The game takes it from the crest across the overturn's length, each cell giving at most 20 % of its water (numerical, the P7 bound). Whether the crest holds enough is measured, not assumed (Part B, Task 5).
+- **The jet's water:** Pick & Feddersen's jet area is the water of the overturning crest. The game takes it from the wave's upper half within 2H of its crest: the cells across shore through the crest standing at least H/2 above the wave's trough (crest − H, where the game measures H), each giving a share of its water above that trough, tapered as 1 − (d/2H)² with distance d from the crest, at most 20 % (the water-physics advisor, 2026-09-29; Basilisk's jet water sits within about ±0.5 H of its crest). The trough, not still level: at the step the trough drains metres below still level, and on the Big swell up to half the Reef's breaking crests stand at or below it. Whether the crest holds enough is measured, not assumed (Part B, Task 5).
 
 ### Rulings (Part B)
 

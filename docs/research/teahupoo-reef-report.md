@@ -501,7 +501,98 @@ Game size (160 m, 64 components), 110 s, fastest wet speed:
 
 **Open:**
 - **The root fix** recovers velocity, not flux, as fully nonlinear models do (FUNWAVE-TVD; improved Green–Naghdi). It is sketched in `docs/research/water-physics/solver-rewrite-sketch.md`. The switch makes it less urgent.
-- **Jets** draw 0.2 of the whole column, and pile 1–2.5 m of water a second into the edge columns. The wave-sizes rule (only water above still level) would throw about a third as much.
+- **Jets** draw 0.2 of the whole column, and pile 1–2.5 m of water a second into the edge columns. Fixed below.
+
+### Where a jet's water comes from
+
+A throw took up to 0.2 of the whole column in the crest cell and its two across-shore neighbours. Over the 10 m shelf that is water from metres below still level: on the Big swell a jet carried 1.7–6 times the crest's water above still level in those cells. Taking the jet's momentum from them drove 1–2 source cells backwards per jet (800–1,700 reversed flows a run).
+
+Ruled with the water-physics advisor over five rounds (2026-09-29):
+- **Where the water comes from:** the wave's upper half. That is the cells across shore through the crest standing at least H/2 above the wave's trough, within ±2H of the crest.
+  - The trough is crest − H, where the game measures H.
+  - Each cell gives its water above that trough, tapered as 1 − (d/2H)², times one share f = min(0.2, ask ÷ tapered water).
+  - The ask still sets the jet; 0.2 only caps it, so the crest is never cut flat.
+- **The trough, not still level.** On the Big swell up to half the Reef's breaking crests stand at or below still level (median −0.61 m at high tide), with the drained trough 1.4–2.7 m below it ahead: the step.
+  - Measured from still level, those throws came out empty.
+  - Measured from the trough, none do.
+- **Its momentum** (volume × jet velocity) comes from the wave's upper half, nearest the crest first.
+  - It reaches out a cell each way at a time until the flow along the jet covers it. Each cell gives in proportion to its own flow and is never reversed.
+  - What the upper half cannot give is counted (`unplacedMomentum`).
+  - At the step the depth-mean flow under the crest runs seaward as the trough drains back. The jet's extra speed comes from the crest's pressure, which the depth-averaged flow does not hold.
+- **Tried on the way:**
+  - Only water above still level, in the three cells: it starved every Big throw to 16–40 % of its ask, and emptied the crests below still level.
+  - The upper half unclipped: its window ran 54–74 m, so most of the water came from far behind or ahead of the crest.
+  - Momentum only from the ±2H cells: 21–28 % of it could not be placed on Big.
+
+Game size (160 m, 64 components), 110 s:
+
+| Sea | Fastest water | Throws ≥ 0.27 H² | Surf H1/3 | At the take-off | Momentum not placed | Reversed flows |
+|---|---:|---:|---:|---:|---:|---:|
+| Small, mid tide | 5.1 → 5.1 m/s | 614/689 → 625/663 | 1.85 → 1.84 m | 1.27 → 1.27 m | 0.6 % | 808 → 1 |
+| Medium, mid tide | 6.9 → 6.9 m/s | 720/776 → 765/767 | 2.56 → 2.63 m | 1.51 → 1.52 m | 2.3 % | 1,059 → 0 |
+| Big, mid tide | 8.6 → 8.7 m/s | 835/910 → 902/910 | 4.21 → 4.13 m | 2.88 → 3.00 m | 7.3 % | 1,743 → 2 |
+| Big, high tide, seed 1 | 9.6 → 9.6 m/s | 829/928 → 927/941 | 4.26 → 4.27 m | 3.17 → 3.54 m | 8.5 % | 1,658 → 2 |
+| Big, high tide, seed 2 | 8.9 → 8.8 m/s | 605/713 → 699/720 | 4.34 → 4.30 m | 3.11 → 3.02 m | 14.2 % | 984 → 5 |
+| Big, high tide, seed 3 | 10.0 → 9.6 m/s | 691/829 → 779/813 | 4.76 → 4.73 m | 3.35 → 3.40 m | 7.0 % | 1,456 → 10 |
+| Big, high tide, seed 4 | 8.7 → 9.0 m/s | 596/690 → 670/688 | 3.10 → 3.18 m | 2.46 → 2.55 m | 2.1 % | 646 → 2 |
+
+- **Every throw now takes water.** The window is 5–11 cells, each giving a median 0.18–0.19 of its water above the trough.
+- **Starving:** a fifth of the throws fall short of the Reef's provisional 0.47 H² ask, by a median 0.02–0.05 H². Under 6 % land below Pick & Feddersen's 0.27 H², against 11–17 % on main, whose 0.2 h cap starved thin columns.
+- **The surf readout** (the SurfMeter's breaking faces) holds within −2 % to +3 %. The take-off readings average 3.02 → 3.13 m over the four high-tide seeds, within their spread.
+- **The water is smoother:** the steepest step between dispersive wet cells falls from 2.3–2.7 to 1.9–2.3.
+  - Seed 3 is the exception, a one-step 2.97, with nothing non-finite.
+  - It came 0.2 s after a throw, 2 m from its crest and 8 m inside its ±2H clip, in 10 m of water within the +x edge ramp.
+  - The likely cause looked like the window's front edge at half height, where the removal still steps by f·H/2 (about 0.45 m for a 5 m wave). Main's three-cell source stepped by 0.2 h, about 2 m over the shelf, at every throw.
+  - Measured since, it is not (next section): the steepest steps sit at the wave's mid-face whatever the source does, and seed 3's worst are at the +x edge.
+- **Momentum:** 0.6–8.5 % of the jets' own momentum is unplaced (14 % on seed 2), against the advisor's 10 % line. The rest comes from the water.
+  - Seed 2's share is one set: the worst tenth of its throws hold 86 %, 70 % of it within ten seconds.
+  - Those are the set's biggest waves (H 3.2 m against 2.4), with forward flow at their crests. Their jets' momentum (∝ H² × jet speed) outgrows the upper half's flow.
+- **Both outliers trace to the provisional 0.47 H² ask** on a set's biggest waves. That ask is the Reef's unsourced value, and a periodic Basilisk run of the Reef's ledge would settle it. A solitary wave breaks past the ledge, not at it (Grilli et al. 1997), so the advisor's solitary runs don't.
+
+### A softer edge at half height (measured, not kept)
+
+At the upper half's edge (H/2 above the trough) a cell's removal steps from none to f × its water above the trough. Two weights that remove the step were measured against main (2e81512), and neither was kept (the water-physics advisor, 2026-09-30).
+- **Softer:** the water above the trough × smoothstep((surface − trough − H/2) ÷ (H/4)) × the ±2H taper. That is none at the edge and all from 3H/4.
+- **Half-height:** the water above max(bed, trough + H/2) × the ±2H taper.
+
+Game size (160 m, 64 components), 110 s, seeds 1–4 on each sea: 48 runs, all finite. Means over the seeds, main → softer → half-height:
+
+| Sea | Near-throw step, 99th | At the half-height edge, 99th | Elsewhere, 99th | Starved water | Starved at 0.27 H² | Momentum not placed | Surf H1/3 | At the take-off | Fastest water |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Small, mid tide | 1.09 → 1.08 → 1.06 | 1.16 → 1.18 → 1.12 | 0.92 → 0.97 → 0.85 | 11.0 → 12.6 → 59.3 % | 0 → 0 → 442 | 2.0 → 1.5 → 1.4 % | 2.37 → 2.37 → 2.37 m | 1.39 → 1.39 → 1.39 m | 6.1 → 6.0 → 5.8 m/s |
+| Medium, mid tide | 1.38 → 1.40 → 1.37 | 1.41 → 1.41 → 1.43 | 1.23 → 1.28 → 1.20 | 13.6 → 16.1 → 60.8 % | 0 → 0 → 586 | 3.0 → 2.8 → 0.9 % | 3.43 → 3.47 → 3.53 m | 1.71 → 1.71 → 1.72 m | 7.7 → 7.7 → 7.3 m/s |
+| Big, mid tide | 1.84 → 1.82 → 1.96 | 1.78 → 1.79 → 1.84 | 1.80 → 1.85 → 2.32 | 13.0 → 15.9 → 58.5 % | 0 → 0 → 594 | 5.4 → 5.0 → 1.1 % | 4.55 → 4.61 → 4.67 m | 2.92 → 2.85 → 2.96 m | 9.2 → 9.5 → 9.1 m/s |
+| Big, high tide | 1.88 → 1.82 → 1.98 | 1.85 → 1.78 → 1.84 | 1.98 → 1.82 → 2.16 | 14.0 → 17.5 → 59.5 % | 0 → 0 → 650 | 4.3 → 4.2 → 1.2 % | 4.47 → 4.54 → 4.63 m | 3.01 → 2.99 → 3.02 m | 9.8 → 9.4 → 9.2 m/s |
+
+**How the steps are measured:** |Δη|/Δz between row neighbours, both dispersive and deeper than 0.5 m.
+- **Near-throw:** each frame's steepest within 2 s, two columns and 2H + 2 m of a throw's crest.
+- **Edge and elsewhere:** each throw's steepest in its first 0.5 s, within 1.5 m of its half-height edge or elsewhere in its window. The edge moves with the crest.
+- **Starved water** is the share of the asked water not thrown. "Starved at 0.27 H²" counts the throws that could not have filled an ask of 0.27 H².
+
+**What it shows:**
+- **The softer edge changes nothing measurable in the steps.** Over all 16 seas the near-throw 99th moves 1.55 → 1.53 and the edge's 99th 1.55 → 1.54. Each sea's mean moves by at most 0.06, inside its seeds' spread of 0.11–0.33.
+- **The steepest steps belong to the wave's mid-face, not to the removal.**
+  - The half-height edge holds a throw's steepest step as often under every rule: 86–94 % of throws on the Small swell, 63–67 % on Medium and 38–70 % on Big. The softer edge moves a run's share by at most 6 points either way.
+  - The run's steepest near-throw step sits within 1.5 m of it in 11 → 10 → 8 of 16 seas.
+  - The removal's step there (f·H/2 tapered, about 0.075 H) is smaller than its steps inside the crest. The 90th of each throw's largest step between neighbours is 0.136 H → 0.143 H → 0.072 H.
+- **Seed 3's outliers are at the +x edge.** The whole-sea steepest was 4.22 on main (Big high tide) and 4.04 with the softer edge (Big mid tide). Both are in the window's last column (x 79.5, about 7 m of water) near t 110 s, with the fastest water 11.5–11.7 m/s.
+  - The two rules swap which seed-3 sea shows it, so it is not the source.
+  - The 2.97 above was the same sea, within the +x edge ramp.
+- **Starving:** the softer edge takes the ask from less water, so f reaches its 0.2 cap more often. Starved water rises by 1.6–3.5 points, all at the Reef's provisional 0.47 H² ask; no throw would starve at 0.27 H².
+- **The half-height weight gives half the water:** 98–100 % of throws starve, short by 59 % of the asked water, and 436–845 a run would starve even at 0.27 H². Its steps away from the edge grow on Big (99th 1.80 on main → 2.32 at mid tide).
+- **Momentum not placed** stays under the advisor's 10 % line on every run; the largest are 7.6, 6.4 and 2.7 %. The surf readout stays within its seeds' spread.
+- **Main has moved since the table above.**
+  - That table was measured on #86's branch before the breaking-age fix (#76) reached it.
+  - On main, 48–62 % of the throws now fall short of the 0.47 H² ask, by 11–14 % of the water asked, against a fifth of the throws then.
+  - The advisor's periodic Basilisk runs of the Reef (2026-09-30) put its jet at 0.55–0.62 H², so a rule that adds starving moves the wrong way. The ask is the owner's to change.
+
+**Tried and not kept:**
+- **The smoothstep edge:** neutral on the steps, and it adds starving at the Reef's ask.
+- **The half-height weight:** it starves at 0.27 H² and roughens the steps elsewhere.
+
+**Open:**
+- **Seed 3's +x edge column:** dη/dz about 4 near t 110 s, in about 7 m of water, under both rules. It belongs with the edge ramp and Froude cap above.
+- **The Reef's jet ask:** 0.55–0.62 H² from the advisor's periodic runs, against the provisional 0.47.
 
 ## Commands
 
@@ -511,4 +602,7 @@ Game size (160 m, 64 components), 110 s, fastest wet speed:
 - `npm run report:rideability -- --spots reef --hs 1.3 --tp 15 --direction <dir> --spread 0.2 --seeds 2 --periods 12 --reef angle=<angle>`
 - `npm run report:catch -- --practice --ghosts --spots reef --seeds 2 --minutes 3` (baseline, in the `origin/main` worktree)
 - Part B: `npm run report:tubes -- --practice --spots reef --seeds 2 --periods 12`, `npm run report:tubes -- --spots reef --seeds 2 --periods 12`, `npm run report:tubes -- --spots beach,point,canyon --seeds 1 --periods 6` and `npm run report:whitewater -- --spots reef --periods 4`, here and in a detached `aa71add` worktree (the other spots' and whitewater runs predate the final review's gradient fix, which acts only on reef breaks)
+- The half-height edge: a one-off game-size probe on main and on two scratch copies of `drawFromCrest`'s weight.
+  - It wraps `lip.launch` to record each throw's removal and upper half, and `onBreak` for the SurfMeter's bands and take-off.
+  - It steps the Surf screen's Reef seas 110 s at 30 Hz, recording each frame's steps between dispersive neighbours near the last 2 s of throws.
 - Part C: a one-off game-size probe (the simulation stepped 45 s, the fastest water with depth over 5 cm recorded), here and in a detached `origin/main` worktree; `npm run report:rideability -- --spots reef --hs 1.3 --tp 15 --direction 20 --spread 0.2 --seeds 2 --periods 12` and `npm run report:catch -- --practice --ghosts --spots reef --seeds 2 --minutes 3`, both sides

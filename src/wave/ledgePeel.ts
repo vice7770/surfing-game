@@ -15,6 +15,8 @@ export interface LedgePeelInput {
   swellDegrees: number;
   /** The ledge's angle to the shoreline, degrees, reaching shoreward toward +x. */
   ledgeDegrees: number;
+  /** The crest's speed at breaking, m/s, for the peel angle; the meter's √(g h_b) when absent. */
+  breakerCelerity?: number;
 }
 
 export interface LedgePeel {
@@ -24,7 +26,7 @@ export interface LedgePeel {
   crestToLedgeDegrees: number;
   /** How fast the break point runs along the ledge, m/s. */
   peelSpeed: number;
-  /** The peel angle α with sin α = √(g h_b) / peelSpeed (Hutt, Black & Mead 2001; the peel meter's measure), degrees. */
+  /** The peel angle α with sin α = c_b / peelSpeed (Walker 1974; Hutt, Black & Mead 2001), c_b the breakerCelerity or the peel meter's √(g h_b), degrees. */
   angleDegrees: number;
 }
 
@@ -44,11 +46,23 @@ export function ledgePeel(input: LedgePeelInput): LedgePeel {
   const crest = shelfAngle + (input.ledgeDegrees * Math.PI) / 180;
   const sine = Math.abs(Math.sin(crest));
   const peelSpeed = sine < 1e-9 ? Infinity : shelf / sine;
-  const breaker = Math.sqrt(GRAVITY * input.breakDepth);
+  const breaker = input.breakerCelerity ?? Math.sqrt(GRAVITY * input.breakDepth);
   return {
     shelfDegrees: (shelfAngle * 180) / Math.PI,
     crestToLedgeDegrees: (crest * 180) / Math.PI,
     peelSpeed,
     angleDegrees: peelSpeed === Infinity ? 0 : (Math.asin(Math.min(1, breaker / peelSpeed)) * 180) / Math.PI,
   };
+}
+
+/**
+ * The ray's angle to the edge's normal where the still depth is `depth` on the ramp, degrees: the along-edge wave
+ * number is conserved, so sin β / c(depth) = sin φ / c_shelf (Snell along the edge). Mead & Black's gradient is
+ * the bed's slope along this ray: the ramp's steepest slope times cos β.
+ */
+export function rayAngleAt(input: LedgePeelInput, depth: number): number {
+  const omega = (2 * Math.PI) / input.period;
+  const { crestToLedgeDegrees } = ledgePeel(input);
+  const sine = (Math.sin((crestToLedgeDegrees * Math.PI) / 180) * madsenSorensenCelerity(omega, depth)) / madsenSorensenCelerity(omega, input.shelfDepth);
+  return (Math.asin(Math.min(1, Math.abs(sine))) * 180) / Math.PI;
 }

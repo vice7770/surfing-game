@@ -1,6 +1,6 @@
 import { seededRandom } from './random';
 
-export type SpotName = 'beach' | 'point' | 'reef' | 'canyon';
+export type SpotName = 'beach' | 'point' | 'reef' | 'canyon' | 'padang';
 
 /**
  * Still-water depth below datum, m; negative on dry land. +x runs along shore,
@@ -76,6 +76,96 @@ export function reefLedgeAt(x: number): boolean {
 export function reefSeaward(x: number, z: number): number {
   return (reefCrestZ(x) - z) * Math.cos((REEF.angle * Math.PI) / 180);
 }
+
+/**
+ * Padang Padang (the Padang Padang spec): a left over a coral reef on the west coast of Bali's Bukit, built from Mead's
+ * components for it (ramp, focus, wedge, pinnacle; no platform: Mead 2000, table 4.1), as Mead & Black's idealised
+ * Bingin beds (1999; Mead 2000, ch. 5). The swell arrives square to the tank in water `deep` deep (the tank's edge,
+ * where its linear sea is near-linear; the Bukit's terrace has already wrapped it), climbs a shore-parallel forereef
+ * at `foreSlope` to a knee `kneeDepth` deep, then Mead's ramp at `rampSlope`, level along shore. From the ramp rises
+ * the wedge to a reef flat `crestDepth` deep that nearly dries at the lowest spring tides. The wave climbs it at Mead &
+ * Black's orthogonal gradient along its own path, inferred from the measured vortex ratios of its tubes (about 1:19;
+ * Mead & Black 2001), so `wedgeSlope`, measured across the crest line, is steeper by the path's angle to it (the
+ * owner's decision, 2026-09-29: docs/research/water-physics/basilisk-profiles.md). The wedge's top
+ * edge (the crest line) runs at `angle` degrees to the ramp's contours from the peak (x = peakX, where the wedge's base
+ * is `baseDepth` deep), so each wave breaks there first and peels toward +x (a left) at the celerity over the wedge's
+ * base over the sine of that angle (phase matching). A spur on the swell's line through the peak (Mead's focus) draws
+ * the waves' energy onto it, so it breaks first. Upcoast of the peak the wedge fades out over `endWidth` m, so the
+ * bed is the bare ramp, level along shore, at the window's −x open edge (an open edge copies its neighbours: a bed
+ * sloping across it ran the Reef's Big swell to NaN); a channel runs along the +x open edge, level across its axis,
+ * where the left ends, `kneeDepth` deep shoreward of `channelFrom`. A planar beach face caps it all. The window is
+ * `alongShore` m wide, so the peak stands clear of the −x side feed. Sources and provisional values: docs/research/padang-padang-sources.md.
+ * Mutable for the design sweep (`scripts/padangShape.ts`).
+ */
+export const PADANG = {
+  deep: 25, foreSlope: 1 / 20, foreRounding: 10, kneeDepth: 12, rampSlope: 1 / 80,
+  /**
+   * The wedge's slope across its crest line: 1:19 along the swell's path, which crosses the 40° line obliquely (1:14.6
+   * as the swell arrives square, about 1:15.8 once refraction turns it toward the wedge's normal). At 1:19 across the line
+   * the swell climbed 1:24.8: in Basilisk (level 11) the peak's face went vertical 16 m before the flat and threw a tube
+   * of 0.125 H²; at 1:19 along the path, 3.6 m before it, the lip landing on the flat and the tube 0.208 H², 1.7 × larger.
+   */
+  wedgeSlope: 1 / 15,
+  baseDepth: 7, crestDepth: 1.25, peakX: -60, peakZ: -170, angle: 40, endWidth: 20,
+  alongShore: 320, channelX: 160, channelHalfWidth: 45, shoreSlope: 0.2, takeOffX: -50,
+  /** How far the channel is deepened from the ramp toward the knee's depth: its crests ran ahead over it and tilted the reef's down-reef crests (the design sweep's). */
+  channelDeepening: 1,
+  /**
+   * How far seaward the channel is deepened, z (−Infinity: from the knee). Held at the knee's depth all the way out, its
+   * crests ran ahead and tilted the down-reef crests about 11° before the wedge (the advisor, 2026-09-29), a peel of
+   * 15.9 m/s against 10.7 without it. Deepened only shoreward of where the ramp is about 5 m deep (the wedge base's depth
+   * at the ride's end), the crests offshore of it cross the bare ramp as they do along the reef: 22 clean waves at 11.3
+   * m/s, the two halves of each alike (docs/research/padang-padang-report.md). The line is the sweep's, provisional.
+   */
+  channelFrom: -138,
+  /**
+   * Mead's focus: a spur along the incoming swell through the peak, `focusRelief` m above the bed where it meets the
+   * wedge's base, tapering (cos²) to nothing `focusLength` m seaward and `focusInset` m up the wedge, `focusHalfWidth` m
+   * to either side of the peak. The advisor's ruling (2026-09-29, from Mead 2000, figs 5.1–5.2): about a wavelength
+   * across (a narrower shoal diffracts rather than focuses), its crest deepening seaward at 1:20–1:40 inside Mead's
+   * focus gradients (1:10–1:80). All provisional.
+   */
+  focusRelief: 2, focusLength: 150, focusInset: 80, focusHalfWidth: 70,
+};
+
+/** Where Padang Padang's wedge rises from the ramp at its peak: `baseDepth` deep, (baseDepth − crestDepth) / wedgeSlope across the crest line. */
+export function padangBaseZ(): number {
+  const { peakZ, baseDepth, crestDepth, wedgeSlope, angle } = PADANG;
+  return peakZ - (baseDepth - crestDepth) / wedgeSlope / Math.cos((angle * Math.PI) / 180);
+}
+
+/** Where Padang Padang's forereef meets its ramp (the knee's centre): the ramp climbs from kneeDepth there to baseDepth at the peak's base. */
+export function padangKneeZ(): number {
+  return padangBaseZ() - (PADANG.kneeDepth - PADANG.baseDepth) / PADANG.rampSlope;
+}
+
+/** Where Padang Padang's forereef rises from deep water (its foot's centre). */
+export function padangForeFootZ(): number {
+  return padangKneeZ() - (PADANG.deep - PADANG.kneeDepth) / PADANG.foreSlope;
+}
+
+/** Where Padang Padang's crest line (the top of its wedge) crosses along-shore position x. */
+export function padangCrestZ(x: number): number {
+  return PADANG.peakZ + (x - PADANG.peakX) * Math.tan((PADANG.angle * Math.PI) / 180);
+}
+
+/** Distance seaward of Padang Padang's crest line, m, measured across it (negative shoreward of it). */
+export function padangSeaward(x: number, z: number): number {
+  return (padangCrestZ(x) - z) * Math.cos((PADANG.angle * Math.PI) / 180);
+}
+
+/** max(0, d), rounded quadratically (C¹) over ±r: a ramp's knee without a slope break. */
+function rounded(d: number, r: number): number {
+  if (d <= -r) return 0;
+  if (d >= r) return d;
+  return ((d + r) * (d + r)) / (4 * r);
+}
+
+/** Whether Padang Padang's reef is ridden at along-shore position x: from its peak to where the channel begins (two half-widths from its axis). */
+export function padangReefAt(x: number): boolean {
+  return x >= PADANG.peakX && x < PADANG.channelX - 2 * PADANG.channelHalfWidth;
+}
+
 /**
  * A canyon cut through the shelf. It bends the swell off its axis, leaving a
  * shadow over it, and gathers it on its flank: 60–130 m from the axis at the
@@ -158,6 +248,56 @@ function reef(): SurfSpot {
   };
 }
 
+/** cos²(π/2 · d/reach) inside ±reach, 0 beyond: a bump's profile, C¹ at its centre and its edge. */
+function bump(d: number, reach: number): number {
+  return Math.abs(d) >= reach ? 0 : Math.cos((Math.PI / 2) * (d / reach)) ** 2;
+}
+
+/** Padang Padang's focus, 0–1: 1 on the swell's line through the peak where it crosses the wedge's base. */
+export function padangFocusShape(x: number, z: number): number {
+  const p = PADANG;
+  const seaward = padangBaseZ() - z;
+  return bump(x - p.peakX, p.focusHalfWidth) * bump(seaward, seaward >= 0 ? p.focusLength : p.focusInset);
+}
+
+/** Padang Padang's bed in its parts: the channel's weight, the depth beneath the beach face, and the beach face's. */
+function padangTerms(x: number, z: number): { channel: number; depth: number; beachFace: number } {
+  const p = PADANG;
+  const knee = padangKneeZ();
+  const r = p.foreRounding;
+  // Shore-parallel: the forereef from deep water up to the knee, rounded (C¹) at its foot and at the knee so its slope breaks
+  // scatter no spurious harmonics; the channel keeps the knee's depth shoreward, the reef has Mead's ramp.
+  const fore = p.kneeDepth + (rounded(knee - z, r) - rounded(padangForeFootZ() - z, r)) * p.foreSlope;
+  const ramp = fore - rounded(z - knee, r) * p.rampSlope;
+  // The wedge, where it is shallower than the ramp, faded out upcoast of the peak.
+  const wedge = p.crestDepth + Math.max(0, padangSeaward(x, z)) * p.wedgeSlope;
+  const bare = ramp - Math.max(0, ramp - wedge) * smoothstep(p.peakX - p.endWidth, p.peakX, x);
+  const reef = bare - p.focusRelief * padangFocusShape(x, z);
+  // The channel: no reef, level across its axis at the window's edge, over the ramp deepened toward the knee's depth by
+  // `channelDeepening` (1: the knee's depth to the shore; 0: the bare ramp), shoreward of `channelFrom` (rounded over
+  // twice the forereef's rounding, so its seaward end is no cliff; −Infinity: from the knee).
+  const channel = Math.exp(-(((x - p.channelX) / p.channelHalfWidth) ** 2));
+  const inshore = p.channelFrom === -Infinity ? 1 : smoothstep(p.channelFrom - 2 * r, p.channelFrom + 2 * r, z);
+  const floor = ramp + (fore - ramp) * p.channelDeepening * inshore;
+  // A beach face, and dry land shoreward of z = 0.
+  return { channel, depth: reef + (floor - reef) * channel, beachFace: z < 0 ? -z * p.shoreSlope : -z * 0.06 };
+}
+
+function padang(): SurfSpot {
+  return {
+    name: 'padang',
+    depthAt(x, z) {
+      const { depth, beachFace } = padangTerms(x, z);
+      return Math.min(depth, beachFace);
+    },
+    // Coral where the reef builds the bed, as the Reef's rock: out of the channel (unmapped by the coral atlas) and off the sand beach.
+    materialAt(x, z) {
+      const { channel, depth, beachFace } = padangTerms(x, z);
+      return channel < 0.5 && depth < beachFace ? 'reef' : 'sand';
+    },
+  };
+}
+
 function canyon(): SurfSpot {
   return {
     name: 'canyon',
@@ -175,5 +315,6 @@ export function createSpot(name: SpotName, seed: number): SurfSpot {
     case 'point': return point();
     case 'reef': return reef();
     case 'canyon': return canyon();
+    case 'padang': return padang();
   }
 }

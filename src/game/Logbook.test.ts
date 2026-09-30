@@ -72,4 +72,14 @@ describe('Logbook', () => {
     expect(() => broken.add(ride())).not.toThrow();
     expect(broken.recent).toHaveLength(1);
   });
+
+  it('keeps Padang Padang rides and still loads a logbook saved before it existed', () => {
+    const before = new Logbook(memory({ [LOGBOOK_KEY]: JSON.stringify({ recent: [ride({ spot: 'reef' })], bests: {} }) }));
+    expect(before.recent.map((entry) => entry.spot)).toEqual(['reef']);
+    const storage = memory();
+    new Logbook(storage).add(ride({ spot: 'padang', distance: 80 }));
+    const reloaded = new Logbook(storage);
+    expect(reloaded.recent[0].spot).toBe('padang');
+    expect(reloaded.bests('padang').distance).toBe(80);
+  });
 });

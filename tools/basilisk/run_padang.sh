@@ -7,20 +7,27 @@
 #
 # LEVEL=12 (or 11) runs a coarser grid. OMP=1 uses Homebrew's libomp on macOS
 # (brew install libomp; untested), otherwise the run uses one core.
+# A0 (the wave's height over the 7 m base, 0.3 by default) runs another swell size,
+# with TOUT0 and TMAX (the fine output's start and the run's end) and its own NAME;
+# the defaults are the owner's level-13 run.
 # Safe to rerun: it resumes from the last checkpoint.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 LEVEL="${LEVEL:-13}"
-RUN="$HERE/runs/pad19_L$LEVEL"
+A0="${A0:-0.3}"
+TOUT0="${TOUT0:-18.5}"
+TMAX="${TMAX:-25}"
+NAME="${NAME:-pad19_L$LEVEL}"
+RUN="$HERE/runs/$NAME"
 BASILISK_HOME="${BASILISK_HOME:-$HOME/basilisk-C}"
 export BASILISK="$BASILISK_HOME/basilisk-source/src"
 export PATH="$PATH:$BASILISK"
 
 # Padang's peak, dimensionless with h0 = 7 m: 1:19 along the wave's path from the
 # 7 m wedge base to the 1.25 m reef flat, a 2.1 m solitary wave (round 6 notes §4).
-FLAGS="-DLEVEL=$LEVEL -DS1=0.0526316 -DHMID=0.1785714 -DHS=0.1785714 -DA0=0.3 \
-  -DXW=8.0 -DXTOE=17.0 -DDOMAIN=48 -DTMAX=25 -DTOUT0=18.5 -DDTOUT=0.025"
+FLAGS="-DLEVEL=$LEVEL -DS1=0.0526316 -DHMID=0.1785714 -DHS=0.1785714 -DA0=$A0 \
+  -DXW=8.0 -DXTOE=17.0 -DDOMAIN=48 -DTMAX=$TMAX -DTOUT0=$TOUT0 -DDTOUT=0.025"
 
 build_basilisk() {
   [ -x "$BASILISK/qcc" ] && return
@@ -61,16 +68,16 @@ case "${1:-run}" in
   status)
     if [ -f "$RUN/done" ]; then echo "Done: $(cat "$RUN/done")"; exit 0; fi
     running && echo "Running." || echo "Not running; $0 resumes it."
-    # Fields: step, t (vertical ≈ 21.45, touchdown ≈ 22.45, end 25), dt, cells, wall seconds.
-    [ -f "$RUN/timing.log" ] && tail -1 "$RUN/timing.log" | awk '{print "step "$4", t = "$5" of 25, dt "$6", cells "$7", wall "$8" s"}'
+    # Fields: step, t (at A0 0.3: vertical ≈ 21.45, touchdown ≈ 22.45), dt, cells, wall seconds.
+    [ -f "$RUN/timing.log" ] && tail -1 "$RUN/timing.log" | awk -v end="$TMAX" '{print "step "$4", t = "$5" of "end", dt "$6", cells "$7", wall "$8" s"}'
     ;;
   analyse)
     [ -f "$RUN/done" ] || { echo "Not finished yet."; exit 1; }
     cd "$HERE/analysis"   # needs Python 3 with numpy, scipy and matplotlib
-    python3 metrics.py "$RUN" "$LEVEL" 48 0.0526316 0.3 18.5
-    python3 library.py "$RUN" "$LEVEL" 48 0.0526316 0.3 7.0 18.5
+    python3 metrics.py "$RUN" "$LEVEL" 48 0.0526316 "$A0" "$TOUT0"
+    python3 library.py "$RUN" "$LEVEL" 48 0.0526316 "$A0" 7.0 "$TOUT0"
     python3 render.py "${RUN}_library.json" "${RUN}_strip.png" "${RUN}_tube.png" 2 \
-      "Padang 1:19 along the path, level $LEVEL" "$RUN/bed.dat"
+      "Padang 1:19 along the path, A0 $A0, level $LEVEL" "$RUN/bed.dat"
     echo "Wrote ${RUN}_metrics.json, ${RUN}_library.json, ${RUN}_strip.png and ${RUN}_tube.png"
     ;;
   *) echo "Usage: $0 [run|status|analyse]"; exit 1 ;;

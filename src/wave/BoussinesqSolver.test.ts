@@ -624,7 +624,7 @@ describe('Boussinesq breaking', () => {
 
 describe('Boussinesq surf zone beds', () => {
   it('keeps a lake at rest over every spot, dry shoreline included, with breaking on', () => {
-    for (const name of ['beach', 'point', 'reef', 'canyon'] as const) {
+    for (const name of ['beach', 'point', 'reef', 'canyon', 'padang'] as const) {
       const spot = createSpot(name, 1);
       const solver = new BoussinesqSolver(
         { nx: 40, xMin: -80, dx: 4, zEdges: uniformEdges(-300, 30, 110) }, spot.depthAt, { waterLevel: 0.3, breaking: { onset: 0.65 } },

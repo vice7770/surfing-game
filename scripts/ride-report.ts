@@ -12,6 +12,7 @@
  *   npm run report:ride -- --practice --ghosts --minutes 5
  *   npm run report:ride -- --spots point --minutes 5 --out /tmp/point.md
  *   npm run report:ride -- --practice --ghosts --style turns
+ *   npm run report:ride -- --practice --ghosts --style turns --spots canyon --bottom-face 0.55 --turn-limit 3
  */
 import { writeFileSync } from 'node:fs';
 import { Quaternion, Vector3 } from 'three';
@@ -26,7 +27,9 @@ import { createWaterSample, type SurfWater } from '../src/physics/SurfWater';
 import { inTakeOffWindow } from '../src/physics/takeOffCue';
 import { WaveFrameGauge } from '../src/physics/waveFrame';
 import type { SpotName } from '../src/wave/Bathymetry';
+import { applyPadangShape } from './padangShape';
 import { applyReefShape } from './reefShape';
+import { chosenSwell, swellSizeOption } from './spotSwell';
 import { alongShift } from './botSpots';
 import { SURF_ZONE_STEP, SurfZoneRunner } from '../src/wave/SurfZoneRunner';
 
@@ -40,6 +43,9 @@ const seedCount = argument('seeds', 2);
 const minutes = argument('minutes', 3);
 // Reshape the Reef for this run: `--reef angle=50,crestZ=-125` (the design sweep).
 applyReefShape(option('reef'));
+applyPadangShape(option('padang'));
+/** `--swell small|medium|big`: each spot's own buoy swell for that size. */
+const swellSize = swellSizeOption(option('swell'));
 const spots = (option('spots')?.split(',') ?? ['point', 'reef']) as SpotName[];
 const output = option('out') ?? 'docs/research/ride-report.md';
 const practice = flag('practice');
@@ -49,11 +55,18 @@ const heightOverride = option('height');
 const reflex = flag('reflex');
 /** The autopilot's riding: a line along the face, or S-turns up and down it. */
 const style = option('style') === 'turns' ? 'turns' : 'line';
+/** Riding S-turns, `--bottom-face F` starts the bottom turn below F of the face, and `--turn-limit S` holds a turn up to S s. */
+const autopilotTurns = {
+  ...(option('bottom-face') ? { bottomFace: Number(option('bottom-face')) } : {}),
+  ...(option('turn-limit') ? { turnLimit: Number(option('turn-limit')) } : {}),
+};
 /** Ghost riders beside the runner's own: metres along shore from the break point (`--ghosts`, as in the catch report). */
 const ghostAlongs = flag('ghosts') ? [-45, -25, -12, 12, 25, 45] : [];
 const settings = practice ? { ...DEFAULT_PHYSICAL_SETTINGS, source: 'practice' as const } : DEFAULT_PHYSICAL_SETTINGS;
-/** Each spot's swell: its own Practice when practising (the Reef has one), with `--height` on top. */
-const swellAt = (spot: SpotName) => ({ ...swellFor({ ...settings, spot }), ...(heightOverride ? { significantHeight: Number(heightOverride) } : {}) });
+/** Each spot's swell: its own Practice when practising (the Reef and Padang Padang have one), or its own buoy swell for `--swell`, with `--height` on top. */
+const swellAt = (spot: SpotName) => ({
+  ...(swellSize && !practice ? chosenSwell(spot, swellSize) : swellFor({ ...settings, spot })), ...(heightOverride ? { significantHeight: Number(heightOverride) } : {}),
+});
 /** The swell's direction, or `--direction` (the Reef's design sweep). */
 const directionAt = (spot: SpotName) => option('direction') !== undefined ? Number(option('direction')) : swellAt(spot).directionDegrees ?? settings.directionDegrees;
 /** A crest this far above still water within LOOK m behind the board starts a paddle. */
@@ -190,7 +203,7 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
   if (shift !== 0) console.error(`${spot} seed ${seed}: ghosts slid ${shift.toFixed(1)} m along shore to stay inside the window`);
   const bot = (session: RideSession, own: boolean, along: number): Bot => ({
     session, own, home: new Vector3(runner.focus.x + along + (own ? 0 : shift), 0, runner.focus.z - 6),
-    autopilot: new Autopilot({ rise: riseAt(spot), style, stall: false }), gauge: new WaveFrameGauge({ directionX: Math.sin(radians), directionZ: Math.cos(radians) }),
+    autopilot: new Autopilot({ rise: riseAt(spot), style, stall: false, ...autopilotTurns }), gauge: new WaveFrameGauge({ directionX: Math.sin(radians), directionZ: Math.cos(radians) }),
     trace: [], request: { paddle: false, popUp: false, steer: 0 }, retry: false, analyzer: new RideAnalyzer(), windDown: 0,
     weights: [], rideStart: 0, lastPhase: 'prone',
   });
@@ -339,10 +352,14 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
   return { rides, attempts: bots.reduce((sum, b) => sum + b.autopilot.attempts, 0), stands, outcomes, durations, curlShares, lostWave, weights, shares };
 }
 
-/** Forsyth et al. 2024 (the survey's §8): accomplished surfers' turns, and the radius and lateral load they imply. */
+/**
+ * Forsyth et al. 2024 (the survey's §8): accomplished surfers' turns. They measured no radius or pull: the
+ * bracketed ones are speed / yaw rate and speed × yaw rate, which read the heading's turn and so overstate the path's
+ * pull on a board that pivots (the angulation study); the analyzer's own columns read the path.
+ */
 const FORSYTH: Partial<Record<ManeuverKind, string>> = {
-  'bottom turn': '| Forsyth 2024 bottom turn | 3.8 per wave | 0.96 | 99 | 1.9 | 7.3 | 3.8 | 1.41 | 42 | — |',
-  cutback: '| Forsyth 2024 cutback / top turn | | 0.96 | 152 | 3.0 | 6.7 | 2.2 | 2.05 | 75 | — |',
+  'bottom turn': '| Forsyth 2024 bottom turn | 3.8 per wave | 0.96 | 99 | 1.9 | 7.3 | | | (3.8) | (1.41) | 42 | — |',
+  cutback: '| Forsyth 2024 cutback / top turn | | 0.96 | 152 | 3.0 | 6.7 | | | (2.2) | (2.05) | 75 | — |',
 };
 
 /** The analyzer's reading of the rides: how they ended, their turns beside Forsyth's, and the speed kept from bottom turn to top turn. */
@@ -354,8 +371,9 @@ function turnTables(rides: Ride[]): string {
   const rows: string[] = [];
   for (const kind of ['bottom turn', 'top turn', 'snap', 'cutback'] as ManeuverKind[]) {
     const of = maneuvers.filter((m) => m.kind === kind);
-    const average = (value: (m: (typeof of)[number]) => number, digits = 1) => fixed(mean(of.map(value)), digits);
-    rows.push(`| ${kind} | ${of.length} | ${average((m) => m.end - m.start, 2)} | ${average((m) => Math.abs(m.yaw) * 180 / Math.PI, 0)} | ${average((m) => m.peakYawRate)} | ${average((m) => m.speedIn)} | ${average((m) => m.radius)} | ${average((m) => m.lateralG, 2)} | ${average((m) => m.roll * 180 / Math.PI, 0)} | ${of.length ? `${fixed((of.filter((m) => m.pocket).length / of.length) * 100, 0)} %` : '—'} |`);
+    // A path that did not turn has no radius: averaged over the turns that did.
+    const average = (value: (m: (typeof of)[number]) => number, digits = 1) => fixed(mean(of.map(value).filter(Number.isFinite)), digits);
+    rows.push(`| ${kind} | ${of.length} | ${average((m) => m.end - m.start, 2)} | ${average((m) => Math.abs(m.yaw) * 180 / Math.PI, 0)} | ${average((m) => m.peakYawRate)} | ${average((m) => m.speedIn)} | ${average((m) => m.speedOut)} | ${average((m) => m.faceFraction, 2)} | ${average((m) => m.radius)} | ${average((m) => m.lateralG, 2)} | ${average((m) => m.roll * 180 / Math.PI, 0)} | ${of.length ? `${fixed((of.filter((m) => m.pocket).length / of.length) * 100, 0)} %` : '—'} |`);
     if (FORSYTH[kind]) rows.push(FORSYTH[kind]!);
   }
   // Speed kept: a bottom turn's entry speed against the next top turn's (Forsyth's "turn flow").
@@ -372,9 +390,11 @@ function turnTables(rides: Ride[]): string {
 
 Ride ends (the ride analyzer): ${[...ends].map(([e, c]) => `${e} ×${c}`).join(', ') || 'none'}${unread ? `; ${unread} ride(s) still open when the rider was relaunched` : ''}. Turns per ride ${fixed(maneuvers.length / Math.max(1, analyses.length))}.
 
-| Turn | Count | Duration s | Yaw ° | Peak yaw rate rad/s | Speed in m/s | Radius m | Lateral g | Rail ° | In the pocket |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Turn | Count | Duration s | Yaw ° | Peak yaw rate rad/s | Speed in m/s | Speed out m/s | Face at the peak | Path's radius m | Path's pull g | Rail ° | In the pocket |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 ${rows.join('\n')}
+
+The radius and the pull are the path's, as the rider rode it, averaged over the turn; Forsyth's, in brackets, are speed / yaw rate and speed × yaw rate (they measured neither), which overstate a pivoting board's pull.
 
 Speed kept from a bottom turn into the next top turn: ${fixed(mean(kept), 2)} (${kept.length} pair(s)); Forsyth 2024's "turn flow" is 0.88–0.95.`;
 }

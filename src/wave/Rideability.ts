@@ -11,6 +11,12 @@ export interface PeelSample {
 
 type RiderSkill = keyof typeof PEEL_SKILL_MINIMUM;
 
+/**
+ * The fastest a surfer rides, m/s: GPS-tracked competitive surfers peaked at 9.3 m/s on average and 12.5 m/s at
+ * most (Farley, Harris & Kilding 2012). A break point outrunning it cannot be kept pace with.
+ */
+export const FASTEST_SURFER = 12.5;
+
 export interface RideabilityStats {
   /** Peak periods sampled. */
   samples: number;
@@ -27,6 +33,8 @@ export interface RideabilityStats {
   medianAngle: number;
   /** Median break-point speed of clean waves, m/s (NaN without any). */
   medianPeelSpeed: number;
+  /** Share of clean waves whose break point outruns the fastest measured surfer (FASTEST_SURFER), 0–1 (NaN without speeds). */
+  fastShare: number;
 }
 
 function median(sorted: readonly number[]): number {
@@ -63,6 +71,7 @@ export function rideability(samples: readonly (PeelSample | undefined)[]): Ridea
     histogram,
     medianAngle: median(clean),
     medianPeelSpeed: median(speeds),
+    fastShare: speeds.length > 0 ? speeds.filter((speed) => speed > FASTEST_SURFER).length / speeds.length : Number.NaN,
   };
 }
 

@@ -1,12 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import type { BreakingWave } from './SurfMeter';
-import { sizeGates, sizeMarkdown, summariseRun, type SizeRun } from './sizeReport';
+import { breakerDepthFor } from './Breaking';
+import { sizeGates, sizeMarkdown, summariseRun, takeOffIndex, type SizeRun } from './sizeReport';
 import { komarGaughan } from './surfForecast';
 
 const wave = (time: number, face: number, z = -100): BreakingWave => ({ time, x: 0, z, face });
 const base = { spot: 'beach' as const, source: 'buoy' as const, significantHeight: 3, period: 12, heightAt: 'deep' as const, takeOffZ: -100, stepMs: 5, cells: 1000 };
 
 describe('size report', () => {
+  it('finds the breaker index that seats a take-off where the sets broke (the refit on every tank)', () => {
+    for (const index of [0.78, 1.14]) expect(takeOffIndex(3, 10, breakerDepthFor(3, 10, index))).toBeCloseTo(index, 12);
+    // Sets breaking in deeper water call for a smaller index.
+    expect(takeOffIndex(3, 10, 4)).toBeLessThan(takeOffIndex(3, 10, 3));
+  });
+
   it('summarises a run: H1/3 and H1/10 of its waves, and where its sets broke at the take-off', () => {
     const faces = [1, 2, 3, 4, 5, 6];
     const takeOff = [wave(0, 6, -110), wave(12, 5, -106), wave(24, 1, -60), wave(36, 2, -70), wave(48, 1.5, -65), wave(60, 1.2, -62)];
