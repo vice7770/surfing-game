@@ -39,9 +39,9 @@ const SWELL_ONSET: readonly { period: number; rows: readonly (readonly [height: 
   { period: 17, rows: [[1.25, 2.61], [1.72, 3.13], [2.09, 3.5], [2.47, 3.82], [2.75, 3.92]] },
   { period: 18, rows: [[1.25, 2.55], [1.81, 2.92], [2.19, 3.34], [2.8, 3.71], [3.21, 3.82]] },
 ];
-/** The foot's depth the swell table was measured at, and the reference depth its heights were read at, m. */
+/** The foot's depth the swell table was measured at, and the band its heights were read over (their highest), m. */
 const SWELL_ONSET_H0 = 7;
-const REFERENCE = 5.5;
+const BAND = [6, 5] as const;
 
 /** Linear in x between the table's rows, clamped at its ends: never extrapolated. */
 function interpolate(table: readonly (readonly [number, number])[], x: number): number {
@@ -57,13 +57,14 @@ function interpolate(table: readonly (readonly [number, number])[], x: number): 
 }
 
 /**
- * A bed's onset timing: its wedge's foot `h0`, m, where crests are first followed; the reference depth where their
- * height is read, m; the still depth where a crest that stood `height` m high at the reference joins its front, m;
+ * A bed's onset timing: its wedge's foot `h0`, m, where crests are first followed; the band of still depth, deeper and
+ * shallower, over which their height is read (its highest), m; the still depth where a crest that stood `height` m
+ * high over the band joins its front, m;
  * when its lip throws after it joins, s, from that depth; and the earliest τ, s.
  */
 export interface OnsetTiming {
   h0: number;
-  reference: number;
+  band: readonly [deeper: number, shallower: number];
   joinDepth(height: number): number;
   lag(depth: number): number;
   earliest: number;
@@ -91,7 +92,7 @@ export function onsetTiming(h0: number, period: number, lag = 1): OnsetTiming {
   };
   return {
     h0,
-    reference: REFERENCE * scale,
+    band: [BAND[0] * scale, BAND[1] * scale],
     joinDepth: (height) => joinAt(height) * scale,
     lag: (depth) => lag * interpolate(ONSET_LAG, depth / h0) * unit,
     earliest: CLOCK.earliest * unit,

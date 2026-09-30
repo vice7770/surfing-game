@@ -44,6 +44,18 @@ describe('the breaking front as lines', () => {
     expect(front.points[0].depth).toBeCloseTo(depth, 12);
   });
 
+  it('sizes a crest by its highest over the band of 6 to 5 m, not one reading', () => {
+    const front = new BreakingFront(1, TIMING);
+    front.update([sample(0, 10, 7, 0, 1)], 1, 0);
+    front.update([sample(0, 11, 5.8, 0, 1.3)], 1, 0.1);
+    front.update([sample(0, 12, 5.4, 0, 1.6)], 1, 0.2);
+    front.update([sample(0, 13, 5.1, 0, 1.4)], 1, 0.3);
+    const joinDepth = TIMING.joinDepth(1.6);
+    front.update([sample(0, 14, joinDepth, 0.5, 1.9)], 1, 0.4);
+    expect(front.points).toHaveLength(1);
+    expect(front.points[0].depth).toBeCloseTo(joinDepth, 12);
+  });
+
   it('joins at the crossing when the segment breaks within a second of it, and never after', () => {
     const late = new BreakingFront(1, TIMING);
     late.update([sample(0, 10, 7, 0)], 1, 0);

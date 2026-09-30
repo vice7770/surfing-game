@@ -32,7 +32,7 @@ export interface CrestTrack {
   z: number;
   /** Its height above still water as it crossed the foot, m; null when first seen past the foot band (it never joins). */
   footHeight: number | null;
-  /** Its height as it crossed the reference depth nearer the break, m, which sizes its join; null until then. */
+  /** Its highest over the timing's band of depth nearer the break, m, which sizes its join; null until it reaches it. */
   refHeight: number | null;
   /** The still depth under it at its last step, m, and when that was, s. */
   depth: number;
@@ -82,8 +82,8 @@ export interface FrontState {
  * The breaking front as lines of points (swept-barrel-build.md, "Front line"; Thürey et al. 2007).
  *
  * - **The join, by depth** (the advisor, 2026-09-30). Each crest is followed from where it crosses the wedge's foot
- *   (the timing's h0), and sized by its height as it crosses the reference depth nearer the break, before anything near
- *   it breaks. It joins where it crosses the depth at which the solver first breaks swell that size fresh (the 1D runs,
+ *   (the timing's h0), and sized by its highest over a band of depth nearer the break (the timing's), before anything
+ *   near it breaks. It joins where it crosses the depth at which the solver first breaks swell that size fresh (the 1D runs,
  *   `OnsetTiming.joinDepth`), at the moment it crosses, provided its segment breaks within JOIN_WINDOW. A crest reads its own place, not its rise: once a neighbour
  *   breaks, the eddy viscosity damps a column's rise (fresh crossings came ~2 s late, or never) and its inherited age
  *   is the event's, so neither can time a peel. Here the peel is each column's crest reaching its breaking depth in
@@ -148,15 +148,19 @@ export class BreakingFront {
         if (s.depth <= h0) {
           const footHeight = s.depth >= h0 - FOOT_BAND ? s.eta : null;
           if (footHeight === null) this.unsized += 1;
-          const refHeight = footHeight !== null && s.depth <= this.timing.reference ? s.eta : null;
+          const refHeight = footHeight !== null && s.depth <= this.timing.band[0] ? s.eta : null;
           tracks.push({ column: s.column, z: s.z, footHeight, refHeight, depth: s.depth, seen: time, crossed: null, fresh: s.rise >= FRESH ? s.depth : null });
         }
         continue;
       }
       followed.add(track);
       const next: CrestTrack = { ...track, z: s.z, depth: s.depth, seen: time, fresh: track.fresh ?? (s.rise >= FRESH ? s.depth : null) };
-      if (track.footHeight !== null && next.refHeight === null && s.depth <= this.timing.reference) next.refHeight = s.eta;
-      if (next.refHeight !== null) {
+      // Its highest over the band; past the band, the first reading if it crossed the band between two steps.
+      const [deeper, shallower] = this.timing.band;
+      if (track.footHeight !== null && s.depth <= deeper && (s.depth >= shallower || next.refHeight === null)) {
+        next.refHeight = Math.max(next.refHeight ?? s.eta, s.eta);
+      }
+      if (next.refHeight !== null && s.depth < shallower) {
         const joinDepth = this.timing.joinDepth(next.refHeight);
         if (track.crossed === null && s.depth <= joinDepth) {
           // When it crossed, linear in depth between the last step and this one.
