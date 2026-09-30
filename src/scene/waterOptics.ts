@@ -188,21 +188,35 @@ export const CLASSIC_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWo
   roughnessFactor = mix( roughnessFactor, 0.9, waterCover );`;
 
 /**
+ * A thin sheet shaded in place of the column where `weight` says (the swept barrel's lip; tube-colour-fix.md): `body`
+ * runs after the column's body, in the lit branch, and the caustics' contribution fades by 1 − `weight`, since no bed
+ * is seen through a lip.
+ */
+export interface WaterBodySheet {
+  /** A GLSL float, 0–1: how far the fragment is the sheet. */
+  weight: string;
+  /** GLSL that mixes `waterBody` toward the sheet's and adds the light it lets through. */
+  body: string;
+}
+
+/**
  * Fragment block run after the normal is final (it replaces
  * `<emissivemap_fragment>`): the water body's colour from the depth under the
  * fragment, foam over it, and with `crestLight` the sunlight that crosses thin
  * crests when the sun is behind them. Needs `vWaterWorld`, `vWaterDepth`,
  * `vWaterFoam`, `vWaterFlow`, `waterFoamColor`, `waterTime` and `foamPatternPars`.
+ * With `sheet`, the fragment is shaded as a thin sheet as far as its weight says (the swept barrel's lip).
  */
-export function waterBodyFragment(crestLight: boolean, caustics = false, foam = CLASSIC_FOAM): string {
+export function waterBodyFragment(crestLight: boolean, caustics = false, foam = CLASSIC_FOAM, sheet?: WaterBodySheet): string {
+  const bedLight = sheet ? `mix( 1.0, causticLightAt( waterBedXZ ), 1.0 - ${sheet.weight} )` : 'causticLightAt( waterBedXZ )';
   // The bed seen through the fragment lies along the refracted view ray; light it with the caustic map there.
-  const body = caustics
+  const body = (caustics
     ? /* glsl */ `
     vec3 waterDown = refract( -waterV, waterN, ${glsl(1 / WATER_IOR)} );
     vec2 waterBedXZ = vWaterWorld.xz + waterDown.xz * ( vWaterDepth / max( 0.05, -waterDown.y ) );
-    waterBody = waterBodyReflectanceLit( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ), causticLightAt( waterBedXZ ) );`
+    waterBody = waterBodyReflectanceLit( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ), ${bedLight} );`
     : /* glsl */ `
-    waterBody = waterBodyReflectance( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ) );`;
+    waterBody = waterBodyReflectance( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ) );`) + (sheet ? sheet.body : '');
   // Sunlight crosses the crest from its sunlit back toward the face in view, so
   // march horizontally toward the sun; a height-field crest seldom lets the
   // refracted view ray out through its back.

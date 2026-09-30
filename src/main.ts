@@ -298,6 +298,8 @@ class SurfGame {
       /** G8's water sheet: the look, the time of day (resolved once its sky is in), and a render from any camera. */
       setWaterLook: (look: WaterLook) => this.applyWaterLook(look),
       setTimeOfDay: (time: TimeOfDay) => this.applySun(TIMES[time]),
+      /** Any sun (the slider's height, and its azimuth, degrees): the water sheet's lighting checks. */
+      setSun: (sun: { sunHeight: number; sunDirection: number }) => this.applySun(sun),
       renderView: (camera: PerspectiveCamera) => {
         const host = this.physicalMode.host;
         this.setUnderwater(host !== undefined && camera.position.y < host.heightAt(camera.position.x, camera.position.z) - 0.1);

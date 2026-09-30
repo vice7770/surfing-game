@@ -7,7 +7,7 @@ const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 10, nz: 10 };
 function quad(): LoftResult {
   const positions = new Float32Array([2, 0, 2, 6, 0, 2, 2, 0, 6, 6, 0, 6]);
   return {
-    positions, normals: new Float32Array(12), mask: new Float32Array([1, 0, 1, 0]), lift: new Float32Array(4), indices: new Uint32Array([0, 1, 2, 1, 3, 2]),
+    positions, normals: new Float32Array(12), mask: new Float32Array([1, 0, 1, 0]), lift: new Float32Array(4), sheet: new Float32Array(4), sheetWeight: new Float32Array(4), indices: new Uint32Array([0, 1, 2, 1, 3, 2]),
     vertexCount: 4, indexCount: 6, sliceCount: 2, sliceFront: new Int32Array(2), sliceSigma: new Float32Array(2), sliceTau: new Float32Array(2),
     slicePhase: new Uint8Array(2), sliceCrestOffset: new Float32Array(2), sliceLife: new Float32Array(2), clamps: 0, clampedLookups: 0, caps: 0,
     sliceJoined: new Uint8Array([1, 0]), sliceRayX: new Float32Array(2), sliceRayZ: new Float32Array(2).fill(1), sliceWeight: new Float32Array(2).fill(1),

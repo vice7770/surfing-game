@@ -31,6 +31,7 @@ interface SheetHooks {
   canvas: HTMLCanvasElement;
   setWaterLook(look: WaterLook): void;
   setTimeOfDay(time: TimeOfDay): Promise<void>;
+  setSun(sun: { sunHeight: number; sunDirection: number }): Promise<void>;
   renderView(camera: PerspectiveCamera): void;
   water: WaterSurface;
 }
@@ -406,6 +407,136 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     const fronts = new Set(Array.from(loft.sliceFront.subarray(0, loft.sliceCount)));
     return { ...curl, front, fronts: [...fronts], sliceCount: loft.sliceCount, slices };
   };
+  /**
+   * The curl's light against the face beside it (tube-colour-fix.md, "How to check it"), measured on screen from one
+   * view: the lip (the loft's sheet), the tube's back wall (throat to toe of the open slices) and the face (the water's
+   * own pixels around them), each's mean relative luminance and hue, as drawn and with the sheet off (before the fix).
+   * `sun`: 'behind' puts the sun where the camera looks, behind the lip; 'front' behind the camera; or a time of day.
+   * The regions come from a pass with the curl in its `region` view and one without the water; the marked frame is
+   * posted as curl-luma.png.
+   */
+  const waterSheetCurlLuma = async (name: string | View, look: WaterLook, sun: 'behind' | 'front' | TimeOfDay = 'behind', height = 0.1) => {
+    const shot = typeof name === 'string'
+      ? shots.find((candidate) => candidate.name === name)
+      : { name: 'view', eye: new Vector3(...name.eye), target: new Vector3(...name.target) };
+    const mesh = hooks.mode.barrelMesh;
+    const gl = hooks.canvas.getContext('webgl2');
+    if (!shot || !mesh || !gl) return undefined;
+    const forward = shot.target.clone().sub(shot.eye).setY(0).normalize();
+    const toward = sun === 'behind' ? forward : sun === 'front' ? forward.clone().negate() : undefined;
+    // An azimuth a puts the sun toward (sin a, −cos a) (PhotoSky's skyRotation).
+    const lighting = toward ? { sunHeight: height, sunDirection: (Math.atan2(toward.x, -toward.z) * 180) / Math.PI } : undefined;
+    for (let pass = 0; pass < 2; pass += 1) {
+      if (lighting) await hooks.setSun(lighting);
+      else await hooks.setTimeOfDay(sun as TimeOfDay);
+      hooks.setWaterLook(look);
+    }
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    const { width, height: rows } = hooks.canvas;
+    const frame = () => {
+      hooks.renderView(camera);
+      const pixels = new Uint8Array(width * rows * 4);
+      gl.readPixels(0, 0, width, rows, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      return pixels;
+    };
+    hooks.renderView(camera);
+    const drawn = frame();
+    const view = mesh.view;
+    mesh.sheetShown = false;
+    const before = frame();
+    mesh.sheetShown = true;
+    mesh.setView('region');
+    const regions = frame();
+    mesh.setView(view);
+    const water = hooks.water.mesh;
+    water.visible = false;
+    const dry = frame();
+    water.visible = true;
+    hooks.renderView(camera);
+    // Each curl pixel's region by the region pass's strongest channel; the water's own pixels where hiding it showed.
+    const same = (a: Uint8Array, b: Uint8Array, k: number) => a[k] === b[k] && a[k + 1] === b[k + 1] && a[k + 2] === b[k + 2];
+    const region = new Uint8Array(width * rows);
+    let x0 = width;
+    let x1 = -1;
+    let y0 = rows;
+    let y1 = -1;
+    for (let p = 0; p < width * rows; p += 1) {
+      const k = 4 * p;
+      if (!same(drawn, regions, k)) {
+        const [r, g, b] = [regions[k], regions[k + 1], regions[k + 2]];
+        region[p] = r > 2 * Math.max(g, b) ? 1 : b > 2 * Math.max(r, g) ? 2 : 3;
+        if (region[p] <= 2) {
+          const [x, y] = [p % width, Math.floor(p / width)];
+          x0 = Math.min(x0, x);
+          x1 = Math.max(x1, x);
+          y0 = Math.min(y0, y);
+          y1 = Math.max(y1, y);
+        }
+      } else if (!same(drawn, dry, k)) {
+        region[p] = 4;
+      }
+    }
+    // The face: the water's pixels around the lip and back wall, their box widened by half each way.
+    const [wx, wy] = [(x1 - x0) / 2, (y1 - y0) / 2];
+    const inBox = (p: number) => {
+      const [x, y] = [p % width, Math.floor(p / width)];
+      return x >= x0 - wx && x <= x1 + wx && y >= y0 - wy && y <= y1 + wy;
+    };
+    const linear = (c: number) => {
+      const v = c / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    const stats = (pixels: Uint8Array, wanted: number) => {
+      let n = 0;
+      let luma = 0;
+      const sum = [0, 0, 0];
+      for (let p = 0; p < width * rows; p += 1) {
+        if (region[p] !== wanted || (wanted === 4 && !inBox(p))) continue;
+        const k = 4 * p;
+        const [r, g, b] = [linear(pixels[k]), linear(pixels[k + 1]), linear(pixels[k + 2])];
+        luma += 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        sum[0] += r;
+        sum[1] += g;
+        sum[2] += b;
+        n += 1;
+      }
+      if (!n) return { pixels: 0 };
+      const [r, g, b] = sum.map((c) => c / n);
+      // Hue, degrees (green 120, cyan 180, blue 240), and the green share of the mean colour.
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const hue = max === min ? 0 : max === r ? (60 * ((g - b) / (max - min)) + 360) % 360 : max === g ? 60 * ((b - r) / (max - min)) + 120 : 60 * ((r - g) / (max - min)) + 240;
+      return { pixels: n, luminance: +(luma / n).toFixed(4), hue: +hue.toFixed(1), green: +(g / (r + g + b)).toFixed(3), rgb: [r, g, b].map((c) => +c.toFixed(4)) };
+    };
+    const result = {
+      shot: shot.name, look, sun: lighting ?? sun,
+      drawn: { lip: stats(drawn, 1), backWall: stats(drawn, 2), face: stats(drawn, 4), otherCurl: stats(drawn, 3) },
+      before: { lip: stats(before, 1), backWall: stats(before, 2), face: stats(before, 4) },
+    };
+    // The drawn frame with the regions marked: the lip red, the back wall blue, the face's pixels yellow, one in four.
+    const marked = new ImageData(width, rows);
+    for (let y = 0; y < rows; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        const p = (rows - 1 - y) * width + x;
+        const k = 4 * p;
+        const o = 4 * (y * width + x);
+        let [r, g, b] = [drawn[k], drawn[k + 1], drawn[k + 2]];
+        const mark = (x + y) % 4 === 0;
+        if (mark && region[p] === 1) [r, g, b] = [255, 0, 0];
+        else if (mark && region[p] === 2) [r, g, b] = [0, 80, 255];
+        else if (mark && region[p] === 4 && inBox(p)) [r, g, b] = [255, 230, 0];
+        marked.data.set([r, g, b, 255], o);
+      }
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = rows;
+    canvas.getContext('2d')!.putImageData(marked, 0, 0);
+    await post(canvas, 'curl-luma.png');
+    return result;
+  };
   /** Steps the sea on (at least `seconds`) to the next hold, and shoots from there; the new shots' names. */
   const waterSheetAdvance = async (seconds = 1) => {
     await settle(seconds);
@@ -414,7 +545,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     Object.assign(window, { waterSheetShots: shots });
     return shots.map((shot) => shot.name);
   };
-  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetBarrel: hooks.mode.barrelMesh });
+  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 

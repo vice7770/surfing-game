@@ -3,7 +3,7 @@ import { describe, it } from 'vitest';
 import { PADANG } from '../Bathymetry';
 import { loadBarrelLibrary } from '../barrel/barrelLibrary';
 import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from '../barrel/frontRecords';
-import { BARREL_SLOPE, LOFT, SweptLoft } from '../barrel/sweptLoft';
+import { BARREL_SLOPE, LOFT, LOFT_SAMPLES, SweptLoft } from '../barrel/sweptLoft';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
 import { sampleSurfaceHeight } from '../../scene/WaterSurface';
 import { PADANG_SPREADING } from '../../game/PhysicalMode';
@@ -40,10 +40,14 @@ describe.runIf(process.env.PROBE)('Padang Padang loft probe', () => {
     const surface = new Float32Array(grid.nx * grid.nz * 2);
     const records = new Float32Array(FRONT_CAPACITY * FRONT_STRIDE);
     const loft = new SweptLoft(library, BARREL_SLOPE.padang!);
+    // The same loft without the lip's sheet (tube-colour-fix.md), built beside it each frame, in turn first, for its cost.
+    const plain = new SweptLoft(library, BARREL_SLOPE.padang!, { sheet: false });
     const frameOf = library.profileTimes({ slope: BARREL_SLOPE.padang!, footHeight: 1.6, footDepth: PADANG.baseDepth }).frameSeconds;
     appendFileSync(log, `Padang Padang ${process.env.SWELL ?? 'small'} (Hs ${swell.significantHeight} m, ${swell.peakPeriod} s), 1 m cells; a library frame ${frameOf.toFixed(3)} s at h0 ${PADANG.baseDepth} m\n`);
     let stepMs = 0;
     let loftMs = 0;
+    let plainMs = 0;
+    let sheetSlices = 0;
     let frames = 0;
     let over2 = 0;
     let openSlices = 0;
@@ -61,9 +65,21 @@ describe.runIf(process.env.PROBE)('Padang Padang loft probe', () => {
       grid.xMin = simulation.windowXMin;
       simulation.writeUniformSurface(surface, grid, false);
       const count = writeFrontRecords(simulation.front!.points, records);
+      const heightAt = (x: number, z: number) => sampleSurfaceHeight(surface, grid, x, z);
+      if (frame % 2 === 1) {
+        start = performance.now();
+        plain.build(records, count, 0, heightAt);
+        plainMs += performance.now() - start;
+      }
       start = performance.now();
-      const result = loft.build(records, count, 0, (x, z) => sampleSurfaceHeight(surface, grid, x, z));
+      const result = loft.build(records, count, 0, heightAt);
       loftMs += performance.now() - start;
+      if (frame % 2 === 0) {
+        start = performance.now();
+        plain.build(records, count, 0, heightAt);
+        plainMs += performance.now() - start;
+      }
+      for (let s = 0; s < result.sliceCount; s += 1) if (result.sheetWeight[s * LOFT_SAMPLES + LOFT.extensionSamples + 48] > 0) sheetSlices += 1;
       frames += 1;
       let run = 0;
       for (let s = 0; s < result.sliceCount; s += 1) {
@@ -93,6 +109,7 @@ describe.runIf(process.env.PROBE)('Padang Padang loft probe', () => {
       steps = [];
     }
     appendFileSync(log, `the loft ${(loftMs / frames).toFixed(2)} ms a frame against the step's ${(stepMs / frames).toFixed(1)} ms (${((100 * loftMs) / stepMs).toFixed(1)} %); open slices with the crest over 2 m off: ${over2} of ${openSlices}\n`);
+    appendFileSync(log, `the lip's sheet: the loft ${(loftMs / frames).toFixed(3)} ms a frame with it, ${(plainMs / frames).toFixed(3)} ms without (built in turn), so ${((loftMs - plainMs) / frames).toFixed(3)} ms; slices shaded as a sheet ${sheetSlices} (${(sheetSlices / frames).toFixed(1)} a frame)\n`);
     const late = cappedLives.filter((life) => life > 0.8).length;
     const fifths = [0, 1, 2, 3, 4].map((k) => cappedLives.filter((life) => life >= k / 5 && (k === 4 ? life <= 1 : life < (k + 1) / 5)).length);
     appendFileSync(log, `capped open slices: ${cappedLives.length} of ${openSlices}; their life (τ / T_open) ${quantiles(cappedLives)}; by fifth of the open time ${fifths.join(' / ')}; past 0.8: ${late}\n`);

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { LoftResult } from '../../wave/barrel/sweptLoft';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
-import { SweptBarrelMesh, sweptViewColours } from './SweptBarrelMesh';
+import { SWEPT_SHEET_BODY, SweptBarrelMesh, sweptViewColours } from './SweptBarrelMesh';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -16,7 +16,7 @@ function compiled(material: { onBeforeCompile: (shader: WebGLProgramParametersWi
 function oneQuad(): LoftResult {
   return {
     positions: new Float32Array([0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1]), normals: new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
-    mask: new Float32Array(4).fill(1), lift: new Float32Array(4), indices: new Uint32Array([0, 2, 1, 1, 2, 3]), vertexCount: 4, indexCount: 6, sliceCount: 2,
+    mask: new Float32Array(4).fill(1), lift: new Float32Array(4), sheet: new Float32Array(4), sheetWeight: new Float32Array(4), indices: new Uint32Array([0, 2, 1, 1, 2, 3]), vertexCount: 4, indexCount: 6, sliceCount: 2,
     sliceFront: new Int32Array(2), sliceSigma: new Float32Array(2), sliceTau: new Float32Array(2), slicePhase: new Uint8Array(2),
     sliceCrestOffset: new Float32Array(2), sliceLife: new Float32Array(2), clamps: 0, clampedLookups: 0, caps: 0,
     sliceJoined: new Uint8Array([1, 0]), sliceRayX: new Float32Array(2), sliceRayZ: new Float32Array(2).fill(1), sliceWeight: new Float32Array(2).fill(1),
@@ -53,6 +53,41 @@ describe('the swept barrel’s mesh', () => {
     expect(swept.mesh.visible).toBe(false);
   });
 
+  it('shades the lip as a thin sheet lit from behind, in both looks, where the loft weighs it (tube-colour-fix.md)', () => {
+    const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+    for (const look of ['classic', 'rich'] as const) {
+      swept.setLook(look);
+      const { vertex, fragment } = compiled(swept.mesh.material);
+      expect(vertex).toContain('attribute float sweptSheet;');
+      expect(vertex).toContain('vSweptSheet = sweptSheet;');
+      expect(vertex).toContain('vSweptSheetWeight = sweptSheetWeight;');
+      expect(fragment).toContain('varying float vSweptSheetWeight;');
+      expect(fragment).toContain(SWEPT_SHEET_BODY);
+      // Two-flux over the view's path through the sheet, and the light behind it through the same path.
+      expect(fragment).toContain('waterBody = mix( waterBody, waterDeepReflectance * ( 1.0 - sweptReach * sweptReach ), vSweptSheetWeight );');
+      expect(fragment).toContain('float sweptPath = vSweptSheet / max( 0.2, waterRefractedCosine( waterViewCos ) );');
+      // No bed is seen through a lip: the caustics fade as the sheet comes in.
+      expect(fragment).toContain('mix( 1.0, causticLightAt( waterBedXZ ), 1.0 - vSweptSheetWeight )');
+      // The height field's crest-light march never runs on the curl.
+      expect(fragment).not.toContain('waterCrestThickness( vWaterWorld');
+      // The sheet's own lines come after the column's body, inside its lit branch, before the foam.
+      expect(fragment.indexOf(SWEPT_SHEET_BODY)).toBeGreaterThan(fragment.indexOf('waterBody = waterBodyReflectanceLit('));
+      expect(fragment.indexOf(SWEPT_SHEET_BODY)).toBeLessThan(fragment.indexOf('float waterCover'));
+    }
+  });
+
+  it('copies the loft’s sheet and its weight, and draws the lip as the column again when the sheet is off (dev)', () => {
+    const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+    const loft = { ...oneQuad(), sheet: new Float32Array([0.1, 0.2, 0.3, 0.4]), sheetWeight: new Float32Array([0, 0.5, 1, 1]) };
+    swept.update(loft);
+    const attribute = (name: string) => Array.from(swept.mesh.geometry.getAttribute(name).array.slice(0, 4));
+    expect(attribute('sweptSheet').map((v) => +v.toFixed(3))).toEqual([0.1, 0.2, 0.3, 0.4]);
+    expect(attribute('sweptSheetWeight')).toEqual([0, 0.5, 1, 1]);
+    swept.sheetShown = false;
+    swept.update(loft);
+    expect(attribute('sweptSheetWeight')).toEqual([0, 0, 0, 0]);
+  });
+
   it('draws a dev view only when asked, in its own program, and back to the water’s', () => {
     const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
     const plain = compiled(swept.mesh.material);
@@ -68,12 +103,16 @@ describe('the swept barrel’s mesh', () => {
     expect(compiled(swept.mesh.material)).toEqual(plain);
   });
 
-  it('colours the phase view by each slice’s phase, dimmed where it rests on the water', () => {
+  it('colours the dev views by phase, and the region view by the lip, the back wall and the rest', () => {
     const loft = { ...oneQuad(), lift: new Float32Array([1, 1, 0, 1]), slicePhase: new Uint8Array([2, 0]) };
     const out = new Float32Array(12);
     sweptViewColours('phase', loft, out);
     // After touchdown red; resting on the water, dimmed to 0.3 of it.
     expect(Array.from(out.slice(0, 3))).toEqual([1, 0.15, 0.1].map((c) => Math.fround(c)));
     expect(out[6]).toBeCloseTo(0.3, 6);
+    const regions = { ...loft, sheetWeight: new Float32Array([1, 0, 0, 0]) };
+    sweptViewColours('region', regions, out);
+    expect(Array.from(out.slice(0, 3))).toEqual([1, 0, 0]);
+    expect(Array.from(out.slice(3, 6))).toEqual([0, 1, 0]);
   });
 });

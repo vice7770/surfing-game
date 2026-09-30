@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
-import { PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
-import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
-import { toyCase, tubeCase } from './toyCase';
+import { LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
+import { LOFT, LOFT_SAMPLES, SweptLoft, sheetAcross, type LoftResult } from './sweptLoft';
+import { lipCase, toyCase, tubeCase } from './toyCase';
 
 const flat = () => 0.5;
 /** A straight front along +x at z = −100, 1 m apart, every point at τ `tau(k)`, thrown at z `throwZ` once τ ≥ 0. */
@@ -154,6 +154,77 @@ describe('the swept loft', () => {
     expect(times).toEqual({
       scale: lookup.scale, clamped: lookup.clamped, touchdownSeconds: lookup.touchdownSeconds, frameSeconds: lookup.frameSeconds, clearSeconds: lookup.clearSeconds,
     });
+  });
+});
+
+describe('the lip as a thin sheet (tube-colour-fix.md, step 1)', () => {
+  /** The synthetic lip: 0.05 h0 thick, 0.35 m at the records' h0 of 7 m. */
+  const THICKNESS = 0.05 * 7;
+  const lips = () => new ProfileLibrary([lipCase(0.3, 0.05)]);
+  const loftLip = (tau: number, options = {}) => new SweptLoft(lips(), 0.05, options).build(records(21, () => tau, -100), 21, 0.5, flat);
+  const middleOf = (loft: LoftResult) => sliceAt(loft, 10) * LOFT_SAMPLES + LOFT.extensionSamples;
+
+  it('measures a lip of known uniform thickness within 5 %, away from its tip', () => {
+    const loft = loftLip(0.1);
+    const base = middleOf(loft);
+    // The two sides meet at the tip (64), so within a thickness of it they close in: 3 points either side.
+    for (let i = 36; i <= 84; i += 1) {
+      if (Math.abs(i - LANDMARK.lip) <= 3) continue;
+      expect(Math.abs(loft.sheet[base + i] - THICKNESS) / THICKNESS, `point ${i}`).toBeLessThan(0.05);
+    }
+    expect(loft.sheet[base + LANDMARK.lip]).toBe(0);
+    for (let i = LANDMARK.lip - 3; i < LANDMARK.lip; i += 1) expect(loft.sheet[base + i]).toBeLessThanOrEqual(THICKNESS * 1.05);
+  });
+
+  it('weighs the sheet 1 from point 36 to 84, ramped over 3 points next to the crest and the throat, and 0 on the face, the back and the extensions', () => {
+    const loft = loftLip(0.1);
+    const base = middleOf(loft);
+    const slice = sliceAt(loft, 10) * LOFT_SAMPLES;
+    for (let i = 36; i <= 84; i += 1) expect(loft.sheetWeight[base + i], `point ${i}`).toBe(1);
+    expect([33, 34, 35].map((i) => loft.sheetWeight[base + i])).toEqual([0.25, 0.5, 0.75]);
+    expect([85, 86, 87].map((i) => loft.sheetWeight[base + i])).toEqual([0.75, 0.5, 0.25]);
+    for (let i = 0; i <= LANDMARK.crest; i += 1) expect(loft.sheetWeight[base + i], `back ${i}`).toBe(0);
+    for (let i = LANDMARK.throat; i < PROFILE_POINTS; i += 1) expect(loft.sheetWeight[base + i], `face ${i}`).toBe(0);
+    for (let j = 0; j < LOFT.extensionSamples; j += 1) {
+      expect(loft.sheetWeight[slice + j]).toBe(0);
+      expect(loft.sheetWeight[slice + LOFT_SAMPLES - 1 - j]).toBe(0);
+    }
+  });
+
+  it('carries the lift, so the front’s blended ends and a fading slice fade the sheet too', () => {
+    const loft = loftLip(0.1);
+    for (let v = 0; v < loft.vertexCount; v += 1) expect(loft.sheetWeight[v]).toBeLessThanOrEqual(loft.lift[v] + 1e-6);
+    const end = LOFT.extensionSamples + 50;
+    // The first slice lies on the water, beyond the front's end: no lift, no sheet.
+    expect(loft.lift[end]).toBe(0);
+    expect(loft.sheetWeight[end]).toBe(0);
+  });
+
+  it('is no sheet before the underside forms, when its run is folded onto the tip', () => {
+    const loft = loftLip(-0.3);
+    for (let v = 0; v < loft.vertexCount; v += 1) expect(loft.sheetWeight[v]).toBe(0);
+  });
+
+  it('leaves the sheet out of the contact’s loft', () => {
+    const loft = loftLip(0.1, { contact: true });
+    for (let v = 0; v < loft.vertexCount; v += 1) expect(loft.sheetWeight[v]).toBe(0);
+  });
+
+  it('measures across to the other side’s segments, not just its points', () => {
+    // Two parallel runs 0.2 m apart with points staggered: every distance is the gap, never a diagonal to a point.
+    const profile = new Float32Array(2 * PROFILE_POINTS);
+    for (let i = LANDMARK.crest; i <= LANDMARK.lip; i += 1) {
+      profile[2 * i] = (i - LANDMARK.crest) * 0.1;
+      profile[2 * i + 1] = 1;
+    }
+    for (let i = LANDMARK.lip + 1; i <= LANDMARK.throat; i += 1) {
+      profile[2 * i] = (LANDMARK.throat - i) * 0.13 + 0.05;
+      profile[2 * i + 1] = 0.8;
+    }
+    const out = new Float32Array(PROFILE_POINTS);
+    expect(sheetAcross(profile, out)).toBe(1);
+    for (let i = 40; i <= 56; i += 1) expect(out[i]).toBeCloseTo(0.2, 6);
+    for (let i = 70; i <= 84; i += 1) expect(out[i]).toBeCloseTo(0.2, 6);
   });
 });
 

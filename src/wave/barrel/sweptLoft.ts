@@ -27,6 +27,17 @@ export const LOFT = {
 } as const;
 /** Vertices per slice: the profile and its extensions over the water at each end. */
 export const LOFT_SAMPLES = PROFILE_POINTS + 2 * LOFT.extensionSamples;
+/**
+ * The lip as a thin sheet (docs/research/water-physics/tube-colour-fix.md, step 1; the advisor, 2026-09-30): the lip's
+ * two sides are the profile's runs from the crest to the tip and from the tip back under to the throat (`LANDMARK`),
+ * and each point between the crest and the throat takes its distance across to the other side, m.
+ * - `ramp`: points over which the sheet's weight ramps to 0 next to the crest and the throat (1 from 36 to 84);
+ * - `formed`, m: the underside's length over which the weight comes in. The library folds the underside onto the tip
+ *   until the cavity forms (its run is a point before the throw, and again at some touchdown frames), when the
+ *   distance across would be the distance down the face to that point, so a slice is a sheet only once its underside
+ *   has length [provisional].
+ */
+export const SHEET = { ramp: 3, formed: 0.25 } as const;
 /** The library's runs' slope along the wave's path, per spot drawn with the swept barrel (the owner's 1:19 at Padang Padang). */
 export const BARREL_SLOPE: Partial<Record<SpotName, number>> = { padang: 1 / 19 };
 
@@ -37,6 +48,13 @@ export interface LoftResult {
   /** 0–1 per vertex: the seam mask's value there, and how far the vertex is lifted off the water (the curl's weight). */
   mask: Float32Array;
   lift: Float32Array;
+  /**
+   * Per vertex, the lip's thickness there, m (the distance across to its other side), and how far the vertex is shaded
+   * as that thin sheet, 0–1: ramped in from the crest and the throat, × its lift, 0 before the underside forms and on
+   * the extensions (`SHEET`). Drawn lofts only; zero in contact mode.
+   */
+  sheet: Float32Array;
+  sheetWeight: Float32Array;
   indices: Uint32Array;
   vertexCount: number;
   indexCount: number;
@@ -76,6 +94,8 @@ export interface LoftResult {
 export interface LoftOptions {
   /** Build for the contact (Part B, PR 4): see `SweptLoft`. */
   contact?: boolean;
+  /** Measure the lip as a sheet (`sheetAcross`), which only the drawing shades: on by default, off in contact mode. */
+  sheet?: boolean;
 }
 
 const MAX_SLICES = Math.floor(LOFT.budget / LOFT_SAMPLES);
@@ -101,6 +121,51 @@ interface Sample {
   footHeight: number;
   footDepth: number;
   throwZ: number;
+}
+
+/** The squared distance from (px, py) to the segment (ax, ay)–(bx, by). */
+function segmentDistance2(px: number, py: number, ax: number, ay: number, bx: number, by: number): number {
+  const dx = bx - ax;
+  const dy = by - ay;
+  const length2 = dx * dx + dy * dy;
+  let t = length2 > 0 ? ((px - ax) * dx + (py - ay) * dy) / length2 : 0;
+  t = t < 0 ? 0 : t > 1 ? 1 : t;
+  const qx = ax + t * dx - px;
+  const qy = ay + t * dy - py;
+  return qx * qx + qy * qy;
+}
+
+/** The shortest distance from profile point i to the segments of the run [from, to], m. */
+function acrossTo(profile: Float32Array, i: number, from: number, to: number): number {
+  const px = profile[2 * i];
+  const py = profile[2 * i + 1];
+  let best = Infinity;
+  for (let k = from; k < to; k += 1) {
+    const d2 = segmentDistance2(px, py, profile[2 * k], profile[2 * k + 1], profile[2 * k + 2], profile[2 * k + 3]);
+    if (d2 < best) best = d2;
+  }
+  return Math.sqrt(best);
+}
+
+/**
+ * The lip's thickness at each point between the crest and the throat (`SHEET`), into `out` (m): from the crest to the
+ * tip, the distance to the underside's run; from the tip back to the throat, to the outer run's; 0 at the tip, where
+ * they meet. Returns how far the underside has formed, 0–1: its length over `SHEET.formed` (0 leaves `out` as it was).
+ */
+export function sheetAcross(profile: Float32Array, out: Float32Array): number {
+  const { crest, lip, throat } = LANDMARK;
+  let underside = 0;
+  for (let k = lip; k < throat; k += 1) {
+    const dx = profile[2 * k + 2] - profile[2 * k];
+    const dy = profile[2 * k + 3] - profile[2 * k + 1];
+    underside += Math.sqrt(dx * dx + dy * dy);
+  }
+  const formed = Math.min(1, underside / SHEET.formed);
+  if (formed <= 0) return 0;
+  for (let i = crest + 1; i < lip; i += 1) out[i] = acrossTo(profile, i, lip, throat);
+  out[lip] = 0;
+  for (let i = lip + 1; i < throat; i += 1) out[i] = acrossTo(profile, i, crest, lip);
+  return formed;
 }
 
 /**
@@ -129,13 +194,18 @@ export class SweptLoft {
   private readonly probe: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
 
   private readonly contact: boolean;
+  private readonly measureSheet: boolean;
+  /** A slice's lip thickness per profile point, m (`sheetAcross`). */
+  private readonly across = new Float32Array(PROFILE_POINTS);
 
   constructor(private readonly library: ProfileLibrary, private readonly slope: number, options: LoftOptions = {}) {
     this.contact = options.contact ?? false;
+    this.measureSheet = options.sheet ?? !this.contact;
     const vertices = (MAX_SLICES + 1) * LOFT_SAMPLES;
     const slices = MAX_SLICES + 1;
     this.result = {
       positions: new Float32Array(3 * vertices), normals: new Float32Array(3 * vertices), mask: new Float32Array(vertices), lift: new Float32Array(vertices),
+      sheet: new Float32Array(vertices), sheetWeight: new Float32Array(vertices),
       indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * slices), vertexCount: 0, indexCount: 0, sliceCount: 0,
       sliceFront: new Int32Array(slices), sliceSigma: new Float32Array(slices), sliceTau: new Float32Array(slices),
       slicePhase: new Uint8Array(slices), sliceCrestOffset: new Float32Array(slices), sliceLife: new Float32Array(slices),
@@ -409,6 +479,8 @@ export class SweptLoft {
         }
       }
       const maskSlice = wFade > 0 ? Math.min(1, Math.max(0, 1 + d / LOFT.band)) : 0;
+      // The lip as a thin sheet, for the drawing only: how far across it each point is, once its underside has formed.
+      const formed = this.measureSheet && w > 0 ? sheetAcross(profile, this.across) : 0;
       const slice = r.sliceCount;
       r.sliceFront[slice] = f.id;
       r.sliceSigma[slice] = sigma;
@@ -430,6 +502,8 @@ export class SweptLoft {
         let above = 0;
         let pin = 1;
         let maskAlong = 1;
+        let sheet = 0;
+        let sheetShare = 0;
         if (j < E) {
           along = profile[0] - (E - j) * EXTENSION_STEP;
           maskAlong = Math.max(0, 1 - ((E - j) * EXTENSION_STEP) / LOFT.band);
@@ -438,6 +512,10 @@ export class SweptLoft {
           along = profile[2 * i];
           above = profile[2 * i + 1];
           pin = i < LOFT.pinned ? (LOFT.pinned - i) / LOFT.pinned : i > LAST - LOFT.pinned ? (i - (LAST - LOFT.pinned)) / LOFT.pinned : 0;
+          if (formed > 0 && i > LANDMARK.crest && i < LANDMARK.throat) {
+            sheet = this.across[i];
+            sheetShare = formed * Math.min(1, Math.min(i - LANDMARK.crest, LANDMARK.throat - i) / (SHEET.ramp + 1));
+          }
         } else {
           const beyond = (j - E - LAST) * EXTENSION_STEP;
           along = profile[2 * LAST] + beyond;
@@ -457,6 +535,8 @@ export class SweptLoft {
         r.positions[3 * v + 2] = pz;
         r.mask[v] = maskSlice * maskAlong;
         r.lift[v] = e;
+        r.sheet[v] = sheet;
+        r.sheetWeight[v] = sheetShare * e;
       }
       r.sliceCount += 1;
     }
