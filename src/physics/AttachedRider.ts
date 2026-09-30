@@ -9,7 +9,7 @@ import { MinimumJerkTrack } from './MinimumJerkTrack';
 import { SEAWATER_DENSITY as SEAWATER } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
 import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, riderPartVolumes, riderPose, stanceFeet, type PosePhase, type StanceName, type SupportRegion } from './riderPosture';
-import type { SurfWater } from './SurfWater';
+import type { SurfWater, WaterSample } from './SurfWater';
 import type { StrokeSplash } from '../wave/SprayCloud';
 
 /**
@@ -663,6 +663,8 @@ export class AttachedRider {
   private readonly waterForce = new Vector3();
   private readonly waterMoment = new Vector3();
   private readonly sample = createWaterSample();
+  /** The curl's water over a part in the tube's air (the swept barrel, Part B, PR 4). */
+  private readonly lipSample = createWaterSample();
   private readonly partWorld = new Vector3();
   private readonly partVelocity = new Vector3();
   private readonly flow = new Vector3();
@@ -939,7 +941,8 @@ export class AttachedRider {
       board.toWorld(this.localScratch.set(0, deckHeight(this.shape, z), z), this.footWorld);
       const sample = water.sampleAt(this.footWorld.x, this.footWorld.y, this.footWorld.z, this.sample);
       if (sample.outsideDomain) return 'no water';
-      if (sample.surfaceY - this.footWorld.y > FEET_DEPTH) return 'feet under water';
+      // A foot in the curl's water, with air beneath it, is struck by the lip, not sunk (the advisor's ruling 4).
+      if (sample.waterFloorY === undefined && sample.surfaceY - this.footWorld.y > FEET_DEPTH) return 'feet under water';
     }
     return undefined;
   }
@@ -1584,9 +1587,25 @@ export class AttachedRider {
     const p = this.partWorld;
     const sample = water.sampleAt(p.x, p.y, p.z, this.sample);
     if (!sample.wet || sample.outsideDomain) return;
-    // Wet between the deck (if the part lies on one) and the surface.
-    const wet = submergedFraction(sample.surfaceY - p.y, radius) - (Number.isFinite(deckY) ? submergedFraction(Math.min(deckY, sample.surfaceY) - p.y, radius) : 0);
-    if (!(wet > 0)) return;
+    // Wet between the surface and what lies under the part: the deck it rests on, or the curl's underside where the
+    // part is in the curl's water (the swept barrel, the Padang Padang spec, Part B, PR 4).
+    const bottom = Math.min(sample.surfaceY, Math.max(deckY, sample.waterFloorY ?? -Infinity));
+    const wet = submergedFraction(sample.surfaceY - p.y, radius) - (Number.isFinite(bottom) ? submergedFraction(bottom - p.y, radius) : 0);
+    if (wet > 0) this.wetForce(slot, sample, wet, volume, dragArea, h, shelter);
+    // A part in the tube's air whose sphere reaches the curl's underside feels the lip: its share between the underside
+    // and the top, in the curl's water's own flow (the advisor's ruling 4). Centre-only sampling would jump.
+    if (sample.ceilingY !== undefined && sample.ceilingTopY !== undefined && sample.ceilingY - p.y < radius) {
+      const share = submergedFraction(sample.ceilingTopY - p.y, radius) - submergedFraction(sample.ceilingY - p.y, radius);
+      if (share > 0) {
+        const lip = water.sampleAt(p.x, (sample.ceilingY + sample.ceilingTopY) / 2, p.z, this.lipSample);
+        if (lip.wet && !lip.outsideDomain) this.wetForce(slot, lip, share, volume, dragArea, h, shelter);
+      }
+    }
+  }
+
+  /** Buoyancy and drag from `sample` on the `wet` share of one body point at `partWorld`, moving at `partVelocity`. */
+  private wetForce(slot: number, sample: WaterSample, wet: number, volume: number, dragArea: number, h: number, shelter: number): void {
+    const p = this.partWorld;
     if (slot >= RIDER_PARTS.length) this.stroking = true;
     // Aerated water (the wipeout spec, Part B) is a lighter mixture to float and drag in.
     const mixture = SEAWATER * (1 - (sample.voidFraction ?? 0));
