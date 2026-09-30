@@ -25,19 +25,20 @@ const ONSET_LAG: readonly (readonly [depth: number, lag: number])[] = [[0.237, 2
 
 /**
  * Where the game's solver first breaks swell, fresh, on the same transect (the periodicOnset probe, 2026-09-30): one
- * column wide, regular waves driven in the foot's 7 m, each wave's crest height as it passes REFERENCE (5.5 m, nearer
- * the break than the foot, still seaward of every onset: refraction and the spur change a crest's height between the
- * foot and the break in 2D, the advisor) against the still depth under its crest where Kennedy's fresh test first
+ * column wide, regular waves driven in the foot's 7 m, each wave's crest height as its highest over BAND (6 to 5 m,
+ * nearer the break than the foot, still seaward of every onset: refraction and the spur change a crest's height
+ * between the foot and the break in 2D, and one reading jitters; the advisor) against the still depth under its crest where Kennedy's fresh test first
  * fired (η_t ≥ 0.65 √(g d)), medians over 12 waves, per period, m. The join sits where the solver itself onsets, so the
  * lag keeps its meaning (the advisor, 2026-09-30); a soliton's depths (1.66 m at A0 0.2) sat well shoreward of swell's.
- * Crests under about 1.15 m at the reference seldom broke fresh on the wedge; they clamp to the first row and join
- * only if the solver breaks them. Measured at h0 = 7 m, provisional.
+ * Crests under about 1.2 m over the band seldom broke fresh on the wedge (1 wave in 12, near the flat's edge): they
+ * clamp to the first row and join only if the solver breaks them there, so small swell mostly draws no barrel, as at
+ * a reef pass (the advisor: one wave is no table row). Measured at h0 = 7 m, provisional.
  */
 const SWELL_ONSET: readonly { period: number; rows: readonly (readonly [height: number, depth: number])[] }[] = [
-  { period: 14, rows: [[1.15, 2.29], [1.61, 2.82], [2.19, 3.24], [2.72, 3.61], [3.1, 3.92]] },
-  { period: 16, rows: [[1.18, 2.61], [1.57, 3.18], [1.78, 3.66], [2.02, 4.13], [2.45, 4.55]] },
-  { period: 17, rows: [[1.25, 2.61], [1.72, 3.13], [2.09, 3.5], [2.47, 3.82], [2.75, 3.92]] },
-  { period: 18, rows: [[1.25, 2.55], [1.81, 2.92], [2.19, 3.34], [2.8, 3.71], [3.21, 3.82]] },
+  { period: 14, rows: [[1.2, 2.29], [1.75, 2.82], [2.29, 3.24], [2.74, 3.61], [3.15, 3.92]] },
+  { period: 16, rows: [[1.19, 2.61], [1.6, 3.18], [1.84, 3.66], [2.21, 4.13], [2.68, 4.55]] },
+  { period: 17, rows: [[1.29, 2.61], [1.74, 3.13], [2.16, 3.5], [2.51, 3.82], [2.82, 3.92]] },
+  { period: 18, rows: [[1.29, 2.55], [1.82, 2.92], [2.37, 3.34], [2.86, 3.71], [3.3, 3.82]] },
 ];
 /** The foot's depth the swell table was measured at, and the band its heights were read over (their highest), m. */
 const SWELL_ONSET_H0 = 7;

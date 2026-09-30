@@ -119,18 +119,18 @@ describe('the slice clock', () => {
     expect(timing.lag(((0.237 + 0.35) / 2) * h0)).toBeCloseTo(((2.34 + 2.6) / 2) * unit, 12);
     expect(timing.lag(0.5)).toBeCloseTo(2.34 * unit, 12);
     expect(timing.lag(20)).toBeCloseTo(2.82 * unit, 12);
-    // And where a crest joins, by its height at the 5.5 m reference and the period: the solver's own swell onsets.
+    // And where a crest joins, by its highest over 6–5 m and the period: the solver's own swell onsets.
     expect(timing.band).toEqual([6, 5]);
-    expect(timing.joinDepth(1.57)).toBeCloseTo(3.18, 12);
-    expect(timing.joinDepth(1.375)).toBeCloseTo((2.61 + 3.18) / 2, 12);
+    expect(timing.joinDepth(1.6)).toBeCloseTo(3.18, 12);
+    expect(timing.joinDepth(1.395)).toBeCloseTo((2.61 + 3.18) / 2, 12);
     expect(timing.joinDepth(0.5)).toBeCloseTo(2.61, 12);
     expect(timing.joinDepth(4)).toBeCloseTo(4.55, 12);
-    const at17 = 2.61 + ((1.57 - 1.25) / (1.72 - 1.25)) * (3.13 - 2.61);
-    expect(onsetTiming(h0, 16.5).joinDepth(1.57)).toBeCloseTo((3.18 + at17) / 2, 12);
-    expect(onsetTiming(h0, 12).joinDepth(1.15)).toBeCloseTo(2.29, 12);
-    expect(onsetTiming(h0, 20).joinDepth(3.21)).toBeCloseTo(3.82, 12);
+    const at17 = 2.61 + ((1.6 - 1.29) / (1.74 - 1.29)) * (3.13 - 2.61);
+    expect(onsetTiming(h0, 16.5).joinDepth(1.6)).toBeCloseTo((3.18 + at17) / 2, 12);
+    expect(onsetTiming(h0, 12).joinDepth(1.2)).toBeCloseTo(2.29, 12);
+    expect(onsetTiming(h0, 20).joinDepth(3.3)).toBeCloseTo(3.82, 12);
     // A higher tide scales it by depth, the reference too; no lag, for the loft's comparison.
-    expect(onsetTiming(8, 16).joinDepth((1.57 * 8) / 7)).toBeCloseTo((3.18 * 8) / 7, 12);
+    expect(onsetTiming(8, 16).joinDepth((1.6 * 8) / 7)).toBeCloseTo((3.18 * 8) / 7, 12);
     expect(onsetTiming(8, 16).band[1]).toBeCloseTo((5 * 8) / 7, 12);
     expect(onsetTiming(h0, 16, 0).lag(3)).toBe(0);
   });
