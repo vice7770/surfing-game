@@ -501,7 +501,55 @@ Game size (160 m, 64 components), 110 s, fastest wet speed:
 
 **Open:**
 - **The root fix** recovers velocity, not flux, as fully nonlinear models do (FUNWAVE-TVD; improved Green–Naghdi). It is sketched in `docs/research/water-physics/solver-rewrite-sketch.md`. The switch makes it less urgent.
-- **Jets** draw 0.2 of the whole column, and pile 1–2.5 m of water a second into the edge columns. The wave-sizes rule (only water above still level) would throw about a third as much.
+- **Jets** draw 0.2 of the whole column, and pile 1–2.5 m of water a second into the edge columns. Fixed below.
+
+### Where a jet's water comes from
+
+A throw took up to 0.2 of the whole column in the crest cell and its two across-shore neighbours. Over the 10 m shelf that is water from metres below still level: on the Big swell a jet carried 1.7–6 times the crest's water above still level in those cells. Taking the jet's momentum from them drove 1–2 source cells backwards per jet (800–1,700 reversed flows a run).
+
+Ruled with the water-physics advisor over five rounds (2026-09-29):
+- **Where the water comes from:** the wave's upper half. That is the cells across shore through the crest standing at least H/2 above the wave's trough, within ±2H of the crest.
+  - The trough is crest − H, where the game measures H.
+  - Each cell gives its water above that trough, tapered as 1 − (d/2H)², times one share f = min(0.2, ask ÷ tapered water).
+  - The ask still sets the jet; 0.2 only caps it, so the crest is never cut flat.
+- **The trough, not still level.** On the Big swell up to half the Reef's breaking crests stand at or below still level (median −0.61 m at high tide), with the drained trough 1.4–2.7 m below it ahead: the step.
+  - Measured from still level, those throws came out empty.
+  - Measured from the trough, none do.
+- **Its momentum** (volume × jet velocity) comes from the wave's upper half, nearest the crest first.
+  - It reaches out a cell each way at a time until the flow along the jet covers it. Each cell gives in proportion to its own flow and is never reversed.
+  - What the upper half cannot give is counted (`unplacedMomentum`).
+  - At the step the depth-mean flow under the crest runs seaward as the trough drains back. The jet's extra speed comes from the crest's pressure, which the depth-averaged flow does not hold.
+- **Tried on the way:**
+  - Only water above still level, in the three cells: it starved every Big throw to 16–40 % of its ask, and emptied the crests below still level.
+  - The upper half unclipped: its window ran 54–74 m, so most of the water came from far behind or ahead of the crest.
+  - Momentum only from the ±2H cells: 21–28 % of it could not be placed on Big.
+
+Game size (160 m, 64 components), 110 s:
+
+| Sea | Fastest water | Throws ≥ 0.27 H² | Surf H1/3 | At the take-off | Momentum not placed | Reversed flows |
+|---|---:|---:|---:|---:|---:|---:|
+| Small, mid tide | 5.1 → 5.1 m/s | 614/689 → 625/663 | 1.85 → 1.84 m | 1.27 → 1.27 m | 0.6 % | 808 → 1 |
+| Medium, mid tide | 6.9 → 6.9 m/s | 720/776 → 765/767 | 2.56 → 2.63 m | 1.51 → 1.52 m | 2.3 % | 1,059 → 0 |
+| Big, mid tide | 8.6 → 8.7 m/s | 835/910 → 902/910 | 4.21 → 4.13 m | 2.88 → 3.00 m | 7.3 % | 1,743 → 2 |
+| Big, high tide, seed 1 | 9.6 → 9.6 m/s | 829/928 → 927/941 | 4.26 → 4.27 m | 3.17 → 3.54 m | 8.5 % | 1,658 → 2 |
+| Big, high tide, seed 2 | 8.9 → 8.8 m/s | 605/713 → 699/720 | 4.34 → 4.30 m | 3.11 → 3.02 m | 14.2 % | 984 → 5 |
+| Big, high tide, seed 3 | 10.0 → 9.6 m/s | 691/829 → 779/813 | 4.76 → 4.73 m | 3.35 → 3.40 m | 7.0 % | 1,456 → 10 |
+| Big, high tide, seed 4 | 8.7 → 9.0 m/s | 596/690 → 670/688 | 3.10 → 3.18 m | 2.46 → 2.55 m | 2.1 % | 646 → 2 |
+
+- **Every throw now takes water.** The window is 5–11 cells, each giving a median 0.18–0.19 of its water above the trough.
+- **Starving:** a fifth of the throws fall short of the Reef's provisional 0.47 H² ask, by a median 0.02–0.05 H². Under 6 % land below Pick & Feddersen's 0.27 H², against 11–17 % on main, whose 0.2 h cap starved thin columns.
+- **The surf readout** (the SurfMeter's breaking faces) holds within −2 % to +3 %. The take-off readings average 3.02 → 3.13 m over the four high-tide seeds, within their spread.
+- **The water is smoother:** the steepest step between dispersive wet cells falls from 2.3–2.7 to 1.9–2.3.
+  - Seed 3 is the exception, a one-step 2.97, with nothing non-finite.
+  - It came 0.2 s after a throw, 2 m from its crest and 8 m inside its ±2H clip, in 10 m of water within the +x edge ramp.
+  - The likely cause is the window's front edge at half height, where the removal still steps by f·H/2 (about 0.45 m for a 5 m wave). Main's three-cell source stepped by 0.2 h, about 2 m over the shelf, at every throw.
+- **Momentum:** 0.6–8.5 % of the jets' own momentum is unplaced (14 % on seed 2), against the advisor's 10 % line. The rest comes from the water.
+  - Seed 2's share is one set: the worst tenth of its throws hold 86 %, 70 % of it within ten seconds.
+  - Those are the set's biggest waves (H 3.2 m against 2.4), with forward flow at their crests. Their jets' momentum (∝ H² × jet speed) outgrows the upper half's flow.
+- **Both outliers trace to the provisional 0.47 H² ask** on a set's biggest waves. That ask is the Reef's unsourced value, and a periodic Basilisk run of the Reef's ledge would settle it. A solitary wave breaks past the ledge, not at it (Grilli et al. 1997), so the advisor's solitary runs don't.
+
+**Open:**
+- **A softer edge at half height:** weight (surface − trough) × smoothstep((surface − trough − H/2) ÷ (H/4)) × the ±2H taper. It reaches zero at the upper half's edge and full weight from three-quarters height. Measure it on the same seeds: the steepest step near throws, starving, momentum not placed, the surf readout.
 
 ## Commands
 

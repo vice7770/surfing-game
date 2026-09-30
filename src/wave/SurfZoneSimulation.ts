@@ -236,6 +236,14 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
   return { offshore: zoneInner - zone, zoneInner, blendEnd: zoneInner + blend, fineFrom, shore: TANK.shore, edgeDepth };
 }
 
+/**
+ * Spots whose tank sides are fed with the incoming sea (the wave-sizes work: open sides drained a directional sea).
+ * Padang Padang only, for now (the owner, 2026-09-30): its 320 m window and its peak are laid out around the feed, and
+ * on the other spots the feed is not finished (on a 40 m window it ran the Reef's Big swell to 64 m/s, and it moves
+ * their take-offs), so they keep main's open sides until the feed's own rollout.
+ */
+export const SIDE_FEED_SPOTS: readonly SpotName[] = ['padang'];
+
 /** Kennedy onset per spot (plan Q27): 0.35√(gh) on the barred beach, 0.65√(gh) on plain or steep beds. */
 export const BREAKING_ONSET: Record<SpotName, number> = { beach: 0.35, point: 0.65, reef: 0.65, canyon: 0.65, padang: 0.65 };
 
@@ -310,13 +318,22 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
 export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 'centre', point: 'centre', reef: 'peak', canyon: 'focus', padang: 'peak' };
 
 /**
- * The breaker index every take-off is placed with, per spot: the size report measures where each spot's sets
- * break and sets these so the take-off lands there (the wave-sizes spec), on small days too, since the side feed
- * grew today's seas (Practice's Beach sets broke 23 m outside a BREAKER_INDEX take-off). The Reef's is the Reef
- * rework's to set; the Canyon keeps its focus take-off at BREAKER_INDEX. The Point's and the Beach's are fitted to
- * their sets' measured breaks at 14 s (Point Hs 2–4 m: 1.05–1.16; Beach Hs 2–3 m: 1.08–1.20), before the side feed; they are refitted after it.
+ * The breaker index a big day's take-off is placed with, per spot: the size report measures where each spot's
+ * sets break and sets these so the take-off lands there (the wave-sizes spec). Today's tanks keep BREAKER_INDEX;
+ * the Reef's is the Reef rework's to set. The Point's and the Beach's are fitted to their sets' measured breaks at
+ * 14 s (Point Hs 2–4 m: 1.05–1.16; Beach Hs 2–3 m: 1.08–1.20), before the side feed; they are refitted after it.
+ * Padang Padang's take-off follows PADANG_TAKE_OFF_INDEX instead.
  */
 export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.13, reef: BREAKER_INDEX, canyon: BREAKER_INDEX, padang: BREAKER_INDEX };
+
+/**
+ * Padang Padang's take-off index against the swell's height at its edge, m: on its wedge a bigger set breaks shallower
+ * for its height, so one index seated Practice's and Small's take-offs where their sets broke but left Medium's 23 m
+ * and Big's 89 m seaward of theirs. The size report's sets broke, at mid tide, where γ is 0.57, 0.70, 0.90 and 1.20
+ * for Practice, Small, Medium and Big (Hs at the edge 0.60, 1.18, 2.21 and 3.89 m): a least-squares line through
+ * them (provisional; refit when the sizes change).
+ */
+export const PADANG_TAKE_OFF_INDEX = { intercept: 0.47, perMetre: 0.19 } as const;
 
 /** Where a peak take-off waits along shore: at the Reef's or Padang Padang's own peak. */
 export function peakTakeOffX(spot: SpotName): number {
@@ -335,7 +352,11 @@ export const TAKE_OFF_EDGE_MARGIN = 30;
 export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   const spot = createSpot(config.spot, config.seed);
   const tank = tankLayout(config);
-  const target = breakerDepthFor(edgeHeight(config, tank.edgeDepth), tank.edgeDepth + config.tide, TAKE_OFF_INDEX[config.spot]);
+  const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
+  const height = edgeHeight(config, tank.edgeDepth);
+  const index = config.spot === 'padang' ? PADANG_TAKE_OFF_INDEX.intercept + PADANG_TAKE_OFF_INDEX.perMetre * height
+    : deeper ? TAKE_OFF_INDEX[config.spot] : BREAKER_INDEX;
+  const target = breakerDepthFor(height, tank.edgeDepth + config.tide, index);
   const breakZ = (x: number) => {
     // Scan the whole simulated bed from the relaxation zone inward.
     for (let z = tank.zoneInner; z < tank.shore; z += 0.5) {
@@ -421,7 +442,7 @@ export class SurfZoneSimulation {
   private seaTimeOffset: number;
   private readonly boundary: SeaStateBoundary;
   /** The incoming sea fed into the window's sides (the wave-sizes spec): open sides drained a directional sea. */
-  private readonly sideFeed: SideFeed;
+  private readonly sideFeed?: SideFeed;
   private takeOff?: { x: number; z: number };
   private mapping?: {
     grid: RenderGrid; xMin: number; columns: Int32Array; columnWeights: Float64Array;
@@ -462,8 +483,10 @@ export class SurfZoneSimulation {
       this.solver, this.sea, this.solver.zoneWeightsAlongZ(tank.zoneInner, tank.offshore), this.seaTimeOffset,
     );
     this.solver.addRelaxationZone(this.boundary);
-    this.sideFeed = new SideFeed(this.solver, this.sea, { referenceZ: tank.zoneInner, timeOffset: this.seaTimeOffset });
-    this.solver.addRelaxationZone(this.sideFeed);
+    if (SIDE_FEED_SPOTS.includes(config.spot)) {
+      this.sideFeed = new SideFeed(this.solver, this.sea, { referenceZ: tank.zoneInner, timeOffset: this.seaTimeOffset });
+      this.solver.addRelaxationZone(this.sideFeed);
+    }
     this.spinUpSeconds = spinUp;
     // Nothing below reads the water, so all of it can be built before the spin-up.
     this.breaking = new BreakingModel(this.solver, { onset });
@@ -604,9 +627,7 @@ export class SurfZoneSimulation {
     this.surf.clear();
     this.seaTimeOffset = state.seaTimeOffset;
     this.boundary.timeOffset = state.seaTimeOffset;
-    this.sideFeed.timeOffset = state.seaTimeOffset;
-    // A handed-over sea is mid-run: its break line came with it, so the next step's onsets count (throws included).
-    this.onsetsArmed = true;
+    if (this.sideFeed) this.sideFeed.timeOffset = state.seaTimeOffset;
     this.lipLaunches = state.counters.lipLaunches;
     this.lipVolume = state.counters.lipVolume;
     this.lipJets = state.counters.lipJets;

@@ -10,7 +10,8 @@ const FRAME: WaveFrame = {
   crestBreaking: 0, curlDistance: Infinity, curlSide: 0, speedOverGround: 7, speedShoreward: 0, speedAlongCrest: 7, requiredSpeed: 7,
 };
 
-type Part = Partial<Omit<RideSample, 'wave'>> & { wave?: Partial<WaveFrame> };
+/** A sample's parts; `course` moves the rider that way instead of along its heading (a board swinging about its path). */
+type Part = Partial<Omit<RideSample, 'wave'>> & { wave?: Partial<WaveFrame>; course?: number };
 
 /**
  * A synthetic ride's samples: a landing at t = 0, then standing samples to `seconds`
@@ -22,13 +23,13 @@ function trace(seconds: number, at: (t: number) => Part, gaps: number[] = [1]): 
   let x = 0;
   let z = 0;
   const make = (t: number, dt: number, phase?: RideSample['phase']): RideSample => {
-    const { wave, ...part } = at(t);
+    const { wave, course, ...part } = at(t);
     const sample: RideSample = {
       t, x, z, heading: 0, speed: 7, roll: 0, load: 1, phase: phase ?? 'standing', depth: 3, breakingHere: 0,
       ...part, wave: { ...FRAME, ...wave },
     };
-    x += sample.speed * Math.sin(sample.heading) * dt;
-    z += sample.speed * Math.cos(sample.heading) * dt;
+    x += sample.speed * Math.sin(course ?? sample.heading) * dt;
+    z += sample.speed * Math.cos(course ?? sample.heading) * dt;
     return { ...sample, x, z };
   };
   samples.push(make(0, 0, 'landing'));
@@ -81,6 +82,21 @@ describe('RideAnalyzer', () => {
     expect(maneuver.start).toBeCloseTo(0.5 - 1 / 60, 6);
     expect(maneuver.end).toBeCloseTo(1.5 - 1 / 60, 6);
     expect(maneuver.pocket).toBe(false);
+  });
+
+  // A board that pivots swings its heading about its path: speed x yaw rate then reads more pull than the path turns
+  // with (the angulation study: 1.38 g against 0.91 g on the game's waves). The radius and the pull are the path's.
+  it('reads the radius and the pull from the path, not the heading, when the board swings about its path', () => {
+    const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
+    const course = turn(30 * DEG, 50 * DEG, 0.5, 1);
+    const report = analyze(trace(2, (t) => ({ heading: heading(t), course: course(t), speed: 7.3, wave: { faceFraction: 0.25 } })));
+    expect(report.maneuvers).toHaveLength(1);
+    const [maneuver] = report.maneuvers;
+    expect(maneuver.yaw).toBeCloseTo(1.745, 1);
+    expect(maneuver.peakYawRate).toBeCloseTo(1.745, 1);
+    // 7.3 m along a path turning 50°: 8.4 m, 0.65 g.
+    expect(maneuver.radius).toBeCloseTo(8.4, 1);
+    expect(maneuver.lateralG).toBeCloseTo(0.65, 1);
   });
 
   it('finds a cutback: a long turn away from the crest high on the face that reverses along it', () => {

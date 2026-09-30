@@ -79,3 +79,28 @@ A free rider on flat water at full steer for 1.5 s, with the body's cap (RAIL_RA
   - It needs a balance that holds the rail at its bite while the body leans past it. That is a redesign on the roll model, near the don't-retry list (Mode B).
 - **B. Where the autopilot turns:** start its bottom turn higher on the face, so the recordings and reports turn where surfers do. This is a dev tool change; players choose their own line.
 - **C. Keep the physics as it is:** the drag is right, and the gap is technique and turn speed.
+
+## Option B, measured (2026-09-30)
+
+After option A closed (`angulation-study.md`: no angulation is missing), where the autopilot starts its bottom turn. The Canyon's practice sea with the ride report's turn settings (turns, the pocket reflex, ghosts), 1 seed × 3 minutes, the autopilot's `bottomFace` (`--bottom-face`) at today's 0.35 and at 0.55. The radius and the pull are the path's (#84).
+
+| | Start below 0.35 of the face (today) | Start below 0.55 |
+|---|---:|---:|
+| Stands, rides ≥ 3 s (of 118 attempts) | 19, 10 | 16, 6 |
+| Bottom turns | 15: 1.11 s, 76° | 13: 0.87 s, 58° |
+| Speed in → out | 8.4 → 4.9 m/s | 8.5 → 5.7 m/s |
+| Height on the face at the turn's peak | 0.02 | 0.02 |
+| The path's radius, pull | 9.2 m, 0.72 g | 9.0 m, 0.75 g |
+| Top turns begin at | 2.2 m/s | 2.1 m/s |
+| Speed kept into the next top turn | 0.38 (4 pairs) | 0.44 (3 pairs) |
+
+- **Starting higher does not lift the turn.** Either way it peaks in the trough: the drop outruns the lean-in.
+- The riders sit 6.2 m ahead of a crest moving at 5.8–6.0 m/s, having dropped to 8.4 m/s. The practice Canyon peels at 11°, nearly closing out, so a rider cannot ride along the crest to stay near it.
+- The bottom turn is a 9 m arc at about 0.7 g on the flats. It loses 8.4 → 4.9 m/s there (the hull's planing drag, as above). The climb back to the top turn then costs about the face's height, 1.3 m.
+- Starting higher gave fewer rides and shorter, weaker turns. Samples are small; the turn's place is not in doubt.
+
+So the default stays at 0.35. The knobs (`bottomFace`, `--bottom-face`, `--turn-limit`) stay for later measurement.
+
+What would move the turn into the pocket is the wave and the line, not the start height:
+- a peeling wave, where the rider rides along the crest and meets the curl;
+- or a take-off that stays near the crest instead of dropping ahead of it.

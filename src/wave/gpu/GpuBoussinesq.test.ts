@@ -12,6 +12,8 @@ import {
 
 const quick = { spot: 'point' as const, seed: 3, significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0,
   alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
+/** A fed sea: only Padang Padang's sides are fed (SIDE_FEED_SPOTS), warm-built, since packing reads no stepped water. */
+const fed = () => new SurfZoneSimulation({ ...quick, spot: 'padang', significantHeight: 1.2, peakPeriod: 16 }, 'warm');
 
 /**
  * A stand-in for the GPU (plan P6): a second solver, stepped on the CPU, is the device's memory, and each frame it
@@ -62,7 +64,7 @@ describe('GpuBoussinesq host', () => {
   });
 
   it('packs the side feed so the device formula reproduces its target, after a slide too (wave sizes)', () => {
-    const sim = new SurfZoneSimulation(quick);
+    const sim = fed();
     const { solver } = sim;
     const feed = solver.relaxationZones.find((zone) => zone instanceof SideFeed) as SideFeed;
     expect(feed).toBeInstanceOf(SideFeed);
@@ -155,9 +157,12 @@ describe('GpuBoussinesq host', () => {
     expect(floats[10]).toBeCloseTo(layout.breaking!.onset, 6);
     expect([words[14], words[15], words[16], words[18]]).toEqual([1, 1, (layout.zones[0] as SeaStateBoundary).sea.components.length, 12]);
     expect(floats[19]).toBeCloseTo(0.04, 7);
-    // The side feed's slots and components (wave sizes).
-    const feed = layout.zones[1] as SideFeed;
-    writeParams(solver, layout, { boundary: layout.zones[0] as SeaStateBoundary, firstRow: 0, rows: 12, feed }, 0.02, 0.04, bytes);
+    // A fed sea's side feed: its slots and components (wave sizes).
+    const fedSolver = fed().solver as BoussinesqSolver;
+    const fedLayout = fedSolver.deviceLayout();
+    const feed = fedLayout.zones[1] as SideFeed;
+    expect(feed).toBeInstanceOf(SideFeed);
+    writeParams(fedSolver, fedLayout, { boundary: fedLayout.zones[0] as SeaStateBoundary, firstRow: 0, rows: 12, feed }, 0.02, 0.04, bytes);
     expect([words[20], words[21]]).toEqual([feed.deviceShape().slots, feed.deviceShape().components]);
   });
 
