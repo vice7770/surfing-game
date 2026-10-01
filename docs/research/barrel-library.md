@@ -241,8 +241,62 @@ The drawn curl as shaded (Part B, after the owner's clip of PR 3 on the M4 Pro: 
 | in front, 48° | Classic | 0.101 | 0.231 | 0.122 | 0.44 | 0.83 |
 | in front, 48° | Rich | 0.118 | 0.296 | 0.157 | 0.40 | 0.75 |
 
-  - **Against the advisor's criteria** (2026-10-01): backlit, the lip is at least 0.8× the face's water at the high sun and at least 1× at the low one; front-lit, at least 0.8× the back wall it covers. All hold but the front-lit pair at the high sun, which the advisor accepted for now: the drawn back wall there mirrors the open sky that a tube's inside can't see, so PR 6's dark throat, which dims that reflection, re-checks it.
+  - **Against the advisor's criteria** (2026-10-01): backlit, the lip is at least 0.8× the face's water at the high sun and at least 1× at the low one; front-lit, at least 0.8× the back wall it covers. All hold but the front-lit pair at the high sun, which the advisor accepted for now: the drawn back wall there mirrors the open sky that a tube's inside can't see, so PR 6's dark throat, which dims that reflection, re-checks it. Re-checked ("The Rich throat and glow"): on the wall a formed lip covers, the lip is 1.01× it in Rich and 0.98× in Classic.
   - **The water's absorption, not the hue** (the advisor's check at a low sun): the lip's red over green against the sun's own. Sunset sun: 0.62× (Classic) and 0.56× (Rich); midday sun: 0.81× and 0.77×, against "at most about 0.8×". Amber at a low sun is right: 0.3–0.5 m of water barely filters an orange sun.
   - Before the fixes, at the high sun: with the sheet off (the fixed winding) the lip read 0.07–0.08; with R∞ of the sky behind it, 0.06 front-lit; as the owner saw it (the old winding, no sheet), 0.013–0.044, hue 228°.
   - A white sun near 15–25° up, where the classic green glow belongs, isn't among the photographed skies, so it wasn't measured.
-- **The loft's cost**: the sheet's worst case, a 140 m front all open (287 slices, 279 sheets; `padangLoft`'s second test, 200 builds each, in turn). The first build searched every segment of the other run: 54.0 ms a build with the sheet against 33.3 ms without (load 25–28). The search now starts from the last point's foot and skips blocks and segments that can't even tie (exactly the same answers; a pure walk missed 713 of 8,470 library points): 49.8 against 32.5 ms in the probe (load 23–29), and 31.5–34.3 against 18.3–18.8 ms in plain node. Precomputing each library frame's thickness and view factor at load is PR 6's.
+- **The loft's cost**: the sheet's worst case, a 140 m front all open (287 slices, 279 sheets; `padangLoft`'s second test, 200 builds each, in turn). The first build searched every segment of the other run: 54.0 ms a build with the sheet against 33.3 ms without (load 25–28). The search now starts from the last point's foot and skips blocks and segments that can't even tie (exactly the same answers; a pure walk missed 713 of 8,470 library points): 49.8 against 32.5 ms in the probe (load 23–29), and 31.5–34.3 against 18.3–18.8 ms in plain node. PR 6 keeps each library frame's thickness and view factor in tables ("The Rich throat and glow", below).
+
+## The Rich throat and glow
+
+The spec's item 16 (Part B's PR 6), Rich only; the advisor's rulings of 2026-10-01. `src/wave/barrel/lipSheet.ts` (`throatViews` and the sheet's tables) and `src/scene/barrel/SweptBarrelMesh.ts` (`RICH_LIP_GLOW`, `RICH_THROAT`). Classic's compiled programs (plain, phase and region views) are byte-identical to the colour fix's, uniforms and cache keys included.
+
+**The glow.** Sunlight that enters the lip's far side scatters through it and leaves toward the viewer:
+- weight · (1 − foam) · (1 − F) · max(0, −n·L) · E_sun · e^{−a k d} / π, on top of the forward crest light;
+- a is the water's own absorption (Pope & Fry, `WATER_ABSORPTION`), not the beam attenuation: k stands for the scattering, so c would count it twice;
+- k = 8 [provisional, within the spec's 5–20; to tune by eye against backlit lips].
+- It lights only where the sun is on the sheet's far side. With the sun down the crest line, the slices' normals are square to it and the glow adds nothing; with the sun higher, the underside glows.
+
+**The dark throat.** On the inner face (points 64–112) of slices whose underside has formed, × the lift:
+- **Sky and ambient light:** F_w · E + F_l · e^{−c t} · (E_sky(up) + max(0, L_y) · E_sun) + (1 − F_w − F_l) · R∞ · E.
+  - F_w is the sky through the opening (the 2D view factor from the horizon up to the tip, as the sheet's). F_l is the lip's underside, from the face only: the arc from the tip round to the throat. Both are exact for an extruded tube (`throatViews`).
+  - t is the lip's mean thickness over points 40–60. The rest is the tube's own water [the magnitudes provisional].
+- **Reflections** only where the mirrored ray leaves the tube:
+  - through the opening in the slice's plane; or
+  - along the crest out of the tube's mouth before it meets the wall: |along| / |across| > L_mouth / d_wall. L_mouth is the distance along the front to the nearest slice without an underside, or the run's end; the tip's distance stands for d_wall.
+- **The sun**, where its direction doesn't leave the tube by the same test: its direct light reaches the face through the lip on the slant path t / max(0.2, |n_lip · L|), e^{−c path} per channel, so red goes first (the green room); no glint.
+  - n_lip is the chord over points 40–60, turned out of the water.
+  - A low sun down the crest and out of the mouth is unchanged: the light down the tube.
+  - With the old sky's fill light, the fill is shadowed with it. The path is provisional.
+- The 2D factors underestimate the sky near the mouth, where the tube ends along the crest (the advisor: acceptable).
+
+**The sheet's tables.** Each library frame's lip thickness, far-side view and formation are kept per case, built at first use, and blended as the profile is (`ProfileLibrary.frameBlend`).
+- Over 321 blends of the library's open frames, against the exact search: the red channel's transmission through the sheet differs by 1.2 % at the 99th percentile and 1.9 % at most; the far side's view by 0.04 and 0.12 (a test holds them).
+- The inner face's views move faster with the shape (0.26 at worst blended), and cost little, so the loft takes them exactly.
+
+**Measured** (2026-10-01, the M1 Air at load average 21–29; the water sheet on the GPU tier, 64 components; `waterSheetCurlLuma` from `curl-close`) [measured]:
+- **The colour fix's held curl** (Practice). Rich now, against Rich before PR 6; Classic measures as before (its program is unchanged):
+
+| sun | lip (hue) | before | face water | lip ÷ water | back wall (all open slices) | lip ÷ wall |
+|---|---|---|---|---|---|---|
+| behind, 6° | 0.630 (23°) | 0.634 | 0.451 | 1.40 | 0.170 | 3.7 |
+| in front, 6° | 0.269 | 0.288 | 0.233 | 1.15 | 0.182 | 1.48 |
+| behind, 48° | 0.429 (190°) | 0.292 (199°) | 0.302 | 1.42 | 0.100 | 4.3 |
+| in front, 48° | 0.132 | 0.118 | 0.296 | 0.45 | 0.156 | 0.85 |
+
+  - The glow lifts the backlit lip at 48° by half, from the underside. At 6° the sun lies down the crest line and the glow adds nothing.
+  - **The back wall a lip covers.** The region view used to count every open slice's throat to toe as the back wall. At this curl only 7 of its 18 open slices have a formed underside (τ 0.13–0.21 s), so most of that was the face below a throwing crest, lit as a face. It now counts only the throat to toe under a formed lip:
+    - in front, 48°: lip 0.132 against wall 0.131 (1.01×) in Rich, 0.101 against 0.103 (0.98×) in Classic;
+    - behind, 48°: 0.429 against 0.107 (4.0×) in Rich, 0.283 against 0.085 (3.4×) in Classic.
+  - So the front-lit lip at the high sun is no longer darker than the wall it covers (Rich), and the colour fix's re-check closes on the corrected region.
+- **The throat itself barely shows on these curls.** Zeroing its weight moves the wall under the lip by 0.3–3 %:
+  - At Practice the curl is about 1 m high, and the tip stands almost straight above the wall. The formed slices' walls see 0.67–0.92 of their sky through the opening, the lip 0.02–0.07, and the mouth is 0.5–1.5 m away.
+  - On the Medium swell (`&swell=medium`, the first held curl at 30 s: 21 open slices, all formed, τ 0.32 s, about 2 m high), the front-lit sun at 48° reaches 296 of the wall's 350 vertices through the opening, 3 out of the mouth, and is blocked at 51. The walls' sky views are 0.40/0.84/0.91 (10th/50th/90th percentile). Wall under the lip, lip ÷ wall: in front 1.04× in Rich (0.96× Classic), behind 2.8× (2.0×).
+  - Young, open curls see their sky, so a dark throat waits for a lip that has come down toward the water.
+- **The drawn tube sits in a trench at Medium** [found, not changed; a shape question for the advisor]. Along that curl's middle slice the solver's water stands 1.9 m at the crest and still 1.1–1.7 m 4–10 m ahead, while the drawn face plunges to its toe at −0.38 m 2.6 m ahead. The 0.5 H rest ramp then climbs 1.8 m back up to the solver's water by 6.3 m. So from in front, at the water's level, the tube is hidden behind the ramp, and a camera low enough to look in is under the solver's water.
+
+**Cost** [measured]:
+- **The loft** with the sheet's tables, in its worst case (a 140 m front all open, 287 slices, plain node): 30.2 ms a build against 22.4–23.7 ms without the sheet (load 27–28). The tables take about 1.5 ms of it, the exact throat views about 1.3 ms.
+- **The mesh's update**, same worst case (38,458 vertices, plain node, 400 each in turn): Classic 5.2–5.6 ms, Rich 5.8–6.3 ms (load 21–24). Rich fills three more attributes.
+- **Upload:** Rich adds 12 floats a vertex (the throat's views, the tip and mouth, the ray and the lip's normal): 1.85 MB a frame at that worst case, about 110 MB/s at 60 fps on the M1.
+  - The follow-up is half floats, or computing the views in the vertex shader; either would roughly halve it (the advisor).
