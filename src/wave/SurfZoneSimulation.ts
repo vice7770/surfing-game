@@ -19,7 +19,7 @@ import type { LipImpact } from './SprayCloud';
 import { OPEN_EDGE_REACH, ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
-import { BreakingFront } from './barrel/BreakingFront';
+import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
 import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
 
@@ -92,10 +92,13 @@ export interface SurfZoneConfig {
    * is sized at the foot wherever the foot lies; or the fine zone's first row ('fine', as before the peak-sizing fix).
    */
   barrelFrontFrom?: 'fine' | 'zone';
+  /** The swept barrel's front rules (`FrontOptions`); none by default. */
+  barrelFront?: FrontOptions;
 }
 
 /** Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run. */
 export const SWEPT_BARREL: readonly SpotName[] = ['padang'];
+
 
 /** Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL. */
 export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel'>): boolean {
@@ -541,7 +544,7 @@ export class SurfZoneSimulation {
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
     if (sweptBarrelOn(config)) {
       this.onsetTiming = onsetTiming(PADANG.baseDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none');
-      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming);
+      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, config.barrelFront);
     }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);

@@ -28,6 +28,8 @@ export interface CrestSample {
   z: number;
   /** The crest's height above still water, m. */
   eta: number;
+  /** The wave's height there: the crest over the lowest water in its segment (the crest to FACE_REACH shoreward), m. */
+  wave: number;
   /** The Kennedy breaking strength over the crest's segment (the crest to FACE_REACH shoreward): its largest. */
   strength: number;
   /** The segment's steepest rise, η_t over √(g d) with d the still depth: its largest (Kennedy's fresh test, a diagnostic). */
@@ -64,21 +66,24 @@ export function columnCrests(
       if (!(eta - restLevel > minHeight) || !(eta > h[i - nx] + bed[i - nx]) || !(eta > h[i + nx] + bed[i + nx])) continue;
       let strength = 0;
       let rise = 0;
+      let trough = eta;
       for (let row = iz; row < nz && zCenters[row] - zCenters[iz] <= FACE_REACH; row += 1) {
         const cell = row * nx + ix;
         if (!(h[cell] > WET)) continue;
         if (breaking.strength[cell] > strength) strength = breaking.strength[cell];
+        if (h[cell] + bed[cell] < trough) trough = h[cell] + bed[cell];
         const fresh = rate[cell] / Math.sqrt(GRAVITY * Math.max(RISE_DEPTH, restLevel - bed[cell]));
         if (fresh > rise) rise = fresh;
       }
       const found = crestMotion(solver, i);
       const motion = found && found.speed >= MIN_CREST_FROUDE * Math.sqrt(GRAVITY * h[i]) ? found : undefined;
-      const sample = (out[count] ??= { column: 0, row: 0, x: 0, z: 0, eta: 0, strength: 0, rise: 0, depth: 0, b: NaN, speed: 0 });
+      const sample = (out[count] ??= { column: 0, row: 0, x: 0, z: 0, eta: 0, wave: 0, strength: 0, rise: 0, depth: 0, b: NaN, speed: 0 });
       sample.column = ix;
       sample.row = iz;
       sample.x = xCenters[ix];
       sample.z = zCenters[iz];
       sample.eta = eta - restLevel;
+      sample.wave = eta - trough;
       sample.strength = strength;
       sample.rise = rise;
       sample.depth = restLevel - bed[i];
