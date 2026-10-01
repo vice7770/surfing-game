@@ -287,9 +287,9 @@ describe('autopilot flow', () => {
     expect(bottom).toMatchObject({ steer: 1, crouch: 0, compress: 1 });
     expect(bottom.trim).toBeGreaterThan(0);
     expect(bottom.trim).toBeLessThan(0.5);
-    expect(autopilot.next(standing(100 * DEG, { faceFraction: 0.35 }), STEP).steer).toBe(1);
-    // Heading 110° up the face, Compress released: the projection holds the heading, tall and centred.
-    expect(autopilot.next(standing(115 * DEG, { faceFraction: 0.4 }), STEP)).toMatchObject({ steer: 0, trim: 0, crouch: 0, compress: 0 });
+    expect(autopilot.next(standing(80 * DEG, { faceFraction: 0.35 }), STEP).steer).toBe(1);
+    // Heading past 85°, along the face and up it, Compress released: the projection holds the heading, tall and centred.
+    expect(autopilot.next(standing(90 * DEG, { faceFraction: 0.4 }), STEP)).toMatchObject({ steer: 0, trim: 0, crouch: 0, compress: 0 });
     expect(autopilot.phase).toBe('FLOW · PROJECTION');
     // Mirrored for an open face toward −x.
     const mirrored = riding(-30 * DEG, { style: 'flow' });
@@ -317,6 +317,12 @@ describe('autopilot flow', () => {
     const later = projecting({ cutbackReach: 15 });
     later.next(standing(90 * DEG, { faceFraction: 0.7, curlDistance: 11, curlSide: -1 }), STEP);
     expect(later.phase).toMatch(/^FLOW · PUMP/);
+  });
+
+  it('starts in the phase asked for (the probe\'s isolated cutback)', () => {
+    const autopilot = riding(90 * DEG, { style: 'flow', flowFrom: 'cutback' });
+    expect(autopilot.next(standing(90 * DEG, { faceFraction: 0.6 }), STEP)).toMatchObject({ steer: -1, trim: -1, compress: 1, rotate: -1 });
+    expect(autopilot.flowRecords[0].phase).toBe('cutback');
   });
 
   it('pumps along the line: crouched while the face fraction falls, extended while it rises', () => {

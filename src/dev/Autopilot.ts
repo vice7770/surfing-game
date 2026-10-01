@@ -56,6 +56,8 @@ export interface AutopilotOptions {
   bottomFace?: number;
   /** Riding the flow, how far ahead of the curl a cutback starts, m (CUTBACK_REACH by default). */
   cutbackReach?: number;
+  /** Riding the flow, the phase it starts in once standing ('drop' by default; the probe's isolated cutback starts in 'cutback'). */
+  flowFrom?: FlowPhase;
 }
 
 export type AutopilotState = 'position' | 'wait' | 'go' | 'ride' | 'done';
@@ -147,7 +149,9 @@ const SNAP_TRIM = -1;
  * - drop: crouched down the face from the pop-up, until below FLOW_BOTTOM_FACE of it, out on the flat
  *   (BOTTOM_REACH) or after FLOW_DROP_LIMIT, s;
  * - bottom turn: Compress with a little weight on the front foot (FLOW_DRIVE), leaning toward the open face, until
- *   the heading points FLOW_BOTTOM_END up the face;
+ *   the heading is FLOW_BOTTOM_END from the fall line, about along the face: on the pool's 1.1 m wave the full lean
+ *   kept 6.0–6.6 m/s to there (the pool flow probe, six rides). Past it the rail reaches its 48° bite as the board
+ *   climbs, and it bogs; held to 110° the turn ended at 2.6–3.7 m/s, off the plane;
  * - projection: Compress released, tall and centred, holding that heading up the face, until above FLOW_TOP_FACE of
  *   it or after FLOW_PROJECT_LIMIT, s;
  * - trim: along the face on the riding line, pumping (crouched while the face fraction falls, extended while it
@@ -168,7 +172,7 @@ const SNAP_TRIM = -1;
 const FLOW_BOTTOM_FACE = 0.4;
 const FLOW_DROP_LIMIT = 1.5;
 const FLOW_DRIVE = 0.3;
-const FLOW_BOTTOM_END = 110 * DEG;
+const FLOW_BOTTOM_END = 85 * DEG;
 const FLOW_TOP_FACE = 0.65;
 const FLOW_PROJECT_LIMIT = 1;
 const FLOW_CUTBACK_FROM = 45 * DEG;
@@ -217,6 +221,7 @@ export class Autopilot {
   private travel = 0;
   private readonly style: 'line' | 'turns' | 'flow';
   private readonly cutbackReach: number;
+  private readonly flowFrom: FlowPhase;
   /** Riding the flow: the open face it rides toward this attempt (kept, so passing the curl never reverses it), the heading turned in the phase under way and the last heading, and the face fraction's last value and smoothed rate (1/s). */
   private flowFace = 0;
   private flowYaw = 0;
@@ -246,6 +251,7 @@ export class Autopilot {
     this.turnLimit = options.turnLimit ?? TURN_LIMIT;
     this.bottomFace = options.bottomFace ?? BOTTOM_FACE;
     this.cutbackReach = options.cutbackReach ?? CUTBACK_REACH;
+    this.flowFrom = options.flowFrom ?? 'drop';
   }
 
   /** Start an attempt now, as when a crest rises behind the waiting board (a placed start: Surf School's, the probes'). */
@@ -452,7 +458,7 @@ export class Autopilot {
     let reached = true;
     switch (record?.phase) {
       case undefined:
-        next = 'drop';
+        next = this.flowFrom;
         break;
       case 'drop':
         if (!wave.valid || fraction < FLOW_BOTTOM_FACE || wave.aheadOfCrest > BOTTOM_REACH) next = 'bottom';
