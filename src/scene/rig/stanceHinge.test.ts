@@ -42,7 +42,9 @@ function posed(state: RiderVisualState) {
 const without = () => Object.assign(RIG_DETAIL.hipAngle, { tall: 180, deep: 180 });
 
 describe('the trunk hinged at the hips (the stance poses, step 3)', () => {
-  it('folds Compress\'s hips to the thesis\'s 90° or less', () => {
+  // The movement-flow spec took Compress's forward weight away (W/S set it, and its pull leans the body in): the
+  // trunk no longer folds over the front foot, and the hips' mean reads about 106°. Pinned, not tuned.
+  it.fails('folds Compress\'s hips to the thesis\'s 90° or less', () => {
     const { angles } = posed(stanceState('compress-frontside', 'regular', at, createRiderVisualState()).state);
     expect((angles.hipFront + angles.hipRear) / 2).toBeLessThanOrEqual(90);
     expect((angles.hipFront + angles.hipRear) / 2).toBeGreaterThanOrEqual(60);

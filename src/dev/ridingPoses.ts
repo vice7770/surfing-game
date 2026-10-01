@@ -57,7 +57,7 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   trim: standing([], 1),
   'trim-forward': standing([{ at: 0.4, trim: 1 }], 1),
   'trim-back': standing([{ at: 0.4, trim: -1 }], 1),
-  drop: standing([{ at: 0, crouch: 0.6 }], 1, { water: 'face', speed: 5 }),
+  drop: standing([{ at: 0, crouch: 1 }], 1, { water: 'face', speed: 5 }),
   'compress-frontside': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, steer: 1 }, { at: 0.7, compress: 1 }], 1.1),
   'compress-backside': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, steer: -1 }, { at: 0.7, compress: 1 }], 1.1),
   // The bottom turn's release up the face (the thesis's final phase): the rail easing, the legs extending, the weight back.
@@ -74,7 +74,8 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   'cutback-frontside': standing([{ at: 0, crouch: 0.5 }, { at: 0.4, steer: -1, trim: -0.7 }], 1.2),
   'pump-compression': standing([{ at: 0.4, crouch: 1 }], 0.8, { speed: 7 }),
   'pump-extension': standing([{ at: 0.4, crouch: 1 }, { at: 0.8, crouch: 0 }], 1.1, { speed: 7 }),
-  'hand-in-face': standing([{ at: 0, crouch: 0.6 }, { at: 0.4, hand: true }], 1, { water: 'across', speed: 6 }),
+  // Crouched to the depth it was recorded at: Shift's 0.6 before the movement-flow spec's ladder made the crouch 0.65 of the depth.
+  'hand-in-face': standing([{ at: 0, crouch: 0.92 }, { at: 0.4, hand: true }], 1, { water: 'across', speed: 6 }),
   // Lying on a board towed at 6 m/s, as the wave would carry it (the body film's pop-up).
   'pop-up': { phase: 'push', water: 'flat', start: 'prone', speed: 6, controls: [{ at: 0.5, popUp: true }], seconds: 3, after: 0.3 },
   // Read at the landing's end (it lasts 0.5 s): the drawn feet are still spreading to the stance until then.
