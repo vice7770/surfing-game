@@ -159,3 +159,37 @@ it.skipIf(!process.env.PROBE || process.env.PART !== 'crests')('each spot’s cr
     }
   }
 }, 14_400_000);
+
+// throws: today's lip throws (the solver's onsets that threw a plunging jet, and those that spilled as a roller), per
+// minute of sea after the spin-up, with the jets' breaking heights: whether an unswept spot would lose anything when
+// the old lip goes (the advisor, 2026-10-01: the Canyon's and the Beach's spilling swells).
+it.skipIf(!process.env.PROBE || process.env.PART !== 'throws')('each spot’s lip throws today', () => {
+  const seed = Number(process.env.SEED ?? 1);
+  const seconds = Number(process.env.SECONDS ?? 180);
+  for (const spot of SPOTS) {
+    for (const swell of SWELLS) {
+      const config = configFor(spot, swell, seed);
+      const started = performance.now();
+      const simulation = new SurfZoneSimulation(config);
+      const heights: number[] = [];
+      let thrown = 0;
+      simulation.onThrow = (event) => {
+        heights.push(event.height);
+        if (event.thrown > 0) thrown += 1;
+      };
+      const [jets, rollers] = [simulation.lipJets, simulation.lipRollers];
+      const spinUp = simulation.solver.time;
+      while (simulation.solver.time < spinUp + seconds) simulation.step(1 / 30);
+      const minutes = seconds / 60;
+      const sorted = heights.sort((a, b) => a - b);
+      const q = (p: number) => (sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))] : Number.NaN);
+      log([
+        spot, swell, `${config.significantHeight} m, ${config.peakPeriod} s`,
+        `jets ${simulation.lipJets - jets} (${f((simulation.lipJets - jets) / minutes, 1)}/min, ${thrown} with water)`,
+        `rollers ${simulation.lipRollers - rollers} (${f((simulation.lipRollers - rollers) / minutes, 1)}/min)`,
+        `jet heights ${f(q(0.1))}/${f(q(0.5))}/${f(q(0.9))} m (10/50/90 %)`,
+        `${f((performance.now() - started) / 1000, 0)} s wall`,
+      ].join(' | '));
+    }
+  }
+}, 14_400_000);

@@ -80,7 +80,15 @@ Each probe sea took 276–927 s of wall time for 150 s of sea, three at once, at
 
 ## 2. The cases and the runs
 
-**Proposed, for the advisor's ruling.** Periodic runs (`run_periodic.sh`, the second crest of a cnoidal train, which carries the trough and the step), one slope along the path from the foot to a flat, as the toolkit's case lines have it. A case's A0 is its measured foot crest over h0, given to the converter with `--a0`; the train's H/h0 is the one whose first-order cnoidal crest is that A0.
+**The advisor's rulings (2026-10-01):**
+- **The feet:** approved: Canyon 4.5 m, Point 7 m, Beach 4.5 m, Reef 10 m.
+- **The Point:** approved: 1:21.5, foot 7 m, flat 0.05, cases A0 0.08 at 9 s, 0.15 at 11 s, 0.23 at 12 s and 0.30 at 14 s. Each is scouted at level 9, then run at level 12 here as a provisional stand-in (3.2–3.6 cells across the lip, about what Padang Padang's level-12 cases had; they threw at a sane 1.0–1.1 C). Level 13 is owed on the M4 Pro.
+- **The Canyon:** no swept barrel and no runs. At ξ ≈ 0.2, with Mead & Black's X at 1:48–1:61 (Y ≈ 4–4.8), it spills, and its lip is under 2 cells even at level 13, so a run would draw a curl the solver can't resolve. First count its lip throws per minute today on each swell: if about none, it stays unswept and the deletion costs it nothing; if it throws, the numbers go to the advisor.
+- **The Beach:** its bar regime (Practice and Medium, 1:32 to the 1.6 m bar crest) is owed at level 13 on the M4 Pro, with no level-12 stand-ins (1.4–1.7 cells is unusable). Small (1:77) and Big (1:66) spill like the Canyon: unswept; count their lip throws too.
+- **The Reef:** see §3.
+- **The join tables, the throw lines, the scouting and the mechanics:** approved as planned, with no change in behaviour. The `'zone'` fronts for the Canyon, Point and Beach are fine. Padang Padang's CLOCK, SPLIT, FRONT_MIN_HEIGHT, LOFT and CONTACT stay at every spot (provisional) until a spot's probes show a need.
+
+**As proposed.** Periodic runs (`run_periodic.sh`, the second crest of a cnoidal train, which carries the trough and the step), one slope along the path from the foot to a flat, as the toolkit's case lines have it. A case's A0 is its measured foot crest over h0, given to the converter with `--a0`; the train's H/h0 is the one whose first-order cnoidal crest is that A0.
 
 | Case | h0 | Slope | Flat (h0) | A0 (foot crest) | Period | Train H/h0 | Domain (h0) | Cell at L12 / L13 | Lip, Pick & Feddersen's fits, in cells at L12 / L13 |
 |---|---|---|---|---|---|---|---|---|---|
@@ -105,9 +113,19 @@ Each probe sea took 276–927 s of wall time for 150 s of sea, three at once, at
 Built by the advisor (`periodic-runs.md` §9): `periodic_reef42_L12` (1:4.2) and `periodic_reef60_L12` (1:6), both A0 0.2127 (the train's crest over the 10 m shelf), 14 s, level 12, flat 0.15 h0.
 
 - **reef60's torn frames** [measured, from the library]: 14 early open frames (τ 0.05–0.48) are flagged `surface_torn_in_window`. Their landmarks trace another piece of the surface: the crest 1 h0 behind the true one, H 0.12–0.17 h0 against 0.25–0.39 around them, the water level ahead above still water. So their profiles are not the lip, and they can't be re-traced without the run's facets. Seven frames between them are flagged only for jumping, against the torn trace; they match their clean neighbours.
-- **Proposed:** refill the torn frames linearly from their good neighbours, and keep the frames flagged only for jumping after a torn one (`--jumps-after-torn`). reef60 then refills 14 of 70 open frames (21 today), its longest gap 7 frames (τ 0.25–0.40, 0.18 s at 10 m); reef42 refills 2 of 65 (3 today).
+- **Proposed:** refill the torn frames from their good neighbours, and keep the frames flagged only for jumping after a torn one.
 - **The slope:** `BARREL_SLOPE` is one slope a spot, so only one of the two cases would ever be read: 1:6 (near the game's median crossing) or 1:4.2. Using both would need the slope measured per slice, a later change.
-- **The throw** [measured, from the runs' `at_vertical` and their transect]: the face goes vertical in 1.93 m of still water on 1:4.2 and 2.08 m on 1:6, for a 2.13 m foot crest. With one foot crest a slope, the throw can only be a constant (provisional) until a second Reef case.
+- **The throw** [measured, from the runs' `at_vertical` and their transect]: the face goes vertical in 1.93 m of still water on 1:4.2 and 2.08 m on 1:6, for a 2.13 m foot crest.
+
+**The advisor's rulings (2026-10-01):**
+1. **The torn frames: not refilled.** The advisor re-traced them from the run's facets: `periodic_library.py` now stitches a torn frame's larger surface pieces left to right, within 0.2 h0 (the drained ledge's water meeting the bed had split the surface, and the widest piece, the back of the wave, had been taken for the whole). Stitched frames carry `"stitched": true`, and previously clean frames are unchanged. Open-tube clean frames: reef60 49 → 67 of 70, reef42 62 → 64 of 65 (`origin/claude/water-physics-advisor-local`, bdff16f). They are used as they are: the converter's usual refill takes the few still flagged.
+2. **`BARREL_SLOPE` 1:4.2 (reef42):** the slope along the swell's path, and the cleanest library. reef60 waits for per-slice slopes, so it is not in the index.
+3. **The throw, proportional:** d = (1.93 / 2.13) η_foot ≈ 0.91 η_foot, provisional. Bigger waves break deeper: a constant would throw Big too late and Practice too early, since the Reef's foot crests span about 1–4 m.
+4. **A second Reef case:** A0 ≈ 0.35 at 1:4.2, 16 s, periodic, level 12 here (the Reef's lip is 0.4–0.5 H, over 10 cells at level 12). Then fit the throw through both cases.
+
+**Converted:** `periodic-reef42-l12` (189 KB, 187 frames, 16 refilled: 15 before the face goes vertical, where the lip landmark jumps, and 1 open; [barrel-cases.md](../../research/barrel-cases.md)). Its ψ0 (0.35) lies past Pick & Feddersen's fitted span, so the validation table shows no fit for it rather than extrapolating.
+
+**A tip-velocity artefact, for the advisor** [measured, from the case]: before the face goes vertical the lip landmark is the face's steepest point, and on the 1:4.2 ledge it jumps 0.78 h0 forward between τ −0.125 and −0.025. Those frames are refilled linearly, so the ±4-frame tip fit reads 3–5 √(g h0) through τ −0.18…+0.03 (3.4 at τ 0); after that the tip runs a steady 0.55–1.0 √(g h0). The contact takes the lip's flow only in the curl's water, which is barely there at τ ≈ 0, but the first open frames' flow is wrong.
 
 ## 4. The switch mechanics (built in this PR)
 
@@ -124,7 +142,7 @@ What a spot needs before the owner can switch it on, and where each piece lives:
 
 - **The front's rows.** At Padang Padang the front follows crests from the fine zone's first row, as before. The Canyon, Point and Beach have their fine zones start 3.4–3.6 m deep, shallower than any foot that lies seaward of their sets' breaks. So their records say `frontFrom: 'zone'`: the front follows crests from the relaxation zone's inner edge, over the 4 m cells. A crest is sized only once its still depth is within 1 m of the foot, so this changes nothing about where it is sized.
 - **One line.** Once a spot has its record and its cases, switching it on is adding it to `SWEPT_BARREL`. Every other switch keys on `sweptBarrelOn(config)`: the front, the loft, the mask, the carve and the lip strips going off, the contact, the handover.
-- **The generator** (`npm run barrels`) takes `--spot`, and `--flat` and `--a0` per case (`NAME=VALUE`). `--keep ID` keeps a committed case as it is: its `.bin` untouched, and its rows carried over from `barrel-cases.md`. Padang Padang's three solitary runs live only on another worktree, so they are kept, not reconverted. `--jumps-after-torn NAME` applies the torn-frame rule (§3).
+- **The generator** (`npm run barrels`) takes `--spot`, and `--flat` and `--a0` per case (`NAME=VALUE`). `--keep ID` keeps a committed case as it is: its `.bin` untouched, and its rows carried over from `barrel-cases.md`. Padang Padang's three solitary runs live only on another worktree, so they are kept, not reconverted. Past Pick & Feddersen's fitted ψ0 (the Reef) the validation table shows no fit rather than an extrapolated one.
 - **Behaviour.** No spot's sea changes. Padang Padang's onset timing, front, loft and contact read the same numbers as before, its four case files are byte-identical, and the page fetches only them. A spot without a record can't be switched on, even by a test.
 
 ## 5. The deletion map
@@ -201,7 +219,7 @@ So `PlungingLip.ts`, `LipSheetMesh.ts` and `richLip.ts` are kept and slimmed, an
 
 ## 6. A finding at Padang Padang (not changed here)
 
-Padang Padang's fine zone starts at one z across the window, but its 7 m contour bends seaward at the peak, over the focus spur. So on Practice and Small, the fine zone's first row at the peak's columns (x −80 to −40 on Small, to −20 on Practice) is 3.7–6.0 m deep, shallower than the foot band (6–7 m) [measured: `tankLayout` and the bed, both swells at mid tide]. A crest first seen shallower than the band is never sized (`BreakingFront.unsized`), so it never joins a front, and the peak draws no barrel on those swells. `frontFrom: 'zone'` would size them, but it changes Padang Padang's barrel, so it is left for the owner (and for the `padangFront` probe's `unsized` count to confirm).
+Padang Padang's fine zone starts at one z across the window, but its 7 m contour bends seaward at the peak, over the focus spur. So on Practice and Small, the fine zone's first row at the peak's columns (x −80 to −40 on Small, to −20 on Practice) is 3.7–6.0 m deep, shallower than the foot band (6–7 m) [measured: `tankLayout` and the bed, both swells at mid tide]. A crest first seen shallower than the band is never sized (`BreakingFront.unsized`), so it never joins a front, and the peak draws no barrel on those swells. The advisor ruled it a defect (it breaks the owner's rule of tubes wherever the physics plunges), to be fixed in its own PR, not in this one: `claude/padang-peak-sizing` from `claude/padang-contact`, switching Padang Padang to `frontFrom: 'zone'` or widening its sizing band, whichever reaches the peak with less change, with before and after on Small and Practice (unsized crests, throws, peel, barrels at the peak), flagged as a Padang Padang behaviour change.
 
 ## 7. The owner's follow-ups
 
