@@ -1,4 +1,5 @@
 import type { RiderPlacement } from '../../physics/RideSession';
+import type { SpotName } from '../../wave/Bathymetry';
 import type { SurfZoneConfig } from '../../wave/SurfZoneSimulation';
 import { decompress } from '../../wave/surfZoneState';
 import { LESSON_WAVES } from './lessonWaves';
@@ -43,7 +44,7 @@ export interface LessonWave {
   stage: 1 | 2;
   /** The sea it was recorded on, kept here so a later change to the practice swell cannot break the recording. */
   config: {
-    spot: 'canyon';
+    spot: SpotName;
     seed: number;
     significantHeight: number;
     peakPeriod: number;

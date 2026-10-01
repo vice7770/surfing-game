@@ -20,7 +20,7 @@ import { PhysicalSurfaceSource } from '../scene/PhysicalSurfaceSource';
 import { SpectatorCamera, type FollowTarget } from '../scene/SpectatorCamera';
 import { SpotSeabed } from '../scene/SpotSeabed';
 import { PoolScenery } from '../scene/PoolScenery';
-import { POOL, poolDeckZ } from '../wave/pool';
+import { POOL, POOL_EDGE_HEIGHT, poolDeckZ, regularSignificantHeight } from '../wave/pool';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import type { WaterSurface } from '../scene/WaterSurface';
 import { createSpot, smoothstep, type SpotName } from '../wave/Bathymetry';
@@ -107,9 +107,14 @@ export const PADANG_SPREADING = 150;
  */
 export const PADANG_PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 0.6, peakPeriod: 16, spreading: PADANG_SPREADING, bandwidth: 0.08, directionDegrees: 0 };
 
-/** A spot's practice groundswell: the Reef's or Padang Padang's own, or the shared one. */
+/** The Wave Pool's practice: its machine's Medium wave (the movement-flow spec), one regular component square to the tank. */
+export const POOL_PRACTICE_SWELL: Readonly<SwellInput> = {
+  significantHeight: regularSignificantHeight(POOL_EDGE_HEIGHT.medium), peakPeriod: POOL.period, spreading: 1000, directionDegrees: 0,
+};
+
+/** A spot's practice groundswell: the Reef's, Padang Padang's or the Wave Pool's own, or the shared one. */
 export function practiceSwell(spot: SpotName): Readonly<SwellInput> {
-  return spot === 'reef' ? REEF_PRACTICE_SWELL : spot === 'padang' ? PADANG_PRACTICE_SWELL : PRACTICE_SWELL;
+  return spot === 'reef' ? REEF_PRACTICE_SWELL : spot === 'padang' ? PADANG_PRACTICE_SWELL : spot === 'pool' ? POOL_PRACTICE_SWELL : PRACTICE_SWELL;
 }
 
 /** The GPU tier's sea (plan P6): more components, so sets repeat less often. */

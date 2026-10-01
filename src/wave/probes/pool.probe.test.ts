@@ -7,10 +7,11 @@
 import { appendFileSync } from 'node:fs';
 const log = (text: string) => appendFileSync(process.env.LOG ?? '/dev/stderr', `${text}\n`);
 import { it } from 'vitest';
-import { POOL, poolCrestZ, poolRampFootZ, poolTerraceZ, regularSignificantHeight } from '../pool';
+import { POOL, poolCrestZ, poolDepth, poolRampFootZ, poolTerraceZ, regularSignificantHeight } from '../pool';
+import { orthogonalGradient } from '../Overturn';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
 
-interface Onset { t: number; z: number; face: number; depth: number }
+interface Onset { t: number; z: number; face: number; depth: number; x: number; ray: number }
 
 it.skipIf(!process.env.PROBE)('rides the Wave Pool’s waves', () => {
   for (const pair of (process.env.POOL ?? '').split(',').filter(Boolean)) {
@@ -29,7 +30,8 @@ it.skipIf(!process.env.PROBE)('rides the Wave Pool’s waves', () => {
   const reach = Number(process.env.REACH ?? 60);
   const xs: number[] = [];
   for (let x = -reach; x <= reach + 1e-9; x += step) xs.push(Math.round(x * 10) / 10);
-  const columns = xs.map((x) => Math.round((x - 0.5 - solver.xCenters[0]) / solver.dx));
+  // Mirror-symmetric columns: the cell centred at x + 0.5 on the right (and at the tip), at x − 0.5 on the left.
+  const columns = xs.map((x) => Math.round((x + (x < 0 ? -0.5 : 0.5) - solver.xCenters[0]) / solver.dx));
   const eta = (i: number) => solver.h[i] + solver.bed[i] - solver.restLevel;
   log(`H ${height} m at the edge (Hs ${config.significantHeight.toFixed(2)}); ${JSON.stringify(POOL)}; ramp foot z ${poolRampFootZ().toFixed(0)}, terrace z ${poolTerraceZ().toFixed(0)}; tank ${JSON.stringify(tank)}; crest line ${[0, 20, 40, 60].map((x) => `${x}:${poolCrestZ(x).toFixed(0)}`).join(' ')}; grid ${solver.nx}×${solver.nz}`);
   const end = Number(process.env.END ?? 150);
@@ -49,8 +51,11 @@ it.skipIf(!process.env.PROBE)('rides the Wave Pool’s waves', () => {
         if (solver.zCenters[iz] > -2) break;
         if (breaking[iz * solver.nx + column] > 0.3) { onset = iz; break; }
       }
-      const now = onset >= 0;
-      if (now && !was[a]) {
+      // Only the reef's own break: near the crest line (not the lagoon's bores or the shore break), once per wave.
+      const near = onset >= 0 && solver.zCenters[onset] >= poolCrestZ(xs[a]) - 50 && solver.zCenters[onset] <= poolCrestZ(xs[a]) + 8;
+      const now = near;
+      const lastAt = onsets[a].length ? onsets[a][onsets[a].length - 1].t : -Infinity;
+      if (now && !was[a] && solver.time - lastAt > 2) {
         let crest = -Infinity;
         let trough = Infinity;
         for (let iz = Math.max(0, onset - 60); iz < Math.min(solver.nz, onset + 20); iz += 1) {
@@ -59,7 +64,10 @@ it.skipIf(!process.env.PROBE)('rides the Wave Pool’s waves', () => {
           if (Math.abs(z - solver.zCenters[onset]) <= 6) crest = Math.max(crest, e);
           if (z < solver.zCenters[onset] && z > solver.zCenters[onset] - 30) trough = Math.min(trough, e);
         }
-        onsets[a].push({ t: solver.time, z: solver.zCenters[onset], face: crest - trough, depth: solver.restLevel - solver.bed[onset * solver.nx + column] });
+        // The wave's own direction there, from its flux: Mead & Black's gradient is taken along it (the Reef's tool).
+        const cell = onset * solver.nx + column;
+        const ray = Math.atan2(solver.qx[cell], solver.qz[cell]);
+        onsets[a].push({ t: solver.time, z: solver.zCenters[onset], face: crest - trough, depth: solver.restLevel - solver.bed[cell], x: xs[a], ray });
       }
       was[a] = now;
     });
@@ -94,7 +102,17 @@ it.skipIf(!process.env.PROBE)('rides the Wave Pool’s waves', () => {
       const speed = run / Math.max(1e-6, time);
       const celerity = Math.sqrt(2 * 9.81 * meanFace);
       const alpha = (Math.asin(Math.min(1, celerity / speed)) * 180) / Math.PI;
-      log(`${direction > 0 ? 'right +x' : 'left −x'} from t ${tip.t.toFixed(1)}: ${found.length} columns to x ${last.x}, ${run.toFixed(0)} m in ${time.toFixed(1)} s → V ${speed.toFixed(1)} m/s, face ${meanFace.toFixed(2)} m (${Math.min(...faces).toFixed(2)}–${Math.max(...faces).toFixed(2)}), C_b ${celerity.toFixed(1)}, α ${alpha.toFixed(0)}° | ${found.map((f) => `${f.x}:${(f.o.t - tip.t).toFixed(1)}s z${f.o.z.toFixed(0)} ${f.o.face.toFixed(2)}`).join(' ')}`);
+      // Mead & Black's X along each break's ray, over its breaking depth's band.
+      const xsAlong = found.map(({ o }) => {
+        const g = orthogonalGradient((s) => poolDepth(o.x + s * Math.sin(o.ray), o.z + s * Math.cos(o.ray)), o.depth, 0.5, 60);
+        return g > 0 ? 1 / g : Infinity;
+      });
+      const finite = xsAlong.filter(Number.isFinite);
+      const meanX = finite.reduce((a, b) => a + b, 0) / Math.max(1, finite.length);
+      // The peak's face against the arm's 20 m away (the advisor's 1.2× check).
+      const at20 = found.find((f) => Math.abs(f.x) >= 20);
+      const ratio = at20 ? found[0].o.face / at20.o.face : Number.NaN;
+      log(`${direction > 0 ? 'right +x' : 'left −x'} from t ${tip.t.toFixed(1)}: ${found.length} columns to x ${last.x}, ${run.toFixed(0)} m in ${time.toFixed(1)} s → V ${speed.toFixed(1)} m/s, face ${meanFace.toFixed(2)} m (${Math.min(...faces).toFixed(2)}–${Math.max(...faces).toFixed(2)}), C_b ${celerity.toFixed(1)}, α ${alpha.toFixed(0)}°, X ${meanX.toFixed(0)}, peak/20 m ${ratio.toFixed(2)} | ${found.map((f) => `${f.x}:${(f.o.t - tip.t).toFixed(1)}s z${f.o.z.toFixed(0)} ${f.o.face.toFixed(2)}`).join(' ')}`);
     }
   }
 }, 3_600_000);

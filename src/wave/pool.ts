@@ -10,14 +10,17 @@ import { SeaState } from './SeaState';
  * - the machine's floor `feedDepth` deep under the relaxation zone, where a regular wave of the pool's height is
  *   near linear (Ursell about 8; at 4.5 m it was 41 and a linear input would shed free harmonics);
  * - a ramp square to the crests (so it turns nothing) at `rampSlope`, at least half a wavelength long so it
- *   reflects little, up to a terrace `terraceDepth` deep;
+ *   reflects little, up to a terrace `terraceDepth` deep: shallow, so little depth is left to refract over (at
+ *   2.75 m still nearly twice the biggest breaking depth, so nothing breaks on it);
  * - the reef on the terrace: a finger pointing seaward, its tip at z = `apexZ` (x = 0, on the grid's symmetry
- *   line), its two arms at `armAngle` to the incoming crests, rounded over `tipRounding` at the tip. Refraction
- *   turns the crests toward the arms, so arms at 70–75° break at a peel angle of about 50°: Scarfe's 46–55° for
+ *   line), its two arms at `armAngle` to the incoming crests, rounded over a half-width `tipRounding` at the tip (a
+ *   hyperbola: the width over which the focus spreads, 0.5–1 wavelength on the terrace). Refraction turns the
+ *   crests toward the arms, so arms at about 61° break at a peel angle of about 50°: Scarfe's 46–55° for
  *   intermediates' standard manoeuvres, about 6.5 m/s at 1.25 m faces;
- * - its face climbs at `gradient` along the waves' path, Mead & Black's orthogonal gradient of about 1:28 (their
- *   intensity about 2.6–2.8, a face that throws without a tube; at 1:16 it tubed), to its crest `crestDepth` deep,
- *   just under the smallest size's breaking depth, so every size breaks on the slope;
+ * - its face climbs at `gradient` square to the crest line, about 1:18: Mead & Black's orthogonal gradient of about
+ *   1:28 along the ray at breaking, which crosses the arms at about 50° (their intensity about 2.6–2.8, a face that
+ *   throws without a tube; set along +z it made the arms about 1:9 and tubed), to its crest `crestDepth` deep, just
+ *   under the smallest size's breaking depth, so every size breaks on the slope;
  * - behind the crest a reef top `flatWidth` wide, then the lagoon inside the finger, `lagoonDepth` deep;
  * - past |x| = `armLength` each arm tapers over `taperWidth` into the terrace, its crest deepening to the terrace's,
  *   so the break fades into a shoulder to kick out on, and the lagoon's return flow leaves through the channels
@@ -29,21 +32,21 @@ export const POOL = {
   period: 10,
   feedDepth: 9,
   rampSlope: 1 / 9,
-  terraceDepth: 3.25,
+  terraceDepth: 2.75,
   apexZ: -210,
-  armAngle: 72,
+  armAngle: 61,
   tipRounding: 25,
-  gradient: 1 / 28,
+  gradient: 1 / 18,
   crestDepth: 0.75,
   flatWidth: 6,
   lagoonDepth: 1.8,
-  armLength: 36,
-  taperWidth: 18,
+  armLength: 50,
+  taperWidth: 25,
   /** How far seaward of the tip's face the terrace reaches before the ramp, m: short, so the ramp's free harmonics don't reorder the crest. */
   terraceLead: 20,
   shoreSlope: 1 / 8,
   deck: 0.6,
-  alongShore: 220,
+  alongShore: 250,
 };
 
 /** Where the beach face meets the deck, z, m. */
@@ -90,6 +93,13 @@ export function poolCrestZ(x: number): number {
   return apexZ + (Math.hypot(x, tipRounding) - tipRounding) * Math.tan((armAngle * Math.PI) / 180);
 }
 
+/** The share of a step along +z that lies square to the crest line at along-shore position x: the cosine of the line's angle there. */
+export function poolNormalShare(x: number): number {
+  const { armAngle, tipRounding } = POOL;
+  const slope = Math.tan((armAngle * Math.PI) / 180) * (x / Math.hypot(x, tipRounding));
+  return 1 / Math.hypot(1, slope);
+}
+
 /** How far each arm has tapered into the terrace at along-shore position x: 0 on the reef, 1 past its end. */
 export function poolTaper(x: number): number {
   return ease(POOL.armLength, POOL.armLength + POOL.taperWidth, Math.abs(x));
@@ -105,8 +115,10 @@ export function poolDepth(x: number, z: number): number {
   const crestLine = poolCrestZ(x);
   const crest = p.crestDepth + (p.terraceDepth - p.crestDepth) * taper;
   const lagoon = p.lagoonDepth + (p.terraceDepth - p.lagoonDepth) * taper;
-  const face = crest + Math.max(0, crestLine - z) * p.gradient;
-  const inside = Math.max(0, z - crestLine - p.flatWidth);
+  // The face and the lagoon's edge climb at `gradient` square to the crest line.
+  const normal = poolNormalShare(x);
+  const face = crest + Math.max(0, crestLine - z) * normal * p.gradient;
+  const inside = Math.max(0, z - crestLine - p.flatWidth) * normal;
   const reef = z <= crestLine ? face : Math.min(lagoon, crest + inside * p.gradient);
   const bed = Math.min(ramp, reef);
   // The beach face at the shore end, up to the deck.
