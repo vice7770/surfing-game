@@ -130,22 +130,26 @@ reef42_a35:10:0.439:16:0.238095:0.15:64:18.5:28:24:44
 
 | Case | Scout: vertical (t), still depth there, H at the vertical; touchdown | Scout wall | Level 12 |
 |---|---|---|---|
-| `point21_a08` | 38.7, 1.46 m, 1.07 m; not closed at level 9 | 20.5 min | restarted with the switch at 31 (below); running |
+| `point21_a08` | 38.7, 1.46 m, 1.07 m; not closed at level 9 | 20.5 min | done (switch at 31): phase 1 32 min, phase 2 2.5 h |
 | `point21_a15` | 35.7, 2.25 m, 2.43 m; 37.8 | stopped once measured | done: phase 1 (level 10) 31 min, phase 2 4.3 h |
 | `point21_a23` | 32.8, 2.93 m, 3.29 m; 33.9 | stopped once measured | done: phase 1 31 min, phase 2 4.3 h |
-| `point21_a30` | 33.5, 3.11 m, 3.50 m; 35.35 | 15.1 min | restarted with the switch at 26 (below); running |
+| `point21_a30` | 33.5, 3.11 m, 3.50 m; 35.35 | 15.1 min | done (switch at 26): phase 1 27 min, phase 2 3.0 h |
 | `reef42_a35` | 23.0, 3.04 m (0.65 h0 before the ledge top), 3.72 m; 24.4 | 15.8 min | done: phase 1 16.6 min, phase 2 3.6 h |
 
 **The level-12 runs** [measured: `plunge_measure.py` from the fine output's start, the vertical's still depth at its crest; `periodic_library.py` with A0 the train's crest and the first frame 3 time units before the vertical, or the fine output's first]:
 
 | Case | Vertical (t), still depth there (× the foot crest), H there; touchdown | Lip just before touchdown (cells); tube L × W | Library: frames (τ span); clean pre / open / post |
 |---|---|---|---|
+| `point21_a08` | 35.55, 1.85 m (3.32 × 0.56 m), 1.52 m; none through 44 | — (no tube closes) | 459 (−3.0…8.45); 120/120, 221/339 open to the end |
 | `point21_a15` | 32.775, 2.71 m (2.58 × 1.05 m), 2.56 m; 33.575 | 0.41 m (4.0); 1.02 × 0.50 m | 420 (−1.75…8.7); 70/70, 32/32, 175/318 |
 | `point21_a23` | 30.225, 3.44 m (2.13 × 1.61 m), 3.30 m; 31.1 | 0.38 m (3.7); 1.25 × 0.48 m | 380 (−2.2…7.3); 85/88, 35/35, 187/257 |
+| `point21_a30` | 32.775, 3.24 m (1.54 × 2.10 m), 3.98 m; 33.95 | 0.65 m (5.6); 2.59 × 0.99 m | 370 (−3.0…6.2); 104/120, 47/47, 125/203 |
 | `reef42_a35` | 22.15, 5.16 m (1.47 × 3.50 m), 4.91 m; 24.075 | 1.66 m (10.6); 4.30 × 1.61 m | 355 (−3.0…5.85); 70/120, 58/77, 107/158 |
 
-- **Level 12 goes vertical earlier and deeper than its level-9 scout:** by 2.9 (a15) and 2.6 (a23) time units on the Point, 0.85 on the Reef. The Point's waves go vertical at H/d 0.94–0.96.
+- **Level 12 goes vertical earlier and deeper than its level-9 scout:** by 3.15 (a08), 2.9 (a15), 2.6 (a23) and 0.7 (a30) time units on the Point, 0.85 on the Reef. The Point's waves go vertical at H/d 0.82–0.96, and a30's 14 s wave at 1.23.
+- **point21_a08 closes no tube** (the advisor: out of the index). Its face overturns from t 35.7 to 37.2 and its lip falls to the water by about 37.2, but no enclosed cavity forms through tmax 44, at level 9 or 12: a spilling-to-plunging transition, not a tube. The converter needs the tube before touchdown, and isn't changed to stand the lip's fall in for it. Its vertical depth stays in the Point's throw line; the Point's Small scales a15 down; its level-13 run, owed, may close a small tube.
 - **So the Point's switch came late:** its fine output starts only 1.75 and 2.2 before the vertical, and the a15 and a23 libraries begin at τ −1.75 and −2.2, not −3. **Accepted** (the advisor): the lookup holds a case's first frame for earlier τ, where the shoulder's weight is low, and the level-13 runs owed on the M4 Pro start earlier anyway. `point21_a30` and `point21_a08` were restarted (2026-10-01 11:18) with their switch 3 earlier, at 26 and 31, so theirs start by −3 even with the same offset.
+- **The Point's cases** (`periodic-point21-a15-l12`, `-a23-l12`, `-a30-l12`; A0 0.1498, 0.2304, 0.2999; flat 0.05 h0): 103, 124 and 168 frames, 0, 3 and 16 refilled; their tips run 0.86/1.00, 1.01/1.14 and 1.14/1.33 √(g h0) (median/largest) over their sustained overturns. Their jets and tubes run well under Pick & Feddersen's fits (a15's jet 0.04 H² against 0.36): their lips are 4–6 cells at level 12, and small waves make small tubes, as on Padang Padang's wedge. Accepted as stand-ins until the level-13 runs (the advisor).
 - **The Reef's second case** goes vertical on the ledge's face, 15 m seaward of the top, in 5.16 m of still water: its throw depth over its foot crest is 1.47, against reef42's 0.906 (its level-9 scout read 0.87). Its lip landmark flickers: before the vertical it jumps to the drained step ahead, and in the open tube it alternates between the curl's top and the jet's tip 0.6–0.9 h0 ahead, so the converter refilled 70 of its 198 frames and the tip fit reads up to 12 √(g h0). Its throw sets the Reef's throw line (§3, ruling 11). Its landmarks were traced again with the advisor's opt-in `robust` option (`periodic_library.py … robust`, `origin/claude/water-physics-advisor-local` 05d8e48: the jet's tip past small undulations on a big curl's top, the pre-vertical lip only in the face's upper 60 %): clean frames pre 97/120, open 64/77 (83 %), post 107/158; 37 of 198 frames refilled; the tip's median 1.10 √(g h0) but its largest 6.0, over the sustained overturn from τ 0.825. That misses the advisor's bar for the index (open frames about 90 % clean, the tip at most about 1.5 √(g h0)), so **the case stays out of the index**; the Reef keeps reef42 alone.
 
 - The scouts ran three at once at a load of 28–66 (`uptime`).
@@ -325,9 +329,9 @@ Padang Padang's fine zone starts at one z across the window, but its 7 m contour
 - [ ] **The flip, per spot:** add the spot to `SWEPT_BARREL` after looking at Padang Padang's finished barrel (the Reef after the Reef session agrees). Before each, compare its catch and ride reports with today's (spec, Judging Part B 6).
 - [ ] **The deletion:** after PR 5 and the last flip, as mapped in §5: only what no spot uses any more. The unswept spots keep today's lip and, where it makes rider-sized voids (the Canyon's and the Beach's Big), its carve.
 - [ ] **The owed runs** (§2, §3), on the M4 Pro:
-  - the Point's four cases at level 13 (level 12 stands in);
+  - the Point's four cases at level 13 (level 12 stands in: lips of 4–6 cells, jets and tubes well under Pick & Feddersen's; a08 closed no tube at level 12);
   - the Beach's bar, Practice and Medium (`beach32_a17`, `beach32_a26`), at level 13;
   - the Reef's small case, A0 ≈ 0.09, at level 13, over a transect that includes the shoaling inner flat;
   - optionally, a third Reef case near A0 0.28, to test whether the throw line is linear;
   - the Canyon at level 14, only if a swept barrel is wanted there (owed, not planned).
-  Running here: `point21_a30` and `point21_a08` at level 12 (restarted 2026-10-01 11:18 with the earlier switch); the Point's record and its four cases follow them.
+  All the level-12 runs ruled here are done.

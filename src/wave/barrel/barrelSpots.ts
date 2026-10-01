@@ -78,6 +78,37 @@ const REEF_ONSET: OnsetTables = {
 };
 
 /**
+ * The Point's transect (Part B, PR 7; the advisor's rulings, 2026-10-01): its headland's flank at 1:21.5 along the
+ * contours' normal (they run 31° off the shoreline there; O'Dea's slope over half a wavelength offshore, every swell)
+ * from the 7 m foot, seaward of every set's break, to a 0.35 m flat. All provisional.
+ * - **The join:** the game's solver's fresh onset on that transect (the spotOnset probe, 2026-10-01: regular waves driven
+ *   in 7 m at the Point's 9, 11, 12 and 14 s, each wave's highest over the band against the still depth under its crest
+ *   where Kennedy's fresh test first fired for that wave, the median of 12 waves; the first onset per wave, since the
+ *   bigger drives fire 4–8 times a wave). The 0.5 m drives never broke on it.
+ * - **The band:** Padang Padang's 6–5 m at its 7 m foot.
+ * - **The throw:** a least-squares line through the four level-12 runs, foot crest against the still depth where the
+ *   face goes vertical (`plunge_measure.py`): 0.56 m → 1.85 m (9 s), 1.05 → 2.71 (11 s), 1.61 → 3.44 (12 s) and
+ *   2.10 → 3.24 (14 s), clamped to those crests. Residuals −0.23/+0.16/+0.36/−0.30 m: a 0.3 m residual moves the throw
+ *   about 6 m along a 1:21.5 ray, as Padang Padang's do. Not monotonic: point21_a30's 14 s wave shoals further before
+ *   going vertical (H/d 1.23 there, against 0.82–0.96). A fit in the period too barely helps (±0.26 m), and in the game
+ *   the Point's period rises with its size, so η alone carries the period's trend. The level-13 cases owed refit it.
+ */
+const POINT_ONSET: OnsetTables = {
+  h0: 7,
+  band: [6, 5],
+  join: [
+    { period: 9, rows: [[0.62, 1.58], [1.01, 2.14], [1.37, 2.65], [1.73, 3.16], [1.99, 3.67]] },
+    { period: 11, rows: [[0.6, 1.72], [0.91, 2.33], [1.19, 2.88], [1.33, 3.44], [1.68, 4.05]] },
+    { period: 12, rows: [[0.69, 1.67], [1.08, 2.19], [1.4, 2.7], [1.75, 3.12], [2.12, 3.49]] },
+    { period: 14, rows: [[0.77, 1.67], [1.22, 2.14], [1.78, 2.6], [2.4, 3.12], [2.88, 3.49]] },
+  ],
+  throwDepth: { intercept: 1.551, slope: 0.946, heights: [0.558, 2.099] },
+};
+
+/** The Point's foot, m (the advisor, 2026-10-01): seaward of its sets' breaks (4.2 m at most), in the solver's free water. */
+const POINT_FOOT = 7;
+
+/**
  * Every spot's barrel transect, where its cases are in the library. Padang Padang's is round 6's (the owner's 1:19 along
  * the path from the wedge's 7 m foot, read live for the design sweep); the Reef's, its shelf's 10 m and the ledge along
  * the swell's path. The Reef's fine zone starts at the shelf's edge, so its front follows crests from there.
@@ -89,6 +120,7 @@ const REEF_ONSET: OnsetTables = {
  */
 export const BARREL_SPOTS: Partial<Record<SpotName, BarrelSpot>> = {
   padang: { slope: 1 / 19, get footDepth() { return PADANG.baseDepth; }, onset: PADANG_ONSET, frontFrom: 'zone', front: PADANG_FRONT },
+  point: { slope: 0.0465116, footDepth: POINT_FOOT, onset: POINT_ONSET, frontFrom: 'zone' },
   reef: {
     slope: 0.238095, get footDepth() { return REEF.shelfDepth; }, onset: REEF_ONSET, frontFrom: 'fine',
     front: { jumpReach: 10, joinPast: 1.5 },

@@ -41,5 +41,29 @@ export const BARREL_CASES: readonly BarrelCaseEntry[] = [
     "nonlinearity": 0.2127,
     "flatDepth": 0.15,
     "asset": "barrels/periodic-reef42-l12.bin"
+  },
+  {
+    "id": "periodic-point21-a15-l12",
+    "spot": "point",
+    "slope": 0.0465116,
+    "nonlinearity": 0.1498,
+    "flatDepth": 0.05,
+    "asset": "barrels/periodic-point21-a15-l12.bin"
+  },
+  {
+    "id": "periodic-point21-a23-l12",
+    "spot": "point",
+    "slope": 0.0465116,
+    "nonlinearity": 0.2304,
+    "flatDepth": 0.05,
+    "asset": "barrels/periodic-point21-a23-l12.bin"
+  },
+  {
+    "id": "periodic-point21-a30-l12",
+    "spot": "point",
+    "slope": 0.0465116,
+    "nonlinearity": 0.2999,
+    "flatDepth": 0.05,
+    "asset": "barrels/periodic-point21-a30-l12.bin"
   }
 ];
