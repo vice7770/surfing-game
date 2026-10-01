@@ -89,11 +89,11 @@ export const POOL_FACES = { small: 1.0, medium: 1.25, big: 1.5 } as const;
 export type PoolSize = keyof typeof POOL_FACES;
 
 /**
- * The wave height the machine makes at the tank's edge for each size, m: reverse-shoaled from the faces to the
- * feed's 9 m (the advisor: a 1.25 m breaker is about 0.76 m high there, Ursell about 8), to be calibrated by the pool
- * probe against the faces the solver breaks with.
+ * The wave height the machine makes at the tank's edge for each size, m: set so the game's surf meter (each wave's
+ * biggest breaking face within 10 m of the take-off, H1/3) reads the size's face. Measured on the pool (the size
+ * probe, 2026-10-01): H 0.85 → 1.29 m, 1.05 → 1.46 m, 1.3 → 1.77 m, about 0.38 + 1.07 H.
  */
-export const POOL_EDGE_HEIGHT: Record<PoolSize, number> = { small: 0.61, medium: 0.76, big: 0.91 };
+export const POOL_EDGE_HEIGHT: Record<PoolSize, number> = { small: 0.58, medium: 0.81, big: 1.05 };
 
 /** A regular wave's Hs, 4√m0, for its height H: m0 = a²/2 = H²/8, so Hs = √2 H. */
 /** smoothstep, kept here so this module and Bathymetry's import only each other's types. */
