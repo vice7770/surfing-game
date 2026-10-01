@@ -21,7 +21,10 @@ import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
 import { BreakingFront } from './barrel/BreakingFront';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
+import type { ProfileLibrary } from './barrel/ProfileLibrary';
 import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
+import { SweptCrash } from './barrel/SweptCrash';
+import { BARREL_SLOPE } from './barrel/sweptLoft';
 
 /** Sea water, kg/m³ (the lip's impact energy for the aeration, G9). */
 const WATER_DENSITY = 1025;
@@ -87,6 +90,11 @@ export interface SurfZoneConfig {
   sweptBarrel?: boolean;
   /** Where the swept barrel's lip throws: where the Navier–Stokes wave goes vertical ('measured', the default), or where the solver's onset joins it ('none'). */
   barrelLag?: 'measured' | 'none';
+  /**
+   * Whether the swept barrel's jets leave and land on its clock (the Padang Padang spec, Part B, PR 5): on wherever the
+   * profile library is given at a swept spot (the default); off keeps Kennedy's lip there (the before-and-after probes).
+   */
+  sweptCrash?: boolean;
 }
 
 /** Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run. */
@@ -431,6 +439,13 @@ export class SurfZoneSimulation {
   readonly front?: BreakingFront;
   /** Shown slice clocks that paused rather than ran back, since the start (the advisor's check on the onsets' noise). */
   frontPauses = 0;
+  /**
+   * The swept barrel's jets on its own clock (the Padang Padang spec, Part B, PR 5), at a swept spot given the profile
+   * library: they replace Kennedy's lip there, and the whitewater waits for their touchdown.
+   */
+  readonly crash?: SweptCrash;
+  /** The breaking the whitewater sees at a swept spot with the crash: withheld over open curls (`SweptCrash`). */
+  private readonly whitewater?: Float64Array;
   private readonly crestSamples: CrestSample[] = [];
   /** When a front's lips throw after the solver's onset: Padang Padang's library transect, its wedge's foot at the tide. */
   private readonly onsetTiming?: OnsetTiming;
@@ -462,7 +477,8 @@ export class SurfZoneSimulation {
   /** Solver seconds of spin-up that settle the warm-started sea's nonlinear shape. */
   private readonly spinUpSeconds: number;
 
-  constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up') {
+  /** `barrel`: the swept barrel's profile library, at a swept spot (the page's cases): the crash runs on it (PR 5). */
+  constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary) {
     this.spot = createSpot(config.spot, config.seed);
     const tank = tankLayout(config);
     this.tank = tank;
@@ -507,7 +523,8 @@ export class SurfZoneSimulation {
     this.aeration = new AerationField(this.solver, { period: config.peakPeriod });
     this.lip.onLand = (x, z, volume, vx, vy, vz, flight) => {
       this.foam.addSplash(x, z, volume);
-      this.lipImpacts.push({ x, z, volume, vx, vy, vz, whole: flight?.volume ?? volume, kind: flight?.kind ?? 0 });
+      // A swept barrel's pour lands under the solver's hump, where the drawn lip comes down: its spray rises from there (PR 5).
+      this.lipImpacts.push({ x, z, volume, vx, vy, vz, whole: flight?.volume ?? volume, kind: flight?.kind ?? 0, ...(flight?.swept ? { y: flight.y } : {}) });
       // Its impact's energy drives air down in proportion to how far it fell (G9).
       const drop = flight ? Math.max(0.1, flight.launch.y - flight.y) : 1;
       this.aeration.addPlunge(x, z, 0.5 * WATER_DENSITY * volume * (vx * vx + vy * vy + vz * vz), AERATION.plungeDepth * drop);
@@ -526,6 +543,11 @@ export class SurfZoneSimulation {
     if (sweptBarrelOn(config)) {
       this.onsetTiming = onsetTiming(PADANG.baseDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none');
       this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming);
+      const slope = BARREL_SLOPE[config.spot];
+      if (barrel && slope !== undefined && config.sweptCrash !== false) {
+        this.crash = new SweptCrash(barrel, slope);
+        this.whitewater = new Float64Array(this.solver.h.length);
+      }
     }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);
@@ -692,7 +714,7 @@ export class SurfZoneSimulation {
     this.markBreakingOnsets();
     this.advanceFront();
     this.lip.step(dt);
-    this.foam.update(dt, this.breaking.strength);
+    this.foam.update(dt, this.whitewaterStrength);
     this.aerateBores(dt);
     this.aeration.update(dt);
     this.lastStepMs = performance.now() - start;
@@ -706,6 +728,25 @@ export class SurfZoneSimulation {
     const count = columnCrests(solver, this.breaking, solver.rowBelow(this.tank.fineFrom), minHeight, this.crestSamples);
     front.update(this.crestSamples, count, solver.time);
     this.frontPauses += advanceClocks(front.points, solver.time, this.onsetTiming!);
+    if (this.crash) {
+      // The barrel's jets leave and land on its clock, and the whitewater waits for its touchdown (PR 5).
+      const { throws, volume } = this.crash.update(front.points, {
+        solver, lip: this.lip, stillLevel: solver.restLevel, period: this.config.peakPeriod, strength: this.breaking.strength,
+        whitewater: this.whitewater!,
+      });
+      this.lipLaunches += throws;
+      this.lipJets += throws;
+      this.lipVolume += volume;
+    }
+  }
+
+  /**
+   * The breaking the whitewater sees: the foam's bore source (and the spray and bubbles it drives), the bore's air and
+   * turbulence, and the roar. At a swept spot with the crash it waits, over each open curl, for the barrel's touchdown
+   * (PR 5); anywhere else it is the solver's own.
+   */
+  get whitewaterStrength(): Float64Array {
+    return this.whitewater ?? this.breaking.strength;
   }
 
   /** Still depth where the shoaled swell breaks, h_b = (Hs·D^¼/γ)^⅘, m. */
@@ -829,6 +870,11 @@ export class SurfZoneSimulation {
    * new breakers, and a lip there would carry almost no water (volume ∝ H²).
    */
   private throwLip(column: number, row: number): void {
+    // At a swept spot with the crash the barrel alone plunges, on its own clock; a wave no front joins spills (PR 5).
+    if (this.crash) {
+      this.crash.counts.onsets += 1;
+      return;
+    }
     const { solver } = this;
     const { nx, nz, bed, zCenters } = solver;
     if (solver.time - this.lastThrow[column] < 0.7 * this.config.peakPeriod) return;
@@ -1000,7 +1046,8 @@ export class SurfZoneSimulation {
   /** G9: every breaking bore drives air in by its dissipation, spilling shallower than a plunge. */
   private aerateBores(dt: number): void {
     const { h, bed, restLevel } = this.solver;
-    const strength = this.breaking.strength;
+    // An open tube's water is clear until its lip lands (PR 5; the advisor's ruling 9b).
+    const strength = this.whitewaterStrength;
     for (let i = 0; i < h.length; i += 1) {
       if (!(strength[i] > 0)) continue;
       const still = restLevel - bed[i];

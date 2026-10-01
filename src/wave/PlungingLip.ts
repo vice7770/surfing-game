@@ -164,7 +164,7 @@ export interface LipFlight {
   volume: number;
   waveHeight: number;
   /** A swept barrel's jet, poured from its crash curve (the Padang Padang spec, Part B, PR 5): it lands where its spray rises. */
-  swept: boolean;
+  swept?: boolean;
 }
 
 /**

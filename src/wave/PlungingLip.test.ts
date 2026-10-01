@@ -919,7 +919,7 @@ describe('a swept barrel’s held jet (Padang Padang, Part B, PR 5)', () => {
     expect(lip.crashJet(strip, { x: 3.5, y: 0.1, z: 15, spacing: 0.1, vy: -3 }, { x: 3.5, y: 0.8, z: 13 })).toBe(true);
     expect(lip.trappedAir - trapped).toBeCloseTo(0.3, 12);
     const landed: { z: number; swept: boolean; drop: number }[] = [];
-    lip.onLand = (x, z, volume, vx, vy, vz, flight) => landed.push({ z, swept: flight!.swept, drop: flight!.launch.y - flight!.y });
+    lip.onLand = (_x, z, _volume, _vx, _vy, _vz, flight) => landed.push({ z, swept: flight!.swept, drop: flight!.launch.y - flight!.y });
     lip.step(0.05);
     expect(landed.length).toBe(1);
     expect(landed[0].z).toBeLessThan(15.5);
@@ -948,7 +948,7 @@ describe('a swept barrel’s held jet (Padang Padang, Part B, PR 5)', () => {
     const solver = basin();
     const lip = new PlungingLip(solver);
     const landed: number[] = [];
-    lip.onLand = (x, z) => landed.push(z);
+    lip.onLand = (_x, z) => landed.push(z);
     lip.holdJet(jet(solver, { pourIn: 0.3 }));
     for (let k = 0; k < 60; k += 1) lip.step(0.05);
     expect(landed.length).toBeGreaterThanOrEqual(STRIP_PARCELS);

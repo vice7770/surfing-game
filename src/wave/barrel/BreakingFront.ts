@@ -75,6 +75,12 @@ export interface FrontPoint {
   fresh: number | null;
   /** When it was last seen, s. */
   seen: number;
+  /**
+   * The swept barrel's crash (PR 5, `SweptCrash`): the lip strip holding its jet from its throw on (−1 when it threw
+   * none), and when its lip touched down, s. Absent until then; they travel with the point, and in the sea handover.
+   */
+  jetStrip?: number;
+  crashedAt?: number;
 }
 
 export interface FrontState {

@@ -21,6 +21,8 @@ import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { TAKE_OFF_BAND } from './SurfMeter';
 import { SideFeed } from './SideFeed';
 import { JET_RELEASE_TIME } from './PlungingLip';
+import { libraryFromBytes } from './barrel/barrelLibrary';
+import { readBarrelCases } from './barrel/nodeBarrelCases';
 
 const small_ = (): SurfZoneConfig => ({ ...small, spot: 'padang', alongShore: PADANG.alongShore });
 const small: Omit<SurfZoneConfig, 'spot'> = {
@@ -915,6 +917,61 @@ describe('the swept barrel’s breaking front (the Padang Padang spec, Part B)',
     }
     expect(joiner.front!.points).toEqual(donor.front!.points);
   }, 1_800_000);
+
+  // The crash (PR 5): the barrel's jets leave and land on its clock, at a swept spot given the library.
+  it('throws no Kennedy lip at a swept spot with the library, pours the barrel’s jets from its crash curve with the water balanced, and hands the held jets over exactly', () => {
+    const library = libraryFromBytes(readBarrelCases());
+    const donor = new SurfZoneSimulation(padang(), 'spun-up', library);
+    let thrown = 0;
+    let landed = 0;
+    const tell = donor.lip.onLand!;
+    donor.lip.onLand = (x, z, volume, vx, vy, vz, flight) => {
+      landed += volume;
+      tell(x, z, volume, vx, vy, vz, flight);
+    };
+    const step = () => {
+      const before = donor.lipVolume;
+      donor.step(1 / 30);
+      thrown += donor.lipVolume - before;
+    };
+    for (let frame = 0; frame < 30 * 30; frame += 1) step();
+    const { counts } = donor.crash!;
+    expect(counts.onsets).toBeGreaterThan(0);
+    expect(counts.throws).toBeGreaterThan(0);
+    expect(counts.crashes).toBeGreaterThan(0);
+    expect(donor.lipJets).toBe(counts.throws);
+    // Every strip in the air is a barrel's jet or a splash-up: no Kennedy lip.
+    expect(donor.exportState().lip.strips.every(([, strip]) => strip.swept === true || strip.kind === 1)).toBe(true);
+    expect(thrown).toBeCloseTo(landed + donor.lip.airborneVolume(), 6);
+    // Review Focus 3: a joiner given the sea while jets are held pours them exactly as the donor.
+    const held = () => donor.exportState().lip.strips.some(([, strip]) => strip.swept === true && strip.tube?.closedAt === null);
+    for (let frame = 0; frame < 30 * 30 && !held(); frame += 1) step();
+    expect(held()).toBe(true);
+    const joiner = new SurfZoneSimulation({ ...padang(), startSeaTime: 1000, spinUpPeriods: 0 }, 'spun-up', library);
+    joiner.importState(donor.exportState());
+    for (let frame = 0; frame < 5 * 30; frame += 1) {
+      donor.step(1 / 30);
+      joiner.step(1 / 30);
+    }
+    const [a, b] = [donor.exportState(), joiner.exportState()];
+    expect(b.lip).toEqual(a.lip);
+    expect(b.front).toEqual(a.front);
+    expect(b.arrays).toEqual(a.arrays);
+  }, 3_600_000);
+
+  it('keeps Kennedy’s lip without the library or with the crash off, and gives the foam the solver’s own breaking there', () => {
+    const alone = new SurfZoneSimulation(padang(), 'warm');
+    expect(alone.crash).toBeUndefined();
+    expect(alone.whitewaterStrength).toBe(alone.breaking.strength);
+    const off = new SurfZoneSimulation(padang({ sweptCrash: false }), 'warm', libraryFromBytes(readBarrelCases()));
+    expect(off.crash).toBeUndefined();
+    const canyon = new SurfZoneSimulation({ ...small, spot: 'canyon' }, 'warm', libraryFromBytes(readBarrelCases()));
+    expect(canyon.crash).toBeUndefined();
+    expect(canyon.whitewaterStrength).toBe(canyon.breaking.strength);
+    const on = new SurfZoneSimulation(padang(), 'warm', libraryFromBytes(readBarrelCases()));
+    expect(on.crash).toBeDefined();
+    expect(on.whitewaterStrength).not.toBe(on.breaking.strength);
+  });
 });
 
 describe('the tank sized to the swell (wave sizes)', () => {

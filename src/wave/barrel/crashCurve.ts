@@ -21,7 +21,10 @@ export interface CrashSlice {
   anchorZ: number;
   fade: number;
   weight: number;
-  /** The drawn lip tip and crest, and where the lip lands: the drawn frame's face at its point nearest the tip, m. */
+  /**
+   * The drawn lip tip and crest, and where the lip lands, m: the drawn frame's face at its point nearest the tip, at the
+   * touchdown frame's own height (the fade dissolves the drawing; it doesn't move the landing).
+   */
   tipX: number;
   tipY: number;
   tipZ: number;
@@ -177,13 +180,14 @@ export class CrashCurve {
     }
     into.anchorX = ax;
     into.anchorZ = az;
-    // The drawn tip and crest.
-    const place = (along: number, above: number, pin: number, axis: 'x' | 'y' | 'z') => {
+    // The drawn tip and crest (lifted by the drawing's weight); the landing at the touchdown frame's own height (lifted by
+    // the end weight alone: the fade dissolves the drawing into the water, it doesn't move where the lip came down).
+    const place = (along: number, above: number, pin: number, axis: 'x' | 'y' | 'z', weight = into.weight) => {
       const px = ax + along * nx;
       const pz = az + along * nz;
       if (axis === 'x') return px;
       if (axis === 'z') return pz;
-      const e = into.weight * (1 - pin);
+      const e = weight * (1 - pin);
       if (e === 1) return stillLevel + above;
       const h = heightAt(px, pz);
       return e === 0 ? h : h + e * (stillLevel + above - h);
@@ -222,7 +226,7 @@ export class CrashCurve {
       }
     }
     into.landX = place(landAlong, landAbove, landPin, 'x');
-    into.landY = place(landAlong, landAbove, landPin, 'y');
+    into.landY = place(landAlong, landAbove, landPin, 'y', into.endWeight);
     into.landZ = place(landAlong, landAbove, landPin, 'z');
     // The lifted band's reach.
     let back = Infinity;
@@ -245,6 +249,11 @@ export class CrashCurve {
     into.axisY = o.axisY;
     into.voidHeight = (GRAVITY * into.collapse * into.collapse) / 2;
     return into;
+  }
+
+  /** A point's touchdown and collapse times, s, without building its profile. */
+  times(point: FrontPoint): { touchdownSeconds: number; collapseSeconds: number } {
+    return this.library.profileTimes({ slope: this.slope, footHeight: point.footHeight, footDepth: point.footDepth });
   }
 
   /** The held frame's tip velocity along the ray and up (m/s), and the drawn crest's speed over the CREST_FRAMES frames before it (m/s). */
