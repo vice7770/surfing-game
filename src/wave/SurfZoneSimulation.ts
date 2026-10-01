@@ -19,7 +19,7 @@ import type { LipImpact } from './SprayCloud';
 import { OPEN_EDGE_REACH, ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
-import { BreakingFront } from './barrel/BreakingFront';
+import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
 import { BARREL_SPOTS } from './barrel/barrelSpots';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
 import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
@@ -88,6 +88,14 @@ export interface SurfZoneConfig {
   sweptBarrel?: boolean;
   /** Where the swept barrel's lip throws: where the Navier–Stokes wave goes vertical ('measured', the default), or where the solver's onset joins it ('none'). */
   barrelLag?: 'measured' | 'none';
+  /**
+   * Where the swept barrel's front follows crests from, in place of the spot's own (`BarrelSpot.frontFrom`): the
+   * relaxation zone's inner edge ('zone'), so a crest is sized at the foot wherever the foot lies, or the fine zone's
+   * first row ('fine', Padang Padang's rows before the peak-sizing fix).
+   */
+  barrelFrontFrom?: 'fine' | 'zone';
+  /** The swept barrel's front rules (`FrontOptions`), in place of the spot's own (`BarrelSpot.front`); `{}` for none. */
+  barrelFront?: FrontOptions;
 }
 
 /**
@@ -386,6 +394,18 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   return { x, z: breakZ(x) };
 }
 
+/**
+ * Where the swept barrel's front follows crests from, z: the spot's rows (`BarrelSpot.frontFrom`) unless the config says
+ * (`barrelFrontFrom`): the relaxation zone's inner edge, or the fine zone's first row (Padang Padang's before the
+ * peak-sizing fix). At Padang Padang's peak, on Practice and Small, the fine
+ * zone starts 3.7–6 m deep, shallower than the 6–7 m foot band, so crests first seen there were never sized and the
+ * peak drew no barrel (the advisor, 2026-10-01). No crest is followed seaward of the foot, so what changes is where a
+ * crest is sized: at the foot itself rather than at the fine zone's first row.
+ */
+export function barrelFrontFrom(config: Pick<SurfZoneConfig, 'spot' | 'barrelFrontFrom'>, layout: Pick<TankLayout, 'zoneInner' | 'fineFrom'>): number {
+  return (config.barrelFrontFrom ?? BARREL_SPOTS[config.spot]?.frontFrom ?? 'zone') === 'fine' ? layout.fineFrom : layout.zoneInner;
+}
+
 /** Spot seabed with a flat floor under the relaxation zone at the edge depth, blended over the layout's zoneInner…blendEnd. */
 export function tankDepth(
   spot: SurfSpot, edgeDepth: number, x: number, z: number, layout: Pick<TankLayout, 'zoneInner' | 'blendEnd'> = TANK,
@@ -533,8 +553,8 @@ export class SurfZoneSimulation {
     if (sweptBarrelOn(config)) {
       const barrel = BARREL_SPOTS[config.spot]!;
       this.onsetTiming = onsetTiming(barrel.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', barrel.onset);
-      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, barrel.front);
-      if (barrel.frontFrom === 'zone') this.frontFrom = tank.zoneInner;
+      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, config.barrelFront ?? barrel.front);
+      this.frontFrom = barrelFrontFrom(config, tank);
     }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);

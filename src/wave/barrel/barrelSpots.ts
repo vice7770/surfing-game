@@ -10,6 +10,14 @@ import { PADANG_ONSET, type OnsetTables } from './sliceClock';
 export const FLOOR_MARGIN = 0.01;
 
 /**
+ * Padang Padang's front rules (the advisor, 2026-10-01; the peak PR): as a crest's face steepens, its highest cell jumps
+ * forward, and the crest ahead started a track of its own, unsized, which never joined (163 jumps in 180 s of its Small
+ * sea, against 23 joins and 199 lost, with the rule off: as often as the Reef's). So a sized crest continues as the
+ * furthest crest within 10 m ahead of it in its column, as the Reef's does. Its join past the throw depth is the Reef's alone.
+ */
+export const PADANG_FRONT: FrontOptions = { jumpReach: 10 };
+
+/**
  * What a spot needs for the swept barrel (Padang Padang Part B, PR 7): the Navier–Stokes transect its library cases
  * were run on, and where its breaking front follows crests from. A spot draws and rides the swept barrel only when it
  * is in SWEPT_BARREL (src/wave/SurfZoneSimulation.ts, the owner's switch) and has an entry here; switching one on is
@@ -26,11 +34,11 @@ export interface BarrelSpot {
   /** The transect's join and throw tables (sliceClock). */
   onset: OnsetTables;
   /**
-   * Where the front follows crests from: the fine zone's first row (Padang Padang), or the relaxation zone's inner edge,
-   * for a spot whose foot lies seaward of its fine zone, in the 4 m cells.
+   * Where the front follows crests from: the fine zone's first row, or the relaxation zone's inner edge, for a spot whose
+   * foot lies seaward of its fine zone anywhere along it, in the 4 m cells (Padang Padang's peak, since the peak PR).
    */
   frontFrom: 'fine' | 'zone';
-  /** The front's rules beyond Padang Padang's (BreakingFront's `FrontOptions`); none: Padang Padang's. */
+  /** The front's rules (BreakingFront's `FrontOptions`): Padang Padang's crest jumps, the Reef's jumps and late join. */
   front?: FrontOptions;
 }
 
@@ -80,7 +88,7 @@ const REEF_ONSET: OnsetTables = {
  * may join up to 1.5 of its wave heights past its throw depth.
  */
 export const BARREL_SPOTS: Partial<Record<SpotName, BarrelSpot>> = {
-  padang: { slope: 1 / 19, get footDepth() { return PADANG.baseDepth; }, onset: PADANG_ONSET, frontFrom: 'fine' },
+  padang: { slope: 1 / 19, get footDepth() { return PADANG.baseDepth; }, onset: PADANG_ONSET, frontFrom: 'zone', front: PADANG_FRONT },
   reef: {
     slope: 0.238095, get footDepth() { return REEF.shelfDepth; }, onset: REEF_ONSET, frontFrom: 'fine',
     front: { jumpReach: 10, joinPast: 1.5 },

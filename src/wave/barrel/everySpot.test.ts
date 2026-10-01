@@ -60,8 +60,8 @@ describe('the swept barrel’s spots (Part B, PR 7)', () => {
     expect(onsetTiming(reef.footDepth + 0.4, 16, true, reef.onset).throwDepth(0.9)).toBeCloseTo(REEF.crestDepth + FLOOR_MARGIN + 0.4, 12);
   });
 
-  it('keeps Padang Padang’s front as it was: the crest jumps and the late join are the Reef’s alone', () => {
-    expect(BARREL_SPOTS.padang!.front).toBeUndefined();
+  it('follows both spots’ crest jumps, and joins only the Reef’s crests past their throw depth', () => {
+    expect(BARREL_SPOTS.padang!.front).toEqual({ jumpReach: 10 });
     expect(BARREL_SPOTS.reef!.front).toEqual({ jumpReach: 10, joinPast: 1.5 });
   });
 });

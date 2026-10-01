@@ -206,17 +206,17 @@ What a spot needs before the owner can switch it on, and where each piece lives:
 
 | Piece | Where | At Padang Padang |
 |---|---|---|
-| The runs' slope along the wave's path (`slope`), their foot depth h0 at mid tide (`footDepth`), the transect's onset tables (`onset`), the row the front follows crests from (`frontFrom`), and the front's own rules (`front`: the crest jumps' reach, the join's reach past the throw depth) | `BARREL_SPOTS[spot]`, `src/wave/barrel/barrelSpots.ts`; `FrontOptions`, `src/wave/barrel/BreakingFront.ts` | 1:19; `PADANG.baseDepth` (7 m, read live); `PADANG_ONSET`; the fine zone; no rules (the Reef's: 10 m and 1.5 H, §3) |
+| The runs' slope along the wave's path (`slope`), their foot depth h0 at mid tide (`footDepth`), the transect's onset tables (`onset`), the row the front follows crests from (`frontFrom`), and the front's own rules (`front`: the crest jumps' reach, the join's reach past the throw depth) | `BARREL_SPOTS[spot]`, `src/wave/barrel/barrelSpots.ts`; `FrontOptions`, `src/wave/barrel/BreakingFront.ts` | 1:19; `PADANG.baseDepth` (7 m, read live); `PADANG_ONSET`; the relaxation zone's edge and the crest jumps' 10 m reach (`PADANG_FRONT`), from the peak PR (#105); the Reef's rules are 10 m and 1.5 H (§3) |
 | The join (the solver's fresh onset by crest height over a band, per period) and the throw (the Navier–Stokes vertical depth, a line in the foot crest) | `OnsetTables`; `onsetTiming(h0, period, lagged, tables)`, `src/wave/barrel/sliceClock.ts` | today's `SWELL_ONSET` and `THROW_DEPTH`, scaled from 7 m as before |
 | The cases | the generated index, each entry with its `spot`; `barrelCasesFor(spot)`, `readBarrelCases(spot)` | the four cases, unchanged bytes |
 | The loft's and the contact's slope | `BARREL_SLOPE`, now derived from `BARREL_SPOTS` | 1:19 |
 | The page's files and library | `barrelCaseBytes(spot)` (one fetch per spot), `SweptBarrel` (one library per spot; `setSpot(spot, swept)`) | the same four files, fetched once |
 | The switch | `SWEPT_BARREL` in `src/wave/SurfZoneSimulation.ts`; `sweptBarrelOn` needs the switch (or a config's `sweptBarrel` in a test) and a `BARREL_SPOTS` entry | `['padang']`, unchanged |
 
-- **The front's rows.** At Padang Padang the front follows crests from the fine zone's first row, as before. The Canyon, Point and Beach have their fine zones start 3.4–3.6 m deep, shallower than any foot that lies seaward of their sets' breaks. So their records say `frontFrom: 'zone'`: the front follows crests from the relaxation zone's inner edge, over the 4 m cells. A crest is sized only once its still depth is within 1 m of the foot, so this changes nothing about where it is sized.
+- **The front's rows.** Padang Padang's front follows crests from the relaxation zone's inner edge since the peak PR (#105, §6). The Canyon, Point and Beach have their fine zones start 3.4–3.6 m deep, shallower than any foot that lies seaward of their sets' breaks. So their records say `frontFrom: 'zone'`: the front follows crests from the relaxation zone's inner edge, over the 4 m cells. A crest is sized only once its still depth is within 1 m of the foot, so this changes nothing about where it is sized.
 - **One line.** Once a spot has its record and its cases, switching it on is adding it to `SWEPT_BARREL`. Every other switch keys on `sweptBarrelOn(config)`: the front, the loft, the mask, the carve and the lip strips going off, the contact, the handover.
 - **The generator** (`npm run barrels`) takes `--spot`, and `--flat` and `--a0` per case (`NAME=VALUE`). `--keep ID` keeps a committed case as it is: its `.bin` untouched, and its rows carried over from `barrel-cases.md`. Padang Padang's three solitary runs live only on another worktree, so they are kept, not reconverted. Past Pick & Feddersen's fitted ψ0 (the Reef) the validation table shows no fit rather than an extrapolated one.
-- **Behaviour.** No spot's sea changes. Padang Padang's onset timing, front, loft and contact read the same numbers as before, its four case files are byte-identical, and the page fetches only them. A spot without a record can't be switched on, even by a test.
+- **Behaviour.** No spot's sea changes beyond the peak PR's (#105), which this branch carries: Padang Padang's onset timing, front, loft and contact read the same numbers as on that branch, its four case files are byte-identical, and the page fetches only them. A spot without a record can't be switched on, even by a test. `config.barrelFrontFrom` and `config.barrelFront` override a spot's rows and rules, for probes.
 
 ## 5. The deletion map
 
@@ -314,9 +314,11 @@ The deletion waits for PR 5 and for every spot that will be swept to be switched
 | `src/scene/LipSheetMesh.ts` | `RICH_LIP_REFLECTION`, `buildRichLipSheet`, its shader chunks | The splash-up strips' Rich sheet |
 | Tests | `richLip.test.ts`, `LipSheetMesh.test.ts` | Slimmed |
 
-## 6. A finding at Padang Padang (not changed here)
+## 6. A finding at Padang Padang (fixed in its own PR, #105)
 
 Padang Padang's fine zone starts at one z across the window, but its 7 m contour bends seaward at the peak, over the focus spur. So on Practice and Small, the fine zone's first row at the peak's columns (x −80 to −40 on Small, to −20 on Practice) is 3.7–6.0 m deep, shallower than the foot band (6–7 m) [measured: `tankLayout` and the bed, both swells at mid tide]. A crest first seen shallower than the band is never sized (`BreakingFront.unsized`), so it never joins a front, and the peak draws no barrel on those swells. The advisor ruled it a defect (it breaks the owner's rule of tubes wherever the physics plunges), to be fixed in its own PR, not in this one: `claude/padang-peak-sizing` from `claude/padang-contact`, switching Padang Padang to `frontFrom: 'zone'` or widening its sizing band, whichever reaches the peak with less change, with before and after on Small and Practice (unsized crests, throws, peel, barrels at the peak), flagged as a Padang Padang behaviour change.
+
+**Fixed** in #105 (`claude/padang-peak-sizing`), with the crest jumps' rule turned on for Padang Padang too (the advisor's ruling (d), 2026-10-01: its maxima jump as often as the Reef's). On Small the peak now throws (2 → 78 throws there in 120 s); on Practice its peak crests are sized but cross their throw depth unbroken. This branch carries that PR's commits, so it merges after it.
 
 ## 7. The owner's follow-ups
 
