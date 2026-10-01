@@ -13,20 +13,17 @@
 //
 // The take-off point (`takeOffPoint`, the breaker depth for the edge's height) lies about 22 m seaward of the tip,
 // where nothing breaks, and from there the autopilot missed every wave. So the probe watches the arm's own column for
-// where each wave first breaks on the reef (the pool probe's rule), waits WAIT m (5) outside that, and starts each attempt as
-// a wave breaks there, so the rider has a whole period to get into place for the next.
+// where each wave first breaks on the reef (the pool probe's rule), waits WAIT m (5) outside that, and starts each
+// attempt as a wave breaks there, so the rider has a whole period to get into place for the next.
 //
 // The pop-up cue's take-off window (`inTakeOffWindow`) wants the board 2–4 m ahead of the crest; on the pool's 1.1 m
 // face a caught paddler rode 0.7–1.5 m ahead of it, at the crest's pace, for 4 s and 20 m, until the wave died in the
-// lagoon. POPUP=caught (the default) has the probe press pop-up as a player would once the board has been carried at the
-// crest's pace, high on the face, for CAUGHT_FOR; POPUP=cue leaves it to the cue.
+// lagoon. POPUP=caught (the default) has the probe press pop-up as a player would once the board has been carried at
+// the crest's pace, high on the face, for CAUGHT_FOR; POPUP=cue leaves it to the cue.
 //
-// Caught that way, few waves are ridden, so placed starts skip the paddle as a wave starts breaking on the arm
-// (PLACES): START=caught lies the rider on the face just ahead of the crest, moving with it, and pops up at once
-// (Surf School's caught start); START=trough stands it in the trough ahead of the wave at a drop's speed, to ride the
-// flow from its bottom turn; START=shoulder stands it up the face heading along it, for the cutback alone. A standing
-// placement on the steep face by the break failed: the board flew 0.3 s off the water, rolled 21°, and the upright
-// body fell into a 66° bank within 0.9 s.
+// Paddled, no wave was ridden (of 13 attempts, 3 stood: off the plane, behind the crest, or on the flat once the
+// wave had died), so placed starts skip the paddle as a wave starts breaking on the arm (PLACES). START=trough is the
+// one that works: all 20 of its placements stood and rode into the flow.
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { Vector3 } from 'three';
 import { it } from 'vitest';
@@ -55,16 +52,15 @@ const CAUGHT_FOR = 0.25;
 /**
  * Placed starts, PLACE_AHEAD m along the arm beyond where the wave starts breaking, angled from shoreward toward the
  * open face, at a speed over the water's own flow, m/s:
- * - START=caught: lying 1 m ahead of the crest (run 3's caught paddler rode 0.7–1.5 m ahead of it) at the
- *   autopilot's take-off angle, at about the crest's pace with the face's water, and popping up at once;
- * - START=trough: standing in the trough ahead of the wave, at the speed and angle a drop down the face reached
- *   (run 9's frontside drop: 7 m/s, 22–30° from the fall line, into its bottom turn), so the flow starts at its bottom
- *   turn. Placed on the face's steep water, a board flew and rolled; the trough is flat;
- * - START=shoulder: standing up the face heading along it, at the speed the bottom turn kept, for the cutback alone
- *   (FLOW_FROM=cutback: every projection bled to 1.3–1.9 m/s before it). It does not work: the board lands rolled
- *   24° across the face and lifts off it (the face's water rises at 1.3 m/s), and the upright body fell into a 70°
- *   bank within 0.5 s, cutting back or riding on unsteered (`settle`, s). The cutback alone is ridden from the trough
- *   instead (START=trough PLACE_ANGLE=80 PLACE_SETTLE=0.3 FLOW_FROM=cutback).
+ * - START=caught: lying 1 m ahead of the crest (where a caught paddler rode) at the autopilot's take-off angle, at
+ *   about the crest's pace with the face's water, popping up at once (Surf School's caught start). 1 of 8 rode on
+ *   past the pop-up: near the breaking crest the board was thrown up at 0.7–1.4 m/s and rolled 30–80° in the push;
+ * - START=trough: standing in the trough ahead of the wave at the speed and angle a drop reached (7 m/s, about 30°
+ *   from the fall line), so the flow starts at its bottom turn. The trough is flat, and every placement rode;
+ * - START=shoulder: standing up the face heading along it, for the cutback alone (FLOW_FROM=cutback). It does not
+ *   work: the board lands rolled 24° across the face and lifts off it (the face's water rises at 1.3 m/s), and the
+ *   upright body fell into a 70° bank within 0.5 s, cutting back or riding on unsteered (`settle`, s). Standing on the
+ *   face by the break failed the same way (the board flew 0.3 s, rolled 21°; a 66° bank in 0.9 s).
  */
 const PLACES = {
   caught: { phase: 'prone', face: 1, angle: 35, speed: 3, settle: 0 },
