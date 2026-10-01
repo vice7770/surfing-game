@@ -11,7 +11,7 @@ import { focusX } from './Refraction';
 import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotion } from './CrestKinematics';
 import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
-import { POOL, POOL_BREAK_DEPTH, poolRiddenAt, poolSea, poolTankLayout } from './pool';
+import { POOL, poolBreakDepth, poolRiddenAt, poolSea, poolTankLayout } from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import { SideFeed } from './SideFeed';
@@ -350,9 +350,9 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   const height = edgeHeight(config, tank.edgeDepth);
   const index = config.spot === 'padang' ? PADANG_TAKE_OFF_INDEX.intercept + PADANG_TAKE_OFF_INDEX.perMetre * height
     : deeper ? TAKE_OFF_INDEX[config.spot] : BREAKER_INDEX;
-  // The Wave Pool's regular wave breaks where its arm is about POOL_BREAK_DEPTH of its height deep (the pool probe):
-  // the shoaled-breaker estimate from its Hs put the take-off 14 m seaward of the break, where every paddle missed.
-  const target = config.spot === 'pool' ? POOL_BREAK_DEPTH * (height / Math.SQRT2) : breakerDepthFor(height, tank.edgeDepth + config.tide, index);
+  // The Wave Pool's regular wave first breaks where its arm is poolBreakDepth deep (the size probe): the shoaled-breaker
+  // estimate from its Hs put the take-off 14 m seaward of the break, and 1.5 H put it 13–23 m inside it.
+  const target = config.spot === 'pool' ? poolBreakDepth(height / Math.SQRT2) : breakerDepthFor(height, tank.edgeDepth + config.tide, index);
   const breakZ = (x: number) => {
     // Scan the whole simulated bed from the relaxation zone inward.
     for (let z = tank.zoneInner; z < tank.shore; z += 0.5) {

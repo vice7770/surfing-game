@@ -87,10 +87,16 @@ export function poolRampFootZ(): number {
 }
 
 /**
- * Where the machine's wave starts breaking on the arms, as the arm's depth over the wave's height at the feed: the
- * break-line probe's 1.5 m contour at H 1.0 m (2026-10-01).
+ * Where the machine's wave starts breaking at the take-off, m deep for a wave H m high at the feed: the size probe's
+ * first breaks at x 27 (2026-10-01) were 1.73, 1.85 and 2.20 m deep for H 0.85, 1.05 and 1.3, about 0.84 + 1.04 H.
+ * At 1.5 H (the break-line probe's contour) riders waited 13–23 m inside the break, in its whitewater.
  */
-export const POOL_BREAK_DEPTH = 1.5;
+export const POOL_BREAK_DEPTH = { base: 0.84, perMetre: 1.04 } as const;
+
+/** How deep the pool's wave of height H at the feed first breaks at the take-off, m. */
+export function poolBreakDepth(height: number): number {
+  return POOL_BREAK_DEPTH.base + POOL_BREAK_DEPTH.perMetre * height;
+}
 
 /** The pool's three sizes, as faces at the break, m (the movement-flow spec): the Surf screen's Small, Medium and Big. */
 export const POOL_FACES = { small: 1.0, medium: 1.25, big: 1.5 } as const;
