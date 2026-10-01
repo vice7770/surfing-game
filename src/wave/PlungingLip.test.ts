@@ -7,8 +7,8 @@ import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
 import { TUBE_EDGE } from './tubeTable';
 
 /** 2 m of still water with a `hump` m hump over rows 10–13. */
-function basin(hump = 0.8): ShallowWaterSolver {
-  const solver = new ShallowWaterSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 30, 30), xBoundary: 'wall' }, () => 2, { manning: 0 });
+function basin(hump = 0.8, xBoundary: 'wall' | 'open' | 'periodic' = 'wall'): ShallowWaterSolver {
+  const solver = new ShallowWaterSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 30, 30), xBoundary }, () => 2, { manning: 0 });
   for (let iz = 10; iz < 14; iz += 1) {
     for (let ix = 0; ix < solver.nx; ix += 1) solver.h[iz * solver.nx + ix] += hump;
   }
@@ -124,6 +124,63 @@ describe('a jet\'s landing (Teahupo\'o Reef, Part B)', () => {
     const landed = land(2);
     expect(total(landed)).toBeCloseTo(1.5, 9);
     expect(Math.max(...landed)).toBeGreaterThan(0.55 * 1.5);
+  });
+
+  // A jet thrown along shore by the window's edge comes down past it (the Reef's pass, Big swell at high tide).
+  const outward = (xBoundary: 'wall' | 'open' | 'periodic', speed = 6, tube?: TubeGeometry) => {
+    const solver = basin(0.8, xBoundary);
+    const lip = new PlungingLip(solver, 256);
+    const landedAt: number[] = [];
+    lip.onLand = (x) => landedAt.push(x);
+    const before = solver.totalVolume();
+    const thrown = lip.launch(solver.cellIndex(6.5, 12.5), { x: speed, z: 0 }, tube ? 3 : 5, 0.6, 0, tube);
+    const launched = { h: Float64Array.from(solver.h), qx: Float64Array.from(solver.qx), qz: Float64Array.from(solver.qz), volume: solver.totalVolume() };
+    for (let frame = 0; frame < 2400 && lip.activeCount() > 0; frame += 1) {
+      lip.step(1 / 240);
+      // The water in the window, in the air, and gone past the edge is all there was.
+      expect((solver.totalVolume() + lip.airborneVolume() + lip.escapedVolume) / before).toBeCloseTo(1, 12);
+    }
+    expect(lip.activeCount()).toBe(0);
+    return { solver, lip, thrown, launched, landedAt };
+  };
+
+  it('lets a jet that comes down past an open edge leave the window with its water and momentum', () => {
+    // Clamped into the edge column, a set's jets stood a one-cell spike 4 m high there (dη/dz 4.2 in 7 m of water).
+    const { solver, lip, thrown, launched, landedAt } = outward('open');
+    expect(Math.min(...landedAt)).toBeGreaterThan(8);
+    expect(Array.from(solver.h)).toEqual(Array.from(launched.h));
+    expect(Array.from(solver.qx)).toEqual(Array.from(launched.qx));
+    expect(Array.from(solver.qz)).toEqual(Array.from(launched.qz));
+    // No splash-up rises from outside the window; each parcel is counted out once, with all its water.
+    expect(lip.landings).toBe(STRIP_PARCELS);
+    expect(lip.escapedLandings).toBe(STRIP_PARCELS);
+    expect(lip.escapedVolume).toBeCloseTo(thrown, 12);
+  });
+
+  it('lands the part of a thick sheet inside an open edge, and lets the rest leave', () => {
+    // A sheet 3.5 m thick (a 0.1 m void) centred 0.2 m inside the edge lands two of its four pieces past it; its
+    // splash-ups, thrown on from inside, come down past it too.
+    const { solver, lip, thrown, launched } = outward('open', 2, { length: 0.1, width: 0.4, tilt: 0.4 });
+    const landed = solver.totalVolume() - launched.volume;
+    expect(landed).toBeGreaterThan(0.2 * thrown);
+    expect(lip.escapedVolume).toBeGreaterThan(SPLASH_UP.share * thrown);
+    expect(landed + lip.escapedVolume).toBeCloseTo(thrown, 12);
+  });
+
+  it('keeps a jet that comes down past a wall in the window, as before', () => {
+    const { solver, lip, thrown, launched } = outward('wall');
+    const edge = Array.from({ length: solver.nz }, (_, iz) => solver.h[iz * solver.nx + 7] - launched.h[iz * solver.nx + 7]);
+    expect(edge.reduce((sum, depth) => sum + depth, 0)).toBeCloseTo(thrown, 9);
+    expect(lip.escapedVolume).toBe(0);
+  });
+
+  it('brings a jet that comes down past a periodic edge in on the far side', () => {
+    const { solver, lip, thrown, launched } = outward('periodic');
+    const column = (ix: number) => Array.from({ length: solver.nz }, (_, iz) => solver.h[iz * solver.nx + ix] - launched.h[iz * solver.nx + ix])
+      .reduce((sum, depth) => sum + depth, 0);
+    expect(column(7)).toBe(0);
+    expect(column(0) + column(1) + column(2) + column(3) + column(4) + column(5)).toBeCloseTo(thrown, 9);
+    expect(lip.escapedVolume).toBe(0);
   });
 });
 

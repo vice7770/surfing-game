@@ -62,3 +62,72 @@ The Canyon's practice sea with the ride report's turn settings (turns, the pocke
    - whether that is the falls' cause.
 
 The probes: `src/dev/zz-body-lean.test.ts` (the deep U; `leanReading` reads a step) and a patch on `scripts/ride-report.ts` (`ride-report-body-lean-probe.patch`), both kept in the session's scratchpad and not committed.
+
+## Where the feet reach their edge, and the falls (2026-09-30)
+
+On "continue" after the reading above. The Canyon's practice sea with the same settings, seeds 1 and 2 × 3 minutes, on main at dacd4e4. Every standing step is tagged with what the autopilot was doing. Each fall from standing is read over its last 0.5 s. The feet are "at their edge" with the centre of pressure 0.12 m or more across, of their 0.13 m.
+
+| What the rider was doing | Seconds (seed 1 + 2) | At the edge | Of those, on the lean's side | Tipping | Contact failing |
+|---|---:|---:|---:|---:|---:|
+| Bottom turn, compressed | 29.1 + 11.8 | 13% / 7% | 77% / 96% | 9% / 9% | 29% / 25% |
+| Dropping, crouched | 19.1 + 12.4 | 5% / 6% | 94% / 49% | 8% / 10% | 55% / 32% |
+| Cutback | 7.1 + 2.9 | 31% / 40% | 61% / 75% | 22% / 30% | 37% / 42% |
+| Climbing, extended | 3.0 + 2.0 | 19% / 16% | 59% / 40% | 19% / 20% | 38% / 33% |
+| Top turn | 1.1 + 1.1 | 23% / 63% | 100% / 100% | 24% / 17% | 50% / 66% |
+
+- The feet reach their edge most in the turns back down the face (cutbacks and top turns), and least in the drop.
+- It is the lean's side: the body falling into its turn, not flung out of it. A rail change within 0.4 s is rare (0–17% of the steps).
+
+**The 28 falls from standing** (20 `balance`, 8 `lost board`; the attempts' other `lost board` falls came before the rider stood):
+
+- **The board had slowed below planing.** 25 of 28 fell below 4 m/s and 18 below 3 m/s; the median was 2.7 m/s. At the fall the feet carried almost nothing (0.00–0.2 body weights in most).
+- **16 had the feet at their edge** in the last 0.5 s, 14 of them on the lean's side. The body, still banked, fell into a turn the slowing board no longer pulled. They ended bottom turns (7), top turns and cutbacks (5), drops and climbs (4).
+- **9 tipped with the feet well inside across,** so at their ends along the board. The body pitched over a stopping board, mostly in drops and just after standing (4 and 2), at 0.8–3.1 m/s, still loaded 0.5–0.7 in all but one.
+- The board's heave in the last 0.5 s stayed mostly within −0.6 to +0.6 g. The water was not throwing the rider.
+
+### Reading
+
+1. **The feet at their edge are the symptom; the stall is the cause.** Nearly every standing fall comes after the board has dropped off the plane (4 m/s on, 3 m/s off). The body is still banked for a pull that is gone, or pitching over a board that has stopped.
+2. This is the riding memory's old lead ("standing falls at ±70° bank at 1.4–2.3 m/s over ground"), now counted. Its root is the turns' lost speed: the long, wide bottom turns on the flats (the carve-drag study) and the climbs they end in.
+3. Two ways at it, for the user:
+   - **the autopilot's technique:** ease the steer and stand up as the board slows below planing, rather than hold a hard turn into a stall (a dev-tool change, measured with the ride report);
+   - **the rider's recovery:** how a banked body stands back up as its board drops off the plane. It already stands back on its ankles before the upright carry takes over. An immediate carry is on the don't-retry list: it tipped the slowing board.
+
+The probe is a patch on `scripts/ride-report.ts` (`ride-report-feet-edge-probe.patch`, with a `--first-seed` flag to run seeds in parallel), kept in the session's scratchpad.
+
+## Where on the wave the falls happen, and two tries at technique (2026-09-30)
+
+The same Canyon settings, seeds 1 + 2 × 3 minutes, on main at 084f060. For each standing attempt, the last standing step's place on the wave.
+
+**The falls are high on the face, not on the flats.** The 28 standing falls, at their last standing step:
+
+- **ahead of the crest:** within 0.4–4.5 m for 21; 5 were 1.2–2.5 m behind it, going over the back; 2 were 6.9–8.1 m out;
+- **height on the face:** 0.51–0.99 for 24, 0.33–0.48 for 4;
+- **breaking water under the rider:** 0.5–1.0 on 13 of them;
+- **speed:** 0.8–4.4 m/s. The crest moved at 4–8 m/s mostly.
+
+So the rider slowed in or after the bottom turn below the crest's speed, and the wave caught it: lifted to the top of the face, into the breaking crest or over the back. The stall of the section above is this, and it is the stances memory's old "a bottom turn carried up into a top turn falls" root. The standing attempts that did not end in a fall were kick-outs and lost waves (7 of 35).
+
+Two tries at the autopilot's technique, measured against the same code without them (seeds 1 + 2):
+
+| | Without | Easing off below 4.5 m/s (end the turn, stand, weight forward) | Turning back down below 4.5 m/s (end a slowing bottom turn, top-turn a slowing climb from 0.3 of the face) |
+|---|---:|---:|---:|
+| Attempts, stands, rides ≥ 3 s | 216, 36, 18 | 216, 35, 18 | 213, 40, 18 |
+| Falls, all causes | 75 | 75 | 71 |
+| Stands that did not end in a fall | 7 | 3 | 8 |
+| Top turns begin at | 2.8 / 1.0 m/s | 5.1 / 2.4 m/s | 3.0 / 3.1 m/s |
+
+- **Neither helps.** Easing off keeps the heading hold's line, straight on up into the lip. Turning back down starts too slow to outrun the crest.
+- The bottom turns leave at 5.5–5.9 m/s, about the crest's speed (6 m/s), and the climb takes the rest. Whatever the rider does next, the wave arrives.
+- Both options were dropped. The ride report keeps `--first-seed`, so seeds can run in parallel.
+
+### Reading
+
+1. **Every thread of the bottom turn ends at its speed.** A 9 m, 0.7 g arc on the flats at full lean drags the board below the wave's speed (the carve-drag study: planing theory's drag). Then the wave catches the rider high on the face.
+2. The autopilot's technique cannot fix it on this wave: not where the turn starts (option B), not easing off, not turning back sooner.
+3. What would, for the user:
+   - a quicker turn, so less time dragging. It is limited by the balance's lean-in, about a 0.5 s time constant; faster gains broke rail changes and the wobble (the don't-retry list).
+   - more wave energy: a steeper, peeling face (the wave sessions' work; the practice Canyon peels at about 11°).
+   - accepting it: a real rider slower than the wave is caught too.
+
+The probes are patches on `scripts/ride-report.ts` in the session's scratchpad: `ride-report-where-probe.patch`, and the feet probe above.
