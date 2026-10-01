@@ -318,7 +318,10 @@ export class SurfZoneRunner {
   /** `'warm'` leaves the spin-up, and seating the board and rider, to `spinUp` (the worker spins up on its GPU). */
   constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, start: SurfZoneStart = 'spun-up') {
     const renderSpacing = options.renderSpacing ?? 1;
-    this.simulation = new SurfZoneSimulation(config, start);
+    // At a swept spot the cases run the crash in every sea (PR 5), and the rider's contact with a board or rider (PR 4).
+    const slope = BARREL_SLOPE[config.spot];
+    const library = options.barrelCases && sweptBarrelOn(config) && slope !== undefined ? libraryFromBytes(options.barrelCases) : undefined;
+    this.simulation = new SurfZoneSimulation(config, start, library);
     this.bubbles = new BubbleCloud(config.seed, PARCEL_CAPACITY);
     this.spray = new SprayCloud(config.seed, SPRAY_CAPACITY, WHITEWATER_CAPACITY);
     this.grid = this.simulation.renderGrid(renderSpacing);
@@ -327,10 +330,7 @@ export class SurfZoneRunner {
     this.focus = this.simulation.breakPoint();
     this.breaker = this.simulation.iribarren();
     this.breakDepth = this.simulation.spot.depthAt(this.focus.x, this.focus.z) + config.tide;
-    const slope = BARREL_SLOPE[config.spot];
-    if (options.barrelCases && (options.rider || options.board) && sweptBarrelOn(config) && slope !== undefined && this.simulation.front) {
-      this.contact = new SweptContact(libraryFromBytes(options.barrelCases), slope);
-    }
+    if (library && (options.rider || options.board) && this.simulation.front) this.contact = new SweptContact(library, slope!);
     this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contact);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
     this.rideLineup = new Vector3(this.focus.x + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? RIDE_LINEUP_OFFSET));
@@ -656,9 +656,10 @@ export class SurfZoneRunner {
    * follows how much water is breaking and how fast it moves.
    */
   private measureRoar(roar: Float32Array): void {
-    const { solver, breaking } = this.simulation;
+    const { solver } = this.simulation;
     const { nx, nz, dx, dz, qx, qz, xCenters, zCenters } = solver;
-    const strength = breaking.strength;
+    // The whitewater's breaking: at a swept spot it waits for the barrel's touchdown (PR 5).
+    const strength = this.simulation.whitewaterStrength;
     roar.fill(0);
     const perSector = nx / ROAR_SECTORS;
     for (let iz = 0; iz < nz; iz += 1) {
