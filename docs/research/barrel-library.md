@@ -153,3 +153,46 @@ The advisor normalised the tips by each case's own crest speed C: the crest land
   - The query scans all 133 quads of its strip. Bucketing each strip's quads by their along-ray range (about 0.5 m) leaves one quad per layer to test, so well under 1 µs a query (the advisor, 2026-09-30).
   - Per-substep lerping would only save the slice rebuilds, which aren't the cost.
 - **On the Small swell**, 20 s of sea from the spin-up: the contact's update took 0.37 ms a step against the step's 613 ms (0.1 %). No tube had opened yet, so the sea gave no query timing; rerun it longer (`PROBE=1 SECONDS=180`) on an unloaded machine.
+
+## The crash
+
+The swept barrel's jets, landing and whitewater (Part B, PR 5; `src/wave/barrel/SweptCrash.ts`, `crashCurve.ts`, `heldOverturn.ts`; the advisor's rulings of 2026-10-01). At a swept spot given the library, the solver stays the mass ledger, but its lips leave and land on the barrel's clock.
+
+**Where the lip lands** (ruling 1). On the drawn touchdown frame, the face's point nearest the tip: the closest point to it on the lower surface, from the throat on, within 2 h0 ahead. That is `metrics.py`'s closing of the void, the gap whose closing is the runs' touchdown.
+- One point per front point, about one per solver column, in the loft's own frame: the ray from the front's tangent over ±2 m, the end weight, the anchor (from 0.8 of the open time handed back to the solver's crest) and PR 4's fade. A test holds the crash's tip and crest to the loft's drawn vertices.
+- On the drawn touchdown frames the tip stands 0.035, 0.025, 0.062 and 0 h0 off the face (a20, a30, a45, periodic): at most 0.43 m at h0 = 7 m. In a20 and a45 the last two frames are open duplicates, so the drawn lip never touches the face; the crash curve says where it lands.
+- Carrying the tip on at its own velocity to the still face would land it 0.78, 0.34 and 1.04 m further at h0 = 7 m: in the runs the face rises to meet the jet, and the gap closes within a frame [measured, NS].
+
+**The jet and the void** (rulings 3 and 8), each case's held frame (PR 4's `heldFrame`) measured as `metrics.py` measures its metrics frame, on the 128 points [measured, NS]:
+
+| Case | A_J held / metrics (h0²) | A_O held / metrics (h0²) | Void length held / metrics (h0) | Axis held / metrics |
+|---|---|---|---|---|
+| `pad19-a20-l12` | 0.00918 / 0.00861 | 0.00421 / 0.00411 | 0.141 / 0.129 | 49° / 57° |
+| `pad19-a30-l12` | 0.02868 / 0.02871 | 0.02611 / 0.02587 | 0.311 / 0.301 | 40° / 41° |
+| `pad19-a45-l12` | 0.04818 / 0.04833 | 0.06344 / 0.06315 | 0.487 / 0.477 | 41° / 40° |
+| `periodic-padang19s-l12` | 0.00830 / 0.00787 | 0.00400 / 0.00358 | 0.140 / 0.123 | 55° / 39° |
+
+- The areas agree within 12 %. The two small voids' axes are noisy (0.14 h0 on 24 samples), and only place G9's bubbles and foam ball.
+- At h0 = 7 m the jet is 0.41–2.36 m² a metre of crest and the void 0.20–3.11 m².
+- Blended by A0 as the frames are, scaled by h0², over the point's share of its front's length (half the σ gap to each neighbour) times the loft's end weight: the jet that is drawn is the water that lands.
+
+**The ledger** (rulings 2, 4–6):
+- **The throw:** at the point's τ = 0, all at once, the jet leaves the solver's crest under it by the lip's own source rule (#86). It takes the wave's upper half at most 0.2 of each cell, and its momentum along the held lip's horizontal velocity nearest first, clamped at each cell's own, never reversed; what can't be placed is counted. H is the solver's own wave height there.
+- **The hold:** the water waits as a strip of 8 parcels (`PlungingLip.holdJet`): in the sea handover, carving nothing.
+- **The crash:** at touchdown its void closes, trapping the held A_O over its share. Its water pours where the lip lands, a parcel every 1/7 of the tube's collapse, √(2W/g) (PR 4's `collapseSeconds`, so the water comes down as the drawing and the contact fade), each released where the landing then stands, with the held lip's velocity. The solver's water stands above the drawn face there, so each lands where it is released.
+- **Each landing** is a lip parcel's: its water spread over the sheet's thickness along its travel, the plunge zone held, the splash-up (0.3 of it), foam, aeration by the jet's own fall (from the drawn crest at the throw to the landing), spray from the landing's own height, and sound.
+- **The tube's air** goes by G9's mechanism with W = PR 4's void height: half as a spit from the chain's open end (the newest thrown point, the tube's mouth), or an eruption where the section closed at once; the rest as bubbles down to 0.8 × the fall; and the foam ball.
+- **Waves no front joins** throw no jet: at a swept spot the barrel alone plunges, and Kennedy's onsets there are counted. Spilling breakers make a roller, not a jet.
+- **Late points:** a point first seen past touchdown throws and pours in one step. One first seen past its collapse was never drawn, and throws nothing.
+- **Lost points:** a point lost while its jet is held pours where and when it was foreseen at the throw.
+
+**The whitewater waits for the touchdown** (ruling 9). Kennedy's onset leads the lip by up to about 2 s and 20 m on the wedge. So while a point's clock is before touchdown, in its column over the drawn curl's footprint (profile samples 6–121), the solver's breaking is withheld from the whitewater:
+- the foam's bore source, and so the bore spray and the bubbles, which read it;
+- the bore's air and turbulence: an open tube's face is clear water, and the rider in it feels it (physics);
+- the roar.
+
+The foam field is shared, so **Classic's foam at Padang Padang changes too**, around the barrel and downstream of it: the change stays inside the swept spot, and follows the one-water rule (the owner's to look at). **A known inconsistency:** the rider's roller push keeps the solver's own breaking (Part D's to change: it moves the catch and ride reports), so in an open curl before touchdown a rider can still feel the early Kennedy bore's push.
+
+**The splash-up sheet** (ruling 10) is drawn at Padang Padang as at every spot (Rich's splash-up strips; Classic draws none). The barrel draws the jet, so the jet's strips stay hidden there. PR 7 must keep a splash-up renderer when it deletes `LipSheetMesh.ts` and `richLip.ts`.
+
+**Sound:** lip hits come from the pour's landings, so the crash sounds along the crash curve as the peel runs.
