@@ -94,7 +94,7 @@ Read in this order:
     - **The navy was PR 3's triangle winding.** Now the curl rests on the solver's water outside its lifted span, and the lip is a thin sheet lit from behind.
     - **Open item:** front-lit at a high sun, it's re-checked after PR 6.
     - **PR 6** (the Rich lip glow and dark throat) follows on `claude/padang-rich-shading`.
-  - **PR 4's remaining items** (the handoff's advisor items 1–7, and the probe rerun) on `claude/padang-contact` (#95).
+  - **PR 4 is done (#95, cf0e5a2):** items 1–7 built and tested. Still owed: the 180 s sea probe (the M1 was paging, so run it on the M4 Pro), a tube ridden by hand and #92's screenshots (with the pane shown), and Part D's fields with the Reef session.
   - **PR 5: PR #102,** the crash curve, the pour and the sound (`claude/padang-crash` into `claude/padang-contact`). Its probes were still running when it opened.
   - **PR 7's preparation** is on `claude/padang-every-spot`, with no change in behaviour: each spot's cases and `BARREL_SLOPE`, the switch mechanics, and the deletion map. The Reef's two libraries are built (`periodic-runs.md` §9); the Canyon, Point and Beach need runs, and gentle beaches need level 13 on the M4 Pro. The flip itself waits for the owner's look and the Reef session, and the deletion waits for PR 5.
   - **Merges:** the auto-mode check refuses this session's `gh pr merge`, even after a review and the owner's standing "check and merge" (2026-10-01). The owner merges, or adds a Bash allow rule for `gh pr merge`.
