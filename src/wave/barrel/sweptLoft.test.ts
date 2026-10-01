@@ -3,7 +3,7 @@ import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
 import { LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
-import { LOFT, LOFT_SAMPLES, SHEET, SweptLoft, sheetAcross, tubeSkyView, type LoftResult } from './sweptLoft';
+import { LOFT, LOFT_SAMPLES, SHEET, SweptLoft, THROAT, sheetAcross, throatViews, tubeSkyView, type LoftResult } from './sweptLoft';
 import { lipCase, toyCase, tubeCase } from './toyCase';
 
 /** The y where the vertical line at (x, z) meets triangle (u, v, w) strictly inside it; undefined where it misses. */
@@ -451,6 +451,108 @@ const sliceAt = (loft: LoftResult, sigma: number) => {
   for (let s = 0; s < loft.sliceCount; s += 1) if (Math.abs(loft.sliceSigma[s] - sigma) < 1e-4) return s;
   throw new Error(`no slice at σ ${sigma}`);
 };
+
+describe('the tube’s inside as its inner face sees it (the Rich look’s dark throat; the advisor, 2026-10-01)', () => {
+  /** The toy tube's open frame (h0 units; the views are scale-free): tip (1.2, 0.5), throat (0.6, 0.6), toe (0.8, 0). */
+  const openTube = () => tubeCase(0.3).frames.slice(2 * 2 * PROFILE_POINTS, 3 * 2 * PROFILE_POINTS);
+
+  it('sees from the wall the sky through the opening and the lip’s underside by their 2D view factors, the water ahead for the rest', () => {
+    const out = new Float32Array(4 * PROFILE_POINTS);
+    throatViews(openTube(), out);
+    // Point 100, halfway down the wall at (0.7, 0.3), faces 18.4° up: the window runs from the horizon up to the tip,
+    // 21.8° up, and the lip from the tip round to the throat, which lies along the wall itself (90° off its normal).
+    const normal = Math.atan2(0.2, 0.6);
+    const tip = Math.atan2(0.2, 0.5) - normal;
+    expect(out[4 * 100]).toBeCloseTo((Math.sin(tip) + Math.sin(normal)) / 2, 5);
+    expect(out[4 * 100 + 1]).toBeCloseTo((1 - Math.sin(tip)) / 2, 5);
+    expect(out[4 * 100 + 2]).toBe(1);
+  });
+
+  it('sees from the lip’s underside neither the opening (the tip lies below it) nor the lip, and outside the tube the open sky', () => {
+    const out = new Float32Array(4 * PROFILE_POINTS);
+    throatViews(openTube(), out);
+    for (let i = LANDMARK.lip + 1; i < LANDMARK.throat; i += 1) expect([out[4 * i], out[4 * i + 1], out[4 * i + 2]], `underside ${i}`).toEqual([0, 0, 1]);
+    for (const i of [0, LANDMARK.crest, LANDMARK.lip - 1, LANDMARK.toe + 1, PROFILE_POINTS - 1]) {
+      expect([out[4 * i], out[4 * i + 1], out[4 * i + 2]], `point ${i}`).toEqual([1, 0, 0]);
+    }
+  });
+
+  it('never sees more than its half of the plane, on any library frame', () => {
+    const out = new Float32Array(4 * PROFILE_POINTS);
+    const floats = 2 * PROFILE_POINTS;
+    let checked = 0;
+    const wrong: string[] = [];
+    for (const c of readBarrelCases().map(decodeCase)) {
+      for (let f = 0; (f + 1) * floats <= c.frames.length; f += 1) {
+        throatViews(c.frames.subarray(f * floats, (f + 1) * floats), out);
+        for (let i = LANDMARK.lip; i <= LANDMARK.toe; i += 1) {
+          const [sky, lip] = [out[4 * i], out[4 * i + 1]];
+          if (!(sky >= 0 && lip >= 0 && sky + lip <= 1 + 1e-6)) wrong.push(`${c.id} frame ${f} point ${i}: sky ${sky}, lip ${lip}`);
+          checked += 1;
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(10_000);
+    expect(wrong).toEqual([]);
+  });
+
+  it('carries the views per vertex in the loft, with the lip’s mean thickness and the inner face’s weight × its lift', () => {
+    const loft = new SweptLoft(tubes(), 0.05).build(records(21, () => 0.1), 21, 0.5, flat);
+    const base = sliceAt(loft, 10) * LOFT_SAMPLES + LOFT.extensionSamples;
+    // The drawn profile is the toy's open frame at h0 7 m.
+    const profile = openTube().map((v) => 7 * v);
+    const views = new Float32Array(4 * PROFILE_POINTS);
+    throatViews(profile, views);
+    const across = new Float32Array(PROFILE_POINTS);
+    sheetAcross(profile, 7, across, new Float32Array(PROFILE_POINTS));
+    let mean = 0;
+    for (let i = THROAT.thicknessFrom; i <= THROAT.thicknessTo; i += 1) mean += across[i];
+    mean /= THROAT.thicknessTo - THROAT.thicknessFrom + 1;
+    expect(mean).toBeGreaterThan(0.5);
+    for (let i = 0; i < PROFILE_POINTS; i += 1) {
+      const v = base + i;
+      expect(loft.throat[4 * v], `sky ${i}`).toBeCloseTo(views[4 * i], 5);
+      expect(loft.throat[4 * v + 1], `lip ${i}`).toBeCloseTo(views[4 * i + 1], 5);
+      expect(loft.throat[4 * v + 2], `thickness ${i}`).toBeCloseTo(mean, 4);
+      expect(loft.throat[4 * v + 3], `weight ${i}`).toBe(i >= LANDMARK.lip && i <= LANDMARK.toe ? loft.lift[v] : 0);
+    }
+    expect(loft.lift[base + 100]).toBe(1);
+  });
+
+  /** The synthetic lip, whose underside is folded onto its tip before τ = 0 as the library's are (the toy tube's tent isn't). */
+  const lips = () => new ProfileLibrary([lipCase(0.3, 0.05)]);
+
+  it('has no inside before the underside forms', () => {
+    const loft = new SweptLoft(lips(), 0.05).build(records(21, () => -0.3, -100), 21, 0.5, flat);
+    for (let v = 0; v < loft.vertexCount; v += 1) expect(loft.throat[4 * v + 3]).toBe(0);
+  });
+
+  it('measures each slice’s distance along its front to its tube’s mouth: the nearest slice without an underside, or its run’s end', () => {
+    for (const tau of [() => 0.1, (k: number) => (k < 8 ? -0.3 : 0.1)]) {
+      const loft = new SweptLoft(lips(), 0.05).build(records(21, tau, -100), 21, 0.5, flat);
+      let first = 0;
+      let formed = 0;
+      for (let s = 0; s < loft.sliceCount; s += 1) {
+        if (loft.sliceJoined[s]) continue;
+        // The run first..s: the tube opens at its ends and at its slices without an underside.
+        const openings = [loft.sliceSigma[first], loft.sliceSigma[s]];
+        for (let k = first; k <= s; k += 1) if (!(loft.sliceFormed[k] > 0)) openings.push(loft.sliceSigma[k]);
+        for (let k = first; k <= s; k += 1) {
+          const nearest = Math.min(...openings.map((o) => Math.abs(loft.sliceSigma[k] - o)));
+          expect(loft.sliceMouth[k], `slice ${k}`).toBeCloseTo(loft.sliceFormed[k] > 0 ? nearest : 0, 4);
+          if (loft.sliceFormed[k] > 0) formed += 1;
+        }
+        first = s + 1;
+      }
+      expect(formed).toBeGreaterThan(20);
+      const middle = sliceAt(loft, 12);
+      // All open, the middle's mouth is where the front's nearer end blends into the water; half open, the last slice
+      // before the throw.
+      expect(loft.sliceMouth[middle]).toBeGreaterThan(tau(0) > 0 ? 7 : 3);
+      expect(loft.sliceMouth[middle]).toBeLessThan(tau(0) > 0 ? 11 : 6);
+    }
+  });
+});
 
 describe('the loft’s slices, for the contact', () => {
   it('records each slice’s ray, weight, joins and whether it overhangs', () => {

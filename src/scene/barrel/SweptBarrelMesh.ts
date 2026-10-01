@@ -1,6 +1,6 @@
 import { BufferAttribute, BufferGeometry, DoubleSide, DynamicDrawUsage, Mesh, MeshPhysicalMaterial } from 'three';
 import { LANDMARK } from '../../wave/barrel/ProfileLibrary';
-import { LOFT, LOFT_SAMPLES, type LoftResult } from '../../wave/barrel/sweptLoft';
+import { LOFT, LOFT_SAMPLES, THROAT, type LoftResult } from '../../wave/barrel/sweptLoft';
 import type { WaterLook } from '../water/waterLook';
 import { RICH_FAR_FOAM, RICH_REFLECTION, richFarNormal, richFragmentPars, richReflectionPars } from '../water/richWaterGlsl';
 import { waterRipplePars } from '../water/rippleTexture';
@@ -167,20 +167,33 @@ export const SWEPT_SHEET_BODY = /* glsl */ `
 export const LIP_GLOW_PATH = 8;
 const glslVec3 = (rgb: readonly number[]) => `vec3( ${rgb.map((c) => c.toFixed(6)).join(', ')} )`;
 
-/** Rich vertex pieces: the inner face's views and weight, each slice's tip and mouth, and its ray. */
+/**
+ * Rich vertex pieces: the inner face's views, the lip's thickness and the face's weight; each slice's tip and mouth; its
+ * ray (x, z) and the lip's normal in its plane (across, up).
+ */
 const richThroatVertexPars = /* glsl */ `attribute vec4 sweptThroat;
 attribute vec4 sweptTube;
-attribute vec2 sweptRay;
+attribute vec4 sweptRay;
 varying vec4 vSweptThroat;
 varying vec4 vSweptTube;
-varying vec2 vSweptRay;`;
+varying vec4 vSweptRay;`;
 const richThroatVertex = /* glsl */ `
 vSweptThroat = sweptThroat;
 vSweptTube = sweptTube;
 vSweptRay = sweptRay;`;
 const richThroatFragmentPars = /* glsl */ `varying vec4 vSweptThroat;
 varying vec4 vSweptTube;
-varying vec2 vSweptRay;`;
+varying vec4 vSweptRay;
+
+// Whether a direction (world) leaves the tube from a point whose slice sees its lip's tip at \`tip\` (along the ray, up):
+// through the opening in the slice's plane, from the horizon up to the tip, or along the crest out of the tube's mouth
+// before it meets the wall, |along| / |across| > L_mouth / d_wall, the tip's distance standing for the wall's.
+bool sweptLeaves( vec3 direction, vec2 tip ) {
+  vec2 across = vec2( dot( direction.xz, vSweptRay.xy ), direction.y );
+  float along = abs( dot( direction.xz, vec2( vSweptRay.y, -vSweptRay.x ) ) );
+  bool opening = across.y >= 0.0 && across.x * tip.y - across.y * tip.x >= 0.0;
+  return opening || along * length( tip ) > vSweptTube.w * length( across );
+}`;
 
 /**
  * The lip's glow (Rich; the spec's item 16; the advisor's rulings, 2026-10-01): sunlight entering the sheet's far side
@@ -199,9 +212,11 @@ export const RICH_LIP_GLOW = /* glsl */ `
  * - its sky light: the sky it sees through the opening (the 2D view factor F_w), the light through the lip (the lip's
  *   view factor F_l × the sky and sun above the lip through its mean thickness, e^{−ct}), and R∞ of the sky for the
  *   rest, the tube's own water [the magnitudes provisional]; the ambient light, the same everywhere, as the sky;
- * - its reflections, only where the mirrored ray leaves through the opening in the slice's plane, or runs along the
- *   crest out of the tube's mouth before it meets the wall: |along| / |across| > L_mouth / d_wall, d_wall the tip's
- *   distance (the advisor's mirrored mouth).
+ * - its reflections, only where the mirrored ray leaves the tube (`sweptLeaves`: the advisor's mirrored mouth);
+ * - the sun, where its direction doesn't leave the tube: its direct light through the lip on the slant path
+ *   t / max(0.2, |n_lip · L|), e^{−c path} per channel (red goes first: the green room), and no glint [the path
+ *   provisional]. A low sun down the crest and out of the mouth is unchanged: the light down the tube. With the old
+ *   sky's fill light, the fill is shadowed with it.
  */
 export const RICH_THROAT = /* glsl */ `
 #if defined( RE_IndirectSpecular ) && defined( RE_IndirectDiffuse )
@@ -214,13 +229,15 @@ if ( vSweptThroat.w > 0.0 ) {
   #endif
   irradiance = mix( irradiance, ( sweptOwn + vSweptThroat.y * sweptThrough ) * irradiance, vSweptThroat.w );
   iblIrradiance = mix( iblIrradiance, sweptOwn * iblIrradiance + vSweptThroat.y * sweptThrough * sweptAbove, vSweptThroat.w );
+  vec2 sweptTip = vec2( dot( vSweptTube.xz - vWaterWorld.xz, vSweptRay.xy ), vSweptTube.y - vWaterWorld.y );
   vec3 sweptMirror = ( vec4( reflect( -geometryViewDir, geometryNormal ), 0.0 ) * viewMatrix ).xyz;
-  vec2 sweptAcross = vec2( dot( sweptMirror.xz, vSweptRay ), sweptMirror.y );
-  float sweptAlong = abs( dot( sweptMirror.xz, vec2( vSweptRay.y, -vSweptRay.x ) ) );
-  vec2 sweptTip = vec2( dot( vSweptTube.xz - vWaterWorld.xz, vSweptRay ), vSweptTube.y - vWaterWorld.y );
-  bool sweptWindow = sweptAcross.y >= 0.0 && sweptAcross.x * sweptTip.y - sweptAcross.y * sweptTip.x >= 0.0;
-  bool sweptMouth = sweptAlong * length( sweptTip ) > vSweptTube.w * length( sweptAcross );
-  radiance *= mix( 1.0, sweptWindow || sweptMouth ? 1.0 : 0.0, vSweptThroat.w );
+  radiance *= mix( 1.0, sweptLeaves( sweptMirror, sweptTip ) ? 1.0 : 0.0, vSweptThroat.w );
+  if ( !sweptLeaves( waterSunDirection, sweptTip ) ) {
+    vec2 sweptSun = vec2( dot( waterSunDirection.xz, vSweptRay.xy ), waterSunDirection.y );
+    float sweptSlant = vSweptThroat.z / max( 0.2, abs( dot( vSweptRay.zw, sweptSun ) ) );
+    reflectedLight.directDiffuse *= mix( vec3( 1.0 ), exp( -waterAttenuation * sweptSlant ), vSweptThroat.w );
+    reflectedLight.directSpecular *= 1.0 - vSweptThroat.w;
+  }
 }
 #endif`;
 
@@ -244,10 +261,10 @@ export class SweptBarrelMesh {
   private readonly sheetBack = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly wall = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
   private readonly wallNormal = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
-  /** The Rich look's dark throat: the inner face's views and weight, each slice's tip and mouth, and its ray. */
+  /** The Rich look's dark throat (`RICH_THROAT`): per vertex, as `richThroatVertexPars` lays them out. */
   private readonly throat = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
   private readonly tube = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
-  private readonly ray = new BufferAttribute(new Float32Array(2 * VERTICES), 2).setUsage(DynamicDrawUsage);
+  private readonly ray = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
   private readonly index = new BufferAttribute(new Uint32Array(INDICES), 1).setUsage(DynamicDrawUsage);
   /** The dev view's colours, made with the first view. */
   private viewColours?: BufferAttribute;
@@ -368,18 +385,30 @@ export class SweptBarrelMesh {
       (this.throat.array as Float32Array).set(loft.throat.subarray(0, 4 * vertices));
       const tube = this.tube.array as Float32Array;
       const ray = this.ray.array as Float32Array;
+      const p = loft.positions;
       for (let s = 0; s * LOFT_SAMPLES < vertices; s += 1) {
+        const [rayX, rayZ] = [loft.sliceRayX[s], loft.sliceRayZ[s]];
+        // The lip's outer face, in the slice's plane: its chord over the points its mean thickness is taken on, turned
+        // a right angle out of the water.
+        const from = 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + THROAT.thicknessFrom);
+        const to = 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + THROAT.thicknessTo);
+        const across = (p[to] - p[from]) * rayX + (p[to + 2] - p[from + 2]) * rayZ;
+        const up = p[to + 1] - p[from + 1];
+        const chord = Math.sqrt(across * across + up * up);
+        const [lipAcross, lipUp] = chord > 0 ? [-up / chord, across / chord] : [0, 1];
         for (let j = 0; j < LOFT_SAMPLES && s * LOFT_SAMPLES + j < vertices; j += 1) {
           const v = s * LOFT_SAMPLES + j;
           tube[4 * v] = loft.sliceTipX[s];
           tube[4 * v + 1] = loft.sliceTipY[s];
           tube[4 * v + 2] = loft.sliceTipZ[s];
           tube[4 * v + 3] = loft.sliceMouth[s];
-          ray[2 * v] = loft.sliceRayX[s];
-          ray[2 * v + 1] = loft.sliceRayZ[s];
+          ray[4 * v] = rayX;
+          ray[4 * v + 1] = rayZ;
+          ray[4 * v + 2] = lipAcross;
+          ray[4 * v + 3] = lipUp;
         }
       }
-      for (const [attribute, size] of [[this.throat, 4], [this.tube, 4], [this.ray, 2]] as const) {
+      for (const [attribute, size] of [[this.throat, 4], [this.tube, 4], [this.ray, 4]] as const) {
         attribute.clearUpdateRanges();
         attribute.addUpdateRange(0, size * vertices);
         attribute.needsUpdate = true;

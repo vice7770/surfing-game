@@ -6,7 +6,8 @@ import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from '../../wave/barre
 import { tubeCase } from '../../wave/barrel/toyCase';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
-import { SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
+import { WATER_ABSORPTION } from '../waterOptics';
+import { RICH_LIP_GLOW, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -28,6 +29,17 @@ function oneQuad(): LoftResult {
     sliceAnchorVZ: new Float32Array(2), sliceFormed: new Float32Array(2), sliceTipX: new Float32Array(2), sliceTipY: new Float32Array(2),
     sliceTipZ: new Float32Array(2), sliceMouth: new Float32Array(2),
   };
+}
+
+/** The toy tube's front for the loft: 21 points along +x at z = −100, open (τ 0.1) at h0 7 m. */
+function tubeRecords(): Float32Array {
+  const records = new Float32Array(21 * FRONT_STRIDE);
+  for (let k = 0; k < 21; k += 1) {
+    const o = k * FRONT_STRIDE;
+    records[o + FRONT_FIELD.x] = k + 0.5; records[o + FRONT_FIELD.z] = -100; records[o + FRONT_FIELD.front] = 1; records[o + FRONT_FIELD.sigma] = k;
+    records[o + FRONT_FIELD.tau] = 0.1; records[o + FRONT_FIELD.footHeight] = 2.1; records[o + FRONT_FIELD.footDepth] = 7; records[o + FRONT_FIELD.throwZ] = -100;
+  }
+  return records;
 }
 
 describe('the swept barrel’s mesh', () => {
@@ -124,6 +136,64 @@ describe('the swept barrel’s mesh', () => {
       expect(Array.from(wall.slice(o, o + 3))).toEqual(Array.from(loft.positions.slice(from, from + 3)));
       expect(Array.from(normal.slice(o, o + 3))).toEqual(Array.from(loft.normals.slice(from, from + 3)));
     }
+  });
+
+  it('in the Rich look only, lights the lip from behind and darkens the throat (the spec’s item 16); Classic draws neither', () => {
+    const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+    const classic = compiled(swept.mesh.material);
+    for (const name of ['sweptThroat', 'sweptTube', 'sweptRay']) {
+      expect(classic.vertex).not.toContain(name);
+      expect(classic.fragment).not.toContain(name.replace('swept', 'vSwept'));
+    }
+    expect(classic.fragment).not.toContain(RICH_LIP_GLOW);
+    expect(classic.fragment).not.toContain(RICH_THROAT);
+    swept.setLook('rich');
+    const { vertex, fragment } = compiled(swept.mesh.material);
+    for (const line of ['attribute vec4 sweptThroat;', 'vSweptThroat = sweptThroat;', 'vSweptTube = sweptTube;', 'vSweptRay = sweptRay;']) expect(vertex).toContain(line);
+    // The glow: the sun on the sheet's far side, through k = 8 times its thickness, on the water's absorption alone.
+    expect(fragment).toContain(RICH_LIP_GLOW);
+    expect(RICH_LIP_GLOW).toContain('max( 0.0, -dot( waterN, waterSunDirection ) ) * waterSunRadiance');
+    expect(RICH_LIP_GLOW).toContain(`exp( -vec3( ${WATER_ABSORPTION.map((c) => c.toFixed(6)).join(', ')} ) * 8.0 * vSweptSheet )`);
+    expect(fragment.indexOf(RICH_LIP_GLOW)).toBeGreaterThan(fragment.indexOf(SWEPT_SHEET_BODY));
+    expect(fragment.indexOf(RICH_LIP_GLOW)).toBeLessThan(fragment.indexOf('float waterCover'));
+    // The throat: once the sky's light and reflections are gathered (and the reflection scaled), before they light it;
+    // the sun through the lip where its direction doesn't leave the tube, red first, and no glint.
+    expect(fragment).toContain(RICH_THROAT);
+    expect(fragment).toContain('bool sweptLeaves( vec3 direction, vec2 tip ) {');
+    expect(RICH_THROAT).toContain('if ( !sweptLeaves( waterSunDirection, sweptTip ) ) {');
+    expect(RICH_THROAT).toContain('float sweptSlant = vSweptThroat.z / max( 0.2, abs( dot( vSweptRay.zw, sweptSun ) ) );');
+    expect(RICH_THROAT).toContain('reflectedLight.directDiffuse *= mix( vec3( 1.0 ), exp( -waterAttenuation * sweptSlant ), vSweptThroat.w );');
+    expect(RICH_THROAT).toContain('reflectedLight.directSpecular *= 1.0 - vSweptThroat.w;');
+    expect(fragment.indexOf(RICH_THROAT)).toBeGreaterThan(fragment.indexOf('radiance *= waterReflection;'));
+    expect(fragment.indexOf(RICH_THROAT)).toBeLessThan(fragment.indexOf('#include <lights_fragment_end>'));
+    expect(swept.mesh.material.customProgramCacheKey()).toBe('breakline-swept-barrel-rich');
+  });
+
+  it('copies the throat’s views per vertex, and each slice’s tip, mouth, ray and lip normal to its vertices, in the Rich look only', () => {
+    const loft = new SweptLoft(new ProfileLibrary([tubeCase(0.3)]), 0.05).build(tubeRecords(), 21, 0.5, () => 0.5);
+    const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+    const attribute = (name: string) => swept.mesh.geometry.getAttribute(name).array;
+    swept.update(loft);
+    // Classic draws none of it, so none of it is filled or uploaded.
+    for (const name of ['sweptThroat', 'sweptTube', 'sweptRay']) expect(attribute(name).every((v) => v === 0), name).toBe(true);
+    swept.setLook('rich');
+    swept.update(loft);
+    // A slice in the front's middle, wholly lifted.
+    const s = Array.from(loft.sliceSigma.subarray(0, loft.sliceCount)).findIndex((sigma) => Math.abs(sigma - 10) < 1e-4);
+    expect(loft.sliceWeight[s]).toBe(1);
+    expect(loft.sliceFormed[s]).toBe(1);
+    for (const j of [0, 40, 70, 100, LOFT_SAMPLES - 1]) {
+      const v = s * LOFT_SAMPLES + j;
+      expect(Array.from(attribute('sweptThroat').slice(4 * v, 4 * v + 4))).toEqual(Array.from(loft.throat.slice(4 * v, 4 * v + 4)));
+      expect(Array.from(attribute('sweptTube').slice(4 * v, 4 * v + 4))).toEqual([loft.sliceTipX[s], loft.sliceTipY[s], loft.sliceTipZ[s], loft.sliceMouth[s]]);
+      expect(Array.from(attribute('sweptRay').slice(4 * v, 4 * v + 2))).toEqual([loft.sliceRayX[s], loft.sliceRayZ[s]]);
+    }
+    // The toy tube's lip runs straight from its crest (0, 0.8) h0 down to its tip (1.2, 0.5): its outer face's normal
+    // is that chord turned up, (0.3, 1.2) / |·|, in the slice's plane.
+    const v = s * LOFT_SAMPLES + 50;
+    const normal = Math.hypot(0.3, 1.2);
+    expect(attribute('sweptRay')[4 * v + 2]).toBeCloseTo(0.3 / normal, 5);
+    expect(attribute('sweptRay')[4 * v + 3]).toBeCloseTo(1.2 / normal, 5);
   });
 
   it('draws a dev view only when asked, in its own program, and back to the water’s', () => {
