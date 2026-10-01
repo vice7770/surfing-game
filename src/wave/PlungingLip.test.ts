@@ -944,16 +944,40 @@ describe('a swept barrel’s held jet (Padang Padang, Part B, PR 5)', () => {
     expect(lip.spits[0].dirX).toBeGreaterThan(0.99);
   });
 
-  it('pours a lost point’s jet where and when it was foreseen', () => {
+  it('pours a lost point’s jet where and when it was foreseen, its void closing as it starts to', () => {
     const solver = basin();
     const lip = new PlungingLip(solver);
     const landed: number[] = [];
     lip.onLand = (_x, z) => landed.push(z);
-    lip.holdJet(jet(solver, { pourIn: 0.3 }));
+    const { strip } = lip.holdJet(jet(solver, { pourIn: 0.3 }));
+    const closedAt = () => lip.exportState().strips.find(([id]) => id === strip)?.[1].tube?.closedAt;
+    lip.step(0.25);
+    expect(closedAt()).toBeNull();
+    expect(lip.trappedAir).toBe(0);
+    lip.step(0.05);
+    // Its first parcel leaves at 0.3 s: the void closes then, trapping its own air.
+    expect(closedAt()).toBeCloseTo(0.3, 12);
+    expect(lip.trappedAir).toBeGreaterThan(0);
+    expect(lip.closedAsForeseen).toBe(1);
     for (let k = 0; k < 60; k += 1) lip.step(0.05);
     expect(landed.length).toBeGreaterThanOrEqual(STRIP_PARCELS);
     expect(Math.min(...landed)).toBeGreaterThanOrEqual(14);
     expect(lip.airborneVolume()).toBe(0);
+    expect(lip.closedAsForeseen).toBe(1);
+  });
+
+  it('closes a held jet as foreseen once, and nothing else', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver);
+    const { strip } = lip.holdJet(jet(solver, { pourIn: 0.3 }));
+    expect(lip.closeJet(strip)).toBe(true);
+    const air = lip.trappedAir;
+    expect(air).toBeGreaterThan(0);
+    expect(lip.closeJet(strip)).toBe(false);
+    expect(lip.closeJet(strip + 1)).toBe(false);
+    for (let k = 0; k < 20; k += 1) lip.step(0.05);
+    expect(lip.trappedAir).toBe(air);
+    expect(lip.closedAsForeseen).toBe(1);
   });
 
   it('takes no water when the pool can’t hold its parcels', () => {

@@ -43,6 +43,11 @@ export interface CrashCounts {
   missed: number;
   /** Points whose throw came under an earlier front's barrel, which the drawing shows instead (first wins): no jet. */
   covered: number;
+  /**
+   * Points holding a jet the barrel couldn't crash at their touchdown, alone on their front (no ray to draw them by) or
+   * past their collapse: their jet crashed as foreseen at its throw (`PlungingLip.closeJet`).
+   */
+  foreseen: number;
   /** Cells whose breaking the whitewater waited on, summed over steps. */
   gated: number;
 }
@@ -64,13 +69,14 @@ export interface CrashCounts {
  * - **The whitewater** waits for the touchdown: over the drawn curl's footprint in the point's column, the breaking is
  *   withheld from the whitewater (the foam's bore source, its spray and bubbles, the bore's air and turbulence, the roar).
  *   An open tube's face is clear water; Kennedy's onset leads the lip by up to 2 s on Padang Padang's wedge.
- * A point lost while its jet is held pours where and when it was foreseen. Where two fronts' barrels overlap, the loft
- * draws the first (PR 4), so a later front's point under it throws nothing and gates nothing. Only + − × ÷ and √
- * (online determinism).
+ * A point lost while its jet is held, or alone on its front at its touchdown, pours where and when it was foreseen, its
+ * void closing as it starts to; the front keeps a jet's point on its crest over the throw's window meanwhile
+ * (BreakingFront). Where two fronts' barrels overlap, the loft draws the first (PR 4), so a later front's point under it
+ * throws nothing and gates nothing. Only + − × ÷ and √ (online determinism).
  */
 export class SweptCrash {
   readonly counts: CrashCounts = {
-    onsets: 0, throws: 0, asked: 0, thrown: 0, starved: 0, starvedVolume: 0, crashes: 0, late: 0, missed: 0, covered: 0, gated: 0,
+    onsets: 0, throws: 0, asked: 0, thrown: 0, starved: 0, starvedVolume: 0, crashes: 0, late: 0, missed: 0, covered: 0, foreseen: 0, gated: 0,
   };
   /** This step's crash curve: the points pouring. */
   readonly curve: CrashPoint[] = [];
@@ -142,6 +148,15 @@ export class SweptCrash {
           volume += thrown;
         }
       }
+    }
+    // A point holding a jet the runs didn't crash at its touchdown: alone on its front, with no ray to draw it by, or past
+    // its collapse. Its jet crashes as foreseen at its throw, and the point lets its crest go (BreakingFront).
+    for (const p of points) {
+      if (p.jetStrip === undefined || p.jetStrip < 0 || p.crashedAt !== undefined) continue;
+      if (p.tau < this.geometry.times(p).touchdownSeconds) continue;
+      sea.lip.closeJet(p.jetStrip);
+      p.crashedAt = sea.solver.time;
+      this.counts.foreseen += 1;
     }
     this.updateMs += performance.now() - started;
     return { throws, volume };

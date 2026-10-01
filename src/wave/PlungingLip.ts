@@ -388,6 +388,8 @@ export class PlungingLip implements LipParcelSource {
   unplacedMomentum = 0;
   /** Air its tubes have trapped as they closed, m³ (G9; a running total for the air's balance). */
   trappedAir = 0;
+  /** Held jets (PR 5) whose void closed as foreseen at their throw, their point not crashed by the barrel (a diagnostic). */
+  closedAsForeseen = 0;
   /**
    * Told of every landing: where the parcel fell, how much water it returned
    * (m³), how fast it hit (m/s), and its flight: where it left the crest and
@@ -756,11 +758,7 @@ export class PlungingLip implements LipParcelSource {
     const strip = this.strips.get(stripId);
     if (!strip?.swept || !strip.tube) return false;
     const { tube } = strip;
-    if (Number.isNaN(tube.closedAt)) {
-      tube.closedAt = this.time;
-      tube.air = (tube.area ?? 0) * (tube.span ?? this.solver.dx);
-      this.trappedAir += tube.air;
-    }
+    if (Number.isNaN(tube.closedAt)) this.closeHeld(tube);
     const age = this.time - strip.launchTime;
     tube.x = crest.x - tube.dirX * tube.crestSpeed * age;
     tube.z = crest.z - tube.dirZ * tube.crestSpeed * age;
@@ -776,6 +774,26 @@ export class PlungingLip implements LipParcelSource {
       n += 1;
     }
     return true;
+  }
+
+  /**
+   * A held jet the crash couldn't follow to its touchdown (its point alone on its front, or past its collapse) closes as
+   * foreseen at its throw (PR 5): its void traps its air where its tube has ridden, and its water pours on its foreseen
+   * schedule. True when it closed now.
+   */
+  closeJet(stripId: number): boolean {
+    const strip = this.strips.get(stripId);
+    if (!strip?.swept || !strip.tube || !Number.isNaN(strip.tube.closedAt)) return false;
+    this.closeHeld(strip.tube);
+    this.closedAsForeseen += 1;
+    return true;
+  }
+
+  /** A held jet's void closes now, trapping its own air: its cross-section over the crest it spans (PR 5). */
+  private closeHeld(tube: FlyingTube): void {
+    tube.closedAt = this.time;
+    tube.air = (tube.area ?? 0) * (tube.span ?? this.solver.dx);
+    this.trappedAir += tube.air;
   }
 
   /** A pouring jet's parcels still waiting move to (x, y, z), where its drawn lip now lands (PR 5). */
@@ -807,9 +825,15 @@ export class PlungingLip implements LipParcelSource {
         this.state[parcel] = 1;
         flight = this.time - this.releaseAt[parcel];
         // A crest still rising as it throws lets the later jet go from higher up; a swept barrel's pour leaves its lip where it stands.
-        if (!this.strips.get(this.strip[parcel])?.swept) {
+        const strip = this.strips.get(this.strip[parcel]);
+        if (!strip?.swept) {
           const crest = solver.sampleCentered(solver.h, this.x[parcel], this.z[parcel]) + solver.sampleCentered(solver.bed, this.x[parcel], this.z[parcel]);
           if (crest > this.y[parcel]) this.y[parcel] = this.ly[parcel] = crest;
+        } else if (strip.tube && Number.isNaN(strip.tube.closedAt)) {
+          // A held jet whose point left its front before its crash pours as foreseen at its throw, and its void closes
+          // as it starts to (PR 5).
+          this.closeHeld(strip.tube);
+          this.closedAsForeseen += 1;
         }
       }
       this.px[parcel] = this.x[parcel];

@@ -127,6 +127,29 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     expect(landed.length).toBe(7 * STRIP_PARCELS);
     for (const z of landed) expect(Math.abs(z - (11.5 + 2.4))).toBeLessThan(0.6);
     expect(lip.airborneVolume()).toBe(0);
+    // Their voids closed as their pours began, as foreseen, trapping their air.
+    expect(lip.closedAsForeseen).toBe(7);
+    expect(lip.trappedAir).toBeGreaterThan(0);
+  });
+
+  it('crashes as foreseen the jet of a point left alone on its front at its touchdown', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver);
+    const crash = new SweptCrash(library(), 0.05);
+    const s = sea(solver, lip);
+    const points = front(9, () => 0);
+    run(crash, points, s, 0, 0.05);
+    expect(crash.counts.throws).toBe(7);
+    // Its neighbours gone, point 4 stands alone: no ray to draw it by, so the runs pass it over.
+    const alone = [points[4]];
+    run(crash, alone, s, 0.05, TOUCHDOWN - 0.06);
+    expect(points[4].crashedAt).toBeUndefined();
+    expect(crash.counts.foreseen).toBe(0);
+    run(crash, alone, s, TOUCHDOWN, 0.02);
+    expect(points[4].crashedAt).toBeDefined();
+    expect(crash.counts.foreseen).toBe(1);
+    expect(crash.counts.crashes).toBe(0);
+    expect(lip.closedAsForeseen).toBeGreaterThanOrEqual(1);
   });
 
   it('moves no water for a front of one point', () => {
