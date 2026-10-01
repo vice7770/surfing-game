@@ -164,10 +164,12 @@ export class SweptBarrelMesh {
   /** Dev only: false draws the lip as the column it was before the sheet (the water sheet's before-and-after). */
   sheetShown = true;
   /**
-   * Each triangle's front face is its outer side, where the loft's normals point. The loft winds its quads the other
-   * way (its front faces look along −n), so a double-sided material saw every outer face as a back face and turned its
-   * normal into the water: the view cosine came out negative, the body fell to R∞ with no bed, and the lights lit the
-   * water's inside. Dev only: false draws the loft's own winding (the water sheet's before-and-after).
+   * Each triangle faces the way its vertices' normals point. The loft winds its quads the other way (its front faces
+   * look along −n), so a double-sided material saw every outer face as a back face and turned its normal into the
+   * water: the view cosine came out negative, the body fell to R∞ with no bed, and the lights lit the water's inside.
+   * At the lip's tip and the throat, where the profile folds back, a cell's vertex normals lean across the fold; such
+   * a cell keeps the loft's order, so the material turns its normal back out (the advisor, 2026-10-01). Dev only: false
+   * draws the loft's own winding (the water sheet's before-and-after).
    */
   facesOut = true;
 
@@ -256,10 +258,24 @@ export class SweptBarrelMesh {
     else (this.sheetWeight.array as Float32Array).fill(0, 0, vertices);
     const index = this.index.array as Uint32Array;
     if (this.facesOut) {
+      const { positions: p, normals: n, indices: from } = loft;
       for (let i = 0; i + 2 < indices; i += 3) {
-        index[i] = loft.indices[i];
-        index[i + 1] = loft.indices[i + 2];
-        index[i + 2] = loft.indices[i + 1];
+        const a = from[i];
+        const b = from[i + 1];
+        const c = from[i + 2];
+        const [a3, b3, c3] = [3 * a, 3 * b, 3 * c];
+        const e1x = p[b3] - p[a3];
+        const e1y = p[b3 + 1] - p[a3 + 1];
+        const e1z = p[b3 + 2] - p[a3 + 2];
+        const e2x = p[c3] - p[a3];
+        const e2y = p[c3 + 1] - p[a3 + 1];
+        const e2z = p[c3 + 2] - p[a3 + 2];
+        // The loft's order's front face against its vertices' normals (their sum): turn it round, else keep it.
+        const facing = (e1y * e2z - e1z * e2y) * (n[a3] + n[b3] + n[c3]) + (e1z * e2x - e1x * e2z) * (n[a3 + 1] + n[b3 + 1] + n[c3 + 1])
+          + (e1x * e2y - e1y * e2x) * (n[a3 + 2] + n[b3 + 2] + n[c3 + 2]);
+        index[i] = a;
+        index[i + 1] = facing < 0 ? c : b;
+        index[i + 2] = facing < 0 ? b : c;
       }
     } else {
       index.set(loft.indices.subarray(0, indices));

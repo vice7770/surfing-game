@@ -28,6 +28,14 @@ export const LOFT = {
 /** Vertices per slice: the profile and its extensions over the water at each end. */
 export const LOFT_SAMPLES = PROFILE_POINTS + 2 * LOFT.extensionSamples;
 /**
+ * Where the profile stands off the solver's water (the advisor's ruling, 2026-10-01; the spec's item 13.4): the library
+ * is the authority only where the solver can't overturn, from just behind the crest to the toe. Its back slope and the
+ * flat ahead are one Basilisk wave's still water, so they rest on the game's sea, its height and its foam. In H, the
+ * slice's crest over the lowest water ahead of its toe: fully lifted from `behind` behind the crest to the toe, and
+ * eased down (smoothstep) to the water over `ramp` beyond each [provisional].
+ */
+export const REST = { behind: 0.1, ramp: 0.5 } as const;
+/**
  * The lip as a thin sheet (docs/research/water-physics/tube-colour-fix.md, step 1; the advisor's rulings, 2026-10-01):
  * the lip's two sides are the profile's runs from the crest to the tip and from the tip back under to the throat
  * (`LANDMARK`), and each point between the crest and the throat takes its distance across to the other side, m.
@@ -573,31 +581,40 @@ export class SweptLoft {
       r.sliceTipUp[slice] = lookup.tipUp;
       r.sliceAnchorVX[slice] = anchorVX;
       r.sliceAnchorVZ[slice] = anchorVZ;
+      // How far each point stands off the water: from just behind the crest to the toe, eased onto it either side.
+      const profileCrestX = profile[2 * LANDMARK.crest];
+      const toeX = profile[2 * LANDMARK.toe];
+      let lowest = profile[2 * LANDMARK.toe + 1];
+      for (let i = LANDMARK.toe + 1; i < PROFILE_POINTS; i += 1) if (profile[2 * i + 1] < lowest) lowest = profile[2 * i + 1];
+      const height = Math.max(1e-6, profile[2 * LANDMARK.crest + 1] - lowest);
+      const rampLength = REST.ramp * height;
       for (let j = 0; j < LOFT_SAMPLES; j += 1) {
         let along: number;
         let above = 0;
         let pin = 1;
-        let maskAlong = 1;
+        let maskAlong = 0;
         let sheet = 0;
         let sheetShare = 0;
         let sheetBack = 0;
         if (j < E) {
           along = profile[0] - (E - j) * EXTENSION_STEP;
-          maskAlong = Math.max(0, 1 - ((E - j) * EXTENSION_STEP) / LOFT.band);
         } else if (j < E + PROFILE_POINTS) {
           const i = j - E;
           along = profile[2 * i];
           above = profile[2 * i + 1];
-          pin = i < LOFT.pinned ? (LOFT.pinned - i) / LOFT.pinned : i > LAST - LOFT.pinned ? (i - (LAST - LOFT.pinned)) / LOFT.pinned : 0;
+          // Past the ramps the profile rests on the water; the mask lets the water draw itself a band beyond them.
+          const past = i < LANDMARK.crest ? profileCrestX - along - REST.behind * height : i > LANDMARK.toe ? along - toeX : 0;
+          const u = past > 0 ? Math.min(1, past / rampLength) : 0;
+          const rest = u * u * (3 - 2 * u);
+          pin = Math.max(rest, i < LOFT.pinned ? (LOFT.pinned - i) / LOFT.pinned : i > LAST - LOFT.pinned ? (i - (LAST - LOFT.pinned)) / LOFT.pinned : 0);
+          maskAlong = Math.min(1, Math.max(0, 1 - (past - rampLength) / LOFT.band));
           if (formed > 0 && i > LANDMARK.crest && i < LANDMARK.throat) {
             sheet = this.across[i];
             sheetBack = this.farSide[i];
             sheetShare = formed * Math.min(1, Math.min(i - LANDMARK.crest, LANDMARK.throat - i) / (SHEET.ramp + 1));
           }
         } else {
-          const beyond = (j - E - LAST) * EXTENSION_STEP;
-          along = profile[2 * LAST] + beyond;
-          maskAlong = Math.max(0, 1 - beyond / LOFT.band);
+          along = profile[2 * LAST] + (j - E - LAST) * EXTENSION_STEP;
         }
         const v = slice * LOFT_SAMPLES + j;
         const px = ax + along * nx;

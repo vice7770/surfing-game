@@ -261,6 +261,49 @@ describe('the lip as a thin sheet (tube-colour-fix.md, step 1)', () => {
   });
 });
 
+describe('where the profile stands off the water (the advisor, 2026-10-01)', () => {
+  // The toy tube at h0 7 m: its crest 5.6 m up at x 0, its toe at 5.6 m ahead on still water, so H is 5.6 m; the back
+  // rises from 14 m behind and the flat runs on to 14 m ahead.
+  const H = 0.8 * 7;
+  const loft = () => new SweptLoft(tubes(), 0.05).build(records(21, () => 0.1), 21, 0.5, flat);
+  /** The middle slice's lift and mask at the profile point whose x (m from the crest) is nearest `x`, on one side. */
+  const at = (result: LoftResult, x: number, behind: boolean) => {
+    const base = sliceAt(result, 10) * LOFT_SAMPLES + LOFT.extensionSamples;
+    const crestZ = result.positions[3 * (base + LANDMARK.crest) + 2];
+    let best = -1;
+    for (let i = 0; i < PROFILE_POINTS; i += 1) {
+      if (behind ? i > LANDMARK.crest : i < LANDMARK.toe) continue;
+      const dx = result.positions[3 * (base + i) + 2] - crestZ;
+      if (best < 0 || Math.abs(dx - x) < Math.abs(result.positions[3 * (base + best) + 2] - crestZ - x)) best = i;
+    }
+    return { lift: result.lift[base + best], mask: result.mask[base + best] };
+  };
+
+  it('lifts the profile fully from 0.1 H behind its crest to its toe', () => {
+    const result = loft();
+    const base = sliceAt(result, 10) * LOFT_SAMPLES + LOFT.extensionSamples;
+    for (const i of [LANDMARK.crest, LANDMARK.lip, LANDMARK.throat, LANDMARK.toe]) expect(result.lift[base + i]).toBe(1);
+    expect(at(result, -0.05 * H, true).lift).toBe(1);
+  });
+
+  it('rests its back and the flat ahead on the water past 0.5 H ramps, eased, and lets the water draw a band beyond', () => {
+    const result = loft();
+    expect(at(result, -0.35 * H, true).lift).toBeGreaterThan(0.2);
+    expect(at(result, -0.35 * H, true).lift).toBeLessThan(0.8);
+    expect(at(result, -0.7 * H, true).lift).toBe(0);
+    expect(at(result, 0.8 * 7 + 0.25 * H, false).lift).toBeGreaterThan(0.2);
+    expect(at(result, 0.8 * 7 + 0.6 * H, false).lift).toBe(0);
+    // The mask: whole over the ramps, gone a band (1 m) past them.
+    expect(at(result, -0.6 * H + 0.1, true).mask).toBeCloseTo(1, 1);
+    expect(at(result, -0.6 * H - 2, true).mask).toBe(0);
+    expect(at(result, 2 * 7, false).mask).toBe(0);
+    // Resting, a vertex takes the water's height and foam: its lift is 0.
+    const base = sliceAt(result, 10) * LOFT_SAMPLES + LOFT.extensionSamples;
+    expect(result.positions[3 * base + 1]).toBe(0.5);
+    expect(result.positions[3 * (base + PROFILE_POINTS - 1) + 1]).toBe(0.5);
+  });
+});
+
 describe('the sky seen through a tube’s opening (the advisor, 2026-10-01)', () => {
   it('is the 2D view factor ½(sin θ2 − sin θ1) of the window from the horizon up to the tip', () => {
     // A floor facing up, the tip 45° up ahead: from −90° to −45° off its normal.
@@ -328,7 +371,10 @@ describe('the loft’s slices, for the contact', () => {
       return flat();
     };
     const loft = new SweptLoft(tubes(), 0.05).build(records(21, () => 0.1), 21, 0.5, counted);
-    expect(calls).toBeLessThan(loft.vertexCount / 2);
+    let resting = 0;
+    for (let v = 0; v < loft.vertexCount; v += 1) if (loft.lift[v] < 1) resting += 1;
+    expect(calls).toBe(resting);
+    expect(resting).toBeLessThan(loft.vertexCount);
     const crest = sliceAt(loft, 10) * LOFT_SAMPLES + LOFT.extensionSamples + 32;
     expect(loft.positions[3 * crest + 1]).toBeCloseTo(0.5 + 0.8 * 7, 5);
   });

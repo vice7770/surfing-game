@@ -159,8 +159,8 @@ describe('the swept barrel’s mesh', () => {
     };
     const drawn = facing();
     expect(drawn.out).toBeGreaterThan(1000);
-    // A few cells at the lip's fold are twisted; the faces are the rest.
-    expect(drawn.inward / drawn.out).toBeLessThan(0.01);
+    // Every cell, the folds' too: those keep the loft's order, so the material turns their leaning normals back out.
+    expect(drawn.inward).toBe(0);
     swept.facesOut = false;
     const loftOwn = facing();
     expect(loftOwn.out / loftOwn.inward).toBeLessThan(0.01);
