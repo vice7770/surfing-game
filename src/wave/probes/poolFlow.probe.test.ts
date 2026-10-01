@@ -120,7 +120,10 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
     wasBreaking.set(arm, breaking);
     return onset;
   };
-  const lineup = (arm: number) => breakZ.get(arm) ?? focus.z;
+  // The game's own take-off, where it is on this arm (the pool's riders wait at x 27, where the arm is 1.5 H deep);
+  // elsewhere the column's most seaward break. On the steep arms a column crosses the break line along tens of metres
+  // of z, and its most seaward break, 28 m outside the take-off, left the paddler there behind every wave.
+  const lineup = (arm: number) => (Math.abs(focus.x - arm * along) < 1 ? focus.z : breakZ.get(arm) ?? focus.z);
   /** The crest in the column at x: the highest water near the reef's crest line. */
   const crestAt = (x: number): number => {
     const column = Math.round((x - solver.xCenters[0]) / solver.dx);
@@ -286,7 +289,7 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
       stanceIndex = (stanceIndex + 1) % stances.length;
       holding = true;
     }
-    host.advance(1, { ...idle, ...input, retry, ...(retry ? { spawnAt: { x: focus.x + side * along, z: lineup(side) - 6 } } : {}), ...(place ? { place } : {}), stance: stances[stanceIndex] });
+    host.advance(1, { ...idle, ...input, retry, ...(retry ? { spawnAt: { x: side * along, z: lineup(side) - 6 } } : {}), ...(place ? { place } : {}), stance: stances[stanceIndex] });
     retry = false;
   }
   log(`\n${end} s simulated in ${((performance.now() - wall) / 1000).toFixed(0)} s wall (${(end / ((performance.now() - wall) / 1000)).toFixed(2)}× real time)`);
