@@ -11,16 +11,20 @@ import { SeaState } from './SeaState';
  *   near linear (Ursell about 8; at 4.5 m it was 41 and a linear input would shed free harmonics);
  * - a ramp square to the crests (so it turns nothing) at `rampSlope`, at least half a wavelength long so it
  *   reflects little, up to a terrace `terraceDepth` deep: shallow, so little depth is left to refract over (at
- *   2.75 m still nearly twice the biggest breaking depth, so nothing breaks on it);
+ *   2.5 m still 1.7 times the biggest breaking depth, so nothing breaks on it);
  * - the reef on the terrace: a finger pointing seaward, its tip at z = `apexZ` (x = 0, on the grid's symmetry
  *   line), its two arms at `armAngle` to the incoming crests, rounded over a half-width `tipRounding` at the tip (a
- *   hyperbola: the width over which the focus spreads, 0.5–1 wavelength on the terrace). Refraction turns the
- *   crests toward the arms, so arms at about 61° break at a peel angle of about 50°: Scarfe's 46–55° for
- *   intermediates' standard manoeuvres, about 6.5 m/s at 1.25 m faces;
+ *   hyperbola: the width over which the focus spreads, 0.5–1 wavelength on the terrace), easing to
+ *   `outerArmAngle` past |x| = `bendX` over `bendWidth` m (a curve, not a kink, which would refract like a small
+ *   tip), so the arms' longer outer run stays in the tank with its peel still about 46°. Refraction turns the
+ *   crests toward the arms, so arms at 71° break at a peel angle of about 47–50° along them (measured): Scarfe's
+ *   46–55° for intermediates' standard manoeuvres, about 6–6.5 m/s at 1.1–1.25 m faces;
  * - its face climbs at `gradient` square to the crest line, about 1:18: Mead & Black's orthogonal gradient of about
  *   1:28 along the ray at breaking, which crosses the arms at about 50° (their intensity about 2.6–2.8, a face that
- *   throws without a tube; set along +z it made the arms about 1:9 and tubed), to its crest `crestDepth` deep, just
- *   under the smallest size's breaking depth, so every size breaks on the slope;
+ *   throws without a tube; set along +z it made the arms about 1:9 and tubed), to its crest: `crestDepth` deep at
+ *   the tip, shallowing along each arm to `crestEndDepth` at its end (a ramped reef: a deeper tip focuses less, so
+ *   it breaks over a small peak rather than closing out across the finger and starving the flanks, and the
+ *   shallowing crest keeps the arms' refracted waves breaking in order; the advisor, 2026-10-01);
  * - behind the crest a reef top `flatWidth` wide, then the lagoon inside the finger, `lagoonDepth` deep;
  * - past |x| = `armLength` each arm tapers over `taperWidth` into the terrace, its crest deepening to the terrace's,
  *   so the break fades into a shoulder to kick out on, and the lagoon's return flow leaves through the channels
@@ -32,21 +36,25 @@ export const POOL = {
   period: 10,
   feedDepth: 9,
   rampSlope: 1 / 9,
-  terraceDepth: 2.75,
+  terraceDepth: 2.5,
   apexZ: -210,
-  armAngle: 61,
+  armAngle: 71,
+  outerArmAngle: 65,
+  bendX: 40,
+  bendWidth: 14,
   tipRounding: 25,
   gradient: 1 / 18,
-  crestDepth: 0.75,
+  crestDepth: 1,
+  crestEndDepth: 0.5,
   flatWidth: 6,
   lagoonDepth: 1.8,
-  armLength: 50,
+  armLength: 82,
   taperWidth: 25,
   /** How far seaward of the tip's face the terrace reaches before the ramp, m: short, so the ramp's free harmonics don't reorder the crest. */
   terraceLead: 20,
   shoreSlope: 1 / 8,
   deck: 0.6,
-  alongShore: 250,
+  alongShore: 280,
 };
 
 /** Where the beach face meets the deck, z, m. */
@@ -87,17 +95,38 @@ export function regularSignificantHeight(height: number): number {
   return Math.SQRT2 * height;
 }
 
-/** Where the crest line (the top of the reef's arms) crosses along-shore position x: rounded over tipRounding at the tip. */
+/** The crest line's slope dz/d|x| at along-shore position x: the hyperbola's at the tip, its arms easing from armAngle to outerArmAngle. */
+function crestSlope(u: number): number {
+  const p = POOL;
+  const bend = ease(p.bendX - p.bendWidth / 2, p.bendX + p.bendWidth / 2, u);
+  const angle = p.armAngle + (p.outerArmAngle - p.armAngle) * bend;
+  return Math.tan((angle * Math.PI) / 180) * (u / Math.hypot(u, p.tipRounding));
+}
+
+/** The crest line's z at |x| on a 0.25 m table, integrated from its slope; rebuilt when POOL changes (the probes set it). */
+const CREST_STEP = 0.25;
+let crestTable: { key: string; z: Float64Array } | undefined;
+function crestTableFor(): Float64Array {
+  const key = JSON.stringify(POOL);
+  if (crestTable?.key === key) return crestTable.z;
+  const count = Math.ceil(POOL.alongShore / CREST_STEP) + 2;
+  const z = new Float64Array(count);
+  for (let i = 1; i < count; i += 1) z[i] = z[i - 1] + (CREST_STEP * (crestSlope((i - 1) * CREST_STEP) + crestSlope(i * CREST_STEP))) / 2;
+  crestTable = { key, z };
+  return z;
+}
+
+/** Where the crest line (the top of the reef's arms) crosses along-shore position x: rounded at the tip, bent outward. */
 export function poolCrestZ(x: number): number {
-  const { apexZ, armAngle, tipRounding } = POOL;
-  return apexZ + (Math.hypot(x, tipRounding) - tipRounding) * Math.tan((armAngle * Math.PI) / 180);
+  const table = crestTableFor();
+  const at = Math.min(table.length - 1.001, Math.abs(x) / CREST_STEP);
+  const i = Math.floor(at);
+  return POOL.apexZ + table[i] + (table[i + 1] - table[i]) * (at - i);
 }
 
 /** The share of a step along +z that lies square to the crest line at along-shore position x: the cosine of the line's angle there. */
 export function poolNormalShare(x: number): number {
-  const { armAngle, tipRounding } = POOL;
-  const slope = Math.tan((armAngle * Math.PI) / 180) * (x / Math.hypot(x, tipRounding));
-  return 1 / Math.hypot(1, slope);
+  return 1 / Math.hypot(1, crestSlope(Math.abs(x)));
 }
 
 /** How far each arm has tapered into the terrace at along-shore position x: 0 on the reef, 1 past its end. */
@@ -113,7 +142,8 @@ export function poolDepth(x: number, z: number): number {
   // The reef: its crest deepening along each arm's taper, its face climbing along the waves' path, its top, the lagoon.
   const taper = poolTaper(x);
   const crestLine = poolCrestZ(x);
-  const crest = p.crestDepth + (p.terraceDepth - p.crestDepth) * taper;
+  const ramped = p.crestDepth + (p.crestEndDepth - p.crestDepth) * Math.min(1, Math.abs(x) / p.armLength);
+  const crest = ramped + (p.terraceDepth - ramped) * taper;
   const lagoon = p.lagoonDepth + (p.terraceDepth - p.lagoonDepth) * taper;
   // The face and the lagoon's edge climb at `gradient` square to the crest line.
   const normal = poolNormalShare(x);
