@@ -416,9 +416,10 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   };
   /**
    * The curl's light against the face beside it (tube-colour-fix.md, "How to check it"), measured on screen from one
-   * view: the lip (the loft's sheet), the tube's back wall (throat to toe of the open slices) and the face beside them
-   * (the water's own pixels around them, and the curl's shoulder face), each's mean relative luminance and hue, as
-   * drawn, with the sheet off, and as the owner's clip drew it (the loft's own winding, no sheet).
+   * view: the lip (the loft's sheet), the tube's back wall (throat to toe of the open slices whose underside has
+   * formed: the wall a lip covers) and the face beside them (the water's own pixels around them, and the curl's
+   * shoulder face), each's mean relative luminance and hue, as drawn, with the sheet off, and as the owner's clip drew
+   * it (the loft's own winding, no sheet).
    * `sun`: 'behind' puts the sun where the camera looks, behind the lip; 'front' behind the camera; or a time of day.
    * The regions come from a pass with the curl in its `region` view and one without the water; the marked frame is
    * posted as curl-luma.png.

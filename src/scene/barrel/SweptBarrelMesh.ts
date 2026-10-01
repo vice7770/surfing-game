@@ -52,7 +52,9 @@ export function sweptViewColours(view: SweptBarrelView, loft: LoftResult, out: F
       const point = (v % LOFT_SAMPLES) - LOFT.extensionSamples;
       const lip = loft.sheetWeight[v] >= REGION_SHARE;
       const standing = loft.lift[v] >= REGION_SHARE;
-      const wall = !lip && loft.slicePhase[slice] === 1 && standing && point >= LANDMARK.throat && point <= LANDMARK.toe;
+      // The back wall a lip covers: throat to toe of an open slice whose underside has formed (the throat's weight, its
+      // lift in it). Before the underside forms there is no cavity: the face below a throwing crest is the rest.
+      const wall = !lip && loft.slicePhase[slice] === 1 && loft.throat[4 * v + 3] >= REGION_SHARE && point >= LANDMARK.throat && point <= LANDMARK.toe;
       const face = loft.slicePhase[slice] === 0 && standing && point >= LANDMARK.crest && point <= LANDMARK.toe;
       out[o] = lip || face ? 1 : 0;
       out[o + 1] = lip || wall ? 0 : 1;

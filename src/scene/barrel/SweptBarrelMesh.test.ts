@@ -224,6 +224,19 @@ describe('the swept barrel’s mesh', () => {
     expect(Array.from(out.slice(3, 6))).toEqual([0, 1, 0]);
   });
 
+  it('marks as the back wall in the region view only the throat to the toe under a lip whose underside has formed', () => {
+    const loft = new SweptLoft(new ProfileLibrary([tubeCase(0.3)]), 0.05).build(tubeRecords(), 21, 0.5, () => 0.5);
+    const out = new Float32Array(3 * loft.vertexCount);
+    const s = Array.from(loft.sliceSigma.subarray(0, loft.sliceCount)).findIndex((sigma) => Math.abs(sigma - 10) < 1e-4);
+    const v = s * LOFT_SAMPLES + LOFT.extensionSamples + 100;
+    expect(loft.slicePhase[s]).toBe(1);
+    sweptViewColours('region', loft, out);
+    expect(Array.from(out.slice(3 * v, 3 * v + 3))).toEqual([0, 0, 1]);
+    // Before the underside forms there is no cavity: the face below the throwing crest is the rest.
+    sweptViewColours('region', { ...loft, throat: new Float32Array(loft.throat.length) }, out);
+    expect(Array.from(out.slice(3 * v, 3 * v + 3))).toEqual([0, 1, 0]);
+  });
+
   it('draws each triangle facing the way the loft’s normals point, so a double-sided material keeps them', () => {
     // A double-sided material turns a back face's normal round: a curl wound inward was shaded as the water's inside.
     const records = new Float32Array(21 * FRONT_STRIDE);
