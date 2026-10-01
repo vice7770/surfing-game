@@ -6,7 +6,7 @@ import { RICH_FAR_FOAM, RICH_REFLECTION, richFarNormal, richFragmentPars, richRe
 import { waterRipplePars } from '../water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from '../water/specular';
 import { waterChopNormal } from '../waterChop';
-import { CLASSIC_FOAM, CREST_SCATTER, WATER_IOR, waterBodyFragment } from '../waterOptics';
+import { CLASSIC_FOAM, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFragment } from '../waterOptics';
 import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
 import { SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
 
@@ -159,6 +159,71 @@ export const SWEPT_SHEET_BODY = /* glsl */ `
     float sweptSunBehind = pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 4.0 );
     totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) ) * (
       sweptReach * sweptBack * RECIPROCAL_PI + ${CREST_SCATTER.toFixed(6)} * sweptSunBehind * waterSunRadiance * exp( -waterAttenuation * sweptSunPath ) );`;
+/**
+ * The lip glow's path lengthening for multiple scattering (the spec's item 16: exp(−σ·k·d), k ≈ 5–20; the advisor's
+ * start, 8, 2026-10-01): a thin, aerated lip scatters far more than clear water [provisional: to tune by eye against
+ * backlit lips].
+ */
+export const LIP_GLOW_PATH = 8;
+const glslVec3 = (rgb: readonly number[]) => `vec3( ${rgb.map((c) => c.toFixed(6)).join(', ')} )`;
+
+/** Rich vertex pieces: the inner face's views and weight, each slice's tip and mouth, and its ray. */
+const richThroatVertexPars = /* glsl */ `attribute vec4 sweptThroat;
+attribute vec4 sweptTube;
+attribute vec2 sweptRay;
+varying vec4 vSweptThroat;
+varying vec4 vSweptTube;
+varying vec2 vSweptRay;`;
+const richThroatVertex = /* glsl */ `
+vSweptThroat = sweptThroat;
+vSweptTube = sweptTube;
+vSweptRay = sweptRay;`;
+const richThroatFragmentPars = /* glsl */ `varying vec4 vSweptThroat;
+varying vec4 vSweptTube;
+varying vec2 vSweptRay;`;
+
+/**
+ * The lip's glow (Rich; the spec's item 16; the advisor's rulings, 2026-10-01): sunlight entering the sheet's far side
+ * scatters through it and leaves toward the viewer diffusely, over a path lengthened k times its thickness and absorbed
+ * by the water alone (Pope & Fry; k stands for the scattering, so not the beam attenuation), only when the sun is on
+ * the far side: weight · (1 − F) · max(0, −n·L) · E_sun · e^{−a k d} / π, on top of the forward crest light.
+ */
+export const RICH_LIP_GLOW = /* glsl */ `
+    totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) )
+      * max( 0.0, -dot( waterN, waterSunDirection ) ) * waterSunRadiance
+      * exp( -${glslVec3(WATER_ABSORPTION)} * ${LIP_GLOW_PATH.toFixed(1)} * vSweptSheet ) * RECIPROCAL_PI;`;
+
+/**
+ * The dark throat (Rich; the spec's item 16; the advisor's rulings, 2026-10-01), once the image-based light is
+ * gathered, on the inner face as far as its weight says (points 64–112 of a slice with an underside):
+ * - its sky light: the sky it sees through the opening (the 2D view factor F_w), the light through the lip (the lip's
+ *   view factor F_l × the sky and sun above the lip through its mean thickness, e^{−ct}), and R∞ of the sky for the
+ *   rest, the tube's own water [the magnitudes provisional]; the ambient light, the same everywhere, as the sky;
+ * - its reflections, only where the mirrored ray leaves through the opening in the slice's plane, or runs along the
+ *   crest out of the tube's mouth before it meets the wall: |along| / |across| > L_mouth / d_wall, d_wall the tip's
+ *   distance (the advisor's mirrored mouth).
+ */
+export const RICH_THROAT = /* glsl */ `
+#if defined( RE_IndirectSpecular ) && defined( RE_IndirectDiffuse )
+if ( vSweptThroat.w > 0.0 ) {
+  vec3 sweptThrough = exp( -waterAttenuation * vSweptThroat.z );
+  vec3 sweptOwn = vSweptThroat.x + max( 0.0, 1.0 - vSweptThroat.x - vSweptThroat.y ) * waterDeepReflectance;
+  vec3 sweptAbove = max( 0.0, waterSunDirection.y ) * waterSunRadiance;
+  #if defined( USE_ENVMAP ) && defined( ENVMAP_TYPE_CUBE_UV )
+    sweptAbove += getIBLIrradiance( ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz );
+  #endif
+  irradiance = mix( irradiance, ( sweptOwn + vSweptThroat.y * sweptThrough ) * irradiance, vSweptThroat.w );
+  iblIrradiance = mix( iblIrradiance, sweptOwn * iblIrradiance + vSweptThroat.y * sweptThrough * sweptAbove, vSweptThroat.w );
+  vec3 sweptMirror = ( vec4( reflect( -geometryViewDir, geometryNormal ), 0.0 ) * viewMatrix ).xyz;
+  vec2 sweptAcross = vec2( dot( sweptMirror.xz, vSweptRay ), sweptMirror.y );
+  float sweptAlong = abs( dot( sweptMirror.xz, vec2( vSweptRay.y, -vSweptRay.x ) ) );
+  vec2 sweptTip = vec2( dot( vSweptTube.xz - vWaterWorld.xz, vSweptRay ), vSweptTube.y - vWaterWorld.y );
+  bool sweptWindow = sweptAcross.y >= 0.0 && sweptAcross.x * sweptTip.y - sweptAcross.y * sweptTip.x >= 0.0;
+  bool sweptMouth = sweptAlong * length( sweptTip ) > vSweptTube.w * length( sweptAcross );
+  radiance *= mix( 1.0, sweptWindow || sweptMouth ? 1.0 : 0.0, vSweptThroat.w );
+}
+#endif`;
+
 const sweptBeginVertex = /* glsl */ `vec3 transformed = vec3( position );
 vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;`;
 
@@ -179,6 +244,10 @@ export class SweptBarrelMesh {
   private readonly sheetBack = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly wall = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
   private readonly wallNormal = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
+  /** The Rich look's dark throat: the inner face's views and weight, each slice's tip and mouth, and its ray. */
+  private readonly throat = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
+  private readonly tube = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
+  private readonly ray = new BufferAttribute(new Float32Array(2 * VERTICES), 2).setUsage(DynamicDrawUsage);
   private readonly index = new BufferAttribute(new Uint32Array(INDICES), 1).setUsage(DynamicDrawUsage);
   /** The dev view's colours, made with the first view. */
   private viewColours?: BufferAttribute;
@@ -207,6 +276,9 @@ export class SweptBarrelMesh {
     geometry.setAttribute('sweptSheetBack', this.sheetBack);
     geometry.setAttribute('sweptWall', this.wall);
     geometry.setAttribute('sweptWallNormal', this.wallNormal);
+    geometry.setAttribute('sweptThroat', this.throat);
+    geometry.setAttribute('sweptTube', this.tube);
+    geometry.setAttribute('sweptRay', this.ray);
     geometry.setIndex(this.index);
     geometry.setDrawRange(0, 0);
     const material = new MeshPhysicalMaterial({ color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide });
@@ -214,18 +286,18 @@ export class SweptBarrelMesh {
       Object.assign(shader.uniforms, uniforms);
       const rich = this.look === 'rich';
       shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
-        .replace('#include <beginnormal_vertex>', sweptBeginNormal)
+        .replace('#include <common>', rich ? `#include <common>\n${waterVertexPars}\n${sweptVertexPars}\n${richThroatVertexPars}` : `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
+        .replace('#include <beginnormal_vertex>', rich ? sweptBeginNormal + richThroatVertex : sweptBeginNormal)
         .replace('#include <begin_vertex>', sweptBeginVertex);
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', rich
-          ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}`
+          ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
           : `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}`)
         .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${SWEPT_BARREL_DISCARD}`)
         .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
         .replace('#include <color_fragment>', '')
-        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, true, RICH_FAR_FOAM, SWEPT_SHEET_BODY) : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
-        .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>');
+        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, true, RICH_FAR_FOAM, SWEPT_SHEET_BODY + RICH_LIP_GLOW) : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
+        .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>');
       const view = this.currentView;
       if (!view) return;
       shader.vertexShader = shader.vertexShader
@@ -290,6 +362,27 @@ export class SweptBarrelMesh {
           wall[o + c] = loft.positions[from + c];
           wallNormal[o + c] = loft.normals[from + c];
         }
+      }
+    }
+    if (this.look === 'rich') {
+      (this.throat.array as Float32Array).set(loft.throat.subarray(0, 4 * vertices));
+      const tube = this.tube.array as Float32Array;
+      const ray = this.ray.array as Float32Array;
+      for (let s = 0; s * LOFT_SAMPLES < vertices; s += 1) {
+        for (let j = 0; j < LOFT_SAMPLES && s * LOFT_SAMPLES + j < vertices; j += 1) {
+          const v = s * LOFT_SAMPLES + j;
+          tube[4 * v] = loft.sliceTipX[s];
+          tube[4 * v + 1] = loft.sliceTipY[s];
+          tube[4 * v + 2] = loft.sliceTipZ[s];
+          tube[4 * v + 3] = loft.sliceMouth[s];
+          ray[2 * v] = loft.sliceRayX[s];
+          ray[2 * v + 1] = loft.sliceRayZ[s];
+        }
+      }
+      for (const [attribute, size] of [[this.throat, 4], [this.tube, 4], [this.ray, 2]] as const) {
+        attribute.clearUpdateRanges();
+        attribute.addUpdateRange(0, size * vertices);
+        attribute.needsUpdate = true;
       }
     }
     if (this.sheetShown) (this.sheetWeight.array as Float32Array).set(loft.sheetWeight.subarray(0, vertices));
