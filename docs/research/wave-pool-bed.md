@@ -73,7 +73,12 @@ Every measurement above was made on this bed:
 - the arms match;
 - the runs stay stable.
 
-So it is kept, as found. It probably adds to the focus on the tip.
+So it is kept, as found. The advisor ruled on 2026-10-01 to keep it:
+- **The bed:** it is Mead's "focus" (two ridges aligned with the approach, inside Mead 2000's ranges), closer to natural breaks than the steep ramp first designed.
+- **The step:** the 10 m blend reflects at most about 0.17 in amplitude (about 3 % of the energy) into the zone, which relaxes it out.
+- **If the zone or the feed ever moves:** recheck the step.
+- **If a secondary crest ever rides the faces:** widen the blend to 30 m first.
+- **If a size ever breaks on the arms before the tip:** look at the deeper axis first.
 
 ## Cost
 

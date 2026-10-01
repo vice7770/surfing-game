@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
-import { POOL, POOL_EDGE_HEIGHT, poolCrestZ, poolDepth, poolRiddenAt, poolSea, poolTankLayout, poolTerraceZ, regularSignificantHeight } from './pool';
+import { POOL, POOL_EDGE_HEIGHT, poolCrestZ, poolDepth, poolNormalShare, poolRiddenAt, poolSea, poolTankLayout, poolTerraceZ, regularSignificantHeight } from './pool';
 import { SurfZoneSimulation, takeOffPoint, tankLayout } from './SurfZoneSimulation';
 
 describe('the Wave Pool (the movement-flow spec)', () => {
@@ -25,9 +25,16 @@ describe('the Wave Pool (the movement-flow spec)', () => {
     // Clear of the finger: the machine's floor, the ramp's top, the terrace.
     expect(poolDepth(120, layout.zoneInner - 5)).toBeCloseTo(POOL.feedDepth, 6);
     expect(poolDepth(120, poolTerraceZ())).toBeCloseTo(POOL.terraceDepth, 6);
-    // In front of the finger its faces run on, gentler than the ramp: shallower at the zone's edge, never above the terrace.
-    expect(poolDepth(20, layout.zoneInner)).toBeLessThan(poolDepth(120, layout.zoneInner));
-    expect(poolDepth(20, layout.zoneInner)).toBeGreaterThan(POOL.terraceDepth);
+    // In front of the finger its faces run on seaward at their 1:18 normal gradient across the ramp: Mead's focus, two
+    // ridges aligned with the approach, kept on the advisor's ruling (2026-10-01) since every measurement was made on it.
+    for (const x of [20, 45]) {
+      const along = poolCrestZ(x) - layout.zoneInner;
+      expect(poolDepth(x, layout.zoneInner)).toBeCloseTo(POOL.crestDepth + (POOL.crestEndDepth - POOL.crestDepth) * (x / POOL.armLength) + along * poolNormalShare(x) * POOL.gradient, 6);
+    }
+    // The terrace's edge and the tip's crest, as designed.
+    expect(poolTerraceZ()).toBeCloseTo(-257, 0);
+    expect(poolDepth(0, poolTerraceZ())).toBeCloseTo(POOL.terraceDepth, 6);
+    expect(poolDepth(0, POOL.apexZ)).toBeCloseTo(POOL.crestDepth, 6);
     const edge = POOL.alongShore / 2;
     for (const z of [-250, -150, -60]) expect(poolDepth(edge, z)).toBeCloseTo(poolDepth(edge - 3, z), 6);
   });

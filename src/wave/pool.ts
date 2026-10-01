@@ -19,10 +19,14 @@ import { SeaState } from './SeaState';
  *   tip), so the arms' longer outer run stays in the tank with its peel still about 46°. Refraction turns the
  *   crests toward the arms, so arms at 71° break at a peel angle of about 47–50° along them (measured): Scarfe's
  *   46–55° for intermediates' standard manoeuvres, about 6–6.5 m/s at 1.1–1.25 m faces;
- * - seaward of the terrace's edge the finger's faces run on at their gradient instead of stopping at the terrace,
- *   so in front of the finger (|x| under about 90 m) the approach is gentler than the ramp, about 1:40 along the
- *   waves' path at |x| 20 down to 4–8 m at the zone's inner edge, where the tank blends it into the feed over 10 m.
- *   Found after the sweep: every measurement was made on this bed, and it gathers the waves onto the finger;
+ * - seaward of the terrace's edge the finger's faces run on at their gradient instead of stopping at the terrace:
+ *   in front of the finger (|x| under about 90 m) two ridges aligned with the approach, their crests dipping seaward
+ *   at about 1:43 along the path and their sides at 1:18 normal, down to 4–8 m at the zone's inner edge, where the
+ *   tank blends them into the feed over 10 m (a step reflecting at most about 3 % of the energy into the zone). This
+ *   is Mead's "focus" (Mead 2000, table 3.3: contour-normal gradients 1:10–1:80, alignments 40–90°), which gathers the
+ *   waves onto the finger and eases the take-off. Found after the sweep and kept on the advisor's ruling
+ *   (2026-10-01): every measurement was made on it. If the zone or the feed ever moves, recheck the step; if a size
+ *   ever breaks on the arms before the tip, look at the axis first (deeper than the ridges, so it draws less);
  * - its face climbs at `gradient` square to the crest line, about 1:18: Mead & Black's orthogonal gradient of about
  *   1:28 along the ray at breaking, which crosses the arms at about 50° (their intensity about 2.6–2.8, a face that
  *   throws without a tube; set along +z it made the arms about 1:9 and tubed), to its crest: `crestDepth` deep at
