@@ -229,6 +229,30 @@ describe('the swept contact', () => {
     });
   });
 
+  it('answers from the first of two overlapping fronts, as drawn, with nothing left for the backstop (the advisor, 2026-09-30)', () => {
+    // The first front over x 0.5–20.5 at τ 0.1 s, the second from x 10 at τ 0.2 s: its strips over the first's are dropped.
+    const n = 21;
+    const both = new Float32Array(2 * n * FRONT_STRIDE);
+    for (let f = 0; f < 2; f += 1) {
+      both.set(records(n, f === 0 ? 0.1 : 0.2), f * n * FRONT_STRIDE);
+      for (let k = 0; k < n; k += 1) {
+        both[(f * n + k) * FRONT_STRIDE + FRONT_FIELD.front] = f + 1;
+        both[(f * n + k) * FRONT_STRIDE + FRONT_FIELD.x] = (f === 0 ? 0.5 : 10) + k;
+      }
+    }
+    const contact = new SweptContact(library(), 0.05);
+    contact.update(both, 2 * n, STILL, flat);
+    expect(contact.last!.overlaps).toBeGreaterThan(0);
+    const hit = createContactHit();
+    // In the overlap the first front's tube, at its clock; past it the second's.
+    expect(contact.query(15.3, 2.5, -93, hit)).toBe(true);
+    expect(hit.life).toBeCloseTo(0.1 / (0.5 * UNIT), 3);
+    expect(contact.query(26.3, 2.5, -93, hit)).toBe(true);
+    expect(hit.life).toBeCloseTo(0.2 / (0.5 * UNIT), 3);
+    for (let x = 8; x < 24; x += 0.37) for (let y = -0.5; y < 7; y += 0.41) contact.query(x, y, -93, hit);
+    expect(contact.stats.overlaps).toBe(0);
+  });
+
   it('holds no state of its own: the same records answer the same in a fresh contact', () => {
     const a = contactAt(0.3);
     const b = contactAt(0.1);

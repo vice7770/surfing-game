@@ -328,6 +328,54 @@ describe('the loft’s slices, for the contact', () => {
     expect(lines).toBeGreaterThan(10_000);
   });
 
+  describe('overlapping fronts: the first wins (the advisor, 2026-09-30)', () => {
+    /** Two straight fronts along +x at z = −100, 21 points each: the first over x 0.5–20.5, the second from `start`. */
+    const two = (start: number) => {
+      const n = 21;
+      const out = new Float32Array(2 * n * FRONT_STRIDE);
+      for (let f = 0; f < 2; f += 1) {
+        for (let k = 0; k < n; k += 1) {
+          const o = (f * n + k) * FRONT_STRIDE;
+          out[o + FRONT_FIELD.x] = (f === 0 ? 0.5 : start) + k; out[o + FRONT_FIELD.z] = -100; out[o + FRONT_FIELD.front] = f + 1;
+          out[o + FRONT_FIELD.sigma] = k; out[o + FRONT_FIELD.tau] = f === 0 ? 0.1 : 0.2; out[o + FRONT_FIELD.footHeight] = 2.1;
+          out[o + FRONT_FIELD.footDepth] = 7; out[o + FRONT_FIELD.throwZ] = -100;
+        }
+      }
+      return out;
+    };
+    const joinedStrips = (loft: LoftResult) => Array.from(loft.sliceJoined.subarray(0, loft.sliceCount));
+
+    it('drops the later front’s strips over the earlier front’s, the same strips in the drawing and the contact', () => {
+      // The second front from x 10: its strips over the first's footprint (x −1 to 22) go.
+      const drawn = new SweptLoft(tubes(), 0.05).build(two(10), 42, 0.5, flat);
+      const contact = new SweptLoft(tubes(), 0.05, { contact: true }).build(two(10), 42, 0.5, flat);
+      expect(drawn.overlaps).toBe(27);
+      expect(contact.overlaps).toBe(drawn.overlaps);
+      expect(joinedStrips(contact)).toEqual(joinedStrips(drawn));
+      for (let s = 0; s + 1 < drawn.sliceCount; s += 1) {
+        // The first front keeps every strip; the second keeps those past x 22.
+        if (drawn.sliceFront[s] === 1 && drawn.sliceFront[s + 1] === 1) expect(drawn.sliceJoined[s]).toBe(1);
+        if (drawn.sliceFront[s] === 2 && drawn.sliceFront[s + 1] === 2) {
+          const x = drawn.positions[3 * s * LOFT_SAMPLES];
+          expect(drawn.sliceJoined[s]).toBe(x < 22 ? 0 : 1);
+        }
+      }
+      // The drawing triangulates the kept strips only.
+      expect(drawn.indexCount).toBe(6 * (LOFT_SAMPLES - 1) * joinedStrips(drawn).reduce((sum, j) => sum + j, 0));
+      // These held open tubes: a hole in the second barrel (the advisor wants to hear of any).
+      expect(drawn.overlapsOpen).toBeGreaterThan(0);
+      expect(drawn.overlapOpenWeight).toBe(1);
+    });
+
+    it('leaves fronts apart alone, and where they meet end to end drops only what lies on the water', () => {
+      expect(new SweptLoft(tubes(), 0.05).build(two(40), 42, 0.5, flat).overlaps).toBe(0);
+      // A metre apart: their extensions and blended ends overlap over x 20–22, where neither barrel stands.
+      const meeting = new SweptLoft(tubes(), 0.05).build(two(21.5), 42, 0.5, flat);
+      expect(meeting.overlaps).toBeGreaterThan(0);
+      expect(meeting.overlapOpenWeight).toBeLessThan(0.2);
+    });
+  });
+
   describe('on the library’s cases', () => {
     const library = new ProfileLibrary(readBarrelCases().map(decodeCase));
     /** A 60 m front whose foot crests run from A0 0.13 to 0.47 at h0 7 m, every point at τ `seconds`: every blend. */

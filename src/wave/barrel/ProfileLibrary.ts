@@ -187,15 +187,15 @@ export class ProfileLibrary {
     };
   }
 
-  /** The lip tip's place in a slice's profile, m (along, up), into `out`: the tip landmark as `profileAt` would place it. */
-  tipPlace(query: ProfileQuery, out: Float64Array): void {
+  /** One profile point's place in a slice's profile, m (along, up), into `out`: as `profileAt` would place it. */
+  pointAt(query: ProfileQuery, point: number, out: Float64Array): void {
     const b = this.bracket(query);
     const times = this.caseTimes(b, query.seconds / b.unit, query.hold);
-    this.landmarkAt(b.lower, times[0], LANDMARK.lip, out);
+    this.landmarkAt(b.lower, times[0], point, out);
     const x = out[0];
     const y = out[1];
     if (b.upper !== b.lower) {
-      this.landmarkAt(b.upper, times[1], LANDMARK.lip, out);
+      this.landmarkAt(b.upper, times[1], point, out);
       out[0] = x + b.weight * (out[0] - x);
       out[1] = y + b.weight * (out[1] - y);
     }
@@ -279,16 +279,16 @@ export class ProfileLibrary {
     return times;
   }
 
-  /** One case's landmark at τ (√(h0/g)), h0, into `out`, linear between frames as `frameAt`. */
-  private landmarkAt(c: BarrelCase, tau: number, landmark: number, out: Float64Array): void {
+  /** One case's profile point at τ (√(h0/g)), h0, into `out`, linear between frames as `frameAt`. */
+  private landmarkAt(c: BarrelCase, tau: number, point: number, out: Float64Array): void {
     const count = c.frames.length / FLOATS;
     const position = Math.min(count - 1, Math.max(0, (tau - c.tauStart) / c.tauStep));
     const f = Math.floor(position);
     const next = Math.min(count - 1, f + 1);
     const t = position - f;
     for (let k = 0; k < 2; k += 1) {
-      const a = c.frames[f * FLOATS + 2 * landmark + k];
-      out[k] = a + t * (c.frames[next * FLOATS + 2 * landmark + k] - a);
+      const a = c.frames[f * FLOATS + 2 * point + k];
+      out[k] = a + t * (c.frames[next * FLOATS + 2 * point + k] - a);
     }
   }
 
