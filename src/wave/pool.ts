@@ -11,16 +11,18 @@ import { SeaState } from './SeaState';
  *   near linear (Ursell about 8; at 4.5 m it was 41 and a linear input would shed free harmonics);
  * - a ramp square to the crests (so it turns nothing) at `rampSlope`, at least half a wavelength long so it
  *   reflects little, up to a terrace `terraceDepth` deep: shallow, so little depth is left to refract over (at
- *   2.75 m still nearly twice the biggest breaking depth, so nothing breaks on it);
+ *   2.5 m still 1.7 times the biggest breaking depth, so nothing breaks on it);
  * - the reef on the terrace: a finger pointing seaward, its tip at z = `apexZ` (x = 0, on the grid's symmetry
  *   line), its two arms at `armAngle` to the incoming crests, rounded over a half-width `tipRounding` at the tip (a
  *   hyperbola: the width over which the focus spreads, 0.5–1 wavelength on the terrace). Refraction turns the
- *   crests toward the arms, so arms at about 61° break at a peel angle of about 50°: Scarfe's 46–55° for
- *   intermediates' standard manoeuvres, about 6.5 m/s at 1.25 m faces;
+ *   crests toward the arms, so arms at 71° break at a peel angle of about 47–50° along them (measured): Scarfe's
+ *   46–55° for intermediates' standard manoeuvres, about 6–6.5 m/s at 1.1–1.25 m faces;
  * - its face climbs at `gradient` square to the crest line, about 1:18: Mead & Black's orthogonal gradient of about
  *   1:28 along the ray at breaking, which crosses the arms at about 50° (their intensity about 2.6–2.8, a face that
- *   throws without a tube; set along +z it made the arms about 1:9 and tubed), to its crest `crestDepth` deep, just
- *   under the smallest size's breaking depth, so every size breaks on the slope;
+ *   throws without a tube; set along +z it made the arms about 1:9 and tubed), to its crest: `crestDepth` deep at
+ *   the tip, shallowing along each arm to `crestEndDepth` at its end (a ramped reef: a deeper tip focuses less, so
+ *   it breaks over a small peak rather than closing out across the finger and starving the flanks, and the
+ *   shallowing crest keeps the arms' refracted waves breaking in order; the advisor, 2026-10-01);
  * - behind the crest a reef top `flatWidth` wide, then the lagoon inside the finger, `lagoonDepth` deep;
  * - past |x| = `armLength` each arm tapers over `taperWidth` into the terrace, its crest deepening to the terrace's,
  *   so the break fades into a shoulder to kick out on, and the lagoon's return flow leaves through the channels
@@ -32,12 +34,13 @@ export const POOL = {
   period: 10,
   feedDepth: 9,
   rampSlope: 1 / 9,
-  terraceDepth: 2.75,
+  terraceDepth: 2.5,
   apexZ: -210,
-  armAngle: 61,
+  armAngle: 71,
   tipRounding: 25,
   gradient: 1 / 18,
-  crestDepth: 0.75,
+  crestDepth: 1,
+  crestEndDepth: 0.5,
   flatWidth: 6,
   lagoonDepth: 1.8,
   armLength: 50,
@@ -113,7 +116,8 @@ export function poolDepth(x: number, z: number): number {
   // The reef: its crest deepening along each arm's taper, its face climbing along the waves' path, its top, the lagoon.
   const taper = poolTaper(x);
   const crestLine = poolCrestZ(x);
-  const crest = p.crestDepth + (p.terraceDepth - p.crestDepth) * taper;
+  const ramped = p.crestDepth + (p.crestEndDepth - p.crestDepth) * Math.min(1, Math.abs(x) / p.armLength);
+  const crest = ramped + (p.terraceDepth - ramped) * taper;
   const lagoon = p.lagoonDepth + (p.terraceDepth - p.lagoonDepth) * taper;
   // The face and the lagoon's edge climb at `gradient` square to the crest line.
   const normal = poolNormalShare(x);

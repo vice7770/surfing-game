@@ -87,6 +87,13 @@ it.skipIf(!process.env.PROBE)('rides the Wave Pool’s waves', () => {
     }
     return found;
   };
+  // DUMP=1: every column's breaks after the settling time, to see where the arms break and when.
+  if (process.env.DUMP) {
+    xs.forEach((x, a) => {
+      if (x < 0) return;
+      log(`x ${x} (crest line z ${poolCrestZ(x).toFixed(0)}): ${onsets[a].filter((o) => o.t >= settled).map((o) => `t ${o.t.toFixed(1)} z ${o.z.toFixed(0)} d ${o.depth.toFixed(2)} f ${o.face.toFixed(2)}`).join(' | ')}`);
+    });
+  }
   const tips = onsets[centre].filter((o) => o.t >= settled);
   log(`tip breaks after ${settled} s: ${tips.map((o) => `t ${o.t.toFixed(2)} z ${o.z.toFixed(1)} face ${o.face.toFixed(2)}`).join(' | ')}`);
   for (const tip of tips) {
@@ -109,10 +116,18 @@ it.skipIf(!process.env.PROBE)('rides the Wave Pool’s waves', () => {
       });
       const finite = xsAlong.filter(Number.isFinite);
       const meanX = finite.reduce((a, b) => a + b, 0) / Math.max(1, finite.length);
+      // Along the arm alone, past the tip's section (|x| ≥ 20): the speed a surfer needs there and its peel angle.
+      const armStart = found.find((f) => Math.abs(f.x) >= 20);
+      const armRun = armStart ? Math.hypot(last.x - armStart.x, last.o.z - armStart.o.z) : 0;
+      const armTime = armStart ? last.o.t - armStart.o.t : 0;
+      const armSpeed = armTime > 0 ? armRun / armTime : Number.NaN;
+      const armAlpha = (Math.asin(Math.min(1, celerity / armSpeed)) * 180) / Math.PI;
+      // The tip's close-out: how far out the break reached within 1 s of the tip.
+      const closeout = Math.max(...found.filter((f) => f.o.t - first.o.t <= 1).map((f) => Math.abs(f.x)));
       // The peak's face against the arm's 20 m away (the advisor's 1.2× check).
       const at20 = found.find((f) => Math.abs(f.x) >= 20);
       const ratio = at20 ? found[0].o.face / at20.o.face : Number.NaN;
-      log(`${direction > 0 ? 'right +x' : 'left −x'} from t ${tip.t.toFixed(1)}: ${found.length} columns to x ${last.x}, ${run.toFixed(0)} m in ${time.toFixed(1)} s → V ${speed.toFixed(1)} m/s, face ${meanFace.toFixed(2)} m (${Math.min(...faces).toFixed(2)}–${Math.max(...faces).toFixed(2)}), C_b ${celerity.toFixed(1)}, α ${alpha.toFixed(0)}°, X ${meanX.toFixed(0)}, peak/20 m ${ratio.toFixed(2)} | ${found.map((f) => `${f.x}:${(f.o.t - tip.t).toFixed(1)}s z${f.o.z.toFixed(0)} ${f.o.face.toFixed(2)}`).join(' ')}`);
+      log(`${direction > 0 ? 'right +x' : 'left −x'} from t ${tip.t.toFixed(1)}: ${found.length} columns to x ${last.x}, ${run.toFixed(0)} m in ${time.toFixed(1)} s → V ${speed.toFixed(1)} m/s, face ${meanFace.toFixed(2)} m (${Math.min(...faces).toFixed(2)}–${Math.max(...faces).toFixed(2)}), C_b ${celerity.toFixed(1)}, α ${alpha.toFixed(0)}°; along the arm V ${armSpeed.toFixed(1)} m/s α ${armAlpha.toFixed(0)}°; close-out ±${closeout} m; X ${meanX.toFixed(0)}, peak/20 m ${ratio.toFixed(2)} | ${found.map((f) => `${f.x}:${(f.o.t - tip.t).toFixed(1)}s z${f.o.z.toFixed(0)} ${f.o.face.toFixed(2)}`).join(' ')}`);
     }
   }
 }, 3_600_000);
