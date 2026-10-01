@@ -148,3 +148,12 @@ P=python3   # with numpy, scipy and matplotlib
 $P tools/basilisk/analysis/periodic_library.py tools/basilisk/runs/periodic_reef42_L12 12 48 0.238095 0.2127 10 18.0 23.0
 $P tools/basilisk/analysis/periodic_library.py tools/basilisk/runs/periodic_reef60_L12 12 48 0.166667 0.2127 10 19.9 23.0
 ```
+
+**The `robust` option (2026-10-01).** `periodic_library.py … robust` makes two changes to the landmark search:
+- it walks past small undulations on a big curl's top to the jet's real tip (`turn_frac` 0.08 against 0.03);
+- before the overturn, it looks for the lip only in the upper 60 % of the face (`face_floor` 0.4), so a drained step ahead can't take it.
+
+It's for big curls over a drained step, where the lip landmark flickers (the Reef's A0 0.35 case).
+- **On reef42 and reef60** it moves the lip's parameterization in 65 and 38 clean frames: the same curve, resampled differently, up to about 1 h0 at a point. It leaves the open-tube frames as they were (64/65 and 67/70 clean).
+- So those two keep the default trace, and the option is opt-in per case.
+

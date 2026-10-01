@@ -179,7 +179,7 @@ def arclen(p):
     return np.concatenate([[0], np.cumsum(np.hypot(*np.diff(p, axis=0).T))])
 
 
-def landmarks(main, hs_level=0.0, back_dist=2.0, front_dist=1.0, xmin_search=None):
+def landmarks(main, hs_level=0.0, back_dist=2.0, front_dist=1.0, xmin_search=None, turn_frac=0.03, face_floor=None):
     """Landmarks on the main surface (indices into main).
     crest  = highest point;
     lip    = after the crest, the most forward (max x) point before the surface
@@ -191,6 +191,10 @@ def landmarks(main, hs_level=0.0, back_dist=2.0, front_dist=1.0, xmin_search=Non
              within 10 % of the crest height of the water level ahead and is
              flatter than 1:4;
     back/front = window ends, back_dist behind the crest and front_dist past the toe (h0 units).
+    turn_frac: how far (a fraction of the crest height) the surface must turn back to count as overturned; a
+        larger value walks past small undulations on a big curl's top to the jet's real tip.
+    face_floor: if set, the steepest face point (not overturned) is looked for only at least this fraction of the
+        crest height above the water level, so a drained step ahead can't take it.
     """
     x, y = main[:, 0], main[:, 1]
     lo = 0 if xmin_search is None else np.searchsorted(x, xmin_search)  # approx
@@ -207,7 +211,7 @@ def landmarks(main, hs_level=0.0, back_dist=2.0, front_dist=1.0, xmin_search=Non
             break  # reached the water ahead of the face: no overhang
         if x[j] > x[xmax_i]:
             xmax_i = j
-        elif x[xmax_i] - x[j] > 0.03 * Hc0:
+        elif x[xmax_i] - x[j] > turn_frac * Hc0:
             overturned = True
             break
     if overturned:
@@ -228,6 +232,9 @@ def landmarks(main, hs_level=0.0, back_dist=2.0, front_dist=1.0, xmin_search=Non
         dxs = np.diff(x[ic:seg_end + 1])
         dys = np.diff(y[ic:seg_end + 1])
         ang = np.arctan2(-dys, dxs)  # descending face -> positive
+        if face_floor is not None and len(ang):
+            high = (y[ic:seg_end] - hs_level) >= face_floor * max(y[ic] - hs_level, 0.05)
+            ang = np.where(high, ang, -np.inf)
         k = int(np.argmax(ang)) if len(ang) else 0
         il = ith = ic + k
     Hc = y[ic] - hs_level

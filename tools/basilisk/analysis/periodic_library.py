@@ -9,7 +9,9 @@ Each frame also records the trough level and H over it. The output format is lib
 game's converter reads it unchanged; the frames' "H" stays the crest's height above still water,
 and "H_trough" is the crest over the trough.
 
-usage: python3 periodic_library.py RUN_DIR LEVEL DOMAIN SLOPE A0 H0_M TMIN XMIN
+usage: python3 periodic_library.py RUN_DIR LEVEL DOMAIN SLOPE A0 H0_M TMIN XMIN [robust]
+  robust: walk past small undulations to the jet's tip (turn_frac 0.08), and look for the pre-vertical lip only
+  in the upper 60 % of the face (face_floor 0.4), for big curls over a drained step.
 writes RUN_DIR_library.json and RUN_DIR_metrics.json (the times it used, for library.py's readers).
 """
 import json
@@ -45,12 +47,15 @@ def stitch_main(path, dx, tol=0.2, minpts=10):
     return cur
 
 
+ROBUST = {}  # landmarks options for big curls over a drained step: {"turn_frac": 0.08, "face_floor": 0.4}
+
+
 def local_landmarks(main, xmin, ahead=3.0):
     lm0 = landmarks(main, xmin_search=xmin)
     x, y = main[:, 0], main[:, 1]
     sel = (x > x[lm0["crest"]]) & (x <= x[lm0["crest"]] + ahead)
     trough = float(y[sel].min()) if sel.any() else 0.0
-    return landmarks(main, hs_level=trough, xmin_search=xmin), trough
+    return landmarks(main, hs_level=trough, xmin_search=xmin, **ROBUST), trough
 
 
 def build(run, level, L0, slope, a0, h0_m, tmin, xmin):
@@ -151,6 +156,8 @@ def build(run, level, L0, slope, a0, h0_m, tmin, xmin):
 if __name__ == "__main__":
     run, level, L0, slope, a0, h0 = sys.argv[1], int(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5]), float(sys.argv[6])
     tmin, xmin = float(sys.argv[7]), float(sys.argv[8])
+    if len(sys.argv) > 9 and sys.argv[9] == "robust":
+        ROBUST.update(turn_frac=0.08, face_floor=0.4)
     out = build(run, level, L0, slope, a0, h0, tmin, xmin)
     json.dump(out, open(run.rstrip("/") + "_library.json", "w"))
     pl = json.load(open(run.rstrip("/") + "_plunge.json"))
