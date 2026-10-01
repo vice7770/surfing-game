@@ -417,6 +417,102 @@ describe('where the profile stands off the water (the advisor, 2026-10-01)', () 
   });
 });
 
+describe('ahead of the toe, the forward rest (the advisor, 2026-10-01)', () => {
+  // The toy tube at h0 7 m: its crest at the throw point, its toe 5.6 m ahead on the still level (0.5 m), its flat on
+  // to its front end 14 m ahead. H is 5.6 m, so the plain ease ends 2.8 m past the toe, and the profile's own samples
+  // leave 14 + 1.5 − 1 − 5.6 = 8.9 m past the toe for the hold and the ease (under 3 H, 16.8 m).
+  const H = 0.8 * 7;
+  const middle = (result: LoftResult) => sliceAt(result, 10);
+  const toeZ = (() => {
+    const result = new SweptLoft(tubes(), 0.05).build(records(21, () => 0.1), 21, 0.5, flat);
+    return result.positions[3 * (middle(result) * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.toe) + 2];
+  })();
+  /** The solver's broad front: its water `over` m above the trough until `until` m past the toe, then on it. */
+  const front = (over: number, until = Infinity) => (_x: number, z: number) => (z - toeZ < until ? 0.5 + over : 0.5);
+  const build = (heightAt: (x: number, z: number) => number, contact = false) =>
+    new SweptLoft(tubes(), 0.05, { contact }).build(records(21, () => 0.1), 21, 0.5, heightAt);
+  /** The middle slice's vertices ahead of its toe: how far past it, their lift, mask and height. */
+  const ahead = (result: LoftResult) => {
+    const base = middle(result) * LOFT_SAMPLES;
+    const out: { past: number; lift: number; mask: number; y: number }[] = [];
+    for (let j = LOFT.extensionSamples + LANDMARK.toe + 1; j < LOFT_SAMPLES; j += 1) {
+      const v = base + j;
+      out.push({ past: result.positions[3 * v + 2] - toeZ, lift: result.lift[v], mask: result.mask[v], y: result.positions[3 * v + 1] });
+    }
+    return out;
+  };
+
+  it('holds the trough at the profile’s front level until the solver’s water comes down to within 0.1 H, then eases onto it over 0.5 H', () => {
+    const result = build(front(2, 3));
+    const s = middle(result);
+    // Read every 0.5 m: 2 m over at 2.5 m, on the trough at 3 m; the line between them is 0.1 H over at 2.86 m.
+    const hold = 2.5 + (0.5 * (2 - 0.1 * H)) / 2;
+    expect(result.sliceRestHold[s]).toBeCloseTo(hold, 5);
+    expect(result.sliceRestEnd[s]).toBeCloseTo(hold + 0.5 * H, 5);
+    expect(result.sliceRestClimb[s]).toBeCloseTo(0.1 * H, 5);
+    expect(result.sliceToeClimb[s]).toBeCloseTo(2, 5);
+    for (const { past, lift, mask, y } of ahead(result)) {
+      if (past <= hold) {
+        // Held on the profile's own flat, its front level, wholly drawn.
+        expect(lift, `${past.toFixed(2)} m`).toBe(1);
+        expect(y).toBeCloseTo(0.5, 5);
+        expect(mask).toBe(1);
+      } else if (past >= hold + 0.5 * H) {
+        expect(lift, `${past.toFixed(2)} m`).toBe(0);
+      }
+      if (past > hold + 0.5 * H + LOFT.band) expect(mask, `${past.toFixed(2)} m`).toBe(0);
+    }
+    const easing = ahead(result).filter(({ past }) => past > hold + 0.2 * H && past < hold + 0.3 * H);
+    expect(easing.length).toBeGreaterThan(0);
+    for (const { lift } of easing) expect(lift).toBeGreaterThan(0.2);
+  });
+
+  it('eases over what is left of the profile’s samples where the water hasn’t come down by then', () => {
+    const result = build(front(2));
+    const s = middle(result);
+    const room = 14 + LOFT.extension - LOFT.band - 0.8 * 7;
+    expect(result.sliceRestEnd[s]).toBeCloseTo(room, 4);
+    expect(result.sliceRestHold[s]).toBeCloseTo(room - 0.5 * H, 4);
+    expect(result.sliceRestClimb[s]).toBeCloseTo(2, 5);
+    // The ease ends within the samples: the last extension vertex rests on the water, unmasked.
+    const last = ahead(result).at(-1)!;
+    expect(last.lift).toBe(0);
+    expect(last.y).toBe(2.5);
+    expect(last.mask).toBe(0);
+  });
+
+  it('holds at most 3 H past the toe', () => {
+    // The toy at h0 0.3 m: its H is 0.24 m, so 3 H (0.72 m) comes before the profile's room (0.36 + 0.5 m).
+    const small = new SweptLoft(tubes(), 0.05).build(records(21, () => 0.1).map((v, k) => (k % FRONT_STRIDE === FRONT_FIELD.footDepth ? 0.3 : k % FRONT_STRIDE === FRONT_FIELD.footHeight ? 0.09 : v)), 21, 0.5, () => 10);
+    const s = sliceAt(small, 10);
+    expect(small.sliceRestEnd[s]).toBeCloseTo(3 * 0.24, 4);
+    expect(small.sliceRestHold[s]).toBeCloseTo(2.5 * 0.24, 4);
+  });
+
+  it('stays the plain 0.5 H rest where the solver’s water ahead already sits at the drawn level', () => {
+    const result = build(flat);
+    const s = middle(result);
+    expect(result.sliceRestHold[s]).toBe(0);
+    expect(result.sliceRestEnd[s]).toBeCloseTo(0.5 * H, 5);
+    expect(result.sliceToeClimb[s]).toBe(0);
+    // Water below the trough too: it eases down onto it from the toe.
+    expect(build(front(-1)).sliceRestHold[s]).toBe(0);
+  });
+
+  it('gives the contact the drawing’s forward rest, so the two surfaces stay one water', () => {
+    const drawn = build(front(2, 3));
+    const touched = build(front(2, 3), true);
+    const s = middle(drawn);
+    expect(touched.sliceRestHold[s]).toBe(drawn.sliceRestHold[s]);
+    expect(touched.sliceRestEnd[s]).toBe(drawn.sliceRestEnd[s]);
+    const [a, b] = [ahead(drawn), ahead(touched)];
+    for (let k = 0; k < a.length; k += 1) {
+      expect(b[k].lift).toBeCloseTo(a[k].lift, 5);
+      expect(b[k].y).toBeCloseTo(a[k].y, 5);
+    }
+  });
+});
+
 describe('the sky seen through a tube’s opening (the advisor, 2026-10-01)', () => {
   it('is the 2D view factor ½(sin θ2 − sin θ1) of the window from the horizon up to the tip', () => {
     // A floor facing up, the tip 45° up ahead: from −90° to −45° off its normal.
@@ -588,7 +684,11 @@ describe('the loft’s slices, for the contact', () => {
     const loft = new SweptLoft(tubes(), 0.05).build(records(21, () => 0.1), 21, 0.5, counted);
     let resting = 0;
     for (let v = 0; v < loft.vertexCount; v += 1) if (loft.lift[v] < 1) resting += 1;
-    expect(calls).toBe(resting);
+    // And the forward rest's readings ahead of each lifted slice's toe: one, where the water there is at the trough.
+    let lifted = 0;
+    for (let s = 0; s < loft.sliceCount; s += 1) if (loft.sliceWeight[s] > 0) lifted += 1;
+    expect(loft.restSamples).toBe(lifted);
+    expect(calls).toBe(resting + loft.restSamples);
     expect(resting).toBeLessThan(loft.vertexCount);
     const crest = sliceAt(loft, 10) * LOFT_SAMPLES + LOFT.extensionSamples + 32;
     expect(loft.positions[3 * crest + 1]).toBeCloseTo(0.5 + 0.8 * 7, 5);
@@ -683,6 +783,15 @@ describe('the loft’s slices, for the contact', () => {
       for (const contact of [false, true]) {
         expect(new SweptLoft(tubes(), 0.05, { contact }).build(two(0.5, 15), 42, 0.5, flat).overlaps).toBe(0);
         expect(new SweptLoft(tubes(), 0.05, { contact }).build(two(0.5, 8), 42, 0.5, flat).overlaps).toBeGreaterThan(0);
+      }
+    });
+
+    it('counts a held trough ahead of a toe in its front’s lifted span', () => {
+      // Under a solver front 2 m over the trough everywhere, the first front's trough holds 8.9 m past its toe (its
+      // profile's room), so its span reaches 14.5 m past its crest, over the back of a front 15 m ahead.
+      const high = () => 2.5;
+      for (const contact of [false, true]) {
+        expect(new SweptLoft(tubes(), 0.05, { contact }).build(two(0.5, 15), 42, 0.5, high).overlaps).toBeGreaterThan(0);
       }
     });
   });
