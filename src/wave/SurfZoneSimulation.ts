@@ -11,7 +11,7 @@ import { focusX } from './Refraction';
 import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotion } from './CrestKinematics';
 import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
-import { POOL, poolSea, poolTankLayout } from './pool';
+import { POOL, POOL_BREAK_DEPTH, poolRiddenAt, poolSea, poolTankLayout } from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import { SideFeed } from './SideFeed';
@@ -309,7 +309,7 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
  * shadow it casts (as measured over the Scripps canyon, Magne et al. 2007),
  * and moves with the swell's direction and period.
  */
-export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 'centre', point: 'centre', reef: 'peak', canyon: 'focus', padang: 'peak', pool: 'centre' };
+export const TAKE_OFF: Record<SpotName, 'centre' | 'focus' | 'peak'> = { beach: 'centre', point: 'centre', reef: 'peak', canyon: 'focus', padang: 'peak', pool: 'peak' };
 
 /**
  * The breaker index a big day's take-off is placed with, per spot: the size report measures where each spot's
@@ -331,7 +331,7 @@ export const PADANG_TAKE_OFF_INDEX = { intercept: 0.47, perMetre: 0.19 } as cons
 
 /** Where a peak take-off waits along shore: at the Reef's or Padang Padang's own peak. */
 export function peakTakeOffX(spot: SpotName): number {
-  return spot === 'padang' ? PADANG.takeOffX : REEF.takeOffX;
+  return spot === 'padang' ? PADANG.takeOffX : spot === 'pool' ? POOL.takeOffX : REEF.takeOffX;
 }
 
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */
@@ -350,7 +350,9 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   const height = edgeHeight(config, tank.edgeDepth);
   const index = config.spot === 'padang' ? PADANG_TAKE_OFF_INDEX.intercept + PADANG_TAKE_OFF_INDEX.perMetre * height
     : deeper ? TAKE_OFF_INDEX[config.spot] : BREAKER_INDEX;
-  const target = breakerDepthFor(height, tank.edgeDepth + config.tide, index);
+  // The Wave Pool's regular wave breaks where its arm is about POOL_BREAK_DEPTH of its height deep (the pool probe):
+  // the shoaled-breaker estimate from its Hs put the take-off 14 m seaward of the break, where every paddle missed.
+  const target = config.spot === 'pool' ? POOL_BREAK_DEPTH * (height / Math.SQRT2) : breakerDepthFor(height, tank.edgeDepth + config.tide, index);
   const breakZ = (x: number) => {
     // Scan the whole simulated bed from the relaxation zone inward.
     for (let z = tank.zoneInner; z < tank.shore; z += 0.5) {
@@ -479,9 +481,10 @@ export class SurfZoneSimulation {
     this.breaking = new BreakingModel(this.solver, { onset });
     this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     // The Reef's peel is its ledge's: breaks past it (the pass, the lagoon's beach face) are not its wave.
-    // Padang Padang's is its reef's, from the peak to the channel.
+    // Padang Padang's is its reef's, from the peak to the channel. The Wave Pool's A-frame peels both ways alike, so a
+    // fit across both arms reads as a close-out: its peel is the right arm's, where riders wait.
     const xCenters = this.solver.xCenters;
-    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : undefined;
+    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? poolRiddenAt : undefined;
     this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
     this.lip = new PlungingLip(this.solver);

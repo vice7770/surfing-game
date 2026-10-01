@@ -37,4 +37,17 @@ describe('the take-off window (Kimura and Kakinuma 2015)', () => {
     expect(inTakeOffWindow({ ...CAUGHT, aheadOfCrest: 1.5, faceFraction: 0.95 })).toBe(false);
     expect(inTakeOffWindow({ ...CAUGHT, aheadOfCrest: 2.3 })).toBe(true);
   });
+
+  // The movement-flow spec: the window scales with the face. On the Wave Pool's 1.15 m faces a caught board rides
+  // 0.7–1.5 m ahead of a 4 m/s crest; the 1.8 m reference faces keep their 2–4 m.
+  it('scales with the face: closer to the crest on a small wave', () => {
+    const pool = { ...CAUGHT, faceHeight: 1.15, crestSpeed: 4, speedShoreward: 3.4, speedOverGround: 3.4 };
+    expect(inTakeOffWindow({ ...pool, aheadOfCrest: 1.4 })).toBe(true);
+    expect(inTakeOffWindow({ ...pool, aheadOfCrest: 1.1 })).toBe(false);
+    expect(inTakeOffWindow({ ...pool, aheadOfCrest: 2.9 })).toBe(false);
+    expect(inTakeOffWindow({ ...CAUGHT, aheadOfCrest: 3.9 })).toBe(true);
+    // A big face keeps the traced 2–4 m, which the bigger spots' catches were tuned with.
+    expect(inTakeOffWindow({ ...CAUGHT, faceHeight: 4, aheadOfCrest: 3 })).toBe(true);
+    expect(inTakeOffWindow({ ...CAUGHT, faceHeight: 4, aheadOfCrest: 5 })).toBe(false);
+  });
 });
