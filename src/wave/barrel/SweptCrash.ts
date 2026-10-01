@@ -64,7 +64,9 @@ export interface CrashCounts {
  * - **The whitewater** waits for the touchdown: over the drawn curl's footprint in the point's column, the breaking is
  *   withheld from the whitewater (the foam's bore source, its spray and bubbles, the bore's air and turbulence, the roar).
  *   An open tube's face is clear water; Kennedy's onset leads the lip by up to 2 s on Padang Padang's wedge.
- * A point lost while its jet is held pours where and when it was foreseen. Only + − × ÷ and √ (online determinism).
+ * A point lost while its jet is held pours where and when it was foreseen. Where two fronts' barrels overlap, the loft
+ * draws the first (PR 4), so a later front's point under it throws nothing and gates nothing. Only + − × ÷ and √
+ * (online determinism).
  */
 export class SweptCrash {
   readonly counts: CrashCounts = {

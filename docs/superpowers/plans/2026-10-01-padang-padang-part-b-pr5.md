@@ -624,6 +624,7 @@ export class SweptCrash {
    - Starved throws are counted.
 2. **Crash:** `jetStrip ≥ 0`, `crashedAt` unset and τ ≥ touchdown. `crashJet` from the landing now, with the drawn crest; `crashedAt = time`. If τ ≥ touchdown at the first sight, count `late`.
 3. **Pour:** crashed and τ < touchdown + collapse. `movePour` to the landing, and push the point to `curve`.
+4. **Overlapping fronts** (added after PR 4's a211247: the loft draws the first front where two overlap). A later front's point whose footprint overlaps a live point of an earlier front throws nothing and gates nothing, counted as `covered`. The footprint is its slice's reach with the extensions, half its share of the front either side, judged by the loft's separating-axes test.
 
 In `SurfZoneSimulation`:
 - `throwLip` returns at once when `crash` is set, counting `crash.counts.onsets`.
