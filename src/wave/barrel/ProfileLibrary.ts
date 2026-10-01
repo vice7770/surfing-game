@@ -33,6 +33,24 @@ export interface BarrelCase {
   tipVelocity?: Float32Array;
 }
 
+/**
+ * How `profileAt` builds a slice's profile from its cases' frames, for tables kept per frame (the lip's sheet and the
+ * tube's inside, PR 6): the two cases and the second's weight, the scale (h0, m), and in each case the frame, the next
+ * and the next's share.
+ */
+export interface FrameBlend {
+  lower: BarrelCase;
+  upper: BarrelCase;
+  weight: number;
+  scale: number;
+  lowerFrame: number;
+  lowerNext: number;
+  lowerShare: number;
+  upperFrame: number;
+  upperNext: number;
+  upperShare: number;
+}
+
 export interface ProfileQuery {
   slope: number;
   /** The slice's crest height at the slope's foot, m, and the still depth there, m: H0/h0 is their ratio. */
@@ -201,6 +219,30 @@ export class ProfileLibrary {
     }
     out[0] *= b.scale;
     out[1] *= b.scale;
+  }
+
+  /** How `profileAt` would blend a slice's profile from its cases' frames (`FrameBlend`), into `into`. */
+  frameBlend(query: ProfileQuery, into: FrameBlend): FrameBlend {
+    const b = this.bracket(query);
+    const times = this.caseTimes(b, query.seconds / b.unit, query.hold);
+    into.lower = b.lower;
+    into.upper = b.upper;
+    into.weight = b.weight;
+    into.scale = b.scale;
+    let position = this.framePosition(b.lower, times[0]);
+    into.lowerFrame = Math.floor(position);
+    into.lowerNext = Math.min(b.lower.frames.length / FLOATS - 1, into.lowerFrame + 1);
+    into.lowerShare = position - into.lowerFrame;
+    position = this.framePosition(b.upper, times[1]);
+    into.upperFrame = Math.floor(position);
+    into.upperNext = Math.min(b.upper.frames.length / FLOATS - 1, into.upperFrame + 1);
+    into.upperShare = position - into.upperFrame;
+    return into;
+  }
+
+  /** Where τ (√(h0/g)) falls among a case's frames, as `frameAt` places it: clamped to its first and last. */
+  private framePosition(c: BarrelCase, tau: number): number {
+    return Math.min(c.frames.length / FLOATS - 1, Math.max(0, (tau - c.tauStart) / c.tauStep));
   }
 
   /** A slice's scale and times, s, as `profileAt` finds them, without building its profile (the loft's refinement and budget). */

@@ -1,7 +1,10 @@
 import type { SpotName } from '../Bathymetry';
 import { GRAVITY } from '../dispersion';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
-import { LANDMARK, PROFILE_POINTS, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
+import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
+import { SHEET, THROAT, sheetTablesLookup, throatViews, type SheetLookup } from './lipSheet';
+
+export { SHEET, THROAT, arcView, sheetAcross, throatViews, tubeSkyView } from './lipSheet';
 
 /**
  * The swept loft's constants (the Padang Padang spec, Part B, PR 3; docs/research/water-physics/swept-barrel-build.md,
@@ -41,23 +44,6 @@ export const REST = { behind: 0.1, ramp: 0.5 } as const;
 function restHeight(crestY: number, toeY: number, frontY: number): number {
   return Math.max(1e-6, crestY - (toeY < frontY ? toeY : frontY));
 }
-/**
- * The lip as a thin sheet (docs/research/water-physics/tube-colour-fix.md, step 1; the advisor's rulings, 2026-10-01):
- * the lip's two sides are the profile's runs from the crest to the tip and from the tip back under to the throat
- * (`LANDMARK`), and each point between the crest and the throat takes its distance across to the other side, m.
- * - `ramp`: points over which the sheet's weight ramps to 0 next to the crest and the throat (1 from 36 to 84);
- * - `formed`, h0: the underside's length over which the weight comes in, 0.25 m at h0 7 m. The library folds the
- *   underside onto the tip until the cavity forms (its run is a point before the throw, and again at some touchdown
- *   frames), when there is no air behind it and the distance across would run down the face: column water, weight 0
- *   [provisional].
- */
-export const SHEET = { ramp: 3, formed: 0.035 } as const;
-/**
- * The dark throat's lip (the Rich look; the advisor's rulings, 2026-10-01): the profile points over whose sheet the lip's
- * mean thickness is taken, for the light it lets through onto the inner face (the outer run's middle, clear of the
- * crest's root and the tip) [provisional].
- */
-export const THROAT = { thicknessFrom: 40, thicknessTo: 60 } as const;
 /**
  * The solver crest's pace in the lip's velocity (the advisor, 2026-09-30, provisional): its mean since the throw is
  * noise early, so it is blended in from `from` to `to` s after the throw; it is held to `slowest`–`fastest` × the
@@ -198,245 +184,6 @@ interface Sample {
 }
 
 /**
- * The view factor, in the slice's plane, of the directions sweeping counter-clockwise from (ax, ay) to (bx, by) (under
- * half a turn apart), from a surface whose unit normal is (nx, ny): ½(sin θ2 − sin θ1), θ from the normal, the arc held
- * to the half-plane the surface faces. Exact for extruded geometry. Only + − × ÷ √.
- */
-export function arcView(nx: number, ny: number, ax: number, ay: number, bx: number, by: number): number {
-  const la = Math.sqrt(ax * ax + ay * ay);
-  const lb = Math.sqrt(bx * bx + by * by);
-  if (!(la > 0 && lb > 0)) return 0;
-  // The arc's ends in the normal's frame: (cos, sin) of their angle from it.
-  const c1 = (nx * ax + ny * ay) / la;
-  const s1 = (nx * ay - ny * ax) / la;
-  const c2 = (nx * bx + ny * by) / lb;
-  const s2 = (nx * by - ny * bx) / lb;
-  // The surface sees from −90° (0, −1) to +90° (0, 1). A direction (c, s) lies in the arc when it is counter-clockwise of
-  // its first end and not of its second: c1 s − s1 c ≥ 0 and c s2 − s c2 ≥ 0, which for (0, −1) reads −c1 ≥ 0 and
-  // c2 ≥ 0, and for (0, 1) c1 ≥ 0 and −c2 ≥ 0.
-  const from = c1 >= 0 ? s1 : c2 >= 0 ? -1 : Number.NaN;
-  const to = c2 >= 0 ? s2 : c1 >= 0 ? 1 : Number.NaN;
-  if (from !== from || to !== to) return 0;
-  return to > from ? (to - from) / 2 : 0;
-}
-
-/**
- * The share of the sky seen through a tube's opening from a point on a surface, in the slice's plane (x along the ray,
- * y up; the advisor's ruling, 2026-10-01): the view factor of the directions from the still water's horizon ahead,
- * (1, 0), up to the lip's tip as seen from (x, y), on the surface's unit normal (nx, ny) (`arcView`). Exact for an
- * extruded tube, where rays below the horizon meet the water and those above the tip the lip. 0 when the tip is not
- * above the point.
- */
-export function tubeSkyView(x: number, y: number, nx: number, ny: number, tipX: number, tipY: number): number {
-  return tipY - y > 0 ? arcView(nx, ny, 1, 0, tipX - x, tipY - y) : 0;
-}
-
-/**
- * The tube's inside as its inner face sees it (the Padang Padang spec, item 16's dark throat; the advisor's rulings,
- * 2026-10-01), per profile point from the tip back under the lip to the throat and down the face to the toe (64–112),
- * into `out` (4 a point): the sky through the opening (`tubeSkyView`); the lip's underside, from the face only (the arc
- * from the tip up to the throat, `arcView`); and 1. Elsewhere the open sky, no lip, 0. The normals are the profile's,
- * out of the water.
- */
-export function throatViews(profile: Float32Array, out: Float32Array): void {
-  const { lip, throat, toe } = LANDMARK;
-  const tipX = profile[2 * lip];
-  const tipY = profile[2 * lip + 1];
-  const throatX = profile[2 * throat];
-  const throatY = profile[2 * throat + 1];
-  for (let i = 0; i < PROFILE_POINTS; i += 1) {
-    const o = 4 * i;
-    if (i < lip || i > toe) {
-      out[o] = 1;
-      out[o + 1] = 0;
-      out[o + 2] = 0;
-      continue;
-    }
-    const a = i > 0 ? i - 1 : i;
-    const b = i < LAST ? i + 1 : i;
-    const dx = profile[2 * b] - profile[2 * a];
-    const dy = profile[2 * b + 1] - profile[2 * a + 1];
-    const length = Math.sqrt(dx * dx + dy * dy);
-    const x = profile[2 * i];
-    const y = profile[2 * i + 1];
-    const nx = length > 0 ? -dy / length : 0;
-    const ny = length > 0 ? dx / length : 1;
-    out[o] = tubeSkyView(x, y, nx, ny, tipX, tipY);
-    // The lip from the face: the arc from the tip up round to the throat, counter-clockwise as seen from the point.
-    const ux = tipX - x;
-    const uy = tipY - y;
-    const vx = throatX - x;
-    const vy = throatY - y;
-    out[o + 1] = i > throat && ux * vy - uy * vx > 0 ? arcView(nx, ny, ux, uy, vx, vy) : 0;
-    out[o + 2] = 1;
-  }
-}
-
-/** Where `acrossTo` found the other side: the segment's first point, and how far along it. */
-const foot = { k: 0, t: 0 };
-/**
- * Each profile segment k → k + 1 a search may test, 8 floats a segment: its start, its run and the run's inverse square
- * length (0 for a point), its midpoint and half its length (`prepareSegments`).
- */
-const segments = new Float64Array(8 * PROFILE_POINTS);
-/** Segments a block holds, and each block's circle (centre, radius) over them, by its first segment (`prepareSegments`). */
-const BLOCK = 4;
-const blocks = new Float64Array(3 * PROFILE_POINTS);
-
-/** Lays out the run [from, to]'s segments for `acrossTo`, and its blocks of `BLOCK` from `from`. */
-function prepareSegments(profile: Float32Array, from: number, to: number): void {
-  for (let k = from; k < to; k += 1) {
-    const o = 8 * k;
-    const ax = profile[2 * k];
-    const ay = profile[2 * k + 1];
-    const dx = profile[2 * k + 2] - ax;
-    const dy = profile[2 * k + 3] - ay;
-    const length2 = dx * dx + dy * dy;
-    segments[o] = ax;
-    segments[o + 1] = ay;
-    segments[o + 2] = dx;
-    segments[o + 3] = dy;
-    segments[o + 4] = length2 > 0 ? 1 / length2 : 0;
-    segments[o + 5] = ax + dx / 2;
-    segments[o + 6] = ay + dy / 2;
-    segments[o + 7] = Math.sqrt(length2) / 2;
-  }
-  for (let b = from; b < to; b += BLOCK) {
-    const end = b + BLOCK < to ? b + BLOCK : to;
-    // The circle about the box of the block's points: every point of its segments lies within it.
-    let x0 = Infinity;
-    let x1 = -Infinity;
-    let y0 = Infinity;
-    let y1 = -Infinity;
-    for (let k = b; k <= end; k += 1) {
-      const x = profile[2 * k];
-      const y = profile[2 * k + 1];
-      x0 = x < x0 ? x : x0;
-      x1 = x > x1 ? x : x1;
-      y0 = y < y0 ? y : y0;
-      y1 = y > y1 ? y : y1;
-    }
-    const cx = (x0 + x1) / 2;
-    const cy = (y0 + y1) / 2;
-    let r2 = 0;
-    for (let k = b; k <= end; k += 1) {
-      const ex = profile[2 * k] - cx;
-      const ey = profile[2 * k + 1] - cy;
-      if (ex * ex + ey * ey > r2) r2 = ex * ex + ey * ey;
-    }
-    blocks[3 * b] = cx;
-    blocks[3 * b + 1] = cy;
-    blocks[3 * b + 2] = Math.sqrt(r2);
-  }
-}
-
-/** The search's best so far: its squared distance, the distance, and where. */
-const search = { best: Infinity, bound: Infinity, k: -1, t: 0 };
-
-/** Tests segment k against (px, py) for `search`: ties go to the first segment along the run, as a search in order. */
-function testSegment(px: number, py: number, k: number): void {
-  const o = 8 * k;
-  const ex = px - segments[o];
-  const ey = py - segments[o + 1];
-  const dx = segments[o + 2];
-  const dy = segments[o + 3];
-  let t = (ex * dx + ey * dy) * segments[o + 4];
-  t = t < 0 ? 0 : t > 1 ? 1 : t;
-  const qx = ex - t * dx;
-  const qy = ey - t * dy;
-  const d2 = qx * qx + qy * qy;
-  if (d2 < search.best || (d2 === search.best && k < search.k)) {
-    search.best = d2;
-    search.bound = Math.sqrt(d2);
-    search.k = k;
-    search.t = t;
-  }
-}
-
-/** Whether a circle (its centre (x, y) from the point, its radius r) lies beyond the search's bound: it cannot even tie. */
-function beyond(x: number, y: number, r: number): boolean {
-  const reach = search.bound + r;
-  return x * x + y * y > reach * reach * (1 + 1e-9) + 1e-12;
-}
-
-/**
- * The shortest distance from profile point i to the segments of the run [from, to] (laid out by `prepareSegments`), m,
- * the nearest point into `foot`: the first such segment along the run, as a search in order finds it. From `start` (the
- * last point's nearest segment, usually next to this one's) it takes a first distance, then tests only the blocks and
- * segments whose circles it doesn't rule out (nothing in a circle is nearer than its centre's distance less its radius),
- * so most cost a few products, not a projection (the advisor, 2026-10-01: a whole search of each run cost 20 ms a build
- * with a long front open). Only + − × ÷ √.
- */
-function acrossTo(profile: Float32Array, i: number, from: number, to: number, start = -1): number {
-  const px = profile[2 * i];
-  const py = profile[2 * i + 1];
-  search.best = Infinity;
-  search.bound = Infinity;
-  search.k = -1;
-  search.t = 0;
-  if (start >= from && start < to) testSegment(px, py, start);
-  for (let b = from; b < to; b += BLOCK) {
-    if (beyond(px - blocks[3 * b], py - blocks[3 * b + 1], blocks[3 * b + 2])) continue;
-    const end = b + BLOCK < to ? b + BLOCK : to;
-    for (let k = b; k < end; k += 1) {
-      if (k === start || beyond(px - segments[8 * k + 5], py - segments[8 * k + 6], segments[8 * k + 7])) continue;
-      testSegment(px, py, k);
-    }
-  }
-  foot.k = search.k;
-  foot.t = search.t;
-  return Math.sqrt(search.best);
-}
-
-/**
- * The lip's thickness at each point between the crest and the throat (`SHEET`), into `out` (m): from the crest to the
- * tip, the distance to the underside's run; from the tip back to the throat, to the outer run's; 0 at the tip, where
- * they meet. Into `back`, how much of the sky the sheet's far side sees there (the advisor's ruling, 2026-10-01): from
- * the outer run, the underside's view through the tube's opening where the distance was found (`tubeSkyView`); from
- * the underside and the tip, 1, the open sky. `scale`: the slice's h0, m. `walk` (the default) starts each point's
- * search from the last one's nearest segment (`acrossTo`; the same answers, fewer tests). Returns how far the underside
- * has formed, 0–1: its length over `SHEET.formed` h0 (0 leaves `out` and `back` as they were).
- */
-export function sheetAcross(profile: Float32Array, scale: number, out: Float32Array, back: Float32Array, walk = true): number {
-  const { crest, lip, throat } = LANDMARK;
-  let underside = 0;
-  for (let k = lip; k < throat; k += 1) {
-    const dx = profile[2 * k + 2] - profile[2 * k];
-    const dy = profile[2 * k + 3] - profile[2 * k + 1];
-    underside += Math.sqrt(dx * dx + dy * dy);
-  }
-  const formed = Math.min(1, underside / (SHEET.formed * scale));
-  if (formed <= 0) return 0;
-  const tipX = profile[2 * lip];
-  const tipY = profile[2 * lip + 1];
-  prepareSegments(profile, crest, lip);
-  prepareSegments(profile, lip, throat);
-  // Each point's search starts from the last one's nearest segment (`acrossTo`).
-  let start = -1;
-  for (let i = crest + 1; i < lip; i += 1) {
-    out[i] = acrossTo(profile, i, lip, throat, walk ? start : -1);
-    start = foot.k;
-    // The underside's normal there, turned from its run (tip back to the throat) into the cavity, below it.
-    const { k, t } = foot;
-    const dx = profile[2 * k + 2] - profile[2 * k];
-    const dy = profile[2 * k + 3] - profile[2 * k + 1];
-    const length = Math.sqrt(dx * dx + dy * dy);
-    back[i] = length > 0
-      ? tubeSkyView(profile[2 * k] + t * dx, profile[2 * k + 1] + t * dy, -dy / length, dx / length, tipX, tipY)
-      : 0;
-  }
-  out[lip] = 0;
-  back[lip] = 1;
-  start = -1;
-  for (let i = lip + 1; i < throat; i += 1) {
-    out[i] = acrossTo(profile, i, crest, lip, walk ? start : -1);
-    start = foot.k;
-    back[i] = 1;
-  }
-  return formed;
-}
-
-/**
  * The swept barrel's loft (the Padang Padang spec, Part B, PR 3): each breaking front's profiles, looked up by its
  * points' foot crests and clocks, stood along its shoreward normal and sewn into the water.
  * - **Anchor** (the advisor's ruling 2): before the throw the profile's crest sits on the solver's crest; from the throw,
@@ -483,10 +230,14 @@ export class SweptLoft {
   private readonly contact: boolean;
   private readonly measureSheet: boolean;
   /** A slice's lip thickness per profile point, m, and its far side's view of the sky (`sheetAcross`). */
-  private readonly across = new Float32Array(PROFILE_POINTS);
-  private readonly farSide = new Float32Array(PROFILE_POINTS);
+  private readonly sheets: SheetLookup = { across: new Float32Array(PROFILE_POINTS), back: new Float32Array(PROFILE_POINTS) };
   /** A slice's throat views per profile point (`throatViews`). */
   private readonly inside = new Float32Array(4 * PROFILE_POINTS);
+  /** How the drawing's profile blends its cases' frames, for the sheet's tables (`ProfileLibrary.frameBlend`). */
+  private readonly blend = {
+    weight: 0, scale: 0, lowerFrame: 0, lowerNext: 0, lowerShare: 0, upperFrame: 0, upperNext: 0, upperShare: 0,
+  } as FrameBlend;
+
 
   constructor(private readonly library: ProfileLibrary, private readonly slope: number, options: LoftOptions = {}) {
     this.contact = options.contact ?? false;
@@ -831,14 +582,19 @@ export class SweptLoft {
         }
       }
       const maskSlice = wFade > 0 ? Math.min(1, Math.max(0, 1 + d / LOFT.band)) : 0;
-      // The lip as a thin sheet, for the drawing only: how far across it each point is, once its underside has formed.
-      const formed = this.measureSheet && w > 0 ? sheetAcross(profile, lookup.scale, this.across, this.farSide) : 0;
-      // Its inside, once there is one: the sky and the lip each inner point sees, and the lip's mean thickness.
+      // The lip as a thin sheet and the tube's inside, for the drawing only, blended from the library's tables as the
+      // profile is from its frames: how far across the lip each point is, what its far side sees, what the inner face
+      // sees, once its underside has formed; and the lip's mean thickness.
+      let formed = 0;
       let lipThickness = 0;
-      if (formed > 0) {
-        throatViews(profile, this.inside);
-        for (let i = THROAT.thicknessFrom; i <= THROAT.thicknessTo; i += 1) lipThickness += this.across[i];
-        lipThickness /= THROAT.thicknessTo - THROAT.thicknessFrom + 1;
+      if (this.measureSheet && w > 0) {
+        query.hold = 'drawing';
+        formed = sheetTablesLookup(this.library.frameBlend(query, this.blend), this.sheets);
+        if (formed > 0) {
+          throatViews(profile, this.inside);
+          for (let i = THROAT.thicknessFrom; i <= THROAT.thicknessTo; i += 1) lipThickness += this.sheets.across[i];
+          lipThickness /= THROAT.thicknessTo - THROAT.thicknessFrom + 1;
+        }
       }
       const slice = r.sliceCount;
       r.sliceFormed[slice] = formed;
@@ -894,8 +650,8 @@ export class SweptLoft {
           pin = Math.max(rest, i < LOFT.pinned ? (LOFT.pinned - i) / LOFT.pinned : i > LAST - LOFT.pinned ? (i - (LAST - LOFT.pinned)) / LOFT.pinned : 0);
           maskAlong = Math.min(1, Math.max(0, 1 - (past - rampLength) / LOFT.band));
           if (formed > 0 && i > LANDMARK.crest && i < LANDMARK.throat) {
-            sheet = this.across[i];
-            sheetBack = this.farSide[i];
+            sheet = this.sheets.across[i];
+            sheetBack = this.sheets.back[i];
             sheetShare = formed * Math.min(1, Math.min(i - LANDMARK.crest, LANDMARK.throat - i) / (SHEET.ramp + 1));
           }
           if (formed > 0) {
