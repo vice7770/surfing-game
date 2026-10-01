@@ -490,36 +490,40 @@ describe('the loft’s slices, for the contact', () => {
   });
 
   describe('overlapping fronts: the first wins (the advisor, 2026-09-30)', () => {
-    /** Two straight fronts along +x at z = −100, 21 points each: the first over x 0.5–20.5, the second from `start`. */
-    const two = (start: number) => {
+    /**
+     * Two straight fronts along +x, 21 points each: the first over x 0.5–20.5 at z = −100, the second from `start`, `ahead`
+     * metres shoreward of it.
+     */
+    const two = (start: number, ahead = 0) => {
       const n = 21;
       const out = new Float32Array(2 * n * FRONT_STRIDE);
       for (let f = 0; f < 2; f += 1) {
         for (let k = 0; k < n; k += 1) {
           const o = (f * n + k) * FRONT_STRIDE;
-          out[o + FRONT_FIELD.x] = (f === 0 ? 0.5 : start) + k; out[o + FRONT_FIELD.z] = -100; out[o + FRONT_FIELD.front] = f + 1;
+          const z = f === 0 ? -100 : -100 + ahead;
+          out[o + FRONT_FIELD.x] = (f === 0 ? 0.5 : start) + k; out[o + FRONT_FIELD.z] = z; out[o + FRONT_FIELD.front] = f + 1;
           out[o + FRONT_FIELD.sigma] = k; out[o + FRONT_FIELD.tau] = f === 0 ? 0.1 : 0.2; out[o + FRONT_FIELD.footHeight] = 2.1;
-          out[o + FRONT_FIELD.footDepth] = 7; out[o + FRONT_FIELD.throwZ] = -100;
+          out[o + FRONT_FIELD.footDepth] = 7; out[o + FRONT_FIELD.throwZ] = z;
         }
       }
       return out;
     };
+    const resting = (loft: LoftResult, s: number) => loft.sliceWeight[s] === 0 && loft.sliceWeight[s + 1] === 0;
     const joinedStrips = (loft: LoftResult) => Array.from(loft.sliceJoined.subarray(0, loft.sliceCount));
 
     it('drops the later front’s strips over the earlier front’s, the same strips in the drawing and the contact', () => {
-      // The second front from x 10: its strips over the first's footprint (x −1 to 22) go.
+      // The second front from x 10: its lifted strips over the first's lifted footprint (x 0.5 to 20.5) go.
       const drawn = new SweptLoft(tubes(), 0.05).build(two(10), 42, 0.5, flat);
       const contact = new SweptLoft(tubes(), 0.05, { contact: true }).build(two(10), 42, 0.5, flat);
-      expect(drawn.overlaps).toBe(27);
+      expect(drawn.overlaps).toBe(21);
       expect(contact.overlaps).toBe(drawn.overlaps);
       expect(joinedStrips(contact)).toEqual(joinedStrips(drawn));
       for (let s = 0; s + 1 < drawn.sliceCount; s += 1) {
-        // The first front keeps every strip; the second keeps those past x 22.
-        if (drawn.sliceFront[s] === 1 && drawn.sliceFront[s + 1] === 1) expect(drawn.sliceJoined[s]).toBe(1);
-        if (drawn.sliceFront[s] === 2 && drawn.sliceFront[s + 1] === 2) {
-          const x = drawn.positions[3 * s * LOFT_SAMPLES];
-          expect(drawn.sliceJoined[s]).toBe(x < 22 ? 0 : 1);
-        }
+        const x = drawn.positions[3 * s * LOFT_SAMPLES];
+        // The first front keeps every lifted strip, and its resting end gives way under the second's lifted strips; the
+        // second drops everything over the first's lifted span (x 0.5 to 20.5), resting or not.
+        if (drawn.sliceFront[s] === 1 && drawn.sliceFront[s + 1] === 1) expect(drawn.sliceJoined[s]).toBe(resting(drawn, s) && x >= 20.5 ? 0 : 1);
+        if (drawn.sliceFront[s] === 2 && drawn.sliceFront[s + 1] === 2) expect(drawn.sliceJoined[s]).toBe(x < 20.5 ? 0 : 1);
       }
       // The drawing triangulates the kept strips only.
       expect(drawn.indexCount).toBe(6 * (LOFT_SAMPLES - 1) * joinedStrips(drawn).reduce((sum, j) => sum + j, 0));
@@ -528,12 +532,19 @@ describe('the loft’s slices, for the contact', () => {
       expect(drawn.overlapOpenWeight).toBe(1);
     });
 
-    it('leaves fronts apart alone, and where they meet end to end drops only what lies on the water', () => {
+    it('leaves fronts apart alone, and where they meet end to end their resting ends drop nothing', () => {
       expect(new SweptLoft(tubes(), 0.05).build(two(40), 42, 0.5, flat).overlaps).toBe(0);
-      // A metre apart: their extensions and blended ends overlap over x 20–22, where neither barrel stands.
-      const meeting = new SweptLoft(tubes(), 0.05).build(two(21.5), 42, 0.5, flat);
-      expect(meeting.overlaps).toBeGreaterThan(0);
-      expect(meeting.overlapOpenWeight).toBeLessThan(0.2);
+      // A metre apart: their extensions and blended ends overlap over x 20–22, where both rest on the water.
+      expect(new SweptLoft(tubes(), 0.05).build(two(21.5), 42, 0.5, flat).overlaps).toBe(0);
+    });
+
+    it('judges fronts one behind the other on their lifted spans, not where they rest (the advisor, 2026-10-01)', () => {
+      // The toy tube at h0 7 m stands off the water from 0.6 H (3.36 m) behind its crest to 0.5 H (2.8 m) past its toe,
+      // 5.6 m ahead: 11.76 m in all, while its profile runs 14 m either way. 15 m apart, only their resting parts meet.
+      for (const contact of [false, true]) {
+        expect(new SweptLoft(tubes(), 0.05, { contact }).build(two(0.5, 15), 42, 0.5, flat).overlaps).toBe(0);
+        expect(new SweptLoft(tubes(), 0.05, { contact }).build(two(0.5, 8), 42, 0.5, flat).overlaps).toBeGreaterThan(0);
+      }
     });
   });
 

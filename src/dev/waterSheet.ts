@@ -9,7 +9,7 @@
  * an M4 player's does (the GPU tier's 64-component sea); `cpu`, the default,
  * steps it in the page as before.
  */
-import { PerspectiveCamera, Vector3 } from 'three';
+import { PerspectiveCamera, Vector3, type Color } from 'three';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
 import type { TimeOfDay } from '../game/SurfConditions';
 import type { WaterLook } from '../scene/water/waterLook';
@@ -460,16 +460,24 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     water.visible = false;
     const dry = frame();
     water.visible = true;
+    // Foam: the pixels that change when the foam's colour does (the curl shares the water's uniforms).
+    const foamColour = hooks.water.materialUniforms.waterFoamColor.value as Color;
+    const foamWas = foamColour.clone();
+    foamColour.setRGB(1, 0, 1);
+    const foamed = frame();
+    foamColour.copy(foamWas);
     hooks.renderView(camera);
     // Each curl pixel's region by the region pass's strongest channel; the water's own pixels where hiding it showed.
     const same = (a: Uint8Array, b: Uint8Array, k: number) => a[k] === b[k] && a[k + 1] === b[k + 1] && a[k + 2] === b[k + 2];
     const region = new Uint8Array(width * rows);
+    const foam = new Uint8Array(width * rows);
     let x0 = width;
     let x1 = -1;
     let y0 = rows;
     let y1 = -1;
     for (let p = 0; p < width * rows; p += 1) {
       const k = 4 * p;
+      foam[p] = Math.max(Math.abs(drawn[k] - foamed[k]), Math.abs(drawn[k + 1] - foamed[k + 1]), Math.abs(drawn[k + 2] - foamed[k + 2])) > 12 ? 1 : 0;
       if (!same(drawn, regions, k)) {
         const [r, g, b] = [regions[k], regions[k + 1], regions[k + 2]];
         // Red the lip, blue the back wall, yellow the shoulder's face, green the rest of the curl.
@@ -495,12 +503,13 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       const v = c / 255;
       return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
     };
-    const stats = (pixels: Uint8Array, wanted: number) => {
+    /** A region's mean luminance and hue; `clear`: its foam-free pixels only. */
+    const stats = (pixels: Uint8Array, wanted: number, clear = false) => {
       let n = 0;
       let luma = 0;
       const sum = [0, 0, 0];
       for (let p = 0; p < width * rows; p += 1) {
-        if (region[p] !== wanted || (wanted === 4 && !inBox(p))) continue;
+        if (region[p] !== wanted || (wanted === 4 && !inBox(p)) || (clear && foam[p])) continue;
         const k = 4 * p;
         const [r, g, b] = [linear(pixels[k]), linear(pixels[k + 1]), linear(pixels[k + 2])];
         luma += 0.2126 * r + 0.7152 * g + 0.0722 * b;
@@ -519,7 +528,8 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     };
     // The face beside the lip: the water's own pixels around the lip and back wall, and the curl's shoulder face.
     const all = (pixels: Uint8Array) => ({
-      lip: stats(pixels, 1), backWall: stats(pixels, 2), faceWater: stats(pixels, 4), faceCurl: stats(pixels, 5), otherCurl: stats(pixels, 3),
+      lip: stats(pixels, 1), backWall: stats(pixels, 2), faceWater: stats(pixels, 4), faceWaterClear: stats(pixels, 4, true),
+      faceCurl: stats(pixels, 5), otherCurl: stats(pixels, 3),
     });
     const result = { shot: shot.name, look, sun: lighting ?? sun, drawn: all(drawn), before: all(before), owner: all(owner) };
     // The drawn frame with the regions marked: the lip red, the back wall blue, the face's pixels yellow, one in four.

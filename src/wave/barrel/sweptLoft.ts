@@ -31,10 +31,15 @@ export const LOFT_SAMPLES = PROFILE_POINTS + 2 * LOFT.extensionSamples;
  * Where the profile stands off the solver's water (the advisor's ruling, 2026-10-01; the spec's item 13.4): the library
  * is the authority only where the solver can't overturn, from just behind the crest to the toe. Its back slope and the
  * flat ahead are one Basilisk wave's still water, so they rest on the game's sea, its height and its foam. In H, the
- * slice's crest over the lowest water ahead of its toe: fully lifted from `behind` behind the crest to the toe, and
- * eased down (smoothstep) to the water over `ramp` beyond each [provisional].
+ * slice's crest over the lower of the water at its toe and at its front end: fully lifted from `behind` behind the
+ * crest to the toe, and eased down (smoothstep) to the water over `ramp` beyond each [provisional].
  */
 export const REST = { behind: 0.1, ramp: 0.5 } as const;
+
+/** H for `REST`, m: the crest's height over the lower of the water at the toe and at the profile's front end. */
+function restHeight(crestY: number, toeY: number, frontY: number): number {
+  return Math.max(1e-6, crestY - (toeY < frontY ? toeY : frontY));
+}
 /**
  * The lip as a thin sheet (docs/research/water-physics/tube-colour-fix.md, step 1; the advisor's rulings, 2026-10-01):
  * the lip's two sides are the profile's runs from the crest to the tip and from the tip back under to the throat
@@ -528,22 +533,31 @@ export class SweptLoft {
         closeRun();
         continue;
       }
-      // The drawn slice's reach along its ray, m, the same in both modes (overlapping fronts are judged on it); and how
-      // far the contact's held tip stands from the drawn one, m (the advisor: the touchdown's own approach).
+      // The drawn slice's lifted span along its ray, m, the same in both modes (overlapping fronts are judged on it:
+      // where both rest on the water there is nothing to conflict; the advisor, 2026-10-01); and how far the contact's
+      // held tip stands from the drawn one, m (the advisor: the touchdown's own approach).
       let tipGap = 0;
-      let reachBack = profile[0];
-      let reachFront = profile[2 * LAST];
+      let drawnCrestX = profile[2 * LANDMARK.crest];
+      let crestY = profile[2 * LANDMARK.crest + 1];
+      let drawnToeX = profile[2 * LANDMARK.toe];
+      let toeY = profile[2 * LANDMARK.toe + 1];
+      let frontY = profile[2 * LAST + 1];
       if (this.contact) {
         query.hold = 'drawing';
         this.library.pointAt(query, LANDMARK.lip, this.point);
         const dx = this.point[0] - profile[2 * LANDMARK.lip];
         const dy = this.point[1] - profile[2 * LANDMARK.lip + 1];
         tipGap = Math.sqrt(dx * dx + dy * dy);
-        this.library.pointAt(query, LANDMARK.back, this.point);
-        reachBack = this.point[0];
+        this.library.pointAt(query, LANDMARK.crest, this.point);
+        [drawnCrestX, crestY] = [this.point[0], this.point[1]];
+        this.library.pointAt(query, LANDMARK.toe, this.point);
+        [drawnToeX, toeY] = [this.point[0], this.point[1]];
         this.library.pointAt(query, LANDMARK.front, this.point);
-        reachFront = this.point[0];
+        frontY = this.point[1];
       }
+      const drawnHeight = restHeight(crestY, toeY, frontY);
+      const reachBack = drawnCrestX - (REST.behind + REST.ramp) * drawnHeight;
+      const reachFront = drawnToeX + REST.ramp * drawnHeight;
       // The weights: into the water at the front's ends, and after touchdown.
       const d = Math.min(sigma - f.first, f.last - sigma);
       const r0 = Math.min(1, d / LOFT.endBlend);
@@ -619,8 +633,8 @@ export class SweptLoft {
       if (tipGap > r.tipGap) r.tipGap = tipGap;
       this.anchorX[slice] = ax;
       this.anchorZ[slice] = az;
-      this.reachBack[slice] = reachBack - LOFT.extension;
-      this.reachFront[slice] = reachFront + LOFT.extension;
+      this.reachBack[slice] = reachBack;
+      this.reachFront[slice] = reachFront;
       r.sliceJoined[slice] = 0;
       r.sliceRayX[slice] = nx;
       r.sliceRayZ[slice] = nz;
@@ -633,9 +647,7 @@ export class SweptLoft {
       // How far each point stands off the water: from just behind the crest to the toe, eased onto it either side.
       const profileCrestX = profile[2 * LANDMARK.crest];
       const toeX = profile[2 * LANDMARK.toe];
-      let lowest = profile[2 * LANDMARK.toe + 1];
-      for (let i = LANDMARK.toe + 1; i < PROFILE_POINTS; i += 1) if (profile[2 * i + 1] < lowest) lowest = profile[2 * i + 1];
-      const height = Math.max(1e-6, profile[2 * LANDMARK.crest + 1] - lowest);
+      const height = restHeight(profile[2 * LANDMARK.crest + 1], profile[2 * LANDMARK.toe + 1], profile[2 * LAST + 1]);
       const rampLength = REST.ramp * height;
       for (let j = 0; j < LOFT_SAMPLES; j += 1) {
         let along: number;
@@ -719,14 +731,18 @@ export class SweptLoft {
   /**
    * Overlapping fronts (the advisor, 2026-09-30): the first front wins. A later front's strip whose footprint overlaps
    * an earlier front's kept strip is dropped, from the drawing, its mask and the contact alike, and counted. A footprint
-   * is the convex hull of its two slices' drawn reach (the same in both modes, so both drop the same strips); a front's
-   * order is the records'. Only + − × ÷.
+   * is the convex hull of its two slices' lifted spans as drawn (from the start of the rest ramp behind the crest to
+   * its end past the toe; the same in both modes, so both drop the same strips), so where two fronts only rest on the
+   * water there is nothing to conflict (the advisor, 2026-10-01). A strip resting wholly on the water (no weight) is
+   * the water: it gives way to any strip over it, and a lifted strip over it keeps its place; those drops are not
+   * counted. A front's order is the records'. Only + − × ÷.
    */
   private dropOverlaps(): void {
     const r = this.result;
     const { corners, boxes } = this;
     // Each joined strip's corners and box, and each front's run of slices [start, end) with its box.
     const starts: number[] = [];
+    const resting = (s: number) => !(r.sliceWeight[s] > 0) && !(r.sliceWeight[s + 1] > 0);
     for (let s = 0; s < r.sliceCount; s += 1) {
       if (s === 0 || r.sliceFront[s] !== r.sliceFront[s - 1]) starts.push(s);
       if (r.sliceJoined[s] !== 1) continue;
@@ -771,7 +787,13 @@ export class SweptLoft {
           if (r.sliceJoined[s] !== 1) continue;
           for (let t = starts[earlier]; t < starts[earlier + 1]; t += 1) {
             if (r.sliceJoined[t] !== 1 || apart(boxes, 4 * s, boxes, 4 * t) || !this.hullsOverlap(8 * s, 8 * t)) continue;
+            // A resting strip is the water: a lifted one over an earlier resting one keeps its place, and the water goes.
+            if (!resting(s) && resting(t)) {
+              r.sliceJoined[t] = 0;
+              continue;
+            }
             r.sliceJoined[s] = 0;
+            if (resting(s)) break;
             r.overlaps += 1;
             // A dropped strip that held an open tube would show as a hole in a barrel (the advisor: report it), as
             // high as its weight lifts it.
