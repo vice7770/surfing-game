@@ -500,7 +500,7 @@ export class PhysicalMode {
       this.scene.add(this.sweptBarrel.mesh.mesh);
     }
     this.sweptBarrel.setSpot(this.swept ? config.spot : undefined);
-    this.lipSheet.mesh.visible = this.shown && !this.swept;
+    this.lipSheet.mesh.visible = this.shown;
     water.setChop(chopForWind(settings.windSpeed));
     water.setOptics(SPOT_OPTICS[settings.spot]);
     this.farField.setOptics(SPOT_OPTICS[settings.spot]);
@@ -663,7 +663,8 @@ export class PhysicalMode {
     this.followMotion(host, time);
     this.camera.update(host, this.focus, dt, pose[7] > 0 ? this.follow : undefined);
     this.farField.update(host.snapshot.status.seaTime);
-    if (!this.swept) this.lipSheet.update(host.snapshot.lip, host.snapshot.lipCount, host.init.dx);
+    // At a swept spot the barrel draws the jet, and the sheet only its splash-ups (PR 5).
+    this.lipSheet.update(host.snapshot.lip, host.snapshot.lipCount, host.init.dx, this.swept);
     this.board.visible = this.shown && pose[7] > 0;
     this.board.position.set(pose[0], pose[1], pose[2]);
     this.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
@@ -724,7 +725,7 @@ export class PhysicalMode {
     this.leash.object.visible = this.surfer.group.visible && (this.host?.snapshot.board[7] ?? 0) > 0;
     this.seabed.mesh.visible = visible;
     this.farField.mesh.visible = visible;
-    this.lipSheet.mesh.visible = visible && !this.swept;
+    this.lipSheet.mesh.visible = visible;
     this.bubbles.mesh.visible = visible;
     this.spray.mesh.visible = visible && this.sprayShown;
   }
