@@ -113,6 +113,17 @@ Read in this order:
   - The report is `docs/research/particle-report.md`.
   - Its recommendations wait for the owner: Medium particles for Auto's Medium result, and no spray stepping while Spray and mist is off.
 
+## Stopped here (2026-10-01, about 16:30, at the owner's request)
+
+Every agent was stopped, and their background runs too. Where each piece was left:
+- **Ready to merge** (the owner merges):
+  - #82 and #94, any time;
+  - the Padang Padang stack, in order: #91 → #92 → #95 (change each base to main first), then #103, then #104.
+- **#105, the peak fix and jump rule:** done, except one check. Small's 90th-percentile peel rose from 8.5 to 22.8 m/s, which may be inherited joins throwing together. If so, re-time an inherited crest by its own onset.
+- **#102, PR 5:** the jet-holding match (a jet-holding point keeps matching over the throw's window until its crash) was being built, and its probes hadn't run. Check the PR 5 agent's branch `claude/padang-crash` for what was pushed, then run the 2 m and 1 m probes: at least about 90 % of jets crashing on their own point.
+- **PR 7's prep** (`claude/padang-every-spot`): it carries #105, the Reef rules and its two-point throw line. The Point's record (a15, a23, a30; d = 1.55 + 0.95 η) was being added, and PR 7 isn't opened yet.
+- **The front splits** (`claude/padang-front-merge`): diagnosed on the old base (238 of 289 pairs were the jump artefact). The runs on #105 hadn't finished, and no rule was built.
+
 ## Open decisions for the owner
 
 - **The Reef's jet:** raise the ask from 0.47 H² to about 0.55–0.6 H² (from the periodic Basilisk runs), and raise the lip-jet source's cap to about 0.3 on the Reef.
