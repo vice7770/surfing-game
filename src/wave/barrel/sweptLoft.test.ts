@@ -319,6 +319,43 @@ describe('the lip as a thin sheet (tube-colour-fix.md, step 1)', () => {
     expect(sheetAcross(profile, 70, out, new Float32Array(PROFILE_POINTS))).toBeCloseTo(0.1 / (SHEET.formed * 70), 5);
   });
 
+  it('starts each point’s search from the last one’s nearest segment and finds what testing every segment finds, on every library frame', () => {
+    const profile = new Float32Array(2 * PROFILE_POINTS);
+    const [walked, whole, walkedBack, wholeBack] = [0, 0, 0, 0].map(() => new Float32Array(PROFILE_POINTS));
+    /** The distance to the run [from, to], every segment tested. */
+    const every = (i: number, from: number, to: number) => {
+      let best = Infinity;
+      for (let k = from; k < to; k += 1) {
+        const [ax, ay] = [profile[2 * k], profile[2 * k + 1]];
+        const [dx, dy] = [profile[2 * k + 2] - ax, profile[2 * k + 3] - ay];
+        const l2 = dx * dx + dy * dy;
+        const t = l2 > 0 ? Math.min(1, Math.max(0, ((profile[2 * i] - ax) * dx + (profile[2 * i + 1] - ay) * dy) / l2)) : 0;
+        best = Math.min(best, Math.hypot(ax + t * dx - profile[2 * i], ay + t * dy - profile[2 * i + 1]));
+      }
+      return best;
+    };
+    let frames = 0;
+    for (const c of readBarrelCases().map(decodeCase)) {
+      const count = c.frames.length / (2 * PROFILE_POINTS);
+      for (let f = 0; f < count; f += 1) {
+        for (let k = 0; k < 2 * PROFILE_POINTS; k += 1) profile[k] = 7 * c.frames[f * 2 * PROFILE_POINTS + k];
+        const formed = sheetAcross(profile, 7, walked, walkedBack);
+        expect(sheetAcross(profile, 7, whole, wholeBack, false)).toBe(formed);
+        if (!(formed > 0)) continue;
+        frames += 1;
+        for (let i = LANDMARK.crest + 1; i < LANDMARK.throat; i += 1) {
+          if (i === LANDMARK.lip) continue;
+          const reference = i < LANDMARK.lip ? every(i, LANDMARK.lip, LANDMARK.throat) : every(i, LANDMARK.crest, LANDMARK.lip);
+          expect(walked[i], `${c.id} frame ${f} point ${i}`).toBeCloseTo(reference, 5);
+          expect(whole[i], `${c.id} frame ${f} point ${i}`).toBeCloseTo(reference, 5);
+          // The far side's view comes from the same segment either way: the first nearest along the run.
+          expect(walkedBack[i], `${c.id} frame ${f} point ${i}`).toBe(wholeBack[i]);
+        }
+      }
+    }
+    expect(frames).toBeGreaterThan(100);
+  });
+
   it('measures across to the other side’s segments, not just its points', () => {
     // Two parallel runs 0.2 m apart with points staggered: every distance is the gap, never a diagonal to a point.
     const profile = new Float32Array(2 * PROFILE_POINTS);

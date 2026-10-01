@@ -193,40 +193,128 @@ export function tubeSkyView(x: number, y: number, nx: number, ny: number, tipX: 
   const c2 = (nx * ux + ny * uy) / u;
   const s2 = (nx * uy - ny * ux) / u;
   // The window runs counter-clockwise from the horizon to the tip, under half a turn; the surface sees from −90° (0, −1)
-  // to +90° (0, 1). A direction (c, s) lies in the window when it is counter-clockwise of the horizon and not of the tip.
-  const inWindow = (c: number, s: number) => c1 * s - s1 * c >= 0 && c * s2 - s * c2 >= 0;
-  const from = c1 >= 0 ? s1 : inWindow(0, -1) ? -1 : Number.NaN;
-  const to = c2 >= 0 ? s2 : inWindow(0, 1) ? 1 : Number.NaN;
+  // to +90° (0, 1). A direction (c, s) lies in the window when it is counter-clockwise of the horizon and not of the
+  // tip: c1 s − s1 c ≥ 0 and c s2 − s c2 ≥ 0, which for (0, −1) reads −c1 ≥ 0 and c2 ≥ 0, and for (0, 1) c1 ≥ 0 and −c2 ≥ 0.
+  const from = c1 >= 0 ? s1 : c2 >= 0 ? -1 : Number.NaN;
+  const to = c2 >= 0 ? s2 : c1 >= 0 ? 1 : Number.NaN;
   if (from !== from || to !== to) return 0;
   return to > from ? (to - from) / 2 : 0;
 }
 
 /** Where `acrossTo` found the other side: the segment's first point, and how far along it. */
 const foot = { k: 0, t: 0 };
+/**
+ * Each profile segment k → k + 1 a search may test, 8 floats a segment: its start, its run and the run's inverse square
+ * length (0 for a point), its midpoint and half its length (`prepareSegments`).
+ */
+const segments = new Float64Array(8 * PROFILE_POINTS);
+/** Segments a block holds, and each block's circle (centre, radius) over them, by its first segment (`prepareSegments`). */
+const BLOCK = 4;
+const blocks = new Float64Array(3 * PROFILE_POINTS);
 
-/** The shortest distance from profile point i to the segments of the run [from, to], m; the nearest point into `foot`. */
-function acrossTo(profile: Float32Array, i: number, from: number, to: number): number {
-  const px = profile[2 * i];
-  const py = profile[2 * i + 1];
-  let best = Infinity;
+/** Lays out the run [from, to]'s segments for `acrossTo`, and its blocks of `BLOCK` from `from`. */
+function prepareSegments(profile: Float32Array, from: number, to: number): void {
   for (let k = from; k < to; k += 1) {
+    const o = 8 * k;
     const ax = profile[2 * k];
     const ay = profile[2 * k + 1];
     const dx = profile[2 * k + 2] - ax;
     const dy = profile[2 * k + 3] - ay;
     const length2 = dx * dx + dy * dy;
-    let t = length2 > 0 ? ((px - ax) * dx + (py - ay) * dy) / length2 : 0;
-    t = t < 0 ? 0 : t > 1 ? 1 : t;
-    const qx = ax + t * dx - px;
-    const qy = ay + t * dy - py;
-    const d2 = qx * qx + qy * qy;
-    if (d2 < best) {
-      best = d2;
-      foot.k = k;
-      foot.t = t;
+    segments[o] = ax;
+    segments[o + 1] = ay;
+    segments[o + 2] = dx;
+    segments[o + 3] = dy;
+    segments[o + 4] = length2 > 0 ? 1 / length2 : 0;
+    segments[o + 5] = ax + dx / 2;
+    segments[o + 6] = ay + dy / 2;
+    segments[o + 7] = Math.sqrt(length2) / 2;
+  }
+  for (let b = from; b < to; b += BLOCK) {
+    const end = b + BLOCK < to ? b + BLOCK : to;
+    // The circle about the box of the block's points: every point of its segments lies within it.
+    let x0 = Infinity;
+    let x1 = -Infinity;
+    let y0 = Infinity;
+    let y1 = -Infinity;
+    for (let k = b; k <= end; k += 1) {
+      const x = profile[2 * k];
+      const y = profile[2 * k + 1];
+      x0 = x < x0 ? x : x0;
+      x1 = x > x1 ? x : x1;
+      y0 = y < y0 ? y : y0;
+      y1 = y > y1 ? y : y1;
+    }
+    const cx = (x0 + x1) / 2;
+    const cy = (y0 + y1) / 2;
+    let r2 = 0;
+    for (let k = b; k <= end; k += 1) {
+      const ex = profile[2 * k] - cx;
+      const ey = profile[2 * k + 1] - cy;
+      if (ex * ex + ey * ey > r2) r2 = ex * ex + ey * ey;
+    }
+    blocks[3 * b] = cx;
+    blocks[3 * b + 1] = cy;
+    blocks[3 * b + 2] = Math.sqrt(r2);
+  }
+}
+
+/** The search's best so far: its squared distance, the distance, and where. */
+const search = { best: Infinity, bound: Infinity, k: -1, t: 0 };
+
+/** Tests segment k against (px, py) for `search`: ties go to the first segment along the run, as a search in order. */
+function testSegment(px: number, py: number, k: number): void {
+  const o = 8 * k;
+  const ex = px - segments[o];
+  const ey = py - segments[o + 1];
+  const dx = segments[o + 2];
+  const dy = segments[o + 3];
+  let t = (ex * dx + ey * dy) * segments[o + 4];
+  t = t < 0 ? 0 : t > 1 ? 1 : t;
+  const qx = ex - t * dx;
+  const qy = ey - t * dy;
+  const d2 = qx * qx + qy * qy;
+  if (d2 < search.best || (d2 === search.best && k < search.k)) {
+    search.best = d2;
+    search.bound = Math.sqrt(d2);
+    search.k = k;
+    search.t = t;
+  }
+}
+
+/** Whether a circle (its centre (x, y) from the point, its radius r) lies beyond the search's bound: it cannot even tie. */
+function beyond(x: number, y: number, r: number): boolean {
+  const reach = search.bound + r;
+  return x * x + y * y > reach * reach * (1 + 1e-9) + 1e-12;
+}
+
+/**
+ * The shortest distance from profile point i to the segments of the run [from, to] (laid out by `prepareSegments`), m,
+ * the nearest point into `foot`: the first such segment along the run, as a search in order finds it. From `start` (the
+ * last point's nearest segment, usually next to this one's) it takes a first distance, then tests only the blocks and
+ * segments whose circles it doesn't rule out (nothing in a circle is nearer than its centre's distance less its radius),
+ * so most cost a few products, not a projection (the advisor, 2026-10-01: a whole search of each run cost 20 ms a build
+ * with a long front open). Only + − × ÷ √.
+ */
+function acrossTo(profile: Float32Array, i: number, from: number, to: number, start = -1): number {
+  const px = profile[2 * i];
+  const py = profile[2 * i + 1];
+  search.best = Infinity;
+  search.bound = Infinity;
+  search.k = -1;
+  search.t = 0;
+  if (start >= from && start < to) testSegment(px, py, start);
+  for (let b = from; b < to; b += BLOCK) {
+    if (beyond(px - blocks[3 * b], py - blocks[3 * b + 1], blocks[3 * b + 2])) continue;
+    const end = b + BLOCK < to ? b + BLOCK : to;
+    for (let k = b; k < end; k += 1) {
+      if (k === start || beyond(px - segments[8 * k + 5], py - segments[8 * k + 6], segments[8 * k + 7])) continue;
+      testSegment(px, py, k);
     }
   }
-  return Math.sqrt(best);
+  foot.k = search.k;
+  foot.t = search.t;
+  return Math.sqrt(search.best);
 }
 
 /**
@@ -234,10 +322,11 @@ function acrossTo(profile: Float32Array, i: number, from: number, to: number): n
  * tip, the distance to the underside's run; from the tip back to the throat, to the outer run's; 0 at the tip, where
  * they meet. Into `back`, how much of the sky the sheet's far side sees there (the advisor's ruling, 2026-10-01): from
  * the outer run, the underside's view through the tube's opening where the distance was found (`tubeSkyView`); from
- * the underside and the tip, 1, the open sky. `scale`: the slice's h0, m. Returns how far the underside has formed,
- * 0–1: its length over `SHEET.formed` h0 (0 leaves `out` and `back` as they were).
+ * the underside and the tip, 1, the open sky. `scale`: the slice's h0, m. `walk` (the default) starts each point's
+ * search from the last one's nearest segment (`acrossTo`; the same answers, fewer tests). Returns how far the underside
+ * has formed, 0–1: its length over `SHEET.formed` h0 (0 leaves `out` and `back` as they were).
  */
-export function sheetAcross(profile: Float32Array, scale: number, out: Float32Array, back: Float32Array): number {
+export function sheetAcross(profile: Float32Array, scale: number, out: Float32Array, back: Float32Array, walk = true): number {
   const { crest, lip, throat } = LANDMARK;
   let underside = 0;
   for (let k = lip; k < throat; k += 1) {
@@ -249,8 +338,13 @@ export function sheetAcross(profile: Float32Array, scale: number, out: Float32Ar
   if (formed <= 0) return 0;
   const tipX = profile[2 * lip];
   const tipY = profile[2 * lip + 1];
+  prepareSegments(profile, crest, lip);
+  prepareSegments(profile, lip, throat);
+  // Each point's search starts from the last one's nearest segment (`acrossTo`).
+  let start = -1;
   for (let i = crest + 1; i < lip; i += 1) {
-    out[i] = acrossTo(profile, i, lip, throat);
+    out[i] = acrossTo(profile, i, lip, throat, walk ? start : -1);
+    start = foot.k;
     // The underside's normal there, turned from its run (tip back to the throat) into the cavity, below it.
     const { k, t } = foot;
     const dx = profile[2 * k + 2] - profile[2 * k];
@@ -262,8 +356,10 @@ export function sheetAcross(profile: Float32Array, scale: number, out: Float32Ar
   }
   out[lip] = 0;
   back[lip] = 1;
+  start = -1;
   for (let i = lip + 1; i < throat; i += 1) {
-    out[i] = acrossTo(profile, i, crest, lip);
+    out[i] = acrossTo(profile, i, crest, lip, walk ? start : -1);
+    start = foot.k;
     back[i] = 1;
   }
   return formed;
