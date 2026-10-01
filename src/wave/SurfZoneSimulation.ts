@@ -20,6 +20,7 @@ import { OPEN_EDGE_REACH, ShallowWaterSolver, stretchedEdges } from './ShallowWa
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
 import { BreakingFront } from './barrel/BreakingFront';
+import { BARREL_SPOTS } from './barrel/barrelSpots';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
 import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
 
@@ -89,12 +90,15 @@ export interface SurfZoneConfig {
   barrelLag?: 'measured' | 'none';
 }
 
-/** Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run. */
+/**
+ * Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run.
+ * The owner's switch: a spot with a barrel transect (`BARREL_SPOTS`) is switched on by adding it here (Part B, PR 7).
+ */
 export const SWEPT_BARREL: readonly SpotName[] = ['padang'];
 
-/** Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL. */
+/** Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL; never at a spot without a barrel transect. */
 export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel'>): boolean {
-  return config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot);
+  return (config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot)) && BARREL_SPOTS[config.spot] !== undefined;
 }
 
 /** A crest joins a breaking front from this share of the edge's wave height above still water (provisional). */
@@ -432,8 +436,10 @@ export class SurfZoneSimulation {
   /** Shown slice clocks that paused rather than ran back, since the start (the advisor's check on the onsets' noise). */
   frontPauses = 0;
   private readonly crestSamples: CrestSample[] = [];
-  /** When a front's lips throw after the solver's onset: Padang Padang's library transect, its wedge's foot at the tide. */
+  /** When a front's lips throw after the solver's onset: the spot's barrel transect, its foot at the tide (BARREL_SPOTS). */
   private readonly onsetTiming?: OnsetTiming;
+  /** Where the front follows crests from, z: the fine zone's start, or the relaxation zone's inner edge (`BarrelSpot.frontFrom`). */
+  private readonly frontFrom: number;
   lastStepMs = 0;
   /** Most offshore breaking cell per column last step (Infinity when none). */
   private readonly outerBreak: Float64Array;
@@ -523,9 +529,12 @@ export class SurfZoneSimulation {
     this.lip.onAir = (x, z, volume, penetration) => this.aeration.addAir(x, z, volume, penetration);
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
+    this.frontFrom = tank.fineFrom;
     if (sweptBarrelOn(config)) {
-      this.onsetTiming = onsetTiming(PADANG.baseDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none');
+      const barrel = BARREL_SPOTS[config.spot]!;
+      this.onsetTiming = onsetTiming(barrel.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', barrel.onset);
       this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming);
+      if (barrel.frontFrom === 'zone') this.frontFrom = tank.zoneInner;
     }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);
@@ -703,7 +712,7 @@ export class SurfZoneSimulation {
     const { front, solver } = this;
     if (!front) return;
     const minHeight = FRONT_MIN_HEIGHT * edgeHeight(this.config, this.tank.edgeDepth);
-    const count = columnCrests(solver, this.breaking, solver.rowBelow(this.tank.fineFrom), minHeight, this.crestSamples);
+    const count = columnCrests(solver, this.breaking, solver.rowBelow(this.frontFrom), minHeight, this.crestSamples);
     front.update(this.crestSamples, count, solver.time);
     this.frontPauses += advanceClocks(front.points, solver.time, this.onsetTiming!);
   }

@@ -1,4 +1,5 @@
 import type { SpotName } from '../Bathymetry';
+import { BARREL_SPOTS } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { LANDMARK, PROFILE_POINTS, type ProfileLibrary } from './ProfileLibrary';
 
@@ -27,8 +28,13 @@ export const LOFT = {
 } as const;
 /** Vertices per slice: the profile and its extensions over the water at each end. */
 export const LOFT_SAMPLES = PROFILE_POINTS + 2 * LOFT.extensionSamples;
-/** The library's runs' slope along the wave's path, per spot drawn with the swept barrel (the owner's 1:19 at Padang Padang). */
-export const BARREL_SLOPE: Partial<Record<SpotName, number>> = { padang: 1 / 19 };
+/**
+ * The library's runs' slope along the wave's path, per spot with a barrel transect (`BARREL_SPOTS`; the owner's 1:19 at
+ * Padang Padang).
+ */
+export const BARREL_SLOPE: Partial<Record<SpotName, number>> = Object.fromEntries(
+  Object.entries(BARREL_SPOTS).flatMap(([spot, barrel]) => (barrel ? [[spot, barrel.slope]] : [])),
+);
 
 export interface LoftResult {
   /** xyz per vertex, and its normal. */
