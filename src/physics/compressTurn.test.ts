@@ -72,18 +72,20 @@ function bottomTurn(steer: number, crouch: number, compress: number) {
     if (i === Math.round(1 / STEP)) atSecond = (Math.abs(turned) * 180) / Math.PI;
     if (!reached && Math.abs(turned) >= Math.PI / 2) reached = { time: i * STEP, speed: board.velocity.length() / entry };
   }
-  return { attached: rider.attached, atSecond, reached };
+  return { attached: rider.attached, atSecond, reached, carry: rider.work.carry };
 }
 
 // The movement-flow spec (Q4, Q16): Compress is the sharp turn's stance. A real bottom turn comes round 99° in 0.96 s
-// (Forsyth et al. 2024); every stance took about 1.45 s here, 0.36 of the speed kept compressed, until COMPRESS_PULL.
+// keeping 0.88–0.95 of its speed (Forsyth et al. 2024); every stance took about 1.45 s here, 0.36 of the speed kept
+// compressed, until COMPRESS_PULL (0.6 kept), and CARVE_CARRY (0.9).
 describe('the compressed turn (the movement-flow spec)', () => {
   it.each([['frontside', -1], ['backside', 1]])('comes round 90° in about a second, %s, and stays on', (_side, steer) => {
     const turn = bottomTurn(steer as number, 0.6, 1);
     expect(turn.attached).toBe(true);
     expect(turn.reached).toBeDefined();
     expect(turn.reached!.time).toBeLessThan(1.1);
-    expect(turn.reached!.speed).toBeGreaterThan(0.55);
+    expect(turn.reached!.speed).toBeGreaterThan(0.85);
+    expect(turn.carry).toBeGreaterThan(0);
   });
 
   it('turns clearly sharper than the crouch alone', () => {
@@ -91,7 +93,9 @@ describe('the compressed turn (the movement-flow spec)', () => {
   });
 
   // Review Focus 4: Compress riding straight turns nothing.
-  it('does not turn a board ridden straight', () => {
-    expect(bottomTurn(0, 0.6, 1).atSecond).toBeLessThan(3);
+  it('does not turn a board ridden straight, nor carry it', () => {
+    const straight = bottomTurn(0, 0.6, 1);
+    expect(straight.atSecond).toBeLessThan(3);
+    expect(straight.carry).toBe(0);
   });
 });
