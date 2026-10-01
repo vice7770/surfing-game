@@ -1,6 +1,6 @@
 import type { SpotName } from '../Bathymetry';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
-import { LANDMARK, PROFILE_POINTS, type ProfileLibrary } from './ProfileLibrary';
+import { LANDMARK, PROFILE_POINTS, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 
 /**
  * The swept loft's constants (the Padang Padang spec, Part B, PR 3; docs/research/water-physics/swept-barrel-build.md,
@@ -58,6 +58,12 @@ export interface LoftResult {
    */
   sliceCollapse: Float32Array;
   sliceFade: Float32Array;
+  /**
+   * Contact mode: per slice, how far its held lip tip stands from the drawn one, m, and the most this build: about a
+   * frame's travel between a case's held frame and touchdown (the advisor, 2026-09-30); 0 in the drawing.
+   */
+  sliceTipGap: Float32Array;
+  tipGap: number;
   /** Neighbouring slices' τ clamped to T_open/4 because the budget was reached; lookups outside the library's cases. */
   clamps: number;
   clampedLookups: number;
@@ -128,11 +134,11 @@ interface Sample {
  *   and each vertex carries the mask's value: 1 over the profile, 0 a `band` past it.
  * - **Resampling** (ruling 4): `spacing`, refined to `fine` where neighbouring clocks differ by more than `frames`
  *   frames, within `budget` vertices.
- * - **Contact mode** (PR 4, the advisor's ruling 2): each slice's geometry is held at its last clear frame
- *   (`ProfileLookup.clearSeconds`: the jet off the face, the void open) through touchdown and its collapse (its clock
- *   and phase run on), so it never self-crosses. Its weights are the drawing's: the lerp toward the same water by the
- *   same weight keeps a vertical line's crossings in order, so a partly weighted lip shrinks as drawn (the advisor,
- *   2026-09-30).
+ * - **Contact mode** (PR 4, the advisor's ruling 2): each blended case is held at its own last clear frame
+ *   (`heldFrame`: the jet off the face, the void open) through touchdown and the collapse (the clock and phase run on),
+ *   so it never self-crosses yet follows the drawing until then; each slice's held tip's distance from the drawn one is
+ *   kept. Its weights are the drawing's: the lerp toward the same water by the same weight keeps a vertical line's
+ *   crossings in order, so a partly weighted lip shrinks as drawn (the advisor, 2026-09-30).
  * A vertex resting on the water asks its height; one lifted fully off it is still level plus the profile.
  * Only + − × ÷ and √, for online determinism: PR 4's contact runs the same code in the worker.
  */
@@ -144,11 +150,14 @@ export class SweptLoft {
   private readonly sigmas = new Float64Array(2 * MAX_SLICES + 8);
   private readonly sample: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
   private readonly probe: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
+  private readonly query: ProfileQuery;
+  private readonly tip = new Float64Array(2);
 
   private readonly contact: boolean;
 
   constructor(private readonly library: ProfileLibrary, private readonly slope: number, options: LoftOptions = {}) {
     this.contact = options.contact ?? false;
+    this.query = { slope, footHeight: 0, footDepth: 0, seconds: 0 };
     const vertices = (MAX_SLICES + 1) * LOFT_SAMPLES;
     const slices = MAX_SLICES + 1;
     this.result = {
@@ -156,7 +165,8 @@ export class SweptLoft {
       indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * slices), vertexCount: 0, indexCount: 0, sliceCount: 0,
       sliceFront: new Int32Array(slices), sliceSigma: new Float32Array(slices), sliceTau: new Float32Array(slices),
       slicePhase: new Uint8Array(slices), sliceCrestOffset: new Float32Array(slices), sliceLife: new Float32Array(slices),
-      sliceCollapse: new Float32Array(slices), sliceFade: new Float32Array(slices), clamps: 0, clampedLookups: 0, caps: 0,
+      sliceCollapse: new Float32Array(slices), sliceFade: new Float32Array(slices), sliceTipGap: new Float32Array(slices), tipGap: 0,
+      clamps: 0, clampedLookups: 0, caps: 0,
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
       sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices),
@@ -171,6 +181,7 @@ export class SweptLoft {
     r.clamps = 0;
     r.clampedLookups = 0;
     r.caps = 0;
+    r.tipGap = 0;
     const fronts = this.fronts(records, count);
     // The spacing that fits the budget, and whether refining would overrun it: faded slices are dropped, so only the
     // live ones count.
@@ -347,16 +358,28 @@ export class SweptLoft {
         if (clamped !== tau) r.clamps += 1;
         tau = clamped;
       }
-      // The contact holds its geometry at the last clear frame, never self-crossing (the advisor's ruling 2); the drawing
-      // keeps the touchdown frame, the visual event (the advisor, 2026-09-30). Both clocks run on.
-      const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
-      const shapeTau = Math.min(tau, this.contact ? times.clearSeconds : times.touchdownSeconds);
-      const lookup = this.library.profileAt({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth, seconds: shapeTau }, profile);
+      // The drawing keeps the touchdown frame, the visual event; the contact also holds each blended case at its own
+      // last clear frame, never self-crossing (the advisor, 2026-09-30). Both clocks run on.
+      const query = this.query;
+      query.footHeight = s.footHeight;
+      query.footDepth = s.footDepth;
+      query.seconds = tau;
+      query.hold = this.contact ? 'contact' : 'drawing';
+      const lookup = this.library.profileAt(query, profile);
       const touchdown = lookup.touchdownSeconds;
       const wFade = collapseFade(tau, touchdown, lookup.collapseSeconds);
       if (wFade === 0) {
         closeRun();
         continue;
+      }
+      // How far the contact's held tip stands from the drawn one, m (the advisor: about a frame's travel).
+      let tipGap = 0;
+      if (this.contact) {
+        query.hold = 'drawing';
+        this.library.tipPlace(query, this.tip);
+        const dx = this.tip[0] - profile[2 * LANDMARK.lip];
+        const dy = this.tip[1] - profile[2 * LANDMARK.lip + 1];
+        tipGap = Math.sqrt(dx * dx + dy * dy);
       }
       // The weights: into the water at the front's ends, and after touchdown.
       const d = Math.min(sigma - f.first, f.last - sigma);
@@ -427,6 +450,8 @@ export class SweptLoft {
       r.sliceLife[slice] = life;
       r.sliceCollapse[slice] = lookup.collapseSeconds;
       r.sliceFade[slice] = wFade;
+      r.sliceTipGap[slice] = tipGap;
+      if (tipGap > r.tipGap) r.tipGap = tipGap;
       r.sliceJoined[slice] = 0;
       r.sliceRayX[slice] = nx;
       r.sliceRayZ[slice] = nz;

@@ -136,6 +136,48 @@ describe('the held frame, where the contact holds through touchdown (the advisor
     }
   });
 
+  it('holds each blended case at its own held frame for the contact, following the drawing until then (the advisor, 2026-09-30)', () => {
+    const library = new ProfileLibrary(readBarrelCases().map(decodeCase));
+    const unit = Math.sqrt(7 / GRAVITY);
+    // A0 0.3 blends pad19-a20-l12 and pad19-a30-l12 wholly toward a30: its own hold, τ 1.134, two frames before touchdown.
+    const query = { slope: 1 / 19, footHeight: 0.3 * 7, footDepth: 7 };
+    const times = library.profileTimes(query);
+    const a30 = decodeCase(readBarrelCases()[1]);
+    const held = heldFrame(a30).tau * unit;
+    expect(times.clearSeconds).toBeCloseTo(held, 9);
+    expect(times.touchdownSeconds).toBeCloseTo(a30.touchdown * unit, 9);
+    const at = (seconds: number, hold: 'drawing' | 'contact') => {
+      const out = new Float32Array(2 * PROFILE_POINTS);
+      library.profileAt({ ...query, seconds, hold }, out);
+      return out;
+    };
+    /** The most two profiles differ by, m. */
+    const apart = (a: Float32Array, b: Float32Array) => a.reduce((most, v, i) => Math.max(most, Math.abs(v - b[i])), 0);
+    // Before a30's hold the contact is the drawing, long past a20's (τ 0.674, 0.57 s), which carries no weight here.
+    expect(apart(at(0.9 * held, 'contact'), at(0.9 * held, 'drawing'))).toBe(0);
+    // Between its hold and touchdown the contact stays at its held frame while the drawing runs on; past touchdown both stay.
+    const between = (held + times.touchdownSeconds) / 2;
+    expect(apart(at(between, 'contact'), at(held, 'contact'))).toBeLessThan(1e-5);
+    expect(apart(at(between, 'drawing'), at(held, 'drawing'))).toBeGreaterThan(0.01);
+    expect(apart(at(times.touchdownSeconds + 0.2, 'drawing'), at(times.touchdownSeconds, 'drawing'))).toBeLessThan(1e-5);
+    expect(apart(at(times.touchdownSeconds + 0.2, 'contact'), at(held, 'contact'))).toBeLessThan(1e-5);
+  });
+
+  it('takes the lip’s velocity at τ until touchdown, the real water still moving, and its held frame’s after', () => {
+    // The toy tube with a tip speeding up a tenth of √(g h0) a frame: 0.5 at its first frame.
+    const c = tubeCase(0.3);
+    for (let f = 0; f < 5; f += 1) c.tipVelocity![2 * f] = 0.5 + 0.1 * f;
+    const library = new ProfileLibrary([c]);
+    const out = new Float32Array(2 * PROFILE_POINTS);
+    const unit = Math.sqrt(7 / GRAVITY);
+    const speed = Math.sqrt(GRAVITY * 7);
+    const query = { slope: c.slope, footHeight: 2.1, footDepth: 7, hold: 'contact' as const };
+    // τ 0.4: held at frame 3 (τ 0.25), the tip at frame 3.6's speed.
+    expect(library.profileAt({ ...query, seconds: 0.4 * unit }, out).tipAlong).toBeCloseTo(0.86 * speed, 4);
+    // Past touchdown (τ 0.5): the held frame's, 0.8.
+    expect(library.profileAt({ ...query, seconds: 0.7 * unit }, out).tipAlong).toBeCloseTo(0.8 * speed, 4);
+  });
+
   it('collapses a slice’s tube over √(2W/g), W its held void blended by the cases’ weights and scaled by h0', () => {
     const library = new ProfileLibrary([tubeCase(0.3)]);
     const out = new Float32Array(2 * PROFILE_POINTS);

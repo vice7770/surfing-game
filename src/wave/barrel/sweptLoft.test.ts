@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
+import { readBarrelCases } from './nodeBarrelCases';
+import { decodeCase } from './profileFormat';
 import { LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
 import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
 import { toyCase, tubeCase } from './toyCase';
@@ -18,17 +20,19 @@ function crossing(p: Float32Array, u: number, v: number, w: number, x: number, z
 
 /**
  * Vertical lines through a loft's overturned strips, across each strip and along its tube from the throat to the tip,
- * each meeting the profile's lower surface (from the throat on), the lip's underside (tip to throat) and its top (crest
- * to tip) once: parity holds. Where a strip's weight is the same at both its slices they come in that order upward,
- * strictly. Where it changes the per-vertex lerp may swap two of them by a hair at the throat or the tip, which leaves
- * every interval's water or air as it was: the most any swapped, m, is returned with how many lines met all three.
+ * meeting the profile's lower surface (from the throat on), the lip's underside (tip to throat) and its top (crest to
+ * tip). Each line must meet them an odd number of times in all: parity holds, water at the bottom. Returns how many
+ * lines met all three, how many met one more than once (a profile's own wiggle), and the most two layers swapped, m
+ * (a lower one's highest over a higher one's lowest), in strips of one weight and in strips whose weight changes.
  */
-function checkLayers(loft: LoftResult): { lines: number; swap: number } {
+function checkLayers(loft: LoftResult): { lines: number; multiple: number; uniformSwap: number; swap: number } {
   const p = loft.positions;
   const throat = LOFT.extensionSamples + LANDMARK.throat;
   const tip = LOFT.extensionSamples + LANDMARK.lip;
   let lines = 0;
-  let swap = 0;
+  let multiple = 0;
+  let uniformSwap = -Infinity;
+  let swap = -Infinity;
   for (let s = 0; s + 1 < loft.sliceCount; s += 1) {
     if (!loft.sliceJoined[s] || !loft.sliceOverturned[s] || !loft.sliceOverturned[s + 1]) continue;
     // Past a front's ends both slices lie wholly on the water: every layer is the water there.
@@ -37,12 +41,23 @@ function checkLayers(loft: LoftResult): { lines: number; swap: number } {
     const a = s * LOFT_SAMPLES;
     const b = a + LOFT_SAMPLES;
     const on = (slice: number, t: number, k: number) => p[3 * (slice + throat) + k] + t * (p[3 * (slice + tip) + k] - p[3 * (slice + throat) + k]);
+    // Each quad's range along slice s's ray: a line outside it cannot meet the quad.
+    const along = (v: number) => (p[3 * v] - p[3 * a]) * loft.sliceRayX[s] + (p[3 * v + 2] - p[3 * a + 2]) * loft.sliceRayZ[s];
+    const low = new Float64Array(LOFT_SAMPLES - 1);
+    const high = new Float64Array(LOFT_SAMPLES - 1);
+    for (let j = 0; j + 1 < LOFT_SAMPLES; j += 1) {
+      const ends = [along(a + j), along(a + j + 1), along(b + j), along(b + j + 1)];
+      low[j] = Math.min(...ends) - 1e-6;
+      high[j] = Math.max(...ends) + 1e-6;
+    }
     for (const across of [0.03, 0.21, 0.5, 0.79, 0.97]) {
       for (let t = 0.004; t < 1; t += 0.0247) {
         const x = on(a, t, 0) + across * (on(b, t, 0) - on(a, t, 0));
         const z = on(a, t, 2) + across * (on(b, t, 2) - on(a, t, 2));
+        const q = (x - p[3 * a]) * loft.sliceRayX[s] + (z - p[3 * a + 2]) * loft.sliceRayZ[s];
         const layers: Record<'lower' | 'under' | 'top', number[]> = { lower: [], under: [], top: [] };
         for (let j = 0; j + 1 < LOFT_SAMPLES; j += 1) {
+          if (q < low[j] || q > high[j]) continue;
           const i = j - LOFT.extensionSamples;
           const layer = i >= LANDMARK.throat ? layers.lower : i >= LANDMARK.lip ? layers.under : i >= LANDMARK.crest ? layers.top : undefined;
           if (!layer) continue;
@@ -51,19 +66,18 @@ function checkLayers(loft: LoftResult): { lines: number; swap: number } {
             if (y !== undefined) layer.push(y);
           }
         }
-        if (!layers.lower.length || !layers.under.length || !layers.top.length) continue;
-        expect([layers.lower.length, layers.under.length, layers.top.length]).toEqual([1, 1, 1]);
-        const [lower, under, top] = [layers.lower[0], layers.under[0], layers.top[0]];
-        if (uniform) {
-          expect(lower).toBeLessThan(under);
-          expect(under).toBeLessThan(top);
-        }
-        swap = Math.max(swap, lower - under, under - top);
+        const { lower, under, top } = layers;
+        if (!lower.length || !under.length || !top.length) continue;
+        expect((lower.length + under.length + top.length) % 2).toBe(1);
+        if (lower.length + under.length + top.length > 3) multiple += 1;
+        const swapped = Math.max(Math.max(...lower) - Math.min(...under), Math.max(...under) - Math.min(...top));
+        if (uniform) uniformSwap = Math.max(uniformSwap, swapped);
+        else swap = Math.max(swap, swapped);
         lines += 1;
       }
     }
   }
-  return { lines, swap };
+  return { lines, multiple, uniformSwap, swap };
 }
 
 const flat = () => 0.5;
@@ -294,7 +308,7 @@ describe('the loft’s slices, for the contact', () => {
     }
   });
 
-  it('keeps the face under the underside under the top along vertical lines through lerped slices (the advisor, 2026-09-30)', () => {
+  it('keeps the face under the underside under the top along vertical lines through lerped slices (the advisor, 2026-09-30)', { timeout: 240_000 }, () => {
     // Over a gently sloping sea: the front's ends ramp the weight over 2.5 m, and the collapse lowers every slice.
     const sea = (x: number, z: number) => 0.5 + 0.02 * x - 0.01 * (z + 100);
     const times = tubes().profileTimes({ slope: 0.05, footHeight: 2.1, footDepth: 7 });
@@ -304,11 +318,56 @@ describe('the loft’s slices, for the contact', () => {
         const loft = new SweptLoft(tubes(), 0.05, { contact: true }).build(records(21, () => tau, -100), 21, 0.5, heightAt);
         const layers = checkLayers(loft);
         lines += layers.lines;
-        // The ends' strips, whose weight changes by 0.1–0.3 from slice to slice, swap two layers by 3 mm at most at h0 7 m.
+        // One crossing a layer; in order where a strip's weight is one; the ends' strips, whose weight changes by
+        // 0.1–0.3 from slice to slice, swap two layers by 3 mm at most at h0 7 m, at the throat or the tip.
+        expect(layers.multiple).toBe(0);
+        expect(layers.uniformSwap).toBeLessThan(0);
         expect(layers.swap).toBeLessThan(0.001 * 7);
       }
     }
     expect(lines).toBeGreaterThan(10_000);
+  });
+
+  describe('on the library’s cases', () => {
+    const library = new ProfileLibrary(readBarrelCases().map(decodeCase));
+    /** A 60 m front whose foot crests run from A0 0.13 to 0.47 at h0 7 m, every point at τ `seconds`: every blend. */
+    const blends = (seconds: number) => {
+      const n = 61;
+      const out = new Float32Array(n * FRONT_STRIDE);
+      for (let k = 0; k < n; k += 1) {
+        const o = k * FRONT_STRIDE;
+        out[o + FRONT_FIELD.x] = k; out[o + FRONT_FIELD.z] = -100; out[o + FRONT_FIELD.front] = 1; out[o + FRONT_FIELD.sigma] = k;
+        out[o + FRONT_FIELD.tau] = seconds; out[o + FRONT_FIELD.footHeight] = (0.13 + (0.34 * k) / (n - 1)) * 7; out[o + FRONT_FIELD.footDepth] = 7;
+        out[o + FRONT_FIELD.throwZ] = -100;
+      }
+      return new SweptLoft(library, 1 / 19, { contact: true }).build(out, n, 0.5, flat);
+    };
+
+    it('keeps the layers apart along vertical lines through blended held slices (the advisor, 2026-09-30)', { timeout: 240_000 }, () => {
+      let lines = 0;
+      let multiple = 0;
+      // Through every case's hold and touchdown, and the collapses after.
+      for (const seconds of [0.5, 0.7, 0.9, 1, 1.2]) {
+        const layers = checkLayers(blends(seconds));
+        lines += layers.lines;
+        multiple += layers.multiple;
+        // A hair at the fold where a strip's weight is one; at most 2 × 10⁻³ h0 at the tip where the front's ends ramp it.
+        expect(layers.uniformSwap).toBeLessThan(1e-4);
+        expect(layers.swap).toBeLessThan(0.002 * 7);
+      }
+      expect(lines).toBeGreaterThan(50_000);
+      // Short S-wiggles in the cases' own nearly vertical undersides meet a line three times, about 1 % of lines.
+      expect(multiple / lines).toBeLessThan(0.02);
+    });
+
+    it('keeps the contact’s held tip within two frames of the drawn one (the advisor, 2026-09-30)', () => {
+      let gap = 0;
+      for (let seconds = 0.3; seconds <= 1.4; seconds += 0.01) gap = Math.max(gap, blends(seconds).tipGap);
+      // pad19-a30-l12's last two frames, closed onto the face, carry the drawn tip 0.047 h0 past its held one (0.33 m at
+      // h0 7 m); periodic-padang19s-l12's last carries it 0.031 h0. pad19-a20-l12's and pad19-a45-l12's last frames are their held ones.
+      expect(gap).toBeGreaterThan(0.3);
+      expect(gap).toBeLessThan(0.34);
+    });
   });
 
   it('in contact mode holds the geometry at the last clear frame after touchdown, lowered by the fade, and keeps the clock', () => {
