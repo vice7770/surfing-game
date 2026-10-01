@@ -387,6 +387,17 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   return { x, z: breakZ(x) };
 }
 
+/**
+ * Where the swept barrel's front follows crests from, z: the relaxation zone's inner edge, or the fine zone's first row
+ * with `barrelFrontFrom: 'fine'` (as before the peak-sizing fix). At Padang Padang's peak, on Practice and Small, the fine
+ * zone starts 3.7–6 m deep, shallower than the 6–7 m foot band, so crests first seen there were never sized and the
+ * peak drew no barrel (the advisor, 2026-10-01). No crest is followed seaward of the foot, so what changes is where a
+ * crest is sized: at the foot itself rather than at the fine zone's first row.
+ */
+export function barrelFrontFrom(config: Pick<SurfZoneConfig, 'barrelFrontFrom'>, layout: Pick<TankLayout, 'zoneInner' | 'fineFrom'>): number {
+  return config.barrelFrontFrom === 'fine' ? layout.fineFrom : layout.zoneInner;
+}
+
 /** Spot seabed with a flat floor under the relaxation zone at the edge depth, blended over the layout's zoneInner…blendEnd. */
 export function tankDepth(
   spot: SurfSpot, edgeDepth: number, x: number, z: number, layout: Pick<TankLayout, 'zoneInner' | 'blendEnd'> = TANK,
@@ -708,12 +719,7 @@ export class SurfZoneSimulation {
     const { front, solver } = this;
     if (!front) return;
     const minHeight = FRONT_MIN_HEIGHT * edgeHeight(this.config, this.tank.edgeDepth);
-    // From the relaxation zone's inner edge: at Padang Padang's peak, on Practice and Small, the fine zone starts 3.7–6 m
-    // deep, shallower than the 6–7 m foot band, so crests first seen there were never sized and the peak drew no barrel
-    // (the advisor, 2026-10-01). No crest is followed seaward of the foot, so what changes is where a crest is sized: at the
-    // foot itself rather than at the fine zone's first row.
-    const from = this.config.barrelFrontFrom === 'fine' ? this.tank.fineFrom : this.tank.zoneInner;
-    const count = columnCrests(solver, this.breaking, solver.rowBelow(from), minHeight, this.crestSamples);
+    const count = columnCrests(solver, this.breaking, solver.rowBelow(barrelFrontFrom(this.config, this.tank)), minHeight, this.crestSamples);
     front.update(this.crestSamples, count, solver.time);
     this.frontPauses += advanceClocks(front.points, solver.time, this.onsetTiming!);
   }
