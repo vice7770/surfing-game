@@ -115,9 +115,11 @@ export interface SurfZoneRunnerOptions {
   /**
    * The barrel library's case files (public/barrels, in the index's order). At a swept spot the board and rider
    * collide with the swept surface the page draws (the Padang Padang spec, Part B, PR 4); without them they ride the
-   * carved water, as before.
+   * carved water, as before. Every sea at a swept spot runs the crash on them (PR 5).
    */
   barrelCases?: readonly Uint8Array[];
+  /** Build the swept contact with no board or rider of the runner's own (reports whose bots ride `water`). */
+  contact?: boolean;
 }
 
 /** The player's request for a batch of steps: the ride's input, and a quick retry. */
@@ -330,7 +332,7 @@ export class SurfZoneRunner {
     this.focus = this.simulation.breakPoint();
     this.breaker = this.simulation.iribarren();
     this.breakDepth = this.simulation.spot.depthAt(this.focus.x, this.focus.z) + config.tide;
-    if (library && (options.rider || options.board) && this.simulation.front) this.contact = new SweptContact(library, slope!);
+    if (library && (options.rider || options.board || options.contact) && this.simulation.front) this.contact = new SweptContact(library, slope!);
     this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contact);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
     this.rideLineup = new Vector3(this.focus.x + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? RIDE_LINEUP_OFFSET));

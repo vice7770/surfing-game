@@ -919,7 +919,7 @@ describe('a swept barrel’s held jet (Padang Padang, Part B, PR 5)', () => {
     expect(lip.crashJet(strip, { x: 3.5, y: 0.1, z: 15, spacing: 0.1, vy: -3 }, { x: 3.5, y: 0.8, z: 13 })).toBe(true);
     expect(lip.trappedAir - trapped).toBeCloseTo(0.3, 12);
     const landed: { z: number; swept: boolean; drop: number }[] = [];
-    lip.onLand = (_x, z, _volume, _vx, _vy, _vz, flight) => landed.push({ z, swept: flight!.swept, drop: flight!.launch.y - flight!.y });
+    lip.onLand = (_x, z, _volume, _vx, _vy, _vz, flight) => landed.push({ z, swept: flight!.swept === true, drop: flight!.launch.y - flight!.y });
     lip.step(0.05);
     expect(landed.length).toBe(1);
     expect(landed[0].z).toBeLessThan(15.5);
