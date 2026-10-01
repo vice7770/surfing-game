@@ -75,8 +75,6 @@ export interface LoftResult {
   sliceTipUp: Float32Array;
   sliceAnchorVX: Float32Array;
   sliceAnchorVZ: Float32Array;
-  /** Contact mode: overturned slices under full weight made whole (from half) or dropped (below). */
-  cuts: number;
 }
 
 export interface LoftOptions {
@@ -132,8 +130,9 @@ interface Sample {
  *   frames, within `budget` vertices.
  * - **Contact mode** (PR 4, the advisor's ruling 2): each slice's geometry is held at its last clear frame
  *   (`ProfileLookup.clearSeconds`: the jet off the face, the void open) through touchdown and its collapse (its clock
- *   and phase run on), so it never self-crosses; and an overturned slice under full weight is whole from half weight
- *   and dropped below, counted in `cuts`: a squashed lip is no water.
+ *   and phase run on), so it never self-crosses. Its weights are the drawing's: the lerp toward the same water by the
+ *   same weight keeps a vertical line's crossings in order, so a partly weighted lip shrinks as drawn (the advisor,
+ *   2026-09-30).
  * A vertex resting on the water asks its height; one lifted fully off it is still level plus the profile.
  * Only + − × ÷ and √, for online determinism: PR 4's contact runs the same code in the worker.
  */
@@ -160,7 +159,7 @@ export class SweptLoft {
       sliceCollapse: new Float32Array(slices), sliceFade: new Float32Array(slices), clamps: 0, clampedLookups: 0, caps: 0,
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
-      sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices), cuts: 0,
+      sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices),
     };
   }
 
@@ -172,7 +171,6 @@ export class SweptLoft {
     r.clamps = 0;
     r.clampedLookups = 0;
     r.caps = 0;
-    r.cuts = 0;
     const fronts = this.fronts(records, count);
     // The spacing that fits the budget, and whether refining would overrun it: faded slices are dropped, so only the
     // live ones count.
@@ -364,22 +362,15 @@ export class SweptLoft {
       const d = Math.min(sigma - f.first, f.last - sigma);
       const r0 = Math.min(1, d / LOFT.endBlend);
       const wEnd = d <= 0 ? 0 : r0 * r0 * (3 - 2 * r0);
-      let w = wEnd * wFade;
+      // The contact follows the drawing's weight: the lerp toward the same water by the same weight keeps a vertical
+      // line's crossings in order, so a partly weighted lip shrinks as drawn (the advisor, 2026-09-30).
+      const w = wEnd * wFade;
       let overturned = 0;
       for (let i = LOFT.pinned; i < LAST - LOFT.pinned; i += 1) {
         if (profile[2 * (i + 1)] < profile[2 * i]) {
           overturned = 1;
           break;
         }
-      }
-      if (this.contact && overturned && w < 1) {
-        // A squashed lip is no water: whole from half weight, gone below (the advisor's ruling 2).
-        r.cuts += 1;
-        if (w < 0.5) {
-          closeRun();
-          continue;
-        }
-        w = 1;
       }
       if (r.sliceCount >= MAX_SLICES) break;
       if (runStart < 0) runStart = r.sliceCount;

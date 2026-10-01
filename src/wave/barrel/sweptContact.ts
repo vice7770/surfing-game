@@ -45,6 +45,11 @@ export interface ContactHit {
   lipVX: number;
   lipVY: number;
   lipVZ: number;
+  /**
+   * The slices' weight on the water at the point, 0–1 (their ends and their collapse): the lip's velocity weighs in by
+   * it, as its shape does (the advisor, 2026-09-30).
+   */
+  lipWeight: number;
   /** The front's tangent at the point (x, z): the solver's flow along it is kept. */
   tangentX: number;
   tangentZ: number;
@@ -55,7 +60,8 @@ export interface ContactHit {
 export function createContactHit(): ContactHit {
   return {
     inWater: false, surfaceY: Number.NaN, normalX: 0, normalY: 1, normalZ: 0, floorY: Number.NaN, waterFloorY: Number.NaN,
-    ceilingY: Number.NaN, ceilingTopY: Number.NaN, lipShare: 0, lipVX: 0, lipVY: 0, lipVZ: 0, tangentX: 1, tangentZ: 0, life: Number.NaN,
+    ceilingY: Number.NaN, ceilingTopY: Number.NaN, lipShare: 0, lipVX: 0, lipVY: 0, lipVZ: 0, lipWeight: 0, tangentX: 1, tangentZ: 0,
+    life: Number.NaN,
   };
 }
 
@@ -76,7 +82,8 @@ const NUDGE = 1e-9;
  * - **Layers:** in water, the surface is the nearest crossing above (the curl's top in its water, the face under it)
  *   and a crossing below is the curl's underside; in air, the surface is the nearest below and the two above are the
  *   curl's underside and top.
- * - **The lip's flow** (ruling 1): in the curl's water, from the crest landmark (0) to the tip (1) by where its top is.
+ * - **The lip's flow** (ruling 1): in the curl's water, from the crest landmark (0) to the tip (1) by where its top is,
+ *   weighed by the slices' weight as their shape is (`lipWeight`).
  * - Where two fronts' strips overlap, the first front's answers (a ledger ruling).
  * - **Cost** (the advisor, 2026-09-30): the strips are indexed by a grid, and each strip's quads bucketed by their range
  *   along its ray, so a vertical line tests only its bucket's quads; a point outside every front's footprint tests none.
@@ -192,6 +199,7 @@ export class SweptContact {
     hit.lipVX = 0;
     hit.lipVY = 0;
     hit.lipVZ = 0;
+    hit.lipWeight = 0;
     let surface: number;
     if (hit.inWater) {
       surface = below;
@@ -229,6 +237,7 @@ export class SweptContact {
       hit.lipVX = (along * rayX) / length + (loft.sliceAnchorVX[strip] + f * (loft.sliceAnchorVX[next] - loft.sliceAnchorVX[strip]));
       hit.lipVZ = (along * rayZ) / length + (loft.sliceAnchorVZ[strip] + f * (loft.sliceAnchorVZ[next] - loft.sliceAnchorVZ[strip]));
       hit.lipVY = loft.sliceTipUp[strip] + f * (loft.sliceTipUp[next] - loft.sliceTipUp[strip]);
+      hit.lipWeight = loft.sliceWeight[strip] + f * (loft.sliceWeight[next] - loft.sliceWeight[strip]);
     }
     this.stats.hits += 1;
     return true;

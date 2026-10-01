@@ -22,7 +22,7 @@ function oneQuad(): LoftResult {
     clamps: 0, clampedLookups: 0, caps: 0,
     sliceJoined: new Uint8Array([1, 0]), sliceRayX: new Float32Array(2), sliceRayZ: new Float32Array(2).fill(1), sliceWeight: new Float32Array(2).fill(1),
     sliceOverturned: new Uint8Array(2), sliceTipAlong: new Float32Array(2), sliceTipUp: new Float32Array(2), sliceAnchorVX: new Float32Array(2),
-    sliceAnchorVZ: new Float32Array(2), cuts: 0,
+    sliceAnchorVZ: new Float32Array(2),
   };
 }
 

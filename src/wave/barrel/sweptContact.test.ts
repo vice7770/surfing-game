@@ -55,6 +55,28 @@ describe('the swept contact', () => {
     expect(hit.tangentX).toBeCloseTo(1, 6);
   });
 
+  it('lowers the held lip by the fade through the collapse, and weighs its flow by the same (the advisor, 2026-09-30)', () => {
+    const times = library().profileTimes({ slope: 0.05, footHeight: 2.1, footDepth: 7 });
+    const contact = contactAt(times.touchdownSeconds + times.collapseSeconds / 2);
+    const hit = createContactHit();
+    // Halfway through: the underside and the top at half their heights over the still water.
+    const under = STILL + (UNDER - STILL) / 2;
+    const top = STILL + (TOP - STILL) / 2;
+    expect(contact.query(10.3, (under + top) / 2, -93, hit)).toBe(true);
+    expect(hit.inWater).toBe(true);
+    expect(hit.surfaceY).toBeCloseTo(top, 3);
+    expect(hit.waterFloorY).toBeCloseTo(under, 3);
+    expect(hit.lipShare).toBeCloseTo(5 / 6, 2);
+    expect(hit.lipWeight).toBeCloseTo(0.5, 5);
+    // The held frame's jet keeps its velocity: the water is still coming down.
+    expect(hit.lipVZ).toBeCloseTo(0.9 * Math.sqrt(9.81 * H0), 2);
+    expect(tubeState(hit.life)).toBe('closed');
+    // Under the lowered lip, the tube's air over the face.
+    contact.query(10.3, (STILL + under) / 2, -93, hit);
+    expect(hit.inWater).toBe(false);
+    expect(hit.ceilingY).toBeCloseTo(under, 3);
+  });
+
   it('reads under the face as water, and over the lip as air resting on its top', () => {
     const contact = contactAt(0.1);
     const hit = createContactHit();
