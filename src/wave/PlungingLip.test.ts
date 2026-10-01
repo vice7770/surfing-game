@@ -958,12 +958,12 @@ describe('a swept barrel’s held jet (Padang Padang, Part B, PR 5)', () => {
     // Its first parcel leaves at 0.3 s: the void closes then, trapping its own air.
     expect(closedAt()).toBeCloseTo(0.3, 12);
     expect(lip.trappedAir).toBeGreaterThan(0);
-    expect(lip.closedAsForeseen).toBe(1);
+    expect(lip.closedAtPour).toBe(1);
     for (let k = 0; k < 60; k += 1) lip.step(0.05);
     expect(landed.length).toBeGreaterThanOrEqual(STRIP_PARCELS);
     expect(Math.min(...landed)).toBeGreaterThanOrEqual(14);
     expect(lip.airborneVolume()).toBe(0);
-    expect(lip.closedAsForeseen).toBe(1);
+    expect(lip.closedAtPour).toBe(1);
   });
 
   it('closes a held jet as foreseen once, and nothing else', () => {
@@ -977,7 +977,8 @@ describe('a swept barrel’s held jet (Padang Padang, Part B, PR 5)', () => {
     expect(lip.closeJet(strip + 1)).toBe(false);
     for (let k = 0; k < 20; k += 1) lip.step(0.05);
     expect(lip.trappedAir).toBe(air);
-    expect(lip.closedAsForeseen).toBe(1);
+    // Closed by the crash, its void has nothing left to close at its pour.
+    expect(lip.closedAtPour).toBe(0);
   });
 
   it('takes no water when the pool can’t hold its parcels', () => {

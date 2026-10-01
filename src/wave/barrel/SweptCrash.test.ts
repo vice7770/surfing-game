@@ -128,7 +128,7 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     for (const z of landed) expect(Math.abs(z - (11.5 + 2.4))).toBeLessThan(0.6);
     expect(lip.airborneVolume()).toBe(0);
     // Their voids closed as their pours began, as foreseen, trapping their air.
-    expect(lip.closedAsForeseen).toBe(7);
+    expect(lip.closedAtPour).toBe(7);
     expect(lip.trappedAir).toBeGreaterThan(0);
   });
 
@@ -149,7 +149,7 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     expect(points[4].crashedAt).toBeDefined();
     expect(crash.counts.foreseen).toBe(1);
     expect(crash.counts.crashes).toBe(0);
-    expect(lip.closedAsForeseen).toBeGreaterThanOrEqual(1);
+    expect(lip.trappedAir).toBeGreaterThan(0);
   });
 
   it('moves no water for a front of one point', () => {

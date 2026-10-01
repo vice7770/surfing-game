@@ -388,8 +388,11 @@ export class PlungingLip implements LipParcelSource {
   unplacedMomentum = 0;
   /** Air its tubes have trapped as they closed, m³ (G9; a running total for the air's balance). */
   trappedAir = 0;
-  /** Held jets (PR 5) whose void closed as foreseen at their throw, their point not crashed by the barrel (a diagnostic). */
-  closedAsForeseen = 0;
+  /**
+   * Held jets (PR 5) whose void closed as their pour began, as foreseen at the throw: their point left its front before
+   * its crash, or its clock ran behind the foresight (a diagnostic).
+   */
+  closedAtPour = 0;
   /**
    * Told of every landing: where the parcel fell, how much water it returned
    * (m³), how fast it hit (m/s), and its flight: where it left the crest and
@@ -785,7 +788,6 @@ export class PlungingLip implements LipParcelSource {
     const strip = this.strips.get(stripId);
     if (!strip?.swept || !strip.tube || !Number.isNaN(strip.tube.closedAt)) return false;
     this.closeHeld(strip.tube);
-    this.closedAsForeseen += 1;
     return true;
   }
 
@@ -833,7 +835,7 @@ export class PlungingLip implements LipParcelSource {
           // A held jet whose point left its front before its crash pours as foreseen at its throw, and its void closes
           // as it starts to (PR 5).
           this.closeHeld(strip.tube);
-          this.closedAsForeseen += 1;
+          this.closedAtPour += 1;
         }
       }
       this.px[parcel] = this.x[parcel];
