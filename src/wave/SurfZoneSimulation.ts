@@ -92,13 +92,20 @@ export interface SurfZoneConfig {
    * is sized at the foot wherever the foot lies; or the fine zone's first row ('fine', as before the peak-sizing fix).
    */
   barrelFrontFrom?: 'fine' | 'zone';
-  /** The swept barrel's front rules (`FrontOptions`); none by default. */
+  /** The swept barrel's front rules (`FrontOptions`), in place of Padang Padang's own (`PADANG_FRONT`); `{}` for none. */
   barrelFront?: FrontOptions;
 }
 
 /** Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run. */
 export const SWEPT_BARREL: readonly SpotName[] = ['padang'];
 
+/**
+ * Padang Padang's front rules (the advisor, 2026-10-01): as a crest's face steepens, its highest cell jumps forward, and
+ * the crest ahead started a track of its own, unsized, which never joined (163 jumps in 180 s of its Small sea, against
+ * 23 joins and 199 lost, with the rule off: as often as the Reef's). So a sized crest continues as the furthest crest
+ * within 10 m ahead of it in its column, as the Reef's does (PR 7). Its join past the throw depth is the Reef's alone.
+ */
+export const PADANG_FRONT: FrontOptions = { jumpReach: 10 };
 
 /** Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL. */
 export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel'>): boolean {
@@ -544,7 +551,7 @@ export class SurfZoneSimulation {
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
     if (sweptBarrelOn(config)) {
       this.onsetTiming = onsetTiming(PADANG.baseDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none');
-      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, config.barrelFront);
+      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, config.barrelFront ?? PADANG_FRONT);
     }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);

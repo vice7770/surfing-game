@@ -6,7 +6,7 @@ import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
   FOAM_DECAY, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight, solverStage,
-  barrelFrontFrom, surfZoneSea, takeOffPoint,
+  PADANG_FRONT, barrelFrontFrom, surfZoneSea, takeOffPoint,
   tankDepth, tankLayout,
   windOnsetScale, type SurfZoneConfig,
 } from './SurfZoneSimulation';
@@ -128,6 +128,15 @@ describe('SurfZoneSimulation', () => {
         expect(barrelFrontFrom({ ...config, barrelFrontFrom: 'fine' }, layout)).toBe(layout.fineFrom);
       }
     }
+  });
+
+  // The crest jumps (the advisor, 2026-10-01): Padang Padang's maxima jump forward as its faces steepen, as the Reef's do.
+  it('builds Padang Padang’s front to follow its crests’ jumps within 10 m, with no join past the throw depth', () => {
+    expect(PADANG_FRONT).toEqual({ jumpReach: 10 });
+    const optionsOf = (config: SurfZoneConfig) => (new SurfZoneSimulation(config, 'warm').front as unknown as { options: object }).options;
+    expect(optionsOf(small_())).toBe(PADANG_FRONT);
+    // A probe's override: none, as before the rule.
+    expect(optionsOf({ ...small_(), barrelFront: {} })).toEqual({});
   });
 
   it('gives Padang Padang a tank beyond its forereef whose fine zone reaches past its sets’ first break at every tide', () => {
