@@ -1591,25 +1591,29 @@ export class AttachedRider {
     // part is in the curl's water (the swept barrel, the Padang Padang spec, Part B, PR 4).
     const bottom = Math.min(sample.surfaceY, Math.max(deckY, sample.waterFloorY ?? -Infinity));
     const wet = submergedFraction(sample.surfaceY - p.y, radius) - (Number.isFinite(bottom) ? submergedFraction(bottom - p.y, radius) : 0);
-    if (wet > 0) this.wetForce(slot, sample, wet, volume, dragArea, h, shelter);
+    // The curl's water is a falling jet, its pressure near the air's: it drags and does not float (the advisor, 2026-09-30).
+    if (wet > 0) this.wetForce(slot, sample, wet, volume, dragArea, h, shelter, sample.waterFloorY === undefined);
     // A part in the tube's air whose sphere reaches the curl's underside feels the lip: its share between the underside
-    // and the top, in the curl's water's own flow (the advisor's ruling 4). Centre-only sampling would jump.
+    // and the top, in the curl's water's own flow (the advisor's ruling 4), drag alone. Centre-only sampling would jump.
     if (sample.ceilingY !== undefined && sample.ceilingTopY !== undefined && sample.ceilingY - p.y < radius) {
       const share = submergedFraction(sample.ceilingTopY - p.y, radius) - submergedFraction(sample.ceilingY - p.y, radius);
       if (share > 0) {
         const lip = water.sampleAt(p.x, (sample.ceilingY + sample.ceilingTopY) / 2, p.z, this.lipSample);
-        if (lip.wet && !lip.outsideDomain) this.wetForce(slot, lip, share, volume, dragArea, h, shelter);
+        if (lip.wet && !lip.outsideDomain) this.wetForce(slot, lip, share, volume, dragArea, h, shelter, false);
       }
     }
   }
 
-  /** Buoyancy and drag from `sample` on the `wet` share of one body point at `partWorld`, moving at `partVelocity`. */
-  private wetForce(slot: number, sample: WaterSample, wet: number, volume: number, dragArea: number, h: number, shelter: number): void {
+  /**
+   * Buoyancy (unless `buoyant` is false: the curl's falling water) and drag from `sample` on the `wet` share of one body
+   * point at `partWorld`, moving at `partVelocity`.
+   */
+  private wetForce(slot: number, sample: WaterSample, wet: number, volume: number, dragArea: number, h: number, shelter: number, buoyant = true): void {
     const p = this.partWorld;
     if (slot >= RIDER_PARTS.length) this.stroking = true;
     // Aerated water (the wipeout spec, Part B) is a lighter mixture to float and drag in.
     const mixture = SEAWATER * (1 - (sample.voidFraction ?? 0));
-    const support = mixture * WATER.gravity * volume * wet;
+    const support = buoyant ? mixture * WATER.gravity * volume * wet : 0;
     const force = this.partForce.set(-support * sample.slopeX, support, -support * sample.slopeZ);
     this.buoyancy.add(force);
     const relative = this.flow.set(sample.flowX, sample.flowY, sample.flowZ).sub(this.partVelocity);
