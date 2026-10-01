@@ -47,6 +47,11 @@ describe('the swept barrel’s spots (Part B, PR 7)', () => {
     for (const spot of SPOTS) expect(BARREL_SPOTS[spot], spot).toBeDefined();
     for (const spot of Object.keys(BARREL_SPOTS) as SpotName[]) expect(SPOTS, spot).toContain(spot);
   });
+
+  it('keeps Padang Padang’s front as it was: the crest jumps and the late join are the Reef’s alone', () => {
+    expect(BARREL_SPOTS.padang!.front).toBeUndefined();
+    expect(BARREL_SPOTS.reef!.front).toEqual({ jumpReach: 10, joinPast: 1.5 });
+  });
 });
 
 describe.each(SPOTS)('the swept barrel at %s, switched on inside the test', (spot) => {
