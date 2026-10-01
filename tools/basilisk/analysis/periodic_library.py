@@ -18,8 +18,31 @@ import sys
 
 import numpy as np
 
-from interface import IDX, N_PTS, frame, landmarks, list_frames, resample128, resample_piece, shape_metrics, void_polygon
+from interface import (IDX, N_PTS, chain, frame, join_open, landmarks, list_frames, read_facets, resample128,
+                       resample_piece, shape_metrics, void_polygon)
 from library import cavity, check
+
+
+def stitch_main(path, dx, tol=0.2, minpts=10):
+    """The surface stitched left to right from its larger open pieces, for a frame whose main chain is torn.
+
+    Over the Reef's drained ledge the water surface can meet the bed behind or ahead of the crest. The chain
+    then breaks, and the piece with the widest x extent (the back of the wave) is taken as the whole surface.
+    Here each piece's start is joined to the previous piece's end when they lie within `tol` (h0) of each other.
+    """
+    lines = join_open(chain(read_facets(path), tol=0.6 * dx), gap=3.0 * dx)
+    opens = [l if l[0, 0] <= l[-1, 0] else l[::-1] for l, c in lines if not c and len(l) >= minpts]
+    if not opens:
+        return None
+    opens.sort(key=lambda l: l[0, 0])
+    cur = opens.pop(0)
+    while opens:
+        d = [float(np.hypot(*(o[0] - cur[-1]))) for o in opens]
+        k = int(np.argmin(d))
+        if d[k] > tol:
+            break
+        cur = np.vstack([cur, opens.pop(k)])
+    return cur
 
 
 def local_landmarks(main, xmin, ahead=3.0):
@@ -44,6 +67,13 @@ def build(run, level, L0, slope, a0, h0_m, tmin, xmin):
         if fr is None:
             continue
         main = fr["main"]
+        stitched = False
+        if not fr["ok_span"] and main[:, 0].max() < 0.95 * L0:
+            # The surface met the bed somewhere: stitch its pieces rather than keep only the widest one.
+            whole = stitch_main(f, dx)
+            if whole is not None and whole[:, 0].max() > main[:, 0].max() + 1.0:
+                main, stitched = whole, True
+                fr = dict(fr, main=main)
         if main[:, 0].max() < xmin + 0.5:
             continue
         try:
@@ -94,7 +124,7 @@ def build(run, level, L0, slope, a0, h0_m, tmin, xmin):
         elif cav is not None:
             tube = shape_metrics(cav)
             tube["height"] = float(cav[:, 1].max() - cav[:, 1].min())
-        rec = {"t": t, "tau": tau, "tau_s": tau * tscale, "phase": phase, "flags": flags,
+        rec = {"t": t, "tau": tau, "tau_s": tau * tscale, "phase": phase, "flags": flags, "stitched": stitched,
                "overturned": bool(lm["overturned"]), "crest": main[lm["crest"]].tolist(),
                "H": float(main[lm["crest"], 1]), "trough": trough, "H_trough": float(main[lm["crest"], 1] - trough),
                "n_bubbles_droplets": len(fr["closed"]), "n_fragments": len(fr["strays"]), "tube": tube,

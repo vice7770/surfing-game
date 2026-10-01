@@ -137,12 +137,12 @@ Built 2026-10-01 from the two level-12 periodic Reef runs, with `analysis/period
   - Both have A0 0.2127: the train's crest over the 10 m shelf.
   - Frames start about 3 √(h0/g) before vertical (TMIN 18.0 and 19.9).
   - The crest is looked for at x ≥ 23 h0. It sits at x 24–29 through those frames, ahead of the steps on the face behind it.
-- **reef42:** 281 frames; open tube 65 frames, 62 clean.
-- **reef60:** 285 frames; open tube 70 frames, 49 clean.
-  - 14 early open frames (τ 0.05–0.48) are flagged `surface_torn_in_window`, with landmark jumps.
-  - The cause: the step drains the flat ahead of the crest until it runs dry. The traced surface then breaks ahead of the toe, while the lip and tube are traced whole.
-  - The converter should keep those frames' lip and tube, or skip them, and say which.
-
+- **reef42:** 281 frames; open tube 65 frames, 64 clean (62 before the stitch, below).
+- **reef60:** 285 frames; open tube 70 frames, 67 clean (49 before the stitch).
+- **The stitch (2026-10-01):**
+  - **Why:** over the drained ledge the water surface meets the bed behind or ahead of the crest, so its chain breaks. The widest piece, the back of the wave, was then taken as the whole surface, with the crest 1 h0 behind and H 0.10–0.14 h0 instead of about 0.36–0.45.
+  - **The fix:** `periodic_library.py` now stitches a torn frame's larger pieces left to right, joining each start to the previous end within 0.2 h0. Each such frame gets `"stitched": true`.
+  - **Effect:** it changes none of the previously clean frames (0 h0 difference across the profile). It recovers 18 of reef60's open frames, 2 of reef42's, and most of both runs' after-touchdown frames.
 ```bash
 P=python3   # with numpy, scipy and matplotlib
 $P tools/basilisk/analysis/periodic_library.py tools/basilisk/runs/periodic_reef42_L12 12 48 0.238095 0.2127 10 18.0 23.0
