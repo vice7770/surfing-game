@@ -248,6 +248,16 @@ export class Autopilot {
     this.cutbackReach = options.cutbackReach ?? CUTBACK_REACH;
   }
 
+  /** Start an attempt now, as when a crest rises behind the waiting board (a placed start: Surf School's, the probes'). */
+  go(): void {
+    this.state = 'go';
+    this.attempts += 1;
+    this.clock = 0;
+    this.popped = false;
+    this.rideTime = 0;
+    this.stalled = 0;
+  }
+
   /** End the ride from outside (the ride analyzer's end). */
   finish(outcome: string): void {
     this.flowOpen = false;
@@ -287,12 +297,7 @@ export class Autopilot {
         const face = this.lastFace || Math.sign(view.peelDirection);
         if (face !== 0) input.steer = this.aim(this.travel + face * TAKEOFF_ANGLE, heading, yawRate);
         if (view.crestBehind > this.rise) {
-          this.state = 'go';
-          this.attempts += 1;
-          this.clock = 0;
-          this.popped = false;
-          this.rideTime = 0;
-          this.stalled = 0;
+          this.go();
           return this.next(view, 0);
         }
         break;
