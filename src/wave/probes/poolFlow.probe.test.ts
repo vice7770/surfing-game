@@ -30,7 +30,7 @@ import { it } from 'vitest';
 import { Autopilot, autopilotView, type FlowPhase, type FlowRecord } from '../../dev/Autopilot';
 import { LocalSurfZone } from '../../game/SurfZoneHost';
 import { physicalSettingsFor } from '../../game/SurfConditions';
-import { poolCrestZ } from '../pool';
+import { POOL, poolCrestZ } from '../pool';
 import type { RiderPlacement } from '../../physics/RideSession';
 import type { StanceName } from '../../physics/riderPosture';
 import { createWaterSample } from '../../physics/SurfWater';
@@ -98,6 +98,7 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
   const { solver } = runner.simulation;
   const strength = (runner.simulation as unknown as { breaking: { strength: Float64Array } }).breaking.strength;
   const breakZ = new Map<number, number>();
+  const firstOnset = new Map<number, number>();
   const wasBreaking = new Map<number, boolean>();
   /** Whether a wave starts breaking in the arm's column now. */
   const watchBreak = (arm: number): boolean => {
@@ -165,8 +166,16 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
   const steps = Math.round(end / SURF_ZONE_STEP);
   for (let step = 0; step < steps; step += 1) {
     const onsets = sides.map((arm) => watchBreak(arm));
+    // Each wave is the same one, a period apart: once an arm's first onset is seen, the later ones are timed from it
+    // (with steep arms a column can stay breaking from one wave to the next, and its rising edges went missing).
+    sides.forEach((arm, i) => {
+      if (onsets[i] && !firstOnset.has(arm)) firstOnset.set(arm, runner.simulation.seaTime);
+    });
+    const first = firstOnset.get(side);
+    const due = first !== undefined
+      && Math.abs(runner.simulation.seaTime - first - Math.round((runner.simulation.seaTime - first) / POOL.period) * POOL.period) < SURF_ZONE_STEP / 2;
     let place: RiderPlacement | undefined;
-    if (holding && onsets[sides.indexOf(side)]) {
+    if (holding && due) {
       holding = false;
       if (start === 'caught' || start === 'trough' || start === 'shoulder') {
         const at = PLACES[start];
