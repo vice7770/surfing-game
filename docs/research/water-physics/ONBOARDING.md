@@ -127,7 +127,10 @@ Read in this order:
 - **PR 4's contact:** check its unloaded cost once the quads are bucketed, then the shapes of PR 5's crash curve and parcels.
 - **Wave Lab max's one-cell troughs (from 20°):** if the owner wants them traced, first check the dispersive mask at each dip: the mask interface against the onset trigger.
 
-- **The Wave Pool spot (the "Movement mapping prototype" session, spec `docs/superpowers/specs/2026-09-30-movement-flow-wave-pool.md` on `claude/wave-pool`):** ruled on 2026-10-01 (see the consult log). Waiting for its sweep: the arms' angle against the peel meter, faces left and right, and whether the waves stay identical over 5 minutes.
+- **The Wave Pool spot (the "Movement mapping prototype" session, spec `docs/superpowers/specs/2026-09-30-movement-flow-wave-pool.md` on `claude/wave-pool`):** settled on 2026-10-01.
+  - **The bed:** a finger reef with a ramped crest, 71° arms easing to 65°.
+  - **Measured:** rides of 18–21 s a side at about 55°, waves repeating to 0.1 s.
+  - **Open:** checking that the smallest waves break at the tip. The bed and numbers are in the consult log.
 
 - **Part B follow-ups, ruled but not yet assigned (2026-10-01):**
   - **Fronts split end to end:** on Small, 265 pairs of fronts lie about 5 m apart along one crest. An agent took it on 2026-10-01, on `claude/padang-front-merge`: it diagnoses first, and its rule needs the advisor's ruling before it builds.
