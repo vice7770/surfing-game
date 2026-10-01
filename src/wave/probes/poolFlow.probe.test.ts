@@ -6,12 +6,14 @@
 // phases (start and end time, the heading turned toward the open face, the speed in and out, the face fraction and the
 // distance to the curl in and out, and how it ended) and the ride's end. TRACE=cutback (the default) logs the rider
 // at 10 Hz through each cutback and rebound and the 2 s before a fall; TRACE=all through the whole ride; TRACE=none
-// never. END is the seconds simulated after the spin-up, CUTBACK the cutback's reach (m). SEA=<file> starts from a
-// spun-up sea saved there (and saves it there first when missing), so repeated runs skip the spin-up.
+// never. END is the seconds simulated after the spin-up, CUTBACK the cutback's reach (m), FLOW_FROM the phase the
+// flow starts in, BOTTOM_END the heading (degrees from the fall line) where the bottom turn is released. SEA=<file>
+// starts from a spun-up sea saved there (and saves it there first when missing), so repeated runs skip the spin-up.
+// The bed is pool.ts's as committed (POOL is not overridden here).
 //
 // The take-off point (`takeOffPoint`, the breaker depth for the edge's height) lies about 22 m seaward of the tip,
 // where nothing breaks, and from there the autopilot missed every wave. So the probe watches the arm's own column for
-// where each wave first breaks on the reef (the pool probe's rule), waits 5 m outside that, and starts each attempt as
+// where each wave first breaks on the reef (the pool probe's rule), waits WAIT m (5) outside that, and starts each attempt as
 // a wave breaks there, so the rider has a whole period to get into place for the next.
 //
 // The pop-up cue's take-off window (`inTakeOffWindow`) wants the board 2–4 m ahead of the crest; on the pool's 1.1 m
@@ -19,10 +21,12 @@
 // lagoon. POPUP=caught (the default) has the probe press pop-up as a player would once the board has been carried at the
 // crest's pace, high on the face, for CAUGHT_FOR; POPUP=cue leaves it to the cue.
 //
-// Caught that way, about one wave in three is ridden, so START=caught (Surf School's caught start) skips the paddle:
-// as a wave starts breaking on the arm, the rider is put lying on the face further along it, just ahead of the crest
-// and moving with it, and pops up at once. A standing placement there failed: the board flew 0.3 s off the steep face,
-// rolled 21°, and the upright body fell into a 66° bank within 0.9 s.
+// Caught that way, few waves are ridden, so placed starts skip the paddle as a wave starts breaking on the arm
+// (PLACES): START=caught lies the rider on the face just ahead of the crest, moving with it, and pops up at once
+// (Surf School's caught start); START=trough stands it in the trough ahead of the wave at a drop's speed, to ride the
+// flow from its bottom turn; START=shoulder stands it up the face heading along it, for the cutback alone. A standing
+// placement on the steep face by the break failed: the board flew 0.3 s off the water, rolled 21°, and the upright
+// body fell into a 66° bank within 0.9 s.
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { Vector3 } from 'three';
 import { it } from 'vitest';
@@ -49,15 +53,25 @@ const CAUGHT_SHARE = 1;
 const CREST_SANE = 8;
 const CAUGHT_FOR = 0.25;
 /**
- * START=caught: the rider is put lying PLACE_AHEAD m along the arm beyond where the wave starts breaking,
- * PLACE_FACE m ahead of the crest there (run 3's caught paddler rode 0.7–1.5 m ahead of it), angled PLACE_ANGLE from
- * shoreward toward the open face (the autopilot's take-off angle), at PLACE_SPEED, m/s, over the water's own flow
- * (with the face's water, about the crest's 4 m/s).
+ * Placed starts, PLACE_AHEAD m along the arm beyond where the wave starts breaking, angled from shoreward toward the
+ * open face, at a speed over the water's own flow, m/s:
+ * - START=caught: lying 1 m ahead of the crest (run 3's caught paddler rode 0.7–1.5 m ahead of it) at the
+ *   autopilot's take-off angle, at about the crest's pace with the face's water, and popping up at once;
+ * - START=trough: standing in the trough ahead of the wave, at the speed and angle a drop down the face reached
+ *   (run 9's frontside drop: 7 m/s, 22–30° from the fall line, into its bottom turn), so the flow starts at its bottom
+ *   turn. Placed on the face's steep water, a board flew and rolled; the trough is flat;
+ * - START=shoulder: standing up the face heading along it, at the speed the bottom turn kept, for the cutback alone
+ *   (FLOW_FROM=cutback: every projection bled to 1.3–1.9 m/s before it). It does not work: the board lands rolled
+ *   24° across the face and lifts off it (the face's water rises at 1.3 m/s), and the upright body fell into a 70°
+ *   bank within 0.5 s, cutting back or riding on unsteered (`settle`, s). The cutback alone is ridden from the trough
+ *   instead (START=trough PLACE_ANGLE=80 PLACE_SETTLE=0.3 FLOW_FROM=cutback).
  */
+const PLACES = {
+  caught: { phase: 'prone', face: 1, angle: 35, speed: 3, settle: 0 },
+  trough: { phase: 'standing', face: 4.5, angle: 30, speed: 7, settle: 0 },
+  shoulder: { phase: 'standing', face: 2, angle: 80, speed: 6.5, settle: 0.5 },
+} as const;
 const PLACE_AHEAD = Number(process.env.PLACE_AHEAD ?? 8);
-const PLACE_FACE = Number(process.env.PLACE_FACE ?? 1);
-const PLACE_ANGLE = (Number(process.env.PLACE_ANGLE ?? 35) * Math.PI) / 180;
-const PLACE_SPEED = Number(process.env.PLACE_SPEED ?? 3);
 
 it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => {
   const pool = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
@@ -125,7 +139,11 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
   const waitOutside = Number(process.env.WAIT ?? 5);
   const popUpRule = process.env.POPUP ?? 'caught';
   const start = process.env.START ?? 'catch';
-  const pilot = new Autopilot({ waitOutside, rise: 0.25 * config.significantHeight, giveUp: 8, style: 'flow', ...(cutbackReach ? { cutbackReach } : {}) });
+  const pilot = new Autopilot({
+    waitOutside, rise: 0.25 * config.significantHeight, giveUp: 8, style: 'flow',
+    ...(cutbackReach ? { cutbackReach } : {}), ...(process.env.FLOW_FROM ? { flowFrom: process.env.FLOW_FROM as FlowPhase } : {}),
+    ...(process.env.BOTTOM_END ? { bottomEnd: Number(process.env.BOTTOM_END) } : {}),
+  });
   const idle: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
   const forward = new Vector3();
   const left = new Vector3();
@@ -136,6 +154,7 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
   let holding = true;
   let attempt = 0;
   let placedAt = -Infinity;
+  let settleSteps = 0;
   let carried = 0;
   let pressed = '';
   let lines: { t: number; phase: FlowPhase | ''; text: string }[] = [];
@@ -147,24 +166,29 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
     let place: RiderPlacement | undefined;
     if (holding && onsets[sides.indexOf(side)]) {
       holding = false;
-      if (start === 'caught') {
+      if (start === 'caught' || start === 'trough' || start === 'shoulder') {
+        const at = PLACES[start];
+        const face = Number(process.env.PLACE_FACE ?? at.face);
+        const speed = Number(process.env.PLACE_SPEED ?? at.speed);
         const x = side * (along + PLACE_AHEAD);
-        place = { x, z: crestAt(x) + PLACE_FACE, heading: side * PLACE_ANGLE, speed: PLACE_SPEED, phase: 'prone' };
+        place = { x, z: crestAt(x) + face, heading: (side * Number(process.env.PLACE_ANGLE ?? at.angle) * Math.PI) / 180, speed, phase: at.phase };
         placedAt = step;
-        catchLines.push(`  placed lying at x ${x.toFixed(1)} z ${place.z.toFixed(1)}, heading ${(place.heading * DEG).toFixed(0)}°, ${PLACE_SPEED} m/s over the water`);
+        settleSteps = Math.round(Number(process.env.PLACE_SETTLE ?? at.settle) / SURF_ZONE_STEP);
+        catchLines.push(`  placed ${at.phase} at x ${x.toFixed(1)} z ${place.z.toFixed(1)}, ${face} m ahead of the crest, heading ${(place.heading * DEG).toFixed(0)}°, ${speed} m/s over the water`);
       } else {
         retry = true;
       }
     }
     // Placed: the snapshot shows the placed rider from the next step, when the autopilot goes and the probe pops up.
-    if (step === placedAt + 1) {
+    const going = placedAt + 1 + settleSteps;
+    if (step === going) {
       pilot.reset();
       pilot.go();
     }
     const view = autopilotView(host, lineup(side), 0);
     // The A-frame peels both ways: the arm it waits on is the one it rides.
-    const input = holding || step === placedAt ? { ...idle } : view ? pilot.next({ ...view, peelDirection: side }, SURF_ZONE_STEP) : { ...idle };
-    if (step === placedAt + 1) input.popUp = true;
+    const input = holding || (step >= placedAt && step < going) ? { ...idle } : view ? pilot.next({ ...view, peelDirection: side }, SURF_ZONE_STEP) : { ...idle };
+    if (step === going && start === 'caught') input.popUp = true;
     const ride = host.snapshot.status.ride;
     if (pilot.state === 'go' && ride?.phase === 'prone' && popUpRule === 'caught') {
       const { wave } = ride;
@@ -218,7 +242,7 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
       const frontside = (rider.stance === 'regular') === (side < 0);
       const popUp = host.snapshot.status.ride?.popUp;
       const caught = `\n  ${pressed}${popUp ? `pop-up ${popUp.outcome} in ${popUp.duration.toFixed(2)} s` : ''}`
-        + (catchLines.length && (pilot.rideTime < 4 || start === 'caught') ? `\n  catch (phase, place, speed, heading from the wave's travel | the wave):\n${catchLines.join('\n')}` : '');
+        + (catchLines.length && (pilot.rideTime < 4 || start !== 'catch') ? `\n  catch (phase, place, speed, heading from the wave's travel | the wave):\n${catchLines.join('\n')}` : '');
       if (pilot.rideTime > 0) {
         all.push({ side, frontside, records, outcome, seconds: pilot.rideTime });
         log(`\n${(runner.simulation.seaTime).toFixed(1)} s · attempt ${attempt} · ${side > 0 ? 'right +x' : 'left −x'} (${frontside ? 'frontside' : 'backside'}): rode ${pilot.rideTime.toFixed(1)} s, ${outcome}${caught}`);

@@ -58,6 +58,8 @@ export interface AutopilotOptions {
   cutbackReach?: number;
   /** Riding the flow, the phase it starts in once standing ('drop' by default; the probe's isolated cutback starts in 'cutback'). */
   flowFrom?: FlowPhase;
+  /** Riding the flow, the heading from the fall line where the bottom turn is released, degrees (FLOW_BOTTOM_END by default). */
+  bottomEnd?: number;
 }
 
 export type AutopilotState = 'position' | 'wait' | 'go' | 'ride' | 'done';
@@ -153,7 +155,9 @@ const SNAP_TRIM = -1;
  *   kept 6.0–6.6 m/s to there (the pool flow probe, six rides). Past it the rail reaches its 48° bite as the board
  *   climbs, and it bogs; held to 110° the turn ended at 2.6–3.7 m/s, off the plane;
  * - projection: Compress released, tall and centred, holding that heading up the face, until above FLOW_TOP_FACE of
- *   it or after FLOW_PROJECT_LIMIT, s;
+ *   it, its speed fallen FLOW_PROJECT_FADE below the phase's best (the top of the projection: on the pool's slow 1.1 m
+ *   wave, carried up to FLOW_TOP_FACE the board fell from 6.2 to 1.3–1.9 m/s, off the plane, and every cutback after
+ *   it fell), or after FLOW_PROJECT_LIMIT, s;
  * - trim: along the face on the riding line, pumping (crouched while the face fraction falls, extended while it
  *   rises: the extension meets the load at the foot of each dip), until CUTBACK_REACH ahead of the curl; low on the
  *   face heading down, another bottom turn;
@@ -175,6 +179,7 @@ const FLOW_DRIVE = 0.3;
 const FLOW_BOTTOM_END = 85 * DEG;
 const FLOW_TOP_FACE = 0.65;
 const FLOW_PROJECT_LIMIT = 1;
+const FLOW_PROJECT_FADE = 0.15;
 const FLOW_CUTBACK_FROM = 45 * DEG;
 const FLOW_CUTBACK_TURN = 160 * DEG;
 const FLOW_TURN_LIMIT = 3;
@@ -222,11 +227,14 @@ export class Autopilot {
   private readonly style: 'line' | 'turns' | 'flow';
   private readonly cutbackReach: number;
   private readonly flowFrom: FlowPhase;
+  private readonly bottomEnd: number;
   /** Riding the flow: the open face it rides toward this attempt (kept, so passing the curl never reverses it), the heading turned in the phase under way and the last heading, and the face fraction's last value and smoothed rate (1/s). */
   private flowFace = 0;
   private flowYaw = 0;
   private flowHeading = 0;
   private flowOpen = false;
+  /** The best speed over ground in the phase under way, m/s. */
+  private flowBest = 0;
   private lastFraction = Number.NaN;
   private fractionRate = 0;
   /** The turn under way and how long it has been held, and a turn given up that waits for its trigger to clear. */
@@ -252,6 +260,7 @@ export class Autopilot {
     this.bottomFace = options.bottomFace ?? BOTTOM_FACE;
     this.cutbackReach = options.cutbackReach ?? CUTBACK_REACH;
     this.flowFrom = options.flowFrom ?? 'drop';
+    this.bottomEnd = options.bottomEnd !== undefined ? options.bottomEnd * DEG : FLOW_BOTTOM_END;
   }
 
   /** Start an attempt now, as when a crest rises behind the waiting board (a placed start: Surf School's, the probes'). */
@@ -450,6 +459,7 @@ export class Autopilot {
     }
     this.lastFraction = fraction;
     const record = this.trackFlow(view, heading);
+    this.flowBest = Math.max(this.flowBest, view.ride.speed);
     const time = record?.seconds ?? 0;
     const turned = face * this.flowYaw;
     const cutback = curl >= this.cutbackReach && angle > FLOW_CUTBACK_FROM;
@@ -466,11 +476,11 @@ export class Autopilot {
         break;
       case 'bottom':
       case 'rebound':
-        if (angle > FLOW_BOTTOM_END) next = 'project';
+        if (angle > this.bottomEnd) next = 'project';
         else if (time > FLOW_TURN_LIMIT) [next, reached] = ['project', false];
         break;
       case 'project':
-        if (fraction > FLOW_TOP_FACE) next = cutback ? 'cutback' : 'trim';
+        if (fraction > FLOW_TOP_FACE || view.ride.speed < (1 - FLOW_PROJECT_FADE) * this.flowBest) next = cutback ? 'cutback' : 'trim';
         else if (time > FLOW_PROJECT_LIMIT) [next, reached] = [cutback ? 'cutback' : 'trim', false];
         break;
       case 'trim':
@@ -491,6 +501,7 @@ export class Autopilot {
       this.flowOpen = true;
       this.flowYaw = 0;
       this.flowHeading = heading;
+      this.flowBest = view.ride.speed;
     }
     const phase = this.flowRecords[this.flowRecords.length - 1].phase;
     switch (phase) {

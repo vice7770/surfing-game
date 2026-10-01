@@ -319,6 +319,14 @@ describe('autopilot flow', () => {
     expect(later.phase).toMatch(/^FLOW · PUMP/);
   });
 
+  it('ends the projection at its top: high on the face, or once its speed has faded', () => {
+    const autopilot = projecting();
+    autopilot.next(standing(100 * DEG, { faceFraction: 0.45, curlDistance: 11, curlSide: -1 }, 1, 6.5), STEP);
+    expect(autopilot.phase).toBe('FLOW · PROJECTION');
+    autopilot.next(standing(100 * DEG, { faceFraction: 0.5, curlDistance: 11, curlSide: -1 }, 1, 5.3), STEP);
+    expect(autopilot.phase).toBe('FLOW · CUTBACK');
+  });
+
   it('starts in the phase asked for (the probe\'s isolated cutback)', () => {
     const autopilot = riding(90 * DEG, { style: 'flow', flowFrom: 'cutback' });
     expect(autopilot.next(standing(90 * DEG, { faceFraction: 0.6 }), STEP)).toMatchObject({ steer: -1, trim: -1, compress: 1, rotate: -1 });
