@@ -352,10 +352,12 @@ export class PhysicalSurfWater implements SurfWater {
 
   /**
    * The curl's water moves with its lip (the advisor's ruling 1): across the crest and up, the solver's flow ramps to
-   * the tip's velocity by where the curl's top is (crest landmark 0, tip 1); along the crest the solver's is kept.
+   * the tip's velocity by where the curl's top is (crest landmark 0, tip 1), and by the slices' weight, as their shape
+   * does (at a front's ends and through the collapse; the advisor, 2026-09-30); along the crest the solver's is kept.
    */
   private lipFlow(out: WaterSample): void {
-    const { lipShare: r, tangentX: tx, tangentZ: tz, lipVX, lipVY, lipVZ } = this.hit;
+    const { tangentX: tx, tangentZ: tz, lipVX, lipVY, lipVZ } = this.hit;
+    const r = this.hit.lipShare * this.hit.lipWeight;
     const along = out.flowX * tx + out.flowZ * tz;
     const lipAlong = lipVX * tx + lipVZ * tz;
     out.flowX = along * tx + (1 - r) * (out.flowX - along * tx) + r * (lipVX - lipAlong * tx);

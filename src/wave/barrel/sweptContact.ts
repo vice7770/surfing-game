@@ -45,6 +45,11 @@ export interface ContactHit {
   lipVX: number;
   lipVY: number;
   lipVZ: number;
+  /**
+   * The slices' weight on the water at the point, 0–1 (their ends and their collapse): the lip's velocity weighs in by
+   * it, as its shape does (the advisor, 2026-09-30).
+   */
+  lipWeight: number;
   /** The front's tangent at the point (x, z): the solver's flow along it is kept. */
   tangentX: number;
   tangentZ: number;
@@ -55,7 +60,8 @@ export interface ContactHit {
 export function createContactHit(): ContactHit {
   return {
     inWater: false, surfaceY: Number.NaN, normalX: 0, normalY: 1, normalZ: 0, floorY: Number.NaN, waterFloorY: Number.NaN,
-    ceilingY: Number.NaN, ceilingTopY: Number.NaN, lipShare: 0, lipVX: 0, lipVY: 0, lipVZ: 0, tangentX: 1, tangentZ: 0, life: Number.NaN,
+    ceilingY: Number.NaN, ceilingTopY: Number.NaN, lipShare: 0, lipVX: 0, lipVY: 0, lipVZ: 0, lipWeight: 0, tangentX: 1, tangentZ: 0,
+    life: Number.NaN,
   };
 }
 
@@ -76,8 +82,10 @@ const NUDGE = 1e-9;
  * - **Layers:** in water, the surface is the nearest crossing above (the curl's top in its water, the face under it)
  *   and a crossing below is the curl's underside; in air, the surface is the nearest below and the two above are the
  *   curl's underside and top.
- * - **The lip's flow** (ruling 1): in the curl's water, from the crest landmark (0) to the tip (1) by where its top is.
- * - Where two fronts' strips overlap, the first front's answers (a ledger ruling).
+ * - **The lip's flow** (ruling 1): in the curl's water, from the crest landmark (0) to the tip (1) by where its top is,
+ *   weighed by the slices' weight as their shape is (`lipWeight`).
+ * - **Overlapping fronts** (the advisor, 2026-09-30): the loft drops a later front's strips over an earlier front's,
+ *   as the drawing does; where any still overlap, the first front's strip answers, counted in `stats.overlaps`.
  * - **Cost** (the advisor, 2026-09-30): the strips are indexed by a grid, and each strip's quads bucketed by their range
  *   along its ray, so a vertical line tests only its bucket's quads; a point outside every front's footprint tests none.
  *   The buckets keep the quads in order, so the answers are exactly the full scan's.
@@ -86,9 +94,10 @@ const NUDGE = 1e-9;
 export class SweptContact {
   /**
    * Queries, those the loft answered, and columns it could not close (air under every crossing: the water answered);
-   * the quads the queries tested.
+   * the quads the queries tested; and answered queries another front's strip also held (the loft drops a later front's
+   * strips over an earlier's, so this is the backstop's count: the first front answers).
    */
-  readonly stats = { queries: 0, hits: 0, anomalies: 0, quads: 0 };
+  readonly stats = { queries: 0, hits: 0, anomalies: 0, quads: 0, overlaps: 0 };
   last: LoftResult | undefined;
   private readonly loft: SweptLoft;
   private readonly bucket: number;
@@ -121,9 +130,10 @@ export class SweptContact {
   private readonly at = new Int32Array(3 * CONTACT.crossings);
   private readonly weights = new Float64Array(3 * CONTACT.crossings);
   private count = 0;
-  /** The found strip's sides of the point: off its first ray (≥ 0) and its second (< 0). */
+  /** The found strip's sides of the point: off its first ray (≥ 0) and its second (< 0); and its place in its cell. */
   private sideA = 0;
   private sideB = 0;
+  private found = 0;
 
   constructor(library: ProfileLibrary, slope: number, options: ContactOptions = {}) {
     this.loft = new SweptLoft(library, slope, { contact: true });
@@ -178,6 +188,7 @@ export class SweptContact {
     const strip = this.strip(x, z);
     if (strip < 0) return false;
     const loft = this.last!;
+    if (this.heldByAnother(loft, strip, x, z)) this.stats.overlaps += 1;
     const n = this.count;
     const { ys } = this;
     let above = 0;
@@ -192,6 +203,7 @@ export class SweptContact {
     hit.lipVX = 0;
     hit.lipVY = 0;
     hit.lipVZ = 0;
+    hit.lipWeight = 0;
     let surface: number;
     if (hit.inWater) {
       surface = below;
@@ -229,6 +241,7 @@ export class SweptContact {
       hit.lipVX = (along * rayX) / length + (loft.sliceAnchorVX[strip] + f * (loft.sliceAnchorVX[next] - loft.sliceAnchorVX[strip]));
       hit.lipVZ = (along * rayZ) / length + (loft.sliceAnchorVZ[strip] + f * (loft.sliceAnchorVZ[next] - loft.sliceAnchorVZ[strip]));
       hit.lipVY = loft.sliceTipUp[strip] + f * (loft.sliceTipUp[next] - loft.sliceTipUp[strip]);
+      hit.lipWeight = loft.sliceWeight[strip] + f * (loft.sliceWeight[next] - loft.sliceWeight[strip]);
     }
     this.stats.hits += 1;
     return true;
@@ -265,10 +278,46 @@ export class SweptContact {
       if (this.crossings(loft, s, x + nudge * loft.sliceRayZ[s], z - nudge * loft.sliceRayX[s]) > 0) {
         this.sideA = sideA;
         this.sideB = sideB;
+        this.found = k;
         return s;
       }
     }
     return -1;
+  }
+
+  /** Whether a strip of another front later in the found strip's cell also holds (x, z): fronts overlapping there. */
+  private heldByAnother(loft: LoftResult, strip: number, x: number, z: number): boolean {
+    const cell = Math.floor((z - this.z0) / CONTACT.cell) * this.nx + Math.floor((x - this.x0) / CONTACT.cell);
+    const p = loft.positions;
+    for (let k = this.found + 1; k < this.cellStart[cell + 1]; k += 1) {
+      const s = this.cellStrips[k];
+      if (loft.sliceFront[s] === loft.sliceFront[strip]) continue;
+      const a = s * S;
+      const b = a + S;
+      if ((x - p[3 * a]) * loft.sliceRayZ[s] - (z - p[3 * a + 2]) * loft.sliceRayX[s] < 0) continue;
+      if ((x - p[3 * b]) * loft.sliceRayZ[s + 1] - (z - p[3 * b + 2]) * loft.sliceRayX[s + 1] >= 0) continue;
+      const q = (x - p[3 * a]) * loft.sliceRayX[s] + (z - p[3 * a + 2]) * loft.sliceRayZ[s];
+      const bucket = Math.floor((q - this.stripLow[s]) / this.bucket);
+      if (!(bucket >= 0 && bucket < this.stripBuckets[s])) continue;
+      const first = this.stripFirst[s] + bucket;
+      for (let e = this.bucketStart[first]; e < this.bucketStart[first + 1]; e += 1) {
+        const j = this.bucketQuads[e];
+        if (q < this.quadLow[s * Q + j] || q > this.quadHigh[s * Q + j]) continue;
+        const v00 = a + j;
+        const v10 = v00 + S;
+        if (this.meets(p, v00, v10, v00 + 1, x, z) || this.meets(p, v00 + 1, v10, v10 + 1, x, z)) return true;
+      }
+    }
+    return false;
+  }
+
+  /** Whether the vertical line at (x, z) meets triangle (a, b, c), by `triangle`'s rules, recording nothing. */
+  private meets(p: Float32Array, a: number, b: number, c: number, x: number, z: number): boolean {
+    const area = this.edge(p, a, b, p[3 * c], p[3 * c + 2]);
+    if (area === 0) return false;
+    const sign = area > 0 ? 1 : -1;
+    return this.inside(this.edge(p, b, c, x, z), b, c, sign) && this.inside(this.edge(p, c, a, x, z), c, a, sign)
+      && this.inside(this.edge(p, a, b, x, z), a, b, sign);
   }
 
   /** The strip's crossings with the vertical line at (x, z), sorted up; how many. */

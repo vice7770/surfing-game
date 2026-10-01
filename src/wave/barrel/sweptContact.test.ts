@@ -55,6 +55,28 @@ describe('the swept contact', () => {
     expect(hit.tangentX).toBeCloseTo(1, 6);
   });
 
+  it('lowers the held lip by the fade through the collapse, and weighs its flow by the same (the advisor, 2026-09-30)', () => {
+    const times = library().profileTimes({ slope: 0.05, footHeight: 2.1, footDepth: 7 });
+    const contact = contactAt(times.touchdownSeconds + times.collapseSeconds / 2);
+    const hit = createContactHit();
+    // Halfway through: the underside and the top at half their heights over the still water.
+    const under = STILL + (UNDER - STILL) / 2;
+    const top = STILL + (TOP - STILL) / 2;
+    expect(contact.query(10.3, (under + top) / 2, -93, hit)).toBe(true);
+    expect(hit.inWater).toBe(true);
+    expect(hit.surfaceY).toBeCloseTo(top, 3);
+    expect(hit.waterFloorY).toBeCloseTo(under, 3);
+    expect(hit.lipShare).toBeCloseTo(5 / 6, 2);
+    expect(hit.lipWeight).toBeCloseTo(0.5, 5);
+    // The held frame's jet keeps its velocity: the water is still coming down.
+    expect(hit.lipVZ).toBeCloseTo(0.9 * Math.sqrt(9.81 * H0), 2);
+    expect(tubeState(hit.life)).toBe('closed');
+    // Under the lowered lip, the tube's air over the face.
+    contact.query(10.3, (STILL + under) / 2, -93, hit);
+    expect(hit.inWater).toBe(false);
+    expect(hit.ceilingY).toBeCloseTo(under, 3);
+  });
+
   it('reads under the face as water, and over the lip as air resting on its top', () => {
     const contact = contactAt(0.1);
     const hit = createContactHit();
@@ -205,6 +227,30 @@ describe('the swept contact', () => {
       for (const y of [0, 2.5, (UNDER + TOP) / 2, 9]) expect(contact.query(10.3, y, -93, hit)).toBe(true);
       expect(contact.stats.quads / 4).toBeLessThanOrEqual(12);
     });
+  });
+
+  it('answers from the first of two overlapping fronts, as drawn, with nothing left for the backstop (the advisor, 2026-09-30)', () => {
+    // The first front over x 0.5–20.5 at τ 0.1 s, the second from x 10 at τ 0.2 s: its strips over the first's are dropped.
+    const n = 21;
+    const both = new Float32Array(2 * n * FRONT_STRIDE);
+    for (let f = 0; f < 2; f += 1) {
+      both.set(records(n, f === 0 ? 0.1 : 0.2), f * n * FRONT_STRIDE);
+      for (let k = 0; k < n; k += 1) {
+        both[(f * n + k) * FRONT_STRIDE + FRONT_FIELD.front] = f + 1;
+        both[(f * n + k) * FRONT_STRIDE + FRONT_FIELD.x] = (f === 0 ? 0.5 : 10) + k;
+      }
+    }
+    const contact = new SweptContact(library(), 0.05);
+    contact.update(both, 2 * n, STILL, flat);
+    expect(contact.last!.overlaps).toBeGreaterThan(0);
+    const hit = createContactHit();
+    // In the overlap the first front's tube, at its clock; past it the second's.
+    expect(contact.query(15.3, 2.5, -93, hit)).toBe(true);
+    expect(hit.life).toBeCloseTo(0.1 / (0.5 * UNIT), 3);
+    expect(contact.query(26.3, 2.5, -93, hit)).toBe(true);
+    expect(hit.life).toBeCloseTo(0.2 / (0.5 * UNIT), 3);
+    for (let x = 8; x < 24; x += 0.37) for (let y = -0.5; y < 7; y += 0.41) contact.query(x, y, -93, hit);
+    expect(contact.stats.overlaps).toBe(0);
   });
 
   it('holds no state of its own: the same records answer the same in a fresh contact', () => {

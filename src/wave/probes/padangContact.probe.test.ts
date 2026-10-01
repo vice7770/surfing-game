@@ -64,7 +64,8 @@ describe.runIf(process.env.PROBE)('Padang Padang contact probe', () => {
     appendFileSync(log, `Padang Padang ${name} (Hs ${swell.significantHeight} m, ${swell.peakPeriod} s), 1 m cells, 1/60 s steps; a standing rider samples the water ${samples} times a step\n`);
     const updates: number[] = [];
     const steps: number[] = [];
-    const cuts: number[] = [];
+    /** Overturned slices under partial weight (a front's ends, a collapse): lerped toward the water as drawn. */
+    const partial: number[] = [];
     const vertices: number[] = [];
     let queried = 0;
     let hits = 0;
@@ -87,7 +88,9 @@ describe.runIf(process.env.PROBE)('Padang Padang contact probe', () => {
       updates.push(runner.contactMs);
       const loft = contact.last;
       if (!loft) continue;
-      cuts.push(loft.cuts);
+      let lerped = 0;
+      for (let s = 0; s < loft.sliceCount; s += 1) if (loft.sliceOverturned[s] && loft.sliceWeight[s] > 0 && loft.sliceWeight[s] < 1) lerped += 1;
+      partial.push(lerped);
       vertices.push(loft.vertexCount);
       // Points through the open, overturned strips: between the two slices, from the face under the throat to the
       // lip's tip, from the face to a metre over the curl's top.
@@ -117,7 +120,7 @@ describe.runIf(process.env.PROBE)('Padang Padang contact probe', () => {
       queryMs += performance.now() - t0;
       anomalies += contact.stats.anomalies - before;
       if (step % 300 === 299) {
-        appendFileSync(log, `t ${runner.simulation.solver.time.toFixed(0)} s | contact update ${quantiles(updates)} ms against the step's ${quantiles(steps, 1)} ms | vertices ${quantiles(vertices, 0)} | cuts ${quantiles(cuts, 0)}\n`);
+        appendFileSync(log, `t ${runner.simulation.solver.time.toFixed(0)} s | contact update ${quantiles(updates)} ms against the step's ${quantiles(steps, 1)} ms | vertices ${quantiles(vertices, 0)} | lerped lips ${quantiles(partial, 0)}\n`);
       }
     }
     const perQuery = queried ? (1000 * queryMs) / queried : Number.NaN;
