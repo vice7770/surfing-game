@@ -239,6 +239,47 @@ describe('the breaking front as lines', () => {
     expect(nearest.unsized).toBe(2);
   });
 
+  // #105's fast fronts (the advisor, 2026-10-01): a jump moves a crest's segment into the bore ahead, whose strength
+  // stays above zero without a fresh start.
+  it('with its own onset, joins a jumped crest only when its own segment rises fresh, timed at that step', () => {
+    const OPTIONS = { jumpReach: 10, ownOnset: true };
+    const fresh = (s: CrestSample) => ({ ...s, rise: 0.7 });
+    const sized = (front: BreakingFront) => {
+      front.update([sample(0, 10, 7, 0)], 1, 0);
+      front.update([sample(0, 11, 5.5, 0)], 1, 0.5);
+    };
+    // Carried past its throw depth by the jump, breaking (strength) but not rising fresh: no join, then dropped.
+    const stale = new BreakingFront(1, TIMING, OPTIONS);
+    sized(stale);
+    stale.update([sample(0, 11.5, 3.4, 0, 1.2), sample(0, 18, 2.4, 0.5, 1.7)], 2, 0.6);
+    expect(stale.points).toHaveLength(0);
+    stale.update([fresh(sample(0, 18.3, 2.35, 0.5, 1.7))], 1, 0.7);
+    expect(stale.points).toHaveLength(0);
+    expect(stale.unbroken).toBe(1);
+    expect(stale.unrisen).toBe(1);
+    // Rising fresh in the jump's step: it joins and throws then, with no time interpolated across the jump.
+    const own = new BreakingFront(1, TIMING, OPTIONS);
+    sized(own);
+    own.update([sample(0, 11.5, 3.4, 0, 1.2), fresh(sample(0, 18, 2.4, 0.5, 1.7))], 2, 0.6);
+    expect(own.points).toHaveLength(1);
+    expect(own.points[0]).toMatchObject({ joined: 0.6, thrown: 0.6, throwZ: 18, jumped: 1 });
+    // Jumped short of its throw depth, it waits for its own onset, joins at that step, and throws later as it crosses.
+    const waits = new BreakingFront(1, TIMING, OPTIONS);
+    sized(waits);
+    waits.update([sample(0, 11.5, 3.4, 0, 1.2), sample(0, 15, 2.9, 0.5, 1.7)], 2, 0.6);
+    expect(waits.points).toHaveLength(0);
+    waits.update([fresh(sample(0, 15.4, 2.8, 0.5, 1.7))], 1, 0.7);
+    expect(waits.points).toHaveLength(1);
+    expect(waits.points[0]).toMatchObject({ joined: 0.7, thrown: null });
+    // A crest that hasn't jumped joins as before: strength above zero, no fresh rise needed.
+    const plain = new BreakingFront(1, TIMING, OPTIONS);
+    plain.update([sample(0, 10, 7, 0)], 1, 0);
+    plain.update([sample(0, 12, JOIN, 0)], 1, 1);
+    plain.update([sample(0, 13, 2.8, 0.5)], 1, 1.8);
+    expect(plain.points).toHaveLength(1);
+    expect(plain.points[0]).toMatchObject({ joined: 1, thrown: null });
+  });
+
   // The Reef's rules (FrontOptions, PR 7): small waves break as they cross onto its top.
   it('with a join reach past the throw depth, joins a crest the solver breaks within it, throwing as it joins', () => {
     const passes = (front: BreakingFront, breaksAt: number) => {
