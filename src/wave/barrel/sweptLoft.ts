@@ -53,6 +53,12 @@ function restHeight(crestY: number, toeY: number, frontY: number): number {
  */
 export const SHEET = { ramp: 3, formed: 0.035 } as const;
 /**
+ * The dark throat's lip (the Rich look; the advisor's rulings, 2026-10-01): the profile points over whose sheet the lip's
+ * mean thickness is taken, for the light it lets through onto the inner face (the outer run's middle, clear of the
+ * crest's root and the tip) [provisional].
+ */
+export const THROAT = { thicknessFrom: 40, thicknessTo: 60 } as const;
+/**
  * The solver crest's pace in the lip's velocity (the advisor, 2026-09-30, provisional): its mean since the throw is
  * noise early, so it is blended in from `from` to `to` s after the throw; it is held to `slowest`–`fastest` × the
  * long-wave speed √(g d) at the crest, which a crest record that jumps (a split, a re-join) would leave.
@@ -80,6 +86,13 @@ export interface LoftResult {
    * light behind the lip is that much sky and the rest the cavity's wall (the advisor, 2026-10-01).
    */
   sheetBack: Float32Array;
+  /**
+   * Per vertex, 4 floats, the tube's inside as its inner face sees it (`throatViews`; the Rich look's dark throat, the
+   * advisor's rulings, 2026-10-01): the sky through the opening, the lip's underside (from the face), the lip's mean
+   * thickness, m, and how far the vertex is the inner face, 0–1 (points 64–112 of a slice whose underside has formed,
+   * × its lift). The open sky, no lip, 0 and 0 elsewhere. Drawn lofts only.
+   */
+  throat: Float32Array;
   indices: Uint32Array;
   vertexCount: number;
   indexCount: number;
@@ -131,6 +144,16 @@ export interface LoftResult {
   sliceTipUp: Float32Array;
   sliceAnchorVX: Float32Array;
   sliceAnchorVZ: Float32Array;
+  /**
+   * Per slice, how far its underside has formed (0–1, `sheetAcross`), its drawn tip in the world, and how far along the
+   * front its tube's mouth is, m: the nearest slice of its run without an underside, or the run's end (0 without one).
+   * Drawn lofts only.
+   */
+  sliceFormed: Float32Array;
+  sliceTipX: Float32Array;
+  sliceTipY: Float32Array;
+  sliceTipZ: Float32Array;
+  sliceMouth: Float32Array;
 }
 
 export interface LoftOptions {
@@ -175,30 +198,78 @@ interface Sample {
 }
 
 /**
- * The share of the sky seen through a tube's opening from a point on a surface, in the slice's plane (x along the ray,
- * y up; the advisor's ruling, 2026-10-01): the view factor F = ½(sin θ2 − sin θ1) of the directions between the
- * still water's horizon ahead, (1, 0), and the lip's tip as seen from (x, y), up to the tip, with θ from the surface's
- * unit normal (nx, ny) and the window held to the half-plane the surface faces. Exact for an extruded tube, where rays
- * below the horizon meet the water and those above the tip the lip. 0 when the tip is not above the point. Only
- * + − × ÷ √.
+ * The view factor, in the slice's plane, of the directions sweeping counter-clockwise from (ax, ay) to (bx, by) (under
+ * half a turn apart), from a surface whose unit normal is (nx, ny): ½(sin θ2 − sin θ1), θ from the normal, the arc held
+ * to the half-plane the surface faces. Exact for extruded geometry. Only + − × ÷ √.
  */
-export function tubeSkyView(x: number, y: number, nx: number, ny: number, tipX: number, tipY: number): number {
-  const ux = tipX - x;
-  const uy = tipY - y;
-  if (!(uy > 0)) return 0;
-  const u = Math.sqrt(ux * ux + uy * uy);
-  // The window's edges in the normal's frame: (cos, sin) of their angle from it. Its first edge is the horizon.
-  const c1 = nx;
-  const s1 = -ny;
-  const c2 = (nx * ux + ny * uy) / u;
-  const s2 = (nx * uy - ny * ux) / u;
-  // The window runs counter-clockwise from the horizon to the tip, under half a turn; the surface sees from −90° (0, −1)
-  // to +90° (0, 1). A direction (c, s) lies in the window when it is counter-clockwise of the horizon and not of the
-  // tip: c1 s − s1 c ≥ 0 and c s2 − s c2 ≥ 0, which for (0, −1) reads −c1 ≥ 0 and c2 ≥ 0, and for (0, 1) c1 ≥ 0 and −c2 ≥ 0.
+export function arcView(nx: number, ny: number, ax: number, ay: number, bx: number, by: number): number {
+  const la = Math.sqrt(ax * ax + ay * ay);
+  const lb = Math.sqrt(bx * bx + by * by);
+  if (!(la > 0 && lb > 0)) return 0;
+  // The arc's ends in the normal's frame: (cos, sin) of their angle from it.
+  const c1 = (nx * ax + ny * ay) / la;
+  const s1 = (nx * ay - ny * ax) / la;
+  const c2 = (nx * bx + ny * by) / lb;
+  const s2 = (nx * by - ny * bx) / lb;
+  // The surface sees from −90° (0, −1) to +90° (0, 1). A direction (c, s) lies in the arc when it is counter-clockwise of
+  // its first end and not of its second: c1 s − s1 c ≥ 0 and c s2 − s c2 ≥ 0, which for (0, −1) reads −c1 ≥ 0 and
+  // c2 ≥ 0, and for (0, 1) c1 ≥ 0 and −c2 ≥ 0.
   const from = c1 >= 0 ? s1 : c2 >= 0 ? -1 : Number.NaN;
   const to = c2 >= 0 ? s2 : c1 >= 0 ? 1 : Number.NaN;
   if (from !== from || to !== to) return 0;
   return to > from ? (to - from) / 2 : 0;
+}
+
+/**
+ * The share of the sky seen through a tube's opening from a point on a surface, in the slice's plane (x along the ray,
+ * y up; the advisor's ruling, 2026-10-01): the view factor of the directions from the still water's horizon ahead,
+ * (1, 0), up to the lip's tip as seen from (x, y), on the surface's unit normal (nx, ny) (`arcView`). Exact for an
+ * extruded tube, where rays below the horizon meet the water and those above the tip the lip. 0 when the tip is not
+ * above the point.
+ */
+export function tubeSkyView(x: number, y: number, nx: number, ny: number, tipX: number, tipY: number): number {
+  return tipY - y > 0 ? arcView(nx, ny, 1, 0, tipX - x, tipY - y) : 0;
+}
+
+/**
+ * The tube's inside as its inner face sees it (the Padang Padang spec, item 16's dark throat; the advisor's rulings,
+ * 2026-10-01), per profile point from the tip back under the lip to the throat and down the face to the toe (64–112),
+ * into `out` (4 a point): the sky through the opening (`tubeSkyView`); the lip's underside, from the face only (the arc
+ * from the tip up to the throat, `arcView`); and 1. Elsewhere the open sky, no lip, 0. The normals are the profile's,
+ * out of the water.
+ */
+export function throatViews(profile: Float32Array, out: Float32Array): void {
+  const { lip, throat, toe } = LANDMARK;
+  const tipX = profile[2 * lip];
+  const tipY = profile[2 * lip + 1];
+  const throatX = profile[2 * throat];
+  const throatY = profile[2 * throat + 1];
+  for (let i = 0; i < PROFILE_POINTS; i += 1) {
+    const o = 4 * i;
+    if (i < lip || i > toe) {
+      out[o] = 1;
+      out[o + 1] = 0;
+      out[o + 2] = 0;
+      continue;
+    }
+    const a = i > 0 ? i - 1 : i;
+    const b = i < LAST ? i + 1 : i;
+    const dx = profile[2 * b] - profile[2 * a];
+    const dy = profile[2 * b + 1] - profile[2 * a + 1];
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const x = profile[2 * i];
+    const y = profile[2 * i + 1];
+    const nx = length > 0 ? -dy / length : 0;
+    const ny = length > 0 ? dx / length : 1;
+    out[o] = tubeSkyView(x, y, nx, ny, tipX, tipY);
+    // The lip from the face: the arc from the tip up round to the throat, counter-clockwise as seen from the point.
+    const ux = tipX - x;
+    const uy = tipY - y;
+    const vx = throatX - x;
+    const vy = throatY - y;
+    out[o + 1] = i > throat && ux * vy - uy * vx > 0 ? arcView(nx, ny, ux, uy, vx, vy) : 0;
+    out[o + 2] = 1;
+  }
 }
 
 /** Where `acrossTo` found the other side: the segment's first point, and how far along it. */
@@ -414,6 +485,8 @@ export class SweptLoft {
   /** A slice's lip thickness per profile point, m, and its far side's view of the sky (`sheetAcross`). */
   private readonly across = new Float32Array(PROFILE_POINTS);
   private readonly farSide = new Float32Array(PROFILE_POINTS);
+  /** A slice's throat views per profile point (`throatViews`). */
+  private readonly inside = new Float32Array(4 * PROFILE_POINTS);
 
   constructor(private readonly library: ProfileLibrary, private readonly slope: number, options: LoftOptions = {}) {
     this.contact = options.contact ?? false;
@@ -423,7 +496,7 @@ export class SweptLoft {
     const slices = MAX_SLICES + 1;
     this.result = {
       positions: new Float32Array(3 * vertices), normals: new Float32Array(3 * vertices), mask: new Float32Array(vertices), lift: new Float32Array(vertices),
-      sheet: new Float32Array(vertices), sheetWeight: new Float32Array(vertices), sheetBack: new Float32Array(vertices),
+      sheet: new Float32Array(vertices), sheetWeight: new Float32Array(vertices), sheetBack: new Float32Array(vertices), throat: new Float32Array(4 * vertices),
       indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * slices), vertexCount: 0, indexCount: 0, sliceCount: 0,
       sliceFront: new Int32Array(slices), sliceSigma: new Float32Array(slices), sliceTau: new Float32Array(slices),
       slicePhase: new Uint8Array(slices), sliceCrestOffset: new Float32Array(slices), sliceLife: new Float32Array(slices),
@@ -432,6 +505,8 @@ export class SweptLoft {
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
       sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices),
+      sliceFormed: new Float32Array(slices), sliceTipX: new Float32Array(slices), sliceTipY: new Float32Array(slices), sliceTipZ: new Float32Array(slices),
+      sliceMouth: new Float32Array(slices),
     };
   }
 
@@ -758,7 +833,15 @@ export class SweptLoft {
       const maskSlice = wFade > 0 ? Math.min(1, Math.max(0, 1 + d / LOFT.band)) : 0;
       // The lip as a thin sheet, for the drawing only: how far across it each point is, once its underside has formed.
       const formed = this.measureSheet && w > 0 ? sheetAcross(profile, lookup.scale, this.across, this.farSide) : 0;
+      // Its inside, once there is one: the sky and the lip each inner point sees, and the lip's mean thickness.
+      let lipThickness = 0;
+      if (formed > 0) {
+        throatViews(profile, this.inside);
+        for (let i = THROAT.thicknessFrom; i <= THROAT.thicknessTo; i += 1) lipThickness += this.across[i];
+        lipThickness /= THROAT.thicknessTo - THROAT.thicknessFrom + 1;
+      }
       const slice = r.sliceCount;
+      r.sliceFormed[slice] = formed;
       r.sliceFront[slice] = f.id;
       r.sliceSigma[slice] = sigma;
       r.sliceTau[slice] = tau;
@@ -795,6 +878,9 @@ export class SweptLoft {
         let sheet = 0;
         let sheetShare = 0;
         let sheetBack = 0;
+        let sky = 1;
+        let underLip = 0;
+        let inner = 0;
         if (j < E) {
           along = profile[0] - (E - j) * EXTENSION_STEP;
         } else if (j < E + PROFILE_POINTS) {
@@ -811,6 +897,11 @@ export class SweptLoft {
             sheet = this.across[i];
             sheetBack = this.farSide[i];
             sheetShare = formed * Math.min(1, Math.min(i - LANDMARK.crest, LANDMARK.throat - i) / (SHEET.ramp + 1));
+          }
+          if (formed > 0) {
+            sky = this.inside[4 * i];
+            underLip = this.inside[4 * i + 1];
+            inner = formed * this.inside[4 * i + 2];
           }
         } else {
           along = profile[2 * LAST] + (j - E - LAST) * EXTENSION_STEP;
@@ -832,7 +923,15 @@ export class SweptLoft {
         r.sheet[v] = sheet;
         r.sheetWeight[v] = sheetShare * e;
         r.sheetBack[v] = sheetBack;
+        r.throat[4 * v] = sky;
+        r.throat[4 * v + 1] = underLip;
+        r.throat[4 * v + 2] = lipThickness;
+        r.throat[4 * v + 3] = inner * e;
       }
+      const tip = 3 * (slice * LOFT_SAMPLES + E + LANDMARK.lip);
+      r.sliceTipX[slice] = r.positions[tip];
+      r.sliceTipY[slice] = r.positions[tip + 1];
+      r.sliceTipZ[slice] = r.positions[tip + 2];
       r.sliceCount += 1;
     }
     closeRun();
@@ -843,6 +942,17 @@ export class SweptLoft {
   private finishRun(firstSlice: number, lastSlice: number): void {
     const r = this.result;
     this.normals(firstSlice, lastSlice);
+    // Each slice's tube's mouth: the nearest slice of the run without an underside on either side, or the run's end.
+    let open = r.sliceSigma[firstSlice];
+    for (let s = firstSlice; s <= lastSlice; s += 1) {
+      if (!(r.sliceFormed[s] > 0)) open = r.sliceSigma[s];
+      r.sliceMouth[s] = r.sliceFormed[s] > 0 ? r.sliceSigma[s] - open : 0;
+    }
+    open = r.sliceSigma[lastSlice];
+    for (let s = lastSlice; s >= firstSlice; s -= 1) {
+      if (!(r.sliceFormed[s] > 0)) open = r.sliceSigma[s];
+      if (r.sliceFormed[s] > 0) r.sliceMouth[s] = Math.min(r.sliceMouth[s], open - r.sliceSigma[s]);
+    }
     for (let s = firstSlice; s < lastSlice; s += 1) r.sliceJoined[s] = 1;
   }
 
