@@ -121,7 +121,7 @@ The owner stopped every agent at about 16:30 and said to continue at about 20:05
   - the Padang Padang stack, in order: #91 → #92 → #95 (change each base to main first), then #103, then #104.
 - **#105, the peak fix and jump rule:** done, except one check. Small's 90th-percentile peel rose from 8.5 to 22.8 m/s, which may be inherited joins throwing together. If so, re-time an inherited crest by its own onset.
 - **#102, PR 5:** the jet-holding match (a jet-holding point keeps matching over the throw's window until its crash) was being built, and its probes hadn't run. Check the PR 5 agent's branch `claude/padang-crash` for what was pushed, then run the 2 m and 1 m probes: at least about 90 % of jets crashing on their own point.
-- **PR 7's prep** (`claude/padang-every-spot`): it carries #105, the Reef rules and its two-point throw line. The Point's record (a15, a23, a30; d = 1.55 + 0.95 η) was being added, and PR 7 isn't opened yet.
+- **PR 7** (`claude/padang-every-spot`): opened as draft #107 at about 20:15, into #105. It carries the Reef's rules and two-point throw line, and the Point's record (a15, a23, a30; d = 1.55 + 0.95 η; a08 and reef42_a35 left out). Its tip refit also changes Padang Padang's held lip velocity (11–23 % faster along). That's the one Padang change in it, and its description is being corrected to say so. The switch itself still waits for the owner's look.
 - **The front splits** (`claude/padang-front-merge`): diagnosed on the old base (238 of 289 pairs were the jump artefact). The runs on #105 hadn't finished, and no rule was built.
 
 ## Open decisions for the owner
