@@ -19,6 +19,14 @@ import { SeaState } from './SeaState';
  *   tip), so the arms' longer outer run stays in the tank with its peel still about 46°. Refraction turns the
  *   crests toward the arms, so arms at 71° break at a peel angle of about 47–50° along them (measured): Scarfe's
  *   46–55° for intermediates' standard manoeuvres, about 6–6.5 m/s at 1.1–1.25 m faces;
+ * - seaward of the terrace's edge the finger's faces run on at their gradient instead of stopping at the terrace:
+ *   in front of the finger (|x| under about 90 m) two ridges aligned with the approach, their crests dipping seaward
+ *   at about 1:43 along the path and their sides at 1:18 normal, down to 4–8 m at the zone's inner edge, where the
+ *   tank blends them into the feed over 10 m (a step reflecting at most about 3 % of the energy into the zone). This
+ *   is Mead's "focus" (Mead 2000, table 3.3: contour-normal gradients 1:10–1:80, alignments 40–90°), which gathers the
+ *   waves onto the finger and eases the take-off. Found after the sweep and kept on the advisor's ruling
+ *   (2026-10-01): every measurement was made on it. If the zone or the feed ever moves, recheck the step; if a size
+ *   ever breaks on the arms before the tip, look at the axis first (deeper than the ridges, so it draws less);
  * - its face climbs at `gradient` square to the crest line, about 1:18: Mead & Black's orthogonal gradient of about
  *   1:28 along the ray at breaking, which crosses the arms at about 50° (their intensity about 2.6–2.8, a face that
  *   throws without a tube; set along +z it made the arms about 1:9 and tubed), to its crest: `crestDepth` deep at
@@ -89,11 +97,11 @@ export const POOL_FACES = { small: 1.0, medium: 1.25, big: 1.5 } as const;
 export type PoolSize = keyof typeof POOL_FACES;
 
 /**
- * The wave height the machine makes at the tank's edge for each size, m: reverse-shoaled from the faces to the
- * feed's 9 m (the advisor: a 1.25 m breaker is about 0.76 m high there, Ursell about 8), to be calibrated by the pool
- * probe against the faces the solver breaks with.
+ * The wave height the machine makes at the tank's edge for each size, m: set so the game's surf meter (each wave's
+ * biggest breaking face within 10 m of the take-off, H1/3) reads the size's face. Measured on the pool (the size
+ * probe, 2026-10-01): H 0.85 → 1.29 m, 1.05 → 1.46 m, 1.3 → 1.77 m, about 0.38 + 1.07 H.
  */
-export const POOL_EDGE_HEIGHT: Record<PoolSize, number> = { small: 0.61, medium: 0.76, big: 0.91 };
+export const POOL_EDGE_HEIGHT: Record<PoolSize, number> = { small: 0.58, medium: 0.81, big: 1.05 };
 
 /** A regular wave's Hs, 4√m0, for its height H: m0 = a²/2 = H²/8, so Hs = √2 H. */
 /** smoothstep, kept here so this module and Bathymetry's import only each other's types. */

@@ -70,6 +70,19 @@ The game does not name or score the phases. There is no Flow lesson and no move 
   - The edges absorb the waves. The walls are drawn but not simulated, as real pools are built to kill reflections.
   - Before the floor shape is settled, the water-physics advisor checks it.
 - **An A-frame:** one peak peeling both ways, so every wave gives a right and a left, frontside and backside.
+- **The bed as built** (`src/wave/pool.ts`; the sweep is in `docs/research/wave-pool-bed.md`):
+  - a regular wave fed at 9 m;
+  - a seaward finger on a 2.5 m terrace, its arms at 71° easing to 65°, its face 1:18 square to its crest line, the crest ramping from 1.0 m at the tip to 0.5 m.
+  - In front of the finger its faces run on across the approach. This is Mead's "focus", two ridges aligned with the waves, kept on the advisor's ruling of 2026-10-01. It is not the steep 1:9 ramp first designed; don't "fix" it, since every measurement was made on it.
+  - Depths across shore, m (the terrace's edge is at z −257; the machine's zone begins at −326, blended over 10 m):
+
+    | x \ z | −330 | −310 | −290 | −270 | −257 |
+    | --- | --- | --- | --- | --- | --- |
+    | 0 | 7.7 | 6.6 | 5.4 | 3.9 | 2.5 |
+    | 20 | 4.2 | 3.7 | 3.3 | 2.8 | 2.5 |
+    | 45 | 5.8 | 5.3 | 4.8 | 3.9 | 2.5 |
+    | 80 | 7.3 | 6.8 | 6.2 | 3.9 | 2.5 |
+    | ≥ 100 | 9.0 | 8.4 | 6.2 | 3.9 | 2.5 |
 - **Sizes:** faces of 1.0, 1.25 and 1.5 m (default 1.25). They take the place of the ocean's swell choice.
 - **Rhythm:** a wave about every 10 s.
 - **Rides:** about 15–20 s, enough for 3–4 bottom-turn-to-cutback cycles.

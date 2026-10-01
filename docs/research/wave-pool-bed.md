@@ -51,6 +51,34 @@ The probe is `src/wave/probes/pool.probe.test.ts`, run with `PROBE=1 LOG=… npx
    - **b = 15:** a ±20 m close-out (peak/20 m 1.07, X 34).
    - **Both:** past |x| 36 each x-column logs several onsets a wave. With arms this steep the break line crosses a column along tens of metres of z, so column onsets no longer show the peel.
    - The probe gained a break-line mode (`LINE=1`): it samples the arm's face where it is 1.5 m deep and times each wave's arrival there by arc length from the tip.
+8. **Along the break line** (H 1.0 m, after 95–105 s; arrivals unwrapped wave by wave):
+
+   | Tip b | Close-out (within 1 s) | Along the line, x 0–30 | Steady peel past it | Reaches | Ride per side |
+   | --- | --- | --- | --- | --- | --- |
+   | 25 | ±6–24 m (varies) | 12–17 m/s | 6.0–6.5 m/s from \|x\| 27 | \|x\| 75–84 | 18–21 s |
+   | **15** | **±18 m** | **10.4 m/s** | **5.6–5.8 m/s** | **\|x\| 63–69** | **18–21 s** |
+   | 10 | ±15 m | 8.3 m/s | 5.4–6.2 m/s | \|x\| 60–63 | about 20 s |
+
+   - **Peel:** at 5.7 m/s against C_b ≈ 4.7 m/s, the steady peel is about 55°: Scarfe's intermediate band, toward its gentle end.
+   - **Repeatability:** the waves repeat to about 0.1 s along the arm (b = 15: arrival at |x| 45 at 11.8 / 11.7 / 11.6 s after the tip).
+   - **b = 10's peak:** faces were about 1.4 times the arm's in the column runs, past the advisor's 1.25.
+   - **Kept: b = 15.** Riders wait at x 27, just past the tip's fast section, where the arm is about 1.5 times the wave's height deep.
+
+## The bed as built, against the design
+
+Mapped after the sweep: seaward of the terrace's edge, the finger's faces run on at their 1:18 normal gradient instead of stopping at the terrace. In front of the finger (|x| under about 90 m) the approach is therefore gentler than the 1:9 ramp. At |x| 20 it runs at about 1:40 along the waves' path, and the zone's inner edge is 4–8 m deep instead of 9 m; the tank blends it into the feed over 10 m. Clear of the finger the ramp and terrace are as designed.
+
+Every measurement above was made on this bed:
+- the waves repeat to 0.1 s along the arm;
+- the arms match;
+- the runs stay stable.
+
+So it is kept, as found. The advisor ruled on 2026-10-01 to keep it:
+- **The bed:** it is Mead's "focus" (two ridges aligned with the approach, inside Mead 2000's ranges), closer to natural breaks than the steep ramp first designed.
+- **The step:** the 10 m blend reflects at most about 0.17 in amplitude (about 3 % of the energy) into the zone, which relaxes it out.
+- **If the zone or the feed ever moves:** recheck the step.
+- **If a secondary crest ever rides the faces:** widen the blend to 30 m first.
+- **If a size ever breaks on the arms before the tip:** look at the deeper axis first.
 
 ## Cost
 

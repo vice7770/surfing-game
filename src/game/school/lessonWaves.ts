@@ -5,50 +5,49 @@ export const LESSON_WAVES: readonly LessonWave[] = [
   {
     "stage": 2,
     "config": {
-      "spot": "canyon",
+      "spot": "pool",
       "seed": 1,
-      "significantHeight": 1.4,
-      "peakPeriod": 12,
-      "directionDegrees": 10,
-      "spreading": 40,
-      "bandwidth": 0.08,
+      "significantHeight": 1.145512985522207,
+      "peakPeriod": 10,
+      "directionDegrees": 0,
+      "spreading": 1000,
       "tide": 0,
       "windSpeed": 0,
-      "componentCount": 64
+      "componentCount": 1
     },
     "assets": {
-      "pocket": "lessons/canyon-s2-pocket.sea",
-      "caught": "lessons/canyon-s2-caught.sea",
-      "waiting": "lessons/canyon-s2-waiting.sea"
+      "pocket": "lessons/pool-s2-pocket.sea",
+      "caught": "lessons/pool-s2-caught.sea",
+      "waiting": "lessons/pool-s2-waiting.sea"
     },
     "placements": {
       "pocket": {
-        "x": -8.2,
-        "z": -48.52,
-        "heading": -0.519,
-        "speed": 0.25,
+        "x": 28.11,
+        "z": -161.82,
+        "heading": 0.711,
+        "speed": 8.42,
         "phase": "standing"
       },
       "caught": {
-        "x": -6.29,
-        "z": -72.89,
-        "heading": -0.627,
-        "speed": 2.39,
+        "x": 27.19,
+        "z": -176.2,
+        "heading": 0.236,
+        "speed": 1.81,
         "phase": "prone"
       },
       "waiting": {
-        "x": 0.47,
-        "z": -84.68,
-        "heading": 0.132,
-        "speed": 0.97,
+        "x": 26.92,
+        "z": -188.34,
+        "heading": -0.048,
+        "speed": 0.48,
         "phase": "prone"
       }
     },
     "provisional": false,
     "checks": {
-      "pocket": "stood 6.4 s (attempt 1)",
-      "caught": "stood 6.1 s (attempt 18)",
-      "waiting": "stood 3.8 s (attempt 4)"
+      "pocket": "stood 4.3 s (attempt 12)",
+      "caught": "stood 9.6 s (attempt 12)",
+      "waiting": "stood 2.6 s (attempt 5)"
     }
   }
 ];
