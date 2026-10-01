@@ -42,7 +42,7 @@ export const POOL = {
   outerArmAngle: 65,
   bendX: 40,
   bendWidth: 14,
-  tipRounding: 25,
+  tipRounding: 15,
   gradient: 1 / 18,
   crestDepth: 1,
   crestEndDepth: 0.5,
@@ -50,6 +50,11 @@ export const POOL = {
   lagoonDepth: 1.8,
   armLength: 82,
   taperWidth: 25,
+  /**
+   * Where riders wait, x, m: on the right arm just past the tip's fast section, where the break line settles to its
+   * steady peel (about 6 m/s along the arm from |x| 27 out; the break-line probe, 2026-10-01).
+   */
+  takeOffX: 27,
   /** How far seaward of the tip's face the terrace reaches before the ramp, m: short, so the ramp's free harmonics don't reorder the crest. */
   terraceLead: 20,
   shoreSlope: 1 / 8,
@@ -72,6 +77,12 @@ export function poolTerraceZ(): number {
 export function poolRampFootZ(): number {
   return poolTerraceZ() - (POOL.feedDepth - POOL.terraceDepth) / POOL.rampSlope;
 }
+
+/**
+ * Where the machine's wave starts breaking on the arms, as the arm's depth over the wave's height at the feed: the
+ * break-line probe's 1.5 m contour at H 1.0 m (2026-10-01).
+ */
+export const POOL_BREAK_DEPTH = 1.5;
 
 /** The pool's three sizes, as faces at the break, m (the movement-flow spec): the Surf screen's Small, Medium and Big. */
 export const POOL_FACES = { small: 1.0, medium: 1.25, big: 1.5 } as const;
@@ -127,6 +138,11 @@ export function poolCrestZ(x: number): number {
 /** The share of a step along +z that lies square to the crest line at along-shore position x: the cosine of the line's angle there. */
 export function poolNormalShare(x: number): number {
   return 1 / Math.hypot(1, crestSlope(Math.abs(x)));
+}
+
+/** The arm the pool's peel is measured on: the right one (riders wait there), out to where its taper ends. */
+export function poolRiddenAt(x: number): boolean {
+  return x >= 0 && x <= POOL.armLength + POOL.taperWidth;
 }
 
 /** How far each arm has tapered into the terrace at along-shore position x: 0 on the reef, 1 past its end. */

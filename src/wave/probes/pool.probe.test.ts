@@ -60,6 +60,21 @@ it.skipIf(!process.env.PROBE)('rides the Wave Pool’s waves', () => {
     }
   }
   const lineOnsets: number[][] = lineCells.map(() => []);
+  // Each line onset's face: the crest within 6 m of the sample over the trough 30 m seaward of it, in its column.
+  const lineFaces: number[][] = lineCells.map(() => []);
+  const faceAt = (cell: number) => {
+    const column = cell % solver.nx;
+    const row = Math.floor(cell / solver.nx);
+    let crest = -Infinity;
+    let trough = Infinity;
+    for (let iz = Math.max(0, row - 60); iz < Math.min(solver.nz, row + 20); iz += 1) {
+      const z = solver.zCenters[iz];
+      const e = eta(iz * solver.nx + column);
+      if (Math.abs(z - solver.zCenters[row]) <= 6) crest = Math.max(crest, e);
+      if (z < solver.zCenters[row] && z > solver.zCenters[row] - 30) trough = Math.min(trough, e);
+    }
+    return crest - trough;
+  };
   const lineWas = lineCells.map(() => false);
   const end = Number(process.env.END ?? 150);
   const onsets: Onset[][] = xs.map(() => []);
@@ -74,7 +89,10 @@ it.skipIf(!process.env.PROBE)('rides the Wave Pool’s waves', () => {
     lineCells.forEach((sample, a) => {
       const now = sample.cells.some((cell) => breaking[cell] > 0.3);
       const lastAt = lineOnsets[a].length ? lineOnsets[a][lineOnsets[a].length - 1] : -Infinity;
-      if (now && !lineWas[a] && solver.time - lastAt > 3) lineOnsets[a].push(solver.time);
+      if (now && !lineWas[a] && solver.time - lastAt > 3) {
+        lineOnsets[a].push(solver.time);
+        lineFaces[a].push(faceAt(sample.cells[7]));
+      }
       lineWas[a] = now;
     });
     columns.forEach((column, a) => {
@@ -108,7 +126,7 @@ it.skipIf(!process.env.PROBE)('rides the Wave Pool’s waves', () => {
   log(`${(end / ((performance.now() - wall) / 1000)).toFixed(2)}× real time`);
   const settled = Number(process.env.SETTLED ?? 60);
   // The raw break-line onsets first, so nothing measured is lost to a mistake in the summary below.
-  if (lineCells.length) log(`line raw ${JSON.stringify(lineCells.map((c, a) => ({ x: c.x, z: Math.round(c.z), s: Math.round(c.s), t: lineOnsets[a].map((t) => Math.round(t * 10) / 10) })))}`);
+  if (lineCells.length) log(`line raw ${JSON.stringify(lineCells.map((c, a) => ({ x: c.x, z: Math.round(c.z), s: Math.round(c.s), t: lineOnsets[a].map((t) => Math.round(t * 10) / 10), f: lineFaces[a].map((f) => Math.round(f * 100) / 100) })))}`);
   // The break line, wave by wave: for each break at the tip after settling, each sample's first onset within the
   // next 30 s (or none), by arc length along the arm; then the close-out (arrivals within 1 s of the tip), the gaps,
   // and the speed along the line past the close-out.
