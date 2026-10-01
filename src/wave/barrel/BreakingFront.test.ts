@@ -226,6 +226,8 @@ describe('the breaking front as lines', () => {
     expect(following.points[0].joined).toBeCloseTo(0.5 + ((5.5 - JOIN) / (5.5 - 2.4)) * 0.1, 12);
     expect(following.points[0].throwZ).toBeCloseTo(11 + ((5.5 - THROW) / (5.5 - 2.4)) * 7, 12);
     expect(following.jumps).toBe(1);
+    // The point remembers that its crest's track jumped once before it joined.
+    expect(following.points[0].jumped).toBe(1);
     // 7 m is past 1.5 of its 1.7 m wave (the advisor's first form of the reach).
     expect(following.waveJumps).toBe(0);
     // Without it (Padang Padang), the jump starts a crest of its own, unsized, which never joins: counted the same.
