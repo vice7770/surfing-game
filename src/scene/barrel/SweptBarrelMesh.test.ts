@@ -2,11 +2,11 @@ import { ShaderLib, type WebGLProgramParametersWithUniforms } from 'three';
 import { describe, expect, it } from 'vitest';
 import { FRONT_FIELD, FRONT_STRIDE } from '../../wave/barrel/frontRecords';
 import { ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
-import { SweptLoft, type LoftResult } from '../../wave/barrel/sweptLoft';
+import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from '../../wave/barrel/sweptLoft';
 import { tubeCase } from '../../wave/barrel/toyCase';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
-import { SWEPT_SHEET_BODY, SweptBarrelMesh, sweptViewColours } from './SweptBarrelMesh';
+import { SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -76,7 +76,10 @@ describe('the swept barrel’s mesh', () => {
       // Behind the sheet, the sky as far as its far side sees it through the opening, else the cavity's wall; the sun
       // over its own path through the sheet.
       expect(vertex).toContain('vSweptSheetBack = sweptSheetBack;');
-      expect(fragment).toContain('vec3 sweptBack = sweptSky * ( vSweptSheetBack + ( 1.0 - vSweptSheetBack ) * waterDeepReflectance );');
+      // Behind the far side that sees no opening, the back wall as drawn: its column body at its depth, under its own light.
+      expect(vertex).toContain('vSweptWallDepth = max( 0.0, sweptWall.y - waterBedAt( sweptWall.xz ) );');
+      expect(fragment).toContain('vec3 sweptWall = waterBodyGain * waterBodyReflectance( vSweptWallDepth, max( 0.05, dot( sweptWallN, waterV ) ), sweptWallSun ) * sweptWallLight;');
+      expect(fragment).toContain('vec3 sweptBack = vSweptSheetBack * sweptSky + ( 1.0 - vSweptSheetBack ) * sweptWall;');
       expect(fragment).toContain('float sweptSunPath = vSweptSheet / max( 0.2, abs( dot( waterN, waterSunDirection ) ) );');
       // The height field's crest-light march never runs on the curl.
       expect(fragment).not.toContain('waterCrestThickness( vWaterWorld');
@@ -99,6 +102,27 @@ describe('the swept barrel’s mesh', () => {
     swept.sheetShown = false;
     swept.update(loft);
     expect(attribute('sweptSheetWeight')).toEqual([0, 0, 0, 0]);
+  });
+
+  it('gives every vertex of a slice its back wall’s place and normal, a third of the way down from the throat', () => {
+    const records = new Float32Array(21 * FRONT_STRIDE);
+    for (let k = 0; k < 21; k += 1) {
+      const o = k * FRONT_STRIDE;
+      records[o + FRONT_FIELD.x] = k + 0.5; records[o + FRONT_FIELD.z] = -100; records[o + FRONT_FIELD.front] = 1; records[o + FRONT_FIELD.sigma] = k;
+      records[o + FRONT_FIELD.tau] = 0.1; records[o + FRONT_FIELD.footHeight] = 2.1; records[o + FRONT_FIELD.footDepth] = 7; records[o + FRONT_FIELD.throwZ] = -100;
+    }
+    const loft = new SweptLoft(new ProfileLibrary([tubeCase(0.3)]), 0.05).build(records, 21, 0.5, () => 0.5);
+    const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+    swept.update(loft);
+    const wall = swept.mesh.geometry.getAttribute('sweptWall').array;
+    const normal = swept.mesh.geometry.getAttribute('sweptWallNormal').array;
+    const slice = 7;
+    const from = 3 * (slice * LOFT_SAMPLES + LOFT.extensionSamples + WALL_POINT);
+    for (const j of [0, 40, LOFT_SAMPLES - 1]) {
+      const o = 3 * (slice * LOFT_SAMPLES + j);
+      expect(Array.from(wall.slice(o, o + 3))).toEqual(Array.from(loft.positions.slice(from, from + 3)));
+      expect(Array.from(normal.slice(o, o + 3))).toEqual(Array.from(loft.normals.slice(from, from + 3)));
+    }
   });
 
   it('draws a dev view only when asked, in its own program, and back to the water’s', () => {

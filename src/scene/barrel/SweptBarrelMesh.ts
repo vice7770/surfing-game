@@ -99,19 +99,32 @@ const sweptVertexPars = /* glsl */ `attribute float sweptLift;
 attribute float sweptSheet;
 attribute float sweptSheetWeight;
 attribute float sweptSheetBack;
+attribute vec3 sweptWall;
+attribute vec3 sweptWallNormal;
 varying float vSweptSheet;
 varying float vSweptSheetWeight;
-varying float vSweptSheetBack;`;
+varying float vSweptSheetBack;
+varying float vSweptWallDepth;
+varying vec3 vSweptWallNormal;`;
 const sweptBeginNormal = /* glsl */ `vec3 objectNormal = vec3( normal );
 vWaterDepth = max( 0.0, position.y - waterBedAt( position.xz ) );
 vWaterFoam = ( 1.0 - sweptLift ) * waterFoamAt( position.xz );
 vWaterFlow = waterFlowAt( position.xz );
 vSweptSheet = sweptSheet;
 vSweptSheetWeight = sweptSheetWeight;
-vSweptSheetBack = sweptSheetBack;`;
+vSweptSheetBack = sweptSheetBack;
+vSweptWallDepth = max( 0.0, sweptWall.y - waterBedAt( sweptWall.xz ) );
+vSweptWallNormal = sweptWallNormal;`;
 const sweptFragmentPars = /* glsl */ `varying float vSweptSheet;
 varying float vSweptSheetWeight;
-varying float vSweptSheetBack;`;
+varying float vSweptSheetBack;
+varying float vSweptWallDepth;
+varying vec3 vSweptWallNormal;`;
+/**
+ * The back wall behind the lip, sampled at this far down it from the throat, profile points (the advisor, 2026-10-01: the
+ * column body at the throat's or the back wall's depth and normal) [provisional: a third of the way to the toe].
+ */
+export const WALL_POINT = LANDMARK.throat + 8;
 
 /**
  * The lip as a thin sheet lit from behind, in both looks (docs/research/water-physics/tube-colour-fix.md, step 2; the
@@ -121,9 +134,10 @@ varying float vSweptSheetBack;`;
  * attenuated by Beer–Lambert on the water's own absorption and scattering, e^{−ct}, as emitted radiance, with no body
  * gain. Behind it: E_back = F · E_sky(−n) + (1 − F) · E_wall, F the far side's view of the sky through the tube's
  * opening (`sheetAcross`), E_sky the sky's irradiance over the hemisphere behind the sheet (the ambient, and the
- * environment at −n) [provisional: the build's choice], E_wall the cavity's wall, about R∞ of that light
- * [provisional]; and the sun's crest light where it is behind, over its own path through the sheet, t / |n·L| (at
- * least 0.2). The height field's march is never run on the curl.
+ * environment at −n) [provisional: the build's choice], and E_wall the back wall as drawn: its column body (the body's
+ * gain on the reflectance at its depth over the bed) under the sky and sun on its own normal (`WALL_POINT`; the
+ * advisor, 2026-10-01) [provisional]. And the sun's crest light where it is behind, over its own path through the
+ * sheet, t / |n·L| (at least 0.2). The height field's march is never run on the curl.
  */
 export const SWEPT_SHEET_BODY = /* glsl */ `
     float sweptPath = vSweptSheet / max( 0.2, waterRefractedCosine( waterViewCos ) );
@@ -133,7 +147,14 @@ export const SWEPT_SHEET_BODY = /* glsl */ `
     #if defined( USE_ENVMAP ) && defined( ENVMAP_TYPE_CUBE_UV )
       sweptSky += getIBLIrradiance( -normal );
     #endif
-    vec3 sweptBack = sweptSky * ( vSweptSheetBack + ( 1.0 - vSweptSheetBack ) * waterDeepReflectance );
+    vec3 sweptWallN = normalize( vSweptWallNormal );
+    float sweptWallSun = max( 0.0, dot( sweptWallN, waterSunDirection ) );
+    vec3 sweptWallLight = getAmbientLightIrradiance( ambientLightColor ) + sweptWallSun * waterSunRadiance;
+    #if defined( USE_ENVMAP ) && defined( ENVMAP_TYPE_CUBE_UV )
+      sweptWallLight += getIBLIrradiance( ( viewMatrix * vec4( sweptWallN, 0.0 ) ).xyz );
+    #endif
+    vec3 sweptWall = waterBodyGain * waterBodyReflectance( vSweptWallDepth, max( 0.05, dot( sweptWallN, waterV ) ), sweptWallSun ) * sweptWallLight;
+    vec3 sweptBack = vSweptSheetBack * sweptSky + ( 1.0 - vSweptSheetBack ) * sweptWall;
     float sweptSunPath = vSweptSheet / max( 0.2, abs( dot( waterN, waterSunDirection ) ) );
     float sweptSunBehind = pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 4.0 );
     totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) ) * (
@@ -156,6 +177,8 @@ export class SweptBarrelMesh {
   private readonly sheet = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly sheetWeight = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly sheetBack = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
+  private readonly wall = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
+  private readonly wallNormal = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
   private readonly index = new BufferAttribute(new Uint32Array(INDICES), 1).setUsage(DynamicDrawUsage);
   /** The dev view's colours, made with the first view. */
   private viewColours?: BufferAttribute;
@@ -182,6 +205,8 @@ export class SweptBarrelMesh {
     geometry.setAttribute('sweptSheet', this.sheet);
     geometry.setAttribute('sweptSheetWeight', this.sheetWeight);
     geometry.setAttribute('sweptSheetBack', this.sheetBack);
+    geometry.setAttribute('sweptWall', this.wall);
+    geometry.setAttribute('sweptWallNormal', this.wallNormal);
     geometry.setIndex(this.index);
     geometry.setDrawRange(0, 0);
     const material = new MeshPhysicalMaterial({ color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide });
@@ -254,6 +279,19 @@ export class SweptBarrelMesh {
     (this.lift.array as Float32Array).set(loft.lift.subarray(0, vertices));
     (this.sheet.array as Float32Array).set(loft.sheet.subarray(0, vertices));
     (this.sheetBack.array as Float32Array).set(loft.sheetBack.subarray(0, vertices));
+    // Each slice's back wall, the same for all its vertices.
+    const wall = this.wall.array as Float32Array;
+    const wallNormal = this.wallNormal.array as Float32Array;
+    for (let s = 0; s * LOFT_SAMPLES < vertices; s += 1) {
+      const from = 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + WALL_POINT);
+      for (let j = 0; j < LOFT_SAMPLES && s * LOFT_SAMPLES + j < vertices; j += 1) {
+        const o = 3 * (s * LOFT_SAMPLES + j);
+        for (let c = 0; c < 3; c += 1) {
+          wall[o + c] = loft.positions[from + c];
+          wallNormal[o + c] = loft.normals[from + c];
+        }
+      }
+    }
     if (this.sheetShown) (this.sheetWeight.array as Float32Array).set(loft.sheetWeight.subarray(0, vertices));
     else (this.sheetWeight.array as Float32Array).fill(0, 0, vertices);
     const index = this.index.array as Uint32Array;
@@ -286,7 +324,7 @@ export class SweptBarrelMesh {
       this.viewColours.addUpdateRange(0, 3 * vertices);
       this.viewColours.needsUpdate = true;
     }
-    for (const attribute of [this.positions, this.normals]) {
+    for (const attribute of [this.positions, this.normals, this.wall, this.wallNormal]) {
       attribute.clearUpdateRanges();
       attribute.addUpdateRange(0, 3 * vertices);
       attribute.needsUpdate = true;
