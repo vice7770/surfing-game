@@ -32,6 +32,8 @@ import { LocalSurfZone } from '../../game/SurfZoneHost';
 import { physicalSettingsFor } from '../../game/SurfConditions';
 import { poolCrestZ } from '../pool';
 import type { RiderPlacement } from '../../physics/RideSession';
+import type { StanceName } from '../../physics/riderPosture';
+import { createWaterSample } from '../../physics/SurfWater';
 import { SURF_ZONE_STEP, type RideRequest } from '../SurfZoneRunner';
 import type { SurfZoneConfig } from '../SurfZoneSimulation';
 import { encodeSurfZoneState } from '../surfZoneState';
@@ -75,14 +77,17 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
     spot: 'pool', seed: 1, significantHeight: pool.significantHeight, peakPeriod: pool.peakPeriod, directionDegrees: pool.directionDegrees,
     spreading: 1000, tide: 0, windSpeed: 0, componentCount: 1, stage: 2, compute: 'cpu',
   };
-  const along = Number(process.env.ALONG ?? 6);
+  const along = Number(process.env.ALONG ?? 27);
   const sides = process.env.SIDE === 'right' ? [1] : process.env.SIDE === 'left' ? [-1] : [1, -1];
+  // STANCE=both alternates Regular and Goofy each attempt (on one arm, frontside and backside); else the stance named.
+  const stances: StanceName[] = process.env.STANCE === 'both' ? ['regular', 'goofy'] : [process.env.STANCE === 'goofy' ? 'goofy' : 'regular'];
+  let stanceIndex = 0;
   const trace = process.env.TRACE ?? 'cutback';
   const cutbackReach = process.env.CUTBACK ? Number(process.env.CUTBACK) : undefined;
   const end = Number(process.env.END ?? 200);
   let wall = performance.now();
   const saved = process.env.SEA && existsSync(process.env.SEA) ? new Uint8Array(readFileSync(process.env.SEA)) : undefined;
-  const host = new LocalSurfZone(saved ? { ...config, spinUpPeriods: 0 } : config, { rider: true, spawnAlong: sides[0] * along }, saved);
+  const host = new LocalSurfZone(saved ? { ...config, spinUpPeriods: 0 } : config, { rider: true, spawnAlong: sides[0] * along, stance: process.env.STANCE === 'goofy' ? 'goofy' : 'regular' }, saved);
   const { runner } = host;
   if (process.env.SEA && !saved) writeFileSync(process.env.SEA, encodeSurfZoneState(runner.simulation.exportState()));
   const session = runner.session!;
@@ -150,6 +155,7 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
   let holding = true;
   let attempt = 0;
   let placedAt = -Infinity;
+  const faceSample = createWaterSample();
   let settleSteps = 0;
   let carried = 0;
   let pressed = '';
@@ -166,11 +172,17 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
         const at = PLACES[start];
         const face = Number(process.env.PLACE_FACE ?? at.face);
         const speed = Number(process.env.PLACE_SPEED ?? at.speed);
-        const x = side * (along + PLACE_AHEAD);
-        place = { x, z: crestAt(x) + face, heading: (side * Number(process.env.PLACE_ANGLE ?? at.angle) * Math.PI) / 180, speed, phase: at.phase };
+        // Ahead of the crest and angled from the wave's own travel there: the arms refract it toward their normal.
+        const crestX = side * (along + PLACE_AHEAD);
+        const crestZ = crestAt(crestX);
+        const sample = runner.water.sampleAt(crestX, runner.water.surfaceAt(crestX, crestZ + 2), crestZ + 2, faceSample);
+        const travel = Math.hypot(sample.slopeX, sample.slopeZ) > 0.02 ? Math.atan2(-sample.slopeX, -sample.slopeZ) : 0;
+        const x = crestX + face * Math.sin(travel);
+        const z = crestZ + face * Math.cos(travel);
+        place = { x, z, heading: travel + (side * Number(process.env.PLACE_ANGLE ?? at.angle) * Math.PI) / 180, speed, phase: at.phase };
         placedAt = step;
         settleSteps = Math.round(Number(process.env.PLACE_SETTLE ?? at.settle) / SURF_ZONE_STEP);
-        catchLines.push(`  placed ${at.phase} at x ${x.toFixed(1)} z ${place.z.toFixed(1)}, ${face} m ahead of the crest, heading ${(place.heading * DEG).toFixed(0)}°, ${speed} m/s over the water`);
+        catchLines.push(`  placed ${at.phase} at x ${x.toFixed(1)} z ${z.toFixed(1)}, ${face} m ahead of the crest along the wave's travel (${(travel * DEG).toFixed(0)}°), heading ${(place.heading * DEG).toFixed(0)}°, ${speed} m/s over the water`);
       } else {
         retry = true;
       }
@@ -262,9 +274,10 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
       pilot.reset();
       sideIndex = (sideIndex + 1) % sides.length;
       side = sides[sideIndex];
+      stanceIndex = (stanceIndex + 1) % stances.length;
       holding = true;
     }
-    host.advance(1, { ...idle, ...input, retry, ...(retry ? { spawnAt: { x: focus.x + side * along, z: lineup(side) - 6 } } : {}), ...(place ? { place } : {}) });
+    host.advance(1, { ...idle, ...input, retry, ...(retry ? { spawnAt: { x: focus.x + side * along, z: lineup(side) - 6 } } : {}), ...(place ? { place } : {}), stance: stances[stanceIndex] });
     retry = false;
   }
   log(`\n${end} s simulated in ${((performance.now() - wall) / 1000).toFixed(0)} s wall (${(end / ((performance.now() - wall) / 1000)).toFixed(2)}× real time)`);
