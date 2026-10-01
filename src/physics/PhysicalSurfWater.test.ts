@@ -331,6 +331,22 @@ describe('the swept contact through the water (Padang Padang, Part B, PR 4)', ()
     expect(sample.flowY).toBeLessThan(0);
   });
 
+  it('holds a steep face’s slope at tan 60° along its own direction, keeping its normal (the advisor, 2026-09-30)', () => {
+    const { water, solver } = sweptChannel();
+    // In the tube's air at 0.733 h0 ahead (2.2 m), over the toy's face from the throat to the toe: 3 in 1, n_y 0.32.
+    const sample = water.sampleAt(0, solver.restLevel + 1, 2.2, createWaterSample());
+    expect(sample.ceilingY).toBeDefined();
+    expect(sample.surfaceY).toBeCloseTo(solver.restLevel + 0.2 * 3, 2);
+    expect(sample.normalY).toBeCloseTo(1 / Math.sqrt(10), 3);
+    expect(sample.normalZ).toBeCloseTo(3 / Math.sqrt(10), 3);
+    // Its slope, 3 unclamped, held at √3: buoyancy at most twice the support.
+    expect(sample.slopeX).toBeCloseTo(0, 6);
+    expect(sample.slopeZ).toBeCloseTo(-Math.sqrt(3), 6);
+    // A gentle surface keeps its own slope: the flat under the lip.
+    const flat = water.sampleAt(0, solver.restLevel + 0.5, 2.7, createWaterSample());
+    expect(Math.hypot(flat.slopeX, flat.slopeZ)).toBeLessThan(0.1);
+  });
+
   it('weighs the lip’s flow by the slices’ weight, as their shape: halfway through the collapse, half of it (the advisor, 2026-09-30)', () => {
     const probe = sweptChannel();
     const { water, solver } = sweptChannel(probe.times.touchdownSeconds + probe.times.collapseSeconds / 2);

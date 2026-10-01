@@ -117,12 +117,43 @@ The swept barrel as ridden (Part B, PR 4; `src/wave/barrel/sweptContact.ts`), fr
 - **Closed down to the seabed** past the pinned ends by vertical walls, which a vertical line never crosses, so the crossings alone decide (ruling 2).
 - **Half-open:** a crossing at or below the point counts as below. A point on an edge two triangles share counts in exactly one; on a fold (the lip's tip), in both or neither. A point exactly on a slice's ray steps a nanometre into its strip, so its own triangles take the ray's edges.
 - **Layers.** In water, the surface is the nearest crossing above, and a crossing below is the curl's underside (`waterFloorY`). In air, it is the nearest crossing below, and the two above are the curl's underside and top (`ceilingY`, `ceilingTopY`). `surfaceAt` is the lowest crossing, the face, as the carve returned the void's floor.
-- **Normals** are the loft's vertex normals by the crossing's weights. The slope takes n_y ≥ 0.1 [inferred], so a vertical face slopes 10 at most.
-- **Where two fronts' strips overlap,** the first front's answers (a ledger ruling).
+- **Normals** are the loft's vertex normals by the crossing's weights. Their slope is held at n_y ≥ 0.5 [provisional]. Buoyancy is support × (−s_x, 1, −s_z), growing as 1/n_y. So past 60° a face's slope is tan 60° = 1.73 along its own direction, at most twice the support. The old n_y ≥ 0.1 let a tube's back wall push a body sideways at 10 × its buoyancy (the advisor, 2026-09-30). The sample keeps the unclamped normal for anything that plans off the face.
+- **Overlapping fronts: the first wins, in the drawing and the contact alike** (the advisor, 2026-09-30).
+  - The loft drops a later front's strip whose footprint overlaps an earlier front's kept strip: from the drawing, its mask and the contact. The footprint is the convex hull of its slices' drawn reach, the same in both modes.
+  - The contact's per-point rule (the first strip in its cell that holds the point) stays as a backstop, and counts what it catches.
+  - If drops reach about 1 %, or a dropped strip held an open tube (a hole in a barrel), the advisor would switch to keeping the front whose crest is nearer.
+- **Cost** (the advisor, 2026-09-30). The strips are indexed on a 2 m grid, and each strip's quads are bucketed by their range along its ray: 0.5 m buckets, in order.
+  - A vertical line tests only its bucket's quads: about 8 through the toy tube, against a strip's 133. A point outside every front's footprint tests none. The answers are exactly the full scan's.
+  - The ranges are stored as 32-bit floats, widened by 0.1 mm. Without that, a point exactly on a vertex row (z 2.1 m on the toy face at h0 3 m) rounded outside the quad that holds it. The full scan lost that face crossing too, so the column read as unclosed or found a wrong floor.
 
-**Contact mode** (ruling 2).
-- After touchdown each slice holds its last clear frame (one before touchdown in each case it blends: the jet ≥ 2 cells off the face at level 12), so the curve never self-crosses. Its clock and phase run on. The cases keep only one frame past touchdown, so the jet's trim and cavity loop have nothing to trim yet (a ledger ruling, sent to the advisor).
-- An overturned slice under full weight is whole from half weight and dropped below, and counted: a squashed lip is no water.
+**After touchdown** (the advisor, 2026-09-30).
+- **The drawing keeps the touchdown frame,** the visual event.
+- **The contact holds each blended case at its own held frame from its hold,** so it never self-crosses yet follows the drawing until each case's own hold. The held frame is the last one, at or before a frame before touchdown, whose tip stands 2 cells (0.0234 h0 at level 12) over the face beneath it and 2 cells ahead of its throat. It is measured when the library loads:
+
+  | Case | Held frame | Void W (h0 7 m) | Collapse √(2W/g) |
+  |---|---|---|---|
+  | `pad19-a20-l12` | 1 before touchdown | 0.48 m | 0.31 s |
+  | `pad19-a30-l12` | 2 before | 1.17 m | 0.49 s |
+  | `pad19-a45-l12` | 1 before | 1.75 m | 0.60 s |
+  | `periodic-padang19s-l12` | 1 before | 0.49 m | 0.32 s |
+
+  - pad19-a30-l12's last two frames have closed onto the face: landmarks 64–112 bunch within 0.03 h0 of (1.46, 0.03) h0, the main surface running over an enclosed cavity. A frame before touchdown, the first rule, held it with no void.
+  - pad19-a20-l12's and pad19-a45-l12's last two frames are duplicates, and open. Their "touchdown frame" is really the last open frame, so the drawn lip never visibly lands. The fade does the closing on screen; the crash curve (PR 5) owns the landing's look.
+  - The first rule also took the earlier of a blend's two clear times. At A0 0.3, all a30, it froze the contact at 0.57 s against a 1.00 s touchdown.
+- **W is the held frame's void height:** the most its underside (tip to throat) stands over the face beneath it, blended by the cases' weights and scaled by h0. It sits within about 20 % of the runs' W_O across the void (0.45, 1.00, 1.45 and 0.39 m) [measured, model].
+- **From touchdown both fade into the water over the tube's own collapse,** √(2W/g): `PlungingLip`'s roof free fall, G9's mechanism [provisional]. That is 0.31–0.60 s, in place of the loft's 0.3 s. A faded slice is dropped. The loft gives each slice its collapse time and fade (`sliceCollapse`, `sliceFade`) for the crash curve.
+- **The contact's held tip stands at most 0.33 m from the drawn one** (h0 7 m; `sliceTipGap`, `tipGap`).
+  - a30's two closed frames carry the drawn tip 0.047 h0 onto the face, and periodic's last carries it 0.031 h0 (0.22 m). It is 0 elsewhere: a20's and a45's last frames are their held ones.
+  - It is the touchdown's own approach, the last 1–2 frames (about 0.05 s), which a contact that never self-crosses can't hold. The advisor accepted it, 2026-09-30.
+
+**Following the drawing's weights** (the advisor, 2026-09-30). The contact takes the drawing's weights, with no cut. The lerp toward the same water by the same weight keeps a vertical line's crossings in order, so a partly weighted lip (a front's ends, a collapse) shrinks as drawn. Tested along vertical lines through the tubes:
+- **The toy tube,** lerped by the end ramps and the collapse over flat and sloping water: each line meets the face, the underside and the top once.
+  - Where a strip's weight is uniform they are in order.
+  - In the ends' strips, whose weight changes 0.1–0.35 a slice, two can swap by up to 3.2 mm (h0 7 m): at the throat, or in the last 5–19 % before the tip.
+- **The library's cases,** every blend, τ 0.5–1.3 s: every line meets the layers an odd number of times, so parity holds.
+  - Swaps are up to 0.05 mm in uniform strips (at the fold), and up to 10.3 mm at the tip in the ends' ramps. A swap of two adjacent crossings only relabels them; the contact doesn't use the labels.
+  - About 1 % of lines meet an underside (rarely a top) three times. The cases' own nearly vertical jet undersides wiggle at the cell scale, in the drawing too, each leaving an air sliver millimetres wide inside the lip, too small for a 10 cm body sphere's wet share to notice.
+  - Smoothing near-vertical undersides lightly in the converter would remove them: a cleanup for later (the advisor).
 
 **The lip's flow** (ruling 1). The converter stores the tip landmark's velocity per frame: a least-squares line over ±4 frames, in √(g h0) (format BRL2; table in [barrel-cases.md](barrel-cases.md)).
 
@@ -138,18 +169,39 @@ The advisor normalised the tips by each case's own crest speed C: the crest land
 - Against their own crests the solitaries throw at about 1.0–1.1 C and peak near 1.2 C, the low end of Erinin 2023's 1.1–1.3 C [measured, lab]. They look faster with A0 only because C grows.
 - They fall at about 2/3 g, not near free fall. Partly the fit spans the whole open time, including the jet's supported start; partly the resolution, about 4 cells across the lip at level 12.
 - The Small swell's periodic case is about 10 % slower still: a weak plunger.
-- Good enough to drive the contact. The level-13 run should nudge these up. The lookup scales it by √(g h0) of the slice; the clock's rate is 1 (τ runs with time; pauses hold it). In the curl's water, from the crest landmark (0) to the tip (1) by where the curl's top is, the solver's flow across the crest and up ramps to the tip's, plus the anchor's own motion while it hands over; along the crest the solver's is kept.
+- Good enough to drive the contact. The level-13 run should nudge these up.
+
+How the contact uses it:
+- **Scale and clock.** The lookup scales it by √(g h0) of the slice. The clock's rate is 1: τ runs with time, and pauses hold it.
+- **During a hold.** Each blended case's tip velocity is taken at the slice's τ until touchdown, since the water is still moving through a case's hold. From touchdown it is the held frame's (the advisor, 2026-09-30).
+- **The ramp.** In the curl's water, the solver's flow across the crest and up ramps to the lip's by where the curl's top is, from the crest landmark (0) to the tip (1). It also ramps by the slices' weight (their ends, the collapse), as their shape does. Along the crest the solver's flow is kept.
+- **The anchor's motion** (the advisor, 2026-09-30). The lip's velocity is the tip's plus the anchor's. The anchor (1 − u) T′ + u C hands over to the crest point C = S − c n, where S is the solver's crest and c the profile's. It follows C as it hands over, and also while the soft cap holds the throw point T′ near C:
+  - the capped point moves at 1 − f′ of C's pace along its offset (f′ the cap's slope), and at 1 − its scale across it;
+  - Ċ = Ṡ − ċ n.
+  - **Ṡ** is the solver crest's mean pace since its throw, along its column: (z − throwZ)/τ. It is blended in over 0.1–0.3 s and held to 0.5–1.5 × √(g d) at the crest [provisional]. It lags a slowing crest by about a tenth late on.
+  - **ċ** is the crest landmark's motion over ±4 frames, as the tip's.
+- **Checked** against the drawn tip's motion over the tip's own ±4-frame smoothing (A0 0.14 and 0.30, the solver's crest at 4 and 11 m/s):
+  - The stored velocity is within 0.33 m/s until a window before a case's hold. Without the anchor's following it was 0.4–3.5 m/s off on tips of 10–16 m/s.
+  - In the last window before the hold the tip decelerates into touchdown faster than its ±4-frame line follows: up to 0.53 m/s.
+  - Windows reaching the hold see the drawn tip go on to the face: 0.7–0.96 m/s. Both are the touchdown's approach, as the tip gap is (the advisor accepted them, 2026-09-30).
 
 **The rider** (ruling 4).
 - No new trigger. At a swept spot the solver's lip parcels no longer strike (their strips are off).
 - A body part in the tube's air whose sphere reaches the curl's underside takes its share between the underside and the top, with the curl's water's flow. A part in the curl's water subtracts the air below it, as the deck is.
+- **The lip's water floats no one** (the advisor, 2026-09-30). The curl's water is a falling jet, near the air's pressure, so a part's share in it, or reaching it from the tube's air, takes drag only. This replaces the earlier "leave it", which held only while the slope stayed small.
 - The pop-up's "feet under water" ignores a foot in the curl's water with air beneath it; it is the attached rider's only submersion rule.
 
 **Part D's fields** on the sample: `covered` (in the curl's air before touchdown), `clearance` (up to the underside), `tube` ('open', 'closing' from 0.8 T_open [provisional], 'closed' from touchdown until the slice goes; none before the throw). The Reef's session has yet to agree them.
 
-**Measured** (the `padangContact` probe, 2026-09-30, on the M1 Air under another session's load: load average 30–88, so every time here reads high) [measured]:
-- **A standing rider samples the water 2,656 times a 1/60 s step**: 32 substeps × its hull points, foils and body parts (ruling 3's count).
-- **A query through a tube** (a toy tube on a 40 m front: its strips have the sea's 133 quads each) took **6.4 µs**; the toy's update (10k vertices, flat water) 11.7 ms. So a standing rider wholly inside a tube would add about 17 ms a step on this loaded machine.
-  - The query scans all 133 quads of its strip. Bucketing each strip's quads by their along-ray range (about 0.5 m) leaves one quad per layer to test, so well under 1 µs a query (the advisor, 2026-09-30).
-  - Per-substep lerping would only save the slice rebuilds, which aren't the cost.
-- **On the Small swell**, 20 s of sea from the spin-up: the contact's update took 0.37 ms a step against the step's 613 ms (0.1 %). No tube had opened yet, so the sea gave no query timing; rerun it longer (`PROBE=1 SECONDS=180`) on an unloaded machine.
+**Measured** [measured]. These come from the `padangContact` probe and its scratch twins. They were taken on the M1 Air (8 GB) under other sessions' load, so wall time also counts the waits for a core. CPU time (`process.cpuUsage`) doesn't, so it is given beside.
+- **A standing rider samples the water 2,656 times a 1/60 s step:** 32 substeps × its hull points, foils and body parts (ruling 3's count).
+- **A query through a tube.** The toy tube is a 40 m front whose strips have the sea's 133 quads each.
+  - 2026-09-30, a full scan at load 30–88: 6.4 µs, wall.
+  - 2026-10-01, with the buckets, warmed, at load 28: 2.05 µs wall and **0.79 µs CPU**, testing 8.4 quads.
+  - Buckets against the full scan in one process: 0.69–0.72 µs against 1.36–1.43 µs CPU. The rest of a query is finding its strip, its few triangles, the normal and the lip's flow.
+- **A standing rider wholly inside a tube** costs 2,656 × 0.79 µs = **2.1 ms of CPU a step**: 5.4 ms wall at load 28, where the scan's estimate was 17 ms wall at load 30–88. Per-substep lerping would only save the slice rebuilds, which aren't the cost (the advisor).
+- **The update at the loft's budget.** Three 60 m fronts in every phase, 294 slices, 39,664 vertices: about 10 ms CPU a step, against the drawing loft's 7–9 ms. Branch b38a1d2 took 7.4–8.4 ms for 270 slices: it cut the lerped ends. The buckets take 1.3 ms of it.
+  - On the Small swell (2026-09-30, 20 s of sea, no tube yet) the update was 0.37 ms a step against the step's 613 ms.
+- **The sea rerun (`PROBE=1 SECONDS=180`) is still owed.**
+  - Started 2026-10-01 at load 22–38 (median 27.7) with the machine paging (64 MB free), its worker got 13–20 % of a core. It hadn't logged its first 5 s of sea after 29 minutes, so it would have run about 14 h, and it was stopped.
+  - The probe now logs CPU time and the load beside each line, so its next run on a quieter machine gives the update and query costs, the dropped strips per 1000 (and any with an open tube), the tip gap on the sea, and the height field's slopes across the breaking faces: the yardstick the slope clamp could take instead of tan 60°.
