@@ -160,6 +160,13 @@ export class SweptBarrelMesh {
   private look: WaterLook = 'classic';
   /** Dev only: false draws the lip as the column it was before the sheet (the water sheet's before-and-after). */
   sheetShown = true;
+  /**
+   * Each triangle's front face is its outer side, where the loft's normals point. The loft winds its quads the other
+   * way (its front faces look along −n), so a double-sided material saw every outer face as a back face and turned its
+   * normal into the water: the view cosine came out negative, the body fell to R∞ with no bed, and the lights lit the
+   * water's inside. Dev only: false draws the loft's own winding (the water sheet's before-and-after).
+   */
+  facesOut = true;
 
   /** `view`: a dev view of the curl in place of its shading (`SweptBarrelView`); none draws it as the water. */
   constructor(uniforms: Record<string, { value: unknown }>, view?: SweptBarrelView) {
@@ -244,7 +251,16 @@ export class SweptBarrelMesh {
     (this.sheetBack.array as Float32Array).set(loft.sheetBack.subarray(0, vertices));
     if (this.sheetShown) (this.sheetWeight.array as Float32Array).set(loft.sheetWeight.subarray(0, vertices));
     else (this.sheetWeight.array as Float32Array).fill(0, 0, vertices);
-    (this.index.array as Uint32Array).set(loft.indices.subarray(0, indices));
+    const index = this.index.array as Uint32Array;
+    if (this.facesOut) {
+      for (let i = 0; i + 2 < indices; i += 3) {
+        index[i] = loft.indices[i];
+        index[i + 1] = loft.indices[i + 2];
+        index[i + 2] = loft.indices[i + 1];
+      }
+    } else {
+      index.set(loft.indices.subarray(0, indices));
+    }
     if (this.currentView && this.viewColours) {
       sweptViewColours(this.currentView, loft, this.viewColours.array as Float32Array);
       this.viewColours.clearUpdateRanges();

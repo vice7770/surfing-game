@@ -1,6 +1,9 @@
 import { ShaderLib, type WebGLProgramParametersWithUniforms } from 'three';
 import { describe, expect, it } from 'vitest';
-import type { LoftResult } from '../../wave/barrel/sweptLoft';
+import { FRONT_FIELD, FRONT_STRIDE } from '../../wave/barrel/frontRecords';
+import { ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
+import { SweptLoft, type LoftResult } from '../../wave/barrel/sweptLoft';
+import { tubeCase } from '../../wave/barrel/toyCase';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
 import { SWEPT_SHEET_BODY, SweptBarrelMesh, sweptViewColours } from './SweptBarrelMesh';
@@ -124,5 +127,42 @@ describe('the swept barrel’s mesh', () => {
     sweptViewColours('region', regions, out);
     expect(Array.from(out.slice(0, 3))).toEqual([1, 0, 0]);
     expect(Array.from(out.slice(3, 6))).toEqual([0, 1, 0]);
+  });
+
+  it('draws each triangle facing the way the loft’s normals point, so a double-sided material keeps them', () => {
+    // A double-sided material turns a back face's normal round: a curl wound inward was shaded as the water's inside.
+    const records = new Float32Array(21 * FRONT_STRIDE);
+    for (let k = 0; k < 21; k += 1) {
+      const o = k * FRONT_STRIDE;
+      records[o + FRONT_FIELD.x] = k + 0.5; records[o + FRONT_FIELD.z] = -100; records[o + FRONT_FIELD.front] = 1; records[o + FRONT_FIELD.sigma] = k;
+      records[o + FRONT_FIELD.tau] = 0.1; records[o + FRONT_FIELD.footHeight] = 2.1; records[o + FRONT_FIELD.footDepth] = 7; records[o + FRONT_FIELD.throwZ] = -100;
+    }
+    const loft = new SweptLoft(new ProfileLibrary([tubeCase(0.3)]), 0.05).build(records, 21, 0.5, () => 0.5);
+    const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+    const facing = () => {
+      swept.update(loft);
+      const index = swept.mesh.geometry.getIndex()!.array;
+      const p = loft.positions;
+      let out = 0;
+      let inward = 0;
+      for (let t = 0; t < swept.mesh.geometry.drawRange.count; t += 3) {
+        const [a, b, c] = [index[t], index[t + 1], index[t + 2]];
+        const e1 = [0, 1, 2].map((k) => p[3 * b + k] - p[3 * a + k]);
+        const e2 = [0, 1, 2].map((k) => p[3 * c + k] - p[3 * a + k]);
+        const g = [e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0]];
+        if (Math.hypot(...g) < 1e-9) continue;
+        const n = [0, 1, 2].map((k) => loft.normals[3 * a + k] + loft.normals[3 * b + k] + loft.normals[3 * c + k]);
+        if (g[0] * n[0] + g[1] * n[1] + g[2] * n[2] > 0) out += 1;
+        else inward += 1;
+      }
+      return { out, inward };
+    };
+    const drawn = facing();
+    expect(drawn.out).toBeGreaterThan(1000);
+    // A few cells at the lip's fold are twisted; the faces are the rest.
+    expect(drawn.inward / drawn.out).toBeLessThan(0.01);
+    swept.facesOut = false;
+    const loftOwn = facing();
+    expect(loftOwn.out / loftOwn.inward).toBeLessThan(0.01);
   });
 });
