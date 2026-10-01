@@ -155,6 +155,32 @@ describe('the swept contact', () => {
     expect(hit.inWater).toBe(false);
   });
 
+  it('finds every layer over a point on a vertex row, though the quads’ ranges are stored rounded', () => {
+    // The toy at h0 3 m: its face's samples every 2.5 cm along the ray, so z 2.1 and 2.2 lie on rows (as 32-bit floats
+    // they round a hair away from the point, and a range check on them missed the face).
+    const n = 17;
+    const recs = new Float32Array(n * FRONT_STRIDE);
+    for (let k = 0; k < n; k += 1) {
+      const o = k * FRONT_STRIDE;
+      recs[o + FRONT_FIELD.x] = k - 8; recs[o + FRONT_FIELD.z] = 0; recs[o + FRONT_FIELD.front] = 1; recs[o + FRONT_FIELD.sigma] = k;
+      recs[o + FRONT_FIELD.tau] = 0.05; recs[o + FRONT_FIELD.footHeight] = 0.9; recs[o + FRONT_FIELD.footDepth] = 3;
+      recs[o + FRONT_FIELD.throwZ] = 0;
+    }
+    const contact = new SweptContact(library(), 0.05);
+    contact.update(recs, n, 0, () => 0);
+    const hit = createContactHit();
+    for (const x of [0, 0.25]) {
+      for (const [z, face, under] of [[2.1, 0.9, 1.75], [2.2, 0.6, 1.7333]]) {
+        // In the tube's air over the face, under the lip.
+        expect(contact.query(x, 1.0, z, hit)).toBe(true);
+        expect(hit.inWater).toBe(false);
+        expect(hit.surfaceY).toBeCloseTo(face, 3);
+        expect(hit.ceilingY).toBeCloseTo(under, 3);
+      }
+    }
+    expect(contact.stats.anomalies).toBe(0);
+  });
+
   it('reads a point exactly on a slice’s ray as the strip it opens (the ray’s own edges included)', () => {
     const contact = contactAt(0.1);
     const on = createContactHit();
