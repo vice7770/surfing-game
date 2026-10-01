@@ -114,4 +114,46 @@ describe.runIf(process.env.PROBE)('Padang Padang loft probe', () => {
     const fifths = [0, 1, 2, 3, 4].map((k) => cappedLives.filter((life) => life >= k / 5 && (k === 4 ? life <= 1 : life < (k + 1) / 5)).length);
     appendFileSync(log, `capped open slices: ${cappedLives.length} of ${openSlices}; their life (τ / T_open) ${quantiles(cappedLives)}; by fifth of the open time ${fifths.join(' / ')}; past 0.8: ${late}\n`);
   }, 7_200_000);
+
+  it('times the lip’s sheet when every slice of a long front is open (its worst case)', async () => {
+    const log = process.env.LOG ?? 'padang-loft.txt';
+    const fetcher = (async (url: string) => {
+      const bytes = readFileSync(`public/${url}`);
+      return { ok: true, status: 200, arrayBuffer: async () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) };
+    }) as unknown as typeof fetch;
+    const library = await loadBarrelLibrary(undefined, fetcher);
+    // A straight 140 m front, a point a metre, every point halfway through its open time (A0 0.3 at h0 7 m).
+    const n = 141;
+    const footHeight = 2.1;
+    const tau = 0.5 * library.profileTimes({ slope: BARREL_SLOPE.padang!, footHeight, footDepth: PADANG.baseDepth }).touchdownSeconds;
+    const records = new Float32Array(n * FRONT_STRIDE);
+    for (let k = 0; k < n; k += 1) {
+      const o = k * FRONT_STRIDE;
+      records.set([k, -100, 1, k, tau, footHeight, PADANG.baseDepth, -100], o);
+    }
+    const loft = new SweptLoft(library, BARREL_SLOPE.padang!);
+    const plain = new SweptLoft(library, BARREL_SLOPE.padang!, { sheet: false });
+    const flat = () => 0;
+    let withMs = 0;
+    let withoutMs = 0;
+    const builds = Number(process.env.BUILDS ?? 200);
+    let slices = 0;
+    let sheets = 0;
+    for (let k = 0; k < builds; k += 1) {
+      for (const first of k % 2 ? [plain, loft] : [loft, plain]) {
+        const start = performance.now();
+        const result = first.build(records, n, 0, flat);
+        const ms = performance.now() - start;
+        if (first === loft) {
+          withMs += ms;
+          slices = result.sliceCount;
+          sheets = 0;
+          for (let s = 0; s < result.sliceCount; s += 1) if (result.sheetWeight[s * LOFT_SAMPLES + LOFT.extensionSamples + 48] > 0) sheets += 1;
+        } else {
+          withoutMs += ms;
+        }
+      }
+    }
+    appendFileSync(log, `every slice open: ${slices} slices (${sheets} shaded as a sheet), the loft ${(withMs / builds).toFixed(3)} ms with the sheet, ${(withoutMs / builds).toFixed(3)} ms without (${builds} builds each, in turn), so ${((withMs - withoutMs) / builds).toFixed(3)} ms\n`);
+  }, 7_200_000);
 });

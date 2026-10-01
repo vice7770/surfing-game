@@ -158,7 +158,13 @@ The advisor normalised the tips by each case's own crest speed C: the crest land
 
 The drawn curl as shaded (Part B, after the owner's clip of PR 3 on the M4 Pro: a navy, almost black curl beside a pale cyan, foamy face; the advisor's `docs/research/water-physics/tube-colour-fix.md`, on their branch `main-sshdns`, and their rulings of 2026-10-01). `src/wave/barrel/sweptLoft.ts` (`sheetAcross`, `tubeSkyView`) and `src/scene/barrel/SweptBarrelMesh.ts` (`SWEPT_SHEET_BODY`).
 
-**Why it was navy.** The curl reused the water's column shading: its depth was its height above the bed, so a lip 3–5 m over the reef took the colour of 3–5 m of water over coral at 8 %, between Padang Padang's navy R∞ and its dark bed. The crest light was off, and the caustics looked for the reef through air.
+**Why it was navy: the winding first.** The tube review drew the curl by its slices' phase and front (`?barrelView=phase|front`) and found two causes:
+- **The winding** (the main one). The loft winds each quad so its front face looks along −n: 12,178 of a toy tube's 12,236 triangles faced against their own vertex normals. The curl's material is double-sided, so from outside every face was a back face and three turned its normal into the water. The view cosine came out negative, the body fell to R∞ with no bed and no caustics, and the sun and sky lit the water's inside: the whole lofted block, about 15 m along a front and 23 m across it, lay navy-black on the water and its foam. The mesh now draws each triangle facing its vertices' normals; the cells at the lip's fold and the throat, whose vertex normals lean across the fold, keep the loft's order so the material turns them back out. The loft and the contact are unchanged by it.
+- **The column shading of the lip** (the advisor's diagnosis): its depth was its height above the bed, so a lip 3–5 m over the reef took the colour of 3–5 m of water over coral at 8 %, between Padang Padang's navy R∞ and its dark bed. The crest light was off, and the caustics looked for the reef through air.
+
+**The tongues and the slab.** Each drawn front was one such block, lifted (lift 1 on points 6–121) and foam-free: the back, the face, the toe and the library's flat ahead, not only the lip. Separate tongues were separate fronts side by side (the `padangCurl` probe, below); the slab at the end of the owner's clip was the block itself, close and seen from above.
+
+**Resting on the water** (the advisor's ruling, 2026-10-01; the spec's item 13.4). The library is the authority only where the solver can't overturn. Each profile is now lifted fully from 0.1 H behind its crest to its toe and eased (smoothstep) down to the solver's water over 0.5 H beyond each, H the crest over the lower of the water at the toe and at the front end [provisional]. Past the ramps a vertex rests on the water with its height and foam, the mask lets the water draw itself a band (1 m) beyond them, and the contact follows the same loft. Overlapping fronts are judged on these lifted spans: a strip resting wholly on the water gives way to any strip over it, and where two fronts only rest nothing conflicts.
 
 **The sheet** (both looks, the curl's program only; every other program is byte-identical):
 - **Thickness.** The loft measures the lip across, per profile point from the crest to the throat: from the crest to the tip, the distance to the underside's run (tip back to the throat); from the tip back, to the outer run's; 0 at the tip, where they meet. Two attributes carry it and its weight: 1 from point 36 to 84, ramped over 3 points next to the crest and the throat, × the vertex's lift, 0 on the extensions.
@@ -167,3 +173,21 @@ The drawn curl as shaded (Part B, after the owner's clip of PR 3 on the M4 Pro: 
 - **What lies behind.** E_back = F · E_sky(−n) + (1 − F) · E_wall. F is the far side's view of the sky through the tube's opening: from the outer face, the 2D view factor ½ (sin θ2 − sin θ1) of the window from the still water's horizon ahead up to the tip, seen from the underside point the thickness step found (exact for an extruded tube; no rays). From the underside, the open sky (1). E_sky is the environment's irradiance at −n, plus the ambient; E_wall is R∞ of it [both provisional].
 - **The sun** behind the lip adds the water's crest light, CREST_SCATTER · pow(−V·L, 4), over its own path through the sheet, t / |n·L| (at least 0.2). The height field's crest-light march never runs on the curl: the height field under a lip is the hump, not the lip. So the curl's weight-0 parts (the back, the face, the back wall) keep no crest light, while the height-field face beside the curl does: a seam in contrast the luminance check watches. A follow-up could give the curl's crest points the profile's own chord through the water as their path.
 - **Caustics** stay in the column's body; the sheet's mix weighs them once by 1 − the weight.
+
+**Measured** (2026-10-01, the M1 Air under other sessions' load, load average 23–42; the water sheet's held curl on the GPU tier, 64 components, Practice swell; `waterSheetCurlLuma`) [measured]:
+- **The tongues** (the `padangCurl` probe on the owner's build, Small swell, 150 s at 1 m cells): tongues in 1,560 of 4,500 frames, one a frame at the median and up to 4. Neighbouring tongues within 12 m: 272 pairs, all on two fronts, 265 of them end to end along the crest (median 5.35 m apart) and 7 one behind the other; none on one front. Tongues after touchdown only: 49 of 2,070. 29 % of the open and post slices drawn were after touchdown, 5,382 of them part-faded.
+- **The lip against the face's water** (its own pixels beside the curl, foam left out), linear luminance, from 7 m down the line (`curl-close`):
+
+| sun | look | lip | water | lip ÷ water | back wall |
+|---|---|---|---|---|---|
+| behind, height 0.1 | Classic | 0.541 (amber) | 0.286 | 1.9 | 0.096 |
+| behind, height 0.1 | Rich | 0.614 (amber) | 0.451 | 1.36 | 0.173 |
+| in front, height 0.1 | Classic | 0.199 | 0.173 | 1.15 | 0.131 |
+| in front, height 0.1 | Rich | 0.235 | 0.233 | 1.0 | 0.185 |
+| behind, height 0.5 | Classic | 0.257 (blue) | 0.312 | 0.82 | 0.093 |
+| behind, height 0.5 | Rich | 0.257 (blue) | 0.302 | 0.85 | 0.100 |
+| in front, height 0.5 | Classic | 0.062 | 0.231 | 0.27 | 0.122 |
+| in front, height 0.5 | Rich | 0.065 | 0.296 | 0.22 | 0.157 |
+
+  The advisor's provisional thresholds (backlit at least the water's and greener, front-lit at least 0.8×, never below the back wall) hold at height 0.1 and fail at 0.5: the far side sees little of the opening, so the light behind the lip is mostly R∞ of the sky, dim and blue; front-lit, a thin sheet's own backscatter is nearly nothing beside a face that shows the bed. With the sheet off the lip read 0.07–0.08 at height 0.5; as the owner saw it (the old winding), 0.013–0.044. Sent to the advisor before any constant changes.
+- **The loft's cost**: the sheet's worst case, a 140 m front all open (287 slices, 279 sheets), 54.0 ms a build with the sheet against 33.3 ms without (`padangLoft`'s second test, 200 builds each in turn, load 25–28).
