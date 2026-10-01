@@ -602,7 +602,19 @@ Agreed with the user on 2026-09-30 ([spec](docs/superpowers/specs/2026-09-30-mov
   - the pad's right stick twists the upper body;
   - a HUD stance readout;
   - a compressed turn comes round 90° in about 1 s. This is a gameplay assist: physics alone left every stance at about 1.45 s.
-- [ ] **Step 2 · the Wave Pool**: a default spot, an A-frame peeling both ways, faces of 1.0 / 1.25 / 1.5 m, and the Surf School on it.
+- [ ] **Step 2 · the Wave Pool** (`src/wave/pool.ts`): a default spot, an A-frame peeling both ways, faces of 1.0 / 1.25 / 1.5 m, and the Surf School on it.
+  - Built:
+    - the spot, its sizes, its conditions (no tide or wind) and its ride-as-practice rule;
+    - the walls, deck and machine hall;
+    - the clear water over a pale floor.
+  - The bed is the water-physics advisor's (consult 2026-10-01):
+    - a regular wave fed at 9 m (Ursell about 8);
+    - a square 1:9 ramp up to a 2.75 m terrace;
+    - a seaward finger, its arms angled to the crests;
+    - its face 1:18 square to the crest line, the crest at 0.75 m;
+    - a lagoon draining through the tapered arms.
+  - First sweep (61° arms, 0.9 m machine wave): the tip breaks every 10.0 s at the same spot, with faces about 1.1 m and break lines of 70–110 m per side. It peels at 7–10 m/s (α 26–42°), still faster than the 50° target, so the arm angle is being swept.
+  - Cost: the pool's tank runs at about 0.3× real time on the M1's CPU (the game runs stage 2 on the GPU where it can).
 - [ ] **Step 3 · pumping**, checked on the pool.
 - [ ] **Step 4 · bottom turn → projection**.
 - [ ] **Step 5 · cutback**.
