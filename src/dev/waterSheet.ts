@@ -160,6 +160,7 @@ function curlShots(mode: PhysicalMode, curl: OpenCurl): Shot[] {
   const inside = new Vector3((throat.x + toe.x) / 2, (throat.y + toe.y) / 2, (throat.z + toe.z) / 2).lerp(mouth, 0.3);
   return [
     { name: 'curl-channel', eye: new Vector3(tip.x + sx * 14 + rx * 6, crest.y - 0.5, tip.z + sz * 14 + rz * 6), target: mouth },
+    { name: 'curl-close', eye: new Vector3(tip.x + sx * 7 + rx * 3, crest.y - 0.3, tip.z + sz * 7 + rz * 3), target: mouth },
     { name: 'curl-front', eye: new Vector3(crest.x + rx * 12 + sx * 2, crest.y - 0.5, crest.z + rz * 12 + sz * 2), target: mouth },
     { name: 'curl-behind', eye: new Vector3(crest.x - rx * 9 + sx * 5, crest.y + 3, crest.z - rz * 9 + sz * 5), target: tip },
     { name: 'curl-inside', eye: inside, target: new Vector3(inside.x + sx * 8, inside.y, inside.z + sz * 8) },
@@ -409,8 +410,9 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   };
   /**
    * The curl's light against the face beside it (tube-colour-fix.md, "How to check it"), measured on screen from one
-   * view: the lip (the loft's sheet), the tube's back wall (throat to toe of the open slices) and the face (the water's
-   * own pixels around them), each's mean relative luminance and hue, as drawn and with the sheet off (before the fix).
+   * view: the lip (the loft's sheet), the tube's back wall (throat to toe of the open slices) and the face beside them
+   * (the water's own pixels around them, and the curl's shoulder face), each's mean relative luminance and hue, as
+   * drawn, with the sheet off, and as the owner's clip drew it (the loft's own winding, no sheet).
    * `sun`: 'behind' puts the sun where the camera looks, behind the lip; 'front' behind the camera; or a time of day.
    * The regions come from a pass with the curl in its `region` view and one without the water; the marked frame is
    * posted as curl-luma.png.
@@ -446,6 +448,10 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     const view = mesh.view;
     mesh.sheetShown = false;
     const before = frame();
+    // As the owner's clip drew it: the loft's own winding, no sheet.
+    mesh.facesOut = false;
+    const owner = frame();
+    mesh.facesOut = true;
     mesh.sheetShown = true;
     mesh.setView('region');
     const regions = frame();
@@ -466,7 +472,8 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       const k = 4 * p;
       if (!same(drawn, regions, k)) {
         const [r, g, b] = [regions[k], regions[k + 1], regions[k + 2]];
-        region[p] = r > 2 * Math.max(g, b) ? 1 : b > 2 * Math.max(r, g) ? 2 : 3;
+        // Red the lip, blue the back wall, yellow the shoulder's face, green the rest of the curl.
+        region[p] = r > 2 * Math.max(g, b) ? 1 : b > 2 * Math.max(r, g) ? 2 : r > 2 * b && g > 2 * b ? 5 : 3;
         if (region[p] <= 2) {
           const [x, y] = [p % width, Math.floor(p / width)];
           x0 = Math.min(x0, x);
@@ -510,11 +517,11 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       const hue = max === min ? 0 : max === r ? (60 * ((g - b) / (max - min)) + 360) % 360 : max === g ? 60 * ((b - r) / (max - min)) + 120 : 60 * ((r - g) / (max - min)) + 240;
       return { pixels: n, luminance: +(luma / n).toFixed(4), hue: +hue.toFixed(1), green: +(g / (r + g + b)).toFixed(3), rgb: [r, g, b].map((c) => +c.toFixed(4)) };
     };
-    const result = {
-      shot: shot.name, look, sun: lighting ?? sun,
-      drawn: { lip: stats(drawn, 1), backWall: stats(drawn, 2), face: stats(drawn, 4), otherCurl: stats(drawn, 3) },
-      before: { lip: stats(before, 1), backWall: stats(before, 2), face: stats(before, 4) },
-    };
+    // The face beside the lip: the water's own pixels around the lip and back wall, and the curl's shoulder face.
+    const all = (pixels: Uint8Array) => ({
+      lip: stats(pixels, 1), backWall: stats(pixels, 2), faceWater: stats(pixels, 4), faceCurl: stats(pixels, 5), otherCurl: stats(pixels, 3),
+    });
+    const result = { shot: shot.name, look, sun: lighting ?? sun, drawn: all(drawn), before: all(before), owner: all(owner) };
     // The drawn frame with the regions marked: the lip red, the back wall blue, the face's pixels yellow, one in four.
     const marked = new ImageData(width, rows);
     for (let y = 0; y < rows; y += 1) {
@@ -527,6 +534,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
         if (mark && region[p] === 1) [r, g, b] = [255, 0, 0];
         else if (mark && region[p] === 2) [r, g, b] = [0, 80, 255];
         else if (mark && region[p] === 4 && inBox(p)) [r, g, b] = [255, 230, 0];
+        else if (mark && region[p] === 5) [r, g, b] = [255, 140, 0];
         marked.data.set([r, g, b, 255], o);
       }
     }

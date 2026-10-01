@@ -20,8 +20,9 @@ const INDICES = 6 * (LOFT_SAMPLES - 1) * Math.ceil(VERTICES / LOFT_SAMPLES);
  *   review; tube-colour-fix.md, "Not solved by this");
  * - `front`: each slice by its front, a hue per front;
  * - `sheet`: the lip's thickness where it is shaded as a sheet, white thin to blue 1 m thick, grey elsewhere;
- * - `region`: unshaded, the lip red (a sheet), the tube's back wall blue (throat to toe on an open slice), the rest
- *   green: the water sheet's luminance check reads its pixels.
+ * - `region`: unshaded, the lip red (a sheet), the tube's back wall blue (throat to toe on an open slice), the
+ *   shoulder's face yellow (crest to toe before the face goes vertical), the rest green: the water sheet's luminance
+ *   check reads its pixels.
  * All but `region` are dimmed where the vertex rests on the water.
  */
 export type SweptBarrelView = 'phase' | 'front' | 'sheet' | 'region';
@@ -50,8 +51,10 @@ export function sweptViewColours(view: SweptBarrelView, loft: LoftResult, out: F
     if (view === 'region') {
       const point = (v % LOFT_SAMPLES) - LOFT.extensionSamples;
       const lip = loft.sheetWeight[v] >= REGION_SHARE;
-      const wall = !lip && loft.slicePhase[slice] === 1 && loft.lift[v] >= REGION_SHARE && point >= LANDMARK.throat && point <= LANDMARK.toe;
-      out[o] = lip ? 1 : 0;
+      const standing = loft.lift[v] >= REGION_SHARE;
+      const wall = !lip && loft.slicePhase[slice] === 1 && standing && point >= LANDMARK.throat && point <= LANDMARK.toe;
+      const face = loft.slicePhase[slice] === 0 && standing && point >= LANDMARK.crest && point <= LANDMARK.toe;
+      out[o] = lip || face ? 1 : 0;
       out[o + 1] = lip || wall ? 0 : 1;
       out[o + 2] = wall ? 1 : 0;
       continue;
