@@ -129,3 +129,22 @@ The Padang session's library had no case under A0 0.2, so every Small-swell look
 - **The throw-depth line, refitted through all four Padang cases:** Navier–Stokes vertical depth = 1.56 + 0.56 × η_foot (m at h0 7 m).
   - The four points (foot crest → depth): 0.99 → 1.99, 1.22 → 2.45, 1.65 → 2.38 and 2.50 → 2.97.
   - Residuals are within 0.21 m, over foot crests of 1.0–2.5 m. The earlier three-point line put the Small wave 0.26 m too deep.
+
+## 9. The Reef's libraries, for PR 7 [measured]
+
+Built 2026-10-01 from the two level-12 periodic Reef runs, with `analysis/periodic_library.py`, for the Reef's swept barrel (PR 7).
+- **`data/periodic_reef42_L12_library.json`** (the ledge at 1:4.2) and **`data/periodic_reef60_L12_library.json`** (1:6).
+  - Both have A0 0.2127: the train's crest over the 10 m shelf.
+  - Frames start about 3 √(h0/g) before vertical (TMIN 18.0 and 19.9).
+  - The crest is looked for at x ≥ 23 h0. It sits at x 24–29 through those frames, ahead of the steps on the face behind it.
+- **reef42:** 281 frames; open tube 65 frames, 64 clean (62 before the stitch, below).
+- **reef60:** 285 frames; open tube 70 frames, 67 clean (49 before the stitch).
+- **The stitch (2026-10-01):**
+  - **Why:** over the drained ledge the water surface meets the bed behind or ahead of the crest, so its chain breaks. The widest piece, the back of the wave, was then taken as the whole surface, with the crest 1 h0 behind and H 0.10–0.14 h0 instead of about 0.36–0.45.
+  - **The fix:** `periodic_library.py` now stitches a torn frame's larger pieces left to right, joining each start to the previous end within 0.2 h0. Each such frame gets `"stitched": true`.
+  - **Effect:** it changes none of the previously clean frames (0 h0 difference across the profile). It recovers 18 of reef60's open frames, 2 of reef42's, and most of both runs' after-touchdown frames.
+```bash
+P=python3   # with numpy, scipy and matplotlib
+$P tools/basilisk/analysis/periodic_library.py tools/basilisk/runs/periodic_reef42_L12 12 48 0.238095 0.2127 10 18.0 23.0
+$P tools/basilisk/analysis/periodic_library.py tools/basilisk/runs/periodic_reef60_L12 12 48 0.166667 0.2127 10 19.9 23.0
+```

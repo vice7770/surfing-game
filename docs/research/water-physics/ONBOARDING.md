@@ -89,6 +89,13 @@ Read in this order:
   - **PR 5:** the crash curve, parcels and sound.
   - **PR 6:** the Rich shading, a lip glow and a dark throat.
   - **PR 7:** every spot switches, and the old lip and tube code is deleted. The Reef switches only after the Reef session agrees and the owner has looked.
+- **The rest of Part B, handed to agents on the M1 (2026-10-01, at the owner's request):**
+  - **The curl's colour fix,** from [tube-colour-fix.md](tube-colour-fix.md), then PR 6 (the Rich lip glow and dark throat), on `claude/padang-curl-colour` and `claude/padang-rich-shading`. It diagnoses the curl's ribbons and slab first.
+  - **PR 4's remaining items** (the handoff's advisor items 1–7, and the probe rerun) on `claude/padang-contact` (#95).
+  - **PR 5,** the crash curve, parcels and sound, on `claude/padang-crash`. Its plan comes to the advisor first.
+  - **PR 7's preparation** is on `claude/padang-every-spot`, with no change in behaviour: each spot's cases and `BARREL_SLOPE`, the switch mechanics, and the deletion map. The Reef's two libraries are built (`periodic-runs.md` §9); the Canyon, Point and Beach need runs, and gentle beaches need level 13 on the M4 Pro. The flip itself waits for the owner's look and the Reef session, and the deletion waits for PR 5.
+  - **Merges:** the auto-mode check refuses this session's `gh pr merge`, even after a review and the owner's standing "check and merge" (2026-10-01). The owner merges, or adds a Bash allow rule for `gh pr merge`.
+  - **One advisor branch:** on 2026-09-30/10-01 a second advisor session on the other machine wrote the colour fix on `main-sshdns`, and it was merged into this branch (d72cbe8). Before continuing, merge any other advisor branch's commits, so the consult log stays one record.
 - **The Reef (Teahupo'o):**
   - Parts A–C are merged (#54, #57, #60).
   - Part D, tube riding, isn't started. It takes its contact fields from Padang's PR 4: covered, clearance and the tube's state.
@@ -114,6 +121,8 @@ Read in this order:
 - **The library's jet speed (settled 2026-09-30):** normalised by each case's own crest speed, the four cases throw at 0.93–1.08 C (median horizontal), peak at 1.08–1.23 C, and fall at 0.58–0.71 g. That's the low end of Erinin et al. 2023's 1.1–1.3 C, falling close to free fall; the Small periodic case is the slowest. The level-13 run should nudge them up; recheck it then.
 - **PR 4's contact:** check its unloaded cost once the quads are bucketed, then the shapes of PR 5's crash curve and parcels.
 - **Wave Lab max's one-cell troughs (from 20°):** if the owner wants them traced, first check the dispersive mask at each dip: the mask interface against the onset trigger.
+
+- **The Wave Pool spot (the "Movement mapping prototype" session, spec `docs/superpowers/specs/2026-09-30-movement-flow-wave-pool.md` on `claude/wave-pool`):** ruled on 2026-10-01 (see the consult log). Waiting for its sweep: the arms' angle against the peel meter, faces left and right, and whether the waves stay identical over 5 minutes.
 
 ## How other sessions reach the advisor
 
