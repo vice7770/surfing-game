@@ -237,7 +237,7 @@ The swept barrel's jets, landing and whitewater (Part B, PR 5; `src/wave/barrel/
 - **Waves no front joins** throw no jet: at a swept spot the barrel alone plunges, and Kennedy's onsets there are counted. Spilling breakers make a roller, not a jet.
 - **Late points:** a point first seen past touchdown throws and pours in one step. One first seen past its collapse was never drawn, and throws nothing.
 - **Overlapping fronts:** the loft draws the first front where two overlap (PR 4). So a later front's point whose drawn footprint (its slice's reach with the extensions, half its share of the front either side) overlaps a live point of an earlier front throws nothing, and its whitewater isn't gated. It is counted (`covered`).
-- **Lost points:** a point lost while its jet is held pours where and when it was foreseen at the throw.
+- **Lost points:** a point lost while its jet is held pours where and when it was foreseen at the throw, and its void closes as its pour begins. One alone on its front at its touchdown, or past its collapse, crashes as foreseen (`foreseen`). Until its crash the front keeps a jet's point on its crest over the throw's window (below).
 
 **The whitewater waits for the touchdown** (ruling 9). Kennedy's onset leads the lip by up to about 2 s and 20 m on the wedge. So while a point's clock is before touchdown, in its column over the drawn curl's footprint (profile samples 6–121), the solver's breaking is withheld from the whitewater:
 - the foam's bore source, and so the bore spray and the bubbles, which read it;
@@ -276,20 +276,38 @@ The foam field is shared, so **Classic's foam at Padang Padang changes too**, ar
 - **The pour lands at the held lip's speed,** 5–12 m/s, where Kennedy's lips hit at up to 14–16 m/s.
 - **The cost:** the crash's update is 0.14–0.37 % of the step.
 
-**Only 36–42 % of the jets crash on their point.** The rest of the thrown points leave the front before their touchdown. Their water pours where and when it was foreseen, so the ledger balances, but their void's air is never trapped, and the loft stops drawing their slices mid-tube. A scratch probe followed every thrown point (Small seed 1 at 2 m cells, 120 s):
-- **With the crash,** 24 of 91 thrown points (26 %) left before touchdown, at a median half of the open time, in fronts of about 9 points. **Without it,** 13 of 75 points past τ = 0 (17 %), early (a median 0.12 of the open time) and mostly in fronts of 1–2 points.
-- **All 24 left the same way** (and 12 of the 13 without the crash): its column's crest moved more than the front's match reach (2 m plus a cell) in one step. The throw takes the jet from the crest's upper half, within 2 wave heights of it (#86's window), and the flattened crest's highest cell jumps [inferred].
-- At 1 m cells the match reach is 3 m, and the probe's crashes are 36–42 % of the jets.
-- **Not fixed here; for the advisor.** Either the front matches a point holding a jet over the throw's own window until its crash (the front's change, PR 2's file), or the jet leaves progressively over the open time (the fallback the advisor named).
+**The jets crash on their own point** (the advisor's rule (a), 2026-10-01) [measured]. As first built, only 36–42 % of the jets crashed on their point: the other points left the front before their touchdown. Their water poured where and when it was foreseen, so the ledger balanced, but their void's air was never trapped, and the loft stopped drawing their slices mid-tube.
+- **Why:** the throw takes the jet from the crest's upper half within 2 H of it (#86's window). The flattened crest's highest cell then jumps past the front's match reach (2 m plus a cell) in one step. A scratch probe followed every point at 1 m cells (Small seed 1, 110 s): with the crash, 99 of 140 thrown points (71 %) left before touchdown, 84 of them that way. Without the crash, 27 of 181 points past τ = 0 (15 %) left, early (a median 0.24 of the open time) and in fronts of 1–2 points.
+- **The rule:** a front point holding an uncrashed jet keeps its column's nearest crest within the match reach plus the throw's window (`jetWindow`, 2 H), at most TRACK_REACH (10 m), until its crash (`BreakingFront.keptCrests`). Each such point picks its crest before the samples are matched, and gets it only where no point matches within the match reach as before. Points without jets match as before, and none hold one without the crash.
+- **Every void closes.** A jet whose point is alone on its front at its touchdown, with no ray to draw it by, or past its collapse, crashes as foreseen at its throw (`foreseen`). A jet whose point left the front closes its void as its pour begins. Both trap the void's own air.
 
-**The catch report before and after** (Small, seed 1, 2 min, 30 ghost bots riding the swept contact; `--barrel --no-crash` against `--barrel`) [measured]. Neither sea gives a ride: no ride reached 3 s either way.
+Measured with both (seed 1, 120 s of sea after the spin-up; the M1 at load 2–22):
 
-| | Attempts | Cue lit | Stood | Longest ride, s | Top speed, m/s | No cue |
-|---|---:|---:|---:|---:|---:|---:|
-| Kennedy's lip | 247 | 12 | 4 | 1.5 | 7.4 | 213 |
-| The crash | 242 | 6 | 2 | 1.7 | 13.2 | 220 |
+| Cells, swell | Jets | Crashed on their own point | Slices dropped mid-tube | Voids closed: own point / alone at touchdown / point lost | Void air, m³ | The kept crests' jumps, m |
+|---|---:|---:|---:|---|---:|---|
+| 2 m, Small | 92 | 89 (98.9 %) | 1 | 89 / 0 / 1 | 41.5 | 4 to 6 (28 jumps) |
+| 2 m, Medium | 386 | 342 (89.3 %) | 56 | 342 / 14 / 27 | 328.1 | −4 to 8 (186) |
+| 1 m, Small | 188 | 165 (88.2 %) | 12 | 165 / 17 / 5 | 38.2 | −3 to 6 (111) |
+| 1 m, Medium | 672 | 554 (82.8 %) | 48 | 554 / 84 / 31 | 253.9 | −5 to 8 (378) |
 
-- The cue lit on 12 and 6 attempts: too few to tell apart.
-- One board reached 13.2 m/s in a 1.7 s ride with the crash; not looked into.
+- **No kept crest was another wave's.** None had another point within 10 m in its column, and the jumps stayed within 8 m: Padang Padang's waves stand about 100 m apart.
+- **Short of the advisor's target** (at least about 90 % on their own point, no slice dropped) on Medium and at 1 m. Three causes:
+  - **Alone at touchdown** (84 on Medium at 1 m): the kept point's z jumps 3–8 m with its crest, past the 3 rows its front links over, so it stands alone or splits its front. A point alone isn't drawn either: "slices dropped" counts only points that left the front.
+  - **The crest past the window** (38 on Medium at 1 m, 56 at 2 m): the nearest crest was a median 7 m away at 1 m, just past the match reach plus 2 H. At 2 m it was 16–152 m away: gone, at any point of the open time (10 %, 50 % and 90 % at 0.04, 0.50 and 0.88).
+  - Another point took the crest, or it stopped breaking (10).
+- **Options, for the advisor:** link a jet's point over the same window, or keep its z on its own pace while it holds the jet; widen the window to the 10 m cap; or the progressive take, the jet leaving as A_J(τ) grows (the fallback named).
+
+**The catch report before and after** (seeds 1–2, 2 min each, 30 ghost bots riding the swept contact; `--barrel --no-crash` against `--barrel`, built at 19bdee6, before the front's rule (a)) [measured]:
+
+| Swell | | Attempts | Cue lit | Stood | Rides ≥ 3 s | Longest, s | Top speed, m/s | No cue |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| Small | Kennedy's lip | 535 | 24 | 8 | 0 | 1.5 | 12.7 | 468 |
+| Small | The crash | 517 | 11 | 4 | 1 | 3.2 | 13.4 | 483 |
+| Medium | Kennedy's lip | 645 | 53 | 20 | 4 | 12.6 | 14.0 | 554 |
+| Medium | The crash | 623 | 49 | 29 | 3 | 10.8 | 13.3 | 552 |
+
+- The bots barely catch either way, so these are small numbers.
+- On Small the cue lit half as often with the crash, on both seeds (12 → 6 and 12 → 5). On Medium it lit about as often (53 → 49), and more boards stood (20 → 29).
+- Top speeds of 13–14 m/s come either way; they aren't the crash's.
 
 **Where the landing falls on the profile** (for the adaptive forward rest; the cases at touchdown, foot heights 1–4 m over 3–5 m) [measured]: at samples 99–111.5, mostly 111.5, 0.03–0.09 m before the toe (landmark 112), and up to 0.8 m before it at h0 5 m with a 1 m foot. So the landing sits where the drawing lifts the profile fully, at the edge of the forward rest. Its height takes the end weight and the seam's pin, as the loft did before `REST`. The crash test holds the tip and crest to the loft's vertices, not the landing.
