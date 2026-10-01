@@ -45,14 +45,17 @@ export interface BarrelSpot {
  *   outside the ledge's library, a Reef behaviour question for the Reef session. At 16–17 s the 3.5 m drive first breaks
  *   at 2.0 m, against 4.9–5.6 m at 14–15 s: longer periods shoal longer before breaking.
  * - **The band:** Padang Padang's 6–5 m at 7 m, scaled to the 10 m foot (the probe read the same band).
- * - **The throw:** proportional to the foot crest, d = (1.928 / 2.127) η_foot: reef42's face goes vertical in 1.93 m of
- *   still water for its 2.13 m foot crest, and bigger waves break deeper (a constant would throw Big too late and
- *   Practice too early; the advisor). Its k is fitted again through the origin once the second Reef case (A0 0.35 at
- *   16 s; its level-9 scout read 0.87) lands. No shallower than the reef's top at the tide (its floor): a wave too small
- *   to go vertical on the ledge face plunges as it crosses onto the top, where the step has drained the water (a 0.9 m
- *   wave sees 1.0–1.2 m there, H/h ≈ 0.75–0.9; the advisor, 2026-10-01). Without the floor the Practice sea's crests
- *   (0.8–0.9 m at the foot, throws at 0.73–0.81 m) never reached their throw depth over the 1.5 m top.
+ * - **The throw:** the line through the two runs, foot crest against the still depth where the face goes vertical
+ *   (`plunge_measure.py`): reef42's 2.127 m crest at 1.928 m, at the top's edge, and reef42_a35's 3.503 m at 5.159 m,
+ *   15 m seaward of the top on the ledge's face, H/d ≈ 0.95 at the vertical in both. So d = 2.35 η − 3.07 (the advisor,
+ *   2026-10-01; provisional: a third case near A0 0.28 would test whether it is linear). Through the origin it would
+ *   throw reef42's own wave 0.9 m too deep. Bigger waves break deeper: a 4 m crest throws about 6.3 m down the face.
+ * - **The floor:** no shallower than the reef's top at the tide, which the line meets at η ≈ 1.95 m. It stands for crests
+ *   the solver breaks near the edge (the advisor, refined after the front's check): the smallest waves cross the edge
+ *   unbroken (H/h ≈ 0.4 there) and break depth-limited where the inner flat shoals to about 0.73 m, which the ledge's
+ *   cases would draw wrongly, so the front's join reach (1.5 H past the throw depth) lets them go as the solver's bores.
  */
+const REEF_THROW_SLOPE = (5.159 - 1.928) / (3.503 - 2.127);
 const REEF_ONSET: OnsetTables = {
   h0: 10,
   band: [60 / 7, 50 / 7],
@@ -62,7 +65,7 @@ const REEF_ONSET: OnsetTables = {
     { period: 16, rows: [[0.9, 4.17], [1.68, 5.12], [2.27, 2.02], [2.83, 2.98]] },
     { period: 17, rows: [[0.89, 4.17], [1.72, 5.36], [2.46, 2.02], [2.92, 3.21]] },
   ],
-  throwDepth: { intercept: 0, slope: 1.928 / 2.127, heights: [0, Infinity] },
+  throwDepth: { intercept: 1.928 - 2.127 * REEF_THROW_SLOPE, slope: REEF_THROW_SLOPE, heights: [0, Infinity] },
   get floor() { return REEF.crestDepth + FLOOR_MARGIN; },
 };
 

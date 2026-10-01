@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import type { SpotName } from '../Bathymetry';
+import { REEF, type SpotName } from '../Bathymetry';
 import { SWEPT_BARREL, SurfZoneSimulation, sweptBarrelOn, type SurfZoneConfig } from '../SurfZoneSimulation';
 import { libraryFromBytes } from './barrelLibrary';
 import { BARREL_CASES } from './barrelLibraryIndex';
-import { BARREL_SPOTS } from './barrelSpots';
+import { BARREL_SPOTS, FLOOR_MARGIN } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
 import { LANDMARK } from './ProfileLibrary';
+import { onsetTiming } from './sliceClock';
 import { createContactHit, SweptContact } from './sweptContact';
 import { LOFT, LOFT_SAMPLES, SweptLoft } from './sweptLoft';
 
@@ -46,6 +47,17 @@ describe('the swept barrel’s spots (Part B, PR 7)', () => {
   it('gives every spot with cases a transect, and every transect cases', () => {
     for (const spot of SPOTS) expect(BARREL_SPOTS[spot], spot).toBeDefined();
     for (const spot of Object.keys(BARREL_SPOTS) as SpotName[]) expect(SPOTS, spot).toContain(spot);
+  });
+
+  it('throws the Reef’s lips on the line through its two runs, never shallower than its top at the tide', () => {
+    const reef = BARREL_SPOTS.reef!;
+    const midTide = onsetTiming(reef.footDepth, 16, true, reef.onset);
+    // reef42 and reef42_a35: where their faces went vertical, for their foot crests.
+    expect(midTide.throwDepth(2.127)).toBeCloseTo(1.928, 9);
+    expect(midTide.throwDepth(3.503)).toBeCloseTo(5.159, 9);
+    // A Practice crest throws at the top's edge, which a tide shifts.
+    expect(midTide.throwDepth(0.9)).toBeCloseTo(REEF.crestDepth + FLOOR_MARGIN, 12);
+    expect(onsetTiming(reef.footDepth + 0.4, 16, true, reef.onset).throwDepth(0.9)).toBeCloseTo(REEF.crestDepth + FLOOR_MARGIN + 0.4, 12);
   });
 
   it('keeps Padang Padang’s front as it was: the crest jumps and the late join are the Reef’s alone', () => {
