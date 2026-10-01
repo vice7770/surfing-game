@@ -93,12 +93,13 @@ interface Front {
  * A gap column's state: a front point held unseen (`flicker`) or a one-point front; a crest the front still follows,
  * sized, toward its join (`waiting-…`: the band, the join depth, the solver's break); a sized crest that crossed its
  * throw depth unbroken (dropped as `unbroken`); a crest whose sized track the front lost, restarted unsized after the
- * face's maximum jumped ahead in its column (`restarted-jump`) or after it went unseen (`restarted-lost`), or one this
+ * face's maximum jumped ahead in its column (`restarted-jump`; `restarted-point` when the crest it left was a front
+ * point's, which the jump rule does not follow) or after it went unseen (`restarted-lost`), or one this
  * probe still follows sized where the front's track is gone or unsized (`front-lost`); a crest never sized (first seen
  * past the foot band); or no crest on the wave's line in that column.
  */
-type Category = 'flicker' | 'single' | 'waiting-band' | 'waiting-join' | 'waiting-break' | 'unbroken' | 'restarted-jump' | 'restarted-lost' | 'front-lost' | 'never-sized' | 'none';
-const PRIORITY: readonly Category[] = ['restarted-jump', 'restarted-lost', 'front-lost', 'unbroken', 'never-sized', 'waiting-band', 'waiting-join', 'waiting-break', 'flicker', 'single', 'none'];
+type Category = 'flicker' | 'single' | 'waiting-band' | 'waiting-join' | 'waiting-break' | 'unbroken' | 'restarted-point' | 'restarted-jump' | 'restarted-lost' | 'front-lost' | 'never-sized' | 'none';
+const PRIORITY: readonly Category[] = ['restarted-point', 'restarted-jump', 'restarted-lost', 'front-lost', 'unbroken', 'never-sized', 'waiting-band', 'waiting-join', 'waiting-break', 'flicker', 'single', 'none'];
 type Adjacent = 'split' | 'reach' | 'other';
 
 interface PairLife {
@@ -363,7 +364,7 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
         tally(byClassFrames, classOf(life), life.frames);
         if (Math.min(...life.gapMetres) <= NEIGHBOUR) tally(byClassNear, classOf(life));
       }
-      const restartedPairs = closed.filter((life) => (life.categories['restarted-jump'] ?? 0) + (life.categories['restarted-lost'] ?? 0) + (life.categories['front-lost'] ?? 0) > 0 || life.endRestarted);
+      const restartedPairs = closed.filter((life) => (life.categories['restarted-point'] ?? 0) + (life.categories['restarted-jump'] ?? 0) + (life.categories['restarted-lost'] ?? 0) + (life.categories['front-lost'] ?? 0) > 0 || life.endRestarted);
       const splitPairs = closed.filter((life) => classOf(life) === 'adjacent-split');
       const uniqueGapCrests = [...new Set(closed.flatMap((life) => [...life.crests.values()]))];
       const neverBroke = uniqueGapCrests.filter((c) => c.firstBreak === null).length;
@@ -671,7 +672,7 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
               const track = (tracksOf.get(column) ?? []).find((t) => Math.abs(t.z - zHere) < MATCH);
               if (track && track.footHeight !== null) category = track.refHeight === null ? 'waiting-band' : track.crossed === null ? 'waiting-join' : 'waiting-break';
               else if (c.footHeight !== null) category = c.passedUnbroken ? 'unbroken' : 'front-lost';
-              else if (c.restart) category = c.restart === 'jump' ? 'restarted-jump' : 'restarted-lost';
+              else if (c.restart) category = c.restart === 'lost' ? 'restarted-lost' : c.predecessor?.onFront !== null ? 'restarted-point' : 'restarted-jump';
               else category = 'never-sized';
               if (!life.crests.has(column)) life.crests.set(column, c);
             }
