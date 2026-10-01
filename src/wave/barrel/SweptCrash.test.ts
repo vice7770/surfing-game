@@ -61,11 +61,18 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     expect(crash.counts.throws).toBe(7);
     expect(points[0].jetStrip).toBe(-1);
     expect(points[4].jetStrip).toBeGreaterThan(0);
-    // The throw's window, over which the front keeps the point's crest until its crash: #86's 2 H, H the wave height
-    // the throw measured on the basin's 0.8 m crest.
+    // The throw's window, over which the point claims its crest until its crash: #86's 2 H, H the wave height the throw
+    // measured on the basin's 0.8 m crest.
     expect(points[4].jetWindow).toBeGreaterThan(2 * 0.7);
     expect(points[4].jetWindow).toBeLessThanOrEqual(2 * 0.8);
     expect(points[0].jetWindow).toBeUndefined();
+    // Its pace from the throw: its crest's, unmeasured here, so the long-wave speed √(g (h + η)) at its crest; its z runs
+    // on it from where it threw (BreakingFront).
+    const pace = Math.sqrt(GRAVITY * (1.8 + 0.8));
+    expect(points[4].jetPace).toBeCloseTo(pace, 12);
+    expect(points[4].jetBase).toBe(11.5);
+    expect(points[4].z).toBeCloseTo(11.5 + pace * points[4].tau, 12);
+    expect(crash.counts.paceUnmeasured).toBe(7);
     expect(crash.counts.crashes).toBe(0);
     expect(landed.length).toBe(0);
     run(crash, points, s, TOUCHDOWN, 2);
@@ -73,8 +80,12 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     expect(crash.counts.late).toBe(0);
     expect(points[4].crashedAt).toBeDefined();
     expect(landed.length).toBe(7 * STRIP_PARCELS);
-    // In h0 the tip is (1.2, 0.5) and lands straight below it: 2.4 m ahead of the crest.
-    for (const z of landed) expect(Math.abs(z - (11.5 + 2.4))).toBeLessThan(0.6);
+    // In h0 the tip is (1.2, 0.5) and lands straight below it, 2.4 m ahead of the anchor: at touchdown still about the
+    // throw point, and through the pour handing over to the crest, which ran on at its pace to the crash.
+    for (const z of landed) {
+      expect(z).toBeGreaterThan(11.5 + 2.4 - 0.6);
+      expect(z).toBeLessThan(11.5 + pace * TOUCHDOWN + 2.4 + 0.6);
+    }
     expect(lip.airborneVolume()).toBe(0);
   });
 

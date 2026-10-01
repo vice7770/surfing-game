@@ -1,9 +1,16 @@
 import { waveHeightAt } from '../CrestKinematics';
+import { GRAVITY } from '../dispersion';
 import { SOURCE_REACH, STRIP_PARCELS, type PlungingLip } from '../PlungingLip';
 import type { ShallowWaterSolver } from '../ShallowWaterSolver';
 import type { FrontPoint } from './BreakingFront';
 import { CrashCurve, createCrashSlice, type CrashSlice, type JetMotion } from './crashCurve';
 import type { ProfileLibrary } from './ProfileLibrary';
+
+/**
+ * A thrown jet's point runs on its crest's pace from the throw to the crash, held to `slowest`–`fastest` × the long-wave
+ * speed √(g (h + η)) at its crest, as the contact's crest pace is (CREST_SPEED; the advisor, 2026-10-01, provisional).
+ */
+export const PACE = { slowest: 0.5, fastest: 1.5 } as const;
 
 /** What the crash reads and writes each step: the water, its lip, still level (m) and the swell's period (s), and the breaking. */
 export interface CrashSea {
@@ -48,6 +55,10 @@ export interface CrashCounts {
    * past their collapse: their jet crashed as foreseen at its throw (`PlungingLip.closeJet`).
    */
   foreseen: number;
+  /** Jets whose point's pace was held to the clamp, slow or fast, or unmeasured (the long-wave speed then): see `PACE`. */
+  paceSlow: number;
+  paceFast: number;
+  paceUnmeasured: number;
   /** Cells whose breaking the whitewater waited on, summed over steps. */
   gated: number;
 }
@@ -76,7 +87,8 @@ export interface CrashCounts {
  */
 export class SweptCrash {
   readonly counts: CrashCounts = {
-    onsets: 0, throws: 0, asked: 0, thrown: 0, starved: 0, starvedVolume: 0, crashes: 0, late: 0, missed: 0, covered: 0, foreseen: 0, gated: 0,
+    onsets: 0, throws: 0, asked: 0, thrown: 0, starved: 0, starvedVolume: 0, crashes: 0, late: 0, missed: 0, covered: 0, foreseen: 0,
+    paceSlow: 0, paceFast: 0, paceUnmeasured: 0, gated: 0,
   };
   /** This step's crash curve: the points pouring. */
   readonly curve: CrashPoint[] = [];
@@ -105,6 +117,12 @@ export class SweptCrash {
     const started = performance.now();
     this.curve.length = 0;
     sea.whitewater.set(sea.strength);
+    // A point holding an uncrashed jet runs on its pace, on its clock (BreakingFront): z = jetBase + jetPace τ.
+    for (const p of points) {
+      if (p.jetPace !== undefined && p.jetBase !== undefined && p.crashedAt === undefined && p.jetStrip !== undefined && p.jetStrip >= 0) {
+        p.z = p.jetBase + p.jetPace * p.tau;
+      }
+    }
     const { solver } = sea;
     const heightAt = (x: number, z: number) => solver.sampleCentered(solver.h, x, z) + solver.sampleCentered(solver.bed, x, z);
     // The fronts the loft draws: two points or more, not bunched at one σ.
@@ -223,10 +241,23 @@ export class SweptCrash {
     if (strip >= 0) {
       this.counts.throws += 1;
       this.counts.thrown += thrown;
-      // The throw's own window (#86's source reach, as `drawFromCrest` measures the wave): the front keeps the point's
-      // crest over it until the crash, since the flattened crest's top can jump past the match reach (BreakingFront).
+      // The throw's own window (#86's source reach, as `drawFromCrest` measures the wave): until its crash the point
+      // claims its column's crest over it (BreakingFront).
       const height = waveHeight > 0 ? waveHeight : solver.h[cell] + solver.bed[cell] - solver.restLevel;
       p.jetWindow = SOURCE_REACH * Math.max(0, height);
+      // Its pace from here to the crash: its crest's over the last few frames, held to PACE × the long-wave speed there.
+      const wave = Math.sqrt(GRAVITY * Math.max(0, p.crestDepth + p.height));
+      let pace = p.crestSpeed !== undefined && p.crestSpeed > 0 ? p.crestSpeed : wave;
+      if (p.crestSpeed === undefined || !(p.crestSpeed > 0)) this.counts.paceUnmeasured += 1;
+      else if (pace < PACE.slowest * wave) {
+        pace = PACE.slowest * wave;
+        this.counts.paceSlow += 1;
+      } else if (pace > PACE.fastest * wave) {
+        pace = PACE.fastest * wave;
+        this.counts.paceFast += 1;
+      }
+      p.jetPace = pace;
+      p.jetBase = (p.throwZ ?? p.z - pace * p.tau);
     }
     if (thrown < volume) {
       this.counts.starved += 1;
