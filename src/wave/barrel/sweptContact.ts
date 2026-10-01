@@ -71,6 +71,11 @@ const Q = S - 1;
 const E = LOFT.extensionSamples;
 /** How far a point exactly on a slice's ray is moved into its strip, m: far above rounding at 100 m, far below a cell. */
 const NUDGE = 1e-9;
+/**
+ * How far each quad's range along its ray is widened, m: the ranges are stored as 32-bit floats (about 4 µm apart at
+ * 40 m), so a point on a quad's edge may round outside it; the triangle tests decide exactly within it.
+ */
+const SLACK = 1e-4;
 
 /**
  * The swept barrel's contact (the Padang Padang spec, Part B, PR 4; the advisor's rulings, 2026-09-30): the loft the
@@ -140,9 +145,14 @@ export class SweptContact {
     this.bucket = options.bucket ?? CONTACT.bucket;
   }
 
-  /** Loft the fronts over the water (`heightAt`, uncarved) and index the strips for this step's queries. */
-  update(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number): void {
-    const loft = this.loft.build(records, count, stillLevel, heightAt);
+  /**
+   * Loft the fronts over the water (`heightAt`, uncarved; `depthAt`, its column's depth, for the crest's pace in the
+   * lip's velocity) and index the strips for this step's queries.
+   */
+  update(
+    records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number, depthAt?: (x: number, z: number) => number,
+  ): void {
+    const loft = this.loft.build(records, count, stillLevel, heightAt, depthAt);
     this.last = loft;
     const { positions: p, sliceCount } = loft;
     if (this.own.length !== p.length / 3) {
@@ -336,7 +346,8 @@ export class SweptContact {
     const base = s * Q;
     for (let e = this.bucketStart[k]; e < end; e += 1) {
       const j = this.bucketQuads[e];
-      // Along slice s's ray, the quad's projection spans its vertices' (a linear map keeps a point inside them).
+      // Along slice s's ray, the quad's projection spans its vertices' (a linear map keeps a point inside them), widened
+      // past their rounding (SLACK).
       if (q < this.quadLow[base + j] || q > this.quadHigh[base + j]) continue;
       const v00 = o + j;
       const v10 = v00 + S;
@@ -497,8 +508,8 @@ export class SweptContact {
       for (let j = 0; j < Q; j += 1) {
         const v00 = o + j;
         const v10 = v00 + S;
-        const lo = Math.min(own[v00], own[v00 + 1], prior[v10], prior[v10 + 1]);
-        const hi = Math.max(own[v00], own[v00 + 1], prior[v10], prior[v10 + 1]);
+        const lo = Math.min(own[v00], own[v00 + 1], prior[v10], prior[v10 + 1]) - SLACK;
+        const hi = Math.max(own[v00], own[v00 + 1], prior[v10], prior[v10 + 1]) + SLACK;
         quadLow[base + j] = lo;
         quadHigh[base + j] = hi;
         low = Math.min(low, lo);

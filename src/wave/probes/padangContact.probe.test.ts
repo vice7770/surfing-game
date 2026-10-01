@@ -16,6 +16,12 @@ import { LOFT, LOFT_SAMPLES } from '../barrel/sweptLoft';
 import { tubeCase } from '../barrel/toyCase';
 import { SURF_ZONE_STEP, SurfZoneRunner } from '../SurfZoneRunner';
 
+const quantile = (values: number[], q: number) => {
+  if (!values.length) return Number.NaN;
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
+};
+
 const quantiles = (values: number[], digits = 2) => {
   if (!values.length) return '—';
   const sorted = [...values].sort((a, b) => a - b);
@@ -73,6 +79,17 @@ describe.runIf(process.env.PROBE)('Padang Padang contact probe', () => {
     let covered = 0;
     let queryMs = 0;
     let anomalies = 0;
+    let quads = 0;
+    let backstop = 0;
+    // Overlapping fronts (the advisor: strips dropped per 1000, and whether one held an open tube), and the contact's
+    // held tip's distance from the drawn one.
+    let strips = 0;
+    let dropped = 0;
+    let droppedOpen = 0;
+    let droppedOpenWeight = 0;
+    let tipGap = 0;
+    /** The height field's slopes on the breaking faces, from 2 m behind the solver's crest to 3 m ahead (the clamp's yardstick). */
+    const faceSlopes: number[] = [];
     // A fixed sequence of points (a linear congruential generator), so reruns draw the same.
     let seed = 12345;
     const random = () => {
@@ -92,12 +109,33 @@ describe.runIf(process.env.PROBE)('Padang Padang contact probe', () => {
       for (let s = 0; s < loft.sliceCount; s += 1) if (loft.sliceOverturned[s] && loft.sliceWeight[s] > 0 && loft.sliceWeight[s] < 1) lerped += 1;
       partial.push(lerped);
       vertices.push(loft.vertexCount);
+      for (let s = 0; s + 1 < loft.sliceCount; s += 1) strips += loft.sliceJoined[s];
+      strips += loft.overlaps;
+      dropped += loft.overlaps;
+      droppedOpen += loft.overlapsOpen;
+      droppedOpenWeight = Math.max(droppedOpenWeight, loft.overlapOpenWeight);
+      tipGap = Math.max(tipGap, loft.tipGap);
+      // Every half second, the plain height field's slope across the breaking faces, by central differences over 0.5 m.
+      const front = runner.simulation.front;
+      if (front && step % 30 === 0) {
+        for (const point of front.points) {
+          for (let d = -2; d <= 3; d += 1) {
+            const x = point.x;
+            const z = point.z + d;
+            const sx = (runner.water.plainSurfaceAt(x + 0.25, z) - runner.water.plainSurfaceAt(x - 0.25, z)) / 0.5;
+            const sz = (runner.water.plainSurfaceAt(x, z + 0.25) - runner.water.plainSurfaceAt(x, z - 0.25)) / 0.5;
+            faceSlopes.push(Math.sqrt(sx * sx + sz * sz));
+          }
+        }
+      }
       // Points through the open, overturned strips: between the two slices, from the face under the throat to the
       // lip's tip, from the face to a metre over the curl's top.
       const open: number[] = [];
       for (let s = 0; s + 1 < loft.sliceCount; s += 1) if (loft.sliceJoined[s] && loft.slicePhase[s] === 1 && loft.sliceOverturned[s]) open.push(s);
       if (open.length === 0) continue;
       const before = contact.stats.anomalies;
+      const quadsBefore = contact.stats.quads;
+      const backstopBefore = contact.stats.overlaps;
       const p = loft.positions;
       const t0 = performance.now();
       for (let k = 0; k < 2000; k += 1) {
@@ -119,17 +157,22 @@ describe.runIf(process.env.PROBE)('Padang Padang contact probe', () => {
       }
       queryMs += performance.now() - t0;
       anomalies += contact.stats.anomalies - before;
+      quads += contact.stats.quads - quadsBefore;
+      backstop += contact.stats.overlaps - backstopBefore;
       if (step % 300 === 299) {
-        appendFileSync(log, `t ${runner.simulation.solver.time.toFixed(0)} s | contact update ${quantiles(updates)} ms against the step's ${quantiles(steps, 1)} ms | vertices ${quantiles(vertices, 0)} | lerped lips ${quantiles(partial, 0)}\n`);
+        appendFileSync(log, `t ${runner.simulation.solver.time.toFixed(0)} s | contact update ${quantiles(updates)} ms against the step's ${quantiles(steps, 1)} ms | vertices ${quantiles(vertices, 0)} | lerped lips ${quantiles(partial, 0)} | strips dropped ${dropped} of ${strips}\n`);
       }
     }
     const perQuery = queried ? (1000 * queryMs) / queried : Number.NaN;
     const update = updates.reduce((sum, ms) => sum + ms, 0) / Math.max(1, updates.length);
     const step = steps.reduce((sum, ms) => sum + ms, 0) / Math.max(1, steps.length);
     appendFileSync(log, `the contact's update ${update.toFixed(2)} ms a step against the step's ${step.toFixed(1)} ms (${((100 * update) / step).toFixed(1)} %)\n`);
-    appendFileSync(log, `queries in the open tubes: ${queried}, ${hits} answered by the loft (${inAir} in air, ${covered} covered), ${anomalies} unclosed columns; ${perQuery.toFixed(2)} µs a query\n`);
+    appendFileSync(log, `queries in the open tubes: ${queried}, ${hits} answered by the loft (${inAir} in air, ${covered} covered), ${anomalies} unclosed columns; ${perQuery.toFixed(2)} µs a query, ${(quads / Math.max(1, queried)).toFixed(1)} quads tested a query\n`);
     appendFileSync(log, `a standing rider in a tube, every sample in the loft: ${samples} × ${perQuery.toFixed(2)} µs = ${((samples * perQuery) / 1000).toFixed(2)} ms a step, on top of the update\n`);
-  }, 7_200_000);
+    appendFileSync(log, `overlapping fronts: ${dropped} strips dropped of ${strips} (${((1000 * dropped) / Math.max(1, strips)).toFixed(2)} per 1000), ${droppedOpen} with an open tube (most weight ${droppedOpenWeight.toFixed(2)}); the contact's backstop counted ${backstop} queries\n`);
+    appendFileSync(log, `the contact's held tip from the drawn one: at most ${tipGap.toFixed(3)} m\n`);
+    appendFileSync(log, `the height field's slope on the breaking faces (${faceSlopes.length} samples, 2 m behind the crest to 3 m ahead): |s| ${quantiles(faceSlopes)}; p99 ${quantile(faceSlopes, 0.99).toFixed(2)}, p99.9 ${quantile(faceSlopes, 0.999).toFixed(2)}\n`);
+  }, 14_400_000);
 
   it('times a query through a toy tube (the strips’ quads are as many as the sea’s)', () => {
     const log = process.env.LOG ?? 'padang-contact.txt';

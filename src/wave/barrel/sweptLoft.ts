@@ -1,4 +1,5 @@
 import type { SpotName } from '../Bathymetry';
+import { GRAVITY } from '../dispersion';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { LANDMARK, PROFILE_POINTS, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 
@@ -51,6 +52,12 @@ function restHeight(crestY: number, toeY: number, frontY: number): number {
  *   [provisional].
  */
 export const SHEET = { ramp: 3, formed: 0.035 } as const;
+/**
+ * The solver crest's pace in the lip's velocity (the advisor, 2026-09-30, provisional): its mean since the throw is
+ * noise early, so it is blended in from `from` to `to` s after the throw; it is held to `slowest`–`fastest` × the
+ * long-wave speed √(g d) at the crest, which a crest record that jumps (a split, a re-join) would leave.
+ */
+export const CREST_SPEED = { from: 0.1, to: 0.3, slowest: 0.5, fastest: 1.5 } as const;
 /** The library's runs' slope along the wave's path, per spot drawn with the swept barrel (the owner's 1:19 at Padang Padang). */
 export const BARREL_SLOPE: Partial<Record<SpotName, number>> = { padang: 1 / 19 };
 
@@ -294,6 +301,9 @@ export class SweptLoft {
   private readonly probe: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
   private readonly query: ProfileQuery;
   private readonly point = new Float64Array(2);
+  private readonly velocity = new Float64Array(2);
+  /** This build's water depth at a point, m (the contact's: the solver's column), for the crest's long-wave pace. */
+  private depthAt: ((x: number, z: number) => number) | undefined;
   /** Per slice, its anchor (x, z) and its drawn profile's reach along its ray past its extensions, m: its footprint. */
   private readonly anchorX = new Float64Array(MAX_SLICES + 1);
   private readonly anchorZ = new Float64Array(MAX_SLICES + 1);
@@ -329,7 +339,14 @@ export class SweptLoft {
     };
   }
 
-  build(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number): LoftResult {
+  /**
+   * Loft the records' fronts over the water (`heightAt`). The contact passes the water's depth (`depthAt`, m) too, for
+   * the crest's pace in the lip's velocity; without it that pace is not held to the long-wave speed.
+   */
+  build(
+    records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number, depthAt?: (x: number, z: number) => number,
+  ): LoftResult {
+    this.depthAt = depthAt;
     const r = this.result;
     r.vertexCount = 0;
     r.indexCount = 0;
@@ -593,28 +610,53 @@ export class SweptLoft {
         const raw = Math.sqrt(ox * ox + oz * oz);
         let throwX = s.x;
         let throwZ = s.throwZ;
+        // How the capped throw point moves with the crest point C it is held near (`o` = T − C): along `o` at 1 − f′
+        // of C's pace (f′ the cap's slope), across it at 1 − its scale; uncapped, it stays.
+        let alongFollow = 0;
+        let acrossFollow = 0;
         if (raw > LOFT.offsetKnee) {
           const beyond = (raw - LOFT.offsetKnee) / LOFT.offsetReach;
           const scale = (LOFT.offsetKnee + (LOFT.offsetReach * beyond) / (1 + beyond)) / raw;
           throwX = crestX + scale * ox;
           throwZ = crestZ + scale * oz;
+          alongFollow = 1 - 1 / ((1 + beyond) * (1 + beyond));
+          acrossFollow = 1 - scale;
           r.caps += 1;
         }
         life = tau / touchdown;
         if (tau <= touchdown) offset = raw;
         const start = LOFT.handoverStart * touchdown;
+        let u = 0;
         if (tau <= start) {
           ax = throwX;
           az = throwZ;
         } else {
-          const u = Math.min(1, (tau - start) / LOFT.handover);
+          u = Math.min(1, (tau - start) / LOFT.handover);
           ax = throwX + u * (crestX - throwX);
           az = throwZ + u * (crestZ - throwZ);
-          // The anchor's own motion while it hands over; the solver's crest's is left out (a ledger ruling).
+          // The anchor's own motion while it hands over.
           if (u < 1) {
             anchorVX = (crestX - throwX) / LOFT.handover;
             anchorVZ = (crestZ - throwZ) / LOFT.handover;
           }
+        }
+        if (this.contact) {
+          // And its following motion (the advisor, 2026-09-30): the crest point C = S − c n moves at Ċ = Ṡ − ċ n, the
+          // solver's crest less the library's; the anchor (1 − u) T′ + u C follows it by (1 − u) dT′/dt + u Ċ.
+          const follow = this.crestPointVelocity(s, tau, lookup.frameSeconds, nx, nz);
+          const cvx = follow[0];
+          const cvz = follow[1];
+          let tvx = 0;
+          let tvz = 0;
+          if (raw > LOFT.offsetKnee) {
+            const ux = ox / raw;
+            const uz = oz / raw;
+            const along = ux * cvx + uz * cvz;
+            tvx = alongFollow * along * ux + acrossFollow * (cvx - along * ux);
+            tvz = alongFollow * along * uz + acrossFollow * (cvz - along * uz);
+          }
+          anchorVX += (1 - u) * tvx + u * cvx;
+          anchorVZ += (1 - u) * tvz + u * cvz;
         }
       }
       const maskSlice = wFade > 0 ? Math.min(1, Math.max(0, 1 + d / LOFT.band)) : 0;
@@ -706,6 +748,40 @@ export class SweptLoft {
     const r = this.result;
     this.normals(firstSlice, lastSlice);
     for (let s = firstSlice; s < lastSlice; s += 1) r.sliceJoined[s] = 1;
+  }
+
+  /**
+   * The crest point's velocity, m/s (x, z): the solver's crest's, Ṡ, less the profile's crest's along the ray, ċ n
+   * (the advisor, 2026-09-30). Ṡ is the solver crest's mean pace since its throw along its column (+z), blended in
+   * after the throw and held near the long-wave speed at the crest (`CREST_SPEED`); it lags a slowing crest by about
+   * a tenth late on. ċ is the contact profile's crest landmark's motion over ±4 frames, as the tip's.
+   */
+  private crestPointVelocity(s: Sample, tau: number, frameSeconds: number, nx: number, nz: number): Float64Array {
+    const out = this.velocity;
+    const blend = Math.min(1, Math.max(0, (tau - CREST_SPEED.from) / (CREST_SPEED.to - CREST_SPEED.from)));
+    let pace = 0;
+    if (blend > 0) {
+      pace = (s.z - s.throwZ) / tau;
+      if (this.depthAt) {
+        const wave = Math.sqrt(GRAVITY * Math.max(0, this.depthAt(s.x, s.z)));
+        pace = Math.min(CREST_SPEED.fastest * wave, Math.max(CREST_SPEED.slowest * wave, pace));
+      }
+      pace *= blend;
+    }
+    const query = this.query;
+    query.footHeight = s.footHeight;
+    query.footDepth = s.footDepth;
+    query.hold = 'contact';
+    const window = 4 * frameSeconds;
+    query.seconds = tau + window;
+    this.library.pointAt(query, LANDMARK.crest, this.point);
+    const ahead = this.point[0];
+    query.seconds = tau - window;
+    this.library.pointAt(query, LANDMARK.crest, this.point);
+    const crestPace = (ahead - this.point[0]) / (2 * window);
+    out[0] = -crestPace * nx;
+    out[1] = pace - crestPace * nz;
+    return out;
   }
 
   /** Two triangles per quad of every joined strip. */
