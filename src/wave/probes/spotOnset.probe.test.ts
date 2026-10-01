@@ -14,6 +14,8 @@ import { BREAKING_ONSET } from '../SurfZoneSimulation';
  * as it passes the foot, its highest over the band of still depth nearer the break (6/7 to 5/7 of h0, Padang's 6–5 m
  * at 7 m), and the still depth under its crest where Kennedy's fresh test first fires on its face (η_t ≥ 0.65 √(g d),
  * the join's condition). Medians over the waves once the run has settled: the spot's join depth, d_join(η_band, T).
+ * On a plane beach a broken wave can trip the test again as it runs up (several onsets a wave), so each wave's
+ * deepest onset over its period (its first) is reported too; where a wave onsets once, the two agree.
  * Opt-in (PROBE=1): SPOT names the spot's Kennedy onset; H0, SLOPE and FLAT the transect (m, rise over run, h0);
  * HEIGHTS and PERIODS the drive; LOG the file.
  */
@@ -23,7 +25,7 @@ describe.runIf(process.env.PROBE)('periodic onset on a spot’s barrel transect'
     const transect = { h0: Number(process.env.H0 ?? 7), slope: Number(process.env.SLOPE ?? 1 / 19), flat: Number(process.env.FLAT ?? 1.25 / 7) };
     const log = process.env.LOG ?? `spot-onset-${spot}.txt`;
     writeFileSync(log, `${spot}: h0 ${transect.h0} m, slope 1:${(1 / transect.slope).toFixed(1)}, flat ${(transect.flat * transect.h0).toFixed(2)} m, Kennedy onset ${BREAKING_ONSET[spot]}\n`);
-    appendFileSync(log, 'T s | H driven | η at the foot (median, waves) | η over the band (its highest; median) | fresh onset: still depth under the crest (median, 10–90 %) | wall s\n');
+    appendFileSync(log, 'T s | H driven | η at the foot (median, waves) | η over the band (its highest; median) | fresh onset: still depth under the crest (median, 10–90 %) | each wave\'s first onset (median, 10–90 %, waves) | wall s\n');
     const heights = (process.env.HEIGHTS ?? '1,1.5,2,2.5,3').split(',').map(Number);
     const periods = (process.env.PERIODS ?? '9,11,12,14').split(',').map(Number);
     for (const period of periods) for (const height of heights) appendFileSync(log, `${run(spot, transect, height, period)}\n`);
@@ -82,6 +84,9 @@ function run(spot: SpotName, transect: { h0: number; slope: number; flat: number
   const feet: number[] = [];
   const references: number[] = [];
   const onsets: number[] = [];
+  // Each wave's deepest onset: the period windows the foot crest uses.
+  const firsts: number[] = [];
+  let first = -Infinity;
   let footCrest = -Infinity;
   let referenceCrest = -Infinity;
   let footPeriod = Math.floor(solver.time / period);
@@ -95,9 +100,11 @@ function run(spot: SpotName, transect: { h0: number; slope: number; flat: number
       if (solver.time > settled + period) {
         feet.push(footCrest);
         references.push(referenceCrest);
+        if (Number.isFinite(first)) firsts.push(first);
       }
       footCrest = -Infinity;
       referenceCrest = -Infinity;
+      first = -Infinity;
       footPeriod = n;
     }
     footCrest = Math.max(footCrest, eta(toeRow));
@@ -117,6 +124,7 @@ function run(spot: SpotName, transect: { h0: number; slope: number; flat: number
       let crest = face;
       for (let row = face; row >= 0 && z - solver.zCenters[row] <= 10; row -= 1) if (eta(row) > eta(crest)) crest = row;
       onsets.push(-solver.bed[crest * nx + column]);
+      first = Math.max(first, -solver.bed[crest * nx + column]);
     }
     lastOnsetZ = z;
   }
@@ -125,5 +133,5 @@ function run(spot: SpotName, transect: { h0: number; slope: number; flat: number
     return sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))] : NaN;
   };
   const wall = (performance.now() - started) / 1000;
-  return `${period} | ${height} | ${q(feet, 0.5).toFixed(2)} m (${feet.length}) | ${q(references, 0.5).toFixed(2)} m | ${q(onsets, 0.5).toFixed(2)} m (${q(onsets, 0.1).toFixed(2)}–${q(onsets, 0.9).toFixed(2)}, ${onsets.length} waves) | ${wall.toFixed(0)}`;
+  return `${period} | ${height} | ${q(feet, 0.5).toFixed(2)} m (${feet.length}) | ${q(references, 0.5).toFixed(2)} m | ${q(onsets, 0.5).toFixed(2)} m (${q(onsets, 0.1).toFixed(2)}–${q(onsets, 0.9).toFixed(2)}, ${onsets.length} waves) | ${q(firsts, 0.5).toFixed(2)} m (${q(firsts, 0.1).toFixed(2)}–${q(firsts, 0.9).toFixed(2)}, ${firsts.length}) | ${wall.toFixed(0)}`;
 }
