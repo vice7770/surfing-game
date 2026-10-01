@@ -1,6 +1,6 @@
 import type { SpotName } from '../Bathymetry';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
-import { LANDMARK, PROFILE_POINTS, type ProfileLibrary } from './ProfileLibrary';
+import { LANDMARK, PROFILE_POINTS, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 
 /**
  * The swept loft's constants (the Padang Padang spec, Part B, PR 3; docs/research/water-physics/swept-barrel-build.md,
@@ -58,13 +58,26 @@ export interface LoftResult {
    */
   sliceCollapse: Float32Array;
   sliceFade: Float32Array;
+  /**
+   * Contact mode: per slice, how far its held lip tip stands from the drawn one, m, and the most this build: about a
+   * frame's travel between a case's held frame and touchdown (the advisor, 2026-09-30); 0 in the drawing.
+   */
+  sliceTipGap: Float32Array;
+  tipGap: number;
   /** Neighbouring slices' τ clamped to T_open/4 because the budget was reached; lookups outside the library's cases. */
   clamps: number;
   clampedLookups: number;
   /** Slices whose drawn crest's distance from the solver's was soft-capped. */
   caps: number;
-  /** Per slice, 1 when it is triangulated to the next (the same run of live slices). */
+  /** Per slice, 1 when it is triangulated to the next (the same run of live slices, not dropped for an overlap). */
   sliceJoined: Uint8Array;
+  /**
+   * Strips dropped because an earlier front's overlaps them (first front wins); of them those that held an open tube
+   * with any weight, which would show as a hole in a barrel (the advisor, 2026-09-30: report them), and their most weight.
+   */
+  overlaps: number;
+  overlapsOpen: number;
+  overlapOpenWeight: number;
   /** Per slice, its ray (the front's shoreward normal, x and z), its weight on the water, and 1 if its profile overhangs. */
   sliceRayX: Float32Array;
   sliceRayZ: Float32Array;
@@ -75,8 +88,6 @@ export interface LoftResult {
   sliceTipUp: Float32Array;
   sliceAnchorVX: Float32Array;
   sliceAnchorVZ: Float32Array;
-  /** Contact mode: overturned slices under full weight made whole (from half) or dropped (below). */
-  cuts: number;
 }
 
 export interface LoftOptions {
@@ -130,10 +141,13 @@ interface Sample {
  *   and each vertex carries the mask's value: 1 over the profile, 0 a `band` past it.
  * - **Resampling** (ruling 4): `spacing`, refined to `fine` where neighbouring clocks differ by more than `frames`
  *   frames, within `budget` vertices.
- * - **Contact mode** (PR 4, the advisor's ruling 2): each slice's geometry is held at its last clear frame
- *   (`ProfileLookup.clearSeconds`: the jet off the face, the void open) through touchdown and its collapse (its clock
- *   and phase run on), so it never self-crosses; and an overturned slice under full weight is whole from half weight
- *   and dropped below, counted in `cuts`: a squashed lip is no water.
+ * - **Overlapping fronts** (the advisor, 2026-09-30): the first front wins; a later front's strip over an earlier
+ *   front's is dropped, and counted, so the drawing and the contact show one surface.
+ * - **Contact mode** (PR 4, the advisor's ruling 2): each blended case is held at its own last clear frame
+ *   (`heldFrame`: the jet off the face, the void open) through touchdown and the collapse (the clock and phase run on),
+ *   so it never self-crosses yet follows the drawing until then; each slice's held tip's distance from the drawn one is
+ *   kept. Its weights are the drawing's: the lerp toward the same water by the same weight keeps a vertical line's
+ *   crossings in order, so a partly weighted lip shrinks as drawn (the advisor, 2026-09-30).
  * A vertex resting on the water asks its height; one lifted fully off it is still level plus the profile.
  * Only + − × ÷ and √, for online determinism: PR 4's contact runs the same code in the worker.
  */
@@ -145,11 +159,22 @@ export class SweptLoft {
   private readonly sigmas = new Float64Array(2 * MAX_SLICES + 8);
   private readonly sample: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
   private readonly probe: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
+  private readonly query: ProfileQuery;
+  private readonly point = new Float64Array(2);
+  /** Per slice, its anchor (x, z) and its drawn profile's reach along its ray past its extensions, m: its footprint. */
+  private readonly anchorX = new Float64Array(MAX_SLICES + 1);
+  private readonly anchorZ = new Float64Array(MAX_SLICES + 1);
+  private readonly reachBack = new Float64Array(MAX_SLICES + 1);
+  private readonly reachFront = new Float64Array(MAX_SLICES + 1);
+  /** Per strip, its footprint's corners (x, z × 4: its slices' back and front reach) and box (x0, x1, z0, z1). */
+  private readonly corners = new Float64Array(8 * (MAX_SLICES + 1));
+  private readonly boxes = new Float64Array(4 * (MAX_SLICES + 1));
 
   private readonly contact: boolean;
 
   constructor(private readonly library: ProfileLibrary, private readonly slope: number, options: LoftOptions = {}) {
     this.contact = options.contact ?? false;
+    this.query = { slope, footHeight: 0, footDepth: 0, seconds: 0 };
     const vertices = (MAX_SLICES + 1) * LOFT_SAMPLES;
     const slices = MAX_SLICES + 1;
     this.result = {
@@ -157,10 +182,11 @@ export class SweptLoft {
       indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * slices), vertexCount: 0, indexCount: 0, sliceCount: 0,
       sliceFront: new Int32Array(slices), sliceSigma: new Float32Array(slices), sliceTau: new Float32Array(slices),
       slicePhase: new Uint8Array(slices), sliceCrestOffset: new Float32Array(slices), sliceLife: new Float32Array(slices),
-      sliceCollapse: new Float32Array(slices), sliceFade: new Float32Array(slices), clamps: 0, clampedLookups: 0, caps: 0,
+      sliceCollapse: new Float32Array(slices), sliceFade: new Float32Array(slices), sliceTipGap: new Float32Array(slices), tipGap: 0,
+      clamps: 0, clampedLookups: 0, caps: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0,
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
-      sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices), cuts: 0,
+      sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices),
     };
   }
 
@@ -172,7 +198,10 @@ export class SweptLoft {
     r.clamps = 0;
     r.clampedLookups = 0;
     r.caps = 0;
-    r.cuts = 0;
+    r.tipGap = 0;
+    r.overlaps = 0;
+    r.overlapsOpen = 0;
+    r.overlapOpenWeight = 0;
     const fronts = this.fronts(records, count);
     // The spacing that fits the budget, and whether refining would overrun it: faded slices are dropped, so only the
     // live ones count.
@@ -191,6 +220,8 @@ export class SweptLoft {
       const n = budgeted ? this.baseSlices(f, spacing, this.sigmas) : this.refinements(records, f, spacing);
       this.loftFront(records, f, n, budgeted, stillLevel, heightAt);
     }
+    this.dropOverlaps();
+    this.triangulate();
     return r;
   }
 
@@ -349,37 +380,49 @@ export class SweptLoft {
         if (clamped !== tau) r.clamps += 1;
         tau = clamped;
       }
-      // The contact holds its geometry at the last clear frame, never self-crossing (the advisor's ruling 2); the drawing
-      // keeps the touchdown frame, the visual event (the advisor, 2026-09-30). Both clocks run on.
-      const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
-      const shapeTau = Math.min(tau, this.contact ? times.clearSeconds : times.touchdownSeconds);
-      const lookup = this.library.profileAt({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth, seconds: shapeTau }, profile);
+      // The drawing keeps the touchdown frame, the visual event; the contact also holds each blended case at its own
+      // last clear frame, never self-crossing (the advisor, 2026-09-30). Both clocks run on.
+      const query = this.query;
+      query.footHeight = s.footHeight;
+      query.footDepth = s.footDepth;
+      query.seconds = tau;
+      query.hold = this.contact ? 'contact' : 'drawing';
+      const lookup = this.library.profileAt(query, profile);
       const touchdown = lookup.touchdownSeconds;
       const wFade = collapseFade(tau, touchdown, lookup.collapseSeconds);
       if (wFade === 0) {
         closeRun();
         continue;
       }
+      // The drawn slice's reach along its ray, m, the same in both modes (overlapping fronts are judged on it); and how
+      // far the contact's held tip stands from the drawn one, m (the advisor: the touchdown's own approach).
+      let tipGap = 0;
+      let reachBack = profile[0];
+      let reachFront = profile[2 * LAST];
+      if (this.contact) {
+        query.hold = 'drawing';
+        this.library.pointAt(query, LANDMARK.lip, this.point);
+        const dx = this.point[0] - profile[2 * LANDMARK.lip];
+        const dy = this.point[1] - profile[2 * LANDMARK.lip + 1];
+        tipGap = Math.sqrt(dx * dx + dy * dy);
+        this.library.pointAt(query, LANDMARK.back, this.point);
+        reachBack = this.point[0];
+        this.library.pointAt(query, LANDMARK.front, this.point);
+        reachFront = this.point[0];
+      }
       // The weights: into the water at the front's ends, and after touchdown.
       const d = Math.min(sigma - f.first, f.last - sigma);
       const r0 = Math.min(1, d / LOFT.endBlend);
       const wEnd = d <= 0 ? 0 : r0 * r0 * (3 - 2 * r0);
-      let w = wEnd * wFade;
+      // The contact follows the drawing's weight: the lerp toward the same water by the same weight keeps a vertical
+      // line's crossings in order, so a partly weighted lip shrinks as drawn (the advisor, 2026-09-30).
+      const w = wEnd * wFade;
       let overturned = 0;
       for (let i = LOFT.pinned; i < LAST - LOFT.pinned; i += 1) {
         if (profile[2 * (i + 1)] < profile[2 * i]) {
           overturned = 1;
           break;
         }
-      }
-      if (this.contact && overturned && w < 1) {
-        // A squashed lip is no water: whole from half weight, gone below (the advisor's ruling 2).
-        r.cuts += 1;
-        if (w < 0.5) {
-          closeRun();
-          continue;
-        }
-        w = 1;
       }
       if (r.sliceCount >= MAX_SLICES) break;
       if (runStart < 0) runStart = r.sliceCount;
@@ -436,6 +479,12 @@ export class SweptLoft {
       r.sliceLife[slice] = life;
       r.sliceCollapse[slice] = lookup.collapseSeconds;
       r.sliceFade[slice] = wFade;
+      r.sliceTipGap[slice] = tipGap;
+      if (tipGap > r.tipGap) r.tipGap = tipGap;
+      this.anchorX[slice] = ax;
+      this.anchorZ[slice] = az;
+      this.reachBack[slice] = reachBack - LOFT.extension;
+      this.reachFront[slice] = reachFront + LOFT.extension;
       r.sliceJoined[slice] = 0;
       r.sliceRayX[slice] = nx;
       r.sliceRayZ[slice] = nz;
@@ -484,12 +533,18 @@ export class SweptLoft {
     r.vertexCount = r.sliceCount * LOFT_SAMPLES;
   }
 
-  /** A run of consecutive slices: its normals, and two triangles per quad between them. */
+  /** A run of consecutive slices: its normals, and its strips joined. */
   private finishRun(firstSlice: number, lastSlice: number): void {
     const r = this.result;
     this.normals(firstSlice, lastSlice);
-    for (let s = firstSlice; s < lastSlice; s += 1) {
-      r.sliceJoined[s] = 1;
+    for (let s = firstSlice; s < lastSlice; s += 1) r.sliceJoined[s] = 1;
+  }
+
+  /** Two triangles per quad of every joined strip. */
+  private triangulate(): void {
+    const r = this.result;
+    for (let s = 0; s + 1 < r.sliceCount; s += 1) {
+      if (r.sliceJoined[s] !== 1) continue;
       for (let j = 0; j < LOFT_SAMPLES - 1; j += 1) {
         const v00 = s * LOFT_SAMPLES + j;
         const v10 = v00 + LOFT_SAMPLES;
@@ -503,6 +558,112 @@ export class SweptLoft {
         r.indexCount += 6;
       }
     }
+  }
+
+  /**
+   * Overlapping fronts (the advisor, 2026-09-30): the first front wins. A later front's strip whose footprint overlaps
+   * an earlier front's kept strip is dropped, from the drawing, its mask and the contact alike, and counted. A footprint
+   * is the convex hull of its two slices' drawn reach (the same in both modes, so both drop the same strips); a front's
+   * order is the records'. Only + − × ÷.
+   */
+  private dropOverlaps(): void {
+    const r = this.result;
+    const { corners, boxes } = this;
+    // Each joined strip's corners and box, and each front's run of slices [start, end) with its box.
+    const starts: number[] = [];
+    for (let s = 0; s < r.sliceCount; s += 1) {
+      if (s === 0 || r.sliceFront[s] !== r.sliceFront[s - 1]) starts.push(s);
+      if (r.sliceJoined[s] !== 1) continue;
+      for (let k = 0; k < 2; k += 1) {
+        const slice = s + k;
+        for (const [m, reach] of [[0, this.reachBack[slice]], [1, this.reachFront[slice]]] as const) {
+          corners[8 * s + 4 * k + 2 * m] = this.anchorX[slice] + reach * r.sliceRayX[slice];
+          corners[8 * s + 4 * k + 2 * m + 1] = this.anchorZ[slice] + reach * r.sliceRayZ[slice];
+        }
+      }
+      boxes[4 * s] = Infinity;
+      boxes[4 * s + 1] = -Infinity;
+      boxes[4 * s + 2] = Infinity;
+      boxes[4 * s + 3] = -Infinity;
+      for (let c = 0; c < 4; c += 1) {
+        boxes[4 * s] = Math.min(boxes[4 * s], corners[8 * s + 2 * c]);
+        boxes[4 * s + 1] = Math.max(boxes[4 * s + 1], corners[8 * s + 2 * c]);
+        boxes[4 * s + 2] = Math.min(boxes[4 * s + 2], corners[8 * s + 2 * c + 1]);
+        boxes[4 * s + 3] = Math.max(boxes[4 * s + 3], corners[8 * s + 2 * c + 1]);
+      }
+    }
+    if (starts.length < 2) return;
+    starts.push(r.sliceCount);
+    const frontBox = (f: number) => {
+      const box = [Infinity, -Infinity, Infinity, -Infinity];
+      for (let s = starts[f]; s < starts[f + 1]; s += 1) {
+        if (r.sliceJoined[s] !== 1) continue;
+        box[0] = Math.min(box[0], boxes[4 * s]);
+        box[1] = Math.max(box[1], boxes[4 * s + 1]);
+        box[2] = Math.min(box[2], boxes[4 * s + 2]);
+        box[3] = Math.max(box[3], boxes[4 * s + 3]);
+      }
+      return box;
+    };
+    const apart = (a: ArrayLike<number>, i: number, b: ArrayLike<number>, j: number) =>
+      a[i + 1] < b[j] || b[j + 1] < a[i] || a[i + 3] < b[j + 2] || b[j + 3] < a[i + 2];
+    for (let later = 1; later + 1 < starts.length; later += 1) {
+      for (let earlier = 0; earlier < later; earlier += 1) {
+        // Fronts apart are skipped whole; the earlier front's box shrinks as its own strips are dropped, so it is taken now.
+        if (apart(frontBox(later), 0, frontBox(earlier), 0)) continue;
+        for (let s = starts[later]; s < starts[later + 1]; s += 1) {
+          if (r.sliceJoined[s] !== 1) continue;
+          for (let t = starts[earlier]; t < starts[earlier + 1]; t += 1) {
+            if (r.sliceJoined[t] !== 1 || apart(boxes, 4 * s, boxes, 4 * t) || !this.hullsOverlap(8 * s, 8 * t)) continue;
+            r.sliceJoined[s] = 0;
+            r.overlaps += 1;
+            // A dropped strip that held an open tube would show as a hole in a barrel (the advisor: report it), as
+            // high as its weight lifts it.
+            const weight = Math.max(r.sliceWeight[s], r.sliceWeight[s + 1]);
+            const open = (r.slicePhase[s] === 1 && r.sliceOverturned[s] === 1) || (r.slicePhase[s + 1] === 1 && r.sliceOverturned[s + 1] === 1);
+            if (open && weight > 0) {
+              r.overlapsOpen += 1;
+              r.overlapOpenWeight = Math.max(r.overlapOpenWeight, weight);
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Whether two strips' footprints overlap: the convex hulls of their four corners each (at `a` and `b` in `corners`),
+   * by separating axes; every pair of a hull's corners gives an axis, the hull's edges among them.
+   */
+  private hullsOverlap(a: number, b: number): boolean {
+    const c = this.corners;
+    for (let hull = 0; hull < 2; hull += 1) {
+      const base = hull === 0 ? a : b;
+      for (let i = 0; i < 4; i += 1) {
+        for (let j = i + 1; j < 4; j += 1) {
+          // The axis across corners i and j.
+          const ax = c[base + 2 * i + 1] - c[base + 2 * j + 1];
+          const az = c[base + 2 * j] - c[base + 2 * i];
+          if (ax === 0 && az === 0) continue;
+          let minA = Infinity;
+          let maxA = -Infinity;
+          let minB = Infinity;
+          let maxB = -Infinity;
+          for (let k = 0; k < 4; k += 1) {
+            const pa = c[a + 2 * k] * ax + c[a + 2 * k + 1] * az;
+            const pb = c[b + 2 * k] * ax + c[b + 2 * k + 1] * az;
+            minA = Math.min(minA, pa);
+            maxA = Math.max(maxA, pa);
+            minB = Math.min(minB, pb);
+            maxB = Math.max(maxB, pb);
+          }
+          // Touching is apart: half-open strips share no point along an edge.
+          if (maxA <= minB || maxB <= minA) return false;
+        }
+      }
+    }
+    return true;
   }
 
   /** Each vertex's normal: across the profile × along the front, by central differences (one-sided at the edges). */

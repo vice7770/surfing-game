@@ -40,6 +40,14 @@ export interface ProfileQuery {
   footDepth: number;
   /** τ, s. */
   seconds: number;
+  /**
+   * What the profile is for after touchdown (the advisor, 2026-09-30); none takes every case at τ as it is.
+   * - `drawing`: the slice keeps its touchdown frame from then on, the visual event.
+   * - `contact`: each case also keeps its own held frame (`heldFrame`: the jet off the face, the void open) from its
+   *   hold, so the contact never uses a case past its clear frame but follows the drawing until then. The lip's
+   *   velocity is each case's at τ until touchdown, the real water still moving; from touchdown, its held frame's.
+   */
+  hold?: 'drawing' | 'contact';
 }
 
 export interface ProfileLookup {
@@ -56,8 +64,8 @@ export interface ProfileLookup {
   tipAlong: number;
   tipUp: number;
   /**
-   * The last clear τ, s: the earlier of the two blended cases' held frames (`heldFrame`), where the jet stands off the
-   * face and the void is open, so the contact holds its geometry there after touchdown, never self-crossing.
+   * When the contact's profile stops moving, s: each blended case holds from its own held frame (`heldFrame`: the jet
+   * off the face, the void open), so the later of the two, or touchdown if sooner.
    */
   clearSeconds: number;
   /**
@@ -151,6 +159,7 @@ export class ProfileLibrary {
   private readonly scratch = new Float32Array(FLOATS);
   private readonly tipLower = new Float64Array(2);
   private readonly tipUpper = new Float64Array(2);
+  private readonly times = new Float64Array(4);
 
   constructor(readonly cases: readonly BarrelCase[]) {
     const groups = new Map<number, BarrelCase[]>();
@@ -163,16 +172,17 @@ export class ProfileLibrary {
   profileAt(query: ProfileQuery, out: Float32Array): ProfileLookup {
     const b = this.bracket(query);
     const tau = query.seconds / b.unit;
-    this.frameAt(b.lower, tau, out);
+    const times = this.caseTimes(b, tau, query.hold);
+    this.frameAt(b.lower, times[0], out);
     if (b.upper !== b.lower) {
-      this.frameAt(b.upper, tau, this.scratch);
+      this.frameAt(b.upper, times[1], this.scratch);
       for (let i = 0; i < FLOATS; i += 1) out[i] += b.weight * (this.scratch[i] - out[i]);
     }
     for (let i = 0; i < FLOATS; i += 1) out[i] *= b.scale;
     const tip = this.tipLower;
-    this.tipAt(b.lower, tau, tip);
+    this.tipAt(b.lower, times[2], tip);
     if (b.upper !== b.lower) {
-      this.tipAt(b.upper, tau, this.tipUpper);
+      this.tipAt(b.upper, times[3], this.tipUpper);
       tip[0] += b.weight * (this.tipUpper[0] - tip[0]);
       tip[1] += b.weight * (this.tipUpper[1] - tip[1]);
     }
@@ -184,6 +194,22 @@ export class ProfileLibrary {
       touchdownSeconds: b.touchdown * b.unit, frameSeconds: b.frameStep * b.unit,
       tipAlong: tip[0] * speed, tipUp: tip[1] * speed, clearSeconds: b.clear * b.unit, collapseSeconds: b.collapse,
     };
+  }
+
+  /** One profile point's place in a slice's profile, m (along, up), into `out`: as `profileAt` would place it. */
+  pointAt(query: ProfileQuery, point: number, out: Float64Array): void {
+    const b = this.bracket(query);
+    const times = this.caseTimes(b, query.seconds / b.unit, query.hold);
+    this.landmarkAt(b.lower, times[0], point, out);
+    const x = out[0];
+    const y = out[1];
+    if (b.upper !== b.lower) {
+      this.landmarkAt(b.upper, times[1], point, out);
+      out[0] = x + b.weight * (out[0] - x);
+      out[1] = y + b.weight * (out[1] - y);
+    }
+    out[0] *= b.scale;
+    out[1] *= b.scale;
   }
 
   /** A slice's scale and times, s, as `profileAt` finds them, without building its profile (the loft's refinement and budget). */
@@ -241,13 +267,44 @@ export class ProfileLibrary {
     const heldUpper = this.heldFrameOf(upper);
     // The void's height, m: the held frames' blended by the cases' weights, scaled by h0.
     const voidHeight = (heldLower.voidHeight + weight * (heldUpper.voidHeight - heldLower.voidHeight)) * scale;
+    const touchdown = lower.touchdown + weight * (upper.touchdown - lower.touchdown);
     return {
-      lower, upper, weight, clamped, scale, unit: Math.sqrt(scale / GRAVITY),
-      touchdown: lower.touchdown + weight * (upper.touchdown - lower.touchdown),
+      lower, upper, weight, clamped, scale, unit: Math.sqrt(scale / GRAVITY), touchdown,
       frameStep: lower.tauStep + weight * (upper.tauStep - lower.tauStep),
-      clear: Math.min(heldLower.tau, heldUpper.tau),
+      heldLower: heldLower.tau, heldUpper: heldUpper.tau,
+      clear: Math.min(touchdown, Math.max(heldLower.tau, heldUpper.tau)),
       collapse: Math.sqrt((2 * voidHeight) / GRAVITY),
     };
+  }
+
+  /**
+   * Each blended case's τ for the slice's geometry and for its tip's velocity (lower, upper; then their tips), at the
+   * slice's τ and hold (`ProfileQuery.hold`).
+   */
+  private caseTimes(b: ReturnType<ProfileLibrary['bracket']>, tau: number, hold: ProfileQuery['hold']): Float64Array {
+    const times = this.times;
+    const after = tau > b.touchdown;
+    const shape = hold !== undefined && after ? b.touchdown : tau;
+    const contact = hold === 'contact';
+    times[0] = contact ? Math.min(shape, b.heldLower) : shape;
+    times[1] = contact ? Math.min(shape, b.heldUpper) : shape;
+    // The lip moves on until touchdown, the real water still moving; from then on, its frame's.
+    times[2] = after && hold !== undefined ? times[0] : tau;
+    times[3] = after && hold !== undefined ? times[1] : tau;
+    return times;
+  }
+
+  /** One case's profile point at τ (√(h0/g)), h0, into `out`, linear between frames as `frameAt`. */
+  private landmarkAt(c: BarrelCase, tau: number, point: number, out: Float64Array): void {
+    const count = c.frames.length / FLOATS;
+    const position = Math.min(count - 1, Math.max(0, (tau - c.tauStart) / c.tauStep));
+    const f = Math.floor(position);
+    const next = Math.min(count - 1, f + 1);
+    const t = position - f;
+    for (let k = 0; k < 2; k += 1) {
+      const a = c.frames[f * FLOATS + 2 * point + k];
+      out[k] = a + t * (c.frames[next * FLOATS + 2 * point + k] - a);
+    }
   }
 
   /** One case's profile at τ (√(h0/g)), linear between its two nearest frames, clamped to its first and last. */

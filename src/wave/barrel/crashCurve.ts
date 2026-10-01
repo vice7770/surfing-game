@@ -37,6 +37,9 @@ export interface CrashSlice {
   /** The lifted band's reach along the ray from the anchor, m: the drawn curl's footprint (the whitewater gate). */
   reachBack: number;
   reachFront: number;
+  /** The drawn slice's whole reach along the ray, its extensions included, m: the loft judges overlapping fronts on it. */
+  footBack: number;
+  footFront: number;
   /** The held frame's overturn, blended and scaled: the jet's and void's cross-sections (m²), the void's length (m) and axis (forward, down); W = g·collapse²/2, m. */
   jetArea: number;
   voidArea: number;
@@ -49,7 +52,7 @@ export interface CrashSlice {
 export function createCrashSlice(): CrashSlice {
   return {
     rayX: 0, rayZ: 1, width: 0, endWeight: 0, scale: 0, touchdown: 0, clear: 0, collapse: 0, anchorX: 0, anchorZ: 0, fade: 1, weight: 0,
-    tipX: 0, tipY: 0, tipZ: 0, crestX: 0, crestY: 0, crestZ: 0, landX: 0, landY: 0, landZ: 0, reachBack: 0, reachFront: 0,
+    tipX: 0, tipY: 0, tipZ: 0, crestX: 0, crestY: 0, crestZ: 0, landX: 0, landY: 0, landZ: 0, reachBack: 0, reachFront: 0, footBack: 0, footFront: 0,
     jetArea: 0, voidArea: 0, voidLength: 0, axisX: 1, axisY: 0, voidHeight: 0,
   };
 }
@@ -145,9 +148,8 @@ export class CrashCurve {
     into.endWeight = d <= 0 ? 0 : r * r * (3 - 2 * r);
     // The drawn frame: the touchdown frame from touchdown on (PR 4), faded over the tube's collapse.
     const query = { slope: this.slope, footHeight: p.footHeight, footDepth: p.footDepth };
-    const times = this.library.profileTimes(query);
     const profile = this.profile;
-    const lookup = this.library.profileAt({ ...query, seconds: Math.min(tau, times.touchdownSeconds) }, profile);
+    const lookup = this.library.profileAt({ ...query, seconds: tau, hold: 'drawing' }, profile);
     const touchdown = lookup.touchdownSeconds;
     into.scale = lookup.scale;
     into.touchdown = touchdown;
@@ -228,7 +230,7 @@ export class CrashCurve {
     into.landX = place(landAlong, landAbove, landPin, 'x');
     into.landY = place(landAlong, landAbove, landPin, 'y', into.endWeight);
     into.landZ = place(landAlong, landAbove, landPin, 'z');
-    // The lifted band's reach.
+    // The lifted band's reach (the whitewater gate), and the drawn slice's own with its extensions (overlapping fronts).
     let back = Infinity;
     let front = -Infinity;
     for (let i = LOFT.pinned; i <= LAST - LOFT.pinned; i += 1) {
@@ -238,6 +240,8 @@ export class CrashCurve {
     }
     into.reachBack = back;
     into.reachFront = front;
+    into.footBack = profile[0] - LOFT.extension;
+    into.footFront = profile[2 * LAST] + LOFT.extension;
     // The held overturn, blended as the frames are, scaled by h0.
     const blend = this.library.caseBlend(query);
     const o = blendOverturn(this.overturnOf(blend.lower), this.overturnOf(blend.upper), blend.weight);
@@ -256,16 +260,22 @@ export class CrashCurve {
     return this.library.profileTimes({ slope: this.slope, footHeight: point.footHeight, footDepth: point.footDepth });
   }
 
-  /** The held frame's tip velocity along the ray and up (m/s), and the drawn crest's speed over the CREST_FRAMES frames before it (m/s). */
+  /**
+   * The held lip's velocity along the ray and up (m/s): each blended case's at its own held frame, as the contact holds it
+   * after touchdown (the advisor's PR 4 rulings: the held frame's velocity through the collapse). And the drawn crest's
+   * speed along the ray (m/s), over the CREST_FRAMES frames before touchdown.
+   */
   jetMotion(point: FrontPoint, into: JetMotion): JetMotion {
     const query = { slope: this.slope, footHeight: point.footHeight, footDepth: point.footDepth };
     const times = this.library.profileTimes(query);
-    const held = this.library.profileAt({ ...query, seconds: times.clearSeconds }, this.profile);
+    const held = this.library.profileAt({ ...query, seconds: times.touchdownSeconds + times.frameSeconds, hold: 'contact' }, this.earlier);
     into.tipAlong = held.tipAlong;
     into.tipUp = held.tipUp;
     const span = CREST_FRAMES * times.frameSeconds;
-    this.library.profileAt({ ...query, seconds: times.clearSeconds - span }, this.earlier);
-    into.crestSpeed = span > 0 ? (this.profile[2 * LANDMARK.crest] - this.earlier[2 * LANDMARK.crest]) / span : 0;
+    this.library.profileAt({ ...query, seconds: times.touchdownSeconds - times.frameSeconds }, this.profile);
+    const late = this.profile[2 * LANDMARK.crest];
+    this.library.profileAt({ ...query, seconds: times.touchdownSeconds - times.frameSeconds - span }, this.earlier);
+    into.crestSpeed = span > 0 ? (late - this.earlier[2 * LANDMARK.crest]) / span : 0;
     return into;
   }
 

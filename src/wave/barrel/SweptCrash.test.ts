@@ -152,6 +152,23 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     expect(s.whitewater.every((value) => value === 1)).toBe(true);
   });
 
+  it('throws nothing under an earlier front’s barrel, as the drawing shows that one (first wins)', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver);
+    const crash = new SweptCrash(library(), 0.05);
+    // A second front 2 m shoreward of the first, in the same columns: its footprint lies inside the first's.
+    const behind = front(9, () => 0.01).map((p) => ({ ...p, id: p.id + 100, front: 2, z: 13.5, throwZ: 13.5 }));
+    crash.update([...front(9, () => 0.01), ...behind], sea(solver, lip));
+    expect(crash.counts.throws).toBe(7);
+    expect(crash.counts.covered).toBe(9);
+    expect(behind.every((p) => p.jetStrip === -1)).toBe(true);
+    // Apart, both throw.
+    const apart = new SweptCrash(library(), 0.05);
+    const far = front(9, () => 0.01).map((p) => ({ ...p, id: p.id + 100, front: 2, z: 25.5, throwZ: 25.5 }));
+    apart.update([...front(9, () => 0.01), ...far], sea(basin(), new PlungingLip(basin())));
+    expect(apart.counts.covered).toBe(0);
+  });
+
   it('uses only + − × ÷ and √ (online determinism)', () => {
     expect(readFileSync('src/wave/barrel/SweptCrash.ts', 'utf8')).not.toMatch(/Math\.(sin|cos|tan|exp|log|pow|hypot|atan|cbrt)/);
   });

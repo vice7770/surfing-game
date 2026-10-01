@@ -41,6 +41,8 @@ export interface CrashCounts {
   crashes: number;
   late: number;
   missed: number;
+  /** Points whose throw came under an earlier front's barrel, which the drawing shows instead (first wins): no jet. */
+  covered: number;
   /** Cells whose breaking the whitewater waited on, summed over steps. */
   gated: number;
 }
@@ -66,17 +68,25 @@ export interface CrashCounts {
  */
 export class SweptCrash {
   readonly counts: CrashCounts = {
-    onsets: 0, throws: 0, asked: 0, thrown: 0, starved: 0, starvedVolume: 0, crashes: 0, late: 0, missed: 0, gated: 0,
+    onsets: 0, throws: 0, asked: 0, thrown: 0, starved: 0, starvedVolume: 0, crashes: 0, late: 0, missed: 0, covered: 0, gated: 0,
   };
   /** This step's crash curve: the points pouring. */
   readonly curve: CrashPoint[] = [];
   /** The crash's own time, ms, summed over its updates (a diagnostic). */
   updateMs = 0;
   private readonly geometry: CrashCurve;
-  private readonly slice = createCrashSlice();
   private readonly foreseen = createCrashSlice();
   private readonly motion: JetMotion = { tipAlong: 0, tipUp: 0, crestSpeed: 0 };
   private readonly pool: CrashPoint[] = [];
+  /** This step's drawn fronts, as [start, end) pairs of point indices. */
+  private readonly runs: number[] = [];
+  /** Per point this step: as drawn; whether it is live (before its collapse ends), and under an earlier front's barrel. */
+  private slices: CrashSlice[] = [];
+  private live = new Uint8Array(0);
+  private covered = new Uint8Array(0);
+  /** Per point, its strip's footprint: corners (x, z × 4) and box (x0, x1, z0, z1), as the loft judges overlaps. */
+  private corners = new Float64Array(0);
+  private boxes = new Float64Array(0);
 
   constructor(library: ProfileLibrary, slope: number) {
     this.geometry = new CrashCurve(library, slope);
@@ -89,23 +99,47 @@ export class SweptCrash {
     sea.whitewater.set(sea.strength);
     const { solver } = sea;
     const heightAt = (x: number, z: number) => solver.sampleCentered(solver.h, x, z) + solver.sampleCentered(solver.bed, x, z);
-    let throws = 0;
-    let volume = 0;
+    // The fronts the loft draws: two points or more, not bunched at one σ.
+    const runs = this.runs;
+    runs.length = 0;
     let start = 0;
     while (start < points.length) {
       let end = start + 1;
       while (end < points.length && points[end].front === points[start].front) end += 1;
-      // A front of one point, or bunched at one σ, has no barrel (the loft draws none).
-      if (end - start >= 2 && points[end - 1].sigma - points[start].sigma > 1e-6) {
-        for (let k = start; k < end; k += 1) {
-          const thrown = this.advance(points, start, end, k, sea, heightAt);
-          if (thrown > 0) {
-            throws += 1;
-            volume += thrown;
+      if (end - start >= 2 && points[end - 1].sigma - points[start].sigma > 1e-6) runs.push(start, end);
+      start = end;
+    }
+    // Each live point as drawn, and its footprint.
+    this.reserve(points.length);
+    for (let r = 0; r < runs.length; r += 2) {
+      for (let k = runs[r]; k < runs[r + 1]; k += 1) {
+        const p = points[k];
+        // Past its tube's collapse a point has nothing left to do (most of a front: the bore behind the barrel).
+        const times = this.geometry.times(p);
+        this.live[k] = p.tau < times.touchdownSeconds + times.collapseSeconds ? 1 : 0;
+        if (!this.live[k]) {
+          if (p.jetStrip === undefined) {
+            // Its lip was never drawn: no jet lands.
+            p.jetStrip = -1;
+            this.counts.missed += 1;
           }
+          continue;
+        }
+        this.footprint(k, this.geometry.slice(points, runs[r], runs[r + 1], k, sea.stillLevel, heightAt, this.slices[k]));
+      }
+    }
+    this.dropOverlaps(runs);
+    let throws = 0;
+    let volume = 0;
+    for (let r = 0; r < runs.length; r += 2) {
+      for (let k = runs[r]; k < runs[r + 1]; k += 1) {
+        if (!this.live[k]) continue;
+        const thrown = this.advance(points, runs[r], runs[r + 1], k, sea, heightAt);
+        if (thrown > 0) {
+          throws += 1;
+          volume += thrown;
         }
       }
-      start = end;
     }
     this.updateMs += performance.now() - started;
     return { throws, volume };
@@ -114,23 +148,21 @@ export class SweptCrash {
   /** Point k's step: the gate, the throw, the crash and the pour. Returns the water it threw. */
   private advance(points: FrontPoint[], start: number, end: number, k: number, sea: CrashSea, heightAt: (x: number, z: number) => number): number {
     const p = points[k];
-    // Past its tube's collapse a point has nothing left to do (most of a front: the bore behind the barrel).
-    const times = this.geometry.times(p);
-    if (p.tau >= times.touchdownSeconds + times.collapseSeconds) {
-      if (p.jetStrip === undefined) {
-        // Its lip was never drawn: no jet lands.
-        p.jetStrip = -1;
-        this.counts.missed += 1;
-      }
-      return 0;
-    }
-    const s = this.geometry.slice(points, start, end, k, sea.stillLevel, heightAt, this.slice);
-    if (p.tau < s.touchdown && s.endWeight > 0) this.gate(p, s, sea);
+    const s = this.slices[k];
+    // Under an earlier front's barrel the drawing shows that one: this point's curl is not drawn (first wins).
+    const drawn = this.covered[k] === 0;
+    if (drawn && p.tau < s.touchdown && s.endWeight > 0) this.gate(p, s, sea);
     let thrown = 0;
     let throwing = false;
     if (p.jetStrip === undefined && p.tau >= 0) {
-      thrown = this.throwJet(points, start, end, k, s, sea, heightAt);
-      throwing = true;
+      if (drawn) {
+        thrown = this.throwJet(points, start, end, k, s, sea, heightAt);
+        throwing = true;
+      } else {
+        // Water that was never drawn doesn't land.
+        p.jetStrip = -1;
+        this.counts.covered += 1;
+      }
     }
     const strip = p.jetStrip ?? -1;
     if (strip >= 0 && p.crashedAt === undefined && p.tau >= s.touchdown) {
@@ -197,6 +229,103 @@ export class SweptCrash {
     const left = s.collapse > 0 ? Math.max(0, 1 - (p.tau - s.touchdown) / s.collapse) : 0;
     point.air = s.voidArea * s.width * s.endWeight * left * left;
     this.curve.push(point);
+  }
+
+  /** Room for `count` points' slices and footprints. */
+  private reserve(count: number): void {
+    while (this.slices.length < count) this.slices.push(createCrashSlice());
+    if (this.live.length < count) {
+      const size = Math.max(count, 2 * this.live.length);
+      this.live = new Uint8Array(size);
+      this.covered = new Uint8Array(size);
+      this.corners = new Float64Array(8 * size);
+      this.boxes = new Float64Array(4 * size);
+    }
+    this.live.fill(0, 0, count);
+    this.covered.fill(0, 0, count);
+  }
+
+  /**
+   * Point k's strip's footprint, as the loft judges overlapping fronts on its strips: the drawn reach, its extensions
+   * included, from its anchor along its ray, half its share of the front either side along the front.
+   */
+  private footprint(k: number, s: CrashSlice): void {
+    const { corners, boxes } = this;
+    // The front's tangent, from its shoreward normal: n = (−t_z, t_x).
+    const tx = s.rayZ;
+    const tz = -s.rayX;
+    const half = s.width / 2;
+    let c = 8 * k;
+    for (const side of [-half, half]) {
+      for (const reach of [s.footBack, s.footFront]) {
+        corners[c] = s.anchorX + side * tx + reach * s.rayX;
+        corners[c + 1] = s.anchorZ + side * tz + reach * s.rayZ;
+        c += 2;
+      }
+    }
+    const b = 4 * k;
+    boxes[b] = Infinity;
+    boxes[b + 1] = -Infinity;
+    boxes[b + 2] = Infinity;
+    boxes[b + 3] = -Infinity;
+    for (let i = 0; i < 4; i += 1) {
+      boxes[b] = Math.min(boxes[b], corners[8 * k + 2 * i]);
+      boxes[b + 1] = Math.max(boxes[b + 1], corners[8 * k + 2 * i]);
+      boxes[b + 2] = Math.min(boxes[b + 2], corners[8 * k + 2 * i + 1]);
+      boxes[b + 3] = Math.max(boxes[b + 3], corners[8 * k + 2 * i + 1]);
+    }
+  }
+
+  /**
+   * Overlapping fronts, as the loft drops them (PR 4: the first front wins, in the drawing and the contact alike): a
+   * later front's point whose footprint overlaps a live, uncovered point of an earlier front is covered.
+   */
+  private dropOverlaps(runs: readonly number[]): void {
+    const { boxes } = this;
+    const apart = (i: number, j: number) =>
+      boxes[i + 1] < boxes[j] || boxes[j + 1] < boxes[i] || boxes[i + 3] < boxes[j + 2] || boxes[j + 3] < boxes[i + 2];
+    for (let later = 2; later < runs.length; later += 2) {
+      for (let earlier = 0; earlier < later; earlier += 2) {
+        for (let k = runs[later]; k < runs[later + 1]; k += 1) {
+          if (!this.live[k] || this.covered[k]) continue;
+          for (let j = runs[earlier]; j < runs[earlier + 1]; j += 1) {
+            if (!this.live[j] || this.covered[j] || apart(4 * k, 4 * j) || !this.hullsOverlap(8 * k, 8 * j)) continue;
+            this.covered[k] = 1;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  /** Whether two footprints overlap: the convex hulls of their four corners each, by separating axes (the loft's test). */
+  private hullsOverlap(a: number, b: number): boolean {
+    const c = this.corners;
+    for (let hull = 0; hull < 2; hull += 1) {
+      const base = hull === 0 ? a : b;
+      for (let i = 0; i < 4; i += 1) {
+        for (let j = i + 1; j < 4; j += 1) {
+          const ax = c[base + 2 * i + 1] - c[base + 2 * j + 1];
+          const az = c[base + 2 * j] - c[base + 2 * i];
+          if (ax === 0 && az === 0) continue;
+          let minA = Infinity;
+          let maxA = -Infinity;
+          let minB = Infinity;
+          let maxB = -Infinity;
+          for (let k = 0; k < 4; k += 1) {
+            const pa = c[a + 2 * k] * ax + c[a + 2 * k + 1] * az;
+            const pb = c[b + 2 * k] * ax + c[b + 2 * k + 1] * az;
+            minA = Math.min(minA, pa);
+            maxA = Math.max(maxA, pa);
+            minB = Math.min(minB, pb);
+            maxB = Math.max(maxB, pb);
+          }
+          // Touching is apart, as the loft's half-open strips share no point.
+          if (maxA <= minB || maxB <= minA) return false;
+        }
+      }
+    }
+    return true;
   }
 
   /** The point's column, over the drawn curl's footprint: the whitewater waits for its touchdown. */
