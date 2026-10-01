@@ -13,6 +13,7 @@
  *   npm run report:ride -- --spots point --minutes 5 --out /tmp/point.md
  *   npm run report:ride -- --practice --ghosts --style turns
  *   npm run report:ride -- --practice --ghosts --style turns --spots canyon --bottom-face 0.55 --turn-limit 3
+ *   npm run report:ride -- --practice --ghosts --style turns --spots canyon --seeds 1 --first-seed 2 (seeds in parallel)
  */
 import { writeFileSync } from 'node:fs';
 import { Quaternion, Vector3 } from 'three';
@@ -40,6 +41,8 @@ const option = (name: string): string | undefined => {
 const argument = (name: string, fallback: number): number => Number(option(name) ?? fallback);
 const flag = (name: string): boolean => process.argv.includes(`--${name}`);
 const seedCount = argument('seeds', 2);
+/** `--first-seed N` starts at seed N, so seeds can run in parallel processes. */
+const firstSeed = argument('first-seed', 1);
 const minutes = argument('minutes', 3);
 // Reshape the Reef for this run: `--reef angle=50,crestZ=-125` (the design sweep).
 applyReefShape(option('reef'));
@@ -412,7 +415,7 @@ for (const spot of spots) {
   let lostWave = 0;
   const weights = new Map<string, number[]>();
   const feetShares = new Map<string, number[]>();
-  for (let seed = 1; seed <= seedCount; seed += 1) {
+  for (let seed = firstSeed; seed < firstSeed + seedCount; seed += 1) {
     const run = runSpot(spot, seed);
     all.push(...run.rides);
     attempts += run.attempts;

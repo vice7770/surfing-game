@@ -57,6 +57,15 @@ describe('the aeration field', () => {
     expect(field.air[solver.cellIndex(0.5, 0.5)]).toBeLessThan(0.3 / 4);
   });
 
+  it('holds no air from a plunge or a tube past the window\'s open edge', () => {
+    // The grid's lookup would put all of it in the edge column (x 19.5), lightening the water under a rider there.
+    const solver = flatSolver();
+    const field = new AerationField(solver);
+    field.addPlunge(22.4, 0.5, 900, 1.2);
+    field.addAir(-22.4, 0.5, 0.3, 1.2);
+    expect(moments(field, solver).total).toBe(0);
+  });
+
   it('never plunges deeper than the water', () => {
     const field = new AerationField(flatSolver(0.5));
     field.addPlunge(0.5, 0.5, 900, 1.2);

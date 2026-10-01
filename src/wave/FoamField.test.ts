@@ -141,6 +141,14 @@ describe('FoamField', () => {
     expect(foam.dense[cell + solver.nx]).toBe(0);
   });
 
+  it('leaves the window alone where a lip splashes down past its open edge', () => {
+    // The grid's lookup would put it in the edge column (x 39.5): a jet that flew out painted that cell white.
+    const solver = flatSolver();
+    const foam = new FoamField(solver, lasting);
+    foam.addSplash(42.4, 0.3, 0.7);
+    expect(Math.max(...foam.dense)).toBe(0);
+  });
+
   it('keeps foam on the same water when the window slides along shore', () => {
     const solver = flatSolver();
     const foam = new FoamField(solver, lasting);

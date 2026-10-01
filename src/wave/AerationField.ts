@@ -146,9 +146,11 @@ export class AerationField {
   /**
    * `volume` m³ of air over the wet cells whose centres lie within `radius` of
    * (x, z) (always the cell it lands in), evenly per square metre, each down to
-   * `radius` or its water's depth.
+   * `radius` or its water's depth. None from past an open edge: the plunge was
+   * outside the window, and its cell would be the edge column's.
    */
   private spread(x: number, z: number, volume: number, radius: number): void {
+    if (this.solver.beyondOpenEdge(x)) return;
     const { nx, nz, xCenters, zCenters, dx, dz, h } = this.solver;
     const centre = this.solver.cellIndex(x, z);
     const column = centre % nx;
