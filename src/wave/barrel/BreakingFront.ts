@@ -68,6 +68,8 @@ export interface CrestTrack {
   /** With `FrontOptions.joinPast`: its crest's z where it crossed its throw depth unbroken, m, and its wave's height there, m. */
   passedZ?: number;
   passedWave?: number;
+  /** How many times it continued as a crest ahead of the one nearest it (`FrontOptions.jumpReach`); absent: none (a diagnostic). */
+  jumped?: number;
 }
 
 export interface FrontPoint {
@@ -102,6 +104,8 @@ export interface FrontPoint {
   tau: number;
   /** The still depth where its crest first rose at Kennedy's fresh onset, m; null until then (a diagnostic of the join table). */
   fresh: number | null;
+  /** How many times its crest's track jumped ahead before it joined (`CrestTrack.jumped`); absent: none (a diagnostic). */
+  jumped?: number;
   /** When it was last seen, s. */
   seen: number;
 }
@@ -184,7 +188,8 @@ export class BreakingFront {
     const points: FrontPoint[] = [];
     const tracks: CrestTrack[] = [];
     const { h0 } = this.timing;
-    const leading = this.options.jumpReach === undefined ? undefined : this.leadingCrests(samples, count, tracksOf, pointsOf, followed);
+    const jumped = new Set<CrestTrack>();
+    const leading = this.options.jumpReach === undefined ? undefined : this.leadingCrests(samples, count, tracksOf, pointsOf, followed, jumped);
     for (let k = 0; k < count; k += 1) {
       const s = samples[k];
       // On a front: it stays while its segment breaks at all.
@@ -218,6 +223,7 @@ export class BreakingFront {
       }
       followed.add(track);
       const next: CrestTrack = { ...track, z: s.z, depth: s.depth, seen: time, fresh: track.fresh ?? (s.rise >= FRESH ? s.depth : null) };
+      if (jumped.has(track)) next.jumped = (track.jumped ?? 0) + 1;
       // Its highest over the band; past the band, the first reading if it crossed the band between two steps.
       const [deeper, shallower] = this.timing.band;
       if (track.footHeight !== null && s.depth <= deeper && (s.depth >= shallower || next.refHeight === null)) {
@@ -254,6 +260,7 @@ export class BreakingFront {
             footHeight: next.footHeight, footDepth: this.timing.h0,
             // Its clock starts at the library's earliest frame; the first advance puts it where the fit does.
             broke: time, tau: this.timing.earliest, seen: time, fresh: next.fresh,
+            ...(next.jumped ? { jumped: next.jumped } : {}),
           });
           continue;
         }
@@ -280,7 +287,7 @@ export class BreakingFront {
    */
   private leadingCrests(
     samples: readonly CrestSample[], count: number, tracksOf: Map<number, CrestTrack[]>, pointsOf: Map<number, FrontPoint[]>,
-    followed: Set<CrestTrack>,
+    followed: Set<CrestTrack>, jumped: Set<CrestTrack>,
   ): Map<CrestSample, CrestTrack> {
     const leading = new Map<CrestSample, CrestTrack>();
     const reach = this.options.jumpReach!;
@@ -306,6 +313,7 @@ export class BreakingFront {
         if (!furthest) continue;
         if (furthest !== nearest) {
           this.jumps += 1;
+          jumped.add(track);
           if (furthest.z - track.z <= JUMP_WAVES * furthest.wave) this.waveJumps += 1;
         }
         leading.set(furthest, track);
