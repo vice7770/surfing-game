@@ -64,6 +64,17 @@ The probe is `src/wave/probes/pool.probe.test.ts`, run with `PROBE=1 LOG=… npx
    - **b = 10's peak:** faces were about 1.4 times the arm's in the column runs, past the advisor's 1.25.
    - **Kept: b = 15.** Riders wait at x 27, just past the tip's fast section, where the arm is about 1.5 times the wave's height deep.
 
+## The bed as built, against the design
+
+Mapped after the sweep: seaward of the terrace's edge, the finger's faces run on at their 1:18 normal gradient instead of stopping at the terrace. In front of the finger (|x| under about 90 m) the approach is therefore gentler than the 1:9 ramp. At |x| 20 it runs at about 1:40 along the waves' path, and the zone's inner edge is 4–8 m deep instead of 9 m; the tank blends it into the feed over 10 m. Clear of the finger the ramp and terrace are as designed.
+
+Every measurement above was made on this bed:
+- the waves repeat to 0.1 s along the arm;
+- the arms match;
+- the runs stay stable.
+
+So it is kept, as found. It probably adds to the focus on the tip.
+
 ## Cost
 
 The pool's tank (a 250 m window, the fine grid from the terrace, a 9 m feed) runs at about 0.3× real time on the M1's CPU alone, and 0.08–0.13× with other runs beside it. The game steps stage 2 on the GPU where WebGPU allows.

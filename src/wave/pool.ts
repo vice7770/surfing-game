@@ -19,6 +19,10 @@ import { SeaState } from './SeaState';
  *   tip), so the arms' longer outer run stays in the tank with its peel still about 46°. Refraction turns the
  *   crests toward the arms, so arms at 71° break at a peel angle of about 47–50° along them (measured): Scarfe's
  *   46–55° for intermediates' standard manoeuvres, about 6–6.5 m/s at 1.1–1.25 m faces;
+ * - seaward of the terrace's edge the finger's faces run on at their gradient instead of stopping at the terrace,
+ *   so in front of the finger (|x| under about 90 m) the approach is gentler than the ramp, about 1:40 along the
+ *   waves' path at |x| 20 down to 4–8 m at the zone's inner edge, where the tank blends it into the feed over 10 m.
+ *   Found after the sweep: every measurement was made on this bed, and it gathers the waves onto the finger;
  * - its face climbs at `gradient` square to the crest line, about 1:18: Mead & Black's orthogonal gradient of about
  *   1:28 along the ray at breaking, which crosses the arms at about 50° (their intensity about 2.6–2.8, a face that
  *   throws without a tube; set along +z it made the arms about 1:9 and tubed), to its crest: `crestDepth` deep at
