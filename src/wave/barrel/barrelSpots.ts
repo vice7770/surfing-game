@@ -53,7 +53,9 @@ const REEF_ONSET: OnsetTables = {
     { period: 17, rows: [[0.89, 4.17], [1.72, 5.36], [2.46, 2.02], [2.92, 3.21]] },
   ],
   throwDepth: { intercept: 0, slope: 1.928 / 2.127, heights: [0, Infinity] },
-  get floor() { return REEF.crestDepth; },
+  // A centimetre over the top: the pass's Gaussian tail lifts the flat's still depth by up to 0.4 mm across the window,
+  // so a floor at exactly 1.5 m was never crossed on the top (a numerical margin, not a physical one).
+  get floor() { return REEF.crestDepth + 0.01; },
 };
 
 /**
