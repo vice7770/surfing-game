@@ -90,9 +90,12 @@ Read in this order:
   - **PR 6:** the Rich shading, a lip glow and a dark throat.
   - **PR 7:** every spot switches, and the old lip and tube code is deleted. The Reef switches only after the Reef session agrees and the owner has looked.
 - **The rest of Part B, handed to agents on the M1 (2026-10-01, at the owner's request):**
-  - **The curl's colour fix,** from [tube-colour-fix.md](tube-colour-fix.md), then PR 6 (the Rich lip glow and dark throat), on `claude/padang-curl-colour` and `claude/padang-rich-shading`. It diagnoses the curl's ribbons and slab first.
+  - **The curl's colour fix: PR #103** (`claude/padang-curl-colour` into `claude/padang-contact`).
+    - **The navy was PR 3's triangle winding.** Now the curl rests on the solver's water outside its lifted span, and the lip is a thin sheet lit from behind.
+    - **Open item:** front-lit at a high sun, it's re-checked after PR 6.
+    - **PR 6** (the Rich lip glow and dark throat) follows on `claude/padang-rich-shading`.
   - **PR 4's remaining items** (the handoff's advisor items 1–7, and the probe rerun) on `claude/padang-contact` (#95).
-  - **PR 5,** the crash curve, parcels and sound, on `claude/padang-crash`. Its plan comes to the advisor first.
+  - **PR 5: PR #102,** the crash curve, the pour and the sound (`claude/padang-crash` into `claude/padang-contact`). Its probes were still running when it opened.
   - **PR 7's preparation** is on `claude/padang-every-spot`, with no change in behaviour: each spot's cases and `BARREL_SLOPE`, the switch mechanics, and the deletion map. The Reef's two libraries are built (`periodic-runs.md` §9); the Canyon, Point and Beach need runs, and gentle beaches need level 13 on the M4 Pro. The flip itself waits for the owner's look and the Reef session, and the deletion waits for PR 5.
   - **Merges:** the auto-mode check refuses this session's `gh pr merge`, even after a review and the owner's standing "check and merge" (2026-10-01). The owner merges, or adds a Bash allow rule for `gh pr merge`.
   - **One advisor branch:** on 2026-09-30/10-01 a second advisor session on the other machine wrote the colour fix on `main-sshdns`, and it was merged into this branch (d72cbe8). Before continuing, merge any other advisor branch's commits, so the consult log stays one record.
