@@ -236,7 +236,7 @@ The drawn curl as shaded (Part B, after the owner's clip of PR 3 on the M4 Pro: 
 
   - The wall the ease climbs drops to a third, 3.5–5.5 m further ahead. The trough's deepest point under the solver's water is the toe's, as before; the held trough hides the water above it.
   - In H (the crest over the toe) the ease ends 3.2 (Practice), 2.6 (Medium) and 1.3 (Big) past the toe at the median.
-  - **From curl-close the tube shows, the camera above both waters.** Practice: 0.49 m over the solver's water and 1.19 m over the drawn trough, 6,537 px of back wall (3,592 px before). Medium, 7.5 s on: 0.31 m and 1.38 m, 6,807 px. Big: 2.8 m and 5.2 m, 211,541 px.
+  - **From curl-close the tube shows, the camera above both waters.** Practice: 0.49 m over the solver's water and 1.19 m over the drawn trough, 6,537 px of the back wall a formed lip covers (3,592 px before; PR 6's region view). Medium, 7.5 s on: 0.31 m and 1.38 m, 6,807 px. Big: 2.8 m and 5.2 m, 211,541 px.
   - **The face water in the luminance check changes.** At curl-close the held trough now covers the water around the curl. The solver's own pixels left in view are about 300 distant, sky-bright ones at the far edge (0.69–0.80 at 48°), so lip ÷ face water drops (Practice, Rich: backlit 48° 0.62×, backlit 6° 1.12×). The lip itself is unchanged (0.429 and 0.630). Against the curl's own held trough (0.21–0.22) the backlit lip at 48° is 1.9×.
   - Overlaps: 0–4 a frame at Big (none open), 0–2 at Medium, none at Practice.
   - The forward readings: 250–310 a frame at Practice, 510–870 at Medium, 830–1,750 at Big.
