@@ -129,7 +129,7 @@ Read in this order:
 - **The Wave Pool spot (the "Movement mapping prototype" session, spec `docs/superpowers/specs/2026-09-30-movement-flow-wave-pool.md` on `claude/wave-pool`):** ruled on 2026-10-01 (see the consult log). Waiting for its sweep: the arms' angle against the peel meter, faces left and right, and whether the waves stay identical over 5 minutes.
 
 - **Part B follow-ups, ruled but not yet assigned (2026-10-01):**
-  - **Fronts split end to end:** on Small, 265 pairs of fronts lie about 5 m apart along one crest. It looks like the front's split rule (onsets jumping more than 1 s/m) cutting one breaking crest in two. Measure it, and consider merging fronts whose ends are within about 2 H, with compatible clocks (PR 2's code).
+  - **Fronts split end to end:** on Small, 265 pairs of fronts lie about 5 m apart along one crest. An agent took it on 2026-10-01, on `claude/padang-front-merge`: it diagnoses first, and its rule needs the advisor's ruling before it builds.
   - **Residual lace on the curl's lifted face:** it needs a face-aligned foam mapping.
   - **Whitening at the lip's leading edge:** spray, with the spray look.
   - **The library's underside wiggles:** a converter cleanup (a light smoothing of near-vertical undersides).
