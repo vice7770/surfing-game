@@ -25,6 +25,7 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 | [correct-shape.md](correct-shape.md) | The reference card: correct numbers per stage (onset, throw, lip, tube, after) against the game |
 | [along-the-crest.md](along-the-crest.md) | How a barrel changes down the line: the slice clock, open-tube length, lip taper, makeable peel angles |
 | [tubes.md](tubes.md) | Why the tube reads wrong, and the swept-surface fix |
+| [wave-methods.md](wave-methods.md) | Five throwaway prototypes of how to make the curl (hybrid, blended library, live 2D fluid, displaced surface, hand-shaped), compared on look and cost |
 | [tube-review.md](tube-review.md) | The drawn barrel at Padang Padang seen and measured: why it's navy, early foam, small, melting; ranked changes |
 | [tube-colour-fix.md](tube-colour-fix.md) | Why the drawn curl is navy (shaded as a deep column over the reef) and how to shade it as a thin backlit sheet |
 | [swept-barrel-build.md](swept-barrel-build.md) | Where the profiles come from and how to loft, seam and collide the barrel in real time |

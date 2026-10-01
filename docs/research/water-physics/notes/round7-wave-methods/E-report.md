@@ -1,0 +1,13 @@
+# E: art-directed curl (look-only baseline)
+
+**How it works.** `gen.js` has a hand-built cross-section rig driven by phase s (swell, steepen, throw, touchdown) and a collapse phase q. The back is a cosine hump. The curl is an offset ellipse: inner arc = cavity, outer arc = lip, thickness tapering root to tip. Tip angle, reach, radii and droop animate with s. Swell, barrel and bore poses share one point layout, blended by smoothsteps. Lofted along x with τ = t − 1.5 − (x−5)/11 (11 m/s peel) into one surface with the flat sea. `thick` is the cross-lip distance on the lip and 1.6× the horizontal chord in the top 40% of the crest, else 50. Foam is noise-modulated bands (tip, landing, collapse, trailing soup). Spray is ballistic particles from the tip and the landing point.
+
+**NOT physical** (only spray ballistics and thickness are computed; nothing stored): it ignores the reef, swell height and period, and breaking timing. Every x gets the identical wave, only time-shifted. The crest moves at 3 m/s (real crests move at ~6–7 m/s). The break location is decreed. Crest-to-trough is ≈4.05 m, taller than the stored a45 case (3.67 m).
+
+**Cost (provisional).** Node, single thread: 7–9 ms mesh (21,780 verts / 42,960 tris) + 2.5 ms spray per frame. The rig is closed-form per vertex, so it fits a WebGPU vertex shader. Guess <0.2 ms on an M4 Pro.
+
+**Right:** a clean, round, open barrel; a thin glowing lip; a smooth peel; buttery easing; no flicker.
+**Wrong:** the lip curtain is a featureless saturated sheet. The whitewater is a flat grey ramp. The crest line is a rigid diagonal. Every section is identical, so it reads as CG. The tube is hard to see from the channel camera, and the shoulder camera ends against the curtain.
+
+## Appendix: every hand-chosen number (CFG in gen.js)
+lip throw t=1.5 s at x=5, peel 11 m/s; crest speed 3 m/s, throw at z=−12.5. s keys (τ,s,ds/dτ): (−6,0,0) (−1.5,.15,.1) (0,.35,.3) (1,1,.4); q keys (1.2,0,0) (3.4,1,0); throw starts s=0.35. Crest H 1.4/3.4/3.7 m (swell/throw/touchdown); trough −0.12→−0.35. Back length 16/10/9 m, swell front 15→4 m, hump exponent 1.4. Cavity rx 0.40→1.45, ry 0.50→1.575 (reaches the trough), radii eased by a^0.8; front reach 1.0→1.45, back squash 0.6. Lip thickness root 1.2, tip 0.12 (linear taper); tip angle 90°→−62°; droop 0.15·a²; toe offset 1.0→landing. Bore H 1.3, back 7 m, front 2.2 m, decay 3 s. Chord thickness ×1.6 above 0.6H. Foam: tip 0.55, landing band ≤3 m, collapse/soup with fbm(0.35/m), curtain streaks ≤0.35. Spray: 16k+16k candidates, life 0.5–1.2 / 0.6–1.5 s, landing up-velocity 2.5–7 m/s. Mesh: 0.5 m columns, 180 points/profile.
