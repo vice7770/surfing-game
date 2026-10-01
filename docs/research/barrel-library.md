@@ -176,18 +176,21 @@ The drawn curl as shaded (Part B, after the owner's clip of PR 3 on the M4 Pro: 
 
 **Measured** (2026-10-01, the M1 Air under other sessions' load, load average 23–42; the water sheet's held curl on the GPU tier, 64 components, Practice swell; `waterSheetCurlLuma`) [measured]:
 - **The tongues** (the `padangCurl` probe on the owner's build, Small swell, 150 s at 1 m cells): tongues in 1,560 of 4,500 frames, one a frame at the median and up to 4. Neighbouring tongues within 12 m: 272 pairs, all on two fronts, 265 of them end to end along the crest (median 5.35 m apart) and 7 one behind the other; none on one front. Tongues after touchdown only: 49 of 2,070. 29 % of the open and post slices drawn were after touchdown, 5,382 of them part-faded.
-- **The lip against the face's water** (its own pixels beside the curl, foam left out), linear luminance, from 7 m down the line (`curl-close`):
+- **The lip against the face's water** (its own pixels beside the curl, foam left out) and the back wall, linear luminance, from 7 m down the line (`curl-close`). The photographed skies set the sun: the slider's 0.1 (and 0.25) snaps to the sunset sky, an orange sun 6° up, and 0.5 to the midday sky, a white sun 48° up. Behind the lip, the back wall as drawn (the advisor's option 2):
 
-| sun | look | lip | water | lip ÷ water | back wall |
-|---|---|---|---|---|---|
-| behind, height 0.1 | Classic | 0.541 (amber) | 0.286 | 1.9 | 0.096 |
-| behind, height 0.1 | Rich | 0.614 (amber) | 0.451 | 1.36 | 0.173 |
-| in front, height 0.1 | Classic | 0.199 | 0.173 | 1.15 | 0.131 |
-| in front, height 0.1 | Rich | 0.235 | 0.233 | 1.0 | 0.185 |
-| behind, height 0.5 | Classic | 0.257 (blue) | 0.312 | 0.82 | 0.093 |
-| behind, height 0.5 | Rich | 0.257 (blue) | 0.302 | 0.85 | 0.100 |
-| in front, height 0.5 | Classic | 0.062 | 0.231 | 0.27 | 0.122 |
-| in front, height 0.5 | Rich | 0.065 | 0.296 | 0.22 | 0.157 |
+| sun | look | lip (hue) | water (hue) | back wall | lip ÷ water | lip ÷ wall |
+|---|---|---|---|---|---|---|
+| behind, 6° | Classic | 0.557 (22°, amber) | 0.286 (112°) | 0.096 | 1.95 | 5.8 |
+| behind, 6° | Rich | 0.634 (22°, amber) | 0.451 (33°) | 0.173 | 1.41 | 3.7 |
+| in front, 6° | Classic | 0.235 | 0.173 | 0.131 | 1.36 | 1.8 |
+| in front, 6° | Rich | 0.288 | 0.233 | 0.185 | 1.24 | 1.56 |
+| behind, 48° | Classic | 0.284 (198°) | 0.312 (158°) | 0.093 | 0.91 | 3.1 |
+| behind, 48° | Rich | 0.292 (199°) | 0.302 (160°) | 0.100 | 0.97 | 2.9 |
+| in front, 48° | Classic | 0.101 | 0.231 | 0.122 | 0.44 | 0.83 |
+| in front, 48° | Rich | 0.118 | 0.296 | 0.157 | 0.40 | 0.75 |
 
-  The advisor's provisional thresholds (backlit at least the water's and greener, front-lit at least 0.8×, never below the back wall) hold at height 0.1 and fail at 0.5: the far side sees little of the opening, so the light behind the lip is mostly R∞ of the sky, dim and blue; front-lit, a thin sheet's own backscatter is nearly nothing beside a face that shows the bed. With the sheet off the lip read 0.07–0.08 at height 0.5; as the owner saw it (the old winding), 0.013–0.044. Sent to the advisor before any constant changes.
-- **The loft's cost**: the sheet's worst case, a 140 m front all open (287 slices, 279 sheets), 54.0 ms a build with the sheet against 33.3 ms without (`padangLoft`'s second test, 200 builds each in turn, load 25–28).
+  - **Against the advisor's criteria** (2026-10-01): backlit, the lip is at least 0.8× the face's water at the high sun and at least 1× at the low one; front-lit, at least 0.8× the back wall it covers. All hold but the front-lit pair at the high sun, which the advisor accepted for now: the drawn back wall there mirrors the open sky that a tube's inside can't see, so PR 6's dark throat, which dims that reflection, re-checks it.
+  - **The water's absorption, not the hue** (the advisor's check at a low sun): the lip's red over green against the sun's own. Sunset sun: 0.62× (Classic) and 0.56× (Rich); midday sun: 0.81× and 0.77×, against "at most about 0.8×". Amber at a low sun is right: 0.3–0.5 m of water barely filters an orange sun.
+  - Before the fixes, at the high sun: with the sheet off (the fixed winding) the lip read 0.07–0.08; with R∞ of the sky behind it, 0.06 front-lit; as the owner saw it (the old winding, no sheet), 0.013–0.044, hue 228°.
+  - A white sun near 15–25° up, where the classic green glow belongs, isn't among the photographed skies, so it wasn't measured.
+- **The loft's cost**: the sheet's worst case, a 140 m front all open (287 slices, 279 sheets; `padangLoft`'s second test, 200 builds each, in turn). The first build searched every segment of the other run: 54.0 ms a build with the sheet against 33.3 ms without (load 25–28). The search now starts from the last point's foot and skips blocks and segments that can't even tie (exactly the same answers; a pure walk missed 713 of 8,470 library points): 49.8 against 32.5 ms in the probe (load 23–29), and 31.5–34.3 against 18.3–18.8 ms in plain node. Precomputing each library frame's thickness and view factor at load is PR 6's.
