@@ -121,7 +121,12 @@ Built by the advisor (`periodic-runs.md` §9): `periodic_reef42_L12` (1:4.2) and
 1. **The torn frames: not refilled.** The advisor re-traced them from the run's facets: `periodic_library.py` now stitches a torn frame's larger surface pieces left to right, within 0.2 h0 (the drained ledge's water meeting the bed had split the surface, and the widest piece, the back of the wave, had been taken for the whole). Stitched frames carry `"stitched": true`, and previously clean frames are unchanged. Open-tube clean frames: reef60 49 → 67 of 70, reef42 62 → 64 of 65 (`origin/claude/water-physics-advisor-local`, bdff16f). They are used as they are: the converter's usual refill takes the few still flagged.
 2. **`BARREL_SLOPE` 1:4.2 (reef42):** the slope along the swell's path, and the cleanest library. reef60 waits for per-slice slopes, so it is not in the index.
 3. **The throw, proportional:** d = (1.93 / 2.13) η_foot ≈ 0.91 η_foot, provisional. Bigger waves break deeper: a constant would throw Big too late and Practice too early, since the Reef's foot crests span about 1–4 m.
-4. **A second Reef case:** A0 ≈ 0.35 at 1:4.2, 16 s, periodic, level 12 here (the Reef's lip is 0.4–0.5 H, over 10 cells at level 12). Then fit the throw through both cases.
+4. **A second Reef case:** A0 ≈ 0.35 at 1:4.2, 16 s, periodic, level 12 here (the Reef's lip is 0.4–0.5 H, over 10 cells at level 12). Then fit the throw through both cases, through the origin (its level-9 scout read 0.87, reef42 0.906: about 0.89 expected).
+5. **The throw's floor** (2026-10-01, after the Practice sea threw nothing): d_throw = max(k η_foot, the reef top's depth + tide), an optional field of a transect's tables; Padang Padang has none. A small wave can't go vertical on the ledge face but plunges as it crosses onto the top, where the step has drained the water (a 0.9 m wave sees 1.0–1.2 m at the 1.5 m top: H/h ≈ 0.75–0.9). A 1.93 m minimum would throw small waves on the face before they stand up; leaving them unthrown would remove the Reef's small barrels.
+6. **Owed:** a small Reef case at about A0 0.09 (Practice and Small) at level 13 on the M4 Pro: its lip would be about 0.45 m, under 4 cells at level 12. Until then small waves scale the 0.21 case down.
+7. **The join table:** dropping the drives that break before the ledge is fine (provisional). Big Reef sets breaking before the ledge sit outside the ledge's library: a Reef behaviour question for the Reef session. The 16 s, 3.5 m drive first breaks at 2.0 m, against 4.9–5.6 m at 14–15 s: longer periods shoal longer before breaking.
+
+**Built:** the Reef's record in `BARREL_SPOTS` (§4), its join table from the `spotOnset` probe ([barrel-library.md](../../research/barrel-library.md), "Every spot"). With the switch on in a test, on the Practice sea: 39 joins, 9 throws in 180 s (3.0 a minute, against today's 11.3 jets), all at the reef top's 1.5 m, 4–26 m inside its crest line; 154 crests followed from the foot were lost before joining.
 
 **Converted:** `periodic-reef42-l12` (189 KB, 187 frames, 16 refilled: 15 before the face goes vertical, where the lip landmark jumps, and 1 open; [barrel-cases.md](../../research/barrel-cases.md)). Its ψ0 (0.35) lies past Pick & Feddersen's fitted span, so the validation table shows no fit for it rather than extrapolating.
 
@@ -151,13 +156,19 @@ The six files PR 7 was to delete, every reference to them, and what each becomes
 - the splash-up strips (PlungingLip kind 1) are drawn at swept spots, exactly as at the other spots; only the jet strips (kind 0) are hidden there;
 - PR 5 launches PlungingLip's parcels for the pour, the splash-up and the spray from the crash curve.
 
-So `PlungingLip.ts`, `LipSheetMesh.ts` and `richLip.ts` are kept and slimmed, and `Overturn.ts`, `tubeTable.ts` and `tubeCarve.ts` are deleted. The deletion waits for PR 5 and for every spot to be switched; until then the non-swept spots use all six.
+So `PlungingLip.ts`, `LipSheetMesh.ts` and `richLip.ts` are kept and slimmed.
+
+**Unswept spots keep today's lip** (the advisor, 2026-10-01). The Canyon, and the Beach's Small and Big, stay unswept, and the Canyon throws: 52 jets a minute on Practice and 16 on Small, breaking at 0.5–1.0 m (§2). So "unswept" means keeping today's Pick & Feddersen lip, jets and parcels, not having none:
+- `Overturn.ts` is **kept and slimmed** for the unswept spots: the jet's sizing (`overturn`, `overturnParameter`, `jetRelativeSpeed`, `jetFlightTime`) stays, the void's geometry goes. `orthogonalGradient` and `vortexRatio` move to a bed-gradient module first, and the gradient's walk takes a flat tolerance (|dh| under about 1 mm), or it reads the Reef's flat as still climbing (§1).
+- `tubeTable.ts` and `tubeCarve.ts` are **deleted only if no unswept spot carves a tube today**. The Canyon's voids measure 0.45–0.8 m long and 0.2–0.3 m wide (at most 1.33 × 0.52 m), with 0.3–0.4 m of room under the lip at the 90th percentile: well under a rider's size. If the Canyon's Medium and Big and the Beach's swells measure the same, the void goes and their lips simply fall (the advisor's test); the full table goes to the advisor before the map is final.
+
+The deletion waits for PR 5 and for every spot to be switched; until then the non-swept spots use all six.
 
 ### `src/wave/PlungingLip.ts` (1178 lines): keep and slim
 
 | Reference | What it uses | After the flip |
 |---|---|---|
-| `src/wave/SurfZoneSimulation.ts` | `PlungingLip` (`this.lip`, its `onLand`: foam, `lipImpacts`, aeration, `holdPlunge`; `onAir`; `step`); `lipThrow` in `throwLip` (the solver-onset throw); `writeTubes`, `carve`, `carveGrid(… this.lip.tubeTable …)`; `exportState`/`importState`; the `lipLaunches`/`lipVolume`/`lipJets`/`lipRollers` counters | Keep the parcels and `onLand`/`onAir` for PR 5's crash-curve parcels; drop `throwLip`/`lipThrow`, the tube table and the carve (the loft and the contact replace them); the handover keeps the parcels in flight |
+| `src/wave/SurfZoneSimulation.ts` | `PlungingLip` (`this.lip`, its `onLand`: foam, `lipImpacts`, aeration, `holdPlunge`; `onAir`; `step`); `lipThrow` in `throwLip` (the solver-onset throw); `writeTubes`, `carve`, `carveGrid(… this.lip.tubeTable …)`; `exportState`/`importState`; the `lipLaunches`/`lipVolume`/`lipJets`/`lipRollers` counters | Keep the parcels and `onLand`/`onAir`: PR 5's crash-curve parcels at swept spots, today's throw (`throwLip`/`lipThrow`) at unswept ones. The tube table and the carve go if no unswept spot needs its void (below); the handover keeps the parcels in flight |
 | `src/wave/SurfZoneRunner.ts` | `STRIP_PARCELS` (the crash's pitch); `lip.spits/eruptions/rollers` (the spray scene); `session.strike(lip)` (already off at swept spots); `lip.writeTubes`; `forEachActiveParcel` (the lip buffer); `airborneVolume` | Strikes and tubes go; the parcels, their buffer and the spray scene stay, fed by the crash curve (PR 5) |
 | `src/wave/SprayCloud.ts` (+ test) | `SPLASH_UP`, `TubeEruption`, `TubeRoller`, `TubeSpit` (G9's collapse) | Fed by the swept barrel's collapse (PR 5) |
 | `src/wave/surfZoneState.ts` | `LipState` (the handover) | Slimmed with the lip |
@@ -168,23 +179,23 @@ So `PlungingLip.ts`, `LipSheetMesh.ts` and `richLip.ts` are kept and slimmed, an
 | `src/wave/Rideability.ts`, `src/dev/tierParity.ts` | `lipLaunches`; `lipImpacts`, `lip.tubeCount` | Counts from the crash curve; `tubeCount` goes |
 | Tests | `PlungingLip.test.ts`, `SprayCloud.test.ts`, `SurfZoneSimulation.test.ts` (`JET_RELEASE_TIME`) | Slimmed with the module |
 
-### `src/wave/Overturn.ts` (203 lines): delete
+### `src/wave/Overturn.ts` (203 lines): keep the jet's sizing for unswept spots, delete the rest
 
 | Reference | What it uses | After the flip |
 |---|---|---|
-| `src/wave/SurfZoneSimulation.ts` | `orthogonalGradient`, `reefOverturn`, `tubeGeometry`, `jetFlightTime` (the solver-onset throw) | Gone with `throwLip` |
-| `src/wave/PlungingLip.ts` | `overturn`, `overturnParameter`, `reefOverturn`, `jetRelativeSpeed`, `LH82_AREA`, `REEF_OVERTURN` (in `lipThrow`) | Gone with `lipThrow` |
+| `src/wave/SurfZoneSimulation.ts` | `orthogonalGradient`, `reefOverturn`, `tubeGeometry`, `jetFlightTime` (the solver-onset throw) | Kept for unswept spots' throws (the jet's sizing); `reefOverturn` and `tubeGeometry`'s void go once the Reef is swept |
+| `src/wave/PlungingLip.ts` | `overturn`, `overturnParameter`, `reefOverturn`, `jetRelativeSpeed`, `LH82_AREA`, `REEF_OVERTURN` (in `lipThrow`) | The jet's sizing stays for unswept spots; the Reef's slab constants go once it is swept |
 | `src/wave/tubeTable.ts` | `tubeFloorDepth` | Deleted |
 | `src/dev/waterSheet.ts` | `tubeFloorDepth` (the dev tool's tube probe) | The contact's `floorAt` |
 | `scripts/tube-report.ts` | `REEF_OVERTURN`, `vortexRatio` | The library's validation (`barrel-cases.md`) |
 | `src/wave/probes/everySpot.probe.test.ts` (this PR) | `orthogonalGradient` | Move `orthogonalGradient` and `vortexRatio` to a bed-gradient module first; they measure beds, not lips |
 | Tests | `Overturn.test.ts`, `PlungingLip.test.ts`, `SurfZoneSimulation.test.ts` (`REEF_OVERTURN`), `tubeTable.test.ts`, `tubeCarve.test.ts` | Deleted or moved with the two functions |
 
-### `src/wave/tubeTable.ts` (142 lines): delete
+### `src/wave/tubeTable.ts` (142 lines): delete if no unswept spot carves a tube
 
 | Reference | What it uses | After the flip |
 |---|---|---|
-| `src/wave/SurfZoneSimulation.ts` | `TUBE_CAPACITY` (`writeTubes`), `carveGrid` (the uniform surface's carve) | Gone: the loft's mask replaces the carve |
+| `src/wave/SurfZoneSimulation.ts` | `TUBE_CAPACITY` (`writeTubes`), `carveGrid` (the uniform surface's carve) | At swept spots the loft's mask replaces the carve; at unswept ones the carve goes if their voids are under a rider's size |
 | `src/wave/SurfZoneRunner.ts` | `TUBE_CAPACITY`, `TUBE_STRIDE` (the snapshot's `tubes`) | The buffer goes; the front records carry the barrel |
 | `src/game/SurfZoneHost.ts` | `carveAt` (the page's physics), `carveGrid`, `TUBE_STRIDE` (`writeTubes`) | The contact (PR 4) |
 | `src/game/WorkerSurfZone.ts`, `src/game/SurfZoneWorkerCore.ts` | the `tubes`/`tubeCount` buffers and their transfer | Dropped from the snapshot |
@@ -193,7 +204,7 @@ So `PlungingLip.ts`, `LipSheetMesh.ts` and `richLip.ts` are kept and slimmed, an
 | `src/wave/PlungingLip.ts`, `src/scene/water/tubeCarve.ts` | `TUBE_STRIDE`, `carveAt`; the layout constants | Slimmed / deleted |
 | Tests | `tubeTable.test.ts`, `tubeCarve.test.ts`, `SurfZoneHost.test.ts`, `PlungingLip.test.ts` | Deleted or rewritten |
 
-### `src/scene/water/tubeCarve.ts` (174 lines): delete
+### `src/scene/water/tubeCarve.ts` (174 lines): delete with `tubeTable.ts`
 
 | Reference | What it uses | After the flip |
 |---|---|---|

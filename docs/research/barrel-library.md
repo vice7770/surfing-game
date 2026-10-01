@@ -20,6 +20,8 @@ Four runs of the advisor's Basilisk setup (`tools/basilisk`, GPL-3.0, run apart 
 | `pad19-a45-l12` | 0.45 | on the wedge, about 2.6 h0 before the flat | 3.67 m | 3.34 × 1.45 m | 1.16 s | 163 | 163 KB |
 | `periodic-padang19s-l12` | 0.141 (the Small swell's crest) | on the wedge, 14 m before the flat, in 1.99 m | 2.24 m over the trough ahead | 0.86 × 0.39 m | 0.82 s | 176 | 176 KB |
 
+**The Reef's case** (PR 7): `periodic-reef42-l12`, the advisor's periodic run on the Reef's ledge at 1:4.2 along the swell's path (the slope the Teahupo'o Reef report measured along the path), from its 10 m shelf to a 1.5 m flat (0.15 h0), H/h0 0.3 at 14 s, A0 0.2127 (the train's crest over the shelf), level 12, re-traced by the advisor so its torn frames are whole (64 of 65 open frames clean). Its face goes vertical in 1.93 m of still water, 0.43 m above the ledge top; touchdown 1.6 s later; 189 KB. Its ψ0 (0.35) lies past Pick & Feddersen's fits, so [barrel-cases.md](barrel-cases.md) shows no fit for it. The 1:6 run (reef60) waits for per-slice slopes. A second Reef case (A0 0.35 at 16 s) is running.
+
 All [measured] in the model. Each case holds 128 points per frame, in h0, from 2.7–2.9 √(h0/g) before its face goes vertical (the clock's earliest frame, −3, clamps to the first) to one frame past touchdown, in the `BRL1` form (`src/wave/barrel/profileFormat.ts`), and loads from `public/barrels/` through `src/wave/barrel/barrelLibraryIndex.ts`.
 
 ## Validation
@@ -126,6 +128,13 @@ The swept barrel as ridden (Part B, PR 4; `src/wave/barrel/sweptContact.ts`), fr
 
 **The lip's flow** (ruling 1). The converter stores the tip landmark's velocity per frame: a least-squares line over ±4 frames, in √(g h0) (format BRL2; table in [barrel-cases.md](barrel-cases.md)).
 
+**Fitted within one regime** (the advisor's ruling, PR 7, 2026-10-01). The lip landmark is the face's steepest point until the face overturns for good, and the jet's tip after, so a ±4-frame line across the switch is meaningless. On the Reef's 1:4.2 ledge the landmark jumps 0.78 h0 forward just before τ 0; its frames were refilled linearly and the fit read 3–5 √(g h0) through τ −0.18…+0.03. Padang Padang's own cases spiked the same way just before τ 0 (by up to 1.7–3.2 √(g h0)), outside the table's open-time window. Now:
+- only the sustained overturn feeds a fit: the last run of frames before touchdown with the landmark ahead of the throat (on a stepped face it flickers before the face goes vertical);
+- refilled frames never feed it, and the fit is one-sided at the run's ends;
+- the velocity is zero before the overturn (no lip there for the contact) and holds the run's last fit after it.
+
+Padang Padang's four cases keep their frames byte-identical; only their tip floats change, refitted from their own frames (`--keep`; a frame copied from the one before counts as refilled). The sustained overturn starts at τ 0.024, 0.109, 0.119 and 0.200 (A0 0.2, 0.3, 0.45, the Small swell's case) and 0.125 on reef42. Over it the medians read 0.94, 1.18, 1.42 and 0.80 √(g h0) (were 0.94, 1.17, 1.42 and 0.77 over the open time), the largest speeds 1.14, 1.43, 1.62 and 0.91, and reef42's 1.12 (was 3.39) [measured, model]. The table below is the advisor's, over the open time, before the change.
+
 The advisor normalised the tips by each case's own crest speed C: the crest landmark's speed over the last 1.0 τ before vertical, decoded from `public/barrels/*.bin` (2026-09-30). These are the library's values, provisional [measured, model]:
 
 | Case | C (√(g h0)) | Median horizontal | Largest \|v\| | Fall |
@@ -153,3 +162,30 @@ The advisor normalised the tips by each case's own crest speed C: the crest land
   - The query scans all 133 quads of its strip. Bucketing each strip's quads by their along-ray range (about 0.5 m) leaves one quad per layer to test, so well under 1 µs a query (the advisor, 2026-09-30).
   - Per-substep lerping would only save the slice rebuilds, which aren't the cost.
 - **On the Small swell**, 20 s of sea from the spin-up: the contact's update took 0.37 ms a step against the step's 613 ms (0.1 %). No tube had opened yet, so the sea gave no query timing; rerun it longer (`PROBE=1 SECONDS=180`) on an unloaded machine.
+
+## Every spot
+
+The swept barrel's rollout (Part B, PR 7; the plan is `docs/superpowers/plans/2026-10-01-padang-padang-part-b-pr7.md`). A spot draws and rides the swept barrel when it is in `SWEPT_BARREL` (the owner's switch, still `['padang']`) and has a barrel transect in `BARREL_SPOTS` (`src/wave/barrel/barrelSpots.ts`): its runs' slope along the wave's path, their foot depth, its onset tables (`sliceClock.ts`) and the row its front follows crests from. Each case in the index names its spot, and a spot loads only its own.
+
+**The Reef** [measured in the model unless said; all provisional]:
+- **The join:** the game's own solver on the Reef's transect (the `spotOnset` probe: the periodicOnset method on any transect, its Kennedy onset 0.65; 10 m flat, 1:4.2, 1.5 m flat), regular waves at 14–17 s, each wave's highest over the band (8.6–7.1 m, Padang Padang's 6–5 m at 7 m, scaled) against the still depth under its crest where the fresh test first fired, the median of 12 waves:
+
+  | Period | Band crest → onset depth (m) |
+  |---|---|
+  | 14 s | 0.90 → 3.69, 1.67 → 4.17, 2.41 → 4.88, 3.14 → 5.83 |
+  | 15 s | 0.89 → 4.17, 1.63 → 5.12, 2.26 → 5.60 |
+  | 16 s | 0.90 → 4.17, 1.68 → 5.12, 2.27 → 2.02, 2.83 → 2.98 |
+  | 17 s | 0.89 → 4.17, 1.72 → 5.36, 2.46 → 2.02, 2.92 → 3.21 |
+
+  - Drives that broke before the ledge, their onsets outnumbering their waves by more than two, are left out: the 5.5 m drive at every period and the 4.5 m drive at 15 s (25–98 onsets for 12 waves). Big Reef sets breaking before the ledge sit outside the ledge's library: a Reef behaviour question for the Reef session (the advisor).
+  - At 16–17 s the 3.5 m drive first breaks at 2.0 m, against 4.9–5.6 m at 14–15 s: longer periods shoal longer before breaking.
+  - The probe reproduces Padang Padang's table exactly on its transect (16 s: 1.19 → 2.61 m and 1.60 → 3.18 m).
+- **The throw:** proportional to the foot crest, d = 0.906 η_foot (reef42's 1.93 m for 2.13 m; the A0 0.35 run will refit k through the origin, its level-9 scout reading 0.87), no shallower than the reef's top at the tide (1.5 m + tide). A wave too small to go vertical on the ledge face plunges as it crosses onto the top, where the step has drained it (the advisor: a 0.9 m wave sees 1.0–1.2 m there, H/h ≈ 0.75–0.9). Without the floor the Practice sea's crests (0.8–0.9 m at the foot, throws at 0.73–0.81 m) never reached their throw depth over the 1.5 m top.
+- **With the switch on in a test** (the Practice sea, 1.0 m at 14 s from 20°, a 40 m window at 2 m cells, 180 s): 39 crests joined, 9 points threw (3.0 a minute, against today's 11.3 lip jets a minute on the same sea), all at 1.50 m of still water, 4–26 m onto the reef's top (median 5.8 m inside its crest line). 154 crests followed from the foot were lost before joining.
+- **Owed:** a small Reef case at about A0 0.09 (Practice and Small) at level 13 on the M4 Pro: its lip would be about 0.45 m, under 4 cells at level 12. Until then small waves scale the 0.21 case down, as Padang Padang's Small did before its own case.
+
+**The Point:** four periodic cases at level 12, provisional stand-ins (level 13 owed on the M4 Pro), 7 m foot, 1:21.5 along the contours' normal to a 0.35 m flat. Their level-9 scouts went vertical at 1.46, 2.25, 2.93 and 3.11 m of still water for foot crests of A0 0.08, 0.15, 0.23 and 0.30 [measured, coarse]. Running.
+
+**The Canyon:** unswept (the advisor): at ξ ≈ 0.2 and Mead & Black's 1:48–1:61 it spills, and its lip is under 2 cells even at level 13, too thin for a run to resolve. It keeps today's lip (Pick & Feddersen's jets and parcels), which throws: 52 jets a minute on Practice and 16 on Small, breaking at 0.5–1.0 m, their voids 0.45–0.8 m long and 0.2–0.3 m wide (at most 1.33 × 0.52 m), the opening under the lip 0.3–0.4 m at the 90th percentile [measured, today's lip].
+
+**The Beach:** its bar (Practice and Medium, 1:32 to the 1.6 m bar crest) is owed at level 13 on the M4 Pro (1.4–1.7 cells across the lip at level 12 is unusable); Small (1:77) and Big (1:66) spill like the Canyon and stay unswept.

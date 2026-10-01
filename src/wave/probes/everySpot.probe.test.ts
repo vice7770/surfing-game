@@ -172,22 +172,43 @@ it.skipIf(!process.env.PROBE || process.env.PART !== 'throws')('each spot’s li
       const started = performance.now();
       const simulation = new SurfZoneSimulation(config);
       const heights: number[] = [];
+      const lengths: number[] = [];
+      const widths: number[] = [];
+      const openings: number[] = [];
       let thrown = 0;
       simulation.onThrow = (event) => {
         heights.push(event.height);
-        if (event.thrown > 0) thrown += 1;
+        if (!(event.thrown > 0)) return;
+        thrown += 1;
+        // The void the carve cuts under the lip (tubeTable), its long and short axes, m.
+        lengths.push(event.tube.length);
+        widths.push(event.tube.width);
       };
       const [jets, rollers] = [simulation.lipJets, simulation.lipRollers];
       const spinUp = simulation.solver.time;
-      while (simulation.solver.time < spinUp + seconds) simulation.step(1 / 30);
+      while (simulation.solver.time < spinUp + seconds) {
+        simulation.step(1 / 30);
+        // Room under the lip, as the tube report measures it: the tallest gap between a flying jet parcel and the water.
+        let opening = 0;
+        simulation.lip.forEachActiveParcel((parcel) => {
+          if (parcel.kind !== 0) return;
+          opening = Math.max(opening, parcel.y - simulation.heightAt(parcel.x, parcel.z));
+        });
+        if (opening > 0) openings.push(opening);
+      }
       const minutes = seconds / 60;
-      const sorted = heights.sort((a, b) => a - b);
-      const q = (p: number) => (sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))] : Number.NaN);
+      const q = (values: number[], p: number) => {
+        const sorted = [...values].sort((a, b) => a - b);
+        return sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))] : Number.NaN;
+      };
+      const spread = (values: number[]) => `${f(q(values, 0.5))}/${f(q(values, 0.9))}/${f(values.length ? Math.max(...values) : Number.NaN)}`;
       log([
         spot, swell, `${config.significantHeight} m, ${config.peakPeriod} s`,
         `jets ${simulation.lipJets - jets} (${f((simulation.lipJets - jets) / minutes, 1)}/min, ${thrown} with water)`,
         `rollers ${simulation.lipRollers - rollers} (${f((simulation.lipRollers - rollers) / minutes, 1)}/min)`,
-        `jet heights ${f(q(0.1))}/${f(q(0.5))}/${f(q(0.9))} m (10/50/90 %)`,
+        `jet heights ${f(q(heights, 0.1))}/${f(q(heights, 0.5))}/${f(q(heights, 0.9))} m (10/50/90 %)`,
+        `voids L ${spread(lengths)} m, W ${spread(widths)} m (50/90 %/max)`,
+        `opening under the lip ${spread(openings)} m (50/90 %/max of steps with one)`,
         `${f((performance.now() - started) / 1000, 0)} s wall`,
       ].join(' | '));
     }
