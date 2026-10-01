@@ -46,6 +46,11 @@ The probe is `src/wave/probes/pool.probe.test.ts`, run with `PROBE=1 LOG=… npx
    - **Ride:** about 9 s per side.
    - **With the tip at 1.2 m:** the close-out is still ±16 m and the peak/arm ratio rises to 1.37–1.48, so it's worse.
    - Kept: 71°, a 2.5 m terrace, the crest 1.0 → 0.5 m.
+7. **Longer arms, bent from 71° to 65°** (the advisor: easing over 14 m about |x| 40 keeps the outer arm in the tank at about 46°). Arms to |x| 82, tapering to 107, in a 280 m window.
+   - **b = 10:** the tip closes out ±16 m with 1.3–1.5 m faces. At 24–32 the break peels cleanly at about 6 m/s along the arm (about 50°).
+   - **b = 15:** a ±20 m close-out (peak/20 m 1.07, X 34).
+   - **Both:** past |x| 36 each x-column logs several onsets a wave. With arms this steep the break line crosses a column along tens of metres of z, so column onsets no longer show the peel.
+   - The probe gained a break-line mode (`LINE=1`): it samples the arm's face where it is 1.5 m deep and times each wave's arrival there by arc length from the tip.
 
 ## Cost
 

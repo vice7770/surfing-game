@@ -34,6 +34,33 @@ it.skipIf(!process.env.PROBE)('rides the Wave Pool’s waves', () => {
   const columns = xs.map((x) => Math.round((x + (x < 0 ? -0.5 : 0.5) - solver.xCenters[0]) / solver.dx));
   const eta = (i: number) => solver.h[i] + solver.bed[i] - solver.restLevel;
   log(`H ${height} m at the edge (Hs ${config.significantHeight.toFixed(2)}); ${JSON.stringify(POOL)}; ramp foot z ${poolRampFootZ().toFixed(0)}, terrace z ${poolTerraceZ().toFixed(0)}; tank ${JSON.stringify(tank)}; crest line ${[0, 20, 40, 60].map((x) => `${x}:${poolCrestZ(x).toFixed(0)}`).join(' ')}; grid ${solver.nx}×${solver.nz}`);
+  // LINE=1: also sample the break line itself, the arm's face where it is LINE_DEPTH deep (both arms, every LINE_STEP
+  // of x): each wave's arrival there, by arc length from the tip, shows the peel along the arm whatever its angle.
+  const lineDepth = Number(process.env.LINE_DEPTH ?? 1.5);
+  const lineStep = Number(process.env.LINE_STEP ?? 3);
+  const lineCells: { x: number; z: number; s: number; cells: number[] }[] = [];
+  if (process.env.LINE) {
+    for (const side of [1, -1]) {
+      let arc = 0;
+      let previous: { x: number; z: number } | undefined;
+      for (let u = 0; u <= reach + 1e-9; u += lineStep) {
+        const x = side * u;
+        // Seaward of the crest line until the bed is lineDepth deep.
+        let z = poolCrestZ(x);
+        while (poolDepth(x, z) < lineDepth && z > poolCrestZ(x) - 80) z -= 0.25;
+        if (previous) arc += Math.hypot(x - previous.x, z - previous.z);
+        previous = { x, z };
+        const ix = Math.round((x + (x < 0 ? -0.5 : 0.5) - solver.xCenters[0]) / solver.dx);
+        let iz = 0;
+        while (iz < solver.nz - 1 && solver.zCenters[iz] < z) iz += 1;
+        const cells: number[] = [];
+        for (let dz = -2; dz <= 2; dz += 1) for (let dx = -1; dx <= 1; dx += 1) cells.push((iz + dz) * solver.nx + ix + dx);
+        lineCells.push({ x, z, s: side * arc, cells });
+      }
+    }
+  }
+  const lineOnsets: number[][] = lineCells.map(() => []);
+  const lineWas = lineCells.map(() => false);
   const end = Number(process.env.END ?? 150);
   const onsets: Onset[][] = xs.map(() => []);
   const was = columns.map(() => false);
@@ -44,6 +71,12 @@ it.skipIf(!process.env.PROBE)('rides the Wave Pool’s waves', () => {
       log(`NaN at t ${solver.time.toFixed(1)}`);
       return;
     }
+    lineCells.forEach((sample, a) => {
+      const now = sample.cells.some((cell) => breaking[cell] > 0.3);
+      const lastAt = lineOnsets[a].length ? lineOnsets[a][lineOnsets[a].length - 1] : -Infinity;
+      if (now && !lineWas[a] && solver.time - lastAt > 3) lineOnsets[a].push(solver.time);
+      lineWas[a] = now;
+    });
     columns.forEach((column, a) => {
       // The most seaward breaking cell in this column: the wave's own break, not the bores inside it.
       let onset = -1;
@@ -73,10 +106,31 @@ it.skipIf(!process.env.PROBE)('rides the Wave Pool’s waves', () => {
     });
   }
   log(`${(end / ((performance.now() - wall) / 1000)).toFixed(2)}× real time`);
+  const settled = Number(process.env.SETTLED ?? 60);
+  // The raw break-line onsets first, so nothing measured is lost to a mistake in the summary below.
+  if (lineCells.length) log(`line raw ${JSON.stringify(lineCells.map((c, a) => ({ x: c.x, z: Math.round(c.z), s: Math.round(c.s), t: lineOnsets[a].map((t) => Math.round(t * 10) / 10) })))}`);
+  // The break line, wave by wave: for each break at the tip after settling, each sample's first onset within the
+  // next 30 s (or none), by arc length along the arm; then the close-out (arrivals within 1 s of the tip), the gaps,
+  // and the speed along the line past the close-out.
+  if (lineCells.length) {
+    const tipIndex = lineCells.findIndex((c) => c.x === 0);
+    for (const tipTime of lineOnsets[tipIndex].filter((t) => t >= settled)) {
+      for (const side of [1, -1]) {
+        const samples = lineCells.map((c, a) => ({ c, t: lineOnsets[a].find((t) => t >= tipTime - 1 && t <= tipTime + 30) }))
+          .filter(({ c }) => Math.sign(c.s) === side || c.x === 0).sort((p, q) => Math.abs(p.c.s) - Math.abs(q.c.s));
+        const hits = samples.filter((p) => p.t !== undefined) as { c: (typeof lineCells)[number]; t: number }[];
+        const closeout = Math.max(0, ...hits.filter((p) => p.t - tipTime <= 1).map((p) => Math.abs(p.c.x)));
+        const missing = samples.filter((p) => p.t === undefined).map((p) => Math.abs(p.c.x));
+        const past = hits.filter((p) => Math.abs(p.c.x) > closeout);
+        const last = hits[hits.length - 1];
+        const fit = past.length >= 2 ? (Math.abs(past[past.length - 1].c.s) - Math.abs(past[0].c.s)) / Math.max(1e-6, past[past.length - 1].t - past[0].t) : Number.NaN;
+        log(`line ${side > 0 ? 'right' : 'left'} from tip t ${tipTime.toFixed(1)}: close-out ±${closeout} m; last break at |x| ${last ? Math.abs(last.c.x) : 0} (${last ? Math.abs(last.c.s).toFixed(0) : 0} m along) after ${last ? (last.t - tipTime).toFixed(1) : 0} s; along the line past the close-out ${fit.toFixed(1)} m/s; no break at |x| ${missing.join(',') || '—'} | ${samples.map((p) => `${Math.abs(p.c.x)}:${p.t === undefined ? '—' : (p.t - tipTime).toFixed(1)}`).join(' ')}`);
+      }
+    }
+  }
   // Chain each tip break outward: at each next column the first onset after the last one, within `gap` s.
   const gap = Number(process.env.GAP ?? 6);
   const centre = xs.indexOf(0);
-  const settled = Number(process.env.SETTLED ?? 60);
   const chain = (start: Onset, direction: 1 | -1) => {
     const found: { x: number; o: Onset }[] = [{ x: 0, o: start }];
     for (let a = centre + direction; a >= 0 && a < xs.length; a += direction) {
