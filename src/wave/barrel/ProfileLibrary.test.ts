@@ -150,3 +150,19 @@ describe('the held frame, where the contact holds through touchdown (the advisor
     expect(blend.clearSeconds).toBeCloseTo(0.25 * Math.sqrt(7 / GRAVITY), 9);
   });
 });
+
+describe('the cases a slice blends (the crash’s held overturn, Part B, PR 5)', () => {
+  it('names the cases and their weight, and the scale, as profileAt blends and scales them', () => {
+    const [low, high] = [toyCase(0.2, 0), toyCase(0.4, 0.2)];
+    const library = new ProfileLibrary([high, low]);
+    expect(library.cases).toEqual([high, low]);
+    expect(library.caseBlend({ slope: 0.05, footHeight: 2.1, footDepth: 7 })).toEqual({ lower: low, upper: high, weight: expect.closeTo(0.5, 12), scale: 7, clamped: false });
+    // A0 0.1, under the cases: the 0.2 case alone, scaled so its foot crest is the slice's (h0 = 0.7 / 0.2).
+    const small = library.caseBlend({ slope: 0.05, footHeight: 0.7, footDepth: 7 });
+    expect(small.lower).toBe(low);
+    expect(small.upper).toBe(low);
+    expect(small.weight).toBe(0);
+    expect(small.clamped).toBe(true);
+    expect(small.scale).toBeCloseTo(3.5, 12);
+  });
+});

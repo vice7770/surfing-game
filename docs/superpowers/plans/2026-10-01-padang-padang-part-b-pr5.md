@@ -54,7 +54,28 @@ Read it with:
   - the roller with body, foam that ages, and the look of the spray (spec 14);
   - every other spot (PR 7).
 
-## The decisions, with what is recommended (sent to the advisor, 2026-10-01)
+## The advisor's rulings (2026-10-01)
+
+Build as recommended, except where noted:
+1. **The crash curve:** approved. The lip lands on the face point nearest the tip on the drawn touchdown frame: in the runs the face rises to meet the jet, so the gap closes from both sides. Keep the test against the loft's drawn vertex.
+2. **The ledger's timing:** at τ = 0, all at once, with #86's source rule. Approved, on a condition.
+   - The throw moves from Kennedy's onset to the swept τ = 0, up to about 2 s and 20 m later on the wedge, and the solver was tuned with lips at Kennedy's onset.
+   - So re-run Padang Padang's game-size probes before and after: stability, peel, catch and surf readout, several seeds, at the Small swell and one bigger.
+   - Report starved throws and water, unplaced momentum, and the fastest water.
+   - If the crest misbehaves, the fallback is a progressive take following the library's own A_J(τ), still with #86's rule; tell the advisor before switching.
+3. **The jet's volume:** the library's own jet on the held frame. Approved. Send the probe's comparison with the solver's Pick & Feddersen ask, with how much the crest starves.
+4. **Waves that never throw:** approved. No jet at a swept spot (the barrel alone plunges), the skipped Kennedy onsets counted, and no per-column fallback: spilling breakers make a roller, not a jet.
+5. **Late points:** approved. Water that was never drawn doesn't land.
+6. **Momentum:** approved, with one change. Take it at the throw by #86's momentum rule: nearest-first from q, clamped at q, never reversing, with the unplaced rest counted. Target the jet's horizontal momentum along the ray, and pour that same amount at the landing. Vertical momentum at impact is lost to turbulence, as `land()` says. (`drawFromCrest` is that rule, given the jet's horizontal velocity; the held parcels keep it.)
+7. **The pour:** approved as planned. Take the drop for aeration from the drawn tip's own fall (the crest at the throw against the landing height), not a flat H. Spray from `LipImpact.y` at swept landings is right.
+8. **The void's air and the tube's own foam:** approved, with W = PR 4's void height, so √(2W/g) is `collapseSeconds`. The spit leaves from the chain's open end, the newest thrown point: the tube's mouth.
+9. **The whitewater gate:**
+   - (a) Yes, gate the shared foam field in the curl's footprint until touchdown. Flag the change to Classic's foam at Padang Padang downstream of the barrel in the PR: it stays inside the swept spot and follows the one-water rule.
+   - (b) Yes, gate the aeration and turbulence there too: the rider inside an open tube is in clear water.
+   - (c) No for the roller push: it is Part D's, since it moves the catch and ride reports. Record it as a known inconsistency: in the open curl before touchdown, a rider can still feel the early Kennedy bore's push.
+10. **The splash-up sheet: show it now,** exactly as at the other spots. At the swept spot hide only the jet strips (kind 0) and draw the splash-up strips (kind 1). Flag for PR 7: deleting `LipSheetMesh.ts` and `richLip.ts` must keep a splash-up renderer.
+
+## The decisions as sent (2026-10-01)
 
 1. **The crash curve: where the lip lands.**
    - Per front point (about one per solver column), once its clock reaches touchdown, on the drawn touchdown frame: the loft's ray (the front's tangent over ±2 m), end weight, anchor (with the 0.8 T_open handover) and fade.
@@ -669,7 +690,8 @@ In `SurfZoneSimulation`:
 - At the start of `update`, `whitewater.set(strength)`.
 - For every point with τ < touchdown and a positive end weight, the cells of its column (the column of its x) whose centres lie between `anchor + reachBack·n̂` and `anchor + reachFront·n̂` in z get 0. They are counted in `gated`.
 - `SurfZoneSimulation.whitewaterStrength` is that copy at a swept spot with the crash, and `breaking.strength` itself anywhere else.
-- `foam.update` reads it, and so do the bore spray and the bubbles (through `foam.source`). [Pending ruling 9b: `aerateBores` too.]
+- `foam.update` reads it, and so do the bore spray and the bubbles (through `foam.source`), and `aerateBores` (the bore's air and its turbulence, ruling 9b).
+- The rider's roller push keeps the solver's own strength (ruling 9c): a known inconsistency, recorded in "The crash".
 
 - [ ] **Step 1: Write the failing tests:**
   - (`SweptCrash.test.ts`) it withholds the breaking from the whitewater over a curl before its touchdown, and gives it back at touchdown. A basin with strength 1 everywhere and a pre-touchdown front: 0 in its columns' footprint rows and 1 beyond; past touchdown, 1 everywhere.
