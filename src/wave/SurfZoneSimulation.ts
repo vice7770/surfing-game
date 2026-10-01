@@ -87,6 +87,11 @@ export interface SurfZoneConfig {
   sweptBarrel?: boolean;
   /** Where the swept barrel's lip throws: where the Navier–Stokes wave goes vertical ('measured', the default), or where the solver's onset joins it ('none'). */
   barrelLag?: 'measured' | 'none';
+  /**
+   * Where the swept barrel's front follows crests from: the relaxation zone's inner edge ('zone', the default), so a crest
+   * is sized at the foot wherever the foot lies; or the fine zone's first row ('fine', as before the peak-sizing fix).
+   */
+  barrelFrontFrom?: 'fine' | 'zone';
 }
 
 /** Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run. */
@@ -703,7 +708,12 @@ export class SurfZoneSimulation {
     const { front, solver } = this;
     if (!front) return;
     const minHeight = FRONT_MIN_HEIGHT * edgeHeight(this.config, this.tank.edgeDepth);
-    const count = columnCrests(solver, this.breaking, solver.rowBelow(this.tank.fineFrom), minHeight, this.crestSamples);
+    // From the relaxation zone's inner edge: at Padang Padang's peak, on Practice and Small, the fine zone starts 3.7–6 m
+    // deep, shallower than the 6–7 m foot band, so crests first seen there were never sized and the peak drew no barrel
+    // (the advisor, 2026-10-01). No crest is followed seaward of the foot, so what changes is where a crest is sized: at the
+    // foot itself rather than at the fine zone's first row.
+    const from = this.config.barrelFrontFrom === 'fine' ? this.tank.fineFrom : this.tank.zoneInner;
+    const count = columnCrests(solver, this.breaking, solver.rowBelow(from), minHeight, this.crestSamples);
     front.update(this.crestSamples, count, solver.time);
     this.frontPauses += advanceClocks(front.points, solver.time, this.onsetTiming!);
   }
