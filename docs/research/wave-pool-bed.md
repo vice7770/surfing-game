@@ -51,6 +51,18 @@ The probe is `src/wave/probes/pool.probe.test.ts`, run with `PROBE=1 LOG=… npx
    - **b = 15:** a ±20 m close-out (peak/20 m 1.07, X 34).
    - **Both:** past |x| 36 each x-column logs several onsets a wave. With arms this steep the break line crosses a column along tens of metres of z, so column onsets no longer show the peel.
    - The probe gained a break-line mode (`LINE=1`): it samples the arm's face where it is 1.5 m deep and times each wave's arrival there by arc length from the tip.
+8. **Along the break line** (H 1.0 m, after 95–105 s; arrivals unwrapped wave by wave):
+
+   | Tip b | Close-out (within 1 s) | Along the line, x 0–30 | Steady peel past it | Reaches | Ride per side |
+   | --- | --- | --- | --- | --- | --- |
+   | 25 | ±6–24 m (varies) | 12–17 m/s | 6.0–6.5 m/s from \|x\| 27 | \|x\| 75–84 | 18–21 s |
+   | **15** | **±18 m** | **10.4 m/s** | **5.6–5.8 m/s** | **\|x\| 63–69** | **18–21 s** |
+   | 10 | ±15 m | 8.3 m/s | 5.4–6.2 m/s | \|x\| 60–63 | about 20 s |
+
+   - **Peel:** at 5.7 m/s against C_b ≈ 4.7 m/s, the steady peel is about 55°: Scarfe's intermediate band, toward its gentle end.
+   - **Repeatability:** the waves repeat to about 0.1 s along the arm (b = 15: arrival at |x| 45 at 11.8 / 11.7 / 11.6 s after the tip).
+   - **b = 10's peak:** faces were about 1.4 times the arm's in the column runs, past the advisor's 1.25.
+   - **Kept: b = 15.** Riders wait at x 27, just past the tip's fast section, where the arm is about 1.5 times the wave's height deep.
 
 ## Cost
 
