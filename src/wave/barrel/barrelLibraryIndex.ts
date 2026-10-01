@@ -4,6 +4,7 @@ import type { BarrelCaseEntry } from './barrelLibrary';
 export const BARREL_CASES: readonly BarrelCaseEntry[] = [
   {
     "id": "pad19-a20-l12",
+    "spot": "padang",
     "slope": 0.0526316,
     "nonlinearity": 0.2,
     "flatDepth": 0.1785714,
@@ -11,6 +12,7 @@ export const BARREL_CASES: readonly BarrelCaseEntry[] = [
   },
   {
     "id": "pad19-a30-l12",
+    "spot": "padang",
     "slope": 0.0526316,
     "nonlinearity": 0.3,
     "flatDepth": 0.1785714,
@@ -18,6 +20,7 @@ export const BARREL_CASES: readonly BarrelCaseEntry[] = [
   },
   {
     "id": "pad19-a45-l12",
+    "spot": "padang",
     "slope": 0.0526316,
     "nonlinearity": 0.45,
     "flatDepth": 0.1785714,
@@ -25,6 +28,7 @@ export const BARREL_CASES: readonly BarrelCaseEntry[] = [
   },
   {
     "id": "periodic-padang19s-l12",
+    "spot": "padang",
     "slope": 0.0526316,
     "nonlinearity": 0.1414,
     "flatDepth": 0.1785714,

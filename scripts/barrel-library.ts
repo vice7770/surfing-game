@@ -1,35 +1,57 @@
 /**
  * The swept barrel's profile library (Padang Padang, Part B): turns the advisor's Basilisk runs
  * (tools/basilisk, analysed by its metrics.py and library.py) into barrel cases the game loads, and checks
- * each against the published fits. Every run is given each time; the index lists exactly those. Written:
+ * each against the published fits. Every case is named each time; the index lists exactly those. Written:
  *
  *   public/barrels/<id>.bin                 each case, as profileFormat encodes it
- *   src/wave/barrel/barrelLibraryIndex.ts   the cases and their assets
+ *   src/wave/barrel/barrelLibraryIndex.ts   the cases, their spots and their assets
  *   docs/research/barrel-cases.md           the validation table and the landmarks' cleanliness
  *
- *   npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --flat 0.1785714
+ *   npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --flat 0.1785714 --spot padang
  *
- * --runs names the directory holding the runs (tools/basilisk/runs by default); --flat is the reef flat's
- * depth beyond the slope, in h0 (Padang Padang: 1.25 m over 7 m). --a0 NAME=VALUE sets a run's H0/h0, the key cases
- * blend by, to its crest at the slope's foot over h0 where its own A0 is something else: a periodic train's is its
- * wave height (the advisor's plunge_measure.py runs; their metrics are read in that form too).
+ * --runs names the directory holding the runs (tools/basilisk/runs by default). --run NAME converts a run; --keep ID
+ * keeps a committed case as it is (its .bin untouched, its rows carried over from barrel-cases.md), for a case whose
+ * run is not on this machine. Per case, NAME=VALUE (or one VALUE for every case):
+ *   --spot: the spot whose transect it was run on (each spot loads only its own cases; PR 7);
+ *   --flat: the flat's depth beyond the slope, in h0 (Padang Padang: 1.25 m over 7 m);
+ *   --a0: its H0/h0, the key cases blend by, where its own A0 is something else: a periodic train's is its wave height,
+ *     so give its crest at the slope's foot over h0 (the advisor's plunge_measure.py runs; their metrics are read in
+ *     that form too);
+ * and --jumps-after-torn NAME keeps a frame flagged only for jumps after a torn one (`ConversionOptions`).
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import type { SpotName } from '../src/wave/Bathymetry';
 import { caseFromLibrary, libraryJson } from '../src/wave/barrel/caseFromLibrary';
-import { encodeCase } from '../src/wave/barrel/profileFormat';
+import { decodeCase, encodeCase } from '../src/wave/barrel/profileFormat';
 import type { BarrelCaseEntry } from '../src/wave/barrel/barrelLibrary';
 
 const options = (name: string): string[] =>
   process.argv.flatMap((arg, i) => (arg === `--${name}` && i + 1 < process.argv.length ? [process.argv[i + 1]] : []));
+/** A per-case option: NAME=VALUE pairs, and one bare VALUE for every case without its own. */
+const perCase = (name: string) => {
+  const pairs = new Map<string, string>();
+  let fallback: string | undefined;
+  for (const option of options(name)) {
+    const at = option.indexOf('=');
+    if (at < 0) fallback = option;
+    else pairs.set(option.slice(0, at), option.slice(at + 1));
+  }
+  return (key: string) => pairs.get(key) ?? fallback;
+};
 const runs = options('run');
+const keeps = options('keep');
 const runsDir = options('runs')[0] ?? 'tools/basilisk/runs';
-const flat = Number(options('flat')[0]);
-const a0Overrides = new Map(options('a0').map((pair) => {
-  const [name, value] = pair.split('=');
-  return [name, Number(value)] as const;
-}));
-if (runs.length === 0 || !Number.isFinite(flat)) {
-  console.error('usage: npm run barrels -- --run NAME [--run NAME …] --flat DEPTH_OVER_H0 [--runs DIR]');
+const flatOf = perCase('flat');
+const spotOf = perCase('spot');
+const a0Of = perCase('a0');
+const jumpsAfterTorn = new Set(options('jumps-after-torn'));
+const SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon', 'padang'];
+const missing = [
+  ...runs.filter((run) => !Number.isFinite(Number(flatOf(run)))).map((run) => `${run}: --flat`),
+  ...[...runs, ...keeps].filter((name) => !SPOTS.includes(spotOf(name) as SpotName)).map((name) => `${name}: --spot`),
+];
+if (runs.length + keeps.length === 0 || missing.length > 0) {
+  console.error(`usage: npm run barrels -- --run NAME … [--keep ID …] --flat [NAME=]DEPTH_OVER_H0 --spot [NAME=]SPOT [--a0 NAME=A0] [--jumps-after-torn NAME] [--runs DIR]${missing.length ? `\nmissing: ${missing.join(', ')}` : ''}`);
   process.exit(1);
 }
 
@@ -96,25 +118,59 @@ function wallSeconds(run: string): number | undefined {
   return last && last.length >= 8 ? Number(last[7]) : undefined;
 }
 
+/** The rows barrel-cases.md holds for a case, by section, so a kept case's are carried over unchanged. */
+function rowsOf(id: string): { validation?: string; tip?: string; landmarks: string[] } {
+  const path = 'docs/research/barrel-cases.md';
+  const found: { validation?: string; tip?: string; landmarks: string[] } = { landmarks: [] };
+  if (!existsSync(path)) return found;
+  let section = '';
+  for (const line of readFileSync(path, 'utf8').split('\n')) {
+    if (line.startsWith('## ')) section = line.slice(3).trim();
+    if (!line.startsWith(`| ${id} |`)) continue;
+    if (section === 'Validation') found.validation = line.slice(2, -2);
+    else if (section === 'The lip tip') found.tip = line;
+    else if (section === 'Landmarks') found.landmarks.push(line);
+  }
+  return found;
+}
+
 mkdirSync('public/barrels', { recursive: true });
 const entries: BarrelCaseEntry[] = [];
 const rows: string[] = [];
 const cleanliness: string[] = [];
 const tips: string[] = [];
-for (const run of runs) {
+const sources: string[] = [];
+for (const name of [...keeps, ...runs]) {
+  const spot = spotOf(name) as SpotName;
+  if (keeps.includes(name)) {
+    // A committed case kept as it is: its index entry from its own header, its rows as barrel-cases.md has them.
+    const asset = `barrels/${name}.bin`;
+    const barrel = decodeCase(new Uint8Array(readFileSync(`public/${asset}`)));
+    entries.push({ id: name, spot, slope: barrel.slope, nonlinearity: barrel.nonlinearity, flatDepth: barrel.flatDepth, asset });
+    const carried = rowsOf(name);
+    if (!carried.validation) throw new Error(`${name}: kept, but barrel-cases.md has no row for it`);
+    rows.push(carried.validation);
+    if (carried.tip) tips.push(carried.tip);
+    cleanliness.push(...carried.landmarks);
+    sources.push(`${name} (${spot}, kept)`);
+    continue;
+  }
+  const run = name;
+  const flat = Number(flatOf(run));
   const library = libraryJson(JSON.parse(readFileSync(`${runsDir}/${run}_library.json`, 'utf8')) as Record<string, unknown>);
-  const a0 = a0Overrides.get(run);
-  if (a0 !== undefined) library.run.A0 = a0;
+  const a0 = a0Of(run);
+  if (a0 !== undefined) library.run.A0 = Number(a0);
   const metrics = asMetrics(
     JSON.parse(readFileSync(`${runsDir}/${run}_metrics.json`, 'utf8')) as Metrics | PeriodicMetrics,
     library.run.level, library.run.slope, library.run.A0, library.run.h0_m,
   );
   const id = run.toLowerCase().replaceAll('_', '-');
-  const { barrel, refilled } = caseFromLibrary(library, id, flat);
+  const { barrel, refilled } = caseFromLibrary(library, id, flat, { jumpsAfterTorn: jumpsAfterTorn.has(run) });
   const asset = `barrels/${id}.bin`;
   const bytes = encodeCase(barrel);
   writeFileSync(`public/${asset}`, bytes);
-  entries.push({ id, slope: barrel.slope, nonlinearity: barrel.nonlinearity, flatDepth: barrel.flatDepth, asset });
+  entries.push({ id, spot, slope: barrel.slope, nonlinearity: barrel.nonlinearity, flatDepth: barrel.flatDepth, asset });
+  sources.push(`${run} (${spot}, flat ${flat} h0${jumpsAfterTorn.has(run) ? ', jumps after a torn frame kept' : ''})`);
 
   const h0 = library.run.h0_m;
   const impact = metrics.impact;
@@ -170,13 +226,19 @@ import type { BarrelCaseEntry } from './barrelLibrary';
 export const BARREL_CASES: readonly BarrelCaseEntry[] = ${JSON.stringify(entries, null, 2)};
 `);
 
+const bySpot = SPOTS.map((spot) => [spot, entries.filter((entry) => entry.spot === spot).map((entry) => `\`${entry.id}\``)] as const)
+  .filter(([, ids]) => ids.length > 0).map(([spot, ids]) => `- ${spot}: ${ids.join(', ')}`).join('\n');
+
 writeFileSync('docs/research/barrel-cases.md', `# Barrel cases
 
-Generated by \`npm run barrels\` (Padang Padang, Part B) from the advisor's Basilisk runs in \`${runsDir}\`: ${runs.join(', ')}; flat at ${flat} h0. What the cases are for and how to add one: [barrel-library.md](barrel-library.md).
+Generated by \`npm run barrels\` (Padang Padang, Part B) from the advisor's Basilisk runs in \`${runsDir}\`: ${sources.join('; ')}. A kept case's rows are carried over from this file as they were. What the cases are for and how to add one: [barrel-library.md](barrel-library.md).
+
+Each spot loads only its own transect's cases (PR 7):
+${bySpot}
 
 ## Validation
 
-Each case at the last output before touchdown, simulated / fitted. The fits are Pick & Feddersen's in ψ0 = s/(H0/h0)^¼, as round 2 recorded them (round 6 §2.1) [modelled]; ✓ is inside round 2's tolerance (areas ±${TOLERANCE.area}, W/L ±${TOLERANCE.aspect}, θ ±${TOLERANCE.angle}°). L/W is against Mead & Black's fit at X = 1/s (in brackets), their reefs' ${MEAD_BLACK.low}–${MEAD_BLACK.high} and Padang Padang's own ${MEAD_BLACK.padangLow}–${MEAD_BLACK.padangHigh} [measured, field], with Padang's tilt at ${MEAD_BLACK.padangTiltLow}–${MEAD_BLACK.padangTiltHigh}°. The simulated values are [measured] in the model. Lengths in h0, and in metres at h0 = 7 m.
+Each case at the last output before touchdown, simulated / fitted. The fits are Pick & Feddersen's in ψ0 = s/(H0/h0)^¼, as round 2 recorded them (round 6 §2.1) [modelled]; ✓ is inside round 2's tolerance (areas ±${TOLERANCE.area}, W/L ±${TOLERANCE.aspect}, θ ±${TOLERANCE.angle}°). L/W is against Mead & Black's fit at X = 1/s (in brackets), their reefs' ${MEAD_BLACK.low}–${MEAD_BLACK.high} and Padang Padang's own ${MEAD_BLACK.padangLow}–${MEAD_BLACK.padangHigh} [measured, field], with Padang's tilt at ${MEAD_BLACK.padangTiltLow}–${MEAD_BLACK.padangTiltHigh}°. The simulated values are [measured] in the model. Lengths in h0, and in metres at the run's own h0 (7 m at Padang Padang, 10 m at the Reef).
 
 | Case | Level | Slope along the path | H0/h0 | ψ0 | H_I | A_O/H_I² | A_J/H_I² | W_O/L_O | θ_O (°) | L/W (fit) | Void L × W (m) | t vertical / τ touchdown | Frames kept | Wall | Size |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -199,4 +261,4 @@ Frames whose landmark checks passed, by phase (round 6 §5.2). The case keeps ev
 ${cleanliness.join('\n')}
 `);
 
-console.log(`${entries.length} cases: ${entries.map((entry) => entry.id).join(', ')}`);
+console.log(`${entries.length} cases: ${entries.map((entry) => `${entry.id} (${entry.spot})`).join(', ')}`);

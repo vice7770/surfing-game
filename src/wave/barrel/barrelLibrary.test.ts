@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { libraryFromBytes, loadBarrelCaseBytes, loadBarrelLibrary, type BarrelCaseEntry } from './barrelLibrary';
+import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes, loadBarrelLibrary, type BarrelCaseEntry } from './barrelLibrary';
 import { BARREL_CASES } from './barrelLibraryIndex';
 import { caseFromLibrary, type LibraryJson } from './caseFromLibrary';
 import { readBarrelCases } from './nodeBarrelCases';
@@ -9,7 +9,7 @@ import { PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
 
 const sample = JSON.parse(readFileSync('docs/research/water-physics/notes/round6-tube-profiles/data/padang-ray-L11-profiles.json', 'utf8')) as LibraryJson;
 const { barrel } = caseFromLibrary(sample, 'test', 0.1785714);
-const entry: BarrelCaseEntry = { id: 'test', slope: barrel.slope, nonlinearity: barrel.nonlinearity, flatDepth: barrel.flatDepth, asset: 'barrels/test.bin' };
+const entry: BarrelCaseEntry = { id: 'test', spot: 'padang', slope: barrel.slope, nonlinearity: barrel.nonlinearity, flatDepth: barrel.flatDepth, asset: 'barrels/test.bin' };
 
 describe('loading the barrel library', () => {
   it('fetches and decodes each case into one library', async () => {
@@ -35,6 +35,17 @@ describe('loading the barrel library', () => {
     const cases = readBarrelCases();
     expect(cases.length).toBe(BARREL_CASES.length);
     expect(libraryFromBytes(cases)).toBeInstanceOf(ProfileLibrary);
+  });
+
+  // PR 7: each spot loads only its own transect's cases.
+  it('picks a spot’s own cases from the index', () => {
+    const reef: BarrelCaseEntry = { ...entry, id: 'reef-test', spot: 'reef', asset: 'barrels/reef-test.bin' };
+    expect(barrelCasesFor('reef', [entry, reef])).toEqual([reef]);
+    expect(barrelCasesFor('canyon', [entry, reef])).toEqual([]);
+    const padang = barrelCasesFor('padang');
+    expect(padang.length).toBeGreaterThan(0);
+    expect(padang.every((c) => c.spot === 'padang')).toBe(true);
+    expect(readBarrelCases('padang').length).toBe(padang.length);
   });
 
   it('names the case that did not load', async () => {
