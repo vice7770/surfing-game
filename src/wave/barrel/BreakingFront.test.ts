@@ -254,6 +254,23 @@ describe('the breaking front as lines', () => {
     expect(front.points[1].z).toBe(10.6);
   });
 
+  it('keeps a crashed point on its pace while it blends toward the crest it claims, and lets one with none go (PR 5)', () => {
+    const front = new BreakingFront(1, TIMING);
+    joinAt(front, range(0, 3), 10, 0, 1);
+    const ids = front.points.map((point) => point.id);
+    for (const k of [1, 2]) Object.assign(front.points[k], { jetStrip: k, jetWindow: 3, jetPace: 5, jetBase: 10, jetBlend: 0.2, jetUntil: 0.5, crashedAt: 1, tau: 0.3 });
+    // Column 1's crest leaps 4.5 m ahead of its paced z, in reach; column 2 has none.
+    const crests = [sample(0, 10.3, 2.4, 0.5), sample(1, 15, 2.4, 0.5)];
+    front.update(crests, crests.length, 1.1);
+    expect(front.points.map((point) => point.id)).toEqual([ids[0], ids[1]]);
+    expect(front.points[1].crestZ).toBe(15);
+    expect(front.points[1].z).toBeCloseTo(10.5, 12);
+    // Past its blend it matches as before: the crest 4.5 m away is past the match reach, and it leaves.
+    front.points[1].tau = 0.6;
+    front.update(crests, crests.length, 1.2);
+    expect(front.points.map((point) => point.id)).toEqual([ids[0]]);
+  });
+
   it('keeps each point’s crest speed as the mean of its crest’s over the last few frames (PR 5)', () => {
     const front = new BreakingFront(1, TIMING);
     joinAt(front, range(0, 2), 10, 0, 1);

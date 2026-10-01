@@ -4,13 +4,16 @@ import { SOURCE_REACH, STRIP_PARCELS, type PlungingLip } from '../PlungingLip';
 import type { ShallowWaterSolver } from '../ShallowWaterSolver';
 import type { FrontPoint } from './BreakingFront';
 import { CrashCurve, createCrashSlice, type CrashSlice, type JetMotion } from './crashCurve';
+import { LOFT } from './sweptLoft';
 import type { ProfileLibrary } from './ProfileLibrary';
 
 /**
  * A thrown jet's point runs on its crest's pace from the throw to the crash, held to `slowest`–`fastest` × the long-wave
- * speed √(g (h + η)) at its crest, as the contact's crest pace is (CREST_SPEED; the advisor, 2026-10-01, provisional).
+ * speed √(g (h + η)) at its crest, as the contact's crest pace is (CREST_SPEED; the advisor, 2026-10-01, provisional),
+ * then turned along its column by the ray's z part, at least `leastRayZ` (a crest line moving c_n along its normal
+ * crosses a column at c_n / cos θ).
  */
-export const PACE = { slowest: 0.5, fastest: 1.5 } as const;
+export const PACE = { slowest: 0.5, fastest: 1.5, leastRayZ: 0.5 } as const;
 
 /** What the crash reads and writes each step: the water, its lip, still level (m) and the swell's period (s), and the breaking. */
 export interface CrashSea {
@@ -117,11 +120,16 @@ export class SweptCrash {
     const started = performance.now();
     this.curve.length = 0;
     sea.whitewater.set(sea.strength);
-    // A point holding an uncrashed jet runs on its pace, on its clock (BreakingFront): z = jetBase + jetPace τ.
+    // A point holding a jet runs on its pace, on its clock (BreakingFront): z = jetBase + jetPace τ. As the loft hands
+    // its anchor back to the solver's crest (from LOFT.handoverStart of the open time, over LOFT.handover), its z blends
+    // toward the crest it claims, so the point and the anchor hand over together; with none in reach it stays paced.
     for (const p of points) {
-      if (p.jetPace !== undefined && p.jetBase !== undefined && p.crashedAt === undefined && p.jetStrip !== undefined && p.jetStrip >= 0) {
-        p.z = p.jetBase + p.jetPace * p.tau;
-      }
+      if (p.jetPace === undefined || p.jetBase === undefined || p.jetStrip === undefined || p.jetStrip < 0) continue;
+      // Crashed, it blends on only toward a crest it claims, until the blend is whole; with none it leaves (BreakingFront).
+      if (p.crashedAt !== undefined && !(p.crestZ !== undefined && p.jetUntil !== undefined && p.tau < p.jetUntil)) continue;
+      const paced = p.jetBase + p.jetPace * p.tau;
+      const u = p.jetBlend === undefined ? 0 : Math.min(1, Math.max(0, (p.tau - p.jetBlend) / LOFT.handover));
+      p.z = p.crestZ !== undefined ? paced + u * (p.crestZ - paced) : paced;
     }
     const { solver } = sea;
     const heightAt = (x: number, z: number) => solver.sampleCentered(solver.h, x, z) + solver.sampleCentered(solver.bed, x, z);
@@ -245,19 +253,24 @@ export class SweptCrash {
       // claims its column's crest over it (BreakingFront).
       const height = waveHeight > 0 ? waveHeight : solver.h[cell] + solver.bed[cell] - solver.restLevel;
       p.jetWindow = SOURCE_REACH * Math.max(0, height);
-      // Its pace from here to the crash: its crest's over the last few frames, held to PACE × the long-wave speed there.
+      // Its pace from here to the crash: its crest's over the last few frames (crestMotion's, along the crest's own
+      // normal), held to PACE × the long-wave speed there, then along its column: c_n / n_z, n_z the ray's (the loft's).
       const wave = Math.sqrt(GRAVITY * Math.max(0, p.crestDepth + p.height));
-      let pace = p.crestSpeed !== undefined && p.crestSpeed > 0 ? p.crestSpeed : wave;
+      let normal = p.crestSpeed !== undefined && p.crestSpeed > 0 ? p.crestSpeed : wave;
       if (p.crestSpeed === undefined || !(p.crestSpeed > 0)) this.counts.paceUnmeasured += 1;
-      else if (pace < PACE.slowest * wave) {
-        pace = PACE.slowest * wave;
+      else if (normal < PACE.slowest * wave) {
+        normal = PACE.slowest * wave;
         this.counts.paceSlow += 1;
-      } else if (pace > PACE.fastest * wave) {
-        pace = PACE.fastest * wave;
+      } else if (normal > PACE.fastest * wave) {
+        normal = PACE.fastest * wave;
         this.counts.paceFast += 1;
       }
+      const pace = normal / Math.max(PACE.leastRayZ, s.rayZ);
       p.jetPace = pace;
       p.jetBase = (p.throwZ ?? p.z - pace * p.tau);
+      // Its z blends toward its crest as the loft hands its anchor back.
+      p.jetBlend = LOFT.handoverStart * s.touchdown;
+      p.jetUntil = p.jetBlend + LOFT.handover;
     }
     if (thrown < volume) {
       this.counts.starved += 1;

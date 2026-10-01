@@ -143,6 +143,44 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     expect(lip.trappedAir).toBeGreaterThan(0);
   });
 
+  it('paces a thrown point along its column, c_n / n_z after the clamp, and blends it toward its crest as the anchor hands back (the advisor)', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver);
+    const crash = new SweptCrash(library(), 0.05);
+    const s = sea(solver, lip);
+    const wave = Math.sqrt(GRAVITY * (1.8 + 0.8));
+    // Fronts at 0°, 26.6° and 71.6° to the columns (their rays' z parts 1, 0.894 and 0.316, held to 0.5); crests at 4 m/s,
+    // and one at 10 m/s, past 1.5 √(g (h + η)).
+    const paced = (slope: number, speed: number) => {
+      const points = front(9, () => 0).map((p) => ({ ...p, z: 11.5 + slope * (p.x - 4.5), throwZ: 11.5 + slope * (p.x - 4.5), crestSpeed: speed }));
+      crash.update(points, s);
+      return points[4];
+    };
+    expect(paced(0, 4).jetPace).toBeCloseTo(4, 12);
+    expect(paced(0.5, 4).jetPace).toBeCloseTo(4 / (1 / Math.sqrt(1.25)), 2);
+    expect(paced(3, 4).jetPace).toBeCloseTo(4 / 0.5, 2);
+    expect(paced(0, 10).jetPace).toBeCloseTo(1.5 * wave, 12);
+    expect(crash.counts.paceFast).toBe(7);
+    // The blend: from 0.8 of the open time, over 0.3 s, z goes from the paced to the claimed crest.
+    const points = front(9, () => 0).map((p) => ({ ...p, crestSpeed: 4 }));
+    run(crash, points, s, 0, 0.02);
+    const p = points[4];
+    expect(p.jetBlend).toBeCloseTo(0.8 * TOUCHDOWN, 12);
+    expect(p.jetUntil).toBeCloseTo(0.8 * TOUCHDOWN + 0.3, 12);
+    for (const tau of [0.1, p.jetBlend! + 0.15, p.jetBlend! + 0.3, p.jetBlend! + 0.45]) {
+      for (const q of points) {
+        q.tau = tau;
+        q.crestZ = 14;
+      }
+      crash.update(points, s);
+      const pacedZ = 11.5 + 4 * tau;
+      const u = Math.min(1, Math.max(0, (tau - p.jetBlend!) / 0.3));
+      // Crashed past the blend's end, it is left as it was: the front matches it as before.
+      if (tau < p.jetUntil!) expect(p.z).toBeCloseTo(pacedZ + u * (14 - pacedZ), 12);
+    }
+    expect(p.crashedAt).toBeDefined();
+  });
+
   it('crashes as foreseen the jet of a point left alone on its front at its touchdown', () => {
     const solver = basin();
     const lip = new PlungingLip(solver);
