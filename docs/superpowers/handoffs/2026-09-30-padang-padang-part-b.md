@@ -22,7 +22,8 @@ Padang Padang (Bali) is the game's fifth surf spot. **Part A** built the spot, a
 | PR 2 front and slice clock, #91 | `claude/padang-clock` | `claude/padang-barrel` | **open**, the user merges |
 | PR 3 drawn mesh, #92 | `claude/padang-mesh` | `claude/padang-clock` | **open**, the user merges; screenshots of a tube in both looks still owed |
 | PR 4 contact, #95 | `claude/padang-contact` | `claude/padang-mesh` | **open**, the user merges; see "PR 4" below |
-| PR 5 crash curve, parcels, sound | — | — | not started |
+| Curl colour fix | `claude/padang-curl-colour` | `claude/padang-contact` | in progress (another agent): the curl's lift range, and the overlap footprint to the lifted span |
+| PR 5 crash curve, parcels, sound | `claude/padang-crash` | `claude/padang-contact` | in progress (another agent), on PR 4's fade |
 | PR 6 shading (Rich: lip glow, dark throat) | — | — | not started |
 | PR 7 switch every spot, delete the old code | — | — | not started |
 
@@ -66,7 +67,22 @@ A "Water physics research" session advises on every lip, tube, contact or foam s
 - Their consult log is `docs/research/water-physics/consult-log.md` on their branch (PR #82). Never edit it.
 - Read their files only through `git fetch origin claude/water-physics-advisor-local` then `git show origin/claude/water-physics-advisor-local:<path>`.
 
-**The advisor's answers on PR 4 (2026-09-30), to build next on this branch.** They confirmed the rest as written: parity, half-open ties and folds, the floor and ceiling fields, `surfaceAt` as the lowest crossing, the lip flow, the tube states, covered and clearance.
+**The advisor's answers on PR 4 (2026-09-30), now built on this branch** (2026-10-01; the record is `docs/research/barrel-library.md`, "The contact"). They confirmed the rest as written: parity, half-open ties and folds, the floor and ceiling fields, `surfaceAt` as the lowest crossing, the lip flow, the tube states, covered and clearance.
+
+As built, and the rulings taken while building (each sent to the advisor first):
+- **Item 7 (the buckets):** 0.5 m buckets along each strip's ray; about 8 quads a query through a tube, against 133; the answers are exactly the full scan's. The quads' ranges are widened by 0.1 mm past their 32-bit rounding, which fixed a lost face crossing on vertex rows; the full scan had it too.
+- **Item 1 (after touchdown):**
+  - **The held frame** is measured per case when the library loads: the last frame, at or before a frame before touchdown, whose tip stands 2 cells over the face beneath it and 2 cells ahead of its throat.
+    - pad19-a30-l12's last two frames have closed onto the face, so it holds two frames before touchdown; the others hold one.
+    - pad19-a20-l12's and pad19-a45-l12's last two frames are duplicates and open, so their drawn lip never visibly lands. The fade closes it; **PR 5's crash curve owns the landing's look.**
+  - **W** is the held frame's void height (0.48, 1.17, 1.75 and 0.49 m at h0 7 m), so the collapse √(2W/g) takes 0.31–0.60 s.
+  - **Each blended case holds at its own held frame** (the advisor's later ruling). The min of the two cases froze a blend on a case that carried no weight.
+  - **The drawn and held tips** stand up to 0.33 m apart, at a30's closed frames: the touchdown's own approach, accepted.
+- **Item 2:** no cut. On the library's cases the layers can swap by up to 10 mm at the tip where a front's ends ramp the weight; parity holds on every line. About 1 % of lines meet a cell-scale wiggle in the cases' near-vertical undersides. **A light smoothing in the converter is a cleanup for later.**
+- **Item 3:** strip-level dropping in the shared loft, counted; the contact's per-point rule is the backstop. The colour agent is changing the footprint to the lifted span on its branch: **don't edit `dropOverlaps` or `hullsOverlap` on `claude/padang-contact`.**
+- **Item 4:** the slope is held at tan 60° along the face's direction.
+- **Item 5:** drag only.
+- **Item 6:** the anchor's following motion is added, with Ṡ the crest's mean pace since its throw (guards: blended in over 0.1–0.3 s, held to 0.5–1.5 × √(g d)). The residual is 0.33 m/s or less until a window before a hold.
 
 1. **After touchdown: keep the contact's hold.**
    - The contact holds the last clear frame (the jet ≥ 2 cells off the face).
@@ -117,23 +133,25 @@ Rulings made while building (the plan's ledger):
 - `PhysicalMode.barrel.test.ts` holds the page tests, so the loader's module mock stays out of the other tests.
 
 Deferred minors:
-- `SweptContact.index` allocates its strip and box arrays every update.
+- ~~`SweptContact.index` allocates its strip and box arrays every update.~~ Fixed with the buckets.
 - A hand touching both the water and the curl keeps only the second share's `handLoad`.
 - The page's `SnapshotSurfZone` doesn't know the contact (page-side only).
+- The converter could smooth the cases' near-vertical jet undersides lightly: about 1 % of vertical lines meet them three times (a millimetre-wide air sliver in the lip).
 
 **Still to do for PR 4:**
-- [ ] Rerun the probe on an unloaded machine long enough for tubes to open: `PROBE=1 SECONDS=180 LOG=padang-contact.txt npx vitest run src/wave/probes/padangContact.probe.test.ts`.
-  - It logs the update per step, µs per query through open tubes, and a standing rider's cost (2,656 samples a step × µs).
-  - On the loaded M1 the toy tube gave 6.4 µs a query, about 17 ms a step for a rider wholly in a tube. Build the quad buckets first (the advisor's item 7), then rerun.
-- [ ] Ride a tube by hand at Padang Padang, and take the screenshots owed from #92 (both looks). The browser pane must be shown: a hidden pane throttles the game to about 1.5 fps.
-- [ ] Build the advisor's answers 1–6 above, with tests, and the query's buckets (7) before the rerun. Update `docs/research/barrel-library.md` ("The contact") and PR #95's description.
-- [ ] Agree Part D's fields (`covered`, `clearance`, `tube`) with the Reef owner's session when it runs.
+- [ ] Rerun the probe on a quiet machine, long enough for tubes to open: `PROBE=1 SECONDS=180 LOG=<a git-ignored path> npx vitest run src/wave/probes/padangContact.probe.test.ts`.
+  - It logs the update per step, µs per query through open tubes, a standing rider's cost (2,656 samples a step × µs), the dropped strips per 1000 (and any with an open tube), the tip gap, and the faces' slopes. Each comes with CPU time and the load.
+  - Tried 2026-10-01 on the M1 (load 22–38, 8 GB paging): its worker got 13–20 % of a core and hadn't logged 5 s of sea in 29 minutes, so it was stopped.
+  - The toy tube with the buckets: 0.79 µs CPU a query (2.05 µs wall at load 28), so about 2.1 ms CPU a step for a rider wholly in a tube.
+- [ ] Ride a tube by hand at Padang Padang, and take the screenshots owed from #92 (both looks). The browser pane must be shown: a hidden pane throttles the game to about 1.5 fps. It was hidden on 2026-10-01.
+- [x] Build the advisor's answers 1–6 above, with tests, and the query's buckets (7) before the rerun. Update `docs/research/barrel-library.md` ("The contact") and PR #95's description. Done 2026-10-01; see "As built" above.
+- [ ] Agree Part D's fields (`covered`, `clearance`, `tube`) with the Reef owner's session when it runs (it wasn't running on 2026-10-01).
 
 ## Next PRs
 
 - **PR 5: crash curve, parcels, sound.**
   - The lip's landing line and the crash parcels come from the barrel's clock (touchdown), not the solver's lip.
-  - The swept surface blends into the roller after touchdown (today it fades over 0.3 s, a stand-in).
+  - The swept surface blends into the roller after touchdown. Today it fades over the tube's collapse, √(2W/g) (the loft's `sliceCollapse`, `sliceFade`, `collapseFade`).
   - The tube's own foam starts here (PR 3 took the whitewater foam off the curl).
   - The overall plan's open item: the Kennedy onset leads the lip by up to about 2 s and 20 m on the wedge, so where the swept barrel runs, Rich's whitewater, foam and the crash sound should start from the barrel's clock. Agree it with the G9 (whitewater) owner first.
 - **PR 6: Rich shading.** Lip glow and a dark throat, Rich only; Classic stays byte-identical except where there is a lip or a tube.
@@ -144,7 +162,7 @@ Deferred minors:
 - **PR 1:** `src/wave/barrel/ProfileLibrary.ts` (lookup by slope, foot crest and τ), `profileFormat.ts` (BRL2), `caseFromLibrary.ts` (conversion, tip fit), `barrelLibrary.ts` (loading), `scripts/barrel-library.ts`, `public/barrels/`.
 - **PR 2:** `crestOnset.ts`, `BreakingFront.ts`, `sliceClock.ts` (the throw depth 1.56 + 0.56 η_foot, clamped to 0.99–2.50 m foot crests; biweight-fitted throws); `SWEPT_BARREL = ['padang']` in `SurfZoneSimulation.ts`.
 - **PR 3:** `frontRecords.ts` (8 floats a point in the snapshot), `sweptLoft.ts` (the loft), `src/scene/barrel/` (mask, mesh, `SweptBarrel`), `WaterSurface.setBarrelEnabled`.
-- **PR 4:** `sweptContact.ts`, `nodeBarrelCases.ts`, `src/physics/PhysicalSurfWater.ts` (`swept`, `plainSurfaceAt`), `src/physics/SurfWater.ts` (the layer and Part D fields), `src/physics/AttachedRider.ts` (`applyWater`, `wetForce`), `src/wave/SurfZoneRunner.ts` (`barrelCases`, `contact`), `src/game/PhysicalMode.ts` (`barrelCaseBytes`, `HostExtras`), `src/main.ts`.
+- **PR 4:** `sweptContact.ts` (the buckets, the backstop), `nodeBarrelCases.ts`, `ProfileLibrary.ts` (`heldFrame`, `ProfileQuery.hold`, `pointAt`, `collapseSeconds`), `sweptLoft.ts` (`collapseFade`, `CREST_SPEED`, `dropOverlaps`, the tip gap), `src/physics/PhysicalSurfWater.ts` (`swept`, `plainSurfaceAt`, the slope clamp), `src/physics/SurfWater.ts` (the layer and Part D fields), `src/physics/AttachedRider.ts` (`applyWater`, `wetForce` with no buoyancy in the lip), `src/wave/SurfZoneRunner.ts` (`barrelCases`, `contact`, the column depth), `src/game/PhysicalMode.ts` (`barrelCaseBytes`, `HostExtras`), `src/main.ts`.
 
 ## Running things
 

@@ -1,4 +1,5 @@
 import { appendFileSync, writeFileSync } from 'node:fs';
+import { loadavg } from 'node:os';
 import { Quaternion, Vector3 } from 'three';
 import { describe, it } from 'vitest';
 import { PADANG_SPREADING } from '../../game/PhysicalMode';
@@ -70,6 +71,9 @@ describe.runIf(process.env.PROBE)('Padang Padang contact probe', () => {
     appendFileSync(log, `Padang Padang ${name} (Hs ${swell.significantHeight} m, ${swell.peakPeriod} s), 1 m cells, 1/60 s steps; a standing rider samples the water ${samples} times a step\n`);
     const updates: number[] = [];
     const steps: number[] = [];
+    /** The step's and the queries' CPU time, ms: on a loaded machine wall time counts the waits for a core too. */
+    const stepCpu: number[] = [];
+    let queryCpuMs = 0;
     /** Overturned slices under partial weight (a front's ends, a collapse): lerped toward the water as drawn. */
     const partial: number[] = [];
     const vertices: number[] = [];
@@ -100,8 +104,11 @@ describe.runIf(process.env.PROBE)('Padang Padang contact probe', () => {
     const seconds = Number(process.env.SECONDS ?? 60);
     for (let step = 0; step < seconds / SURF_ZONE_STEP; step += 1) {
       const start = performance.now();
+      const cpu = process.cpuUsage();
       runner.advance(1);
       steps.push(performance.now() - start);
+      const used = process.cpuUsage(cpu);
+      stepCpu.push((used.user + used.system) / 1000);
       updates.push(runner.contactMs);
       const loft = contact.last;
       if (!loft) continue;
@@ -138,6 +145,7 @@ describe.runIf(process.env.PROBE)('Padang Padang contact probe', () => {
       const backstopBefore = contact.stats.overlaps;
       const p = loft.positions;
       const t0 = performance.now();
+      const c0 = process.cpuUsage();
       for (let k = 0; k < 2000; k += 1) {
         const s = open[Math.floor(random() * open.length)];
         const j = LOFT.extensionSamples + 64 + Math.floor(random() * 48);
@@ -156,19 +164,23 @@ describe.runIf(process.env.PROBE)('Padang Padang contact probe', () => {
         queried += 1;
       }
       queryMs += performance.now() - t0;
+      const queryCpu = process.cpuUsage(c0);
+      queryCpuMs += (queryCpu.user + queryCpu.system) / 1000;
       anomalies += contact.stats.anomalies - before;
       quads += contact.stats.quads - quadsBefore;
       backstop += contact.stats.overlaps - backstopBefore;
       if (step % 300 === 299) {
-        appendFileSync(log, `t ${runner.simulation.solver.time.toFixed(0)} s | contact update ${quantiles(updates)} ms against the step's ${quantiles(steps, 1)} ms | vertices ${quantiles(vertices, 0)} | lerped lips ${quantiles(partial, 0)} | strips dropped ${dropped} of ${strips}\n`);
+        appendFileSync(log, `t ${runner.simulation.solver.time.toFixed(0)} s | contact update ${quantiles(updates)} ms against the step's ${quantiles(steps, 1)} ms (CPU ${quantiles(stepCpu, 1)}) | vertices ${quantiles(vertices, 0)} | lerped lips ${quantiles(partial, 0)} | strips dropped ${dropped} of ${strips} | load ${loadavg()[0].toFixed(1)}\n`);
       }
     }
     const perQuery = queried ? (1000 * queryMs) / queried : Number.NaN;
+    const perQueryCpu = queried ? (1000 * queryCpuMs) / queried : Number.NaN;
     const update = updates.reduce((sum, ms) => sum + ms, 0) / Math.max(1, updates.length);
     const step = steps.reduce((sum, ms) => sum + ms, 0) / Math.max(1, steps.length);
-    appendFileSync(log, `the contact's update ${update.toFixed(2)} ms a step against the step's ${step.toFixed(1)} ms (${((100 * update) / step).toFixed(1)} %)\n`);
-    appendFileSync(log, `queries in the open tubes: ${queried}, ${hits} answered by the loft (${inAir} in air, ${covered} covered), ${anomalies} unclosed columns; ${perQuery.toFixed(2)} µs a query, ${(quads / Math.max(1, queried)).toFixed(1)} quads tested a query\n`);
-    appendFileSync(log, `a standing rider in a tube, every sample in the loft: ${samples} × ${perQuery.toFixed(2)} µs = ${((samples * perQuery) / 1000).toFixed(2)} ms a step, on top of the update\n`);
+    const cpuStep = stepCpu.reduce((sum, ms) => sum + ms, 0) / Math.max(1, stepCpu.length);
+    appendFileSync(log, `the contact's update ${update.toFixed(2)} ms a step against the step's ${step.toFixed(1)} ms (${((100 * update) / step).toFixed(1)} %); the step's CPU ${cpuStep.toFixed(1)} ms; load ${loadavg().map((l) => l.toFixed(1)).join(' ')}\n`);
+    appendFileSync(log, `queries in the open tubes: ${queried}, ${hits} answered by the loft (${inAir} in air, ${covered} covered), ${anomalies} unclosed columns; ${perQuery.toFixed(2)} µs a query (CPU ${perQueryCpu.toFixed(2)} µs), ${(quads / Math.max(1, queried)).toFixed(1)} quads tested a query\n`);
+    appendFileSync(log, `a standing rider in a tube, every sample in the loft: ${samples} × ${perQuery.toFixed(2)} µs = ${((samples * perQuery) / 1000).toFixed(2)} ms a step (CPU ${((samples * perQueryCpu) / 1000).toFixed(2)} ms), on top of the update\n`);
     appendFileSync(log, `overlapping fronts: ${dropped} strips dropped of ${strips} (${((1000 * dropped) / Math.max(1, strips)).toFixed(2)} per 1000), ${droppedOpen} with an open tube (most weight ${droppedOpenWeight.toFixed(2)}); the contact's backstop counted ${backstop} queries\n`);
     appendFileSync(log, `the contact's held tip from the drawn one: at most ${tipGap.toFixed(3)} m\n`);
     appendFileSync(log, `the height field's slope on the breaking faces (${faceSlopes.length} samples, 2 m behind the crest to 3 m ahead): |s| ${quantiles(faceSlopes)}; p99 ${quantile(faceSlopes, 0.99).toFixed(2)}, p99.9 ${quantile(faceSlopes, 0.999).toFixed(2)}\n`);
@@ -200,9 +212,15 @@ describe.runIf(process.env.PROBE)('Padang Padang contact probe', () => {
       points[3 * k + 2] = -100 + 4 + 6 * random();
     }
     let hits = 0;
+    // Warmed first, as a long ride would be; then wall and CPU time.
+    for (let k = 0; k < n; k += 1) contact.query(points[3 * k], points[3 * k + 1], points[3 * k + 2], hit);
+    const quads = contact.stats.quads;
     const t0 = performance.now();
+    const c0 = process.cpuUsage();
     for (let k = 0; k < n; k += 1) if (contact.query(points[3 * k], points[3 * k + 1], points[3 * k + 2], hit)) hits += 1;
+    const cpu = process.cpuUsage(c0);
     const perQuery = (1000 * (performance.now() - t0)) / n;
-    appendFileSync(log, `toy tube, a 40 m front (${contact.last!.vertexCount} vertices): update ${update.toFixed(2)} ms; ${perQuery.toFixed(2)} µs a query through its tube (${hits} of ${n} answered)\n`);
+    const perQueryCpu = (cpu.user + cpu.system) / n;
+    appendFileSync(log, `toy tube, a 40 m front (${contact.last!.vertexCount} vertices): update ${update.toFixed(2)} ms; ${perQuery.toFixed(2)} µs a query through its tube (CPU ${perQueryCpu.toFixed(2)} µs; ${((contact.stats.quads - quads) / n).toFixed(1)} quads tested; ${hits} of ${n} answered); load ${loadavg().map((l) => l.toFixed(1)).join(' ')}\n`);
   }, 600_000);
 });
