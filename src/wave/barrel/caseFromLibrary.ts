@@ -64,18 +64,6 @@ export function libraryJson(raw: Record<string, unknown>): LibraryJson {
   return { run, frames: raw.frames as LibraryFrame[] };
 }
 
-/** How a conversion treats flagged frames. */
-export interface ConversionOptions {
-  /**
-   * Keep a frame whose only flags are landmark jumps when the frame before it is torn (`surface_torn_in_window`): its
-   * jumps were measured against the torn trace, not the wave (reef60's early open frames; the advisor's ruling,
-   * PR 7). The torn frames themselves are refilled.
-   */
-  jumpsAfterTorn?: boolean;
-}
-
-const TORN = 'surface_torn_in_window';
-
 /**
  * A Basilisk run's library (the advisor's `library.py`) as a barrel case. Its tube ends at touchdown and blends into
  * the roller later (basilisk-profiles.md, decision 4), and after touchdown the landmarks lose their meaning (round 6
@@ -83,9 +71,7 @@ const TORN = 'surface_torn_in_window';
  * vertical (between the two frames either side of τ = 0). Frames whose landmark checks failed are refilled linearly from their nearest clean neighbours, and counted.
  * The lip tip's velocity is fitted per frame (`tipVelocities`), for the contact's lip flow.
  */
-export function caseFromLibrary(
-  json: LibraryJson, id: string, flatDepth: number, options: ConversionOptions = {},
-): { barrel: BarrelCase; refilled: number } {
+export function caseFromLibrary(json: LibraryJson, id: string, flatDepth: number): { barrel: BarrelCase; refilled: number } {
   const firstPost = json.frames.findIndex((frame) => frame.phase === 'post');
   const kept = json.frames.slice(0, firstPost < 0 ? json.frames.length : firstPost + 1);
   const step = kept.length > 1 ? kept[1].tau - kept[0].tau : 1;
@@ -93,9 +79,7 @@ export function caseFromLibrary(
     // Frames before library.py's TMIN come at the coarse output interval; the case needs one step throughout.
     if (Math.abs(frame.tau - kept[0].tau - i * step) > 0.01 * step) throw new Error(`${id}: frame ${i} breaks the τ step ${step}; pass library.py the fine output's start`);
   });
-  const jumpsOnlyAfterTorn = (i: number) =>
-    options.jumpsAfterTorn === true && i > 0 && kept[i - 1].flags.includes(TORN) && kept[i].flags.every((flag) => flag.startsWith('jump_'));
-  const clean = kept.map((frame, i) => frame.profile !== null && (frame.flags.length === 0 || jumpsOnlyAfterTorn(i)));
+  const clean = kept.map((frame) => frame.flags.length === 0 && frame.profile !== null);
   if (!clean.some(Boolean)) throw new Error(`${id}: no frame up to touchdown passed its landmark checks`);
   const nearestClean = (i: number, step: 1 | -1) => {
     for (let j = i + step; j >= 0 && j < kept.length; j += step) if (clean[j]) return j;

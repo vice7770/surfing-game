@@ -16,8 +16,7 @@
  *   --flat: the flat's depth beyond the slope, in h0 (Padang Padang: 1.25 m over 7 m);
  *   --a0: its H0/h0, the key cases blend by, where its own A0 is something else: a periodic train's is its wave height,
  *     so give its crest at the slope's foot over h0 (the advisor's plunge_measure.py runs; their metrics are read in
- *     that form too);
- * and --jumps-after-torn NAME keeps a frame flagged only for jumps after a torn one (`ConversionOptions`).
+ *     that form too).
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import type { SpotName } from '../src/wave/Bathymetry';
@@ -44,14 +43,13 @@ const runsDir = options('runs')[0] ?? 'tools/basilisk/runs';
 const flatOf = perCase('flat');
 const spotOf = perCase('spot');
 const a0Of = perCase('a0');
-const jumpsAfterTorn = new Set(options('jumps-after-torn'));
 const SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon', 'padang'];
 const missing = [
   ...runs.filter((run) => !Number.isFinite(Number(flatOf(run)))).map((run) => `${run}: --flat`),
   ...[...runs, ...keeps].filter((name) => !SPOTS.includes(spotOf(name) as SpotName)).map((name) => `${name}: --spot`),
 ];
 if (runs.length + keeps.length === 0 || missing.length > 0) {
-  console.error(`usage: npm run barrels -- --run NAME … [--keep ID …] --flat [NAME=]DEPTH_OVER_H0 --spot [NAME=]SPOT [--a0 NAME=A0] [--jumps-after-torn NAME] [--runs DIR]${missing.length ? `\nmissing: ${missing.join(', ')}` : ''}`);
+  console.error(`usage: npm run barrels -- --run NAME … [--keep ID …] --flat [NAME=]DEPTH_OVER_H0 --spot [NAME=]SPOT [--a0 NAME=A0] [--runs DIR]${missing.length ? `\nmissing: ${missing.join(', ')}` : ''}`);
   process.exit(1);
 }
 
@@ -107,8 +105,11 @@ const MEAD_BLACK = { low: 1.42, high: 3.43, padangLow: 1.97, padangHigh: 2.14, p
 const meadBlackFit = (slope: number) => 0.065 / slope + 0.821;
 
 const fixed = (v: number | null | undefined, digits: number) => (v === null || v === undefined || !Number.isFinite(v) ? '—' : v.toFixed(digits));
-const vs = (sim: number | null | undefined, fit: number, tolerance: number, digits: number) =>
-  sim === null || sim === undefined ? `— / ${fit.toFixed(digits)}` : `${sim.toFixed(digits)} / ${fit.toFixed(digits)} ${Math.abs(sim - fit) <= tolerance ? '✓' : '✗'}`;
+/** Pick & Feddersen's fitted ψ0 span (src/wave/Overturn.ts's PSI_RANGE): past it a fit is extrapolation, so none is shown. */
+const PSI_FITTED = { min: 0.0156, max: 0.0889 };
+const vs = (sim: number | null | undefined, fit: number | null, tolerance: number, digits: number) =>
+  fit === null ? `${sim === null || sim === undefined ? '—' : sim.toFixed(digits)} / — (ψ0 past the fits)`
+    : sim === null || sim === undefined ? `— / ${fit.toFixed(digits)}` : `${sim.toFixed(digits)} / ${fit.toFixed(digits)} ${Math.abs(sim - fit) <= tolerance ? '✓' : '✗'}`;
 
 /** The run's wall time, s: timing.log's last line, "# mgp mgu step t dt cells wall". */
 function wallSeconds(run: string): number | undefined {
@@ -165,16 +166,17 @@ for (const name of [...keeps, ...runs]) {
     library.run.level, library.run.slope, library.run.A0, library.run.h0_m,
   );
   const id = run.toLowerCase().replaceAll('_', '-');
-  const { barrel, refilled } = caseFromLibrary(library, id, flat, { jumpsAfterTorn: jumpsAfterTorn.has(run) });
+  const { barrel, refilled } = caseFromLibrary(library, id, flat);
   const asset = `barrels/${id}.bin`;
   const bytes = encodeCase(barrel);
   writeFileSync(`public/${asset}`, bytes);
   entries.push({ id, spot, slope: barrel.slope, nonlinearity: barrel.nonlinearity, flatDepth: barrel.flatDepth, asset });
-  sources.push(`${run} (${spot}, flat ${flat} h0${jumpsAfterTorn.has(run) ? ', jumps after a torn frame kept' : ''})`);
+  sources.push(`${run} (${spot}, flat ${flat} h0)`);
 
   const h0 = library.run.h0_m;
   const impact = metrics.impact;
-  const fits = metrics.fits;
+  const fitted = metrics.psi0 >= PSI_FITTED.min && metrics.psi0 <= PSI_FITTED.max;
+  const fit = (name: keyof Metrics['fits']) => (fitted ? metrics.fits[name] : null);
   const lw = impact?.['L/W'] ?? null;
   const tilt = impact?.theta_O ?? null;
   const kept = barrel.frames.length / 256;
@@ -182,10 +184,10 @@ for (const name of [...keeps, ...runs]) {
   rows.push([
     id, metrics.level, `1:${(1 / barrel.slope).toFixed(1)}`, barrel.nonlinearity, fixed(metrics.psi0, 4),
     `${fixed(impact?.H_I, 3)} (${fixed(impact ? impact.H_I * h0 : null, 2)} m)`,
-    vs(impact?.['A_O/H2'], fits['A_O/H2'], TOLERANCE.area, 3),
-    vs(impact?.['A_J/H2'], fits['A_J/H2'], TOLERANCE.area, 3),
-    vs(impact?.['W/L'], fits['W/L'], TOLERANCE.aspect, 3),
-    vs(tilt, fits.theta_O, TOLERANCE.angle, 1),
+    vs(impact?.['A_O/H2'], fit('A_O/H2'), TOLERANCE.area, 3),
+    vs(impact?.['A_J/H2'], fit('A_J/H2'), TOLERANCE.area, 3),
+    vs(impact?.['W/L'], fit('W/L'), TOLERANCE.aspect, 3),
+    vs(tilt, fit('theta_O'), TOLERANCE.angle, 1),
     `${fixed(lw, 2)} (${meadBlackFit(barrel.slope).toFixed(2)}) ${lw === null ? '' : lw >= MEAD_BLACK.padangLow && lw <= MEAD_BLACK.padangHigh ? 'Padang ✓' : lw >= MEAD_BLACK.low && lw <= MEAD_BLACK.high ? 'reefs ✓' : '✗'}`,
     `${fixed(impact?.L_O != null ? impact.L_O * h0 : null, 2)} × ${fixed(impact?.W_O != null ? impact.W_O * h0 : null, 2)}`,
     `${fixed(metrics.t_vertical, 3)} / ${fixed(barrel.touchdown, 3)}`,
@@ -238,7 +240,7 @@ ${bySpot}
 
 ## Validation
 
-Each case at the last output before touchdown, simulated / fitted. The fits are Pick & Feddersen's in ψ0 = s/(H0/h0)^¼, as round 2 recorded them (round 6 §2.1) [modelled]; ✓ is inside round 2's tolerance (areas ±${TOLERANCE.area}, W/L ±${TOLERANCE.aspect}, θ ±${TOLERANCE.angle}°). L/W is against Mead & Black's fit at X = 1/s (in brackets), their reefs' ${MEAD_BLACK.low}–${MEAD_BLACK.high} and Padang Padang's own ${MEAD_BLACK.padangLow}–${MEAD_BLACK.padangHigh} [measured, field], with Padang's tilt at ${MEAD_BLACK.padangTiltLow}–${MEAD_BLACK.padangTiltHigh}°. The simulated values are [measured] in the model. Lengths in h0, and in metres at the run's own h0 (7 m at Padang Padang, 10 m at the Reef).
+Each case at the last output before touchdown, simulated / fitted. The fits are Pick & Feddersen's in ψ0 = s/(H0/h0)^¼, as round 2 recorded them (round 6 §2.1) [modelled]; ✓ is inside round 2's tolerance (areas ±${TOLERANCE.area}, W/L ±${TOLERANCE.aspect}, θ ±${TOLERANCE.angle}°); past their fitted ψ0 (${PSI_FITTED.min}–${PSI_FITTED.max}, the Reef's ledge) no fit is shown. L/W is against Mead & Black's fit at X = 1/s (in brackets), their reefs' ${MEAD_BLACK.low}–${MEAD_BLACK.high} and Padang Padang's own ${MEAD_BLACK.padangLow}–${MEAD_BLACK.padangHigh} [measured, field], with Padang's tilt at ${MEAD_BLACK.padangTiltLow}–${MEAD_BLACK.padangTiltHigh}°. The simulated values are [measured] in the model. Lengths in h0, and in metres at the run's own h0 (7 m at Padang Padang, 10 m at the Reef).
 
 | Case | Level | Slope along the path | H0/h0 | ψ0 | H_I | A_O/H_I² | A_J/H_I² | W_O/L_O | θ_O (°) | L/W (fit) | Void L × W (m) | t vertical / τ touchdown | Frames kept | Wall | Size |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|

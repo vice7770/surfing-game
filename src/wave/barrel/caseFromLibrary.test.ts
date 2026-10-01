@@ -53,23 +53,6 @@ describe('a Basilisk library as a barrel case', () => {
     const coarse = { ...sample, frames: [{ ...sample.frames[0], tau: sample.frames[0].tau - 1 }, ...sample.frames] };
     expect(() => caseFromLibrary(coarse, 'coarse', 0.1785714)).toThrow(/τ step/);
   });
-
-  // PR 7: reef60's early open frames trace a torn surface, and the frame after each torn one is flagged only for
-  // jumping away from that trace (the advisor's ruling).
-  it('keeps a frame flagged only for jumps after a torn one, when asked, and refills the torn frame', () => {
-    const frames = sample.frames.slice(0, count).map((frame) => ({ ...frame, flags: [] as string[] }));
-    frames[10] = { ...frames[10], flags: ['surface_torn_in_window', 'jump_crest'] };
-    frames[11] = { ...frames[11], flags: ['jump_crest', 'jump_lip'] };
-    frames[20] = { ...frames[20], flags: ['jump_lip'] };
-    const torn = { ...sample, frames: [...frames, ...sample.frames.slice(count)] };
-    expect(caseFromLibrary(torn, 'torn', 0.15).refilled).toBe(3);
-    const kept = caseFromLibrary(torn, 'torn', 0.15, { jumpsAfterTorn: true });
-    expect(kept.refilled).toBe(2);
-    // Frame 11 is its own profile, not a blend of its neighbours: its lip stands where the run traced it from its crest.
-    const floats = 2 * PROFILE_POINTS;
-    const lipFromCrest = (frame: number) => kept.barrel.frames[frame * floats + 2 * LANDMARK.lip] - kept.barrel.frames[frame * floats + 2 * LANDMARK.crest];
-    expect(lipFromCrest(11)).toBeCloseTo(frames[11].profile![LANDMARK.lip][0] - frames[11].profile![LANDMARK.crest][0], 5);
-  });
 });
 
 describe('the lip tip’s velocity', () => {
