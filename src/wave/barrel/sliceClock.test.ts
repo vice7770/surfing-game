@@ -170,5 +170,11 @@ describe('the slice clock', () => {
     expect(timing.joinDepth(1.5 * 1.1)).toBeCloseTo(3.5 * 1.1, 12);
     expect(timing.throwDepth(0.5)).toBeCloseTo(2 * 1.1, 12);
     expect(timing.earliest).toBeCloseTo(CLOCK.earliest * Math.sqrt(11 / GRAVITY), 12);
+    // A floor (the Reef's top): never shallower than the flat, which a tide shifts rather than scales.
+    const floored: OnsetTables = { ...other, throwDepth: { intercept: 0, slope: 0.9, heights: [0, Infinity] }, floor: 1.5 };
+    expect(onsetTiming(10, 14, true, floored).throwDepth(0.8)).toBe(1.5);
+    expect(onsetTiming(10, 14, true, floored).throwDepth(3)).toBeCloseTo(2.7, 12);
+    expect(onsetTiming(10.6, 14, true, floored).throwDepth(0.8)).toBeCloseTo(2.1, 12);
+    expect(onsetTiming(9.4, 14, true, floored).throwDepth(0.8)).toBeCloseTo(0.9, 12);
   });
 });

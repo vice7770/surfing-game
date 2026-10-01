@@ -59,6 +59,12 @@ export interface OnsetTables {
   band: readonly [deeper: number, shallower: number];
   join: readonly { period: number; rows: readonly (readonly [height: number, depth: number])[] }[];
   throwDepth: { intercept: number; slope: number; heights: readonly [lowest: number, highest: number] };
+  /**
+   * The shallowest a lip throws, m at mid tide: the transect's flat (a reef's top), which a tide shifts rather than
+   * scales. A wave too small to go vertical on the slope throws as it crosses onto the flat (the Reef; the advisor,
+   * 2026-10-01). None: no floor (Padang Padang).
+   */
+  floor?: number;
 }
 
 /** Padang Padang's tables (round 6's transect: the 7 m foot, 1:19 along the path to the 1.25 m flat). */
@@ -120,7 +126,10 @@ export function onsetTiming(h0: number, period: number, lagged = true, tables: O
     h0,
     band: [band[0] * scale, band[1] * scale],
     joinDepth: (height) => joinAt(height) * scale,
-    throwDepth: (footHeight) => (throwDepth.intercept + throwDepth.slope * Math.min(highest, Math.max(lowest, footHeight / scale))) * scale,
+    throwDepth: (footHeight) => {
+      const depth = (throwDepth.intercept + throwDepth.slope * Math.min(highest, Math.max(lowest, footHeight / scale))) * scale;
+      return tables.floor === undefined ? depth : Math.max(depth, tables.floor + h0 - tables.h0);
+    },
     lagged,
     earliest: CLOCK.earliest * unit,
   };
