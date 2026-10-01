@@ -103,7 +103,7 @@ const SOURCE_SHARE = 0.2;
  * ±2H. Basilisk's jet water sits within about ±0.5 H of its crest; the solver's crest is about twice as broad,
  * and ±2H leaves margin (the water-physics advisor, 2026-09-29).
  */
-const SOURCE_REACH = 2;
+export const SOURCE_REACH = 2;
 /** Parcels still airborne after this long land where they are, s. */
 const MAX_FLIGHT = 3;
 

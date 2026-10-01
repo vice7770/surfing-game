@@ -61,6 +61,11 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     expect(crash.counts.throws).toBe(7);
     expect(points[0].jetStrip).toBe(-1);
     expect(points[4].jetStrip).toBeGreaterThan(0);
+    // The throw's window, over which the front keeps the point's crest until its crash: #86's 2 H, H the wave height
+    // the throw measured on the basin's 0.8 m crest.
+    expect(points[4].jetWindow).toBeGreaterThan(2 * 0.7);
+    expect(points[4].jetWindow).toBeLessThanOrEqual(2 * 0.8);
+    expect(points[0].jetWindow).toBeUndefined();
     expect(crash.counts.crashes).toBe(0);
     expect(landed.length).toBe(0);
     run(crash, points, s, TOUCHDOWN, 2);

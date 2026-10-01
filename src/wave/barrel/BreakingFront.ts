@@ -81,6 +81,11 @@ export interface FrontPoint {
    */
   jetStrip?: number;
   crashedAt?: number;
+  /**
+   * The throw's own window, m: how far from the crest it took the jet (#86's source reach, 2 H). Until its crash the
+   * front matches the point's crest over it too (`BreakingFront.update`). Set with `jetStrip`.
+   */
+  jetWindow?: number;
 }
 
 export interface FrontState {
@@ -148,10 +153,16 @@ export class BreakingFront {
     const points: FrontPoint[] = [];
     const tracks: CrestTrack[] = [];
     const { h0 } = this.timing;
+    const jetCrests = this.keptCrests(previous, samples, count);
     for (let k = 0; k < count; k += 1) {
       const s = samples[k];
       // On a front: it stays while its segment breaks at all.
-      const point = this.nearest(pointsOf.get(s.column), matched, s.z);
+      let point = this.nearest(pointsOf.get(s.column), matched, s.z);
+      // A point holding an uncrashed jet whose crest jumped past the match reach (PR 5; see `keptCrests`).
+      if (!point) {
+        const holder = jetCrests?.get(s);
+        if (holder && !matched.has(holder)) point = holder;
+      }
       if (point) {
         if (!(s.strength > 0)) continue;
         matched.add(point);
@@ -221,6 +232,35 @@ export class BreakingFront {
     const kept = this.tracks.filter((old) => !followed.has(old) && time - old.seen <= HOLD);
     for (const old of this.tracks) if (!followed.has(old) && !kept.includes(old) && old.footHeight !== null) this.lost += 1;
     this.tracks = [...tracks, ...kept];
+  }
+
+  /**
+   * The swept barrel's crash (PR 5; the advisor, 2026-10-01): a point's throw takes its jet from the crest's upper half
+   * over the throw's window (#86, 2 H), and the flattened crest's top can jump past the match reach in one step. So a
+   * point holding an uncrashed jet keeps its column's nearest crest within the match reach plus its `jetWindow`, at
+   * most TRACK_REACH (waves stand about 100 m apart), until its crash. Each such point picks its crest here, and the
+   * update hands it over only where no point matches within the match reach as before. Two points wanting one crest:
+   * the nearer keeps it. Points without jets are matched as before; none hold one without the crash (undefined then).
+   */
+  private keptCrests(previous: readonly FrontPoint[], samples: readonly CrestSample[], count: number): Map<CrestSample, FrontPoint> | undefined {
+    let kept: Map<CrestSample, FrontPoint> | undefined;
+    let samplesOf: Map<number, CrestSample[]> | undefined;
+    for (const point of previous) {
+      const window = point.jetWindow;
+      if (point.jetStrip === undefined || point.jetStrip < 0 || point.crashedAt !== undefined || window === undefined || !(window > 0)) continue;
+      samplesOf ??= byColumn(samples.slice(0, count));
+      const reach = Math.min(TRACK_REACH, this.matchReach + window);
+      let best: CrestSample | undefined;
+      for (const s of samplesOf.get(point.column) ?? []) {
+        if (!(Math.abs(s.z - point.z) < reach)) continue;
+        if (!best || Math.abs(s.z - point.z) < Math.abs(best.z - point.z)) best = s;
+      }
+      if (!best) continue;
+      kept ??= new Map();
+      const other = kept.get(best);
+      if (!other || Math.abs(best.z - point.z) < Math.abs(best.z - other.z)) kept.set(best, point);
+    }
+    return kept;
   }
 
   /** The unclaimed one of `candidates` nearest `z` within the match reach. */

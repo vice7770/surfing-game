@@ -1,5 +1,5 @@
 import { waveHeightAt } from '../CrestKinematics';
-import { STRIP_PARCELS, type PlungingLip } from '../PlungingLip';
+import { SOURCE_REACH, STRIP_PARCELS, type PlungingLip } from '../PlungingLip';
 import type { ShallowWaterSolver } from '../ShallowWaterSolver';
 import type { FrontPoint } from './BreakingFront';
 import { CrashCurve, createCrashSlice, type CrashSlice, type JetMotion } from './crashCurve';
@@ -208,6 +208,10 @@ export class SweptCrash {
     if (strip >= 0) {
       this.counts.throws += 1;
       this.counts.thrown += thrown;
+      // The throw's own window (#86's source reach, as `drawFromCrest` measures the wave): the front keeps the point's
+      // crest over it until the crash, since the flattened crest's top can jump past the match reach (BreakingFront).
+      const height = waveHeight > 0 ? waveHeight : solver.h[cell] + solver.bed[cell] - solver.restLevel;
+      p.jetWindow = SOURCE_REACH * Math.max(0, height);
     }
     if (thrown < volume) {
       this.counts.starved += 1;

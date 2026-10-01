@@ -195,6 +195,50 @@ describe('the breaking front as lines', () => {
     expect(front.points.map((point) => point.column)).toEqual([0, 1, 3, 4]);
   });
 
+  // PR 5: a throw takes its jet from the crest's upper half (#86), and the flattened crest's top can jump past the
+  // match reach (2 m and a cell) in one step; a point holding an uncrashed jet keeps its crest over the throw's window.
+  it('keeps a point holding an uncrashed jet on its crest over the throw’s window, at most 10 m, and no other (PR 5)', () => {
+    const front = new BreakingFront(1, TIMING);
+    joinAt(front, range(0, 7), 10, 0, 1);
+    const ids = front.points.map((point) => point.id);
+    const hold = (k: number, strip: number, window: number, crashedAt?: number) => {
+      Object.assign(front.points[k], { jetStrip: strip, jetWindow: window, ...(crashedAt !== undefined ? { crashedAt } : {}) });
+    };
+    hold(1, 4, 3);
+    hold(2, 5, 20);
+    // Crashed, threw none, or a window too short for the jump: matched as before.
+    hold(3, 6, 3, 1.05);
+    hold(4, -1, 3);
+    hold(5, 7, 1);
+    // Every crest jumps 5 m shoreward in one step: past the 3 m match reach, inside 3 + 3 m and the 10 m cap.
+    const jumped = line(range(0, 7), 15, 0, 2.4, 0.5);
+    front.update(jumped, jumped.length, 1.1);
+    expect(front.points.map((point) => point.id)).toEqual([ids[1], ids[2]]);
+    expect(front.points.every((point) => point.z === 15 && point.joined === 1)).toBe(true);
+    expect(front.points.map((point) => point.jetStrip)).toEqual([4, 5]);
+    // A 20 m window is held to 10 m: a jump of 11 m loses the point, as does one beyond 3 + 3 m.
+    const far = [sample(1, 21.5, 2.3, 0.5), sample(2, 26, 2.3, 0.5)];
+    front.update(far, far.length, 1.2);
+    expect(front.points).toHaveLength(0);
+  });
+
+  it('gives a jet’s point the nearer of two crests its throw left, and leaves a crest within the match reach to the nearest point (PR 5)', () => {
+    const front = new BreakingFront(1, TIMING);
+    joinAt(front, range(0, 3), 10, 0, 1);
+    const ids = front.points.map((point) => point.id);
+    Object.assign(front.points[1], { jetStrip: 2, jetWindow: 3 });
+    // Column 1's crest split about its dip: shoulders 3.5 m behind and 3.2 m ahead; columns 0 and 2 move 0.3 m.
+    const split = [sample(0, 10.3, 2.4, 0.5), sample(1, 6.5, 2.4, 0.5), sample(1, 13.2, 2.4, 0.5), sample(2, 10.3, 2.4, 0.5)];
+    front.update(split, split.length, 1.1);
+    expect(front.points.map((point) => point.id)).toEqual(ids);
+    expect(front.points[1].z).toBe(13.2);
+    // Within the match reach a crest goes to the nearest point, as before.
+    const near = [sample(0, 10.6, 2.4, 0.5), sample(1, 13.4, 2.4, 0.5), sample(2, 10.6, 2.4, 0.5)];
+    front.update(near, near.length, 1.2);
+    expect(front.points.map((point) => point.id)).toEqual(ids);
+    expect(front.points[1].z).toBe(13.4);
+  });
+
   it('follows a crest across a whole row on a coarser grid', () => {
     const front = new BreakingFront(2, TIMING);
     const foot = range(0, 10).map((column) => ({ ...sample(column, 18, 7, 0), x: 2 * column + 1 }));
