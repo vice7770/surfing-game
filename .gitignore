@@ -9,3 +9,4 @@ scripts/assets/.build/
 dist-server/
 server/bots/*.bin
 tools/basilisk/runs/
+__pycache__/

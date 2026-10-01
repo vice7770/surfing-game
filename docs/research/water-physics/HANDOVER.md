@@ -1,5 +1,7 @@
 # Water physics advisor: handover (2026-09-29)
 
+**Superseded as the starting point by [ONBOARDING.md](ONBOARDING.md) (2026-09-30).** This page is kept as the history; its "still open" items are as of 2026-09-29 and 2026-09-30 morning.
+
 The "Water physics research" session moved from the owner's Mac to the cloud on 2026-09-29, at the owner's request. This file carries what that session kept in its local memory, so whoever continues can pick up without it. Read [README.md](README.md) first for the owner's decisions and the page index.
 
 ## The role
@@ -37,17 +39,24 @@ The "Water physics research" session moved from the owner's Mac to the cloud on 
 
 ## Open decisions for the owner
 
-1. **Rich foam:** draw foam as a layer that only adds light (prototyped: the Reef lace went from 0.92× to 1.14× the water), and decide how to apply Rich's 4× body gain.
-2. **Roller:** whether Classic draws it (this reopens "Classic unchanged"), the roller's density, whether aerated water raises the surface, and its roughness.
-3. **Spray and mist:**
-   - physical optics, or a readability minimum;
-   - haze above water;
-   - the budget: a bigger CPU pool or GPU spray;
-   - rainbows;
-   - the order (recommended: shading and haze now, new emission after the swept surface).
-4. **The peel meter:** use the solver's measured crest speed instead of √(g·h_b). Every spot's reported angle moves 5–7° toward easier. It's a separate task chip.
-5. **The Basilisk benchmark** (2D profile runs for the swept barrel): not started. It's on the Padang Padang session's plan, and it's the critical path for the tube rebuild.
-6. **PRs:** #67 (this folder) is merged. #63 (the switch latch) is held as a draft, because it made the high-tide Big swell worse.
+All settled on 2026-09-29: Rich foam, the roller, spray and mist, the peel meter, the solver, round 6's Basilisk choices, water colour and the underwater view. They are listed in [README.md](README.md), under "The owner's decisions".
+
+**Still open or waiting (2026-09-29, night):**
+- **The level-13 Padang run:** it needs the M4 Pro (`tools/basilisk/run_padang.sh`, see `tools/basilisk/README.md`). It ran end to end in the cloud on a coarse grid, but not yet on a Mac. The owner's Mac that the advisor runs on is an M1, which is not the machine meant for this run.
+- **The new peel meter:** decided, but not built. `SurfZoneSimulation.breakerCelerity()` still returns √(g·h_b).
+- **PR #63** (the switch latch): held as a draft.
+- **The Reef's lip (the owner's call, raised 2026-09-30):**
+  - Its jet ask of 0.47 H² is provisional: a 0.5 H lip, from an article's description (Shand 2024), beyond Pick & Feddersen's fitted slopes. Their 0.27 H² is where the fit stops, not a physical cap.
+  - At game size, the predictor session measured that the solver's crest supplies only part of it from above still level.
+  - A Basilisk run on the Reef's own transect would source it, under the owner's tube rule.
+  - **Run on the M1, 2026-09-30** ([reef-ledge-runs.md](reef-ledge-runs.md)). The solitary wave broke on the flat, so the owner approved periodic runs.
+  - **Periodic runs (same day):** the second wave breaks at the ledge top into the step. Jet 0.55–0.62 H², lip 0.41–0.46 H; the tube is round through its flight (0.34–0.45 H² at 85 %) and flattens as the lip lands.
+  - **Open for the owner:** raise the jet ask to about 0.55–0.6 H², with the lip-jet source's cap raised to about 0.3 on the Reef; keep the tube and lip.
+- **Periodic Basilisk runs (approved and run, 2026-09-30):** the Reef results above.
+  - Padang's swell lag is 2.32 √(h0/g) at 16 s (the Padang session's table is scaled around it).
+  - Two more Padang cases give lags of 0.22 (1.2 m crest, 14 s) and 1.60 (2.5 m, 18 s). Not a clean function of join depth; offered: key the throw on the Navier–Stokes breaking depth instead.
+- **The lip-jet source (consult in flight):** the predictor session is measuring the upper-half crest window; see [consult-log.md](consult-log.md).
+- **Water colour:** checked against the journals. The builder uses the phytoplankton-only coefficients in [underwater-colour.md](underwater-colour.md).
 
 ## Work in flight elsewhere at the move
 
@@ -113,9 +122,19 @@ The move to the cloud worked on the second try. The session now works on branch 
   - Doc exports (blobs) can't be read back here, so pages are mirrored by hand.
   - The container is reclaimed whenever the session idles, killing background jobs. Long simulations (the level-13 Padang run) need a machine that stays up.
 
+## Back on the Mac (2026-09-29, night)
+
+The owner asked the local session to continue from the cloud session's handover. It did three things:
+- **Relayed three items to the Padang Padang session,** which the cloud session couldn't message:
+  - the wedge at 1:19 along the path, about 1:14.6 across the crest line at β 40°, then re-check the peel;
+  - its murkier water, per [underwater-colour.md](underwater-colour.md);
+  - the new peel meter: decided, not yet built.
+- **Told the Padang Padang and predictor-gate sessions** they can message the advisor directly again.
+- **Left the level-13 Basilisk run for the M4 Pro.**
+
 ## How other sessions consult now
 
-- A cloud session can receive messages, but can't reply to sessions on the owner's Mac.
+- The advisor is back on the owner's Mac, so local sessions can SendMessage "Water physics research" again. A cloud session can receive messages, but can't reply to sessions on the Mac.
 - Local sessions should spawn the `water-physics` agent (`.claude/agents/water-physics.md` on this branch; a user-scope copy is on the owner's Mac), which reads this folder.
 - Log the consult here.
 
