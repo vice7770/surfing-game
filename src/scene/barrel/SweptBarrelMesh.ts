@@ -6,7 +6,7 @@ import { RICH_FAR_FOAM, RICH_REFLECTION, richFarNormal, richFragmentPars, richRe
 import { waterRipplePars } from '../water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from '../water/specular';
 import { waterChopNormal } from '../waterChop';
-import { CLASSIC_FOAM, CREST_SCATTER, WATER_IOR, waterBodyFragment, type WaterBodySheet } from '../waterOptics';
+import { CLASSIC_FOAM, CREST_SCATTER, WATER_IOR, waterBodyFragment } from '../waterOptics';
 import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
 import { SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
 
@@ -95,26 +95,32 @@ gl_FragColor = vec4( vSweptView, 1.0 );`;
 const sweptVertexPars = /* glsl */ `attribute float sweptLift;
 attribute float sweptSheet;
 attribute float sweptSheetWeight;
+attribute float sweptSheetBack;
 varying float vSweptSheet;
-varying float vSweptSheetWeight;`;
+varying float vSweptSheetWeight;
+varying float vSweptSheetBack;`;
 const sweptBeginNormal = /* glsl */ `vec3 objectNormal = vec3( normal );
 vWaterDepth = max( 0.0, position.y - waterBedAt( position.xz ) );
 vWaterFoam = ( 1.0 - sweptLift ) * waterFoamAt( position.xz );
 vWaterFlow = waterFlowAt( position.xz );
 vSweptSheet = sweptSheet;
-vSweptSheetWeight = sweptSheetWeight;`;
+vSweptSheetWeight = sweptSheetWeight;
+vSweptSheetBack = sweptSheetBack;`;
 const sweptFragmentPars = /* glsl */ `varying float vSweptSheet;
-varying float vSweptSheetWeight;`;
+varying float vSweptSheetWeight;
+varying float vSweptSheetBack;`;
 
 /**
  * The lip as a thin sheet lit from behind, in both looks (docs/research/water-physics/tube-colour-fix.md, step 2; the
- * advisor, 2026-09-30), not a column of water over the reef: the view ray crosses the sheet's thickness, lengthened by
- * its refracted angle. The sheet's own backscatter builds up with that path (two-flux: R∞ (1 − e^{−2ct})) and is lit
- * from the front as the body is; the light behind it comes through attenuated by Beer–Lambert on the water's own
- * absorption and scattering, e^{−ct}, so thin water turns cyan-green. Behind it: the sky's irradiance over the
- * hemisphere behind the sheet (the scene's ambient, and its environment map at −n) [provisional: the build's choice],
- * and the crest light where the sun is behind it, over the same path (the water's own term; the height field's march
- * is never run on the curl).
+ * advisor's rulings, 2026-10-01), not a column of water over the reef: the view ray crosses the sheet's thickness,
+ * lengthened by its refracted angle (at least 0.2), t. The sheet's own backscatter builds up with that path (two-flux:
+ * R∞ (1 − e^{−2ct})) and is lit from the front as the body is, in the albedo; the light behind it comes through
+ * attenuated by Beer–Lambert on the water's own absorption and scattering, e^{−ct}, as emitted radiance, with no body
+ * gain. Behind it: E_back = F · E_sky(−n) + (1 − F) · E_wall, F the far side's view of the sky through the tube's
+ * opening (`sheetAcross`), E_sky the sky's irradiance over the hemisphere behind the sheet (the ambient, and the
+ * environment at −n) [provisional: the build's choice], E_wall the cavity's wall, about R∞ of that light
+ * [provisional]; and the sun's crest light where it is behind, over its own path through the sheet, t / |n·L| (at
+ * least 0.2). The height field's march is never run on the curl.
  */
 export const SWEPT_SHEET_BODY = /* glsl */ `
     float sweptPath = vSweptSheet / max( 0.2, waterRefractedCosine( waterViewCos ) );
@@ -124,10 +130,11 @@ export const SWEPT_SHEET_BODY = /* glsl */ `
     #if defined( USE_ENVMAP ) && defined( ENVMAP_TYPE_CUBE_UV )
       sweptSky += getIBLIrradiance( -normal );
     #endif
+    vec3 sweptBack = sweptSky * ( vSweptSheetBack + ( 1.0 - vSweptSheetBack ) * waterDeepReflectance );
+    float sweptSunPath = vSweptSheet / max( 0.2, abs( dot( waterN, waterSunDirection ) ) );
     float sweptSunBehind = pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 4.0 );
-    vec3 sweptBehind = sweptSky * RECIPROCAL_PI + ${CREST_SCATTER.toFixed(6)} * sweptSunBehind * waterSunRadiance;
-    totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) ) * sweptReach * sweptBehind;`;
-const SWEPT_SHEET: WaterBodySheet = { weight: 'vSweptSheetWeight', body: SWEPT_SHEET_BODY };
+    totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) ) * (
+      sweptReach * sweptBack * RECIPROCAL_PI + ${CREST_SCATTER.toFixed(6)} * sweptSunBehind * waterSunRadiance * exp( -waterAttenuation * sweptSunPath ) );`;
 const sweptBeginVertex = /* glsl */ `vec3 transformed = vec3( position );
 vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;`;
 
@@ -145,6 +152,7 @@ export class SweptBarrelMesh {
   private readonly lift = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly sheet = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly sheetWeight = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
+  private readonly sheetBack = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly index = new BufferAttribute(new Uint32Array(INDICES), 1).setUsage(DynamicDrawUsage);
   /** The dev view's colours, made with the first view. */
   private viewColours?: BufferAttribute;
@@ -161,6 +169,7 @@ export class SweptBarrelMesh {
     geometry.setAttribute('sweptLift', this.lift);
     geometry.setAttribute('sweptSheet', this.sheet);
     geometry.setAttribute('sweptSheetWeight', this.sheetWeight);
+    geometry.setAttribute('sweptSheetBack', this.sheetBack);
     geometry.setIndex(this.index);
     geometry.setDrawRange(0, 0);
     const material = new MeshPhysicalMaterial({ color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide });
@@ -178,7 +187,7 @@ export class SweptBarrelMesh {
         .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${SWEPT_BARREL_DISCARD}`)
         .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
         .replace('#include <color_fragment>', '')
-        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, true, RICH_FAR_FOAM, SWEPT_SHEET) : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET))
+        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, true, RICH_FAR_FOAM, SWEPT_SHEET_BODY) : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
         .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>');
       const view = this.currentView;
       if (!view) return;
@@ -232,6 +241,7 @@ export class SweptBarrelMesh {
     (this.normals.array as Float32Array).set(loft.normals.subarray(0, 3 * vertices));
     (this.lift.array as Float32Array).set(loft.lift.subarray(0, vertices));
     (this.sheet.array as Float32Array).set(loft.sheet.subarray(0, vertices));
+    (this.sheetBack.array as Float32Array).set(loft.sheetBack.subarray(0, vertices));
     if (this.sheetShown) (this.sheetWeight.array as Float32Array).set(loft.sheetWeight.subarray(0, vertices));
     else (this.sheetWeight.array as Float32Array).fill(0, 0, vertices);
     (this.index.array as Uint32Array).set(loft.indices.subarray(0, indices));
@@ -246,7 +256,7 @@ export class SweptBarrelMesh {
       attribute.addUpdateRange(0, 3 * vertices);
       attribute.needsUpdate = true;
     }
-    for (const attribute of [this.lift, this.sheet, this.sheetWeight]) {
+    for (const attribute of [this.lift, this.sheet, this.sheetWeight, this.sheetBack]) {
       attribute.clearUpdateRanges();
       attribute.addUpdateRange(0, vertices);
       attribute.needsUpdate = true;

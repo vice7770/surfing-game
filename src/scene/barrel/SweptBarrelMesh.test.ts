@@ -16,7 +16,7 @@ function compiled(material: { onBeforeCompile: (shader: WebGLProgramParametersWi
 function oneQuad(): LoftResult {
   return {
     positions: new Float32Array([0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1]), normals: new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
-    mask: new Float32Array(4).fill(1), lift: new Float32Array(4), sheet: new Float32Array(4), sheetWeight: new Float32Array(4), indices: new Uint32Array([0, 2, 1, 1, 2, 3]), vertexCount: 4, indexCount: 6, sliceCount: 2,
+    mask: new Float32Array(4).fill(1), lift: new Float32Array(4), sheet: new Float32Array(4), sheetWeight: new Float32Array(4), sheetBack: new Float32Array(4), indices: new Uint32Array([0, 2, 1, 1, 2, 3]), vertexCount: 4, indexCount: 6, sliceCount: 2,
     sliceFront: new Int32Array(2), sliceSigma: new Float32Array(2), sliceTau: new Float32Array(2), slicePhase: new Uint8Array(2),
     sliceCrestOffset: new Float32Array(2), sliceLife: new Float32Array(2), sliceCollapse: new Float32Array(2), sliceFade: new Float32Array(2).fill(1),
     clamps: 0, clampedLookups: 0, caps: 0,
@@ -67,8 +67,14 @@ describe('the swept barrel’s mesh', () => {
       // Two-flux over the view's path through the sheet, and the light behind it through the same path.
       expect(fragment).toContain('waterBody = mix( waterBody, waterDeepReflectance * ( 1.0 - sweptReach * sweptReach ), vSweptSheetWeight );');
       expect(fragment).toContain('float sweptPath = vSweptSheet / max( 0.2, waterRefractedCosine( waterViewCos ) );');
-      // No bed is seen through a lip: the caustics fade as the sheet comes in.
-      expect(fragment).toContain('mix( 1.0, causticLightAt( waterBedXZ ), 1.0 - vSweptSheetWeight )');
+      // No bed is seen through a lip: the column, caustics and all, is weighed once by 1 − the sheet's weight.
+      expect(fragment).toContain('causticLightAt( waterBedXZ ) );');
+      expect(fragment).not.toContain('mix( 1.0, causticLightAt');
+      // Behind the sheet, the sky as far as its far side sees it through the opening, else the cavity's wall; the sun
+      // over its own path through the sheet.
+      expect(vertex).toContain('vSweptSheetBack = sweptSheetBack;');
+      expect(fragment).toContain('vec3 sweptBack = sweptSky * ( vSweptSheetBack + ( 1.0 - vSweptSheetBack ) * waterDeepReflectance );');
+      expect(fragment).toContain('float sweptSunPath = vSweptSheet / max( 0.2, abs( dot( waterN, waterSunDirection ) ) );');
       // The height field's crest-light march never runs on the curl.
       expect(fragment).not.toContain('waterCrestThickness( vWaterWorld');
       // The sheet's own lines come after the column's body, inside its lit branch, before the foam.
@@ -79,11 +85,14 @@ describe('the swept barrel’s mesh', () => {
 
   it('copies the loft’s sheet and its weight, and draws the lip as the column again when the sheet is off (dev)', () => {
     const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
-    const loft = { ...oneQuad(), sheet: new Float32Array([0.1, 0.2, 0.3, 0.4]), sheetWeight: new Float32Array([0, 0.5, 1, 1]) };
+    const loft = {
+      ...oneQuad(), sheet: new Float32Array([0.1, 0.2, 0.3, 0.4]), sheetWeight: new Float32Array([0, 0.5, 1, 1]), sheetBack: new Float32Array([0, 0.25, 0.5, 1]),
+    };
     swept.update(loft);
     const attribute = (name: string) => Array.from(swept.mesh.geometry.getAttribute(name).array.slice(0, 4));
     expect(attribute('sweptSheet').map((v) => +v.toFixed(3))).toEqual([0.1, 0.2, 0.3, 0.4]);
     expect(attribute('sweptSheetWeight')).toEqual([0, 0.5, 1, 1]);
+    expect(attribute('sweptSheetBack')).toEqual([0, 0.25, 0.5, 1]);
     swept.sheetShown = false;
     swept.update(loft);
     expect(attribute('sweptSheetWeight')).toEqual([0, 0, 0, 0]);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
-import { LOFT, LOFT_SAMPLES, SweptLoft, sheetAcross, type LoftResult } from './sweptLoft';
+import { LOFT, LOFT_SAMPLES, SHEET, SweptLoft, sheetAcross, tubeSkyView, type LoftResult } from './sweptLoft';
 import { lipCase, toyCase, tubeCase } from './toyCase';
 
 const flat = () => 0.5;
@@ -225,6 +225,24 @@ describe('the lip as a thin sheet (tube-colour-fix.md, step 1)', () => {
     for (let v = 0; v < loft.vertexCount; v += 1) expect(loft.sheetWeight[v]).toBe(0);
   });
 
+  it('sees behind the lip the tube’s wall from its outer face, and the open sky from its underside (the advisor, 2026-10-01)', () => {
+    const loft = loftLip(0.1);
+    const base = middleOf(loft);
+    // The synthetic lip's tip is its lowest point, so its underside never sees the opening: all wall behind the outer face.
+    for (let i = 36; i < LANDMARK.lip; i += 1) expect(loft.sheetBack[base + i], `outer ${i}`).toBe(0);
+    for (let i = LANDMARK.lip; i <= 84; i += 1) expect(loft.sheetBack[base + i], `underside ${i}`).toBe(1);
+  });
+
+  it('comes in with the underside’s length over 0.035 h0 (0.25 m at h0 7 m)', () => {
+    // A 0.1 m underside at h0 7 m is 0.1 / 0.245 of the way in.
+    const profile = new Float32Array(2 * PROFILE_POINTS);
+    for (let i = LANDMARK.crest; i <= LANDMARK.lip; i += 1) profile[2 * i] = (i - LANDMARK.crest) * 0.1;
+    for (let i = LANDMARK.lip + 1; i <= LANDMARK.throat; i += 1) profile[2 * i] = 3.2 - (0.1 * (i - LANDMARK.lip)) / (LANDMARK.throat - LANDMARK.lip);
+    const out = new Float32Array(PROFILE_POINTS);
+    expect(sheetAcross(profile, 7, out, new Float32Array(PROFILE_POINTS))).toBeCloseTo(0.1 / (SHEET.formed * 7), 5);
+    expect(sheetAcross(profile, 70, out, new Float32Array(PROFILE_POINTS))).toBeCloseTo(0.1 / (SHEET.formed * 70), 5);
+  });
+
   it('measures across to the other side’s segments, not just its points', () => {
     // Two parallel runs 0.2 m apart with points staggered: every distance is the gap, never a diagonal to a point.
     const profile = new Float32Array(2 * PROFILE_POINTS);
@@ -237,9 +255,35 @@ describe('the lip as a thin sheet (tube-colour-fix.md, step 1)', () => {
       profile[2 * i + 1] = 0.8;
     }
     const out = new Float32Array(PROFILE_POINTS);
-    expect(sheetAcross(profile, out)).toBe(1);
+    expect(sheetAcross(profile, 7, out, new Float32Array(PROFILE_POINTS))).toBe(1);
     for (let i = 40; i <= 56; i += 1) expect(out[i]).toBeCloseTo(0.2, 6);
     for (let i = 70; i <= 84; i += 1) expect(out[i]).toBeCloseTo(0.2, 6);
+  });
+});
+
+describe('the sky seen through a tube’s opening (the advisor, 2026-10-01)', () => {
+  it('is the 2D view factor ½(sin θ2 − sin θ1) of the window from the horizon up to the tip', () => {
+    // A floor facing up, the tip 45° up ahead: from −90° to −45° off its normal.
+    expect(tubeSkyView(0, 0, 0, 1, 1, 1)).toBeCloseTo((1 - Math.SQRT1_2) / 2, 6);
+    // A wall facing ahead: from 0° to 45°.
+    expect(tubeSkyView(0, 0, 1, 0, 1, 1)).toBeCloseTo(Math.SQRT1_2 / 2, 6);
+    // The tip overhead and behind: the floor sees the whole sky ahead of it and up to the tip, 135° up.
+    expect(tubeSkyView(0, 0, 0, 1, -1, 1)).toBeCloseTo((1 + Math.SQRT1_2) / 2, 6);
+  });
+
+  it('is nothing when the tip is not above the point, or the window lies behind the surface', () => {
+    expect(tubeSkyView(0, 0, 0, 1, 1, -0.5)).toBe(0);
+    expect(tubeSkyView(0, 0, 0, 1, 1, 0)).toBe(0);
+    // An underside facing down and back: the window ahead and above lies behind it.
+    expect(tubeSkyView(0, 0, -Math.SQRT1_2, -Math.SQRT1_2, 1, 1)).toBe(0);
+  });
+
+  it('counts only the part of the window in front of the surface', () => {
+    // A wall facing back and up (normal at 135°): the window from 0° to 135° up is in front of it from 45° on.
+    const n = Math.SQRT1_2;
+    expect(tubeSkyView(0, 0, -n, n, -1, 1)).toBeCloseTo((0 + 1) / 2, 6);
+    // A window entering from below: a floor tilted down-ahead (normal at 60° up, pointing ahead): the horizon is −60°.
+    expect(tubeSkyView(0, 0, 0.5, Math.sqrt(3) / 2, 0, 1)).toBeCloseTo((Math.sin(Math.PI / 6) + Math.sin(Math.PI / 3)) / 2, 6);
   });
 });
 
