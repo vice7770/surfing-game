@@ -206,22 +206,32 @@ describe('the breaking front as lines', () => {
     };
     hold(1, 4, 3);
     hold(2, 5, 20);
-    // Crashed, threw none, or a window too short for the jump: matched as before.
+    // A window too short for the jump: it claims no crest, and runs on all the same.
+    hold(5, 7, 0.5);
+    // Crashed, or threw none: matched as before.
     hold(3, 6, 3, 1.05);
     hold(4, -1, 3);
-    hold(5, 7, 0.5);
     // Every crest leaps 5 m shoreward in 0.1 s: past the 3 m match reach. The paced points run 0.5 m and claim the crest
     // 4.5 m ahead, inside 3 + 3 m and the 10 m cap, without taking its z.
     const jumped = line(range(0, 7), 15, 0, 2.4, 0.5);
     front.update(jumped, jumped.length, 1.1);
-    expect(front.points.map((point) => point.id)).toEqual([ids[1], ids[2]]);
-    expect(front.points.map((point) => point.z)).toEqual([10.5, 10.5]);
-    expect(front.points.map((point) => point.jetStrip)).toEqual([4, 5]);
-    // Linked on their own z: one front.
-    expect(fronts(front)).toBe(1);
+    expect(front.points.map((point) => point.id)).toEqual([ids[1], ids[2], ids[5]]);
+    expect(front.points.map((point) => point.z)).toEqual([10.5, 10.5, 10.5]);
+    expect(front.points.map((point) => point.jetStrip)).toEqual([4, 5, 7]);
+    expect(front.coasted).toBe(1);
+    // Linked on their own z: columns 1 and 2 one front, column 5 apart from them.
+    expect(fronts(front)).toBe(2);
     // Now at 11 m: column 1's crest 6.5 m away is past its 3 + 3 m, and column 2's 10.5 m away past the 10 m cap on 3 + 20 m.
+    // None claims a crest, and all run on at their pace until their crash.
     const far = [sample(1, 17.5, 2.3, 0.5), sample(2, 21.5, 2.3, 0.5)];
     front.update(far, far.length, 1.2);
+    expect(front.points.map((point) => point.id)).toEqual([ids[1], ids[2], ids[5]]);
+    expect(front.points.map((point) => point.z)).toEqual([11, 11, 11]);
+    expect(fronts(front)).toBe(2);
+    expect(front.coasted).toBe(4);
+    // Crashed, they match as before: with no crest in reach they leave.
+    for (const point of front.points) point.crashedAt = 1.25;
+    front.update(far, far.length, 1.3);
     expect(front.points).toHaveLength(0);
   });
 

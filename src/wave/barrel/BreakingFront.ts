@@ -146,6 +146,8 @@ export class BreakingFront {
   unbroken = 0;
   lost = 0;
   unsized = 0;
+  /** Steps a point holding an uncrashed jet ran on at its pace with no crest in reach (PR 5; a diagnostic). */
+  coasted = 0;
   private readonly linkReach: number;
   private readonly matchReach: number;
 
@@ -252,6 +254,17 @@ export class BreakingFront {
       }
       tracks.push(next);
     }
+    // A point holding an uncrashed jet stays on its front until its crash, with a crest or without: with none in reach
+    // it runs on at its pace (PR 5). It goes in by column and z, as the samples come, for the links.
+    let coasting = false;
+    for (const point of previous) {
+      if (matched.has(point) || !runsOnPace(point)) continue;
+      matched.add(point);
+      this.coasted += 1;
+      coasting = true;
+      points.push({ ...point, sigma: 0, z: point.z + point.jetPace! * (time - point.seen), seen: time });
+    }
+    if (coasting) points.sort((a, b) => a.column - b.column || a.z - b.z);
     this.points = this.link(points);
     this.held = previous.filter((old) => !matched.has(old) && time - old.seen <= HOLD);
     const kept = this.tracks.filter((old) => !followed.has(old) && time - old.seen <= HOLD);
@@ -267,8 +280,9 @@ export class BreakingFront {
    * It still claims its column's crest nearest that z within the match reach plus the throw's window (`jetWindow`, #86's
    * 2 H), at most TRACK_REACH (waves stand about 100 m apart), so no second point forms on its wave in the column, but it
    * doesn't take the crest's z. Each such point picks its crest here, before the others match; two wanting one crest:
-   * the nearer keeps it. With none in reach it leaves the front, as any unseen point. At its crash it goes back to the
-   * ordinary match. Points without jets are matched as before; none run on a pace without the crash (undefined then).
+   * the nearer keeps it. With none in reach it runs on all the same (`coasted`): it leaves only after its crash, when it
+   * goes back to the ordinary match. Points without jets are matched as before; none run on a pace without the crash
+   * (undefined then).
    */
   private keptCrests(previous: readonly FrontPoint[], samples: readonly CrestSample[], count: number, time: number): Map<CrestSample, FrontPoint> | undefined {
     let kept: Map<CrestSample, FrontPoint> | undefined;
