@@ -218,6 +218,30 @@ The drawn curl as shaded (Part B, after the owner's clip of PR 3 on the M4 Pro: 
 
 **Resting on the water** (the advisor's ruling, 2026-10-01; the spec's item 13.4). The library is the authority only where the solver can't overturn. Each profile is now lifted fully from 0.1 H behind its crest to its toe and eased (smoothstep) down to the solver's water over 0.5 H beyond each, H the crest over the lower of the water at the toe and at the front end [provisional]. Past the ramps a vertex rests on the water with its height and foam, the mask lets the water draw itself a band (1 m) beyond them, and the contact follows the same loft. Overlapping fronts are judged on these lifted spans: a strip resting wholly on the water gives way to any strip over it, and where two fronts only rest nothing conflicts.
 
+**The forward rest** (the advisor's ruling, 2026-10-01, on the trench found at Medium in PR 6) [provisional].
+- **Why.** The solver's depth-averaged breaking smooths its front broad. At Medium's first held curl its water stood 1.86 m at the crest and still 1.1–1.7 m 4–10 m ahead, while the library's face (the true shape near the break) drops to its toe at −0.38 m 2.6 m ahead. The plain 0.5 H ease from the toe then climbed about 2 m in 2 m: a trench that hid the tube from the front, and a channel camera low enough to look in was under the solver's water.
+- **The rule.** Ahead of the toe the drawn trough holds at the profile's own front level until the solver's water along the ray comes down to within 0.1 H of it, read every 0.5 m from the toe and taken where the line between two readings crosses. Then it eases onto the water over 0.5 H, as behind.
+  - The ease ends within 3 H of the toe and within the profile's own samples: its front end and extension, less the mask's band. Where the water hasn't come down by then, it eases over what is left.
+  - Where the water at the toe is already within 0.1 H of the level, it is the plain rest.
+  - It is computed from the drawn slice in both modes, so the contact, the mask and the overlaps' lifted spans follow. The behind-the-crest rest is unchanged.
+  - The forward end's pin gives way to it: its ease always ends within the samples.
+  - The held trough takes no foam: it is the trough ahead of an open tube (the advisor: acceptable).
+- **Measured** (2026-10-01, the water sheet's held curls and a few 1.5 s steps on, GPU tier, load average 22–37; per open slice of weight at least 0.5; median / 90th percentile / max) [measured]:
+
+| swell | open slices (frames) | held / to the cap | the ease ends past the toe | the climb where the ease starts: before (at the toe) → after | deepest under the solver's water ahead of the toe: before → after |
+|---|---|---|---|---|---|
+| Practice | 66 (4) | 100 % / 79 % | 4.3 / 4.4 / 4.5 m | 1.02 / 1.14 / 1.16 → 0.35 / 0.56 / 0.81 m | 0.91 / 1.05 / 1.09 → 0.95 / 1.11 / 1.14 m |
+| Medium | 208 (7) | 98 % / 23 % | 4.4 / 6.8 / 7.6 m | 1.33 / 1.50 / 2.43 → 0.27 / 0.90 / 1.77 m | 1.10 / 1.38 / 2.34 → 1.11 / 1.41 / 2.38 m |
+| Big | 251 (5) | 88 % / 9 % | 4.6 / 7.5 / 7.6 m | 1.33 / 2.69 / 3.32 → 0.37 / 0.56 / 1.48 m | 0.96 / 2.08 / 3.06 → 0.96 / 2.10 / 3.09 m |
+
+  - The wall the ease climbs drops to a third, 3.5–5.5 m further ahead. The trough's deepest point under the solver's water is the toe's, as before; the held trough hides the water above it.
+  - In H (the crest over the toe) the ease ends 3.2 (Practice), 2.6 (Medium) and 1.3 (Big) past the toe at the median.
+  - **From curl-close the tube shows, the camera above both waters.** Practice: 0.49 m over the solver's water and 1.19 m over the drawn trough, 6,537 px of back wall (3,592 px before). Medium, 7.5 s on: 0.31 m and 1.38 m, 6,807 px. Big: 2.8 m and 5.2 m, 211,541 px.
+  - **The face water in the luminance check changes.** At curl-close the held trough now covers the water around the curl. The solver's own pixels left in view are about 300 distant, sky-bright ones at the far edge (0.69–0.80 at 48°), so lip ÷ face water drops (Practice, Rich: backlit 48° 0.62×, backlit 6° 1.12×). The lip itself is unchanged (0.429 and 0.630). Against the curl's own held trough (0.21–0.22) the backlit lip at 48° is 1.9×.
+  - Overlaps: 0–4 a frame at Big (none open), 0–2 at Medium, none at Practice.
+  - The forward readings: 250–310 a frame at Practice, 510–870 at Medium, 830–1,750 at Big.
+- **Cost:** the loft's worst case (a 140 m front all open, 287 slices, plain node, 200 builds in turn, load 34–37): 13.5–16.0 ms a build with the water on the trough (279 readings), 14.4–14.8 ms under a front 2 m over it everywhere (the hold to its cap, 3,906 readings). The readings are lost in the run-to-run noise.
+
 **The sheet** (both looks, the curl's program only; every other program is byte-identical):
 - **Thickness.** The loft measures the lip across, per profile point from the crest to the throat: from the crest to the tip, the distance to the underside's run (tip back to the throat); from the tip back, to the outer run's; 0 at the tip, where they meet. Two attributes carry it and its weight: 1 from point 36 to 84, ramped over 3 points next to the crest and the throat, × the vertex's lift, 0 on the extensions.
 - **Only once the underside has formed.** The library folds the underside onto the tip until the cavity forms: all four cases until τ/T ≈ 0.07–0.21, and the periodic case again at its touchdown frame. With no air behind it the lip is column water, so the weight comes in with the underside's length over 0.035 h0 (0.25 m at h0 7 m) [provisional].
