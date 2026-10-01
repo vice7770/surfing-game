@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Prepare the swept barrel for every spot, with no change in behaviour:
+**Goal:** Prepare the swept barrel for every spot, with no change in behaviour beyond two Padang Padang changes: the peak PR's front (#105, carried here) and the held lip's velocity (the tip's refit, below):
 - each spot's transect (its slope, its foot, its onset tables) and its library cases;
 - the switch mechanics, so that switching a spot on is one line in `SWEPT_BARREL`;
 - tests that run each spot's barrel with the switch on inside the test only;
@@ -118,7 +118,7 @@ Each case is scouted at level 9: one phase on the whole domain, outputs every 0.
 - the end at 3.5 after touchdown;
 - the fine window from 9 h0 behind the vertical crest to 10 h0 ahead of it.
 
-These lines are for PR #82's `tools/basilisk/run_periodic.sh`; this branch doesn't commit the toolkit.
+These lines are in PR #82's `tools/basilisk/run_periodic.sh` (2b092ed, with a30's switch at 26 and a08's at 31, and its README's case list); this branch doesn't commit the toolkit.
 
 ```
 point21_a08:7:0.141:9:0.0465116:0.05:52:31:44:27:47
@@ -220,7 +220,7 @@ What a spot needs before the owner can switch it on, and where each piece lives:
 - **The front's rows.** Padang Padang's front follows crests from the relaxation zone's inner edge since the peak PR (#105, §6). The Canyon, Point and Beach have their fine zones start 3.4–3.6 m deep, shallower than any foot that lies seaward of their sets' breaks. So their records say `frontFrom: 'zone'`: the front follows crests from the relaxation zone's inner edge, over the 4 m cells. A crest is sized only once its still depth is within 1 m of the foot, so this changes nothing about where it is sized.
 - **One line.** Once a spot has its record and its cases, switching it on is adding it to `SWEPT_BARREL`. Every other switch keys on `sweptBarrelOn(config)`: the front, the loft, the mask, the carve and the lip strips going off, the contact, the handover.
 - **The generator** (`npm run barrels`) takes `--spot`, and `--flat` and `--a0` per case (`NAME=VALUE`). `--keep ID` keeps a committed case as it is: its `.bin` untouched, and its rows carried over from `barrel-cases.md`. Padang Padang's three solitary runs live only on another worktree, so they are kept, not reconverted. Past Pick & Feddersen's fitted ψ0 (the Reef) the validation table shows no fit rather than an extrapolated one.
-- **Behaviour.** No spot's sea changes beyond the peak PR's (#105), which this branch carries: Padang Padang's onset timing, front, loft and contact read the same numbers as on that branch, its four case files are byte-identical, and the page fetches only them. A spot without a record can't be switched on, even by a test. `config.barrelFrontFrom` and `config.barrelFront` override a spot's rows and rules, for probes.
+- **Behaviour.** No spot's sea changes beyond the peak PR's (#105), which this branch carries: Padang Padang's onset timing, front and loft read the same numbers as on that branch, and the page fetches only its four case files. Their frames are byte-identical, but their tip floats are refitted over the sustained overturn (523a7a4, the advisor's ruling), which **changes Padang Padang's held lip** (the advisor decoded the four files before and after, 2026-10-01): outside the sustained overturn the tip's velocity is now zero; inside it nothing changes but the window's two ends, where the old ±4-frame line took in frames from before the overturn and after touchdown; and at the held frames (touchdown − 1, a30's − 2), in √(g h0), along and up: a20 0.83 → 0.96 and −0.54 → −0.61; a30 1.06 → 1.18 and −0.69 → −0.72; a45 1.22 → 1.42 and −0.64 → −0.76; periodic padang19s 0.66 → 0.81 and −0.46 → −0.31. So the held lip's along-speed rises 11–23 %. PR 4's contact reads it after touchdown, and PR 5's jets (#102: `crashCurve.jetMotion`'s held jet velocity, the pour's fall, and the relative speed the held tube's void grows by) read it once both are in. The refit stays: a free jet's horizontal speed holds and its fall is a line, and the old held values were dragged down by frames after touchdown. A spot without a record can't be switched on, even by a test. `config.barrelFrontFrom` and `config.barrelFront` override a spot's rows and rules, for probes.
 
 ## 5. The deletion map
 
