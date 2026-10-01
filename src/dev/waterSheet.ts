@@ -8,10 +8,11 @@
  * `&compute=gpu` (or `auto`) steps the sea in the game's worker, on the GPU as
  * an M4 player's does (the GPU tier's 64-component sea); `cpu`, the default,
  * steps it in the page as before.
+ * `&swell=small|medium|big` runs the spot's own swell of that size in place of the practice groundswell.
  */
 import { PerspectiveCamera, Vector3, type Color } from 'three';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
-import type { TimeOfDay } from '../game/SurfConditions';
+import { swellChoice, type TimeOfDay } from '../game/SurfConditions';
 import type { WaterLook } from '../scene/water/waterLook';
 import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
 import { tubeFloorDepth } from '../wave/Overturn';
@@ -53,6 +54,8 @@ interface Shot { name: string; eye: Vector3; target: Vector3 }
 const PARAMETERS = new URLSearchParams(window.location.search);
 /** `?waterSheet&spot=reef` or `padang` (G9): the practice Reef or Padang Padang, held on an open tube, with tube shots in place of the face and bore. */
 const SPOT = (['reef', 'beach', 'padang'] as const).find((spot) => spot === PARAMETERS.get('spot')) ?? 'point';
+/** `&swell=small|medium|big`: the spot's own swell of that size, in place of the practice groundswell. */
+const SWELL = (['small', 'medium', 'big'] as const).find((size) => size === PARAMETERS.get('swell'));
 /** Reef breaks: the sheet holds them on an open tube. */
 const TUBE_SPOT = SPOT === 'reef' || SPOT === 'padang';
 /** Padang Padang draws the swept barrel (Part B): its sheet holds on the swept curl, not the old lip's tube. */
@@ -270,7 +273,10 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   status.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:1000;padding:6px 10px;background:#0d1117;color:#d6dde6;font:12px ui-monospace,monospace';
   status.textContent = 'Water sheet: settling the sea…';
   document.body.append(status);
-  const settings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS, spot: SPOT, source: 'practice', compute: COMPUTE === 'cpu' ? 'cpu' : 'auto' };
+  const compute = COMPUTE === 'cpu' ? 'cpu' : 'auto';
+  const settings: PhysicalSettings = SWELL
+    ? { ...DEFAULT_PHYSICAL_SETTINGS, ...swellChoice(SPOT, SWELL), spot: SPOT, source: 'buoy', compute }
+    : { ...DEFAULT_PHYSICAL_SETTINGS, spot: SPOT, source: 'practice', compute };
   await hooks.start(settings, COMPONENTS ? { componentCount: COMPONENTS } : undefined);
   hooks.resize(RENDER.width, RENDER.height);
   const idle = { paddle: false, popUp: false, steer: 0 };
@@ -343,7 +349,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   // Which tier stepped the sea: asked for the GPU and given the CPU (no WebGPU) must not pass for the GPU's water.
   const stepped = hooks.mode.host?.snapshot.status.compute ?? 'cpu';
   const tier = `water on the ${stepped.toUpperCase()}, ${hooks.mode.config?.componentCount ?? SEA_COMPONENTS} components${COMPUTE === 'gpu' && stepped !== 'gpu' ? ' (ASKED FOR THE GPU)' : ''}`;
-  status.textContent = `Water sheet: ${SPOT} practice${ball ? `, ${ball.count} foam-ball sprites` : ''}, ${simulated.toFixed(0)} s settled, ${tier} · columns ${TIMES.map((t) => LOOKS.map((l) => `${l} ${t}`).join(', ')).join(', ')} · rows ${shots.map((s) => s.name).join(', ')}`;
+  status.textContent = `Water sheet: ${SPOT} ${SWELL ?? 'practice'}${ball ? `, ${ball.count} foam-ball sprites` : ''}, ${simulated.toFixed(0)} s settled, ${tier} · columns ${TIMES.map((t) => LOOKS.map((l) => `${l} ${t}`).join(', ')).join(', ')} · rows ${shots.map((s) => s.name).join(', ')}`;
   const face = steepestFace(hooks.water, hooks.mode.focus);
   status.textContent += ` · face slope ${face.slope.toFixed(2)} · program ${hooks.water.mesh.material.customProgramCacheKey()}`;
   /** One shot at full size, posted as water-shot.png: for close checks from the console once the sheet is done. */
