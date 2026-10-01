@@ -62,6 +62,10 @@ export interface BarrelSpot {
  *   the solver breaks near the edge (the advisor, refined after the front's check): the smallest waves cross the edge
  *   unbroken (H/h ≈ 0.4 there) and break depth-limited where the inner flat shoals to about 0.73 m, which the ledge's
  *   cases would draw wrongly, so the front's join reach (1.5 H past the throw depth) lets them go as the solver's bores.
+ * - **Its cases:** reef42 (A0 0.21) alone. reef60 (1:6) waits for per-slice slopes. reef42_a35 (A0 0.35) sets the throw
+ *   line but is out of the index: its lip landmark flickers between the curl's top and the jet's tip, so even the
+ *   advisor's robust trace leaves 13 of its 77 open frames flagged and its tip fit up to 6 √(g h0) (the bar: about 90 %
+ *   clean, at most about 1.5). The small case (A0 ≈ 0.09, over the inner flat) is owed at level 13.
  */
 const REEF_THROW_SLOPE = (5.159 - 1.928) / (3.503 - 2.127);
 const REEF_ONSET: OnsetTables = {
@@ -92,6 +96,10 @@ const REEF_ONSET: OnsetTables = {
  *   about 6 m along a 1:21.5 ray, as Padang Padang's do. Not monotonic: point21_a30's 14 s wave shoals further before
  *   going vertical (H/d 1.23 there, against 0.82–0.96). A fit in the period too barely helps (±0.26 m), and in the game
  *   the Point's period rises with its size, so η alone carries the period's trend. The level-13 cases owed refit it.
+ * - **Its cases:** point21_a15, a23 and a30 (A0 0.15, 0.23, 0.30), level-12 stand-ins (lips of 4–6 cells; jets and tubes
+ *   well under Pick & Feddersen's). point21_a08 (A0 0.08, 9 s) sets the throw line's shallow end but is out of the
+ *   index: its lip falls to the water without enclosing air, at level 9 or 12, so it has no tube to draw (the Point's
+ *   Small scales a15 down). Its level-13 run is owed and may close one.
  */
 const POINT_ONSET: OnsetTables = {
   h0: 7,
