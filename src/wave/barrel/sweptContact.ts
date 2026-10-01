@@ -145,9 +145,14 @@ export class SweptContact {
     this.bucket = options.bucket ?? CONTACT.bucket;
   }
 
-  /** Loft the fronts over the water (`heightAt`, uncarved) and index the strips for this step's queries. */
-  update(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number): void {
-    const loft = this.loft.build(records, count, stillLevel, heightAt);
+  /**
+   * Loft the fronts over the water (`heightAt`, uncarved; `depthAt`, its column's depth, for the crest's pace in the
+   * lip's velocity) and index the strips for this step's queries.
+   */
+  update(
+    records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number, depthAt?: (x: number, z: number) => number,
+  ): void {
+    const loft = this.loft.build(records, count, stillLevel, heightAt, depthAt);
     this.last = loft;
     const { positions: p, sliceCount } = loft;
     if (this.own.length !== p.length / 3) {
