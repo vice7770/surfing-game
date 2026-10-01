@@ -533,7 +533,7 @@ export class SurfZoneSimulation {
     if (sweptBarrelOn(config)) {
       const barrel = BARREL_SPOTS[config.spot]!;
       this.onsetTiming = onsetTiming(barrel.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', barrel.onset);
-      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming);
+      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, barrel.front);
       if (barrel.frontFrom === 'zone') this.frontFrom = tank.zoneInner;
     }
     const takeOff = this.breakPoint();

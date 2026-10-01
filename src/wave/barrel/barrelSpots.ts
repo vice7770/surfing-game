@@ -1,5 +1,13 @@
 import { PADANG, REEF, type SpotName } from '../Bathymetry';
+import type { FrontOptions } from './BreakingFront';
 import { PADANG_ONSET, type OnsetTables } from './sliceClock';
+
+/**
+ * How far over a reef's top its throw's floor sits, m: the pass's Gaussian tail lifts the flat's still depth by up to
+ * 0.4 mm across the window, so a floor at exactly the top's depth was never crossed there (a numerical margin, not a
+ * physical one; the advisor kept it, 2026-10-01).
+ */
+export const FLOOR_MARGIN = 0.01;
 
 /**
  * What a spot needs for the swept barrel (Padang Padang Part B, PR 7): the Navier–Stokes transect its library cases
@@ -22,6 +30,8 @@ export interface BarrelSpot {
    * for a spot whose foot lies seaward of its fine zone, in the 4 m cells.
    */
   frontFrom: 'fine' | 'zone';
+  /** The front's rules beyond Padang Padang's (BreakingFront's `FrontOptions`); none: Padang Padang's. */
+  front?: FrontOptions;
 }
 
 /**
@@ -53,17 +63,23 @@ const REEF_ONSET: OnsetTables = {
     { period: 17, rows: [[0.89, 4.17], [1.72, 5.36], [2.46, 2.02], [2.92, 3.21]] },
   ],
   throwDepth: { intercept: 0, slope: 1.928 / 2.127, heights: [0, Infinity] },
-  // A centimetre over the top: the pass's Gaussian tail lifts the flat's still depth by up to 0.4 mm across the window,
-  // so a floor at exactly 1.5 m was never crossed on the top (a numerical margin, not a physical one).
-  get floor() { return REEF.crestDepth + 0.01; },
+  get floor() { return REEF.crestDepth + FLOOR_MARGIN; },
 };
 
 /**
  * Every spot's barrel transect, where its cases are in the library. Padang Padang's is round 6's (the owner's 1:19 along
  * the path from the wedge's 7 m foot, read live for the design sweep); the Reef's, its shelf's 10 m and the ledge along
  * the swell's path. The Reef's fine zone starts at the shelf's edge, so its front follows crests from there.
+ *
+ * The Reef's front (the advisor's rulings, 2026-10-01; provisional): its crests' highest cells jump forward to the
+ * ledge's edge as their faces steepen, so a sized crest follows the furthest crest within 10 m ahead (the advisor's
+ * 1.5 H would catch none of the jumps measured); and its small waves break only as they cross onto the top, so a crest
+ * may join up to 1.5 of its wave heights past its throw depth.
  */
 export const BARREL_SPOTS: Partial<Record<SpotName, BarrelSpot>> = {
   padang: { slope: 1 / 19, get footDepth() { return PADANG.baseDepth; }, onset: PADANG_ONSET, frontFrom: 'fine' },
-  reef: { slope: 0.238095, get footDepth() { return REEF.shelfDepth; }, onset: REEF_ONSET, frontFrom: 'fine' },
+  reef: {
+    slope: 0.238095, get footDepth() { return REEF.shelfDepth; }, onset: REEF_ONSET, frontFrom: 'fine',
+    front: { jumpReach: 10, joinPast: 1.5 },
+  },
 };
