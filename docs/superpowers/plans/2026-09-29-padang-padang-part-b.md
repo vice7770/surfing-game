@@ -62,7 +62,7 @@ The advice it builds on, in `docs/research/water-physics/` on `main`:
 2. **The slice clock and onset.** This plan, Tasks 4–7.
 3. **The drawn mesh.** The loft, the seam and the mask. Planned in `2026-09-30-padang-padang-part-b-pr3.md` and built (branch `claude/padang-mesh`); measured on the Small swell: the loft 0.6 % of the step, the open curl 3–9 m at the median, 5.4 % of open slices' crests over 2 m from the solver's, every lookup clamped under the library's smallest case (`docs/research/barrel-library.md`, "The loft").
 4. **The contact.** Wave-attached signed distance, and the Reef's Part D interface.
-5. **The crash curve, parcels and sound.** Planned in `2026-10-01-padang-padang-part-b-pr5.md` with the advisor's rulings, and built (branch `claude/padang-crash`).
+5. **The crash curve, parcels and sound.** Planned in `2026-10-01-padang-padang-part-b-pr5.md` with the advisor's rulings, and built (branch `claude/padang-crash`, PR #102). Measured before and after in `docs/research/barrel-library.md`, "The crash": stable, the surf readout held, a tenth to half of Kennedy's water moved. Open: only 36–42 % of the jets crash on their point, since the throw moves the solver's crest past the front's match reach (for the advisor).
    - The lip lands on the drawn touchdown frame's face, at its point nearest the tip.
    - The jet the loft draws leaves the crest at the barrel's throw, is held, and pours there over the tube's collapse; Kennedy's lip is off at the swept spot.
    - The whitewater (the foam, the bore's air and turbulence, the roar) waits for the touchdown.

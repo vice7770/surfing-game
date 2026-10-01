@@ -249,3 +249,47 @@ The foam field is shared, so **Classic's foam at Padang Padang changes too**, ar
 **The splash-up sheet** (ruling 10) is drawn at Padang Padang as at every spot (Rich's splash-up strips; Classic draws none). The barrel draws the jet, so the jet's strips stay hidden there. PR 7 must keep a splash-up renderer when it deletes `LipSheetMesh.ts` and `richLip.ts`.
 
 **Sound:** lip hits come from the pour's landings, so the crash sounds along the crash curve as the peel runs.
+
+**Measured before and after** (the advisor's condition on ruling 2; the `padangCrash` probe, 2026-10-01) [measured]. Padang Padang at 1 m cells, 120 s of sea after the spin-up, with Kennedy's lip (before PR 5) and with the crash. It ran on the M1 Air under other sessions' load (load averages 8–38), so the times read high; the crash's cost is its share of the same run's step.
+
+| Swell, seed | Small 1 | Small 2 | Medium 1 | Medium 2 |
+|---|---|---|---|---|
+| Fastest water, m/s | 6.6 → 6.6 | 6.3 → 6.1 | 7.1 → 7.1 | 8.5 → 7.3 |
+| The fine zone's highest water, m: median, 90 %, top | 1.72, 2.34, 3.18 → 1.72, 2.34, 2.67 | 1.84, 2.28, 3.29 → 1.84, 2.29, 2.69 | 2.42, 2.93, 3.79 → 2.40, 2.89, 3.19 | 2.79, 3.16, 3.85 → 2.79, 3.08, 3.37 |
+| The front's crests past the throw, m: median, 90 %, top | 0.80, 1.14, 1.72 → 0.81, 1.21, 1.85 | 0.73, 1.12, 1.86 → 0.76, 1.20, 1.93 | 1.02, 1.48, 2.53 → 1.03, 1.53, 2.60 | 1.12, 1.71, 2.56 → 1.07, 1.64, 2.63 |
+| Peel, the last wave | 24.9°, 12.1 m/s → 23.7°, 12.7 m/s | 0.9° (r² 0.04) → 18.2°, 16.4 m/s | 32.1°, 12.3 m/s → 36.2°, 11.1 m/s | 25.2°, 15.4 m/s → 30.3°, 13.0 m/s |
+| Surf readout, typical / sets, m | 3.21 / 3.48 → 3.37 / 3.49 | 3.30 / 3.50 → 3.31 / 3.51 | 3.69 / 3.81 → 3.70 / 3.74 | 3.59 / 3.68 → 3.59 / 3.65 |
+| Jets | 939 → 178 | 1605 → 365 | 1116 → 659 | 1475 → 1097 |
+| Water thrown (asked), m³ | 765 (826) → 76 (76) | 1328 (1420) → 131 (131) | 854 (877) → 386 (388) | 1810 (1928) → 792 (795) |
+| Starved: jets, water (m³) | 308, 61.4 → 11, 0.003 | 501, 92.0 → 16, 0 | 139, 23.6 → 38, 2.0 | 273, 118.0 → 58, 2.9 |
+| Unplaced momentum: jets, m⁴/s | 123, 134 → 14, 7 | 95, 110 → 27, 24 | 142, 339 → 63, 72 | 124, 305 → 180, 422 |
+| Jet impacts, m/s: median, 90 %, top | 8.8, 11.4, 16.2 → 7.1, 7.9, 8.1 | 9.0, 11.1, 14.2 → 6.2, 7.8, 8.6 | 9.5, 12.0, 15.1 → 8.2, 9.6, 10.8 | 9.9, 11.8, 15.0 → 8.3, 10.8, 12.2 |
+| Crashes / jets; covered points | 69 / 178; 74 | 153 / 365; 94 | 242 / 659; 278 | 392 / 1097; 430 |
+| The crash's update / the step, ms | 5.42 / 2351 | 1.41 / 982 | 11.36 / 3060 | 1.23 / 644 |
+
+- **Stable** in all eight seas, and the water no faster: the same fastest water on the two seas where it came early (t 22 s), and 0.2 and 1.2 m/s slower on the two where it came later.
+- **The crests don't stand taller without Kennedy's lip.** The fine zone's highest water is the same to 0.04 m at its median and 90th percentile. Only its top falls, by 0.5–0.6 m: most likely Kennedy's landings heaping water [inferred]. The front's crests past the throw stand 0.05–0.08 m taller at the 90th percentile on three seas and 0.07 m lower on the fourth: Kennedy's lip took its water up to 2 s before τ = 0, and the barrel takes it at τ = 0.
+- **The peel** meter reads the last wave of the 120 s, and the two seas part after the first throw, so its changes are the waves' spread. Small seed 2's last wave had no clean front before (r² 0.04).
+- **The surf readout** holds: typical heights within 0.16 m, sets within 0.07 m.
+- **The ledger moves less water:** 10 % of Kennedy's on Small and 45 % on Medium, in a fifth to three quarters as many jets. They are rarely starved: 2–6 % of the jets, at most 3 m³ against Kennedy's 24–118 m³. Their momentum is placed better on three seas. On Medium seed 2, 180 jets left 422 m⁴/s unplaced, against Kennedy's 124 and 305: the held lip leaves faster than the solver's water there [inferred].
+- **The join count on Small is held down** by Padang Padang's unsized peak (`claude/padang-peak-sizing`, daf6681), which hadn't landed when these ran.
+- **The pour lands at the held lip's speed,** 5–12 m/s, where Kennedy's lips hit at up to 14–16 m/s.
+- **The cost:** the crash's update is 0.14–0.37 % of the step.
+
+**Only 36–42 % of the jets crash on their point.** The rest of the thrown points leave the front before their touchdown. Their water pours where and when it was foreseen, so the ledger balances, but their void's air is never trapped, and the loft stops drawing their slices mid-tube. A scratch probe followed every thrown point (Small seed 1 at 2 m cells, 120 s):
+- **With the crash,** 24 of 91 thrown points (26 %) left before touchdown, at a median half of the open time, in fronts of about 9 points. **Without it,** 13 of 75 points past τ = 0 (17 %), early (a median 0.12 of the open time) and mostly in fronts of 1–2 points.
+- **All 24 left the same way** (and 12 of the 13 without the crash): its column's crest moved more than the front's match reach (2 m plus a cell) in one step. The throw takes the jet from the crest's upper half, within 2 wave heights of it (#86's window), and the flattened crest's highest cell jumps [inferred].
+- At 1 m cells the match reach is 3 m, and the probe's crashes are 36–42 % of the jets.
+- **Not fixed here; for the advisor.** Either the front matches a point holding a jet over the throw's own window until its crash (the front's change, PR 2's file), or the jet leaves progressively over the open time (the fallback the advisor named).
+
+**The catch report before and after** (Small, seed 1, 2 min, 30 ghost bots riding the swept contact; `--barrel --no-crash` against `--barrel`) [measured]. Neither sea gives a ride: no ride reached 3 s either way.
+
+| | Attempts | Cue lit | Stood | Longest ride, s | Top speed, m/s | No cue |
+|---|---:|---:|---:|---:|---:|---:|
+| Kennedy's lip | 247 | 12 | 4 | 1.5 | 7.4 | 213 |
+| The crash | 242 | 6 | 2 | 1.7 | 13.2 | 220 |
+
+- The cue lit on 12 and 6 attempts: too few to tell apart.
+- One board reached 13.2 m/s in a 1.7 s ride with the crash; not looked into.
+
+**Where the landing falls on the profile** (for the adaptive forward rest; the cases at touchdown, foot heights 1–4 m over 3–5 m) [measured]: at samples 99–111.5, mostly 111.5, 0.03–0.09 m before the toe (landmark 112), and up to 0.8 m before it at h0 5 m with a 1 m foot. So the landing sits where the drawing lifts the profile fully, at the edge of the forward rest. Its height takes the end weight and the seam's pin, as the loft did before `REST`. The crash test holds the tip and crest to the loft's vertices, not the landing.
