@@ -113,9 +113,9 @@ Read in this order:
   - The report is `docs/research/particle-report.md`.
   - Its recommendations wait for the owner: Medium particles for Auto's Medium result, and no spray stepping while Spray and mist is off.
 
-## Stopped here (2026-10-01, about 16:30, at the owner's request)
+## Where each piece stands (2026-10-01)
 
-Every agent was stopped, and their background runs too. Where each piece was left:
+The owner stopped every agent at about 16:30 and said to continue at about 20:05. The three agents (PR 5, PR 7's prep, the front splits) were resumed from where they stopped. Main took the second advisor branch (#101) in between; #82 was brought up to date with it (0d0f114) and is mergeable again. Where each piece was left at the stop:
 - **Ready to merge** (the owner merges):
   - #82 and #94, any time;
   - the Padang Padang stack, in order: #91 → #92 → #95 (change each base to main first), then #103, then #104.
