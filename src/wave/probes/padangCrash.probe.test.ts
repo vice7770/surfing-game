@@ -50,6 +50,11 @@ describe.runIf(process.env.PROBE)('Padang Padang crash probe', () => {
           thrown += event.thrown;
         };
         const impacts: number[] = [];
+        // Whether the crests stand taller without Kennedy's lip taking water (the coordinator, 2026-10-01): each step's
+        // highest water above still level in the fine zone, and the front's thrown crests' heights.
+        const highest: number[] = [];
+        const thrownCrests: number[] = [];
+        const fineRow = solver.rowBelow(simulation.tank.fineFrom);
         let fastest = 0;
         let fastestAt = '';
         let bad = '';
@@ -68,6 +73,12 @@ describe.runIf(process.env.PROBE)('Padang Padang crash probe', () => {
           stepMs += performance.now() - start;
           steps += 1;
           if (frame % 3 !== 2) continue;
+          let top = 0;
+          for (let i = fineRow * solver.nx; i < solver.h.length; i += 1) {
+            if (solver.h[i] > 0.05) top = Math.max(top, solver.h[i] + solver.bed[i] - solver.restLevel);
+          }
+          highest.push(top);
+          for (const point of simulation.front?.points ?? []) if (point.tau >= 0) thrownCrests.push(point.height);
           for (let i = 0; i < solver.h.length; i += 1) {
             if (!(Number.isFinite(solver.h[i]) && Number.isFinite(solver.qx[i]) && Number.isFinite(solver.qz[i]))) {
               bad = `cell ${i} at t ${solver.time.toFixed(2)} s`;
@@ -93,6 +104,7 @@ describe.runIf(process.env.PROBE)('Padang Padang crash probe', () => {
           `  lips: ${simulation.lipJets} throws, ${simulation.lipVolume.toFixed(1)} m³ thrown (events: asked ${asked.toFixed(1)}, thrown ${thrown.toFixed(1)}), landed ${landed.toFixed(1)} m³, airborne ${lip.airborneVolume().toFixed(1)} m³`,
           `  starved: ${lip.starvedThrows} throws, ${lip.starvedVolume.toFixed(2)} m³; unplaced momentum: ${lip.momentumClamps} throws, ${lip.unplacedMomentum.toFixed(1)} m⁴/s`,
           `  jet impacts ${quantiles(impacts, 1)} m/s`,
+          `  the fine zone's highest water above still level, per tenth of a second: ${quantiles(highest)} m; the front's thrown crests: ${quantiles(thrownCrests)} m`,
           counts ? `  crash: ${JSON.stringify(counts)}` : '',
           `  step ${(stepMs / steps).toFixed(0)} ms${simulation.crash ? `, the crash ${(simulation.crash.updateMs / steps).toFixed(2)} ms` : ''}`,
           '',
