@@ -29,13 +29,20 @@ export const LOFT = {
 /** Vertices per slice: the profile and its extensions over the water at each end. */
 export const LOFT_SAMPLES = PROFILE_POINTS + 2 * LOFT.extensionSamples;
 /**
- * Where the profile stands off the solver's water (the advisor's ruling, 2026-10-01; the spec's item 13.4): the library
+ * Where the profile stands off the solver's water (the advisor's rulings, 2026-10-01; the spec's item 13.4): the library
  * is the authority only where the solver can't overturn, from just behind the crest to the toe. Its back slope and the
  * flat ahead are one Basilisk wave's still water, so they rest on the game's sea, its height and its foam. In H, the
  * slice's crest over the lower of the water at its toe and at its front end: fully lifted from `behind` behind the
  * crest to the toe, and eased down (smoothstep) to the water over `ramp` beyond each [provisional].
+ *
+ * Ahead of the toe the rest adapts (the forward rest): the solver's depth-averaged breaking smooths its front broad, so
+ * its water can stand far above the library's trough there, the true shape near the break, and a plain ramp from the
+ * toe dug a trench that hid the tube. The drawn trough holds at the profile's own front level until the solver's
+ * water along the ray comes down to within `near` H of it, read every `step` m from the toe, then eases onto it over
+ * `ramp` as behind; within `ahead` H of the toe and the profile's own samples (its front end and extension, less the
+ * mask's band), easing over what is left where the water hasn't come down by then [provisional].
  */
-export const REST = { behind: 0.1, ramp: 0.5 } as const;
+export const REST = { behind: 0.1, ramp: 0.5, near: 0.1, ahead: 3, step: 0.5 } as const;
 
 /** H for `REST`, m: the crest's height over the lower of the water at the toe and at the profile's front end. */
 function restHeight(crestY: number, toeY: number, frontY: number): number {
@@ -107,6 +114,17 @@ export interface LoftResult {
    */
   sliceTipGap: Float32Array;
   tipGap: number;
+  /**
+   * Per slice, its forward rest (`REST`), m past the drawn toe: where the drawn trough stops holding at the profile's
+   * front level and starts easing onto the solver's water, and where it rests on it; and the solver's water over that
+   * level where the ease starts and at the toe (where the plain rest would start), m (NaN on a slice with no weight).
+   * The same in both modes. And the water heights the forward rests read this build.
+   */
+  sliceRestHold: Float32Array;
+  sliceRestEnd: Float32Array;
+  sliceRestClimb: Float32Array;
+  sliceToeClimb: Float32Array;
+  restSamples: number;
   /** Neighbouring slices' τ clamped to T_open/4 because the budget was reached; lookups outside the library's cases. */
   clamps: number;
   clampedLookups: number;
@@ -398,6 +416,8 @@ export class SweptLoft {
   private readonly query: ProfileQuery;
   private readonly point = new Float64Array(2);
   private readonly velocity = new Float64Array(2);
+  /** A slice's forward rest (`forwardRest`): its hold and end, m past the toe, and the climbs where it eases and at the toe. */
+  private readonly rest = new Float64Array(4);
   /** This build's water depth at a point, m (the contact's: the solver's column), for the crest's long-wave pace. */
   private depthAt: ((x: number, z: number) => number) | undefined;
   /** Per slice, its anchor (x, z) and its drawn profile's reach along its ray past its extensions, m: its footprint. */
@@ -428,6 +448,8 @@ export class SweptLoft {
       sliceFront: new Int32Array(slices), sliceSigma: new Float32Array(slices), sliceTau: new Float32Array(slices),
       slicePhase: new Uint8Array(slices), sliceCrestOffset: new Float32Array(slices), sliceLife: new Float32Array(slices),
       sliceCollapse: new Float32Array(slices), sliceFade: new Float32Array(slices), sliceTipGap: new Float32Array(slices), tipGap: 0,
+      sliceRestHold: new Float32Array(slices), sliceRestEnd: new Float32Array(slices), sliceRestClimb: new Float32Array(slices),
+      sliceToeClimb: new Float32Array(slices), restSamples: 0,
       clamps: 0, clampedLookups: 0, caps: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0,
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
@@ -454,6 +476,7 @@ export class SweptLoft {
     r.overlaps = 0;
     r.overlapsOpen = 0;
     r.overlapOpenWeight = 0;
+    r.restSamples = 0;
     const fronts = this.fronts(records, count);
     // The spacing that fits the budget, and whether refining would overrun it: faded slices are dropped, so only the
     // live ones count.
@@ -655,6 +678,7 @@ export class SweptLoft {
       let drawnToeX = profile[2 * LANDMARK.toe];
       let toeY = profile[2 * LANDMARK.toe + 1];
       let frontY = profile[2 * LAST + 1];
+      let drawnFrontX = profile[2 * LAST];
       if (this.contact) {
         query.hold = 'drawing';
         this.library.pointAt(query, LANDMARK.lip, this.point);
@@ -666,11 +690,10 @@ export class SweptLoft {
         this.library.pointAt(query, LANDMARK.toe, this.point);
         [drawnToeX, toeY] = [this.point[0], this.point[1]];
         this.library.pointAt(query, LANDMARK.front, this.point);
-        frontY = this.point[1];
+        [drawnFrontX, frontY] = [this.point[0], this.point[1]];
       }
       const drawnHeight = restHeight(crestY, toeY, frontY);
       const reachBack = drawnCrestX - (REST.behind + REST.ramp) * drawnHeight;
-      const reachFront = drawnToeX + REST.ramp * drawnHeight;
       // The weights: into the water at the front's ends, and after touchdown.
       const d = Math.min(sigma - f.first, f.last - sigma);
       const r0 = Math.min(1, d / LOFT.endBlend);
@@ -756,6 +779,18 @@ export class SweptLoft {
         }
       }
       const maskSlice = wFade > 0 ? Math.min(1, Math.max(0, 1 + d / LOFT.band)) : 0;
+      // The forward rest, from the drawn slice in both modes, so the contact and the overlaps follow the drawing.
+      const forward = this.rest;
+      if (w > 0) {
+        this.forwardRest(ax, az, nx, nz, drawnToeX, stillLevel + frontY, drawnHeight, drawnFrontX + LOFT.extension - LOFT.band - drawnToeX, heightAt);
+      } else {
+        forward[0] = 0;
+        forward[1] = REST.ramp * drawnHeight;
+        forward[2] = Number.NaN;
+        forward[3] = Number.NaN;
+      }
+      const [restHold, restEnd] = [forward[0], forward[1]];
+      const reachFront = drawnToeX + restEnd;
       // The lip as a thin sheet, for the drawing only: how far across it each point is, once its underside has formed.
       const formed = this.measureSheet && w > 0 ? sheetAcross(profile, lookup.scale, this.across, this.farSide) : 0;
       const slice = r.sliceCount;
@@ -769,6 +804,10 @@ export class SweptLoft {
       r.sliceFade[slice] = wFade;
       r.sliceTipGap[slice] = tipGap;
       if (tipGap > r.tipGap) r.tipGap = tipGap;
+      r.sliceRestHold[slice] = restHold;
+      r.sliceRestEnd[slice] = restEnd;
+      r.sliceRestClimb[slice] = forward[2];
+      r.sliceToeClimb[slice] = forward[3];
       this.anchorX[slice] = ax;
       this.anchorZ[slice] = az;
       this.reachBack[slice] = reachBack;
@@ -782,11 +821,13 @@ export class SweptLoft {
       r.sliceTipUp[slice] = lookup.tipUp;
       r.sliceAnchorVX[slice] = anchorVX;
       r.sliceAnchorVZ[slice] = anchorVZ;
-      // How far each point stands off the water: from just behind the crest to the toe, eased onto it either side.
+      // How far each point stands off the water: from just behind the crest to the toe, eased onto it either side, and
+      // ahead of the toe held as the forward rest says first.
       const profileCrestX = profile[2 * LANDMARK.crest];
       const toeX = profile[2 * LANDMARK.toe];
       const height = restHeight(profile[2 * LANDMARK.crest + 1], profile[2 * LANDMARK.toe + 1], profile[2 * LAST + 1]);
       const rampLength = REST.ramp * height;
+      const restSpan = restEnd - restHold;
       for (let j = 0; j < LOFT_SAMPLES; j += 1) {
         let along: number;
         let above = 0;
@@ -802,11 +843,21 @@ export class SweptLoft {
           along = profile[2 * i];
           above = profile[2 * i + 1];
           // Past the ramps the profile rests on the water; the mask lets the water draw itself a band beyond them.
-          const past = i < LANDMARK.crest ? profileCrestX - along - REST.behind * height : i > LANDMARK.toe ? along - toeX : 0;
-          const u = past > 0 ? Math.min(1, past / rampLength) : 0;
-          const rest = u * u * (3 - 2 * u);
-          pin = Math.max(rest, i < LOFT.pinned ? (LOFT.pinned - i) / LOFT.pinned : i > LAST - LOFT.pinned ? (i - (LAST - LOFT.pinned)) / LOFT.pinned : 0);
-          maskAlong = Math.min(1, Math.max(0, 1 - (past - rampLength) / LOFT.band));
+          if (i < LANDMARK.crest) {
+            const past = profileCrestX - along - REST.behind * height;
+            const u = past > 0 ? Math.min(1, past / rampLength) : 0;
+            pin = Math.max(u * u * (3 - 2 * u), i < LOFT.pinned ? (LOFT.pinned - i) / LOFT.pinned : 0);
+            maskAlong = Math.min(1, Math.max(0, 1 - (past - rampLength) / LOFT.band));
+          } else if (i > LANDMARK.toe) {
+            // Ahead, the forward rest alone: it ends within the profile's samples, so its end needs no pin.
+            const past = along - toeX;
+            const u = past > restHold ? Math.min(1, (past - restHold) / restSpan) : 0;
+            pin = u * u * (3 - 2 * u);
+            maskAlong = Math.min(1, Math.max(0, 1 - (past - restEnd) / LOFT.band));
+          } else {
+            pin = 0;
+            maskAlong = 1;
+          }
           if (formed > 0 && i > LANDMARK.crest && i < LANDMARK.throat) {
             sheet = this.across[i];
             sheetBack = this.farSide[i];
@@ -814,6 +865,12 @@ export class SweptLoft {
           }
         } else {
           along = profile[2 * LAST] + (j - E - LAST) * EXTENSION_STEP;
+          // Held as far as the forward rest reaches, at the profile's front level.
+          above = profile[2 * LAST + 1];
+          const past = along - toeX;
+          const u = past > restHold ? Math.min(1, (past - restHold) / restSpan) : 0;
+          pin = u * u * (3 - 2 * u);
+          maskAlong = Math.min(1, Math.max(0, 1 - (past - restEnd) / LOFT.band));
         }
         const v = slice * LOFT_SAMPLES + j;
         const px = ax + along * nx;
@@ -837,6 +894,49 @@ export class SweptLoft {
     }
     closeRun();
     r.vertexCount = r.sliceCount * LOFT_SAMPLES;
+  }
+
+  /**
+   * A slice's forward rest (`REST`; the advisor's ruling, 2026-10-01) into `this.rest`: its hold and end, m past the toe
+   * `toeX` (m along the ray from the anchor (ax, az)), and the solver's water over the drawn level `level` where the
+   * ease starts and at the toe, m. The water is read along the ray every `REST.step` m from the toe; the hold ends where
+   * it first comes within `REST.near` H of the level (between two readings, where the line between them does), and the
+   * ease runs `REST.ramp` H from there, all within `REST.ahead` H and `room`, m past the toe. Only + − × ÷.
+   */
+  private forwardRest(
+    ax: number, az: number, nx: number, nz: number, toeX: number, level: number, height: number, room: number,
+    heightAt: (x: number, z: number) => number,
+  ): void {
+    const out = this.rest;
+    const ramp = REST.ramp * height;
+    const near = REST.near * height;
+    const cap = Math.max(0, Math.min(REST.ahead * height, room));
+    // The latest the ease may start and still end within the cap.
+    const latest = Math.max(0, cap - ramp);
+    let hold = latest;
+    let climb = Number.NaN;
+    let previous = 0;
+    let previousGap = 0;
+    for (let k = 0; ; k += 1) {
+      const at = Math.min(k * REST.step, latest);
+      const gap = heightAt(ax + (toeX + at) * nx, az + (toeX + at) * nz) - level;
+      this.result.restSamples += 1;
+      if (k === 0) out[3] = gap;
+      if (gap <= near) {
+        hold = k === 0 ? 0 : previous + ((at - previous) * (previousGap - near)) / (previousGap - gap);
+        climb = k === 0 ? gap : near;
+        break;
+      }
+      if (at >= latest) {
+        climb = gap;
+        break;
+      }
+      previous = at;
+      previousGap = gap;
+    }
+    out[0] = hold;
+    out[1] = hold + Math.max(Math.min(ramp, cap - hold), 1e-3);
+    out[2] = climb;
   }
 
   /** A run of consecutive slices: its normals, and its strips joined. */
