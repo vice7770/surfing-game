@@ -1914,15 +1914,58 @@ describe('the curl overhead (the swept barrel, Part B, PR 4)', () => {
     expect(after(0.05)).toBeLessThan(after(2) - 1e-4);
   });
 
+  it('gives the lip’s water drag and no buoyancy: a falling jet, near the air’s pressure (the advisor, 2026-09-30)', () => {
+    const buoyancy = (water: PlaneWater) => {
+      const { board, rider } = standing();
+      board.step(STEP, water);
+      return rider.buoyancy.y;
+    };
+    const head = standing().rider.partPosition(2, new Vector3()).y;
+    // The curl's underside 5 cm over the head's centre: the share it reaches is the lip's, so no more lift than with
+    // the curl 2 m clear.
+    expect(buoyancy(new CurlWater(head + 0.05, head + 0.45, { x: 0, y: -4, z: 8 }))).toBe(buoyancy(new CurlWater(head + 2, head + 2.4, { x: 0, y: -4, z: 8 })));
+    // A body wholly in the curl's water floats on none of it, but is dragged by it.
+    const drift = (flow: { x: number; y: number; z: number }) => {
+      const { board, rider } = standing();
+      board.step(STEP, new CurlWater(-10, head + 1, flow));
+      return { lift: rider.buoyancy.y, rise: rider.velocity.y };
+    };
+    expect(drift({ x: 0, y: 0, z: 8 }).lift).toBe(0);
+    expect(drift({ x: 0, y: -4, z: 8 }).rise).toBeLessThan(drift({ x: 0, y: 0, z: 8 }).rise - 1e-4);
+  });
+
   it('keeps “feet under water” for real water: a foot in the curl’s water, air beneath, is not sunk', () => {
-    const { board, rider } = mounted('prone');
-    run(board, new PlaneWater(), 3);
-    const deck = board.toWorld(new Vector3(0, deckHeight(board.shape, 0), 0), new Vector3()).y;
-    rider.popUp();
-    // The board sinks under a standing rider in flat water (its feet read under water there): the band holds the feet
-    // wherever they go.
-    run(board, new CurlWater(deck - 0.4, deck + 0.4, { x: 0, y: 0, z: 0 }), 3);
-    expect(rider.popUpReport.outcome).toBe('stood');
-    expect(rider.popUpReport.refusal).not.toBe('feet under water');
+    const stand = (water: (board: BoardBody) => SurfWater) => {
+      const { board, rider } = mounted('prone');
+      run(board, new PlaneWater(), 3);
+      rider.popUp();
+      run(board, water(board), 3);
+      return rider.popUpReport;
+    };
+    // The board sinks under a standing rider in flat water: its feet read under water.
+    expect(stand(() => new PlaneWater())).toMatchObject({ outcome: 'stood', refusal: 'feet under water' });
+    // The curl's water on the deck, air beneath it (a lip landing on the feet): struck, not sunk. Only the deck reads as
+    // the curl's, so the lip's water, which floats no one, leaves the board and body as in flat water.
+    expect(stand((board) => new DeckCurlWater(board))).toMatchObject({ outcome: 'stood', refusal: undefined });
   });
 });
+
+/** Flat water, but the board's deck reads as the curl's water with air under it, the stand's feet samples alone. */
+class DeckCurlWater extends PlaneWater {
+  constructor(private readonly board: BoardBody) {
+    super();
+  }
+
+  override sampleAt(x: number, y: number, z: number, out: WaterSample) {
+    super.sampleAt(x, y, z, out);
+    out.waterFloorY = undefined;
+    out.ceilingY = undefined;
+    out.ceilingTopY = undefined;
+    const local = this.board.toLocal(new Vector3(x, y, z), new Vector3());
+    if (Math.abs(local.y - deckHeight(this.board.shape, local.z)) < 0.01) {
+      out.surfaceY = y + 0.5;
+      out.waterFloorY = y - 0.05;
+    }
+    return out;
+  }
+}
