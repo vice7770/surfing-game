@@ -287,9 +287,9 @@ describe('autopilot flow', () => {
     expect(bottom).toMatchObject({ steer: 1, crouch: 0, compress: 1 });
     expect(bottom.trim).toBeGreaterThan(0);
     expect(bottom.trim).toBeLessThan(0.5);
-    expect(autopilot.next(standing(80 * DEG, { faceFraction: 0.35 }), STEP).steer).toBe(1);
-    // Heading past 85°, along the face and up it, Compress released: the projection holds the heading, tall and centred.
-    expect(autopilot.next(standing(90 * DEG, { faceFraction: 0.4 }), STEP)).toMatchObject({ steer: 0, trim: 0, crouch: 0, compress: 0 });
+    expect(autopilot.next(standing(40 * DEG, { faceFraction: 0.35 }), STEP).steer).toBe(1);
+    // Heading past 45°, Compress released (the lean carries it on along the face): the projection, tall and centred.
+    expect(autopilot.next(standing(50 * DEG, { faceFraction: 0.4 }), STEP)).toMatchObject({ steer: 0, trim: 0, crouch: 0, compress: 0 });
     expect(autopilot.phase).toBe('FLOW · PROJECTION');
     // Mirrored for an open face toward −x.
     const mirrored = riding(-30 * DEG, { style: 'flow' });
@@ -349,7 +349,7 @@ describe('autopilot flow', () => {
     const autopilot = riding(30 * DEG, { style: 'flow' });
     autopilot.next(standing(30 * DEG, { faceFraction: 0.7, curlDistance: 4, curlSide: -1 }), STEP);
     autopilot.next(standing(30 * DEG, { faceFraction: 0.3, curlDistance: 5, curlSide: -1 }, 1, 7), STEP);
-    autopilot.next(standing(80 * DEG, { faceFraction: 0.35, curlDistance: 6, curlSide: -1 }, 1, 6.5), STEP);
+    autopilot.next(standing(40 * DEG, { faceFraction: 0.35, curlDistance: 6, curlSide: -1 }, 1, 6.5), STEP);
     autopilot.next(standing(115 * DEG, { faceFraction: 0.4, curlDistance: 7, curlSide: -1 }, 1, 6), STEP);
     autopilot.next({ ...standing(120 * DEG, { faceFraction: 0.5 }), ride: ride({ phase: 'fallen', speed: 3 }) }, STEP);
     expect(autopilot.flowRecords.map((record) => record.phase)).toEqual(['drop', 'bottom', 'project']);

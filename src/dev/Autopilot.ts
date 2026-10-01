@@ -151,9 +151,11 @@ const SNAP_TRIM = -1;
  * - drop: crouched down the face from the pop-up, until below FLOW_BOTTOM_FACE of it, out on the flat
  *   (BOTTOM_REACH) or after FLOW_DROP_LIMIT, s;
  * - bottom turn: Compress with a little weight on the front foot (FLOW_DRIVE), leaning toward the open face, until
- *   the heading is FLOW_BOTTOM_END from the fall line, about along the face: on the pool's 1.1 m wave the full lean
- *   kept 6.0–6.6 m/s to there (the pool flow probe, six rides). Past it the rail reaches its 48° bite as the board
- *   climbs, and it bogs; held to 110° the turn ended at 2.6–3.7 m/s, off the plane;
+ *   the heading is FLOW_BOTTOM_END from the fall line. The body's lean carries the heading on 33–37° after the
+ *   release, so the board comes out along the face, near the line that keeps pace with the pool's 4 m/s wave, with
+ *   the body back to an 11–17° bank (the pool flow probe). Released at 85° the heading went on to 95–122°, up the
+ *   face, with the rail at its 48° bite and the body still banked 33° into the turn; held to 110° the turn ended at
+ *   2.6–3.7 m/s, off the plane;
  * - projection: Compress released, tall and centred, holding that heading up the face, until above FLOW_TOP_FACE of
  *   it, its speed fallen FLOW_PROJECT_FADE below the phase's best (the top of the projection: on the pool's slow 1.1 m
  *   wave, carried up to FLOW_TOP_FACE the board fell from 6.2 to 1.3–1.9 m/s, off the plane, and every cutback after
@@ -167,16 +169,16 @@ const SNAP_TRIM = -1;
  * - rebound: the bottom turn again, off the foam, then the projection.
  * No turn is held longer than FLOW_TURN_LIMIT, s.
  *
- * CUTBACK_REACH: the pool's curl runs along the crest at about 6.5 m/s (the pool probe at its 1.25 m faces: Hutt's
+ * CUTBACK_REACH: the pool's curl runs along the crest at about 6.5–10 m/s (the pool probe and the bed sweep: Hutt's
  * V_s = C_b / sin α). A cutback is a U-turn, which leaves the rider about where it began along the crest, and takes
- * about 1.5 s, while the curl closes 10 m: begun 10 m ahead, the cutback comes round as the foam arrives, and the
+ * about 1.5 s, while the curl closes 10–15 m: begun 10 m ahead, the cutback comes round as the foam arrives, and the
  * rebound is off it, as the user describes. Nearer, the foam takes the rider mid-turn; further, it runs back to it
  * slowing.
  */
 const FLOW_BOTTOM_FACE = 0.4;
 const FLOW_DROP_LIMIT = 1.5;
 const FLOW_DRIVE = 0.3;
-const FLOW_BOTTOM_END = 85 * DEG;
+const FLOW_BOTTOM_END = 45 * DEG;
 const FLOW_TOP_FACE = 0.65;
 const FLOW_PROJECT_LIMIT = 1;
 const FLOW_PROJECT_FADE = 0.15;
