@@ -32,9 +32,12 @@ The flip and the deletion are the owner's follow-ups (below).
 
 ## 1. The inventory (measured 2026-10-01)
 
-Two opt-in probes in `src/wave/probes/everySpot.probe.test.ts`, on each spot's Surf-screen swells at mid tide in calm air (seed 1), as `PhysicalMode.start` builds them [measured in the model]:
+The opt-in probe `src/wave/probes/everySpot.probe.test.ts` runs each spot's Surf-screen swells at mid tide in calm air (seed 1), as `PhysicalMode.start` builds them [measured in the model]:
 - `PART=geometry` reads the bed at the take-off (the peak): its still depth; the slope over half a wavelength offshore along the contours' normal, O'Dea et al. (2021)'s predictor (and cross-shore, for comparison); Mead & Black's orthogonal gradient over the breaking depth ± 2.5 m along the same path (the game's `orthogonalGradient`); and the local gradient.
 - `PART=crests` runs 150 s of each sea after its spin-up and records every crest passing candidate foot depths on the take-off transect (zero up-crossings, five columns 20 m apart), as A0 = crest above still water / depth.
+- `PART=throws` counts today's lip throws per minute, with each jet's void and the opening under its flying lip (the advisor's question for the unswept spots).
+
+`src/wave/probes/spotOnset.probe.test.ts` measures a transect's join table: the periodicOnset probe's method on any spot's transect, with each wave's first onset (it reproduces Padang Padang's table exactly).
 
 ### Slopes
 
@@ -107,6 +110,35 @@ Each probe sea took 276–927 s of wall time for 150 s of sea, three at once, at
 - **Each case** is scouted at level 9 first (minutes) for its switch time and fine window, as the advisor did for the Reef and Padang Padang.
 - **The join tables:** the game's own solver on each spot's transect, by `src/wave/probes/spotOnset.probe.test.ts` (the periodicOnset probe's method on any transect, with the spot's Kennedy onset), at the spot's periods (9, 11, 12 and 14 s; the Reef's 14–17 s), heights spanning its foot crests. The band a crest is sized over is then set just seaward of the spot's deepest join, as Padang Padang's 6–5 m was.
 - **The throw lines:** each spot's runs, the still depth where the face goes vertical against the foot crest (`plunge_measure.py`'s `at_vertical`).
+
+### The runs
+
+Each case is scouted at level 9: one phase on the whole domain, outputs every 0.05 from 12 time units before the estimated break, a scratch driver (not committed). From its second crest's vertical face and touchdown (`plunge_measure.py`, from just before its break) its `run_periodic.sh` line follows the advisor's spacing:
+- the switch to level 12 at 4.5 time units before the vertical, so the library's first frame (3 before) is in the fine output;
+- the end at 3.5 after touchdown;
+- the fine window from 9 h0 behind the vertical crest to 10 h0 ahead of it.
+
+These lines are for PR #82's `tools/basilisk/run_periodic.sh`; this branch doesn't commit the toolkit.
+
+```
+point21_a08:7:0.141:9:0.0465116:0.05:52:34:44:27:47
+point21_a15:7:0.229:11:0.0465116:0.05:60:31:41.5:29:49
+point21_a23:7:0.318:12:0.0465116:0.05:60:28:37.5:29:49
+point21_a30:7:0.38:14:0.0465116:0.05:68:29:39:34:54
+reef42_a35:10:0.439:16:0.238095:0.15:64:18.5:28:24:44
+```
+
+| Case | Scout: vertical (t), still depth there, H at the vertical; touchdown | Scout wall | Level 12 |
+|---|---|---|---|
+| `point21_a08` | 38.7, 1.46 m, 1.07 m; not closed at level 9 | 20.5 min | waiting for a slot |
+| `point21_a15` | 35.7, 2.25 m, 2.43 m; 37.8 | stopped once measured | phase 1 (level 10) 31 min; fine phase running |
+| `point21_a23` | 32.8, 2.93 m, 3.29 m; 33.9 | stopped once measured | phase 1 31 min; fine phase running |
+| `point21_a30` | 33.5, 3.11 m, 3.50 m; 35.35 | 15.1 min | waiting for a slot |
+| `reef42_a35` | 23.0, 3.04 m (0.65 h0 before the ledge top), 3.72 m; 24.4 | 15.8 min | phase 1 16.4 min; fine phase running |
+
+- The scouts ran three at once at a load of 28–66 (`uptime`).
+- Each scout's measure starts just before its second crest's break. From the start of the fine output, the toolkit's crest search caught the leading crest's break: a23 at t 24.7, and the Reef's bore on its flat at t 14.0. At level 9, a30 read a steep face as vertical at t 26.85 in 5.2 m of water, with touchdown 8.5 later; that is not one plunge.
+- Level-12 fine phases run at 0.9–1.7 time units an hour at a load of 22–31: 5–10 hours each, three at once.
 
 ## 3. The Reef's libraries
 
