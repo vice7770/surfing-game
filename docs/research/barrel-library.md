@@ -232,12 +232,42 @@ The swept barrel's rollout (Part B, PR 7; the plan is `docs/superpowers/plans/20
   - Drives that broke before the ledge, their onsets outnumbering their waves by more than two, are left out: the 5.5 m drive at every period and the 4.5 m drive at 15 s (25–98 onsets for 12 waves). Big Reef sets breaking before the ledge sit outside the ledge's library: a Reef behaviour question for the Reef session (the advisor).
   - At 16–17 s the 3.5 m drive first breaks at 2.0 m, against 4.9–5.6 m at 14–15 s: longer periods shoal longer before breaking.
   - The probe reproduces Padang Padang's table exactly on its transect (16 s: 1.19 → 2.61 m and 1.60 → 3.18 m).
-- **The throw:** proportional to the foot crest, d = 0.906 η_foot (reef42's 1.93 m for 2.13 m; the A0 0.35 run will refit k through the origin, its level-9 scout reading 0.87), no shallower than the reef's top at the tide (1.5 m + tide). A wave too small to go vertical on the ledge face plunges as it crosses onto the top, where the step has drained it (the advisor: a 0.9 m wave sees 1.0–1.2 m there, H/h ≈ 0.75–0.9). Without the floor the Practice sea's crests (0.8–0.9 m at the foot, throws at 0.73–0.81 m) never reached their throw depth over the 1.5 m top.
-- **With the switch on in a test** (the Practice sea, 1.0 m at 14 s from 20°, a 40 m window at 2 m cells, 180 s): 39 crests joined, 9 points threw (3.0 a minute, against today's 11.3 lip jets a minute on the same sea), all at 1.50 m of still water, 4–26 m onto the reef's top (median 5.8 m inside its crest line). 154 crests followed from the foot were lost before joining.
-- **Owed:** a small Reef case at about A0 0.09 (Practice and Small) at level 13 on the M4 Pro: its lip would be about 0.45 m, under 4 cells at level 12. Until then small waves scale the 0.21 case down, as Padang Padang's Small did before its own case.
+- **The throw:** the line through the two runs, foot crest against the still depth where the face goes vertical: reef42's 2.13 m at 1.93 m (at the top's edge) and reef42_a35's 3.50 m at 5.16 m (15 m seaward of the top on the ledge's face; H/d ≈ 0.95 at the vertical in both), so d = 2.35 η − 3.07 (the advisor, 2026-10-01; provisional; a third case near A0 0.28 would test whether it is linear). No shallower than the reef's top at the tide (1.5 m + tide), which the line meets at η ≈ 1.95 m. reef42_a35 itself stays out of the index: even the advisor's `robust` trace leaves 13 of its 77 open frames flagged and its tip fit up to 6 √(g h0). A wave too small to go vertical on the ledge face plunges as it crosses onto the top, where the step has drained it (the advisor: a 0.9 m wave sees 1.0–1.2 m there, H/h ≈ 0.75–0.9). Without the floor the Practice sea's crests (0.8–0.9 m at the foot, throws at 0.73–0.81 m) never reached their throw depth over the 1.5 m top.
+  The floor sits a centimetre over the top (`FLOOR_MARGIN`): the pass's Gaussian tail lifts the flat's still depth by up to 0.4 mm, so a floor at exactly the top's depth was never crossed. **Refined** after the front check below (the advisor): the floor stands for crests the solver breaks near the edge. The smallest waves cross the edge unbroken (H/h ≈ 0.4 there) and break where the inner flat shoals to about 0.73 m (H/h ≈ 0.85): depth-limited breaking on the flat, which the ledge's library would draw wrongly, so they spill as the solver's bores.
+- **The front's two rules** (`BarrelSpot.front`, the Reef's alone; the advisor, 2026-10-01):
+  - **The crest jumps** (`jumpReach` 10 m). As a crest's face steepens over the ledge, its highest cell jumps forward to the ledge's edge, and the crest ahead had started a track of its own, unsized, which never joined. With the rule off, on the Practice sea at 2 m cells over 180 s: 200 jumps, 4/4/10 m ahead (10/50/90 %), 2.8/5.7/10.8 of the wave's heights. 1.5 H would catch none and 10 m catches 192, so a sized crest continues as the furthest crest within 10 m ahead of it in its column.
+  - **The join past the edge** (`joinPast` 1.5 H). A sized crest past its throw depth that the solver hasn't broken may still join while it runs 1.5 of its wave heights past that depth, its lip throwing where the solver breaks it.
+- **With the switch on in a test** (the Practice sea, 1.0 m at 14 s from 20°):
+
+  | Front | Grid, window, sea | Joined (late) | Lost | Crossed unbroken | Thrown points a minute (today's lip jets on that sea) | Throws: still depth; across the crest line (+ seaward), 10/50/90 % |
+  |---|---|---|---|---|---|---|
+  | The floor only | 2 m cells, 40 m, 12 components, 180 s | 31 | 139 | 44 | 3.7 (11.3) | 1.51 m; −5.7/0.0/0.0 m |
+  | Both rules | 2 m cells, 40 m, 12 components, 180 s | 49 (11) | 23 | 146 | 9.7 (11.3) | 1.50/1.51/1.51 m; −4.3/0.0/0.0 m |
+  | The floor at exactly 1.5 m (before its margin) | 1 m cells, 160 m, 24 components, 150 s | 157 | 1685 | 0 (never crossed) | 3.2 (352.4) | 1.50 m; −53.8/−7.1/38.2 m |
+  | Both rules | 1 m cells, 160 m, 24 components, 150 s | 892 (173) | 1608 | 212 | 147.6 (352.4) | 1.50/1.50/1.51 m; −4.2/−0.7/9.2 m |
+
+  With no limit on the join's reach (a diagnostic, 2 m cells), the solver breaks 94 of the crests that cross unbroken, 4.2/26.9/35.4 m inside the crest line (10/50/90 %), 0.62 m crests in 0.73 m of still water: well onto the top, not at its edge.
+
+  On the game's grid the jump rule raises the joins from 157 to 892. The losses stay near 1,600–1,700, but they change: without the rule they are waves lost on the ledge's lower face after 2.3 s; with it, maxima seen for 0.1 s that a crest briefly splits into (their foot crests match the joined ones'). Each sized crest was followed to its end, 150 s of sea.
+- **Owed:** a small Reef case at about A0 0.09 (Practice and Small) at level 13 on the M4 Pro: its lip would be about 0.45 m, under 4 cells at level 12. Until then small waves scale the 0.21 case down, as Padang Padang's Small did before its own case. It runs over a transect that includes the shoaling inner flat, so it also shows where and how those waves break; if they curl there, they get a flat case of their own later.
 
 **The Point:** four periodic cases at level 12, provisional stand-ins (level 13 owed on the M4 Pro), 7 m foot, 1:21.5 along the contours' normal to a 0.35 m flat. Their level-9 scouts went vertical at 1.46, 2.25, 2.93 and 3.11 m of still water for foot crests of A0 0.08, 0.15, 0.23 and 0.30 [measured, coarse]. Running.
 
-**The Canyon:** unswept (the advisor): at ξ ≈ 0.2 and Mead & Black's 1:48–1:61 it spills, and its lip is under 2 cells even at level 13, too thin for a run to resolve. It keeps today's lip (Pick & Feddersen's jets and parcels), which throws: 52 jets a minute on Practice and 16 on Small, breaking at 0.5–1.0 m, their voids 0.45–0.8 m long and 0.2–0.3 m wide (at most 1.33 × 0.52 m), the opening under the lip 0.3–0.4 m at the 90th percentile [measured, today's lip].
+**The Canyon:** unswept (the advisor): at ξ ≈ 0.2 and Mead & Black's 1:48–1:61 it spills, and its lip is under 2 cells even at level 13, too thin for a run to resolve. A swept barrel would need level 14 on the M4 Pro: owed, not planned. It keeps today's lip (Pick & Feddersen's jets and parcels) and, since its Big carves near-rider-sized voids, today's carve (the owner's rule: tubes wherever the physics plunges).
 
-**The Beach:** its bar (Practice and Medium, 1:32 to the 1.6 m bar crest) is owed at level 13 on the M4 Pro (1.4–1.7 cells across the lip at level 12 is unusable); Small (1:77) and Big (1:66) spill like the Canyon and stay unswept.
+**The Beach:** its bar (Practice and Medium, 1:32 to the 1.6 m bar crest) goes swept, its cases owed at level 13 on the M4 Pro (1.4–1.7 cells across the lip at level 12 is unusable); Small (1:77) and Big (1:66) spill like the Canyon and stay unswept, with today's lip.
+
+**Today's lip at the unswept spots** [measured: the `everySpot` probe's `PART=throws`, each Surf-screen swell's 180 s at mid tide, seed 1; voids and the opening under the flying lip at the median / 90th percentile / largest]:
+
+| Spot | Swell (Hs, Tp) | Lip jets a minute | Rollers a minute | Jet heights (10/50/90 %) | Void, length × width | Opening under the lip | Wall |
+|---|---|---|---|---|---|---|---|
+| Beach | Practice (1.4 m, 12 s) | 426.3 | 311.3 | 1.15/1.35/1.49 m | 1.50/1.65/1.71 × 0.63/0.71/0.73 m | 0.80/1.02/1.19 m | 1273 s |
+| Beach | Small (0.9 m, 9 s) | 27.7 | 207.3 | 0.34/0.41/0.47 m | 0.36/0.42/0.46 × 0.14/0.16/0.17 m | 0.01/0.02/0.23 m | 1237 s |
+| Beach | Medium (1.4 m, 11 s) | 182.7 | 468.3 | 1.06/1.21/1.43 m | 1.21/1.57/1.72 × 0.49/0.66/0.72 m | 0.72/0.95/1.28 m | 1682 s |
+| Beach | Big (2.4 m, 14 s) | 65.0 | 476.7 | 1.31/1.52/1.95 m | 1.60/1.96/2.01 × 0.66/0.79/0.82 m | 0.95/1.20/1.33 m | 3509 s |
+| Canyon | Practice (1.4 m, 12 s) | 51.7 | 523.7 | 0.54/0.81/1.01 m | 0.64/0.77/1.33 × 0.23/0.27/0.52 m | 0.12/0.41/0.85 m | 1326 s |
+| Canyon | Small (0.9 m, 9 s) | 16.3 | 27.0 | 0.36/0.50/0.77 m | 0.45/0.68/0.71 × 0.17/0.26/0.27 m | 0.05/0.31/0.56 m | 930 s |
+| Canyon | Medium (1.4 m, 11 s) | 30.7 | 226.7 | 0.46/0.77/1.02 m | 0.61/0.81/0.89 × 0.22/0.29/0.32 m | 0.08/0.43/0.77 m | 1435 s |
+| Canyon | Big (2.4 m, 14 s) | 80.0 | 452.7 | 1.26/1.65/2.07 m | 1.58/1.98/2.45 × 0.58/0.77/0.92 m | 0.84/1.43/1.81 m | 1520 s |
+
+Each sea's wall time is for 180 s of sea, two probes at once, at a load of 16–39 (`uptime` before and after). The Canyon's Big and the Beach's Practice, Medium and Big carve voids near a rider's size.
