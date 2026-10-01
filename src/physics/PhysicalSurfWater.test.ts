@@ -281,21 +281,22 @@ describe('PhysicalSurfWater\'s turbulence', () => {
   }, 240_000);
 });
 
-/** The toy tube (h0 3 m: foot crest 0.9 m at A0 0.3) on a straight front along +x at z = 0, thrown there. */
-function sweptChannel() {
+/** The toy tube (h0 3 m: foot crest 0.9 m at A0 0.3) on a straight front along +x at z = 0, thrown there, at τ `tau`, s. */
+function sweptChannel(tau = 0.05) {
   const { solver, breaking } = channel(3, 1);
-  const contact = new SweptContact(new ProfileLibrary([tubeCase(0.3)]), 0.05);
+  const library = new ProfileLibrary([tubeCase(0.3)]);
+  const contact = new SweptContact(library, 0.05);
   const water = new PhysicalSurfWater(solver, { peakPeriod: 10, breaking, swept: contact });
   const n = 17;
   const records = new Float32Array(n * FRONT_STRIDE);
   for (let k = 0; k < n; k += 1) {
     const o = k * FRONT_STRIDE;
     records[o + FRONT_FIELD.x] = k - 8; records[o + FRONT_FIELD.z] = 0; records[o + FRONT_FIELD.front] = 1; records[o + FRONT_FIELD.sigma] = k;
-    records[o + FRONT_FIELD.tau] = 0.05; records[o + FRONT_FIELD.footHeight] = 0.9; records[o + FRONT_FIELD.footDepth] = 3;
+    records[o + FRONT_FIELD.tau] = tau; records[o + FRONT_FIELD.footHeight] = 0.9; records[o + FRONT_FIELD.footDepth] = 3;
     records[o + FRONT_FIELD.throwZ] = 0;
   }
   contact.update(records, n, solver.restLevel, (x, z) => water.plainSurfaceAt(x, z));
-  return { water, solver };
+  return { water, solver, times: library.profileTimes({ slope: 0.05, footHeight: 0.9, footDepth: 3 }) };
 }
 // At x = 0.9 h0 = 2.7 m ahead (z 2.7): the flat below, the underside at 0.55 h0 and the top at 0.575 h0 over still
 // water; the top crosses there at profile index 32 + 32 × 0.75, three quarters of the way to the tip.
@@ -328,6 +329,21 @@ describe('the swept contact through the water (Padang Padang, Part B, PR 4)', ()
     expect(sample.flowX).toBeCloseTo(plain.flowX, 6);
     expect(sample.flowZ).toBeCloseTo(0.25 * plain.flowZ + 0.75 * 0.9 * Math.sqrt(9.81 * 3), 1);
     expect(sample.flowY).toBeLessThan(0);
+  });
+
+  it('weighs the lip’s flow by the slices’ weight, as their shape: halfway through the collapse, half of it (the advisor, 2026-09-30)', () => {
+    const probe = sweptChannel();
+    const { water, solver } = sweptChannel(probe.times.touchdownSeconds + probe.times.collapseSeconds / 2);
+    // The held lip lowered halfway toward the still water: its underside and top at half their heights.
+    const y = solver.restLevel + (UNDER + TOP) / 4;
+    const sample = water.sampleAt(0, y, 2.7, createWaterSample());
+    expect(sample.surfaceY).toBeCloseTo(solver.restLevel + TOP / 2, 2);
+    expect(sample.waterFloorY).toBeCloseTo(solver.restLevel + UNDER / 2, 2);
+    const plain = new PhysicalSurfWater(solver, { peakPeriod: 10 }).sampleAt(0, y, 2.7, createWaterSample());
+    // 3/4 of the way to the tip, at half weight: 3/8 of the tip's flow across the crest.
+    expect(sample.flowX).toBeCloseTo(plain.flowX, 6);
+    expect(sample.flowZ).toBeCloseTo((1 - 0.375) * plain.flowZ + 0.375 * 0.9 * Math.sqrt(9.81 * 3), 1);
+    expect(sample.tube).toBe('closed');
   });
 
   it('leaves every field out where the loft is not, and clears them from a reused sample', () => {

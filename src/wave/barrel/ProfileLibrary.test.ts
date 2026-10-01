@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase, encodeCase } from './profileFormat';
-import { LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
+import { CLEAR, heldFrame, LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
 import { GRAVITY } from '../dispersion';
 import { toyCase, tubeCase } from './toyCase';
 
@@ -83,5 +84,111 @@ describe('the barrel profile library', () => {
     const legacy = new ProfileLibrary([toyCase(0.3, 0.1)]).profileAt({ slope: 0.05, footHeight: 2.1, footDepth: 7, seconds: 0.1 }, out);
     expect(legacy.tipAlong).toBe(0);
     expect(legacy.tipUp).toBe(0);
+  });
+});
+
+describe('the held frame, where the contact holds through touchdown (the advisor, 2026-09-30)', () => {
+  /** The toy tube's void at its held frame, h0: its underside over the toe, at x 0.8 h0. */
+  const TUBE_VOID = 0.6 - 0.2 / 6;
+  /** The toy tube with its frame a frame before touchdown (3) changed by `edit`. */
+  const edited = (edit: (frame: Float32Array) => void) => {
+    const c = tubeCase(0.3);
+    edit(c.frames.subarray(3 * 2 * PROFILE_POINTS, 4 * 2 * PROFILE_POINTS));
+    return c;
+  };
+
+  it('holds the frame before touchdown where the jet is off the face and the void open, and measures its void', () => {
+    const held = heldFrame(tubeCase(0.3));
+    expect(held.clear).toBe(true);
+    expect(held.tau).toBe(0.25);
+    expect(held.voidHeight).toBeCloseTo(TUBE_VOID, 5);
+  });
+
+  it('goes back past a frame whose void has collapsed onto the face, or whose jet has reached it', () => {
+    // pad19-a30-l12's way: the underside bunched against the face, the tip within a cell of the throat.
+    const collapsed = edited((frame) => {
+      for (let i = LANDMARK.lip; i <= LANDMARK.toe; i += 1) {
+        const t = (LANDMARK.toe - i) / (LANDMARK.toe - LANDMARK.lip);
+        frame[2 * i] = 0.8 + 0.01 * t;
+        frame[2 * i + 1] = 0.01 * t;
+      }
+    });
+    expect(heldFrame(collapsed)).toMatchObject({ tau: 0, clear: true });
+    // A tip a cell over the flat: the jet has reached the face.
+    const landed = edited((frame) => {
+      frame[2 * LANDMARK.lip + 1] = CLEAR.gap / 2;
+    });
+    expect(heldFrame(landed)).toMatchObject({ tau: 0, clear: true });
+    // Neither in any frame: the frame before touchdown, unclear.
+    expect(heldFrame(toyCase(0.3, 0))).toMatchObject({ tau: 0.25, clear: false, voidHeight: 0 });
+  });
+
+  it('finds the library’s held frames: a frame before touchdown, two in pad19-a30-l12, whose last two have closed', () => {
+    const found = new Map(readBarrelCases().map(decodeCase).map((c) => {
+      const held = heldFrame(c);
+      return [c.id, { before: Math.round((c.touchdown - held.tau) / c.tauStep), metres: 7 * held.voidHeight, clear: held.clear }];
+    }));
+    // Voids at h0 7 m: 0.48, 1.17, 1.75 and 0.49 m (measured on the frames; W_O across the voids is 0.45, 1.00, 1.45, 0.39 m).
+    const expected = { 'pad19-a20-l12': [1, 0.482], 'pad19-a30-l12': [2, 1.172], 'pad19-a45-l12': [1, 1.748], 'periodic-padang19s-l12': [1, 0.492] };
+    for (const [id, [before, metres]] of Object.entries(expected)) {
+      expect(found.get(id)).toMatchObject({ before, clear: true });
+      expect(found.get(id)!.metres).toBeCloseTo(metres, 2);
+    }
+  });
+
+  it('holds each blended case at its own held frame for the contact, following the drawing until then (the advisor, 2026-09-30)', () => {
+    const library = new ProfileLibrary(readBarrelCases().map(decodeCase));
+    const unit = Math.sqrt(7 / GRAVITY);
+    // A0 0.3 blends pad19-a20-l12 and pad19-a30-l12 wholly toward a30: its own hold, τ 1.134, two frames before touchdown.
+    const query = { slope: 1 / 19, footHeight: 0.3 * 7, footDepth: 7 };
+    const times = library.profileTimes(query);
+    const a30 = decodeCase(readBarrelCases()[1]);
+    const held = heldFrame(a30).tau * unit;
+    expect(times.clearSeconds).toBeCloseTo(held, 9);
+    expect(times.touchdownSeconds).toBeCloseTo(a30.touchdown * unit, 9);
+    const at = (seconds: number, hold: 'drawing' | 'contact') => {
+      const out = new Float32Array(2 * PROFILE_POINTS);
+      library.profileAt({ ...query, seconds, hold }, out);
+      return out;
+    };
+    /** The most two profiles differ by, m. */
+    const apart = (a: Float32Array, b: Float32Array) => a.reduce((most, v, i) => Math.max(most, Math.abs(v - b[i])), 0);
+    // Before a30's hold the contact is the drawing, long past a20's (τ 0.674, 0.57 s), which carries no weight here.
+    expect(apart(at(0.9 * held, 'contact'), at(0.9 * held, 'drawing'))).toBe(0);
+    // Between its hold and touchdown the contact stays at its held frame while the drawing runs on; past touchdown both stay.
+    const between = (held + times.touchdownSeconds) / 2;
+    expect(apart(at(between, 'contact'), at(held, 'contact'))).toBeLessThan(1e-5);
+    expect(apart(at(between, 'drawing'), at(held, 'drawing'))).toBeGreaterThan(0.01);
+    expect(apart(at(times.touchdownSeconds + 0.2, 'drawing'), at(times.touchdownSeconds, 'drawing'))).toBeLessThan(1e-5);
+    expect(apart(at(times.touchdownSeconds + 0.2, 'contact'), at(held, 'contact'))).toBeLessThan(1e-5);
+  });
+
+  it('takes the lip’s velocity at τ until touchdown, the real water still moving, and its held frame’s after', () => {
+    // The toy tube with a tip speeding up a tenth of √(g h0) a frame: 0.5 at its first frame.
+    const c = tubeCase(0.3);
+    for (let f = 0; f < 5; f += 1) c.tipVelocity![2 * f] = 0.5 + 0.1 * f;
+    const library = new ProfileLibrary([c]);
+    const out = new Float32Array(2 * PROFILE_POINTS);
+    const unit = Math.sqrt(7 / GRAVITY);
+    const speed = Math.sqrt(GRAVITY * 7);
+    const query = { slope: c.slope, footHeight: 2.1, footDepth: 7, hold: 'contact' as const };
+    // τ 0.4: held at frame 3 (τ 0.25), the tip at frame 3.6's speed.
+    expect(library.profileAt({ ...query, seconds: 0.4 * unit }, out).tipAlong).toBeCloseTo(0.86 * speed, 4);
+    // Past touchdown (τ 0.5): the held frame's, 0.8.
+    expect(library.profileAt({ ...query, seconds: 0.7 * unit }, out).tipAlong).toBeCloseTo(0.8 * speed, 4);
+  });
+
+  it('collapses a slice’s tube over √(2W/g), W its held void blended by the cases’ weights and scaled by h0', () => {
+    const library = new ProfileLibrary([tubeCase(0.3)]);
+    const out = new Float32Array(2 * PROFILE_POINTS);
+    // One case at h0 7 m.
+    const lookup = library.profileAt({ slope: 0.05, footHeight: 2.1, footDepth: 7, seconds: 0.1 }, out);
+    expect(lookup.collapseSeconds).toBeCloseTo(Math.sqrt((2 * TUBE_VOID * 7) / GRAVITY), 5);
+    // A second tube twice as tall: at A0 0.4, halfway between, over h0 = the foot depth, 7 m.
+    const tall = tubeCase(0.5);
+    for (let k = 1; k < tall.frames.length; k += 2) tall.frames[k] *= 2;
+    const blend = new ProfileLibrary([tubeCase(0.3), tall]).profileTimes({ slope: 0.05, footHeight: 2.8, footDepth: 7 });
+    expect(blend.collapseSeconds).toBeCloseTo(Math.sqrt((2 * 1.5 * TUBE_VOID * 7) / GRAVITY), 5);
+    expect(blend.clearSeconds).toBeCloseTo(0.25 * Math.sqrt(7 / GRAVITY), 9);
   });
 });
