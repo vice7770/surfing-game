@@ -20,7 +20,8 @@
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import type { SpotName } from '../src/wave/Bathymetry';
-import { caseFromLibrary, libraryJson } from '../src/wave/barrel/caseFromLibrary';
+import { caseFromLibrary, libraryJson, refitTip, sustainedOverturn } from '../src/wave/barrel/caseFromLibrary';
+import type { BarrelCase } from '../src/wave/barrel/ProfileLibrary';
 import { decodeCase, encodeCase } from '../src/wave/barrel/profileFormat';
 import type { BarrelCaseEntry } from '../src/wave/barrel/barrelLibrary';
 
@@ -119,6 +120,29 @@ function wallSeconds(run: string): number | undefined {
   return last && last.length >= 8 ? Number(last[7]) : undefined;
 }
 
+/**
+ * The tip table's row for a case, over its sustained overturn (the frames its tip velocity is defined on): the median
+ * horizontal speed, the largest speed, and its fall, g (a line through its vertical velocity), all in sqrt(g h0).
+ */
+function tipRow(c: BarrelCase): string {
+  const { from, to } = sustainedOverturn(c.frames, c.tauStart, c.tauStep, c.touchdown);
+  const velocity = c.tipVelocity!;
+  const frames: number[] = [];
+  for (let f = from; f <= to; f += 1) frames.push(f);
+  if (frames.length === 0) return `| ${c.id} | — | — | — |`;
+  const horizontal = frames.map((f) => velocity[2 * f]).sort((a, b) => a - b);
+  const largest = Math.max(...frames.map((f) => Math.hypot(velocity[2 * f], velocity[2 * f + 1])));
+  const meanFrame = frames.reduce((sum, f) => sum + f, 0) / frames.length;
+  let stt = 0;
+  let stv = 0;
+  for (const f of frames) {
+    stt += (f - meanFrame) ** 2;
+    stv += (f - meanFrame) * velocity[2 * f + 1];
+  }
+  const fall = stt > 0 ? -stv / stt / c.tauStep : null;
+  return `| ${c.id} | ${fixed(horizontal[Math.floor(horizontal.length / 2)], 2)} | ${fixed(largest, 2)} | ${fixed(fall, 2)} | ${fixed(c.tauStart + from * c.tauStep, 3)} |`;
+}
+
 /** The rows barrel-cases.md holds for a case, by section, so a kept case's are carried over unchanged. */
 function rowsOf(id: string): { validation?: string; tip?: string; landmarks: string[] } {
   const path = 'docs/research/barrel-cases.md';
@@ -145,13 +169,15 @@ for (const name of [...keeps, ...runs]) {
   const spot = spotOf(name) as SpotName;
   if (keeps.includes(name)) {
     // A committed case kept as it is: its index entry from its own header, its rows as barrel-cases.md has them.
+    // Its frames as they are; its tip fitted again by the regime rule (the advisor's ruling, PR 7).
     const asset = `barrels/${name}.bin`;
-    const barrel = decodeCase(new Uint8Array(readFileSync(`public/${asset}`)));
+    const barrel = refitTip(decodeCase(new Uint8Array(readFileSync(`public/${asset}`))));
+    writeFileSync(`public/${asset}`, encodeCase(barrel));
     entries.push({ id: name, spot, slope: barrel.slope, nonlinearity: barrel.nonlinearity, flatDepth: barrel.flatDepth, asset });
     const carried = rowsOf(name);
     if (!carried.validation) throw new Error(`${name}: kept, but barrel-cases.md has no row for it`);
     rows.push(carried.validation);
-    if (carried.tip) tips.push(carried.tip);
+    tips.push(tipRow(barrel));
     cleanliness.push(...carried.landmarks);
     sources.push(`${name} (${spot}, kept)`);
     continue;
@@ -195,19 +221,7 @@ for (const name of [...keeps, ...runs]) {
     wall === undefined ? '—' : `${(wall / 60).toFixed(0)} min`,
     `${(bytes.length / 1024).toFixed(0)} KB`,
   ].join(' | '));
-  // The lip tip over the open time (the contact's lip flow), √(g h0), and its fall, g: a line through its vertical velocity.
-  const open = library.frames.slice(0, kept).map((frame, i) => ({ frame, i })).filter(({ frame }) => frame.phase === 'open');
-  const velocity = barrel.tipVelocity!;
-  const horizontal = open.map(({ i }) => velocity[2 * i]).sort((a, b) => a - b);
-  const largest = Math.max(...open.map(({ i }) => Math.hypot(velocity[2 * i], velocity[2 * i + 1])));
-  const meanTau = open.reduce((sum, { frame }) => sum + frame.tau, 0) / open.length;
-  let stt = 0;
-  let stv = 0;
-  for (const { frame, i } of open) {
-    stt += (frame.tau - meanTau) ** 2;
-    stv += (frame.tau - meanTau) * velocity[2 * i + 1];
-  }
-  tips.push(`| ${id} | ${fixed(horizontal[Math.floor(horizontal.length / 2)], 2)} | ${fixed(largest, 2)} | ${fixed(stt > 0 ? -stv / stt : null, 2)} |`);
+  tips.push(tipRow(barrel));
   for (const phase of ['pre', 'open', 'post'] as const) {
     const frames = library.frames.filter((frame) => frame.phase === phase);
     const flags = new Map<string, number>();
@@ -248,10 +262,10 @@ ${rows.map((row) => `| ${row} |`).join('\n')}
 
 ## The lip tip
 
-The tip landmark's velocity over the open time, a local line over ±4 frames (the contact's lip flow; the advisor's ruling 1, 2026-09-30), in √(g h0), and its fall in g (a line through its vertical velocity). The advisor measured padang19s's crest at C = 0.83 √(g h0), its tip at 0.87–0.98 C horizontally and falling at about 0.57 g; Erinin 2023's lips run at 1.1–1.3 C [measured, lab].
+The tip landmark's velocity over the sustained overturn, a local line over ±4 frames (the contact's lip flow; the advisor's ruling 1, 2026-09-30), in √(g h0), and its fall in g (a line through its vertical velocity). Only the overturn's clean frames feed a fit, one-sided at its ends, and the velocity is zero before it: the landmark is the face's steepest point until the face overturns for good, so a line across the switch is meaningless (the advisor's ruling, PR 7). The advisor measured padang19s's crest at C = 0.83 √(g h0), its tip at 0.87–0.98 C horizontally and falling at about 0.57 g; Erinin 2023's lips run at 1.1–1.3 C [measured, lab].
 
-| Case | Median horizontal | Largest \\|v\\| | Fall (g) |
-|---|---|---|---|
+| Case | Median horizontal | Largest \\|v\\| | Fall (g) | Overturned from τ |
+|---|---|---|---|---|
 ${tips.join('\n')}
 
 ## Landmarks

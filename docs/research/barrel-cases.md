@@ -20,15 +20,15 @@ Each case at the last output before touchdown, simulated / fitted. The fits are 
 
 ## The lip tip
 
-The tip landmark's velocity over the open time, a local line over ±4 frames (the contact's lip flow; the advisor's ruling 1, 2026-09-30), in √(g h0), and its fall in g (a line through its vertical velocity). The advisor measured padang19s's crest at C = 0.83 √(g h0), its tip at 0.87–0.98 C horizontally and falling at about 0.57 g; Erinin 2023's lips run at 1.1–1.3 C [measured, lab].
+The tip landmark's velocity over the sustained overturn, a local line over ±4 frames (the contact's lip flow; the advisor's ruling 1, 2026-09-30), in √(g h0), and its fall in g (a line through its vertical velocity). Only the overturn's clean frames feed a fit, one-sided at its ends, and the velocity is zero before it: the landmark is the face's steepest point until the face overturns for good, so a line across the switch is meaningless (the advisor's ruling, PR 7). The advisor measured padang19s's crest at C = 0.83 √(g h0), its tip at 0.87–0.98 C horizontally and falling at about 0.57 g; Erinin 2023's lips run at 1.1–1.3 C [measured, lab].
 
-| Case | Median horizontal | Largest \|v\| | Fall (g) |
-|---|---|---|---|
-| pad19-a20-l12 | 0.94 | 1.17 | 0.64 |
-| pad19-a30-l12 | 1.17 | 1.32 | 0.66 |
-| pad19-a45-l12 | 1.42 | 1.59 | 0.71 |
-| periodic-padang19s-l12 | 0.77 | 0.89 | 0.55 |
-| periodic-reef42-l12 | 0.77 | 3.39 | 0.59 |
+| Case | Median horizontal | Largest \|v\| | Fall (g) | Overturned from τ |
+|---|---|---|---|---|
+| pad19-a20-l12 | 0.94 | 1.14 | 0.71 | 0.024 |
+| pad19-a30-l12 | 1.18 | 1.43 | 0.55 | 0.109 |
+| pad19-a45-l12 | 1.42 | 1.62 | 0.59 | 0.119 |
+| periodic-padang19s-l12 | 0.80 | 0.91 | 0.54 | 0.200 |
+| periodic-reef42-l12 | 0.80 | 1.12 | 0.61 | 0.125 |
 
 ## Landmarks
 
