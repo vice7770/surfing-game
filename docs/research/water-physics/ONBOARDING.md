@@ -142,7 +142,8 @@ The owner stopped every agent at about 16:30 and said to continue at about 20:05
 - **The Wave Pool spot (the "Movement mapping prototype" session, spec `docs/superpowers/specs/2026-09-30-movement-flow-wave-pool.md` on `claude/wave-pool`):** settled on 2026-10-01.
   - **The bed:** a finger reef with a ramped crest, 71° arms easing to 65°.
   - **Measured:** rides of 18–21 s a side at about 55°, waves repeating to 0.1 s.
-  - **Open:** checking that the smallest waves break at the tip. The bed and numbers are in the consult log.
+  - **The smallest waves (2026-10-01):** 12 of 12 broke at the tip at H 0.58, so the tip crest stays at 1.0 m. The Surf School lesson wave is recorded on the pool.
+  - **The bed as built (2026-10-01):** the finger's faces run on seaward at 1:18 normal past the terrace, which makes two ridges in front of the finger and a 1:2 blend into the 9 m feed. Kept as Mead's focus. The step reflects at most 0.17 of the amplitude, into the absorbing zone. The session changes its unit test and spec to the bed as built. The bed and numbers are in the consult log.
 
 - **Part B follow-ups, ruled but not yet assigned (2026-10-01):**
   - **Fronts split end to end:** on Small, 265 pairs of fronts lie about 5 m apart along one crest. An agent took it on 2026-10-01, on `claude/padang-front-merge`: it diagnoses first, and its rule needs the advisor's ruling before it builds.
