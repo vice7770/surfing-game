@@ -20,6 +20,9 @@
 #   padang19b  the same with a 2.5 m foot crest at 18 s (H/h0 0.42), for the lag table's deep end
 #   padang19c  the same with a 1.2 m foot crest at 14 s (H/h0 0.24), for its shallow end
 #   padang19s  the Small swell: a 1.0 m foot crest at 16 s (H/h0 0.195, A0 about 0.14), for the barrel library
+#   point21_a08/a15/a23/a30  the Point's 7 m foot, 1:21.5 along the contours' normal to a 0.35 m flat, foot crests A0
+#              0.08 at 9 s, 0.15 at 11 s, 0.23 at 12 s, 0.30 at 14 s (PR 7; switch, end and window from level-9 scouts)
+#   reef42_a35  the Reef's 1:4.2 ledge with a 3.5 m foot crest at 16 s (A0 0.35), its throw line's second point (PR 7)
 # Each case uses one core. Safe to rerun: each phase resumes from its checkpoint.
 set -euo pipefail
 
@@ -32,7 +35,7 @@ export PATH="$PATH:$BASILISK"
 PY="${PYTHON:-python3}"   # needs numpy, scipy and matplotlib
 
 # name:h0 m:H/h0:period s:slope:flat depth/h0:domain/h0:switch t:end t:window from:window to (h0 and sqrt(h0/g))
-CASES_ALL="reef42:10:0.3:14:0.238095:0.15:48:17:25:20:36 reef60:10:0.3:14:0.166667:0.15:48:18:27:21:38 padang19:7:0.3:16:0.0526316:0.1785714:64:31:41:37:56 padang19b:7:0.42:18:0.0526316:0.1785714:72:32:42:45:64 padang19c:7:0.24:14:0.0526316:0.1785714:64:31:41:38:52 padang19s:7:0.195:16:0.0526316:0.1785714:64:35:46:42:56"
+CASES_ALL="reef42:10:0.3:14:0.238095:0.15:48:17:25:20:36 reef60:10:0.3:14:0.166667:0.15:48:18:27:21:38 padang19:7:0.3:16:0.0526316:0.1785714:64:31:41:37:56 padang19b:7:0.42:18:0.0526316:0.1785714:72:32:42:45:64 padang19c:7:0.24:14:0.0526316:0.1785714:64:31:41:38:52 padang19s:7:0.195:16:0.0526316:0.1785714:64:35:46:42:56 point21_a08:7:0.141:9:0.0465116:0.05:52:31:44:27:47 point21_a15:7:0.229:11:0.0465116:0.05:60:31:41.5:29:49 point21_a23:7:0.318:12:0.0465116:0.05:60:28:37.5:29:49 point21_a30:7:0.38:14:0.0465116:0.05:68:26:39:34:54 reef42_a35:10:0.439:16:0.238095:0.15:64:18.5:28:24:44"
 
 build_basilisk() {
   [ -x "$BASILISK/qcc" ] && return
