@@ -1,0 +1,61 @@
+{
+  "status": "prepared; no GPU/browser run",
+  "checks": {
+    "targetedTests": 8,
+    "failures": 0,
+    "syntax": "pass",
+    "planOnlyBoth": "pass"
+  },
+  "records": [
+    {
+      "path": "/private/tmp/rich-patch-held-helper.mjs",
+      "sha256": "a6a91f8f480ddb5cb9451dcdb948d10eec9940d9d3ddc3b53324eef50a51b254",
+      "bytes": 31895
+    },
+    {
+      "path": "/private/tmp/rich-patch-passive-adapter.mjs",
+      "sha256": "2bdbdda4f77958d0b7344549e4d9c678f4b01c792674d1f6da388fc3c7488acf",
+      "bytes": 13309
+    },
+    {
+      "path": "/private/tmp/rich-patch-held-helper.test.mjs",
+      "sha256": "4516e3ec9b6ee7d10a5da44c733c618bebe824087794879758d25cd2fe64aee9",
+      "bytes": 8278
+    },
+    {
+      "path": "/private/tmp/rich-patch-actual-trial-plan.md",
+      "sha256": "6ec8788bc6e9cd1d978f7b01f5873b4fa110b1eb41574c487e41ba68904616b9",
+      "bytes": 7371
+    },
+    {
+      "path": "/private/tmp/rich-patch-helper-tests.txt",
+      "sha256": "6ea333ffa8c2238b5d0a39280351682f8346387fac20474df3ed3df1c9413d2e",
+      "bytes": 956
+    },
+    {
+      "path": "/private/tmp/rich-patch-passive-adapter/derived-baseline.mjs",
+      "sha256": "3dd673660ad09245cb50de392e51de152bee716deb18a65b7e376905a46dc398",
+      "bytes": 44263
+    },
+    {
+      "path": "/private/tmp/rich-patch-passive-adapter/derived-candidate.mjs",
+      "sha256": "44f24bbf0e5fa8468530cb851d126a890b418f336446ac8b6153a741c5de93b0",
+      "bytes": 44201
+    },
+    {
+      "path": "/private/tmp/rich-patch-passive-adapter/owned-cdp.mjs",
+      "sha256": "36f62bd75468ef3b20ba0fe613256f8a29c81b764b88551961d51194b8b40211",
+      "bytes": 2037
+    },
+    {
+      "path": "/private/tmp/rich-patch-passive-adapter/baseline-plan.json",
+      "sha256": "3523897dcdb2146c354fd10c5219c41de470fefa024cf262e3ea6544db5d5072",
+      "bytes": 5948
+    },
+    {
+      "path": "/private/tmp/rich-patch-passive-adapter/candidate-plan.json",
+      "sha256": "8ed7fe0b9f0ebe98ebbb00bf16afe722104817581cfd51b57350ca5dd9251f1b",
+      "bytes": 5952
+    }
+  ]
+}

@@ -1,0 +1,297 @@
+// QA-only v2 same-renderer geometry trial with exact observed native color-pass version accounting, derived from the guarded v3 held helper. No production or imported Three changes.
+export const PATCH_FACTORY_SOURCE = "function createPatchGeometry(size, spacing) {\n\tconst n = Math.round(size / spacing) + 1;\n\tconst positions = [];\n\tconst skirt = [];\n\tconst indices = [];\n\tfor (let j = 0; j < n; j += 1) for (let i = 0; i < n; i += 1) {\n\t\tpositions.push(-size / 2 + i * spacing, 0, -size / 2 + j * spacing);\n\t\tskirt.push(0);\n\t}\n\tfor (let j = 0; j < n - 1; j += 1) for (let i = 0; i < n - 1; i += 1) {\n\t\tconst a = j * n + i;\n\t\tconst b = a + 1;\n\t\tconst c = a + n;\n\t\tconst d = c + 1;\n\t\tindices.push(a, c, b, b, c, d);\n\t}\n\tconst rim = [];\n\tfor (let i = 0; i < n - 1; i += 1) rim.push(i);\n\tfor (let j = 0; j < n - 1; j += 1) rim.push(j * n + n - 1);\n\tfor (let i = n - 1; i > 0; i -= 1) rim.push((n - 1) * n + i);\n\tfor (let j = n - 1; j > 0; j -= 1) rim.push(j * n);\n\tconst first = n * n;\n\trim.forEach((top) => {\n\t\tpositions.push(positions[top * 3], 0, positions[top * 3 + 2]);\n\t\tskirt.push(1);\n\t});\n\tfor (let k = 0; k < rim.length; k += 1) {\n\t\tconst top = rim[k];\n\t\tconst nextTop = rim[(k + 1) % rim.length];\n\t\tconst bottom = first + k;\n\t\tconst nextBottom = first + (k + 1) % rim.length;\n\t\tindices.push(top, nextTop, bottom, nextTop, nextBottom, bottom);\n\t}\n\tconst geometry = new BufferGeometry();\n\tgeometry.setAttribute(\"position\", new Float32BufferAttribute(positions, 3));\n\tgeometry.setAttribute(\"skirt\", new Float32BufferAttribute(skirt, 1));\n\tgeometry.setAttribute(\"onPatch\", new Float32BufferAttribute(new Float32Array(skirt.length).fill(1), 1));\n\tgeometry.setIndex(indices);\n\treturn geometry;\n}";
+// QA-only helper installed after passive sampling and Escape→pause. No runtime API added.
+export async function installHeldPatchProbe(expectedSpacing = 0.25) {
+  const d=window.breaklineDiagnostics,mode=d.mode,host=mode.host,water=d.water;
+  if(window.__perf.sampling||document.querySelector('#app')?.dataset.screen!=='pause')throw Error('Held probe must be outside sampling and paused');
+  const begun=performance.now();while(host.outstandingSteps){if(performance.now()-begun>15000)throw Error('Pause did not settle');await new Promise(r=>setTimeout(r,5));}
+  const nativeRaf=window.requestAnimationFrame;const stopped=[];
+  window.requestAnimationFrame=callback=>{stopped.push(callback);return 0;};
+  await new Promise(r=>setTimeout(r,50));
+  if(host.outstandingSteps)throw Error('Unexpected advance after RAF stop');
+  mode.update(0);
+  const ownCamera=mode.camera.camera,ownProjectionBefore=ownCamera.projectionMatrix.toArray();
+  if(ownCamera.aspect!==innerWidth/Math.max(1,innerHeight))throw Error('Physical own camera CSS aspect differs');
+  // applyGraphics.resize repeats this CSS-aspect operation; prove the current projection is already its exact result.
+  mode.camera.resize(innerWidth/Math.max(1,innerHeight));
+  if(JSON.stringify(ownProjectionBefore)!==JSON.stringify(ownCamera.projectionMatrix.toArray()))throw Error('Own camera resize would change projection');
+  const camera=ownCamera.clone();camera.updateMatrixWorld(true);
+  const sea=host.snapshot.status.seaTime;
+  let renderer,scene;const old=water.mesh.onBeforeRender;
+  water.mesh.onBeforeRender=function(...args){if(args[0].domElement===d.canvas){renderer=args[0];scene=args[1];}return Reflect.apply(old,this,args);};
+  try{d.renderView(camera);}finally{water.mesh.onBeforeRender=old;}
+  if(!renderer||!scene)throw Error('Actual game renderer was not observed');
+  const style=document.createElement('style');style.textContent='#ui,#touch-controls,#loading{visibility:hidden!important}';document.head.append(style);
+  let drawFlags={spray:false,bubbles:false};
+  let versionLedger;
+  function renderOnce(){
+    const restore=[],objectEvents=[],materialEvents=[];
+    scene.traverse(object=>{if(typeof object.onBeforeRender!=='function')return;
+      const callback=object.onBeforeRender;restore.push(()=>{object.onBeforeRender=callback;});
+      object.onBeforeRender=function(...args){const answer=Reflect.apply(callback,this,args);
+        if(args[0]===renderer&&args[1]===scene&&args[2]===camera&&args[4]?.isMaterial){
+          if(this===mode.spray.mesh)drawFlags.spray=true;if(this===mode.bubbles.mesh)drawFlags.bubbles=true;
+          if(versionLedger)objectEvents.push([this,args[4],args[5]]);
+        }return answer;
+      };
+    });
+    if(versionLedger)for(const [material,entry]of versionLedger){
+      const callback=material.onBeforeRender;restore.push(()=>{material.onBeforeRender=callback;});
+      material.onBeforeRender=function(...args){const answer=Reflect.apply(callback,this,args);
+        // Native renderObject checks these flags immediately AFTER this callback.
+        if(args[0]===renderer&&args[1]===scene&&args[2]===camera&&args[4]?.isObject3D){
+          const flags={transparent:this.transparent,side:this.side,forceSinglePass:this.forceSinglePass,transmission:this.transmission??0};
+          if(JSON.stringify(flags)!==JSON.stringify(entry.flags))throw Error('Native version branch flags changed:'+this.uuid);
+          if(flags.transmission>0)throw Error('Positive transmission version path is outside observed color-pass contract');
+          materialEvents.push([args[4],this,args[5]]);entry.colorCalls++;
+          const eligible=flags.transparent===true&&flags.side===2&&flags.forceSinglePass===false;
+          if(eligible){entry.eligibleCalls++;entry.expectedIncrement+=2;}
+          entry.owners.set(args[4].uuid,(entry.owners.get(args[4].uuid)??0)+1);
+        }return answer;
+      };
+    }
+    try{d.renderView(camera);}finally{for(const restoreCallback of restore)restoreCallback();}
+    if(versionLedger){
+      if(objectEvents.length!==materialEvents.length||objectEvents.some((e,i)=>e.some((value,j)=>value!==materialEvents[i][j])))throw Error('Actual color object/material callback pair mismatch');
+      for(const [,material]of objectEvents){const entry=versionLedger.get(material);if(!entry)throw Error('Uncaptured actual color material');entry.objectCalls++;}
+      for(const [material]of versionLedger)normalizedMaterialVersion(material);
+    }
+  }
+  renderOnce();renderOnce();
+  const sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),n=>n.toString(16).padStart(2,'0')).join('');
+  const encode=bytes=>{let string='';for(let i=0;i<bytes.length;i+=32768)string+=String.fromCharCode(...bytes.subarray(i,i+32768));return btoa(string);};
+  const pack=async(array,data=false)=>{const bytes=new Uint8Array(array.buffer,array.byteOffset,array.byteLength);return{type:array.constructor.name,length:array.length,byteLength:bytes.byteLength,sha256:await sha(bytes),...(data?{base64:encode(bytes)}:{})};};
+  const plain=value=>JSON.parse(JSON.stringify(value));
+  const originalPatch=water.patch.geometry;
+  const patchMesh=water.patch;
+  const originalPatchId=originalPatch.uuid;
+  const patchPrefix='scene.geometry.'+originalPatchId+'.';
+  let halfGeometry,halfSignature,activeHalf=false,currentView='default';
+  const factorySource="function createPatchGeometry(size, spacing) {\n\tconst n = Math.round(size / spacing) + 1;\n\tconst positions = [];\n\tconst skirt = [];\n\tconst indices = [];\n\tfor (let j = 0; j < n; j += 1) for (let i = 0; i < n; i += 1) {\n\t\tpositions.push(-size / 2 + i * spacing, 0, -size / 2 + j * spacing);\n\t\tskirt.push(0);\n\t}\n\tfor (let j = 0; j < n - 1; j += 1) for (let i = 0; i < n - 1; i += 1) {\n\t\tconst a = j * n + i;\n\t\tconst b = a + 1;\n\t\tconst c = a + n;\n\t\tconst d = c + 1;\n\t\tindices.push(a, c, b, b, c, d);\n\t}\n\tconst rim = [];\n\tfor (let i = 0; i < n - 1; i += 1) rim.push(i);\n\tfor (let j = 0; j < n - 1; j += 1) rim.push(j * n + n - 1);\n\tfor (let i = n - 1; i > 0; i -= 1) rim.push((n - 1) * n + i);\n\tfor (let j = n - 1; j > 0; j -= 1) rim.push(j * n);\n\tconst first = n * n;\n\trim.forEach((top) => {\n\t\tpositions.push(positions[top * 3], 0, positions[top * 3 + 2]);\n\t\tskirt.push(1);\n\t});\n\tfor (let k = 0; k < rim.length; k += 1) {\n\t\tconst top = rim[k];\n\t\tconst nextTop = rim[(k + 1) % rim.length];\n\t\tconst bottom = first + k;\n\t\tconst nextBottom = first + (k + 1) % rim.length;\n\t\tindices.push(top, nextTop, bottom, nextTop, nextBottom, bottom);\n\t}\n\tconst geometry = new BufferGeometry();\n\tgeometry.setAttribute(\"position\", new Float32BufferAttribute(positions, 3));\n\tgeometry.setAttribute(\"skirt\", new Float32BufferAttribute(skirt, 1));\n\tgeometry.setAttribute(\"onPatch\", new Float32BufferAttribute(new Float32Array(skirt.length).fill(1), 1));\n\tgeometry.setIndex(indices);\n\treturn geometry;\n}";
+  // Bind the ACTUAL loaded classes. No second Three import or resource tree is created.
+  const makePatch=new Function('BufferGeometry','Float32BufferAttribute','return ('+factorySource+');')(originalPatch.constructor,originalPatch.getAttribute('position').constructor);
+  const materialObjects=new Map();
+  scene.traverse(object=>{for(const material of [].concat(object.material??[]))materialObjects.set(material.uuid,material);});
+  versionLedger=new Map([...materialObjects.values()].map(material=>{
+    const flags={transparent:material.transparent,side:material.side,forceSinglePass:material.forceSinglePass,transmission:material.transmission??0};
+    if(flags.transmission>0)throw Error('Positive transmission version path unsupported in narrow trial');
+    return[material,{initialVersion:material.version,flags,colorCalls:0,objectCalls:0,eligibleCalls:0,expectedIncrement:0,owners:new Map()}];
+  }));
+  function normalizedMaterialVersion(material){
+    const entry=versionLedger.get(material);if(!entry)throw Error('Unknown material in version ledger');
+    if(material.version!==entry.initialVersion+entry.expectedIncrement||entry.colorCalls!==entry.objectCalls)throw Error('Unaccounted material version increment:'+material.uuid);
+    return entry.initialVersion;
+  }
+  function versionProof(){return [...versionLedger].map(([material,e])=>({materialId:material.uuid,rawVersion:material.version,normalizedGuardVersion:e.initialVersion,expectedRawVersion:e.initialVersion+e.expectedIncrement,
+    expectedIncrement:e.expectedIncrement,colorObjectCalls:e.objectCalls,colorMaterialCalls:e.colorCalls,eligibleDoubleSideCalls:e.eligibleCalls,flags:{...e.flags},actualFlags:{transparent:material.transparent,side:material.side,forceSinglePass:material.forceSinglePass,transmission:material.transmission??0},owners:[...e.owners].map(([objectId,calls])=>({objectId,calls})),valid:material.version===e.initialVersion+e.expectedIncrement&&e.objectCalls===e.colorCalls}));}
+
+  function uniformValue(value,parents=new Set()){
+    if(value?.isTexture)return{texture:value.uuid,version:value.version,sourceVersion:value.source?.version,width:value.image?.width,height:value.image?.height,type:value.type,format:value.format};
+    if(value?.toArray)return value.toArray();
+    if(ArrayBuffer.isView(value))return{type:value.constructor.name,values:Array.from(value)};
+    if(typeof value==='number'||typeof value==='boolean'||typeof value==='string'||value==null)return value;
+    if(typeof value!=='object')return {omittedType:typeof value};
+    if(parents.has(value))throw Error('Cyclic material uniform is outside guarded contract');
+    const next=new Set(parents);next.add(value);
+    return Array.isArray(value)?value.map(item=>uniformValue(item,next)):Object.fromEntries(Object.entries(value).sort(([a],[b])=>a.localeCompare(b)).map(([name,item])=>[name,uniformValue(item,next)]));
+  }
+  function materialUniforms(current=false){
+    const actual=current?new Map():materialObjects;if(current)scene.traverse(object=>{for(const material of [].concat(object.material??[]))actual.set(material.uuid,material);});
+    return [...actual].map(([id,material])=>({id,type:material.type,
+      authored:Object.fromEntries(Object.entries(material.uniforms??{}).map(([name,uniform])=>[name,uniformValue(uniform.value)])),
+      renderer:Object.fromEntries(Object.entries(renderer.properties.get(material).uniforms??{}).map(([name,uniform])=>[name,uniformValue(uniform.value)]))}));
+  }
+  function sceneState({rawVersions=false}={}){
+    const objects=[],geometries=new Map(),attributes=new Map(),arrayFields={};
+    function attribute(key,attr){const data=attr.isInterleavedBufferAttribute?attr.data:attr;attributes.set(key,attr);arrayFields[key]=data.array;
+      return{version:data.version,itemSize:attr.itemSize,count:attr.count,normalized:attr.normalized,usage:data.usage,gpuType:attr.gpuType,offset:attr.offset,stride:data.stride};}
+    scene.traverse(object=>{
+      const row={id:object.uuid,type:object.type,parent:object.parent?.uuid,visible:object.visible,layers:object.layers.mask,renderOrder:object.renderOrder,frustumCulled:object.frustumCulled,
+        material:[].concat(object.material??[]).map(material=>({id:material.uuid,version:rawVersions?material.version:normalizedMaterialVersion(material),forceSinglePass:material.forceSinglePass,transmission:material.transmission??0,visible:material.visible,side:material.side,transparent:material.transparent,opacity:material.opacity,depthTest:material.depthTest,depthWrite:material.depthWrite,stencilWrite:material.stencilWrite,stencilRef:material.stencilRef,stencilFunc:material.stencilFunc})),
+        position:object.position.toArray(),quaternion:object.quaternion.toArray(),scale:object.scale.toArray(),matrix:object.matrix.toArray(),matrixWorld:object.matrixWorld.toArray(),geometry:object.geometry?.uuid};
+      objects.push({object,row,material:object.material,materialMembers:[].concat(object.material??[])});if(object.skeleton){const key='scene.skeleton.'+object.skeleton.uuid;arrayFields[key+'.boneMatrices']=object.skeleton.boneMatrices;row.skeleton={id:object.skeleton.uuid,bones:object.skeleton.bones.map(b=>b.uuid)};}
+      const geometry=object.geometry;
+      const id=activeHalf&&object===patchMesh?originalPatchId:geometry?.uuid;
+      if(activeHalf&&object===patchMesh)row.geometry=originalPatchId;
+      if(geometry&&!geometries.has(id)){
+        const key='scene.geometry.'+id;const attrs={};for(const [name,attr]of Object.entries(geometry.attributes))attrs[name]=attribute(key+'.'+name,attr);
+        const morph={};for(const [name,list]of Object.entries(geometry.morphAttributes))morph[name]=list.map((attr,index)=>attribute(key+'.morph.'+name+'.'+index,attr));
+        const index=geometry.index?attribute(key+'.index',geometry.index):null;
+        geometries.set(id,{geometry,row:{id,attributes:attrs,morphAttributes:morph,morphTargetsRelative:geometry.morphTargetsRelative,index,
+          drawRange:{start:geometry.drawRange.start,count:Number.isFinite(geometry.drawRange.count)?geometry.drawRange.count:String(geometry.drawRange.count)},groups:plain(geometry.groups)}});
+      }
+    });return{objects,geometries,attributes,arrayFields,scalars:{objects:objects.map(o=>o.row),geometries:[...geometries.entries()].map(([id,g])=>activeHalf&&id===originalPatchId?originalScene.geometries.get(originalPatchId).row:g.row)}};
+  }
+  let originalScene=sceneState();
+  const arrays=(rawVersions=false)=>{
+    const out={};for(const [name,array]of Object.entries(host.snapshot))if(ArrayBuffer.isView(array))out['snapshot.'+name]=array;
+    for(const [name,array]of Object.entries(host.init))if(ArrayBuffer.isView(array))out['init.'+name]=array;
+    for(const name of ['surfaceData','bedData','flowData','aerationData','barrelMaskData','tubeTable','tubeTexels','tubeColumnData']){
+      if(!ArrayBuffer.isView(water[name]))throw Error('Missing water array '+name);out['water.'+name]=water[name];
+    }
+    const loft=mode.barrelLoft;if(!loft)throw Error('Missing actual loft result');
+    for(const [name,array]of Object.entries(loft))if(ArrayBuffer.isView(array))out['loft.'+name]=array;
+    Object.assign(out,sceneState({rawVersions}).arrayFields);return out;
+  };
+  let originalArrays=arrays();
+  const scalarState=(rawVersions=false)=>({config:plain(mode.config),init:plain(Object.fromEntries(Object.entries(host.init).filter(([,v])=>!ArrayBuffer.isView(v)))),
+    status:plain(host.snapshot.status),snapshotScalars:plain(Object.fromEntries(Object.entries(host.snapshot).filter(([,v])=>!ArrayBuffer.isView(v)))),
+    waterUniforms:Object.fromEntries(Object.entries(water.uniforms).map(([name,uniform])=>[name,uniformValue(uniform.value)])),materialUniforms:materialUniforms(rawVersions),
+    waterGrid:plain(water.grid),maskGrid:plain(water.barrelMaskGrid),loft:plain(Object.fromEntries(Object.entries(mode.barrelLoft).filter(([,v])=>!ArrayBuffer.isView(v)))),
+    scene:sceneState({rawVersions}).scalars,
+    camera:{position:camera.position.toArray(),quaternion:camera.quaternion.toArray(),projection:camera.projectionMatrix.toArray(),world:camera.matrixWorld.toArray(),fov:camera.fov,aspect:camera.aspect},
+    ownCamera:{position:ownCamera.position.toArray(),quaternion:ownCamera.quaternion.toArray(),projection:ownCamera.projectionMatrix.toArray(),fov:ownCamera.fov,aspect:ownCamera.aspect}});
+  let beforeScalars=scalarState();let scalarHash=await sha(new TextEncoder().encode(JSON.stringify(beforeScalars)));
+  let originalHashes=Object.fromEntries(await Promise.all(Object.entries(originalArrays).map(async([name,array])=>[name,(await pack(array)).sha256])));
+  async function assertSource(){
+    if(host.outstandingSteps||host.snapshot.status.seaTime!==sea)throw Error('Held physics clock advanced');
+    if(await sha(new TextEncoder().encode(JSON.stringify(scalarState())))!==scalarHash)throw Error('Held config/status/geometry scalar state changed');
+    const currentScene=sceneState();
+    if(currentScene.objects.length!==originalScene.objects.length||currentScene.objects.some((o,i)=>o.object!==originalScene.objects[i].object))throw Error('Held scene object identities changed');
+    if(currentScene.objects.some((o,i)=>o.material!==originalScene.objects[i].material||o.materialMembers.length!==originalScene.objects[i].materialMembers.length||o.materialMembers.some((m,j)=>m!==originalScene.objects[i].materialMembers[j])))throw Error('Held per-object material assignment identity changed');
+    for(const [id,g]of currentScene.geometries)if(!(activeHalf&&id===originalPatchId&&g.geometry===halfGeometry)&&g.geometry!==originalScene.geometries.get(id)?.geometry)throw Error('Held geometry identity changed:'+id);
+    for(const [id,attr]of currentScene.attributes)if(!(activeHalf&&id.startsWith(patchPrefix))&&attr!==originalScene.attributes.get(id))throw Error('Held attribute identity changed:'+id);
+    const current=arrays();if(Object.keys(current).join('|')!==Object.keys(originalArrays).join('|'))throw Error('Held array fields changed');
+    for(const [name,array]of Object.entries(current))if(!(activeHalf&&name.startsWith(patchPrefix))&&(array!==originalArrays[name]||(await pack(array)).sha256!==originalHashes[name]))throw Error('Held array bytes/identity changed: '+name);
+    if(scene.children.length===0||water.patch!==patchMesh)throw Error('Patch mesh identity lost');
+    if(activeHalf){if(water.patch.geometry!==halfGeometry||(await geometrySignature(halfGeometry))!==halfSignature)throw Error('Half geometry factory bytes/metadata changed');}
+    else if(water.patch.geometry!==originalPatch)throw Error('Original patch geometry identity not restored');
+    const references=[];scene.traverse(object=>{if(object.geometry===(activeHalf?halfGeometry:originalPatch))references.push(object);});
+    if(references.length!==1||references[0]!==patchMesh)throw Error('Owned patch geometry has an unexpected shared scene owner');
+    const currentMaterials=new Map();scene.traverse(object=>{for(const material of [].concat(object.material??[]))currentMaterials.set(material.uuid,material);});
+    if(currentMaterials.size!==materialObjects.size||[...currentMaterials].some(([id,material])=>materialObjects.get(id)!==material))throw Error('Held material identity changed');
+  }
+  async function serialized(){
+    const saved=await host.exportState();const stream=new Blob([saved.bytes]).stream();
+    const bytes=new Uint8Array(await new Response(saved.deflated?stream.pipeThrough(new DecompressionStream('deflate')):stream).arrayBuffer());
+    return{rawSha256:await sha(bytes),rawByteLength:bytes.length,deflated:saved.deflated,compressed:await pack(saved.bytes,true)};
+  }
+  const beforeExport=await serialized();
+  const globalScene=originalScene,globalArrays=originalArrays,globalHashes={...originalHashes};
+  const initialScalarHash=scalarHash;const initialFullScalars=plain(beforeScalars);
+  async function shaders(){
+    const gl=renderer.getContext(),materials=new Set();scene.traverse(object=>{for(const m of [].concat(object.material??[]))materials.add(m);});
+    const rows=[];for(const material of materials){const props=renderer.properties.get(material),program=props.currentProgram;
+      if(program?.vertexShader&&program?.fragmentShader)rows.push({materialId:material.uuid,programId:program.id,type:material.type,defines:plain(material.defines??{}),sizeAttenuation:material.sizeAttenuation,
+        vertexSha256:await sha(new TextEncoder().encode(gl.getShaderSource(program.vertexShader))),fragmentSha256:await sha(new TextEncoder().encode(gl.getShaderSource(program.fragmentShader)))});
+    }if(!renderer.properties.get(water.mesh.material).currentProgram||rows.length===0)throw Error('Actual compiled water shader proof unavailable');
+    return rows.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  }
+  async function inspect(){
+    function visible(mesh){for(let object=mesh;object;object=object.parent)if(!object.visible)return false;return mesh.material.visible&&camera.layers.test(mesh.layers);}
+    const sprayMesh=mode.spray.mesh,bubbleMesh=mode.bubbles.mesh,spray=sprayMesh.material,bubble=bubbleMesh.material,bu=renderer.properties.get(bubble).uniforms;
+    const activity={spray:{visible:visible(sprayMesh),count:sprayMesh.geometry.drawRange.count,drawn:drawFlags.spray},bubbles:{visible:visible(bubbleMesh),count:bubbleMesh.geometry.drawRange.count,drawn:drawFlags.bubbles}};
+    const uniforms={sprayPixelsPerMetre:spray.uniforms?.pixelsPerMetre?.value,
+      expectedSprayPixelsPerMetre:d.canvas.height/(2*Math.tan(camera.fov*Math.PI/360)),
+      bubbleSize:bu?.size?.value,expectedBubbleSize:bubble.size*renderer.getPixelRatio(),bubbleScale:bu?.scale?.value,expectedBubbleScale:innerHeight/2};
+    for(const [name,state]of Object.entries(activity))if(state.visible&&state.count>0&&!state.drawn)throw Error('Visible nonzero particles not actually drawn:'+name);
+    if(activity.spray.drawn){if(!Number.isFinite(uniforms.sprayPixelsPerMetre))throw Error('Drawn spray lacks resolution uniform');if(Math.abs(uniforms.sprayPixelsPerMetre-uniforms.expectedSprayPixelsPerMetre)>1e-9)throw Error('Spray resolution uniform stale');}
+    if(activity.bubbles.drawn){if(!Number.isFinite(uniforms.bubbleSize)||!Number.isFinite(uniforms.bubbleScale))throw Error('Drawn bubbles lack resolution uniforms');
+      if(Math.abs(uniforms.bubbleSize-uniforms.expectedBubbleSize)>1e-12||Math.abs(uniforms.bubbleScale-uniforms.expectedBubbleScale)>1e-12)throw Error('Bubble resolution uniforms stale');}
+    const detail=mode.surfer.detail,skinned=mode.surfer.skinned;
+    if(!detail||detail.lodDistance!==Infinity||detail.textureCap!==2048)throw Error('Own surfer High detail fields unavailable or different');
+    if(skinned&&skinned.lodDistance!==Infinity)throw Error('Loaded own surfer LOD differs');
+    const wanted=[2989,1620];if(renderer.getPixelRatio()!==1.75)throw Error('Native pixel ratio changed');
+    if(innerWidth!==1708||innerHeight!==926||devicePixelRatio!==2||d.canvas.width!==wanted[0]||d.canvas.height!==wanted[1])throw Error('Held raster/native viewport differs');
+    if(camera.aspect!==1708/926||ownCamera.aspect!==1708/926)throw Error('Held CSS-aspect camera differs');
+    return{seaTime:sea,viewport:[innerWidth,innerHeight],browserDpr:devicePixelRatio,canvas:[d.canvas.width,d.canvas.height],pixelRatio:renderer.getPixelRatio(),
+      activity,uniforms,shaderPrograms:await shaders(),shadow:{enabled:renderer.shadowMap.enabled,type:renderer.shadowMap.type,autoUpdate:renderer.shadowMap.autoUpdate},
+      ownSurferDetail:{observation:'ordinary TypeScript private detail fields, source-guarded; public skinned getter',lodDistance:'Infinity',textureCap:detail.textureCap,skinned:!!skinned,skinnedLodDistance:skinned?'Infinity':null},waterLook:water.drawnLook,vertexNormals:water.vertexNormals,particleLevel:mode.particleLevel,
+      rendererMaterialVersionAccounting:versionProof(),renderInfo:plain(renderer.info.render),tubeNonempty:mode.barrelLoft.vertexCount>0,view:currentView,waterTubeCount:water.uniforms.waterTubeCount.value,waterPatchRect:water.uniforms.waterPatchRect.value.toArray(),waterPatchActive:water.uniforms.waterPatchActive.value,
+      patch:{objectId:patchMesh.uuid,meshId:patchMesh.uuid,geometryId:water.patch.geometry.uuid,originalGeometryId:originalPatchId,restoredIdentity:water.patch.geometry===originalPatch,spacing:activeHalf?.5:expectedSpacing,signature:await geometrySignature(water.patch.geometry),position:patchMesh.position.toArray(),quaternion:patchMesh.quaternion.toArray(),scale:patchMesh.scale.toArray(),matrixWorld:patchMesh.matrixWorld.toArray()},
+      actualView:{position:camera.position.toArray(),quaternion:camera.quaternion.toArray(),projection:camera.projectionMatrix.toArray(),rawHostHeight:host.heightAt(camera.position.x,camera.position.z),rawUnderwater:camera.position.y<host.heightAt(camera.position.x,camera.position.z)-.1},
+      fog:{present:!!scene.fog,type:scene.fog?.constructor.name,density:scene.fog?.density,near:scene.fog?.near,far:scene.fog?.far},
+      lights:scene.children.filter(o=>o.isLight).map(o=>({type:o.type,color:o.color.toArray(),intensity:o.intensity,position:o.position.toArray()})),
+      waterSun:plain({direction:water.uniforms.waterSunDirection.value.toArray(),radiance:water.uniforms.waterSunRadiance.value.toArray(),time:water.uniforms.waterTime.value})};
+  }
+  async function geometrySignature(geometry){
+    const attrs={};for(const [name,attribute]of Object.entries(geometry.attributes))attrs[name]={array:await pack(attribute.array),itemSize:attribute.itemSize,count:attribute.count,normalized:attribute.normalized,usage:attribute.usage,gpuType:attribute.gpuType,version:attribute.version};
+    const index=geometry.index;
+    return JSON.stringify({attributes:attrs,index:{array:await pack(index.array),itemSize:index.itemSize,count:index.count,normalized:index.normalized,usage:index.usage,gpuType:index.gpuType,version:index.version},groups:geometry.groups,drawRange:{start:geometry.drawRange.start,count:String(geometry.drawRange.count)},morphAttributes:geometry.morphAttributes,morphTargetsRelative:geometry.morphTargetsRelative});
+  }
+  const signatureOriginal=await geometrySignature(originalPatch);
+  const proof=makePatch(96,expectedSpacing);
+  if(proof.constructor!==originalPatch.constructor||proof.getAttribute('position').constructor!==originalPatch.getAttribute('position').constructor||await geometrySignature(proof)!==signatureOriginal)throw Error('Source-generated factory does not reproduce actual native patch');
+  proof.dispose();
+  if(expectedSpacing===.25){halfGeometry=makePatch(96,.5);halfSignature=await geometrySignature(halfGeometry);
+    for(const [name,attribute]of Object.entries(halfGeometry.attributes))if(attribute===originalPatch.attributes[name]||attribute.array===originalPatch.attributes[name].array)throw Error('Candidate attribute unexpectedly shares original buffers');
+    if(halfGeometry.index===originalPatch.index||halfGeometry.index.array===originalPatch.index.array)throw Error('Candidate index unexpectedly shares original buffers');
+  }else if(expectedSpacing!==.5)throw Error('Only quarter/half patch editions allowed');
+  const expected={.25:{vertices:149761,indices:893952,type:'Uint32Array'},.5:{vertices:38017,indices:225792,type:'Uint16Array'}};
+  function checkCounts(geometry,spacing){const row=expected[spacing];if(geometry.getAttribute('position').count!==row.vertices||geometry.index.count!==row.indices||geometry.index.array.constructor.name!==row.type)throw Error('Actual patch topology/count/type differs');}
+  checkCounts(originalPatch,expectedSpacing);if(halfGeometry)checkCounts(halfGeometry,.5);
+  const defaultView=camera.clone();
+  const rect=water.uniforms.waterPatchRect.value,grid=water.grid;let crest;
+  for(let z=0;z<grid.nz;z++)for(let x=0;x<grid.nx;x++){
+    const wx=grid.xMin+x*grid.spacing,wz=grid.zMin+z*grid.spacing,n=z*grid.nx+x,h=water.surfaceData[2*n];
+    if(wx<rect.x+4||wx>rect.z-4||wz<rect.y+4||wz>rect.w-4||!Number.isFinite(h)||h<=water.bedData[n]+.05)continue;
+    if(!crest||h>crest.height)crest={x:wx,z:wz,height:h,node:n};
+  }
+  if(!crest)throw Error('No finite wet crest in actual patch for close view');
+  const viewPlan={default:{method:'Actual ordinary own-camera clone'},closeCrest:{method:'Highest finite wet source node within current patch, inset4m; deterministic eyeoffset(8,6,10)m',crest,eye:[crest.x+8,crest.height+6,crest.z+10],target:[crest.x,crest.height,crest.z]},cavity:{attempted:false,reason:'No independent indexed-air witness established in this narrow spacing trial; no forced fog or generic under-roof eye.'}};
+  let viewShaderSources;
+  async function checkpoint(){
+    const current=arrays();
+    if(Object.keys(current).join('|')!==Object.keys(globalArrays).join('|'))throw Error('Cross-view source fields changed');
+    for(const [name,array]of Object.entries(current))if(array!==globalArrays[name]||(await pack(array)).sha256!==globalHashes[name])throw Error('Cross-view source bytes/identity changed:'+name);
+    const rows=sceneState();
+    const unowned=state=>JSON.stringify({objects:state.scalars.objects.filter(row=>row.id!==patchMesh.uuid),geometries:state.scalars.geometries.filter(row=>row.id!==originalPatchId)});
+    if(unowned(rows)!==unowned(globalScene))throw Error('Cross-view unowned scene geometry/transforms changed');
+    if(rows.objects.some((o,i)=>o.object!==globalScene.objects[i].object||o.material!==globalScene.objects[i].material||o.materialMembers.length!==globalScene.objects[i].materialMembers.length||o.materialMembers.some((m,j)=>m!==globalScene.objects[i].materialMembers[j])))throw Error('Cross-view object/material assignment identities changed');
+    originalScene=sceneState();originalArrays=arrays();beforeScalars=scalarState();scalarHash=await sha(new TextEncoder().encode(JSON.stringify(beforeScalars)));
+    originalHashes=Object.fromEntries(await Promise.all(Object.entries(originalArrays).map(async([name,array])=>[name,(await pack(array)).sha256])));
+    viewShaderSources=JSON.stringify(await shaders());await assertSource();
+  }
+  async function setView(name){
+    if(!['default','closeCrest'].includes(name))throw Error('Unknown predeclared view');
+    if(activeHalf||water.patch.geometry!==originalPatch)throw Error('Restore original geometry before changing view');
+    await assertSource();
+    camera.copy(defaultView);if(name==='closeCrest'){camera.position.set(...viewPlan.closeCrest.eye);camera.lookAt(...viewPlan.closeCrest.target);}
+    camera.updateMatrixWorld(true);currentView=name;drawFlags={spray:false,bubbles:false};renderOnce();renderOnce();await checkpoint();return inspect();
+  }
+  async function draw(spacing){
+    if(expectedSpacing===.5&&spacing!==.5||![.25,.5].includes(spacing))throw Error('Unsupported spacing for this edition');
+    activeHalf=expectedSpacing===.25&&spacing===.5;water.patch.geometry=activeHalf?halfGeometry:originalPatch;
+    drawFlags={spray:false,bubbles:false};renderOnce();renderOnce();await assertSource();
+    if(JSON.stringify(await shaders())!==viewShaderSources)throw Error('Program sources changed within geometry-only view');
+    return inspect();
+  }
+  async function packGeometry(geometry,spacing){return{size:96,spacing,signature:await geometrySignature(geometry),vertices:geometry.getAttribute('position').count,indices:geometry.index.count,indexType:geometry.index.array.constructor.name,
+    attributes:Object.fromEntries(await Promise.all(Object.entries(geometry.attributes).map(async([name,attribute])=>[name,{itemSize:attribute.itemSize,count:attribute.count,normalized:attribute.normalized,...await pack(attribute.array,true)}]))),index:{itemSize:geometry.index.itemSize,count:geometry.index.count,...await pack(geometry.index.array,true)}};}
+  async function capture(){return{scalars:beforeScalars,patchFactory:{factorySource,factorySourceSha256:await sha(new TextEncoder().encode(factorySource)),nativeClassBinding:true,bindsLoadedConstructors:true,nativeByteMatch:true,byteExactNative:true,geometries:expectedSpacing===.25?{quarter:await packGeometry(originalPatch,.25),half:await packGeometry(halfGeometry,.5)}:{half:await packGeometry(originalPatch,.5)}},arrays:Object.fromEntries(await Promise.all(Object.entries(originalArrays).map(async([name,array])=>[name,await pack(array,true)]))),
+    serialized:beforeExport,observed:await inspect(),limitations:['SET1 state export includes Float32 sea serialization; main snapshot/renderer arrays are separately hashed without conversion. All snapshot/loft and actual scene geometry attribute/index/skeleton array capacity bytes are retained with counts; geometry/attribute identities, versions, draw ranges and object/world transforms are guarded; no reconstruction used.','The source-generated patch factory binds only actual loaded native classes; original geometry/attributes/index bytes are proven before swapping. GPU-only FFT/caustic/shadow texture bytes are not captured or reconstructed. Existing targets stay in the same renderer and repeat PNG differences are retained.']};}
+  let cleaned=false;
+  function cleanup(){
+    if(cleaned)return;cleaned=true;
+    activeHalf=false;patchMesh.geometry=originalPatch;
+    style.remove();window.requestAnimationFrame=nativeRaf;for(const callback of new Set(stopped))nativeRaf(callback);
+    if(halfGeometry){if(halfGeometry===originalPatch)throw Error('Refusing to dispose original geometry');
+      for(const [name,attribute]of Object.entries(halfGeometry.attributes))if(attribute===originalPatch.attributes[name]||attribute.array===originalPatch.attributes[name].array)throw Error('Refusing to dispose shared original attributes');
+      if(halfGeometry.index===originalPatch.index||halfGeometry.index.array===originalPatch.index.array)throw Error('Refusing to dispose shared original index');
+      halfGeometry.dispose();
+    }
+  }
+  async function finish(){
+    try{
+      activeHalf=false;patchMesh.geometry=originalPatch;await setView('default');
+      const after=await serialized();await assertSource();
+      if(after.rawSha256!==beforeExport.rawSha256)throw Error('Serialized physics bytes changed');
+      if(await sha(new TextEncoder().encode(JSON.stringify(scalarState())))!==initialScalarHash)throw Error('Default scene scalar state was not restored');
+      if(await geometrySignature(originalPatch)!==signatureOriginal)throw Error('Original patch bytes/metadata were not restored');
+      return{serializedBefore:beforeExport.rawSha256,serializedAfter:after.rawSha256,serializedByteParity:true,allUnownedArrayBytesAndIdentitiesUnchanged:true,allUnownedSceneGeometryBytesIdentitiesVersionsDrawRangesAndTransformsUnchanged:true,originalPatchIdentityRestored:patchMesh.geometry===originalPatch,originalPatchSignatureRestored:true,defaultSceneScalarStateRestored:true,candidateOwnedGeometryDisposed:!!halfGeometry,seaTime:sea};
+    }finally{cleanup();}
+  }
+  async function failureState(){
+    const after=scalarState(true),current=arrays(true),afterArrays={};
+    for(const [name,array]of Object.entries(current)){const metadata=await pack(array);afterArrays[name]=metadata;if(metadata.sha256!==globalHashes[name])afterArrays[name]=await pack(array,true);}
+    const differences=[];
+    function diff(before,after,path){if(JSON.stringify(before)===JSON.stringify(after))return;
+      if(before&&after&&typeof before==='object'&&typeof after==='object'){for(const key of new Set([...Object.keys(before),...Object.keys(after)]))diff(before[key],after[key],path+'.'+key);}
+      else differences.push({path,before,after});
+    }
+    diff(initialFullScalars,after,'scalars');for(const name of new Set([...Object.keys(globalHashes),...Object.keys(afterArrays)]))if(globalHashes[name]!==afterArrays[name]?.sha256)differences.push({path:'arrays.'+name,beforeSha256:globalHashes[name],afterSha256:afterArrays[name]?.sha256});
+    return{schema:1,view:currentView,activeHalf,seaTime:host.snapshot.status.seaTime,beforeScalars:initialFullScalars,afterScalars:after,differences,beforeArrayHashes:globalHashes,afterArrays,rendererMaterialVersionAccounting:versionProof(),beforeViewPrograms:viewShaderSources?JSON.parse(viewShaderSources):null,afterPrograms:await shaders(),limitations:['Raw after material versions include observed native renderer increments. Only exact eligible color-call accounting normalizes guard versions; positive transmission is unsupported.','Every changed/added array includes full after bytes; unchanged arrays have hashes. Before bytes remain in original source capture.']};
+  }
+  window.__heldPatch={draw,setView,capture,finish,inspect,failureState,abort:cleanup,viewPlan,factoryProof:{sourceSha256:await sha(new TextEncoder().encode(factorySource)),nativeClassBinding:true,baselineByteExact:true,expectedSpacing,originalSignature:signatureOriginal,halfSignature}};
+  await checkpoint();
+}

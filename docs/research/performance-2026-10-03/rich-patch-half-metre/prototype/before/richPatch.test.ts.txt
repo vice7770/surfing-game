@@ -28,7 +28,7 @@ describe('the dense water patch', () => {
     expect(patchRect({ x: 20, z: 15, dirX: 0, dirZ: 1 }, small)).toEqual({ x0: 0, z0: 0, x1: 40, z1: 30 });
   });
 
-  it('builds a half-metre grid with a skirt round its rim', () => {
+  it('builds a quarter-metre grid with a skirt round its rim', () => {
     const geometry = createPatchGeometry(8, PATCH_SPACING);
     const n = 8 / PATCH_SPACING + 1;
     const rim = 4 * (n - 1);

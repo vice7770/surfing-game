@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "kind": "Same loaded canonical scene; only Rich patch geometry intentionally swapped",
+  "valid": false,
+  "frames": [],
+  "startedAt": "2026-10-03T22:29:29.869Z",
+  "bounds": {
+    "seconds": 60,
+    "retries": 0
+  },
+  "qualityAccepted": false,
+  "sourcePath": "/private/tmp/rich-patch-quality-20261003/baseline-held/source.json.gz",
+  "sourceJsonSha256": "f6b1e3f09d41200fef1075aac9572a7c0091bc335ba480709ae010ab11c3e4ea",
+  "sourceCompressedSha256": "e5fecacb1bd9646d635dab18443733d6ff91038587d7101c20d8d8a25e801eff",
+  "viewPlan": {
+    "default": {
+      "method": "Actual ordinary own-camera clone"
+    },
+    "closeCrest": {
+      "method": "Highest finite wet source node within current patch, inset4m; deterministic eyeoffset(8,6,10)m",
+      "crest": {
+        "x": -26,
+        "z": -283.0249111256337,
+        "height": 2.816889762878418,
+        "node": 76542
+      },
+      "eye": [
+        -18,
+        8.816889762878418,
+        -273.0249111256337
+      ],
+      "target": [
+        -26,
+        2.816889762878418,
+        -283.0249111256337
+      ]
+    },
+    "cavity": {
+      "attempted": false,
+      "reason": "No independent indexed-air witness established in this narrow spacing trial; no forced fog or generic under-roof eye."
+    }
+  },
+  "factoryProof": {
+    "sourceSha256": "4570a020749bda3a2187985b55d1b333520df3b3a9d271da0ced1f7231610f67",
+    "nativeClassBinding": true,
+    "baselineByteExact": true,
+    "expectedSpacing": 0.25,
+    "originalSignature": "{\"attributes\":{\"position\":{\"array\":{\"type\":\"Float32Array\",\"length\":449283,\"byteLength\":1797132,\"sha256\":\"a1f8b2149834a2ed1a21deac591527797a910cab3079a09f4823138ee5516ec7\"},\"itemSize\":3,\"count\":149761,\"normalized\":false,\"usage\":35044,\"gpuType\":1015,\"version\":0},\"skirt\":{\"array\":{\"type\":\"Float32Array\",\"length\":149761,\"byteLength\":599044,\"sha256\":\"a238c2c240174d7be0a713afcdc5f75f4854f550a126e30d5ccde3e0e9f9b321\"},\"itemSize\":1,\"count\":149761,\"normalized\":false,\"usage\":35044,\"gpuType\":1015,\"version\":0},\"onPatch\":{\"array\":{\"type\":\"Float32Array\",\"length\":149761,\"byteLength\":599044,\"sha256\":\"c7751ecdbed101911b89383c9a3d089d90914378d0cca0c58b998d5f3a73f337\"},\"itemSize\":1,\"count\":149761,\"normalized\":false,\"usage\":35044,\"gpuType\":1015,\"version\":0}},\"index\":{\"array\":{\"type\":\"Uint32Array\",\"length\":893952,\"byteLength\":3575808,\"sha256\":\"7ca94edd9924331255b49e5c45d53f6dc70a33a530da1680ed9fb29b10245582\"},\"itemSize\":1,\"count\":893952,\"normalized\":false,\"usage\":35044,\"gpuType\":1015,\"version\":0},\"groups\":[],\"drawRange\":{\"start\":0,\"count\":\"Infinity\"},\"morphAttributes\":{},\"morphTargetsRelative\":false}",
+    "halfSignature": "{\"attributes\":{\"position\":{\"array\":{\"type\":\"Float32Array\",\"length\":114051,\"byteLength\":456204,\"sha256\":\"776648a7953cd87331cfdacd02b4493918df0c0cf5c060b3d085ca435fafb61d\"},\"itemSize\":3,\"count\":38017,\"normalized\":false,\"usage\":35044,\"gpuType\":1015,\"version\":0},\"skirt\":{\"array\":{\"type\":\"Float32Array\",\"length\":38017,\"byteLength\":152068,\"sha256\":\"bff6baf4248990651a60067f783597ecf3f2f6c9e2693db9c022b3a8a208b328\"},\"itemSize\":1,\"count\":38017,\"normalized\":false,\"usage\":35044,\"gpuType\":1015,\"version\":0},\"onPatch\":{\"array\":{\"type\":\"Float32Array\",\"length\":38017,\"byteLength\":152068,\"sha256\":\"7a726457bcb4a6550da49406fa48b2ddbbca63bf177a25e1d99b0bd9e2b0a48a\"},\"itemSize\":1,\"count\":38017,\"normalized\":false,\"usage\":35044,\"gpuType\":1015,\"version\":0}},\"index\":{\"array\":{\"type\":\"Uint16Array\",\"length\":225792,\"byteLength\":451584,\"sha256\":\"b2bdb8f707f58097393bb03214c92c5f0582c3a759f204aa5ec5ca4b1d68cfe8\"},\"itemSize\":1,\"count\":225792,\"normalized\":false,\"usage\":35044,\"gpuType\":1015,\"version\":0},\"groups\":[],\"drawRange\":{\"start\":0,\"count\":\"Infinity\"},\"morphAttributes\":{},\"morphTargetsRelative\":false}"
+  },
+  "currentView": "default",
+  "error": "Error: Error: Cross-view unowned scene geometry/transforms changed\n    at checkpoint (<anonymous>:191:51)\n    at async Object.setView (<anonymous>:202:117)\n    at Page.eval (file:///Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs:101:33)\n    at async file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:586:44\n    at async bounded (file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:432:85)\n    at async captureHeld (file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:581:7)\n    at async ride (file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:613:3)\n    at async attempt (file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:622:5)\n    at async file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:644:7\n    at async bounded (file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:432:85)\n    at async file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:433:5",
+  "deadlineExpired": false
+}

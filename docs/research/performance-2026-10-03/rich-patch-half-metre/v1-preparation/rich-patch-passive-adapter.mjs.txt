@@ -1,0 +1,91 @@
+// Isolated one-spacing trial. The default plan=true cannot start Chrome.
+import {createHash} from 'node:crypto';
+import {mkdirSync,readFileSync,readdirSync,writeFileSync} from 'node:fs';
+import {execFileSync,spawn} from 'node:child_process';
+import {installHeldPatchProbe} from './rich-patch-held-helper.mjs';
+const root='/Users/regina/Desktop/Projects/surfing-game',scratch='/private/tmp/surf-rich-patch-half-metre-20261003',work='/private/tmp/rich-patch-passive-adapter';
+const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+const args=Object.fromEntries(process.argv.slice(2).map(arg=>{const i=arg.indexOf('=');if(i<0||!arg.startsWith('--'))throw Error('Use --name=value');return[arg.slice(2,i),arg.slice(i+1)];}));
+if(Object.keys(args).some(key=>!['variant','plan','out','cdp'].includes(key)))throw Error('Only variant/plan/out/cdp may change');
+const variant=args.variant??'baseline';if(!['baseline','candidate'].includes(variant))throw Error('Use variant=baseline|candidate');
+const plan=args.plan??'true';if(!['true','false'].includes(plan))throw Error('Use plan=true|false');
+const candidate=variant==='candidate',spacing=candidate?.5:.25;
+const url='http://127.0.0.1:'+(candidate?'4210':'4201')+'/?diagnostics';
+const dir=candidate?scratch+'/dist':'/private/tmp/surf-tube-stability-current-20261003';
+const out=args.out??'/private/tmp/rich-patch-quality-20261003',port=args.cdp??(candidate?'9542':'9541');
+const canonical=root+'/scripts/browser/fps-survey.mjs',source=readFileSync(canonical,'utf8');
+if(sha(source)!=='84e580b651e8ec1dcd028599d1c931b5d96a4e50c1299f9cdf38ee78dbf5d5cd')throw Error('Canonical FPS source changed');
+const manifestPath=scratch+'/half-metre-manifest.json',manifestBytes=readFileSync(manifestPath),manifest=JSON.parse(manifestBytes);
+if(sha(manifestBytes)!=='bd88785a8117db7f5a93e788ba195f6defd22fee75bd6c173d24323e3c497212')throw Error('Scratch authority manifest changed');
+if(manifest.sourceFiles.length!==552)throw Error('Scratch source authority count changed');
+for(const record of manifest.sourceFiles){if(sha(readFileSync(scratch+'/'+record.path))!==record.candidateSha256)throw Error('Scratch source/config changed:'+record.path);if(!record.owned&&record.candidateSha256!==record.canonicalSha256)throw Error('Unowned scratch source differs:'+record.path);}
+for(const record of manifest.buildAssets)if(sha(readFileSync(scratch+'/dist/'+record.path))!==record.sha256)throw Error('Candidate build changed:'+record.path);
+const canonicalDir='/private/tmp/surf-tube-stability-current-20261003';
+const canonicalFiles=['index.html',...readdirSync(canonicalDir+'/assets').filter(f=>/\.(js|css)$/.test(f)).sort().map(f=>'assets/'+f)];
+const aggregate=createHash('sha256');for(const file of canonicalFiles)aggregate.update(file).update(readFileSync(canonicalDir+'/'+file));
+if(aggregate.digest('hex')!=='7c2e14bade277ece4f1100a09dda8fe731073a41572a6619cfeb2970328fc7a3')throw Error('Canonical frozen build changed');
+if(sha(readFileSync(canonicalDir+'/'+manifest.physicsWorker.path))!==manifest.physicsWorker.sha256)throw Error('Worker is not byte-exact across builds');
+mkdirSync(work,{recursive:true});mkdirSync(out,{recursive:true});
+new Function('return '+installHeldPatchProbe.toString());
+let derived=source;const changes=[];
+function replace(name,before,after){if(derived.split(before).length!==2)throw Error('FPS source marker changed:'+name);derived=derived.replace(before,after);changes.push({name,beforeSha256:sha(before),afterSha256:sha(after)});}
+replace('owned-launcher',"from './cdp.mjs'",'from '+JSON.stringify(work+'/owned-cdp.mjs'));
+replace('imports','import { launch, sleep }',"import { gzipSync } from 'node:zlib';\nimport { installHeldPatchProbe } from '/private/tmp/rich-patch-held-helper.mjs';\nimport { launch, sleep }");
+replace('edition-guard',"expectedMaxBatchSteps: EDITION === 'catchup-batch2' ? 2 : undefined",'expectedMaxBatchSteps:1');
+replace('comparison-label','timingComparableToPassiveBaseline: !GPU_DIAGNOSTIC','timingComparableToPassiveBaseline:!GPU_DIAGNOSTIC,explicitPatchSpacingTradeoff:'+candidate+',nativeRasterAndShadersPreserved:true,nativeQualityPreserved:'+(!candidate)+',fullNativeGeometryPreserved:'+(!candidate));
+replace('baseline-comparable','baselineComparable: failures.length === 0 && !GPU_DIAGNOSTIC','baselineComparable:failures.length===0&&!GPU_DIAGNOSTIC&&'+(!candidate)+',explicitSpacingTrialConfigMatches:failures.length===0,nativeRasterAndShadersPreserved:true,nativeQualityPreserved:'+(!candidate)+',fullNativeGeometryPreserved:'+(!candidate)+'');
+replace('worker-start-observer','  const NativeWorker = window.Worker;',`  const NativeWorker = window.Worker;
+  const nativePost=NativeWorker.prototype.postMessage;NativeWorker.prototype.postMessage=function(request,...rest){
+    if(request?.type==='start'&&request.config?.spot==='padang'&&request.options?.rider===true){
+      perf.workerStart={config:{...request.config},rider:request.options.rider,renderSpacing:request.options.renderSpacing??null,renderSpacingValueIsUndefined:request.options.renderSpacing===undefined,renderSpacingHasOwn:Object.prototype.hasOwnProperty.call(request.options,'renderSpacing'),barrelCaseCount:request.options.barrelCases?.length??0};
+      NativeWorker.prototype.postMessage=nativePost;
+    }return Reflect.apply(nativePost,this,[request,...rest]);
+  };`);
+replace('worker-start-output','maxBatchSteps: d?.mode?.host?.maxBatchSteps,','maxBatchSteps:d?.mode?.host?.maxBatchSteps,workerStart:window.__perf.workerStart,independentMaskSpacing:d?.water?.barrelMaskGrid?.spacing,patchVertices:d?.water?.patch?.geometry.getAttribute("position").count,patchIndices:d?.water?.patch?.geometry.index.count,patchIndexType:d?.water?.patch?.geometry.index.array.constructor.name,');
+const counts=candidate?{vertices:38017,indices:225792,type:'Uint16Array'}:{vertices:149761,indices:893952,type:'Uint32Array'};
+replace('physics-render-guards','  if (!(stats.freshSnapshots > 1)',`  if(o.renderSpacing!==2||o.independentMaskSpacing!==1||o.renderPixelRatio!==1.75)failures.push('Render/contact/raster spacing changed');
+  if(o.patchVertices!==${counts.vertices}||o.patchIndices!==${counts.indices}||o.patchIndexType!==${JSON.stringify(counts.type)})failures.push('Actual native patch counts/index type differ');
+  if(!o.workerStart||o.workerStart.rider!==true||o.workerStart.renderSpacing!==null||o.workerStart.renderSpacingValueIsUndefined!==true||o.workerStart.renderSpacingHasOwn!==true||o.workerStart.barrelCaseCount!==4)failures.push('Actual rider/contact start options differ');
+  for(const [key,value]of Object.entries(ordinary.expectedConfig))if(o.workerStart?.config?.[key]!==value)failures.push('Actual worker config differs:'+key);
+  if (!(stats.freshSnapshots > 1)`);
+replace('plan-spacing','const ordinary = ordinaryPlan();',`const ordinary=ordinaryPlan();ordinary.patchSpacing=${spacing};ordinary.patchCounts=${JSON.stringify(counts)};
+ordinary.heldMethod='After ordinary passive90: pause/settle same renderer, default and fixed elevated source-crest view; baseline quarter→half→original→original repeat, candidate native half repeat. Exact source factory binds loaded classes. GPU-only textures remain loaded, not reconstructed.';
+ordinary.bounds={overallSeconds:360,heldSeconds:60,retries:0};`);
+replace('held-after-pause',"  if (pause) await measure(setting, 'Pause menu', MENU_SECONDS, 1500);",'  await captureHeld();\n  if (pause) await measure(setting, \'Pause menu\', MENU_SECONDS, 1500);');
+replace('held-function','async function ride(setting, spot, { pause = false } = {}) {',`let heldDeadlineExpired=false;
+async function captureHeld(){
+  const folder=${JSON.stringify(out+'/'+variant+'-held')};mkdirSync(folder,{recursive:true});
+  const held={schema:1,kind:${JSON.stringify(candidate?'Native half-metre candidate held after its separate ordinary90; not a cross-run pixel match':'Same loaded canonical scene; only Rich patch geometry intentionally swapped')},valid:false,frames:[],startedAt:new Date().toISOString(),bounds:{seconds:60,retries:0},qualityAccepted:false};
+  const retain=()=>{writeFileSync(join(folder,'report.json'),JSON.stringify(held,null,2)+'\\n');run.held=held;save();};retain();
+  try{await bounded((async()=>{
+    await page.eval('('+installHeldPatchProbe.toString()+')(${spacing})');
+    const full=await page.eval('window.__heldPatch.capture()'),bytes=Buffer.from(JSON.stringify(full)),sourcePath=join(folder,'source.json.gz');
+    writeFileSync(sourcePath,gzipSync(bytes,{level:9,mtime:0}));Object.assign(held,{sourcePath,sourceJsonSha256:sha(bytes),sourceCompressedSha256:sha(readFileSync(sourcePath)),viewPlan:await page.eval('window.__heldPatch.viewPlan'),factoryProof:await page.eval('window.__heldPatch.factoryProof')});retain();
+    for(const view of ['default','closeCrest']){
+      held.currentView=view;held.viewReady=await page.eval('window.__heldPatch.setView('+JSON.stringify(view)+')');retain();
+      for(const [name,spacing]of ${JSON.stringify(candidate?[['nativeHalf',.5],['nativeHalfRepeat',.5]]:[['nativeQuarter',.25],['half',.5],['originalRestored',.25],['originalRepeat',.25]])}){
+        const observed=await page.eval('window.__heldPatch.draw('+spacing+')');
+        const png=Buffer.from((await page.send('Page.captureScreenshot',{format:'png'})).data,'base64'),path=join(folder,view+'.'+name+'.png');writeFileSync(path,png);
+        held.frames.push({view,name,spacing,path,pngSha256:sha(png),bytes:png.length,observed});retain();
+      }
+    }
+    held.invariant=await page.eval('window.__heldPatch.finish()');held.finishedAt=new Date().toISOString();held.valid=true;
+    held.repeatPairs=['default','closeCrest'].map(view=>{const frames=held.frames.filter(row=>row.view===view);return{view,originalRepeatPngSame:frames.at(-2).pngSha256===frames.at(-1).pngSha256,restorePngSame:${candidate?'null':'frames[0].pngSha256===frames[2].pngSha256'}};});retain();
+  })(),60,'Owned held patch deadline');}
+  catch(error){held.error=String(error.stack??error);held.deadlineExpired=heldDeadlineExpired=String(error.message).includes('Owned held patch deadline');retain();if(!heldDeadlineExpired)await page.eval('window.__heldPatch?.abort()').catch(()=>{});throw error;}
+}
+async function ride(setting, spot, { pause = false } = {}) {`);
+// Deadline failures retain the progress report but never trigger an extra post-deadline GPU screenshot.
+replace('failure-deadline','  } catch (error) {\n    const shot',"  } catch (error) {\n    if(heldDeadlineExpired){run.results.push({setting,screen,error:String(error.message),heldDeadlineExpired:true});save();throw error;}\n    const shot");
+replace('bounded-open','let save = () => {};\ntry {',`let save=()=>{};const bounded=async(promise,seconds,message)=>{let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(message)),seconds*1000);})]);}finally{clearTimeout(timer);}};
+try{await bounded((async()=>{`);
+replace('bounded-close','} finally {\n  save();\n  await page.close();',"})(),360,'Owned passive/held deadline');\n}finally{\n  save();\n  await page.close();");
+writeFileSync(work+'/derived-'+variant+'.mjs',derived);execFileSync(process.execPath,['--check',work+'/derived-'+variant+'.mjs'],{stdio:'pipe'});
+let launcherSource=readFileSync('/private/tmp/render-scale-passive-adapter-v3/owned-cdp.mjs','utf8').replace('breakline-render-scale-','breakline-rich-patch-');
+for(const [before,after]of [["let chrome,page,closed=false;","let chrome,page,closed=false,deadline;"],["if(closed)return;closed=true;","if(closed)return;closed=true;clearTimeout(deadline);"],[" let launchError;"," deadline=setTimeout(()=>{void close();},360000);deadline.unref();\n let launchError;"]]){if(launcherSource.split(before).length!==2)throw Error('Owned launcher watchdog marker changed');launcherSource=launcherSource.replace(before,after);}
+
+writeFileSync(work+'/owned-cdp.mjs',launcherSource);writeFileSync(work+'/derived-'+variant+'.mjs',derived);
+const metadata={variant,plan,adapterSha256:sha(readFileSync(new URL(import.meta.url))),canonicalSha256:sha(source),derivedSha256:sha(derived),heldHelperSha256:sha(readFileSync('/private/tmp/rich-patch-held-helper.mjs')),launcherSha256:sha(launcherSource),changes,sourceAuthority:{manifestPath,manifestSha256:sha(manifestBytes),filesVerified:manifest.sourceFiles.length,inheritedCurrentRootDifferences:manifest.inheritedCurrentRootDifferences,workerByteExact:true},productionEdited:false,spacing,counts,url,dir,bounds:{overallSeconds:360,heldSeconds:60,retries:0}};
+writeFileSync(out+'/'+variant+'-adapter-meta.json',JSON.stringify(metadata,null,2)+'\n');
+const childArgs=[work+'/derived-'+variant+'.mjs',out+'/'+variant+'-fps.json','--url='+url,'--dir='+dir,'--baseline='+root+'/docs/research/performance-2026-10-03/padang-live-frame-pacing.json','--features=true','--only=High (baseline)','--spot=Padang','--swell=Big','--rideSeconds=90','--warmSeconds=5','--gpuTiming=false','--width=1708','--height=926','--qualityBase=1bcc7c0c9','--edition=rich-patch-'+variant,'--cdp='+port,...(plan==='true'?['--plan=true']:[])];
+const child=spawn(process.execPath,childArgs,{cwd:root,stdio:'inherit'});process.exitCode=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('exit',code=>resolve(code??1));});

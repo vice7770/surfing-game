@@ -1,0 +1,533 @@
+{
+  "spec": {
+    "schema": 1,
+    "size": 96,
+    "baselineSpacing": 0.25,
+    "candidateSpacing": 0.5,
+    "sampleSpacing": 0.125,
+    "deadlineMs": 10000,
+    "limits": [
+      "CPU/F64 height-only approximation; not GPU/raster parity.",
+      "No mask, depth, foam, carved-tube/cavity quality or FPS acceptance.",
+      "One held state; no solver, browser or water advance."
+    ]
+  },
+  "status": "CPU-only height supplement completed",
+  "sourceSchema": "Fresh lossless held scalars/arrays; scalars.waterUniforms actual values; observed.patch:{objectId,geometryId,matrixWorld}; observed.waterLook/vertexNormals.",
+  "factorySchema": "Embedded patchFactory:{factorySource,factorySourceSha256,bindsLoadedConstructors:true,nativeByteMatch:true,sourceHashes,geometries:{quarter,half}}; each geometry:{size,spacing,attributes:{position,skirt,onPatch exact typed fields},index exact typed field}",
+  "helperSha256": "3650441ce923401b8d961bbdd084171dac7e8418d6345a34c2b4319be03d7795",
+  "command": "node /private/tmp/rich-patch-height-risk.mjs --run=true --source=<fresh.json.gz> --sourceSha256=<reviewed> --factorySha256=<reviewed embedded source> --out=<fresh report.json>",
+  "pass": true,
+  "result": {
+    "schema": 1,
+    "status": "CPU-only height supplement completed",
+    "authority": {
+      "source": {
+        "path": "/private/tmp/rich-patch-quality-20261003/baseline-held/source.json.gz",
+        "compressedSha256": "e5fecacb1bd9646d635dab18443733d6ff91038587d7101c20d8d8a25e801eff",
+        "contentSha256": "f6b1e3f09d41200fef1075aac9572a7c0091bc335ba480709ae010ab11c3e4ea",
+        "rawBytes": 17485636,
+        "jsonBytes": 70027931
+      },
+      "factorySourceSha256": "4570a020749bda3a2187985b55d1b333520df3b3a9d271da0ced1f7231610f67",
+      "seaTime": 402.8410465576326
+    },
+    "observed": {
+      "waterTubeCount": 0,
+      "waterPatchActive": 1,
+      "waterPatchRect": [
+        -102,
+        -301.0249111256337,
+        -6,
+        -205.0249111256337
+      ],
+      "waterLook": "rich",
+      "vertexNormals": false,
+      "uniformWitness": "actual-material-uniforms-after-real-draw"
+    },
+    "rect": [
+      -102,
+      -301.0249111256337,
+      -6,
+      -205.0249111256337
+    ],
+    "matrix": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      -54,
+      0,
+      -253.0249111256337,
+      1
+    ],
+    "grid": {
+      "xMin": -160,
+      "zMin": -1233.0249111256337,
+      "spacing": 2,
+      "nx": 161,
+      "nz": 633
+    },
+    "spec": {
+      "schema": 1,
+      "size": 96,
+      "baselineSpacing": 0.25,
+      "candidateSpacing": 0.5,
+      "sampleSpacing": 0.125,
+      "deadlineMs": 10000,
+      "limits": [
+        "CPU/F64 height-only approximation; not GPU/raster parity.",
+        "No mask, depth, foam, carved-tube/cavity quality or FPS acceptance.",
+        "One held state; no solver, browser or water advance."
+      ]
+    },
+    "geometry": {
+      "baseline": {
+        "n": 385,
+        "topVertexCount": 148225,
+        "rimVertexCount": 1536,
+        "vertexCount": 149761,
+        "triangleCount": 297984,
+        "heightRange": [
+          -1.6908617159351707,
+          2.8322146680166043
+        ],
+        "arrayHashes": {
+          "position": "a1f8b2149834a2ed1a21deac591527797a910cab3079a09f4823138ee5516ec7",
+          "skirt": "a238c2c240174d7be0a713afcdc5f75f4854f550a126e30d5ccde3e0e9f9b321",
+          "index": "7ca94edd9924331255b49e5c45d53f6dc70a33a530da1680ed9fb29b10245582"
+        }
+      },
+      "candidate": {
+        "n": 193,
+        "topVertexCount": 37249,
+        "rimVertexCount": 768,
+        "vertexCount": 38017,
+        "triangleCount": 75264,
+        "heightRange": [
+          -1.6908617159351707,
+          2.8321251921443036
+        ],
+        "arrayHashes": {
+          "position": "776648a7953cd87331cfdacd02b4493918df0c0cf5c060b3d085ca435fafb61d",
+          "skirt": "bff6baf4248990651a60067f783597ecf3f2f6c9e2693db9c022b3a8a208b328",
+          "index": "b2bdb8f707f58097393bb03214c92c5f0582c3a759f204aa5ec5ca4b1d68cfe8"
+        }
+      }
+    },
+    "metrics": {
+      "atOriginalQuarterMetreNodes": {
+        "count": 148225,
+        "signedMean": 0.000011940970625247363,
+        "rms": 0.0005926364356320511,
+        "p50Absolute": 0.00011533808174135629,
+        "p95Absolute": 0.0013725140849487616,
+        "p99Absolute": 0.00239193266625648,
+        "max": {
+          "value": -0.004284190356543149,
+          "absolute": 0.004284190356543149,
+          "x": -31.75,
+          "z": -285.2749111256337,
+          "baselineVertex": 24536,
+          "candidateTriangle": 12184,
+          "underlyingTextureNodes": [
+            {
+              "column": 63,
+              "row": 472,
+              "height": 1.175356149673462
+            },
+            {
+              "column": 64,
+              "row": 472,
+              "height": 1.3133625984191895
+            },
+            {
+              "column": 65,
+              "row": 472,
+              "height": 1.4260578155517578
+            },
+            {
+              "column": 66,
+              "row": 472,
+              "height": 1.51817786693573
+            },
+            {
+              "column": 63,
+              "row": 473,
+              "height": 1.8182494640350342
+            },
+            {
+              "column": 64,
+              "row": 473,
+              "height": 2.0049238204956055
+            },
+            {
+              "column": 65,
+              "row": 473,
+              "height": 2.135117292404175
+            },
+            {
+              "column": 66,
+              "row": 473,
+              "height": 2.2177770137786865
+            },
+            {
+              "column": 63,
+              "row": 474,
+              "height": 2.3010568618774414
+            },
+            {
+              "column": 64,
+              "row": 474,
+              "height": 2.5062649250030518
+            },
+            {
+              "column": 65,
+              "row": 474,
+              "height": 2.635195016860962
+            },
+            {
+              "column": 66,
+              "row": 474,
+              "height": 2.7012624740600586
+            },
+            {
+              "column": 63,
+              "row": 475,
+              "height": 2.4609732627868652
+            },
+            {
+              "column": 64,
+              "row": 475,
+              "height": 2.6459662914276123
+            },
+            {
+              "column": 65,
+              "row": 475,
+              "height": 2.7571897506713867
+            },
+            {
+              "column": 66,
+              "row": 475,
+              "height": 2.80983304977417
+            }
+          ]
+        }
+      },
+      "fixedEighthMetreLattice": {
+        "nx": 769,
+        "nz": 769,
+        "spacing": 0.125,
+        "delta": {
+          "count": 591361,
+          "signedMean": 0.000011970169469108765,
+          "rms": 0.0005142367815376481,
+          "p50Absolute": 0.00015531912708333095,
+          "p95Absolute": 0.0011306550395406845,
+          "p99Absolute": 0.0019146116901538335,
+          "max": {
+            "value": -0.004284190356543149,
+            "absolute": 0.004284190356543149,
+            "x": -31.75,
+            "z": -285.2749111256337,
+            "baselineTriangle": 48946,
+            "candidateTriangle": 12184,
+            "underlyingTextureNodes": [
+              {
+                "column": 63,
+                "row": 472,
+                "height": 1.175356149673462
+              },
+              {
+                "column": 64,
+                "row": 472,
+                "height": 1.3133625984191895
+              },
+              {
+                "column": 65,
+                "row": 472,
+                "height": 1.4260578155517578
+              },
+              {
+                "column": 66,
+                "row": 472,
+                "height": 1.51817786693573
+              },
+              {
+                "column": 63,
+                "row": 473,
+                "height": 1.8182494640350342
+              },
+              {
+                "column": 64,
+                "row": 473,
+                "height": 2.0049238204956055
+              },
+              {
+                "column": 65,
+                "row": 473,
+                "height": 2.135117292404175
+              },
+              {
+                "column": 66,
+                "row": 473,
+                "height": 2.2177770137786865
+              },
+              {
+                "column": 63,
+                "row": 474,
+                "height": 2.3010568618774414
+              },
+              {
+                "column": 64,
+                "row": 474,
+                "height": 2.5062649250030518
+              },
+              {
+                "column": 65,
+                "row": 474,
+                "height": 2.635195016860962
+              },
+              {
+                "column": 66,
+                "row": 474,
+                "height": 2.7012624740600586
+              },
+              {
+                "column": 63,
+                "row": 475,
+                "height": 2.4609732627868652
+              },
+              {
+                "column": 64,
+                "row": 475,
+                "height": 2.6459662914276123
+              },
+              {
+                "column": 65,
+                "row": 475,
+                "height": 2.7571897506713867
+              },
+              {
+                "column": 66,
+                "row": 475,
+                "height": 2.80983304977417
+              }
+            ]
+          }
+        },
+        "baselineErrorToCubic": {
+          "count": 591361,
+          "signedMean": 0.000002992520951626544,
+          "rms": 0.0001488479771603731,
+          "p50Absolute": 0.000028924665002705297,
+          "p95Absolute": 0.000344537953772317,
+          "p99Absolute": 0.0006008471413903038,
+          "max": {
+            "value": -0.0011388412850177332,
+            "absolute": 0.0011388412850177332,
+            "x": -27.375,
+            "z": -280.8999111256337,
+            "baselineTriangle": 62036,
+            "candidateTriangle": 15658,
+            "underlyingTextureNodes": [
+              {
+                "column": 65,
+                "row": 475,
+                "height": 2.7571897506713867
+              },
+              {
+                "column": 66,
+                "row": 475,
+                "height": 2.80983304977417
+              },
+              {
+                "column": 67,
+                "row": 475,
+                "height": 2.816889762878418
+              },
+              {
+                "column": 68,
+                "row": 475,
+                "height": 2.790560245513916
+              },
+              {
+                "column": 65,
+                "row": 476,
+                "height": 2.4302539825439453
+              },
+              {
+                "column": 66,
+                "row": 476,
+                "height": 2.475191116333008
+              },
+              {
+                "column": 67,
+                "row": 476,
+                "height": 2.4906015396118164
+              },
+              {
+                "column": 68,
+                "row": 476,
+                "height": 2.483196258544922
+              },
+              {
+                "column": 65,
+                "row": 477,
+                "height": 1.7306530475616455
+              },
+              {
+                "column": 66,
+                "row": 477,
+                "height": 1.7749147415161133
+              },
+              {
+                "column": 67,
+                "row": 477,
+                "height": 1.8134586811065674
+              },
+              {
+                "column": 68,
+                "row": 477,
+                "height": 1.8430382013320923
+              },
+              {
+                "column": 65,
+                "row": 478,
+                "height": 0.8705379962921143
+              },
+              {
+                "column": 66,
+                "row": 478,
+                "height": 0.913836658000946
+              },
+              {
+                "column": 67,
+                "row": 478,
+                "height": 0.9725651144981384
+              },
+              {
+                "column": 68,
+                "row": 478,
+                "height": 1.0371730327606201
+              }
+            ]
+          }
+        },
+        "candidateErrorToCubic": {
+          "count": 591361,
+          "signedMean": 0.000014962690420735252,
+          "rms": 0.0006125018074791866,
+          "p50Absolute": 0.0002018405571106996,
+          "p95Absolute": 0.0013695727684535086,
+          "p99Absolute": 0.0022111979603007814,
+          "max": {
+            "value": -0.004284190356543149,
+            "absolute": 0.004284190356543149,
+            "x": -31.75,
+            "z": -285.2749111256337,
+            "baselineTriangle": 48946,
+            "candidateTriangle": 12184,
+            "underlyingTextureNodes": [
+              {
+                "column": 63,
+                "row": 472,
+                "height": 1.175356149673462
+              },
+              {
+                "column": 64,
+                "row": 472,
+                "height": 1.3133625984191895
+              },
+              {
+                "column": 65,
+                "row": 472,
+                "height": 1.4260578155517578
+              },
+              {
+                "column": 66,
+                "row": 472,
+                "height": 1.51817786693573
+              },
+              {
+                "column": 63,
+                "row": 473,
+                "height": 1.8182494640350342
+              },
+              {
+                "column": 64,
+                "row": 473,
+                "height": 2.0049238204956055
+              },
+              {
+                "column": 65,
+                "row": 473,
+                "height": 2.135117292404175
+              },
+              {
+                "column": 66,
+                "row": 473,
+                "height": 2.2177770137786865
+              },
+              {
+                "column": 63,
+                "row": 474,
+                "height": 2.3010568618774414
+              },
+              {
+                "column": 64,
+                "row": 474,
+                "height": 2.5062649250030518
+              },
+              {
+                "column": 65,
+                "row": 474,
+                "height": 2.635195016860962
+              },
+              {
+                "column": 66,
+                "row": 474,
+                "height": 2.7012624740600586
+              },
+              {
+                "column": 63,
+                "row": 475,
+                "height": 2.4609732627868652
+              },
+              {
+                "column": 64,
+                "row": 475,
+                "height": 2.6459662914276123
+              },
+              {
+                "column": 65,
+                "row": 475,
+                "height": 2.7571897506713867
+              },
+              {
+                "column": 66,
+                "row": 475,
+                "height": 2.80983304977417
+              }
+            ]
+          }
+        }
+      }
+    },
+    "skirt": {
+      "excludedFromTopSurfaceStatistics": true,
+      "localDropMeters": 0.3,
+      "worldDropMeters": 0.3,
+      "note": "Same endpoint displacement/drop rule; skirt raster coverage not tested."
+    },
+    "elapsedCalculationMs": 264.915667
+  }
+}

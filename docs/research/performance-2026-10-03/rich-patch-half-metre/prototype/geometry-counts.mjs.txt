@@ -1,0 +1,42 @@
+import { writeFileSync } from 'node:fs';
+import * as canonical from './canonical-geometry.mjs';
+import * as candidate from './candidate-geometry.mjs';
+
+function describe(module) {
+  const geometry = module.createPatchGeometry(module.PATCH_SIZE, module.PATCH_SPACING);
+  const index = geometry.getIndex();
+  const position = geometry.getAttribute('position');
+  const skirt = geometry.getAttribute('skirt');
+  let rimVertices = 0;
+  for (let i = 0; i < skirt.count; i += 1) rimVertices += skirt.getX(i);
+  const result = {
+    size: module.PATCH_SIZE, spacing: module.PATCH_SPACING, skirtDrop: module.PATCH_SKIRT,
+    nodesAlongSide: Math.round(module.PATCH_SIZE / module.PATCH_SPACING) + 1,
+    vertices: position.count, rimVertices, indices: index.count,
+    triangles: index.count / 3, indexType: index.array.constructor.name,
+    attributeBytes: Object.values(geometry.attributes).reduce((sum, value) => sum + value.array.byteLength, 0),
+    indexBytes: index.array.byteLength,
+  };
+  geometry.dispose();
+  return result;
+}
+
+const before = describe(canonical), after = describe(candidate);
+if (before.triangles !== 297984 || after.triangles !== 75264
+  || before.vertices !== 149761 || after.vertices !== 38017
+  || before.indexType !== 'Uint32Array' || after.indexType !== 'Uint16Array'
+  || before.size !== after.size || before.skirtDrop !== after.skirtDrop) {
+  throw new Error('Unexpected actual geometry or spacing-only scope');
+}
+const result = {
+  method: 'Actual CPU construction through retained canonical and candidate generators; no renderer, physics, timing or numerical quality benchmark.',
+  before, after,
+  reductions: {
+    trianglesPerDraw: before.triangles - after.triangles,
+    vertices: before.vertices - after.vertices,
+    geometryPayloadBytes: before.attributeBytes + before.indexBytes - after.attributeBytes - after.indexBytes,
+    trianglesForTwoActiveSharedGeometryDraws: 2 * (before.triangles - after.triangles),
+  },
+};
+writeFileSync(new URL('./geometry-counts.json', import.meta.url), JSON.stringify(result, null, 2) + '\n');
+console.log(JSON.stringify(result, null, 2));

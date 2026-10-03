@@ -1,0 +1,161 @@
+{
+  "planOnly": true,
+  "url": "http://127.0.0.1:4210/?diagnostics",
+  "ordinary": {
+    "method": "Ordinary menu → Surf → Padang → Big → Paddle out; idle rider; five-second warmup and 90-second passive sample",
+    "diagnosticGpuProfile": false,
+    "timingComparableToPassiveBaseline": true,
+    "explicitPatchSpacingTradeoff": true,
+    "nativeRasterAndShadersPreserved": true,
+    "nativeQualityPreserved": false,
+    "fullNativeGeometryPreserved": false,
+    "edition": "rich-patch-candidate",
+    "fixedPhysicsStepSeconds": 0.016666666666666666,
+    "expectedMaxBatchSteps": 1,
+    "pipelineMetricSemantics": "Physics/device/step timings describe the final step of a batch; batch spans the advance loop; snapshot/summary occur once per publication; total is (batch+snapshot+summary)/batchSteps, not full request latency. Independent stage quantiles must not be summed.",
+    "baseline": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/padang-live-frame-pacing.json",
+    "expectedConfig": {
+      "spot": "padang",
+      "seed": 8761,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "expectedViewport": "1708 × 926",
+    "expectedBrowserDpr": 2,
+    "expectedCanvas": "2989 × 1620",
+    "expectedRenderPixelRatio": 1.75,
+    "graphics": {
+      "renderScale": 1,
+      "nativePixelDensity": true,
+      "frameLimit": 60,
+      "waterSimulation": "auto",
+      "seaDetail": "rich",
+      "caustics": true,
+      "sprayMist": true,
+      "oceanView": "far",
+      "foam": "detailed",
+      "waterLook": "rich",
+      "particles": "high",
+      "preset": "high"
+    },
+    "normalMode": "production pixel normals (no waterNormals flag)",
+    "runtimeOverrides": [],
+    "sourceAudit": {
+      "ref": "1bcc7c0c9",
+      "files": [
+        {
+          "file": "src/game/Graphics.ts",
+          "sha256": "39e0bd72abe3bee7daf39f022775a4a2688a6ba798f02ca3564a1109ebfcea42",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/game/Settings.ts",
+          "sha256": "feffa5a5fc4d2df4bfd7d1ad9ca1e81a26f014d9fa25efe02814dcaea684b618",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/scene/WaterSurface.ts",
+          "sha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/scene/water/richWaterGlsl.ts",
+          "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/scene/water/richSpray.ts",
+          "sha256": "79ef564c42b48eb77d62a560848d4b85f06be50d6f2ae3f21a957f293f77da5d",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/scene/SprayPoints.ts",
+          "sha256": "23e722c6880c86c2e4ec81af681ad72732923bdd418695bd41593726db250439",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/scene/BubblePoints.ts",
+          "sha256": "cbd6f49e31e426bf7e6295d6fde213c6289fa23b9c5aedbedd2159acc8846f5a",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/wave/particleBudget.ts",
+          "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363",
+          "sameAsReference": true
+        }
+      ]
+    },
+    "patchSpacing": 0.5,
+    "patchCounts": {
+      "vertices": 38017,
+      "indices": 225792,
+      "type": "Uint16Array"
+    },
+    "heldMethod": "After ordinary passive90: pause/settle same renderer, default and fixed elevated source-crest view; baseline quarter→half→original→original repeat, candidate native half repeat. Exact source factory binds loaded classes. GPU-only textures remain loaded, not reconstructed.",
+    "bounds": {
+      "overallSeconds": 360,
+      "heldSeconds": 60,
+      "retries": 0
+    }
+  },
+  "artifact": {
+    "root": "/private/tmp/surf-rich-patch-half-metre-20261003/dist",
+    "sha256": "df283acff009f09825218cf5c644c872c9a4d4ce5af149381ab3ca0e8f8bdae9",
+    "entry": "assets/index-DsNadEqs.js",
+    "worker": "assets/surfZoneWorker-BH6FhcTP.js",
+    "files": [
+      {
+        "file": "index.html",
+        "sha256": "55945445017d3ef3918996c1abc95868c4b025c9e0fefff53540f5bd55296d0b"
+      },
+      {
+        "file": "assets/WorkerSurfZone-9cLIUHEj.js",
+        "sha256": "8f7e1291548d58932dc03c0b662cc66868fe076fd181ff5705e1baf746301eb8"
+      },
+      {
+        "file": "assets/devStepping-xVJ9pK4s.js",
+        "sha256": "c184c94526248625fdf176b34ddfc9fb05f0e15481ed6c6caf813d6eb20fce85"
+      },
+      {
+        "file": "assets/index-DA8NEfOT.css",
+        "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+      },
+      {
+        "file": "assets/index-DsNadEqs.js",
+        "sha256": "a9153e37787b542ae1103454e5ba347ba6f5f05cbe0f0e39e9cdf566e2db3687"
+      },
+      {
+        "file": "assets/jevRecorder-NNdAzjKD.js",
+        "sha256": "727f9e923c40ad74ea3e49e6ea98fa5a5afd8ece61773a218534e0909aa4df47"
+      },
+      {
+        "file": "assets/particleBench-BVwOdk4S.js",
+        "sha256": "f9cfcbf60fa0205d13fb175e546ed98dc82de079963d98f14df12bcddadccb9e"
+      },
+      {
+        "file": "assets/rideRecorder-CQcVOq6m.js",
+        "sha256": "367aac236bf2d78e1e6542f08e21d5a556d46ae13eb93203ee2f107631cdb0ae"
+      },
+      {
+        "file": "assets/surfZoneWorker-BH6FhcTP.js",
+        "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+      },
+      {
+        "file": "assets/waterSheet-BnA4zvHM.js",
+        "sha256": "5bff6b6553431b9bdac5a0b0ecdc3b1230da3d086b98b53a22c3bb4194d4611e"
+      }
+    ],
+    "verified": []
+  },
+  "chromeStarted": false,
+  "servedVerification": "Deferred to the scheduled live run"
+}

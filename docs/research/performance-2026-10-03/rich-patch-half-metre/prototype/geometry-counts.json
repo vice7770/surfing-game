@@ -1,0 +1,35 @@
+{
+  "method": "Actual CPU construction through retained canonical and candidate generators; no renderer, physics, timing or numerical quality benchmark.",
+  "before": {
+    "size": 96,
+    "spacing": 0.25,
+    "skirtDrop": 0.3,
+    "nodesAlongSide": 385,
+    "vertices": 149761,
+    "rimVertices": 1536,
+    "indices": 893952,
+    "triangles": 297984,
+    "indexType": "Uint32Array",
+    "attributeBytes": 2995220,
+    "indexBytes": 3575808
+  },
+  "after": {
+    "size": 96,
+    "spacing": 0.5,
+    "skirtDrop": 0.3,
+    "nodesAlongSide": 193,
+    "vertices": 38017,
+    "rimVertices": 768,
+    "indices": 225792,
+    "triangles": 75264,
+    "indexType": "Uint16Array",
+    "attributeBytes": 760340,
+    "indexBytes": 451584
+  },
+  "reductions": {
+    "trianglesPerDraw": 222720,
+    "vertices": 111744,
+    "geometryPayloadBytes": 5359104,
+    "trianglesForTwoActiveSharedGeometryDraws": 445440
+  }
+}

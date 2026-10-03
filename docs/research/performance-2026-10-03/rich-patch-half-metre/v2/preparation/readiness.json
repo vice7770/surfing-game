@@ -1,0 +1,72 @@
+{
+  "status": "NEW v2 prepared only, no GPU/browser",
+  "checks": {
+    "targetedTests": 11,
+    "failures": 0,
+    "syntax": "pass",
+    "planOnlyBoth": "pass"
+  },
+  "records": [
+    {
+      "path": "/private/tmp/rich-patch-held-helper-v2.mjs",
+      "sha256": "be839453b1555d33b5fd81f17ddf00ab15c327cc70caf0654a09af2823cffabc",
+      "bytes": 37652
+    },
+    {
+      "path": "/private/tmp/rich-patch-passive-adapter-v2.mjs",
+      "sha256": "4c08beff775054daf7dbd13077ebe88890673c66c552a2af6c38a70c3cfe4848",
+      "bytes": 14097
+    },
+    {
+      "path": "/private/tmp/rich-patch-held-helper-v2.test.mjs",
+      "sha256": "772538e213f049e7067e7740a4b1d9e815490548b2ec2116b33e690db9e9d041",
+      "bytes": 12700
+    },
+    {
+      "path": "/private/tmp/rich-patch-actual-trial-v2-plan.md",
+      "sha256": "6a6e83163b6ad9b50f3234c70cd2863416d19ae055297cc7327ae00175a90a44",
+      "bytes": 5676
+    },
+    {
+      "path": "/private/tmp/rich-patch-helper-v2-tests.txt",
+      "sha256": "a076a9ef79c2b1d68709d79cbda1187eb67767cbc041bfcee7bc780beb0ea8a5",
+      "bytes": 1339
+    },
+    {
+      "path": "/private/tmp/rich-patch-passive-adapter-v2/derived-baseline.mjs",
+      "sha256": "11ea16fc4b7a50d9fcf1e3a4d46c067b429a0a0eb05c203b8e4ad3a1a545f1e7",
+      "bytes": 45042
+    },
+    {
+      "path": "/private/tmp/rich-patch-passive-adapter-v2/derived-candidate.mjs",
+      "sha256": "825f604f6fcf9bcf95465e70b119fe569bb692a935c9a559280ddacf0ad60858",
+      "bytes": 44980
+    },
+    {
+      "path": "/private/tmp/rich-patch-passive-adapter-v2/owned-cdp.mjs",
+      "sha256": "36f62bd75468ef3b20ba0fe613256f8a29c81b764b88551961d51194b8b40211",
+      "bytes": 2037
+    },
+    {
+      "path": "/private/tmp/rich-patch-passive-adapter-v2/baseline-plan.json",
+      "sha256": "e9f88859edb980dd792f40a6097ee958eb3158ac65bd2e74ac9890adf5b0e779",
+      "bytes": 5951
+    },
+    {
+      "path": "/private/tmp/rich-patch-passive-adapter-v2/candidate-plan.json",
+      "sha256": "3d64b7caf6e077f21a1cb54f0e72768ef934767cbb49921ca286444efbc02016",
+      "bytes": 5955
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/three/src/renderers/WebGLRenderer.js",
+      "sha256": "9e8740aad691246b31b3704014e8f3bbd38a8e7bf4b1b4d23868541b023cc63a",
+      "bytes": 111481
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/three/src/materials/Material.js",
+      "sha256": "79a2574f1ee57fec5f73acccb2fb0053c134a663446074930b8989193fb40377",
+      "bytes": 42812
+    }
+  ],
+  "v1Preserved": true
+}

@@ -1,0 +1,22 @@
+--- a/src/scene/water/richPatch.ts
++++ b/src/scene/water/richPatch.ts
+@@ -3,7 +3,7 @@
+ 
+ /** The dense patch drawn where the camera looks (G8): its side and vertex spacing, m. */
+ export const PATCH_SIZE = 96;
+-export const PATCH_SPACING = 0.25;
++export const PATCH_SPACING = 0.5;
+ /** How far the skirt hangs below the surface to hide seams with the coarse water, m. */
+ export const PATCH_SKIRT = 0.3;
+ 
+--- a/src/scene/water/richPatch.test.ts
++++ b/src/scene/water/richPatch.test.ts
+@@ -28,7 +28,7 @@
+     expect(patchRect({ x: 20, z: 15, dirX: 0, dirZ: 1 }, small)).toEqual({ x0: 0, z0: 0, x1: 40, z1: 30 });
+   });
+ 
+-  it('builds a quarter-metre grid with a skirt round its rim', () => {
++  it('builds a half-metre grid with a skirt round its rim', () => {
+     const geometry = createPatchGeometry(8, PATCH_SPACING);
+     const n = 8 / PATCH_SPACING + 1;
+     const rim = 4 * (n - 1);

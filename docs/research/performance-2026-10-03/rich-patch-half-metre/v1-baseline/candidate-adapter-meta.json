@@ -1,0 +1,109 @@
+{
+  "variant": "candidate",
+  "plan": "true",
+  "adapterSha256": "2bdbdda4f77958d0b7344549e4d9c678f4b01c792674d1f6da388fc3c7488acf",
+  "canonicalSha256": "84e580b651e8ec1dcd028599d1c931b5d96a4e50c1299f9cdf38ee78dbf5d5cd",
+  "derivedSha256": "44f24bbf0e5fa8468530cb851d126a890b418f336446ac8b6153a741c5de93b0",
+  "heldHelperSha256": "a6a91f8f480ddb5cb9451dcdb948d10eec9940d9d3ddc3b53324eef50a51b254",
+  "launcherSha256": "36f62bd75468ef3b20ba0fe613256f8a29c81b764b88551961d51194b8b40211",
+  "changes": [
+    {
+      "name": "owned-launcher",
+      "beforeSha256": "a6d65153af2ca7429aa59dfd268e2c297d9e3500718cafe99c3f11ba31ca2816",
+      "afterSha256": "5f13abddc6ffa1199f2027ba8e2229de12c5b938e7dca6b7a93a58d18547ddc9"
+    },
+    {
+      "name": "imports",
+      "beforeSha256": "bb87b15fa5f195fc498b3bc2d71f739b2ffeed01cf16f3a91975f6ca972e8257",
+      "afterSha256": "9d9752cb2f3d18a1e6faa7aa8b8252f9e3b16bb92452bd35b268ff9198ded882"
+    },
+    {
+      "name": "edition-guard",
+      "beforeSha256": "6e513bec195cbb0e4742e1051757cd4db70054a374aea4b18b203328035619b5",
+      "afterSha256": "e52f3b1c8c77c97de912cf4f72d4e0e9ccea629b12ed470a861e555ea084c6d3"
+    },
+    {
+      "name": "comparison-label",
+      "beforeSha256": "f8aa7bbc04a68c45cabdf72c13770205c29eda21dc0ed67712b06da885aea95a",
+      "afterSha256": "90013d2c1fc7363270ad9f0b559dd017b4c5780b43755cc28d3d0babd33ecaba"
+    },
+    {
+      "name": "baseline-comparable",
+      "beforeSha256": "913e4b17f228d594b007cdeba8b8d129279e61a788ad33810b773992015c97a7",
+      "afterSha256": "853859492e2e574677919b30d781d2cf0875e2e365beef8f80592326d65de6c5"
+    },
+    {
+      "name": "worker-start-observer",
+      "beforeSha256": "dde6e0699b74026aeabd4cf6aa50ce61e5e8ee82eda99b6aee821e4b1c5588f0",
+      "afterSha256": "8e860f7836045c6026fce80b5fcf72352db97fd5b51e7e5f7b0dc3ae77f48c74"
+    },
+    {
+      "name": "worker-start-output",
+      "beforeSha256": "fed221ca63f1a7e55bfbfc3698f3bd24c2910846828c30349862e83b9574c888",
+      "afterSha256": "4152a228aa559835e19ae6bd77f0d086fdb7405130368443c9a3337c15d44b21"
+    },
+    {
+      "name": "physics-render-guards",
+      "beforeSha256": "21da46f725e4700cdea32d6779992fbca17b9d0d5cd0c50dc4c9a6fb1ac9bf22",
+      "afterSha256": "d906ac530f57b2b243648963bf2801bf80748d612de0ddb5c87b4cee38214979"
+    },
+    {
+      "name": "plan-spacing",
+      "beforeSha256": "d271a614fdd6c182a873b914a9d85997fe3231d5275e1fea9f28f3009217dae0",
+      "afterSha256": "d41af127221cc4c62b1f4cc0207d0a7df5faf6b5faa888a35ebc267e395b7b17"
+    },
+    {
+      "name": "held-after-pause",
+      "beforeSha256": "2e02020e75db49fec211bce46c5db955f4f04a106b1a34ae55dc34e45cb2e57e",
+      "afterSha256": "653e101c5e7e50c6ef451026761735d19caf5043abb8a5534357946f5534db5d"
+    },
+    {
+      "name": "held-function",
+      "beforeSha256": "ae5c138cd4b2b18a0fd7358d3e301372af634f5baab9d80d486b118550dde377",
+      "afterSha256": "1b97892246391cabd1237d0e44d4683f9d4ffbde48a611173f29c8490b1d6ea0"
+    },
+    {
+      "name": "failure-deadline",
+      "beforeSha256": "5626b26b7059fae69e062e459f57e6593d1e0badf26a1a9bc9cb0aadae8e8d21",
+      "afterSha256": "070d683cbc9b6f5d7408bb3072301d75eb7101b235e21a09f03ac385a2d0b26a"
+    },
+    {
+      "name": "bounded-open",
+      "beforeSha256": "57e70a8740ec80e7783d33407343700e14e8d70812396158962fb25f9c88c9ab",
+      "afterSha256": "f1f9dc0a3b2b8ded685ded0a4c9772db54b2b1c5990e81735b995aa9f7cdccd0"
+    },
+    {
+      "name": "bounded-close",
+      "beforeSha256": "f0db613852669ae4730b94cbcbf7b9e737c097c1e4919c72adb762ac84ac227b",
+      "afterSha256": "4ce695f43c2e55c195fc16680614c7afd839230c68fa27cc45368326f7c58344"
+    }
+  ],
+  "sourceAuthority": {
+    "manifestPath": "/private/tmp/surf-rich-patch-half-metre-20261003/half-metre-manifest.json",
+    "manifestSha256": "bd88785a8117db7f5a93e788ba195f6defd22fee75bd6c173d24323e3c497212",
+    "filesVerified": 552,
+    "inheritedCurrentRootDifferences": [
+      {
+        "path": "src/wave/barrel/sweptContact.test.ts",
+        "canonicalSha256": "03dde67b5133320f1fd8972c68eb567643ac668480e5ec9d748df6d5bf664ef8",
+        "currentRootSha256": "7a63cff85cf812858d963025d1b05e6cb5178bc74553481ae0daffd9cd4e0fcf",
+        "authority": "Inherited test-only root difference; scratch deliberately uses canonical 1bcc test, root untouched."
+      }
+    ],
+    "workerByteExact": true
+  },
+  "productionEdited": false,
+  "spacing": 0.5,
+  "counts": {
+    "vertices": 38017,
+    "indices": 225792,
+    "type": "Uint16Array"
+  },
+  "url": "http://127.0.0.1:4210/?diagnostics",
+  "dir": "/private/tmp/surf-rich-patch-half-metre-20261003/dist",
+  "bounds": {
+    "overallSeconds": 360,
+    "heldSeconds": 60,
+    "retries": 0
+  }
+}

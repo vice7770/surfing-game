@@ -1,0 +1,110 @@
+// Targeted CPU-only tests of the exact trial helper/factory. No browser, rendering or timing.
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {BufferGeometry,Float32BufferAttribute,Scene,Mesh,MeshBasicMaterial} from '/Users/regina/Desktop/Projects/surfing-game/node_modules/three/build/three.module.js';
+import {PATCH_FACTORY_SOURCE,installHeldPatchProbe} from './rich-patch-held-helper-v2.mjs';
+import * as canonical from './surf-rich-patch-half-metre-20261003/canonical-geometry.mjs';
+import * as candidate from './surf-rich-patch-half-metre-20261003/candidate-geometry.mjs';
+const source=readFileSync(new URL('./rich-patch-held-helper-v2.mjs',import.meta.url),'utf8');
+const make=new Function('BufferGeometry','Float32BufferAttribute','return ('+PATCH_FACTORY_SOURCE+');')(BufferGeometry,Float32BufferAttribute);
+const pack=async array=>({type:array.constructor.name,length:array.length,byteLength:array.byteLength,sha256:createHash('sha256').update(new Uint8Array(array.buffer,array.byteOffset,array.byteLength)).digest('hex')});
+const signatureBody=source.slice(source.indexOf('  async function geometrySignature('),source.indexOf('  const signatureOriginal='));
+const signature=new Function('pack',signatureBody+';return geometrySignature;')(pack);
+const sceneBody=source.slice(source.indexOf('  function sceneState('),source.indexOf('  let originalScene='));
+function captureScene(scene,patchMesh,originalPatchId,activeHalf=false,originalScene){return new Function('scene','patchMesh','originalPatchId','activeHalf','originalScene','plain','normalizedMaterialVersion',sceneBody+';return sceneState();')(scene,patchMesh,originalPatchId,activeHalf,originalScene,value=>JSON.parse(JSON.stringify(value)),material=>material.version);}
+const cleanupBody=source.slice(source.indexOf('  function cleanup(){'),source.indexOf('  async function finish(){'));
+function cleanup(originalPatch,halfGeometry,patchMesh){const resume=[],style={remove(){}};return new Function('cleaned','activeHalf','patchMesh','originalPatch','halfGeometry','style','window','nativeRaf','stopped',cleanupBody+';cleanup();return {activeHalf,geometry:patchMesh.geometry};')(false,true,patchMesh,originalPatch,halfGeometry,style,{},fn=>resume.push(fn),[]);}
+function unchangedAssignments(a,b){return a.objects.length===b.objects.length&&a.objects.every((o,i)=>o.object===b.objects[i].object&&o.material===b.objects[i].material&&o.materialMembers.length===b.objects[i].materialMembers.length&&o.materialMembers.every((m,j)=>m===b.objects[i].materialMembers[j]));}
+test('reviewed factory body matches retained canonical generator verbatim',()=>{
+ const module=readFileSync('/private/tmp/surf-rich-patch-half-metre-20261003/canonical-geometry.mjs','utf8');
+ assert.equal(PATCH_FACTORY_SOURCE,module.slice(module.indexOf('function createPatchGeometry('),module.indexOf('\n//#endregion')).trim());
+ const injected=installHeldPatchProbe.toString().match(/^  const factorySource=(.*);$/m);assert(injected);assert.equal(JSON.parse(injected[1]),PATCH_FACTORY_SOURCE);
+});
+test('actual bound factory quarter and half arrays/metadata equal native production factories',async()=>{
+ for(const [spacing,module,vertices,indices,type]of [[.25,canonical,149761,893952,'Uint32Array'],[.5,candidate,38017,225792,'Uint16Array']]){
+  const native=module.createPatchGeometry(96,spacing),made=make(96,spacing);
+  assert.equal(await signature(made),await signature(native));assert.equal(made.constructor,BufferGeometry);assert.equal(made.attributes.position.constructor,Float32BufferAttribute);
+  assert.equal(made.attributes.position.count,vertices);assert.equal(made.index.count,indices);assert.equal(made.index.array.constructor.name,type);native.dispose();made.dispose();
+ }
+});
+test('factory proof detects geometry bytes, versions, metadata, topology and added attributes',async()=>{
+ const original=make(96,.5),hash=await signature(original);
+ for(const change of [g=>g.attributes.position.array[0]+=1,g=>g.index.array[0]+=1,g=>g.attributes.position.needsUpdate=true,g=>g.addGroup(0,3,0),g=>g.setDrawRange(3,30),g=>g.setAttribute('extra',new Float32BufferAttribute([0],1))]){
+  const altered=make(96,.5);change(altered);assert.notEqual(await signature(altered),hash);altered.dispose();
+ }original.dispose();
+});
+test('only actual identified patch normalizes geometry, unowned geometry and transforms remain detectable',()=>{
+ const scene=new Scene(),original=make(2,.25),half=make(2,.5),patch=new Mesh(original,new MeshBasicMaterial()),other=new Mesh(new BufferGeometry(),new MeshBasicMaterial());scene.add(patch,other);scene.updateMatrixWorld(true);
+ const before=captureScene(scene,patch,original.uuid);patch.geometry=half;
+ const during=captureScene(scene,patch,original.uuid,true,before);assert.deepEqual(during.scalars,before.scalars);assert.equal(during.geometries.get(original.uuid).geometry,half);assert.equal(during.attributes.get('scene.geometry.'+original.uuid+'.position'),half.attributes.position);
+ other.geometry=new BufferGeometry();assert.notDeepEqual(captureScene(scene,patch,original.uuid,true,before).scalars,before.scalars);
+ other.geometry=before.geometries.get(before.objects.find(o=>o.object===other).row.geometry).geometry;other.position.x=1;other.updateMatrixWorld(true);assert.notDeepEqual(captureScene(scene,patch,original.uuid,true,before).scalars,before.scalars);
+ original.dispose();half.dispose();other.geometry.dispose();
+});
+test('per-object material assignment guard catches reassignment and mutable array member replacement',()=>{
+ const scene=new Scene(),one=new MeshBasicMaterial(),two=new MeshBasicMaterial(),patch=new Mesh(make(2,.5),[one,two]),other=new Mesh(new BufferGeometry(),two);scene.add(patch,other);
+ const before=captureScene(scene,patch,patch.geometry.uuid);assert(unchangedAssignments(before,captureScene(scene,patch,patch.geometry.uuid)));
+ patch.material[0]=two;assert.equal(unchangedAssignments(before,captureScene(scene,patch,patch.geometry.uuid)),false);patch.material[0]=one;
+ other.material=one;assert.equal(unchangedAssignments(before,captureScene(scene,patch,patch.geometry.uuid)),false);
+ patch.geometry.dispose();other.geometry.dispose();one.dispose();two.dispose();
+});
+test('cleanup restores exact original identity and disposes only distinct candidate geometry',()=>{
+ const original=make(2,.25),half=make(2,.5),mesh={geometry:half};let originalDisposals=0,candidateDisposals=0;
+ original.addEventListener('dispose',()=>originalDisposals++);half.addEventListener('dispose',()=>candidateDisposals++);
+ const result=cleanup(original,half,mesh);assert.equal(result.geometry,original);assert.equal(result.activeHalf,false);assert.equal(originalDisposals,0);assert.equal(candidateDisposals,1);
+ original.dispose();
+});
+test('cleanup refuses original geometry or original attribute/index sharing before disposal',()=>{
+ for(const kind of ['geometry','attribute','index']){
+  const original=make(2,.25),half=kind==='geometry'?original:make(2,.5),mesh={geometry:half};let count=0;
+  if(kind==='attribute')half.setAttribute('position',original.attributes.position);if(kind==='index')half.setIndex(original.index);
+  half.addEventListener('dispose',()=>count++);assert.throws(()=>cleanup(original,half,mesh),/Refusing to dispose/);assert.equal(mesh.geometry,original);assert.equal(count,0);
+  original.dispose();if(half!==original)half.dispose();
+ }
+});
+
+test('uniform value guard records actual scalar/vector/texture state and mutable nested numeric values',()=>{
+ const body=source.slice(source.indexOf('  function uniformValue('),source.indexOf('  function materialUniforms('));
+ const guard=new Function(body+';return uniformValue;')();
+ const values={waterTubeCount:0,waterPatchActive:1,waterPatchRect:{toArray:()=>[-48,-48,48,48]},tex:{isTexture:true,uuid:'target',version:1,source:{version:2},image:{width:256,height:256},type:1,format:2},nested:[{weights:new Float32Array([.25,.75])}]};
+ const before=guard(values);assert.equal(before.waterTubeCount,0);assert.deepEqual(before.waterPatchRect,[-48,-48,48,48]);assert.equal(before.tex.texture,'target');
+ values.nested[0].weights[0]=.5;assert.notDeepEqual(guard(values),before);
+ const cyclic={};cyclic.self=cyclic;assert.throws(()=>guard(cyclic),/Cyclic/);
+});
+
+// Execute the exact installed native renderObject branch with real Three Material.needsUpdate setters.
+const rendererSource=readFileSync('/Users/regina/Desktop/Projects/surfing-game/node_modules/three/src/renderers/WebGLRenderer.js','utf8');
+const branchStart=rendererSource.indexOf('if ( material.transparent === true && material.side === DoubleSide && material.forceSinglePass === false ) {',rendererSource.indexOf('function renderObject('));
+const branchEnd=rendererSource.indexOf('object.onAfterRender',branchStart);
+const nativeBranch=new Function('material','_this','camera','scene','geometry','object','group','DoubleSide','BackSide','FrontSide',rendererSource.slice(branchStart,branchEnd));
+const normalizedBody=source.slice(source.indexOf('  function normalizedMaterialVersion('),source.indexOf('  function versionProof('));
+const renderBody=source.slice(source.indexOf('  function renderOnce(){'),source.indexOf('  renderOnce();renderOnce();'));
+const ledgerBody=source.slice(source.indexOf('  versionLedger=new Map('),source.indexOf('  function normalizedMaterialVersion('));
+function ledger(material){return new Function('materialObjects','versionLedger',ledgerBody+';return versionLedger;')(new Map([[material.uuid,material]]));}
+function fixture(mutate){
+ const scene=new Scene(),material=new MeshBasicMaterial({transparent:true,side:2,forceSinglePass:false}),geometry=new BufferGeometry(),a=new Mesh(geometry,material),b=new Mesh(geometry,material);scene.add(a,b);
+ const versionLedger=ledger(material),normalized=new Function('versionLedger',normalizedBody+';return normalizedMaterialVersion;')(versionLedger),camera={},renderer={renderBufferDirect(){}};
+ const d={renderView(view){scene.onBeforeRender(renderer,scene,view,null);for(const object of [a,b]){const mat=object.material,group=null;object.onBeforeRender(renderer,scene,view,geometry,mat,group);mat.onBeforeRender(renderer,scene,view,geometry,object,group);if(mutate)mutate(mat);nativeBranch(mat,renderer,view,scene,geometry,object,group,2,1,0);}}};
+ const mode={spray:{mesh:{}},bubbles:{mesh:{}}},draw=new Function('scene','renderer','camera','d','mode','versionLedger','drawFlags','normalizedMaterialVersion',renderBody+';return renderOnce;')(scene,renderer,camera,d,mode,versionLedger,{},normalized);
+ return{scene,material,geometry,a,b,versionLedger,normalized,draw};
+}
+test('exact native branch ledger counts both shared owners after actual callbacks and normalizes only2 increments per eligible call',()=>{
+ const f=fixture(),beforeA=f.a.onBeforeRender,beforeMaterial=f.material.onBeforeRender,initial=f.material.version;
+ f.draw();assert.equal(f.material.version,initial+4);f.draw();assert.equal(f.material.version,initial+8);
+ const e=f.versionLedger.get(f.material);assert.equal(e.colorCalls,4);assert.equal(e.objectCalls,4);assert.equal(e.eligibleCalls,4);assert.equal(e.expectedIncrement,8);assert.deepEqual([...e.owners.values()],[2,2]);assert.equal(f.normalized(f.material),initial);assert.equal(f.a.onBeforeRender,beforeA);assert.equal(f.material.onBeforeRender,beforeMaterial);
+ f.geometry.dispose();f.material.dispose();
+});
+test('extra material updates from original callbacks or an untracked native preparation path remain failures',()=>{
+ for(const kind of ['callback','preparation']){
+  const f=fixture(kind==='preparation'?material=>{material.needsUpdate=true;}:undefined);
+  if(kind==='callback')f.material.onBeforeRender=function(){this.needsUpdate=true;};
+  const callback=f.material.onBeforeRender;assert.throws(()=>f.draw(),/Unaccounted material version increment/);assert.equal(f.material.onBeforeRender,callback);f.geometry.dispose();f.material.dispose();
+ }
+});
+test('counter contract rejects changed flags, unknown shared-owner material and positive transmission',()=>{
+ const changed=fixture();changed.material.forceSinglePass=true;assert.throws(()=>changed.draw(),/branch flags changed/);changed.geometry.dispose();changed.material.dispose();
+ const reassigned=fixture(),replacement=new MeshBasicMaterial();reassigned.b.material=replacement;assert.throws(()=>reassigned.draw(),/callback pair mismatch/);reassigned.geometry.dispose();reassigned.material.dispose();replacement.dispose();
+ const transmission=new MeshBasicMaterial();transmission.transmission=.5;assert.throws(()=>ledger(transmission),/Positive transmission/);transmission.dispose();
+});

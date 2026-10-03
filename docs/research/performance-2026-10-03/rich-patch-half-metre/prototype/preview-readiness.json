@@ -1,0 +1,29 @@
+{
+  "url": "http://localhost:4210/",
+  "manifestSha256": "bd88785a8117db7f5a93e788ba195f6defd22fee75bd6c173d24323e3c497212",
+  "checks": [
+    {
+      "path": "index.html",
+      "sha256": "55945445017d3ef3918996c1abc95868c4b025c9e0fefff53540f5bd55296d0b",
+      "servedByteExact": true
+    },
+    {
+      "path": "build.json",
+      "sha256": "ff2fa91e25d8b6caa467aa11db9bdc8bd51146e35ad09aa7cbbe494e4848dc9c",
+      "servedByteExact": true
+    },
+    {
+      "path": "assets/index-DsNadEqs.js",
+      "sha256": "a9153e37787b542ae1103454e5ba347ba6f5f05cbe0f0e39e9cdf566e2db3687",
+      "servedByteExact": true
+    },
+    {
+      "path": "assets/surfZoneWorker-BH6FhcTP.js",
+      "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5",
+      "servedByteExact": true
+    }
+  ],
+  "browserLaunched": false,
+  "physicsAdvanced": false,
+  "ownedServerExecSession": 95549
+}

@@ -1,0 +1,17 @@
+{
+  "method": "One10-second CPU/F64 height-only pass; actual captured native source before initial default-view QA failure. Visual trial remains invalid; no spacing swap/image occurred.",
+  "source": "/private/tmp/rich-patch-quality-20261003/baseline-held/source.json.gz",
+  "sourceSha256": "e5fecacb1bd9646d635dab18443733d6ff91038587d7101c20d8d8a25e801eff",
+  "captureHelperSha256": "a6a91f8f480ddb5cb9451dcdb948d10eec9940d9d3ddc3b53324eef50a51b254",
+  "factorySourceSha256": "4570a020749bda3a2187985b55d1b333520df3b3a9d271da0ced1f7231610f67",
+  "kernelSha256": "3650441ce923401b8d961bbdd084171dac7e8418d6345a34c2b4319be03d7795",
+  "sourceHashes": {
+    "src/scene/water/richPatch.ts": "fe564caa92e24ea5f15acc6d3cb4377bcda3ab0cf90e12b0ef599ef55f412fc9",
+    "src/scene/water/cubicSurface.ts": "c396930d9ff5def978e9a1657931a5c3c49e7cee1c41c577d6cdfbb2c2caee18",
+    "src/scene/water/richWaterGlsl.ts": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416",
+    "src/scene/water/tubeCarve.ts": "5b8ccfed406bee44877e9791f78223931234a4d52a03c1c4cf30cc9461639ce4"
+  },
+  "output": "/private/tmp/rich-patch-height-risk-from-invalid-held-20261003.json",
+  "retries": 0,
+  "gpu": "All owned Chromes closed; no rendering or physics."
+}

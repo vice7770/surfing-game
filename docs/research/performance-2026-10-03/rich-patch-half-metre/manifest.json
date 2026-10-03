@@ -1,0 +1,559 @@
+{
+  "schema": 1,
+  "scope": "V1 baseline ordinary-valid/held-invalid; initial prototype/readiness and CPU/F64 height supplement only. V2 preparation/trial excluded. No production edit, replay, build, tests or GPU run performed while archiving.",
+  "files": [
+    {
+      "path": "v1-baseline/fps.json.gz",
+      "originalPath": "/private/tmp/rich-patch-quality-20261003/baseline-fps.json",
+      "scope": "Valid ordinary baseline followed by held QA failure; no swap/quality frame",
+      "originalBytes": 87645,
+      "originalSha256": "85cfc5a20af78160dc7dc6fdd6fb81b782d098b2b7e0028239a030d1978af5c9",
+      "storedBytes": 9469,
+      "storedSha256": "7fe9f8b204c138e99a6c796e4bee09332c261b2990e972d62083cfc11e9fa8e1",
+      "encoding": "deterministic-gzip",
+      "decompressedBytes": 87645,
+      "decompressedSha256": "85cfc5a20af78160dc7dc6fdd6fb81b782d098b2b7e0028239a030d1978af5c9"
+    },
+    {
+      "path": "v1-baseline/held-report.json",
+      "originalPath": "/private/tmp/rich-patch-quality-20261003/baseline-held/report.json",
+      "scope": "Valid ordinary baseline followed by held QA failure; no swap/quality frame",
+      "originalBytes": 5068,
+      "originalSha256": "b23752bd846fc2b89fb821e9b2bcf6f9c835e331aaa925839bc3e729a95f7b16",
+      "storedBytes": 5068,
+      "storedSha256": "b23752bd846fc2b89fb821e9b2bcf6f9c835e331aaa925839bc3e729a95f7b16",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-baseline/held-source.json.gz",
+      "originalPath": "/private/tmp/rich-patch-quality-20261003/baseline-held/source.json.gz",
+      "scope": "Valid ordinary baseline followed by held QA failure; no swap/quality frame",
+      "originalBytes": 17485636,
+      "originalSha256": "e5fecacb1bd9646d635dab18443733d6ff91038587d7101c20d8d8a25e801eff",
+      "storedBytes": 17485636,
+      "storedSha256": "e5fecacb1bd9646d635dab18443733d6ff91038587d7101c20d8d8a25e801eff",
+      "encoding": "original-gzip",
+      "decompressedBytes": 70027931,
+      "decompressedSha256": "f6b1e3f09d41200fef1075aac9572a7c0091bc335ba480709ae010ab11c3e4ea"
+    },
+    {
+      "path": "v1-baseline/failure-native.png",
+      "originalPath": "/private/tmp/rich-patch-quality-20261003/baseline-fps-High_baseline_-Ride_Padang.png",
+      "scope": "Valid ordinary baseline followed by held QA failure; no swap/quality frame",
+      "originalBytes": 3528737,
+      "originalSha256": "e192669a31c57589cd0bd01875a7f793be1e06d8bb84571548ec45b581538b82",
+      "storedBytes": 3528737,
+      "storedSha256": "e192669a31c57589cd0bd01875a7f793be1e06d8bb84571548ec45b581538b82",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-baseline/failure-audit.json",
+      "originalPath": "/private/tmp/rich-patch-quality-20261003/baseline-held/failure-audit.json",
+      "scope": "Read-only post-failure diagnosis, not a cause attribution",
+      "originalBytes": 4663,
+      "originalSha256": "7632e48894e8266cf36af0be1e6d97bcd79f124f5b27b29b7c0b532a6436f77a",
+      "storedBytes": 4663,
+      "storedSha256": "7632e48894e8266cf36af0be1e6d97bcd79f124f5b27b29b7c0b532a6436f77a",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-baseline/baseline-adapter-meta.json",
+      "originalPath": "/private/tmp/rich-patch-quality-20261003/baseline-adapter-meta.json",
+      "scope": "Prepared adapter metadata; candidate v1 did not run",
+      "originalBytes": 4684,
+      "originalSha256": "ba0cccb9c2d2fd8585187be0e33283632c01fbd3cca27a4616aa4a3cba0a8483",
+      "storedBytes": 4684,
+      "storedSha256": "ba0cccb9c2d2fd8585187be0e33283632c01fbd3cca27a4616aa4a3cba0a8483",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-baseline/candidate-adapter-meta.json",
+      "originalPath": "/private/tmp/rich-patch-quality-20261003/candidate-adapter-meta.json",
+      "scope": "Prepared adapter metadata; candidate v1 did not run",
+      "originalBytes": 4686,
+      "originalSha256": "2fd0977f5479d0cc3b214a340fd1a22066ba3a5622d1de1954f16eafc5b4d57c",
+      "storedBytes": 4686,
+      "storedSha256": "2fd0977f5479d0cc3b214a340fd1a22066ba3a5622d1de1954f16eafc5b4d57c",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-preparation/readiness.json",
+      "originalPath": "/private/tmp/rich-patch-adapter-readiness.json",
+      "scope": "Prepared syntax/test/plan authority; retained verbatim",
+      "originalBytes": 2031,
+      "originalSha256": "e09d3c786a8a8e74c12c167826a52461b9e73105e56cfad4245f63a1008dfb9d",
+      "storedBytes": 2031,
+      "storedSha256": "e09d3c786a8a8e74c12c167826a52461b9e73105e56cfad4245f63a1008dfb9d",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-preparation/rich-patch-held-helper.mjs.txt",
+      "originalPath": "/private/tmp/rich-patch-held-helper.mjs",
+      "scope": "Exact v1 readiness file; no v2 substitution",
+      "originalBytes": 31895,
+      "originalSha256": "a6a91f8f480ddb5cb9451dcdb948d10eec9940d9d3ddc3b53324eef50a51b254",
+      "storedBytes": 31895,
+      "storedSha256": "a6a91f8f480ddb5cb9451dcdb948d10eec9940d9d3ddc3b53324eef50a51b254",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-preparation/rich-patch-passive-adapter.mjs.txt",
+      "originalPath": "/private/tmp/rich-patch-passive-adapter.mjs",
+      "scope": "Exact v1 readiness file; no v2 substitution",
+      "originalBytes": 13309,
+      "originalSha256": "2bdbdda4f77958d0b7344549e4d9c678f4b01c792674d1f6da388fc3c7488acf",
+      "storedBytes": 13309,
+      "storedSha256": "2bdbdda4f77958d0b7344549e4d9c678f4b01c792674d1f6da388fc3c7488acf",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-preparation/rich-patch-held-helper.test.mjs.txt",
+      "originalPath": "/private/tmp/rich-patch-held-helper.test.mjs",
+      "scope": "Exact v1 readiness file; no v2 substitution",
+      "originalBytes": 8278,
+      "originalSha256": "4516e3ec9b6ee7d10a5da44c733c618bebe824087794879758d25cd2fe64aee9",
+      "storedBytes": 8278,
+      "storedSha256": "4516e3ec9b6ee7d10a5da44c733c618bebe824087794879758d25cd2fe64aee9",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-preparation/rich-patch-actual-trial-plan.md",
+      "originalPath": "/private/tmp/rich-patch-actual-trial-plan.md",
+      "scope": "Exact v1 readiness file; no v2 substitution",
+      "originalBytes": 7371,
+      "originalSha256": "6ec8788bc6e9cd1d978f7b01f5873b4fa110b1eb41574c487e41ba68904616b9",
+      "storedBytes": 7371,
+      "storedSha256": "6ec8788bc6e9cd1d978f7b01f5873b4fa110b1eb41574c487e41ba68904616b9",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-preparation/rich-patch-helper-tests.txt",
+      "originalPath": "/private/tmp/rich-patch-helper-tests.txt",
+      "scope": "Exact v1 readiness file; no v2 substitution",
+      "originalBytes": 956,
+      "originalSha256": "6ea333ffa8c2238b5d0a39280351682f8346387fac20474df3ed3df1c9413d2e",
+      "storedBytes": 956,
+      "storedSha256": "6ea333ffa8c2238b5d0a39280351682f8346387fac20474df3ed3df1c9413d2e",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-preparation/derived-baseline.mjs.txt",
+      "originalPath": "/private/tmp/rich-patch-passive-adapter/derived-baseline.mjs",
+      "scope": "Exact v1 readiness file; no v2 substitution",
+      "originalBytes": 44263,
+      "originalSha256": "3dd673660ad09245cb50de392e51de152bee716deb18a65b7e376905a46dc398",
+      "storedBytes": 44263,
+      "storedSha256": "3dd673660ad09245cb50de392e51de152bee716deb18a65b7e376905a46dc398",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-preparation/derived-candidate.mjs.txt",
+      "originalPath": "/private/tmp/rich-patch-passive-adapter/derived-candidate.mjs",
+      "scope": "Exact v1 readiness file; no v2 substitution",
+      "originalBytes": 44201,
+      "originalSha256": "44f24bbf0e5fa8468530cb851d126a890b418f336446ac8b6153a741c5de93b0",
+      "storedBytes": 44201,
+      "storedSha256": "44f24bbf0e5fa8468530cb851d126a890b418f336446ac8b6153a741c5de93b0",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-preparation/owned-cdp.mjs.txt",
+      "originalPath": "/private/tmp/rich-patch-passive-adapter/owned-cdp.mjs",
+      "scope": "Exact v1 readiness file; no v2 substitution",
+      "originalBytes": 2037,
+      "originalSha256": "36f62bd75468ef3b20ba0fe613256f8a29c81b764b88551961d51194b8b40211",
+      "storedBytes": 2037,
+      "storedSha256": "36f62bd75468ef3b20ba0fe613256f8a29c81b764b88551961d51194b8b40211",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-preparation/baseline-plan.json",
+      "originalPath": "/private/tmp/rich-patch-passive-adapter/baseline-plan.json",
+      "scope": "Exact v1 readiness file; no v2 substitution",
+      "originalBytes": 5948,
+      "originalSha256": "3523897dcdb2146c354fd10c5219c41de470fefa024cf262e3ea6544db5d5072",
+      "storedBytes": 5948,
+      "storedSha256": "3523897dcdb2146c354fd10c5219c41de470fefa024cf262e3ea6544db5d5072",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "v1-preparation/candidate-plan.json",
+      "originalPath": "/private/tmp/rich-patch-passive-adapter/candidate-plan.json",
+      "scope": "Exact v1 readiness file; no v2 substitution",
+      "originalBytes": 5952,
+      "originalSha256": "8ed7fe0b9f0ebe98ebbb00bf16afe722104817581cfd51b57350ca5dd9251f1b",
+      "storedBytes": 5952,
+      "storedSha256": "8ed7fe0b9f0ebe98ebbb00bf16afe722104817581cfd51b57350ca5dd9251f1b",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "prototype/source-manifest.json",
+      "originalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/half-metre-manifest.json",
+      "scope": "Initial prototype source/build/test declarations; pending labels preserved",
+      "originalBytes": 152481,
+      "originalSha256": "bd88785a8117db7f5a93e788ba195f6defd22fee75bd6c173d24323e3c497212",
+      "storedBytes": 152481,
+      "storedSha256": "bd88785a8117db7f5a93e788ba195f6defd22fee75bd6c173d24323e3c497212",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "prototype/half-metre.patch",
+      "originalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/half-metre.patch",
+      "scope": "Canonical before/candidate after owned diff",
+      "originalBytes": 892,
+      "originalSha256": "203420f397f87d06243a45c97854d5a3ccfb68081fc8f4b92fdbe993719117ed",
+      "storedBytes": 892,
+      "storedSha256": "203420f397f87d06243a45c97854d5a3ccfb68081fc8f4b92fdbe993719117ed",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "prototype/geometry-counts.mjs.txt",
+      "originalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/geometry-counts.mjs",
+      "scope": "Initial CPU geometry construction/count authority; no FPS/quality result",
+      "originalBytes": 2106,
+      "originalSha256": "ad1501dc15bec14ceac17049d7b49e84203433d95e3339fd558f39df9aee646f",
+      "storedBytes": 2106,
+      "storedSha256": "ad1501dc15bec14ceac17049d7b49e84203433d95e3339fd558f39df9aee646f",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "prototype/geometry-counts.json",
+      "originalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/geometry-counts.json",
+      "scope": "Initial CPU geometry construction/count authority; no FPS/quality result",
+      "originalBytes": 902,
+      "originalSha256": "94c1b66befc554f91311c517847fa40413eb55be90327e4a3eb492c0f0b301c5",
+      "storedBytes": 902,
+      "storedSha256": "94c1b66befc554f91311c517847fa40413eb55be90327e4a3eb492c0f0b301c5",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "prototype/canonical-geometry.mjs.txt",
+      "originalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/canonical-geometry.mjs",
+      "scope": "Initial CPU geometry construction/count authority; no FPS/quality result",
+      "originalBytes": 4122,
+      "originalSha256": "c2b678a229b2998c1a9f349d11972e36a91b1f0bd40abe2c5773ada01975af34",
+      "storedBytes": 4122,
+      "storedSha256": "c2b678a229b2998c1a9f349d11972e36a91b1f0bd40abe2c5773ada01975af34",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "prototype/candidate-geometry.mjs.txt",
+      "originalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/candidate-geometry.mjs",
+      "scope": "Initial CPU geometry construction/count authority; no FPS/quality result",
+      "originalBytes": 4105,
+      "originalSha256": "e9dea70e9cd3fc5e9f3b09cf23e1d8ad1d6ef105eba0535c9ca74e050e27fe6c",
+      "storedBytes": 4105,
+      "storedSha256": "e9dea70e9cd3fc5e9f3b09cf23e1d8ad1d6ef105eba0535c9ca74e050e27fe6c",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "prototype/preview-readiness.json",
+      "originalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/preview-readiness.json",
+      "scope": "Initial served-byte readiness; no browser or physics advancement",
+      "originalBytes": 892,
+      "originalSha256": "7c2a3b0ddc54823fc8b9663e0682e7755b8456d239ba14373ffdafb7fdcfd433",
+      "storedBytes": 892,
+      "storedSha256": "7c2a3b0ddc54823fc8b9663e0682e7755b8456d239ba14373ffdafb7fdcfd433",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "prototype/trial-plan-superseded.md",
+      "originalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/trial-plan.md",
+      "scope": "Superseded generic scene-reconstruction plan; never visual authority",
+      "originalBytes": 5804,
+      "originalSha256": "2a0a5fd9e90b971c1338f05480f2f227716d612ef281fc38fc8714fb5e634ceb",
+      "storedBytes": 5804,
+      "storedSha256": "2a0a5fd9e90b971c1338f05480f2f227716d612ef281fc38fc8714fb5e634ceb",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "prototype/before/richPatch.ts.txt",
+      "originalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/canonical-owned/src/scene/water/richPatch.ts",
+      "scope": "Canonical1bcc owned source bytes",
+      "originalBytes": 4671,
+      "originalSha256": "fe564caa92e24ea5f15acc6d3cb4377bcda3ab0cf90e12b0ef599ef55f412fc9",
+      "storedBytes": 4671,
+      "storedSha256": "fe564caa92e24ea5f15acc6d3cb4377bcda3ab0cf90e12b0ef599ef55f412fc9",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "prototype/after/richPatch.ts.txt",
+      "originalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/src/scene/water/richPatch.ts",
+      "scope": "Initial candidate owned source bytes",
+      "originalBytes": 4670,
+      "originalSha256": "3153a59891e68a67264b93f2ca1517696e54fc9c9402f78b443258d9b3ee6435",
+      "storedBytes": 4670,
+      "storedSha256": "3153a59891e68a67264b93f2ca1517696e54fc9c9402f78b443258d9b3ee6435",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "prototype/before/richPatch.test.ts.txt",
+      "originalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/canonical-owned/src/scene/water/richPatch.test.ts",
+      "scope": "Canonical1bcc owned source bytes",
+      "originalBytes": 2207,
+      "originalSha256": "6b290f0616ec6aabdb1c5190fd3aed5addde4208b4bda3102aca963f4833f117",
+      "storedBytes": 2207,
+      "storedSha256": "6b290f0616ec6aabdb1c5190fd3aed5addde4208b4bda3102aca963f4833f117",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "prototype/after/richPatch.test.ts.txt",
+      "originalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/src/scene/water/richPatch.test.ts",
+      "scope": "Initial candidate owned source bytes",
+      "originalBytes": 2204,
+      "originalSha256": "7efd3ae6e0d93fa4f6ba605540cb1228944196b6d24f5b7de99b2b88884a7ee8",
+      "storedBytes": 2204,
+      "storedSha256": "7efd3ae6e0d93fa4f6ba605540cb1228944196b6d24f5b7de99b2b88884a7ee8",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "cpu-v1/actual-input-intent.json",
+      "originalPath": "/private/tmp/rich-patch-height-risk-v1-actual-input-intent.json",
+      "scope": "CPU/F64 height-only v1 preparation or result on invalid held source; no GPU-quality verdict",
+      "originalBytes": 1241,
+      "originalSha256": "d67ea77cf0028c83897bd6c8442597beb4883e91fc023151f66d4459f6319b9c",
+      "storedBytes": 1241,
+      "storedSha256": "d67ea77cf0028c83897bd6c8442597beb4883e91fc023151f66d4459f6319b9c",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "cpu-v1/height-report.json",
+      "originalPath": "/private/tmp/rich-patch-height-risk-from-invalid-held-20261003.json",
+      "scope": "CPU/F64 height-only v1 preparation or result on invalid held source; no GPU-quality verdict",
+      "originalBytes": 15454,
+      "originalSha256": "f82dfa788cc361b78ac4b36ff4dabfb63e71328c21585aef220ea07bc32e57ce",
+      "storedBytes": 15454,
+      "storedSha256": "f82dfa788cc361b78ac4b36ff4dabfb63e71328c21585aef220ea07bc32e57ce",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "cpu-v1/kernel.mjs.txt",
+      "originalPath": "/private/tmp/rich-patch-height-risk.mjs",
+      "scope": "CPU/F64 height-only v1 preparation or result on invalid held source; no GPU-quality verdict",
+      "originalBytes": 16854,
+      "originalSha256": "3650441ce923401b8d961bbdd084171dac7e8418d6345a34c2b4319be03d7795",
+      "storedBytes": 16854,
+      "storedSha256": "3650441ce923401b8d961bbdd084171dac7e8418d6345a34c2b4319be03d7795",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "cpu-v1/kernel.test.mjs.txt",
+      "originalPath": "/private/tmp/rich-patch-height-risk.test.mjs",
+      "scope": "CPU/F64 height-only v1 preparation or result on invalid held source; no GPU-quality verdict",
+      "originalBytes": 3447,
+      "originalSha256": "be56dfd7d9534e7e4b2e952afa90ab60fc8440820c4e0c0cec3a0a888a6c3737",
+      "storedBytes": 3447,
+      "storedSha256": "be56dfd7d9534e7e4b2e952afa90ab60fc8440820c4e0c0cec3a0a888a6c3737",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "cpu-v1/plan.md",
+      "originalPath": "/private/tmp/rich-patch-height-risk-plan.md",
+      "scope": "CPU/F64 height-only v1 preparation or result on invalid held source; no GPU-quality verdict",
+      "originalBytes": 5907,
+      "originalSha256": "461933e27e6c26cc0a771d1ff1e0ff14af420f5d005d5f65af44cfc776438b73",
+      "storedBytes": 5907,
+      "storedSha256": "461933e27e6c26cc0a771d1ff1e0ff14af420f5d005d5f65af44cfc776438b73",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "source-audit.md",
+      "originalPath": "/private/tmp/patch-half-density-source-audit-20261003.md",
+      "scope": "Read-only conditional patch nesting and skirt/overlap proof limits",
+      "originalBytes": 6688,
+      "originalSha256": "47f547063f56745cb75a0945405b909569fecde123892a6ae3984c81b89d1c0b",
+      "storedBytes": 6688,
+      "storedSha256": "47f547063f56745cb75a0945405b909569fecde123892a6ae3984c81b89d1c0b",
+      "encoding": "original-bytes"
+    },
+    {
+      "path": "archive-v1.py.txt",
+      "originalPath": "/private/tmp/archive-rich-patch-v1.py",
+      "scope": "Archive copy/hash verification implementation; no trial or kernel execution",
+      "originalBytes": 10386,
+      "originalSha256": "545bb5a8d4746d23d545387ce1364f49fd6ce6e2fceed2119797db0721ea626a",
+      "storedBytes": 10386,
+      "storedSha256": "545bb5a8d4746d23d545387ce1364f49fd6ce6e2fceed2119797db0721ea626a",
+      "encoding": "original-bytes"
+    }
+  ],
+  "readinessAliases": [
+    {
+      "originalPath": "/private/tmp/rich-patch-held-helper.mjs",
+      "archivePath": "v1-preparation/rich-patch-held-helper.mjs.txt"
+    },
+    {
+      "originalPath": "/private/tmp/rich-patch-passive-adapter.mjs",
+      "archivePath": "v1-preparation/rich-patch-passive-adapter.mjs.txt"
+    },
+    {
+      "originalPath": "/private/tmp/rich-patch-held-helper.test.mjs",
+      "archivePath": "v1-preparation/rich-patch-held-helper.test.mjs.txt"
+    },
+    {
+      "originalPath": "/private/tmp/rich-patch-actual-trial-plan.md",
+      "archivePath": "v1-preparation/rich-patch-actual-trial-plan.md"
+    },
+    {
+      "originalPath": "/private/tmp/rich-patch-helper-tests.txt",
+      "archivePath": "v1-preparation/rich-patch-helper-tests.txt"
+    },
+    {
+      "originalPath": "/private/tmp/rich-patch-passive-adapter/derived-baseline.mjs",
+      "archivePath": "v1-preparation/derived-baseline.mjs.txt"
+    },
+    {
+      "originalPath": "/private/tmp/rich-patch-passive-adapter/derived-candidate.mjs",
+      "archivePath": "v1-preparation/derived-candidate.mjs.txt"
+    },
+    {
+      "originalPath": "/private/tmp/rich-patch-passive-adapter/owned-cdp.mjs",
+      "archivePath": "v1-preparation/owned-cdp.mjs.txt"
+    },
+    {
+      "originalPath": "/private/tmp/rich-patch-passive-adapter/baseline-plan.json",
+      "archivePath": "v1-preparation/baseline-plan.json"
+    },
+    {
+      "originalPath": "/private/tmp/rich-patch-passive-adapter/candidate-plan.json",
+      "archivePath": "v1-preparation/candidate-plan.json"
+    }
+  ],
+  "prototypeOwnedBeforeAfter": [
+    {
+      "path": "src/scene/water/richPatch.ts",
+      "beforeOriginalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/canonical-owned/src/scene/water/richPatch.ts",
+      "afterOriginalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/src/scene/water/richPatch.ts",
+      "beforeArchivePath": "prototype/before/richPatch.ts.txt",
+      "afterArchivePath": "prototype/after/richPatch.ts.txt"
+    },
+    {
+      "path": "src/scene/water/richPatch.test.ts",
+      "beforeOriginalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/canonical-owned/src/scene/water/richPatch.test.ts",
+      "afterOriginalPath": "/private/tmp/surf-rich-patch-half-metre-20261003/src/scene/water/richPatch.test.ts",
+      "beforeArchivePath": "prototype/before/richPatch.test.ts.txt",
+      "afterArchivePath": "prototype/after/richPatch.test.ts.txt"
+    }
+  ],
+  "prototypeSourceVerification": {
+    "records": 552,
+    "allCandidateHashesMatch": true,
+    "originalDirectory": "/private/tmp/surf-rich-patch-half-metre-20261003",
+    "authorityArchive": "prototype/source-manifest.json"
+  },
+  "prototypeBuildVerification": {
+    "assets": [
+      {
+        "path": "/private/tmp/surf-rich-patch-half-metre-20261003/dist/index.html",
+        "bytes": 1626,
+        "sha256": "55945445017d3ef3918996c1abc95868c4b025c9e0fefff53540f5bd55296d0b"
+      },
+      {
+        "path": "/private/tmp/surf-rich-patch-half-metre-20261003/dist/build.json",
+        "bytes": 21,
+        "sha256": "ff2fa91e25d8b6caa467aa11db9bdc8bd51146e35ad09aa7cbbe494e4848dc9c"
+      },
+      {
+        "path": "/private/tmp/surf-rich-patch-half-metre-20261003/dist/assets/WorkerSurfZone-9cLIUHEj.js",
+        "bytes": 848243,
+        "sha256": "8f7e1291548d58932dc03c0b662cc66868fe076fd181ff5705e1baf746301eb8"
+      },
+      {
+        "path": "/private/tmp/surf-rich-patch-half-metre-20261003/dist/assets/devStepping-xVJ9pK4s.js",
+        "bytes": 320,
+        "sha256": "c184c94526248625fdf176b34ddfc9fb05f0e15481ed6c6caf813d6eb20fce85"
+      },
+      {
+        "path": "/private/tmp/surf-rich-patch-half-metre-20261003/dist/assets/index-DA8NEfOT.css",
+        "bytes": 33213,
+        "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+      },
+      {
+        "path": "/private/tmp/surf-rich-patch-half-metre-20261003/dist/assets/index-DsNadEqs.js",
+        "bytes": 582425,
+        "sha256": "a9153e37787b542ae1103454e5ba347ba6f5f05cbe0f0e39e9cdf566e2db3687"
+      },
+      {
+        "path": "/private/tmp/surf-rich-patch-half-metre-20261003/dist/assets/jevRecorder-NNdAzjKD.js",
+        "bytes": 15917,
+        "sha256": "727f9e923c40ad74ea3e49e6ea98fa5a5afd8ece61773a218534e0909aa4df47"
+      },
+      {
+        "path": "/private/tmp/surf-rich-patch-half-metre-20261003/dist/assets/particleBench-BVwOdk4S.js",
+        "bytes": 10708,
+        "sha256": "f9cfcbf60fa0205d13fb175e546ed98dc82de079963d98f14df12bcddadccb9e"
+      },
+      {
+        "path": "/private/tmp/surf-rich-patch-half-metre-20261003/dist/assets/rideRecorder-CQcVOq6m.js",
+        "bytes": 41108,
+        "sha256": "367aac236bf2d78e1e6542f08e21d5a556d46ae13eb93203ee2f107631cdb0ae"
+      },
+      {
+        "path": "/private/tmp/surf-rich-patch-half-metre-20261003/dist/assets/surfZoneWorker-BH6FhcTP.js",
+        "bytes": 436884,
+        "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+      },
+      {
+        "path": "/private/tmp/surf-rich-patch-half-metre-20261003/dist/assets/waterSheet-BnA4zvHM.js",
+        "bytes": 11689,
+        "sha256": "5bff6b6553431b9bdac5a0b0ecdc3b1230da3d086b98b53a22c3bb4194d4611e"
+      }
+    ],
+    "allHashesAndBytesMatch": true,
+    "physicsWorkerByteExactToOriginalCanonical": true,
+    "buildId": "eea68720f",
+    "authorityArchive": "prototype/source-manifest.json"
+  },
+  "validationClaims": {
+    "scratchTests": {
+      "focusedCommand": "npm run test -- src/scene/water/richPatch.test.ts src/scene/WaterSurface.test.ts src/scene/waterLooks.test.ts src/scene/barrel/SweptBarrel.test.ts",
+      "testFiles": 5,
+      "testsPassed": 48,
+      "testFailures": 0,
+      "buildCommand": "BUILD_ID=eea68720f npm run build",
+      "strictTypeScript": "passed",
+      "viteBuild": "passed",
+      "warnings": [
+        "Existing chunks exceed 500 kB after minification."
+      ]
+    },
+    "v1AdapterChecks": {
+      "targetedTests": 8,
+      "failures": 0,
+      "syntax": "pass",
+      "planOnlyBoth": "pass"
+    },
+    "cpuV1Tests": "7 tests and syntaxcheck passed in original tool transcript; no stdout file retained; not rerun"
+  },
+  "v1Result": {
+    "ordinaryValid": true,
+    "heldValid": false,
+    "heldFrames": 0,
+    "geometrySwaps": 0,
+    "candidateRun": false,
+    "nativeFailureImageArchive": "v1-baseline/failure-native.png"
+  },
+  "cpuV1Scope": {
+    "report": "cpu-v1/height-report.json",
+    "inputSource": "v1-baseline/held-source.json.gz",
+    "heightOnly": true,
+    "heldQualityValid": false,
+    "sampleCount": 591361,
+    "deltaMaxMeters": 0.004284190356543149,
+    "deltaRmsMeters": 0.0005142367815376481
+  },
+  "missingAuthorityGaps": [
+    "No valid held frame, swap, restoration/native repeat or v1 candidate ordinary run occurred.",
+    "No after-failure scene snapshot/detailed changed-object diff was captured; legitimate callback effects are possible, not identified cause.",
+    "Only original tool/manifest provenance exists for 48-test strict build and seven CPU-v1 tests; separate stdout files were not supplied/retained.",
+    "Original GPU-only FFT/caustic/shadow targets are not captured by CPU source; CPU height result cannot prove GPU depth/coverage/material/cavity/foam/skirt quality.",
+    "Full initial prototype source/build hashes are preserved and checked, but all552source files and distassets are not duplicated in this archive; original immutable directory plus canonicalcommit remain source authority.",
+    "Source vertex nesting is conditional for coarse-grid nodes; arbitrary narrow/clamped grids and fixed skirt/overlap have no universal seam/depth bound."
+  ],
+  "verification": {
+    "records": 37,
+    "allStoredOriginalDecompressedHashesValid": true,
+    "proofOriginalsUnchanged": true,
+    "noReplayTestsBuildOrGPU": true
+  }
+}

@@ -1,0 +1,81 @@
+from pathlib import Path
+import gzip,hashlib,json,subprocess
+ROOT=Path('/Users/regina/Desktop/Projects/surfing-game')
+OUT=ROOT/'docs/research/performance-2026-10-03/rich-patch-half-metre/v2'
+assert not OUT.exists(),str(OUT)
+OUT.mkdir(parents=True)
+sha=lambda b:hashlib.sha256(b).hexdigest()
+records=[]; aliases=[]
+def add(original,target,scope,expected=None,compress=False):
+ o=Path(original); data=o.read_bytes()
+ if expected: assert sha(data)==expected,(str(o),sha(data),expected)
+ dest=OUT/target; assert not dest.exists(),target
+ dest.parent.mkdir(parents=True,exist_ok=True)
+ stored=gzip.compress(data,mtime=0) if compress else data
+ dest.write_bytes(stored)
+ r={'path':target,'originalPath':str(o),'scope':scope,'originalBytes':len(data),'originalSha256':sha(data),'storedBytes':len(stored),'storedSha256':sha(stored),'encoding':'deterministic-gzip' if compress else ('original-gzip' if o.suffix=='.gz' else 'original-bytes')}
+ if compress or o.suffix=='.gz':
+  raw=gzip.decompress(stored)
+  if compress: assert raw==data
+  r.update(decompressedBytes=len(raw),decompressedSha256=sha(raw))
+ records.append(r); return r
+quality=Path('/private/tmp/rich-patch-quality-v2-20261003')
+held={}; image_by_hash={}
+for v in ['baseline','candidate']:
+ add(quality/(v+'-fps.json'),v+'-fps.json.gz','Valid passive ordinary90, retained complete JSON',compress=True)
+ add(quality/(v+'-adapter-meta.json'),v+'-adapter-meta.json','Exact executed v2 adapter provenance')
+ h=json.loads((quality/(v+'-held/report.json')).read_text()); held[v]=h
+ assert h['valid'] and len(h['frames'])==(8 if v=='baseline' else 4)
+ assert h['qualityAccepted'] is False
+ add(quality/(v+'-held/report.json'),v+'-held-report.json','Complete held invariants/counters/frame original paths; valid guard but quality unaccepted')
+ src=add(quality/(v+'-held/source.json.gz'),v+'-held-source.json.gz','Original lossless complete CPU scene source; GPU-only targets stay uncaptured',h['sourceCompressedSha256'])
+ assert src['decompressedSha256']==h['sourceJsonSha256']
+ for f in h['frames']:
+  original=Path(f['path']); data=original.read_bytes(); digest=sha(data)
+  assert digest==f['pngSha256'] and len(data)==f['bytes']
+  if digest in image_by_hash:
+   prior=image_by_hash[digest]; assert (OUT/prior['path']).read_bytes()==data
+   target=prior['path']; duplicate=True
+  else:
+   target=v+'/'+original.name
+   rec=add(original,target,'Exact native PNG; only unique bytes stored once',digest)
+   image_by_hash[digest]=rec; duplicate=False
+  aliases.append({'variant':v,'view':f['view'],'name':f['name'],'originalPath':str(original),'storedPath':target,'bytes':len(data),'sha256':digest,'deduplicatedToExactBytes':duplicate})
+ for p in h['repeatPairs']: assert p['originalRepeatPngSame'] is True and (p['restorePngSame'] is True if v=='baseline' else p['restorePngSame'] is None)
+ assert h['invariant']['serializedByteParity'] is True
+ assert h['invariant']['serializedBefore']==h['invariant']['serializedAfter']
+ for k in ['allUnownedArrayBytesAndIdentitiesUnchanged','allUnownedSceneGeometryBytesIdentitiesVersionsDrawRangesAndTransformsUnchanged','originalPatchIdentityRestored','originalPatchSignatureRestored','defaultSceneScalarStateRestored']: assert h['invariant'][k] is True
+readiness=Path('/private/tmp/rich-patch-adapter-v2-readiness.json'); prepared=json.loads(readiness.read_text())
+assert prepared['checks']['targetedTests']==11 and prepared['checks']['failures']==0
+add(readiness,'preparation/readiness.json','Original12-record v2 preparation/hash/test authority; pre-run wording preserved')
+readyaliases=[]
+for r in prepared['records']:
+ o=Path(r['path']); assert o.stat().st_size==r['bytes']
+ target='preparation/'+o.name+('.txt' if o.suffix in ['.mjs','.js'] else '')
+ add(o,target,'Exact v2 prepared or installed dependency bytes; no v1 substitution',r['sha256'])
+ readyaliases.append({'originalPath':str(o),'storedPath':target,'sha256':r['sha256']})
+add('/private/tmp/summarize-rich-patch-v2.py','summarize.py','Pure extraction of retained raw stats and ledger guards; no benchmark/replay')
+subprocess.run(['python3',str(OUT/'summarize.py'),str(OUT),str(OUT/'summary.json')],check=True)
+add('/private/tmp/archive-rich-patch-v2.py','archive-v2.py.txt','Archive/hash/dedup implementation; no hardware run')
+for r in records:
+ stored=(OUT/r['path']).read_bytes(); original=Path(r['originalPath']).read_bytes()
+ assert len(stored)==r['storedBytes'] and sha(stored)==r['storedSha256']
+ assert len(original)==r['originalBytes'] and sha(original)==r['originalSha256']
+ if r['encoding']=='deterministic-gzip': assert gzip.decompress(stored)==original
+ else: assert stored==original
+ if 'decompressedSha256' in r:
+  raw=gzip.decompress(stored); assert len(raw)==r['decompressedBytes'] and sha(raw)==r['decompressedSha256']
+for a in aliases:
+ raw=Path(a['originalPath']).read_bytes(); assert raw==(OUT/a['storedPath']).read_bytes() and sha(raw)==a['sha256']
+summary=json.loads((OUT/'summary.json').read_text())
+manifest={'schema':1,'scope':'Executed serial v2 passive90 and two-view actual-renderer held geometry trial; valid guard reports, unaccepted quality/production. V1 records immutable. Archive-only work; no replay/build/GPU.',
+'files':records,'imageAliases':aliases,'readinessAliases':readyaliases,
+'analysisFiles':[{'path':'summary.json','bytes':(OUT/'summary.json').stat().st_size,'sha256':sha((OUT/'summary.json').read_bytes()),'method':'Pure summarize.py from complete retained FPS/held reports'}],
+'deduplication':{'originalPngs':len(aliases),'storedUniquePngs':len(image_by_hash),'duplicateOriginalAliases':sum(a['deduplicatedToExactBytes'] for a in aliases),'allOriginalAliasBytesExact':True},
+'prototypeAuthority':{'manifest':'../prototype/source-manifest.json','patch':'../prototype/half-metre.patch','buildId':'eea68720f','candidateSourceChange':'Spacing0.25 to0.5 only, matching title-only test edit','unchangedOriginalScratch':'/private/tmp/surf-rich-patch-half-metre-20261003','canonical':'/private/tmp/surf-tube-stability-current-20261003','noProductionEdit':True},
+'heldGuard':{'baselineFrames':8,'candidateFrames':4,'baselineSerializedParity':True,'candidateSerializedParity':True,'allMaterialRowsHaveExactExpectedCounterAndPairedOwners':True,'nativeRestoredRepeatAliasesByteExact':True,'candidateOwnedGeometryDisposedFalseMeaning':'N/A: native half remained original; baseline temporary swap resource disposed, bound factory proof resource disposed','qualityAccepted':False},
+'ordinarySummary':{'baselineFreshHz':summary['variants']['baseline']['core']['freshSnapshotsPerSecond'],'candidateFreshHz':summary['variants']['candidate']['core']['freshSnapshotsPerSecond'],'singlePairDeltaHz':summary['singlePairDeltaFreshHz'],'displayFps':[60,60],'notPerformanceAcceptance':True},
+'limitations':summary['limits']+['No GPU-only FFT/caustic/shadow target readback; within-renderer native byte returns are the available presentation repeat evidence.','Baseline heldclock401.074379890966 differs from separately initialized candidate401.324379890966; only baseline quarter/half/return is same-state geometry comparison.','No cavity/air, grazing skirt, broad narrow-grid, moving touchdown or rider lifecycle acceptance.'],
+'verification':{'records':len(records),'allStoredOriginalAndDecompressedHashesValid':True,'all12OriginalImageAliasesExact':True,'readinessRecords':len(prepared['records']),'readinessHashesValid':True,'pureSummaryLedgerChecksPass':True,'proofOriginalsUnchanged':True}}
+(OUT/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+print(json.dumps({'folder':str(OUT),'records':len(records),'storedPngs':len(image_by_hash),'originalImageAliases':len(aliases),'storedBytes':sum(r['storedBytes'] for r in records),'manifestSha256':sha((OUT/'manifest.json').read_bytes())},indent=2))

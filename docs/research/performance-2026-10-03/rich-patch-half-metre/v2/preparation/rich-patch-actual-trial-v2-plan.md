@@ -1,0 +1,28 @@
+# Rich patch spacing trial v2 — exact native material-version accounting
+
+Prepared only; no GPU authority or run. V1 helper/adapter/readiness, original plan, ordinary90 result, raw failure/source and failure screenshot are immutable. V1 ordinary High/Padang Big passed60 display FPS,57.12 fixed physics/fresh snapshots per second and0.952 simulation/wall. Its first default-view held checkpoint failed before any patch swap or successful held PNG. No after-state was retained, so the exact failed row remains unproved. Source inspection identifies a likely counter-only cause: two captured transparent DoubleSide materials had versions11914/11910; installed Three WebGLRenderer.renderObject increments Material.needsUpdate twice for each transparent&&DoubleSide&&forceSinglePass===false color draw. V2 checks that causal counter path rather than dropping version guards.
+
+The trial otherwise retains the reviewed `/private/tmp/rich-patch-actual-trial-plan.md`: immutable canonical4201 and scratch half-metre4210, ordinary High90 s with5 s warmup, unchanged seed8761/T18/C64 and native raster2989×1620, then paused same-loaded-scene factory quarter→half→original→original repeat for actual default and elevated close crest views. Candidate separately runs its ordinary90 and native-half repeats. Intentional tessellation approximation is explicit; no native-quality, cavity, grazing-skirt or lifecycle acceptance claim. Actual native Three classes and factory bytes are proved. GPU-only textures stay in the actual renderer; no replay/reconstruction. All552 scratch source/config files and build/worker provenance checked. Production unchanged.
+
+New tmp files only: `rich-patch-held-helper-v2.mjs`, `rich-patch-passive-adapter-v2.mjs`, matching targeted tests/readiness and derived workdir `rich-patch-passive-adapter-v2`. V1 files and candidate build stay untouched. Output is separately `/private/tmp/rich-patch-quality-v2-20261003`; CDP9543/9544.
+
+Counter contract:
+
+- Capture every actual scene material object, its initial raw version and static transparent/side/forceSinglePass/transmission flags. Positive transmission is explicitly unsupported and rejected; no accounting is inferred for renderTransmissionPass or prepareMaterial.
+- During each held d.renderView, temporarily wrap every existing scene object's onBeforeRender and each captured material's onBeforeRender, calling the original callbacks first. Count only the actual main scene, held camera and actual renderer; shadow/FFT/caustic scenes are excluded. Record actual object, material and group references for every color renderObject event.
+- After original material.onBeforeRender returns, record the flags which the next native renderObject branch tests. They must match the captured flags exactly. Pair object and material callback sequences by actual object/material/group identity, including every owner/group of a shared material. Restore all original callbacks after each render, even on error.
+- Only the observed transparent DoubleSide forceSinglePass=false calls earn exactly2 expected version increments. All other materials earn0. Require actual rawVersion===initialVersion+2×eligibleColorCalls and objectCalls===materialCalls. Any extra setter update from an original callback, shader preparation, reassignment or unknown material fails. No version tolerance or unconditional normalization.
+- Scene scalar guards use initialVersion only after that exact equation passes. Every frame retains rawVersion, expectedRawVersion, normalizedGuardVersion, eligible/color object/material call counts, static branch flags and per-owner counts. Existing material object/member identity, all static flags, uniforms and actual per-material program IDs/source hashes remain strict. Only expected native counters are normalized; source/geometry/transform guards are unchanged.
+
+Failure evidence now records initial full scalar state, raw after scalar state (including all scene IDs/types/material versions/flags/transforms, attribute versions/groups/drawRanges), every recursive difference path/value, all before/after array hashes and full bytes of every changed/added array, and program/counter evidence. Initial source contains every before-array byte. Diagnostics and abort cleanup must fit the remaining original60 s held budget; a deadline closes owned Chrome without additional GPU screenshots. No dropped failure, retry or enlarged budget.
+
+Hardware lifetime remains360 s from owned launcher spawn plus500 ms cleanup; separate derived load/sample/held action bound360 s after launch. Held block60 s including settlement, captures/guards/restoration and any failure diagnostics. Ordinary failure aborts route. Root reviews stable files/hashes before a NEW serial pair; prior valid passive90 is retained separately, not relabeled as a valid held visual.
+
+Proposed commands after exclusive lease:
+
+```
+node /private/tmp/rich-patch-passive-adapter-v2.mjs --variant=baseline --plan=false
+node /private/tmp/rich-patch-passive-adapter-v2.mjs --variant=candidate --plan=false
+```
+
+Targeted CPU tests execute the exact installed native renderObject branch with actual Three Material.needsUpdate setters (no GPU), and the exact injected wrapper/ledger source. Two owners sharing one material produce4 exact increments per render and paired owner counts. Extra callback/preparation updates, changed flags, unknown-owner reassignment and positive transmission fail. The original8 factory/identity/bytes/uniform/restoration/disposal tests remain. Root will decide after11 tests, syntax checks, plan-only branches and exact provenance review. No solver, physics quality, shader or application UI changes.

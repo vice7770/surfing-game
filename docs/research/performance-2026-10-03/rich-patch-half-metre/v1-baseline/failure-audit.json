@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "method": "CPU-only inspection of retained failed baseline; no new state reconstructed, no rerun or source edits.",
+  "ordinary": {
+    "valid": true,
+    "comparisonFailures": [],
+    "renderedFps": 60,
+    "freshSnapshotsPerSecond": 57.12,
+    "physicsStepsPerWallSecond": 57.12,
+    "simulationSecondsPerWallSecond": 0.952,
+    "observed": {
+      "viewport": "1708 \u00d7 926",
+      "browserDpr": 2,
+      "renderPixelRatio": 1.75,
+      "graphics": {
+        "renderScale": 1,
+        "nativePixelDensity": true,
+        "frameLimit": 60,
+        "waterSimulation": "auto",
+        "seaDetail": "rich",
+        "caustics": true,
+        "sprayMist": true,
+        "oceanView": "far",
+        "foam": "detailed",
+        "waterLook": "rich",
+        "particles": "high",
+        "preset": "high"
+      },
+      "waterLook": "rich",
+      "vertexNormals": false,
+      "particleLevel": "high",
+      "renderSpacing": 2,
+      "maxBatchSteps": 1,
+      "workerStart": {
+        "config": {
+          "spot": "padang",
+          "seed": 8761,
+          "significantHeight": 3.8,
+          "peakPeriod": 18,
+          "directionDegrees": 0,
+          "spreading": 150,
+          "tide": 0,
+          "windSpeed": 0,
+          "stage": 2,
+          "compute": "auto",
+          "dx": 2,
+          "fineSpacing": 1,
+          "componentCount": 64
+        },
+        "rider": true,
+        "renderSpacing": null,
+        "renderSpacingValueIsUndefined": true,
+        "renderSpacingHasOwn": true,
+        "barrelCaseCount": 4
+      },
+      "independentMaskSpacing": 1,
+      "patchVertices": 149761,
+      "patchIndices": 893952,
+      "patchIndexType": "Uint32Array",
+      "compute": "gpu",
+      "screen": "ride"
+    }
+  },
+  "held": {
+    "valid": false,
+    "firstFailedView": "default",
+    "successfulFrames": 0,
+    "failure": "Error: Error: Cross-view unowned scene geometry/transforms changed\n    at checkpoint (<anonymous>:191:51)\n    at async Object.setView (<anonymous>:202:117)\n    at Page.eval (file:///Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs:101:33)\n    at async file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:586:44\n    at async bounded (file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:432:85)\n    at async captureHeld (file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:581:7)\n    at async ride (file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:613:3)\n    at async attempt (file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:622:5)\n    at async file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:644:7\n    at async bounded (file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:432:85)\n    at async file:///private/tmp/rich-patch-passive-adapter/derived-baseline.mjs:433:5",
+    "deadlineExpired": false,
+    "geometrySwapsPerformed": 0,
+    "candidateRun": false,
+    "afterFailureSceneRetained": false,
+    "changedObjectIDs": "unknown; only before-state scene retained",
+    "GPUReleased": true,
+    "ownedCDPPort9541": "no listener after owned launcher closed"
+  },
+  "evidence": [
+    {
+      "path": "/private/tmp/rich-patch-quality-20261003/baseline-fps.json",
+      "sha256": "85cfc5a20af78160dc7dc6fdd6fb81b782d098b2b7e0028239a030d1978af5c9",
+      "bytes": 87645
+    },
+    {
+      "path": "/private/tmp/rich-patch-quality-20261003/baseline-held/report.json",
+      "sha256": "b23752bd846fc2b89fb821e9b2bcf6f9c835e331aaa925839bc3e729a95f7b16",
+      "bytes": 5068
+    },
+    {
+      "path": "/private/tmp/rich-patch-quality-20261003/baseline-held/source.json.gz",
+      "sha256": "e5fecacb1bd9646d635dab18443733d6ff91038587d7101c20d8d8a25e801eff",
+      "bytes": 17485636
+    },
+    {
+      "path": "/private/tmp/rich-patch-quality-20261003/baseline-fps-High_baseline_-Ride_Padang.png",
+      "sha256": "e192669a31c57589cd0bd01875a7f793be1e06d8bb84571548ec45b581538b82",
+      "bytes": 3528737
+    }
+  ],
+  "possibleSourceEffectsNotEstablishedCause": [
+    "WaterSurface onBeforeRender places Rich patch from actual render camera (src/scene/WaterSurface.ts:361\u2013362,placePatch:528\u2013538).",
+    "drawPhysical calls deterministic ShadowRig.follow each render; light,target,blob positions update (src/main.ts:978;src/scene/ShadowRig.ts:195\u2013203)."
+  ],
+  "notes": [
+    "No actual changed row can be proved without an after-state; do not infer that a legitimate callback caused failure.",
+    "First setView default failed; close view and half-metre geometry were never drawn. Native factory bytes and initial full source capture passed."
+  ]
+}

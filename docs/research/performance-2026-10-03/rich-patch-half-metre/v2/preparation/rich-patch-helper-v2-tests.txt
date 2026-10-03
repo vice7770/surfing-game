@@ -1,0 +1,19 @@
+✔ reviewed factory body matches retained canonical generator verbatim (0.641584ms)
+✔ actual bound factory quarter and half arrays/metadata equal native production factories (48.587625ms)
+✔ factory proof detects geometry bytes, versions, metadata, topology and added attributes (24.321542ms)
+✔ only actual identified patch normalizes geometry, unowned geometry and transforms remain detectable (2.429042ms)
+✔ per-object material assignment guard catches reassignment and mutable array member replacement (0.407916ms)
+✔ cleanup restores exact original identity and disposes only distinct candidate geometry (0.224917ms)
+✔ cleanup refuses original geometry or original attribute/index sharing before disposal (0.36075ms)
+✔ uniform value guard records actual scalar/vector/texture state and mutable nested numeric values (6.411458ms)
+✔ exact native branch ledger counts both shared owners after actual callbacks and normalizes only2 increments per eligible call (0.750833ms)
+✔ extra material updates from original callbacks or an untracked native preparation path remain failures (0.728708ms)
+✔ counter contract rejects changed flags, unknown shared-owner material and positive transmission (0.270792ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 162.036375

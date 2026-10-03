@@ -3,7 +3,7 @@ import type { SurfaceGrid } from '../WaterSurface';
 
 /** The dense patch drawn where the camera looks (G8): its side and vertex spacing, m. */
 export const PATCH_SIZE = 96;
-export const PATCH_SPACING = 0.5;
+export const PATCH_SPACING = 0.25;
 /** How far the skirt hangs below the surface to hide seams with the coarse water, m. */
 export const PATCH_SKIRT = 0.3;
 

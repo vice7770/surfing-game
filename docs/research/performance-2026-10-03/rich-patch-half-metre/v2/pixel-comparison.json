@@ -1,0 +1,257 @@
+{
+  "schema": 1,
+  "method": "Immutable same-loaded-renderer baseline quarter\u2192half\u2192quarter\u2192quarter-repeat. All PNG checksums verified against the valid held report; no new rendering, replay, simulation or edited image.",
+  "units": "Absolute differences of uint8 RGB channel values in encoded post-render browser PNG,0\u2013255; no conversion to linear radiance.",
+  "percentileDefinition": "Nearest-rank empirical quantile over all absolute RGB channel differences, including zeros; per-pixel maximum RGB difference quantiles separately reported.",
+  "screenshotVsBuffer": "Browser PNG3416\u00d71852 is CSS1708\u00d7926 at browser DPR2; actual unchanged render buffer2989\u00d71620 at renderer ratio1.75. Browser composition/resampling is part of this viewed image.",
+  "qualityInterpretation": "Descriptive only. Any changed pixel is not a quality failure; no acceptance tolerance is imposed. These default/elevated-crest views do not establish grazing-skirt, cavity or moving lifecycle quality.",
+  "authority": {
+    "heldReportPath": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/report.json",
+    "heldReportSha256": "b4ebf747f023c7f3790747bd059fef179f31b1c71cf4ce6253c4e630d76413dd",
+    "scriptPath": "/private/tmp/rich-patch-pixel-diff-v2.py",
+    "scriptSha256": "6bea28be1fdb2c06191bc8f6bc8aa093982a3fed96b3f96e6c4a2d871ae28bb4"
+  },
+  "runtime": {
+    "python": "3.14.4",
+    "pillow": "12.2.0",
+    "numpy": "2.5.1"
+  },
+  "views": [
+    {
+      "view": "default",
+      "inputs": {
+        "nativeQuarter": {
+          "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/default.nativeQuarter.png",
+          "sha256": "f3e36fba31e18e2c96aa7aa68f2e900bd9b4976f48d64684b8701e6aa96c489a",
+          "bytes": 4122027,
+          "dimensions": [
+            3416,
+            1852
+          ]
+        },
+        "half": {
+          "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/default.half.png",
+          "sha256": "1c08be93b85678c619ade2eb2b24ea14d71f12e94e69bf672c7b1867abc2aacd",
+          "bytes": 4122999,
+          "dimensions": [
+            3416,
+            1852
+          ]
+        },
+        "originalRestored": {
+          "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/default.originalRestored.png",
+          "sha256": "f3e36fba31e18e2c96aa7aa68f2e900bd9b4976f48d64684b8701e6aa96c489a",
+          "bytes": 4122027,
+          "dimensions": [
+            3416,
+            1852
+          ]
+        },
+        "originalRepeat": {
+          "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/default.originalRepeat.png",
+          "sha256": "f3e36fba31e18e2c96aa7aa68f2e900bd9b4976f48d64684b8701e6aa96c489a",
+          "bytes": 4122027,
+          "dimensions": [
+            3416,
+            1852
+          ]
+        }
+      },
+      "fullBrowserScreenshot": {
+        "pixels": 6326432,
+        "rgbChannels": 18979296,
+        "absoluteEncodedRGBChannelError": {
+          "max": 26,
+          "mean": 0.03409852504539684,
+          "rms": 0.2865294860114853,
+          "p95": 0,
+          "p99": 1
+        },
+        "perPixelMaximumAbsoluteRGBError": {
+          "max": 26,
+          "p95": 1,
+          "p99": 1
+        },
+        "changedPixels": 381970,
+        "changedPixelPercent": 6.0376844325521875,
+        "changedRGBChannels": 490337,
+        "changedRGBChannelPercent": 2.583536291335569,
+        "changedAlphaPixels": 0
+      },
+      "lowerHalf": {
+        "rectangleXYXY": [
+          0,
+          926,
+          3416,
+          1852
+        ],
+        "interpretation": "Fixed lower half below both observed horizons; water dominated, not a water-pixel classifier. Small rider/particles may be included.",
+        "metrics": {
+          "pixels": 3163216,
+          "rgbChannels": 9489648,
+          "absoluteEncodedRGBChannelError": {
+            "max": 22,
+            "mean": 0.04567819586142711,
+            "rms": 0.36510848642263954,
+            "p95": 0,
+            "p99": 1
+          },
+          "perPixelMaximumAbsoluteRGBError": {
+            "max": 22,
+            "p95": 1,
+            "p99": 1
+          },
+          "changedPixels": 222669,
+          "changedPixelPercent": 7.039323271000146,
+          "changedRGBChannels": 291394,
+          "changedRGBChannelPercent": 3.070651303399241,
+          "changedAlphaPixels": 0
+        }
+      },
+      "returns": [
+        {
+          "name": "originalRestored",
+          "pngByteExact": true,
+          "decodedRGBAExact": true,
+          "allRGBErrorsZero": true
+        },
+        {
+          "name": "originalRepeat",
+          "pngByteExact": true,
+          "decodedRGBAExact": true,
+          "allRGBErrorsZero": true
+        }
+      ],
+      "cameraAndMaterialInvariant": {
+        "serializedBefore": "8380525350ef5aa6c7ed8f801ce485a4c94d0d54d3065bb4193c0a96da38dd6d",
+        "serializedAfter": "8380525350ef5aa6c7ed8f801ce485a4c94d0d54d3065bb4193c0a96da38dd6d",
+        "serializedByteParity": true,
+        "allUnownedArrayBytesAndIdentitiesUnchanged": true,
+        "allUnownedSceneGeometryBytesIdentitiesVersionsDrawRangesAndTransformsUnchanged": true,
+        "originalPatchIdentityRestored": true,
+        "originalPatchSignatureRestored": true,
+        "defaultSceneScalarStateRestored": true,
+        "candidateOwnedGeometryDisposed": true,
+        "seaTime": 401.074379890966
+      }
+    },
+    {
+      "view": "closeCrest",
+      "inputs": {
+        "nativeQuarter": {
+          "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/closeCrest.nativeQuarter.png",
+          "sha256": "af400573e32e0c8b7c13b66b80ac4d2e648c7931298123396248f0bd49ab4cd0",
+          "bytes": 4766753,
+          "dimensions": [
+            3416,
+            1852
+          ]
+        },
+        "half": {
+          "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/closeCrest.half.png",
+          "sha256": "ef1191a46dbcbd211c78f9cb2cb0bda957fa2344b6afe5731dd6c9fe6aa16d20",
+          "bytes": 4768891,
+          "dimensions": [
+            3416,
+            1852
+          ]
+        },
+        "originalRestored": {
+          "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/closeCrest.originalRestored.png",
+          "sha256": "af400573e32e0c8b7c13b66b80ac4d2e648c7931298123396248f0bd49ab4cd0",
+          "bytes": 4766753,
+          "dimensions": [
+            3416,
+            1852
+          ]
+        },
+        "originalRepeat": {
+          "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/closeCrest.originalRepeat.png",
+          "sha256": "af400573e32e0c8b7c13b66b80ac4d2e648c7931298123396248f0bd49ab4cd0",
+          "bytes": 4766753,
+          "dimensions": [
+            3416,
+            1852
+          ]
+        }
+      },
+      "fullBrowserScreenshot": {
+        "pixels": 6326432,
+        "rgbChannels": 18979296,
+        "absoluteEncodedRGBChannelError": {
+          "max": 23,
+          "mean": 0.07833188333223741,
+          "rms": 0.35009499590099463,
+          "p95": 1,
+          "p99": 1
+        },
+        "perPixelMaximumAbsoluteRGBError": {
+          "max": 23,
+          "p95": 1,
+          "p99": 1
+        },
+        "changedPixels": 958312,
+        "changedPixelPercent": 15.147748367484231,
+        "changedRGBChannels": 1299273,
+        "changedRGBChannelPercent": 6.845738640674554,
+        "changedAlphaPixels": 0
+      },
+      "lowerHalf": {
+        "rectangleXYXY": [
+          0,
+          926,
+          3416,
+          1852
+        ],
+        "interpretation": "Fixed lower half below both observed horizons; water dominated, not a water-pixel classifier. Small rider/particles may be included.",
+        "metrics": {
+          "pixels": 3163216,
+          "rgbChannels": 9489648,
+          "absoluteEncodedRGBChannelError": {
+            "max": 23,
+            "mean": 0.08918349763869007,
+            "rms": 0.38678168191522305,
+            "p95": 1,
+            "p99": 1
+          },
+          "perPixelMaximumAbsoluteRGBError": {
+            "max": 23,
+            "p95": 1,
+            "p99": 2
+          },
+          "changedPixels": 523658,
+          "changedPixelPercent": 16.55460771569188,
+          "changedRGBChannels": 718342,
+          "changedRGBChannelPercent": 7.569743366666498,
+          "changedAlphaPixels": 0
+        }
+      },
+      "returns": [
+        {
+          "name": "originalRestored",
+          "pngByteExact": true,
+          "decodedRGBAExact": true,
+          "allRGBErrorsZero": true
+        },
+        {
+          "name": "originalRepeat",
+          "pngByteExact": true,
+          "decodedRGBAExact": true,
+          "allRGBErrorsZero": true
+        }
+      ],
+      "cameraAndMaterialInvariant": {
+        "serializedBefore": "8380525350ef5aa6c7ed8f801ce485a4c94d0d54d3065bb4193c0a96da38dd6d",
+        "serializedAfter": "8380525350ef5aa6c7ed8f801ce485a4c94d0d54d3065bb4193c0a96da38dd6d",
+        "serializedByteParity": true,
+        "allUnownedArrayBytesAndIdentitiesUnchanged": true,
+        "allUnownedSceneGeometryBytesIdentitiesVersionsDrawRangesAndTransformsUnchanged": true,
+        "originalPatchIdentityRestored": true,
+        "originalPatchSignatureRestored": true,
+        "defaultSceneScalarStateRestored": true,
+        "candidateOwnedGeometryDisposed": true,
+        "seaTime": 401.074379890966
+      }
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+from pathlib import Path
+import gzip,hashlib,json,shutil
+ROOT=Path('/Users/regina/Desktop/Projects/surfing-game')
+OUT=ROOT/'docs/research/performance-2026-10-03/rich-patch-half-metre'
+assert not OUT.exists(),f'Refusing existing archive {OUT}'
+OUT.mkdir(parents=True)
+sha=lambda b:hashlib.sha256(b).hexdigest()
+records=[]
+def add(original,target,scope,expected=None,compress=False):
+    original=Path(original); data=original.read_bytes()
+    if expected: assert sha(data)==expected,(str(original),sha(data),expected)
+    dest=OUT/target; assert not dest.exists(),target
+    dest.parent.mkdir(parents=True,exist_ok=True)
+    stored=gzip.compress(data,mtime=0) if compress else data
+    dest.write_bytes(stored)
+    r={'path':target,'originalPath':str(original),'scope':scope,'originalBytes':len(data),'originalSha256':sha(data),'storedBytes':len(stored),'storedSha256':sha(stored),'encoding':'deterministic-gzip' if compress else ('original-gzip' if original.suffix=='.gz' else 'original-bytes')}
+    if compress or original.suffix=='.gz':
+        raw=gzip.decompress(stored)
+        if compress: assert raw==data
+        r.update(decompressedBytes=len(raw),decompressedSha256=sha(raw))
+    assert dest.read_bytes()==stored
+    records.append(r)
+    return r
+quality=Path('/private/tmp/rich-patch-quality-20261003')
+failure=json.loads((quality/'baseline-held/failure-audit.json').read_text())
+for e in failure['evidence']:
+    original=Path(e['path'])
+    targets={
+      'baseline-fps.json':('v1-baseline/fps.json.gz',True),
+      'report.json':('v1-baseline/held-report.json',False),
+      'source.json.gz':('v1-baseline/held-source.json.gz',False),
+      'baseline-fps-High_baseline_-Ride_Padang.png':('v1-baseline/failure-native.png',False)}
+    target,compress=targets[original.name]
+    assert original.stat().st_size==e['bytes']
+    add(original,target,'Valid ordinary baseline followed by held QA failure; no swap/quality frame',e['sha256'],compress)
+add(quality/'baseline-held/failure-audit.json','v1-baseline/failure-audit.json','Read-only post-failure diagnosis, not a cause attribution')
+for name in ['baseline-adapter-meta.json','candidate-adapter-meta.json']:
+    add(quality/name,'v1-baseline/'+name,'Prepared adapter metadata; candidate v1 did not run')
+readiness=Path('/private/tmp/rich-patch-adapter-readiness.json')
+d=json.loads(readiness.read_text())
+add(readiness,'v1-preparation/readiness.json','Prepared syntax/test/plan authority; retained verbatim')
+readiness_aliases=[]
+for r in d['records']:
+    o=Path(r['path']); assert o.stat().st_size==r['bytes']
+    alias='v1-preparation/'+o.name+('.txt' if o.suffix=='.mjs' else '')
+    add(o,alias,'Exact v1 readiness file; no v2 substitution',r['sha256'])
+    readiness_aliases.append({'originalPath':str(o),'archivePath':alias})
+prototype=Path('/private/tmp/surf-rich-patch-half-metre-20261003')
+manifest=json.loads((prototype/'half-metre-manifest.json').read_text())
+add(prototype/'half-metre-manifest.json','prototype/source-manifest.json','Initial prototype source/build/test declarations; pending labels preserved')
+add(prototype/'half-metre.patch','prototype/half-metre.patch','Canonical before/candidate after owned diff',manifest['patch']['sha256'])
+for r in manifest['geometryProofFiles']:
+    o=prototype/r['path']; alias='prototype/'+o.name+('.txt' if o.suffix=='.mjs' else '')
+    add(o,alias,'Initial CPU geometry construction/count authority; no FPS/quality result',r['sha256'])
+add(prototype/'preview-readiness.json','prototype/preview-readiness.json','Initial served-byte readiness; no browser or physics advancement')
+add(prototype/'trial-plan.md','prototype/trial-plan-superseded.md','Superseded generic scene-reconstruction plan; never visual authority',manifest['trialPlan']['sha256'])
+owned=[]
+lookup={r['path']:r for r in manifest['sourceFiles']}
+for path in manifest['ownedFiles']:
+    r=lookup[path]
+    before=prototype/'canonical-owned'/path
+    after=prototype/path
+    suffix='richPatch.test.ts.txt' if path.endswith('.test.ts') else 'richPatch.ts.txt'
+    b=add(before,'prototype/before/'+suffix,'Canonical1bcc owned source bytes',r['canonicalSha256'])
+    a=add(after,'prototype/after/'+suffix,'Initial candidate owned source bytes',r['candidateSha256'])
+    owned.append({'path':path,'beforeOriginalPath':str(before),'afterOriginalPath':str(after),'beforeArchivePath':b['path'],'afterArchivePath':a['path']})
+source_checks=[]
+for r in manifest['sourceFiles']:
+    p=prototype/r['path']; assert sha(p.read_bytes())==r['candidateSha256'],str(p)
+    source_checks.append({'path':str(p),'sha256':r['candidateSha256']})
+build_checks=[]
+for r in manifest['buildAssets']:
+    p=prototype/'dist'/r['path']; raw=p.read_bytes()
+    assert len(raw)==r['bytes'] and sha(raw)==r['sha256'],str(p)
+    build_checks.append({'path':str(p),'bytes':len(raw),'sha256':sha(raw)})
+worker=prototype/'dist'/manifest['physicsWorker']['path']
+assert worker.read_bytes()==Path(manifest['physicsWorker']['canonicalPath']).read_bytes()
+intent=Path('/private/tmp/rich-patch-height-risk-v1-actual-input-intent.json')
+height=Path('/private/tmp/rich-patch-height-risk-from-invalid-held-20261003.json')
+intent_data=json.loads(intent.read_text()); height_data=json.loads(height.read_text())
+for original,target,expected in [
+(intent,'cpu-v1/actual-input-intent.json',None),
+(height,'cpu-v1/height-report.json',None),
+(Path('/private/tmp/rich-patch-height-risk.mjs'),'cpu-v1/kernel.mjs.txt','3650441ce923401b8d961bbdd084171dac7e8418d6345a34c2b4319be03d7795'),
+(Path('/private/tmp/rich-patch-height-risk.test.mjs'),'cpu-v1/kernel.test.mjs.txt','be56dfd7d9534e7e4b2e952afa90ab60fc8440820c4e0c0cec3a0a888a6c3737'),
+(Path('/private/tmp/rich-patch-height-risk-plan.md'),'cpu-v1/plan.md','461933e27e6c26cc0a771d1ff1e0ff14af420f5d005d5f65af44cfc776438b73')]:
+    add(original,target,'CPU/F64 height-only v1 preparation or result on invalid held source; no GPU-quality verdict',expected)
+assert intent_data['sourceSha256']==height_data['result']['authority']['source']['compressedSha256']=='e5fecacb1bd9646d635dab18443733d6ff91038587d7101c20d8d8a25e801eff'
+source_record=next(r for r in records if r['path']=='v1-baseline/held-source.json.gz')
+assert source_record['decompressedSha256']==height_data['result']['authority']['source']['contentSha256']=='f6b1e3f09d41200fef1075aac9572a7c0091bc335ba480709ae010ab11c3e4ea'
+assert intent_data['kernelSha256']==height_data['helperSha256']=='3650441ce923401b8d961bbdd084171dac7e8418d6345a34c2b4319be03d7795'
+add('/private/tmp/patch-half-density-source-audit-20261003.md','source-audit.md','Read-only conditional patch nesting and skirt/overlap proof limits','47f547063f56745cb75a0945405b909569fecde123892a6ae3984c81b89d1c0b')
+add('/private/tmp/archive-rich-patch-v1.py','archive-v1.py.txt','Archive copy/hash verification implementation; no trial or kernel execution')
+# Verify every retained archive/original byte independently after creation.
+for r in records:
+    stored=(OUT/r['path']).read_bytes(); original=Path(r['originalPath']).read_bytes()
+    assert len(stored)==r['storedBytes'] and sha(stored)==r['storedSha256']
+    assert len(original)==r['originalBytes'] and sha(original)==r['originalSha256']
+    if r['encoding']=='deterministic-gzip': assert gzip.decompress(stored)==original
+    else: assert stored==original
+    if 'decompressedSha256' in r:
+        raw=gzip.decompress(stored)
+        assert len(raw)==r['decompressedBytes'] and sha(raw)==r['decompressedSha256']
+archive={
+'schema':1,
+'scope':'V1 baseline ordinary-valid/held-invalid; initial prototype/readiness and CPU/F64 height supplement only. V2 preparation/trial excluded. No production edit, replay, build, tests or GPU run performed while archiving.',
+'files':records,
+'readinessAliases':readiness_aliases,
+'prototypeOwnedBeforeAfter':owned,
+'prototypeSourceVerification':{'records':len(source_checks),'allCandidateHashesMatch':True,'originalDirectory':str(prototype),'authorityArchive':'prototype/source-manifest.json'},
+'prototypeBuildVerification':{'assets':build_checks,'allHashesAndBytesMatch':True,'physicsWorkerByteExactToOriginalCanonical':True,'buildId':manifest['buildId'],'authorityArchive':'prototype/source-manifest.json'},
+'validationClaims':{'scratchTests':manifest['checks'],'v1AdapterChecks':d['checks'],'cpuV1Tests':'7 tests and syntaxcheck passed in original tool transcript; no stdout file retained; not rerun'},
+'v1Result':{'ordinaryValid':True,'heldValid':False,'heldFrames':0,'geometrySwaps':0,'candidateRun':False,'nativeFailureImageArchive':'v1-baseline/failure-native.png'},
+'cpuV1Scope':{'report':'cpu-v1/height-report.json','inputSource':'v1-baseline/held-source.json.gz','heightOnly':True,'heldQualityValid':False,'sampleCount':591361,'deltaMaxMeters':height_data['result']['metrics']['fixedEighthMetreLattice']['delta']['max']['absolute'],'deltaRmsMeters':height_data['result']['metrics']['fixedEighthMetreLattice']['delta']['rms']},
+'missingAuthorityGaps':[
+'No valid held frame, swap, restoration/native repeat or v1 candidate ordinary run occurred.',
+'No after-failure scene snapshot/detailed changed-object diff was captured; legitimate callback effects are possible, not identified cause.',
+'Only original tool/manifest provenance exists for 48-test strict build and seven CPU-v1 tests; separate stdout files were not supplied/retained.',
+'Original GPU-only FFT/caustic/shadow targets are not captured by CPU source; CPU height result cannot prove GPU depth/coverage/material/cavity/foam/skirt quality.',
+'Full initial prototype source/build hashes are preserved and checked, but all552source files and distassets are not duplicated in this archive; original immutable directory plus canonicalcommit remain source authority.',
+'Source vertex nesting is conditional for coarse-grid nodes; arbitrary narrow/clamped grids and fixed skirt/overlap have no universal seam/depth bound.'],
+'verification':{'records':len(records),'allStoredOriginalDecompressedHashesValid':True,'proofOriginalsUnchanged':True,'noReplayTestsBuildOrGPU':True}}
+(OUT/'manifest.json').write_text(json.dumps(archive,indent=2)+'\n')
+print(json.dumps({'archive':str(OUT),'fileRecords':len(records),'storedBytes':sum(r['storedBytes'] for r in records),'candidateSourcesVerified':len(source_checks),'buildAssetsVerified':len(build_checks),'manifestSha256':sha((OUT/'manifest.json').read_bytes())},indent=2))

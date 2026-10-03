@@ -1,0 +1,33 @@
+{
+  "kind": "Root adoption validation from tool transcript, not fabricated stdout",
+  "sourceRuntimeChange": "PATCH_SPACING .25\u2192.5",
+  "sourceTestChange": "quarter-metre title\u2192half-metre",
+  "focusedTests": {
+    "passed": 53,
+    "failed": 0,
+    "files": 6,
+    "commands": [
+      "npm test -- src/scene/water/richPatch.test.ts src/scene/water/cubicSurface.test.ts src/scene/water/tubeCarve.test.ts src/scene/WaterSurface.test.ts src/scene/BarrelSurface.test.ts",
+      "npm test -- src/scene/waterLooks.test.ts src/scene/barrel/SweptBarrel.test.ts"
+    ],
+    "note": "First command matched4existingfiles; BarrelSurface.test.ts does not exist; second matched2. No whole-suite claim."
+  },
+  "build": {
+    "command": "npm run build",
+    "strictTypeScript": "pass",
+    "vite": "pass",
+    "existingWarning": "chunks above500kB",
+    "main": "index-vy6kVXfY.js",
+    "physicsWorkerSha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+  },
+  "rootVisualDecision": {
+    "ordinaryAndElevatedClose": "very similar; no obvious new cracks/facets in selectedviews",
+    "acceptedAs": "simpler reduced drawing/memory workload",
+    "notEstablished": [
+      "meaningful physics FPS gain",
+      "cavity or lifecycle quality",
+      "grazing or all-grid seam parity"
+    ]
+  },
+  "rawTrialQualityAcceptedFlags": "remain false; user-facing adoption decision is separate from raw probe flags"
+}

@@ -1,0 +1,61 @@
+"""One offline comparison of immutable same-renderer A/B/A PNGs; no thresholds or image edits."""
+from pathlib import Path
+import hashlib,json,math,platform
+import numpy as np
+from PIL import Image,__version__ as pillow_version
+BASE=Path('/private/tmp/rich-patch-quality-v2-20261003/baseline-held')
+OUT=BASE/'pixel-comparison.json'
+# Fixed from the original native captures, not chosen from the difference image. Both horizons lie above y926.
+# This is a water-dominated rectangle, not semantic segmentation: default includes the small rider and particles.
+ROI=(0,926,3416,1852)
+def sha(data): return hashlib.sha256(data).hexdigest()
+def image(path,expected_sha):
+    raw=path.read_bytes()
+    if sha(raw)!=expected_sha: raise RuntimeError('Input checksum differs from immutable held report: '+str(path))
+    with Image.open(path) as source:
+        if source.size!=(3416,1852): raise RuntimeError('Unexpected native browser screenshot dimensions')
+        return np.array(source.convert('RGBA'),dtype=np.uint8),{'path':str(path),'sha256':sha(raw),'bytes':len(raw),'dimensions':list(source.size)}
+def histogram(values): return np.bincount(values.reshape(-1),minlength=256)
+def quantile(hist,q): return int(np.searchsorted(np.cumsum(hist),math.ceil(q*int(hist.sum())),side='left'))
+def metrics(a,b):
+    delta=np.abs(a[:,:,:3].astype(np.int16)-b[:,:,:3].astype(np.int16)).astype(np.uint8)
+    hist=histogram(delta);n=int(hist.sum());levels=np.arange(256,dtype=np.float64)
+    maximum=delta.max(axis=2);pixel_hist=histogram(maximum)
+    changed_channels=int(n-hist[0]);changed_pixels=int(maximum.size-pixel_hist[0])
+    return {'pixels':int(maximum.size),'rgbChannels':n,'absoluteEncodedRGBChannelError':{
+        'max':int(np.flatnonzero(hist)[-1]),'mean':float(np.dot(hist,levels)/n),
+        'rms':float(math.sqrt(float(np.dot(hist,levels*levels))/n)),
+        'p95':quantile(hist,.95),'p99':quantile(hist,.99)},
+        'perPixelMaximumAbsoluteRGBError':{'max':int(maximum.max()),'p95':quantile(pixel_hist,.95),'p99':quantile(pixel_hist,.99)},
+        'changedPixels':changed_pixels,'changedPixelPercent':100*changed_pixels/maximum.size,
+        'changedRGBChannels':changed_channels,'changedRGBChannelPercent':100*changed_channels/n,
+        'changedAlphaPixels':int(np.count_nonzero(a[:,:,3]!=b[:,:,3]))}
+report_path=BASE/'report.json';report_bytes=report_path.read_bytes();held=json.loads(report_bytes)
+if not held['valid']: raise RuntimeError('Requires a valid held report')
+views=[]
+for view in ['default','closeCrest']:
+    frames={r['name']:r for r in held['frames'] if r['view']==view}
+    loaded={name:image(Path(row['path']),row['pngSha256']) for name,row in frames.items()}
+    original=loaded['nativeQuarter'][0];half=loaded['half'][0]
+    x0,y0,x1,y1=ROI
+    returns=[]
+    for name in ['originalRestored','originalRepeat']:
+        restored=loaded[name][0]
+        byte_same=loaded[name][1]['sha256']==loaded['nativeQuarter'][1]['sha256']
+        rgba_same=bool(np.array_equal(original,restored))
+        if not byte_same or not rgba_same: raise RuntimeError('Original geometry return/repeat must be exactly equal')
+        returns.append({'name':name,'pngByteExact':byte_same,'decodedRGBAExact':rgba_same,'allRGBErrorsZero':True})
+    views.append({'view':view,'inputs':{name:row[1] for name,row in loaded.items()},
+        'fullBrowserScreenshot':metrics(original,half),
+        'lowerHalf':{'rectangleXYXY':list(ROI),'interpretation':'Fixed lower half below both observed horizons; water dominated, not a water-pixel classifier. Small rider/particles may be included.',
+                     'metrics':metrics(original[y0:y1,x0:x1],half[y0:y1,x0:x1])},
+        'returns':returns,'cameraAndMaterialInvariant':held['invariant']})
+result={'schema':1,'method':'Immutable same-loaded-renderer baseline quarter→half→quarter→quarter-repeat. All PNG checksums verified against the valid held report; no new rendering, replay, simulation or edited image.',
+    'units':'Absolute differences of uint8 RGB channel values in encoded post-render browser PNG,0–255; no conversion to linear radiance.',
+    'percentileDefinition':'Nearest-rank empirical quantile over all absolute RGB channel differences, including zeros; per-pixel maximum RGB difference quantiles separately reported.',
+    'screenshotVsBuffer':'Browser PNG3416×1852 is CSS1708×926 at browser DPR2; actual unchanged render buffer2989×1620 at renderer ratio1.75. Browser composition/resampling is part of this viewed image.',
+    'qualityInterpretation':'Descriptive only. Any changed pixel is not a quality failure; no acceptance tolerance is imposed. These default/elevated-crest views do not establish grazing-skirt, cavity or moving lifecycle quality.',
+    'authority':{'heldReportPath':str(report_path),'heldReportSha256':sha(report_bytes),'scriptPath':str(Path(__file__).resolve()),'scriptSha256':sha(Path(__file__).read_bytes())},
+    'runtime':{'python':platform.python_version(),'pillow':pillow_version,'numpy':np.__version__},'views':views}
+OUT.write_text(json.dumps(result,indent=2)+'\n')
+print(json.dumps({'resultPath':str(OUT),'sha256':sha(OUT.read_bytes()),'views':[{k:r[k] for k in ['view','fullBrowserScreenshot','lowerHalf','returns']} for r in views]},indent=2))

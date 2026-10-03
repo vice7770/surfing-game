@@ -1,0 +1,99 @@
+import { BufferGeometry, Float32BufferAttribute } from "three";
+//#region canonical-owned/src/scene/water/richPatch.ts
+/** The dense patch drawn where the camera looks (G8): its side and vertex spacing, m. */
+const PATCH_SIZE = 96;
+const PATCH_SPACING = .25;
+/** How far the skirt hangs below the surface to hide seams with the coarse water, m. */
+const PATCH_SKIRT = .3;
+/** Rich vertex pars: the patch's skirt and flag. */
+const richPatchVertexPars = `
+attribute float skirt;
+attribute float onPatch;
+varying float vPatch;
+varying float vWaterSkirt;
+`;
+/** Rich fragment pars and the coarse water's discard under the patch (inset half a metre so the two overlap). */
+const richPatchFragmentPars = `
+uniform vec4 waterPatchRect;
+uniform float waterPatchActive;
+varying float vPatch;
+varying float vWaterSkirt;
+`;
+const richPatchDiscard = `
+// The skirt's inner faces only show from below, as a curtain hanging under the surface.
+if ( vWaterSkirt > 0.001 && !gl_FrontFacing ) discard;
+if ( vPatch < 0.5 && waterPatchActive > 0.5
+  && all( greaterThan( vWaterWorld.xz, waterPatchRect.xy + 0.5 ) ) && all( lessThan( vWaterWorld.xz, waterPatchRect.zw - 0.5 ) ) ) discard;
+`;
+/**
+* Where the dense patch goes: centred 0.3 of its size ahead of the camera
+* along its ground direction, its corner on a render node (so its vertices
+* include every node), and kept inside the grid (narrowed to a grid smaller
+* than it).
+*/
+function patchRect(camera, grid, size = 96) {
+	const extentX = (grid.nx - 1) * grid.spacing;
+	const extentZ = (grid.nz - 1) * grid.spacing;
+	const width = Math.min(size, extentX);
+	const depth = Math.min(size, extentZ);
+	const length = Math.hypot(camera.dirX, camera.dirZ) || 1;
+	const centreX = camera.x + camera.dirX / length * .3 * size;
+	const centreZ = camera.z + camera.dirZ / length * .3 * size;
+	const snap = (value, origin) => origin + Math.round((value - origin) / grid.spacing) * grid.spacing;
+	const clamp = (value, low, high) => Math.min(high, Math.max(low, value));
+	const x0 = clamp(snap(centreX - width / 2, grid.xMin), grid.xMin, grid.xMin + extentX - width);
+	const z0 = clamp(snap(centreZ - depth / 2, grid.zMin), grid.zMin, grid.zMin + extentZ - depth);
+	return {
+		x0,
+		z0,
+		x1: x0 + width,
+		z1: z0 + depth
+	};
+}
+/**
+* A flat `size` × `size` grid in xz, centred on the origin, at `spacing`,
+* facing up, and a skirt: the rim again with `skirt` = 1, which the vertex
+* shader hangs below the surface, joined to the rim by outward-facing quads.
+*/
+function createPatchGeometry(size, spacing) {
+	const n = Math.round(size / spacing) + 1;
+	const positions = [];
+	const skirt = [];
+	const indices = [];
+	for (let j = 0; j < n; j += 1) for (let i = 0; i < n; i += 1) {
+		positions.push(-size / 2 + i * spacing, 0, -size / 2 + j * spacing);
+		skirt.push(0);
+	}
+	for (let j = 0; j < n - 1; j += 1) for (let i = 0; i < n - 1; i += 1) {
+		const a = j * n + i;
+		const b = a + 1;
+		const c = a + n;
+		const d = c + 1;
+		indices.push(a, c, b, b, c, d);
+	}
+	const rim = [];
+	for (let i = 0; i < n - 1; i += 1) rim.push(i);
+	for (let j = 0; j < n - 1; j += 1) rim.push(j * n + n - 1);
+	for (let i = n - 1; i > 0; i -= 1) rim.push((n - 1) * n + i);
+	for (let j = n - 1; j > 0; j -= 1) rim.push(j * n);
+	const first = n * n;
+	rim.forEach((top) => {
+		positions.push(positions[top * 3], 0, positions[top * 3 + 2]);
+		skirt.push(1);
+	});
+	for (let k = 0; k < rim.length; k += 1) {
+		const top = rim[k];
+		const nextTop = rim[(k + 1) % rim.length];
+		const bottom = first + k;
+		const nextBottom = first + (k + 1) % rim.length;
+		indices.push(top, nextTop, bottom, nextTop, nextBottom, bottom);
+	}
+	const geometry = new BufferGeometry();
+	geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
+	geometry.setAttribute("skirt", new Float32BufferAttribute(skirt, 1));
+	geometry.setAttribute("onPatch", new Float32BufferAttribute(new Float32Array(skirt.length).fill(1), 1));
+	geometry.setIndex(indices);
+	return geometry;
+}
+//#endregion
+export { PATCH_SIZE, PATCH_SKIRT, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars };
