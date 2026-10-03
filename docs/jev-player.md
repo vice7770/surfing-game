@@ -49,4 +49,18 @@ About 460–600 input tokens a call (the API's own overhead is most of it: a one
 
 ## Results
 
-See the table below (each run: Canyon, Practice swell, 4 min of sea at most, stopping at the first catch).
+Measured 2026-10-03 on an M5 Pro, at the commit that added this page. Each run: the Canyon, the Practice swell (Hs 1.4 m, Tp 12 s), the pocket reflex on (the game's default there), 4 min of sea at most, stopping at the first catch. A stand converts when its ride lasts 3 s or more.
+
+| Pilot | Reaction | Seeds caught | Stands → rides ≥ 3 s | The catches |
+|---|---|---:|---:|---|
+| Jev | each call's own (p50 266–283 ms) | 3 of 4 | 10 → 3 | 4.7 s / 31 m at 63.7 s; 3.5 s / 27 m at 51.3 s; none in 4 min; 5.5 s / 36 m at 194.3 s |
+| Jev | none (lockstep) | 2 of 4 | 5 → 2 | 4.9 s / 32 m at 51.3 s; none; 4.5 s / 22 m at 14.0 s; none |
+| Dev autopilot, S-turns | none | 4 of 4 | 5 → 4 | 3.7 s at 49.0 s; 4.5 s at 18.0 s; 5.1 s at 15.0 s; 3.9 s at 26.3 s |
+| Jev, the film (in the page) | each call's own (p50 329 ms) | 1 of 1 | 4 pop-ups | 4.3 s / 27 m, top 10.7 m/s, at 0.9 min |
+
+A call costs about 490 input tokens; a 4-minute session about $0.05. What the runs taught, in order of how much each moved the catch rate:
+
+1. **A plan made while popping up must not steer a rider who has just stood.** Before, the line from a look taken during the landing hit the moment the feet came down, a full lean at the lip: the balance went from 0.77 to 0.02 in 0.8 s. Holding the lean until a look taken standing lands, and a gentler lean, took Jev from 1 seed of 4 to 3.
+2. **The open face's side has to be held for the ride.** The curl the gauge sees jumps between crests; with the side read fresh at each look, consecutive plans asked for opposite rails and the lean flipped from one to the other every tenth of a second.
+3. **The reaction time mattered most before those two fixes:** with them, lockstep (no reaction at all) caught no more often than a human's ~270 ms. Every take-off is late anyway: the prompt lights with the board high on the face, and most stands begin "at the lip" with the balance already wobbling, whoever reacts.
+4. **Where Jev still loses to the script:** riding. The dev autopilot drops straight down crouched and turns hard at the bottom, and converts 4 stands in 5; Jev converts about 1 in 3. A bottom-turn option, asked low on the face, is the next thing to try.
