@@ -2,7 +2,6 @@ import { smoothstep } from '../../wave/Bathymetry';
 
 /** How far the foam lace is stretched along the current into streaks up a steep face (G8). */
 export const STREAK_STRETCH = 7;
-export const STREAK_OPACITY = 0.55;
 /** The foam over which streaks fade in: the physics leaves 0.005–0.05 on its steep faces. */
 const STREAK_FOAM = [0.005, 0.05] as const;
 /** The surface slope over which streaks fade in: the practice faces peak near 0.5. */
@@ -56,12 +55,13 @@ export function streakMask(steepness: number, foam: number): number {
  * of the four anchors around a pixel turns them with the current at the
  * anchor. Needs `foamPatternPars`, the height pars (`waterGrid`,
  * `waterGridSize`) and `waterTime`; fades out once a pixel spans a lace cell
- * (the tile has no mipmaps).
+ * (the tile has no mipmaps). It returns the lines' coverage: how faint a streak
+ * is belongs to the foam layer's reflectance (a bubble monolayer, 0.10), no
+ * longer to a hand opacity of 0.55.
  */
 export const waterStreakPars = /* glsl */ `
 uniform sampler2D waterFlow;
 const float STREAK_STRETCH = ${STREAK_STRETCH.toFixed(3)};
-const float STREAK_OPACITY = ${STREAK_OPACITY.toFixed(3)};
 const float STREAK_ANCHOR = ${STREAK_ANCHOR.toFixed(3)};
 vec2 waterStreakCurrent( vec2 anchor ) {
   ivec2 c = clamp( ivec2( floor( ( anchor - waterGrid.xy ) / waterGrid.z + 0.5 ) ), ivec2( 0 ), ivec2( waterGridSize ) - 1 );
@@ -95,6 +95,6 @@ float waterStreak( vec2 p, vec2 flow, float steepness, float foam ) {
     vec2 along = waterStreakCurrent( anchor );
     lines += weights.x * weights.y * ( w * waterStreakLines( pa, anchor, along ) + ( 1.0 - w ) * waterStreakLines( pb, anchor, along ) );
   }
-  return STREAK_OPACITY * lines * mask;
+  return lines * mask;
 }
 `;
