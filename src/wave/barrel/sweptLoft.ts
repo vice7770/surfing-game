@@ -3,9 +3,9 @@ import { GRAVITY } from '../dispersion';
 import { BARREL_SPOTS } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
-import { NO_CHORD, SHEET, THROAT, polylineChords, sheetTablesLookup, throatViews, type SheetLookup } from './lipSheet';
+import { NO_CHORD, SHEET, THROAT, mouthSkyShare, polylineChords, sheetTablesLookup, throatEase, throatViews, type SheetLookup } from './lipSheet';
 
-export { NO_CHORD, SHEET, THROAT, arcView, polylineChords, sheetAcross, throatViews, tubeSkyView } from './lipSheet';
+export { NO_CHORD, SHEET, THROAT, arcView, mouthSkyShare, polylineChords, sheetAcross, throatEase, throatViews, tubeSkyView } from './lipSheet';
 
 /**
  * The swept loft's constants (the Padang Padang spec, Part B, PR 3; docs/research/water-physics/swept-barrel-build.md,
@@ -178,6 +178,12 @@ export interface LoftResult {
   sliceTipY: Float32Array;
   sliceTipZ: Float32Array;
   sliceMouth: Float32Array;
+  /**
+   * Per slice, the lip's thickness at its root, m: across the sheet where it starts to be one, next to the crest
+   * (`THROAT.root`); the sun's path through the lip runs from 0 at the tip to this at the root (the Rich throat's shadow,
+   * look-fix round 1). 0 before the underside forms. Drawn lofts only; a loft made by hand may leave it out.
+   */
+  sliceLipRoot?: Float32Array;
 }
 
 export interface LoftOptions {
@@ -321,7 +327,7 @@ export class SweptLoft {
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
       sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices),
       sliceFormed: new Float32Array(slices), sliceTipX: new Float32Array(slices), sliceTipY: new Float32Array(slices), sliceTipZ: new Float32Array(slices),
-      sliceMouth: new Float32Array(slices),
+      sliceMouth: new Float32Array(slices), sliceLipRoot: new Float32Array(slices),
     };
   }
 
@@ -673,6 +679,7 @@ export class SweptLoft {
           lipThickness /= THROAT.thicknessTo - THROAT.thicknessFrom + 1;
         }
       }
+      r.sliceLipRoot![r.sliceCount] = formed > 0 ? this.sheets.across[THROAT.root] : 0;
       const chorded = this.measureSheet && w > 0;
       const slice = r.sliceCount;
       r.sliceFormed[slice] = formed;
@@ -864,7 +871,40 @@ export class SweptLoft {
       if (!(r.sliceFormed[s] > 0)) open = r.sliceSigma[s];
       if (r.sliceFormed[s] > 0) r.sliceMouth[s] = Math.min(r.sliceMouth[s], open - r.sliceSigma[s]);
     }
+    if (this.measureSheet) this.throatNearMouth(firstSlice, lastSlice);
     for (let s = firstSlice; s < lastSlice; s += 1) r.sliceJoined[s] = 1;
+  }
+
+  /**
+   * The dark throat near its tube's mouth (the advisor's rulings, 2026-10-01: a dark throat with a mirrored mouth; look-fix
+   * round 1): the inner face sees, besides the opening in its slice's plane, the tube's open end along the crest, so of the
+   * sky the opening and the lip leave it, F_w' = F_w + (1 − F_w − F_l) · ½ (1 − d / √(d² + R²)) (`mouthSkyShare`), d the
+   * slice's distance to the mouth, R half its tip-to-throat distance; and the throat's weight eases in from 0 at the last
+   * slice with an underside to 1 a slice spacing in (`throatEase`), so the dark never stops at a wall where the tube ends.
+   * The run's slices, in place.
+   */
+  private throatNearMouth(firstSlice: number, lastSlice: number): void {
+    const r = this.result;
+    const { positions: p, throat } = r;
+    for (let s = firstSlice; s <= lastSlice; s += 1) {
+      if (!(r.sliceFormed[s] > 0)) continue;
+      const tip = 3 * (s * LOFT_SAMPLES + E + LANDMARK.lip);
+      const back = 3 * (s * LOFT_SAMPLES + E + LANDMARK.throat);
+      const dx = p[tip] - p[back];
+      const dy = p[tip + 1] - p[back + 1];
+      const dz = p[tip + 2] - p[back + 2];
+      const share = mouthSkyShare(r.sliceMouth[s], 0.5 * Math.sqrt(dx * dx + dy * dy + dz * dz));
+      // The spacing to this slice's neighbours, the larger: a refined stretch's quarter metre or the base half.
+      const before = s > firstSlice ? r.sliceSigma[s] - r.sliceSigma[s - 1] : 0;
+      const after = s < lastSlice ? r.sliceSigma[s + 1] - r.sliceSigma[s] : 0;
+      const ease = throatEase(r.sliceMouth[s], Math.max(before, after, 1e-6));
+      for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+        const v = 4 * (s * LOFT_SAMPLES + j);
+        if (!(throat[v + 3] > 0)) continue;
+        throat[v] += Math.max(0, 1 - throat[v] - throat[v + 1]) * share;
+        throat[v + 3] *= ease;
+      }
+    }
   }
 
   /**

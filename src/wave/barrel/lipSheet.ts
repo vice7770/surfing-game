@@ -23,9 +23,10 @@ export const SHEET = { ramp: 3, formed: 0.035 } as const;
 /**
  * The dark throat's lip (the Rich look; the advisor's rulings, 2026-10-01): the profile points over whose sheet the lip's
  * mean thickness is taken, for the light it lets through onto the inner face (the outer run's middle, clear of the
- * crest's root and the tip) [provisional].
+ * crest's root and the tip) [provisional]; and `root`, the point where the sheet's weight comes in full next to the
+ * crest (`SHEET.ramp`), whose thickness is the lip's at its root for the sun's path through it (look-fix round 1).
  */
-export const THROAT = { thicknessFrom: 40, thicknessTo: 60 } as const;
+export const THROAT = { thicknessFrom: 40, thicknessTo: 60, root: LANDMARK.crest + SHEET.ramp + 1 } as const;
 
 /**
  * The view factor, in the slice's plane, of the directions sweeping counter-clockwise from (ax, ay) to (bx, by) (under
@@ -241,6 +242,28 @@ function chordAt(line: Float32Array, n: number, i: number, out: Float32Array): v
 export function polylineChords(line: Float32Array, n: number, out: Float32Array): void {
   fileChordSegments(line, n);
   for (let i = 0; i < n; i += 1) chordAt(line, n, i, out);
+}
+
+/**
+ * The share of what a tube's inner face still sees of the sky that the tube's open end along the crest gives it (the
+ * advisor's ruling, 2026-10-01: the dark throat with a mirrored mouth; look-fix round 1): from a slice `d` m along the crest
+ * from its mouth, in a tube `2R` across (R half its tip-to-throat distance), the view factor of the mouth's disk from a
+ * point d along its axis, ½ (1 − d / √(d² + R²)) [provisional: the point-to-disk view factor stands for the mouth's
+ * share]. Only + − × ÷ √.
+ */
+export function mouthSkyShare(d: number, radius: number): number {
+  const reach = Math.sqrt(d * d + radius * radius);
+  return reach > 0 ? 0.5 * (1 - d / reach) : 0;
+}
+
+/**
+ * How far the throat's darkening is in a slice `d` m from its tube's mouth, at slice spacing `spacing` (look-fix round 1):
+ * 0 at the last slice with an underside, one spacing from the mouth, to 1 a spacing further in (smoothstep), so the dark
+ * eases in from the tube's end rather than stopping at it [provisional].
+ */
+export function throatEase(d: number, spacing: number): number {
+  const t = Math.min(1, Math.max(0, d / spacing - 1));
+  return t * t * (3 - 2 * t);
 }
 
 /** Where `acrossTo` found the other side: the segment's first point, and how far along it. */

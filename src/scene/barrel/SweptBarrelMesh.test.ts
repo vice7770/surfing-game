@@ -160,11 +160,12 @@ describe('the swept barrel’s mesh', () => {
     // The throat: once the sky's light and reflections are gathered (and the reflection scaled), before they light it;
     // the sun through the lip where its direction doesn't leave the tube, red first, and no glint.
     expect(fragment).toContain(RICH_THROAT);
-    expect(fragment).toContain('bool sweptLeaves( vec3 direction, vec2 tip ) {');
-    expect(RICH_THROAT).toContain('if ( !sweptLeaves( waterSunDirection, sweptTip ) ) {');
-    expect(RICH_THROAT).toContain('float sweptSlant = vSweptThroat.z / max( 0.2, abs( dot( vSweptRay.zw, sweptSun ) ) );');
-    expect(RICH_THROAT).toContain('reflectedLight.directDiffuse *= mix( vec3( 1.0 ), exp( -waterAttenuation * sweptSlant ), vSweptThroat.w );');
-    expect(RICH_THROAT).toContain('reflectedLight.directSpecular *= 1.0 - vSweptThroat.w;');
+    // The sun through the lip where its own ray crosses it, from 0 at the tip to the root's thickness, glint and all, out
+    // of the mouth unshadowed (look-fix round 1: this replaced a cut at the tip's direction and the lip's mean thickness).
+    expect(fragment).toContain('float sweptLipCrossing( vec2 tip, vec2 root, vec2 direction ) {');
+    expect(RICH_THROAT).toContain('float sweptSlant = sweptCrossing * vSweptCrest.w / max( 0.2, abs( dot( vSweptRay.zw, sweptSun ) ) );');
+    expect(RICH_THROAT).toContain('vec3 sweptSunThrough = mix( vec3( 1.0 ), exp( -waterAttenuation * sweptSlant ), vSweptThroat.w * ( 1.0 - sweptMouthShare( waterSunDirection, sweptTip ) ) );');
+    expect(RICH_THROAT).toContain('reflectedLight.directSpecular *= sweptSunThrough;');
     expect(fragment.indexOf(RICH_THROAT)).toBeGreaterThan(fragment.indexOf('radiance *= waterReflection;'));
     expect(fragment.indexOf(RICH_THROAT)).toBeLessThan(fragment.indexOf('#include <lights_fragment_end>'));
     expect(swept.mesh.material.customProgramCacheKey()).toBe('breakline-swept-barrel-rich');
