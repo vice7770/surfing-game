@@ -17,6 +17,8 @@ import { WaterSurface, waterFragmentPars, type SurfaceSource } from '../WaterSur
 import { REST_NORMAL, SWEPT_CHORD_LIGHT, SweptBarrelMesh, waterTriangle } from './SweptBarrelMesh';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
+/** The water's lace in both looks' foam blocks, which the curl maps on its face where lifted. */
+const FOAM_COVER_CALL = 'waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) )';
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
 function compiled(material: { onBeforeCompile: (shader: WebGLProgramParametersWithUniforms, renderer: never) => void }) {
   const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader } as unknown as WebGLProgramParametersWithUniforms;
@@ -66,7 +68,8 @@ describe('the curl where it rests on the water (look-fix round 1)', () => {
     swept.setLook('rich');
     const { vertex, fragment } = compiled(swept.mesh.material);
     expect(vertex).toContain('vWaterAir = ( 1.0 - sweptLift ) * waterAerationAt( position.xz ).x;');
-    expect(fragment).toContain(RICH_FOAM);
+    // The water's own foam, its lace on the curl's own map where lifted (the face's).
+    expect(fragment).toContain(RICH_FOAM.replace(FOAM_COVER_CALL, 'sweptFoamCover( waterFootprint )'));
     // The water's relief, from its own normal chunk: the chop, the ripples on the current, the churn's clumps.
     const relief = richNormalFragment({ ripples: true, churn: true });
     for (const line of ['waterSlope += waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime );', 'waterSlope += waterRippleSlopeAt( vWaterWorld.xz, vWaterFlow );', 'waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, vWaterFlow );']) {
@@ -88,8 +91,10 @@ describe('the curl where it rests on the water (look-fix round 1)', () => {
   it('in the Classic look, shades it with the water’s own Classic chunks and its own triangles', () => {
     const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
     const { fragment } = compiled(swept.mesh.material);
-    expect(fragment).toContain(CLASSIC_FOAM);
-    expect(fragment).toContain(waterChopNormal.replace('#include <normal_fragment_begin>\n', ''));
+    expect(fragment).toContain(CLASSIC_FOAM.replace(FOAM_COVER_CALL, 'sweptFoamCover( waterFootprint )'));
+    // The water's chop, faded where the curl stands up.
+    expect(fragment).toContain(waterChopNormal.replace('#include <normal_fragment_begin>\n', '').split('vec2 chopSlope = ')[0]);
+    expect(fragment).toContain('vec3 chopNormal = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );');
     expect(fragment).toContain('sweptWaterTriangleNormal = sweptW.x * sweptNodeNormal( sweptA ) + sweptW.y * sweptNodeNormal( sweptB ) + sweptW.z * sweptNodeNormal( sweptC );');
   });
 
