@@ -193,9 +193,20 @@ export function sampleFoamField(u: number, v: number, channel: 2 | 3): number {
 
 const UINT = 4294967296;
 
-/** The hex-tiled Gaussian pair (early, late) at tile coordinates (qx, qz): the three corners of the triangle holding it, each a random turn and shift of the texture, blended in squares. */
-export function foamHexGauss(qx: number, qz: number, salt: number): [number, number] {
-  // The triangular lattice of edge 1, in skewed coordinates.
+/**
+ * One byte channel of the texture at (u, v) tiles, turned and shifted by a hash (hx, hz) as each hex corner and each streak
+ * anchor reads it: turned by the hash of the hash (swapped, each half xor 0x9e3779b9), shifted by the hash over 2^32.
+ */
+export function foamTurnedSample(u: number, v: number, hx: number, hz: number, channel: 2 | 3): number {
+  const [angle] = pcg2d((hz ^ 0x9e3779b9) >>> 0, (hx ^ 0x9e3779b9) >>> 0);
+  const turn = (2 * Math.PI * angle) / UINT;
+  const c = Math.cos(turn);
+  const s = Math.sin(turn);
+  return sampleFoamField(c * u - s * v + hx / UINT, s * u + c * v + hz / UINT, channel);
+}
+
+/** The corners of the triangle of the lattice of edge 1 (skewed coordinates, as `waterFoamHex`) holding (qx, qz), and their barycentric weights. */
+export function hexCorners(qx: number, qz: number): { corner: [number, number]; weight: number }[] {
   const sx = qx - qz * 0.5773502692;
   const sz = qz * 1.1547005384;
   const cx = Math.floor(sx);
@@ -205,22 +216,22 @@ export function foamHexGauss(qx: number, qz: number, salt: number): [number, num
   const up = fx + fz >= 1 ? 1 : 0;
   const corners: [number, number][] = [[cx + up, cz + up], [cx + 1, cz], [cx, cz + 1]];
   const raw = up ? [fx + fz - 1, 1 - fz, 1 - fx] : [1 - fx - fz, fx, fz];
-  const cubed = raw.map((w) => w ** FOAM_HEX_POWER);
+  return corners.map((corner, index) => ({ corner, weight: raw[index] }));
+}
+
+/** The hex-tiled Gaussian pair (early, late) at tile coordinates (qx, qz): the three corners of the triangle holding it, each a random turn and shift of the texture, blended in squares. */
+export function foamHexGauss(qx: number, qz: number, salt: number): [number, number] {
+  const corners = hexCorners(qx, qz);
+  const cubed = corners.map(({ weight }) => weight ** FOAM_HEX_POWER);
   const total = cubed[0] + cubed[1] + cubed[2];
   let early = 0;
   let late = 0;
   let squares = 0;
-  corners.forEach(([vx, vz], index) => {
+  corners.forEach(({ corner: [vx, vz] }, index) => {
     const weight = cubed[index] / total;
     const [hx, hz] = pcg2d((vx + 1024 + salt) >>> 0, (vz + 1024 + salt) >>> 0);
-    const [angle] = pcg2d((hz ^ 0x9e3779b9) >>> 0, (hx ^ 0x9e3779b9) >>> 0);
-    const turn = (2 * Math.PI * angle) / UINT;
-    const c = Math.cos(turn);
-    const s = Math.sin(turn);
-    const u = c * qx - s * qz + hx / UINT;
-    const v = s * qx + c * qz + hz / UINT;
-    early += weight * sampleFoamField(u, v, 2);
-    late += weight * sampleFoamField(u, v, 3);
+    early += weight * foamTurnedSample(qx, qz, hx, hz, 2);
+    late += weight * foamTurnedSample(qx, qz, hx, hz, 3);
     squares += weight * weight;
   });
   const norm = 1 / Math.sqrt(squares);
@@ -410,8 +421,11 @@ vec2 waterFoamField( vec2 p, vec2 flow, float foam, float age, float footprint )
   float fade = smoothstep( ${FOAM_FADE[0].toFixed(3)}, ${FOAM_FADE[1].toFixed(3)}, footprint );
   return mix( vec2( smoothstep( t - width, t + width, blend ), smoothstep( 0.0, ${FOAM_THICK.toFixed(3)}, blend - t ) ), vec2( foam, 1.0 ), fade );
 }
-// The streaks' sample of the late stage, in sigma (declared in waterStreakPars, which the water's program lists first).
-float waterStreakField( vec2 frame, vec2 dx, vec2 dy ) {
-  return ( 2.0 * textureGrad( waterChurnMap, frame, dx, dy ).a - 1.0 ) * FOAM_RANGE;
+// The streaks' sample of the late stage at frame (tiles), in sigma, turned and shifted by an anchor's hash h as a hex corner's
+// sample is (declared in waterStreakPars, which the water's program lists first).
+float waterStreakField( vec2 frame, vec2 dx, vec2 dy, uvec2 h ) {
+  float turn = 6.2831853 * float( waterFoamPcg( h.yx ^ 0x9e3779b9u ).x ) / 4294967296.0;
+  mat2 r = mat2( cos( turn ), sin( turn ), -sin( turn ), cos( turn ) );
+  return ( 2.0 * textureGrad( waterChurnMap, r * frame + vec2( h ) / 4294967296.0, r * dx, r * dy ).a - 1.0 ) * FOAM_RANGE;
 }
 `;
