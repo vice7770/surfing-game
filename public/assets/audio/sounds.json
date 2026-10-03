@@ -14,7 +14,7 @@
         { "file": "distant-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
       ],
       "chosen": 0,
-      "gain": 1.32
+      "gain": 1.86
     },
     "wind": { "candidates": [], "chosen": 0, "gain": 1 },
     "rush": { "candidates": [], "chosen": 0, "gain": 1 },
@@ -24,24 +24,24 @@
         { "file": "bubbles-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
         { "file": "bubbles-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
       ],
-      "chosen": 1,
+      "chosen": 0,
       "gain": 1.57
     },
     "lipJet": {
       "candidates": [
         { "file": "lipJet-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
-        { "file": "lipJet-2.m4a", "level": 0.67, "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
+        { "file": "lipJet-2.m4a", "level": 0.86, "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
       ],
       "chosen": 0,
-      "gain": 1.32
+      "gain": 1.3
     },
     "lipRoller": {
       "candidates": [
         { "file": "lipRoller-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
-        { "file": "lipRoller-2.m4a", "level": 1.28, "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
+        { "file": "lipRoller-2.m4a", "level": 1.22, "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
       ],
       "chosen": 0,
-      "gain": 0.99
+      "gain": 1.04
     },
     "paddle": {
       "candidates": [
