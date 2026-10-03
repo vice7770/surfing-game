@@ -102,6 +102,147 @@ export function throatViews(profile: Float32Array, out: Float32Array): void {
   }
 }
 
+/**
+ * The chord `polylineChords` reports where the sun's light crosses no water to reach a point, or more water than the
+ * height field's own crest-light march reads (its last sample, 6 m, `CREST_SAMPLES`): past it the march finds no crest
+ * and the light is none [provisional: a render constant, as the march's reach].
+ */
+export const NO_CHORD = 8;
+
+/** Height bins a polyline's segments are filed in for `polylineChords`, so a point tests about a dozen, not all of them. */
+const CHORD_BINS = 16;
+/** The most points a polyline `polylineChords` reads may have: a loft slice, its profile and its extensions. */
+const CHORD_POINTS = 2 * PROFILE_POINTS;
+const chordSegments = new Int32Array(CHORD_BINS * CHORD_POINTS);
+const chordStart = new Int32Array(CHORD_BINS + 1);
+const chordFill = new Int32Array(CHORD_BINS);
+const chordBins = { low: 0, scale: 0 };
+
+function chordBin(y: number): number {
+  const b = Math.floor((y - chordBins.low) * chordBins.scale);
+  return b < 0 ? 0 : b >= CHORD_BINS ? CHORD_BINS - 1 : b;
+}
+
+/** Files the polyline's `n` points' segments by the heights they span (`chordBin`), for `chordAt`. */
+function fileChordSegments(line: Float32Array, n: number): void {
+  let low = Infinity;
+  let high = -Infinity;
+  for (let i = 0; i < n; i += 1) {
+    const y = line[2 * i + 1];
+    low = y < low ? y : low;
+    high = y > high ? y : high;
+  }
+  chordBins.low = low;
+  chordBins.scale = high > low ? CHORD_BINS / (high - low) : 0;
+  chordStart.fill(0);
+  chordFill.fill(0);
+  for (let pass = 0; pass < 2; pass += 1) {
+    for (let k = 0; k + 1 < n; k += 1) {
+      const y0 = line[2 * k + 1];
+      const y1 = line[2 * k + 3];
+      if (y0 === y1) continue;
+      const to = chordBin(y0 < y1 ? y1 : y0);
+      for (let b = chordBin(y0 < y1 ? y0 : y1); b <= to; b += 1) {
+        if (pass === 0) chordStart[b + 1] += 1;
+        else chordSegments[chordStart[b] + chordFill[b]++] = k;
+      }
+    }
+    if (pass === 0) for (let b = 0; b < CHORD_BINS; b += 1) chordStart[b + 1] += chordStart[b];
+  }
+}
+
+/** The crossings a point's line meets beyond it, for `waterAlong`: their distances, and whether each leaves the water. */
+const hitDistance = new Float64Array(CHORD_POINTS);
+const hitLeaves = new Uint8Array(CHORD_POINTS);
+
+/**
+ * The water the horizontal line through point i crosses beyond it, ahead (+x) or behind, m, once `fileChordSegments`
+ * has filed the polyline: from the point if it starts `inside` the water, to where the line first leaves it, and then
+ * each stretch from where it enters again to where it next leaves; a stretch it never leaves again (the sea beyond the
+ * wave, which the sun, a little above the horizon, clears) is past its reach. `NO_CHORD` for a line that starts inside
+ * and never leaves, or crosses that much water.
+ */
+function waterAlong(line: Float32Array, i: number, ahead: boolean, inside: boolean): number {
+  const x = line[2 * i];
+  const y = line[2 * i + 1];
+  let hits = 0;
+  const b = chordBin(y);
+  for (let m = chordStart[b]; m < chordStart[b + 1]; m += 1) {
+    const k = chordSegments[m];
+    if (k === i || k + 1 === i) continue;
+    const y0 = line[2 * k + 1];
+    const y1 = line[2 * k + 3];
+    if ((y0 - y) * (y1 - y) > 0 || y0 === y1) continue;
+    const x0 = line[2 * k];
+    const at = x0 + ((y - y0) / (y1 - y0)) * (line[2 * k + 2] - x0);
+    const d = ahead ? at - x : x - at;
+    if (!(d > 1e-6)) continue;
+    // Walking away from the point, ahead a falling segment leaves the water and a rising one enters it; behind, the reverse.
+    let h = hits++;
+    while (h > 0 && hitDistance[h - 1] > d) {
+      hitDistance[h] = hitDistance[h - 1];
+      hitLeaves[h] = hitLeaves[h - 1];
+      h -= 1;
+    }
+    hitDistance[h] = d;
+    hitLeaves[h] = ahead === y1 < y0 ? 1 : 0;
+  }
+  const started = inside;
+  let from = 0;
+  let water = 0;
+  let left = false;
+  for (let h = 0; h < hits; h += 1) {
+    if (inside && hitLeaves[h] === 1) {
+      water += hitDistance[h] - from;
+      inside = false;
+      left = true;
+    } else if (!inside && hitLeaves[h] === 0) {
+      from = hitDistance[h];
+      inside = true;
+    }
+  }
+  return (started && !left) || water >= NO_CHORD ? NO_CHORD : water;
+}
+
+/**
+ * Point i's chords into `out[2i]` (ahead, +x) and `out[2i + 1]` (behind), m (`waterAlong`), once `fileChordSegments` has
+ * filed the polyline's `n` points: where the line rises through the point (the back, the lip's underside) the water lies
+ * ahead of it, where it falls (the lip's outer face, the face) behind it, and the chord is the water toward that side,
+ * so from the back wall of a tube it crosses the wall, the tube, and the lip where the lip hangs at the point's height.
+ * A crest's top, walked over with the water under it, meets water on neither side but what lies beyond: 0 where nothing
+ * does. The other side, and a level point that is no crest's top, are `NO_CHORD`.
+ */
+function chordAt(line: Float32Array, n: number, i: number, out: Float32Array): void {
+  out[2 * i] = NO_CHORD;
+  out[2 * i + 1] = NO_CHORD;
+  const before = i > 0 ? i - 1 : i;
+  const after = i + 1 < n ? i + 1 : i;
+  const y = line[2 * i + 1];
+  if (y > line[2 * before + 1] && y > line[2 * after + 1] && line[2 * after] > line[2 * before]) {
+    out[2 * i] = waterAlong(line, i, true, false);
+    out[2 * i + 1] = waterAlong(line, i, false, false);
+    return;
+  }
+  const rise = line[2 * after + 1] - line[2 * before + 1];
+  if (rise > 0) out[2 * i] = waterAlong(line, i, true, true);
+  else if (rise < 0) out[2 * i + 1] = waterAlong(line, i, false, true);
+}
+
+/**
+ * The water a horizontal line crosses toward the sun through a slice (look-fix round 1; the advisor's ruling, "the curl's
+ * crest light at weight 0": the profile's own horizontal chord): for each of a polyline's `n` points (along the ray, up,
+ * from the back to the front, the water under it), the water the line through it crosses beyond it, ahead along the ray
+ * (`out[2i]`) and behind it (`out[2i + 1]`), m (`chordAt`). The loft reads it on each slice as drawn, so where the curl
+ * rests toward the water the chords run on through the water it rests on. It is the height field's crest-light march
+ * (`crestThickness`) through the slice, which the height field cannot give under a lifted curl, carried on past the
+ * first gap a tube makes and up to a crest's top, where it ends at 0; the sun's horizontal path is the chord over the
+ * cosine of its angle to the ray (the shader). Only + − × ÷.
+ */
+export function polylineChords(line: Float32Array, n: number, out: Float32Array): void {
+  fileChordSegments(line, n);
+  for (let i = 0; i < n; i += 1) chordAt(line, n, i, out);
+}
+
 /** Where `acrossTo` found the other side: the segment's first point, and how far along it. */
 const foot = { k: 0, t: 0 };
 /**
