@@ -1098,7 +1098,10 @@ class SurfGame {
 }
 
 const game = new SurfGame();
-if (recordRequested) void import('./dev/rideRecorder').then(({ recordRide }) => recordRide(game.recording));
+if (recordRequested && new URLSearchParams(window.location.search).get('pilot') === 'jev') {
+  // `?inpage&record&pilot=jev`: Jev plays and the page films it (src/dev/jevRecorder.ts, with `npm run film:jev`).
+  void import('./dev/jevRecorder').then(({ recordJevRide }) => recordJevRide(game.recording));
+} else if (recordRequested) void import('./dev/rideRecorder').then(({ recordRide }) => recordRide(game.recording));
 if (waterSheetRequested) void import('./dev/waterSheet').then(({ renderWaterSheet }) => renderWaterSheet(game.recording));
 if (particleBenchRequested) void import('./dev/particleBench').then(({ runParticleBench }) => runParticleBench(game.recording));
 const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
