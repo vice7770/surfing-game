@@ -10,14 +10,24 @@
  * on the GPU tier as an M4 player's does (`&components=` fixes its sea;
  * otherwise the graphics preset picks it, `?graphics=` in main.ts); the
  * default, `cpu`, steps it in the page as before.
+ *
+ * On the Wave Pool (`&spot=pool`) the paddled catch is hardly ever ridden, so `&start=trough` (in the trough ahead of a
+ * breaking wave, for the flow from its bottom turn) or `&start=face` (on the face, for the trim) puts the standing rider
+ * in place instead, as the pool flow probe does (`poolStart.ts`; the CPU tier). `&size=small|medium|big` picks the
+ * pool's size as the Surf screen does, `&arm=left` its left arm (the right is the game's take-off), `&pump=1` has the
+ * flow's trim pump, `&trimOnly=1` keeps it in the trim, `&flowFrom=trim` starts the flow in a phase, and
+ * `&view=front|behind|side` the camera.
  */
 import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
 import { PerspectiveCamera, Vector3 } from 'three';
 import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
+import { physicalSettingsFor, type SwellSize } from '../game/SurfConditions';
+import type { RiderPlacement } from '../physics/RideSession';
 import { SEA_COMPONENTS, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LIP_STRIDE } from '../wave/SurfZoneRunner';
-import { Autopilot, autopilotView, type FlowRecord, type TurnRecord } from './Autopilot';
+import { Autopilot, autopilotView, type FlowPhase, type FlowRecord, type TurnRecord } from './Autopilot';
 import { advance, breathe } from './devStepping';
+import { PoolStart, type PoolStartKind } from './poolStart';
 
 interface RecordingHooks {
   start(settings: PhysicalSettings, overrides?: Partial<SurfZoneConfig>): Promise<void>;
@@ -49,6 +59,21 @@ const LEAD = 4;
 const AFTER = 2.5;
 const MAX_SIM_SECONDS = Number(params.get('maxMinutes') ?? 20) * 60;
 const STYLE = params.get('style') === 'line' ? 'line' : params.get('style') === 'flow' ? 'flow' : 'turns';
+/** `start=trough|face`: on the Wave Pool, put the standing rider in place for each attempt instead of paddling (`poolStart.ts`). */
+const START: PoolStartKind | undefined = params.get('start') === 'trough' || params.get('start') === 'face' ? (params.get('start') as PoolStartKind) : undefined;
+/** `arm=left`: the pool's left arm, the right (the game's take-off) by default. */
+const ARM = params.get('arm') === 'left' ? -1 : 1;
+/** `size=small|medium|big`: the Wave Pool's size, as the Surf screen picks it (the practice swell, its Medium, by default). */
+const SIZE = ['small', 'medium', 'big'].includes(params.get('size') ?? '') ? (params.get('size') as SwellSize) : undefined;
+/**
+ * `pump=1`: the flow's trim pumps about the face's band, else it holds the band. `trimOnly=1`: once trimming it stays in the
+ * trim (no bottom turn or cutback from it). `flowFrom=`: the phase the flow starts in.
+ */
+const PUMP = params.get('pump') === '1';
+const TRIM_ONLY = params.get('trimOnly') === '1';
+const FLOW_FROM = ['drop', 'bottom', 'project', 'trim', 'cutback', 'rebound'].includes(params.get('flowFrom') ?? '') ? (params.get('flowFrom') as FlowPhase) : undefined;
+/** `view=front|behind|side`: the following camera (the game's front view by default). */
+const VIEW = ['front', 'behind', 'side'].includes(params.get('view') ?? '') ? (params.get('view') as 'front' | 'behind' | 'side') : undefined;
 /**
  * `need=bottom`: keep only a ride with a bottom turn in it (and at least MIN_RIDE s long): one that reached its end,
  * heading up the face, or with `&turn=D`, one that turned at least D degrees. Riding the flow (`&style=flow`) any of its
@@ -127,10 +152,14 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
   }
   const spot = (params.get('spot') ?? 'point') as PhysicalSettings['spot'];
   const source = (params.get('source') ?? 'practice') as PhysicalSettings['source'];
-  const settings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS, spot, source, compute: COMPUTE === 'cpu' ? 'cpu' : 'auto', ...SWELL_OVERRIDES };
-  await log(`starting ${spot} (${source})`);
+  const compute = COMPUTE === 'cpu' ? 'cpu' : 'auto';
+  const settings: PhysicalSettings = SIZE && spot === 'pool'
+    ? { ...physicalSettingsFor('pool', { swell: SIZE, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute }), ...SWELL_OVERRIDES }
+    : { ...DEFAULT_PHYSICAL_SETTINGS, spot, source, compute, ...SWELL_OVERRIDES };
+  await log(`starting ${spot} (${settings.source}${SIZE && spot === 'pool' ? `, ${SIZE}` : ''})`);
   await hooks.start(settings, COMPONENTS ? { componentCount: COMPONENTS } : undefined);
   hooks.resize(WIDTH, HEIGHT);
+  if (VIEW) hooks.mode.setRideView(VIEW);
   const host = hooks.mode.host!;
   const composite = document.createElement('canvas');
   composite.width = WIDTH;
@@ -141,7 +170,18 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
     return;
   }
   const rise = 0.25 * (source === 'practice' ? 2 : settings.significantHeight);
-  const autopilot = new Autopilot({ waitOutside: WAIT_OUTSIDE, rise, giveUp: GIVE_UP, style: STYLE, ...(TURN_LIMIT ? { turnLimit: TURN_LIMIT } : {}) });
+  const autopilot = new Autopilot({
+    waitOutside: WAIT_OUTSIDE, rise, giveUp: GIVE_UP, style: STYLE, ...(TURN_LIMIT ? { turnLimit: TURN_LIMIT } : {}),
+    ...(PUMP ? { pump: true } : {}), ...(TRIM_ONLY ? { trimOnly: true } : {}), ...(FLOW_FROM ? { flowFrom: FLOW_FROM } : {}),
+  });
+  // A placed start: the rider waits on the lineup for a wave to break in the arm's column, then is put in place.
+  const placed = START ? PoolStart.at(host, ARM) : undefined;
+  if (START && !placed) {
+    await log(`start=${START} needs spot=pool stepped in the page (the CPU tier: no &compute=gpu)`);
+    return;
+  }
+  let holding = placed !== undefined;
+  let placedStep = -Infinity;
 
   let clip = new Clip();
   let previous = autopilot.state;
@@ -155,7 +195,26 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
     let input = { paddle: false, popUp: false, steer: 0 };
     // Watch behind: the highest water within LOOK m seaward of the board.
     const view = autopilotView(host, hooks.mode.focus.z, settings.tide, LOOK);
-    if (view) input = autopilot.next(view, STEP);
+    if (placed && START) {
+      // Idle on the lineup until a wave is due; the step after the rider is put in place, the attempt begins.
+      if (holding && placed.due()) {
+        holding = false;
+        placedStep = step;
+        const placement = placed.placement(START);
+        hooks.mode.place(placement);
+        hooks.mode.camera.setView(hooks.mode.camera.view);
+        clip.drop();
+        clip = new Clip();
+        await log(`${START} start at ${host.snapshot.status.seaTime.toFixed(1)} s sea time: ${placementLine(placement)}`);
+      } else if (step === placedStep + 1) {
+        autopilot.reset();
+        autopilot.go();
+      }
+      // The A-frame peels both ways: the arm the rider is put on is the one it rides.
+      if (!holding && step > placedStep && view) input = autopilot.next({ ...view, peelDirection: ARM }, STEP);
+    } else if (view) {
+      input = autopilot.next(view, STEP);
+    }
     const { state } = autopilot;
     if (state === 'wait' && previous !== 'wait') {
       // Film only the last few seconds of waiting before a wave.
@@ -194,20 +253,27 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
         autopilot.reset();
         previous = autopilot.state;
         after = 0;
+        holding = placed !== undefined;
       }
     }
     await advance(hooks, 1, input);
     simulated += STEP;
     step += 1;
-    if (step % STEPS_PER_FRAME === 0) {
+    // A placed start films from the moment the rider is in place, not while it waits.
+    if (step % STEPS_PER_FRAME === 0 && !holding) {
       hooks.render(STEPS_PER_FRAME * STEP);
       context.drawImage(hooks.canvas, 0, 0, WIDTH, HEIGHT);
-      drawOverlay(context, spot, source, label, autopilot.attempts);
+      drawOverlay(context, spot, spot === 'pool' ? SIZE ?? 'medium' : source, label, autopilot.attempts, START ? `AUTOPILOT · ${START.toUpperCase()} START · ATTEMPT ${autopilot.attempts}` : undefined);
       await clip.add(composite);
     }
     if (step % 30 === 0) await breathe();
   }
   await log(`no ride of ${MIN_RIDE} s in ${autopilot.attempts} attempts`);
+}
+
+/** A placement for the log: where, which way and how fast. */
+function placementLine(placement: RiderPlacement): string {
+  return `x ${placement.x.toFixed(1)} z ${placement.z.toFixed(1)}, heading ${((placement.heading * 180) / Math.PI).toFixed(0)}°, ${placement.speed} m/s over the water`;
 }
 
 /**
