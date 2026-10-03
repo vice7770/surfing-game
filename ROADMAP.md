@@ -127,7 +127,6 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [S1 sound](
 - [ ] **Open:**
   - **The user's listening playtest,** which tunes the mapping's provisional levels and settles each recording's pick and gain in the sound check. The sound check plays a loop's first 4 s only, so the wraps and repeats below are heard only in play.
   - **Firefox,** which was not tried (Chrome at 44.1 and 48 kHz and CoreAudio were). A browser that refuses a 44.1 kHz context resamples each loop as it decodes it, and the wraps get a burst back.
-  - **The ElevenLabs plan's terms.** Its tier is not recorded: check it covers a shipped game and whether it asks for credit (an in-game credits screen if so).
   - **The remainder,** which needs credits: the key's quota of 90,000 is spent, so raise it (or wait for it to reset), then make what `docs/ASSETS.md` lists under Known limits: the pools of `lipJet`, `lipRoller` and `paddle`, new `paddle` and `plunge` takes, single 30 s `bubbles` takes, and `distant-2` in the review's wording.
   - **`distant-1`'s made stereo.** Its side is a random-phase resynthesis of the take: listen for phasiness in the sound check against `distant-2`, whose stereo is the generator's own.
   - **The roars' pumping.** Listen to them in the sound check, then in play (the eight sectors start at random points, which should steady the sum); if they pump, look for steadier takes that keep the texture, which wants many more takes than this pass could make.

@@ -1,6 +1,6 @@
 # Third-party assets
 
-Every image, model, texture and sound the game ships, with its source and licence. Nothing here is known to need in-game attribution: all of it is CC0 except the generated sounds, which are used under the owner's ElevenLabs plan (see Sounds). The one ported piece of code, under Code, is zlib-licensed, which asks for no in-game credit either. An in-game credits screen becomes necessary only if a CC-BY asset comes in, or if the ElevenLabs plan's terms ask for credit.
+Every image, model, texture and sound the game ships, with its source and licence. Nothing here is known to need in-game attribution: all of it is CC0 except the generated sounds, which are used under the owner's paid ElevenLabs plan: commercial use, no attribution (see Sounds). The one ported piece of code, under Code, is zlib-licensed, which asks for no in-game credit either. An in-game credits screen becomes necessary only if a CC-BY asset comes in, or if the ElevenLabs plan's terms ask for credit.
 
 ## Skies (G7)
 
@@ -38,7 +38,7 @@ The men also carry MPFB shape targets on top of their macros (the recipe's `targ
 
 ## Sounds (S1)
 
-Fourteen recordings, two candidates for each of seven sounds (roar, distant surf, bubbles, the two lip crashes, the paddle splash and the plunge), **generated with ElevenLabs Sound Effects on 2026-10-03**. The owner chose generated recordings over CC0 downloads that day. They are not CC0: they are used under the owner's ElevenLabs plan, and `public/assets/audio/sounds.json` records them with the licence `generated`. The plan's tier and terms are not written down here: confirm they cover a shipped game, and whether they ask for credit, before release. (The only hint of the tier is that the generator served 44.1 kHz PCM, which the tool's documentation reserves for the Pro tier and above.)
+Fourteen recordings, two candidates for each of seven sounds (roar, distant surf, bubbles, the two lip crashes, the paddle splash and the plunge), **generated with ElevenLabs Sound Effects on 2026-10-03**. The owner chose generated recordings over CC0 downloads that day. They are not CC0: they are used under the owner's ElevenLabs plan, and `public/assets/audio/sounds.json` records them with the licence `generated`. The owner confirmed the same day that the account is on a paid plan, whose licence covers commercial use with no attribution.
 
 Wind, rush, rail, the pop-up, the click, the chime, the leash snap, the knock and the duck-dive stay synthesised. Every sound keeps its synthesised fallback (`src/audio/synth.ts`), used until its recording loads or if it fails.
 
