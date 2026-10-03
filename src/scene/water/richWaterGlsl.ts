@@ -95,7 +95,11 @@ const foamDense = (foam: string) => `smoothstep( ${FOAM_DENSE[0].toFixed(2)}, ${
 
 /**
  * The Rich foam composition for `waterBodyFragment`: fresh whitewater as dense
- * churn, creased between its clumps, opening into the lace as it ages (the
+ * churn, creased between its clumps, where the air breaking drove in is still in
+ * the water and the foam on top of it is still dense (the foam value, as before
+ * G9: with the air alone, a trough the plume had drifted under drew the churn's
+ * smooth clumps at a fraction of their strength, as cream blobs on bare water),
+ * opening into the lace as it ages (the
  * baked life cycle of `foamBake`: dense with holes, then lace and threads, by
  * an age proxy from the void fraction and the foam value [provisional]); the
  * lace streaked up steep faces along the current; a glossy body that turns
@@ -114,10 +118,11 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
   vec2 waterField = waterFoamField( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterAge, max( waterFootprint.x, waterFootprint.y ) );
   float waterLace = mix( vWaterFoam, waterField.x, waterFoamPattern );
   vec2 waterChurn = waterChurnAt( vWaterWorld.xz, vWaterFlow );
-  float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterFresh );
-  float waterThick = mix( 1.0, mix( waterField.y, 1.0, waterFresh ), waterFoamPattern );
+  float waterChurnShare = waterFresh * ${foamDense('vWaterFoam')};
+  float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterChurnShare );
+  float waterThick = mix( 1.0, mix( waterField.y, 1.0, waterChurnShare ), waterFoamPattern );
   float waterStreakCover = waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam );
-  float waterCrease = mix( 1.0, 0.88 + 0.12 * waterChurn.y, waterFresh );
+  float waterCrease = mix( 1.0, 0.88 + 0.12 * waterChurn.y, waterChurnShare );
   float waterPlume = 1.0 - exp( -PLUME_DENSITY * vWaterAir * min( vWaterPlumeDepth, vWaterDepth ) );
   float waterPlumePath = faceDirection > 0.0 ? 0.5 * min( vWaterPlumeDepth, vWaterDepth ) / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;
   vec3 waterPlumeColor = waterFoamColor * exp( -waterAttenuation * waterPlumePath ) / waterBodyGain;
@@ -128,7 +133,7 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
   ${foamLayer('waterUnder', 'waterUnfocused', 'waterCover', 'waterFoamR')}
   ${RICH_SPECULAR}
   roughnessFactor = mix( roughnessFactor, 0.7, waterCover );
-  totalEmissiveRadiance += 0.18 * waterFresh * ( 1.0 - waterChurn.x ) * pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 6.0 ) * waterSunRadiance;`;
+  totalEmissiveRadiance += 0.18 * waterChurnShare * ( 1.0 - waterChurn.x ) * pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 6.0 ) * waterSunRadiance;`;
 
 /**
  * The Rich look's own balance: how much of the sky its glossy surface mirrors, and the gain on its body colour

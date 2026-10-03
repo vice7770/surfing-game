@@ -182,9 +182,11 @@ describe('Classic water parity', () => {
     water.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
     expect((shader.uniforms as Record<string, { value: unknown }>).waterChurnMap.value).toBe(churnTexture());
     expect(shader.fragmentShader).toContain('vec2 waterChurn = waterChurnAt( vWaterWorld.xz, vWaterFlow );');
-    expect(shader.fragmentShader).toContain('float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterFresh );');
+    // Churn is dense fresh foam: the air still in the water, and the foam on top still dense.
+    expect(shader.fragmentShader).toContain('float waterChurnShare = waterFresh * smoothstep( 0.45, 0.90, vWaterFoam );');
+    expect(shader.fragmentShader).toContain('float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterChurnShare );');
     expect(shader.fragmentShader).toContain('waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, vWaterFlow );');
-    expect(shader.fragmentShader).toContain('totalEmissiveRadiance += 0.18 * waterFresh');
+    expect(shader.fragmentShader).toContain('totalEmissiveRadiance += 0.18 * waterChurnShare');
   });
 
   it('draws the Rich water’s lace from the baked foam field in place of the Classic network, and its streaks from the field’s late stage', () => {

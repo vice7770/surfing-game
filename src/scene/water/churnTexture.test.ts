@@ -3,7 +3,7 @@ import { RGBAFormat } from 'three';
 import { foamCover } from '../foamPattern';
 import { FOAM_BAKE, FOAM_RANGE, inverseNormal, mulberry32 } from './foamBake';
 import {
-  CHURN_TEXTURE_SIZE, CHURN_TILE, FOAM_EDGE, FOAM_FADE, FOAM_OCTAVES, FOAM_STAGE_CORRELATION, FOAM_WEIGHTS, churnSample, churnTexture, churnTextureData,
+  CHURN_TEXTURE_SIZE, CHURN_TILE, churnShare, FOAM_EDGE, FOAM_FADE, FOAM_OCTAVES, FOAM_STAGE_CORRELATION, FOAM_WEIGHTS, churnSample, churnTexture, churnTextureData,
   FOAM_FRINGE, foamFieldCover, foamFieldThickness, foamFieldValue, foamHexGauss, foamPhaseGauss, foamQuantile, freshness, sampleFoamField, waterChurnPars,
 } from './churnTexture';
 
@@ -27,6 +27,15 @@ describe('churn whitewater', () => {
     expect(freshness(0.01)).toBe(0);
     expect(freshness(0.2)).toBe(1);
     expect(freshness(0.1)).toBeGreaterThan(freshness(0.05));
+  });
+
+  it('is drawn only where fresh foam is dense: air in the water and thick foam on it, never on thin foam over a plume', () => {
+    expect(churnShare(0.2, 1)).toBe(1);
+    expect(churnShare(0.01, 1)).toBe(0);
+    // A trough the plume has drifted under, with a little foam: no churn, the lace's threads alone.
+    for (const foam of [0, 0.05, 0.2, 0.4]) expect(churnShare(0.2, foam)).toBe(0);
+    expect(churnShare(0.2, 0.7)).toBeGreaterThan(0);
+    expect(churnShare(0.2, 0.7)).toBeLessThan(churnShare(0.2, 0.95));
   });
 
   it('is one repeating, mipmapped RGBA tile of 1024², churn in red and green, the foam’s two stages in blue and alpha', () => {
