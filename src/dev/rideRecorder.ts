@@ -19,7 +19,7 @@ import { LIP_STRIDE } from '../wave/SurfZoneRunner';
 import { Autopilot, autopilotView, type TurnRecord } from './Autopilot';
 import { advance, breathe } from './devStepping';
 
-interface RecordingHooks {
+export interface RecordingHooks {
   start(settings: PhysicalSettings, overrides?: Partial<SurfZoneConfig>): Promise<void>;
   step(input: { paddle: boolean; popUp: boolean; steer: number }): void;
   retry(): void;
@@ -81,7 +81,7 @@ const COMPONENTS = Number(params.get('components')) || undefined;
 const CODECS = { avc: 'avc1.640028', vp9: 'vp09.00.40.08' } as const;
 let codec: keyof typeof CODECS = 'avc';
 
-class Clip {
+export class Clip {
   private readonly muxer = new Muxer({ target: new ArrayBufferTarget(), video: { codec, width: WIDTH, height: HEIGHT }, fastStart: 'in-memory' });
   private readonly encoder: VideoEncoder;
   frames = 0;
@@ -113,17 +113,23 @@ class Clip {
   }
 }
 
-export async function recordRide(hooks: RecordingHooks): Promise<void> {
+/** H.264 when the browser encodes it, else VP9; false (and logged) when it encodes neither. */
+export async function prepareCodec(): Promise<boolean> {
   const supported = async (name: keyof typeof CODECS) =>
     (await VideoEncoder.isConfigSupported({ codec: CODECS[name], width: WIDTH, height: HEIGHT, bitrate: 8_000_000, framerate: FPS })).supported;
   if (!(await supported('avc'))) {
     if (!(await supported('vp9'))) {
       await log('neither H.264 nor VP9 encoding is supported here');
-      return;
+      return false;
     }
     codec = 'vp9';
     await log('no H.264 encoder here: filming VP9 in the MP4');
   }
+  return true;
+}
+
+export async function recordRide(hooks: RecordingHooks): Promise<void> {
+  if (!(await prepareCodec())) return;
   const spot = (params.get('spot') ?? 'point') as PhysicalSettings['spot'];
   const source = (params.get('source') ?? 'practice') as PhysicalSettings['source'];
   const settings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS, spot, source, compute: COMPUTE === 'cpu' ? 'cpu' : 'auto', ...SWELL_OVERRIDES };

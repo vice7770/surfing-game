@@ -46,10 +46,12 @@ Open the local URL printed by Vite. The game opens on its main menu, over live w
 The Wave Lab (a menu tile) is the original screen, around the legacy wave: the wave waits for the first paddle input. Use Space to paddle, Enter or the Get Up button to attempt a pop-up when enabled, and Left/Right to steer and carve. On a touch phone, hold Paddle and the arrow buttons, then tap Get Up when it becomes available. The incoming wave evolves in a shared height field sampled by rendering and board physics. During a ride, the grid scrolls and replenishes the swell so there is no 20 m finish. Its peeling break also launches a bounded 3D plunging sheet that renders and collides from the same parcel positions. The surfer has articulated paddling, standing, and leaning poses on a detailed shortboard; a wipeout detaches a separate body that falls into and floats in the moving water. The Wave Lab offers three surf spot presets plus wave, board, current, wind, shore shelf, and sun controls; it also keeps a local record of recent outcomes. The shelf slows the wave toward shore and appears in the Below view. Replay repeats the current seed and settings, while New Wave creates a different seed. Profile shows diagnostic contacts, and Below follows the board from under the water. URL flags open the Wave Lab directly:
 - `?demo` shows an automatic clean ride, and `?demo=carve` a turn into the breaking section;
 - `?physical` opens the physical surf zone;
-- `?record` films an autopilot ride;
+- `?record` films an autopilot ride, and `?record&pilot=jev` films Jev playing (below);
 - `?inpage` runs the surf zone without a worker.
 
 The Wave Lab's ♪ Sound button opens the **sound check**: every sound's synthesised version and its candidate recordings on buttons, a gain per sound, and the bus levels; `public/assets/audio/sounds.json` picks the recordings. `npm run report:sound` logs the sound an autopilot ride makes and checks it follows its causes ([sound report](docs/research/sound-report.md)).
+
+**Jev plays the game** ([docs/jev-player.md](docs/jev-player.md)): TypeSafe's Jev, a System One model, makes a player's decisions (paddle, point, pop up, line, weight, stance) from the game's state put into words, at a human's reaction time. `npm run play:jev` plays the physical surf zone headless and exits 0 once it has caught a wave (a ride of 3 s or more by the ride analyzer), so it can gate a change; `npm run film:jev` with `?inpage&record&pilot=jev` films it. The key is read from `TYPESAFE_API_KEY` or `~/.config/typesafe/api_key`.
 
 The 3D lip is a local hybrid model, not a full fluid solver; its scope is recorded in [ADR 0003](docs/adr/0003-plunging-sheet-collision.md) and [ROADMAP.md](ROADMAP.md).
 

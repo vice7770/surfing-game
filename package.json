@@ -35,7 +35,9 @@
     "server:bots": "npm run build:server && BOTS=1 node dist-server/server.mjs",
     "deploy": "fly deploy --build-arg BUILD_ID=$(git rev-parse --short HEAD)",
     "report:body": "rolldown scripts/body-report.ts -o dist/scripts/body-report.mjs --format esm --platform node && node dist/scripts/body-report.mjs",
-    "report:stances": "rolldown scripts/stance-report.ts -o dist/scripts/stance-report.mjs --format esm --platform node && node dist/scripts/stance-report.mjs"
+    "report:stances": "rolldown scripts/stance-report.ts -o dist/scripts/stance-report.mjs --format esm --platform node && node dist/scripts/stance-report.mjs",
+    "play:jev": "rolldown scripts/jev/jevSurf.ts -o dist/scripts/jev-surf.mjs --format esm --platform node && node dist/scripts/jev-surf.mjs",
+    "film:jev": "rolldown scripts/jev/jevBridge.ts -o dist/scripts/jev-bridge.mjs --format esm --platform node && node dist/scripts/jev-bridge.mjs"
   },
   "dependencies": {
     "three": "^0.186.1",
