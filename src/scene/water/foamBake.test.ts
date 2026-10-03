@@ -7,7 +7,7 @@ import {
 const parameters = (overrides: Partial<FoamBakeParameters> = {}): FoamBakeParameters => ({ ...FOAM_BAKE, ...overrides });
 const dt = 1 / FOAM_BAKE.stepsPerTurnover;
 
-/** The same bake as the page makes, once for the file (about half a second). */
+/** The same bake as the page makes, once for the file (a second or two). */
 let bake: FoamBake;
 beforeAll(() => {
   bake = bakeFoamCycle();
@@ -109,20 +109,54 @@ describe('the surface flow', () => {
     expect(Math.abs(divergence / (divergence + curl) - 0.49)).toBeLessThan(0.08);
   });
 
-  it('has a root-mean-square velocity of one integral length a turnover, and is periodic', () => {
+  it('has a root-mean-square velocity of its speed a unit of time, and is periodic', () => {
     const flow = new SurfaceFlow(parameters(), dt);
     const n = flow.n;
     const stride = n + 1;
     let square = 0;
     for (let j = 0; j < n; j += 1) for (let i = 0; i < n; i += 1) square += flow.ux[j * stride + i] ** 2 + flow.uy[j * stride + i] ** 2;
-    const lint = 1.7 / (2 * Math.PI * FOAM_BAKE.peak);
-    // One component’s rms is L_int; a single draw of the modes is within a fifth of it.
-    expect(Math.sqrt(square / (2 * n * n)) / lint).toBeGreaterThan(0.75);
-    expect(Math.sqrt(square / (2 * n * n)) / lint).toBeLessThan(1.25);
+    // One component’s rms is the speed; a single draw of the modes is within a fifth of it.
+    expect(Math.sqrt(square / (2 * n * n)) / FOAM_BAKE.speed).toBeGreaterThan(0.75);
+    expect(Math.sqrt(square / (2 * n * n)) / FOAM_BAKE.speed).toBeLessThan(1.25);
     for (let k = 0; k <= n; k += 1) {
       expect(flow.ux[k * stride + n]).toBe(flow.ux[k * stride]);
       expect(flow.uy[n * stride + k]).toBe(flow.uy[k]);
     }
+  });
+
+  it('has an integral scale of 0.034 tiles (0.40 m on the 12 m tile), so a unit of its time is two eddy turnovers', () => {
+    // The longitudinal autocorrelation of each component, integrated to its first zero, over a few draws of the modes.
+    let scale = 0;
+    let draws = 0;
+    for (const seed of [1, 2, 3, 4]) {
+      const flow = new SurfaceFlow(parameters({ seed }), dt);
+      const n = flow.n;
+      const stride = n + 1;
+      for (const [component, along] of [[flow.ux, 1], [flow.uy, stride]] as const) {
+        let variance = 0;
+        for (let j = 0; j < n; j += 1) for (let i = 0; i < n; i += 1) variance += component[j * stride + i] ** 2;
+        let integral = 0;
+        for (let r = 0; r < n / 2; r += 1) {
+          let sum = 0;
+          for (let j = 0; j < n; j += 1) {
+            for (let i = 0; i < n; i += 1) {
+              const there = along === 1 ? j * stride + ((i + r) % n) : ((j + r) % n) * stride + i;
+              sum += component[j * stride + i] * component[there];
+            }
+          }
+          const correlation = sum / variance;
+          if (correlation <= 0) break;
+          integral += r === 0 ? 0.5 : correlation;
+        }
+        scale += integral / n;
+        draws += 1;
+      }
+    }
+    const integralScale = scale / draws;
+    expect(Math.abs(integralScale - 0.0336) / 0.0336).toBeLessThan(0.1);
+    // A turnover, L_int / u', is about half a unit of the bake's time.
+    expect(integralScale / FOAM_BAKE.speed).toBeGreaterThan(0.4);
+    expect(integralScale / FOAM_BAKE.speed).toBeLessThan(0.6);
   });
 
   it('is the same flow for the same seed and a different one for another', () => {

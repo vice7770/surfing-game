@@ -18,10 +18,10 @@ export const STREAK_COVER = 0.1;
 export const STREAK_TILE = FOAM_OCTAVES.small;
 /**
  * The streaks' edge is this many sigma of the field wider per metre of the pixel's footprint: half the late stage's
- * gradient at a threshold crossing, 54 sigma a metre at the median across the stretch (the test measures it), so a ramp
+ * gradient at a threshold crossing, 69 sigma a metre at the median across the stretch (the test measures it), so a ramp
  * is about a pixel wide. (The foam field reads its gradient off the derivatives; the streaks' branch hides them.)
  */
-export const STREAK_EDGE_SLOPE = 27;
+export const STREAK_EDGE_SLOPE = 35;
 /** Where the second flow-map phase is shifted, m, so the two phases never sample alike (not a multiple of the tile). */
 const STREAK_PHASE = [1.11, 1.89] as const;
 /**
