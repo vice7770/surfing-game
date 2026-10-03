@@ -5,6 +5,7 @@ import { FarFieldProfile } from '../wave/FarFieldProfile';
 import { SeaState } from '../wave/SeaState';
 import { FarFieldOcean } from './FarFieldOcean';
 import { buildGridGeometry, gradedAxis } from './gridGeometry';
+import { churnTexture } from './water/churnTexture';
 
 const hole = { xMin: -80, xMax: 80, zMin: -330, zMax: 30 };
 
@@ -92,5 +93,18 @@ describe('FarFieldOcean', () => {
     expect(Object.keys(shader.uniforms)).toEqual(expect.arrayContaining(['waterAttenuation', 'waterSunDirection', 'farTable', 'waterFoamTile']));
     expect(ocean.mesh.material.ior).toBeCloseTo(1.333, 6);
     expect(ocean.mesh.material.clearcoat).toBe(0);
+  });
+
+  it('binds the tank\'s churn map for the foam field, which no far-ocean program samples yet', () => {
+    const ocean = new FarFieldOcean();
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    ocean.mesh.material.onBeforeCompile(shader as never, undefined as never);
+    expect((shader.uniforms as Record<string, { value: unknown }>).waterChurnMap.value).toBe(churnTexture());
+    expect(shader.fragmentShader).not.toContain('waterChurnMap');
+    ocean.setLook('rich');
+    const rich = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    ocean.mesh.material.onBeforeCompile(rich as never, undefined as never);
+    expect((rich.uniforms as Record<string, { value: unknown }>).waterChurnMap.value).toBe(churnTexture());
+    expect(rich.fragmentShader).not.toContain('waterChurnMap');
   });
 });
