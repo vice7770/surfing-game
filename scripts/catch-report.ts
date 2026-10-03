@@ -12,6 +12,8 @@
  *   npm run report:catch -- --ghosts --hs 2.4 --tp 14 --spread 0.2   (the Surf screen's Big swell)
  *   npm run report:catch -- --spots padang --swell small --barrel            (the swept barrel: its contact and crash)
  *   npm run report:catch -- --spots padang --swell small --barrel --no-crash (its contact, with Kennedy's lip: before PR 5)
+ *   npm run report:catch -- --spots padang --swell small --barrel --no-contact (the crash, no swept contact: dev-only, below)
+ *   npm run report:catch -- --spots padang --swell small --barrel --no-gate    (the crash, its whitewater the solver's own: dev-only)
  */
 import { writeFileSync } from 'node:fs';
 import { Vector3 } from 'three';
@@ -26,6 +28,7 @@ import { chosenSwell, swellSizeOption } from './spotSwell';
 import { alongShift } from './botSpots';
 import { SURF_ZONE_STEP, SurfZoneRunner } from '../src/wave/SurfZoneRunner';
 import { readBarrelCases } from '../src/wave/barrel/nodeBarrelCases';
+import type { SweptCrash } from '../src/wave/barrel/SweptCrash';
 
 const option = (name: string): string | undefined => {
   const index = process.argv.indexOf(`--${name}`);
@@ -39,6 +42,19 @@ const ghosts = flag('ghosts');
 /** The swept barrel at a swept spot (Part B): the bots ride its contact; `--no-crash` keeps Kennedy's lip there (before PR 5). */
 const barrel = flag('barrel');
 const crash = !flag('no-crash');
+/**
+ * Dev-only, to tell the causes apart when the cue lights less often with the crash than with Kennedy's lip. Both change
+ * nothing unless given, and both leave the crash's jets thrown and poured:
+ * - `--no-contact` builds no swept contact, so three things change at once, as before PR 4: the bots ride the solver's
+ *   water, not the swept barrel's drawn surface; the lip's carve is back in it (`PhysicalSurfWater.forSimulation` carves
+ *   only without a contact); and the lip's parcels strike them (below, `session.strike`);
+ * - `--no-gate`: the whitewater over an open curl is the solver's own breaking, not withheld until the curl's touchdown
+ *   (`ungate`, in this report alone).
+ */
+const contact = !flag('no-contact');
+const gate = !flag('no-gate');
+if ((!contact || !gate) && !barrel) throw new Error('--no-contact and --no-gate need --barrel');
+if (!gate && !crash) throw new Error('--no-gate needs the crash: drop --no-crash');
 const barrelCases = barrel ? readBarrelCases() : undefined;
 /** Where the bots wait: metres along shore from the break point, and metres outside the break line (negative: inside). */
 const alongs = ghosts ? [-45, -25, -5, 15, 35] : [0];
@@ -93,6 +109,21 @@ interface Bot {
   stalled: number;
 }
 
+/**
+ * `--no-gate`, in this report alone: after each of the crash's steps the whitewater is the solver's breaking again, as
+ * if no open curl withheld any. The gate writes only the whitewater, which the crash copies afresh from the breaking at
+ * each step's start and reads nowhere else, so its jets are thrown, crashed and poured as with the gate on (its `gated`
+ * tally still counts the cells it would have withheld).
+ */
+function ungate(sweptCrash: SweptCrash): void {
+  const update = sweptCrash.update.bind(sweptCrash);
+  sweptCrash.update = (points, sea) => {
+    const done = update(points, sea);
+    sea.whitewater.set(sea.strength);
+    return done;
+  };
+}
+
 function runSpot(spot: SpotName, seed: number): { attempts: Attempt[]; seconds: number } {
   const swell = swellAt(spot);
   const direction = directionAt(spot);
@@ -108,7 +139,8 @@ function runSpot(spot: SpotName, seed: number): { attempts: Attempt[]; seconds: 
     tide: settings.tide,
     windSpeed: settings.windSpeed,
     ...(crash ? {} : { sweptCrash: false }),
-  }, barrelCases ? { barrelCases, contact: true } : {});
+  }, barrelCases ? { barrelCases, ...(contact ? { contact: true } : {}) } : {});
+  if (!gate && runner.simulation.crash) ungate(runner.simulation.crash);
   // Ghosts: the water's reactions and the lip's recoil are dropped.
   const water: SurfWater = {
     sampleAt: (x, y, z, out) => runner.water.sampleAt(x, y, z, out),
@@ -254,11 +286,18 @@ const sea = `${practice ? 'Practice mode' : 'Buoy swells'}, tide ${settings.tide
 const where = ghosts
   ? `${bots} bots share the sea, at ${alongs.join(', ')} m along shore from the break point and ${offsets.join(', ')} m outside the break line (negative: inside)`
   : `One bot waits ${offsets[0]} m outside the break line`;
+/** What the bots ride at a swept spot, as the report says it: by default the contact with the crash's jets on their own clock (PR 5). */
+const ridden = contact
+  ? `the swept barrel's contact, ${crash ? 'its jets on its own clock (PR 5)' : 'with Kennedy\'s lip (before PR 5)'}`
+  : `the solver's water with no swept contact, the lip's carve in it and its parcels striking them (--no-contact); the swept barrel's ${crash
+    ? 'jets run on its own clock (PR 5)'
+    : 'lip is Kennedy\'s (before PR 5)'}`;
+const ungated = gate ? '' : ', the whitewater the solver\'s own over an open curl (--no-gate)';
 const report = `# Catch report · physical surf zone
 
 Generated by \`npm run report:catch -- ${process.argv.slice(2).join(' ')}\` on ${new Date().toISOString().slice(0, 10)} (P4e task 5, P4f; reported, not asserted).
 
-**Conditions.** ${sea}. Stage 2 (Boussinesq) surf zone.${barrel ? ` At a swept spot the bots ride the swept barrel's contact, ${crash ? 'its jets on its own clock (PR 5)' : 'with Kennedy\'s lip (before PR 5)'}.` : ''} ${seedCount === 1 ? 'Seed 1' : `Seeds 1–${seedCount}`}, ${minutes} min each.
+**Conditions.** ${sea}. Stage 2 (Boussinesq) surf zone.${barrel ? ` At a swept spot the bots ride ${ridden}${ungated}.` : ''} ${seedCount === 1 ? 'Seed 1' : `Seeds 1–${seedCount}`}, ${minutes} min each.
 
 **The bots.** ${where}, prone, nose to the beach. The bots are ghosts: they feel the water and the lip, but neither feels them. A bot paddles when a crest more than a quarter of the swell's height above still water (${spots.map((spot) => `${spot} ${fixed(riseAt(spot), 2)} m`).join(', ')}) rises within ${LOOK} m behind it. It pops up the moment the cue lights and gives up after ${GIVE_UP} s without one. Standing, it rides straight with no steering until it falls, or until the board has been slower than ${STALL} m/s for ${RIDE_END} s. After every attempt it goes back to its spot in the lineup.
 
