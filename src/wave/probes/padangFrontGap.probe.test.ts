@@ -2,8 +2,9 @@ import { appendFileSync, writeFileSync } from 'node:fs';
 import { loadavg } from 'node:os';
 import { describe, it } from 'vitest';
 import { PADANG } from '../Bathymetry';
+import { crestMotion } from '../CrestKinematics';
 import { libraryFromBytes } from '../barrel/barrelLibrary';
-import type { CrestTrack, FrontPoint } from '../barrel/BreakingFront';
+import type { CrestTrack, FrontOptions, FrontPoint } from '../barrel/BreakingFront';
 import { columnCrests, type CrestSample } from '../barrel/crestOnset';
 import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from '../barrel/frontRecords';
 import { readBarrelCases } from '../barrel/nodeBarrelCases';
@@ -14,6 +15,7 @@ import { PADANG_FRONT, SurfZoneSimulation, barrelFrontFrom, edgeHeight } from '.
 import { sampleSurfaceHeight } from '../../scene/WaterSurface';
 import { PADANG_SPREADING } from '../../game/PhysicalMode';
 import { PADANG_SWELLS } from '../../game/SurfConditions';
+import { formatFastFronts, logPoints, type FastFront, type FastPoint, type PointLog } from './fastFrontDump';
 
 const quantiles = (values: number[], digits = 2) => {
   if (!values.length) return '—';
@@ -137,6 +139,8 @@ interface PairLife {
   meanJoin: number;
   /** How it ended: the two ends on one front (merged), on two fronts no longer end to end (apart), or an end gone. */
   ended: string;
+  /** For a merged pair: whether its two ends' own link is past the front's old rules (beyond the 3-row reach or across a gap), so the clock link made it. */
+  byClock: boolean;
 }
 
 /** Union–find over the step's crest samples: crest lines, each a wave. */
@@ -253,6 +257,13 @@ function separation(loft: LoftResult, a: Tongue, b: Tongue): { distance: number;
  * and the waves. Its own crests follow a sized crest's jumps as the front does (`FrontOptions.jumpReach`). Opt-in
  * (PROBE=1); SECONDS, SWELL, SEED, LOG; FRONT_FROM ('fine' or 'zone': the config's `barrelFrontFrom`) and JUMPS=off
  * (`barrelFront: {}`, no jump rule) for the earlier bases' fronts.
+ *
+ * LINK=1 runs the front with the clock link on (`FrontOptions.clockLink`, the advisor, 2026-10-03: facing ends within
+ * 10 m and one-column gaps linked when their joins agree within 0.166 s/m, the 1 s/m split left alone); the pairs it
+ * reports are then those it left apart, and the 'true splits linked' line says whether any pair the 1 s/m rule splits
+ * ended on one front. FASTDUMP=<file> writes every front whose throws peel at 20 m/s or more as tab-separated rows, a
+ * point's join and throw side by side (time, x, z, η, still depth d, the crest's bearing), rewritten at each summary.
+ * Point LOG and FASTDUMP outside the repository.
  */
 describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
   it('logs why one crest is split into fronts end to end', () => {
@@ -262,12 +273,16 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
     const swellName = (process.env.SWELL ?? 'small') as keyof typeof PADANG_SWELLS;
     const swell = PADANG_SWELLS[swellName];
     const seed = Number(process.env.SEED ?? 3);
+    const linkOn = Boolean(process.env.LINK) && process.env.LINK !== '0' && process.env.LINK !== 'off';
+    const frontRules: FrontOptions | undefined = process.env.JUMPS === 'off' || linkOn
+      ? { ...(process.env.JUMPS === 'off' ? {} : PADANG_FRONT), ...(linkOn ? { clockLink: true } : {}) }
+      : undefined;
     const simulation = new SurfZoneSimulation({
       spot: 'padang', seed, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod,
       directionDegrees: 0, spreading: PADANG_SPREADING, tide: 0, componentCount: 24,
       alongShore: PADANG.alongShore, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1,
       ...(process.env.FRONT_FROM ? { barrelFrontFrom: process.env.FRONT_FROM as 'fine' | 'zone' } : {}),
-      ...(process.env.JUMPS === 'off' ? { barrelFront: {} } : {}),
+      ...(frontRules ? { barrelFront: frontRules } : {}),
     });
     const { solver } = simulation;
     const front = simulation.front!;
@@ -280,7 +295,7 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
     const records = new Float32Array(FRONT_CAPACITY * FRONT_STRIDE);
     const loft = new SweptLoft(library, BARREL_SLOPE.padang!);
     const samples: CrestSample[] = [];
-    appendFileSync(log, `Padang Padang ${swellName} (Hs ${swell.significantHeight} m, ${swell.peakPeriod} s), seed ${seed}, 1 m cells; crests from z ${solver.zCenters[fromRow].toFixed(0)} over ${minHeight.toFixed(2)} m, jumps followed ${jumpReach === undefined ? 'no' : `${jumpReach} m`}; waves: crests linked column to column within ${LINE_REACH} m a column, up to ${LINE_SKIP} columns; tongues: joined slices of one front at weight ≥ ${STANDING}; neighbours within ${NEIGHBOUR} m\n`);
+    appendFileSync(log, `Padang Padang ${swellName} (Hs ${swell.significantHeight} m, ${swell.peakPeriod} s), seed ${seed}, 1 m cells; crests from z ${solver.zCenters[fromRow].toFixed(0)} over ${minHeight.toFixed(2)} m, jumps followed ${jumpReach === undefined ? 'no' : `${jumpReach} m`}; clock link ${linkOn ? 'ON' : 'off'}; waves: crests linked column to column within ${LINE_REACH} m a column, up to ${LINE_SKIP} columns; tongues: joined slices of one front at weight ≥ ${STANDING}; neighbours within ${NEIGHBOUR} m\n`);
     const seconds = Number(process.env.SECONDS ?? 150);
     const throwOf = (c: ColumnCrest) => (c.footHeight === null ? NaN : Math.min(timing.joinDepth(c.refHeight ?? c.footHeight), timing.throwDepth(c.footHeight)));
     // This probe's own crests, and those dropped lately (a new crest may restart one).
@@ -313,12 +328,18 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
     const closed: PairLife[] = [];
     const categoryFrames: Partial<Record<Category, number>> = {};
     const adjacentFrames: Partial<Record<Adjacent, number>> = {};
+    // Pair-frames on which the clock link would join the facing ends, by their gap's columns: with the link on, the 0s and 1s are
+    // what it left (the ends it could not take), and the wider gaps are what a wider bridge would add.
+    const linkableByColumns: Partial<Record<string, number>> = {};
     let wallMs = 0;
     let cpuMs = 0;
     const loads: number[] = [];
     // Each point's first throw, as padangPeak reads the peel (x against the throw along each front, by its front then),
     // with whether its crest jumped before it joined, whether it joined in a jump's step, and the solver's own first break.
     const throwsById = new Map<number, { x: number; thrown: number; joined: number; front: number; jumped: boolean; joinAtJump: boolean; firstBreak: number | null }>();
+    // With FASTDUMP: each point's join and throw, to dump the fast fronts' (fastFrontDump.ts).
+    const fastDump = process.env.FASTDUMP;
+    const pointLogs = new Map<number, PointLog>();
     // Neighbouring points (columns side by side, within 10 m in z): linked now or not, and what a link by clock
     // compatibility would do (the coordinator's candidate: |Δjoin| within 2 × 0.083 s/m of their distance, |Δz| within
     // the jump reach): as an extra link beyond the 3-row reach (A), or as the whole test (B).
@@ -331,6 +352,11 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
       const a = byId.get(life.aEnd);
       const b = byId.get(life.bEnd);
       life.ended = a && b ? (a.front === b.front ? 'merged' : 'apart') : !a && !b ? 'both ends gone' : 'one end gone';
+      // Merged by the front's old rules if its two ends are in neighbouring columns within the 3-row reach and under the 1 s/m split.
+      if (life.ended === 'merged' && a && b) {
+        const distance = Math.hypot(b.x - a.x, b.z - a.z);
+        life.byClock = !(Math.abs(b.column - a.column) === 1 && Math.abs(b.z - a.z) < MATCH && Math.abs(b.joined - a.joined) <= distance);
+      }
       closed.push(life);
       const gapCrests = [...life.crests.entries()].sort((p, q) => p[0] - q[0]).map(([column, c]) => {
         const joinDepth = c.refHeight === null ? NaN : timing.joinDepth(c.refHeight);
@@ -399,6 +425,30 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
       const fast = frontPeels.filter((f) => f.throwPeel >= 20);
       const slow = frontPeels.filter((f) => f.throwPeel < 20);
       const allThrows = [...throwsById.values()];
+      if (fastDump) {
+        // Each fast front's points with a join and a throw on record; a failure here is logged, never the run's end.
+        try {
+          const dumped: FastFront[] = fast.map((f) => {
+            const points: FastPoint[] = [];
+            for (const [id, t] of throwsById) {
+              const entry = pointLogs.get(id);
+              if (t.front === f.front && entry?.thrown) points.push({ id, column: entry.column, join: entry.join, throw: entry.thrown, joinDepth: entry.joinDepth, throwDepth: entry.throwDepth });
+            }
+            return { front: f.front, throws: f.n, span: f.span, throwPeel: f.throwPeel, joinPeel: f.joinPeel, breakPeel: f.breakPeel, points };
+          });
+          writeFileSync(fastDump, formatFastFronts(dumped, `padangFrontGap ${swellName} seed ${seed}, ${label}, clock link ${linkOn ? 'ON' : 'off'}, ${frames} frames`));
+        } catch (error) {
+          appendFileSync(log, `FASTDUMP failed: ${String(error)}\n`);
+        }
+      }
+      const quantile = (values: number[], q: number) => {
+        const sorted = [...values].filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
+        return sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] : NaN;
+      };
+      // The true splits (adjacent facing ends the 1 s/m rule refuses) that ended on one front, and of them those only the clock link's reach or bridge could have made.
+      const splitLinked = splitPairs.filter((life) => life.ended === 'merged');
+      const splitLinkedByClock = splitLinked.filter((life) => life.byClock);
+      const splitShare = splitPairs.length ? (100 * splitLinked.length) / splitPairs.length : 0;
       const nearPairs = closed.filter((life) => Math.min(...life.gapMetres) <= NEIGHBOUR);
       appendFileSync(log, [
         '',
@@ -418,12 +468,15 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
         `all restarted crests left unsized: ${listed(restarts)}`,
         `tongues: frames with one ${framesWithTongue}, with two on two fronts within ${NEIGHBOUR} m ${framesSplitTongues}; neighbouring tongues on one front ${tongueSameFront}, on two fronts ${tongueEndToEnd.length + tongueBehind.length}: end to end ${quantiles(tongueEndToEnd)} m apart, one behind the other ${quantiles(tongueBehind)} m apart`,
         `peel (fronts of 10+ points, r² ≥ 0.5, sampled each second): along σ ${quantiles(frontPeel)} m/s, along x ${quantiles(frontPeelX)} m/s; |dt/dσ| ${quantiles(frontSlowness, 3)} s/m; lips along σ ${quantiles(lips)} m/s; whole waves along x ${quantiles(wavePeelX)} m/s`,
-        `front counters: joins ${front.joins}, splits ${front.splits}, unbroken ${front.unbroken}, lost ${front.lost}, unsized ${front.unsized}, jumps ${front.jumps} (within 1.5 H ${front.waveJumps}); pauses ${simulation.frontPauses}`,
+        `front counters: joins ${front.joins}, splits ${front.splits}, unbroken ${front.unbroken}, lost ${front.lost}, unsized ${front.unsized}, jumps ${front.jumps} (within 1.5 H ${front.waveJumps}); pauses ${simulation.frontPauses}; clock links ${front.clockLinks} (neighbouring columns), bridges ${front.bridges} (one empty column), counted a step as splits are`,
+        `clock-compatible pair-frames (facing ends within ${jumpReach ?? TRACK} m, |Δjoin| ≤ ${CLOCK_LINK.toFixed(3)} s/m × gap) still apart, by gap columns: ${listed(linkableByColumns)} (${linkOn ? 'link ON: gaps of 0 and 1 columns are what it left, wider ones what a wider bridge would add' : 'link off: all of them'})`,
+        `true splits linked (adjacent ends the 1 s/m rule refuses, pairs that ended on one front): ${splitLinked.length} of ${splitPairs.length} (${splitShare.toFixed(1)} %), ${splitLinkedByClock.length} of them past the old rules' reach or across a gap${splitShare > 1 ? ' — OVER 1 %: stop and ask the advisor' : ''}`,
         `peel by throws along x (padangPeak's: fronts of 5+ throws over 10+ m): ${frontPeels.length} fronts, ${quantiles(frontPeels.map((f) => f.throwPeel))} m/s; the same points' joins ${quantiles(frontPeels.map((f) => f.joinPeel))} m/s, the solver's own first breaks ${quantiles(frontPeels.map((f) => f.breakPeel).filter((v) => Number.isFinite(v)))} m/s`,
         `throws ${allThrows.length}: their crest jumped before joining ${share(allThrows.filter((t) => t.jumped).length, allThrows.length)}, joined in a jump's step ${share(allThrows.filter((t) => t.joinAtJump).length, allThrows.length)}`,
         `fronts peeling at 20 m/s or more by their throws: ${fast.length} (${fast.reduce((s, f) => s + f.n, 0)} throws): jumped ${quantiles(fast.map((f) => f.jumped))}, joined in a jump ${quantiles(fast.map((f) => f.joinAtJump))}; slower fronts ${slow.length}: jumped ${quantiles(slow.map((f) => f.jumped))}, joined in a jump ${quantiles(slow.map((f) => f.joinAtJump))}`,
         ...fast.map((f) => `  fast f${f.front}: ${f.n} throws over ${f.span.toFixed(0)} m, by throws ${f.throwPeel.toFixed(1)} m/s, by joins ${f.joinPeel.toFixed(1)} m/s, by the solver's first breaks ${fixed(f.breakPeel, 1)} m/s; jumped ${(100 * f.jumped).toFixed(0)} %, joined in a jump ${(100 * f.joinAtJump).toFixed(0)} %`),
         `neighbouring points within ${jumpReach ?? TRACK} m in z: ${linkCounts.pairs} pair-steps, linked ${linkCounts.linked} (|Δjoin|/d ${quantiles(linkedRates, 3)} s/m; ${linkCounts.linkedRefusedB} over ${LINK_SLOPE.toFixed(3)} s/m, which (B) would split); unlinked ${linkCounts.pairs - linkCounts.linked}: (A) the reach widened for clock-compatible ends would link ${linkCounts.unlinkedA} (of them over 1 s/m: ${linkCounts.unlinkedSplitA}), (B) the clock alone ${linkCounts.unlinkedB}; unlinked beyond the 3-row reach ${linkCounts.unlinkedReach}, of which (A) links ${linkCounts.unlinkedReachA}`,
+        `headline, clock link ${linkOn ? 'ON' : 'off'}, ${swellName}, seed ${seed}, ${label}: fronts a wave ${(frontsPerWave.reduce((a, b) => a + b, 0) / Math.max(1, frontsPerWave.length)).toFixed(2)}; drawn fronts a frame ${(drawnFronts / frames).toFixed(2)}; pairs ${closed.length} (${listed(byClass)}); true splits linked ${splitLinked.length} of ${splitPairs.length}; throws ${allThrows.length}; peel by throws median ${quantile(frontPeels.map((f) => f.throwPeel), 0.5).toFixed(1)} / 90 % ${quantile(frontPeels.map((f) => f.throwPeel), 0.9).toFixed(1)} m/s over ${frontPeels.length} fronts; fast fronts (20 m/s or more) ${fast.length}`,
       ].join('\n') + '\n');
     };
 
@@ -637,7 +690,7 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
               endRestarted: Boolean(aCrest?.restart || bCrest?.restart), rate: (bEnd.joined - aEnd.joined) / gap, fitGap: bMid - aMid,
               overHeight: gap / Math.max(aEnd.height, bEnd.height), overFoot: gap / Math.max(aEnd.footHeight, bEnd.footHeight),
               overWave: gap / Math.max(waveOf(aEnd), waveOf(bEnd)),
-              crests: new Map(), aEnd: aEnd.id, bEnd: bEnd.id, meanJoin: (aEnd.joined + bEnd.joined) / 2, ended: '',
+              crests: new Map(), aEnd: aEnd.id, bEnd: bEnd.id, meanJoin: (aEnd.joined + bEnd.joined) / 2, ended: '', byClock: false,
               linkFrames: 0, oneColumnFrames: 0, oneColumnLinkFrames: 0,
             };
             open.set(key, life);
@@ -648,7 +701,10 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
           life.gapMetres.push(gap);
           // The clock link on the facing ends, and the one-column gaps a bridge would close.
           const linkable = gap <= (jumpReach ?? TRACK) && Math.abs(bEnd.joined - aEnd.joined) <= CLOCK_LINK * gap;
-          if (linkable) life.linkFrames += 1;
+          if (linkable) {
+            life.linkFrames += 1;
+            tally(linkableByColumns, columns >= 6 ? '6+' : columns >= 3 ? '3–5' : String(columns));
+          }
           if (columns === 1) {
             life.oneColumnFrames += 1;
             if (linkable) life.oneColumnLinkFrames += 1;
@@ -739,6 +795,15 @@ describe.runIf(process.env.PROBE)('Padang Padang front gap probe', () => {
       }
       previousPoints = [...points, ...held];
       if (frame % 900 === 899 && frame + 1 < seconds * 30) summarise(`after ${((frame + 1) / 30).toFixed(0)} s`);
+      // With FASTDUMP, each point's join (the step it first stands) and throw (the step it first has one): its crest's height and depth,
+      // its direction of travel from the solver's face (crestMotion, if it reads a travelling form) and its front's line there.
+      if (fastDump) {
+        logPoints(pointLogs, points, (p) => {
+          const k = sampleAt.get(`${p.column}:${p.z}`);
+          const motion = k === undefined ? undefined : crestMotion(solver, samples[k].row * solver.nx + samples[k].column);
+          return motion ? (Math.atan2(motion.direction.x, motion.direction.z) * 180) / Math.PI : null;
+        });
+      }
       // Each point's first throw, with its crest's history.
       for (const p of points) {
         if (p.thrown === null || throwsById.has(p.id)) continue;
