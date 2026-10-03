@@ -1,0 +1,518 @@
+{
+  "schema": 1,
+  "valid": true,
+  "elapsedSeconds": 12.207,
+  "bundleSha256": "d8d8564409cac85cd0bfd742025a7835e0e8627184e89579358952cdb0510788",
+  "fullReport": "report.json",
+  "sourceDirectory": "/private/tmp/tube-stencil-held-final",
+  "geometryReference": "Same current continuous-plan geometry/mask in reference and candidate; no EEA comparison",
+  "method": "Same current continuous-plan geometry in both variants. Reference retains original world-mask rejection; prototype uses exact surviving swept screen samples with seabed depth first. Fixed caustic FBO is an isolated optics input.",
+  "pairs": [
+    {
+      "at": 10,
+      "seaTime": 173.88921329749155,
+      "geometryHash": "1b675336374b996f254b31f8f6cd8ccb5256b0a5af319ac4555849b3bff5b36a",
+      "maskHash": "f218a0294990313efff9cae425ec87e4a5c8d8ccd9de2682d8400cadc0cfc253",
+      "exactRepeats": {
+        "common": true,
+        "state": true,
+        "png": true,
+        "postDiagnostic": true
+      },
+      "ownership": {
+        "controlStates": [
+          {
+            "name": "orderOnly",
+            "mode": "order",
+            "seaTime": 173.88921329749155,
+            "active": 1,
+            "sweptVisible": true,
+            "prepassVisible": false
+          },
+          {
+            "name": "reference",
+            "mode": "world",
+            "seaTime": 173.88921329749155,
+            "active": 0,
+            "sweptVisible": false,
+            "prepassVisible": false
+          },
+          {
+            "name": "inactive",
+            "mode": "stencil",
+            "seaTime": 173.88921329749155,
+            "active": 0,
+            "sweptVisible": true,
+            "prepassVisible": false
+          },
+          {
+            "name": "hidden",
+            "mode": "stencil",
+            "seaTime": 173.88921329749155,
+            "active": 1,
+            "sweptVisible": false,
+            "prepassVisible": false
+          }
+        ],
+        "counts": {
+          "roofPixelsBefore": 54738,
+          "roofPixelsAfter": 54864,
+          "lostOriginalRoofPixels": 0,
+          "newlyExposedSeabed": 0,
+          "exposedWetSeabedBefore": 722,
+          "exposedWetSeabedAfter": 0,
+          "restoredWaterFromSeabed": 722,
+          "newWaterFromFarField": 0,
+          "newWaterFromOther": 3
+        },
+        "controls": {
+          "bedFirstIdsExact": true,
+          "inactiveIdsExact": true,
+          "hiddenIdsExact": true
+        },
+        "parity": {
+          "prepassVertexExact": true,
+          "prepassOriginalFragmentExact": true,
+          "sameGeometryObject": true,
+          "sameDrawRange": true,
+          "sameSide": true,
+          "sameDepthTest": true,
+          "sameDepthFunc": true,
+          "prepassDepthWrite": false,
+          "normalDepthWrite": true,
+          "prepassColourWrite": false
+        },
+        "stencil": {
+          "attributes": {
+            "alpha": true,
+            "antialias": true,
+            "depth": true,
+            "desynchronized": false,
+            "failIfMajorPerformanceCaveat": false,
+            "powerPreference": "high-performance",
+            "premultipliedAlpha": true,
+            "preserveDrawingBuffer": false,
+            "stencil": true,
+            "xrCompatible": false
+          },
+          "bits": 8,
+          "depthBits": 24
+        },
+        "shaders": {
+          "water": {
+            "vertexSha256": "7694bfa47fe90cdea7ce9dffa9442f60de71551765f226f5607f22aa261363ab",
+            "fragmentSha256": "9023be31b9a31a1668303666b20e22fbb04aa10fa5798fe7afcb3542fcf1ce9f"
+          },
+          "normalSwept": {
+            "flags": {
+              "logdepth": false,
+              "map": false,
+              "alphaMap": false,
+              "alphaTest": 0,
+              "alphaHash": false,
+              "alphaToCoverage": false,
+              "transmission": 0,
+              "opacity": 1,
+              "transparent": false,
+              "clippingPlanes": 0
+            },
+            "laterExplicitDiscardOrDepth": false,
+            "guardedChunks": [
+              "logdepthbuf_fragment",
+              "map_fragment",
+              "alphamap_fragment",
+              "alphatest_fragment",
+              "alphahash_fragment"
+            ],
+            "depth": {
+              "test": true,
+              "write": true,
+              "func": 3,
+              "side": 2,
+              "polygonOffset": false,
+              "polygonOffsetFactor": 0,
+              "polygonOffsetUnits": 0
+            },
+            "vertexSha256": "327bee4f2d89aea24dd85985b5e33e6d271769ed62974ebffed7d449d0a2871f",
+            "fragmentSha256": "d97ac24dfa418d7df6e6439f2020c1e0b15045f3b1c39d8ce17f710e1e4c1829"
+          },
+          "ownershipPrepass": {
+            "flags": {
+              "logdepth": false,
+              "map": false,
+              "alphaMap": false,
+              "alphaTest": 0,
+              "alphaHash": false,
+              "alphaToCoverage": false,
+              "transmission": 0,
+              "opacity": 1,
+              "transparent": false,
+              "clippingPlanes": 0
+            },
+            "laterExplicitDiscardOrDepth": false,
+            "guardedChunks": [
+              "logdepthbuf_fragment",
+              "map_fragment",
+              "alphamap_fragment",
+              "alphatest_fragment",
+              "alphahash_fragment"
+            ],
+            "depth": {
+              "test": true,
+              "write": false,
+              "func": 3,
+              "side": 2,
+              "polygonOffset": false,
+              "polygonOffsetFactor": 0,
+              "polygonOffsetUnits": 0
+            },
+            "vertexSha256": "327bee4f2d89aea24dd85985b5e33e6d271769ed62974ebffed7d449d0a2871f",
+            "fragmentSha256": "d97ac24dfa418d7df6e6439f2020c1e0b15045f3b1c39d8ce17f710e1e4c1829"
+          }
+        },
+        "limitations": [
+          "Newly restored water can fill an intended tube cavity. Hole and roof counts do not prove cavity shape is correct.",
+          "Pure foreground IDs exclude antialiased boundaries; ID alpha overrides distant transparent far-field fades."
+        ],
+        "focus": {
+          "roof": {
+            "slice": 23,
+            "front": 2,
+            "sigma": 9.782126426696777,
+            "mouth": 9.810544967651367,
+            "clip": {
+              "x": 354,
+              "y": 262,
+              "width": 420,
+              "height": 300,
+              "scale": 1
+            }
+          },
+          "mouthEdge": {
+            "slice": 5,
+            "front": 2,
+            "sigma": 0.9526362419128418,
+            "mouth": 0.9810544848442078,
+            "clip": {
+              "x": 166,
+              "y": 237,
+              "width": 420,
+              "height": 300,
+              "scale": 1
+            }
+          }
+        }
+      },
+      "controlPngHashes": {
+        "orderOnly": "4c8eb21ccaa3f054fdd5f7135af9d89cb1dd914bc31526b0a937003ae1cf2715",
+        "reference": "8d9e1717785548044d0ae21232764de75caedd3ea1a814523771f50064ac326a",
+        "inactive": "8d9e1717785548044d0ae21232764de75caedd3ea1a814523771f50064ac326a",
+        "hidden": "8d9e1717785548044d0ae21232764de75caedd3ea1a814523771f50064ac326a"
+      }
+    },
+    {
+      "at": 20,
+      "seaTime": 179.9392132974912,
+      "geometryHash": "da2fd31acded3e5e20a7a782ace9fee7ead5d48127af37bb50717fa13ed54bcf",
+      "maskHash": "5cb9d12b42170c5e0ad7d50a23c2d2e0ecff6abb365056d244295a32875825fb",
+      "exactRepeats": {
+        "common": true,
+        "state": true,
+        "png": true,
+        "postDiagnostic": true
+      },
+      "ownership": {
+        "controlStates": [
+          {
+            "name": "orderOnly",
+            "mode": "order",
+            "seaTime": 179.9392132974912,
+            "active": 1,
+            "sweptVisible": true,
+            "prepassVisible": false
+          },
+          {
+            "name": "reference",
+            "mode": "world",
+            "seaTime": 179.9392132974912,
+            "active": 0,
+            "sweptVisible": false,
+            "prepassVisible": false
+          },
+          {
+            "name": "inactive",
+            "mode": "stencil",
+            "seaTime": 179.9392132974912,
+            "active": 0,
+            "sweptVisible": true,
+            "prepassVisible": false
+          },
+          {
+            "name": "hidden",
+            "mode": "stencil",
+            "seaTime": 179.9392132974912,
+            "active": 1,
+            "sweptVisible": false,
+            "prepassVisible": false
+          }
+        ],
+        "counts": {
+          "roofPixelsBefore": 65321,
+          "roofPixelsAfter": 65437,
+          "lostOriginalRoofPixels": 0,
+          "newlyExposedSeabed": 0,
+          "exposedWetSeabedBefore": 1263,
+          "exposedWetSeabedAfter": 0,
+          "restoredWaterFromSeabed": 1263,
+          "newWaterFromFarField": 0,
+          "newWaterFromOther": 2
+        },
+        "controls": {
+          "bedFirstIdsExact": true,
+          "inactiveIdsExact": true,
+          "hiddenIdsExact": true
+        },
+        "parity": {
+          "prepassVertexExact": true,
+          "prepassOriginalFragmentExact": true,
+          "sameGeometryObject": true,
+          "sameDrawRange": true,
+          "sameSide": true,
+          "sameDepthTest": true,
+          "sameDepthFunc": true,
+          "prepassDepthWrite": false,
+          "normalDepthWrite": true,
+          "prepassColourWrite": false
+        },
+        "stencil": {
+          "attributes": {
+            "alpha": true,
+            "antialias": true,
+            "depth": true,
+            "desynchronized": false,
+            "failIfMajorPerformanceCaveat": false,
+            "powerPreference": "high-performance",
+            "premultipliedAlpha": true,
+            "preserveDrawingBuffer": false,
+            "stencil": true,
+            "xrCompatible": false
+          },
+          "bits": 8,
+          "depthBits": 24
+        },
+        "shaders": {
+          "water": {
+            "vertexSha256": "7694bfa47fe90cdea7ce9dffa9442f60de71551765f226f5607f22aa261363ab",
+            "fragmentSha256": "9023be31b9a31a1668303666b20e22fbb04aa10fa5798fe7afcb3542fcf1ce9f"
+          },
+          "normalSwept": {
+            "flags": {
+              "logdepth": false,
+              "map": false,
+              "alphaMap": false,
+              "alphaTest": 0,
+              "alphaHash": false,
+              "alphaToCoverage": false,
+              "transmission": 0,
+              "opacity": 1,
+              "transparent": false,
+              "clippingPlanes": 0
+            },
+            "laterExplicitDiscardOrDepth": false,
+            "guardedChunks": [
+              "logdepthbuf_fragment",
+              "map_fragment",
+              "alphamap_fragment",
+              "alphatest_fragment",
+              "alphahash_fragment"
+            ],
+            "depth": {
+              "test": true,
+              "write": true,
+              "func": 3,
+              "side": 2,
+              "polygonOffset": false,
+              "polygonOffsetFactor": 0,
+              "polygonOffsetUnits": 0
+            },
+            "vertexSha256": "327bee4f2d89aea24dd85985b5e33e6d271769ed62974ebffed7d449d0a2871f",
+            "fragmentSha256": "d97ac24dfa418d7df6e6439f2020c1e0b15045f3b1c39d8ce17f710e1e4c1829"
+          },
+          "ownershipPrepass": {
+            "flags": {
+              "logdepth": false,
+              "map": false,
+              "alphaMap": false,
+              "alphaTest": 0,
+              "alphaHash": false,
+              "alphaToCoverage": false,
+              "transmission": 0,
+              "opacity": 1,
+              "transparent": false,
+              "clippingPlanes": 0
+            },
+            "laterExplicitDiscardOrDepth": false,
+            "guardedChunks": [
+              "logdepthbuf_fragment",
+              "map_fragment",
+              "alphamap_fragment",
+              "alphatest_fragment",
+              "alphahash_fragment"
+            ],
+            "depth": {
+              "test": true,
+              "write": false,
+              "func": 3,
+              "side": 2,
+              "polygonOffset": false,
+              "polygonOffsetFactor": 0,
+              "polygonOffsetUnits": 0
+            },
+            "vertexSha256": "327bee4f2d89aea24dd85985b5e33e6d271769ed62974ebffed7d449d0a2871f",
+            "fragmentSha256": "d97ac24dfa418d7df6e6439f2020c1e0b15045f3b1c39d8ce17f710e1e4c1829"
+          }
+        },
+        "limitations": [
+          "Newly restored water can fill an intended tube cavity. Hole and roof counts do not prove cavity shape is correct.",
+          "Pure foreground IDs exclude antialiased boundaries; ID alpha overrides distant transparent far-field fades."
+        ],
+        "focus": {
+          "roof": {
+            "slice": 39,
+            "front": 24,
+            "sigma": 25.890443801879883,
+            "mouth": 16.43426513671875,
+            "clip": {
+              "x": 438,
+              "y": 264,
+              "width": 420,
+              "height": 300,
+              "scale": 1
+            }
+          },
+          "mouthEdge": {
+            "slice": 81,
+            "front": 24,
+            "sigma": 41.82670211791992,
+            "mouth": 0.49800872802734375,
+            "clip": {
+              "x": 602,
+              "y": 186,
+              "width": 420,
+              "height": 300,
+              "scale": 1
+            }
+          }
+        }
+      },
+      "controlPngHashes": {
+        "orderOnly": "bb1af488c35e1f8d896ec4cc101d75d728b90cb36d4dc92390ebf30cc22b2ded",
+        "reference": "cdf890b5acda048b86251f63fac6fad048ceb724c37072f9b7eecfb3d587480c",
+        "inactive": "cdf890b5acda048b86251f63fac6fad048ceb724c37072f9b7eecfb3d587480c",
+        "hidden": "cdf890b5acda048b86251f63fac6fad048ceb724c37072f9b7eecfb3d587480c"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "report.json",
+      "bytes": 268994,
+      "sha256": "4de575d568705b25521285bcb8e5535db46e73bb40dd9b9263b19d31fdc650bd"
+    },
+    {
+      "path": "prototype-driver.json",
+      "bytes": 3849,
+      "sha256": "1703dc453f72ffd578276adb3900355503d1192b181c0d88f8ad711aba2121b5"
+    },
+    {
+      "path": "at-10.baseline.png",
+      "bytes": 833021,
+      "sha256": "ccadf856dca85d808d8a452c7ccb5668dd2791fb7f4a868b422cdbd98a2054e6"
+    },
+    {
+      "path": "at-10.baseline.masked-ids.png",
+      "bytes": 54150,
+      "sha256": "4c8eb21ccaa3f054fdd5f7135af9d89cb1dd914bc31526b0a937003ae1cf2715"
+    },
+    {
+      "path": "at-10.current.png",
+      "bytes": 830527,
+      "sha256": "222829d9ec1cc051fa0ec78e9210628808f9144465b9c01db72292c8cdb7e68c"
+    },
+    {
+      "path": "at-10.current.masked-ids.png",
+      "bytes": 52636,
+      "sha256": "cfaeebbb88f2de5b356e9e2f7bd5ffda39ea5330f3c2b0b4228bf1832764fa34"
+    },
+    {
+      "path": "at-10.focus-roof-world.png",
+      "bytes": 160526,
+      "sha256": "b0d5e4f24133ee1a214043d8b89d6c422a420ec3d9e4eaf787abfa20a36a5035"
+    },
+    {
+      "path": "at-10.focus-roof-stencil.png",
+      "bytes": 160059,
+      "sha256": "1324889885108d8129f09daddece38eb0d743bf1d22ba336bce32407781dfb38"
+    },
+    {
+      "path": "at-10.focus-mouthEdge-world.png",
+      "bytes": 163669,
+      "sha256": "b4b9ef58806cac3ae114d6d969ce638ec7c2c138401591f5c281746069c7d379"
+    },
+    {
+      "path": "at-10.focus-mouthEdge-stencil.png",
+      "bytes": 163343,
+      "sha256": "d1f92838b079c880654a8c25ec568ea280a19b57b839dfa9c1f7f4db6d20b702"
+    },
+    {
+      "path": "at-10.control-reference.png",
+      "bytes": 45972,
+      "sha256": "8d9e1717785548044d0ae21232764de75caedd3ea1a814523771f50064ac326a"
+    },
+    {
+      "path": "at-20.baseline.png",
+      "bytes": 1331309,
+      "sha256": "55fb52b625e921704ae7c61d7e4403bf1a3f70caf096fa647bcbcfd99f3cf866"
+    },
+    {
+      "path": "at-20.baseline.masked-ids.png",
+      "bytes": 49102,
+      "sha256": "bb1af488c35e1f8d896ec4cc101d75d728b90cb36d4dc92390ebf30cc22b2ded"
+    },
+    {
+      "path": "at-20.current.png",
+      "bytes": 1327218,
+      "sha256": "1dbf6523199c74ec7e43fb57d5feaaaf5b4b574eefae8555a51ba292cba4d3fb"
+    },
+    {
+      "path": "at-20.current.masked-ids.png",
+      "bytes": 46994,
+      "sha256": "e3830e2dee1571f2a2054971b1ae1541e381d0b9eab3ed30377bb81d03a83d94"
+    },
+    {
+      "path": "at-20.focus-roof-world.png",
+      "bytes": 227477,
+      "sha256": "3ab8d4fa6229a5a69a8affbc9f75c91938d8bcf8666b32f6c8bd283bcba74ed0"
+    },
+    {
+      "path": "at-20.focus-roof-stencil.png",
+      "bytes": 227364,
+      "sha256": "08b2986cbbb3c7603ce66c0ff9adb176b42cf5d8b6d141015c379de8f8147b96"
+    },
+    {
+      "path": "at-20.focus-mouthEdge-world.png",
+      "bytes": 217376,
+      "sha256": "d148f2b256a0591cbdf1edb9ecf4fcdaa66ca7f64e27f48f60ba70e4482df209"
+    },
+    {
+      "path": "at-20.focus-mouthEdge-stencil.png",
+      "bytes": 215614,
+      "sha256": "eb3743ee34ea501b07b6b8a1cae46bcbcf6b6bc706b055dc7d50daed182558ab"
+    },
+    {
+      "path": "at-20.control-reference.png",
+      "bytes": 37837,
+      "sha256": "cdf890b5acda048b86251f63fac6fad048ceb724c37072f9b7eecfb3d587480c"
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "basePath": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/tube-frozen-render.mjs",
+  "baseSha256": "8babd6f3a9edb0dc92434e5df57fb7302a6412d6fcf88eabc652cb5158b9f487",
+  "helperPath": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/tube-stencil-helper.mjs",
+  "helperSha256": "88b0f9ad816dd75bb3535567bc371af3c9b5742688b30fdb3ab08e45f85fedca",
+  "patches": [
+    {
+      "name": "absolute-cdp-import",
+      "beforeSha256": "a6d65153af2ca7429aa59dfd268e2c297d9e3500718cafe99c3f11ba31ca2816",
+      "afterSha256": "77eaba394e7af03b5b7bc6175841c2be20e6ec643531b1a9a7a1d126c423844c"
+    },
+    {
+      "name": "stencil-before-context",
+      "beforeSha256": "4efb9d78e066f900048fd21dd850c2f5c9d72a68e39095981c8b15ede6cceef6",
+      "afterSha256": "64b71e569c22cc23cbb2cdad1c8778234f66bd8d5273b8fac8b2df8d5efee7e0"
+    },
+    {
+      "name": "install-isolated-helper",
+      "beforeSha256": "9a2be1d32112d1e9682a19c28ae004db9f0f78c23572e94ac2b02a5f6f800e74",
+      "afterSha256": "70a859bbde6158a9350407d79746d4ad987ed388048e07e45800d016cf70e192"
+    },
+    {
+      "name": "same-current-reference-geometry",
+      "beforeSha256": "c5013a5acc5a7e4d42ca1a66eabe8b94fd01aa774435decbaf107cf6cd503862",
+      "afterSha256": "7c66e01714040abc72c66571bd4922668f7f1b07093187dbbebe0d246b14627e"
+    },
+    {
+      "name": "same-current-camera",
+      "beforeSha256": "773e61198ea15c1c8bf16f9a34d84ea22c1e9da4d4849dd28310253aa1b15c63",
+      "afterSha256": "94c59bf59f23bc7d2e519791913c24c89a50c25b9de9f9fcb1e04acb28fe7d89"
+    },
+    {
+      "name": "same-current-geometry-check",
+      "beforeSha256": "78c0f2d12f627cb33eb272dce6d24372a4707ea1c404385affde07f2ab786e25",
+      "afterSha256": "ff9ac4c0d386f7e46709b8ed9cee2edca55f810695db7b8d1034ec0213e42e9d"
+    },
+    {
+      "name": "normal-variant-switch",
+      "beforeSha256": "d2de7adf177b515e54af717c9baebc325405d35e554b0786556761fe0c7fb110",
+      "afterSha256": "4f7820fc79e942b8410aa331dcbac2a68ea98f59fa4a1f4e7b4c0acb51fe170a"
+    },
+    {
+      "name": "diagnostic-variant-switch",
+      "beforeSha256": "6816e34925eeb1ceb057a020b760f6f8b64efce9d44711b3167ce8bf6689ec68",
+      "afterSha256": "51648bdf893012589f68d3f55e221b3eec44be391bbc50c16bcae9961a5b15be"
+    },
+    {
+      "name": "solid-pass-keeps-original-sampling",
+      "beforeSha256": "a1c44b1d03a11fe69b7d6a17ef8b7668b818072b284d5c06ded38e4789e2bfd9",
+      "afterSha256": "f197ba82ec81fd625715b6e6e6e65404ccdfea9c77d7519d1ff636cf3d2ac622"
+    },
+    {
+      "name": "remember-ids-before-reset",
+      "beforeSha256": "22933a6f19de2a34ab301cfb9438442bc673b20f9873d0a0fc6013b82975aa94",
+      "afterSha256": "8715387bf15a6f12cdb07f42185fca545a840cfdd660a352a8c7d965faa7fab8"
+    },
+    {
+      "name": "controls-and-focused-normal",
+      "beforeSha256": "6da27cf8f04f696347e3cf9f9122307f14368a172ce1d75faf6368a94a1da0c5",
+      "afterSha256": "a8892daf83fe8a981f77bb4382b5f8d48684cf7892df7e67a0c0b5e3d3807573"
+    },
+    {
+      "name": "prototype-provenance",
+      "beforeSha256": "c47a4a9fecf9eb46d628f140dde18d3f317c858cf30c15717d23d4c69e488f58",
+      "afterSha256": "31e9a92c3671eb386563f0e86fba40de32c5d1c92c38d002ae64eaec48e9f210"
+    }
+  ],
+  "method": "Same current continuous-plan geometry in both variants. Reference retains original world-mask rejection; prototype uses exact surviving swept screen samples with seabed depth first. Fixed caustic FBO is an isolated optics input.",
+  "productionChanged": false,
+  "derivedSha256": "00cbb736fe1268e81531f5fe12175fdeb6f19135382b9a0ebd3e239d30d24c5f",
+  "args": [
+    "--url=http://127.0.0.1:4201/",
+    "--dir=/private/tmp/surf-tube-stability-current-20261003",
+    "--out=/private/tmp/tube-stencil-held-final",
+    "--frames=10,20",
+    "--timeoutSeconds=60",
+    "--cdp=9465",
+    "--mask-diagnostic=true",
+    "--freeze-caustics=true"
+  ]
+}
