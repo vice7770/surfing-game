@@ -6,7 +6,6 @@ import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from '../../wave/barre
 import { tubeCase } from '../../wave/barrel/toyCase';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
-import { WATER_ABSORPTION } from '../waterOptics';
 import { RICH_LIP_GLOW, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
@@ -151,10 +150,10 @@ describe('the swept barrel’s mesh', () => {
     swept.setLook('rich');
     const { vertex, fragment } = compiled(swept.mesh.material);
     for (const line of ['attribute vec4 sweptThroat;', 'vSweptThroat = sweptThroat;', 'vSweptTube = sweptTube;', 'vSweptRay = sweptRay;']) expect(vertex).toContain(line);
-    // The glow: the sun on the sheet's far side, through k = 8 times its thickness, on the water's absorption alone.
+    // The glow: the sun on the sheet's far side, through k times its thickness, on the spot's own water (round 2).
     expect(fragment).toContain(RICH_LIP_GLOW);
     expect(RICH_LIP_GLOW).toContain('max( 0.0, -dot( waterN, waterSunDirection ) ) * waterSunRadiance');
-    expect(RICH_LIP_GLOW).toContain(`exp( -vec3( ${WATER_ABSORPTION.map((c) => c.toFixed(6)).join(', ')} ) * 20.0 * vSweptSheet )`);
+    expect(RICH_LIP_GLOW).toContain('exp( -waterDiffuseAttenuation * 20.0 * vSweptSheet )');
     expect(fragment.indexOf(RICH_LIP_GLOW)).toBeGreaterThan(fragment.indexOf(SWEPT_SHEET_BODY));
     expect(fragment.indexOf(RICH_LIP_GLOW)).toBeLessThan(fragment.indexOf('float waterCover'));
     // The throat: once the sky's light and reflections are gathered (and the reflection scaled), before they light it;

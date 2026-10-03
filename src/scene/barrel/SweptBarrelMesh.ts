@@ -12,7 +12,7 @@ import { waterStreakPars } from '../water/streaks';
 import { waterTubePars } from '../water/tubeCarve';
 import type { WaterLook } from '../water/waterLook';
 import { waterChopNormal } from '../waterChop';
-import { CLASSIC_FOAM, CREST_SAMPLES, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFragment } from '../waterOptics';
+import { CLASSIC_FOAM, CREST_SCATTER, WATER_IOR, waterBodyFragment } from '../waterOptics';
 import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
 import { SWEPT_BAND_ALPHA, SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
 
@@ -121,8 +121,6 @@ export const FACE_MAP = [0.1, 0.4] as const;
  * across (look-fix round 1; the advisor's smoothstep 0.3–0.7, provisional).
  */
 export const CHOP_UPRIGHT = [0.3, 0.7] as const;
-/** The height field's crest-light march's reach, m: its last sample (`CREST_SAMPLES`); past it the water lights nothing. */
-const CHORD_REACH = CREST_SAMPLES[CREST_SAMPLES.length - 1];
 
 // The loft's vertices are world positions and normals: the water's depth, foam and current are read where each lies.
 // The curl takes the water's foam only as far as it lies on the water: the solver breaks where the tube is, so its
@@ -219,6 +217,26 @@ ${SWEPT_BARREL_DISCARD}
 export const WALL_POINT = LANDMARK.throat + 8;
 
 /**
+ * The path lengthening for multiple scattering (the spec's item 16: exp(−σ·k·d), k ≈ 5–20; graphics.md item 1, after Pope &
+ * Fry 1997 and Barré-Brisebois 2011): a thin, aerated lip scatters far more than clear water, and the light that crosses
+ * the curl's water toward the eye goes by a path k times as long. Tuned by eye against backlit lips, as the advisor's start
+ * (8, 2026-10-01) asked, to the range's top: at 8 the sun's glow through the 0.1–0.2 m underside kept 66–76 % of its red and
+ * drew a pale windscreen from inside the tube (its pale pixels' saturation 0.12); at 20 they are aqua (0.22) [provisional].
+ */
+export const LIP_GLOW_PATH = 20;
+
+/**
+ * What a light crossing `path` (GLSL, m) of the curl's water toward the eye keeps of each colour (look-fix round 2; the
+ * advisor's ruling): e^{−K k d}, K the spot's own diffuse attenuation in the look drawn (the bound uniform
+ * `waterDiffuseAttenuation`, a + b_b: in Rich it carries the plankton and the dissolved matter of the sourced colour, in
+ * Classic the grey particles), k = `LIP_GLOW_PATH`. The unscattered beam e^{−c d} passes 86–98 % of every colour through
+ * the 0.1–0.3 m of a lip, so a lit lip was one flat colour; and pure water's constant lets 95 % of the blue and 71 % of the
+ * green through a 0.3 m lip at k = 20 whatever the spot's water is, a pale windscreen. The sun's shadow in the throat stays on the beam (`RICH_THROAT`):
+ * there the beam is what casts it.
+ */
+export const scatteredPass = (path: string) => `exp( -waterDiffuseAttenuation * ${LIP_GLOW_PATH.toFixed(1)} * ${path} )`;
+
+/**
  * The lip as a thin sheet lit from behind, in both looks (docs/research/water-physics/tube-colour-fix.md, step 2; the
  * advisor's rulings, 2026-10-01), not a column of water over the reef: the view ray crosses the sheet's thickness,
  * lengthened by its refracted angle (at least 0.2), t. The sheet's own backscatter builds up with that path (two-flux:
@@ -229,7 +247,8 @@ export const WALL_POINT = LANDMARK.throat + 8;
  * environment at −n) [provisional: the build's choice], and E_wall the back wall as drawn: its column body (the body's
  * gain on the reflectance at its depth over the bed) under the sky and sun on its own normal (`WALL_POINT`; the
  * advisor, 2026-10-01) [provisional]. And the sun's crest light where it is behind, over its own path through the
- * sheet, t / |n·L| (at least 0.2). The height field's march is never run on the curl.
+ * sheet, t / |n·L| (at least 0.2), on the scattered path (`scatteredPass`: e^{−K k d}, look-fix round 2), the sun's light
+ * leaving the sheet toward the eye as the glow's does. The height field's march is never run on the curl.
  */
 export const SWEPT_SHEET_BODY = /* glsl */ `
     float sweptPath = vSweptSheet / max( 0.2, waterRefractedCosine( waterViewCos ) );
@@ -250,15 +269,7 @@ export const SWEPT_SHEET_BODY = /* glsl */ `
     float sweptSunPath = vSweptSheet / max( 0.2, abs( dot( waterN, waterSunDirection ) ) );
     float sweptSunBehind = pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 4.0 );
     totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) ) * (
-      sweptReach * sweptBack * RECIPROCAL_PI + ${CREST_SCATTER.toFixed(6)} * sweptSunBehind * waterSunRadiance * exp( -waterAttenuation * sweptSunPath ) );`;
-/**
- * The lip glow's path lengthening for multiple scattering (the spec's item 16: exp(−σ·k·d), k ≈ 5–20): a thin, aerated
- * lip scatters far more than clear water. Tuned by eye against backlit lips, as the advisor's start (8, 2026-10-01) asked,
- * to the range's top: at 8 the sun's glow through the 0.1–0.2 m underside kept 66–76 % of its red and drew a pale
- * windscreen from inside the tube (its pale pixels' saturation 0.12); at 20 they are aqua (0.22) [provisional].
- */
-export const LIP_GLOW_PATH = 20;
-const glslVec3 = (rgb: readonly number[]) => `vec3( ${rgb.map((c) => c.toFixed(6)).join(', ')} )`;
+      sweptReach * sweptBack * RECIPROCAL_PI + ${CREST_SCATTER.toFixed(6)} * sweptSunBehind * waterSunRadiance * ${scatteredPass('sweptSunPath')} );`;
 
 /**
  * The margin over which the sun is taken to leave a tube along the crest out of its mouth (look-fix round 1), a share of
@@ -310,26 +321,29 @@ float sweptMouthShare( vec3 direction, vec2 tip ) {
 
 /**
  * The lip's glow (Rich; the spec's item 16; the advisor's rulings, 2026-10-01): sunlight entering the sheet's far side
- * scatters through it and leaves toward the viewer diffusely, over a path lengthened k times its thickness and absorbed
- * by the water alone (Pope & Fry; k stands for the scattering, so not the beam attenuation), only when the sun is on
- * the far side: weight · (1 − F) · max(0, −n·L) · E_sun · e^{−a k d} / π, on top of the forward crest light.
+ * scatters through it and leaves toward the viewer diffusely, over a path lengthened k times its thickness and absorbed by
+ * the spot's own water (`scatteredPass`: Pope & Fry; k stands for the scattering, so not the beam attenuation; look-fix
+ * round 2: the bound K of the water drawn, no longer pure water's constant, which let 95 % of the blue through a 0.3 m lip × 20
+ * at any spot), only when the sun is on the far side: weight · (1 − F) · max(0, −n·L) · E_sun · e^{−K k d} / π, on top of
+ * the forward crest light.
  */
 export const RICH_LIP_GLOW = /* glsl */ `
     totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) )
       * max( 0.0, -dot( waterN, waterSunDirection ) ) * waterSunRadiance
-      * exp( -${glslVec3(WATER_ABSORPTION)} * ${LIP_GLOW_PATH.toFixed(1)} * vSweptSheet ) * RECIPROCAL_PI;`;
+      * ${scatteredPass('vSweptSheet')} * RECIPROCAL_PI;`;
 
 /**
  * The light behind the lip, Rich (look-fix round 1; graphics.md item 1: exp(−σ k d), k about 5–20, after Pope & Fry 1997;
  * the glow's k, `LIP_GLOW_PATH`): the sheet's diffuse back light, the sky's and the wall's, crosses the lip as the
- * glow does, scattered over k times its thickness and absorbed by the water alone, e^{−a k t}, not on the unscattered beam
- * e^{−c t}, which passes 86–98 % of every colour through the 0.1–0.5 m of a lip at Padang Padang and drew a white-blue
- * strip with no gradient. It replaces the body's own term (`SWEPT_SHEET_BODY`) by adding the difference, so the lip is
- * aqua at its thin edge and green-blue toward its root, where the red has gone. Needs `sweptReach` and `sweptBack`.
+ * glow does, scattered over k times its thickness and absorbed by the spot's own water, e^{−K k t} (`scatteredPass`; round
+ * 2), not on the unscattered beam e^{−c t}, which passes 86–98 % of every colour through the 0.1–0.5 m of a lip at Padang
+ * Padang and drew a white-blue strip with no gradient. It replaces the body's own term (`SWEPT_SHEET_BODY`) by adding the
+ * difference, so the lip is aqua at its thin edge and green-blue toward its root, where the red has gone. Needs
+ * `sweptReach` and `sweptBack`.
  */
 export const RICH_LIP_BACK = /* glsl */ `
     totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) )
-      * ( exp( -${glslVec3(WATER_ABSORPTION)} * ${LIP_GLOW_PATH.toFixed(1)} * vSweptSheet ) - sweptReach ) * sweptBack * RECIPROCAL_PI;`;
+      * ( ${scatteredPass('vSweptSheet')} - sweptReach ) * sweptBack * RECIPROCAL_PI;`;
 
 /**
  * The sea in the curl's mirror, Rich (look-fix round 1; the advisor's ruling): where its mirrored ray points below the
@@ -510,17 +524,23 @@ normal = normalize( mix( normalize( vNormal ), normalize( ( viewMatrix * vec4( s
  * `CREST_SCATTER` form), its path the horizontal chord through the slice as drawn on the sun's side of the vertex
  * (`polylineChords`) over the cosine of the sun's horizontal direction s to the slice's ray, chord / max(0.2, |s·ray|),
  * as the water's own march through its height field, which under a lifted curl reads the hump, not the curl. Weighted by
- * the lift less the sheet's weight (the sheet keeps its own), and faded out over the last 1.5 m of the march's 6 m reach
- * (`NO_CHORD` beyond), where the water's cuts it [the fade provisional]. Needs `sweptSunBehind` from `SWEPT_SHEET_BODY`.
+ * the lift less the sheet's weight (the sheet keeps its own), and, as every light that crosses the curl's water toward
+ * the eye, on the scattered path (`scatteredPass`: e^{−K k d}; look-fix round 2): over a metre or two of chord only a thin
+ * edge of the red and green is left, which is what lights a back gold at its crest and green a hand's breadth in, where the
+ * unscattered beam e^{−c d} lit it one flat colour. A line that crosses no water, or more than the march reads
+ * (`NO_CHORD`), gives none; there is no fade at the march's reach, the absorption ends the light. Needs `sweptSunBehind`
+ * from `SWEPT_SHEET_BODY`.
  */
 export const SWEPT_CHORD_LIGHT = /* glsl */ `
     float sweptSunLength = length( waterSunDirection.xz );
     if ( sweptSunLength > 1e-3 ) {
       float sweptAlong = dot( waterSunDirection.xz / sweptSunLength, vSweptChord.xy );
-      float sweptChordPath = ( sweptAlong > 0.0 ? vSweptChord.z : vSweptChord.w ) / max( 0.2, abs( sweptAlong ) );
-      totalEmissiveRadiance += max( 0.0, vSweptLift - vSweptSheetWeight ) * ${CREST_SCATTER.toFixed(6)} * ( 1.0 - vWaterFoam ) * sweptSunBehind
-        * ( 1.0 - waterFresnel( waterViewCos ) ) * waterSunRadiance * exp( -waterAttenuation * sweptChordPath )
-        * ( 1.0 - smoothstep( ${(CHORD_REACH - 1.5).toFixed(1)}, ${CHORD_REACH.toFixed(1)}, sweptChordPath ) );
+      float sweptChordWater = sweptAlong > 0.0 ? vSweptChord.z : vSweptChord.w;
+      float sweptChordPath = sweptChordWater / max( 0.2, abs( sweptAlong ) );
+      if ( sweptChordWater < ${(NO_CHORD - 0.01).toFixed(2)} ) {
+        totalEmissiveRadiance += max( 0.0, vSweptLift - vSweptSheetWeight ) * ${CREST_SCATTER.toFixed(6)} * ( 1.0 - vWaterFoam ) * sweptSunBehind
+          * ( 1.0 - waterFresnel( waterViewCos ) ) * waterSunRadiance * ${scatteredPass('sweptChordPath')};
+      }
     }`;
 
 /** The water's varyings the resting curl takes in place of its own (`richRestingWater`, `classicRestingWater`), as the preprocessor names them. */
