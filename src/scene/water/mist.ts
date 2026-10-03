@@ -184,12 +184,14 @@ float foamBallGlowCoverage( float phase, float chord, float density ) {
 
 /**
  * The Rich spray's drawing in GLSL: each cluster is a capsule, as long as it travels in `streak` seconds (a drop's
- * frame or two; a veil's longer trail) and as wide as `width` times its cluster, mist drawn wider, thickest on its axis
- * and falling away to its edge as (1 − edge)^`shape`; the light of `sprayColour`; and the cluster faded as it grows to fill
- * the view or comes near the eye (True Surf's overdraw lesson, spray-and-mist.md §4).
+ * frame or two; mist's, 0.3 s) and as wide as `width` times its cluster, mist drawn wider (1.2 against a drop's 0.5),
+ * thickest on its axis and falling away to its edge as (1 − edge)^`shape`; the light of `sprayColour`; and the cluster
+ * faded as it grows to fill the view or comes near the eye (True Surf's overdraw lesson, spray-and-mist.md §4). Mist's
+ * trail and width are provisional, set by eye on the water sheet: the veil is shed all along a crest and drawn out
+ * downwind, so it reads as the filament it is and not as a row of round puffs (a 0.1 s trail, 1.6 wide, did).
  */
 export const SPRAY_DRAW = {
-  streakDrop: 1 / 30, streakMist: 0.1, widthDrop: 0.5, widthMist: 1.6, shapeDrop: 2.5, shapeMist: 1.5, grain: 1.2, wisp: 0.7,
+  streakDrop: 1 / 30, streakMist: 0.3, widthDrop: 0.5, widthMist: 1.2, shapeDrop: 2.5, shapeMist: 1.5, grain: 1.2, wisp: 0.7,
   fadeFrom: 0.12, fadeTo: 0.3, nearFrom: 0.4, nearTo: 2,
 } as const;
 

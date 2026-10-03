@@ -146,8 +146,17 @@ describe('spray drawn by its optical depth (decided 2026-09-29, item 1)', () => 
     expect(sprayPars).toContain('vec3 sprayColour( float tau, float phase, float facing, float up, float sky, float ground, vec3 sun )');
     expect(sprayPars).toContain('float sprayWhite( float tau )');
     expect(sprayDrawPars).toContain(`const float STREAK_DROP = ${SPRAY_DRAW.streakDrop.toFixed(5)};`);
+    expect(sprayDrawPars).toContain(`const float STREAK_MIST = ${SPRAY_DRAW.streakMist.toFixed(5)};`);
     expect(sprayDrawPars).toContain(`const float WIDTH_MIST = ${SPRAY_DRAW.widthMist.toFixed(3)};`);
     // The drops’ g is the mist’s: one lobe for all spray.
     expect(MIST_G).toBe(DROP_G);
+  });
+
+  it('draws mist as a trail longer than a drop’s frame and narrower than it was, so that a veil reads as filaments and not puffs', () => {
+    // Provisional, set by eye on the water sheet: a drop is a frame's streak (1/30 s), mist trails 0.3 s and is 1.2 of its
+    // cluster wide, where it trailed 0.1 s and was 1.6 wide, and read as a row of round puffs.
+    expect(SPRAY_DRAW.streakMist).toBeGreaterThan(5 * SPRAY_DRAW.streakDrop);
+    expect(SPRAY_DRAW.widthMist).toBeGreaterThan(SPRAY_DRAW.widthDrop);
+    expect(SPRAY_DRAW.widthMist).toBeLessThan(1.6);
   });
 });
