@@ -430,7 +430,7 @@ describe('the clock link', () => {
     expect(fronts(joinTogether(LINKED, halves(12, 10, 0.25)))).toBe(2);
   });
 
-  it('continues the nearest chain end when several qualify, and an end only once', () => {
+  it('continues for each head in turn the nearest end left, as the 3-row link does, and an end only once', () => {
     // A 0–8 and a crest C 5 m behind it in the same columns, 0–9; a third piece from column 10 on A's line: A's end is 2 m
     // off across the empty column 9, C's 5.10 m off beside it, both with joins 0.25 s apart.
     const nearest = joinTogether(LINKED, [
@@ -441,7 +441,16 @@ describe('the clock link', () => {
     expect(frontAt(nearest, 10, 10)).toBe(frontAt(nearest, 0, 10));
     expect(frontAt(nearest, 0, 15)).not.toBe(frontAt(nearest, 0, 10));
     expect(nearest.points.filter((point) => point.front === frontAt(nearest, 0, 15))).toHaveLength(10);
-    // Two pieces after one end: the first in z takes it, the other starts a front of its own.
+    // Two pieces in reach of one end, 8 m below it (8.06 m apart) and 5 m above (5.10 m): the first in z takes it, though
+    // the other is nearer, and the other starts a front of its own.
+    const first = joinTogether(LINKED, [
+      { columns: range(0, 10), z: 10, join: 1 }, { columns: range(10, 20), z: 2, join: 1.25 }, { columns: range(10, 20), z: 15, join: 1.25 },
+    ]);
+    expect(fronts(first)).toBe(2);
+    expect(frontAt(first, 10, 2)).toBe(frontAt(first, 0, 10));
+    expect(frontAt(first, 10, 15)).not.toBe(frontAt(first, 0, 10));
+    expect(first.clockLinks).toBe(1);
+    // The first in z the nearer as well: it takes the end, and the end is taken once.
     const once = joinTogether(LINKED, [
       { columns: range(0, 10), z: 10, join: 1 }, { columns: range(10, 20), z: 14, join: 1.25 }, { columns: range(10, 20), z: 18, join: 1.25 },
     ]);
@@ -497,7 +506,7 @@ describe('the clock link', () => {
   /** Three crest lines 2 and 17 m apart, wandering a metre either way on whole rows: crests meet and tie in a column. */
   const CROWDED = crestSteps(7, [{ z: 12, first: 10 }, { z: 14, first: 13 }, { z: 31, first: 12 }], 1, true);
 
-  it.each([['three lines', THREE_LINES]] as const)('only ever adds links when on, each from one front\'s last point to the next one\'s first: %s', (_, steps) => {
+  it.each([['three lines', THREE_LINES], ['crowded rows', CROWDED]] as const)('only ever adds links when on, each from one front\'s last point to the next one\'s first: %s', (_, steps) => {
     const off = new BreakingFront(1, TIMING, PADANG);
     const on = new BreakingFront(1, TIMING, LINKED);
     /** A front's links: each point to the one before it on its front, as "before>point". */
@@ -510,7 +519,7 @@ describe('the clock link', () => {
     steps.forEach((samples, step) => {
       const time = step * 0.1;
       for (const front of [off, on]) front.update(samples, samples.length, time);
-      // The same points, with the same joins and places, the links the only difference.
+      // The same points, with the same joins and places (crests that tie in a column included), the links the only difference.
       const ids = (front: BreakingFront) => front.points.map((point) => `${point.id}:${point.joined}:${point.z}`).sort().join();
       if (ids(on) !== ids(off)) problems.push(`${step}: different points`);
       const offLinks = links(off.points);
