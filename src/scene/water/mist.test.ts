@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import skyManifest from '../../../public/assets/skies/skies.json';
 import { skyExposure, type SkyEntry } from '../PhotoSky';
 import { skyIrradiance } from '../SprayPoints';
-import { DROP_G, FOAM_BALL, MIST_G, ballPars, ballShade, foamBallDepth, foamBallLight, henyeyGreenstein, isMist, mistPars, type BallLight, type BallShape } from './mist';
+import {
+  CAPSULE_MEANS, DROP_G, FOAM_BALL, MIST_G, SPRAY_DRAW, SPRAY_LIGHT, ballPars, ballShade, capsuleMean, clusterProfile, foamBallDepth, foamBallLight, henyeyGreenstein, isMist, mistPars,
+  sprayLight, sprayPars, sprayWhite, twoStream, type BallLight, type BallShape, type SprayLight,
+} from './mist';
 import { richSprayFragment, richSprayVertex } from './richSpray';
 
 describe('mist', () => {
@@ -193,5 +196,99 @@ describe('the shade foam balls throw on each other', () => {
     // The water's fresh churn is creased 0.88–1 (richWaterGlsl.ts); so is the ball.
     expect(richSprayFragment).toContain('0.88 + 0.12 * churn.y');
     expect(richSprayVertex).toContain('vRadius = 0.5 * look.x;');
+  });
+});
+
+describe('spray drawn by its optical depth (decided 2026-09-29, spray item 1)', () => {
+  const light: SprayLight = { sky: [1.7, 1.7, 1.7], sun: [4.95, 1.7, 0.11], sunHeight: 0.106, foam: FOAM };
+
+  it('scatters as water drops do: mist’s asymmetry is the drops’ own, 0.86–0.88', () => {
+    expect(MIST_G).toBe(DROP_G);
+  });
+
+  it('is see-through near τ = 1 and white past 15: Bohren’s two-stream slab', () => {
+    const reduced = (tau: number) => (1 - MIST_G) * tau;
+    expect(twoStream(15).reflect).toBeCloseTo(reduced(15) / (2 + reduced(15)), 12);
+    expect(twoStream(15).reflect).toBeGreaterThan(0.45);
+    expect(twoStream(1).reflect).toBeLessThan(0.07);
+    expect(twoStream(1).through).toBeCloseTo(2 / (2 + reduced(1)) - Math.exp(-1), 12);
+    expect(sprayWhite(1)).toBeLessThan(0.15);
+    expect(sprayWhite(15)).toBeGreaterThan(0.8);
+    expect(sprayWhite(100)).toBeGreaterThan(0.99);
+  });
+
+  it('stops 1 − e^−τ of what is behind it, and hides half of that while thin (half of what drops scatter goes within 5°), all of it once white', () => {
+    const thin = sprayLight(light, 0.3, 0.3, 1 / (4 * Math.PI), 0, 0);
+    expect(thin.emission).toBeCloseTo(1 - Math.exp(-0.3), 12);
+    expect(thin.hidden / thin.emission).toBeCloseTo(SPRAY_LIGHT.leak + (1 - SPRAY_LIGHT.leak) * sprayWhite(0.3), 12);
+    expect(SPRAY_LIGHT.leak).toBe(0.5);
+    const thick = sprayLight(light, 0.3, 200, 1 / (4 * Math.PI), 0, 0);
+    expect(thick.hidden / thick.emission).toBeGreaterThan(0.99);
+  });
+
+  it('glows with the sun’s own colour where thin spray is backlit, and is the readable minimum of white where it is lit from the front', () => {
+    const backlit = sprayLight(light, 0.3, 0.3, henyeyGreenstein(0.97, MIST_G), 0, 0).colour;
+    expect(backlit[0] / backlit[1]).toBeGreaterThan(0.8 * (light.sun[0] / light.sun[1]));
+    expect(luminance(backlit)).toBeGreaterThan(4 * luminance(sprayLight(light, 0.3, 0.3, henyeyGreenstein(-0.9, MIST_G), 0, 0).colour));
+    // Front-lit thin spray is never under the readable share of a white cloud's light in the same place; with no sky to
+    // scatter, the sun's backscatter alone is far under it, and it is lifted to it.
+    const whiteIn = (l: SprayLight) => l.sky.map((sky, k) => (sky * 0.5 + FOAM[k] * (sky + l.sun[k] * l.sunHeight) * 0.5 + l.sun[k] * 0.5) / Math.PI);
+    const front = sprayLight(light, 0.3, 0.3, henyeyGreenstein(-0.9, MIST_G), 0.5, 0).colour;
+    expect(luminance(front)).toBeGreaterThanOrEqual(SPRAY_LIGHT.readable * luminance(whiteIn(light)) - 1e-9);
+    const noSky: SprayLight = { ...light, sky: [0, 0, 0] };
+    const lifted = sprayLight(noSky, 0.3, 0.3, henyeyGreenstein(-0.9, MIST_G), 0.5, 0).colour;
+    expect(luminance(lifted)).toBeCloseTo(SPRAY_LIGHT.readable * luminance(whiteIn(noSky)), 9);
+    // In its own hue, the sun's: the lift scales it, it does not whiten it.
+    expect(lifted[0] / lifted[2]).toBeGreaterThan(10);
+  });
+
+  it('is a white of the sun on its lit side where the spray round it is thick, and passes the sun through on the other while it is not too thick', () => {
+    const lit = sprayLight(light, 2, 400, 0, 1, 0).colour;
+    const shaded = sprayLight(light, 2, 400, 0, -1, 0).colour;
+    expect(luminance(lit)).toBeGreaterThan(2 * luminance(shaded));
+    // At τ = 15 round it, half the sun comes through to its far side: the silver lining of a backlit cloud.
+    const through = sprayLight(light, 2, 15, 0, -1, 0).colour;
+    expect(luminance(through)).toBeGreaterThan(1.5 * luminance(shaded));
+  });
+
+  it('spreads a cluster’s depth over the capsule drawn, most at its middle and nothing at its edge, keeping its water', () => {
+    expect(clusterProfile(0)).toBe(1);
+    expect(clusterProfile(1)).toBeCloseTo(0, 12);
+    expect(clusterProfile(0.5)).toBeCloseTo((Math.exp(-0.5) - Math.exp(-2)) / (1 - Math.exp(-2)), 12);
+    // Over a disc the profile's mean is ((1 − e^−2) / 2 − e^−2) / (1 − e^−2); across a band, (√(π/8) erf √2 − e^−2) / (1 − e^−2).
+    const rim = Math.exp(-2);
+    expect(CAPSULE_MEANS.disc).toBeCloseTo(((1 - rim) / 2 - rim) / (1 - rim), 6);
+    expect(CAPSULE_MEANS.line).toBeCloseTo((0.598144 - rim) / (1 - rim), 5);
+    expect(capsuleMean(0)).toBeCloseTo(CAPSULE_MEANS.disc, 12);
+    expect(capsuleMean(1e9)).toBeCloseTo(CAPSULE_MEANS.line, 6);
+    // Integrate the profile over a capsule of half length 2 numerically: its mean is capsuleMean(2).
+    let sum = 0;
+    let area = 0;
+    for (let i = -300; i < 300; i += 1) {
+      for (let j = -100; j < 100; j += 1) {
+        const x = (i + 0.5) / 100;
+        const y = (j + 0.5) / 100;
+        const beyond = Math.max(0, Math.abs(x) - 2);
+        const edge2 = beyond * beyond + y * y;
+        if (edge2 > 1) continue;
+        sum += clusterProfile(Math.sqrt(edge2));
+        area += 1;
+      }
+    }
+    expect(sum / area).toBeCloseTo(capsuleMean(2), 2);
+  });
+
+  it('has a GLSL twin with the same numbers, which the Rich spray draws its spray and mist with', () => {
+    for (const [name, value] of [['SPRAY_LEAK', SPRAY_LIGHT.leak], ['SPRAY_READABLE', SPRAY_LIGHT.readable], ['SPRAY_GLASS', SPRAY_LIGHT.glass]] as const) {
+      expect(sprayPars).toContain(`const float ${name} = ${value.toFixed(3)};`);
+    }
+    expect(sprayPars).toContain('vec3 sprayLight( float column, float phase, float facing, float up, vec3 sky, vec3 sun, float sunHeight, vec3 foam )');
+    expect(richSprayFragment).toContain('sprayLight( vColumn, phase, dot( worldNormal, spraySunDirection ), worldNormal.y, vSky, spraySunRadiance, spraySunDirection.y, waterFoamColor )');
+    expect(richSprayFragment).toContain('hidden = ( stopped * mix( SPRAY_LEAK, 1.0, white ) + clear * SPRAY_GLASS ) * fade;');
+    expect(richSprayFragment).toContain('gl_FragColor = vec4( gl_FragColor.rgb * emission, hidden );');
+    expect(richSprayVertex).toContain('capsuleMean( halfLength / vRadius )');
+    expect(richSprayVertex).toContain('smoothstep( SPRAY_FADE_FROM, SPRAY_FADE_TO, pixels / screenHeight )');
+    expect(richSprayVertex).toContain(`const float SPRAY_FADE_FROM = ${SPRAY_DRAW.fadeFrom.toFixed(3)};`);
+    expect(richSprayFragment).toContain('float profile = max( 0.0, ( exp( -2.0 * edge2 ) - 0.135335283 ) / 0.864664717 );');
   });
 });

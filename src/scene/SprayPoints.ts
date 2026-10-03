@@ -9,7 +9,11 @@ import { FOAM_BALL } from './water/mist';
 import { richSprayFragment, richSprayVertex } from './water/richSpray';
 import type { WaterLook } from './water/waterLook';
 
-/** What the renderer needs from a spray cloud: packed x, y, z, size, opacity and kind per particle (`SPRAY_STRIDE`), and how many are live. */
+/**
+ * What the renderer needs from a spray cloud: packed x, y, z, size, opacity and kind per particle (`SPRAY_STRIDE`), then
+ * for the Rich look its streak, optical depth, the optical depth round it and its share of clear water; and how many
+ * are live.
+ */
 export interface RenderableSpray {
   readonly particles: Float32Array;
   readonly count: number;
@@ -88,6 +92,11 @@ export class SprayPoints {
   private readonly positions: BufferAttribute;
   private readonly looks: BufferAttribute;
   private readonly kinds: BufferAttribute;
+  /** Rich only: what a cluster travels while it is drawn, its optical depth, the depth of the spray round it and its clear water. */
+  private readonly streaks: BufferAttribute;
+  private readonly depths: BufferAttribute;
+  private readonly columns: BufferAttribute;
+  private readonly glasses: BufferAttribute;
   /** Rich only: the draw order, farthest first. */
   private readonly order: BufferAttribute;
   private readonly buffer = new Vector2();
@@ -98,6 +107,7 @@ export class SprayPoints {
   private readonly balls: number[] = [];
   private readonly ballDistance = new Map<number, number>();
   private environment: Texture | null = null;
+  private largestPoint?: number;
   private readonly rotation = new Matrix4();
   private readonly euler = new Euler();
   private drawn = 0;
@@ -108,15 +118,26 @@ export class SprayPoints {
     this.positions = new BufferAttribute(new Float32Array(capacity * 3), 3);
     this.looks = new BufferAttribute(new Float32Array(capacity * 2), 2);
     this.kinds = new BufferAttribute(new Float32Array(capacity), 1);
+    this.streaks = new BufferAttribute(new Float32Array(capacity * 3), 3);
+    this.depths = new BufferAttribute(new Float32Array(capacity), 1);
+    this.columns = new BufferAttribute(new Float32Array(capacity), 1);
+    this.glasses = new BufferAttribute(new Float32Array(capacity), 1);
     this.order = capacity <= 65536 ? new Uint16BufferAttribute(new Uint16Array(capacity), 1) : new Uint32BufferAttribute(new Uint32Array(capacity), 1);
     this.bucketOf = new Uint16Array(capacity);
     geometry.setAttribute('position', this.positions);
     geometry.setAttribute('look', this.looks);
     geometry.setAttribute('kind', this.kinds);
+    geometry.setAttribute('streak', this.streaks);
+    geometry.setAttribute('tau', this.depths);
+    geometry.setAttribute('column', this.columns);
+    geometry.setAttribute('glass', this.glasses);
     geometry.setDrawRange(0, 0);
     const material = new ShaderMaterial({
       uniforms: {
         pixelsPerMetre: { value: 500 },
+        // Rich only: the drawing buffer's height, px, and the largest point the GPU draws (ALIASED_POINT_SIZE_RANGE).
+        screenHeight: { value: 720 },
+        maxPointSize: { value: 64 },
         sprayColor: { value: [0.94, 0.97, 1] },
         // Rich only: the sun for the mist, and the water's height (shared with the water by `useWater`).
         spraySunDirection: { value: new Vector3(0, 1, 0) },
@@ -156,6 +177,12 @@ export class SprayPoints {
       const fov = camera instanceof PerspectiveCamera ? camera.fov : 50;
       material.uniforms.pixelsPerMetre.value = height / (2 * Math.tan((fov * Math.PI) / 360));
       if (this.currentLook !== 'rich') return;
+      material.uniforms.screenHeight.value = height;
+      if (this.largestPoint === undefined) {
+        const gl = renderer.getContext();
+        this.largestPoint = Number((gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE) as Float32Array | null)?.[1] ?? 64);
+      }
+      material.uniforms.maxPointSize.value = this.largestPoint;
       // The draw order and the balls' shadows go up with the draw, so they are this camera's.
       const eye = this.mesh.worldToLocal(camera.getWorldPosition(this.eye));
       this.sortFrom(eye);
@@ -175,6 +202,8 @@ export class SprayPoints {
     geometry.setIndex(look === 'rich' ? this.order : null);
     material.defines = {};
     this.environment = null;
+    // The Rich spray adds the light it scatters and hides only part of what is behind it: it blends as premultiplied light.
+    material.premultipliedAlpha = look === 'rich';
     material.needsUpdate = true;
     if (look === 'rich') this.sortFrom(undefined);
   }
@@ -205,6 +234,10 @@ export class SprayPoints {
     const positions = this.positions.array as Float32Array;
     const looks = this.looks.array as Float32Array;
     const kinds = this.kinds.array as Float32Array;
+    const streaks = this.streaks.array as Float32Array;
+    const depths = this.depths.array as Float32Array;
+    const columns = this.columns.array as Float32Array;
+    const glasses = this.glasses.array as Float32Array;
     const rich = this.currentLook === 'rich';
     const balls = this.balls;
     balls.length = 0;
@@ -220,12 +253,26 @@ export class SprayPoints {
       looks[drawn * 2 + 1] = spray.particles[o + 4];
       kinds[drawn] = kind;
       if (kind === 2) balls.push(drawn);
+      if (rich) {
+        streaks[drawn * 3] = spray.particles[o + 6];
+        streaks[drawn * 3 + 1] = spray.particles[o + 7];
+        streaks[drawn * 3 + 2] = spray.particles[o + 8];
+        depths[drawn] = spray.particles[o + 9];
+        columns[drawn] = spray.particles[o + 10];
+        glasses[drawn] = spray.particles[o + 11];
+      }
       drawn += 1;
     }
     this.drawn = drawn;
     this.positions.needsUpdate = true;
     this.looks.needsUpdate = true;
     this.kinds.needsUpdate = true;
+    if (rich) {
+      this.streaks.needsUpdate = true;
+      this.depths.needsUpdate = true;
+      this.columns.needsUpdate = true;
+      this.glasses.needsUpdate = true;
+    }
     this.mesh.geometry.setDrawRange(0, drawn);
     if (rich) this.sortFrom(undefined);
   }

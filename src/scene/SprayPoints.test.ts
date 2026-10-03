@@ -19,7 +19,8 @@ function drawFrom(spray: SprayPoints, eye: Vector3, scene = new Scene()): void {
   const camera = new PerspectiveCamera(55, 16 / 9, 0.1, 3000);
   camera.position.copy(eye);
   camera.updateMatrixWorld();
-  const renderer = { getDrawingBufferSize: (target: Vector2) => target.set(1280, 720) } as unknown as WebGLRenderer;
+  const gl = { ALIASED_POINT_SIZE_RANGE: 0x846e, getParameter: (name: number) => (name === 0x846e ? new Float32Array([1, 511]) : null) };
+  const renderer = { getDrawingBufferSize: (target: Vector2) => target.set(1280, 720), getContext: () => gl } as unknown as WebGLRenderer;
   spray.mesh.onBeforeRender(renderer, scene, camera as Camera, spray.mesh.geometry, spray.mesh.material, null as never);
 }
 
@@ -159,5 +160,38 @@ describe('the Rich draw order', () => {
     expect(spray.mesh.geometry.getIndex()).not.toBeNull();
     spray.setLook('classic');
     expect(spray.mesh.geometry.getIndex()).toBeNull();
+  });
+});
+
+describe('the Rich spray’s optics on the GPU (spray item 1)', () => {
+  it('hands the Rich shader each cluster’s streak, optical depth, the depth round it and its clear water, from after the kind', () => {
+    const particles = new Float32Array(2 * SPRAY_STRIDE);
+    particles.set([1, 2, 3, 0.1, 1, 0, 0.1, 0.2, 0.3, 0.4, 5, 0.6], 0);
+    particles.set([4, 5, 6, 0.5, 1, 1, -0.1, 0, 0.05, 0.2, 1, 0], SPRAY_STRIDE);
+    const spray = new SprayPoints();
+    spray.setLook('rich');
+    spray.update({ particles, count: 2 });
+    const read = (name: string, n: number) => Array.from(spray.mesh.geometry.getAttribute(name).array.slice(0, n)).map((v) => +v.toFixed(6));
+    expect(read('streak', 6)).toEqual([0.1, 0.2, 0.3, -0.1, 0, 0.05]);
+    expect(read('tau', 2)).toEqual([0.4, 0.2]);
+    expect(read('column', 2)).toEqual([5, 1]);
+    expect(read('glass', 2)).toEqual([0.6, 0]);
+  });
+
+  it('blends the Rich spray as premultiplied light, which adds and hides apart, and Classic as it always did', () => {
+    const spray = new SprayPoints();
+    expect(spray.mesh.material.premultipliedAlpha).toBe(false);
+    spray.setLook('rich');
+    expect(spray.mesh.material.premultipliedAlpha).toBe(true);
+    spray.setLook('classic');
+    expect(spray.mesh.material.premultipliedAlpha).toBe(false);
+  });
+
+  it('knows the screen’s height and the largest point the GPU draws, so it fades a sprite before it would be cut', () => {
+    const spray = new SprayPoints();
+    spray.setLook('rich');
+    drawFrom(spray, new Vector3());
+    expect(spray.mesh.material.uniforms.screenHeight.value).toBe(720);
+    expect(spray.mesh.material.uniforms.maxPointSize.value).toBe(511);
   });
 });
