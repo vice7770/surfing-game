@@ -13,7 +13,7 @@ import { WaveFrameGauge, type WaveFrame } from '../physics/waveFrame';
 import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { BubbleCloud } from './BubbleCloud';
-import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type SprayLook } from './SprayCloud';
+import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, createLipCrests, writeLipCrests, type SprayLook } from './SprayCloud';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { libraryFromBytes } from './barrel/barrelLibrary';
 import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from './barrel/frontRecords';
@@ -288,6 +288,8 @@ export class SurfZoneRunner {
   /** The contact's last update, ms. */
   contactMs = 0;
   private readonly contactRecords = new Float32Array(FRONT_CAPACITY * FRONT_STRIDE);
+  /** The swept barrel's drawn crest, for the Rich offshore veil (Part B). */
+  private readonly lipCrests = createLipCrests();
   private rideResets = 0;
   private readonly lipHits = new SoundEvents(LIP_HIT_STRIDE);
   private readonly strokeHits = new SoundEvents(STROKE_HIT_STRIDE);
@@ -367,6 +369,8 @@ export class SurfZoneRunner {
     return {
       solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, windSpeed: this.config.windSpeed ?? 0, strokes,
       spits: simulation.lip.spits, eruptions: simulation.lip.eruptions, rollers: simulation.lip.rollers,
+      // The Rich veil comes off the curl the page draws, where this runner builds it (with the contact).
+      lipCrests: this.spray.look === 'rich' && this.contact?.last ? writeLipCrests(this.contact.last, this.lipCrests) : undefined,
     };
   }
 

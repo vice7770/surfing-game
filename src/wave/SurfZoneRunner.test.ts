@@ -10,7 +10,7 @@ import {
   LEASH_BITS, LIP_HIT_STRIDE, LIP_STRIDE, RIDER_PHASES, RIDER_SNAPSHOT, SWIM_BITS, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE, SURF_ZONE_STEP, SurfZoneRunner, surfZoneSea,
 } from './SurfZoneRunner';
 import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
-import { FOAM_BALL_VOLUME, SPRAY_CAPACITY, SPRAY_PER_AIR, SPRAY_STRIDE, WHITEWATER_CAPACITY } from './SprayCloud';
+import { FOAM_BALL_VOLUME, LIP_CREST_STRIDE, SPRAY_CAPACITY, SPRAY_PER_AIR, SPRAY_STRIDE, WHITEWATER_CAPACITY, type SprayScene } from './SprayCloud';
 
 const config: SurfZoneConfig = {
   spot: 'point', seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 20, spreading: 24, tide: 0,
@@ -624,6 +624,29 @@ describe('the swept contact in the surf zone', () => {
       // A landing heard before the barrel's first crash would be Kennedy's lip's, which no longer throws here.
       if (crashes === 0) expect(buffers.lipHitCount).toBe(0);
     }
+  }, 600_000);
+
+  it('hands the spray the barrel’s drawn crest for the offshore veil, where the runner builds the contact (Part B)', () => {
+    const ridden = new SurfZoneRunner(padang, { rider: true, barrelCases: readBarrelCases('padang') });
+    const update = vi.spyOn(ridden.spray, 'update');
+    ridden.advance(30);
+    const scenes = update.mock.calls.map(([scene]) => scene as SprayScene);
+    expect(scenes).toHaveLength(30);
+    for (const scene of scenes) {
+      expect(scene.lipCrests).toBeDefined();
+      expect(scene.lipCrests!.count).toBeGreaterThanOrEqual(0);
+      expect(scene.lipCrests!.count).toBeLessThanOrEqual(scene.lipCrests!.data.length / LIP_CREST_STRIDE);
+    }
+    // Classic has no veil, so builds no crest.
+    ridden.setSprayLook('classic');
+    update.mockClear();
+    ridden.advance(2);
+    for (const [scene] of update.mock.calls) expect((scene as SprayScene).lipCrests).toBeUndefined();
+    // Without the contact there is no loft to read it from, and the veil comes off the solver's crests.
+    const plain = new SurfZoneRunner(padang, { barrelCases: readBarrelCases('padang') });
+    const plainUpdate = vi.spyOn(plain.spray, 'update');
+    plain.advance(2);
+    for (const [scene] of plainUpdate.mock.calls) expect((scene as SprayScene).lipCrests).toBeUndefined();
   }, 600_000);
 
   it('rides the carved water, struck by parcels, without the cases or away from a swept spot', () => {
