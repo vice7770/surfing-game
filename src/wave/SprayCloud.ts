@@ -1,6 +1,8 @@
 import { GRAVITY } from './dispersion';
 import { seededRandom } from './random';
 import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
+import { LANDMARK } from './barrel/ProfileLibrary';
+import { LOFT, LOFT_SAMPLES, type LoftResult } from './barrel/sweptLoft';
 
 /**
  * A lip parcel falling back into the water: where, how much stays (its
@@ -66,6 +68,48 @@ export interface SprayScene {
   readonly spits?: readonly TubeSpit[];
   readonly eruptions?: readonly TubeEruption[];
   readonly rollers?: readonly TubeRoller[];
+  /** A swept barrel's drawn crest, where it is drawn (Padang Padang, Part B): the offshore veil comes off it (`writeLipCrests`). */
+  readonly lipCrests?: LipCrests;
+}
+
+/** Floats per stretch of drawn crest in `LipCrests`: its ends' x, y and z. */
+export const LIP_CREST_STRIDE = 6;
+
+/** A swept barrel's drawn crest, as `count` straight stretches of `LIP_CREST_STRIDE` floats in `data`. */
+export interface LipCrests {
+  data: Float32Array;
+  count: number;
+}
+
+export function createLipCrests(capacity = 1024): LipCrests {
+  return { data: new Float32Array(capacity * LIP_CREST_STRIDE), count: 0 };
+}
+
+/**
+ * The drawn crest of a swept barrel's open slices (phase open, weight at least a half: the curl the page draws), into
+ * `out`: for each, the stretch of crest it stands for, from halfway to the slice before it to halfway to the one after
+ * (where they are joined to it on its front), through the apexes of the crests the page draws. As many as fit.
+ */
+export function writeLipCrests(
+  loft: Pick<LoftResult, 'positions' | 'sliceCount' | 'slicePhase' | 'sliceWeight' | 'sliceFront' | 'sliceJoined'>, out: LipCrests,
+): LipCrests {
+  const capacity = Math.floor(out.data.length / LIP_CREST_STRIDE);
+  const apex = (s: number) => 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.crest);
+  let count = 0;
+  for (let s = 0; s < loft.sliceCount && count < capacity; s += 1) {
+    if (loft.slicePhase[s] !== 1 || !(loft.sliceWeight[s] >= 0.5)) continue;
+    const here = apex(s);
+    const before = s > 0 && loft.sliceJoined[s - 1] === 1 && loft.sliceFront[s - 1] === loft.sliceFront[s] ? apex(s - 1) : here;
+    const after = s + 1 < loft.sliceCount && loft.sliceJoined[s] === 1 && loft.sliceFront[s + 1] === loft.sliceFront[s] ? apex(s + 1) : here;
+    const o = count * LIP_CREST_STRIDE;
+    for (let axis = 0; axis < 3; axis += 1) {
+      out.data[o + axis] = (loft.positions[before + axis] + loft.positions[here + axis]) / 2;
+      out.data[o + 3 + axis] = (loft.positions[here + axis] + loft.positions[after + axis]) / 2;
+    }
+    count += 1;
+  }
+  out.count = count;
+  return out;
 }
 
 /**
@@ -99,6 +143,80 @@ const FOAM_BALL_LINGER = 1;
 const FEATHER_ONSET = 4;
 const FEATHER_SLOPE = 0.25;
 const FEATHER_HEIGHT = 0.3;
+/**
+ * The Rich offshore veil (decided 2026-09-29, spray item 4; round-4 notes §2c): spume is torn off a crest once the wind
+ * relative to it passes 7–11 m/s (Veron 2015, citing Andreas et al. 1995 and Andreas 2002), the offshore wind plus the
+ * crest's own speed √(g d): at a surf break "the phase speed of the wave may be sufficient" (Veron 2015). None comes off
+ * under the onset's low end.
+ */
+export const VEIL_ONSET = 7;
+/** Its drops are 0.1 mm in radius, the spume's peak (Veron 2015), falling at 0.72 m/s, their terminal speed (round-4 notes §2f). */
+export const VEIL_RADIUS = 1e-4;
+export const VEIL_FALL = 0.72;
+/**
+ * The water the veil sheds, m³ per metre of crest per second, on the square of the relative wind over the onset, as
+ * feathering's rate was on the absolute wind's excess (spray-and-mist.md: "Amount provisional (square law on the
+ * excess, as today)") [the rate provisional: no surf-zone measurement exists, set by eye so that at Padang Padang's
+ * sourced 5 m/s offshore over a medium swell, some 9–12 m/s relative, the veil is a haze over the crest and not a row
+ * of white plumes: a particle's optical depth about 1 as it leaves the crest and a few tenths once it has spread].
+ */
+export const VEIL_RATE = 3e-6;
+/**
+ * It is drawn as particles each standing for the water `spacing` m of crest sheds over `interval` s: every place
+ * `spacing` m apart along a crest sheds one every `interval` s, at a moment of its own (`placePhase`), drawn over the
+ * way it has flown in that time, so the particles one place sheds join into a trail, and as wide as the crest it
+ * stands for, so neighbouring places' trails meet: a sheet of fine streaks, with neither the gaps nor the clumps
+ * shedding at random leaves. The solver's crests, which stand for the crest away from the drawn lip, shed it from the
+ * same places every `coarse` intervals: as fine, each drawn over that longer time, half as many [render values,
+ * provisional].
+ */
+export const VEIL_DRAW = { spacing: 0.5, interval: 0.4, width: 0.5, coarse: 2 } as const;
+/**
+ * The air the relative wind drives up a crest's face lifts the veil, at the face's slope times the wind (round-4 notes
+ * §2c: "of order |U| × the face slope", inferred) for as long as the air takes to rise over the wave's height, so the
+ * veil rises about the face's slope times that height above the lip, then streams back and falls (§2c: it "rises 1–3 m
+ * above the lip"): `face` is a steep face's slope, about 24°, and the wave's height is taken as twice the crest's over
+ * still water [both provisional]. The air's gusts spread a place's drops apart at `gust` of the relative wind for as
+ * long as an eddy lasts, `eddy` s: its drops ride the air, so the air's eddies, not their own fall, set how far they
+ * spread, and its trail widens into a haze as it goes [both provisional].
+ */
+export const VEIL_AIR = { face: 0.45, gust: 0.1, eddy: 0.4 } as const;
+/**
+ * The veil's own rooms in the pool, a share for the drawn lip and one for the solver's crests, so neither starves the
+ * other, and the rest of the pool the other spray's: when its room is full, a new veil particle takes the place of its
+ * room's oldest; when the pool is full, a newcomer, veil or not, takes the place of the oldest of the other spray, the
+ * faintest by then, so neither the veil nor an impact is ever turned away, and the veil costs the other spray only its
+ * oldest places, and only in a full pool (round-4 notes §5, item 2: "reserve room for impact bursts and evict the
+ * oldest, farthest or faintest first") [the shares provisional]. The oldest is looked for among the next `look`
+ * particles of the pool, round from where the last was taken.
+ */
+export const VEIL_ROOM = { lip: 0.15, crest: 0.1, look: 64 } as const;
+/**
+ * Solver crest cells within about this many metres of a drawn stretch of crest (in the same cell of this size or the
+ * next) leave the veil to it: the drawn lip stands ahead of the solver's crest by up to about the wave's height
+ * [provisional].
+ */
+export const VEIL_COVER = 3;
+
+/** The wind relative to a crest over `depth` m of water, m/s, positive when the air flows seaward past it: the offshore wind plus the crest's own speed √(g d). */
+export function relativeWind(windSpeed: number, depth: number): number {
+  return -windSpeed + Math.sqrt(GRAVITY * Math.max(0, depth));
+}
+
+/** The water a metre of crest sheds as veil a second at relative wind `relative`, m³: the square law on its excess over the onset. */
+export function veilRate(relative: number): number {
+  const excess = relative - VEIL_ONSET;
+  return excess > 0 ? VEIL_RATE * excess * excess : 0;
+}
+
+/** When in its interval the place `key` sheds its veil, 0–1: an integer hash of it (murmur3's finaliser), so neighbouring places shed at moments of their own. */
+export function placePhase(key: number): number {
+  let h = Math.imul(key ^ 0x9e3779b9, 0x85ebca6b);
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35);
+  h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+}
 /** Classic's lip-impact drops (as before G9): up at these shares of the impact speed, and on at these of its horizontal speed. */
 const CLASSIC_SPLASH_UP = { min: 0.3, max: 0.8 };
 const CLASSIC_SPLASH_FORWARD = { min: 0.2, max: 0.6 };
@@ -131,8 +249,13 @@ const WATER_DENSITY = 1025;
  * look the cloud was packed for, and Rich's width and opacity never reach it.
  */
 export const SPRAY_STRIDE = 14;
-/** The worker's pools: spray and mist, and a closing tube's whitewater beside them, so neither crowds the other out. */
-export const SPRAY_CAPACITY = 4096;
+/**
+ * The worker's pools: spray and mist, and a closing tube's whitewater beside them, so neither crowds the other out. The
+ * spray pool is the decided 16k (2026-09-29, spray-and-mist.md: the 4,096 it was is full on a sixth of the Reef's
+ * steps and clips its biggest impacts): the Rich look uses all of it, Classic the 4,096 it always had.
+ */
+export const SPRAY_CAPACITY = 16384;
+export const CLASSIC_SPRAY_CAPACITY = 4096;
 export const WHITEWATER_CAPACITY = 1024;
 
 type Kind = 0 | 1 | 2 | 3 | 4;
@@ -239,6 +362,9 @@ export class SprayCloud {
   count = 0;
   /** How many of them are a closing tube's whitewater. */
   whitewaterCount = 0;
+  /** How many are the offshore veil, off the drawn lip and off the solver's crests (`VEIL_ROOM`). */
+  veilLipCount = 0;
+  veilCrestCount = 0;
   /** The look the spray is drawn in: Classic's lip-impact drops are as they were before G9. */
   look: SprayLook = 'rich';
   private readonly x: Float64Array;
@@ -262,8 +388,20 @@ export class SprayCloud {
   private readonly spread: Float64Array;
   private readonly streak: Float64Array;
   private readonly around: Float64Array;
-  /** Per particle, how long the air takes to take its drops' speeds, v_t / g, s (`DISPERSION`). */
+  /**
+   * Per particle, how long its drops spread at their spread of speeds, s (`DISPERSION`): till the air takes their own
+   * speeds, v_t / g, or, for the veil's, which ride the air, as long as its eddies last (`VEIL_AIR`).
+   */
   private readonly settle: Float64Array;
+  /** Per particle: 0, or the veil it is, 1 off the drawn lip and 2 off the solver's crests; and the updraft that lifts it at birth, m/s, and how long that lasts, s. */
+  private readonly veilOf: Uint8Array;
+  private readonly lift: Float64Array;
+  private readonly liftTime: Float64Array;
+  /** Where the search for the veil's oldest particle goes on from, and the Rich veil's clock, s (`placePhase`). */
+  private cursor = 0;
+  private veilClock = 0;
+  /** Scratch for `veil`: the coarse cells a drawn stretch of crest covers (`VEIL_COVER`). */
+  private readonly veilCover = new Set<number>();
   /** Scratch for `pack`: each cluster's width, and its water in drops and in sheets, now (`optics`). */
   private readonly widthNow: Float64Array;
   private readonly dropsNow: Float64Array;
@@ -298,12 +436,20 @@ export class SprayCloud {
     this.kind = new Uint8Array(total);
     this.radius = make(); this.water = make(); this.spread = make(); this.streak = make(); this.around = make(); this.settle = make();
     this.widthNow = make(); this.dropsNow = make(); this.sheetsNow = make();
+    this.veilOf = new Uint8Array(total); this.lift = make(); this.liftTime = make();
     this.particles = new Float32Array(total * SPRAY_STRIDE);
   }
 
-  /** Whether there is room for another particle of spray and mist, or of a tube's whitewater. */
+  /**
+   * Whether there is room for another particle of spray and mist, or of a tube's whitewater. Classic's spray keeps the
+   * 4,096 it always had; Rich's has the whole pool but the veil's places, and a newcomer takes the place of its oldest
+   * when it is full (`spawn`, `VEIL_ROOM`).
+   */
   private room(whitewater: boolean): boolean {
-    return whitewater ? this.whitewaterCount < this.whitewaterCapacity : this.count - this.whitewaterCount < this.capacity;
+    if (whitewater) return this.whitewaterCount < this.whitewaterCapacity;
+    const spray = this.count - this.whitewaterCount;
+    if (this.look === 'classic') return spray < Math.min(this.capacity, CLASSIC_SPRAY_CAPACITY);
+    return spray < this.capacity || spray - this.veilLipCount - this.veilCrestCount > 0;
   }
 
   update(scene: SprayScene, dt: number): void {
@@ -319,13 +465,16 @@ export class SprayCloud {
     for (const impact of scene.lipImpacts) this.splash(scene, impact);
     for (const stroke of scene.strokes ?? []) this.strokeSplash(scene, stroke);
     this.boreSpray(scene, dt);
-    this.feather(scene, dt);
+    if (this.look === 'rich') this.veil(scene, dt);
+    else this.feather(scene, dt);
     this.pack();
   }
 
   clear(): void {
     this.count = 0;
     this.whitewaterCount = 0;
+    this.veilLipCount = 0;
+    this.veilCrestCount = 0;
   }
 
   private fly(scene: SprayScene, dt: number): void {
@@ -339,14 +488,16 @@ export class SprayCloud {
         if (this.age[k] > this.life[k]) this.remove(k--);
         continue;
       }
-      // Quadratic drag toward the wind (implicit in the drag's size, so light mist cannot overshoot it).
+      // Quadratic drag toward the wind (implicit in the drag's size, so light mist cannot overshoot it); the veil's air
+      // also rises up the crest's face for a while.
+      const updraft = this.lift[k] > 0 ? this.lift[k] * Math.exp(-this.age[k] / this.liftTime[k]) : 0;
       const rx = this.vx[k];
-      const ry = this.vy[k];
+      const ry = this.vy[k] - updraft;
       const rz = this.vz[k] - windSpeed;
       const speed = Math.hypot(rx, ry, rz);
       const damping = 1 / (1 + dt * this.drag[k] * speed);
       this.vx[k] = rx * damping;
-      this.vy[k] = ry * damping - GRAVITY * dt;
+      this.vy[k] = ry * damping + updraft - GRAVITY * dt;
       this.vz[k] = rz * damping + windSpeed;
       this.x[k] += this.vx[k] * dt;
       this.y[k] += this.vy[k] * dt;
@@ -567,10 +718,153 @@ export class SprayCloud {
   }
 
   /**
+   * The Rich offshore veil (decided 2026-09-29, spray item 4): spume torn off every crest the wind relative to it
+   * (`relativeWind`) is over the onset on, at the air's velocity, lifted by the air the wind drives up the crest's face,
+   * streaming back with the wind. It comes off a swept barrel's drawn crest where one is drawn, all along it, and off
+   * the solver's steep crests elsewhere (the crest feathering found), each in its own room.
+   */
+  private veil(scene: SprayScene, dt: number): void {
+    const { solver, windSpeed } = scene;
+    const before = this.veilClock;
+    const now = before + dt;
+    this.veilClock = now;
+    // How many particles the place `key` sheds this step: one every `interval` s, at its own moment in it.
+    const sheds = (key: number, interval: number) => {
+      const phase = placePhase(key) * interval;
+      return Math.floor((now + phase) / interval) - Math.floor((before + phase) / interval);
+    };
+    const { spacing, interval } = VEIL_DRAW;
+    const covered = this.veilCover;
+    covered.clear();
+    const lips = scene.lipCrests;
+    // A room that can take no more (a pool too small to hold any veil) ends its own group's shedding, not the other's.
+    stretches: for (let c = 0; lips && c < lips.count; c += 1) {
+      const o = c * LIP_CREST_STRIDE;
+      const ax = lips.data[o];
+      const ay = lips.data[o + 1];
+      const az = lips.data[o + 2];
+      const bx = lips.data[o + 3];
+      const by = lips.data[o + 4];
+      const bz = lips.data[o + 5];
+      const mx = (ax + bx) / 2;
+      const mz = (az + bz) / 2;
+      const kx = Math.floor(mx / VEIL_COVER);
+      const kz = Math.floor(mz / VEIL_COVER);
+      for (let i = -1; i <= 1; i += 1) for (let j = -1; j <= 1; j += 1) covered.add((kx + i) * 65536 + (kz + j));
+      const cell = solver.cellIndex(mx, mz);
+      const relative = relativeWind(windSpeed, solver.h[cell]);
+      const rate = veilRate(relative);
+      if (!(rate > 0)) continue;
+      const height = Math.max(0, (ay + by) / 2 - solver.restLevel);
+      // Its places are every `spacing` m along the level axis it runs nearer to, fixed in the world as the crest moves,
+      // each standing for the crest between it and the next (at most two spacings of it, where a stretch rises steeply);
+      // each sheds within half a spacing of itself.
+      const alongX = Math.abs(bx - ax) >= Math.abs(bz - az);
+      const a = alongX ? ax : az;
+      const b = alongX ? bx : bz;
+      if (!(Math.abs(b - a) > 0)) continue;
+      const length = Math.min(2, Math.hypot(bx - ax, by - ay, bz - az) / Math.abs(b - a)) * spacing;
+      for (let j = Math.ceil(Math.min(a, b) / spacing); j * spacing < Math.max(a, b); j += 1) {
+        for (let n = sheds(4 * j + (alongX ? 0 : 1), interval); n > 0; n -= 1) {
+          const u = (j * spacing + (this.random() - 0.5) * spacing - a) / (b - a);
+          if (!this.spawnVeil(1, ax + (bx - ax) * u, ay + (by - ay) * u, az + (bz - az) * u, windSpeed, relative, rate, height, length, interval)) break stretches;
+        }
+      }
+    }
+    const { nx, nz, xCenters, zCenters, dx, h, bed, restLevel } = solver;
+    for (let row = 1; row < nz - 1; row += 1) {
+      const gap = zCenters[row + 1] - zCenters[row - 1];
+      for (let column = 0; column < nx; column += 1) {
+        const i = row * nx + column;
+        const depth = h[i];
+        const still = restLevel - bed[i];
+        if (depth <= WET || !(still > WET)) continue;
+        const crest = depth + bed[i] - restLevel;
+        if (crest < FEATHER_HEIGHT * still) continue;
+        // The wind blows toward −z (offshore); the shoreward face of a crest rises toward it.
+        const slope = (h[i - nx] + bed[i - nx] - (h[i + nx] + bed[i + nx])) / gap;
+        if (slope < FEATHER_SLOPE) continue;
+        if (covered.size > 0 && covered.has(Math.floor(xCenters[column] / VEIL_COVER) * 65536 + Math.floor(zCenters[row] / VEIL_COVER))) continue;
+        const relative = relativeWind(windSpeed, depth);
+        const rate = veilRate(relative);
+        if (!(rate > 0)) continue;
+        // Its places are the crest's every `spacing` m along x across the cell, as the lip's are.
+        const slow = VEIL_DRAW.coarse * interval;
+        const from = xCenters[column] - dx / 2;
+        for (let j = Math.ceil(from / spacing); j * spacing < from + dx; j += 1) {
+          for (let n = sheds(4 * (j * 65536 + row) + 2, slow); n > 0; n -= 1) {
+            const x = j * spacing + (this.random() - 0.5) * spacing;
+            if (!this.spawnVeil(2, x, depth + bed[i], zCenters[row], windSpeed, relative, rate, crest, spacing, slow)) return;
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * One particle of veil, `group` 1 off the drawn lip and 2 off the solver's crests: the water `length` m of crest sheds
+   * over `interval` s (`VEIL_DRAW`) at `rate`, m³ per metre a second, in 0.1 mm drops, as wide as that crest, at the
+   * air's velocity, lifted by the air rising up a crest standing `height` m over still water. It takes its room's
+   * oldest place when its room is full, and the other spray's oldest when the pool is full (`VEIL_ROOM`).
+   */
+  private spawnVeil(
+    group: 1 | 2, x: number, y: number, z: number, windSpeed: number, relative: number, rate: number, height: number, length: number, interval: number,
+  ): boolean {
+    const room = group === 1 ? VEIL_ROOM.lip : VEIL_ROOM.crest;
+    if ((group === 1 ? this.veilLipCount : this.veilCrestCount) >= room * this.capacity && !this.evictOldest(group)) return false;
+    if (!this.room(false) && !this.evictOldest(group)) return false;
+    const updraft = VEIL_AIR.face * relative;
+    this.spawn(MIST, x, y, z, 0, updraft, windSpeed, VEIL_AIR.gust * relative);
+    const k = this.count - 1;
+    this.veilOf[k] = group;
+    if (group === 1) this.veilLipCount += 1;
+    else this.veilCrestCount += 1;
+    this.lift[k] = updraft;
+    this.liftTime[k] = (2 * Math.max(height, 0.1)) / relative;
+    this.drag[k] = GRAVITY / (VEIL_FALL * VEIL_FALL);
+    this.settle[k] = VEIL_AIR.eddy;
+    this.size[k] = length * (VEIL_DRAW.width / VEIL_DRAW.spacing);
+    this.radius[k] = VEIL_RADIUS;
+    this.water[k] = rate * length * interval;
+    this.streak[k] = interval;
+    return true;
+  }
+
+  /**
+   * Takes the place of the oldest particle of `group`: the veil off the drawn lip (1) or off the solver's crests (2), or
+   * the other spray and mist (-1, a tube's whitewater aside): the one furthest through its life of the next
+   * `VEIL_ROOM.look` of them round the pool from the last one taken, or of the rest if none is there. False if there is
+   * none to take.
+   */
+  private evictOldest(group: -1 | 1 | 2): boolean {
+    const count = this.count;
+    const veil = this.veilLipCount + this.veilCrestCount;
+    if (count === 0 || (group === -1 ? count - this.whitewaterCount - veil : group === 1 ? this.veilLipCount : this.veilCrestCount) === 0) return false;
+    let best = -1;
+    let oldest = -1;
+    for (let looked = 0, k = this.cursor % count; looked < count; looked += 1, k = k + 1 === count ? 0 : k + 1) {
+      if (group === -1 ? this.veilOf[k] === 0 && !isWhitewater(this.kind[k]) : this.veilOf[k] === group) {
+        const through = this.age[k] / this.life[k];
+        if (through > oldest) {
+          oldest = through;
+          best = k;
+        }
+      }
+      if (looked + 1 >= VEIL_ROOM.look && best >= 0) break;
+    }
+    if (best < 0) return false;
+    this.cursor = best;
+    this.remove(best);
+    return true;
+  }
+
+  /**
    * A particle of `kind`, launched with its emitter's `spread` of speeds, m/s (how its cluster widens, `DISPERSION`),
    * its drops the water share `water` of its volume (`SPRAY_WATER`, mist a fraction of it).
    */
   private spawn(kind: Kind, x: number, y: number, z: number, vx: number, vy: number, vz: number, spread = 0, water = 0): void {
+    // A full Rich pool: the newcomer takes the place of the oldest of the spray but the veil (`VEIL_ROOM`).
+    if (!isWhitewater(kind) && this.count - this.whitewaterCount >= this.capacity) this.evictOldest(-1);
     const k = this.count;
     this.x[k] = x;
     this.y[k] = y;
@@ -583,6 +877,8 @@ export class SprayCloud {
     this.spread[k] = spread;
     this.streak[k] = STREAK_EXPOSURE;
     this.around[k] = Number.NaN;
+    this.veilOf[k] = 0;
+    this.lift[k] = 0;
     this.count += 1;
     if (isWhitewater(kind)) this.whitewaterCount += 1;
     if (kind === FOAM_BALL) {
@@ -608,6 +904,8 @@ export class SprayCloud {
 
   private remove(k: number): void {
     if (isWhitewater(this.kind[k])) this.whitewaterCount -= 1;
+    if (this.veilOf[k] === 1) this.veilLipCount -= 1;
+    else if (this.veilOf[k] === 2) this.veilCrestCount -= 1;
     this.count -= 1;
     const last = this.count;
     this.x[k] = this.x[last];
@@ -627,6 +925,9 @@ export class SprayCloud {
     this.streak[k] = this.streak[last];
     this.around[k] = this.around[last];
     this.settle[k] = this.settle[last];
+    this.veilOf[k] = this.veilOf[last];
+    this.lift[k] = this.lift[last];
+    this.liftTime[k] = this.liftTime[last];
     this.owner[k] = this.owner[last];
     this.radial[k] = this.radial[last];
     this.spin[k] = this.spin[last];
@@ -634,6 +935,7 @@ export class SprayCloud {
   }
 
   private pack(): void {
+    const rich = this.look === 'rich';
     const { particles } = this;
     // The cross-section of each cluster's drops, gathered into the cells round it for the optical depth of the spray there.
     this.pass += 1;
@@ -654,9 +956,14 @@ export class SprayCloud {
       const width = ball ? this.size[k] : this.widthNow[k];
       const drops = this.dropsNow[k];
       const sheets = this.sheetsNow[k];
-      particles[o] = this.x[k];
-      particles[o + 1] = this.y[k];
-      particles[o + 2] = this.z[k];
+      // A particle of veil stands for what its place shed over its interval: drawn over the way it has come in that
+      // time, behind it (since it was shed, while it is younger), not about it.
+      const veil = rich && this.veilOf[k] !== 0;
+      const trail = veil ? Math.min(this.streak[k], this.age[k]) : this.streak[k];
+      const back = veil ? trail / 2 : 0;
+      particles[o] = this.x[k] - this.vx[k] * back;
+      particles[o + 1] = this.y[k] - this.vy[k] * back;
+      particles[o + 2] = this.z[k] - this.vz[k] * back;
       // Classic draws mist growing to twice its width, its spray and mist fading as they age; a foam ball holds until its
       // roller is gone, then fades over the time it lingers (Classic draws none, and gave it the 0.9 it always had; while
       // it holds, Rich draws it as opaque as its own optical depth makes it, `foamBallDepth`).
@@ -664,9 +971,9 @@ export class SprayCloud {
       particles[o + 3] = this.size[k] * (mist ? 1 + t : 1);
       particles[o + 4] = ball ? 0.9 * lingering : (mist ? 0.25 : 0.8) * (1 - t * t);
       particles[o + 5] = this.kind[k];
-      particles[o + 6] = this.vx[k] * this.streak[k];
-      particles[o + 7] = this.vy[k] * this.streak[k];
-      particles[o + 8] = this.vz[k] * this.streak[k];
+      particles[o + 6] = this.vx[k] * trail;
+      particles[o + 7] = this.vy[k] * trail;
+      particles[o + 8] = this.vz[k] * trail;
       // Rich draws each cluster as wide as its drops have spread, and by its optical depth, which thins as its water does.
       particles[o + 12] = width;
       particles[o + 13] = ball ? lingering : 1;

@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
-  COLUMN_CELL, COLUMN_EVERY, DROP_LAW, FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE, STREAK_EXPOSURE, SprayCloud, dropDiameter, opticalDepth, splashLaunch, type LipImpact,
-  type SprayScene, type StrokeSplash,
+  CLASSIC_SPRAY_CAPACITY, COLUMN_CELL, COLUMN_EVERY, DROP_LAW, FOAM_BALL_VOLUME, LIP_CREST_STRIDE, SPRAY_CAPACITY, SPRAY_PER_AIR, SPRAY_STRIDE, STREAK_EXPOSURE,
+  SprayCloud, VEIL_AIR, VEIL_DRAW, VEIL_FALL, VEIL_ONSET, VEIL_RADIUS, VEIL_RATE, VEIL_ROOM, createLipCrests, dropDiameter, opticalDepth, placePhase, relativeWind,
+  splashLaunch, veilRate, writeLipCrests, type LipCrests, type LipImpact, type SprayScene, type StrokeSplash,
 } from './SprayCloud';
+import { LANDMARK } from './barrel/ProfileLibrary';
+import { LOFT, LOFT_SAMPLES } from './barrel/sweptLoft';
 import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
 
 /** Flat water 2 m deep over 10 m × 40 m (1 m cells), still, with no bores; `crest` raises a steep shoreward-facing step. */
@@ -390,9 +393,9 @@ describe('the spray’s flight, unchanged by how Rich draws it (spray item 1)', 
     expect(hashes('classic', [0, 1, 2, 5], offshore)).toEqual(['234:5185c920', '295:3bff07a4', '281:94283463', '300:92f7453b', '83:fcb31be5', '160:db250492']);
   });
 
-  it('flies Rich’s particles exactly as before too: where each is and what it is (hashes taken on the code before)', () => {
+  it('flies Rich’s particles exactly as before too where no veil is shed: where each is and what it is (hashes taken on the code before)', () => {
+    // Onshore and calm over these 2–3 m crests the wind relative to them stays under the veil's onset.
     expect(hashes('rich', [0, 1, 2, 5], onshore)).toEqual(['315:13079cf', '376:18735f52', '305:231ec79a', '372:75a66cde', '177:5c0a46e0', '249:4d914ff']);
-    expect(hashes('rich', [0, 1, 2, 5], offshore)).toEqual(['303:2840290a', '417:2e24f577', '254:4cdad4d5', '342:1e28e219', '177:4c8daa61', '291:ce2ca607']);
   });
 });
 
@@ -601,5 +604,261 @@ describe('spray drawn by its optical depth (decided 2026-09-29, spray item 1)', 
       b.update(flatScene(2, [impact(0.2)]), 1 / 60);
     }
     expect(Array.from(a.particles.subarray(0, a.count * SPRAY_STRIDE))).toEqual(Array.from(b.particles.subarray(0, b.count * SPRAY_STRIDE)));
+  });
+});
+
+describe('the offshore veil (decided 2026-09-29, spray item 4)', () => {
+  /** Water `deep` m over a 10 m × 40 m bed (1 m cells), with a steep shoreward-facing crest `rise` m high 18–20 m out when `crest`. */
+  function sea(windSpeed: number, deep: number, options: { crest?: boolean; rise?: number; lipCrests?: LipCrests; impacts?: LipImpact[] } = {}): SprayScene {
+    const nx = 10;
+    const nz = 40;
+    const rise = options.rise ?? 0.9;
+    const h = new Float64Array(nx * nz).fill(deep);
+    const bed = new Float64Array(nx * nz).fill(-deep);
+    if (options.crest) for (let row = 18; row <= 20; row += 1) for (let column = 0; column < nx; column += 1) h[row * nx + column] = row === 20 ? deep + rise : deep + rise * (row - 17) / 3;
+    return {
+      solver: {
+        nx, nz, dx: 1, restLevel: 0,
+        xCenters: Array.from({ length: nx }, (_, i) => i + 0.5),
+        zCenters: Array.from({ length: nz }, (_, i) => i + 0.5),
+        dz: new Float64Array(nz).fill(1),
+        h, bed, qx: new Float64Array(nx * nz), qz: new Float64Array(nx * nz),
+        cellIndex: (x, z) => Math.min(nz - 1, Math.max(0, Math.floor(z))) * nx + Math.min(nx - 1, Math.max(0, Math.floor(x))),
+      },
+      foam: { source: new Float64Array(nx * nz) },
+      lipImpacts: options.impacts ?? [],
+      windSpeed,
+      lipCrests: options.lipCrests,
+    };
+  }
+
+  /** A drawn crest along x from `from` to `to` m at z = 30.5, `y` m up, in stretches of `step` m. */
+  function drawnCrest(from: number, to: number, y = 1.5, step = 0.5): LipCrests {
+    const crests = createLipCrests(Math.ceil((to - from) / step));
+    let count = 0;
+    for (let x = from; x < to - 1e-9; x += step) crests.data.set([x, y, 30.5, Math.min(x + step, to), y, 30.5], LIP_CREST_STRIDE * count++);
+    crests.count = count;
+    return crests;
+  }
+
+  /** The veil a cloud sheds over `seconds` in `scene`: the new particles of each step, by their place in the pool then. */
+  function shed(cloud: SprayCloud, scene: () => SprayScene, seconds: number): { x: number; y: number; z: number; o: number }[] {
+    const born: { x: number; y: number; z: number; o: number }[] = [];
+    for (let step = 0; step < Math.round(seconds * 60); step += 1) {
+      const before = cloud.count;
+      cloud.update(scene(), 1 / 60);
+      for (let k = before; k < cloud.count; k += 1) born.push({ x: cloud.particles[k * SPRAY_STRIDE], y: cloud.particles[k * SPRAY_STRIDE + 1], z: cloud.particles[k * SPRAY_STRIDE + 2], o: k * SPRAY_STRIDE });
+    }
+    return born;
+  }
+
+  it('starts on the wind relative to the crest: the offshore wind plus its own speed √(g d)', () => {
+    expect(relativeWind(-5, 3)).toBeCloseTo(5 + Math.sqrt(9.81 * 3), 9);
+    // A crest running through still air has its own speed as the wind (Veron: "the phase speed of the wave may be sufficient").
+    expect(relativeWind(0, 6)).toBeCloseTo(Math.sqrt(9.81 * 6), 9);
+    // An onshore wind blows with the crest, and takes from it.
+    expect(relativeWind(3, 4)).toBeCloseTo(Math.sqrt(9.81 * 4) - 3, 9);
+    expect(relativeWind(-5, -1)).toBe(5);
+  });
+
+  it('sheds nothing under 7 m/s of relative wind, and on the square of the excess over it (Veron 2015; feathering’s square law)', () => {
+    expect(VEIL_ONSET).toBe(7);
+    expect(veilRate(6.99)).toBe(0);
+    expect(veilRate(-3)).toBe(0);
+    expect(veilRate(9)).toBeCloseTo(VEIL_RATE * 4, 15);
+    expect(veilRate(11) / veilRate(9)).toBeCloseTo(4, 9);
+  });
+
+  it('comes off a crest the offshore wind alone would not lift, and off one in still air whose own speed is over the onset, and off none under it', () => {
+    // Over 3.9 m of water at the crest √(g d) is 6.2 m/s: with 3 m/s offshore that is 9.2, in still air 6.2.
+    expect(shed(new SprayCloud(60), () => sea(-3, 3, { crest: true }), 1).length).toBeGreaterThan(5);
+    expect(shed(new SprayCloud(60), () => sea(0, 3, { crest: true }), 1).length).toBe(0);
+    // Over an 8 m crest (2 m over 6 m of still water) its own speed is 8.9 m/s: the veil comes off it in still air.
+    expect(shed(new SprayCloud(60), () => sea(0, 6, { crest: true, rise: 2 }), 1).length).toBeGreaterThan(5);
+    // Classic keeps its feathering on the absolute wind, as before.
+    const classic = new SprayCloud(60);
+    classic.look = 'classic';
+    expect(shed(classic, () => sea(0, 6, { crest: true, rise: 2 }), 1).length).toBe(0);
+  });
+
+  it('sheds all along a drawn crest, not in puffs: every half metre of it once an interval, each at a moment of its own', () => {
+    // Over 2 s, before the first of them is through its life.
+    const cloud = new SprayCloud(61);
+    const perStep: number[] = [];
+    const born: { x: number; y: number; z: number; o: number }[] = [];
+    for (let step = 0; step < 2 * 60; step += 1) {
+      const now = shed(cloud, () => sea(-5, 3, { lipCrests: drawnCrest(0, 10) }), 1 / 60);
+      perStep.push(now.length);
+      born.push(...now);
+    }
+    // 20 places, each once every 0.4 s.
+    const places = 10 / VEIL_DRAW.spacing;
+    const times = 2 / VEIL_DRAW.interval;
+    expect(born.length).toBeGreaterThanOrEqual(places * times - 2);
+    expect(born.length).toBeLessThanOrEqual(places * times + 2);
+    // Each place as often as the next, within half a spacing of itself.
+    const bins = new Array(places).fill(0);
+    for (const p of born) bins[Math.min(places - 1, Math.max(0, Math.floor(p.x / VEIL_DRAW.spacing + 0.5)))] += 1;
+    for (const n of bins) {
+      expect(n).toBeGreaterThanOrEqual(times - 1);
+      expect(n).toBeLessThanOrEqual(times + 1);
+    }
+    // Not all at once: a few places a step, never the whole crest.
+    expect(Math.max(...perStep)).toBeLessThanOrEqual(5);
+    // At the crest's top, and from where the stretches are only.
+    for (const p of born) {
+      expect(p.y).toBeCloseTo(1.5, 1);
+      expect(p.z).toBeCloseTo(30.5, 1);
+    }
+  });
+
+  it('marks its places in the world, so a crest that moves keeps shedding from the same places at the same moments', () => {
+    expect(placePhase(7)).not.toBe(placePhase(8));
+    expect(placePhase(7)).toBe(placePhase(7));
+    for (let key = -50; key < 50; key += 1) {
+      expect(placePhase(key)).toBeGreaterThanOrEqual(0);
+      expect(placePhase(key)).toBeLessThan(1);
+    }
+    // The crest 0–10 m drawn in stretches of 0.5 m or of 0.3 m sheds the same particles.
+    const a = shed(new SprayCloud(67), () => sea(-5, 3, { lipCrests: drawnCrest(0, 10, 1.5, 0.5) }), 2);
+    const b = shed(new SprayCloud(67), () => sea(-5, 3, { lipCrests: drawnCrest(0, 10, 1.5, 0.3) }), 2);
+    expect(b.length).toBe(a.length);
+  });
+
+  it('is drops of 0.1 mm falling at 0.72 m/s, launched at the air’s velocity and lifted up the face, a metre or more over the lip', () => {
+    expect(VEIL_RADIUS).toBe(1e-4);
+    expect(VEIL_FALL).toBe(0.72);
+    const cloud = new SprayCloud(62);
+    let highest = 0;
+    const born = shed(cloud, () => sea(-5, 3, { lipCrests: drawnCrest(0, 10) }), 0.2);
+    cloud.update(sea(-5, 3, { lipCrests: drawnCrest(0, 10) }), 1 / 60);
+    for (const p of born) {
+      // Launched seaward at the wind's speed, and up: drawn over the way it has come, behind it.
+      expect(cloud.particles[p.o + 8]).toBeLessThan(0);
+      expect(cloud.particles[p.o + 7]).toBeGreaterThan(0);
+      expect(cloud.particles[p.o + 5]).toBe(1);
+    }
+    for (let step = 0; step < 90; step += 1) {
+      cloud.update(sea(-5, 3, { lipCrests: drawnCrest(0, 10) }), 1 / 60);
+      for (let k = 0; k < cloud.count; k += 1) highest = Math.max(highest, cloud.particles[k * SPRAY_STRIDE + 1]);
+    }
+    expect(highest).toBeGreaterThan(1.5 + 1);
+    expect(highest).toBeLessThan(1.5 + 4);
+    // Its streak is the way it travels over the interval each particle stands for, so a stretch's particles join.
+    expect(VEIL_DRAW.interval).toBeGreaterThan(STREAK_EXPOSURE);
+    expect(VEIL_AIR.face).toBeLessThan(1);
+  });
+
+  it('draws a particle of veil over the way it has come since it was shed, behind it, not ahead of it over the face', () => {
+    const cloud = new SprayCloud(68);
+    const born = shed(cloud, () => sea(-5, 3, { lipCrests: drawnCrest(0, 10) }), 0.25);
+    expect(born.length).toBeGreaterThan(5);
+    for (let k = 0; k < cloud.count; k += 1) {
+      const o = k * SPRAY_STRIDE;
+      // The trail's far end is about where the particle was shed, on the drawn crest (drawn straight, at its speed now).
+      expect(Math.abs(cloud.particles[o + 1] - cloud.particles[o + 7] / 2 - 1.5)).toBeLessThan(0.35);
+      expect(Math.abs(cloud.particles[o + 2] - cloud.particles[o + 8] / 2 - 30.5)).toBeLessThan(0.35);
+      // And no longer than the interval's way.
+      expect(Math.hypot(cloud.particles[o + 6], cloud.particles[o + 7], cloud.particles[o + 8])).toBeLessThan(0.25 * 8);
+    }
+  });
+
+  it('keeps shedding off the solver’s crests away from the drawn lip while the lip sheds, each in a room of its own', () => {
+    // The drawn crest at z = 30.5 and the solver's steep crest 18–20 m out are 10 m apart: neither covers the other.
+    const cloud = new SprayCloud(63, 600, 150);
+    const scene = () => sea(-5, 3, { crest: true, lipCrests: drawnCrest(0, 10) });
+    for (let step = 0; step < 600; step += 1) cloud.update(scene(), 1 / 60);
+    expect(cloud.veilLipCount).toBeGreaterThan(0);
+    expect(cloud.veilCrestCount).toBeGreaterThan(0);
+    expect(cloud.veilLipCount).toBeLessThanOrEqual(VEIL_ROOM.lip * 600);
+    expect(cloud.veilCrestCount).toBeLessThanOrEqual(VEIL_ROOM.crest * 600);
+    // With its room full the lip still sheds, each new particle taking its oldest's place: there is always new veil at
+    // the crest (the wind carries the older off it at 5 m/s), at the drawn lip and at the solver's crest both.
+    expect(cloud.veilLipCount).toBe(Math.ceil(VEIL_ROOM.lip * 600));
+    for (let step = 0; step < 30; step += 1) {
+      cloud.update(scene(), 1 / 60);
+      let lip = 0;
+      let crest = 0;
+      for (let k = 0; k < cloud.count; k += 1) {
+        const z = cloud.particles[k * SPRAY_STRIDE + 2];
+        if (Math.abs(z - 30.5) < 0.6) lip += 1;
+        if (z > 19.9 && z < 21.1) crest += 1;
+      }
+      expect(lip).toBeGreaterThan(0);
+      expect(crest).toBeGreaterThan(0);
+    }
+  });
+
+  it('leaves the solver’s crest cells near a drawn crest to it', () => {
+    // The drawn crest along the solver's own steep crest, a little ahead of it: only the drawn one sheds.
+    const along = createLipCrests(20);
+    for (let c = 0; c < 20; c += 1) along.data.set([c * 0.5, 1.5, 21.5, (c + 1) * 0.5, 1.5, 21.5], c * LIP_CREST_STRIDE);
+    along.count = 20;
+    const born = shed(new SprayCloud(64), () => sea(-5, 3, { crest: true, lipCrests: along }), 1);
+    expect(born.length).toBeGreaterThan(20);
+    for (const p of born) expect(p.z).toBeCloseTo(21.5, 1);
+  });
+
+  it('neither crowds the other out: in a full pool an impact takes the oldest spray’s places and the veil keeps its rooms', () => {
+    const cloud = new SprayCloud(65, 400, 100);
+    const scene = (impacts: LipImpact[] = []) => sea(-9, 3, { crest: true, lipCrests: drawnCrest(0, 10), impacts });
+    for (let step = 0; step < 300; step += 1) cloud.update(scene(), 1 / 60);
+    expect(cloud.veilLipCount + cloud.veilCrestCount).toBeGreaterThan(0);
+    // Impacts as big as the pool, step after step: the pool fills with their spray.
+    for (let step = 0; step < 30; step += 1) cloud.update(scene([{ ...impact(4), y: 1 }]), 1 / 60);
+    expect(cloud.count - cloud.whitewaterCount).toBe(400);
+    let impactSpray = 0;
+    for (let k = 0; k < cloud.count; k += 1) if (cloud.particles[k * SPRAY_STRIDE + 5] === 0) impactSpray += 1;
+    expect(impactSpray).toBeGreaterThan(200);
+    // The veil sheds on into it, off the lip and off the solver's crest, taking the oldest spray's places.
+    let lip = 0;
+    let crest = 0;
+    for (let step = 0; step < 30; step += 1) {
+      const before = cloud.veilLipCount + cloud.veilCrestCount;
+      cloud.update(scene([{ ...impact(4), y: 1 }]), 1 / 60);
+      expect(cloud.veilLipCount + cloud.veilCrestCount).toBeGreaterThanOrEqual(Math.min(before, 1));
+      lip = Math.max(lip, cloud.veilLipCount);
+      crest = Math.max(crest, cloud.veilCrestCount);
+    }
+    expect(lip).toBeGreaterThan(0);
+    expect(crest).toBeGreaterThan(0);
+    expect(cloud.veilLipCount).toBeLessThanOrEqual(Math.ceil(VEIL_ROOM.lip * 400));
+    expect(cloud.veilCrestCount).toBeLessThanOrEqual(Math.ceil(VEIL_ROOM.crest * 400));
+    // And an impact's spray is never turned away in a full pool: there is room, the oldest spray's place.
+    const room = (cloud as unknown as { room(whitewater: boolean): boolean }).room.bind(cloud);
+    expect(cloud.count - cloud.whitewaterCount).toBe(400);
+    expect(room(false)).toBe(true);
+  });
+
+  it('keeps Classic’s pool at the 4,096 it always had, and gives Rich the decided 16k', () => {
+    expect(SPRAY_CAPACITY).toBe(16384);
+    expect(CLASSIC_SPRAY_CAPACITY).toBe(4096);
+    const fill = (look: 'classic' | 'rich') => {
+      const cloud = new SprayCloud(66);
+      cloud.look = look;
+      for (let step = 0; step < 3; step += 1) cloud.update(sea(0, 3, { impacts: [{ ...impact(20), y: 30 }] }), 1 / 60);
+      return cloud.count - cloud.whitewaterCount;
+    };
+    expect(fill('classic')).toBe(4096);
+    expect(fill('rich')).toBeGreaterThan(4096);
+  });
+
+  it('takes the drawn crest from the swept barrel’s open slices: the stretch each stands for, halfway to its neighbours', () => {
+    const slices = 5;
+    const positions = new Float32Array(slices * LOFT_SAMPLES * 3);
+    const apex = (s: number) => 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.crest);
+    for (let s = 0; s < slices; s += 1) positions.set([s * 0.5, 2 + s * 0.1, 30], apex(s));
+    const loft = {
+      positions, sliceCount: slices,
+      slicePhase: Uint8Array.from([1, 1, 0, 1, 1]), sliceWeight: Float32Array.from([1, 1, 1, 0.4, 1]),
+      sliceFront: Int32Array.from([1, 1, 1, 1, 2]), sliceJoined: Uint8Array.from([1, 1, 1, 0, 0]),
+    };
+    const out = writeLipCrests(loft, createLipCrests(8));
+    // Slices 0 and 1 are open; 2 is not (phase), 3 is too light, 4 is open but alone on its front.
+    expect(out.count).toBe(3);
+    const stretch = (c: number) => Array.from(out.data.subarray(c * LIP_CREST_STRIDE, (c + 1) * LIP_CREST_STRIDE)).map((v) => +v.toFixed(4));
+    expect(stretch(0)).toEqual([0, 2, 30, 0.25, 2.05, 30]);
+    expect(stretch(1)).toEqual([0.25, 2.05, 30, 0.75, 2.15, 30]);
+    expect(stretch(2)).toEqual([2, 2.4, 30, 2, 2.4, 30]);
   });
 });
