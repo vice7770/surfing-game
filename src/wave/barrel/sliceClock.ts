@@ -47,6 +47,29 @@ const SWELL_ONSET: readonly { period: number; rows: readonly (readonly [height: 
 const SWELL_ONSET_H0 = 7;
 const BAND = [6, 5] as const;
 
+/**
+ * A barrel transect's onset tables (Padang Padang Part B, PR 7: every spot's own): the foot's still depth `h0` they
+ * were measured at (the Navier–Stokes runs' h0), m; the band of still depth, deeper and shallower, over which a crest's
+ * height sizes its join, m; the join, per period, the solver's fresh onset against the crest's height over the band
+ * (rows of [height, still depth], m: the periodicOnset or spotOnset probe on the transect); and the throw, the
+ * Navier–Stokes vertical depth as a line in the foot crest, m, clamped to the runs' foot crests.
+ */
+export interface OnsetTables {
+  h0: number;
+  band: readonly [deeper: number, shallower: number];
+  join: readonly { period: number; rows: readonly (readonly [height: number, depth: number])[] }[];
+  throwDepth: { intercept: number; slope: number; heights: readonly [lowest: number, highest: number] };
+  /**
+   * The shallowest a lip throws, m at mid tide: the transect's flat (a reef's top), which a tide shifts rather than
+   * scales. A wave too small to go vertical on the slope throws as it crosses onto the flat (the Reef; the advisor,
+   * 2026-10-01). None: no floor (Padang Padang).
+   */
+  floor?: number;
+}
+
+/** Padang Padang's tables (round 6's transect: the 7 m foot, 1:19 along the path to the 1.25 m flat). */
+export const PADANG_ONSET: OnsetTables = { h0: SWELL_ONSET_H0, band: BAND, join: SWELL_ONSET, throwDepth: THROW_DEPTH };
+
 /** Linear in x between the table's rows, clamped at its ends: never extrapolated. */
 function interpolate(table: readonly (readonly [number, number])[], x: number): number {
   if (x <= table[0][0]) return table[0][1];
@@ -77,32 +100,36 @@ export interface OnsetTiming {
 }
 
 /**
- * The onset timing for a bed whose slope rises from `h0` m (the library cases' foot depth) under swell of `period` s:
- * the join depth from SWELL_ONSET (linear in height, then between the two nearest periods, clamped) and the throw depth
- * from THROW_DEPTH (linear in foot height, clamped), both scaled from their 7 m foot to h0 by depth (about ±7 % for
- * a ±0.5 m tide). `lagged` throws where the Navier–Stokes wave goes vertical (the default); unlagged throws at the join
- * (PR 3's loft shows both).
+ * The onset timing for a bed whose slope rises from `h0` m (the library cases' foot depth, at the tide) under swell of
+ * `period` s, from its transect's `tables` (Padang Padang's unless given): the join depth (linear in height, then
+ * between the two nearest periods, clamped) and the throw depth (linear in foot height, clamped), both scaled from the
+ * tables' foot to h0 by depth (about ±7 % for a ±0.5 m tide). `lagged` throws where the Navier–Stokes wave goes
+ * vertical (the default); unlagged throws at the join (PR 3's loft shows both).
  */
-export function onsetTiming(h0: number, period: number, lagged = true): OnsetTiming {
+export function onsetTiming(h0: number, period: number, lagged = true, tables: OnsetTables = PADANG_ONSET): OnsetTiming {
   const unit = Math.sqrt(h0 / GRAVITY);
-  const scale = h0 / SWELL_ONSET_H0;
-  const [lowest, highest] = THROW_DEPTH.heights;
+  const scale = h0 / tables.h0;
+  const { join, band, throwDepth } = tables;
+  const [lowest, highest] = throwDepth.heights;
   const joinAt = (measured: number) => {
     const height = measured / scale;
-    const first = SWELL_ONSET[0];
-    const last = SWELL_ONSET[SWELL_ONSET.length - 1];
+    const first = join[0];
+    const last = join[join.length - 1];
     if (period <= first.period) return interpolate(first.rows, height);
     if (period >= last.period) return interpolate(last.rows, height);
-    const k = SWELL_ONSET.findIndex((entry) => entry.period >= period);
-    const [below, above] = [SWELL_ONSET[k - 1], SWELL_ONSET[k]];
+    const k = join.findIndex((entry) => entry.period >= period);
+    const [below, above] = [join[k - 1], join[k]];
     const t = (period - below.period) / (above.period - below.period);
     return interpolate(below.rows, height) + t * (interpolate(above.rows, height) - interpolate(below.rows, height));
   };
   return {
     h0,
-    band: [BAND[0] * scale, BAND[1] * scale],
+    band: [band[0] * scale, band[1] * scale],
     joinDepth: (height) => joinAt(height) * scale,
-    throwDepth: (footHeight) => (THROW_DEPTH.intercept + THROW_DEPTH.slope * Math.min(highest, Math.max(lowest, footHeight / scale))) * scale,
+    throwDepth: (footHeight) => {
+      const depth = (throwDepth.intercept + throwDepth.slope * Math.min(highest, Math.max(lowest, footHeight / scale))) * scale;
+      return tables.floor === undefined ? depth : Math.max(depth, tables.floor + h0 - tables.h0);
+    },
     lagged,
     earliest: CLOCK.earliest * unit,
   };

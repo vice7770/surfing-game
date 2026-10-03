@@ -14,7 +14,7 @@ const THROW = TIMING.throwDepth(FOOT);
 
 /** A crest sample at one-metre columns. */
 function sample(column: number, z: number, depth: number, strength: number, eta = FOOT): CrestSample {
-  return { column, row: Math.floor(z), x: column + 0.5, z, eta, strength, rise: 0.5, depth, b: 0.3, speed: 5 };
+  return { column, row: Math.floor(z), x: column + 0.5, z, eta, wave: eta, strength, rise: 0.5, depth, b: 0.3, speed: 5 };
 }
 
 /** An oblique straight crest over `columns`, z = z0 + slope · x. */
@@ -206,6 +206,67 @@ describe('the breaking front as lines', () => {
     const next = first.map((s) => ({ ...s, z: 22 }));
     front.update(next, next.length, 1.1);
     expect(front.points.map((point) => point.id)).toEqual(ids);
+  });
+
+  // The Reef's rules (FrontOptions, PR 7): a crest's maximum jumps forward over a ledge.
+  it('with a jump reach, follows a sized crest whose highest cell jumps ahead, and joins it there', () => {
+    // Sized at the foot and over the band; then its face steepens and its maximum jumps 7 m to the ledge's edge, while
+    // a lower maximum lingers where it was, and another crest stands 11 m ahead, beyond the reach.
+    const steps = (front: BreakingFront) => {
+      front.update([sample(0, 10, 7, 0)], 1, 0);
+      front.update([sample(0, 11, 5.5, 0)], 1, 0.5);
+      const jumped = [sample(0, 11.5, 3.4, 0, 1.2), sample(0, 18, 2.4, 0.5, 1.7), sample(0, 22.5, 2, 0, 0.4)];
+      front.update(jumped, jumped.length, 0.6);
+    };
+    const following = new BreakingFront(1, TIMING, { jumpReach: 10 });
+    steps(following);
+    expect(following.points).toHaveLength(1);
+    expect(following.points[0]).toMatchObject({ z: 18, footHeight: FOOT, throwDepth: THROW });
+    // It crossed its join and throw depths between 5.5 and 2.4 m, and its throw between 11 and 18 m.
+    expect(following.points[0].joined).toBeCloseTo(0.5 + ((5.5 - JOIN) / (5.5 - 2.4)) * 0.1, 12);
+    expect(following.points[0].throwZ).toBeCloseTo(11 + ((5.5 - THROW) / (5.5 - 2.4)) * 7, 12);
+    expect(following.jumps).toBe(1);
+    // The point remembers that its crest's track jumped once before it joined.
+    expect(following.points[0].jumped).toBe(1);
+    // 7 m is past 1.5 of its 1.7 m wave (the advisor's first form of the reach).
+    expect(following.waveJumps).toBe(0);
+    // Without it (Padang Padang), the jump starts a crest of its own, unsized, which never joins: counted the same.
+    const nearest = new BreakingFront(1, TIMING);
+    steps(nearest);
+    expect(nearest.points).toHaveLength(0);
+    expect(nearest.jumps).toBe(1);
+    expect(nearest.waveJumps).toBe(0);
+    expect(nearest.unsized).toBe(2);
+  });
+
+  // The Reef's rules (FrontOptions, PR 7): small waves break as they cross onto its top.
+  it('with a join reach past the throw depth, joins a crest the solver breaks within it, throwing as it joins', () => {
+    const passes = (front: BreakingFront, breaksAt: number) => {
+      front.update([sample(0, 10, 7, 0)], 1, 0);
+      front.update([sample(0, 12, JOIN, 0)], 1, 1);
+      // It crosses its throw depth unbroken, its wave 1 m high there.
+      front.update([{ ...sample(0, 13, 2.42, 0), wave: 1 }], 1, 1.2);
+      front.update([sample(0, breaksAt, 2.4, 0.5)], 1, 1.3);
+    };
+    const passedZ = 12 + (JOIN - THROW) / (JOIN - 2.42);
+    // Broken 1.05 m past where it crossed: within 1.5 of its wave's heights.
+    const within = new BreakingFront(1, TIMING, { joinPast: 1.5 });
+    passes(within, 14);
+    expect(14 - passedZ).toBeLessThan(1.5);
+    expect(within.points).toHaveLength(1);
+    expect(within.points[0]).toMatchObject({ joined: 1, depth: JOIN, throwDepth: THROW, throwZ: 14 });
+    expect(within.points[0].thrown).toBeCloseTo(1.3, 12);
+    expect(within.latePasses).toBe(1);
+    // Broken 1.65 m past: beyond it, no barrel.
+    const beyond = new BreakingFront(1, TIMING, { joinPast: 1.5 });
+    passes(beyond, 14.6);
+    expect(beyond.points).toHaveLength(0);
+    expect(beyond.unbroken).toBe(1);
+    // Without it (Padang Padang): no barrel either way.
+    const none = new BreakingFront(1, TIMING);
+    passes(none, 14);
+    expect(none.points).toHaveLength(0);
+    expect(none.unbroken).toBe(1);
   });
 
   it('carries its state through export and import, crests on their way in included', () => {

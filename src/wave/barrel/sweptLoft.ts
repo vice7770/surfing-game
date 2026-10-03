@@ -1,5 +1,6 @@
 import type { SpotName } from '../Bathymetry';
 import { GRAVITY } from '../dispersion';
+import { BARREL_SPOTS } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 import { SHEET, THROAT, sheetTablesLookup, throatViews, type SheetLookup } from './lipSheet';
@@ -57,8 +58,13 @@ function restHeight(crestY: number, toeY: number, frontY: number): number {
  * long-wave speed √(g d) at the crest, which a crest record that jumps (a split, a re-join) would leave.
  */
 export const CREST_SPEED = { from: 0.1, to: 0.3, slowest: 0.5, fastest: 1.5 } as const;
-/** The library's runs' slope along the wave's path, per spot drawn with the swept barrel (the owner's 1:19 at Padang Padang). */
-export const BARREL_SLOPE: Partial<Record<SpotName, number>> = { padang: 1 / 19 };
+/**
+ * The library's runs' slope along the wave's path, per spot with a barrel transect (`BARREL_SPOTS`; the owner's 1:19 at
+ * Padang Padang).
+ */
+export const BARREL_SLOPE: Partial<Record<SpotName, number>> = Object.fromEntries(
+  Object.entries(BARREL_SPOTS).flatMap(([spot, barrel]) => (barrel ? [[spot, barrel.slope]] : [])),
+);
 
 export interface LoftResult {
   /** xyz per vertex, and its normal. */

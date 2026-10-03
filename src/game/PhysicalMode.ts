@@ -34,7 +34,7 @@ import { SweptBarrel } from '../scene/barrel/SweptBarrel';
 import { SWEPT_BARREL_VIEWS, type SweptBarrelMesh } from '../scene/barrel/SweptBarrelMesh';
 import { devParam } from '../devTools';
 import type { LoftResult } from '../wave/barrel/sweptLoft';
-import { libraryFromBytes, loadBarrelCaseBytes } from '../wave/barrel/barrelLibrary';
+import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes } from '../wave/barrel/barrelLibrary';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
@@ -269,24 +269,29 @@ export interface HostExtras {
 /** Runs the surf zone in the page (tests, and browsers without Web Workers). */
 export const localSurfZone: SurfZoneHostFactory = (config, extra) => new LocalSurfZone(config, { rider: true, ...extra });
 
-let barrelBytes: Promise<Uint8Array[] | undefined> | undefined;
+const barrelBytes = new Map<SpotName, Promise<Uint8Array[] | undefined>>();
 
 /**
- * The barrel case files, fetched once for the page's drawing and the surf zone's contact (the Padang Padang spec,
- * Part B, PR 4). A failed fetch leaves the swept barrel off for that start and is tried again at the next.
+ * A spot's barrel case files, fetched once for the page's drawing and the surf zone's contact (the Padang Padang spec,
+ * Part B, PR 4; each spot its own transect's, PR 7). A failed fetch leaves the swept barrel off for that start and is
+ * tried again at the next.
  */
-export function barrelCaseBytes(): Promise<Uint8Array[] | undefined> {
-  barrelBytes ??= loadBarrelCaseBytes().catch((error: unknown) => {
-    console.warn('The barrel library did not load; the swept barrel stays off.', error);
-    barrelBytes = undefined;
-    return undefined;
-  });
-  return barrelBytes;
+export function barrelCaseBytes(spot: SpotName): Promise<Uint8Array[] | undefined> {
+  let bytes = barrelBytes.get(spot);
+  if (!bytes) {
+    bytes = loadBarrelCaseBytes(barrelCasesFor(spot)).catch((error: unknown) => {
+      console.warn('The barrel library did not load; the swept barrel stays off.', error);
+      barrelBytes.delete(spot);
+      return undefined;
+    });
+    barrelBytes.set(spot, bytes);
+  }
+  return bytes;
 }
 
 /** Forget the fetched files (tests). */
 export function resetBarrelCaseBytes(): void {
-  barrelBytes = undefined;
+  barrelBytes.clear();
 }
 
 /** No front points: the swept barrel draws nothing. */
@@ -470,7 +475,7 @@ export class PhysicalMode {
     // Superseded while asking for the GPU: never build it, and never drop the newer start's spin-up.
     if (start !== this.starts) return false;
     // A swept spot's contact needs the barrel files in the surf zone (Part B, PR 4).
-    const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes() : undefined;
+    const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot) : undefined;
     if (start !== this.starts) return false;
     const host = createHost(config, barrelCases ? { barrelCases } : undefined);
     // A superseded spin-up is let go at once, so its worker stops competing with the next one.
@@ -497,14 +502,14 @@ export class PhysicalMode {
     if (!this.sweptBarrel) {
       // `?barrelView=phase|front`: the curl flat-coloured by its slices' phase or front (a dev view, the tube review).
       const view = SWEPT_BARREL_VIEWS.find((candidate) => candidate === devParam('barrelView'));
-      this.sweptBarrel = new SweptBarrel(water, async () => {
-        const bytes = await barrelCaseBytes();
+      this.sweptBarrel = new SweptBarrel(water, async (spot) => {
+        const bytes = await barrelCaseBytes(spot);
         if (!bytes) throw new Error('No barrel case files');
         return libraryFromBytes(bytes);
       }, view);
       this.scene.add(this.sweptBarrel.mesh.mesh);
     }
-    this.sweptBarrel.setSpot(this.swept ? config.spot : undefined);
+    this.sweptBarrel.setSpot(this.swept ? config.spot : undefined, this.swept);
     this.lipSheet.mesh.visible = this.shown && !this.swept;
     water.setChop(chopForWind(settings.windSpeed));
     water.setOptics(SPOT_OPTICS[settings.spot]);

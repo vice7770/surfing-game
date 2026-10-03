@@ -23,6 +23,32 @@ const SPLIT = 1;
 const FOOT_BAND = 1;
 /** Kennedy's fresh onset for Padang Padang, η_t over √(g d): the swell table's own condition (a diagnostic here). */
 const FRESH = 0.65;
+/**
+ * The crest jump's reach in wave heights, as the advisor first put it (about 1.5 H or 10 m, whichever is smaller,
+ * 2026-10-01): recorded beside the metres (`BreakingFront.waveJumps`), not used, since the Reef's maxima jump 2.8–10.8 H.
+ */
+const JUMP_WAVES = 1.5;
+
+/**
+ * A spot's rules for following its crests beyond Padang Padang's; none of them is Padang Padang's front (the
+ * advisor's rulings for the Reef, PR 7, 2026-10-01).
+ */
+export interface FrontOptions {
+  /**
+   * m: as a crest's face steepens over a ledge, its highest cell jumps forward to the ledge's edge (the Reef's Practice
+   * sea: 4 m at the median, 10 m at the 90th percentile, 2.8–10.8 of the wave's heights), and the crest ahead starts a
+   * track of its own, unsized, which never joins. With this reach a sized crest continues as the furthest crest ahead
+   * of it in its column within it: the tracker follows the wave, not its maximum. 1.5 H would catch none of 200 measured
+   * jumps; 10 m catches 192.
+   */
+  jumpReach?: number;
+  /**
+   * Wave heights: a sized crest past its throw depth that the solver has not broken may still join while it runs this
+   * many of its wave heights past that depth, throwing where the solver breaks it (the Reef's small waves break only as
+   * they cross onto its top).
+   */
+  joinPast?: number;
+}
 
 /** A crest followed shoreward from the wedge's foot until it joins a front, or is dropped. */
 export interface CrestTrack {
@@ -39,6 +65,11 @@ export interface CrestTrack {
   crossed: number | null;
   /** The still depth where its segment first rose at Kennedy's fresh onset, m; null until then (a diagnostic). */
   fresh: number | null;
+  /** With `FrontOptions.joinPast`: its crest's z where it crossed its throw depth unbroken, m, and its wave's height there, m. */
+  passedZ?: number;
+  passedWave?: number;
+  /** How many times it continued as a crest ahead of the one nearest it (`FrontOptions.jumpReach`); absent: none (a diagnostic). */
+  jumped?: number;
 }
 
 export interface FrontPoint {
@@ -73,6 +104,8 @@ export interface FrontPoint {
   tau: number;
   /** The still depth where its crest first rose at Kennedy's fresh onset, m; null until then (a diagnostic of the join table). */
   fresh: number | null;
+  /** How many times its crest's track jumped ahead before it joined (`CrestTrack.jumped`); absent: none (a diagnostic). */
+  jumped?: number;
   /** When it was last seen, s. */
   seen: number;
 }
@@ -103,6 +136,8 @@ export interface FrontState {
  *   z link, a column's own never do (two crests in a column are two fronts, an empty column splits one), and
  *   neighbours whose joins differ by more than SPLIT per metre are two waves: two fronts, smoothed apart. A point
  *   matched to last step's in its column keeps its ID, join and clock.
+ * - **A spot's own rules** (`FrontOptions`; the Reef's): a sized crest follows its highest cell as it jumps forward
+ *   over a ledge, and may join a little past its throw depth when the solver breaks it there.
  *
  * Columns go in order, with no randomness, and only + − × ÷ and √, for online determinism.
  */
@@ -124,11 +159,22 @@ export class BreakingFront {
   unbroken = 0;
   lost = 0;
   unsized = 0;
+  /**
+   * Crest jumps (diagnostics): with `jumpReach`, the sized crests that continued as a crest ahead of the one nearest them;
+   * without, the new crests first seen ahead of a sized one in its column within TRACK_REACH, which the reach would give
+   * it. `waveJumps`: those within JUMP_WAVES of the wave's heights. `latePasses`: joins past the throw depth (`joinPast`).
+   */
+  jumps = 0;
+  waveJumps = 0;
+  latePasses = 0;
   private readonly linkReach: number;
   private readonly matchReach: number;
 
-  /** `cell`: the rows' spacing where fronts form, m; `timing`: the wedge’s foot, the join and throw depths (sliceClock). */
-  constructor(cell: number, private readonly timing: OnsetTiming) {
+  /**
+   * `cell`: the rows' spacing where fronts form, m; `timing`: the wedge’s foot, the join and throw depths (sliceClock);
+   * `options`: the spot's rules beyond Padang Padang's (none there).
+   */
+  constructor(cell: number, private readonly timing: OnsetTiming, private readonly options: FrontOptions = {}) {
     this.linkReach = LINK_ROWS * cell;
     this.matchReach = MATCH_REACH + cell;
   }
@@ -142,6 +188,8 @@ export class BreakingFront {
     const points: FrontPoint[] = [];
     const tracks: CrestTrack[] = [];
     const { h0 } = this.timing;
+    const jumped = new Set<CrestTrack>();
+    const leading = this.options.jumpReach === undefined ? undefined : this.leadingCrests(samples, count, tracksOf, pointsOf, followed, jumped);
     for (let k = 0; k < count; k += 1) {
       const s = samples[k];
       // On a front: it stays while its segment breaks at all.
@@ -161,10 +209,11 @@ export class BreakingFront {
         points.push({ ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, crestDepth: s.depth, thrown, throwZ, seen: time, fresh });
         continue;
       }
-      const track = this.nearest(tracksOf.get(s.column), followed, s.z, TRACK_REACH);
+      const track = leading?.get(s) ?? this.nearest(tracksOf.get(s.column), followed, s.z, TRACK_REACH);
       if (!track) {
         // A new crest past the foot: followed from here, sized by its height if it is at the foot.
         if (s.depth <= h0) {
+          if (!leading) this.countJump(tracksOf.get(s.column), s);
           const footHeight = s.depth >= h0 - FOOT_BAND ? s.eta : null;
           if (footHeight === null) this.unsized += 1;
           const refHeight = footHeight !== null && s.depth <= this.timing.band[0] ? s.eta : null;
@@ -174,6 +223,7 @@ export class BreakingFront {
       }
       followed.add(track);
       const next: CrestTrack = { ...track, z: s.z, depth: s.depth, seen: time, fresh: track.fresh ?? (s.rise >= FRESH ? s.depth : null) };
+      if (jumped.has(track)) next.jumped = (track.jumped ?? 0) + 1;
       // Its highest over the band; past the band, the first reading if it crossed the band between two steps.
       const [deeper, shallower] = this.timing.band;
       if (track.footHeight !== null && s.depth <= deeper && (s.depth >= shallower || next.refHeight === null)) {
@@ -186,11 +236,22 @@ export class BreakingFront {
           const joinF = crossingFraction(track.depth, s.depth, joinDepth);
           if (joinF !== null) next.crossed = track.seen + joinF * (time - track.seen);
         }
+        // With `joinPast`, where it crossed its throw depth, and whether it is still within the reach past it.
+        const { joinPast } = this.options;
+        if (joinPast !== undefined && next.passedZ === undefined && s.depth <= throwDepth) {
+          const passF = crossingFraction(track.depth, s.depth, throwDepth) ?? 1;
+          next.passedZ = track.z + passF * (s.z - track.z);
+          next.passedWave = s.wave;
+        }
+        const late = joinPast !== undefined && next.passedZ !== undefined && s.z - next.passedZ <= joinPast * next.passedWave!;
         // It joins if the solver breaks it before its lip would throw (at the latest in the step its crest reaches the
-        // depth), so a tube never throws off water the solver has not broken (the advisor, 2026-09-30).
-        if (next.crossed !== null && s.strength > 0 && track.depth > throwDepth) {
+        // depth), so a tube never throws off water the solver has not broken (the advisor, 2026-09-30). With
+        // `joinPast` it may join up to that many of its wave heights past the depth, its lip throwing as it joins.
+        if (next.crossed !== null && s.strength > 0 && (track.depth > throwDepth || late)) {
           this.joins += 1;
-          const throwF = crossingFraction(track.depth, s.depth, throwDepth);
+          const past = track.depth <= throwDepth;
+          if (past) this.latePasses += 1;
+          const throwF = past ? 1 : crossingFraction(track.depth, s.depth, throwDepth);
           points.push({
             id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
             joined: next.crossed, depth: joinDepth, throwDepth, crestDepth: s.depth,
@@ -199,11 +260,13 @@ export class BreakingFront {
             footHeight: next.footHeight, footDepth: this.timing.h0,
             // Its clock starts at the library's earliest frame; the first advance puts it where the fit does.
             broke: time, tau: this.timing.earliest, seen: time, fresh: next.fresh,
+            ...(next.jumped ? { jumped: next.jumped } : {}),
           });
           continue;
         }
-        // Past its throw depth and not broken: the solver spilled it, broke it late or not at all, so it has no barrel.
-        if (next.crossed !== null && track.depth <= throwDepth) {
+        // Past its throw depth (and the join's reach) and not broken: the solver spilled it, broke it late or not at
+        // all, so it has no barrel.
+        if (next.crossed !== null && track.depth <= throwDepth && !late) {
           this.unbroken += 1;
           continue;
         }
@@ -215,6 +278,61 @@ export class BreakingFront {
     const kept = this.tracks.filter((old) => !followed.has(old) && time - old.seen <= HOLD);
     for (const old of this.tracks) if (!followed.has(old) && !kept.includes(old) && old.footHeight !== null) this.lost += 1;
     this.tracks = [...tracks, ...kept];
+  }
+
+  /**
+   * With `jumpReach`: each sized crest's continuation, the furthest crest in its column from a match reach behind it to
+   * the jump reach ahead, claimed before the other crests match; a crest beside a front point is the point's. A jump
+   * when it is not the crest nearest it.
+   */
+  private leadingCrests(
+    samples: readonly CrestSample[], count: number, tracksOf: Map<number, CrestTrack[]>, pointsOf: Map<number, FrontPoint[]>,
+    followed: Set<CrestTrack>, jumped: Set<CrestTrack>,
+  ): Map<CrestSample, CrestTrack> {
+    const leading = new Map<CrestSample, CrestTrack>();
+    const reach = this.options.jumpReach!;
+    let start = 0;
+    while (start < count) {
+      // Samples arrive by column; [start, end) is one column.
+      const column = samples[start].column;
+      let end = start;
+      while (end < count && samples[end].column === column) end += 1;
+      const points = pointsOf.get(column) ?? [];
+      for (const track of tracksOf.get(column) ?? []) {
+        if (track.footHeight === null) continue;
+        let furthest: CrestSample | undefined;
+        let nearest: CrestSample | undefined;
+        for (let k = start; k < end; k += 1) {
+          const s = samples[k];
+          const ahead = s.z - track.z;
+          if (ahead < -this.matchReach || ahead > reach || leading.has(s)) continue;
+          if (points.some((point) => Math.abs(point.z - s.z) < this.matchReach)) continue;
+          if (!furthest || s.z > furthest.z) furthest = s;
+          if (!nearest || Math.abs(ahead) < Math.abs(nearest.z - track.z)) nearest = s;
+        }
+        if (!furthest) continue;
+        if (furthest !== nearest) {
+          this.jumps += 1;
+          jumped.add(track);
+          if (furthest.z - track.z <= JUMP_WAVES * furthest.wave) this.waveJumps += 1;
+        }
+        leading.set(furthest, track);
+        followed.add(track);
+      }
+      start = end;
+    }
+    return leading;
+  }
+
+  /** Without `jumpReach`: counts a new crest first seen ahead of a sized one in its column within TRACK_REACH. */
+  private countJump(tracks: readonly CrestTrack[] | undefined, s: CrestSample): void {
+    for (const sized of tracks ?? []) {
+      const ahead = s.z - sized.z;
+      if (sized.footHeight === null || !(ahead > 0) || ahead > TRACK_REACH) continue;
+      this.jumps += 1;
+      if (ahead <= JUMP_WAVES * s.wave) this.waveJumps += 1;
+      return;
+    }
   }
 
   /** The unclaimed one of `candidates` nearest `z` within the match reach. */

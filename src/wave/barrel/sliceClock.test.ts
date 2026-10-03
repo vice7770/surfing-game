@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GRAVITY } from '../dispersion';
 import type { FrontPoint } from './BreakingFront';
-import { advanceClocks, CLOCK, onsetTiming, type OnsetTiming } from './sliceClock';
+import { advanceClocks, CLOCK, onsetTiming, PADANG_ONSET, type OnsetTables, type OnsetTiming } from './sliceClock';
 
 const DT = 1 / 30;
 /** Unlagged, a second of steepening frames: the throw is the join. */
@@ -151,5 +151,30 @@ describe('the slice clock', () => {
     expect(onsetTiming(8, 16).band[1]).toBeCloseTo((5 * 8) / 7, 12);
     expect(onsetTiming(8, 16).throwDepth((1.65 * 8) / 7)).toBeCloseTo(((1.56 + 0.56 * 1.65) * 8) / 7, 12);
     expect(onsetTiming(h0, 16, false).lagged).toBe(false);
+  });
+
+  // PR 7: every spot’s transect brings its own tables; Padang Padang’s are the default.
+  it('takes a transect’s own tables, scaled from its own foot', () => {
+    const padang = onsetTiming(7.5, 16);
+    const explicit = onsetTiming(7.5, 16, true, PADANG_ONSET);
+    expect(explicit.band).toEqual(padang.band);
+    for (const height of [0.8, 1.6, 3]) {
+      expect(explicit.joinDepth(height)).toBe(padang.joinDepth(height));
+      expect(explicit.throwDepth(height)).toBe(padang.throwDepth(height));
+    }
+    const other: OnsetTables = {
+      h0: 10, band: [8.6, 7.1], join: [{ period: 14, rows: [[1, 3], [2, 4]] }], throwDepth: { intercept: 2, slope: 0, heights: [2.13, 2.13] },
+    };
+    const timing = onsetTiming(11, 14, true, other);
+    expect(timing.band[0]).toBeCloseTo(8.6 * 1.1, 12);
+    expect(timing.joinDepth(1.5 * 1.1)).toBeCloseTo(3.5 * 1.1, 12);
+    expect(timing.throwDepth(0.5)).toBeCloseTo(2 * 1.1, 12);
+    expect(timing.earliest).toBeCloseTo(CLOCK.earliest * Math.sqrt(11 / GRAVITY), 12);
+    // A floor (the Reef's top): never shallower than the flat, which a tide shifts rather than scales.
+    const floored: OnsetTables = { ...other, throwDepth: { intercept: 0, slope: 0.9, heights: [0, Infinity] }, floor: 1.5 };
+    expect(onsetTiming(10, 14, true, floored).throwDepth(0.8)).toBe(1.5);
+    expect(onsetTiming(10, 14, true, floored).throwDepth(3)).toBeCloseTo(2.7, 12);
+    expect(onsetTiming(10.6, 14, true, floored).throwDepth(0.8)).toBeCloseTo(2.1, 12);
+    expect(onsetTiming(9.4, 14, true, floored).throwDepth(0.8)).toBeCloseTo(0.9, 12);
   });
 });

@@ -19,7 +19,8 @@ import type { LipImpact } from './SprayCloud';
 import { OPEN_EDGE_REACH, ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
-import { BreakingFront } from './barrel/BreakingFront';
+import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
+import { BARREL_SPOTS } from './barrel/barrelSpots';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
 import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
 
@@ -87,14 +88,25 @@ export interface SurfZoneConfig {
   sweptBarrel?: boolean;
   /** Where the swept barrel's lip throws: where the Navier–Stokes wave goes vertical ('measured', the default), or where the solver's onset joins it ('none'). */
   barrelLag?: 'measured' | 'none';
+  /**
+   * Where the swept barrel's front follows crests from, in place of the spot's own (`BarrelSpot.frontFrom`): the
+   * relaxation zone's inner edge ('zone'), so a crest is sized at the foot wherever the foot lies, or the fine zone's
+   * first row ('fine', Padang Padang's rows before the peak-sizing fix).
+   */
+  barrelFrontFrom?: 'fine' | 'zone';
+  /** The swept barrel's front rules (`FrontOptions`), in place of the spot's own (`BarrelSpot.front`); `{}` for none. */
+  barrelFront?: FrontOptions;
 }
 
-/** Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run. */
+/**
+ * Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run.
+ * The owner's switch: a spot with a barrel transect (`BARREL_SPOTS`) is switched on by adding it here (Part B, PR 7).
+ */
 export const SWEPT_BARREL: readonly SpotName[] = ['padang'];
 
-/** Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL. */
+/** Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL; never at a spot without a barrel transect. */
 export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel'>): boolean {
-  return config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot);
+  return (config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot)) && BARREL_SPOTS[config.spot] !== undefined;
 }
 
 /** A crest joins a breaking front from this share of the edge's wave height above still water (provisional). */
@@ -382,6 +394,18 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   return { x, z: breakZ(x) };
 }
 
+/**
+ * Where the swept barrel's front follows crests from, z: the spot's rows (`BarrelSpot.frontFrom`) unless the config says
+ * (`barrelFrontFrom`): the relaxation zone's inner edge, or the fine zone's first row (Padang Padang's before the
+ * peak-sizing fix). At Padang Padang's peak, on Practice and Small, the fine
+ * zone starts 3.7–6 m deep, shallower than the 6–7 m foot band, so crests first seen there were never sized and the
+ * peak drew no barrel (the advisor, 2026-10-01). No crest is followed seaward of the foot, so what changes is where a
+ * crest is sized: at the foot itself rather than at the fine zone's first row.
+ */
+export function barrelFrontFrom(config: Pick<SurfZoneConfig, 'spot' | 'barrelFrontFrom'>, layout: Pick<TankLayout, 'zoneInner' | 'fineFrom'>): number {
+  return (config.barrelFrontFrom ?? BARREL_SPOTS[config.spot]?.frontFrom ?? 'zone') === 'fine' ? layout.fineFrom : layout.zoneInner;
+}
+
 /** Spot seabed with a flat floor under the relaxation zone at the edge depth, blended over the layout's zoneInner…blendEnd. */
 export function tankDepth(
   spot: SurfSpot, edgeDepth: number, x: number, z: number, layout: Pick<TankLayout, 'zoneInner' | 'blendEnd'> = TANK,
@@ -432,8 +456,10 @@ export class SurfZoneSimulation {
   /** Shown slice clocks that paused rather than ran back, since the start (the advisor's check on the onsets' noise). */
   frontPauses = 0;
   private readonly crestSamples: CrestSample[] = [];
-  /** When a front's lips throw after the solver's onset: Padang Padang's library transect, its wedge's foot at the tide. */
+  /** When a front's lips throw after the solver's onset: the spot's barrel transect, its foot at the tide (BARREL_SPOTS). */
   private readonly onsetTiming?: OnsetTiming;
+  /** Where the front follows crests from, z: the fine zone's start, or the relaxation zone's inner edge (`BarrelSpot.frontFrom`). */
+  private readonly frontFrom: number;
   lastStepMs = 0;
   /** Most offshore breaking cell per column last step (Infinity when none). */
   private readonly outerBreak: Float64Array;
@@ -523,9 +549,12 @@ export class SurfZoneSimulation {
     this.lip.onAir = (x, z, volume, penetration) => this.aeration.addAir(x, z, volume, penetration);
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
+    this.frontFrom = tank.fineFrom;
     if (sweptBarrelOn(config)) {
-      this.onsetTiming = onsetTiming(PADANG.baseDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none');
-      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming);
+      const barrel = BARREL_SPOTS[config.spot]!;
+      this.onsetTiming = onsetTiming(barrel.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', barrel.onset);
+      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, config.barrelFront ?? barrel.front);
+      this.frontFrom = barrelFrontFrom(config, tank);
     }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);
@@ -703,7 +732,7 @@ export class SurfZoneSimulation {
     const { front, solver } = this;
     if (!front) return;
     const minHeight = FRONT_MIN_HEIGHT * edgeHeight(this.config, this.tank.edgeDepth);
-    const count = columnCrests(solver, this.breaking, solver.rowBelow(this.tank.fineFrom), minHeight, this.crestSamples);
+    const count = columnCrests(solver, this.breaking, solver.rowBelow(this.frontFrom), minHeight, this.crestSamples);
     front.update(this.crestSamples, count, solver.time);
     this.frontPauses += advanceClocks(front.points, solver.time, this.onsetTiming!);
   }

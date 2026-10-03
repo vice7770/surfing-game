@@ -6,7 +6,7 @@ import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
   FOAM_DECAY, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight, solverStage,
-  surfZoneSea, takeOffPoint,
+  barrelFrontFrom, surfZoneSea, takeOffPoint,
   tankDepth, tankLayout,
   windOnsetScale, type SurfZoneConfig,
 } from './SurfZoneSimulation';
@@ -18,6 +18,7 @@ import { PADANG_PRACTICE_SWELL, PADANG_SPREADING, REEF_PRACTICE_SWELL } from '..
 import { rayConcentration } from './Refraction';
 import { crestSpeedAt } from './CrestKinematics';
 import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
+import { PADANG_FRONT } from './barrel/barrelSpots';
 import { TAKE_OFF_BAND } from './SurfMeter';
 import { SideFeed } from './SideFeed';
 import { JET_RELEASE_TIME } from './PlungingLip';
@@ -108,6 +109,35 @@ describe('SurfZoneSimulation', () => {
     expect(padang.solver).toBeInstanceOf(BoussinesqSolver);
     const omega = padang.sea.components[0].omega;
     expect(padang.sea.components[0].k).toBeCloseTo(madsenSorensenWaveNumber(omega, padang.sea.depth), 10);
+  });
+
+  // The peak-sizing fix (2026-10-01): the front sizes a crest within 1 m shallower than the 7 m foot, so it must see each
+  // crest before the foot. At the peak the fine zone starts 3.7–6 m deep on Practice and Small.
+  it('follows Padang Padang’s crests from the relaxation zone’s edge, deeper than its foot all along the window, at every swell and tide', () => {
+    const bed = createSpot('padang', 1);
+    const swells = [{ ...PADANG_PRACTICE_SWELL, heightAt: 'edge' as const }, ...Object.values(PADANG_SWELLS)];
+    for (const swell of swells) {
+      for (const tide of Object.values(PADANG_TIDES)) {
+        const config: SurfZoneConfig = { ...small, spot: 'padang', alongShore: PADANG.alongShore, tide, significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod };
+        const layout = tankLayout(config);
+        const from = barrelFrontFrom(config, layout);
+        expect(from).toBe(layout.zoneInner);
+        for (let x = -PADANG.alongShore / 2; x <= PADANG.alongShore / 2; x += 5) {
+          expect(tankDepth(bed, layout.edgeDepth, x, from, layout), `x ${x}`).toBeGreaterThan(PADANG.baseDepth);
+        }
+        // The rows before the fix, kept for the probe's comparison.
+        expect(barrelFrontFrom({ ...config, barrelFrontFrom: 'fine' }, layout)).toBe(layout.fineFrom);
+      }
+    }
+  });
+
+  // The crest jumps (the advisor, 2026-10-01): Padang Padang's maxima jump forward as its faces steepen, as the Reef's do.
+  it('builds Padang Padang’s front to follow its crests’ jumps within 10 m, with no join past the throw depth', () => {
+    expect(PADANG_FRONT).toEqual({ jumpReach: 10 });
+    const optionsOf = (config: SurfZoneConfig) => (new SurfZoneSimulation(config, 'warm').front as unknown as { options: object }).options;
+    expect(optionsOf(small_())).toBe(PADANG_FRONT);
+    // A probe's override: none, as before the rule.
+    expect(optionsOf({ ...small_(), barrelFront: {} })).toEqual({});
   });
 
   it('gives Padang Padang a tank beyond its forereef whose fine zone reaches past its sets’ first break at every tide', () => {
