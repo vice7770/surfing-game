@@ -564,7 +564,9 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
   - **Open:**
     - seed 3's +x edge column reaching dη/dz 4 near t 110 s under the Big swell ([report](docs/research/teahupoo-reef-report.md#a-softer-edge-at-half-height-measured-not-kept));
     - validating the water against the open Teahupo'o lab dataset (download needs the user's OK);
-    - peel against makeability before Part D (the user's call).
+    - peel against makeability before Part D (the user's call);
+    - watch the Reef's momentum not placed, 1.6–9.7 % with its raised jet against the advisor's 10 % line: its parcel jets leave at a median 1.92 times the crest's speed, against about 1 C in the profile library whose speed the swept barrel's crash uses, which should lower it once the Reef is swept (inferred; the advisor, [report](docs/research/teahupoo-reef-report.md#the-reefs-lip-jet-raised-to-the-periodic-runs));
+    - optional: a probe of the share of its source window a Reef throw takes, to settle whether the provisional 0.3 cap is more than its biggest waves need ([report](docs/research/teahupoo-reef-report.md#the-reefs-lip-jet-raised-to-the-periodic-runs)).
 - [ ] **Part C · the look, the sound and a solid reef** (branch `claude/teahupoo-reef-c`, [plan](docs/superpowers/plans/2026-09-28-teahupoo-reef-part-c.md), [report](docs/research/teahupoo-reef-report.md#part-c-the-solid-reef-the-lagoon-the-crash)):
   - **Done:**
     - the reef is solid: the board and the body meet it along the bed's own normal, and wet reef grips harder than sand (0.8 against 0.6, provisional);
