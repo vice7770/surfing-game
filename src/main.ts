@@ -1072,6 +1072,9 @@ class SurfGame {
 
   private setUnderwater(below: boolean): void {
     this.isBelowSurface = below;
+    // The Rich water's underside (Snell's window and mirror) follows the water as drawn: the page's answer, which counts a
+    // camera inside the swept barrel's tube as in air, not the tank's own test against the solver's height.
+    this.water.setEyeUnderwater(below);
     if (this.environment.group.visible === below) {
       this.scene.fog = below ? this.underwaterFog : null;
       this.scene.background = below ? this.underwaterColor : (this.photoSky.background ?? this.skyColor);
