@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { WaveFrame } from '../physics/waveFrame';
+import type { RideInput } from '../physics/RideSession';
 import { Autopilot, type AutopilotOptions, type AutopilotView } from './Autopilot';
 
 const wave = (overrides: Partial<WaveFrame> = {}): WaveFrame => ({
@@ -352,16 +353,75 @@ describe('autopilot flow', () => {
     expect(autopilot.flowRecords[0].phase).toBe('cutback');
   });
 
-  it('pumps along the line: crouched while the face fraction falls, extended while it rises', () => {
-    const autopilot = projecting();
-    let fraction = 0.7;
-    let input = autopilot.next(standing(60 * DEG, { faceFraction: fraction, curlDistance: 5, curlSide: -1 }), STEP);
-    for (let i = 0; i < 20; i += 1) input = autopilot.next(standing(60 * DEG, { faceFraction: (fraction -= 0.01), curlDistance: 5, curlSide: -1 }), STEP);
-    expect(input.crouch).toBe(1);
-    expect(autopilot.phase).toBe('FLOW · PUMP · DOWN');
-    for (let i = 0; i < 20; i += 1) input = autopilot.next(standing(60 * DEG, { faceFraction: (fraction += 0.01), curlDistance: 5, curlSide: -1 }), STEP);
-    expect(input.crouch).toBe(0);
-    expect(autopilot.phase).toBe('FLOW · PUMP · UP');
+  // The movement-flow spec's pumping, as `pumping.test.ts` times it on still water: S-turns about the riding line, the
+  // lean swept rail to rail once every 2 s, the crouch deepest 3/16 of that after the stick crosses the middle (the
+  // body passing upright, unweighted) and tallest 3/16 after its peak (the new rail set, weighted); never Compress.
+  it('pumps through rail changes: the lean swept from rail to rail about the line, crouched between the rails, tall on them', () => {
+    // On the riding line (60° from the fall line, in the face's band) the line asks for no lean: the sweep alone.
+    const pump = (fraction: number, peel = 1) => {
+      // Through the drop and the bottom turn into the projection, as `projecting`, toward the open face `peel`.
+      const autopilot = riding(peel * 10 * DEG, { style: 'flow' });
+      for (const [degrees, faceFraction] of [[10, 0.3], [10, 0.3], [115, 0.4]]) autopilot.next(standing(peel * degrees * DEG, { faceFraction }, peel), STEP);
+      const inputs: RideInput[] = [];
+      const phases: string[] = [];
+      for (let i = 0; i <= 120; i += 1) {
+        inputs.push(autopilot.next(standing(peel * 60 * DEG, { faceFraction: fraction, curlDistance: 5, curlSide: -peel }, peel), STEP));
+        phases.push(autopilot.phase);
+      }
+      return { inputs, phases };
+    };
+    const high = pump(0.7);
+    // The projection ends at once (no bank: the body upright); from the face's upper half the first turn leans down it.
+    const at = (seconds: number) => high.inputs[Math.round(seconds / STEP)];
+    expect(at(0.5).steer).toBeCloseTo(-1, 2);
+    expect(high.phases[Math.round(0.5 / STEP)]).toBe('FLOW · PUMP · DOWN');
+    expect(at(1.5).steer).toBeCloseTo(1, 2);
+    expect(high.phases[Math.round(1.5 / STEP)]).toBe('FLOW · PUMP · UP');
+    expect(Math.abs(at(1).steer)).toBeLessThan(0.02);
+    // Twice a period the crouch: deepest 0.375 s after the stick crosses the middle, tallest 0.375 s after its peak.
+    for (const seconds of [0.375, 1.375]) expect(at(seconds).crouch).toBeCloseTo(1, 2);
+    for (const seconds of [0.875, 1.875]) expect(at(seconds).crouch).toBeCloseTo(0, 2);
+    expect(high.inputs.every((input) => input.compress === 0 && input.trim === 0)).toBe(true);
+    // From the lower half (above the bottom turn's 0.4) the first turn leans up the face; mirrored for an open face toward −x.
+    const low = pump(0.45);
+    expect(low.inputs[Math.round(0.5 / STEP)].steer).toBeCloseTo(1, 2);
+    const mirrored = pump(0.45, -1);
+    expect(mirrored.inputs[Math.round(0.5 / STEP)].steer).toBeCloseTo(-1, 2);
+  });
+
+  it('pumps about the riding line: off it, the line holds a part of its lean beside the sweep, and the stick is never passed', () => {
+    const pump = (peel: number) => {
+      const autopilot = riding(peel * 10 * DEG, { style: 'flow' });
+      for (const [degrees, faceFraction] of [[10, 0.3], [10, 0.3], [115, 0.4]]) autopilot.next(standing(peel * degrees * DEG, { faceFraction }, peel), STEP);
+      // 40° short of the 60° line, in the face's band and its lower half: the line asks for the full lean toward the open face.
+      return Array.from({ length: 121 }, () => autopilot.next(standing(peel * 20 * DEG, { faceFraction: 0.45, curlDistance: 5, curlSide: -peel }, peel), STEP).steer);
+    };
+    const steers = pump(1);
+    const at = (seconds: number) => steers[Math.round(seconds / STEP)];
+    // Where the sweep crosses the middle, the line's own lean is left: a part of it, neither none nor all.
+    expect(at(1)).toBeGreaterThan(0.1);
+    expect(at(1)).toBeLessThan(0.5);
+    // The sweep swings about that lean; at its peak toward the open face the sum is held to the stick.
+    expect(at(1.5)).toBeCloseTo(at(1) - 1, 2);
+    expect(at(0.5)).toBeCloseTo(1, 6);
+    expect(Math.max(...steers.map(Math.abs))).toBeLessThanOrEqual(1);
+    // Mirrored for an open face toward −x.
+    expect(pump(-1)[Math.round(1 / STEP)]).toBeCloseTo(-at(1), 6);
+  });
+
+  it('keeps pumping when asked to: no bottom turn low on the face, no cutback far ahead of the curl', () => {
+    const autopilot = projecting({ pumpOnly: true });
+    autopilot.next(standing(60 * DEG, { faceFraction: 0.7, curlDistance: 5, curlSide: -1 }), STEP);
+    expect(autopilot.phase).toMatch(/^FLOW · PUMP/);
+    for (const frame of [{ faceFraction: 0.2, curlDistance: 5 }, { faceFraction: 0.6, curlDistance: 30 }, { faceFraction: 0.5, curlDistance: Infinity }]) {
+      expect(autopilot.next(standing(40 * DEG, { ...frame, curlSide: -1 }), STEP).compress).toBe(0);
+      expect(autopilot.phase).toMatch(/^FLOW · PUMP/);
+    }
+    // Without it, the same frames turn at the bottom of the face as before.
+    const flow = projecting();
+    flow.next(standing(60 * DEG, { faceFraction: 0.7, curlDistance: 5, curlSide: -1 }), STEP);
+    flow.next(standing(40 * DEG, { faceFraction: 0.2, curlDistance: 5, curlSide: -1 }), STEP);
+    expect(flow.phase).toBe('FLOW · BOTTOM TURN');
   });
 
   it('records each phase: how long, how far it turned toward the open face, the speed, face and curl in and out, and whether it finished', () => {
