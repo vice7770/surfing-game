@@ -7,6 +7,10 @@ import { stormSwell } from '../wave/StormSwell';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, spreadingFor, swellFor, swellHeightLimit } from './PhysicalMode';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { FRONT_FIELD, FRONT_STRIDE } from '../wave/barrel/frontRecords';
+import { ProfileLibrary } from '../wave/barrel/ProfileLibrary';
+import { SweptLoft } from '../wave/barrel/sweptLoft';
+import { tubeCase } from '../wave/barrel/toyCase';
 
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
 
@@ -239,6 +243,71 @@ describe('PhysicalMode', () => {
     mode.defaultView = 'side';
     expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick)).toBe(true);
     expect(mode.homeView).toBe('side');
+  });
+
+  it('reads the camera by the water as drawn: air inside the swept barrel\'s tube, water under its face, the solver\'s height beyond it', () => {
+    const mode = new PhysicalMode(new Scene());
+    // Under a swept lip the solver's height is the hump the tube is cut from: higher than the cavity a camera sits in.
+    const hump = 5;
+    mode.host = { heightAt: () => hump } as unknown as SurfZoneHost;
+    // The contact tests' toy tube: a front along +x at z = −100, thrown there; at x = 10.3, z = −93 its face stands at 0.5,
+    // its lip's underside at 4.2 and its top at 4.35.
+    const records = new Float32Array(21 * FRONT_STRIDE);
+    for (let k = 0; k < 21; k += 1) {
+      const o = k * FRONT_STRIDE;
+      records[o + FRONT_FIELD.x] = k + 0.5;
+      records[o + FRONT_FIELD.z] = -100;
+      records[o + FRONT_FIELD.front] = 1;
+      records[o + FRONT_FIELD.sigma] = k;
+      records[o + FRONT_FIELD.tau] = 0.1;
+      records[o + FRONT_FIELD.footHeight] = 2.1;
+      records[o + FRONT_FIELD.footDepth] = 7;
+      records[o + FRONT_FIELD.throwZ] = -100;
+    }
+    const loft = new SweptLoft(new ProfileLibrary([tubeCase(0.3)]), 0.05).build(records, 21, 0.5, () => 0.5);
+    let asked = 0;
+    const counted = { positions: loft.positions, indices: loft.indices, vertexCount: loft.vertexCount, get indexCount() { asked += 1; return loft.indexCount; } };
+    const draw = vi.fn();
+    (mode as unknown as { sweptBarrel: unknown }).sweptBarrel = { lastLoft: counted, draw };
+    const below = (x: number, y: number, z: number) => {
+      mode.camera.camera.position.set(x, y, z);
+      return mode.cameraBelowSurface();
+    };
+    // The cavity: the solver's height put this camera under water (2.5 < 5 − 0.1); the drawn tube says air.
+    expect(2.5 < hump - 0.1).toBe(true);
+    expect(below(10.3, 2.5, -93)).toBe(false);
+    expect(below(10.3, 0, -93)).toBe(true);
+    expect(below(10.3, 9, -93)).toBe(false);
+    // Beyond the loft's footprint the solver's height still decides, as before.
+    expect(below(10.3, 2.5, -150)).toBe(true);
+    expect(below(10.3, 6, -150)).toBe(false);
+    // The same point asked twice in a frame (the scene's fog and the sound's muffle) scans the loft once.
+    mode.drawBarrel();
+    expect(draw).toHaveBeenCalledTimes(1);
+    asked = 0;
+    expect(below(10.3, 2.5, -93)).toBe(false);
+    expect(below(10.3, 2.5, -93)).toBe(false);
+    expect(asked).toBe(1);
+    // A new drawing is asked again.
+    mode.drawBarrel();
+    expect(below(10.3, 2.5, -93)).toBe(false);
+    expect(asked).toBe(2);
+    // The scan is skipped where its answer is known: outside the loft's footprint, and over its top in the air.
+    asked = 0;
+    expect(below(10.3, 2.5, -150)).toBe(true);
+    expect(below(80, 6, -93)).toBe(false);
+    expect(below(10.3, 9, -93)).toBe(false);
+    expect(asked).toBe(0);
+    // Over the top but under the solver's water, whether the loft covers the point decides: it does here, so air.
+    mode.host = { heightAt: () => 20 } as unknown as SurfZoneHost;
+    expect(below(10.3, 9, -93)).toBe(false);
+    expect(asked).toBe(1);
+    mode.host = { heightAt: () => hump } as unknown as SurfZoneHost;
+    // No host, or no barrel at the spot: the solver's height, or nothing.
+    (mode as unknown as { sweptBarrel: unknown }).sweptBarrel = { lastLoft: undefined, draw };
+    expect(below(10.3, 2.5, -93)).toBe(true);
+    mode.host = undefined;
+    expect(below(10.3, 2.5, -93)).toBe(false);
   });
 
   it('rides as the chosen surfer: the body loaded once, dressed, and the board in its design', () => {

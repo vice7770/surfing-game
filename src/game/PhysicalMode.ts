@@ -35,6 +35,7 @@ import { SWEPT_BARREL_VIEWS, type SweptBarrelMesh } from '../scene/barrel/SweptB
 import { devParam } from '../devTools';
 import type { LoftResult } from '../wave/barrel/sweptLoft';
 import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes } from '../wave/barrel/barrelLibrary';
+import { drawnLoftBounds, pointInDrawnWater, type DrawnLoftBounds } from './drawnWater';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import { SUIT_COLORS, outfitFor, type SurferSettings } from './SurferChoice';
 
@@ -356,6 +357,15 @@ export class PhysicalMode {
   /** The swept barrel (the Padang Padang spec, Part B, PR 3): built with the water on the first start, on at a swept spot. */
   private sweptBarrel?: SweptBarrel;
   private swept = false;
+  /**
+   * How many times the barrel has been drawn; the box of the loft drawn last, and the drawing it is of; and the last
+   * point asked of that loft, with its answer (`pointBelowSurface`).
+   */
+  private barrelDraws = 0;
+  private readonly drawnBounds: DrawnLoftBounds & { loft?: LoftResult; draw: number } = { draw: -1, xMin: 0, xMax: 0, zMin: 0, zMax: 0, top: 0 };
+  private readonly drawnAnswer: { loft?: LoftResult; draw: number; x: number; y: number; z: number; margin: number; inWater: boolean | undefined } = {
+    draw: -1, x: 0, y: 0, z: 0, margin: 0, inWater: undefined,
+  };
   private readonly scene: Scene;
   /** Graphics setting (plan P8): spray and mist are still simulated, only not drawn. */
   private sprayShown = true;
@@ -705,6 +715,7 @@ export class PhysicalMode {
   drawBarrel(): void {
     const { host, sweptBarrel } = this;
     if (!sweptBarrel) return;
+    this.barrelDraws += 1;
     if (!host || !this.swept || !this.shown) {
       sweptBarrel.draw(NO_FRONT, 0, 0);
       return;
@@ -732,10 +743,56 @@ export class PhysicalMode {
     this.spray.mesh.visible = this.shown && visible;
   }
 
+  /**
+   * Whether the camera is under the water as the page draws it, by more than `margin` m (`pointBelowSurface`): the
+   * scene's underwater fog and background, and the sound's muffle.
+   */
   cameraBelowSurface(margin = 0.1): boolean {
-    if (!this.host) return false;
     const position = this.camera.camera.position;
-    return position.y < this.host.heightAt(position.x, position.z) - margin;
+    return this.pointBelowSurface(position.x, position.y, position.z, margin);
+  }
+
+  /**
+   * Whether (x, y, z) is more than `margin` m under the water as drawn (the owner's one-water rule: a point is in what is
+   * drawn at its place). Where the swept barrel's loft covers the point it says (`pointInDrawnWater`): a point inside
+   * the drawn tube is in air, though the solver's height there is the hump the tube is cut from. Elsewhere the solver's
+   * height does, as it always has. The loft is the one drawn last, after the heights the page uploaded: a frame behind
+   * the solver's snapshot, which a point inside a barrel's cavity, metres from its walls, does not notice.
+   */
+  pointBelowSurface(x: number, y: number, z: number, margin = 0.1): boolean {
+    const { host } = this;
+    if (!host) return false;
+    const solver = y < host.heightAt(x, z) - margin;
+    const loft = this.sweptBarrel?.lastLoft;
+    return loft ? this.drawnWaterAt(loft, x, y, z, margin, solver) : solver;
+  }
+
+  /**
+   * `pointInDrawnWater` where it can differ from the solver's answer, asked once of each drawing (the sound and the scene
+   * ask a frame's same point). Outside the loft's footprint the solver's water is what is drawn; over the loft's top,
+   * nothing drawn lies above the point, so it is in air unless the solver's water stands over it (then the scan says
+   * whether the loft covers it). The chase cameras, metres from a barrel or over its lip, mostly stop there.
+   */
+  private drawnWaterAt(loft: LoftResult, x: number, y: number, z: number, margin: number, solver: boolean): boolean {
+    const bounds = this.drawnBounds;
+    if (bounds.loft !== loft || bounds.draw !== this.barrelDraws) {
+      drawnLoftBounds(loft, bounds);
+      bounds.loft = loft;
+      bounds.draw = this.barrelDraws;
+    }
+    if (x < bounds.xMin || x > bounds.xMax || z < bounds.zMin || z > bounds.zMax) return solver;
+    if (y >= bounds.top && !solver) return false;
+    const last = this.drawnAnswer;
+    if (last.loft !== loft || last.draw !== this.barrelDraws || last.x !== x || last.y !== y || last.z !== z || last.margin !== margin) {
+      last.loft = loft;
+      last.draw = this.barrelDraws;
+      last.x = x;
+      last.y = y;
+      last.z = z;
+      last.margin = margin;
+      last.inWater = pointInDrawnWater(loft, x, y, z, margin);
+    }
+    return last.inWater ?? solver;
   }
 
   setVisible(visible: boolean): void {

@@ -301,8 +301,8 @@ class SurfGame {
       /** Any sun (the slider's height, and its azimuth, degrees): the water sheet's lighting checks. */
       setSun: (sun: { sunHeight: number; sunDirection: number }) => this.applySun(sun),
       renderView: (camera: PerspectiveCamera) => {
-        const host = this.physicalMode.host;
-        this.setUnderwater(host !== undefined && camera.position.y < host.heightAt(camera.position.x, camera.position.z) - 0.1);
+        // The water as drawn: inside the swept barrel's tube is air, whatever the solver's height there.
+        this.setUnderwater(this.physicalMode.pointBelowSurface(camera.position.x, camera.position.y, camera.position.z));
         this.drawPhysical(camera);
       },
       water: this.water,
