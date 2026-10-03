@@ -58,6 +58,53 @@ export interface SoundTargets {
 export const ONE_SHOT_CAP = 32;
 
 /**
+ * Loops heard without the world's muffle (the underwater low-pass, the paused bed):
+ * they are made under water, so the water's filter must not colour them. The muffle
+ * is for what the camera hears through the surface.
+ */
+export const UNMUFFLED_LOOPS: readonly LoopId[] = ['bubbles'];
+
+/**
+ * How much a sound that fires often varies from shot to shot (provisional, by
+ * ear): its pitch by up to this many semitones either way, its level by up to
+ * this many dB. Together with a pool of recordings it keeps a landing or a stroke
+ * from repeating itself.
+ */
+export const ONE_SHOT_JITTER: Partial<Record<OneShotId, { semitones: number; gainDb: number }>> = {
+  lipJet: { semitones: 1, gainDb: 1.5 },
+  lipRoller: { semitones: 1, gainDb: 0 },
+  paddle: { semitones: 1.5, gainDb: 1.5 },
+};
+
+/** A shot's playback-rate and level factors from two uniform draws in [0, 1): 0.5 is no change. */
+export function oneShotJitter(id: OneShotId, pitchDraw: number, levelDraw: number): { rate: number; gain: number } {
+  const jitter = ONE_SHOT_JITTER[id];
+  if (!jitter) return { rate: 1, gain: 1 };
+  return {
+    rate: 2 ** ((jitter.semitones * (2 * pitchDraw - 1)) / 12),
+    gain: 10 ** ((jitter.gainDb * (2 * levelDraw - 1)) / 20),
+  };
+}
+
+/**
+ * Air takes the treble out of a sound with distance. The cutoff where the air has
+ * absorbed 3 dB falls as distance^−0.56: absorption grows steeply with frequency
+ * (ISO 9613-1: of the order of 5 dB/km at 1 kHz and 25 dB/km at 4 kHz in mild, humid
+ * air), roughly as f^1.8 above 2 kHz. Clear within the panner's reference distance,
+ * and never below AIR_FLOOR_HZ, so a far sector is dull, not gone. Provisional (by
+ * ear): the constants are a fit to that shape, tuned in the listening playtest.
+ */
+export const AIR_CLEAR_HZ = 18000;
+export const AIR_FLOOR_HZ = 900;
+const AIR_REFERENCE_M = 8;
+const AIR_KM_CUTOFF_HZ = 1230;
+export function airCutoff(distance: number): number {
+  if (!(distance > AIR_REFERENCE_M)) return AIR_CLEAR_HZ;
+  const cutoff = AIR_KM_CUTOFF_HZ * (distance / 1000) ** -0.56;
+  return Math.min(AIR_CLEAR_HZ, Math.max(AIR_FLOOR_HZ, cutoff));
+}
+
+/**
  * The shortest time between two one-shots of a kind in one place, s
  * (provisional, by ear). Lip landings arrive by the hundred as a wave throws, and
  * a paddling hand pulls for many steps: they gather into a few crashes a second

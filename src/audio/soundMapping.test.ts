@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { LIP_HIT_STRIDE, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE } from '../wave/SurfZoneRunner';
-import { CRASH_RATE_MIN, CRASH_SIZE_REFERENCE, MIN_INTERVAL, ONE_SHOT_CAP, OneShotShaper, soundTargets, type SoundFrame } from './soundMapping';
+import {
+  AIR_CLEAR_HZ, AIR_FLOOR_HZ, CRASH_RATE_MIN, CRASH_SIZE_REFERENCE, MIN_INTERVAL, ONE_SHOT_CAP, ONE_SHOT_JITTER, OneShotShaper, UNMUFFLED_LOOPS,
+  airCutoff, oneShotJitter, soundTargets, type SoundFrame,
+} from './soundMapping';
 
 function frame(overrides: Partial<SoundFrame> = {}): SoundFrame {
   return {
@@ -202,5 +205,62 @@ describe('the rider under water', () => {
     // A Big swell's Reef lip (6 m³) crashes deeper by its own size.
     const heavy = soundTargets(frame(lipHits([{ x: 3, z: -30, volume: 0.75, speed: 6, lip: 6 }]))).oneShots.find((one) => one.id === 'lipJet')!;
     expect(heavy.rate).toBeCloseTo(Math.cbrt(CRASH_SIZE_REFERENCE / 6), 6);
+  });
+});
+
+describe('what the world\'s muffle leaves alone', () => {
+  it('lets the bubbles, made under water, skip the muffle and muffles every other loop', () => {
+    expect(UNMUFFLED_LOOPS).toEqual(['bubbles']);
+    const ids = soundTargets(frame()).loops.map((l) => l.id);
+    expect(ids).toContain('bubbles');
+    for (const id of ['roar', 'distant', 'wind', 'rush', 'rail']) {
+      expect(UNMUFFLED_LOOPS).not.toContain(id);
+      expect(ids).toContain(id);
+    }
+  });
+});
+
+describe('oneShotJitter', () => {
+  it('changes nothing at the middle of the draw, and spans its range at the ends', () => {
+    expect(oneShotJitter('lipJet', 0.5, 0.5)).toEqual({ rate: 1, gain: 1 });
+    const low = oneShotJitter('lipJet', 0, 0);
+    const high = oneShotJitter('lipJet', 1, 1);
+    expect(low.rate).toBeCloseTo(2 ** (-1 / 12), 9);
+    expect(high.rate).toBeCloseTo(2 ** (1 / 12), 9);
+    expect(low.gain).toBeCloseTo(10 ** (-1.5 / 20), 9);
+    expect(high.gain).toBeCloseTo(10 ** (1.5 / 20), 9);
+  });
+
+  it('varies the lip roller\'s pitch only, the paddle\'s pitch and level by more, and the rest not at all', () => {
+    expect(oneShotJitter('lipRoller', 0, 0).gain).toBe(1);
+    expect(oneShotJitter('lipRoller', 0, 0).rate).toBeCloseTo(2 ** (-1 / 12), 9);
+    expect(oneShotJitter('paddle', 1, 1).rate).toBeCloseTo(2 ** (1.5 / 12), 9);
+    expect(oneShotJitter('paddle', 1, 1).gain).toBeCloseTo(10 ** (1.5 / 20), 9);
+    for (const id of ['popUp', 'plunge', 'leashSnap', 'knock', 'duckDive'] as const) {
+      expect(ONE_SHOT_JITTER[id]).toBeUndefined();
+      expect(oneShotJitter(id, 0, 1)).toEqual({ rate: 1, gain: 1 });
+    }
+  });
+});
+
+describe('airCutoff', () => {
+  it('is clear up close and falls with distance, but never to nothing', () => {
+    expect(airCutoff(0)).toBe(AIR_CLEAR_HZ);
+    expect(airCutoff(8)).toBe(AIR_CLEAR_HZ);
+    expect(airCutoff(Number.NaN)).toBe(AIR_CLEAR_HZ);
+    let previous = AIR_CLEAR_HZ;
+    for (const metres of [9, 12, 20, 40, 80, 160, 320, 640, 1280]) {
+      const hz = airCutoff(metres);
+      expect(hz, `${metres} m`).toBeLessThan(previous);
+      expect(hz).toBeGreaterThanOrEqual(AIR_FLOOR_HZ);
+      previous = hz;
+    }
+    expect(airCutoff(1e6)).toBe(AIR_FLOOR_HZ);
+  });
+
+  it('falls by about the same factor for each doubling of the distance', () => {
+    const ratio = (a: number) => airCutoff(2 * a) / airCutoff(a);
+    expect(ratio(60)).toBeCloseTo(2 ** -0.56, 6);
+    expect(ratio(120)).toBeCloseTo(2 ** -0.56, 6);
   });
 });

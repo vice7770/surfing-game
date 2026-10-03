@@ -30,7 +30,7 @@
     "lipJet": {
       "candidates": [
         { "file": "lipJet-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
-        { "file": "lipJet-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
+        { "file": "lipJet-2.m4a", "level": 0.67, "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
       ],
       "chosen": 0,
       "gain": 1.32
@@ -38,7 +38,7 @@
     "lipRoller": {
       "candidates": [
         { "file": "lipRoller-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
-        { "file": "lipRoller-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
+        { "file": "lipRoller-2.m4a", "level": 1.28, "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
       ],
       "chosen": 0,
       "gain": 0.99
@@ -46,7 +46,7 @@
     "paddle": {
       "candidates": [
         { "file": "paddle-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
-        { "file": "paddle-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
+        { "file": "paddle-2.m4a", "level": 1.44, "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
       ],
       "chosen": 0,
       "gain": 1.22
@@ -55,7 +55,7 @@
     "plunge": {
       "candidates": [
         { "file": "plunge-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
-        { "file": "plunge-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
+        { "file": "plunge-2.m4a", "level": 1.55, "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
       ],
       "chosen": 0,
       "gain": 1.48

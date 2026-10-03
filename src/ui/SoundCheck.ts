@@ -34,13 +34,14 @@ function soundRow(id: SoundId, engine: () => AudioEngine | undefined): HTMLEleme
     json.textContent = `"${id}": { "chosen": ${chosen}, "gain": ${Number(gain.value)} }`;
   };
   gain.addEventListener('input', refresh);
-  const play = (label: string, buffer: () => Promise<AudioBuffer | undefined>, index?: number) => el('button', {
+  // A candidate plays at the sound's gain times its own level; a pooled candidate plays its next recording on each press.
+  const play = (label: string, buffer: () => Promise<AudioBuffer | undefined>, index?: number, level: () => number = () => 1) => el('button', {
     class: 'button button-quiet', attrs: { type: 'button' }, text: label,
     on: {
       click: async () => {
         const audio = engine();
         const sound = await buffer();
-        if (audio && sound) audio.audition(sound, Number(gain.value));
+        if (audio && sound) audio.audition(sound, Number(gain.value) * level());
         if (index !== undefined) {
           chosen = index;
           refresh();
@@ -62,7 +63,9 @@ function soundRow(id: SoundId, engine: () => AudioEngine | undefined): HTMLEleme
         buffer.copyToChannel(samples, 0);
         return buffer;
       }),
-      ...candidates.map((candidate, index) => play(candidate.author, async () => bank()?.candidate(id, index), index))),
+      ...candidates.map((candidate, index) => play(
+        candidate.variants?.length ? `${candidate.author} (×${1 + candidate.variants.length})` : candidate.author,
+        async () => bank()?.candidate(id, index), index, () => bank()?.candidateLevel(id, index) ?? 1))),
     el('label', { class: 'slider-row' }, el('span', { text: 'gain' }), gain),
     json);
 }

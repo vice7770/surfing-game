@@ -1,6 +1,6 @@
 import type { AudioSettings } from '../game/Settings';
 import { SoundBank } from './SoundBank';
-import type { LoopId, OneShotId, SoundTargets } from './soundMapping';
+import { UNMUFFLED_LOOPS, airCutoff, oneShotJitter, type LoopId, type OneShotId, type SoundTargets } from './soundMapping';
 import type { SoundManifest } from './soundManifest';
 
 /** The camera as the listener: where it is and which way it looks. */
@@ -30,22 +30,29 @@ interface Loop {
   buffer: AudioBuffer;
   source: AudioBufferSourceNode;
   gain: GainNode;
+  /** Positional loops only: the air's low-pass, whose cutoff falls with distance. */
+  air?: BiquadFilterNode;
   panner?: PannerNode;
   silentFor: number;
 }
 
 /**
- * Plays the sound targets through Web Audio (S1). Each source → its panner
- * (positional sounds) → its bus (Sea, Board and rider, Interface); the world's
- * buses pass a muffle low-pass; all meet at Master, then a mute gain. Loops keep
- * their source nodes and glide to each frame's targets; one-shots start new
- * sources. Browser only: its decisions live in `soundTargets` and `audioState`.
+ * Plays the sound targets through Web Audio (S1). Each source → the air's
+ * low-pass and its panner (positional sounds) → its bus (Sea, Board and rider,
+ * Interface); the world's buses pass a muffle low-pass, except what is made under
+ * water (the bubbles), which meets Master by a dry path at the Sea level; all meet
+ * at Master, then a mute gain. Loops keep their source nodes and glide to each
+ * frame's targets; one-shots start new sources, taking the next recording of their
+ * pool with a little pitch and level jitter. Browser only: its decisions live in
+ * `soundTargets`, `oneShotJitter`, `airCutoff` and `audioState`.
  */
 export class AudioEngine {
   private readonly master: GainNode;
   private readonly mute: GainNode;
   private readonly muffle: BiquadFilterNode;
   private readonly buses: Record<Bus, GainNode>;
+  /** The Sea level again, on a path that skips the muffle (see `UNMUFFLED_LOOPS`). */
+  private readonly seaDry: GainNode;
   private readonly loops = new Map<string, Loop>();
   private bank: SoundBank;
 
@@ -80,6 +87,8 @@ export class AudioEngine {
     this.buses.sea.connect(this.muffle);
     this.buses.board.connect(this.muffle);
     this.buses.ui.connect(this.master);
+    this.seaDry = c.createGain();
+    this.seaDry.connect(this.master);
     this.bank = new SoundBank(c, { sounds: {} });
   }
 
@@ -109,6 +118,7 @@ export class AudioEngine {
     const now = this.context.currentTime;
     this.master.gain.setTargetAtTime(audio.master, now, RAMP);
     this.buses.sea.gain.setTargetAtTime(audio.sea, now, RAMP);
+    this.seaDry.gain.setTargetAtTime(audio.sea, now, RAMP);
     this.buses.board.gain.setTargetAtTime(audio.board, now, RAMP);
     this.buses.ui.gain.setTargetAtTime(audio.ui, now, RAMP);
   }
@@ -143,6 +153,7 @@ export class AudioEngine {
   setBusLevel(bus: Bus | 'master', level: number): void {
     const node = bus === 'master' ? this.master : this.buses[bus];
     node.gain.setTargetAtTime(level, this.context.currentTime, RAMP);
+    if (bus === 'sea') this.seaDry.gain.setTargetAtTime(level, this.context.currentTime, RAMP);
   }
 
   playUi(id: 'click' | 'chime'): void {
@@ -167,55 +178,73 @@ export class AudioEngine {
       if (!loop || loop.buffer !== buffer) {
         if (target.gain < AUDIBLE) continue;
         if (loop) this.stopLoop(target.key, loop);
-        loop = this.startLoop(target.id, buffer, target.position !== undefined);
+        loop = this.startLoop(target.id, buffer, target.position ? airCutoff(distance(listener, target.position)) : undefined);
         this.loops.set(target.key, loop);
       }
       const level = target.gain * this.bank.gain(target.id);
       loop.gain.gain.setTargetAtTime(level, now, RAMP);
       loop.source.playbackRate.setTargetAtTime(target.rate * targets.playbackRate, now, RAMP);
       if (loop.panner && target.position) this.place(loop.panner, target.position, now);
+      if (loop.air && target.position) loop.air.frequency.setTargetAtTime(airCutoff(distance(listener, target.position)), now, RAMP);
       loop.silentFor = level < AUDIBLE ? loop.silentFor + dt : 0;
       if (loop.silentFor > SILENT_STOP) this.stopLoop(target.key, loop);
     }
     for (const shot of targets.oneShots) {
       const source = c.createBufferSource();
-      source.buffer = this.bank.buffer(shot.id);
-      source.playbackRate.value = shot.rate * targets.playbackRate;
+      // The next recording of the sound's pool (never the one just played), a little off in pitch and level each time.
+      const jitter = oneShotJitter(shot.id, Math.random(), Math.random());
+      source.buffer = this.bank.variant(shot.id);
+      source.playbackRate.value = shot.rate * jitter.rate * targets.playbackRate;
       const gain = c.createGain();
-      gain.gain.value = shot.gain * this.bank.gain(shot.id);
+      gain.gain.value = shot.gain * jitter.gain * this.bank.gain(shot.id);
+      const air = this.air(airCutoff(distance(listener, shot.position)));
       const panner = this.panner();
       this.place(panner, shot.position, now, true);
-      source.connect(gain).connect(panner).connect(this.buses[ONE_SHOT_BUS[shot.id]]);
+      source.connect(gain).connect(air).connect(panner).connect(this.buses[ONE_SHOT_BUS[shot.id]]);
       source.onended = () => {
         gain.disconnect();
+        air.disconnect();
         panner.disconnect();
       };
       source.start();
     }
   }
 
-  private startLoop(id: LoopId, buffer: AudioBuffer, positional: boolean): Loop {
+  /** A loop with an air cutoff is positional (it has a panner); one without plays unplaced. */
+  private startLoop(id: LoopId, buffer: AudioBuffer, airHz?: number): Loop {
     const c = this.context;
     const source = c.createBufferSource();
     source.buffer = buffer;
     source.loop = true;
     const gain = c.createGain();
     gain.gain.value = 0;
-    const panner = positional ? this.panner() : undefined;
+    const air = airHz === undefined ? undefined : this.air(airHz);
+    const panner = airHz === undefined ? undefined : this.panner();
+    const output = UNMUFFLED_LOOPS.includes(id) ? this.seaDry : this.buses[LOOP_BUS[id]];
     source.connect(gain);
-    if (panner) gain.connect(panner).connect(this.buses[LOOP_BUS[id]]);
-    else gain.connect(this.buses[LOOP_BUS[id]]);
+    if (air && panner) gain.connect(air).connect(panner).connect(output);
+    else gain.connect(output);
     // Loops of one sound start at different points, so the roar's sectors never sound in phase.
     source.start(0, Math.random() * buffer.duration);
-    return { buffer, source, gain, panner, silentFor: 0 };
+    return { buffer, source, gain, air, panner, silentFor: 0 };
   }
 
   private stopLoop(key: string, loop: Loop): void {
     loop.source.stop();
     loop.source.disconnect();
     loop.gain.disconnect();
+    loop.air?.disconnect();
     loop.panner?.disconnect();
     this.loops.delete(key);
+  }
+
+  /** The air's low-pass: a 12 dB/octave Butterworth at the cutoff for the source's distance. */
+  private air(hz: number): BiquadFilterNode {
+    const filter = this.context.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.Q.value = -3.01;
+    filter.frequency.value = hz;
+    return filter;
   }
 
   private panner(): PannerNode {
@@ -263,3 +292,7 @@ export class AudioEngine {
   }
 }
 
+/** Metres between the camera and a source. */
+function distance(listener: ListenerPose, at: { x: number; y: number; z: number }): number {
+  return Math.hypot(at.x - listener.x, at.y - listener.y, at.z - listener.z);
+}
