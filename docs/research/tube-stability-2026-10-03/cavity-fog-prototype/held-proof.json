@@ -1,0 +1,1903 @@
+{
+  "schema": 1,
+  "scope": "Held real draw camera/fog proof; no production integration, physics advance, moving lifecycle or FPS claim.",
+  "valid": true,
+  "viewPairs": 8,
+  "physicsSteps": 0,
+  "runtimeSeconds": {
+    "baseline": 6.679,
+    "candidate": 6.939
+  },
+  "originalOverallDeadlineSeconds": 60,
+  "runtimeProvenance": {
+    "baseline": {
+      "indexSha256": "df9f5b5b9064eeb635ad5ce1838f2f06aee37b9fe1481f8ab1c5ac360571552b",
+      "verifiedDirectory": "/private/tmp/surf-tube-stability-current-20261003",
+      "servedJavaScript": {
+        "assets/WorkerSurfZone-DsoxOk5J.js": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606",
+        "assets/devStepping-CLfXNMh-.js": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677",
+        "assets/index-Dhp1E5Jm.js": "cff7f235604df399fe95d2f872a877ca95fca141a66e588c0d9a5eb8efc90cf3",
+        "assets/jevRecorder-DKAk_GxP.js": "aa5a9ec59dc47571b87c9a62901bca07c54e39430b6cafe5d4abe8d05dc61300",
+        "assets/particleBench-UFIniUOA.js": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e",
+        "assets/rideRecorder-DdzH6W7j.js": "cc1f6cc0fb23c4aa8416dbe123564f02239e4db55fbc14f97d2d51072c540674",
+        "assets/surfZoneWorker-BH6FhcTP.js": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5",
+        "assets/waterSheet-heYJdhwA.js": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+      },
+      "bundleSha256": "d8d8564409cac85cd0bfd742025a7835e0e8627184e89579358952cdb0510788"
+    },
+    "candidate": {
+      "indexSha256": "f37ef6665e41b391a9a56331235e83ed63f576018511a2242a39fe4eeb210675",
+      "verifiedDirectory": "/private/tmp/surf-cavity-fog-20261003/dist",
+      "servedJavaScript": {
+        "assets/WorkerSurfZone-D3Jj98_0.js": "94644aaccceee8b4f2d12784bbb45530715c7c539dd7509da23c5be3d44a379a",
+        "assets/devStepping-BoAkcxsM.js": "a4c1d8720871efa9afc73434d1ad3ede1735d37b807055a690f6ba5e445dc487",
+        "assets/index-BtRHsPaG.js": "43a54b29e4a7edafafc95d180b45c5790fce81895fce7156f31093d67e444fd4",
+        "assets/jevRecorder-Cfn8EerB.js": "bb88e6c69f15d5885ab7f8e3d75708912db8ee4d012b235430270935922821cb",
+        "assets/particleBench-dTU5MElO.js": "afb6798bd9a3ea60bf6c07c023b5dc10f9e2b6378f6028c537e93a4a745dd7b6",
+        "assets/rideRecorder-CnUzafT3.js": "f0ac7d83a745860e94d38353e5cb3e40a694c275cd3663e0c330de1064ebcef0",
+        "assets/surfZoneWorker-BH6FhcTP.js": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5",
+        "assets/waterSheet-BX5FUeHR.js": "6cb9765f54dadfd498fc042e7d0c6eff9939533336d441036252fb026863ab93"
+      },
+      "bundleSha256": "469b1a5300861cc9afe3032105d33f04b846af92e07215b867d85ec0a3ce8c11"
+    }
+  },
+  "viewResults": [
+    {
+      "view": "10-lower-air",
+      "actualView": {
+        "position": [
+          114.49167762756348,
+          0.8355403826597486,
+          -9.801540737152099
+        ],
+        "quaternion": [
+          0.10740575641818895,
+          0.379160868756084,
+          -0.044361481575505665,
+          0.9180049553487142
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "ownCamera": [
+        114.49167762756348,
+        20,
+        -9.801540737152099
+      ],
+      "rawHeight": 1.0507383408111823,
+      "rawUnderwater": true,
+      "baselineSceneFog": {
+        "present": true,
+        "type": "FogExp2",
+        "color": [
+          0.036889450395083165,
+          0.20863687013464577,
+          0.22696587349938613
+        ],
+        "density": 0.035
+      },
+      "candidateSceneFog": {
+        "present": false,
+        "type": null
+      },
+      "baselineActualGlPrograms": [
+        {
+          "label": "rich-water",
+          "program": 1,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "water",
+          "program": 1,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "swept",
+          "program": 2,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "6504fb3c978b83212406e9c73c281b3ec7bc9db9bb21abe4daaff06039bd60e5"
+        }
+      ],
+      "candidateActualGlPrograms": [
+        {
+          "label": "rich-water",
+          "program": 1,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "530c798cbbdaa90bf77b8755bfc54ae6544ac21fd62fec536c13ea55f233d244"
+        },
+        {
+          "label": "water",
+          "program": 1,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "530c798cbbdaa90bf77b8755bfc54ae6544ac21fd62fec536c13ea55f233d244"
+        },
+        {
+          "label": "swept",
+          "program": 2,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "e41c553eadde72c94316f818ed7aecd8174f399e52367bd9bf990fbaf73d4e79"
+        }
+      ],
+      "mask": {
+        "inside": true,
+        "nodes": [
+          255,
+          255,
+          255,
+          255
+        ],
+        "weights": [
+          0.21447115601813044,
+          0.20744841244414142,
+          0.29385121641837936,
+          0.2842292151193488
+        ],
+        "alpha": 1,
+        "opaque": true
+      },
+      "contactIndexedWitness": {
+        "kind": "lower-air",
+        "position": [
+          114.49167762756348,
+          0.8355403826597486,
+          -9.801540737152099
+        ],
+        "boundedIndexedAir": true,
+        "contact": {
+          "inWater": false,
+          "floorY": 0.720342424508315,
+          "ceilingY": 1.4365744900703492,
+          "ceilingTopY": 1.6417848043640417
+        },
+        "knownColumn": {
+          "front": 2,
+          "strip": 8,
+          "row": 70,
+          "hits": [
+            {
+              "y": 0.7203424245083149,
+              "triangle": 2325,
+              "strip": 8,
+              "row": 98,
+              "layer": "face",
+              "bary": [
+                0.37012232814295504,
+                0.41207082251975763,
+                0.21780684933728728
+              ]
+            },
+            {
+              "y": 1.436574490070345,
+              "triangle": 2268,
+              "strip": 8,
+              "row": 70,
+              "layer": "under",
+              "bary": [
+                0.3700000000000867,
+                0.629999999999999,
+                -8.570921750106208e-14
+              ]
+            },
+            {
+              "y": 1.6417848043640444,
+              "triangle": 2251,
+              "strip": 8,
+              "row": 61,
+              "layer": "top",
+              "bary": [
+                0.3700106255576287,
+                0.027779158679488398,
+                0.6022102157628828
+              ]
+            }
+          ]
+        },
+        "rawBilinearHeight": 1.0507383408111823,
+        "inputSha256": "b9813c244a7a5fd7e6dd7b7cd4edf195d3d19b904b56dc4c6055ebceeed632c6",
+        "geometryHash": "1b675336374b996f254b31f8f6cd8ccb5256b0a5af319ac4555849b3bff5b36a",
+        "contactOracle": "Retained exact fixture column, independently verified by swept-contact unit tests. No contact rebuild in renderer."
+      },
+      "generatedUploadedVariantsByteExact": true,
+      "camerasByteExact": true,
+      "cpuTexturesByteExact": true,
+      "waterUniformsByteExact": true,
+      "baselineNativeRepeatExact": true,
+      "candidateNativeRepeatExact": true
+    },
+    {
+      "view": "10-under-floor",
+      "actualView": {
+        "position": [
+          114.49167762756348,
+          0.520342424508315,
+          -9.801540737152099
+        ],
+        "quaternion": [
+          0.19291654517573628,
+          0.37333904559499687,
+          -0.07967974948290889,
+          0.9039094540682799
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "ownCamera": [
+        114.49167762756348,
+        20,
+        -9.801540737152099
+      ],
+      "rawHeight": 1.0507383408111823,
+      "rawUnderwater": true,
+      "baselineSceneFog": {
+        "present": true,
+        "type": "FogExp2",
+        "color": [
+          0.036889450395083165,
+          0.20863687013464577,
+          0.22696587349938613
+        ],
+        "density": 0.035
+      },
+      "candidateSceneFog": {
+        "present": true,
+        "type": "FogExp2",
+        "color": [
+          0.036889450395083165,
+          0.20863687013464577,
+          0.22696587349938613
+        ],
+        "density": 0.035
+      },
+      "baselineActualGlPrograms": [
+        {
+          "label": "rich-water",
+          "program": 1,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "water",
+          "program": 1,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "swept",
+          "program": 2,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "6504fb3c978b83212406e9c73c281b3ec7bc9db9bb21abe4daaff06039bd60e5"
+        }
+      ],
+      "candidateActualGlPrograms": [
+        {
+          "label": "rich-water",
+          "program": 3,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "b7043c80832058892cdc721f82565b5f0a8b7727537e64c9a8164dbda264fab9"
+        },
+        {
+          "label": "water",
+          "program": 3,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "b7043c80832058892cdc721f82565b5f0a8b7727537e64c9a8164dbda264fab9"
+        },
+        {
+          "label": "swept",
+          "program": 4,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "6504fb3c978b83212406e9c73c281b3ec7bc9db9bb21abe4daaff06039bd60e5"
+        }
+      ],
+      "mask": {
+        "inside": true,
+        "nodes": [
+          255,
+          255,
+          255,
+          255
+        ],
+        "weights": [
+          0.21447115601813044,
+          0.20744841244414142,
+          0.29385121641837936,
+          0.2842292151193488
+        ],
+        "alpha": 1,
+        "opaque": true
+      },
+      "contactIndexedWitness": {
+        "kind": "under-floor",
+        "position": [
+          114.49167762756348,
+          0.520342424508315,
+          -9.801540737152099
+        ],
+        "boundedIndexedAir": false,
+        "contact": {
+          "inWater": true,
+          "floorY": 0.720342424508315,
+          "ceilingY": 1.4365744900703492,
+          "ceilingTopY": 1.6417848043640417
+        },
+        "knownColumn": {
+          "front": 2,
+          "strip": 8,
+          "row": 70,
+          "hits": [
+            {
+              "y": 0.7203424245083149,
+              "triangle": 2325,
+              "strip": 8,
+              "row": 98,
+              "layer": "face",
+              "bary": [
+                0.37012232814295504,
+                0.41207082251975763,
+                0.21780684933728728
+              ]
+            },
+            {
+              "y": 1.436574490070345,
+              "triangle": 2268,
+              "strip": 8,
+              "row": 70,
+              "layer": "under",
+              "bary": [
+                0.3700000000000867,
+                0.629999999999999,
+                -8.570921750106208e-14
+              ]
+            },
+            {
+              "y": 1.6417848043640444,
+              "triangle": 2251,
+              "strip": 8,
+              "row": 61,
+              "layer": "top",
+              "bary": [
+                0.3700106255576287,
+                0.027779158679488398,
+                0.6022102157628828
+              ]
+            }
+          ]
+        },
+        "rawBilinearHeight": 1.0507383408111823,
+        "inputSha256": "b9813c244a7a5fd7e6dd7b7cd4edf195d3d19b904b56dc4c6055ebceeed632c6",
+        "geometryHash": "1b675336374b996f254b31f8f6cd8ccb5256b0a5af319ac4555849b3bff5b36a",
+        "contactOracle": "Retained exact fixture column, independently verified by swept-contact unit tests. No contact rebuild in renderer."
+      },
+      "generatedUploadedVariantsByteExact": true,
+      "camerasByteExact": true,
+      "cpuTexturesByteExact": true,
+      "waterUniformsByteExact": true,
+      "baselineNativeRepeatExact": true,
+      "candidateNativeRepeatExact": true
+    },
+    {
+      "view": "10-roof-band",
+      "actualView": {
+        "position": [
+          114.49167762756348,
+          1.5391796472171955,
+          -9.801540737152099
+        ],
+        "quaternion": [
+          -0.10490325810352108,
+          0.3792803713292709,
+          0.04332788210578419,
+          0.918294288883375
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "ownCamera": [
+        114.49167762756348,
+        20,
+        -9.801540737152099
+      ],
+      "rawHeight": 1.0507383408111823,
+      "rawUnderwater": false,
+      "baselineSceneFog": {
+        "present": false,
+        "type": null
+      },
+      "candidateSceneFog": {
+        "present": false,
+        "type": null
+      },
+      "baselineActualGlPrograms": [
+        {
+          "label": "rich-water",
+          "program": 3,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "f52cfb4f11a6258ec9076a9b9996bd578b28248a083d20716164cc953fde88ca"
+        },
+        {
+          "label": "water",
+          "program": 3,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "f52cfb4f11a6258ec9076a9b9996bd578b28248a083d20716164cc953fde88ca"
+        },
+        {
+          "label": "swept",
+          "program": 4,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "e41c553eadde72c94316f818ed7aecd8174f399e52367bd9bf990fbaf73d4e79"
+        }
+      ],
+      "candidateActualGlPrograms": [
+        {
+          "label": "rich-water",
+          "program": 5,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "f52cfb4f11a6258ec9076a9b9996bd578b28248a083d20716164cc953fde88ca"
+        },
+        {
+          "label": "water",
+          "program": 5,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "f52cfb4f11a6258ec9076a9b9996bd578b28248a083d20716164cc953fde88ca"
+        },
+        {
+          "label": "swept",
+          "program": 2,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "e41c553eadde72c94316f818ed7aecd8174f399e52367bd9bf990fbaf73d4e79"
+        }
+      ],
+      "mask": {
+        "inside": true,
+        "nodes": [
+          255,
+          255,
+          255,
+          255
+        ],
+        "weights": [
+          0.21447115601813044,
+          0.20744841244414142,
+          0.29385121641837936,
+          0.2842292151193488
+        ],
+        "alpha": 1,
+        "opaque": true
+      },
+      "contactIndexedWitness": {
+        "kind": "roof-band",
+        "position": [
+          114.49167762756348,
+          1.5391796472171955,
+          -9.801540737152099
+        ],
+        "boundedIndexedAir": false,
+        "contact": {
+          "inWater": true,
+          "floorY": 0.720342424508315,
+          "ceilingY": 1.4365744900703492,
+          "ceilingTopY": 1.6417848043640417
+        },
+        "knownColumn": {
+          "front": 2,
+          "strip": 8,
+          "row": 70,
+          "hits": [
+            {
+              "y": 0.7203424245083149,
+              "triangle": 2325,
+              "strip": 8,
+              "row": 98,
+              "layer": "face",
+              "bary": [
+                0.37012232814295504,
+                0.41207082251975763,
+                0.21780684933728728
+              ]
+            },
+            {
+              "y": 1.436574490070345,
+              "triangle": 2268,
+              "strip": 8,
+              "row": 70,
+              "layer": "under",
+              "bary": [
+                0.3700000000000867,
+                0.629999999999999,
+                -8.570921750106208e-14
+              ]
+            },
+            {
+              "y": 1.6417848043640444,
+              "triangle": 2251,
+              "strip": 8,
+              "row": 61,
+              "layer": "top",
+              "bary": [
+                0.3700106255576287,
+                0.027779158679488398,
+                0.6022102157628828
+              ]
+            }
+          ]
+        },
+        "rawBilinearHeight": 1.0507383408111823,
+        "inputSha256": "b9813c244a7a5fd7e6dd7b7cd4edf195d3d19b904b56dc4c6055ebceeed632c6",
+        "geometryHash": "1b675336374b996f254b31f8f6cd8ccb5256b0a5af319ac4555849b3bff5b36a",
+        "contactOracle": "Retained exact fixture column, independently verified by swept-contact unit tests. No contact rebuild in renderer."
+      },
+      "generatedUploadedVariantsByteExact": true,
+      "camerasByteExact": true,
+      "cpuTexturesByteExact": true,
+      "waterUniformsByteExact": true,
+      "baselineNativeRepeatExact": true,
+      "candidateNativeRepeatExact": true
+    },
+    {
+      "view": "10-outside",
+      "actualView": {
+        "position": [
+          114.49167762756348,
+          0.7178456827595765,
+          -28.95175552368164
+        ],
+        "quaternion": [
+          0.000382345752521429,
+          0.9994868057875652,
+          -0.013067578084229071,
+          0.029244098059401886
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "ownCamera": [
+        114.49167762756348,
+        20,
+        -28.95175552368164
+      ],
+      "rawHeight": 0.9178456827595765,
+      "rawUnderwater": true,
+      "baselineSceneFog": {
+        "present": true,
+        "type": "FogExp2",
+        "color": [
+          0.036889450395083165,
+          0.20863687013464577,
+          0.22696587349938613
+        ],
+        "density": 0.035
+      },
+      "candidateSceneFog": {
+        "present": true,
+        "type": "FogExp2",
+        "color": [
+          0.036889450395083165,
+          0.20863687013464577,
+          0.22696587349938613
+        ],
+        "density": 0.035
+      },
+      "baselineActualGlPrograms": [
+        {
+          "label": "water",
+          "program": 1,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "rich-water",
+          "program": 1,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "swept",
+          "program": 2,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "6504fb3c978b83212406e9c73c281b3ec7bc9db9bb21abe4daaff06039bd60e5"
+        }
+      ],
+      "candidateActualGlPrograms": [
+        {
+          "label": "water",
+          "program": 6,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "rich-water",
+          "program": 6,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "swept",
+          "program": 4,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "6504fb3c978b83212406e9c73c281b3ec7bc9db9bb21abe4daaff06039bd60e5"
+        }
+      ],
+      "mask": {
+        "inside": true,
+        "nodes": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "weights": [
+          0.2908286926818151,
+          0.2813056623098886,
+          0.21749367975469466,
+          0.2103719652536016
+        ],
+        "alpha": 0,
+        "opaque": false
+      },
+      "contactIndexedWitness": {
+        "kind": "outside",
+        "position": [
+          114.49167762756348,
+          0.7178456827595765,
+          -28.95175552368164
+        ],
+        "boundedIndexedAir": false,
+        "contact": {
+          "answered": false,
+          "outsideIndexedBounds": true
+        },
+        "knownColumn": {
+          "front": 2,
+          "strip": 8,
+          "row": 70,
+          "hits": [
+            {
+              "y": 0.7203424245083149,
+              "triangle": 2325,
+              "strip": 8,
+              "row": 98,
+              "layer": "face",
+              "bary": [
+                0.37012232814295504,
+                0.41207082251975763,
+                0.21780684933728728
+              ]
+            },
+            {
+              "y": 1.436574490070345,
+              "triangle": 2268,
+              "strip": 8,
+              "row": 70,
+              "layer": "under",
+              "bary": [
+                0.3700000000000867,
+                0.629999999999999,
+                -8.570921750106208e-14
+              ]
+            },
+            {
+              "y": 1.6417848043640444,
+              "triangle": 2251,
+              "strip": 8,
+              "row": 61,
+              "layer": "top",
+              "bary": [
+                0.3700106255576287,
+                0.027779158679488398,
+                0.6022102157628828
+              ]
+            }
+          ]
+        },
+        "rawBilinearHeight": 0.9178456827595765,
+        "inputSha256": "b9813c244a7a5fd7e6dd7b7cd4edf195d3d19b904b56dc4c6055ebceeed632c6",
+        "geometryHash": "1b675336374b996f254b31f8f6cd8ccb5256b0a5af319ac4555849b3bff5b36a",
+        "contactOracle": "Retained exact fixture column, independently verified by swept-contact unit tests. No contact rebuild in renderer."
+      },
+      "generatedUploadedVariantsByteExact": true,
+      "camerasByteExact": true,
+      "cpuTexturesByteExact": true,
+      "waterUniformsByteExact": true,
+      "baselineNativeRepeatExact": true,
+      "candidateNativeRepeatExact": true
+    },
+    {
+      "view": "20-lower-air",
+      "actualView": {
+        "position": [
+          46.045549392700195,
+          1.1391468675184453,
+          -108.53816902160645
+        ],
+        "quaternion": [
+          0.18470262134410184,
+          -0.16669321709248971,
+          0.03180541698821932,
+          0.9680324005394545
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "ownCamera": [
+        46.045549392700195,
+        20,
+        -108.53816902160645
+      ],
+      "rawHeight": 1.4997664889319497,
+      "rawUnderwater": true,
+      "baselineSceneFog": {
+        "present": true,
+        "type": "FogExp2",
+        "color": [
+          0.036889450395083165,
+          0.20863687013464577,
+          0.22696587349938613
+        ],
+        "density": 0.035
+      },
+      "candidateSceneFog": {
+        "present": false,
+        "type": null
+      },
+      "baselineActualGlPrograms": [
+        {
+          "label": "rich-water",
+          "program": 1,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "water",
+          "program": 1,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "swept",
+          "program": 2,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "6504fb3c978b83212406e9c73c281b3ec7bc9db9bb21abe4daaff06039bd60e5"
+        }
+      ],
+      "candidateActualGlPrograms": [
+        {
+          "label": "rich-water",
+          "program": 5,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "f52cfb4f11a6258ec9076a9b9996bd578b28248a083d20716164cc953fde88ca"
+        },
+        {
+          "label": "water",
+          "program": 5,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "f52cfb4f11a6258ec9076a9b9996bd578b28248a083d20716164cc953fde88ca"
+        },
+        {
+          "label": "swept",
+          "program": 2,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "e41c553eadde72c94316f818ed7aecd8174f399e52367bd9bf990fbaf73d4e79"
+        }
+      ],
+      "mask": {
+        "inside": true,
+        "nodes": [
+          255,
+          255,
+          255,
+          255
+        ],
+        "weights": [
+          0.1513260945022459,
+          0.0072217584142670556,
+          0.8031245127975588,
+          0.03832763428592826
+        ],
+        "alpha": 1,
+        "opaque": true
+      },
+      "contactIndexedWitness": {
+        "kind": "lower-air",
+        "position": [
+          46.045549392700195,
+          1.1391468675184453,
+          -108.53816902160645
+        ],
+        "boundedIndexedAir": true,
+        "contact": {
+          "inWater": false,
+          "floorY": 0.8785272461049408,
+          "ceilingY": 2.538703744411462,
+          "ceilingTopY": 2.9154485034384026
+        },
+        "knownColumn": {
+          "front": 24,
+          "strip": 68,
+          "row": 70,
+          "hits": [
+            {
+              "y": 0.8785272461049407,
+              "triangle": 18029,
+              "strip": 68,
+              "row": 103,
+              "layer": "face",
+              "bary": [
+                0.37006892504273076,
+                0.05826200671354816,
+                0.5716690682437211
+              ]
+            },
+            {
+              "y": 2.53870374441146,
+              "triangle": 17961,
+              "strip": 68,
+              "row": 69,
+              "layer": "under",
+              "bary": [
+                0.3700000000000051,
+                -1.7173683384477942e-13,
+                0.6300000000001666
+              ]
+            },
+            {
+              "y": 2.915448503438404,
+              "triangle": 17948,
+              "strip": 68,
+              "row": 63,
+              "layer": "top",
+              "bary": [
+                0.09209836185240912,
+                0.6300094657751849,
+                0.27789217237240593
+              ]
+            }
+          ]
+        },
+        "rawBilinearHeight": 1.4997664889319497,
+        "inputSha256": "db821e14b75189cd0a96c7acc886121785c46051171b0c8b64f23357b8f81261",
+        "geometryHash": "da2fd31acded3e5e20a7a782ace9fee7ead5d48127af37bb50717fa13ed54bcf",
+        "contactOracle": "Retained exact fixture column, independently verified by swept-contact unit tests. No contact rebuild in renderer."
+      },
+      "generatedUploadedVariantsByteExact": true,
+      "camerasByteExact": true,
+      "cpuTexturesByteExact": true,
+      "waterUniformsByteExact": true,
+      "baselineNativeRepeatExact": true,
+      "candidateNativeRepeatExact": false
+    },
+    {
+      "view": "20-under-floor",
+      "actualView": {
+        "position": [
+          46.045549392700195,
+          0.6785272461049408,
+          -108.53816902160645
+        ],
+        "quaternion": [
+          0.2326961664646135,
+          -0.16490186065525603,
+          0.04006980817115224,
+          0.9576295113133442
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "ownCamera": [
+        46.045549392700195,
+        20,
+        -108.53816902160645
+      ],
+      "rawHeight": 1.4997664889319497,
+      "rawUnderwater": true,
+      "baselineSceneFog": {
+        "present": true,
+        "type": "FogExp2",
+        "color": [
+          0.036889450395083165,
+          0.20863687013464577,
+          0.22696587349938613
+        ],
+        "density": 0.035
+      },
+      "candidateSceneFog": {
+        "present": true,
+        "type": "FogExp2",
+        "color": [
+          0.036889450395083165,
+          0.20863687013464577,
+          0.22696587349938613
+        ],
+        "density": 0.035
+      },
+      "baselineActualGlPrograms": [
+        {
+          "label": "rich-water",
+          "program": 1,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "water",
+          "program": 1,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "swept",
+          "program": 2,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "6504fb3c978b83212406e9c73c281b3ec7bc9db9bb21abe4daaff06039bd60e5"
+        }
+      ],
+      "candidateActualGlPrograms": [
+        {
+          "label": "rich-water",
+          "program": 3,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "b7043c80832058892cdc721f82565b5f0a8b7727537e64c9a8164dbda264fab9"
+        },
+        {
+          "label": "water",
+          "program": 3,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "b7043c80832058892cdc721f82565b5f0a8b7727537e64c9a8164dbda264fab9"
+        },
+        {
+          "label": "swept",
+          "program": 4,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "6504fb3c978b83212406e9c73c281b3ec7bc9db9bb21abe4daaff06039bd60e5"
+        }
+      ],
+      "mask": {
+        "inside": true,
+        "nodes": [
+          255,
+          255,
+          255,
+          255
+        ],
+        "weights": [
+          0.1513260945022459,
+          0.0072217584142670556,
+          0.8031245127975588,
+          0.03832763428592826
+        ],
+        "alpha": 1,
+        "opaque": true
+      },
+      "contactIndexedWitness": {
+        "kind": "under-floor",
+        "position": [
+          46.045549392700195,
+          0.6785272461049408,
+          -108.53816902160645
+        ],
+        "boundedIndexedAir": false,
+        "contact": {
+          "inWater": true,
+          "floorY": 0.8785272461049408,
+          "ceilingY": 2.538703744411462,
+          "ceilingTopY": 2.9154485034384026
+        },
+        "knownColumn": {
+          "front": 24,
+          "strip": 68,
+          "row": 70,
+          "hits": [
+            {
+              "y": 0.8785272461049407,
+              "triangle": 18029,
+              "strip": 68,
+              "row": 103,
+              "layer": "face",
+              "bary": [
+                0.37006892504273076,
+                0.05826200671354816,
+                0.5716690682437211
+              ]
+            },
+            {
+              "y": 2.53870374441146,
+              "triangle": 17961,
+              "strip": 68,
+              "row": 69,
+              "layer": "under",
+              "bary": [
+                0.3700000000000051,
+                -1.7173683384477942e-13,
+                0.6300000000001666
+              ]
+            },
+            {
+              "y": 2.915448503438404,
+              "triangle": 17948,
+              "strip": 68,
+              "row": 63,
+              "layer": "top",
+              "bary": [
+                0.09209836185240912,
+                0.6300094657751849,
+                0.27789217237240593
+              ]
+            }
+          ]
+        },
+        "rawBilinearHeight": 1.4997664889319497,
+        "inputSha256": "db821e14b75189cd0a96c7acc886121785c46051171b0c8b64f23357b8f81261",
+        "geometryHash": "da2fd31acded3e5e20a7a782ace9fee7ead5d48127af37bb50717fa13ed54bcf",
+        "contactOracle": "Retained exact fixture column, independently verified by swept-contact unit tests. No contact rebuild in renderer."
+      },
+      "generatedUploadedVariantsByteExact": true,
+      "camerasByteExact": true,
+      "cpuTexturesByteExact": true,
+      "waterUniformsByteExact": true,
+      "baselineNativeRepeatExact": true,
+      "candidateNativeRepeatExact": true
+    },
+    {
+      "view": "20-roof-band",
+      "actualView": {
+        "position": [
+          46.045549392700195,
+          2.7270761239249324,
+          -108.53816902160645
+        ],
+        "quaternion": [
+          -0.009479857455266742,
+          -0.1696925113395572,
+          -0.0016324122373548903,
+          0.9854501099133276
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "ownCamera": [
+        46.045549392700195,
+        20,
+        -108.53816902160645
+      ],
+      "rawHeight": 1.4997664889319497,
+      "rawUnderwater": false,
+      "baselineSceneFog": {
+        "present": false,
+        "type": null
+      },
+      "candidateSceneFog": {
+        "present": false,
+        "type": null
+      },
+      "baselineActualGlPrograms": [
+        {
+          "label": "rich-water",
+          "program": 3,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "f52cfb4f11a6258ec9076a9b9996bd578b28248a083d20716164cc953fde88ca"
+        },
+        {
+          "label": "water",
+          "program": 3,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "f52cfb4f11a6258ec9076a9b9996bd578b28248a083d20716164cc953fde88ca"
+        },
+        {
+          "label": "swept",
+          "program": 4,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "e41c553eadde72c94316f818ed7aecd8174f399e52367bd9bf990fbaf73d4e79"
+        }
+      ],
+      "candidateActualGlPrograms": [
+        {
+          "label": "rich-water",
+          "program": 5,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "f52cfb4f11a6258ec9076a9b9996bd578b28248a083d20716164cc953fde88ca"
+        },
+        {
+          "label": "water",
+          "program": 5,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "f52cfb4f11a6258ec9076a9b9996bd578b28248a083d20716164cc953fde88ca"
+        },
+        {
+          "label": "swept",
+          "program": 2,
+          "usesFog": false,
+          "fogExp2": false,
+          "materialFog": true,
+          "fogColor": null,
+          "fogDensity": null,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "e41c553eadde72c94316f818ed7aecd8174f399e52367bd9bf990fbaf73d4e79"
+        }
+      ],
+      "mask": {
+        "inside": true,
+        "nodes": [
+          255,
+          255,
+          255,
+          255
+        ],
+        "weights": [
+          0.1513260945022459,
+          0.0072217584142670556,
+          0.8031245127975588,
+          0.03832763428592826
+        ],
+        "alpha": 1,
+        "opaque": true
+      },
+      "contactIndexedWitness": {
+        "kind": "roof-band",
+        "position": [
+          46.045549392700195,
+          2.7270761239249324,
+          -108.53816902160645
+        ],
+        "boundedIndexedAir": false,
+        "contact": {
+          "inWater": true,
+          "floorY": 0.8785272461049408,
+          "ceilingY": 2.538703744411462,
+          "ceilingTopY": 2.9154485034384026
+        },
+        "knownColumn": {
+          "front": 24,
+          "strip": 68,
+          "row": 70,
+          "hits": [
+            {
+              "y": 0.8785272461049407,
+              "triangle": 18029,
+              "strip": 68,
+              "row": 103,
+              "layer": "face",
+              "bary": [
+                0.37006892504273076,
+                0.05826200671354816,
+                0.5716690682437211
+              ]
+            },
+            {
+              "y": 2.53870374441146,
+              "triangle": 17961,
+              "strip": 68,
+              "row": 69,
+              "layer": "under",
+              "bary": [
+                0.3700000000000051,
+                -1.7173683384477942e-13,
+                0.6300000000001666
+              ]
+            },
+            {
+              "y": 2.915448503438404,
+              "triangle": 17948,
+              "strip": 68,
+              "row": 63,
+              "layer": "top",
+              "bary": [
+                0.09209836185240912,
+                0.6300094657751849,
+                0.27789217237240593
+              ]
+            }
+          ]
+        },
+        "rawBilinearHeight": 1.4997664889319497,
+        "inputSha256": "db821e14b75189cd0a96c7acc886121785c46051171b0c8b64f23357b8f81261",
+        "geometryHash": "da2fd31acded3e5e20a7a782ace9fee7ead5d48127af37bb50717fa13ed54bcf",
+        "contactOracle": "Retained exact fixture column, independently verified by swept-contact unit tests. No contact rebuild in renderer."
+      },
+      "generatedUploadedVariantsByteExact": true,
+      "camerasByteExact": true,
+      "cpuTexturesByteExact": true,
+      "waterUniformsByteExact": true,
+      "baselineNativeRepeatExact": true,
+      "candidateNativeRepeatExact": true
+    },
+    {
+      "view": "20-outside",
+      "actualView": {
+        "position": [
+          46.045549392700195,
+          -0.786751569689008,
+          -136.9835662841797
+        ],
+        "quaternion": [
+          -0.0017658246905058433,
+          0.9973100194696314,
+          -0.0686390854616618,
+          -0.0256570239044339
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "ownCamera": [
+        46.045549392700195,
+        20,
+        -136.9835662841797
+      ],
+      "rawHeight": -0.586751569689008,
+      "rawUnderwater": true,
+      "baselineSceneFog": {
+        "present": true,
+        "type": "FogExp2",
+        "color": [
+          0.036889450395083165,
+          0.20863687013464577,
+          0.22696587349938613
+        ],
+        "density": 0.035
+      },
+      "candidateSceneFog": {
+        "present": true,
+        "type": "FogExp2",
+        "color": [
+          0.036889450395083165,
+          0.20863687013464577,
+          0.22696587349938613
+        ],
+        "density": 0.035
+      },
+      "baselineActualGlPrograms": [
+        {
+          "label": "water",
+          "program": 1,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "rich-water",
+          "program": 1,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "swept",
+          "program": 2,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "6504fb3c978b83212406e9c73c281b3ec7bc9db9bb21abe4daaff06039bd60e5"
+        }
+      ],
+      "candidateActualGlPrograms": [
+        {
+          "label": "water",
+          "program": 6,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "rich-water",
+          "program": 6,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "cac98a125fc9d40e36917ab9a1cc20917164ce4533ff6100b1b667da15f9d75b"
+        },
+        {
+          "label": "swept",
+          "program": 4,
+          "usesFog": true,
+          "fogExp2": true,
+          "materialFog": true,
+          "fogColor": [
+            0.21177057921886444,
+            0.4941233694553375,
+            0.5137311220169067
+          ],
+          "fogDensity": 0.03500000014901161,
+          "fogNear": null,
+          "fogFar": null,
+          "fragmentSha256": "6504fb3c978b83212406e9c73c281b3ec7bc9db9bb21abe4daaff06039bd60e5"
+        }
+      ],
+      "mask": {
+        "inside": true,
+        "nodes": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "weights": [
+          0.5764357822549432,
+          0.027509333234807462,
+          0.37801482504486156,
+          0.01804005946538785
+        ],
+        "alpha": 0,
+        "opaque": false
+      },
+      "contactIndexedWitness": {
+        "kind": "outside",
+        "position": [
+          46.045549392700195,
+          -0.786751569689008,
+          -136.9835662841797
+        ],
+        "boundedIndexedAir": false,
+        "contact": {
+          "answered": false,
+          "outsideIndexedBounds": true
+        },
+        "knownColumn": {
+          "front": 24,
+          "strip": 68,
+          "row": 70,
+          "hits": [
+            {
+              "y": 0.8785272461049407,
+              "triangle": 18029,
+              "strip": 68,
+              "row": 103,
+              "layer": "face",
+              "bary": [
+                0.37006892504273076,
+                0.05826200671354816,
+                0.5716690682437211
+              ]
+            },
+            {
+              "y": 2.53870374441146,
+              "triangle": 17961,
+              "strip": 68,
+              "row": 69,
+              "layer": "under",
+              "bary": [
+                0.3700000000000051,
+                -1.7173683384477942e-13,
+                0.6300000000001666
+              ]
+            },
+            {
+              "y": 2.915448503438404,
+              "triangle": 17948,
+              "strip": 68,
+              "row": 63,
+              "layer": "top",
+              "bary": [
+                0.09209836185240912,
+                0.6300094657751849,
+                0.27789217237240593
+              ]
+            }
+          ]
+        },
+        "rawBilinearHeight": -0.586751569689008,
+        "inputSha256": "db821e14b75189cd0a96c7acc886121785c46051171b0c8b64f23357b8f81261",
+        "geometryHash": "da2fd31acded3e5e20a7a782ace9fee7ead5d48127af37bb50717fa13ed54bcf",
+        "contactOracle": "Retained exact fixture column, independently verified by swept-contact unit tests. No contact rebuild in renderer."
+      },
+      "generatedUploadedVariantsByteExact": true,
+      "camerasByteExact": true,
+      "cpuTexturesByteExact": true,
+      "waterUniformsByteExact": true,
+      "baselineNativeRepeatExact": true,
+      "candidateNativeRepeatExact": true
+    }
+  ],
+  "imageScope": "Native caustics/normal High Rich shaders retained. Cross-build underfloor images differ slightly although classifier/GL fog uniforms/source/geometry remain exact; no cause inferred. Other4control PNGs exact. Candidate20lower native repeat changes4pixels by1."
+}

@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "method": "Isolated canonical-root rendering-only bounded-cavity fog prototype. No hardware run and no production integration.",
+  "rootHead": "1233de6e4bc57e84e8b5d93047f7ace2ffda792e",
+  "rootSourceUnchanged": true,
+  "scratch": "/private/tmp/surf-cavity-fog-20261003",
+  "patch": "/private/tmp/surf-cavity-fog-20261003/cavity-fog.patch",
+  "patchSha256": "bc6e2e9a99107c70976f6465a29d744bf13b387935323b81bbc6c2c61a8ae547",
+  "ownedFiles": [
+    {
+      "path": "src/main.ts",
+      "beforeSha256": "95d52f07d106be65fa2509a7a6c5fefc736244f61a27c8fbcced5f9ed9037490",
+      "afterSha256": "63bca1793b2c38a92c2cceca6e3240c82f6492c7af9713897751392abf8e5f8d"
+    },
+    {
+      "path": "src/game/PhysicalMode.ts",
+      "beforeSha256": "588f59b12a5aec7a1d51af16fed5949bcfadf61eb42503ed54391c31a19cf63f",
+      "afterSha256": "c231cc21bb253a8de44d42b0dbd17dfe74a60bad0726d593d09f1e40af23479b"
+    },
+    {
+      "path": "src/scene/barrel/renderedCavity.ts",
+      "beforeSha256": null,
+      "afterSha256": "1b89c48a59b940bb57892b04601ea883839522fcede49799ec41c4b293c35927"
+    },
+    {
+      "path": "src/scene/barrel/renderedCavity.test.ts",
+      "beforeSha256": null,
+      "afterSha256": "1e326674d1f3097ae852f11f4a771a2e1ff8ba324613273166d5b1f444d345fb"
+    }
+  ],
+  "unownedSourceExact": true,
+  "configExact": {
+    "package.json": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702",
+    "package-lock.json": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209",
+    "tsconfig.json": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f",
+    "vite.config.ts": "9cbc9a7527a2e4529a8630d6fffc59f4bb4e8291bf7ed49aade006fe1950d230",
+    "vitest.config.ts": "2f314b8658980cef78efaef82c4bd23ae5b050402a616c06f2b725b947800a48",
+    "index.html": "60675d1b7e6f739633646d53fd74d07f90d913151f5adb2a65b71fc786372392"
+  },
+  "checks": {
+    "focusedTests": {
+      "files": 4,
+      "passed": 44,
+      "newTests": 10
+    },
+    "strictTypecheck": "passed within npm run build",
+    "productionBuild": "passed",
+    "patchApplyCheck": "passed against root",
+    "workerExactTo4201": true,
+    "browserRun": false
+  },
+  "build": {
+    "literalBuildId": "eea68720f",
+    "assetsSha256": {
+      "assets/WorkerSurfZone-D3Jj98_0.js": "94644aaccceee8b4f2d12784bbb45530715c7c539dd7509da23c5be3d44a379a",
+      "assets/devStepping-BoAkcxsM.js": "a4c1d8720871efa9afc73434d1ad3ede1735d37b807055a690f6ba5e445dc487",
+      "assets/index-BtRHsPaG.js": "43a54b29e4a7edafafc95d180b45c5790fce81895fce7156f31093d67e444fd4",
+      "assets/index-DA8NEfOT.css": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148",
+      "assets/jevRecorder-Cfn8EerB.js": "bb88e6c69f15d5885ab7f8e3d75708912db8ee4d012b235430270935922821cb",
+      "assets/particleBench-dTU5MElO.js": "afb6798bd9a3ea60bf6c07c023b5dc10f9e2b6378f6028c537e93a4a745dd7b6",
+      "assets/rideRecorder-CnUzafT3.js": "f0ac7d83a745860e94d38353e5cb3e40a694c275cd3663e0c330de1064ebcef0",
+      "assets/surfZoneWorker-BH6FhcTP.js": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5",
+      "assets/waterSheet-BX5FUeHR.js": "6cb9765f54dadfd498fc042e7d0c6eff9939533336d441036252fb026863ab93",
+      "index.html": "f37ef6665e41b391a9a56331235e83ed63f576018511a2242a39fe4eeb210675"
+    }
+  },
+  "guards": [
+    "existing raw height minus0.1 predicate true",
+    "current draw host/status/front/count/surface revision",
+    "visible indexed mesh, start0 and exact count, upload attribute versions",
+    "local opaque node-centred linear-filter mask only",
+    "exactly3 finite crossings and strict bounded air",
+    "half-open strip and triangle ties",
+    "ambiguous overlaps/degenerate projections/extra layers/overflow fall back"
+  ],
+  "witnesses": [
+    {
+      "fixture": "at-10",
+      "fixtureSha256": "bc0c41fc7c2c6676d49eecf64022ff547d66552eb3fc4ed2f100c9103aaf26a8",
+      "x": 114.49167762756348,
+      "z": -9.801540737152099,
+      "y": 0.8355403826597486,
+      "bilinearHeight": 1.0507383408111823,
+      "knownContactFloor": 0.720342424508315,
+      "knownContactCeiling": 1.4365744900703492,
+      "rawUnderwater": true,
+      "prototypeUnderwater": false,
+      "currentOpaqueSupportTestPassed": true,
+      "currentContactOracleAirTestPassed": true
+    },
+    {
+      "fixture": "at-20",
+      "fixtureSha256": "4137607e323dfe2153557b3087d142bfe4346c60611007e04e1cf7e76275774d",
+      "x": 46.045549392700195,
+      "z": -108.53816902160645,
+      "y": 1.1391468675184453,
+      "bilinearHeight": 1.4997664889319497,
+      "knownContactFloor": 0.8785272461049408,
+      "knownContactCeiling": 2.538703744411462,
+      "rawUnderwater": true,
+      "prototypeUnderwater": false,
+      "currentOpaqueSupportTestPassed": true,
+      "currentContactOracleAirTestPassed": true
+    }
+  ],
+  "limitations": [
+    "Rendering-only bounded-air override, not physical contact or solver changes.",
+    "Drawing and held contact can differ during late collapse.",
+    "Partial dither seams deliberately retain raw fog.",
+    "Listener calls share the guard but may run before the current draw and retain raw fallback.",
+    "No GPU visual proof, moving lifecycle proof, or FPS measurement.",
+    "Predicate cost is a slice scan plus133quads per ray-owning candidate; no timing claim."
+  ]
+}

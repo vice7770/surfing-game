@@ -1,0 +1,534 @@
+diff --git a/src/main.ts b/src/main.ts
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -303,8 +303,6 @@
+       /** Any sun (the slider's height, and its azimuth, degrees): the water sheet's lighting checks. */
+       setSun: (sun: { sunHeight: number; sunDirection: number }) => this.applySun(sun),
+       renderView: (camera: PerspectiveCamera) => {
+-        const host = this.physicalMode.host;
+-        this.setUnderwater(host !== undefined && camera.position.y < host.heightAt(camera.position.x, camera.position.z) - 0.1);
+         this.drawPhysical(camera);
+       },
+       water: this.water,
+@@ -933,7 +931,6 @@
+   private physicalRender(simElapsed: number, camera?: PerspectiveCamera): void {
+     this.physicalMode.update(simElapsed || this.fixedStep);
+     this.drawOnline();
+-    this.setUnderwater(this.physicalMode.cameraBelowSurface());
+     this.drawPhysical(camera ?? this.physicalMode.camera.camera);
+   }
+ 
+@@ -947,7 +944,6 @@
+     const view = this.physicalMode.camera.camera;
+     if (!this.stillFrame.needsDraw(view, now, this.needsRender)) return;
+     this.needsRender = false;
+-    this.setUnderwater(this.physicalMode.cameraBelowSurface());
+     this.drawPhysical(view);
+     this.stillFrame.drawn(view, now);
+   }
+@@ -957,6 +953,8 @@
+     this.water.update();
+     // The swept barrel lofts over the heights the water just uploaded (Padang Padang, Part B, PR 3).
+     this.physicalMode.drawBarrel();
++    // The actual view's fog follows the current drawn cavity, after its source and indexed mesh are prepared.
++    this.setUnderwater(this.physicalMode.cameraBelowSurface(0.1, view.position));
+     // Caustics where the view looks: a window a third of its width ahead of the camera.
+     const ahead = view.getWorldDirection(this.causticAhead).setY(0);
+     if (ahead.lengthSq() > 1e-6) ahead.normalize();
+diff --git a/src/game/PhysicalMode.ts b/src/game/PhysicalMode.ts
+--- a/src/game/PhysicalMode.ts
++++ b/src/game/PhysicalMode.ts
+@@ -1,4 +1,4 @@
+-import { Color, Mesh, Vector3, type Material, type Scene } from 'three';
++import { Color, Mesh, Vector3, type BufferAttribute, type DataTexture, type Material, type Scene } from 'three';
+ import type { StandRefusal } from '../physics/AttachedRider';
+ import type { WaveFrame } from '../physics/waveFrame';
+ import type { RiderPlacement } from '../physics/RideSession';
+@@ -35,6 +35,7 @@
+ import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
+ import { SEA_COMPONENTS, solverStage, surfZoneSea, sweptBarrelOn, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+ import { SweptBarrel } from '../scene/barrel/SweptBarrel';
++import { opaqueBarrelColumn, RenderedCavityQuery } from '../scene/barrel/renderedCavity';
+ import { SWEPT_BARREL_VIEWS, type SweptBarrelMesh } from '../scene/barrel/SweptBarrelMesh';
+ import { devParam } from '../devTools';
+ import type { LoftResult } from '../wave/barrel/sweptLoft';
+@@ -383,6 +384,13 @@
+   private shown = true;
+   /** The swept barrel (the Padang Padang spec, Part B, PR 3): built with the water on the first start, on at a swept spot. */
+   private sweptBarrel?: SweptBarrel;
++  private water?: WaterSurface;
++  private readonly renderedCavity = new RenderedCavityQuery();
++  /** Explicit draw provenance; the reused loft and snapshot buffers alone cannot identify a current render. */
++  private renderedCavityDraw?: {
++    host: SurfZoneHost; status: SurfZoneStatus; surfaceRevision: number; front: Float32Array; count: number;
++    loft: LoftResult; positionVersion: number; indexVersion: number;
++  };
+   private swept = false;
+   private readonly scene: Scene;
+   /** Graphics setting (plan P8): spray and mist are still simulated, only not drawn. */
+@@ -535,6 +543,7 @@
+     const { init } = host;
+     // A swept spot draws its barrel as one lofted surface: its water is never carved, and its lip strips are off.
+     this.swept = sweptBarrelOn(config);
++    this.water = water;
+     water.setSource(new PhysicalSurfaceSource(new SnapshotSurfZone(host, { sweptBarrel: this.swept }), init.grid.spacing));
+     if (!this.sweptBarrel) {
+       // `?barrelView=phase|front`: the curl flat-coloured by its slices' phase or front (a dev view, the tube review).
+@@ -759,13 +768,36 @@
+    * the water has uploaded this frame's heights. Hidden, or at a spot without it, it draws nothing and masks nothing.
+    */
+   drawBarrel(): void {
+-    const { host, sweptBarrel } = this;
+-    if (!sweptBarrel) return;
++    const { host, sweptBarrel, water } = this;
++    if (!sweptBarrel) {
++      this.renderedCavityDraw = undefined;
++      return;
++    }
+     if (!host || !this.swept || !this.shown) {
+       sweptBarrel.draw(NO_FRONT, 0, 0, host?.snapshot.status);
++      this.renderedCavityDraw = undefined;
+       return;
+     }
+     sweptBarrel.draw(host.snapshot.front, host.snapshot.frontCount, this.config?.tide ?? 0, host.snapshot.status);
++    const loft = sweptBarrel.lastLoft;
++    const geometry = sweptBarrel.mesh.mesh.geometry;
++    const position = geometry.getAttribute('position') as BufferAttribute;
++    const index = geometry.getIndex();
++    if (!loft || !water || !index || !position) {
++      this.renderedCavityDraw = undefined;
++      return;
++    }
++    const draw = this.renderedCavityDraw;
++    if (draw) {
++      draw.host = host; draw.status = host.snapshot.status; draw.surfaceRevision = water.surfaceRevision;
++      draw.front = host.snapshot.front; draw.count = host.snapshot.frontCount; draw.loft = loft;
++      draw.positionVersion = position.version; draw.indexVersion = index.version;
++    } else {
++      this.renderedCavityDraw = {
++        host, status: host.snapshot.status, surfaceRevision: water.surfaceRevision, front: host.snapshot.front,
++        count: host.snapshot.frontCount, loft, positionVersion: position.version, indexVersion: index.version,
++      };
++    }
+   }
+ 
+   /** The swept barrel's loft as last drawn, at a swept spot (the water sheet's curl shots). */
+@@ -790,10 +822,26 @@
+     this.spray.mesh.visible = this.shown && visible;
+   }
+ 
+-  cameraBelowSurface(margin = 0.1): boolean {
+-    if (!this.host) return false;
+-    const position = this.camera.camera.position;
+-    return position.y < this.host.heightAt(position.x, position.z) - margin;
++  cameraBelowSurface(margin = 0.1, position = this.camera.camera.position): boolean {
++    const { host, water, sweptBarrel, renderedCavityDraw: draw } = this;
++    if (!host || !(position.y < host.heightAt(position.x, position.z) - margin)) return false;
++    // Above-water views never scan triangles. Before a current draw (including a same-time restore), keep the
++    // height-field result. This also makes the listener's pre-draw calls conservative rather than using stale air.
++    if (!this.shown || !this.swept || !water || !sweptBarrel || !draw || draw.host !== host
++      || draw.status !== host.snapshot.status || draw.front !== host.snapshot.front || draw.count !== host.snapshot.frontCount
++      || draw.surfaceRevision !== water.surfaceRevision || draw.loft !== sweptBarrel.lastLoft
++      || water.materialUniforms.waterBarrelMaskActive.value !== 1) return true;
++    const geometry = sweptBarrel.mesh.mesh.geometry;
++    const positionAttribute = geometry.getAttribute('position') as BufferAttribute;
++    const index = geometry.getIndex();
++    if (!sweptBarrel.mesh.mesh.visible || !index || !positionAttribute || geometry.drawRange.start !== 0
++      || geometry.drawRange.count !== draw.loft.indexCount || positionAttribute.count < draw.loft.vertexCount
++      || index.count < draw.loft.indexCount
++      || positionAttribute.version !== draw.positionVersion || index.version !== draw.indexVersion) return true;
++    const mask = (water.materialUniforms.waterBarrelMask.value as DataTexture).image.data as Uint8Array;
++    if (!opaqueBarrelColumn(mask, water.barrelMaskGrid, position.x, position.z)) return true;
++    // Only bounded rendered air overrides the old predicate; this is not a replacement for physical contact.
++    return !this.renderedCavity.contains(draw.loft, position.x, position.y, position.z);
+   }
+ 
+   setVisible(visible: boolean): void {
+diff --git a/src/scene/barrel/renderedCavity.ts b/src/scene/barrel/renderedCavity.ts
+new file mode 100644
+--- /dev/null
++++ b/src/scene/barrel/renderedCavity.ts
+@@ -0,0 +1,141 @@
++import { CONTACT } from '../../wave/barrel/sweptContact';
++import { LOFT_SAMPLES, type LoftResult } from '../../wave/barrel/sweptLoft';
++import type { SurfaceGrid } from '../WaterSurface';
++
++const S = LOFT_SAMPLES;
++const Q = S - 1;
++// The contact's half-open first-ray tie moves this far into the owning strip.
++const NUDGE = 1e-9;
++
++/**
++ * Only an opaque current footprint can certify shaded cavity geometry. The shader samples node-centred texels
++ * with linear filtering; every node with positive interpolation weight must be 255. Partial dither bands retain
++ * the raw fog classification. This avoids relying on rounded interpolation values near one.
++ */
++export function opaqueBarrelColumn(mask: Uint8Array, grid: SurfaceGrid, x: number, z: number): boolean {
++  const gx = (x - grid.xMin) / grid.spacing, gz = (z - grid.zMin) / grid.spacing;
++  if (!(mask instanceof Uint8Array) || !Number.isFinite(gx) || !Number.isFinite(gz) || !(grid.spacing > 0)
++    || !Number.isInteger(grid.nx) || !Number.isInteger(grid.nz) || grid.nx < 2 || grid.nz < 2 || mask.length < grid.nx * grid.nz
++    || gx < 0 || gz < 0 || gx >= grid.nx - 1 || gz >= grid.nz - 1) return false;
++  const ix = Math.floor(gx), iz = Math.floor(gz), tx = gx - ix, tz = gz - iz;
++  const i = iz * grid.nx + ix;
++  return mask[i] === 255 && (tx === 0 || mask[i + 1] === 255)
++    && (tz === 0 || (mask[i + grid.nx] === 255 && (tx === 0 || mask[i + grid.nx + 1] === 255)));
++}
++
++/**
++ * A rendering-only bounded-air test on an already drawn loft. It neither builds a second loft nor caches mutable
++ * geometry. The caller must establish a fresh visible mesh and opaque local mask. Three finite crossings describe
++ * the closed face/underside/top cavity; other columns retain the ordinary height-field classification. Drawing and
++ * held physical contact can differ during collapse. Cost is the slice scan plus 133 quads per ray-owning candidate.
++ */
++export class RenderedCavityQuery {
++  private readonly ys = new Float64Array(CONTACT.crossings);
++  private count = 0;
++  private ambiguous = false;
++
++  contains(loft: LoftResult, x: number, y: number, z: number): boolean {
++    const { positions: p, sliceCount, vertexCount, indexCount, indices } = loft;
++    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)
++      || !Number.isInteger(sliceCount) || sliceCount < 2 || vertexCount !== sliceCount * S
++      || p.length < 3 * vertexCount || indices.length < indexCount || indexCount === 0) return false;
++    let expected = 0;
++    for (let s = 0; s + 1 < sliceCount; s += 1) {
++      if (loft.sliceJoined[s] === 1) expected += 6 * Q;
++      else if (loft.sliceJoined[s] !== 0) return false;
++    }
++    if (indexCount !== expected) return false;
++
++    let found = false;
++    let air = false;
++    let first = 0;
++    for (let s = 0; s + 1 < sliceCount; s += 1) {
++      if (loft.sliceJoined[s] !== 1) continue;
++      const base = first;
++      first += 6 * Q;
++      const a = s * S;
++      const b = a + S;
++      const ax = loft.sliceRayX[s], az = loft.sliceRayZ[s];
++      const bx = loft.sliceRayX[s + 1], bz = loft.sliceRayZ[s + 1];
++      if (!Number.isFinite(ax) || !Number.isFinite(az) || !Number.isFinite(bx) || !Number.isFinite(bz)
++        || !Number.isFinite(p[3 * a]) || !Number.isFinite(p[3 * a + 2])
++        || !Number.isFinite(p[3 * b]) || !Number.isFinite(p[3 * b + 2])
++        || loft.sliceFront[s] !== loft.sliceFront[s + 1]) return false;
++      const sideA = (x - p[3 * a]) * az - (z - p[3 * a + 2]) * ax;
++      const sideB = (x - p[3 * b]) * bz - (z - p[3 * b + 2]) * bx;
++      if (!Number.isFinite(sideA) || !Number.isFinite(sideB)) return false;
++      if (sideA < 0 || sideB >= 0) continue;
++      const nudge = sideA === 0 ? NUDGE : 0;
++      const px = x + nudge * az;
++      const pz = z - nudge * ax;
++      this.count = 0;
++      this.ambiguous = false;
++      for (let j = 0; j < Q; j += 1) {
++        const k = base + 6 * j;
++        const v = a + j, w = b + j;
++        // Only the actual complete indexed strip may answer. Do not infer a surface from unused isolated vertices.
++        if (indices[k] !== v || indices[k + 1] !== w || indices[k + 2] !== v + 1
++          || indices[k + 3] !== v + 1 || indices[k + 4] !== w || indices[k + 5] !== w + 1) return false;
++        this.triangle(p, v, w, v + 1, px, pz);
++        this.triangle(p, v + 1, w, w + 1, px, pz);
++        if (this.ambiguous) return false;
++      }
++      if (this.count === 0) continue;
++      // Unlike physical contact's first-front priority, uncertain overlapping rendered columns do not override fog.
++      if (found) return false;
++      found = true;
++      if (this.count !== 3) continue;
++      const { ys } = this;
++      for (let i = 1; i < this.count; i += 1) {
++        for (let k = i; k > 0 && ys[k - 1] > ys[k]; k -= 1) {
++          const value = ys[k]; ys[k] = ys[k - 1]; ys[k - 1] = value;
++        }
++      }
++      air = ys[0] < y && y < ys[1] && ys[1] < ys[2];
++    }
++    return found && air;
++  }
++
++  private triangle(p: Float32Array, a: number, b: number, c: number, x: number, z: number): void {
++    for (let k = 0; k < 3; k += 1) {
++      const v = k === 0 ? a : k === 1 ? b : c;
++      if (!Number.isFinite(p[3 * v]) || !Number.isFinite(p[3 * v + 1]) || !Number.isFinite(p[3 * v + 2])) {
++        this.ambiguous = true;
++        return;
++      }
++    }
++    const area = this.edge(p, a, b, p[3 * c], p[3 * c + 2]);
++    if (area === 0) {
++      // Collapsed authored edges away from the query are harmless. A query on their projection is ambiguous.
++      if (x >= Math.min(p[3 * a], p[3 * b], p[3 * c]) && x <= Math.max(p[3 * a], p[3 * b], p[3 * c])
++        && z >= Math.min(p[3 * a + 2], p[3 * b + 2], p[3 * c + 2]) && z <= Math.max(p[3 * a + 2], p[3 * b + 2], p[3 * c + 2])
++        && this.edge(p, a, b, x, z) === 0 && this.edge(p, b, c, x, z) === 0) this.ambiguous = true;
++      return;
++    }
++    const sign = area > 0 ? 1 : -1;
++    const wa = this.edge(p, b, c, x, z);
++    if (!this.inside(wa, b, c, sign)) return;
++    const wb = this.edge(p, c, a, x, z);
++    if (!this.inside(wb, c, a, sign)) return;
++    const wc = this.edge(p, a, b, x, z);
++    if (!this.inside(wc, a, b, sign)) return;
++    const value = (wa * p[3 * a + 1] + wb * p[3 * b + 1] + wc * p[3 * c + 1]) / area;
++    if (!Number.isFinite(value) || this.count === this.ys.length) {
++      this.ambiguous = true;
++      return;
++    }
++    this.ys[this.count++] = value;
++  }
++
++  /** Identical edge ordering and half-open triangle ties to SweptContact; winding changes preserve ownership. */
++  private edge(p: Float32Array, u: number, v: number, x: number, z: number): number {
++    const lo = u < v ? u : v;
++    const hi = u < v ? v : u;
++    const value = (p[3 * hi] - p[3 * lo]) * (z - p[3 * lo + 2]) - (p[3 * hi + 2] - p[3 * lo + 2]) * (x - p[3 * lo]);
++    return u < v ? value : -value;
++  }
++
++  private inside(value: number, u: number, v: number, sign: number): boolean {
++    return value * sign > 0 || (value === 0 && (sign > 0) === (u < v));
++  }
++}
+diff --git a/src/scene/barrel/renderedCavity.test.ts b/src/scene/barrel/renderedCavity.test.ts
+new file mode 100644
+--- /dev/null
++++ b/src/scene/barrel/renderedCavity.test.ts
+@@ -0,0 +1,237 @@
++import { readFileSync } from 'node:fs';
++import { PerspectiveCamera, type BufferAttribute, type DataTexture, Vector3 } from 'three';
++import { describe, expect, it, vi } from 'vitest';
++import { PhysicalMode } from '../../game/PhysicalMode';
++import type { SurfZoneHost } from '../../game/SurfZoneHost';
++import { barrelCasesFor, libraryFromBytes } from '../../wave/barrel/barrelLibrary';
++import { ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
++import { CONTACT, createContactHit, SweptContact } from '../../wave/barrel/sweptContact';
++import { BARREL_SLOPE, LOFT_SAMPLES as S, SweptLoft, type LoftResult } from '../../wave/barrel/sweptLoft';
++import { tubeCase } from '../../wave/barrel/toyCase';
++import type { SurfZoneStatus } from '../../wave/SurfZoneRunner';
++import { sampleCubicSurface } from '../water/cubicSurface';
++import { sampleSurfaceHeight, WaterSurface, type SurfaceGrid, type SurfaceSource } from '../WaterSurface';
++import { opaqueBarrelColumn, RenderedCavityQuery } from './renderedCavity';
++import { SweptBarrel } from './SweptBarrel';
++
++const library = () => new ProfileLibrary([tubeCase(0.3)]);
++
++/** A closed face/underside/top strip. Its three horizontal crossings are y=0,2,3 at z=1. */
++function cavity(slices = 2): LoftResult {
++  const blank = new SweptLoft(library(), 0.05).build(new Float32Array(), 0, 0, () => 0);
++  const out = { ...blank };
++  for (const [name, value] of Object.entries(blank)) {
++    if (!ArrayBuffer.isView(value)) continue;
++    const size = name === 'indices' ? 6 * (S - 1) * (slices - 1)
++      : name === 'positions' || name === 'normals' ? 3 * S * slices : name.startsWith('slice') ? slices : S * slices;
++    (out as unknown as Record<string, unknown>)[name] = value instanceof Uint8Array ? new Uint8Array(size)
++      : value instanceof Uint32Array ? new Uint32Array(size) : new Float32Array(size);
++  }
++  out.sliceCount = slices; out.vertexCount = slices * S; out.indexCount = 6 * (S - 1) * (slices - 1);
++  out.sliceFront.fill(1); out.sliceRayZ.fill(1); out.sliceWeight.fill(1); out.sliceLife.fill(0.3);
++  const profile = [[0, 0], [2, 0], [2, 2], [0, 2], [0, 3], [2, 3]];
++  for (let s = 0; s < slices; s += 1) {
++    out.sliceSigma[s] = s;
++    for (let j = 0; j < S; j += 1) {
++      const [z, y] = profile[Math.min(j, profile.length - 1)], v = s * S + j;
++      out.positions.set([s, y, z], 3 * v); out.normals[3 * v + 1] = 1;
++    }
++    if (s + 1 < slices) {
++      out.sliceJoined[s] = 1;
++      for (let j = 0; j + 1 < S; j += 1) {
++        const v = s * S + j;
++        out.indices.set([v, v + S, v + 1, v + 1, v + S, v + S + 1], 6 * ((S - 1) * s + j));
++      }
++    }
++  }
++  return out;
++}
++
++/** Independent production contact index/triangle/parity code on the synthetic geometry. */
++function contactFor(loft: LoftResult) {
++  const contact = new SweptContact(library(), 0.05, { bucket: Infinity });
++  vi.spyOn((contact as unknown as { loft: SweptLoft }).loft, 'build').mockReturnValue(loft);
++  contact.update(new Float32Array(), 0, 0, () => 0);
++  return contact;
++}
++
++type Fixture = { waterGrid: SurfaceGrid; surfaceData: number[]; front: (number | null)[]; frontCount: number;
++  config: { tide: number }; status: SurfZoneStatus };
++const cases = () => libraryFromBytes(barrelCasesFor('padang').map(c =>
++  new Uint8Array(readFileSync(new URL('../../../public/' + c.asset, import.meta.url)))));
++function fixture(at: number) {
++  const data: Fixture = JSON.parse(readFileSync(new URL(`../../../docs/research/tube-stability-2026-10-03/fixtures/at-${at}.json`, import.meta.url), 'utf8'));
++  const front = Float32Array.from(data.front, v => v ?? Number.NaN), surface = Float32Array.from(data.surfaceData);
++  const heightAt = (x: number, z: number) => sampleCubicSurface(surface, data.waterGrid, x, z).height;
++  return { data, front, surface, heightAt };
++}
++
++describe('bounded rendered cavity air', () => {
++  it('requires the locally shaded opaque mask, retaining zero and dither-band fallback despite global activity', () => {
++    const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 2, nz: 2 };
++    const mask = new Uint8Array([255, 255, 255, 255]);
++    expect(opaqueBarrelColumn(mask, grid, 0.3, 0.5)).toBe(true);
++    mask[3] = 0;
++    expect(opaqueBarrelColumn(mask, grid, 0.3, 0.5)).toBe(false);
++    mask[3] = 254;
++    expect(opaqueBarrelColumn(mask, grid, 0.3, 0.5)).toBe(false);
++    expect(opaqueBarrelColumn(mask, grid, 0, 0)).toBe(true); // Zero-weight neighbours do not shade this node.
++    expect(opaqueBarrelColumn(mask, grid, -0.1, 0.5)).toBe(false);
++  });
++  it('matches independent contact air, floor/roof water and half-open ray/triangle ties', () => {
++    const loft = cavity(3), query = new RenderedCavityQuery(), contact = contactFor(loft), hit = createContactHit();
++    for (const x of [0, 0.3, 0.5, 1, 1.5]) for (const y of [-0.1, 0, 1, 2, 2.5, 3.5]) {
++      expect(contact.query(x, y, 1, hit)).toBe(true);
++      const boundedAir = !hit.inWater && Number.isFinite(hit.ceilingY) && hit.floorY < y && y < hit.ceilingY;
++      expect(query.contains(loft, x, y, 1)).toBe(boundedAir);
++    }
++    expect(query.contains(loft, 2, 1, 1)).toBe(false); // Last ray belongs to no half-open strip.
++    expect(query.contains(loft, -0.1, 1, 1)).toBe(false);
++  });
++
++  it('never mistakes flat water, air under all crossings, or air above the roof for a cavity', () => {
++    const loft = cavity(), query = new RenderedCavityQuery();
++    expect(query.contains(loft, 0.3, -1, 1)).toBe(false);
++    expect(query.contains(loft, 0.3, 4, 1)).toBe(false);
++    for (let s = 0; s < 2; s += 1) for (let j = 0; j < S; j += 1) {
++      loft.positions[3 * (s * S + j) + 1] = 0;
++      loft.positions[3 * (s * S + j) + 2] = j;
++    }
++    expect(query.contains(loft, 0.3, -0.2, 1.2)).toBe(false);
++    expect(query.contains(loft, 0.3, 0.2, 1.2)).toBe(false);
++  });
++
++  it('recomputes reused mutable geometry without a stale held query result', () => {
++    const loft = cavity(), query = new RenderedCavityQuery();
++    expect(query.contains(loft, 0.3, 1, 1)).toBe(true);
++    for (let v = 0; v < loft.vertexCount; v += 1) loft.positions[3 * v + 1] += 2;
++    expect(query.contains(loft, 0.3, 1, 1)).toBe(false);
++    expect(query.contains(loft, 0.3, 3, 1)).toBe(true);
++    loft.indexCount = 0;
++    expect(query.contains(loft, 0.3, 3, 1)).toBe(false);
++  });
++
++  it('rejects overlapping fronts even where physical contact selects its first front', () => {
++    const loft = cavity(4), query = new RenderedCavityQuery();
++    loft.sliceJoined[1] = 0; loft.sliceFront[2] = loft.sliceFront[3] = 2;
++    for (let v = 2 * S; v < 4 * S; v += 1) loft.positions[3 * v] -= 2;
++    loft.indices.copyWithin(6 * (S - 1), 12 * (S - 1)); loft.indexCount = 12 * (S - 1);
++    const contact = contactFor(loft), hit = createContactHit();
++    expect(contact.query(0.3, 1, 1, hit)).toBe(true); expect(hit.inWater).toBe(false);
++    expect(query.contains(loft, 0.3, 1, 1)).toBe(false);
++  });
++
++  it('retains the fallback for malformed indices, nonfinite geometry, query-edge degeneracy and overflow', () => {
++    const query = new RenderedCavityQuery();
++    const malformed = cavity(); malformed.indices[0] = 1;
++    expect(query.contains(malformed, 0.3, 1, 1)).toBe(false);
++    const nonfinite = cavity(); nonfinite.positions[7] = Number.NaN;
++    expect(query.contains(nonfinite, 0.3, 1, 1)).toBe(false);
++    expect(query.contains(cavity(), 0.3, 1, 2)).toBe(false);
++    const overflow = cavity();
++    for (let s = 0; s < 2; s += 1) for (let j = 0; j < S; j += 1) {
++      overflow.positions[3 * (s * S + j) + 1] = j;
++      overflow.positions[3 * (s * S + j) + 2] = 2 * (j % 2);
++    }
++    expect(S - 1).toBeGreaterThan(CONTACT.crossings);
++    expect(query.contains(overflow, 0.3, 1, 1)).toBe(false);
++    const extra = cavity();
++    for (let s = 0; s < 2; s += 1) {
++      extra.positions[3 * (s * S + 6) + 2] = 0;
++      extra.positions[3 * (s * S + 6) + 1] = 4;
++      extra.positions[3 * (s * S + 7) + 1] = 5;
++    }
++    expect(query.contains(extra, 0.3, 1, 1)).toBe(false);
++  });
++});
++
++describe('fresh actual drawing and camera fog', () => {
++  const witnesses = [
++    { at: 10, x: 114.49167762756348, z: -9.801540737152099, y: 0.8355403826597486, bilinear: 1.0507383408111823 },
++    { at: 20, x: 46.045549392700195, z: -108.53816902160645, y: 1.1391468675184453, bilinear: 1.4997664889319497 },
++  ];
++
++  async function setup(witness: typeof witnesses[number]) {
++    const f = fixture(witness.at), lib = cases();
++    const snapshot = { status: f.data.status, front: f.front, frontCount: f.data.frontCount };
++    const source: SurfaceSource = { grid: f.data.waterGrid, bedRevision: 0,
++      get time() { return snapshot.status.seaTime; }, get revision() { return snapshot.status; },
++      write: out => out.set(f.surface), writeBed: out => out.fill(-5) };
++    const water = new WaterSurface(source); water.setLook('rich');
++    const barrel = new SweptBarrel(water, async () => lib); barrel.setSpot('padang'); await barrel.ready;
++    const host = { snapshot, heightAt: (x: number, z: number) => sampleSurfaceHeight(f.surface, f.data.waterGrid, x, z) } as unknown as SurfZoneHost;
++    // Exercise the real PhysicalMode method and actual SweptBarrel draw, without starting or advancing a solver.
++    const mode = Object.create(PhysicalMode.prototype) as PhysicalMode;
++    const camera = new PerspectiveCamera(); camera.position.set(witness.x, witness.y, witness.z);
++    const query = new RenderedCavityQuery();
++    Object.assign(mode, { host, config: f.data.config, water, sweptBarrel: barrel, shown: true, swept: true,
++      camera: { camera }, renderedCavity: query });
++    return { f, water, barrel, host, snapshot, mode, camera, query, dispose: () => { barrel.dispose(); water.dispose(); } };
++  }
++
++  for (const witness of witnesses) it(`proves raw underwater→rendered cavity air on frozen state ${witness.at}, with contact oracle`, async () => {
++    const t = await setup(witness);
++    try {
++      expect(t.host.heightAt(witness.x, witness.z)).toBeCloseTo(witness.bilinear, 12);
++      expect(t.mode.cameraBelowSurface()).toBe(true); // No current drawing yet: exact old fallback.
++      t.water.update(); t.mode.drawBarrel();
++      const contact = new SweptContact(cases(), BARREL_SLOPE.padang!, { bucket: Infinity });
++      contact.update(t.f.front, t.f.data.frontCount, t.f.data.config.tide, t.f.heightAt);
++      const hit = createContactHit();
++      expect(contact.query(witness.x, witness.y, witness.z, hit)).toBe(true);
++      expect(hit.inWater).toBe(false); expect(hit.floorY).toBeLessThan(witness.y); expect(hit.ceilingY).toBeGreaterThan(witness.y);
++      expect(t.mode.cameraBelowSurface()).toBe(false);
++      const position = t.barrel.mesh.mesh.geometry.getAttribute('position') as BufferAttribute;
++      const version = position.version;
++      t.water.update(); t.mode.drawBarrel();
++      expect(position.version).toBe(version); expect(t.mode.cameraBelowSurface()).toBe(false); // Real held draw.
++      expect(t.mode.cameraBelowSurface(0.1, new Vector3(witness.x, hit.floorY - 0.2, witness.z))).toBe(true);
++      expect(t.mode.cameraBelowSurface(0.1, new Vector3(witness.x, 20, witness.z))).toBe(false);
++    } finally { t.dispose(); }
++  });
++
++  it('falls back before a new status or same-time restore is redrawn, and accepts the real view override', async () => {
++    const witness = witnesses[0], t = await setup(witness);
++    try {
++      t.water.update(); t.mode.drawBarrel();
++      const highView = new Vector3(witness.x, 20, witness.z), cavityView = t.camera.position.clone();
++      t.camera.position.copy(highView);
++      expect(t.mode.cameraBelowSurface()).toBe(false);
++      expect(t.mode.cameraBelowSurface(0.1, cavityView)).toBe(false);
++      for (const increment of [1 / 60, 0]) {
++        t.snapshot.status = { ...t.snapshot.status, seaTime: t.snapshot.status.seaTime + increment };
++        expect(t.mode.cameraBelowSurface(0.1, cavityView)).toBe(true);
++        t.water.update();
++        expect(t.mode.cameraBelowSurface(0.1, cavityView)).toBe(true);
++        t.mode.drawBarrel();
++        expect(t.mode.cameraBelowSurface(0.1, cavityView)).toBe(false);
++      }
++      const scan = vi.spyOn(t.query, 'contains');
++      expect(t.mode.cameraBelowSurface(0.1, highView)).toBe(false); expect(scan).not.toHaveBeenCalled();
++    } finally { t.dispose(); }
++  });
++
++  it('rejects hidden/empty/unuploaded/maskless drawing without changing the raw fallback', async () => {
++    const witness = witnesses[0], t = await setup(witness);
++    try {
++      t.water.update(); t.mode.drawBarrel(); expect(t.mode.cameraBelowSurface()).toBe(false);
++      const mesh = t.barrel.mesh.mesh, geometry = mesh.geometry, count = geometry.drawRange.count;
++      mesh.visible = false; expect(t.mode.cameraBelowSurface()).toBe(true); mesh.visible = true;
++      geometry.setDrawRange(1, count); expect(t.mode.cameraBelowSurface()).toBe(true); geometry.setDrawRange(0, count);
++      geometry.setDrawRange(0, 0); expect(t.mode.cameraBelowSurface()).toBe(true); geometry.setDrawRange(0, count);
++      const mask = (t.water.materialUniforms.waterBarrelMask.value as DataTexture).image.data as Uint8Array;
++      const grid = t.water.barrelMaskGrid, node = Math.floor((witness.z - grid.zMin) / grid.spacing) * grid.nx
++        + Math.floor((witness.x - grid.xMin) / grid.spacing);
++      const previous = mask[node]; mask[node] = 0;
++      expect(t.water.barrelMaskActive).toBe(true); expect(t.mode.cameraBelowSurface()).toBe(true);
++      mask[node] = 254; expect(t.mode.cameraBelowSurface()).toBe(true);
++      mask[node] = previous; expect(t.mode.cameraBelowSurface()).toBe(false);
++      (geometry.getAttribute('position') as BufferAttribute).needsUpdate = true;
++      expect(t.mode.cameraBelowSurface()).toBe(true);
++      t.water.setBarrelMask(null); expect(t.mode.cameraBelowSurface()).toBe(true);
++      t.snapshot.front = new Float32Array(); t.snapshot.frontCount = 0;
++      t.snapshot.status = { ...t.snapshot.status };
++      t.water.update(); t.mode.drawBarrel(); expect(t.mode.cameraBelowSurface()).toBe(true);
++    } finally { t.dispose(); }
++  });
++});

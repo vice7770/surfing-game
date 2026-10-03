@@ -1,0 +1,227 @@
+{
+  "schema": 1,
+  "archive": "Valid isolated cavity-fog held proof; original bytes preserved (reports gzip losslessly).",
+  "files": [
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/baseline/report.json",
+      "archivedPath": "baseline-report.json.gz",
+      "originalSha256": "99e7d3b459b8526965e18c5b4bf3d2292ed6819f8a4e1cf1b2751fdaa562f28b",
+      "gzipSha256": "8a1c287be4c75421ce33cc23a8387895771518988236bea7ebbaa468ccc54ee9",
+      "originalBytes": 594259,
+      "gzipBytes": 28443
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/baseline/at-10-lower-air.normal.png",
+      "archivedPath": "10-lower-air.baseline.native-normal.png",
+      "sha256": "a3f94e8ce465b33a5fcfa6d277fb0360cf44df9817a3a6625715957d6c1549da",
+      "bytes": 360960
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/baseline/at-10-under-floor.normal.png",
+      "archivedPath": "10-under-floor.baseline.native-normal.png",
+      "sha256": "738d3b922609f9e53f0bf6639106fc7b785ab04b2890dfaf03100fab51d76a0b",
+      "bytes": 326519
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/baseline/at-10-roof-band.normal.png",
+      "archivedPath": "10-roof-band.baseline.native-normal.png",
+      "sha256": "f4a19ca254e576c3dfa009ba2a7ffedee480bd7c7e87a23c6f30b2b98b164251",
+      "bytes": 290890
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/baseline/at-10-outside.normal.png",
+      "archivedPath": "10-outside.baseline.native-normal.png",
+      "sha256": "ddc5ff2582d5bf8cdd995728afea2916afa43860edbc7d4edf8eacc2b08f981b",
+      "bytes": 291503
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/baseline/at-20-lower-air.normal.png",
+      "archivedPath": "20-lower-air.baseline.native-normal.png",
+      "sha256": "c32691461b8025a3be9f686a862137723701f4995f1ffaf66d36db160192c1a1",
+      "bytes": 224730
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/baseline/at-20-under-floor.normal.png",
+      "archivedPath": "20-under-floor.baseline.native-normal.png",
+      "sha256": "932f76041a1f5129d8b255dc16a0e7c0bbe1a5fa82367fc6413642e911150126",
+      "bytes": 338039
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/baseline/at-20-roof-band.normal.png",
+      "archivedPath": "20-roof-band.baseline.native-normal.png",
+      "sha256": "b135c537c98ae8f1d7c08ba6b4d7c799cc0032c056f7331ce6e0958fc3aee51e",
+      "bytes": 444257
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/baseline/at-20-outside.normal.png",
+      "archivedPath": "20-outside.baseline.native-normal.png",
+      "sha256": "35e37a754940020e96740381c374d4d2624afc3d2efd79d41673554baa503cd8",
+      "bytes": 289613
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/candidate/report.json",
+      "archivedPath": "candidate-report.json.gz",
+      "originalSha256": "b9c56462db233b60b33d0d57f304f89dc49856e5a096051397364f584bbc7bab",
+      "gzipSha256": "66a0e1d8380a5026a188efbc1a00fde0935a7f6277e268c22fc369d7b5fd1276",
+      "originalBytes": 586778,
+      "gzipBytes": 28805
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/candidate/at-10-lower-air.normal.png",
+      "archivedPath": "10-lower-air.candidate.native-normal.png",
+      "sha256": "2ecce7fe7c137c0b4e3180ef357e0a846e0ad4b29be7b5ac79b000f616b1aaf7",
+      "bytes": 521977
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/candidate/at-10-under-floor.normal.png",
+      "archivedPath": "10-under-floor.candidate.native-normal.png",
+      "sha256": "ff2d4bcf094a8d15952601726532fdceb581a81d04e8fd4b85b64b4d653747ce",
+      "bytes": 326509
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/candidate/at-10-roof-band.normal.png",
+      "archivedPath": "10-roof-band.candidate.native-normal.png",
+      "sha256": "f4a19ca254e576c3dfa009ba2a7ffedee480bd7c7e87a23c6f30b2b98b164251",
+      "bytes": 290890
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/candidate/at-10-outside.normal.png",
+      "archivedPath": "10-outside.candidate.native-normal.png",
+      "sha256": "ddc5ff2582d5bf8cdd995728afea2916afa43860edbc7d4edf8eacc2b08f981b",
+      "bytes": 291503
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/candidate/at-20-lower-air.normal.png",
+      "archivedPath": "20-lower-air.candidate.native-normal.png",
+      "sha256": "b234310f96e017fca4168fd628aebb1e8c663a0613a1459e7f1e586023b06a26",
+      "bytes": 458371
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/candidate/at-20-under-floor.normal.png",
+      "archivedPath": "20-under-floor.candidate.native-normal.png",
+      "sha256": "88d4370305dcd185c49a9c8b0459d4d9cf62adc877c74b25738ba065d958afb6",
+      "bytes": 338021
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/candidate/at-20-roof-band.normal.png",
+      "archivedPath": "20-roof-band.candidate.native-normal.png",
+      "sha256": "b135c537c98ae8f1d7c08ba6b4d7c799cc0032c056f7331ce6e0958fc3aee51e",
+      "bytes": 444257
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/candidate/at-20-outside.normal.png",
+      "archivedPath": "20-outside.candidate.native-normal.png",
+      "sha256": "35e37a754940020e96740381c374d4d2624afc3d2efd79d41673554baa503cd8",
+      "bytes": 289613
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/candidate/at-20-lower-air.normal-repeat.png",
+      "archivedPath": "20-lower-air.candidate.native-repeat.png",
+      "sha256": "26bf18f232d427f95fe082a2b333896a7b962c85332cb1c113351bd00070e6ee",
+      "bytes": 458372
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/driver-plan.json",
+      "archivedPath": "driver-plan.json",
+      "sha256": "f1959ea3b5458754592c8a8c915d5b3f79d7c2c8c5f134f080e1afe0c4fd3158",
+      "bytes": 16363
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held/pixel-comparison.json",
+      "archivedPath": "pixel-comparison.json",
+      "sha256": "76de4c48cfce9f1321f6f92f62a896dccc3be1a6c410d23bf0aeb5057e94932f",
+      "bytes": 3858
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held-qa-plan.md",
+      "archivedPath": "held-qa-plan.md",
+      "sha256": "552a0ddef4ce71fa147c95f01dcacded8c7e89f6bc659a0fd75d6211a43fa105",
+      "bytes": 6436
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held-driver.mjs",
+      "archivedPath": "source-held-driver.mjs.txt",
+      "sha256": "7bc73083535604e9db242a0efc49649e0fe9bbc61e33a2aea91601376c3d4df7",
+      "bytes": 15212
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held-helper.mjs",
+      "archivedPath": "source-held-helper.mjs.txt",
+      "sha256": "5315625e7be418d28a18d37a6cdee25620d534602d3af24603d9f3c4a1986a4c",
+      "bytes": 5980
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held-plan-source/baseline.mjs",
+      "archivedPath": "source-derived-baseline.mjs.txt",
+      "sha256": "b0c24a659ec4759070f3bdbca3122eaa6d0b0c0544f2f718c718a8d7a03d9bb7",
+      "bytes": 77613
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-fog-held-plan-source/candidate.mjs",
+      "archivedPath": "source-derived-candidate.mjs.txt",
+      "sha256": "9946a2409be70729b4eec8eb885eb0277aaf4de703c6c6481c439a6fc06ac861",
+      "bytes": 77615
+    },
+    {
+      "originalPath": "/private/tmp/tube-cavity-witness.json",
+      "archivedPath": "cavity-witness.json",
+      "sha256": "17c251e10dc1bb49e532e18b829e059d15661185c4b1ea997fbdda1af3d7dd53",
+      "bytes": 24923
+    },
+    {
+      "originalPath": "/private/tmp/surf-cavity-fog-20261003/cavity-fog.patch",
+      "archivedPath": "cavity-fog.patch",
+      "sha256": "bc6e2e9a99107c70976f6465a29d744bf13b387935323b81bbc6c2c61a8ae547",
+      "bytes": 29858
+    },
+    {
+      "originalPath": "/private/tmp/surf-cavity-fog-20261003/cavity-fog-manifest.json",
+      "archivedPath": "source-manifest.json",
+      "sha256": "8f2275fd2422de6432b24abe66bdb1650a9b035826e9c84bb155e5a94aebece4",
+      "bytes": 5313
+    },
+    {
+      "originalPath": "/private/tmp/surf-cavity-fog-20261003/cavity-fog-prototype.md",
+      "archivedPath": "source-prototype.md",
+      "sha256": "5c0fcda42c72119ed4af9a2c0c115d34aa5534434ae281b7765b6f5bd1e8a183",
+      "bytes": 3737
+    },
+    {
+      "originalPath": "/private/tmp/surf-cavity-fog-20261003/src/main.ts",
+      "archivedPath": "source-src-main.ts.txt",
+      "sha256": "63bca1793b2c38a92c2cceca6e3240c82f6492c7af9713897751392abf8e5f8d",
+      "bytes": 56699
+    },
+    {
+      "originalPath": "/private/tmp/surf-cavity-fog-20261003/src/game/PhysicalMode.ts",
+      "archivedPath": "source-src-game-PhysicalMode.ts.txt",
+      "sha256": "c231cc21bb253a8de44d42b0dbd17dfe74a60bad0726d593d09f1e40af23479b",
+      "bytes": 44916
+    },
+    {
+      "originalPath": "/private/tmp/surf-cavity-fog-20261003/src/scene/barrel/renderedCavity.ts",
+      "archivedPath": "source-src-scene-barrel-renderedCavity.ts.txt",
+      "sha256": "1b89c48a59b940bb57892b04601ea883839522fcede49799ec41c4b293c35927",
+      "bytes": 6944
+    },
+    {
+      "originalPath": "/private/tmp/surf-cavity-fog-20261003/src/scene/barrel/renderedCavity.test.ts",
+      "archivedPath": "source-src-scene-barrel-renderedCavity.test.ts.txt",
+      "sha256": "1e326674d1f3097ae852f11f4a771a2e1ff8ba324613273166d5b1f444d345fb",
+      "bytes": 13996
+    },
+    {
+      "archivedPath": "held-proof.json",
+      "sha256": "d56e6ed28e71850f59fe531b26a317546614b07a29bb05b8558831c37ad9dcee"
+    },
+    {
+      "archivedPath": "held-fog-result.md",
+      "sha256": "af5c3ace74c4c1e5db09a0039ac217c0b7ff8f13bc64c5ae0452200321c4e4f3"
+    }
+  ],
+  "rawReportsPathsAreOriginalTemporaryLocations": true,
+  "selectedNativeScreenshots": 16,
+  "selectedRepeatScreenshots": 1,
+  "unarchivedRepeatPngs": "15 exact repeats; their raw report SHA256 values equal retained normal images. Candidate20lower differing repeat retained.",
+  "sourceArchiveExtension": "All archived source text ends.txt so default test discovery cannot treat prototype tests as production."
+}

@@ -1,0 +1,170 @@
+{
+  "schema": 1,
+  "runtimeChanged": false,
+  "raw": {
+    "tmpPath": "/private/tmp/padang-dx24-quality-20261003/report.json",
+    "archive": "report.json.gz",
+    "bytes": 7495670,
+    "sha256": "6b2835f20196acaffab54ee88307f5f46503471af466c2f9ae172e5b31ee2a3a",
+    "compressedBytes": 2039094,
+    "compressedSha256": "4f2c32d6e0860ec73701255665c272fe63a35ba979acc9f48a57ea5ea4c3bd36",
+    "decompressedByteParity": true,
+    "repeatedCompressionByteParity": true
+  },
+  "selectedImageScope": "Native5/30-second pairs archived;0/15-second originals remain exact in/tmp and listed below. No image re-encoding.",
+  "images": [
+    {
+      "label": "dx2",
+      "at": 0,
+      "tmpPath": "/private/tmp/padang-dx24-quality-20261003/dx2-0s.png",
+      "bytes": 3451591,
+      "sha256": "8fd6b3cdfc76b20d3bc0c12425231f78670d5a138dcd4b31431b2df2566265d6",
+      "archived": false,
+      "encodedWidth": 3416,
+      "encodedHeight": 1852
+    },
+    {
+      "label": "dx2",
+      "at": 5,
+      "tmpPath": "/private/tmp/padang-dx24-quality-20261003/dx2-5s.png",
+      "bytes": 5265649,
+      "sha256": "b5965af804499a9b34418a691bdbad8267e2554cd9e2b397c247d186cbb74511",
+      "archived": true,
+      "archive": "dx2-5s.png",
+      "encodedWidth": 3416,
+      "encodedHeight": 1852
+    },
+    {
+      "label": "dx2",
+      "at": 15,
+      "tmpPath": "/private/tmp/padang-dx24-quality-20261003/dx2-15s.png",
+      "bytes": 5681072,
+      "sha256": "01a923d1f00051add4a2062b579361958b703ff68c8d6fdafdb6a915f20644cc",
+      "archived": false,
+      "encodedWidth": 3416,
+      "encodedHeight": 1852
+    },
+    {
+      "label": "dx2",
+      "at": 30,
+      "tmpPath": "/private/tmp/padang-dx24-quality-20261003/dx2-30s.png",
+      "bytes": 5795290,
+      "sha256": "a2833b43587943673a3542eb70da802220d97260eb2d8b3a5a5943f02e1d50ae",
+      "archived": true,
+      "archive": "dx2-30s.png",
+      "encodedWidth": 3416,
+      "encodedHeight": 1852
+    },
+    {
+      "label": "dx4",
+      "at": 0,
+      "tmpPath": "/private/tmp/padang-dx24-quality-20261003/dx4-0s.png",
+      "bytes": 3466622,
+      "sha256": "c19fd823916017f5039809114d835aa214aea238d91b2eb4764ebcceeb679159",
+      "archived": false,
+      "encodedWidth": 3416,
+      "encodedHeight": 1852
+    },
+    {
+      "label": "dx4",
+      "at": 5,
+      "tmpPath": "/private/tmp/padang-dx24-quality-20261003/dx4-5s.png",
+      "bytes": 5202290,
+      "sha256": "74546413290eb0985e65d395adde64360c05afb5af3bedd2fe4a4fb8a4b83464",
+      "archived": true,
+      "archive": "dx4-5s.png",
+      "encodedWidth": 3416,
+      "encodedHeight": 1852
+    },
+    {
+      "label": "dx4",
+      "at": 15,
+      "tmpPath": "/private/tmp/padang-dx24-quality-20261003/dx4-15s.png",
+      "bytes": 5761165,
+      "sha256": "c95fcb1710ec54955d725aca299ccd8de05961c0e0a489fb168255b54b80b169",
+      "archived": false,
+      "encodedWidth": 3416,
+      "encodedHeight": 1852
+    },
+    {
+      "label": "dx4",
+      "at": 30,
+      "tmpPath": "/private/tmp/padang-dx24-quality-20261003/dx4-30s.png",
+      "bytes": 5918586,
+      "sha256": "6ea76451a7fa87b9c6c2a712aa843201155ce55d251a42e0f76bfeecc77903a9",
+      "archived": true,
+      "archive": "dx4-30s.png",
+      "encodedWidth": 3416,
+      "encodedHeight": 1852
+    }
+  ],
+  "sources": [
+    {
+      "archive": "adapter.mjs",
+      "tmpPath": "/private/tmp/gpu-dx24-quality-adapter.mjs",
+      "bytes": 14498,
+      "sha256": "78f5fb140697180d36fbc2a49efa57e49111065bee1d5e4adea1e06870162758"
+    },
+    {
+      "archive": "derived.ts",
+      "tmpPath": "/private/tmp/gpu-dx24-quality-adapter/derived.ts",
+      "bytes": 35878,
+      "sha256": "69dd43aedd980f94161f90bfe43aed0654f6661fce90b2150384bb5dbfc7fb02"
+    },
+    {
+      "archive": "derived.mjs",
+      "tmpPath": "/private/tmp/gpu-dx24-quality-adapter/derived.mjs",
+      "bytes": 88236,
+      "sha256": "4c957bae49ca68397f37eff83bb718e4398a995cba96f5a26045d106e0ed28fe"
+    },
+    {
+      "archive": "owned-cdp.mjs",
+      "tmpPath": "/private/tmp/gpu-dx24-quality-adapter/owned-cdp.mjs",
+      "bytes": 1924,
+      "sha256": "2d74984b72d2b2ba42ccc590792578f252c0ad807830b040b3a5463cfa7c9bb8"
+    },
+    {
+      "archive": "canonical-gpu-resolution-fidelity.ts",
+      "tmpPath": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/gpu-resolution-fidelity.ts",
+      "bytes": 30914,
+      "sha256": "b50f34679b8d66983fcde3d832de276e810dfd133aed8bf97ecca5ada65f8939"
+    },
+    {
+      "archive": "plan.json",
+      "tmpPath": "/private/tmp/padang-dx24-quality-20261003/plan.json",
+      "bytes": 1705,
+      "sha256": "e1e531352f6c6bd93bd33ad06069b7eb66ae4878aab7dca923c2b0f06e7994dc"
+    },
+    {
+      "archive": "adapter-meta.run.json",
+      "tmpPath": "/private/tmp/padang-dx24-quality-20261003/adapter-meta.json",
+      "bytes": 3210,
+      "sha256": "ab6fd405e0df0c85e5de47e2f1466042db5dc4deabf7d92417445d0d8388a4ec"
+    },
+    {
+      "archive": "adapter-meta.full.json",
+      "tmpPath": "/private/tmp/gpu-dx24-quality-adapter/adapter-meta.json",
+      "bytes": 8436,
+      "sha256": "f9d8813eebf4165fc48b95d8762b396750c7842f6b7e36a18ad7404dd1ececa1"
+    },
+    {
+      "archive": "adapter-meta.plan.json",
+      "tmpPath": "/private/tmp/padang-dx24-quality-20261003/adapter-meta.plan.json",
+      "bytes": 3209,
+      "sha256": "e9439018de6525b9ebb1433a35a028ee51ccbe5fc231e8e9b62fb651bb735d9b",
+      "reconstructedOptionsOnly": "plan=false\u2192true; exact original plan metadata hash verified"
+    },
+    {
+      "archive": "summarize.mjs",
+      "bytes": 3035,
+      "sha256": "dab2a554034d527f1895acc12b540a3ddc5c73204e06337e6ae18f00ffacaa38",
+      "kind": "Pure postprocessing; no new measurement"
+    },
+    {
+      "archive": "summary.json",
+      "bytes": 44674,
+      "sha256": "a5927163fcff9456deccc8319f665d3f006a0b7f2dd368f1dac65fd9309f0ca6",
+      "kind": "Pure postprocessing; no new measurement"
+    }
+  ]
+}

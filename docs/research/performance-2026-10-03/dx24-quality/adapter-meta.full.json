@@ -1,0 +1,200 @@
+{
+  "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/gpu-resolution-fidelity.ts",
+  "sourceSha256": "b50f34679b8d66983fcde3d832de276e810dfd133aed8bf97ecca5ada65f8939",
+  "adapterSha256": "78f5fb140697180d36fbc2a49efa57e49111065bee1d5e4adea1e06870162758",
+  "derivedSha256": "69dd43aedd980f94161f90bfe43aed0654f6661fce90b2150384bb5dbfc7fb02",
+  "ownedLauncherSha256": "2d74984b72d2b2ba42ccc590792578f252c0ad807830b040b3a5463cfa7c9bb8",
+  "changes": [
+    {
+      "name": "grid-labels",
+      "beforeSha256": "7bd425a9deb7000b469c310e0f5665bb5e8a782f695329b3db9215136160b428",
+      "afterSha256": "3190a15de7b4163fc6c2a7c9f38821b8b1eded634aa140c38605443131dae9c5"
+    },
+    {
+      "name": "coarse-grid-label",
+      "beforeSha256": "e0fb971a5ea93397c2e18926cf6dbffd9e7732225d7f91953f5e0d5071b1b6d2",
+      "afterSha256": "d878e47b43a73ed67f386e368623c042241e17f8d1411978b4e2704baae54b4b"
+    },
+    {
+      "name": "description",
+      "beforeSha256": "17544a9b080e5d38b179b85156d9884d3064aeeb85682e42e381cbdf57315299",
+      "afterSha256": "6f81be12d75de099d3491d862db6ce1481b93b3cc0e02e29fdfa837fb43be741"
+    },
+    {
+      "name": "defect-caveat",
+      "beforeSha256": "85d96e9649fe0260c86ab85a562f97e8c6d237a2fa5bff938963279bb73b814a",
+      "afterSha256": "c0f17dc9b5040705b08a34c18fd9f2240f1b1f24c67deb8cde92c1cb721f0a5e"
+    },
+    {
+      "name": "simulation-import",
+      "beforeSha256": "1d428b53c320304f4df9221d34f07b06153b59f3e332cc30ba17899cb12c35c8",
+      "afterSha256": "fc435d2d29ecab5c7c4eb1206d35c46426803f68d9cb899ede91afc44ec03153"
+    },
+    {
+      "name": "grid-import",
+      "beforeSha256": "b4e3aa3d5e49ace46ad6db1a9565bf60856a58cf6f4d68a223b0e5e3d2561531",
+      "afterSha256": "876ca84f3647deb58c5d828b7df651b30d2c707ca763cbbac24679630b523515"
+    },
+    {
+      "name": "cdp-import",
+      "beforeSha256": "a6d65153af2ca7429aa59dfd268e2c297d9e3500718cafe99c3f11ba31ca2816",
+      "afterSha256": "5886dc6c2c7e6839fcd92bcb5b102fa18410d069405acfe0e743d8b0fc5535e5"
+    },
+    {
+      "name": "native-graphics",
+      "beforeSha256": "8da210b7befbd42bddfcba2b5e41ed7501cc79c34e7130d0ab932fbfbbc7bb67",
+      "afterSha256": "976461de397161a5e3fcc5911161b9f977a0371f5c076a6eb257f32b318aef1f"
+    },
+    {
+      "name": "contact-enable",
+      "beforeSha256": "aa0e4bf222e2d3a15a10112723384e9a89bb4b63d3a498ab797926aaf93b2f04",
+      "afterSha256": "72997d142d573db9a7730c809634f76bc75994b9141d77bc7e9035f5592c8876"
+    },
+    {
+      "name": "contact-stage-status",
+      "beforeSha256": "a3ebc0e882534ae83850628a280fa6c3a233bcb1954c4e78603a7d94d958cbcd",
+      "afterSha256": "b0a02c89df447dbb32c3e8179d0731dc0718c749b897868c8b0e0631e51f0fd1"
+    },
+    {
+      "name": "contact-proof",
+      "beforeSha256": "91645724b8b82b33051595cddf00ba9d7f14f22d275c504a00f4935c15809ac7",
+      "afterSha256": "0281d04f3a90f69f92131813043815218f44e7cca23483aa13a150aaca2b8f5f"
+    },
+    {
+      "name": "hold-before-start",
+      "beforeSha256": "2fc23d6a0e91c682f76545d55a310447c937ac9d28395f630fd0c015255e0c67",
+      "afterSha256": "82dc7477cd84b3687a213da43a312bccea58cb1980f4a0f38e0aea1634c62733"
+    },
+    {
+      "name": "keep-native-size",
+      "beforeSha256": "9542d2b5cf7797e6ff2d839f6fa0eb5c93f2ca3420fe9ba0836f2b06126546cc",
+      "afterSha256": "e1787cf6deb99698ecb0078c105ff61823fdc681cd50ac2a10cb1a73ab2521c6"
+    },
+    {
+      "name": "native-observation",
+      "beforeSha256": "adbb0751482744cf5b1733adc64c76acd97020fcb628b2345c3365b0e3715d5a",
+      "afterSha256": "98e809f59c8cc6082adccd88190c6d49dd90be0102d915e46d0d766725865473"
+    },
+    {
+      "name": "observed-start-config",
+      "beforeSha256": "b4ad785283bfff38707cdf6ca739a118d369f754a9d9f29b459b28088313af93",
+      "afterSha256": "bb3d22e8090e7d3e42deb6fa9c45086a4d0fb87de76ef606c5a4418914139719"
+    },
+    {
+      "name": "native-mask-guard",
+      "beforeSha256": "84a4970e9e82a289c5291bdbb5db32722945cecb811856603f58aef7bb17fcea",
+      "afterSha256": "55d6ee3c35e6f606d579c9f2169867dd672d757944d3ca02d394a322caaa4950"
+    },
+    {
+      "name": "plume-measures",
+      "beforeSha256": "84189f7e8f72acbf2efda86cb5ce63998532cad7721dc76da360a584c7c601cd",
+      "afterSha256": "b25934c9436a6432e7b2f372920255300c8351765e44f78281e0fd861dc774c9"
+    },
+    {
+      "name": "plume-aggregation",
+      "beforeSha256": "f5c9e4245a1492f9253d0d1646037830d5154ba381c2ba9493db5230a1d1eed0",
+      "afterSha256": "0df80235b65228474922b96b7208ccd7ed6c4c11b523125d5debd9566e118846"
+    },
+    {
+      "name": "launch-comparison",
+      "beforeSha256": "593e3d4bfc7ccf39ed9e3c95320b58d861f997b143ee103c7142b62dfaae63aa",
+      "afterSha256": "117a05d973be2e1a5d7a65c7dcb8bf256c85cf01979a008f0a47a809e022f8e5"
+    },
+    {
+      "name": "css-manifest",
+      "beforeSha256": "31acf1cbb2b69629bde846dfdc94c894aa51205a92ea19a84106ace20aa17546",
+      "afterSha256": "ac6a21912248d3aa0000314dd6050f0e6e0d2aa5fc9842580ebde9dadf4e1704"
+    },
+    {
+      "name": "all-served-bundles",
+      "beforeSha256": "caabab93c15a5edee38546523e8c3e4aacc0d70c61201009ac16d54d7b4d9a46",
+      "afterSha256": "8d7eee7b0739276457561cb8b8f274bcf825ba2af86f4ba4c731d41b79274df6"
+    },
+    {
+      "name": "manifest-results",
+      "beforeSha256": "d07da4dd382bbe716d4d9423681fdcab9aaba20de0bd071e96f22e11d96169b2",
+      "afterSha256": "55552e3e8c748bdb93337d64de26cfe8bec8049486a48f1657f339256ed091ad"
+    },
+    {
+      "name": "no-unverified-runtime",
+      "beforeSha256": "7ad8c0728080bc2ae882fb369ac9ba742e788afcd627ce3c3183810b8354c4b2",
+      "afterSha256": "9c5f393698ec41424be2780d19fd998fc18529ee014f604975d289e45abc0159"
+    },
+    {
+      "name": "probe-cell-guards",
+      "beforeSha256": "1197cb64997b91f5001b7553c4f01472e41c8cffa20af25715484e802ad54324",
+      "afterSha256": "4bccb1fa440b38448c46fffa6f3083519befe812a9c9ba2c749c0d84d367393a"
+    },
+    {
+      "name": "overall-deadline",
+      "beforeSha256": "730d62f0d18f754188c9fe6076a09b381c8eb518b346b7d431277077edfc320e",
+      "afterSha256": "6d3ce6c2468afc1da16611f66a505a7df57c5d5f44f791205c29b3acffbf7f61"
+    },
+    {
+      "name": "extra-caveat",
+      "beforeSha256": "6dc06f2b360fbbf342cae12c1bc122aabce6f92ed0d77ea223b8764234f2a5e9",
+      "afterSha256": "b3ddc5d7f24ed9941974c9e7a16a991116ba47c8f756e7e3fdf5f6b7cc3351bc"
+    }
+  ],
+  "options": {
+    "url": "http://127.0.0.1:4201/",
+    "dir": "/private/tmp/surf-tube-stability-current-20261003",
+    "out": "/private/tmp/padang-dx24-quality-20261003",
+    "at": "5,15,30",
+    "spinUp": "2",
+    "seaTime": "400",
+    "width": "1708",
+    "height": "926",
+    "cdp": "9524",
+    "plan": "false"
+  },
+  "expectedFrozen": {
+    "root": "/private/tmp/surf-tube-stability-current-20261003",
+    "sha256": "7c2e14bade277ece4f1100a09dda8fe731073a41572a6619cfeb2970328fc7a3",
+    "files": [
+      {
+        "file": "index.html",
+        "sha256": "df9f5b5b9064eeb635ad5ce1838f2f06aee37b9fe1481f8ab1c5ac360571552b"
+      },
+      {
+        "file": "assets/WorkerSurfZone-DsoxOk5J.js",
+        "sha256": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606"
+      },
+      {
+        "file": "assets/devStepping-CLfXNMh-.js",
+        "sha256": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677"
+      },
+      {
+        "file": "assets/index-DA8NEfOT.css",
+        "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+      },
+      {
+        "file": "assets/index-Dhp1E5Jm.js",
+        "sha256": "cff7f235604df399fe95d2f872a877ca95fca141a66e588c0d9a5eb8efc90cf3"
+      },
+      {
+        "file": "assets/jevRecorder-DKAk_GxP.js",
+        "sha256": "aa5a9ec59dc47571b87c9a62901bca07c54e39430b6cafe5d4abe8d05dc61300"
+      },
+      {
+        "file": "assets/particleBench-UFIniUOA.js",
+        "sha256": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e"
+      },
+      {
+        "file": "assets/rideRecorder-DdzH6W7j.js",
+        "sha256": "cc1f6cc0fb23c4aa8416dbe123564f02239e4db55fbc14f97d2d51072c540674"
+      },
+      {
+        "file": "assets/surfZoneWorker-BH6FhcTP.js",
+        "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+      },
+      {
+        "file": "assets/waterSheet-heYJdhwA.js",
+        "sha256": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+      }
+    ]
+  },
+  "productionEdited": false,
+  "gpuRunAuthorizedHere": false,
+  "browserInstrumentationSyntaxChecked": true
+}

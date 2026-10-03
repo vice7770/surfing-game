@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "originalPath": "/private/tmp/tube-repair-combined-before-fps.json",
+      "archivedPath": "ordinary-before-fps.json",
+      "sha256": "46b518ccf64b3ae66d3006ed2a49ab2d1eca8fdfd26885d6ac27b2d149b631b7",
+      "bytes": 79331
+    },
+    {
+      "originalPath": "/private/tmp/tube-repair-combined-after-fps.json",
+      "archivedPath": "ordinary-candidate-fps.json",
+      "sha256": "15a67ad89aa41687a336508912cca8c094ffa3ce3299c9f11fa42d3e3ecd89e2",
+      "bytes": 183840
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-repair-combined-20261003/combined-manifest.json",
+      "archivedPath": "source-manifest.json",
+      "sha256": "06bb55d3f0958240a22fb3d460e1d8cd90d3fcd702c5967f076a372c6e409f9d",
+      "bytes": 132841
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-repair-combined-20261003/combined.patch",
+      "archivedPath": "combined.patch",
+      "sha256": "5684639e5ca56e510285bf36e8e5dc937e91bfb25894bd651ea263b5f7d5ac5f",
+      "bytes": 60007
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-repair-combined-20261003/dist/qa-source.json",
+      "archivedPath": "candidate-qa-source.json",
+      "sha256": "2cca2b1b78fc56036ae5b860939f96d2f0741945b0d6014381700ca75da6fc4a",
+      "bytes": 105318
+    },
+    {
+      "archivedPath": "ordinary-fps-summary.json",
+      "sha256": "7b65c0334f3999ed18be3c92c447bf7f936d23b0f950ddca35896115df4b22fd",
+      "bytes": 5188
+    },
+    {
+      "archivedPath": "ordinary-fps.md",
+      "sha256": "bd759dd9c26a49e41e8d588950d4292598e0a8f241d842ec22cfd8ea895fd6c9",
+      "bytes": 3411
+    }
+  ],
+  "originalBytesPreserved": true,
+  "productionIntegrated": false
+}

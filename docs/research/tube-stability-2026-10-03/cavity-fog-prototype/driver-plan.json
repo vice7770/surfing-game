@@ -1,0 +1,399 @@
+{
+  "schema": 1,
+  "overallSeconds": 60,
+  "basePath": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/tube-frozen-render.mjs",
+  "baseSha256": "8babd6f3a9edb0dc92434e5df57fb7302a6412d6fcf88eabc652cb5158b9f487",
+  "driverSha256": "7bc73083535604e9db242a0efc49649e0fe9bbc61e33a2aea91601376c3d4df7",
+  "helperSha256": "5315625e7be418d28a18d37a6cdee25620d534602d3af24603d9f3c4a1986a4c",
+  "witnessPath": "/private/tmp/tube-cavity-witness.json",
+  "witnessSha256": "17c251e10dc1bb49e532e18b829e059d15661185c4b1ea997fbdda1af3d7dd53",
+  "manifestPath": "/private/tmp/surf-cavity-fog-20261003/cavity-fog-manifest.json",
+  "manifestSha256": "8f2275fd2422de6432b24abe66bdb1650a9b035826e9c84bb155e5a94aebece4",
+  "productionChanged": false,
+  "targets": [
+    {
+      "variant": "baseline",
+      "url": "http://localhost:4201/",
+      "dir": "/private/tmp/surf-tube-stability-current-20261003",
+      "patches": [
+        {
+          "name": "absolute-cdp",
+          "beforeSha256": "a6d65153af2ca7429aa59dfd268e2c297d9e3500718cafe99c3f11ba31ca2816",
+          "afterSha256": "77eaba394e7af03b5b7bc6175841c2be20e6ec643531b1a9a7a1d126c423844c"
+        },
+        {
+          "name": "canonical-export-name",
+          "beforeSha256": "c5013a5acc5a7e4d42ca1a66eabe8b94fd01aa774435decbaf107cf6cd503862",
+          "afterSha256": "7c66e01714040abc72c66571bd4922668f7f1b07093187dbbebe0d246b14627e"
+        },
+        {
+          "name": "canonical-bounds-name",
+          "beforeSha256": "773e61198ea15c1c8bf16f9a34d84ea22c1e9da4d4849dd28310253aa1b15c63",
+          "afterSha256": "94c59bf59f23bc7d2e519791913c24c89a50c25b9de9f9fcb1e04acb28fe7d89"
+        },
+        {
+          "name": "index-transport-oracle",
+          "beforeSha256": "eb2cf29b7e49a3b5daef21edc8fea778de0be47ada2b9c1a342899753e8888b2",
+          "afterSha256": "de8725b87d8110820eed7d795afdeab8d2fc4e0ca278e08a5bffe93ca5adce63"
+        },
+        {
+          "name": "index-transport-hash",
+          "beforeSha256": "45cdfc88c4b335429f13bee411fb99e8b3647c046be4448dab6a03ef2711d734",
+          "afterSha256": "b962c90de3e75ad0cf16be1360f83ab2892517a659c9ea3247e9ac9f3b7c0840"
+        },
+        {
+          "name": "base-fixtures",
+          "beforeSha256": "2a8d9e7242fa2dfe34eacd47c229a19268480a77ccb2751aeee188869720f507",
+          "afterSha256": "0f69720ca7ef163ed4c4a4c0d7698e080c9cec89e4a82522999995e779559a93"
+        },
+        {
+          "name": "four-cameras-per-state",
+          "beforeSha256": "78c0f2d12f627cb33eb272dce6d24372a4707ea1c404385affde07f2ab786e25",
+          "afterSha256": "ea3ad8ce46f6f18fd1e54cce7a7b4754b9288888210e36651cfbbc8b5d30d33e"
+        },
+        {
+          "name": "camera-near",
+          "beforeSha256": "258fafbf4ff68267b74177b176463dec51e51bf1f0c2098c06e993de81fe7767",
+          "afterSha256": "a2d48222b9b2e24b7b6aa50285cf0cc9bd1f0d54461bcd6a6c7c0db7b06049a0"
+        },
+        {
+          "name": "own-camera-distinct",
+          "beforeSha256": "059b66d8663587f99bd0780b2b84897a384f004bf6c00b344a11f131404293d9",
+          "afterSha256": "4c13635e3828ae6f3d3f4181f9253b600708a49e375001b0aab568edc0194307"
+        },
+        {
+          "name": "expected-index-payload",
+          "beforeSha256": "b16d6cb58395c2acda680f48119dd8281febed086263459c8e94d90bf4755a7d",
+          "afterSha256": "777ee07f82b5d5ceca57bcc66779f22543adb13a8446b772c19c93e5f75365cb"
+        },
+        {
+          "name": "real-prototype-draw",
+          "beforeSha256": "1171a0ead0c509f6869a00ed16ce7dea0b3f49d1e22ca79bc48111815ba4de22",
+          "afterSha256": "1b0ec6aff0bea0bfb2de654dfa77027def9a1cffc6208f130c2aaef8daf81dae"
+        },
+        {
+          "name": "fog-helper-install",
+          "beforeSha256": "9a2be1d32112d1e9682a19c28ae004db9f0f78c23572e94ac2b02a5f6f800e74",
+          "afterSha256": "a0dfe0a0e87fcaad1ef60d663d215ca9bbc21f97fe9f3c670565da26b0885d2c"
+        },
+        {
+          "name": "signature-fog",
+          "beforeSha256": "63f911a79327219b2702068f37b4f935ac060da914a7f9b95ec8cb590c71a686",
+          "afterSha256": "d35de637fb440f0c40086a7d2680acc119bc5d47fa6178a05ac06f8f718ac726"
+        },
+        {
+          "name": "observation-reset",
+          "beforeSha256": "dbe03139646f888aec6f7c0ae502f7f302f8d65905dc905e76d8b67d68d78f4b",
+          "afterSha256": "a07d09a9df8799fad642b246dc374008930257f9550d0786e6717351eb02ed20"
+        },
+        {
+          "name": "native-sequence",
+          "beforeSha256": "41b994c43f31e7e8ebc9dfc93f5c04ff7f933e39377c637919ff931f4cb9eb25",
+          "afterSha256": "98a1842c57319556f803f1ac2f5a4db8ce7190e0846354d79ba121a1178889bf"
+        },
+        {
+          "name": "caustic-repeat-report",
+          "beforeSha256": "47b0000d9a83847d453285c63dc501cd716191ecb2098814010eda00a225a43d",
+          "afterSha256": "d23b3d9f45429231611c1fb52cf40262dfa9e49cbeddf879c32c4baebd577f1c"
+        },
+        {
+          "name": "caustic-repeat-not-force",
+          "beforeSha256": "953c58970aa63cbdc5785ede3bce96d61fc701783f1221a44f2279058f0447b6",
+          "afterSha256": "268df839811381725e9de6814bf0283d910e8c95aa80cd0e0aaf14662b9bdadb"
+        },
+        {
+          "name": "variant-instrument",
+          "beforeSha256": "7e62122feed54314c1927cde6e74ea49cab6604924729c3d217424017aaccc42",
+          "afterSha256": "6f42582008f9e44c6651110e840c6e6027c2e8e7b48d36b4011d1779c9b191b0"
+        },
+        {
+          "name": "plan-source-label",
+          "beforeSha256": "e091e2043b8f9bd875f54fd0b028f51b0d4a0a2eb6790aedce0108c78e241b66",
+          "afterSha256": "f8db87885b8f43eec63487d967ba5deb946f152787ca7aaaef09a0607f41ad95"
+        },
+        {
+          "name": "plan-method",
+          "beforeSha256": "e045decd06275c506a54d155820ed71fed775302200325400802df015db19766",
+          "afterSha256": "26919843b0e113bf0dfef6d1f2c949bdc756b68fba443affc637a9b8bdc71943"
+        },
+        {
+          "name": "plan-limits-canonical",
+          "beforeSha256": "6790ec15d2c6cbd9a209f58328f6e4968ba5a81849130cb58c21cb3e34d9257f",
+          "afterSha256": "10cf199e9df3d0f0cfa1c7fe0afcbdb28e25e8b581ceeb89732424ea87a76e5c"
+        },
+        {
+          "name": "plan-limit-fft",
+          "beforeSha256": "87b675ab104337cd5d4222392f0aee861b27cdd54d033f1b96f145be96fcb65d",
+          "afterSha256": "c5ca10282e51be445e877a26e66cb67fb6830b59ab7a20359e0cb8d95a88eef5"
+        },
+        {
+          "name": "provenance",
+          "beforeSha256": "c47a4a9fecf9eb46d628f140dde18d3f317c858cf30c15717d23d4c69e488f58",
+          "afterSha256": "1ed88e3b693342943a63315f0304a1e3acfb27e3e7460b84863e6f6ab3c096a7"
+        }
+      ],
+      "sha256": "b0c24a659ec4759070f3bdbca3122eaa6d0b0c0544f2f718c718a8d7a03d9bb7"
+    },
+    {
+      "variant": "candidate",
+      "url": "http://localhost:4207/",
+      "dir": "/private/tmp/surf-cavity-fog-20261003/dist",
+      "patches": [
+        {
+          "name": "absolute-cdp",
+          "beforeSha256": "a6d65153af2ca7429aa59dfd268e2c297d9e3500718cafe99c3f11ba31ca2816",
+          "afterSha256": "77eaba394e7af03b5b7bc6175841c2be20e6ec643531b1a9a7a1d126c423844c"
+        },
+        {
+          "name": "canonical-export-name",
+          "beforeSha256": "c5013a5acc5a7e4d42ca1a66eabe8b94fd01aa774435decbaf107cf6cd503862",
+          "afterSha256": "7c66e01714040abc72c66571bd4922668f7f1b07093187dbbebe0d246b14627e"
+        },
+        {
+          "name": "canonical-bounds-name",
+          "beforeSha256": "773e61198ea15c1c8bf16f9a34d84ea22c1e9da4d4849dd28310253aa1b15c63",
+          "afterSha256": "94c59bf59f23bc7d2e519791913c24c89a50c25b9de9f9fcb1e04acb28fe7d89"
+        },
+        {
+          "name": "index-transport-oracle",
+          "beforeSha256": "eb2cf29b7e49a3b5daef21edc8fea778de0be47ada2b9c1a342899753e8888b2",
+          "afterSha256": "de8725b87d8110820eed7d795afdeab8d2fc4e0ca278e08a5bffe93ca5adce63"
+        },
+        {
+          "name": "index-transport-hash",
+          "beforeSha256": "45cdfc88c4b335429f13bee411fb99e8b3647c046be4448dab6a03ef2711d734",
+          "afterSha256": "b962c90de3e75ad0cf16be1360f83ab2892517a659c9ea3247e9ac9f3b7c0840"
+        },
+        {
+          "name": "base-fixtures",
+          "beforeSha256": "2a8d9e7242fa2dfe34eacd47c229a19268480a77ccb2751aeee188869720f507",
+          "afterSha256": "0f69720ca7ef163ed4c4a4c0d7698e080c9cec89e4a82522999995e779559a93"
+        },
+        {
+          "name": "four-cameras-per-state",
+          "beforeSha256": "78c0f2d12f627cb33eb272dce6d24372a4707ea1c404385affde07f2ab786e25",
+          "afterSha256": "ea3ad8ce46f6f18fd1e54cce7a7b4754b9288888210e36651cfbbc8b5d30d33e"
+        },
+        {
+          "name": "camera-near",
+          "beforeSha256": "258fafbf4ff68267b74177b176463dec51e51bf1f0c2098c06e993de81fe7767",
+          "afterSha256": "a2d48222b9b2e24b7b6aa50285cf0cc9bd1f0d54461bcd6a6c7c0db7b06049a0"
+        },
+        {
+          "name": "own-camera-distinct",
+          "beforeSha256": "059b66d8663587f99bd0780b2b84897a384f004bf6c00b344a11f131404293d9",
+          "afterSha256": "4c13635e3828ae6f3d3f4181f9253b600708a49e375001b0aab568edc0194307"
+        },
+        {
+          "name": "expected-index-payload",
+          "beforeSha256": "b16d6cb58395c2acda680f48119dd8281febed086263459c8e94d90bf4755a7d",
+          "afterSha256": "777ee07f82b5d5ceca57bcc66779f22543adb13a8446b772c19c93e5f75365cb"
+        },
+        {
+          "name": "real-prototype-draw",
+          "beforeSha256": "1171a0ead0c509f6869a00ed16ce7dea0b3f49d1e22ca79bc48111815ba4de22",
+          "afterSha256": "1b0ec6aff0bea0bfb2de654dfa77027def9a1cffc6208f130c2aaef8daf81dae"
+        },
+        {
+          "name": "fog-helper-install",
+          "beforeSha256": "9a2be1d32112d1e9682a19c28ae004db9f0f78c23572e94ac2b02a5f6f800e74",
+          "afterSha256": "a0dfe0a0e87fcaad1ef60d663d215ca9bbc21f97fe9f3c670565da26b0885d2c"
+        },
+        {
+          "name": "signature-fog",
+          "beforeSha256": "63f911a79327219b2702068f37b4f935ac060da914a7f9b95ec8cb590c71a686",
+          "afterSha256": "d35de637fb440f0c40086a7d2680acc119bc5d47fa6178a05ac06f8f718ac726"
+        },
+        {
+          "name": "observation-reset",
+          "beforeSha256": "dbe03139646f888aec6f7c0ae502f7f302f8d65905dc905e76d8b67d68d78f4b",
+          "afterSha256": "a07d09a9df8799fad642b246dc374008930257f9550d0786e6717351eb02ed20"
+        },
+        {
+          "name": "native-sequence",
+          "beforeSha256": "41b994c43f31e7e8ebc9dfc93f5c04ff7f933e39377c637919ff931f4cb9eb25",
+          "afterSha256": "98a1842c57319556f803f1ac2f5a4db8ce7190e0846354d79ba121a1178889bf"
+        },
+        {
+          "name": "caustic-repeat-report",
+          "beforeSha256": "47b0000d9a83847d453285c63dc501cd716191ecb2098814010eda00a225a43d",
+          "afterSha256": "d23b3d9f45429231611c1fb52cf40262dfa9e49cbeddf879c32c4baebd577f1c"
+        },
+        {
+          "name": "caustic-repeat-not-force",
+          "beforeSha256": "953c58970aa63cbdc5785ede3bce96d61fc701783f1221a44f2279058f0447b6",
+          "afterSha256": "268df839811381725e9de6814bf0283d910e8c95aa80cd0e0aaf14662b9bdadb"
+        },
+        {
+          "name": "variant-instrument",
+          "beforeSha256": "7e62122feed54314c1927cde6e74ea49cab6604924729c3d217424017aaccc42",
+          "afterSha256": "80c54e29237109be3daedee0ddd5a64f42e4bfe3f39a7e7e2d00ca4ea0e08272"
+        },
+        {
+          "name": "plan-source-label",
+          "beforeSha256": "e091e2043b8f9bd875f54fd0b028f51b0d4a0a2eb6790aedce0108c78e241b66",
+          "afterSha256": "f8db87885b8f43eec63487d967ba5deb946f152787ca7aaaef09a0607f41ad95"
+        },
+        {
+          "name": "plan-method",
+          "beforeSha256": "e045decd06275c506a54d155820ed71fed775302200325400802df015db19766",
+          "afterSha256": "26919843b0e113bf0dfef6d1f2c949bdc756b68fba443affc637a9b8bdc71943"
+        },
+        {
+          "name": "plan-limits-canonical",
+          "beforeSha256": "6790ec15d2c6cbd9a209f58328f6e4968ba5a81849130cb58c21cb3e34d9257f",
+          "afterSha256": "10cf199e9df3d0f0cfa1c7fe0afcbdb28e25e8b581ceeb89732424ea87a76e5c"
+        },
+        {
+          "name": "plan-limit-fft",
+          "beforeSha256": "87b675ab104337cd5d4222392f0aee861b27cdd54d033f1b96f145be96fcb65d",
+          "afterSha256": "c5ca10282e51be445e877a26e66cb67fb6830b59ab7a20359e0cb8d95a88eef5"
+        },
+        {
+          "name": "provenance",
+          "beforeSha256": "c47a4a9fecf9eb46d628f140dde18d3f317c858cf30c15717d23d4c69e488f58",
+          "afterSha256": "bd22db15296858a6d6937b8aea261a270138d9890b651ff9b64645075aa3736a"
+        }
+      ],
+      "sha256": "9946a2409be70729b4eec8eb885eb0277aaf4de703c6c6481c439a6fc06ac861"
+    }
+  ],
+  "views": [
+    {
+      "at": 10,
+      "kind": "lower-air",
+      "position": [
+        114.49167762756348,
+        0.8355403826597486,
+        -9.801540737152099
+      ],
+      "rawHeight": 1.0507383408111823,
+      "rawUnderwater": true,
+      "expectedBaseline": true,
+      "expectedCandidate": false,
+      "classifierContract": "verified opaque bounded drawn air",
+      "floor": 0.720342424508315,
+      "ceiling": 1.4365744900703492,
+      "top": 1.6417848043640417
+    },
+    {
+      "at": 10,
+      "kind": "under-floor",
+      "position": [
+        114.49167762756348,
+        0.520342424508315,
+        -9.801540737152099
+      ],
+      "rawHeight": 1.0507383408111823,
+      "rawUnderwater": true,
+      "expectedBaseline": true,
+      "expectedCandidate": true,
+      "classifierContract": "unchanged raw-height fallback",
+      "floor": 0.720342424508315,
+      "ceiling": 1.4365744900703492,
+      "top": 1.6417848043640417
+    },
+    {
+      "at": 10,
+      "kind": "roof-band",
+      "position": [
+        114.49167762756348,
+        1.5391796472171955,
+        -9.801540737152099
+      ],
+      "rawHeight": 1.0507383408111823,
+      "rawUnderwater": false,
+      "expectedBaseline": false,
+      "expectedCandidate": false,
+      "classifierContract": "unchanged raw-height fallback",
+      "floor": 0.720342424508315,
+      "ceiling": 1.4365744900703492,
+      "top": 1.6417848043640417
+    },
+    {
+      "at": 10,
+      "kind": "outside",
+      "position": [
+        114.49167762756348,
+        0.7178456827595765,
+        -28.95175552368164
+      ],
+      "rawHeight": 0.9178456827595765,
+      "rawUnderwater": true,
+      "expectedBaseline": true,
+      "expectedCandidate": true,
+      "classifierContract": "unchanged raw-height fallback",
+      "floor": 0.720342424508315,
+      "ceiling": 1.4365744900703492,
+      "top": 1.6417848043640417
+    },
+    {
+      "at": 20,
+      "kind": "lower-air",
+      "position": [
+        46.045549392700195,
+        1.1391468675184453,
+        -108.53816902160645
+      ],
+      "rawHeight": 1.4997664889319497,
+      "rawUnderwater": true,
+      "expectedBaseline": true,
+      "expectedCandidate": false,
+      "classifierContract": "verified opaque bounded drawn air",
+      "floor": 0.8785272461049408,
+      "ceiling": 2.538703744411462,
+      "top": 2.9154485034384026
+    },
+    {
+      "at": 20,
+      "kind": "under-floor",
+      "position": [
+        46.045549392700195,
+        0.6785272461049408,
+        -108.53816902160645
+      ],
+      "rawHeight": 1.4997664889319497,
+      "rawUnderwater": true,
+      "expectedBaseline": true,
+      "expectedCandidate": true,
+      "classifierContract": "unchanged raw-height fallback",
+      "floor": 0.8785272461049408,
+      "ceiling": 2.538703744411462,
+      "top": 2.9154485034384026
+    },
+    {
+      "at": 20,
+      "kind": "roof-band",
+      "position": [
+        46.045549392700195,
+        2.7270761239249324,
+        -108.53816902160645
+      ],
+      "rawHeight": 1.4997664889319497,
+      "rawUnderwater": false,
+      "expectedBaseline": false,
+      "expectedCandidate": false,
+      "classifierContract": "unchanged raw-height fallback",
+      "floor": 0.8785272461049408,
+      "ceiling": 2.538703744411462,
+      "top": 2.9154485034384026
+    },
+    {
+      "at": 20,
+      "kind": "outside",
+      "position": [
+        46.045549392700195,
+        -0.786751569689008,
+        -136.9835662841797
+      ],
+      "rawHeight": -0.586751569689008,
+      "rawUnderwater": true,
+      "expectedBaseline": true,
+      "expectedCandidate": true,
+      "classifierContract": "unchanged raw-height fallback",
+      "floor": 0.8785272461049408,
+      "ceiling": 2.538703744411462,
+      "top": 2.9154485034384026
+    }
+  ]
+}

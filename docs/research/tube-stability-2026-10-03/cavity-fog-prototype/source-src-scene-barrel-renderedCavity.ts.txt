@@ -1,0 +1,141 @@
+import { CONTACT } from '../../wave/barrel/sweptContact';
+import { LOFT_SAMPLES, type LoftResult } from '../../wave/barrel/sweptLoft';
+import type { SurfaceGrid } from '../WaterSurface';
+
+const S = LOFT_SAMPLES;
+const Q = S - 1;
+// The contact's half-open first-ray tie moves this far into the owning strip.
+const NUDGE = 1e-9;
+
+/**
+ * Only an opaque current footprint can certify shaded cavity geometry. The shader samples node-centred texels
+ * with linear filtering; every node with positive interpolation weight must be 255. Partial dither bands retain
+ * the raw fog classification. This avoids relying on rounded interpolation values near one.
+ */
+export function opaqueBarrelColumn(mask: Uint8Array, grid: SurfaceGrid, x: number, z: number): boolean {
+  const gx = (x - grid.xMin) / grid.spacing, gz = (z - grid.zMin) / grid.spacing;
+  if (!(mask instanceof Uint8Array) || !Number.isFinite(gx) || !Number.isFinite(gz) || !(grid.spacing > 0)
+    || !Number.isInteger(grid.nx) || !Number.isInteger(grid.nz) || grid.nx < 2 || grid.nz < 2 || mask.length < grid.nx * grid.nz
+    || gx < 0 || gz < 0 || gx >= grid.nx - 1 || gz >= grid.nz - 1) return false;
+  const ix = Math.floor(gx), iz = Math.floor(gz), tx = gx - ix, tz = gz - iz;
+  const i = iz * grid.nx + ix;
+  return mask[i] === 255 && (tx === 0 || mask[i + 1] === 255)
+    && (tz === 0 || (mask[i + grid.nx] === 255 && (tx === 0 || mask[i + grid.nx + 1] === 255)));
+}
+
+/**
+ * A rendering-only bounded-air test on an already drawn loft. It neither builds a second loft nor caches mutable
+ * geometry. The caller must establish a fresh visible mesh and opaque local mask. Three finite crossings describe
+ * the closed face/underside/top cavity; other columns retain the ordinary height-field classification. Drawing and
+ * held physical contact can differ during collapse. Cost is the slice scan plus 133 quads per ray-owning candidate.
+ */
+export class RenderedCavityQuery {
+  private readonly ys = new Float64Array(CONTACT.crossings);
+  private count = 0;
+  private ambiguous = false;
+
+  contains(loft: LoftResult, x: number, y: number, z: number): boolean {
+    const { positions: p, sliceCount, vertexCount, indexCount, indices } = loft;
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)
+      || !Number.isInteger(sliceCount) || sliceCount < 2 || vertexCount !== sliceCount * S
+      || p.length < 3 * vertexCount || indices.length < indexCount || indexCount === 0) return false;
+    let expected = 0;
+    for (let s = 0; s + 1 < sliceCount; s += 1) {
+      if (loft.sliceJoined[s] === 1) expected += 6 * Q;
+      else if (loft.sliceJoined[s] !== 0) return false;
+    }
+    if (indexCount !== expected) return false;
+
+    let found = false;
+    let air = false;
+    let first = 0;
+    for (let s = 0; s + 1 < sliceCount; s += 1) {
+      if (loft.sliceJoined[s] !== 1) continue;
+      const base = first;
+      first += 6 * Q;
+      const a = s * S;
+      const b = a + S;
+      const ax = loft.sliceRayX[s], az = loft.sliceRayZ[s];
+      const bx = loft.sliceRayX[s + 1], bz = loft.sliceRayZ[s + 1];
+      if (!Number.isFinite(ax) || !Number.isFinite(az) || !Number.isFinite(bx) || !Number.isFinite(bz)
+        || !Number.isFinite(p[3 * a]) || !Number.isFinite(p[3 * a + 2])
+        || !Number.isFinite(p[3 * b]) || !Number.isFinite(p[3 * b + 2])
+        || loft.sliceFront[s] !== loft.sliceFront[s + 1]) return false;
+      const sideA = (x - p[3 * a]) * az - (z - p[3 * a + 2]) * ax;
+      const sideB = (x - p[3 * b]) * bz - (z - p[3 * b + 2]) * bx;
+      if (!Number.isFinite(sideA) || !Number.isFinite(sideB)) return false;
+      if (sideA < 0 || sideB >= 0) continue;
+      const nudge = sideA === 0 ? NUDGE : 0;
+      const px = x + nudge * az;
+      const pz = z - nudge * ax;
+      this.count = 0;
+      this.ambiguous = false;
+      for (let j = 0; j < Q; j += 1) {
+        const k = base + 6 * j;
+        const v = a + j, w = b + j;
+        // Only the actual complete indexed strip may answer. Do not infer a surface from unused isolated vertices.
+        if (indices[k] !== v || indices[k + 1] !== w || indices[k + 2] !== v + 1
+          || indices[k + 3] !== v + 1 || indices[k + 4] !== w || indices[k + 5] !== w + 1) return false;
+        this.triangle(p, v, w, v + 1, px, pz);
+        this.triangle(p, v + 1, w, w + 1, px, pz);
+        if (this.ambiguous) return false;
+      }
+      if (this.count === 0) continue;
+      // Unlike physical contact's first-front priority, uncertain overlapping rendered columns do not override fog.
+      if (found) return false;
+      found = true;
+      if (this.count !== 3) continue;
+      const { ys } = this;
+      for (let i = 1; i < this.count; i += 1) {
+        for (let k = i; k > 0 && ys[k - 1] > ys[k]; k -= 1) {
+          const value = ys[k]; ys[k] = ys[k - 1]; ys[k - 1] = value;
+        }
+      }
+      air = ys[0] < y && y < ys[1] && ys[1] < ys[2];
+    }
+    return found && air;
+  }
+
+  private triangle(p: Float32Array, a: number, b: number, c: number, x: number, z: number): void {
+    for (let k = 0; k < 3; k += 1) {
+      const v = k === 0 ? a : k === 1 ? b : c;
+      if (!Number.isFinite(p[3 * v]) || !Number.isFinite(p[3 * v + 1]) || !Number.isFinite(p[3 * v + 2])) {
+        this.ambiguous = true;
+        return;
+      }
+    }
+    const area = this.edge(p, a, b, p[3 * c], p[3 * c + 2]);
+    if (area === 0) {
+      // Collapsed authored edges away from the query are harmless. A query on their projection is ambiguous.
+      if (x >= Math.min(p[3 * a], p[3 * b], p[3 * c]) && x <= Math.max(p[3 * a], p[3 * b], p[3 * c])
+        && z >= Math.min(p[3 * a + 2], p[3 * b + 2], p[3 * c + 2]) && z <= Math.max(p[3 * a + 2], p[3 * b + 2], p[3 * c + 2])
+        && this.edge(p, a, b, x, z) === 0 && this.edge(p, b, c, x, z) === 0) this.ambiguous = true;
+      return;
+    }
+    const sign = area > 0 ? 1 : -1;
+    const wa = this.edge(p, b, c, x, z);
+    if (!this.inside(wa, b, c, sign)) return;
+    const wb = this.edge(p, c, a, x, z);
+    if (!this.inside(wb, c, a, sign)) return;
+    const wc = this.edge(p, a, b, x, z);
+    if (!this.inside(wc, a, b, sign)) return;
+    const value = (wa * p[3 * a + 1] + wb * p[3 * b + 1] + wc * p[3 * c + 1]) / area;
+    if (!Number.isFinite(value) || this.count === this.ys.length) {
+      this.ambiguous = true;
+      return;
+    }
+    this.ys[this.count++] = value;
+  }
+
+  /** Identical edge ordering and half-open triangle ties to SweptContact; winding changes preserve ownership. */
+  private edge(p: Float32Array, u: number, v: number, x: number, z: number): number {
+    const lo = u < v ? u : v;
+    const hi = u < v ? v : u;
+    const value = (p[3 * hi] - p[3 * lo]) * (z - p[3 * lo + 2]) - (p[3 * hi + 2] - p[3 * lo + 2]) * (x - p[3 * lo]);
+    return u < v ? value : -value;
+  }
+
+  private inside(value: number, u: number, v: number, sign: number): boolean {
+    return value * sign > 0 || (value === 0 && (sign > 0) === (u < v));
+  }
+}

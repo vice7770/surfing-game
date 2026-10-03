@@ -1,0 +1,123 @@
+// Guarded adapter of the existing held harness. Explicit --run=true is required; no production source edits.
+import {createHash} from 'node:crypto';
+import {readFileSync,writeFileSync,mkdirSync,mkdtempSync,rmSync} from 'node:fs';
+import {join,resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {spawn} from 'node:child_process';
+import {installFogHeldAudit} from './tube-cavity-fog-held-helper.mjs';
+
+const root='/Users/regina/Desktop/Projects/surfing-game',basePath=join(root,'scripts/browser/tube-frozen-render.mjs');
+const witnessPath='/private/tmp/tube-cavity-witness.json',manifestPath='/private/tmp/surf-cavity-fog-20261003/cavity-fog-manifest.json';
+const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+const argv=process.argv.slice(2),args=Object.fromEntries(argv.map(a=>{if(!a.startsWith('--')||!a.includes('='))throw Error('Use --name=value');const i=a.indexOf('=');return[a.slice(2,i),a.slice(i+1)];}));
+const base=readFileSync(basePath,'utf8'),witness=JSON.parse(readFileSync(witnessPath)),manifest=JSON.parse(readFileSync(manifestPath));
+const seconds=Number(args.timeoutSeconds??60);if(!Number.isFinite(seconds)||seconds<20||seconds>60)throw Error('Overall deadline must be20–60 seconds');
+const out=resolve(args.out??'/private/tmp/tube-cavity-fog-held'),targets=[
+  {variant:'baseline',url:args.before??'http://localhost:4201/',dir:args.beforeDir??'/private/tmp/surf-tube-stability-current-20261003'},
+  {variant:'candidate',url:args.after??'http://localhost:4207/',dir:args.afterDir??'/private/tmp/surf-cavity-fog-20261003/dist'},
+];
+const cameras=Object.fromEntries(witness.fixtures.map(f=>[f.at,{inputSha256:f.inputSha256,geometryHash:f.geometryHash,
+  column:f.witness,lower:f.at===10?.8355403826597486:1.1391468675184453,camera:f.cameras.cavity}]));
+const expectedUploadedIndices=function(loft){
+  const p=loft.positions,n=loft.normals,from=loft.indices,into=new Uint32Array(loft.indexCount);
+  for(let i=0;i+2<into.length;i+=3){
+    const a=from[i],b=from[i+1],c=from[i+2],a3=3*a,b3=3*b,c3=3*c;
+    const e1x=p[b3]-p[a3],e1y=p[b3+1]-p[a3+1],e1z=p[b3+2]-p[a3+2];
+    const e2x=p[c3]-p[a3],e2y=p[c3+1]-p[a3+1],e2z=p[c3+2]-p[a3+2];
+    const facing=(e1y*e2z-e1z*e2y)*(n[a3]+n[b3]+n[c3])+(e1z*e2x-e1x*e2z)*(n[a3+1]+n[b3+1]+n[c3+1])+(e1x*e2y-e1y*e2x)*(n[a3+2]+n[b3+2]+n[c3+2]);
+    into[i]=a;into[i+1]=facing<0?c:b;into[i+2]=facing<0?b:c;
+  }
+  return into;
+};
+function derive(variant){
+  let source=base;const patches=[];
+  function patch(name,before,after){if(source.split(before).length!==2)throw Error('Held harness marker changed: '+name);source=source.replace(before,after);patches.push({name,beforeSha256:sha(before),afterSha256:sha(after)});}
+  patch('absolute-cdp',"from './cdp.mjs'",`from ${JSON.stringify(pathToFileURL(join(root,'scripts/browser/cdp.mjs')).href)}`);
+  patch('canonical-export-name','const baseline = readGeometry(join(baselineDir, `at-${at}.baseline.json`), data, inputHash);','const baseline = readGeometry(join(baselineDir, `at-${at}.current.json`), data, inputHash);');
+  patch('canonical-bounds-name','JSON.parse(readFileSync(join(baselineDir, `at-${at}.baseline.json`)))','JSON.parse(readFileSync(join(baselineDir, `at-${at}.current.json`)))');
+  patch('index-transport-oracle','function readGeometry(path, input, inputHash) {',`const expectedUploadedIndices=${expectedUploadedIndices.toString()};\nfunction readGeometry(path, input, inputHash) {`);
+  patch('index-transport-hash','mask: pack(mask), maskGrid: data.maskGrid },','mask: pack(mask), maskGrid: data.maskGrid, expectedUploadedIndexSha256: sha(expectedUploadedIndices(loft)) },');
+  patch('base-fixtures','const fixtures = frames.map(at => {','const baseFixtures = frames.map(at => {');
+  patch('four-cameras-per-state','if (fixtures.some(f => !sameGrid',`const fogCameras=${JSON.stringify(cameras)};
+const fixtures=baseFixtures.flatMap(f=>{
+  const w=fogCameras[f.at];if(!w||w.inputSha256!==f.fileSha256||w.geometryHash!==f.baseline.metadata.geometryHash)throw Error('Air witness is not exact canonical fixture/geometry');
+  const p=f.baseline.payload.loft.positions;
+  const bytes=Buffer.from(p.base64,'base64'),actual=new Float32Array(bytes.buffer,bytes.byteOffset,p.length);
+  let minZ=Infinity;for(let i=2;i<actual.length;i+=3)minZ=Math.min(minZ,actual[i]);
+  const packed=f.payload.surface,sbytes=Buffer.from(packed.base64,'base64'),surface=new Float32Array(sbytes.buffer,sbytes.byteOffset,packed.length),g=f.payload.grid;
+  const heightAt=(x,z)=>{const gx=(x-g.xMin)/g.spacing,gz=(z-g.zMin)/g.spacing;if(gx<0||gz<0||gx>=g.nx-1||gz>=g.nz-1)return 0;const ix=Math.floor(gx),iz=Math.floor(gz),tx=gx-ix,tz=gz-iz,o=2*(iz*g.nx+ix),row=2*g.nx;return(surface[o]*(1-tx)+surface[o+2]*tx)*(1-tz)+(surface[o+row]*(1-tx)+surface[o+row+2]*tx)*tz;};
+  const x=w.column.position[0],z=w.column.position[2],h=heightAt(x,z),c=w.column.contact;
+  const definitions=[
+    {kind:'lower-air',position:[x,w.lower,z],boundedIndexedAir:true,contact:{inWater:false,floorY:c.floorY,ceilingY:c.ceilingY,ceilingTopY:c.ceilingTopY}},
+    {kind:'under-floor',position:[x,c.floorY-.2,z],boundedIndexedAir:false,contact:{inWater:true,floorY:c.floorY,ceilingY:c.ceilingY,ceilingTopY:c.ceilingTopY}},
+    {kind:'roof-band',position:[x,(c.ceilingY+c.ceilingTopY)/2,z],boundedIndexedAir:false,contact:{inWater:true,floorY:c.floorY,ceilingY:c.ceilingY,ceilingTopY:c.ceilingTopY}},
+    {kind:'outside',position:[x,heightAt(x,minZ-2)-.2,minZ-2],boundedIndexedAir:false,contact:{answered:false,outsideIndexedBounds:true}},
+  ];
+  return definitions.map(c=>({...f,at:f.at+'-'+c.kind,physicalAt:f.at,view:c.kind,payload:{...f.payload,camera:{...w.camera,position:c.position,near:.02,far:3000,fov:52,
+    fogControl:{...c,knownColumn:{front:w.column.front,strip:w.column.strip,row:w.column.row,hits:w.column.hits},rawBilinearHeight:c.kind==='outside'?heightAt(c.position[0],c.position[2]):h,
+      inputSha256:f.fileSha256,geometryHash:f.baseline.metadata.geometryHash,contactOracle:'Retained exact fixture column, independently verified by swept-contact unit tests. No contact rebuild in renderer.'}}}}));
+});
+if (fixtures.some(f => !sameGrid`);
+  patch('camera-near','    camera.fov = window.__tubeFrozenOptions.fov ?? camera.fov;','    camera.fov = fixture.camera.fov ?? camera.fov;\n    camera.near = fixture.camera.near ?? camera.near;\n    camera.far = fixture.camera.far ?? camera.far;');
+  patch('own-camera-distinct','    window.__tubeFrozenCamera = camera;','    window.__tubeFrozenCamera = camera;\n    // An unused high physical camera proves renderView uses the actual supplied lower view.\n    mode.camera.camera.position.set(camera.position.x,20,camera.position.z);');
+  patch('expected-index-payload','mask: decode(payload.mask) };','mask: decode(payload.mask), expectedUploadedIndexSha256: payload.expectedUploadedIndexSha256 };');
+  patch('real-prototype-draw',`  mode.drawBarrel = () => {
+    if (!current) throw Error('No frozen geometry selected');
+    mesh.setLook('rich');
+    mesh.update(current.loft);
+    mesh.mesh.visible = !hidden;
+    water.setBarrelMask(maskDisabled ? null : current.mask);
+  };`,`  // Decode expected geometry only; all actual loft/mask/uploads and freshness come from the real prototype draw.
+  mode.drawBarrel = Object.getPrototypeOf(mode).drawBarrel.bind(mode);`);
+  patch('fog-helper-install',"  return { initializedCompute: 'cpu' };",`  const fogAudit=(${installFogHeldAudit.toString()})({d,mode,water,mesh,host,hash,getCurrent:()=>current,getFixture:()=>fixture});\n  return { initializedCompute: 'cpu', fogAudit };`);
+  patch('signature-fog','    const common = { seaTime: host.snapshot.status.seaTime,','    const common = { fogAudit: await window.__tubeFogAudit.signature(), seaTime: host.snapshot.status.seaTime,');
+  patch('observation-reset','    hidden = hide;','    if(hide)throw Error("Fog QA never hides actual geometry");\n    window.__tubeFogAudit.begin();\n    hidden = hide;');
+  patch('native-sequence',"sequence: ['baseline', 'baseline-hidden', ...(args['baseline-only'] === 'true' ? [] : ['current']), 'baseline-repeat'],","sequence: ['normal', 'normal-repeat'],");
+  patch('caustic-repeat-report',"    const tubeChangesImage = shots.find(s => s.mode === 'baseline-hidden').pngSha256 !== firstShot.pngSha256;","    const tubeChangesImage = null; // Native caustics remain enabled; image repeat variability is reported explicitly.");
+  patch('caustic-repeat-not-force',"    if (!commonUnchanged || !baselineStateExact || !baselineImageExact || !tubeChangesImage) throw Error('Held rendering failed visibility/state/image checks');","    if (!commonUnchanged || !baselineStateExact) throw Error('Held native geometry/source/fog state failed repeat checks');");
+  patch('variant-instrument',"const instrument = `(()=>{let seed=0x5eed;",`const instrument = \`(()=>{window.__tubeFogVariant=${JSON.stringify(variant)};let seed=0x5eed;`);
+  patch('plan-source-label','  sourceHashes: Object.fromEntries(localSources.map(path => [path, sha(readFileSync(path))])),','  harnessContextSourceHashes: Object.fromEntries(localSources.map(path => [path, sha(readFileSync(path))])),');
+  patch('plan-method',"  method: 'Ordinary diagnostics page with RAF blocked before startup; same rich renderer, fixed camera/sea clock, exported loft+mask swapped without simulation advance; baseline PNG/state must repeat exactly. With mask diagnostics, normal captures are output0 instrumented originals, not byte-identical unwrapped shader source.',","  method: 'Ordinary diagnostics page with RAF blocked; original prototype drawBarrel builds from the exact held host/source/front, generated/uploaded geometry and mask must equal canonical exports. Actual supplied view drives native fog; caustics remain enabled and PNG repeat variability is reported.',");
+  patch('plan-limits-canonical',"    'This isolates exported geometry and its mask. It does not replay a moving tube, rider contact, live frame rate, or reproduce every missing effect from the original screenshot.',","    'This validates held actual rendered cavity fog and real draw/upload provenance. It does not replay moving tubes, listener audio, rider contact or live frame rate. Native caustic image repeat differences are reported; there is no forced above-water flag.',");
+  patch('plan-limit-fft',"    'Saved GPU status selects actual fixed-sea-time FFT shading; CPU is used only for zero-spin-up initialization. CPU textures are hashed, FFT render-target pixels are covered by the exact baseline PNG repeat.',","    'Saved GPU status selects actual fixed-sea-time FFT shading; CPU is used only for zero-spin-up initialization. CPU textures are hashed, exact geometry/source/fog repeats are required, and native-caustic PNG repeat variability is recorded.',");
+  patch('provenance','const plan = { schema: 1,',`const plan = { fogTrial:{variant:${JSON.stringify(variant)},realPrototypeDraw:true,normalShaders:true,nativeCaustics:true,privateFreshnessWritten:false,sourcePatchSha256:${JSON.stringify(manifest.patchSha256)},limits:'Held camera/fog proof only. Captured flow/particles absent; no solver advances, physics claim or FPS measurement.'}, schema: 1,`);
+  const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;new AsyncFunction(source.replace(/^import .*;$/gm,'').replace(/import\.meta/g,'({})'));
+  return{source,patches,sha256:sha(source)};
+}
+const derived=targets.map(t=>({...t,...derive(t.variant)}));
+const plannedViews=witness.fixtures.flatMap(f=>{
+  const geometry=JSON.parse(readFileSync('/private/tmp/tube-geometry-final/at-'+f.at+'.current.json'));
+  const capture=JSON.parse(readFileSync('/private/tmp/tube-live-original/at-'+f.at+'.json'));
+  if(geometry.geometryHash!==f.geometryHash||sha(readFileSync('/private/tmp/tube-live-original/at-'+f.at+'.json'))!==f.inputSha256)throw Error('Planned camera input/geometry provenance changed');
+  const g=capture.waterGrid,surface=capture.surfaceData;
+  const heightAt=(x,z)=>{const gx=(x-g.xMin)/g.spacing,gz=(z-g.zMin)/g.spacing;if(gx<0||gz<0||gx>=g.nx-1||gz>=g.nz-1)return 0;const ix=Math.floor(gx),iz=Math.floor(gz),tx=gx-ix,tz=gz-iz,o=2*(iz*g.nx+ix),row=2*g.nx;return(surface[o]*(1-tx)+surface[o+2]*tx)*(1-tz)+(surface[o+row]*(1-tx)+surface[o+row+2]*tx)*tz;};
+  let minZ=Infinity;for(let i=2;i<geometry.loft.positions.length;i+=3)minZ=Math.min(minZ,geometry.loft.positions[i]);
+  const [x,,z]=f.witness.position,c=f.witness.contact;
+  return [
+    {kind:'lower-air',position:[x,cameras[f.at].lower,z]},
+    {kind:'under-floor',position:[x,c.floorY-.2,z]},
+    {kind:'roof-band',position:[x,(c.ceilingY+c.ceilingTopY)/2,z]},
+    {kind:'outside',position:[x,heightAt(x,minZ-2)-.2,minZ-2]},
+  ].map(v=>{const rawHeight=heightAt(v.position[0],v.position[2]),rawUnderwater=v.position[1]<rawHeight-.1;
+    return {at:f.at,...v,rawHeight,rawUnderwater,expectedBaseline:rawUnderwater,expectedCandidate:v.kind==='lower-air'?false:rawUnderwater,
+      classifierContract:v.kind==='lower-air'?'verified opaque bounded drawn air':'unchanged raw-height fallback',floor:c.floorY,ceiling:c.ceilingY,top:c.ceilingTopY};});
+});
+const plan={schema:1,overallSeconds:seconds,basePath,baseSha256:sha(base),driverSha256:sha(readFileSync(new URL(import.meta.url))),helperSha256:sha(readFileSync(new URL('./tube-cavity-fog-held-helper.mjs',import.meta.url))),
+  witnessPath,witnessSha256:sha(readFileSync(witnessPath)),manifestPath,manifestSha256:sha(readFileSync(manifestPath)),productionChanged:false,targets:derived.map(({source,...t})=>t),
+  views:plannedViews};
+if(args.emitDir){const dir=resolve(args.emitDir);mkdirSync(dir,{recursive:true});for(const t of derived)writeFileSync(join(dir,t.variant+'.mjs'),t.source);}
+if(args.run!=='true'){console.log(JSON.stringify({...plan,browserLaunched:false},null,2));process.exit(0);}
+mkdirSync(out,{recursive:true});writeFileSync(join(out,'driver-plan.json'),JSON.stringify(plan,null,2)+'\n');
+const scratch=mkdtempSync('/private/tmp/tube-fog-driver-'),started=Date.now();
+try{
+  for(let i=0;i<derived.length;i++){
+    const t=derived[i],remaining=seconds-(Date.now()-started)/1000,budget=i===0?Math.min(28,remaining-2):remaining-2;if(budget<10)throw Error('Pair deadline leaves insufficient initialization time');
+    const script=join(scratch,t.variant+'.mjs');writeFileSync(script,t.source);
+    const runArgs=[`--url=${t.url}`,`--dir=${t.dir}`,`--out=${join(out,t.variant)}`,`--timeoutSeconds=${Math.floor(budget)}`,'--baseline-only=true','--mask-diagnostic=false','--freeze-caustics=false',`--cdp=${i===0?9477:9478}`,
+      `--width=${args.width??1280}`,`--height=${args.height??720}`];
+    const child=spawn(process.execPath,[script,...runArgs],{cwd:root,stdio:'inherit',detached:true});let timer;
+    const stopOwned=()=>{try{process.kill(-child.pid,'SIGTERM');}catch(error){if(error.code!=='ESRCH')throw error;}};
+    const code=await new Promise((resolveExit,reject)=>{timer=setTimeout(stopOwned,(budget+.5)*1000);child.once('error',reject);child.once('exit',code=>resolveExit(code??1));});clearTimeout(timer);stopOwned();
+    if(code!==0)throw Error('Held '+t.variant+' failed; retained report has details');
+  }
+}finally{rmSync(scratch,{recursive:true,force:true});}

@@ -1,0 +1,68 @@
+// Observation only: never changes shaders, scene fog, visibility, physics or private draw provenance.
+export function installFogHeldAudit({d,mode,water,mesh,host,hash,getCurrent,getFixture}) {
+  const gl=d.canvas.getContext('webgl2'), observed=new Map(), programs=new Map();
+  const programInfo=program=>{
+    let info=programs.get(program);
+    if(!info){
+      const fragment=(gl.getAttachedShaders(program)??[]).filter(s=>gl.getShaderParameter(s,gl.SHADER_TYPE)===gl.FRAGMENT_SHADER).map(s=>gl.getShaderSource(s)).join('\n');
+      info={id:programs.size+1,fragment,usesFog:/^\s*#define\s+USE_FOG\b/m.test(fragment),fogExp2:/^\s*#define\s+FOG_EXP2\b/m.test(fragment)};
+      programs.set(program,info);
+    }
+    return info;
+  };
+  for(const [label,object]of [['water',water.mesh],['rich-water',water.patch],['swept',mesh.mesh]]){
+    if(!object)continue;
+    const original=object.onAfterRender;
+    object.onAfterRender=function(...args){
+      original?.apply(this,args);
+      if(gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING)!==null)return;
+      const program=gl.getParameter(gl.CURRENT_PROGRAM);if(!program)return;
+      const info=programInfo(program),uniform=name=>{const location=gl.getUniformLocation(program,name);if(location===null)return null;const value=gl.getUniform(program,location);return ArrayBuffer.isView(value)?Array.from(value):value;};
+      observed.set(label+':'+info.id,{label,program:info.id,usesFog:info.usesFog,fogExp2:info.fogExp2,
+        materialFog:args[4]?.fog??this.material?.fog,fogColor:uniform('fogColor'),fogDensity:uniform('fogDensity'),fogNear:uniform('fogNear'),fogFar:uniform('fogFar')});
+    };
+  }
+  function maskInfo(x,z){
+    const grid=water.barrelMaskGrid,mask=water.materialUniforms.waterBarrelMask.value.image.data;
+    const gx=(x-grid.xMin)/grid.spacing,gz=(z-grid.zMin)/grid.spacing;
+    if(gx<0||gz<0||gx>=grid.nx-1||gz>=grid.nz-1)return{inside:false,opaque:false};
+    const ix=Math.floor(gx),iz=Math.floor(gz),tx=gx-ix,tz=gz-iz,i=iz*grid.nx+ix;
+    const nodes=[mask[i],mask[i+1],mask[i+grid.nx],mask[i+grid.nx+1]];
+    const weights=[(1-tx)*(1-tz),tx*(1-tz),(1-tx)*tz,tx*tz];
+    return{inside:true,nodes,weights,alpha:nodes.reduce((sum,v,k)=>sum+weights[k]*v/255,0),opaque:nodes.every((v,k)=>weights[k]===0||v===255)};
+  }
+  async function signature(){
+    const expected=getCurrent(),fixture=getFixture(),actual=mode.barrelLoft,camera=window.__tubeFrozenCamera;
+    if(!actual)throw Error('Actual prototype draw did not expose a loft');
+    for(const [name,count]of [['positions',3*actual.vertexCount],['normals',3*actual.vertexCount],['indices',actual.indexCount],['mask',actual.vertexCount]]){
+      if(expected.loft[name].length!==count||await hash(actual[name],count)!==await hash(expected.loft[name]))throw Error('Actual drawn '+name+' differs from canonical exports');
+    }
+    if(mesh.facesOut!==true||mesh.sheetShown!==true)throw Error('Canonical rich sheet facing/visibility state changed');
+    const geometry=mesh.mesh.geometry;
+    if(geometry.drawRange.start!==0||geometry.drawRange.count!==actual.indexCount)throw Error('Actual complete uploaded index prefix missing');
+    if(await hash(geometry.index.array,actual.indexCount)!==expected.expectedUploadedIndexSha256)throw Error('Uploaded facing-normalized indices differ from canonical export transport');
+    if(await hash(water.materialUniforms.waterBarrelMask.value.image.data)!==await hash(expected.mask))throw Error('Actual rasterized mask differs from canonical exports');
+    const position=camera.position,rawHeight=host.heightAt(position.x,position.z),rawUnderwater=position.y<rawHeight-.1;
+    const control=fixture.camera.fogControl,fog=mode.scene.fog;
+    const shaderPrograms=[];
+    for(const record of observed.values()){
+      const info=[...programs.values()].find(p=>p.id===record.program);
+      shaderPrograms.push({...record,fragmentSha256:await hash(new TextEncoder().encode(info.fragment))});
+    }
+    const result={control,currentView:{position:position.toArray(),quaternion:camera.quaternion.toArray(),projection:camera.projectionMatrix.toArray()},
+      ownCamera:mode.camera.camera.position.toArray(),ownCameraBelow:mode.cameraBelowSurface(),rawHeight,rawUnderwater,tubeCount:host.snapshot.tubeCount,
+      seaTime:host.snapshot.status.seaTime,sourceTime:water.materialUniforms.waterTime.value,maskActive:water.materialUniforms.waterBarrelMaskActive.value,
+      localMask:maskInfo(position.x,position.z),actualPrototypeDraw:true,generatedCanonicalPrefixesExact:true,
+      snapshotClockUnchanged:host.snapshot.status.seaTime===fixture.status.seaTime,drawRange:{...geometry.drawRange},
+      fog:{present:fog!==null&&fog!==undefined,type:fog?.isFogExp2?'FogExp2':fog?.isFog?'Fog':null,color:fog?.color?.toArray(),density:fog?.density,near:fog?.near,far:fog?.far},shaderPrograms};
+    const expectedFog=window.__tubeFogVariant==='candidate'&&control.kind==='lower-air'?false:rawUnderwater;
+    if(result.fog.present!==expectedFog)throw Error('Unexpected actual fog for '+control.kind);
+    if(!shaderPrograms.some(p=>p.label==='water'||p.label==='rich-water'||p.label==='swept'))throw Error('No actual water/barrel shader fog observation');
+    if(shaderPrograms.some(p=>p.materialFog&&p.usesFog!==expectedFog))throw Error('Actual shader USE_FOG differs from scene classification');
+    if(control.kind==='lower-air'&&(!result.localMask.opaque||!control.boundedIndexedAir||control.contact.inWater!==false))throw Error('Lower camera is not an opaque indexed/contact cavity witness');
+    if(!result.snapshotClockUnchanged||result.sourceTime!==result.seaTime||result.tubeCount!==0)throw Error('Held physical source changed');
+    return result;
+  }
+  window.__tubeFogAudit={begin:()=>observed.clear(),signature};
+  return{method:'Original PhysicalMode.prototype.drawBarrel; exact canonical generated/uploaded prefixes; native fog shader observation only.',shaderSourcesModified:false,privateDrawProvenanceModified:false};
+}

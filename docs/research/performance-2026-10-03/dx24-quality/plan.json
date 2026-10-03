@@ -1,0 +1,76 @@
+{
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "shared": {
+    "seed": 8761,
+    "componentCount": 64,
+    "alongShore": 320,
+    "fineSpacing": 1,
+    "spinUpPeriods": 2,
+    "startSeaTime": 400
+  },
+  "checkpoints": [
+    5,
+    15,
+    30
+  ],
+  "fixedStep": 0.016666666666666666,
+  "steps": 1800,
+  "renderSpacing": 1,
+  "variants": [
+    {
+      "label": "dx2",
+      "url": "http://127.0.0.1:4201/?diagnostics=&graphics=high&renderSpacing=1",
+      "physicsGrid": {
+        "nx": 160,
+        "nz": 725
+      }
+    },
+    {
+      "label": "dx4",
+      "url": "http://127.0.0.1:4201/?diagnostics=&graphics=high&renderSpacing=1",
+      "physicsGrid": {
+        "nx": 80,
+        "nz": 725
+      }
+    }
+  ],
+  "numericApproximation": "Alongshore dx2→dx4; fineSpacing1 and all other sea inputs fixed. Not exact semantics or FPS.",
+  "expectedNative": {
+    "viewport": "1708 × 926",
+    "browserDpr": 2,
+    "renderPixelRatio": 1.75,
+    "canvas": "2989 × 1620",
+    "graphics": {
+      "preset": "high",
+      "renderScale": 1,
+      "nativePixelDensity": true,
+      "frameLimit": 60,
+      "waterSimulation": "auto",
+      "seaDetail": "rich",
+      "caustics": true,
+      "sprayMist": true,
+      "oceanView": "far",
+      "foam": "detailed",
+      "waterLook": "rich",
+      "particles": "high"
+    },
+    "contactSamplingM": 1,
+    "independentMaskSamplingM": 1
+  }
+}

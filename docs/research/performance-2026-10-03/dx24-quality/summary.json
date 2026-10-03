@@ -1,0 +1,1537 @@
+{
+  "schema": 1,
+  "rawSha256": "6b2835f20196acaffab54ee88307f5f46503471af466c2f9ae172e5b31ee2a3a",
+  "rawValid": true,
+  "limitations": [
+    "Finite/clocks/source guards passing is not physics-quality acceptance or FPS evidence.",
+    "NearBreak sums use all of each cell whose center is inside the inclusive ROI. The grids cover different actual ROI support.",
+    "Peak matching uses sampled local maxima at 0.5 m z intervals; unmatched peaks remain visible.",
+    "cuts includes all unjoined adjacent slices, not only overlap removal. overlapsOpen is distinct from overlaps.",
+    "endWeightMax is the helper endpoint indicator, not an independently measured seam gap."
+  ],
+  "runs": [
+    {
+      "label": "dx2",
+      "cells": 116000,
+      "completedSteps": 1800,
+      "initialClock": {
+        "solverTime": 36,
+        "seaTimeOffset": 364,
+        "seaTime": 400
+      },
+      "finalClock": {
+        "solverTime": 65.9999999999983,
+        "seaTimeOffset": 364,
+        "seaTime": 429.9999999999983
+      },
+      "advancingWallSeconds": 48.095,
+      "events": {
+        "firstFrontAfterStartSeconds": 4,
+        "firstNewLipLaunchSeconds": 4.45,
+        "firstFrontThrowClockAdvanceSeconds": 4.433333333333334
+      },
+      "observed": {
+        "viewport": "1708 × 926",
+        "dpr": 2,
+        "canvas": "2989 × 1620",
+        "vertexNormals": false,
+        "particles": "high",
+        "waterLook": "rich",
+        "graphics": {
+          "preset": "high",
+          "renderScale": 1,
+          "nativePixelDensity": true,
+          "frameLimit": 60,
+          "waterSimulation": "auto",
+          "seaDetail": "rich",
+          "caustics": true,
+          "sprayMist": true,
+          "oceanView": "far",
+          "foam": "detailed",
+          "waterLook": "rich",
+          "particles": "high"
+        },
+        "workerStart": {
+          "config": {
+            "spot": "padang",
+            "seed": 8761,
+            "significantHeight": 3.8,
+            "peakPeriod": 18,
+            "directionDegrees": 0,
+            "spreading": 150,
+            "tide": 0,
+            "windSpeed": 0,
+            "stage": 2,
+            "compute": "auto",
+            "componentCount": 64,
+            "alongShore": 320,
+            "fineSpacing": 1,
+            "spinUpPeriods": 2,
+            "startSeaTime": 400,
+            "dx": 2
+          },
+          "contact": true,
+          "rider": false,
+          "renderSpacing": 1,
+          "barrelCaseCount": 4
+        }
+      },
+      "contactProof": {
+        "start": {
+          "config": {
+            "spot": "padang",
+            "seed": 8761,
+            "significantHeight": 3.8,
+            "peakPeriod": 18,
+            "directionDegrees": 0,
+            "spreading": 150,
+            "tide": 0,
+            "windSpeed": 0,
+            "stage": 2,
+            "compute": "auto",
+            "componentCount": 64,
+            "alongShore": 320,
+            "fineSpacing": 1,
+            "spinUpPeriods": 2,
+            "startSeaTime": 400,
+            "dx": 2
+          },
+          "contact": true,
+          "rider": false,
+          "renderSpacing": 1,
+          "barrelCaseCount": 4
+        },
+        "activeTimedTimelineSamples": 26,
+        "nonemptyGeometryCheckpoints": [
+          5,
+          15,
+          30
+        ]
+      },
+      "bundle": {
+        "root": "/private/tmp/surf-tube-stability-current-20261003",
+        "verified": [
+          {
+            "file": "index.html",
+            "sha256": "df9f5b5b9064eeb635ad5ce1838f2f06aee37b9fe1481f8ab1c5ac360571552b"
+          },
+          {
+            "file": "assets/WorkerSurfZone-DsoxOk5J.js",
+            "sha256": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606"
+          },
+          {
+            "file": "assets/devStepping-CLfXNMh-.js",
+            "sha256": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/index-Dhp1E5Jm.js",
+            "sha256": "cff7f235604df399fe95d2f872a877ca95fca141a66e588c0d9a5eb8efc90cf3"
+          },
+          {
+            "file": "assets/jevRecorder-DKAk_GxP.js",
+            "sha256": "aa5a9ec59dc47571b87c9a62901bca07c54e39430b6cafe5d4abe8d05dc61300"
+          },
+          {
+            "file": "assets/particleBench-UFIniUOA.js",
+            "sha256": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e"
+          },
+          {
+            "file": "assets/rideRecorder-DdzH6W7j.js",
+            "sha256": "cc1f6cc0fb23c4aa8416dbe123564f02239e4db55fbc14f97d2d51072c540674"
+          },
+          {
+            "file": "assets/surfZoneWorker-BH6FhcTP.js",
+            "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+          },
+          {
+            "file": "assets/waterSheet-heYJdhwA.js",
+            "sha256": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+          }
+        ],
+        "sha256": "7c2e14bade277ece4f1100a09dda8fe731073a41572a6619cfeb2970328fc7a3",
+        "worker": "assets/surfZoneWorker-BH6FhcTP.js",
+        "workerSha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5",
+        "containsRowScratch": true,
+        "containsSideTimes": true
+      },
+      "roiColumns": {
+        "count": 40,
+        "firstCenter": -89,
+        "lastCenter": -11,
+        "fullCellSupport": [
+          -90,
+          -10
+        ],
+        "widthM": 80
+      },
+      "domainWet": [
+        {
+          "at": 0,
+          "areaM2": 403065.9715600611
+        },
+        {
+          "at": 5,
+          "areaM2": 403179.9715600611
+        },
+        {
+          "at": 15,
+          "areaM2": 403329.9715600611
+        },
+        {
+          "at": 30,
+          "areaM2": 403597.9715600611
+        }
+      ]
+    },
+    {
+      "label": "dx4",
+      "cells": 58000,
+      "completedSteps": 1800,
+      "initialClock": {
+        "solverTime": 36,
+        "seaTimeOffset": 364,
+        "seaTime": 400
+      },
+      "finalClock": {
+        "solverTime": 65.9999999999983,
+        "seaTimeOffset": 364,
+        "seaTime": 429.9999999999983
+      },
+      "advancingWallSeconds": 37.395,
+      "events": {
+        "firstFrontAfterStartSeconds": 4,
+        "firstNewLipLaunchSeconds": 7.95,
+        "firstFrontThrowClockAdvanceSeconds": 4.5
+      },
+      "observed": {
+        "viewport": "1708 × 926",
+        "dpr": 2,
+        "canvas": "2989 × 1620",
+        "vertexNormals": false,
+        "particles": "high",
+        "waterLook": "rich",
+        "graphics": {
+          "preset": "high",
+          "renderScale": 1,
+          "nativePixelDensity": true,
+          "frameLimit": 60,
+          "waterSimulation": "auto",
+          "seaDetail": "rich",
+          "caustics": true,
+          "sprayMist": true,
+          "oceanView": "far",
+          "foam": "detailed",
+          "waterLook": "rich",
+          "particles": "high"
+        },
+        "workerStart": {
+          "config": {
+            "spot": "padang",
+            "seed": 8761,
+            "significantHeight": 3.8,
+            "peakPeriod": 18,
+            "directionDegrees": 0,
+            "spreading": 150,
+            "tide": 0,
+            "windSpeed": 0,
+            "stage": 2,
+            "compute": "auto",
+            "componentCount": 64,
+            "alongShore": 320,
+            "fineSpacing": 1,
+            "spinUpPeriods": 2,
+            "startSeaTime": 400,
+            "dx": 4
+          },
+          "contact": true,
+          "rider": false,
+          "renderSpacing": 1,
+          "barrelCaseCount": 4
+        }
+      },
+      "contactProof": {
+        "start": {
+          "config": {
+            "spot": "padang",
+            "seed": 8761,
+            "significantHeight": 3.8,
+            "peakPeriod": 18,
+            "directionDegrees": 0,
+            "spreading": 150,
+            "tide": 0,
+            "windSpeed": 0,
+            "stage": 2,
+            "compute": "auto",
+            "componentCount": 64,
+            "alongShore": 320,
+            "fineSpacing": 1,
+            "spinUpPeriods": 2,
+            "startSeaTime": 400,
+            "dx": 4
+          },
+          "contact": true,
+          "rider": false,
+          "renderSpacing": 1,
+          "barrelCaseCount": 4
+        },
+        "activeTimedTimelineSamples": 24,
+        "nonemptyGeometryCheckpoints": [
+          15,
+          30
+        ]
+      },
+      "bundle": {
+        "root": "/private/tmp/surf-tube-stability-current-20261003",
+        "verified": [
+          {
+            "file": "index.html",
+            "sha256": "df9f5b5b9064eeb635ad5ce1838f2f06aee37b9fe1481f8ab1c5ac360571552b"
+          },
+          {
+            "file": "assets/WorkerSurfZone-DsoxOk5J.js",
+            "sha256": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606"
+          },
+          {
+            "file": "assets/devStepping-CLfXNMh-.js",
+            "sha256": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/index-Dhp1E5Jm.js",
+            "sha256": "cff7f235604df399fe95d2f872a877ca95fca141a66e588c0d9a5eb8efc90cf3"
+          },
+          {
+            "file": "assets/jevRecorder-DKAk_GxP.js",
+            "sha256": "aa5a9ec59dc47571b87c9a62901bca07c54e39430b6cafe5d4abe8d05dc61300"
+          },
+          {
+            "file": "assets/particleBench-UFIniUOA.js",
+            "sha256": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e"
+          },
+          {
+            "file": "assets/rideRecorder-DdzH6W7j.js",
+            "sha256": "cc1f6cc0fb23c4aa8416dbe123564f02239e4db55fbc14f97d2d51072c540674"
+          },
+          {
+            "file": "assets/surfZoneWorker-BH6FhcTP.js",
+            "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+          },
+          {
+            "file": "assets/waterSheet-heYJdhwA.js",
+            "sha256": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+          }
+        ],
+        "sha256": "7c2e14bade277ece4f1100a09dda8fe731073a41572a6619cfeb2970328fc7a3",
+        "worker": "assets/surfZoneWorker-BH6FhcTP.js",
+        "workerSha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5",
+        "containsRowScratch": true,
+        "containsSideTimes": true
+      },
+      "roiColumns": {
+        "count": 21,
+        "firstCenter": -90,
+        "lastCenter": -10,
+        "fullCellSupport": [
+          -92,
+          -8
+        ],
+        "widthM": 84
+      },
+      "domainWet": [
+        {
+          "at": 0,
+          "areaM2": 403111.97156021744
+        },
+        {
+          "at": 5,
+          "areaM2": 403235.97156021744
+        },
+        {
+          "at": 15,
+          "areaM2": 403367.97156021744
+        },
+        {
+          "at": 30,
+          "areaM2": 403635.97156021744
+        }
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "at": 0,
+      "clocks": [
+        true,
+        true,
+        true
+      ],
+      "breakBandHeightM": {
+        "count": 8421,
+        "rms": 0.045370686408623136,
+        "p95": 0.09266086317309619,
+        "max": 0.2440635206005708
+      },
+      "breakBandSlope": {
+        "count": 8421,
+        "rms": 0.014878150339074168,
+        "p95": 0.027991669749951757,
+        "max": 0.1500208806782477
+      },
+      "crestNeighborhoodHeightM": {
+        "count": 1386,
+        "rms": 0.042013752345047846,
+        "p95": 0.08219202662601699,
+        "max": 0.13346894788817876
+      },
+      "matchedPeaks": 42,
+      "unmatchedPeaks": 0,
+      "matchedPeakHeightM": {
+        "count": 42,
+        "rms": 0.03613994687354217,
+        "p95": 0.0692025419600455,
+        "max": 0.0858810397703813
+      },
+      "matchedPeakPhaseM": {
+        "count": 42,
+        "rms": 0.3181045051401759,
+        "p95": 0.5,
+        "max": 1
+      },
+      "nearBreak": {
+        "wetAreaM2": {
+          "fine": 16000,
+          "coarse": 16800,
+          "difference": 800,
+          "relative": 0.050000000000000044
+        },
+        "activeBreakingIndicatorAreaM2": {
+          "fine": 1054,
+          "coarse": 1060,
+          "difference": 6,
+          "relative": 0.005692599620493288
+        },
+        "strengthWeightedAreaM2": {
+          "fine": 736.2645182339475,
+          "coarse": 733.7606604844332,
+          "difference": -2.5038577495142817,
+          "relative": -0.0034007584061230833
+        },
+        "denseFoamAreaM2": {
+          "fine": 0,
+          "coarse": 0,
+          "difference": 0,
+          "relative": null
+        },
+        "residualFoamAreaM2": {
+          "fine": 0,
+          "coarse": 0,
+          "difference": 0,
+          "relative": null
+        },
+        "totalFoamAreaM2": {
+          "fine": 0,
+          "coarse": 0,
+          "difference": 0,
+          "relative": null
+        },
+        "airVolumeM3": {
+          "fine": 0,
+          "coarse": 0,
+          "difference": 0,
+          "relative": null
+        },
+        "plumeDepthAreaM3": {
+          "fine": 0,
+          "coarse": 0,
+          "difference": 0,
+          "relative": null
+        },
+        "voidFractionAreaM2": {
+          "fine": 0,
+          "coarse": 0,
+          "difference": 0,
+          "relative": null
+        }
+      },
+      "domain": {
+        "wetAreaM2": {
+          "fine": 403065.9715600611,
+          "coarse": 403111.97156021744,
+          "difference": 46.00000015634578,
+          "relative": 0.00011412523855169887
+        },
+        "activeBreakingIndicatorAreaM2": {
+          "fine": 6894,
+          "coarse": 7092,
+          "difference": 198,
+          "relative": 0.02872062663185382
+        },
+        "strengthWeightedAreaM2": {
+          "fine": 4139.317089894728,
+          "coarse": 4351.749283104204,
+          "difference": 212.43219320947537,
+          "relative": 0.0513205895069222
+        },
+        "denseFoamAreaM2": {
+          "fine": 0,
+          "coarse": 0,
+          "difference": 0,
+          "relative": null
+        },
+        "residualFoamAreaM2": {
+          "fine": 0,
+          "coarse": 0,
+          "difference": 0,
+          "relative": null
+        },
+        "totalFoamAreaM2": {
+          "fine": 0,
+          "coarse": 0,
+          "difference": 0,
+          "relative": null
+        },
+        "airVolumeM3": {
+          "fine": 0,
+          "coarse": 0,
+          "difference": 0,
+          "relative": null
+        },
+        "plumeDepthAreaM3": {
+          "fine": 0,
+          "coarse": 0,
+          "difference": 0,
+          "relative": null
+        },
+        "voidFractionAreaM2": {
+          "fine": 0,
+          "coarse": 0,
+          "difference": 0,
+          "relative": null
+        }
+      },
+      "launches": {
+        "dx2": {
+          "count": 0,
+          "volumeM3": 0,
+          "jets": 0,
+          "rollers": 0,
+          "columnWidthProxyM": 0
+        },
+        "dx4": {
+          "count": 0,
+          "volumeM3": 0,
+          "jets": 0,
+          "rollers": 0,
+          "columnWidthProxyM": 0
+        }
+      },
+      "onset": {
+        "fine": {
+          "newColumns": 0,
+          "newWidthM": 0,
+          "firstSolverTime": null,
+          "lastSolverTime": null
+        },
+        "coarse": {
+          "newColumns": 0,
+          "newWidthM": 0,
+          "firstSolverTime": null,
+          "lastSolverTime": null
+        }
+      },
+      "front": {
+        "fine": {
+          "points": 0,
+          "fronts": 0,
+          "crestSpanM": 0,
+          "activeColumnWidthM": 0,
+          "thrownColumnWidthM": 0,
+          "activeJetClaimAreaM2": 0,
+          "newJoinedPoints": 0,
+          "newThrownPoints": 0,
+          "firstNewJoinedSolverTime": null,
+          "firstNewThrownSolverTime": null
+        },
+        "coarse": {
+          "points": 0,
+          "fronts": 0,
+          "crestSpanM": 0,
+          "activeColumnWidthM": 0,
+          "thrownColumnWidthM": 0,
+          "activeJetClaimAreaM2": 0,
+          "newJoinedPoints": 0,
+          "newThrownPoints": 0,
+          "firstNewJoinedSolverTime": null,
+          "firstNewThrownSolverTime": null
+        }
+      },
+      "geometry": {
+        "fine": {
+          "present": true,
+          "vertexCount": 0,
+          "indexCount": 0,
+          "sliceCount": 0,
+          "samples": 0,
+          "joins": 0,
+          "cuts": 0,
+          "overlaps": 0,
+          "overlapsOpen": 0,
+          "overlapOpenWeight": 0,
+          "clamps": 0,
+          "clampedLookups": 0,
+          "endWeightMax": 0,
+          "maxRayTurnDegrees": 0,
+          "minY": null,
+          "maxY": null,
+          "regions": {
+            "back": {
+              "tested": 0,
+              "reversed": 0
+            },
+            "roof": {
+              "tested": 0,
+              "reversed": 0
+            },
+            "underside": {
+              "tested": 0,
+              "reversed": 0
+            },
+            "face": {
+              "tested": 0,
+              "reversed": 0
+            },
+            "forwardRest": {
+              "tested": 0,
+              "reversed": 0
+            }
+          },
+          "caveat": "Reversed across-front orientation is a structural fold indicator, not a complete self-intersection/contact test. The same implementation is used in both grids."
+        },
+        "coarse": {
+          "present": true,
+          "vertexCount": 0,
+          "indexCount": 0,
+          "sliceCount": 0,
+          "samples": 0,
+          "joins": 0,
+          "cuts": 0,
+          "overlaps": 0,
+          "overlapsOpen": 0,
+          "overlapOpenWeight": 0,
+          "clamps": 0,
+          "clampedLookups": 0,
+          "endWeightMax": 0,
+          "maxRayTurnDegrees": 0,
+          "minY": null,
+          "maxY": null,
+          "regions": {
+            "back": {
+              "tested": 0,
+              "reversed": 0
+            },
+            "roof": {
+              "tested": 0,
+              "reversed": 0
+            },
+            "underside": {
+              "tested": 0,
+              "reversed": 0
+            },
+            "face": {
+              "tested": 0,
+              "reversed": 0
+            },
+            "forwardRest": {
+              "tested": 0,
+              "reversed": 0
+            }
+          },
+          "caveat": "Reversed across-front orientation is a structural fold indicator, not a complete self-intersection/contact test. The same implementation is used in both grids."
+        }
+      }
+    },
+    {
+      "at": 5,
+      "clocks": [
+        true,
+        true,
+        true
+      ],
+      "breakBandHeightM": {
+        "count": 8421,
+        "rms": 0.05601338187197249,
+        "p95": 0.10814905443292991,
+        "max": 0.2658649384976617
+      },
+      "breakBandSlope": {
+        "count": 8421,
+        "rms": 0.01680103591301542,
+        "p95": 0.03361858413599768,
+        "max": 0.10098203399292324
+      },
+      "crestNeighborhoodHeightM": {
+        "count": 1298,
+        "rms": 0.08041988060468623,
+        "p95": 0.1682879386378649,
+        "max": 0.2658649384976617
+      },
+      "matchedPeaks": 41,
+      "unmatchedPeaks": 1,
+      "matchedPeakHeightM": {
+        "count": 41,
+        "rms": 0.09579533589009614,
+        "p95": 0.13733481877850728,
+        "max": 0.25239403814567574
+      },
+      "matchedPeakPhaseM": {
+        "count": 41,
+        "rms": 0.3662599370166148,
+        "p95": 0.5,
+        "max": 1
+      },
+      "nearBreak": {
+        "wetAreaM2": {
+          "fine": 16000,
+          "coarse": 16800,
+          "difference": 800,
+          "relative": 0.050000000000000044
+        },
+        "activeBreakingIndicatorAreaM2": {
+          "fine": 1496,
+          "coarse": 1436,
+          "difference": -60,
+          "relative": -0.0401069518716578
+        },
+        "strengthWeightedAreaM2": {
+          "fine": 1022.7571111895377,
+          "coarse": 868.6664329655468,
+          "difference": -154.09067822399084,
+          "relative": -0.15066204530689853
+        },
+        "denseFoamAreaM2": {
+          "fine": 2761.7176112980615,
+          "coarse": 2823.230552565983,
+          "difference": 61.51294126792163,
+          "relative": 0.022273436290616733
+        },
+        "residualFoamAreaM2": {
+          "fine": 471.81370561155063,
+          "coarse": 483.55577778986435,
+          "difference": 11.74207217831372,
+          "relative": 0.024887094288823075
+        },
+        "totalFoamAreaM2": {
+          "fine": 3233.531316909612,
+          "coarse": 3306.7863303558474,
+          "difference": 73.25501344623535,
+          "relative": 0.022654802526003603
+        },
+        "airVolumeM3": {
+          "fine": 477.84524644906736,
+          "coarse": 381.0086888844353,
+          "difference": -96.83655756463207,
+          "relative": -0.20265254972030722
+        },
+        "plumeDepthAreaM3": {
+          "fine": 6840.975363850594,
+          "coarse": 5654.271381855011,
+          "difference": -1186.7039819955826,
+          "relative": -0.17346999789919137
+        },
+        "voidFractionAreaM2": {
+          "fine": 437.89477518350844,
+          "coarse": 428.50535793857057,
+          "difference": -9.389417244937874,
+          "relative": -0.02144217692710093
+        }
+      },
+      "domain": {
+        "wetAreaM2": {
+          "fine": 403179.9715600611,
+          "coarse": 403235.97156021744,
+          "difference": 56.00000015634578,
+          "relative": 0.00013889578874581865
+        },
+        "activeBreakingIndicatorAreaM2": {
+          "fine": 9542,
+          "coarse": 9700,
+          "difference": 158,
+          "relative": 0.016558373506602386
+        },
+        "strengthWeightedAreaM2": {
+          "fine": 5822.072708823835,
+          "coarse": 5384.162067736033,
+          "difference": -437.9106410878012,
+          "relative": -0.0752155912488196
+        },
+        "denseFoamAreaM2": {
+          "fine": 18057.960358393462,
+          "coarse": 18720.5543756284,
+          "difference": 662.5940172349365,
+          "relative": 0.036692627743363015
+        },
+        "residualFoamAreaM2": {
+          "fine": 3581.4373045806524,
+          "coarse": 3638.727873475514,
+          "difference": 57.290568894861735,
+          "relative": 0.015996529890831113
+        },
+        "totalFoamAreaM2": {
+          "fine": 21639.397662974112,
+          "coarse": 22359.282249103897,
+          "difference": 719.884586129785,
+          "relative": 0.03326731165727126
+        },
+        "airVolumeM3": {
+          "fine": 1740.9114247423572,
+          "coarse": 1535.3331205389895,
+          "difference": -205.57830420336768,
+          "relative": -0.11808659606779925
+        },
+        "plumeDepthAreaM3": {
+          "fine": 33247.889386354014,
+          "coarse": 30672.621937979013,
+          "difference": -2575.2674483750015,
+          "relative": -0.07745656930126732
+        },
+        "voidFractionAreaM2": {
+          "fine": 1986.4434543695413,
+          "coarse": 2053.0421419122595,
+          "difference": 66.59868754271815,
+          "relative": 0.03352659618687981
+        }
+      },
+      "launches": {
+        "dx2": {
+          "count": 5,
+          "volumeM3": 4.051685878164424,
+          "jets": 5,
+          "rollers": 0,
+          "columnWidthProxyM": 10
+        },
+        "dx4": {
+          "count": 0,
+          "volumeM3": 0,
+          "jets": 0,
+          "rollers": 0,
+          "columnWidthProxyM": 0
+        }
+      },
+      "onset": {
+        "fine": {
+          "newColumns": 114,
+          "newWidthM": 228,
+          "firstSolverTime": 36.04999923706055,
+          "lastSolverTime": 41
+        },
+        "coarse": {
+          "newColumns": 43,
+          "newWidthM": 172,
+          "firstSolverTime": 36.20000076293945,
+          "lastSolverTime": 40.983333587646484
+        }
+      },
+      "front": {
+        "fine": {
+          "points": 7,
+          "fronts": 1,
+          "crestSpanM": 12.545612905089232,
+          "activeColumnWidthM": 14,
+          "thrownColumnWidthM": 12,
+          "activeJetClaimAreaM2": 113.62957620620725,
+          "newJoinedPoints": 7,
+          "newThrownPoints": 6,
+          "firstNewJoinedSolverTime": 39.99583333333311,
+          "firstNewThrownSolverTime": 40.432133333333084
+        },
+        "coarse": {
+          "points": 1,
+          "fronts": 1,
+          "crestSpanM": 0,
+          "activeColumnWidthM": 4,
+          "thrownColumnWidthM": 4,
+          "activeJetClaimAreaM2": 0,
+          "newJoinedPoints": 1,
+          "newThrownPoints": 1,
+          "firstNewJoinedSolverTime": 39.99583333333311,
+          "firstNewThrownSolverTime": 40.49385735070432
+        }
+      },
+      "geometry": {
+        "fine": {
+          "present": true,
+          "vertexCount": 4422,
+          "indexCount": 25536,
+          "sliceCount": 33,
+          "samples": 134,
+          "joins": 32,
+          "cuts": 0,
+          "overlaps": 0,
+          "overlapsOpen": 0,
+          "overlapOpenWeight": 0,
+          "clamps": 0,
+          "clampedLookups": 13,
+          "endWeightMax": 0,
+          "maxRayTurnDegrees": 1.0240946121848509,
+          "minY": -1.0562719106674194,
+          "maxY": 1.9228017330169678,
+          "regions": {
+            "back": {
+              "tested": 48,
+              "reversed": 0
+            },
+            "roof": {
+              "tested": 768,
+              "reversed": 0
+            },
+            "underside": {
+              "tested": 576,
+              "reversed": 0
+            },
+            "face": {
+              "tested": 576,
+              "reversed": 0
+            },
+            "forwardRest": {
+              "tested": 96,
+              "reversed": 0
+            }
+          },
+          "caveat": "Reversed across-front orientation is a structural fold indicator, not a complete self-intersection/contact test. The same implementation is used in both grids."
+        },
+        "coarse": {
+          "present": true,
+          "vertexCount": 0,
+          "indexCount": 0,
+          "sliceCount": 0,
+          "samples": 0,
+          "joins": 0,
+          "cuts": 0,
+          "overlaps": 0,
+          "overlapsOpen": 0,
+          "overlapOpenWeight": 0,
+          "clamps": 0,
+          "clampedLookups": 0,
+          "endWeightMax": 0,
+          "maxRayTurnDegrees": 0,
+          "minY": null,
+          "maxY": null,
+          "regions": {
+            "back": {
+              "tested": 0,
+              "reversed": 0
+            },
+            "roof": {
+              "tested": 0,
+              "reversed": 0
+            },
+            "underside": {
+              "tested": 0,
+              "reversed": 0
+            },
+            "face": {
+              "tested": 0,
+              "reversed": 0
+            },
+            "forwardRest": {
+              "tested": 0,
+              "reversed": 0
+            }
+          },
+          "caveat": "Reversed across-front orientation is a structural fold indicator, not a complete self-intersection/contact test. The same implementation is used in both grids."
+        }
+      }
+    },
+    {
+      "at": 15,
+      "clocks": [
+        true,
+        true,
+        true
+      ],
+      "breakBandHeightM": {
+        "count": 8421,
+        "rms": 0.0857784511867509,
+        "p95": 0.18864243553588866,
+        "max": 0.48281006841061574
+      },
+      "breakBandSlope": {
+        "count": 8421,
+        "rms": 0.023634899888847666,
+        "p95": 0.05184478786405105,
+        "max": 0.1479799125223246
+      },
+      "crestNeighborhoodHeightM": {
+        "count": 1386,
+        "rms": 0.10048721720605934,
+        "p95": 0.22269819425787762,
+        "max": 0.3072597693466057
+      },
+      "matchedPeaks": 42,
+      "unmatchedPeaks": 0,
+      "matchedPeakHeightM": {
+        "count": 42,
+        "rms": 0.06897391374480513,
+        "p95": 0.10543817344539086,
+        "max": 0.18455279161113713
+      },
+      "matchedPeakPhaseM": {
+        "count": 42,
+        "rms": 0.45643546458763845,
+        "p95": 1,
+        "max": 1
+      },
+      "nearBreak": {
+        "wetAreaM2": {
+          "fine": 16000,
+          "coarse": 16800,
+          "difference": 800,
+          "relative": 0.050000000000000044
+        },
+        "activeBreakingIndicatorAreaM2": {
+          "fine": 1500,
+          "coarse": 1584,
+          "difference": 84,
+          "relative": 0.05600000000000005
+        },
+        "strengthWeightedAreaM2": {
+          "fine": 880.3873005164787,
+          "coarse": 901.5574576128274,
+          "difference": 21.170157096348703,
+          "relative": 0.024046413531782163
+        },
+        "denseFoamAreaM2": {
+          "fine": 3055.0340115197478,
+          "coarse": 3199.6467660138333,
+          "difference": 144.6127544940855,
+          "relative": 0.04733589018936879
+        },
+        "residualFoamAreaM2": {
+          "fine": 1752.056903507517,
+          "coarse": 1804.07314253197,
+          "difference": 52.01623902445294,
+          "relative": 0.02968866988299257
+        },
+        "totalFoamAreaM2": {
+          "fine": 4807.0909150272655,
+          "coarse": 5003.719908545803,
+          "difference": 196.62899351853775,
+          "relative": 0.040903947313303934
+        },
+        "airVolumeM3": {
+          "fine": 707.7495961878541,
+          "coarse": 683.3508919347066,
+          "difference": -24.398704253147457,
+          "relative": -0.03447363924270108
+        },
+        "plumeDepthAreaM3": {
+          "fine": 15164.37723505497,
+          "coarse": 15155.37483882904,
+          "difference": -9.00239622592926,
+          "relative": -0.0005936541993375455
+        },
+        "voidFractionAreaM2": {
+          "fine": 606.5791152541937,
+          "coarse": 604.6255300558914,
+          "difference": -1.9535851983022212,
+          "relative": -0.0032206601730485618
+        }
+      },
+      "domain": {
+        "wetAreaM2": {
+          "fine": 403329.9715600611,
+          "coarse": 403367.97156021744,
+          "difference": 38.00000015634578,
+          "relative": 0.00009421566170586537
+        },
+        "activeBreakingIndicatorAreaM2": {
+          "fine": 9156,
+          "coarse": 9328,
+          "difference": 172,
+          "relative": 0.018785495849716005
+        },
+        "strengthWeightedAreaM2": {
+          "fine": 5234.959809213207,
+          "coarse": 5266.059871561709,
+          "difference": 31.100062348501524,
+          "relative": 0.005940840709754314
+        },
+        "denseFoamAreaM2": {
+          "fine": 22735.78144536258,
+          "coarse": 23133.38661615734,
+          "difference": 397.60517079475903,
+          "relative": 0.017488080264593586
+        },
+        "residualFoamAreaM2": {
+          "fine": 13966.887449452157,
+          "coarse": 14624.157242252428,
+          "difference": 657.2697928002708,
+          "relative": 0.04705914579601278
+        },
+        "totalFoamAreaM2": {
+          "fine": 36702.668894814764,
+          "coarse": 37757.54385840977,
+          "difference": 1054.874963595008,
+          "relative": 0.028741096910912534
+        },
+        "airVolumeM3": {
+          "fine": 5013.280887069108,
+          "coarse": 4501.6737068504735,
+          "difference": -511.6071802186343,
+          "relative": -0.10205037215014956
+        },
+        "plumeDepthAreaM3": {
+          "fine": 144506.20432314463,
+          "coarse": 134468.45940696448,
+          "difference": -10037.744916180149,
+          "relative": -0.069462380270772
+        },
+        "voidFractionAreaM2": {
+          "fine": 3347.5578633094137,
+          "coarse": 3245.674862513749,
+          "difference": -101.88300079566488,
+          "relative": -0.030435023069307898
+        }
+      },
+      "launches": {
+        "dx2": {
+          "count": 38,
+          "volumeM3": 82.57397438925999,
+          "jets": 38,
+          "rollers": 0,
+          "columnWidthProxyM": 76
+        },
+        "dx4": {
+          "count": 18,
+          "volumeM3": 68.29773105462976,
+          "jets": 18,
+          "rollers": 0,
+          "columnWidthProxyM": 72
+        }
+      },
+      "onset": {
+        "fine": {
+          "newColumns": 160,
+          "newWidthM": 320,
+          "firstSolverTime": 36.04999923706055,
+          "lastSolverTime": 48.08333206176758
+        },
+        "coarse": {
+          "newColumns": 80,
+          "newWidthM": 320,
+          "firstSolverTime": 36.20000076293945,
+          "lastSolverTime": 48.266666412353516
+        }
+      },
+      "front": {
+        "fine": {
+          "points": 45,
+          "fronts": 18,
+          "crestSpanM": 55.955304166748235,
+          "activeColumnWidthM": 90,
+          "thrownColumnWidthM": 50,
+          "activeJetClaimAreaM2": 88.77154417774332,
+          "newJoinedPoints": 45,
+          "newThrownPoints": 25,
+          "firstNewJoinedSolverTime": 41.92948934794062,
+          "firstNewThrownSolverTime": 43.531331370755126
+        },
+        "coarse": {
+          "points": 18,
+          "fronts": 10,
+          "crestSpanM": 32.325016676356455,
+          "activeColumnWidthM": 72,
+          "thrownColumnWidthM": 44,
+          "activeJetClaimAreaM2": 108.6648811356747,
+          "newJoinedPoints": 18,
+          "newThrownPoints": 11,
+          "firstNewJoinedSolverTime": 41.923348286086025,
+          "firstNewThrownSolverTime": 43.484012156910374
+        }
+      },
+      "geometry": {
+        "fine": {
+          "present": true,
+          "vertexCount": 14070,
+          "indexCount": 79800,
+          "sliceCount": 105,
+          "samples": 134,
+          "joins": 100,
+          "cuts": 4,
+          "overlaps": 0,
+          "overlapsOpen": 0,
+          "overlapOpenWeight": 0,
+          "clamps": 0,
+          "clampedLookups": 81,
+          "endWeightMax": 0,
+          "maxRayTurnDegrees": 1.0727296807189992,
+          "minY": -1.119114637374878,
+          "maxY": 5.30120849609375,
+          "regions": {
+            "back": {
+              "tested": 261,
+              "reversed": 0
+            },
+            "roof": {
+              "tested": 2016,
+              "reversed": 0
+            },
+            "underside": {
+              "tested": 1512,
+              "reversed": 0
+            },
+            "face": {
+              "tested": 1512,
+              "reversed": 0
+            },
+            "forwardRest": {
+              "tested": 520,
+              "reversed": 0
+            }
+          },
+          "caveat": "Reversed across-front orientation is a structural fold indicator, not a complete self-intersection/contact test. The same implementation is used in both grids."
+        },
+        "coarse": {
+          "present": true,
+          "vertexCount": 9246,
+          "indexCount": 52668,
+          "sliceCount": 69,
+          "samples": 134,
+          "joins": 66,
+          "cuts": 2,
+          "overlaps": 0,
+          "overlapsOpen": 0,
+          "overlapOpenWeight": 0,
+          "clamps": 0,
+          "clampedLookups": 24,
+          "endWeightMax": 0,
+          "maxRayTurnDegrees": 1.0314846618157054,
+          "minY": -0.278097540140152,
+          "maxY": 5.26420783996582,
+          "regions": {
+            "back": {
+              "tested": 218,
+              "reversed": 0
+            },
+            "roof": {
+              "tested": 1472,
+              "reversed": 0
+            },
+            "underside": {
+              "tested": 1104,
+              "reversed": 0
+            },
+            "face": {
+              "tested": 1104,
+              "reversed": 0
+            },
+            "forwardRest": {
+              "tested": 609,
+              "reversed": 0
+            }
+          },
+          "caveat": "Reversed across-front orientation is a structural fold indicator, not a complete self-intersection/contact test. The same implementation is used in both grids."
+        }
+      }
+    },
+    {
+      "at": 30,
+      "clocks": [
+        true,
+        true,
+        true
+      ],
+      "breakBandHeightM": {
+        "count": 8421,
+        "rms": 0.1328290143264347,
+        "p95": 0.2748531533422219,
+        "max": 0.5647147733827698
+      },
+      "breakBandSlope": {
+        "count": 8421,
+        "rms": 0.04104525531704172,
+        "p95": 0.08162764822987727,
+        "max": 0.8042433349661341
+      },
+      "crestNeighborhoodHeightM": {
+        "count": 1386,
+        "rms": 0.12148312005486124,
+        "p95": 0.24890160447222562,
+        "max": 0.3867806659847721
+      },
+      "matchedPeaks": 39,
+      "unmatchedPeaks": 3,
+      "matchedPeakHeightM": {
+        "count": 39,
+        "rms": 0.0882986589978072,
+        "p95": 0.20962107918660422,
+        "max": 0.22764140298058533
+      },
+      "matchedPeakPhaseM": {
+        "count": 39,
+        "rms": 0.560448538317805,
+        "p95": 1,
+        "max": 1
+      },
+      "nearBreak": {
+        "wetAreaM2": {
+          "fine": 16000,
+          "coarse": 16800,
+          "difference": 800,
+          "relative": 0.050000000000000044
+        },
+        "activeBreakingIndicatorAreaM2": {
+          "fine": 1074,
+          "coarse": 1152,
+          "difference": 78,
+          "relative": 0.07262569832402233
+        },
+        "strengthWeightedAreaM2": {
+          "fine": 823.2051283388864,
+          "coarse": 885.6594411917031,
+          "difference": 62.454312852816656,
+          "relative": 0.07586725434867092
+        },
+        "denseFoamAreaM2": {
+          "fine": 2913.662817988275,
+          "coarse": 3130.2521131881826,
+          "difference": 216.5892951999076,
+          "relative": 0.07433574463823889
+        },
+        "residualFoamAreaM2": {
+          "fine": 2028.85929281509,
+          "coarse": 2127.499646537586,
+          "difference": 98.64035372249623,
+          "relative": 0.04861862726105093
+        },
+        "totalFoamAreaM2": {
+          "fine": 4942.522110803365,
+          "coarse": 5257.751759725768,
+          "difference": 315.2296489224036,
+          "relative": 0.0637791074790286
+        },
+        "airVolumeM3": {
+          "fine": 2155.020942503258,
+          "coarse": 1971.9103112322523,
+          "difference": -183.1106312710058,
+          "relative": -0.08496930478007592
+        },
+        "plumeDepthAreaM3": {
+          "fine": 47648.402443408966,
+          "coarse": 39396.69569969177,
+          "difference": -8251.706743717194,
+          "relative": -0.17317908514388447
+        },
+        "voidFractionAreaM2": {
+          "fine": 577.5066103280204,
+          "coarse": 678.659649177611,
+          "difference": 101.15303884959053,
+          "relative": 0.17515477232743049
+        }
+      },
+      "domain": {
+        "wetAreaM2": {
+          "fine": 403597.9715600611,
+          "coarse": 403635.97156021744,
+          "difference": 38.00000015634578,
+          "relative": 0.00009415309995097765
+        },
+        "activeBreakingIndicatorAreaM2": {
+          "fine": 8882,
+          "coarse": 9776,
+          "difference": 894,
+          "relative": 0.10065300607971173
+        },
+        "strengthWeightedAreaM2": {
+          "fine": 5908.046968232142,
+          "coarse": 6302.115040103206,
+          "difference": 394.0680718710646,
+          "relative": 0.06670022665527009
+        },
+        "denseFoamAreaM2": {
+          "fine": 21716.08394121942,
+          "coarse": 22935.971545520893,
+          "difference": 1219.8876043014752,
+          "relative": 0.056174382434855064
+        },
+        "residualFoamAreaM2": {
+          "fine": 14998.922502779249,
+          "coarse": 15436.98044379122,
+          "difference": 438.0579410119717,
+          "relative": 0.029205960690229738
+        },
+        "totalFoamAreaM2": {
+          "fine": 36715.00644399867,
+          "coarse": 38372.95198931212,
+          "difference": 1657.9455453134506,
+          "relative": 0.04515716340244458
+        },
+        "airVolumeM3": {
+          "fine": 13065.227083734713,
+          "coarse": 12010.023331749651,
+          "difference": -1055.203751985062,
+          "relative": -0.08076428715875261
+        },
+        "plumeDepthAreaM3": {
+          "fine": 319341.91465518996,
+          "coarse": 300424.32966996357,
+          "difference": -18917.584985226393,
+          "relative": -0.059239279646872145
+        },
+        "voidFractionAreaM2": {
+          "fine": 4719.845688740328,
+          "coarse": 4587.271271013498,
+          "difference": -132.57441772682978,
+          "relative": -0.028088718672116708
+        }
+      },
+      "launches": {
+        "dx2": {
+          "count": 139,
+          "volumeM3": 423.87787093524236,
+          "jets": 139,
+          "rollers": 0,
+          "columnWidthProxyM": 278
+        },
+        "dx4": {
+          "count": 70,
+          "volumeM3": 415.0360137859351,
+          "jets": 70,
+          "rollers": 0,
+          "columnWidthProxyM": 280
+        }
+      },
+      "onset": {
+        "fine": {
+          "newColumns": 160,
+          "newWidthM": 320,
+          "firstSolverTime": 39.45000076293945,
+          "lastSolverTime": 65.83333587646484
+        },
+        "coarse": {
+          "newColumns": 80,
+          "newWidthM": 320,
+          "firstSolverTime": 36.93333435058594,
+          "lastSolverTime": 65.8499984741211
+        }
+      },
+      "front": {
+        "fine": {
+          "points": 90,
+          "fronts": 37,
+          "crestSpanM": 109.06096749599712,
+          "activeColumnWidthM": 180,
+          "thrownColumnWidthM": 142,
+          "activeJetClaimAreaM2": 228.2932176578091,
+          "newJoinedPoints": 90,
+          "newThrownPoints": 71,
+          "firstNewJoinedSolverTime": 41.92948934794062,
+          "firstNewThrownSolverTime": 43.531331370755126
+        },
+        "coarse": {
+          "points": 45,
+          "fronts": 20,
+          "crestSpanM": 103.69955634314215,
+          "activeColumnWidthM": 180,
+          "thrownColumnWidthM": 144,
+          "activeJetClaimAreaM2": 238.0282610073271,
+          "newJoinedPoints": 45,
+          "newThrownPoints": 36,
+          "firstNewJoinedSolverTime": 41.923348286086025,
+          "firstNewThrownSolverTime": 43.484012156910374
+        }
+      },
+      "geometry": {
+        "fine": {
+          "present": true,
+          "vertexCount": 15946,
+          "indexCount": 90972,
+          "sliceCount": 119,
+          "samples": 134,
+          "joins": 114,
+          "cuts": 4,
+          "overlaps": 0,
+          "overlapsOpen": 0,
+          "overlapOpenWeight": 0,
+          "clamps": 0,
+          "clampedLookups": 119,
+          "endWeightMax": 0,
+          "maxRayTurnDegrees": 0.8427690611091149,
+          "minY": -0.5920681953430176,
+          "maxY": 5.687986373901367,
+          "regions": {
+            "back": {
+              "tested": 352,
+              "reversed": 0
+            },
+            "roof": {
+              "tested": 2368,
+              "reversed": 0
+            },
+            "underside": {
+              "tested": 1776,
+              "reversed": 0
+            },
+            "face": {
+              "tested": 1776,
+              "reversed": 0
+            },
+            "forwardRest": {
+              "tested": 614,
+              "reversed": 0
+            }
+          },
+          "caveat": "Reversed across-front orientation is a structural fold indicator, not a complete self-intersection/contact test. The same implementation is used in both grids."
+        },
+        "coarse": {
+          "present": true,
+          "vertexCount": 16348,
+          "indexCount": 86184,
+          "sliceCount": 122,
+          "samples": 134,
+          "joins": 108,
+          "cuts": 13,
+          "overlaps": 5,
+          "overlapsOpen": 0,
+          "overlapOpenWeight": 0,
+          "clamps": 0,
+          "clampedLookups": 105,
+          "endWeightMax": 0.8960000276565552,
+          "maxRayTurnDegrees": 0.9338411631505249,
+          "minY": -0.5680766701698303,
+          "maxY": 5.450504302978516,
+          "regions": {
+            "back": {
+              "tested": 311,
+              "reversed": 0
+            },
+            "roof": {
+              "tested": 2176,
+              "reversed": 0
+            },
+            "underside": {
+              "tested": 1632,
+              "reversed": 0
+            },
+            "face": {
+              "tested": 1632,
+              "reversed": 0
+            },
+            "forwardRest": {
+              "tested": 793,
+              "reversed": 0
+            }
+          },
+          "caveat": "Reversed across-front orientation is a structural fold indicator, not a complete self-intersection/contact test. The same implementation is used in both grids."
+        }
+      }
+    }
+  ]
+}
