@@ -28,6 +28,20 @@ const FRESH = 0.65;
  * 2026-10-01): recorded beside the metres (`BreakingFront.waveJumps`), not used, since the Reef's maxima jump 2.8–10.8 H.
  */
 const JUMP_WAVES = 1.5;
+/**
+ * With `clockLink`: the farthest a front's head may be from the chain end it continues, m (provisional: the crest jump's
+ * reach; the advisor, 2026-10-03).
+ */
+const CLOCK_REACH = 10;
+/**
+ * With `clockLink`: the most the two joins may differ per metre between them, s/m (provisional): twice the 0.083 s/m at
+ * which the fronts' own joins peeled on Padang Padang's base before the jump rule (the padangFrontGap runs; the medians
+ * on #105's are 0.086–0.090). That is 6 times under SPLIT, so a peel links and a split wave does not: of the probe's 364
+ * true splits on Medium, 2 passed it at some frame, and 0 of 4 on Small.
+ */
+const CLOCK_SLOPE = 2 * 0.083;
+/** With `clockLink`: how many empty columns a head may bridge to the chain end it continues (the advisor, 2026-10-03: one-column gaps). */
+const CLOCK_BRIDGE = 1;
 
 /**
  * A spot's rules for following its crests beyond Padang Padang's; none of them is Padang Padang's front (the
@@ -57,6 +71,16 @@ export interface FrontOptions {
    * 2026-10-01; #105's fast fronts were all jumped crests over the +x channel and by the −x edge).
    */
   ownOnset?: boolean;
+  /**
+   * Links by the clock what the 3-row reach and an empty column split (the advisor, 2026-10-03; off): one breaking crest
+   * drawn as two fronts end to end. On #105's Small sea (150 s) 1262 such pairs formed, 638 of them where the highest cell
+   * jumped and the crest restarted unsized, 190 where the neighbour stood more than 3 rows off in z and 79 where a point
+   * flickered; Medium's 3071 were led by 1109 restarted points. A point that no neighbour in the column before took continues
+   * the nearest chain end in that column or the one before it (a one-column gap), within CLOCK_REACH, when their joins
+   * differ by at most CLOCK_SLOPE per metre between them. The 1 s/m split (SPLIT) is left as it is: it still refuses the
+   * neighbours it refused, and the clock's slope is a sixth of it, so a pair it refuses is never linked as it stands.
+   */
+  clockLink?: boolean;
 }
 
 /** A crest followed shoreward from the wedge's foot until it joins a front, or is dropped. */
@@ -89,7 +113,7 @@ export interface FrontPoint {
   /** Which front (line) it is on. */
   front: number;
   column: number;
-  /** Arc length along its front from the −x end, m. */
+  /** Arc length along its front from the −x end, m (straight across a gap the front bridged, `FrontOptions.clockLink`). */
   sigma: number;
   x: number;
   z: number;
@@ -149,6 +173,10 @@ export interface FrontState {
  *   matched to last step's in its column keeps its ID, join and clock.
  * - **A spot's own rules** (`FrontOptions`; the Reef's): a sized crest follows its highest cell as it jumps forward
  *   over a ledge, and may join a little past its throw depth when the solver breaks it there.
+ * - **The clock link** (`FrontOptions.clockLink`, off): after the links above, a point left at the head of a new chain
+ *   continues the nearest chain end up to a column further back, within CLOCK_REACH m, when their joins agree within
+ *   CLOCK_SLOPE per metre. It only joins chains the rules above left apart: every link they made stands, and with the
+ *   switch off none of this runs.
  *
  * Columns go in order, with no randomness, and only + − × ÷ and √, for online determinism.
  */
@@ -180,6 +208,12 @@ export class BreakingFront {
   latePasses = 0;
   /** With `ownOnset`: jumped crests that crossed their throw depth before their own fresh onset came (a diagnostic). */
   unrisen = 0;
+  /**
+   * With `clockLink`, counted a step as `splits` is (diagnostics): the points that continued a chain end in the column before
+   * (past the 3-row reach, or whose end another point took), and those that bridged an empty column.
+   */
+  clockLinks = 0;
+  bridges = 0;
   private readonly linkReach: number;
   private readonly matchReach: number;
 
@@ -372,6 +406,8 @@ export class BreakingFront {
   /** Chains the points column to column into fronts, each numbered as its first matched point's was. */
   private link(points: FrontPoint[]): FrontPoint[] {
     const chains: FrontPoint[][] = [];
+    // With `clockLink`: each chain that continues another, under the chain it continues, and the chains continued.
+    const clock = this.options.clockLink === true ? { parents: new Map<FrontPoint[], FrontPoint[]>(), continued: new Set<FrontPoint[]>() } : undefined;
     let start = 0;
     while (start < points.length) {
       // Points arrive by column; [start, end) is one column. A chain this column has already grown ends in it, so
@@ -380,6 +416,7 @@ export class BreakingFront {
       while (end < points.length && points[end].column === points[start].column) end += 1;
       const column = points[start].column;
       const before = chains.filter((chain) => chain.at(-1)!.column === column - 1);
+      const heads: FrontPoint[][] | undefined = clock ? [] : undefined;
       for (let k = start; k < end; k += 1) {
         const point = points[k];
         let best: FrontPoint[] | undefined;
@@ -401,19 +438,59 @@ export class BreakingFront {
           point.sigma = tail.sigma + Math.sqrt(dx * dx + dz * dz);
           best.push(point);
         } else {
-          chains.push([point]);
+          const head = [point];
+          chains.push(head);
+          heads?.push(head);
         }
       }
+      if (clock && heads && heads.length > 0) this.linkByClock(chains, heads, column, clock.parents, clock.continued);
       start = end;
     }
+    const fronts = clock && clock.parents.size > 0 ? joinChains(chains, clock.parents) : chains;
     const claimed = new Set<number>();
-    for (const chain of chains) {
+    for (const chain of fronts) {
       const inherited = chain.find((point) => point.front >= 0 && !claimed.has(point.front))?.front;
       const front = inherited ?? this.nextFront++;
       claimed.add(front);
       for (const point of chain) point.front = front;
     }
-    return chains.flat();
+    return fronts.flat();
+  }
+
+  /**
+   * With `clockLink`, after a column's links: each of its heads (a point no neighbour took, in z) continues the nearest end
+   * of a chain that stops in the column before or CLOCK_BRIDGE columns earlier, if that end is not continued yet, lies
+   * within CLOCK_REACH of the head and its join is within CLOCK_SLOPE per metre of the head's. The head's chain is
+   * recorded under the one it continues (`parents`); the chains themselves, and so the links above, are left as they are.
+   */
+  private linkByClock(
+    chains: readonly FrontPoint[][], heads: readonly FrontPoint[][], column: number,
+    parents: Map<FrontPoint[], FrontPoint[]>, continued: Set<FrontPoint[]>,
+  ): void {
+    const ends = chains.filter((chain) => {
+      const last = chain.at(-1)!.column;
+      return last < column && last >= column - 1 - CLOCK_BRIDGE && !continued.has(chain);
+    });
+    for (const head of heads) {
+      const point = head[0];
+      let best: FrontPoint[] | undefined;
+      let nearest = Infinity;
+      for (const chain of ends) {
+        if (continued.has(chain)) continue;
+        const tail = chain.at(-1)!;
+        const dx = point.x - tail.x;
+        const dz = point.z - tail.z;
+        const gap = Math.sqrt(dx * dx + dz * dz);
+        if (gap > CLOCK_REACH || Math.abs(point.joined - tail.joined) > CLOCK_SLOPE * gap || !(gap < nearest)) continue;
+        best = chain;
+        nearest = gap;
+      }
+      if (!best) continue;
+      parents.set(head, best);
+      continued.add(best);
+      if (best.at(-1)!.column === column - 1) this.clockLinks += 1;
+      else this.bridges += 1;
+    }
   }
 
   exportState(): FrontState {
@@ -430,6 +507,35 @@ export class BreakingFront {
     this.held = state.held.map((p) => ({ ...p }));
     this.tracks = (state.tracks ?? []).map((t) => ({ ...t }));
   }
+}
+
+/**
+ * `chains` with each chain that continues another (`parents`) appended to the front it continues, as one line, its points'
+ * σ carried on straight across the gap. Chains go in the order they began, so a parent comes before its child, and a
+ * chain end is continued once, so a front's last point is always the end its next chain continues.
+ */
+function joinChains(chains: readonly FrontPoint[][], parents: ReadonlyMap<FrontPoint[], FrontPoint[]>): FrontPoint[][] {
+  const fronts: FrontPoint[][] = [];
+  const frontOf = new Map<FrontPoint[], FrontPoint[]>();
+  for (const chain of chains) {
+    const parent = parents.get(chain);
+    if (!parent) {
+      fronts.push(chain);
+      frontOf.set(chain, chain);
+      continue;
+    }
+    const front = frontOf.get(parent)!;
+    const tail = front.at(-1)!;
+    const dx = chain[0].x - tail.x;
+    const dz = chain[0].z - tail.z;
+    const offset = tail.sigma + Math.sqrt(dx * dx + dz * dz);
+    for (const point of chain) {
+      point.sigma += offset;
+      front.push(point);
+    }
+    frontOf.set(chain, front);
+  }
+  return fronts;
 }
 
 /** How far between a crest at `fromDepth` and at `depth` it crossed `at`, 0–1, linear in depth; null if it has not. */

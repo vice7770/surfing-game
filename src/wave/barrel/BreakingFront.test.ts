@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BreakingFront } from './BreakingFront';
+import { BreakingFront, type FrontOptions, type FrontPoint } from './BreakingFront';
 import type { CrestSample } from './crestOnset';
 import { onsetTiming } from './sliceClock';
 
@@ -324,5 +324,183 @@ describe('the breaking front as lines', () => {
     copy.update(later, later.length, 1.3);
     expect(copy.exportState()).toEqual(front.exportState());
     expect(front.points.length).toBeGreaterThan(20);
+  });
+});
+
+// The clock link (FrontOptions.clockLink, the advisor, 2026-10-03): one breaking crest drawn as two fronts end to end.
+describe('the clock link', () => {
+  const PADANG = { jumpReach: 10 };
+  const LINKED = { jumpReach: 10, clockLink: true };
+
+  /** A crest segment: its columns, its z, and when it reaches its join depth, breaking, s (a multiple of 0.25). */
+  interface Segment { columns: readonly number[]; z: number; join: number }
+  /** Steps `segments` by 0.25 s from just before the first joins to when the last does; those that joined earlier keep breaking. */
+  function joinTogether(options: FrontOptions, segments: readonly Segment[]): BreakingFront {
+    const front = new BreakingFront(1, TIMING, options);
+    const first = Math.min(...segments.map((segment) => segment.join)) - 0.25;
+    const last = Math.max(...segments.map((segment) => segment.join));
+    for (let step = 0; first + step * 0.25 <= last; step += 1) {
+      const time = first + step * 0.25;
+      const samples = segments
+        .flatMap((segment) => (time >= segment.join ? line(segment.columns, segment.z, 0, JOIN, 0.5) : line(segment.columns, segment.z, 0, TIMING.h0, 0)))
+        .sort((a, b) => a.column - b.column || a.z - b.z);
+      front.update(samples, samples.length, time);
+    }
+    return front;
+  }
+  /** A crest 0–9 and its other half from column `from`, `z` m on (the first half's z is 10), joining `later` s after it. */
+  const halves = (from: number, z: number, later: number): Segment[] => [
+    { columns: range(0, 10), z: 10, join: 1 },
+    { columns: range(from, from + 10), z, join: 1 + later },
+  ];
+  const columnsOf = (front: BreakingFront) => front.points.map((point) => point.column);
+
+  it('links two fronts end to end whose joins agree, though their ends stand more than 3 rows apart in z', () => {
+    // The ends are (9.5, 10) and (10.5, 16): 6.08 m apart, their joins 0.25 s, 0.04 s/m.
+    const segments = halves(10, 16, 0.25);
+    expect(fronts(joinTogether(PADANG, segments))).toBe(2);
+    const linked = joinTogether(LINKED, segments);
+    expect(fronts(linked)).toBe(1);
+    expect(columnsOf(linked)).toEqual(range(0, 20));
+    // σ runs straight across: nine 1 m steps, the 6.08 m, nine more.
+    const gap = Math.sqrt(1 + 6 ** 2);
+    linked.points.forEach((point, k) => expect(point.sigma).toBeCloseTo(k < 10 ? k : 9 + gap + (k - 10), 9));
+    expect(linked.clockLinks).toBe(1);
+    expect(linked.bridges).toBe(0);
+    expect(linked.splits).toBe(0);
+  });
+
+  it('does not link them when their joins differ by more than 0.166 s per metre between them', () => {
+    // Ends 4.12 m apart: 0.5 s apart is 0.12 s/m, 0.75 s apart is 0.18 s/m, which the 1 s/m split would never refuse.
+    expect(fronts(joinTogether(LINKED, halves(10, 14, 0.5)))).toBe(1);
+    const apart = joinTogether(LINKED, halves(10, 14, 0.75));
+    expect(fronts(apart)).toBe(2);
+    expect(apart.splits).toBe(0);
+    expect(apart.clockLinks).toBe(0);
+  });
+
+  it('does not link them past 10 m', () => {
+    // Ends 9.06 m apart link; 11.05 m apart, with the same joins, do not.
+    expect(fronts(joinTogether(LINKED, halves(10, 19, 0.25)))).toBe(1);
+    expect(fronts(joinTogether(LINKED, halves(10, 21, 0.25)))).toBe(2);
+  });
+
+  it('bridges a one-column gap only when the clock link passes, and no wider gap', () => {
+    // Column 10 is empty: the ends are 2 m apart, 0.25 s is 0.125 s/m, 0.5 s is 0.25 s/m (under the 1 s/m split).
+    const bridged = joinTogether(LINKED, halves(11, 10, 0.25));
+    expect(fronts(bridged)).toBe(1);
+    expect(columnsOf(bridged)).toEqual([...range(0, 10), ...range(11, 21)]);
+    bridged.points.forEach((point, k) => expect(point.sigma).toBeCloseTo(k < 10 ? k : 11 + (k - 10), 9));
+    expect(bridged.bridges).toBe(1);
+    expect(bridged.clockLinks).toBe(0);
+    expect(fronts(joinTogether(PADANG, halves(11, 10, 0.25)))).toBe(2);
+    const refused = joinTogether(LINKED, halves(11, 10, 0.5));
+    expect(fronts(refused)).toBe(2);
+    expect(refused.bridges).toBe(0);
+    expect(refused.splits).toBe(0);
+    // Two empty columns are the advisor's next question, not this link's.
+    expect(fronts(joinTogether(LINKED, halves(12, 10, 0.25)))).toBe(2);
+  });
+
+  it('continues the nearest chain end when several qualify, and an end only once', () => {
+    // A 0–8 and a crest C 5 m behind it in the same columns, 0–9; a third piece from column 10 on A's line: A's end is 2 m
+    // off across the empty column 9, C's 5.10 m off beside it, both with joins 0.25 s apart.
+    const nearest = joinTogether(LINKED, [
+      { columns: range(0, 9), z: 10, join: 1 }, { columns: range(0, 10), z: 15, join: 1 }, { columns: range(10, 20), z: 10, join: 1.25 },
+    ]);
+    expect(fronts(nearest)).toBe(2);
+    const frontAt = (column: number, z: number) => nearest.points.find((point) => point.column === column && point.z === z)!.front;
+    expect(frontAt(10, 10)).toBe(frontAt(0, 10));
+    expect(frontAt(0, 15)).not.toBe(frontAt(0, 10));
+    expect(nearest.points.filter((point) => point.front === frontAt(0, 15))).toHaveLength(10);
+    // Two pieces after one end: the first in z takes it, the other starts a front of its own.
+    const once = joinTogether(LINKED, [
+      { columns: range(0, 10), z: 10, join: 1 }, { columns: range(10, 20), z: 14, join: 1.25 }, { columns: range(10, 20), z: 18, join: 1.25 },
+    ]);
+    expect(fronts(once)).toBe(2);
+    expect(once.points.find((point) => point.column === 10 && point.z === 14)!.front).toBe(once.points[0].front);
+    expect(once.clockLinks).toBe(1);
+  });
+
+  it('leaves the 1 s/m split alone: a true split stays two fronts with the link on', () => {
+    // Joined 5 s apart, side by side: the split rule's own case, refused once.
+    const side = joinTogether(LINKED, halves(10, 10, 5));
+    expect(fronts(side)).toBe(2);
+    expect(side.splits).toBe(1);
+    expect(side.clockLinks + side.bridges).toBe(0);
+    // And across a one-column gap, or 6 m off in z, where only the clock link could reach them.
+    expect(fronts(joinTogether(LINKED, halves(11, 10, 5)))).toBe(2);
+    expect(fronts(joinTogether(LINKED, halves(10, 16, 9)))).toBe(2);
+    expect(fronts(joinTogether(LINKED, halves(11, 16, 9)))).toBe(2);
+  });
+
+  it('is exactly the front without it when the switch is off, and only ever adds links when on', () => {
+    // Three crest lines joining column by column, in blocks of seven columns 6 m apart in z (past the 3-row reach), a tenth
+    // of the columns held back a second and a half (true splits), some samples missing (flicker, one-column gaps);
+    // z has noise, so that no two crests tie.
+    let seed = 20261003;
+    const random = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
+    const lines = [{ z: 12, first: 10 }, { z: 50, first: 20 }, { z: 90, first: 15 }];
+    const delayed = new Set(lines.flatMap((_, l) => range(0, 36).filter(() => random() < 0.1).map((column) => `${l}:${column}`)));
+    const steps: CrestSample[][] = [];
+    for (let step = 0; step < 80; step += 1) {
+      const samples: CrestSample[] = [];
+      lines.forEach((crest, l) => {
+        for (let column = 0; column < 36; column += 1) {
+          const join = crest.first + column + (delayed.has(`${l}:${column}`) ? 15 : 0);
+          const joined = step >= join;
+          if (random() < (joined ? 0.05 : 0.02)) continue;
+          const z = crest.z + (Math.floor(column / 7) % 2) * 6 + 0.6 * random() - 0.3;
+          samples.push(sample(column, z, joined ? JOIN : TIMING.h0, joined ? 0.5 : 0));
+        }
+      });
+      steps.push(samples.sort((a, b) => a.column - b.column || a.z - b.z));
+    }
+    const off = new BreakingFront(1, TIMING, PADANG);
+    const none = new BreakingFront(1, TIMING, { ...PADANG, clockLink: false });
+    const on = new BreakingFront(1, TIMING, LINKED);
+    /** A front's links: each point to the one before it on its front, as "before>point". */
+    const links = (points: readonly FrontPoint[]) => new Set(points.slice(1).flatMap((point, k) => (point.front === points[k].front ? [`${points[k].id}>${point.id}`] : [])));
+    const problems: string[] = [];
+    let fewer = 0;
+    let copy: BreakingFront | undefined;
+    steps.forEach((samples, step) => {
+      const time = step * 0.1;
+      for (const front of [off, none, on]) front.update(samples, samples.length, time);
+      if (JSON.stringify(none.exportState()) !== JSON.stringify(off.exportState())) problems.push(`${step}: the switch off differs from none`);
+      // The same points, the front's links the only difference.
+      const ids = (front: BreakingFront) => front.points.map((point) => point.id).sort((a, b) => a - b).join();
+      if (ids(on) !== ids(off)) problems.push(`${step}: different points`);
+      const offLinks = links(off.points);
+      const onLinks = links(on.points);
+      for (const link of offLinks) if (!onLinks.has(link)) problems.push(`${step}: lost the link ${link}`);
+      const byId = new Map(off.points.map((point) => [point.id, point]));
+      for (const link of onLinks) {
+        if (offLinks.has(link)) continue;
+        const [a, b] = link.split('>').map((id) => byId.get(Number(id))!);
+        const gap = Math.sqrt((b.x - a.x) ** 2 + (b.z - a.z) ** 2);
+        if (!(b.column - a.column <= 2 && gap <= 10 && Math.abs(b.joined - a.joined) <= 0.166 * gap)) problems.push(`${step}: a link ${link} the clock does not allow`);
+      }
+      on.points.slice(1).forEach((point, k) => {
+        if (point.front === on.points[k].front && !(point.sigma > on.points[k].sigma)) problems.push(`${step}: σ does not grow at ${point.id}`);
+      });
+      if (fronts(on) > fronts(off)) problems.push(`${step}: more fronts`);
+      if (fronts(on) < fronts(off)) fewer += 1;
+      // The linked front carries its state through export and import like the plain one.
+      if (step === 39) {
+        copy = new BreakingFront(1, TIMING, LINKED);
+        copy.importState(JSON.parse(JSON.stringify(on.exportState())));
+      } else if (copy) {
+        copy.update(samples, samples.length, time);
+        if (JSON.stringify(copy.exportState()) !== JSON.stringify(on.exportState())) problems.push(`${step}: an imported state drifts`);
+      }
+    });
+    expect(problems).toEqual([]);
+    // The run uses both links, and a good share of its steps have fewer fronts for it.
+    expect(on.clockLinks).toBeGreaterThan(0);
+    expect(on.bridges).toBeGreaterThan(0);
+    expect(fewer).toBeGreaterThan(20);
+    expect(off.clockLinks + off.bridges).toBe(0);
+    expect(off.splits).toBe(on.splits);
   });
 });
