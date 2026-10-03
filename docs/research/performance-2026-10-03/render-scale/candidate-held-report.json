@@ -1,0 +1,299 @@
+{
+  "kind": "ActualCustom final scene; not matched to evolving baseline",
+  "sourcePath": "/private/tmp/render-scale-quality-default-option-20261003/candidate-held/source.json.gz",
+  "sourceJsonSha256": "141b9a6e4348caee5d579125f4fbff0e935ca3d19daa6a5add4ffd3263a72b60",
+  "sourceCompressedSha256": "4e961cf85e2f78b7a5df004c2510cacda40f7b5d1939111bb22cb1736f38d5be",
+  "invariant": {
+    "serializedBefore": "acf1ee7a856434d540803f5abfeec5482af256726d94e1914db85ff5b9409225",
+    "serializedAfter": "acf1ee7a856434d540803f5abfeec5482af256726d94e1914db85ff5b9409225",
+    "serializedByteParity": true,
+    "allArrayBytesAndIdentitiesUnchanged": true,
+    "actualSceneGeometryBytesIdentitiesVersionsDrawRangesAndTransformsUnchanged": true,
+    "cssCameraProjectionResizeEquivalent": true,
+    "seaTime": 400.89104655763265
+  },
+  "frames": [
+    {
+      "name": "actualCustom",
+      "ratio": 1.5,
+      "path": "/private/tmp/render-scale-quality-default-option-20261003/candidate-held/actualCustom.png",
+      "pngSha256": "722f133a730ef9811232bcdfee5badb59176c0f2c85725cd2d63053d40fae8ed",
+      "bytes": 3969998,
+      "observed": {
+        "seaTime": 400.89104655763265,
+        "viewport": [
+          1708,
+          926
+        ],
+        "browserDpr": 2,
+        "canvas": [
+          2562,
+          1389
+        ],
+        "pixelRatio": 1.5,
+        "activity": {
+          "spray": {
+            "visible": true,
+            "count": 4754,
+            "drawn": true
+          },
+          "bubbles": {
+            "visible": true,
+            "count": 4096,
+            "drawn": true
+          }
+        },
+        "uniforms": {
+          "sprayPixelsPerMetre": 1423.9360179768212,
+          "expectedSprayPixelsPerMetre": 1423.9360179768212,
+          "bubbleSize": 0.10500000000000001,
+          "expectedBubbleSize": 0.10500000000000001,
+          "bubbleScale": 463,
+          "expectedBubbleScale": 463
+        },
+        "shaderPrograms": [
+          {
+            "type": "MeshBasicMaterial",
+            "defines": {},
+            "vertexSha256": "f4e860526fd7fc29d1c0438ccc33a13ca78546dbcaf8e930f281634281ad06a8",
+            "fragmentSha256": "30eb7eec9a1840c2ef15d9302598cec95064c3affc620de55211ce05234528f0"
+          },
+          {
+            "type": "MeshPhysicalMaterial",
+            "defines": {
+              "STANDARD": "",
+              "PHYSICAL": ""
+            },
+            "vertexSha256": "0fcdb164384338f9d93a4a6599830915c6dc5ea1d0d01966e18357053f574c99",
+            "fragmentSha256": "e41c553eadde72c94316f818ed7aecd8174f399e52367bd9bf990fbaf73d4e79"
+          },
+          {
+            "type": "MeshPhysicalMaterial",
+            "defines": {
+              "STANDARD": "",
+              "PHYSICAL": ""
+            },
+            "vertexSha256": "224ca8e9f2d0c50aa6932de915aa80c0634a9db5283d1161a99e105d0837a582",
+            "fragmentSha256": "796b6988ff1b0162783193f39504e11751e34eb0a2167773bcc9ffb3bff0ac39"
+          },
+          {
+            "type": "MeshPhysicalMaterial",
+            "defines": {
+              "STANDARD": "",
+              "PHYSICAL": ""
+            },
+            "vertexSha256": "2e26aa222d3d4465c8249d44c2063e03f4cfe4d2cf9e29a90e1230224b2c9d9c",
+            "fragmentSha256": "7df8ec8b431fcd2df31ea6b4a39b481ee65f8f79cc2d9e78bdcf56c8aaf13892"
+          },
+          {
+            "type": "MeshPhysicalMaterial",
+            "defines": {
+              "STANDARD": "",
+              "PHYSICAL": ""
+            },
+            "vertexSha256": "31a289343ba58d71bf7a38f368a4fbd8e4a9379e404b58c79d1028d6e37ed2c8",
+            "fragmentSha256": "474535bfc7e305612e98db74dd01fe225ce2814c44042cdb7dfe872792d5fb6d"
+          },
+          {
+            "type": "MeshPhysicalMaterial",
+            "defines": {
+              "STANDARD": "",
+              "PHYSICAL": ""
+            },
+            "vertexSha256": "3ee9ce43fe4206f5271c3a015201b6149d3382443a882ba9830be5ce75ae05f8",
+            "fragmentSha256": "cd8e0a8866bec31e6aac59f9e241dd1260e9f883edbaacd265931a010a4b3d6c"
+          },
+          {
+            "type": "MeshPhysicalMaterial",
+            "defines": {
+              "STANDARD": "",
+              "PHYSICAL": ""
+            },
+            "vertexSha256": "4888bca1f9ef6024cd266b5a39f3a6b263365b8cd884560ce8028b2c73bbf2f6",
+            "fragmentSha256": "c53b66e4cdc5f088a2d6f223fb2205a51193f048ad3f7e33fc8698df11259911"
+          },
+          {
+            "type": "MeshPhysicalMaterial",
+            "defines": {
+              "STANDARD": "",
+              "PHYSICAL": ""
+            },
+            "vertexSha256": "9b8ba1e1a18c2344a6f322e45ed086b710e83bcff7126802eb9e72cfe639dec3",
+            "fragmentSha256": "f52cfb4f11a6258ec9076a9b9996bd578b28248a083d20716164cc953fde88ca"
+          },
+          {
+            "type": "MeshPhysicalMaterial",
+            "defines": {
+              "STANDARD": "",
+              "PHYSICAL": ""
+            },
+            "vertexSha256": "c715d84e441bc6437c282ed35b5efd1c93b8db9e74399c6a037a0f503103c0cd",
+            "fragmentSha256": "a812e72046efc9a93cb65b704aac65b323ab8d2a05ba6d23fbf8e79bfce294b3"
+          },
+          {
+            "type": "MeshPhysicalMaterial",
+            "defines": {
+              "STANDARD": "",
+              "PHYSICAL": ""
+            },
+            "vertexSha256": "c715d84e441bc6437c282ed35b5efd1c93b8db9e74399c6a037a0f503103c0cd",
+            "fragmentSha256": "a812e72046efc9a93cb65b704aac65b323ab8d2a05ba6d23fbf8e79bfce294b3"
+          },
+          {
+            "type": "MeshPhysicalMaterial",
+            "defines": {
+              "STANDARD": "",
+              "PHYSICAL": ""
+            },
+            "vertexSha256": "d21157f3a91296c729c95b24bd6542c559d711df3792997e9bdfebc75365259e",
+            "fragmentSha256": "6b223a5cb687fc00cff1a04914b877ffc016909d200ac11612fb22535b72d885"
+          },
+          {
+            "type": "MeshPhysicalMaterial",
+            "defines": {
+              "STANDARD": "",
+              "PHYSICAL": ""
+            },
+            "vertexSha256": "dbf7c94760228244e6935b233176775ddefd011d5ae7b15fca87fdb1c815bd12",
+            "fragmentSha256": "254fa160e0d422686f0f8d98ba466c841b0ecb141b063f55ba7d217c9b0d8234"
+          },
+          {
+            "type": "MeshPhysicalMaterial",
+            "defines": {
+              "STANDARD": "",
+              "PHYSICAL": ""
+            },
+            "vertexSha256": "dbf7c94760228244e6935b233176775ddefd011d5ae7b15fca87fdb1c815bd12",
+            "fragmentSha256": "254fa160e0d422686f0f8d98ba466c841b0ecb141b063f55ba7d217c9b0d8234"
+          },
+          {
+            "type": "MeshPhysicalMaterial",
+            "defines": {
+              "STANDARD": "",
+              "PHYSICAL": ""
+            },
+            "vertexSha256": "dbf7c94760228244e6935b233176775ddefd011d5ae7b15fca87fdb1c815bd12",
+            "fragmentSha256": "254fa160e0d422686f0f8d98ba466c841b0ecb141b063f55ba7d217c9b0d8234"
+          },
+          {
+            "type": "MeshStandardMaterial",
+            "defines": {
+              "STANDARD": ""
+            },
+            "vertexSha256": "66afed83ae94d81bb2e7f3b2d648e8cfabffc2e66f9797bcaa64b110bf55403c",
+            "fragmentSha256": "236d803e3b8cbdc28545110486695fd9cb897db9146829c4a39048c34346d475"
+          },
+          {
+            "type": "MeshStandardMaterial",
+            "defines": {
+              "STANDARD": ""
+            },
+            "vertexSha256": "66afed83ae94d81bb2e7f3b2d648e8cfabffc2e66f9797bcaa64b110bf55403c",
+            "fragmentSha256": "236d803e3b8cbdc28545110486695fd9cb897db9146829c4a39048c34346d475"
+          },
+          {
+            "type": "PointsMaterial",
+            "defines": {},
+            "sizeAttenuation": true,
+            "vertexSha256": "e58d9f4fdab70db5250bc2503e0b1fcba2d9cf7f41b9b1fde5a65721f5536345",
+            "fragmentSha256": "cfae20b741f4a96408d5dc859e43dfcaf67e5605e9d7d7667358c4389d0296b5"
+          },
+          {
+            "type": "ShaderMaterial",
+            "defines": {},
+            "vertexSha256": "2e33570912ae9588b44c14b3ce7d386716d11850e7299b4bf6b682ba4e3c34f2",
+            "fragmentSha256": "963f5cad30d98df43943b28df18b425b0e9ed7d2af03ac6dc0cdacc7345c1c1a"
+          },
+          {
+            "type": "ShaderMaterial",
+            "defines": {},
+            "vertexSha256": "7b35f93a51c9ea1f798a487c74db3ec08636c0d95e348a9295a666e4afff6620",
+            "fragmentSha256": "e75d1fe1dc54893f46ee3b2e55efa5bbac44359d6a1d50a1d89e709932992618"
+          }
+        ],
+        "shadow": {
+          "enabled": true,
+          "type": 1,
+          "autoUpdate": true
+        },
+        "ownSurferDetail": {
+          "observation": "ordinary TypeScript private detail fields, source-guarded; public skinned getter",
+          "lodDistance": "Infinity",
+          "textureCap": 2048,
+          "skinned": true,
+          "skinnedLodDistance": "Infinity"
+        },
+        "waterLook": "rich",
+        "vertexNormals": false,
+        "particleLevel": "high",
+        "renderInfo": {
+          "frame": 98303,
+          "calls": 36,
+          "triangles": 1110546,
+          "points": 8850,
+          "lines": 0
+        },
+        "tubeNonempty": true,
+        "lights": [
+          {
+            "type": "AmbientLight",
+            "color": [
+              0.6866853124288864,
+              0.6938717612856897,
+              0.6104955708001716
+            ],
+            "intensity": 0,
+            "position": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "type": "DirectionalLight",
+            "color": [
+              0.9873614606589763,
+              1,
+              0.9134020738496168
+            ],
+            "intensity": 2.584466089516297,
+            "position": [
+              -64.92109296578732,
+              14.092950517330639,
+              -249.02403600363897
+            ]
+          },
+          {
+            "type": "DirectionalLight",
+            "color": [
+              0.181164244239483,
+              0.5647115056965487,
+              0.6514056374127929
+            ],
+            "intensity": 0,
+            "position": [
+              8,
+              4,
+              -10
+            ]
+          }
+        ],
+        "waterSun": {
+          "direction": [
+            -0.1735936009221898,
+            0.7417159177529422,
+            -0.647860138510449
+          ],
+          "radiance": [
+            2.5518022131684037,
+            2.584466089516297,
+            2.3606566859581952
+          ],
+          "time": 400.89104655763265
+        }
+      }
+    }
+  ],
+  "baselineRepeatPngSame": null,
+  "qualityAccepted": false
+}

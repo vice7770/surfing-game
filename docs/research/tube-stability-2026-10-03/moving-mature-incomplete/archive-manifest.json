@@ -1,0 +1,187 @@
+{
+  "schema": 1,
+  "method": "Original bytes preserved or deterministic gzip(mtime=0). New mature trial only; previous incomplete archive and source hashes untouched. No production source changes, retry or deadline widening.",
+  "records": [
+    {
+      "path": "baseline-report.json.gz",
+      "originalPath": "/private/tmp/tube-moving-mature-20261003-baseline/report.json",
+      "bytes": 3338,
+      "sha256": "d6347692f9d35fdf1e5cba9d17f97b4a78cc165bfaa329cd11a5c727f4c1406b",
+      "originalBytes": 7640,
+      "originalSha256": "f6ee3bb68e1a2a09f9d012dc154a9f46c4c597102561cbfeefdcb629c8dab132",
+      "encoding": "gzip"
+    },
+    {
+      "path": "baseline-query-bundle.js.txt",
+      "originalPath": "/private/tmp/tube-moving-mature-20261003-baseline/query-bundle.js.txt",
+      "bytes": 22507,
+      "sha256": "c8151215eb4bb54c70ac5230f377640b5281f6198ba8b42cff8d479ae05cbbf0",
+      "originalBytes": 22507,
+      "originalSha256": "c8151215eb4bb54c70ac5230f377640b5281f6198ba8b42cff8d479ae05cbbf0",
+      "encoding": "original"
+    },
+    {
+      "path": "combined-report.json.gz",
+      "originalPath": "/private/tmp/tube-moving-mature-20261003-combined/report.json",
+      "bytes": 214348,
+      "sha256": "ce3f60f0c8e44cf7cfe8e4ec611d9c2ea103941efbfa7bba910de8541f443fda",
+      "originalBytes": 6011004,
+      "originalSha256": "2d465db2f9ed20e4bc001e448e99f4f01f5fc9135971e2a0736277077244857a",
+      "encoding": "gzip"
+    },
+    {
+      "path": "combined-query-bundle.js.txt",
+      "originalPath": "/private/tmp/tube-moving-mature-20261003-combined/query-bundle.js.txt",
+      "bytes": 22507,
+      "sha256": "c8151215eb4bb54c70ac5230f377640b5281f6198ba8b42cff8d479ae05cbbf0",
+      "originalBytes": 22507,
+      "originalSha256": "c8151215eb4bb54c70ac5230f377640b5281f6198ba8b42cff8d479ae05cbbf0",
+      "encoding": "original"
+    },
+    {
+      "path": "combined-checkpoint-first-open.json.gz",
+      "originalPath": "/private/tmp/tube-moving-mature-20261003-combined/checkpoint-0-first-open.json",
+      "bytes": 1670842,
+      "sha256": "084104f8e3b6a02a8c6cc4f96648da2813ae5c36e7dd1eb9e605e66bcc22818a",
+      "originalBytes": 3190038,
+      "originalSha256": "c75246cd2deb356aca0bf848c0504c45b125cee72818e7102884d498acba0ff3",
+      "encoding": "gzip"
+    },
+    {
+      "path": "combined-first-open-delayed.png",
+      "originalPath": "/private/tmp/tube-moving-mature-20261003-combined/first-open.png",
+      "bytes": 1391318,
+      "sha256": "ee09295dc5b2990c479969d31394f08c3e067efcc4280a1e6ec34dd6bc3649d7",
+      "originalBytes": 1391318,
+      "originalSha256": "ee09295dc5b2990c479969d31394f08c3e067efcc4280a1e6ec34dd6bc3649d7",
+      "encoding": "original"
+    },
+    {
+      "path": "moving-driver.mjs.txt",
+      "originalPath": "/private/tmp/tube-mature-moving-driver.mjs",
+      "bytes": 20875,
+      "sha256": "dd67db48aaea3a88ab773280b5f4b9e1d9138439e20c680f9a24b10046a2703f",
+      "originalBytes": 20875,
+      "originalSha256": "dd67db48aaea3a88ab773280b5f4b9e1d9138439e20c680f9a24b10046a2703f",
+      "encoding": "original"
+    },
+    {
+      "path": "moving-helper.mjs.txt",
+      "originalPath": "/private/tmp/tube-mature-moving-helper.mjs",
+      "bytes": 28487,
+      "sha256": "ccaa33b33af137fa4a35b9422810495f127ebd840005b534159bfef3d467178d",
+      "originalBytes": 28487,
+      "originalSha256": "ccaa33b33af137fa4a35b9422810495f127ebd840005b534159bfef3d467178d",
+      "encoding": "original"
+    },
+    {
+      "path": "moving-helper-test.mjs.txt",
+      "originalPath": "/private/tmp/tube-mature-moving-helper.test.mjs",
+      "bytes": 7869,
+      "sha256": "97982e08f71706dc7adffd5a82c491732608ef248ba602592d8d8e2def6d0d03",
+      "originalBytes": 7869,
+      "originalSha256": "97982e08f71706dc7adffd5a82c491732608ef248ba602592d8d8e2def6d0d03",
+      "encoding": "original"
+    },
+    {
+      "path": "query-entry.mjs.txt",
+      "originalPath": "/private/tmp/tube-mature-moving-query-entry.mjs",
+      "bytes": 211,
+      "sha256": "db7f27b53c1ea14b0899f26dfca415b2efd31d48a51cd894d348c43f6f3eb5cf",
+      "originalBytes": 211,
+      "originalSha256": "db7f27b53c1ea14b0899f26dfca415b2efd31d48a51cd894d348c43f6f3eb5cf",
+      "encoding": "original"
+    },
+    {
+      "path": "checkpoint-tools.mjs.txt",
+      "originalPath": "/private/tmp/tube-mature-checkpoint-tools.mjs",
+      "bytes": 2006,
+      "sha256": "e298775edd4b33c29d1c50de9e6b82ce41f4c85269003d9f11489774696006e8",
+      "originalBytes": 2006,
+      "originalSha256": "e298775edd4b33c29d1c50de9e6b82ce41f4c85269003d9f11489774696006e8",
+      "encoding": "original"
+    },
+    {
+      "path": "predeclared-baseline-plan.json",
+      "originalPath": "/private/tmp/tube-mature-moving-plan-baseline.json",
+      "bytes": 6026,
+      "sha256": "9b6a8a514bf4c8f7613ad3cd43f1fa3aa727d493969e9865685c1ba24a06ebf2",
+      "originalBytes": 6026,
+      "originalSha256": "9b6a8a514bf4c8f7613ad3cd43f1fa3aa727d493969e9865685c1ba24a06ebf2",
+      "encoding": "original"
+    },
+    {
+      "path": "predeclared-combined-plan.json",
+      "originalPath": "/private/tmp/tube-mature-moving-plan-combined.json",
+      "bytes": 150221,
+      "sha256": "5e9c1405335e8a181028eadfacfb32a27fcc317014962dcb80b4698cf73bf124",
+      "originalBytes": 150221,
+      "originalSha256": "5e9c1405335e8a181028eadfacfb32a27fcc317014962dcb80b4698cf73bf124",
+      "encoding": "original"
+    },
+    {
+      "path": "prepared-source-review.json",
+      "originalPath": "/private/tmp/tube-mature-moving-review.json",
+      "bytes": 1988,
+      "sha256": "a5dff55e32f0892cd2a625f5ce204ae0a66d2d72f0443e66d5a16f6d8efb125b",
+      "originalBytes": 1988,
+      "originalSha256": "a5dff55e32f0892cd2a625f5ce204ae0a66d2d72f0443e66d5a16f6d8efb125b",
+      "encoding": "original"
+    },
+    {
+      "path": "pure-tests.txt",
+      "originalPath": "/private/tmp/tube-mature-moving-tests.txt",
+      "bytes": 1141,
+      "sha256": "6ea8f97f904c0b8c84f37a47d2e9c655e0a924509a6ba57ee4377d2f77513a6c",
+      "originalBytes": 1141,
+      "originalSha256": "6ea8f97f904c0b8c84f37a47d2e9c655e0a924509a6ba57ee4377d2f77513a6c",
+      "encoding": "original"
+    },
+    {
+      "path": "predeclared-intent.md",
+      "originalPath": "/private/tmp/tube-mature-moving-intent.md",
+      "bytes": 4120,
+      "sha256": "2452025d1c0fff77d2f57ced706ad0d40448792a9715686f9ec19eb1b7ed14f1",
+      "originalBytes": 4120,
+      "originalSha256": "2452025d1c0fff77d2f57ced706ad0d40448792a9715686f9ec19eb1b7ed14f1",
+      "encoding": "original"
+    },
+    {
+      "path": "contact-oracle.mjs.txt",
+      "originalPath": "/private/tmp/tube-mature-offline-oracle.mjs",
+      "bytes": 2662,
+      "sha256": "990fd6e43413ea8c1551de2b5462d7305ed28425b8e71cf069c4f4f5676f7a38",
+      "originalBytes": 2662,
+      "originalSha256": "990fd6e43413ea8c1551de2b5462d7305ed28425b8e71cf069c4f4f5676f7a38",
+      "encoding": "original"
+    },
+    {
+      "path": "contact-oracle.json",
+      "originalPath": "/private/tmp/tube-mature-offline-oracle.json",
+      "bytes": 5343,
+      "sha256": "75e2c24387504e2703c82c9a0fff40ed363ba2f8b6a6d138530f70c080d21f38",
+      "originalBytes": 5343,
+      "originalSha256": "75e2c24387504e2703c82c9a0fff40ed363ba2f8b6a6d138530f70c080d21f38",
+      "encoding": "original"
+    },
+    {
+      "path": "offline-analysis.py.txt",
+      "originalPath": "/private/tmp/tube-mature-offline-analysis.py",
+      "bytes": 7011,
+      "sha256": "acc573270b7a46974198471e32788dd111964c73a9abb56bc77ecd481ca17b4e",
+      "originalBytes": 7011,
+      "originalSha256": "acc573270b7a46974198471e32788dd111964c73a9abb56bc77ecd481ca17b4e",
+      "encoding": "original"
+    },
+    {
+      "path": "offline-analysis.json",
+      "originalPath": "/private/tmp/tube-mature-offline-analysis.json",
+      "bytes": 30206,
+      "sha256": "ecdd17e4d792ffa8d307779afcca31609d7c80a792b2afff540e7ece3a586aa1",
+      "originalBytes": 30206,
+      "originalSha256": "ecdd17e4d792ffa8d307779afcca31609d7c80a792b2afff540e7ece3a586aa1",
+      "encoding": "original"
+    }
+  ],
+  "totalStoredBytes": 3593026
+}

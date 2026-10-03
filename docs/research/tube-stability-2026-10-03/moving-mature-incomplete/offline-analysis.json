@@ -1,0 +1,1025 @@
+{
+  "schema": 1,
+  "method": "Offline immutable reports and exact compact checkpoint; no solver stepping, browser, rendering, timing benchmark or retry. Counts retain original raw gates and separately state their narrower tracked meaning.",
+  "source": {
+    "helperSha256": "acc573270b7a46974198471e32788dd111964c73a9abb56bc77ecd481ca17b4e"
+  },
+  "baseline": {
+    "reportSha256": "f6ee3bb68e1a2a09f9d012dc154a9f46c4c597102561cbfeefdcb629c8dab132",
+    "pass": false,
+    "incomplete": true,
+    "failures": [
+      "Error: GPU initial state timeout"
+    ],
+    "rows": 0,
+    "publications": 0,
+    "elapsedSeconds": 25.244,
+    "ownedChromeClosed": true,
+    "interpretation": "GPU initialization call timed out before installing mature helper or observing lifecycle; baseline is invalid, no paired moving comparison."
+  },
+  "combined": {
+    "reportSha256": "2d465db2f9ed20e4bc001e448e99f4f01f5fc9135971e2a0736277077244857a",
+    "pass": false,
+    "incomplete": true,
+    "failures": [
+      "Missing native lifecycle screenshot within bound",
+      "Incomplete same-front/source-column open\u2192touchdown\u2192retired lifecycle within hard bound"
+    ],
+    "ownedChromeClosed": true,
+    "clocks": {
+      "start": 164,
+      "last": 180.0499999999991,
+      "simulationAdvanceSeconds": 16.049999999999102,
+      "observationWallSecondsIncludingSettleControls": 30.40409999999404,
+      "elapsedSeconds": 54.941
+    },
+    "counts": {
+      "inspectedStates": 964,
+      "publishedSnapshots": 963,
+      "candidateFailureRows": 0,
+      "movingQaInvalidRows": 0,
+      "finalControlQaInvalidRows": 0,
+      "rawFogWitnessRows": 2,
+      "trackedSourceEyeTargetFogWitnessRows": 1,
+      "cachedDraws": 857,
+      "sourcePresentRows": 1,
+      "sourcePresentNoJoinedStripRows": 0,
+      "phase1Rows": 1,
+      "phase2Rows": 0
+    },
+    "selection": {
+      "criteria": {
+        "minimumJoinedSpanMeters": 12,
+        "minimumJoinedEndDistanceMeters": 4.5,
+        "minimumFrontEndpointDistanceMeters": 3,
+        "minimumPhysicalEdgeDistanceMeters": 3,
+        "minimumLocalWeight": 0.9,
+        "minimumLocalFormed": 0.9,
+        "minimumLifeFraction": 0.2,
+        "maximumLifeFraction": 0.75,
+        "minimumAirGapMeters": 0.15
+      },
+      "metrics": {
+        "front": 0,
+        "sourceX": 156.5,
+        "sourceSigma": 16.269277572631836,
+        "sourceRecordIndex": 15,
+        "strip": 35,
+        "runFirst": 0,
+        "runLast": 45,
+        "joinedSpanMeters": 22.273452758789062,
+        "joinedEndDistanceMeters": 4.504175186157227,
+        "frontEndpointDistanceMeters": 3.0041751861572266,
+        "physicalEdgeDistanceMeters": 3.5,
+        "phase": [
+          1,
+          1
+        ],
+        "overturned": [
+          1,
+          1
+        ],
+        "weight": [
+          1,
+          1
+        ],
+        "formed": [
+          1,
+          1
+        ],
+        "life": [
+          0.21706506609916687,
+          0.23215484619140625
+        ]
+      },
+      "sourceRecordIndex": 15,
+      "geometrySeaTime": 167.38333333333316,
+      "selectionHostSeaTime": 167.38333333333316,
+      "actualDrawSourceMatches": true,
+      "eye": {
+        "position": [
+          156.14046223958334,
+          1.1970554205016088,
+          -10.510295232137045
+        ],
+        "levels": [
+          1.09044681817105,
+          1.5168812274932857,
+          1.9084650335888482
+        ],
+        "strip": 35,
+        "row": 79,
+        "front": 0,
+        "sigma": 15.823796272277832
+      },
+      "target": {
+        "position": [
+          156.63602193196616,
+          1.211006676159398,
+          -10.514911015828451
+        ],
+        "levels": [
+          1.105972495346727,
+          1.5261092185974119,
+          1.9418088563866356
+        ],
+        "strip": 36,
+        "row": 79,
+        "front": 0,
+        "sigma": 16.318761825561523
+      }
+    },
+    "sourceContinuity": {
+      "lastPresent": 167.38333333333316,
+      "firstAbsent": 167.3999999999998,
+      "lastFrontRecordPresent": 177.68333333333254,
+      "tauAtLastPresent": 0.1396869570016861,
+      "observedPhase": 1,
+      "touchdownObserved": false,
+      "retirementObserved": false,
+      "interpretation": "The fixed raw source record disappears at the next consecutive publication. No source-present/phase-null row is observed. This is not merely a failed joined-strip lookup while that source persists, and is not evidence of touchdown."
+    },
+    "renderedColumnEvidence": {
+      "atSelection": {
+        "slices": 46,
+        "joined": 45,
+        "projectedSelectedFrontOpenVertices": 313,
+        "freshEyeAir": true,
+        "freshTargetAir": true,
+        "coverage": {
+          "supported": 1,
+          "active": 1,
+          "barrelVisible": true,
+          "waterMark": true,
+          "sweptMark": true,
+          "repairVisible": true,
+          "patchRepairVisible": true,
+          "orders": {
+            "water": 0,
+            "swept": 0,
+            "repair": 1
+          }
+        }
+      },
+      "firstAbsent": {
+        "slices": 54,
+        "joined": 31,
+        "projectedSelectedFrontOpenVertices": 0,
+        "freshEyeAir": false,
+        "freshTargetAir": false,
+        "coverage": {
+          "supported": 1,
+          "active": 1,
+          "barrelVisible": true,
+          "waterMark": true,
+          "sweptMark": true,
+          "repairVisible": true,
+          "patchRepairVisible": true,
+          "orders": {
+            "water": 0,
+            "swept": 0,
+            "repair": 1
+          }
+        },
+        "cameraWitnessSeaTime": 167.38333333333316,
+        "planningAttemptSeaTime": 167.3999999999998,
+        "desiredMatchesPlanningField": false
+      },
+      "limitation": "Joined counts are aggregate geometry, not persistent identities for the selected strip. Phase=null is derived from missing source mapping. Loss of air at the held last-good camera and zero projected selected-front open vertices do not establish physical retirement of the specific roof or identify why source vanished. No full next-step loft/front checkpoint was captured."
+    },
+    "fogWitnesses": [
+      {
+        "seaTime": 167.38333333333316,
+        "scope": "ordinary-moving",
+        "sourcePresent": true,
+        "phase": 1,
+        "freshEyeAir": true,
+        "freshTargetAir": true,
+        "classifier": false,
+        "sceneFog": false,
+        "projectedSelectedFrontOpenVertices": 313
+      },
+      {
+        "seaTime": 177.68333333333254,
+        "scope": "ordinary-moving",
+        "sourcePresent": false,
+        "phase": null,
+        "freshEyeAir": true,
+        "freshTargetAir": false,
+        "classifier": false,
+        "sceneFog": false,
+        "projectedSelectedFrontOpenVertices": 0
+      }
+    ],
+    "continuity": {
+      "inspectedStepSeconds": {
+        "n": 963,
+        "min": 0.01666666666665151,
+        "median": 0.01666666666667993,
+        "p95": 0.01666666666667993,
+        "max": 0.01666666666667993
+      },
+      "publishedStepSeconds": {
+        "n": 962,
+        "min": 0.01666666666665151,
+        "median": 0.01666666666667993,
+        "p95": 0.01666666666667993,
+        "max": 0.01666666666667993
+      },
+      "nonconsecutiveInspectedStates": 0,
+      "nonconsecutivePublications": 0,
+      "interpretation": "All publications and inspected states are consecutive1/60s; no published phase2 is hidden by a capture stall."
+    },
+    "capture": {
+      "checkpoint": {
+        "schema": 2,
+        "kind": "first-open",
+        "seaTime": 167.38333333333316,
+        "path": "/private/tmp/tube-moving-mature-20261003-combined/checkpoint-0-first-open.json",
+        "sha256": "c75246cd2deb356aca0bf848c0504c45b125cee72818e7102884d498acba0ff3",
+        "bytes": 3190038,
+        "checkpointCopyAndEncodeMs": 32.70000001788139,
+        "row": {
+          "wall": 29947.59999999404,
+          "seaTime": 167.38333333333316,
+          "geometry": {
+            "slices": 46,
+            "vertices": 6164,
+            "joined": 45,
+            "negativeRows": 0,
+            "zeroRows": 0,
+            "minimumAdvance": 0.17116864722919445,
+            "liftedRunEnds": 0,
+            "unsupportedLift": 0,
+            "unusedIsolatedLiftedVertices": 0,
+            "worstEnds": [],
+            "worstUnsupported": [],
+            "nonfinite": 0,
+            "topologyFaults": 0,
+            "phases": [
+              28,
+              18,
+              0
+            ],
+            "overturned": 19,
+            "openLiftedSlices": 14,
+            "worst": [],
+            "failures": [],
+            "pass": true
+          },
+          "target": {
+            "front": 0,
+            "sourceX": 156.5,
+            "phase": 1,
+            "tau": 0.1396869570016861,
+            "open": true,
+            "sourceColumnPresent": true,
+            "frontRecordsPresent": true,
+            "retired": false
+          },
+          "freshness": {
+            "sourceStatusMatches": true,
+            "meshStatusMatches": true,
+            "sourceTime": 167.38333333333316,
+            "surfaceRevision": 1145
+          },
+          "versions": {
+            "surfaceRevision": 1145,
+            "position": 45,
+            "normal": 45,
+            "index": 45,
+            "maskTexture": 45,
+            "drawRange": {
+              "start": 0,
+              "count": 35910
+            }
+          },
+          "cached": false,
+          "coverage": {
+            "supported": 1,
+            "active": 1,
+            "barrelVisible": true,
+            "waterMark": true,
+            "sweptMark": true,
+            "repairVisible": true,
+            "patchRepairVisible": true,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": 1
+            }
+          },
+          "view": {
+            "meshVisible": true,
+            "projectedLiftedVertices": 313,
+            "projectedOpenLiftedVertices": 313,
+            "cameraCuts": 0,
+            "camera": {
+              "position": [
+                156.14046223958334,
+                1.1970554205016088,
+                -10.510295232137045
+              ],
+              "quaternion": [
+                0.009996261176022612,
+                -0.7037364414294662,
+                0.009903586768783964,
+                0.7103217684513163
+              ],
+              "near": 0.02,
+              "far": 3000,
+              "fov": 52
+            }
+          },
+          "cavity": {
+            "freshEyeAir": true,
+            "freshTargetAir": true,
+            "predicateMatchesCamera": true,
+            "preceding": {
+              "drawnSeaTime": 167.38333333333316,
+              "planningAttemptGeometrySeaTime": 167.38333333333316,
+              "planningHostSeaTime": 167.38333333333316,
+              "desiredMatchesPlanningField": true,
+              "drawnSourceMatches": true,
+              "fieldMatchesCurrentSnapshot": true,
+              "surfaceRevision": 1145,
+              "front": 0,
+              "sourceX": 156.5,
+              "eye": {
+                "position": [
+                  156.14046223958334,
+                  1.1970554205016088,
+                  -10.510295232137045
+                ],
+                "levels": [
+                  1.09044681817105,
+                  1.5168812274932857,
+                  1.9084650335888482
+                ],
+                "strip": 35,
+                "row": 79,
+                "front": 0,
+                "sigma": 15.823796272277832
+              },
+              "target": {
+                "position": [
+                  156.63602193196616,
+                  1.211006676159398,
+                  -10.514911015828451
+                ],
+                "levels": [
+                  1.105972495346727,
+                  1.5261092185974119,
+                  1.9418088563866356
+                ],
+                "strip": 36,
+                "row": 79,
+                "front": 0,
+                "sigma": 16.318761825561523
+              }
+            },
+            "originalClassifier": {
+              "result": false,
+              "call": 776,
+              "seaTime": 167.38333333333316,
+              "camera": [
+                156.14046223958334,
+                1.1970554205016088,
+                -10.510295232137045
+              ],
+              "supplied": [
+                156.14046223958334,
+                1.1970554205016088,
+                -10.510295232137045
+              ],
+              "suppliedPositionMatchesCamera": true,
+              "margin": 0.1
+            },
+            "rawHeight": 1.754524286785842,
+            "fog": null,
+            "rawUnderwater": true,
+            "classifiedUnderwaterWhileVerifiedAir": false
+          },
+          "fogProvenance": {
+            "enabledCandidate": true,
+            "fresh": true,
+            "drawStatusMatches": true,
+            "drawSurfaceMatches": true,
+            "drawPositionVersion": 45,
+            "drawIndexVersion": 45
+          },
+          "status": {
+            "compute": "gpu",
+            "cells": 203200,
+            "stepMs": 19.69999998807907,
+            "pipelineMs": {
+              "water": 9,
+              "breaking": 0.19999998807907104,
+              "front": 3.5,
+              "lip": 0,
+              "foam": 4.199999988079071,
+              "airSources": 0.10000002384185791,
+              "aeration": 2.699999988079071,
+              "board": 0,
+              "contact": 0,
+              "bubbles": 0.19999998807907104,
+              "spray": 0.20000001788139343,
+              "sounds": 0,
+              "step": 20.099999994039536,
+              "surface": 0,
+              "snapshotAeration": 0,
+              "flow": 0,
+              "snapshotFields": 7.699999988079071,
+              "snapshot": 8.099999994039536,
+              "summary": 0.19999998807907104,
+              "batch": 20.099999994039536,
+              "batchSteps": 1,
+              "total": 28.399999976158142,
+              "deviceSubsteps": 3,
+              "devicePack": 1.5999999940395355,
+              "deviceCfl": 0.29999998211860657,
+              "deviceEncode": 2.100000023841858,
+              "deviceMap": 3.7999999821186066,
+              "deviceUnpack": 1.2000000178813934
+            }
+          },
+          "particles": {
+            "lip": 0,
+            "spray": 4096,
+            "bubbles": 4096
+          },
+          "temporal": {
+            "throwCrossings": 0,
+            "touchdownCrossings": 0,
+            "maxTipRelativeStepMeters": 0
+          },
+          "crestMismatchMaxMeters": 0,
+          "events": [
+            {
+              "kind": "first-open",
+              "seaTime": 167.38333333333316,
+              "front": 0,
+              "sourceX": 156.5
+            }
+          ],
+          "qaScope": "ordinary-moving",
+          "maturity": {
+            "current": {
+              "front": 0,
+              "sourceX": 156.5,
+              "sourceSigma": 16.269277572631836,
+              "sourceRecordIndex": 15,
+              "strip": 35,
+              "runFirst": 0,
+              "runLast": 45,
+              "joinedSpanMeters": 22.273452758789062,
+              "joinedEndDistanceMeters": 4.504175186157227,
+              "frontEndpointDistanceMeters": 3.0041751861572266,
+              "physicalEdgeDistanceMeters": 3.5,
+              "phase": [
+                1,
+                1
+              ],
+              "overturned": [
+                1,
+                1
+              ],
+              "weight": [
+                1,
+                1
+              ],
+              "formed": [
+                1,
+                1
+              ],
+              "life": [
+                0.21706506609916687,
+                0.23215484619140625
+              ]
+            },
+            "currentMeetsSelectionCriteria": true,
+            "preselectionScan": null
+          },
+          "candidateFailures": [],
+          "qaInvalid": [],
+          "failures": [],
+          "pass": true,
+          "inspectMs": 0.699999988079071
+        }
+      },
+      "rowGapAfterFirstOpenMs": 67.09999999403954,
+      "rowGapMs": {
+        "n": 963,
+        "min": 13.799999982118607,
+        "median": 33.19999998807907,
+        "p95": 35.29999998211861,
+        "max": 86.7999999821186
+      },
+      "nativeShots": [
+        {
+          "kind": "first-open",
+          "sha256": "ee09295dc5b2990c479969d31394f08c3e067efcc4280a1e6ec34dd6bc3649d7",
+          "eventSeaTime": 167.38333333333316,
+          "seaTimeBefore": 167.48333333333312,
+          "seaTimeAfter": 167.6499999999998,
+          "eventToShotStartSeconds": 0.0999999999999659,
+          "eventToShotEndSeconds": 0.2666666666666515,
+          "exactEventState": false
+        }
+      ],
+      "limitation": "32.7ms is browser checkpoint copy+encode only. Overall serialization/CDP/file/screenshot cost was not separately measured. Size/cadence differences versus earlier invalid or instrumented runs are not an FPS comparison."
+    },
+    "controls": [
+      {
+        "name": "active-settled",
+        "cached": false,
+        "seaTime": 180.0499999999991,
+        "versions": {
+          "surfaceRevision": 1905,
+          "position": 364,
+          "normal": 364,
+          "index": 364,
+          "maskTexture": 364,
+          "drawRange": {
+            "start": 0,
+            "count": 11172
+          }
+        },
+        "coverage": {
+          "supported": 1,
+          "active": 1,
+          "barrelVisible": true,
+          "waterMark": true,
+          "sweptMark": true,
+          "repairVisible": true,
+          "patchRepairVisible": true,
+          "orders": {
+            "water": 0,
+            "swept": 0,
+            "repair": 1
+          }
+        },
+        "drawn": true
+      },
+      {
+        "name": "active-cached-1",
+        "cached": true,
+        "seaTime": 180.0499999999991,
+        "versions": {
+          "surfaceRevision": 1905,
+          "position": 364,
+          "normal": 364,
+          "index": 364,
+          "maskTexture": 364,
+          "drawRange": {
+            "start": 0,
+            "count": 11172
+          }
+        },
+        "coverage": {
+          "supported": 1,
+          "active": 1,
+          "barrelVisible": true,
+          "waterMark": true,
+          "sweptMark": true,
+          "repairVisible": true,
+          "patchRepairVisible": true,
+          "orders": {
+            "water": 0,
+            "swept": 0,
+            "repair": 1
+          }
+        },
+        "drawn": true
+      },
+      {
+        "name": "active-cached-2",
+        "cached": true,
+        "seaTime": 180.0499999999991,
+        "versions": {
+          "surfaceRevision": 1905,
+          "position": 364,
+          "normal": 364,
+          "index": 364,
+          "maskTexture": 364,
+          "drawRange": {
+            "start": 0,
+            "count": 11172
+          }
+        },
+        "coverage": {
+          "supported": 1,
+          "active": 1,
+          "barrelVisible": true,
+          "waterMark": true,
+          "sweptMark": true,
+          "repairVisible": true,
+          "patchRepairVisible": true,
+          "orders": {
+            "water": 0,
+            "swept": 0,
+            "repair": 1
+          }
+        },
+        "drawn": true
+      },
+      {
+        "name": "unsupported-real-cache",
+        "cached": true,
+        "seaTime": 180.0499999999991,
+        "versions": {
+          "surfaceRevision": 1905,
+          "position": 364,
+          "normal": 364,
+          "index": 364,
+          "maskTexture": 364,
+          "drawRange": {
+            "start": 0,
+            "count": 11172
+          }
+        },
+        "coverage": {
+          "supported": 0,
+          "active": 1,
+          "barrelVisible": true,
+          "waterMark": false,
+          "sweptMark": false,
+          "repairVisible": false,
+          "patchRepairVisible": false,
+          "orders": {
+            "water": 0,
+            "swept": 0,
+            "repair": 1
+          }
+        },
+        "drawn": true
+      },
+      {
+        "name": "reactivated-real-cache",
+        "cached": true,
+        "seaTime": 180.0499999999991,
+        "versions": {
+          "surfaceRevision": 1905,
+          "position": 364,
+          "normal": 364,
+          "index": 364,
+          "maskTexture": 364,
+          "drawRange": {
+            "start": 0,
+            "count": 11172
+          }
+        },
+        "coverage": {
+          "supported": 1,
+          "active": 1,
+          "barrelVisible": true,
+          "waterMark": true,
+          "sweptMark": true,
+          "repairVisible": true,
+          "patchRepairVisible": true,
+          "orders": {
+            "water": 0,
+            "swept": 0,
+            "repair": 1
+          }
+        },
+        "drawn": true
+      },
+      {
+        "name": "mode-hidden",
+        "cached": false,
+        "seaTime": 180.0499999999991,
+        "versions": {
+          "surfaceRevision": 1905,
+          "position": 364,
+          "normal": 364,
+          "index": 364,
+          "maskTexture": 364,
+          "drawRange": {
+            "start": 0,
+            "count": 0
+          }
+        },
+        "coverage": {
+          "supported": 1,
+          "active": 0,
+          "barrelVisible": false,
+          "waterMark": false,
+          "sweptMark": false,
+          "repairVisible": false,
+          "patchRepairVisible": false,
+          "orders": {
+            "water": 0,
+            "swept": 0,
+            "repair": 1
+          }
+        },
+        "drawn": true
+      },
+      {
+        "name": "mode-visible-restored",
+        "cached": false,
+        "seaTime": 180.0499999999991,
+        "versions": {
+          "surfaceRevision": 1905,
+          "position": 365,
+          "normal": 365,
+          "index": 365,
+          "maskTexture": 365,
+          "drawRange": {
+            "start": 0,
+            "count": 11172
+          }
+        },
+        "coverage": {
+          "supported": 1,
+          "active": 1,
+          "barrelVisible": true,
+          "waterMark": true,
+          "sweptMark": true,
+          "repairVisible": true,
+          "patchRepairVisible": true,
+          "orders": {
+            "water": 0,
+            "swept": 0,
+            "repair": 1
+          }
+        },
+        "drawn": true
+      },
+      {
+        "name": "spot-off",
+        "cached": false,
+        "seaTime": 180.0499999999991,
+        "versions": {
+          "surfaceRevision": 1905,
+          "position": 365,
+          "normal": 365,
+          "index": 365,
+          "maskTexture": 365,
+          "drawRange": {
+            "start": 0,
+            "count": 0
+          }
+        },
+        "coverage": {
+          "supported": 0,
+          "active": 0,
+          "barrelVisible": false,
+          "waterMark": false,
+          "sweptMark": false,
+          "repairVisible": false,
+          "patchRepairVisible": false,
+          "orders": {
+            "water": 0,
+            "swept": 0,
+            "repair": 1
+          }
+        },
+        "drawn": false
+      },
+      {
+        "name": "spot-restored",
+        "cached": false,
+        "seaTime": 180.0499999999991,
+        "versions": {
+          "surfaceRevision": 1905,
+          "position": 366,
+          "normal": 366,
+          "index": 366,
+          "maskTexture": 366,
+          "drawRange": {
+            "start": 0,
+            "count": 11172
+          }
+        },
+        "coverage": {
+          "supported": 1,
+          "active": 1,
+          "barrelVisible": true,
+          "waterMark": true,
+          "sweptMark": true,
+          "repairVisible": true,
+          "patchRepairVisible": true,
+          "orders": {
+            "water": 0,
+            "swept": 0,
+            "repair": 1
+          }
+        },
+        "drawn": true
+      }
+    ],
+    "lifecycle": {
+      "front": 0,
+      "sourceX": 156.5,
+      "opened": true,
+      "touchdown": false,
+      "retired": false,
+      "complete": false,
+      "events": [
+        {
+          "kind": "selected",
+          "seaTime": 167.38333333333316,
+          "front": 0,
+          "sourceX": 156.5
+        },
+        {
+          "kind": "first-open",
+          "seaTime": 167.38333333333316,
+          "front": 0,
+          "sourceX": 156.5
+        }
+      ]
+    }
+  },
+  "contactOracle": {
+    "schema": 1,
+    "method": "Offline decoded exact compact checkpoint. Contact rebuilt from full front and complete F32 cubic-height domain; no water stepping, browser, rendering or timing benchmark. Draw/contact levels are measured rather than presumed equal; no shader-displacement claim.",
+    "source": {
+      "helperSha256": "990fd6e43413ea8c1551de2b5462d7305ed28425b8e71cf069c4f4f5676f7a38",
+      "decoderSha256": "e298775edd4b33c29d1c50de9e6b82ce41f4c85269003d9f11489774696006e8",
+      "inputPath": "/private/tmp/tube-moving-mature-20261003-combined/checkpoint-0-first-open.json",
+      "inputSha256": "c75246cd2deb356aca0bf848c0504c45b125cee72818e7102884d498acba0ff3",
+      "runtimeSha256": "b4015f9c1e9cf68a8ca22ff067012a7a73918c178deca6711b5d2f0793c7e4f9",
+      "assets": [
+        {
+          "asset": "barrels/pad19-a20-l12.bin",
+          "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+        },
+        {
+          "asset": "barrels/pad19-a30-l12.bin",
+          "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+        },
+        {
+          "asset": "barrels/pad19-a45-l12.bin",
+          "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+        },
+        {
+          "asset": "barrels/periodic-padang19s-l12.bin",
+          "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+        }
+      ]
+    },
+    "clock": 167.38333333333316,
+    "selection": {
+      "criteria": {
+        "minimumJoinedSpanMeters": 12,
+        "minimumJoinedEndDistanceMeters": 4.5,
+        "minimumFrontEndpointDistanceMeters": 3,
+        "minimumPhysicalEdgeDistanceMeters": 3,
+        "minimumLocalWeight": 0.9,
+        "minimumLocalFormed": 0.9,
+        "minimumLifeFraction": 0.2,
+        "maximumLifeFraction": 0.75,
+        "minimumAirGapMeters": 0.15
+      },
+      "metrics": {
+        "front": 0,
+        "sourceX": 156.5,
+        "sourceSigma": 16.269277572631836,
+        "sourceRecordIndex": 15,
+        "strip": 35,
+        "runFirst": 0,
+        "runLast": 45,
+        "joinedSpanMeters": 22.273452758789062,
+        "joinedEndDistanceMeters": 4.504175186157227,
+        "frontEndpointDistanceMeters": 3.0041751861572266,
+        "physicalEdgeDistanceMeters": 3.5,
+        "phase": [
+          1,
+          1
+        ],
+        "overturned": [
+          1,
+          1
+        ],
+        "weight": [
+          1,
+          1
+        ],
+        "formed": [
+          1,
+          1
+        ],
+        "life": [
+          0.21706506609916687,
+          0.23215484619140625
+        ]
+      },
+      "sourceRecordIndex": 15,
+      "geometrySeaTime": 167.38333333333316,
+      "selectionHostSeaTime": 167.38333333333316,
+      "actualDrawSourceMatches": true,
+      "eye": {
+        "position": [
+          156.14046223958334,
+          1.1970554205016088,
+          -10.510295232137045
+        ],
+        "levels": [
+          1.09044681817105,
+          1.5168812274932857,
+          1.9084650335888482
+        ],
+        "strip": 35,
+        "row": 79,
+        "front": 0,
+        "sigma": 15.823796272277832
+      },
+      "target": {
+        "position": [
+          156.63602193196616,
+          1.211006676159398,
+          -10.514911015828451
+        ],
+        "levels": [
+          1.105972495346727,
+          1.5261092185974119,
+          1.9418088563866356
+        ],
+        "strip": 36,
+        "row": 79,
+        "front": 0,
+        "sigma": 16.318761825561523
+      }
+    },
+    "probes": [
+      {
+        "name": "eye",
+        "position": [
+          156.14046223958334,
+          1.1970554205016088,
+          -10.510295232137045
+        ],
+        "drawingLevels": [
+          1.09044681817105,
+          1.5168812274932857,
+          1.9084650335888482
+        ],
+        "contact": {
+          "answered": true,
+          "inWater": false,
+          "surfaceY": 1.09044681817105,
+          "normalX": 0.0012129614159485263,
+          "normalY": 0.5258764977930898,
+          "normalZ": 0.8505600730068852,
+          "floorY": 1.09044681817105,
+          "waterFloorY": null,
+          "ceilingY": 1.5168812274932857,
+          "ceilingTopY": 1.9084650335888482,
+          "lipShare": 0,
+          "lipVX": 0,
+          "lipVY": 0,
+          "lipVZ": 0,
+          "lipWeight": 0,
+          "tangentX": 0.99168024184563,
+          "tangentZ": 0.12872566928547255,
+          "life": 0.22209480927873512
+        },
+        "contactAir": true,
+        "floorDifferenceMeters": 0,
+        "ceilingDifferenceMeters": 0,
+        "cubicBaseHeight": 1.7483053689546126
+      },
+      {
+        "name": "target",
+        "position": [
+          156.63602193196616,
+          1.211006676159398,
+          -10.514911015828451
+        ],
+        "drawingLevels": [
+          1.105972495346727,
+          1.5261092185974119,
+          1.9418088563866356
+        ],
+        "contact": {
+          "answered": true,
+          "inWater": false,
+          "surfaceY": 1.105972495346727,
+          "normalX": -0.032635832439576726,
+          "normalY": 0.5212566146759088,
+          "normalZ": 0.8527757290739384,
+          "floorY": 1.105972495346727,
+          "waterFloorY": null,
+          "ceilingY": 1.5261092185974119,
+          "ceilingTopY": 1.9418088563866356,
+          "lipShare": 0,
+          "lipVX": 0,
+          "lipVY": 0,
+          "lipVZ": 0,
+          "lipWeight": 0,
+          "tangentX": 0.9916695045619011,
+          "tangentZ": 0.12880836045053012,
+          "life": 0.23631362874159986
+        },
+        "contactAir": true,
+        "floorDifferenceMeters": 0,
+        "ceilingDifferenceMeters": 0,
+        "cubicBaseHeight": 1.7516610285044731
+      }
+    ]
+  },
+  "decision": "Still incomplete. Predicate proves eligible actual opening at selection, not future source continuity or full moving retirement. No default acceptance, no baseline retry/timeout widening, no new predicate tuning or hardware run."
+}

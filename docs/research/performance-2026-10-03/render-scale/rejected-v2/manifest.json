@@ -1,0 +1,60 @@
+{
+  "classification": "Unexecuted rejected preparation: canonical surfZoneFactory includes own renderSpacing property with undefined value; v2 incorrectly required absent property. Wrong-shaped tiny fixtures did not prove actual protocol. No Chrome/GPU run.",
+  "files": [
+    {
+      "name": "render-scale-passive-adapter-v2.mjs",
+      "bytes": 11331,
+      "sha256": "eab1cda8a1f8dda5beefd4919d4ad5209f4c466b6076e0c92de601e8c5292f20"
+    },
+    {
+      "name": "render-scale-held-helper.mjs",
+      "bytes": 15020,
+      "sha256": "20c448b16cb406460ec20d901caa2e877f0a489d561dee2c7062a7e4e3ea1054"
+    },
+    {
+      "name": "owned-cdp.mjs",
+      "bytes": 1940,
+      "sha256": "2426a753ed68d3895cc8e0f13df94dcc082d709fbeaeb6acb15f64da0014cbd4"
+    },
+    {
+      "name": "derived-baseline.mjs",
+      "bytes": 44317,
+      "sha256": "56339900b4ac6c1f9701e47a3265d443e10ded608b57e5c50e4eda4f9a8708fe"
+    },
+    {
+      "name": "derived-candidate.mjs",
+      "bytes": 44432,
+      "sha256": "7a7884b5b257b0e95eadee2245f8ad20008397f3b48f297eeb13b2d489201b56"
+    },
+    {
+      "name": "render-scale-baseline-plan-v2.json",
+      "bytes": 7946,
+      "sha256": "05b32def700969d55ffec95b5fe4c7f927503ca6af50690dec551321530afc38"
+    },
+    {
+      "name": "render-scale-candidate-plan-v2.json",
+      "bytes": 8230,
+      "sha256": "e84153d6a843fb4162cf54bf935220c22902df796739d3c51dc114b1861727eb"
+    },
+    {
+      "name": "baseline-adapter-meta.json",
+      "bytes": 6597,
+      "sha256": "a8c791e9c50f15b802c226b6ea5641ba74172055fff3d9bd1639db99eb72308e"
+    },
+    {
+      "name": "candidate-adapter-meta.json",
+      "bytes": 6598,
+      "sha256": "8461d8dae9ccb6b58bebeb1459895ee04bcde08fd07fabc0015bf8299f43b78e"
+    },
+    {
+      "name": "render-scale-start-guard-tests.mjs",
+      "bytes": 3293,
+      "sha256": "e572034c3c1015b09a7b26bf6666921f1419c6b1d0acbb44900af29df1a9f2c6"
+    },
+    {
+      "name": "start-guard-tests.json",
+      "bytes": 2392,
+      "sha256": "65f044105a2c410271cbfc488ec5d0ea82b0d7e773c486773d1c9473a0b7bc81"
+    }
+  ]
+}

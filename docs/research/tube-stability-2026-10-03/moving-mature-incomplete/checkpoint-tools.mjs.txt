@@ -1,0 +1,17 @@
+/** QA-only compact checkpoint decoder; original archived checkpoint/report bytes are never rewritten. */
+export function decodeTypedPrefix(value){
+ const constructors={Float32Array,Float64Array,Uint8Array,Uint16Array,Uint32Array,Int32Array};
+ if(!value||value.encoding!=='base64'||value.endian!=='little'||!Object.hasOwn(constructors,value.type)||!Number.isInteger(value.length)||value.length<0)throw Error('Unsupported compact typed field');
+ if(new Uint8Array(new Uint16Array([1]).buffer)[0]!==1)throw Error('Explicit little-endian oracle required');
+ const C=constructors[value.type],bytes=Buffer.from(value.base64,'base64');
+ if(bytes.length!==value.byteLength||bytes.length!==value.length*C.BYTES_PER_ELEMENT||bytes.toString('base64')!==value.base64)throw Error('Compact typed length/encoding mismatch');
+ const copy=Uint8Array.from(bytes);return new C(copy.buffer);
+}
+export function decodeCompactCheckpoint(value){
+ if(value.schema!==2||value.status.seaTime!==value.row.seaTime||value.presentation.sourceSeaTime!==value.status.seaTime||value.presentation.waterTime!==value.status.seaTime)throw Error('Compact checkpoint schema/clock authority mismatch');
+ const front=decodeTypedPrefix(value.front),surfaceHeight=decodeTypedPrefix(value.surfaceHeight),maskNodes=decodeTypedPrefix(value.maskNodes),loft={};
+ if(!(front instanceof Float32Array)||front.length!==9*value.frontCount||!(surfaceHeight instanceof Float32Array)||surfaceHeight.length!==value.waterGrid.nx*value.waterGrid.nz||!(maskNodes instanceof Uint8Array)||maskNodes.length!==value.maskGrid.nx*value.maskGrid.nz)throw Error('Compact domain/prefix mismatch');
+ for(const[k,v]of Object.entries(value.loft))loft[k]=v?.encoding==='base64'?decodeTypedPrefix(v):v;
+ if(loft.positions.length!==3*loft.vertexCount||loft.normals.length!==3*loft.vertexCount||loft.indices.length!==loft.indexCount||loft.throat.length!==4*loft.vertexCount)throw Error('Compact active loft prefix mismatch');
+ return{...value,front,surfaceHeight,maskNodes,loft};
+}

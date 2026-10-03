@@ -1,0 +1,82 @@
+{
+  "scope": "tiny CPU-only tests of exact generated observational wrapper and ordinary guard; no browser/GPU",
+  "derivedSha256": "56339900b4ac6c1f9701e47a3265d443e10ded608b57e5c50e4eda4f9a8708fe",
+  "scriptSha256": "e572034c3c1015b09a7b26bf6666921f1419c6b1d0acbb44900af29df1a9f2c6",
+  "results": [
+    {
+      "name": "canonical omitted request uses observed default2",
+      "passed": true,
+      "accepted": true,
+      "failures": []
+    },
+    {
+      "name": "wrong actual grid rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Render/contact/raster spacing changed"
+      ]
+    },
+    {
+      "name": "wrong independent mask rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Render/contact/raster spacing changed"
+      ]
+    },
+    {
+      "name": "explicit spacing2 override rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Actual rider/contact start options differ"
+      ]
+    },
+    {
+      "name": "explicit undefined option rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Actual rider/contact start options differ"
+      ]
+    },
+    {
+      "name": "no rider rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Actual rider/contact start options differ",
+        "Actual worker config differs:spot",
+        "Actual worker config differs:seed",
+        "Actual worker config differs:significantHeight",
+        "Actual worker config differs:peakPeriod",
+        "Actual worker config differs:directionDegrees",
+        "Actual worker config differs:spreading",
+        "Actual worker config differs:tide",
+        "Actual worker config differs:windSpeed",
+        "Actual worker config differs:stage",
+        "Actual worker config differs:compute",
+        "Actual worker config differs:dx",
+        "Actual worker config differs:fineSpacing",
+        "Actual worker config differs:componentCount"
+      ]
+    },
+    {
+      "name": "wrong case count rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Actual rider/contact start options differ"
+      ]
+    },
+    {
+      "name": "wrong actual config rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Actual worker config differs:componentCount"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,175 @@
+{
+  "variant": "baseline",
+  "plan": "true",
+  "adapterSha256": "eab1cda8a1f8dda5beefd4919d4ad5209f4c466b6076e0c92de601e8c5292f20",
+  "canonicalSha256": "84e580b651e8ec1dcd028599d1c931b5d96a4e50c1299f9cdf38ee78dbf5d5cd",
+  "derivedSha256": "56339900b4ac6c1f9701e47a3265d443e10ded608b57e5c50e4eda4f9a8708fe",
+  "heldHelperSha256": "20c448b16cb406460ec20d901caa2e877f0a489d561dee2c7062a7e4e3ea1054",
+  "launcherSha256": "2426a753ed68d3895cc8e0f13df94dcc082d709fbeaeb6acb15f64da0014cbd4",
+  "equivalence": {
+    "graphicsSourceSha256": "39e0bd72abe3bee7daf39f022775a4a2688a6ba798f02ca3564a1109ebfcea42",
+    "detected": {
+      "preset": "high",
+      "water": "accurate",
+      "lowPerformance": false
+    },
+    "high": {
+      "renderScale": 1,
+      "nativePixelDensity": true,
+      "frameLimit": 60,
+      "waterSimulation": "auto",
+      "seaDetail": "rich",
+      "caustics": true,
+      "sprayMist": true,
+      "oceanView": "far",
+      "foam": "detailed",
+      "waterLook": "rich",
+      "particles": "high",
+      "preset": "high"
+    },
+    "custom": {
+      "renderScale": 0.8571428571428571,
+      "nativePixelDensity": true,
+      "frameLimit": 60,
+      "waterSimulation": "auto",
+      "seaDetail": "rich",
+      "caustics": true,
+      "sprayMist": true,
+      "oceanView": "far",
+      "foam": "detailed",
+      "waterLook": "rich",
+      "particles": "high",
+      "preset": "custom"
+    },
+    "resolvedHigh": {
+      "pixelRatio": 1.75,
+      "frameInterval": 16.666666666666668,
+      "stage": 2,
+      "compute": "auto",
+      "richSea": true,
+      "caustics": true,
+      "sprayMist": true,
+      "oceanView": "far",
+      "detailedFoam": true,
+      "waterLook": "rich",
+      "particles": "high",
+      "stillBackdrop": false,
+      "shadows": "surfaces",
+      "surferLodDistance": 12,
+      "textureCap": 2048
+    },
+    "resolvedCustom": {
+      "pixelRatio": 1.5,
+      "frameInterval": 16.666666666666668,
+      "stage": 2,
+      "compute": "auto",
+      "richSea": true,
+      "caustics": true,
+      "sprayMist": true,
+      "oceanView": "far",
+      "detailedFoam": true,
+      "waterLook": "rich",
+      "particles": "high",
+      "stillBackdrop": false,
+      "shadows": "surfaces",
+      "surferLodDistance": 12,
+      "textureCap": 2048
+    },
+    "differences": [
+      "pixelRatio"
+    ],
+    "ownSurferLodDistance": "Infinity for both via ownSurferDetail",
+    "shaderImplementationUnchanged": true,
+    "pointUniformSourceSha256": "23e722c6880c86c2e4ec81af681ad72732923bdd418695bd41593726db250439",
+    "threeMaterialsSourceSha256": "745d17a34b26ea6d59e35b6f13f6277d80c219f77db464516708bf726f02a8a8"
+  },
+  "changes": [
+    {
+      "name": "owned-launcher",
+      "beforeSha256": "a6d65153af2ca7429aa59dfd268e2c297d9e3500718cafe99c3f11ba31ca2816",
+      "afterSha256": "d84bc42d0b820299a9e5eaeb3ac074fcd70b738b1a1c9cb6ee4cee3d9416d344"
+    },
+    {
+      "name": "imports",
+      "beforeSha256": "bb87b15fa5f195fc498b3bc2d71f739b2ffeed01cf16f3a91975f6ca972e8257",
+      "afterSha256": "21f5ea7f89c580a0748c5e04cc92d5ed38b0e328ab2ddc6088810192c8171c3b"
+    },
+    {
+      "name": "selected-row",
+      "beforeSha256": "e26667f75deb1f23e097db93f8af03d5bf30c945f73249dd7f729c07c0534463",
+      "afterSha256": "e8445ce101a41789e0dea8e96262286fd7f813bbeee511f66ddf68df197e05c6"
+    },
+    {
+      "name": "feature",
+      "beforeSha256": "f39dae71a198a0590fd11d28535b8a7f0dfc205ec34d8a76bedd6854fcb9be86",
+      "afterSha256": "52bd476eaedccfb970687a5b8faaef40f8b486f5878b1ec952e681296d163f9d"
+    },
+    {
+      "name": "edition-guard",
+      "beforeSha256": "6e513bec195cbb0e4742e1051757cd4db70054a374aea4b18b203328035619b5",
+      "afterSha256": "e52f3b1c8c77c97de912cf4f72d4e0e9ccea629b12ed470a861e555ea084c6d3"
+    },
+    {
+      "name": "expected-buffer",
+      "beforeSha256": "e72ec575c25bbfb84540409320aa370b2ed07fcc7e7141bc46b1d119be1604bb",
+      "afterSha256": "2fd6bcfad93395a6aff25624ab33f4d0b74159ab2d59d29aa7c620bf30fe1627"
+    },
+    {
+      "name": "expected-graphics",
+      "beforeSha256": "4be8872513a840828fd293fc13f3e21044f36faacbb821101e57378339af772b",
+      "afterSha256": "af531c8517d1d6270a16dc56362f5df70bcbf4f3ac77cf5dcc9ca698abfd7551"
+    },
+    {
+      "name": "comparison-label",
+      "beforeSha256": "f8aa7bbc04a68c45cabdf72c13770205c29eda21dc0ed67712b06da885aea95a",
+      "afterSha256": "41b15fafcb66b8ce209d45ab227a21b966c78b20107840b57262ea178ab5c3bf"
+    },
+    {
+      "name": "baseline-comparable",
+      "beforeSha256": "913e4b17f228d594b007cdeba8b8d129279e61a788ad33810b773992015c97a7",
+      "afterSha256": "738c116063b4207e787d4fb789bcb0d7278c681b6a202d2530c844345ee6fabf"
+    },
+    {
+      "name": "worker-start-observer",
+      "beforeSha256": "dde6e0699b74026aeabd4cf6aa50ce61e5e8ee82eda99b6aee821e4b1c5588f0",
+      "afterSha256": "1b10ae90c8bf4f04fc7d734cd4b0eefe109453b53de960e37fbcb68030867e48"
+    },
+    {
+      "name": "worker-start-output",
+      "beforeSha256": "fed221ca63f1a7e55bfbfc3698f3bd24c2910846828c30349862e83b9574c888",
+      "afterSha256": "2435b5e2b13e31f35262b115c05d4cadf657a5a0332fb41961cc1d37f653c958"
+    },
+    {
+      "name": "physics-render-guards",
+      "beforeSha256": "21da46f725e4700cdea32d6779992fbca17b9d0d5cd0c50dc4c9a6fb1ac9bf22",
+      "afterSha256": "0241bbdcb1c1e4739ab4a72f3a3304888d446a3058c1a00dc5dd46fc51d21544"
+    },
+    {
+      "name": "plan-equivalence",
+      "beforeSha256": "d271a614fdd6c182a873b914a9d85997fe3231d5275e1fea9f28f3009217dae0",
+      "afterSha256": "ae2df96c3057caf66346e393dfd1fab694ac0f737f9ef59705d1de3d69eb1158"
+    },
+    {
+      "name": "held-after-pause",
+      "beforeSha256": "2e02020e75db49fec211bce46c5db955f4f04a106b1a34ae55dc34e45cb2e57e",
+      "afterSha256": "653e101c5e7e50c6ef451026761735d19caf5043abb8a5534357946f5534db5d"
+    },
+    {
+      "name": "held-function",
+      "beforeSha256": "ae5c138cd4b2b18a0fd7358d3e301372af634f5baab9d80d486b118550dde377",
+      "afterSha256": "464ae0f286763d51aaf1b496dc80730bba2e2f0c626c4d5904bbbadf2c33a75b"
+    },
+    {
+      "name": "bounded-open",
+      "beforeSha256": "57e70a8740ec80e7783d33407343700e14e8d70812396158962fb25f9c88c9ab",
+      "afterSha256": "8704e50d69c7f873ed5766d8762a8ef7c9959ad8cccef7dd4aca8fe29cbe4658"
+    },
+    {
+      "name": "bounded-close",
+      "beforeSha256": "f0db613852669ae4730b94cbcbf7b9e737c097c1e4919c72adb762ac84ac227b",
+      "afterSha256": "ceea5eb1cf68d4c28342b44bc78f2ae7fd2e2efef6adb9f92ca43884b3af68dd"
+    }
+  ],
+  "productionEdited": false,
+  "sourceRuntimeAggregate": "7c2e14bade277ece4f1100a09dda8fe731073a41572a6619cfeb2970328fc7a3"
+}

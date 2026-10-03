@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "status": "CPU-only prepared; no browser started; GPU permission pending",
+  "checks": {
+    "syntax": true,
+    "pureTests": 9,
+    "oldHelperDriverHashesUnchanged": true,
+    "noProductionFilesChanged": true,
+    "noCpuBenchmark": true,
+    "noBrowserOrGpuRun": true,
+    "trackedCameraUsesMatchingDrawnControls": true
+  },
+  "records": [
+    {
+      "path": "/private/tmp/tube-mature-moving-driver.mjs",
+      "sha256": "dd67db48aaea3a88ab773280b5f4b9e1d9138439e20c680f9a24b10046a2703f",
+      "bytes": 20875
+    },
+    {
+      "path": "/private/tmp/tube-mature-moving-helper.mjs",
+      "sha256": "ccaa33b33af137fa4a35b9422810495f127ebd840005b534159bfef3d467178d",
+      "bytes": 28487
+    },
+    {
+      "path": "/private/tmp/tube-mature-moving-helper.test.mjs",
+      "sha256": "97982e08f71706dc7adffd5a82c491732608ef248ba602592d8d8e2def6d0d03",
+      "bytes": 7869
+    },
+    {
+      "path": "/private/tmp/tube-mature-moving-query-entry.mjs",
+      "sha256": "db7f27b53c1ea14b0899f26dfca415b2efd31d48a51cd894d348c43f6f3eb5cf",
+      "bytes": 211
+    },
+    {
+      "path": "/private/tmp/tube-mature-checkpoint-tools.mjs",
+      "sha256": "e298775edd4b33c29d1c50de9e6b82ce41f4c85269003d9f11489774696006e8",
+      "bytes": 2006
+    },
+    {
+      "path": "/private/tmp/tube-mature-moving-plan-baseline.json",
+      "sha256": "9b6a8a514bf4c8f7613ad3cd43f1fa3aa727d493969e9865685c1ba24a06ebf2",
+      "bytes": 6026
+    },
+    {
+      "path": "/private/tmp/tube-mature-moving-plan-combined.json",
+      "sha256": "5e9c1405335e8a181028eadfacfb32a27fcc317014962dcb80b4698cf73bf124",
+      "bytes": 150221
+    },
+    {
+      "path": "/private/tmp/tube-mature-moving-tests.txt",
+      "sha256": "6ea8f97f904c0b8c84f37a47d2e9c655e0a924509a6ba57ee4377d2f77513a6c",
+      "bytes": 1141
+    },
+    {
+      "path": "/private/tmp/tube-mature-moving-intent.md",
+      "sha256": "2452025d1c0fff77d2f57ced706ad0d40448792a9715686f9ec19eb1b7ed14f1",
+      "bytes": 4120
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "classification": "Invalid ordinary guard: actual Worker start omits renderSpacing; runtime default resolves2. No held capture; no retry. Original completed90s passive data retained without claiming full ordinary proof.",
+  "chromeClosed": true,
+  "files": [
+    {
+      "name": "baseline-fps.json",
+      "bytes": 82561,
+      "sha256": "d441635a6decbab5dfdea3cb842d29cefb5a46b9d2f86a660853cfd312866c46"
+    },
+    {
+      "name": "baseline-fps-High_baseline_-Ride_Padang.png",
+      "bytes": 4196586,
+      "sha256": "9a65d6414d1403ae0dd8e698599a6f578e887f89c56469202c89af10bd936ef7"
+    },
+    {
+      "name": "baseline-adapter-meta.json",
+      "bytes": 6598,
+      "sha256": "a01f6b8f32bdfe1ab0d515b3c8b5945c7f0b289a80570b460b3ef27ce1b07034"
+    },
+    {
+      "name": "render-scale-passive-adapter.mjs",
+      "bytes": 11168,
+      "sha256": "7dfb1d4e1a3d0872c639e348fa7d1dcbb5f8d7ea00755b51a72998730970d13f"
+    },
+    {
+      "name": "render-scale-held-helper.mjs",
+      "bytes": 15020,
+      "sha256": "20c448b16cb406460ec20d901caa2e877f0a489d561dee2c7062a7e4e3ea1054"
+    },
+    {
+      "name": "owned-cdp.mjs",
+      "bytes": 1940,
+      "sha256": "2426a753ed68d3895cc8e0f13df94dcc082d709fbeaeb6acb15f64da0014cbd4"
+    },
+    {
+      "name": "derived-baseline.mjs",
+      "bytes": 44154,
+      "sha256": "9e88ed2428669e380459e7eca8b70bf1f1bba4e8a1f1943e405faed4873ef5ff"
+    },
+    {
+      "name": "render-scale-baseline-plan.json",
+      "bytes": 7946,
+      "sha256": "05b32def700969d55ffec95b5fe4c7f927503ca6af50690dec551321530afc38"
+    },
+    {
+      "name": "derived-candidate.mjs",
+      "bytes": 44269,
+      "sha256": "954e6c3d890e59c3b06dd046b32b3fd22fbae887b4e989db45b39f914df8a5d7"
+    },
+    {
+      "name": "render-scale-candidate-plan.json",
+      "bytes": 8230,
+      "sha256": "e84153d6a843fb4162cf54bf935220c22902df796739d3c51dc114b1861727eb"
+    },
+    {
+      "name": "candidate-adapter-meta.json",
+      "bytes": 6598,
+      "sha256": "ed23a846cbb5d82c0732db3f5615fd0e3d45b3153d1e732f87c76390ed835f62"
+    }
+  ]
+}

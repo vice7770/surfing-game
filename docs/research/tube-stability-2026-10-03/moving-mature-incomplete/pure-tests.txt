@@ -1,0 +1,17 @@
+✔ fixed scalar thresholds include exact boundaries and reject young/end-tapered or nonfinite controls (1.054958ms)
+✔ measures actual control and joined-cut endpoints separately; rejects fragmented source or ambiguous strip authority (1.331625ms)
+✔ first source-record order controls selection; a later larger opening never wins, opaque-air failure can reject a scalar candidate (0.375458ms)
+✔ exact typed active-prefix transport preserves F32 bits and NaN sentinels without unused tails (0.825917ms)
+✔ requires verified mature first source and never changes front/source identity (0.201916ms)
+✔ vanished fixed source or open overlap cut cannot invent touchdown/retirement (0.113959ms)
+✔ actual phase2 plus three persistent same-column removals completes lifecycle once (0.293042ms)
+✔ compact decoder checks exact clocks/domain/prefixes and preserves all four throat values per vertex (8.047291ms)
+✔ tracked camera uses prior-draw control sigma rather than current host; both buffers remain unchanged (0.62775ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 67.955

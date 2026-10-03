@@ -1,0 +1,12 @@
+import {spawn} from 'node:child_process';import{mkdtempSync,rmSync}from'node:fs';import{tmpdir}from'node:os';import{join}from'node:path';import{Page,sleep}from "file:///Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs";
+export async function launch({url,width,height,port,args=[]}){
+ let occupied=false;try{const r=await fetch('http://127.0.0.1:'+port+'/json/version');occupied=r.ok;}catch{}if(occupied)throw Error('Owned CDP port already occupied');
+ const profile=mkdtempSync(join(tmpdir(),'breakline-render-scale-'));let chrome,page,closed=false;
+ const close=async()=>{if(closed)return;closed=true;try{page?.socket?.close();chrome?.kill();await sleep(500);}finally{rmSync(profile,{recursive:true,force:true});}};
+ try{chrome=spawn(process.env.CHROME??'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',['--remote-debugging-port='+port,'--user-data-dir='+profile,'--no-first-run','--no-default-browser-check','--disable-extensions','--disable-backgrounding-occluded-windows','--disable-renderer-backgrounding','--disable-background-timer-throttling','--autoplay-policy=no-user-gesture-required','--window-size='+width+','+(height+40),'--window-position=60,60','--app='+url,...args],{stdio:'ignore'});
+ let launchError;chrome.once('error',error=>{launchError=error;});let target;for(let n=0;n<100&&!target;n++){await sleep(150);if(launchError)throw launchError;try{const list=await(await fetch('http://127.0.0.1:'+port+'/json/list')).json();target=list.find(t=>t.type==='page'&&t.url.startsWith(url.split('?')[0]));}catch{}}
+ if(!target)throw Error('Owned quality Chrome did not open target');page=await Page.connect(target.webSocketDebuggerUrl);page.close=close;await page.send('Page.enable');await page.send('Runtime.enable');await page.send('Emulation.setFocusEmulationEnabled',{enabled:true});await page.fitViewport(width,height);return page;
+ }catch(error){await close();throw error;}
+}
+
+export{sleep};

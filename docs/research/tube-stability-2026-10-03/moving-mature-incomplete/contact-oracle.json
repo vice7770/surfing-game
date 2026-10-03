@@ -1,0 +1,188 @@
+{
+  "schema": 1,
+  "method": "Offline decoded exact compact checkpoint. Contact rebuilt from full front and complete F32 cubic-height domain; no water stepping, browser, rendering or timing benchmark. Draw/contact levels are measured rather than presumed equal; no shader-displacement claim.",
+  "source": {
+    "helperSha256": "990fd6e43413ea8c1551de2b5462d7305ed28425b8e71cf069c4f4f5676f7a38",
+    "decoderSha256": "e298775edd4b33c29d1c50de9e6b82ce41f4c85269003d9f11489774696006e8",
+    "inputPath": "/private/tmp/tube-moving-mature-20261003-combined/checkpoint-0-first-open.json",
+    "inputSha256": "c75246cd2deb356aca0bf848c0504c45b125cee72818e7102884d498acba0ff3",
+    "runtimeSha256": "b4015f9c1e9cf68a8ca22ff067012a7a73918c178deca6711b5d2f0793c7e4f9",
+    "assets": [
+      {
+        "asset": "barrels/pad19-a20-l12.bin",
+        "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+      },
+      {
+        "asset": "barrels/pad19-a30-l12.bin",
+        "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+      },
+      {
+        "asset": "barrels/pad19-a45-l12.bin",
+        "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+      },
+      {
+        "asset": "barrels/periodic-padang19s-l12.bin",
+        "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+      }
+    ]
+  },
+  "clock": 167.38333333333316,
+  "selection": {
+    "criteria": {
+      "minimumJoinedSpanMeters": 12,
+      "minimumJoinedEndDistanceMeters": 4.5,
+      "minimumFrontEndpointDistanceMeters": 3,
+      "minimumPhysicalEdgeDistanceMeters": 3,
+      "minimumLocalWeight": 0.9,
+      "minimumLocalFormed": 0.9,
+      "minimumLifeFraction": 0.2,
+      "maximumLifeFraction": 0.75,
+      "minimumAirGapMeters": 0.15
+    },
+    "metrics": {
+      "front": 0,
+      "sourceX": 156.5,
+      "sourceSigma": 16.269277572631836,
+      "sourceRecordIndex": 15,
+      "strip": 35,
+      "runFirst": 0,
+      "runLast": 45,
+      "joinedSpanMeters": 22.273452758789062,
+      "joinedEndDistanceMeters": 4.504175186157227,
+      "frontEndpointDistanceMeters": 3.0041751861572266,
+      "physicalEdgeDistanceMeters": 3.5,
+      "phase": [
+        1,
+        1
+      ],
+      "overturned": [
+        1,
+        1
+      ],
+      "weight": [
+        1,
+        1
+      ],
+      "formed": [
+        1,
+        1
+      ],
+      "life": [
+        0.21706506609916687,
+        0.23215484619140625
+      ]
+    },
+    "sourceRecordIndex": 15,
+    "geometrySeaTime": 167.38333333333316,
+    "selectionHostSeaTime": 167.38333333333316,
+    "actualDrawSourceMatches": true,
+    "eye": {
+      "position": [
+        156.14046223958334,
+        1.1970554205016088,
+        -10.510295232137045
+      ],
+      "levels": [
+        1.09044681817105,
+        1.5168812274932857,
+        1.9084650335888482
+      ],
+      "strip": 35,
+      "row": 79,
+      "front": 0,
+      "sigma": 15.823796272277832
+    },
+    "target": {
+      "position": [
+        156.63602193196616,
+        1.211006676159398,
+        -10.514911015828451
+      ],
+      "levels": [
+        1.105972495346727,
+        1.5261092185974119,
+        1.9418088563866356
+      ],
+      "strip": 36,
+      "row": 79,
+      "front": 0,
+      "sigma": 16.318761825561523
+    }
+  },
+  "probes": [
+    {
+      "name": "eye",
+      "position": [
+        156.14046223958334,
+        1.1970554205016088,
+        -10.510295232137045
+      ],
+      "drawingLevels": [
+        1.09044681817105,
+        1.5168812274932857,
+        1.9084650335888482
+      ],
+      "contact": {
+        "answered": true,
+        "inWater": false,
+        "surfaceY": 1.09044681817105,
+        "normalX": 0.0012129614159485263,
+        "normalY": 0.5258764977930898,
+        "normalZ": 0.8505600730068852,
+        "floorY": 1.09044681817105,
+        "waterFloorY": null,
+        "ceilingY": 1.5168812274932857,
+        "ceilingTopY": 1.9084650335888482,
+        "lipShare": 0,
+        "lipVX": 0,
+        "lipVY": 0,
+        "lipVZ": 0,
+        "lipWeight": 0,
+        "tangentX": 0.99168024184563,
+        "tangentZ": 0.12872566928547255,
+        "life": 0.22209480927873512
+      },
+      "contactAir": true,
+      "floorDifferenceMeters": 0,
+      "ceilingDifferenceMeters": 0,
+      "cubicBaseHeight": 1.7483053689546126
+    },
+    {
+      "name": "target",
+      "position": [
+        156.63602193196616,
+        1.211006676159398,
+        -10.514911015828451
+      ],
+      "drawingLevels": [
+        1.105972495346727,
+        1.5261092185974119,
+        1.9418088563866356
+      ],
+      "contact": {
+        "answered": true,
+        "inWater": false,
+        "surfaceY": 1.105972495346727,
+        "normalX": -0.032635832439576726,
+        "normalY": 0.5212566146759088,
+        "normalZ": 0.8527757290739384,
+        "floorY": 1.105972495346727,
+        "waterFloorY": null,
+        "ceilingY": 1.5261092185974119,
+        "ceilingTopY": 1.9418088563866356,
+        "lipShare": 0,
+        "lipVX": 0,
+        "lipVY": 0,
+        "lipVZ": 0,
+        "lipWeight": 0,
+        "tangentX": 0.9916695045619011,
+        "tangentZ": 0.12880836045053012,
+        "life": 0.23631362874159986
+      },
+      "contactAir": true,
+      "floorDifferenceMeters": 0,
+      "ceilingDifferenceMeters": 0,
+      "cubicBaseHeight": 1.7516610285044731
+    }
+  ]
+}

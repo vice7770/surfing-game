@@ -1,0 +1,64 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {MATURE_CRITERIA,sourceMaturityAt,meetsMatureCriteria,firstMatureSource,drawnControlAt,encodeTypedPrefix,MatureFixedFrontLifecycle} from './tube-mature-moving-helper.mjs';
+const valid={front:24,sourceX:46.5,sourceSigma:8,joinedSpanMeters:16,joinedEndDistanceMeters:8,frontEndpointDistanceMeters:8,physicalEdgeDistanceMeters:8,phase:[1,1],overturned:[1,1],weight:[1,1],formed:[1,1],life:[.5,.5]};
+const eligible={front:24,sourceX:46.5,verifiedAir:true,eligible:true};
+const row=(extra={})=>({front:24,sourceX:46.5,seaTime:170,phase:1,verifiedAir:true,indexedLift:true,sourcePresent:true,...extra});
+function fixture(){
+ const front=new Float32Array(9*17);for(let i=0;i<17;i++)front.set([i,0,24,i,.5,1,7,0,0],9*i);
+ const n=33,L={sliceCount:n,sliceJoined:new Uint8Array(n).fill(1),sliceFront:new Int32Array(n).fill(24),sliceSigma:Float32Array.from({length:n},(_,i)=>i/2),slicePhase:new Uint8Array(n).fill(1),sliceOverturned:new Uint8Array(n).fill(1),sliceWeight:new Float32Array(n).fill(1),sliceFormed:new Float32Array(n).fill(1),sliceLife:new Float32Array(n).fill(.5)};L.sliceJoined[n-1]=0;
+ return{front,count:17,loft:L,grid:{xMin:0,nx:17,spacing:1}};
+}
+test('fixed scalar thresholds include exact boundaries and reject young/end-tapered or nonfinite controls',()=>{
+ assert.equal(meetsMatureCriteria(valid,MATURE_CRITERIA),true);
+ for(const change of [{joinedSpanMeters:11.999},{joinedEndDistanceMeters:4.499},{frontEndpointDistanceMeters:2.999},{physicalEdgeDistanceMeters:2.999},{phase:[1,2]},{overturned:[1,0]},{weight:[.9,.899]},{formed:[.899,1]},{life:[.199,.5]},{life:[.5,.751]},{life:[NaN,.5]},{life:[]}])assert.equal(meetsMatureCriteria({...valid,...change},MATURE_CRITERIA),false);
+ assert.equal(meetsMatureCriteria({...valid,joinedSpanMeters:12,joinedEndDistanceMeters:4.5,frontEndpointDistanceMeters:3,physicalEdgeDistanceMeters:3,weight:[.9,.9],formed:[.9,.9],life:[.2,.75]},MATURE_CRITERIA),true);
+});
+test('measures actual control and joined-cut endpoints separately; rejects fragmented source or ambiguous strip authority',()=>{
+ const f=fixture(),m=sourceMaturityAt(f.front,f.count,f.loft,f.grid,8);assert.equal(m.strip,16);assert.equal(m.joinedSpanMeters,16);assert.equal(m.joinedEndDistanceMeters,8);assert.equal(m.frontEndpointDistanceMeters,8);assert.equal(m.physicalEdgeDistanceMeters,8);assert.equal(meetsMatureCriteria(m,MATURE_CRITERIA),true);
+ f.loft.sliceJoined[12]=0;const cut=sourceMaturityAt(f.front,f.count,f.loft,f.grid,8);assert.equal(cut.runFirst,13);assert.equal(cut.joinedEndDistanceMeters,1.5);assert.equal(meetsMatureCriteria(cut,MATURE_CRITERIA),false);
+ const fragmented=fixture();fragmented.front[9*2+2]=27;assert.equal(sourceMaturityAt(fragmented.front,fragmented.count,fragmented.loft,fragmented.grid,8),null);
+ const ambiguous=fixture();ambiguous.loft.sliceSigma[0]=7.8;ambiguous.loft.sliceSigma[1]=8.1;assert.equal(sourceMaturityAt(ambiguous.front,ambiguous.count,ambiguous.loft,ambiguous.grid,8),null);
+});
+test('first source-record order controls selection; a later larger opening never wins, opaque-air failure can reject a scalar candidate',()=>{
+ const list=[{...valid,weight:[.1,.1]},valid,{...valid,sourceX:48.5,joinedSpanMeters:100}];
+ const first=firstMatureSource(list.length,k=>list[k],m=>meetsMatureCriteria(m,MATURE_CRITERIA),m=>({gap:m.sourceX}));assert.equal(first.index,1);
+ const skipped=firstMatureSource(list.length,k=>list[k],m=>meetsMatureCriteria(m,MATURE_CRITERIA),m=>m===valid?null:{gap:.5});assert.equal(skipped.index,2);
+ assert.equal(firstMatureSource(list.length,k=>list[k],()=>false,()=>({})),null);
+});
+test('exact typed active-prefix transport preserves F32 bits and NaN sentinels without unused tails',()=>{
+ const all=new Float32Array([99,1.1,NaN,-0,8]),view=all.subarray(1,4),packed=encodeTypedPrefix(view,3);assert.equal(packed.type,'Float32Array');assert.equal(packed.length,3);assert.equal(packed.byteLength,12);assert.equal(packed.endian,'little');assert.deepEqual(Buffer.from(packed.base64,'base64'),Buffer.from(view.buffer,view.byteOffset,12));assert.throws(()=>encodeTypedPrefix(view,4),/Invalid/);assert.throws(()=>encodeTypedPrefix(new DataView(all.buffer),1),/Invalid/);
+ const indices=new Uint32Array([1,2,3,999]);assert.equal(encodeTypedPrefix(indices,3).byteLength,12);
+});
+test('requires verified mature first source and never changes front/source identity',()=>{
+ const t=new MatureFixedFrontLifecycle();assert.equal(t.lock({...eligible,eligible:false},1),false);assert.equal(t.lock({...eligible,verifiedAir:false},1),false);assert.equal(t.lock(eligible,2),true);assert.equal(t.lock({...eligible,front:27},3),false);assert.throws(()=>t.observe(row({sourceX:47.5})),/identity changed/);
+});
+test('vanished fixed source or open overlap cut cannot invent touchdown/retirement',()=>{
+ const t=new MatureFixedFrontLifecycle();t.lock(eligible,1);t.observe(row());for(let k=0;k<5;k++)t.observe(row({sourcePresent:false,phase:null,indexedLift:false}));assert.equal(t.opened,true);assert.equal(t.touchdown,false);assert.equal(t.retired,false);assert.equal(t.summary().complete,false);
+});
+test('actual phase2 plus three persistent same-column removals completes lifecycle once',()=>{
+ const t=new MatureFixedFrontLifecycle();t.lock(eligible,1);assert.equal(t.observe(row())[0].kind,'first-open');assert.equal(t.observe(row({phase:2}))[0].kind,'first-touchdown');for(let k=0;k<2;k++)assert.equal(t.observe(row({phase:2,indexedLift:false})).length,0);assert.equal(t.observe(row({phase:2,indexedLift:false}))[0].kind,'first-retired');assert.equal(t.summary().complete,true);assert.equal(t.observe(row({sourcePresent:false,phase:null,indexedLift:false})).length,0);
+});
+
+test('compact decoder checks exact clocks/domain/prefixes and preserves all four throat values per vertex',async()=>{
+ const{decodeCompactCheckpoint}=await import('./tube-mature-checkpoint-tools.mjs');
+ const encode=encodeTypedPrefix,v={schema:2,status:{seaTime:170},row:{seaTime:170},presentation:{sourceSeaTime:170,waterTime:170},frontCount:1,front:encode(new Float32Array(9),9),waterGrid:{nx:2,nz:2},surfaceHeight:encode(new Float32Array([1,2,3,4]),4),maskGrid:{nx:2,nz:2},maskNodes:encode(new Uint8Array(4).fill(255),4),loft:{vertexCount:1,indexCount:0,positions:encode(new Float32Array(3),3),normals:encode(new Float32Array(3),3),indices:encode(new Uint32Array(0),0),throat:encode(new Float32Array([.1,.2,.3,.4]),4)}};
+ assert.equal(decodeCompactCheckpoint(v).loft.throat.length,4);assert.equal(decodeCompactCheckpoint(v).surfaceHeight[3],4);
+ assert.throws(()=>decodeCompactCheckpoint({...v,presentation:{...v.presentation,waterTime:171}}),/clock/);
+ assert.throws(()=>decodeCompactCheckpoint({...v,surfaceHeight:{...v.surfaceHeight,length:3}}),/length/);
+ assert.throws(()=>decodeCompactCheckpoint({...v,loft:{...v.loft,throat:encode(new Float32Array(1),1)}}),/prefix/);
+});
+
+
+test('tracked camera uses prior-draw control sigma rather than current host; both buffers remain unchanged',()=>{
+ const f=fixture(),revision={seaTime:170},current=Float32Array.from(f.front);
+ for(let k=0;k<f.count;k++)current[9*k+3]+=2;
+ const beforeDrawn=Buffer.from(f.front.buffer).toString('hex'),beforeCurrent=Buffer.from(current.buffer).toString('hex');
+ const authority={revision,count:f.count,front:f.front},control=drawnControlAt(authority,revision,24,8);
+ assert.equal(control.sigma,8);assert.equal(current[9*8+3],10);
+ assert.equal(sourceMaturityAt(f.front,f.count,f.loft,f.grid,8).strip,16);
+ assert.equal(sourceMaturityAt(current,f.count,f.loft,f.grid,8).strip,20);
+ assert.equal(drawnControlAt(authority,{seaTime:170},24,8),null);
+ assert.equal(drawnControlAt(authority,revision,24,99),null);
+ assert.equal(Buffer.from(f.front.buffer).toString('hex'),beforeDrawn);assert.equal(Buffer.from(current.buffer).toString('hex'),beforeCurrent);
+});

@@ -1,0 +1,100 @@
+{
+  "scope": "tiny CPU-only exact main.ts surfZoneFactory body + structuredClone, generated observer and ordinary guard; no browser/GPU",
+  "mainSha256": "95d52f07d106be65fa2509a7a6c5fefc736244f61a27c8fbcced5f9ed9037490",
+  "factoryBodySha256": "89e922a0de57bec39157b3989faaf3b6dcc643dc3da5ba390fc86c257d2376c3",
+  "derivedSha256": "9c9f2a5bd988b1731de916310cedfaaef00ab6ba463b27267be5250fe3f36fdb",
+  "scriptSha256": "030ef0c00b2b12438a7546198a679269a042a05618e5518ed99d5a9ca0c1d83c",
+  "results": [
+    {
+      "name": "exact factory own undefined + structured clone passes",
+      "passed": true,
+      "accepted": true,
+      "failures": []
+    },
+    {
+      "name": "wrong actual grid rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Render/contact/raster spacing changed"
+      ]
+    },
+    {
+      "name": "wrong independent mask rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Render/contact/raster spacing changed"
+      ]
+    },
+    {
+      "name": "explicit numeric2 override rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Actual rider/contact start options differ"
+      ]
+    },
+    {
+      "name": "explicit numeric4 override rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Actual rider/contact start options differ"
+      ]
+    },
+    {
+      "name": "explicit null option rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Actual rider/contact start options differ"
+      ]
+    },
+    {
+      "name": "noncanonical missing property rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Actual rider/contact start options differ"
+      ]
+    },
+    {
+      "name": "no rider rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Actual rider/contact start options differ",
+        "Actual worker config differs:spot",
+        "Actual worker config differs:seed",
+        "Actual worker config differs:significantHeight",
+        "Actual worker config differs:peakPeriod",
+        "Actual worker config differs:directionDegrees",
+        "Actual worker config differs:spreading",
+        "Actual worker config differs:tide",
+        "Actual worker config differs:windSpeed",
+        "Actual worker config differs:stage",
+        "Actual worker config differs:compute",
+        "Actual worker config differs:dx",
+        "Actual worker config differs:fineSpacing",
+        "Actual worker config differs:componentCount"
+      ]
+    },
+    {
+      "name": "wrong case count rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Actual rider/contact start options differ"
+      ]
+    },
+    {
+      "name": "wrong actual config rejected",
+      "passed": true,
+      "accepted": false,
+      "failures": [
+        "Actual worker config differs:componentCount"
+      ]
+    }
+  ]
+}
