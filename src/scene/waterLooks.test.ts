@@ -1,11 +1,11 @@
 import { Color, ShaderLib, Vector3, type ShaderMaterial, type WebGLProgramParametersWithUniforms } from 'three';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { FarFieldOcean } from './FarFieldOcean';
 import { LipSheetMesh } from './LipSheetMesh';
 import { SprayPoints } from './SprayPoints';
 import { SPRAY_CAPACITY, SPRAY_STRIDE, WHITEWATER_CAPACITY } from '../wave/SprayCloud';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
-import { churnTexture, churnTextureBaked } from './water/churnTexture';
+import { churnTexture } from './water/churnTexture';
 import { rippleStrength, rippleTexture } from './water/rippleTexture';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import { DEFAULT_WATER_CHOP } from './waterChop';
@@ -30,15 +30,20 @@ function compiled(material: { onBeforeCompile: (shader: WebGLProgramParametersWi
 }
 
 describe('Classic water parity', () => {
-  it('leaves the foam unbaked until the GPU reads the texture: building the water, the spray and the far ocean, in either look, costs none of it', () => {
-    const water = new WaterSurface({ ...source, cubic: true });
+  it('leaves the foam unbaked until the GPU reads the texture: building the water, the spray and the far ocean, in either look, costs none of it', async () => {
+    // Fresh copies of the modules, so no other test's read of the bytes counts, whatever order the tests run in.
+    vi.resetModules();
+    const churn = await import('./water/churnTexture');
+    const fresh = { ...(await import('./WaterSurface')), ...(await import('./SprayPoints')), ...(await import('./FarFieldOcean')) };
+    expect(churn.churnTextureBaked()).toBe(false);
+    const water = new fresh.WaterSurface({ ...source, cubic: true });
     water.setLook('rich');
     compiled(water.mesh.material);
-    const spray = new SprayPoints();
+    const spray = new fresh.SprayPoints();
     spray.setLook('rich');
-    new FarFieldOcean().setLook('rich');
-    expect(churnTexture().image.width).toBe(1024);
-    expect(churnTextureBaked()).toBe(false);
+    new fresh.FarFieldOcean().setLook('rich');
+    expect(churn.churnTexture().image.width).toBe(1024);
+    expect(churn.churnTextureBaked()).toBe(false);
   });
 
   it('keeps the tank water’s Classic shaders exactly as before G8', () => {

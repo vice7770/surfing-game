@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { RGBAFormat } from 'three';
 import { foamCover } from '../foamPattern';
 import { FOAM_BAKE, FOAM_RANGE, inverseNormal, mulberry32 } from './foamBake';
@@ -54,6 +54,65 @@ describe('churn whitewater', () => {
       expect(Math.abs(data[(j * 1024 + i) * 4] - density * 255)).toBeLessThan(14);
       expect(Math.abs(data[(j * 1024 + i) * 4 + 1] - height * 255)).toBeLessThan(14);
     }
+  });
+});
+
+describe('the foam’s bake, off the main thread', () => {
+  /** A stand-in for the bake's worker: it records what it was sent, and the test answers for it. */
+  const fakeWorker = () => {
+    const worker = {
+      onmessage: null as ((event: { data: unknown }) => void) | null,
+      onerror: null as ((event: unknown) => void) | null,
+      sent: [] as unknown[],
+      terminated: false,
+      postMessage(message: unknown) { this.sent.push(message); },
+      terminate() { this.terminated = true; },
+    };
+    return worker;
+  };
+
+  it('starts once with the texture, shows the churn while the worker bakes, then uploads what it hands back', async () => {
+    vi.resetModules();
+    const churn = await import('./churnTexture');
+    const worker = fakeWorker();
+    let started = 0;
+    churn.startFoamBake(() => { started += 1; return worker; });
+    expect(worker.sent).toEqual(['bake']);
+    // Making the texture does not start a second bake.
+    const texture = churn.churnTexture();
+    churn.startFoamBake(() => { started += 1; return worker; });
+    expect(started).toBe(1);
+    // Meanwhile the GPU reads the churn, its height standing in for the two stages, and nothing is baked here.
+    const interim = texture.image.data as Uint8Array;
+    expect(interim.length).toBe(1024 * 1024 * 4);
+    for (const k of [0, 4097, 300000, 1048575]) {
+      expect(interim[k * 4 + 2]).toBe(interim[k * 4 + 1]);
+      expect(interim[k * 4 + 3]).toBe(interim[k * 4 + 1]);
+    }
+    expect(churn.churnTextureBaked()).toBe(false);
+    // The worker's bytes replace them, and the texture is uploaded again.
+    const version = texture.version;
+    const baked = new Uint8Array(1024 * 1024 * 4).fill(7);
+    worker.onmessage?.({ data: baked });
+    expect(worker.terminated).toBe(true);
+    expect(churn.churnTextureBaked()).toBe(true);
+    expect(texture.version).toBeGreaterThan(version);
+    expect(texture.image.data).toBe(baked);
+  });
+
+  it('falls back to baking on the main thread if the worker fails, and needs no worker where there is none', async () => {
+    vi.resetModules();
+    const churn = await import('./churnTexture');
+    const worker = fakeWorker();
+    churn.startFoamBake(() => worker);
+    worker.onerror?.(new Error('no worker'));
+    expect(worker.terminated).toBe(true);
+    expect(churn.churnTextureBaked()).toBe(false);
+    // With no worker to start (tests, or a browser without them), nothing is started and the first read bakes.
+    const none = vi.fn(() => undefined);
+    churn.startFoamBake(none);
+    expect(none).toHaveBeenCalledTimes(1);
+    expect(churn.churnTextureBaked()).toBe(false);
   });
 });
 
