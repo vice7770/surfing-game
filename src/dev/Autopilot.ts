@@ -239,7 +239,10 @@ const TRIM_CROUCH = 0.5;
  * 16° or more within 9 s. Of about 200 pumps tried on a steady 11° face none planed more than 0.3 s longer than
  * holding the band. There the face gives the speed: the pump's S takes the board off its steepest band, and the
  * crouch's up-and-down costs the hull more than the legs put in (crouching twice a second on a held band, the legs
- * did 87 W and the board ran 0.74 m/s slower).
+ * did 87 W and the board ran 0.74 m/s slower). A timed pump pays only where the path itself swings the load on the
+ * feet, which it then flattens for the hull (`pumping.test.ts`' pump track, at 6–9 m/s: it breaks even at a spread of
+ * about 0.09 body weights and keeps +0.3 m/s a pump at 0.25). Holding the band on the Wave Pool the load spreads
+ * 0.08–0.12 body weights (the pool flow probe), so there is nothing for a pump to flatten.
  */
 const PUMP_PERIOD = 2;
 const PUMP_LEAN = 0.3;

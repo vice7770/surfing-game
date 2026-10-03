@@ -10,8 +10,10 @@
 // flow starts in, BOTTOM_END the heading (degrees from the fall line) where the bottom turn is released, TRIM_ONLY=1
 // keeps the rider in the trim once it trims (no further bottom turn or cutback; with FLOW_FROM=trim, from the placement
 // on), holding the face's band (PUMP=1 pumps about it), and each ride then logs its time in the trim on the plane and
-// off it, the face under it where it first dropped off the plane, and the gameplay rules' work meanwhile. SEA=<file>
-// starts from a spun-up sea saved there (and saves it there first when missing), so repeated runs skip the spin-up.
+// off it, the face under it where it first dropped off the plane and how fast the surface rose there, the feet's load
+// (its mean and spread) and the surface's rise under the board while it planed, the legs' net work, and the gameplay
+// rules' work meanwhile. SEA=<file> starts from a spun-up sea saved there (and saves it there first when missing), so
+// repeated runs skip the spin-up.
 // The bed is pool.ts's as committed (POOL is not overridden here).
 //
 // The take-off point (`takeOffPoint`, the breaker depth for the edge's height) lies about 22 m seaward of the tip,
@@ -79,6 +81,11 @@ const PLACES = {
   face: { phase: 'standing', face: 2.5, angle: 50, speed: 6, settle: 0 },
 } as const;
 const PLACE_AHEAD = Number(process.env.PLACE_AHEAD ?? 8);
+/** The trim's load on the feet while planing: its mean and spread (standard deviation), body weights. */
+const trimLoad = (trim: { steps: number; load: number; loadSq: number }) => {
+  const mean = trim.load / trim.steps;
+  return { mean, spread: Math.sqrt(Math.max(0, trim.loadSq / trim.steps - mean * mean)) };
+};
 
 it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => {
   // SIZE=small|medium|big: the pool's size (Medium by default, as the lesson-wave script records it).
@@ -178,10 +185,15 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
   let pressed = '';
   /**
    * The flow's trim this attempt: s on the plane and off it, the gameplay rules' work meanwhile, J, and where it first
-   * dropped off the plane: when (s into the ride), the face's height there (the gauge, m) and its slope under the board.
+   * dropped off the plane: when (s into the ride), the face's height there (the gauge, m), its slope under the board
+   * and how fast the surface rose under the board there (m/s). While it planed: the steps, the load on the feet summed
+   * and squared (body weights: its mean and spread, the up-and-down a pump could flatten), the surface's rise under
+   * the board summed (m/s), and the legs' net work (J).
    */
-  const pumping = { planing: 0, off: 0, rules: 0, offAt: -1, offFace: 0, offSlope: 0 };
+  const pumping = { planing: 0, off: 0, rules: 0, offAt: -1, offFace: 0, offSlope: 0, offRise: 0, steps: 0, load: 0, loadSq: 0, rise: 0, legs: 0 };
+  const cleared = { ...pumping };
   let lastRules = 0;
+  let lastLegs = 0;
   let lines: { t: number; phase: FlowPhase | ''; text: string }[] = [];
   let catchLines: string[] = [];
   const all: { side: number; frontside: boolean; records: FlowRecord[]; outcome: string; seconds: number; pumping: typeof pumping }[] = [];
@@ -260,18 +272,25 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
     }
     if (pilot.state === 'ride' && ride?.phase === 'standing') {
       const rules = rider.work.assist + rider.work.carry + rider.work.leanOut;
+      const legs = rider.work.contact + board.work.rider;
       if (pilot.flowRecords[pilot.flowRecords.length - 1]?.phase === 'trim') {
-        if ((rider as unknown as { planing: boolean }).planing) pumping.planing += SURF_ZONE_STEP;
-        else {
+        const under = runner.water.sampleAt(board.position.x, runner.water.surfaceAt(board.position.x, board.position.z), board.position.z, faceSample);
+        if ((rider as unknown as { planing: boolean }).planing) {
+          const load = rider.contact.load;
+          Object.assign(pumping, {
+            planing: pumping.planing + SURF_ZONE_STEP, steps: pumping.steps + 1, load: pumping.load + load, loadSq: pumping.loadSq + load * load, rise: pumping.rise + under.flowY,
+          });
+        } else {
           pumping.off += SURF_ZONE_STEP;
           if (pumping.offAt < 0 && ride.wave.valid) {
-            const under = runner.water.sampleAt(board.position.x, board.position.y, board.position.z, faceSample);
-            Object.assign(pumping, { offAt: pilot.rideTime, offFace: ride.wave.faceHeight, offSlope: Math.atan(Math.hypot(under.slopeX, under.slopeZ)) * DEG });
+            Object.assign(pumping, { offAt: pilot.rideTime, offFace: ride.wave.faceHeight, offSlope: Math.atan(Math.hypot(under.slopeX, under.slopeZ)) * DEG, offRise: under.flowY });
           }
         }
         pumping.rules += rules - lastRules;
+        pumping.legs += legs - lastLegs;
       }
       lastRules = rules;
+      lastLegs = legs;
     }
     if (pilot.state === 'ride' && ride?.phase === 'standing' && step % 6 === 0 && trace !== 'none') {
       const { wave } = ride;
@@ -310,8 +329,9 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
             + ` face ${record.faceIn.toFixed(2)}→${record.faceOut.toFixed(2)} curl ${metres(record.curlIn)}→${metres(record.curlOut)} ${how}`);
         }
         if (pumping.planing + pumping.off > 0) {
-          const off = pumping.offAt >= 0 ? `, dropping off it at ${pumping.offAt.toFixed(1)} s on a ${pumping.offFace.toFixed(2)} m face sloping ${pumping.offSlope.toFixed(0)}° under the board` : '';
-          log(`  trim (${process.env.PUMP && process.env.PUMP !== '0' ? 'pumping' : 'holding the band'}): ${pumping.planing.toFixed(1)} s on the plane, ${pumping.off.toFixed(1)} s off it${off}; the gameplay rules' work meanwhile ${pumping.rules.toFixed(0)} J`);
+          const off = pumping.offAt >= 0 ? `, dropping off it at ${pumping.offAt.toFixed(1)} s on a ${pumping.offFace.toFixed(2)} m face sloping ${pumping.offSlope.toFixed(0)}° under the board, rising ${pumping.offRise.toFixed(2)} m/s there` : '';
+          const planed = pumping.steps ? `; planing, the feet's load ${trimLoad(pumping).mean.toFixed(2)} body weights (spread ${trimLoad(pumping).spread.toFixed(2)}) and the surface rising ${(pumping.rise / pumping.steps).toFixed(2)} m/s under the board` : '';
+          log(`  trim (${process.env.PUMP && process.env.PUMP !== '0' ? 'pumping' : 'holding the band'}): ${pumping.planing.toFixed(1)} s on the plane, ${pumping.off.toFixed(1)} s off it${off}${planed}; the legs' net work ${pumping.legs.toFixed(0)} J; the gameplay rules' work meanwhile ${pumping.rules.toFixed(0)} J`);
         }
         const fell = outcome.startsWith('fell');
         const kept = trace === 'all' ? lines
@@ -324,8 +344,9 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
       catchLines = [];
       carried = 0;
       pressed = '';
-      Object.assign(pumping, { planing: 0, off: 0, rules: 0, offAt: -1, offFace: 0, offSlope: 0 });
+      Object.assign(pumping, cleared);
       lastRules = 0;
+      lastLegs = 0;
       pilot.reset();
       sideIndex = (sideIndex + 1) % sides.length;
       side = sides[sideIndex];
@@ -342,8 +363,13 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
     const offs = pumped.filter((ride) => ride.pumping.offAt >= 0);
     const range = (pick: (ride: (typeof pumped)[number]) => number, digits: number) => (offs.length
       ? `${Math.min(...offs.map(pick)).toFixed(digits)}–${Math.max(...offs.map(pick)).toFixed(digits)}` : '-');
+    const planed = pumped.filter((ride) => ride.pumping.steps > 0);
+    const spread = (pick: (ride: (typeof pumped)[number]) => number, digits: number) => (planed.length
+      ? `${Math.min(...planed.map(pick)).toFixed(digits)}–${Math.max(...planed.map(pick)).toFixed(digits)}` : '-');
     log(`trim (${process.env.PUMP && process.env.PUMP !== '0' ? 'pumping' : 'holding the band'}): ${pumped.length} rides, on the plane ${on[0].toFixed(1)}–${on[on.length - 1].toFixed(1)} s (median ${on[Math.floor(on.length / 2)].toFixed(1)}), ${pumped.filter((ride) => ride.outcome.startsWith('fell')).length} fell;`
-      + ` ${offs.length} dropped off the plane, on a ${range((ride) => ride.pumping.offFace, 2)} m face sloping ${range((ride) => ride.pumping.offSlope, 0)}° under the board; the gameplay rules' work in the trim ${pumped.reduce((sum, ride) => sum + ride.pumping.rules, 0).toFixed(0)} J`);
+      + ` ${offs.length} dropped off the plane, on a ${range((ride) => ride.pumping.offFace, 2)} m face sloping ${range((ride) => ride.pumping.offSlope, 0)}° under the board, rising ${range((ride) => ride.pumping.offRise, 2)} m/s there;`
+      + ` planing, the feet's load spread ${spread((ride) => trimLoad(ride.pumping).spread, 2)} body weights and the surface rising ${spread((ride) => ride.pumping.rise / ride.pumping.steps, 2)} m/s under the board;`
+      + ` the legs' net work ${spread((ride) => ride.pumping.legs, 0)} J a ride; the gameplay rules' work in the trim ${pumped.reduce((sum, ride) => sum + ride.pumping.rules, 0).toFixed(0)} J`);
   }
   // The phases over every ride, frontside and backside apart.
   for (const frontside of [true, false]) {
