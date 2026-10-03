@@ -345,8 +345,9 @@ describe('the breaking front as lines', () => {
     expect(nearest.unsized).toBe(2);
   });
 
-  // PR 5 with #105's jump rule: the held jets claim their crests first, and the sized crests follow the furthest crest
-  // ahead of them among the others.
+  // PR 5 with #105's jump rule: the points on their pace (past their throw, jet or not, until their slice has faded: the
+  // advisor, 2026-10-03) claim their crests first, and the sized crests follow the furthest crest ahead of them among
+  // the others.
   it('with a jump reach, leaves the crest a jet-holding point keeps to the point, and follows a sized crest on the others (PR 5 with #105)', () => {
     const front = new BreakingFront(1, TIMING, { jumpReach: 10 });
     joinAt(front, [0], 20, 0, 1);
@@ -354,7 +355,8 @@ describe('the breaking front as lines', () => {
     front.update([sample(0, 5, 7, 0), sample(0, 20.3, 2.9, 0.5)], 2, 1.05);
     expect(front.points).toHaveLength(1);
     expect(front.exportState().tracks).toHaveLength(1);
-    Object.assign(front.points[0], { jetStrip: 1, jetWindow: 7, jetPace: 5, jetBase: 20 });
+    // Thrown, its slice not yet faded (its clock short of `jetUntil`): on its pace.
+    Object.assign(front.points[0], { jetStrip: 1, jetWindow: 7, jetPace: 5, jetBase: 20, jetUntil: 2, tau: 0.3 });
     // Two crests in both their reaches: the 14 is 6.8 m from the point's paced z (20.8), nearer than the 12, so the
     // point keeps it; the sized crest, whose reach is 2 to 15 m, follows the 12. Neither takes the other's, and the
     // sized crest's step is no jump.
