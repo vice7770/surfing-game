@@ -5,7 +5,7 @@ import { BARREL_SLOPE, SweptLoft, type LoftResult } from '../../wave/barrel/swep
 import { SWEPT_BARREL } from '../../wave/SurfZoneSimulation';
 import { sampleCubicSurface } from '../water/cubicSurface';
 import type { WaterLook } from '../water/waterLook';
-import { sampleSurfaceHeight, type WaterSurface } from '../WaterSurface';
+import { sampleSurfaceHeight, type SurfaceGrid, type WaterSurface } from '../WaterSurface';
 import { rasterizeBarrelMask } from './barrelMask';
 import { SweptBarrelMesh, type SweptBarrelView } from './SweptBarrelMesh';
 
@@ -27,6 +27,10 @@ export class SweptBarrel {
   private resolveReady!: () => void;
   private mask = new Uint8Array(0);
   private look?: WaterLook;
+  private drawn?: {
+    loft: SweptLoft; revision: unknown; surfaceRevision: number; front: Float32Array; count: number; stillLevel: number;
+    look: WaterLook; maskGrid: SurfaceGrid; view: SweptBarrelView | undefined; sheetShown: boolean; facesOut: boolean;
+  };
 
   /** `view`: a dev view of the curl in place of its shading (`SweptBarrelView`). */
   constructor(
@@ -45,6 +49,7 @@ export class SweptBarrel {
    * SWEPT_BARREL's say unless the caller (the surf zone's config) says otherwise.
    */
   setSpot(spot: SpotName | undefined, swept = spot !== undefined && SWEPT_BARREL.includes(spot)): void {
+    this.drawn = undefined;
     const on = spot !== undefined && swept && BARREL_SLOPE[spot] !== undefined;
     this.spot = on ? spot : undefined;
     this.water.setBarrelEnabled(on);
@@ -66,9 +71,10 @@ export class SweptBarrel {
     }, (error: unknown) => console.warn('The barrel library did not load; the swept barrel stays off.', error));
   }
 
-  /** Loft `count` front records (`FRONT_STRIDE` each) over the water as drawn, mask them into it, and draw them. */
-  draw(front: Float32Array, count: number, stillLevel: number): void {
+  /** Loft the front over the drawn water; an explicit snapshot revision permits reuse between display frames. */
+  draw(front: Float32Array, count: number, stillLevel: number, revision?: unknown): void {
     if (!this.loft) {
+      this.drawn = undefined;
       this.water.setBarrelMask(null);
       this.mesh.update(undefined);
       this.lastLoft = undefined;
@@ -76,13 +82,19 @@ export class SweptBarrel {
     }
     const { water } = this;
     const { grid, surfaceData } = water;
+    const maskGrid = water.barrelMaskGrid;
     const look = water.drawnLook;
+    const mesh = this.mesh;
+    const was = this.drawn;
+    if (revision !== undefined && was?.revision === revision && was.loft === this.loft && was.surfaceRevision === water.surfaceRevision && was.front === front
+      && was.count === count && was.stillLevel === stillLevel && was.look === look && was.maskGrid === maskGrid && was.view === mesh.view
+      && was.sheetShown === mesh.sheetShown && was.facesOut === mesh.facesOut) return;
     const heightAt = look === 'rich'
       ? (x: number, z: number) => sampleCubicSurface(surfaceData, grid, x, z).height
       : (x: number, z: number) => sampleSurfaceHeight(surfaceData, grid, x, z);
     const loft = this.loft.build(front, count, stillLevel, heightAt);
-    if (this.mask.length !== grid.nx * grid.nz) this.mask = new Uint8Array(grid.nx * grid.nz);
-    const set = rasterizeBarrelMask(loft, grid, this.mask);
+    if (this.mask.length !== maskGrid.nx * maskGrid.nz) this.mask = new Uint8Array(maskGrid.nx * maskGrid.nz);
+    const set = rasterizeBarrelMask(loft, maskGrid, this.mask);
     water.setBarrelMask(set > 0 ? this.mask : null);
     if (look !== this.look) {
       this.look = look;
@@ -90,6 +102,10 @@ export class SweptBarrel {
     }
     this.mesh.update(loft);
     this.lastLoft = loft;
+    this.drawn = {
+      loft: this.loft, revision, surfaceRevision: water.surfaceRevision, front, count, stillLevel, look, maskGrid,
+      view: mesh.view, sheetShown: mesh.sheetShown, facesOut: mesh.facesOut,
+    };
   }
 
   dispose(): void {

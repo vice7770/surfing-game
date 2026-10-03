@@ -69,6 +69,26 @@ describe('Classic water parity', () => {
     expect(compiled(water.mesh.material)).toEqual(compiled(new WaterSurface(source).mesh.material));
   });
 
+  it('can interpolate the cubic vertex slopes for Rich shading while retaining cubic displacement and surface detail', () => {
+    const water = new WaterSurface({ ...source, cubic: true });
+    water.setLook('rich');
+    const original = compiled(water.mesh.material);
+    const originalKey = water.mesh.material.customProgramCacheKey();
+    water.setVertexNormals(true);
+    const interpolated = compiled(water.mesh.material);
+    expect(interpolated.vertex).toContain('waterCarvedCubic( waterXZ )');
+    expect(interpolated.vertex).toContain('vWaterSurfaceSlope = waterCubicSample.yz;');
+    expect(interpolated.fragment).toContain('waterSurfaceSlope = vWaterSurfaceSlope;');
+    expect(interpolated.fragment).not.toContain('waterCarvedCubic( vWaterWorld.xz )');
+    expect(interpolated.fragment).toContain('waterRippleSlopeAt( vWaterWorld.xz, vWaterFlow )');
+    expect(interpolated.fragment).toContain('waterChurnSlope( vWaterWorld.xz, vWaterFlow )');
+    expect(interpolated.fragment).toContain('float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;');
+    expect(water.mesh.material.customProgramCacheKey()).not.toBe(originalKey);
+    water.setVertexNormals(false);
+    expect(compiled(water.mesh.material)).toEqual(original);
+    expect(water.mesh.material.customProgramCacheKey()).toBe(originalKey);
+  });
+
   it('draws a cubic source’s Rich surface from the Catmull-Rom chunk, cut by the flying tubes, per vertex and per pixel', () => {
     const water = new WaterSurface({ ...source, cubic: true });
     water.setLook('rich');
@@ -184,7 +204,9 @@ describe('Classic water parity', () => {
     spray.setLook('rich');
     // G9: the spray fades at the carved surface, so spit blown out of a tube is not taken for underwater.
     expect(spray.mesh.material.vertexShader).toContain('vAbove = world.y - waterCarve( world.xz, waterHeightAt( world.xz ) );');
-    expect(spray.mesh.material.fragmentShader).toContain('henyeyGreenstein( dot( normalize( vSprayWorld - cameraPosition ), spraySunDirection ), MIST_G )');
+    expect(spray.mesh.material.vertexShader).toContain('henyeyGreenstein( dot( normalize( world - cameraPosition ), spraySunDirection ), MIST_G )');
+    expect(spray.mesh.material.fragmentShader).not.toContain('henyeyGreenstein');
+    expect(spray.mesh.material.fragmentShader).toContain('sprayColor * vSprayLight / vThin');
     expect(spray.mesh.material.fragmentShader).toContain('smoothstep( -0.1, 0.35, vAbove )');
     const water = new WaterSurface({ ...source, cubic: true });
     spray.useWater(water.causticSource);

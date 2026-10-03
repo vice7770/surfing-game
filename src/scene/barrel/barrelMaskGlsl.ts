@@ -1,16 +1,18 @@
 /**
  * The swept barrel's seam in the shaders (the Padang Padang spec, Part B, PR 3; the build sheet's "keep two surfaces and
  * cut a hole", after Surf's Up): the mask's value at a world xz, read from the texture `rasterizeBarrelMask` fills on
- * the render grid's nodes (node-centred texels, linear filtering), and a per-pixel dither both surfaces share
+ * the seam grid's nodes (node-centred texels, linear filtering), and a per-pixel dither both surfaces share
  * (interleaved gradient noise, Jimenez 2014). Where the mask is 1 only the swept surface draws, where it is 0 only the
- * water, and across the band between each pixel shows exactly one of them. Needs `waterGrid` and `waterGridSize`.
+ * water, and across the band between each pixel shows exactly one of them. The seam's grid can be finer than the water.
  */
 export const waterBarrelMaskPars = /* glsl */ `
 uniform sampler2D waterBarrelMask;
 uniform float waterBarrelMaskActive;
+uniform vec4 waterBarrelGrid;
+uniform vec2 waterBarrelGridSize;
 float waterBarrelMaskAt( vec2 xz ) {
-  vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
-  return texture( waterBarrelMask, ( g + 0.5 ) / waterGridSize ).r;
+  vec2 g = ( xz - waterBarrelGrid.xy ) / waterBarrelGrid.z;
+  return texture( waterBarrelMask, ( g + 0.5 ) / waterBarrelGridSize ).r;
 }
 float waterBarrelDither( vec2 fragCoord ) {
   return fract( 52.9829189 * fract( dot( fragCoord, vec2( 0.06711056, 0.00583715 ) ) ) );

@@ -1,0 +1,41 @@
+{
+  "before": "docs/research/performance-2026-10-03/before-front.png",
+  "after": "docs/research/performance-2026-10-03/after-front.png",
+  "units": "8-bit RGB channel values (0\u2013255)",
+  "fullFrame": {
+    "size": [
+      1280,
+      720
+    ],
+    "changedPixels": 0,
+    "changedPercent": 0.0,
+    "pixelsAbove1": 0,
+    "pixelsAbove2": 0,
+    "pixelsAbove5": 0,
+    "maxChannelDelta": 0,
+    "meanAbsoluteChannelDelta": 0.0,
+    "p95MaxPixelDelta": 0,
+    "differenceBounds": null
+  },
+  "waterCrop": {
+    "bounds": [
+      0,
+      240,
+      1280,
+      720
+    ],
+    "size": [
+      1280,
+      480
+    ],
+    "changedPixels": 0,
+    "changedPercent": 0.0,
+    "pixelsAbove1": 0,
+    "pixelsAbove2": 0,
+    "pixelsAbove5": 0,
+    "maxChannelDelta": 0,
+    "meanAbsoluteChannelDelta": 0.0,
+    "p95MaxPixelDelta": 0,
+    "differenceBounds": null
+  }
+}

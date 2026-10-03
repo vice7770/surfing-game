@@ -58,7 +58,7 @@ export interface PhysicalSurfWaterOptions {
   peakPeriod: number;
   /** Breaking strength per cell, if the water breaks. */
   breaking?: ArrayLike<number>;
-  /** Render node spacing, m (the physical mode renders at 1 m). */
+  /** Render node spacing, m: body contact interpolates the same nodes as the renderer. */
   nodeSpacing?: number;
   /** What the bed is made of at (x, z), from the spot (the Teahupo'o Reef, Part C); sand when absent. */
   materialAt?: (x: number, z: number) => BedMaterial;
@@ -104,6 +104,14 @@ export class PhysicalSurfWater implements SurfWater {
   private readonly cells = new Int32Array(4);
   private readonly weights = new Float64Array(4);
   private readonly hit = createContactHit();
+  private surfaceCacheActive = false;
+  private surfaceCacheEpoch = 0;
+  private surfaceCacheHeights = new Float64Array(0);
+  private surfaceCacheStamps = new Uint32Array(0);
+  private surfaceCacheXMin = Number.NaN;
+  private surfaceCacheZMin = Number.NaN;
+  private surfaceCacheLastX = -1;
+  private surfaceCacheLastZ = -1;
 
   constructor(private readonly solver: ShallowWaterSolver, private readonly options: PhysicalSurfWaterOptions) {
     this.spacing = options.nodeSpacing ?? 1;
@@ -111,13 +119,39 @@ export class PhysicalSurfWater implements SurfWater {
   }
 
   /** The simulation's water; with the swept barrel's contact, that in place of the lip's carve (Part B, PR 4). */
-  static forSimulation(simulation: SurfZoneSimulation, swept?: SweptContact): PhysicalSurfWater {
+  static forSimulation(simulation: SurfZoneSimulation, swept?: SweptContact, nodeSpacing = 1): PhysicalSurfWater {
     const { lip } = simulation;
     return new PhysicalSurfWater(simulation.solver, {
-      peakPeriod: simulation.config.peakPeriod, breaking: simulation.breaking.strength,
+      peakPeriod: simulation.config.peakPeriod, breaking: simulation.breaking.strength, nodeSpacing,
       ...(swept ? { swept } : { carve: (x: number, z: number, surface: number) => lip.carve(x, z, surface) }),
       aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
     });
+  }
+
+  /**
+   * Reuse exact render-node heights during a synchronous read-only build. The water, bed and carve must stay fixed;
+   * a caller that changes them inside the scope must call `invalidateSurfaceNodeCache`. Every scope starts and ends
+   * with invalidation, so ordinary samples and later builds never reuse untracked mutable water.
+   */
+  withSurfaceNodeCache<T>(read: () => T): T {
+    const active = this.surfaceCacheActive;
+    this.invalidateSurfaceNodeCache();
+    this.surfaceCacheActive = true;
+    try {
+      return read();
+    } finally {
+      this.surfaceCacheActive = active;
+      this.invalidateSurfaceNodeCache();
+    }
+  }
+
+  /** Explicitly discard node heights after a water, bed or grid change within a scoped build. */
+  invalidateSurfaceNodeCache(): void {
+    this.surfaceCacheEpoch = (this.surfaceCacheEpoch + 1) >>> 0;
+    if (this.surfaceCacheEpoch === 0) {
+      this.surfaceCacheStamps.fill(0);
+      this.surfaceCacheEpoch = 1;
+    }
   }
 
   sampleAt(x: number, y: number, z: number, out: WaterSample): WaterSample {
@@ -285,11 +319,36 @@ export class PhysicalSurfWater implements SurfWater {
     const gz = (z - zMin) / spacing;
     const i0 = Math.floor(gx);
     const j0 = Math.floor(gz);
+    if (this.surfaceCacheActive) {
+      // A moved window or different grid cannot reuse the old integer node addresses, even within a scope.
+      if (this.surfaceCacheXMin !== xMin || this.surfaceCacheZMin !== zMin
+        || this.surfaceCacheLastX !== lastX || this.surfaceCacheLastZ !== lastZ) {
+        this.invalidateSurfaceNodeCache();
+        this.surfaceCacheXMin = xMin;
+        this.surfaceCacheZMin = zMin;
+        this.surfaceCacheLastX = lastX;
+        this.surfaceCacheLastZ = lastZ;
+      }
+      const size = (lastX + 1) * (lastZ + 1);
+      if (this.surfaceCacheHeights.length < size) {
+        this.surfaceCacheHeights = new Float64Array(size);
+        this.surfaceCacheStamps = new Uint32Array(size);
+      }
+    }
     for (let j = 0; j < 4; j += 1) {
       const nz = Math.min(lastZ, Math.max(0, j0 + j - 1));
       for (let i = 0; i < 4; i += 1) {
         const nx = Math.min(lastX, Math.max(0, i0 + i - 1));
-        this.nodes[j * 4 + i] = this.nodeHeight(xMin + nx * spacing, zMin + nz * spacing);
+        if (this.surfaceCacheActive) {
+          const at = nz * (lastX + 1) + nx;
+          if (this.surfaceCacheStamps[at] !== this.surfaceCacheEpoch) {
+            this.surfaceCacheHeights[at] = this.nodeHeight(xMin + nx * spacing, zMin + nz * spacing);
+            this.surfaceCacheStamps[at] = this.surfaceCacheEpoch;
+          }
+          this.nodes[j * 4 + i] = this.surfaceCacheHeights[at];
+        } else {
+          this.nodes[j * 4 + i] = this.nodeHeight(xMin + nx * spacing, zMin + nz * spacing);
+        }
       }
     }
     return { gx, gz };

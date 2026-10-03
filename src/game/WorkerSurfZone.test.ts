@@ -18,7 +18,7 @@ const shown = (snapshot: SurfZoneSnapshot) => ({
   bubbles: Array.from(snapshot.bubbles.subarray(0, snapshot.bubbleCount * 3)),
   board: Array.from(snapshot.board),
   rider: Array.from(snapshot.rider),
-  status: { ...snapshot.status, stepMs: 0 },
+  status: { ...snapshot.status, stepMs: 0, pipelineMs: undefined },
 });
 
 /** A worker stand-in: the real core behind asynchronous message delivery. */
@@ -178,9 +178,9 @@ describe('WorkerSurfZone', () => {
     expect(shown(host.snapshot)).toEqual(shown(local.snapshot));
     host.advance(3);
     host.advance(2);
-    expect(port.requests.map((request) => (request.type === 'advance' ? request.steps : request.type))).toEqual(['start', 3]);
+    expect(port.requests.map((request) => (request.type === 'advance' ? request.steps : request.type))).toEqual(['start', 1]);
     await settle();
-    expect(port.requests.map((request) => (request.type === 'advance' ? request.steps : request.type))).toEqual(['start', 3, 2]);
+    expect(port.requests.map((request) => (request.type === 'advance' ? request.steps : request.type))).toEqual(['start', 1, 1, 1, 1, 1]);
     await settle();
     local.advance(5);
     expect(shown(host.snapshot)).toEqual(shown(local.snapshot));
@@ -233,8 +233,8 @@ describe('WorkerSurfZone', () => {
     low.advance(90, input);
     const { spray: _high, ...highStatus } = high.snapshot.status;
     const { spray: _low, ...lowStatus } = low.snapshot.status;
-    expect({ ...shown(low.snapshot), bubbles: [], status: { ...lowStatus, stepMs: 0 } })
-      .toEqual({ ...shown(high.snapshot), bubbles: [], status: { ...highStatus, stepMs: 0 } });
+    expect({ ...shown(low.snapshot), bubbles: [], status: { ...lowStatus, stepMs: 0, pipelineMs: undefined } })
+      .toEqual({ ...shown(high.snapshot), bubbles: [], status: { ...highStatus, stepMs: 0, pipelineMs: undefined } });
     expect(Array.from(low.snapshot.lip.subarray(0, low.snapshot.lipCount * 9))).toEqual(Array.from(high.snapshot.lip.subarray(0, high.snapshot.lipCount * 9)));
     expect(Array.from(low.snapshot.aeration)).toEqual(Array.from(high.snapshot.aeration));
     expect(Array.from(low.snapshot.tubes)).toEqual(Array.from(high.snapshot.tubes));
@@ -265,7 +265,7 @@ describe('WorkerSurfZone', () => {
     host.advance(1);
     host.advance(20);
     await settle();
-    expect(port.requests.map((request) => (request.type === 'advance' ? request.steps : request.type))).toEqual(['start', 1, MAX_QUEUED_STEPS]);
+    expect(port.requests.map((request) => (request.type === 'advance' ? request.steps : request.type))).toEqual(['start', ...Array(MAX_QUEUED_STEPS + 1).fill(1)]);
     host.dispose();
   });
 
@@ -280,12 +280,12 @@ describe('WorkerSurfZone', () => {
     const advances = () => port.requests.filter((request) => request.type === 'advance');
     expect(Array.from(advances()[0].reactions ?? [])).toEqual([1, 2, 3, 4]);
     await settle();
-    expect(advances()).toHaveLength(2);
+    expect(advances()).toHaveLength(5);
     expect(Array.from(advances()[1].reactions ?? [])).toEqual([5, 6, 7, 8]);
     await settle();
     expect(host.outstandingSteps).toBe(0);
     // Each push went out once.
-    expect(advances()).toHaveLength(2);
+    expect(advances()).toHaveLength(5);
     host.dispose();
   });
 

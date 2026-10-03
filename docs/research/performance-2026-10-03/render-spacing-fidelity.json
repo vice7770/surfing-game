@@ -1,0 +1,510 @@
+{
+  "method": "Frozen original physical snapshot; 2 m nodes are exact nested samples of the 1 m snapshot. CPU mirror of Rich Catmull-Rom height/slope, no simulation advance. Break band ±50 m alongshore and ±100 m crossshore; crest neighborhoods ±8 m about the two tallest crests per 4 m transect.",
+  "limitation": "Hs4m/T10s/64component mixed sea captures at three instants. Render interpolation only; excludes swept-loft reshaping on changed heightAt, FFT chop, light/shader slope interpolation, foam aliasing, and live rider dynamics.",
+  "runs": [
+    {
+      "at": 10,
+      "fixture": {
+        "name": "at-10.json",
+        "sha256": "b9813c244a7a5fd7e6dd7b7cd4edf195d3d19b904b56dc4c6055ebceeed632c6",
+        "capturedAt": 33682.5
+      },
+      "seaTime": 173.88921329749155,
+      "config": {
+        "spot": "padang",
+        "seed": 1,
+        "significantHeight": 4,
+        "peakPeriod": 10,
+        "directionDegrees": 10,
+        "spreading": 11.720624206334085,
+        "tide": 0,
+        "windSpeed": 0,
+        "stage": 2,
+        "compute": "auto",
+        "componentCount": 64
+      },
+      "focus": {
+        "x": -50,
+        "z": -261.09137870490895
+      },
+      "fineGrid": {
+        "xMin": -160,
+        "zMin": -1130.37962116869,
+        "spacing": 1,
+        "nx": 321,
+        "nz": 1161
+      },
+      "coarseGrid": {
+        "xMin": -160,
+        "zMin": -1130.37962116869,
+        "spacing": 2,
+        "nx": 161,
+        "nz": 581
+      },
+      "mask": {
+        "originalWaterNodes": 372681,
+        "coarseWaterNodes": 93541,
+        "grid": {
+          "xMin": -160,
+          "zMin": -1130.37962116869,
+          "spacing": 1,
+          "nx": 321,
+          "nz": 1161
+        },
+        "nodes": 372681,
+        "maskedNodes": 282,
+        "maskDifferences": 0,
+        "uploadedDifferences": 0
+      },
+      "breakBand": {
+        "heightMeters": {
+          "count": 20000,
+          "rms": 0.0024243056542329285,
+          "p95": 0.0038985161130900003,
+          "max": 0.03945293757351864
+        },
+        "slope": {
+          "count": 20000,
+          "rms": 0.00543362099721271,
+          "p95": 0.011460947146712069,
+          "max": 0.05335527926731928
+        },
+        "normalAngleDegrees": {
+          "count": 20000,
+          "rms": 0.2839191354643774,
+          "p95": 0.5937200304143899,
+          "max": 2.679566382843735
+        },
+        "worstHeight": {
+          "x": -51.629999999999995,
+          "z": -297.48137870490893,
+          "fine": {
+            "height": 3.8065115674519667,
+            "slopeX": -0.009339685647650246,
+            "slopeZ": -0.20432112233822478
+          },
+          "coarse": {
+            "height": 3.767058629878448,
+            "slopeX": -0.009044781110629688,
+            "slopeZ": -0.2305539781125167
+          }
+        }
+      },
+      "crestNeighborhoods": {
+        "heightMeters": {
+          "count": 1344,
+          "rms": 0.005526804513880278,
+          "p95": 0.01246030129807929,
+          "max": 0.040284158319363605
+        },
+        "slope": {
+          "count": 1344,
+          "rms": 0.011782365344458954,
+          "p95": 0.024005524703836125,
+          "max": 0.05397312156159978
+        },
+        "normalAngleDegrees": {
+          "count": 1344,
+          "rms": 0.6045645640343902,
+          "p95": 1.2474080047742908,
+          "max": 3.047059774230208
+        },
+        "worstHeight": {
+          "x": -53.63,
+          "z": -297.36137870490893,
+          "fine": {
+            "height": 3.7986702276995494,
+            "slopeX": -0.009333456824225086,
+            "slopeZ": -0.22247086791776322
+          },
+          "coarse": {
+            "height": 3.758386069380186,
+            "slopeX": -0.009971773838916927,
+            "slopeZ": -0.2282804350447724
+          }
+        }
+      },
+      "crestPeaks": {
+        "count": 42,
+        "fineHeightRange": [
+          1.6100238298907743,
+          3.9100535574742588
+        ],
+        "heightMeters": {
+          "count": 42,
+          "rms": 0.005772991817942556,
+          "p95": 0.011023567006584578,
+          "max": 0.01778812786415207
+        },
+        "positionMeters": {
+          "count": 42,
+          "rms": 0.11410886614690961,
+          "p95": 0.125,
+          "max": 0.375
+        },
+        "worst": [
+          {
+            "x": -42,
+            "z": -299.21637870490895,
+            "height": 3.8237294371994954,
+            "coarseHeight": 3.8415175650636475,
+            "heightError": 0.01778812786415207,
+            "positionError": -0.125
+          },
+          {
+            "x": -70,
+            "z": -297.09137870490895,
+            "height": 3.7290704901142533,
+            "coarseHeight": 3.7444090379830683,
+            "heightError": 0.015338547868815056,
+            "positionError": -0.125
+          },
+          {
+            "x": -22,
+            "z": -301.59137870490895,
+            "height": 3.304118779504882,
+            "coarseHeight": 3.315455093994079,
+            "heightError": 0.01133631448919692,
+            "positionError": 0.125
+          }
+        ]
+      }
+    },
+    {
+      "at": 15,
+      "fixture": {
+        "name": "at-15.json",
+        "sha256": "b6ee693716fed69884e641bf3b9534431d191100307624149a9c24c3a9a2aa7a",
+        "capturedAt": 38754.5
+      },
+      "seaTime": 177.00587996415803,
+      "config": {
+        "spot": "padang",
+        "seed": 1,
+        "significantHeight": 4,
+        "peakPeriod": 10,
+        "directionDegrees": 10,
+        "spreading": 11.720624206334085,
+        "tide": 0,
+        "windSpeed": 0,
+        "stage": 2,
+        "compute": "auto",
+        "componentCount": 64
+      },
+      "focus": {
+        "x": -50,
+        "z": -261.09137870490895
+      },
+      "fineGrid": {
+        "xMin": -160,
+        "zMin": -1130.37962116869,
+        "spacing": 1,
+        "nx": 321,
+        "nz": 1161
+      },
+      "coarseGrid": {
+        "xMin": -160,
+        "zMin": -1130.37962116869,
+        "spacing": 2,
+        "nx": 161,
+        "nz": 581
+      },
+      "mask": {
+        "originalWaterNodes": 372681,
+        "coarseWaterNodes": 93541,
+        "grid": {
+          "xMin": -160,
+          "zMin": -1130.37962116869,
+          "spacing": 1,
+          "nx": 321,
+          "nz": 1161
+        },
+        "nodes": 372681,
+        "maskedNodes": 0,
+        "maskDifferences": 0,
+        "uploadedDifferences": 0
+      },
+      "breakBand": {
+        "heightMeters": {
+          "count": 20000,
+          "rms": 0.0020495703829068327,
+          "p95": 0.0035725827038324276,
+          "max": 0.04021355908454516
+        },
+        "slope": {
+          "count": 20000,
+          "rms": 0.004789979546609596,
+          "p95": 0.009422241048892867,
+          "max": 0.06974922848917146
+        },
+        "normalAngleDegrees": {
+          "count": 20000,
+          "rms": 0.2533648017168461,
+          "p95": 0.502501724430791,
+          "max": 3.169467095818391
+        },
+        "worstHeight": {
+          "x": -55.629999999999995,
+          "z": -183.48137870490893,
+          "fine": {
+            "height": 1.4232579262739244,
+            "slopeX": -0.03410919714179998,
+            "slopeZ": -0.4008530517782529
+          },
+          "coarse": {
+            "height": 1.3830443671893793,
+            "slopeX": -0.03137662468138984,
+            "slopeZ": -0.4376434028277918
+          }
+        }
+      },
+      "crestNeighborhoods": {
+        "heightMeters": {
+          "count": 1344,
+          "rms": 0.004328363402802268,
+          "p95": 0.007957155188565546,
+          "max": 0.0375712953499443
+        },
+        "slope": {
+          "count": 1344,
+          "rms": 0.009348836576586774,
+          "p95": 0.01737924445041498,
+          "max": 0.06274725455507947
+        },
+        "normalAngleDegrees": {
+          "count": 1344,
+          "rms": 0.47820249383821206,
+          "p95": 0.9316046228850073,
+          "max": 2.8365104888535515
+        },
+        "worstHeight": {
+          "x": -57.63,
+          "z": -183.36137870490896,
+          "fine": {
+            "height": 1.439974131560856,
+            "slopeX": -0.02997747671779216,
+            "slopeZ": -0.3856343281251664
+          },
+          "coarse": {
+            "height": 1.4024028362109118,
+            "slopeX": -0.03793769463214696,
+            "slopeZ": -0.3986256125755085
+          }
+        }
+      },
+      "crestPeaks": {
+        "count": 42,
+        "fineHeightRange": [
+          1.2868745481607904,
+          3.110263145423134
+        ],
+        "heightMeters": {
+          "count": 42,
+          "rms": 0.003121543846733792,
+          "p95": 0.005705929690369427,
+          "max": 0.012556183997618042
+        },
+        "positionMeters": {
+          "count": 42,
+          "rms": 0.08625819491779428,
+          "p95": 0.125,
+          "max": 0.375
+        },
+        "worst": [
+          {
+            "x": -62,
+            "z": -185.59137870490895,
+            "height": 1.8606300210151323,
+            "coarseHeight": 1.8480738370175143,
+            "heightError": -0.012556183997618042,
+            "positionError": -0.125
+          },
+          {
+            "x": -50,
+            "z": -186.96637870490895,
+            "height": 2.197251295989931,
+            "coarseHeight": 2.2042637795556534,
+            "heightError": 0.007012483565722594,
+            "positionError": -0.125
+          },
+          {
+            "x": -42,
+            "z": -187.71637870490895,
+            "height": 2.2928197554519425,
+            "coarseHeight": 2.286453315110213,
+            "heightError": -0.006366440341729618,
+            "positionError": 0
+          }
+        ]
+      }
+    },
+    {
+      "at": 20,
+      "fixture": {
+        "name": "at-20.json",
+        "sha256": "db821e14b75189cd0a96c7acc886121785c46051171b0c8b64f23357b8f81261",
+        "capturedAt": 43792
+      },
+      "seaTime": 179.9392132974912,
+      "config": {
+        "spot": "padang",
+        "seed": 1,
+        "significantHeight": 4,
+        "peakPeriod": 10,
+        "directionDegrees": 10,
+        "spreading": 11.720624206334085,
+        "tide": 0,
+        "windSpeed": 0,
+        "stage": 2,
+        "compute": "auto",
+        "componentCount": 64
+      },
+      "focus": {
+        "x": -50,
+        "z": -261.09137870490895
+      },
+      "fineGrid": {
+        "xMin": -160,
+        "zMin": -1130.37962116869,
+        "spacing": 1,
+        "nx": 321,
+        "nz": 1161
+      },
+      "coarseGrid": {
+        "xMin": -160,
+        "zMin": -1130.37962116869,
+        "spacing": 2,
+        "nx": 161,
+        "nz": 581
+      },
+      "mask": {
+        "originalWaterNodes": 372681,
+        "coarseWaterNodes": 93541,
+        "grid": {
+          "xMin": -160,
+          "zMin": -1130.37962116869,
+          "spacing": 1,
+          "nx": 321,
+          "nz": 1161
+        },
+        "nodes": 372681,
+        "maskedNodes": 480,
+        "maskDifferences": 0,
+        "uploadedDifferences": 0
+      },
+      "breakBand": {
+        "heightMeters": {
+          "count": 20000,
+          "rms": 0.001642861020584844,
+          "p95": 0.0026298927125232296,
+          "max": 0.039961635811501695
+        },
+        "slope": {
+          "count": 20000,
+          "rms": 0.0038163891297864354,
+          "p95": 0.008139933198486625,
+          "max": 0.04684599754513637
+        },
+        "normalAngleDegrees": {
+          "count": 20000,
+          "rms": 0.2088720616612919,
+          "p95": 0.4482876652185113,
+          "max": 2.3594536638177734
+        },
+        "worstHeight": {
+          "x": -51.629999999999995,
+          "z": -161.48137870490893,
+          "fine": {
+            "height": 0.8481311390788587,
+            "slopeX": -0.02012061413694969,
+            "slopeZ": -0.3351312510807257
+          },
+          "coarse": {
+            "height": 0.808169503267357,
+            "slopeX": -0.01710124592920381,
+            "slopeZ": -0.3793658667713615
+          }
+        }
+      },
+      "crestNeighborhoods": {
+        "heightMeters": {
+          "count": 1344,
+          "rms": 0.0019525347832653353,
+          "p95": 0.003968685072957556,
+          "max": 0.019864713814231383
+        },
+        "slope": {
+          "count": 1344,
+          "rms": 0.004731443341365227,
+          "p95": 0.011060943139793554,
+          "max": 0.026915826420127947
+        },
+        "normalAngleDegrees": {
+          "count": 1344,
+          "rms": 0.2543073492015388,
+          "p95": 0.5790535955029074,
+          "max": 1.5362011988739206
+        },
+        "worstHeight": {
+          "x": -49.63,
+          "z": -345.36137870490893,
+          "fine": {
+            "height": 2.9430379331731347,
+            "slopeX": -0.0005948113004331762,
+            "slopeZ": -0.13025716707860338
+          },
+          "coarse": {
+            "height": 2.9231732193589033,
+            "slopeX": -0.003801654750257769,
+            "slopeZ": -0.13095768694550855
+          }
+        }
+      },
+      "crestPeaks": {
+        "count": 42,
+        "fineHeightRange": [
+          1.537566060379357,
+          3.0419970299470642
+        ],
+        "heightMeters": {
+          "count": 42,
+          "rms": 0.0017352486973797882,
+          "p95": 0.002790851400187311,
+          "max": 0.007030480079986745
+        },
+        "positionMeters": {
+          "count": 42,
+          "rms": 0.09046835805696823,
+          "p95": 0.125,
+          "max": 0.25
+        },
+        "worst": [
+          {
+            "x": -58,
+            "z": -345.09137870490895,
+            "height": 2.685611519645531,
+            "coarseHeight": 2.6926419997255175,
+            "heightError": 0.007030480079986745,
+            "positionError": -0.125
+          },
+          {
+            "x": -42,
+            "z": -347.71637870490895,
+            "height": 3.012963994568412,
+            "coarseHeight": 3.017240053182979,
+            "heightError": 0.004276058614566924,
+            "positionError": 0
+          },
+          {
+            "x": -46,
+            "z": -346.96637870490895,
+            "height": 3.0419970299470642,
+            "coarseHeight": 3.045069545672543,
+            "heightError": 0.0030725157254787305,
+            "positionError": -0.125
+          }
+        ]
+      }
+    }
+  ]
+}

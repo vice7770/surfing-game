@@ -1,4 +1,4 @@
-import { BufferAttribute, BufferGeometry, Color, NormalBlending, PerspectiveCamera, Points, ShaderMaterial, Vector2, Vector3, Vector4 } from 'three';
+import { BufferAttribute, BufferGeometry, Color, DynamicDrawUsage, NormalBlending, PerspectiveCamera, Points, ShaderMaterial, Vector2, Vector3, Vector4 } from 'three';
 import { SPRAY_CAPACITY, SPRAY_STRIDE, WHITEWATER_CAPACITY } from '../wave/SprayCloud';
 import { churnTexture } from './water/churnTexture';
 import { richSprayFragment, richSprayVertex } from './water/richSpray';
@@ -51,9 +51,9 @@ export class SprayPoints {
 
   constructor(readonly capacity = SPRAY_CAPACITY + WHITEWATER_CAPACITY) {
     const geometry = new BufferGeometry();
-    this.positions = new BufferAttribute(new Float32Array(capacity * 3), 3);
-    this.looks = new BufferAttribute(new Float32Array(capacity * 2), 2);
-    this.kinds = new BufferAttribute(new Float32Array(capacity), 1);
+    this.positions = new BufferAttribute(new Float32Array(capacity * 3), 3).setUsage(DynamicDrawUsage);
+    this.looks = new BufferAttribute(new Float32Array(capacity * 2), 2).setUsage(DynamicDrawUsage);
+    this.kinds = new BufferAttribute(new Float32Array(capacity), 1).setUsage(DynamicDrawUsage);
     geometry.setAttribute('position', this.positions);
     geometry.setAttribute('look', this.looks);
     geometry.setAttribute('kind', this.kinds);
@@ -142,9 +142,13 @@ export class SprayPoints {
       kinds[drawn] = kind;
       drawn += 1;
     }
-    this.positions.needsUpdate = true;
-    this.looks.needsUpdate = true;
-    this.kinds.needsUpdate = true;
+    for (const attribute of [this.positions, this.looks, this.kinds]) {
+      attribute.clearUpdateRanges();
+      if (drawn > 0) {
+        attribute.addUpdateRange(0, drawn * attribute.itemSize);
+        attribute.needsUpdate = true;
+      }
+    }
     this.mesh.geometry.setDrawRange(0, drawn);
   }
 }

@@ -59,6 +59,13 @@ vWaterPlumeDepth = waterAerationAt( waterXZ ).y;
 vWaterFlow = waterFlowAt( waterXZ );
 `;
 
+/** The diagnostic vertex-normal path carries the cubic slope already computed for displacement. */
+export const richVertexSlopePars = 'varying vec2 vWaterSurfaceSlope;';
+export const richBeginVertexNormal = richBeginNormal.replace(
+  'float waterHeight = waterCubicSample.x;',
+  'float waterHeight = waterCubicSample.x;\nvWaterSurfaceSlope = waterCubicSample.yz;',
+);
+
 /** Rich <begin_vertex>: the vertex lifted to the Catmull-Rom height; the patch's skirt hangs below it. */
 export const richVertexHeight = `vec3 transformed = vec3( position );
 transformed.y = waterHeight - ${PATCH_SKIRT.toFixed(3)} * skirt;
@@ -132,13 +139,17 @@ const CHURN_RELIEF = `float waterFreshNormal = waterFreshness( vWaterAir ) * wat
  * Rich <normal_fragment_begin>: the Catmull-Rom normal per pixel, the wind chop
  * (and, from Task 5, the ripples), flipped for the underside and written in view space.
  */
-export function richNormalFragment(opts: { ripples: boolean; churn?: boolean }): string {
+export function richNormalFragment(opts: { ripples: boolean; churn?: boolean; vertexNormals?: boolean }): string {
+  const surface = opts.vertexNormals
+    ? `waterSurfaceSlope = vWaterSurfaceSlope;
+  vec2 waterSlope = vWaterSurfaceSlope;`
+    : `vec3 waterSurfaceSample = waterCarvedCubic( vWaterWorld.xz );
+  waterSurfaceSlope = waterSurfaceSample.yz;
+  vec2 waterSlope = waterSurfaceSample.yz;`;
   return /* glsl */ `
 #include <normal_fragment_begin>
 {
-  vec3 waterSurfaceSample = waterCarvedCubic( vWaterWorld.xz );
-  waterSurfaceSlope = waterSurfaceSample.yz;
-  vec2 waterSlope = waterSurfaceSample.yz;
+  ${surface}
   float chopFade = exp( -length( vWaterWorld - cameraPosition ) / 80.0 );
   waterSlope += waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime );
   ${opts.ripples ? 'waterSlope += waterRippleSlopeAt( vWaterWorld.xz, vWaterFlow );' : ''}

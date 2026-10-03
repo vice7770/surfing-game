@@ -197,6 +197,8 @@ export class GpuBoussinesq {
   kernels: string[] = [...STEP_KERNELS];
   readback = true;
   lastSubsteps = 0;
+  /** CPU preparation, CFL scan, submission, readback wait and unpacking, ms, from the latest frame. */
+  readonly diagnostics = { substeps: 0, pack: 0, cfl: 0, encode: 0, map: 0, unpack: 0 };
 
   private constructor(readonly solver: BoussinesqSolver, readonly device: GPUDevice, module: GPUShaderModule) {
     const { nx, nz } = solver;
@@ -306,7 +308,12 @@ export class GpuBoussinesq {
       packSideTimes(this.zone.feed, solver.time, this.feedPacked);
       device.queue.writeBuffer(this.feedBuffer, 0, this.feedPacked, 0, this.zone.feed.deviceShape().components * 3);
     }
+    let phase = performance.now();
+    this.diagnostics.pack = phase - started;
     const substeps = cflSubsteps(dt, solver.maxStableStep());
+    let end = performance.now();
+    this.diagnostics.cfl = end - phase;
+    phase = end;
     const sub = dt / substeps;
     const cells = Math.ceil(n / WORKGROUP);
     for (let s = 0; s < substeps; s += 1) {
@@ -333,13 +340,22 @@ export class GpuBoussinesq {
       device.queue.submit([encoder.finish()]);
     }
     this.lastSubsteps = substeps;
+    this.diagnostics.substeps = substeps;
+    end = performance.now();
+    this.diagnostics.encode = end - phase;
+    phase = end;
     if (!this.readback) {
       await device.queue.onSubmittedWorkDone();
+      this.diagnostics.map = performance.now() - phase;
+      this.diagnostics.unpack = 0;
       solver.time += dt;
       this.lastStepMs = performance.now() - started;
       return;
     }
     await this.staging.mapAsync(GPUMapMode.READ);
+    end = performance.now();
+    this.diagnostics.map = end - phase;
+    phase = end;
     const back = new Float32Array(this.staging.getMappedRange());
     DEVICE_READBACK.forEach((index, k) => {
       const view = back.subarray(k * n, (k + 1) * n);
@@ -347,6 +363,7 @@ export class GpuBoussinesq {
     });
     this.staging.unmap();
     solver.adoptDeviceStep(dt);
+    this.diagnostics.unpack = performance.now() - phase;
     this.lastStepMs = performance.now() - started;
   }
 

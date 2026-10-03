@@ -4,7 +4,8 @@ import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from '
 import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
 import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { AERATION, AerationField } from './AerationField';
-import { FoamField, boreDissipation, type FoamDecay } from './FoamField';
+import { AdvectionStencil } from './AdvectionStencil';
+import { FoamField, type FoamDecay } from './FoamField';
 import { PlungingLip, lipThrow } from './PlungingLip';
 import { TUBE_CAPACITY, carveGrid } from './tubeTable';
 import { focusX } from './Refraction';
@@ -154,6 +155,8 @@ export const SEA_COMPONENTS = 24;
 export interface SolverDevice {
   step(dt: number): Promise<void>;
   dispose(): void;
+  /** Optional timing of its latest step; hosts without a GPU can omit it. */
+  readonly diagnostics?: { substeps: number; pack: number; cfl: number; encode: number; map: number; unpack: number };
 }
 
 /** A surf zone built spun up (on the CPU, at once), or only warm-started, to spin up later on its device (`spinUp`). */
@@ -517,6 +520,8 @@ export class SurfZoneSimulation {
   /** Where the front follows crests from, z: the fine zone's start, or the relaxation zone's inner edge (`BarrelSpot.frontFrom`). */
   private readonly frontFrom: number;
   lastStepMs = 0;
+  /** Latest step's wall time by stage, including the device readback wait in `water`. */
+  readonly stepCosts = { water: 0, breaking: 0, front: 0, lip: 0, foam: 0, airSources: 0, aeration: 0 };
   /** Most offshore breaking cell per column last step (Infinity when none). */
   private readonly outerBreak: Float64Array;
   /** The first pass only records the spin-up's bores; onsets count from the next step. */
@@ -540,6 +545,8 @@ export class SurfZoneSimulation {
   private velocityZ?: Float64Array;
   /** Each cell's void fraction, for `writeUniformAeration`. */
   private voidFractions?: Float64Array;
+  /** Foam and aeration move over the same post-water flow; only their field values change between them. */
+  private readonly advectionStencil = new AdvectionStencil();
 
   /** Solver seconds of spin-up that settle the warm-started sea's nonlinear shape. */
   private readonly spinUpSeconds: number;
@@ -782,14 +789,33 @@ export class SurfZoneSimulation {
 
   /** Everything a step does once the water has moved: breaking, lip, foam. */
   private afterWater(dt: number, start: number): void {
+    let phase = performance.now();
+    this.stepCosts.water = phase - start;
     this.breaking.update(dt);
     this.markBreakingOnsets();
+    let end = performance.now();
+    this.stepCosts.breaking = end - phase;
+    phase = end;
     this.advanceFront();
+    end = performance.now();
+    this.stepCosts.front = end - phase;
+    phase = end;
     this.lip.step(dt);
-    this.foam.update(dt, this.whitewaterStrength);
+    end = performance.now();
+    this.stepCosts.lip = end - phase;
+    phase = end;
+    this.foam.update(dt, this.whitewaterStrength, this.advectionStencil);
+    end = performance.now();
+    this.stepCosts.foam = end - phase;
+    phase = end;
     this.aerateBores(dt);
-    this.aeration.update(dt);
-    this.lastStepMs = performance.now() - start;
+    end = performance.now();
+    this.stepCosts.airSources = end - phase;
+    phase = end;
+    this.aeration.update(dt, this.advectionStencil);
+    end = performance.now();
+    this.stepCosts.aeration = end - phase;
+    this.lastStepMs = end - start;
   }
 
   /** The swept barrel's front (Part B): the crests breaking in the fine zone, linked into lines, and their clocks. */
@@ -1085,34 +1111,13 @@ export class SurfZoneSimulation {
    * page carves them from the tube table).
    */
   writeUniformSurface(data: Float32Array, grid: RenderGrid, carve = true): void {
-    const mapping = this.mappingFor(grid);
-    const { h, bed, nx } = this.solver;
-    const { dense, residual } = this.foam;
-    const { columns, columnWeights, rows, rowWeights } = mapping;
-    for (let r = 0; r < grid.nz; r += 1) {
-      const row = rows[r] * nx;
-      const tz = rowWeights[r];
-      for (let c = 0; c < grid.nx; c += 1) {
-        const i = row + columns[c];
-        const tx = columnWeights[c];
-        const w00 = (1 - tx) * (1 - tz);
-        const w10 = tx * (1 - tz);
-        const w01 = (1 - tx) * tz;
-        const w11 = tx * tz;
-        const depth = h[i] * w00 + h[i + 1] * w10 + h[i + nx] * w01 + h[i + nx + 1] * w11;
-        const bottom = bed[i] * w00 + bed[i + 1] * w10 + bed[i + nx] * w01 + bed[i + nx + 1] * w11;
-        const k = r * grid.nx + c;
-        if (depth > WET) {
-          data[k * 2] = depth + bottom;
-          data[k * 2 + 1] = (dense[i] + residual[i]) * w00 + (dense[i + 1] + residual[i + 1]) * w10
-            + (dense[i + nx] + residual[i + nx]) * w01 + (dense[i + nx + 1] + residual[i + nx + 1]) * w11;
-        } else {
-          data[k * 2] = bottom - 0.05;
-          data[k * 2 + 1] = 0;
-        }
-      }
-    }
+    this.writeUniformFields(grid, data);
     if (carve) carveGrid(data, grid, this.lip.tubeTable, this.lip.tubeCount, this.solver.dx);
+  }
+
+  /** The worker's three visual fields share the same interpolation and one pass over the render nodes. */
+  writeUniformSnapshot(surface: Float32Array, flow: Float32Array, aeration: Float32Array, grid: RenderGrid): void {
+    this.writeUniformFields(grid, surface, flow, aeration);
   }
 
   /** G9: every breaking bore drives air in by its dissipation, spilling shallower than a plunge. */
@@ -1120,11 +1125,11 @@ export class SurfZoneSimulation {
     const { h, bed, restLevel } = this.solver;
     // An open tube's water is clear until its lip lands (PR 5; the advisor's ruling 9b).
     const strength = this.whitewaterStrength;
-    for (let i = 0; i < h.length; i += 1) {
-      if (!(strength[i] > 0)) continue;
+    const { breakingCells, breakingCount, dissipation } = this.foam;
+    for (let n = 0; n < breakingCount; n += 1) {
+      const i = breakingCells[n];
       const still = restLevel - bed[i];
-      const dissipation = strength[i] * boreDissipation(still, h[i]);
-      if (dissipation > 0) this.aeration.addBore(i, dissipation, h[i] - still, dt);
+      if (dissipation[i] > 0) this.aeration.addBore(i, dissipation[i], h[i] - still, dt);
       // The wipeout spec, Part B: breaking stirs the water's turbulence.
       this.aeration.stir(i, strength[i], dt);
     }
@@ -1132,12 +1137,37 @@ export class SurfZoneSimulation {
 
   /** G9: resample the aeration to interleaved (void fraction, plume depth, m) per render node; 0 on dry nodes. */
   writeUniformAeration(data: Float32Array, grid: RenderGrid): void {
+    this.writeUniformFields(grid, undefined, undefined, data);
+  }
+
+  /** Resample the depth-averaged current to interleaved (u, w) per render node, m/s; 0 on dry nodes. */
+  writeUniformFlow(data: Float32Array, grid: RenderGrid): void {
+    this.writeUniformFields(grid, undefined, data);
+  }
+
+  private writeUniformFields(grid: RenderGrid, surface?: Float32Array, flow?: Float32Array, aeration?: Float32Array): void {
     const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
-    const { nx, h } = this.solver;
-    const { depth } = this.aeration;
-    if (!this.voidFractions || this.voidFractions.length !== h.length) this.voidFractions = new Float64Array(h.length);
+    const { h, bed, qx, qz, nx } = this.solver;
+    const { dense, residual } = this.foam;
+    const plume = this.aeration.depth;
+    if (flow && (!this.velocityX || this.velocityX.length !== h.length)) {
+      this.velocityX = new Float64Array(h.length);
+      this.velocityZ = new Float64Array(h.length);
+    }
+    if (aeration && (!this.voidFractions || this.voidFractions.length !== h.length)) this.voidFractions = new Float64Array(h.length);
+    const u = this.velocityX;
+    const w = this.velocityZ;
     const fraction = this.voidFractions;
-    for (let i = 0; i < h.length; i += 1) fraction[i] = this.aeration.voidFraction(i);
+    if (flow || aeration) {
+      for (let i = 0; i < h.length; i += 1) {
+        if (flow) {
+          const wet = h[i] > WET;
+          u![i] = wet ? qx[i] / h[i] : 0;
+          w![i] = wet ? qz[i] / h[i] : 0;
+        }
+        if (aeration) fraction![i] = this.aeration.voidFraction(i);
+      }
+    }
     for (let r = 0; r < grid.nz; r += 1) {
       const row = rows[r] * nx;
       const tz = rowWeights[r];
@@ -1149,46 +1179,21 @@ export class SurfZoneSimulation {
         const w01 = (1 - tx) * tz;
         const w11 = tx * tz;
         const o = (r * grid.nx + c) * 2;
-        data[o] = w00 * fraction[i] + w10 * fraction[i + 1] + w01 * fraction[i + nx] + w11 * fraction[i + nx + 1];
-        data[o + 1] = w00 * depth[i] + w10 * depth[i + 1] + w01 * depth[i + nx] + w11 * depth[i + nx + 1];
-      }
-    }
-  }
-
-  /** Resample the depth-averaged current to interleaved (u, w) per render node, m/s; 0 on dry nodes. */
-  writeUniformFlow(data: Float32Array, grid: RenderGrid): void {
-    const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
-    const { h, qx, qz, nx } = this.solver;
-    if (!this.velocityX || this.velocityX.length !== h.length) {
-      this.velocityX = new Float64Array(h.length);
-      this.velocityZ = new Float64Array(h.length);
-    }
-    const u = this.velocityX;
-    const w = this.velocityZ!;
-    for (let i = 0; i < h.length; i += 1) {
-      const wet = h[i] > WET;
-      u[i] = wet ? qx[i] / h[i] : 0;
-      w[i] = wet ? qz[i] / h[i] : 0;
-    }
-    for (let r = 0; r < grid.nz; r += 1) {
-      const row = rows[r] * nx;
-      const tz = rowWeights[r];
-      for (let c = 0; c < grid.nx; c += 1) {
-        const i = row + columns[c];
-        const tx = columnWeights[c];
-        const w00 = (1 - tx) * (1 - tz);
-        const w10 = tx * (1 - tz);
-        const w01 = (1 - tx) * tz;
-        const w11 = tx * tz;
-        const k = (r * grid.nx + c) * 2;
-        const depth = h[i] * w00 + h[i + 1] * w10 + h[i + nx] * w01 + h[i + nx + 1] * w11;
-        if (depth <= WET) {
-          data[k] = 0;
-          data[k + 1] = 0;
-          continue;
+        const depth = surface || flow ? h[i] * w00 + h[i + 1] * w10 + h[i + nx] * w01 + h[i + nx + 1] * w11 : 0;
+        if (surface) {
+          const bottom = bed[i] * w00 + bed[i + 1] * w10 + bed[i + nx] * w01 + bed[i + nx + 1] * w11;
+          surface[o] = depth > WET ? depth + bottom : bottom - 0.05;
+          surface[o + 1] = depth > WET ? (dense[i] + residual[i]) * w00 + (dense[i + 1] + residual[i + 1]) * w10
+            + (dense[i + nx] + residual[i + nx]) * w01 + (dense[i + nx + 1] + residual[i + nx + 1]) * w11 : 0;
         }
-        data[k] = u[i] * w00 + u[i + 1] * w10 + u[i + nx] * w01 + u[i + nx + 1] * w11;
-        data[k + 1] = w[i] * w00 + w[i + 1] * w10 + w[i + nx] * w01 + w[i + nx + 1] * w11;
+        if (flow) {
+          flow[o] = depth > WET ? u![i] * w00 + u![i + 1] * w10 + u![i + nx] * w01 + u![i + nx + 1] * w11 : 0;
+          flow[o + 1] = depth > WET ? w![i] * w00 + w![i + 1] * w10 + w![i + nx] * w01 + w![i + nx + 1] * w11 : 0;
+        }
+        if (aeration) {
+          aeration[o] = w00 * fraction![i] + w10 * fraction![i + 1] + w01 * fraction![i + nx] + w11 * fraction![i + nx + 1];
+          aeration[o + 1] = w00 * plume[i] + w10 * plume[i + 1] + w01 * plume[i + nx] + w11 * plume[i + nx + 1];
+        }
       }
     }
   }

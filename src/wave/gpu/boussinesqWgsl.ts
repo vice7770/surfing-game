@@ -129,6 +129,8 @@ fn dzOfDx(field: u32, ix: u32, iz: u32, oddX: bool, oddZ: bool) -> f32 {
 }
 
 fn cellOf(id: vec3<u32>) -> u32 { return id.x; }
+// Row solves run one row per lane. Transpose only their dead face fields so neighbouring lanes use neighbouring addresses.
+fn rowScratch(ix: u32, iz: u32) -> u32 { return ix * P.nz + iz; }
 
 // Monotonized-central limited slope.
 fn limited(back: f32, forward: f32) -> f32 {
@@ -511,7 +513,8 @@ fn parentAge(current: f32, j: u32) -> f32 {
     if (ix == 0u) { b += edge * a; a = 0.0; }
     if (ix == P.nx - 1u) { b += edge * c; c = 0.0; }
   }
-  put(${FIELD.XHW}u, i, a); put(${FIELD.XHE}u, i, b); put(${FIELD.XETAW}u, i, c); put(${FIELD.XETAE}u, i, r);
+  let scratch = rowScratch(ix, iz);
+  put(${FIELD.XHW}u, scratch, a); put(${FIELD.XHE}u, scratch, b); put(${FIELD.XETAW}u, scratch, c); put(${FIELD.XETAE}u, scratch, r);
 }
 
 // K12: P from P̄, one row per thread (Thomas).
@@ -520,7 +523,7 @@ fn parentAge(current: f32, j: u32) -> f32 {
   let nx = P.nx; let row = iz * nx;
   var cPrev = 0.0; var rPrev = 0.0;
   for (var ix = 0u; ix < nx; ix++) {
-    let i = row + ix;
+    let i = rowScratch(ix, iz);
     let a = select(at(${FIELD.XHW}u, i), 0.0, ix == 0u);
     let denominator = at(${FIELD.XHE}u, i) - a * cPrev;
     cPrev = at(${FIELD.XETAW}u, i) / denominator;
@@ -531,7 +534,8 @@ fn parentAge(current: f32, j: u32) -> f32 {
   put(${FIELD.QX}u, row + nx - 1u, next);
   for (var k = i32(nx) - 2; k >= 0; k--) {
     let i = row + u32(k);
-    next = at(${FIELD.TR}u, i) - at(${FIELD.TC}u, i) * next;
+    let scratch = rowScratch(u32(k), iz);
+    next = at(${FIELD.TR}u, scratch) - at(${FIELD.TC}u, scratch) * next;
     put(${FIELD.QX}u, i, next);
   }
 }
@@ -634,26 +638,43 @@ fn parentAge(current: f32, j: u32) -> f32 {
 
 // K17: the side strips blend toward the incoming sea (SideFeed.target, the wave-sizes spec). Per slot: cell,
 // weight, row factors' start, column factors' start; per component: cos ωs and sin ωs at the frame's start, and ω.
-@compute @workgroup_size(64) fn relaxSides(@builtin(global_invocation_id) id: vec3<u32>) {
-  let slot = id.x; if (slot >= P.feedSlots) { return; }
-  let record = P.feedComponents * 3u + slot * 4u;
-  let i = u32(D[record]);
-  let weight = D[record + 1u];
-  let rowAt = u32(D[record + 2u]);
-  let columnAt = u32(D[record + 3u]);
-  var eta = 0.0; var qx = 0.0; var qz = 0.0;
-  for (var c = 0u; c < P.feedComponents; c++) {
-    let c0 = D[c * 3u]; let s0 = D[c * 3u + 1u];
-    let angle = D[c * 3u + 2u] * P.tau;
-    let ca = cos(angle); let sa = sin(angle);
-    let timeCos = c0 * ca - s0 * sa;
-    let timeSin = s0 * ca + c0 * sa;
-    let r = rowAt + c * 4u; let k = columnAt + c * 2u;
-    let real = D[r] * D[k] - D[r + 1u] * D[k + 1u];
-    let imaginary = D[r] * D[k + 1u] + D[r + 1u] * D[k];
-    let value = real * timeCos + imaginary * timeSin;
-    eta += value; qx += D[r + 2u] * value; qz += D[r + 3u] * value;
+// These time factors are identical for all 64 slots. One lane computes each component; chunks support any count.
+var<workgroup> sideTimes: array<vec2<f32>, 64>;
+@compute @workgroup_size(64) fn relaxSides(@builtin(global_invocation_id) id: vec3<u32>, @builtin(local_invocation_index) lane: u32) {
+  let slot = id.x;
+  let hasSlot = slot < P.feedSlots;
+  var i = 0u; var weight = 0.0; var rowAt = 0u; var columnAt = 0u;
+  if (hasSlot) {
+    let record = P.feedComponents * 3u + slot * 4u;
+    i = u32(D[record]); weight = D[record + 1u];
+    rowAt = u32(D[record + 2u]); columnAt = u32(D[record + 3u]);
   }
+  var eta = 0.0; var qx = 0.0; var qz = 0.0;
+  for (var first = 0u; first < P.feedComponents; first += 64u) {
+    let c = first + lane;
+    if (c < P.feedComponents) {
+      let c0 = D[c * 3u]; let s0 = D[c * 3u + 1u];
+      let angle = D[c * 3u + 2u] * P.tau;
+      let ca = cos(angle); let sa = sin(angle);
+      let timeCos = c0 * ca - s0 * sa;
+      let timeSin = s0 * ca + c0 * sa;
+      sideTimes[lane] = vec2<f32>(timeCos, timeSin);
+    }
+    workgroupBarrier();
+    if (hasSlot) {
+      for (var c = first; c < min(first + 64u, P.feedComponents); c++) {
+        let timeCos = sideTimes[c - first].x; let timeSin = sideTimes[c - first].y;
+        let r = rowAt + c * 4u; let k = columnAt + c * 2u;
+        let real = D[r] * D[k] - D[r + 1u] * D[k + 1u];
+        let imaginary = D[r] * D[k + 1u] + D[r + 1u] * D[k];
+        let value = real * timeCos + imaginary * timeSin;
+        eta += value; qx += D[r + 2u] * value; qz += D[r + 3u] * value;
+      }
+    }
+    // Keep every lane here until all slots finish this chunk, before its factors are overwritten.
+    workgroupBarrier();
+  }
+  if (!hasSlot) { return; }
   let bed = at(${FIELD.BED}u, i);
   let goal = max(0.0, eta - bed);
   var h = at(${FIELD.H}u, i);

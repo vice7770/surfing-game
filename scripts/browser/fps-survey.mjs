@@ -8,13 +8,17 @@
 // alone; a second context (the surfer preview) is reported apart (see INSTRUMENT). (Chrome 153 on macOS
 // cannot lift the cap: --disable-gpu-vsync --disable-frame-rate-limit dropped the title screen from 120 to 55 fps.)
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { cpus, loadavg, totalmem } from 'node:os';
 import { launch, sleep } from './cdp.mjs';
 
 const argv = process.argv.slice(2);
-const args = Object.fromEntries(argv.filter((a) => a.startsWith('--')).map((a) => { const [k, v] = a.slice(2).split('='); return [k, v ?? 'true']; }));
+const args = Object.fromEntries(argv.filter((a) => a.startsWith('--')).map((a) => {
+  const equal = a.indexOf('=');
+  return equal < 0 ? [a.slice(2), 'true'] : [a.slice(2, equal), a.slice(equal + 1)];
+}));
 const OUT = argv.find((a) => !a.startsWith('--')) ?? 'fps.json';
 const PAGE_URL = args.url ?? 'http://localhost:4173/';
 const WIDTH = Number(args.width ?? 1280);
@@ -26,13 +30,15 @@ const SWELL = args.swell;
 /** Seconds sampled per screen: menus, rides. */
 const MENU_SECONDS = Number(args.menuSeconds ?? 6);
 const RIDE_SECONDS = Number(args.rideSeconds ?? 10);
+/** Passive counters avoid submitting GPU timer queries when checking ordinary gameplay cadence. */
+const GPU_TIMERS = args.gpuTiming !== 'false';
 
 /** Graphics.PRESETS, kept in step by hand (src/game/Graphics.ts). */
 const PRESET_VALUES = {
-  low: { renderScale: 0.75, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'standard', caustics: false, sprayMist: false, oceanView: 'near', foam: 'simple', waterLook: 'classic', particles: 'low' },
-  medium: { renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'standard', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high' },
-  high: { renderScale: 1, nativePixelDensity: true, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'rich', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high' },
-  ultra: { renderScale: 1.25, nativePixelDensity: true, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'rich', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high' },
+  low: { renderScale: 0.75, nativePixelDensity: false, frameLimit: 60, waterSimulation: 'auto', seaDetail: 'standard', caustics: false, sprayMist: false, oceanView: 'near', foam: 'simple', waterLook: 'classic', particles: 'low' },
+  medium: { renderScale: 1, nativePixelDensity: false, frameLimit: 60, waterSimulation: 'auto', seaDetail: 'standard', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'medium' },
+  high: { renderScale: 1, nativePixelDensity: true, frameLimit: 60, waterSimulation: 'auto', seaDetail: 'rich', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high' },
+  ultra: { renderScale: 1.25, nativePixelDensity: true, frameLimit: 60, waterSimulation: 'auto', seaDetail: 'rich', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high' },
 };
 
 /** One advanced setting changed from High at a time (the Custom preset; the surfer keeps High's detail). */
@@ -51,6 +57,9 @@ const FEATURES = [
   ['Water look: classic', { waterLook: 'classic' }],
   ['Particles: medium', { particles: 'medium' }],
   ['Particles: low', { particles: 'low' }],
+  ['Display cap: 60', { frameLimit: 60 }],
+  ['Display cap: screen', { frameLimit: 'screen' }],
+  ['Display cap: 60 + standard sea', { frameLimit: 60, seaDetail: 'standard' }],
 ];
 
 // Installed before the game's scripts: a seeded Math.random (the menu's backdrop spot and the sea's
@@ -58,10 +67,22 @@ const FEATURES = [
 const INSTRUMENT = `(() => {
   let a = 0x5eed;
   Math.random = () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-  const perf = window.__perf = { draws: 0, primitives: 0, work: 0, frames: [], gpu: [], gpuOther: [], contextsDrawn: 0, sampling: false };
+  const perf = window.__perf = { draws: 0, primitives: 0, work: 0, frames: [], gpu: [], gpuOther: [], snapshots: [], contextsDrawn: 0, sampling: false };
+  const NativeWorker = window.Worker;
+  window.Worker = class extends NativeWorker {
+    constructor(...args) {
+      super(...args);
+      this.addEventListener('message', ({ data }) => {
+        if (data?.snapshot?.status && perf.sampling) {
+          const status = data.snapshot.status;
+          perf.snapshots.push({ wall: performance.now(), sea: status.seaTime, pipeline: status.pipelineMs });
+        }
+      });
+    }
+  };
   // A sample starts afresh: its frames, GPU times, and which contexts drew in it.
   perf.startSample = () => {
-    perf.frames = []; perf.gpu = []; perf.gpuOther = [];
+    perf.frames = []; perf.gpu = []; perf.gpuOther = []; perf.snapshots = [];
     for (const t of timed) t.drawn = false;
     perf.sampling = true;
   };
@@ -76,7 +97,7 @@ const INSTRUMENT = `(() => {
   HTMLCanvasElement.prototype.getContext = function (type, ...rest) {
     const gl = getContext.call(this, type, ...rest);
     if (gl && type === 'webgl2' && !byContext.has(gl)) {
-      const ext = gl.getExtension('EXT_disjoint_timer_query_webgl2');
+      const ext = ${GPU_TIMERS} ? gl.getExtension('EXT_disjoint_timer_query_webgl2') : null;
       if (ext) {
         const t = { gl, ext, pending: [], used: false, game: timed.length === 0, drawn: false };
         timed.push(t);
@@ -195,10 +216,28 @@ function quantile(values, q) {
 function summarize(frames) {
   const intervals = frames.map((f) => f[0]);
   const total = intervals.reduce((sum, v) => sum + v, 0);
+  const rendered = frames.filter((f) => f[1] > 0);
+  const renderedIntervals = [];
+  let sinceDraw = 0;
+  let hadDraw = false;
+  for (const frame of frames) {
+    sinceDraw += frame[0];
+    if (frame[1] <= 0) continue;
+    if (hadDraw) renderedIntervals.push(sinceDraw);
+    hadDraw = true;
+    sinceDraw = 0;
+  }
   const round = (v, d = 1) => Number(v.toFixed(d));
   return {
     frames: frames.length,
     fps: round(frames.length / (total / 1000)),
+    renderedFrames: rendered.length,
+    renderedFps: round(rendered.length / (total / 1000)),
+    renderedFrameMsP50: round(quantile(renderedIntervals, 0.5), 2),
+    renderedFrameMsP95: round(quantile(renderedIntervals, 0.95), 2),
+    renderedFrameMsP99: round(quantile(renderedIntervals, 0.99), 2),
+    renderedFrameMsMax: round(renderedIntervals.length ? Math.max(...renderedIntervals) : 0),
+    renderedDrawCalls: Math.round(quantile(rendered.map((f) => f[1]), 0.5)),
     fpsMedian: round(1000 / quantile(intervals, 0.5)),
     fps1Low: round(1000 / quantile(intervals, 0.99)),
     frameMsP50: round(quantile(intervals, 0.5), 2),
@@ -212,6 +251,29 @@ function summarize(frames) {
   };
 }
 
+/** Optional immutable-build check; validates served entry and worker before sampling. */
+async function buildMetadata(directory) {
+  if (!directory) return undefined;
+  const root = resolve(directory);
+  const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
+  const files = ['index.html', ...readdirSync(join(root, 'assets')).filter((f) => f.endsWith('.js')).sort().map((f) => `assets/${f}`)];
+  const bundle = createHash('sha256');
+  for (const file of files) { bundle.update(file); bundle.update(readFileSync(join(root, file))); }
+  const index = readFileSync(join(root, 'index.html'));
+  const entry = index.toString().match(/<script[^>]+src="([^"]+)"/)?.[1];
+  const workers = files.filter((f) => /^assets\/surfZoneWorker-[^/]+\.js$/.test(f));
+  if (!entry || workers.length !== 1) throw new Error('Expected one production entry and surf-zone worker');
+  const verified = [];
+  for (const file of ['index.html', entry.replace(/^\//, ''), workers[0]]) {
+    const response = await fetch(new URL(file, PAGE_URL));
+    if (!response.ok) throw new Error(`Artifact fetch failed: ${file} (${response.status})`);
+    const sha256 = hash(Buffer.from(await response.arrayBuffer()));
+    if (sha256 !== hash(readFileSync(join(root, file)))) throw new Error(`Served artifact differs from --dir: ${file}`);
+    verified.push({ file, sha256 });
+  }
+  return { root, sha256: bundle.digest('hex'), verified };
+}
+const artifact = await buildMetadata(args.dir);
 const page = await launch({ url: PAGE_URL, width: WIDTH, height: HEIGHT, args: ['--mute-audio'] });
 await page.send('Page.addScriptToEvaluateOnNewDocument', { source: INSTRUMENT });
 
@@ -230,13 +292,16 @@ browser.chrome = sh('/Applications/Google Chrome.app/Contents/MacOS/Google Chrom
 browser.refreshHz = Math.round(await page.eval(`new Promise((resolve) => { const times = []; const tick = (t) => { times.push(t); if (times.length < 240) requestAnimationFrame(tick); else { const d = times.slice(1).map((x, i) => x - times[i]).sort((a, b) => a - b); resolve(1000 / d[Math.floor(d.length / 2)]); } }; requestAnimationFrame(tick); })`));
 
 const machine = hardware();
-const run = { date: new Date().toISOString(), url: PAGE_URL, commit: args.commit ?? '', build: args.build ?? 'production (vite build)', loadAverage: loadavg().map((v) => Number(v.toFixed(2))), machine, browser, window: `${WIDTH} × ${HEIGHT}`, frameCap: 'display refresh (vsync)', gpuTiming: 'game context', menuSeconds: MENU_SECONDS, rideSeconds: RIDE_SECONDS, results: [] };
+const run = { date: new Date().toISOString(), url: PAGE_URL, commit: args.commit ?? '', build: args.build ?? 'production (vite build)', artifact, loadAverage: loadavg().map((v) => Number(v.toFixed(2))), machine, browser, window: `${WIDTH} × ${HEIGHT}`, frameCap: 'settings limit within display refresh', gpuTiming: GPU_TIMERS ? 'game context' : 'disabled (passive counters)', menuSeconds: MENU_SECONDS, rideSeconds: RIDE_SECONDS, results: [] };
 console.log(JSON.stringify({ machine, browser }, null, 1));
 mkdirSync(dirname(OUT), { recursive: true });
 const save = () => writeFileSync(OUT, `${JSON.stringify(run, null, 1)}\n`);
 
 async function load(graphics) {
-  const settings = { graphics, gameplay: { showTelemetry: true }, seen: { rideHints: true, lowPerformanceNotice: true } };
+  // Custom graphics use the detected preset's surfer/shadow detail. Feature rows
+  // vary High's advanced settings, so retain High detail instead of the fallback Medium.
+  const detected = { preset: 'high', water: 'accurate', lowPerformance: false, adapter: browser.webgl };
+  const settings = { graphics, detected, gameplay: { showTelemetry: true }, seen: { rideHints: true, lowPerformanceNotice: true } };
   await page.eval(`localStorage.setItem('breakline.settings.v1', ${JSON.stringify(JSON.stringify(settings))}); location.reload()`);
   await sleep(800);
   await page.waitFor(`document.querySelector('.screen-menu') && !document.querySelector('.is-scene-pending')`, 90000);
@@ -256,13 +321,32 @@ async function sample(seconds) {
     await sleep(500);
   }
   const frames = await page.eval('(() => { window.__perf.sampling = false; return window.__perf.frames; })()');
+  const snapshots = await page.eval('window.__perf.snapshots');
+  const span = snapshots.length > 1 ? (snapshots.at(-1).wall - snapshots[0].wall) / 1000 : 0;
+  const pipeline = {};
+  for (const key of Object.keys(snapshots.find((s) => s.pipeline)?.pipeline ?? {})) {
+    pipeline[key] = Number(quantile(snapshots.map((s) => s.pipeline?.[key]).filter(Number.isFinite), 0.5).toFixed(2));
+  }
+  const simulation = span > 0 ? {
+    freshSnapshots: snapshots.length,
+    freshSnapshotsPerSecond: Number(((snapshots.length - 1) / span).toFixed(2)),
+    simulationSecondsPerWallSecond: Number(((snapshots.at(-1).sea - snapshots[0].sea) / span).toFixed(3)),
+    pipelineMsP50: pipeline,
+    simulationTimeline: Array.from({ length: Math.ceil(span / 2) }, (_, i) => {
+      const rows = snapshots.filter((s) => s.wall >= snapshots[0].wall + i * 2000 && s.wall < snapshots[0].wall + (i + 1) * 2000);
+      const pipelineMsP50 = Object.fromEntries(Object.keys(pipeline).map((key) => [key,
+        Number(quantile(rows.map((s) => s.pipeline?.[key]).filter(Number.isFinite), 0.5).toFixed(2))]));
+      return { from: i * 2, snapshots: rows.length, waterMs: pipelineMsP50.water,
+        totalMs: pipelineMsP50.total, substeps: pipelineMsP50.deviceSubsteps, pipelineMsP50 };
+    }),
+  } : { freshSnapshots: snapshots.length };
   await sleep(300); // the last frames' GPU timers report a few frames late
   const { gpu, gpuOther, contextsDrawn } = await page.eval('({ gpu: window.__perf.gpu.slice(), gpuOther: window.__perf.gpuOther.slice(), contextsDrawn: window.__perf.contextsDrawn })');
   const extra = await page.eval(`(() => {
     const canvas = document.querySelector('canvas');
     const rows = {};
     for (const dt of document.querySelectorAll('.ride-telemetry dt')) rows[dt.textContent.trim()] = dt.nextElementSibling?.textContent.trim() ?? '';
-    return { canvas: canvas ? canvas.width + ' × ' + canvas.height : '', solver: rows.SOLVER ?? '', heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1e6) : null };
+    return { canvas: canvas ? canvas.width + ' × ' + canvas.height : '', solver: rows.SOLVER ?? '', config: window.breaklineDiagnostics?.mode.config, heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1e6) : null };
   })()`);
   const stepStats = steps.length ? { solverMsP50: quantile(steps, 0.5), solverMsMax: Math.max(...steps) } : {};
   const gpuStats = {
@@ -271,7 +355,7 @@ async function sample(seconds) {
     ...(gpuOther.length ? { gpuOtherMsP50: Number(quantile(gpuOther, 0.5).toFixed(2)), gpuOtherMsP95: Number(quantile(gpuOther, 0.95).toFixed(2)) } : {}),
     gpuContexts: contextsDrawn,
   };
-  return { ...summarize(frames), ...gpuStats, ...extra, ...stepStats };
+  return { ...summarize(frames), ...gpuStats, ...extra, ...stepStats, ...simulation };
 }
 
 async function measure(setting, screen, seconds, warmMs) {
@@ -279,7 +363,7 @@ async function measure(setting, screen, seconds, warmMs) {
   const stats = await sample(seconds);
   run.results.push({ setting, screen, ...stats, power: powerNow() });
   save();
-  console.log(`${setting.padEnd(26)} ${screen.padEnd(20)} ${String(stats.fps).padStart(6)} fps  1% low ${String(stats.fps1Low).padStart(6)}  p95 ${stats.frameMsP95} ms  gpu ${stats.gpuMsP50 ?? '-'}/${stats.gpuMsP95 ?? '-'} ms${stats.gpuOtherMsP50 !== undefined ? ` (preview ${stats.gpuOtherMsP50})` : ''}  main ${stats.mainThreadMsP50} ms  draws ${stats.drawCalls}  ${stats.canvas}  ${stats.solverMsP50 !== undefined ? `solver ${stats.solverMsP50}–${stats.solverMsMax} ms` : ''}`);
+  console.log(`${setting.padEnd(26)} ${screen.padEnd(20)} ${String(stats.renderedFps).padStart(6)} rendered fps (${stats.fps} callbacks/s)  callback p95 ${stats.frameMsP95} ms  gpu ${stats.gpuMsP50 ?? '-'}/${stats.gpuMsP95 ?? '-'} ms${stats.gpuOtherMsP50 !== undefined ? ` (preview ${stats.gpuOtherMsP50})` : ''}  main ${stats.mainThreadMsP50} ms  draws ${stats.drawCalls}  ${stats.canvas}  ${stats.solverMsP50 !== undefined ? `solver ${stats.solverMsP50}–${stats.solverMsMax} ms` : ''}  water ${stats.freshSnapshotsPerSecond ?? '-'} updates/s  simulation ${stats.simulationSecondsPerWallSecond ?? '-'}×`);
 }
 
 const onScreen = (name) => page.waitFor(`document.querySelector('#app')?.dataset.screen === ${JSON.stringify(name)}`, 120000);
@@ -296,7 +380,7 @@ async function ride(setting, spot, { pause = false } = {}) {
   }
   await page.click('.button-primary', 'Paddle out');
   await onScreen('ride');
-  await measure(setting, `Ride · ${spot}`, RIDE_SECONDS, 5000);
+  await measure(setting, `Ride · ${spot}`, RIDE_SECONDS, Number(args.warmSeconds ?? 5) * 1000);
   await page.press('Escape');
   await onScreen('pause');
   if (pause) await measure(setting, 'Pause menu', MENU_SECONDS, 1500);

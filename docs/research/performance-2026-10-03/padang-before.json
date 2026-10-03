@@ -1,0 +1,167 @@
+{
+  "date": "2026-10-03T16:35:15.916Z",
+  "commit": "0cccd95528de0b18aeb5633941bd205965db3add",
+  "build": {
+    "build": "0cccd9552"
+  },
+  "url": "http://localhost:5189/?particleBench=&graphics=high&spot=padang&swell=big&compute=gpu&from=30&to=30&frames=16&width=1280&height=720&shot=30&receiver=http%3A%2F%2Flocalhost%3A5338",
+  "metadata": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+    "viewport": [
+      1280,
+      720
+    ],
+    "pixelRatio": 1
+  },
+  "held": {
+    "done": true,
+    "summary": {
+      "spot": "padang",
+      "swell": "big",
+      "level": "high",
+      "look": "rich",
+      "compute": "gpu",
+      "size": "1280 × 720",
+      "maxPoint": 511,
+      "gpuTimer": true,
+      "moments": 1,
+      "spray": 5120,
+      "bubbles": 4096,
+      "lipParcels": 61,
+      "kinds": {
+        "spray": 3391,
+        "mist": 705,
+        "foamBall": 1011,
+        "tubeSpray": 9,
+        "tubeMist": 4
+      },
+      "pageMs": {
+        "spray": 0,
+        "bubbles": 0,
+        "lip": 0.5
+      },
+      "views": {
+        "front": {
+          "frameMs": 11.5,
+          "gpuFrameMs": 5.122708,
+          "sprayMs": 0.3999999761581421,
+          "bubblesMs": -0.4999999701976776,
+          "lipMs": 0.09999999403953552,
+          "gpuSprayMs": 0.06770800000000055,
+          "gpuBubblesMs": -0.9321660000000005,
+          "gpuLipMs": 1.0077500000000006,
+          "fragmentsM": {
+            "spray": 0.0529505223906999,
+            "mist": 0.24777746401026327,
+            "foamBall": 1.185147805556217,
+            "tubeSpray": 0.00022511642820489556,
+            "tubeMist": 0.011801064716972955
+          },
+          "onScreen": 1858
+        },
+        "close": {
+          "frameMs": 11.599999994039536,
+          "gpuFrameMs": 5.197874,
+          "sprayMs": 0.09999999403953552,
+          "bubblesMs": 0.29999998211860657,
+          "lipMs": -0.29999998211860657,
+          "gpuSprayMs": 0.12395800000000001,
+          "gpuBubblesMs": -0.014292000000000193,
+          "gpuLipMs": -0.03825000000000056,
+          "fragmentsM": {
+            "spray": 0.07846151312216734,
+            "mist": 0.7316863268573749,
+            "foamBall": 2.4500490412141227,
+            "tubeSpray": 0.0005388767236728334,
+            "tubeMist": 0.026453258370236765
+          },
+          "onScreen": 913
+        }
+      }
+    },
+    "moments": [
+      {
+        "seaTime": 391.80670943367926,
+        "centre": [
+          62.96420876729475,
+          -82.70626584972975
+        ],
+        "spray": 5120,
+        "kinds": [
+          3391,
+          705,
+          1011,
+          9,
+          4
+        ],
+        "bubbles": 4096,
+        "lipParcels": 61,
+        "page": {
+          "spray": 0,
+          "bubbles": 0,
+          "lip": 0.5
+        },
+        "views": {
+          "front": {
+            "wall": {
+              "drawn": 11.5,
+              "noSpray": 11.100000023841858,
+              "noBubbles": 11.599999994039536,
+              "noLip": 11.5
+            },
+            "gpu": {
+              "drawn": 5.122708,
+              "noSpray": 5.055,
+              "noBubbles": 5.987166,
+              "noLip": 4.979416
+            },
+            "fragments": {
+              "spray": 52950.5223906999,
+              "mist": 247777.46401026327,
+              "foamBall": 1185147.805556217,
+              "tubeSpray": 225.11642820489556,
+              "tubeMist": 11801.064716972955
+            },
+            "onScreen": 1858
+          },
+          "close": {
+            "wall": {
+              "drawn": 11.599999994039536,
+              "noSpray": 11.5,
+              "noBubbles": 11.200000017881393,
+              "noLip": 11.5
+            },
+            "gpu": {
+              "drawn": 5.197874,
+              "noSpray": 5.073916,
+              "noBubbles": 5.088208,
+              "noLip": 5.126458
+            },
+            "fragments": {
+              "spray": 78461.51312216734,
+              "mist": 731686.3268573749,
+              "foamBall": 2450049.041214123,
+              "tubeSpray": 538.8767236728335,
+              "tubeMist": 26453.258370236766
+            },
+            "onScreen": 913
+          }
+        }
+      }
+    ],
+    "snapshot": {
+      "seaTime": 391.80670943367926,
+      "frontCount": 236,
+      "lipCount": 61,
+      "sprayCount": 5120,
+      "bubbleCount": 4096,
+      "solverMs": 23.30000001192093
+    }
+  },
+  "artifact": {
+    "label": "padang-before",
+    "bundleSha256": "829dda90b557e3f093329e6067eb2efb4f46f739267ae2e7f869e2d1b6a44276",
+    "sourceState": "Frozen production build copied before implementation changes"
+  }
+}

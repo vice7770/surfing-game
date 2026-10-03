@@ -123,6 +123,7 @@ export class FarFieldOcean {
   private extent = 1500;
   private view: 'near' | 'far' = 'far';
   private currentLook: WaterLook = 'classic';
+  private drawnTime = Number.NaN;
 
   constructor() {
     this.uniforms = {
@@ -200,6 +201,7 @@ export class FarFieldOcean {
   setProfile(profile: FarFieldProfile, hole: HoleRect, focus: { x: number; z: number }, options: { extent: number }): void {
     if (profile.count > MAX_COMPONENTS) throw new RangeError(`The far field supports ${MAX_COMPONENTS} components, got ${profile.count}`);
     this.profile = profile;
+    this.drawnTime = Number.NaN;
     const xs = gradedAxis(focus.x - options.extent, focus.x + options.extent, hole.xMin, hole.xMax, 4, 40);
     const zs = gradedAxis(profile.offshoreZ, profile.shoreZ, hole.zMin, hole.zMax, 3, 40);
     this.mesh.geometry.dispose();
@@ -260,10 +262,11 @@ export class FarFieldOcean {
   /** Advance to sea time t: each component's ωt is reduced mod 2π in double precision. */
   update(seaTime: number): void {
     const profile = this.profile;
-    if (!profile) return;
+    if (!profile || seaTime === this.drawnTime) return;
     const temporal = this.uniforms.farTemporal.value as Float32Array;
     for (let c = 0; c < profile.count; c += 1) temporal[c] = (profile.omega[c] * seaTime) % (2 * Math.PI);
     this.uniforms.waterTime.value = seaTime;
+    this.drawnTime = seaTime;
   }
 
   dispose(): void {

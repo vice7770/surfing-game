@@ -93,7 +93,7 @@ describe('LocalSurfZone', () => {
     expect(Array.from(host.snapshot.surface)).toEqual(Array.from(buffers.surface));
     expect(Array.from(host.snapshot.flow)).toEqual(Array.from(buffers.flow));
     // Everything but the wall-clock step time is deterministic.
-    expect({ ...host.snapshot.status, stepMs: 0 }).toEqual({ ...runner.status(), stepMs: 0 });
+    expect({ ...host.snapshot.status, stepMs: 0, pipelineMs: undefined }).toEqual({ ...runner.status(), stepMs: 0, pipelineMs: undefined });
   });
 
   it('samples the rendered surface and bed for the camera', async () => {

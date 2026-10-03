@@ -6,19 +6,19 @@ import type { AdvancedGraphics, ConcretePreset, Detection, GraphicsPreset, Graph
 /** What each graphics preset sets (plan P8). Ultra supersamples; the Auto benchmark never picks it. */
 export const PRESETS: Record<ConcretePreset, AdvancedGraphics> = {
   low: {
-    renderScale: 0.75, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'standard',
+    renderScale: 0.75, nativePixelDensity: false, frameLimit: 60, waterSimulation: 'auto', seaDetail: 'standard',
     caustics: false, sprayMist: false, oceanView: 'near', foam: 'simple', waterLook: 'classic', particles: 'low',
   },
   medium: {
-    renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'standard',
-    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high',
+    renderScale: 1, nativePixelDensity: false, frameLimit: 60, waterSimulation: 'auto', seaDetail: 'standard',
+    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'medium',
   },
   high: {
-    renderScale: 1, nativePixelDensity: true, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'rich',
+    renderScale: 1, nativePixelDensity: true, frameLimit: 60, waterSimulation: 'auto', seaDetail: 'rich',
     caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high',
   },
   ultra: {
-    renderScale: 1.25, nativePixelDensity: true, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'rich',
+    renderScale: 1.25, nativePixelDensity: true, frameLimit: 60, waterSimulation: 'auto', seaDetail: 'rich',
     caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high',
   },
 };
@@ -53,7 +53,7 @@ export function withAdvanced(graphics: GraphicsSettings, patch: Partial<Advanced
 /** The settings as the renderer and the next surf zone use them. */
 export interface ResolvedGraphics {
   pixelRatio: number;
-  /** Least time between rendered frames, ms; 0 renders every display frame. */
+  /** Target render period, ms; 0 renders every display frame. */
   frameInterval: number;
   stage: 1 | 2;
   compute: 'auto' | 'cpu';

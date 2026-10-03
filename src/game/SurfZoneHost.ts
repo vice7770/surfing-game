@@ -42,6 +42,8 @@ export interface SurfZoneHost {
   restore(sea: Uint8Array): void;
   /** The water look the spray is drawn in (G9: Classic keeps its lip-impact spray as it was). */
   setSprayLook(look: SprayLook): void;
+  /** Stop stepping spray while the graphics setting hides it. */
+  setSprayEnabled(enabled: boolean): void;
   /** The Particles setting (graphics): the spray's and bubbles' budget. Visual only. */
   setParticleLevel(level: ParticleLevel): void;
   /** Rendered water surface at (x, z), m: the same lookup the water shader uses. */
@@ -117,6 +119,10 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
     this.runner.setSprayLook(look);
   }
 
+  setSprayEnabled(enabled: boolean): void {
+    this.runner.setSprayEnabled(enabled);
+  }
+
   setParticleLevel(level: ParticleLevel): void {
     this.runner.setParticleLevel(level);
   }
@@ -137,6 +143,11 @@ export class SnapshotSurfZone implements RenderableSurfZone {
    * carved and gets no tubes; the physics keeps its own carve for the contact until PR 4.
    */
   constructor(private readonly host: SurfZoneHost, private readonly options: { sweptBarrel?: boolean } = {}) {}
+
+  /** Refreshes and same-time restores replace status even when the buffers are reused. */
+  get revision(): object {
+    return this.host.snapshot.status;
+  }
 
   get windowXMin(): number {
     return this.host.init.windowXMin;

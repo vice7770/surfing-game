@@ -4,6 +4,8 @@ import type { SurfaceGrid, SurfaceSource } from './WaterSurface';
 export interface RenderableSurfZone {
   readonly windowXMin: number;
   readonly seaTime: number;
+  /** Changes when a new snapshot is published, including a refresh at the same sea time. */
+  readonly revision?: unknown;
   renderGrid(spacing: number): SurfaceGrid;
   writeUniformSurface(data: Float32Array, grid: SurfaceGrid, carve?: boolean): void;
   /** The flying tubes as a `tubeTable` (G9), for a renderer that cuts them itself; returns how many. */
@@ -48,6 +50,10 @@ export class PhysicalSurfaceSource implements SurfaceSource {
 
   get time(): number {
     return this.simulation.seaTime;
+  }
+
+  get revision(): unknown {
+    return this.simulation.revision;
   }
 
   /** The seabed is fixed, so it only changes when the window slides. */

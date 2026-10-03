@@ -19,10 +19,14 @@ export function createSurfZoneWorker(): WorkerPort {
 
 /** Most steps queued while an advance is in flight (the page's accumulator caps its backlog the same way). */
 export const MAX_QUEUED_STEPS = 6;
+/** Publish every offline physics step so a busy worker cannot turn six steps into one visible jump. */
+export const MAX_BATCH_STEPS = 1;
 
 export interface WorkerSurfZoneOptions {
   /** Most steps queued while an advance is in flight; online play raises it to catch up with the room's clock (spec N1). */
   maxQueuedSteps?: number;
+  /** Maximum steps before publishing a snapshot; online catch-up may use larger batches. */
+  maxBatchSteps?: number;
   /** An encoded sea handed over by another player, to start from (spec N1). */
   sea?: Uint8Array;
 }
@@ -69,6 +73,7 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
   /** Other boards' pushes waiting for the next advance (spec N1). */
   private pendingReactions: number[] = [];
   private readonly maxQueuedSteps: number;
+  private readonly maxBatchSteps: number;
   /** Held controls from the latest request; presses (pop-up, retry) kept until an advance carries them. */
   private input: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
   private disposed = false;
@@ -81,6 +86,7 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
   ) {
     super();
     this.maxQueuedSteps = host.maxQueuedSteps ?? MAX_QUEUED_STEPS;
+    this.maxBatchSteps = Math.max(1, host.maxBatchSteps ?? (host.maxQueuedSteps === undefined ? MAX_BATCH_STEPS : this.maxQueuedSteps));
     this.ready = new Promise((resolve, reject) => {
       port.onerror = (event) => reject(new Error(event.message || 'The surf zone worker failed'));
       port.onmessage = ({ data }) => {
@@ -144,6 +150,11 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
     this.port.postMessage({ type: 'look', look });
   }
 
+  setSprayEnabled(enabled: boolean): void {
+    if (this.disposed) return;
+    this.port.postMessage({ type: 'sprayEnabled', enabled });
+  }
+
   /** The Particles setting: the worker's spray and bubbles take the budget from their next step. */
   setParticleLevel(level: ParticleLevel): void {
     if (this.disposed) return;
@@ -160,8 +171,8 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
     const buffers = this.spare;
     this.spare = undefined;
     this.inFlight = true;
-    const steps = this.pending;
-    this.pending = 0;
+    const steps = Math.min(this.pending, this.maxBatchSteps);
+    this.pending -= steps;
     this.inFlightSteps = steps;
     const reactions = this.pendingReactions.length ? Float32Array.from(this.pendingReactions) : undefined;
     this.pendingReactions = [];

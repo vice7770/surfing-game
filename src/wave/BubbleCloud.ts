@@ -1,5 +1,6 @@
 import { PARTICLE_BUDGETS, particleBudget, poolSize, type ParticleBudget, type ParticleLevel } from './particleBudget';
 import { seededRandom } from './random';
+import { firstSourceCell, type ParticleSources } from './particleSources';
 
 /** What the bubbles need from a surf zone: its grid and water, and where bores are making foam. */
 export interface BubbleScene {
@@ -15,7 +16,7 @@ export interface BubbleScene {
     readonly bed: ArrayLike<number>;
     cellIndex(x: number, z: number): number;
   };
-  readonly foam: { readonly source: ArrayLike<number> };
+  readonly foam: ParticleSources;
 }
 
 /** Rise speed of millimetre bubbles, near their terminal velocity (Clift, Grace & Weber 1978), m/s. */
@@ -35,7 +36,8 @@ const WET = 0.05;
  */
 export class BubbleCloud {
   /** Interleaved (x, y, z) of the live bubbles, m. */
-  readonly positions: Float32Array;
+  private readonly packedPositions: Float32Array;
+  private positionsDirty = false;
   private readonly x: Float64Array;
   private readonly y: Float64Array;
   private readonly z: Float64Array;
@@ -55,7 +57,7 @@ export class BubbleCloud {
     this.y = new Float64Array(capacity);
     this.z = new Float64Array(capacity);
     this.age = new Float64Array(capacity);
-    this.positions = new Float32Array(capacity * 3);
+    this.packedPositions = new Float32Array(capacity * 3);
     this.room = capacity;
   }
 
@@ -68,6 +70,19 @@ export class BubbleCloud {
 
   get level(): ParticleLevel {
     return this.particleLevel;
+  }
+
+  /** Pack once when a snapshot or tool reads the presentation data, skipping intermediate physics steps. */
+  get positions(): Float32Array {
+    if (this.positionsDirty) {
+      for (let k = 0; k < this.count; k += 1) {
+        this.packedPositions[k * 3] = this.x[k];
+        this.packedPositions[k * 3 + 1] = this.y[k];
+        this.packedPositions[k * 3 + 2] = this.z[k];
+      }
+      this.positionsDirty = false;
+    }
+    return this.packedPositions;
   }
 
   update(scene: BubbleScene, dt: number): void {
@@ -96,8 +111,12 @@ export class BubbleCloud {
     const source = foam.source;
     // Start the scan at a random cell, so a full pool is shared along and across the surf zone.
     const start = Math.floor(this.random() * source.length);
-    for (let n = 0; n < source.length && this.count < this.room; n += 1) {
-      const i = (start + n) % source.length;
+    const cells = foam.sourceCells;
+    const count = cells ? (foam.sourceCount ?? cells.length) : source.length;
+    let cursor = cells ? firstSourceCell(cells, count, start) : start;
+    for (let n = 0; n < count && this.count < this.room; n += 1) {
+      const i = cells ? cells[cursor] : cursor;
+      if (++cursor === count) cursor = 0;
       if (!(source[i] > 0) || h[i] <= DEPTH.min + WET) continue;
       const row = Math.floor(i / nx);
       const expected = source[i] * dt * dx * dz[row] * BUBBLES_PER_FOAM * this.budget.bubbles;
@@ -112,14 +131,11 @@ export class BubbleCloud {
         this.count += 1;
       }
     }
-    for (let k = 0; k < this.count; k += 1) {
-      this.positions[k * 3] = this.x[k];
-      this.positions[k * 3 + 1] = this.y[k];
-      this.positions[k * 3 + 2] = this.z[k];
-    }
+    this.positionsDirty = true;
   }
 
   clear(): void {
     this.count = 0;
+    this.positionsDirty = false;
   }
 }

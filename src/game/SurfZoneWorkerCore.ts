@@ -14,6 +14,7 @@ export type SurfZoneRequest =
   /** Take this encoded sea in place of the running one (spec L2: a lesson restarts on the same wave). */
   | { type: 'restore'; sea: Uint8Array }
   | { type: 'look'; look: SprayLook }
+  | { type: 'sprayEnabled'; enabled: boolean }
   /** The Particles setting (graphics): the spray's and bubbles' budget. */
   | { type: 'particles'; level: ParticleLevel }
   | { type: 'advance'; steps: number; buffers: SurfZoneBuffers; input?: RideRequest; reactions?: Float32Array };
@@ -46,6 +47,8 @@ export class SurfZoneWorkerCore {
   private runner?: SurfZoneRunner;
   /** The water look the spray is drawn in (G9: Classic keeps its spray), kept for a sea still to start. */
   private sprayLook: SprayLook = 'rich';
+  /** Kept while a new sea is still spinning up. */
+  private sprayEnabled = true;
   /** The Particles setting, kept for a sea still to start. */
   private particleLevel: ParticleLevel = 'high';
   /** A device step under way: an export waits for it, so it never sees half a step. */
@@ -60,6 +63,11 @@ export class SurfZoneWorkerCore {
     if (request.type === 'look') {
       this.sprayLook = request.look;
       this.runner?.setSprayLook(request.look);
+      return;
+    }
+    if (request.type === 'sprayEnabled') {
+      this.sprayEnabled = request.enabled;
+      this.runner?.setSprayEnabled(request.enabled);
       return;
     }
     if (request.type === 'particles') {
@@ -79,6 +87,7 @@ export class SurfZoneWorkerCore {
           if (sea) runner.simulation.importState(decodeSurfZoneState(sea));
           // Only a ready sea takes steps and exports.
           runner.setSprayLook(this.sprayLook);
+          runner.setSprayEnabled(this.sprayEnabled);
           runner.setParticleLevel(this.particleLevel);
           this.runner = runner;
           this.ready(runner);
@@ -87,6 +96,7 @@ export class SurfZoneWorkerCore {
       const runner = new SurfZoneRunner(config, options);
       if (sea) runner.simulation.importState(decodeSurfZoneState(sea));
       runner.setSprayLook(this.sprayLook);
+      runner.setSprayEnabled(this.sprayEnabled);
       runner.setParticleLevel(this.particleLevel);
       this.runner = runner;
       this.ready(runner);

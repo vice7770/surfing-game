@@ -1,0 +1,193 @@
+{
+  "schema": "swept-contact-lazy-buckets-1",
+  "scope": "Identical frozen LoftResult; loft construction excluded. Captured mixed-sea WaveLab states and a synthetic 320m toy front; CPU microbenchmark only, not game FPS.",
+  "samples": 30,
+  "results": [
+    {
+      "name": "original-WaveLab-at-10",
+      "slices": 48,
+      "joinedStrips": 46,
+      "parityQueries": 1410,
+      "exact": true,
+      "timings": [
+        {
+          "scenario": "index-only",
+          "queries": 0,
+          "old-eager": {
+            "medianMs": 0.10954200000000469,
+            "p95Ms": 0.6202089999999885,
+            "preparedStrips": 46,
+            "entries": 10339
+          },
+          "new-lazy": {
+            "medianMs": 0.030458000000010088,
+            "p95Ms": 0.4903750000000002,
+            "preparedStrips": 0,
+            "entries": 0
+          },
+          "medianReductionPct": 72.19513976373557
+        },
+        {
+          "scenario": "nearby-body-64",
+          "queries": 64,
+          "old-eager": {
+            "medianMs": 0.11058299999999122,
+            "p95Ms": 0.17962499999998727,
+            "preparedStrips": 46,
+            "entries": 10339
+          },
+          "new-lazy": {
+            "medianMs": 0.060167000000006965,
+            "p95Ms": 0.09195800000000531,
+            "preparedStrips": 3,
+            "entries": 606
+          },
+          "medianReductionPct": 45.591094472014916
+        },
+        {
+          "scenario": "wave-gauge-346",
+          "queries": 346,
+          "old-eager": {
+            "medianMs": 0.11862499999998022,
+            "p95Ms": 0.19470799999999144,
+            "preparedStrips": 46,
+            "entries": 10339
+          },
+          "new-lazy": {
+            "medianMs": 0.09245799999999349,
+            "p95Ms": 0.1534170000000188,
+            "preparedStrips": 35,
+            "entries": 7758
+          },
+          "medianReductionPct": 22.0585879873476
+        }
+      ]
+    },
+    {
+      "name": "original-WaveLab-at-15",
+      "slices": 0,
+      "joinedStrips": 0,
+      "skipped": "Original captured drawing has no joined contact strips"
+    },
+    {
+      "name": "original-WaveLab-at-20",
+      "slices": 105,
+      "joinedStrips": 87,
+      "parityQueries": 1410,
+      "exact": true,
+      "timings": [
+        {
+          "scenario": "index-only",
+          "queries": 0,
+          "old-eager": {
+            "medianMs": 0.20129200000002356,
+            "p95Ms": 0.5207920000000001,
+            "preparedStrips": 87,
+            "entries": 19105
+          },
+          "new-lazy": {
+            "medianMs": 0.11470800000000736,
+            "p95Ms": 0.3877499999999827,
+            "preparedStrips": 0,
+            "entries": 0
+          },
+          "medianReductionPct": 43.014128728417454
+        },
+        {
+          "scenario": "nearby-body-64",
+          "queries": 64,
+          "old-eager": {
+            "medianMs": 0.18079099999999926,
+            "p95Ms": 0.3140000000000214,
+            "preparedStrips": 87,
+            "entries": 19105
+          },
+          "new-lazy": {
+            "medianMs": 0.082458000000031,
+            "p95Ms": 0.108791999999994,
+            "preparedStrips": 3,
+            "entries": 655
+          },
+          "medianReductionPct": 54.390428727076376
+        },
+        {
+          "scenario": "wave-gauge-346",
+          "queries": 346,
+          "old-eager": {
+            "medianMs": 0.20358299999998053,
+            "p95Ms": 0.24045800000004647,
+            "preparedStrips": 87,
+            "entries": 19105
+          },
+          "new-lazy": {
+            "medianMs": 0.1711249999999609,
+            "p95Ms": 0.210708000000011,
+            "preparedStrips": 60,
+            "entries": 12849
+          },
+          "medianReductionPct": 15.943374446796998
+        }
+      ]
+    },
+    {
+      "name": "synthetic-320m-straight-toy-front",
+      "slices": 297,
+      "joinedStrips": 296,
+      "parityQueries": 1410,
+      "exact": true,
+      "timings": [
+        {
+          "scenario": "index-only",
+          "queries": 0,
+          "old-eager": {
+            "medianMs": 0.5684590000000185,
+            "p95Ms": 0.6939160000000015,
+            "preparedStrips": 296,
+            "entries": 64232
+          },
+          "new-lazy": {
+            "medianMs": 0.2610000000000241,
+            "p95Ms": 0.3057089999999789,
+            "preparedStrips": 0,
+            "entries": 0
+          },
+          "medianReductionPct": 54.08639849135724
+        },
+        {
+          "scenario": "nearby-body-64",
+          "queries": 64,
+          "old-eager": {
+            "medianMs": 0.5550419999999576,
+            "p95Ms": 0.7190410000000043,
+            "preparedStrips": 296,
+            "entries": 64232
+          },
+          "new-lazy": {
+            "medianMs": 0.247792000000004,
+            "p95Ms": 0.35462499999999864,
+            "preparedStrips": 1,
+            "entries": 217
+          },
+          "medianReductionPct": 55.35617124469447
+        },
+        {
+          "scenario": "wave-gauge-346",
+          "queries": 346,
+          "old-eager": {
+            "medianMs": 0.6008749999999736,
+            "p95Ms": 0.6991669999999885,
+            "preparedStrips": 296,
+            "entries": 64232
+          },
+          "new-lazy": {
+            "medianMs": 0.36887500000000273,
+            "p95Ms": 0.4503750000000082,
+            "preparedStrips": 75,
+            "entries": 16275
+          },
+          "medianReductionPct": 38.610359891821275
+        }
+      ]
+    }
+  ]
+}

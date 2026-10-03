@@ -225,7 +225,7 @@ Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [
   - **Trimmed:** `SurfWater` loses its legacy adapter and the `surface` flow regime; `Surfer` keeps only the pose the physical rider falls back to; `BoardInput` moves into `Controls`; the legacy swell readout and board values go; the sky loses the coastline cards the physical sea always hid.
   - **Kept on purpose:** the test waters, test surfers and the report scripts' helpers, which the suite and the reports still use.
 
-### P1 · Performance (2026-09-27) — `Study done; Particles setting added (2026-09-30); decisions open`
+### P1 · Performance (2026-09-27) — `Padang Big renders 60 FPS on M5 Pro (2026-10-03); late water throughput and Auto tuning open`
 
 From the user's M4 Pro frame-rate survey, re-run on the M1 Air: [performance study](docs/research/performance-study.md).
 - [x] **The M4 Pro holds 120 fps on every screen at every preset.** Its heaviest reading, the Surf screen, was the survey counting GPU time once per WebGL context. The surfer preview costs about 0.5 ms.
@@ -239,7 +239,9 @@ From the user's M4 Pro frame-rate survey, re-run on the M1 Air: [performance stu
 - [ ] **Open:**
   - decide what the menus' waves may cost (a 60 fps cap on faster displays, a lower scale, or holding them still);
   - re-measure High on the M1 Air with no other session running, and have Auto weigh High's resolution if it misses 60 fps;
-  - whether Auto's Medium (no WebGPU: the water steps on the CPU in the particles' worker) should take Medium particles, and whether Spray and mist off should stop stepping the spray.
+- [x] **Performance continuation on `claude/wave-pool` (2026-10-03):** [implementation and measurements](docs/research/performance-simplification.md). The water, barrel, particle buffers and FFT reuse completed snapshot work between display frames. Foam's existing pass records active particle sources so both clouds skip inactive cells, and presentation arrays pack only when a snapshot reads them. Rich spray lighting moves from every fragment to once per point; live buffer prefixes upload at each new snapshot. High keeps its existing counts and trajectories. Medium graphics now takes Medium particles, and Spray and mist off stops spray updates while water, rider, bubbles and sound continue.
+- [x] **Visible M5 Pro Padang Big/High run (90 s):** 60.0 average rendered FPS, 16.7 ms median / 25.0 ms p95 rendered intervals, 57.70 fresh water snapshots/s, 0.962 simulation seconds per wall second, at 1708 × 926 / 2989 × 1620. Named presets cap at 60 with a scheduled clock; ordinary Padang uses 2 m alongshore cells with 1 m fine cross-shore cells and 2 m render sampling with an independent 1 m barrel mask. GPU scratch/phases, shared foam/air advection, fused snapshots, exact contact sampling/lazy buckets and one-step offline publishing reduce work. Similar sampled visuals are documented alongside numerical physics differences; supplied overrides remain authoritative.
+- [ ] **Late heavy-breaking water throughput:** the 90 s run still drops below 60 new water states/s. Tube self-folding/unstable crest normals remain a separate open physics problem; neither the render cap nor the grid quality screen accepts tube contact.
 
 ### P1 · Steam Controller (C1) — `In Progress (hardware check open)`
 

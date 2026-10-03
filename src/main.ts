@@ -17,7 +17,7 @@ import {
 import { addPadSource } from './game/Bindings';
 import { Controls } from './game/Controls';
 import { SteamControllerDriver } from './game/steam/SteamControllerDriver';
-import { frameDue } from './game/frameLimit';
+import { advanceFrameClock, frameDue } from './game/frameLimit';
 import { ownSurferDetail, PRESETS, resolveGraphics, withPreset, type ResolvedGraphics } from './game/Graphics';
 import { schoolPocketReflex, showsPocketReflex } from './game/pocketReflex';
 import type { StanceName } from './physics/riderPosture';
@@ -283,8 +283,8 @@ class SurfGame {
   get recording() {
     return {
       /** `overrides` fix the sea (the water sheet's GPU tier takes the GPU tier's components whatever the graphics preset). */
-      start: async (settings: PhysicalSettings, overrides?: Partial<SurfZoneConfig>) => {
-        await this.startPhysical(this.seed, settings, overrides ? { overrides } : {});
+      start: async (settings: PhysicalSettings, overrides?: Partial<SurfZoneConfig>, scene: { rider?: boolean; lab?: boolean } = {}) => {
+        await this.startPhysical(this.seed, settings, { ...scene, ...(overrides ? { overrides } : {}) });
         getElement<HTMLElement>('#loading').classList.add('is-hidden');
       },
       step: (input: { paddle: boolean; popUp: boolean; steer: number }) => this.physicalMode.advance(1, input),
@@ -624,7 +624,7 @@ class SurfGame {
       requestAnimationFrame(this.frame);
       return;
     }
-    this.lastRender = timestamp;
+    this.lastRender = advanceFrameClock(timestamp, this.lastRender, this.graphics?.frameInterval ?? 0);
     controls.poll();
     this.labInput.poll();
     const rawElapsed = this.previousFrame === 0 ? 0 : (timestamp - this.previousFrame) / 1000;
@@ -1098,6 +1098,8 @@ class SurfGame {
 }
 
 const game = new SurfGame();
+// Opt-in live diagnostics use the same scene and clock as ordinary gameplay.
+if (devFlag('diagnostics')) (globalThis as unknown as { breaklineDiagnostics?: SurfGame['recording'] }).breaklineDiagnostics = game.recording;
 if (recordRequested && new URLSearchParams(window.location.search).get('pilot') === 'jev') {
   // `?inpage&record&pilot=jev`: Jev plays and the page films it (src/dev/jevRecorder.ts, with `npm run film:jev`).
   void import('./dev/jevRecorder').then(({ recordJevRide }) => recordJevRide(game.recording));

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { BoussinesqSolver } from '../BoussinesqSolver';
 import { SeaStateBoundary } from '../SeaStateBoundary';
 import { SideFeed } from '../SideFeed';
@@ -7,7 +7,7 @@ import { uniformEdges, type WaterTarget } from '../ShallowWaterSolver';
 import { SurfZoneSimulation, type SolverDevice } from '../SurfZoneSimulation';
 import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, boussinesqWgsl } from './boussinesqWgsl';
 import {
-  DEVICE_LAYOUT, DEVICE_READBACK, DEVICE_UPLOAD, deviceStepRefusal, packComponents, packGrid, packSideFeed, packSideTimes, readbackTarget, writeParams,
+  DEVICE_LAYOUT, DEVICE_READBACK, DEVICE_UPLOAD, GpuBoussinesq, deviceStepRefusal, packComponents, packGrid, packSideFeed, packSideTimes, readbackTarget, writeParams,
 } from './GpuBoussinesq';
 
 const quick = { spot: 'point' as const, seed: 3, significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0,
@@ -55,6 +55,50 @@ class ShadowDevice implements SolverDevice {
 }
 
 describe('GpuBoussinesq host', () => {
+  it('reports submission and readback stages separately without changing the device step or its diagnostic no-readback path', async () => {
+    vi.stubGlobal('GPUBufferUsage', { STORAGE: 1, COPY_DST: 2, COPY_SRC: 4, MAP_READ: 8, UNIFORM: 16 });
+    vi.stubGlobal('GPUShaderStage', { COMPUTE: 1 });
+    vi.stubGlobal('GPUMapMode', { READ: 1 });
+    let clock = 0;
+    const now = vi.spyOn(performance, 'now').mockImplementation(() => clock++);
+    const copies = vi.fn();
+    const wait = vi.fn(async () => {});
+    const submit = vi.fn();
+    const device = {
+      queue: { writeBuffer: vi.fn(), submit, onSubmittedWorkDone: wait },
+      createBuffer: ({ size }: { size: number }) => ({ size, mapAsync: async () => {}, getMappedRange: () => new ArrayBuffer(size), unmap: () => {} }),
+      createBindGroupLayout: () => ({}), createPipelineLayout: () => ({}), createBindGroup: () => ({}), createComputePipeline: () => ({}),
+      createShaderModule: () => ({ getCompilationInfo: async () => ({ messages: [] }) }),
+      createCommandEncoder: () => ({
+        beginComputePass: () => ({ setBindGroup: () => {}, setPipeline: () => {}, dispatchWorkgroups: () => {}, end: () => {} }),
+        copyBufferToBuffer: copies, finish: () => ({}),
+      }),
+      destroy: () => {},
+    };
+    const gpu = { requestAdapter: async () => ({ limits: { maxStorageBufferBindingSize: 1e9, maxBufferSize: 1e9 }, requestDevice: async () => device }) } as unknown as GPU;
+    try {
+      const solver = new BoussinesqSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(-8, 0, 8), xBoundary: 'open' }, () => 2);
+      const host = await GpuBoussinesq.create(solver, gpu);
+      expect(host).toBeDefined();
+      await host!.step(1 / 60);
+      expect(host!.diagnostics).toEqual({ substeps: 1, pack: 1, cfl: 1, encode: 1, map: 1, unpack: 1 });
+      expect(host!.lastSubsteps).toBe(host!.diagnostics.substeps);
+      expect(copies).toHaveBeenCalledTimes(DEVICE_READBACK.length);
+      expect(solver.time).toBe(1 / 60);
+      host!.readback = false;
+      await host!.step(1 / 60);
+      expect(host!.diagnostics.unpack).toBe(0);
+      expect(host!.diagnostics.map).toBe(1);
+      expect(wait).toHaveBeenCalledOnce();
+      expect(submit).toHaveBeenCalledTimes(2);
+      expect(copies).toHaveBeenCalledTimes(DEVICE_READBACK.length);
+      expect(solver.time).toBe(2 / 60);
+    } finally {
+      now.mockRestore();
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('lays every field out once inside the packed buffer', () => {
     const indices = Object.values(FIELD);
     expect(new Set(indices).size).toBe(indices.length);

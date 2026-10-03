@@ -136,10 +136,10 @@ describe('applyRow', () => {
   });
 
   // The Particles setting, after Spray and mist; it applies at once, the running sea included.
-  it('offers Low, Medium and High particles after the spray, High by default, and applies them instantly', () => {
+  it('offers Low, Medium and High particles after the spray, Medium by default, and applies them instantly', () => {
     const rows = settingsModel('graphics', defaultSettings(), context);
     const row = rows.find((r) => r.id === 'particles');
-    expect(row).toMatchObject({ kind: 'choice', value: 'high', label: 'Particles' });
+    expect(row).toMatchObject({ kind: 'choice', value: 'medium', label: 'Particles' });
     expect(row && row.kind === 'choice' ? row.options.map((option) => option.label) : []).toEqual(['Low', 'Medium', 'High']);
     expect(row && 'help' in row && row.help).toBeTruthy();
     expect(row && 'nextWave' in row && row.nextWave).toBeFalsy();

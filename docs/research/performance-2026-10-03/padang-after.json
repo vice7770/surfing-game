@@ -1,0 +1,202 @@
+{
+  "date": "2026-10-03T16:38:15.788Z",
+  "commit": "0cccd95528de0b18aeb5633941bd205965db3add",
+  "artifact": {
+    "label": "padang-after",
+    "bundleSha256": "ef5b931dac03c3b5638b202889c07a429764efdf82e0277e7f7f3ee9655a01b0"
+  },
+  "checkoutDirtyFiles": [
+    "ROADMAP.md",
+    "docs/superpowers/handoffs/2026-10-03-evening-next-run.md",
+    "package.json",
+    "scripts/browser/fps-survey.mjs",
+    "src/game/Graphics.test.ts",
+    "src/game/Graphics.ts",
+    "src/game/PhysicalMode.test.ts",
+    "src/game/PhysicalMode.ts",
+    "src/game/Settings.test.ts",
+    "src/game/Settings.ts",
+    "src/game/SurfZoneHost.ts",
+    "src/game/SurfZoneWorkerCore.ts",
+    "src/game/WorkerSurfZone.ts",
+    "src/scene/BubblePoints.test.ts",
+    "src/scene/BubblePoints.ts",
+    "src/scene/FarFieldOcean.ts",
+    "src/scene/FftChop.ts",
+    "src/scene/PhysicalSurfaceSource.ts",
+    "src/scene/SprayPoints.ts",
+    "src/scene/WaterSurface.test.ts",
+    "src/scene/WaterSurface.ts",
+    "src/scene/barrel/SweptBarrel.test.ts",
+    "src/scene/barrel/SweptBarrel.ts",
+    "src/scene/water/richSpray.ts",
+    "src/scene/waterLooks.test.ts",
+    "src/ui/settingsModel.test.ts",
+    "src/wave/BubbleCloud.test.ts",
+    "src/wave/BubbleCloud.ts",
+    "src/wave/FoamField.test.ts",
+    "src/wave/FoamField.ts",
+    "src/wave/SprayCloud.test.ts",
+    "src/wave/SprayCloud.ts",
+    "src/wave/SurfZoneRunner.test.ts",
+    "src/wave/SurfZoneRunner.ts"
+  ],
+  "build": {
+    "build": "0cccd9552"
+  },
+  "url": "http://localhost:5189/?particleBench=&graphics=high&spot=padang&swell=big&compute=gpu&from=30&to=30&frames=16&width=1280&height=720&shot=30&receiver=http%3A%2F%2Flocalhost%3A5338&centre=62.96420876729475%2C-82.70626584972975",
+  "metadata": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+    "viewport": [
+      1280,
+      720
+    ],
+    "pixelRatio": 1
+  },
+  "held": {
+    "done": true,
+    "summary": {
+      "spot": "padang",
+      "swell": "big",
+      "level": "high",
+      "look": "rich",
+      "compute": "gpu",
+      "size": "1280 × 720",
+      "maxPoint": 511,
+      "gpuTimer": true,
+      "moments": 1,
+      "spray": 5120,
+      "bubbles": 4096,
+      "lipParcels": 61,
+      "kinds": {
+        "spray": 3391,
+        "mist": 705,
+        "foamBall": 1011,
+        "tubeSpray": 9,
+        "tubeMist": 4
+      },
+      "pageMs": {
+        "spray": 0,
+        "bubbles": 0,
+        "lip": 0.4000000059604645
+      },
+      "views": {
+        "front": {
+          "frameMs": 4.9000000059604645,
+          "gpuFrameMs": 3.737166,
+          "sprayMs": 0.19999998807907104,
+          "bubblesMs": -0.19999995827674866,
+          "lipMs": 0.19999998807907104,
+          "gpuSprayMs": 0.072708,
+          "gpuBubblesMs": -0.13462499999999977,
+          "gpuLipMs": 0.06762500000000005,
+          "fragmentsM": {
+            "spray": 0.0529505223906999,
+            "mist": 0.24777746401026327,
+            "foamBall": 1.185147805556217,
+            "tubeSpray": 0.00022511642820489556,
+            "tubeMist": 0.011801064716972955
+          },
+          "onScreen": 1858
+        },
+        "close": {
+          "frameMs": 5.4000000059604645,
+          "gpuFrameMs": 4.259166,
+          "sprayMs": 0.5,
+          "bubblesMs": 0.20000001788139343,
+          "lipMs": -0.20000001788139343,
+          "gpuSprayMs": 0.39358299999999957,
+          "gpuBubblesMs": 0.13891700000000018,
+          "gpuLipMs": -0.1667500000000004,
+          "fragmentsM": {
+            "spray": 0.07846151312216734,
+            "mist": 0.7316863268573749,
+            "foamBall": 2.4500490412141227,
+            "tubeSpray": 0.0005388767236728334,
+            "tubeMist": 0.026453258370236765
+          },
+          "onScreen": 913
+        }
+      }
+    },
+    "moments": [
+      {
+        "seaTime": 391.80670943367926,
+        "centre": [
+          62.96420876729475,
+          -82.70626584972975
+        ],
+        "spray": 5120,
+        "kinds": [
+          3391,
+          705,
+          1011,
+          9,
+          4
+        ],
+        "bubbles": 4096,
+        "lipParcels": 61,
+        "page": {
+          "spray": 0,
+          "bubbles": 0,
+          "lip": 0.4000000059604645
+        },
+        "views": {
+          "front": {
+            "wall": {
+              "drawn": 4.9000000059604645,
+              "noSpray": 4.700000017881393,
+              "noBubbles": 4.899999976158142,
+              "noLip": 4.699999988079071
+            },
+            "gpu": {
+              "drawn": 3.737166,
+              "noSpray": 3.664458,
+              "noBubbles": 3.799083,
+              "noLip": 3.731458
+            },
+            "fragments": {
+              "spray": 52950.5223906999,
+              "mist": 247777.46401026327,
+              "foamBall": 1185147.805556217,
+              "tubeSpray": 225.11642820489556,
+              "tubeMist": 11801.064716972955
+            },
+            "onScreen": 1858
+          },
+          "close": {
+            "wall": {
+              "drawn": 5.4000000059604645,
+              "noSpray": 4.9000000059604645,
+              "noBubbles": 4.699999988079071,
+              "noLip": 4.9000000059604645
+            },
+            "gpu": {
+              "drawn": 4.259166,
+              "noSpray": 3.865583,
+              "noBubbles": 3.726666,
+              "noLip": 3.893416
+            },
+            "fragments": {
+              "spray": 78461.51312216734,
+              "mist": 731686.3268573749,
+              "foamBall": 2450049.041214123,
+              "tubeSpray": 538.8767236728335,
+              "tubeMist": 26453.258370236766
+            },
+            "onScreen": 913
+          }
+        }
+      }
+    ],
+    "snapshot": {
+      "seaTime": 391.80670943367926,
+      "frontCount": 236,
+      "lipCount": 61,
+      "sprayCount": 5120,
+      "bubbleCount": 4096,
+      "solverMs": 21.30000001192093
+    }
+  }
+}

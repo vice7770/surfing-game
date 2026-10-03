@@ -93,7 +93,8 @@ const SLACK = 1e-4;
  *   as the drawing does; where any still overlap, the first front's strip answers, counted in `stats.overlaps`.
  * - **Cost** (the advisor, 2026-09-30): the strips are indexed by a grid, and each strip's quads bucketed by their range
  *   along its ray, so a vertical line tests only its bucket's quads; a point outside every front's footprint tests none.
- *   The buckets keep the quads in order, so the answers are exactly the full scan's.
+ *   Queried strips build their buckets on demand. The buckets keep the quads in order, so the answers are exactly
+ *   the full scan's; every update captures the projections and discards all prepared buckets.
  * Only + − × ÷ and √. It keeps nothing between steps but the loft.
  */
 export class SweptContact {
@@ -126,6 +127,10 @@ export class SweptContact {
   private stripLow = new Float32Array(0);
   private stripBuckets = new Int32Array(0);
   private stripFirst = new Int32Array(0);
+  /** Which strips have been bucketed this update, and the end of their shared storage. */
+  private stripReady = new Uint8Array(0);
+  private nextBucket = 0;
+  private nextEntry = 0;
   /** Per bucket, where its quads start in `bucketQuads` (the next bucket's start ends it); the quads' columns, in order. */
   private bucketStart = new Int32Array(1);
   private bucketQuads = new Uint8Array(0);
@@ -162,6 +167,7 @@ export class SweptContact {
       this.stripLow = new Float32Array(slices);
       this.stripBuckets = new Int32Array(slices);
       this.stripFirst = new Int32Array(slices);
+      this.stripReady = new Uint8Array(slices);
       this.boxes = new Int32Array(4 * slices);
     }
     let minX = Infinity;
@@ -187,7 +193,9 @@ export class SweptContact {
       }
     }
     this.index(loft, minX, minZ, maxX, maxZ);
-    this.bucketQuadsAlong(loft);
+    this.stripReady.fill(0);
+    this.nextBucket = 0;
+    this.nextEntry = 0;
   }
 
   /** The swept surface at (x, y, z) into `hit`; false where the loft is not (the water answers as before). */
@@ -305,6 +313,7 @@ export class SweptContact {
       if ((x - p[3 * a]) * loft.sliceRayZ[s] - (z - p[3 * a + 2]) * loft.sliceRayX[s] < 0) continue;
       if ((x - p[3 * b]) * loft.sliceRayZ[s + 1] - (z - p[3 * b + 2]) * loft.sliceRayX[s + 1] >= 0) continue;
       const q = (x - p[3 * a]) * loft.sliceRayX[s] + (z - p[3 * a + 2]) * loft.sliceRayZ[s];
+      this.ensureBucket(s);
       const bucket = Math.floor((q - this.stripLow[s]) / this.bucket);
       if (!(bucket >= 0 && bucket < this.stripBuckets[s])) continue;
       const first = this.stripFirst[s] + bucket;
@@ -334,6 +343,7 @@ export class SweptContact {
     const o = s * S;
     const q = (x - p[3 * o]) * loft.sliceRayX[s] + (z - p[3 * o + 2]) * loft.sliceRayZ[s];
     this.count = 0;
+    this.ensureBucket(s);
     // Only the quads whose range along the ray holds q can be crossed: its bucket's (floor keeps a range's order, so a
     // quad holding q is always in q's bucket).
     const b = Math.floor((q - this.stripLow[s]) / this.bucket);
@@ -490,75 +500,75 @@ export class SweptContact {
   }
 
   /**
-   * Each strip's quads by their range along its ray (the advisor, 2026-09-30): the strip's range in `bucket`-wide
-   * buckets from its least, each quad in every bucket its range touches, in column order (counting sort).
+   * A strip's quads by their captured range along its ray (the advisor, 2026-09-30): the strip's range in `bucket`-wide
+   * buckets from its least, each quad in every bucket its range touches, in column order (counting sort). Only the
+   * projections captured by update are read, retaining the eager ranges even if the public loft is later mutated.
    */
-  private bucketQuadsAlong(loft: LoftResult): void {
+  private ensureBucket(s: number): void {
+    if (this.stripReady[s] === 1) return;
     const { own, prior, quadLow, quadHigh, bucket, quadFrom, quadTo } = this;
-    let buckets = 0;
-    let entries = 0;
-    for (let s = 0; s + 1 < loft.sliceCount; s += 1) {
-      if (loft.sliceJoined[s] !== 1) continue;
-      const o = s * S;
-      const base = s * Q;
-      let low = Infinity;
-      let high = -Infinity;
-      for (let j = 0; j < Q; j += 1) {
-        const v00 = o + j;
-        const v10 = v00 + S;
-        const a = own[v00];
-        const b = own[v00 + 1];
-        const c = prior[v10];
-        const d = prior[v10 + 1];
-        let lo = a < b ? a : b;
-        let hi = a < b ? b : a;
-        if (c < lo) lo = c;
-        if (c > hi) hi = c;
-        if (d < lo) lo = d;
-        if (d > hi) hi = d;
-        lo -= SLACK;
-        hi += SLACK;
-        quadLow[base + j] = lo;
-        quadHigh[base + j] = hi;
-        if (lo < low) low = lo;
-        if (hi > high) high = hi;
-      }
-      // Each quad's buckets, from the ranges as stored (the queries compare against those).
-      const lowStored = Math.fround(low);
-      let n = 1;
-      for (let j = 0; j < Q; j += 1) {
-        const from = Math.floor((quadLow[base + j] - lowStored) / bucket);
-        const to = Math.floor((quadHigh[base + j] - lowStored) / bucket);
-        quadFrom[j] = from;
-        quadTo[j] = to;
-        if (to + 1 > n) n = to + 1;
-      }
-      this.stripLow[s] = lowStored;
-      this.stripBuckets[s] = n;
-      this.stripFirst[s] = buckets;
-      if (this.bucketStart.length < buckets + n + 1) {
-        const grown = new Int32Array(2 * (buckets + n + 1));
-        for (let k = 0; k <= buckets; k += 1) grown[k] = this.bucketStart[k];
-        this.bucketStart = grown;
-      }
-      const start = this.bucketStart;
-      for (let k = buckets + 1; k <= buckets + n; k += 1) start[k] = 0;
-      start[buckets] = entries;
-      for (let j = 0; j < Q; j += 1) for (let k = quadFrom[j]; k <= quadTo[j]; k += 1) start[buckets + k + 1] += 1;
-      for (let k = 0; k < n; k += 1) start[buckets + k + 1] += start[buckets + k];
-      const total = start[buckets + n];
-      if (this.bucketQuads.length < total) {
-        const grown = new Uint8Array(2 * total);
-        for (let k = 0; k < entries; k += 1) grown[k] = this.bucketQuads[k];
-        this.bucketQuads = grown;
-      }
-      if (this.bucketFill.length < n) this.bucketFill = new Int32Array(2 * n);
-      const fill = this.bucketFill;
-      for (let k = 0; k < n; k += 1) fill[k] = start[buckets + k];
-      const quads = this.bucketQuads;
-      for (let j = 0; j < Q; j += 1) for (let k = quadFrom[j]; k <= quadTo[j]; k += 1) quads[fill[k]++] = j;
-      buckets += n;
-      entries = total;
+    const buckets = this.nextBucket;
+    const entries = this.nextEntry;
+    const o = s * S;
+    const base = s * Q;
+    let low = Infinity;
+    let high = -Infinity;
+    for (let j = 0; j < Q; j += 1) {
+      const v00 = o + j;
+      const v10 = v00 + S;
+      const a = own[v00];
+      const b = own[v00 + 1];
+      const c = prior[v10];
+      const d = prior[v10 + 1];
+      let lo = a < b ? a : b;
+      let hi = a < b ? b : a;
+      if (c < lo) lo = c;
+      if (c > hi) hi = c;
+      if (d < lo) lo = d;
+      if (d > hi) hi = d;
+      lo -= SLACK;
+      hi += SLACK;
+      quadLow[base + j] = lo;
+      quadHigh[base + j] = hi;
+      if (lo < low) low = lo;
+      if (hi > high) high = hi;
     }
+    // Each quad's buckets, from the ranges as stored (the queries compare against those).
+    const lowStored = Math.fround(low);
+    let n = 1;
+    for (let j = 0; j < Q; j += 1) {
+      const from = Math.floor((quadLow[base + j] - lowStored) / bucket);
+      const to = Math.floor((quadHigh[base + j] - lowStored) / bucket);
+      quadFrom[j] = from;
+      quadTo[j] = to;
+      if (to + 1 > n) n = to + 1;
+    }
+    this.stripLow[s] = lowStored;
+    this.stripBuckets[s] = n;
+    this.stripFirst[s] = buckets;
+    if (this.bucketStart.length < buckets + n + 1) {
+      const grown = new Int32Array(2 * (buckets + n + 1));
+      for (let k = 0; k <= buckets; k += 1) grown[k] = this.bucketStart[k];
+      this.bucketStart = grown;
+    }
+    const start = this.bucketStart;
+    for (let k = buckets + 1; k <= buckets + n; k += 1) start[k] = 0;
+    start[buckets] = entries;
+    for (let j = 0; j < Q; j += 1) for (let k = quadFrom[j]; k <= quadTo[j]; k += 1) start[buckets + k + 1] += 1;
+    for (let k = 0; k < n; k += 1) start[buckets + k + 1] += start[buckets + k];
+    const total = start[buckets + n];
+    if (this.bucketQuads.length < total) {
+      const grown = new Uint8Array(2 * total);
+      for (let k = 0; k < entries; k += 1) grown[k] = this.bucketQuads[k];
+      this.bucketQuads = grown;
+    }
+    if (this.bucketFill.length < n) this.bucketFill = new Int32Array(2 * n);
+    const fill = this.bucketFill;
+    for (let k = 0; k < n; k += 1) fill[k] = start[buckets + k];
+    const quads = this.bucketQuads;
+    for (let j = 0; j < Q; j += 1) for (let k = quadFrom[j]; k <= quadTo[j]; k += 1) quads[fill[k]++] = j;
+    this.nextBucket = buckets + n;
+    this.nextEntry = total;
+    this.stripReady[s] = 1;
   }
 }

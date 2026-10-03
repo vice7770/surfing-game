@@ -33,6 +33,33 @@ const small: Omit<SurfZoneConfig, 'spot'> = {
 };
 
 describe('SurfZoneSimulation', () => {
+  it('writes the worker snapshot fields together with the same data as separate surface, air and current writers', () => {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'padang' }, 'warm');
+    for (let i = 0; i < simulation.solver.h.length; i += 1) {
+      simulation.solver.h[i] = i % 13 === 0 ? 0 : 0.1 + (i % 17) / 4;
+      simulation.solver.qx[i] = (i % 11) - 5;
+      simulation.solver.qz[i] = (i % 19) - 9;
+      simulation.foam.dense[i] = (i % 7) / 10;
+      simulation.foam.residual[i] = (i % 3) / 20;
+      simulation.aeration.depth[i] = (i % 5) / 10;
+      simulation.aeration.air[i] = simulation.aeration.depth[i] * (i % 3) / 10;
+    }
+    for (const spacing of [1, 2, 3]) {
+      const grid = simulation.renderGrid(spacing);
+      const n = grid.nx * grid.nz * 2;
+      const surface = new Float32Array(n);
+      const flow = new Float32Array(n);
+      const air = new Float32Array(n);
+      const together = [new Float32Array(n), new Float32Array(n), new Float32Array(n)];
+      simulation.writeUniformSurface(surface, grid, false);
+      simulation.writeUniformFlow(flow, grid);
+      simulation.writeUniformAeration(air, grid);
+      simulation.writeUniformSnapshot(together[0], together[1], together[2], grid);
+      expect(together).toEqual([surface, flow, air]);
+      expect(together.every((field) => field.every(Number.isFinite))).toBe(true);
+    }
+  });
+
   it('feeds Padang Padang\'s sides with the incoming sea, on the clock of a handed-over sea (wave sizes)', () => {
     expect(SIDE_FEED_SPOTS).toEqual(['padang']);
     const simulation = new SurfZoneSimulation(small_(), 'warm');

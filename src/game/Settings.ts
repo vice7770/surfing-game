@@ -130,8 +130,7 @@ export function defaultSettings(prefersReducedMotion = false): GameSettings {
     gameplay: { units: 'metric', surfScale: 'face', defaultCamera: 'front', touchControls: 'auto', balanceMeter: 'practice', breathMeter: 'practice', pocketReflex: 'practice', stance: 'regular', scoreRides: false, showTelemetry: false, nameTags: true, stanceReadout: true },
     // The Medium preset's values (Graphics.PRESETS.medium; a test keeps the two equal).
     graphics: {
-      preset: 'auto', renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto',
-      seaDetail: 'standard', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high',
+      preset: 'auto', ...PRESETS.medium,
     },
     controls: { bindings: copyBindings(DEFAULT_BINDINGS), handedness: 'right', ...DEFAULT_STICK, padLayout: 2 },
     audio: { master: 1, sea: 1, board: 1, ui: 1, muteInBackground: true },
@@ -222,6 +221,9 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
   const g = defaults.graphics;
   const detected = sanitizeDetection(source.detected);
   const preset = oneOf(graphics.preset, ['auto', 'low', 'medium', 'high', 'ultra', 'custom'] as const, g.preset);
+  // Presets now leave GPU time for the 60 Hz water solver. Manual display limits use Custom.
+  const frameLimit = preset !== 'custom' && graphics.frameLimit === 'screen'
+    ? 60 : oneOf(graphics.frameLimit, ['screen', 60, 30] as const, g.frameLimit);
   // A save from before G8 has no water look: take its preset's, so a Low player stays on the light Classic water
   // (a Custom one takes the benchmark's, so a machine rated Low stays there too).
   const presetLook = preset === 'custom'
@@ -250,7 +252,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       preset,
       renderScale: within(graphics.renderScale, 0.5, 1.25, g.renderScale),
       nativePixelDensity: flag(graphics.nativePixelDensity, g.nativePixelDensity),
-      frameLimit: oneOf(graphics.frameLimit, ['screen', 60, 30] as const, g.frameLimit),
+      frameLimit,
       waterSimulation: oneOf(graphics.waterSimulation, ['auto', 'fast', 'accurate'] as const, g.waterSimulation),
       seaDetail: oneOf(graphics.seaDetail, ['standard', 'rich'] as const, g.seaDetail),
       caustics: flag(graphics.caustics, g.caustics),

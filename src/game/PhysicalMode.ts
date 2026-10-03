@@ -23,6 +23,7 @@ import { PoolScenery } from '../scene/PoolScenery';
 import { POOL, POOL_EDGE_HEIGHT, poolDeckZ, regularSignificantHeight } from '../wave/pool';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import type { WaterSurface } from '../scene/WaterSurface';
+import type { WaterLook } from '../scene/water/waterLook';
 import { createSpot, smoothstep, type SpotName } from '../wave/Bathymetry';
 import { FarFieldProfile } from '../wave/FarFieldProfile';
 import { MIXED_PEAK_FIT, skillForPeel } from '../wave/Breaking';
@@ -335,6 +336,11 @@ export class PhysicalMode {
   private readonly drawnRider = new Float64Array(RIDER_SNAPSHOT.length);
   private readonly drawnBoard = new Float64Array(8);
   private trackedHost?: SurfZoneHost;
+  private visualHost?: SurfZoneHost;
+  private visualStatus?: SurfZoneStatus;
+  private visualsDirty = true;
+  private visualSprayLook?: WaterLook;
+  private visualLipLook?: WaterLook;
   /** Whether the latest input paddles, which cups the drawn hands. */
   private paddling = false;
   private retryPending = false;
@@ -354,12 +360,14 @@ export class PhysicalMode {
   /** Hand the water look to the running sea's spray, and to every sea started after. */
   setSprayLook(look: SprayLook): void {
     this.sprayLook = look;
+    this.visualsDirty = true;
     this.host?.setSprayLook(look);
   }
 
   /** Hand the Particles setting to the running sea, and to every sea started after; the lip sheet draws at its detail. */
   setParticleLevel(level: ParticleLevel): void {
     this.particleLevel = level;
+    this.visualsDirty = true;
     this.host?.setParticleLevel(level);
     this.lipSheet.setSubdivisions(particleBudget(level).lipSubdivisions);
   }
@@ -475,6 +483,8 @@ export class PhysicalMode {
     const stage = solverStage(settings.spot, settings.stage);
     const compute = stage !== settings.stage ? 'auto' : settings.compute;
     const tier = stage === 2 && compute === 'auto' && gpuTier !== undefined && await gpuTier();
+    const diagnosticDx = Number(devParam('physicsDx'));
+    const diagnosticDz = Number(devParam('physicsDz'));
     const config: SurfZoneConfig = {
       spot: settings.spot,
       seed,
@@ -487,9 +497,14 @@ export class PhysicalMode {
       windSpeed: settings.windSpeed,
       stage,
       compute,
+      // Ordinary Padang seas halve alongshore work, keeping the original 1 m cross-shore grid.
+      // Supplied room/replay/report configurations retain their own grid, including legacy defaults.
+      ...(settings.spot === 'padang' && Object.keys(overrides).length === 0 ? { dx: 2, fineSpacing: 1 } : {}),
       // Practice's groundswell is given at the tank's edge, so its sea stays as it was (the wave-sizes spec).
       ...(settings.source === 'practice' ? { heightAt: 'edge' as const } : {}),
       ...(tier ? { componentCount: GPU_TIER_COMPONENTS } : {}),
+      ...(diagnosticDx > 0 && Number.isFinite(diagnosticDx) ? { dx: diagnosticDx } : {}),
+      ...(diagnosticDz > 0 && Number.isFinite(diagnosticDz) ? { fineSpacing: diagnosticDz } : {}),
       ...overrides,
     };
     // Superseded while asking for the GPU: never build it, and never drop the newer start's spin-up.
@@ -513,6 +528,7 @@ export class PhysicalMode {
     this.host = host;
     host.setSprayLook(this.sprayLook);
     host.setParticleLevel(this.particleLevel);
+    host.setSprayEnabled(this.sprayShown);
     this.config = config;
     this.storm = swell.storm;
     this.practice = settings.source === 'practice';
@@ -686,6 +702,8 @@ export class PhysicalMode {
     if (!host) return;
     // The board, the rider and the camera's target are drawn between physics snapshots (the riding-body plan, step 1).
     const { status } = host.snapshot;
+    const refreshVisuals = host !== this.visualHost || status !== this.visualStatus || this.visualsDirty
+      || this.visualSprayLook !== this.spray.look || this.visualLipLook !== this.lipSheet.look;
     if (host !== this.trackedHost) {
       this.track.reset();
       this.trackedHost = host;
@@ -703,9 +721,18 @@ export class PhysicalMode {
     this.follow.heading = riding ? rider[RIDER_SNAPSHOT.heading] : 0;
     this.followMotion(host, time);
     this.camera.update(host, this.focus, dt, pose[7] > 0 ? this.follow : undefined);
-    this.farField.update(host.snapshot.status.seaTime);
-    // At a swept spot the barrel draws the jet, and the sheet only its splash-ups (PR 5).
-    this.lipSheet.update(host.snapshot.lip, host.snapshot.lipCount, host.init.dx, this.swept);
+    if (refreshVisuals) {
+      this.farField.update(status.seaTime);
+      // At a swept spot the barrel draws the jet, and the sheet only its splash-ups (PR 5).
+      this.lipSheet.update(host.snapshot.lip, host.snapshot.lipCount, host.init.dx, this.swept);
+      this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
+      this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount });
+      this.visualHost = host;
+      this.visualStatus = status;
+      this.visualSprayLook = this.spray.look;
+      this.visualLipLook = this.lipSheet.look;
+      this.visualsDirty = false;
+    }
     this.board.visible = this.shown && pose[7] > 0;
     this.board.position.set(pose[0], pose[1], pose[2]);
     this.board.quaternion.set(pose[3], pose[4], pose[5], pose[6]);
@@ -725,8 +752,6 @@ export class PhysicalMode {
     } else {
       this.riderMotion.reset();
     }
-    this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
-    this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount });
   }
 
   /**
@@ -737,10 +762,10 @@ export class PhysicalMode {
     const { host, sweptBarrel } = this;
     if (!sweptBarrel) return;
     if (!host || !this.swept || !this.shown) {
-      sweptBarrel.draw(NO_FRONT, 0, 0);
+      sweptBarrel.draw(NO_FRONT, 0, 0, host?.snapshot.status);
       return;
     }
-    sweptBarrel.draw(host.snapshot.front, host.snapshot.frontCount, this.config?.tide ?? 0);
+    sweptBarrel.draw(host.snapshot.front, host.snapshot.frontCount, this.config?.tide ?? 0, host.snapshot.status);
   }
 
   /** The swept barrel's loft as last drawn, at a swept spot (the water sheet's curl shots). */
@@ -760,6 +785,8 @@ export class PhysicalMode {
 
   setSprayVisible(visible: boolean): void {
     this.sprayShown = visible;
+    this.visualsDirty = true;
+    this.host?.setSprayEnabled(visible);
     this.spray.mesh.visible = this.shown && visible;
   }
 

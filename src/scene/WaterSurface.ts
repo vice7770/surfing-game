@@ -20,7 +20,8 @@ import {
   Vector4,
 } from 'three';
 import type { WaterLook } from './water/waterLook';
-import { RICH_FOAM, RICH_REFLECTION, RICH_WATER, richAerationFragmentPars, richAerationVertexPars, richBeginNormal, richFragmentPars, richReflectionPars, richNormalFragment, richVertexHeight, waterCubicPars } from './water/richWaterGlsl';
+import { devParam } from '../devTools';
+import { RICH_FOAM, RICH_REFLECTION, RICH_WATER, richAerationFragmentPars, richAerationVertexPars, richBeginNormal, richBeginVertexNormal, richFragmentPars, richReflectionPars, richNormalFragment, richVertexHeight, richVertexSlopePars, waterCubicPars } from './water/richWaterGlsl';
 import {
   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
 } from './water/richPatch';
@@ -191,6 +192,8 @@ ${causticLookupPars}
 /** Supplies interleaved (height, foam) for every node of a uniform render grid. */
 export interface SurfaceSource {
   readonly grid: SurfaceGrid;
+  /** Stable while every value this source writes is unchanged; absent sources are read on every frame. */
+  readonly revision?: unknown;
   /** Simulation clock that animates the shading-only wind chop, s. */
   readonly time: number;
   /** Interleaved (height, foam) per grid node; with `carve` false, the heights before the tubes cut them (G9). */
@@ -215,7 +218,7 @@ export class WaterSurface {
   readonly mesh: Mesh<PlaneGeometry, MeshPhysicalMaterial>;
   /** G8: the dense patch drawn where the camera looks, in the Rich look (a child of `mesh`, same material). */
   readonly patch: Mesh<BufferGeometry, MeshPhysicalMaterial>;
-  /** Interleaved (height, foam) per grid node, uploaded as an RG float texture each frame. */
+  /** Interleaved (height, foam) per grid node, uploaded as an RG float texture for each new snapshot. */
   surfaceData: Float32Array;
   /** Bed elevation per grid node, uploaded only when the source's bed changes. */
   bedData: Float32Array;
@@ -235,13 +238,22 @@ export class WaterSurface {
   private tubeColumnTexture = new DataTexture(this.tubeColumnData, 1, 1, RGFormat, FloatType);
   private flowSource?: SurfaceSource;
   private flowFrames = 0;
+  private flowDataRevision = -1;
   private bedSource?: SurfaceSource;
   private bedRevision = Number.NaN;
+  private dataRevision = 0;
+  private written?: {
+    source: SurfaceSource; revision: unknown; time: number; bedRevision: number; look: WaterLook;
+    xMin: number; zMin: number; spacing: number; nx: number; nz: number; tubeWidth: number | undefined;
+  };
   private readonly uniforms: Record<string, { value: unknown }>;
   private detailedFoam = true;
   private currentLook: WaterLook = 'classic';
-  /** The swept barrel's seam (Part B, PR 3): its mask on the render grid's nodes, compiled in only at a swept spot. */
+  /** `?waterNormals=vertex`: retain cubic displacement, interpolate its vertex slopes for shading. */
+  private vertexNormals = devParam('waterNormals') === 'vertex';
+  /** The swept barrel's seam keeps at least 1 m precision when the height field is rendered more coarsely. */
   private barrelEnabled = false;
+  private maskGrid: SurfaceGrid;
   private barrelMaskData: Uint8Array;
   private barrelMaskTexture: DataTexture;
   /** Caustic map lighting the bed seen through the water (G5); off until a `CausticMap` draws into it. */
@@ -257,8 +269,9 @@ export class WaterSurface {
     this.flowTexture = WaterSurface.createTexture(this.flowData, grid);
     this.aerationData = new Float32Array(grid.nx * grid.nz * 2);
     this.aerationTexture = WaterSurface.createTexture(this.aerationData, grid);
-    this.barrelMaskData = new Uint8Array(grid.nx * grid.nz);
-    this.barrelMaskTexture = WaterSurface.createMaskTexture(this.barrelMaskData, grid);
+    this.maskGrid = WaterSurface.createMaskGrid(grid);
+    this.barrelMaskData = new Uint8Array(this.maskGrid.nx * this.maskGrid.nz);
+    this.barrelMaskTexture = WaterSurface.createMaskTexture(this.barrelMaskData, this.maskGrid);
     this.uniforms = {
       waterSurface: { value: this.texture },
       waterBed: { value: this.bedTexture },
@@ -287,6 +300,8 @@ export class WaterSurface {
       waterReflection: { value: RICH_WATER.reflection },
       waterBarrelMask: { value: this.barrelMaskTexture },
       waterBarrelMaskActive: { value: 0 },
+      waterBarrelGrid: { value: new Vector4(this.maskGrid.xMin, this.maskGrid.zMin, this.maskGrid.spacing, 0) },
+      waterBarrelGridSize: { value: new Vector2(this.maskGrid.nx, this.maskGrid.nz) },
     };
     // One air–water interface: Fresnel from n = 1.333 (F0 = 0.020), no clearcoat.
     const material = new MeshPhysicalMaterial({
@@ -300,17 +315,18 @@ export class WaterSurface {
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, this.uniforms);
       if (this.effectiveLook === 'rich') {
+        const slopePars = this.vertexNormals ? `\n${richVertexSlopePars}` : '';
         // G8: the physics' Catmull-Rom surface, its normal per pixel.
         shader.vertexShader = shader.vertexShader
-          .replace('#include <common>', `#include <common>\n${waterVertexPars}\n${richAerationVertexPars}\n${waterCubicPars}\n${waterTubePars}\n${richPatchVertexPars}`)
-          .replace('#include <beginnormal_vertex>', richBeginNormal)
+          .replace('#include <common>', `#include <common>\n${waterVertexPars}\n${richAerationVertexPars}\n${waterCubicPars}\n${waterTubePars}\n${richPatchVertexPars}${slopePars}`)
+          .replace('#include <beginnormal_vertex>', this.vertexNormals ? richBeginVertexNormal : richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}`)
+          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}${this.barrelEnabled ? `\n${WATER_BARREL_DISCARD}` : ''}`)
           // The crest light marches through the carved surface (G9): through a tube's void, not water.
           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')
-          .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true, churn: true }))
+          .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true, churn: true, vertexNormals: this.vertexNormals }))
           .replace('#include <color_fragment>', '')
           .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true, RICH_FOAM))
           .replace('#include <lights_fragment_maps>', RICH_REFLECTION);
@@ -332,7 +348,7 @@ export class WaterSurface {
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${WATER_BARREL_DISCARD}`);
       }
     };
-    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}`;
+    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}`;
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
     this.refreshTubeColumns();
     this.mesh.frustumCulled = false;
@@ -351,6 +367,11 @@ export class WaterSurface {
     return this.source.grid;
   }
 
+  /** Changes only when the drawn surface data is rewritten; the barrel can reuse its loft between snapshots. */
+  get surfaceRevision(): number {
+    return this.dataRevision;
+  }
+
   /** The surface, bed, grid and sun uniforms a caustic pass refracts through: the objects this mesh renders from. */
   get causticSource(): CausticSource {
     return this.uniforms as unknown as CausticSource;
@@ -362,33 +383,52 @@ export class WaterSurface {
   }
 
   update(): void {
-    // The Rich water cuts the tubes itself, per vertex and per pixel (G9); everything else takes them carved.
-    this.source.write(this.surfaceData, !(this.effectiveLook === 'rich' && this.source.writeTubes));
-    this.updateTubes();
-    if (this.effectiveLook === 'rich' && this.source.writeAeration) {
-      this.source.writeAeration(this.aerationData);
-      this.aerationTexture.needsUpdate = true;
-    }
-    const grid = this.source.grid;
-    (this.uniforms.waterGrid.value as Vector4).set(grid.xMin, grid.zMin, grid.spacing, 0);
-    this.uniforms.waterTime.value = this.source.time;
-    this.mesh.position.set(grid.xMin + ((grid.nx - 1) * grid.spacing) / 2, 0, grid.zMin + ((grid.nz - 1) * grid.spacing) / 2);
-    this.texture.needsUpdate = true;
-    if (this.source !== this.bedSource || this.source.bedRevision !== this.bedRevision) {
-      this.source.writeBed(this.bedData);
-      this.bedSource = this.source;
-      this.bedRevision = this.source.bedRevision;
-      this.bedTexture.needsUpdate = true;
+    const source = this.source;
+    const grid = source.grid;
+    const revision = source.revision;
+    const was = this.written;
+    const changed = revision === undefined || !was || was.source !== source || was.revision !== revision
+      || was.time !== source.time || was.bedRevision !== source.bedRevision || was.look !== this.effectiveLook
+      || was.xMin !== grid.xMin || was.zMin !== grid.zMin || was.spacing !== grid.spacing
+      || was.nx !== grid.nx || was.nz !== grid.nz || was.tubeWidth !== source.tubeColumnWidth;
+    if (changed) {
+      // The Rich water cuts the tubes itself, per vertex and per pixel (G9); everything else takes them carved.
+      source.write(this.surfaceData, !(this.effectiveLook === 'rich' && source.writeTubes));
+      this.updateTubes();
+      if (this.effectiveLook === 'rich' && source.writeAeration) {
+        source.writeAeration(this.aerationData);
+        this.aerationTexture.needsUpdate = true;
+      }
+      (this.uniforms.waterGrid.value as Vector4).set(grid.xMin, grid.zMin, grid.spacing, 0);
+      this.refreshBarrelMaskGrid();
+      this.uniforms.waterTime.value = source.time;
+      this.mesh.position.set(grid.xMin + ((grid.nx - 1) * grid.spacing) / 2, 0, grid.zMin + ((grid.nz - 1) * grid.spacing) / 2);
+      this.texture.needsUpdate = true;
+      if (source !== this.bedSource || source.bedRevision !== this.bedRevision) {
+        source.writeBed(this.bedData);
+        this.bedSource = source;
+        this.bedRevision = source.bedRevision;
+        this.bedTexture.needsUpdate = true;
+      }
+      this.dataRevision += 1;
+      this.written = {
+        source, revision, time: source.time, bedRevision: source.bedRevision, look: this.effectiveLook,
+        xMin: grid.xMin, zMin: grid.zMin, spacing: grid.spacing, nx: grid.nx, nz: grid.nz, tubeWidth: source.tubeColumnWidth,
+      };
     }
     // The current changes slowly beside the 2 s flow-map period, so every other frame is enough.
-    if (this.source.writeFlow && (this.flowSource !== this.source || (this.flowFrames += 1) % 2 === 0)) {
-      this.source.writeFlow(this.flowData);
-      this.flowTexture.needsUpdate = true;
-    } else if (!this.source.writeFlow && this.flowSource !== this.source) {
+    // Keep that display-frame cadence, but upload a held snapshot's current only once.
+    if (source.writeFlow && (this.flowSource !== source || (this.flowFrames += 1) % 2 === 0)) {
+      if (this.flowSource !== source || this.flowDataRevision !== this.dataRevision) {
+        source.writeFlow(this.flowData);
+        this.flowTexture.needsUpdate = true;
+        this.flowDataRevision = this.dataRevision;
+      }
+    } else if (!source.writeFlow && this.flowSource !== source) {
       this.flowData.fill(0);
       this.flowTexture.needsUpdate = true;
     }
-    this.flowSource = this.source;
+    this.flowSource = source;
     this.refreshFoamPattern();
     this.patch.receiveShadow = this.mesh.receiveShadow;
   }
@@ -431,7 +471,13 @@ export class WaterSurface {
     this.mesh.material.needsUpdate = true;
   }
 
-  /** The seam's mask on the render grid's nodes (`rasterizeBarrelMask`), copied; null lets the water draw everywhere. */
+  /** The seam's own grid: its origin and extent follow the water, with spacing capped at 1 m. */
+  get barrelMaskGrid(): SurfaceGrid {
+    this.refreshBarrelMaskGrid();
+    return this.maskGrid;
+  }
+
+  /** The seam's mask on its own grid's nodes (`rasterizeBarrelMask`), copied; null lets the water draw everywhere. */
   setBarrelMask(mask: Uint8Array | null): void {
     this.uniforms.waterBarrelMaskActive.value = mask ? 1 : 0;
     if (!mask) return;
@@ -459,6 +505,13 @@ export class WaterSurface {
     this.currentLook = look;
     this.mesh.material.needsUpdate = true;
     this.refreshLook();
+  }
+
+  /** Diagnostic quality switch; the simulation and all displaced geometry keep their cubic surface. */
+  setVertexNormals(enabled: boolean): void {
+    if (enabled === this.vertexNormals) return;
+    this.vertexNormals = enabled;
+    this.mesh.material.needsUpdate = true;
   }
 
   /** The patch shows, the coarse water gives way under it, and the water turns glossy, only in the Rich look drawn. */
@@ -529,10 +582,12 @@ export class WaterSurface {
     const previous = this.source.grid;
     const wasLook = this.effectiveLook;
     this.source = source;
+    this.written = undefined;
     if (this.effectiveLook !== wasLook) this.mesh.material.needsUpdate = true;
     this.refreshLook();
     this.refreshTubeColumns();
     const grid = source.grid;
+    this.refreshBarrelMaskGrid();
     if (previous.nx === grid.nx && previous.nz === grid.nz && previous.spacing === grid.spacing) return;
     this.surfaceData = new Float32Array(grid.nx * grid.nz * 2);
     this.texture.dispose();
@@ -550,11 +605,6 @@ export class WaterSurface {
     this.aerationTexture.dispose();
     this.aerationTexture = WaterSurface.createTexture(this.aerationData, grid);
     this.uniforms.waterAeration.value = this.aerationTexture;
-    this.barrelMaskData = new Uint8Array(grid.nx * grid.nz);
-    this.barrelMaskTexture.dispose();
-    this.barrelMaskTexture = WaterSurface.createMaskTexture(this.barrelMaskData, grid);
-    this.uniforms.waterBarrelMask.value = this.barrelMaskTexture;
-    this.uniforms.waterBarrelMaskActive.value = 0;
     this.flowSource = undefined;
     (this.uniforms.waterGridSize.value as Vector2).set(grid.nx, grid.nz);
     this.mesh.geometry.dispose();
@@ -580,6 +630,40 @@ export class WaterSurface {
     texture.minFilter = NearestFilter;
     texture.generateMipmaps = false;
     return texture;
+  }
+
+  /** Cover the water's world rectangle without tying the seam's texture resolution to its geometry. */
+  private static createMaskGrid(grid: SurfaceGrid): SurfaceGrid {
+    const spacing = Math.min(1, grid.spacing);
+    return {
+      xMin: grid.xMin, zMin: grid.zMin, spacing,
+      nx: grid.spacing <= 1 ? grid.nx : Math.ceil((grid.nx - 1) * grid.spacing) + 1,
+      nz: grid.spacing <= 1 ? grid.nz : Math.ceil((grid.nz - 1) * grid.spacing) + 1,
+    };
+  }
+
+  /** Only the mask texture can change here; height, bed, flow, aeration and geometry keep their own grid. */
+  private refreshBarrelMaskGrid(): void {
+    const grid = this.source.grid;
+    const spacing = Math.min(1, grid.spacing);
+    const nx = grid.spacing <= 1 ? grid.nx : Math.ceil((grid.nx - 1) * grid.spacing) + 1;
+    const nz = grid.spacing <= 1 ? grid.nz : Math.ceil((grid.nz - 1) * grid.spacing) + 1;
+    const previous = this.maskGrid;
+    if (previous.xMin === grid.xMin && previous.zMin === grid.zMin && previous.spacing === spacing
+      && previous.nx === nx && previous.nz === nz) return;
+    this.maskGrid = { xMin: grid.xMin, zMin: grid.zMin, spacing, nx, nz };
+    if (previous.nx !== nx || previous.nz !== nz) {
+      this.barrelMaskData = new Uint8Array(nx * nz);
+      this.barrelMaskTexture.dispose();
+      this.barrelMaskTexture = WaterSurface.createMaskTexture(this.barrelMaskData, this.maskGrid);
+      this.uniforms.waterBarrelMask.value = this.barrelMaskTexture;
+    } else {
+      this.barrelMaskData.fill(0);
+      this.barrelMaskTexture.needsUpdate = true;
+    }
+    (this.uniforms.waterBarrelGrid.value as Vector4).set(grid.xMin, grid.zMin, spacing, 0);
+    (this.uniforms.waterBarrelGridSize.value as Vector2).set(nx, nz);
+    this.uniforms.waterBarrelMaskActive.value = 0;
   }
 
   /** The swept barrel's seam mask, 0–255 per node, filtered linearly so the band ramps between nodes. */

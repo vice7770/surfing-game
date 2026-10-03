@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BubblePoints } from './BubblePoints';
+import { BufferAttribute, DynamicDrawUsage } from 'three';
 
 describe('BubblePoints', () => {
   it('draws exactly the bubbles it is given, within its pool', () => {
@@ -13,4 +14,18 @@ describe('BubblePoints', () => {
     points.update({ positions: new Float32Array(0), count: 0 });
     expect(points.mesh.geometry.drawRange.count).toBe(0);
   });
+});
+
+it('uploads only the live position range and skips uploads for an empty cloud', () => {
+  const points = new BubblePoints(4);
+  const position = points.mesh.geometry.getAttribute('position') as BufferAttribute;
+  expect(position.usage).toBe(DynamicDrawUsage);
+  points.update({ positions: new Float32Array(12), count: 2 });
+  expect(position.updateRanges).toEqual([{ start: 0, count: 6 }]);
+  points.update({ positions: new Float32Array(12), count: 1 });
+  expect(position.updateRanges).toEqual([{ start: 0, count: 3 }]);
+  const version = position.version;
+  points.update({ positions: new Float32Array(0), count: 0 });
+  expect(position.updateRanges).toEqual([]);
+  expect(position.version).toBe(version);
 });

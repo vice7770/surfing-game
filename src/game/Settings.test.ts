@@ -8,6 +8,15 @@ function memory(initial: Record<string, string> = {}) {
 }
 
 describe('SettingsStore', () => {
+  it('moves old preset display limits to 60 Hz and preserves manual Custom limits', () => {
+    const load = (preset: string, frameLimit: 'screen' | 60 | 30) =>
+      sanitizeSettings({ graphics: { preset, frameLimit } }, defaultSettings()).graphics.frameLimit;
+    for (const preset of ['auto', 'low', 'medium', 'high', 'ultra']) expect(load(preset, 'screen')).toBe(60);
+    expect(load('custom', 'screen')).toBe('screen');
+    expect(load('custom', 30)).toBe(30);
+    expect(load('custom', 60)).toBe(60);
+  });
+
   it('reads surf as faces unless the player chose the Hawaiian scale, and old saves as faces (wave sizes)', () => {
     const defaults = defaultSettings();
     expect(defaults.gameplay.surfScale).toBe('face');
@@ -36,25 +45,26 @@ describe('SettingsStore', () => {
     expect(new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics: oldCustom, detected: medium }) })).value.graphics.waterLook).toBe('rich');
   });
 
-  // The Particles setting: High (the game as it was) by default, and a save from before it takes its preset's.
-  it('defaults the particles to High, takes an old save’s preset’s, and sanitizes them', () => {
-    expect(defaultSettings().graphics.particles).toBe('high');
+  it('defaults particles to Medium, takes an old save’s preset’s, and preserves explicit settings', () => {
+    expect(defaultSettings().graphics.particles).toBe('medium');
     const load = (graphics: object, detected?: object) =>
       new SettingsStore(memory({ [SETTINGS_KEY]: JSON.stringify({ graphics, ...(detected ? { detected } : {}) }) })).value.graphics.particles;
     const { particles: _low, ...oldLow } = { preset: 'low', ...PRESETS.low };
     expect(load(oldLow)).toBe('low');
     for (const preset of ['medium', 'high', 'ultra'] as const) {
       const { particles: _preset, ...old } = { preset, ...PRESETS[preset] };
-      expect(load(old)).toBe('high');
+      expect(load(old)).toBe(PRESETS[preset].particles);
     }
     const { particles: _auto, ...oldAuto } = { preset: 'auto', ...PRESETS.medium };
-    expect(load(oldAuto)).toBe('high');
+    expect(load(oldAuto)).toBe('medium');
+    expect(load(oldAuto, { preset: 'high', water: 'accurate', lowPerformance: false, adapter: 'test' })).toBe('high');
     expect(load(oldAuto, { preset: 'low', water: 'fast', lowPerformance: true, adapter: 'test' })).toBe('low');
     const { particles: _custom, ...oldCustom } = { preset: 'custom', ...PRESETS.medium };
-    expect(load(oldCustom)).toBe('high');
+    expect(load(oldCustom)).toBe('medium');
     expect(load(oldCustom, { preset: 'low', water: 'fast', lowPerformance: true, adapter: 'test' })).toBe('low');
     expect(load({ ...oldCustom, particles: 'medium' })).toBe('medium');
-    expect(load({ ...oldCustom, particles: 'ultra' })).toBe('high');
+    expect(load({ ...oldAuto, particles: 'high' })).toBe('high');
+    expect(load({ ...oldCustom, particles: 'ultra' })).toBe('medium');
   });
 
   // C1: the stick settings, with their defaults and ranges.
@@ -255,4 +265,3 @@ describe('SettingsStore online (N1)', () => {
     expect(JSON.parse(storage.data.get(SETTINGS_KEY)!).online.name).toBe('Bea');
   });
 });
-

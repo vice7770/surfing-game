@@ -8,10 +8,84 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, spreadingFor, swellFor, swellHeightLimit } from './PhysicalMode';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { encodeSurfZoneState } from '../wave/surfZoneState';
 
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
 
 describe('PhysicalMode', () => {
+  it('uses the lighter Padang grid for ordinary play and preserves supplied sea configurations', async () => {
+    const water = new WaterSurface(new FlatSurfaceSource());
+    const mode = new PhysicalMode(new Scene());
+    const warnings = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const capture = (spot: 'padang' | 'point', overrides: Partial<SurfZoneConfig> = {}) =>
+      new Promise<SurfZoneConfig>((resolve) => {
+        void mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot }, 5, water, overrides, (config) => {
+          resolve(config);
+          return { config, ready: new Promise<void>(() => {}), dispose: () => {} } as unknown as SurfZoneHost;
+        });
+      });
+    try {
+      expect(await capture('padang')).toMatchObject({ dx: 2, fineSpacing: 1 });
+      mode.cancel();
+      const legacyRoom = await capture('padang', { seed: 42, componentCount: 24 });
+      expect(legacyRoom.dx).toBeUndefined();
+      expect(legacyRoom.fineSpacing).toBeUndefined();
+      mode.cancel();
+      expect(await capture('padang', { dx: 1, fineSpacing: 0.5 })).toMatchObject({ dx: 1, fineSpacing: 0.5 });
+      mode.cancel();
+      expect((await capture('point')).dx).toBeUndefined();
+    } finally {
+      mode.cancel();
+      water.dispose();
+      warnings.mockRestore();
+    }
+  });
+
+  it('uploads snapshot visuals once while the camera keeps moving, and refreshes same-time restores and settings', async () => {
+    const water = new WaterSurface(new FlatSurfaceSource());
+    const mode = new PhysicalMode(new Scene());
+    await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 5, water, quick);
+    const local = mode.host as LocalSurfZone;
+    const visualUpdates = [
+      vi.spyOn(mode.farField, 'update'), vi.spyOn(mode.lipSheet, 'update'),
+      vi.spyOn(mode.bubbles, 'update'), vi.spyOn(mode.spray, 'update'),
+    ];
+    const camera = vi.spyOn(mode.camera, 'update');
+    const refresh = () => { mode.update(1 / 120); water.update(); };
+    for (let frame = 0; frame < 120; frame += 1) refresh();
+    for (const update of visualUpdates) expect(update).toHaveBeenCalledTimes(1);
+    expect(camera).toHaveBeenCalledTimes(120);
+    const seaTime = local.snapshot.status.seaTime;
+    const revision = water.surfaceRevision;
+    local.refresh();
+    refresh();
+    for (const update of visualUpdates) expect(update).toHaveBeenCalledTimes(2);
+    expect(water.surfaceRevision).toBe(revision + 1);
+    const sea = encodeSurfZoneState(local.runner.simulation.exportState());
+    local.restore(sea);
+    expect(local.snapshot.status.seaTime).toBe(seaTime);
+    refresh();
+    for (const update of visualUpdates) expect(update).toHaveBeenCalledTimes(3);
+    mode.setParticleLevel('low');
+    refresh();
+    for (const update of visualUpdates) expect(update).toHaveBeenCalledTimes(4);
+    mode.spray.setLook('rich');
+    mode.lipSheet.setLook('rich');
+    refresh();
+    for (const update of visualUpdates) expect(update).toHaveBeenCalledTimes(5);
+    const enabled = vi.spyOn(local, 'setSprayEnabled');
+    mode.setSprayVisible(false);
+    refresh();
+    expect(enabled).toHaveBeenCalledWith(false);
+    for (const update of visualUpdates) expect(update).toHaveBeenCalledTimes(6);
+    // A new host may begin at the same sea time and must replace every displayed buffer.
+    await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 5, water, quick);
+    refresh();
+    for (const update of visualUpdates) expect(update).toHaveBeenCalledTimes(7);
+    mode.stop();
+    water.dispose();
+  });
+
   it('lets buoys and storms reach 4 m, and the Canyon 3 m as before (wave sizes)', () => {
     expect(TANK_SWELL_LIMITS.height.max).toBe(4);
     expect(swellHeightLimit('point')).toBe(4);
@@ -161,6 +235,7 @@ describe('PhysicalMode', () => {
     expect(mode.lipSheet.mesh.geometry.index!.count).toBeGreaterThan(0);
     simulation.foam.source.fill(0);
     simulation.foam.source[crest] = 40;
+    simulation.foam.reindexSources();
     local.runner.bubbles.update(simulation, 1 / 60);
     local.refresh();
     mode.update(1 / 30);

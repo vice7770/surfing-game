@@ -1,0 +1,527 @@
+{
+ "date": "2026-10-03T17:19:50.554Z",
+ "url": "http://localhost:4185/?diagnostics&physicsDx=2&physicsDz=1.5&renderSpacing=2",
+ "commit": "",
+ "build": "production (vite build)",
+ "loadAverage": [
+  7.9,
+  7.16,
+  7.04
+ ],
+ "machine": {
+  "model": "MacBook Pro",
+  "modelId": "Mac17,8",
+  "chip": "Apple M5 Pro",
+  "cores": "proc 18:6:0:12",
+  "memory": "24 GB",
+  "gpu": "Apple M5 Pro",
+  "gpuCores": "20",
+  "metal": "spdisplays_metal4",
+  "displays": [
+   {
+    "name": "Color LCD",
+    "resolution": "1728 x 1117 @ 120.00Hz",
+    "pixels": "3456 x 2234",
+    "main": true
+   }
+  ],
+  "os": "macOS 26.6.2 (25G83)",
+  "power": "AC power",
+  "lowPowerMode": false,
+  "nodeCpus": 18,
+  "totalMemoryGB": 24
+ },
+ "browser": {
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+  "webgpu": "apple · metal-3",
+  "viewport": "1728 × 860",
+  "devicePixelRatio": 2,
+  "screen": "1728 × 1117",
+  "chrome": "Google Chrome 154.0.8037.93",
+  "refreshHz": 120
+ },
+ "window": "1728 × 860",
+ "frameCap": "display refresh (vsync)",
+ "gpuTiming": "game context",
+ "menuSeconds": 6,
+ "rideSeconds": 45,
+ "results": [
+  {
+   "setting": "High (baseline)",
+   "screen": "Ride · Padang",
+   "frames": 5362,
+   "fps": 118.7,
+   "renderedFrames": 5362,
+   "renderedFps": 118.7,
+   "fpsMedian": 120.5,
+   "fps1Low": 107.5,
+   "frameMsP50": 8.3,
+   "frameMsP95": 9.1,
+   "frameMsP99": 9.3,
+   "frameMsMax": 232.6,
+   "mainThreadMsP50": 1,
+   "mainThreadMsP95": 2.3,
+   "drawCalls": 37,
+   "trianglesK": 1355,
+   "gpuMsP50": 8.49,
+   "gpuMsP95": 18.44,
+   "gpuContexts": 1,
+   "canvas": "3024 × 1505",
+   "solver": "Boussinesq · GPU · 64 components · 87,040 cells · 40.3 ms/step",
+   "config": {
+    "spot": "padang",
+    "seed": 8761,
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stage": 2,
+    "compute": "auto",
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1.5
+   },
+   "heapMB": 89,
+   "solverMsP50": 8,
+   "solverMsMax": 48.4,
+   "freshSnapshots": 2524,
+   "freshSnapshotsPerSecond": 55.85,
+   "simulationSecondsPerWallSecond": 0.931,
+   "pipelineMsP50": {
+    "water": 3.8,
+    "breaking": 0.1,
+    "front": 0.9,
+    "lip": 0,
+    "foam": 1.2,
+    "airSources": 0,
+    "aeration": 1.4,
+    "board": 0.4,
+    "contact": 0,
+    "bubbles": 0.1,
+    "spray": 0.2,
+    "sounds": 0,
+    "step": 8.9,
+    "surface": 0,
+    "snapshotAeration": 0,
+    "flow": 0,
+    "snapshotFields": 2,
+    "snapshot": 2.2,
+    "summary": 0.1,
+    "batch": 8.9,
+    "batchSteps": 1,
+    "total": 11.3,
+    "deviceSubsteps": 1,
+    "devicePack": 0.7,
+    "deviceCfl": 0.2,
+    "deviceEncode": 0.3,
+    "deviceMap": 1.8,
+    "deviceUnpack": 0.6
+   },
+   "simulationTimeline": [
+    {
+     "from": 0,
+     "snapshots": 120,
+     "waterMs": 3.7,
+     "totalMs": 10.6,
+     "substeps": 1
+    },
+    {
+     "from": 2,
+     "snapshots": 121,
+     "waterMs": 3.8,
+     "totalMs": 10.8,
+     "substeps": 1
+    },
+    {
+     "from": 4,
+     "snapshots": 120,
+     "waterMs": 4.7,
+     "totalMs": 12,
+     "substeps": 2
+    },
+    {
+     "from": 6,
+     "snapshots": 120,
+     "waterMs": 3.6,
+     "totalMs": 10.5,
+     "substeps": 1
+    },
+    {
+     "from": 8,
+     "snapshots": 120,
+     "waterMs": 3.8,
+     "totalMs": 10.9,
+     "substeps": 1
+    },
+    {
+     "from": 10,
+     "snapshots": 87,
+     "waterMs": 3.8,
+     "totalMs": 10.8,
+     "substeps": 1
+    },
+    {
+     "from": 12,
+     "snapshots": 100,
+     "waterMs": 7.8,
+     "totalMs": 17.5,
+     "substeps": 1
+    },
+    {
+     "from": 14,
+     "snapshots": 120,
+     "waterMs": 4,
+     "totalMs": 11.4,
+     "substeps": 1
+    },
+    {
+     "from": 16,
+     "snapshots": 121,
+     "waterMs": 3.8,
+     "totalMs": 10.9,
+     "substeps": 1
+    },
+    {
+     "from": 18,
+     "snapshots": 120,
+     "waterMs": 3.9,
+     "totalMs": 11.1,
+     "substeps": 1
+    },
+    {
+     "from": 20,
+     "snapshots": 120,
+     "waterMs": 3.7,
+     "totalMs": 11,
+     "substeps": 1
+    },
+    {
+     "from": 22,
+     "snapshots": 120,
+     "waterMs": 3.7,
+     "totalMs": 10.7,
+     "substeps": 1
+    },
+    {
+     "from": 24,
+     "snapshots": 120,
+     "waterMs": 3.6,
+     "totalMs": 10.6,
+     "substeps": 1
+    },
+    {
+     "from": 26,
+     "snapshots": 120,
+     "waterMs": 3.5,
+     "totalMs": 10.3,
+     "substeps": 1
+    },
+    {
+     "from": 28,
+     "snapshots": 120,
+     "waterMs": 3.6,
+     "totalMs": 10.5,
+     "substeps": 1
+    },
+    {
+     "from": 30,
+     "snapshots": 119,
+     "waterMs": 3.5,
+     "totalMs": 12.3,
+     "substeps": 1
+    },
+    {
+     "from": 32,
+     "snapshots": 116,
+     "waterMs": 3.5,
+     "totalMs": 12.9,
+     "substeps": 1
+    },
+    {
+     "from": 34,
+     "snapshots": 107,
+     "waterMs": 4.5,
+     "totalMs": 15.4,
+     "substeps": 1
+    },
+    {
+     "from": 36,
+     "snapshots": 118,
+     "waterMs": 3.6,
+     "totalMs": 13.9,
+     "substeps": 1
+    },
+    {
+     "from": 38,
+     "snapshots": 120,
+     "waterMs": 3.6,
+     "totalMs": 14.2,
+     "substeps": 1
+    },
+    {
+     "from": 40,
+     "snapshots": 115,
+     "waterMs": 3.8,
+     "totalMs": 13.5,
+     "substeps": 1
+    },
+    {
+     "from": 42,
+     "snapshots": 53,
+     "waterMs": 24.3,
+     "totalMs": 39.6,
+     "substeps": 1
+    },
+    {
+     "from": 44,
+     "snapshots": 27,
+     "waterMs": 31.5,
+     "totalMs": 41.4,
+     "substeps": 1
+    }
+   ],
+   "power": "AC 79%"
+  },
+  {
+   "setting": "Display cap: 60",
+   "screen": "Ride · Padang",
+   "frames": 5449,
+   "fps": 120.7,
+   "renderedFrames": 2680,
+   "renderedFps": 59.3,
+   "fpsMedian": 120.5,
+   "fps1Low": 107.5,
+   "frameMsP50": 8.3,
+   "frameMsP95": 9.1,
+   "frameMsP99": 9.3,
+   "frameMsMax": 17,
+   "mainThreadMsP50": 0.1,
+   "mainThreadMsP95": 2.4,
+   "drawCalls": 0,
+   "trianglesK": 0,
+   "gpuMsP50": 6.08,
+   "gpuMsP95": 8.25,
+   "gpuContexts": 1,
+   "canvas": "3024 × 1505",
+   "solver": "Boussinesq · GPU · 64 components · 87,040 cells · 9.4 ms/step",
+   "config": {
+    "spot": "padang",
+    "seed": 8761,
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stage": 2,
+    "compute": "auto",
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1.5
+   },
+   "heapMB": 79,
+   "solverMsP50": 11.7,
+   "solverMsMax": 18.3,
+   "freshSnapshots": 2709,
+   "freshSnapshotsPerSecond": 59.99,
+   "simulationSecondsPerWallSecond": 1,
+   "pipelineMsP50": {
+    "water": 7.9,
+    "breaking": 0.1,
+    "front": 0.9,
+    "lip": 0,
+    "foam": 1.2,
+    "airSources": 0,
+    "aeration": 1.4,
+    "board": 0.4,
+    "contact": 0.1,
+    "bubbles": 0.1,
+    "spray": 0.2,
+    "sounds": 0,
+    "step": 13.4,
+    "surface": 0,
+    "snapshotAeration": 0,
+    "flow": 0,
+    "snapshotFields": 2.1,
+    "snapshot": 2.3,
+    "summary": 0.1,
+    "batch": 13.4,
+    "batchSteps": 1,
+    "total": 16,
+    "deviceSubsteps": 1,
+    "devicePack": 0.7,
+    "deviceCfl": 0.2,
+    "deviceEncode": 0.3,
+    "deviceMap": 6.1,
+    "deviceUnpack": 0.6
+   },
+   "simulationTimeline": [
+    {
+     "from": 0,
+     "snapshots": 120,
+     "waterMs": 8.7,
+     "totalMs": 16,
+     "substeps": 1
+    },
+    {
+     "from": 2,
+     "snapshots": 120,
+     "waterMs": 8.9,
+     "totalMs": 15.8,
+     "substeps": 1
+    },
+    {
+     "from": 4,
+     "snapshots": 120,
+     "waterMs": 8.9,
+     "totalMs": 16,
+     "substeps": 2
+    },
+    {
+     "from": 6,
+     "snapshots": 120,
+     "waterMs": 8.5,
+     "totalMs": 16.1,
+     "substeps": 1
+    },
+    {
+     "from": 8,
+     "snapshots": 121,
+     "waterMs": 8.6,
+     "totalMs": 16.1,
+     "substeps": 1
+    },
+    {
+     "from": 10,
+     "snapshots": 117,
+     "waterMs": 8.3,
+     "totalMs": 16.2,
+     "substeps": 1
+    },
+    {
+     "from": 12,
+     "snapshots": 122,
+     "waterMs": 8.2,
+     "totalMs": 16.2,
+     "substeps": 1
+    },
+    {
+     "from": 14,
+     "snapshots": 120,
+     "waterMs": 8.8,
+     "totalMs": 15.9,
+     "substeps": 1
+    },
+    {
+     "from": 16,
+     "snapshots": 120,
+     "waterMs": 8.9,
+     "totalMs": 15.8,
+     "substeps": 1
+    },
+    {
+     "from": 18,
+     "snapshots": 120,
+     "waterMs": 8.8,
+     "totalMs": 16,
+     "substeps": 1
+    },
+    {
+     "from": 20,
+     "snapshots": 120,
+     "waterMs": 8.6,
+     "totalMs": 15.5,
+     "substeps": 1
+    },
+    {
+     "from": 22,
+     "snapshots": 121,
+     "waterMs": 8.7,
+     "totalMs": 15.6,
+     "substeps": 1
+    },
+    {
+     "from": 24,
+     "snapshots": 119,
+     "waterMs": 8.6,
+     "totalMs": 15.4,
+     "substeps": 1
+    },
+    {
+     "from": 26,
+     "snapshots": 120,
+     "waterMs": 8.6,
+     "totalMs": 15.4,
+     "substeps": 1
+    },
+    {
+     "from": 28,
+     "snapshots": 120,
+     "waterMs": 7.8,
+     "totalMs": 15.9,
+     "substeps": 1
+    },
+    {
+     "from": 30,
+     "snapshots": 120,
+     "waterMs": 6.8,
+     "totalMs": 15.7,
+     "substeps": 1
+    },
+    {
+     "from": 32,
+     "snapshots": 120,
+     "waterMs": 6.6,
+     "totalMs": 16.4,
+     "substeps": 1
+    },
+    {
+     "from": 34,
+     "snapshots": 120,
+     "waterMs": 5.6,
+     "totalMs": 16.4,
+     "substeps": 1
+    },
+    {
+     "from": 36,
+     "snapshots": 120,
+     "waterMs": 5.1,
+     "totalMs": 15.8,
+     "substeps": 1
+    },
+    {
+     "from": 38,
+     "snapshots": 120,
+     "waterMs": 5.4,
+     "totalMs": 15.1,
+     "substeps": 1
+    },
+    {
+     "from": 40,
+     "snapshots": 120,
+     "waterMs": 5.3,
+     "totalMs": 16,
+     "substeps": 1
+    },
+    {
+     "from": 42,
+     "snapshots": 120,
+     "waterMs": 5.6,
+     "totalMs": 16.5,
+     "substeps": 1
+    },
+    {
+     "from": 44,
+     "snapshots": 69,
+     "waterMs": 5.4,
+     "totalMs": 16.5,
+     "substeps": 1
+    }
+   ],
+   "power": "AC 79%"
+  }
+ ]
+}

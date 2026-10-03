@@ -129,6 +129,26 @@ describe('FoamField', () => {
     expect(foam.totalAt(dry)).toBe(0);
     expect(foam.source[big]).toBeCloseTo(FOAM_SOURCE_RATE, 9);
     expect(foam.source[calm]).toBe(0);
+    expect(Array.from(foam.sourceCells.subarray(0, foam.sourceCount))).toEqual([big, small]);
+    expect(Array.from(foam.breakingCells.subarray(0, foam.breakingCount))).toEqual([big, small]);
+    expect(foam.dissipation[big]).toBe(boreDissipation(1, 1.25));
+    expect(foam.dissipation[small]).toBe(boreDissipation(1, 1.1));
+    breaking.fill(0);
+    foam.update(0.1, breaking);
+    expect(foam.sourceCount).toBe(0);
+    expect(foam.breakingCount).toBe(0);
+  });
+
+  it('reindexes direct source edits into the same sorted active prefix', () => {
+    const foam = new FoamField(flatSolver(), lasting);
+    foam.source[500] = 2;
+    foam.source[10] = 3;
+    foam.source[20] = -1;
+    foam.reindexSources();
+    expect(Array.from(foam.sourceCells.subarray(0, foam.sourceCount))).toEqual([10, 500]);
+    foam.source.fill(0);
+    foam.reindexSources();
+    expect(foam.sourceCount).toBe(0);
   });
 
   it('saturates the cell a lip splashes into', () => {

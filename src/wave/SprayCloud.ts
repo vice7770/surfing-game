@@ -1,6 +1,7 @@
 import { GRAVITY } from './dispersion';
 import { PARTICLE_BUDGETS, particleBudget, poolSize, type ParticleBudget, type ParticleLevel } from './particleBudget';
 import { seededRandom } from './random';
+import { firstSourceCell, type ParticleSources } from './particleSources';
 import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
 
 /**
@@ -57,7 +58,7 @@ export interface SprayScene {
     readonly restLevel: number;
     cellIndex(x: number, z: number): number;
   };
-  readonly foam: { readonly source: ArrayLike<number> };
+  readonly foam: ParticleSources;
   readonly lipImpacts: readonly LipImpact[];
   /** Local wind at crest height, m/s: positive onshore (+z). */
   readonly windSpeed: number;
@@ -152,7 +153,10 @@ const isMist = (kind: number) => kind === MIST || kind === TUBE_MIST;
  */
 export class SprayCloud {
   /** Per live particle: x, y, z, size, opacity, kind (`SPRAY_STRIDE`), packed at the front. */
-  readonly particles: Float32Array;
+  private readonly packedParticles: Float32Array;
+  private particlesDirty = false;
+  /** Width follows the last update, even if a setting changes before the next read. */
+  private packedMistSize = 1;
   count = 0;
   /** How many of them are a closing tube's whitewater. */
   whitewaterCount = 0;
@@ -195,7 +199,7 @@ export class SprayCloud {
     this.age = make(); this.life = make(); this.drag = make(); this.size = make();
     this.owner = make(); this.radial = make(); this.spin = make(); this.lateral = make();
     this.kind = new Uint8Array(total);
-    this.particles = new Float32Array(total * SPRAY_STRIDE);
+    this.packedParticles = new Float32Array(total * SPRAY_STRIDE);
     this.sprayRoom = capacity;
     this.whitewaterRoom = whitewaterCapacity;
   }
@@ -213,6 +217,15 @@ export class SprayCloud {
 
   get level(): ParticleLevel {
     return this.particleLevel;
+  }
+
+  /** Packed presentation data is needed only when a snapshot or tool reads it. */
+  get particles(): Float32Array {
+    if (this.particlesDirty) {
+      this.pack();
+      this.particlesDirty = false;
+    }
+    return this.packedParticles;
   }
 
   /** Whether there is room for another particle of spray and mist, or of a tube's whitewater. */
@@ -234,12 +247,14 @@ export class SprayCloud {
     for (const stroke of scene.strokes ?? []) this.strokeSplash(scene, stroke);
     this.boreSpray(scene, dt);
     this.feather(scene, dt);
-    this.pack();
+    this.packedMistSize = this.budget.mistSize;
+    this.particlesDirty = true;
   }
 
   clear(): void {
     this.count = 0;
     this.whitewaterCount = 0;
+    this.particlesDirty = false;
   }
 
   private fly(scene: SprayScene, dt: number): void {
@@ -420,8 +435,12 @@ export class SprayCloud {
     const { nx, xCenters, zCenters, dx, dz, h, bed, qx, qz } = solver;
     const source = foam.source;
     const start = Math.floor(this.random() * source.length);
-    for (let n = 0; n < source.length && this.room(false); n += 1) {
-      const i = (start + n) % source.length;
+    const cells = foam.sourceCells;
+    const count = cells ? (foam.sourceCount ?? cells.length) : source.length;
+    let cursor = cells ? firstSourceCell(cells, count, start) : start;
+    for (let n = 0; n < count && this.room(false); n += 1) {
+      const i = cells ? cells[cursor] : cursor;
+      if (++cursor === count) cursor = 0;
       if (!(source[i] > 0) || h[i] <= WET) continue;
       const row = Math.floor(i / nx);
       const expected = source[i] * dt * dx * dz[row] * SPRAY_PER_FOAM * this.budget.spawn;
@@ -521,20 +540,21 @@ export class SprayCloud {
   }
 
   private pack(): void {
-    const { mistSize } = this.budget;
+    const mistSize = this.packedMistSize;
+    const particles = this.packedParticles;
     for (let k = 0; k < this.count; k += 1) {
       const o = k * SPRAY_STRIDE;
       const t = this.age[k] / this.life[k];
       const mist = isMist(this.kind[k]);
-      this.particles[o] = this.x[k];
-      this.particles[o + 1] = this.y[k];
-      this.particles[o + 2] = this.z[k];
-      this.particles[o + 3] = this.size[k] * (mist ? (1 + t) * mistSize : 1);
+      particles[o] = this.x[k];
+      particles[o + 1] = this.y[k];
+      particles[o + 2] = this.z[k];
+      particles[o + 3] = this.size[k] * (mist ? (1 + t) * mistSize : 1);
       // A foam ball holds until its roller is gone, then fades over the time it lingers.
-      this.particles[o + 4] = this.kind[k] === FOAM_BALL
+      particles[o + 4] = this.kind[k] === FOAM_BALL
         ? 0.9 * Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER)
         : (mist ? 0.25 : 0.8) * (1 - t * t);
-      this.particles[o + 5] = this.kind[k];
+      particles[o + 5] = this.kind[k];
     }
   }
 

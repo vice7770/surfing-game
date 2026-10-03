@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { REFERENCE_BOARD } from '../physics/boardReference';
 import { WATER } from '../physics/hullForces';
 import { createWaterSample } from '../physics/SurfWater';
+import { sampleCubicSurface } from '../scene/water/cubicSurface';
 import type { SpotName } from './Bathymetry';
 import { readBarrelCases } from './barrel/nodeBarrelCases';
 import { BubbleCloud } from './BubbleCloud';
@@ -18,6 +19,13 @@ const config: SurfZoneConfig = {
 };
 
 describe('SurfZoneRunner', () => {
+  it('forwards optional device stage diagnostics and reports zero for a CPU host', () => {
+    const runner = new SurfZoneRunner(config, {}, 'warm');
+    expect(runner.status().pipelineMs).toMatchObject({ deviceSubsteps: 0, devicePack: 0, deviceCfl: 0, deviceEncode: 0, deviceMap: 0, deviceUnpack: 0 });
+    runner.simulation.device = { step: async () => {}, dispose: () => {}, diagnostics: { substeps: 3, pack: 1, cfl: 2, encode: 4, map: 5, unpack: 6 } };
+    expect(runner.status().pipelineMs).toMatchObject({ deviceSubsteps: 3, devicePack: 1, deviceCfl: 2, deviceEncode: 4, deviceMap: 5, deviceUnpack: 6 });
+  });
+
   it('steps on the CPU when the GPU device never arrives, instead of waiting forever (wave sizes)', async () => {
     const runner = new SurfZoneRunner({ ...config, spot: 'point' }, {}, 'warm');
     const started = Date.now();
@@ -54,7 +62,7 @@ describe('SurfZoneRunner', () => {
     expect(Array.from(b.surface)).toEqual(Array.from(a.surface));
     expect(Array.from(b.board)).toEqual(Array.from(a.board));
     expect(Array.from(b.rider)).toEqual(Array.from(a.rider));
-    expect({ ...warm.status(), stepMs: 0 }).toEqual({ ...eager.status(), stepMs: 0 });
+    expect({ ...warm.status(), stepMs: 0, pipelineMs: undefined }).toEqual({ ...eager.status(), stepMs: 0, pipelineMs: undefined });
   });
 
   it('reports how many breaks threw a jet and how many spilled', () => {
@@ -71,6 +79,45 @@ describe('SurfZoneRunner', () => {
     expect(fine.grid.spacing).toBe(0.5);
     expect(fine.grid.nx).toBe(2 * (coarse.grid.nx - 1) + 1);
     expect(fine.createBuffers().surface.length).toBe(fine.grid.nx * fine.grid.nz * 2);
+  });
+
+  it('reduces large Padang snapshots while honoring explicit spacing and retaining the physics grid', () => {
+    const padang = { ...config, spot: 'padang' as const, alongShore: 320 };
+    const normal = new SurfZoneRunner(padang, {}, 'warm');
+    const explicit = new SurfZoneRunner(padang, { renderSpacing: 1 }, 'warm');
+    expect(normal.grid.spacing).toBe(2);
+    expect(explicit.grid.spacing).toBe(1);
+    expect(normal.grid.nx * normal.grid.nz).toBeLessThan(explicit.grid.nx * explicit.grid.nz / 3.9);
+    expect(normal.simulation.solver.nx).toBe(explicit.simulation.solver.nx);
+    expect(normal.simulation.solver.nz).toBe(explicit.simulation.solver.nz);
+  });
+
+  it('samples body contact on the same render nodes at either coarse or fine render spacing', () => {
+    for (const renderSpacing of [0.5, 2]) {
+      const runner = new SurfZoneRunner(config, { renderSpacing }, 'warm');
+      const { solver } = runner.simulation;
+      // Cell-scale variation makes sampling the old 1 m grid observably different.
+      for (let r = 0; r < solver.nz; r += 1) {
+        for (let c = 0; c < solver.nx; c += 1) {
+          const i = r * solver.nx + c;
+          solver.h[i] = Math.max(0, -solver.bed[i] + 0.3 * Math.sin(c * 1.1) * Math.cos(r * 0.8));
+        }
+      }
+      const buffers = runner.createBuffers();
+      runner.fill(buffers);
+      const out = createWaterSample();
+      for (const [u, v] of [[0.2, 0.3], [0.5, 0.4], [0.7, 0.5]]) {
+        const c = Math.floor((runner.grid.nx - 1) * u) + 0.2;
+        const r = Math.floor((runner.grid.nz - 1) * v) + 0.7;
+        const x = runner.grid.xMin + c * renderSpacing;
+        const z = runner.grid.zMin + r * renderSpacing;
+        const drawn = sampleCubicSurface(buffers.surface, runner.grid, x, z);
+        runner.water.sampleAt(x, 0, z, out);
+        expect(out.surfaceY).toBeCloseTo(drawn.height, 5);
+        expect(out.slopeX).toBeCloseTo(drawn.slopeX, 5);
+        expect(out.slopeZ).toBeCloseTo(drawn.slopeZ, 5);
+      }
+    }
   });
 
   it('carries the air breaking drives into the water: a landing lip aerates where it falls, and the snapshot holds it per node', () => {
@@ -96,6 +143,7 @@ describe('SurfZoneRunner', () => {
     const crest = runner.simulation.solver.cellIndex(0, -60);
     runner.simulation.lip.launch(crest, { x: 0, z: 4 }, runner.simulation.solver.surfaceAt(crest) + 1, 0.3);
     runner.simulation.foam.source[crest] = 40;
+    runner.simulation.foam.reindexSources();
     runner.bubbles.update(runner.simulation, SURF_ZONE_STEP);
     const buffers = runner.createBuffers();
     runner.fill(buffers);

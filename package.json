@@ -24,6 +24,7 @@
     "barrels": "rolldown scripts/barrel-library.ts -o dist/scripts/barrel-library.mjs --format esm --platform node && node dist/scripts/barrel-library.mjs",
     "report:whitewater": "rolldown scripts/whitewater-report.ts -o dist/scripts/whitewater-report.mjs --format esm --platform node && node dist/scripts/whitewater-report.mjs",
     "report:particles": "rolldown scripts/particle-report.ts -o dist/scripts/particle-report.mjs --format esm --platform node && node dist/scripts/particle-report.mjs",
+    "report:particle-overhead": "rolldown scripts/particle-overhead-report.ts -o dist/scripts/particle-overhead-report.mjs --format esm --platform node && node dist/scripts/particle-overhead-report.mjs",
     "report:duckdive": "rolldown scripts/duck-dive-report.ts -o dist/scripts/duck-dive-report.mjs --format esm --platform node && node dist/scripts/duck-dive-report.mjs",
     "report:holddown": "rolldown scripts/holddown-report.ts -o dist/scripts/holddown-report.mjs --format esm --platform node && node dist/scripts/holddown-report.mjs",
     "report:sizes": "rolldown scripts/size-report.ts -o dist/scripts/size-report.mjs --format esm --platform node && node dist/scripts/size-report.mjs",

@@ -102,6 +102,34 @@ const loftOf = (tau: (k: number) => number, n = 21, throwZ = -100.2) => new Swep
 const TOUCHDOWN = 0.5 * Math.sqrt(7 / 9.81);
 
 describe('the swept loft', () => {
+  it('keeps the strict sorted-sigma bracket at equal and repeated records, using logarithmic lookups', () => {
+    type Sample = { x: number; z: number; tau: number; footHeight: number; footDepth: number; pace: number };
+    type Front = { id: number; start: number; end: number; first: number; last: number };
+    const loft = new SweptLoft(library(), 0.05) as unknown as {
+      at(records: Float32Array, front: Front, sigma: number, into: Sample): Sample;
+    };
+    const data = records(9, k => k * k);
+    const sigmas = [-2, 0, 1, 1, 2, 4, 5, 7, 9];
+    sigmas.forEach((sigma, k) => { data[k * FRONT_STRIDE + FRONT_FIELD.sigma] = sigma; });
+    const front = { id: 1, start: 1, end: 8, first: 0, last: 7 };
+    const sample = (): Sample => ({ x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, pace: 0 });
+    for (const [sigma, tau] of [[0, 1], [0.5, 2.5], [1, 4], [1.5, 12.5], [2, 16], [3, 20.5], [7, 49]]) {
+      expect(loft.at(data, front, sigma, sample()).tau).toBe(tau);
+    }
+    expect(loft.at(data, front, -3, sample()).tau).toBe(1);
+    expect(loft.at(data, front, 20, sample()).tau).toBe(49);
+    const many = records(512, k => k * k);
+    let sigmaReads = 0;
+    const counted = new Proxy(many, {
+      get(target, key) {
+        if (typeof key === 'string' && /^\d+$/.test(key) && Number(key) % FRONT_STRIDE === FRONT_FIELD.sigma) sigmaReads += 1;
+        return Reflect.get(target, key, target);
+      },
+    });
+    expect(loft.at(counted, { id: 1, start: 0, end: 512, first: 0, last: 511 }, 400.5, sample()).tau).toBe(160400.5);
+    expect(sigmaReads).toBeLessThanOrEqual(12);
+  });
+
   it('lofts a front every half metre, 1.5 m past each end, 134 vertices a slice', () => {
     const loft = loftOf(() => 0);
     expect(loft.sliceCount).toBe(Math.round((20 + 2 * LOFT.extension) / LOFT.spacing) + 1);
@@ -260,6 +288,15 @@ describe('the swept loft', () => {
     const loft = loftOf((k) => (k % 2) * 0.6, 400);
     expect(loft.vertexCount).toBeLessThanOrEqual(LOFT.budget);
     expect(loft.clamps).toBeGreaterThan(0);
+  });
+
+  it('keeps a late live section finite when its mostly faded front exceeds the scratch buffer', () => {
+    const loft = loftOf((k) => k < 280 ? 5 : 0.1, 321);
+    expect(loft.sliceCount).toBeGreaterThan(0);
+    expect(loft.vertexCount).toBeLessThanOrEqual(LOFT.budget);
+    expect(loft.positions.subarray(0, 3 * loft.vertexCount).every(Number.isFinite)).toBe(true);
+    expect(loft.sliceTau.subarray(0, loft.sliceCount).every(Number.isFinite)).toBe(true);
+    expect(loft.sliceSigma[loft.sliceCount - 1]).toBeCloseTo(321.5, 5);
   });
 
   it('knows a slice’s times without building its profile', () => {
@@ -821,6 +858,29 @@ describe('the loft’s slices, for the contact', () => {
       expect(new SweptLoft(tubes(), 0.05).build(two(21.5), 42, 0.5, flat).overlaps).toBe(0);
     });
 
+    it('seals an exposed overlap cut onto the water with a supported mask in both drawing and contact', () => {
+      const water = (x: number, z: number) => 0.5 + 0.002 * x - 0.003 * z;
+      const results = [false, true].map((contact) => new SweptLoft(tubes(), 0.05, { contact }).build(two(10), 42, 0.5, water));
+      for (const loft of results) {
+        const first = Array.from(loft.sliceJoined.subarray(0, loft.sliceCount)).findIndex((joined, s) =>
+          joined === 1 && loft.sliceFront[s] === 2);
+        expect(first).toBeGreaterThan(0);
+        expect(loft.sliceJoined[first - 1]).toBe(0);
+        expect(loft.sliceWeight[first]).toBe(0);
+        expect(loft.sliceWeight[first + 1]).toBeGreaterThan(0);
+        for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+          const v = first * LOFT_SAMPLES + j;
+          expect(loft.positions[3 * v + 1]).toBeCloseTo(water(loft.positions[3 * v], loft.positions[3 * v + 2]), 5);
+          expect(loft.lift[v]).toBe(0);
+          expect(loft.mask[v]).toBe(0);
+          expect(loft.sheetWeight[v]).toBe(0);
+          expect(loft.throat[4 * v + 3]).toBe(0);
+        }
+      }
+      expect(Array.from(results[0].sliceWeight.subarray(0, results[0].sliceCount)))
+        .toEqual(Array.from(results[1].sliceWeight.subarray(0, results[1].sliceCount)));
+    });
+
     it('judges fronts one behind the other on their lifted spans, not where they rest (the advisor, 2026-10-01)', () => {
       // The toy tube at h0 7 m stands off the water from 0.6 H (3.36 m) behind its crest to 0.5 H (2.8 m) past its toe,
       // 5.6 m ahead: 11.76 m in all, while its profile runs 14 m either way. 15 m apart, only their resting parts meet.
@@ -893,13 +953,30 @@ describe('the loft’s slices, for the contact', () => {
       };
       const middle = (loft: LoftResult) => sliceAt(loft, 10);
 
+      it('keeps a moving pre-overturn landmark separate from a material lip jet, and stops geometric transport when held', () => {
+        const before = new SweptLoft(library, 1 / 19, { contact: true }).build(moving(0.1414, 4, 0.08), 21, 0.5, flat);
+        const s = middle(before);
+        expect(before.sliceTipAlong[s]).toBe(0);
+        expect(before.sliceTipUp[s]).toBe(0);
+        expect(Math.abs(before.sliceTipTransportAlong[s])).toBeGreaterThan(1);
+
+        const times = library.profileTimes({ slope: 1 / 19, footHeight: 0.1414 * 7, footDepth: 7 });
+        const held = new SweptLoft(library, 1 / 19, { contact: true })
+          .build(moving(0.1414, 4, times.touchdownSeconds + times.collapseSeconds / 2), 21, 0.5, flat);
+        const h = middle(held);
+        expect(held.sliceTipTransportAlong[h]).toBe(0);
+        expect(held.sliceTipTransportUp[h]).toBe(0);
+        expect(Math.abs(held.sliceTipAlong[h])).toBeGreaterThan(1);
+      });
+
       it('agrees within 0.5 m/s from the throw until a case holds, along and across the columns, on straight and slanted fronts, with and without a throw point (the advisor, 2026-10-03)', { timeout: 240_000 }, () => {
         // Fronts along the columns and at 36.9° to them (rays (0, 1) and (−0.6, 0.8)); each case alone, the point's crest
         // slower and faster than the library's (5.2 and 7.3–7.8 m/s at these A0). The contact builds as the game does,
         // with no depth (the loft reads none since the pace's clamp went: it is held at the throw). From the throw, the
         // first window wholly after it, until a window before the case's held frame: from there the tip decelerates into
         // touchdown faster than its ±4-frame line follows (up to 0.5 m/s), and past the hold the drawn tip goes on to touch
-        // down (up to 0.9). The largest residual is 0.46 m/s along the ray, at τ 0.16 s at A0 0.14, as its lip forms.
+        // down (up to 0.9). This is geometric landmark transport, not the material jet flow: before sustained overturn
+        // the landmark still moves along the steep face although the measured material jet is correctly zero.
         const unit = Math.sqrt(7 / 9.81);
         let checked = 0;
         for (const slope of [0, 0.75]) {
@@ -917,7 +994,7 @@ describe('the loft’s slices, for the contact', () => {
                 const stored = (tau: number) => {
                   const contact = new SweptLoft(library, 1 / 19, { contact: true }).build(moving(a0, pace, tau, slope, anchored), 21, 0.5, flat);
                   const s = sliceAt(contact, sigma);
-                  return [contact.sliceTipAlong[s] * contact.sliceRayX[s] + contact.sliceAnchorVX[s], contact.sliceTipAlong[s] * contact.sliceRayZ[s] + contact.sliceAnchorVZ[s]];
+                  return [contact.sliceTipTransportAlong[s] * contact.sliceRayX[s] + contact.sliceAnchorVX[s], contact.sliceTipTransportAlong[s] * contact.sliceRayZ[s] + contact.sliceAnchorVZ[s]];
                 };
                 for (let tau = window; tau + 2 * window <= held * unit; tau += 0.04) {
                   const mean = [0, 0];
@@ -929,7 +1006,9 @@ describe('the loft’s slices, for the contact', () => {
                   const ahead = tip(tau + window);
                   const behind = tip(tau - window);
                   const residual = [0, 1].map((axis) => (ahead[axis] - behind[axis]) / (2 * window) - mean[axis]);
-                  expect(Math.sqrt(residual[0] * residual[0] + residual[1] * residual[1])).toBeLessThan(0.5);
+                  expect(Math.sqrt(residual[0] * residual[0] + residual[1] * residual[1]),
+                    `A0=${a0}, slope=${slope}, pace=${pace}, anchored=${anchored}, tau=${tau}, window=${window}`,
+                  ).toBeLessThan(0.5);
                   checked += 1;
                 }
               }

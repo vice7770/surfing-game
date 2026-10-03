@@ -1,0 +1,99 @@
+{
+ "date": "2026-10-03T17:00:01.367Z",
+ "url": "http://localhost:5173/",
+ "commit": "",
+ "build": "production (vite build)",
+ "loadAverage": [
+  5.53,
+  5.4,
+  6.42
+ ],
+ "machine": {
+  "model": "MacBook Pro",
+  "modelId": "Mac17,8",
+  "chip": "Apple M5 Pro",
+  "cores": "proc 18:6:0:12",
+  "memory": "24 GB",
+  "gpu": "Apple M5 Pro",
+  "gpuCores": "20",
+  "metal": "spdisplays_metal4",
+  "displays": [
+   {
+    "name": "Color LCD",
+    "resolution": "1728 x 1117 @ 120.00Hz",
+    "pixels": "3456 x 2234",
+    "main": true
+   }
+  ],
+  "os": "macOS 26.6.2 (25G83)",
+  "power": "AC power",
+  "lowPowerMode": false,
+  "nodeCpus": 18,
+  "totalMemoryGB": 24
+ },
+ "browser": {
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+  "webgpu": "apple · metal-3",
+  "viewport": "1728 × 860",
+  "devicePixelRatio": 2,
+  "screen": "1728 × 1117",
+  "chrome": "Google Chrome 154.0.8037.93",
+  "refreshHz": 120
+ },
+ "window": "1728 × 860",
+ "frameCap": "display refresh (vsync)",
+ "gpuTiming": "game context",
+ "menuSeconds": 6,
+ "rideSeconds": 20,
+ "results": [
+  {
+   "setting": "High (baseline)",
+   "screen": "Ride · Padang",
+   "frames": 2359,
+   "fps": 117.6,
+   "fpsMedian": 120.5,
+   "fps1Low": 59.9,
+   "frameMsP50": 8.3,
+   "frameMsP95": 9.2,
+   "frameMsP99": 16.7,
+   "frameMsMax": 25,
+   "mainThreadMsP50": 0.9,
+   "mainThreadMsP95": 1.5,
+   "drawCalls": 36,
+   "trianglesK": 1961,
+   "gpuMsP50": 6.7,
+   "gpuMsP95": 14.73,
+   "gpuContexts": 1,
+   "canvas": "3024 × 1505",
+   "solver": "Boussinesq · GPU · 64 components · 232,000 cells · 58.2 ms/step",
+   "heapMB": 133,
+   "solverMsP50": 20.2,
+   "solverMsMax": 56.5,
+   "power": "AC 67%"
+  },
+  {
+   "setting": "Native pixel density off",
+   "screen": "Ride · Padang",
+   "frames": 0,
+   "fps": null,
+   "fpsMedian": null,
+   "fps1Low": null,
+   "frameMsP50": 0,
+   "frameMsP95": 0,
+   "frameMsP99": 0,
+   "frameMsMax": null,
+   "mainThreadMsP50": 0,
+   "mainThreadMsP95": 0,
+   "drawCalls": 0,
+   "trianglesK": 0,
+   "gpuContexts": 0,
+   "canvas": "1728 × 860",
+   "solver": "",
+   "heapMB": 70,
+   "solverMsP50": 20,
+   "solverMsMax": 23.1,
+   "power": "AC 67%"
+  }
+ ]
+}

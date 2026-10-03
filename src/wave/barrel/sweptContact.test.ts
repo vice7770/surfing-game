@@ -30,6 +30,23 @@ const contactAt = (tau: number) => {
 const UNDER = STILL + (0.7 - 1 / 6) * H0;
 const TOP = STILL + 0.55 * H0;
 
+/** Observe preparation separately from public query results; the fully prepared twin is the eager reference. */
+type BucketState = {
+  stripReady: Uint8Array;
+  nextBucket: number;
+  nextEntry: number;
+  cellStrips: Int32Array;
+  found: number;
+  count: number;
+  ensureBucket(s: number): void;
+  heldByAnother(loft: NonNullable<SweptContact['last']>, strip: number, x: number, z: number): boolean;
+};
+const bucketState = (contact: SweptContact) => contact as unknown as BucketState;
+const prepareAll = (contact: SweptContact) => {
+  const loft = contact.last!;
+  for (let s = 0; s + 1 < loft.sliceCount; s += 1) if (loft.sliceJoined[s] === 1) bucketState(contact).ensureBucket(s);
+};
+
 describe('the swept contact', () => {
   it('reads the tube’s air as air, over the face, under the lip', () => {
     const hit = createContactHit();
@@ -213,6 +230,103 @@ describe('the swept contact', () => {
       seed = (seed * 1103515245 + 12345) % 2147483648;
       return seed / 2147483648;
     };
+
+    it('prepares only reached strips, once, with exact answers after out-of-order storage growth', () => {
+      const lazy = new SweptContact(library(), 0.05);
+      const eager = new SweptContact(library(), 0.05);
+      const recs = records(321, 0.1);
+      for (const contact of [lazy, eager]) contact.update(recs, 321, STILL, flat);
+      prepareAll(eager);
+      const state = bucketState(lazy);
+      const a = createContactHit();
+      const b = createContactHit();
+      expect(state.nextBucket).toBe(0);
+      expect(state.nextEntry).toBe(0);
+      expect(lazy.query(160.3, 2.5, -150, a)).toBe(false);
+      expect(state.nextBucket).toBe(0);
+      // Visit strips far apart, including earlier strips after later ones have grown the shared storage.
+      for (const x of [160.3, 300.3, 20.3, 240.3, 80.3, 160.3]) {
+        for (const y of [0, 2.5, (UNDER + TOP) / 2, 9]) {
+          expect(lazy.query(x, y, -93, a)).toBe(eager.query(x, y, -93, b));
+          expect(a).toEqual(b);
+        }
+        expect(lazy.floorAt(x, -93)).toBe(eager.floorAt(x, -93));
+      }
+      expect(state.stripReady.reduce((sum, ready) => sum + ready, 0)).toBe(5);
+      const prepared = [state.nextBucket, state.nextEntry];
+      lazy.query(160.3, 2.5, -93, a);
+      expect([state.nextBucket, state.nextEntry]).toEqual(prepared);
+      expect(state.nextEntry).toBeLessThan(bucketState(eager).nextEntry / 50);
+    });
+
+    it('discards preparation on every update, through reused, resized and empty lofts', () => {
+      const reused = contactAt(0.1);
+      const a = createContactHit();
+      const b = createContactHit();
+      reused.query(10.3, 2.5, -93, a);
+      for (const [n, tau] of [[21, 0.3], [41, -0.3], [0, 0.1], [21, 0.1]]) {
+        const fresh = new SweptContact(library(), 0.05);
+        const recs = records(n, tau);
+        reused.update(recs, n, STILL, flat);
+        fresh.update(recs, n, STILL, flat);
+        expect(bucketState(reused).nextBucket).toBe(0);
+        expect(bucketState(reused).nextEntry).toBe(0);
+        expect(bucketState(reused).stripReady.every(ready => ready === 0)).toBe(true);
+        for (const [x, y, z] of [[10.3, 2.5, -93], [5.2, 4.1, -92.5], [12.7, 0.1, -95]]) {
+          const hit = reused.query(x, y, z, a);
+          expect(hit).toBe(fresh.query(x, y, z, b));
+          if (hit) expect(a).toEqual(b);
+        }
+      }
+    });
+
+    it('uses projections captured during update when the public loft is mutated before its first query', () => {
+      const lazy = contactAt(0.1);
+      const eager = contactAt(0.1);
+      prepareAll(eager);
+      for (const contact of [lazy, eager]) {
+        const loft = contact.last!;
+        for (let v = 0; v < loft.vertexCount; v += 1) {
+          loft.positions[3 * v + 1] += 0.125;
+          loft.positions[3 * v + 2] += 0.037;
+        }
+        // The eager index already selected its strips; laziness must not consult changed topology to prepare them.
+        loft.sliceJoined.fill(0);
+        loft.sliceCount = 0;
+      }
+      const a = createContactHit();
+      const b = createContactHit();
+      for (const x of [15.3, 5.2, 10.3]) for (const y of [0.1, 2.5, 4.4, 9]) {
+        expect(lazy.query(x, y, -93 + 0.037, a)).toBe(true);
+        expect(eager.query(x, y, -93 + 0.037, b)).toBe(true);
+        expect(a).toEqual(b);
+      }
+      expect(lazy.stats).toEqual(eager.stats);
+    });
+
+    it('prepares later overlap candidates without replacing the found strip’s crossings', () => {
+      const lazy = contactAt(0.1);
+      const eager = contactAt(0.1);
+      prepareAll(eager);
+      const hit = createContactHit();
+      for (const contact of [lazy, eager]) expect(contact.query(10.3, 2.5, -93, hit)).toBe(true);
+      const state = bucketState(lazy);
+      const first = state.cellStrips[state.found];
+      const later = first + 1;
+      expect(state.stripReady[later]).toBe(0);
+      // A mutable loft can place a later, already indexed strip over the found one. The backstop must prepare that
+      // candidate too, while retaining the found strip's crossing state for the public query's layer selection.
+      for (const contact of [lazy, eager]) {
+        const loft = contact.last!;
+        loft.sliceFront[later] = 2;
+        for (let v = later * LOFT_SAMPLES; v < (later + 2) * LOFT_SAMPLES; v += 1) loft.positions[3 * v] -= 0.5;
+      }
+      const crossings = state.count;
+      expect(state.heldByAnother(lazy.last!, first, 10.3, -93)).toBe(true);
+      expect(bucketState(eager).heldByAnother(eager.last!, first, 10.3, -93)).toBe(true);
+      expect(state.stripReady[later]).toBe(1);
+      expect(state.count).toBe(crossings);
+    });
 
     it('answers exactly as a scan of every quad, through the tube, its lip, its edges and folds', () => {
       const bucketed = contactAt(0.1);

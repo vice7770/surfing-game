@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { sampleSurfaceNormal } from '../scene/WaterSurface';
 import { waveNumber } from '../wave/dispersion';
 import { ShallowWaterSolver, uniformEdges } from '../wave/ShallowWaterSolver';
@@ -6,7 +6,7 @@ import { SurfZoneSimulation, type SurfZoneConfig } from '../wave/SurfZoneSimulat
 import { reefCrestZ } from '../wave/Bathymetry';
 import { FRONT_FIELD, FRONT_STRIDE } from '../wave/barrel/frontRecords';
 import { ProfileLibrary } from '../wave/barrel/ProfileLibrary';
-import { SweptContact } from '../wave/barrel/sweptContact';
+import { createContactHit, SweptContact } from '../wave/barrel/sweptContact';
 import { tubeCase } from '../wave/barrel/toyCase';
 import { SEAWATER_DENSITY, PhysicalSurfWater, catmullRomWeights } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
@@ -31,6 +31,97 @@ describe('Catmull-Rom weights', () => {
       const w = catmullRomWeights(t);
       expect(w.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 12);
       expect(w[0] * -1 + w[1] * 0 + w[2] * 1 + w[3] * 2).toBeCloseTo(t, 12);
+    }
+  });
+});
+
+describe('scoped surface-node cache', () => {
+  it('reuses exact node heights without changing interpolation or clamped edge samples', () => {
+    const { solver } = channel();
+    for (let i = 0; i < solver.h.length; i += 1) solver.h[i] = 3 + 0.17 * Math.sin(i * 0.37);
+    const water = new PhysicalSurfWater(solver, { peakPeriod: 10, nodeSpacing: 2 });
+    const points = [[-9.9, -9.7], [-9.8, -9.6], [0.2, 0.3], [0.4, 0.5], [0.2, 0.3], [9.8, 9.9]];
+    const reads = vi.spyOn(solver, 'sampleCentered');
+    const sample = () => points.map(([x, z]) => water.plainSurfaceAt(x, z));
+    const expected = sample();
+    const eagerReads = reads.mock.calls.length;
+    reads.mockClear();
+    expect(water.withSurfaceNodeCache(sample)).toEqual(expected);
+    expect(reads.mock.calls.length).toBeLessThan(eagerReads / 2);
+  });
+
+  it('invalidates mutable water explicitly, changed windows automatically, and every scope even after an error', () => {
+    const { solver, water } = channel();
+    for (let i = 0; i < solver.h.length; i += 1) solver.h[i] = 3 + 0.01 * i;
+    const fresh = () => new PhysicalSurfWater(solver, { peakPeriod: 10 }).plainSurfaceAt(0.2, 0.3);
+    water.withSurfaceNodeCache(() => {
+      expect(water.plainSurfaceAt(0.2, 0.3)).toBe(fresh());
+      solver.h.fill(4);
+      water.invalidateSurfaceNodeCache();
+      expect(water.plainSurfaceAt(0.2, 0.3)).toBe(fresh());
+      solver.bed.fill(-2.7);
+      water.invalidateSurfaceNodeCache();
+      expect(water.plainSurfaceAt(0.2, 0.3)).toBe(fresh());
+      for (let i = 0; i < solver.h.length; i += 1) solver.h[i] = 4 + 0.01 * i;
+      water.invalidateSurfaceNodeCache();
+      water.plainSurfaceAt(0.2, 0.3);
+      solver.shiftAlongShore(1);
+      expect(water.plainSurfaceAt(0.2, 0.3)).toBe(fresh());
+    });
+    solver.h.fill(5);
+    expect(water.plainSurfaceAt(0.2, 0.3)).toBe(fresh());
+    expect(water.withSurfaceNodeCache(() => water.plainSurfaceAt(0.2, 0.3))).toBe(fresh());
+    expect(() => water.withSurfaceNodeCache(() => {
+      water.plainSurfaceAt(0.2, 0.3);
+      throw new Error('failed contact build');
+    })).toThrow('failed contact build');
+    solver.h.fill(6);
+    expect(water.plainSurfaceAt(0.2, 0.3)).toBe(fresh());
+  });
+
+  it('builds identical contact geometry and query layers while eliminating repeated node sampling', () => {
+    const { solver } = channel();
+    for (let i = 0; i < solver.h.length; i += 1) solver.h[i] = 3 + 0.13 * Math.sin(i * 0.17);
+    const library = new ProfileLibrary([tubeCase(0.3)]);
+    const records = new Float32Array(17 * FRONT_STRIDE);
+    for (let k = 0; k < 17; k += 1) {
+      const o = k * FRONT_STRIDE;
+      records[o + FRONT_FIELD.x] = k - 8;
+      records[o + FRONT_FIELD.z] = 0.2 * Math.sin(k * 0.2);
+      records[o + FRONT_FIELD.front] = 1;
+      records[o + FRONT_FIELD.sigma] = k;
+      records[o + FRONT_FIELD.tau] = 0.05 + 0.01 * Math.sin(k);
+      records[o + FRONT_FIELD.footHeight] = 0.9;
+      records[o + FRONT_FIELD.footDepth] = 3;
+      records[o + FRONT_FIELD.pace] = Number.NaN;
+    }
+    const water = new PhysicalSurfWater(solver, { peakPeriod: 10, nodeSpacing: 2 });
+    const plain = new SweptContact(library, 0.05), cached = new SweptContact(library, 0.05);
+    const read = (x: number, z: number) => water.plainSurfaceAt(x, z);
+    const reads = vi.spyOn(solver, 'sampleCentered');
+    plain.update(records, 17, solver.restLevel, read);
+    const eagerReads = reads.mock.calls.length;
+    reads.mockClear();
+    water.withSurfaceNodeCache(() => cached.update(records, 17, solver.restLevel, read));
+    expect(reads.mock.calls.length).toBeLessThan(eagerReads / 20);
+    const a = plain.last!, b = cached.last!;
+    expect(b.sliceCount).toBe(a.sliceCount);
+    expect(b.vertexCount).toBe(a.vertexCount);
+    expect(b.indexCount).toBe(a.indexCount);
+    for (const field of ['positions', 'normals', 'mask', 'lift'] as const) {
+      const count = a.vertexCount * (field === 'positions' || field === 'normals' ? 3 : 1);
+      expect(b[field].subarray(0, count)).toEqual(a[field].subarray(0, count));
+    }
+    for (const field of ['sliceJoined', 'sliceWeight', 'sliceLife', 'sliceRestHold', 'sliceRestEnd'] as const) {
+      expect(b[field].subarray(0, a.sliceCount)).toEqual(a[field].subarray(0, a.sliceCount));
+    }
+    for (const x of [-8, -6.3, 0, 5.7, 8]) for (const z of [-3.5, 0, 2.2, 2.7, 4, 7.5]) {
+      expect(cached.floorAt(x, z)).toBe(plain.floorAt(x, z));
+      for (const y of [-0.5, 0.5, 1, 1.7, 3]) {
+        const left = createContactHit(), right = createContactHit();
+        expect(cached.query(x, y, z, right)).toBe(plain.query(x, y, z, left));
+        expect(right).toEqual(left);
+      }
     }
   });
 });

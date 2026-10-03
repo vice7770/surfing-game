@@ -76,6 +76,10 @@ export class FftChop {
   readonly output: WebGLRenderTarget;
   private spectrum?: DataTexture;
   private wind = Number.NaN;
+  private seed = Number.NaN;
+  private drawnRenderer?: WebGLRenderer;
+  private drawnSpectrum?: DataTexture;
+  private drawnTime = Number.NaN;
 
   constructor(readonly size = FFT_CHOP_SIZE, readonly patch = FFT_CHOP_PATCH) {
     const geometry = new BufferGeometry();
@@ -102,8 +106,9 @@ export class FftChop {
 
   /** Build the spectrum for the local wind, m/s (positive onshore); unchanged wind keeps the sea. */
   setWind(windSpeed: number, seed = 1): void {
-    if (windSpeed === this.wind && this.spectrum) return;
+    if (windSpeed === this.wind && seed === this.seed && this.spectrum) return;
     this.wind = windSpeed;
+    this.seed = seed;
     this.spectrum?.dispose();
     this.spectrum = new DataTexture(chopSpectrum(windSpeed, seed, this.size, this.patch), this.size, this.size, RGBAFormat, FloatType);
     this.spectrum.minFilter = NearestFilter;
@@ -114,6 +119,11 @@ export class FftChop {
   /** Transform the sea at `time` into the slope map and point the water shaders at it. */
   render(renderer: WebGLRenderer, time: number): void {
     if (!this.spectrum) this.setWind(0);
+    // Display frames between snapshots share the same sea; the transform's output is already complete.
+    if (renderer === this.drawnRenderer && this.spectrum === this.drawnSpectrum && time === this.drawnTime) {
+      this.useOutput();
+      return;
+    }
     const previous = renderer.getRenderTarget();
     this.quad.material = this.spectrumMaterial;
     this.spectrumMaterial.uniforms.spectrum.value = this.spectrum;
@@ -134,6 +144,13 @@ export class FftChop {
       [from, to] = [to, from];
     }
     renderer.setRenderTarget(previous);
+    this.drawnRenderer = renderer;
+    this.drawnSpectrum = this.spectrum;
+    this.drawnTime = time;
+    this.useOutput();
+  }
+
+  private useOutput(): void {
     chopFieldUniforms.waterChopMap.value = this.output.texture;
     chopFieldUniforms.waterChopPatch.value = this.patch;
     chopFieldUniforms.waterChopFft.value = 1;

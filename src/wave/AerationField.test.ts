@@ -159,6 +159,21 @@ describe('the aeration field', () => {
 
 // The wipeout spec, Part B: the plume's turbulence (Ting & Kirby 1995).
 describe('the whitewater plume\'s turbulence', () => {
+  it('uses each step size when stirring successive cells and when the step size changes', () => {
+    const solver = flatSolver();
+    const field = new AerationField(solver);
+    const cells = [solver.cellIndex(-1.5, 0.5), solver.cellIndex(0.5, 0.5), solver.cellIndex(1.5, 0.5)];
+    const strength = 0.7;
+    const target = (TURBULENCE.ratio * Math.sqrt(GRAVITY * 2)) ** 2 * strength;
+    for (const [cell, dt] of [[cells[0], 0.1], [cells[1], 0.1], [cells[2], 0.25]]) {
+      field.stir(cell, strength, dt);
+      expect(field.turbulence[cell]).toBe(target * (1 - Math.exp(-dt / TURBULENCE.rise)));
+    }
+    const previous = field.turbulence[cells[0]];
+    field.stir(cells[0], strength, 0.05);
+    expect(field.turbulence[cells[0]]).toBe(previous + (target - previous) * (1 - Math.exp(-0.05 / TURBULENCE.rise)));
+  });
+
   const target = (depth: number, strength = 1) => (TURBULENCE.ratio * Math.sqrt(GRAVITY * depth)) ** 2 * strength;
 
   it('stirs toward Ting & Kirby\'s intensity under breaking, √k ≈ 0.15 √(g h)', () => {

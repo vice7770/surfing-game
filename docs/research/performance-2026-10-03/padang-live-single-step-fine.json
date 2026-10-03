@@ -1,0 +1,103 @@
+{
+ "date": "2026-10-03T17:11:36.509Z",
+ "url": "http://localhost:4184/?diagnostics",
+ "commit": "",
+ "build": "production (vite build)",
+ "loadAverage": [
+  7.66,
+  7.3,
+  7.1
+ ],
+ "machine": {
+  "model": "MacBook Pro",
+  "modelId": "Mac17,8",
+  "chip": "Apple M5 Pro",
+  "cores": "proc 18:6:0:12",
+  "memory": "24 GB",
+  "gpu": "Apple M5 Pro",
+  "gpuCores": "20",
+  "metal": "spdisplays_metal4",
+  "displays": [
+   {
+    "name": "Color LCD",
+    "resolution": "1728 x 1117 @ 120.00Hz",
+    "pixels": "3456 x 2234",
+    "main": true
+   }
+  ],
+  "os": "macOS 26.6.2 (25G83)",
+  "power": "AC power",
+  "lowPowerMode": false,
+  "nodeCpus": 18,
+  "totalMemoryGB": 24
+ },
+ "browser": {
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Pro, Unspecified Version)",
+  "webgpu": "apple · metal-3",
+  "viewport": "1728 × 860",
+  "devicePixelRatio": 2,
+  "screen": "1728 × 1117",
+  "chrome": "Google Chrome 154.0.8037.93",
+  "refreshHz": 120
+ },
+ "window": "1728 × 860",
+ "frameCap": "display refresh (vsync)",
+ "gpuTiming": "game context",
+ "menuSeconds": 6,
+ "rideSeconds": 20,
+ "results": [
+  {
+   "setting": "High (baseline)",
+   "screen": "Ride · Padang",
+   "frames": 2378,
+   "fps": 118.5,
+   "fpsMedian": 120.5,
+   "fps1Low": 60.6,
+   "frameMsP50": 8.3,
+   "frameMsP95": 9.2,
+   "frameMsP99": 16.5,
+   "frameMsMax": 17.3,
+   "mainThreadMsP50": 0.9,
+   "mainThreadMsP95": 1.5,
+   "drawCalls": 36,
+   "trianglesK": 1961,
+   "gpuMsP50": 6.52,
+   "gpuMsP95": 9.69,
+   "gpuContexts": 1,
+   "canvas": "3024 × 1505",
+   "solver": "Boussinesq · GPU · 64 components · 232,000 cells · 49.9 ms/step",
+   "heapMB": 113,
+   "solverMsP50": 48.1,
+   "solverMsMax": 54.9,
+   "freshSnapshots": 343,
+   "freshSnapshotsPerSecond": 17.07,
+   "simulationSecondsPerWallSecond": 0.285,
+   "pipelineMsP50": {
+    "water": 39,
+    "breaking": 0.3,
+    "front": 1.9,
+    "lip": 0,
+    "foam": 3.3,
+    "airSources": 0.1,
+    "aeration": 4.2,
+    "board": 0.4,
+    "contact": 0,
+    "bubbles": 0.1,
+    "spray": 0.3,
+    "sounds": 0,
+    "step": 49.9,
+    "surface": 0,
+    "snapshotAeration": 0,
+    "flow": 0,
+    "snapshotFields": 8,
+    "snapshot": 8.4,
+    "summary": 0.2,
+    "batch": 49.9,
+    "batchSteps": 1,
+    "total": 58.5
+   },
+   "power": "AC 74%"
+  }
+ ]
+}

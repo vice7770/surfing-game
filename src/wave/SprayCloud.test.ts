@@ -416,3 +416,65 @@ describe('a swept barrel’s landing spray (Padang Padang, Part B, PR 5)', () =>
     }
   });
 });
+
+describe('indexed sources and presentation packing', () => {
+  it('replays the full-grid traversal exactly in both looks and every budget, including full pools', () => {
+    for (const look of ['rich', 'classic'] as const) {
+      for (const level of ['high', 'medium', 'low'] as const) {
+        const full = new SprayCloud(17, 64, 16);
+        const indexed = new SprayCloud(17, 64, 16);
+        full.look = indexed.look = look;
+        full.setLevel(level);
+        indexed.setLevel(level);
+        for (let frame = 0; frame < 240; frame += 1) {
+          const scene = busyWhitewater(frame);
+          const source = scene.foam.source;
+          const cells = new Uint32Array(source.length);
+          let count = 0;
+          for (let i = 0; i < source.length; i += 1) if (source[i] > 0) cells[count++] = i;
+          full.update(scene, 1 / 60);
+          indexed.update({ ...scene, foam: { source, sourceCells: cells, sourceCount: count } }, 1 / 60);
+          expect(indexed.count).toBe(full.count);
+          expect(indexed.whitewaterCount).toBe(full.whitewaterCount);
+          if (frame % 17 === 0 || frame === 239) {
+            expect(indexed.particles.subarray(0, indexed.count * SPRAY_STRIDE)).toEqual(full.particles.subarray(0, full.count * SPRAY_STRIDE));
+          }
+        }
+      }
+    }
+  });
+
+  it('packs on the next read and keeps the same result when intermediate snapshots are skipped', () => {
+    const eager = new SprayCloud(19);
+    const lazy = new SprayCloud(19);
+    const buffer = lazy.particles;
+    for (let frame = 0; frame < 40; frame += 1) {
+      const scene = busyWhitewater(frame);
+      eager.update(scene, 1 / 60);
+      lazy.update(scene, 1 / 60);
+      void eager.particles;
+    }
+    expect(lazy.count).toBeGreaterThan(0);
+    expect(buffer.some((value) => value !== 0)).toBe(false);
+    expect(lazy.particles).toBe(buffer);
+    expect(lazy.particles.subarray(0, lazy.count * SPRAY_STRIDE)).toEqual(eager.particles.subarray(0, eager.count * SPRAY_STRIDE));
+    lazy.clear();
+    expect(lazy.count).toBe(0);
+    expect(lazy.particles).toBe(buffer);
+  });
+
+  it('packs widths from the last update when the budget changes before a snapshot reads them', () => {
+    const eager = new SprayCloud(21);
+    const lazy = new SprayCloud(21);
+    const scene = busyWhitewater(0);
+    eager.update(scene, 1 / 60);
+    lazy.update(scene, 1 / 60);
+    const before = eager.particles.slice();
+    eager.setLevel('low');
+    lazy.setLevel('low');
+    expect(lazy.particles).toEqual(before);
+    eager.update(busyWhitewater(1), 1 / 60);
+    lazy.update(busyWhitewater(1), 1 / 60);
+    expect(lazy.particles).toEqual(eager.particles);
+  });
+});

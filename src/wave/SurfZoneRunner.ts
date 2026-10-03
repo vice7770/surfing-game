@@ -106,7 +106,7 @@ export interface SurfZoneRunnerOptions {
   board?: boolean;
   /** Carry a board with a rider the player controls (P4d). */
   rider?: boolean;
-  /** The render grid's spacing, m (1 by default; finer for close shots). The physics samples the water as before. */
+  /** The render grid's spacing, m. Large Padang windows use 2 m; explicit close-shot spacing takes precedence. */
   renderSpacing?: number;
   /** Online (spec N1): where the rider first waits, m along shore from the take-off and seaward of the break line. */
   spawnAlong?: number;
@@ -180,6 +180,14 @@ export interface SurfZoneStatus {
   timeToSet: number;
   /** Wall-clock time of the latest step, water and board, ms. */
   stepMs: number;
+  /** Full worker processing cost, including visual fields, particles, contact and snapshot generation. */
+  pipelineMs?: {
+    water: number; breaking: number; front: number; lip: number; foam: number; airSources: number; aeration: number;
+    board: number; contact: number; bubbles: number; spray: number; sounds: number;
+    step: number; surface: number; snapshotAeration: number; flow: number; snapshotFields: number; snapshot: number; summary: number;
+    batch: number; batchSteps: number; total: number;
+    deviceSubsteps: number; devicePack: number; deviceCfl: number; deviceEncode: number; deviceMap: number; deviceUnpack: number;
+  };
   /** Where the water steps: on the GPU (plan P6) or the CPU. */
   compute: 'gpu' | 'cpu';
   cells: number;
@@ -278,6 +286,8 @@ export class SurfZoneRunner {
   readonly simulation: SurfZoneSimulation;
   readonly bubbles: BubbleCloud;
   readonly spray: SprayCloud;
+  /** Hidden spray has no effect on water, rider physics or sound. */
+  private sprayEnabled = true;
   /** Uniform render grid over the window and the whole tank. */
   readonly grid: RenderGrid;
   /** Bed elevation per render node (fixed until the window slides). */
@@ -310,6 +320,14 @@ export class SurfZoneRunner {
   private rescues = 0;
   private snapshotKnock = 0;
   private boardMs = 0;
+  private bubbleMs = 0;
+  private sprayMs = 0;
+  private soundMs = 0;
+  private pipelineStepMs = 0;
+  private batchMs = 0;
+  private batchSteps = 0;
+  private fillMs = 0;
+  private snapshotFieldsMs = 0;
   /** The rider against the wave (spec P9 phase 0), and the peel angle it uses, refreshed once per simulated second. */
   private readonly gauge?: WaveFrameGauge;
   private wave?: WaveFrame;
@@ -324,21 +342,25 @@ export class SurfZoneRunner {
 
   /** `'warm'` leaves the spin-up, and seating the board and rider, to `spinUp` (the worker spins up on its GPU). */
   constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, start: SurfZoneStart = 'spun-up') {
-    const renderSpacing = options.renderSpacing ?? 1;
     // At a swept spot the cases run the crash in every sea (PR 5), and the rider's contact with a board or rider (PR 4).
     const slope = BARREL_SLOPE[config.spot];
     const library = options.barrelCases && sweptBarrelOn(config) && slope !== undefined ? libraryFromBytes(options.barrelCases) : undefined;
     this.simulation = new SurfZoneSimulation(config, start, library);
+    const requestedGrid = this.simulation.renderGrid(options.renderSpacing ?? 1);
+    // The broad Padang tank otherwise copies over 400,000 render nodes every 1/60 s.
+    // Its swept tube retains a separate 1 m footprint mask and its own profile geometry.
+    const renderSpacing = options.renderSpacing
+      ?? (config.spot === 'padang' && requestedGrid.nx * requestedGrid.nz >= 200_000 ? 2 : 1);
     this.bubbles = new BubbleCloud(config.seed, PARCEL_CAPACITY);
     this.spray = new SprayCloud(config.seed, SPRAY_CAPACITY, WHITEWATER_CAPACITY);
-    this.grid = this.simulation.renderGrid(renderSpacing);
+    this.grid = requestedGrid.spacing === renderSpacing ? requestedGrid : this.simulation.renderGrid(renderSpacing);
     this.bed = new Float32Array(this.grid.nx * this.grid.nz);
     this.simulation.writeUniformBed(this.bed, this.grid);
     this.focus = this.simulation.breakPoint();
     this.breaker = this.simulation.iribarren();
     this.breakDepth = this.simulation.spot.depthAt(this.focus.x, this.focus.z) + config.tide;
     if (library && (options.rider || options.board || options.contact) && this.simulation.front) this.contact = new SweptContact(library, slope!);
-    this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contact);
+    this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contact, renderSpacing);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
     this.rideLineup = new Vector3(this.focus.x + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? RIDE_LINEUP_OFFSET));
     if (options.rider) {
@@ -380,6 +402,12 @@ export class SurfZoneRunner {
     this.spray.look = look;
   }
 
+  /** Stop invisible spray work and discard old drops before it is shown again. */
+  setSprayEnabled(enabled: boolean): void {
+    this.sprayEnabled = enabled;
+    if (!enabled) this.spray.clear();
+  }
+
   /** The Particles setting (graphics): the spray's and bubbles' budget, from the next step. Visual only. */
   setParticleLevel(level: ParticleLevel): void {
     this.spray.setLevel(level);
@@ -397,20 +425,30 @@ export class SurfZoneRunner {
    * water. A snapshot (`fill`) shows the state after the last step.
    */
   advance(steps: number, input: RideRequest = IDLE, reactions?: ArrayLike<number>): void {
+    const batchStart = performance.now();
     this.applyRemote(reactions);
     for (let step = 0; step < steps; step += 1) {
+      const start = performance.now();
       this.simulation.step(SURF_ZONE_STEP);
       this.afterWater(step, input);
+      this.pipelineStepMs = performance.now() - start;
     }
+    this.batchMs = performance.now() - batchStart;
+    this.batchSteps = steps;
   }
 
   /** `advance` with the water stepped on the simulation's device, when it has one (plan P6). */
   async advanceAsync(steps: number, input: RideRequest = IDLE, reactions?: ArrayLike<number>): Promise<void> {
+    const batchStart = performance.now();
     this.applyRemote(reactions);
     for (let step = 0; step < steps; step += 1) {
+      const start = performance.now();
       await this.simulation.stepAsync(SURF_ZONE_STEP);
       this.afterWater(step, input);
+      this.pipelineStepMs = performance.now() - start;
     }
+    this.batchMs = performance.now() - batchStart;
+    this.batchSteps = steps;
   }
 
   /** Other players' boards pushing on this water (spec N1): x, z, jx, jz each (`REACTION_STRIDE`). */
@@ -453,7 +491,10 @@ export class SurfZoneRunner {
     if (!contact || !simulation.front) return;
     const start = performance.now();
     const count = writeFrontRecords(simulation.front.points, this.contactRecords);
-    contact.update(this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z));
+    // The solver has finished all water mutations; the contact only reads heights for this synchronous build.
+    this.water.withSurfaceNodeCache(() => {
+      contact.update(this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z));
+    });
     this.contactMs = performance.now() - start;
   }
 
@@ -506,9 +547,17 @@ export class SurfZoneRunner {
         this.launchBoard();
       }
     }
+    let phase = performance.now();
     this.bubbles.update(this.simulation, SURF_ZONE_STEP);
-    this.spray.update(this.sprayScene, SURF_ZONE_STEP);
+    let end = performance.now();
+    this.bubbleMs = end - phase;
+    phase = end;
+    if (this.sprayEnabled) this.spray.update(this.sprayScene, SURF_ZONE_STEP);
+    end = performance.now();
+    this.sprayMs = end - phase;
+    phase = end;
     this.collectSounds();
+    this.soundMs = performance.now() - phase;
   }
 
   /** Each step's lip landings and paddle strokes, kept for the next snapshot's sound (S1). */
@@ -619,13 +668,13 @@ export class SurfZoneRunner {
   }
 
   fill(buffers: SurfZoneBuffers): void {
+    const start = performance.now();
     const { simulation, grid } = this;
     grid.xMin = simulation.windowXMin;
     // Raw heights: the page carves them with the tubes (G9), exactly as the physics does.
-    simulation.writeUniformSurface(buffers.surface, grid, false);
+    simulation.writeUniformSnapshot(buffers.surface, buffers.flow, buffers.aeration, grid);
+    this.snapshotFieldsMs = performance.now() - start;
     buffers.tubeCount = simulation.lip.writeTubes(buffers.tubes, TUBE_CAPACITY);
-    simulation.writeUniformAeration(buffers.aeration, grid);
-    simulation.writeUniformFlow(buffers.flow, grid);
     let parcels = 0;
     simulation.lip.forEachActiveParcel((parcel) => {
       if (parcels >= PARCEL_CAPACITY) return;
@@ -661,6 +710,7 @@ export class SurfZoneRunner {
     this.water.drainReaction(buffers.reaction);
     this.measureRoar(buffers.roar);
     buffers.frontCount = simulation.front ? writeFrontRecords(simulation.front.points, buffers.front) : 0;
+    this.fillMs = performance.now() - start;
   }
 
   /**
@@ -697,8 +747,9 @@ export class SurfZoneRunner {
   }
 
   status(): SurfZoneStatus {
+    const start = performance.now();
     const { simulation } = this;
-    return {
+    const status: SurfZoneStatus = {
       seaTime: simulation.seaTime,
       timeToSet: simulation.timeToSet,
       stepMs: simulation.lastStepMs + this.boardMs,
@@ -739,5 +790,18 @@ export class SurfZoneRunner {
         rescues: this.rescues,
       } : undefined,
     };
+    const summary = performance.now() - start;
+    const device = simulation.device?.diagnostics;
+    status.pipelineMs = {
+      ...simulation.stepCosts, board: this.boardMs, contact: this.contactMs,
+      bubbles: this.bubbleMs, spray: this.sprayMs, sounds: this.soundMs, step: this.pipelineStepMs,
+      // The three fields now share one pass; retain the old diagnostic keys at zero for existing consumers.
+      surface: 0, snapshotAeration: 0, flow: 0, snapshotFields: this.snapshotFieldsMs, snapshot: this.fillMs, summary,
+      batch: this.batchMs, batchSteps: this.batchSteps,
+      total: (this.batchMs + this.fillMs + summary) / Math.max(1, this.batchSteps),
+      deviceSubsteps: device?.substeps ?? 0, devicePack: device?.pack ?? 0, deviceCfl: device?.cfl ?? 0,
+      deviceEncode: device?.encode ?? 0, deviceMap: device?.map ?? 0, deviceUnpack: device?.unpack ?? 0,
+    };
+    return status;
   }
 }

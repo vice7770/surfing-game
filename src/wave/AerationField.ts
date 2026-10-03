@@ -1,5 +1,6 @@
 import { GRAVITY } from './dispersion';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
+import type { AdvectionStencil } from './AdvectionStencil';
 
 /**
  * The air breaking drives into the water (G9), from `docs/research/whitewater-sources.md`:
@@ -54,6 +55,8 @@ export class AerationField {
   private readonly stirred: Uint8Array;
   private windowX: number;
   private readonly period: number;
+  private stirDt = Number.NaN;
+  private stirGain = 0;
 
   /** `period`: the swell's peak period, s, which sets how fast the turbulence fades. */
   constructor(private readonly solver: ShallowWaterSolver, options: { period?: number } = {}) {
@@ -76,7 +79,13 @@ export class AerationField {
     if (!(depth > WET) || !(strength > 0)) return;
     this.stirred[cell] = 1;
     const target = (TURBULENCE.ratio * Math.sqrt(GRAVITY * depth)) ** 2 * Math.min(1, strength);
-    if (target > this.turbulence[cell]) this.turbulence[cell] += (target - this.turbulence[cell]) * (1 - Math.exp(-dt / TURBULENCE.rise));
+    if (target > this.turbulence[cell]) {
+      if (dt !== this.stirDt) {
+        this.stirDt = dt;
+        this.stirGain = 1 - Math.exp(-dt / TURBULENCE.rise);
+      }
+      this.turbulence[cell] += (target - this.turbulence[cell]) * this.stirGain;
+    }
   }
 
   /** A plunge that dissipated `energy` J at (x, z), driving its bubbles `penetration` m down. */
@@ -117,10 +126,10 @@ export class AerationField {
   }
 
   /** Advance by `dt` s: carry with the current, and degas as the bubbles rise out of the plume. */
-  update(dt: number): void {
+  update(dt: number, stencil?: AdvectionStencil): void {
     if (!(dt > 0)) return;
     this.followWindow();
-    this.advect(dt);
+    this.advect(dt, stencil?.take(this.solver, dt));
     const { h } = this.solver;
     const fade = Math.exp(-dt / (TURBULENCE.decayShare * this.period));
     for (let i = 0; i < h.length; i += 1) {
@@ -185,7 +194,11 @@ export class AerationField {
   }
 
   /** Semi-Lagrangian step: each cell takes the air (and plume depth, and turbulence) found upstream at x − u·dt. */
-  private advect(dt: number): void {
+  private advect(dt: number, stencil?: AdvectionStencil): void {
+    if (stencil) {
+      this.advectStencil(stencil);
+      return;
+    }
     const { nx, nz, h, qx, qz, xCenters, zCenters, dx } = this.solver;
     for (let iz = 0; iz < nz; iz += 1) {
       for (let ix = 0; ix < nx; ix += 1) {
@@ -215,6 +228,33 @@ export class AerationField {
         this.nextTurbulence[i] = this.turbulence[k] * w00 + this.turbulence[k + 1] * w10 + this.turbulence[k + nx] * w01 + this.turbulence[k + nx + 1] * w11;
         this.nextDepth[i] = Math.max(this.depth[k] * (w00 > 0 ? 1 : 0), this.depth[k + 1] * (w10 > 0 ? 1 : 0), this.depth[k + nx] * (w01 > 0 ? 1 : 0), this.depth[k + nx + 1] * (w11 > 0 ? 1 : 0));
       }
+    }
+    this.air.set(this.nextAir);
+    this.depth.set(this.nextDepth);
+    this.turbulence.set(this.nextTurbulence);
+  }
+
+  /** Same interpolation as `advect`; foam has already found the departures on this step's water. */
+  private advectStencil(stencil: AdvectionStencil): void {
+    const { h, nx } = this.solver;
+    const { indices, values } = stencil;
+    for (let i = 0; i < h.length; i += 1) {
+      if (h[i] <= WET) {
+        this.nextAir[i] = 0;
+        this.nextDepth[i] = 0;
+        this.nextTurbulence[i] = 0;
+        continue;
+      }
+      const k = indices[i];
+      const tx = values[i * 2];
+      const tz = values[i * 2 + 1];
+      const w00 = (1 - tx) * (1 - tz);
+      const w10 = tx * (1 - tz);
+      const w01 = (1 - tx) * tz;
+      const w11 = tx * tz;
+      this.nextAir[i] = this.air[k] * w00 + this.air[k + 1] * w10 + this.air[k + nx] * w01 + this.air[k + nx + 1] * w11;
+      this.nextTurbulence[i] = this.turbulence[k] * w00 + this.turbulence[k + 1] * w10 + this.turbulence[k + nx] * w01 + this.turbulence[k + nx + 1] * w11;
+      this.nextDepth[i] = Math.max(this.depth[k] * (w00 > 0 ? 1 : 0), this.depth[k + 1] * (w10 > 0 ? 1 : 0), this.depth[k + nx] * (w01 > 0 ? 1 : 0), this.depth[k + nx + 1] * (w11 > 0 ? 1 : 0));
     }
     this.air.set(this.nextAir);
     this.depth.set(this.nextDepth);

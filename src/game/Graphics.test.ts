@@ -36,7 +36,7 @@ describe('graphics', () => {
 
   it('resolves pixel ratio, frame interval, water and the still backdrop', () => {
     const low = resolveGraphics(withPreset(defaultSettings().graphics, 'low'), undefined, 2);
-    expect(low).toMatchObject({ pixelRatio: 0.75, frameInterval: 0, stage: 2, compute: 'auto', caustics: false, stillBackdrop: true });
+    expect(low).toMatchObject({ pixelRatio: 0.75, frameInterval: 1000 / 60, stage: 2, compute: 'auto', caustics: false, stillBackdrop: true });
     const fast = resolveGraphics({ ...defaultSettings().graphics, frameLimit: 30, waterSimulation: 'auto' },
       { preset: 'medium', water: 'fast', lowPerformance: false, adapter: 'x' }, 3);
     expect(fast).toMatchObject({ frameInterval: 1000 / 30, stage: 1, compute: 'cpu', stillBackdrop: false });
@@ -73,10 +73,10 @@ describe('graphics', () => {
     expect(needsDetection(withPreset(auto, 'low'), undefined, 'x')).toBe(false);
   });
 
-  // The Particles setting by preset: every preset draws the particles as the game always has, but Low (which draws no spray).
-  it('puts Low on Low particles and the others on High, and resolves the level', () => {
+  it('matches Medium particles to Medium graphics and keeps High detail at High and Ultra', () => {
     expect(PRESETS.low.particles).toBe('low');
-    for (const preset of ['medium', 'high', 'ultra'] as const) expect(PRESETS[preset].particles).toBe('high');
+    expect(PRESETS.medium.particles).toBe('medium');
+    for (const preset of ['high', 'ultra'] as const) expect(PRESETS[preset].particles).toBe('high');
     expect(resolveGraphics({ preset: 'low', ...PRESETS.low }, undefined, 2).particles).toBe('low');
     expect(resolveGraphics(withAdvanced(defaultSettings().graphics, { particles: 'medium' }), undefined, 2).particles).toBe('medium');
   });

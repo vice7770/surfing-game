@@ -1,11 +1,130 @@
-import { ShaderLib } from 'three';
-import { describe, expect, it } from 'vitest';
+import { DataTexture, ShaderLib } from 'three';
+import { describe, expect, it, vi } from 'vitest';
 import { WaterSurface, sampleSurfaceBed } from './WaterSurface';
 import { FlatSurfaceSource } from './FlatSurfaceSource';
 import { PhysicalSurfaceSource } from './PhysicalSurfaceSource';
 import { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
 
 describe('WaterSurface GPU displacement data', () => {
+  it('keeps a 1 m barrel seam grid independent of coarse water textures and follows its world window', () => {
+    const source = {
+      grid: { xMin: -20, zMin: -60, spacing: 2, nx: 21, nz: 31 }, revision: {}, time: 0, bedRevision: 0,
+      write: (into: Float32Array) => into.fill(0), writeBed: (into: Float32Array) => into.fill(-2),
+    };
+    const water = new WaterSurface(source);
+    const uniforms = water.materialUniforms;
+    const geometry = water.mesh.geometry;
+    const surfaceData = water.surfaceData;
+    const textures = ['waterSurface', 'waterBed', 'waterFlow', 'waterAeration']
+      .map((name) => uniforms[name].value as DataTexture);
+    const versions = textures.map((texture) => texture.version);
+    const maskTexture = uniforms.waterBarrelMask.value as DataTexture;
+    expect(water.barrelMaskGrid).toEqual({ xMin: -20, zMin: -60, spacing: 1, nx: 41, nz: 61 });
+    expect(maskTexture.image.width).toBe(41);
+    expect(maskTexture.image.height).toBe(61);
+    const mask = new Uint8Array(41 * 61).fill(128);
+    water.setBarrelMask(mask);
+    expect(Array.from(maskTexture.image.data as Uint8Array)).toEqual(Array.from(mask));
+    expect(water.barrelMaskActive).toBe(true);
+
+    source.grid.xMin += 4;
+    source.grid.zMin += 3;
+    expect(water.barrelMaskGrid).toEqual({ xMin: -16, zMin: -57, spacing: 1, nx: 41, nz: 61 });
+    expect(uniforms.waterBarrelMask.value).toBe(maskTexture);
+    expect(water.barrelMaskActive).toBe(false);
+    expect(uniforms.waterBarrelGrid.value).toMatchObject({ x: -16, y: -57, z: 1 });
+    expect(water.mesh.geometry).toBe(geometry);
+    expect(water.surfaceData).toBe(surfaceData);
+    expect(textures.map((texture) => texture.version)).toEqual(versions);
+    for (const [i, name] of ['waterSurface', 'waterBed', 'waterFlow', 'waterAeration'].entries()) {
+      expect(uniforms[name].value).toBe(textures[i]);
+    }
+    water.dispose();
+  });
+
+  it('preserves the original mask grid at 1 m or finer and rounds up a coarse noninteger extent', () => {
+    for (const spacing of [0.1, 0.5, 1, 1.5]) {
+      const grid = { xMin: -2, zMin: 3, spacing, nx: 4, nz: 6 };
+      const water = new WaterSurface({ grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} });
+      expect(water.barrelMaskGrid).toEqual(spacing <= 1 ? grid
+        : { xMin: -2, zMin: 3, spacing: 1, nx: 6, nz: 9 });
+      water.dispose();
+    }
+  });
+
+  it('keeps held snapshot textures and reloads same-time revisions, looks, windows and replacement sources', () => {
+    let height = 1;
+    const source = {
+      grid: { xMin: 0, zMin: 0, spacing: 1, nx: 3, nz: 3 }, revision: {}, time: 0, bedRevision: 0, cubic: true,
+      write: vi.fn((into: Float32Array) => into.fill(height)),
+      writeBed: vi.fn((into: Float32Array) => into.fill(-2)),
+      writeFlow: vi.fn((into: Float32Array) => into.fill(height)),
+      writeAeration: vi.fn((into: Float32Array) => into.fill(0.1)),
+      writeTubes: vi.fn(() => 0),
+    };
+    const water = new WaterSurface(source);
+    water.setLook('rich');
+    water.update();
+    water.update(); // The original alternate-frame flow cadence catches up with the look change.
+    const textures = ['waterSurface', 'waterFlow', 'waterAeration', 'waterTubeMap', 'waterTubeColumns']
+      .map((name) => water.materialUniforms[name].value as DataTexture);
+    const versions = textures.map((texture) => texture.version);
+    const revision = water.surfaceRevision;
+    source.write.mockClear();
+    source.writeFlow.mockClear();
+    source.writeAeration.mockClear();
+    source.writeTubes.mockClear();
+    for (let frame = 0; frame < 120; frame += 1) water.update();
+    for (const write of [source.write, source.writeFlow, source.writeAeration, source.writeTubes]) expect(write).not.toHaveBeenCalled();
+    expect(textures.map((texture) => texture.version)).toEqual(versions);
+    expect(water.surfaceRevision).toBe(revision);
+
+    // A restore or manual refresh may publish different data at exactly the same sea time.
+    height = 2;
+    source.revision = {};
+    water.update();
+    expect(source.write).toHaveBeenCalledTimes(1);
+    expect(water.surfaceData[0]).toBe(2);
+    water.setLook('classic');
+    water.update();
+    expect(source.write).toHaveBeenCalledTimes(2);
+    source.grid.xMin = 3;
+    source.bedRevision += 1;
+    water.update();
+    expect(source.write).toHaveBeenCalledTimes(3);
+    expect(source.writeBed).toHaveBeenCalledTimes(2);
+    expect(water.mesh.position.x).toBe(4);
+    water.setSource({ ...source });
+    water.update();
+    expect(source.write).toHaveBeenCalledTimes(4);
+    water.dispose();
+  });
+
+  it('preserves alternate-display-frame flow updates and reads unversioned mutable sources every time', () => {
+    let current = 1;
+    const source = {
+      grid: { xMin: 0, zMin: 0, spacing: 1, nx: 3, nz: 3 }, revision: {}, time: 0, bedRevision: 0,
+      write: vi.fn((into: Float32Array) => into.fill(0)), writeBed: (into: Float32Array) => into.fill(-2),
+      writeFlow: vi.fn((into: Float32Array) => into.fill(current)),
+    };
+    const water = new WaterSurface(source);
+    current = 2;
+    source.revision = {};
+    water.update();
+    expect(water.flowData[0]).toBe(1);
+    expect(source.writeFlow).toHaveBeenCalledTimes(1);
+    water.update();
+    expect(water.flowData[0]).toBe(2);
+    expect(source.writeFlow).toHaveBeenCalledTimes(2);
+    for (let frame = 0; frame < 120; frame += 1) water.update();
+    expect(source.writeFlow).toHaveBeenCalledTimes(2);
+    water.setSource({ ...source, revision: undefined });
+    source.write.mockClear();
+    for (let frame = 0; frame < 120; frame += 1) water.update();
+    expect(source.write).toHaveBeenCalledTimes(120);
+    water.dispose();
+  });
+
   it('uploads the physical bed under every node, 5 cm above the tucked-in dry surface, and follows the window', () => {
     const surface = new WaterSurface(new FlatSurfaceSource());
     const simulation = new SurfZoneSimulation({

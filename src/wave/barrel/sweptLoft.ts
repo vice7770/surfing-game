@@ -136,6 +136,13 @@ export interface LoftResult {
    */
   sliceTipAlong: Float32Array;
   sliceTipUp: Float32Array;
+  /**
+   * Contact mode: the lip landmark's geometric transport along the ray and up, m/s. Before sustained overturn this
+   * landmark moves along the steep face and is not a material jet; after the contact holds, its geometric motion
+   * stops while the measured material flow above can continue. These values describe movement of the contact shape.
+   */
+  sliceTipTransportAlong: Float32Array;
+  sliceTipTransportUp: Float32Array;
   sliceAnchorVX: Float32Array;
   sliceAnchorVZ: Float32Array;
   /**
@@ -219,8 +226,8 @@ export class SweptLoft {
   private readonly result: LoftResult;
   private readonly profile = new Float32Array(2 * PROFILE_POINTS);
   /** Per front, its slices' σ, before and after refinement. */
-  private readonly base = new Float64Array(2 * MAX_SLICES + 8);
-  private readonly sigmas = new Float64Array(2 * MAX_SLICES + 8);
+  private base = new Float64Array(2 * MAX_SLICES + 8);
+  private sigmas = new Float64Array(2 * MAX_SLICES + 8);
   private readonly sample: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, pace: 0 };
   private readonly probe: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, pace: 0 };
   private readonly query: ProfileQuery;
@@ -268,6 +275,7 @@ export class SweptLoft {
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
       sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices),
+      sliceTipTransportAlong: new Float32Array(slices), sliceTipTransportUp: new Float32Array(slices),
       sliceFormed: new Float32Array(slices), sliceTipX: new Float32Array(slices), sliceTipY: new Float32Array(slices), sliceTipZ: new Float32Array(slices),
       sliceMouth: new Float32Array(slices),
     };
@@ -287,6 +295,13 @@ export class SweptLoft {
     r.overlapOpenWeight = 0;
     r.restSamples = 0;
     const fronts = this.fronts(records, count);
+    // The output budget limits live slices, not the length surveyed before faded slices are removed. A 320 m front
+    // already needs more survey samples than the original fixed scratch buffer; grow these reusable arrays before
+    // writing them, including space for refinement, so its live end is not silently truncated or read as NaN.
+    let samples = 0;
+    for (const f of fronts) samples = Math.max(samples, Math.ceil((f.last - f.first + 2 * LOFT.extension) / LOFT.spacing) + 1);
+    if (this.base.length < samples) this.base = new Float64Array(Math.max(samples, 2 * this.base.length));
+    if (this.sigmas.length < 2 * samples) this.sigmas = new Float64Array(Math.max(2 * samples, 2 * this.sigmas.length));
     // The spacing that fits the budget, and whether refining would overrun it: faded slices are dropped, so only the
     // live ones count.
     let live = 0;
@@ -305,6 +320,7 @@ export class SweptLoft {
       this.loftFront(records, f, n, budgeted, stillLevel, heightAt);
     }
     this.dropOverlaps();
+    this.sealRuns(heightAt);
     this.triangulate();
     return r;
   }
@@ -408,8 +424,16 @@ export class SweptLoft {
       runOn(f.end - 2, f.end - 1, sigma - f.last);
       return into;
     }
-    let k = f.start;
-    while (k + 2 < f.end && field(k + 1, 'sigma') < sigma) k += 1;
+    // Front records are sorted by sigma. Keep the first record at an equal sigma on the right, exactly as the old
+    // strict '< sigma' scan did, including repeated sigma values; only the bracket search changes.
+    let low = f.start + 1;
+    let high = f.end - 1;
+    while (low < high) {
+      const middle = (low + high) >>> 1;
+      if (field(middle, 'sigma') < sigma) low = middle + 1;
+      else high = middle;
+    }
+    const k = low - 1;
     const s0 = field(k, 'sigma');
     const s1 = field(k + 1, 'sigma');
     const t = s1 - s0 > 1e-12 ? (sigma - s0) / (s1 - s0) : 0;
@@ -433,7 +457,7 @@ export class SweptLoft {
     // Runs of live slices: a faded slice is dropped, and the slices either side of it are never joined.
     let runStart = -1;
     const closeRun = () => {
-      if (runStart >= 0) this.finishRun(runStart, r.sliceCount - 1);
+      if (runStart >= 0) this.joinRun(runStart, r.sliceCount - 1);
       runStart = -1;
     };
     let previousTau = 0;
@@ -591,6 +615,14 @@ export class SweptLoft {
       r.sliceOverturned[slice] = overturned;
       r.sliceTipAlong[slice] = lookup.tipAlong;
       r.sliceTipUp[slice] = lookup.tipUp;
+      if (this.contact) {
+        const transport = this.landmarkVelocity(s, tau, lookup.frameSeconds, LANDMARK.lip);
+        r.sliceTipTransportAlong[slice] = transport[0];
+        r.sliceTipTransportUp[slice] = transport[1];
+      } else {
+        r.sliceTipTransportAlong[slice] = 0;
+        r.sliceTipTransportUp[slice] = 0;
+      }
       r.sliceAnchorVX[slice] = anchorVX;
       r.sliceAnchorVZ[slice] = anchorVZ;
       // How far each point stands off the water: from just behind the crest to the toe, eased onto it either side, and
@@ -742,7 +774,59 @@ export class SweptLoft {
       if (!(r.sliceFormed[s] > 0)) open = r.sliceSigma[s];
       if (r.sliceFormed[s] > 0) r.sliceMouth[s] = Math.min(r.sliceMouth[s], open - r.sliceSigma[s]);
     }
-    for (let s = firstSlice; s < lastSlice; s += 1) r.sliceJoined[s] = 1;
+    this.joinRun(firstSlice, lastSlice);
+  }
+
+  /** Join before overlap decisions; normals and mouth are calculated once on the final surviving runs. */
+  private joinRun(firstSlice: number, lastSlice: number): void {
+    for (let s = firstSlice; s < lastSlice; s += 1) this.result.sliceJoined[s] = 1;
+  }
+
+  /**
+   * A cut creates a new end, just as the records' ends do. Overlap removal, a faded gap or the vertex budget can leave
+   * a surviving strip with a fully raised edge; taper that new end onto the water before making its triangles. Retire
+   * the mask inside the surviving mesh's support, so filtering its edge cannot cut water beyond the replacement.
+   * Drawing and contact use these same final runs and weights.
+   */
+  private sealRuns(heightAt: (x: number, z: number) => number): void {
+    const r = this.result;
+    let first = 0;
+    while (first + 1 < r.sliceCount) {
+      if (r.sliceJoined[first] !== 1) {
+        first += 1;
+        continue;
+      }
+      let last = first + 1;
+      while (last + 1 < r.sliceCount && r.sliceJoined[last] === 1) last += 1;
+      const cutFirst = r.sliceWeight[first] > 0;
+      const cutLast = r.sliceWeight[last] > 0;
+      if (cutFirst || cutLast) {
+        for (let s = first; s <= last; s += 1) {
+          const distance = Math.min(
+            cutFirst ? r.sliceSigma[s] - r.sliceSigma[first] : Infinity,
+            cutLast ? r.sliceSigma[last] - r.sliceSigma[s] : Infinity,
+          );
+          const u = Math.min(1, Math.max(0, distance / LOFT.endBlend));
+          const weight = u * u * (3 - 2 * u);
+          const mask = Math.min(1, Math.max(0, distance / LOFT.band));
+          r.sliceWeight[s] *= weight;
+          for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+            const v = s * LOFT_SAMPLES + j;
+            if (weight < 1 && r.lift[v] > 0) {
+              const water = heightAt(r.positions[3 * v], r.positions[3 * v + 2]);
+              r.positions[3 * v + 1] = water + weight * (r.positions[3 * v + 1] - water);
+              r.lift[v] *= weight;
+              r.sheetWeight[v] *= weight;
+              r.throat[4 * v + 3] *= weight;
+            }
+            r.mask[v] *= mask;
+          }
+          r.sliceTipY[s] = r.positions[3 * (s * LOFT_SAMPLES + E + LANDMARK.lip) + 1];
+        }
+      }
+      this.finishRun(first, last);
+      first = last + 1;
+    }
   }
 
   /**
@@ -753,21 +837,30 @@ export class SweptLoft {
    * motion over ±4 frames, as the tip's.
    */
   private crestPointVelocity(s: Sample, tau: number, frameSeconds: number, nx: number, nz: number): Float64Array {
-    const out = this.velocity;
     const pace = s.pace === s.pace ? s.pace : 0;
+    const out = this.landmarkVelocity(s, tau, frameSeconds, LANDMARK.crest);
+    const crestPace = out[0];
+    out[0] = -crestPace * nx;
+    out[1] = pace - crestPace * nz;
+    return out;
+  }
+
+  /** Geometric motion of a held profile landmark, averaged over the same four-frame window as its anchor. */
+  private landmarkVelocity(s: Sample, tau: number, frameSeconds: number, landmark: number): Float64Array {
+    const out = this.velocity;
     const query = this.query;
     query.footHeight = s.footHeight;
     query.footDepth = s.footDepth;
     query.hold = 'contact';
     const window = 4 * frameSeconds;
     query.seconds = tau + window;
-    this.library.pointAt(query, LANDMARK.crest, this.point);
+    this.library.pointAt(query, landmark, this.point);
     const ahead = this.point[0];
+    const above = this.point[1];
     query.seconds = tau - window;
-    this.library.pointAt(query, LANDMARK.crest, this.point);
-    const crestPace = (ahead - this.point[0]) / (2 * window);
-    out[0] = -crestPace * nx;
-    out[1] = pace - crestPace * nz;
+    this.library.pointAt(query, landmark, this.point);
+    out[0] = (ahead - this.point[0]) / (2 * window);
+    out[1] = (above - this.point[1]) / (2 * window);
     return out;
   }
 

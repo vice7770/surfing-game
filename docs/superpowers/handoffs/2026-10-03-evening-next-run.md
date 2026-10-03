@@ -2,6 +2,14 @@
 
 **The next run's goal, in the owner's words:** "make sure all the prs are closed and there are no fails in the build". So every open PR ends merged (or deliberately closed), and the build, the type check and every test suite are green on main.
 
+**Performance continuation, later on 2026-10-03:**
+
+The owner continued on `claude/wave-pool`, then explicitly prioritized FPS before the remaining tube physics. The [implementation and measurements](../../research/performance-simplification.md) cover snapshot/FFT reuse, indexed particle sources, shared foam/air advection, GPU layout/phase reuse, exact contact sampling, one-step worker publishing and ordinary Padang's smaller alongshore/render grids. High retains its particle budget and original pixel-normal shader. Named presets now cap rendering at 60 FPS; Custom limits and supplied simulation overrides remain authoritative.
+
+The final M5 Pro visible 90-second Padang Big/High check averaged **60.0 rendered FPS**, with **57.70 fresh water snapshots/s** and **0.962× real-time sea progress** at the actual 1708 × 926 viewport / 2989 × 1620 drawing buffer. Actual rendered intervals were 16.7 ms median / 25.0 ms p95; late heavy breaking still lowers water throughput, so this is neither a perfectly steady frame-time claim nor a 60 Hz simulation claim. The final cap uses a scheduled clock rather than accumulating callback lateness, and contact buckets build lazily from unchanged captured projections. Build/server type check and focused changed-system tests pass; the whole suite was not run. The inherited swept-loft velocity failure was fixed against its unchanged limit; **nine AttachedRider failures remain**, rather than the ten in the historical merge log below.
+
+The owner's movie and YouTube reference were viewed. Loft cut edges, truncated long-front refinement and the tip transport residual were repaired, but **front-normal instability and self-folding tube geometry remain unresolved**. Do not mark tube physics accepted from the FPS or coarse-grid quality screens. The 2 m alongshore grid was accepted for similar sampled visuals, with measured numerical differences documented in the GPU fidelity report.
+
 **Stopped on 2026-10-03, evening, at the owner's request** (low on tokens). Every running agent was stopped. No work is lost:
 - Every lane's commits are pushed (branches below).
 - The one half-edited file was stashed (see "The Padang look loop").
@@ -349,4 +357,3 @@ The merge commits on that branch hold every conflict resolution the real merges 
 
   Captures are byte-deterministic across runs, so before/after pairs are like for like.
 - **Ports used:** 5173 (the owner's dev server), 5181–5199 (captures), and CDP 9420–9470.
-
