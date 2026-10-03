@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
-  FOAM_BAKE, FOAM_RANGE, SurfaceFlow, bakeFoamCycle, blur, cellDensity, depthField, flowHistory, gaussianRanks, inverseNormal, mulberry32, traceBack,
-  type FoamBake, type FoamBakeParameters,
+  FOAM_BAKE, FOAM_LAYER_RANKS, FOAM_RANGE, FOAM_SPARSE, SurfaceFlow, bakeFoamCycle, blur, cellDensity, depthField, flowHistory, foamLayerTable, gaussianRanks,
+  inverseNormal, mulberry32, traceBack, type FoamBake, type FoamBakeParameters,
 } from './foamBake';
 
 const parameters = (overrides: Partial<FoamBakeParameters> = {}): FoamBakeParameters => ({ ...FOAM_BAKE, ...overrides });
@@ -318,6 +318,36 @@ describe('the baked life cycle', () => {
     let differ = 0;
     for (let k = 0; k < bake.early.length; k += 1) if (Math.abs(bake.early[k] - bake.late[k]) > 20) differ += 1;
     expect(differ / bake.early.length).toBeGreaterThan(0.3);
+  });
+
+  it('gives the foam’s density by rank from floating particles: empty in the holes, a few times the mean along the threads', () => {
+    const table = foamLayerTable(bake, {}, 512);
+    expect(FOAM_LAYER_RANKS.length).toBe(33);
+    expect(FOAM_LAYER_RANKS[0]).toBe(-4);
+    expect(FOAM_LAYER_RANKS[32]).toBe(4);
+    for (const stage of [table.early, table.late]) {
+      expect(stage.length).toBe(FOAM_LAYER_RANKS.length);
+      // Never below the sparse-bubble background, never falling with rank.
+      for (let k = 0; k < stage.length; k += 1) {
+        expect(stage[k]).toBeGreaterThanOrEqual(Math.log2(FOAM_SPARSE) - 1e-9);
+        if (k > 0) expect(stage[k]).toBeGreaterThanOrEqual(stage[k - 1]);
+      }
+      // The holes (below the median) hold almost none of the foam; the threads (a sigma and a half up) several times the mean.
+      expect(stage[FOAM_LAYER_RANKS.indexOf(-1)]).toBeLessThan(-7);
+      expect(stage[FOAM_LAYER_RANKS.indexOf(1.5)]).toBeGreaterThan(1);
+      // The density of the mean rank band near 1 sigma is the mean: a share of texels carries the foam.
+      expect(Math.abs(stage[FOAM_LAYER_RANKS.indexOf(1)])).toBeLessThan(1);
+    }
+    // The particles' mean density over all ranks, weighted by how many texels each holds, is the uniform start's 1.
+    let mass = 0;
+    let weight = 0;
+    for (let k = 0; k < FOAM_LAYER_RANKS.length; k += 1) {
+      const density = Math.exp(-0.5 * FOAM_LAYER_RANKS[k] ** 2);
+      mass += density * Math.max(0, 2 ** table.late[k] - FOAM_SPARSE);
+      weight += density;
+    }
+    expect(mass / weight).toBeGreaterThan(0.6);
+    expect(mass / weight).toBeLessThan(1.6);
   });
 
   it('is the same for the same parameters, and a different foam for another seed (a small bake)', () => {

@@ -1,7 +1,7 @@
 import { DataTexture, LinearFilter, LinearMipmapLinearFilter, RGBAFormat, RepeatWrapping, UnsignedByteType } from 'three';
 import { smoothstep } from '../../wave/Bathymetry';
-import { FOAM_DENSE, pcg2d } from '../foamPattern';
-import { FOAM_BAKE, FOAM_RANGE, bakeFoamCycle } from './foamBake';
+import { FOAM_ALBEDO, FOAM_DENSE, FOAM_LAYER_SCALE, foamLayerReflectance, pcg2d } from '../foamPattern';
+import { FOAM_BAKE, FOAM_LAYER_RANKS, FOAM_RANGE, bakeFoamCycle } from './foamBake';
 
 /** The churn tile's size, m: a few clumps of fresh whitewater across a metre or two each. */
 export const CHURN_TILE = 6;
@@ -90,13 +90,17 @@ export const FOAM_FADE = [0.12, 0.6] as const;
  */
 export const FOAM_EDGE = 0.04;
 /**
- * The width of a foam patch's fringe, m: a single layer of bubbles at its edge (reflectance 0.10, Koepke 1984), the
- * stage's full reflectance inside it. A few bubble diameters: the bubbles of surf foam are a millimetre to a few across
- * (the Hinze scale under breaking waves is near a millimetre, Deane & Stokes 2002). [provisional] The fringe climbs the
- * field at its own gradient there. (At 1.5 sigma of the field, the first ramp, the fringe ran 10-30 cm, wider than the
- * lace's threads, so every thread was drawn as a translucent, milky tube.)
+ * The foam's density by its Gaussian rank in each stage, log2 of a share of the mean, at the ranks `FOAM_LAYER_RANKS`
+ * (-4 to 4 sigma every quarter): `foamLayerTable` of the bake, with floating particles carried by its flow, 2048 a side,
+ * pasted here so the shader can carry them as constants (the test measures them afresh). A patch's edge, where a
+ * component passes its threshold t, is a single layer of bubbles, and N = 2^(T(G) - T(t)) layers lie at G inside it
+ * (foam-lifecycle.md, sections 3.2 and 5): a thread is thin at its edges and thick along its spine, a knot where threads
+ * meet thicker still, and the middle of a hole that dense foam is closing a single layer at its deepest.
  */
-export const FOAM_FRINGE = 0.02;
+export const FOAM_LAYER_LOG2 = {
+  early: [-10, -10, -10, -10, -10, -9.96, -9.53, -9.53, -9.53, -9.53, -9.52, -8.87, -8.22, -7.57, -6.81, -5.91, -4.88, -3.67, -2.39, -1.21, 0.04, 1.12, 1.94, 2.59, 3.09, 3.7, 4.25, 4.93, 5.66, 6.1, 6.74, 7.73, 8.79],
+  late: [-10, -10, -10, -10, -10, -9.95, -9.95, -9.9, -9.87, -9.87, -9.85, -9.85, -9.85, -9.75, -9.75, -9.61, -8.07, -5.37, -2.85, -0.95, 0.19, 1.09, 2.03, 2.8, 3.4, 3.98, 4.43, 5.08, 5.08, 5.08, 5.08, 5.08, 6.13],
+} as const;
 /** Where the second octave's texture is shifted, tile fractions, so it never samples the first's own point. */
 const OCTAVE_SHIFT = [0.371, 0.629] as const;
 /** The seeds of the two octaves' and two phases' hex lattices. */
@@ -369,24 +373,43 @@ const FOAM_MOST = 0.99999;
 /** A component's weight below which it is left out: its threshold would sit past the texture's 4 sigma. */
 const FOAM_LEAST = 1e-4;
 
+/** log2 of the foam's density at Gaussian rank `g` in a stage (`FOAM_LAYER_LOG2`), linear between its quarter-sigma ranks. */
+export function foamLayerLog2(g: number, stage: 'early' | 'late'): number {
+  const table = FOAM_LAYER_LOG2[stage];
+  const s = Math.min(table.length - 1 - 1e-6, Math.max(0, (g - FOAM_LAYER_RANKS[0]) * 4));
+  const k = Math.floor(s);
+  return table[k] + (table[k + 1] - table[k]) * (s - k);
+}
+
 /**
- * The foam field at world (x, z), in sigma: by how much the foam's components pass their own thresholds, at most. Each
- * component, one flow-map phase at one stage, is a unit Gaussian; one that weighs w (the phase's weight times the
- * stage's, 1 − age early and age late) is covered where it passes the value that leaves (1 − F)^w of it below, so the
- * union of all of them covers F of the surface, as they are independent (the stages correlate 0.12). The foam is
- * covered where this is positive. Blended linearly instead, two independent webs of thin lines threshold to beads and
- * blobs half of every flow period; the union keeps each a web of lines, only thinner where it weighs less.
+ * The foam field at world (x, z): by how much the foam's components pass their own thresholds, at most, in sigma
+ * (`value`), and how many bubble layers the thickest of them lays there (`layers`, 1 at its edge). Each component, one
+ * flow-map phase at one stage, is a unit Gaussian; one that weighs w (the phase's weight times the stage's, 1 - age early
+ * and age late) is covered where it passes the value t that leaves (1 - F)^w of it below, so the union of all of them
+ * covers F of the surface, as they are independent (the stages correlate 0.12), and it lays 2^(T(G) - T(t)) layers there
+ * (`FOAM_LAYER_LOG2`). The foam is covered where `value` is positive. Blended linearly instead, two independent webs of
+ * thin lines threshold to beads and blobs half of every flow period; the union keeps each a web of lines, only thinner
+ * where it weighs less.
  */
-export function foamFieldValue(x: number, z: number, flowX: number, flowZ: number, foam: number, age: number, time: number): number {
+export function foamFieldAt(x: number, z: number, flowX: number, flowZ: number, foam: number, age: number, time: number): { value: number; layers: number } {
   const keep = Math.log(1 - Math.min(FOAM_MOST, foam));
-  let best = -8;
+  let value = -8;
+  let layers = 0;
   for (const { weight, early, late } of foamPhaseGauss(x, z, flowX, flowZ, time)) {
-    for (const [g, share] of [[early, 1 - age], [late, age]]) {
+    for (const [g, share, stage] of [[early, 1 - age, 'early'], [late, age, 'late']] as const) {
       const w = weight * share;
-      if (w > FOAM_LEAST) best = Math.max(best, g - foamQuantile(Math.exp(w * keep)));
+      if (!(w > FOAM_LEAST)) continue;
+      const threshold = foamQuantile(Math.exp(w * keep));
+      value = Math.max(value, g - threshold);
+      layers = Math.max(layers, 2 ** (foamLayerLog2(g, stage) - foamLayerLog2(threshold, stage)));
     }
   }
-  return best;
+  return { value, layers };
+}
+
+/** The foam field at world (x, z), in sigma: `foamFieldAt`'s value, positive where the foam covers. */
+export function foamFieldValue(x: number, z: number, flowX: number, flowZ: number, foam: number, age: number, time: number): number {
+  return foamFieldAt(x, z, flowX, flowZ, foam, age, time).value;
 }
 
 /**
@@ -406,25 +429,56 @@ export function foamFieldCover(x: number, z: number, flowX: number, flowZ: numbe
   return cover + (foam - cover) * fade;
 }
 
+/** The foam values at which `FOAM_MEAN_REFLECTANCE` is tabulated: 0 to 1 every sixteenth. */
+const FOAM_MEAN_LEVELS = 16;
+
 /**
- * How thick the foam is at world (x, z), 0 at the edge of a patch (a single layer of bubbles) to 1 once it is
- * `FOAM_FRINGE` inside it (the field's climb at its gradient there, read off central differences); 1 where a pixel spans
- * more than the pattern can show. The foam's reflectance runs from the monolayer's to its stage's by it.
+ * The mean reflectance of the covered foam in each stage at foam values 0, 1/16, ..., 1: R(N) averaged over the part of a
+ * unit Gaussian that passes the threshold for F, with N = 2^(T(G) - T(t)) (one component, the stage's table). What a pixel
+ * that spans more than the pattern can show draws (foam-lifecycle.md section 5: the far field's mean is F times the mean
+ * covered albedo, from the bake).
  */
-export function foamFieldThickness(x: number, z: number, flowX: number, flowZ: number, foam: number, age: number, time: number, footprint = 0): number {
-  const at = (px: number, pz: number) => foamFieldValue(px, pz, flowX, flowZ, foam, age, time);
-  const h = 0.005;
-  const gradient = Math.hypot(at(x + h, z) - at(x - h, z), at(x, z + h) - at(x, z - h)) / (2 * h);
-  const thickness = smoothstep(0, Math.max(FOAM_FRINGE * gradient, 1e-3), at(x, z));
-  const fade = smoothstep(FOAM_FADE[0], FOAM_FADE[1], footprint);
-  return thickness + (1 - thickness) * fade;
+export const FOAM_MEAN_REFLECTANCE = (() => {
+  const table = (stage: 'early' | 'late') => Array.from({ length: FOAM_MEAN_LEVELS + 1 }, (_, k) => {
+    const foam = Math.min(FOAM_MOST, Math.max(1e-3, k / FOAM_MEAN_LEVELS));
+    const threshold = foamQuantile(1 - foam);
+    const base = foamLayerLog2(threshold, stage);
+    let sum = 0;
+    let weight = 0;
+    for (let g = Math.max(threshold, -6); g < 6; g += 0.005) {
+      const density = Math.exp(-0.5 * g * g);
+      sum += density * foamLayerReflectance(Math.max(1, 2 ** (foamLayerLog2(g, stage) - base)));
+      weight += density;
+    }
+    return weight > 0 ? sum / weight : FOAM_ALBEDO.streak;
+  });
+  return { early: table('early'), late: table('late') };
+})();
+
+/** The mean reflectance of covered foam at foam value `foam` and age `age` (`FOAM_MEAN_REFLECTANCE`, the stages mixed by age). */
+export function foamMeanReflectance(foam: number, age: number): number {
+  const s = Math.min(1, Math.max(0, foam)) * FOAM_MEAN_LEVELS;
+  const k = Math.min(FOAM_MEAN_LEVELS - 1, Math.floor(s));
+  const at = (table: readonly number[]) => table[k] + (table[k + 1] - table[k]) * (s - k);
+  return at(FOAM_MEAN_REFLECTANCE.early) * (1 - age) + at(FOAM_MEAN_REFLECTANCE.late) * age;
 }
 
 /**
- * GLSL: the foam's life cycle as a field of coverage (`waterFoamField`), in `waterChurnMap`'s blue and alpha, and the
- * sampler. The field is `foamFieldValue` in GLSL: for each flow-map phase, two octaves sampled hex-tiled and summed, at
- * both stages; the four components, weighed by phase and age, united before any threshold, each thresholded for its
- * weight. Needs `foamPatternPars` and `waterTime` first. Every Rich water program carries it (`richFragmentPars`), the
+ * The reflectance of the foam where it covers at world (x, z): R(N) of the bubble layers the thickest component lays
+ * there (`foamFieldAt`), 0.10 at a patch's edge, rising to 0.55 where it is many layers deep; where a pixel spans more than
+ * the pattern can show, the mean over the covered foam (`foamMeanReflectance`).
+ */
+export function foamFieldReflectance(x: number, z: number, flowX: number, flowZ: number, foam: number, age: number, time: number, footprint = 0): number {
+  const reflectance = foamLayerReflectance(Math.max(1, foamFieldAt(x, z, flowX, flowZ, foam, age, time).layers));
+  const fade = smoothstep(FOAM_FADE[0], FOAM_FADE[1], footprint);
+  return reflectance + (foamMeanReflectance(foam, age) - reflectance) * fade;
+}
+
+/**
+ * GLSL: the foam's life cycle as a field of coverage and reflectance (`waterFoamField`), in `waterChurnMap`'s blue and
+ * alpha, and the sampler. The field is `foamFieldAt` in GLSL: for each flow-map phase, two octaves sampled hex-tiled and
+ * summed, at both stages; the four components, weighed by phase and age, united before any threshold, each thresholded
+ * for its weight, and the bubble layers each lays by the bake's density (`FOAM_LAYER_LOG2`). Needs `foamPatternPars` and `waterTime` first. Every Rich water program carries it (`richFragmentPars`), the
  * tank's, the far ocean's and the curl's, so each draws its foam from it; it defines itself once whatever includes it
  * again (`waterChurnPars` does, for the tank).
  */
@@ -477,17 +531,30 @@ float waterFoamQuantile( float p ) {
   float x = t - ( 2.515517 + 0.802853 * t + 0.010328 * t * t ) / ( 1.0 + 1.432788 * t + 0.189269 * t * t + 0.001308 * t * t * t );
   return p < 0.5 ? -x : x;
 }
+// The foam's density by rank, log2 (FOAM_LAYER_LOG2): early in .x, late in .y, linear between quarter-sigma ranks.
+const float FOAM_LAYER_EARLY[${FOAM_LAYER_RANKS.length}] = float[${FOAM_LAYER_RANKS.length}]( ${FOAM_LAYER_LOG2.early.map((v) => v.toFixed(2)).join(', ')} );
+const float FOAM_LAYER_LATE[${FOAM_LAYER_RANKS.length}] = float[${FOAM_LAYER_RANKS.length}]( ${FOAM_LAYER_LOG2.late.map((v) => v.toFixed(2)).join(', ')} );
+vec2 waterFoamLog2( vec2 g ) {
+  vec2 s = clamp( ( g - ${FOAM_LAYER_RANKS[0].toFixed(1)} ) * 4.0, 0.0, ${(FOAM_LAYER_RANKS.length - 1 - 1e-3).toFixed(3)} );
+  ivec2 k = ivec2( s );
+  vec2 f = s - vec2( k );
+  return vec2( mix( FOAM_LAYER_EARLY[ k.x ], FOAM_LAYER_EARLY[ k.x + 1 ], f.x ), mix( FOAM_LAYER_LATE[ k.y ], FOAM_LAYER_LATE[ k.y + 1 ], f.y ) );
+}
 // One flow-map phase's stages g (early, late), weighing w, against their own thresholds: by how much the one that passes
-// its own most does. keep is the log of the share of the surface the foam leaves open.
-float waterFoamPass( vec2 g, vec2 w, float keep ) {
-  float best = -8.0;
-  if ( w.x > ${FOAM_LEAST.toExponential(0)} ) best = g.x - waterFoamQuantile( exp( w.x * keep ) );
-  if ( w.y > ${FOAM_LEAST.toExponential(0)} ) best = max( best, g.y - waterFoamQuantile( exp( w.y * keep ) ) );
+// its own most does, and the most bubble layers any of them lays there (1 at its edge). keep is the log of the share of the
+// surface the foam leaves open.
+vec2 waterFoamPass( vec2 g, vec2 w, float keep ) {
+  vec2 t = vec2( waterFoamQuantile( exp( w.x * keep ) ), waterFoamQuantile( exp( w.y * keep ) ) );
+  vec2 layers = exp2( waterFoamLog2( g ) - waterFoamLog2( t ) );
+  vec2 best = vec2( -8.0, 0.0 );
+  if ( w.x > ${FOAM_LEAST.toExponential(0)} ) best = vec2( g.x - t.x, layers.x );
+  if ( w.y > ${FOAM_LEAST.toExponential(0)} ) best = max( best, vec2( g.y - t.y, layers.y ) );
   return best;
 }
-// The foam field at p, in sigma (foamFieldValue): each flow-map phase at each stage a unit Gaussian, weighed by the phase
-// and the age, covered where it leaves (1 - foam)^weight of itself below; their union covers foam of the surface.
-float waterFoamUnion( vec2 p, vec2 dpdx, vec2 dpdy, vec2 flow, float foam, float age ) {
+// The foam field at p (foamFieldAt): in x, by how much the components pass their thresholds, in sigma, each flow-map phase
+// at each stage a unit Gaussian, weighed by the phase and the age, covered where it leaves (1 - foam)^weight of itself
+// below, so their union covers foam of the surface; in y, the bubble layers the thickest of them lays there.
+vec2 waterFoamUnion( vec2 p, vec2 dpdx, vec2 dpdy, vec2 flow, float foam, float age ) {
   float a = fract( waterTime / FOAM_FLOW_PERIOD );
   float b = fract( a + 0.5 );
   // Each phase weighs nothing as it wraps, at every current (foamPhases).
@@ -495,30 +562,37 @@ float waterFoamUnion( vec2 p, vec2 dpdx, vec2 dpdy, vec2 flow, float foam, float
   float wb = 1.0 - wa;
   float keep = log( 1.0 - min( foam, ${FOAM_MOST} ) );
   vec2 stages = vec2( 1.0 - age, age );
-  float best = waterFoamPass( waterFoamPhase( p - flow * a * FOAM_FLOW_PERIOD, dpdx, dpdy, ${SALTS.large[0]}u, ${SALTS.small[0]}u ), wa * stages, keep );
+  vec2 best = waterFoamPass( waterFoamPhase( p - flow * a * FOAM_FLOW_PERIOD, dpdx, dpdy, ${SALTS.large[0]}u, ${SALTS.small[0]}u ), wa * stages, keep );
   if ( wb > 0.0 ) best = max( best, waterFoamPass( waterFoamPhase( p - flow * b * FOAM_FLOW_PERIOD, dpdx, dpdy, ${SALTS.large[1]}u, ${SALTS.small[1]}u ), wb * stages, keep ) );
   return best;
 }
-// The foam at p as (share of the surface covered, thickness): covered where the field passes 0, the edge as soft as the
-// field changes across the pixel (half its fwidth); thin (a single layer of bubbles) at the edge, full FOAM_FRINGE metres
-// inside it. Both give way to the foam's mean and full thickness where a pixel (footprint, m) spans more
-// than they can show. The branches are taken by a whole 2 x 2 quad together, so that fwidth reads real neighbours: a
-// pixel with no foam may only return early when the foam at its neighbours, which its derivatives bound, is gone as
-// well, and a pixel may return the mean at once only when the smallest footprint in its quad is past the fade.
+// The mean reflectance of covered foam by foam value (FOAM_MEAN_REFLECTANCE), the stages mixed by age.
+const float FOAM_MEAN_EARLY[${FOAM_MEAN_LEVELS + 1}] = float[${FOAM_MEAN_LEVELS + 1}]( ${FOAM_MEAN_REFLECTANCE.early.map((v) => v.toFixed(4)).join(', ')} );
+const float FOAM_MEAN_LATE[${FOAM_MEAN_LEVELS + 1}] = float[${FOAM_MEAN_LEVELS + 1}]( ${FOAM_MEAN_REFLECTANCE.late.map((v) => v.toFixed(4)).join(', ')} );
+float waterFoamMean( float foam, float age ) {
+  float s = clamp( foam, 0.0, 1.0 ) * ${FOAM_MEAN_LEVELS.toFixed(1)};
+  int k = min( ${FOAM_MEAN_LEVELS - 1}, int( s ) );
+  float f = s - float( k );
+  return mix( mix( FOAM_MEAN_EARLY[ k ], FOAM_MEAN_EARLY[ k + 1 ], f ), mix( FOAM_MEAN_LATE[ k ], FOAM_MEAN_LATE[ k + 1 ], f ), age );
+}
+// The foam at p as (share of the surface covered, reflectance where it covers): covered where the field passes 0, the edge
+// as soft as the field changes across the pixel (half its fwidth); R(N) of the layers there, a single layer's 0.10 at the
+// edge (foamFieldReflectance). Both give way to the foam's mean where a pixel (footprint, m) spans more than they can show.
+// The branches are taken by a whole 2 x 2 quad together, so that fwidth reads real neighbours: a pixel with no foam may
+// only return early when the foam at its neighbours, which its derivatives bound, is gone as well, and a pixel may return
+// the mean at once only when the smallest footprint in its quad is past the fade.
 vec2 waterFoamField( vec2 p, vec2 flow, float foam, float age, float footprint ) {
   vec2 dpdx = dFdx( p );
   vec2 dpdy = dFdy( p );
   float reach = foam + abs( dFdx( foam ) ) + abs( dFdy( foam ) );
   float least = footprint - abs( dFdx( footprint ) ) - abs( dFdy( footprint ) );
-  if ( reach <= 0.001 ) return vec2( 0.0, 1.0 );
-  if ( least >= ${FOAM_FADE[1].toFixed(3)} ) return vec2( foam, 1.0 );
-  float field = waterFoamUnion( p, dpdx, dpdy, flow, foam, age );
-  float change = fwidth( field );
-  float width = clamp( 0.5 * change, ${FOAM_EDGE.toFixed(3)}, 1.0 );
-  // The fringe: FOAM_FRINGE metres of the field's climb at its gradient here, its change across the pixel over the pixel's size.
-  float fringe = max( ${FOAM_FRINGE.toFixed(3)} * change / max( footprint, 1e-4 ), 1e-3 );
+  if ( reach <= 0.001 ) return vec2( 0.0, ${FOAM_ALBEDO.streak.toFixed(3)} );
+  if ( least >= ${FOAM_FADE[1].toFixed(3)} ) return vec2( foam, waterFoamMean( foam, age ) );
+  vec2 field = waterFoamUnion( p, dpdx, dpdy, flow, foam, age );
+  float width = clamp( 0.5 * fwidth( field.x ), ${FOAM_EDGE.toFixed(3)}, 1.0 );
+  float reflectance = ${FOAM_ALBEDO.fresh.toFixed(3)} * ( 1.0 - exp( -max( field.y, 1.0 ) / ${FOAM_LAYER_SCALE.toFixed(1)} ) );
   float fade = smoothstep( ${FOAM_FADE[0].toFixed(3)}, ${FOAM_FADE[1].toFixed(3)}, footprint );
-  return mix( vec2( smoothstep( -width, width, field ), smoothstep( 0.0, fringe, field ) ), vec2( foam, 1.0 ), fade );
+  return mix( vec2( smoothstep( -width, width, field.x ), reflectance ), vec2( foam, waterFoamMean( foam, age ) ), fade );
 }
 #endif
 `;

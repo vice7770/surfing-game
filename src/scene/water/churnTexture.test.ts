@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { RGBAFormat } from 'three';
-import { foamCover } from '../foamPattern';
-import { FOAM_BAKE, FOAM_RANGE, inverseNormal, mulberry32 } from './foamBake';
+import { FOAM_ALBEDO, foamCover, foamLayerReflectance } from '../foamPattern';
+import { FOAM_BAKE, FOAM_LAYER_RANKS, FOAM_RANGE, foamLayerTable, inverseNormal, mulberry32 } from './foamBake';
 import {
   CHURN_TEXTURE_SIZE, CHURN_TILE, churnShare, FOAM_EDGE, FOAM_FADE, FOAM_OCTAVES, FOAM_STAGE_CORRELATION, FOAM_WEIGHTS, churnSample, churnTexture, churnTextureData,
-  FOAM_FRINGE, foamFieldCover, foamFieldThickness, foamFieldValue, foamHexGauss, foamPhaseGauss, foamPhases, foamQuantile, freshness, sampleFoamField, waterChurnPars,
+  FOAM_LAYER_LOG2, FOAM_MEAN_REFLECTANCE, foamFieldCover, foamFieldReflectance, foamFieldValue, foamHexGauss, foamLayerLog2, foamMeanReflectance, foamPhaseGauss,
+  foamPhases, foamQuantile, freshness, sampleFoamField, waterChurnPars,
 } from './churnTexture';
 
 describe('churn whitewater', () => {
@@ -370,18 +371,18 @@ describe('the foam field', () => {
     expect(FOAM_EDGE).toBeLessThan(0.1);
   });
 
-  it('is a single layer of bubbles at a patch’s edge and full foam a fringe of 2 cm inside it, not a milky tube', () => {
+  it('lays a single layer of bubbles at a patch’s edge and more along its spine, by the bake’s density: a thread dims to its edges', () => {
     // Lace at 15 % cover, sampled every centimetre across a few metres: where the foam is, how far in from its edge each
-    // pixel lies, and how thick it is there.
+    // pixel lies, and how bright the foam is there.
     const size = 300;
     const step = 0.01;
     const covered = new Uint8Array(size * size);
-    const thick = new Float32Array(size * size);
+    const bright = new Float32Array(size * size);
     for (let j = 0; j < size; j += 1) {
       for (let i = 0; i < size; i += 1) {
         const [x, z] = [6 + i * step, 9 + j * step];
         covered[j * size + i] = foamFieldCover(x, z, 0, 0, 0.15, 1, 1) >= 0.5 ? 1 : 0;
-        thick[j * size + i] = foamFieldThickness(x, z, 0, 0, 0.15, 1, 1);
+        bright[j * size + i] = foamFieldReflectance(x, z, 0, 0, 0.15, 1, 1);
       }
     }
     let rim = 0;
@@ -397,19 +398,71 @@ describe('the foam field', () => {
         for (let d = 1; d <= 5; d += 1) {
           if (!covered[k - d] || !covered[k + d] || !covered[k - d * size] || !covered[k + d * size]) { depth = d; break; }
         }
-        expect(thick[k]).toBeGreaterThanOrEqual(0);
-        expect(thick[k]).toBeLessThanOrEqual(1);
-        if (depth === 1) { rim += thick[k]; rimCount += 1; }
-        if (depth >= 4) { inner += thick[k]; innerCount += 1; }
+        // Between a single layer (Koepke 1984's 0.10) and dense foam's 0.55.
+        expect(bright[k]).toBeGreaterThanOrEqual(foamLayerReflectance(1) - 1e-9);
+        expect(bright[k]).toBeLessThan(FOAM_ALBEDO.fresh);
+        if (depth === 1) { rim += bright[k]; rimCount += 1; }
+        if (depth >= 4) { inner += bright[k]; innerCount += 1; }
       }
     }
-    // The rim is thin, and 4 cm in the foam is at its full thickness: a thread is white to its edge's fringe.
-    expect(rim / rimCount).toBeLessThan(0.6);
-    expect(inner / innerCount).toBeGreaterThan(0.9);
-    expect(FOAM_FRINGE).toBeGreaterThan(0.005);
-    expect(FOAM_FRINGE).toBeLessThan(0.05);
-    // A pixel that spans more than the pattern shows is full foam.
-    expect(foamFieldThickness(5, 5, 0, 0, 0.5, 0, 1, FOAM_FADE[1])).toBe(1);
+    // The rim is a layer or two, the spine several: a thread is see-through at its edges and white along its middle.
+    expect(rim / rimCount).toBeLessThan(0.22);
+    expect(inner / innerCount).toBeGreaterThan(rim / rimCount + 0.12);
+    // A pixel that spans more than the pattern shows draws the covered foam's mean.
+    expect(foamFieldReflectance(5, 5, 0, 0, 0.5, 0, 1, FOAM_FADE[1])).toBeCloseTo(foamMeanReflectance(0.5, 0), 12);
+  });
+
+  it('carries the bake’s own density by rank, measured afresh with floating particles', () => {
+    // The texture's two stages as the bake made them, and the particles' density over their ranks.
+    const data = churnTextureData();
+    const count = CHURN_TEXTURE_SIZE * CHURN_TEXTURE_SIZE;
+    const early = new Uint8Array(count);
+    const late = new Uint8Array(count);
+    for (let k = 0; k < count; k += 1) {
+      early[k] = data[k * 4 + 2];
+      late[k] = data[k * 4 + 3];
+    }
+    const fresh = foamLayerTable({ size: CHURN_TEXTURE_SIZE, early, late, compressibility: 0, correlation: 0 }, {}, 512);
+    for (const stage of ['early', 'late'] as const) {
+      FOAM_LAYER_RANKS.forEach((rank, k) => expect(Math.abs(fresh[stage][k] - FOAM_LAYER_LOG2[stage][k])).toBeLessThan(rank >= -1 ? 0.35 : 1.5));
+    }
+    // Between ranks it is linear, and it holds its ends beyond them.
+    expect(foamLayerLog2(1.125, 'late')).toBeCloseTo((FOAM_LAYER_LOG2.late[20] + FOAM_LAYER_LOG2.late[21]) / 2, 9);
+    expect(foamLayerLog2(9, 'early')).toBeCloseTo(FOAM_LAYER_LOG2.early[32], 4);
+    expect(foamLayerLog2(-9, 'early')).toBe(FOAM_LAYER_LOG2.early[0]);
+  });
+
+  it('draws the covered foam’s mean reflectance where the pattern gives way: dense foam near 0.55, thin lace a few layers', () => {
+    for (const stage of ['early', 'late'] as const) {
+      const table = FOAM_MEAN_REFLECTANCE[stage];
+      expect(table.length).toBe(17);
+      for (const value of table) {
+        expect(value).toBeGreaterThanOrEqual(foamLayerReflectance(1) - 1e-9);
+        expect(value).toBeLessThan(FOAM_ALBEDO.fresh);
+      }
+      // A little foam is its densest threads, a few layers; half the surface covered is mostly thick.
+      expect(table[1]).toBeLessThan(0.25);
+      expect(table[8]).toBeGreaterThan(0.35);
+    }
+    // Fully covered early foam is many layers deep but for the deepest of its holes, which a single layer closes: dense foam
+    // is mottled where clear water lies under it. (The late stage draws only foam below the dense share, FOAM_DENSE.)
+    expect(FOAM_MEAN_REFLECTANCE.early[16]).toBeGreaterThan(0.42);
+    expect(foamMeanReflectance(0.5, 0)).toBeCloseTo(FOAM_MEAN_REFLECTANCE.early[8], 12);
+    expect(foamMeanReflectance(0.25, 1)).toBeCloseTo(FOAM_MEAN_REFLECTANCE.late[4], 12);
+    expect(foamMeanReflectance(0.5, 0.5)).toBeCloseTo((FOAM_MEAN_REFLECTANCE.early[8] + FOAM_MEAN_REFLECTANCE.late[8]) / 2, 12);
+    // The pattern's own mean over a few metres agrees with the table it gives way to, within a tenth.
+    for (const [foam, age] of [[0.15, 1], [0.4, 1], [0.7, 0]] as const) {
+      let reflected = 0;
+      let covered = 0;
+      for (let z = 4; z < 16; z += 0.04) {
+        for (let x = 4; x < 16; x += 0.04) {
+          const cover = foamFieldCover(x, z, 0, 0, foam, age, 1);
+          reflected += cover * foamFieldReflectance(x, z, 0, 0, foam, age, 1);
+          covered += cover;
+        }
+      }
+      expect(Math.abs(reflected / covered / foamMeanReflectance(foam, age) - 1)).toBeLessThan(0.15);
+    }
   });
 
   it('weighs each flow-map phase on a triangle at every current, so a phase weighs nothing when it wraps', () => {
@@ -485,15 +538,18 @@ describe('the foam field', () => {
 
   it('has a GLSL twin: the same hash, the hex corners, the blends and the threshold', () => {
     expect(waterChurnPars).toContain('vec2 waterFoamField( vec2 p, vec2 flow, float foam, float age, float footprint )');
-    expect(waterChurnPars).toContain(`float fringe = max( ${FOAM_FRINGE.toFixed(3)} * change / max( footprint, 1e-4 ), 1e-3 );`);
-    expect(waterChurnPars).toContain('smoothstep( 0.0, fringe, field )');
+    // The layers by the bake's density, and R(N) of them.
+    expect(waterChurnPars).toContain(`const float FOAM_LAYER_LATE[33] = float[33]( ${FOAM_LAYER_LOG2.late.map((v) => v.toFixed(2)).join(', ')} );`);
+    expect(waterChurnPars).toContain('vec2 layers = exp2( waterFoamLog2( g ) - waterFoamLog2( t ) );');
+    expect(waterChurnPars).toContain(`float reflectance = ${FOAM_ALBEDO.fresh.toFixed(3)} * ( 1.0 - exp( -max( field.y, 1.0 ) / 5.0 ) );`);
+    expect(waterChurnPars).toContain(`const float FOAM_MEAN_EARLY[17] = float[17]( ${FOAM_MEAN_REFLECTANCE.early.map((v) => v.toFixed(4)).join(', ')} );`);
     expect(waterChurnPars).toContain('v = v * 1664525u + 1013904223u;');
     expect(waterChurnPars).toContain('uvec2( ivec2( corner ) + 1024 ) + salt');
     expect(waterChurnPars).toContain('textureGrad( waterChurnMap');
     expect(waterChurnPars).toContain(`const float FOAM_TILE_LARGE = ${FOAM_OCTAVES.large.toFixed(3)};`);
     expect(waterChurnPars).toContain(`const float FOAM_TILE_SMALL = ${FOAM_OCTAVES.small.toFixed(3)};`);
-    expect(waterChurnPars).toContain('float field = waterFoamUnion( p, dpdx, dpdy, flow, foam, age );');
-    expect(waterChurnPars).toContain('best = g.x - waterFoamQuantile( exp( w.x * keep ) );');
+    expect(waterChurnPars).toContain('vec2 field = waterFoamUnion( p, dpdx, dpdy, flow, foam, age );');
+    expect(waterChurnPars).toContain('vec2 t = vec2( waterFoamQuantile( exp( w.x * keep ) ), waterFoamQuantile( exp( w.y * keep ) ) );');
     expect(waterChurnPars).not.toContain('waterFoamGauss');
     // The branch is the whole quad's, so its derivatives are real; the streaks' sample is defined here, after the churn map.
     expect(waterChurnPars).toContain('float reach = foam + abs( dFdx( foam ) ) + abs( dFdy( foam ) );');
@@ -501,7 +557,7 @@ describe('the foam field', () => {
     // give at fade 1), and every derivative is taken before the first return.
     const field = waterChurnPars.slice(waterChurnPars.indexOf('vec2 waterFoamField('), waterChurnPars.indexOf('float waterStreakField('));
     expect(field).toContain('float least = footprint - abs( dFdx( footprint ) ) - abs( dFdy( footprint ) );');
-    expect(field).toContain(`if ( least >= ${FOAM_FADE[1].toFixed(3)} ) return vec2( foam, 1.0 );`);
+    expect(field).toContain(`if ( least >= ${FOAM_FADE[1].toFixed(3)} ) return vec2( foam, waterFoamMean( foam, age ) );`);
     expect(field.indexOf('float least')).toBeLessThan(field.indexOf('return'));
     expect(waterChurnPars).toContain('float waterStreakField( vec2 frame, vec2 dx, vec2 dy, uvec2 h ) {');
     // Plain ASCII: some drivers refuse anything else in a shader.

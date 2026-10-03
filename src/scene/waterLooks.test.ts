@@ -202,8 +202,10 @@ describe('Classic water parity', () => {
     expect(fragment).toContain('float waterAge = 1.0 - max( waterFresh, smoothstep( 0.45, 0.90, vWaterFoam ) );');
     expect(fragment).toContain('vec2 waterField = waterFoamField( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterAge, max( waterFootprint.x, waterFootprint.y ) );');
     expect(fragment).toContain('float waterLace = mix( vWaterFoam, waterField.x, waterFoamPattern );');
-    // A patch's edge is a single layer of bubbles, its core the stage's reflectance.
-    expect(fragment).toContain(`mix( ${FOAM_ALBEDO.streak.toFixed(3)}, mix( ${FOAM_ALBEDO.fresh.toFixed(3)}, ${FOAM_ALBEDO.lace.toFixed(3)}, waterAge ), waterThick )`);
+    // The lace is as bright as the field says it is thick there (R(N) of its layers, a single layer at a patch's edge); fresh
+    // churn is dense foam, the stage's own reflectance.
+    expect(fragment).toContain(`float waterLaceR = mix( mix( ${FOAM_ALBEDO.fresh.toFixed(3)}, ${FOAM_ALBEDO.lace.toFixed(3)}, waterAge ), waterField.y, waterFoamPattern );`);
+    expect(fragment).toContain(`waterCover * waterCrease * mix( waterLaceR, mix( ${FOAM_ALBEDO.fresh.toFixed(3)}, ${FOAM_ALBEDO.lace.toFixed(3)}, waterAge ), waterChurnShare )`);
     expect(fragment).not.toContain('waterFoamCover( vWaterWorld.xz');
     // GLSL wants a name declared before it is used: the sampler before the field that reads it, the streaks' sample declared
     // where the streaks come first and defined after the churn map.

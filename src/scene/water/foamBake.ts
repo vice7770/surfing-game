@@ -537,6 +537,106 @@ export function gaussianRanks(key: Float32Array): Uint8Array {
   return out;
 }
 
+/**
+ * The foam's sparse-bubble background, a share of its mean density: the least foam the layer table counts, so the middle
+ * of a hole has a few bubbles rather than none, and a hole that the foam's share closes is a single layer at its deepest
+ * (foam-lifecycle.md §3.2's ε). [provisional]
+ */
+export const FOAM_SPARSE = 2 ** -10;
+
+/** The Gaussian ranks at which `foamLayerTable` gives the foam's density: −4σ to 4σ every quarter σ. */
+export const FOAM_LAYER_RANKS = Array.from({ length: 33 }, (_, k) => -4 + k / 4);
+
+/**
+ * The foam's density by its rank in a stage, log₂ of a share of the mean (foam-lifecycle.md §3.2's inverse table, G →
+ * log₂ c): a shader that covers where a stage passes its threshold t lays N = 2^(T(G) − T(t)) bubble layers at G, one at
+ * the patch's edge (§5). The ranks are the bake's own; the density is not its traced one, whose folds count the foam on a
+ * ridge several times over (`cellDensity`), but that of floating particles carried by the same flow, one start per
+ * `particles`² of the tile, counted on the texture's grid and smoothed as the bake smooths its trace. Each value is the
+ * mean density of the texels a quarter σ wide round its rank, floored at `FOAM_SPARSE`, and never lower than the one
+ * below it.
+ */
+export function foamLayerTable(bake: FoamBake, overrides: Partial<FoamBakeParameters> = {}, particles = 2048): { early: number[]; late: number[] } {
+  const parameters: FoamBakeParameters = { ...FOAM_BAKE, ...overrides };
+  const flow = new SurfaceFlow(parameters, 1 / parameters.stepsPerTurnover);
+  const earlySteps = Math.round(parameters.early * parameters.stepsPerTurnover);
+  const lateSteps = Math.round(parameters.late * parameters.stepsPerTurnover);
+  const history = flowHistory(flow, lateSteps);
+  const g = parameters.grid;
+  const stride = g + 1;
+  const { size } = bake;
+  const count = particles * particles;
+  const px = new Float64Array(count);
+  const py = new Float64Array(count);
+  const random = mulberry32(parameters.seed ^ 0x9e3779b9);
+  for (let j = 0; j < particles; j += 1) {
+    for (let i = 0; i < particles; i += 1) {
+      px[j * particles + i] = (i + random()) / particles;
+      py[j * particles + i] = (j + random()) / particles;
+    }
+  }
+  let vx = 0;
+  let vy = 0;
+  const look = (ux: Float32Array, uy: Float32Array, x: number, y: number) => {
+    const fx = (x - Math.floor(x)) * g;
+    const fy = (y - Math.floor(y)) * g;
+    const i = fx | 0;
+    const j = fy | 0;
+    const tx = fx - i;
+    const ty = fy - j;
+    const m = j * stride + i;
+    vx = (1 - tx) * (1 - ty) * ux[m] + tx * (1 - ty) * ux[m + 1] + (1 - tx) * ty * ux[m + stride] + tx * ty * ux[m + stride + 1];
+    vy = (1 - tx) * (1 - ty) * uy[m] + tx * (1 - ty) * uy[m + 1] + (1 - tx) * ty * uy[m + stride] + tx * ty * uy[m + stride + 1];
+  };
+  const table = (ranks: Uint8Array): number[] => {
+    // The particles' density on the texture's grid, mean 1, smoothed as the bake smooths its trace (on its own grid).
+    const density = new Float32Array(size * size);
+    const share = (size * size) / count;
+    for (let k = 0; k < count; k += 1) {
+      const x = px[k] - Math.floor(px[k]);
+      const y = py[k] - Math.floor(py[k]);
+      density[Math.min(size - 1, Math.floor(y * size)) * size + Math.min(size - 1, Math.floor(x * size))] += share;
+    }
+    if (parameters.smooth > 0) blur(density, size, (parameters.smooth * size) / parameters.trace);
+    const sums = new Float64Array(256);
+    const counts = new Float64Array(256);
+    for (let k = 0; k < density.length; k += 1) {
+      sums[ranks[k]] += density[k];
+      counts[ranks[k]] += 1;
+    }
+    let floor = -Infinity;
+    return FOAM_LAYER_RANKS.map((rank) => {
+      let sum = 0;
+      let n = 0;
+      for (let b = 0; b < 256; b += 1) {
+        if (Math.abs((b / 127.5 - 1) * FOAM_RANGE - rank) > 0.125 + 1e-9) continue;
+        sum += sums[b];
+        n += counts[b];
+      }
+      floor = Math.max(floor, Math.log2((n > 0 ? sum / n : 0) + FOAM_SPARSE));
+      return floor;
+    });
+  };
+  let step = 0;
+  const advance = (until: number) => {
+    for (; step < until; step += 1) {
+      const ux = history.ux[step];
+      const uy = history.uy[step];
+      for (let k = 0; k < count; k += 1) {
+        look(ux, uy, px[k], py[k]);
+        look(ux, uy, px[k] + (0.5 * vx) / g, py[k] + (0.5 * vy) / g);
+        px[k] += vx / g;
+        py[k] += vy / g;
+      }
+    }
+  };
+  advance(earlySteps);
+  const early = table(bake.early);
+  advance(lateSteps);
+  const late = table(bake.late);
+  return { early, late };
+}
+
 /** Bakes the two stages of the foam life cycle (see the file's note). */
 export function bakeFoamCycle(overrides: Partial<FoamBakeParameters> = {}): FoamBake {
   const parameters: FoamBakeParameters = { ...FOAM_BAKE, ...overrides };

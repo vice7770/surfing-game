@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  FOAM_ALBEDO, FOAM_CELL, FOAM_FLOW_PERIOD, FOAM_TILE, FOAM_TILE_TEXELS, foamAge, foamCover, foamCoverage, foamDistance, foamOverWater,
-  foamPatternPars, foamReflectance, foamTileData, foamTileTexture, sampleFoamTile, unfocusedWater,
+  FOAM_ALBEDO, FOAM_CELL, FOAM_FLOW_PERIOD, FOAM_LAYER_SCALE, FOAM_TILE, FOAM_TILE_TEXELS, foamAge, foamCover, foamCoverage, foamDistance,
+  foamLayerReflectance, foamOverWater, foamPatternPars, foamReflectance, foamTileData, foamTileTexture, sampleFoamTile, unfocusedWater,
 } from './foamPattern';
 import { SPOT_OPTICS, shallowReflectance } from './waterOptics';
 
@@ -156,6 +156,21 @@ describe('Rich foam as a layer that adds light', () => {
     expect(fit(1)).toBeCloseTo(FOAM_ALBEDO.streak, 1);
     expect(fit(3)).toBeCloseTo(FOAM_ALBEDO.lace, 1);
     expect(fit(25)).toBeCloseTo(FOAM_ALBEDO.fresh, 1);
+  });
+
+  it('is as bright as it is thick: R(N) = 0.55 (1 - e^(-N/5)), a single layer 0.10, two 0.18, three 0.25, 25 or more 0.55', () => {
+    expect(FOAM_LAYER_SCALE).toBe(5);
+    expect(foamLayerReflectance(1)).toBeCloseTo(0.0997, 4);
+    // Dierssen 2019's thin foam, about two layers.
+    expect(foamLayerReflectance(2)).toBeCloseTo(0.18, 2);
+    expect(foamLayerReflectance(3)).toBeCloseTo(FOAM_ALBEDO.lace, 2);
+    expect(foamLayerReflectance(25)).toBeCloseTo(FOAM_ALBEDO.fresh, 2);
+    let previous = 0;
+    for (const layers of [0.5, 1, 1.5, 2, 4, 8, 16, 64]) {
+      expect(foamLayerReflectance(layers)).toBeGreaterThan(previous);
+      expect(foamLayerReflectance(layers)).toBeLessThan(FOAM_ALBEDO.fresh);
+      previous = foamLayerReflectance(layers);
+    }
   });
 
   it('is fresh while air is in the water or the foam is dense, and lace once both are gone', () => {

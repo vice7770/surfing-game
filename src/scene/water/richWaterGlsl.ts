@@ -108,10 +108,10 @@ const foamDense = (foam: string) => `smoothstep( ${FOAM_DENSE[0].toFixed(2)}, ${
  * behind it.
  * Under it all, the bubble plume (G9) whitens the body as far down as the air
  * went: from above seen through the water over its middle, from below plainly.
- * The foam is a layer that adds light to that water (`foamLayer`): bright
- * white where it is fresh (0.55), dimmer as lace (0.25), a veil as streaks (0.10),
- * and a single layer of bubbles (also 0.10) at the edge of a patch, thickening to
- * its stage's reflectance within `FOAM_FRINGE` (2 cm) of the edge. The light it lets
+ * The foam is a layer that adds light to that water (`foamLayer`), as bright as it
+ * is thick: R(N) of the bubble layers the baked field lays there (`waterFoamField`),
+ * a single layer's 0.10 at the edge of a patch, near 0.55 where it is many layers
+ * deep; fresh churn is dense (0.55), and streaks a veil (0.10). The light it lets
  * through is diffuse, so under it the caustics lose their focus.
  */
 export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );
@@ -122,7 +122,7 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
   vec2 waterChurn = waterChurnAt( vWaterWorld.xz, vWaterFlow );
   float waterChurnShare = waterFresh * ${foamDense('vWaterFoam')};
   float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterChurnShare );
-  float waterThick = mix( 1.0, mix( waterField.y, 1.0, waterChurnShare ), waterFoamPattern );
+  float waterLaceR = mix( ${foamAlbedoAt('waterAge')}, waterField.y, waterFoamPattern );
   float waterStreakCover = waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam );
   float waterCrease = mix( 1.0, 0.88 + 0.12 * waterChurn.y, waterChurnShare );
   float waterPlume = 1.0 - exp( -PLUME_DENSITY * vWaterAir * min( vWaterPlumeDepth, vWaterDepth ) );
@@ -130,7 +130,7 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
   vec3 waterPlumeColor = waterFoamColor * exp( -waterAttenuation * waterPlumePath ) / waterBodyGain;
   vec3 waterUnder = mix( waterBody, waterPlumeColor, waterPlume );
   vec3 waterUnfocused = mix( ${unfocusedBody('waterBody')}, waterPlumeColor, waterPlume );
-  float waterFoamR = max( waterCover * waterCrease * mix( ${FOAM_ALBEDO.streak.toFixed(3)}, ${foamAlbedoAt('waterAge')}, waterThick ), waterStreakCover * ${FOAM_ALBEDO.streak.toFixed(3)} );
+  float waterFoamR = max( waterCover * waterCrease * mix( waterLaceR, ${foamAlbedoAt('waterAge')}, waterChurnShare ), waterStreakCover * ${FOAM_ALBEDO.streak.toFixed(3)} );
   waterCover = max( waterCover, waterStreakCover );
   ${foamLayer('waterUnder', 'waterUnfocused', 'waterCover', 'waterFoamR')}
   ${RICH_SPECULAR}
@@ -160,15 +160,15 @@ export const RICH_REFLECTION = `#include <lights_fragment_maps>
 
 /**
  * The far ocean's Rich foam (and the swept barrel's): the water's foam field (`waterFoamField`, the baked life cycle by
- * the same age proxy, from the foam value alone: it has no aeration), composed as the water's foam is, a layer that adds
- * light (`foamLayer`), with the Rich gloss. It has no churn or streaks. Classic keeps its lace network.
+ * the same age proxy, from the foam value alone: it has no aeration, and as bright as the layers it lays), composed as
+ * the water's foam is, a layer that adds light (`foamLayer`), with the Rich gloss. It has no churn or streaks. Classic
+ * keeps its lace network.
  */
 export const RICH_FAR_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );
   float waterAge = 1.0 - ${foamDense('vWaterFoam')};
   vec2 waterField = waterFoamField( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterAge, max( waterFootprint.x, waterFootprint.y ) );
   float waterCover = mix( vWaterFoam, waterField.x, waterFoamPattern );
-  float waterThick = mix( 1.0, waterField.y, waterFoamPattern );
-  float waterFoamR = waterCover * mix( ${FOAM_ALBEDO.streak.toFixed(3)}, ${foamAlbedoAt('waterAge')}, waterThick );
+  float waterFoamR = waterCover * mix( ${foamAlbedoAt('waterAge')}, waterField.y, waterFoamPattern );
   ${foamLayer('waterBody', unfocusedBody('waterBody'), 'waterCover', 'waterFoamR')}
   ${RICH_SPECULAR}
   roughnessFactor = mix( roughnessFactor, 0.7, waterCover );`;

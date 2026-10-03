@@ -236,6 +236,18 @@ export function foamReflectance(age: number): number {
 }
 
 /**
+ * The bubble layers of the saturating fit R(N) = 0.55 (1 − e^(−N/5)) (foam-lifecycle.md §2.3): fitted through Koepke 1984's
+ * anchors, one layer 0.10 and 25 or more 0.55, it gives 0.18 at two (Dierssen 2019's thin foam) and 0.25 at three, the
+ * lace value. The constant of 5 layers is fitted, so provisional.
+ */
+export const FOAM_LAYER_SCALE = 5;
+
+/** Reflectance of foam `layers` bubbles thick: R(N) = 0.55 (1 − e^(−N/5)), 0.10 for a single layer. */
+export function foamLayerReflectance(layers: number): number {
+  return FOAM_ALBEDO.fresh * (1 - Math.exp(-layers / FOAM_LAYER_SCALE));
+}
+
+/**
  * The brightest water lit without the caustics' focus: its reflectance lies between R∞ and the bed's albedo (it is R∞ (1 −
  * e) + A e, `shallowReflectance`, e between 0 and 1), never above the larger of the two, so never above 1.
  */
