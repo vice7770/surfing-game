@@ -87,19 +87,8 @@ const OCTAVE_SHIFT = [0.371, 0.629] as const;
 /** The seeds of the two octaves' and two phases' hex lattices. */
 const SALTS = { large: [0, 7919], small: [104729, 15485863] } as const;
 
-let bytes: Uint8Array | undefined;
-
-/** Whether the texture's bytes have been made: nothing but a read of them (the GPU's first upload) does. */
-export function churnTextureBaked(): boolean {
-  return bytes !== undefined;
-}
-
-/**
- * The texture's bytes: the churn raised from its 256² tile, and the foam's two stages from `bakeFoamCycle`, which takes
- * about half a second. Made when first read, so a program that never draws the Rich foam never pays for them.
- */
-export function churnTextureData(): Uint8Array {
-  if (bytes) return bytes;
+/** The churn's density and height in red and green at the texture's size, raised from its 256² tile; blue and alpha left 0. */
+function churnBytes(): Uint8Array {
   const size = CHURN_TEXTURE_SIZE;
   const data = new Uint8Array(size * size * 4);
   const coarse = new Float32Array(CHURN_SIZE * CHURN_SIZE * 2);
@@ -131,20 +120,104 @@ export function churnTextureData(): Uint8Array {
       }
     }
   }
+  return data;
+}
+
+/**
+ * The texture's bytes, made afresh: the churn, and the foam's two stages from `bakeFoamCycle`, which takes about half a
+ * second. What the bake's worker (`foamBakeWorker`) makes and hands back.
+ */
+export function churnTextureBytes(): Uint8Array {
+  const data = churnBytes();
   const foam = bakeFoamCycle();
-  for (let k = 0; k < size * size; k += 1) {
+  for (let k = 0; k < CHURN_TEXTURE_SIZE * CHURN_TEXTURE_SIZE; k += 1) {
     data[k * 4 + 2] = foam.early[k];
     data[k * 4 + 3] = foam.late[k];
   }
-  bytes = data;
   return data;
+}
+
+/** The finished bytes, once made: by the bake's worker, or here where there is none. */
+let bytes: Uint8Array | undefined;
+/** While the worker bakes: the churn, its height standing in for the foam's two stages. */
+let interim: Uint8Array | undefined;
+/** Whether a worker is baking the bytes now. */
+let baking = false;
+
+/** Whether the texture's finished bytes have been made: by the bake's worker, or by a read of them where there is none. */
+export function churnTextureBaked(): boolean {
+  return bytes !== undefined;
+}
+
+/**
+ * The texture's bytes, made here when first read if no worker has made them (tests, and browsers without workers): a
+ * program that never draws the Rich foam never pays for them.
+ */
+export function churnTextureData(): Uint8Array {
+  bytes ??= churnTextureBytes();
+  return bytes;
+}
+
+/** The part of a `Worker` the bake uses; tests stand in a fake. */
+export interface FoamBakeWorker {
+  onmessage: ((event: { data: unknown }) => void) | null;
+  onerror: ((event: unknown) => void) | null;
+  postMessage(message: unknown): void;
+  terminate(): void;
+}
+
+/** A module worker running `foamBakeWorker`, in a page that can start one. */
+function bakeWorker(): FoamBakeWorker | undefined {
+  if (typeof window === 'undefined' || typeof Worker === 'undefined') return undefined;
+  return new Worker(new URL('./foamBakeWorker.ts', import.meta.url), { type: 'module' }) as unknown as FoamBakeWorker;
+}
+
+/**
+ * Bakes the foam's life cycle once, off the main thread, from the moment the texture is made (at load, with the water):
+ * the bake takes a second or two, which on the main thread was a stall at the first Rich frame, and again whenever a
+ * session switched to Rich. Until it lands, the texture holds the churn, its height standing in for the foam's stages;
+ * then the finished bytes are uploaded in their place. Without a worker, or if it fails, the next upload bakes here.
+ */
+export function startFoamBake(create: () => FoamBakeWorker | undefined = bakeWorker): void {
+  if (bytes || baking) return;
+  const worker = create();
+  if (!worker) return;
+  baking = true;
+  const finish = (data?: Uint8Array) => {
+    baking = false;
+    interim = undefined;
+    worker.terminate();
+    if (data) bytes ??= data;
+    if (texture) texture.needsUpdate = true;
+  };
+  worker.onmessage = (event) => {
+    const data = event.data;
+    finish(data instanceof Uint8Array && data.length === CHURN_TEXTURE_SIZE * CHURN_TEXTURE_SIZE * 4 ? data : undefined);
+  };
+  worker.onerror = () => finish();
+  worker.postMessage('bake');
+}
+
+/** What the GPU reads: the finished bytes, the interim churn while a worker bakes them, or (no worker) a bake here. */
+function textureBytes(): Uint8Array {
+  if (bytes) return bytes;
+  if (!baking) return churnTextureData();
+  if (!interim) {
+    interim = churnBytes();
+    for (let k = 0; k < CHURN_TEXTURE_SIZE * CHURN_TEXTURE_SIZE; k += 1) {
+      interim[k * 4 + 2] = interim[k * 4 + 1];
+      interim[k * 4 + 3] = interim[k * 4 + 1];
+    }
+  }
+  return interim;
 }
 
 let texture: DataTexture | undefined;
 
 /**
  * RGBA8, 1024², mipmapped and repeating, cached: red and green are the fresh churn's density and height, blue and
- * alpha the foam's early and late stages as Gaussian ranks. Its bytes are made when the GPU first reads them.
+ * alpha the foam's early and late stages as Gaussian ranks. Making it starts the foam's bake (`startFoamBake`); its
+ * bytes are read when the GPU first uploads it.
  */
 export function churnTexture(): DataTexture {
   if (texture) return texture;
@@ -153,7 +226,7 @@ export function churnTexture(): DataTexture {
     width: CHURN_TEXTURE_SIZE,
     height: CHURN_TEXTURE_SIZE,
     get data(): Uint8Array {
-      return churnTextureData();
+      return textureBytes();
     },
   };
   texture.image = image as unknown as typeof texture.image;
@@ -166,6 +239,7 @@ export function churnTexture(): DataTexture {
   texture.anisotropy = 4;
   texture.generateMipmaps = true;
   texture.needsUpdate = true;
+  startFoamBake();
   return texture;
 }
 
