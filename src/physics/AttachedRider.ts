@@ -287,8 +287,9 @@ const TWIST_GRIP_RADIUS = 0.15;
  * leans in.
  *
  * On flat water at 7 m/s this brings the bottom turn round 90° in 1.0 s,
- * either side, keeping about 0.6 of the speed (0.36 before). At 0.7 a rider
- * compressing from standing fell after 100°. Riding straight it does nothing.
+ * either side, keeping about 0.6 of the speed (0.36 before; 0.9 with
+ * CARVE_CARRY). At 0.7 a rider compressing from standing fell after 100°.
+ * Riding straight it does nothing.
  */
 const COMPRESS_PULL = 0.5;
 /**
@@ -298,6 +299,25 @@ const COMPRESS_PULL = 0.5;
  * kept tipping the body in (70° against 15° asked) until it fell.
  */
 const PULL_OVERLEAN = (10 * Math.PI) / 180;
+/**
+ * The carve's carry (the movement-flow spec's Q4 and Q16, a gameplay rule,
+ * not physics), under the same gate as COMPRESS_PULL. A real bottom turn or
+ * cutback keeps 0.88–0.95 of its speed (Forsyth et al. 2024), fed by the wave
+ * it turns on; here the hull's carve shed it (the compressed bottom turn kept
+ * 0.6 at 90°, and on the Wave Pool's 1.1 m face every cutback dropped off the
+ * plane). So the body is pushed along the board's level path by CARVE_CARRY of
+ * the pull its bank balances, m g tan of the bank, scaled by Compress: it gives
+ * back part of what the carve sheds, in proportion to how hard it turns, and
+ * nothing riding straight. Pushing the body (not the board) keeps it off the
+ * feet: they pass on only the board's share.
+ *
+ * In the stances spec's bottom turn (flat water at 7 m/s, compressed over the
+ * crouch) 90° then comes in 1.02 s keeping 0.90–0.91 of the speed, either side
+ * (0.60–0.62 without; 0.86–0.87 at 0.35, 1.0 at 0.5); compressed alone, 0.83 in
+ * 0.95 s. Riding straight the same board keeps 0.63 after 1 s: on flat water
+ * the carry gives back the planing drag a wave's face would feed.
+ */
+const CARVE_CARRY = 0.4;
 const PULL_FULL_SPEED = 5;
 /** Below this load, in body weights, the centre of pressure says nothing and the rider does not rebalance. */
 const BALANCE_LOAD = 0.1;
@@ -586,6 +606,8 @@ export interface RiderWork {
   lip: number;
   /** Done by the compressed turn's assist (COMPRESS_PULL), a gameplay rule's. */
   assist: number;
+  /** Done by the carve's carry (CARVE_CARRY), a gameplay rule's. */
+  carry: number;
 }
 
 type V3 = { x: number; y: number; z: number };
@@ -644,7 +666,7 @@ export class AttachedRider {
   flightTime = 0;
   /** Distance of the centre of mass from where the posture puts it, m. */
   postureError = 0;
-  readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0, assist: 0 };
+  readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0, assist: 0, carry: 0 };
   /** Impulse the lip gave the body since the latest step began, N·s. */
   readonly lastLipImpulse = new Vector3();
   /** The water's latest force on each stroking hand (left, right), N. */
@@ -848,6 +870,8 @@ export class AttachedRider {
   private twistTorque = 0;
   /** The compressed turn's assist on the body, N (world): COMPRESS_PULL. */
   private readonly assistForce = new Vector3();
+  /** The carve's carry on the body, N (world): CARVE_CARRY. */
+  private readonly carryForce = new Vector3();
 
   constructor(shape: BoardShape, options: AttachedRiderOptions = {}) {
     this.shape = shape;
@@ -1056,6 +1080,7 @@ export class AttachedRider {
     this.work.contact = 0;
     this.work.lip = 0;
     this.work.assist = 0;
+    this.work.carry = 0;
     this.struckBy.clear();
     this.lastLipImpulse.set(0, 0, 0);
     this.sway.set(0, 0, 0);
@@ -1398,7 +1423,7 @@ export class AttachedRider {
     this.gravity.set(0, -this.mass * WATER.gravity, 0);
     this.waterForces(h, board, water);
     this.compressAssist(board);
-    this.external.copy(this.gravity).add(this.waterForce).add(this.assistForce);
+    this.external.copy(this.gravity).add(this.waterForce).add(this.assistForce).add(this.carryForce);
     if (this.upright) {
       this.prepareLeg(h, board, water);
       this.twistStep(h);
@@ -1509,6 +1534,7 @@ export class AttachedRider {
   /** COMPRESS_PULL: compressing into a turn, planing, the body is pulled in across the board's path by the lean asked for. */
   private compressAssist(board: BoardBody): void {
     this.assistForce.set(0, 0, 0);
+    this.carryForce.set(0, 0, 0);
     const crouch = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
     const compress = Math.max(0, Math.min(1, this.compress));
     if (!this.upright || !this.banking || !this.planing || compress <= crouch || Math.abs(this.steer) <= STEER_DEADBAND) return;
@@ -1522,6 +1548,8 @@ export class AttachedRider {
     const fade = Math.max(0, 1 - past / PULL_OVERLEAN) * Math.min(1, Math.max(0, (speed - PLANING_DROP) / (PULL_FULL_SPEED - PLANING_DROP)));
     this.assistForce.crossVectors(Y, along)
       .multiplyScalar(Math.sign(this.bankReference) * fade * compress * COMPRESS_PULL * this.mass * WATER.gravity * Math.tan(lean));
+    // CARVE_CARRY: along the path, by the pull the body's own bank balances.
+    this.carryForce.copy(along).multiplyScalar(compress * CARVE_CARRY * this.mass * WATER.gravity * Math.tan(Math.min(Math.abs(this.bank.angle), MAX_BANK)));
   }
 
   private resetTwist(): void {
@@ -1967,6 +1995,7 @@ export class AttachedRider {
     this.work.gravity += h * this.gravity.dot(mean);
     this.work.water += h * this.waterForce.dot(mean);
     this.work.assist += h * this.assistForce.dot(mean);
+    this.work.carry += h * this.carryForce.dot(mean);
     if (this.upright && this.feasible && this.swingTorque !== 0) {
       // The swing's couple, which the board did not take with the push along the line of force.
       board.work.rider -= (h * this.swingTorque * this.rollAxis.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;

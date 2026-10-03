@@ -43,18 +43,48 @@ export interface AutopilotOptions {
   lineDegrees?: number;
   /** Seconds of paddling without a cue before giving up. */
   giveUp?: number;
-  /** Standing: hold a line along the face ('line'), or ride S-turns up and down it ('turns', spec P9). */
-  style?: 'line' | 'turns';
+  /**
+   * Standing: hold a line along the face ('line'), ride S-turns up and down it ('turns', spec P9), or ride the user's
+   * movement flow ('flow', the movement-flow spec): bottom turn, projection, cutback, rebound.
+   */
+  style?: 'line' | 'turns' | 'flow';
   /** Standing, end the ride when the board crawls (STALL for STALL_TIME); false leaves the end to the caller's ride analyzer. */
   stall?: boolean;
   /** Riding S-turns, the longest a turn is held, s (TURN_LIMIT by default). */
   turnLimit?: number;
   /** Riding S-turns, the height on the face below which a bottom turn starts (BOTTOM_FACE by default). */
   bottomFace?: number;
+  /** Riding the flow, how far ahead of the curl a cutback starts, m (CUTBACK_REACH by default). */
+  cutbackReach?: number;
+  /** Riding the flow, the phase it starts in once standing ('drop' by default; the probe's isolated cutback starts in 'cutback'). */
+  flowFrom?: FlowPhase;
+  /** Riding the flow, the heading from the fall line where the bottom turn is released, degrees (FLOW_BOTTOM_END by default). */
+  bottomEnd?: number;
 }
 
 export type AutopilotState = 'position' | 'wait' | 'go' | 'ride' | 'done';
 type Turn = 'bottom' | 'top' | 'cutback';
+/** The movement flow's phases (style 'flow'): the rebound is the bottom turn off the foam after a cutback. */
+export type FlowPhase = 'drop' | 'bottom' | 'project' | 'trim' | 'cutback' | 'rebound';
+
+/** A phase of the flow the autopilot rode, for the probe's log: when, how long, how far it turned, and the wave in and out. */
+export interface FlowRecord {
+  phase: FlowPhase;
+  /** Seconds into the ride it began, and how long it lasted. */
+  at: number;
+  seconds: number;
+  /** The heading turned, degrees, positive toward the open face (a cutback's are negative). */
+  degrees: number;
+  /** Speed over ground in and out, m/s; height on the face in and out (0 trough, 1 crest); metres along the crest to the curl in and out (Infinity: none within the gauge's reach). */
+  speedIn: number;
+  speedOut: number;
+  faceIn: number;
+  faceOut: number;
+  curlIn: number;
+  curlOut: number;
+  /** It reached its end (not given up at its limit, nor ended by a fall or the wave leaving). */
+  completed: boolean;
+}
 
 /** A turn the autopilot rode (style 'turns'), for the recorder's log: when, how far, how long, and the speed it kept. */
 export interface TurnRecord {
@@ -115,14 +145,58 @@ const TURN_CROUCH = 0.6;
 const EXTEND_FROM = 60 * DEG;
 const TOP_TRIM = -0.5;
 const SNAP_TRIM = -1;
+/**
+ * The movement flow (style 'flow', the user's notes in the movement-flow spec), by the same angle from the fall line
+ * toward the open face (negative toward the curl):
+ * - drop: crouched down the face from the pop-up, until below FLOW_BOTTOM_FACE of it, out on the flat
+ *   (BOTTOM_REACH) or after FLOW_DROP_LIMIT, s;
+ * - bottom turn: Compress with a little weight on the front foot (FLOW_DRIVE), leaning toward the open face, until
+ *   the heading is FLOW_BOTTOM_END from the fall line. The body's lean carries the heading on 33–37° after the
+ *   release, so the board comes out along the face, near the line that keeps pace with the pool's 4 m/s wave, with
+ *   the body back to an 11–17° bank (the pool flow probe). Released at 85° the heading went on to 95–122°, up the
+ *   face, with the rail at its 48° bite and the body still banked 33° into the turn; held to 110° the turn ended at
+ *   2.6–3.7 m/s, off the plane;
+ * - projection: Compress released, tall and centred, holding that heading up the face, until the body has come back
+ *   within FLOW_UPRIGHT of upright (the cutback changes rails from there), the board is above FLOW_TOP_FACE of the
+ *   face (its top), or after FLOW_PROJECT_LIMIT, s. Begun while the body was still banked 11–41° into the bottom
+ *   turn (once the projection's speed had faded 15%), every cutback on the pool fell in 0.2 s or carved on up the
+ *   face to a stall;
+ * - trim: along the face on the riding line, pumping (crouched while the face fraction falls, extended while it
+ *   rises: the extension meets the load at the foot of each dip), until CUTBACK_REACH ahead of the curl; low on the
+ *   face heading down, another bottom turn;
+ * - cutback: heading along the face or up it (past FLOW_CUTBACK_FROM), Compress with the weight on the back foot,
+ *   leaning and looking back toward the curl (the rotation stick), until the heading has come round
+ *   FLOW_CUTBACK_TURN;
+ * - rebound: the bottom turn again, off the foam, then the projection.
+ * No turn is held longer than FLOW_TURN_LIMIT, s.
+ *
+ * CUTBACK_REACH: the pool's curl runs along the crest at about 6.5–10 m/s (the pool probe and the bed sweep: Hutt's
+ * V_s = C_b / sin α). A cutback is a U-turn, which leaves the rider about where it began along the crest, and takes
+ * about 1.5 s, while the curl closes 10–15 m: begun 10 m ahead, the cutback comes round as the foam arrives, and the
+ * rebound is off it, as the user describes. Nearer, the foam takes the rider mid-turn; further, it runs back to it
+ * slowing.
+ */
+const FLOW_BOTTOM_FACE = 0.4;
+const FLOW_DROP_LIMIT = 1.5;
+const FLOW_DRIVE = 0.3;
+const FLOW_BOTTOM_END = 45 * DEG;
+const FLOW_TOP_FACE = 0.65;
+const FLOW_PROJECT_LIMIT = 1;
+const FLOW_UPRIGHT = 12 * DEG;
+const FLOW_CUTBACK_FROM = 45 * DEG;
+const FLOW_CUTBACK_TURN = 160 * DEG;
+const FLOW_TURN_LIMIT = 3;
+const CUTBACK_REACH = 10;
+/** Pumping, the face fraction's rate is smoothed over this, s: a falling or rising face, not the board's chatter. */
+const PUMP_SMOOTHING = 0.15;
 
 /**
  * A dev autopilot for the recorder and the ride report (spec P9 phase 0). It
  * paddles in to wait outside the break line, goes when a crest rises behind,
  * pops up on the cue, and standing holds a line along the face toward the peel,
  * turning up when low on the face and down when high, or (style 'turns') rides
- * S-turns up and down the face with a pump between them. It only produces a
- * `RideInput`, like a player.
+ * S-turns up and down the face with a pump between them, or (style 'flow') rides
+ * the movement flow. It only produces a `RideInput`, like a player.
  */
 export class Autopilot {
   state: AutopilotState = 'position';
@@ -135,6 +209,8 @@ export class Autopilot {
   phase = '';
   /** The turns ridden this attempt. */
   readonly turnRecords: TurnRecord[] = [];
+  /** Riding the flow, its phases this attempt, the one under way last. */
+  readonly flowRecords: FlowRecord[] = [];
   private readonly waitOutside: number;
   private readonly rise: number;
   private readonly line: number;
@@ -151,7 +227,17 @@ export class Autopilot {
   private popped = false;
   private lastHeading = Number.NaN;
   private travel = 0;
-  private readonly style: 'line' | 'turns';
+  private readonly style: 'line' | 'turns' | 'flow';
+  private readonly cutbackReach: number;
+  private readonly flowFrom: FlowPhase;
+  private readonly bottomEnd: number;
+  /** Riding the flow: the open face it rides toward this attempt (kept, so passing the curl never reverses it), the heading turned in the phase under way and the last heading, and the face fraction's last value and smoothed rate (1/s). */
+  private flowFace = 0;
+  private flowYaw = 0;
+  private flowHeading = 0;
+  private flowOpen = false;
+  private lastFraction = Number.NaN;
+  private fractionRate = 0;
   /** The turn under way and how long it has been held, and a turn given up that waits for its trigger to clear. */
   private turn?: Turn;
   private turnTime = 0;
@@ -173,10 +259,24 @@ export class Autopilot {
     this.stall = options.stall ?? true;
     this.turnLimit = options.turnLimit ?? TURN_LIMIT;
     this.bottomFace = options.bottomFace ?? BOTTOM_FACE;
+    this.cutbackReach = options.cutbackReach ?? CUTBACK_REACH;
+    this.flowFrom = options.flowFrom ?? 'drop';
+    this.bottomEnd = options.bottomEnd !== undefined ? options.bottomEnd * DEG : FLOW_BOTTOM_END;
+  }
+
+  /** Start an attempt now, as when a crest rises behind the waiting board (a placed start: Surf School's, the probes'). */
+  go(): void {
+    this.state = 'go';
+    this.attempts += 1;
+    this.clock = 0;
+    this.popped = false;
+    this.rideTime = 0;
+    this.stalled = 0;
   }
 
   /** End the ride from outside (the ride analyzer's end). */
   finish(outcome: string): void {
+    this.flowOpen = false;
     if (this.state === 'ride') this.end(outcome);
   }
 
@@ -190,6 +290,11 @@ export class Autopilot {
     this.blocked = undefined;
     this.phase = '';
     this.turnRecords.length = 0;
+    this.flowRecords.length = 0;
+    this.flowOpen = false;
+    this.flowFace = 0;
+    this.lastFraction = Number.NaN;
+    this.fractionRate = 0;
   }
 
   next(view: AutopilotView, dt: number): RideInput {
@@ -208,12 +313,7 @@ export class Autopilot {
         const face = this.lastFace || Math.sign(view.peelDirection);
         if (face !== 0) input.steer = this.aim(this.travel + face * TAKEOFF_ANGLE, heading, yawRate);
         if (view.crestBehind > this.rise) {
-          this.state = 'go';
-          this.attempts += 1;
-          this.clock = 0;
-          this.popped = false;
-          this.rideTime = 0;
-          this.stalled = 0;
+          this.go();
           return this.next(view, 0);
         }
         break;
@@ -240,16 +340,19 @@ export class Autopilot {
       case 'ride': {
         if (ride.phase === 'fallen') {
           this.closeTurn(false, ride.speed);
+          this.closeFlow(false, view);
           this.end(`fell · ${ride.separation ?? 'balance'}`);
           break;
         }
         this.rideTime += dt;
         this.stalled = ride.speed < STALL ? this.stalled + dt : 0;
         if (this.stall && this.stalled > STALL_TIME) {
+          this.closeFlow(false, view);
           this.end('the wave left');
           break;
         }
         if (this.style === 'turns' && this.openFace(view) !== 0) Object.assign(input, this.turns(view, heading, dt));
+        else if (this.style === 'flow' && (this.flowFace || this.openFace(view)) !== 0) Object.assign(input, this.flow(view, heading, yawRate, dt));
         else input.steer = this.steer(view, heading, yawRate);
         break;
       }
@@ -259,11 +362,13 @@ export class Autopilot {
     return input;
   }
 
-  /** The lean that brings the heading onto the line: the travel direction turned toward the peel, opened when low on the face and closed when high. */
-  private steer(view: AutopilotView, heading: number, yawRate: number): number {
+  /**
+   * The lean that brings the heading onto the line: the travel direction turned toward the peel (or `open`), opened
+   * when low on the face and closed when high.
+   */
+  private steer(view: AutopilotView, heading: number, yawRate: number, open = this.openFace(view)): number {
     const { wave } = view.ride;
     let target = this.travel;
-    const open = this.openFace(view);
     if (open !== 0) {
       let line = this.line;
       if (wave.valid && wave.faceFraction < FACE_LOW) line += (FACE_TURN * Math.PI) / 180;
@@ -337,6 +442,110 @@ export class Autopilot {
         this.phase = angle < BOTTOM_START ? 'DROPPING · CROUCHED' : 'CLIMBING · EXTENDED';
         return { steer: 0, trim: 0, crouch: angle < BOTTOM_START ? TURN_CROUCH : 0, compress: 0 };
     }
+  }
+
+  /**
+   * The movement flow (FLOW_* above): the phase under way, ended when it reaches its end or its limit and the next
+   * begun, and the inputs it asks for. The open face is kept for the whole ride.
+   */
+  private flow(view: AutopilotView, heading: number, yawRate: number, dt: number): Pick<RideInput, 'steer' | 'trim' | 'crouch' | 'compress' | 'rotate'> {
+    const { wave } = view.ride;
+    if (this.flowFace === 0) this.flowFace = this.openFace(view);
+    const face = this.flowFace;
+    const angle = face * wrap(heading - this.travel);
+    const fraction = wave.valid ? wave.faceFraction : 0;
+    const curl = wave.valid ? wave.curlDistance : Infinity;
+    if (Number.isFinite(this.lastFraction) && dt > 0) {
+      this.fractionRate += ((fraction - this.lastFraction) / dt - this.fractionRate) * (1 - Math.exp(-dt / PUMP_SMOOTHING));
+    }
+    this.lastFraction = fraction;
+    const record = this.trackFlow(view, heading);
+    const time = record?.seconds ?? 0;
+    const turned = face * this.flowYaw;
+    const cutback = curl >= this.cutbackReach && angle > FLOW_CUTBACK_FROM;
+    // The phase's end: [reached its end, given up at its limit], and what follows.
+    let next: FlowPhase | undefined;
+    let reached = true;
+    switch (record?.phase) {
+      case undefined:
+        next = this.flowFrom;
+        break;
+      case 'drop':
+        if (!wave.valid || fraction < FLOW_BOTTOM_FACE || wave.aheadOfCrest > BOTTOM_REACH) next = 'bottom';
+        else if (time > FLOW_DROP_LIMIT) [next, reached] = ['bottom', false];
+        break;
+      case 'bottom':
+      case 'rebound':
+        if (angle > this.bottomEnd) next = 'project';
+        else if (time > FLOW_TURN_LIMIT) [next, reached] = ['project', false];
+        break;
+      case 'project':
+        if (Math.abs(view.ride.bank ?? 0) <= FLOW_UPRIGHT || fraction > FLOW_TOP_FACE) next = cutback ? 'cutback' : 'trim';
+        else if (time > FLOW_PROJECT_LIMIT) [next, reached] = [cutback ? 'cutback' : 'trim', false];
+        break;
+      case 'trim':
+        if (cutback) next = 'cutback';
+        else if (fraction < FLOW_BOTTOM_FACE && angle < BOTTOM_START) next = 'bottom';
+        break;
+      case 'cutback':
+        if (-turned > FLOW_CUTBACK_TURN) next = 'rebound';
+        else if (time > FLOW_TURN_LIMIT) [next, reached] = ['rebound', false];
+        break;
+    }
+    if (next) {
+      this.closeFlow(reached);
+      this.flowRecords.push({
+        phase: next, at: this.rideTime, seconds: 0, degrees: 0, speedIn: view.ride.speed, speedOut: view.ride.speed,
+        faceIn: fraction, faceOut: fraction, curlIn: curl, curlOut: curl, completed: false,
+      });
+      this.flowOpen = true;
+      this.flowYaw = 0;
+      this.flowHeading = heading;
+    }
+    const phase = this.flowRecords[this.flowRecords.length - 1].phase;
+    switch (phase) {
+      case 'drop':
+        this.phase = 'FLOW · DROP';
+        return { steer: 0, trim: 0, crouch: 1, compress: 0 };
+      case 'bottom':
+      case 'rebound':
+        this.phase = phase === 'bottom' ? 'FLOW · BOTTOM TURN' : 'FLOW · REBOUND';
+        return { steer: face, trim: FLOW_DRIVE, crouch: 0, compress: 1 };
+      case 'project':
+        this.phase = 'FLOW · PROJECTION';
+        return { steer: 0, trim: 0, crouch: 0, compress: 0 };
+      case 'trim': {
+        const falling = this.fractionRate < 0;
+        this.phase = falling ? 'FLOW · PUMP · DOWN' : 'FLOW · PUMP · UP';
+        return { steer: this.steer(view, heading, yawRate, face), trim: 0, crouch: falling ? 1 : 0, compress: 0 };
+      }
+      case 'cutback':
+        this.phase = 'FLOW · CUTBACK';
+        return { steer: -face, trim: -1, crouch: 0, compress: 1, rotate: -face };
+    }
+  }
+
+  /** The flow's phase under way brought up to now: its time, the heading turned, and the speed and wave out. */
+  private trackFlow(view: AutopilotView, heading: number): FlowRecord | undefined {
+    if (!this.flowOpen) return undefined;
+    const record = this.flowRecords[this.flowRecords.length - 1];
+    const { wave } = view.ride;
+    this.flowYaw += wrap(heading - this.flowHeading);
+    this.flowHeading = heading;
+    record.seconds = this.rideTime - record.at;
+    record.degrees = (this.flowFace * this.flowYaw * 180) / Math.PI;
+    record.speedOut = view.ride.speed;
+    record.faceOut = wave.valid ? wave.faceFraction : 0;
+    record.curlOut = wave.valid ? wave.curlDistance : Infinity;
+    return record;
+  }
+
+  /** The flow's phase under way ended (brought up to `view` first, when given): `completed` when it reached its end. */
+  private closeFlow(completed: boolean, view?: AutopilotView): void {
+    if (view) this.trackFlow(view, view.board.heading);
+    if (!this.flowOpen) return;
+    this.flowRecords[this.flowRecords.length - 1].completed = completed;
+    this.flowOpen = false;
   }
 
   /** The turn under way, recorded and ended: `completed` when it reached its end. */
