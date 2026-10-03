@@ -1,6 +1,6 @@
 # Water physics advisor: onboarding
 
-Written 2026-09-30 (evening), when the advisor moved to another machine. It is for whoever takes over the "Water physics research" role: a new Claude session, or a person.
+Written 2026-09-30 (evening), when the advisor moved to another machine; brought up to date on 2026-10-03, when the work moved again (see [the handoff](../../superpowers/handoffs/2026-10-03-all-pending-work.md)). It is for whoever takes over the "Water physics research" role: a new Claude session, or a person.
 
 Read in this order:
 1. this page;
@@ -70,87 +70,29 @@ Read in this order:
 - **Log every consult twice:** a row in consult-log.md, and a row in the doc's Consult log tab.
 - **Commit and PR footers:** commits end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`; PR bodies end with `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
 
-## State on 2026-09-30
+## Current state
 
-- **Merged:**
-  - #86: lip jets drawn from the wave's upper half;
-  - #88: the half-height taper, measured and not kept;
-  - #89: Padang Padang, Part A;
-  - #90: the swept barrel's profile library;
-  - #93: the feet at their edge.
-- **Waiting for the owner's merge:**
-  - #82 (this branch);
-  - #91 (the breaking front and slice clock);
-  - #92 (the drawn barrel).
+Every open branch and PR, what is left on each, the owner's merge order and decisions, and the prompts for the sessions are in [the handoff of 2026-10-03](../../superpowers/handoffs/2026-10-03-all-pending-work.md), written when the work moved to another computer. Its `2026-10-03-data/` folder holds the run results that existed only on the old machine.
 
-  #91 and #92 still target the Padang branches below them. Change each base to main, then merge, #91 first.
-- **Padang Padang Part B, the swept barrel** (the Padang Padang session builds it):
-  - **PR 4 (#95), the rider's contact with the drawn barrel:** built on `claude/padang-contact` (plan: `docs/superpowers/plans/2026-09-30-padang-padang-part-b-pr4.md`). It is moving to another machine too; its handoff, with the advisor's rulings as its next items, is `docs/superpowers/handoffs/2026-09-30-padang-padang-part-b.md` on that branch. The rulings are the PR 4 rows in the consult log. Still owed: bucketing the quads by along-ray range, and the contact's cost measured unloaded.
-  - **PR 5:** the crash curve, parcels and sound.
-  - **PR 6:** the Rich shading, a lip glow and a dark throat.
-  - **PR 7:** every spot switches, and the old lip and tube code is deleted. The Reef switches only after the Reef session agrees and the owner has looked.
-- **The rest of Part B, handed to agents on the M1 (2026-10-01, at the owner's request):**
-  - **The curl's colour fix: PR #103** (`claude/padang-curl-colour` into `claude/padang-contact`).
-    - **The navy was PR 3's triangle winding.** Now the curl rests on the solver's water outside its lifted span, and the lip is a thin sheet lit from behind.
-    - **Open item:** front-lit at a high sun, it's re-checked after PR 6.
-    - **PR 6 is open as #104** (`claude/padang-rich-shading` into `claude/padang-curl-colour`): the Rich lip glow, the dark throat, and the sun's shadow under the lip.
-    - **Built, ready to merge:** the adaptive forward rest for the Medium trench. The drawn trough holds until the solver's water comes down to it.
-    - **Left open:** judging the throat and k on a Big or Reef tube, and the upload follow-up.
-  - **PR 4 is done (#95, cf0e5a2):** items 1–7 built and tested. Still owed: the 180 s sea probe (the M1 was paging, so run it on the M4 Pro), a tube ridden by hand and #92's screenshots (with the pane shown), and Part D's fields with the Reef session.
-  - **PR 5: PR #102,** the crash curve, the pour and the sound (`claude/padang-crash` into `claude/padang-contact`). Its probes were still running when it opened.
-  - **The peak fix: PR #105** (`claude/padang-peak-sizing` into `claude/padang-contact`). Crests are sized at the 7 m foot, and the jump rule is on for Padang Padang. On Small the peak's throws go 2 → 78. It's a Padang Padang behaviour change, and the front-merge work and PR 7's prep stack on it.
-  - **PR 7's preparation** is on `claude/padang-every-spot`, with no change in behaviour: each spot's cases and `BARREL_SLOPE`, the switch mechanics, and the deletion map. The Reef's two libraries are built (`periodic-runs.md` §9); the Canyon, Point and Beach need runs, and gentle beaches need level 13 on the M4 Pro. The flip itself waits for the owner's look and the Reef session, and the deletion waits for PR 5.
-  - **Merges:** the auto-mode check refuses this session's `gh pr merge`, even after a review and the owner's standing "check and merge" (2026-10-01). The owner merges, or adds a Bash allow rule for `gh pr merge`.
-  - **One advisor branch:** on 2026-09-30/10-01 a second advisor session on the other machine wrote the colour fix on `main-sshdns`, and it was merged into this branch (d72cbe8). Before continuing, merge any other advisor branch's commits, so the consult log stays one record.
-- **The Reef (Teahupo'o):**
-  - Parts A–C are merged (#54, #57, #60).
-  - Part D, tube riding, isn't started. It takes its contact fields from Padang's PR 4: covered, clearance and the tube's state.
-- **The Reef's +x edge spike, fixed:** lip jets were landing past the open edge and getting clamped into the edge column. The fix is PR #99 (`claude/edge-landings`, waiting for the owner's merge): landings past open edges are dropped with their foam and aeration, walls still clamp, and periodic edges wrap. It passed both criteria in 60 game-size runs (seed 3's edge 4.22 → 1.79). The pass's steep steps are bores and faces about to break, which are expected, except 70 one-cell troughs on Wave Lab max from 20°. Those are numerical; tracing them is the owner's call (the hypothesis is in the consult log).
-- **Particle load, PR #94** (`claude/particle-settings`, waiting for the owner's merge):
-  - It adds Graphics › Advanced › Particles, Low / Medium / High. High, the default, is bit-identical to before.
-  - It rebuilds the Rich lip sheet 3–5 times faster, with the same output.
-  - Its findings: the spray's GPU cost is fill rate, not particle count. About 90 % of the fragments are wide mist sprites, and the foam balls add more near Padang Padang's throws.
-  - The report is `docs/research/particle-report.md`.
-  - Its recommendations wait for the owner: Medium particles for Auto's Medium result, and no spray stepping while Spray and mist is off.
-
-## Where each piece stands (2026-10-01)
-
-The owner stopped every agent at about 16:30 and said to continue at about 20:05. The three agents (PR 5, PR 7's prep, the front splits) were resumed from where they stopped. Main took the second advisor branch (#101) in between; #82 was brought up to date with it (0d0f114) and is mergeable again. Where each piece was left at the stop:
-- **Ready to merge** (the owner merges):
-  - #82 and #94, any time;
-  - the Padang Padang stack, in order: #91 → #92 → #95 (change each base to main first), then #103, then #104.
-- **#105, the peak fix and jump rule:** the check found the fast fronts (18–25.5 m/s on Small) are all jumped crests over the +x channel or near the −x edge, joining on older broken water. Ruled (20:30): a jumped crest joins only on its own fresh onset (rise ≥ 0.65, Kennedy's start test), behind a FrontOptions switch, with no join or throw interpolated across a jump. Being measured, Small first. It goes on at Padang if Medium's and Big's throws stay within ±5 % and their peel within ±10 %.
-- **#102, PR 5:** rule (a) (a jet-holding point keeps matching until its crash) gave 98.9 / 89.3 % on own point at 2 m Small and Medium, 88.2 / 82.8 % at 1 m. The misses come from the point's z jumping with the solver's crest. Ruled (20:35): from the throw to its crash, a jet-holding point moves on a pace fixed at the throw (clamped as the contact's), still claims its crest, and links on the predicted z. The new measure is the gap at touchdown to the solver's crest (over 1 H → blend late in the flight). Open: Small's catch halved with PR 5 (cue lit 24 → 11, stood 8 → 4, both seeds). The agent is tracing which piece does it.
-- **PR 7** (`claude/padang-every-spot`): opened as draft #107 at about 20:15, into #105. It carries the Reef's rules and two-point throw line, and the Point's record (a15, a23, a30; d = 1.55 + 0.95 η; a08 and reef42_a35 left out). Its tip refit also changes Padang Padang's held lip velocity (11–23 % faster along). That's the one Padang change in it, and its description is being corrected to say so. The switch itself still waits for the owner's look.
-- **The front splits** (`claude/padang-front-merge`): diagnosed on the old base (238 of 289 pairs were the jump artefact). The runs on #105 hadn't finished, and no rule was built.
-
-## Open decisions for the owner
-
-- **The Reef's jet:** raise the ask from 0.47 H² to about 0.55–0.6 H² (from the periodic Basilisk runs), and raise the lip-jet source's cap to about 0.3 on the Reef.
-- **The Reef's tube and lip:** keep them. The tube is 0.43 H², L/W 1.42 and 23°; the lip is 0.5 H.
-- **The level-13 Padang run on the M4 Pro:** `tools/basilisk/run_padang.sh`. It takes 8–35 h on one core, or 3–8 h with libomp.
-- **Downloads waiting:**
-  - the Blenkinsopp thesis (about 9 MB, through the browser);
-  - the Teahupo'o lab dataset (Zenodo 11392175), which is restricted, so the owner must request access with their own account.
+- **Merged so far** (the advisor's threads): #86 (lip jets from the wave's upper half), #88 (the half-height taper, not kept), #89 (Padang Padang Part A), #90 (the swept barrel's profile library), #93 (the feet at their edge), #99 (jets landing past open edges dropped), #101 (the second advisor branch).
+- **Waiting for the owner's merge:** #82 (this branch), #94, the Padang Padang stack (#91 → #92 → #95 → #103 → #104), and the movement work (#100 → #106).
+- **Still being built:** #105 (complete, two test files to run unloaded), #102 (PR 5, measurements owed), #107 (PR 7, waits for the owner's look), and the front-split link (ruled 2026-10-03, not built).
+- **One advisor branch:** on 2026-09-30/10-01 a second advisor session on the other machine wrote the colour fix on `main-sshdns`; it was merged into this branch and into main (#101). Before continuing, merge any other advisor branch's commits, so the consult log stays one record.
 
 ## Threads to pick up
 
-- **The library's jet speed (settled 2026-09-30):** normalised by each case's own crest speed, the four cases throw at 0.93–1.08 C (median horizontal), peak at 1.08–1.23 C, and fall at 0.58–0.71 g. That's the low end of Erinin et al. 2023's 1.1–1.3 C, falling close to free fall; the Small periodic case is the slowest. The level-13 run should nudge them up; recheck it then.
-- **PR 4's contact:** check its unloaded cost once the quads are bucketed, then the shapes of PR 5's crash curve and parcels.
-- **Wave Lab max's one-cell troughs (from 20°):** if the owner wants them traced, first check the dispersive mask at each dip: the mask interface against the onset trigger.
-
-- **The Wave Pool spot (the "Movement mapping prototype" session, spec `docs/superpowers/specs/2026-09-30-movement-flow-wave-pool.md` on `claude/wave-pool`):** settled on 2026-10-01.
-  - **The bed:** a finger reef with a ramped crest, 71° arms easing to 65°.
-  - **Measured:** rides of 18–21 s a side at about 55°, waves repeating to 0.1 s.
-  - **The smallest waves (2026-10-01):** 12 of 12 broke at the tip at H 0.58, so the tip crest stays at 1.0 m. The Surf School lesson wave is recorded on the pool.
-  - **The bed as built (2026-10-01):** the finger's faces run on seaward at 1:18 normal past the terrace, which makes two ridges in front of the finger and a 1:2 blend into the 9 m feed. Kept as Mead's focus. The step reflects at most 0.17 of the amplitude, into the absorbing zone. The session changes its unit test and spec to the bed as built. The bed and numbers are in the consult log.
-
-- **Part B follow-ups, ruled but not yet assigned (2026-10-01):**
-  - **Fronts split end to end:** on Small, 265 pairs of fronts lie about 5 m apart along one crest. An agent took it on 2026-10-01, on `claude/padang-front-merge`: it diagnoses first, and its rule needs the advisor's ruling before it builds.
-  - **Residual lace on the curl's lifted face:** it needs a face-aligned foam mapping.
-  - **Whitening at the lip's leading edge:** spray, with the spray look.
-  - **The library's underside wiggles:** a converter cleanup (a light smoothing of near-vertical undersides).
-  - **The curl's crest light at weight 0:** the profile's own horizontal chord, if the seam's contrast shows.
+- **Medium's fast throw fronts** (the front-split runs on #105's base): 11 of 44 fronts throw at 20 m/s or more. In 6 of them the joins peel at only 4–17 m/s while the throws go 28–134 m/s, and most aren't jumped. The hypothesis: between the join (the solver's fresh onset, deeper) and the throw (the Navier–Stokes vertical depth, shallower), the crests refract toward the contours and reach the throw depth together. Check each fast front's throw times against its joins and η before ruling. If confirmed, a throw follows its join by the library's own lag, in time.
+- **The fresh test:** rise ≥ 0.65 in the crest's segment never fired for 80 % of ordinary joins on Small. Don't use it as a gate anywhere without first checking what it measures.
+- **The library's jet speed (settled 2026-09-30):** normalised by each case's own crest speed, the four cases throw at 0.93–1.08 C (median horizontal), peak at 1.08–1.23 C, and fall at 0.58–0.71 g. That's the low end of Erinin et al. 2023's 1.1–1.3 C, falling close to free fall; the Small periodic case is the slowest. The level-13 runs should nudge them up; recheck them then.
+- **Wave Lab max's one-cell troughs (from 20°):** numerical. If the owner wants them traced, first check the dispersive mask at each dip: the mask interface against the onset trigger.
+- **The Wave Pool** (the Movement mapping prototype, #106): settled on 2026-10-01. A finger reef with a ramped crest, 71° arms easing to 65°; rides of 18–21 s a side at about 55°; 12 of 12 of the smallest waves break at the tip. The approach as built (the finger's faces running on seaward, two ridges before a 1:2 blend into the 9 m feed) is kept as Mead's focus; the step reflects at most 0.17 of the amplitude, into the absorbing zone.
+- **The Reef, the owner's calls:** raise the jet ask from 0.47 to about 0.55–0.6 H² (the periodic Basilisk runs) and the source's cap to about 0.3; keep the tube and lip (the tube 0.43 H², L/W 1.42 and 23°; the lip 0.5 H).
+- **Part B follow-ups, ruled but not yet assigned:**
+  - residual lace on the curl's lifted face: a face-aligned foam mapping;
+  - whitening at the lip's leading edge: with the spray look;
+  - the library's underside wiggles: a light smoothing of near-vertical undersides in the converter;
+  - the curl's crest light at weight 0: the profile's own horizontal chord, if the seam's contrast shows;
+  - Rich's upload size: half floats.
 
 ## How other sessions reach the advisor
 
