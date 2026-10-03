@@ -205,11 +205,13 @@ The goal: a playable prototype where real surf technique works, on a steady wave
   - The pad's right stick rotates the upper body.
   - A HUD stance readout.
   - A compressed-turn pull: a gameplay assist, 90° in about 1 s.
+  - The drawn-pose checks (6451e70): the drop and hand-in-face recipes re-recorded at the new ladder's depths, and the stance map's misses re-pinned. Compress's intended pose changes are pinned with `it.fails` (stanceHinge's hip fold, two stanceMotion checks, the body film's compress mid-turn), so the rig, stance and body-film tests pass on #100.
 - **Step 2, the Wave Pool: #106** (`claude/wave-pool`, stacked on #100), ready.
   - A sixth spot, `pool`, first in the list and the default: an A-frame every 10 s at 1.0 / 1.25 / 1.5 m.
   - **The bed** (designed with the advisor): a finger reef, its arms at 71° easing to 65°, a ramped crest, a 2.5 m terrace.
     - The approach as built (the finger's faces running on seaward) is kept as Mead's "focus" (consult log, 2026-10-01).
   - **Rides:** 18–21 s a side, peeling about 5.7 m/s.
+  - **The take-off** (bbec2a9) is where the waves first break: 0.84 + 1.04·H deep, z ≈ −215 at x 27 for Medium. The earlier 1.5·H put paddlers 13–23 m inside the break, and the flow probe's paddled catches failed there (0 of 3).
   - **Surf School** is on the pool.
 - **Steps 3–5, pumping, bottom turn and projection, cutback:** `claude/pool-flow-probe` at d6a7c55, stacked on `claude/wave-pool`, no PR yet.
   - **Built:**
@@ -225,10 +227,14 @@ The goal: a playable prototype where real surf technique works, on a steady wave
     - the runner reports the rider's bank.
     - `Autopilot.test.ts` passes (26) and `tsc` is clean. The probe has not been rerun on this change.
   - **Next:**
-    1. Rerun the pool flow probe with the new projection end.
-    2. Finish the cutback: change rails from near upright and keep planing speed.
-    3. Pumping, with real physics only.
-    4. Open the steps 3–5 PR, stacked on #106, for the owner's playtest.
+    1. Re-check 2–3 paddled catches (`START=catch`) on the new take-off.
+    2. Rerun the pool flow probe with the new projection end.
+    3. Finish the cutback: change rails from near upright and keep planing speed. Two candidates, from the helper's report:
+       - **Physics first:** on release, as the legs extend, the feet roll the board off its rail toward flat under the body, instead of locking at the rail's bite. Gate it to that moment, so `compressTurn.test.ts` stays green. Check it against the turn redesign's lesson first: a standing ankle rest that laid the board flat on the face fought the load-line hull and threw a quarter-steer rider (`docs/superpowers/plans/2026-09-26-turn-redesign.md`, Task 4).
+       - **An assist, only if physics can't:** a lean-out pull toward the new rail while the steer asks for the side opposite the body's bank. It mirrors `COMPRESS_PULL`'s gate and gets its own ledger. It is not the lean-in feed-forward on the don't-retry list below.
+       - **Also try the Big size** (`SIZE=big`): more face gives the body time to come upright.
+    4. Pumping, with real physics only.
+    5. Open the steps 3–5 PR, stacked on #106, for the owner's playtest.
 - **The session's rules** (from the grilling):
   - **Controls:** the pad is the design target (analog), and the keyboard approximates it.
   - **No move recognition,** names or scores.
@@ -240,6 +246,12 @@ The goal: a playable prototype where real surf technique works, on a steady wave
     - short probes only for the Compress bar.
     - Update old tests only in the files you touch.
   - **Delivery:** the owner does the gameplay testing. One PR per step, stacked; the owner merges.
+- **Don't retry** (measured and dropped earlier; the reports are in the repo):
+  - a feed-forward lean-in (`LEAN_IN_FEED` on the reference rate or plan), and reference shaping or rate feed-forward for the lean-in: every full feed fell (`docs/research/lean-in-study.md`);
+  - rail-first entries, where the feet roll the rail past the body: the board bogs and the rider falls; a yaw torque at the entry gains nothing; `BANK_RATE_GAIN` below 3.6 breaks rail changes (`docs/research/bottom-turn-entry-study.md`);
+  - the feet never rolling the board past the body while steering (the body falls in), and the lean cap held through the turn;
+  - the autopilot's easeBelow and climbBelow bottom-turn exits;
+  - the braking-curve rail controller is designed but not built (`docs/research/rail-control-study.md`).
 - **Wave-shape questions** go to the advisor ("Water physics research"), and are logged in its consult log.
 
 ## The water physics research role
