@@ -1,7 +1,7 @@
 import type { AudioSettings } from '../game/Settings';
 import { SoundBank } from './SoundBank';
 import { UNMUFFLED_LOOPS, airCutoff, oneShotJitter, type LoopId, type OneShotId, type SoundTargets } from './soundMapping';
-import type { SoundManifest } from './soundManifest';
+import { RECORDING_RATE, type SoundManifest } from './soundManifest';
 
 /** The camera as the listener: where it is and which way it looks. */
 export interface ListenerPose {
@@ -40,19 +40,22 @@ interface Loop {
  * Plays the sound targets through Web Audio (S1). Each source → the air's
  * low-pass and its panner (positional sounds) → its bus (Sea, Board and rider,
  * Interface); the world's buses pass a muffle low-pass, except what is made under
- * water (the bubbles), which meets Master by a dry path at the Sea level; all meet
- * at Master, then a mute gain. Loops keep their source nodes and glide to each
- * frame's targets; one-shots start new sources, taking the next recording of their
- * pool with a little pitch and level jitter. Browser only: its decisions live in
- * `soundTargets`, `oneShotJitter`, `airCutoff` and `audioState`.
+ * water (the bubbles), which meets Master by a path at the Sea level that skips the
+ * water's muffle but not the pause menu's; all meet at Master, then a mute gain.
+ * Loops keep their source nodes and glide to each frame's targets; one-shots start
+ * new sources, taking the next recording of their pool, a little detuned. Browser
+ * only: its decisions live in `soundTargets`, `oneShotJitter`, `airCutoff` and
+ * `audioState`.
  */
 export class AudioEngine {
   private readonly master: GainNode;
   private readonly mute: GainNode;
   private readonly muffle: BiquadFilterNode;
   private readonly buses: Record<Bus, GainNode>;
-  /** The Sea level again, on a path that skips the muffle (see `UNMUFFLED_LOOPS`). */
+  /** The Sea level again, on a path that skips the water's muffle (see `UNMUFFLED_LOOPS`). */
   private readonly seaDry: GainNode;
+  /** That path's low-pass: the pause menu's share of the muffle only. */
+  private readonly dryMuffle: BiquadFilterNode;
   private readonly loops = new Map<string, Loop>();
   private bank: SoundBank;
 
@@ -62,7 +65,7 @@ export class AudioEngine {
     // Safari 16.4+: an ambient session, so the iPhone's silent switch mutes the game.
     const session = (globalThis.navigator as unknown as { audioSession?: { type: string } } | undefined)?.audioSession;
     if (session) session.type = 'ambient';
-    return new AudioEngine(new Context());
+    return new AudioEngine(openContext(Context));
   }
 
   private constructor(readonly context: AudioContext) {
@@ -87,8 +90,12 @@ export class AudioEngine {
     this.buses.sea.connect(this.muffle);
     this.buses.board.connect(this.muffle);
     this.buses.ui.connect(this.master);
+    this.dryMuffle = c.createBiquadFilter();
+    this.dryMuffle.type = 'lowpass';
+    this.dryMuffle.frequency.value = CLEAR_HZ;
+    this.dryMuffle.connect(this.master);
     this.seaDry = c.createGain();
-    this.seaDry.connect(this.master);
+    this.seaDry.connect(this.dryMuffle);
     this.bank = new SoundBank(c, { sounds: {} });
   }
 
@@ -171,7 +178,8 @@ export class AudioEngine {
     if (c.state !== 'running') return;
     const now = c.currentTime;
     this.placeListener(listener, now);
-    this.muffle.frequency.setTargetAtTime(CLEAR_HZ * (MUFFLED_HZ / CLEAR_HZ) ** targets.muffle, now, RAMP * 2);
+    this.muffle.frequency.setTargetAtTime(muffleCutoff(targets.muffle), now, RAMP * 2);
+    this.dryMuffle.frequency.setTargetAtTime(muffleCutoff(targets.pauseMuffle), now, RAMP * 2);
     for (const target of targets.loops) {
       let loop = this.loops.get(target.key);
       const buffer = this.bank.buffer(target.id);
@@ -191,12 +199,11 @@ export class AudioEngine {
     }
     for (const shot of targets.oneShots) {
       const source = c.createBufferSource();
-      // The next recording of the sound's pool (never the one just played), a little off in pitch and level each time.
-      const jitter = oneShotJitter(shot.id, Math.random(), Math.random());
+      // The next recording of the sound's pool (never the one just played), a little off in pitch each time; its level is the shot's own.
       source.buffer = this.bank.variant(shot.id);
-      source.playbackRate.value = shot.rate * jitter.rate * targets.playbackRate;
+      source.playbackRate.value = shot.rate * oneShotJitter(shot.id, Math.random()) * targets.playbackRate;
       const gain = c.createGain();
-      gain.gain.value = shot.gain * jitter.gain * this.bank.gain(shot.id);
+      gain.gain.value = shot.gain * this.bank.gain(shot.id);
       const air = this.air(airCutoff(distance(listener, shot.position)));
       const panner = this.panner();
       this.place(panner, shot.position, now, true);
@@ -290,6 +297,25 @@ export class AudioEngine {
       listener.setOrientation(pose.forward.x, pose.forward.y, pose.forward.z, 0, 1, 0);
     }
   }
+}
+
+/**
+ * A context at the recordings' rate, or at the device's own where a browser refuses that rate. decodeAudioData
+ * resamples a file to its context's rate as a clip with two ends, so at another rate (48 kHz is common) every loop's
+ * wrap would carry the resampler's edge, a treble burst the file does not have. At the recordings' rate a loop plays
+ * its decoded samples as they are, and the browser resamples the context's output as one stream, which has no edges.
+ */
+function openContext(Context: typeof AudioContext): AudioContext {
+  try {
+    return new Context({ sampleRate: RECORDING_RATE });
+  } catch {
+    return new Context();
+  }
+}
+
+/** A muffle's cutoff, Hz: clear at 0, fully muffled at 1, log-spaced between. */
+function muffleCutoff(amount: number): number {
+  return CLEAR_HZ * (MUFFLED_HZ / CLEAR_HZ) ** amount;
 }
 
 /** Metres between the camera and a source. */

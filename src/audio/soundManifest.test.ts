@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { SoundBank, type AudioContextLike } from './SoundBank';
-import { MAX_POOL, candidateFiles, parseManifest } from './soundManifest';
+import { MAX_POOL, RECORDING_RATE, candidateFiles, parseManifest } from './soundManifest';
 import type { SoundId } from './synth';
 
 const candidate = { file: 'roar.m4a', source: 'https://freesound.org/s/1/', author: 'someone', licence: 'CC0' };
@@ -104,6 +104,17 @@ describe('the shipped manifest (public/assets/audio/sounds.json)', () => {
     }
     const shipped = readdirSync(folder).filter((name) => name.endsWith('.m4a'));
     expect([...shipped].sort()).toEqual([...listed].sort());
+  });
+
+  // The engine runs at the recordings' rate, so decodeAudioData never resamples one (a resampled loop's wrap has edges).
+  it('ships every recording at the engine\'s rate', () => {
+    for (const file of readdirSync(folder).filter((name) => name.endsWith('.m4a'))) {
+      const bytes = readFileSync(`${folder}/${file}`);
+      const at = bytes.indexOf('mdhd');
+      expect(at, file).toBeGreaterThan(0);
+      // The media header's timescale: after its version, flags and two times (32-bit in version 0, 64-bit in 1).
+      expect(bytes.readUInt32BE(at + (bytes[at + 4] === 1 ? 24 : 16)), file).toBe(RECORDING_RATE);
+    }
   });
 });
 

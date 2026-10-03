@@ -218,27 +218,35 @@ describe('what the world\'s muffle leaves alone', () => {
       expect(ids).toContain(id);
     }
   });
+
+  it('gives the pause menu its own share of the muffle, which the bubbles still take', () => {
+    const under = { x: 0, y: -1, z: 0, underwater: true };
+    const running = soundTargets(frame({ listener: under }));
+    expect(running.muffle).toBe(1);
+    expect(running.pauseMuffle).toBe(0);
+    const paused = soundTargets(frame({ listener: under, paused: true }));
+    expect(paused.muffle).toBe(1);
+    expect(paused.pauseMuffle).toBeGreaterThan(0.5);
+    // Above water the pause menu's share is the whole muffle.
+    const pausedDry = soundTargets(frame({ paused: true }));
+    expect(pausedDry.pauseMuffle).toBe(pausedDry.muffle);
+    expect(soundTargets(frame()).pauseMuffle).toBe(0);
+  });
 });
 
 describe('oneShotJitter', () => {
   it('changes nothing at the middle of the draw, and spans its range at the ends', () => {
-    expect(oneShotJitter('lipJet', 0.5, 0.5)).toEqual({ rate: 1, gain: 1 });
-    const low = oneShotJitter('lipJet', 0, 0);
-    const high = oneShotJitter('lipJet', 1, 1);
-    expect(low.rate).toBeCloseTo(2 ** (-1 / 12), 9);
-    expect(high.rate).toBeCloseTo(2 ** (1 / 12), 9);
-    expect(low.gain).toBeCloseTo(10 ** (-1.5 / 20), 9);
-    expect(high.gain).toBeCloseTo(10 ** (1.5 / 20), 9);
+    expect(oneShotJitter('lipJet', 0.5)).toBe(1);
+    expect(oneShotJitter('lipJet', 0)).toBeCloseTo(2 ** (-1 / 12), 9);
+    expect(oneShotJitter('lipJet', 1)).toBeCloseTo(2 ** (1 / 12), 9);
   });
 
-  it('varies the lip roller\'s pitch only, the paddle\'s pitch and level by more, and the rest not at all', () => {
-    expect(oneShotJitter('lipRoller', 0, 0).gain).toBe(1);
-    expect(oneShotJitter('lipRoller', 0, 0).rate).toBeCloseTo(2 ** (-1 / 12), 9);
-    expect(oneShotJitter('paddle', 1, 1).rate).toBeCloseTo(2 ** (1.5 / 12), 9);
-    expect(oneShotJitter('paddle', 1, 1).gain).toBeCloseTo(10 ** (1.5 / 20), 9);
+  it('detunes the lip roller as much as the jet, the paddle by more, and the rest not at all', () => {
+    expect(oneShotJitter('lipRoller', 0)).toBeCloseTo(2 ** (-1 / 12), 9);
+    expect(oneShotJitter('paddle', 1)).toBeCloseTo(2 ** (1.5 / 12), 9);
     for (const id of ['popUp', 'plunge', 'leashSnap', 'knock', 'duckDive'] as const) {
       expect(ONE_SHOT_JITTER[id]).toBeUndefined();
-      expect(oneShotJitter(id, 0, 1)).toEqual({ rate: 1, gain: 1 });
+      expect(oneShotJitter(id, 0)).toBe(1);
     }
   });
 });

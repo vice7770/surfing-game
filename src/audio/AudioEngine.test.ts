@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LIP_HIT_STRIDE, ROAR_SECTORS, SOUND_EVENT_CAPACITY, STROKE_HIT_STRIDE } from '../wave/SurfZoneRunner';
 import { AudioEngine, type ListenerPose } from './AudioEngine';
-import { parseManifest } from './soundManifest';
+import { RECORDING_RATE, parseManifest } from './soundManifest';
 import { soundTargets, type SoundFrame, type SoundTargets } from './soundMapping';
 
 /**
@@ -110,6 +110,30 @@ afterEach(() => {
 /** The muffle is the filter the world's buses end in: the first low-pass built. */
 const muffle = () => context.filters[0];
 
+describe('AudioEngine context', () => {
+  it('runs at the recordings\' rate, so a browser never resamples a decoded loop', () => {
+    const asked: unknown[] = [];
+    vi.stubGlobal('AudioContext', function AudioContext(options?: unknown) {
+      asked.push(options);
+      return context;
+    });
+    expect(AudioEngine.create()).toBeDefined();
+    expect(asked).toEqual([{ sampleRate: RECORDING_RATE }]);
+    expect(RECORDING_RATE).toBe(44100);
+  });
+
+  it('opens at the device\'s own rate where a browser refuses that one', () => {
+    const asked: unknown[] = [];
+    vi.stubGlobal('AudioContext', function AudioContext(options?: unknown) {
+      asked.push(options);
+      if (options !== undefined) throw new Error('NotSupportedError');
+      return context;
+    });
+    expect(AudioEngine.create()).toBeDefined();
+    expect(asked).toEqual([{ sampleRate: RECORDING_RATE }, undefined]);
+  });
+});
+
 describe('AudioEngine routing', () => {
   it('sends the bubbles to Master without passing the muffle, and the world through it', () => {
     const roar = new Float32Array(ROAR_SECTORS * 3);
@@ -126,6 +150,22 @@ describe('AudioEngine routing', () => {
     expect(path(wind.source, master)).toContain(muffle());
     const rush = engine['loops'].get('rush')!;
     expect(path(rush.source, master)).toContain(muffle());
+  });
+
+  it('muffles the bubbles under the pause menu, though never as the water muffles the world', () => {
+    const under = { x: 0, y: -1, z: 0, underwater: true };
+    const bubblesLowPass = () => path(engine['loops'].get('bubbles')!.source, context.destination)!.filter((n): n is Biquad => n instanceof Biquad);
+    engine.update(soundTargets(frame({ listener: under })), LISTENER, 1 / 60);
+    expect(muffle().frequency.value).toBeCloseTo(400, 6);
+    expect(bubblesLowPass()).toHaveLength(1);
+    expect(bubblesLowPass()[0].frequency.value).toBeCloseTo(18000, 6);
+    engine.update(soundTargets(frame({ listener: under, paused: true })), LISTENER, 1 / 60);
+    expect(muffle().frequency.value).toBeCloseTo(400, 6);
+    // The paused bed's cutoff (about 708 Hz), as for the world above water.
+    const pausedAbove = soundTargets(frame({ paused: true }));
+    expect(bubblesLowPass()[0].frequency.value).toBeCloseTo(18000 * (400 / 18000) ** pausedAbove.muffle, 6);
+    expect(bubblesLowPass()[0].frequency.value).toBeGreaterThan(600);
+    expect(bubblesLowPass()[0].frequency.value).toBeLessThan(800);
   });
 
   it('keeps the bubbles at the Sea level, wherever the volume is set', () => {
@@ -174,7 +214,7 @@ describe('AudioEngine one-shots', () => {
     expect(chain.findIndex((n) => n instanceof Panner)).toBeGreaterThan(chain.indexOf(filters[0]));
   });
 
-  it('varies a paddle stroke in pitch and level within the jitter, and holds a plunge steady', () => {
+  it('detunes a paddle stroke within the jitter, and never draws its level at random', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
     engine.update(stroke(), LISTENER, 1 / 60);
     vi.spyOn(Math, 'random').mockReturnValue(0.999999);
@@ -184,8 +224,10 @@ describe('AudioEngine one-shots', () => {
     const [low, high] = shots;
     expect(low.playbackRate.value).toBeCloseTo(2 ** (-1.5 / 12), 3);
     expect(high.playbackRate.value).toBeCloseTo(2 ** (1.5 / 12), 3);
+    // The same stroke at the two ends of every draw: the same level, the one its work gives.
     const gainOf = (s: Source) => (path(s, context.destination)!.find((n) => n instanceof Gain) as Gain).gain.value;
-    expect(gainOf(high) / gainOf(low)).toBeCloseTo(10 ** (3 / 20), 3);
+    expect(gainOf(high)).toBe(gainOf(low));
+    expect(gainOf(low)).toBeCloseTo(stroke().oneShots[0].gain, 12);
   });
 
   it('plays the next recording of a pool each time, never the same one twice running', async () => {

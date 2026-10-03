@@ -50,6 +50,11 @@ export interface SoundTargets {
   oneShots: { id: OneShotId; gain: number; rate: number; position: Position }[];
   /** 0 clear … 1 fully muffled (under water). */
   muffle: number;
+  /**
+   * The pause menu's share of the muffle (0, or the paused bed's): the part that also covers the loops made
+   * under water (`UNMUFFLED_LOOPS`), which skip the water's own muffle but not the menu's.
+   */
+  pauseMuffle: number;
   /** Playback rate of everything: the simulation's time scale. */
   playbackRate: number;
 }
@@ -58,32 +63,26 @@ export interface SoundTargets {
 export const ONE_SHOT_CAP = 32;
 
 /**
- * Loops heard without the world's muffle (the underwater low-pass, the paused bed):
- * they are made under water, so the water's filter must not colour them. The muffle
- * is for what the camera hears through the surface.
+ * Loops heard without the water's muffle (the underwater low-pass): they are made
+ * under water, so the water's filter must not colour them. That muffle is for what
+ * the camera hears through the surface. The pause menu's muffle (`pauseMuffle`)
+ * still covers them, as it covers everything in the world.
  */
 export const UNMUFFLED_LOOPS: readonly LoopId[] = ['bubbles'];
 
 /**
- * How much a sound that fires often varies from shot to shot (provisional, by
- * ear): its pitch by up to this many semitones either way, its level by up to
- * this many dB. Together with a pool of recordings it keeps a landing or a stroke
- * from repeating itself.
+ * How far a sound that fires often is detuned from shot to shot (provisional, by
+ * ear): its playback rate by up to this many semitones either way. Together with a
+ * pool of recordings it keeps a landing or a stroke from repeating itself. Only the
+ * pitch varies: a shot's level always comes from its measured quantity, so no level
+ * is drawn at random.
  */
-export const ONE_SHOT_JITTER: Partial<Record<OneShotId, { semitones: number; gainDb: number }>> = {
-  lipJet: { semitones: 1, gainDb: 1.5 },
-  lipRoller: { semitones: 1, gainDb: 0 },
-  paddle: { semitones: 1.5, gainDb: 1.5 },
-};
+export const ONE_SHOT_JITTER: Partial<Record<OneShotId, number>> = { lipJet: 1, lipRoller: 1, paddle: 1.5 };
 
-/** A shot's playback-rate and level factors from two uniform draws in [0, 1): 0.5 is no change. */
-export function oneShotJitter(id: OneShotId, pitchDraw: number, levelDraw: number): { rate: number; gain: number } {
-  const jitter = ONE_SHOT_JITTER[id];
-  if (!jitter) return { rate: 1, gain: 1 };
-  return {
-    rate: 2 ** ((jitter.semitones * (2 * pitchDraw - 1)) / 12),
-    gain: 10 ** ((jitter.gainDb * (2 * levelDraw - 1)) / 20),
-  };
+/** A shot's playback-rate factor from a uniform draw in [0, 1): 0.5 is no change. */
+export function oneShotJitter(id: OneShotId, draw: number): number {
+  const semitones = ONE_SHOT_JITTER[id];
+  return semitones ? 2 ** ((semitones * (2 * draw - 1)) / 12) : 1;
 }
 
 /**
@@ -320,6 +319,7 @@ export function soundTargets(frame: SoundFrame, shaper = new OneShotShaper()): S
     loops,
     oneShots,
     muffle: listener.underwater || frame.ride?.headUnder ? 1 : paused ? PAUSED_MUFFLE : 0,
+    pauseMuffle: paused ? PAUSED_MUFFLE : 0,
     playbackRate: frame.timeScale,
   };
 }

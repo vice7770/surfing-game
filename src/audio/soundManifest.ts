@@ -14,6 +14,12 @@ const LICENCES: readonly SoundLicence[] = ['CC0', 'generated'];
 /** Most recordings one candidate may pool. */
 export const MAX_POOL = 16;
 
+/**
+ * The rate every recording is made at, Hz. The engine runs its context at it, so a browser never resamples a
+ * recording as it decodes it (see `openContext` in AudioEngine.ts).
+ */
+export const RECORDING_RATE = 44100;
+
 export interface SoundCandidate {
   file: string;
   /**
@@ -25,7 +31,7 @@ export interface SoundCandidate {
   /**
    * This candidate's level against the sound's `gain`, 0–2 (1 when absent). It
    * matches the candidates of one sound in loudness, so the sound check's A/B does
-   * not favour the louder file.
+   * not favour the louder file. Provisional: measured (docs/ASSETS.md), not heard.
    */
   level?: number;
   /** Where it came from: the file's URL for CC0, or for a generated one the generator and date. */
