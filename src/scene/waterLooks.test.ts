@@ -250,13 +250,20 @@ describe('Classic water parity', () => {
     }
     // Plain ASCII: some drivers refuse anything else in a shader.
     for (const chunk of [RICH_FOAM, RICH_FAR_FOAM]) expect(/^[\x09\x0a\x20-\x7e]*$/.test(chunk)).toBe(true);
-    // The far ocean and the curl lay it over the body itself, the light under the foam unfocused (the curl's caustics); the
-    // tank over the body the plume whitens.
-    for (const { fragment } of [compiled(ocean.mesh.material), compiled(curl.mesh.material)]) {
-      expect(fragment).toContain(
-        '( ( 1.0 - waterCover ) * waterBody + ( waterCover - waterFoamR ) * min( waterBody, max( waterDeepReflectance, waterBedAlbedo ) ) ) / ( 1.0 - waterFoamR * min( waterBody, max( waterDeepReflectance, waterBedAlbedo ) ) )',
-      );
+    // The layer's form, whichever chunk a program draws its foam with (the curl draws with the far ocean's today, and with the
+    // tank's where it rests on the water): the open share of the pixel keeps the water as lit, the share the foam covers sees
+    // it as the foam has diffused the light, unfocused, and that same unfocused water is the one the light bounces between
+    // the foam and the water. The tank lays it over the body its plume whitens, the far ocean over the body itself.
+    const layer = /diffuseColor\.rgb = waterBodyGain \* \( vec3\( waterFoamR \) \+ waterFoamT \* \( \( 1\.0 - waterCover \) \* (.+?) \+ \( waterCover - waterFoamR \) \* (.+?) \) \/ \( 1\.0 - waterFoamR \* (.+?) \) \);/;
+    for (const { fragment } of [compiled(tank.mesh.material), compiled(ocean.mesh.material), compiled(curl.mesh.material)]) {
+      const match = layer.exec(fragment);
+      expect(match).not.toBeNull();
+      const [, focused, unfocused, bounced] = match as RegExpExecArray;
+      expect(unfocused).toBe(bounced);
+      expect(unfocused).not.toBe(focused);
     }
+    // The far ocean's unfocused water is its body held to the brighter of R-infinity and the bed's albedo.
+    expect(compiled(ocean.mesh.material).fragment).toContain('min( waterBody, max( waterDeepReflectance, waterBedAlbedo ) )');
   });
 
   it('draws the far ocean’s and the curl’s Rich foam from the water’s foam field, not the Classic network', () => {
@@ -266,8 +273,9 @@ describe('Classic water parity', () => {
     ocean.setLook('rich');
     const curl = new SweptBarrelMesh(tank.materialUniforms);
     curl.setLook('rich');
+    // Each draws its foam by calling the field, whichever chunk it composes it with, and never the Classic network.
     for (const { fragment } of [compiled(ocean.mesh.material), compiled(curl.mesh.material)]) {
-      expect(fragment).toContain('vec2 waterField = waterFoamField( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterAge, max( waterFootprint.x, waterFootprint.y ) );');
+      expect(fragment).toMatch(/vec2 waterField = waterFoamField\( vWaterWorld\.xz, vWaterFlow, vWaterFoam, waterAge, /);
       expect(fragment).not.toContain('waterFoamCover( vWaterWorld.xz');
     }
     // Every Rich program carries the field, guarded so the tank, which lists it twice, defines it once.
