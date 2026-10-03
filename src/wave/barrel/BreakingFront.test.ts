@@ -743,13 +743,16 @@ describe('the clock link', () => {
   /**
    * The front from before the clock link (at the merge of #105 into this branch, before the switch was added), run on
    * these crest lines and fingerprinted. A ruled change to the switch-off front recomputes them, and says so in its commit.
+   * On the owner's test build the front before the link is PR 5's (#102), whose points carry their crest's speed from the
+   * samples' `speed`, so the hashes are its own (taken from e88a6437f, the build before the link's merge, which the merged
+   * front matched step for step); the counts are the same.
    */
   const BEFORE = {
     // The jump rule changes nothing on the three lines: no crest there has another in its column within its reach.
-    'three lines, no rules': { hash: '8c2ceb2e', points: 4739, fronts: 1330, splits: 258 },
-    'three lines, Padang Padang': { hash: '8c2ceb2e', points: 4739, fronts: 1330, splits: 258 },
-    'crowded rows, no rules': { hash: '6897fabe', points: 4772, fronts: 1344, splits: 152 },
-    'crowded rows, Padang Padang': { hash: 'd250e721', points: 4772, fronts: 1344, splits: 152 },
+    'three lines, no rules': { hash: 'b876f66e', points: 4739, fronts: 1330, splits: 258 },
+    'three lines, Padang Padang': { hash: 'b876f66e', points: 4739, fronts: 1330, splits: 258 },
+    'crowded rows, no rules': { hash: '1064366d', points: 4772, fronts: 1344, splits: 152 },
+    'crowded rows, Padang Padang': { hash: '69752bf0', points: 4772, fronts: 1344, splits: 152 },
   };
 
   it('is the front from before the clock link, step for step, with the switch off', () => {
