@@ -1,7 +1,10 @@
+import type { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { LIP_STRIDE } from '../wave/SurfZoneRunner';
 import { LipSheetMesh, buildLipSheet } from './LipSheetMesh';
 import { LIP_SUBDIVISIONS, buildRichLipSheet } from './water/richLip';
+import { richBeamAttenuation, richDeepReflectance } from './water/richOptics';
+import { SPOT_OPTICS } from './waterOptics';
 
 /** Parcels of strips in the snapshot's layout: x, y, z, column, index, launch time, age. */
 function strips(...defs: { column: number; launchTime: number; indices?: number[]; kind?: number }[]): { parcels: Float32Array; count: number } {
@@ -92,5 +95,15 @@ describe('lip sheet mesh', () => {
     const { parcels, count } = strips({ column: 4, launchTime: 1 });
     const sheet = buildLipSheet(parcels, count, 1);
     expect(Math.max(...sheet.foam)).toBeGreaterThan(Math.min(...sheet.foam));
+  });
+});
+
+describe('the Rich lip’s water', () => {
+  it('is the Rich look’s own sourced water, as the tank’s, so a lip matches the sea it is thrown from', () => {
+    const lip = new LipSheetMesh();
+    lip.setOptics(SPOT_OPTICS.beach);
+    const uniforms = (lip as unknown as { richUniforms: Record<string, { value: Vector3 }> }).richUniforms;
+    expect(uniforms.waterDeepReflectance.value.toArray()).toEqual([...richDeepReflectance(SPOT_OPTICS.beach)]);
+    expect(uniforms.waterAttenuation.value.toArray()).toEqual([...richBeamAttenuation(SPOT_OPTICS.beach)]);
   });
 });

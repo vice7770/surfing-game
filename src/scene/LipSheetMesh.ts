@@ -5,7 +5,8 @@ import { RICH_LIP_REFLECTION, buildRichLipSheet, richLipBeginVertex, richLipBody
 import { RICH_WATER } from './water/richWaterGlsl';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import type { WaterLook } from './water/waterLook';
-import { WATER_IOR, applyOptics, applySun, createOpticsUniforms, type WaterOptics } from './waterOptics';
+import { WATER_IOR, applySun, createOpticsUniforms, type WaterOptics } from './waterOptics';
+import { applyRichWater } from './water/richOptics';
 
 /** Lip water whitens to foam over this long in the air, s. */
 const FOAM_AGE = 0.6;
@@ -208,9 +209,9 @@ export class LipSheetMesh {
     applySun(this.richUniforms, direction, radiance);
   }
 
-  /** The spot's water optics (the Rich lip's body and the light through it). */
+  /** The spot's water optics: the Rich lip's body and the light through it are the Rich look's own water, as the tank's. */
   setOptics(optics: WaterOptics): void {
-    applyOptics(this.richUniforms, optics);
+    applyRichWater(this.richUniforms, optics);
     this.richUniforms.waterBodyGain.value = RICH_WATER.bodyGain;
   }
 
