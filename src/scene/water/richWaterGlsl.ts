@@ -68,12 +68,19 @@ vWaterSkirt = skirt;`;
 
 /**
  * GLSL: the foam as a layer that adds light to the water under it (`foamOverWater`, with `FOAM_ALBEDO`), and Rich's
- * gain on the whole, not on the water alone. `under` is the water's reflectance before the gain, `reflectance` the
- * layer's; it needs `waterBodyGain`. The foam is white, whatever the light: it takes the colour of the sky and sun
- * that fall on it, where it used to be tinted mint.
+ * gain on the whole, not on the water alone. `under` is the water's reflectance before the gain, as lit (the caustics'
+ * focus and all), `unfocused` the same water under light the foam has diffused, `cover` the share of the pixel the foam
+ * covers and `reflectance` the layer's (at most the cover); it needs `waterBodyGain`. The foam is white, whatever the
+ * light: it takes the colour of the sky and sun that fall on it, where it used to be tinted mint.
  */
-const foamLayer = (under: string, reflectance: string) => `float waterFoamT = 1.0 - ${reflectance};
-  diffuseColor.rgb = waterBodyGain * ( vec3( ${reflectance} ) + waterFoamT * waterFoamT * ${under} / ( 1.0 - ${reflectance} * ${under} ) );`;
+const foamLayer = (under: string, unfocused: string, cover: string, reflectance: string) => `float waterFoamT = 1.0 - ${reflectance};
+  diffuseColor.rgb = waterBodyGain * ( vec3( ${reflectance} ) + waterFoamT * ( ( 1.0 - ${cover} ) * ${under} + ( ${cover} - ${reflectance} ) * ${unfocused} ) / ( 1.0 - ${reflectance} * ${unfocused} ) );`;
+
+/**
+ * GLSL: the water `body` lit without the caustics' focus, as the light under foam is (`unfocusedWater`): a column's
+ * reflectance lies between R∞ and the bed's albedo, so never above the larger, and never above 1.
+ */
+const unfocusedBody = (body: string) => `min( ${body}, max( waterDeepReflectance, waterBedAlbedo ) )`;
 
 /** GLSL: the reflectance of foam by its age proxy `age` (`foamAge`): fresh whitewater to lace. */
 const foamAlbedoAt = (age: string) => `mix( ${FOAM_ALBEDO.fresh.toFixed(3)}, ${FOAM_ALBEDO.lace.toFixed(3)}, ${age} )`;
@@ -93,7 +100,8 @@ const foamDense = (foam: string) => `smoothstep( ${FOAM_DENSE[0].toFixed(2)}, ${
  * The foam is a layer that adds light to that water (`foamLayer`): bright
  * white where it is fresh (0.55), dimmer as lace (0.25), a veil as streaks (0.10),
  * and a single layer of bubbles (also 0.10) at the edge of a patch, thickening to
- * its stage's reflectance within `FOAM_THICK` sigma of the field.
+ * its stage's reflectance within `FOAM_THICK` sigma of the field. The light it lets
+ * through is diffuse, so under it the caustics lose their focus.
  */
 export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );
   float waterFresh = waterFreshness( vWaterAir ) * waterFoamPattern;
@@ -107,10 +115,12 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
   float waterCrease = mix( 1.0, 0.88 + 0.12 * waterChurn.y, waterFresh );
   float waterPlume = 1.0 - exp( -PLUME_DENSITY * vWaterAir * min( vWaterPlumeDepth, vWaterDepth ) );
   float waterPlumePath = faceDirection > 0.0 ? 0.5 * min( vWaterPlumeDepth, vWaterDepth ) / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;
-  vec3 waterUnder = mix( waterBody, waterFoamColor * exp( -waterAttenuation * waterPlumePath ) / waterBodyGain, waterPlume );
+  vec3 waterPlumeColor = waterFoamColor * exp( -waterAttenuation * waterPlumePath ) / waterBodyGain;
+  vec3 waterUnder = mix( waterBody, waterPlumeColor, waterPlume );
+  vec3 waterUnfocused = mix( ${unfocusedBody('waterBody')}, waterPlumeColor, waterPlume );
   float waterFoamR = max( waterCover * waterCrease * mix( ${FOAM_ALBEDO.streak.toFixed(3)}, ${foamAlbedoAt('waterAge')}, waterThick ), waterStreakCover * ${FOAM_ALBEDO.streak.toFixed(3)} );
-  ${foamLayer('waterUnder', 'waterFoamR')}
   waterCover = max( waterCover, waterStreakCover );
+  ${foamLayer('waterUnder', 'waterUnfocused', 'waterCover', 'waterFoamR')}
   ${RICH_SPECULAR}
   roughnessFactor = mix( roughnessFactor, 0.7, waterCover );
   totalEmissiveRadiance += 0.18 * waterFresh * ( 1.0 - waterChurn.x ) * pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 6.0 ) * waterSunRadiance;`;
@@ -143,7 +153,7 @@ export const RICH_REFLECTION = `#include <lights_fragment_maps>
 export const RICH_FAR_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );
   float waterCover = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
   float waterFoamR = waterCover * ${foamAlbedoAt(`( 1.0 - ${foamDense('vWaterFoam')} )`)};
-  ${foamLayer('waterBody', 'waterFoamR')}
+  ${foamLayer('waterBody', unfocusedBody('waterBody'), 'waterCover', 'waterFoamR')}
   ${RICH_SPECULAR}
   roughnessFactor = mix( roughnessFactor, 0.7, waterCover );`;
 

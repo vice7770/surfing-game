@@ -214,8 +214,13 @@ describe('Classic water parity', () => {
     expect(fragment).toContain('float waterPlume = 1.0 - exp( -PLUME_DENSITY * vWaterAir * min( vWaterPlumeDepth, vWaterDepth ) );');
     expect(fragment).toContain('float waterPlumePath = faceDirection > 0.0 ? 0.5 * min( vWaterPlumeDepth, vWaterDepth ) / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;');
     // The plume keeps the colour it had as displayed; Rich's gain now multiplies the whole, foam layer included.
-    expect(fragment).toContain('vec3 waterUnder = mix( waterBody, waterFoamColor * exp( -waterAttenuation * waterPlumePath ) / waterBodyGain, waterPlume );');
-    expect(fragment).toContain('diffuseColor.rgb = waterBodyGain * ( vec3( waterFoamR ) + waterFoamT * waterFoamT * waterUnder / ( 1.0 - waterFoamR * waterUnder ) );');
+    expect(fragment).toContain('vec3 waterPlumeColor = waterFoamColor * exp( -waterAttenuation * waterPlumePath ) / waterBodyGain;');
+    expect(fragment).toContain('vec3 waterUnder = mix( waterBody, waterPlumeColor, waterPlume );');
+    // Light the foam has diffused is not focused: under foam the caustics lose their focus, and the bounces stay finite.
+    expect(fragment).toContain('vec3 waterUnfocused = mix( min( waterBody, max( waterDeepReflectance, waterBedAlbedo ) ), waterPlumeColor, waterPlume );');
+    expect(fragment).toContain(
+      'diffuseColor.rgb = waterBodyGain * ( vec3( waterFoamR ) + waterFoamT * ( ( 1.0 - waterCover ) * waterUnder + ( waterCover - waterFoamR ) * waterUnfocused ) / ( 1.0 - waterFoamR * waterUnfocused ) );',
+    );
     // A fully aerated metre of plume reads near white.
     expect(1 - Math.exp(-PLUME_DENSITY * 0.2 * 1)).toBeGreaterThan(0.9);
   });
@@ -230,7 +235,7 @@ describe('Classic water parity', () => {
     const reflectances = `mix( ${FOAM_ALBEDO.fresh.toFixed(3)}, ${FOAM_ALBEDO.lace.toFixed(3)}, `;
     for (const { fragment } of [compiled(tank.mesh.material), compiled(ocean.mesh.material), compiled(curl.mesh.material)]) {
       expect(fragment).toContain('float waterFoamT = 1.0 - waterFoamR;');
-      expect(fragment).toContain('diffuseColor.rgb = waterBodyGain * ( vec3( waterFoamR ) + waterFoamT * waterFoamT * ');
+      expect(fragment).toContain('diffuseColor.rgb = waterBodyGain * ( vec3( waterFoamR ) + waterFoamT * ( ( 1.0 - waterCover ) * ');
       expect(fragment).toContain(reflectances);
       // Not an opaque tint laid over a gained water.
       expect(fragment).not.toContain('waterFoamColor * waterCrease');
@@ -238,9 +243,12 @@ describe('Classic water parity', () => {
     }
     // Plain ASCII: some drivers refuse anything else in a shader.
     for (const chunk of [RICH_FOAM, RICH_FAR_FOAM]) expect(/^[\x09\x0a\x20-\x7e]*$/.test(chunk)).toBe(true);
-    // The far ocean and the curl lay it over the body itself; the tank over the body the plume whitens.
+    // The far ocean and the curl lay it over the body itself, the light under the foam unfocused (the curl's caustics); the
+    // tank over the body the plume whitens.
     for (const { fragment } of [compiled(ocean.mesh.material), compiled(curl.mesh.material)]) {
-      expect(fragment).toContain('waterFoamT * waterFoamT * waterBody / ( 1.0 - waterFoamR * waterBody )');
+      expect(fragment).toContain(
+        '( ( 1.0 - waterCover ) * waterBody + ( waterCover - waterFoamR ) * min( waterBody, max( waterDeepReflectance, waterBedAlbedo ) ) ) / ( 1.0 - waterFoamR * min( waterBody, max( waterDeepReflectance, waterBedAlbedo ) ) )',
+      );
     }
   });
 
