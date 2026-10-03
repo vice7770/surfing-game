@@ -1,0 +1,54 @@
+from pathlib import Path
+import json,base64,struct,math,hashlib
+from PIL import Image
+from collections import defaultdict,Counter
+root=Path('/private/tmp');out={'schema':1,'method':'Pure opaque foreground IDs from exact-repeat fixed-FBO companion; baseline/candidate share current indexed geometry, camera, height inputs and clock. Actual GPU-displaced water worlds, with encoding/reprojection guards, compared against same-front indexed swept top/under/face layers. Swept vertex shader uses vec3(position), so indexed xz/y are its actual projection. No raw CPU water vertices are treated as GPU points.','pairs':[]}
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def decode(p):
+ types={'Uint32Array':('I',4),'Float32Array':('f',4),'Uint8Array':('B',1)};kind,size=types[p['type']];b=base64.b64decode(p['base64']);assert len(b)==p['length']*size;return struct.unpack('<'+kind*p['length'],b)
+def ids(p):return list(Image.open(p).convert('RGB').transpose(Image.Transpose.FLIP_TOP_BOTTOM).getdata())
+colours={(0,0,255):'water',(255,0,0):'swept',(255,255,0):'bed',(255,0,255):'farField'}
+def layer(j):return 'back'if j<35 else'top'if j<=67 else'under'if j<=91 else'face'if j<=115 else'rest'
+def spatial(L):
+ T=[];cells=defaultdict(list);P=L['positions'];S=134
+ for t in range(0,L['indexCount'],3):
+  vs=L['indices'][t:t+3];s=min(v//S for v in vs);row=min(v%S for v in vs);a,b,c=[P[3*v:3*v+3]for v in vs];d=(b[2]-c[2])*(a[0]-c[0])+(c[0]-b[0])*(a[2]-c[2]);
+  if abs(d)<1e-12:continue
+  index=len(T);T.append((a,b,c,d,s,row,L['sliceFront'][s],vs))
+  for x in range(math.floor(min(v[0]for v in[a,b,c])/2),math.floor(max(v[0]for v in[a,b,c])/2)+1):
+   for z in range(math.floor(min(v[2]for v in[a,b,c])/2),math.floor(max(v[2]for v in[a,b,c])/2)+1):cells[x,z].append(index)
+ return T,cells
+def airAt(T,cells,x,y,z):
+ groups=defaultdict(list)
+ for i in cells.get((math.floor(x/2),math.floor(z/2)),[]):
+  a,b,c,d,s,row,front,vs=T[i];w0=((b[2]-c[2])*(x-c[0])+(c[0]-b[0])*(z-c[2]))/d;w1=((c[2]-a[2])*(x-c[0])+(a[0]-c[0])*(z-c[2]))/d;w2=1-w0-w1
+  if min(w0,w1,w2)<-1e-8:continue
+  yy=w0*a[1]+w1*b[1]+w2*c[1];groups[front].append({'y':yy,'triangle':i,'strip':s,'row':row,'layer':layer(row)})
+ for front,hits in groups.items():
+  hits.sort(key=lambda a:a['y']);unique=[]
+  for h in hits:
+   if not unique or h['y']-unique[-1]['y']>1e-5:unique.append(h)
+  if len(unique)!=3:continue
+  floor,under,top=unique
+  if [h['layer']for h in unique]!=['face','under','top']:continue
+  margin=min(y-floor['y'],under['y']-y)
+  if margin>.02:return {'front':front,'layers':unique,'margin':margin,'gap':under['y']-floor['y']}
+ return None
+for at in [10,20]:
+ L=json.loads((root/f'tube-geometry-final/at-{at}.current.json').read_text())['loft'];T,cells=spatial(L)
+ for view in ['overview','cavity','mouth']:
+  label=f'{at}-{view}';bp=root/f'tube-compiled-baseline/at-{label}.baseline.masked-ids.png';cp=root/f'tube-compiled-candidate/at-{label}.baseline.masked-ids.png';A=ids(bp);B=ids(cp);assert len(A)==len(B)
+  Wp=root/f'tube-compiled-candidate/at-{label}.baseline.water-world.json';W=json.loads(Wp.read_text());indexes=decode(W['indices']);positions=decode(W['positions']);alpha=decode(W['maskAlpha']);dither=decode(W['dither']);world={n:(positions[3*k:3*k+3],alpha[k]/255,dither[k]/255)for k,n in enumerate(indexes)}
+  counts=Counter();probes=[];airCounts=Counter()
+  for n,(a,b)in enumerate(zip(A,B)):
+   fa,fb=colours.get(a,'other'),colours.get(b,'other');counts['sweptBefore']+=fa=='swept';counts['sweptAfter']+=fb=='swept';counts['lostSwept']+=fa=='swept'and fb!='swept';counts['newBed']+=fb=='bed'and fa!='bed';counts['changedIds']+=a!=b
+   if fb=='water'and fa!='water':
+    counts['newWater']+=1;counts['newWaterFrom_'+fa]+=1
+    if n not in world:airCounts['unreliableWorld']+=1;continue
+    xyz,aa,dd=world[n];air=airAt(T,cells,*xyz)
+    if air:
+     airCounts['insideAuthoredAir']+=1;airCounts['insideAirFrom_'+fa]+=1
+     if len(probes)<12:probes.append({'pixel':[n%W['width'],W['height']-1-n//W['width']],'from':fa,'to':fb,'world':xyz,'alpha':aa,'dither':dd,'air':air})
+    else:airCounts['outsideVerifiedAir']+=1
+  out['pairs'].append({'at':at,'view':view,'counts':dict(counts),'restoredWaterAir':dict(airCounts),'probes':probes,'sources':{'baselineIdSha256':sha(bp),'candidateIdSha256':sha(cp),'actualWaterWorldSha256':sha(Wp)},'ownership':W['ownership'],'camera':W['camera'],'clocks':W['clocks']});print(label,dict(counts),dict(airCounts))
+(root/'tube-compiled-ownership-pixels.json').write_text(json.dumps(out,indent=2)+'\n')

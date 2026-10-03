@@ -1,0 +1,418 @@
+{
+  "schema": 1,
+  "method": "Pure opaque foreground IDs from exact-repeat fixed-FBO companion; baseline/candidate share current indexed geometry, camera, height inputs and clock. Actual GPU-displaced water worlds, with encoding/reprojection guards, compared against same-front indexed swept top/under/face layers. Swept vertex shader uses vec3(position), so indexed xz/y are its actual projection. No raw CPU water vertices are treated as GPU points.",
+  "pairs": [
+    {
+      "at": 10,
+      "view": "overview",
+      "counts": {
+        "newBed": 0,
+        "changedIds": 953,
+        "newWater": 725,
+        "newWaterFrom_bed": 722,
+        "newWaterFrom_other": 3,
+        "sweptBefore": 54738,
+        "sweptAfter": 54864,
+        "lostSwept": 0
+      },
+      "restoredWaterAir": {
+        "outsideVerifiedAir": 725
+      },
+      "probes": [],
+      "sources": {
+        "baselineIdSha256": "4c8eb21ccaa3f054fdd5f7135af9d89cb1dd914bc31526b0a937003ae1cf2715",
+        "candidateIdSha256": "cfaeebbb88f2de5b356e9e2f7bd5ffda39ea5330f3c2b0b4228bf1832764fa34",
+        "actualWaterWorldSha256": "716ac03af9bf9dc1e657bab9f32e8eea2292d538fb3eafd3413fbba7a43a162d"
+      },
+      "ownership": {
+        "compiledCandidate": true,
+        "stencilFlag": 1,
+        "stencilBits": 8,
+        "active": 1,
+        "prepassVisible": true,
+        "bedOrder": -30,
+        "waterOrder": -10,
+        "barrelOrder": 0
+      },
+      "camera": {
+        "position": [
+          113.17452738629504,
+          14.592825194729135,
+          20.95674220855646
+        ],
+        "quaternion": [
+          -0.1880636631271282,
+          -0.18263554833558154,
+          -0.03561614470977886,
+          0.9643691229666053
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.050303841579296,
+          0,
+          0,
+          0,
+          0,
+          -1.000066668888963,
+          -1,
+          0,
+          0,
+          -0.2000066668888963,
+          0
+        ]
+      },
+      "clocks": {
+        "snapshot": 173.88921329749155,
+        "shading": 173.88921329749155
+      }
+    },
+    {
+      "at": 10,
+      "view": "cavity",
+      "counts": {
+        "newBed": 0,
+        "changedIds": 447,
+        "newWater": 445,
+        "newWaterFrom_bed": 425,
+        "newWaterFrom_other": 20,
+        "sweptBefore": 687079,
+        "sweptAfter": 687079,
+        "lostSwept": 0
+      },
+      "restoredWaterAir": {
+        "outsideVerifiedAir": 443,
+        "unreliableWorld": 2
+      },
+      "probes": [],
+      "sources": {
+        "baselineIdSha256": "c4579daf37f50528e6f26fb2602231b9b546c3a393c9d0b49de398795a389efe",
+        "candidateIdSha256": "12af1c8c41e7b4a74f6f170c3871222d89791bb5d186980bcc1f26be67802086",
+        "actualWaterWorldSha256": "189f8dd27f6a6df893f41cc0dfddcc33a51dbd14b35a1e75b3fbc8e12fe6a510"
+      },
+      "ownership": {
+        "compiledCandidate": true,
+        "stencilFlag": 1,
+        "stencilBits": 8,
+        "active": 1,
+        "prepassVisible": true,
+        "bedOrder": -30,
+        "waterOrder": -10,
+        "barrelOrder": 0
+      },
+      "camera": {
+        "position": [
+          114.49167762756348,
+          1.0784584572893299,
+          -9.801540737152099
+        ],
+        "quaternion": [
+          0.03478089621050965,
+          0.3814767873317042,
+          -0.014365450585484689,
+          0.9236121392745721
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "clocks": {
+        "snapshot": 173.88921329749155,
+        "shading": 173.88921329749155
+      }
+    },
+    {
+      "at": 10,
+      "view": "mouth",
+      "counts": {
+        "newBed": 0,
+        "changedIds": 97509,
+        "newWater": 1163,
+        "newWaterFrom_bed": 1112,
+        "newWaterFrom_other": 51,
+        "sweptBefore": 74854,
+        "sweptAfter": 170254,
+        "lostSwept": 0
+      },
+      "restoredWaterAir": {
+        "outsideVerifiedAir": 1115,
+        "unreliableWorld": 48
+      },
+      "probes": [],
+      "sources": {
+        "baselineIdSha256": "920bf348934c9ee6e0280a9ff3e0134f03e99c2629ec24a6170db2ad2454d702",
+        "candidateIdSha256": "f270018a181901d45dd82c7c487bcdf1fd3c0082333aa2ab429cc9c910dec7ef",
+        "actualWaterWorldSha256": "48b76a1a88badd741cd4f95e9c93ce07df4fb2bfba0d18a974d21feca095b910"
+      },
+      "ownership": {
+        "compiledCandidate": true,
+        "stencilFlag": 1,
+        "stencilBits": 8,
+        "active": 1,
+        "prepassVisible": true,
+        "bedOrder": -30,
+        "waterOrder": -10,
+        "barrelOrder": 0
+      },
+      "camera": {
+        "position": [
+          109.4785673046112,
+          1.3916762146053308,
+          -11.47128916501999
+        ],
+        "quaternion": [
+          -0.017310232689646616,
+          -0.8108191154953059,
+          -0.02401080998933112,
+          0.5845478584301684
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "clocks": {
+        "snapshot": 173.88921329749155,
+        "shading": 173.88921329749155
+      }
+    },
+    {
+      "at": 20,
+      "view": "overview",
+      "counts": {
+        "newBed": 0,
+        "changedIds": 1609,
+        "newWater": 1265,
+        "newWaterFrom_bed": 1263,
+        "newWaterFrom_other": 2,
+        "sweptBefore": 65321,
+        "sweptAfter": 65437,
+        "lostSwept": 0
+      },
+      "restoredWaterAir": {
+        "outsideVerifiedAir": 1265
+      },
+      "probes": [],
+      "sources": {
+        "baselineIdSha256": "bb1af488c35e1f8d896ec4cc101d75d728b90cb36d4dc92390ebf30cc22b2ded",
+        "candidateIdSha256": "e3830e2dee1571f2a2054971b1ae1541e381d0b9eab3ed30377bb81d03a83d94",
+        "actualWaterWorldSha256": "a3a29ac8a2a2ea3c9d816756b18197761bce748dcacabdbe6ed0afcaa22c3fc5"
+      },
+      "ownership": {
+        "compiledCandidate": true,
+        "stencilFlag": 1,
+        "stencilBits": 8,
+        "active": 1,
+        "prepassVisible": true,
+        "bedOrder": -30,
+        "waterOrder": -10,
+        "barrelOrder": 0
+      },
+      "camera": {
+        "position": [
+          21.867429672364523,
+          19.286329807158182,
+          -76.46278816670682
+        ],
+        "quaternion": [
+          -0.19422203701016083,
+          -0.18240423645605944,
+          -0.03678243878141323,
+          0.9631477285753193
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.050303841579296,
+          0,
+          0,
+          0,
+          0,
+          -1.000066668888963,
+          -1,
+          0,
+          0,
+          -0.2000066668888963,
+          0
+        ]
+      },
+      "clocks": {
+        "snapshot": 179.9392132974912,
+        "shading": 179.9392132974912
+      }
+    },
+    {
+      "at": 20,
+      "view": "cavity",
+      "counts": {
+        "newBed": 0,
+        "changedIds": 240,
+        "newWater": 229,
+        "newWaterFrom_bed": 217,
+        "newWaterFrom_other": 12,
+        "sweptBefore": 518807,
+        "sweptAfter": 518813,
+        "lostSwept": 0
+      },
+      "restoredWaterAir": {
+        "outsideVerifiedAir": 228,
+        "unreliableWorld": 1
+      },
+      "probes": [],
+      "sources": {
+        "baselineIdSha256": "68e824cfc117a22c1603fbed3ba0c200d70f6760894fe41bac06b35281fdf8ee",
+        "candidateIdSha256": "c2586ac73d2425dc119c42fef8583d69d477c9c3300f0d25bc78ceacafc5eeb2",
+        "actualWaterWorldSha256": "bd027f5fa50a68d9a8faddf44afae31cec2b99f7b1b0392f4052710f54bf8e99"
+      },
+      "ownership": {
+        "compiledCandidate": true,
+        "stencilFlag": 1,
+        "stencilBits": 8,
+        "active": 1,
+        "prepassVisible": true,
+        "bedOrder": -30,
+        "waterOrder": -10,
+        "barrelOrder": 0
+      },
+      "camera": {
+        "position": [
+          46.045549392700195,
+          1.7086154952582002,
+          -108.53816902160645
+        ],
+        "quaternion": [
+          0.11907454453651724,
+          -0.16845706560459012,
+          0.02050439519540236,
+          0.9782755438366956
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "clocks": {
+        "snapshot": 179.9392132974912,
+        "shading": 179.9392132974912
+      }
+    },
+    {
+      "at": 20,
+      "view": "mouth",
+      "counts": {
+        "newBed": 0,
+        "changedIds": 22031,
+        "newWater": 2055,
+        "newWaterFrom_bed": 2051,
+        "newWaterFrom_other": 4,
+        "sweptBefore": 607148,
+        "sweptAfter": 626731,
+        "lostSwept": 0
+      },
+      "restoredWaterAir": {
+        "outsideVerifiedAir": 2047,
+        "unreliableWorld": 8
+      },
+      "probes": [],
+      "sources": {
+        "baselineIdSha256": "0255a3d41f2258271e191a1b7d25eabf865ac8512fd26ab9cac570224a7a1425",
+        "candidateIdSha256": "15e8df89bd08bebc92ed3cdc5f8487afff3c8782b2705590cd55be6de99e1484",
+        "actualWaterWorldSha256": "20f62b4c4682fe841f7aee9077dd39fb42dfcd27b01f7878fce3ded3c57068b9"
+      },
+      "ownership": {
+        "compiledCandidate": true,
+        "stencilFlag": 1,
+        "stencilBits": 8,
+        "active": 1,
+        "prepassVisible": true,
+        "bedOrder": -30,
+        "waterOrder": -10,
+        "barrelOrder": 0
+      },
+      "camera": {
+        "position": [
+          51.312454748153684,
+          2.8534985807532776,
+          -111.83083159327506
+        ],
+        "quaternion": [
+          -0.044114339477972934,
+          0.8710405715500036,
+          0.07960404400167104,
+          0.48270637446054643
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "clocks": {
+        "snapshot": 179.9392132974912,
+        "shading": 179.9392132974912
+      }
+    }
+  ]
+}

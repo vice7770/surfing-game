@@ -1,0 +1,173 @@
+{
+  "schema": 1,
+  "decision": "Reject bed-only screen-ownership prepass; production unchanged.",
+  "sourceRootHead": "5606527db",
+  "literalBuildId": "eea68720f",
+  "immutableCandidateSource": "/private/tmp/surf-screen-ownership-20261003",
+  "immutableCandidatePreview": "http://127.0.0.1:4205/",
+  "candidatePreviewSession": 18468,
+  "nativeImagesKept": "Three paired views (10mouth,20mouth,20cavity), all native caustics enabled and unwrapped production shaders. All six-view native pairs remain in /private/tmp original output.",
+  "records": [
+    {
+      "path": "ownership.patch",
+      "sourcePath": "/private/tmp/surf-screen-ownership-20261003/ownership.patch",
+      "sourceSha256": "1d12293ff244e2b87d92ac3058d76acdb0f760c59740c73030dde2f6644441f6",
+      "archiveSha256": "1d12293ff244e2b87d92ac3058d76acdb0f760c59740c73030dde2f6644441f6",
+      "bytes": 34848
+    },
+    {
+      "path": "ownership-manifest.json",
+      "sourcePath": "/private/tmp/surf-screen-ownership-20261003/ownership-manifest.json",
+      "sourceSha256": "6163063f6b7a0f18ec8fa0295b31f2c737dc54f0181fe4d24bc479e72fc931fa",
+      "archiveSha256": "6163063f6b7a0f18ec8fa0295b31f2c737dc54f0181fe4d24bc479e72fc931fa",
+      "bytes": 5800
+    },
+    {
+      "path": "ownership-held-qa.md",
+      "sourcePath": "/private/tmp/surf-screen-ownership-20261003/ownership-held-qa.md",
+      "sourceSha256": "99282b8fff32ad22709299d934a9a159322815b91c7286814e848fc59bbac80c",
+      "archiveSha256": "99282b8fff32ad22709299d934a9a159322815b91c7286814e848fc59bbac80c",
+      "bytes": 5174
+    },
+    {
+      "path": "baseline-report.json.gz",
+      "sourcePath": "/private/tmp/tube-compiled-baseline/report.json",
+      "sourceSha256": "6e244b145901884329dd7f733b0341d974e9f09446e9bbd347584c1bf8dc802a",
+      "archiveSha256": "fbef3b476942a2a340b1e9fa886b2eff48b96c96199baf69bc811fcec2126382",
+      "bytes": 80357
+    },
+    {
+      "path": "baseline-driver.json",
+      "sourcePath": "/private/tmp/tube-compiled-baseline/compiled-driver.json",
+      "sourceSha256": "1fed5fa261f59c94948dfbc1a6e1814030e249540635bcadfd6d34feb81b414a",
+      "archiveSha256": "1fed5fa261f59c94948dfbc1a6e1814030e249540635bcadfd6d34feb81b414a",
+      "bytes": 5138
+    },
+    {
+      "path": "at-10-mouth.baseline.native-normal.png",
+      "sourcePath": "/private/tmp/tube-compiled-baseline/at-10-mouth.native-normal.png",
+      "sourceSha256": "4dc1ec6c8afcd484a53e825caf441608f4b8f7c4f032ed189ac680d7fbe42e45",
+      "archiveSha256": "4dc1ec6c8afcd484a53e825caf441608f4b8f7c4f032ed189ac680d7fbe42e45",
+      "bytes": 413232
+    },
+    {
+      "path": "at-20-mouth.baseline.native-normal.png",
+      "sourcePath": "/private/tmp/tube-compiled-baseline/at-20-mouth.native-normal.png",
+      "sourceSha256": "4790e7126b1c28b23648c973db38f50536255c1ed07847bfd8ad8a3fc6457809",
+      "archiveSha256": "4790e7126b1c28b23648c973db38f50536255c1ed07847bfd8ad8a3fc6457809",
+      "bytes": 782685
+    },
+    {
+      "path": "at-20-cavity.baseline.native-normal.png",
+      "sourcePath": "/private/tmp/tube-compiled-baseline/at-20-cavity.native-normal.png",
+      "sourceSha256": "47c40af4b2a3a53b364d84088a3d6e0de216d691f06e333420b013689dc71e3c",
+      "archiveSha256": "47c40af4b2a3a53b364d84088a3d6e0de216d691f06e333420b013689dc71e3c",
+      "bytes": 542264
+    },
+    {
+      "path": "candidate-report.json.gz",
+      "sourcePath": "/private/tmp/tube-compiled-candidate/report.json",
+      "sourceSha256": "986a6ed28a3d0d7fed56c4f18fad279df4d61caf94a3658d12808a90ea87b6cf",
+      "archiveSha256": "3b378845f7e3867d0883974ffe54eee857b19c3e44ff499e1872daeef9178523",
+      "bytes": 51002
+    },
+    {
+      "path": "candidate-driver.json",
+      "sourcePath": "/private/tmp/tube-compiled-candidate/compiled-driver.json",
+      "sourceSha256": "9b6a71a202e0ac5834cb650f1f9c73d70a5df79a1c59cb73e3f4fb14f73d3b68",
+      "archiveSha256": "9b6a71a202e0ac5834cb650f1f9c73d70a5df79a1c59cb73e3f4fb14f73d3b68",
+      "bytes": 5139
+    },
+    {
+      "path": "at-10-mouth.candidate.native-normal.png",
+      "sourcePath": "/private/tmp/tube-compiled-candidate/at-10-mouth.native-normal.png",
+      "sourceSha256": "dbf7155fd44039b3c9fa4c8a5771e724002d4f986dcf1dbe3ce7f81fdf0be014",
+      "archiveSha256": "dbf7155fd44039b3c9fa4c8a5771e724002d4f986dcf1dbe3ce7f81fdf0be014",
+      "bytes": 470201
+    },
+    {
+      "path": "at-20-mouth.candidate.native-normal.png",
+      "sourcePath": "/private/tmp/tube-compiled-candidate/at-20-mouth.native-normal.png",
+      "sourceSha256": "df2927da582bdd7c11524d2be636996d228db22bd80f770db34e26cf5ba7e431",
+      "archiveSha256": "df2927da582bdd7c11524d2be636996d228db22bd80f770db34e26cf5ba7e431",
+      "bytes": 767662
+    },
+    {
+      "path": "at-20-cavity.candidate.native-normal.png",
+      "sourcePath": "/private/tmp/tube-compiled-candidate/at-20-cavity.native-normal.png",
+      "sourceSha256": "f6ecf930716800a8d4c5700ac7f64ebf5536c1674053a5e1fa08460a43136436",
+      "archiveSha256": "f6ecf930716800a8d4c5700ac7f64ebf5536c1674053a5e1fa08460a43136436",
+      "bytes": 543605
+    },
+    {
+      "path": "tube-cavity-witness.json",
+      "sourcePath": "/private/tmp/tube-cavity-witness.json",
+      "sourceSha256": "17c251e10dc1bb49e532e18b829e059d15661185c4b1ea997fbdda1af3d7dd53",
+      "archiveSha256": "17c251e10dc1bb49e532e18b829e059d15661185c4b1ea997fbdda1af3d7dd53",
+      "bytes": 24923
+    },
+    {
+      "path": "tube-compiled-ownership-pixels.json",
+      "sourcePath": "/private/tmp/tube-compiled-ownership-pixels.json",
+      "sourceSha256": "8ce3e7c94693cb9ea16564ed4be6b201db43f82513fad154c289eeb3cff43942",
+      "archiveSha256": "8ce3e7c94693cb9ea16564ed4be6b201db43f82513fad154c289eeb3cff43942",
+      "bytes": 10717
+    },
+    {
+      "path": "tube-compiled-swept-attribution.json",
+      "sourcePath": "/private/tmp/tube-compiled-swept-attribution.json",
+      "sourceSha256": "1a70e02b0e29e2006b6798d1c4b18f181f2eb803963ec97c4cace69c1a938db7",
+      "archiveSha256": "1a70e02b0e29e2006b6798d1c4b18f181f2eb803963ec97c4cace69c1a938db7",
+      "bytes": 75013
+    },
+    {
+      "path": "tube-compiled-bundle-proof.json",
+      "sourcePath": "/private/tmp/tube-compiled-bundle-proof.json",
+      "sourceSha256": "f0f748b12089e01526e4894f0f450ad90eaba3ea192bd96aa9d6147d2cbf6667",
+      "archiveSha256": "f0f748b12089e01526e4894f0f450ad90eaba3ea192bd96aa9d6147d2cbf6667",
+      "bytes": 521
+    },
+    {
+      "path": "source-tube-cavity-witness.mjs.txt",
+      "sourcePath": "/private/tmp/tube-cavity-witness.mjs",
+      "sourceSha256": "b5d2dbd09cc67b53a7a4cc7a2e5f1ba6602e1d44daa871a8b8cedafa493637fe",
+      "archiveSha256": "b5d2dbd09cc67b53a7a4cc7a2e5f1ba6602e1d44daa871a8b8cedafa493637fe",
+      "bytes": 6021
+    },
+    {
+      "path": "source-tube-compiled-ownership-driver.mjs.txt",
+      "sourcePath": "/private/tmp/tube-compiled-ownership-driver.mjs",
+      "sourceSha256": "7eae66246aae0a59c955c2d6c350b8df86c260d565139ed780a5c1f88fb2367a",
+      "archiveSha256": "7eae66246aae0a59c955c2d6c350b8df86c260d565139ed780a5c1f88fb2367a",
+      "bytes": 10052
+    },
+    {
+      "path": "source-tube-compiled-ownership-helper.mjs.txt",
+      "sourcePath": "/private/tmp/tube-compiled-ownership-helper.mjs",
+      "sourceSha256": "268bd55e2bd881382fcd627d2659379fb8cd84d12d288a213d82c607d882f5e5",
+      "archiveSha256": "268bd55e2bd881382fcd627d2659379fb8cd84d12d288a213d82c607d882f5e5",
+      "bytes": 3722
+    },
+    {
+      "path": "source-tube-compiled-pixel-report.py.txt",
+      "sourcePath": "/private/tmp/tube-compiled-pixel-report.py",
+      "sourceSha256": "22d9f66891b986898f10d50f5fb567f6da1f9206fca1dc4612087ec3a8085952",
+      "archiveSha256": "22d9f66891b986898f10d50f5fb567f6da1f9206fca1dc4612087ec3a8085952",
+      "bytes": 4528
+    },
+    {
+      "path": "source-tube-compiled-swept-gains.py.txt",
+      "sourcePath": "/private/tmp/tube-compiled-swept-gains.py",
+      "sourceSha256": "144a60b76550ee5c75beb9e064220a06ae35a4a5de53484726b8e44c160ff93b",
+      "archiveSha256": "144a60b76550ee5c75beb9e064220a06ae35a4a5de53484726b8e44c160ff93b",
+      "bytes": 1602
+    },
+    {
+      "path": "source-tube-compiled-swept-gains.mjs.txt",
+      "sourcePath": "/private/tmp/tube-compiled-swept-gains.mjs",
+      "sourceSha256": "d932c26fb79b05770e926e3ea7b715e5ca8703ed6d5ac5b799ff6f4231e5bbea",
+      "archiveSha256": "d932c26fb79b05770e926e3ea7b715e5ca8703ed6d5ac5b799ff6f4231e5bbea",
+      "bytes": 4720
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "variant": "candidate",
+  "basePath": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/tube-frozen-render.mjs",
+  "baseSha256": "8babd6f3a9edb0dc92434e5df57fb7302a6412d6fcf88eabc652cb5158b9f487",
+  "helperPath": "/private/tmp/tube-compiled-ownership-helper.mjs",
+  "helperSha256": "268bd55e2bd881382fcd627d2659379fb8cd84d12d288a213d82c607d882f5e5",
+  "witnessPath": "/private/tmp/tube-cavity-witness.json",
+  "witnessSha256": "17c251e10dc1bb49e532e18b829e059d15661185c4b1ea997fbdda1af3d7dd53",
+  "driverSha256": "7eae66246aae0a59c955c2d6c350b8df86c260d565139ed780a5c1f88fb2367a",
+  "patches": [
+    {
+      "name": "absolute-cdp",
+      "beforeSha256": "a6d65153af2ca7429aa59dfd268e2c297d9e3500718cafe99c3f11ba31ca2816",
+      "afterSha256": "77eaba394e7af03b5b7bc6175841c2be20e6ec643531b1a9a7a1d126c423844c"
+    },
+    {
+      "name": "same-current-reference",
+      "beforeSha256": "c5013a5acc5a7e4d42ca1a66eabe8b94fd01aa774435decbaf107cf6cd503862",
+      "afterSha256": "7c66e01714040abc72c66571bd4922668f7f1b07093187dbbebe0d246b14627e"
+    },
+    {
+      "name": "same-current-bounds",
+      "beforeSha256": "773e61198ea15c1c8bf16f9a34d84ea22c1e9da4d4849dd28310253aa1b15c63",
+      "afterSha256": "94c59bf59f23bc7d2e519791913c24c89a50c25b9de9f9fcb1e04acb28fe7d89"
+    },
+    {
+      "name": "base-fixtures",
+      "beforeSha256": "2a8d9e7242fa2dfe34eacd47c229a19268480a77ccb2751aeee188869720f507",
+      "afterSha256": "0f69720ca7ef163ed4c4a4c0d7698e080c9cec89e4a82522999995e779559a93"
+    },
+    {
+      "name": "actual-air-cameras",
+      "beforeSha256": "78c0f2d12f627cb33eb272dce6d24372a4707ea1c404385affde07f2ab786e25",
+      "afterSha256": "fc6456ae3d99883de4f3a2ca458beb2d8438716d6b4d9d0da845e231b9de42c1"
+    },
+    {
+      "name": "frozen-camera-near",
+      "beforeSha256": "258fafbf4ff68267b74177b176463dec51e51bf1f0c2098c06e993de81fe7767",
+      "afterSha256": "6df4ef9d14ef9435a72ac1db011f0bb883ad7115e31fa759dee9ebe8aef77b92"
+    },
+    {
+      "name": "frozen-lifecycle-sync",
+      "beforeSha256": "4ac4cb65b45b94ca81da6e0bc11123e78ce90f3bc1a0f7f908d48030c996b35a",
+      "afterSha256": "b019d428a313cd0cf90bfd7362940d6245ea61cd14612ebcc91a3c96661bb906"
+    },
+    {
+      "name": "solid-pass-guard",
+      "beforeSha256": "5d97b1aa095ee6351b6c54b3d430865a00363eb2d36d0ea255254a82ebf8ab92",
+      "afterSha256": "4059335efaece33745d2714115adf081a863e0d9ce1c84694ea42167a972bba1"
+    },
+    {
+      "name": "compiled-variant",
+      "beforeSha256": "7e62122feed54314c1927cde6e74ea49cab6604924729c3d217424017aaccc42",
+      "afterSha256": "9cb0013366adffbb4f927c35af54bf5b96dba0ae55ce9db7b2f2d839ee11558a"
+    },
+    {
+      "name": "audit-helper",
+      "beforeSha256": "9a2be1d32112d1e9682a19c28ae004db9f0f78c23572e94ac2b02a5f6f800e74",
+      "afterSha256": "e6241dfbd36b3e63610bd6f40589fdd1ad53a1570255b94ae81d7e2c14ffd048"
+    },
+    {
+      "name": "native-normal-stream",
+      "beforeSha256": "df5c938baa57fe927949a06a3d20304c72e36066b748a3ce79f80d04dd4da076",
+      "afterSha256": "f874463caf4131a4fdbb133f055d000ba48d5a473911616b895390fc83ad1453"
+    },
+    {
+      "name": "water-world-export",
+      "beforeSha256": "22933a6f19de2a34ab301cfb9438442bc673b20f9873d0a0fc6013b82975aa94",
+      "afterSha256": "16d4c4a5df51ab9ad64dccc0573ca42f445bb10d8a290fceaee7035dab695f71"
+    },
+    {
+      "name": "water-world-provenance",
+      "beforeSha256": "211a89339aa86cd56d89d45611d93ecc498ef2cec9f198d3101724885a1e8cf4",
+      "afterSha256": "6bb26f56611748f788b8b71bc61707433944db6446560e3eedebe5767f794d97"
+    },
+    {
+      "name": "compiled-provenance",
+      "beforeSha256": "c47a4a9fecf9eb46d628f140dde18d3f317c858cf30c15717d23d4c69e488f58",
+      "afterSha256": "61d7efbb370b1d13a946725018adce7bd777ab592e45770cf03b4404c1700187"
+    }
+  ],
+  "compiledCandidatePatchSha256": "1d12293ff244e2b87d92ac3058d76acdb0f760c59740c73030dde2f6644441f6",
+  "literalBuildId": "eea68720f",
+  "productionChanged": false,
+  "method": "Actual immutable compiled baseline/candidate; identical current continuous-plan exported geometry and mask. Pure indexed/contact air witness cameras. Native unwrapped normal capture stream keeps caustics enabled. ID companion subsequently holds only the actual caustic FBO for strict fixed-input repeat. Frozen lifecycle overrides sync ownership after mask/visibility and mirror bed order; cached production lifecycle is unit-tested separately.",
+  "limitations": [
+    "Two held mixed-sea states, not moving touchdown169.6 or rider/FPS proof.",
+    "Cavity camera eye and target are drawing-index/contact air witnesses; mouth camera must be assessed as an outside view.",
+    "Opaque ID alpha override may change farField blending; pure foreground water/swept/bed comparisons only."
+  ],
+  "derivedSha256": "9351659de53636b59d38ba5142c41888ae4e857ba30444d74b60ea3a6d6773db",
+  "args": [
+    "--url=http://127.0.0.1:4205/",
+    "--dir=/private/tmp/surf-screen-ownership-20261003/dist",
+    "--out=/private/tmp/tube-compiled-candidate",
+    "--mask-diagnostic=true",
+    "--freeze-caustics=true",
+    "--baseline-only=true",
+    "--cdp=9468",
+    "--timeoutSeconds=60"
+  ]
+}

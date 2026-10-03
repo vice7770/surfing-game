@@ -1,0 +1,2492 @@
+{
+  "schema": 1,
+  "method": "Exact full gained swept-ID counts. At most512 deterministic screen samples per camera, raycast actual indexed Float32 world-position triangles using exact recorded perspective camera. Swept vertex projection is identity vec3(position). Filter nearest CPU ray hits using node-centred bilinear mask and supplied GPU dither +/-1/255 uncertainty; classify sampled front/profile rows, lift/weights and depth relative to retained GPU-displaced original water. This is bounded attribution, not exact GPU triangle-ID instrumentation.",
+  "pairs": [
+    {
+      "at": 10,
+      "view": "overview",
+      "totalNewSwept": 126,
+      "from": {
+        "water": 124,
+        "other": 2
+      },
+      "sampled": 126,
+      "summary": {
+        "noSurvivingCenterHit": 6,
+        "accepted": 120,
+        "layer_frontRest": 120,
+        "front_2": 120,
+        "liftUnder1percent": 5,
+        "maskSelectionNearQuantization": 10,
+        "within2cmOriginalWater": 4,
+        "maskSelectionMarginOverQuantization": 110,
+        "partialLift": 83,
+        "fartherThanOriginalWater2cm": 114,
+        "liftOverHalf": 32
+      },
+      "probes": [
+        {
+          "index": 270463,
+          "pixel": [
+            383,
+            508
+          ],
+          "from": "water",
+          "waterWorld": [
+            112.84727478027344,
+            -0.45433810353279114,
+            -3.6476662158966064
+          ],
+          "waterAlpha": 0.47058823529411764,
+          "gpuDitherQuantized": 0.47058823529411764,
+          "swept": {
+            "point": [
+              112.84719989110259,
+              -0.4583738388622436,
+              -3.6544236729431034
+            ],
+            "distance": 28.85056709467908,
+            "strip": 6,
+            "row": 126,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 1.443163514137268,
+            "phase": 1,
+            "life": 0.2912904620170593,
+            "formed": 1,
+            "weight": 0.6149755716323853,
+            "collapse": 0.34040629863739014,
+            "mouth": 1.4715818166732788,
+            "lift": 0,
+            "sheetWeight": 0,
+            "maskAlpha": 0.47415752645728126,
+            "maskDitherMargin": 0.0035692911631636237,
+            "bary": [
+              0.1140118498544459,
+              0.7439022030912693,
+              0.1420859470542848
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.007870765972125326
+        },
+        {
+          "index": 270470,
+          "pixel": [
+            390,
+            508
+          ],
+          "from": "water",
+          "waterWorld": [
+            113.08377838134766,
+            -0.41968539357185364,
+            -3.498492479324341
+          ],
+          "waterAlpha": 0.3764705882352941,
+          "gpuDitherQuantized": 0.3764705882352941,
+          "swept": {
+            "point": [
+              113.08373617096404,
+              -0.4229560781985491,
+              -3.503887487852978
+            ],
+            "distance": 28.701991837258515,
+            "strip": 7,
+            "row": 126,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 1.9336906671524048,
+            "phase": 1,
+            "life": 0.3772411048412323,
+            "formed": 1,
+            "weight": 0.8693082332611084,
+            "collapse": 0.3371090590953827,
+            "mouth": 1.9621089696884155,
+            "lift": 0,
+            "sheetWeight": 0,
+            "maskAlpha": 0.38130971099702815,
+            "maskDitherMargin": 0.004839122761734038,
+            "bary": [
+              0.2895399516599094,
+              0.5552930656434959,
+              0.15516698269659468
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.006309005426881953
+        },
+        {
+          "index": 290027,
+          "pixel": [
+            747,
+            493
+          ],
+          "from": "other",
+          "waterWorld": null,
+          "waterAlpha": null,
+          "gpuDitherQuantized": null,
+          "swept": {
+            "point": [
+              124.83853546893044,
+              0.49564258070289924,
+              1.6006251269072465
+            ],
+            "distance": 26.63529445460478,
+            "strip": 34,
+            "row": 127,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 15.177926063537598,
+            "phase": 2,
+            "life": 1.170900583267212,
+            "formed": 1,
+            "weight": 0.6020252704620361,
+            "collapse": 0.31550291180610657,
+            "mouth": 4.905272483825684,
+            "lift": 0.020314752539074554,
+            "sheetWeight": 0,
+            "maskAlpha": 0.8334932400005949,
+            "maskDitherMargin": 0.017138168905492024,
+            "bary": [
+              0.1423688134346191,
+              0.012309282629134267,
+              0.8453219039362466
+            ]
+          },
+          "fartherThanOriginalWaterMeters": null
+        },
+        {
+          "index": 291297,
+          "pixel": [
+            737,
+            492
+          ],
+          "from": "water",
+          "waterWorld": [
+            124.54027557373047,
+            0.49839022755622864,
+            1.4186384677886963
+          ],
+          "waterAlpha": 0.5254901960784314,
+          "gpuDitherQuantized": 0.5529411764705883,
+          "swept": {
+            "point": [
+              124.60560853659099,
+              0.4173443302663564,
+              1.3061066387793083
+            ],
+            "distance": 26.79106851731735,
+            "strip": 34,
+            "row": 127,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 15.177926063537598,
+            "phase": 2,
+            "life": 1.170900583267212,
+            "formed": 1,
+            "weight": 0.6020252704620361,
+            "collapse": 0.31550291180610657,
+            "mouth": 4.905272483825684,
+            "lift": 0.0889466382355423,
+            "sheetWeight": 0,
+            "maskAlpha": 0.5830814446417402,
+            "maskDitherMargin": 0.030140268171151896,
+            "bary": [
+              0.2943126164005351,
+              0.2788846092025964,
+              0.4268027743968685
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.15329783940472907
+        },
+        {
+          "index": 291299,
+          "pixel": [
+            739,
+            492
+          ],
+          "from": "water",
+          "waterWorld": [
+            124.60404205322266,
+            0.500679075717926,
+            1.4475480318069458
+          ],
+          "waterAlpha": 0.592156862745098,
+          "gpuDitherQuantized": 0.6627450980392157,
+          "swept": {
+            "point": [
+              124.7217180248445,
+              0.3554975699296463,
+              1.2463935454278392
+            ],
+            "distance": 26.917224113213816,
+            "strip": 34,
+            "row": 127,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 15.177926063537598,
+            "phase": 2,
+            "life": 1.170900583267212,
+            "formed": 1,
+            "weight": 0.6020252704620361,
+            "collapse": 0.31550291180610657,
+            "mouth": 4.905272483825684,
+            "lift": 0.160553875389201,
+            "sheetWeight": 0,
+            "maskAlpha": 0.6903088487082792,
+            "maskDitherMargin": 0.02756375066906358,
+            "bary": [
+              0.2272950277669875,
+              0.5034030029927267,
+              0.2693019692402859
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.27456949346555604
+        },
+        {
+          "index": 291301,
+          "pixel": [
+            741,
+            492
+          ],
+          "from": "water",
+          "waterWorld": [
+            124.66773223876953,
+            0.5029526352882385,
+            1.4764577150344849
+          ],
+          "waterAlpha": 0.6549019607843137,
+          "gpuDitherQuantized": 0.792156862745098,
+          "swept": {
+            "point": [
+              124.83884511007409,
+              0.29310877743651886,
+              1.1861571196242728
+            ],
+            "distance": 27.044671052445096,
+            "strip": 34,
+            "row": 127,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 15.177926063537598,
+            "phase": 2,
+            "life": 1.170900583267212,
+            "formed": 1,
+            "weight": 0.6020252704620361,
+            "collapse": 0.31550291180610657,
+            "mouth": 4.905272483825684,
+            "lift": 0.23278868664632862,
+            "sheetWeight": 0,
+            "maskAlpha": 0.7969884292210132,
+            "maskDitherMargin": 0.0048315664759152055,
+            "bary": [
+              0.15969008923957873,
+              0.7298891019380324,
+              0.11042080882238887
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.3969741450052098
+        },
+        {
+          "index": 291303,
+          "pixel": [
+            743,
+            492
+          ],
+          "from": "water",
+          "waterWorld": [
+            124.73143005371094,
+            0.5052414536476135,
+            1.5052783489227295
+          ],
+          "waterAlpha": 0.7176470588235294,
+          "gpuDitherQuantized": 0.9019607843137255,
+          "swept": {
+            "point": [
+              124.99363417173227,
+              0.1855182471405108,
+              1.0637360819405721
+            ],
+            "distance": 27.257906585818013,
+            "strip": 35,
+            "row": 126,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 15.668453216552734,
+            "phase": 2,
+            "life": 1.2030388116836548,
+            "formed": 1,
+            "weight": 0.5297636389732361,
+            "collapse": 0.31544214487075806,
+            "mouth": 4.414745330810547,
+            "lift": 0.3575095896458867,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9311741163726954,
+            "maskDitherMargin": 0.02921333205896992,
+            "bary": [
+              0.17257622947574114,
+              0.015837228722457866,
+              0.811586541801801
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.6049243660223027
+        },
+        {
+          "index": 292586,
+          "pixel": [
+            746,
+            491
+          ],
+          "from": "water",
+          "waterWorld": [
+            124.86246490478516,
+            0.5042038559913635,
+            1.4851751327514648
+          ],
+          "waterAlpha": 0.8470588235294118,
+          "gpuDitherQuantized": 0.8784313725490196,
+          "swept": {
+            "point": [
+              125.11622925087838,
+              0.19826565399934637,
+              1.0621415162949148
+            ],
+            "distance": 27.305726954225953,
+            "strip": 35,
+            "row": 126,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 15.668453216552734,
+            "phase": 2,
+            "life": 1.2030388116836548,
+            "formed": 1,
+            "weight": 0.5297636389732361,
+            "collapse": 0.31544214487075806,
+            "mouth": 4.414745330810547,
+            "lift": 0.34226101914038004,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9364438913216785,
+            "maskDitherMargin": 0.058012518772658894,
+            "bary": [
+              0.7264815688281453,
+              0.19569881116459512,
+              0.07781962000725966
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.5804756167728442
+        },
+        {
+          "index": 293742,
+          "pixel": [
+            622,
+            490
+          ],
+          "from": "water",
+          "waterWorld": [
+            120.98039245605469,
+            0.19335176050662994,
+            -0.6426639556884766
+          ],
+          "waterAlpha": 0.1450980392156863,
+          "gpuDitherQuantized": 0.1450980392156863,
+          "swept": {
+            "point": [
+              120.98178796765306,
+              0.19063498321664696,
+              -0.6469734142249521
+            ],
+            "distance": 27.11267101161047,
+            "strip": 25,
+            "row": 124,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 10.76318073272705,
+            "phase": 1,
+            "life": 0.978936493396759,
+            "formed": 1,
+            "weight": 1,
+            "collapse": 0.3154832720756531,
+            "mouth": 9.32001781463623,
+            "lift": 0,
+            "sheetWeight": 0,
+            "maskAlpha": 0.14643618664762198,
+            "maskDitherMargin": 0.0013381474319356934,
+            "bary": [
+              0.1753137186351223,
+              0.4972328995111907,
+              0.327453381853687
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.005278822058269128
+        },
+        {
+          "index": 293854,
+          "pixel": [
+            734,
+            490
+          ],
+          "from": "water",
+          "waterWorld": [
+            124.51541900634766,
+            0.48424533009529114,
+            1.244379997253418
+          ],
+          "waterAlpha": 0.49411764705882355,
+          "gpuDitherQuantized": 0.5019607843137255,
+          "swept": {
+            "point": [
+              124.54237313552213,
+              0.4507213015975786,
+              1.1973539931079316
+            ],
+            "distance": 26.82648769688558,
+            "strip": 34,
+            "row": 127,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 15.177926063537598,
+            "phase": 2,
+            "life": 1.170900583267212,
+            "formed": 1,
+            "weight": 0.6020252704620361,
+            "collapse": 0.31550291180610657,
+            "mouth": 4.905272483825684,
+            "lift": 0.03618640999884561,
+            "sheetWeight": 0,
+            "maskAlpha": 0.5159528200365856,
+            "maskDitherMargin": 0.013992035722860119,
+            "bary": [
+              0.6729811192598666,
+              0.11345940679903488,
+              0.21355947394109856
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.06373237378516805
+        },
+        {
+          "index": 293858,
+          "pixel": [
+            738,
+            490
+          ],
+          "from": "water",
+          "waterWorld": [
+            124.6429443359375,
+            0.48963168263435364,
+            1.3036224842071533
+          ],
+          "waterAlpha": 0.6196078431372549,
+          "gpuDitherQuantized": 0.7254901960784313,
+          "swept": {
+            "point": [
+              124.97713576461446,
+              0.07864581484889044,
+              0.7307908235928018
+            ],
+            "distance": 27.550899749921598,
+            "strip": 34,
+            "row": 126,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 15.177926063537598,
+            "phase": 2,
+            "life": 1.170900583267212,
+            "formed": 1,
+            "weight": 0.6020252704620361,
+            "collapse": 0.31550291180610657,
+            "mouth": 4.905272483825684,
+            "lift": 0.46517862216709976,
+            "sheetWeight": 0,
+            "maskAlpha": 0.8812658087961833,
+            "maskDitherMargin": 0.15577561271775198,
+            "bary": [
+              0.012476093273667832,
+              0.8780871089391638,
+              0.10943679778716836
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.7802111246724053
+        },
+        {
+          "index": 295143,
+          "pixel": [
+            743,
+            489
+          ],
+          "from": "water",
+          "waterWorld": [
+            124.83867645263672,
+            0.49097445607185364,
+            1.312161922454834
+          ],
+          "waterAlpha": 0.807843137254902,
+          "gpuDitherQuantized": 0.8313725490196079,
+          "swept": {
+            "point": [
+              125.2049559696718,
+              0.04807950693218288,
+              0.6950453645172345
+            ],
+            "distance": 27.691464353157016,
+            "strip": 35,
+            "row": 126,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 15.668453216552734,
+            "phase": 2,
+            "life": 1.2030388116836548,
+            "formed": 1,
+            "weight": 0.5297636389732361,
+            "collapse": 0.31544214487075806,
+            "mouth": 4.414745330810547,
+            "lift": 0.5022268556301137,
+            "sheetWeight": 0,
+            "maskAlpha": 0.916646048369335,
+            "maskDitherMargin": 0.08527349934972717,
+            "bary": [
+              0.6427802804845419,
+              0.34566574466310596,
+              0.011553974852352045
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.8432967748230915
+        }
+      ],
+      "sampling": "Deterministic equal quantiles across gained pure swept pixels (bottom-left framebuffer ordering), at most512 per camera.",
+      "sources": {
+        "baselineId": "4c8eb21ccaa3f054fdd5f7135af9d89cb1dd914bc31526b0a937003ae1cf2715",
+        "candidateId": "cfaeebbb88f2de5b356e9e2f7bd5ffda39ea5330f3c2b0b4228bf1832764fa34",
+        "baselineWaterWorld": "44bb1ac8d31d8f5acf2770b1ac391d60d6528b9bb42054b0f53489aa94ba63f5"
+      }
+    },
+    {
+      "at": 10,
+      "view": "cavity",
+      "totalNewSwept": 0,
+      "from": {},
+      "sampled": 0,
+      "summary": {},
+      "probes": [],
+      "sampling": "Deterministic equal quantiles across gained pure swept pixels (bottom-left framebuffer ordering), at most512 per camera.",
+      "sources": {
+        "baselineId": "c4579daf37f50528e6f26fb2602231b9b546c3a393c9d0b49de398795a389efe",
+        "candidateId": "12af1c8c41e7b4a74f6f170c3871222d89791bb5d186980bcc1f26be67802086",
+        "baselineWaterWorld": "716ae3ac72fc4bc400637f9c30111446156572e6a254fccce4b7166c6242dc18"
+      }
+    },
+    {
+      "at": 10,
+      "view": "mouth",
+      "totalNewSwept": 95400,
+      "from": {
+        "water": 95141,
+        "other": 259
+      },
+      "sampled": 512,
+      "summary": {
+        "accepted": 512,
+        "layer_frontRest": 283,
+        "front_2": 512,
+        "partialLift": 327,
+        "maskSelectionMarginOverQuantization": 510,
+        "fartherThanOriginalWater2cm": 504,
+        "liftOverHalf": 168,
+        "layer_face": 226,
+        "maskSelectionNearQuantization": 2,
+        "layer_back": 1,
+        "liftUnder1percent": 17,
+        "layer_roofTop": 2
+      },
+      "probes": [
+        {
+          "index": 263659,
+          "pixel": [
+            1259,
+            514
+          ],
+          "from": "water",
+          "waterWorld": [
+            109.56006622314453,
+            1.3590775728225708,
+            -11.336387634277344
+          ],
+          "waterAlpha": 0,
+          "gpuDitherQuantized": 0.42745098039215684,
+          "swept": {
+            "point": [
+              113.89298730570546,
+              -0.37461966035667915,
+              -4.173340350942769
+            ],
+            "distance": 8.710164289889137,
+            "strip": 9,
+            "row": 123,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 2.914745330810547,
+            "phase": 1,
+            "life": 0.5389961004257202,
+            "formed": 1,
+            "weight": 1,
+            "collapse": 0.3294435739517212,
+            "mouth": 2.9431636333465576,
+            "lift": 0.12870375628596703,
+            "sheetWeight": 0,
+            "maskAlpha": 0.8765239980731475,
+            "maskDitherMargin": 0.44907301768099067,
+            "bary": [
+              0.06188729037266205,
+              0.26578655563122944,
+              0.6723261539961085
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 8.549219677786429
+        },
+        {
+          "index": 271357,
+          "pixel": [
+            1277,
+            508
+          ],
+          "from": "water",
+          "waterWorld": [
+            109.56092834472656,
+            1.3593827486038208,
+            -11.330694198608398
+          ],
+          "waterAlpha": 0,
+          "gpuDitherQuantized": 0.30196078431372547,
+          "swept": {
+            "point": [
+              113.57610494490373,
+              -0.2155996330110781,
+              -4.479159442554441
+            ],
+            "distance": 8.262144299135137,
+            "strip": 8,
+            "row": 123,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 2.424217939376831,
+            "phase": 1,
+            "life": 0.46497029066085815,
+            "formed": 1,
+            "weight": 0.9972991347312927,
+            "collapse": 0.3337792754173279,
+            "mouth": 2.452636241912842,
+            "lift": 0.4020572231599046,
+            "sheetWeight": 0,
+            "maskAlpha": 1,
+            "maskDitherMargin": 0.6980392156862745,
+            "bary": [
+              0.07865893440197924,
+              0.40677778882238336,
+              0.5145632767756374
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 8.096032428832167
+        },
+        {
+          "index": 277711,
+          "pixel": [
+            1231,
+            503
+          ],
+          "from": "water",
+          "waterWorld": [
+            109.56694793701172,
+            1.3589249849319458,
+            -11.33238410949707
+          ],
+          "waterAlpha": 0,
+          "gpuDitherQuantized": 0.23529411764705882,
+          "swept": {
+            "point": [
+              114.23260094039561,
+              -0.37122646081533084,
+              -4.008071769719186
+            ],
+            "distance": 9.022653464624216,
+            "strip": 10,
+            "row": 123,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 3.4052724838256836,
+            "phase": 1,
+            "life": 0.6082897782325745,
+            "formed": 1,
+            "weight": 1,
+            "collapse": 0.32462188601493835,
+            "mouth": 3.4336907863616943,
+            "lift": 0.09411499635717636,
+            "sheetWeight": 0,
+            "maskAlpha": 0.7954383565439619,
+            "maskDitherMargin": 0.5601442388969031,
+            "bary": [
+              0.27883494486240545,
+              0.09891151710987178,
+              0.6222535380277228
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 8.854789252600156
+        },
+        {
+          "index": 281562,
+          "pixel": [
+            1242,
+            500
+          ],
+          "from": "water",
+          "waterWorld": [
+            109.56730651855469,
+            1.3591080904006958,
+            -11.329092979431152
+          ],
+          "waterAlpha": 0,
+          "gpuDitherQuantized": 0.29411764705882354,
+          "swept": {
+            "point": [
+              113.92203456313108,
+              -0.2403720522634012,
+              -4.356444961837689
+            ],
+            "distance": 8.545700138577537,
+            "strip": 9,
+            "row": 123,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 2.914745330810547,
+            "phase": 1,
+            "life": 0.5389961004257202,
+            "formed": 1,
+            "weight": 1,
+            "collapse": 0.3294435739517212,
+            "mouth": 2.9431636333465576,
+            "lift": 0.3321442174852295,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9862168984858257,
+            "maskDitherMargin": 0.6920992514270021,
+            "bary": [
+              0.45464848593227214,
+              0.26720335087547165,
+              0.27814816319225627
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 8.374951533893544
+        },
+        {
+          "index": 285375,
+          "pixel": [
+            1215,
+            497
+          ],
+          "from": "water",
+          "waterWorld": [
+            109.57110595703125,
+            1.3588181734085083,
+            -11.330160140991211
+          ],
+          "waterAlpha": 0,
+          "gpuDitherQuantized": 0.1843137254901961,
+          "swept": {
+            "point": [
+              114.30998671746434,
+              -0.3241592414006482,
+              -4.10976330877494
+            ],
+            "distance": 8.970995919469912,
+            "strip": 10,
+            "row": 123,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 3.4052724838256836,
+            "phase": 1,
+            "life": 0.6082897782325745,
+            "formed": 1,
+            "weight": 1,
+            "collapse": 0.32462188601493835,
+            "mouth": 3.4336907863616943,
+            "lift": 0.15729334717127474,
+            "sheetWeight": 0,
+            "maskAlpha": 0.8544561407969363,
+            "maskDitherMargin": 0.6701424153067402,
+            "bary": [
+              0.4602632562650977,
+              0.23713758123715678,
+              0.3025991624977455
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 8.799064379354883
+        },
+        {
+          "index": 287964,
+          "pixel": [
+            1244,
+            495
+          ],
+          "from": "water",
+          "waterWorld": [
+            109.56938171386719,
+            1.3592149019241333,
+            -11.325267791748047
+          ],
+          "waterAlpha": 0,
+          "gpuDitherQuantized": 0.9529411764705882,
+          "swept": {
+            "point": [
+              113.83475135677516,
+              -0.16598827849152098,
+              -4.473973797187974
+            ],
+            "distance": 8.388389626518329,
+            "strip": 9,
+            "row": 123,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 2.914745330810547,
+            "phase": 1,
+            "life": 0.5389961004257202,
+            "formed": 1,
+            "weight": 1,
+            "collapse": 0.3294435739517212,
+            "mouth": 2.9431636333465576,
+            "lift": 0.4547494007304645,
+            "sheetWeight": 0,
+            "maskAlpha": 1,
+            "maskDitherMargin": 0.04705882352941182,
+            "bary": [
+              0.8389330850763013,
+              0.026131694922877115,
+              0.1349352200008216
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 8.213394668871763
+        },
+        {
+          "index": 290541,
+          "pixel": [
+            1261,
+            493
+          ],
+          "from": "water",
+          "waterWorld": [
+            109.56874084472656,
+            1.3594743013381958,
+            -11.321887969970703
+          ],
+          "waterAlpha": 0,
+          "gpuDitherQuantized": 0.03529411764705882,
+          "swept": {
+            "point": [
+              113.57871973285751,
+              -0.07347961939442071,
+              -4.681413334228089
+            ],
+            "distance": 8.065999339841875,
+            "strip": 8,
+            "row": 123,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 2.424217939376831,
+            "phase": 1,
+            "life": 0.46497029066085815,
+            "formed": 1,
+            "weight": 0.9972991347312927,
+            "collapse": 0.3337792754173279,
+            "mouth": 2.452636241912842,
+            "lift": 0.6666709365980592,
+            "sheetWeight": 0,
+            "maskAlpha": 1,
+            "maskDitherMargin": 0.9647058823529412,
+            "bary": [
+              0.5377871346129384,
+              0.3389018663871905,
+              0.1233109989998712
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 7.888548085585516
+        },
+        {
+          "index": 293102,
+          "pixel": [
+            1262,
+            491
+          ],
+          "from": "water",
+          "waterWorld": [
+            109.56959533691406,
+            1.3595353364944458,
+            -11.320286750793457
+          ],
+          "waterAlpha": 0,
+          "gpuDitherQuantized": 0.2235294117647059,
+          "swept": {
+            "point": [
+              113.0482494960209,
+              0.1299533534350139,
+              -5.550329754510093
+            ],
+            "distance": 7.027968117953655,
+            "strip": 6,
+            "row": 122,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 1.443163514137268,
+            "phase": 1,
+            "life": 0.2912904620170593,
+            "formed": 1,
+            "weight": 0.6149755716323853,
+            "collapse": 0.34040629863739014,
+            "mouth": 1.4715818166732788,
+            "lift": 0.7849845069479862,
+            "sheetWeight": 0,
+            "maskAlpha": 1,
+            "maskDitherMargin": 0.7764705882352941,
+            "bary": [
+              0.016748341047888804,
+              0.6684510523614202,
+              0.3148006065906909
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 6.848745162356694
+        },
+        {
+          "index": 294342,
+          "pixel": [
+            1222,
+            490
+          ],
+          "from": "water",
+          "waterWorld": [
+            109.57389831542969,
+            1.3590317964553833,
+            -11.324200630187988
+          ],
+          "waterAlpha": 0,
+          "gpuDitherQuantized": 0.2549019607843137,
+          "swept": {
+            "point": [
+              113.24158252675998,
+              0.10228293037816827,
+              -5.666922975547322
+            ],
+            "distance": 7.036581944739008,
+            "strip": 7,
+            "row": 121,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 1.9336906671524048,
+            "phase": 1,
+            "life": 0.3772411048412323,
+            "formed": 1,
+            "weight": 0.8693082332611084,
+            "collapse": 0.3371090590953827,
+            "mouth": 1.9621089696884155,
+            "lift": 0.8845145637245744,
+            "sheetWeight": 0,
+            "maskAlpha": 1,
+            "maskDitherMargin": 0.7450980392156863,
+            "bary": [
+              0.09279034329339331,
+              0.11880790188049595,
+              0.7884017548261107
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 6.858288095324489
+        },
+        {
+          "index": 295461,
+          "pixel": [
+            1061,
+            489
+          ],
+          "from": "water",
+          "waterWorld": null,
+          "waterAlpha": null,
+          "gpuDitherQuantized": null,
+          "swept": {
+            "point": [
+              113.64156826936855,
+              0.10273431997991089,
+              -6.773720714248462
+            ],
+            "distance": 6.407737322173495,
+            "strip": 7,
+            "row": 119,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 1.9336906671524048,
+            "phase": 1,
+            "life": 0.3772411048412323,
+            "formed": 1,
+            "weight": 0.8693082332611084,
+            "collapse": 0.3371090590953827,
+            "mouth": 1.9621089696884155,
+            "lift": 0.9597729554702785,
+            "sheetWeight": 0,
+            "maskAlpha": 1,
+            "maskDitherMargin": 0.09387049521139446,
+            "bary": [
+              0.2612580893929296,
+              0.706805883621689,
+              0.031936026985381435
+            ]
+          },
+          "fartherThanOriginalWaterMeters": null
+        },
+        {
+          "index": 296592,
+          "pixel": [
+            912,
+            488
+          ],
+          "from": "water",
+          "waterWorld": [
+            109.61007690429688,
+            1.3543473482131958,
+            -11.364941596984863
+          ],
+          "waterAlpha": 0,
+          "gpuDitherQuantized": 0.24313725490196078,
+          "swept": {
+            "point": [
+              113.90381878341772,
+              0.13546123063388626,
+              -7.8990360543938785
+            ],
+            "distance": 5.824252657896252,
+            "strip": 7,
+            "row": 116,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 1.9336906671524048,
+            "phase": 1,
+            "life": 0.3772411048412323,
+            "formed": 1,
+            "weight": 0.8693082332611084,
+            "collapse": 0.3371090590953827,
+            "mouth": 1.9621089696884155,
+            "lift": 0.9888107813116102,
+            "sheetWeight": 0,
+            "maskAlpha": 1,
+            "maskDitherMargin": 0.7568627450980392,
+            "bary": [
+              0.06631997526527245,
+              0.5367744682530232,
+              0.39690555648170434
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 5.651053280580416
+        },
+        {
+          "index": 296778,
+          "pixel": [
+            1098,
+            488
+          ],
+          "from": "water",
+          "waterWorld": [
+            109.5878677368164,
+            1.3573380708694458,
+            -11.338254928588867
+          ],
+          "waterAlpha": 0,
+          "gpuDitherQuantized": 0.8274509803921568,
+          "swept": {
+            "point": [
+              113.55258394290514,
+              0.11088560089769928,
+              -6.514716580186594
+            ],
+            "distance": 6.542602536757024,
+            "strip": 7,
+            "row": 119,
+            "layer": "frontRest",
+            "front": 2,
+            "sigma": 1.9336906671524048,
+            "phase": 1,
+            "life": 0.3772411048412323,
+            "formed": 1,
+            "weight": 0.8693082332611084,
+            "collapse": 0.3371090590953827,
+            "mouth": 1.9621089696884155,
+            "lift": 0.9437239867540059,
+            "sheetWeight": 0,
+            "maskAlpha": 1,
+            "maskDitherMargin": 0.1725490196078432,
+            "bary": [
+              0.4185855975845841,
+              0.33071030238189575,
+              0.2507041000335201
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 6.36703545368539
+        }
+      ],
+      "sampling": "Deterministic equal quantiles across gained pure swept pixels (bottom-left framebuffer ordering), at most512 per camera.",
+      "sources": {
+        "baselineId": "920bf348934c9ee6e0280a9ff3e0134f03e99c2629ec24a6170db2ad2454d702",
+        "candidateId": "f270018a181901d45dd82c7c487bcdf1fd3c0082333aa2ab429cc9c910dec7ef",
+        "baselineWaterWorld": "4f87d3bf9041ae18032c00d500990098b3dbc5b4cf953a1481c000ae74d53c46"
+      }
+    },
+    {
+      "at": 20,
+      "view": "overview",
+      "totalNewSwept": 116,
+      "from": {
+        "water": 116
+      },
+      "sampled": 116,
+      "summary": {
+        "accepted": 112,
+        "layer_frontRest": 72,
+        "front_24": 11,
+        "partialLift": 101,
+        "maskSelectionNearQuantization": 9,
+        "fartherThanOriginalWater2cm": 110,
+        "noSurvivingCenterHit": 4,
+        "front_21": 101,
+        "within2cmOriginalWater": 2,
+        "liftOverHalf": 10,
+        "maskSelectionMarginOverQuantization": 103,
+        "layer_face": 40,
+        "liftUnder1percent": 1
+      },
+      "probes": [
+        {
+          "index": 333207,
+          "pixel": [
+            407,
+            459
+          ],
+          "from": "water",
+          "waterWorld": [
+            22.795080184936523,
+            0.13599397242069244,
+            -111.05652618408203
+          ],
+          "waterAlpha": 0.996078431372549,
+          "gpuDitherQuantized": 0.996078431372549,
+          "swept": {
+            "point": [
+              22.79606939758756,
+              0.11563034439339859,
+              -111.09351965148568
+            ],
+            "distance": 39.593757750455644,
+            "strip": 11,
+            "row": 122,
+            "layer": "frontRest",
+            "front": 24,
+            "sigma": 11.946218490600586,
+            "phase": 2,
+            "life": 1.3757119178771973,
+            "formed": 1,
+            "weight": 0.2904870808124542,
+            "collapse": 0.35104504227638245,
+            "mouth": 2.4900407791137695,
+            "lift": 0.2706653281527306,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9966340997975963,
+            "maskDitherMargin": 0.0005556684250472843,
+            "bary": [
+              0.12244362220074725,
+              0.17780520507399553,
+              0.6997511727252572
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.042239346334959293
+        },
+        {
+          "index": 338393,
+          "pixel": [
+            473,
+            455
+          ],
+          "from": "water",
+          "waterWorld": [
+            25.991512298583984,
+            0.07302094250917435,
+            -110.34703826904297
+          ],
+          "waterAlpha": 0.9921568627450981,
+          "gpuDitherQuantized": 0.996078431372549,
+          "swept": {
+            "point": [
+              25.995024877874535,
+              0.056407740246218196,
+              -110.37652904380684
+            ],
+            "distance": 39.20419320887935,
+            "strip": 18,
+            "row": 122,
+            "layer": "frontRest",
+            "front": 24,
+            "sigma": 15.43227481842041,
+            "phase": 2,
+            "life": 1.2996175289154053,
+            "formed": 1,
+            "weight": 0.4260522723197937,
+            "collapse": 0.39038339257240295,
+            "mouth": 5.976097106933594,
+            "lift": 0.3530141728185434,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9994270022033315,
+            "maskDitherMargin": 0.003348570830782438,
+            "bary": [
+              0.18779084885339414,
+              0.6179367612290376,
+              0.19427238991756826
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.034029818436962955
+        },
+        {
+          "index": 341528,
+          "pixel": [
+            1048,
+            453
+          ],
+          "from": "water",
+          "waterWorld": [
+            53.77507400512695,
+            -0.0027847292367368937,
+            -99.79181671142578
+          ],
+          "waterAlpha": 0.796078431372549,
+          "gpuDitherQuantized": 0.8,
+          "swept": {
+            "point": [
+              53.77712288198758,
+              -0.003987633774769961,
+              -99.7934500514447
+            ],
+            "distance": 43.98482296979478,
+            "strip": 93,
+            "row": 127,
+            "layer": "frontRest",
+            "front": 21,
+            "sigma": 0.3714721202850342,
+            "phase": 1,
+            "life": 0.284418523311615,
+            "formed": 1,
+            "weight": 0.05967465788125992,
+            "collapse": 0.5690392255783081,
+            "mouth": 0.46786803007125854,
+            "lift": 0.04210211849798831,
+            "sheetWeight": 0,
+            "maskAlpha": 0.8002715536710054,
+            "maskDitherMargin": 0.00027155367100539785,
+            "bary": [
+              0.7401449477654223,
+              0.21251344969522243,
+              0.04734160253935528
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.002880319378114393
+        },
+        {
+          "index": 343755,
+          "pixel": [
+            715,
+            451
+          ],
+          "from": "water",
+          "waterWorld": [
+            37.75322341918945,
+            0.06385041028261185,
+            -106.18334197998047
+          ],
+          "waterAlpha": 0.9882352941176471,
+          "gpuDitherQuantized": 0.9882352941176471,
+          "swept": {
+            "point": [
+              37.7720062944187,
+              0.041018046478424,
+              -106.21887564455119
+            ],
+            "distance": 38.84278986223412,
+            "strip": 44,
+            "row": 121,
+            "layer": "frontRest",
+            "front": 24,
+            "sigma": 28.38048553466797,
+            "phase": 2,
+            "life": 1.1191492080688477,
+            "formed": 0.7811013460159302,
+            "weight": 0.7604036331176758,
+            "collapse": 0.5138627290725708,
+            "mouth": 13.944225311279297,
+            "lift": 0.548165649506721,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9908900603189223,
+            "maskDitherMargin": 0.0026547662012752493,
+            "bary": [
+              0.7056652660780656,
+              0.29241246982791663,
+              0.0019222640940176985
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.04622460063315259
+        },
+        {
+          "index": 348783,
+          "pixel": [
+            623,
+            447
+          ],
+          "from": "water",
+          "waterWorld": [
+            33.41620635986328,
+            0.12664033472537994,
+            -108.21724700927734
+          ],
+          "waterAlpha": 0.9921568627450981,
+          "gpuDitherQuantized": 0.996078431372549,
+          "swept": {
+            "point": [
+              33.459238929927366,
+              0.0552668139530077,
+              -108.33562687232677
+            ],
+            "distance": 38.98822479758229,
+            "strip": 34,
+            "row": 120,
+            "layer": "frontRest",
+            "front": 24,
+            "sigma": 23.40040397644043,
+            "phase": 2,
+            "life": 1.0887527465820312,
+            "formed": 0.7673240303993225,
+            "weight": 0.8196616768836975,
+            "collapse": 0.4805881679058075,
+            "mouth": 13.944226264953613,
+            "lift": 0.7732694322818063,
+            "sheetWeight": 0,
+            "maskAlpha": 0.998134086056593,
+            "maskDitherMargin": 0.002055654684044006,
+            "bary": [
+              0.22431072937396918,
+              0.03998228996371383,
+              0.735706980662317
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.14477489876057348
+        },
+        {
+          "index": 351760,
+          "pixel": [
+            1040,
+            445
+          ],
+          "from": "water",
+          "waterWorld": [
+            53.75529861450195,
+            0.19545747339725494,
+            -100.32295227050781
+          ],
+          "waterAlpha": 0.8117647058823529,
+          "gpuDitherQuantized": 0.8274509803921568,
+          "swept": {
+            "point": [
+              53.793372629098755,
+              0.17261643791403358,
+              -100.3515041640935
+            ],
+            "distance": 44.21844213042867,
+            "strip": 93,
+            "row": 126,
+            "layer": "frontRest",
+            "front": 21,
+            "sigma": 0.3714721202850342,
+            "phase": 1,
+            "life": 0.284418523311615,
+            "formed": 1,
+            "weight": 0.05967465788125992,
+            "collapse": 0.5690392255783081,
+            "mouth": 0.46786803007125854,
+            "lift": 0.17792734859421216,
+            "sheetWeight": 0,
+            "maskAlpha": 0.8437739161673443,
+            "maskDitherMargin": 0.016322935775187508,
+            "bary": [
+              0.23712759422238405,
+              0.7012542180981993,
+              0.06161818767941664
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.05278779139272416
+        },
+        {
+          "index": 353030,
+          "pixel": [
+            1030,
+            444
+          ],
+          "from": "water",
+          "waterWorld": [
+            53.295555114746094,
+            0.23169709742069244,
+            -100.54817962646484
+          ],
+          "waterAlpha": 0.5607843137254902,
+          "gpuDitherQuantized": 0.5607843137254902,
+          "swept": {
+            "point": [
+              53.3062028615502,
+              0.22516354344076106,
+              -100.55656677341358
+            ],
+            "distance": 43.957191522242866,
+            "strip": 92,
+            "row": 126,
+            "layer": "frontRest",
+            "front": 21,
+            "sigma": -0.09639590978622437,
+            "phase": 1,
+            "life": 0.3250868022441864,
+            "formed": 0,
+            "weight": 0,
+            "collapse": 0.5679754018783569,
+            "mouth": 0,
+            "lift": 0.05019481575125272,
+            "sheetWeight": 0,
+            "maskAlpha": 0.5722852478895148,
+            "maskDitherMargin": 0.011500934164024645,
+            "bary": [
+              0.001360754335431369,
+              0.876826728376011,
+              0.12181251728855756
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.015045713294767893
+        },
+        {
+          "index": 354319,
+          "pixel": [
+            1039,
+            443
+          ],
+          "from": "water",
+          "waterWorld": [
+            53.798431396484375,
+            0.24594880640506744,
+            -100.43761444091797
+          ],
+          "waterAlpha": 0.8549019607843137,
+          "gpuDitherQuantized": 0.8901960784313725,
+          "swept": {
+            "point": [
+              53.85482685053593,
+              0.21233264686360087,
+              -100.48005369420719
+            ],
+            "distance": 44.31523428036313,
+            "strip": 93,
+            "row": 125,
+            "layer": "frontRest",
+            "front": 21,
+            "sigma": 0.3714721202850342,
+            "phase": 1,
+            "life": 0.284418523311615,
+            "formed": 1,
+            "weight": 0.05967465788125992,
+            "collapse": 0.5690392255783081,
+            "mouth": 0.46786803007125854,
+            "lift": 0.2311146854108871,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9021832498259178,
+            "maskDitherMargin": 0.011987171394545304,
+            "bary": [
+              0.009036836194278156,
+              0.08868048451643067,
+              0.9022826792892912
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.07817657262005895
+        },
+        {
+          "index": 356878,
+          "pixel": [
+            1038,
+            441
+          ],
+          "from": "water",
+          "waterWorld": [
+            53.84098815917969,
+            0.29720309376716614,
+            -100.55218505859375
+          ],
+          "waterAlpha": 0.9019607843137255,
+          "gpuDitherQuantized": 0.9529411764705882,
+          "swept": {
+            "point": [
+              53.94582498649841,
+              0.23495987771685378,
+              -100.63135561964428
+            ],
+            "distance": 44.45332152770427,
+            "strip": 94,
+            "row": 125,
+            "layer": "frontRest",
+            "front": 21,
+            "sigma": 0.8393401503562927,
+            "phase": 1,
+            "life": 0.23336413502693176,
+            "formed": 1,
+            "weight": 0.2624686360359192,
+            "collapse": 0.5703762769699097,
+            "mouth": 0.9357360601425171,
+            "lift": 0.3231872836277608,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9696367702805215,
+            "maskDitherMargin": 0.01669559380993335,
+            "bary": [
+              0.41418509753217336,
+              0.5077507560965459,
+              0.07806414637128081
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.14537169630423818
+        },
+        {
+          "index": 358150,
+          "pixel": [
+            1030,
+            440
+          ],
+          "from": "water",
+          "waterWorld": [
+            53.47911071777344,
+            0.33251193165779114,
+            -100.74201202392578
+          ],
+          "waterAlpha": 0.7529411764705882,
+          "gpuDitherQuantized": 0.8,
+          "swept": {
+            "point": [
+              53.547312426742394,
+              0.2915183044270364,
+              -100.79451629208282
+            ],
+            "distance": 44.23178527849209,
+            "strip": 93,
+            "row": 125,
+            "layer": "frontRest",
+            "front": 21,
+            "sigma": 0.3714721202850342,
+            "phase": 1,
+            "life": 0.284418523311615,
+            "formed": 1,
+            "weight": 0.05967465788125992,
+            "collapse": 0.5690392255783081,
+            "mouth": 0.46786803007125854,
+            "lift": 0.19357101416980912,
+            "sheetWeight": 0,
+            "maskAlpha": 0.8016073961636715,
+            "maskDitherMargin": 0.0016073961636714484,
+            "bary": [
+              0.023252630371709992,
+              0.670870904692668,
+              0.3058764649356221
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.09533433731135688
+        },
+        {
+          "index": 359435,
+          "pixel": [
+            1035,
+            439
+          ],
+          "from": "water",
+          "waterWorld": [
+            53.78044891357422,
+            0.35176852345466614,
+            -100.70215606689453
+          ],
+          "waterAlpha": 0.8901960784313725,
+          "gpuDitherQuantized": 0.9058823529411765,
+          "swept": {
+            "point": [
+              53.91583678850588,
+              0.2714862469774211,
+              -100.80500606507744
+            ],
+            "distance": 44.51076551253463,
+            "strip": 94,
+            "row": 125,
+            "layer": "frontRest",
+            "front": 21,
+            "sigma": 0.8393401503562927,
+            "phase": 1,
+            "life": 0.23336413502693176,
+            "formed": 1,
+            "weight": 0.2624686360359192,
+            "collapse": 0.5703762769699097,
+            "mouth": 0.9357360601425171,
+            "lift": 0.3621512614294206,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9637763238189245,
+            "maskDitherMargin": 0.05789397087774806,
+            "bary": [
+              0.16133454648766665,
+              0.7707801136723427,
+              0.06788533983999069
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.1880245740863984
+        },
+        {
+          "index": 360698,
+          "pixel": [
+            1018,
+            438
+          ],
+          "from": "water",
+          "waterWorld": [
+            52.95631790161133,
+            0.39913180470466614,
+            -101.0503158569336
+          ],
+          "waterAlpha": 0.7215686274509804,
+          "gpuDitherQuantized": 0.7333333333333333,
+          "swept": {
+            "point": [
+              52.97319469016563,
+              0.3888328874741802,
+              -101.06376469329552
+            ],
+            "distance": 43.93053668274374,
+            "strip": 92,
+            "row": 125,
+            "layer": "frontRest",
+            "front": 21,
+            "sigma": -0.09639590978622437,
+            "phase": 1,
+            "life": 0.3250868022441864,
+            "formed": 0,
+            "weight": 0,
+            "collapse": 0.5679754018783569,
+            "mouth": 0,
+            "lift": 0.04629235062338344,
+            "sheetWeight": 0,
+            "maskAlpha": 0.7429536692272746,
+            "maskDitherMargin": 0.00962033589394129,
+            "bary": [
+              0.1914602620946939,
+              0.7757455554331879,
+              0.03279418247211815
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.02391146931891086
+        }
+      ],
+      "sampling": "Deterministic equal quantiles across gained pure swept pixels (bottom-left framebuffer ordering), at most512 per camera.",
+      "sources": {
+        "baselineId": "bb1af488c35e1f8d896ec4cc101d75d728b90cb36d4dc92390ebf30cc22b2ded",
+        "candidateId": "e3830e2dee1571f2a2054971b1ae1541e381d0b9eab3ed30377bb81d03a83d94",
+        "baselineWaterWorld": "8621cef3e3bd397cfb8f58079a8a94cc94851ca942014ab28268e4ca90d5056f"
+      }
+    },
+    {
+      "at": 20,
+      "view": "cavity",
+      "totalNewSwept": 6,
+      "from": {
+        "water": 3,
+        "other": 3
+      },
+      "sampled": 6,
+      "summary": {
+        "noSurvivingCenterHit": 1,
+        "accepted": 5,
+        "layer_face": 1,
+        "front_24": 1,
+        "liftUnder1percent": 5,
+        "maskSelectionNearQuantization": 2,
+        "layer_back": 4,
+        "front_21": 4,
+        "maskSelectionMarginOverQuantization": 3,
+        "fartherThanOriginalWater2cm": 2
+      },
+      "probes": [
+        {
+          "index": 48264,
+          "pixel": [
+            904,
+            682
+          ],
+          "from": "other",
+          "waterWorld": null,
+          "waterAlpha": null,
+          "gpuDitherQuantized": null,
+          "swept": {
+            "point": [
+              48.253288580874695,
+              1.12529158106755,
+              -111.36733964484877
+            ],
+            "distance": 3.635737274238258,
+            "strip": 84,
+            "row": 108,
+            "layer": "face",
+            "front": 24,
+            "sigma": 43.32072830200195,
+            "phase": 0,
+            "life": null,
+            "formed": 0,
+            "weight": 0.10095875710248947,
+            "collapse": 0.5631988644599915,
+            "mouth": 0,
+            "lift": 0.0011830348331064446,
+            "sheetWeight": 0,
+            "maskAlpha": 0.7664885105149507,
+            "maskDitherMargin": 0.0012936784855638317,
+            "bary": [
+              0.011718001162647762,
+              0.7226369639519169,
+              0.26564503488543534
+            ]
+          },
+          "fartherThanOriginalWaterMeters": null
+        },
+        {
+          "index": 94599,
+          "pixel": [
+            1159,
+            646
+          ],
+          "from": "other",
+          "waterWorld": null,
+          "waterAlpha": null,
+          "gpuDitherQuantized": null,
+          "swept": {
+            "point": [
+              48.66007651411197,
+              1.3573155843929152,
+              -110.50641308727447
+            ],
+            "distance": 3.291374849209532,
+            "strip": 92,
+            "row": 30,
+            "layer": "back",
+            "front": 21,
+            "sigma": -0.09639590978622437,
+            "phase": 1,
+            "life": 0.3250868022441864,
+            "formed": 0,
+            "weight": 0,
+            "collapse": 0.5679754018783569,
+            "mouth": 0,
+            "lift": 0.00009386204848640629,
+            "sheetWeight": 0,
+            "maskAlpha": 0.919626793552749,
+            "maskDitherMargin": 0.0063730970025349665,
+            "bary": [
+              0.6887027803042909,
+              0.18264205049260385,
+              0.12865516920310527
+            ]
+          },
+          "fartherThanOriginalWaterMeters": null
+        },
+        {
+          "index": 98479,
+          "pixel": [
+            1199,
+            643
+          ],
+          "from": "other",
+          "waterWorld": null,
+          "waterAlpha": null,
+          "gpuDitherQuantized": null,
+          "swept": {
+            "point": [
+              48.67371445963972,
+              1.3819250097405213,
+              -110.37605467276241
+            ],
+            "distance": 3.2236317964578345,
+            "strip": 92,
+            "row": 30,
+            "layer": "back",
+            "front": 21,
+            "sigma": -0.09639590978622437,
+            "phase": 1,
+            "life": 0.3250868022441864,
+            "formed": 0,
+            "weight": 0,
+            "collapse": 0.5679754018783569,
+            "mouth": 0,
+            "lift": 0.000036633812926346166,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9949600418652736,
+            "maskDitherMargin": 0.8912020976001259,
+            "bary": [
+              0.43357118905366926,
+              0.07128413259805784,
+              0.4951446783482729
+            ]
+          },
+          "fartherThanOriginalWaterMeters": null
+        },
+        {
+          "index": 99760,
+          "pixel": [
+            1200,
+            642
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.646240234375,
+            1.3888932466506958,
+            -110.35291290283203
+          ],
+          "waterAlpha": 0.9803921568627451,
+          "gpuDitherQuantized": 0.984313725490196,
+          "swept": {
+            "point": [
+              48.70510008517259,
+              1.3816501221115083,
+              -110.3940886966708
+            ],
+            "distance": 3.259532801086427,
+            "strip": 92,
+            "row": 30,
+            "layer": "back",
+            "front": 21,
+            "sigma": -0.09639590978622437,
+            "phase": 1,
+            "life": 0.3250868022441864,
+            "formed": 0,
+            "weight": 0,
+            "collapse": 0.5679754018783569,
+            "mouth": 0,
+            "lift": 0.00009046914881604316,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9877539209007563,
+            "maskDitherMargin": 0.003440195410560287,
+            "bary": [
+              0.4093771410214445,
+              0.17603995557880547,
+              0.41458290339975
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.07219684065308574
+        },
+        {
+          "index": 101052,
+          "pixel": [
+            1212,
+            641
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.655479431152344,
+            1.3954087495803833,
+            -110.32008361816406
+          ],
+          "waterAlpha": 0.9607843137254902,
+          "gpuDitherQuantized": 0.9647058823529412,
+          "swept": {
+            "point": [
+              48.71197418411872,
+              1.3886243516332908,
+              -110.35872731322969
+            ],
+            "distance": 3.2444796182882487,
+            "strip": 92,
+            "row": 30,
+            "layer": "back",
+            "front": 21,
+            "sigma": -0.09639590978622437,
+            "phase": 1,
+            "life": 0.3250868022441864,
+            "formed": 0,
+            "weight": 0,
+            "collapse": 0.5679754018783569,
+            "mouth": 0,
+            "lift": 0.00007932648760405836,
+            "sheetWeight": 0,
+            "maskAlpha": 0.982366795606803,
+            "maskDitherMargin": 0.017660913253861765,
+            "bary": [
+              0.3344933411428025,
+              0.15435793899682082,
+              0.5111487198603767
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.06878238766660116
+        }
+      ],
+      "sampling": "Deterministic equal quantiles across gained pure swept pixels (bottom-left framebuffer ordering), at most512 per camera.",
+      "sources": {
+        "baselineId": "68e824cfc117a22c1603fbed3ba0c200d70f6760894fe41bac06b35281fdf8ee",
+        "candidateId": "c2586ac73d2425dc119c42fef8583d69d477c9c3300f0d25bc78ceacafc5eeb2",
+        "baselineWaterWorld": "5eee27756487f951f16d6e264794e079323e2add46e2bc7a028e3324f9f41032"
+      }
+    },
+    {
+      "at": 20,
+      "view": "mouth",
+      "totalNewSwept": 19583,
+      "from": {
+        "water": 19511,
+        "other": 72
+      },
+      "sampled": 512,
+      "summary": {
+        "noSurvivingCenterHit": 1,
+        "accepted": 511,
+        "layer_face": 37,
+        "front_24": 510,
+        "partialLift": 169,
+        "maskSelectionMarginOverQuantization": 500,
+        "fartherThanOriginalWater2cm": 504,
+        "maskSelectionNearQuantization": 11,
+        "within2cmOriginalWater": 2,
+        "liftOverHalf": 340,
+        "layer_frontRest": 473,
+        "layer_back": 1,
+        "front_21": 1,
+        "liftUnder1percent": 2
+      },
+      "probes": [
+        {
+          "index": 88069,
+          "pixel": [
+            1029,
+            651
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.055240631103516,
+            1.0912705659866333,
+            -111.7195816040039
+          ],
+          "waterAlpha": 0.9490196078431372,
+          "gpuDitherQuantized": 0.9686274509803922,
+          "swept": {
+            "point": [
+              48.02459120976458,
+              1.074700392415857,
+              -111.71869361385929
+            ],
+            "distance": 3.7398856357285126,
+            "strip": 83,
+            "row": 105,
+            "layer": "face",
+            "front": 24,
+            "sigma": 42.82271957397461,
+            "phase": 1,
+            "life": 0.008238443173468113,
+            "formed": 0,
+            "weight": 0.34627291560173035,
+            "collapse": 0.5620135068893433,
+            "mouth": 0,
+            "lift": 0.11426356285056104,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9764923241114085,
+            "maskDitherMargin": 0.007864873131016359,
+            "bary": [
+              0.05423578414497726,
+              0.3551891784246017,
+              0.5905750374304211
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.03485285038745323
+        },
+        {
+          "index": 107167,
+          "pixel": [
+            927,
+            636
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.22625732421875,
+            1.1274338960647583,
+            -111.34384155273438
+          ],
+          "waterAlpha": 0.796078431372549,
+          "gpuDitherQuantized": 0.807843137254902,
+          "swept": {
+            "point": [
+              48.21357426722893,
+              1.1203237836755722,
+              -111.3419631603177
+            ],
+            "distance": 3.5841243640565783,
+            "strip": 84,
+            "row": 108,
+            "layer": "face",
+            "front": 24,
+            "sigma": 43.32072830200195,
+            "phase": 0,
+            "life": null,
+            "formed": 0,
+            "weight": 0.10095875710248947,
+            "collapse": 0.5631988644599915,
+            "mouth": 0,
+            "lift": 0.016669168200424325,
+            "sheetWeight": 0,
+            "maskAlpha": 0.8081390730403968,
+            "maskDitherMargin": 0.00029593578549480526,
+            "bary": [
+              0.165108690705279,
+              0.6824660218179102,
+              0.1524252874768109
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.014660379812260427
+        },
+        {
+          "index": 125074,
+          "pixel": [
+            914,
+            622
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.15253448486328,
+            1.1349412202835083,
+            -111.27464294433594
+          ],
+          "waterAlpha": 0.8745098039215686,
+          "gpuDitherQuantized": 0.8941176470588236,
+          "swept": {
+            "point": [
+              48.1005425007582,
+              1.1066546623488298,
+              -111.2656750918137
+            ],
+            "distance": 3.6996277963302933,
+            "strip": 84,
+            "row": 108,
+            "layer": "face",
+            "front": 24,
+            "sigma": 43.32072830200195,
+            "phase": 0,
+            "life": null,
+            "formed": 0,
+            "weight": 0.10095875710248947,
+            "collapse": 0.5631988644599915,
+            "mouth": 0,
+            "lift": 0.06061193427853893,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9168080674272969,
+            "maskDitherMargin": 0.022690420368473352,
+            "bary": [
+              0.12011001153021023,
+              0.3996366831555978,
+              0.48025330531419197
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.059863891241553
+        },
+        {
+          "index": 144264,
+          "pixel": [
+            904,
+            607
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.0511589050293,
+            1.1394425630569458,
+            -111.2093505859375
+          ],
+          "waterAlpha": 0.9607843137254902,
+          "gpuDitherQuantized": 0.9764705882352941,
+          "swept": {
+            "point": [
+              47.899203712428175,
+              1.0595639097846068,
+              -111.18055863574286
+            ],
+            "distance": 3.910414192369194,
+            "strip": 83,
+            "row": 108,
+            "layer": "face",
+            "front": 24,
+            "sigma": 42.82271957397461,
+            "phase": 1,
+            "life": 0.008238443173468113,
+            "formed": 0,
+            "weight": 0.34627291560173035,
+            "collapse": 0.5620135068893433,
+            "mouth": 0,
+            "lift": 0.1971420153266599,
+            "sheetWeight": 0,
+            "maskAlpha": 1,
+            "maskDitherMargin": 0.02352941176470591,
+            "bary": [
+              0.32075322686567564,
+              0.607918031260034,
+              0.07132874187429038
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.17406875188022264
+        },
+        {
+          "index": 169826,
+          "pixel": [
+            866,
+            587
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.03761672973633,
+            1.1823197603225708,
+            -111.03197479248047
+          ],
+          "waterAlpha": 0.9764705882352941,
+          "gpuDitherQuantized": 0.996078431372549,
+          "swept": {
+            "point": [
+              47.764099359439726,
+              1.0427343120333383,
+              -110.96542209438124
+            ],
+            "distance": 4.076595001010513,
+            "strip": 83,
+            "row": 108,
+            "layer": "face",
+            "front": 24,
+            "sigma": 42.82271957397461,
+            "phase": 1,
+            "life": 0.008238443173468113,
+            "formed": 0,
+            "weight": 0.34627291560173035,
+            "collapse": 0.5620135068893433,
+            "mouth": 0,
+            "lift": 0.31509389415097455,
+            "sheetWeight": 0,
+            "maskAlpha": 1,
+            "maskDitherMargin": 0.0039215686274509665,
+            "bary": [
+              0.432624510895469,
+              0.1270983364413199,
+              0.4402771526632111
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.3142054830440837
+        },
+        {
+          "index": 200468,
+          "pixel": [
+            788,
+            563
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.20304489135742,
+            1.2872544527053833,
+            -110.7082748413086
+          ],
+          "waterAlpha": 0.9372549019607843,
+          "gpuDitherQuantized": 0.984313725490196,
+          "swept": {
+            "point": [
+              47.53459317179787,
+              0.9506019158388541,
+              -110.46706512496131
+            ],
+            "distance": 4.444447410820048,
+            "strip": 82,
+            "row": 110,
+            "layer": "face",
+            "front": 24,
+            "sigma": 42.324710845947266,
+            "phase": 1,
+            "life": 0.032563723623752594,
+            "formed": 0,
+            "weight": 0.6411024332046509,
+            "collapse": 0.5608256459236145,
+            "mouth": 0,
+            "lift": 0.5370971027734535,
+            "sheetWeight": 0,
+            "maskAlpha": 1,
+            "maskDitherMargin": 0.015686274509803977,
+            "bary": [
+              0.5169584211824465,
+              0.3527643069011591,
+              0.13027727191639435
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.7863489994084887
+        },
+        {
+          "index": 205575,
+          "pixel": [
+            775,
+            559
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.22969436645508,
+            1.3043442964553833,
+            -110.6536636352539
+          ],
+          "waterAlpha": 0.9411764705882353,
+          "gpuDitherQuantized": 0.9803921568627451,
+          "swept": {
+            "point": [
+              47.571728330743056,
+              0.9737062503003571,
+              -110.4025802726539
+            ],
+            "distance": 4.423409903049846,
+            "strip": 82,
+            "row": 110,
+            "layer": "face",
+            "front": 24,
+            "sigma": 42.324710845947266,
+            "phase": 1,
+            "life": 0.032563723623752594,
+            "formed": 0,
+            "weight": 0.6411024332046509,
+            "collapse": 0.5608256459236145,
+            "mouth": 0,
+            "lift": 0.48648922810399436,
+            "sheetWeight": 0,
+            "maskAlpha": 1,
+            "maskDitherMargin": 0.019607843137254943,
+            "bary": [
+              0.4755843771759272,
+              0.29124830814103847,
+              0.23316731468303428
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 0.7779997794943689
+        },
+        {
+          "index": 210513,
+          "pixel": [
+            593,
+            555
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.90050506591797,
+            1.4511948823928833,
+            -110.08702850341797
+          ],
+          "waterAlpha": 0.7333333333333333,
+          "gpuDitherQuantized": 0.8745098039215686,
+          "swept": {
+            "point": [
+              47.020556583730155,
+              0.35816245367677757,
+              -108.7280162754076
+            ],
+            "distance": 5.854447466470956,
+            "strip": 80,
+            "row": 115,
+            "layer": "face",
+            "front": 24,
+            "sigma": 41.57769775390625,
+            "phase": 1,
+            "life": 0.1050686463713646,
+            "formed": 1,
+            "weight": 0.9686878323554993,
+            "collapse": 0.5592601895332336,
+            "mouth": 0.7470130920410156,
+            "lift": 0.9515156057055952,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9999193859461563,
+            "maskDitherMargin": 0.12540958202458763,
+            "bary": [
+              0.7801188343818037,
+              0.16425861624057594,
+              0.055622549377620296
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 2.5643401508553447
+        },
+        {
+          "index": 213061,
+          "pixel": [
+            581,
+            553
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.92751693725586,
+            1.4601975679397583,
+            -110.0430908203125
+          ],
+          "waterAlpha": 0.6862745098039216,
+          "gpuDitherQuantized": 0.807843137254902,
+          "swept": {
+            "point": [
+              47.01273063298738,
+              0.3415768568217228,
+              -108.60808189702789
+            ],
+            "distance": 5.931567568388918,
+            "strip": 80,
+            "row": 116,
+            "layer": "frontRest",
+            "front": 24,
+            "sigma": 41.57769775390625,
+            "phase": 1,
+            "life": 0.1050686463713646,
+            "formed": 1,
+            "weight": 0.9686878323554993,
+            "collapse": 0.5592601895332336,
+            "mouth": 0.7470130920410156,
+            "lift": 0.9501447580959066,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9999500759490692,
+            "maskDitherMargin": 0.19210693869416717,
+            "bary": [
+              0.6628833877400313,
+              0.237434135099004,
+              0.09968247716096469
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 2.641395362337984
+        },
+        {
+          "index": 214497,
+          "pixel": [
+            737,
+            552
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.337379455566406,
+            1.3458482027053833,
+            -110.50733184814453
+          ],
+          "waterAlpha": 0.9568627450980393,
+          "gpuDitherQuantized": 0.996078431372549,
+          "swept": {
+            "point": [
+              47.50224351703873,
+              0.9226663253571223,
+              -110.13597242490052
+            ],
+            "distance": 4.5954728184177105,
+            "strip": 82,
+            "row": 111,
+            "layer": "face",
+            "front": 24,
+            "sigma": 42.324710845947266,
+            "phase": 1,
+            "life": 0.032563723623752594,
+            "formed": 0,
+            "weight": 0.6411024332046509,
+            "collapse": 0.5608256459236145,
+            "mouth": 0,
+            "lift": 0.5447212200379233,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9995201137176358,
+            "maskDitherMargin": 0.003441682345086794,
+            "bary": [
+              0.673095102721245,
+              0.10240535672284856,
+              0.22449954055590654
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 1.007195483211885
+        },
+        {
+          "index": 216914,
+          "pixel": [
+            594,
+            550
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.85845184326172,
+            1.4515000581741333,
+            -110.06221008300781
+          ],
+          "waterAlpha": 0.7254901960784313,
+          "gpuDitherQuantized": 0.9764705882352941,
+          "swept": {
+            "point": [
+              47.1169129749022,
+              0.4565219377578602,
+              -108.8074272274804
+            ],
+            "distance": 5.699915943000389,
+            "strip": 81,
+            "row": 115,
+            "layer": "face",
+            "front": 24,
+            "sigma": 41.82670211791992,
+            "phase": 1,
+            "life": 0.07210901379585266,
+            "formed": 0.14812862873077393,
+            "weight": 0.8905900716781616,
+            "collapse": 0.5597285628318787,
+            "mouth": 0.49800872802734375,
+            "lift": 0.8675060605899698,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9995415177454816,
+            "maskDitherMargin": 0.02307092951018752,
+            "bary": [
+              0.9074743292716574,
+              0.0585501980234892,
+              0.03397547270485347
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 2.3658865248469856
+        },
+        {
+          "index": 218240,
+          "pixel": [
+            640,
+            549
+          ],
+          "from": "water",
+          "waterWorld": [
+            48.68449783325195,
+            1.4193040132522583,
+            -110.19039154052734
+          ],
+          "waterAlpha": 0.8705882352941177,
+          "gpuDitherQuantized": 0.8980392156862745,
+          "swept": {
+            "point": [
+              47.24990427924259,
+              0.6363955058737494,
+              -109.29516794436599
+            ],
+            "distance": 5.277258047271224,
+            "strip": 81,
+            "row": 115,
+            "layer": "face",
+            "front": 24,
+            "sigma": 41.82670211791992,
+            "phase": 1,
+            "life": 0.07210901379585266,
+            "formed": 0.14812862873077393,
+            "weight": 0.8905900716781616,
+            "collapse": 0.5597285628318787,
+            "mouth": 0.49800872802734375,
+            "lift": 0.7606486122242265,
+            "sheetWeight": 0,
+            "maskAlpha": 0.9990199832186565,
+            "maskDitherMargin": 0.10098076753238194,
+            "bary": [
+              0.3568028162770779,
+              0.5208332575071916,
+              0.12236392621573053
+            ]
+          },
+          "fartherThanOriginalWaterMeters": 1.8634456372685593
+        }
+      ],
+      "sampling": "Deterministic equal quantiles across gained pure swept pixels (bottom-left framebuffer ordering), at most512 per camera.",
+      "sources": {
+        "baselineId": "0255a3d41f2258271e191a1b7d25eabf865ac8512fd26ab9cac570224a7a1425",
+        "candidateId": "15e8df89bd08bebc92ed3cdc5f8487afff3c8782b2705590cd55be6de99e1484",
+        "baselineWaterWorld": "48c38c2503883f0697ccc5e0b1ad2db189ca449955ca6ab84551484a3ce829f1"
+      }
+    }
+  ]
+}

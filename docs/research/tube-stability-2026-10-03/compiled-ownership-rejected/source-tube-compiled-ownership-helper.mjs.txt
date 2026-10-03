@@ -1,0 +1,29 @@
+// Isolated companion for the compiled baseline/candidate: does not create/alter ownership shaders.
+export function installCompiledOwnershipAudit(env) {
+  const {d,mode,water,mesh,hash,getDiagnostic,getCurrent}=env;
+  const gl=d.canvas.getContext('webgl2');
+  const stencil=water.materialUniforms.waterBarrelScreenOwnership?.value;
+  const candidate=window.__tubeCompiledVariant==='candidate';
+  if(candidate&&(stencil!==1||!gl.getContextAttributes().stencil||typeof mesh.syncOwnership!=='function'))throw Error('Compiled candidate ownership not enabled');
+  if(!candidate&&stencil!==undefined)throw Error('Expected immutable legacy baseline, got ownership API');
+  const base64=bytes=>{let out='';for(let i=0;i<bytes.length;i+=8192)out+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(out);};
+  function exportWaterPixels(){
+    // Restore the measured masked scene after the solid-only passes before reporting active/stencil state.
+    window.__tubeFrozen.diagnosticRender('masked-ids');
+    const p=getDiagnostic().pixels,canvas=d.canvas,g=getDiagnostic(),positions=[],indices=[],alphas=[],dithers=[];
+    const is=(a,n,r,gg,b)=>a[4*n]===r&&a[4*n+1]===gg&&a[4*n+2]===b;
+    const coordinate=(n,axis)=>{const a=p[['unmasked-x','unmasked-y','unmasked-z'][axis]],o=4*n;return g.low[axis]+g.span[axis]*(a[o]*65536+a[o+1]*256+a[o+2])/16777215;};
+    let edgeRejected=0;
+    for(let n=0;n<canvas.width*canvas.height;n++){
+      if(!is(p['masked-ids'],n,0,0,255)||!is(p['unmasked-ids'],n,0,0,255))continue;
+      const world=[0,1,2].map(a=>coordinate(n,a)),v=window.__tubeFrozenCamera.position.clone().fromArray(world).project(window.__tubeFrozenCamera);
+      const reprojection=Math.hypot((v.x+1)*canvas.width/2-(n%canvas.width+.5),(v.y+1)*canvas.height/2-(Math.floor(n/canvas.width)+.5));
+      if(p['unmasked-bounds'][4*n]!==255||reprojection>.75){edgeRejected++;continue;}
+      indices.push(n);positions.push(...world);alphas.push(p['unmasked-mask'][4*n]);dithers.push(p['unmasked-mask'][4*n+1]);
+    }
+    const packed=a=>({type:a.constructor.name,length:a.length,base64:base64(new Uint8Array(a.buffer))});
+    return{width:canvas.width,height:canvas.height,pixelOrigin:'bottom-left',edgeRejected,worldMethod:'GPU post-displacement interpolated world varying; unmasked water and masked water have identical geometry/source/camera. Pure water IDs in both passes; encoded bounds and <=.75px reprojection guard. Not raw CPU water vertices.',indices:packed(Uint32Array.from(indices)),positions:packed(Float32Array.from(positions)),maskAlpha:packed(Uint8Array.from(alphas)),dither:packed(Uint8Array.from(dithers)),drawRange:{...mesh.mesh.geometry.drawRange},ownership:{compiledCandidate:candidate,stencilFlag:stencil??null,stencilBits:gl.getParameter(gl.STENCIL_BITS),active:water.materialUniforms.waterBarrelMaskActive.value,prepassVisible:mesh.ownership?.visible??false,bedOrder:mode.seabed.mesh.renderOrder,waterOrder:water.mesh.renderOrder,barrelOrder:mesh.mesh.renderOrder},clocks:{snapshot:mode.host.snapshot.status.seaTime,shading:water.materialUniforms.waterTime.value},camera:{position:window.__tubeFrozenCamera.position.toArray(),quaternion:window.__tubeFrozenCamera.quaternion.toArray(),projection:window.__tubeFrozenCamera.projectionMatrix.toArray()}};
+  }
+  window.__tubeCompiledAudit={exportWaterPixels};
+  return{candidate,actualContextStencil:gl.getContextAttributes().stencil,stencilBits:gl.getParameter(gl.STENCIL_BITS),scope:'No prototype rendering implementation. Actual compiled source provides normal and ownership shaders; frozen geometry lifecycle explicitly syncs ownership after mask and visibility, then mirrors production bed order. Does not test cached PhysicalMode lifecycle.'};
+}

@@ -1,0 +1,118 @@
+{
+  "scratch": "/private/tmp/surf-screen-ownership-20261003",
+  "base": "/private/tmp/surf-screen-ownership-base-20261003",
+  "rootHead": "1233de6e4bc57e84e8b5d93047f7ace2ffda792e",
+  "productionUnmodifiedByAgent": true,
+  "patchSha256": "1d12293ff244e2b87d92ac3058d76acdb0f760c59740c73030dde2f6644441f6",
+  "ownedFiles": [
+    {
+      "path": "src/main.ts",
+      "baseSha256": "95d52f07d106be65fa2509a7a6c5fefc736244f61a27c8fbcced5f9ed9037490",
+      "candidateSha256": "1381cbe8ab0a36163cbc7fe6b5cad2b10f1e8ef6bc7a7ffd8eebffc18fdbe3f0",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/game/PhysicalMode.ts",
+      "baseSha256": "588f59b12a5aec7a1d51af16fed5949bcfadf61eb42503ed54391c31a19cf63f",
+      "candidateSha256": "f4f711a63f5f5b4ca6334a6b2d326de0bd13539f577735f6041fc826c634b2d0",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/WaterSurface.ts",
+      "baseSha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000",
+      "candidateSha256": "5ae6a2cfefc91ba393b24955d9ee3525bfaa70126d446f0c3f91e7c5788ea622",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/WaterSurface.test.ts",
+      "baseSha256": "539ad0199962bac31bfb043d78a01359a067819064e02353282bdf6087ee0b8f",
+      "candidateSha256": "414260730d5c3942a8b44cdb828eb12047f148749e66a26daf8eb3c715d2b509",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrelMesh.ts",
+      "baseSha256": "cc52d17fb7cbf90621ec51a50b0236a055bd44b8794459361e41277000a88186",
+      "candidateSha256": "2e205ac73aad0b5188c7f5fe0333208d191f848aed3d3a9f622d6bb0a1d26ff6",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrelMesh.test.ts",
+      "baseSha256": "462cec51884ef8c351bf982decd5fafb35fa099c63f3427ea7e76c1c5deb7595",
+      "candidateSha256": "6704e1f698392710bcc3eeb7ed27db3feb6cdb119870825ba4101f3c683a157e",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/barrel/barrelMaskGlsl.ts",
+      "baseSha256": "d18790112d5c9b06903fffcce66f320e31974cec27e402c74b0030e608a1e589",
+      "candidateSha256": "c5eee41ee28e62957b068573546e5d54021f876660d30cfa025bbcbee8bb5e1a",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/barrel/barrelOwnership.ts",
+      "baseSha256": null,
+      "candidateSha256": "d4a8f2762fcc33852d8bcf83fd74e09698f9f7e517ac67c62b51383c229d1ca7",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrel.ts",
+      "baseSha256": "f52314fb81f295a7b389b5c74133a4c538c4060563e0c30ce5d89c311c724697",
+      "candidateSha256": "4bba7bd9817ee8bdb22f7abf6bab6d2e1eaf7fe4c979b75135e586655bb09c16",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrel.test.ts",
+      "baseSha256": "11996a0efc5f6095a9a975d80197f6bb6b4079d31fa624bde717c950e2adefe5",
+      "candidateSha256": "eeea33026930751794652b65dd35a7217bcfe2c2f2735e3dd10a526f503aa5f5",
+      "productionAtBase": true
+    }
+  ],
+  "unownedSourceDifferencesFromCurrentProduction": [],
+  "canonicalFft": {
+    "src/scene/FftChop.ts": {
+      "candidateSha256": "6939107ec1ddb046e08b5e0ab2659a7eb15a43cd81e7c174411afb5b149858fd",
+      "canonicalHeadSha256": "6939107ec1ddb046e08b5e0ab2659a7eb15a43cd81e7c174411afb5b149858fd"
+    },
+    "src/scene/FftChop.test.ts": {
+      "candidateSha256": "925d2e85e7a81c90cb54a6f7219c1e48109abe745e7bbda8be9f2953bc42ca25",
+      "canonicalHeadSha256": "925d2e85e7a81c90cb54a6f7219c1e48109abe745e7bbda8be9f2953bc42ca25"
+    }
+  },
+  "temporalHelperAbsent": true,
+  "lazyAllocation": {
+    "constructorRngParityVerified": true,
+    "extraRandomCallsOnFirstActiveOwnershipOnly": 8,
+    "laterUnseededRandomParityClaim": false,
+    "publicOwnershipGetterDoesNotAllocate": true
+  },
+  "checks": {
+    "focusedTests": {
+      "command": "npx vitest run src/scene/WaterSurface.test.ts src/scene/barrel/SweptBarrelMesh.test.ts src/scene/barrel/SweptBarrel.test.ts src/scene/waterLooks.test.ts src/scene/FftChop.test.ts",
+      "files": 5,
+      "passed": 60,
+      "newOwnershipTests": 8
+    },
+    "build": {
+      "command": "BUILD_ID=eea68720f npm run build",
+      "passed": true,
+      "typecheckPassed": true,
+      "literalBuildId": "eea68720f",
+      "indexSha256": "e39fe85b4b56fd7a830afce590c6db0dfb8caac992f26f53619f575ad6c82fdd",
+      "javascript": {
+        "WorkerSurfZone-DQRnCxgA.js": "e04e5e464ae19503a61d8a680cdc2f0a344a3135e20c1f0e836b3447f22c3637",
+        "devStepping-CFn2zLk8.js": "f00526a527a807acab5b3e8f0d47dc1b9664dd492274d3b25872850890f22cbd",
+        "index-lKN1E2yC.js": "8459316a07e03420a750f05922996e8ed9a38079bd6c8c8387c26fc7fd5e0655",
+        "jevRecorder-T0_54vGB.js": "6e4ed231288e89239e733dbb9ebf7d1f2eb4dd2c28e0eada982a08615f7894f9",
+        "particleBench-DOuzKpLo.js": "16ddd1b7104ffe974b9d3ed34c9fd39189a4fd1db1f0df68e2e1d9db1a889c83",
+        "rideRecorder-DsPumnrt.js": "a46d44360080361aa94abe3932a4c9ce892b5c3f6b8ac2af2bcfe9c340f4207b",
+        "surfZoneWorker-BH6FhcTP.js": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5",
+        "waterSheet-DbhOdIJU.js": "7a965e2484efa52d022452853406d9ad3c3f8960c3ca42cf08e3e00079992e54"
+      }
+    }
+  },
+  "pending": [
+    "Compiled candidate matched cavity/mouth/touchdown visual QA with normal caustics enabled",
+    "Actual display and fresh-snapshot throughput QA",
+    "Root review/apply; scratch is not default"
+  ],
+  "compatibility": "Actual default framebuffer stencil opt-in, legacy by default. Lazy identity child shares geometry; source projection/mask/dither/active guard, no color/depth writes. Active bed/prepass/water/swept order resets when inactive. Frozen QA must explicitly sync ownership AFTER mask/visibility and set bed order; it is not proof of cached production lifecycle."
+}

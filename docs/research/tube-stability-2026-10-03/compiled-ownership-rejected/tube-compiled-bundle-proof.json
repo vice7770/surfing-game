@@ -1,0 +1,19 @@
+{
+  "baselineBuild": {
+    "build": "eea68720f"
+  },
+  "candidateBuild": {
+    "build": "eea68720f"
+  },
+  "physicsWorker": {
+    "path": "assets/surfZoneWorker-BH6FhcTP.js",
+    "baselineSha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5",
+    "candidateSha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+  },
+  "staticCandidateSession": 18468,
+  "chromeClosed": true,
+  "actualServedBuildIdsVerifiedViaIpv4Curl": {
+    "4201": "eea68720f",
+    "4205": "eea68720f"
+  }
+}

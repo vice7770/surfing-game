@@ -1,0 +1,11 @@
+exec(open('/private/tmp/tube-compiled-pixel-report.py').read().split('for at in [10,20]:')[0])
+report={'schema':1,'samples':[]}
+for at in [10,20]:
+ for view in ['overview','cavity','mouth']:
+  label=f'{at}-{view}';A=ids(root/f'tube-compiled-baseline/at-{label}.baseline.masked-ids.png');B=ids(root/f'tube-compiled-candidate/at-{label}.baseline.masked-ids.png');G=[n for n,(a,b)in enumerate(zip(A,B))if a!=(255,0,0)and b==(255,0,0)]
+  Wp=root/f'tube-compiled-baseline/at-{label}.baseline.water-world.json';W=json.loads(Wp.read_text());ii=decode(W['indices']);ww=decode(W['positions']);aa=decode(W['maskAlpha']);dd=decode(W['dither']);world={n:(ww[3*k:3*k+3],aa[k]/255,dd[k]/255)for k,n in enumerate(ii)}
+  selected=[G[math.floor((i+.5)*len(G)/min(512,len(G)))]for i in range(min(512,len(G)))];counts=Counter(colours.get(A[n],'other')for n in G);samples=[]
+  for n in selected:
+   w=world.get(n);samples.append({'index':n,'pixel':[n%W['width'],W['height']-1-n//W['width']],'from':colours.get(A[n],'other'),'waterWorld':w[0]if w else None,'waterAlpha':w[1]if w else None,'gpuDitherQuantized':w[2]if w else None})
+  report['samples'].append({'at':at,'view':view,'totalNewSwept':len(G),'from':dict(counts),'samples':samples,'camera':W['camera'],'width':W['width'],'height':W['height'],'sources':{'baselineId':sha(root/f'tube-compiled-baseline/at-{label}.baseline.masked-ids.png'),'candidateId':sha(root/f'tube-compiled-candidate/at-{label}.baseline.masked-ids.png'),'baselineWaterWorld':sha(Wp)}});print(label,len(G),dict(counts))
+(root/'tube-compiled-swept-gains.json').write_text(json.dumps(report)+'\n')

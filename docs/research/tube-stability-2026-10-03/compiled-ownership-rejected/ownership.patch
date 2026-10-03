@@ -1,0 +1,626 @@
+diff --git a/src/main.ts b/src/main.ts
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -213,7 +213,7 @@
+   private lastRender = 0;
+ 
+   constructor() {
+-    this.renderer = new WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
++    this.renderer = new WebGLRenderer({ antialias: true, stencil: true, powerPreference: 'high-performance' });
+     this.renderer.setPixelRatio(this.pixelRatio());
+     this.renderer.setSize(window.innerWidth, window.innerHeight);
+     this.renderer.outputColorSpace = 'srgb';
+@@ -250,6 +250,7 @@
+ 
+     // The water shows once a surf zone runs; until then it holds a still sea.
+     this.water = new WaterSurface(new FlatSurfaceSource());
++    this.water.setBarrelScreenOwnership(this.renderer.getContext().getContextAttributes()?.stencil === true);
+     this.water.mesh.material.envMapIntensity = 0.28;
+     this.water.mesh.visible = false;
+     this.scene.add(this.water.mesh);
+diff --git a/src/game/PhysicalMode.ts b/src/game/PhysicalMode.ts
+--- a/src/game/PhysicalMode.ts
++++ b/src/game/PhysicalMode.ts
+@@ -36,6 +36,7 @@
+ import { SEA_COMPONENTS, solverStage, surfZoneSea, sweptBarrelOn, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+ import { SweptBarrel } from '../scene/barrel/SweptBarrel';
+ import { SWEPT_BARREL_VIEWS, type SweptBarrelMesh } from '../scene/barrel/SweptBarrelMesh';
++import { BARREL_RENDER_ORDER } from '../scene/barrel/barrelOwnership';
+ import { devParam } from '../devTools';
+ import type { LoftResult } from '../wave/barrel/sweptLoft';
+ import { barrelCasesFor, libraryFromBytes, loadBarrelCaseBytes } from '../wave/barrel/barrelLibrary';
+@@ -760,12 +761,17 @@
+    */
+   drawBarrel(): void {
+     const { host, sweptBarrel } = this;
+-    if (!sweptBarrel) return;
++    if (!sweptBarrel) {
++      this.seabed.mesh.renderOrder = 0;
++      return;
++    }
+     if (!host || !this.swept || !this.shown) {
+       sweptBarrel.draw(NO_FRONT, 0, 0, host?.snapshot.status);
+-      return;
+-    }
+-    sweptBarrel.draw(host.snapshot.front, host.snapshot.frontCount, this.config?.tide ?? 0, host.snapshot.status);
++    } else {
++      sweptBarrel.draw(host.snapshot.front, host.snapshot.frontCount, this.config?.tide ?? 0, host.snapshot.status);
++    }
++    // Geometry and cached draws both synchronize the child before this depth-order decision.
++    this.seabed.mesh.renderOrder = sweptBarrel.mesh.ownership?.visible ? BARREL_RENDER_ORDER.bed : 0;
+   }
+ 
+   /** The swept barrel's loft as last drawn, at a swept spot (the water sheet's curl shots). */
+diff --git a/src/scene/WaterSurface.ts b/src/scene/WaterSurface.ts
+--- a/src/scene/WaterSurface.ts
++++ b/src/scene/WaterSurface.ts
+@@ -32,6 +32,7 @@
+ import { packTubeTextures, tubeColumnCount, waterTubePars } from './water/tubeCarve';
+ import { TUBE_CAPACITY, TUBE_STRIDE } from '../wave/tubeTable';
+ import { WATER_BARREL_DISCARD, waterBarrelMaskPars } from './barrel/barrelMaskGlsl';
++import { BARREL_RENDER_ORDER, configureBarrelWater } from './barrel/barrelOwnership';
+ import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
+ import { foamPatternPars, foamTileTexture } from './foamPattern';
+ import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
+@@ -253,6 +254,8 @@
+   private vertexNormals = devParam('waterNormals') === 'vertex';
+   /** The swept barrel's seam keeps at least 1 m precision when the height field is rendered more coarsely. */
+   private barrelEnabled = false;
++  /** Enabled explicitly only for a renderer whose drawing buffer has stencil; legacy renderers keep world masking. */
++  private barrelScreenOwnership = false;
+   private maskGrid: SurfaceGrid;
+   private barrelMaskData: Uint8Array;
+   private barrelMaskTexture: DataTexture;
+@@ -300,6 +303,7 @@
+       waterReflection: { value: RICH_WATER.reflection },
+       waterBarrelMask: { value: this.barrelMaskTexture },
+       waterBarrelMaskActive: { value: 0 },
++      waterBarrelScreenOwnership: { value: 0 },
+       waterBarrelGrid: { value: new Vector4(this.maskGrid.xMin, this.maskGrid.zMin, this.maskGrid.spacing, 0) },
+       waterBarrelGridSize: { value: new Vector2(this.maskGrid.nx, this.maskGrid.nz) },
+     };
+@@ -312,6 +316,7 @@
+       side: DoubleSide,
+       flatShading: false,
+     });
++    configureBarrelWater(material);
+     material.onBeforeCompile = (shader) => {
+       Object.assign(shader.uniforms, this.uniforms);
+       if (this.effectiveLook === 'rich') {
+@@ -323,7 +328,7 @@
+           .replace('#include <begin_vertex>', richVertexHeight);
+         shader.fragmentShader = shader.fragmentShader
+           .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}`)
+-          .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}${this.barrelEnabled ? `\n${WATER_BARREL_DISCARD}` : ''}`)
++          .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}${this.barrelEnabled && !this.barrelScreenOwnership ? `\n${WATER_BARREL_DISCARD}` : ''}`)
+           // The crest light marches through the carved surface (G9): through a tube's void, not water.
+           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')
+           .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true, churn: true, vertexNormals: this.vertexNormals }))
+@@ -345,10 +350,10 @@
+       if (this.barrelEnabled) {
+         shader.fragmentShader = shader.fragmentShader
+           .replace(`#include <common>\n${waterFragmentPars}`, `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}`)
+-          .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${WATER_BARREL_DISCARD}`);
++          .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>${this.barrelScreenOwnership ? '' : `\n${WATER_BARREL_DISCARD}`}`);
+       }
+     };
+-    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}`;
++    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? `-barrel${this.barrelScreenOwnership ? '-screen-ownership' : ''}` : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}`;
+     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
+     this.refreshTubeColumns();
+     this.mesh.frustumCulled = false;
+@@ -468,7 +473,24 @@
+     if (on === this.barrelEnabled) return;
+     this.barrelEnabled = on;
+     if (!on) this.setBarrelMask(null);
++    this.refreshBarrelOwnership();
+     this.mesh.material.needsUpdate = true;
++  }
++
++  /** Use surviving swept screen samples only when the renderer supplies stencil; false retains legacy masking. */
++  setBarrelScreenOwnership(on: boolean): void {
++    if (on === this.barrelScreenOwnership) return;
++    this.barrelScreenOwnership = on;
++    this.refreshBarrelOwnership();
++    this.mesh.material.needsUpdate = true;
++  }
++
++  private refreshBarrelOwnership(): void {
++    const enabled = this.barrelEnabled && this.barrelScreenOwnership;
++    this.uniforms.waterBarrelScreenOwnership.value = enabled ? 1 : 0;
++    const active = enabled && this.barrelMaskActive;
++    this.mesh.material.stencilWrite = active;
++    this.mesh.renderOrder = this.patch.renderOrder = active ? BARREL_RENDER_ORDER.water : 0;
+   }
+ 
+   /** The seam's own grid: its origin and extent follow the water, with spacing capped at 1 m. */
+@@ -480,6 +502,7 @@
+   /** The seam's mask on its own grid's nodes (`rasterizeBarrelMask`), copied; null lets the water draw everywhere. */
+   setBarrelMask(mask: Uint8Array | null): void {
+     this.uniforms.waterBarrelMaskActive.value = mask ? 1 : 0;
++    this.refreshBarrelOwnership();
+     if (!mask) return;
+     this.barrelMaskData.set(mask.subarray(0, this.barrelMaskData.length));
+     this.barrelMaskTexture.needsUpdate = true;
+@@ -664,6 +687,7 @@
+     (this.uniforms.waterBarrelGrid.value as Vector4).set(grid.xMin, grid.zMin, spacing, 0);
+     (this.uniforms.waterBarrelGridSize.value as Vector2).set(nx, nz);
+     this.uniforms.waterBarrelMaskActive.value = 0;
++    this.refreshBarrelOwnership();
+   }
+ 
+   /** The swept barrel's seam mask, 0–255 per node, filtered linearly so the band ramps between nodes. */
+diff --git a/src/scene/WaterSurface.test.ts b/src/scene/WaterSurface.test.ts
+--- a/src/scene/WaterSurface.test.ts
++++ b/src/scene/WaterSurface.test.ts
+@@ -4,8 +4,74 @@
+ import { FlatSurfaceSource } from './FlatSurfaceSource';
+ import { PhysicalSurfaceSource } from './PhysicalSurfaceSource';
+ import { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
++import { WATER_BARREL_DISCARD } from './barrel/barrelMaskGlsl';
++import { BARREL_RENDER_ORDER } from './barrel/barrelOwnership';
++import { richPatchDiscard } from './water/richPatch';
+ 
+ describe('WaterSurface GPU displacement data', () => {
++  it('uses screen ownership only when explicitly supported, retaining displacement and the rich patch discard', () => {
++    const source = { grid: { xMin: 0, zMin: -8, spacing: 1, nx: 9, nz: 9 }, time: 0, bedRevision: 0,
++      cubic: true, write: (data: Float32Array) => data.fill(0), writeBed: (data: Float32Array) => data.fill(-2) };
++    const water = new WaterSurface(source);
++    const compile = () => {
++      const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
++      water.mesh.material.onBeforeCompile(shader as never, undefined as never);
++      return shader;
++    };
++    water.setBarrelEnabled(true);
++    for (const look of ['classic', 'rich'] as const) {
++      water.setLook(look);
++      const legacy = compile();
++      const key = water.mesh.material.customProgramCacheKey();
++      water.setBarrelMask(new Uint8Array(81).fill(255));
++      expect(water.mesh.material.stencilWrite).toBe(false);
++      expect(legacy.fragmentShader).toContain(WATER_BARREL_DISCARD);
++      water.setBarrelScreenOwnership(true);
++      const screen = compile();
++      expect(screen.vertexShader).toBe(legacy.vertexShader);
++      expect(screen.fragmentShader).not.toContain(WATER_BARREL_DISCARD);
++      if (look === 'rich') expect(screen.fragmentShader).toContain(richPatchDiscard);
++      expect(water.patch.material).toBe(water.mesh.material);
++      expect(water.mesh.material.stencilWrite).toBe(true);
++      expect(water.mesh.material.stencilWriteMask).toBe(0);
++      expect(water.mesh.renderOrder).toBe(BARREL_RENDER_ORDER.water);
++      expect(water.patch.renderOrder).toBe(BARREL_RENDER_ORDER.water);
++      water.setBarrelMask(null);
++      expect(water.mesh.material.stencilWrite).toBe(false);
++      expect(water.mesh.renderOrder).toBe(0);
++      expect(water.patch.renderOrder).toBe(0);
++      water.setBarrelScreenOwnership(false);
++      expect(water.mesh.material.customProgramCacheKey()).toBe(key);
++      expect(compile().fragmentShader).toBe(legacy.fragmentShader);
++      expect(water.mesh.renderOrder).toBe(0);
++    }
++    water.dispose();
++  });
++
++  it('drops ownership after an inactive spot or a moved mask grid without reallocating surface data', () => {
++    const source = { grid: { xMin: -4, zMin: -8, spacing: 2, nx: 5, nz: 5 }, time: 0, bedRevision: 0,
++      write: (data: Float32Array) => data.fill(0), writeBed: (data: Float32Array) => data.fill(-2) };
++    const water = new WaterSurface(source), data = water.surfaceData, geometry = water.mesh.geometry;
++    water.setBarrelScreenOwnership(true);
++    expect(water.materialUniforms.waterBarrelScreenOwnership.value).toBe(0);
++    water.setBarrelEnabled(true);
++    water.setBarrelMask(new Uint8Array(81).fill(255));
++    expect(water.mesh.material.stencilWrite).toBe(true);
++    source.grid.xMin += 2;
++    water.update();
++    expect(water.barrelMaskActive).toBe(false);
++    expect(water.mesh.material.stencilWrite).toBe(false);
++    expect(water.surfaceData).toBe(data);
++    expect(water.mesh.geometry).toBe(geometry);
++    water.setBarrelMask(new Uint8Array(81).fill(255));
++    water.setBarrelEnabled(false);
++    expect(water.materialUniforms.waterBarrelScreenOwnership.value).toBe(0);
++    expect(water.mesh.material.stencilWrite).toBe(false);
++    expect(water.mesh.renderOrder).toBe(0);
++    expect(water.patch.renderOrder).toBe(0);
++    water.dispose();
++  });
++
+   it('keeps a 1 m barrel seam grid independent of coarse water textures and follows its world window', () => {
+     const source = {
+       grid: { xMin: -20, zMin: -60, spacing: 2, nx: 21, nz: 31 }, revision: {}, time: 0, bedRevision: 0,
+diff --git a/src/scene/barrel/SweptBarrelMesh.ts b/src/scene/barrel/SweptBarrelMesh.ts
+--- a/src/scene/barrel/SweptBarrelMesh.ts
++++ b/src/scene/barrel/SweptBarrelMesh.ts
+@@ -8,7 +8,8 @@
+ import { waterChopNormal } from '../waterChop';
+ import { CLASSIC_FOAM, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFragment } from '../waterOptics';
+ import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
+-import { SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
++import { SWEPT_BARREL_ACTIVE_GUARD, SWEPT_BARREL_DISCARD, SWEPT_OWNERSHIP_OUTPUT, waterBarrelMaskPars } from './barrelMaskGlsl';
++import { BARREL_RENDER_ORDER, configureBarrelOwnership } from './barrelOwnership';
+ 
+ /** The most vertices, and triangle indices, a loft fills (its budget and one slice more). */
+ const VERTICES = LOFT.budget + LOFT_SAMPLES;
+@@ -285,7 +286,7 @@
+   facesOut = true;
+ 
+   /** `view`: a dev view of the curl in place of its shading (`SweptBarrelView`); none draws it as the water. */
+-  constructor(uniforms: Record<string, { value: unknown }>, view?: SweptBarrelView) {
++  constructor(private readonly uniforms: Record<string, { value: unknown }>, view?: SweptBarrelView) {
+     const geometry = new BufferGeometry();
+     geometry.setAttribute('position', this.positions);
+     geometry.setAttribute('normal', this.normals);
+@@ -312,7 +313,7 @@
+         .replace('#include <common>', rich
+           ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
+           : `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}`)
+-        .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${SWEPT_BARREL_DISCARD}`)
++        .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${SWEPT_BARREL_ACTIVE_GUARD}\n${SWEPT_BARREL_DISCARD}`)
+         .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
+         .replace('#include <color_fragment>', '')
+         .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, true, RICH_FAR_FOAM, SWEPT_SHEET_BODY + RICH_LIP_GLOW) : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
+@@ -328,9 +329,51 @@
+     };
+     material.customProgramCacheKey = () => `breakline-swept-barrel-${this.look}${this.currentView ? `-view-${this.currentView}` : ''}`;
+     this.mesh = new Mesh(geometry, material);
++    this.mesh.renderOrder = BARREL_RENDER_ORDER.swept;
+     this.mesh.frustumCulled = false;
+     this.mesh.visible = false;
+     this.setView(view);
++  }
++
++  /** Allocated only for an actual active draw, after the menu has chosen its sea; reading it does not allocate. */
++  private ownershipMesh?: Mesh<BufferGeometry, MeshPhysicalMaterial>;
++
++  get ownership(): Mesh<BufferGeometry, MeshPhysicalMaterial> | undefined {
++    return this.ownershipMesh;
++  }
++
++  private createOwnership(): Mesh<BufferGeometry, MeshPhysicalMaterial> {
++    const { geometry, material } = this.mesh;
++    const ownership = material.clone();
++    configureBarrelOwnership(ownership);
++    // Material.clone does not copy callbacks. Reuse the canonical shader construction, including dev-view projection.
++    ownership.onBeforeCompile = (shader, renderer) => {
++      material.onBeforeCompile(shader, renderer);
++      shader.fragmentShader = shader.fragmentShader.replace(SWEPT_BARREL_DISCARD, `${SWEPT_BARREL_DISCARD}\n${SWEPT_OWNERSHIP_OUTPUT}`);
++    };
++    ownership.customProgramCacheKey = () => material.customProgramCacheKey() + '-screen-ownership';
++    const mesh = new Mesh(geometry, ownership);
++    mesh.renderOrder = BARREL_RENDER_ORDER.ownership;
++    mesh.frustumCulled = false;
++    mesh.visible = false;
++    // Identity local transform gives both passes the same model matrix. Parent hiding also hides its prepass.
++    this.mesh.add(mesh);
++    return mesh;
++  }
++
++  /** Recheck uniforms even when a held snapshot reused its loft; no arrays or GPU uploads are changed. */
++  syncOwnership(): boolean {
++    const active = this.mesh.visible && this.mesh.geometry.drawRange.count > 0 && this.uniforms.waterBarrelScreenOwnership?.value === 1
++      && this.uniforms.waterBarrelMaskActive?.value === 1;
++    if (active && !this.ownershipMesh) this.ownershipMesh = this.createOwnership();
++    if (this.ownershipMesh) this.ownershipMesh.visible = active;
++    return active;
++  }
++
++  dispose(): void {
++    this.mesh.geometry.dispose();
++    this.mesh.material.dispose();
++    this.ownershipMesh?.material.dispose();
+   }
+ 
+   get view(): SweptBarrelView | undefined {
+@@ -346,6 +389,7 @@
+       this.mesh.geometry.setAttribute('sweptView', this.viewColours);
+     }
+     this.mesh.material.needsUpdate = true;
++    if (this.ownershipMesh) this.ownershipMesh.material.needsUpdate = true;
+   }
+ 
+   /** Graphics setting (G8): shaded as the Classic water, or the Rich. */
+@@ -353,7 +397,9 @@
+     if (look === this.look) return;
+     this.look = look;
+     this.mesh.material.roughness = look === 'rich' ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
++    if (this.ownershipMesh) this.ownershipMesh.material.roughness = this.mesh.material.roughness;
+     this.mesh.material.needsUpdate = true;
++    if (this.ownershipMesh) this.ownershipMesh.material.needsUpdate = true;
+   }
+ 
+   /** Draw a loft's grid; none, or an empty one, hides the mesh. */
+@@ -361,6 +407,7 @@
+     if (!loft || loft.indexCount === 0) {
+       this.mesh.visible = false;
+       this.mesh.geometry.setDrawRange(0, 0);
++      this.syncOwnership();
+       return;
+     }
+     const vertices = Math.min(loft.vertexCount, VERTICES);
+@@ -463,5 +510,6 @@
+     this.index.needsUpdate = true;
+     this.mesh.geometry.setDrawRange(0, indices);
+     this.mesh.visible = true;
++    this.syncOwnership();
+   }
+ }
+diff --git a/src/scene/barrel/SweptBarrelMesh.test.ts b/src/scene/barrel/SweptBarrelMesh.test.ts
+--- a/src/scene/barrel/SweptBarrelMesh.test.ts
++++ b/src/scene/barrel/SweptBarrelMesh.test.ts
+@@ -1,11 +1,12 @@
+-import { ShaderLib, type WebGLProgramParametersWithUniforms } from 'three';
+-import { describe, expect, it } from 'vitest';
++import { BufferGeometry, Mesh, MeshPhysicalMaterial, ShaderLib, type WebGLProgramParametersWithUniforms } from 'three';
++import { describe, expect, it, vi } from 'vitest';
+ import { FRONT_FIELD, FRONT_STRIDE } from '../../wave/barrel/frontRecords';
+ import { ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
+ import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from '../../wave/barrel/sweptLoft';
+ import { tubeCase } from '../../wave/barrel/toyCase';
+ import { WaterSurface, type SurfaceSource } from '../WaterSurface';
+-import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
++import { mirrorsBarrelDither, SWEPT_BARREL_ACTIVE_GUARD, SWEPT_BARREL_DISCARD, SWEPT_OWNERSHIP_OUTPUT } from './barrelMaskGlsl';
++import { BARREL_RENDER_ORDER } from './barrelOwnership';
+ import { WATER_ABSORPTION } from '../waterOptics';
+ import { RICH_LIP_GLOW, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
+ 
+@@ -45,7 +46,122 @@
+   return records;
+ }
+ 
++function activateOwnership(swept: SweptBarrelMesh, water: WaterSurface) {
++  water.setBarrelEnabled(true);
++  water.setBarrelScreenOwnership(true);
++  water.setBarrelMask(new Uint8Array(grid.nx * grid.nz).fill(255));
++  swept.update(oneQuad());
++  const owner = swept.ownership;
++  if (!owner) throw Error('Active test geometry did not allocate ownership');
++  return owner;
++}
++
+ describe('the swept barrel’s mesh', () => {
++  it('preserves constructor random consumption and allocates no ownership for legacy, inactive or empty draws', () => {
++    const water = new WaterSurface(source);
++    const random = vi.spyOn(Math, 'random');
++    try {
++      const baseline = new Mesh(new BufferGeometry(), new MeshPhysicalMaterial());
++      const calls = random.mock.calls.length;
++      random.mockClear();
++      const swept = new SweptBarrelMesh(water.materialUniforms);
++      expect(random).toHaveBeenCalledTimes(calls);
++      expect(swept.ownership).toBeUndefined();
++      random.mockClear();
++      swept.setLook('rich'); swept.setView('phase'); swept.update(oneQuad());
++      expect(swept.ownership).toBeUndefined();
++      water.setBarrelScreenOwnership(true); water.setBarrelEnabled(true);
++      swept.syncOwnership();
++      expect(swept.ownership).toBeUndefined();
++      water.setBarrelMask(new Uint8Array(64).fill(255)); swept.update(undefined);
++      expect(swept.ownership).toBeUndefined();
++      expect(random).not.toHaveBeenCalled();
++      swept.update(oneQuad());
++      expect(swept.ownership).toBeDefined();
++      const activeCalls = random.mock.calls.length;
++      expect(activeCalls).toBeGreaterThan(0);
++      swept.syncOwnership(); swept.update(oneQuad());
++      expect(random).toHaveBeenCalledTimes(activeCalls);
++      swept.dispose(); baseline.geometry.dispose(); baseline.material.dispose();
++    } finally { random.mockRestore(); water.dispose(); }
++  });
++
++  it('owns only the original surviving fragment samples, with identical vertex projection in every look/view', () => {
++    const water = new WaterSurface(source), swept = new SweptBarrelMesh(water.materialUniforms);
++    const ownership = activateOwnership(swept, water);
++    for (const look of ['classic', 'rich'] as const) for (const view of [undefined, 'phase', 'front', 'sheet', 'region'] as const) {
++      swept.setLook(look);
++      swept.setView(view);
++      const normal = compiled(swept.mesh.material), owner = compiled(ownership.material);
++      expect(owner.vertex).toBe(normal.vertex);
++      expect(owner.fragment).toContain(SWEPT_BARREL_ACTIVE_GUARD);
++      expect(owner.fragment).toContain(`${SWEPT_BARREL_DISCARD}\n${SWEPT_OWNERSHIP_OUTPUT}`);
++      expect(owner.fragment.slice(0, owner.fragment.indexOf(SWEPT_OWNERSHIP_OUTPUT)))
++        .toBe(normal.fragment.slice(0, normal.fragment.indexOf(SWEPT_BARREL_DISCARD) + SWEPT_BARREL_DISCARD.length) + '\n');
++      expect(ownership.material.customProgramCacheKey()).toBe(swept.mesh.material.customProgramCacheKey() + '-screen-ownership');
++      expect(ownership.material.side).toBe(swept.mesh.material.side);
++      expect(ownership.material.depthFunc).toBe(swept.mesh.material.depthFunc);
++      expect(ownership.material.depthTest).toBe(swept.mesh.material.depthTest);
++      expect(ownership.material.colorWrite).toBe(false);
++      expect(ownership.material.depthWrite).toBe(false);
++      expect(swept.mesh.material.depthWrite).toBe(true);
++    }
++    swept.dispose(); water.dispose();
++  });
++
++  it('shares indexed geometry and inherits transforms/hiding, retaining legacy and inactive controls', () => {
++    const water = new WaterSurface(source), swept = new SweptBarrelMesh(water.materialUniforms);
++    swept.update(oneQuad());
++    expect(swept.ownership).toBeUndefined();
++    water.setBarrelEnabled(true);
++    water.setBarrelScreenOwnership(true);
++    water.setBarrelMask(new Uint8Array(64).fill(255));
++    swept.syncOwnership();
++    const ownership = swept.ownership!;
++    expect(ownership.geometry).toBe(swept.mesh.geometry);
++    expect(ownership.parent).toBe(swept.mesh);
++    expect(ownership.visible).toBe(true);
++    expect(ownership.geometry.drawRange).toBe(swept.mesh.geometry.drawRange);
++    expect(ownership.geometry.drawRange.count).toBe(6);
++    expect(ownership.renderOrder).toBeLessThan(water.mesh.renderOrder);
++    expect(water.mesh.renderOrder).toBeLessThan(swept.mesh.renderOrder);
++    expect(BARREL_RENDER_ORDER.bed).toBeLessThan(ownership.renderOrder);
++    swept.mesh.position.set(3, 4, 5); swept.mesh.rotation.set(0.1, 0.2, 0.3); swept.mesh.scale.set(2, 3, 4);
++    swept.mesh.updateMatrixWorld(true);
++    expect(ownership.matrixWorld.elements).toEqual(swept.mesh.matrixWorld.elements);
++    swept.mesh.visible = false;
++    const seen: unknown[] = [];
++    swept.mesh.traverseVisible(object => seen.push(object));
++    expect(seen).not.toContain(ownership);
++    swept.mesh.visible = true;
++    water.setBarrelMask(null); swept.syncOwnership();
++    expect(ownership.visible).toBe(false);
++    water.setBarrelMask(new Uint8Array(64).fill(255));
++    water.setBarrelScreenOwnership(false); swept.syncOwnership();
++    expect(ownership.visible).toBe(false);
++    water.setBarrelScreenOwnership(true); swept.syncOwnership();
++    expect(ownership.visible).toBe(true);
++    swept.update(undefined);
++    expect(ownership.visible).toBe(false);
++    expect(ownership.geometry.drawRange.count).toBe(0);
++    swept.dispose(); water.dispose();
++  });
++
++  it('invalidates ownership shader variants and disposes shared geometry once with both owned materials', () => {
++    const water = new WaterSurface(source), swept = new SweptBarrelMesh(water.materialUniforms);
++    const ownership = activateOwnership(swept, water);
++    let version = ownership.material.version;
++    swept.setLook('rich'); expect(ownership.material.version).toBeGreaterThan(version);
++    version = ownership.material.version;
++    swept.setView('region'); expect(ownership.material.version).toBeGreaterThan(version);
++    const geometry = vi.spyOn(swept.mesh.geometry, 'dispose');
++    const normal = vi.spyOn(swept.mesh.material, 'dispose'), owner = vi.spyOn(ownership.material, 'dispose');
++    swept.dispose();
++    expect(geometry).toHaveBeenCalledTimes(1);
++    expect(normal).toHaveBeenCalledTimes(1); expect(owner).toHaveBeenCalledTimes(1);
++    water.dispose();
++  });
++
+   it('shades lofted vertices as the water, showing exactly where the water gives way, in both looks', () => {
+     const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+     for (const look of ['classic', 'rich'] as const) {
+diff --git a/src/scene/barrel/barrelMaskGlsl.ts b/src/scene/barrel/barrelMaskGlsl.ts
+--- a/src/scene/barrel/barrelMaskGlsl.ts
++++ b/src/scene/barrel/barrelMaskGlsl.ts
+@@ -3,11 +3,14 @@
+  * cut a hole", after Surf's Up): the mask's value at a world xz, read from the texture `rasterizeBarrelMask` fills on
+  * the seam grid's nodes (node-centred texels, linear filtering), and a per-pixel dither both surfaces share
+  * (interleaved gradient noise, Jimenez 2014). Where the mask is 1 only the swept surface draws, where it is 0 only the
+- * water, and across the band between each pixel shows exactly one of them. The seam's grid can be finer than the water.
++ * water. A stencil-capable renderer gives way at the swept fragment's actual screen sample: two fragments at the
++ * same pixel can have different world xz, so world-mask tests alone are not complementary. The seam's grid can be
++ * finer than the water, and still determines the swept surface's coverage.
+  */
+ export const waterBarrelMaskPars = /* glsl */ `
+ uniform sampler2D waterBarrelMask;
+ uniform float waterBarrelMaskActive;
++uniform float waterBarrelScreenOwnership;
+ uniform vec4 waterBarrelGrid;
+ uniform vec2 waterBarrelGridSize;
+ float waterBarrelMaskAt( vec2 xz ) {
+@@ -22,8 +25,14 @@
+ /** The water gives way where the mask covers it; in the band, where the mask beats the pixel's dither. */
+ export const WATER_BARREL_DISCARD = 'if ( waterBarrelMaskActive > 0.5 && waterBarrelMaskAt( vWaterWorld.xz ) > waterBarrelDither( gl_FragCoord.xy ) ) discard;';
+ 
+-/** The swept surface shows exactly where the water gave way: the same test, the other way. */
++/** The swept surface keeps its authored world-mask band. */
+ export const SWEPT_BARREL_DISCARD = 'if ( waterBarrelMaskAt( vWaterWorld.xz ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;';
++
++/** A null mask disables retained geometry as well as its ownership pass. */
++export const SWEPT_BARREL_ACTIVE_GUARD = 'if ( waterBarrelMaskActive < 0.5 ) discard;';
++
++/** Ownership stops after the normal swept discard, before shading; the projection/discard/depth test are shared. */
++export const SWEPT_OWNERSHIP_OUTPUT = 'if ( waterBarrelScreenOwnership < 0.5 ) discard;\ngl_FragColor = vec4( 0.0 ); return;';
+ 
+ /** Whether a fragment shader reads the barrel mask and the shared dither (for tests). */
+ export function mirrorsBarrelDither(fragment: string): boolean {
+diff --git a/src/scene/barrel/barrelOwnership.ts b/src/scene/barrel/barrelOwnership.ts
+new file mode 100644
+--- /dev/null
++++ b/src/scene/barrel/barrelOwnership.ts
+@@ -0,0 +1,26 @@
++import { AlwaysStencilFunc, EqualStencilFunc, KeepStencilOp, ReplaceStencilOp, type MeshPhysicalMaterial } from 'three';
++
++/** Opaque replacement order: the bed must reject buried curl samples before they can own water pixels. */
++export const BARREL_RENDER_ORDER = { bed: -30, ownership: -20, water: -10, swept: 0 } as const;
++
++/** One stencil bit belongs to surviving swept fragments; neither their colour nor depth is written yet. */
++export function configureBarrelOwnership(material: MeshPhysicalMaterial): void {
++  material.colorWrite = false;
++  material.depthWrite = false;
++  material.stencilWrite = true;
++  material.stencilRef = 1;
++  material.stencilFunc = AlwaysStencilFunc;
++  material.stencilFuncMask = material.stencilWriteMask = 1;
++  material.stencilFail = material.stencilZFail = KeepStencilOp;
++  material.stencilZPass = ReplaceStencilOp;
++}
++
++/** Three enables stencil testing through `stencilWrite`; the zero write mask keeps this pass read-only. */
++export function configureBarrelWater(material: MeshPhysicalMaterial): void {
++  material.stencilWrite = false;
++  material.stencilRef = 0;
++  material.stencilFunc = EqualStencilFunc;
++  material.stencilFuncMask = 1;
++  material.stencilWriteMask = 0;
++  material.stencilFail = material.stencilZFail = material.stencilZPass = KeepStencilOp;
++}
+diff --git a/src/scene/barrel/SweptBarrel.ts b/src/scene/barrel/SweptBarrel.ts
+--- a/src/scene/barrel/SweptBarrel.ts
++++ b/src/scene/barrel/SweptBarrel.ts
+@@ -88,7 +88,10 @@
+     const was = this.drawn;
+     if (revision !== undefined && was?.revision === revision && was.loft === this.loft && was.surfaceRevision === water.surfaceRevision && was.front === front
+       && was.count === count && was.stillLevel === stillLevel && was.look === look && was.maskGrid === maskGrid && was.view === mesh.view
+-      && was.sheetShown === mesh.sheetShown && was.facesOut === mesh.facesOut) return;
++      && was.sheetShown === mesh.sheetShown && was.facesOut === mesh.facesOut) {
++      mesh.syncOwnership();
++      return;
++    }
+     const heightAt = look === 'rich'
+       ? (x: number, z: number) => sampleCubicSurface(surfaceData, grid, x, z).height
+       : (x: number, z: number) => sampleSurfaceHeight(surfaceData, grid, x, z);
+@@ -109,7 +112,6 @@
+   }
+ 
+   dispose(): void {
+-    this.mesh.mesh.geometry.dispose();
+-    this.mesh.mesh.material.dispose();
++    this.mesh.dispose();
+   }
+ }
+diff --git a/src/scene/barrel/SweptBarrel.test.ts b/src/scene/barrel/SweptBarrel.test.ts
+--- a/src/scene/barrel/SweptBarrel.test.ts
++++ b/src/scene/barrel/SweptBarrel.test.ts
+@@ -22,6 +22,44 @@
+ const library = () => new ProfileLibrary([toyCase(0.2, 0), toyCase(0.4, 0.2)]);
+ 
+ describe('the swept barrel at a spot', () => {
++  it('updates ownership on held snapshots without reuploading geometry and releases it across spot transitions', async () => {
++    const water = new WaterSurface(source), barrel = new SweptBarrel(water, async () => library());
++    water.setBarrelScreenOwnership(true);
++    barrel.setSpot('padang'); await barrel.ready;
++    const front = straightFront(21), revision = {};
++    barrel.draw(front, 21, 0, revision);
++    expect(barrel.mesh.ownership?.visible).toBe(true);
++    const update = vi.spyOn(barrel.mesh, 'update');
++    const position = barrel.mesh.mesh.geometry.getAttribute('position') as BufferAttribute;
++    const version = position.version;
++    water.setBarrelScreenOwnership(false); barrel.draw(front, 21, 0, revision);
++    expect(barrel.mesh.ownership?.visible).toBe(false);
++    water.setBarrelScreenOwnership(true); barrel.draw(front, 21, 0, revision);
++    expect(barrel.mesh.ownership?.visible).toBe(true);
++    water.setBarrelMask(null); barrel.draw(front, 21, 0, revision);
++    expect(barrel.mesh.ownership?.visible).toBe(false);
++    expect(update).not.toHaveBeenCalled(); expect(position.version).toBe(version);
++    barrel.setSpot(undefined);
++    expect(water.mesh.material.stencilWrite).toBe(false);
++    expect(barrel.mesh.ownership?.visible).toBe(false);
++    barrel.setSpot('padang'); barrel.draw(front, 21, 0, revision);
++    expect(barrel.mesh.ownership?.visible).toBe(true);
++    barrel.dispose(); water.dispose();
++  });
++
++  it('releases the shared geometry and both materials through its mesh lifecycle', async () => {
++    const water = new WaterSurface(source), barrel = new SweptBarrel(water, async () => library());
++    water.setBarrelScreenOwnership(true); barrel.setSpot('padang'); await barrel.ready;
++    barrel.draw(straightFront(21), 21, 0);
++    const geometry = vi.spyOn(barrel.mesh.mesh.geometry, 'dispose');
++    const normal = vi.spyOn(barrel.mesh.mesh.material, 'dispose');
++    const owner = vi.spyOn(barrel.mesh.ownership!.material, 'dispose');
++    barrel.dispose();
++    expect(geometry).toHaveBeenCalledTimes(1);
++    expect(normal).toHaveBeenCalledTimes(1); expect(owner).toHaveBeenCalledTimes(1);
++    water.dispose();
++  });
++
+   it('preserves the same seam bytes and shader coordinates when the water is coarsened to 2 m', async () => {
+     const surfaces = [1, 2].map((spacing) => new WaterSurface({
+       ...source, grid: { ...grid, spacing, nx: 40 / spacing + 1, nz: 50 / spacing + 1 },
