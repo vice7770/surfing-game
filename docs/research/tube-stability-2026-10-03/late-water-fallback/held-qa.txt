@@ -1,0 +1,33 @@
+# Late inverse-mask water fallback: held QA
+
+Status: isolated candidate; production source unchanged. No moving-lifecycle, whole-physics, rider, or throughput acceptance.
+
+Compiled baseline4201 and candidate4206 share literal `BUILD_ID=eea68720f`, canonical FFT and exact BH physics worker. Both use the same final continuous-plan indexed geometry, original captured state/clock and six matched cameras (10/20 overview, verified cavity eye/target, outside mouth view). Native original production shaders and caustics were captured first; no caustic suppression in those images. Diagnostic companion then held the actual HalfFloat caustic FBO for strict repeat. Zero solver steps. Frozen lifecycle overrides upload exported geometry/mask and sync actual fallback state; actual cached drawBarrel runtime remains pending.
+
+Baseline run:26.086s; candidate:27.318s. Both valid, no failures, all fixed-FBO state/image/post-diagnostic repeats exact. Candidate initialization attempt retained separately: audit incorrectly required a lazily allocated child before any active mask/render, produced no images. Only diagnostic guard was corrected; production source/build unchanged. Current guard requires API/stencil support initially and real child visibility, active flag and water/swept marking after actual first active draw.
+
+| Held view | Bed→water repaired | Lost original water | Lost/gained original swept | New bed |
+| --- | ---: | ---: | ---: | ---: |
+|10overview|722|0|0/0|0|
+|10cavity|425|0|0/0|0|
+|10mouth|1112|0|0/0|0|
+|20overview|1263|0|0/0|0|
+|20cavity|217|0|0/0|0|
+|20mouth|2051|0|0/0|0|
+
+Across all views,5,823 reliable GPU-displaced water gains do not enter a tested same-front three-layer face/under-roof/top-roof air interior (2cm boundary guard).55 edge/encoding/reprojection samples are excluded. This is bounded indexed-geometry evidence, not a claim that every possible cavity, layer ambiguity, near-boundary point or later physical state is proved. Pixel attribution does not use raw CPU water vertices as shader-displaced water.
+
+All six candidate unsupported controls equal legacy baseline IDs byte-for-byte. Mask-off+swept-hidden controls are exact across builds, reactivation repeats candidate IDs exactly, actual default framebuffer clear calls use stencil value0 with bit1 writable, normal shader hashes and depth/raster state match baseline. Water/swept ordinary renderOrder0 preserved; late repair1. No bed-first order or ownership prepass.
+
+Native enabled-caustic repeats: baseline20cavity differs at3pixels by1 channel; candidate10cavity differs at1pixel by1 channel. Their only common-state change is the actual512×512 caustic FBO hash; geometry, mask, cameras and other inputs match. Raw normal/repeat PNGs and target provenance retained; no tolerance applied to the strict fixed-FBO diagnostic stream.
+
+Evidence paths:
+- `/private/tmp/tube-fallback-held-20261003-baseline/report.json`
+- `/private/tmp/tube-fallback-held-20261003-candidate-active/report.json`
+- `/private/tmp/tube-fallback-held-20261003-candidate/report.json` (invalid initialization, no images)
+- `/private/tmp/tube-fallback-held-pixels.json`
+- `/private/tmp/tube-fallback-native-repeat-provenance.json`
+- `/private/tmp/tube-fallback-pixel-report.py`
+- `/private/tmp/tube-compiled-fallback-driver.mjs` / helper.mjs (hashes in each compiled-driver.json)
+
+Selected native pairs are `at-10-mouth.native-normal.png`, `at-20-mouth.native-normal.png`, and `at-20-cavity.native-normal.png` in each valid output directory. All six pairs/repeats remain immutable.

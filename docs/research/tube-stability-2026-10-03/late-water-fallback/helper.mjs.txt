@@ -1,0 +1,64 @@
+// Isolated companion for the compiled baseline/candidate: does not create/alter ownership shaders.
+export function installCompiledFallbackAudit(env) {
+  const {d,mode,water,mesh,hash,getDiagnostic,getCurrent}=env;
+  const gl=d.canvas.getContext('webgl2');
+  const stencil=water.materialUniforms.waterBarrelScreenFallback?.value;
+  const candidate=window.__tubeCompiledVariant==='candidate';
+  if(candidate&&(!gl.getContextAttributes().stencil||typeof water.setBarrelScreenFallback!=='function'||typeof mesh.syncScreenFallback!=='function'))throw Error('Compiled candidate fallback API/context unavailable');
+  if(!candidate&&stencil!==undefined)throw Error('Expected immutable legacy baseline, got fallback API');
+  const base64=bytes=>{let out='';for(let i=0;i<bytes.length;i+=8192)out+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(out);};
+  function exportWaterPixels(){
+    // Restore the measured masked scene after the solid-only passes before reporting active/stencil state.
+    window.__tubeFrozen.diagnosticRender('masked-ids');
+    if(candidate&&(water.materialUniforms.waterBarrelScreenFallback.value!==1||water.materialUniforms.waterBarrelMaskActive.value!==1||!water.barrelFallback?.visible||!water.mesh.material.stencilWrite||!mesh.mesh.material.stencilWrite))throw Error('Compiled candidate active fallback did not initialize on first frozen draw');
+    const p=getDiagnostic().pixels,canvas=d.canvas,g=getDiagnostic(),positions=[],indices=[],alphas=[],dithers=[];
+    const is=(a,n,r,gg,b)=>a[4*n]===r&&a[4*n+1]===gg&&a[4*n+2]===b;
+    const coordinate=(n,axis)=>{const a=p[['unmasked-x','unmasked-y','unmasked-z'][axis]],o=4*n;return g.low[axis]+g.span[axis]*(a[o]*65536+a[o+1]*256+a[o+2])/16777215;};
+    let edgeRejected=0;
+    for(let n=0;n<canvas.width*canvas.height;n++){
+      if(!is(p['masked-ids'],n,0,0,255)||!is(p['unmasked-ids'],n,0,0,255))continue;
+      const world=[0,1,2].map(a=>coordinate(n,a)),v=window.__tubeFrozenCamera.position.clone().fromArray(world).project(window.__tubeFrozenCamera);
+      const reprojection=Math.hypot((v.x+1)*canvas.width/2-(n%canvas.width+.5),(v.y+1)*canvas.height/2-(Math.floor(n/canvas.width)+.5));
+      if(p['unmasked-bounds'][4*n]!==255||reprojection>.75){edgeRejected++;continue;}
+      indices.push(n);positions.push(...world);alphas.push(p['unmasked-mask'][4*n]);dithers.push(p['unmasked-mask'][4*n+1]);
+    }
+    const packed=a=>({type:a.constructor.name,length:a.length,base64:base64(new Uint8Array(a.buffer))});
+    return{width:canvas.width,height:canvas.height,pixelOrigin:'bottom-left',edgeRejected,worldMethod:'GPU post-displacement interpolated world varying; unmasked water and masked water have identical geometry/source/camera. Pure water IDs in both passes; encoded bounds and <=.75px reprojection guard. Not raw CPU water vertices.',indices:packed(Uint32Array.from(indices)),positions:packed(Float32Array.from(positions)),maskAlpha:packed(Uint8Array.from(alphas)),dither:packed(Uint8Array.from(dithers)),drawRange:{...mesh.mesh.geometry.drawRange},ownership:{compiledCandidate:candidate,stencilFlag:water.materialUniforms.waterBarrelScreenFallback?.value??null,stencilBits:gl.getParameter(gl.STENCIL_BITS),active:water.materialUniforms.waterBarrelMaskActive.value,fallbackVisible:water.barrelFallback?.visible??false,fallbackPatchVisible:water.barrelPatchFallback?.visible??false,waterCoverageWrites:water.mesh.material.stencilWrite,sweptCoverageWrites:mesh.mesh.material.stencilWrite,bedOrder:mode.seabed.mesh.renderOrder,waterOrder:water.mesh.renderOrder,barrelOrder:mesh.mesh.renderOrder},clocks:{snapshot:mode.host.snapshot.status.seaTime,shading:water.materialUniforms.waterTime.value},camera:{position:window.__tubeFrozenCamera.position.toArray(),quaternion:window.__tubeFrozenCamera.quaternion.toArray(),projection:window.__tubeFrozenCamera.projectionMatrix.toArray()}};
+  }
+  const clears=[];
+  const clear=gl.clear.bind(gl);
+  gl.clear=bits=>{
+    if(gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING)===null&&(bits&gl.STENCIL_BUFFER_BIT)){
+      clears.push({bits,value:gl.getParameter(gl.STENCIL_CLEAR_VALUE),writeMask:gl.getParameter(gl.STENCIL_WRITEMASK)});
+    }
+    clear(bits);
+  };
+  let firstIds;
+  const equal=(a,b)=>a.length===b.length&&a.every((v,i)=>v===b[i]);
+  function rememberActive(){firstIds=getDiagnostic().pixels['masked-ids'].slice();}
+  function captureControl(name){
+    if(!firstIds)throw Error('Missing active IDs before controls');
+    if(name==='unsupported')water.setBarrelScreenFallback?.(false);
+    if(name==='reactivated')water.setBarrelScreenFallback?.(true);
+    const pass=name==='mask-off-hidden'?'unmasked-ids':'masked-ids';
+    window.__tubeFrozen.diagnosticRender(pass);
+    const p=getDiagnostic().pixels[pass];
+    const repair=water.barrelFallback;
+    const result={name,shaPending:true,width:d.canvas.width,height:d.canvas.height,pixelOrigin:'bottom-left',
+      pixels:base64(p),sameActiveIds:pass==='masked-ids'?equal(firstIds,p):undefined,
+      clock:mode.host.snapshot.status.seaTime,active:water.materialUniforms.waterBarrelMaskActive.value,
+      sweptVisible:mesh.mesh.visible,waterStencil:water.mesh.material.stencilWrite,
+      sweptStencil:mesh.mesh.material.stencilWrite,fallbackVisible:repair?.visible??false,
+      orders:{water:water.mesh.renderOrder,swept:mesh.mesh.renderOrder,repair:repair?.renderOrder??null}};
+    if(name==='mask-off-hidden'&&(result.active!==0||result.sweptVisible||result.fallbackVisible||result.waterStencil||result.sweptStencil))throw Error('Inactive/hidden fallback state failed');
+    if(name==='unsupported'&&(result.fallbackVisible||result.waterStencil||result.sweptStencil))throw Error('Unsupported path marks coverage or draws fallback');
+    if(name==='reactivated'&&candidate&&(!result.fallbackVisible||!result.waterStencil||!result.sweptStencil||!result.sameActiveIds))throw Error('Reactivation did not repeat active IDs');
+    return result;
+  }
+  function clearSummary(){
+    if(!clears.length||clears.some(c=>c.value!==0||(c.writeMask&1)!==1))throw Error('Default stencil was not cleared to0 with bit1 writable');
+    return{count:clears.length,allClearValueZero:true,allBit1Writable:true,first:clears[0],last:clears.at(-1),method:'Actual gl.clear calls on the default draw framebuffer only, inspected before clearing. Original renderer paths/calls preserved.'};
+  }
+  window.__tubeCompiledAudit={exportWaterPixels,rememberActive,captureControl,clearSummary,normalOutput:()=>{getDiagnostic().output.value=0;getDiagnostic().bypass.value=0;}};
+  return{candidate,actualContextStencil:gl.getContextAttributes().stencil,stencilBits:gl.getParameter(gl.STENCIL_BITS),scope:'No prototype rendering implementation. Actual compiled source provides unchanged normal shaders and late inverse-mask repair shader; frozen geometry lifecycle explicitly syncs coverage/repair after mask and visibility, retaining original render order. Does not test cached PhysicalMode lifecycle.'};
+}

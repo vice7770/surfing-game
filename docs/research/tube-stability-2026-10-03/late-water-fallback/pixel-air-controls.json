@@ -1,0 +1,489 @@
+{
+  "schema": 1,
+  "method": "Pure opaque foreground IDs from exact-repeat fixed-FBO companion; baseline/candidate share current indexed geometry, camera, height inputs and clock. Actual GPU-displaced water worlds, with encoding/reprojection guards, compared against same-front indexed swept top/under/face layers. Swept vertex shader uses vec3(position), so indexed xz/y are its actual projection. No raw CPU water vertices are treated as GPU points.",
+  "pairs": [
+    {
+      "at": 10,
+      "view": "overview",
+      "counts": {
+        "sweptBefore": 54738,
+        "sweptAfter": 54738,
+        "lostSwept": 0,
+        "gainedSwept": 0,
+        "lostWater": 0,
+        "newBed": 0,
+        "changedIds": 820,
+        "newWater": 725,
+        "newWaterFrom_bed": 722,
+        "newWaterFrom_other": 3
+      },
+      "restoredWaterAir": {
+        "outsideVerifiedAir": 725
+      },
+      "probes": [],
+      "sources": {
+        "baselineIdSha256": "4c8eb21ccaa3f054fdd5f7135af9d89cb1dd914bc31526b0a937003ae1cf2715",
+        "candidateIdSha256": "3568d1f87b4ce8f445ab5739b95d08dc39e078d288c8a82427a1198219fc96b0",
+        "actualWaterWorldSha256": "e16e90b3f047f9ca644d833ca4ed304f0f7659f964b84d2ead121ae04c9734c6"
+      },
+      "ownership": {
+        "compiledCandidate": true,
+        "stencilFlag": 1,
+        "stencilBits": 8,
+        "active": 1,
+        "fallbackVisible": true,
+        "fallbackPatchVisible": true,
+        "waterCoverageWrites": true,
+        "sweptCoverageWrites": true,
+        "bedOrder": 0,
+        "waterOrder": 0,
+        "barrelOrder": 0
+      },
+      "controls": {
+        "maskOffHiddenExact": true,
+        "unsupportedExactLegacy": true,
+        "reactivatedExactCandidate": true,
+        "defaultClearBit1ZeroWritable": true,
+        "normalShaderAndDepthParity": true
+      },
+      "camera": {
+        "position": [
+          113.17452738629504,
+          14.592825194729135,
+          20.95674220855646
+        ],
+        "quaternion": [
+          -0.1880636631271282,
+          -0.18263554833558154,
+          -0.03561614470977886,
+          0.9643691229666053
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.050303841579296,
+          0,
+          0,
+          0,
+          0,
+          -1.000066668888963,
+          -1,
+          0,
+          0,
+          -0.2000066668888963,
+          0
+        ]
+      },
+      "clocks": {
+        "snapshot": 173.88921329749155,
+        "shading": 173.88921329749155
+      }
+    },
+    {
+      "at": 10,
+      "view": "cavity",
+      "counts": {
+        "sweptBefore": 687079,
+        "sweptAfter": 687079,
+        "lostSwept": 0,
+        "gainedSwept": 0,
+        "lostWater": 0,
+        "newBed": 0,
+        "changedIds": 445,
+        "newWater": 445,
+        "newWaterFrom_bed": 425,
+        "newWaterFrom_other": 20
+      },
+      "restoredWaterAir": {
+        "outsideVerifiedAir": 443,
+        "unreliableWorld": 2
+      },
+      "probes": [],
+      "sources": {
+        "baselineIdSha256": "c4579daf37f50528e6f26fb2602231b9b546c3a393c9d0b49de398795a389efe",
+        "candidateIdSha256": "07f4629f508877f06353c219a87f5f4c63950fd8f36c21d460325ccdaf9bcef2",
+        "actualWaterWorldSha256": "85d67eb2e73c972a0a5fe580e5d20cc2cc3ac536cb9ac7cb513c66ff4a943f3c"
+      },
+      "ownership": {
+        "compiledCandidate": true,
+        "stencilFlag": 1,
+        "stencilBits": 8,
+        "active": 1,
+        "fallbackVisible": true,
+        "fallbackPatchVisible": true,
+        "waterCoverageWrites": true,
+        "sweptCoverageWrites": true,
+        "bedOrder": 0,
+        "waterOrder": 0,
+        "barrelOrder": 0
+      },
+      "controls": {
+        "maskOffHiddenExact": true,
+        "unsupportedExactLegacy": true,
+        "reactivatedExactCandidate": true,
+        "defaultClearBit1ZeroWritable": true,
+        "normalShaderAndDepthParity": true
+      },
+      "camera": {
+        "position": [
+          114.49167762756348,
+          1.0784584572893299,
+          -9.801540737152099
+        ],
+        "quaternion": [
+          0.03478089621050965,
+          0.3814767873317042,
+          -0.014365450585484689,
+          0.9236121392745721
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "clocks": {
+        "snapshot": 173.88921329749155,
+        "shading": 173.88921329749155
+      }
+    },
+    {
+      "at": 10,
+      "view": "mouth",
+      "counts": {
+        "sweptBefore": 74854,
+        "sweptAfter": 74854,
+        "lostSwept": 0,
+        "gainedSwept": 0,
+        "lostWater": 0,
+        "newBed": 0,
+        "changedIds": 1242,
+        "newWater": 1163,
+        "newWaterFrom_bed": 1112,
+        "newWaterFrom_other": 51
+      },
+      "restoredWaterAir": {
+        "outsideVerifiedAir": 1115,
+        "unreliableWorld": 48
+      },
+      "probes": [],
+      "sources": {
+        "baselineIdSha256": "920bf348934c9ee6e0280a9ff3e0134f03e99c2629ec24a6170db2ad2454d702",
+        "candidateIdSha256": "85e9085e582ee1c3391049e28f93b9c5db78db085cb6750dc546a91fc2efa874",
+        "actualWaterWorldSha256": "56dd6cf14ded3d3ca38acf252f2e3f6dfc590fa1934ac5538a37709e8bf78bbd"
+      },
+      "ownership": {
+        "compiledCandidate": true,
+        "stencilFlag": 1,
+        "stencilBits": 8,
+        "active": 1,
+        "fallbackVisible": true,
+        "fallbackPatchVisible": true,
+        "waterCoverageWrites": true,
+        "sweptCoverageWrites": true,
+        "bedOrder": 0,
+        "waterOrder": 0,
+        "barrelOrder": 0
+      },
+      "controls": {
+        "maskOffHiddenExact": true,
+        "unsupportedExactLegacy": true,
+        "reactivatedExactCandidate": true,
+        "defaultClearBit1ZeroWritable": true,
+        "normalShaderAndDepthParity": true
+      },
+      "camera": {
+        "position": [
+          109.4785673046112,
+          1.3916762146053308,
+          -11.47128916501999
+        ],
+        "quaternion": [
+          -0.017310232689646616,
+          -0.8108191154953059,
+          -0.02401080998933112,
+          0.5845478584301684
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "clocks": {
+        "snapshot": 173.88921329749155,
+        "shading": 173.88921329749155
+      }
+    },
+    {
+      "at": 20,
+      "view": "overview",
+      "counts": {
+        "sweptBefore": 65321,
+        "sweptAfter": 65321,
+        "lostSwept": 0,
+        "gainedSwept": 0,
+        "lostWater": 0,
+        "newBed": 0,
+        "changedIds": 1462,
+        "newWater": 1265,
+        "newWaterFrom_bed": 1263,
+        "newWaterFrom_other": 2
+      },
+      "restoredWaterAir": {
+        "outsideVerifiedAir": 1265
+      },
+      "probes": [],
+      "sources": {
+        "baselineIdSha256": "bb1af488c35e1f8d896ec4cc101d75d728b90cb36d4dc92390ebf30cc22b2ded",
+        "candidateIdSha256": "b1039c11db1516bba3a9fb43ae595356c6ce5cafdaa302b2ecafdaa1d737e831",
+        "actualWaterWorldSha256": "5bbaea45f480ca0195d36adbf1742518285a607d7348a42399f90de3bddbb69f"
+      },
+      "ownership": {
+        "compiledCandidate": true,
+        "stencilFlag": 1,
+        "stencilBits": 8,
+        "active": 1,
+        "fallbackVisible": true,
+        "fallbackPatchVisible": true,
+        "waterCoverageWrites": true,
+        "sweptCoverageWrites": true,
+        "bedOrder": 0,
+        "waterOrder": 0,
+        "barrelOrder": 0
+      },
+      "controls": {
+        "maskOffHiddenExact": true,
+        "unsupportedExactLegacy": true,
+        "reactivatedExactCandidate": true,
+        "defaultClearBit1ZeroWritable": true,
+        "normalShaderAndDepthParity": true
+      },
+      "camera": {
+        "position": [
+          21.867429672364523,
+          19.286329807158182,
+          -76.46278816670682
+        ],
+        "quaternion": [
+          -0.19422203701016083,
+          -0.18240423645605944,
+          -0.03678243878141323,
+          0.9631477285753193
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.050303841579296,
+          0,
+          0,
+          0,
+          0,
+          -1.000066668888963,
+          -1,
+          0,
+          0,
+          -0.2000066668888963,
+          0
+        ]
+      },
+      "clocks": {
+        "snapshot": 179.9392132974912,
+        "shading": 179.9392132974912
+      }
+    },
+    {
+      "at": 20,
+      "view": "cavity",
+      "counts": {
+        "sweptBefore": 518807,
+        "sweptAfter": 518807,
+        "lostSwept": 0,
+        "gainedSwept": 0,
+        "lostWater": 0,
+        "newBed": 0,
+        "changedIds": 232,
+        "newWater": 229,
+        "newWaterFrom_bed": 217,
+        "newWaterFrom_other": 12
+      },
+      "restoredWaterAir": {
+        "outsideVerifiedAir": 228,
+        "unreliableWorld": 1
+      },
+      "probes": [],
+      "sources": {
+        "baselineIdSha256": "68e824cfc117a22c1603fbed3ba0c200d70f6760894fe41bac06b35281fdf8ee",
+        "candidateIdSha256": "b2ab40302ea965bdc0866587269b07f69a7cead90d50e1d316c98773a45dc222",
+        "actualWaterWorldSha256": "5b98a33f10dd6ea8b9ac6885f4f463864944663cfd7c0999301f1b6480b6cb30"
+      },
+      "ownership": {
+        "compiledCandidate": true,
+        "stencilFlag": 1,
+        "stencilBits": 8,
+        "active": 1,
+        "fallbackVisible": true,
+        "fallbackPatchVisible": true,
+        "waterCoverageWrites": true,
+        "sweptCoverageWrites": true,
+        "bedOrder": 0,
+        "waterOrder": 0,
+        "barrelOrder": 0
+      },
+      "controls": {
+        "maskOffHiddenExact": true,
+        "unsupportedExactLegacy": true,
+        "reactivatedExactCandidate": true,
+        "defaultClearBit1ZeroWritable": true,
+        "normalShaderAndDepthParity": true
+      },
+      "camera": {
+        "position": [
+          46.045549392700195,
+          1.7086154952582002,
+          -108.53816902160645
+        ],
+        "quaternion": [
+          0.11907454453651724,
+          -0.16845706560459012,
+          0.02050439519540236,
+          0.9782755438366956
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "clocks": {
+        "snapshot": 179.9392132974912,
+        "shading": 179.9392132974912
+      }
+    },
+    {
+      "at": 20,
+      "view": "mouth",
+      "counts": {
+        "sweptBefore": 607148,
+        "sweptAfter": 607148,
+        "lostSwept": 0,
+        "gainedSwept": 0,
+        "lostWater": 0,
+        "newBed": 0,
+        "changedIds": 2226,
+        "newWater": 2051,
+        "newWaterFrom_bed": 2051
+      },
+      "restoredWaterAir": {
+        "outsideVerifiedAir": 2047,
+        "unreliableWorld": 4
+      },
+      "probes": [],
+      "sources": {
+        "baselineIdSha256": "0255a3d41f2258271e191a1b7d25eabf865ac8512fd26ab9cac570224a7a1425",
+        "candidateIdSha256": "0ee3c0b7f520440029a08768ff6288bf59fbd2f728801b5944382538cc53d67c",
+        "actualWaterWorldSha256": "aea948152c427e868d454b4e2e48d708c8e96921a7a3d7522affa9bd0bed09b1"
+      },
+      "ownership": {
+        "compiledCandidate": true,
+        "stencilFlag": 1,
+        "stencilBits": 8,
+        "active": 1,
+        "fallbackVisible": true,
+        "fallbackPatchVisible": true,
+        "waterCoverageWrites": true,
+        "sweptCoverageWrites": true,
+        "bedOrder": 0,
+        "waterOrder": 0,
+        "barrelOrder": 0
+      },
+      "controls": {
+        "maskOffHiddenExact": true,
+        "unsupportedExactLegacy": true,
+        "reactivatedExactCandidate": true,
+        "defaultClearBit1ZeroWritable": true,
+        "normalShaderAndDepthParity": true
+      },
+      "camera": {
+        "position": [
+          51.312454748153684,
+          2.8534985807532776,
+          -111.83083159327506
+        ],
+        "quaternion": [
+          -0.044114339477972934,
+          0.8710405715500036,
+          0.07960404400167104,
+          0.48270637446054643
+        ],
+        "projection": [
+          1.153295910888354,
+          0,
+          0,
+          0,
+          0,
+          2.0503038415792965,
+          0,
+          0,
+          0,
+          0,
+          -1.0000133334222228,
+          -1,
+          0,
+          0,
+          -0.04000026666844446,
+          0
+        ]
+      },
+      "clocks": {
+        "snapshot": 179.9392132974912,
+        "shading": 179.9392132974912
+      }
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+// Guarded adapter of the committed held harness. No committed harness or production source edits.
+import {createHash} from 'node:crypto';
+import {mkdtempSync,readFileSync,writeFileSync,mkdirSync,rmSync} from 'node:fs';
+import {resolve,join} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {spawn} from 'node:child_process';
+import {installCompiledFallbackAudit} from './tube-compiled-fallback-helper.mjs';
+const root='/Users/regina/Desktop/Projects/surfing-game',basePath=join(root,'scripts/browser/tube-frozen-render.mjs'),helperPath='/private/tmp/tube-compiled-fallback-helper.mjs',witnessPath='/private/tmp/tube-cavity-witness.json';
+const sha=value=>createHash('sha256').update(value).digest('hex'),base=readFileSync(basePath,'utf8'),witness=JSON.parse(readFileSync(witnessPath)),argv=process.argv.slice(2),variantArg=argv.find(a=>a.startsWith('--variant=')),variant=variantArg?.slice(10);
+if(!['baseline','candidate'].includes(variant))throw Error('Use --variant=baseline|candidate');
+if(!argv.some(a=>a.startsWith('--dir=')))throw Error('Compiled QA requires exact frozen --dir verification');
+const runArgs=argv.filter(a=>a!==variantArg);let derived=base;const patches=[];
+function patch(name,before,after){if(derived.split(before).length!==2)throw Error('Committed harness marker changed: '+name);derived=derived.replace(before,after);patches.push({name,beforeSha256:sha(before),afterSha256:sha(after)});}
+patch('absolute-cdp',"from './cdp.mjs'",`from ${JSON.stringify(pathToFileURL(join(root,'scripts/browser/cdp.mjs')).href)}`);
+patch('same-current-reference','const baseline = readGeometry(join(baselineDir, `at-${at}.baseline.json`), data, inputHash);','const baseline = readGeometry(join(baselineDir, `at-${at}.current.json`), data, inputHash);');
+patch('same-current-bounds',"JSON.parse(readFileSync(join(baselineDir, `at-${at}.baseline.json`)))","JSON.parse(readFileSync(join(baselineDir, `at-${at}.current.json`)))");
+patch('base-fixtures','const fixtures = frames.map(at => {','const baseFixtures = frames.map(at => {');
+const cameras=Object.fromEntries(witness.fixtures.map(f=>[f.at,{inputSha256:f.inputSha256,geometryHash:f.geometryHash,cameras:f.cameras}]));
+patch('actual-air-cameras',"if (fixtures.some(f => !sameGrid",`const cavityCameras=${JSON.stringify(cameras)};
+const fixtures=baseFixtures.flatMap(f=>{
+  const w=cavityCameras[f.at];if(!w||w.inputSha256!==f.fileSha256||w.geometryHash!==f.baseline.metadata.geometryHash)throw Error('Cavity witness differs from held input/geometry');
+  return ['overview','cavity','mouth'].map(view=>({...f,at:f.at+'-'+view,physicalAt:f.at,view,payload:{...f.payload,camera:view==='overview'?f.payload.camera:w.cameras[view]}}));
+});
+if (fixtures.some(f => !sameGrid`);
+patch('frozen-camera-near',"    camera.fov = window.__tubeFrozenOptions.fov ?? camera.fov;","    camera.fov = window.__tubeFrozenOptions.fov ?? fixture.camera.fov ?? camera.fov;\n    camera.near = fixture.camera.near ?? camera.near;\n    camera.far = fixture.camera.far ?? camera.far;");
+patch('frozen-lifecycle-sync',"    water.setBarrelMask(maskDisabled ? null : current.mask);",`    water.setBarrelMask(maskDisabled ? null : current.mask);
+    // This override bypasses SweptBarrel's cached draw. Sync only actual coverage/repair state AFTER mask/visibility.
+    water.syncBarrelFallback?.();
+    mesh.syncScreenFallback?.();`);
+patch('solid-pass-guard',"          shader.fragmentShader = shader.fragmentShader.replace(discard, 'if ( tubeDiagnosticBypassSwept < 0.5 && waterBarrelMaskAt( vWaterWorld.xz ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;');",`          shader.fragmentShader = shader.fragmentShader.replace(discard, 'if ( tubeDiagnosticBypassSwept < 0.5 && waterBarrelMaskAt( vWaterWorld.xz ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;');
+          // Solid-only diagnostic bypasses both rejection paths. Normal/masked output preserves both.
+          const guard='if ( waterBarrelMaskActive < 0.5 ) discard;';
+          if(shader.fragmentShader.includes(guard))shader.fragmentShader=shader.fragmentShader.replace(guard,'if ( tubeDiagnosticBypassSwept < 0.5 && waterBarrelMaskActive < 0.5 ) discard;');`);
+patch('compiled-variant',"const instrument = `(()=>{let seed=0x5eed;",`const instrument = \`(()=>{window.__tubeCompiledVariant=${JSON.stringify(variant)};let seed=0x5eed;`);
+patch('audit-helper',"  return { initializedCompute: 'cpu' };",`  const compiledFallback=(${installCompiledFallbackAudit.toString()})({d,mode,water,mesh,hash,getDiagnostic:()=>diagnostic,getCurrent:()=>current});
+  return { initializedCompute: 'cpu', compiledFallback };`);
+// All native normal images precede diagnostic shader installation and caustic holding.
+const normalSequence=`  report.nativeNormals=[];
+  for(const fixture of fixtures){
+    await bounded(page.eval(\`window.__tubeFrozen.setFixture(\${JSON.stringify(fixture.payload)});window.__tubeFrozen.setGeometry(\${JSON.stringify(fixture.baseline.payload)})\`),'native camera/input');
+    const warmup=[];for(let n=0;n<3;n++)warmup.push(await bounded(page.eval('window.__tubeFrozen.render(false)'),'native warmup'));
+    const shots=[];
+    for(const name of ['normal','normal-repeat']){
+      const state=await bounded(page.eval('window.__tubeFrozen.render(false)'),'native render');
+      if(state.common.surface!==fixture.surfaceSha256||state.common.front!==fixture.frontSha256)throw Error('Native normal input changed');
+      const screenshot=await bounded(page.send('Page.captureScreenshot',{format:'png'}),'native screenshot'),png=Buffer.from(screenshot.data,'base64'),path=join(out,\`at-\${fixture.at}.native-\${name}.png\`);
+      writeFileSync(path,png);shots.push({name,path,pngSha256:sha(png),state});
+    }
+    const stateExact=JSON.stringify(shots[0].state.variant)===JSON.stringify(shots[1].state.variant);
+    if(!stateExact)throw Error('Native geometry/mask repeat changed');
+    report.nativeNormals.push({at:fixture.at,physicalAt:fixture.physicalAt,view:fixture.view,camera:fixture.payload.camera,causticRenderingEnabled:true,unwrappedProductionShaders:true,warmup,shots,geometryMaskRepeatExact:stateExact,imageRepeatExact:shots[0].pngSha256===shots[1].pngSha256,interpretation:'Native caustics are rendered every shot. GPU target provenance is retained; fixed-state additive HalfFloat caustic drift, if present, is reported rather than equated to geometry. Separate ID/fixed-FBO stream below still requires exact repeat.'});save();
+  }
+`;
+patch('native-normal-stream',"  for (const fixture of fixtures) {",normalSequence+"  for (const fixture of fixtures) {");
+patch('water-world-export',"        const result = await bounded(page.eval('window.__tubeFrozen.finishDiagnostic()'), 'diagnostic ID comparison and source export');",`        const waterPixels=await bounded(page.eval('window.__tubeCompiledAudit.exportWaterPixels()'),'actual water world export');
+        const waterPath=join(out,\`at-\${fixture.at}.\${variant}.water-world.json\`);writeFileSync(waterPath,JSON.stringify(waterPixels)+'\\n');
+        const result = await bounded(page.eval('window.__tubeFrozen.finishDiagnostic()'), 'diagnostic ID comparison and source export');`);
+patch('water-world-provenance',"          supportPath, supportSha256: sha(readFileSync(supportPath)), restoredStateExact: true });",`          supportPath,supportSha256:sha(readFileSync(supportPath)),waterPath,waterSha256:sha(readFileSync(waterPath)),restoredStateExact:true });`);
+const manifest=JSON.parse(readFileSync('/private/tmp/surf-screen-fallback-20261003/fallback-manifest.json'));
+const metadata={variant,basePath,baseSha256:sha(base),helperPath,helperSha256:sha(readFileSync(helperPath)),witnessPath,witnessSha256:sha(readFileSync(witnessPath)),driverSha256:sha(readFileSync(new URL(import.meta.url))),patches,compiledFallbackPatchSha256:manifest.patchSha256,literalBuildId:manifest.checks.build.literalBuildId,productionChanged:false,method:'Actual immutable compiled baseline/candidate; identical current continuous-plan exported geometry and mask. Pure indexed/contact air witness cameras. Native unwrapped normal capture stream keeps caustics enabled. ID companion subsequently holds only the actual caustic FBO for strict fixed-input repeat. Frozen lifecycle overrides sync coverage/repair after mask/visibility, leaving ordinary order unchanged; cached production lifecycle is unit-tested separately.',limitations:['Two held mixed-sea states, not moving touchdown169.6 or rider/FPS proof.','Cavity camera eye and target are drawing-index/contact air witnesses; mouth camera must be assessed as an outside view.','Opaque ID alpha override may change farField blending; pure foreground water/swept/bed comparisons only.']};
+const controlSequence=`      await bounded(page.eval('window.__tubeCompiledAudit.rememberActive()'),'remember active coverage');
+      const controlStates=[];
+      for(const name of ['mask-off-hidden','unsupported','reactivated']){
+        const state=await bounded(page.eval(\`window.__tubeCompiledAudit.captureControl(\${JSON.stringify(name)})\`),'coverage control '+name);
+        const pixels=Buffer.from(state.pixels,'base64');delete state.pixels;delete state.shaPending;
+        const path=join(out,\`at-\${fixture.at}.control-\${name}.ids\`);writeFileSync(path,pixels);controlStates.push({...state,path,sha256:sha(pixels)});
+      }
+      report.pairs.at(-1).fallbackControls={states:controlStates,clear:await bounded(page.eval('window.__tubeCompiledAudit.clearSummary()'),'actual stencil clears')};
+      await bounded(page.eval('window.__tubeCompiledAudit.normalOutput()'),'normal output restoration after controls');
+`;
+patch('dynamic-controls',"      await bounded(page.eval(\`window.__tubeFrozen.setGeometry(\${JSON.stringify(fixture.baseline.payload)})\`), 'post-diagnostic baseline upload');",controlSequence+"      await bounded(page.eval(\`window.__tubeFrozen.setGeometry(\${JSON.stringify(fixture.baseline.payload)})\`), 'post-diagnostic baseline upload');");
+patch('literal-build-and-worker', '  return metadata;\n}\ntry {', `  const buildResponse=await fetch(new URL('build.json',url),{signal:AbortSignal.timeout(5000)});
+  const literalBuild=await buildResponse.json();
+  if(!buildResponse.ok||literalBuild.build!=='eea68720f')throw Error('Unexpected literal served BUILD_ID');
+  metadata.literalBuildId=literalBuild.build;
+  if(metadata.servedJavaScript['assets/surfZoneWorker-BH6FhcTP.js']!=='eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5')throw Error('Physics worker is not canonical BH bytes');
+  return metadata;
+}
+try {`);
+patch('compiled-provenance','const plan = { schema: 1,',`const plan = { compiledFallback: ${JSON.stringify(metadata)}, schema: 1,`);
+for(const[key,val]of Object.entries({'mask-diagnostic':'true','freeze-caustics':'true','baseline-only':'true',cdp:variant==='candidate'?'9470':'9469',timeoutSeconds:'60'})){if(!runArgs.some(a=>a.startsWith('--'+key+'=')))runArgs.push('--'+key+'='+val);}
+const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;new AsyncFunction(derived.replace(/^import .*;$/gm,'').replace(/import\.meta/g,'({})'));
+const scratch=mkdtempSync('/private/tmp/tube-compiled-driver-'),script=join(scratch,'derived-harness.mjs');writeFileSync(script,derived);
+if(Number(runArgs.find(a=>a.startsWith('--timeoutSeconds=')).slice(17))>60)throw Error('QA is bounded to60s');
+const outArg=runArgs.find(a=>a.startsWith('--out=')),out=resolve(outArg?.slice(6)??'/private/tmp/tube-compiled-'+variant);if(!outArg)runArgs.push('--out='+out);mkdirSync(out,{recursive:true});writeFileSync(join(out,'compiled-driver.json'),JSON.stringify({...metadata,derivedSha256:sha(derived),args:runArgs},null,2)+'\n');
+try{const child=spawn(process.execPath,[script,...runArgs],{cwd:root,stdio:'inherit'});process.exitCode=await new Promise((resolveExit,reject)=>{child.once('error',reject);child.once('exit',code=>resolveExit(code??1));});}finally{rmSync(scratch,{recursive:true,force:true});}

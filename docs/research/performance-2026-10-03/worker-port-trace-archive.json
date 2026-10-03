@@ -1,0 +1,25 @@
+{
+  "format": "gzip level9, mtime0; equal second compression and byte-exact gunzip verified",
+  "archives": [
+    {
+      "file": "worker-port-trace.json.gz",
+      "contentSha256": "30dfce43514acc964d288b514ee07e96724f654a5680b89eddfac6f9c54ad406",
+      "compressedSha256": "c96d14393e5ac3ed24196f9632527bb7b4c0199e227faac201182c220fbf6109",
+      "contentBytes": 7832125,
+      "compressedBytes": 397390,
+      "gzipMtimeHeader": 0,
+      "decompressionByteParity": true
+    },
+    {
+      "file": "worker-port-trace-summary.json.gz",
+      "contentSha256": "2ed9768bda01dafab808324f875f5b7501a9602276d024b9cc82cdcd39f105b9",
+      "compressedSha256": "f57f782c4ef3fdbff11231618e163f02c8ecdbce7e75b89ccb6bff4adeb2b6af",
+      "contentBytes": 3127080,
+      "compressedBytes": 195426,
+      "gzipMtimeHeader": 0,
+      "decompressionByteParity": true
+    }
+  ],
+  "summaryProducerAnalysisSha256": "5d0b5ee5f6c1bac75b649c7383635e7bbc0c885ba7f889e45466fd158b5ecb39",
+  "currentGzipReaderAnalysisSha256": "1c095d954d724f4807d320e046be5afa3e7aaf8ec576f61c8ccbd946c6e9aaa1"
+}

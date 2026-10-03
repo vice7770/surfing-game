@@ -1,0 +1,223 @@
+{
+  "schema": 1,
+  "baseCommit": "1233de6e4bc57e84e8b5d93047f7ace2ffda792e",
+  "status": "isolated held candidate; no production/default acceptance",
+  "records": [
+    {
+      "name": "fallback.patch",
+      "source": "/private/tmp/surf-screen-fallback-20261003/fallback.patch",
+      "sourceSha256": "3607afff67f84979f432e9605dd292b8a8dbf5af09749323675b61620c498d8f",
+      "archiveSha256": "3607afff67f84979f432e9605dd292b8a8dbf5af09749323675b61620c498d8f",
+      "sourceBytes": 30224,
+      "archiveBytes": 30224,
+      "gzip": false
+    },
+    {
+      "name": "fallback-manifest.json",
+      "source": "/private/tmp/surf-screen-fallback-20261003/fallback-manifest.json",
+      "sourceSha256": "9b8d3ed916921bc1113c82ecf11ca351acb33858b1e72d491e3948c5466263f6",
+      "archiveSha256": "9b8d3ed916921bc1113c82ecf11ca351acb33858b1e72d491e3948c5466263f6",
+      "sourceBytes": 7469,
+      "archiveBytes": 7469,
+      "gzip": false
+    },
+    {
+      "name": "fallback-base-manifest.json",
+      "source": "/private/tmp/surf-screen-fallback-20261003/fallback-base-manifest.json",
+      "sourceSha256": "1d1384a7b2f621adef1913575513af5fbe97575dacc7b6a6f7f6b104c4b69c6d",
+      "archiveSha256": "1d1384a7b2f621adef1913575513af5fbe97575dacc7b6a6f7f6b104c4b69c6d",
+      "sourceBytes": 56435,
+      "archiveBytes": 56435,
+      "gzip": false
+    },
+    {
+      "name": "held-qa.txt",
+      "source": "/private/tmp/surf-screen-fallback-20261003/fallback-held-qa.md",
+      "sourceSha256": "a5204439ca3d367c11d51d676245912a8ea912fe759dbb77df3f89813728afd2",
+      "archiveSha256": "a5204439ca3d367c11d51d676245912a8ea912fe759dbb77df3f89813728afd2",
+      "sourceBytes": 3555,
+      "archiveBytes": 3555,
+      "gzip": false
+    },
+    {
+      "name": "baseline.report.json.gz",
+      "source": "/private/tmp/tube-fallback-held-20261003-baseline/report.json",
+      "sourceSha256": "1b996e2da0646df27d21162e23b9d854cf2a6e96eaffba9c4acde6fb5670979d",
+      "archiveSha256": "895ee398b071dfadd59007f22e4ae561217924413ca75295a16397359a3712e4",
+      "sourceBytes": 924133,
+      "archiveBytes": 83691,
+      "gzip": true
+    },
+    {
+      "name": "baseline.compiled-driver.json",
+      "source": "/private/tmp/tube-fallback-held-20261003-baseline/compiled-driver.json",
+      "sourceSha256": "94f1dc766c419b6c9eaa8e0b340fbb25156c96fff76855890cd46293cb9ab689",
+      "archiveSha256": "94f1dc766c419b6c9eaa8e0b340fbb25156c96fff76855890cd46293cb9ab689",
+      "sourceBytes": 5627,
+      "archiveBytes": 5627,
+      "gzip": false
+    },
+    {
+      "name": "baseline.10-mouth.native-normal.png",
+      "source": "/private/tmp/tube-fallback-held-20261003-baseline/at-10-mouth.native-normal.png",
+      "sourceSha256": "4dc1ec6c8afcd484a53e825caf441608f4b8f7c4f032ed189ac680d7fbe42e45",
+      "archiveSha256": "4dc1ec6c8afcd484a53e825caf441608f4b8f7c4f032ed189ac680d7fbe42e45",
+      "sourceBytes": 413232,
+      "archiveBytes": 413232,
+      "gzip": false
+    },
+    {
+      "name": "baseline.20-cavity.native-normal.png",
+      "source": "/private/tmp/tube-fallback-held-20261003-baseline/at-20-cavity.native-normal.png",
+      "sourceSha256": "47c40af4b2a3a53b364d84088a3d6e0de216d691f06e333420b013689dc71e3c",
+      "archiveSha256": "47c40af4b2a3a53b364d84088a3d6e0de216d691f06e333420b013689dc71e3c",
+      "sourceBytes": 542264,
+      "archiveBytes": 542264,
+      "gzip": false
+    },
+    {
+      "name": "candidate.report.json.gz",
+      "source": "/private/tmp/tube-fallback-held-20261003-candidate-active/report.json",
+      "sourceSha256": "0f985dc60cd7df42a78fb2fd857605750a1bb6eb170c22ee3db1834b4a74b444",
+      "archiveSha256": "19f8b8d5af1fb2f68f87f2307b3d432de4ac4e60b2283aca88ea9fd1beb57804",
+      "sourceBytes": 734158,
+      "archiveBytes": 54726,
+      "gzip": true
+    },
+    {
+      "name": "candidate.compiled-driver.json",
+      "source": "/private/tmp/tube-fallback-held-20261003-candidate-active/compiled-driver.json",
+      "sourceSha256": "f8b4193464ad9fb6bc5a7748b847df03f1fd6d41595a53cc0b42051278b94ea4",
+      "archiveSha256": "f8b4193464ad9fb6bc5a7748b847df03f1fd6d41595a53cc0b42051278b94ea4",
+      "sourceBytes": 5634,
+      "archiveBytes": 5634,
+      "gzip": false
+    },
+    {
+      "name": "candidate.10-mouth.native-normal.png",
+      "source": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-10-mouth.native-normal.png",
+      "sourceSha256": "7f06f86c531702d7696bd498373c2e9852fa8701bdda591c2fc65bc21ee455c8",
+      "archiveSha256": "7f06f86c531702d7696bd498373c2e9852fa8701bdda591c2fc65bc21ee455c8",
+      "sourceBytes": 412157,
+      "archiveBytes": 412157,
+      "gzip": false
+    },
+    {
+      "name": "candidate.20-cavity.native-normal.png",
+      "source": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-20-cavity.native-normal.png",
+      "sourceSha256": "f2df03ad324cd1bfab54d49b15f56dc8cd94501d2120ab33526edfa2ae70c5c8",
+      "archiveSha256": "f2df03ad324cd1bfab54d49b15f56dc8cd94501d2120ab33526edfa2ae70c5c8",
+      "sourceBytes": 542285,
+      "archiveBytes": 542285,
+      "gzip": false
+    },
+    {
+      "name": "invalid-initialization.report.json.gz",
+      "source": "/private/tmp/tube-fallback-held-20261003-candidate/report.json",
+      "sourceSha256": "c1f1a3de2b3e75fb52e168e63c1988a294d5360bfc98558a5cb2ff8b8fd3f675",
+      "archiveSha256": "0fe149ab65804797336064acc8f5174ba56f65ebf9a27aff286bbf69ac2a218c",
+      "sourceBytes": 23901,
+      "archiveBytes": 6484,
+      "gzip": true
+    },
+    {
+      "name": "invalid-initialization.compiled-driver.json",
+      "source": "/private/tmp/tube-fallback-held-20261003-candidate/compiled-driver.json",
+      "sourceSha256": "890f62038d7fe39161ca4e6b747f0f57dc8a76aa207e5f03e5b8b6a1b120d986",
+      "archiveSha256": "890f62038d7fe39161ca4e6b747f0f57dc8a76aa207e5f03e5b8b6a1b120d986",
+      "sourceBytes": 5627,
+      "archiveBytes": 5627,
+      "gzip": false
+    },
+    {
+      "name": "pixel-air-controls.json",
+      "source": "/private/tmp/tube-fallback-held-pixels.json",
+      "sourceSha256": "b23878a2701c8a4bd90a5fc28b511fad749ebf627396d039b86371a1e00e195e",
+      "archiveSha256": "b23878a2701c8a4bd90a5fc28b511fad749ebf627396d039b86371a1e00e195e",
+      "sourceBytes": 13057,
+      "archiveBytes": 13057,
+      "gzip": false
+    },
+    {
+      "name": "native-repeat-provenance.json",
+      "source": "/private/tmp/tube-fallback-native-repeat-provenance.json",
+      "sourceSha256": "e6b0065c6b8ee9dc4a9fcc3b8a74a1497ecf1cbc52ca95671d5a9e803787258f",
+      "archiveSha256": "e6b0065c6b8ee9dc4a9fcc3b8a74a1497ecf1cbc52ca95671d5a9e803787258f",
+      "sourceBytes": 11034,
+      "archiveBytes": 11034,
+      "gzip": false
+    },
+    {
+      "name": "cavity-witness.json",
+      "source": "/private/tmp/tube-cavity-witness.json",
+      "sourceSha256": "17c251e10dc1bb49e532e18b829e059d15661185c4b1ea997fbdda1af3d7dd53",
+      "archiveSha256": "17c251e10dc1bb49e532e18b829e059d15661185c4b1ea997fbdda1af3d7dd53",
+      "sourceBytes": 24923,
+      "archiveBytes": 24923,
+      "gzip": false
+    },
+    {
+      "name": "driver.mjs.txt",
+      "source": "/private/tmp/tube-compiled-fallback-driver.mjs",
+      "sourceSha256": "854baa6fad69b2f51af4d34fc675bcd5d84bb087bb9c3ca45eebb0415e2cf40a",
+      "archiveSha256": "854baa6fad69b2f51af4d34fc675bcd5d84bb087bb9c3ca45eebb0415e2cf40a",
+      "sourceBytes": 11991,
+      "archiveBytes": 11991,
+      "gzip": false
+    },
+    {
+      "name": "helper.mjs.txt",
+      "source": "/private/tmp/tube-compiled-fallback-helper.mjs",
+      "sourceSha256": "1087a6c034801a238c704afbaeba21051edd84e5eab5e3d9e9f934dea07ae3ce",
+      "archiveSha256": "1087a6c034801a238c704afbaeba21051edd84e5eab5e3d9e9f934dea07ae3ce",
+      "sourceBytes": 6970,
+      "archiveBytes": 6970,
+      "gzip": false
+    },
+    {
+      "name": "helper-initial.mjs.txt",
+      "source": "/private/tmp/tube-compiled-fallback-helper-initial.mjs",
+      "sourceSha256": "2766b6ae4f479c54ddc555ee5b50fd5a3b7427ec46c80fa7da909a2ecba3fe60",
+      "archiveSha256": "2766b6ae4f479c54ddc555ee5b50fd5a3b7427ec46c80fa7da909a2ecba3fe60",
+      "sourceBytes": 6568,
+      "archiveBytes": 6568,
+      "gzip": false
+    },
+    {
+      "name": "pixel-report.py.txt",
+      "source": "/private/tmp/tube-fallback-pixel-report.py",
+      "sourceSha256": "93ed336a6efe8f30c43277ef62e3bf11eb1449045664a55edd4c09a5ae2da4a9",
+      "archiveSha256": "93ed336a6efe8f30c43277ef62e3bf11eb1449045664a55edd4c09a5ae2da4a9",
+      "sourceBytes": 6024,
+      "archiveBytes": 6024,
+      "gzip": false
+    },
+    {
+      "name": "base-harness.mjs.txt",
+      "source": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/tube-frozen-render.mjs",
+      "sourceSha256": "8babd6f3a9edb0dc92434e5df57fb7302a6412d6fcf88eabc652cb5158b9f487",
+      "archiveSha256": "8babd6f3a9edb0dc92434e5df57fb7302a6412d6fcf88eabc652cb5158b9f487",
+      "sourceBytes": 59060,
+      "archiveBytes": 59060,
+      "gzip": false
+    },
+    {
+      "name": "cdp.mjs.txt",
+      "source": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "sourceSha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+      "archiveSha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+      "sourceBytes": 7064,
+      "archiveBytes": 7064,
+      "gzip": false
+    },
+    {
+      "name": "README.md",
+      "source": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-03/late-water-fallback/README.md",
+      "sourceSha256": "063693b8e9ba4c680de978e5c718ff09432cdd2c871858fe53b10d19b0554b8f",
+      "archiveSha256": "063693b8e9ba4c680de978e5c718ff09432cdd2c871858fe53b10d19b0554b8f",
+      "sourceBytes": 4656,
+      "archiveBytes": 4656,
+      "gzip": false
+    }
+  ]
+}

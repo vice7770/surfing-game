@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "rootSourceBoundary": "1233de6e4bc57e84e8b5d93047f7ace2ffda792e",
+  "scratch": "/private/tmp/surf-screen-fallback-20261003",
+  "base": "/private/tmp/surf-screen-fallback-base-20261003",
+  "productionModified": false,
+  "rejectedOwnershipSourceCopied": false,
+  "ownedFiles": [
+    {
+      "path": "src/main.ts",
+      "baseSha256": "95d52f07d106be65fa2509a7a6c5fefc736244f61a27c8fbcced5f9ed9037490",
+      "candidateSha256": "862f790007b4ab6d8596b331e37b871d7349ca6178494bcf40b1287d5943edde",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/WaterSurface.ts",
+      "baseSha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000",
+      "candidateSha256": "04d62102784270589eb78126ed4a4f31025c3e8b286532f64f91f3b01d2c1868",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/WaterSurface.test.ts",
+      "baseSha256": "539ad0199962bac31bfb043d78a01359a067819064e02353282bdf6087ee0b8f",
+      "candidateSha256": "2bf9d749b88d0c13249e60b79c05bb30de8822937c62748065fd139d89c54fe2",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrelMesh.ts",
+      "baseSha256": "cc52d17fb7cbf90621ec51a50b0236a055bd44b8794459361e41277000a88186",
+      "candidateSha256": "01780b06d8bb01a992c4b9368be903d626cf5d5d915b917bf8898e73007e1479",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrelMesh.test.ts",
+      "baseSha256": "462cec51884ef8c351bf982decd5fafb35fa099c63f3427ea7e76c1c5deb7595",
+      "candidateSha256": "79475b9469ac5d3ad80c395afeb60243bbb861236952f5145980519d0c1c5275",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrel.ts",
+      "baseSha256": "f52314fb81f295a7b389b5c74133a4c538c4060563e0c30ce5d89c311c724697",
+      "candidateSha256": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrel.test.ts",
+      "baseSha256": "11996a0efc5f6095a9a975d80197f6bb6b4079d31fa624bde717c950e2adefe5",
+      "candidateSha256": "110b39c7f192e814c944decff41e5304434a8a3d8432902e61c75c30333c3928",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/barrel/barrelMaskGlsl.ts",
+      "baseSha256": "d18790112d5c9b06903fffcce66f320e31974cec27e402c74b0030e608a1e589",
+      "candidateSha256": "82a029625f3b9c48680166ccd16cb75028f1cc269a3e4690cf3a168b2f47f44b",
+      "productionAtBase": true
+    },
+    {
+      "path": "src/scene/barrel/barrelFallback.ts",
+      "baseSha256": null,
+      "candidateSha256": "cf2c4981ef25869fe7dcffdaba0fa9c91b3c1161a18db203673b059093c293ba",
+      "productionAtBase": true
+    }
+  ],
+  "unownedSourceDifferencesFromCurrentProduction": [],
+  "patchSha256": "3607afff67f84979f432e9605dd292b8a8dbf5af09749323675b61620c498d8f",
+  "canonicalFft": {
+    "src/scene/FftChop.ts": {
+      "baseSha256": "6939107ec1ddb046e08b5e0ab2659a7eb15a43cd81e7c174411afb5b149858fd",
+      "candidateSha256": "6939107ec1ddb046e08b5e0ab2659a7eb15a43cd81e7c174411afb5b149858fd",
+      "currentProductionSha256": "6939107ec1ddb046e08b5e0ab2659a7eb15a43cd81e7c174411afb5b149858fd"
+    },
+    "src/scene/FftChop.test.ts": {
+      "baseSha256": "925d2e85e7a81c90cb54a6f7219c1e48109abe745e7bbda8be9f2953bc42ca25",
+      "candidateSha256": "925d2e85e7a81c90cb54a6f7219c1e48109abe745e7bbda8be9f2953bc42ca25",
+      "currentProductionSha256": "925d2e85e7a81c90cb54a6f7219c1e48109abe745e7bbda8be9f2953bc42ca25"
+    }
+  },
+  "temporalHelperAbsent": true,
+  "checks": {
+    "focusedTests": {
+      "command": "npx vitest run src/scene/WaterSurface.test.ts src/scene/barrel/SweptBarrelMesh.test.ts src/scene/barrel/SweptBarrel.test.ts src/scene/waterLooks.test.ts src/scene/FftChop.test.ts",
+      "files": 5,
+      "passed": 60,
+      "newFallbackTests": 8
+    },
+    "build": {
+      "command": "BUILD_ID=eea68720f npm run build",
+      "passed": true,
+      "typecheckPassed": true,
+      "literalBuildId": "eea68720f",
+      "indexSha256": "56552244b6067e211dd656c52550447db06198da1cac31b6b719395d9714e480",
+      "javascript": {
+        "WorkerSurfZone-z-6j-ELi.js": "c3d80a7dae5b5b82c9d860414fefa652c077bb269ca6882d519a2963001da526",
+        "devStepping-CDB-0LDb.js": "d0503afec07acc84c01b5d54ccce61b83f716dbfd0225f7e008473e9cf0e6141",
+        "index-DBAEwxK5.js": "c745c8d64feb12ba131cc5d479932f4f6fa37ffd583ccdc812747004c5313235",
+        "jevRecorder-pIkrW4qg.js": "deb2771f7e4090eeb3dbaef4ac09a7b2c1b6dcac30a3a6b23081b392aaffde56",
+        "particleBench-CF6tS4xk.js": "a7c29db5f95e235d35146eb916c0c65feeff19f862c18216cec900cf02edd8ec",
+        "rideRecorder-DxJ9DZwK.js": "32075ec892f8e79758f878479c8ec14889b33c48a5a3da0f075d8a56e0e80175",
+        "surfZoneWorker-BH6FhcTP.js": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5",
+        "waterSheet-BsUETHqH.js": "2b16d82f64937d41466d380b9690640adad081ba489e8190a2074f17f675b61f"
+      }
+    }
+  },
+  "contracts": {
+    "originalDraws": "Normal water and swept shader text, custom shader keys, original depth/colour/side, geometry and render orders remain unchanged. Only successful fragment/depth tests replace stencil bit1. Stencil failure and depth failure keep it.",
+    "lateRepair": "Two identity children (coarse and Rich patch) share their original geometry and one cloned water material. Exactly the original mask-rejected predicate, including active guard, replaces only WATER_BARREL_DISCARD. Rich patch/skirt and wet/dry clipping, body optics and source uniforms remain original. Stencil equality0/readmask1/writeMask0 prevents repair covering original water/swept samples. Render order1 follows all ordinary opaque water/swept order0 draws.",
+    "clear": "Actual main renderer requests stencil and opts in only if its default context confirms it. Three defaults autoClear=true/autoClearStencil=true and clearStencil=0; its clear resets stencil write mask before clearing despite the last read-only fallback draw. Exact GPU clear provenance and active\u2192inactive\u2192active controls remain pending held QA.",
+    "dynamicState": "Mask enable/null, supported flag, coarse-grid/window rebuild and look changes sync WaterSurface repair state. Swept update/hide and explicitly versioned cached draw sync coverage marking without rebuilding or uploading geometry. Unsupported/inactive paths mark nothing and hide repairs. Getters do not allocate.",
+    "allocation": "No additional mesh/material construction in inactive constructors. Repair material/two meshes allocated only at first supported active mask; subsequent mask/held-source transitions reuse them. Extra first-active UUID randomness is acknowledged; no claim of later unseeded global RNG parity.",
+    "lifecycle": "Original coarse/patch geometries remain shared and disposed exactly once; the repair material shared by both children is disposed once. Children are detached at WaterSurface disposal. Source/envMap rotation/intensity/roughness/version and receiveShadow sync before drawing. No prepass, no second loft/contact build, no optics tuning."
+  },
+  "pending": [
+    "Root source/plan review and exclusive GPU permission",
+    "Matched compiled fallback held native/ID air and mouth QA, original foreground/swept coverage exactness, stencil-clear and inactive controls",
+    "Additional water vertex-pass throughput measurement",
+    "Moving same-front lifecycle/cavity/touchdown QA; separate fog prototype not combined"
+  ]
+}

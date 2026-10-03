@@ -1,0 +1,301 @@
+{
+  "schema": 1,
+  "variants": [
+    {
+      "variant": "baseline",
+      "valid": true,
+      "elapsedSeconds": 26.086,
+      "native": [
+        {
+          "at": "10-overview",
+          "imageRepeatExact": true,
+          "changedPixels": 0,
+          "maxChannelDifference": 0,
+          "commonChangedKeys": [
+            "gpuTargets"
+          ],
+          "gpuChangedTargets": [
+            {
+              "first": {
+                "id": 4,
+                "width": 512,
+                "height": 512,
+                "format": 6408,
+                "type": 5131,
+                "hash": "59c2672437c49893485cf32c8ad9fc74448007bfc40d7d048da07e80d5fc3907",
+                "frozen": false
+              },
+              "repeat": {
+                "id": 4,
+                "width": 512,
+                "height": 512,
+                "format": 6408,
+                "type": 5131,
+                "hash": "ddef22c05903985c71096d7d190d1808993aa9d582da251b7c7cbdc5902dc78c",
+                "frozen": false
+              }
+            }
+          ],
+          "geometryMaskRepeatExact": true,
+          "normalPath": "/private/tmp/tube-fallback-held-20261003-baseline/at-10-overview.native-normal.png",
+          "repeatPath": "/private/tmp/tube-fallback-held-20261003-baseline/at-10-overview.native-normal-repeat.png",
+          "fixedFboPostDiagnosticExact": true
+        },
+        {
+          "at": "10-cavity",
+          "imageRepeatExact": true,
+          "changedPixels": 0,
+          "maxChannelDifference": 0,
+          "commonChangedKeys": [],
+          "gpuChangedTargets": [],
+          "geometryMaskRepeatExact": true,
+          "normalPath": "/private/tmp/tube-fallback-held-20261003-baseline/at-10-cavity.native-normal.png",
+          "repeatPath": "/private/tmp/tube-fallback-held-20261003-baseline/at-10-cavity.native-normal-repeat.png",
+          "fixedFboPostDiagnosticExact": true
+        },
+        {
+          "at": "10-mouth",
+          "imageRepeatExact": true,
+          "changedPixels": 0,
+          "maxChannelDifference": 0,
+          "commonChangedKeys": [],
+          "gpuChangedTargets": [],
+          "geometryMaskRepeatExact": true,
+          "normalPath": "/private/tmp/tube-fallback-held-20261003-baseline/at-10-mouth.native-normal.png",
+          "repeatPath": "/private/tmp/tube-fallback-held-20261003-baseline/at-10-mouth.native-normal-repeat.png",
+          "fixedFboPostDiagnosticExact": true
+        },
+        {
+          "at": "20-overview",
+          "imageRepeatExact": true,
+          "changedPixels": 0,
+          "maxChannelDifference": 0,
+          "commonChangedKeys": [],
+          "gpuChangedTargets": [],
+          "geometryMaskRepeatExact": true,
+          "normalPath": "/private/tmp/tube-fallback-held-20261003-baseline/at-20-overview.native-normal.png",
+          "repeatPath": "/private/tmp/tube-fallback-held-20261003-baseline/at-20-overview.native-normal-repeat.png",
+          "fixedFboPostDiagnosticExact": true
+        },
+        {
+          "at": "20-cavity",
+          "imageRepeatExact": false,
+          "changedPixels": 3,
+          "maxChannelDifference": 1,
+          "commonChangedKeys": [
+            "gpuTargets"
+          ],
+          "gpuChangedTargets": [
+            {
+              "first": {
+                "id": 4,
+                "width": 512,
+                "height": 512,
+                "format": 6408,
+                "type": 5131,
+                "hash": "89b76c7f2e1fc9642ebdce9d3048cd273db1a79b14f0268d40118fc6c9083e48",
+                "frozen": false
+              },
+              "repeat": {
+                "id": 4,
+                "width": 512,
+                "height": 512,
+                "format": 6408,
+                "type": 5131,
+                "hash": "5ea2196da97a1c9ecd8184a87c2a263e682a2619df46bcd1e1ee42ec9cbbc2e7",
+                "frozen": false
+              }
+            }
+          ],
+          "geometryMaskRepeatExact": true,
+          "normalPath": "/private/tmp/tube-fallback-held-20261003-baseline/at-20-cavity.native-normal.png",
+          "repeatPath": "/private/tmp/tube-fallback-held-20261003-baseline/at-20-cavity.native-normal-repeat.png",
+          "fixedFboPostDiagnosticExact": true
+        },
+        {
+          "at": "20-mouth",
+          "imageRepeatExact": true,
+          "changedPixels": 0,
+          "maxChannelDifference": 0,
+          "commonChangedKeys": [],
+          "gpuChangedTargets": [],
+          "geometryMaskRepeatExact": true,
+          "normalPath": "/private/tmp/tube-fallback-held-20261003-baseline/at-20-mouth.native-normal.png",
+          "repeatPath": "/private/tmp/tube-fallback-held-20261003-baseline/at-20-mouth.native-normal-repeat.png",
+          "fixedFboPostDiagnosticExact": true
+        }
+      ]
+    },
+    {
+      "variant": "candidate-active",
+      "valid": true,
+      "elapsedSeconds": 27.318,
+      "native": [
+        {
+          "at": "10-overview",
+          "imageRepeatExact": true,
+          "changedPixels": 0,
+          "maxChannelDifference": 0,
+          "commonChangedKeys": [
+            "gpuTargets"
+          ],
+          "gpuChangedTargets": [
+            {
+              "first": {
+                "id": 4,
+                "width": 512,
+                "height": 512,
+                "format": 6408,
+                "type": 5131,
+                "hash": "af8e821e6b1a801d8a5d6942ea690a76af9080732f26621483661a6435aff292",
+                "frozen": false
+              },
+              "repeat": {
+                "id": 4,
+                "width": 512,
+                "height": 512,
+                "format": 6408,
+                "type": 5131,
+                "hash": "ddef22c05903985c71096d7d190d1808993aa9d582da251b7c7cbdc5902dc78c",
+                "frozen": false
+              }
+            }
+          ],
+          "geometryMaskRepeatExact": true,
+          "normalPath": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-10-overview.native-normal.png",
+          "repeatPath": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-10-overview.native-normal-repeat.png",
+          "fixedFboPostDiagnosticExact": true
+        },
+        {
+          "at": "10-cavity",
+          "imageRepeatExact": false,
+          "changedPixels": 1,
+          "maxChannelDifference": 1,
+          "commonChangedKeys": [
+            "gpuTargets"
+          ],
+          "gpuChangedTargets": [
+            {
+              "first": {
+                "id": 4,
+                "width": 512,
+                "height": 512,
+                "format": 6408,
+                "type": 5131,
+                "hash": "69cb8305a341d792d1f62265ce112d891990071ded5aa26e3cf20101977ca413",
+                "frozen": false
+              },
+              "repeat": {
+                "id": 4,
+                "width": 512,
+                "height": 512,
+                "format": 6408,
+                "type": 5131,
+                "hash": "c1815383c106f685b2514a20fd0b5da1d8423638819537bcb8044d5747ecdc4f",
+                "frozen": false
+              }
+            }
+          ],
+          "geometryMaskRepeatExact": true,
+          "normalPath": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-10-cavity.native-normal.png",
+          "repeatPath": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-10-cavity.native-normal-repeat.png",
+          "fixedFboPostDiagnosticExact": true
+        },
+        {
+          "at": "10-mouth",
+          "imageRepeatExact": true,
+          "changedPixels": 0,
+          "maxChannelDifference": 0,
+          "commonChangedKeys": [
+            "gpuTargets"
+          ],
+          "gpuChangedTargets": [
+            {
+              "first": {
+                "id": 4,
+                "width": 512,
+                "height": 512,
+                "format": 6408,
+                "type": 5131,
+                "hash": "b11444d58d51118634c019b9cd3c62d98ee80006cf42b327b843061584ec9eff",
+                "frozen": false
+              },
+              "repeat": {
+                "id": 4,
+                "width": 512,
+                "height": 512,
+                "format": 6408,
+                "type": 5131,
+                "hash": "e0716fdab6791579c948bad8e8303c6240cf4e3c9af1a66b6b43240ea137f2ce",
+                "frozen": false
+              }
+            }
+          ],
+          "geometryMaskRepeatExact": true,
+          "normalPath": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-10-mouth.native-normal.png",
+          "repeatPath": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-10-mouth.native-normal-repeat.png",
+          "fixedFboPostDiagnosticExact": true
+        },
+        {
+          "at": "20-overview",
+          "imageRepeatExact": true,
+          "changedPixels": 0,
+          "maxChannelDifference": 0,
+          "commonChangedKeys": [],
+          "gpuChangedTargets": [],
+          "geometryMaskRepeatExact": true,
+          "normalPath": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-20-overview.native-normal.png",
+          "repeatPath": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-20-overview.native-normal-repeat.png",
+          "fixedFboPostDiagnosticExact": true
+        },
+        {
+          "at": "20-cavity",
+          "imageRepeatExact": true,
+          "changedPixels": 0,
+          "maxChannelDifference": 0,
+          "commonChangedKeys": [
+            "gpuTargets"
+          ],
+          "gpuChangedTargets": [
+            {
+              "first": {
+                "id": 4,
+                "width": 512,
+                "height": 512,
+                "format": 6408,
+                "type": 5131,
+                "hash": "89b76c7f2e1fc9642ebdce9d3048cd273db1a79b14f0268d40118fc6c9083e48",
+                "frozen": false
+              },
+              "repeat": {
+                "id": 4,
+                "width": 512,
+                "height": 512,
+                "format": 6408,
+                "type": 5131,
+                "hash": "d21d9bff68bd110d8f24ff3e3dfe6463dabdb5ec0aaed00b117e0aac540e16c8",
+                "frozen": false
+              }
+            }
+          ],
+          "geometryMaskRepeatExact": true,
+          "normalPath": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-20-cavity.native-normal.png",
+          "repeatPath": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-20-cavity.native-normal-repeat.png",
+          "fixedFboPostDiagnosticExact": true
+        },
+        {
+          "at": "20-mouth",
+          "imageRepeatExact": true,
+          "changedPixels": 0,
+          "maxChannelDifference": 0,
+          "commonChangedKeys": [],
+          "gpuChangedTargets": [],
+          "geometryMaskRepeatExact": true,
+          "normalPath": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-20-mouth.native-normal.png",
+          "repeatPath": "/private/tmp/tube-fallback-held-20261003-candidate-active/at-20-mouth.native-normal-repeat.png",
+          "fixedFboPostDiagnosticExact": true
+        }
+      ]
+    }
+  ]
+}

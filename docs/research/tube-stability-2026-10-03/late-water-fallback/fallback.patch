@@ -1,0 +1,570 @@
+diff --git a/src/main.ts b/src/main.ts
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -213,7 +213,7 @@
+   private lastRender = 0;
+ 
+   constructor() {
+-    this.renderer = new WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
++    this.renderer = new WebGLRenderer({ antialias: true, stencil: true, powerPreference: 'high-performance' });
+     this.renderer.setPixelRatio(this.pixelRatio());
+     this.renderer.setSize(window.innerWidth, window.innerHeight);
+     this.renderer.outputColorSpace = 'srgb';
+@@ -250,6 +250,7 @@
+ 
+     // The water shows once a surf zone runs; until then it holds a still sea.
+     this.water = new WaterSurface(new FlatSurfaceSource());
++    this.water.setBarrelScreenFallback(this.renderer.getContext().getContextAttributes()?.stencil === true);
+     this.water.mesh.material.envMapIntensity = 0.28;
+     this.water.mesh.visible = false;
+     this.scene.add(this.water.mesh);
+diff --git a/src/scene/WaterSurface.ts b/src/scene/WaterSurface.ts
+--- a/src/scene/WaterSurface.ts
++++ b/src/scene/WaterSurface.ts
+@@ -31,7 +31,8 @@
+ import { waterStreakPars } from './water/streaks';
+ import { packTubeTextures, tubeColumnCount, waterTubePars } from './water/tubeCarve';
+ import { TUBE_CAPACITY, TUBE_STRIDE } from '../wave/tubeTable';
+-import { WATER_BARREL_DISCARD, waterBarrelMaskPars } from './barrel/barrelMaskGlsl';
++import { WATER_BARREL_DISCARD, WATER_BARREL_FALLBACK_DISCARD, waterBarrelMaskPars } from './barrel/barrelMaskGlsl';
++import { BARREL_FALLBACK_ORDER, configureBarrelCoverage, configureBarrelFallback } from './barrel/barrelFallback';
+ import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
+ import { foamPatternPars, foamTileTexture } from './foamPattern';
+ import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
+@@ -253,6 +254,10 @@
+   private vertexNormals = devParam('waterNormals') === 'vertex';
+   /** The swept barrel's seam keeps at least 1 m precision when the height field is rendered more coarsely. */
+   private barrelEnabled = false;
++  private barrelScreenFallback = false;
++  private fallbackMesh?: Mesh<PlaneGeometry, MeshPhysicalMaterial>;
++  private fallbackPatch?: Mesh<BufferGeometry, MeshPhysicalMaterial>;
++  private fallbackSourceVersion = -1;
+   private maskGrid: SurfaceGrid;
+   private barrelMaskData: Uint8Array;
+   private barrelMaskTexture: DataTexture;
+@@ -300,6 +305,7 @@
+       waterReflection: { value: RICH_WATER.reflection },
+       waterBarrelMask: { value: this.barrelMaskTexture },
+       waterBarrelMaskActive: { value: 0 },
++      waterBarrelScreenFallback: { value: 0 },
+       waterBarrelGrid: { value: new Vector4(this.maskGrid.xMin, this.maskGrid.zMin, this.maskGrid.spacing, 0) },
+       waterBarrelGridSize: { value: new Vector2(this.maskGrid.nx, this.maskGrid.nz) },
+     };
+@@ -312,6 +318,7 @@
+       side: DoubleSide,
+       flatShading: false,
+     });
++    configureBarrelCoverage(material);
+     material.onBeforeCompile = (shader) => {
+       Object.assign(shader.uniforms, this.uniforms);
+       if (this.effectiveLook === 'rich') {
+@@ -431,6 +438,7 @@
+     this.flowSource = source;
+     this.refreshFoamPattern();
+     this.patch.receiveShadow = this.mesh.receiveShadow;
++    this.syncBarrelFallback();
+   }
+ 
+   /** G9: lay the source's flying tubes out for the Rich shader, which cuts them itself; none otherwise. */
+@@ -469,6 +477,7 @@
+     this.barrelEnabled = on;
+     if (!on) this.setBarrelMask(null);
+     this.mesh.material.needsUpdate = true;
++    this.syncBarrelFallback();
+   }
+ 
+   /** The seam's own grid: its origin and extent follow the water, with spacing capped at 1 m. */
+@@ -480,6 +489,7 @@
+   /** The seam's mask on its own grid's nodes (`rasterizeBarrelMask`), copied; null lets the water draw everywhere. */
+   setBarrelMask(mask: Uint8Array | null): void {
+     this.uniforms.waterBarrelMaskActive.value = mask ? 1 : 0;
++    this.syncBarrelFallback();
+     if (!mask) return;
+     this.barrelMaskData.set(mask.subarray(0, this.barrelMaskData.length));
+     this.barrelMaskTexture.needsUpdate = true;
+@@ -487,6 +497,67 @@
+ 
+   get barrelMaskActive(): boolean {
+     return this.uniforms.waterBarrelMaskActive.value === 1;
++  }
++
++  /** Explicit renderer capability opt-in. Unsupported renderers and ordinary spots keep the legacy path. */
++  setBarrelScreenFallback(on: boolean): void {
++    if (on === this.barrelScreenFallback) return;
++    this.barrelScreenFallback = on;
++    this.syncBarrelFallback();
++  }
++
++  /** Late repair objects, absent until the first supported active mask; these getters never allocate. */
++  get barrelFallback(): Mesh<PlaneGeometry, MeshPhysicalMaterial> | undefined { return this.fallbackMesh; }
++  get barrelPatchFallback(): Mesh<BufferGeometry, MeshPhysicalMaterial> | undefined { return this.fallbackPatch; }
++
++  /** Follow current geometry/look/lighting without adding a normal draw or replacing its shader. */
++  syncBarrelFallback(): void {
++    const supported = this.barrelScreenFallback && this.barrelEnabled;
++    this.uniforms.waterBarrelScreenFallback.value = supported ? 1 : 0;
++    const active = supported && this.barrelMaskActive;
++    this.mesh.material.stencilWrite = active;
++    if (active && !this.fallbackMesh) this.createBarrelFallback();
++    if (!this.fallbackMesh || !this.fallbackPatch) return;
++    const original = this.mesh.material, repair = this.fallbackMesh.material;
++    this.fallbackMesh.visible = active;
++    this.fallbackPatch.visible = active && this.patch.visible;
++    this.fallbackMesh.geometry = this.mesh.geometry;
++    this.fallbackPatch.geometry = this.patch.geometry;
++    this.fallbackMesh.receiveShadow = this.mesh.receiveShadow;
++    this.fallbackPatch.receiveShadow = this.patch.receiveShadow;
++    repair.roughness = original.roughness;
++    repair.envMapIntensity = original.envMapIntensity;
++    repair.envMapRotation.copy(original.envMapRotation);
++    if (repair.envMap !== original.envMap) {
++      repair.envMap = original.envMap;
++      repair.needsUpdate = true;
++    }
++    if (this.fallbackSourceVersion !== original.version) {
++      this.fallbackSourceVersion = original.version;
++      repair.needsUpdate = true;
++    }
++  }
++
++  private createBarrelFallback(): void {
++    const original = this.mesh.material;
++    const material = original.clone();
++    configureBarrelFallback(material);
++    material.onBeforeCompile = (shader, renderer) => {
++      original.onBeforeCompile(shader, renderer);
++      if (shader.fragmentShader.split(WATER_BARREL_DISCARD).length !== 2) throw new Error('Water fallback requires the original barrel discard');
++      shader.fragmentShader = shader.fragmentShader.replace(WATER_BARREL_DISCARD, WATER_BARREL_FALLBACK_DISCARD);
++    };
++    material.customProgramCacheKey = () => original.customProgramCacheKey() + '-barrel-hole-fallback';
++    // Identity children inherit the EXACT original world transforms, visibility and displaced geometry.
++    this.fallbackMesh = new Mesh(this.mesh.geometry, material);
++    this.fallbackPatch = new Mesh(this.patch.geometry, material);
++    for (const repair of [this.fallbackMesh, this.fallbackPatch]) {
++      repair.frustumCulled = false;
++      repair.renderOrder = BARREL_FALLBACK_ORDER;
++      repair.visible = false;
++    }
++    this.mesh.add(this.fallbackMesh);
++    this.patch.add(this.fallbackPatch);
+   }
+ 
+   /** The water's uniform objects, shared by a surface drawn with its shading (the swept barrel). */
+@@ -521,6 +592,7 @@
+     this.uniforms.waterPatchActive.value = rich ? 1 : 0;
+     this.mesh.material.roughness = rich ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
+     this.uniforms.waterBodyGain.value = rich ? RICH_WATER.bodyGain : WATER_BODY_GAIN;
++    this.syncBarrelFallback();
+   }
+ 
+   private readonly patchCamera = new Vector3();
+@@ -609,6 +681,7 @@
+     (this.uniforms.waterGridSize.value as Vector2).set(grid.nx, grid.nz);
+     this.mesh.geometry.dispose();
+     this.mesh.geometry = WaterSurface.createGeometry(grid);
++    this.syncBarrelFallback();
+   }
+ 
+   dispose(): void {
+@@ -622,6 +695,12 @@
+     this.tubeColumnTexture.dispose();
+     this.barrelMaskTexture.dispose();
+     this.mesh.material.dispose();
++    // Both repair objects share one material and the ORIGINAL geometries, disposed above only once.
++    this.fallbackMesh?.material.dispose();
++    if (this.fallbackMesh) this.mesh.remove(this.fallbackMesh);
++    if (this.fallbackPatch) this.patch.remove(this.fallbackPatch);
++    this.fallbackMesh = undefined;
++    this.fallbackPatch = undefined;
+   }
+ 
+   private static createTexture(data: Float32Array, grid: SurfaceGrid): DataTexture {
+@@ -664,6 +743,7 @@
+     (this.uniforms.waterBarrelGrid.value as Vector4).set(grid.xMin, grid.zMin, spacing, 0);
+     (this.uniforms.waterBarrelGridSize.value as Vector2).set(nx, nz);
+     this.uniforms.waterBarrelMaskActive.value = 0;
++    this.syncBarrelFallback();
+   }
+ 
+   /** The swept barrel's seam mask, 0–255 per node, filtered linearly so the band ramps between nodes. */
+diff --git a/src/scene/WaterSurface.test.ts b/src/scene/WaterSurface.test.ts
+--- a/src/scene/WaterSurface.test.ts
++++ b/src/scene/WaterSurface.test.ts
+@@ -222,3 +222,166 @@
+     expect(surface.foamPattern).toBe(1);
+   });
+ });
++
++function fallbackCompiled(material: import('three').MeshPhysicalMaterial) {
++  const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
++  material.onBeforeCompile(shader as unknown as import('three').WebGLProgramParametersWithUniforms, undefined as never);
++  return { vertex: shader.vertexShader, fragment: shader.fragmentShader, uniforms: shader.uniforms };
++}
++
++function fallbackSource(cubic = true) {
++  return { grid: { xMin: -2, zMin: -4, spacing: 2, nx: 5, nz: 6 }, time: 0, bedRevision: 0, cubic,
++    write: (out: Float32Array) => out.fill(0), writeBed: (out: Float32Array) => out.fill(-2) };
++}
++
++describe('late barrel water fallback', () => {
++  it('retains the original Classic/Rich normal shaders and depth; repairs only their rejected mask fragments', async () => {
++    const { WATER_BARREL_DISCARD, WATER_BARREL_FALLBACK_DISCARD } = await import('./barrel/barrelMaskGlsl');
++    const water = new WaterSurface(fallbackSource());
++    water.setBarrelEnabled(true);
++    const originals = new Map<string, ReturnType<typeof fallbackCompiled>>();
++    for (const look of ['classic', 'rich'] as const) {
++      water.setLook(look);
++      originals.set(look, fallbackCompiled(water.mesh.material));
++    }
++    const key = water.mesh.material.customProgramCacheKey();
++    water.setBarrelScreenFallback(true);
++    water.setBarrelMask(new Uint8Array(water.barrelMaskGrid.nx * water.barrelMaskGrid.nz).fill(255));
++    const repair = water.barrelFallback!;
++    expect(repair.renderOrder).toBeGreaterThan(water.mesh.renderOrder);
++    expect(water.mesh.material.customProgramCacheKey()).toBe(key);
++    for (const look of ['classic', 'rich'] as const) {
++      water.setLook(look);
++      const normal = fallbackCompiled(water.mesh.material), late = fallbackCompiled(repair.material);
++      expect(normal.vertex).toBe(originals.get(look)!.vertex);
++      expect(normal.fragment).toBe(originals.get(look)!.fragment);
++      expect(late.vertex).toBe(normal.vertex);
++      expect(late.fragment.replace(WATER_BARREL_FALLBACK_DISCARD, WATER_BARREL_DISCARD)).toBe(normal.fragment);
++      expect(late.uniforms).toEqual(normal.uniforms);
++      for (const property of ['side', 'colorWrite', 'depthTest', 'depthWrite', 'depthFunc', 'polygonOffset', 'transparent', 'blending'] as const) {
++        expect(repair.material[property]).toBe(water.mesh.material[property]);
++      }
++      // The Rich dense patch is also repaired, with its ORIGINAL patch/skirt and wet/dry clipping intact.
++      expect(water.barrelPatchFallback!.visible).toBe(look === 'rich');
++    }
++    water.setBarrelScreenFallback(false);
++    expect(water.mesh.material.stencilWrite).toBe(false);
++    expect(repair.visible).toBe(false);
++    water.dispose();
++  });
++
++  it('does not allocate repair objects or consume random calls for unsupported, inactive or unswept use', () => {
++    // Warm the shared procedural textures before observing inactive lifecycle calls.
++    const warm = new WaterSurface(fallbackSource()); warm.dispose();
++    const random = vi.spyOn(Math, 'random');
++    const water = new WaterSurface(fallbackSource());
++    const constructedCalls = random.mock.calls.length;
++    expect(water.barrelFallback).toBeUndefined();
++    expect(water.barrelPatchFallback).toBeUndefined();
++    water.setBarrelScreenFallback(true); // ordinary spot
++    water.setBarrelMask(null);
++    water.setBarrelEnabled(true); // no active mask
++    water.update();
++    expect(random.mock.calls.length).toBe(constructedCalls);
++    expect(water.barrelFallback).toBeUndefined();
++    water.setBarrelScreenFallback(false); // unsupported legacy renderer, even with an active mask
++    const mask = new Uint8Array(water.barrelMaskGrid.nx * water.barrelMaskGrid.nz).fill(128);
++    water.setBarrelMask(mask);
++    expect(random.mock.calls.length).toBe(constructedCalls);
++    expect(water.mesh.material.stencilWrite).toBe(false);
++    water.setBarrelScreenFallback(true);
++    const first = water.barrelFallback;
++    expect(first).toBeDefined();
++    const activeCalls = random.mock.calls.length;
++    expect(activeCalls).toBeGreaterThan(constructedCalls);
++    water.setBarrelMask(mask);
++    water.setBarrelMask(null);
++    water.setBarrelMask(mask);
++    water.update();
++    expect(water.barrelFallback).toBe(first);
++    expect(random.mock.calls.length).toBe(activeCalls);
++    random.mockRestore();
++    water.dispose();
++  });
++
++  it('keeps original fragment/depth success marking and never marks on depth failure or changes normal order', async () => {
++    const { AlwaysStencilFunc, EqualStencilFunc, KeepStencilOp, ReplaceStencilOp } = await import('three');
++    const water = new WaterSurface(fallbackSource());
++    const normalOrder = water.mesh.renderOrder, patchOrder = water.patch.renderOrder;
++    water.setBarrelScreenFallback(true);
++    water.setBarrelEnabled(true);
++    water.setBarrelMask(new Uint8Array(water.barrelMaskGrid.nx * water.barrelMaskGrid.nz).fill(255));
++    expect(water.mesh.renderOrder).toBe(normalOrder);
++    expect(water.patch.renderOrder).toBe(patchOrder);
++    expect(water.mesh.material).toMatchObject({ stencilWrite: true, stencilRef: 1, stencilFunc: AlwaysStencilFunc,
++      stencilWriteMask: 1, stencilFail: KeepStencilOp, stencilZFail: KeepStencilOp, stencilZPass: ReplaceStencilOp,
++      colorWrite: true, depthWrite: true });
++    expect(water.barrelFallback!.material).toMatchObject({ stencilWrite: true, stencilRef: 0, stencilFunc: EqualStencilFunc,
++      stencilFuncMask: 1, stencilWriteMask: 0, stencilFail: KeepStencilOp, stencilZFail: KeepStencilOp, stencilZPass: KeepStencilOp,
++      colorWrite: true, depthWrite: true });
++    water.setBarrelMask(null);
++    expect(water.mesh.material.stencilWrite).toBe(false);
++    expect(water.barrelFallback!.visible).toBe(false);
++    water.dispose();
++  });
++
++  it('shares original coarse/patch transforms and follows mask, geometry, look and mutable sky lighting', async () => {
++    const { Texture } = await import('three');
++    const source = fallbackSource();
++    const water = new WaterSurface(source);
++    water.setLook('rich');
++    water.setBarrelEnabled(true);
++    water.setBarrelScreenFallback(true);
++    water.setBarrelMask(new Uint8Array(water.barrelMaskGrid.nx * water.barrelMaskGrid.nz).fill(255));
++    const coarse = water.barrelFallback!, patch = water.barrelPatchFallback!;
++    expect(coarse.parent).toBe(water.mesh);
++    expect(patch.parent).toBe(water.patch);
++    expect(coarse.geometry).toBe(water.mesh.geometry);
++    expect(patch.geometry).toBe(water.patch.geometry);
++    expect(patch.material).toBe(coarse.material);
++    water.mesh.position.set(2, 3, 4); water.mesh.rotation.set(.2, .3, .4);
++    water.patch.position.set(7, 0, 9); water.patch.scale.set(2, 1, 3);
++    water.mesh.updateMatrixWorld(true);
++    expect(coarse.matrixWorld.toArray()).toEqual(water.mesh.matrixWorld.toArray());
++    expect(patch.matrixWorld.toArray()).toEqual(water.patch.matrixWorld.toArray());
++    const sky = new Texture();
++    water.mesh.material.envMap = sky;
++    water.mesh.material.envMapIntensity = .73;
++    water.mesh.material.envMapRotation.set(.1, .2, .3);
++    water.syncBarrelFallback();
++    expect(coarse.material.envMap).toBe(sky);
++    expect(coarse.material.envMapIntensity).toBe(.73);
++    expect(coarse.material.envMapRotation.toArray()).toEqual(water.mesh.material.envMapRotation.toArray());
++    const version = coarse.material.version;
++    water.setVertexNormals(true); water.syncBarrelFallback();
++    expect(coarse.material.version).toBeGreaterThan(version);
++    expect(fallbackCompiled(coarse.material).vertex).toBe(fallbackCompiled(water.mesh.material).vertex);
++    source.grid.xMin += 1;
++    water.update();
++    expect(water.barrelMaskActive).toBe(false);
++    expect(coarse.visible).toBe(false);
++    const geometry = water.mesh.geometry;
++    water.setSource({ ...fallbackSource(), grid: { ...source.grid, nx: 7 } });
++    expect(water.mesh.geometry).not.toBe(geometry);
++    expect(coarse.geometry).toBe(water.mesh.geometry);
++    expect(patch.geometry).toBe(water.patch.geometry);
++    water.setBarrelEnabled(false);
++    expect(water.materialUniforms.waterBarrelScreenFallback.value).toBe(0);
++    expect(coarse.visible).toBe(false);
++    water.dispose(); sky.dispose();
++  });
++
++  it('disposes only one repair material and the two original geometries once each', () => {
++    const water = new WaterSurface(fallbackSource());
++    water.setBarrelEnabled(true); water.setBarrelScreenFallback(true);
++    water.setBarrelMask(new Uint8Array(water.barrelMaskGrid.nx * water.barrelMaskGrid.nz).fill(255));
++    const repair = water.barrelFallback!, patch = water.barrelPatchFallback!;
++    const coarseDispose = vi.spyOn(water.mesh.geometry, 'dispose'), patchDispose = vi.spyOn(water.patch.geometry, 'dispose');
++    const repairDispose = vi.spyOn(repair.material, 'dispose'), normalDispose = vi.spyOn(water.mesh.material, 'dispose');
++    water.dispose();
++    expect(coarseDispose).toHaveBeenCalledTimes(1); expect(patchDispose).toHaveBeenCalledTimes(1);
++    expect(repairDispose).toHaveBeenCalledTimes(1); expect(normalDispose).toHaveBeenCalledTimes(1);
++    expect(repair.parent).toBeNull(); expect(patch.parent).toBeNull();
++    expect(water.barrelFallback).toBeUndefined();
++  });
++});
+diff --git a/src/scene/barrel/SweptBarrelMesh.ts b/src/scene/barrel/SweptBarrelMesh.ts
+--- a/src/scene/barrel/SweptBarrelMesh.ts
++++ b/src/scene/barrel/SweptBarrelMesh.ts
+@@ -9,6 +9,7 @@
+ import { CLASSIC_FOAM, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFragment } from '../waterOptics';
+ import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
+ import { SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
++import { configureBarrelCoverage } from './barrelFallback';
+ 
+ /** The most vertices, and triangle indices, a loft fills (its budget and one slice more). */
+ const VERTICES = LOFT.budget + LOFT_SAMPLES;
+@@ -285,7 +286,7 @@
+   facesOut = true;
+ 
+   /** `view`: a dev view of the curl in place of its shading (`SweptBarrelView`); none draws it as the water. */
+-  constructor(uniforms: Record<string, { value: unknown }>, view?: SweptBarrelView) {
++  constructor(private readonly uniforms: Record<string, { value: unknown }>, view?: SweptBarrelView) {
+     const geometry = new BufferGeometry();
+     geometry.setAttribute('position', this.positions);
+     geometry.setAttribute('normal', this.normals);
+@@ -301,6 +302,7 @@
+     geometry.setIndex(this.index);
+     geometry.setDrawRange(0, 0);
+     const material = new MeshPhysicalMaterial({ color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide });
++    configureBarrelCoverage(material);
+     material.onBeforeCompile = (shader) => {
+       Object.assign(shader.uniforms, uniforms);
+       const rich = this.look === 'rich';
+@@ -356,11 +358,18 @@
+     this.mesh.material.needsUpdate = true;
+   }
+ 
++  /** Mark only surviving ORIGINAL fragments. No geometry, colour, depth or discard changes. */
++  syncScreenFallback(): void {
++    this.mesh.material.stencilWrite = this.uniforms.waterBarrelScreenFallback?.value === 1
++      && this.uniforms.waterBarrelMaskActive.value === 1 && this.mesh.visible && this.mesh.geometry.drawRange.count > 0;
++  }
++
+   /** Draw a loft's grid; none, or an empty one, hides the mesh. */
+   update(loft: LoftResult | undefined): void {
+     if (!loft || loft.indexCount === 0) {
+       this.mesh.visible = false;
+       this.mesh.geometry.setDrawRange(0, 0);
++      this.syncScreenFallback();
+       return;
+     }
+     const vertices = Math.min(loft.vertexCount, VERTICES);
+@@ -463,5 +472,6 @@
+     this.index.needsUpdate = true;
+     this.mesh.geometry.setDrawRange(0, indices);
+     this.mesh.visible = true;
++    this.syncScreenFallback();
+   }
+ }
+diff --git a/src/scene/barrel/SweptBarrelMesh.test.ts b/src/scene/barrel/SweptBarrelMesh.test.ts
+--- a/src/scene/barrel/SweptBarrelMesh.test.ts
++++ b/src/scene/barrel/SweptBarrelMesh.test.ts
+@@ -1,5 +1,5 @@
+ import { ShaderLib, type WebGLProgramParametersWithUniforms } from 'three';
+-import { describe, expect, it } from 'vitest';
++import { describe, expect, it, vi } from 'vitest';
+ import { FRONT_FIELD, FRONT_STRIDE } from '../../wave/barrel/frontRecords';
+ import { ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
+ import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from '../../wave/barrel/sweptLoft';
+@@ -277,3 +277,53 @@
+     expect(loftOwn.out / loftOwn.inward).toBeLessThan(0.01);
+   });
+ });
++
++describe('original swept screen coverage for late fallback', () => {
++  it('marks surviving original fragments without a child, shader variant, depth change or eager allocation', async () => {
++    const { AlwaysStencilFunc, KeepStencilOp, ReplaceStencilOp } = await import('three');
++    const water = new WaterSurface(source), swept = new SweptBarrelMesh(water.materialUniforms);
++    const originalOrder = swept.mesh.renderOrder;
++    const shaders = new Map<string, ReturnType<typeof compiled>>();
++    for (const look of ['classic', 'rich'] as const) for (const view of [undefined, 'phase', 'front', 'sheet', 'region'] as const) {
++      swept.setLook(look); swept.setView(view); shaders.set(look + '-' + view, compiled(swept.mesh.material));
++    }
++    water.setBarrelScreenFallback(true); water.setBarrelEnabled(true);
++    water.setBarrelMask(new Uint8Array(water.barrelMaskGrid.nx * water.barrelMaskGrid.nz).fill(255));
++    swept.update(oneQuad());
++    expect(swept.mesh.children).toEqual([]);
++    expect(swept.mesh.renderOrder).toBe(originalOrder);
++    expect(swept.mesh.material).toMatchObject({ stencilWrite: true, stencilRef: 1, stencilFunc: AlwaysStencilFunc,
++      stencilWriteMask: 1, stencilFail: KeepStencilOp, stencilZFail: KeepStencilOp, stencilZPass: ReplaceStencilOp,
++      depthWrite: true, colorWrite: true });
++    for (const look of ['classic', 'rich'] as const) for (const view of [undefined, 'phase', 'front', 'sheet', 'region'] as const) {
++      swept.setLook(look); swept.setView(view); expect(compiled(swept.mesh.material)).toEqual(shaders.get(look + '-' + view));
++    }
++    swept.mesh.visible = false; swept.syncScreenFallback(); expect(swept.mesh.material.stencilWrite).toBe(false);
++    swept.mesh.visible = true; swept.syncScreenFallback(); expect(swept.mesh.material.stencilWrite).toBe(true);
++    water.setBarrelMask(null); swept.syncScreenFallback(); expect(swept.mesh.material.stencilWrite).toBe(false);
++    water.setBarrelMask(new Uint8Array(water.barrelMaskGrid.nx * water.barrelMaskGrid.nz).fill(255));
++    swept.update(undefined); expect(swept.mesh.material.stencilWrite).toBe(false);
++    water.dispose(); swept.mesh.geometry.dispose(); swept.mesh.material.dispose();
++  });
++});
++
++
++it('keeps the original swept constructor UUID consumption with no inactive repair objects', async () => {
++  const { BufferGeometry, Mesh, MeshPhysicalMaterial } = await import('three');
++  const water = new WaterSurface(source);
++  const random = vi.spyOn(Math, 'random');
++  const original = new Mesh(new BufferGeometry(), new MeshPhysicalMaterial());
++  const ordinaryCalls = random.mock.calls.length;
++  random.mockClear();
++  const swept = new SweptBarrelMesh(water.materialUniforms);
++  expect(random.mock.calls.length).toBe(ordinaryCalls);
++  const constructedCalls = random.mock.calls.length;
++  water.setBarrelScreenFallback(true);
++  swept.syncScreenFallback();
++  swept.update(undefined);
++  expect(random.mock.calls.length).toBe(constructedCalls);
++  expect(swept.mesh.children).toEqual([]);
++  random.mockRestore();
++  original.geometry.dispose(); original.material.dispose();
++  swept.mesh.geometry.dispose(); swept.mesh.material.dispose(); water.dispose();
++});
+diff --git a/src/scene/barrel/SweptBarrel.ts b/src/scene/barrel/SweptBarrel.ts
+--- a/src/scene/barrel/SweptBarrel.ts
++++ b/src/scene/barrel/SweptBarrel.ts
+@@ -88,7 +88,10 @@
+     const was = this.drawn;
+     if (revision !== undefined && was?.revision === revision && was.loft === this.loft && was.surfaceRevision === water.surfaceRevision && was.front === front
+       && was.count === count && was.stillLevel === stillLevel && was.look === look && was.maskGrid === maskGrid && was.view === mesh.view
+-      && was.sheetShown === mesh.sheetShown && was.facesOut === mesh.facesOut) return;
++      && was.sheetShown === mesh.sheetShown && was.facesOut === mesh.facesOut) {
++      mesh.syncScreenFallback();
++      return;
++    }
+     const heightAt = look === 'rich'
+       ? (x: number, z: number) => sampleCubicSurface(surfaceData, grid, x, z).height
+       : (x: number, z: number) => sampleSurfaceHeight(surfaceData, grid, x, z);
+diff --git a/src/scene/barrel/SweptBarrel.test.ts b/src/scene/barrel/SweptBarrel.test.ts
+--- a/src/scene/barrel/SweptBarrel.test.ts
++++ b/src/scene/barrel/SweptBarrel.test.ts
+@@ -152,3 +152,26 @@
+     expect(water.mesh.material.customProgramCacheKey()).toBe(key);
+   });
+ });
++
++describe('held screen coverage state', () => {
++  it('refreshes stencil marking on a cached draw without rebuilding geometry or uploading attributes', async () => {
++    const water = new WaterSurface(source), barrel = new SweptBarrel(water, async () => library());
++    barrel.setSpot('padang'); await barrel.ready;
++    const front = straightFront(21), revision = {};
++    barrel.draw(front, 21, 0, revision);
++    expect(water.barrelMaskActive).toBe(true);
++    const position = barrel.mesh.mesh.geometry.getAttribute('position') as BufferAttribute, version = position.version;
++    const update = vi.spyOn(barrel.mesh, 'update');
++    water.setBarrelScreenFallback(true);
++    barrel.draw(front, 21, 0, revision);
++    expect(barrel.mesh.mesh.material.stencilWrite).toBe(true);
++    expect(update).not.toHaveBeenCalled(); expect(position.version).toBe(version);
++    water.setBarrelScreenFallback(false); barrel.draw(front, 21, 0, revision);
++    expect(barrel.mesh.mesh.material.stencilWrite).toBe(false);
++    expect(update).not.toHaveBeenCalled(); expect(position.version).toBe(version);
++    barrel.setSpot(undefined);
++    expect(water.barrelFallback!.visible).toBe(false);
++    expect(barrel.mesh.mesh.material.stencilWrite).toBe(false);
++    barrel.dispose(); water.dispose();
++  });
++});
+diff --git a/src/scene/barrel/barrelMaskGlsl.ts b/src/scene/barrel/barrelMaskGlsl.ts
+--- a/src/scene/barrel/barrelMaskGlsl.ts
++++ b/src/scene/barrel/barrelMaskGlsl.ts
+@@ -22,7 +22,10 @@
+ /** The water gives way where the mask covers it; in the band, where the mask beats the pixel's dither. */
+ export const WATER_BARREL_DISCARD = 'if ( waterBarrelMaskActive > 0.5 && waterBarrelMaskAt( vWaterWorld.xz ) > waterBarrelDither( gl_FragCoord.xy ) ) discard;';
+ 
+-/** The swept surface shows exactly where the water gave way: the same test, the other way. */
++/** A late repair draws only water fragments the original world-mask test rejected. Inactive masks never repair. */
++export const WATER_BARREL_FALLBACK_DISCARD = 'if ( waterBarrelMaskActive < 0.5 || waterBarrelMaskAt( vWaterWorld.xz ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;';
++
++/** The swept surface keeps its original world-mask and dither test. */
+ export const SWEPT_BARREL_DISCARD = 'if ( waterBarrelMaskAt( vWaterWorld.xz ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;';
+ 
+ /** Whether a fragment shader reads the barrel mask and the shared dither (for tests). */
+diff --git a/src/scene/barrel/barrelFallback.ts b/src/scene/barrel/barrelFallback.ts
+new file mode 100644
+--- /dev/null
++++ b/src/scene/barrel/barrelFallback.ts
+@@ -0,0 +1,28 @@
++import { AlwaysStencilFunc, EqualStencilFunc, KeepStencilOp, ReplaceStencilOp, type Material } from 'three';
++
++/** Ordinary opaque surfaces keep their ordering. Only the water repair runs after them. */
++export const BARREL_FALLBACK_ORDER = 1;
++
++/** Mark a surviving original surface; fragment discard and depth failure leave the bit untouched. */
++export function configureBarrelCoverage(material: Material): void {
++  material.stencilWrite = false;
++  material.stencilRef = 1;
++  material.stencilFunc = AlwaysStencilFunc;
++  material.stencilFuncMask = 1;
++  material.stencilWriteMask = 1;
++  material.stencilFail = KeepStencilOp;
++  material.stencilZFail = KeepStencilOp;
++  material.stencilZPass = ReplaceStencilOp;
++}
++
++/** Repair only an uncovered screen sample. Original water side, colour and depth state are retained. */
++export function configureBarrelFallback(material: Material): void {
++  material.stencilWrite = true;
++  material.stencilRef = 0;
++  material.stencilFunc = EqualStencilFunc;
++  material.stencilFuncMask = 1;
++  material.stencilWriteMask = 0;
++  material.stencilFail = KeepStencilOp;
++  material.stencilZFail = KeepStencilOp;
++  material.stencilZPass = KeepStencilOp;
++}
