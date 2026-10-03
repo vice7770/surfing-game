@@ -2,6 +2,20 @@ import { smoothstep } from '../../wave/Bathymetry';
 import { pcg2d } from '../foamPattern';
 import { FOAM_EDGE, FOAM_FADE, FOAM_HEX_POWER, FOAM_OCTAVES, foamQuantile, foamTurnedSample, hexCorners } from './churnTexture';
 
+/**
+ * How much of the face streaks may draw at all: 0, so Rich draws no face streaks, whatever the face; 1 draws them as built.
+ * The gate multiplies the mask (`streakMask`, and the shader's), so the code, its tests and the line that composes it in
+ * `RICH_FOAM` stay, and a gate of 0 costs the shader nothing: its constant condition drops the whole function.
+ *
+ * Why: the streaks stretch the foam field's late stage `STREAK_STRETCH` times along the current on any face steeper than
+ * `STREAK_STEEP`, at `STREAK_COVER` of it, and the practice swell's faces make most of the near water that steep. Seen
+ * there, they are long straight translucent bands crossing at random angles: scratches, not foam (a review capture of the
+ * Padang Padang curl and its whitewater at three hours). Foam is packed into lines by converging flow and stretched by the
+ * flow, not by one fixed factor on steep faces (foam-and-whitewater.md item 7, decided 2026-09-29): the lines are to come
+ * from the foam's own advection where the flow converges, and until they do the near water shows the foam field's lace
+ * alone. STREAK_STRETCH, STREAK_STEEP and STREAK_COVER are G8's hand values, not measurements. [provisional]
+ */
+export const STREAK_GATE = 0;
 /** How far the foam lace is stretched along the current into streaks up a steep face (G8). */
 export const STREAK_STRETCH = 7;
 /** The foam over which streaks fade in: the physics leaves 0.005–0.05 on its steep faces. */
@@ -81,9 +95,9 @@ export function streakFrame(x: number, z: number, flowX: number, flowZ: number, 
   return [-lx * dz + lz * dx + anchorX, (lx * dx + lz * dz) / STREAK_STRETCH + anchorZ];
 }
 
-/** Where streaks show: steep faces (surface slope) with some foam about. */
-export function streakMask(steepness: number, foam: number): number {
-  return smoothstep(STREAK_STEEP[0], STREAK_STEEP[1], steepness) * smoothstep(STREAK_FOAM[0], STREAK_FOAM[1], foam);
+/** Where streaks show: steep faces (surface slope) with some foam about, as far as the gate (`STREAK_GATE`) lets them. */
+export function streakMask(steepness: number, foam: number, gate = STREAK_GATE): number {
+  return gate * smoothstep(STREAK_STEEP[0], STREAK_STEEP[1], steepness) * smoothstep(STREAK_FOAM[0], STREAK_FOAM[1], foam);
 }
 
 /**
@@ -110,8 +124,9 @@ const STREAK_LEAST = 1e-4;
  */
 export function streakCover(
   x: number, z: number, flowAt: (x: number, z: number) => [number, number], time: number, steepness: number, foam: number, footprint = 0, period = 2,
+  gate = STREAK_GATE,
 ): number {
-  const mask = streakMask(steepness, foam) * (1 - smoothstep(FOAM_FADE[0], FOAM_FADE[1], footprint));
+  const mask = streakMask(steepness, foam, gate) * (1 - smoothstep(FOAM_FADE[0], FOAM_FADE[1], footprint));
   if (mask <= 0) return 0;
   const [flowX, flowZ] = flowAt(x, z);
   const a = time / period - Math.floor(time / period);
@@ -139,7 +154,8 @@ export function streakCover(
 
 /**
  * GLSL: the foam field's late stage (lace and threads), stretched along the current and carried by it in the lace's
- * two flow-map phases, thresholded for a tenth of the face, as thin lines up steep foamy faces. Each of the three anchors
+ * two flow-map phases, thresholded for a tenth of the face, as thin lines up steep foamy faces: none while `STREAK_GATE`
+ * is 0, which is Rich's setting, so a program that carries this function pays for none of it. Each of the three anchors
  * around a pixel turns them about itself to the current at the pixel and draws its own (`STREAK_SALT`); their six
  * samples are combined by their union, each thresholded for its weight. Returns the lines' coverage: how faint a streak
  * is belongs to the foam layer's reflectance (a bubble monolayer, 0.10), no longer to a hand opacity of 0.55. Needs
@@ -148,6 +164,7 @@ export function streakCover(
  * defines them).
  */
 export const waterStreakPars = /* glsl */ `
+const float STREAK_GATE = ${STREAK_GATE.toFixed(3)};
 const float STREAK_STRETCH = ${STREAK_STRETCH.toFixed(3)};
 const float STREAK_ANCHOR = ${STREAK_ANCHOR.toFixed(3)};
 const float STREAK_TILE = ${STREAK_TILE.toFixed(3)};
@@ -164,11 +181,12 @@ float waterStreakGauss( vec2 q, vec2 anchor, vec2 along, vec2 dpdx, vec2 dpdy, u
   return waterStreakField( frame / STREAK_TILE, fdx / STREAK_TILE, fdy / STREAK_TILE, h );
 }
 float waterStreak( vec2 p, vec2 flow, float steepness, float foam ) {
+  if ( STREAK_GATE <= 0.0 ) return 0.0;
   vec2 dpdx = dFdx( p );
   vec2 dpdy = dFdy( p );
   vec2 footprint = abs( dpdx ) + abs( dpdy );
   float size = max( footprint.x, footprint.y );
-  float mask = smoothstep( ${STREAK_STEEP[0].toFixed(3)}, ${STREAK_STEEP[1].toFixed(3)}, steepness ) * smoothstep( ${STREAK_FOAM[0].toFixed(3)}, ${STREAK_FOAM[1].toFixed(3)}, foam )
+  float mask = STREAK_GATE * smoothstep( ${STREAK_STEEP[0].toFixed(3)}, ${STREAK_STEEP[1].toFixed(3)}, steepness ) * smoothstep( ${STREAK_FOAM[0].toFixed(3)}, ${STREAK_FOAM[1].toFixed(3)}, foam )
     * ( 1.0 - smoothstep( ${FOAM_FADE[0].toFixed(3)}, ${FOAM_FADE[1].toFixed(3)}, size ) );
   if ( mask <= 0.0 ) return 0.0;
   float a = fract( waterTime / FOAM_FLOW_PERIOD );

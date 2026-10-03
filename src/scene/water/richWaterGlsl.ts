@@ -102,8 +102,10 @@ const foamDense = (foam: string) => `smoothstep( ${FOAM_DENSE[0].toFixed(2)}, ${
  * opening into the lace as it ages (the
  * baked life cycle of `foamBake`: dense with holes, then lace and threads, by
  * an age proxy from the void fraction and the foam value [provisional]); the
- * lace streaked up steep faces along the current; a glossy body that turns
- * matte under foam; and thin fresh foam glowing when the sun is behind it.
+ * lace streaked up steep faces along the current (none while `STREAK_GATE` is 0,
+ * which it is: fixed-stretch streaks read as scratches, see streaks.ts); a glossy
+ * body that turns matte under foam; and thin fresh foam glowing when the sun is
+ * behind it.
  * Under it all, the bubble plume (G9) whitens the body as far down as the air
  * went: from above seen through the water over its middle, from below plainly.
  * The foam is a layer that adds light to that water (`foamLayer`): bright

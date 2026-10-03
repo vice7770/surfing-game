@@ -14,6 +14,7 @@ import { PLUME_DENSITY, RICH_FAR_FOAM, RICH_FOAM, RICH_REFLECTION, RICH_WATER } 
 import { mirrorsBarrelDither } from './barrel/barrelMaskGlsl';
 import { SweptBarrelMesh } from './barrel/SweptBarrelMesh';
 import { FOAM_ALBEDO } from './foamPattern';
+import { STREAK_GATE } from './water/streaks';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -162,10 +163,15 @@ describe('Classic water parity', () => {
     expect(CLASSIC_FOAM).toContain('roughnessFactor = mix( roughnessFactor, 0.9, waterCover );');
   });
 
-  it('streaks the Rich foam up steep faces, only where the foam is drawn as lace', () => {
+  it('composes the Rich foam’s face streaks where the foam is drawn as lace, but draws none: their gate is shut', () => {
     const water = new WaterSurface({ ...source, cubic: true });
     water.setLook('rich');
     const { fragment } = compiled(water.mesh.material);
+    // The streaks' gate: the fixed-stretch streaks read as scratches across the near water, so Rich draws none until the
+    // foam's own advection packs them (streaks.ts); the code and the line that composes it stay.
+    expect(STREAK_GATE).toBe(0);
+    expect(fragment).toContain(`const float STREAK_GATE = ${STREAK_GATE.toFixed(3)};`);
+    expect(fragment).toContain('if ( STREAK_GATE <= 0.0 ) return 0.0;');
     expect(fragment).toContain('float waterStreakCover = waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam );');
     expect(fragment).toContain('waterCover = max( waterCover, waterStreakCover );');
     // A streak is a bubble monolayer: its thinness is its reflectance, not a hand opacity.

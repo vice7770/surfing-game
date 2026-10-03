@@ -1,8 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { foamQuantile, sampleFoamField, waterChurnPars } from './churnTexture';
 import {
-  STREAK_ANCHOR, STREAK_COVER, STREAK_EDGE_SLOPE, STREAK_STRETCH, STREAK_TILE, streakAnchors, streakCover, streakFrame, streakMask, streakReach, waterStreakPars,
+  STREAK_ANCHOR, STREAK_COVER, STREAK_EDGE_SLOPE, STREAK_GATE, STREAK_STRETCH, STREAK_TILE, streakAnchors, streakCover, streakFrame, streakMask, streakReach, waterStreakPars,
 } from './streaks';
+
+/** The gate open: Rich shuts it (`STREAK_GATE`), but the lines' own form is what most of these tests pin. */
+const OPEN = 1;
+
+/** `streakCover` with the gate open. */
+function drawn(
+  x: number, z: number, flowAt: (x: number, z: number) => [number, number], time: number, steepness: number, foam: number, footprint = 0,
+): number {
+  return streakCover(x, z, flowAt, time, steepness, foam, footprint, 2, OPEN);
+}
 
 /** A strip across a uniform current, as a mask of the lines: `across` samples `step` m apart, `rows` rows 0.1 m apart along it. */
 function strip(flow: [number, number], across = 3000, step = 0.02, rows = 40): { mask: Uint8Array; across: number; rows: number; cover: number } {
@@ -14,7 +24,7 @@ function strip(flow: [number, number], across = 3000, step = 0.02, rows = 40): {
     for (let i = 0; i < across; i += 1) {
       const x = 7.3 - along[1] * i * step + along[0] * j * 0.1;
       const z = -3.1 + along[0] * i * step + along[1] * j * 0.1;
-      const cover = streakCover(x, z, () => flow, 3.1, 0.8, 0.3);
+      const cover = drawn(x, z, () => flow, 3.1, 0.8, 0.3);
       sum += cover;
       mask[j * across + i] = cover >= 0.5 ? 1 : 0;
     }
@@ -58,15 +68,15 @@ describe('face streaks', () => {
   });
 
   it('appear only on steep faces with foam about', () => {
-    expect(streakMask(0.05, 0.5)).toBe(0);
-    expect(streakMask(0.8, 0)).toBe(0);
-    expect(streakMask(0.8, 0.3)).toBeGreaterThan(0.5);
-    expect(streakMask(0.9, 0.3)).toBeGreaterThanOrEqual(streakMask(0.6, 0.3));
+    expect(streakMask(0.05, 0.5, OPEN)).toBe(0);
+    expect(streakMask(0.8, 0, OPEN)).toBe(0);
+    expect(streakMask(0.8, 0.3, OPEN)).toBeGreaterThan(0.5);
+    expect(streakMask(0.9, 0.3, OPEN)).toBeGreaterThanOrEqual(streakMask(0.6, 0.3, OPEN));
   });
 
   it('show at the thin foam the physics leaves on its steep faces (0.045 at the 90th percentile)', () => {
-    expect(streakMask(0.6, 0.045)).toBeGreaterThan(0.5);
-    expect(streakMask(0.6, 0.004)).toBe(0);
+    expect(streakMask(0.6, 0.045, OPEN)).toBeGreaterThan(0.5);
+    expect(streakMask(0.6, 0.004, OPEN)).toBe(0);
   });
 
   it('hold still when the current turns: a 1° turn moves the lines well under their spacing, even 100 m from the origin', () => {
@@ -117,6 +127,34 @@ describe('face streaks', () => {
   });
 });
 
+describe('the face streaks’ gate', () => {
+  const flow = (): [number, number] => [0.1, 0.9];
+
+  it('is shut in Rich: no face, however steep or foamy, draws a streak, in the shader’s twin and in the shader', () => {
+    expect(STREAK_GATE).toBe(0);
+    for (const steepness of [0.3, 0.6, 0.9, 1.5]) {
+      for (const foam of [0.01, 0.05, 0.3, 1]) {
+        expect(streakMask(steepness, foam)).toBe(0);
+        expect(streakCover(5.3, 7.1, flow, 3.1, steepness, foam)).toBe(0);
+      }
+    }
+    // The shader's gate is the same constant, and it leaves before it reads a derivative or the map: the constant
+    // condition lets the compiler drop the rest, so a program that carries the function pays for none of it.
+    expect(waterStreakPars).toContain(`const float STREAK_GATE = ${STREAK_GATE.toFixed(3)};`);
+    expect(waterStreakPars).toContain('{\n  if ( STREAK_GATE <= 0.0 ) return 0.0;\n  vec2 dpdx = dFdx( p );');
+    expect(waterStreakPars).toContain('float mask = STREAK_GATE * smoothstep(');
+  });
+
+  it('scales the streaks by how far it is open, and leaves the lines as built when it is open', () => {
+    expect(streakMask(0.8, 0.3, 0.5)).toBeCloseTo(0.5 * streakMask(0.8, 0.3, OPEN), 12);
+    expect(streakMask(0.8, 0.3, OPEN)).toBeGreaterThan(0.5);
+    let cover = 0;
+    for (let x = 2; x < 12; x += 0.05) cover += drawn(x, 6.1, flow, 3.1, 0.8, 0.3);
+    expect(cover).toBeGreaterThan(1);
+    for (let x = 2; x < 12; x += 0.05) expect(streakCover(x, 6.1, flow, 3.1, 0.8, 0.3, 0, 2, 0)).toBe(0);
+  });
+});
+
 describe('face streaks from the foam field’s late stage', () => {
   const flowAt = (): [number, number] => [0.1, 0.9];
   const steep = 0.8;
@@ -127,13 +165,13 @@ describe('face streaks from the foam field’s late stage', () => {
     let count = 0;
     for (let z = 2; z < 32; z += 0.2) {
       for (let x = 2; x < 32; x += 0.2) {
-        sum += streakCover(x, z, flowAt, 3.1, steep, foam);
+        sum += drawn(x, z, flowAt, 3.1, steep, foam);
         count += 1;
       }
     }
     expect(Math.abs(sum / count - STREAK_COVER)).toBeLessThan(0.03);
-    expect(streakCover(5, 5, flowAt, 3.1, 0.05, foam)).toBe(0);
-    expect(streakCover(5, 5, flowAt, 3.1, steep, 0)).toBe(0);
+    expect(drawn(5, 5, flowAt, 3.1, 0.05, foam)).toBe(0);
+    expect(drawn(5, 5, flowAt, 3.1, steep, 0)).toBe(0);
   });
 
   it('keep the flow’s stretch: the lines are the late stage drawn STREAK_STRETCH times longer along the current than across it', () => {
@@ -149,9 +187,9 @@ describe('face streaks from the foam field’s late stage', () => {
     const still = (): [number, number] => [0, 1];
     for (let z = 2; z < 28; z += 0.19) {
       for (let x = 2; x < 28; x += 0.19) {
-        const a = streakCover(x, z, still, 3.1, steep, foam) >= 0.5 ? 1 : 0;
-        const b = streakCover(x + across, z, still, 3.1, steep, foam) >= 0.5 ? 1 : 0;
-        const c = streakCover(x, z + along, still, 3.1, steep, foam) >= 0.5 ? 1 : 0;
+        const a = drawn(x, z, still, 3.1, steep, foam) >= 0.5 ? 1 : 0;
+        const b = drawn(x + across, z, still, 3.1, steep, foam) >= 0.5 ? 1 : 0;
+        const c = drawn(x, z + along, still, 3.1, steep, foam) >= 0.5 ? 1 : 0;
         acrossBoth += a * b;
         alongBoth += a * c;
         first += a;
@@ -207,7 +245,7 @@ describe('face streaks from the foam field’s late stage', () => {
         const n = 60;
         const step = 0.025;
         const mask = new Float32Array(n * n);
-        for (let j = 0; j < n; j += 1) for (let i = 0; i < n; i += 1) mask[j * n + i] = streakCover(px + i * step, pz + j * step, (x) => flowAt(x), 3.1, 0.8, 0.3) >= 0.5 ? 1 : 0;
+        for (let j = 0; j < n; j += 1) for (let i = 0; i < n; i += 1) mask[j * n + i] = drawn(px + i * step, pz + j * step, (x) => flowAt(x), 3.1, 0.8, 0.3) >= 0.5 ? 1 : 0;
         let sxx = 0;
         let szz = 0;
         let sxz = 0;
