@@ -154,7 +154,7 @@ describe('the swept barrel’s mesh', () => {
     // The glow: the sun on the sheet's far side, through k = 8 times its thickness, on the water's absorption alone.
     expect(fragment).toContain(RICH_LIP_GLOW);
     expect(RICH_LIP_GLOW).toContain('max( 0.0, -dot( waterN, waterSunDirection ) ) * waterSunRadiance');
-    expect(RICH_LIP_GLOW).toContain(`exp( -vec3( ${WATER_ABSORPTION.map((c) => c.toFixed(6)).join(', ')} ) * 8.0 * vSweptSheet )`);
+    expect(RICH_LIP_GLOW).toContain(`exp( -vec3( ${WATER_ABSORPTION.map((c) => c.toFixed(6)).join(', ')} ) * 20.0 * vSweptSheet )`);
     expect(fragment.indexOf(RICH_LIP_GLOW)).toBeGreaterThan(fragment.indexOf(SWEPT_SHEET_BODY));
     expect(fragment.indexOf(RICH_LIP_GLOW)).toBeLessThan(fragment.indexOf('float waterCover'));
     // The throat: once the sky's light and reflections are gathered (and the reflection scaled), before they light it;

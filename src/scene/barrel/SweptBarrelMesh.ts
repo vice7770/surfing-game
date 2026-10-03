@@ -1,6 +1,6 @@
 import { BufferAttribute, BufferGeometry, DoubleSide, DynamicDrawUsage, Mesh, MeshPhysicalMaterial, type WebGLProgramParametersWithUniforms } from 'three';
 import { LANDMARK } from '../../wave/barrel/ProfileLibrary';
-import { LOFT, LOFT_SAMPLES, NO_CHORD, THROAT, type LoftResult } from '../../wave/barrel/sweptLoft';
+import { FRAY, LOFT, LOFT_SAMPLES, NO_CHORD, THROAT, type LoftResult } from '../../wave/barrel/sweptLoft';
 import { waterChurnPars } from '../water/churnTexture';
 import { richPatchFragmentPars } from '../water/richPatch';
 import {
@@ -142,12 +142,12 @@ attribute float sweptSheetBack;
 attribute vec3 sweptWall;
 attribute vec3 sweptWallNormal;
 attribute vec4 sweptChord;
-attribute vec2 sweptFace;
+attribute vec3 sweptFace;
 varying float vSweptLift;
 varying float vSweptRest;
 varying vec3 vSweptWaterNormal;
 varying vec4 vSweptChord;
-varying vec2 vSweptFace;
+varying vec3 vSweptFace;
 varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
@@ -185,15 +185,19 @@ vec3 sweptWaterNormalAt( vec2 xz ) {
   vec3 surface = waterCarvedCubic( xz );
   return normalize( vec3( -surface.y, 1.0, -surface.z ) );
 }`;
-/** Rich: the air the plunge drove into the water, as far as the curl rests on it (`RICH_FOAM` reads both). */
+/**
+ * Rich: the air the plunge drove into the water, as far as the curl rests on it (`RICH_FOAM` reads both); and the depth of
+ * the sea under the vertex, its own surface over the bed, for the sea a mirrored ray meets (`RICH_SEA_MIRROR`).
+ */
 const richAirVertex = /* glsl */ `
 vWaterAir = ( 1.0 - sweptLift ) * waterAerationAt( position.xz ).x;
-vWaterPlumeDepth = waterAerationAt( position.xz ).y;`;
+vWaterPlumeDepth = waterAerationAt( position.xz ).y;
+vSweptSeaDepth = max( 0.0, waterCarvedCubic( position.xz ).x - waterBedAt( position.xz ) );`;
 const sweptFragmentPars = /* glsl */ `varying float vSweptLift;
 varying float vSweptRest;
 varying vec3 vSweptWaterNormal;
 varying vec4 vSweptChord;
-varying vec2 vSweptFace;
+varying vec3 vSweptFace;
 varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
@@ -248,11 +252,12 @@ export const SWEPT_SHEET_BODY = /* glsl */ `
     totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) ) * (
       sweptReach * sweptBack * RECIPROCAL_PI + ${CREST_SCATTER.toFixed(6)} * sweptSunBehind * waterSunRadiance * exp( -waterAttenuation * sweptSunPath ) );`;
 /**
- * The lip glow's path lengthening for multiple scattering (the spec's item 16: exp(−σ·k·d), k ≈ 5–20; the advisor's
- * start, 8, 2026-10-01): a thin, aerated lip scatters far more than clear water [provisional: to tune by eye against
- * backlit lips].
+ * The lip glow's path lengthening for multiple scattering (the spec's item 16: exp(−σ·k·d), k ≈ 5–20): a thin, aerated
+ * lip scatters far more than clear water. Tuned by eye against backlit lips, as the advisor's start (8, 2026-10-01) asked,
+ * to the range's top: at 8 the sun's glow through the 0.1–0.2 m underside kept 66–76 % of its red and drew a pale
+ * windscreen from inside the tube (its pale pixels' saturation 0.12); at 20 they are aqua (0.22) [provisional].
  */
-export const LIP_GLOW_PATH = 8;
+export const LIP_GLOW_PATH = 20;
 const glslVec3 = (rgb: readonly number[]) => `vec3( ${rgb.map((c) => c.toFixed(6)).join(', ')} )`;
 
 /**
@@ -266,7 +271,8 @@ export const MOUTH_MARGIN = 0.15;
  * Rich vertex pieces: the inner face's views, the lip's thickness and the face's weight; each slice's tip and mouth; its
  * ray (x, z) and the lip's normal in its plane (across, up); its crest, the lip's root, and the lip's thickness there.
  */
-const richThroatVertexPars = /* glsl */ `attribute vec4 sweptThroat;
+const richThroatVertexPars = /* glsl */ `varying float vSweptSeaDepth;
+attribute vec4 sweptThroat;
 attribute vec4 sweptTube;
 attribute vec4 sweptRay;
 attribute vec4 sweptCrest;
@@ -279,7 +285,8 @@ vSweptThroat = sweptThroat;
 vSweptTube = sweptTube;
 vSweptRay = sweptRay;
 vSweptCrest = sweptCrest;`;
-const richThroatFragmentPars = /* glsl */ `varying vec4 vSweptThroat;
+const richThroatFragmentPars = /* glsl */ `varying float vSweptSeaDepth;
+varying vec4 vSweptThroat;
 varying vec4 vSweptTube;
 varying vec4 vSweptRay;
 varying vec4 vSweptCrest;
@@ -311,6 +318,69 @@ export const RICH_LIP_GLOW = /* glsl */ `
     totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) )
       * max( 0.0, -dot( waterN, waterSunDirection ) ) * waterSunRadiance
       * exp( -${glslVec3(WATER_ABSORPTION)} * ${LIP_GLOW_PATH.toFixed(1)} * vSweptSheet ) * RECIPROCAL_PI;`;
+
+/**
+ * The light behind the lip, Rich (look-fix round 1; graphics.md item 1: exp(−σ k d), k about 5–20, after Pope & Fry 1997;
+ * the glow's k, `LIP_GLOW_PATH`): the sheet's diffuse back light, the sky's and the wall's, crosses the lip as the
+ * glow does, scattered over k times its thickness and absorbed by the water alone, e^{−a k t}, not on the unscattered beam
+ * e^{−c t}, which passes 86–98 % of every colour through the 0.1–0.5 m of a lip at Padang Padang and drew a white-blue
+ * strip with no gradient. It replaces the body's own term (`SWEPT_SHEET_BODY`) by adding the difference, so the lip is
+ * aqua at its thin edge and green-blue toward its root, where the red has gone. Needs `sweptReach` and `sweptBack`.
+ */
+export const RICH_LIP_BACK = /* glsl */ `
+    totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) )
+      * ( exp( -${glslVec3(WATER_ABSORPTION)} * ${LIP_GLOW_PATH.toFixed(1)} * vSweptSheet ) - sweptReach ) * sweptBack * RECIPROCAL_PI;`;
+
+/**
+ * The sea in the curl's mirror, Rich (look-fix round 1; the advisor's ruling): where its mirrored ray points below the
+ * horizon it meets the sea, not the environment's lower half, whose photograph read as a dimmed mirror of the sky ((65, 75,
+ * 102) three-quarters of the way down the panorama: the lip's glossy grey) and, on a normal turned a little from the eye,
+ * a navy crease. The sea seen along that ray is its own surface's Fresnel mirror of the sky above it and, through the rest,
+ * its upwelling radiance: its body over the bed below the curl, as the water draws it (its body gain on the reflectance
+ * at the sea's depth there), under the sky's irradiance and the sun's, over π. At the horizon the Fresnel term is 1, so
+ * the sea meets the sky without a seam. After `RICH_REFLECTION`, at its scale.
+ */
+export const RICH_SEA_MIRROR = /* glsl */ `
+#if defined( RE_IndirectSpecular ) && defined( USE_ENVMAP ) && defined( ENVMAP_TYPE_CUBE_UV )
+{
+  vec3 sweptMirrorWorld = ( vec4( reflect( -geometryViewDir, geometryNormal ), 0.0 ) * viewMatrix ).xyz;
+  if ( sweptMirrorWorld.y < 0.0 ) {
+    vec3 sweptAboveView = normalize( ( viewMatrix * vec4( sweptMirrorWorld.x, -sweptMirrorWorld.y, sweptMirrorWorld.z, 0.0 ) ).xyz );
+    vec3 sweptSkyAbove = getIBLRadiance( sweptAboveView, sweptAboveView, material.roughness );
+    vec3 sweptSeaLight = getIBLIrradiance( ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz ) + max( 0.0, waterSunDirection.y ) * waterSunRadiance;
+    vec3 sweptSea = waterBodyGain * waterBodyReflectance( vSweptSeaDepth, -sweptMirrorWorld.y, max( 0.0, waterSunDirection.y ) ) * sweptSeaLight * RECIPROCAL_PI;
+    radiance = waterReflection * mix( sweptSea, sweptSkyAbove, waterFresnel( -sweptMirrorWorld.y ) );
+  }
+}
+#endif`;
+
+/**
+ * The fraying tip of the lip, Rich, in the foam's composition (look-fix round 1; the ruled follow-up, "with the spray
+ * look", on open slices only): a share of the sheet breaks into drops (`vSweptFace.z`: all of it at the tip, none 0.15 of
+ * the lip back, `FRAY`), the water a unit area holds W the sheet's thickness, its optical depth τ = 1.5 · share · W / r for
+ * drops of radius r = 1 mm (spray-and-mist.md), and the lip whitens as such a layer of drops does, R = (1 − g) τ / (2 + (1
+ * − g) τ) with g = 0.87 (the two-stream reflectance of a layer that scatters without absorbing; see-through near τ 1,
+ * white only above about 15) [provisional]. It covers the body as the lace does.
+ */
+export const RICH_FRAY = /* glsl */ `
+  float sweptFrayTransport = ${(1 - FRAY.asymmetry).toFixed(2)} * ${FRAY.depth.toFixed(1)} * vSweptFace.z * vSweptSheet / ${FRAY.drop.toFixed(3)};
+  waterCover = max( waterCover, sweptFrayTransport / ( 2.0 + sweptFrayTransport ) );`;
+/** The last of the Rich foam's cover terms, the streaks, after which the fray covers the lip (`RICH_FRAY`). */
+const RICH_FOAM_STREAK_LINE = '  waterCover = max( waterCover, waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam ) );';
+
+/**
+ * A normal on the curl turned from the eye (look-fix round 1; the same formula group 2's look fixes put on the water):
+ * where n·v < 0.05, in view space, n += (0.05 − n·v) v, renormalised. The folds of the lip and its ripples turned normals
+ * across the view, where the water falls to R∞ with no bed, and drew navy creases and a knife-shaped sliver seen from
+ * below [the constant provisional].
+ */
+export const NORMAL_GUARD = 0.05;
+export const SWEPT_NORMAL_GUARD = /* glsl */ `
+{
+  vec3 sweptEye = normalize( vViewPosition );
+  float sweptFacing = dot( normal, sweptEye );
+  if ( sweptFacing < ${NORMAL_GUARD.toFixed(2)} ) normal = normalize( normal + ( ${NORMAL_GUARD.toFixed(2)} - sweptFacing ) * sweptEye );
+}`;
 
 /**
  * The dark throat (Rich; the spec's item 16; the advisor's rulings, 2026-10-01), once the image-based light is
@@ -413,13 +483,13 @@ export const RICH_CURL_NORMAL = replaced(replaced(WATER_RICH_NORMAL,
   vec3 sweptT = normalize( vec3( vSweptChord.y, 0.0, -vSweptChord.x ) );
   vec3 sweptP = cross( sweptT, sweptOut );
   sweptP = dot( sweptP, sweptP ) > 1e-6 ? normalize( sweptP ) : vec3( 0.0 );
-  vec2 sweptFaceSlope = sweptFaceRippleAt( vSweptFace );
+  vec2 sweptFaceSlope = sweptFaceRippleAt( vSweptFace.xy );
   vec2 sweptFaceChop = waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime ) * smoothstep( ${CHOP_UPRIGHT[0].toFixed(1)}, ${CHOP_UPRIGHT[1].toFixed(1)}, sweptOut.y );
   vec3 sweptFaceRelief = normalize( sweptOut - sweptFaceSlope.x * sweptT - sweptFaceSlope.y * sweptP + vec3( -sweptFaceChop.x, 0.0, -sweptFaceChop.y ) );
   float sweptMapped = smoothstep( ${FACE_MAP[0].toFixed(1)}, ${FACE_MAP[1].toFixed(1)}, vSweptLift );
   waterRippleVariance = mix( sweptWaterVariance, waterRippleVariance, sweptMapped );
   ${SWEPT_RESTING_SIDE.replace('sweptRestingNormal', 'sweptWaterPixel')}
-  vec3 waterWorldNormal = normalize( mix( sweptWorldRelief, sweptFaceRelief, sweptMapped ) ) * faceDirection;`);
+  vec3 waterWorldNormal = normalize( mix( sweptWorldRelief, sweptFaceRelief, sweptMapped ) ) * faceDirection;`) + SWEPT_NORMAL_GUARD;
 
 /**
  * The Classic curl's normal: the water's own chunk (its interpolated vertex normal, the water's own where the curl rests:
@@ -430,7 +500,7 @@ export const CLASSIC_CURL_NORMAL = replaced(replaced(waterChopNormal, '#include 
 ${SWEPT_RESTING_SIDE.replace('sweptRestingNormal', 'normalize( sweptWaterTriangleNormal )')}
 normal = normalize( mix( normalize( vNormal ), normalize( ( viewMatrix * vec4( sweptWaterTriangleNormal, 0.0 ) ).xyz ), vSweptRest ) ) * faceDirection;`),
 'vec2 chopSlope = waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime );',
-`vec2 chopSlope = waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime ) * smoothstep( ${CHOP_UPRIGHT[0].toFixed(1)}, ${CHOP_UPRIGHT[1].toFixed(1)}, ( vec4( normal * faceDirection, 0.0 ) * viewMatrix ).y );`);
+`vec2 chopSlope = waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime ) * smoothstep( ${CHOP_UPRIGHT[0].toFixed(1)}, ${CHOP_UPRIGHT[1].toFixed(1)}, ( vec4( normal * faceDirection, 0.0 ) * viewMatrix ).y );`) + SWEPT_NORMAL_GUARD;
 
 /**
  * The crest light where the curl is lifted and no sheet (look-fix round 1; the advisor's ruling, "the curl's crest light
@@ -463,7 +533,7 @@ const CURL_CREST_LINE = `totalEmissiveRadiance += ${CREST_SCATTER.toFixed(6)} * 
  */
 export function sweptBodyFragment(rich: boolean): string {
   const body = rich
-    ? waterBodyFragment(true, true, RICH_FOAM, SWEPT_LIFTED_BED + SWEPT_SHEET_BODY + RICH_LIP_GLOW + SWEPT_CHORD_LIGHT)
+    ? waterBodyFragment(true, true, replaced(RICH_FOAM, RICH_FOAM_STREAK_LINE, RICH_FOAM_STREAK_LINE + RICH_FRAY), SWEPT_LIFTED_BED + SWEPT_SHEET_BODY + RICH_LIP_GLOW + RICH_LIP_BACK + SWEPT_CHORD_LIGHT)
     : waterBodyFragment(true, true, CLASSIC_FOAM, SWEPT_LIFTED_BED + SWEPT_SHEET_BODY + SWEPT_CHORD_LIGHT);
   return replaced(replaced(body, WATER_CREST_LINE, CURL_CREST_LINE), FOAM_COVER_CALL, 'sweptFoamCover( waterFootprint )');
 }
@@ -489,8 +559,8 @@ export const SWEPT_LIFTED_BED = /* glsl */ `
 const sweptFoamCoverPars = /* glsl */ `
 float sweptFoamCover( vec2 footprint ) {
   float world = waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( footprint.x, footprint.y ) );
-  vec2 faceFootprint = fwidth( vSweptFace );
-  float face = waterFoamCover( vSweptFace, vec2( 0.0 ), vWaterFoam, waterTime, max( faceFootprint.x, faceFootprint.y ) );
+  vec2 faceFootprint = fwidth( vSweptFace.xy );
+  float face = waterFoamCover( vSweptFace.xy, vec2( 0.0 ), vWaterFoam, waterTime, max( faceFootprint.x, faceFootprint.y ) );
   return mix( world, face, smoothstep( ${FACE_MAP[0].toFixed(1)}, ${FACE_MAP[1].toFixed(1)}, vSweptLift ) );
 }`;
 
@@ -676,8 +746,11 @@ export class SweptBarrelMesh {
   private readonly crest = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
   /** Both looks' crest light on the lifted curl (`SWEPT_CHORD_LIGHT`): each vertex's slice's ray (x, z) and its chords ahead and behind. */
   private readonly chord = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
-  /** Both looks' face coordinates (σ, arc length along its slice): the lace's and the Rich ripples' map where the curl is lifted. */
-  private readonly face = new BufferAttribute(new Float32Array(2 * VERTICES), 2).setUsage(DynamicDrawUsage);
+  /**
+   * Both looks' face coordinates (σ, arc length along its slice), the lace's and the Rich ripples' map where the curl is
+   * lifted, and the share of its lip fraying into drops (the Rich lip's leading edge, `RICH_FRAY`).
+   */
+  private readonly face = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
   private readonly index = new BufferAttribute(new Uint32Array(INDICES), 1).setUsage(DynamicDrawUsage);
   /** The dev view's colours, made with the first view. */
   private viewColours?: BufferAttribute;
@@ -759,7 +832,7 @@ export class SweptBarrelMesh {
       .replace('#include <normal_fragment_begin>', rich ? RICH_CURL_NORMAL : CLASSIC_CURL_NORMAL)
       .replace('#include <color_fragment>', '')
       .replace('#include <emissivemap_fragment>', sweptBodyFragment(rich))
-      .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>');
+      .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_SEA_MIRROR + RICH_THROAT : '#include <lights_fragment_maps>');
     const view = this.currentView;
     if (!view) return;
     shader.vertexShader = shader.vertexShader
@@ -900,17 +973,19 @@ export class SweptBarrelMesh {
     this.chord.clearUpdateRanges();
     this.chord.addUpdateRange(0, 4 * vertices);
     this.chord.needsUpdate = true;
-    // Each vertex's face coordinates: its slice's σ and its arc length along it (a loft made without them has 0).
+    // Each vertex's face coordinates, its slice's σ and its arc length along it, and its lip's fraying share (a loft made
+    // without them has 0).
     const face = this.face.array as Float32Array;
     for (let s = 0; s * LOFT_SAMPLES < vertices; s += 1) {
       for (let j = 0; j < LOFT_SAMPLES && s * LOFT_SAMPLES + j < vertices; j += 1) {
         const v = s * LOFT_SAMPLES + j;
-        face[2 * v] = loft.sliceSigma[s];
-        face[2 * v + 1] = loft.arc ? loft.arc[v] : 0;
+        face[3 * v] = loft.sliceSigma[s];
+        face[3 * v + 1] = loft.arc ? loft.arc[v] : 0;
+        face[3 * v + 2] = loft.fray ? loft.fray[v] : 0;
       }
     }
     this.face.clearUpdateRanges();
-    this.face.addUpdateRange(0, 2 * vertices);
+    this.face.addUpdateRange(0, 3 * vertices);
     this.face.needsUpdate = true;
     if (this.sheetShown) (this.sheetWeight.array as Float32Array).set(loft.sheetWeight.subarray(0, vertices));
     else (this.sheetWeight.array as Float32Array).fill(0, 0, vertices);

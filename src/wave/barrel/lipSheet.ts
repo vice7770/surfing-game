@@ -266,6 +266,38 @@ export function throatEase(d: number, spacing: number): number {
   return t * t * (3 - 2 * t);
 }
 
+/**
+ * The lip's leading edge fraying into spray (look-fix round 1; the advisor's ruled follow-up, "whitening at the lip's
+ * leading edge: with the spray look"; spray-and-mist.md, "The numbers to hit") [provisional throughout]:
+ * - `reach`: over the last 0.15 of the lip's outer length from its tip, a share of the sheet breaks into drops, all of
+ *   it at the tip and none `reach` back, on the outer face and the underside alike;
+ * - `drop`, m: the drops' radius, 1 mm (Chanson et al. 2002: drops to 3 mm, the count falling as d⁻² below about 1 mm);
+ * - `depth`: the optical depth of the drops a unit area of water makes, τ = 1.5 W / r (spray-and-mist.md);
+ * - `asymmetry`: water drops' asymmetry parameter, g = 0.87 (spray-and-mist.md: 0.86–0.88), for how white a layer of
+ *   them is (`frayWhiteness`).
+ */
+export const FRAY = { reach: 0.15, drop: 0.001, depth: 1.5, asymmetry: 0.87 } as const;
+
+/**
+ * The share of the sheet at a point `arc` m along its slice (from the crest) that frays into drops, 0–1 (`FRAY`): 1 at
+ * the tip, `tipArc` m along, falling to 0 `FRAY.reach` of the lip's outer length (the tip's arc) back along either face.
+ */
+export function frayShare(arc: number, tipArc: number): number {
+  if (!(tipArc > 0)) return 0;
+  return Math.max(0, 1 - Math.abs(arc - tipArc) / (FRAY.reach * tipArc));
+}
+
+/**
+ * How white a sheet `thickness` m thick looks where `share` of it is drops (`FRAY`): the two-stream reflectance of a
+ * layer that scatters without absorbing, R = (1 − g) τ / (2 + (1 − g) τ), over its optical depth τ = 1.5 · share · W / r
+ * (Bohren 1987's multiple scattering, as spray-and-mist.md reads it: see-through near τ 1, white only above about 15).
+ */
+export function frayWhiteness(share: number, thickness: number): number {
+  const tau = (FRAY.depth * share * thickness) / FRAY.drop;
+  const transport = (1 - FRAY.asymmetry) * tau;
+  return transport / (2 + transport);
+}
+
 /** Where `acrossTo` found the other side: the segment's first point, and how far along it. */
 const foot = { k: 0, t: 0 };
 /**
