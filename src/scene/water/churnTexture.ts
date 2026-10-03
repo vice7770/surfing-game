@@ -64,11 +64,14 @@ export const CHURN_TEXTURE_SIZE = FOAM_BAKE.size;
 /** The large and small octaves of the foam, m a tile (foam-and-whitewater.md item 2: about 12 m and 3 m): holes and lace of a few metres, and of a few decimetres. */
 export const FOAM_OCTAVES = { large: 12, small: 3 } as const;
 /**
- * The octaves' weights, summing in squares to 1 so the blend stays a unit Gaussian. The large octave sets the holes and
- * the lace; the small one only roughens their edges. At a weight of 0.5 it speckled the voids with isolated shards in
- * the previews, and the hole sizes the large octave alone gives were already wide enough. [provisional]
+ * The octaves' weights, summing in squares to 1 so the blend stays a unit Gaussian: in the ratio of the variance a k^(-5/3)
+ * spectrum (Obukhov 1949, Corrsin 1951, for a scalar the turbulence stirs) puts in two bands four times apart in
+ * wavenumber, 4^(-2/3), so the small octave carries the eddies below the bake's flow (its smallest are 0.75 m on the 12 m
+ * tile) in their share. [provisional: foam is a floater on a compressible surface, not a passive scalar] It frays the
+ * edges and threads of the large octave's patches and opens small holes in them; at the first bake's weight of 0.2 their
+ * outlines were smooth, cut-out shapes.
  */
-export const FOAM_WEIGHTS = { large: Math.sqrt(0.96), small: 0.2 } as const;
+export const FOAM_WEIGHTS = { large: 1 / Math.sqrt(1 + 4 ** (-2 / 3)), small: 4 ** (-1 / 3) / Math.sqrt(1 + 4 ** (-2 / 3)) } as const;
 /**
  * The correlation of the early and late stages' Gaussian values (`FoamBake.correlation`; the test checks it): the two
  * are the same fluid at two ages, but they are related only weakly. Their union (`foamFieldValue`) covers the foam's
