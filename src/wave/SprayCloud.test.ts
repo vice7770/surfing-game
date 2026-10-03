@@ -218,6 +218,16 @@ describe('the foam ball (G9)', () => {
     expect(foamBalls(cloud).length).toBe(0);
   });
 
+  it('packs a foam ball opaque while its roller holds it, its coverage its own (Rich draws it by its depth), and fading over the second it lingers', () => {
+    const cloud = new SprayCloud(11);
+    for (let frame = 0; frame < 10; frame += 1) cloud.update({ ...flatScene(), rollers: [roller()] }, 1 / 60);
+    const held = foamBalls(cloud).map((k) => cloud.particles[k * SPRAY_STRIDE + 4]);
+    expect(held.length).toBeGreaterThan(0);
+    for (const opacity of held) expect(opacity).toBe(1);
+    for (let frame = 0; frame < 30; frame += 1) cloud.update(flatScene(), 1 / 60);
+    for (const k of foamBalls(cloud)) expect(cloud.particles[k * SPRAY_STRIDE + 4]).toBeCloseTo(0.5, 1);
+  });
+
   it('gives a closing tube’s whitewater its own room, so the spray keeps its whole pool and the foam ball its own', () => {
     // 40 places for spray and mist, 30 for the tube's whitewater (drawn in Rich only).
     const cloud = new SprayCloud(12, 40, 30);
