@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect } from './richPatch';
+import { PATCH_OVERLAP, PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchOverlap, patchRect, richPatchDiscard } from './richPatch';
 
 const grid = { xMin: -100, zMin: -60, spacing: 1, nx: 301, nz: 181 };
 
@@ -41,5 +41,32 @@ describe('the dense water patch', () => {
     const index = geometry.getIndex()!;
     expect(index.count).toBe(6 * (n - 1) * (n - 1) + 6 * rim);
     for (let i = 0; i < index.count; i += 1) expect(index.getX(i)).toBeLessThan(n * n + rim);
+  });
+});
+
+describe('the seam between the patch and the coarse water', () => {
+  it('overlaps by half the pixel\'s footprint with margin, never under the old half metre nor past the cap', () => {
+    expect(patchOverlap(0)).toBe(PATCH_OVERLAP.min);
+    expect(patchOverlap(0.2)).toBe(0.5);
+    expect(patchOverlap(1)).toBeCloseTo(1.5, 12);
+    // The lineup's horizon at sunset: a pixel of 6 m of water, 77 m out from a 1.6 m eye, takes 9 m (a fixed 3 m removed the line there).
+    expect(patchOverlap(6)).toBeCloseTo(9, 12);
+    expect(patchOverlap(100)).toBe(PATCH_OVERLAP.max);
+    let last = 0;
+    for (let footprint = 0; footprint < 20; footprint += 0.1) {
+      const overlap = patchOverlap(footprint);
+      expect(overlap).toBeGreaterThanOrEqual(last);
+      last = overlap;
+    }
+  });
+
+  it('is in the Rich discard as the footprint, taken before the first discard, and no longer as half a metre', () => {
+    expect(richPatchDiscard).toContain('vec2 richPatchFoot = fwidth( vWaterWorld.xz );');
+    expect(richPatchDiscard).toContain('float richPatchOverlap = clamp( 1.5 * max( richPatchFoot.x, richPatchFoot.y ), 0.5, 16.0 );');
+    expect(richPatchDiscard.indexOf('fwidth(')).toBeLessThan(richPatchDiscard.indexOf('discard;'));
+    expect(richPatchDiscard).toContain('waterPatchRect.xy + richPatchOverlap');
+    expect(richPatchDiscard).toContain('waterPatchRect.zw - richPatchOverlap');
+    expect(richPatchDiscard).not.toContain('+ 0.5 )');
+    expect(richPatchDiscard).toContain('if ( vWaterSkirt > 0.001 && !gl_FrontFacing ) discard;');
   });
 });

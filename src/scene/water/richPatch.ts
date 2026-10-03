@@ -15,18 +15,42 @@ varying float vPatch;
 varying float vWaterSkirt;
 `;
 
-/** Rich fragment pars and the coarse water's discard under the patch (inset half a metre so the two overlap). */
+/** Rich fragment pars. */
 export const richPatchFragmentPars = /* glsl */ `
 uniform vec4 waterPatchRect;
 uniform float waterPatchActive;
 varying float vPatch;
 varying float vWaterSkirt;
 `;
+
+/**
+ * How far the coarse water draws under the patch's rim, m, so a pixel on the seam keeps both of its surfaces: the
+ * pixel's footprint on the water, `footprints` times its longer side, never under `min` (half a metre, the first rule)
+ * or over `max`. The renderer is multisampled and shades a pixel once. At a pixel the patch covers only in part, the
+ * coarse water's fragment is shaded for the whole pixel at its centre and, if that lies inside the patch, discarded for
+ * every sample it covers, which leaves the rest of the pixel empty: the far ocean showed through as a dark line along the
+ * rim (the lineup's horizon at sunset, 77 m out from a 1.6 m eye, where a pixel spans 6 m of water). Half the footprint
+ * keeps every such pixel; 1.5 leaves margin [rendering choices, provisional]. Both surfaces shade alike, so what the
+ * overlap draws twice does not show.
+ */
+export const PATCH_OVERLAP = { footprints: 1.5, min: 0.5, max: 16 } as const;
+
+/** CPU twin of the overlap in `richPatchDiscard`: the band under the rim for a pixel `footprint` m long on the water. */
+export function patchOverlap(footprint: number): number {
+  return Math.min(PATCH_OVERLAP.max, Math.max(PATCH_OVERLAP.min, PATCH_OVERLAP.footprints * footprint));
+}
+
+/**
+ * The coarse water's discard under the patch (`patchOverlap` under its rim, so the two overlap). The footprint is taken
+ * first, before any discard, so every pixel of a quad has run to it.
+ */
 export const richPatchDiscard = /* glsl */ `
+vec2 richPatchFoot = fwidth( vWaterWorld.xz );
+float richPatchOverlap = clamp( ${PATCH_OVERLAP.footprints.toFixed(1)} * max( richPatchFoot.x, richPatchFoot.y ), ${PATCH_OVERLAP.min.toFixed(1)}, ${PATCH_OVERLAP.max.toFixed(1)} );
 // The skirt's inner faces only show from below, as a curtain hanging under the surface.
 if ( vWaterSkirt > 0.001 && !gl_FrontFacing ) discard;
 if ( vPatch < 0.5 && waterPatchActive > 0.5
-  && all( greaterThan( vWaterWorld.xz, waterPatchRect.xy + 0.5 ) ) && all( lessThan( vWaterWorld.xz, waterPatchRect.zw - 0.5 ) ) ) discard;
+  && all( greaterThan( vWaterWorld.xz, waterPatchRect.xy + richPatchOverlap ) ) && all( lessThan( vWaterWorld.xz, waterPatchRect.zw - richPatchOverlap ) ) ) discard;
 `;
 
 export interface PatchRect {
