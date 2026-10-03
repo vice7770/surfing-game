@@ -973,6 +973,7 @@ class SurfGame {
     this.physicalMode.spray.setLook(look);
     this.physicalMode.setSprayLook(look);
     this.physicalMode.lipSheet.setLook(look);
+    this.physicalMode.seabed.setLook(look);
   }
 
   /**

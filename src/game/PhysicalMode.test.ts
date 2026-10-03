@@ -141,6 +141,24 @@ describe('PhysicalMode', () => {
     expect(water.grid.nz).toBe(local.init.grid.nz);
     expect(mode.seabed.mesh.visible).toBe(true);
     expect(scene.children).toContain(mode.seabed.mesh);
+    // The Rich bed's albedo follows the spot's own map of its bed: reef rock or sand, as the rider's physics has it.
+    const bed = mode.seabed.mesh.geometry;
+    const positions = bed.getAttribute('position');
+    const reef = bed.getAttribute('seabedReef');
+    const { grid, windowXMin } = local.init;
+    const windowXMax = windowXMin + (grid.nx - 1) * grid.spacing;
+    const zMax = grid.zMin + (grid.nz - 1) * grid.spacing;
+    let checked = 0;
+    const kinds = new Set<number>();
+    for (let i = 0; i < positions.count; i += 1) {
+      const [x, z] = [positions.getX(i), positions.getZ(i)];
+      kinds.add(reef.getX(i));
+      if (x < windowXMin || x > windowXMax || z < grid.zMin || z > zMax) continue;
+      expect(reef.getX(i)).toBe(simulation.spot.materialAt!(x, z) === 'reef' ? 1 : 0);
+      checked += 1;
+    }
+    expect(checked).toBeGreaterThan(100);
+    expect([...kinds].sort()).toEqual([0, 1]);
     expect(scene.children).toContain(mode.farField.mesh);
     expect(mode.farField.mesh.visible).toBe(true);
     expect(scene.children).toContain(mode.lipSheet.mesh);

@@ -541,10 +541,17 @@ export class PhysicalMode {
     };
     this.focus = { ...init.focus };
     const hole = { xMin: windowMin, xMax: windowMax, zMin: tank.offshore, zMax: tank.shore };
+    // The spot's own map of its bed (reef or sand), continued beyond the window as its depths are: the Rich bed's albedo.
+    const { materialAt } = spot;
+    const bedReef = materialAt
+      ? (x: number, z: number) => materialAt.call(spot, x < windowMin ? leftX : x > windowMax ? rightX : x, Math.max(z, tank.offshore)) === 'reef'
+      : undefined;
+    this.seabed.setWaterLevel(settings.tide);
     this.seabed.setDepthOnGrid(
       bedDepth,
       gradedAxis(this.focus.x - 600, this.focus.x + 600, windowMin, windowMax, 2, 30),
       gradedAxis(Math.min(-900, tank.offshore - 300), tank.shore + 30, tank.offshore, tank.shore, 2, 30),
+      bedReef,
     );
     const profile = new FarFieldProfile(surfZoneSea(config), {
       referenceZ: tank.offshore,
