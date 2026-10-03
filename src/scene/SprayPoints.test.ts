@@ -27,7 +27,7 @@ function drawFrom(spray: SprayPoints, eye: Vector3, scene = new Scene()): void {
 /** Particles at (x, 1, z) for each z, of the given kinds (foam balls 0.6 m wide, the rest 0.1 m). */
 function cloud(zs: number[], kinds: number[], xs = zs.map(() => 0)): Float32Array {
   const particles = new Float32Array(zs.length * SPRAY_STRIDE);
-  zs.forEach((z, k) => particles.set([xs[k], 1, z, kinds[k] === 2 ? 0.6 : 0.1, 1, kinds[k]], k * SPRAY_STRIDE));
+  zs.forEach((z, k) => particles.set([xs[k], 1, z, kinds[k] === 2 ? 0.6 : 0.1, 1, kinds[k], 0, 0, 0, 0, 0, 0, kinds[k] === 2 ? 0.6 : 0.1, 1], k * SPRAY_STRIDE));
   return particles;
 }
 
@@ -176,6 +176,30 @@ describe('the Rich spray’s optics on the GPU (spray item 1)', () => {
     expect(read('tau', 2)).toEqual([0.4, 0.2]);
     expect(read('column', 2)).toEqual([5, 1]);
     expect(read('glass', 2)).toEqual([0.6, 0]);
+  });
+
+  it('draws Classic by the size and opacity in the first six floats, as it always did, in either look, and Rich by the pair appended after the rest', () => {
+    const particles = new Float32Array(3 * SPRAY_STRIDE);
+    // A cluster packed for Classic (0.35 wide, a quarter opaque) and for Rich (0.9 wide, drawn by its optical depth), a ball (0.6), a spit's mist.
+    particles.set([1, 2, 3, 0.35, 0.25, 1, 0, 0, 0, 0.4, 5, 0, 0.9, 1], 0);
+    particles.set([4, 5, 6, 0.6, 0.81, 2, 0, 0, 0, 0, 0, 0, 0.6, 0.9], SPRAY_STRIDE);
+    particles.set([7, 8, 9, 0.1, 0.8, 0, 0, 0, 0, 0.1, 1, 0, 0.3, 1], 2 * SPRAY_STRIDE);
+    const spray = new SprayPoints();
+    const attribute = (name: string, n: number) => Array.from(spray.mesh.geometry.getAttribute(name).array.slice(0, n)).map((v) => +v.toFixed(6));
+    spray.update({ particles, count: 3 });
+    expect(spray.mesh.geometry.drawRange.count).toBe(2);
+    expect(attribute('look', 4)).toEqual([0.35, 0.25, 0.1, 0.8]);
+    spray.setLook('rich');
+    spray.update({ particles, count: 3 });
+    expect(spray.mesh.geometry.drawRange.count).toBe(3);
+    // Rich draws by its own pair; Classic's size and opacity stay where they were, so Classic's draw is not Rich's to move.
+    expect(attribute('shape', 6)).toEqual([0.9, 1, 0.6, 0.9, 0.3, 1]);
+    expect(attribute('look', 6)).toEqual([0.35, 0.25, 0.6, 0.81, 0.1, 0.8]);
+    expect(spray.mesh.material.vertexShader).toContain('attribute vec2 shape;');
+    expect(spray.mesh.material.vertexShader).not.toContain('look.');
+    spray.setLook('classic');
+    expect(spray.mesh.material.vertexShader).toContain('attribute vec2 look;');
+    expect(spray.mesh.material.vertexShader).toContain('gl_PointSize = max( 1.0, look.x * pixelsPerMetre / max( 0.1, -view.z ) );');
   });
 
   it('blends the Rich spray as premultiplied light, which adds and hides apart, and Classic as it always did', () => {

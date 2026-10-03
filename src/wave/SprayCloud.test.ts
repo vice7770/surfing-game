@@ -224,11 +224,14 @@ describe('the foam ball (G9)', () => {
   it('packs a foam ball opaque while its roller holds it, its coverage its own (Rich draws it by its depth), and fading over the second it lingers', () => {
     const cloud = new SprayCloud(11);
     for (let frame = 0; frame < 10; frame += 1) cloud.update({ ...flatScene(), rollers: [roller()] }, 1 / 60);
-    const held = foamBalls(cloud).map((k) => cloud.particles[k * SPRAY_STRIDE + 4]);
+    // The opacity Rich draws it with is the last float (`SPRAY_STRIDE`); the 0.9 before the kind is Classic's, which draws none.
+    const held = foamBalls(cloud).map((k) => cloud.particles[(k + 1) * SPRAY_STRIDE - 1]);
     expect(held.length).toBeGreaterThan(0);
     for (const opacity of held) expect(opacity).toBe(1);
+    for (const k of foamBalls(cloud)) expect(cloud.particles[k * SPRAY_STRIDE + 4]).toBeCloseTo(0.9, 6);
     for (let frame = 0; frame < 30; frame += 1) cloud.update(flatScene(), 1 / 60);
-    for (const k of foamBalls(cloud)) expect(cloud.particles[k * SPRAY_STRIDE + 4]).toBeCloseTo(0.5, 1);
+    for (const k of foamBalls(cloud)) expect(cloud.particles[(k + 1) * SPRAY_STRIDE - 1]).toBeCloseTo(0.5, 1);
+    for (const k of foamBalls(cloud)) expect(cloud.particles[k * SPRAY_STRIDE + 4]).toBeCloseTo(0.45, 1);
   });
 
   it('gives a closing tube’s whitewater its own room, so the spray keeps its whole pool and the foam ball its own', () => {
@@ -253,7 +256,7 @@ describe('the foam ball (G9)', () => {
 
   it('packs each particle’s kind after its opacity: spray 0, mist 1, foam ball 2, and what the Rich look draws it by after the kind', () => {
     // Appended after the kind, so every reader of the older offsets (x, y, z, size, opacity, kind) is unmoved.
-    expect(SPRAY_STRIDE).toBe(12);
+    expect(SPRAY_STRIDE).toBe(14);
     const cloud = new SprayCloud(3);
     cloud.update({ ...flatScene(0, [impact(0.2)]), rollers: [roller()] }, 1 / 60);
     const kinds = new Set(Array.from({ length: cloud.count }, (_, k) => cloud.particles[k * SPRAY_STRIDE + 5]));
@@ -394,7 +397,7 @@ describe('the spray’s flight, unchanged by how Rich draws it (spray item 1)', 
 });
 
 describe('spray drawn by its optical depth (decided 2026-09-29, spray item 1)', () => {
-  const at = { streak: 6, tau: 9, column: 10, glass: 11 } as const;
+  const at = { streak: 6, tau: 9, column: 10, glass: 11, width: 12, opacity: 13 } as const;
   const roller = (): TubeRoller => ({ id: 1, x: 5, y: 0.5, z: 20, dirX: 0, dirZ: 1, speed: 4, area: 1.5, width: 1 });
   const foamBalls = (cloud: SprayCloud) => Array.from({ length: cloud.count }, (_, k) => k).filter((k) => cloud.particles[k * SPRAY_STRIDE + 5] === 2);
 
@@ -461,7 +464,7 @@ describe('spray drawn by its optical depth (decided 2026-09-29, spray item 1)', 
       if (field(frames[0], k, 5) !== 0) continue;
       // A lip impact's drops leave with an even spread of 1.5 m/s across, and the air takes it over v_t / g: 0.31 s
       // for drops falling at 3 m/s, 0.71 s at 7 m/s. So their cluster widens by 1.5 × that at most.
-      const grown = (frame: number) => field(frames[frame], k, 3) - field(frames[0], k, 3);
+      const grown = (frame: number) => field(frames[frame], k, at.width) - field(frames[0], k, at.width);
       expect(grown(6)).toBeGreaterThan(0.6 * 1.5 * (6 / 60));
       expect(grown(6)).toBeLessThanOrEqual(1.5 * (6 / 60) + 1e-6);
       expect(grown(100)).toBeGreaterThan(grown(50));
@@ -493,7 +496,7 @@ describe('spray drawn by its optical depth (decided 2026-09-29, spray item 1)', 
     cloud.update(flatScene(0, [{ ...impact(0.4), y: 60 }]), 1 / 60);
     for (let step = 0; step < 6; step += 1) cloud.update(flatScene(), 1 / 60);
     expect(cloud.count).toBe(1);
-    const width = field(cloud, 0, 3);
+    const width = field(cloud, 0, at.width);
     const crossSection = (field(cloud, 0, at.tau) * Math.PI * width * width) / 4;
     expect(field(cloud, 0, at.column)).toBeGreaterThan(0.125 * (crossSection / COLUMN_CELL ** 2));
     expect(field(cloud, 0, at.column)).toBeLessThanOrEqual((crossSection / COLUMN_CELL ** 2) * (1 + 1e-6));
@@ -530,6 +533,37 @@ describe('spray drawn by its optical depth (decided 2026-09-29, spray item 1)', 
       }
       // The spray round a cluster is read every few steps, so Classic's may be a few steps old.
       expect(classic[k * SPRAY_STRIDE + at.column]).toBeGreaterThan(0);
+    }
+  });
+
+  it('packs Classic’s size and opacity in the first six floats whichever look the cloud is packed for, and Rich’s width and opacity after the rest', () => {
+    const spit: TubeSpit = { x: 5, y: 1, z: 20, dirX: 1, dirZ: 0, speed: 6, airRate: 3 };
+    const packed = (look: 'classic' | 'rich') => {
+      const cloud = new SprayCloud(37);
+      cloud.look = look;
+      cloud.update({ ...flatScene(), spits: [spit], rollers: [roller()] }, 0.3);
+      for (let step = 0; step < 12; step += 1) cloud.update({ ...flatScene(), rollers: [roller()] }, 1 / 60);
+      return cloud;
+    };
+    const classic = packed('classic');
+    const rich = packed('rich');
+    expect(rich.count).toBe(classic.count);
+    expect(classic.count).toBeGreaterThan(20);
+    // The same spray in either look, field for field: a switch of look needs no new snapshot.
+    expect(Array.from(rich.particles.subarray(0, rich.count * SPRAY_STRIDE))).toEqual(Array.from(classic.particles.subarray(0, classic.count * SPRAY_STRIDE)));
+    for (let k = 0; k < rich.count; k += 1) {
+      const kind = field(rich, k, 5);
+      if (kind === 2) {
+        // A ball holds its roller's size in both pairs and its opacity, Classic's with the 0.9 it always had, in both.
+        expect(field(rich, k, 3)).toBeCloseTo(field(rich, k, at.width), 6);
+        expect(field(rich, k, 4)).toBeCloseTo(0.9 * field(rich, k, at.opacity), 6);
+        continue;
+      }
+      // Classic's: mist at most a quarter opaque, drops at most four fifths, fading as they age; Rich draws by optical depth, in full.
+      expect(field(rich, k, 4)).toBeLessThanOrEqual((kind === 1 || kind === 4 ? 0.25 : 0.8) + 1e-6);
+      expect(field(rich, k, at.opacity)).toBe(1);
+      // Rich's width is as wide as its drops have spread (mist at its launch size or wider), Classic's the size it was born with, mist growing.
+      expect(field(rich, k, at.width)).toBeGreaterThanOrEqual(field(rich, k, 3) / (kind === 1 || kind === 4 ? 2 : 1) - 1e-6);
     }
   });
 

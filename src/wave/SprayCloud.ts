@@ -119,15 +119,18 @@ const WATER_DENSITY = 1025;
 /**
  * Floats per particle in `particles`: x, y, z, size (m), opacity, and kind:
  * 0 spray, 1 mist, and a closing tube's whitewater (G9, drawn in Rich only):
- * 2 foam ball, 3 the spit's and eruption's spray, 4 their mist. Then, after
- * the kind so every older reader keeps its offsets, what the Rich look draws
- * a cluster by (decided 2026-09-29, spray item 1), written in both looks so a
- * switch to Rich draws at once: its streak (the metres it travels while the
- * eye takes it in, x, y, z), `tau` (its drops' optical depth, its mean over
- * its disc), `column` (the optical depth of the spray round it) and `glass`
- * (the share of its disc its water still covers as sheets).
+ * 2 foam ball, 3 the spit's and eruption's spray, 4 their mist. Those first
+ * six are Classic's, as they always were, whichever look the cloud is packed
+ * for. Then, after the kind so every older reader keeps its offsets, what the
+ * Rich look draws a cluster by (decided 2026-09-29, spray item 1): its streak
+ * (the metres it travels while the eye takes it in, x, y, z), `tau` (its
+ * drops' optical depth, its mean over its disc), `column` (the optical depth
+ * of the spray round it) and `glass` (the share of its disc its water still
+ * covers as sheets), then the width (m) and opacity Rich draws it with. All
+ * are written in both looks: Classic's draw reads the same floats whichever
+ * look the cloud was packed for, and Rich's width and opacity never reach it.
  */
-export const SPRAY_STRIDE = 12;
+export const SPRAY_STRIDE = 14;
 /** The worker's pools: spray and mist, and a closing tube's whitewater beside them, so neither crowds the other out. */
 export const SPRAY_CAPACITY = 4096;
 export const WHITEWATER_CAPACITY = 1024;
@@ -631,7 +634,6 @@ export class SprayCloud {
   }
 
   private pack(): void {
-    const rich = this.look === 'rich';
     const { particles } = this;
     // The cross-section of each cluster's drops, gathered into the cells round it for the optical depth of the spray there.
     this.pass += 1;
@@ -655,18 +657,19 @@ export class SprayCloud {
       particles[o] = this.x[k];
       particles[o + 1] = this.y[k];
       particles[o + 2] = this.z[k];
-      // Classic draws mist growing to twice its width; Rich draws each cluster as wide as its drops have spread.
-      particles[o + 3] = rich ? width : this.size[k] * (mist ? 1 + t : 1);
-      // A foam ball holds until its roller is gone, then fades over the time it lingers; while it holds it is as
-      // opaque as its own optical depth makes it (Rich draws it, `foamBallDepth`). Rich draws a cluster by its
-      // optical depth, which thins as its water does.
-      particles[o + 4] = ball
-        ? Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER)
-        : rich ? 1 : (mist ? 0.25 : 0.8) * (1 - t * t);
+      // Classic draws mist growing to twice its width, its spray and mist fading as they age; a foam ball holds until its
+      // roller is gone, then fades over the time it lingers (Classic draws none, and gave it the 0.9 it always had; while
+      // it holds, Rich draws it as opaque as its own optical depth makes it, `foamBallDepth`).
+      const lingering = Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER);
+      particles[o + 3] = this.size[k] * (mist ? 1 + t : 1);
+      particles[o + 4] = ball ? 0.9 * lingering : (mist ? 0.25 : 0.8) * (1 - t * t);
       particles[o + 5] = this.kind[k];
       particles[o + 6] = this.vx[k] * this.streak[k];
       particles[o + 7] = this.vy[k] * this.streak[k];
       particles[o + 8] = this.vz[k] * this.streak[k];
+      // Rich draws each cluster as wide as its drops have spread, and by its optical depth, which thins as its water does.
+      particles[o + 12] = width;
+      particles[o + 13] = ball ? lingering : 1;
       if (ball) {
         particles[o + 9] = 0;
         particles[o + 10] = 0;

@@ -11,8 +11,8 @@ import type { WaterLook } from './water/waterLook';
 
 /**
  * What the renderer needs from a spray cloud: packed x, y, z, size, opacity and kind per particle (`SPRAY_STRIDE`), then
- * for the Rich look its streak, optical depth, the optical depth round it and its share of clear water; and how many
- * are live.
+ * for the Rich look its streak, optical depth, the optical depth round it, its share of clear water, and the width and
+ * opacity it is drawn with; and how many are live.
  */
 export interface RenderableSpray {
   readonly particles: Float32Array;
@@ -92,6 +92,8 @@ export class SprayPoints {
   private readonly positions: BufferAttribute;
   private readonly looks: BufferAttribute;
   private readonly kinds: BufferAttribute;
+  /** Rich only: the width and opacity a cluster is drawn with (Classic's are `looks`, as they always were). */
+  private readonly shapes: BufferAttribute;
   /** Rich only: what a cluster travels while it is drawn, its optical depth, the depth of the spray round it and its clear water. */
   private readonly streaks: BufferAttribute;
   private readonly depths: BufferAttribute;
@@ -118,6 +120,7 @@ export class SprayPoints {
     this.positions = new BufferAttribute(new Float32Array(capacity * 3), 3);
     this.looks = new BufferAttribute(new Float32Array(capacity * 2), 2);
     this.kinds = new BufferAttribute(new Float32Array(capacity), 1);
+    this.shapes = new BufferAttribute(new Float32Array(capacity * 2), 2);
     this.streaks = new BufferAttribute(new Float32Array(capacity * 3), 3);
     this.depths = new BufferAttribute(new Float32Array(capacity), 1);
     this.columns = new BufferAttribute(new Float32Array(capacity), 1);
@@ -127,6 +130,7 @@ export class SprayPoints {
     geometry.setAttribute('position', this.positions);
     geometry.setAttribute('look', this.looks);
     geometry.setAttribute('kind', this.kinds);
+    geometry.setAttribute('shape', this.shapes);
     geometry.setAttribute('streak', this.streaks);
     geometry.setAttribute('tau', this.depths);
     geometry.setAttribute('column', this.columns);
@@ -234,6 +238,7 @@ export class SprayPoints {
     const positions = this.positions.array as Float32Array;
     const looks = this.looks.array as Float32Array;
     const kinds = this.kinds.array as Float32Array;
+    const shapes = this.shapes.array as Float32Array;
     const streaks = this.streaks.array as Float32Array;
     const depths = this.depths.array as Float32Array;
     const columns = this.columns.array as Float32Array;
@@ -249,11 +254,14 @@ export class SprayPoints {
       positions[drawn * 3] = spray.particles[o];
       positions[drawn * 3 + 1] = spray.particles[o + 1];
       positions[drawn * 3 + 2] = spray.particles[o + 2];
+      // Classic's size and opacity are the first six floats' in both looks, as they always were; Rich's are appended (`SPRAY_STRIDE`).
       looks[drawn * 2] = spray.particles[o + 3];
       looks[drawn * 2 + 1] = spray.particles[o + 4];
       kinds[drawn] = kind;
       if (kind === 2) balls.push(drawn);
       if (rich) {
+        shapes[drawn * 2] = spray.particles[o + 12];
+        shapes[drawn * 2 + 1] = spray.particles[o + 13];
         streaks[drawn * 3] = spray.particles[o + 6];
         streaks[drawn * 3 + 1] = spray.particles[o + 7];
         streaks[drawn * 3 + 2] = spray.particles[o + 8];
@@ -268,6 +276,7 @@ export class SprayPoints {
     this.looks.needsUpdate = true;
     this.kinds.needsUpdate = true;
     if (rich) {
+      this.shapes.needsUpdate = true;
       this.streaks.needsUpdate = true;
       this.depths.needsUpdate = true;
       this.columns.needsUpdate = true;

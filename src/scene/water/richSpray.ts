@@ -55,7 +55,7 @@ vec3 spraySky() {
  * backlit. Everything is drawn as premultiplied light, farthest first.
  */
 export const richSprayVertex = /* glsl */ `
-attribute vec2 look;
+attribute vec2 shape;
 attribute float kind;
 attribute vec3 streak;
 attribute float tau;
@@ -92,13 +92,13 @@ void main() {
   gl_Position = projectionMatrix * view;
   vMist = abs( kind - 1.0 ) < 0.5 || abs( kind - 4.0 ) < 0.5 ? 1.0 : 0.0;
   vKind = kind;
-  vOpacity = look.y;
-  vRadius = 0.5 * look.x;
+  vOpacity = shape.y;
+  vRadius = 0.5 * shape.x;
   vSky = spraySky();
   float depth = max( 0.1, -view.z );
   if ( abs( kind - 2.0 ) < 0.5 ) {
     // A foam ball is a round sprite as wide as it is.
-    gl_PointSize = max( 1.0, look.x * pixelsPerMetre / depth );
+    gl_PointSize = max( 1.0, shape.x * pixelsPerMetre / depth );
     vTrail = vec3( 1.0, 0.0, 0.0 );
     vTau = 0.0;
     vColumn = 0.0;

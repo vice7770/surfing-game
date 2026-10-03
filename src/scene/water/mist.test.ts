@@ -195,7 +195,7 @@ describe('the shade foam balls throw on each other', () => {
     expect(richSprayFragment).toContain('vOpacity * ( 1.0 - exp( -ballDepth ) ) * shade.z');
     // The water's fresh churn is creased 0.88–1 (richWaterGlsl.ts); so is the ball.
     expect(richSprayFragment).toContain('0.88 + 0.12 * churn.y');
-    expect(richSprayVertex).toContain('vRadius = 0.5 * look.x;');
+    expect(richSprayVertex).toContain('vRadius = 0.5 * shape.x;');
   });
 });
 
