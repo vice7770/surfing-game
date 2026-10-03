@@ -1,6 +1,7 @@
 import { Vector3 } from 'three';
 import {
-  BED_RAY_FLOOR, WATER_ABSORPTION, WATER_IOR, applyOptics, backscattering, particleAbsorption, type OpticsUniforms, type Rgb, type WaterOptics,
+  BED_RAY_FLOOR, WATER_ABSORPTION, WATER_IOR, applyOptics, backscattering, particleAbsorption, refractedCosine, schlickFresnel, type OpticsUniforms, type Rgb,
+  type WaterOptics,
 } from '../waterOptics';
 import type { WaterLook } from './waterLook';
 
@@ -157,3 +158,164 @@ export function applyLookOptics(uniforms: OpticsUniforms, optics: WaterOptics, l
   if (look === 'rich') applyRichWater(uniforms, optics);
   else applyOptics(uniforms, optics);
 }
+
+/** How far under the surface the camera must be to count as under it, m (the game's `cameraBelowSurface` margin). */
+export const UNDERWATER_MARGIN = 0.1;
+
+/** Whether an eye at (x, y, z) is under a water. */
+export type EyeTest = (x: number, y: number, z: number) => boolean;
+const sceneEyes = new WeakMap<object, EyeTest>();
+
+/**
+ * A tank about to be drawn leaves its eye test with the scene it is drawn in, and the far ocean drawn in the same scene
+ * asks it for its own camera (`eyeUnderwaterIn`): each water sets its own flag, and the answer never depends on which
+ * drew first in a frame, nor on another scene's water.
+ */
+export function shareEyeTest(scene: object, test: EyeTest): void {
+  sceneEyes.set(scene, test);
+}
+
+/** Whether an eye at (x, y, z) is under the water of the tank drawn in `scene`; above it if none has been. */
+export function eyeUnderwaterIn(scene: object, x: number, y: number, z: number): boolean {
+  return sceneEyes.get(scene)?.(x, y, z) ?? false;
+}
+
+/** A water's own flag for the Rich underside, 1 while the camera about to draw it is under the water. */
+export function createUnderwaterUniforms(): { richUnderwater: { value: number } } {
+  return { richUnderwater: { value: 0 } };
+}
+
+/** GLSL pars of the Rich underside (`richUndersideFragment`). */
+export const richUndersidePars = /* glsl */ `
+uniform float richUnderwater;
+`;
+
+/** The critical angle of water against air, asin(1/n) = 48.6° from the vertical. */
+export const CRITICAL_ANGLE = Math.asin(1 / WATER_IOR);
+/** Snell's window: the sky fills a cone of twice that, 97.2° across on flat water (Lynch 2014; the prototype measured 97.5–98.4°). */
+export const WINDOW_ANGLE = 2 * CRITICAL_ANGLE;
+/** Fresnel reflectance of uniform diffuse sky light entering water, ≈ 0.066 for n = 1.333 (textbook; the prototype's). */
+export const DIFFUSE_FRESNEL = 0.066;
+/** Diffuse sky light's mean path stretch under the surface, 1/μ̄_d with μ̄_d ≈ 0.83 [estimate, the prototype's]. */
+export const DIFFUSE_STRETCH = 1.2;
+/** The sun's disc seen through the window, spread over a pow(cos, 800) lobe of 2π/801 sr so it stays a small bright disc [estimate, the prototype's]. */
+export const SUN_LOBE = 800;
+/** Tyler 1960 (the prototype's water radiance): level radiance 7 times the nadir's, log-linear between them [the shape an estimate]. */
+export const LEVEL_OVER_NADIR = 7;
+/** How far below the horizontal a mirrored ray is kept, so a facet tilted past it still sends the eye's ray down into the water [provisional]. */
+export const MIRROR_FLOOR = 0.02;
+/** Foam seen from below passes 45 % of the light above it, from Koepke's 55 % reflectance of foam with little absorbed [estimate, the prototype's]. */
+export const FOAM_TRANSMITTANCE = 0.45;
+/** The bubble plume seen from below: 1 mm bubbles, g = 0.85, so τ = 3α/(2a) · depth = 1500 α depth (round 5 §3.5). */
+export const PLUME_OPTICAL_DEPTH = 1500;
+
+/**
+ * The view ray leaving the water through a surface whose unit normal `normalDown` faces the eye (below it), by Snell's
+ * law with n = 1.333; zero past the critical angle, where the surface mirrors the water instead.
+ */
+export function refractOut(looking: Vector3, normalDown: Vector3): Vector3 {
+  return refractRay(looking, normalDown, WATER_IOR);
+}
+
+/** Radiance gained entering the denser medium, n² (1 − F), for light that meets the surface at cosine `cosine`. */
+export function windowGain(cosine: number): number {
+  return WATER_IOR * WATER_IOR * (1 - schlickFresnel(cosine));
+}
+
+/**
+ * The irradiance on a level plane just under the surface, and on the bed `depth` m down, from the sun at `sunCosine`
+ * above the horizon (its irradiance on a plane square to it, `sun`) and the sky's irradiance on a level plane, `sky`:
+ * each enters at (1 − F), the sun at its own Fresnel and the sky's diffuse 0.066; the sun then falls along its refracted
+ * path, e^{−K z/μ_w}, μ_w the refracted cosine, and the sky along 1.2× the depth (the prototype's `uwDownwelling`).
+ */
+export function downwelling(sun: number, sunCosine: number, sky: number, diffuse: number, depth: number): number {
+  const mu = Math.max(0, sunCosine);
+  const sunIn = sun * mu * (1 - schlickFresnel(mu));
+  const skyIn = sky * (1 - DIFFUSE_FRESNEL);
+  return sunIn * Math.exp((-diffuse * Math.max(0, depth)) / refractedCosine(mu)) + skyIn * Math.exp(-DIFFUSE_STRETCH * diffuse * Math.max(0, depth));
+}
+
+/**
+ * CPU twin of the Rich underside for one grey channel: what the eye sees looking `looking` (up) at a surface with unit
+ * normal `normalDown`: inside the window the sky, `sky(direction)`, times n² (1 − F), plus the water mirrored by F;
+ * beyond it, past the critical angle, total internal reflection mirrors the water, `mirror`.
+ */
+export function undersideRadiance(looking: Vector3, normalDown: Vector3, sky: (direction: Vector3) => number, mirror: number): number {
+  const out = refractOut(looking, normalDown);
+  if (out.lengthSq() < 0.5) return mirror;
+  const cosine = out.dot(normalDown.clone().negate());
+  return schlickFresnel(cosine) * mirror + windowGain(cosine) * sky(out);
+}
+
+/** The water's own radiance along a mirrored ray `mu` below the horizontal (< 0), over its level radiance: (1/7)^{−μ}. */
+export function mirroredWaterShape(mu: number): number {
+  return (1 / LEVEL_OVER_NADIR) ** -Math.min(-MIRROR_FLOOR, mu);
+}
+
+/**
+ * The foam seen from below as a ceiling (the plume's whiteness): two-stream transmission, 1 / (1 + 0.75 (1 − g) τ) with
+ * g = 0.85, of a plume of void fraction `air` over `depth` metres.
+ */
+export function plumeTransmission(air: number, depth: number): number {
+  return 1 / (1 + 0.75 * 0.15 * PLUME_OPTICAL_DEPTH * air * depth);
+}
+
+/**
+ * The surface seen from below, in the Rich look only, spliced after the foam composition inside `waterBodyFragment`'s
+ * block (underwater.md items 1–2, decided 2026-09-29; the prototype in notes/round5-underwater). For a back face seen by
+ * an eye under the water (`richUnderwater`, set per water for the camera about to draw it), the view ray is refracted
+ * out of the water (n = 1.333). Inside the 48.6° critical angle it shows the sky from the environment times n² (1 − F)
+ * (radiance gains n² entering the denser medium) and the sun as a small bright disc; beyond it, and for the reflected
+ * share inside, the surface mirrors the water: its own radiance (R∞ under the light just below the surface, level 7
+ * times the nadir's, Tyler 1960) and, where the water is shallow, the bed under the light that reaches it
+ * (`downwelling`). Foam and plume glow as a ceiling lit from above (diffusers pass light in every direction, so the whole
+ * ceiling, window or not). The environment is three's, so no texture is new; the fog stays inside the material and is
+ * set elsewhere. `plume`: the tank's, which carries the bubble plume (`vWaterAir`); the far ocean has none.
+ */
+export function richUndersideFragment(plume: boolean): string {
+  const eta = WATER_IOR.toFixed(3);
+  return /* glsl */ `
+  if ( richUnderwater > 0.5 && faceDirection < 0.0 ) {
+    vec3 richUp = -waterN;
+    vec3 richOut = refract( -waterV, waterN, ${eta} );
+    // The light just under a level surface: the sun and the sky, each after its Fresnel (the sky's colour is the scene's).
+    float richSunUp = max( waterSunDirection.y, 0.0 );
+    vec3 richSkyDown = getAmbientLightIrradiance( ambientLightColor );
+    #if defined( USE_ENVMAP ) && defined( ENVMAP_TYPE_CUBE_UV )
+      richSkyDown += getIBLIrradiance( ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz );
+    #endif
+    vec3 richSunIn = waterSunRadiance * richSunUp * ( 1.0 - waterFresnel( richSunUp ) );
+    vec3 richSkyIn = richSkyDown * ${(1 - DIFFUSE_FRESNEL).toFixed(3)};
+    vec3 richBelow = richSunIn + richSkyIn;
+    // The water mirrored: its own radiance along the mirrored ray, and the bed where the water is shallow, under the light
+    // that reaches it: the sun down its refracted path, the sky down its diffuse one.
+    vec3 richMirrorDir = reflect( -waterV, waterN );
+    richMirrorDir.y = min( richMirrorDir.y, -${MIRROR_FLOOR.toFixed(2)} );
+    vec3 richWater = ${LEVEL_OVER_NADIR.toFixed(1)} * waterDeepReflectance * richBelow / PI * pow( ${(1 / LEVEL_OVER_NADIR).toFixed(4)}, -richMirrorDir.y );
+    float richBedPath = vWaterDepth / max( ${BED_RAY_FLOOR.toFixed(2)}, -richMirrorDir.y );
+    vec3 richBedLight = richSunIn * exp( -waterDiffuseAttenuation * vWaterDepth / waterRefractedCosine( richSunUp ) )
+      + richSkyIn * exp( -waterDiffuseAttenuation * ${DIFFUSE_STRETCH.toFixed(1)} * vWaterDepth );
+    vec3 richMirror = mix( richWater, waterBedAlbedo * richBedLight / PI, exp( -waterAttenuation * richBedPath ) );
+    vec3 richCeiling = richMirror;
+    if ( dot( richOut, richOut ) > 0.5 ) {
+      float richF = waterFresnel( dot( richOut, richUp ) );
+      vec3 richSky = richSkyDown / PI;
+      #if defined( USE_ENVMAP ) && defined( ENVMAP_TYPE_CUBE_UV )
+        richSky = textureCubeUV( envMap, envMapRotation * richOut, 0.0 ).rgb * envMapIntensity;
+      #endif
+      richSky += waterSunRadiance * pow( max( 0.0, dot( richOut, waterSunDirection ) ), ${SUN_LOBE.toFixed(1)} ) * ${((SUN_LOBE + 1) / (2 * Math.PI)).toFixed(3)};
+      richCeiling = richF * richMirror + ( 1.0 - richF ) * ${(WATER_IOR * WATER_IOR).toFixed(3)} * richSky;
+    }${plume ? `
+    float richTau = ${PLUME_OPTICAL_DEPTH.toFixed(1)} * vWaterAir * min( vWaterPlumeDepth, vWaterDepth );
+    richCeiling = mix( richCeiling, waterFoamColor * richBelow / PI / ( 1.0 + ${(0.75 * 0.15).toFixed(4)} * richTau ), waterPlume );` : ''}
+    richCeiling = mix( richCeiling, waterFoamColor * ${FOAM_TRANSMITTANCE.toFixed(2)} * richBelow / PI, waterCover );
+    diffuseColor.rgb = vec3( 0.0 );
+    totalEmissiveRadiance = richCeiling;
+  }`;
+}
+
+/** Rich: no sky reflection on a surface seen from below (the underside shows the sky through the window instead), after `RICH_REFLECTION`. */
+export const RICH_UNDERSIDE_REFLECTION = /* glsl */ `
+#if defined( RE_IndirectSpecular )
+  if ( richUnderwater > 0.5 && faceDirection < 0.0 ) radiance = vec3( 0.0 );
+#endif`;

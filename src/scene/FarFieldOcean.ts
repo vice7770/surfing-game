@@ -14,7 +14,9 @@ import {
 } from 'three';
 import type { WaterLook } from './water/waterLook';
 import { RICH_FAR_FOAM, RICH_REFLECTION, RICH_WATER, richFarNormal, richFragmentPars, richReflectionPars } from './water/richWaterGlsl';
-import { RICH_NORMAL_GUARD, applyLookOptics } from './water/richOptics';
+import {
+  RICH_NORMAL_GUARD, RICH_UNDERSIDE_REFLECTION, applyLookOptics, createUnderwaterUniforms, eyeUnderwaterIn, richUndersideFragment, richUndersidePars,
+} from './water/richOptics';
 import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import type { FarFieldProfile } from '../wave/FarFieldProfile';
@@ -151,6 +153,7 @@ export class FarFieldOcean {
       waterChop: { value: DEFAULT_WATER_CHOP },
       ...chopFieldUniforms,
       ...createOpticsUniforms(),
+      ...createUnderwaterUniforms(),
       // Rich only (G8): the tank's ripples, so the two meet without a step in gloss.
       waterRippleMap: { value: rippleTexture() },
       waterRippleStrength: { value: rippleStrength(DEFAULT_WATER_CHOP) },
@@ -168,17 +171,23 @@ export class FarFieldOcean {
         .replace('#include <begin_vertex>', 'vec3 transformed = vec3( position.x + farShift.x, farHeight, position.z + farShift.y );\nvWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', rich
-          ? `#include <common>\n${farFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}`
+          ? `#include <common>\n${farFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}\n${richUndersidePars}`
           : `#include <common>\n${farFragmentPars}`)
         .replace('#include <normal_fragment_begin>', rich ? richFarNormal + RICH_NORMAL_GUARD : waterChopNormal)
         .replace('#include <color_fragment>', 'diffuseColor.a *= 1.0 - smoothstep( farFade.x, farFade.y, length( vWaterWorld.xz - farFocus ) );')
-        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, false, RICH_FAR_FOAM, '', true) : waterBodyFragment(false))
-        .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>');
+        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, false, RICH_FAR_FOAM + richUndersideFragment(false), '', true) : waterBodyFragment(false))
+        .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_UNDERSIDE_REFLECTION : '#include <lights_fragment_maps>');
     };
     material.customProgramCacheKey = () => `breakline-far-field-ocean-${this.currentLook}`;
     this.mesh = new Mesh(new BufferGeometry(), material);
     this.mesh.frustumCulled = false;
     this.mesh.visible = false;
+    // The Rich underside, for the camera about to draw it: the answer of the tank drawn in the same scene (`eyeUnderwaterIn`).
+    const eye = new Vector3();
+    this.mesh.onBeforeRender = (_renderer, scene, camera) => {
+      camera.getWorldPosition(eye);
+      this.uniforms.richUnderwater.value = this.currentLook === 'rich' && eyeUnderwaterIn(scene, eye.x, eye.y, eye.z) ? 1 : 0;
+    };
   }
 
   /** Graphics setting (G8): the Classic water, or the Rich look. */
