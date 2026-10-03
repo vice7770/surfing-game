@@ -99,6 +99,13 @@ export interface LoftResult {
    * which reads as `NO_CHORD`.
    */
   chord?: Float32Array;
+  /**
+   * Per vertex, its arc length along its slice as drawn from the crest landmark, m, growing toward the front (look-fix
+   * round 1): with the slice's σ along the crest, the face coordinates the curl's ripples and lace are mapped by where it
+   * is lifted, so a steep or overturned face carries them as the sea does. Drawn lofts only; a loft made by hand may leave
+   * it out, which reads as 0.
+   */
+  arc?: Float32Array;
   indices: Uint32Array;
   vertexCount: number;
   indexCount: number;
@@ -195,6 +202,24 @@ export function collapseFade(tau: number, touchdown: number, collapse: number): 
   return collapse > 0 ? Math.max(0, 1 - (tau - touchdown) / collapse) : 0;
 }
 
+/**
+ * The arc length along a slice as drawn (`drawn`: along its ray, up, per sample), from its sample `origin`, m, into `out`
+ * from `offset`: 0 at the origin, growing toward the front, negative behind it. Only + − × ÷ √.
+ */
+export function drawnArcs(drawn: Float32Array, origin: number, out: Float32Array, offset: number): void {
+  out[offset + origin] = 0;
+  for (let j = origin + 1; j < LOFT_SAMPLES; j += 1) {
+    const dx = drawn[2 * j] - drawn[2 * j - 2];
+    const dy = drawn[2 * j + 1] - drawn[2 * j - 1];
+    out[offset + j] = out[offset + j - 1] + Math.sqrt(dx * dx + dy * dy);
+  }
+  for (let j = origin - 1; j >= 0; j -= 1) {
+    const dx = drawn[2 * j + 2] - drawn[2 * j];
+    const dy = drawn[2 * j + 3] - drawn[2 * j + 1];
+    out[offset + j] = out[offset + j + 1] - Math.sqrt(dx * dx + dy * dy);
+  }
+}
+
 interface Front {
   id: number;
   /** Its records [start, end). */
@@ -284,7 +309,7 @@ export class SweptLoft {
     this.result = {
       positions: new Float32Array(3 * vertices), normals: new Float32Array(3 * vertices), mask: new Float32Array(vertices), lift: new Float32Array(vertices),
       sheet: new Float32Array(vertices), sheetWeight: new Float32Array(vertices), sheetBack: new Float32Array(vertices), throat: new Float32Array(4 * vertices),
-      chord: new Float32Array(2 * vertices).fill(NO_CHORD),
+      chord: new Float32Array(2 * vertices).fill(NO_CHORD), arc: new Float32Array(vertices),
       indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * slices), vertexCount: 0, indexCount: 0, sliceCount: 0,
       sliceFront: new Int32Array(slices), sliceSigma: new Float32Array(slices), sliceTau: new Float32Array(slices),
       slicePhase: new Uint8Array(slices), sliceCrestOffset: new Float32Array(slices), sliceLife: new Float32Array(slices),
@@ -769,6 +794,8 @@ export class SweptLoft {
         r.chord![2 * v] = lifted ? this.chords[2 * j] : NO_CHORD;
         r.chord![2 * v + 1] = lifted ? this.chords[2 * j + 1] : NO_CHORD;
       }
+      // The face coordinate along the slice as drawn: its arc length from the crest landmark (the drawing only).
+      if (this.measureSheet) drawnArcs(this.drawn, E + LANDMARK.crest, r.arc!, slice * LOFT_SAMPLES);
       const tip = 3 * (slice * LOFT_SAMPLES + E + LANDMARK.lip);
       r.sliceTipX[slice] = r.positions[tip];
       r.sliceTipY[slice] = r.positions[tip + 1];

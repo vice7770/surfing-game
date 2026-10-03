@@ -110,6 +110,17 @@ export const REST_NORMAL = 0.05;
  * water to centimetres, so this only guards a ray grazing the surface (look-fix round 1) [provisional].
  */
 export const RESTING_REACH = 0.5;
+/**
+ * The lift over which the curl's ripples and lace pass from the water's mapping, at the pixel's xz, to its face's, at (σ,
+ * arc length along the slice) (look-fix round 1; the advisor's smoothstep 0.1–0.4, provisional): the rests stay the
+ * water's.
+ */
+export const FACE_MAP = [0.1, 0.4] as const;
+/**
+ * The height of the curl's world normal over which the wind chop fades in, on a face it would only stretch into stripes
+ * across (look-fix round 1; the advisor's smoothstep 0.3–0.7, provisional).
+ */
+export const CHOP_UPRIGHT = [0.3, 0.7] as const;
 /** The height field's crest-light march's reach, m: its last sample (`CREST_SAMPLES`); past it the water lights nothing. */
 const CHORD_REACH = CREST_SAMPLES[CREST_SAMPLES.length - 1];
 
@@ -131,10 +142,12 @@ attribute float sweptSheetBack;
 attribute vec3 sweptWall;
 attribute vec3 sweptWallNormal;
 attribute vec4 sweptChord;
+attribute vec2 sweptFace;
 varying float vSweptLift;
 varying float vSweptRest;
 varying vec3 vSweptWaterNormal;
 varying vec4 vSweptChord;
+varying vec2 vSweptFace;
 varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
@@ -151,6 +164,7 @@ vSweptWallDepth = max( 0.0, sweptWall.y - waterBedAt( sweptWall.xz ) );
 vSweptWallNormal = sweptWallNormal;
 vSweptLift = sweptLift;
 vSweptChord = sweptChord;
+vSweptFace = sweptFace;
 vSweptRest = 1.0 - smoothstep( 0.0, ${REST_NORMAL.toFixed(2)}, sweptLift );
 vSweptWaterNormal = sweptWaterNormalAt( position.xz );
 objectNormal = normalize( mix( objectNormal, vSweptWaterNormal, vSweptRest ) );`;
@@ -179,6 +193,7 @@ const sweptFragmentPars = /* glsl */ `varying float vSweptLift;
 varying float vSweptRest;
 varying vec3 vSweptWaterNormal;
 varying vec4 vSweptChord;
+varying vec2 vSweptFace;
 varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
@@ -341,7 +356,12 @@ const WATER_RICH_NORMAL = richNormalFragment({ ripples: true, churn: true });
  * water's. The curl's surface, out of the water, in the world, is its vertices' normal (the water's own where it rests,
  * the loft's where lifted: `sweptBeginNormal`), with the water's per-pixel normal in place of its vertices' as far as it
  * rests (`vSweptRest`), so a resting curl is the water's normal exactly. The relief goes on as the water's does, to its
- * height field's slope, where the surface faces up, and across it where it stands steep or overturns.
+ * height field's slope, where the surface faces up, and across it where it stands steep or overturns. Where the curl is
+ * lifted (`FACE_MAP`) the relief is its face's own (look-fix round 1): a planar xz projection is degenerate on a near-
+ * vertical or overturned face, and smeared the ripples into contour stripes down it and streaks into the throat; so the
+ * ripples are read at the face coordinates (σ along the crest, the arc length along the slice), still in the wave's own
+ * frame [no current: provisional], and tilt the normal in the frame of the crest's direction T and the profile's P = T ×
+ * n, n − (s_σ T + s_arc P); the wind chop stays the water's, faded on a face standing up (`CHOP_UPRIGHT`).
  */
 export const RICH_CURL_NORMAL = replaced(replaced(WATER_RICH_NORMAL,
   'vec2 waterSlope = waterSurfaceSample.yz;', 'vec2 waterSlope = vec2( 0.0 );'),
@@ -349,16 +369,31 @@ export const RICH_CURL_NORMAL = replaced(replaced(WATER_RICH_NORMAL,
   vec3 sweptOut = normalize( ( vec4( normalize( vNormal ), 0.0 ) * viewMatrix ).xyz + vSweptRest * ( sweptWaterPixel - normalize( vSweptWaterNormal ) ) );
   vec3 sweptField = normalize( vec3( sweptOut.x / max( sweptOut.y, 0.3 ) - waterSlope.x, 1.0, sweptOut.z / max( sweptOut.y, 0.3 ) - waterSlope.y ) );
   vec3 sweptAcross = normalize( sweptOut + vec3( -waterSlope.x, 0.0, -waterSlope.y ) );
+  vec3 sweptWorldRelief = normalize( mix( sweptAcross, sweptField, smoothstep( 0.3, 0.7, sweptOut.y ) ) );
+  // Lifted, the face's own relief: the ripples at (σ, arc) on the crest's direction T and the profile's P = T × n, and
+  // the chop only as far as the surface faces up.
+  float sweptWaterVariance = waterRippleVariance;
+  vec3 sweptT = normalize( vec3( vSweptChord.y, 0.0, -vSweptChord.x ) );
+  vec3 sweptP = cross( sweptT, sweptOut );
+  sweptP = dot( sweptP, sweptP ) > 1e-6 ? normalize( sweptP ) : vec3( 0.0 );
+  vec2 sweptFaceSlope = sweptFaceRippleAt( vSweptFace );
+  vec2 sweptFaceChop = waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime ) * smoothstep( ${CHOP_UPRIGHT[0].toFixed(1)}, ${CHOP_UPRIGHT[1].toFixed(1)}, sweptOut.y );
+  vec3 sweptFaceRelief = normalize( sweptOut - sweptFaceSlope.x * sweptT - sweptFaceSlope.y * sweptP + vec3( -sweptFaceChop.x, 0.0, -sweptFaceChop.y ) );
+  float sweptMapped = smoothstep( ${FACE_MAP[0].toFixed(1)}, ${FACE_MAP[1].toFixed(1)}, vSweptLift );
+  waterRippleVariance = mix( sweptWaterVariance, waterRippleVariance, sweptMapped );
   ${SWEPT_RESTING_SIDE.replace('sweptRestingNormal', 'sweptWaterPixel')}
-  vec3 waterWorldNormal = normalize( mix( sweptAcross, sweptField, smoothstep( 0.3, 0.7, sweptOut.y ) ) ) * faceDirection;`);
+  vec3 waterWorldNormal = normalize( mix( sweptWorldRelief, sweptFaceRelief, sweptMapped ) ) * faceDirection;`);
 
 /**
  * The Classic curl's normal: the water's own chunk (its interpolated vertex normal, the water's own where the curl rests:
- * `sweptBeginNormal`), with its wind chop (look-fix round 1), on the side of the water the eye is on where it rests.
+ * `sweptBeginNormal`), with its wind chop (look-fix round 1), on the side of the water the eye is on where it rests. The
+ * chop, read at the world's xz, fades where the curl stands up (`CHOP_UPRIGHT`), on a face it would stretch into stripes.
  */
-export const CLASSIC_CURL_NORMAL = replaced(waterChopNormal, '#include <normal_fragment_begin>', `#include <normal_fragment_begin>
+export const CLASSIC_CURL_NORMAL = replaced(replaced(waterChopNormal, '#include <normal_fragment_begin>', `#include <normal_fragment_begin>
 ${SWEPT_RESTING_SIDE.replace('sweptRestingNormal', 'normalize( sweptWaterTriangleNormal )')}
-normal = normalize( mix( normalize( vNormal ), normalize( ( viewMatrix * vec4( sweptWaterTriangleNormal, 0.0 ) ).xyz ), vSweptRest ) ) * faceDirection;`);
+normal = normalize( mix( normalize( vNormal ), normalize( ( viewMatrix * vec4( sweptWaterTriangleNormal, 0.0 ) ).xyz ), vSweptRest ) ) * faceDirection;`),
+'vec2 chopSlope = waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime );',
+`vec2 chopSlope = waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime ) * smoothstep( ${CHOP_UPRIGHT[0].toFixed(1)}, ${CHOP_UPRIGHT[1].toFixed(1)}, ( vec4( normal * faceDirection, 0.0 ) * viewMatrix ).y );`);
 
 /**
  * The crest light where the curl is lifted and no sheet (look-fix round 1; the advisor's ruling, "the curl's crest light
@@ -391,10 +426,51 @@ const CURL_CREST_LINE = `totalEmissiveRadiance += ${CREST_SCATTER.toFixed(6)} * 
  */
 export function sweptBodyFragment(rich: boolean): string {
   const body = rich
-    ? waterBodyFragment(true, true, RICH_FOAM, SWEPT_SHEET_BODY + RICH_LIP_GLOW + SWEPT_CHORD_LIGHT)
-    : waterBodyFragment(true, true, CLASSIC_FOAM, SWEPT_SHEET_BODY + SWEPT_CHORD_LIGHT);
-  return replaced(body, WATER_CREST_LINE, CURL_CREST_LINE);
+    ? waterBodyFragment(true, true, RICH_FOAM, SWEPT_LIFTED_BED + SWEPT_SHEET_BODY + RICH_LIP_GLOW + SWEPT_CHORD_LIGHT)
+    : waterBodyFragment(true, true, CLASSIC_FOAM, SWEPT_LIFTED_BED + SWEPT_SHEET_BODY + SWEPT_CHORD_LIGHT);
+  return replaced(replaced(body, WATER_CREST_LINE, CURL_CREST_LINE), FOAM_COVER_CALL, 'sweptFoamCover( waterFootprint )');
 }
+
+/** The water's lace in both looks' foam blocks (`CLASSIC_FOAM`, `RICH_FOAM`), which the curl maps on its face where lifted. */
+const FOAM_COVER_CALL = 'waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) )';
+
+/**
+ * No caustic focus where the curl is lifted (look-fix round 1): the caustic map refracts the sun through the height field,
+ * which under a lifted curl is the hump, not the curl (as the crest light's march), and the bed seen through a steep face
+ * lies far along its refracted ray, where the map smeared into stripes down the face and a swimming-pool web inside the
+ * tube; and caustics on a near-vertical moving wall are faint (graphics.md, item 3). So the column's bed takes the light
+ * of flat water, bedLight 1, as far as the curl is lifted; where it rests, the water's own caustics.
+ */
+export const SWEPT_LIFTED_BED = /* glsl */ `
+    waterBody = mix( waterBody, waterBodyReflectanceLit( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ), 1.0 ), vSweptLift );`;
+
+/**
+ * The lace on the curl (look-fix round 1; the ruled follow-up, residual lace on the curl's lifted face: a face-aligned
+ * mapping): the water's lace at the pixel's xz where it rests, and at its face coordinates (σ, arc) where it is lifted
+ * (`FACE_MAP`), still in the wave's frame, where the world's xz stretched it down a steep face.
+ */
+const sweptFoamCoverPars = /* glsl */ `
+float sweptFoamCover( vec2 footprint ) {
+  float world = waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( footprint.x, footprint.y ) );
+  vec2 faceFootprint = fwidth( vSweptFace );
+  float face = waterFoamCover( vSweptFace, vec2( 0.0 ), vWaterFoam, waterTime, max( faceFootprint.x, faceFootprint.y ) );
+  return mix( world, face, smoothstep( ${FACE_MAP[0].toFixed(1)}, ${FACE_MAP[1].toFixed(1)}, vSweptLift ) );
+}`;
+
+/**
+ * The Rich curl's ripples on its face (look-fix round 1): the sea's two ripple layers (`waterRipplePars`, one phase of
+ * `waterRippleSlopeAt`'s) read at the face coordinates (σ, arc), still, in the wave's own frame [no current:
+ * provisional; the sea's flow-map pair would cross-fade two patterns at a standstill]. Sets `waterRippleVariance`, as the
+ * water's does.
+ */
+const richFaceRipplePars = /* glsl */ `
+vec2 sweptFaceRippleAt( vec2 p ) {
+  vec4 t0 = waterRippleTap( p, RIPPLE_TILE_0 );
+  vec4 t1 = waterRippleTap( p, RIPPLE_TILE_1 );
+  float strength = waterRippleStrength * waterRippleFoamGain( vWaterFoam );
+  waterRippleVariance = strength * strength * ( waterRippleLayerVariance( t0 ) + 0.36 * waterRippleLayerVariance( t1 ) );
+  return strength * ( t0.xy + 0.6 * t1.xy );
+}`;
 
 /**
  * Where the curl rests on the water it is the water, and is drawn at the water's own surface along the view ray, with the
@@ -519,7 +595,8 @@ ${waterStreakPars}
 ${waterChurnPars}
 ${richReflectionPars}
 ${richPatchFragmentPars}
-${waterBarrelMaskPars}`;
+${waterBarrelMaskPars}
+${richFaceRipplePars}`;
 
 /**
  * The polygon offset that draws the band over the water it rests on, the two surfaces coinciding there: factor −1 (with
@@ -560,6 +637,8 @@ export class SweptBarrelMesh {
   private readonly ray = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
   /** Both looks' crest light on the lifted curl (`SWEPT_CHORD_LIGHT`): each vertex's slice's ray (x, z) and its chords ahead and behind. */
   private readonly chord = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
+  /** Both looks' face coordinates (σ, arc length along its slice): the lace's and the Rich ripples' map where the curl is lifted. */
+  private readonly face = new BufferAttribute(new Float32Array(2 * VERTICES), 2).setUsage(DynamicDrawUsage);
   private readonly index = new BufferAttribute(new Uint32Array(INDICES), 1).setUsage(DynamicDrawUsage);
   /** The dev view's colours, made with the first view. */
   private viewColours?: BufferAttribute;
@@ -592,6 +671,7 @@ export class SweptBarrelMesh {
     geometry.setAttribute('sweptTube', this.tube);
     geometry.setAttribute('sweptRay', this.ray);
     geometry.setAttribute('sweptChord', this.chord);
+    geometry.setAttribute('sweptFace', this.face);
     geometry.setIndex(this.index);
     geometry.setDrawRange(0, 0);
     const parameters = { color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide } as const;
@@ -631,8 +711,8 @@ export class SweptBarrelMesh {
       .replace('#include <begin_vertex>', sweptBeginVertex);
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', rich
-        ? `${RICH_CURL_FRAGMENT_PARS}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
-        : `#include <common>\n${waterFragmentPars}\n${classicRestingPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}`)
+        ? `${RICH_CURL_FRAGMENT_PARS}\n${sweptFragmentPars}\n${sweptFoamCoverPars}\n${richThroatFragmentPars}`
+        : `#include <common>\n${waterFragmentPars}\n${classicRestingPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${sweptFoamCoverPars}`)
       .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${rich ? richRestingWater : classicRestingWater}\n${SWEPT_SEAM}`)
       // The Rich water's crest light marches through the carved surface (G9), and so does the curl's where it rests.
       .replace('float gap = waterHeightAt( p.xz ) - p.y;', rich ? 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;' : 'float gap = waterHeightAt( p.xz ) - p.y;')
@@ -768,6 +848,18 @@ export class SweptBarrelMesh {
     this.chord.clearUpdateRanges();
     this.chord.addUpdateRange(0, 4 * vertices);
     this.chord.needsUpdate = true;
+    // Each vertex's face coordinates: its slice's σ and its arc length along it (a loft made without them has 0).
+    const face = this.face.array as Float32Array;
+    for (let s = 0; s * LOFT_SAMPLES < vertices; s += 1) {
+      for (let j = 0; j < LOFT_SAMPLES && s * LOFT_SAMPLES + j < vertices; j += 1) {
+        const v = s * LOFT_SAMPLES + j;
+        face[2 * v] = loft.sliceSigma[s];
+        face[2 * v + 1] = loft.arc ? loft.arc[v] : 0;
+      }
+    }
+    this.face.clearUpdateRanges();
+    this.face.addUpdateRange(0, 2 * vertices);
+    this.face.needsUpdate = true;
     if (this.sheetShown) (this.sheetWeight.array as Float32Array).set(loft.sheetWeight.subarray(0, vertices));
     else (this.sheetWeight.array as Float32Array).fill(0, 0, vertices);
     const index = this.index.array as Uint32Array;
