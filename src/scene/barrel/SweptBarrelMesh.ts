@@ -1,4 +1,4 @@
-import { BufferAttribute, BufferGeometry, DoubleSide, DynamicDrawUsage, Mesh, MeshPhysicalMaterial } from 'three';
+import { BufferAttribute, BufferGeometry, DoubleSide, DynamicDrawUsage, Mesh, MeshPhysicalMaterial, type WebGLProgramParametersWithUniforms } from 'three';
 import { LANDMARK } from '../../wave/barrel/ProfileLibrary';
 import { LOFT, LOFT_SAMPLES, THROAT, type LoftResult } from '../../wave/barrel/sweptLoft';
 import type { WaterLook } from '../water/waterLook';
@@ -8,7 +8,7 @@ import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from '../wa
 import { waterChopNormal } from '../waterChop';
 import { CLASSIC_FOAM, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFragment } from '../waterOptics';
 import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
-import { SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
+import { SWEPT_BAND_ALPHA, SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
 
 /** The most vertices, and triangle indices, a loft fills (its budget and one slice more). */
 const VERTICES = LOFT.budget + LOFT_SAMPLES;
@@ -121,7 +121,16 @@ const sweptFragmentPars = /* glsl */ `varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
 varying float vSweptWallDepth;
-varying vec3 vSweptWallNormal;`;
+varying vec3 vSweptWallNormal;
+#ifdef SWEPT_BAND
+uniform float sweptBandOpaque;
+#endif`;
+/** The seam (look-fix round 1): the curl draws where the mask is full, its band (`SWEPT_BAND`) across the mask's band. */
+const SWEPT_SEAM = /* glsl */ `#ifdef SWEPT_BAND
+${SWEPT_BAND_ALPHA}
+#else
+${SWEPT_BARREL_DISCARD}
+#endif`;
 /**
  * The back wall behind the lip, sampled at this far down it from the throat, profile points (the advisor, 2026-10-01: the
  * column body at the throat's or the back wall's depth and normal) [provisional: a third of the way to the toe].
@@ -247,14 +256,30 @@ const sweptBeginVertex = /* glsl */ `vec3 transformed = vec3( position );
 vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;`;
 
 /**
+ * The polygon offset that draws the band over the water it rests on, the two surfaces coinciding there: factor −1 (with
+ * the surface's depth slope), units −4 (a few steps of the depth buffer) (look-fix round 1) [provisional].
+ */
+export const BAND_OFFSET = { factor: -1, units: -4 } as const;
+
+/**
  * The swept barrel as drawn (the Padang Padang spec, Part B, PR 3): the loft's grid, shaded as the water is in either
  * look (spec 15: Classic with its existing shading), on the water's own uniforms, opaque, except that its lip is shaded
- * as a thin sheet lit from behind (`SWEPT_SHEET_BODY`). It shows exactly where the water gave way to the seam's mask,
- * the same dither deciding each pixel of the band. The height field's crest light is not marched on it: under a lip it
- * reads the hump, not the lip; the lip takes the crest light over its own thickness.
+ * as a thin sheet lit from behind (`SWEPT_SHEET_BODY`). It shows exactly where the water gave way to the seam's mask
+ * (where it is full), and across the mask's band, where it rests on the water, a child mesh (`band`) draws the same
+ * surface blended over the water by the mask, so it fades into the sea with no dither (look-fix round 1). The height
+ * field's crest light is not marched on it: under a lip it reads the hump, not the lip; the lip takes the crest light
+ * over its own thickness.
  */
 export class SweptBarrelMesh {
   readonly mesh: Mesh<BufferGeometry, MeshPhysicalMaterial>;
+  /**
+   * The seam's band (look-fix round 1): the curl's own geometry and program (`SWEPT_BAND` defined), transparent, with no
+   * depth write and pulled over the water it rests on (`BAND_OFFSET`), its alpha the mask (`SWEPT_BAND_ALPHA`). A child
+   * of `mesh`, so it shows and hides with it, and shares its views, its sheet and its winding.
+   */
+  readonly band: Mesh<BufferGeometry, MeshPhysicalMaterial>;
+  private readonly bandMaterial: MeshPhysicalMaterial;
+  private readonly bandOpaqueUniform = { value: 0 };
   private readonly positions = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
   private readonly normals = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
   private readonly lift = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
@@ -285,7 +310,7 @@ export class SweptBarrelMesh {
   facesOut = true;
 
   /** `view`: a dev view of the curl in place of its shading (`SweptBarrelView`); none draws it as the water. */
-  constructor(uniforms: Record<string, { value: unknown }>, view?: SweptBarrelView) {
+  constructor(private readonly uniforms: Record<string, { value: unknown }>, view?: SweptBarrelView) {
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', this.positions);
     geometry.setAttribute('normal', this.normals);
@@ -300,37 +325,72 @@ export class SweptBarrelMesh {
     geometry.setAttribute('sweptRay', this.ray);
     geometry.setIndex(this.index);
     geometry.setDrawRange(0, 0);
-    const material = new MeshPhysicalMaterial({ color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide });
-    material.onBeforeCompile = (shader) => {
-      Object.assign(shader.uniforms, uniforms);
-      const rich = this.look === 'rich';
-      shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', rich ? `#include <common>\n${waterVertexPars}\n${sweptVertexPars}\n${richThroatVertexPars}` : `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
-        .replace('#include <beginnormal_vertex>', rich ? sweptBeginNormal + richThroatVertex : sweptBeginNormal)
-        .replace('#include <begin_vertex>', sweptBeginVertex);
-      shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', rich
-          ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
-          : `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}`)
-        .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${SWEPT_BARREL_DISCARD}`)
-        .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
-        .replace('#include <color_fragment>', '')
-        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, true, RICH_FAR_FOAM, SWEPT_SHEET_BODY + RICH_LIP_GLOW) : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
-        .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>');
-      const view = this.currentView;
-      if (!view) return;
-      shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', `#include <common>\n${sweptViewVertexPars}`)
-        .replace('#include <project_vertex>', 'vSweptView = sweptView;\n#include <project_vertex>');
-      shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', `#include <common>\n${sweptViewFragmentPars}`)
-        .replace('#include <opaque_fragment>', view === 'region' ? SWEPT_REGION_OUTPUT : SWEPT_VIEW_OUTPUT);
-    };
-    material.customProgramCacheKey = () => `breakline-swept-barrel-${this.look}${this.currentView ? `-view-${this.currentView}` : ''}`;
+    const parameters = { color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide } as const;
+    const material = new MeshPhysicalMaterial(parameters);
+    // The band: transparent, over the water it rests on, in one pass (three draws a double-sided transparent material twice).
+    this.bandMaterial = new MeshPhysicalMaterial({
+      ...parameters, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: BAND_OFFSET.factor, polygonOffsetUnits: BAND_OFFSET.units,
+    });
+    this.bandMaterial.defines = { ...this.bandMaterial.defines, SWEPT_BAND: '' };
+    this.bandMaterial.forceSinglePass = true;
+    for (const each of [material, this.bandMaterial]) {
+      const band = each === this.bandMaterial;
+      each.onBeforeCompile = (shader) => this.compile(shader, band);
+      each.customProgramCacheKey = () => `breakline-swept-barrel-${this.look}${this.currentView ? `-view-${this.currentView}` : ''}${band ? '-band' : ''}`;
+    }
     this.mesh = new Mesh(geometry, material);
     this.mesh.frustumCulled = false;
     this.mesh.visible = false;
+    // The first of the transparent things drawn: it is part of the water's surface, and spray and foam lie over it.
+    this.band = new Mesh(geometry, this.bandMaterial);
+    this.band.frustumCulled = false;
+    this.band.renderOrder = -1;
+    this.mesh.add(this.band);
     this.setView(view);
+  }
+
+  /** The shaders of the curl (`band` false) and of its band, which differ only in how the seam's mask cuts them. */
+  private compile(shader: WebGLProgramParametersWithUniforms, band: boolean): void {
+    Object.assign(shader.uniforms, this.uniforms);
+    if (band) shader.uniforms.sweptBandOpaque = this.bandOpaqueUniform;
+    const rich = this.look === 'rich';
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', rich ? `#include <common>\n${waterVertexPars}\n${sweptVertexPars}\n${richThroatVertexPars}` : `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
+      .replace('#include <beginnormal_vertex>', rich ? sweptBeginNormal + richThroatVertex : sweptBeginNormal)
+      .replace('#include <begin_vertex>', sweptBeginVertex);
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', rich
+        ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
+        : `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}`)
+      .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${SWEPT_SEAM}`)
+      .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
+      .replace('#include <color_fragment>', '')
+      .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, true, RICH_FAR_FOAM, SWEPT_SHEET_BODY + RICH_LIP_GLOW) : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
+      .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>');
+    const view = this.currentView;
+    if (!view) return;
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', `#include <common>\n${sweptViewVertexPars}`)
+      .replace('#include <project_vertex>', 'vSweptView = sweptView;\n#include <project_vertex>');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>\n${sweptViewFragmentPars}`)
+      .replace('#include <opaque_fragment>', view === 'region' ? SWEPT_REGION_OUTPUT : SWEPT_VIEW_OUTPUT);
+  }
+
+  /** Dev only: draw the band opaque, to compare the curl's shading with the water's under it. */
+  get bandOpaque(): boolean {
+    return this.bandOpaqueUniform.value === 1;
+  }
+
+  set bandOpaque(on: boolean) {
+    this.bandOpaqueUniform.value = on ? 1 : 0;
+  }
+
+  /** Free the geometry and both materials, the curl's and its band's. */
+  dispose(): void {
+    this.mesh.geometry.dispose();
+    this.mesh.material.dispose();
+    this.bandMaterial.dispose();
   }
 
   get view(): SweptBarrelView | undefined {
@@ -345,15 +405,20 @@ export class SweptBarrelMesh {
       this.viewColours = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
       this.mesh.geometry.setAttribute('sweptView', this.viewColours);
     }
+    // The region view reads the curl's own pixels (the water sheet's luminance check): the band over the water around
+    // them would mix the water in, so it is not drawn there.
+    this.band.visible = view !== 'region';
     this.mesh.material.needsUpdate = true;
+    this.bandMaterial.needsUpdate = true;
   }
 
   /** Graphics setting (G8): shaded as the Classic water, or the Rich. */
   setLook(look: WaterLook): void {
     if (look === this.look) return;
     this.look = look;
-    this.mesh.material.roughness = look === 'rich' ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
+    this.mesh.material.roughness = this.bandMaterial.roughness = look === 'rich' ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
     this.mesh.material.needsUpdate = true;
+    this.bandMaterial.needsUpdate = true;
   }
 
   /** Draw a loft's grid; none, or an empty one, hides the mesh. */
