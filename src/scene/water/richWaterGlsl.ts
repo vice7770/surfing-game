@@ -116,11 +116,15 @@ export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld
   totalEmissiveRadiance += 0.18 * waterFresh * ( 1.0 - waterChurn.x ) * pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 6.0 ) * waterSunRadiance;`;
 
 /**
- * The Rich look's own balance (G8, tuned on the water sheet against the
- * reference stills): how much of the sky its glossy surface mirrors, and the
- * gain on its body colour. Classic keeps `WATER_BODY_GAIN` and the full sky.
+ * The Rich look's own balance: how much of the sky its glossy surface mirrors, and the gain on its body colour
+ * (Classic keeps `WATER_BODY_GAIN` and the full sky).
+ *
+ * `reflection` is 1: plain Fresnel for one air-water interface (n = 1.333, F0 0.020; `WATER_F0`), so the sky the water
+ * mirrors never exceeds the sky it mirrors. G8 had it at 0.5, tuned by eye on the water sheet; that halved the warm sky
+ * at a low sun, so the near water stayed the mint of its body and a trough's khaki never turned to sky at grazing
+ * angles. The body gain stays at 4 until the owner rules on moving it to the renderer's exposure.
  */
-export const RICH_WATER = { reflection: 0.5, bodyGain: 4 } as const;
+export const RICH_WATER = { reflection: 1, bodyGain: 4 } as const;
 
 export const richReflectionPars = /* glsl */ `
 uniform float waterReflection;

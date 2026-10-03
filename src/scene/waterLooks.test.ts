@@ -321,6 +321,8 @@ describe('Classic water parity', () => {
       expect(shader.fragmentShader).toContain('#include <lights_fragment_maps>\n#if defined( RE_IndirectSpecular )\n  radiance *= waterReflection;\n#endif');
       const uniforms = shader.uniforms as Record<string, { value: unknown }>;
       expect(uniforms.waterReflection.value).toBe(RICH_WATER.reflection);
+      // Plain Fresnel: the sky the water mirrors is the whole sky, so it never exceeds the sky it mirrors.
+      expect(RICH_WATER.reflection).toBe(1);
       expect(uniforms.waterBodyGain.value).toBe(RICH_WATER.bodyGain);
       water.setLook('classic');
       expect(uniforms.waterBodyGain.value).toBe(WATER_BODY_GAIN);
