@@ -442,10 +442,7 @@ export class SurfZoneRunner {
     if (!contact || !simulation.front) return;
     const start = performance.now();
     const count = writeFrontRecords(simulation.front.points, this.contactRecords);
-    const { solver } = simulation;
-    contact.update(
-      this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z), (x, z) => solver.sampleCentered(solver.h, x, z),
-    );
+    contact.update(this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z));
     this.contactMs = performance.now() - start;
   }
 

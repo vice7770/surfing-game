@@ -2,7 +2,7 @@ import { GRAVITY } from '../dispersion';
 import type { FrontPoint } from './BreakingFront';
 import { blendOverturn, overturnAt, type Overturn } from './heldOverturn';
 import { LANDMARK, PROFILE_POINTS, type BarrelCase, type ProfileLibrary } from './ProfileLibrary';
-import { LOFT, anchorOnRay, collapseFade, type RayAnchor } from './sweptLoft';
+import { LOFT, collapseFade } from './sweptLoft';
 
 /** One front point's barrel as the loft draws it at its clock (the Padang Padang spec, Part B, PR 5: the crash). */
 export interface CrashSlice {
@@ -68,12 +68,11 @@ export interface JetMotion {
 
 /**
  * How a slice is read: at the point's own clock, or another (`tau`, s), with the point's own z or another (`z`, m: the
- * foresight reads its paced z at its τ); with the anchor held at its throw point, u = 0 (`throwAnchor`, for the probes).
+ * foresight reads its paced z at its τ).
  */
 export interface SliceClock {
   tau?: number;
   z?: number;
-  throwAnchor?: boolean;
 }
 
 const LAST = PROFILE_POINTS - 1;
@@ -96,8 +95,8 @@ function pinOf(i: number): number {
  * - the ray from the front's tangent over ±2 m, run on past its ends;
  * - the end weight, the profile at the clock (the touchdown frame from touchdown on: the drawing keeps it), and PR 4's
  *   fade over the tube's collapse;
- * - the anchor: on the solver's crest before the throw; from the throw, at the throw point on the slice's own ray
- *   (soft-capped along it), handed back to the crest point by a smoothstep whole by 0.8 of the open time (`anchorOnRay`).
+ * - the anchor: the crest point K = S − c n, so the profile's crest landmark sits on the point's crest, before the
+ *   throw and from it alike (the advisor, 2026-10-03: u = 1 from the throw).
  * Where the lip lands (the advisor, 2026-10-01): on the drawn frame's face, at its point nearest the tip, `metrics.py`'s
  * closing of the void, whose gap closing is the runs' touchdown. In the runs the face rises to meet the jet, so the tip
  * carried on at its own velocity to a still face would land 0.3–1 m too far. The jet and void are the cases' held
@@ -109,7 +108,7 @@ export class CrashCurve {
   private readonly overturns = new Map<BarrelCase, Overturn>();
   private readonly ahead = { x: 0, z: 0 };
   private readonly behind = { x: 0, z: 0 };
-  private readonly anchor: RayAnchor = { held: 0, distance: 0, capped: false, slope: 1, u: 0, rate: 0 };
+  private readonly normal = { x: 0, z: 0 };
 
   constructor(private readonly library: ProfileLibrary, private readonly slope: number) {
     for (const c of library.cases) {
@@ -130,21 +129,7 @@ export class CrashCurve {
     const tau = clock.tau ?? p.tau;
     const first = points[start].sigma;
     const last = points[end - 1].sigma;
-    // The ray: the front's shoreward normal, from its tangent over ±2 m.
-    this.positionAt(points, start, end, p.sigma + 2, this.ahead);
-    this.positionAt(points, start, end, p.sigma - 2, this.behind);
-    let tx = this.ahead.x - this.behind.x;
-    let tz = this.ahead.z - this.behind.z;
-    const t = Math.sqrt(tx * tx + tz * tz);
-    if (t > 1e-9) {
-      tx /= t;
-      tz /= t;
-    } else {
-      tx = 1;
-      tz = 0;
-    }
-    const nx = -tz;
-    const nz = tx;
+    const { x: nx, z: nz } = this.ray(points, start, end, k, this.normal);
     into.rayX = nx;
     into.rayZ = nz;
     into.width = ((k > start ? p.sigma - points[k - 1].sigma : 0) + (k + 1 < end ? points[k + 1].sigma - p.sigma : 0)) / 2;
@@ -162,19 +147,11 @@ export class CrashCurve {
     into.collapse = lookup.collapseSeconds;
     into.fade = collapseFade(tau, touchdown, lookup.collapseSeconds);
     into.weight = into.endWeight * into.fade;
-    // The anchor, as the loft places it: K = S − c n, and from the throw K + (1 − u) held n (`anchorOnRay`).
+    // The anchor, as the loft places it: the crest point K = S − c n, at the point's z or the one asked.
     const z = clock.z ?? p.z;
     const crest = profile[2 * LANDMARK.crest];
-    const crestX = p.x - crest * nx;
-    const crestZ = z - crest * nz;
-    let ax = crestX;
-    let az = crestZ;
-    if (tau >= 0 && p.throwZ !== null) {
-      const anchor = anchorOnRay((p.throwZ - z) * nz + crest, tau, touchdown, this.anchor);
-      const u = clock.throwAnchor ? 0 : anchor.u;
-      ax = crestX + (1 - u) * anchor.held * nx;
-      az = crestZ + (1 - u) * anchor.held * nz;
-    }
+    const ax = p.x - crest * nx;
+    const az = z - crest * nz;
     into.anchorX = ax;
     into.anchorZ = az;
     // The drawn tip and crest (lifted by the drawing's weight); the landing at the touchdown frame's own height (lifted by
@@ -247,6 +224,29 @@ export class CrashCurve {
     into.axisX = o.axisX;
     into.axisY = o.axisY;
     into.voidHeight = (GRAVITY * into.collapse * into.collapse) / 2;
+    return into;
+  }
+
+  /**
+   * Front point k's ray (its front's points are [start, end), at least two): the front's shoreward normal (x, z), from
+   * its tangent over ±2 m, run on past its ends, as `slice` and the loft read it; into `into`.
+   */
+  ray(points: readonly FrontPoint[], start: number, end: number, k: number, into: { x: number; z: number }): { x: number; z: number } {
+    const p = points[k];
+    this.positionAt(points, start, end, p.sigma + 2, this.ahead);
+    this.positionAt(points, start, end, p.sigma - 2, this.behind);
+    let tx = this.ahead.x - this.behind.x;
+    let tz = this.ahead.z - this.behind.z;
+    const t = Math.sqrt(tx * tx + tz * tz);
+    if (t > 1e-9) {
+      tx /= t;
+      tz /= t;
+    } else {
+      tx = 1;
+      tz = 0;
+    }
+    into.x = -tz;
+    into.z = tx;
     return into;
   }
 

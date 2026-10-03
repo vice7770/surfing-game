@@ -64,7 +64,10 @@ export interface FrontPoint {
   throwDepth: number;
   crestDepth: number;
   thrown: number | null;
-  /** Its crest's z where it crossed its throw depth, m, as `thrown` is interpolated: the τ = 0 crest the loft anchors on; null until then. */
+  /**
+   * Its crest's z where it crossed its throw depth, m, as `thrown` is interpolated: the τ = 0 crest its pace starts from
+   * (`SweptCrash`), so the drawn crest leaves from there (the advisor, 2026-10-03); null until then.
+   */
   throwZ: number | null;
   /** Its crest's height at the wedge's foot, m, and the still depth there, m: they size and scale its profile (the loft). */
   footHeight: number;

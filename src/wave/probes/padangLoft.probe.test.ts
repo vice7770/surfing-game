@@ -3,7 +3,7 @@ import { describe, it } from 'vitest';
 import { PADANG } from '../Bathymetry';
 import { loadBarrelLibrary } from '../barrel/barrelLibrary';
 import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from '../barrel/frontRecords';
-import { BARREL_SLOPE, LOFT, SweptLoft } from '../barrel/sweptLoft';
+import { BARREL_SLOPE, SweptLoft } from '../barrel/sweptLoft';
 import { SurfZoneSimulation } from '../SurfZoneSimulation';
 import { sampleSurfaceHeight } from '../../scene/WaterSurface';
 import { PADANG_SPREADING } from '../../game/PhysicalMode';
@@ -17,9 +17,10 @@ const quantiles = (values: number[]) => {
 
 /**
  * The swept loft on Padang Padang's Small swell (Part B, PR 3): its cost against the step, its slices and clamps, the
- * anchored crest's offset from the solver's (the advisor's ruling 2: report past about 2 m before touchdown), the open
- * curl's length along the crest (the checklist's 3–10 m) and neighbouring slices' clock steps in library frames (no
- * teeth: within one stage). The Classic look's bilinear heights, uncarved. Opt-in (PROBE=1); SECONDS, SWELL, LOG.
+ * open curl's length along the crest (the checklist's 3–10 m) and neighbouring slices' clock steps in library frames (no
+ * teeth: within one stage). (The anchored crest's offset from the solver's, which the advisor's ruling 2 asked for, is 0
+ * since 2026-10-03: the anchor is the crest point from the throw.) The Classic look's bilinear heights, uncarved.
+ * Opt-in (PROBE=1); SECONDS, SWELL, LOG.
  */
 describe.runIf(process.env.PROBE)('Padang Padang loft probe', () => {
   it('lofts the fronts every step and logs what it drew', async () => {
@@ -45,12 +46,6 @@ describe.runIf(process.env.PROBE)('Padang Padang loft probe', () => {
     let stepMs = 0;
     let loftMs = 0;
     let frames = 0;
-    let over2 = 0;
-    let openSlices = 0;
-    // Capped slices, and where in their tube's life (τ over the touchdown time) they fell: the advisor asks whether
-    // they cluster past 0.8, where the handover would then start.
-    const cappedLives: number[] = [];
-    let offsets: number[] = [];
     let curls: number[] = [];
     let steps: number[] = [];
     const seconds = Number(process.env.SECONDS ?? 120);
@@ -68,15 +63,6 @@ describe.runIf(process.env.PROBE)('Padang Padang loft probe', () => {
       let run = 0;
       for (let s = 0; s < result.sliceCount; s += 1) {
         const open = result.slicePhase[s] === 1;
-        if (open) {
-          openSlices += 1;
-          const offset = result.sliceCrestOffset[s];
-          if (Number.isFinite(offset)) {
-            offsets.push(offset);
-            if (offset > 2) over2 += 1;
-            if (offset > LOFT.offsetKnee) cappedLives.push(result.sliceLife[s]);
-          }
-        }
         const sameFront = s > 0 && result.sliceFront[s] === result.sliceFront[s - 1];
         if (sameFront) steps.push(Math.abs(result.sliceTau[s] - result.sliceTau[s - 1]) / frameOf);
         if (open && (run === 0 || sameFront)) run += 1;
@@ -87,14 +73,10 @@ describe.runIf(process.env.PROBE)('Padang Padang loft probe', () => {
       }
       if (run > 1) curls.push((run - 1) * 0.5);
       if (frame % 30 !== 29) continue;
-      appendFileSync(log, `t ${simulation.solver.time.toFixed(0)} s | ${count} points, ${result.sliceCount} slices, ${result.vertexCount} vertices, clamps ${result.clamps}, clamped lookups ${result.clampedLookups} | crest offset (open) ${quantiles(offsets)} m | open curl ${quantiles(curls)} m | clock step ${quantiles(steps)} frames\n`);
-      offsets = [];
+      appendFileSync(log, `t ${simulation.solver.time.toFixed(0)} s | ${count} points, ${result.sliceCount} slices, ${result.vertexCount} vertices, clamps ${result.clamps}, clamped lookups ${result.clampedLookups} | open curl ${quantiles(curls)} m | clock step ${quantiles(steps)} frames\n`);
       curls = [];
       steps = [];
     }
-    appendFileSync(log, `the loft ${(loftMs / frames).toFixed(2)} ms a frame against the step's ${(stepMs / frames).toFixed(1)} ms (${((100 * loftMs) / stepMs).toFixed(1)} %); open slices with the crest over 2 m off: ${over2} of ${openSlices}\n`);
-    const late = cappedLives.filter((life) => life > 0.8).length;
-    const fifths = [0, 1, 2, 3, 4].map((k) => cappedLives.filter((life) => life >= k / 5 && (k === 4 ? life <= 1 : life < (k + 1) / 5)).length);
-    appendFileSync(log, `capped open slices: ${cappedLives.length} of ${openSlices}; their life (τ / T_open) ${quantiles(cappedLives)}; by fifth of the open time ${fifths.join(' / ')}; past 0.8: ${late}\n`);
+    appendFileSync(log, `the loft ${(loftMs / frames).toFixed(2)} ms a frame against the step's ${(stepMs / frames).toFixed(1)} ms (${((100 * loftMs) / stepMs).toFixed(1)} %)\n`);
   }, 7_200_000);
 });
