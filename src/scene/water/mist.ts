@@ -39,10 +39,31 @@ float henyeyGreenstein( float cosTheta, float g ) {
  *   [provisional].
  * - `relief`: how far the clumps' slope tilts the sphere's normal [provisional].
  * - `shadows`: the most balls whose shadows one ball's pixels look through (the nearest the eye) [a budget].
+ * - `contact`: how far from the water's surface, as a share of its radius, a ball's pixel is all there (`foamBallContact`):
+ *   a sprite is flat, so the depth test cuts it along the line where the water crosses its face, and a ball fades to
+ *   nothing at that line, over this share of its radius, in place of a hard edge. Soft particles (Lorach 2007, NVIDIA)
+ *   fade by the depth between a particle and the surface behind it, done here against the water's height field in place
+ *   of the depth buffer [the width provisional: a render value, a quarter of the radius].
  * Its creases are shaded as the water's fresh churn is (0.88 + 0.12 × the clump's height, richWaterGlsl.ts
  * `RICH_FOAM`), so it is the whitewater it tumbles on.
  */
-export const FOAM_BALL = { depth: 8, fray: 0.2, lumps: 2, relief: 0.18, shadows: 64 } as const;
+export const FOAM_BALL = { depth: 8, fray: 0.2, lumps: 2, relief: 0.18, shadows: 64, contact: 0.25 } as const;
+
+/**
+ * How much of a foam ball shows at a point of its face `height` m over (or, negative, under) the drawn water: nothing at
+ * the water, all of it `FOAM_BALL.contact` of its `radius` away from it, a smoothstep between, the same on either side.
+ * The depth test hides the face the water is in front of, so the points left are on the eye's side of the water (over it
+ * for an eye above, under it for an eye below), and the fade is the same distance from the surface for either. The
+ * face's point is the one in the sprite's plane under the pixel (`point - centre` along the view's right and up), where
+ * the depth test cuts the sprite, not the sphere's point under it, which stands up to a radius nearer the eye: there
+ * the fade would not be nothing at the cut.
+ */
+export function foamBallContact(height: number, radius: number): number {
+  const width = FOAM_BALL.contact * radius;
+  if (!(width > 0)) return height === 0 ? 0 : 1;
+  const t = Math.min(1, Math.abs(height) / width);
+  return t * t * (3 - 2 * t);
+}
 
 const luminance = (c: readonly number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
 
@@ -140,18 +161,22 @@ export function ballShade(
   return { sunlit: Math.exp(-depth), enclosed: 1 - open, visible: Math.exp(-buried) };
 }
 
-/** The foam ball's light in GLSL: the same numbers as `FOAM_BALL`, and `foamBallDepth`, `ballShade` and `foamBallLight` as functions. */
+/** The foam ball's light in GLSL: the same numbers as `FOAM_BALL`, and `foamBallDepth`, `foamBallContact`, `ballShade` and `foamBallLight` as functions. */
 export const ballPars = /* glsl */ `
 const float DROP_G = ${DROP_G.toFixed(3)};
 const float BALL_DEPTH = ${FOAM_BALL.depth.toFixed(3)};
 const float BALL_FRAY = ${FOAM_BALL.fray.toFixed(3)};
 const float BALL_LUMPS = ${FOAM_BALL.lumps.toFixed(3)};
 const float BALL_RELIEF = ${FOAM_BALL.relief.toFixed(3)};
+const float BALL_CONTACT = ${FOAM_BALL.contact.toFixed(3)};
 #define BALL_SHADOWS ${FOAM_BALL.shadows}
 uniform vec4 sprayBalls[ BALL_SHADOWS ];
 uniform int sprayBallCount;
 float foamBallDepth( float r ) {
   return BALL_DEPTH * ( 1.0 - smoothstep( 0.55, 1.0, r ) );
+}
+float foamBallContact( float height, float radius ) {
+  return smoothstep( 0.0, BALL_CONTACT * radius, abs( height ) );
 }
 vec3 ballShade( vec3 point, vec3 normal, vec3 toSun, vec3 self ) {
   float depth = 0.0;

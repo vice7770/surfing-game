@@ -52,7 +52,8 @@ vec3 spraySky() {
  * it. The foam ball (G9) is a clump of the churned whitewater, opaque to near its rim, lit as the foam it tumbles on is
  * (`foamBallLight`): by the sky, the foam sheet under it and the sun on its lit side, as far as the other balls leave
  * it the sun, and by the foam round it where they crowd its view (`ballShade`), with a gold rim where it is thin and
- * backlit. Everything is drawn as premultiplied light, farthest first.
+ * backlit; it fades pixel by pixel to nothing where the water crosses it (`foamBallContact`), where the depth test
+ * would cut the flat sprite along a line. Everything is drawn as premultiplied light, farthest first.
  */
 export const richSprayVertex = /* glsl */ `
 attribute vec2 shape;
@@ -134,6 +135,8 @@ uniform vec3 spraySunDirection;
 uniform vec3 spraySunRadiance;
 uniform vec3 waterFoamColor;
 uniform sampler2D waterChurnMap;
+${waterHeightPars}
+${waterTubeCarvePars}
 ${mistPars}
 ${ballPars}
 ${sprayPars}
@@ -180,7 +183,11 @@ void main() {
     // The drops' phase function toward the eye: backlit, the thin rim passes the sun on.
     float forward = henyeyGreenstein( dot( normalize( vSprayWorld - cameraPosition ), spraySunDirection ), DROP_G );
     gl_FragColor = vec4( foamBallLight( dot( worldNormal, spraySunDirection ), worldNormal.y, shade.x, shade.y, 0.88 + 0.12 * churn.y, ballDepth, forward, vSky, spraySunRadiance, spraySunDirection.y, waterFoamColor ), 1.0 );
-    emission = vOpacity * ( 1.0 - exp( -ballDepth ) ) * shade.z * smoothstep( -0.3, 0.1, vAbove );
+    // The depth test cuts the flat sprite where the water crosses its face: this pixel's point in the sprite's plane is
+    // where it is, so the ball fades to nothing as that point nears the drawn water, from whichever side the eye is on.
+    vec3 faceWorld = vSprayWorld + vRadius * ( vec4( q.x, -q.y, 0.0, 0.0 ) * viewMatrix ).xyz;
+    float contact = foamBallContact( faceWorld.y - waterCarve( faceWorld.xz, waterHeightAt( faceWorld.xz ) ), vRadius );
+    emission = vOpacity * ( 1.0 - exp( -ballDepth ) ) * shade.z * contact;
     hidden = emission;
   } else {
     // A cluster of drops: a capsule along its streak, its drops spread across it most at its middle (clusterProfile).

@@ -3,7 +3,7 @@ import skyManifest from '../../../public/assets/skies/skies.json';
 import { skyExposure, type SkyEntry } from '../PhotoSky';
 import { skyIrradiance } from '../SprayPoints';
 import {
-  CAPSULE_MEANS, DROP_G, FOAM_BALL, MIST_G, SPRAY_DRAW, SPRAY_LIGHT, ballPars, ballShade, capsuleMean, clusterProfile, foamBallDepth, foamBallLight, henyeyGreenstein, isMist, mistPars,
+  CAPSULE_MEANS, DROP_G, FOAM_BALL, MIST_G, SPRAY_DRAW, SPRAY_LIGHT, ballPars, ballShade, capsuleMean, clusterProfile, foamBallContact, foamBallDepth, foamBallLight, henyeyGreenstein, isMist, mistPars,
   sprayLight, sprayPars, sprayWhite, twoStream, type BallLight, type BallShape, type SprayLight,
 } from './mist';
 import { richSprayFragment, richSprayVertex } from './richSpray';
@@ -142,6 +142,55 @@ describe('the foam ball (G9), lit as fresh foam', () => {
     const toward = foamBallLight(light, 0, 0, 1, 0, 1, 0.7, henyeyGreenstein(0.97, DROP_G)).colour;
     expect(toward[0] - away[0]).toBeGreaterThan(10 * (toward[2] - away[2]));
     expect(foamBallLight(light, 0, 0, 0, 0, 1, 0.7, henyeyGreenstein(0.97, DROP_G)).colour).toEqual(foamBallLight(light, 0, 0, 0, 0, 1, 0.7, 0).colour);
+  });
+});
+
+describe('the foam ball where the water crosses it (G9)', () => {
+  const radius = 0.3;
+
+  it('is nothing at the water, all of it a quarter of its radius away, and a smoothstep between', () => {
+    expect(FOAM_BALL.contact).toBe(0.25);
+    expect(foamBallContact(0, radius)).toBe(0);
+    expect(foamBallContact(0.25 * radius, radius)).toBe(1);
+    expect(foamBallContact(2 * radius, radius)).toBe(1);
+    expect(foamBallContact(0.125 * radius, radius)).toBeCloseTo(0.5, 9);
+    let last = 0;
+    for (let k = 1; k <= 20; k += 1) {
+      const here = foamBallContact((k / 20) * 0.25 * radius, radius);
+      expect(here).toBeGreaterThanOrEqual(last);
+      last = here;
+    }
+  });
+
+  it('is the same over the water and under it: the depth test leaves the points on the eye’s side, and each fades to nothing at the cut', () => {
+    for (const height of [0, 0.01, 0.03, 0.05, 0.2]) {
+      expect(foamBallContact(-height, radius)).toBe(foamBallContact(height, radius));
+    }
+  });
+
+  it('scales with the ball: a bigger ball softens over more of the surface', () => {
+    expect(foamBallContact(0.05, 0.2)).toBeGreaterThan(foamBallContact(0.05, 0.4));
+    expect(foamBallContact(0.05, 0.2)).toBeCloseTo(1, 9);
+  });
+
+  it('ramps over at least 6 px on the smallest ball a few metres off, as it meets the surface at the whitewater sheet’s shots', () => {
+    // The sheet's 1280 × 720 frame at 55° (waterSheet.ts): a metre across the frame's plane at 1 m is 720 / (2 tan 27.5°) px.
+    const perMetre = 720 / (2 * Math.tan((27.5 * Math.PI) / 180));
+    const smallest = 0.25;
+    for (const distance of [3, 4.5, 6]) {
+      expect(FOAM_BALL.contact * smallest * (perMetre / distance)).toBeGreaterThanOrEqual(6);
+    }
+  });
+
+  it('has a GLSL twin with the same width, which the Rich spray fades the ball by in place of the sprite’s centre height', () => {
+    expect(ballPars).toContain(`const float BALL_CONTACT = ${FOAM_BALL.contact.toFixed(3)};`);
+    expect(ballPars).toContain('float foamBallContact( float height, float radius ) {\n  return smoothstep( 0.0, BALL_CONTACT * radius, abs( height ) );');
+    expect(richSprayFragment).toContain('foamBallContact( faceWorld.y - waterCarve( faceWorld.xz, waterHeightAt( faceWorld.xz ) ), vRadius )');
+    expect(richSprayFragment).toContain('vec3 faceWorld = vSprayWorld + vRadius * ( vec4( q.x, -q.y, 0.0, 0.0 ) * viewMatrix ).xyz;');
+    // The fragment reads the drawn water itself: its own height field and the tubes' carve, not one height for the whole sprite.
+    expect(richSprayFragment).toContain('float waterHeightAt( vec2 xz )');
+    expect(richSprayFragment).toContain('float waterCarve( vec2 xz, float surface )');
+    expect(richSprayFragment).not.toContain('smoothstep( -0.3, 0.1, vAbove )');
   });
 });
 
