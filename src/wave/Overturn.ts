@@ -52,8 +52,10 @@ export function overturn(psi: number): OverturnShape {
  * about 1:10) their void area, jet and tilt are sourced, and only the roundness is Mead & Black's. Beyond them,
  * where Teahupo'o's ledge lies, the lip is `lipThickness` of the wave's height thick (Shand 2024) over the
  * void's length, and the void's area and tilt are Pick & Feddersen's at their steepest fit (provisional). The
- * gradient is averaged `band` m above and below the breaking depth: Mead & Black's stated 2–3 m band absorbs
- * height and tide errors, and 2.5 m is the game's pick within it.
+ * Teahupo'o Reef's own jet there is the periodic Basilisk runs', not this slab (`LIP_JET` in SurfZoneSimulation), so
+ * its lip is that jet over the void's in-flight length (about 0.58 H in calm air, provisional), not `lipThickness`; the slab stays for any
+ * other spot's break over a submerged crest. The gradient is averaged `band` m above and below the breaking depth:
+ * Mead & Black's stated 2–3 m band absorbs height and tide errors, and 2.5 m is the game's pick within it.
  */
 export const REEF_OVERTURN = {
   area: 0.43, lipThickness: 0.5, tiltDegrees: 23, roundestRatio: 1.42, gentlestRatio: 3.43, band: 2.5,
@@ -71,9 +73,11 @@ export function vortexRatio(orthogonalGradient: number): number {
 
 /**
  * A reef break's overturn for the gradient it climbs, under a sea `nonlinearity` (H0/h0) high, or undefined
- * where it is gentler than any measured.
+ * where it is gentler than any measured. Beyond Pick & Feddersen's fits the jet is the lip's thickness over the
+ * void's length, unless the spot has measured its own: `jetArea`, A_J / H² (the Teahupo'o Reef's, `LIP_JET`
+ * in SurfZoneSimulation). Inside the fits the jet stays theirs.
  */
-export function reefOverturn(orthogonalGradient: number, nonlinearity: number): OverturnShape | undefined {
+export function reefOverturn(orthogonalGradient: number, nonlinearity: number, jetArea?: number): OverturnShape | undefined {
   if (!(orthogonalGradient > 0)) return undefined;
   const fit = vortexRatio(orthogonalGradient);
   if (fit > REEF_OVERTURN.gentlestRatio) return undefined;
@@ -83,7 +87,7 @@ export function reefOverturn(orthogonalGradient: number, nonlinearity: number): 
   const lengthOverHeight = Math.sqrt(REEF_OVERTURN.area / (LH82_AREA * aspect));
   return {
     area: REEF_OVERTURN.area,
-    jetArea: REEF_OVERTURN.lipThickness * lengthOverHeight,
+    jetArea: jetArea ?? REEF_OVERTURN.lipThickness * lengthOverHeight,
     aspect,
     tilt: (REEF_OVERTURN.tiltDegrees * Math.PI) / 180,
   };

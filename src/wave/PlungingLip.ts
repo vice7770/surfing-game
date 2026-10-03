@@ -95,9 +95,9 @@ export interface TubeEruption {
  * Largest share of its water above the wave's trough a source cell may give one throw (the P7 bound), so the
  * crest is never cut flat. The throw's ask sets the jet; this only caps it. Round 6's Basilisk jet at Padang's
  * peak is about a fifth of the water above still level within 1.5 m of its crest (the water-physics advisor,
- * 2026-09-29).
+ * 2026-09-29). This is every lip's unless its spot says otherwise (`LIP_JET` in SurfZoneSimulation).
  */
-const SOURCE_SHARE = 0.2;
+export const SOURCE_SHARE = 0.2;
 /**
  * How far from its crest a jet's water may come, in wave heights: its share tapers from the crest to none at
  * ±2H. Basilisk's jet water sits within about ±0.5 H of its crest; the solver's crest is about twice as broad,
@@ -216,8 +216,11 @@ export interface LipConditions {
   windOverCelerity: number;
   /** Crest length the throw covers, m. */
   width: number;
-  /** A break over a submerged crest (a reef break): the gradient it climbs along its travel, rise over run. */
-  reef?: { orthogonalGradient: number };
+  /**
+   * A break over a submerged crest (a reef break): the gradient it climbs along its travel, rise over run, and
+   * the spot's own jet area there, A_J / H², where it has measured one (beyond Pick & Feddersen's fits).
+   */
+  reef?: { orthogonalGradient: number; jetArea?: number };
 }
 
 export interface LipThrow {
@@ -244,7 +247,7 @@ export function lipThrow(conditions: LipConditions): LipThrow | undefined {
   // photographed in offshore wind, so the wind reshapes the void as it does a plane slope's (Feddersen et al.
   // 2023) only from theirs, and a stronger offshore wind rounds it no further.
   if (conditions.reef && breakerHeight > 0) {
-    const reef = reefOverturn(conditions.reef.orthogonalGradient, nonlinearity);
+    const reef = reefOverturn(conditions.reef.orthogonalGradient, nonlinearity, conditions.reef.jetArea);
     if (reef) {
       const wind = Math.max(windOverCelerity, REEF_OVERTURN.windOverCelerity) - REEF_OVERTURN.windOverCelerity;
       const shape: OverturnShape = { ...reef, aspect: clamp(reef.aspect - 0.18 * wind, 0.2, 1) };
@@ -366,10 +369,11 @@ function collapsed(tube: FlyingTube, time: number): number {
 /**
  * Mass-conserving plunging lip for the physical surf zone (plan §1.9, Q12).
  * A throw takes water from the crest cell and its across-shore neighbours (at
- * most a fifth of each), with the momentum the jet carries off, and launches it
- * as ballistic parcels. A parcel that falls back through the surface returns its
- * volume and horizontal momentum to the cell it lands in, which drives the
- * splash-up and the secondary bore; its vertical momentum is lost to turbulence.
+ * most `sourceShare` of each, a fifth unless its spot says otherwise), with the
+ * momentum the jet carries off, and launches it as ballistic parcels. A parcel
+ * that falls back through the surface returns its volume and horizontal
+ * momentum to the cell it lands in, which drives the splash-up and the
+ * secondary bore; its vertical momentum is lost to turbulence.
  * The parcels are a coarse sample of the jet: one throw is a strip of
  * STRIP_PARCELS.
  */
@@ -458,7 +462,11 @@ export class PlungingLip implements LipParcelSource {
   private tubes = new Float64Array(64 * TUBE_STRIDE);
   private tubeRows = 0;
 
-  constructor(private readonly solver: ShallowWaterSolver, readonly capacity = 16384) {
+  /**
+   * `sourceShare` is the most of a source cell's water above the wave's trough one throw may take
+   * (`drawFromCrest`): SOURCE_SHARE, or the spot's own.
+   */
+  constructor(private readonly solver: ShallowWaterSolver, readonly capacity = 16384, readonly sourceShare = SOURCE_SHARE) {
     this.x = new Float64Array(capacity);
     this.y = new Float64Array(capacity);
     this.z = new Float64Array(capacity);
@@ -561,7 +569,7 @@ export class PlungingLip implements LipParcelSource {
    * from the wave's upper half, the cells across shore through the crest standing at least H/2 above its
    * trough (crest − H, where the wave's height is measured to), within SOURCE_REACH wave heights of the crest.
    * Each gives its water above the trough, tapered as 1 − (d / 2H)² with its distance d from the crest, times
-   * one share, at most SOURCE_SHARE: most from the crest's top, and none at the window's ends. The trough, not
+   * one share, at most `sourceShare`: most from the crest's top, and none at the window's ends. The trough, not
    * still level: at the Reef's step the trough drains metres below still level ahead of crests standing at
    * or below it. Told no wave height, it measures the wave from still level.
    *
@@ -604,7 +612,7 @@ export class PlungingLip implements LipParcelSource {
       water += weight * area(index);
     }
     if (!(water > 0)) return 0;
-    const share = Math.min(SOURCE_SHARE, volume / water);
+    const share = Math.min(this.sourceShare, volume / water);
     const thrown = share * water;
     if (thrown < volume) {
       this.starvedThrows += 1;

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, type SpotName } from './Bathymetry';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
@@ -5,13 +6,13 @@ import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { BREAKER_INDEX } from './SwellReadout';
 import { breakerDepthFor } from './Breaking';
 import {
-  FOAM_DECAY, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight, solverStage,
-  barrelFrontFrom, surfZoneSea, takeOffPoint,
+  FOAM_DECAY, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
+  solverStage, barrelFrontFrom, surfZoneSea, takeOffPoint,
   tankDepth, tankLayout,
   windOnsetScale, type SurfZoneConfig,
 } from './SurfZoneSimulation';
 import { BoussinesqSolver } from './BoussinesqSolver';
-import { REEF_OVERTURN } from './Overturn';
+import { PSI_RANGE, REEF_OVERTURN, overturn, overturnParameter, reefOverturn } from './Overturn';
 import { shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
 import { PADANG_SWELLS, PADANG_TIDES, REEF_SWELLS } from '../game/SurfConditions';
 import { PADANG_PRACTICE_SWELL, PADANG_SPREADING, REEF_PRACTICE_SWELL } from '../game/PhysicalMode';
@@ -21,7 +22,7 @@ import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { PADANG_FRONT } from './barrel/barrelSpots';
 import { TAKE_OFF_BAND } from './SurfMeter';
 import { SideFeed } from './SideFeed';
-import { JET_RELEASE_TIME } from './PlungingLip';
+import { JET_RELEASE_TIME, SOURCE_SHARE } from './PlungingLip';
 import { libraryFromBytes } from './barrel/barrelLibrary';
 import { readBarrelCases } from './barrel/nodeBarrelCases';
 
@@ -1103,4 +1104,83 @@ describe('the tank sized to the swell (wave sizes)', () => {
     const omega = simulation.sea.components[0].omega;
     expect(simulation.sea.components[0].k).toBe(shallowWaterWaveNumber(omega, simulation.sea.depth));
   });
+});
+
+// The Teahupo'o Reef's lip jet, raised on the owner's call of 2026-10-03: the water-physics advisor's periodic Basilisk
+// runs of its ledge give the jet, and the source's cap rises with it. Only the Reef's.
+describe('the lip jet per spot (the Reef\'s periodic Basilisk runs)', () => {
+  const RUNS = 'docs/research/water-physics/notes/round6-tube-profiles/data';
+
+  it('gives the Reef, and only the Reef, a jet of its own, and every other spot\'s lip the defaults', () => {
+    expect(Object.keys(LIP_JET)).toEqual(['reef']);
+    expect(LIP_JET.reef).toEqual({ jetArea: 0.585, sourceShare: 0.3 });
+    expect(SOURCE_SHARE).toBe(0.2);
+    for (const spot of ['beach', 'point', 'reef', 'canyon', 'padang'] as const) {
+      const { lip } = new SurfZoneSimulation(spot === 'padang' ? small_() : { ...small, spot }, 'warm');
+      expect(lip.sourceShare, spot).toBe(spot === 'reef' ? 0.3 : SOURCE_SHARE);
+    }
+  });
+
+  it('takes the Reef\'s jet from the median of the two periodic runs of its ledge, within the owner\'s 0.55–0.6 H²', () => {
+    // The jet's area just before the lip lands, over the breaking wave's height squared, for the 1:4.2 and the 1:6 ledge.
+    const jet = (run: string) => (JSON.parse(readFileSync(`${RUNS}/periodic_${run}_L12_plunge.json`, 'utf8')) as {
+      pre_touchdown: { 'per H at vertical': { jet: number } };
+    }).pre_touchdown['per H at vertical'].jet;
+    const [low, high] = [jet('reef42'), jet('reef60')].sort((a, b) => a - b);
+    expect(low).toBeCloseTo(0.55, 2);
+    expect(high).toBeCloseTo(0.62, 2);
+    expect(LIP_JET.reef!.jetArea!).toBeCloseTo((low + high) / 2, 2);
+    expect(LIP_JET.reef!.jetArea!).toBeGreaterThanOrEqual(0.55);
+    expect(LIP_JET.reef!.jetArea!).toBeLessThanOrEqual(0.6);
+    // The cap is provisional (the advisor's inference): above the share of the window's water the jet takes (0.585 of about 2.6 H²), and well under all of it.
+    expect(LIP_JET.reef!.sourceShare!).toBeGreaterThan(LIP_JET.reef!.jetArea! / 2.6);
+    expect(LIP_JET.reef!.sourceShare!).toBeLessThan(0.5);
+  });
+
+  // A spot's reef breaks as thrown, each ask over its column and H², with what the slab would ask (beyond Pick &
+  // Feddersen's fits, no jet of the spot's own) or what theirs is (inside them); stepped until `enough` or `seconds`.
+  const reefBreaks = (config: SurfZoneConfig, enough: (beyond: number, inside: number) => boolean, seconds: number) => {
+    const simulation = new SurfZoneSimulation(config);
+    const nonlinearity = edgeHeight(config, simulation.tank.edgeDepth) / (simulation.tank.edgeDepth + config.tide);
+    const beyond: { asked: number; slab: number }[] = [];
+    const inside: { asked: number; theirs: number }[] = [];
+    simulation.onThrow = (event) => {
+      if (event.orthogonalGradient === undefined) return;
+      const asked = event.asked / (simulation.tubeColumnWidth * event.height * event.height);
+      const psi = overturnParameter(event.orthogonalGradient, nonlinearity);
+      if (psi > PSI_RANGE.max) beyond.push({ asked, slab: reefOverturn(event.orthogonalGradient, nonlinearity)!.jetArea });
+      else inside.push({ asked, theirs: overturn(psi).jetArea });
+    };
+    for (let frame = 0; frame < seconds * 30 && !enough(beyond.length, inside.length); frame += 1) simulation.step(1 / 30);
+    return { simulation, beyond, inside };
+  };
+
+  // Inside the fits a Reef break keeps theirs (the reef overturn's tests in Overturn.test.ts): at game size such breaks
+  // are 0.2-0.3 % of the Reef's throws, too few to wait for here, and this sea throws none in its first 90 s.
+  it('asks the Reef\'s ledge breaks beyond Pick & Feddersen\'s fits for its sourced jet, not the slab', () => {
+    const config: SurfZoneConfig = { ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 };
+    const { simulation, beyond } = reefBreaks(config, (count) => count >= 3, 60);
+    expect(beyond.length).toBeGreaterThanOrEqual(3);
+    for (const { asked, slab } of beyond) {
+      expect(asked).toBeCloseTo(LIP_JET.reef!.jetArea!, 9);
+      // The slab would have asked about 0.47 H².
+      expect(LIP_JET.reef!.jetArea! - slab).toBeGreaterThan(0.05);
+    }
+    expect(simulation.lip.sourceShare).toBe(0.3);
+  }, 240_000);
+
+  // The Reef's entry must not leak to another spot. Padang Padang's reef breaks go beyond the fits within seconds, so a
+  // leaked jet would show in their asks.
+  it('asks another spot\'s reef breaks for the slab beyond the fits and theirs inside them, never the Reef\'s jet (Padang Padang)', () => {
+    const { simulation, beyond, inside } = reefBreaks(small_(), (out, within) => out >= 3 && within >= 3, 40);
+    expect(beyond.length).toBeGreaterThanOrEqual(3);
+    expect(inside.length).toBeGreaterThanOrEqual(3);
+    for (const { asked, slab } of beyond) {
+      expect(asked).toBeCloseTo(slab, 9);
+      // Each slab here differs from the Reef's jet, so a leaked one would fail the line above.
+      expect(Math.abs(slab - LIP_JET.reef!.jetArea!)).toBeGreaterThan(1e-3);
+    }
+    for (const { asked, theirs } of inside) expect(asked).toBeCloseTo(theirs, 9);
+    expect(simulation.lip.sourceShare).toBe(SOURCE_SHARE);
+  }, 240_000);
 });

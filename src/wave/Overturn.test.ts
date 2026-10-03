@@ -95,6 +95,7 @@ describe('the overturn of a plunging wave (Pick & Feddersen 2026)', () => {
 describe('the reef overturn (Teahupo\'o Reef, Part B)', () => {
   // A sea whose H0/h0 puts a 1:12 gradient beyond Pick & Feddersen's fits (ψ0 0.18) and a 1:30 one inside (0.07).
   const STEEP_SEA = 0.05;
+  const psiOf = (gradient: number) => overturnParameter(gradient, STEEP_SEA);
 
   it('takes the void, jet and tilt from Pick & Feddersen inside their fits, and only the roundness from Mead & Black', () => {
     const psi = overturnParameter(1 / 30, STEEP_SEA);
@@ -116,6 +117,25 @@ describe('the reef overturn (Teahupo\'o Reef, Part B)', () => {
     const shape = reefOverturn(1 / 12, STEEP_SEA)!;
     const lengthOverHeight = Math.sqrt(shape.area / (LH82_AREA * shape.aspect));
     expect(shape.jetArea).toBeCloseTo(REEF_OVERTURN.lipThickness * lengthOverHeight, 12);
+  });
+
+  it('takes a spot\'s own jet area beyond the fits, in place of the slab, and changes nothing else of the shape', () => {
+    const slab = reefOverturn(1 / 12, STEEP_SEA)!;
+    const own = reefOverturn(1 / 12, STEEP_SEA, 0.585)!;
+    expect(psiOf(1 / 12)).toBeGreaterThan(PSI_RANGE.max);
+    expect(own.jetArea).toBe(0.585);
+    expect(slab.jetArea).not.toBe(0.585);
+    expect({ ...own, jetArea: 0 }).toEqual({ ...slab, jetArea: 0 });
+    // The ledge's roundest tube takes it too, so the slab's 0.47 H² there is the one it replaces.
+    const steep = reefOverturn(1 / 2.29, STEEP_SEA)!;
+    expect(steep.jetArea).toBeCloseTo(0.4694, 4);
+    expect(reefOverturn(1 / 2.29, STEEP_SEA, 0.585)!.jetArea).toBe(0.585);
+  });
+
+  it('leaves the jet inside Pick & Feddersen\'s fits theirs, whatever a spot asks, and a gradient too gentle to the plane-slope rule', () => {
+    expect(psiOf(1 / 30)).toBeLessThan(PSI_RANGE.max);
+    expect(reefOverturn(1 / 30, STEEP_SEA, 0.585)).toEqual(reefOverturn(1 / 30, STEEP_SEA));
+    expect(reefOverturn(1 / 41, STEEP_SEA, 0.585)).toBeUndefined();
   });
 
   it('holds a steeper bed\'s tube at the roundest one measured: nothing says a break over a submerged crest collapses', () => {

@@ -241,7 +241,7 @@ The [Part B plan](../superpowers/plans/2026-09-28-teahupoo-reef-part-b.md); the 
 A break over a submerged crest with ξ ≥ 0.4 is a reef break:
 - **Roundness:** its tube's length over width is Mead & Black's vortex ratio for the gradient it climbs. The ratio is held within the 1.42–3.43 they measured at surfed breaks; gentler than 1:40, the break is a plane slope's.
 - **The gradient:** measured their way, averaged along the crest's travel from 2.5 m shallower to 2.5 m deeper than the breaking depth (H / 0.78). A band reaching past the crest ends at the crest, and one reaching below the shelf ends at the shelf: that is the gradient the wave climbs. Before the final review's fix, a small wave's band walked on across the reef flat, and its roundness depended on the window's size.
-- **Inside Pick & Feddersen's fits** (ψ0 ≤ 0.0889): their void area, jet area and tilt, with only the roundness from Mead & Black. Beyond the fits (the Teahupo'o ledge): the provisional 0.43 H² void, 0.5 H lip and 23° tilt.
+- **Inside Pick & Feddersen's fits** (ψ0 ≤ 0.0889): their void area, jet area and tilt, with only the roundness from Mead & Black. Beyond the fits (the Teahupo'o ledge): the provisional 0.43 H² void, 0.5 H lip and 23° tilt. (Since 2026-10-03 the Reef's own jet there is the periodic runs' 0.585 H², over the same void, so its lip is about 0.58 H, the jet over its void in flight (provisional): [below](#the-reefs-lip-jet-raised-to-the-periodic-runs).)
 - **Wind:** it reshapes the tube from U/C = −0.4 (Mead & Black's photos were offshore days), not from calm.
 - **No collapse over a submerged crest.** The plan's first rule, "Y < 1 collapses", made 74 of 87 Big-swell ledge breaks throw nothing. On the 1:2.29 ledge Y ≥ 0.97, so any crest within ~34° of the ledge's normal fell under it, and no source supports it.
 - **Landing:** a jet lands over its sheet's thickness along its travel, not in one cell.
@@ -271,8 +271,8 @@ Per throw, from the same runs:
 
 - **Tube shape:** Mead & Black's fit for the Reef's gradients reads a median 1.16–1.32. On half to two-thirds of the breaks that is rounder than anything they measured, so it is held at 1.42. In calm wind (these runs) it throws at 1.58, 0.07 flatter than their offshore-day tubes.
 - **The water:** at these sizes the crest gives the whole jet it is asked for. On the Big swell (60 m window, +25°, seed 3) the median crest still gives 92 %, but 21 of the 27 waves over 4 m gave under 90 %, often about half (6.4 of 12.5 m³): the crest's water limits the biggest lips. The source share was not raised (the spec's "never thicker than its water").
-- **Jet area:** 0.47 H², against Pick & Feddersen's 0.13–0.27 H² at their fitted slopes. The Reef's ledge lies beyond their fits, where the jet comes from the provisional 0.5 H lip.
-- **Sheet thickness:** 0.47 H. That is Shand's "about half the wave height", an article's description, **provisional**. Measured and modelled lips are thinner: tips about 0.07–0.08 H (Feddersen et al. 2024, Surf Ranch), roots 0.10–0.21 H (jet area over void length). The advisor's reading: 0.5 H describes the lip's root at most.
+- **Jet area:** 0.47 H², against Pick & Feddersen's 0.13–0.27 H² at their fitted slopes. The Reef's ledge lies beyond their fits, where the jet comes from the provisional 0.5 H lip. (Raised to the periodic runs' 0.585 H² on 2026-10-03: [below](#the-reefs-lip-jet-raised-to-the-periodic-runs).)
+- **Sheet thickness:** 0.47 H. That is Shand's "about half the wave height", an article's description, **provisional**. Measured and modelled lips are thinner: tips about 0.07–0.08 H (Feddersen et al. 2024, Surf Ranch), roots 0.10–0.21 H (jet area over void length). The advisor's reading: 0.5 H describes the lip's root at most. (The Reef's has been about 0.58 H since its jet was raised on 2026-10-03: the jet over its void in flight, provisional. The periodic runs' lip, 0.41–0.46 H, is their jet over the void's longest chord just before touchdown, 1.20–1.50 H: [below](#the-reefs-lip-jet-raised-to-the-periodic-runs).)
 - **Jet speed:** 1.95–1.96 times the crest's, against lab jet tips landing at 1.25–1.32 in total, about 1.16–1.17 horizontally (Erinin et al. 2023). The 1.68–1.73 figures the game's range cites are against linear phase speed, which runs 10–25 % below crest speed near breaking. This is reported, not changed: it moves where the pour lands and has to stay momentum-conserving, so it waits for the user's decision.
 
 ### Whitewater
@@ -360,7 +360,7 @@ Per throw, from the same runs:
   - the foam ball's and spit's forces;
   - the same result from a handed-over sea.
 - **Provisional:**
-  - the 0.5 H lip, the 0.43 H² void and the 23° tilt beyond Pick & Feddersen's fits;
+  - the 0.5 H lip, the 0.43 H² void and the 23° tilt beyond Pick & Feddersen's fits (the Reef's jet there has been the periodic runs' since 2026-10-03, so its lip is about 0.58 H, the jet over its void in flight, provisional too: [below](#the-reefs-lip-jet-raised-to-the-periodic-runs));
   - the −0.4 wind reference;
   - the 2.5 m band within Mead & Black's 2–3 m.
 - **Tube look:** stopped, on the user's decision to replace the carved void with a swept overturn surface.
@@ -658,7 +658,83 @@ Game size (160 m, 64 components), 110 s, seeds 1–4 on each sea: 48 runs, all f
 
 **Open:**
 - ~~**Seed 3's +x edge column:** dη/dz about 4 near t 110 s, in about 7 m of water, under both rules.~~ Jets that came down past the edge, clamped into its last column: fixed in "Jets that come down past the open edges" above.
-- **The Reef's jet ask:** 0.55–0.62 H² from the advisor's periodic runs, against the provisional 0.47.
+- ~~**The Reef's jet ask:** 0.55–0.62 H² from the advisor's periodic runs, against the provisional 0.47.~~ Raised to 0.585 H², with the source's cap at 0.3, on the Reef only: "The Reef's lip jet, raised to the periodic runs'" below.
+
+### The Reef's lip jet, raised to the periodic runs'
+
+The owner's call (2026-10-03), on the water-physics advisor's recommendation (2026-09-30): the Reef's jet ask rises from the provisional 0.47 H² to **0.585 H²**, and the source's cap from 0.2 to **0.3**, on the Reef only. Both are the Reef's entry in `LIP_JET` (`SurfZoneSimulation.ts`). Every other spot has no entry and keeps the slab and `SOURCE_SHARE`.
+
+- **The ask is sourced.**
+  - The advisor's two periodic Basilisk runs of the Reef's ledge (level 12; the second wave of a train breaks at the ledge top) give the jet just before its lip lands, over the breaking height squared: **0.5485 H²** on the 1:4.2 ledge and **0.6224 H²** on the 1:6. They are `jet` under `per H at vertical` in `docs/research/water-physics/notes/round6-tube-profiles/data/periodic_reef42_L12_plunge.json` and `periodic_reef60_L12_plunge.json`, tabulated there as 0.55 and 0.62 H² (`periodic-runs.md`, §3).
+  - **How it was chosen:** the median of the two, 0.585 H² (of two runs, their mean), inside the 0.55–0.6 H² recommended. A test reads both files and holds the constant to their median.
+  - **Its error** is the two runs' spread, ±6 %: two 2D runs at lab-scale Reynolds and Bond numbers, from first-order cnoidal trains (`periodic-runs.md`, caveats).
+- **Where it applies:** to the Reef's breaks over its ledge beyond Pick & Feddersen's fits, whose jet was the slab (a 0.5 H lip over the void's length). They are 6,420 of main's 6,585 throws below (97.5 %) and 6,371 of the change's 6,564 (97.1 %). The other throws keep their own rules' asks:
+  - **Plane-slope breaks,** with no reef gradient (not over a submerged crest, or climbing one gentler than 1:40), ask Pick & Feddersen's plane-slope jet, 0.10–0.26 H². They are 153 of main's throws (2.3 %) and 172 of the change's (2.6 %), most of them on the Small swell and at high tide (70 and 70 of main's, 59 and 85 of the change's).
+  - **Reef breaks inside the fits** ask theirs, 0.12–0.26 H². They are 12 of main's throws (0.2 %) and 21 of the change's (0.3 %).
+  - **A flat value.** The slab's ask grew with the tube's length, but 94 % of its 6,420 throws on main asked 0.46–0.50 H², and only 24 asked more than 0.585 H²: 23 on the Small swell's seed 1, up to 0.616, and one at 0.586 on Medium's seed 1. A flat 0.585 lowers those by at most 5 %, no more than the two runs' own spread.
+- **The cap, 0.3, is provisional:** the advisor's inference, not a measurement. The game's broad crest holds about 2.6 H² in the source window, so a 0.585 H² jet takes about 0.225 of it, over the 0.2 cap that already starved 39–69 % of the 0.47 H² throws. 0.3 leaves the biggest waves headroom.
+- **The tube stays; the lip thickens.**
+  - **The tube** is kept: the 0.43 H² void, length over width 1.42 and 23° tilt, which the runs support (0.34–0.45 H² and 1.5–1.8 at 85 % of its flight). So is the jet's speed, which flies the jet over that void.
+  - **The lip is not kept.** A jet lands as a sheet, its water over the void's length, spread that thick along its travel ("Landing" in Part B). With the void kept, the sheet thickens with the water: from 0.47 H to 0.58 H, measured below. That 0.58 H is the jet over its void in flight, **provisional** (the owner, 2026-10-03).
+  - **That is thicker than the runs' lip, measured over another length.** The runs' lip, 0.41–0.46 H, is their jet over the void's longest chord just before touchdown (`lip_m` = `jet_m2` / `tube_L_m` in their plunge files), by then flattened to 1.198 H on the 1:4.2 ledge and 1.500 H on the 1:6 (length over width 3.3–4.0). The game spreads the jet over its void in flight, 1.00 H long in calm air.
+  - **The recommendation kept both the tube and the lip.** In the game the two and the jet are tied (the jet is the lip times the void's length), so with the jet raised and the tube kept, the lip is what gives. The advisor has since ruled (2026-10-03) that the two lips were measured over different lengths, its own error of 2026-09-30. Landing the jets over the runs' touchdown length gave the runs' lip but steepened the bigger seas' steps, and the owner kept the void: [below](#landing-the-reefs-jets-over-the-runs-touchdown-length-measured-not-kept).
+
+Game size (160 m, 64 components), 110 s, main → this change, one run at a time: the Surf screen's Reef swells at mid tide in calm air (seeds 1 and 2), and the Big swell at high tide (seeds 1–4, the seas of the jet source's worst cases above). "Starved" counts throws that fell short of their ask; "steepest step" is the largest |Δη|/Δz between dispersive row neighbours deeper than 0.5 m.
+
+| Sea | Throws | Starved throws | Starved water | Thrown ÷ asked | Momentum not placed | Surf H1/3 | At the take-off | Steepest step | Fastest water |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Small, mid tide, seed 1 | 476 → 466 | 69 → 15 % | 12.1 → 0.8 % | 0.88 → 0.99 | 0.8 → 1.6 % | 2.28 → 2.31 m | 1.32 → 1.33 m | 1.16 → 1.33 | 5.2 → 5.7 m/s |
+| Small, mid tide, seed 2 | 456 → 456 | 55 → 15 % | 9.2 → 1.2 % | 0.91 → 0.99 | 3.2 → 4.3 % | 2.32 → 2.32 m | 1.40 → 1.41 m | 1.16 → 1.28 | 7.1 → 7.4 m/s |
+| Medium, mid tide, seed 1 | 617 → 617 | 59 → 24 % | 14.3 → 1.9 % | 0.86 → 0.98 | 1.0 → 4.6 % | 3.41 → 3.44 m | 1.47 → 1.43 m | 1.55 → 1.55 | 6.9 → 7.0 m/s |
+| Medium, mid tide, seed 2 | 599 → 594 | 60 → 20 % | 12.6 → 2.0 % | 0.87 → 0.98 | 2.1 → 5.7 % | 3.45 → 3.43 m | 1.75 → 1.74 m | 1.59 → 1.46 | 9.3 → 10.0 m/s |
+| Big, mid tide, seed 1 | 863 → 855 | 41 → 17 % | 13.1 → 2.4 % | 0.87 → 0.98 | 2.4 → 6.3 % | 4.71 → 4.69 m | 2.97 → 2.98 m | 2.33 → 2.27 | 8.6 → 8.7 m/s |
+| Big, mid tide, seed 2 | 615 → 610 | 48 → 18 % | 13.4 → 2.0 % | 0.87 → 0.98 | 7.6 → 9.7 % | 4.57 → 4.59 m | 3.01 → 3.01 m | 1.99 → 2.00 | 8.9 → 9.2 m/s |
+| Big, high tide, seed 1 | 914 → 924 | 43 → 18 % | 14.1 → 3.0 % | 0.86 → 0.97 | 3.0 → 5.8 % | 4.70 → 4.86 m | 3.45 → 3.25 m | 2.60 → 2.47 | 9.1 → 8.9 m/s |
+| Big, high tide, seed 2 | 681 → 681 | 39 → 12 % | 14.3 → 2.7 % | 0.86 → 0.97 | 5.0 → 5.9 % | 4.48 → 4.47 m | 2.90 → 2.96 m | 2.30 → 2.20 | 9.1 → 9.2 m/s |
+| Big, high tide, seed 3 | 808 → 820 | 50 → 21 % | 14.8 → 3.3 % | 0.85 → 0.97 | 4.0 → 8.4 % | 5.04 → 5.16 m | 3.20 → 3.07 m | 2.75 → 2.52 | 10.1 → 10.2 m/s |
+| Big, high tide, seed 4 | 556 → 541 | 54 → 14 % | 13.1 → 1.9 % | 0.87 → 0.98 | 5.3 → 8.5 % | 3.64 → 3.76 m | 2.58 → 2.59 m | 1.96 → 1.96 | 9.3 → 9.1 m/s |
+
+**What it shows:**
+- **The jets get their water.** The throws that fall short of their ask fall from 39–69 % to 12–24 %, and the water not thrown from 9–15 % of the asked to 0.8–3.3 %. A throw now gets 97–99 % of its ask (85–91 % on main), and one that still falls short misses by a median 0.02–0.05 H² (0.05–0.10 on main). No starved throw ends under Pick & Feddersen's 0.27 H² (one did on main, Big at high tide, seed 3).
+- **More water, as asked.** The jets carry 25–37 % more water (776 → 1,021 m³ on Small seed 1), and the mean throw rises from 0.41–0.45 to 0.54–0.58 H². The plane-slope breaks and the reef breaks inside the fits keep their rules' asks (0.10–0.26 H² on both sides).
+- **Thicker sheets, wider landings.** Over the ledge the void stays 1.00 H long (each sea's median 0.99–1.01 on both sides), so the sheet a jet lands as, its water over that length, thickens with the water. Medians per sea, main → the change:
+  - **The sheet:** as asked, 0.47 → 0.58–0.59 H; as thrown, 0.42–0.47 → 0.57–0.59 H, since main's throws fell short.
+  - **Its landing:** each jet comes down spread over its sheet's thickness along its travel, 0.80–0.81 → 1.05–1.12 m on the Small swell, 1.01–1.04 → 1.29–1.35 m on Medium and 1.02–1.26 → 1.26–1.65 m on Big.
+  - **The cells it lands in:** the jets that come down over more than one cell rise from 23–24 % to 54–65 % on the Small swell, 52–54 % to 72 % on Medium and 51–78 % to 70–93 % on Big, where a jet now spans up to four cells (three on main).
+  - **In flight:** the sheet a board or body meets thickens with the water thrown too, since its half thickness is the parcels' water over their link's length and a column's width.
+- **The water stays calm.** Every run is finite and no Froude cap holds water. Fastest water moves by −0.2 to +0.6 m/s, to 10.2 m/s at most. The steepest step is lower than or within 0.01 of main's on 8 of the 10 seas, and 0.12–0.17 higher on the Small swell's two seeds (1.16 → 1.28 and 1.33, under every Medium and Big sea's); the near-throw 99th (1.0–1.9) moves by −0.16 to +0.03.
+- **The surf readout holds, within the seeds' spread.** H1/3 moves by at most 0.03 m at mid tide, and by −0.02 to +0.15 m (up to 3.2 %) at high tide. The take-off's moves by at most 0.04 m at mid tide, and by −0.20 to +0.06 m (up to −5.7 %) at high tide, where the four seeds themselves span 2.6–3.5 m; it averages 3.03 → 2.97 m over them.
+- **More of the jets' momentum goes unplaced:** 0.8–7.6 % → 1.6–9.7 %, since the upper half's forward flow has more to carry. Every sea stays under the advisor's 10 % line, but three are close (Big mid tide seed 2 at 9.7 %, high tide seeds 3 and 4 at 8.4 and 8.5 %). This is the cost of the bigger ask, and the first thing to watch if the ask rises further.
+- **Other spots are bit-identical.** The Beach, Point, Canyon and Padang Padang, stepped 30–40 s on main and on this change, match in a hash of their water fields and in every lip counter (Padang Padang's 121 jets, 81 of them reef breaks, and 25 cap-starved throws included). The Beach and the Canyon throw no jets on those seas, so the game's Big swell at the Beach, the Canyon and the Point was stepped 40 s as well: 67, 27 and 300 jets (the Beach's one reef break and the Canyon's 26 all inside the fits), bit-identical too.
+- **Tests:** the Reef's stability suites pass with the bigger jets (the steep Reef's, and the Big swell at high tide through its sets, finite and under 20 m/s). A test steps Padang Padang, whose reef breaks go beyond the fits within seconds, and holds each ask to the slab there and to Pick & Feddersen's inside the fits: giving every spot the Reef's entry fails it.
+
+**Open:**
+- **The momentum not placed is the one to watch** (the advisor, 2026-10-03): 1.6–9.7 % with the raise, close to the advisor's 10 % line on three seas. The parcel jets leave at a median 1.92 times their crest's speed on these seas (1.77–2.05 per sea; 1.94–1.96 on Part B's tube runs), against about 1 C in the profile library whose speed the swept barrel's crash uses. So the swept barrel should lower it at the Reef (inferred).
+- **The cap's 2.6 H²** is the advisor's inference from main's 0.47 H² ask (÷ its f of 0.18). The share the Reef's throws actually take is not recorded; a probe of `drawFromCrest`'s f would settle whether 0.3 is more than the biggest waves need. Optional (the advisor, 2026-10-03).
+- ~~**The two runs are a 1:4.2 and a 1:6 ledge;** the game's ledge is steeper (1:2.29). A run on a steeper ledge would tell whether 0.585 H² holds there.~~ Dropped (the advisor, 2026-10-03): the Reef's waves climb its ledge at 1:4.2 along their path ([Tube shape against Mead & Black](#tube-shape-against-mead--black)), the case the 1:4.2 run was made for. By the game's own Mead & Black gradient, the raise's throws beyond the fits on these ten seas climb a median of 1:9.7, and 4.0 % climb steeper than 1:4.2 (254 of 6,371; up to 7.9 % on a Big sea).
+- ~~**The sheet against the runs' lip:** 0.58 H against their 0.41–0.46 H, since the game spreads a jet over its void in flight (1.00 H) and the runs measure their lip over the tube at touchdown (1.20–1.50 H). Whether to keep the thicker sheet, or land the jet over a void as long as the runs' at touchdown, is the owner's call, with the advisor.~~ The owner kept the void (2026-10-03, the advisor's recommended fallback): the 0.58 H sheet stays, the jet over its void in flight, provisional. Landing over the runs' touchdown length was measured and not kept: [below](#landing-the-reefs-jets-over-the-runs-touchdown-length-measured-not-kept).
+- **The steps once the Reef is swept** (the advisor, 2026-10-03): PR 5's crash (#102) lands each held jet over the held frame's longest void chord, about the runs' 1.2–1.5 H at the Reef (inferred). So the 0.43 H footprint that steepened the bigger seas' steps [below](#landing-the-reefs-jets-over-the-runs-touchdown-length-measured-not-kept) returns when the Reef is swept. Measure the steps bar on PR 7's Reef (#107): the Small swell's steepest step at or under Medium's, and no Medium or Big sea's above main's.
+
+### Landing the Reef's jets over the runs' touchdown length (measured, not kept)
+
+The advisor's ruling on the raise (2026-10-03) traced the thicker lip to the two lengths above and proposed landing the Reef's jets over the runs' length instead, with a pass bar on the same ten seas. It was built and measured, and not kept.
+- **The value:** 1.35 H (provisional), the median of the runs' longest void chords just before touchdown, 1.198 and 1.500 H (`tube_L_m` over `at_vertical`'s `H_m` in their plunge files). The sheet came to 0.585 / 1.35 = 0.433 H, between the runs' 0.415 and 0.458 H lips.
+- **What it touched:** the Reef's `LIP_JET` entry gained a landing length, applied beyond Pick & Feddersen's fits only and read only by `PlungingLip.land`'s thickness. The void, its carve, the air it traps and the jet's speed were unchanged.
+- **The pass bar** (the advisor): the thrown sheet 0.41–0.46 H; the Small swell's steepest step at or under Medium's (1.46–1.55), and no Medium or Big sea's above main's; the momentum not placed and the surf readout unchanged; the other spots bit-identical.
+
+Game size, the same ten seas, probe and settings as the raise's above, one run at a time:
+- **The thrown sheet: passes.** 0.433 H on every sea (the raise's 0.57–0.59 H). Every throw beyond the fits landed over 1.35 H, and no other did.
+- **The Small swell under Medium's: passes.** Its steepest steps were 1.33 and 1.26 (the raise's 1.33 and 1.28).
+- **No bigger sea above main's: fails.** Five of the eight Medium and Big seas' steepest steps rose above main's by more than 0.01: Medium 1.553 → 1.590 and 1.593 → 1.632, Big at mid tide 2.329 → 2.493 and 1.994 → 2.012, and Big at high tide seed 1 2.604 → 2.889. The raise had all eight lower than or within 0.01 of main's. Four of the five new maxima sit near a throw (within 2 s, two columns and 2H + 2 m of its crest). Each frame's steepest step stayed within −0.05 to +0.10 of main's at its 99th percentile: it is the extremes that rose.
+- **The fastest water** rose from 10.2 m/s at most with the raise to 11.4 m/s (Big at high tide, seed 3). Every run stayed finite, with no Froude cap holding water.
+- **The momentum not placed and the surf readout: the ranges hold, and the per-sea moves are mixed in sign.** The momentum not placed spans 1.6–9.8 % (the raise's 1.6–9.7 %). Against the raise it rose on five seas and fell on five, by −3.0 to +3.9 points, where the raise had raised it from main on all ten. Its highest, 9.8 % on Big at high tide seed 2, is under the advisor's 10 % line. H1/3 and the take-off's height moved by at most 0.03 m on the Small and Medium swells, and by −0.22 to +0.21 m on Big.
+- **Other spots:** bit-identical to main, in the same seven cases.
+
+**Why** (the advisor): `PlungingLip.land`'s thickness is each jet parcel's footprint in the solver. A sheet t thick comes down as ceil(t/dx) pieces spread across t, each landing whole in its cell. Over 1.35 H the thinner sheet put the raise's 25–40 % more water into about as many cells as main's: the jets landing in more than one cell were 20–27, 45–50 and 46–72 % on the Small, Medium and Big swells (main's 23–24, 52–54 and 51–78 %; the raise's 54–65, 72 and 70–93 %). The steeper steps follow from that (inferred from the spreads).
+
+**The drawn sheet's thickness does not change** with either length: the Rich sheet's comes from its parcels' water and spacing (`lipThickness` in `src/scene/water/richLip.ts`). The solver's water near the throws does change, and that water is drawn.
+
+**Not kept** (the owner, 2026-10-03, on the advisor's recommended fallback): the Reef's jets land over their void in flight, with the 0.58 H sheet marked provisional and the raise's steps. The advisor's reasons: the two landings' spreads differ by 0.3–0.4 m on 1 m cells, finer than the solver resolves (inferred), so the sourced length gains nothing the player can see, and the bar it fails guards the solver's health. The same footprint returns once the Reef is swept (Open, above). The commit, with its tests and its ten-sea table, is kept on branch `claude/reef-jet-landing`.
 
 ## Commands
 
@@ -672,4 +748,10 @@ Game size (160 m, 64 components), 110 s, seeds 1–4 on each sea: 48 runs, all f
 - The half-height edge: a one-off game-size probe on main and on two scratch copies of `drawFromCrest`'s weight.
   - It wraps `lip.launch` to record each throw's removal and upper half, and `onBreak` for the SurfMeter's bands and take-off.
   - It steps the Surf screen's Reef seas 110 s at 30 Hz, recording each frame's steps between dispersive neighbours near the last 2 s of throws.
+- The Reef's jet ask: a one-off game-size probe stepping the Reef's Surf screen seas (Small, Medium and Big at mid tide in calm air, seeds 1 and 2; Big at high tide, seeds 1–4) 110 s at 30 Hz, one run at a time, on main and on the change.
+  - It wraps `lip.launch` for the jets' momentum and listens to `onThrow` (asked and thrown water, the gradient, the void's length) and `onBreak` (the size report's bands and the take-off's, for H1/3).
+  - It sorts each throw as a reef break beyond or inside Pick & Feddersen's fits, by ψ0 from its gradient, or a plane slope's (no gradient). A jet's sheet is its thrown water over a column's width and the void's length, the thickness `PlungingLip` lands it over.
+  - After each step it records the steepest |Δη|/Δz between dispersive row neighbours deeper than 0.5 m (near-throw: within 2 s, two columns and 2H + 2 m of a throw's crest) and the fastest wet speed.
+  - Other spots: the Beach, Point, Canyon and Padang Padang stepped 30–40 s on main and on the change, and the Beach, Canyon and Point on the game's Big swell (mid tide, calm, seed 1) for 40 s, comparing a hash of h, qx and qz and the lip's counters.
+- The Reef's landing length (not kept): the same probe and seas on branch `claude/reef-jet-landing`, also recording each throw's landing length and checking, at every jet parcel's landing, that it comes down in as many pieces as its throw's sheet spans; the other spots' cases against main as above.
 - Part C: a one-off game-size probe (the simulation stepped 45 s, the fastest water with depth over 5 cm recorded), here and in a detached `origin/main` worktree; `npm run report:rideability -- --spots reef --hs 1.3 --tp 15 --direction 20 --spread 0.2 --seeds 2 --periods 12` and `npm run report:catch -- --practice --ghosts --spots reef --seeds 2 --minutes 3`, both sides

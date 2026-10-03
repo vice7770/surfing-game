@@ -293,6 +293,38 @@ export const FOAM_DECAY: Record<SpotName, FoamDecay> = {
   pool: { dense: 3, residual: 8 },
 };
 
+/** A spot's own lip jet: see `LIP_JET`. */
+export interface LipJetSetting {
+  /** What a break over the spot's ledge asks for beyond Pick & Feddersen's fits, A_J / H²; the provisional slab's where omitted. */
+  jetArea?: number;
+  /** The most of a source cell's water above the wave's trough one throw may take; `SOURCE_SHARE` where omitted. */
+  sourceShare?: number;
+}
+
+/**
+ * The lip jets of the spots that have their own (the owner, 2026-10-03, on the water-physics advisor's recommendation
+ * of 2026-09-30); every other spot keeps the slab and `SOURCE_SHARE`.
+ * - **The Teahupo'o Reef's jet, 0.585 H²,** is the median of the advisor's two periodic Basilisk runs of its ledge:
+ *   0.55 H² on the 1:4.2 ledge and 0.62 H² on the 1:6, each the jet's area just before the lip lands over the
+ *   breaking wave's height squared (0.5485 and 0.6224; docs/research/water-physics/notes/round6-tube-profiles/periodic-runs.md,
+ *   data/periodic_reef42_L12_plunge.json and data/periodic_reef60_L12_plunge.json). It replaces the slab's 0.47 H²
+ *   (a 0.5 H lip over the void's length, unsourced). The tube (0.43 H², 1.42 and 23°) stays: the runs support it
+ *   (0.34-0.45 H², 1.5-1.8 at 85 % of the flight).
+ * - **So the Reef's lip thickens.** A jet lands as a sheet, its water over the void's length (`PlungingLip`), and the
+ *   void stays about 1 H long in calm air, so the sheet goes from 0.47 H to about 0.58 H (provisional: the jet over its
+ *   in-flight void; landing over the runs' 1.35 H was tried and not kept, see the report) and each jet lands spread that
+ *   much wider along its travel. The runs' lip is thinner, 0.41-0.46 H, because they measure it over the tube just
+ *   before it lands, flattened to 1.2-1.5 H long. A consequence of the owner's call, measured in
+ *   docs/research/teahupoo-reef-report.md.
+ * - **The Reef's cap, 0.3, is provisional** (the advisor's inference, not a measurement). The game's broad crest holds about
+ *   2.6 H² of water in the source window, so a 0.585 H² jet takes a share of about 0.225 of it: over the 0.2 cap,
+ *   which starved 39-69 % of the 0.47 H² throws on main (docs/research/teahupoo-reef-report.md); 0.3 leaves the
+ *   biggest waves headroom.
+ */
+export const LIP_JET: Partial<Record<SpotName, LipJetSetting>> = {
+  reef: { jetArea: 0.585, sourceShare: 0.3 },
+};
+
 /**
  * Wind shifts breaking onset (plan Q23), as a factor on the breaking thresholds
  * like the breaker index γ. With u = U/√(g h_b), positive onshore: γ(1 − 0.10u)
@@ -554,7 +586,7 @@ export class SurfZoneSimulation {
     const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? poolRiddenAt : undefined;
     this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
-    this.lip = new PlungingLip(this.solver);
+    this.lip = new PlungingLip(this.solver, undefined, LIP_JET[config.spot]?.sourceShare);
     this.foam = new FoamField(this.solver, config.foamDecay ?? FOAM_DECAY[config.spot]);
     this.aeration = new AerationField(this.solver, { period: config.peakPeriod });
     this.lip.onLand = (x, z, volume, vx, vy, vz, flight) => {
@@ -968,7 +1000,7 @@ export class SurfZoneSimulation {
       breakerHeight: height,
       windOverCelerity: (this.config.windSpeed ?? 0) / Math.sqrt(GRAVITY * stillDepth),
       width: solver.dx,
-      reef: orthogonal !== undefined ? { orthogonalGradient: orthogonal } : undefined,
+      reef: orthogonal !== undefined ? { orthogonalGradient: orthogonal, jetArea: LIP_JET[this.config.spot]?.jetArea } : undefined,
     });
     if (!shape) return;
     // The jet leaves the way the crest travels, measured from the crest's own motion, and outruns it
