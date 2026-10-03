@@ -53,7 +53,7 @@ export function overturn(psi: number): OverturnShape {
  * where Teahupo'o's ledge lies, the lip is `lipThickness` of the wave's height thick (Shand 2024) over the
  * void's length, and the void's area and tilt are Pick & Feddersen's at their steepest fit (provisional). The
  * Teahupo'o Reef's own jet there is the periodic Basilisk runs', not this slab (`LIP_JET` in SurfZoneSimulation), so
- * its lip is that jet over the void's length (about 0.58 H in calm air), not `lipThickness`; the slab stays for any
+ * its lip is that jet over the void's in-flight length (about 0.58 H in calm air, provisional), not `lipThickness`; the slab stays for any
  * other spot's break over a submerged crest. The gradient is averaged `band` m above and below the breaking depth:
  * Mead & Black's stated 2–3 m band absorbs height and tide errors, and 2.5 m is the game's pick within it.
  */

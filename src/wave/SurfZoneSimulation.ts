@@ -268,7 +268,8 @@ export interface LipJetSetting {
  *   (a 0.5 H lip over the void's length, unsourced). The tube (0.43 H², 1.42 and 23°) stays: the runs support it
  *   (0.34-0.45 H², 1.5-1.8 at 85 % of the flight).
  * - **So the Reef's lip thickens.** A jet lands as a sheet, its water over the void's length (`PlungingLip`), and the
- *   void stays about 1 H long in calm air, so the sheet goes from 0.47 H to about 0.58 H and each jet lands spread that
+ *   void stays about 1 H long in calm air, so the sheet goes from 0.47 H to about 0.58 H (provisional: the jet over its
+ *   in-flight void; landing over the runs' 1.35 H was tried and not kept, see the report) and each jet lands spread that
  *   much wider along its travel. The runs' lip is thinner, 0.41-0.46 H, because they measure it over the tube just
  *   before it lands, flattened to 1.2-1.5 H long. A consequence of the owner's call, measured in
  *   docs/research/teahupoo-reef-report.md.
