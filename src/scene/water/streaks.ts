@@ -27,7 +27,9 @@ const STREAK_PHASE = [1.11, 1.89] as const;
 /**
  * The streaks turn with the current about anchors this far apart, m: the corners of a triangular lattice (tiled
  * directional flow), so a turn of the current moves the lines by its angle times a few metres, not times the distance to
- * the world's origin, where they would swim with every wave.
+ * the world's origin, where they would swim with every wave. Each anchor turns its lines to the current where they are
+ * drawn, not to its own, so between anchors whose currents differ the lines of both still run together, along the
+ * current, and never cross in a hatch.
  */
 export const STREAK_ANCHOR = 6;
 /**
@@ -85,9 +87,10 @@ export function streakMask(steepness: number, foam: number): number {
 const STREAK_LEAST = 1e-4;
 
 /**
- * CPU mirror of `waterStreak`: the share of the pixel at (x, z), m, that is streak, given the current at any point
- * (`flowAt`, m/s), the surface's slope and foam there, the clock and the pixel's footprint. Each of the three anchors'
- * two flow-map phases is the foam field's late stage in the anchor's frame, its own turn and shift. They are combined by
+ * CPU mirror of `waterStreak`: the share of the pixel at (x, z), m, that is streak, given the current (`flowAt`, m/s),
+ * the surface's slope and foam there, the clock and the pixel's footprint. Each of the three anchors' two flow-map
+ * phases is the foam field's late stage in the frame of the current there, turned about the anchor, its own turn and
+ * shift. They are combined by
  * their union before any threshold: a component that weighs w is drawn where it passes the value that leaves (1 − F)^w
  * of it below, so the six together cover F = `STREAK_COVER` of the face, and none is blended with another. (Blended,
  * two independent sets of thin lines threshold to beads; the union keeps each a line, only thinner where it weighs less.)
@@ -106,7 +109,6 @@ export function streakCover(
   const keep = Math.log(1 - STREAK_COVER);
   let best = -8;
   for (const anchor of streakAnchors(x, z)) {
-    const [anchorFlowX, anchorFlowZ] = flowAt(anchor.x, anchor.z);
     const phases: [[number, number], number, [number, number]][] = [
       [pa, w, anchor.hash],
       [pb, 1 - w, [(anchor.hash[0] ^ STREAK_PHASE_HASH) >>> 0, (anchor.hash[1] ^ STREAK_PHASE_HASH) >>> 0]],
@@ -114,7 +116,7 @@ export function streakCover(
     for (const [p, phase, hash] of phases) {
       const weight = anchor.weight * phase;
       if (weight <= STREAK_LEAST) continue;
-      const [u, v] = streakFrame(p[0], p[1], anchorFlowX, anchorFlowZ, anchor.x, anchor.z);
+      const [u, v] = streakFrame(p[0], p[1], flowX, flowZ, anchor.x, anchor.z);
       best = Math.max(best, foamTurnedSample(u / STREAK_TILE, v / STREAK_TILE, hash[0], hash[1], 3) - foamQuantile(Math.exp(weight * keep)));
     }
   }
@@ -125,15 +127,14 @@ export function streakCover(
 /**
  * GLSL: the foam field's late stage (lace and threads), stretched along the current and carried by it in the lace's
  * two flow-map phases, thresholded for a tenth of the face, as thin lines up steep foamy faces. Each of the three anchors
- * around a pixel turns them with the current at the anchor and draws its own (`STREAK_SALT`); their six samples are
- * combined by their union, each thresholded for its weight. Returns the lines' coverage: how faint a streak is belongs to
- * the foam layer's reflectance (a bubble monolayer, 0.10), no longer to a hand opacity of 0.55. Needs `foamPatternPars`,
- * the height pars (`waterGrid`, `waterGridSize`) and `waterTime`, and, defined after it, `waterStreakField`,
- * `waterFoamPcg` and `waterFoamQuantile` of `waterChurnPars` (the water's program lists the streaks first, so this
- * declares the functions it calls and that one defines them).
+ * around a pixel turns them about itself to the current at the pixel and draws its own (`STREAK_SALT`); their six
+ * samples are combined by their union, each thresholded for its weight. Returns the lines' coverage: how faint a streak
+ * is belongs to the foam layer's reflectance (a bubble monolayer, 0.10), no longer to a hand opacity of 0.55. Needs
+ * `foamPatternPars` and `waterTime`, and, defined after it, `waterStreakField`, `waterFoamPcg` and `waterFoamQuantile`
+ * of `waterChurnPars` (the water's program lists the streaks first, so this declares the functions it calls and that one
+ * defines them).
  */
 export const waterStreakPars = /* glsl */ `
-uniform sampler2D waterFlow;
 const float STREAK_STRETCH = ${STREAK_STRETCH.toFixed(3)};
 const float STREAK_ANCHOR = ${STREAK_ANCHOR.toFixed(3)};
 const float STREAK_TILE = ${STREAK_TILE.toFixed(3)};
@@ -141,12 +142,6 @@ const int STREAK_SALT = ${STREAK_SALT};
 float waterStreakField( vec2 frame, vec2 dx, vec2 dy, uvec2 h );
 uvec2 waterFoamPcg( uvec2 v );
 float waterFoamQuantile( float p );
-vec2 waterStreakCurrent( vec2 anchor ) {
-  ivec2 c = clamp( ivec2( floor( ( anchor - waterGrid.xy ) / waterGrid.z + 0.5 ) ), ivec2( 0 ), ivec2( waterGridSize ) - 1 );
-  vec2 flow = texelFetch( waterFlow, c, 0 ).rg;
-  float speed = length( flow );
-  return speed > 1e-3 ? flow / speed : vec2( 0.0, 1.0 );
-}
 float waterStreakGauss( vec2 q, vec2 anchor, vec2 along, vec2 dpdx, vec2 dpdy, uvec2 h ) {
   vec2 across = vec2( -along.y, along.x );
   vec2 local = q - anchor;
@@ -178,13 +173,14 @@ float waterStreak( vec2 p, vec2 flow, float steepness, float foam ) {
   weights = weights * weights * weights;
   weights /= weights.x + weights.y + weights.z;
   float keep = log( ${(1 - STREAK_COVER).toFixed(4)} );
+  float speed = length( flow );
+  vec2 along = speed > 1e-3 ? flow / speed : vec2( 0.0, 1.0 );
   float best = -8.0;
   for ( int k = 0; k < 3; k ++ ) {
     vec2 corner = cell + ( k == 0 ? vec2( up ) : ( k == 1 ? vec2( 1.0, 0.0 ) : vec2( 0.0, 1.0 ) ) );
     float weight = k == 0 ? weights.x : ( k == 1 ? weights.y : weights.z );
     vec2 anchor = vec2( corner.x + 0.5 * corner.y, 0.8660254038 * corner.y ) * STREAK_ANCHOR;
     uvec2 h = waterFoamPcg( uvec2( ivec2( corner ) + STREAK_SALT ) );
-    vec2 along = waterStreakCurrent( anchor );
     if ( weight * w > ${STREAK_LEAST.toExponential(0)} ) best = max( best, waterStreakGauss( pa, anchor, along, dpdx, dpdy, h ) - waterFoamQuantile( exp( weight * w * keep ) ) );
     if ( weight * ( 1.0 - w ) > ${STREAK_LEAST.toExponential(0)} ) best = max( best, waterStreakGauss( pb, anchor, along, dpdx, dpdy, h ^ uvec2( ${STREAK_PHASE_HASH}u ) ) - waterFoamQuantile( exp( weight * ( 1.0 - w ) * keep ) ) );
   }

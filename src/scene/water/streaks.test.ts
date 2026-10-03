@@ -195,6 +195,42 @@ describe('face streaks from the foam field’s late stage', () => {
     }
   });
 
+  it('run along the current where they are drawn, even where the anchors’ currents differ, so they never cross in a hatch', () => {
+    // A current turning 0.25 rad a metre across x (86 degrees over an anchor's 6 m). In windows of 1.5 m, the lines'
+    // direction (across the strongest gradient of the mask's structure tensor) against the current there: turned to each
+    // anchor's own current instead, the lines of neighbouring anchors cross, and the mean angle was 19 degrees.
+    const flowAt = (x: number): [number, number] => [Math.sin(0.25 * x), Math.cos(0.25 * x)];
+    let angle = 0;
+    let windows = 0;
+    for (let px = 2; px < 40; px += 3.4) {
+      for (let pz = 3; pz < 40; pz += 4.6) {
+        const n = 60;
+        const step = 0.025;
+        const mask = new Float32Array(n * n);
+        for (let j = 0; j < n; j += 1) for (let i = 0; i < n; i += 1) mask[j * n + i] = streakCover(px + i * step, pz + j * step, (x) => flowAt(x), 3.1, 0.8, 0.3) >= 0.5 ? 1 : 0;
+        let sxx = 0;
+        let szz = 0;
+        let sxz = 0;
+        for (let j = 1; j < n - 1; j += 1) {
+          for (let i = 1; i < n - 1; i += 1) {
+            const gx = mask[j * n + i + 1] - mask[j * n + i - 1];
+            const gz = mask[(j + 1) * n + i] - mask[(j - 1) * n + i];
+            sxx += gx * gx;
+            szz += gz * gz;
+            sxz += gx * gz;
+          }
+        }
+        if (sxx + szz < 1) continue;
+        const theta = 0.5 * Math.atan2(2 * sxz, sxx - szz);
+        const [fx, fz] = flowAt(px + 0.75);
+        angle += (Math.acos(Math.min(1, Math.abs(-Math.sin(theta) * fx + Math.cos(theta) * fz))) * 180) / Math.PI;
+        windows += 1;
+      }
+    }
+    expect(windows).toBeGreaterThan(80);
+    expect(angle / windows).toBeLessThan(15);
+  });
+
   it('are combined by their union, each anchor’s phase thresholded for its weight, and defined where the churn map is', () => {
     // A component that weighs w is drawn where it passes the value leaving (1 - F)^w of it below: six of them cover F.
     expect(waterStreakPars).toContain(`float keep = log( ${(1 - STREAK_COVER).toFixed(4)} );`);
