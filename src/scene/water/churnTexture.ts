@@ -161,6 +161,9 @@ export function churnTexture(): DataTexture {
   texture.wrapT = RepeatWrapping;
   texture.magFilter = LinearFilter;
   texture.minFilter = LinearMipmapLinearFilter;
+  // A surfer's eye is a metre or two over the water, so a pixel is much longer along the view than across it: read plain, the
+  // foam's threads smear to the long side. 4, as the board's map; 8 costs about 30% more where the foam is, for little more.
+  texture.anisotropy = 4;
   texture.generateMipmaps = true;
   texture.needsUpdate = true;
   return texture;
