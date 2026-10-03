@@ -265,8 +265,13 @@ export interface LipJetSetting {
  *   0.55 H² on the 1:4.2 ledge and 0.62 H² on the 1:6, each the jet's area just before the lip lands over the
  *   breaking wave's height squared (0.5485 and 0.6224; docs/research/water-physics/notes/round6-tube-profiles/periodic-runs.md,
  *   data/periodic_reef42_L12_plunge.json and data/periodic_reef60_L12_plunge.json). It replaces the slab's 0.47 H²
- *   (a 0.5 H lip over the void's length, unsourced). The tube (0.43 H², 1.42 and 23°) and the lip's 0.5 H stay: the
- *   runs support them (0.34-0.45 H², 1.5-1.8 at 85 % of the flight; lip 0.41-0.46 H).
+ *   (a 0.5 H lip over the void's length, unsourced). The tube (0.43 H², 1.42 and 23°) stays: the runs support it
+ *   (0.34-0.45 H², 1.5-1.8 at 85 % of the flight).
+ * - **So the Reef's lip thickens.** A jet lands as a sheet, its water over the void's length (`PlungingLip`), and the
+ *   void stays about 1 H long in calm air, so the sheet goes from 0.47 H to about 0.58 H and each jet lands spread that
+ *   much wider along its travel. The runs' lip is thinner, 0.41-0.46 H, because they measure it over the tube just
+ *   before it lands, flattened to 1.2-1.5 H long. A consequence of the owner's call, measured in
+ *   docs/research/teahupoo-reef-report.md.
  * - **The Reef's cap, 0.3, is provisional** (the advisor's inference, not a measurement). The game's broad crest holds about
  *   2.6 H² of water in the source window, so a 0.585 H² jet takes a share of about 0.225 of it: over the 0.2 cap,
  *   which starved 39-69 % of the 0.47 H² throws on main (docs/research/teahupoo-reef-report.md); 0.3 leaves the
