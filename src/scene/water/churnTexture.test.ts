@@ -433,9 +433,12 @@ describe('the foam field', () => {
     expect(moved).toBeLessThan(stayed / 3);
   });
 
-  it('is built from two octaves whose weights make a unit Gaussian, a large one for the holes and a small one for their edges', () => {
+  it('is built from two octaves whose weights make a unit Gaussian, in the ratio of a turbulent scalar’s spectrum: the large one for the holes, the small one fraying them', () => {
     expect(FOAM_WEIGHTS.large ** 2 + FOAM_WEIGHTS.small ** 2).toBeCloseTo(1, 12);
     expect(FOAM_WEIGHTS.large).toBeGreaterThan(FOAM_WEIGHTS.small);
+    // The variance of a k^(-5/3) spectrum in two bands a factor 4 apart (the octaves' tiles, 12 m and 3 m) is 4^(-2/3).
+    expect((FOAM_WEIGHTS.small / FOAM_WEIGHTS.large) ** 2).toBeCloseTo(4 ** (-2 / 3), 12);
+    expect(FOAM_OCTAVES.large / FOAM_OCTAVES.small).toBe(4);
     expect(FOAM_OCTAVES.large).toBe(12);
     expect(FOAM_OCTAVES.small).toBe(3);
     expect(FOAM_OCTAVES.large * FOAM_BAKE.size).toBeGreaterThan(0);
