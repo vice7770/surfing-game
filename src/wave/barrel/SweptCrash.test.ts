@@ -409,6 +409,20 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     expect(lip.closedAtPour).toBe(0);
   });
 
+  it('retains the observed crest at first pacing before resetting the point to its throw anchor', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver);
+    const crash = new SweptCrash(library(), 0.05);
+    const points = front(3, () => 0.05).map((p) => ({ ...p, z: 13, throwZ: 11.5, crestSpeed: 4 }));
+    crash.update(points, sea(solver, lip));
+    for (const point of points) {
+      expect(point.crestZ).toBe(13);
+      expect(point.jetBase).toBe(11.5);
+      expect(point.z).toBeCloseTo(11.5 + point.jetPace! * point.tau, 12);
+      expect(point.z).not.toBe(point.crestZ);
+    }
+  });
+
   it('paces a thrown point, jet or not, along its column, c_n / n_z after the clamp, with no blend through its slice’s fade (the advisor)', () => {
     const solver = basin();
     const lip = new PlungingLip(solver);

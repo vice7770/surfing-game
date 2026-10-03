@@ -1,0 +1,70 @@
+{
+  "base": "56bf750996cd48cdc5ef45954c479a268053c0b9",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 5481,
+      "sha256": "6eadb0b5d263062675273d12e09cd6f0d8ab1bc02bc5dc99a4e2233c24382d78"
+    },
+    {
+      "path": "focused-validation.json",
+      "bytes": 1937,
+      "sha256": "dbdcfed031efb0693d7e8de5ecd471525710e5a16692c6cdb10307222849e9a6"
+    },
+    {
+      "path": "gameplay-build-manifest.json",
+      "bytes": 2433,
+      "sha256": "c3d6faf1490a7ac2882b14be2af8bc3b95e5c06ec3966face712e092ed83025b"
+    },
+    {
+      "path": "gameplay-fps.json",
+      "bytes": 80670,
+      "sha256": "c31d95aa848a2eb826c88525268c6a1a1b0a3a4ba9f7e922fad5c32a40dba9c9"
+    },
+    {
+      "path": "gameplay-survey.mjs.txt",
+      "bytes": 38889,
+      "sha256": "0b94271e4aa6709a16e0793bfff42a93a0876ba4628d655ddbff83a2f1252751"
+    },
+    {
+      "path": "original/src/wave/barrel/BreakingFront.ts",
+      "bytes": 38669,
+      "sha256": "d234af07ab831b8f5c0211675c94cec3b9fc081381d5d634223ef0ac99116bf0"
+    },
+    {
+      "path": "original/src/wave/barrel/sliceClock.ts",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+    },
+    {
+      "path": "original/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+    },
+    {
+      "path": "original-reproduction.json",
+      "bytes": 18145,
+      "sha256": "a9866031a602f554aab0431733c7100dc7507f8581b5fa63217e8c69c9129216"
+    },
+    {
+      "path": "original-reproduction.mjs.txt",
+      "bytes": 5125,
+      "sha256": "9eaad2e45e76e65e9d9adbb5b15e260baa1883ee43d4c18c6ea8e5e69ff8fc47"
+    },
+    {
+      "path": "owned-cdp.mjs.txt",
+      "bytes": 2037,
+      "sha256": "36f62bd75468ef3b20ba0fe613256f8a29c81b764b88551961d51194b8b40211"
+    },
+    {
+      "path": "reproduce.mjs",
+      "bytes": 5155,
+      "sha256": "421b21ca6d6545feff05767c83a1bbe08352a041630b081e64902a07656091f0"
+    },
+    {
+      "path": "reproduction.json",
+      "bytes": 18145,
+      "sha256": "a9866031a602f554aab0431733c7100dc7507f8581b5fa63217e8c69c9129216"
+    }
+  ]
+}

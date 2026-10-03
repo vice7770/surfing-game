@@ -1,0 +1,77 @@
+{
+  "purpose": "ordinary native gameplay sanity after paced own-crossing repair; no isolated FPS-saving claim",
+  "base": "56bf750996cd48cdc5ef45954c479a268053c0b9",
+  "changedRuntime": [
+    "BreakingFront.ts",
+    "SweptCrash.ts"
+  ],
+  "boundSeconds": 360,
+  "profileTimers": false,
+  "files": [
+    {
+      "path": "dist/assets/WorkerSurfZone-8pNiElrU.js",
+      "sha256": "492514b43928eec48b1a90db8630aa8dbdb51ce7611565d4585dcd82ad08752d",
+      "bytes": 848363
+    },
+    {
+      "path": "dist/assets/devStepping-DpFxiFxV.js",
+      "sha256": "d805b649a21981b5abc7a6ef90d1cc52746478cbb5d9f473858a3ccc198bf516",
+      "bytes": 320
+    },
+    {
+      "path": "dist/assets/index-BBfxZIFO.js",
+      "sha256": "fd2c2bd093073e04d25b191833a9b45b4465554b743cf1fd1faca7208987e8a0",
+      "bytes": 582425
+    },
+    {
+      "path": "dist/assets/index-DA8NEfOT.css",
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148",
+      "bytes": 33213
+    },
+    {
+      "path": "dist/assets/jevRecorder-bAyFRm6D.js",
+      "sha256": "1d3255bb3d5d85ac0798c3531ef7881a37e37aa85344fb44ce57028e1b20dbfc",
+      "bytes": 15917
+    },
+    {
+      "path": "dist/assets/particleBench-CYvKdjqn.js",
+      "sha256": "8da44106b3d6074a9b18d9addff646513253e3d1f286d38025a05af4847e6d4a",
+      "bytes": 10708
+    },
+    {
+      "path": "dist/assets/rideRecorder-D1wI60PW.js",
+      "sha256": "d9268e2f9db97bc9d1135494064c7f3f948a5b5ddfc1293d7b90e49ea2f78fe1",
+      "bytes": 41108
+    },
+    {
+      "path": "dist/assets/surfZoneWorker-0gFT5nyl.js",
+      "sha256": "21b796673a700d9ecb8c46fb32c913795a89134c51adb0860e98f646f65371fa",
+      "bytes": 437004
+    },
+    {
+      "path": "dist/assets/waterSheet-Bhxsq2yy.js",
+      "sha256": "741d755ee05faecac288e5a576463df2a79032d3cd9eccb1e0e19eefc745be7c",
+      "bytes": 11689
+    },
+    {
+      "path": "dist/build.json",
+      "sha256": "6420a47396d675b19fcce7e9c6ebfb8a008d3f8a35d36b92a67cc1b9dd56ec11",
+      "bytes": 21
+    },
+    {
+      "path": "dist/index.html",
+      "sha256": "2459208498fda0600a64e868e27bd0a8832b5861912b7c4c3e7c8a5d021054df",
+      "bytes": 1626
+    },
+    {
+      "path": "owned-cdp.mjs",
+      "sha256": "36f62bd75468ef3b20ba0fe613256f8a29c81b764b88551961d51194b8b40211",
+      "bytes": 2037
+    },
+    {
+      "path": "survey.mjs",
+      "sha256": "0b94271e4aa6709a16e0793bfff42a93a0876ba4628d655ddbff83a2f1252751",
+      "bytes": 38889
+    }
+  ]
+}

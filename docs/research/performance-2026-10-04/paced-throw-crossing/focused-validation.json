@@ -1,0 +1,55 @@
+{
+  "head": "56bf750996cd48cdc5ef45954c479a268053c0b9",
+  "scope": [
+    "src/wave/barrel/BreakingFront.ts",
+    "src/wave/barrel/BreakingFront.test.ts",
+    "src/wave/barrel/SweptCrash.ts",
+    "src/wave/barrel/SweptCrash.test.ts"
+  ],
+  "patch": {
+    "path": "/private/tmp/paced-own-throw-repair-20261004.patch",
+    "sha256": "c4bedd556d1162213edaff3db096c4d58bff051c6f8bd9cea164d6617b83414b"
+  },
+  "files": [
+    {
+      "path": "src/wave/barrel/BreakingFront.ts",
+      "sha256": "4a5256f9a6501a2320e275c2fddaa786b1b00147eca36aba696ec7ca4c543052"
+    },
+    {
+      "path": "src/wave/barrel/BreakingFront.test.ts",
+      "sha256": "a2e2f9517cb47b31d396dda7e6a61d5d4237843d53c828d57aaf07e5b143bb3f"
+    },
+    {
+      "path": "src/wave/barrel/SweptCrash.ts",
+      "sha256": "dc783fe2e9f2af737de5f3faa5fd6054d1800ab7ae58f90bd691fb45e32789da"
+    },
+    {
+      "path": "src/wave/barrel/SweptCrash.test.ts",
+      "sha256": "1b887fb4082f819884d7112439ec34fdf9cdd4555638e6d03f16ef01a58d4d63"
+    }
+  ],
+  "validation": {
+    "command": "node_modules/.bin/vitest run src/wave/barrel/BreakingFront.test.ts src/wave/barrel/sliceClock.test.ts src/wave/barrel/SweptCrash.test.ts",
+    "passed": 62,
+    "failed": 0,
+    "testFiles": 3,
+    "newRegressionTests": 6,
+    "observedDurationMs": 533,
+    "authority": "Observed tool output; no separate raw stdout file was saved."
+  },
+  "preserved": [
+    "Original switch-off fingerprint hashes",
+    "paced spatial Z update",
+    "jetPace",
+    "jetBase",
+    "jetAt",
+    "jetUntil",
+    "watchdog rules",
+    "clock-link rules"
+  ],
+  "limitations": [
+    "Synthetic early-pacing fixture plus actual pace observed-coordinate test; no attribution to old GPU event.",
+    "After coasting or a legacy imported point without previous observed crestZ, crossing is pinned to current observed time/Z.",
+    "No full simulation, app build, typecheck or GPU/FPS test in this scoped repair."
+  ]
+}

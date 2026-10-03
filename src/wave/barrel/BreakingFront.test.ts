@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BreakingFront, type FrontOptions, type FrontPoint } from './BreakingFront';
 import type { CrestSample } from './crestOnset';
-import { onsetTiming } from './sliceClock';
+import { advanceClocks, onsetTiming } from './sliceClock';
 
 /**
  * A 7 m wedge foot under 16 s swell: a crest 1.6 m high over 6–5 m joins where the solver first breaks it, 3.18 m deep,
@@ -282,6 +282,116 @@ describe('the breaking front as lines', () => {
     for (const k of [1, 2]) front.points[k].tau = 0.6;
     front.update(crests, crests.length, 1.2);
     expect(front.points.map((point) => point.id)).toEqual([ids[0]]);
+  });
+
+  /** A real neighbor fit reaches column 3's throw before its own sampled crest crosses the depth. */
+  const earlyPacedFront = (): { front: BreakingFront; id: number } => {
+    const front = new BreakingFront(1, TIMING);
+    joinAt(front, range(0, 7), 10, 0, 1);
+    advanceClocks(front.points, 1, TIMING);
+    for (const time of [1.2, 1.3]) {
+      const crests = range(0, 7).map((column) => sample(column, 10.5, column === 3 ? 2.8 : 2.3, 0.5));
+      front.update(crests, crests.length, time);
+      advanceClocks(front.points, time, TIMING);
+    }
+    const point = front.points.find((p) => p.column === 3)!;
+    expect(point.thrown).toBeNull();
+    expect(point.crestDepth).toBeGreaterThan(point.throwDepth);
+    expect(point.tau).toBeGreaterThanOrEqual(0);
+    // SweptCrash starts this documented pace once the neighbor-fitted clock reaches zero; no solver step is needed.
+    Object.assign(point, { crestZ: point.z, jetStrip: -1, jetPace: 3, jetBase: point.z - 3 * point.tau, jetUntil: 10, jetAt: 1.3, jetWindow: 2 });
+    return { front, id: point.id };
+  };
+
+  it('records the own crossing on the first paced read after an early neighbor-fitted throw, retaining its clock and pace', () => {
+    const { front: paced, id } = earlyPacedFront();
+    const plain = new BreakingFront(1, TIMING);
+    const state = paced.exportState();
+    const plainPoint = state.points.find((p) => p.id === id)!;
+    delete plainPoint.jetPace;
+    delete plainPoint.jetUntil;
+    plain.importState(state);
+    const before = { ...paced.points.find((p) => p.id === id)! };
+    expect(before.crestZ).toBe(10.5);
+    const fraction = (2.8 - THROW) / (2.8 - 2.3);
+    const thrown = 1.3 + fraction * 0.1;
+    const throwZ = 10.5 + fraction * 0.3;
+    for (const time of [1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2]) {
+      const z = 10.5 + 3 * (time - 1.3);
+      const crests = line(range(0, 7), z, 0, 2.3, 0.5);
+      for (const front of [plain, paced]) {
+        front.update(crests, crests.length, time);
+        advanceClocks(front.points, time, TIMING);
+      }
+      const point = paced.points.find((p) => p.id === id)!;
+      const unpaced = plain.points.find((p) => p.id === id)!;
+      expect(point.thrown).toBeCloseTo(thrown, 12);
+      expect(point.throwZ).toBeCloseTo(throwZ, 12);
+      expect(point.thrown).toBe(unpaced.thrown);
+      expect(point.throwZ).toBe(unpaced.throwZ);
+      expect(point.tau).toBe(unpaced.tau);
+      expect(point.z).toBeCloseTo(before.z + before.jetPace! * (time - before.seen), 12);
+      expect([point.jetBase, point.jetAt, point.jetUntil, point.jetPace]).toEqual([before.jetBase, before.jetAt, before.jetUntil, before.jetPace]);
+    }
+  });
+
+  it('interpolates a paced crossing from actual crest positions while its paced point follows a different position', () => {
+    const { front, id } = earlyPacedFront();
+    let crests = line(range(0, 7), 10.95, 0, 2.7, 0.5);
+    front.update(crests, crests.length, 1.35);
+    const before = { ...front.points.find((p) => p.id === id)! };
+    expect(before.crestZ).toBe(10.95);
+    expect(before.z).toBeCloseTo(10.65, 12);
+    crests = line(range(0, 7), 11.1, 0, 2.3, 0.5);
+    front.update(crests, crests.length, 1.4);
+    const point = front.points.find((p) => p.id === id)!;
+    const fraction = (2.7 - THROW) / (2.7 - 2.3);
+    expect(point.thrown).toBeCloseTo(1.35 + fraction * 0.05, 12);
+    expect(point.throwZ).toBeCloseTo(10.95 + fraction * 0.15, 12);
+    expect(point.z).toBeCloseTo(10.8, 12);
+    expect(point.jetBase).toBe(before.jetBase);
+  });
+
+  it('does not invent an own crossing while coasting and records only the observed crossing after reacquisition', () => {
+    const { front, id } = earlyPacedFront();
+    front.update([], 0, 1.4);
+    const coast = front.points.find((p) => p.id === id)!;
+    expect(coast.crestZ).toBeUndefined();
+    expect(coast.thrown).toBeNull();
+    expect(coast.throwZ).toBeNull();
+    const crests = [sample(3, 10.9, 2.3, 0.5)];
+    front.update(crests, crests.length, 1.5);
+    const seen = front.points.find((p) => p.id === id)!;
+    expect(seen.thrown).toBe(1.5);
+    expect(seen.throwZ).toBe(10.9);
+    expect(seen.z).toBeCloseTo(11.1, 12);
+  });
+
+  it('records the current observation for an imported paced point without a previous real crest', () => {
+    const { front, id } = earlyPacedFront();
+    const state = front.exportState();
+    delete state.points.find((p) => p.id === id)!.crestZ;
+    front.importState(state);
+    const crests = [sample(3, 10.9, 2.3, 0.5)];
+    front.update(crests, crests.length, 1.4);
+    const point = front.points.find((p) => p.id === id)!;
+    expect(point.thrown).toBe(1.4);
+    expect(point.throwZ).toBe(10.9);
+  });
+
+  it('never rewrites an already recorded own throw in either matching path', () => {
+    for (const onPace of [false, true]) {
+      const { front, id } = earlyPacedFront();
+      const point = front.points.find((p) => p.id === id)!;
+      if (!onPace) { delete point.jetPace; delete point.jetUntil; }
+      point.thrown = 1.1;
+      point.throwZ = 9.7;
+      const crests = line(range(0, 7), 10.8, 0, 2.3, 0.5);
+      front.update(crests, crests.length, 1.4);
+      const next = front.points.find((p) => p.id === id)!;
+      expect(next.thrown).toBe(1.1);
+      expect(next.throwZ).toBe(9.7);
+    }
   });
 
   it('keeps each point’s crest speed as the mean of its crest’s over the last few frames (PR 5)', () => {

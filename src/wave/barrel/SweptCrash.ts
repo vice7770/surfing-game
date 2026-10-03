@@ -383,6 +383,9 @@ export class SweptCrash {
       this.counts.paceFast += 1;
     }
     const pace = normal / Math.max(PACE.leastRayZ, rayZ);
+    // Keep the observed crest before all new throws reset their positions onto the pace; the next holder read may
+    // cross its own throw depth after the neighbor-fitted clock started its throw.
+    p.crestZ = p.z;
     p.jetPace = pace;
     p.jetBase = p.throwZ ?? p.z - pace * p.tau;
     p.jetUntil = times.touchdownSeconds + times.collapseSeconds;

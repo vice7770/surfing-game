@@ -299,12 +299,10 @@ export class BreakingFront {
       if (holder && !matched.has(holder)) {
         // Its slice runs on from the throw at its own pace: the crest says its wave is still there (SweptCrash).
         matched.add(holder);
-        const next = {
+        points.push({
           ...holder, sigma: 0, x: s.x, z: holder.z + holder.jetPace! * (time - holder.seen), b: s.b, height: s.eta, crestDepth: s.depth,
           seen: time, crestZ: s.z,
-        };
-        recordOwnThrow(next, holder, s, time, holder.crestZ);
-        points.push(next);
+        });
         continue;
       }
       // On a front: it stays while its segment breaks at all.
@@ -313,16 +311,22 @@ export class BreakingFront {
         if (!(s.strength > 0)) continue;
         matched.add(point);
         const fresh = point.fresh ?? (s.rise >= FRESH ? s.depth : null);
+        let { thrown, throwZ } = point;
+        if (thrown === null) {
+          const f = crossingFraction(point.crestDepth, s.depth, point.throwDepth);
+          if (f !== null) {
+            thrown = point.seen + f * (time - point.seen);
+            throwZ = point.z + f * (s.z - point.z);
+          }
+        }
         // Its crest's speed over the last few frames: the pace its slice runs on once its jet is thrown (PR 5).
         const crestSpeed = s.speed > 0
           ? point.crestSpeed === undefined ? s.speed : point.crestSpeed + (s.speed - point.crestSpeed) * Math.min(1, (time - point.seen) / PACE_SECONDS)
           : point.crestSpeed;
-        const next = {
-          ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, crestDepth: s.depth, seen: time, fresh,
+        points.push({
+          ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, crestDepth: s.depth, thrown, throwZ, seen: time, fresh,
           ...(crestSpeed === undefined ? {} : { crestSpeed }),
-        };
-        recordOwnThrow(next, point, s, time, point.z);
-        points.push(next);
+        });
         continue;
       }
       const track = leading?.get(s) ?? this.nearest(tracksOf.get(s.column), followed, s.z, TRACK_REACH);
@@ -677,21 +681,6 @@ function joinChains(chains: readonly FrontPoint[][], parents: ReadonlyMap<FrontP
     frontOf.set(chain, front);
   }
   return fronts;
-}
-
-/** Records the crest's own throw-depth crossing, independently of the point's paced position. */
-function recordOwnThrow(next: FrontPoint, previous: FrontPoint, sample: CrestSample, time: number, previousCrestZ: number | undefined): void {
-  if (previous.thrown !== null || sample.depth > previous.throwDepth) return;
-  // Without a previous sampled crest (first paced read, or after coasting), record this observation; interpolating
-  // from the paced point would invent a crest position/time. A coast without a sample never calls this updater.
-  if (previousCrestZ === undefined) {
-    next.thrown = time;
-    next.throwZ = sample.z;
-    return;
-  }
-  const fraction = crossingFraction(previous.crestDepth, sample.depth, previous.throwDepth)!;
-  next.thrown = previous.seen + fraction * (time - previous.seen);
-  next.throwZ = previousCrestZ + fraction * (sample.z - previousCrestZ);
 }
 
 /** How far between a crest at `fromDepth` and at `depth` it crossed `at`, 0–1, linear in depth; null if it has not. */

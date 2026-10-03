@@ -1,0 +1,72 @@
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { registerHooks } from 'node:module';
+import { pathToFileURL, fileURLToPath } from 'node:url';
+const root = fileURLToPath(new URL('./original/', import.meta.url)).replace(/\/$/, '');
+registerHooks({ resolve(specifier, context, nextResolve) {
+  if (specifier.startsWith('.') && context.parentURL && !/\.[a-z]+$/i.test(specifier)) {
+    const candidate = new URL(`${specifier}.ts`, context.parentURL);
+    if (candidate.protocol === 'file:' && existsSync(fileURLToPath(candidate))) return nextResolve(candidate.href, context);
+  }
+  return nextResolve(specifier, context);
+}});
+const { BreakingFront } = await import(pathToFileURL(`${root}/src/wave/barrel/BreakingFront.ts`).href);
+const { advanceClocks, onsetTiming } = await import(pathToFileURL(`${root}/src/wave/barrel/sliceClock.ts`).href);
+const timing = onsetTiming(7, 16);
+const foot = 1.6;
+const join = timing.joinDepth(foot);
+const throwDepth = timing.throwDepth(foot);
+const column = 3;
+const sample = (c, z, depth, strength=.5) => ({ column:c, row:Math.floor(z), x:c+.5, z, eta:foot, wave:foot, strength, rise:.5, depth, b:.3, speed:3 });
+const samples = (z, depthOf, strength=.5) => Array.from({length:7}, (_,c)=>sample(c,z,depthOf(c),strength));
+const front = new BreakingFront(1, timing);
+const histories=[];
+function update(front, samples, time) {
+  front.update(samples,samples.length,time);
+  const before=front.points.find(p=>p.column===column).tau;
+  const pauses=advanceClocks(front.points,time,timing);
+  const point=front.points.find(p=>p.column===column);
+  return { time, point:{...point}, tauBeforeClocks:before, pauses };
+}
+let input=samples(9.6,()=>timing.h0,0); front.update(input,input.length,.8);
+input=samples(10,()=>join); front.update(input,input.length,1);
+advanceClocks(front.points,1,timing);
+histories.push({stage:'joined',time:1,points:front.exportState().points});
+for(const time of [1.2,1.3]) histories.push({stage:'neighborhood fit before own crossing', ...update(front,samples(10.5,c=>c===column?2.8:2.3),time)});
+const initial=front.points.find(p=>p.column===column);
+assert.equal(initial.thrown,null,'own depth remains before throw');
+assert.ok(initial.crestDepth>initial.throwDepth,'not crossed own throw depth');
+assert.ok(initial.tau>=0,'original neighborhood fit has nevertheless reached throw');
+const unpaced=new BreakingFront(1,timing); unpaced.importState(front.exportState());
+const paced=new BreakingFront(1,timing); paced.importState(front.exportState());
+const pacedPoint=paced.points.find(p=>p.id===initial.id);
+// Explicit pacing fixture: the ORIGINAL fitted tau meets SweptCrash paceThrow eligibility.
+// No SweptCrash, solver, profile or physical landing is executed in this tracker/clock test.
+Object.assign(pacedPoint,{jetStrip:-1,jetPace:3,jetBase:pacedPoint.z-3*pacedPoint.tau,jetUntil:10,jetAt:1.3,jetWindow:2});
+const paired=[];
+for(const time of [1.4,1.5,1.6,1.7,1.8,1.9,2]) {
+  const z=10.5+3*(time-1.3);
+  const next=samples(z,()=>2.3);
+  const a=update(unpaced,next,time);
+  const b=update(paced,next,time);
+  paired.push({time,unpaced:a,paced:b,tauDifference:b.point.tau-a.point.tau});
+}
+const crossed=paired[0];
+assert.ok(crossed.unpaced.point.thrown!==null,'ordinary matching pins actual crossing');
+assert.ok(crossed.unpaced.point.throwZ!==null,'ordinary matching records source crest crossing');
+assert.equal(crossed.paced.point.thrown,null,'paced holder loses the same actual crossing');
+assert.equal(crossed.paced.point.throwZ,null,'paced holder also leaves throwZ unset');
+assert.equal(crossed.paced.point.id,crossed.unpaced.point.id,'same original tracked ID');
+assert.ok(Math.abs(crossed.paced.point.z-crossed.unpaced.point.z)<1e-12,'first crossing keeps intended paced displacement');
+assert.ok(paired.at(-1).tauDifference<-.01,'moving forecast measurably delays ORIGINAL fitted clock');
+for(const row of paired) {
+  assert.equal(row.paced.point.thrown,null);
+  assert.equal(row.paced.point.id,initial.id);
+  assert.ok(row.paced.point.tau>=row.paced.tauBeforeClocks,'causal clock never retracts');
+}
+const sourceFiles=['src/wave/barrel/BreakingFront.ts','src/wave/barrel/sliceClock.ts','src/wave/dispersion.ts'];
+const result={valid:true,scope:'synthetic original tracker/clocks only; explicit documented pace fixture; no solver/profile/crash/replay/GPU',input:{h0:7,period:16,footHeight:foot,joinDepth:join,throwDepth,targetColumn:column,columns:7,times:[.8,1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2],pace:3,jetUntil:10},sourceFiles:sourceFiles.map(path=>({path,sha256:createHash('sha256').update(readFileSync(`${root}/${path}`)).digest('hex')})),histories,initial:{...initial},paired};
+const output=fileURLToPath(new URL('./reproduction.json', import.meta.url));
+writeFileSync(output,JSON.stringify(result,null,2));
+console.log(JSON.stringify({valid:true,output,initial:{id:initial.id,tau:initial.tau,thrown:initial.thrown,crestDepth:initial.crestDepth},crossing:{unpaced:crossed.unpaced.point,paced:crossed.paced.point},finalTauDifference:paired.at(-1).tauDifference}));
