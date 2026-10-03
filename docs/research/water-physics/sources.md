@@ -135,3 +135,7 @@ The pages below were opened, not just searched; the full notes tag every finding
 - Surf-pool current control, US patents [10,449,433](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/10449433) (wave energy and rip-current control) and [11,966,239](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/11966239) (current control): pools manage set-up and return flow.
 - Battjes 1974 (ICCE): the Iribarren breaker classes. Weggel 1972: the breaker index on slopes. Beji & Battjes 1993: free harmonics released by a regular train over a bar.
 
+## The Reef's cavity against submergence (round 7, 2026-10-03)
+
+- [Blenkinsopp 2007, PhD thesis, University of Southampton (ePrints Soton 466054)](https://eprints.soton.ac.uk/466054/): *Air entrainment, splash and energy dissipation in breaking waves*, the work behind Blenkinsopp & Chaplin's papers. On a 1:10 lab reef with a zero-width crest, the cavity under the jet at the plunge point: length over width 1.46–2.28 (mean 1.76) at every submergence; area 0.04–0.41 H_b², rising as h_c/H_b falls from 1.28 to 0.67 (chapter 4). Also the plume's void fractions, the splash and scale (chapters 5–7). Opened with the owner's OK; the PDF isn't kept in the repo. Notes: [notes/round7-blenkinsopp/blenkinsopp-thesis.md](notes/round7-blenkinsopp/blenkinsopp-thesis.md).
+- [Blenkinsopp & Chaplin 2008, Coastal Eng. 55, 967–974, abstract](https://www.sciencedirect.com/science/article/abs/pii/S0378383908000604): the same reef, published; its full text still not opened.
