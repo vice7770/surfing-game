@@ -9,6 +9,7 @@ The pages below were opened, not just searched; the full notes tag every finding
 - [O'Dea, Brodie & Elgar 2021, GRL](https://www2.whoi.edu/staff/elgar/wp-content/uploads/sites/153/2021/08/145.pdf): field lidar of voids at closure
 - [Mead & Black 2001, J. Coastal Res. SI 29](http://joas.free.fr/studies/bei/g2s/predicting_the_breaking_waves_intensity.pdf): vortex ratio against seabed gradient, intensity classes, Padang Padang and Pipeline
 - [Derakhti et al. 2020, JGR Oceans](https://arxiv.org/pdf/1911.06896): onset at crest speed ratio 0.85
+- [Bjørkavåg & Kalisch 2016, arXiv](https://arxiv.org/pdf/1601.06822): Table 8 quotes Grilli et al. 1997's solitary-wave breaking index on 1:35, H_b/h_b 1.38–1.40
 - [Erinin et al. 2023, J. Fluid Mech. 967 A35](https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/plunging-breakers-part-1-analysis-of-an-ensemble-of-wave-profiles/9DA630A5718361A3579618BB022B8F35): plunging jet speeds and impact
 - [Drazen, Melville & Lenain 2008, J. Fluid Mech. 611](https://airsea.ucsd.edu/wp-content/uploads/sites/10/2019/06/2008_Drazen_Melville_Lenain-Journal_of_Fluid_Mechanics_vol_611.pdf): the jet's toe in free fall
 - [Chanson, Aoki & Maruyama 2002, Coastal Eng. 46](https://staff.civil.uq.edu.au/h.chanson/reprints/coastal02.pdf): jet impact, air entrainment, plume
@@ -104,8 +105,37 @@ The pages below were opened, not just searched; the full notes tag every finding
 - [Garcez Faria 1997](https://calhoun.nps.edu/server/api/core/bitstreams/7a30faa6-893a-4ede-af9a-5f711de8fe8c/content), [van der Zanden et al. 2018](https://ris.utwente.nl/ws/files/29784531/Zanden_et_al_2018_Journal_of_Geophysical_Research_Oceans.pdf) and [MacMahan et al. 2005](https://calhoun.nps.edu/server/api/core/bitstreams/b2de88ce-653b-4133-9d3e-bf1d78390d59/content): undertow and rip currents
 - [Crest's underwater docs](https://crest.readthedocs.io/en/stable/user/underwater.html), [Unity HDRP underwater](https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@17.0/manual/water-underwater-view.html) and [Finding Nemo's water, AWN](https://www.awn.com/animationworld/finding-right-cg-water-and-fish-nemo): how games and film draw it
 
+## Water colour
+
+- [Bricaud, Ciotti & Gentili 2012, Global Biogeochemical Cycles](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010GB003952), full text: the dissolved-and-detrital absorption rules (Table 1), fitted to SeaWiFS retrievals
+- [Bricaud et al. 1998, JGR Oceans](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/98JC02712), abstract only: its particle absorption laws cover all particles, 25–30 % of it non-algal
+- [Mobley, "A New IOP Model for Case 1 Water", Ocean Optics Web Book](https://www.oceanopticsbook.info/view/optical-constituents-of-the-ocean/level-2/new-iop-model-case-1-water): the Bricaud table as particle absorption, a = A·Chl^E
+- [ocpy's copy of the Bricaud 1998 table](https://github.com/ocean-colour/ocpy/blob/main/ocpy/data/phytoplankton/aph_bricaud_1998.txt) (BSD-3, commit 18f8ee2): particle and phytoplankton-only columns, the layout POLYMER and NASA's l2gen read
+- The ocean-optics model code that implements the published absorption shapes: [OSOAA](https://github.com/CNES/RadiativeTransferCode-OSOAA), [POLYMER](https://github.com/hygeos/polymer) and [IOPmodel](https://github.com/bishun945/IOPmodel)
+- [NOAA-20 VIIRS ocean colour, 2023](https://noaa-jpss.s3.amazonaws.com/index.html#NOAA20/VIIRS/): chlorophyll and Kd490 off each spot
+- [colour-science](https://github.com/colour-science/colour): the CIE 1931 observer and D65, for hue and sighting
+
 ## Basilisk runs (round 6)
 
 - [Basilisk source and wiki mirror](https://github.com/comphy-lab/basilisk-C), synced 2026-09-28: the solver (GPL-3.0, from its `src/COPYING`), and both published setups, Mostert & Deike's `sandbox/wmostert/shallow.c` and Feddersen et al.'s `sandbox/ffeddersen/shoal_RE0_BO4000.c`. basilisk.fr itself is blocked in the cloud session.
 - Pick & Feddersen's fits and domain, Mead & Black's roundness fit and the Surf Ranch open-curl lengths, as recorded in rounds 1–2; their PDFs could not be reopened from the cloud session.
 - Padang Padang's bed: `PADANG` in `src/wave/Bathymetry.ts` on branch `claude/padang-padang` (f132989).
+- [Grilli, Svendsen & Subramanya 1997, abstract](https://digitalcommons.uri.edu/oce_facpubs/207/): solitary waves don't break on plane slopes steeper than 12°
+- [O'Dea, Brodie & Elgar 2021, GRL](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2021GL093664): field void shapes at closure (length over width 1.70–3.15), and Blenkinsopp & Chaplin's lab-reef 1.46–2.28
+
+## Wave pools and surfing skill (the Wave Pool consult, 2026-10-01)
+
+- [Scarfe et al. 2009, J. Coastal Res. 25(3), review; its figure adapted from Scarfe 2002](https://www.researchgate.net/figure/Range-of-peel-angles-suitable-for-different-surfing-maneuvers-adapted-from-Scarfe-2002_fig4_232294869): peel angles per manoeuvre. 46–55° lets intermediates do standard manoeuvres; 20–45° is for experts; 56–70° for beginners.
+- [Hutt, Black & Mead 2001, J. Coastal Res. SI 29, 66–81](https://www.semanticscholar.org/paper/Classification-of-Surf-Breaks-in-Relation-to-Skillt-Huttf-Blackt/48c92e986ea02085bb4ccf0c77ea0877c2b4e3e3): peel angle and wave height against a 1–10 skill scale; 30–70° suits most surfers.
+- [Wavegarden Cove, Raised Water Research](https://raisedwaterresearch.com/wavegarden-cove/):
+  - one wave per side every 8 s;
+  - Reef faces to 2.4 m, the Peak about half that with open faces for turns;
+  - rides 10–15 s (Bay 80 m / 16 s).
+- [Surf Ranch facts, Surfertoday](https://www.surfertoday.com/surfing/the-facts-and-figures-behind-kelly-slater-surf-ranch): a 700 m pool, rides about 45 s, and 3–4 minutes for the water to calm between waves.
+- Surf-pool current control, US patents [10,449,433](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/10449433) (wave energy and rip-current control) and [11,966,239](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/11966239) (current control): pools manage set-up and return flow.
+- Battjes 1974 (ICCE): the Iribarren breaker classes. Weggel 1972: the breaker index on slopes. Beji & Battjes 1993: free harmonics released by a regular train over a bar.
+
+## The Reef's cavity against submergence (round 7, 2026-10-03)
+
+- [Blenkinsopp 2007, PhD thesis, University of Southampton (ePrints Soton 466054)](https://eprints.soton.ac.uk/466054/): *Air entrainment, splash and energy dissipation in breaking waves*, the work behind Blenkinsopp & Chaplin's papers. On a 1:10 lab reef with a zero-width crest, the cavity under the jet at the plunge point: length over width 1.46–2.28 (mean 1.76) at every submergence; area 0.04–0.41 H_b², rising as h_c/H_b falls from 1.28 to 0.67 (chapter 4). Also the plume's void fractions, the splash and scale (chapters 5–7). Opened with the owner's OK; the PDF isn't kept in the repo. Notes: [notes/round7-blenkinsopp/blenkinsopp-thesis.md](notes/round7-blenkinsopp/blenkinsopp-thesis.md).
+- [Blenkinsopp & Chaplin 2008, Coastal Eng. 55, 967–974, abstract](https://www.sciencedirect.com/science/article/abs/pii/S0378383908000604): the same reef, published; its full text still not opened.

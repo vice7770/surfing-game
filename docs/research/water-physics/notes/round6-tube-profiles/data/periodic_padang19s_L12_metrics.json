@@ -1,0 +1,37 @@
+{
+ "run": "../runs/periodic_padang19s_L12",
+ "t_vertical": 39.4,
+ "t_impact": 40.375,
+ "timing": "plunge_measure.py: the local trough as the water level, the crest looked for at x >= XMIN, touchdown = first enclosed tube, the frame before it with the jet >= 3 cells off the face",
+ "at_vertical": {
+  "crest_m": 1.600326,
+  "x_m": 334.9066,
+  "trough_m": -0.6181833,
+  "H_m": 2.2185093
+ },
+ "pre_touchdown": {
+  "t": 40.325,
+  "crest_m": 1.625225,
+  "trough_m": -0.6179705,
+  "H_m": 2.2431954999999997,
+  "jet_m2": 0.38576753317884993,
+  "tube_m2": 0.1753303405350195,
+  "tube_L_m": 0.8642342886191469,
+  "tube_W_m": 0.392126255950199,
+  "L/W": 2.2039694499031626,
+  "tilt_deg": 39.25593827493045,
+  "lip_m": 0.4463691596814797,
+  "lip_cells": 4.081089459944957,
+  "per H at touchdown": {
+   "jet": 0.07666399093549889,
+   "tube": 0.034843584494351154,
+   "lip": 0.1989880773572699
+  },
+  "per H at vertical": {
+   "jet": 0.07837962235984541,
+   "tube": 0.03562333451474439,
+   "lip": 0.20120229366695902
+  },
+  "open_s": 0.8236052987161973
+ }
+}

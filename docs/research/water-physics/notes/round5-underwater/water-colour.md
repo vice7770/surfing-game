@@ -37,7 +37,7 @@ The game's channels are R, G and B = 650, 550 and 450 nm (`src/scene/waterOptics
   - OSOAA (eq. 46) and IOPmodel (`R/IOP_models_func.R:652`) both apply the table as a = A·Chl^E.
   - OceanOptics.jl applies it as a = A·Chl^(1−E) (`src/materials/phytoplankton.jl:115`). That is a different curve; at Chl 0.056, a(450) comes out about 2× higher.
   - We use A·Chl^E. [inferred: two of the three implementations agree, and their form is the one the manual writes.]
-- **Not checked:** whether these are Bricaud's phytoplankton-only coefficients (a_φ) or total particulate ones (a_p, with detritus), because the paper was blocked. POLYMER's data file carries both sets separately (`water.pyx:145`, header `lambda,Ap,Ep,Aphi,Ephi`), but it sits on a blocked host. For the game this is the particle term either way. [inferred]
+- **Not checked in the cloud:** whether these are Bricaud's phytoplankton-only coefficients (a_φ) or total particulate ones (a_p, with detritus), because the paper was blocked. POLYMER's data file carries both sets separately (`water.pyx:145`, header `lambda,Ap,Ep,Aphi,Ephi`), but it sits on a blocked host. **Settled on 2026-09-30 (§6): they are a_p, and adding the detrital term to them counts detritus twice.**
 
 **CDOM and detritus: a_g(λ) = a_g(440)·exp(−S(λ − 440))** [modelled].
 
@@ -167,7 +167,7 @@ The game's channels are R, G and B = 650, 550 and 450 nm (`src/scene/waterOptics
 
 - **The offshore water is not the surf zone.** Chlorophyll and CDOM rise toward shore at the temperate sites, and Teahupo'o's lagoon drains through the Havae pass beside the break. The real surf-zone colour may be greener than this, at every site.
 - **Near-shore chlorophyll is an upper bound** (OC3 reads CDOM and sediment as chlorophyll). Variant (b)'s Kd match is the safer constraint.
-- **The exponent convention and the a_φ versus a_p question** (§1) are unchecked against the paper.
+- **The exponent convention and the a_φ versus a_p question** (§1): both settled on 2026-09-30 (§6).
 - **The mineral-particle spectral shape** (S ≈ 0.011, yellow-brown) was not added at the Beach; it would push the hue further toward green-yellow (about 106° in a quick test). It is left out until a surf-zone sediment absorption measurement is found.
 
 ## Open questions for the owner
@@ -187,8 +187,48 @@ The game's channels are R, G and B = 650, 550 and 450 nm (`src/scene/waterOptics
 - OceanOptics.jl (Pope & Fry and Bricaud 1998 tables, with their provenance headers): https://github.com/RemoteSensingTools/OceanOptics.jl (commit 0de430b)
 - NOAA-20 VIIRS NRT ocean colour, chlorophyll-a and Kd490, 2023: https://noaa-jpss.s3.amazonaws.com/index.html#NOAA20/VIIRS/
 - CIE 1931 2° observer and D65, via colour-science 0.4.7: https://github.com/colour-science/colour
-- Named but not opened (hosts blocked):
-  - Bricaud et al. 1998, https://doi.org/10.1029/98JC02712
+- Opened from the Mac session on 2026-09-30 (see §5):
+  - Bricaud, Ciotti & Gentili 2012, GBC 26(1), https://doi.org/10.1029/2010GB003952 (full text; DOI verified)
+  - Bricaud et al. 1998, JGR 103(C13):31033–31044, https://doi.org/10.1029/98JC02712 (abstract only)
+- Named but not opened:
+  - Bricaud et al. 1998, full text
   - Bricaud, Morel & Prieur 1981, https://doi.org/10.4319/lo.1981.26.1.0043
-  - Bricaud, Ciotti & Gentili 2012, GBC, https://doi.org/10.1029/2010GB003952 (DOI not verified)
   - Babin et al. 2003, https://doi.org/10.1029/2001JC000882
+
+## 5. Journal check (2026-09-30, from the Mac session)
+
+- [modelled, paper opened] **Bricaud, Ciotti & Gentili 2012, Global Biogeochemical Cycles 26(1), Table 1** (free access on AGU, DOI verified). Its fits relate quantities that the Ciotti & Bricaud 2006 inversion retrieved from twelve years of SeaWiFS data (1998–2009), not in-water measurements: log a_cdm(443) = 1.070·log Chl − 1.161 (November 2007; Feb 1.095/−1.153, May 1.067/−1.169, Aug 1.109/−1.128), and log S_cdm = −0.448·log a_cdm(443) − 2.581 (Nov; Feb −0.448/−2.574, May −0.426/−2.534, Aug −0.419/−2.519). POLYMER's rule is the November fit. The paper defines CDM as including both CDOM and particulate detrital matter, and says its relationships are "not designed for use in predictive applications or models" (§34).
+- [measured, abstract opened] **Bricaud et al. 1998, JGR 103(C13):31033**: its power laws are for total particulate absorption a_p(λ); non-algal particles average 25–30 % of it, with an exponential slope of 0.011 ± 0.0025 nm⁻¹. The same 2012 table gives Bricaud 1998's phytoplankton-only law as log a_phy(443) = 0.620·log Chl − 1.426, so a_phy(443) = 0.0375·Chl^0.620.
+- [inferred] **So the §1 table (A(440) = 0.05202, E = 0.635) is a_p, not a_phy**, and a_p + a_CDM counts the non-algal particles twice. Fix it by scaling the particle term by about 0.72 (a_phy/a_p at 443 nm, Chl 1), or by using phytoplankton-only coefficients. *(Superseded by §6: use the coefficients; a flat factor misses the green.)* At the Beach this removes about 11 % of the added blue absorption and shifts the hue by a degree or two. Variant (b)'s fit to the satellite's Kd490 takes up the total.
+- **Not opened:** the 1998 paper's full coefficient table (the PDF is bot-protected for scripts and the in-browser reader did not render), and Bricaud, Morel & Prieur 1981.
+
+## 6. Phytoplankton-only coefficients, and what they change (2026-09-30, from the Mac session)
+
+- [modelled, page opened] **The §1 table is particle absorption.** Mobley's Ocean Optics Web Book page on HydroLight's new Case 1 model (https://www.oceanopticsbook.info/view/optical-constituents-of-the-ocean/level-2/new-iop-model-case-1-water) defines the `AEmidUVabs.txt` table as a_p = A·Chl^E (its Eq. 1, with E = 1 − B), from Bricaud 1998's particle absorption. It pairs a_p with CDOM alone (0.2·a_p(440), S 0.014), not with a detrital term. OceanOptics.jl's header, which calls the same numbers phytoplankton absorption, is wrong.
+- [modelled, file read] **The phytoplankton-only columns.** ocpy (https://github.com/ocean-colour/ocpy, BSD-3, commit 18f8ee2) has `ocpy/data/phytoplankton/aph_bricaud_1998.txt`, the layout POLYMER reads (`lambda,Ap,Ep,Aphi,Ephi`; header: aphi = Aphi·Chl^Ephi). NASA's l2gen (`aph.c`, `aph_bricaud_1998()`, read in a public mirror of the OCSSW source) reads the same file name and takes its Aphi column. At 440 nm the Ap and Ep columns are exactly §1's 0.052019 and 0.634965.
+
+  | λ, nm | A_p | E_p | A_φ | E_φ |
+  |---|---|---|---|---|
+  | 450 (B) | 0.047932 | 0.615096 | 0.0349905 | 0.599299 |
+  | 490 | 0.034124 | 0.620026 | 0.0253719 | 0.607395 |
+  | 550 (G) | 0.011825 | 0.838542 | 0.00702755 | 0.9311673 |
+  | 650 (R) | 0.010298 | 0.814236 | 0.00777566 | 0.815461 |
+
+- [inferred] **Cross-check:** interpolated to 443 nm, the table gives a_φ = 0.0371·Chl^0.615; the 2012 paper quotes Bricaud 1998's law as 0.0375·Chl^0.620 (§5). They agree within 1 %.
+- [inferred] **The share a_φ/a_p is not flat:** 0.72–0.74 at 440 nm and 0.75–0.76 at 650 nm, but 0.46–0.64 at 550 nm (Chl 0.056–2.1). So use the columns, not a single factor.
+- [inferred] **Rerun of §3 with a_φ.**
+  - Same model, same inputs (§2's chlorophyll, a_CDM and S; the game's b_p, 0.15 at the Reef and Padang, 1 at the Point and Canyon, 2 at the Beach; the eye 2 m down, 1.3 m at the Beach; hue on linear RGB).
+  - With §1's a_p it reproduces §3: added a within 2 %, hues within 1° for (a) and 1–3° for (b).
+
+  | Spot | Added a (R, G, B), a_φ | Hue (a): a_p → a_φ | Variant (b): flat term, Kd490 a_p → a_φ (VIIRS) | Hue (b): a_p → a_φ |
+  |---|---|---|---|---|
+  | Reef | 0.0008, 0.0007, 0.0087 | 222° → 223° | 0 (floored), 0.029 → 0.027 (0.026) | 224° → 226° |
+  | Padang | 0.0114, 0.0210, 0.0765 | 187° → 191° | +0.033 → +0.040, 0.122 (0.122) | 189° → 193° |
+  | Point, Snapper | 0.0039, 0.0063, 0.0349 | 193° → 195° | 0 → +0.004, 0.067 (0.067) | 196° → 198° |
+  | Point, J-Bay | 0.0291, 0.0588, 0.1890 | 147° → 150° | 0 → +0.013, 0.193 → 0.192 (0.192) | 144° → 147° |
+  | Beach | 0.0223, 0.0437, 0.1449 | 157° → 161° | 0 (floored), 0.179 → 0.165 (0.161) | 152° → 155° |
+  | Canyon | 0.0239, 0.0473, 0.1556 | 153° → 156° | +0.003 → +0.015, 0.170 (0.170) | 150° → 154° |
+
+  - Every hue moves 2–4° bluer, and no spot changes its look. The eye's green attenuation moves under 1 %, so sighting is unchanged.
+  - Variant (b) now comes closer to VIIRS where the flat term was floored at zero, at the Beach and the Reef.
+- **For the builder:** `colourAbsorption` takes the A_φ and E_φ rows above at 650, 550 and 450 nm, in place of §1's. §4's unit test should use this table.

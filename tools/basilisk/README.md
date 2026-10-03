@@ -52,3 +52,25 @@ The runs (M1 Air, level 12, one core each, all three at once, 2026-09-29/30), at
 | `pad19_a45_L12` | 298 min | 17.68, 19.05 | 0.23 / 0.30 | 0.44 / 0.40 | 40° / 39° | 2.30 | 98/108, 54/54, 49/99 |
 
 Why the tubes run smaller than the plane-slope fits (small waves make small, steep tubes on this wedge): `docs/research/barrel-library.md`.
+
+## The Reef's ledge
+
+`tools/basilisk/run_reef.sh` runs the Reef's peak in two cases, both from the 10 m shelf to the 1.5 m reef crest:
+- **reef42:** the ledge at 1:4.2 along the wave's path, the steepest crossing the Teahupo'o Reef report measured;
+- **reef60:** at 1:6, near the median of the game's own readings.
+
+The owner asked for them (2026-09-30) to source the Reef's lip and tube, which are provisional beyond Pick & Feddersen's fits.
+- **Commands:** `run`, `status` and `analyse`, as for Padang.
+- **Level:** 11 by default. Each case uses one core.
+- **Where it has run:** on the owner's M1 on 2026-09-30, alongside other work. `LEVEL=12` or `13` refines it on the M4 Pro.
+- **Disk:** the Basilisk mirror takes about 2.8 GB in `~/basilisk-C`. On macOS its checkout reports errors outside `basilisk-source/src`, which doesn't matter here.
+- **What it found:** a solitary wave climbs the Reef's ledge unbroken and breaks on the flat, so it can't source the Reef's ledge plunge.
+
+## Periodic waves
+
+`tools/basilisk/run_periodic.sh` runs a train of cnoidal waves, so the wave studied, the second crest, breaks into the trough its predecessor leaves. The owner approved these runs on 2026-09-30. A level-9 test on the Reef's 1:4.2 ledge shows the step: the first wave's backwash drains the ledge to about 1.8 m below still level, and the second crest breaks at the ledge top.
+- **`periodic.c`:** `slope.c` with the solitary wave replaced by the train in `train.dat`, written by `analysis/cnoidal_train.py` (first-order cnoidal theory). It dumps `final` at the end, so a finer build can continue from it, and can keep its finest two levels inside a window (`XWIN0`, `XWIN1`).
+- **Two phases per case:** level 10 until the second crest nears the break, then level 12 inside a window around it.
+- **Cases:** `reef42` and `reef60` (the Reef's ledge at 1:4.2 and 1:6); `padang19`, `padang19b` and `padang19c` (Padang's 16 s, 18 s and 14 s swells, which give the swept barrel its onset lag for swell); `padang19s` (the Small swell, for the barrel library); `point21_a08`, `point21_a15`, `point21_a23` and `point21_a30` (the Point's transect at four sizes, for PR 7); `reef42_a35` (a 3.5 m crest on the Reef's ledge, the second point of its throw line). PR 7's records say which of them the library uses, and why.
+- **Commands:** `run`, `status` and `analyse`, optionally with case names. Set `PYTHON` to a Python with numpy, scipy and matplotlib.
+- **Overview figure:** `analysis/train_overview.py` draws a run's surface along the whole domain at chosen times.

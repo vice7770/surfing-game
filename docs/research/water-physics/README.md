@@ -4,6 +4,8 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 
 **Asking for advice:** before settling a breaking, lip, tube, roller or foam shape, message the "Water physics research" session (ListAgents, then SendMessage). If it isn't running, spawn the `water-physics` agent (`.claude/agents/water-physics.md`), which reads this folder. Log each consult in [consult-log.md](consult-log.md).
 
+**Taking over the advisor role** (a new session or machine): start with [ONBOARDING.md](ONBOARDING.md).
+
 ## The owner's standing decisions
 
 - **Realism (2026-09-28):** every shape is sourced from measurements or physics simulations, or marked provisional. It need not come from the game's own solver: a precomputed 2D breaking simulation swept along the crest qualifies. Hand-authored shapes don't.
@@ -23,8 +25,13 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 | [correct-shape.md](correct-shape.md) | The reference card: correct numbers per stage (onset, throw, lip, tube, after) against the game |
 | [along-the-crest.md](along-the-crest.md) | How a barrel changes down the line: the slice clock, open-tube length, lip taper, makeable peel angles |
 | [tubes.md](tubes.md) | Why the tube reads wrong, and the swept-surface fix |
+| [ingame-tests.md](ingame-tests.md) | In-game tests at Padang Padang: the colour fix (winding, sheet, foam hold), the blended library and clocks, the displaced surface on the solver |
+| [wave-methods.md](wave-methods.md) | Five throwaway prototypes of how to make the curl (hybrid, blended library, live 2D fluid, displaced surface, hand-shaped), compared on look and cost |
+| [tube-review.md](tube-review.md) | The drawn barrel at Padang Padang seen and measured: why it's navy, early foam, small, melting; ranked changes |
+| [tube-colour-fix.md](tube-colour-fix.md) | Why the drawn curl is navy (shaded as a deep column over the reef) and how to shade it as a thin backlit sheet |
 | [swept-barrel-build.md](swept-barrel-build.md) | Where the profiles come from and how to loft, seam and collide the barrel in real time |
 | [basilisk-profiles.md](basilisk-profiles.md) | The first Basilisk runs: validation against Pick & Feddersen, Padang Padang's first tube, library cost, the profile format |
+| [reef-ledge-runs.md](reef-ledge-runs.md) | The Reef's own ledge in Basilisk, with periodic waves: the step, the thick lip and jet, the tube's time course, Padang's swell lag |
 | [padang-padang.md](padang-padang.md) and [padang-padang-build-sheet.md](padang-padang-build-sheet.md) | The break, and its sourced bed, bearings, tide, swell and wind |
 | [breaking.md](breaking.md) | Why the solver's face stays near 17°, the crest-speed trigger, the stop rule, directional spread |
 | [solver-stability.md](solver-stability.md) | Why the biggest Reef swells blow up, what published models do, and the options |
@@ -62,10 +69,9 @@ They tag each finding as measured, modelled or inferred, and cite `path:line` in
 
 ## Handover
 
-The advisor session moved to the cloud on 2026-09-29. [HANDOVER.md](HANDOVER.md) has its working state:
-- the open decisions;
+The advisor session worked in the cloud on the evening of 2026-09-29 and is back on the owner's Mac. [HANDOVER.md](HANDOVER.md) has its working state:
+- what is still open;
 - the consults in flight;
-- the underwater research round to restart;
 - how to keep this folder in step with the doc.
 
 ## Keeping this folder current
