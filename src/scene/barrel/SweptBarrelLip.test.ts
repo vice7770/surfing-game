@@ -4,11 +4,11 @@ import { FRONT_FIELD, FRONT_STRIDE } from '../../wave/barrel/frontRecords';
 import { LANDMARK, ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
 import { FRAY, LOFT, LOFT_SAMPLES, SweptLoft, frayShare, frayWhiteness } from '../../wave/barrel/sweptLoft';
 import { tubeCase } from '../../wave/barrel/toyCase';
-import { RICH_REFLECTION } from '../water/richWaterGlsl';
+import { RICH_FOAM, RICH_REFLECTION } from '../water/richWaterGlsl';
 import { WATER_ABSORPTION, beamAttenuation, schlickFresnel, SPOT_OPTICS } from '../waterOptics';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import {
-  LIP_GLOW_PATH, NORMAL_GUARD, RICH_FRAY, RICH_LIP_BACK, RICH_LIP_GLOW, RICH_SEA_MIRROR, RICH_THROAT, SWEPT_NORMAL_GUARD, SweptBarrelMesh,
+  LIP_GLOW_PATH, NORMAL_GUARD, RICH_FRAY, RICH_LIP_BACK, RICH_LIP_GLOW, RICH_SEA_MIRROR, RICH_THROAT, SWEPT_NORMAL_GUARD, SweptBarrelMesh, curlFoam,
 } from './SweptBarrelMesh';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
@@ -61,10 +61,8 @@ describe('the lip’s light, its mirror and its fraying tip (look-fix round 1)',
     expect(fragment.indexOf(RICH_SEA_MIRROR)).toBeGreaterThan(fragment.indexOf('radiance *= waterReflection;'));
     expect(fragment.indexOf(RICH_SEA_MIRROR)).toBeLessThan(fragment.indexOf(RICH_THROAT));
     expect(RICH_REFLECTION).toContain('radiance *= waterReflection;');
-    // The fray covers the body as the lace does, after the streaks.
-    expect(fragment).toContain(RICH_FRAY);
-    expect(fragment.indexOf(RICH_FRAY)).toBeGreaterThan(fragment.indexOf('waterStreak( vWaterWorld.xz'));
-    expect(fragment.indexOf(RICH_FRAY)).toBeLessThan(fragment.indexOf('diffuseColor.rgb = mix( waterUnder'));
+    // The fray whitens what the foam block made of the pixel, as a layer of its own right after it (not a line in it).
+    expect(fragment).toContain(curlFoam(RICH_FOAM) + RICH_FRAY);
     swept.setLook('classic');
     const classic = compiled(swept.mesh.material).fragment;
     for (const chunk of [RICH_LIP_BACK, RICH_SEA_MIRROR, RICH_FRAY]) expect(classic).not.toContain(chunk);
@@ -111,7 +109,11 @@ describe('the lip’s light, its mirror and its fraying tip (look-fix round 1)',
     expect(frayWhiteness(0, 0.1)).toBe(0);
     // The shader's twin.
     expect(RICH_FRAY).toContain(`float sweptFrayTransport = ${(1 - FRAY.asymmetry).toFixed(2)} * ${FRAY.depth.toFixed(1)} * vSweptFace.z * vSweptSheet / ${FRAY.drop.toFixed(3)};`);
-    expect(RICH_FRAY).toContain('waterCover = max( waterCover, sweptFrayTransport / ( 2.0 + sweptFrayTransport ) );');
+    expect(RICH_FRAY).toContain('float sweptFrayCover = sweptFrayTransport / ( 2.0 + sweptFrayTransport );');
+    // Over whatever the foam block left, in the foam's colour and matte; it reads and writes none of the block's own values.
+    expect(RICH_FRAY).toContain('diffuseColor.rgb = mix( diffuseColor.rgb, waterFoamColor, sweptFrayCover );');
+    expect(RICH_FRAY).toContain('roughnessFactor = mix( roughnessFactor, 0.7, sweptFrayCover );');
+    expect(RICH_FRAY).not.toContain('waterCover');
   });
 
   it('frays all of the sheet at the tip and none a share of the lip back, on open slices with an underside, drawn lofts only', () => {
@@ -133,13 +135,13 @@ describe('the lip’s light, its mirror and its fraying tip (look-fix round 1)',
       if (open.includes(s)) continue;
       for (let j = 0; j < LOFT_SAMPLES; j += 1) expect(loft.fray![s * LOFT_SAMPLES + j]).toBe(0);
     }
-    // The mesh carries it as the face's third coordinate.
+    // The mesh carries it as the face's third value.
     const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
     swept.update(loft);
     const face = swept.mesh.geometry.getAttribute('sweptFace');
-    expect(face.itemSize).toBe(3);
+    expect(face.itemSize).toBe(4);
     const v = open[0] * LOFT_SAMPLES + E + LANDMARK.lip;
-    expect(face.array[3 * v + 2]).toBeCloseTo(1, 6);
+    expect(face.array[4 * v + 2]).toBeCloseTo(1, 6);
     // The contact never frays.
     const contact = new SweptLoft(new ProfileLibrary([tubeCase(0.3)]), 0.05, { contact: true }).build(tubeRecords(), 21, 0.5, () => 0.5);
     expect(Array.from(contact.fray!.subarray(0, contact.vertexCount)).every((f) => f === 0)).toBe(true);

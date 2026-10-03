@@ -30,6 +30,13 @@ export const LOFT = {
   spacing: 0.5, fine: 0.25, frames: 3, budget: 40_000, pinned: 6, extension: 1.5, extensionSamples: 3, band: 1, endBlend: 2.5, handover: 0.3,
   offsetKnee: 1.5, offsetReach: 1, handoverStart: 0.8,
 } as const;
+/**
+ * The profile's own lift (1 less its pin onto the water, by its shape and not by its slice's weight) over which the lace
+ * passes from the water's mapping, at a vertex's world position, to the face's, unrolled along the ray (`LoftResult.unroll`,
+ * look-fix round 2): the rests are the water's own and the lifted stretch is the face's, a smoothstep between [provisional,
+ * as the curl's ripples' `FACE_MAP`].
+ */
+export const LACE_LIFT = [0.1, 0.4] as const;
 /** Vertices per slice: the profile and its extensions over the water at each end. */
 export const LOFT_SAMPLES = PROFILE_POINTS + 2 * LOFT.extensionSamples;
 /**
@@ -106,6 +113,17 @@ export interface LoftResult {
    * it out, which reads as 0.
    */
   arc?: Float32Array;
+  /**
+   * Per vertex, how far the lace is laid along the slice's ray to lie on its face, m (look-fix round 2): the face's distance
+   * from the ground it covers, its arc length less its horizontal reach (`arc` less the distance along the ray), the two
+   * taken from the crest landmark behind it and from the slice's front end ahead of it, so that it is 0 on the level
+   * stretches at either foot and, where the profile climbs, falls or turns back, the extra length it has over the ground it
+   * covers; by how far the profile is lifted off the water by its shape (`LACE_LIFT` over 1 − the pin, not over the slice's
+   * weight, which moves the whole slice and would drag the lace across it), so it is 0 where the profile rests. With the
+   * slice's ray it unrolls the face onto the ground: the curl's lace laid along its face and the water's own at its feet,
+   * where a planar xz projection stretched it. Drawn lofts only; a loft made by hand may leave it out, which reads as 0.
+   */
+  unroll?: Float32Array;
   /**
    * Per vertex, the share of the lip's sheet fraying into drops there, 0–1 (`frayShare`; look-fix round 1): near the tip
    * of an open slice whose underside has formed, 0 elsewhere. Drawn lofts only; a loft made by hand may leave it out.
@@ -278,6 +296,8 @@ export class SweptLoft {
   /** Per front, its slices' σ, before and after refinement. */
   private readonly base = new Float64Array(2 * MAX_SLICES + 8);
   private readonly sigmas = new Float64Array(2 * MAX_SLICES + 8);
+  /** A slice's pin onto the water per sample (`loftFront`), for the lace's unroll. */
+  private readonly pins = new Float64Array(LOFT_SAMPLES);
   private readonly sample: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
   private readonly probe: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
   private readonly query: ProfileQuery;
@@ -320,7 +340,7 @@ export class SweptLoft {
     this.result = {
       positions: new Float32Array(3 * vertices), normals: new Float32Array(3 * vertices), mask: new Float32Array(vertices), lift: new Float32Array(vertices),
       sheet: new Float32Array(vertices), sheetWeight: new Float32Array(vertices), sheetBack: new Float32Array(vertices), throat: new Float32Array(4 * vertices),
-      chord: new Float32Array(2 * vertices).fill(NO_CHORD), arc: new Float32Array(vertices), fray: new Float32Array(vertices),
+      chord: new Float32Array(2 * vertices).fill(NO_CHORD), arc: new Float32Array(vertices), unroll: new Float32Array(vertices), fray: new Float32Array(vertices),
       indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * slices), vertexCount: 0, indexCount: 0, sliceCount: 0,
       sliceFront: new Int32Array(slices), sliceSigma: new Float32Array(slices), sliceTau: new Float32Array(slices),
       slicePhase: new Uint8Array(slices), sliceCrestOffset: new Float32Array(slices), sliceLife: new Float32Array(slices),
@@ -774,6 +794,7 @@ export class SweptLoft {
           pin = u * u * (3 - 2 * u);
           maskAlong = Math.min(1, Math.max(0, 1 - (past - restEnd) / LOFT.band));
         }
+        this.pins[j] = pin;
         const v = slice * LOFT_SAMPLES + j;
         const px = ax + along * nx;
         const pz = az + along * nz;
@@ -809,6 +830,17 @@ export class SweptLoft {
       // The face coordinate along the slice as drawn: its arc length from the crest landmark (the drawing only).
       if (this.measureSheet) {
         drawnArcs(this.drawn, E + LANDMARK.crest, r.arc!, slice * LOFT_SAMPLES);
+        // ... less its reach along the ray, from the crest behind it and from the front end ahead of it: what the face has over
+        // the ground it covers, nothing on the level stretches at either foot; and where the profile is lifted, not where it
+        // rests (the lace there is the water's own).
+        const crestIndex = E + LANDMARK.crest;
+        const crestAlong = this.drawn[2 * crestIndex];
+        const frontExcess = r.arc![slice * LOFT_SAMPLES + LOFT_SAMPLES - 1] - (this.drawn[2 * (LOFT_SAMPLES - 1)] - crestAlong);
+        for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+          const excess = r.arc![slice * LOFT_SAMPLES + j] - (this.drawn[2 * j] - crestAlong);
+          const lifted = Math.min(1, Math.max(0, (1 - this.pins[j] - LACE_LIFT[0]) / (LACE_LIFT[1] - LACE_LIFT[0])));
+          r.unroll![slice * LOFT_SAMPLES + j] = lifted * lifted * (3 - 2 * lifted) * (j <= crestIndex ? excess : excess - frontExcess);
+        }
         // The lip frays at its leading edge while it flies: an open slice whose underside has formed.
         const tipArc = formed > 0 && r.slicePhase[slice] === PHASE.open ? r.arc![slice * LOFT_SAMPLES + E + LANDMARK.lip] : 0;
         for (let j = 0; j < LOFT_SAMPLES; j += 1) {

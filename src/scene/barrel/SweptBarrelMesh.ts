@@ -142,12 +142,12 @@ attribute float sweptSheetBack;
 attribute vec3 sweptWall;
 attribute vec3 sweptWallNormal;
 attribute vec4 sweptChord;
-attribute vec3 sweptFace;
+attribute vec4 sweptFace;
 varying float vSweptLift;
 varying float vSweptRest;
 varying vec3 vSweptWaterNormal;
 varying vec4 vSweptChord;
-varying vec3 vSweptFace;
+varying vec4 vSweptFace;
 varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
@@ -197,7 +197,7 @@ const sweptFragmentPars = /* glsl */ `varying float vSweptLift;
 varying float vSweptRest;
 varying vec3 vSweptWaterNormal;
 varying vec4 vSweptChord;
-varying vec3 vSweptFace;
+varying vec4 vSweptFace;
 varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
@@ -355,18 +355,20 @@ export const RICH_SEA_MIRROR = /* glsl */ `
 #endif`;
 
 /**
- * The fraying tip of the lip, Rich, in the foam's composition (look-fix round 1; the ruled follow-up, "with the spray
- * look", on open slices only): a share of the sheet breaks into drops (`vSweptFace.z`: all of it at the tip, none 0.15 of
- * the lip back, `FRAY`), the water a unit area holds W the sheet's thickness, its optical depth τ = 1.5 · share · W / r for
- * drops of radius r = 1 mm (spray-and-mist.md), and the lip whitens as such a layer of drops does, R = (1 − g) τ / (2 + (1
- * − g) τ) with g = 0.87 (the two-stream reflectance of a layer that scatters without absorbing; see-through near τ 1,
- * white only above about 15) [provisional]. It covers the body as the lace does.
+ * The fraying tip of the lip, Rich, as a whitening layer of its own after the foam block (look-fix round 1; the ruled
+ * follow-up, "with the spray look", on open slices only): a share of the sheet breaks into drops (`vSweptFace.z`: all of
+ * it at the tip, none 0.15 of the lip back, `FRAY`), the water a unit area holds W the sheet's thickness, its optical depth
+ * τ = 1.5 · share · W / r for drops of radius r = 1 mm (spray-and-mist.md), and the lip whitens as such a layer of drops
+ * does, R = (1 − g) τ / (2 + (1 − g) τ) with g = 0.87 (the two-stream reflectance of a layer that scatters without
+ * absorbing; see-through near τ 1, white only above about 15) [provisional]. It lies over whatever the foam block made of
+ * the pixel, as foam does, in the foam's colour and matte (the foam block is the water's own and changes with it, so
+ * nothing here is spliced into its lines).
  */
 export const RICH_FRAY = /* glsl */ `
   float sweptFrayTransport = ${(1 - FRAY.asymmetry).toFixed(2)} * ${FRAY.depth.toFixed(1)} * vSweptFace.z * vSweptSheet / ${FRAY.drop.toFixed(3)};
-  waterCover = max( waterCover, sweptFrayTransport / ( 2.0 + sweptFrayTransport ) );`;
-/** The last of the Rich foam's cover terms, the streaks, after which the fray covers the lip (`RICH_FRAY`). */
-const RICH_FOAM_STREAK_LINE = '  waterCover = max( waterCover, waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam ) );';
+  float sweptFrayCover = sweptFrayTransport / ( 2.0 + sweptFrayTransport );
+  diffuseColor.rgb = mix( diffuseColor.rgb, waterFoamColor, sweptFrayCover );
+  roughnessFactor = mix( roughnessFactor, 0.7, sweptFrayCover );`;
 
 /**
  * A normal on the curl turned from the eye (look-fix round 1; the same formula group 2's look fixes put on the water):
@@ -521,6 +523,9 @@ export const SWEPT_CHORD_LIGHT = /* glsl */ `
         * ( 1.0 - smoothstep( ${(CHORD_REACH - 1.5).toFixed(1)}, ${CHORD_REACH.toFixed(1)}, sweptChordPath ) );
     }`;
 
+/** The water's varyings the resting curl takes in place of its own (`richRestingWater`, `classicRestingWater`), as the preprocessor names them. */
+const SWEPT_RESTING = { vWaterWorld: 'sweptShading', vWaterFoam: 'sweptFoam', vWaterFlow: 'sweptFlow' } as const;
+
 /** The line of the water's body block that adds its crest light (`waterBodyFragment`), and the curl's, by 1 − the lift. */
 const WATER_CREST_LINE = `totalEmissiveRadiance += ${CREST_SCATTER.toFixed(6)} * ( 1.0 - vWaterFoam ) * waterBehind`;
 const CURL_CREST_LINE = `totalEmissiveRadiance += ${CREST_SCATTER.toFixed(6)} * ( 1.0 - vSweptLift ) * ( 1.0 - vWaterFoam ) * waterBehind`;
@@ -528,18 +533,61 @@ const CURL_CREST_LINE = `totalEmissiveRadiance += ${CREST_SCATTER.toFixed(6)} * 
 /**
  * The curl's body (look-fix round 1): the water's own (`waterBodyFragment`), with the crest light marched through the
  * height field as far as the curl rests on it (1 − the lift: under a lifted curl the height field is the hump), the lip's
- * sheet and the lifted curl's chord light after the column, and the look's own foam: Rich's (the churn, the freshness,
- * the streaks and the plume, on the air as far as the curl rests), Classic's.
+ * sheet and the lifted curl's chord light after the column, and the look's own foam (`curlFoam`): Rich's (the churn, the
+ * freshness, the streaks and the plume, on the air as far as the curl rests) with the lip's fray over it, Classic's.
  */
 export function sweptBodyFragment(rich: boolean): string {
   const body = rich
-    ? waterBodyFragment(true, true, replaced(RICH_FOAM, RICH_FOAM_STREAK_LINE, RICH_FOAM_STREAK_LINE + RICH_FRAY), SWEPT_LIFTED_BED + SWEPT_SHEET_BODY + RICH_LIP_GLOW + RICH_LIP_BACK + SWEPT_CHORD_LIGHT)
-    : waterBodyFragment(true, true, CLASSIC_FOAM, SWEPT_LIFTED_BED + SWEPT_SHEET_BODY + SWEPT_CHORD_LIGHT);
-  return replaced(replaced(body, WATER_CREST_LINE, CURL_CREST_LINE), FOAM_COVER_CALL, 'sweptFoamCover( waterFootprint )');
+    ? waterBodyFragment(true, true, curlFoam(RICH_FOAM) + RICH_FRAY, SWEPT_LIFTED_BED + SWEPT_SHEET_BODY + RICH_LIP_GLOW + RICH_LIP_BACK + SWEPT_CHORD_LIGHT)
+    : waterBodyFragment(true, true, curlFoam(CLASSIC_FOAM), SWEPT_LIFTED_BED + SWEPT_SHEET_BODY + SWEPT_CHORD_LIGHT);
+  return replaced(body, WATER_CREST_LINE, CURL_CREST_LINE);
 }
 
-/** The water's lace in both looks' foam blocks (`CLASSIC_FOAM`, `RICH_FOAM`), which the curl maps on its face where lifted. */
-const FOAM_COVER_CALL = 'waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) )';
+/**
+ * The current fades from the lace over this much of the lace's unroll, m (below, the lace is the water's own and keeps the
+ * water's current; above, it lies on a face and has none) [provisional, as the ripples'].
+ */
+export const LACE_CURRENT = [0.05, 0.4] as const;
+
+/**
+ * The curl's foam coordinates (look-fix round 1; the ruled follow-up, residual lace on the curl's lifted face: a
+ * face-aligned mapping): the pixel's xz where the curl rests on the water, and where it is lifted the face unrolled onto
+ * the ground, the pixel's xz moved along the slice's ray by how far the lace lies along the face (`LoftResult.unroll`: the
+ * arc the face has over its horizontal reach, from the crest behind and the front end ahead, where the profile is lifted
+ * by its shape), so the lace is laid along the face where the world's xz stretched it down a steep one and is the water's
+ * own where the profile rests or runs level, at either foot: the two mappings agree there, and the mapping changes slowly
+ * between them, so the lace keeps its scale (a mix of the world's xz and the face's own σ and arc, a hundred metres
+ * apart, spanned the lace's cells across a few pixels and drew the rests as a smooth tarp; and a mix by the slice's
+ * weight, which moves the whole slice, dotted its end with the lace's folded cells). No current in the wave's frame where
+ * it lies on a face (`LACE_CURRENT`) [provisional], as the ripples. Through the preprocessor, as the resting water's own
+ * values (`sweptRestingDefines`), the foam block that follows reads them as its `vWaterWorld` and `vWaterFlow`, whatever
+ * lines it is made of.
+ */
+export const SWEPT_FOAM_COORDS = /* glsl */ `  vec2 sweptFoamUnrolled = vSweptFace.w * vSweptChord.xy;
+  vec3 sweptFoamWorld = vec3( vWaterWorld.x + sweptFoamUnrolled.x, vWaterWorld.y, vWaterWorld.z + sweptFoamUnrolled.y );
+  vec2 sweptFoamFlow = vWaterFlow * ( 1.0 - smoothstep( ${LACE_CURRENT[0].toFixed(2)}, ${LACE_CURRENT[1].toFixed(2)}, abs( vSweptFace.w ) ) );
+#undef vWaterWorld
+#define vWaterWorld sweptFoamWorld
+#undef vWaterFlow
+#define vWaterFlow sweptFoamFlow
+`;
+/** The resting water's values again, after the foam block (`SWEPT_FOAM_COORDS`). */
+export const SWEPT_FOAM_RESTORE = /* glsl */ `
+#undef vWaterWorld
+#define vWaterWorld ${SWEPT_RESTING.vWaterWorld}
+#undef vWaterFlow
+#define vWaterFlow ${SWEPT_RESTING.vWaterFlow}
+`;
+
+/**
+ * A look's foam block (`CLASSIC_FOAM`, `RICH_FOAM`) as the curl draws it: itself, whole, between the curl's foam
+ * coordinates (`SWEPT_FOAM_COORDS`) and the resting water's again, so the lace, the churn and the streaks lie on the face
+ * where it is lifted. Nothing is spliced into the block's lines or matched in them, so it holds for whatever the block is
+ * made of; the pieces of the curl's own go before and after it.
+ */
+export function curlFoam(foam: string): string {
+  return SWEPT_FOAM_COORDS + foam + SWEPT_FOAM_RESTORE;
+}
 
 /**
  * No caustic focus where the curl is lifted (look-fix round 1): the caustic map refracts the sun through the height field,
@@ -550,19 +598,6 @@ const FOAM_COVER_CALL = 'waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam,
  */
 export const SWEPT_LIFTED_BED = /* glsl */ `
     waterBody = mix( waterBody, waterBodyReflectanceLit( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ), 1.0 ), vSweptLift );`;
-
-/**
- * The lace on the curl (look-fix round 1; the ruled follow-up, residual lace on the curl's lifted face: a face-aligned
- * mapping): the water's lace at the pixel's xz where it rests, and at its face coordinates (σ, arc) where it is lifted
- * (`FACE_MAP`), still in the wave's frame, where the world's xz stretched it down a steep face.
- */
-const sweptFoamCoverPars = /* glsl */ `
-float sweptFoamCover( vec2 footprint ) {
-  float world = waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( footprint.x, footprint.y ) );
-  vec2 faceFootprint = fwidth( vSweptFace.xy );
-  float face = waterFoamCover( vSweptFace.xy, vec2( 0.0 ), vWaterFoam, waterTime, max( faceFootprint.x, faceFootprint.y ) );
-  return mix( world, face, smoothstep( ${FACE_MAP[0].toFixed(1)}, ${FACE_MAP[1].toFixed(1)}, vSweptLift ) );
-}`;
 
 /**
  * The Rich curl's ripples on its face (look-fix round 1): the sea's two ripple layers (`waterRipplePars`, one phase of
@@ -605,7 +640,7 @@ export function waterTriangle(gx: number, gz: number): { nodes: [number, number]
 }
 
 const SWEPT_RESTING_NAMES = ['vWaterWorld', 'vWaterFoam', 'vWaterFlow'] as const;
-const sweptRestingDefines = SWEPT_RESTING_NAMES.map((name, k) => `#define ${name} ${['sweptShading', 'sweptFoam', 'sweptFlow'][k]}`).join('\n');
+const sweptRestingDefines = SWEPT_RESTING_NAMES.map((name) => `#define ${name} ${SWEPT_RESTING[name]}`).join('\n');
 const sweptRestingUndefines = SWEPT_RESTING_NAMES.map((name) => `#undef ${name}`).join('\n');
 const richRestingPars = /* glsl */ `
 vec3 sweptShading;
@@ -747,10 +782,11 @@ export class SweptBarrelMesh {
   /** Both looks' crest light on the lifted curl (`SWEPT_CHORD_LIGHT`): each vertex's slice's ray (x, z) and its chords ahead and behind. */
   private readonly chord = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
   /**
-   * Both looks' face coordinates (σ, arc length along its slice), the lace's and the Rich ripples' map where the curl is
-   * lifted, and the share of its lip fraying into drops (the Rich lip's leading edge, `RICH_FRAY`).
+   * Both looks' face coordinates (σ, arc length along its slice), the Rich ripples' map where the curl is lifted; the
+   * share of its lip fraying into drops (the Rich lip's leading edge, `RICH_FRAY`); and how far its face lies from the
+   * ground it covers (`unroll`), which lays the lace along the face (`SWEPT_FOAM_COORDS`).
    */
-  private readonly face = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
+  private readonly face = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
   private readonly index = new BufferAttribute(new Uint32Array(INDICES), 1).setUsage(DynamicDrawUsage);
   /** The dev view's colours, made with the first view. */
   private viewColours?: BufferAttribute;
@@ -824,8 +860,8 @@ export class SweptBarrelMesh {
       .replace('#include <begin_vertex>', sweptBeginVertex);
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', rich
-        ? `${RICH_CURL_FRAGMENT_PARS}\n${sweptFragmentPars}\n${sweptFoamCoverPars}\n${richThroatFragmentPars}`
-        : `#include <common>\n${waterFragmentPars}\n${classicRestingPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${sweptFoamCoverPars}`)
+        ? `${RICH_CURL_FRAGMENT_PARS}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
+        : `#include <common>\n${waterFragmentPars}\n${classicRestingPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}`)
       .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${rich ? richRestingWater : classicRestingWater}\n${SWEPT_SEAM}`)
       // The Rich water's crest light marches through the carved surface (G9), and so does the curl's where it rests.
       .replace('float gap = waterHeightAt( p.xz ) - p.y;', rich ? 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;' : 'float gap = waterHeightAt( p.xz ) - p.y;')
@@ -973,19 +1009,20 @@ export class SweptBarrelMesh {
     this.chord.clearUpdateRanges();
     this.chord.addUpdateRange(0, 4 * vertices);
     this.chord.needsUpdate = true;
-    // Each vertex's face coordinates, its slice's σ and its arc length along it, and its lip's fraying share (a loft made
-    // without them has 0).
+    // Each vertex's face coordinates, its slice's σ and its arc length along it, its lip's fraying share, and its arc less its
+    // reach along the ray (a loft made without them has 0).
     const face = this.face.array as Float32Array;
     for (let s = 0; s * LOFT_SAMPLES < vertices; s += 1) {
       for (let j = 0; j < LOFT_SAMPLES && s * LOFT_SAMPLES + j < vertices; j += 1) {
         const v = s * LOFT_SAMPLES + j;
-        face[3 * v] = loft.sliceSigma[s];
-        face[3 * v + 1] = loft.arc ? loft.arc[v] : 0;
-        face[3 * v + 2] = loft.fray ? loft.fray[v] : 0;
+        face[4 * v] = loft.sliceSigma[s];
+        face[4 * v + 1] = loft.arc ? loft.arc[v] : 0;
+        face[4 * v + 2] = loft.fray ? loft.fray[v] : 0;
+        face[4 * v + 3] = loft.unroll ? loft.unroll[v] : 0;
       }
     }
     this.face.clearUpdateRanges();
-    this.face.addUpdateRange(0, 3 * vertices);
+    this.face.addUpdateRange(0, 4 * vertices);
     this.face.needsUpdate = true;
     if (this.sheetShown) (this.sheetWeight.array as Float32Array).set(loft.sheetWeight.subarray(0, vertices));
     else (this.sheetWeight.array as Float32Array).fill(0, 0, vertices);
