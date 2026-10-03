@@ -609,11 +609,11 @@ describe('the swept contact in the surf zone', () => {
   }, 600_000);
 
   it('runs the crash with the cases at Padang Padang, with or without a rider, and hears only the barrel’s landings (PR 5)', () => {
-    const runner = new SurfZoneRunner(padang, { barrelCases: readBarrelCases() });
+    const runner = new SurfZoneRunner(padang, { barrelCases: readBarrelCases('padang') });
     expect(runner.simulation.crash).toBeDefined();
     expect(runner.contact).toBeUndefined();
     expect(new SurfZoneRunner(padang).simulation.crash).toBeUndefined();
-    const ridden = new SurfZoneRunner(padang, { rider: true, barrelCases: readBarrelCases() });
+    const ridden = new SurfZoneRunner(padang, { rider: true, barrelCases: readBarrelCases('padang') });
     expect(ridden.simulation.crash).toBeDefined();
     expect(ridden.contact).toBeDefined();
     const buffers = runner.createBuffers();

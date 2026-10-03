@@ -30,7 +30,7 @@ describe.runIf(process.env.PROBE)('Padang Padang crash probe', () => {
     const log = process.env.LOG ?? 'padang-crash.txt';
     writeFileSync(log, '');
     const crash = process.env.CRASH !== '0';
-    const library = crash ? libraryFromBytes(readBarrelCases()) : undefined;
+    const library = crash ? libraryFromBytes(readBarrelCases('padang')) : undefined;
     const seeds = (process.env.SEEDS ?? '1,2').split(',').map(Number);
     const swells = (process.env.SWELLS ?? 'small,medium').split(',') as (keyof typeof PADANG_SWELLS)[];
     const seconds = Number(process.env.SECONDS ?? 120);

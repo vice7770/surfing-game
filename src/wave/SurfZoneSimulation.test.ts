@@ -950,7 +950,7 @@ describe('the swept barrel’s breaking front (the Padang Padang spec, Part B)',
 
   // The crash (PR 5): the barrel's jets leave and land on its clock, at a swept spot given the library.
   it('throws no Kennedy lip at a swept spot with the library, pours the barrel’s jets from its crash curve with the water balanced, and hands the held jets over exactly', () => {
-    const library = libraryFromBytes(readBarrelCases());
+    const library = libraryFromBytes(readBarrelCases('padang'));
     const donor = new SurfZoneSimulation(padang(), 'spun-up', library);
     let thrown = 0;
     let landed = 0;
@@ -993,12 +993,12 @@ describe('the swept barrel’s breaking front (the Padang Padang spec, Part B)',
     const alone = new SurfZoneSimulation(padang(), 'warm');
     expect(alone.crash).toBeUndefined();
     expect(alone.whitewaterStrength).toBe(alone.breaking.strength);
-    const off = new SurfZoneSimulation(padang({ sweptCrash: false }), 'warm', libraryFromBytes(readBarrelCases()));
+    const off = new SurfZoneSimulation(padang({ sweptCrash: false }), 'warm', libraryFromBytes(readBarrelCases('padang')));
     expect(off.crash).toBeUndefined();
-    const canyon = new SurfZoneSimulation({ ...small, spot: 'canyon' }, 'warm', libraryFromBytes(readBarrelCases()));
+    const canyon = new SurfZoneSimulation({ ...small, spot: 'canyon' }, 'warm', libraryFromBytes(readBarrelCases('padang')));
     expect(canyon.crash).toBeUndefined();
     expect(canyon.whitewaterStrength).toBe(canyon.breaking.strength);
-    const on = new SurfZoneSimulation(padang(), 'warm', libraryFromBytes(readBarrelCases()));
+    const on = new SurfZoneSimulation(padang(), 'warm', libraryFromBytes(readBarrelCases('padang')));
     expect(on.crash).toBeDefined();
     expect(on.whitewaterStrength).not.toBe(on.breaking.strength);
   });
