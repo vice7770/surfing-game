@@ -133,31 +133,73 @@ describe('the swept loft', () => {
 
   it('anchors the τ = 0 crest at the throw point, and before the throw on the solver’s crest', () => {
     // The toy's crest sits at x = 1 h0 = 7 m at every τ; thrown at z −106, it stands at −99, 1 m ahead of the solver's.
-    const thrown = loftOf(() => 0.1, 21, -106);
+    const thrown = loftOf(() => 0, 21, -106);
     const early = loftOf(() => -0.1);
     expect(crestZ(thrown)).toBeCloseTo(-99, 4);
     expect(crestZ(early)).toBeCloseTo(-100, 4);
     const middle = Math.floor(thrown.sliceCount / 2);
     expect(thrown.sliceCrestOffset[middle]).toBeCloseTo(1, 4);
-    expect(thrown.sliceLife[middle]).toBeCloseTo(0.1 / TOUCHDOWN, 4);
+    expect(loftOf(() => 0.1, 21, -106).sliceLife[middle]).toBeCloseTo(0.1 / TOUCHDOWN, 4);
     expect(early.sliceCrestOffset[middle]).toBeNaN();
     expect(thrown.caps).toBe(0);
   });
 
-  it('hands the anchor back to the solver’s crest from 80 % of the open time, where the capped slices cluster (the advisor, 2026-09-30)', () => {
-    // Thrown at z −106 the drawn crest stands at −99, the solver's at −100: held until 0.8 of the touchdown time,
-    // then a sixth of the way back 0.05 s (a sixth of the handover) later.
-    expect(crestZ(loftOf(() => 0.5 * TOUCHDOWN, 21, -106))).toBeCloseTo(-99, 4);
-    expect(crestZ(loftOf(() => 0.8 * TOUCHDOWN + LOFT.handover / 6, 21, -106))).toBeCloseTo(-99 - 1 / 6, 4);
+  it('hands the anchor back to the solver’s crest by a smoothstep from the throw, whole by 80 % of the open time (the advisor, 2026-10-03)', () => {
+    // Thrown at z −106 the drawn crest stands at −99, the solver's at −100: u = 3x² − 2x³ of the way back at x = τ / 0.8 T.
+    const window = 0.8 * TOUCHDOWN;
+    for (const x of [0, 0.25, 0.5, 0.75, 1]) {
+      expect(crestZ(loftOf(() => x * window, 21, -106))).toBeCloseTo(-99 - (3 * x * x - 2 * x * x * x), 4);
+    }
+    expect(crestZ(loftOf(() => 0.25 * window, 21, -106))).toBeCloseTo(-99.15625, 4);
+    // Back on the crest from there to touchdown.
+    expect(crestZ(loftOf(() => 0.9 * TOUCHDOWN, 21, -106))).toBeCloseTo(-100, 4);
   });
 
-  it('soft-caps the drawn crest’s distance from the solver’s at 2.5 m, and counts the caps (the advisor, 2026-09-30)', () => {
-    // Thrown at z −100.2, the crest would stand 6.8 m ahead: drawn at 1.5 + 5.3 / (1 + 5.3) m.
-    const loft = loftOf(() => 0.1);
+  it('soft-caps the throw point’s offset along the ray at 2.5 m either way, and counts the caps (the advisor, 2026-09-30)', () => {
+    // Thrown at z −100.2, the crest would stand 6.8 m ahead: drawn at 1.5 + 5.3 / (1 + 5.3) m; thrown at −113.8, as far behind.
+    const loft = loftOf(() => 0);
     const middle = Math.floor(loft.sliceCount / 2);
     expect(crestZ(loft)).toBeCloseTo(-100 + 1.5 + 5.3 / 6.3, 4);
     expect(loft.sliceCrestOffset[middle]).toBeCloseTo(6.8, 4);
     expect(loft.caps).toBe(loft.sliceCount);
+    const behind = loftOf(() => 0, 21, -113.8);
+    expect(crestZ(behind)).toBeCloseTo(-100 - 1.5 - 5.3 / 6.3, 4);
+    expect(behind.sliceCrestOffset[middle]).toBeCloseTo(6.8, 4);
+    // Handing back, the capped offset shrinks with the rest: halfway, half of it.
+    expect(crestZ(loftOf(() => 0.4 * TOUCHDOWN))).toBeCloseTo(-100 + 0.5 * (1.5 + 5.3 / 6.3), 4);
+  });
+
+  it('stands the throw point on the slice’s own ray, not on its column, so the slice hands back along its ray (the advisor, 2026-10-03)', () => {
+    // A front at 36.9° to the columns (its ray (−0.6, 0.8)), its crest crossing its throw depth 1 m behind each point along
+    // its column: on the ray that is 0.8 m behind, and the anchor never leaves the line through the point.
+    const slope = 0.75;
+    const at = (tau: number) => {
+      const n = 21;
+      const out = new Float32Array(n * FRONT_STRIDE);
+      for (let k = 0; k < n; k += 1) {
+        const o = k * FRONT_STRIDE;
+        out[o + FRONT_FIELD.x] = k; out[o + FRONT_FIELD.z] = -100 + slope * (k - 10); out[o + FRONT_FIELD.front] = 1;
+        out[o + FRONT_FIELD.sigma] = 1.25 * k; out[o + FRONT_FIELD.tau] = tau; out[o + FRONT_FIELD.footHeight] = 2.1;
+        out[o + FRONT_FIELD.footDepth] = 7; out[o + FRONT_FIELD.throwZ] = -101 + slope * (k - 10);
+      }
+      return new SweptLoft(tubes(), 0.05).build(out, n, 0.5, flat);
+    };
+    const window = 0.8 * 0.5 * TUBE_UNIT;
+    for (const x of [0, 0.3, 0.5, 0.8, 1]) {
+      const loft = at(x * window);
+      const s = sliceAt(loft, 12.5);
+      expect(loft.sliceRayX[s]).toBeCloseTo(-0.6, 5);
+      expect(loft.sliceRayZ[s]).toBeCloseTo(0.8, 5);
+      // The tube's crest is its profile's origin (c = 0), so its crest vertex is the anchor; the point is (10, −100).
+      const v = 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.crest);
+      const dx = loft.positions[v] - 10;
+      const dz = loft.positions[v + 2] + 100;
+      const u = 3 * x * x - 2 * x * x * x;
+      // Along the ray, (1 − u) of the throw point's offset; across it, nothing.
+      expect(-0.6 * dx + 0.8 * dz).toBeCloseTo((1 - u) * -0.8, 4);
+      expect(0.8 * dx + 0.6 * dz).toBeCloseTo(0, 4);
+      expect(loft.sliceCrestOffset[s]).toBeCloseTo(0.8, 4);
+    }
   });
 
   it('blends into the water over 2.5 m at each end, and masks 1 m past them', () => {
@@ -664,15 +706,24 @@ describe('the loft’s slices, for the contact', () => {
     expect(tent.sliceOverturned[sliceAt(tent, 10)]).toBe(0);
   });
 
-  it('carries the tip’s velocity, and the anchor’s while it hands over', () => {
+  it('carries the tip’s velocity, and the anchor’s own as it hands back, u̇ (K − T′), none once it is back', () => {
     const open = new SweptLoft(tubes(), 0.05).build(records(21, () => 0.1), 21, 0.5, flat);
     const middle = sliceAt(open, 10);
     expect(open.sliceTipAlong[middle]).toBeCloseTo(0.9 * Math.sqrt(9.81 * 7), 3);
     expect(open.sliceTipUp[middle]).toBeCloseTo(-0.3 * Math.sqrt(9.81 * 7), 3);
-    expect(open.sliceAnchorVZ[middle]).toBe(0);
-    // Thrown 3 m behind the solver's crest (soft-capped to 2.1 m), handing over: the anchor runs to the crest over 0.3 s.
-    const handing = new SweptLoft(tubes(), 0.05).build(records(21, () => 0.85 * 0.5 * TUBE_UNIT, -103), 21, 0.5, flat);
-    expect(handing.sliceAnchorVZ[sliceAt(handing, 10)]).toBeCloseTo(2.1 / LOFT.handover, 3);
+    // Thrown 3 m behind the solver's crest (soft-capped to 2.1 m): at the throw and from 0.8 T the anchor stands still;
+    // halfway it runs to the crest at u̇ = 1.5 / 0.8 T.
+    const window = 0.8 * 0.5 * TUBE_UNIT;
+    const anchorVZ = (tau: number) => {
+      const loft = new SweptLoft(tubes(), 0.05).build(records(21, () => tau, -103), 21, 0.5, flat);
+      return loft.sliceAnchorVZ[sliceAt(loft, 10)];
+    };
+    expect(anchorVZ(0)).toBe(0);
+    expect(anchorVZ(0.5 * window)).toBeCloseTo((1.5 / window) * 2.1, 3);
+    expect(anchorVZ(0.25 * window)).toBeCloseTo(((6 * 0.25 * 0.75) / window) * 2.1, 3);
+    // (The records' τ is 32-bit: at the window's end u̇ is within a hair of 0.)
+    expect(anchorVZ(window)).toBeCloseTo(0, 5);
+    expect(anchorVZ(0.85 * 0.5 * TUBE_UNIT)).toBe(0);
   });
 
   it('asks the water’s height only where a vertex rests on it', () => {
@@ -873,17 +924,68 @@ describe('the loft’s slices, for the contact', () => {
         expect(checked).toBeGreaterThan(30);
       });
 
+      it('agrees within 0.5 m/s along and across the columns on a front at an angle to them, its throw point riding its ray (the advisor, 2026-10-03)', { timeout: 240_000 }, () => {
+        // A front at 36.9° to the columns (its ray (−0.6, 0.8)) moving shoreward at `pace` from its throw: the throw point
+        // on the ray moves across it with the solver's crest. From 0.3 s after the throw (the crest's pace whole) and a
+        // window, through the hand-back's fastest at 0.4 T, until a window before the case's hold.
+        const unit = Math.sqrt(7 / 9.81);
+        const slanted = (a0: number, pace: number, tau: number) => {
+          const n = 21;
+          const out = new Float32Array(n * FRONT_STRIDE);
+          for (let k = 0; k < n; k += 1) {
+            const o = k * FRONT_STRIDE;
+            out[o + FRONT_FIELD.x] = k; out[o + FRONT_FIELD.z] = -100 + 0.75 * (k - 10) + pace * tau; out[o + FRONT_FIELD.front] = 1;
+            out[o + FRONT_FIELD.sigma] = 1.25 * k; out[o + FRONT_FIELD.tau] = tau; out[o + FRONT_FIELD.footHeight] = a0 * 7;
+            out[o + FRONT_FIELD.footDepth] = 7; out[o + FRONT_FIELD.throwZ] = -100 + 0.75 * (k - 10);
+          }
+          return out;
+        };
+        let checked = 0;
+        for (const [a0, held] of [[0.1414, 0.95], [0.3, 1.1338]] as const) {
+          const times = library.profileTimes({ slope: 1 / 19, footHeight: a0 * 7, footDepth: 7 });
+          const window = 4 * times.frameSeconds;
+          for (const pace of [4, 11]) {
+            const tip = (tau: number) => {
+              const drawn = new SweptLoft(library, 1 / 19).build(slanted(a0, pace, tau), 21, 0.5, flat);
+              const v = 3 * (sliceAt(drawn, 12.5) * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.lip);
+              return [drawn.positions[v], drawn.positions[v + 2]];
+            };
+            const stored = (tau: number) => {
+              const contact = new SweptLoft(library, 1 / 19, { contact: true }).build(slanted(a0, pace, tau), 21, 0.5, flat);
+              const s = sliceAt(contact, 12.5);
+              return [contact.sliceTipAlong[s] * contact.sliceRayX[s] + contact.sliceAnchorVX[s], contact.sliceTipAlong[s] * contact.sliceRayZ[s] + contact.sliceAnchorVZ[s]];
+            };
+            for (let tau = 0.3 + window; tau + 2 * window <= held * unit; tau += 0.04) {
+              const mean = [0, 0];
+              for (let k = -4; k <= 4; k += 1) {
+                const v = stored(tau + (k * window) / 4);
+                mean[0] += v[0] / 9;
+                mean[1] += v[1] / 9;
+              }
+              const ahead = tip(tau + window);
+              const behind = tip(tau - window);
+              for (const axis of [0, 1]) expect(Math.abs((ahead[axis] - behind[axis]) / (2 * window) - mean[axis])).toBeLessThan(0.5);
+              checked += 1;
+            }
+          }
+        }
+        expect(checked).toBeGreaterThan(30);
+      });
+
       it('takes the solver crest’s pace only from 0.1 s after the throw, held near the long-wave speed', () => {
         // The solver's crest still at z −100, thrown 3 m behind or ahead of where the cap holds it equally: the cap's
-        // pull is the same both ways, so only the crest's pace since the throw, (z − throwZ)/τ, tells them apart.
+        // pull is the same both ways, so only the crest's pace since the throw, (z − throwZ)/τ, tells their following
+        // motion apart: the contact's anchor velocity less the drawing's (the hand-back's own, u̇ (K − T′)).
         const crestX = (tau: number) => {
           const out = new Float64Array(2);
           library.pointAt({ slope: 1 / 19, footHeight: 2.1, footDepth: 7, seconds: tau, hold: 'contact' }, LANDMARK.crest, out);
           return out[0];
         };
         const anchorVZ = (tau: number, side: number) => {
-          const loft = new SweptLoft(library, 1 / 19, { contact: true }).build(moving(0.3, 0, tau, -100 - crestX(tau) + 3 * side), 21, 0.5, flat);
-          return loft.sliceAnchorVZ[middle(loft)];
+          const records = moving(0.3, 0, tau, -100 - crestX(tau) + 3 * side);
+          const contact = new SweptLoft(library, 1 / 19, { contact: true }).build(records, 21, 0.5, flat);
+          const drawn = new SweptLoft(library, 1 / 19).build(records, 21, 0.5, flat);
+          return contact.sliceAnchorVZ[middle(contact)] - drawn.sliceAnchorVZ[middle(drawn)];
         };
         // At 0.05 s that pace is noise: none of it, so both read alike; at 0.5 s it is in.
         expect(anchorVZ(0.05, 1)).toBeCloseTo(anchorVZ(0.05, -1), 4);

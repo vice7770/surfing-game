@@ -61,18 +61,20 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     expect(crash.counts.throws).toBe(7);
     expect(points[0].jetStrip).toBe(-1);
     expect(points[4].jetStrip).toBeGreaterThan(0);
-    // The throw's window, over which the point claims its crest until its crash: #86's 2 H, H the wave height the throw
-    // measured on the basin's 0.8 m crest.
+    // The throw's window, over which the point claims its crest while on its pace: #86's 2 H, H the wave height the
+    // throw measured on the basin's 0.8 m crest.
     expect(points[4].jetWindow).toBeGreaterThan(2 * 0.7);
     expect(points[4].jetWindow).toBeLessThanOrEqual(2 * 0.8);
-    expect(points[0].jetWindow).toBeUndefined();
     // Its pace from the throw: its crest's, unmeasured here, so the long-wave speed √(g (h + η)) at its crest; its z runs
-    // on it from where it threw (BreakingFront).
+    // on it from where it threw (BreakingFront). The ends, with no jet, run on theirs too (the advisor, 2026-10-03).
     const pace = Math.sqrt(GRAVITY * (1.8 + 0.8));
     expect(points[4].jetPace).toBeCloseTo(pace, 12);
     expect(points[4].jetBase).toBe(11.5);
     expect(points[4].z).toBeCloseTo(11.5 + pace * points[4].tau, 12);
-    expect(crash.counts.paceUnmeasured).toBe(7);
+    expect(points[0].jetStrip).toBe(-1);
+    expect(points[0].jetPace).toBeCloseTo(pace, 12);
+    expect(points[0].z).toBeCloseTo(11.5 + pace * points[0].tau, 12);
+    expect(crash.counts.paceUnmeasured).toBe(9);
     expect(crash.counts.crashes).toBe(0);
     expect(landed.length).toBe(0);
     run(crash, points, s, TOUCHDOWN, 2);
@@ -80,13 +82,42 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     expect(crash.counts.late).toBe(0);
     expect(points[4].crashedAt).toBeDefined();
     expect(landed.length).toBe(7 * STRIP_PARCELS);
-    // In h0 the tip is (1.2, 0.5) and lands straight below it, 2.4 m ahead of the anchor: at touchdown still about the
-    // throw point, and through the pour handing over to the crest, which ran on at its pace to the crash.
+    // In h0 the tip is (1.2, 0.5) and lands straight below it, 2.4 m ahead of the anchor, which is back on the crest by
+    // then; the pour follows the drawn lip as its point runs on at its pace through the collapse.
+    const collapse = library().profileTimes({ slope: 0.05, footHeight: 0.6, footDepth: 2 }).collapseSeconds;
     for (const z of landed) {
-      expect(z).toBeGreaterThan(11.5 + 2.4 - 0.6);
-      expect(z).toBeLessThan(11.5 + pace * TOUCHDOWN + 2.4 + 0.6);
+      expect(z).toBeGreaterThan(11.5 + pace * TOUCHDOWN + 2.4 - 0.6);
+      expect(z).toBeLessThan(11.5 + pace * (TOUCHDOWN + collapse) + 2.4 + 0.6);
     }
     expect(lip.airborneVolume()).toBe(0);
+  });
+
+  it('foresees the landing at the throw where the crash lands it, its point on its pace and its clock at real time (the advisor, 2026-10-03)', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver);
+    const crash = new SweptCrash(library(), 0.05);
+    const s = sea(solver, lip);
+    const points = front(9, () => 0);
+    run(crash, points, s, 0, 0.01);
+    // The foresight: where its parcels wait, held.
+    const state = lip.exportState();
+    const strip = state.strips.find(([id]) => id === points[4].jetStrip)![1];
+    const slot = state.slots.indexOf(strip.parcels[0]);
+    const foreseen = { x: state.fields.x[slot], z: state.fields.z[slot] };
+    // The crash, at touchdown on the same clock: the first crash curve point is where its lip lands.
+    let landed: { x: number; z: number } | undefined;
+    for (let t = 0.01; t < TOUCHDOWN + 0.05 && !landed; t += 0.01) {
+      for (const p of points) p.tau = t;
+      solver.time += 0.01;
+      crash.update(points, s);
+      if (points[4].crashedAt !== undefined) landed = crash.curve[Math.floor(crash.curve.length / 2)];
+      lip.step(0.01);
+    }
+    expect(landed).toBeDefined();
+    // Within the pace's one step of clock past touchdown.
+    const pace = Math.sqrt(GRAVITY * (1.8 + 0.8));
+    expect(landed!.x).toBeCloseTo(foreseen.x, 6);
+    expect(Math.abs(landed!.z - foreseen.z)).toBeLessThanOrEqual(pace * 0.01 + 1e-9);
   });
 
   it('balances the water: what the crests gave is what landed', () => {
@@ -122,28 +153,77 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     expect(points.every((p) => p.jetStrip === -1)).toBe(true);
   });
 
-  it('pours a lost point’s jet where it was foreseen', () => {
+  it('pours a lost point’s jet where it was foreseen, from when its point leaves the front (the advisor, 2026-10-03)', () => {
     const solver = basin();
     const lip = new PlungingLip(solver);
     const crash = new SweptCrash(library(), 0.05);
     const s = sea(solver, lip);
-    const landed: number[] = [];
+    const landed: { z: number; t: number }[] = [];
     lip.onLand = (_x, z, _volume, _vx, _vy, _vz, flight) => {
-      if (flight?.swept) landed.push(z);
+      if (flight?.swept) landed.push({ z, t: lip.time });
     };
     run(crash, front(9, () => 0), s, 0, 0.05);
     expect(crash.counts.throws).toBe(7);
-    // The front is gone: nothing more is told of it.
+    // Held: nothing has poured and no void has closed, though the clock ran on.
+    expect(landed.length).toBe(0);
+    expect(lip.trappedAir).toBe(0);
+    // The front is gone: its jets crash where they were foreseen (the slice at touchdown, its point paced there), now.
+    const left = lip.time;
     run(crash, [], s, 0, TOUCHDOWN + 2);
+    expect(crash.counts.lost).toBe(7);
     expect(landed.length).toBe(7 * STRIP_PARCELS);
-    for (const z of landed) expect(Math.abs(z - (11.5 + 2.4))).toBeLessThan(0.6);
+    const pace = Math.sqrt(GRAVITY * (1.8 + 0.8));
+    for (const { z } of landed) expect(Math.abs(z - (11.5 + pace * TOUCHDOWN + 2.4))).toBeLessThan(0.6);
+    expect(Math.min(...landed.map((landing) => landing.t))).toBeLessThan(left + 0.02);
     expect(lip.airborneVolume()).toBe(0);
-    // Their voids closed as their pours began, as foreseen, trapping their air.
-    expect(lip.closedAtPour).toBe(7);
+    // Their voids closed as they left, trapping their air: none as a pour began.
+    expect(lip.closedAtPour).toBe(0);
     expect(lip.trappedAir).toBeGreaterThan(0);
   });
 
-  it('paces a thrown point along its column, c_n / n_z after the clamp, and blends it toward its crest as the anchor hands back (the advisor)', () => {
+  it('lets a point whose clock stalls leave the front 2 T after its throw, its jet crashing where it was foreseen (the advisor, 2026-10-03)', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver);
+    const crash = new SweptCrash(library(), 0.05);
+    const s = sea(solver, lip);
+    const landed: { z: number; t: number }[] = [];
+    lip.onLand = (_x, z, _volume, _vx, _vy, _vz, flight) => {
+      if (flight?.swept) landed.push({ z, t: lip.time });
+    };
+    const points = front(9, () => 0);
+    run(crash, points, s, 0, 0.05);
+    const thrownAt = points[4].jetAt!;
+    expect(thrownAt).toBeCloseTo(0.01, 12);
+    // Its clock stalls at 0.05 s while the sea runs on: short of touchdown 2 T after its throw, every point leaves, jet or not.
+    let left = Number.NaN;
+    let exited = 0;
+    for (let step = 0; step < 100 && Number.isNaN(left); step += 1) {
+      for (const p of points) p.tau = 0.05;
+      solver.time += 0.01;
+      crash.update(points, s);
+      lip.step(0.01);
+      if (points.length === 0) {
+        left = solver.time;
+        exited = crash.exited.length;
+      }
+    }
+    expect(left - thrownAt).toBeGreaterThanOrEqual(2 * TOUCHDOWN);
+    expect(left - thrownAt).toBeLessThan(2 * TOUCHDOWN + 0.01 + 1e-9);
+    expect(exited).toBe(9);
+    expect(crash.counts.exits).toBe(9);
+    expect(crash.counts.exitJets).toBe(7);
+    expect(crash.counts.crashes + crash.counts.foreseen + crash.counts.lost).toBe(0);
+    // Their jets pour from where they were foreseen, from the step they left.
+    run(crash, points, s, 0, 2);
+    expect(landed.length).toBe(7 * STRIP_PARCELS);
+    expect(Math.min(...landed.map((landing) => landing.t))).toBeGreaterThan(left - 1e-9);
+    const pace = Math.sqrt(GRAVITY * (1.8 + 0.8));
+    for (const { z } of landed) expect(Math.abs(z - (11.5 + pace * TOUCHDOWN + 2.4))).toBeLessThan(0.6);
+    expect(lip.airborneVolume()).toBe(0);
+    expect(lip.closedAtPour).toBe(0);
+  });
+
+  it('paces a thrown point, jet or not, along its column, c_n / n_z after the clamp, with no blend through its slice’s fade (the advisor)', () => {
     const solver = basin();
     const lip = new PlungingLip(solver);
     const crash = new SweptCrash(library(), 0.05);
@@ -160,23 +240,26 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     expect(paced(0.5, 4).jetPace).toBeCloseTo(4 / (1 / Math.sqrt(1.25)), 2);
     expect(paced(3, 4).jetPace).toBeCloseTo(4 / 0.5, 2);
     expect(paced(0, 10).jetPace).toBeCloseTo(1.5 * wave, 12);
-    expect(crash.counts.paceFast).toBe(7);
-    // The blend: from 0.8 of the open time, over 0.3 s, z goes from the paced to the claimed crest.
+    // Every point of the front, its two ends with no jet among them.
+    expect(crash.counts.paceFast).toBe(9);
+    // Held to its pace from the throw until its slice has faded, at touchdown + collapse, whatever crest it claims; then
+    // left where the front puts it (the ordinary match).
     const points = front(9, () => 0).map((p) => ({ ...p, crestSpeed: 4 }));
     run(crash, points, s, 0, 0.02);
     const p = points[4];
-    expect(p.jetBlend).toBeCloseTo(0.8 * TOUCHDOWN, 12);
-    expect(p.jetUntil).toBeCloseTo(0.8 * TOUCHDOWN + 0.3, 12);
-    for (const tau of [0.1, p.jetBlend! + 0.15, p.jetBlend! + 0.3, p.jetBlend! + 0.45]) {
+    const times = library().profileTimes({ slope: 0.05, footHeight: 0.6, footDepth: 2 });
+    const until = times.touchdownSeconds + times.collapseSeconds;
+    expect(p.jetUntil).toBeCloseTo(until, 12);
+    expect(points[0].jetUntil).toBeCloseTo(until, 12);
+    for (const tau of [0.1, 0.8 * TOUCHDOWN + 0.05, TOUCHDOWN, TOUCHDOWN + 0.5 * times.collapseSeconds, until - 0.01, until + 0.01]) {
       for (const q of points) {
         q.tau = tau;
         q.crestZ = 14;
       }
+      const before = p.z;
       crash.update(points, s);
-      const pacedZ = 11.5 + 4 * tau;
-      const u = Math.min(1, Math.max(0, (tau - p.jetBlend!) / 0.3));
-      // Crashed past the blend's end, it is left as it was: the front matches it as before.
-      if (tau < p.jetUntil!) expect(p.z).toBeCloseTo(pacedZ + u * (14 - pacedZ), 12);
+      if (tau < until) expect(p.z).toBeCloseTo(11.5 + 4 * tau, 12);
+      else expect(p.z).toBe(before);
     }
     expect(p.crashedAt).toBeDefined();
   });
@@ -189,16 +272,19 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     const points = front(9, () => 0);
     run(crash, points, s, 0, 0.05);
     expect(crash.counts.throws).toBe(7);
-    // Its neighbours gone, point 4 stands alone: no ray to draw it by, so the runs pass it over.
+    // Its neighbours gone, point 4 stands alone: no ray to draw it by, so the runs pass it over. The others' jets crash
+    // where they were foreseen as their points leave.
     const alone = [points[4]];
     run(crash, alone, s, 0.05, TOUCHDOWN - 0.06);
+    expect(crash.counts.lost).toBe(6);
     expect(points[4].crashedAt).toBeUndefined();
     expect(crash.counts.foreseen).toBe(0);
+    const trapped = lip.trappedAir;
     run(crash, alone, s, TOUCHDOWN, 0.02);
     expect(points[4].crashedAt).toBeDefined();
     expect(crash.counts.foreseen).toBe(1);
     expect(crash.counts.crashes).toBe(0);
-    expect(lip.trappedAir).toBeGreaterThan(0);
+    expect(lip.trappedAir).toBeGreaterThan(trapped);
   });
 
   it('moves no water for a front of one point', () => {

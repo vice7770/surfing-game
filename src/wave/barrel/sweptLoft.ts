@@ -18,16 +18,17 @@ export { SHEET, THROAT, arcView, sheetAcross, throatViews, tubeSkyView } from '.
  *   samples, so the seam's band always has both surfaces [inferred];
  * - `band`, m: the dithered overlap at the mask's edge [inferred];
  * - `endBlend`, m: a front's ends blend into the water over this length [inferred];
- * - `handover`, s: the anchor returns to the solver's crest over this long [inferred]. (After touchdown a slice fades
- *   into the water over its tube's own collapse, `ProfileLookup.collapseSeconds`, and a faded slice is dropped.)
  * - `offsetKnee`, `offsetReach`, m: the drawn crest's distance from the solver's is its own below the knee and
  *   saturates `offsetReach` past it (the advisor, 2026-09-30: 5 % of open slices ran over 2 m on the Small swell);
- * - `handoverStart`: the anchor starts back to the solver's crest at this share of the open time, where the lip
+ * - `handoverStart`: the share of the open time by which the anchor is back on the solver's crest, where the lip
  *   collapses and the crest landmark is least defined: the capped slices clustered there (44 % in the last fifth of
- *   the open time on the Small swell; the advisor's rule, 2026-09-30).
+ *   the open time on the Small swell; the advisor's rules, 2026-09-30 and 2026-10-03). It goes back from the throw by
+ *   a smoothstep (`anchorOnRay`), which replaced the 0.3 s handover from there (2026-10-03).
+ * (After touchdown a slice fades into the water over its tube's own collapse, `ProfileLookup.collapseSeconds`, and a
+ * faded slice is dropped.)
  */
 export const LOFT = {
-  spacing: 0.5, fine: 0.25, frames: 3, budget: 40_000, pinned: 6, extension: 1.5, extensionSamples: 3, band: 1, endBlend: 2.5, handover: 0.3,
+  spacing: 0.5, fine: 0.25, frames: 3, budget: 40_000, pinned: 6, extension: 1.5, extensionSamples: 3, band: 1, endBlend: 2.5,
   offsetKnee: 1.5, offsetReach: 1, handoverStart: 0.8,
 } as const;
 /** Vertices per slice: the profile and its extensions over the water at each end. */
@@ -97,8 +98,8 @@ export interface LoftResult {
   indexCount: number;
   sliceCount: number;
   /**
-   * Per slice: its front, σ (m), τ (s), phase (0 before vertical, 1 open, 2 after touchdown), and the anchored crest's
-   * distance from the solver's, m (NaN where the anchor is the crest).
+   * Per slice: its front, σ (m), τ (s), phase (0 before vertical, 1 open, 2 after touchdown), and its throw point's
+   * distance from the crest point along its ray, before the soft cap, m, to touchdown (NaN where the anchor is the crest).
    */
   sliceFront: Int32Array;
   sliceSigma: Float32Array;
@@ -179,6 +180,46 @@ const EXTENSION_STEP = LOFT.extension / E;
 const LAST = PROFILE_POINTS - 1;
 const PHASE = { pre: 0, open: 1, post: 2 } as const;
 
+/** A thrown slice's anchor, as `anchorOnRay` finds it. */
+export interface RayAnchor {
+  /** Its throw point's offset from the crest point K along the ray, m (+ forward), soft-capped: T′ = K + held n. */
+  held: number;
+  /** Its uncapped offset's size, m; whether the cap held it, and the cap's slope there (1 uncapped). */
+  distance: number;
+  capped: boolean;
+  slope: number;
+  /** How far it has handed back to K, 0 at the throw to 1 from `handoverStart` of the open time, and how fast, per second of the clock. */
+  u: number;
+  rate: number;
+}
+
+/**
+ * A thrown slice's anchor (the advisor, 2026-10-03), shared by the loft and the crash curve. The throw point T = (x,
+ * throwZ) stands on the slice's own ray through the solver's crest S: T_ray = S + ((T − S)·n) n, so it doesn't drift
+ * along the crest. Its offset from the crest point K = S − c n is then along the ray alone, `raw` = (T_ray − K)·n =
+ * (throwZ − z) n_z + c, m (+ forward), and the soft cap acts on it: at most `offsetKnee` + `offsetReach`. From the throw
+ * the anchor goes back to K by a smoothstep, A = T′ + u (K − T′) = K + (1 − u) held n, u = 3x² − 2x³, x = τ / (0.8 T)
+ * clamped to 0–1: back by `handoverStart` of the open time T (`touchdown`, s), with no step at either end. Into `into`.
+ */
+export function anchorOnRay(raw: number, tau: number, touchdown: number, into: RayAnchor): RayAnchor {
+  const distance = raw < 0 ? -raw : raw;
+  into.distance = distance;
+  into.held = raw;
+  into.capped = false;
+  into.slope = 1;
+  if (distance > LOFT.offsetKnee) {
+    const beyond = (distance - LOFT.offsetKnee) / LOFT.offsetReach;
+    into.held = ((LOFT.offsetKnee + (LOFT.offsetReach * beyond) / (1 + beyond)) / distance) * raw;
+    into.capped = true;
+    into.slope = 1 / ((1 + beyond) * (1 + beyond));
+  }
+  const window = LOFT.handoverStart * touchdown;
+  const x = window > 0 ? Math.min(1, Math.max(0, tau / window)) : 1;
+  into.u = x * x * (3 - 2 * x);
+  into.rate = x > 0 && x < 1 ? (6 * x * (1 - x)) / window : 0;
+  return into;
+}
+
 /**
  * A slice's fade after touchdown: 1 until then, falling to 0 over its tube's collapse, √(2W/g) (the advisor,
  * 2026-09-30: neither the drawing nor the contact may outlast the pocket); a tube without a void goes at touchdown.
@@ -210,9 +251,10 @@ interface Sample {
 /**
  * The swept barrel's loft (the Padang Padang spec, Part B, PR 3): each breaking front's profiles, looked up by its
  * points' foot crests and clocks, stood along its shoreward normal and sewn into the water.
- * - **Anchor** (the advisor's ruling 2): before the throw the profile's crest sits on the solver's crest; from the throw,
- *   its τ = 0 crest sits where the crest crossed its throw depth; from 80 % of the open time it returns to the solver's
- *   crest over the handover. The anchored crest's distance from the solver's is kept per slice for the advisor.
+ * - **Anchor** (the advisor's ruling 2; 2026-10-03): before the throw the profile's crest sits on the solver's crest;
+ *   at the throw, its τ = 0 crest sits where the crest crossed its throw depth, taken onto the slice's own ray; from
+ *   there it returns to the solver's crest by a smoothstep, whole by 80 % of the open time (`anchorOnRay`). The throw
+ *   point's distance from the crest point is kept per slice for the advisor.
  * - **After touchdown** (the advisor, 2026-09-30): the drawing keeps the touchdown frame, the visual event; the slice
  *   fades into the water over its tube's collapse, √(2W/g), and is dropped once faded.
  * - **Seam** (ruling 3): a profile's first and last `pinned` samples blend onto the water, the extensions lie on it,
@@ -242,6 +284,7 @@ export class SweptLoft {
   private readonly velocity = new Float64Array(2);
   /** A slice's forward rest (`forwardRest`): its hold and end, m past the toe, and the climbs where it eases and at the toe. */
   private readonly rest = new Float64Array(4);
+  private readonly anchor: RayAnchor = { held: 0, distance: 0, capped: false, slope: 1, u: 0, rate: 0 };
   /** This build's water depth at a point, m (the contact's: the solver's column), for the crest's long-wave pace. */
   private depthAt: ((x: number, z: number) => number) | undefined;
   /** Per slice, its anchor (x, z) and its drawn profile's reach along its ray past its extensions, m: its footprint. */
@@ -555,59 +598,29 @@ export class SweptLoft {
       let anchorVX = 0;
       let anchorVZ = 0;
       if (tau >= 0 && s.throwZ === s.throwZ) {
-        // The throw's anchor, its drawn crest at most `offsetKnee` + `offsetReach` from the solver's (a soft cap).
-        const ox = crest * nx;
-        const oz = s.throwZ + crest * nz - s.z;
-        const raw = Math.sqrt(ox * ox + oz * oz);
-        let throwX = s.x;
-        let throwZ = s.throwZ;
-        // How the capped throw point moves with the crest point C it is held near (`o` = T − C): along `o` at 1 − f′
-        // of C's pace (f′ the cap's slope), across it at 1 − its scale; uncapped, it stays.
-        let alongFollow = 0;
-        let acrossFollow = 0;
-        if (raw > LOFT.offsetKnee) {
-          const beyond = (raw - LOFT.offsetKnee) / LOFT.offsetReach;
-          const scale = (LOFT.offsetKnee + (LOFT.offsetReach * beyond) / (1 + beyond)) / raw;
-          throwX = crestX + scale * ox;
-          throwZ = crestZ + scale * oz;
-          alongFollow = 1 - 1 / ((1 + beyond) * (1 + beyond));
-          acrossFollow = 1 - scale;
-          r.caps += 1;
-        }
+        // The throw point on the slice's own ray, its offset from the crest point K along it soft-capped, and the
+        // smoothstep back to K from the throw (the advisor, 2026-10-03): A = K + (1 − u) held n.
+        const anchor = anchorOnRay((s.throwZ - s.z) * nz + crest, tau, touchdown, this.anchor);
+        if (anchor.capped) r.caps += 1;
         life = tau / touchdown;
-        if (tau <= touchdown) offset = raw;
-        const start = LOFT.handoverStart * touchdown;
-        let u = 0;
-        if (tau <= start) {
-          ax = throwX;
-          az = throwZ;
-        } else {
-          u = Math.min(1, (tau - start) / LOFT.handover);
-          ax = throwX + u * (crestX - throwX);
-          az = throwZ + u * (crestZ - throwZ);
-          // The anchor's own motion while it hands over.
-          if (u < 1) {
-            anchorVX = (crestX - throwX) / LOFT.handover;
-            anchorVZ = (crestZ - throwZ) / LOFT.handover;
-          }
-        }
+        if (tau <= touchdown) offset = anchor.distance;
+        ax = crestX + (1 - anchor.u) * anchor.held * nx;
+        az = crestZ + (1 - anchor.u) * anchor.held * nz;
+        // The anchor's own motion as it hands back, per second of the clock: u̇ (K − T′) = −u̇ held n.
+        anchorVX = -anchor.rate * anchor.held * nx;
+        anchorVZ = -anchor.rate * anchor.held * nz;
         if (this.contact) {
-          // And its following motion (the advisor, 2026-09-30): the crest point C = S − c n moves at Ċ = Ṡ − ċ n, the
-          // solver's crest less the library's; the anchor (1 − u) T′ + u C follows it by (1 − u) dT′/dt + u Ċ.
+          // And its following motion (the advisor, 2026-09-30): the crest point K = S − c n moves at K̇ = Ṡ − ċ n, the
+          // solver's crest less the library's. The throw point T′ = K + held n moves across the ray as T_ray does, Ṡ
+          // less its part along n (which is K̇ less its part along n), and along the ray at 1 − f′ of K's pace (f′ the
+          // cap's slope, 1 uncapped): T′̇ = K̇ − f′ (K̇·n) n. So the anchor, (1 − u) T′ + u K, follows by
+          // (1 − u) T′̇ + u K̇ = K̇ − (1 − u) f′ (K̇·n) n.
           const follow = this.crestPointVelocity(s, tau, lookup.frameSeconds, nx, nz);
-          const cvx = follow[0];
-          const cvz = follow[1];
-          let tvx = 0;
-          let tvz = 0;
-          if (raw > LOFT.offsetKnee) {
-            const ux = ox / raw;
-            const uz = oz / raw;
-            const along = ux * cvx + uz * cvz;
-            tvx = alongFollow * along * ux + acrossFollow * (cvx - along * ux);
-            tvz = alongFollow * along * uz + acrossFollow * (cvz - along * uz);
-          }
-          anchorVX += (1 - u) * tvx + u * cvx;
-          anchorVZ += (1 - u) * tvz + u * cvz;
+          const kvx = follow[0];
+          const kvz = follow[1];
+          const along = (1 - anchor.u) * anchor.slope * (kvx * nx + kvz * nz);
+          anchorVX += kvx - along * nx;
+          anchorVZ += kvz - along * nz;
         }
       }
       const maskSlice = wFade > 0 ? Math.min(1, Math.max(0, 1 + d / LOFT.band)) : 0;
