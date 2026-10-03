@@ -7,6 +7,43 @@
 - The one half-edited file was stashed (see "The Padang look loop").
 - Nothing was merged on GitHub.
 
+## Update, later on 2026-10-03: every PR closed into `claude/wave-pool`, the owner's main line
+
+The owner: "make sure that all the prs are closed to "claude/wave-pool" branch please. This is our main branch."
+
+**Done:**
+- **13 PRs were merged into `claude/wave-pool`:** #82, #91, #92, #94, #95, #102 (with fix round 2, 9af8eb9ae), #103, #104, #105, #107, #108, #109 and #110.
+  - Each was retargeted to `claude/wave-pool`. The drafts were marked ready.
+  - The branch was pushed with every PR's head in it, so GitHub marked each one merged.
+- **#100 and #106 were closed with a note:**
+  - #100's commits were already in the line, via #106.
+  - #106's branch is the line itself.
+- **No PR is open.** GitHub's default branch is still `main`, which is now stale. Changing the default needs admin rights, which the owner has; this account doesn't.
+- **The movement work's latest commits** (`claude/pool-flow-probe`, which has no PR) are merged in too.
+- **The checks on the line:**
+  - `npx tsc --noEmit` is clean and `npm run build` passes.
+  - Targeted suites: 754 tests pass and 10 fail (below). The whole suite and the two SurfZone suites weren't run on the merged line.
+
+**The 10 failing tests: the next run's first job ("no fails in the build"):**
+1. **`src/wave/barrel/sweptLoft.test.ts`, "agrees within 0.5 m/s from the throw until a case holds"** reads 5.7 m/s.
+   - #102's fix round 2 (u = 1) wrote this check against the crash branch's library.
+   - #107's tip refit zeroes a case's tip outside its sustained overturn, and the two meet only on the line.
+   - The same check passed with fix round 1.
+   - Reconcile them with the advisor, and never loosen the check.
+2. **`src/physics/AttachedRider.test.ts`, 9 failures:**
+   - 7 crouch and Compress expectations, already failing on #106's commit bbec2a971: the crouch to two thirds, compressing to full depth, Compress taken mid-turn at 7, 8, 10 and 11 m/s, the weight over the front foot.
+   - 2 known gaps marked `it.fails` that now pass ("makes a deep U at the bottom of the face", "turns at least as hard compressed as crouched"): flip them to `it`.
+   - Judge each of the 7 against the movement spec.
+
+**The rest of this page still holds,** with "PR" read as the branch now merged:
+- #102's catch pair and ruling on fix round 2.
+- #110's narrowing before its switch goes on, and the order-list bug.
+- The movement steps' bars.
+- The Padang look loop and the owner's five questions.
+- The owed heavy runs.
+
+New work branches from `claude/wave-pool` and opens PRs into it.
+
 **Read first:** this page, then [the morning handoff](2026-10-03-all-pending-work.md), then [ONBOARDING.md](../../research/water-physics/ONBOARDING.md). The consult log's 2026-10-03 rows are the rulings (`docs/research/water-physics/consult-log.md`, newest first).
 
 **Raw data from this run:** [2026-10-03-evening-data/](2026-10-03-evening-data/). Machine paths are scrubbed to placeholders such as `<WORKTREES>` and `<SCRATCH>`.
