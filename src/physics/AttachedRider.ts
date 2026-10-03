@@ -203,6 +203,20 @@ const UPRIGHT_RATE = 0.2;
  * range, after which a held partial steer turned the wrong way (the final
  * review). Unsteered, near upright, the heading hold, the hand and a shove keep
  * the feet's whole range.
+ *
+ * The projection (the movement-flow spec: Compress released, the legs extend, the
+ * rail neutral): while the legs extend out of a crouch or Compress with no lean
+ * asked for, the body still banked (past UPRIGHT_BANK) from the turn it leaves and
+ * the board planing, the feet hold the board neutral under the body, an ankle rest
+ * of nothing, and the upper body's swing takes the rest of what the balance asks.
+ * Rolling the board on past the body there (the counter-steer above) held the rail
+ * 14–16° past the bank at its bite while the extension loaded it with 2–2.9 body
+ * weights: the old turn closed up, the board skidded out once the legs were
+ * straight, and on the deep U the rider fell within a second of letting go at
+ * 25–40° from the fall line (on the Wave Pool the projections lost about 40% of
+ * their speed, and 4 riders in 21 reached a cutback).
+ * Rolled flatter than the body instead, the feet threw it into the turn (the turn
+ * redesign's lesson: the hull rights about the rider's load line).
  */
 const ANKLE_STIFFNESS = 800;
 const ANKLE_DAMPING = 80;
@@ -813,6 +827,8 @@ export class AttachedRider {
   readonly handPoint = new Vector3();
   private handYaw = 0;
   private restRate = 0;
+  /** Standing, the leg's rest rising toward a shallower crouch asked for: a crouch or Compress released (the projection). */
+  private extending = false;
 
   private legFresh = true;
   private legDamping = 0;
@@ -1087,6 +1103,7 @@ export class AttachedRider {
     this.leg.rate = 0;
     this.leg.rest = 0;
     this.restRate = 0;
+    this.extending = false;
     this.legRateAfter = 0;
     this.balanceMargin = 1;
     this.rawMargin = 1;
@@ -1481,7 +1498,10 @@ export class AttachedRider {
     // Steering into a lean the body lags, the feet never roll the board away from it: the upper body throws the lean.
     const asking = Math.abs(this.steer) > STEER_DEADBAND && Math.abs(this.bankReference) > UPRIGHT_BANK ? Math.sign(this.bankReference) : 0;
     const lagging = Math.abs(this.bankReference - this.bank.angle) > ANKLE_REST_RANGE / BANK_GAIN;
-    const lean = reach * asking > 0 && lagging ? 0 : reach;
+    // The projection: extending out of a crouch or Compress with no lean asked for, the feet hold the board neutral.
+    const projecting = this.extending && this.planing && Math.abs(this.steer) <= STEER_DEADBAND && !this.hand
+      && Math.abs(this.bank.angle) > UPRIGHT_BANK;
+    const lean = projecting ? 0 : reach * asking > 0 && lagging ? 0 : reach;
     this.swingStep(h, wanted - lean);
     this.ankleRest += (lean - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
     // Backward Euler on the ankle: over the substep the bank and the roll move at their rates after the solve.
@@ -1599,6 +1619,7 @@ export class AttachedRider {
       this.restRate = Math.max(this.restRate, this.leg.rate);
     }
     if (this.leg.rest === 0 || this.leg.rest === -CROUCH_DEPTH) this.restRate = 0;
+    this.extending = this.restRate > 0 && this.leg.rest < rest;
     this.legStiffness = LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * -this.leg.rest) / CROUCH_DEPTH);
     this.legDamping = 2 * RIDER_LEG.axialDamping * Math.sqrt(this.legStiffness * this.mass);
     this.leg.height = this.localCenter.y - this.base.y;
