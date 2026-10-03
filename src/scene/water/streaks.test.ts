@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { FOAM_CELL } from '../foamPattern';
-import { STREAK_ANCHOR, STREAK_STRETCH, streakAnchors, streakFrame, streakMask, waterStreakPars } from './streaks';
+import { foamQuantile, sampleFoamField, waterChurnPars } from './churnTexture';
+import {
+  STREAK_ANCHOR, STREAK_COVER, STREAK_EDGE_SLOPE, STREAK_STRETCH, STREAK_TILE, streakAnchors, streakCover, streakFrame, streakMask, waterStreakPars,
+} from './streaks';
 
 describe('face streaks', () => {
   it('stretch the lace along the current: a step along it moves the pattern 1/STRETCH as far as a step across', () => {
@@ -54,5 +57,83 @@ describe('face streaks', () => {
 
   it('has a GLSL twin', () => {
     expect(waterStreakPars).toContain('float waterStreak( vec2 p, vec2 flow, float steepness, float foam )');
+  });
+});
+
+describe('face streaks from the foam field’s late stage', () => {
+  const flowAt = (): [number, number] => [0.1, 0.9];
+  const steep = 0.8;
+  const foam = 0.3;
+
+  it('draw about a tenth of a steep, foamy face as line, and none where the face is flat or has no foam', () => {
+    let sum = 0;
+    let count = 0;
+    for (let z = 2; z < 32; z += 0.2) {
+      for (let x = 2; x < 32; x += 0.2) {
+        sum += streakCover(x, z, flowAt, 3.1, steep, foam);
+        count += 1;
+      }
+    }
+    expect(Math.abs(sum / count - STREAK_COVER)).toBeLessThan(0.03);
+    expect(streakCover(5, 5, flowAt, 3.1, 0.05, foam)).toBe(0);
+    expect(streakCover(5, 5, flowAt, 3.1, steep, 0)).toBe(0);
+  });
+
+  it('keep the flow’s stretch: the lines are the late stage drawn STREAK_STRETCH times longer along the current than across it', () => {
+    // Along +z, a step of STRETCH times a step across it changes the lines alike.
+    const across = 0.025;
+    const along = across * STREAK_STRETCH;
+    let acrossBoth = 0;
+    let alongBoth = 0;
+    let first = 0;
+    let acrossSecond = 0;
+    let alongSecond = 0;
+    let count = 0;
+    const still = (): [number, number] => [0, 1];
+    for (let z = 2; z < 28; z += 0.19) {
+      for (let x = 2; x < 28; x += 0.19) {
+        const a = streakCover(x, z, still, 3.1, steep, foam) >= 0.5 ? 1 : 0;
+        const b = streakCover(x + across, z, still, 3.1, steep, foam) >= 0.5 ? 1 : 0;
+        const c = streakCover(x, z + along, still, 3.1, steep, foam) >= 0.5 ? 1 : 0;
+        acrossBoth += a * b;
+        alongBoth += a * c;
+        first += a;
+        acrossSecond += b;
+        alongSecond += c;
+        count += 1;
+      }
+    }
+    const cover = first / count;
+    const correlation = (both: number, second: number) => (both / count - cover * (second / count)) / (cover * (1 - cover));
+    // The same likeness a step across and STRETCH times that along; across the whole step, it would be much less.
+    expect(Math.abs(correlation(acrossBoth, acrossSecond) - correlation(alongBoth, alongSecond))).toBeLessThan(0.12);
+    expect(correlation(acrossBoth, acrossSecond)).toBeGreaterThan(0.2);
+  });
+
+  it('take their edge from the late stage’s gradient: the slope is half its median at a threshold crossing', () => {
+    const h = 0.004;
+    const threshold = foamQuantile(1 - STREAK_COVER);
+    const gradients: number[] = [];
+    for (let j = 0; j < 300; j += 1) {
+      for (let i = 0; i < 300; i += 1) {
+        const u = (i * 0.0173) / STREAK_TILE;
+        const v = (j * 0.0191) / STREAK_TILE;
+        const g = sampleFoamField(u, v, 3);
+        if (Math.abs(g - threshold) > 0.15) continue;
+        gradients.push((Math.abs(sampleFoamField(u + h / STREAK_TILE, v, 3) - g) + Math.abs(sampleFoamField(u, v + h / STREAK_TILE, 3) - g)) / h);
+      }
+    }
+    gradients.sort((a, b) => a - b);
+    const median = gradients[gradients.length >> 1];
+    expect(Math.abs(STREAK_EDGE_SLOPE - 0.5 * median) / (0.5 * median)).toBeLessThan(0.25);
+  });
+
+  it('are blended in squares before the threshold, and defined where the churn map is: declared here, defined there', () => {
+    expect(waterStreakPars).toContain('float waterStreakField( vec2 frame, vec2 dx, vec2 dy );');
+    expect(waterStreakPars).toContain('squares += weight * weight * ( w * w + ( 1.0 - w ) * ( 1.0 - w ) );');
+    expect(waterStreakPars).toContain('sum / sqrt( squares )');
+    expect(waterStreakPars).not.toContain('waterFoamTile');
+    expect(waterChurnPars).toContain('float waterStreakField( vec2 frame, vec2 dx, vec2 dy ) {');
+    expect(/^[\x09\x0a\x20-\x7e]*$/.test(waterStreakPars)).toBe(true);
   });
 });

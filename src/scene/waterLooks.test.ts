@@ -5,12 +5,12 @@ import { LipSheetMesh } from './LipSheetMesh';
 import { SprayPoints } from './SprayPoints';
 import { SPRAY_CAPACITY, SPRAY_STRIDE, WHITEWATER_CAPACITY } from '../wave/SprayCloud';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
-import { churnTexture } from './water/churnTexture';
+import { churnTexture, churnTextureBaked } from './water/churnTexture';
 import { rippleStrength, rippleTexture } from './water/rippleTexture';
 import { RICH_BASE_ROUGHNESS } from './water/specular';
 import { DEFAULT_WATER_CHOP } from './waterChop';
 import { CLASSIC_FOAM, WATER_BODY_GAIN, waterBodyFragment } from './waterOptics';
-import { PLUME_DENSITY, RICH_REFLECTION, RICH_WATER } from './water/richWaterGlsl';
+import { PLUME_DENSITY, RICH_FAR_FOAM, RICH_FOAM, RICH_REFLECTION, RICH_WATER } from './water/richWaterGlsl';
 import { mirrorsBarrelDither } from './barrel/barrelMaskGlsl';
 import { SweptBarrelMesh } from './barrel/SweptBarrelMesh';
 import { FOAM_ALBEDO } from './foamPattern';
@@ -30,6 +30,17 @@ function compiled(material: { onBeforeCompile: (shader: WebGLProgramParametersWi
 }
 
 describe('Classic water parity', () => {
+  it('leaves the foam unbaked until the GPU reads the texture: building the water, the spray and the far ocean, in either look, costs none of it', () => {
+    const water = new WaterSurface({ ...source, cubic: true });
+    water.setLook('rich');
+    compiled(water.mesh.material);
+    const spray = new SprayPoints();
+    spray.setLook('rich');
+    new FarFieldOcean().setLook('rich');
+    expect(churnTexture().image.width).toBe(1024);
+    expect(churnTextureBaked()).toBe(false);
+  });
+
   it('keeps the tank water’s Classic shaders exactly as before G8', () => {
     expect(compiled(new WaterSurface(source).mesh.material)).toMatchSnapshot();
   });
@@ -171,6 +182,30 @@ describe('Classic water parity', () => {
     expect(shader.fragmentShader).toContain('totalEmissiveRadiance += 0.18 * waterFresh');
   });
 
+  it('draws the Rich water’s lace from the baked foam field in place of the Classic network, and its streaks from the field’s late stage', () => {
+    const water = new WaterSurface({ ...source, cubic: true });
+    water.setLook('rich');
+    const { fragment } = compiled(water.mesh.material);
+    expect(fragment).toContain('float waterAge = 1.0 - max( waterFresh, smoothstep( 0.45, 0.90, vWaterFoam ) );');
+    expect(fragment).toContain('vec2 waterField = waterFoamField( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterAge, max( waterFootprint.x, waterFootprint.y ) );');
+    expect(fragment).toContain('float waterLace = mix( vWaterFoam, waterField.x, waterFoamPattern );');
+    // A patch's edge is a single layer of bubbles, its core the stage's reflectance.
+    expect(fragment).toContain(`mix( ${FOAM_ALBEDO.streak.toFixed(3)}, mix( ${FOAM_ALBEDO.fresh.toFixed(3)}, ${FOAM_ALBEDO.lace.toFixed(3)}, waterAge ), waterThick )`);
+    expect(fragment).not.toContain('waterFoamCover( vWaterWorld.xz');
+    // GLSL wants a name declared before it is used: the sampler before the field that reads it, the streaks' sample declared
+    // where the streaks come first and defined after the churn map.
+    expect(fragment.indexOf('uniform sampler2D waterChurnMap;')).toBeLessThan(fragment.indexOf('textureGrad( waterChurnMap'));
+    expect(fragment.indexOf('float waterStreakField( vec2 frame, vec2 dx, vec2 dy );')).toBeLessThan(fragment.indexOf('float waterStreak( vec2 p'));
+    expect(fragment.indexOf('float waterStreak( vec2 p')).toBeLessThan(fragment.indexOf('float waterStreakField( vec2 frame, vec2 dx, vec2 dy ) {'));
+    // One RGBA texture carries the churn and both foam stages; no new uniform.
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    water.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
+    const map = (shader.uniforms as Record<string, { value: { image: { width: number }; format: number } }>).waterChurnMap.value;
+    expect(map).toBe(churnTexture());
+    expect(map.image.width).toBe(1024);
+    expect(Object.keys(shader.uniforms)).not.toContain('waterFoamStages');
+  });
+
   it('whitens the Rich water where the bubble plume fills it, seen through the water above it, and plainly from below (G9)', () => {
     const water = new WaterSurface({ ...source, cubic: true });
     water.setLook('rich');
@@ -201,6 +236,8 @@ describe('Classic water parity', () => {
       expect(fragment).not.toContain('waterFoamColor * waterCrease');
       expect(fragment).not.toContain('mix( waterBody * waterBodyGain, waterFoamColor, waterCover )');
     }
+    // Plain ASCII: some drivers refuse anything else in a shader.
+    for (const chunk of [RICH_FOAM, RICH_FAR_FOAM]) expect(/^[\x09\x0a\x20-\x7e]*$/.test(chunk)).toBe(true);
     // The far ocean and the curl lay it over the body itself; the tank over the body the plume whitens.
     for (const { fragment } of [compiled(ocean.mesh.material), compiled(curl.mesh.material)]) {
       expect(fragment).toContain('waterFoamT * waterFoamT * waterBody / ( 1.0 - waterFoamR * waterBody )');

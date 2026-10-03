@@ -83,26 +83,32 @@ const foamDense = (foam: string) => `smoothstep( ${FOAM_DENSE[0].toFixed(2)}, ${
 
 /**
  * The Rich foam composition for `waterBodyFragment`: fresh whitewater as dense
- * churn, creased between its clumps, opening into the lace as it ages; the
+ * churn, creased between its clumps, opening into the lace as it ages (the
+ * baked life cycle of `foamBake`: dense with holes, then lace and threads, by
+ * an age proxy from the void fraction and the foam value [provisional]); the
  * lace streaked up steep faces along the current; a glossy body that turns
  * matte under foam; and thin fresh foam glowing when the sun is behind it.
  * Under it all, the bubble plume (G9) whitens the body as far down as the air
  * went: from above seen through the water over its middle, from below plainly.
  * The foam is a layer that adds light to that water (`foamLayer`): bright
- * white where it is fresh (0.55), dimmer as lace (0.25), a veil as streaks (0.10).
+ * white where it is fresh (0.55), dimmer as lace (0.25), a veil as streaks (0.10),
+ * and a single layer of bubbles (also 0.10) at the edge of a patch, thickening to
+ * its stage's reflectance within `FOAM_THICK` sigma of the field.
  */
 export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );
-  float waterLace = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
-  vec2 waterChurn = waterChurnAt( vWaterWorld.xz, vWaterFlow );
   float waterFresh = waterFreshness( vWaterAir ) * waterFoamPattern;
+  float waterAge = 1.0 - max( waterFresh, ${foamDense('vWaterFoam')} );
+  vec2 waterField = waterFoamField( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterAge, max( waterFootprint.x, waterFootprint.y ) );
+  float waterLace = mix( vWaterFoam, waterField.x, waterFoamPattern );
+  vec2 waterChurn = waterChurnAt( vWaterWorld.xz, vWaterFlow );
   float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterFresh );
+  float waterThick = mix( 1.0, mix( waterField.y, 1.0, waterFresh ), waterFoamPattern );
   float waterStreakCover = waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam );
   float waterCrease = mix( 1.0, 0.88 + 0.12 * waterChurn.y, waterFresh );
   float waterPlume = 1.0 - exp( -PLUME_DENSITY * vWaterAir * min( vWaterPlumeDepth, vWaterDepth ) );
   float waterPlumePath = faceDirection > 0.0 ? 0.5 * min( vWaterPlumeDepth, vWaterDepth ) / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;
   vec3 waterUnder = mix( waterBody, waterFoamColor * exp( -waterAttenuation * waterPlumePath ) / waterBodyGain, waterPlume );
-  float waterAge = 1.0 - max( waterFresh, ${foamDense('vWaterFoam')} );
-  float waterFoamR = max( waterCover * waterCrease * ${foamAlbedoAt('waterAge')}, waterStreakCover * ${FOAM_ALBEDO.streak.toFixed(3)} );
+  float waterFoamR = max( waterCover * waterCrease * mix( ${FOAM_ALBEDO.streak.toFixed(3)}, ${foamAlbedoAt('waterAge')}, waterThick ), waterStreakCover * ${FOAM_ALBEDO.streak.toFixed(3)} );
   ${foamLayer('waterUnder', 'waterFoamR')}
   waterCover = max( waterCover, waterStreakCover );
   ${RICH_SPECULAR}
