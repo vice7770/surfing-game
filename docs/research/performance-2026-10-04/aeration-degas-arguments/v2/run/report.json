@@ -1,0 +1,277 @@
+{
+  "schema": 2,
+  "adapterVersion": "v2-owned-target-inventory",
+  "kind": "one actual live degas-argument diagnostic; no FPS or steady-state gain claim",
+  "plan": {
+    "kind": "one actual live degas-argument diagnostic; no FPS or steady-state gain claim",
+    "base": "56bf750996cd48cdc5ef45954c479a268053c0b9",
+    "url": "http://127.0.0.1:4214/?diagnostics",
+    "viewport": {
+      "width": 1708,
+      "height": 926,
+      "browserDpr": 2,
+      "effectiveDpr": 1.75,
+      "canvasWidth": 2989,
+      "canvasHeight": 1620
+    },
+    "route": "ordinary menu → Surf → Padang → Big → Paddle out",
+    "warmWallSeconds": 5,
+    "fixedStep": 0.016666666666666666,
+    "captures": 1,
+    "ordinaryWaterBackend": "auto; require/report actual GPU for this declared capture",
+    "runtimeOverrides": [],
+    "graphics": {
+      "preset": "high",
+      "renderScale": 1,
+      "nativePixelDensity": true,
+      "frameLimit": 60,
+      "waterSimulation": "auto",
+      "seaDetail": "rich",
+      "caustics": true,
+      "sprayMist": true,
+      "oceanView": "far",
+      "foam": "detailed",
+      "waterLook": "rich",
+      "particles": "high"
+    },
+    "expectedConfig": {
+      "spot": "padang",
+      "seed": 8761,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "bounds": {
+      "overallFromOwnedChromeSpawnSeconds": 240,
+      "initializationFromOwnedChromeSpawnSeconds": 180,
+      "settleSeconds": 15,
+      "captureSeconds": 15,
+      "retries": 0
+    },
+    "manifestSha256": "e2ba54431689c0a33484bc18d3dd560a1830b405bb7d7b6421f0858565f883e9",
+    "build": [
+      {
+        "path": "index.html",
+        "sha256": "6b4c771a11c8b228ffad7316c863cbe7aca2af07922da5d06a260d86f9f0debf",
+        "bytes": 1626
+      },
+      {
+        "path": "build.json",
+        "sha256": "e0a3bfc4561276ab04ddb4ca18be5a1510d2538ee9014c8d5b303635ce14b4f9",
+        "bytes": 19
+      },
+      {
+        "path": "assets/WorkerSurfZone-UWE07rgU.js",
+        "sha256": "7f585758a00f8767bbb98bbb70e38059c92cbb5b27c39cf47fe4e37cd450ae28",
+        "bytes": 848779
+      },
+      {
+        "path": "assets/devStepping-DLXHCUI0.js",
+        "sha256": "4bfdc3ff9aa54b1476c088e1823d6cbf5a561942e3e9041fc4134c56ab357b82",
+        "bytes": 320
+      },
+      {
+        "path": "assets/index-D_CFvyTQ.js",
+        "sha256": "c5e70fe12e916607c3711de03b17d95f8c1c752d3ed9b98ad4a1c28ac945b635",
+        "bytes": 582423
+      },
+      {
+        "path": "assets/jevRecorder-BgBIVY0x.js",
+        "sha256": "bb18b1de5c7928d5b077fe4a56916499c05959a3c3f8da0723219946cbdc263a",
+        "bytes": 15917
+      },
+      {
+        "path": "assets/particleBench-BjfuW61d.js",
+        "sha256": "1b146bc88e293b6bbdaf1f5e898920c37352a02254caa1da1661dd49c5e1875a",
+        "bytes": 10708
+      },
+      {
+        "path": "assets/rideRecorder-k-noso0x.js",
+        "sha256": "812924022d47db64d51af10362ae42911f5f5973a280ce5349cd9ed16dbf8872",
+        "bytes": 41108
+      },
+      {
+        "path": "assets/surfZoneWorker-BiS1HSwW.js",
+        "sha256": "6a59a6367a8eb25c4d53fd5a9becdf9c8462d86ebb9b8c9237a1a50ec0b70aef",
+        "bytes": 439595
+      },
+      {
+        "path": "assets/waterSheet-CenldjZR.js",
+        "sha256": "6f9956f2daf8b81bbd71db3b480012fc5321e70414d49accbe26c24bea7cbbc9",
+        "bytes": 11689
+      },
+      {
+        "path": "assets/index-DA8NEfOT.css",
+        "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148",
+        "bytes": 33213
+      }
+    ]
+  },
+  "runId": "0dcd1435-776a-445b-ab51-0d1712480db7",
+  "valid": false,
+  "startedAt": "2026-10-03T23:39:45.412Z",
+  "sourceChecks": true,
+  "ownedChromeClosed": true,
+  "ownServerClosed": true,
+  "chromeSpawnedAt": "2026-10-03T23:39:45.423Z",
+  "chromeProcess": {
+    "pid": 7007,
+    "executable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "profile": "/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-aeration-arguments-OFn3VA",
+    "initialUrl": "http://127.0.0.1:4214/?diagnostics",
+    "stderr": "\nDevTools listening on ws://127.0.0.1:9624/devtools/browser/db1e2c51-b887-4a13-a931-bb33967e42e3\nTrying to load the allocator multiple times. This is *not* supported.\n[7007:11379568:1004/003948.287944:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR\n[7007:11379568:1004/003948.290053:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR\nCreated TensorFlow Lite XNNPACK delegate for CPU.\n[7167:11380872:1004/004004.762714:VERBOSE1:chrome/updater/updater.cc:364] Version: 156.0.8067.0, opt, ARM_64, command line: /Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake-all --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2\n[7167:11380872:1004/004004.763495:VERBOSE1:chrome/updater/updater.cc:367] OS version: 26.6.2, arch: arm64, System uptime (seconds): 262347, parent pid: 7007\n[7167:11380872:1004/004004.766834:VERBOSE1:chrome/updater/updater.cc:372] Available disk space in install directory (/Users/regina/Library/Application Support/Google/GoogleUpdater): 4147171328B (3.862GiB) / 994610155520B (926.303GiB)\n[7167:11380872:1004/004004.766902:VERBOSE1:chrome/updater/updater.cc:376] Available disk space in temporary directory (/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/): 4147171328B (3.862GiB) / 994610155520B (926.303GiB)\n[7167:11380872:1004/004004.767029:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS START event to the history log\n[7169:11380877:1004/004004.779498:VERBOSE1:chrome/updater/updater.cc:364] Version: 156.0.8067.0, opt, ARM_64, command line: /Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --crash-handler --database=/Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/Crashpad --url=https://clients2.google.com/cr/report --annotation=prod=Update4 --annotation=ver=156.0.8067.0 --handshake-fd=6 --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2\n[7169:11380877:1004/004004.780304:VERBOSE1:chrome/updater/updater.cc:367] OS version: 26.6.2, arch: arm64, System uptime (seconds): 262347, parent pid: 1\n[7169:11380877:1004/004004.783343:VERBOSE1:chrome/updater/updater.cc:372] Available disk space in install directory (/Users/regina/Library/Application Support/Google/GoogleUpdater): 4147163136B (3.862GiB) / 994610155520B (926.303GiB)\n[7169:11380877:1004/004004.783375:VERBOSE1:chrome/updater/updater.cc:376] Available disk space in temporary directory (/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/): 4147163136B (3.862GiB) / 994610155520B (926.303GiB)\n[7169:11380877:1004/004004.783609:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS START event to the history log\n[7167:11380872:1004/004004.784559:VERBOSE1:chrome/updater/crash_reporter.cc:123] Crash handler launched and ready.\n[7167:11380872:1004/004004.785567:VERBOSE1:chrome/updater/crash_client.cc:108] Found 0 completed crash reports\n[7167:11380872:1004/004004.785695:VERBOSE1:chrome/updater/crash_client.cc:132] Found 0 pending crash reports\n[7167:11380872:1004/004004.785813:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/RLZ/Crashpad/settings.dat: No such file or directory (2)\n[7167:11380872:1004/004004.785898:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/ChromeForTesting/Crashpad/settings.dat: No such file or directory (2)\n[7167:11380872:1004/004004.785948:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/Chrome-headless/Crashpad/settings.dat: No such file or directory (2)\n[7167:11380872:1004/004004.785987:VERBOSE1:chrome/updater/updater.cc:105] Crash reporting initialized.\n[7167:11380885:1004/004004.786345:VERBOSE1:chrome/updater/app/app_wakeall.cc:58] Launching `/Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake`\n[7170:11380889:1004/004004.796899:VERBOSE1:chrome/updater/updater.cc:364] Version: 156.0.8067.0, opt, ARM_64, command line: /Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2\n[7170:11380889:1004/004004.797860:VERBOSE1:chrome/updater/updater.cc:367] OS version: 26.6.2, arch: arm64, System uptime (seconds): 262347, parent pid: 7167\n[7170:11380889:1004/004004.801662:VERBOSE1:chrome/updater/updater.cc:372] Available disk space in install directory (/Users/regina/Library/Application Support/Google/GoogleUpdater): 4147159040B (3.862GiB) / 994610155520B (926.303GiB)\n[7170:11380889:1004/004004.801740:VERBOSE1:chrome/updater/updater.cc:376] Available disk space in temporary directory (/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/): 4147159040B (3.862GiB) / 994610155520B (926.303GiB)\n[7170:11380889:1004/004004.801808:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS START event to the history log\n[7172:11380894:1004/004004.814192:VERBOSE1:chrome/updater/updater.cc:364] Version: 156.0.8067.0, opt, ARM_64, command line: /Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --crash-handler --database=/Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/Crashpad --url=https://clients2.google.com/cr/report --annotation=prod=Update4 --annotation=ver=156.0.8067.0 --handshake-fd=6 --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2\n[7172:11380894:1004/004004.815061:VERBOSE1:chrome/updater/updater.cc:367] OS version: 26.6.2, arch: arm64, System uptime (seconds): 262347, parent pid: 1\n[7172:11380894:1004/004004.817667:VERBOSE1:chrome/updater/updater.cc:372] Available disk space in install directory (/Users/regina/Library/Application Support/Google/GoogleUpdater): 4147159040B (3.862GiB) / 994610155520B (926.303GiB)\n[7172:11380894:1004/004004.817711:VERBOSE1:chrome/updater/updater.cc:376] Available disk space in temporary directory (/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/): 4147159040B (3.862GiB) / 994610155520B (926.303GiB)\n[7172:11380894:1004/004004.817829:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS START event to the history log\n[7170:11380889:1004/004004.818367:VERBOSE1:chrome/updater/crash_reporter.cc:123] Crash handler launched and ready.\n[7170:11380889:1004/004004.819133:VERBOSE1:chrome/updater/crash_client.cc:108] Found 0 completed crash reports\n[7170:11380889:1004/004004.819201:VERBOSE1:chrome/updater/crash_client.cc:132] Found 0 pending crash reports\n[7170:11380889:1004/004004.819269:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/RLZ/Crashpad/settings.dat: No such file or directory (2)\n[7170:11380889:1004/004004.819360:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/ChromeForTesting/Crashpad/settings.dat: No such file or directory (2)\n[7170:11380889:1004/004004.819370:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/Chrome-headless/Crashpad/settings.dat: No such file or directory (2)\n[7170:11380889:1004/004004.819381:VERBOSE1:chrome/updater/updater.cc:105] Crash reporting initialized.\n[7170:11380889:1004/004004.819569:VERBOSE1:chrome/updater/ipc/update_service_internal_proxy_mojo.cc:61] Run\n[7007:11379568:1004/004009.142077:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT\n[7170:11380889:1004/004020.733161:VERBOSE1:chrome/updater/app/app.cc:52] Shutdown: 0\n[7170:11380889:1004/004020.733547:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS END event to the history log\n[7170:11380889:1004/004020.733572:VERBOSE1:chrome/updater/updater.cc:409] UpdaterMain (--wake) returned 0.\n[7167:11380885:1004/004020.987038:VERBOSE1:chrome/updater/app/app_wakeall.cc:68] `/Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake` exited 0\n[7167:11380872:1004/004020.987184:VERBOSE1:chrome/updater/app/app.cc:52] Shutdown: 0\n[7167:11380872:1004/004020.987530:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS END event to the history log\n[7167:11380872:1004/004020.987550:VERBOSE1:chrome/updater/updater.cc:409] UpdaterMain (--wake-all) returned 0.\n[7172:11380894:1004/004030.749857:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS END event to the history log\n[7172:11380894:1004/004030.749936:VERBOSE1:chrome/updater/updater.cc:409] UpdaterMain (--crash-handler) returned 0.\n[7169:11380877:1004/004030.752354:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS END event to the history log\n[7169:11380877:1004/004030.752406:VERBOSE1:chrome/updater/updater.cc:409] UpdaterMain (--crash-handler) returned 0.\n[7007:11379568:1004/004101.913234:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT\n[7007:11379568:1004/004222.999438:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT\n",
+    "spawnEventAt": "2026-10-03T23:39:45.425Z",
+    "exit": {
+      "at": "2026-10-03T23:42:45.564Z",
+      "code": 0,
+      "signal": null
+    }
+  },
+  "lastTargetPollError": {
+    "at": "2026-10-03T23:39:45.578Z",
+    "attempt": 1,
+    "error": "TypeError: fetch failed"
+  },
+  "lastTargetInventory": {
+    "at": "2026-10-03T23:39:46.004Z",
+    "attempt": 2,
+    "targets": [
+      {
+        "description": "",
+        "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@f89f3a4363808e117c592adedcf9947882ac3b79/inspector.html?ws=127.0.0.1:9624/devtools/page/AA443B2E8174A2A59864BEA899501B3A",
+        "id": "AA443B2E8174A2A59864BEA899501B3A",
+        "title": "Google Hangouts",
+        "type": "background_page",
+        "url": "chrome-extension://nkeimhogjdpnpccoofpliimaahmaaome/background.html",
+        "webSocketDebuggerUrl": "ws://127.0.0.1:9624/devtools/page/AA443B2E8174A2A59864BEA899501B3A"
+      },
+      {
+        "description": "",
+        "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@f89f3a4363808e117c592adedcf9947882ac3b79/inspector.html?ws=127.0.0.1:9624/devtools/page/8210F2C3BABE168379FCA1E2AE7C6AEC",
+        "id": "8210F2C3BABE168379FCA1E2AE7C6AEC",
+        "title": "",
+        "type": "page",
+        "url": "http://127.0.0.1:4214/?diagnostics",
+        "webSocketDebuggerUrl": "ws://127.0.0.1:9624/devtools/page/8210F2C3BABE168379FCA1E2AE7C6AEC"
+      },
+      {
+        "description": "",
+        "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@f89f3a4363808e117c592adedcf9947882ac3b79/inspector.html?ws=127.0.0.1:9624/devtools/page/48E7405B0B4EF64DF67EEBDFEC4F9DE3",
+        "id": "48E7405B0B4EF64DF67EEBDFEC4F9DE3",
+        "title": "",
+        "type": "browser_ui",
+        "url": "chrome://omnibox-popup.top-chrome/",
+        "webSocketDebuggerUrl": "ws://127.0.0.1:9624/devtools/page/48E7405B0B4EF64DF67EEBDFEC4F9DE3"
+      },
+      {
+        "description": "",
+        "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@f89f3a4363808e117c592adedcf9947882ac3b79/inspector.html?ws=127.0.0.1:9624/devtools/page/51F5D938A586CD460E5145424537459F",
+        "id": "51F5D938A586CD460E5145424537459F",
+        "title": "",
+        "type": "browser_ui",
+        "url": "chrome://omnibox-popup.top-chrome/omnibox_popup_aim.html",
+        "webSocketDebuggerUrl": "ws://127.0.0.1:9624/devtools/page/51F5D938A586CD460E5145424537459F"
+      }
+    ]
+  },
+  "selectedTarget": {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@f89f3a4363808e117c592adedcf9947882ac3b79/inspector.html?ws=127.0.0.1:9624/devtools/page/8210F2C3BABE168379FCA1E2AE7C6AEC",
+    "id": "8210F2C3BABE168379FCA1E2AE7C6AEC",
+    "title": "",
+    "type": "page",
+    "url": "http://127.0.0.1:4214/?diagnostics",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9624/devtools/page/8210F2C3BABE168379FCA1E2AE7C6AEC"
+  },
+  "bootstrapIdentifier": "1",
+  "bootstrapNavigation": {
+    "url": "http://127.0.0.1:4214/?diagnostics",
+    "initialDocumentWasPrebootstrap": true,
+    "method": "early script followed by fresh navigation; previous document/worker discarded"
+  },
+  "error": "Error: Initialization180s deadline\n    at Timeout._onTimeout (file:///private/tmp/aeration-live-arguments-20261004/v2/adapter.mjs:115:72)\n    at listOnTimeout (node:internal/timers:611:17)\n    at process.processTimers (node:internal/timers:546:7)",
+  "chromeBeforeCleanup": {
+    "at": "2026-10-03T23:42:45.429Z",
+    "pid": 7007,
+    "exitCode": null,
+    "signalCode": null,
+    "killed": false,
+    "spawnargs": [
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "--remote-debugging-port=9624",
+      "--user-data-dir=/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-aeration-arguments-OFn3VA",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-extensions",
+      "--disable-backgrounding-occluded-windows",
+      "--disable-renderer-backgrounding",
+      "--disable-background-timer-throttling",
+      "--autoplay-policy=no-user-gesture-required",
+      "--window-size=1708,966",
+      "--window-position=60,60",
+      "--app=http://127.0.0.1:4214/?diagnostics"
+    ],
+    "startError": null,
+    "lastTargetInventory": {
+      "at": "2026-10-03T23:39:46.004Z",
+      "attempt": 2,
+      "targets": [
+        {
+          "description": "",
+          "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@f89f3a4363808e117c592adedcf9947882ac3b79/inspector.html?ws=127.0.0.1:9624/devtools/page/AA443B2E8174A2A59864BEA899501B3A",
+          "id": "AA443B2E8174A2A59864BEA899501B3A",
+          "title": "Google Hangouts",
+          "type": "background_page",
+          "url": "chrome-extension://nkeimhogjdpnpccoofpliimaahmaaome/background.html",
+          "webSocketDebuggerUrl": "ws://127.0.0.1:9624/devtools/page/AA443B2E8174A2A59864BEA899501B3A"
+        },
+        {
+          "description": "",
+          "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@f89f3a4363808e117c592adedcf9947882ac3b79/inspector.html?ws=127.0.0.1:9624/devtools/page/8210F2C3BABE168379FCA1E2AE7C6AEC",
+          "id": "8210F2C3BABE168379FCA1E2AE7C6AEC",
+          "title": "",
+          "type": "page",
+          "url": "http://127.0.0.1:4214/?diagnostics",
+          "webSocketDebuggerUrl": "ws://127.0.0.1:9624/devtools/page/8210F2C3BABE168379FCA1E2AE7C6AEC"
+        },
+        {
+          "description": "",
+          "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@f89f3a4363808e117c592adedcf9947882ac3b79/inspector.html?ws=127.0.0.1:9624/devtools/page/48E7405B0B4EF64DF67EEBDFEC4F9DE3",
+          "id": "48E7405B0B4EF64DF67EEBDFEC4F9DE3",
+          "title": "",
+          "type": "browser_ui",
+          "url": "chrome://omnibox-popup.top-chrome/",
+          "webSocketDebuggerUrl": "ws://127.0.0.1:9624/devtools/page/48E7405B0B4EF64DF67EEBDFEC4F9DE3"
+        },
+        {
+          "description": "",
+          "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@f89f3a4363808e117c592adedcf9947882ac3b79/inspector.html?ws=127.0.0.1:9624/devtools/page/51F5D938A586CD460E5145424537459F",
+          "id": "51F5D938A586CD460E5145424537459F",
+          "title": "",
+          "type": "browser_ui",
+          "url": "chrome://omnibox-popup.top-chrome/omnibox_popup_aim.html",
+          "webSocketDebuggerUrl": "ws://127.0.0.1:9624/devtools/page/51F5D938A586CD460E5145424537459F"
+        }
+      ]
+    },
+    "lastTargetPollError": {
+      "at": "2026-10-03T23:39:45.578Z",
+      "attempt": 1,
+      "error": "TypeError: fetch failed"
+    }
+  },
+  "portProof": {
+    "closed": true,
+    "reason": "ECONNREFUSED"
+  },
+  "chromeNeverStarted": false,
+  "closedAt": "2026-10-03T23:42:46.294Z"
+}

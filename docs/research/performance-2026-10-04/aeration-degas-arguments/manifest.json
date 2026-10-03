@@ -1,0 +1,790 @@
+{
+  "schemaVersion": 1,
+  "kind": "One actual aeration degas argument observation plus two failed attempts; no cache/timing/FPS acceptance",
+  "counts": {
+    "records": 30,
+    "originalAliases": 29,
+    "storedPayloadRecords": 29,
+    "generatedRecords": 1,
+    "gzipRecords": 3,
+    "storedRecordBytes": 350007
+  },
+  "files": [
+    {
+      "storedPath": "common/AerationField.patch",
+      "encoding": "identity",
+      "storedBytes": 4227,
+      "storedSha256": "58eb9404d57d676b31897f9361df592dfd897df6de94d429ecd96c69fdd9b2d9",
+      "decompressedBytes": 4227,
+      "decompressedSha256": "58eb9404d57d676b31897f9361df592dfd897df6de94d429ecd96c69fdd9b2d9",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/AerationField.patch",
+          "bytes": 4227,
+          "sha256": "58eb9404d57d676b31897f9361df592dfd897df6de94d429ecd96c69fdd9b2d9"
+        }
+      ]
+    },
+    {
+      "storedPath": "common/surfZoneWorker.patch",
+      "encoding": "identity",
+      "storedBytes": 4425,
+      "storedSha256": "d0f5a8b0fdc867946ec11fc6fab52c0f388b654c89712bdd6d81bbc30b6dbcd6",
+      "decompressedBytes": 4425,
+      "decompressedSha256": "d0f5a8b0fdc867946ec11fc6fab52c0f388b654c89712bdd6d81bbc30b6dbcd6",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/surfZoneWorker.patch",
+          "bytes": 4425,
+          "sha256": "d0f5a8b0fdc867946ec11fc6fab52c0f388b654c89712bdd6d81bbc30b6dbcd6"
+        }
+      ]
+    },
+    {
+      "storedPath": "common/AerationField.original.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 13174,
+      "storedSha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f",
+      "decompressedBytes": 13174,
+      "decompressedSha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/AerationField.original.ts",
+          "bytes": 13174,
+          "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f"
+        }
+      ]
+    },
+    {
+      "storedPath": "common/surfZoneWorker.original.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 827,
+      "storedSha256": "2f04572a34cc6f5a1a236d2c44f6ef878d03e1db229e7545f5f33e9daa5f84c6",
+      "decompressedBytes": 827,
+      "decompressedSha256": "2f04572a34cc6f5a1a236d2c44f6ef878d03e1db229e7545f5f33e9daa5f84c6",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/surfZoneWorker.original.ts",
+          "bytes": 827,
+          "sha256": "2f04572a34cc6f5a1a236d2c44f6ef878d03e1db229e7545f5f33e9daa5f84c6"
+        }
+      ]
+    },
+    {
+      "storedPath": "common/counter.test.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 4497,
+      "storedSha256": "013890ca148b94c9270e54856ed2da0ae6f7376411a30f3cad9b52c964b245e3",
+      "decompressedBytes": 4497,
+      "decompressedSha256": "013890ca148b94c9270e54856ed2da0ae6f7376411a30f3cad9b52c964b245e3",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/counter.test.mjs",
+          "bytes": 4497,
+          "sha256": "013890ca148b94c9270e54856ed2da0ae6f7376411a30f3cad9b52c964b245e3"
+        }
+      ]
+    },
+    {
+      "storedPath": "common/build.log",
+      "encoding": "identity",
+      "storedBytes": 1397,
+      "storedSha256": "d63af85246b65106d879cfd7df7511890b361fccd9d4774e5cd2b375d1fe4b1d",
+      "decompressedBytes": 1397,
+      "decompressedSha256": "d63af85246b65106d879cfd7df7511890b361fccd9d4774e5cd2b375d1fe4b1d",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/build.log",
+          "bytes": 1397,
+          "sha256": "d63af85246b65106d879cfd7df7511890b361fccd9d4774e5cd2b375d1fe4b1d"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/adapter.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 14982,
+      "storedSha256": "bfc150e7128424c46efd7c29511b7958ff7e7af4385b84d9ae8e14cfa02cb6a3",
+      "decompressedBytes": 14982,
+      "decompressedSha256": "bfc150e7128424c46efd7c29511b7958ff7e7af4385b84d9ae8e14cfa02cb6a3",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/adapter.mjs",
+          "bytes": 14982,
+          "sha256": "bfc150e7128424c46efd7c29511b7958ff7e7af4385b84d9ae8e14cfa02cb6a3"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/ready.json",
+      "encoding": "identity",
+      "storedBytes": 3021,
+      "storedSha256": "7f11e8aa3547cab0e216b774b8929732ec3dddebb6976c1d067429072a116841",
+      "decompressedBytes": 3021,
+      "decompressedSha256": "7f11e8aa3547cab0e216b774b8929732ec3dddebb6976c1d067429072a116841",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/ready.json",
+          "bytes": 3021,
+          "sha256": "7f11e8aa3547cab0e216b774b8929732ec3dddebb6976c1d067429072a116841"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/plan.json",
+      "encoding": "identity",
+      "storedBytes": 3330,
+      "storedSha256": "25256ced2703cc901f8dbf19fcb5943cbda1a7b33656d3eeaaa1f7ba2a17d5df",
+      "decompressedBytes": 3330,
+      "decompressedSha256": "25256ced2703cc901f8dbf19fcb5943cbda1a7b33656d3eeaaa1f7ba2a17d5df",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/plan.json",
+          "bytes": 3330,
+          "sha256": "25256ced2703cc901f8dbf19fcb5943cbda1a7b33656d3eeaaa1f7ba2a17d5df"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/source-build-manifest.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 51366,
+      "storedSha256": "0e03cca781847e316d3139282f8d1f478831feae75c8e6baa2b8a0a95d3c96ce",
+      "decompressedBytes": 183975,
+      "decompressedSha256": "1287ee1eb91df0ddff9176e1193758085ac3555b05eefc10ead3b2ca68f0e87f",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/manifest.json",
+          "bytes": 183975,
+          "sha256": "1287ee1eb91df0ddff9176e1193758085ac3555b05eefc10ead3b2ca68f0e87f"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/prepared-README.md",
+      "encoding": "identity",
+      "storedBytes": 3809,
+      "storedSha256": "4eb670701ddcde91ed0d49462fe8af1d6bdeaab35d3ddaf5883378d7097fca35",
+      "decompressedBytes": 3809,
+      "decompressedSha256": "4eb670701ddcde91ed0d49462fe8af1d6bdeaab35d3ddaf5883378d7097fca35",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/README.md",
+          "bytes": 3809,
+          "sha256": "4eb670701ddcde91ed0d49462fe8af1d6bdeaab35d3ddaf5883378d7097fca35"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/run/report.json",
+      "encoding": "identity",
+      "storedBytes": 4456,
+      "storedSha256": "d784922527c6fcdf7c930605669e7839912ab482b3b641568a5d086c506c0915",
+      "decompressedBytes": 4456,
+      "decompressedSha256": "d784922527c6fcdf7c930605669e7839912ab482b3b641568a5d086c506c0915",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/run/report.json",
+          "bytes": 4456,
+          "sha256": "d784922527c6fcdf7c930605669e7839912ab482b3b641568a5d086c506c0915"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/adapter.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 17647,
+      "storedSha256": "a2ddda05e721ff97356bfe38c0c59452fc2125119ec435454bb3bf699d08c5f0",
+      "decompressedBytes": 17647,
+      "decompressedSha256": "a2ddda05e721ff97356bfe38c0c59452fc2125119ec435454bb3bf699d08c5f0",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v2/adapter.mjs",
+          "bytes": 17647,
+          "sha256": "a2ddda05e721ff97356bfe38c0c59452fc2125119ec435454bb3bf699d08c5f0"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/ready.json",
+      "encoding": "identity",
+      "storedBytes": 1659,
+      "storedSha256": "ac2f126ea72592d8df124c7dbd35c0b842df99ba13a8db161def4a5b3abadfb5",
+      "decompressedBytes": 1659,
+      "decompressedSha256": "ac2f126ea72592d8df124c7dbd35c0b842df99ba13a8db161def4a5b3abadfb5",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v2/ready.json",
+          "bytes": 1659,
+          "sha256": "ac2f126ea72592d8df124c7dbd35c0b842df99ba13a8db161def4a5b3abadfb5"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/plan.json",
+      "encoding": "identity",
+      "storedBytes": 3330,
+      "storedSha256": "02a5fe22c0657142d31c319b05414ebd549554f292c043c5c8fe80897a8f15b4",
+      "decompressedBytes": 3330,
+      "decompressedSha256": "02a5fe22c0657142d31c319b05414ebd549554f292c043c5c8fe80897a8f15b4",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v2/plan.json",
+          "bytes": 3330,
+          "sha256": "02a5fe22c0657142d31c319b05414ebd549554f292c043c5c8fe80897a8f15b4"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/source-build-manifest.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 52067,
+      "storedSha256": "b95316fec52eedd19ec9a5ec7b51e5a7c047109fef60c476601e7c28f707b3b6",
+      "decompressedBytes": 185491,
+      "decompressedSha256": "e2ba54431689c0a33484bc18d3dd560a1830b405bb7d7b6421f0858565f883e9",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v2/manifest.json",
+          "bytes": 185491,
+          "sha256": "e2ba54431689c0a33484bc18d3dd560a1830b405bb7d7b6421f0858565f883e9"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/prepared-README.md",
+      "encoding": "identity",
+      "storedBytes": 2320,
+      "storedSha256": "d01f637e9a45f0dd2ada4ab365c86db3ab5326c99db97e0c3d8716c23086f9f0",
+      "decompressedBytes": 2320,
+      "decompressedSha256": "d01f637e9a45f0dd2ada4ab365c86db3ab5326c99db97e0c3d8716c23086f9f0",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v2/README.md",
+          "bytes": 2320,
+          "sha256": "d01f637e9a45f0dd2ada4ab365c86db3ab5326c99db97e0c3d8716c23086f9f0"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/run/report.json",
+      "encoding": "identity",
+      "storedBytes": 20989,
+      "storedSha256": "d9ee175d299e969f49ea44deaefcbff9dc25da9e4921fd7544c0e8da1749788c",
+      "decompressedBytes": 20989,
+      "decompressedSha256": "d9ee175d299e969f49ea44deaefcbff9dc25da9e4921fd7544c0e8da1749788c",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v2/run/report.json",
+          "bytes": 20989,
+          "sha256": "d9ee175d299e969f49ea44deaefcbff9dc25da9e4921fd7544c0e8da1749788c"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/adapter-v1-to-v2.patch",
+      "encoding": "identity",
+      "storedBytes": 10474,
+      "storedSha256": "79bf41edd6f3f4122bd5c08c056c6584068dbd3a9ea9bf5c2093fb9ec8f31d17",
+      "decompressedBytes": 10474,
+      "decompressedSha256": "79bf41edd6f3f4122bd5c08c056c6584068dbd3a9ea9bf5c2093fb9ec8f31d17",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v2/adapter-v1-to-v2.patch",
+          "bytes": 10474,
+          "sha256": "79bf41edd6f3f4122bd5c08c056c6584068dbd3a9ea9bf5c2093fb9ec8f31d17"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/interpretation.md",
+      "encoding": "identity",
+      "storedBytes": 2143,
+      "storedSha256": "1dbe231ad580f94de68c4cd75a5532009723df4bb7d1b0bc07b2c7c00f160a57",
+      "decompressedBytes": 2143,
+      "decompressedSha256": "1dbe231ad580f94de68c4cd75a5532009723df4bb7d1b0bc07b2c7c00f160a57",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v2/interpretation.md",
+          "bytes": 2143,
+          "sha256": "1dbe231ad580f94de68c4cd75a5532009723df4bb7d1b0bc07b2c7c00f160a57"
+        }
+      ]
+    },
+    {
+      "storedPath": "v3/adapter.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 17702,
+      "storedSha256": "600a6fa633fbe56f5218f02760edd249b524c6514f52e6985eccac9aad57eaec",
+      "decompressedBytes": 17702,
+      "decompressedSha256": "600a6fa633fbe56f5218f02760edd249b524c6514f52e6985eccac9aad57eaec",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v3/adapter.mjs",
+          "bytes": 17702,
+          "sha256": "600a6fa633fbe56f5218f02760edd249b524c6514f52e6985eccac9aad57eaec"
+        }
+      ]
+    },
+    {
+      "storedPath": "v3/ready.json",
+      "encoding": "identity",
+      "storedBytes": 1882,
+      "storedSha256": "1e3881116942e33253503cdd6b46d44a6f3234277d2b3d29d1fc21779cbbb3f7",
+      "decompressedBytes": 1882,
+      "decompressedSha256": "1e3881116942e33253503cdd6b46d44a6f3234277d2b3d29d1fc21779cbbb3f7",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v3/ready.json",
+          "bytes": 1882,
+          "sha256": "1e3881116942e33253503cdd6b46d44a6f3234277d2b3d29d1fc21779cbbb3f7"
+        }
+      ]
+    },
+    {
+      "storedPath": "v3/plan.json",
+      "encoding": "identity",
+      "storedBytes": 3330,
+      "storedSha256": "1b8192cdbd5184642206d5f6cb787a0c8192c8671b25c58c089d26642945345e",
+      "decompressedBytes": 3330,
+      "decompressedSha256": "1b8192cdbd5184642206d5f6cb787a0c8192c8671b25c58c089d26642945345e",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v3/plan.json",
+          "bytes": 3330,
+          "sha256": "1b8192cdbd5184642206d5f6cb787a0c8192c8671b25c58c089d26642945345e"
+        }
+      ]
+    },
+    {
+      "storedPath": "v3/source-build-manifest.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 52417,
+      "storedSha256": "136e32c8ce6a9c72266247fcafd6a9f5a32bdca99f3129a4773ab4d703253ba8",
+      "decompressedBytes": 186360,
+      "decompressedSha256": "f7aa25083fafbbb96a37efa4fb1e880341194d8540892e1476fa36b19e9be855",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v3/manifest.json",
+          "bytes": 186360,
+          "sha256": "f7aa25083fafbbb96a37efa4fb1e880341194d8540892e1476fa36b19e9be855"
+        }
+      ]
+    },
+    {
+      "storedPath": "v3/prepared-README.md",
+      "encoding": "identity",
+      "storedBytes": 2342,
+      "storedSha256": "6b32488ea4eb0a6326ba070f05791b3e2994be7cc9fb750bbb84e8f88e958e38",
+      "decompressedBytes": 2342,
+      "decompressedSha256": "6b32488ea4eb0a6326ba070f05791b3e2994be7cc9fb750bbb84e8f88e958e38",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v3/README.md",
+          "bytes": 2342,
+          "sha256": "6b32488ea4eb0a6326ba070f05791b3e2994be7cc9fb750bbb84e8f88e958e38"
+        }
+      ]
+    },
+    {
+      "storedPath": "v3/run/report.json",
+      "encoding": "identity",
+      "storedBytes": 34982,
+      "storedSha256": "b68161c00552a4c7d5e7dd00a3c24fe99f7e48ed22612444890da702a779b11e",
+      "decompressedBytes": 34982,
+      "decompressedSha256": "b68161c00552a4c7d5e7dd00a3c24fe99f7e48ed22612444890da702a779b11e",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v3/run/report.json",
+          "bytes": 34982,
+          "sha256": "b68161c00552a4c7d5e7dd00a3c24fe99f7e48ed22612444890da702a779b11e"
+        }
+      ]
+    },
+    {
+      "storedPath": "v3/adapter-v2-to-v3.patch",
+      "encoding": "identity",
+      "storedBytes": 3659,
+      "storedSha256": "e5cb11f4133e30e0c8e117b5bcbb388187b4b0cd3a5d9b04734e97f2c317d290",
+      "decompressedBytes": 3659,
+      "decompressedSha256": "e5cb11f4133e30e0c8e117b5bcbb388187b4b0cd3a5d9b04734e97f2c317d290",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v3/adapter-v2-to-v3.patch",
+          "bytes": 3659,
+          "sha256": "e5cb11f4133e30e0c8e117b5bcbb388187b4b0cd3a5d9b04734e97f2c317d290"
+        }
+      ]
+    },
+    {
+      "storedPath": "v3/source-field-audit.md",
+      "encoding": "identity",
+      "storedBytes": 3303,
+      "storedSha256": "1ef6cee1ec6db8d3e59557f8115b84022c31986bb497d4bfec66d78707d0e45b",
+      "decompressedBytes": 3303,
+      "decompressedSha256": "1ef6cee1ec6db8d3e59557f8115b84022c31986bb497d4bfec66d78707d0e45b",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v3/source-field-audit.md",
+          "bytes": 3303,
+          "sha256": "1ef6cee1ec6db8d3e59557f8115b84022c31986bb497d4bfec66d78707d0e45b"
+        }
+      ]
+    },
+    {
+      "storedPath": "v3/interpretation.md",
+      "encoding": "identity",
+      "storedBytes": 3506,
+      "storedSha256": "3a4968748fd67d2364dc074f55ff4a3f233d203dff2d1af55f1c8209c0574a01",
+      "decompressedBytes": 3506,
+      "decompressedSha256": "3a4968748fd67d2364dc074f55ff4a3f233d203dff2d1af55f1c8209c0574a01",
+      "originals": [
+        {
+          "path": "/private/tmp/aeration-live-arguments-20261004/v3/interpretation.md",
+          "bytes": 3506,
+          "sha256": "3a4968748fd67d2364dc074f55ff4a3f233d203dff2d1af55f1c8209c0574a01"
+        }
+      ]
+    },
+    {
+      "storedPath": "README.md",
+      "encoding": "identity",
+      "storedBytes": 6744,
+      "storedSha256": "553f560adc5fd31e5c6e2e73be2ec8fd43a95fd5648dead9f5a70fcd5979f049",
+      "decompressedBytes": 6744,
+      "decompressedSha256": "553f560adc5fd31e5c6e2e73be2ec8fd43a95fd5648dead9f5a70fcd5979f049",
+      "originals": [],
+      "note": "Generated archive summary, no original alias."
+    }
+  ],
+  "readinessChecks": [
+    {
+      "version": "v1",
+      "recordCount": 13,
+      "matchingRecords": 13,
+      "records": [
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/adapter.mjs",
+          "expectedBytes": 14982,
+          "expectedSha256": "bfc150e7128424c46efd7c29511b7958ff7e7af4385b84d9ae8e14cfa02cb6a3",
+          "currentBytes": 14982,
+          "currentSha256": "bfc150e7128424c46efd7c29511b7958ff7e7af4385b84d9ae8e14cfa02cb6a3",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/AerationField.patch",
+          "expectedBytes": 4227,
+          "expectedSha256": "58eb9404d57d676b31897f9361df592dfd897df6de94d429ecd96c69fdd9b2d9",
+          "currentBytes": 4227,
+          "currentSha256": "58eb9404d57d676b31897f9361df592dfd897df6de94d429ecd96c69fdd9b2d9",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/surfZoneWorker.patch",
+          "expectedBytes": 4425,
+          "expectedSha256": "d0f5a8b0fdc867946ec11fc6fab52c0f388b654c89712bdd6d81bbc30b6dbcd6",
+          "currentBytes": 4425,
+          "currentSha256": "d0f5a8b0fdc867946ec11fc6fab52c0f388b654c89712bdd6d81bbc30b6dbcd6",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/counter.test.mjs",
+          "expectedBytes": 4497,
+          "expectedSha256": "013890ca148b94c9270e54856ed2da0ae6f7376411a30f3cad9b52c964b245e3",
+          "currentBytes": 4497,
+          "currentSha256": "013890ca148b94c9270e54856ed2da0ae6f7376411a30f3cad9b52c964b245e3",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/manifest.json",
+          "expectedBytes": 183975,
+          "expectedSha256": "1287ee1eb91df0ddff9176e1193758085ac3555b05eefc10ead3b2ca68f0e87f",
+          "currentBytes": 183975,
+          "currentSha256": "1287ee1eb91df0ddff9176e1193758085ac3555b05eefc10ead3b2ca68f0e87f",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/plan.json",
+          "expectedBytes": 3330,
+          "expectedSha256": "25256ced2703cc901f8dbf19fcb5943cbda1a7b33656d3eeaaa1f7ba2a17d5df",
+          "currentBytes": 3330,
+          "currentSha256": "25256ced2703cc901f8dbf19fcb5943cbda1a7b33656d3eeaaa1f7ba2a17d5df",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/README.md",
+          "expectedBytes": 3809,
+          "expectedSha256": "4eb670701ddcde91ed0d49462fe8af1d6bdeaab35d3ddaf5883378d7097fca35",
+          "currentBytes": 3809,
+          "currentSha256": "4eb670701ddcde91ed0d49462fe8af1d6bdeaab35d3ddaf5883378d7097fca35",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/build.log",
+          "expectedBytes": 1397,
+          "expectedSha256": "d63af85246b65106d879cfd7df7511890b361fccd9d4774e5cd2b375d1fe4b1d",
+          "currentBytes": 1397,
+          "currentSha256": "d63af85246b65106d879cfd7df7511890b361fccd9d4774e5cd2b375d1fe4b1d",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/AerationField.original.ts",
+          "expectedBytes": 13174,
+          "expectedSha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f",
+          "currentBytes": 13174,
+          "currentSha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/surfZoneWorker.original.ts",
+          "expectedBytes": 827,
+          "expectedSha256": "2f04572a34cc6f5a1a236d2c44f6ef878d03e1db229e7545f5f33e9daa5f84c6",
+          "currentBytes": 827,
+          "currentSha256": "2f04572a34cc6f5a1a236d2c44f6ef878d03e1db229e7545f5f33e9daa5f84c6",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/scratch/src/wave/AerationField.ts",
+          "expectedBytes": 16221,
+          "expectedSha256": "a5b925767b4358febe5f72ddd0bbacc9c3a3f40e9862978717a368c1ada47474",
+          "currentBytes": 16221,
+          "currentSha256": "a5b925767b4358febe5f72ddd0bbacc9c3a3f40e9862978717a368c1ada47474",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/scratch/src/game/surfZoneWorker.ts",
+          "expectedBytes": 4429,
+          "expectedSha256": "58012ec12dc2a560f08012214d263e75f6a922b27f542a89ae149154f91fa9a3",
+          "currentBytes": 4429,
+          "currentSha256": "58012ec12dc2a560f08012214d263e75f6a922b27f542a89ae149154f91fa9a3",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/scratch/scripts/browser/cdp.mjs",
+          "expectedBytes": 7064,
+          "expectedSha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+          "currentBytes": 7064,
+          "currentSha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+          "matches": true
+        }
+      ],
+      "scope": "Preserved pre-run readiness claims and exact current source bytes, not a new test/build execution."
+    },
+    {
+      "version": "v2",
+      "recordCount": 5,
+      "matchingRecords": 5,
+      "records": [
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/v2/adapter.mjs",
+          "expectedBytes": 17647,
+          "expectedSha256": "a2ddda05e721ff97356bfe38c0c59452fc2125119ec435454bb3bf699d08c5f0",
+          "currentBytes": 17647,
+          "currentSha256": "a2ddda05e721ff97356bfe38c0c59452fc2125119ec435454bb3bf699d08c5f0",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/v2/adapter-v1-to-v2.patch",
+          "expectedBytes": 10474,
+          "expectedSha256": "79bf41edd6f3f4122bd5c08c056c6584068dbd3a9ea9bf5c2093fb9ec8f31d17",
+          "currentBytes": 10474,
+          "currentSha256": "79bf41edd6f3f4122bd5c08c056c6584068dbd3a9ea9bf5c2093fb9ec8f31d17",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/v2/manifest.json",
+          "expectedBytes": 185491,
+          "expectedSha256": "e2ba54431689c0a33484bc18d3dd560a1830b405bb7d7b6421f0858565f883e9",
+          "currentBytes": 185491,
+          "currentSha256": "e2ba54431689c0a33484bc18d3dd560a1830b405bb7d7b6421f0858565f883e9",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/v2/plan.json",
+          "expectedBytes": 3330,
+          "expectedSha256": "02a5fe22c0657142d31c319b05414ebd549554f292c043c5c8fe80897a8f15b4",
+          "currentBytes": 3330,
+          "currentSha256": "02a5fe22c0657142d31c319b05414ebd549554f292c043c5c8fe80897a8f15b4",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/v2/README.md",
+          "expectedBytes": 2320,
+          "expectedSha256": "d01f637e9a45f0dd2ada4ab365c86db3ab5326c99db97e0c3d8716c23086f9f0",
+          "currentBytes": 2320,
+          "currentSha256": "d01f637e9a45f0dd2ada4ab365c86db3ab5326c99db97e0c3d8716c23086f9f0",
+          "matches": true
+        }
+      ],
+      "scope": "Preserved pre-run readiness claims and exact current source bytes, not a new test/build execution."
+    },
+    {
+      "version": "v3",
+      "recordCount": 6,
+      "matchingRecords": 6,
+      "records": [
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/v3/adapter.mjs",
+          "expectedBytes": 17702,
+          "expectedSha256": "600a6fa633fbe56f5218f02760edd249b524c6514f52e6985eccac9aad57eaec",
+          "currentBytes": 17702,
+          "currentSha256": "600a6fa633fbe56f5218f02760edd249b524c6514f52e6985eccac9aad57eaec",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/v3/adapter-v2-to-v3.patch",
+          "expectedBytes": 3659,
+          "expectedSha256": "e5cb11f4133e30e0c8e117b5bcbb388187b4b0cd3a5d9b04734e97f2c317d290",
+          "currentBytes": 3659,
+          "currentSha256": "e5cb11f4133e30e0c8e117b5bcbb388187b4b0cd3a5d9b04734e97f2c317d290",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/v3/manifest.json",
+          "expectedBytes": 186360,
+          "expectedSha256": "f7aa25083fafbbb96a37efa4fb1e880341194d8540892e1476fa36b19e9be855",
+          "currentBytes": 186360,
+          "currentSha256": "f7aa25083fafbbb96a37efa4fb1e880341194d8540892e1476fa36b19e9be855",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/v3/plan.json",
+          "expectedBytes": 3330,
+          "expectedSha256": "1b8192cdbd5184642206d5f6cb787a0c8192c8671b25c58c089d26642945345e",
+          "currentBytes": 3330,
+          "currentSha256": "1b8192cdbd5184642206d5f6cb787a0c8192c8671b25c58c089d26642945345e",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/v3/README.md",
+          "expectedBytes": 2342,
+          "expectedSha256": "6b32488ea4eb0a6326ba070f05791b3e2994be7cc9fb750bbb84e8f88e958e38",
+          "currentBytes": 2342,
+          "currentSha256": "6b32488ea4eb0a6326ba070f05791b3e2994be7cc9fb750bbb84e8f88e958e38",
+          "matches": true
+        },
+        {
+          "originalPath": "/private/tmp/aeration-live-arguments-20261004/v3/source-field-audit.md",
+          "expectedBytes": 3303,
+          "expectedSha256": "1ef6cee1ec6db8d3e59557f8115b84022c31986bb497d4bfec66d78707d0e45b",
+          "currentBytes": 3303,
+          "currentSha256": "1ef6cee1ec6db8d3e59557f8115b84022c31986bb497d4bfec66d78707d0e45b",
+          "matches": true
+        }
+      ],
+      "scope": "Preserved pre-run readiness claims and exact current source bytes, not a new test/build execution."
+    }
+  ],
+  "sourceBuildManifestSummaries": [
+    {
+      "version": "v1",
+      "manifestOriginalPath": "/private/tmp/aeration-live-arguments-20261004/manifest.json",
+      "manifestRawSha256": "1287ee1eb91df0ddff9176e1193758085ac3555b05eefc10ead3b2ca68f0e87f",
+      "sourceRecordCount": 626,
+      "uniqueSourcePaths": 626,
+      "ownedQaEditCount": 2,
+      "unownedUnchangedRecordCount": 624,
+      "buildRecordCount": 11,
+      "base": "56bf750996cd48cdc5ef45954c479a268053c0b9",
+      "worker": {
+        "path": "assets/surfZoneWorker-BiS1HSwW.js",
+        "sha256": "6a59a6367a8eb25c4d53fd5a9becdf9c8462d86ebb9b8c9237a1a50ec0b70aef",
+        "bytes": 439595
+      }
+    },
+    {
+      "version": "v2",
+      "manifestOriginalPath": "/private/tmp/aeration-live-arguments-20261004/v2/manifest.json",
+      "manifestRawSha256": "e2ba54431689c0a33484bc18d3dd560a1830b405bb7d7b6421f0858565f883e9",
+      "sourceRecordCount": 626,
+      "uniqueSourcePaths": 626,
+      "ownedQaEditCount": 2,
+      "unownedUnchangedRecordCount": 624,
+      "buildRecordCount": 11,
+      "base": "56bf750996cd48cdc5ef45954c479a268053c0b9",
+      "worker": {
+        "path": "assets/surfZoneWorker-BiS1HSwW.js",
+        "sha256": "6a59a6367a8eb25c4d53fd5a9becdf9c8462d86ebb9b8c9237a1a50ec0b70aef",
+        "bytes": 439595
+      }
+    },
+    {
+      "version": "v3",
+      "manifestOriginalPath": "/private/tmp/aeration-live-arguments-20261004/v3/manifest.json",
+      "manifestRawSha256": "f7aa25083fafbbb96a37efa4fb1e880341194d8540892e1476fa36b19e9be855",
+      "sourceRecordCount": 626,
+      "uniqueSourcePaths": 626,
+      "ownedQaEditCount": 2,
+      "unownedUnchangedRecordCount": 624,
+      "buildRecordCount": 11,
+      "base": "56bf750996cd48cdc5ef45954c479a268053c0b9",
+      "worker": {
+        "path": "assets/surfZoneWorker-BiS1HSwW.js",
+        "sha256": "6a59a6367a8eb25c4d53fd5a9becdf9c8462d86ebb9b8c9237a1a50ec0b70aef",
+        "bytes": 439595
+      }
+    }
+  ],
+  "observedV3": {
+    "rawReportOriginalPath": "/private/tmp/aeration-live-arguments-20261004/v3/run/report.json",
+    "rawReportSha256": "b68161c00552a4c7d5e7dd00a3c24fe99f7e48ed22612444890da702a779b11e",
+    "ids": {
+      "runId": "6bd08e68-c82e-4c82-8219-1618011c6257",
+      "fieldId": "6bd08e68-c82e-4c82-8219-1618011c6257:field:1",
+      "armId": "1",
+      "startRequestSerial": 1,
+      "advanceRequestSerial": 291,
+      "requestSteps": 1
+    },
+    "dt": 0.016666666666666666,
+    "cells": 116000,
+    "counts": {
+      "eligible": 10153,
+      "first": 1,
+      "repeats": 9054,
+      "misses": 1098,
+      "nonFinite": 0,
+      "nan": 0
+    },
+    "beforeSeaTime": 316.17437989097084,
+    "afterSeaTime": 316.1910465576375,
+    "eligibleRepeatFraction": 0.8917561311927509,
+    "eligibleCellFraction": 0.08752586206896552,
+    "publicArrayIdentitiesMatch": true,
+    "allOriginalExpCallsRetained": true,
+    "fullLiveFieldByteOracleRetained": false,
+    "historicalOrderedArgumentsRetained": false,
+    "fpsAcceptance": false,
+    "timingAcceptance": false,
+    "cacheImplemented": false
+  },
+  "omissions": [
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/scratch",
+      "reason": "Full source/build trees deliberately omitted; exact source/build guard manifests, explicit base, owned original source snapshots and QA patches retained."
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/prepare-entry.py",
+      "reason": "Optional one-time preparation helper omitted; exact resulting QA patches/build manifests retained."
+    },
+    {
+      "path": "/private/tmp/aeration-live-argument-capture-plan-20261004.md",
+      "reason": "Optional earlier planning note omitted; all three exact reviewed run plans retained."
+    },
+    {
+      "path": "/private/tmp/aeration-live-argument-capture-20261004.patch",
+      "reason": "Optional aggregate QA patch omitted; both exact applied per-file QA patches retained."
+    }
+  ],
+  "compression": {
+    "method": "gzip",
+    "mtime": 0,
+    "filename": "",
+    "compresslevel": 9
+  },
+  "allIncludedInterpretationsFrozenBeforeCopy": true,
+  "archiveOnly": true,
+  "productionEdited": false,
+  "hardwareRun": false,
+  "testsRun": false,
+  "buildRun": false
+}

@@ -1,0 +1,105 @@
+--- a/src/wave/AerationField.ts
++++ b/src/wave/AerationField.ts
+@@ -32,6 +32,68 @@
+ const ACROSS = [-1, 1] as const;
+ /** Plumes thinner than this still degas at this depth's rate, m (a numerical floor). */
+ const MIN_DEPTH = 0.05;
++
++/** QA SCRATCH ONLY: one update, on one actual worker field instance. */
++export interface AerationArgumentQaIds {
++  runId: string;
++  fieldId: string;
++  armId: string;
++  startRequestSerial: number;
++  advanceRequestSerial: number;
++  requestSteps: 1;
++}
++export interface AerationArgumentQaReport {
++  ids: AerationArgumentQaIds;
++  stage: 'after-advect-before-degas';
++  dt: number;
++  solverTime: number;
++  period: number;
++  nx: number;
++  nz: number;
++  dx: number;
++  dzFirst: number;
++  dzLast: number;
++  cells: number;
++  xFirst: number;
++  xLast: number;
++  zFirst: number;
++  zLast: number;
++  windowX: number;
++  counts: { eligible: number; first: number; repeats: number; misses: number; nonFinite: number; nan: number };
++}
++type ArmedAerationArgumentQa = {
++  ids: AerationArgumentQaIds;
++  observe: (argument: number) => number;
++  counts: AerationArgumentQaReport['counts'];
++  report: (result: AerationArgumentQaReport) => void;
++};
++const armedAerationArgumentQa = new WeakMap<AerationField, ArmedAerationArgumentQa>();
++
++/** The QA worker supplies an inert report callback that only retains this small result. */
++export function armAerationArgumentQa(field: AerationField, ids: AerationArgumentQaIds,
++  report: ArmedAerationArgumentQa['report']): void {
++  if (armedAerationArgumentQa.has(field)) throw new Error('Aeration argument QA already armed');
++  const counts = { eligible: 0, first: 0, repeats: 0, misses: 0, nonFinite: 0, nan: 0 };
++  let seen = false;
++  let last = Number.NaN;
++  armedAerationArgumentQa.set(field, {
++    ids: { ...ids }, counts, report,
++    observe(argument) {
++      counts.eligible += 1;
++      if (!seen) counts.first += 1;
++      else if (argument === last) counts.repeats += 1;
++      else counts.misses += 1;
++      if (!Number.isFinite(argument)) counts.nonFinite += 1;
++      if (Number.isNaN(argument)) counts.nan += 1;
++      last = argument;
++      seen = true;
++      return argument; // identity: the original Math.exp always runs, even on a repeat.
++    },
++  });
++}
++export function cancelAerationArgumentQa(field: AerationField): void {
++  armedAerationArgumentQa.delete(field);
++}
+ 
+ /**
+  * Entrained air on the solver grid (G9): per cell, the air it holds per unit
+@@ -130,6 +192,8 @@
+     if (!(dt > 0)) return;
+     this.followWindow();
+     this.advect(dt, stencil?.take(this.solver, dt));
++    const qa = armedAerationArgumentQa.get(this);
++    if (qa) armedAerationArgumentQa.delete(this); // consumes only this positive-dt update
+     const { h } = this.solver;
+     const fade = Math.exp(-dt / (TURBULENCE.decayShare * this.period));
+     for (let i = 0; i < h.length; i += 1) {
+@@ -142,10 +206,23 @@
+         continue;
+       }
+       const depth = Math.min(this.depth[i], h[i]);
+-      const air = this.air[i] * Math.exp((-AERATION.riseSpeed * dt) / Math.max(MIN_DEPTH, depth));
++      const air = this.air[i] * Math.exp(qa
++        ? qa.observe((-AERATION.riseSpeed * dt) / Math.max(MIN_DEPTH, depth))
++        : (-AERATION.riseSpeed * dt) / Math.max(MIN_DEPTH, depth));
+       this.air[i] = air < TRACE ? 0 : Math.min(air, AERATION.peak * depth);
+       this.depth[i] = this.air[i] > 0 ? depth : 0;
+     }
++    // Publish after the original finish loop. The QA entry only assigns a local result;
++    // it does not throw, mutate this field, post a message, or scan any material array.
++    if (qa) qa.report({
++      ids: qa.ids, stage: 'after-advect-before-degas', dt, solverTime: this.solver.time,
++      period: this.period, nx: this.solver.nx, nz: this.solver.nz,
++      dx: this.solver.dx, dzFirst: this.solver.dz[0],
++      dzLast: this.solver.dz[this.solver.nz - 1], cells: h.length,
++      xFirst: this.solver.xCenters[0], xLast: this.solver.xCenters[this.solver.nx - 1],
++      zFirst: this.solver.zCenters[0], zLast: this.solver.zCenters[this.solver.nz - 1],
++      windowX: this.windowX, counts: { ...qa.counts },
++    });
+   }
+ 
+   private reach(cell: number, penetration: number): number {

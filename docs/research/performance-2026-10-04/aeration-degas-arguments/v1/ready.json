@@ -1,0 +1,77 @@
+{
+  "status": "Prepared only; no browser/hardware/count",
+  "base": "56bf750996cd48cdc5ef45954c479a268053c0b9",
+  "buildPassedOnce": true,
+  "toyTestsPassed": 6,
+  "toyTestsFailed": 0,
+  "syntaxPassed": true,
+  "planBranchPassed": true,
+  "proposedCommand": "node /private/tmp/aeration-live-arguments-20261004/adapter.mjs --run=true --out=/private/tmp/aeration-live-arguments-20261004/run",
+  "files": [
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/adapter.mjs",
+      "bytes": 14982,
+      "sha256": "bfc150e7128424c46efd7c29511b7958ff7e7af4385b84d9ae8e14cfa02cb6a3"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/AerationField.patch",
+      "bytes": 4227,
+      "sha256": "58eb9404d57d676b31897f9361df592dfd897df6de94d429ecd96c69fdd9b2d9"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/surfZoneWorker.patch",
+      "bytes": 4425,
+      "sha256": "d0f5a8b0fdc867946ec11fc6fab52c0f388b654c89712bdd6d81bbc30b6dbcd6"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/counter.test.mjs",
+      "bytes": 4497,
+      "sha256": "013890ca148b94c9270e54856ed2da0ae6f7376411a30f3cad9b52c964b245e3"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/manifest.json",
+      "bytes": 183975,
+      "sha256": "1287ee1eb91df0ddff9176e1193758085ac3555b05eefc10ead3b2ca68f0e87f"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/plan.json",
+      "bytes": 3330,
+      "sha256": "25256ced2703cc901f8dbf19fcb5943cbda1a7b33656d3eeaaa1f7ba2a17d5df"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/README.md",
+      "bytes": 3809,
+      "sha256": "4eb670701ddcde91ed0d49462fe8af1d6bdeaab35d3ddaf5883378d7097fca35"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/build.log",
+      "bytes": 1397,
+      "sha256": "d63af85246b65106d879cfd7df7511890b361fccd9d4774e5cd2b375d1fe4b1d"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/AerationField.original.ts",
+      "bytes": 13174,
+      "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/surfZoneWorker.original.ts",
+      "bytes": 827,
+      "sha256": "2f04572a34cc6f5a1a236d2c44f6ef878d03e1db229e7545f5f33e9daa5f84c6"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/scratch/src/wave/AerationField.ts",
+      "bytes": 16221,
+      "sha256": "a5b925767b4358febe5f72ddd0bbacc9c3a3f40e9862978717a368c1ada47474"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/scratch/src/game/surfZoneWorker.ts",
+      "bytes": 4429,
+      "sha256": "58012ec12dc2a560f08012214d263e75f6a922b27f542a89ae149154f91fa9a3"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/scratch/scripts/browser/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    }
+  ]
+}

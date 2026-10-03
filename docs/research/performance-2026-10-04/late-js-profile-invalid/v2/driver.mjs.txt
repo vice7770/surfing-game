@@ -1,0 +1,91 @@
+// Derive only observation/scheduling changes from root's exact frozen ordinary survey.
+import { readFileSync, writeFileSync, mkdirSync, existsSync, createWriteStream } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { execFileSync, spawn } from 'node:child_process';
+import { resolve } from 'node:path';
+import { createConnection } from 'node:net';
+const root='/Users/regina/Desktop/Projects/surfing-game';
+const home='/private/tmp/late-js-profile-20261004-v2',base='/private/tmp/paced-crossing-gameplay-20261004';
+const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+const args=Object.fromEntries(process.argv.slice(2).map(arg=>{const at=arg.indexOf('=');return[arg.slice(2,at),arg.slice(at+1)];}));
+if(Object.keys(args).some(key=>!['plan','out','cdp'].includes(key))||!['true','false'].includes(args.plan??'true'))throw Error('Only --plan=true|false, --out, --cdp are supported');
+const plan=(args.plan??'true')==='true',out=resolve(args.out??home+'/result'),port=Number(args.cdp??9547);
+if(!Number.isInteger(port)||port<1024||port>65535)throw Error('Invalid owned CDP port');
+if(!plan&&(existsSync(out+'/fps-diagnostic.json')||existsSync(out+'/cpu/report.json')))throw Error('Refusing to overwrite prior runtime evidence');
+const manifestBytes=readFileSync(base+'/manifest.json');
+if(hash(manifestBytes)!=='c3d6faf1490a7ac2882b14be2af8bc3b95e5c06ec3966face712e092ed83025b')throw Error('Frozen root manifest changed');
+const manifest=JSON.parse(manifestBytes);
+for(const row of manifest.files)if(hash(readFileSync(base+'/'+row.path))!==row.sha256)throw Error('Frozen file changed: '+row.path);
+const cdpSha256='e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091';
+const baselineSha256='dc655a3fffa336f4ee16a7b71ecaed8bc167ce07485b567af01f36dc2986e110';
+if(hash(readFileSync(root+'/scripts/browser/cdp.mjs'))!==cdpSha256)throw Error('Launcher Page dependency changed');
+if(hash(readFileSync(root+'/docs/research/performance-2026-10-03/padang-live-frame-pacing.json'))!==baselineSha256)throw Error('Canonical comparison guards changed');
+let derived=readFileSync(base+'/survey.mjs','utf8');
+const changes=[];
+function replace(name,before,after){if(derived.split(before).length!==2)throw Error('Frozen survey marker changed: '+name);derived=derived.replace(before,after);changes.push({name,beforeSha256:hash(before),afterSha256:hash(after)});}
+const url='http://localhost:4211/?diagnostics',worker='assets/surfZoneWorker-0gFT5nyl.js',workerUrl=new URL(worker,url).href;
+const sources=Object.fromEntries(manifest.files.filter(row=>row.path.startsWith('dist/assets/')&&row.path.endsWith('.js')).map(row=>[new URL(row.path.slice(5),url).href,{path:base+'/'+row.path,sha256:row.sha256}]));
+const provenance={url,dir:base+'/dist',manifestPath:base+'/manifest.json',manifestSha256:hash(manifestBytes),workerUrl,
+  entrySha256:'fd2c2bd093073e04d25b191833a9b45b4465554b743cf1fd1faca7208987e8a0',workerSha256:'21b796673a700d9ecb8c46fb32c913795a89134c51adb0860e98f646f65371fa',
+  surveySha256:hash(readFileSync(base+'/survey.mjs')),launcherSha256:hash(readFileSync(base+'/owned-cdp.mjs')),cdpSha256,baselineSha256,
+  qualityBase:'56bf750996',sourceCheckpoint:manifest.base,publishedClockCommit:'58ceb6a29617c00f93fb3b21eff3058d824319d5',
+  runtimeDelta:'Four source hunks across BreakingFront.ts and SweptCrash.ts after checkpoint 56bf; exact runtime authority is frozen served bundle hashes'};
+replace('profile-import',"import { launch, sleep } from '/private/tmp/paced-crossing-gameplay-20261004/owned-cdp.mjs';",`import { launch, sleep } from '${base}/owned-cdp.mjs';\nimport { performance } from 'node:perf_hooks';\nimport { readyWitness, collectLateProfiles } from '${home}/profile.mjs';`);
+replace('worker-identity',"  window.Worker = class extends NativeWorker {\n    constructor(...args) {\n      super(...args);",`  window.Worker = class extends NativeWorker {
+    postMessage(...args) {
+      const request=args[0];
+      if(request?.type==='start')this.__profileStart={config:{...request.config},rider:request.options?.rider===true};
+      return super.postMessage(...args);
+    }
+    constructor(...args) {
+      super(...args);
+      this.__profileUrl=new URL(String(args[0]),location.href).href;this.__profileObserved=true;`);
+replace('ride-screen-origin',"  await onScreen('ride');\n  await measure",`  await onScreen('ride');\n  run.rideScreenObserved={iso:new Date().toISOString(),monoMs:performance.now()};save();\n  await measure`);
+replace('late-schedule',"async function sample(seconds) {\n  await page.eval('window.__perf.startSample()');",`async function sample(seconds) {
+  const readiness=await readyWitness(page,ordinary,${JSON.stringify(workerUrl)});
+  const origin={iso:new Date().toISOString(),monoMs:performance.now(),meaning:'Canonical sample entry after original 5s warmup and actual ready/native guard',readiness,rideScreenObserved:run.rideScreenObserved};
+  const profileTask=collectLateProfiles({page,ordinary,workerUrl:${JSON.stringify(workerUrl)},port:${port},out:${JSON.stringify(out+'/cpu')},origin,sources:${JSON.stringify(sources)},provenance:${JSON.stringify(provenance)}});
+  await page.eval('window.__perf.startSample()');`);
+replace('profile-await',"  const frames = await page.eval('(() => { window.__perf.sampling = false; return window.__perf.frames; })()');",`  run.cpuProfile=await profileTask;save();
+  const frames = await page.eval('(() => { window.__perf.sampling = false; return window.__perf.frames; })()');`);
+replace('ordinary-diagnostic','timingComparableToPassiveBaseline: !GPU_DIAGNOSTIC','timingComparableToPassiveBaseline:false,jsCpuProfileDiagnostic:true');
+replace('result-diagnostic','baselineComparable: failures.length === 0 && !GPU_DIAGNOSTIC','baselineComparable:false,jsCpuProfileDiagnostic:true');
+replace('profile-failure',"  if (failures.length) throw new Error(`Ordinary baseline mismatch: ${failures.join('; ')}`);",`  if(failures.length)throw new Error('Ordinary baseline mismatch: '+failures.join('; '));
+  if(!run.cpuProfile?.valid)throw Error('CPU profile invalid; retained report contains errors');`);
+replace('bounded-action-open','let save = () => {};\ntry {',`let save=()=>{};
+let actionDeadline;
+try{await Promise.race([(async()=>{`);
+replace('bounded-action-close','} finally {\n  save();\n  await page.close();',`})(),new Promise((_,reject)=>{actionDeadline=setTimeout(()=>reject(Error('Profile survey action deadline')),360000);})]);
+}finally{\n  clearTimeout(actionDeadline);\n  save();\n  await page.close();`);
+mkdirSync(home,{recursive:true});mkdirSync(out,{recursive:true});
+writeFileSync(home+'/derived-survey.mjs',derived);
+execFileSync(process.execPath,['--check',home+'/derived-survey.mjs']);
+const metadata={planOnly:plan,productionEdited:false,chromeStarted:false,port,out,provenance,changes,derivedSha256:hash(derived),
+  helperFiles:['driver.mjs','session-cdp.mjs','profile.mjs','attribution.mjs'].map(file=>({file:home+'/'+file,sha256:hash(readFileSync(home+'/'+file))})),
+  hardwareBound:{seconds:360,launcherCleanupMs:500},schedule:{origin:'Canonical sample entry after existing 5 s warmup plus actual ready/native guard; ride-screen time also retained',afterOriginSeconds:75,profileSeconds:8,samplingIntervalUs:1000},
+  workerIdentity:'Observed actual host.port URL/start config + unique exact-page worker parentFrameId + in-worker self.location.href before and after profiling; no protocol nonce exists',
+  notes:['Profiler is intrusive diagnostic, not passive FPS acceptance','No GPU timers, source maps rebuild or production instrumentation','No retry or deadline widening']};
+const preparationPath=home+(plan?'/preparation.json':'/runtime-preparation.json');
+writeFileSync(preparationPath,JSON.stringify(metadata,null,2)+'\n');
+const childArgs=[home+'/derived-survey.mjs',out+'/fps-diagnostic.json','--url='+url,'--dir='+base+'/dist','--baseline='+root+'/docs/research/performance-2026-10-03/padang-live-frame-pacing.json','--features=true','--only=High (baseline)','--spot=Padang','--swell=Big','--rideSeconds=90','--warmSeconds=5','--gpuTiming=false','--width=1708','--height=926','--qualityBase=56bf750996','--edition=late-js-cpu-new-clock-v2','--cdp='+port,...(plan?['--plan=true']:[])];
+console.log(JSON.stringify(metadata,null,2));
+const consolePath=out+(plan?'/dry-child-console.log':'/console.log'),log=createWriteStream(consolePath);
+const child=spawn(process.execPath,childArgs,{cwd:root,stdio:['ignore','pipe','pipe']});
+for(const stream of [child.stdout,child.stderr]){stream.pipe(log,{end:false});stream.pipe(process.stdout,{end:false});}
+let childError;
+const outcome=await new Promise(resolve=>{child.once('error',error=>{childError=String(error);});child.once('close',(code,signal)=>resolve({exitCode:code??1,signal,...(childError?{error:childError}:{})}));});
+await new Promise(resolve=>log.end(resolve));
+if(!plan){
+  const portProof=await new Promise(resolve=>{
+    const socket=createConnection({host:'127.0.0.1',port});let settled=false;
+    const finish=result=>{if(settled)return;settled=true;clearTimeout(timer);socket.destroy();resolve(result);};
+    const timer=setTimeout(()=>finish({closed:null,reason:'TCP check deadline'}),2000);
+    socket.once('connect',()=>finish({closed:false,reason:'TCP connection accepted'}));
+    socket.once('error',error=>finish({closed:error.code==='ECONNREFUSED'?true:null,reason:error.code??String(error)}));
+  });
+  const ownedPortClosed=portProof.closed;
+  writeFileSync(out+'/workflow.json',JSON.stringify({finishedAt:new Date().toISOString(),...outcome,ownedPortClosed,portProof,port,
+    launcherOwns360sWatchdog:true,productionEdited:false,preparationPath,consolePath},null,2)+'\n');
+  if(ownedPortClosed!==true)outcome.exitCode=1;
+}
+process.exitCode=outcome.exitCode;

@@ -1,0 +1,15 @@
+{
+  "finishedAt": "2026-10-03T23:32:31.101Z",
+  "exitCode": 1,
+  "signal": null,
+  "ownedPortClosed": true,
+  "portProof": {
+    "closed": true,
+    "reason": "ECONNREFUSED"
+  },
+  "port": 9546,
+  "launcherOwns360sWatchdog": true,
+  "productionEdited": false,
+  "preparationPath": "/private/tmp/late-js-profile-20261004/preparation.json",
+  "consolePath": "/private/tmp/late-js-profile-20261004/result/console.log"
+}

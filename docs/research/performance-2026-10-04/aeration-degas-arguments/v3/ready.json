@@ -1,0 +1,45 @@
+{
+  "status": "v3 ready, no hardware; worker/source build unchanged; syntax/default plan pass",
+  "command": "node /private/tmp/aeration-live-arguments-20261004/v3/adapter.mjs --run=true --out=/private/tmp/aeration-live-arguments-20261004/v3/run",
+  "checks": {
+    "syntax": true,
+    "noLaunchPlan": true,
+    "frozenSourceFieldAudit": true,
+    "workerBuildUnchanged": true
+  },
+  "files": [
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/v3/adapter.mjs",
+      "bytes": 17702,
+      "sha256": "600a6fa633fbe56f5218f02760edd249b524c6514f52e6985eccac9aad57eaec"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/v3/adapter-v2-to-v3.patch",
+      "bytes": 3659,
+      "sha256": "e5cb11f4133e30e0c8e117b5bcbb388187b4b0cd3a5d9b04734e97f2c317d290"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/v3/manifest.json",
+      "bytes": 186360,
+      "sha256": "f7aa25083fafbbb96a37efa4fb1e880341194d8540892e1476fa36b19e9be855"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/v3/plan.json",
+      "bytes": 3330,
+      "sha256": "1b8192cdbd5184642206d5f6cb787a0c8192c8671b25c58c089d26642945345e"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/v3/README.md",
+      "bytes": 2342,
+      "sha256": "6b32488ea4eb0a6326ba070f05791b3e2994be7cc9fb750bbb84e8f88e958e38"
+    },
+    {
+      "path": "/private/tmp/aeration-live-arguments-20261004/v3/source-field-audit.md",
+      "bytes": 3303,
+      "sha256": "1ef6cee1ec6db8d3e59557f8115b84022c31986bb497d4bfec66d78707d0e45b"
+    }
+  ],
+  "retainedV2ReportSha256": "d9ee175d299e969f49ea44deaefcbff9dc25da9e4921fd7544c0e8da1749788c",
+  "retainedV2DriverSha256": "a2ddda05e721ff97356bfe38c0c59452fc2125119ec435454bb3bf699d08c5f0",
+  "retainedV2ManifestSha256": "e2ba54431689c0a33484bc18d3dd560a1830b405bb7d7b6421f0858565f883e9"
+}

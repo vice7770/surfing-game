@@ -1,0 +1,50 @@
+{
+  "kind": "NEW v2 source-only readiness; node syntax checks and dry plan passed; no hardware",
+  "files": [
+    {
+      "path": "/private/tmp/late-js-profile-20261004-v2/driver.mjs",
+      "sha256": "977816334ec67e1ec24caefdba3cbf4313b04d286e25ed1e3fcfdb605dbc9960",
+      "bytes": 9780
+    },
+    {
+      "path": "/private/tmp/late-js-profile-20261004-v2/session-cdp.mjs",
+      "sha256": "a563eaea0fe933c8757c48cb19710311c0d5820375451178dbce90f03a531c24",
+      "bytes": 2374
+    },
+    {
+      "path": "/private/tmp/late-js-profile-20261004-v2/profile.mjs",
+      "sha256": "d7576556dc2036232c1453c10e25e8b7f5135087af0b3cd77e09651485d333ba",
+      "bytes": 8701
+    },
+    {
+      "path": "/private/tmp/late-js-profile-20261004-v2/attribution.mjs",
+      "sha256": "b692a5a888dd57e26f90bbd2a49ced291e3c01983b33e0f9e335ccad7583de52",
+      "bytes": 3175
+    },
+    {
+      "path": "/private/tmp/late-js-profile-20261004-v2/README.md",
+      "sha256": "3430a3f2493eecbc00ac635fcc71f976ddd8f0b14fed79aad5c73dd6eebeef00",
+      "bytes": 4888
+    },
+    {
+      "path": "/private/tmp/late-js-profile-20261004-v2/derived-survey.mjs",
+      "sha256": "6306124f17599d65e824fcb711ac215a00a61ed96250409abd360287e3244df0",
+      "bytes": 43271
+    },
+    {
+      "path": "/private/tmp/late-js-profile-20261004-v2/preparation.json",
+      "sha256": "0f1168363142a76ee6e96dfbe65fd4986917130ddc635f0529479ec4deb6553c",
+      "bytes": 5150
+    },
+    {
+      "path": "/private/tmp/late-js-profile-20261004-v2/dry-plan.log",
+      "sha256": "cf9b62dee69abd896751cf821775426b5693d463199f4a041dd6d87c4ea54784",
+      "bytes": 10416
+    },
+    {
+      "path": "/private/tmp/late-js-profile-20261004-v2/result/dry-child-console.log",
+      "sha256": "ae923431a063fe400a1cee73838ce4d360b8662a768dc9d1faf21edb6ca5a362",
+      "bytes": 5266
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+--- a/src/game/surfZoneWorker.ts
++++ b/src/game/surfZoneWorker.ts
+@@ -1,4 +1,6 @@
+ /// <reference lib="webworker" />
++import { armAerationArgumentQa, cancelAerationArgumentQa, type AerationArgumentQaReport } from '../wave/AerationField';
++import type { SurfZoneRunner } from '../wave/SurfZoneRunner';
+ import { GpuBoussinesq } from '../wave/gpu/GpuBoussinesq';
+ import { SurfZoneWorkerCore, type SurfZoneRequest } from './SurfZoneWorkerCore';
+ 
+@@ -6,6 +8,72 @@
+ const scope = self as unknown as DedicatedWorkerGlobalScope;
+ // Stage 2 water steps on the GPU where WebGPU allows (plan P6), else on the CPU.
+ const core = new SurfZoneWorkerCore((reply, transfer) => scope.postMessage(reply, transfer), (solver) => GpuBoussinesq.create(solver));
++// QA scratch only: no ordinary request/reply or transfer-buffer change.
++const qaTag = '__breaklineAerationArguments20261004';
++const qaCore = core as unknown as { runner?: SurfZoneRunner; stepping?: Promise<void> };
++const qaExp = Math.exp;
++let qaStarts = 0;
++let qaAdvances = 0;
++let qaStart: unknown;
++let qaRun = '';
++let qaArmed = false;
++let qaUsed = false;
++let qaExpectedAdvance = 0;
++let qaResult: AerationArgumentQaReport | undefined;
++let qaFault = '';
++let qaArrays: unknown[] = [];
++scope.addEventListener('message', (event: MessageEvent) => {
++  const request = event.data;
++  if (!request?.[qaTag]) {
++    if (request?.type === 'start') {
++      qaStarts += 1;
++      qaStart = { config: { ...request.config }, rider: request.options?.rider,
++        barrelCaseCount: request.options?.barrelCases?.length ?? 0,
++        renderSpacingHasOwn: Object.prototype.hasOwnProperty.call(request.options ?? {}, 'renderSpacing'),
++        renderSpacingValueIsUndefined: request.options?.renderSpacing === undefined };
++    }
++    if (request?.type === 'advance') {
++      qaAdvances += 1;
++      if (qaArmed && (request.steps !== 1 || qaAdvances !== qaExpectedAdvance)) {
++        qaFault = 'Armed request serial/one-step mismatch';
++        if (qaCore.runner) cancelAerationArgumentQa(qaCore.runner.simulation.aeration);
++        qaArmed = false;
++      }
++    }
++    return;
++  }
++  event.stopImmediatePropagation();
++  try {
++    const runner = qaCore.runner;
++    if (!runner || qaCore.stepping) throw new Error('QA requires ready and settled ordinary runner');
++    const field = runner.simulation.aeration;
++    let value: unknown;
++    if (request.command === 'arm') {
++      if (qaUsed || qaArmed || qaStarts !== 1 || typeof request.runId !== 'string' || !request.runId)
++        throw new Error('QA arm is single-use and needs exactly one start');
++      if (Math.exp !== qaExp) throw new Error('Math.exp intrinsic changed');
++      qaRun = request.runId; qaExpectedAdvance = qaAdvances + 1; qaArmed = true; qaUsed = true;
++      qaArrays = [field.air, field.depth, field.turbulence];
++      armAerationArgumentQa(field, { runId: qaRun, fieldId: qaRun + ':field:1', armId: String(request.id),
++        startRequestSerial: qaStarts, advanceRequestSerial: qaExpectedAdvance, requestSteps: 1 }, (report) => {
++        qaResult = report; qaArmed = false; // inert sink, no scan/message/field mutation
++      });
++      value = { runId: qaRun, startRequestSerial: qaStarts, advanceRequestSerial: qaExpectedAdvance,
++        fieldId: qaRun + ':field:1', start: qaStart, before: runner.status() };
++    } else if (request.command === 'collect') {
++      if (request.runId !== qaRun || !qaResult || qaArmed || qaFault || qaAdvances !== qaExpectedAdvance)
++        throw new Error(qaFault || 'QA result/serial/run not complete');
++      if (Math.exp !== qaExp) throw new Error('Math.exp intrinsic changed');
++      value = { report: qaResult, after: runner.status(), start: qaStart,
++        publicArrayIdentitiesMatch: qaArrays[0] === field.air && qaArrays[1] === field.depth && qaArrays[2] === field.turbulence };
++    } else if (request.command === 'cancel') {
++      cancelAerationArgumentQa(field); qaArmed = false; value = { cancelled: true };
++    } else throw new Error('Unknown QA control');
++    scope.postMessage({ [qaTag]: true, id: request.id, value });
++  } catch (cause) {
++    scope.postMessage({ [qaTag]: true, id: request.id, error: String(cause) });
++  }
++});
+ scope.onmessage = (event: MessageEvent<SurfZoneRequest>) => {
+   const pending = core.handle(event.data);
+   // A failure inside an async step reaches the page's onerror like a synchronous one.

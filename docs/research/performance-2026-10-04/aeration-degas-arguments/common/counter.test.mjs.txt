@@ -1,0 +1,48 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {readFileSync} from 'node:fs';
+import ts from './scratch/node_modules/typescript/lib/typescript.js';
+const load = file => {
+ const source=readFileSync(new URL(file,import.meta.url),'utf8');
+ const js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;
+ const exports={};new Function('exports','require',js)(exports,id=>{assert.equal(id,'./dispersion');return{GRAVITY:9.81};});return exports;
+};
+const original=load('./AerationField.original.ts'),scratch=load('./scratch/src/wave/AerationField.ts');
+const ids={runId:'toy',fieldId:'toy:field:1',armId:'1',startRequestSerial:1,advanceRequestSerial:1,requestSteps:1};
+function pair(){
+ const solver=()=>({nx:4,nz:3,dx:1,dz:Float64Array.of(1,1,1),h:new Float64Array(12).fill(1),qx:new Float64Array(12),qz:new Float64Array(12),xCenters:Float64Array.of(.5,1.5,2.5,3.5),zCenters:Float64Array.of(.5,1.5,2.5),time:3});
+ const a=solver(),b=solver();return{a,b,old:new original.AerationField(a,{period:18}),now:new scratch.AerationField(b,{period:18})};
+}
+const fields=['air','depth','turbulence','nextAir','nextDepth','nextTurbulence','stirred'];
+const bytes=array=>Buffer.from(array.buffer,array.byteOffset,array.byteLength);
+function exact(a,b){for(const key of fields)assert.deepEqual(bytes(a[key]),bytes(b[key]),key);}
+function captureExp(fn){const raw=Math.exp,args=[];Math.exp=x=>{args.push(x);return raw(x);};try{fn();}finally{Math.exp=raw;}return args;}
+function compare(p,{stencil,finishOnly=false}={}){
+ const refs=[p.now.air,p.now.depth,p.now.turbulence];let result;
+ scratch.armAerationArgumentQa(p.now,ids,r=>{result=r;});
+ if(finishOnly){p.old.advect=()=>{};p.now.advect=()=>{};}
+ const before=captureExp(()=>p.old.update(1/60,stencil)),after=captureExp(()=>p.now.update(1/60,stencil));
+ assert.equal(before.length,after.length);before.forEach((v,i)=>assert.ok(Object.is(v,after[i]),'Math.exp argument order '+i));
+ exact(p.old,p.now);refs.forEach((r,i)=>assert.equal(r,[p.now.air,p.now.depth,p.now.turbulence][i]));
+ assert.equal(result.counts.eligible,after.length-1); // one original global fade precedes per-cell calls
+ assert.equal(result.counts.eligible,result.counts.first+result.counts.repeats+result.counts.misses);
+ return result;
+}
+test('uniform actual fallback advection preserves every F64 byte/call and reports single-entry repeats',()=>{
+ const p=pair();for(const f of [p.old,p.now]){f.air.fill(.03);f.depth.fill(.4);f.turbulence.fill(.2);}const r=compare(p);assert.deepEqual(r.counts,{eligible:12,first:1,repeats:11,misses:0,nonFinite:0,nan:0});
+});
+test('dry, source/stir and boundary currents remain exact through normal advection',()=>{
+ const p=pair();for(const [s,f]of[[p.a,p.old],[p.b,p.now]]){s.h[0]=0;s.qx[3]=.7;s.qz[9]=-.3;for(let i=0;i<12;i++){f.air[i]=i%3===0?0:.01*(i+1);f.depth[i]=.03+i*.01;f.turbulence[i]=.01*(12-i);}f.addBore(5,.5,.3,1/60);f.stir(5,.6,1/60);}compare(p);
+});
+test('already-recorded shared stencil retains exact interpolation/finish',()=>{
+ const p=pair();for(const f of[p.old,p.now]){f.air.fill(.02);f.depth.fill(.3);f.turbulence.fill(.1);}const stencil={indices:Uint32Array.of(0,1,2,2,4,5,6,6,4,5,6,6),values:Float64Array.of(0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1,0,1,0,1,1,1),take(){return this;}};compare(p,{stencil});
+});
+test('finish-only edge arguments preserve signed zeros/NaN and skip order without filtering',()=>{
+ const p=pair();for(const[s,f]of[[p.a,p.old],[p.b,p.now]]){f.air.fill(.01);f.depth.set([Infinity,Infinity,NaN,NaN,.01,.049,.05,.050001,.2,.2,.2,.2]);s.h[0]=Infinity;s.h[1]=Infinity;s.h[8]=0;f.air[9]=0;f.air[10]=-0;f.air[11]=-.01;}const r=compare(p,{finishOnly:true});assert.equal(r.counts.nonFinite,2);assert.equal(r.counts.nan,2);assert.equal(r.counts.repeats,3);assert.equal(r.counts.eligible,9);
+});
+test('one instance/positive update only; nonpositive dt and other field do not consume arm',()=>{
+ const p=pair();let calls=0;scratch.armAerationArgumentQa(p.now,ids,()=>calls++);p.now.update(0);new scratch.AerationField(p.b).update(1/60);assert.equal(calls,0);p.now.update(1/60);p.now.update(1/60);assert.equal(calls,1);
+});
+test('double arm rejects; explicit cancel prevents report',()=>{
+ const p=pair();let calls=0;scratch.armAerationArgumentQa(p.now,ids,()=>calls++);assert.throws(()=>scratch.armAerationArgumentQa(p.now,ids,()=>{}));scratch.cancelAerationArgumentQa(p.now);p.now.update(1/60);assert.equal(calls,0);
+});

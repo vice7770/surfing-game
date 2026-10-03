@@ -1,0 +1,686 @@
+{
+  "schemaVersion": 1,
+  "kind": "Invalid late JS CPU profiling attempts; zero profiles; no CPU cost or passive FPS acceptance",
+  "counts": {
+    "records": 32,
+    "originalAliases": 31,
+    "storedPayloadRecords": 31,
+    "generatedRecords": 1,
+    "gzipRecords": 2,
+    "omittedPNGs": 2,
+    "storedRecordBytes": 267042
+  },
+  "files": [
+    {
+      "storedPath": "v1/prepared-README.md",
+      "encoding": "identity",
+      "storedBytes": 3991,
+      "storedSha256": "f396a9f6cdfb1a3d07c126cab8bb323ffc3d54d49b123c351a09b443c1a69d7a",
+      "decompressedBytes": 3991,
+      "decompressedSha256": "f396a9f6cdfb1a3d07c126cab8bb323ffc3d54d49b123c351a09b443c1a69d7a",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/README.md",
+          "bytes": 3991,
+          "sha256": "f396a9f6cdfb1a3d07c126cab8bb323ffc3d54d49b123c351a09b443c1a69d7a"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/attribution.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 3175,
+      "storedSha256": "b692a5a888dd57e26f90bbd2a49ced291e3c01983b33e0f9e335ccad7583de52",
+      "decompressedBytes": 3175,
+      "decompressedSha256": "b692a5a888dd57e26f90bbd2a49ced291e3c01983b33e0f9e335ccad7583de52",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/attribution.mjs",
+          "bytes": 3175,
+          "sha256": "b692a5a888dd57e26f90bbd2a49ced291e3c01983b33e0f9e335ccad7583de52"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/derived-survey.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 43265,
+      "storedSha256": "d622122aa1e598204ef246d1afaaac5a981ce5d229c79bd13429cc5e72b960d5",
+      "decompressedBytes": 43265,
+      "decompressedSha256": "d622122aa1e598204ef246d1afaaac5a981ce5d229c79bd13429cc5e72b960d5",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/derived-survey.mjs",
+          "bytes": 43265,
+          "sha256": "d622122aa1e598204ef246d1afaaac5a981ce5d229c79bd13429cc5e72b960d5"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/driver.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 9667,
+      "storedSha256": "fe3eca8ae443b1098593159e6bf6b96db90c934fd3a83590f0cb7be663c3901a",
+      "decompressedBytes": 9667,
+      "decompressedSha256": "fe3eca8ae443b1098593159e6bf6b96db90c934fd3a83590f0cb7be663c3901a",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/driver.mjs",
+          "bytes": 9667,
+          "sha256": "fe3eca8ae443b1098593159e6bf6b96db90c934fd3a83590f0cb7be663c3901a"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/dry-plan.log",
+      "encoding": "identity",
+      "storedBytes": 10340,
+      "storedSha256": "fc0196e92521c89f9da66fff0acfb31779fe5b365839e0ccbe09dfec67dc83dc",
+      "decompressedBytes": 10340,
+      "decompressedSha256": "fc0196e92521c89f9da66fff0acfb31779fe5b365839e0ccbe09dfec67dc83dc",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/dry-plan.log",
+          "bytes": 10340,
+          "sha256": "fc0196e92521c89f9da66fff0acfb31779fe5b365839e0ccbe09dfec67dc83dc"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/interpretation.md",
+      "encoding": "identity",
+      "storedBytes": 6000,
+      "storedSha256": "e668f01351eb19272861f4c4ac3cab7af4517f15fff26f2eb1635d8b63649f57",
+      "decompressedBytes": 6000,
+      "decompressedSha256": "e668f01351eb19272861f4c4ac3cab7af4517f15fff26f2eb1635d8b63649f57",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/interpretation.md",
+          "bytes": 6000,
+          "sha256": "e668f01351eb19272861f4c4ac3cab7af4517f15fff26f2eb1635d8b63649f57"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/preparation-postrun.json",
+      "encoding": "identity",
+      "storedBytes": 5078,
+      "storedSha256": "61a30b3e384a60955c58bd313e042e76e4e314d92e2c5e5f51e8b19e67da66be",
+      "decompressedBytes": 5078,
+      "decompressedSha256": "61a30b3e384a60955c58bd313e042e76e4e314d92e2c5e5f51e8b19e67da66be",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/preparation.json",
+          "bytes": 5078,
+          "sha256": "61a30b3e384a60955c58bd313e042e76e4e314d92e2c5e5f51e8b19e67da66be"
+        }
+      ],
+      "note": "Actual live-written planOnly:false bytes; distinct archive name. Pre-run standalone preparation JSON is not reconstructed."
+    },
+    {
+      "storedPath": "v1/profile.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 7523,
+      "storedSha256": "332a2578a7469995ed36ec7fd7748e3373f1c4176ee1fde9cbdad4eaeaa640e9",
+      "decompressedBytes": 7523,
+      "decompressedSha256": "332a2578a7469995ed36ec7fd7748e3373f1c4176ee1fde9cbdad4eaeaa640e9",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/profile.mjs",
+          "bytes": 7523,
+          "sha256": "332a2578a7469995ed36ec7fd7748e3373f1c4176ee1fde9cbdad4eaeaa640e9"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/readiness.json",
+      "encoding": "identity",
+      "storedBytes": 1801,
+      "storedSha256": "8ee31e873165e5e4483b0744a0dad38b8bfb5fd5a431f01e09426339f25dcec0",
+      "decompressedBytes": 1801,
+      "decompressedSha256": "8ee31e873165e5e4483b0744a0dad38b8bfb5fd5a431f01e09426339f25dcec0",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/readiness.json",
+          "bytes": 1801,
+          "sha256": "8ee31e873165e5e4483b0744a0dad38b8bfb5fd5a431f01e09426339f25dcec0"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/result/console.log",
+      "encoding": "identity",
+      "storedBytes": 2072,
+      "storedSha256": "19921cda40db47a2b8bb5f54333f5b5c94b356f31d70d3a4eddd1785152a117b",
+      "decompressedBytes": 2072,
+      "decompressedSha256": "19921cda40db47a2b8bb5f54333f5b5c94b356f31d70d3a4eddd1785152a117b",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/result/console.log",
+          "bytes": 2072,
+          "sha256": "19921cda40db47a2b8bb5f54333f5b5c94b356f31d70d3a4eddd1785152a117b"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/result/cpu/report.json",
+      "encoding": "identity",
+      "storedBytes": 12713,
+      "storedSha256": "c879f0725876661474630d933a4c3fbb564298e0ac971c869fb10fb08755fa8d",
+      "decompressedBytes": 12713,
+      "decompressedSha256": "c879f0725876661474630d933a4c3fbb564298e0ac971c869fb10fb08755fa8d",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/result/cpu/report.json",
+          "bytes": 12713,
+          "sha256": "c879f0725876661474630d933a4c3fbb564298e0ac971c869fb10fb08755fa8d"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/result/dry-child-console.log",
+      "encoding": "identity",
+      "storedBytes": 5263,
+      "storedSha256": "2968121708abb2fb6650ed88dc159e221859a6f20f99bbce43005f7a162b0d2e",
+      "decompressedBytes": 5263,
+      "decompressedSha256": "2968121708abb2fb6650ed88dc159e221859a6f20f99bbce43005f7a162b0d2e",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/result/dry-child-console.log",
+          "bytes": 5263,
+          "sha256": "2968121708abb2fb6650ed88dc159e221859a6f20f99bbce43005f7a162b0d2e"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/result/fps-diagnostic.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 10562,
+      "storedSha256": "6a91bf05db86f5bc7a09a5a4f1c35e9f711d21f6f71365a082e64521df380b10",
+      "decompressedBytes": 91344,
+      "decompressedSha256": "3052daa2c9c30e12e9bc604309d0f0f7d1798c5ebdaab9a009f3f81b89050112",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/result/fps-diagnostic.json",
+          "bytes": 91344,
+          "sha256": "3052daa2c9c30e12e9bc604309d0f0f7d1798c5ebdaab9a009f3f81b89050112"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/result/workflow.json",
+      "encoding": "identity",
+      "storedBytes": 417,
+      "storedSha256": "1f5864c24a2393cea6ce9411d9f463ba8239f3de2c0674ab6f2b425762477c6d",
+      "decompressedBytes": 417,
+      "decompressedSha256": "1f5864c24a2393cea6ce9411d9f463ba8239f3de2c0674ab6f2b425762477c6d",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/result/workflow.json",
+          "bytes": 417,
+          "sha256": "1f5864c24a2393cea6ce9411d9f463ba8239f3de2c0674ab6f2b425762477c6d"
+        }
+      ]
+    },
+    {
+      "storedPath": "v1/session-cdp.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 2374,
+      "storedSha256": "a563eaea0fe933c8757c48cb19710311c0d5820375451178dbce90f03a531c24",
+      "decompressedBytes": 2374,
+      "decompressedSha256": "a563eaea0fe933c8757c48cb19710311c0d5820375451178dbce90f03a531c24",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004/session-cdp.mjs",
+          "bytes": 2374,
+          "sha256": "a563eaea0fe933c8757c48cb19710311c0d5820375451178dbce90f03a531c24"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/prepared-README.md",
+      "encoding": "identity",
+      "storedBytes": 4888,
+      "storedSha256": "3430a3f2493eecbc00ac635fcc71f976ddd8f0b14fed79aad5c73dd6eebeef00",
+      "decompressedBytes": 4888,
+      "decompressedSha256": "3430a3f2493eecbc00ac635fcc71f976ddd8f0b14fed79aad5c73dd6eebeef00",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/README.md",
+          "bytes": 4888,
+          "sha256": "3430a3f2493eecbc00ac635fcc71f976ddd8f0b14fed79aad5c73dd6eebeef00"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/attribution.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 3175,
+      "storedSha256": "b692a5a888dd57e26f90bbd2a49ced291e3c01983b33e0f9e335ccad7583de52",
+      "decompressedBytes": 3175,
+      "decompressedSha256": "b692a5a888dd57e26f90bbd2a49ced291e3c01983b33e0f9e335ccad7583de52",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/attribution.mjs",
+          "bytes": 3175,
+          "sha256": "b692a5a888dd57e26f90bbd2a49ced291e3c01983b33e0f9e335ccad7583de52"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/derived-survey.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 43271,
+      "storedSha256": "6306124f17599d65e824fcb711ac215a00a61ed96250409abd360287e3244df0",
+      "decompressedBytes": 43271,
+      "decompressedSha256": "6306124f17599d65e824fcb711ac215a00a61ed96250409abd360287e3244df0",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/derived-survey.mjs",
+          "bytes": 43271,
+          "sha256": "6306124f17599d65e824fcb711ac215a00a61ed96250409abd360287e3244df0"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/driver.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 9780,
+      "storedSha256": "977816334ec67e1ec24caefdba3cbf4313b04d286e25ed1e3fcfdb605dbc9960",
+      "decompressedBytes": 9780,
+      "decompressedSha256": "977816334ec67e1ec24caefdba3cbf4313b04d286e25ed1e3fcfdb605dbc9960",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/driver.mjs",
+          "bytes": 9780,
+          "sha256": "977816334ec67e1ec24caefdba3cbf4313b04d286e25ed1e3fcfdb605dbc9960"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/dry-plan.log",
+      "encoding": "identity",
+      "storedBytes": 10416,
+      "storedSha256": "cf9b62dee69abd896751cf821775426b5693d463199f4a041dd6d87c4ea54784",
+      "decompressedBytes": 10416,
+      "decompressedSha256": "cf9b62dee69abd896751cf821775426b5693d463199f4a041dd6d87c4ea54784",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/dry-plan.log",
+          "bytes": 10416,
+          "sha256": "cf9b62dee69abd896751cf821775426b5693d463199f4a041dd6d87c4ea54784"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/interpretation.md",
+      "encoding": "identity",
+      "storedBytes": 9441,
+      "storedSha256": "9015c77c926df097325113448dc1b704f8fcc812635b708a69973e4c31d7812c",
+      "decompressedBytes": 9441,
+      "decompressedSha256": "9015c77c926df097325113448dc1b704f8fcc812635b708a69973e4c31d7812c",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/interpretation.md",
+          "bytes": 9441,
+          "sha256": "9015c77c926df097325113448dc1b704f8fcc812635b708a69973e4c31d7812c"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/preparation.json",
+      "encoding": "identity",
+      "storedBytes": 5150,
+      "storedSha256": "0f1168363142a76ee6e96dfbe65fd4986917130ddc635f0529479ec4deb6553c",
+      "decompressedBytes": 5150,
+      "decompressedSha256": "0f1168363142a76ee6e96dfbe65fd4986917130ddc635f0529479ec4deb6553c",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/preparation.json",
+          "bytes": 5150,
+          "sha256": "0f1168363142a76ee6e96dfbe65fd4986917130ddc635f0529479ec4deb6553c"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/profile.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 8701,
+      "storedSha256": "d7576556dc2036232c1453c10e25e8b7f5135087af0b3cd77e09651485d333ba",
+      "decompressedBytes": 8701,
+      "decompressedSha256": "d7576556dc2036232c1453c10e25e8b7f5135087af0b3cd77e09651485d333ba",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/profile.mjs",
+          "bytes": 8701,
+          "sha256": "d7576556dc2036232c1453c10e25e8b7f5135087af0b3cd77e09651485d333ba"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/readiness.json",
+      "encoding": "identity",
+      "storedBytes": 1835,
+      "storedSha256": "65c0575d2420886ebf01e775fcbe5807a5dae10893ef757bb22a5d8bdb7cec46",
+      "decompressedBytes": 1835,
+      "decompressedSha256": "65c0575d2420886ebf01e775fcbe5807a5dae10893ef757bb22a5d8bdb7cec46",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/readiness.json",
+          "bytes": 1835,
+          "sha256": "65c0575d2420886ebf01e775fcbe5807a5dae10893ef757bb22a5d8bdb7cec46"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/result/console.log",
+      "encoding": "identity",
+      "storedBytes": 2093,
+      "storedSha256": "967a8b13591832d94859680059069caac71b9eee6cf43b535788d549c8dfa5ba",
+      "decompressedBytes": 2093,
+      "decompressedSha256": "967a8b13591832d94859680059069caac71b9eee6cf43b535788d549c8dfa5ba",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/result/console.log",
+          "bytes": 2093,
+          "sha256": "967a8b13591832d94859680059069caac71b9eee6cf43b535788d549c8dfa5ba"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/result/cpu/report.json",
+      "encoding": "identity",
+      "storedBytes": 14532,
+      "storedSha256": "eeb60bbad168a3eec2811fa01dc43c2697226e49d43166e95f0c940ce64b6a71",
+      "decompressedBytes": 14532,
+      "decompressedSha256": "eeb60bbad168a3eec2811fa01dc43c2697226e49d43166e95f0c940ce64b6a71",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/result/cpu/report.json",
+          "bytes": 14532,
+          "sha256": "eeb60bbad168a3eec2811fa01dc43c2697226e49d43166e95f0c940ce64b6a71"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/result/dry-child-console.log",
+      "encoding": "identity",
+      "storedBytes": 5266,
+      "storedSha256": "ae923431a063fe400a1cee73838ce4d360b8662a768dc9d1faf21edb6ca5a362",
+      "decompressedBytes": 5266,
+      "decompressedSha256": "ae923431a063fe400a1cee73838ce4d360b8662a768dc9d1faf21edb6ca5a362",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/result/dry-child-console.log",
+          "bytes": 5266,
+          "sha256": "ae923431a063fe400a1cee73838ce4d360b8662a768dc9d1faf21edb6ca5a362"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/result/fps-diagnostic.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 11120,
+      "storedSha256": "459b6145323070e95d14470622c87cb45dcf573210b4eb336f76107626d19c74",
+      "decompressedBytes": 93016,
+      "decompressedSha256": "0f52d8bd42e7295cdf56ff7641f38b4fc7845b150461493dbcf9af53977d81e0",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/result/fps-diagnostic.json",
+          "bytes": 93016,
+          "sha256": "0f52d8bd42e7295cdf56ff7641f38b4fc7845b150461493dbcf9af53977d81e0"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/result/workflow.json",
+      "encoding": "identity",
+      "storedBytes": 431,
+      "storedSha256": "b8993303330f768570b992cec0f2e4f154c33ee594d1c24cadab31c974c52694",
+      "decompressedBytes": 431,
+      "decompressedSha256": "b8993303330f768570b992cec0f2e4f154c33ee594d1c24cadab31c974c52694",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/result/workflow.json",
+          "bytes": 431,
+          "sha256": "b8993303330f768570b992cec0f2e4f154c33ee594d1c24cadab31c974c52694"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/runtime-preparation.json",
+      "encoding": "identity",
+      "storedBytes": 5151,
+      "storedSha256": "67135c2a4d0bc56fc96ea80fa2557e508ec6c64535190512fdde863c1329b373",
+      "decompressedBytes": 5151,
+      "decompressedSha256": "67135c2a4d0bc56fc96ea80fa2557e508ec6c64535190512fdde863c1329b373",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/runtime-preparation.json",
+          "bytes": 5151,
+          "sha256": "67135c2a4d0bc56fc96ea80fa2557e508ec6c64535190512fdde863c1329b373"
+        }
+      ]
+    },
+    {
+      "storedPath": "v2/session-cdp.mjs.txt",
+      "encoding": "identity",
+      "storedBytes": 2374,
+      "storedSha256": "a563eaea0fe933c8757c48cb19710311c0d5820375451178dbce90f03a531c24",
+      "decompressedBytes": 2374,
+      "decompressedSha256": "a563eaea0fe933c8757c48cb19710311c0d5820375451178dbce90f03a531c24",
+      "originals": [
+        {
+          "path": "/private/tmp/late-js-profile-20261004-v2/session-cdp.mjs",
+          "bytes": 2374,
+          "sha256": "a563eaea0fe933c8757c48cb19710311c0d5820375451178dbce90f03a531c24"
+        }
+      ]
+    },
+    {
+      "storedPath": "README.md",
+      "encoding": "identity",
+      "storedBytes": 5177,
+      "storedSha256": "4281eca323389ef8d10d7060d66f9a46f79e3fcb4e4e8e3006bd969590cccf16",
+      "decompressedBytes": 5177,
+      "decompressedSha256": "4281eca323389ef8d10d7060d66f9a46f79e3fcb4e4e8e3006bd969590cccf16",
+      "originals": [],
+      "note": "Generated archive summary; no original file alias."
+    }
+  ],
+  "readinessChecks": [
+    {
+      "version": "v1",
+      "records": [
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004/driver.mjs",
+          "expectedBytes": 9667,
+          "expectedSha256": "fe3eca8ae443b1098593159e6bf6b96db90c934fd3a83590f0cb7be663c3901a",
+          "actualArchivedBytes": 9667,
+          "actualArchivedSha256": "fe3eca8ae443b1098593159e6bf6b96db90c934fd3a83590f0cb7be663c3901a",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004/session-cdp.mjs",
+          "expectedBytes": 2374,
+          "expectedSha256": "a563eaea0fe933c8757c48cb19710311c0d5820375451178dbce90f03a531c24",
+          "actualArchivedBytes": 2374,
+          "actualArchivedSha256": "a563eaea0fe933c8757c48cb19710311c0d5820375451178dbce90f03a531c24",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004/profile.mjs",
+          "expectedBytes": 7523,
+          "expectedSha256": "332a2578a7469995ed36ec7fd7748e3373f1c4176ee1fde9cbdad4eaeaa640e9",
+          "actualArchivedBytes": 7523,
+          "actualArchivedSha256": "332a2578a7469995ed36ec7fd7748e3373f1c4176ee1fde9cbdad4eaeaa640e9",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004/attribution.mjs",
+          "expectedBytes": 3175,
+          "expectedSha256": "b692a5a888dd57e26f90bbd2a49ced291e3c01983b33e0f9e335ccad7583de52",
+          "actualArchivedBytes": 3175,
+          "actualArchivedSha256": "b692a5a888dd57e26f90bbd2a49ced291e3c01983b33e0f9e335ccad7583de52",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004/README.md",
+          "expectedBytes": 3991,
+          "expectedSha256": "f396a9f6cdfb1a3d07c126cab8bb323ffc3d54d49b123c351a09b443c1a69d7a",
+          "actualArchivedBytes": 3991,
+          "actualArchivedSha256": "f396a9f6cdfb1a3d07c126cab8bb323ffc3d54d49b123c351a09b443c1a69d7a",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004/derived-survey.mjs",
+          "expectedBytes": 43265,
+          "expectedSha256": "d622122aa1e598204ef246d1afaaac5a981ce5d229c79bd13429cc5e72b960d5",
+          "actualArchivedBytes": 43265,
+          "actualArchivedSha256": "d622122aa1e598204ef246d1afaaac5a981ce5d229c79bd13429cc5e72b960d5",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004/preparation.json",
+          "expectedBytes": 5077,
+          "expectedSha256": "5b2e7cce7fd1f1c8f3765bf5fff4c394c1bc93c7540c223901017ea1f15600fe",
+          "actualArchivedBytes": 5078,
+          "actualArchivedSha256": "61a30b3e384a60955c58bd313e042e76e4e314d92e2c5e5f51e8b19e67da66be",
+          "matchesReadiness": false
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004/dry-plan.log",
+          "expectedBytes": 10340,
+          "expectedSha256": "fc0196e92521c89f9da66fff0acfb31779fe5b365839e0ccbe09dfec67dc83dc",
+          "actualArchivedBytes": 10340,
+          "actualArchivedSha256": "fc0196e92521c89f9da66fff0acfb31779fe5b365839e0ccbe09dfec67dc83dc",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004/result/dry-child-console.log",
+          "expectedBytes": 5263,
+          "expectedSha256": "2968121708abb2fb6650ed88dc159e221859a6f20f99bbce43005f7a162b0d2e",
+          "actualArchivedBytes": 5263,
+          "actualArchivedSha256": "2968121708abb2fb6650ed88dc159e221859a6f20f99bbce43005f7a162b0d2e",
+          "matchesReadiness": true
+        }
+      ],
+      "matchingRecords": 8,
+      "recordCount": 9,
+      "scope": "Pre-launch record, not a promise that preparation metadata remains unchanged after running."
+    },
+    {
+      "version": "v2",
+      "records": [
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004-v2/driver.mjs",
+          "expectedBytes": 9780,
+          "expectedSha256": "977816334ec67e1ec24caefdba3cbf4313b04d286e25ed1e3fcfdb605dbc9960",
+          "actualArchivedBytes": 9780,
+          "actualArchivedSha256": "977816334ec67e1ec24caefdba3cbf4313b04d286e25ed1e3fcfdb605dbc9960",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004-v2/session-cdp.mjs",
+          "expectedBytes": 2374,
+          "expectedSha256": "a563eaea0fe933c8757c48cb19710311c0d5820375451178dbce90f03a531c24",
+          "actualArchivedBytes": 2374,
+          "actualArchivedSha256": "a563eaea0fe933c8757c48cb19710311c0d5820375451178dbce90f03a531c24",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004-v2/profile.mjs",
+          "expectedBytes": 8701,
+          "expectedSha256": "d7576556dc2036232c1453c10e25e8b7f5135087af0b3cd77e09651485d333ba",
+          "actualArchivedBytes": 8701,
+          "actualArchivedSha256": "d7576556dc2036232c1453c10e25e8b7f5135087af0b3cd77e09651485d333ba",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004-v2/attribution.mjs",
+          "expectedBytes": 3175,
+          "expectedSha256": "b692a5a888dd57e26f90bbd2a49ced291e3c01983b33e0f9e335ccad7583de52",
+          "actualArchivedBytes": 3175,
+          "actualArchivedSha256": "b692a5a888dd57e26f90bbd2a49ced291e3c01983b33e0f9e335ccad7583de52",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004-v2/README.md",
+          "expectedBytes": 4888,
+          "expectedSha256": "3430a3f2493eecbc00ac635fcc71f976ddd8f0b14fed79aad5c73dd6eebeef00",
+          "actualArchivedBytes": 4888,
+          "actualArchivedSha256": "3430a3f2493eecbc00ac635fcc71f976ddd8f0b14fed79aad5c73dd6eebeef00",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004-v2/derived-survey.mjs",
+          "expectedBytes": 43271,
+          "expectedSha256": "6306124f17599d65e824fcb711ac215a00a61ed96250409abd360287e3244df0",
+          "actualArchivedBytes": 43271,
+          "actualArchivedSha256": "6306124f17599d65e824fcb711ac215a00a61ed96250409abd360287e3244df0",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004-v2/preparation.json",
+          "expectedBytes": 5150,
+          "expectedSha256": "0f1168363142a76ee6e96dfbe65fd4986917130ddc635f0529479ec4deb6553c",
+          "actualArchivedBytes": 5150,
+          "actualArchivedSha256": "0f1168363142a76ee6e96dfbe65fd4986917130ddc635f0529479ec4deb6553c",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004-v2/dry-plan.log",
+          "expectedBytes": 10416,
+          "expectedSha256": "cf9b62dee69abd896751cf821775426b5693d463199f4a041dd6d87c4ea54784",
+          "actualArchivedBytes": 10416,
+          "actualArchivedSha256": "cf9b62dee69abd896751cf821775426b5693d463199f4a041dd6d87c4ea54784",
+          "matchesReadiness": true
+        },
+        {
+          "originalPath": "/private/tmp/late-js-profile-20261004-v2/result/dry-child-console.log",
+          "expectedBytes": 5266,
+          "expectedSha256": "ae923431a063fe400a1cee73838ce4d360b8662a768dc9d1faf21edb6ca5a362",
+          "actualArchivedBytes": 5266,
+          "actualArchivedSha256": "ae923431a063fe400a1cee73838ce4d360b8662a768dc9d1faf21edb6ca5a362",
+          "matchesReadiness": true
+        }
+      ],
+      "matchingRecords": 9,
+      "recordCount": 9,
+      "scope": "Pre-launch record, not a promise that preparation metadata remains unchanged after running."
+    }
+  ],
+  "omissions": [
+    {
+      "originalPath": "/private/tmp/late-js-profile-20261004/result/fps-diagnostic-High_baseline_-Ride_Padang.png",
+      "originalBytes": 4221588,
+      "originalSha256": "7d0f7fcbfc00c5444ca8515716060b47f598d9642f629893a8656d3dce582f75",
+      "reason": "Failed diagnostic screenshot omitted; no visual or quality acceptance was performed."
+    },
+    {
+      "originalPath": "/private/tmp/late-js-profile-20261004-v2/result/fps-diagnostic-High_baseline_-Ride_Padang.png",
+      "originalBytes": 4239870,
+      "originalSha256": "f0a4672b18adee2e07b2c0cc7feafa4e2fbec069a6aca57f9b736dc99d829ba3",
+      "reason": "Failed diagnostic screenshot omitted; no visual or quality acceptance was performed."
+    }
+  ],
+  "externalReferences": [
+    {
+      "originalPath": "/private/tmp/paced-crossing-gameplay-20261004/manifest.json",
+      "durableRelativePath": "../paced-throw-crossing/gameplay-build-manifest.json",
+      "bytes": 2433,
+      "sha256": "c3d6faf1490a7ac2882b14be2af8bc3b95e5c06ec3966face712e092ed83025b",
+      "byteIdentical": true
+    }
+  ],
+  "metadataTransition": "V1 actual post-run preparation.json is archived as preparation-postrun.json. Its earlier standalone preparation JSON is not reconstructed. V2 has separate dry and runtime preparation metadata.",
+  "compression": {
+    "method": "gzip",
+    "mtime": 0,
+    "filename": "",
+    "compresslevel": 9
+  },
+  "archiveOnly": true,
+  "productionEdited": false,
+  "hardwareRun": false
+}

@@ -1,0 +1,50 @@
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+
+// Sample-weighted tables; inclusive columns overlap and must never be summed.
+export function attribute(profile, sourceByUrl) {
+  const nodes = new Map(profile.nodes.map(node => [node.id, node]));
+  const parents = new Map();
+  for (const node of nodes.values()) for (const child of node.children ?? []) {
+    if (parents.has(child)) throw Error('CPU profile node has multiple parents');
+    parents.set(child, node.id);
+  }
+  const self = new Map(), inclusive = new Map();
+  for (let i = 0; i < (profile.samples ?? []).length; i += 1) {
+    const id = profile.samples[i], delta = profile.timeDeltas?.[i];
+    if (!nodes.has(id) || !Number.isFinite(delta) || delta < 0) throw Error('Invalid CPU profile sample');
+    self.set(id, (self.get(id) ?? 0) + delta);
+    const seen = new Set();
+    for (let at = id; at !== undefined; at = parents.get(at)) {
+      if (seen.has(at)) throw Error('CPU profile parent cycle');
+      seen.add(at);
+      inclusive.set(at, (inclusive.get(at) ?? 0) + delta);
+    }
+  }
+  const sources = new Map();
+  for (const [url, file] of Object.entries(sourceByUrl)) {
+    const bytes = readFileSync(file.path);
+    if (createHash('sha256').update(bytes).digest('hex') !== file.sha256) throw Error('Attribution source changed');
+    sources.set(url, { ...file, lines: bytes.toString().split('\n') });
+  }
+  const rows = [...nodes.values()].map(node => {
+    const frame = node.callFrame;
+    const source = sources.get(frame.url);
+    const line = source?.lines[frame.lineNumber];
+    return { id: node.id, functionName: frame.functionName, url: frame.url,
+      lineNumber: frame.lineNumber, columnNumber: frame.columnNumber, deoptReason: node.deoptReason ?? null,
+      selfMs: (self.get(node.id) ?? 0) / 1000, inclusiveMs: (inclusive.get(node.id) ?? 0) / 1000,
+      kind: frame.functionName === '(idle)' ? 'idle' : frame.functionName === '(garbage collector)' ? 'gc'
+        : frame.functionName === '(program)' ? 'program' : source ? 'pinned-source' : 'native-or-unresolved',
+      ...(source ? { sourceSha256: source.sha256, sourcePath: source.path,
+        excerptColumnStart: Math.max(0, frame.columnNumber - 80),
+        sourceExcerpt: line?.slice(Math.max(0, frame.columnNumber - 80), frame.columnNumber + 160) ?? null } : {}) };
+  });
+  return { method: 'timeDeltas weighted to sample leaves; parent-inclusive time overlaps; positions are zero-based CDP columns',
+    durationMs: (profile.endTime - profile.startTime) / 1000, samples: profile.samples?.length ?? 0,
+    sampledMs: [...self.values()].reduce((sum, value) => sum + value, 0) / 1000,
+    selfTop: rows.filter(row => row.selfMs > 0).sort((a, b) => b.selfMs - a.selfMs).slice(0, 35),
+    inclusiveTop: rows.filter(row => row.inclusiveMs > 0).sort((a, b) => b.inclusiveMs - a.inclusiveMs).slice(0, 35),
+    namedContactAndFieldRows: rows.filter(row => /build|profileAt|pointAt|plainSurfaceAt|gatherNodes|catmull|updateContact|writeUniform|prepare|forwardRest|normals|index|measureRide/.test(row.functionName)),
+    special: rows.filter(row => row.kind !== 'pinned-source' && row.selfMs > 0) };
+}

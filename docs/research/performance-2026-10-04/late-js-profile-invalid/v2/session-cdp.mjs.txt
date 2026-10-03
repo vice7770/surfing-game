@@ -1,0 +1,54 @@
+// Browser CDP connection with flat target-session routing; no page/runtime injection.
+export class SessionCDP {
+  static async connect(url) {
+    const socket = new WebSocket(url);
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => { socket.close(); reject(Error('CDP connection deadline')); }, 5000);
+      socket.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
+      socket.addEventListener('error', () => { clearTimeout(timer); reject(Error('CDP connection failed')); }, { once: true });
+    });
+    return new SessionCDP(socket);
+  }
+
+  constructor(socket) {
+    this.socket = socket;
+    this.sequence = 0;
+    this.pending = new Map();
+    this.listeners = new Map();
+    socket.addEventListener('message', ({ data }) => {
+      const row = JSON.parse(data);
+      if (row.id !== undefined) {
+        const request = this.pending.get(row.id);
+        if (!request) return;
+        this.pending.delete(row.id);
+        clearTimeout(request.timer);
+        if ((row.sessionId ?? '') !== request.session) request.reject(Error('CDP response session mismatch'));
+        else if (row.error) request.reject(Error(`${request.method}: ${row.error.message}`));
+        else request.resolve(row.result);
+      } else {
+        for (const listener of this.listeners.get(`${row.sessionId ?? ''}:${row.method}`) ?? []) listener(row.params);
+      }
+    });
+    socket.addEventListener('close', () => {
+      for (const request of this.pending.values()) { clearTimeout(request.timer); request.reject(Error('CDP disconnected')); }
+      this.pending.clear();
+    });
+  }
+
+  send(method, params = {}, sessionId = '') {
+    const id = ++this.sequence;
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => { this.pending.delete(id); reject(Error(`${method}: CDP command deadline`)); }, 10000);
+      this.pending.set(id, { resolve, reject, timer, method, session: sessionId });
+      try { this.socket.send(JSON.stringify({ id, method, params, ...(sessionId ? { sessionId } : {}) })); }
+      catch (error) { clearTimeout(timer); this.pending.delete(id); reject(error); }
+    });
+  }
+
+  on(method, listener, sessionId = '') {
+    const key = `${sessionId}:${method}`;
+    this.listeners.set(key, [...(this.listeners.get(key) ?? []), listener]);
+  }
+
+  close() { this.socket.close(); }
+}

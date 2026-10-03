@@ -1,0 +1,111 @@
+{
+  "planOnly": true,
+  "productionEdited": false,
+  "chromeStarted": false,
+  "port": 9547,
+  "out": "/private/tmp/late-js-profile-20261004-v2/result",
+  "provenance": {
+    "url": "http://localhost:4211/?diagnostics",
+    "dir": "/private/tmp/paced-crossing-gameplay-20261004/dist",
+    "manifestPath": "/private/tmp/paced-crossing-gameplay-20261004/manifest.json",
+    "manifestSha256": "c3d6faf1490a7ac2882b14be2af8bc3b95e5c06ec3966face712e092ed83025b",
+    "workerUrl": "http://localhost:4211/assets/surfZoneWorker-0gFT5nyl.js",
+    "entrySha256": "fd2c2bd093073e04d25b191833a9b45b4465554b743cf1fd1faca7208987e8a0",
+    "workerSha256": "21b796673a700d9ecb8c46fb32c913795a89134c51adb0860e98f646f65371fa",
+    "surveySha256": "0b94271e4aa6709a16e0793bfff42a93a0876ba4628d655ddbff83a2f1252751",
+    "launcherSha256": "36f62bd75468ef3b20ba0fe613256f8a29c81b764b88551961d51194b8b40211",
+    "cdpSha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+    "baselineSha256": "dc655a3fffa336f4ee16a7b71ecaed8bc167ce07485b567af01f36dc2986e110",
+    "qualityBase": "56bf750996",
+    "sourceCheckpoint": "56bf750996cd48cdc5ef45954c479a268053c0b9",
+    "publishedClockCommit": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+    "runtimeDelta": "Four source hunks across BreakingFront.ts and SweptCrash.ts after checkpoint 56bf; exact runtime authority is frozen served bundle hashes"
+  },
+  "changes": [
+    {
+      "name": "profile-import",
+      "beforeSha256": "e6d355d6fda487a6df3a071aaac70ee507bfeae10c4317ae6923bc18bb1801e7",
+      "afterSha256": "9eebbcece379552f011de6167836d96d865f34928ab0ae31354954cb707d79fd"
+    },
+    {
+      "name": "worker-identity",
+      "beforeSha256": "05d1ee57c6aa454c8689a28c426bb57827b8c03c40d21e380266cb5cd604c9e8",
+      "afterSha256": "644255975dddb6aa8e6069e579396a4f1bf5d830fd60f7a7d6f7bbf28e56da26"
+    },
+    {
+      "name": "ride-screen-origin",
+      "beforeSha256": "417abbcb1c032fac4305c7fc3e844b5b7f221497628a9587f099c75aca9f164b",
+      "afterSha256": "acaaa816a8b12b8cef71cea3c66151b8ddce5798d096b2b1f4bb0e67431ce0c9"
+    },
+    {
+      "name": "late-schedule",
+      "beforeSha256": "fee7e49fbad9e9311839598e169afa407a0f451977f9efee347d6385675b4a4c",
+      "afterSha256": "6e2ffe14c35a007141b462b4ea8345b4e709c1e33e43af61864fd00db0726207"
+    },
+    {
+      "name": "profile-await",
+      "beforeSha256": "bbfd78f7e2b6192909b3e802dc8538e4a2708d12543e0e3ecdc575d1245d2980",
+      "afterSha256": "12305166e5bb51331241fcf39d980f45d74b97967cda08946a39e0802c63ddd3"
+    },
+    {
+      "name": "ordinary-diagnostic",
+      "beforeSha256": "f8aa7bbc04a68c45cabdf72c13770205c29eda21dc0ed67712b06da885aea95a",
+      "afterSha256": "9151465f097f8583d5939753df7234ede9b62cb393524c6d3114bed5d3adee06"
+    },
+    {
+      "name": "result-diagnostic",
+      "beforeSha256": "913e4b17f228d594b007cdeba8b8d129279e61a788ad33810b773992015c97a7",
+      "afterSha256": "c8bfc4e4b06d45e26a11f591ae1c181d4429a7c988c34368cfd8cab368d3c744"
+    },
+    {
+      "name": "profile-failure",
+      "beforeSha256": "0a1a3cebe38e815a946d48592c972fbf8c574dcfe5e4f359113be4d8f1ad0128",
+      "afterSha256": "576996d034d10f3d07004985cfb12f20448b912362d1819a280a350f7a03d0a3"
+    },
+    {
+      "name": "bounded-action-open",
+      "beforeSha256": "57e70a8740ec80e7783d33407343700e14e8d70812396158962fb25f9c88c9ab",
+      "afterSha256": "77f9b0a96977107ab159404aa41935adcf527227e6992b773aac395f5f498c58"
+    },
+    {
+      "name": "bounded-action-close",
+      "beforeSha256": "f0db613852669ae4730b94cbcbf7b9e737c097c1e4919c72adb762ac84ac227b",
+      "afterSha256": "e484cd7bf610b8b0a476f87e5868c45458e599d1b74420df41ab52b545abf070"
+    }
+  ],
+  "derivedSha256": "6306124f17599d65e824fcb711ac215a00a61ed96250409abd360287e3244df0",
+  "helperFiles": [
+    {
+      "file": "/private/tmp/late-js-profile-20261004-v2/driver.mjs",
+      "sha256": "977816334ec67e1ec24caefdba3cbf4313b04d286e25ed1e3fcfdb605dbc9960"
+    },
+    {
+      "file": "/private/tmp/late-js-profile-20261004-v2/session-cdp.mjs",
+      "sha256": "a563eaea0fe933c8757c48cb19710311c0d5820375451178dbce90f03a531c24"
+    },
+    {
+      "file": "/private/tmp/late-js-profile-20261004-v2/profile.mjs",
+      "sha256": "d7576556dc2036232c1453c10e25e8b7f5135087af0b3cd77e09651485d333ba"
+    },
+    {
+      "file": "/private/tmp/late-js-profile-20261004-v2/attribution.mjs",
+      "sha256": "b692a5a888dd57e26f90bbd2a49ced291e3c01983b33e0f9e335ccad7583de52"
+    }
+  ],
+  "hardwareBound": {
+    "seconds": 360,
+    "launcherCleanupMs": 500
+  },
+  "schedule": {
+    "origin": "Canonical sample entry after existing 5 s warmup plus actual ready/native guard; ride-screen time also retained",
+    "afterOriginSeconds": 75,
+    "profileSeconds": 8,
+    "samplingIntervalUs": 1000
+  },
+  "workerIdentity": "Observed actual host.port URL/start config + unique exact-page worker parentFrameId + in-worker self.location.href before and after profiling; no protocol nonce exists",
+  "notes": [
+    "Profiler is intrusive diagnostic, not passive FPS acceptance",
+    "No GPU timers, source maps rebuild or production instrumentation",
+    "No retry or deadline widening"
+  ]
+}

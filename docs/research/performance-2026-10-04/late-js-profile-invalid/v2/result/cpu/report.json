@@ -1,0 +1,481 @@
+{
+  "kind": "JS CPU attribution diagnostic; not passive FPS acceptance",
+  "valid": false,
+  "origin": {
+    "iso": "2026-10-03T23:35:10.912Z",
+    "monoMs": 25246.928291,
+    "meaning": "Canonical sample entry after original 5s warmup and actual ready/native guard",
+    "readiness": {
+      "rendererNow": 20943.29999998212,
+      "screen": "ride",
+      "ready": true,
+      "config": {
+        "spot": "padang",
+        "seed": 8761,
+        "significantHeight": 3.8,
+        "peakPeriod": 18,
+        "directionDegrees": 0,
+        "spreading": 150,
+        "tide": 0,
+        "windSpeed": 0,
+        "stage": 2,
+        "compute": "auto",
+        "dx": 2,
+        "fineSpacing": 1,
+        "componentCount": 64
+      },
+      "status": {
+        "seaTime": 316.1910465576375,
+        "timeToSet": 20.15000000000026,
+        "stepMs": 12.599999994039536,
+        "compute": "gpu",
+        "cells": 116000,
+        "breakPoint": {
+          "x": -50,
+          "z": -265.09137870490895
+        },
+        "breakDepth": 4.849587719671077,
+        "breaker": {
+          "value": 0.26596061299602175,
+          "type": "spilling"
+        },
+        "breakingFraction": 0.012058123925484563,
+        "lipLaunches": 0,
+        "lipVolume": 0,
+        "lipJets": 0,
+        "lipRollers": 0,
+        "lipAirborne": 0,
+        "spray": 4096,
+        "onsetScale": 1,
+        "ride": {
+          "phase": "prone",
+          "speed": 0.15378182908058316,
+          "boardSpeed": 0.26444976180817686,
+          "cue": false,
+          "popUp": {
+            "outcome": "none",
+            "duration": 0,
+            "landingPeak": 0,
+            "frontShare": 0
+          },
+          "resets": 0,
+          "wave": {
+            "valid": false,
+            "directionX": 0.051050964090876484,
+            "directionZ": 0.9986960493890982,
+            "aheadOfCrest": 0,
+            "crestSpeed": 6.643610424477109,
+            "faceHeight": 0,
+            "faceFraction": 0,
+            "crestBreaking": 0,
+            "curlDistance": null,
+            "curlSide": 0,
+            "speedOverGround": 0.15378182908058316,
+            "speedShoreward": -0.15218922444642322,
+            "speedAlongCrest": 0.02207466687780167,
+            "requiredSpeed": null
+          },
+          "balance": 0.9999864054266625,
+          "bank": 0,
+          "leash": {
+            "snapped": false,
+            "tension": 0,
+            "distance": 0,
+            "reeling": false
+          },
+          "duck": 0,
+          "boardInReach": false,
+          "knock": 0,
+          "breath": 1,
+          "rescues": 0
+        },
+        "pipelineMs": {
+          "water": 6,
+          "breaking": 0,
+          "front": 1.199999988079071,
+          "lip": 0,
+          "foam": 2.800000011920929,
+          "airSources": 0.09999999403953552,
+          "aeration": 2,
+          "board": 0.5,
+          "contact": 0,
+          "bubbles": 0.19999998807907104,
+          "spray": 0.30000001192092896,
+          "sounds": 0,
+          "step": 13.199999988079071,
+          "surface": 0,
+          "snapshotAeration": 0,
+          "flow": 0,
+          "snapshotFields": 2.5,
+          "snapshot": 2.800000011920929,
+          "summary": 0.19999998807907104,
+          "batch": 13.199999988079071,
+          "batchSteps": 1,
+          "total": 16.19999998807907,
+          "deviceSubsteps": 1,
+          "devicePack": 1,
+          "deviceCfl": 0.3999999761581421,
+          "deviceEncode": 0.4000000059604645,
+          "deviceMap": 3.300000011920929,
+          "deviceUnpack": 0.9000000059604645
+        }
+      },
+      "workerUrl": "http://localhost:4211/assets/surfZoneWorker-0gFT5nyl.js",
+      "workerStart": {
+        "config": {
+          "spot": "padang",
+          "seed": 8761,
+          "significantHeight": 3.8,
+          "peakPeriod": 18,
+          "directionDegrees": 0,
+          "spreading": 150,
+          "tide": 0,
+          "windSpeed": 0,
+          "stage": 2,
+          "compute": "auto",
+          "dx": 2,
+          "fineSpacing": 1,
+          "componentCount": 64
+        },
+        "rider": true
+      },
+      "constructorObserved": true,
+      "graphics": {
+        "renderScale": 1,
+        "nativePixelDensity": true,
+        "frameLimit": 60,
+        "waterSimulation": "auto",
+        "seaDetail": "rich",
+        "caustics": true,
+        "sprayMist": true,
+        "oceanView": "far",
+        "foam": "detailed",
+        "waterLook": "rich",
+        "particles": "high",
+        "preset": "high"
+      },
+      "viewport": "1708 × 926",
+      "browserDpr": 2,
+      "canvas": "2989 × 1620",
+      "waterLook": "rich",
+      "vertexNormals": false,
+      "particles": "high",
+      "renderSpacing": 2,
+      "maxBatchSteps": 1
+    },
+    "rideScreenObserved": {
+      "iso": "2026-10-03T23:35:05.904Z",
+      "monoMs": 20239.564875
+    }
+  },
+  "schedule": {
+    "waitFromOriginMs": 75000,
+    "profileMs": 8000,
+    "samplingIntervalUs": 1000
+  },
+  "provenance": {
+    "url": "http://localhost:4211/?diagnostics",
+    "dir": "/private/tmp/paced-crossing-gameplay-20261004/dist",
+    "manifestPath": "/private/tmp/paced-crossing-gameplay-20261004/manifest.json",
+    "manifestSha256": "c3d6faf1490a7ac2882b14be2af8bc3b95e5c06ec3966face712e092ed83025b",
+    "workerUrl": "http://localhost:4211/assets/surfZoneWorker-0gFT5nyl.js",
+    "entrySha256": "fd2c2bd093073e04d25b191833a9b45b4465554b743cf1fd1faca7208987e8a0",
+    "workerSha256": "21b796673a700d9ecb8c46fb32c913795a89134c51adb0860e98f646f65371fa",
+    "surveySha256": "0b94271e4aa6709a16e0793bfff42a93a0876ba4628d655ddbff83a2f1252751",
+    "launcherSha256": "36f62bd75468ef3b20ba0fe613256f8a29c81b764b88551961d51194b8b40211",
+    "cdpSha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+    "baselineSha256": "dc655a3fffa336f4ee16a7b71ecaed8bc167ce07485b567af01f36dc2986e110",
+    "qualityBase": "56bf750996",
+    "sourceCheckpoint": "56bf750996cd48cdc5ef45954c479a268053c0b9",
+    "publishedClockCommit": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+    "runtimeDelta": "Four source hunks across BreakingFront.ts and SweptCrash.ts after checkpoint 56bf; exact runtime authority is frozen served bundle hashes"
+  },
+  "commands": [
+    {
+      "context": "worker",
+      "method": "Runtime.evaluate",
+      "sent": {
+        "iso": "2026-10-03T23:36:25.924Z",
+        "monoMs": 100258.464875
+      },
+      "error": "Error: Runtime.evaluate: CDP command deadline",
+      "received": {
+        "iso": "2026-10-03T23:36:35.926Z",
+        "monoMs": 110260.272
+      }
+    }
+  ],
+  "errors": [
+    "Error: Runtime.evaluate: CDP command deadline\n    at Timeout._onTimeout (file:///private/tmp/late-js-profile-20261004-v2/session-cdp.mjs:41:72)\n    at listOnTimeout (node:internal/timers:611:17)\n    at process.processTimers (node:internal/timers:546:7)"
+  ],
+  "profiles": {},
+  "startedAt": {
+    "iso": "2026-10-03T23:35:10.912Z",
+    "monoMs": 25247.682041
+  },
+  "before": {
+    "rendererNow": 95945.09999999404,
+    "screen": "ride",
+    "ready": true,
+    "config": {
+      "spot": "padang",
+      "seed": 8761,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "status": {
+      "seaTime": 389.30771322429996,
+      "timeToSet": -52.966666666662206,
+      "stepMs": 10.099999994039536,
+      "compute": "gpu",
+      "cells": 116000,
+      "breakPoint": {
+        "x": -50,
+        "z": -265.09137870490895
+      },
+      "breakDepth": 4.849587719671077,
+      "breaker": {
+        "value": 0.26596061299602175,
+        "type": "spilling"
+      },
+      "breakingFraction": 0.015811945760803265,
+      "surf": {
+        "typical": 3.9145704115693754,
+        "sets": 3.9145704115693754,
+        "waves": 3
+      },
+      "peel": {
+        "angleDegrees": 15.43798200125073,
+        "direction": 1,
+        "peelSpeed": 30.886905319576705,
+        "lineSlope": 0.6175324675324676,
+        "columns": 21,
+        "fit": 0.9538792498136571
+      },
+      "lipLaunches": 207,
+      "lipVolume": 431.89777162943835,
+      "lipJets": 207,
+      "lipRollers": 0,
+      "lipAirborne": 18.10901877072274,
+      "spray": 4578,
+      "onsetScale": 1,
+      "ride": {
+        "phase": "prone",
+        "speed": 0.9060688938959224,
+        "boardSpeed": 0.9095625290310438,
+        "cue": false,
+        "popUp": {
+          "outcome": "none",
+          "duration": 0,
+          "landingPeak": 0,
+          "frontShare": 0
+        },
+        "resets": 0,
+        "wave": {
+          "valid": true,
+          "directionX": 0.8705334063182919,
+          "directionZ": -0.4921093257436517,
+          "aheadOfCrest": 26.68816375094191,
+          "crestSpeed": -160.32187898374738,
+          "faceHeight": 1.6397999944332295,
+          "faceFraction": 0.19342756708089215,
+          "crestBreaking": 0,
+          "curlDistance": null,
+          "curlSide": 0,
+          "speedOverGround": 0.9060688938959224,
+          "speedShoreward": 0.07664926107009118,
+          "speedAlongCrest": 0.9028209851699224,
+          "requiredSpeed": -596.4552245344786
+        },
+        "balance": 0.9999486403680851,
+        "bank": 0,
+        "leash": {
+          "snapped": false,
+          "tension": 0,
+          "distance": 0,
+          "reeling": false
+        },
+        "duck": 0,
+        "boardInReach": false,
+        "knock": 0,
+        "breath": 1,
+        "rescues": 0
+      },
+      "pipelineMs": {
+        "water": 4.4000000059604645,
+        "breaking": 0.09999999403953552,
+        "front": 1.5,
+        "lip": 0.09999999403953552,
+        "foam": 2,
+        "airSources": 0.20000001788139343,
+        "aeration": 1.2999999821186066,
+        "board": 0.5,
+        "contact": 1.4000000059604645,
+        "bubbles": 0.09999999403953552,
+        "spray": 0.30000001192092896,
+        "sounds": 0,
+        "step": 12.400000005960464,
+        "surface": 0,
+        "snapshotAeration": 0,
+        "flow": 0,
+        "snapshotFields": 2.7999999821186066,
+        "snapshot": 3.0999999940395355,
+        "summary": 0.09999999403953552,
+        "batch": 12.400000005960464,
+        "batchSteps": 1,
+        "total": 15.599999994039536,
+        "deviceSubsteps": 2,
+        "devicePack": 0.800000011920929,
+        "deviceCfl": 0.19999998807907104,
+        "deviceEncode": 0.800000011920929,
+        "deviceMap": 1.7999999821186066,
+        "deviceUnpack": 0.800000011920929
+      }
+    },
+    "workerUrl": "http://localhost:4211/assets/surfZoneWorker-0gFT5nyl.js",
+    "workerStart": {
+      "config": {
+        "spot": "padang",
+        "seed": 8761,
+        "significantHeight": 3.8,
+        "peakPeriod": 18,
+        "directionDegrees": 0,
+        "spreading": 150,
+        "tide": 0,
+        "windSpeed": 0,
+        "stage": 2,
+        "compute": "auto",
+        "dx": 2,
+        "fineSpacing": 1,
+        "componentCount": 64
+      },
+      "rider": true
+    },
+    "constructorObserved": true,
+    "graphics": {
+      "renderScale": 1,
+      "nativePixelDensity": true,
+      "frameLimit": 60,
+      "waterSimulation": "auto",
+      "seaDetail": "rich",
+      "caustics": true,
+      "sprayMist": true,
+      "oceanView": "far",
+      "foam": "detailed",
+      "waterLook": "rich",
+      "particles": "high",
+      "preset": "high"
+    },
+    "viewport": "1708 × 926",
+    "browserDpr": 2,
+    "canvas": "2989 × 1620",
+    "waterLook": "rich",
+    "vertexNormals": false,
+    "particles": "high",
+    "renderSpacing": 2,
+    "maxBatchSteps": 1
+  },
+  "browserVersion": "Chrome/154.0.8037.93",
+  "targetsBefore": [
+    {
+      "targetId": "927213F80B71E190C3E219BC5D4243A5",
+      "type": "worker",
+      "title": "",
+      "url": "",
+      "attached": false,
+      "parentId": "BCF49E719B0758E6E3B2C535EAE57130",
+      "canAccessOpener": false,
+      "parentFrameId": "BCF49E719B0758E6E3B2C535EAE57130",
+      "browserContextId": "327C91E0C3803148D93F2064791E0497"
+    },
+    {
+      "targetId": "7871344EC4F60A77BB8A208980469CAC",
+      "type": "browser_ui",
+      "title": "Omnibox Popup",
+      "url": "chrome://omnibox-popup.top-chrome/omnibox_popup_aim.html",
+      "attached": false,
+      "canAccessOpener": false,
+      "browserContextId": "327C91E0C3803148D93F2064791E0497"
+    },
+    {
+      "targetId": "BB60B4FCD5FA5A16F01DA3E92BF8437B",
+      "type": "browser_ui",
+      "title": "Omnibox Popup",
+      "url": "chrome://omnibox-popup.top-chrome/",
+      "attached": false,
+      "canAccessOpener": false,
+      "browserContextId": "327C91E0C3803148D93F2064791E0497"
+    },
+    {
+      "targetId": "BCF49E719B0758E6E3B2C535EAE57130",
+      "type": "page",
+      "title": "Breakline — Surf Simulator",
+      "url": "http://localhost:4211/?diagnostics",
+      "attached": true,
+      "canAccessOpener": false,
+      "browserContextId": "327C91E0C3803148D93F2064791E0497"
+    }
+  ],
+  "frame": {
+    "id": "BCF49E719B0758E6E3B2C535EAE57130",
+    "loaderId": "45D5E4545B29A5FA9585A349A8849EDA",
+    "url": "http://localhost:4211/?diagnostics",
+    "domainAndRegistry": "",
+    "securityOrigin": "http://localhost:4211",
+    "securityOriginDetails": {
+      "isLocalhost": true
+    },
+    "mimeType": "text/html",
+    "adFrameStatus": {
+      "adFrameType": "none"
+    },
+    "secureContextType": "SecureLocalhost",
+    "crossOriginIsolatedContextType": "NotIsolated",
+    "gatedAPIFeatures": []
+  },
+  "worker": {
+    "targetId": "927213F80B71E190C3E219BC5D4243A5",
+    "type": "worker",
+    "title": "",
+    "url": "",
+    "attached": false,
+    "parentId": "BCF49E719B0758E6E3B2C535EAE57130",
+    "canAccessOpener": false,
+    "parentFrameId": "BCF49E719B0758E6E3B2C535EAE57130",
+    "browserContextId": "327C91E0C3803148D93F2064791E0497"
+  },
+  "pageTarget": {
+    "targetId": "BCF49E719B0758E6E3B2C535EAE57130",
+    "type": "page",
+    "title": "Breakline — Surf Simulator",
+    "url": "http://localhost:4211/?diagnostics",
+    "attached": true,
+    "canAccessOpener": false,
+    "browserContextId": "327C91E0C3803148D93F2064791E0497"
+  },
+  "sessions": [
+    {
+      "name": "page",
+      "id": "D88E36D1DD5D63A630E51F36B0B5896B",
+      "targetId": "BCF49E719B0758E6E3B2C535EAE57130"
+    },
+    {
+      "name": "worker",
+      "id": "B5F8B0DCF8AA119569FA673A48AE4DA0",
+      "targetId": "927213F80B71E190C3E219BC5D4243A5"
+    }
+  ],
+  "finishedAt": {
+    "iso": "2026-10-03T23:36:35.928Z",
+    "monoMs": 110262.354625
+  }
+}

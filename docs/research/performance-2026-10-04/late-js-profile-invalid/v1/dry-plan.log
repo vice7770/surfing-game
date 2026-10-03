@@ -1,0 +1,256 @@
+{
+  "planOnly": true,
+  "productionEdited": false,
+  "chromeStarted": false,
+  "port": 9546,
+  "out": "/private/tmp/late-js-profile-20261004/result",
+  "provenance": {
+    "url": "http://localhost:4211/?diagnostics",
+    "dir": "/private/tmp/paced-crossing-gameplay-20261004/dist",
+    "manifestPath": "/private/tmp/paced-crossing-gameplay-20261004/manifest.json",
+    "manifestSha256": "c3d6faf1490a7ac2882b14be2af8bc3b95e5c06ec3966face712e092ed83025b",
+    "workerUrl": "http://localhost:4211/assets/surfZoneWorker-0gFT5nyl.js",
+    "entrySha256": "fd2c2bd093073e04d25b191833a9b45b4465554b743cf1fd1faca7208987e8a0",
+    "workerSha256": "21b796673a700d9ecb8c46fb32c913795a89134c51adb0860e98f646f65371fa",
+    "surveySha256": "0b94271e4aa6709a16e0793bfff42a93a0876ba4628d655ddbff83a2f1252751",
+    "launcherSha256": "36f62bd75468ef3b20ba0fe613256f8a29c81b764b88551961d51194b8b40211",
+    "cdpSha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+    "baselineSha256": "dc655a3fffa336f4ee16a7b71ecaed8bc167ce07485b567af01f36dc2986e110",
+    "qualityBase": "56bf750996",
+    "sourceCheckpoint": "56bf750996cd48cdc5ef45954c479a268053c0b9",
+    "publishedClockCommit": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+    "runtimeDelta": "Four source hunks across BreakingFront.ts and SweptCrash.ts after checkpoint 56bf; exact runtime authority is frozen served bundle hashes"
+  },
+  "changes": [
+    {
+      "name": "profile-import",
+      "beforeSha256": "e6d355d6fda487a6df3a071aaac70ee507bfeae10c4317ae6923bc18bb1801e7",
+      "afterSha256": "b1652b4646f4e8f52bf3da7744f96502df23981ccc4b2679963a18ce568fee23"
+    },
+    {
+      "name": "worker-identity",
+      "beforeSha256": "05d1ee57c6aa454c8689a28c426bb57827b8c03c40d21e380266cb5cd604c9e8",
+      "afterSha256": "644255975dddb6aa8e6069e579396a4f1bf5d830fd60f7a7d6f7bbf28e56da26"
+    },
+    {
+      "name": "ride-screen-origin",
+      "beforeSha256": "417abbcb1c032fac4305c7fc3e844b5b7f221497628a9587f099c75aca9f164b",
+      "afterSha256": "acaaa816a8b12b8cef71cea3c66151b8ddce5798d096b2b1f4bb0e67431ce0c9"
+    },
+    {
+      "name": "late-schedule",
+      "beforeSha256": "fee7e49fbad9e9311839598e169afa407a0f451977f9efee347d6385675b4a4c",
+      "afterSha256": "90af2db65101916b4bb8cdfe77dadb8c7746bd77215880247d4b858331a14a16"
+    },
+    {
+      "name": "profile-await",
+      "beforeSha256": "bbfd78f7e2b6192909b3e802dc8538e4a2708d12543e0e3ecdc575d1245d2980",
+      "afterSha256": "12305166e5bb51331241fcf39d980f45d74b97967cda08946a39e0802c63ddd3"
+    },
+    {
+      "name": "ordinary-diagnostic",
+      "beforeSha256": "f8aa7bbc04a68c45cabdf72c13770205c29eda21dc0ed67712b06da885aea95a",
+      "afterSha256": "9151465f097f8583d5939753df7234ede9b62cb393524c6d3114bed5d3adee06"
+    },
+    {
+      "name": "result-diagnostic",
+      "beforeSha256": "913e4b17f228d594b007cdeba8b8d129279e61a788ad33810b773992015c97a7",
+      "afterSha256": "c8bfc4e4b06d45e26a11f591ae1c181d4429a7c988c34368cfd8cab368d3c744"
+    },
+    {
+      "name": "profile-failure",
+      "beforeSha256": "0a1a3cebe38e815a946d48592c972fbf8c574dcfe5e4f359113be4d8f1ad0128",
+      "afterSha256": "576996d034d10f3d07004985cfb12f20448b912362d1819a280a350f7a03d0a3"
+    },
+    {
+      "name": "bounded-action-open",
+      "beforeSha256": "57e70a8740ec80e7783d33407343700e14e8d70812396158962fb25f9c88c9ab",
+      "afterSha256": "77f9b0a96977107ab159404aa41935adcf527227e6992b773aac395f5f498c58"
+    },
+    {
+      "name": "bounded-action-close",
+      "beforeSha256": "f0db613852669ae4730b94cbcbf7b9e737c097c1e4919c72adb762ac84ac227b",
+      "afterSha256": "e484cd7bf610b8b0a476f87e5868c45458e599d1b74420df41ab52b545abf070"
+    }
+  ],
+  "derivedSha256": "d622122aa1e598204ef246d1afaaac5a981ce5d229c79bd13429cc5e72b960d5",
+  "helperFiles": [
+    {
+      "file": "/private/tmp/late-js-profile-20261004/driver.mjs",
+      "sha256": "fe3eca8ae443b1098593159e6bf6b96db90c934fd3a83590f0cb7be663c3901a"
+    },
+    {
+      "file": "/private/tmp/late-js-profile-20261004/session-cdp.mjs",
+      "sha256": "a563eaea0fe933c8757c48cb19710311c0d5820375451178dbce90f03a531c24"
+    },
+    {
+      "file": "/private/tmp/late-js-profile-20261004/profile.mjs",
+      "sha256": "332a2578a7469995ed36ec7fd7748e3373f1c4176ee1fde9cbdad4eaeaa640e9"
+    },
+    {
+      "file": "/private/tmp/late-js-profile-20261004/attribution.mjs",
+      "sha256": "b692a5a888dd57e26f90bbd2a49ced291e3c01983b33e0f9e335ccad7583de52"
+    }
+  ],
+  "hardwareBound": {
+    "seconds": 360,
+    "launcherCleanupMs": 500
+  },
+  "schedule": {
+    "origin": "Canonical sample entry after existing 5 s warmup plus actual ready/native guard; ride-screen time also retained",
+    "afterOriginSeconds": 75,
+    "profileSeconds": 8,
+    "samplingIntervalUs": 1000
+  },
+  "workerIdentity": "Observed actual host.port URL/start config + sole matching worker CDP parentFrameId; no protocol nonce exists",
+  "notes": [
+    "Profiler is intrusive diagnostic, not passive FPS acceptance",
+    "No GPU timers, source maps rebuild or production instrumentation",
+    "No retry or deadline widening"
+  ]
+}
+{
+  "planOnly": true,
+  "url": "http://localhost:4211/?diagnostics",
+  "ordinary": {
+    "method": "Ordinary menu → Surf → Padang → Big → Paddle out; idle rider; five-second warmup and 90-second passive sample",
+    "diagnosticGpuProfile": false,
+    "timingComparableToPassiveBaseline": false,
+    "jsCpuProfileDiagnostic": true,
+    "edition": "late-js-cpu-new-clock",
+    "fixedPhysicsStepSeconds": 0.016666666666666666,
+    "pipelineMetricSemantics": "Physics/device/step timings describe the final step of a batch; batch spans the advance loop; snapshot/summary occur once per publication; total is (batch+snapshot+summary)/batchSteps, not full request latency. Independent stage quantiles must not be summed.",
+    "baseline": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/padang-live-frame-pacing.json",
+    "expectedConfig": {
+      "spot": "padang",
+      "seed": 8761,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "expectedViewport": "1708 × 926",
+    "expectedBrowserDpr": 2,
+    "expectedCanvas": "2989 × 1620",
+    "expectedRenderPixelRatio": 1.75,
+    "graphics": {
+      "renderScale": 1,
+      "nativePixelDensity": true,
+      "frameLimit": 60,
+      "waterSimulation": "auto",
+      "seaDetail": "rich",
+      "caustics": true,
+      "sprayMist": true,
+      "oceanView": "far",
+      "foam": "detailed",
+      "waterLook": "rich",
+      "particles": "high",
+      "preset": "high"
+    },
+    "normalMode": "production pixel normals (no waterNormals flag)",
+    "runtimeOverrides": [],
+    "sourceAudit": {
+      "ref": "56bf750996",
+      "files": [
+        {
+          "file": "src/game/Graphics.ts",
+          "sha256": "39e0bd72abe3bee7daf39f022775a4a2688a6ba798f02ca3564a1109ebfcea42",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/game/Settings.ts",
+          "sha256": "feffa5a5fc4d2df4bfd7d1ad9ca1e81a26f014d9fa25efe02814dcaea684b618",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/scene/WaterSurface.ts",
+          "sha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/scene/water/richWaterGlsl.ts",
+          "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/scene/water/richSpray.ts",
+          "sha256": "79ef564c42b48eb77d62a560848d4b85f06be50d6f2ae3f21a957f293f77da5d",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/scene/SprayPoints.ts",
+          "sha256": "23e722c6880c86c2e4ec81af681ad72732923bdd418695bd41593726db250439",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/scene/BubblePoints.ts",
+          "sha256": "cbd6f49e31e426bf7e6295d6fde213c6289fa23b9c5aedbedd2159acc8846f5a",
+          "sameAsReference": true
+        },
+        {
+          "file": "src/wave/particleBudget.ts",
+          "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363",
+          "sameAsReference": true
+        }
+      ]
+    }
+  },
+  "artifact": {
+    "root": "/private/tmp/paced-crossing-gameplay-20261004/dist",
+    "sha256": "7b49550cb55f5cb8f620123c9e2ad0926a0316d8873bf654819375fb4cb3190c",
+    "entry": "assets/index-BBfxZIFO.js",
+    "worker": "assets/surfZoneWorker-0gFT5nyl.js",
+    "files": [
+      {
+        "file": "index.html",
+        "sha256": "2459208498fda0600a64e868e27bd0a8832b5861912b7c4c3e7c8a5d021054df"
+      },
+      {
+        "file": "assets/WorkerSurfZone-8pNiElrU.js",
+        "sha256": "492514b43928eec48b1a90db8630aa8dbdb51ce7611565d4585dcd82ad08752d"
+      },
+      {
+        "file": "assets/devStepping-DpFxiFxV.js",
+        "sha256": "d805b649a21981b5abc7a6ef90d1cc52746478cbb5d9f473858a3ccc198bf516"
+      },
+      {
+        "file": "assets/index-BBfxZIFO.js",
+        "sha256": "fd2c2bd093073e04d25b191833a9b45b4465554b743cf1fd1faca7208987e8a0"
+      },
+      {
+        "file": "assets/index-DA8NEfOT.css",
+        "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+      },
+      {
+        "file": "assets/jevRecorder-bAyFRm6D.js",
+        "sha256": "1d3255bb3d5d85ac0798c3531ef7881a37e37aa85344fb44ce57028e1b20dbfc"
+      },
+      {
+        "file": "assets/particleBench-CYvKdjqn.js",
+        "sha256": "8da44106b3d6074a9b18d9addff646513253e3d1f286d38025a05af4847e6d4a"
+      },
+      {
+        "file": "assets/rideRecorder-D1wI60PW.js",
+        "sha256": "d9268e2f9db97bc9d1135494064c7f3f948a5b5ddfc1293d7b90e49ea2f78fe1"
+      },
+      {
+        "file": "assets/surfZoneWorker-0gFT5nyl.js",
+        "sha256": "21b796673a700d9ecb8c46fb32c913795a89134c51adb0860e98f646f65371fa"
+      },
+      {
+        "file": "assets/waterSheet-Bhxsq2yy.js",
+        "sha256": "741d755ee05faecac288e5a576463df2a79032d3cd9eccb1e0e19eefc745be7c"
+      }
+    ],
+    "verified": []
+  },
+  "chromeStarted": false,
+  "servedVerification": "Deferred to the scheduled live run"
+}
