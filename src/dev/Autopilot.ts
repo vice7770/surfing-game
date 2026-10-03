@@ -60,8 +60,10 @@ export interface AutopilotOptions {
   flowFrom?: FlowPhase;
   /** Riding the flow, the heading from the fall line where the bottom turn is released, degrees (FLOW_BOTTOM_END by default). */
   bottomEnd?: number;
-  /** Riding the flow, once trimming keep pumping along the face: no bottom turn or cutback from the trim phase (the pool flow probe's pumping rides; a projection still goes to a cutback when one is due). */
-  pumpOnly?: boolean;
+  /** Riding the flow, once trimming stay in the trim along the face: no bottom turn or cutback from it (the pool flow probe's TRIM_ONLY rides; a projection still goes to a cutback when one is due). */
+  trimOnly?: boolean;
+  /** Riding the flow, the trim pumps through small rail changes about the face's band (PUMP_* below; the pool flow probe's PUMP=1); by default it holds the band at a steady stance. */
+  pump?: boolean;
 }
 
 export type AutopilotState = 'position' | 'wait' | 'go' | 'ride' | 'done';
@@ -165,8 +167,8 @@ const SNAP_TRIM = -1;
  *   face (its top), or after FLOW_PROJECT_LIMIT, s. Begun while the body was still banked 11–41° into the bottom
  *   turn (once the projection's speed had faded 15%), every cutback on the pool fell in 0.2 s or carved on up the
  *   face to a stall;
- * - trim: along the face, pumping through rail changes (PUMP_* below) about the riding line, until CUTBACK_REACH
- *   ahead of the curl; low on the face heading down, another bottom turn;
+ * - trim: along the face, holding its steep band (BAND_* below), or pumping through small rail changes about it
+ *   (PUMP_*) when asked, until CUTBACK_REACH ahead of the curl; low on the face heading down, another bottom turn;
  * - cutback: heading along the face or up it (past FLOW_CUTBACK_FROM), Compress with the weight on the back foot
  *   (FLOW_CUTBACK_TRIM), leaning and looking back toward the curl (the rotation stick), until the heading is
  *   FLOW_CUTBACK_END past the fall line toward the curl, back down the face, or has come round FLOW_CUTBACK_TURN.
@@ -198,24 +200,49 @@ const FLOW_CUTBACK_TRIM = -0.5;
 const FLOW_TURN_LIMIT = 3;
 const CUTBACK_REACH = 10;
 /**
- * Pumping (the movement-flow spec: real physics, no pump bonus), as a pad's sticks would: S-turns about the riding
- * line, the lean swept from one rail to the other as sin(2πt / PUMP_PERIOD) at PUMP_LEAN of the stick, plus
- * PUMP_LINE of the line's own lean, and the crouch at twice that frequency, 0.5 + 0.5 cos(4πt / PUMP_PERIOD +
- * PUMP_PHASE): deepest 3/16 of a period after the stick crosses the middle, as the body comes upright between the
- * rails (unweighted), tallest 3/16 after the stick's peak, as the new rail sets (weighted). No Compress, so none of
- * the compressed turn's gameplay rules act. On a still face from 6–8 m/s (15° from 6, 12° from 7, 10° from 8) this
- * timing kept 0.21–0.29 m/s a pump more than the best steady stance, the same S-turns mistimed by half a pump
- * 0.41–0.48 less (`pumping.test.ts` pins the first two): the load comes off the rail change, where the board rides
- * nose-up to its flow and the planing hull's drag per unit of load is highest, and goes back on as the new rail
- * sets. PUMP_PHASE is the best of eight phases, or within 0.03 m/s a pump of the best (270°), at each of those
- * entries and at 15° from 8 m/s (which reaches 10–12 m/s and keeps only 0.04–0.05); from 6 m/s on 10° everything
- * falls. PUMP_PERIOD a rail change a second (Forsyth et al. 2024's bottom turn, 0.96 s; 2.4 s kept 0.27–0.39 a pump,
- * 1.6 s 0.15–0.20); PUMP_LEAN the stick's full sweep (at the best phase and period, 0.6 of it kept at most 0.04 a
- * pump and 0.8 at most 0.19); PUMP_LINE provisional.
+ * The face's band (the flow's trim): on a wave the speed comes from the face. The water rises past a board held on
+ * it (in the wave's frame it flows up the face), the faster the steeper the face and the faster the crest, and a
+ * board planes on where that lift pays the hull's drag. So the trim holds the face's steep band: a line BAND_ANGLE
+ * from the wave's travel toward the open face, turned BAND_GAIN down the face for each unit of face fraction above
+ * BAND_FACE (up it below), never closer to the fall line than BAND_MIN, leaning toward it at full stick for
+ * BAND_HEADING of heading error (the riding line's HEADING_GAIN doubled: half the authority), never past BAND_LEAN of
+ * the stick. On a steady 0.85 m face running at 4.7 m/s it keeps a board planing at 12–16° and drops off the plane at
+ * 11° in about 10 s (`faceTrim.test.ts`): the face must rise past the board at about 1 m/s (with 5.3 m/s crests 11°
+ * held; with 4 m/s crests 14° dropped off at 8.4 s). On the Wave Pool, placed on its face (the pool flow probe's
+ * START=face), riders kept planing for 4.0–6.9 s on Medium (median 4.8) until the face under them had fallen to
+ * 0.6–0.75 m and 9–12°; full sweeps about the line, as this phase pumped before, planed 0.7–3.1 s (median 1.7) from
+ * placements on the face. Holding the band at 0.55 of the face, 2 rides in 8 fell within 2.7 s of the placement.
+ * Steady, the trim stands half crouched (TRIM_CROUCH): tall or fully crouched moved the median time on the plane by at
+ * most 0.2 s. Provisional beyond those measurements.
+ */
+const BAND_FACE = 0.45;
+const BAND_ANGLE = 45 * DEG;
+const BAND_GAIN = 60 * DEG;
+const BAND_MIN = 25 * DEG;
+const BAND_HEADING = 0.7;
+const BAND_LEAN = 0.5;
+const TRIM_CROUCH = 0.5;
+/**
+ * Pumping (the movement-flow spec: real physics, no pump bonus), as a pad's sticks would: S-turns about the face's
+ * band, the lean swept from one rail to the other as sin(2πt / PUMP_PERIOD) at PUMP_LEAN of the stick on top of the
+ * band's own lean, and the crouch at twice that frequency, 0.5 + 0.5 cos(4πt / PUMP_PERIOD + PUMP_PHASE): deepest
+ * 3/16 of a period after the stick crosses the middle, as the body comes upright between the rails (unweighted),
+ * tallest 3/16 after the stick's peak, as the new rail sets (weighted). No Compress, so none of the compressed turn's
+ * gameplay rules act. On a still face from 6–8 m/s (15° from 6, 12° from 7, 10° from 8) at the full sweep this timing
+ * kept 0.21–0.29 m/s a pump more than the best steady stance, the same S-turns mistimed by half a pump 0.41–0.48 less
+ * (`pumping.test.ts`): the load comes off the rail change, where the board rides nose-up to its flow and the planing
+ * hull's drag per unit of load is highest, and goes back on as the new rail sets. PUMP_PHASE is the best of eight
+ * phases there; PUMP_PERIOD a rail change a second (Forsyth et al. 2024's bottom turn, 0.96 s). On a wave's face the
+ * full sweep turned the board 60–100° and off the band; PUMP_LEAN is a 0.3 sweep. Even so it kept a board planing
+ * less long than holding the band: on the Wave Pool's Medium face 1.9–6.9 s (median 3.4) against 4.0–6.9 (median
+ * 4.8); on a steady face (`faceTrim.test.ts`) it held the 13–15° faces but dropped off 12° at 8.0 s and every face of
+ * 16° or more within 9 s. Of about 200 pumps tried on a steady 11° face none planed more than 0.3 s longer than
+ * holding the band. There the face gives the speed: the pump's S takes the board off its steepest band, and the
+ * crouch's up-and-down costs the hull more than the legs put in (crouching twice a second on a held band, the legs
+ * did 87 W and the board ran 0.74 m/s slower).
  */
 const PUMP_PERIOD = 2;
-const PUMP_LEAN = 1;
-const PUMP_LINE = 0.3;
+const PUMP_LEAN = 0.3;
 const PUMP_PHASE = (5 * Math.PI) / 4;
 
 /**
@@ -259,7 +286,8 @@ export class Autopilot {
   private readonly cutbackReach: number;
   private readonly flowFrom: FlowPhase;
   private readonly bottomEnd: number;
-  private readonly pumpOnly: boolean;
+  private readonly trimOnly: boolean;
+  private readonly pump: boolean;
   /** Riding the flow: the open face it rides toward this attempt (kept, so passing the curl never reverses it), the heading turned in the phase under way and the last heading, and the side the pumping's first turn leans to (+1 up the face). */
   private flowFace = 0;
   private flowYaw = 0;
@@ -290,7 +318,8 @@ export class Autopilot {
     this.cutbackReach = options.cutbackReach ?? CUTBACK_REACH;
     this.flowFrom = options.flowFrom ?? 'drop';
     this.bottomEnd = options.bottomEnd !== undefined ? options.bottomEnd * DEG : FLOW_BOTTOM_END;
-    this.pumpOnly = options.pumpOnly ?? false;
+    this.trimOnly = options.trimOnly ?? false;
+    this.pump = options.pump ?? false;
   }
 
   /** Start an attempt now, as when a crest rises behind the waiting board (a placed start: Surf School's, the probes'). */
@@ -508,7 +537,7 @@ export class Autopilot {
         else if (time > FLOW_PROJECT_LIMIT) [next, reached] = [cutback ? 'cutback' : 'trim', false];
         break;
       case 'trim':
-        if (this.pumpOnly) break;
+        if (this.trimOnly) break;
         if (cutback) next = 'cutback';
         else if (fraction < FLOW_BOTTOM_FACE && angle < BOTTOM_START) next = 'bottom';
         break;
@@ -542,12 +571,19 @@ export class Autopilot {
         this.phase = 'FLOW · PROJECTION';
         return { steer: 0, trim: 0, crouch: 0, compress: 0 };
       case 'trim': {
+        // The band: its line turned down the face above BAND_FACE and up it below (held where the gauge sees no face).
+        const line = Math.max(BAND_MIN, BAND_ANGLE - BAND_GAIN * ((wave.valid ? fraction : BAND_FACE) - BAND_FACE));
+        const hold = Math.max(-BAND_LEAN, Math.min(BAND_LEAN, wrap(this.travel + face * line - heading) / BAND_HEADING - YAW_DAMPING * yawRate));
+        if (!this.pump) {
+          this.phase = 'FLOW · TRIM';
+          return { steer: hold, trim: 0, crouch: TRIM_CROUCH, compress: 0 };
+        }
         const pumping = this.rideTime - this.flowRecords[this.flowRecords.length - 1].at;
         const sweep = this.pumpSide * Math.sin((2 * Math.PI * pumping) / PUMP_PERIOD);
-        const steer = face * PUMP_LEAN * sweep + PUMP_LINE * this.steer(view, heading, yawRate, face);
         this.phase = sweep > 0 ? 'FLOW · PUMP · UP' : 'FLOW · PUMP · DOWN';
         return {
-          steer: Math.max(-1, Math.min(1, steer)), trim: 0, crouch: 0.5 + 0.5 * Math.cos((4 * Math.PI * pumping) / PUMP_PERIOD + PUMP_PHASE), compress: 0,
+          steer: Math.max(-1, Math.min(1, hold + face * PUMP_LEAN * sweep)), trim: 0,
+          crouch: 0.5 + 0.5 * Math.cos((4 * Math.PI * pumping) / PUMP_PERIOD + PUMP_PHASE), compress: 0,
         };
       }
       case 'cutback':
