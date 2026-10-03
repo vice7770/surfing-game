@@ -71,7 +71,7 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus a
 ### P1 · Sound (S1) — `Playtest`
 
 Requirements agreed in a grilling session on 2026-09-26. The plan is [S1 sound](docs/superpowers/plans/2026-09-26-s1-sound.md).
-- [ ] **Sources:** CC0 recordings (listed in `docs/ASSETS.md`, fetched by a script, shipped as AAC `.m4a`), layered and looped. Every sound also has a synthesised fallback, used until its recording loads or if it fails.
+- [x] **Sources:** recordings **generated with ElevenLabs Sound Effects** on 2026-10-03, the owner's decision in place of CC0 downloads (two candidates each for the roar, distant surf, bubbles, the two lip crashes, the paddle splash and the plunge; listed in `docs/ASSETS.md`, shipped as AAC `.m4a`), layered and looped. Wind, rush, rail, the pop-up, the click and the chime stay synthesised. Every sound also has a synthesised fallback, used until its recording loads or if it fails.
 - [x] **Driven by the physics, never scripted:**
   - surf roar from where the water breaks (breaking strength × discharge, by along-shore sector);
   - lip impacts by their landed volume and speed; whitewater bores;
@@ -96,7 +96,7 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [S1 sound](
   - **The worker reports what makes sound** with each snapshot: the lip landings and paddle strokes since the last one, and the breaking roar in 8 along-shore sectors (B·|q|·area, with its centroid).
   - **A pure mapping turns it into loops, places and one-shots.** A shaper gathers landings by kind and place into a few crashes a second, and a hand's pull into one splash. The first sound report showed about 170 lip one-shots a second in a set without it.
   - **A Web Audio engine plays it** from the camera: HRTF panners, three buses, a muffle filter and a limiter.
-  - **Every sound is synthesised for now.** The Wave Lab's sound check auditions each one.
+  - **Every sound is synthesised,** and seven also have recordings (below). The Wave Lab's sound check auditions each one.
   - **The [sound report](docs/research/sound-report.md)** runs an autopilot ride on the practice swell and checks the sound follows its causes. The roar correlates with the breaking at 0.97 and the board's rush with its speed at 1.00. There is one pop-up sound per pop-up and one plunge per fall. At most 4 one-shots start in a frame, and the mapping takes 9 µs a frame.
   - **Checked in the page (the pane was hidden, so nothing was heard):**
     - suspended out of view, and running with background muting off;
@@ -104,17 +104,16 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [S1 sound](
     - pause muffles to 708 Hz and quarters the sea, and silences the board;
     - M and the toggles mute;
     - the Sea slider sets its bus, and Mono folds the output to one channel.
+  - **Recordings (2026-10-03).** The owner decided to generate them with ElevenLabs Sound Effects instead of downloading CC0 files, so the download approval was never needed:
+    - 14 files in `public/assets/audio/`, 0.96 MB in all: two candidates each for roar, distant, bubbles, lipJet, lipRoller, paddle and plunge, with their prompts, levels and processing in `docs/ASSETS.md`. The manifest records them with the licence `generated`, which `parseManifest` now accepts beside `CC0`; a test fails if the manifest lists a missing file, ships an unlisted one, or names a licence the game would drop.
+    - The tool makes at most 5 s a take, so each loop joins two takes with equal-power crossfades: 8.10 s long, −23.0 LUFS (EBU R128). One-shots are 0.6–2.8 s and peak at −1.0 dBFS.
+    - Every file is 1024 k + 960 samples long, which leaves AAC no end padding: CoreAudio and ffmpeg both decode each to exactly its source length, so a loop has no gap at its wrap, and the decoded wrap is as smooth as any other point in its file.
+    - Picks (roar 1, distant 1, bubbles 2, lipJet 1, lipRoller 1, paddle 1, plunge 1) and gains (1.14, 1.32, 1.57, 0.95, 0.99, 1.22, 1.40; each matches the recording's loudness to the synthesised sound it replaces) are **provisional**: from measurements and spectrograms. Nothing was heard.
+    - 33 takes were generated for the 20 used. The API key could not read the plan's credit balance, so the cost is not recorded.
 - [ ] **Open:**
-  - **CC0 recordings (the user's download approval is pending).** Candidates found, all CC0 Freesound previews, about 50 MB to fetch and about 2.5 MB shipped once trimmed:
-    - surf roar: felix.blume #868869 and treytatum3 #815319;
-    - distant surf: INNORECORDS #457740;
-    - underwater: felix.blume #705058;
-    - lip crashes: felix.blume #411509, nobarknoonan #695875 and mlnqr #542183;
-    - paddling: craigsmith #438845;
-    - plunge: kyles #637823.
-
-    Wind, rush, rail, the pop-up, the click and the chime stay synthesised.
-  - **The user's listening playtest,** which tunes the mapping's provisional levels.
+  - **The user's listening playtest,** which tunes the mapping's provisional levels and settles each recording's pick and gain in the sound check.
+  - **The ElevenLabs plan's terms.** Its tier is not recorded: check it covers a shipped game and whether it asks for credit (an in-game credits screen if so).
+  - **The 8.10 s repeat.** If a loop's repeat is audible, join more takes.
 
 ### P1 · Online lineup (N1) — `Part A done (playtest open); Part B next`
 

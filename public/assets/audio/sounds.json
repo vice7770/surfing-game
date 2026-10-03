@@ -1,16 +1,65 @@
 {
   "sounds": {
-    "roar": { "candidates": [], "chosen": 0, "gain": 1 },
-    "distant": { "candidates": [], "chosen": 0, "gain": 1 },
+    "roar": {
+      "candidates": [
+        { "file": "roar-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
+        { "file": "roar-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
+      ],
+      "chosen": 0,
+      "gain": 1.14
+    },
+    "distant": {
+      "candidates": [
+        { "file": "distant-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
+        { "file": "distant-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
+      ],
+      "chosen": 0,
+      "gain": 1.32
+    },
     "wind": { "candidates": [], "chosen": 0, "gain": 1 },
     "rush": { "candidates": [], "chosen": 0, "gain": 1 },
     "rail": { "candidates": [], "chosen": 0, "gain": 1 },
-    "bubbles": { "candidates": [], "chosen": 0, "gain": 1 },
-    "lipJet": { "candidates": [], "chosen": 0, "gain": 1 },
-    "lipRoller": { "candidates": [], "chosen": 0, "gain": 1 },
-    "paddle": { "candidates": [], "chosen": 0, "gain": 1 },
+    "bubbles": {
+      "candidates": [
+        { "file": "bubbles-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
+        { "file": "bubbles-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
+      ],
+      "chosen": 1,
+      "gain": 1.57
+    },
+    "lipJet": {
+      "candidates": [
+        { "file": "lipJet-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
+        { "file": "lipJet-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
+      ],
+      "chosen": 0,
+      "gain": 0.95
+    },
+    "lipRoller": {
+      "candidates": [
+        { "file": "lipRoller-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
+        { "file": "lipRoller-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
+      ],
+      "chosen": 0,
+      "gain": 0.99
+    },
+    "paddle": {
+      "candidates": [
+        { "file": "paddle-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
+        { "file": "paddle-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
+      ],
+      "chosen": 0,
+      "gain": 1.22
+    },
     "popUp": { "candidates": [], "chosen": 0, "gain": 1 },
-    "plunge": { "candidates": [], "chosen": 0, "gain": 1 },
+    "plunge": {
+      "candidates": [
+        { "file": "plunge-1.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 1", "licence": "generated" },
+        { "file": "plunge-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
+      ],
+      "chosen": 0,
+      "gain": 1.4
+    },
     "click": { "candidates": [], "chosen": 0, "gain": 1 },
     "chime": { "candidates": [], "chosen": 0, "gain": 1 }
   }
