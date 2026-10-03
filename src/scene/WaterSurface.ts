@@ -313,7 +313,7 @@ export class WaterSurface {
           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')
           .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true, churn: true }) + RICH_NORMAL_GUARD)
           .replace('#include <color_fragment>', '')
-          .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true, RICH_FOAM))
+          .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true, RICH_FOAM, '', true))
           .replace('#include <lights_fragment_maps>', RICH_REFLECTION);
         return;
       }

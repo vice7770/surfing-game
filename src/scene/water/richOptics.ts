@@ -1,4 +1,5 @@
 import { Vector3 } from 'three';
+import { BED_RAY_FLOOR, WATER_IOR, type Rgb } from '../waterOptics';
 
 /**
  * What the Rich look adds to the water's optics, compiled into the Rich programs only: Classic keeps `waterOptics.ts`
@@ -39,3 +40,33 @@ export const RICH_NORMAL_GUARD = /* glsl */ `
   if ( richGuardCos < ${RICH_NORMAL_FLOOR.toFixed(2)} ) normal = normalize( normal + ( ${RICH_NORMAL_FLOOR.toFixed(2)} - richGuardCos ) * richGuardView );
 }
 `;
+
+/** GLSL `refract`: the incident direction bent through a surface with unit normal `normal`, by the index ratio `eta` (zero past total reflection). */
+export function refractRay(incident: Vector3, normal: Vector3, eta = 1 / WATER_IOR): Vector3 {
+  const d = normal.dot(incident);
+  const k = 1 - eta * eta * (1 - d * d);
+  if (k < 0) return new Vector3();
+  return incident.clone().multiplyScalar(eta).addScaledVector(normal, -(eta * d + Math.sqrt(k)));
+}
+
+/**
+ * Metres of water the view ray and the sun's ray cross for each metre of depth, 1/|r_v.y| + 1/|r_s.y|, from the
+ * refracted rays' world-vertical components, each held at `BED_RAY_FLOOR` (`waterBodyFragment`'s Rich body).
+ */
+export function bedPathFactor(refractedView: Vector3, refractedSun: Vector3): number {
+  return 1 / Math.max(BED_RAY_FLOOR, -refractedView.y) + 1 / Math.max(BED_RAY_FLOOR, -refractedSun.y);
+}
+
+/**
+ * CPU twin of the Rich body (`waterBodyFragment`'s `rich` option): R∞ (1 − e) + A · bedLight · e, e = e^{−K · depth ·
+ * bedPathFactor}, for a water of diffuse attenuation `diffuse` and deep reflectance `deep` over a bed of albedo `bed`.
+ */
+export function richShallowReflectance(
+  water: { deep: Rgb; diffuse: Rgb; bed: Rgb }, depth: number, refractedView: Vector3, refractedSun: Vector3, bedLight = 1,
+): Rgb {
+  const path = Math.max(0, depth) * bedPathFactor(refractedView, refractedSun);
+  return [0, 1, 2].map((i) => {
+    const reach = Math.exp(-water.diffuse[i] * path);
+    return water.deep[i] * (1 - reach) + water.bed[i] * bedLight * reach;
+  }) as unknown as Rgb;
+}

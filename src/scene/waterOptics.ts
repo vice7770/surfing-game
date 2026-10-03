@@ -181,6 +181,34 @@ float waterCrestThickness( vec3 origin, vec3 direction ) {
 }
 `;
 
+/**
+ * The shallowest a refracted ray may run to the bed, as its downward world component: the caustic lookup's own floor
+ * (`waterBodyFragment`), which a ray that heads up out of the water is held at.
+ */
+export const BED_RAY_FLOOR = 0.05;
+
+/**
+ * The Rich body's GLSL (`waterBodyFragment`'s `rich` option): R∞ (1 − e) + A · bedLight · e, e = e^{−K · depth · (1/|r_v.y|
+ * + 1/|r_s.y|)}. Maritorena, Morel & Gentili 1994 write the bed's path as 2KH for a bed parallel to the surface;
+ * `shallowReflectance` lengthens it by the view and sun cosines against the surface normal, which on a steep face puts
+ * the bed "behind" the face at the column's depth. The bed is horizontal, so each ray crosses the depth H at the slope
+ * it has in the world after refraction (Snell's law): r_v = refract(−v, n, 1/1.333), the ray the caustic lookup already
+ * follows, and r_s, the sun's, by their world-vertical components. On flat water the two forms are identical. It reads
+ * the water's own optics uniforms, which every water program declares. CPU twin: `richShallowReflectance`
+ * (water/richOptics.ts).
+ */
+function richBedPath(caustics: boolean): string {
+  const eta = glsl(1 / WATER_IOR);
+  const floor = BED_RAY_FLOOR.toFixed(2);
+  return /* glsl */ `
+    vec3 waterDown = refract( -waterV, waterN, ${eta} );
+    vec3 waterSunDown = refract( -waterSunDirection, waterN, ${eta} );
+    vec3 waterReach = exp( -waterDiffuseAttenuation * ( max( vWaterDepth, 0.0 ) * ( 1.0 / max( ${floor}, -waterDown.y ) + 1.0 / max( ${floor}, -waterSunDown.y ) ) ) );${caustics ? `
+    vec2 waterBedXZ = vWaterWorld.xz + waterDown.xz * ( vWaterDepth / max( ${floor}, -waterDown.y ) );
+    waterBody = waterDeepReflectance * ( 1.0 - waterReach ) + waterBedAlbedo * causticLightAt( waterBedXZ ) * waterReach;` : `
+    waterBody = waterDeepReflectance * ( 1.0 - waterReach ) + waterBedAlbedo * waterReach;`}`;
+}
+
 /** The Classic foam composition in `waterBodyFragment`: the lace (or a plain tint) over the body, matte where it covers. */
 export const CLASSIC_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );
   float waterCover = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
@@ -195,15 +223,19 @@ export const CLASSIC_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWo
  * `vWaterFoam`, `vWaterFlow`, `waterFoamColor`, `waterTime` and `foamPatternPars`.
  * With `sheet`, GLSL run after the column's body in its lit branch: the swept barrel's lip, shaded as a thin sheet as
  * far as its weight says (its mix weighs the column, caustics and all, by 1 − the weight).
+ * With `rich`, the Rich look's body (`richBedPath`): the bed's path follows the refracted view and sun rays down to the
+ * horizontal bed. Off, Classic's text is unchanged.
  */
-export function waterBodyFragment(crestLight: boolean, caustics = false, foam = CLASSIC_FOAM, sheet = ''): string {
+export function waterBodyFragment(crestLight: boolean, caustics = false, foam = CLASSIC_FOAM, sheet = '', rich = false): string {
   // The bed seen through the fragment lies along the refracted view ray; light it with the caustic map there.
-  const body = (caustics
-    ? /* glsl */ `
+  const body = (rich
+    ? richBedPath(caustics)
+    : caustics
+      ? /* glsl */ `
     vec3 waterDown = refract( -waterV, waterN, ${glsl(1 / WATER_IOR)} );
     vec2 waterBedXZ = vWaterWorld.xz + waterDown.xz * ( vWaterDepth / max( 0.05, -waterDown.y ) );
     waterBody = waterBodyReflectanceLit( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ), causticLightAt( waterBedXZ ) );`
-    : /* glsl */ `
+      : /* glsl */ `
     waterBody = waterBodyReflectance( vWaterDepth, waterViewCos, max( 0.0, dot( waterN, waterSunDirection ) ) );`) + sheet;
   // Sunlight crosses the crest from its sunlit back toward the face in view, so
   // march horizontally toward the sun; a height-field crest seldom lets the
