@@ -31,8 +31,14 @@ const NEAR_BED = 0.3;
 const MIN_ROLLER_FLOW = 0.05;
 const ROLLER_SHOREWARD = 0.5;
 const GRAVITY = 9.81;
-/** A swept contact normal's least upward part: the slope stays under 10 on a vertical or overhanging face [inferred]. */
-const MIN_NORMAL_Y = 0.1;
+/**
+ * A swept contact normal's least upward part, for its slope (the advisor, 2026-09-30, provisional): buoyancy is
+ * support × (−s_x, 1, −s_z), so it grows as 1/n_y; past 60° the slope is held at tan 60° = 1.73 along the face's own
+ * direction, at most twice the support. The normal itself is kept as it is, for anything that plans off the face.
+ */
+const MIN_NORMAL_Y = 0.5;
+/** The steepest slope the clamp allows: tan of its tilt. */
+const STEEPEST = Math.sqrt(1 - MIN_NORMAL_Y * MIN_NORMAL_Y) / MIN_NORMAL_Y;
 
 /** Catmull-Rom weights for nodes −1, 0, 1, 2 at fraction t of the way from node 0 to node 1. */
 export function catmullRomWeights(t: number): [number, number, number, number] {
@@ -334,9 +340,15 @@ export class PhysicalSurfWater implements SurfWater {
   private fromContact(y: number, out: WaterSample): void {
     const { hit } = this;
     out.surfaceY = hit.surfaceY;
-    const up = Math.max(MIN_NORMAL_Y, hit.normalY);
-    out.slopeX = -hit.normalX / up;
-    out.slopeZ = -hit.normalZ / up;
+    if (hit.normalY >= MIN_NORMAL_Y) {
+      out.slopeX = -hit.normalX / hit.normalY;
+      out.slopeZ = -hit.normalZ / hit.normalY;
+    } else {
+      // Steeper than the clamp, or overhanging: its steepest slope, along the face's own horizontal direction.
+      const across = Math.sqrt(hit.normalX * hit.normalX + hit.normalZ * hit.normalZ);
+      out.slopeX = across > 0 ? (-hit.normalX / across) * STEEPEST : 0;
+      out.slopeZ = across > 0 ? (-hit.normalZ / across) * STEEPEST : 0;
+    }
     out.normalX = hit.normalX;
     out.normalY = hit.normalY;
     out.normalZ = hit.normalZ;

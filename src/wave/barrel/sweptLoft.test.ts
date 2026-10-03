@@ -408,6 +408,86 @@ describe('the loft’s slices, for the contact', () => {
       expect(multiple / lines).toBeLessThan(0.02);
     });
 
+    describe('the lip’s stored velocity against the drawn tip’s motion (the advisor, 2026-09-30)', () => {
+      /** A 20 m front at foot crest A0 × 7 m, its solver crest moving shoreward at `pace` from its throw at z −100. */
+      const moving = (a0: number, pace: number, tau: number, throwZ = -100) => {
+        const n = 21;
+        const out = new Float32Array(n * FRONT_STRIDE);
+        for (let k = 0; k < n; k += 1) {
+          const o = k * FRONT_STRIDE;
+          out[o + FRONT_FIELD.x] = k; out[o + FRONT_FIELD.z] = -100 + pace * tau; out[o + FRONT_FIELD.front] = 1; out[o + FRONT_FIELD.sigma] = k;
+          out[o + FRONT_FIELD.tau] = tau; out[o + FRONT_FIELD.footHeight] = a0 * 7; out[o + FRONT_FIELD.footDepth] = 7;
+          out[o + FRONT_FIELD.throwZ] = throwZ;
+        }
+        return out;
+      };
+      const middle = (loft: LoftResult) => sliceAt(loft, 10);
+
+      it('agrees within 0.5 m/s over the tip’s smoothing, through the soft cap and the handover, until a case holds', { timeout: 240_000 }, () => {
+        const unit = Math.sqrt(7 / 9.81);
+        let checked = 0;
+        // Each case alone; the solver's crest slower and faster than the library's (5.2 and 7.3–7.8 m/s at these A0).
+        for (const [a0, held] of [[0.1414, 0.95], [0.3, 1.1338]] as const) {
+          const times = library.profileTimes({ slope: 1 / 19, footHeight: a0 * 7, footDepth: 7 });
+          const window = 4 * times.frameSeconds;
+          for (const pace of [4, 11]) {
+            const tipZ = (tau: number) => {
+              const drawn = new SweptLoft(library, 1 / 19).build(moving(a0, pace, tau), 21, 0.5, flat);
+              return drawn.positions[3 * (middle(drawn) * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.lip) + 2];
+            };
+            const stored = (tau: number) => {
+              const contact = new SweptLoft(library, 1 / 19, { contact: true }).build(moving(a0, pace, tau), 21, 0.5, flat);
+              const s = middle(contact);
+              return contact.sliceTipAlong[s] * contact.sliceRayZ[s] + contact.sliceAnchorVZ[s];
+            };
+            // Until a window before the case's held frame: from there the tip decelerates into touchdown faster than its
+            // ±4-frame line follows (up to 0.5 m/s), and past the hold the drawn tip goes on to touch down (up to 0.9).
+            for (let tau = 0.45 * times.touchdownSeconds; tau + 2 * window <= held * unit; tau += 0.04) {
+              let mean = 0;
+              for (let k = -4; k <= 4; k += 1) mean += stored(tau + (k * window) / 4) / 9;
+              expect(Math.abs((tipZ(tau + window) - tipZ(tau - window)) / (2 * window) - mean)).toBeLessThan(0.5);
+              checked += 1;
+            }
+          }
+        }
+        expect(checked).toBeGreaterThan(30);
+      });
+
+      it('takes the solver crest’s pace only from 0.1 s after the throw, held near the long-wave speed', () => {
+        // The solver's crest still at z −100, thrown 3 m behind or ahead of where the cap holds it equally: the cap's
+        // pull is the same both ways, so only the crest's pace since the throw, (z − throwZ)/τ, tells them apart.
+        const crestX = (tau: number) => {
+          const out = new Float64Array(2);
+          library.pointAt({ slope: 1 / 19, footHeight: 2.1, footDepth: 7, seconds: tau, hold: 'contact' }, LANDMARK.crest, out);
+          return out[0];
+        };
+        const anchorVZ = (tau: number, side: number) => {
+          const loft = new SweptLoft(library, 1 / 19, { contact: true }).build(moving(0.3, 0, tau, -100 - crestX(tau) + 3 * side), 21, 0.5, flat);
+          return loft.sliceAnchorVZ[middle(loft)];
+        };
+        // At 0.05 s that pace is noise: none of it, so both read alike; at 0.5 s it is in.
+        expect(anchorVZ(0.05, 1)).toBeCloseTo(anchorVZ(0.05, -1), 4);
+        expect(Math.abs(anchorVZ(0.5, 1) - anchorVZ(0.5, -1))).toBeGreaterThan(1);
+        // Handed over (u = 1), the anchor moves with the crest point, Ṡ − ċ. Pinned at h0 14 m, where pad19-a45-l12
+        // hands over before touchdown: over 2 m of water a crest record leaping at 20 or 30 m/s reads as 1.5 × 4.43 m/s.
+        const handed = (pace: number, depthAt?: (x: number, z: number) => number) => {
+          const tau = 1.62;
+          const out = new Float32Array(21 * FRONT_STRIDE);
+          out.set(moving(0.45, pace, tau));
+          for (let k = 0; k < 21; k += 1) {
+            out[k * FRONT_STRIDE + FRONT_FIELD.footHeight] = 0.45 * 14;
+            out[k * FRONT_STRIDE + FRONT_FIELD.footDepth] = 14;
+          }
+          const loft = new SweptLoft(library, 1 / 19, { contact: true }).build(out, 21, 0.5, flat, depthAt);
+          return loft.sliceAnchorVZ[middle(loft)];
+        };
+        expect(handed(30) - handed(20)).toBeCloseTo(10, 4);
+        const depth = () => 2;
+        expect(handed(30, depth)).toBeCloseTo(handed(20, depth), 4);
+        expect(handed(30) - handed(30, depth)).toBeCloseTo(30 - 1.5 * Math.sqrt(9.81 * 2), 4);
+      });
+    });
+
     it('keeps the contact’s held tip within two frames of the drawn one (the advisor, 2026-09-30)', () => {
       let gap = 0;
       for (let seconds = 0.3; seconds <= 1.4; seconds += 0.01) gap = Math.max(gap, blends(seconds).tipGap);
