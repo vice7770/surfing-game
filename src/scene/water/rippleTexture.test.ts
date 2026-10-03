@@ -1,6 +1,9 @@
 import { DataUtils } from 'three';
 import { describe, expect, it } from 'vitest';
-import { RIPPLE_RMS_SLOPE, RIPPLE_SIZE, rippleFoamGain, rippleSlope, rippleTexture, rippleVariance, waterRipplePars } from './rippleTexture';
+import {
+  CAPILLARY_WAVELENGTH, RIPPLE_BAND, RIPPLE_RMS_SLOPE, RIPPLE_SIZE, RIPPLE_TILES, RIPPLE_WEIGHTS, rippleFoamGain, rippleSlope, rippleTexture, rippleVariance,
+  rippleWaveVectors, waterRipplePars,
+} from './rippleTexture';
 
 describe('ripple texture', () => {
   it('tiles exactly: the slope at one edge equals the opposite edge', () => {
@@ -71,5 +74,49 @@ describe('ripple strength over foam', () => {
     expect(rippleFoamGain(0.25)).toBeGreaterThan(0.75);
     expect(rippleFoamGain(0.9)).toBeLessThan(0.3);
     expect(waterRipplePars).toContain('float waterRippleFoamGain( float foam )');
+  });
+});
+
+describe('the third ripple layer', () => {
+  const wavelengths = (tile: number) => rippleWaveVectors().map(([nx, nz]) => tile / Math.hypot(nx, nz));
+
+  it('carries the near water’s centimetre ripples on a 0.35 m tile: 1.25 to 11.7 cm, past the capillary-gravity minimum', () => {
+    expect(RIPPLE_TILES).toEqual([4, 1.3, 0.35]);
+    // The wave vectors span |n| 3 to 28 per tile (rounded to integers, so a hair either side).
+    for (const [nx, nz] of rippleWaveVectors()) {
+      expect(Math.hypot(nx, nz)).toBeGreaterThan(RIPPLE_BAND.min - 1);
+      expect(Math.hypot(nx, nz)).toBeLessThan(RIPPLE_BAND.max + 1);
+    }
+    // Before it the shortest ripple anywhere was the second layer's, 4.6 cm.
+    expect(Math.min(...wavelengths(RIPPLE_TILES[1]))).toBeGreaterThan(0.044);
+    // The band is 1.25 to 11.7 cm on the third tile; this seed's components reach 1.5 cm, past λ = 2π √(σ/(ρ g)) = 1.7 cm
+    // (σ = 0.073 N/m), where wind ripples pass from gravity waves to capillary ones.
+    const third = wavelengths(RIPPLE_TILES[2]);
+    expect(RIPPLE_TILES[2] / RIPPLE_BAND.max).toBeCloseTo(0.0125, 4);
+    expect(RIPPLE_TILES[2] / RIPPLE_BAND.min).toBeCloseTo(0.1167, 4);
+    expect(CAPILLARY_WAVELENGTH).toBeCloseTo(0.0171, 4);
+    expect(Math.min(...third)).toBeLessThan(CAPILLARY_WAVELENGTH);
+    expect(Math.max(...third)).toBeLessThan(0.125);
+    expect(third.filter((l) => l < 0.02).length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('adds its own unresolved variance by its weight squared, so it turns into roughness with distance', () => {
+    const blurred = (variance: number): [number, number, number, number] => [0, 0, variance / 2, variance / 2];
+    const [, w1, w2] = RIPPLE_WEIGHTS;
+    expect(w1).toBe(0.6);
+    expect(w2).toBe(0.5);
+    expect(rippleVariance(blurred(0.01), blurred(0.02), blurred(0.03), blurred(0), 0.25, blurred(0.04), blurred(0.05)))
+      .toBeCloseTo(0.25 * (0.01 + 0.36 * 0.02 + 0.25 * 0.04) + 0.75 * (0.03 + 0.25 * 0.05), 12);
+    // Without its taps, the two-layer sum as before.
+    expect(rippleVariance(blurred(0.01), blurred(0.02), blurred(0.03), blurred(0), 0.25)).toBeCloseTo(0.25 * (0.01 + 0.36 * 0.02) + 0.75 * 0.03, 12);
+  });
+
+  it('taps the one ripple texture at its tile in both flow phases, with no sampler of its own', () => {
+    expect(waterRipplePars).toContain(`const float RIPPLE_TILE_2 = ${RIPPLE_TILES[2].toFixed(3)};`);
+    expect(waterRipplePars).toContain('vec4 a2 = waterRippleTap( pa, RIPPLE_TILE_2 );');
+    expect(waterRipplePars).toContain('vec4 b2 = waterRippleTap( pb, RIPPLE_TILE_2 );');
+    expect(waterRipplePars).toContain('RIPPLE_WEIGHT_2 * a2.xy');
+    expect(waterRipplePars).toContain('RIPPLE_WEIGHT_2 * RIPPLE_WEIGHT_2 * waterRippleLayerVariance( b2 )');
+    expect(waterRipplePars.match(/uniform sampler/g)).toHaveLength(1);
   });
 });
