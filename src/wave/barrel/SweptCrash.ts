@@ -63,6 +63,13 @@ export interface CrashCounts {
    */
   exits: number;
   exitJets: number;
+  /**
+   * Points that left the front still on their pace 2 (T + collapse) of solver time after their throw, their clock stalled
+   * in their slice's fade (the advisor, 2026-10-03), and of them those holding a jet, its pour running on from its last
+   * place. Counted apart from the 2 T exits.
+   */
+  fadeExits: number;
+  fadeExitJets: number;
   /** Held jets whose point left the front any other way (lost): they crashed where foreseen as it left. None are expected. */
   lost: number;
   /** Thrown points, jet or not, whose pace was held to the clamp, slow or fast, or unmeasured (the long-wave speed then): see `PACE`. */
@@ -73,15 +80,24 @@ export interface CrashCounts {
   gated: number;
 }
 
+/** A throw this step (a diagnostic): its point, the solver's crest z it stood on, which its jet's water leaves (#86), and the ray's z part its pace was turned by. */
+export interface PacedThrow {
+  point: FrontPoint;
+  crestZ: number;
+  rayZ: number;
+}
+
 /**
  * The swept barrel's jets (the Padang Padang spec, Part B, 13.1 and 13.6; the advisor's rulings, 2026-10-01). The solver
  * stays the mass ledger, but at a swept spot its lips leave and land on the barrel's clock. Each step, for every point
  * of every front the loft draws (two points or more):
  * - **The throw** (its clock reaches 0): every point, jet or not, runs from here on its pace (`PACE`), claiming its crest
- *   (BreakingFront), until its slice has faded (the advisor, 2026-10-03). The jet the loft will draw, the cases' held
- *   frames' A_J, blended and scaled as their frames, over the point's share of its front times the loft's end weight,
- *   leaves the solver's crest under it by the lip's own rule (#86): from the wave's upper half, its momentum along the
- *   held lip's velocity taken nearest first, never reversed, the rest counted. It waits as a held strip
+ *   (BreakingFront), until its slice has faded (the advisor, 2026-10-03). Its pace is set before its slice is taken, so
+ *   from that very step its z, crest point, launch point and anchor run on z = jetBase + jetPace τ, from where its crest
+ *   crossed its throw depth. The jet the loft will draw, the cases' held frames' A_J, blended and scaled as their
+ *   frames, over the point's share of its front times the loft's end weight, still leaves the solver's crest under it by
+ *   the lip's own rule (#86): from the wave's upper half, its momentum along the held lip's velocity taken nearest first,
+ *   never reversed, the rest counted. It waits as a held strip
  *   (`PlungingLip.holdJet`, in the sea handover), its pour foreseen where the lip would land: the slice at its
  *   touchdown, on the anchor's own rule there with its paced z then.
  * - **The crash** (its clock reaches touchdown): its void closes, trapping the held frame's A_O over its share, and its
@@ -93,7 +109,9 @@ export interface CrashCounts {
  *   withheld from the whitewater (the foam's bore source, its spray and bubbles, the bore's air and turbulence, the roar).
  *   An open tube's face is clear water; Kennedy's onset leads the lip by up to 2 s on Padang Padang's wedge.
  * - **A stall** (the advisor, 2026-10-03): a point whose clock hasn't reached touchdown 2 T of solver time after its
- *   throw leaves the front (`exits`), and its jet crashes where it was foreseen.
+ *   throw leaves the front (`exits`), and its jet crashes where it was foreseen. One still on its pace 2 (T + collapse)
+ *   after its throw, its clock stalled in its slice's fade, leaves too (`fadeExits`), its pour running on from its last
+ *   place.
  * A point alone on its front at its touchdown, past its collapse, leaving the front at a stall or lost, crashes where it
  * was foreseen: its void closes, and its pour starts from the foreseen place at the foreseen spacing. Where two fronts'
  * barrels overlap, the loft draws the first (PR 4), so a later front's point under it throws nothing and gates nothing.
@@ -102,12 +120,15 @@ export interface CrashCounts {
 export class SweptCrash {
   readonly counts: CrashCounts = {
     onsets: 0, throws: 0, asked: 0, thrown: 0, starved: 0, starvedVolume: 0, crashes: 0, late: 0, missed: 0, covered: 0, foreseen: 0,
-    exits: 0, exitJets: 0, lost: 0, paceSlow: 0, paceFast: 0, paceUnmeasured: 0, gated: 0,
+    exits: 0, exitJets: 0, fadeExits: 0, fadeExitJets: 0, lost: 0, paceSlow: 0, paceFast: 0, paceUnmeasured: 0, gated: 0,
   };
   /** This step's crash curve: the points pouring. */
   readonly curve: CrashPoint[] = [];
-  /** The points that left the front this step at a stall (a diagnostic): see `CrashCounts.exits`. */
+  /** The points that left the front this step at a stall, short of touchdown and in the fade (diagnostics): see `CrashCounts`. */
   readonly exited: FrontPoint[] = [];
+  readonly fadeExited: FrontPoint[] = [];
+  /** This step's throws, paced before their slices were taken (a diagnostic). */
+  readonly paced: PacedThrow[] = [];
   /** The crash's own time, ms, summed over its updates (a diagnostic). */
   updateMs = 0;
   private readonly geometry: CrashCurve;
@@ -116,10 +137,17 @@ export class SweptCrash {
   private readonly pool: CrashPoint[] = [];
   /** This step's drawn fronts, as [start, end) pairs of point indices. */
   private readonly runs: number[] = [];
-  /** Per point this step: as drawn; whether it is live (before its collapse ends), and under an earlier front's barrel. */
+  /**
+   * Per point this step: as drawn; whether it is live (before its collapse ends), and under an earlier front's barrel;
+   * whether it throws, and the solver's crest cell its water leaves and the wave height measured there.
+   */
   private slices: CrashSlice[] = [];
   private live = new Uint8Array(0);
   private covered = new Uint8Array(0);
+  private throwing = new Uint8Array(0);
+  private throwCell = new Int32Array(0);
+  private throwHeight = new Float64Array(0);
+  private readonly ray = { x: 0, z: 1 };
   /** Per point, its strip's footprint: corners (x, z × 4) and box (x0, x1, z0, z1), as the loft judges overlaps. */
   private corners = new Float64Array(0);
   private boxes = new Float64Array(0);
@@ -139,24 +167,14 @@ export class SweptCrash {
     this.curve.length = 0;
     sea.whitewater.set(sea.strength);
     const { solver, lip } = sea;
-    // A stall (the advisor, 2026-10-03): a point whose clock hasn't reached touchdown 2 T of solver time after its throw
-    // leaves the front, and its jet, if any, crashes where it was foreseen.
+    // The stalls (the advisor, 2026-10-03): a point whose clock hasn't reached touchdown 2 T of solver time after its
+    // throw leaves the front, and its jet, if any, crashes where it was foreseen; one still on its pace 2 (T + collapse)
+    // after its throw, its clock stalled in its slice's fade, leaves the front too, its pour running on from its last place.
     this.exited.length = 0;
+    this.fadeExited.length = 0;
     let kept = 0;
     for (const p of points) {
-      if (p.jetAt !== undefined) {
-        const touchdown = this.geometry.times(p).touchdownSeconds;
-        if (p.tau < touchdown && solver.time - p.jetAt >= 2 * touchdown) {
-          this.exited.push(p);
-          this.counts.exits += 1;
-          if (p.jetStrip !== undefined && p.jetStrip >= 0 && p.crashedAt === undefined) {
-            lip.closeJet(p.jetStrip);
-            p.crashedAt = solver.time;
-            this.counts.exitJets += 1;
-          }
-          continue;
-        }
-      }
+      if (p.jetAt !== undefined && this.stalled(p, solver.time, lip)) continue;
       points[kept] = p;
       kept += 1;
     }
@@ -187,14 +205,25 @@ export class SweptCrash {
       if (end - start >= 2 && points[end - 1].sigma - points[start].sigma > 1e-6) runs.push(start, end);
       start = end;
     }
-    // Each live point as drawn, and its footprint.
+    // This step's throws (the advisor, 2026-10-03): a live point whose clock passed 0 this step is paced before its slice
+    // is taken, from the front as it stands, so its z, crest point, launch point and anchor lie on its pace from this step;
+    // its water still leaves the solver's crest under it (#86). Past its tube's collapse a point has nothing left to do
+    // (most of a front: the bore behind the barrel).
     this.reserve(points.length);
+    this.paced.length = 0;
     for (let r = 0; r < runs.length; r += 2) {
       for (let k = runs[r]; k < runs[r + 1]; k += 1) {
         const p = points[k];
-        // Past its tube's collapse a point has nothing left to do (most of a front: the bore behind the barrel).
         const times = this.geometry.times(p);
         this.live[k] = p.tau < times.touchdownSeconds + times.collapseSeconds ? 1 : 0;
+        if (this.live[k] && p.jetStrip === undefined && p.tau >= 0) this.paceThrow(points, runs[r], runs[r + 1], k, times, sea);
+      }
+    }
+    for (const thrown of this.paced) thrown.point.z = thrown.point.jetBase! + thrown.point.jetPace! * thrown.point.tau;
+    // Each live point as drawn, and its footprint.
+    for (let r = 0; r < runs.length; r += 2) {
+      for (let k = runs[r]; k < runs[r + 1]; k += 1) {
+        const p = points[k];
         if (!this.live[k]) {
           if (p.jetStrip === undefined) {
             // Its lip was never drawn: no jet lands.
@@ -241,14 +270,10 @@ export class SweptCrash {
     if (drawn && p.tau < s.touchdown && s.endWeight > 0) this.gate(p, s, sea);
     let thrown = 0;
     let throwing = false;
-    if (p.jetStrip === undefined && p.tau >= 0) {
-      // Every point runs on its pace from its throw, jet or not (the advisor, 2026-10-03).
-      const motion = this.geometry.jetMotion(p, this.motion);
-      const cell = sea.solver.cellIndex(p.x, p.z);
-      const waveHeight = waveHeightAt(sea.solver, cell, 0.5 * Math.max(0, motion.crestSpeed) * sea.period);
-      this.pace(p, s, sea, cell, waveHeight);
+    if (this.throwing[k]) {
+      // Paced already this step (`paceThrow`), jet or not; its water leaves the solver's crest it stood on.
       if (drawn) {
-        thrown = this.throwJet(points, start, end, k, s, sea, heightAt, motion, cell, waveHeight);
+        thrown = this.throwJet(points, start, end, k, s, sea, heightAt, this.geometry.jetMotion(p, this.motion), this.throwCell[k], this.throwHeight[k]);
         throwing = true;
       } else {
         // Water that was never drawn doesn't land.
@@ -272,12 +297,61 @@ export class SweptCrash {
   }
 
   /**
+   * Whether point p, thrown at `jetAt`, leaves the front at a stall now (the advisor, 2026-10-03): short of touchdown 2 T
+   * after its throw, its jet, if any, crashing where it was foreseen (`exits`); or still on its pace 2 (T + collapse)
+   * after it, past touchdown (the first rule takes any short of it), its jet's pour running on from its last place
+   * (`fadeExits`).
+   */
+  private stalled(p: FrontPoint, time: number, lip: PlungingLip): boolean {
+    const { touchdownSeconds: touchdown, collapseSeconds: collapse } = this.geometry.times(p);
+    const age = time - p.jetAt!;
+    if (p.tau < touchdown && age >= 2 * touchdown) {
+      this.exited.push(p);
+      this.counts.exits += 1;
+      if (p.jetStrip !== undefined && p.jetStrip >= 0 && p.crashedAt === undefined) {
+        lip.closeJet(p.jetStrip);
+        p.crashedAt = time;
+        this.counts.exitJets += 1;
+      }
+      return true;
+    }
+    if (p.jetUntil !== undefined && p.tau < p.jetUntil && age >= 2 * (touchdown + collapse)) {
+      this.fadeExited.push(p);
+      this.counts.fadeExits += 1;
+      if (p.jetStrip !== undefined && p.jetStrip >= 0) this.counts.fadeExitJets += 1;
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Front point k's throw this step, before its slice is taken: its pace (`pace`) from the front as it stands (this step's
+   * other throws not yet on theirs), and the solver's crest cell it stands on, which its jet's water leaves (#86), with
+   * the wave height measured there. Listed in `paced`.
+   */
+  private paceThrow(points: FrontPoint[], start: number, end: number, k: number, times: { touchdownSeconds: number; collapseSeconds: number }, sea: CrashSea): void {
+    const p = points[k];
+    const motion = this.geometry.jetMotion(p, this.motion);
+    const cell = sea.solver.cellIndex(p.x, p.z);
+    const waveHeight = waveHeightAt(sea.solver, cell, 0.5 * Math.max(0, motion.crestSpeed) * sea.period);
+    const rayZ = this.geometry.ray(points, start, end, k, this.ray).z;
+    this.pace(p, times, rayZ, sea, cell, waveHeight);
+    this.throwing[k] = 1;
+    this.throwCell[k] = cell;
+    this.throwHeight[k] = waveHeight;
+    this.paced.push({ point: p, crestZ: p.z, rayZ });
+  }
+
+  /**
    * A point's pace from its throw, jet or not (the advisor, 2026-10-01 and 2026-10-03): its crest's over the last few
    * frames (crestMotion's, along the crest's own normal), held to PACE × the long-wave speed there, then along its column:
-   * c_n / n_z, n_z the ray's (the loft's). It runs on it until its slice has faded, at touchdown + collapse, and claims its
-   * column's crest over the throw's own window meanwhile (BreakingFront).
+   * c_n / n_z, n_z its ray's at the throw (`rayZ`, the loft's). It runs on it from where its crest crossed its throw depth
+   * (`throwZ`; with none, from its z now less its pace since τ = 0) until its slice has faded, at touchdown + collapse,
+   * and claims its column's crest over the throw's own window meanwhile (BreakingFront).
    */
-  private pace(p: FrontPoint, s: CrashSlice, sea: CrashSea, cell: number, waveHeight: number): void {
+  private pace(
+    p: FrontPoint, times: { touchdownSeconds: number; collapseSeconds: number }, rayZ: number, sea: CrashSea, cell: number, waveHeight: number,
+  ): void {
     const { solver } = sea;
     // The throw's own window: #86's source reach, as `drawFromCrest` measures the wave.
     const height = waveHeight > 0 ? waveHeight : solver.h[cell] + solver.bed[cell] - solver.restLevel;
@@ -292,10 +366,10 @@ export class SweptCrash {
       normal = PACE.fastest * wave;
       this.counts.paceFast += 1;
     }
-    const pace = normal / Math.max(PACE.leastRayZ, s.rayZ);
+    const pace = normal / Math.max(PACE.leastRayZ, rayZ);
     p.jetPace = pace;
-    p.jetBase = (p.throwZ ?? p.z - pace * p.tau);
-    p.jetUntil = s.touchdown + s.collapse;
+    p.jetBase = p.throwZ ?? p.z - pace * p.tau;
+    p.jetUntil = times.touchdownSeconds + times.collapseSeconds;
     p.jetAt = solver.time;
   }
 
@@ -350,18 +424,22 @@ export class SweptCrash {
     this.curve.push(point);
   }
 
-  /** Room for `count` points' slices and footprints. */
+  /** Room for `count` points' slices, throws and footprints. */
   private reserve(count: number): void {
     while (this.slices.length < count) this.slices.push(createCrashSlice());
     if (this.live.length < count) {
       const size = Math.max(count, 2 * this.live.length);
       this.live = new Uint8Array(size);
       this.covered = new Uint8Array(size);
+      this.throwing = new Uint8Array(size);
+      this.throwCell = new Int32Array(size);
+      this.throwHeight = new Float64Array(size);
       this.corners = new Float64Array(8 * size);
       this.boxes = new Float64Array(4 * size);
     }
     this.live.fill(0, 0, count);
     this.covered.fill(0, 0, count);
+    this.throwing.fill(0, 0, count);
   }
 
   /**
