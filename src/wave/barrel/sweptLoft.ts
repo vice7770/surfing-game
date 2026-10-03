@@ -16,7 +16,7 @@ export { SHEET, THROAT, arcView, sheetAcross, throatViews, tubeSkyView } from '.
  * - `pinned`: samples at each end of a profile blended onto the water, never reaching the lip or throat [inferred];
  * - `extension`, `extensionSamples`: the surface runs on over the water this far past each end, m, in this many
  *   samples, so the seam's band always has both surfaces [inferred];
- * - `band`, m: the dithered overlap at the mask's edge [inferred];
+ * - `band`, m: the mask's band past the rests, where the curl fades into the water it rests on [inferred];
  * - `endBlend`, m: a front's ends blend into the water over this length [inferred];
  * - `handover`, s: the anchor returns to the solver's crest over this long [inferred]. (After touchdown a slice fades
  *   into the water over its tube's own collapse, `ProfileLookup.collapseSeconds`, and a faded slice is dropped.)

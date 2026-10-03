@@ -92,8 +92,8 @@ export class SweptBarrel {
     this.lastLoft = loft;
   }
 
+  /** Free the curl's geometry and materials, its band's with them. */
   dispose(): void {
-    this.mesh.mesh.geometry.dispose();
-    this.mesh.mesh.material.dispose();
+    this.mesh.dispose();
   }
 }
