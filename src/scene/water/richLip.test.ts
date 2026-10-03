@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { LIP_STRIDE } from '../../wave/SurfZoneRunner';
-import { buildRichLipSheet, lipThickness } from './richLip';
+import { seededRandom } from '../../wave/random';
+import { LIP_SUBDIVISIONS, buildRichLipSheet, lipThickness } from './richLip';
 
 /** Packs parcels as a snapshot does: x, y, z, column, index, launch time, age, volume. */
 function pack(parcels: number[][]): Float32Array {
@@ -76,6 +77,64 @@ describe('the Rich lip', () => {
     const sheet = buildRichLipSheet(pack(strip(3, () => 2, 0.05, [3, 4, 5, 6, 7])), 5, 1);
     const zs = vertices(sheet.positions).map(([, , z]) => z);
     expect(Math.min(...zs)).toBeGreaterThan(2.99);
+  });
+
+  /** A few throws of jets and a splash-up across columns, some strips broken where parcels landed. */
+  function throwOf(seed: number): { parcels: Float32Array; count: number } {
+    const random = seededRandom(seed, 99);
+    const rows: number[][] = [];
+    for (let w = 0; w < 3; w += 1) {
+      const columns = 2 + Math.floor(random() * 12);
+      const first = Math.floor(random() * 30);
+      const launch = 10 * w + random();
+      const kind = w === 2 ? 1 : 0;
+      for (let c = first; c < first + columns; c += 1) {
+        const per = 3 + Math.floor(random() * 8);
+        for (let k = 0; k < per; k += 1) {
+          if (random() < 0.08) continue;
+          rows.push([c + 0.5 + 0.1 * random(), 3 - 0.2 * k + 0.3 * random(), 10 + 0.3 * k + 0.2 * random(), c, k, launch + 0.02 * random() * (c - first), 0.1 * k * random(), 0.01 + 0.2 * random(), kind]);
+        }
+      }
+    }
+    return { parcels: pack(rows), count: rows.length };
+  }
+  const checksum = (values: ArrayLike<number>) => {
+    let total = 0;
+    for (let i = 0; i < values.length; i += 1) total += values[i] * ((i % 7) + 1);
+    return total;
+  };
+
+  it('builds the same sheet as before it was built into typed arrays, point for point', () => {
+    // Pinned from the builder before the Particles setting (an array per point), on two throws.
+    const pinned = [
+      { seed: 7, vertices: 600, indices: 2304, positions: 56199.31521475315, normals: -53.70973637441057, foam: 1489.4583054296672, thickness: 152.85558771155775, indexSum: 2760820 },
+      { seed: 42, vertices: 400, indices: 1536, positions: 49453.669567108154, normals: -22.093793045605707, foam: 987.6849018465728, thickness: 74.3235752414912, indexSum: 1224896 },
+    ];
+    for (const expected of pinned) {
+      const { parcels, count } = throwOf(expected.seed);
+      const sheet = buildRichLipSheet(parcels, count, 1);
+      expect(sheet.positions.length / 3).toBe(expected.vertices);
+      expect(sheet.indices.length).toBe(expected.indices);
+      expect(checksum(sheet.positions)).toBeCloseTo(expected.positions, 6);
+      expect(checksum(sheet.normals)).toBeCloseTo(expected.normals, 9);
+      expect(checksum(sheet.foam)).toBeCloseTo(expected.foam, 9);
+      expect(checksum(sheet.thickness)).toBeCloseTo(expected.thickness, 9);
+      expect(checksum(sheet.indices)).toBe(expected.indexSum);
+      // Built again, the same (the build keeps its buffers from one sheet to the next).
+      expect(Array.from(buildRichLipSheet(parcels, count, 1).positions)).toEqual(Array.from(sheet.positions));
+    }
+  });
+
+  // The Particles setting draws fewer spline points between parcels at its lower levels.
+  it('draws the spline points it is asked for between parcels, through every parcel still', () => {
+    const parcels = strip(3, (k) => 2 + Math.sin(k * 0.7), 0);
+    for (const subdivisions of [LIP_SUBDIVISIONS, 2, 1]) {
+      const sheet = buildRichLipSheet(pack(parcels), 8, 1, subdivisions);
+      // Two ribbon cells across, seven along; two faces of (subdivisions + 2)² points each.
+      expect(sheet.positions.length / 3).toBe(2 * 7 * 2 * (subdivisions + 2) ** 2);
+      const drawn = vertices(sheet.positions);
+      for (const [x, y, z] of parcels) expect(drawn.some(([dx, dy, dz]) => Math.hypot(dx - x, dy - y, dz - z) < 1e-5)).toBe(true);
+    }
   });
 
   it('builds nothing from no parcels', () => {

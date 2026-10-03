@@ -3,6 +3,7 @@ import type { SurfScale } from '../ui/surfHeight';
 import type { Units } from '../ui/units';
 import type { WaterLook } from '../scene/water/waterLook';
 import type { StanceName } from '../physics/riderPosture';
+import { PARTICLE_LEVELS, type ParticleLevel } from '../wave/particleBudget';
 import { ACTIONS, DEFAULT_BINDINGS, MAX_BUTTON, freeInputs, type Action, type Bindings } from './Bindings';
 import { DEFAULT_STICK, MAX_DEADZONE, type StickSettings } from './Sticks';
 import { DEFAULT_SURFER, sanitizeSurfer, type SurferSettings } from './SurferChoice';
@@ -61,6 +62,8 @@ export interface AdvancedGraphics {
   foam: 'simple' | 'detailed';
   /** G8: Classic (today's water, the light fallback) or Rich (detail, gloss, churn, lit mist). */
   waterLook: WaterLook;
+  /** How many spray, mist, foam-ball and bubble particles the whitewater keeps; High is the game as it was. Visual only. */
+  particles: ParticleLevel;
 }
 
 export interface GraphicsSettings extends AdvancedGraphics {
@@ -128,7 +131,7 @@ export function defaultSettings(prefersReducedMotion = false): GameSettings {
     // The Medium preset's values (Graphics.PRESETS.medium; a test keeps the two equal).
     graphics: {
       preset: 'auto', renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto',
-      seaDetail: 'standard', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich',
+      seaDetail: 'standard', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high',
     },
     controls: { bindings: copyBindings(DEFAULT_BINDINGS), handedness: 'right', ...DEFAULT_STICK, padLayout: 2 },
     audio: { master: 1, sea: 1, board: 1, ui: 1, muteInBackground: true },
@@ -224,6 +227,10 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
   const presetLook = preset === 'custom'
     ? (detected?.preset === 'low' ? PRESETS.low.waterLook : g.waterLook)
     : PRESETS[preset === 'auto' ? detected?.preset ?? 'medium' : preset].waterLook;
+  // A save from before the Particles setting takes its preset's the same way.
+  const presetParticles = preset === 'custom'
+    ? (detected?.preset === 'low' ? PRESETS.low.particles : g.particles)
+    : PRESETS[preset === 'auto' ? detected?.preset ?? 'medium' : preset].particles;
   return {
     gameplay: {
       units: oneOf(gameplay.units, ['metric', 'imperial'] as const, defaults.gameplay.units),
@@ -251,6 +258,7 @@ export function sanitizeSettings(raw: unknown, defaults: GameSettings): GameSett
       oceanView: oneOf(graphics.oceanView, ['near', 'far'] as const, g.oceanView),
       foam: oneOf(graphics.foam, ['simple', 'detailed'] as const, g.foam),
       waterLook: oneOf(graphics.waterLook, ['classic', 'rich'] as const, presetLook),
+      particles: oneOf(graphics.particles, PARTICLE_LEVELS, presetParticles),
     },
     controls: {
       bindings: sanitizeBindings(controls.bindings, defaults.controls.bindings, controls.padLayout !== 2),

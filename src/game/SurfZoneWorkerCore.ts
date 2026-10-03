@@ -1,6 +1,7 @@
 import type { BoussinesqSolver } from '../wave/BoussinesqSolver';
 import { SurfZoneRunner, type RideRequest, type SurfZoneBuffers, type SurfZoneRunnerOptions } from '../wave/SurfZoneRunner';
 import type { SprayLook } from '../wave/SprayCloud';
+import type { ParticleLevel } from '../wave/particleBudget';
 import type { SolverDevice, SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { compress, decodeSurfZoneState, encodeSurfZoneState } from '../wave/surfZoneState';
 import type { SurfZoneInit, SurfZoneSnapshot } from './SurfZoneHost';
@@ -13,6 +14,8 @@ export type SurfZoneRequest =
   /** Take this encoded sea in place of the running one (spec L2: a lesson restarts on the same wave). */
   | { type: 'restore'; sea: Uint8Array }
   | { type: 'look'; look: SprayLook }
+  /** The Particles setting (graphics): the spray's and bubbles' budget. */
+  | { type: 'particles'; level: ParticleLevel }
   | { type: 'advance'; steps: number; buffers: SurfZoneBuffers; input?: RideRequest; reactions?: Float32Array };
 
 /** Worker → main thread. */
@@ -43,6 +46,8 @@ export class SurfZoneWorkerCore {
   private runner?: SurfZoneRunner;
   /** The water look the spray is drawn in (G9: Classic keeps its spray), kept for a sea still to start. */
   private sprayLook: SprayLook = 'rich';
+  /** The Particles setting, kept for a sea still to start. */
+  private particleLevel: ParticleLevel = 'high';
   /** A device step under way: an export waits for it, so it never sees half a step. */
   private stepping?: Promise<void>;
 
@@ -57,6 +62,11 @@ export class SurfZoneWorkerCore {
       this.runner?.setSprayLook(request.look);
       return;
     }
+    if (request.type === 'particles') {
+      this.particleLevel = request.level;
+      this.runner?.setParticleLevel(request.level);
+      return;
+    }
     if (request.type === 'start') {
       const { config, options, sea } = request;
       if (this.createDevice && (config.compute ?? 'auto') === 'auto') {
@@ -69,6 +79,7 @@ export class SurfZoneWorkerCore {
           if (sea) runner.simulation.importState(decodeSurfZoneState(sea));
           // Only a ready sea takes steps and exports.
           runner.setSprayLook(this.sprayLook);
+          runner.setParticleLevel(this.particleLevel);
           this.runner = runner;
           this.ready(runner);
         })();
@@ -76,6 +87,7 @@ export class SurfZoneWorkerCore {
       const runner = new SurfZoneRunner(config, options);
       if (sea) runner.simulation.importState(decodeSurfZoneState(sea));
       runner.setSprayLook(this.sprayLook);
+      runner.setParticleLevel(this.particleLevel);
       this.runner = runner;
       this.ready(runner);
       return;

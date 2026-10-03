@@ -1,24 +1,25 @@
 import type { ShadowLevel } from '../scene/ShadowRig';
 import type { WaterLook } from '../scene/water/waterLook';
+import type { ParticleLevel } from '../wave/particleBudget';
 import type { AdvancedGraphics, ConcretePreset, Detection, GraphicsPreset, GraphicsSettings } from './Settings';
 
 /** What each graphics preset sets (plan P8). Ultra supersamples; the Auto benchmark never picks it. */
 export const PRESETS: Record<ConcretePreset, AdvancedGraphics> = {
   low: {
     renderScale: 0.75, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'standard',
-    caustics: false, sprayMist: false, oceanView: 'near', foam: 'simple', waterLook: 'classic',
+    caustics: false, sprayMist: false, oceanView: 'near', foam: 'simple', waterLook: 'classic', particles: 'low',
   },
   medium: {
     renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'standard',
-    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich',
+    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high',
   },
   high: {
     renderScale: 1, nativePixelDensity: true, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'rich',
-    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich',
+    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high',
   },
   ultra: {
     renderScale: 1.25, nativePixelDensity: true, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'rich',
-    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich',
+    caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high',
   },
 };
 
@@ -64,6 +65,8 @@ export interface ResolvedGraphics {
   detailedFoam: boolean;
   /** G8: which water look to draw. */
   waterLook: WaterLook;
+  /** How many whitewater particles the sea keeps (visual only). */
+  particles: ParticleLevel;
   /** Show the menu's waves as a still frame instead of running them. */
   stillBackdrop: boolean;
   shadows: ShadowLevel;
@@ -98,6 +101,7 @@ export function resolveGraphics(graphics: GraphicsSettings, detected: Detection 
     oceanView: graphics.oceanView,
     detailedFoam: graphics.foam === 'detailed',
     waterLook: graphics.waterLook,
+    particles: graphics.particles,
     stillBackdrop: effective === 'low',
     // Custom tunes only the advanced values: the surfer follows the detected preset.
     ...SURFER_DETAIL[effective === 'custom' ? detected?.preset ?? 'medium' : effective],

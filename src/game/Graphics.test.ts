@@ -73,6 +73,14 @@ describe('graphics', () => {
     expect(needsDetection(withPreset(auto, 'low'), undefined, 'x')).toBe(false);
   });
 
+  // The Particles setting by preset: every preset draws the particles as the game always has, but Low (which draws no spray).
+  it('puts Low on Low particles and the others on High, and resolves the level', () => {
+    expect(PRESETS.low.particles).toBe('low');
+    for (const preset of ['medium', 'high', 'ultra'] as const) expect(PRESETS[preset].particles).toBe('high');
+    expect(resolveGraphics({ preset: 'low', ...PRESETS.low }, undefined, 2).particles).toBe('low');
+    expect(resolveGraphics(withAdvanced(defaultSettings().graphics, { particles: 'medium' }), undefined, 2).particles).toBe('medium');
+  });
+
   // G8: the water look by preset.
   it('puts Low on the Classic water and the others on Rich', () => {
     expect(PRESETS.low.waterLook).toBe('classic');

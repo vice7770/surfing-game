@@ -14,6 +14,7 @@ import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { BubbleCloud } from './BubbleCloud';
 import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type SprayLook } from './SprayCloud';
+import type { ParticleLevel } from './particleBudget';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { SurfZoneSimulation, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
 import type { BreakerType } from './SwellReadout';
@@ -351,6 +352,12 @@ export class SurfZoneRunner {
   /** The water look the spray is drawn in: Classic keeps its lip-impact drops as they were before G9. */
   setSprayLook(look: SprayLook): void {
     this.spray.look = look;
+  }
+
+  /** The Particles setting (graphics): the spray's and bubbles' budget, from the next step. Visual only. */
+  setParticleLevel(level: ParticleLevel): void {
+    this.spray.setLevel(level);
+    this.bubbles.setLevel(level);
   }
 
   get windowXMin(): number {

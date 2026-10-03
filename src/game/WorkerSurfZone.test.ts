@@ -205,6 +205,41 @@ describe('WorkerSurfZone', () => {
     host.dispose();
   });
 
+  it('tells the worker’s spray and bubbles the Particles level, before or after the sea is ready', async () => {
+    const port = new FakePort();
+    const host = new WorkerSurfZone(config, port);
+    host.setParticleLevel('low');
+    await host.ready;
+    const runner = () => (port as unknown as { core: { runner: { spray: { level: string }; bubbles: { level: string } } } }).core.runner;
+    expect([runner().spray.level, runner().bubbles.level]).toEqual(['low', 'low']);
+    host.setParticleLevel('medium');
+    await settle();
+    expect([runner().spray.level, runner().bubbles.level]).toEqual(['medium', 'medium']);
+    // The in-page host does the same.
+    const local = new LocalSurfZone(config);
+    local.setParticleLevel('low');
+    expect([local.runner.spray.level, local.runner.bubbles.level]).toEqual(['low', 'low']);
+    host.dispose();
+  });
+
+  // The particles are visual only: the water, the lip and the rider step the same at any level (online, every player's sea agrees).
+  it('steps the same sea, lip and rider at every Particles level; only the particles differ', () => {
+    const high = new LocalSurfZone(config, { rider: true });
+    const low = new LocalSurfZone(config, { rider: true });
+    low.setParticleLevel('low');
+    const input = { paddle: true, popUp: false, steer: 0.3, retry: false };
+    high.advance(90, input);
+    low.advance(90, input);
+    const { spray: _high, ...highStatus } = high.snapshot.status;
+    const { spray: _low, ...lowStatus } = low.snapshot.status;
+    expect({ ...shown(low.snapshot), bubbles: [], status: { ...lowStatus, stepMs: 0 } })
+      .toEqual({ ...shown(high.snapshot), bubbles: [], status: { ...highStatus, stepMs: 0 } });
+    expect(Array.from(low.snapshot.lip.subarray(0, low.snapshot.lipCount * 9))).toEqual(Array.from(high.snapshot.lip.subarray(0, high.snapshot.lipCount * 9)));
+    expect(Array.from(low.snapshot.aeration)).toEqual(Array.from(high.snapshot.aeration));
+    expect(Array.from(low.snapshot.tubes)).toEqual(Array.from(high.snapshot.tubes));
+    expect(low.runner.simulation.exportState()).toEqual(high.runner.simulation.exportState());
+  });
+
   // L2: a lesson's placement asked for with no steps rides in the next advance, and only that one.
   it('carries a placement into the next advance once', async () => {
     const port = new FakePort();

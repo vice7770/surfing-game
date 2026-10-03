@@ -30,6 +30,7 @@ import { stormSwell, type StormSwell } from '../wave/StormSwell';
 import type { ReadoutRow } from '../wave/SwellReadout';
 import { RIDER_PHASES, RIDER_SNAPSHOT, type RideRequest, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { SprayLook } from '../wave/SprayCloud';
+import { particleBudget, type ParticleLevel } from '../wave/particleBudget';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
 import { SEA_COMPONENTS, solverStage, surfZoneSea, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LocalSurfZone, SnapshotSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -309,11 +310,20 @@ export class PhysicalMode {
   host?: SurfZoneHost;
   /** The water look the sea's spray is drawn in (G9: Classic keeps its lip-impact spray as it was). */
   private sprayLook: SprayLook = 'rich';
+  /** The Particles setting (graphics): how many particles the sea's spray and bubbles keep. Visual only. */
+  private particleLevel: ParticleLevel = 'high';
 
   /** Hand the water look to the running sea's spray, and to every sea started after. */
   setSprayLook(look: SprayLook): void {
     this.sprayLook = look;
     this.host?.setSprayLook(look);
+  }
+
+  /** Hand the Particles setting to the running sea, and to every sea started after; the lip sheet draws at its detail. */
+  setParticleLevel(level: ParticleLevel): void {
+    this.particleLevel = level;
+    this.host?.setParticleLevel(level);
+    this.lipSheet.setSubdivisions(particleBudget(level).lipSubdivisions);
   }
   config?: SurfZoneConfig;
   /** The storm behind the running sea, in storm mode. */
@@ -456,6 +466,7 @@ export class PhysicalMode {
     this.stop();
     this.host = host;
     host.setSprayLook(this.sprayLook);
+    host.setParticleLevel(this.particleLevel);
     this.config = config;
     this.storm = swell.storm;
     this.practice = settings.source === 'practice';

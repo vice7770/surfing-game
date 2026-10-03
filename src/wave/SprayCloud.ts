@@ -1,4 +1,5 @@
 import { GRAVITY } from './dispersion';
+import { PARTICLE_BUDGETS, particleBudget, poolSize, type ParticleBudget, type ParticleLevel } from './particleBudget';
 import { seededRandom } from './random';
 import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
 
@@ -140,8 +141,9 @@ const isMist = (kind: number) => kind === MIST || kind === TUBE_MIST;
  * whitewater has its own pool (`whitewaterCapacity`) beside the spray's
  * (`capacity`), so neither crowds the other out. They fly ballistically with quadratic air drag toward the
  * wind, and end when they fall back through the surface or their time is up.
- * Visual only, with no rendering dependency, so it runs in the worker beside
- * the water; `SprayPoints` draws it.
+ * The Particles setting (`setLevel`) spawns a share of them into a share of
+ * the pools. Visual only, with no rendering dependency, so it runs in the
+ * worker beside the water; `SprayPoints` draws it.
  */
 export class SprayCloud {
   /** Per live particle: x, y, z, size, opacity, kind (`SPRAY_STRIDE`), packed at the front. */
@@ -151,6 +153,12 @@ export class SprayCloud {
   whitewaterCount = 0;
   /** The look the spray is drawn in: Classic's lip-impact drops are as they were before G9. */
   look: SprayLook = 'rich';
+  /** The Particles setting (`setLevel`): High is the spray as it always was. */
+  private particleLevel: ParticleLevel = 'high';
+  private budget: Readonly<ParticleBudget> = PARTICLE_BUDGETS.high;
+  /** The pools in use at that budget: spray and mist, and a tube's whitewater. */
+  private sprayRoom: number;
+  private whitewaterRoom: number;
   private readonly x: Float64Array;
   private readonly y: Float64Array;
   private readonly z: Float64Array;
@@ -183,11 +191,28 @@ export class SprayCloud {
     this.owner = make(); this.radial = make(); this.spin = make(); this.lateral = make();
     this.kind = new Uint8Array(total);
     this.particles = new Float32Array(total * SPRAY_STRIDE);
+    this.sprayRoom = capacity;
+    this.whitewaterRoom = whitewaterCapacity;
+  }
+
+  /**
+   * The Particles setting (graphics): a lower level spawns a share of each source's particles into a share of the
+   * pools, and draws the mist narrower. Particles already in the air live out their time.
+   */
+  setLevel(level: ParticleLevel): void {
+    this.particleLevel = level;
+    this.budget = particleBudget(level);
+    this.sprayRoom = poolSize(this.capacity, this.budget);
+    this.whitewaterRoom = poolSize(this.whitewaterCapacity, this.budget);
+  }
+
+  get level(): ParticleLevel {
+    return this.particleLevel;
   }
 
   /** Whether there is room for another particle of spray and mist, or of a tube's whitewater. */
   private room(whitewater: boolean): boolean {
-    return whitewater ? this.whitewaterCount < this.whitewaterCapacity : this.count - this.whitewaterCount < this.capacity;
+    return whitewater ? this.whitewaterCount < this.whitewaterRoom : this.count - this.whitewaterCount < this.sprayRoom;
   }
 
   update(scene: SprayScene, dt: number): void {
@@ -251,7 +276,7 @@ export class SprayCloud {
     }
     const speed = Math.hypot(impact.vx, impact.vy, impact.vz);
     const energy = 0.5 * WATER_DENSITY * impact.volume * speed * speed;
-    const expected = energy * SPRAY_PER_JOULE;
+    const expected = energy * SPRAY_PER_JOULE * this.budget.spawn;
     let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
     const cell = scene.solver.cellIndex(impact.x, impact.z);
     const surface = scene.solver.h[cell] + scene.solver.bed[cell];
@@ -278,7 +303,7 @@ export class SprayCloud {
     const volume = impact.whole ?? impact.volume;
     const speed = Math.hypot(impact.vx, impact.vy, impact.vz);
     const energy = 0.5 * WATER_DENSITY * volume * speed * speed;
-    const expected = energy * SPRAY_PER_JOULE;
+    const expected = energy * SPRAY_PER_JOULE * this.budget.spawn;
     let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
     const cell = scene.solver.cellIndex(impact.x, impact.z);
     const surface = scene.solver.h[cell] + scene.solver.bed[cell];
@@ -303,7 +328,7 @@ export class SprayCloud {
   private strokeSplash(scene: SprayScene, stroke: StrokeSplash): void {
     const push = Math.hypot(stroke.jx, stroke.jz);
     if (!(push > 0) || !(stroke.speed > 0)) return;
-    const expected = push * stroke.speed * SPRAY_PER_JOULE;
+    const expected = push * stroke.speed * SPRAY_PER_JOULE * this.budget.spawn;
     let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
     const cell = scene.solver.cellIndex(stroke.x, stroke.z);
     const surface = scene.solver.h[cell] + scene.solver.bed[cell];
@@ -327,7 +352,7 @@ export class SprayCloud {
    * of the air, carried at its velocity with a fifth either way of variety.
    */
   private tubeBurst(x: number, y: number, z: number, vx: number, vy: number, vz: number, air: number, mistShare: number): void {
-    const expected = air * SPRAY_PER_AIR;
+    const expected = air * SPRAY_PER_AIR * this.budget.spawn;
     let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
     const spread = 0.1 * Math.hypot(vx, vy, vz);
     for (; spawns > 0 && this.room(true); spawns -= 1) {
@@ -359,7 +384,7 @@ export class SprayCloud {
       const radius = Math.sqrt(roller.area / Math.PI);
       if (!(radius > 0)) continue;
       byId.set(roller.id, roller);
-      const wanted = Math.round((roller.area * roller.width) / FOAM_BALL_VOLUME);
+      const wanted = Math.round(((roller.area * roller.width) / FOAM_BALL_VOLUME) * this.budget.foamBall);
       for (let n = held.get(roller.id) ?? 0; n < wanted && this.room(true); n += 1) {
         const k = this.count;
         this.spawn(FOAM_BALL, roller.x, roller.y, roller.z, 0, 0, 0);
@@ -396,7 +421,7 @@ export class SprayCloud {
       const i = (start + n) % source.length;
       if (!(source[i] > 0) || h[i] <= WET) continue;
       const row = Math.floor(i / nx);
-      const expected = source[i] * dt * dx * dz[row] * SPRAY_PER_FOAM;
+      const expected = source[i] * dt * dx * dz[row] * SPRAY_PER_FOAM * this.budget.spawn;
       let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
       const surface = h[i] + bed[i];
       const u = qx[i] / h[i];
@@ -434,7 +459,7 @@ export class SprayCloud {
         // The wind blows toward −z (offshore); the shoreward face of a crest rises toward it.
         const slope = (h[i - nx] + bed[i - nx] - (h[i + nx] + bed[i + nx])) / gap;
         if (slope < FEATHER_SLOPE) continue;
-        const expected = FEATHER_RATE * excess * excess * dx * dz[row] * dt;
+        const expected = FEATHER_RATE * excess * excess * dx * dz[row] * dt * this.budget.spawn;
         let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
         for (; spawns > 0 && this.room(false); spawns -= 1) {
           this.spawn(
@@ -493,6 +518,7 @@ export class SprayCloud {
   }
 
   private pack(): void {
+    const { mistSize } = this.budget;
     for (let k = 0; k < this.count; k += 1) {
       const o = k * SPRAY_STRIDE;
       const t = this.age[k] / this.life[k];
@@ -500,7 +526,7 @@ export class SprayCloud {
       this.particles[o] = this.x[k];
       this.particles[o + 1] = this.y[k];
       this.particles[o + 2] = this.z[k];
-      this.particles[o + 3] = this.size[k] * (mist ? 1 + t : 1);
+      this.particles[o + 3] = this.size[k] * (mist ? (1 + t) * mistSize : 1);
       // A foam ball holds until its roller is gone, then fades over the time it lingers.
       this.particles[o + 4] = this.kind[k] === FOAM_BALL
         ? 0.9 * Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER)

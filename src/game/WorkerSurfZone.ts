@@ -1,5 +1,6 @@
 import type { RideRequest, SurfZoneBuffers, SurfZoneRunnerOptions } from '../wave/SurfZoneRunner';
 import type { SprayLook } from '../wave/SprayCloud';
+import type { ParticleLevel } from '../wave/particleBudget';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { SnapshotSampler, type SurfZoneHost, type SurfZoneInit, type SurfZoneSnapshot } from './SurfZoneHost';
 import { transferables, type SurfZoneReply, type SurfZoneRequest } from './SurfZoneWorkerCore';
@@ -139,6 +140,12 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
   setSprayLook(look: SprayLook): void {
     if (this.disposed) return;
     this.port.postMessage({ type: 'look', look });
+  }
+
+  /** The Particles setting: the worker's spray and bubbles take the budget from their next step. */
+  setParticleLevel(level: ParticleLevel): void {
+    if (this.disposed) return;
+    this.port.postMessage({ type: 'particles', level });
   }
 
   dispose(): void {

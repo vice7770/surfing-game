@@ -2,6 +2,7 @@ import type { RenderableSurfZone } from '../scene/PhysicalSurfaceSource';
 import { sampleSurfaceBed, sampleSurfaceHeight, type SurfaceGrid } from '../scene/WaterSurface';
 import { SurfZoneRunner, type RideRequest, type SurfZoneBuffers, type SurfZoneRunnerOptions, type SurfZoneStatus } from '../wave/SurfZoneRunner';
 import type { SprayLook } from '../wave/SprayCloud';
+import type { ParticleLevel } from '../wave/particleBudget';
 import type { RenderGrid, SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { compress, decodeSurfZoneState, encodeSurfZoneState } from '../wave/surfZoneState';
 import { TUBE_STRIDE, carveAt, carveGrid } from '../wave/tubeTable';
@@ -41,6 +42,8 @@ export interface SurfZoneHost {
   restore(sea: Uint8Array): void;
   /** The water look the spray is drawn in (G9: Classic keeps its lip-impact spray as it was). */
   setSprayLook(look: SprayLook): void;
+  /** The Particles setting (graphics): the spray's and bubbles' budget. Visual only. */
+  setParticleLevel(level: ParticleLevel): void;
   /** Rendered water surface at (x, z), m: the same lookup the water shader uses. */
   heightAt(x: number, z: number): number;
   bedAt(x: number, z: number): number;
@@ -112,6 +115,10 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
 
   setSprayLook(look: SprayLook): void {
     this.runner.setSprayLook(look);
+  }
+
+  setParticleLevel(level: ParticleLevel): void {
+    this.runner.setParticleLevel(level);
   }
 
   dispose(): void {}

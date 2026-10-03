@@ -1,7 +1,7 @@
 // Frame-rate survey (dev only): every screen at every graphics preset, in real Chrome on this machine.
 //   npm run build && npm run preview        (the game on http://localhost:4173; --url to point elsewhere)
 //   npm run survey:fps -- docs/research/fps/<date>-<machine>-1-presets.json --commit=<sha> [--presets=low,medium,high,ultra] [--spots=Beach,Point,Reef,Canyon]
-//   npm run survey:fps -- docs/research/fps/<date>-<machine>-2-settings.json --features --spot=Beach [--only=<setting>,…]
+//   npm run survey:fps -- docs/research/fps/<date>-<machine>-2-settings.json --features --spot=Beach [--swell=Big] [--only=<setting>,…]
 //   npm run report:fps                       (docs/research/fps-report.md from every run)
 // Writes the samples, their statistics and the machine. The display caps the frame rate, so each frame's GPU
 // time is measured too (EXT_disjoint_timer_query_webgl2): the headroom under the cap. It is the game's context
@@ -21,16 +21,18 @@ const WIDTH = Number(args.width ?? 1280);
 const HEIGHT = Number(args.height ?? 720);
 const PRESETS = (args.presets ?? 'low,medium,high,ultra').split(',');
 const SPOTS = (args.spots ?? 'Beach,Point,Reef,Canyon').split(',');
+/** The Surf screen's swell for the rides (Practice, Small, Medium or Big); left as the screen has it when omitted. */
+const SWELL = args.swell;
 /** Seconds sampled per screen: menus, rides. */
 const MENU_SECONDS = Number(args.menuSeconds ?? 6);
 const RIDE_SECONDS = Number(args.rideSeconds ?? 10);
 
 /** Graphics.PRESETS, kept in step by hand (src/game/Graphics.ts). */
 const PRESET_VALUES = {
-  low: { renderScale: 0.75, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'standard', caustics: false, sprayMist: false, oceanView: 'near', foam: 'simple', waterLook: 'classic' },
-  medium: { renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'standard', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich' },
-  high: { renderScale: 1, nativePixelDensity: true, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'rich', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich' },
-  ultra: { renderScale: 1.25, nativePixelDensity: true, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'rich', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich' },
+  low: { renderScale: 0.75, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'standard', caustics: false, sprayMist: false, oceanView: 'near', foam: 'simple', waterLook: 'classic', particles: 'low' },
+  medium: { renderScale: 1, nativePixelDensity: false, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'standard', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high' },
+  high: { renderScale: 1, nativePixelDensity: true, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'rich', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high' },
+  ultra: { renderScale: 1.25, nativePixelDensity: true, frameLimit: 'screen', waterSimulation: 'auto', seaDetail: 'rich', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high' },
 };
 
 /** One advanced setting changed from High at a time (the Custom preset; the surfer keeps High's detail). */
@@ -47,6 +49,8 @@ const FEATURES = [
   ['Ocean view: near', { oceanView: 'near' }],
   ['Foam: simple', { foam: 'simple' }],
   ['Water look: classic', { waterLook: 'classic' }],
+  ['Particles: medium', { particles: 'medium' }],
+  ['Particles: low', { particles: 'low' }],
 ];
 
 // Installed before the game's scripts: a seeded Math.random (the menu's backdrop spot and the sea's
@@ -286,6 +290,10 @@ async function ride(setting, spot, { pause = false } = {}) {
   await sleep(600);
   await page.click('.spot-card', spot);
   await sleep(300);
+  if (SWELL) {
+    await page.click('.segmented button', SWELL);
+    await sleep(300);
+  }
   await page.click('.button-primary', 'Paddle out');
   await onScreen('ride');
   await measure(setting, `Ride · ${spot}`, RIDE_SECONDS, 5000);

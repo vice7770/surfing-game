@@ -29,7 +29,7 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [P8 menus a
   - **Graphics:**
     - presets Auto / Low / Medium / High / Ultra;
     - Auto runs a benchmark on first launch behind the menu. It runs again when the graphics card changes, has a Re-detect button, and warns when performance is low. It also carries out the decided CPU fallback: stage 1 when stage 2 cannot keep real time;
-    - an Advanced section: render scale and pixel density, frame limit, Water simulation (Fast / Accurate / Auto), sea detail, caustics, spray and mist, ocean view distance, foam.
+    - an Advanced section: render scale and pixel density, frame limit, Water simulation (Fast / Accurate / Auto), sea detail, caustics, spray and mist, particles (Low / Medium / High, since 2026-09-30), ocean view distance, foam.
   - **Controls:** keyboard and gamepad can both be remapped. Every menu works with arrows or D-pad, Enter or A, and Esc or B. The touch layout is fixed, with a left/right-handed swap.
   - **Accessibility:** reduced motion, UI scale, high-contrast HUD.
 - [x] **Text and platforms:** English only, with all player-facing text in one typed strings file (a Language tab appears when a second language exists). Desktop keyboard, phone and tablet touch, and gamepad, in portrait and landscape; a ride on a phone suggests landscape. No hover-only interactions.
@@ -209,7 +209,7 @@ Grilled with the user on 2026-09-27 (Q1–Q28, every recommendation accepted). [
   - **Trimmed:** `SurfWater` loses its legacy adapter and the `surface` flow regime; `Surfer` keeps only the pose the physical rider falls back to; `BoardInput` moves into `Controls`; the legacy swell readout and board values go; the sky loses the coastline cards the physical sea always hid.
   - **Kept on purpose:** the test waters, test surfers and the report scripts' helpers, which the suite and the reports still use.
 
-### P1 · Performance (2026-09-27) — `Study done; two decisions open`
+### P1 · Performance (2026-09-27) — `Study done; Particles setting added (2026-09-30); decisions open`
 
 From the user's M4 Pro frame-rate survey, re-run on the M1 Air: [performance study](docs/research/performance-study.md).
 - [x] **The M4 Pro holds 120 fps on every screen at every preset.** Its heaviest reading, the Surf screen, was the survey counting GPU time once per WebGL context. The surfer preview costs about 0.5 ms.
@@ -217,9 +217,13 @@ From the user's M4 Pro frame-rate survey, re-run on the M1 Air: [performance stu
 - [x] **Fixed separately:** the camera jumping as waves pass a waiting rider (PR #28), and the High Reef menu never coming up (PR #32).
 - [x] **Spin-up on the GPU** (PR #39, with the GPU step's guard against diverged water): on the M1 Air the menu's waves now come up in about 4–7 s and a ride in 3–6 s, against 19–44 s (see the P8 section).
 - [x] **The survey times the game's WebGL context alone** (PR #41), with the surfer preview's reported apart.
+- [x] **Particles setting (2026-09-30):** Graphics › Advanced › Particles, Low / Medium / High, applied live. High is the game as it was, particle for particle. Medium and Low spawn a half and a quarter of each source's spray, mist, tube whitewater, foam-ball sprites and bubbles into as much of each pool, draw the mist 0.8 and 0.6 as wide, and draw the Rich lip sheet with fewer spline points. The Low preset takes Low (it draws no spray); the others keep High. Visual only: a sea ridden at High and at Low steps the same water, lip and rider.
+  - **Measured on the M1 Air at the Big swells, under other sessions' load** (the [particle report](docs/research/particle-report.md), and the `?particleBench` dev tool for the GPU): the spray is a few per cent of a High frame's GPU time (0.4–1.9 ms at 2240 × 1260), mostly mist overdraw, but 2.5–3.2 ms close to the Reef's throw and 8.7 ms close to Padang Padang's. Timed back to back on one sea, at the heaviest moment Medium draws it in about a third of High's time and Low in a tenth. In the worker the spray and bubbles take 1.9 ms a step at High, 1.1 at Medium, 0.7 at Low (medians).
+  - **The Rich lip sheet builds into typed arrays:** its rebuild for every snapshot was the page's largest whitewater cost (3.6 ms median, 67 ms at the 95th percentile). The same sheet, point for point, now takes 1.0 ms and 23 ms.
 - [ ] **Open:**
   - decide what the menus' waves may cost (a 60 fps cap on faster displays, a lower scale, or holding them still);
-  - re-measure High on the M1 Air with no other session running, and have Auto weigh High's resolution if it misses 60 fps.
+  - re-measure High on the M1 Air with no other session running, and have Auto weigh High's resolution if it misses 60 fps;
+  - whether Auto's Medium (no WebGPU: the water steps on the CPU in the particles' worker) should take Medium particles, and whether Spray and mist off should stop stepping the spray.
 
 ### P1 · Steam Controller (C1) — `In Progress (hardware check open)`
 

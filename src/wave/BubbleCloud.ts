@@ -1,3 +1,4 @@
+import { PARTICLE_BUDGETS, particleBudget, poolSize, type ParticleBudget, type ParticleLevel } from './particleBudget';
 import { seededRandom } from './random';
 
 /** What the bubbles need from a surf zone: its grid and water, and where bores are making foam. */
@@ -42,6 +43,11 @@ export class BubbleCloud {
   /** Live bubbles, packed at the front of `positions`. */
   count = 0;
   private readonly random: () => number;
+  /** The Particles setting (`setLevel`): High is the bubbles as they always were. */
+  private particleLevel: ParticleLevel = 'high';
+  private budget: Readonly<ParticleBudget> = PARTICLE_BUDGETS.high;
+  /** The pool in use at that budget. */
+  private room: number;
 
   constructor(seed: number, readonly capacity = 4096) {
     this.random = seededRandom(seed, 0xb0bb1e);
@@ -50,6 +56,18 @@ export class BubbleCloud {
     this.z = new Float64Array(capacity);
     this.age = new Float64Array(capacity);
     this.positions = new Float32Array(capacity * 3);
+    this.room = capacity;
+  }
+
+  /** The Particles setting (graphics): a lower level entrains a share of the bubbles into a share of the pool. */
+  setLevel(level: ParticleLevel): void {
+    this.particleLevel = level;
+    this.budget = particleBudget(level);
+    this.room = poolSize(this.capacity, this.budget);
+  }
+
+  get level(): ParticleLevel {
+    return this.particleLevel;
   }
 
   update(scene: BubbleScene, dt: number): void {
@@ -78,14 +96,14 @@ export class BubbleCloud {
     const source = foam.source;
     // Start the scan at a random cell, so a full pool is shared along and across the surf zone.
     const start = Math.floor(this.random() * source.length);
-    for (let n = 0; n < source.length && this.count < this.capacity; n += 1) {
+    for (let n = 0; n < source.length && this.count < this.room; n += 1) {
       const i = (start + n) % source.length;
       if (!(source[i] > 0) || h[i] <= DEPTH.min + WET) continue;
       const row = Math.floor(i / nx);
-      const expected = source[i] * dt * dx * dz[row] * BUBBLES_PER_FOAM;
+      const expected = source[i] * dt * dx * dz[row] * BUBBLES_PER_FOAM * this.budget.bubbles;
       let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
       const surface = h[i] + bed[i];
-      for (; spawns > 0 && this.count < this.capacity; spawns -= 1) {
+      for (; spawns > 0 && this.count < this.room; spawns -= 1) {
         const k = this.count;
         this.x[k] = xCenters[i - row * nx] + (this.random() - 0.5) * dx;
         this.z[k] = zCenters[row] + (this.random() - 0.5) * dz[row];

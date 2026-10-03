@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE, SprayCloud, splashLaunch, type LipImpact, type SprayScene, type StrokeSplash } from './SprayCloud';
 import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
+import { PARTICLE_BUDGETS } from './particleBudget';
+import { busyWhitewater } from './particleTestSupport';
 
 /** Flat water 2 m deep over 10 m × 40 m (1 m cells), still, with no bores; `crest` raises a steep shoreward-facing step. */
 function flatScene(windSpeed = 0, lipImpacts: LipImpact[] = [], crest = false): SprayScene {
@@ -284,5 +286,116 @@ describe('the spit and the eruption (G9)', () => {
     expect(velocity.y / eruption.speed).toBeGreaterThan(0.85);
     expect(velocity.y / eruption.speed).toBeLessThan(1.15);
     expect(Math.hypot(velocity.x, velocity.z)).toBeLessThan(0.1 * eruption.speed);
+  });
+});
+
+describe('the Particles setting', () => {
+  const run = (cloud: SprayCloud, frames = 240) => {
+    for (let frame = 0; frame < frames; frame += 1) cloud.update(busyWhitewater(frame), 1 / 60);
+    return cloud;
+  };
+  const kinds = (cloud: SprayCloud) => {
+    const counts = [0, 0, 0, 0, 0];
+    for (let k = 0; k < cloud.count; k += 1) counts[cloud.particles[k * SPRAY_STRIDE + 5]] += 1;
+    return counts;
+  };
+  const checksum = (cloud: SprayCloud) => {
+    let sum = 0;
+    for (let i = 0; i < cloud.count * SPRAY_STRIDE; i += 1) sum += cloud.particles[i] * ((i % 7) + 1);
+    return sum;
+  };
+  const drawn = (cloud: SprayCloud) => Array.from(cloud.particles.subarray(0, cloud.count * SPRAY_STRIDE));
+
+  it('keeps the spray exactly as it was at High, the default, in both looks', () => {
+    // Pinned from the code before the Particles setting: the same scene, seed and pools, 240 frames.
+    const rich = run(new SprayCloud(3));
+    expect(rich.count).toBe(4041);
+    expect(rich.whitewaterCount).toBe(101);
+    expect(kinds(rich)).toEqual([2355, 1585, 66, 9, 26]);
+    expect(checksum(rich)).toBeCloseTo(396223.58700532693, 6);
+    const classic = new SprayCloud(3);
+    classic.look = 'classic';
+    run(classic);
+    expect(classic.count).toBe(4087);
+    expect(kinds(classic)).toEqual([2545, 1440, 66, 13, 23]);
+    expect(checksum(classic)).toBeCloseTo(403684.03047078295, 6);
+    // Chosen, High is the default, particle for particle.
+    const high = new SprayCloud(3);
+    high.setLevel('high');
+    expect(drawn(run(high))).toEqual(drawn(rich));
+  });
+
+  it('spawns a share of each source’s particles at Medium and Low', () => {
+    const spit: TubeSpit = { x: 5, y: 1, z: 20, dirX: 1, dirZ: 0, speed: 6, airRate: 3 };
+    const roller: TubeRoller = { id: 1, x: 5, y: 0.5, z: 20, dirX: 0, dirZ: 1, speed: 4, area: 1.5, width: 1 };
+    const jet = impact(0.4);
+    const energy = 0.5 * 1025 * 0.4 * Math.hypot(jet.vx, jet.vy, jet.vz) ** 2;
+    for (const level of ['high', 'medium', 'low'] as const) {
+      const { spawn, foamBall } = PARTICLE_BUDGETS[level];
+      const splash = new SprayCloud(4);
+      splash.setLevel(level);
+      splash.update(flatScene(0, [jet]), 1 / 60);
+      // 0.05 drawn particles per joule of the impact, a share of them.
+      expect(Math.abs(splash.count - energy * 0.05 * spawn)).toBeLessThanOrEqual(1);
+      const tube = new SprayCloud(6);
+      tube.setLevel(level);
+      tube.update({ ...flatScene(), spits: [spit] }, 0.5);
+      expect(tube.count).toBe(1.5 * SPRAY_PER_AIR * spawn);
+      const ball = new SprayCloud(8);
+      ball.setLevel(level);
+      ball.update({ ...flatScene(), rollers: [roller] }, 1 / 60);
+      expect(ball.count).toBe(Math.round((1.5 / FOAM_BALL_VOLUME) * foamBall));
+    }
+  });
+
+  it('fills a share of each pool at Medium and Low', () => {
+    const spit: TubeSpit = { x: 5, y: 1, z: 20, dirX: 1, dirZ: 0, speed: 6, airRate: 40 };
+    for (const level of ['high', 'medium', 'low'] as const) {
+      // 64 places for spray and mist, 16 for a tube's whitewater, filled to the brim.
+      const cloud = new SprayCloud(12, 64, 16);
+      cloud.setLevel(level);
+      cloud.update({ ...flatScene(0, [impact(2)]), spits: [spit] }, 1 / 60);
+      expect(cloud.count - cloud.whitewaterCount).toBe(64 * PARTICLE_BUDGETS[level].pool);
+      expect(cloud.whitewaterCount).toBe(16 * PARTICLE_BUDGETS[level].pool);
+    }
+  });
+
+  it('draws the mist narrower at Medium and Low, the drops and foam balls as wide as ever', () => {
+    const widths = (level: 'high' | 'medium' | 'low') => {
+      const cloud = new SprayCloud(14);
+      cloud.setLevel(level);
+      // Freshly thrown, so no mist has grown with age yet.
+      cloud.update({ ...flatScene(0, [impact(0.4)]), rollers: [{ id: 1, x: 5, y: 0.5, z: 20, dirX: 0, dirZ: 1, speed: 4, area: 1.5, width: 1 }] }, 1e-4);
+      const byKind: number[][] = [[], [], []];
+      for (let k = 0; k < cloud.count; k += 1) byKind[cloud.particles[k * SPRAY_STRIDE + 5]].push(cloud.particles[k * SPRAY_STRIDE + 3]);
+      return byKind;
+    };
+    for (const level of ['high', 'medium', 'low'] as const) {
+      const [drops, mist, balls] = widths(level);
+      const { mistSize } = PARTICLE_BUDGETS[level];
+      expect(mist.length).toBeGreaterThan(0);
+      expect(Math.min(...mist)).toBeGreaterThanOrEqual(0.35 * mistSize - 1e-3);
+      expect(Math.max(...mist)).toBeLessThanOrEqual(0.8 * mistSize + 1e-3);
+      expect(Math.min(...drops)).toBeGreaterThanOrEqual(0.06 - 1e-6);
+      expect(Math.max(...drops)).toBeLessThanOrEqual(0.14 + 1e-6);
+      expect(balls.length).toBeGreaterThan(0);
+      expect(Math.min(...balls)).toBeGreaterThanOrEqual(0.5 - 1e-6);
+      expect(Math.max(...balls)).toBeLessThanOrEqual(0.8 + 1e-6);
+    }
+  });
+
+  it('takes a new level at once: particles in the air live out their time, new ones follow the budget', () => {
+    const cloud = new SprayCloud(15, 400);
+    run(cloud, 30);
+    expect(cloud.count - cloud.whitewaterCount).toBe(400);
+    cloud.setLevel('low');
+    cloud.update(busyWhitewater(30), 1 / 60);
+    // Nothing is taken out of the air; nothing new is thrown while the pool is over its Low share.
+    expect(cloud.count - cloud.whitewaterCount).toBeGreaterThan(100);
+    for (let frame = 31; frame < 330; frame += 1) cloud.update(busyWhitewater(frame), 1 / 60);
+    expect(cloud.count - cloud.whitewaterCount).toBeLessThanOrEqual(100);
+    cloud.setLevel('high');
+    for (let frame = 330; frame < 360; frame += 1) cloud.update(busyWhitewater(frame), 1 / 60);
+    expect(cloud.count - cloud.whitewaterCount).toBe(400);
   });
 });
