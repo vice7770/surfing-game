@@ -1,0 +1,567 @@
+{
+  "schema": 1,
+  "preparedOnly": true,
+  "numericalExecution": false,
+  "timingExecuted": false,
+  "canonicalRef": "1bcc7c0c9",
+  "root": "/Users/regina/Desktop/Projects/surfing-game",
+  "frozenRoot": "/private/tmp/surf-tube-stability-current-20261003",
+  "authority": {
+    "source": {
+      "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/source.json.gz",
+      "sha256": "10b2651ef6b7f2a6a701ec98f0e266fe411a3c2e2e3ada8190ddd1fea1ca2783",
+      "bytes": 17543451
+    },
+    "held": {
+      "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/report.json",
+      "sha256": "b4ebf747f023c7f3790747bd059fef179f31b1c71cf4ce6253c4e630d76413dd",
+      "bytes": 361427
+    },
+    "fps": {
+      "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-fps.json",
+      "sha256": "528df2bb48ec60f8362c5c8e77c54e4110081b3b456a2f7091bfc5ed81d205fc",
+      "bytes": 389383
+    },
+    "meta": {
+      "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-adapter-meta.json",
+      "sha256": "f70dc637e04618042d8719340a37ee56f7a75171ae673afa89c0225a72aba3c9",
+      "bytes": 4684
+    },
+    "captureHelper": {
+      "path": "/private/tmp/rich-patch-held-helper-v2.mjs",
+      "sha256": "be839453b1555d33b5fd81f17ddf00ab15c327cc70caf0654a09af2823cffabc",
+      "bytes": 37652
+    }
+  },
+  "rawSource": {
+    "bytes": 70059127,
+    "sha256": "c4e6987fdeb7a53aad9316efe299aa56b0118d297390ee3981c727bec04c0d4c"
+  },
+  "sourceAuthorityManifest": {
+    "path": "/private/tmp/surf-rich-patch-half-metre-20261003/half-metre-manifest.json",
+    "bytes": 152481,
+    "sha256": "bd88785a8117db7f5a93e788ba195f6defd22fee75bd6c173d24323e3c497212"
+  },
+  "artifactSummarySha256": "7c2e14bade277ece4f1100a09dda8fe731073a41572a6619cfeb2970328fc7a3",
+  "artifacts": [
+    {
+      "path": "/private/tmp/surf-tube-stability-current-20261003/index.html",
+      "bytes": 1626,
+      "sha256": "df9f5b5b9064eeb635ad5ce1838f2f06aee37b9fe1481f8ab1c5ac360571552b"
+    },
+    {
+      "path": "/private/tmp/surf-tube-stability-current-20261003/assets/WorkerSurfZone-DsoxOk5J.js",
+      "bytes": 848244,
+      "sha256": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606"
+    },
+    {
+      "path": "/private/tmp/surf-tube-stability-current-20261003/assets/devStepping-CLfXNMh-.js",
+      "bytes": 320,
+      "sha256": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677"
+    },
+    {
+      "path": "/private/tmp/surf-tube-stability-current-20261003/assets/index-DA8NEfOT.css",
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    {
+      "path": "/private/tmp/surf-tube-stability-current-20261003/assets/index-Dhp1E5Jm.js",
+      "bytes": 582425,
+      "sha256": "cff7f235604df399fe95d2f872a877ca95fca141a66e588c0d9a5eb8efc90cf3"
+    },
+    {
+      "path": "/private/tmp/surf-tube-stability-current-20261003/assets/jevRecorder-DKAk_GxP.js",
+      "bytes": 15917,
+      "sha256": "aa5a9ec59dc47571b87c9a62901bca07c54e39430b6cafe5d4abe8d05dc61300"
+    },
+    {
+      "path": "/private/tmp/surf-tube-stability-current-20261003/assets/particleBench-UFIniUOA.js",
+      "bytes": 10708,
+      "sha256": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e"
+    },
+    {
+      "path": "/private/tmp/surf-tube-stability-current-20261003/assets/rideRecorder-DdzH6W7j.js",
+      "bytes": 41108,
+      "sha256": "cc1f6cc0fb23c4aa8416dbe123564f02239e4db55fbc14f97d2d51072c540674"
+    },
+    {
+      "path": "/private/tmp/surf-tube-stability-current-20261003/assets/surfZoneWorker-BH6FhcTP.js",
+      "bytes": 436884,
+      "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+    },
+    {
+      "path": "/private/tmp/surf-tube-stability-current-20261003/assets/waterSheet-heYJdhwA.js",
+      "bytes": 11689,
+      "sha256": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+    }
+  ],
+  "cases": [
+    {
+      "file": "barrels/pad19-a20-l12.bin",
+      "path": "/private/tmp/surf-tube-stability-current-20261003/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37",
+      "sameAsCanonicalPublic": true
+    },
+    {
+      "file": "barrels/pad19-a30-l12.bin",
+      "path": "/private/tmp/surf-tube-stability-current-20261003/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041",
+      "sameAsCanonicalPublic": true
+    },
+    {
+      "file": "barrels/pad19-a45-l12.bin",
+      "path": "/private/tmp/surf-tube-stability-current-20261003/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af",
+      "sameAsCanonicalPublic": true
+    },
+    {
+      "file": "barrels/periodic-padang19s-l12.bin",
+      "path": "/private/tmp/surf-tube-stability-current-20261003/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab",
+      "sameAsCanonicalPublic": true
+    }
+  ],
+  "modules": [
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+      "file": "src/wave/barrel/crestRays.ts",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+      "file": "src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "file": "src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+      "file": "src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "file": "src/wave/barrel/sweptLoft.ts",
+      "bytes": 54858,
+      "sha256": "bda23f0eb188a9568cbe368b542cff2e073bd5e6e7d98bdda4f3d84b8f961f7b",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+      "file": "src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Bathymetry.ts",
+      "file": "src/wave/Bathymetry.ts",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/pool.ts",
+      "file": "src/wave/pool.ts",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState.ts",
+      "file": "src/wave/SeaState.ts",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/random.ts",
+      "file": "src/wave/random.ts",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sliceClock.ts",
+      "file": "src/wave/barrel/sliceClock.ts",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+      "file": "src/wave/barrel/lipSheet.ts",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibrary.ts",
+      "file": "src/wave/barrel/barrelLibrary.ts",
+      "bytes": 2036,
+      "sha256": "b58c4038afae8f3994cbf9e58a90a9806ac61d717a0cb51940ff7c5cd059d974",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibraryIndex.ts",
+      "file": "src/wave/barrel/barrelLibraryIndex.ts",
+      "bytes": 1662,
+      "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/profileFormat.ts",
+      "file": "src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "sameAsCanonical": true
+    }
+  ],
+  "compiled": [
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/barrel/frontRecords.js",
+      "bytes": 1989,
+      "sha256": "8a2add2d8927dd1d637449e3d47f8f02b98891a74afca16529566e0173178ce4",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/dispersion.js",
+      "bytes": 3325,
+      "sha256": "2bb794116487e8648de4245cf49570af87c3f8288253528c08047e1cf1b50a16",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/barrel/ProfileLibrary.js",
+      "bytes": 13818,
+      "sha256": "193baed2e3f7924a8a8d8deafb841fb759a616c3dec2564e9cd37fa5256a955b",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/barrel/crestRays.js",
+      "bytes": 16222,
+      "sha256": "3f2451b3f54696d0947976ad3712bb83f429f4bfd69ba3c67600667dfb87f876",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/random.js",
+      "bytes": 535,
+      "sha256": "7a12979b3d1e2824b908f15c7d2d1880ca701d810f9c7895c51b5285ebc5eace",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/random.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/SeaState.js",
+      "bytes": 8153,
+      "sha256": "4ea257afc19beef814209f0e5d3e2c0afb0af75a561bf5bba1b8768a7114c391",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/pool.js",
+      "bytes": 12238,
+      "sha256": "c72f2feb8a7722a966fb82d46fd4128facd643695d3318b368a17a3b3e0cacf4",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/pool.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/Bathymetry.js",
+      "bytes": 18787,
+      "sha256": "1d8841d3c1369092f9bcd5fc596f6fad52f3f0454774d2a23666dce0d30720c6",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Bathymetry.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/barrel/sliceClock.js",
+      "bytes": 10979,
+      "sha256": "faca7e1ce2e0e216d8e31788800570b41724a244d134f3712ce59bf0f5bc76b1",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sliceClock.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/barrel/barrelSpots.js",
+      "bytes": 8381,
+      "sha256": "c5209e9d87e3d457a3abae91ab011599ac7393a1d9b745fe66a7c759e48029b4",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/barrel/lipSheet.js",
+      "bytes": 16258,
+      "sha256": "78fcddcc7033ba878ad43fadfcb343d8eb51563c613816f11f4ff49f55f63f85",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/barrel/sweptLoft.js",
+      "bytes": 54940,
+      "sha256": "adffd0c91447ef93d5dde8d8a959168118ccc3cf005a569f96b2957a5f8b1b18",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/barrel/barrelLibraryIndex.js",
+      "bytes": 1853,
+      "sha256": "c24bda7258657e7189a1a0cb919b56b0834f43656ba08441572913bcc00a1ef2",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibraryIndex.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/barrel/profileFormat.js",
+      "bytes": 2399,
+      "sha256": "bd99fa708975655473eb60a3cc64a5449b2b05cf3dc96a10792ae9c6fefa3c16",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/profileFormat.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/oracle/src/wave/barrel/barrelLibrary.js",
+      "bytes": 1847,
+      "sha256": "e5b991ba42c05ef1d649d32f94293d7af1b8168f6d3619b66d82ed7e6a06e303",
+      "sourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibrary.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/original-module.cjs",
+      "bytes": 2034,
+      "sha256": "2ed575a2643e2341bf5ae4c91b85be1328662ac27d659aca956a23ba08a54eb4",
+      "sourcePath": "/private/tmp/crest-ray-prepare-cost-20261003/entry.ts",
+      "arithmeticChanges": false,
+      "transformation": "TypeScript type erasure, ES2022/CommonJS; original methods unmodified"
+    }
+  ],
+  "retainedSources": [
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/barrel/crestRays.ts",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/barrel/sweptLoft.ts",
+      "bytes": 54858,
+      "sha256": "bda23f0eb188a9568cbe368b542cff2e073bd5e6e7d98bdda4f3d84b8f961f7b"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/Bathymetry.ts",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/pool.ts",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/SeaState.ts",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/random.ts",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/barrel/sliceClock.ts",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/barrel/lipSheet.ts",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/barrel/barrelLibrary.ts",
+      "bytes": 2036,
+      "sha256": "b58c4038afae8f3994cbf9e58a90a9806ac61d717a0cb51940ff7c5cd059d974"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/barrel/barrelLibraryIndex.ts",
+      "bytes": 1662,
+      "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/retained-original/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+    }
+  ],
+  "compiler": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/lib/typescript.js",
+    "bytes": 9112572,
+    "sha256": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675",
+    "version": "5.9.3",
+    "options": {
+      "target": 9,
+      "module": 1,
+      "moduleResolution": 2,
+      "useDefineForClassFields": true,
+      "sourceMap": false,
+      "declaration": false,
+      "removeComments": false
+    }
+  },
+  "generated": [
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/entry.ts",
+      "bytes": 519,
+      "sha256": "faa92b255dbc8ca0fc9cd8ca4b4bb57f9f9a8007a22ef3d4d755451b3f1f475f"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/original-module.cjs",
+      "bytes": 2034,
+      "sha256": "2ed575a2643e2341bf5ae4c91b85be1328662ac27d659aca956a23ba08a54eb4"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/guard.mjs",
+      "bytes": 1969,
+      "sha256": "188d131ed37e39d6560dfc92b020f16b468101089c545c5277cee059b7d78774"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/driver.mjs",
+      "bytes": 11700,
+      "sha256": "f226fa843e95742e4c23bc12572b47607fb5f50ba33297c19c5c0ece310419d6"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/prepare.mjs",
+      "bytes": 9570,
+      "sha256": "543bc400c99a8a114e51a1e8a2ccda4dccc6f98f30a459606f0467d005380141"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/guard.test.mjs",
+      "bytes": 2022,
+      "sha256": "29b82175df2b5ab12261a356690df71f0a694a50f3fc4c4d0e51df9b8aa88b16"
+    },
+    {
+      "path": "/private/tmp/crest-ray-prepare-cost-20261003/range-selector-proof.md",
+      "bytes": 3074,
+      "sha256": "2c0f9e8644fcd79bdfff8879d7009eec4818ba80fc460d428e7c6db53c202fb7"
+    }
+  ],
+  "front": {
+    "path": "/private/tmp/crest-ray-prepare-cost-20261003/front.bin",
+    "bytes": 73728,
+    "sha256": "a2c1724c2b487259d0999794aefc2815bb49d9bfab2b08e44dcc4caf8924d7b6",
+    "type": "Float32Array",
+    "length": 18432,
+    "count": 136,
+    "activeBytes": 4896
+  },
+  "fixture": {
+    "config": {
+      "spot": "padang",
+      "seed": 8761,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "seaTime": 401.074379890966,
+    "compute": "gpu",
+    "cells": 116000,
+    "renderGrid": {
+      "xMin": -160,
+      "zMin": -1233.0249111256337,
+      "spacing": 2,
+      "nx": 161,
+      "nz": 633
+    },
+    "maskGrid": {
+      "xMin": -160,
+      "zMin": -1233.0249111256337,
+      "spacing": 1,
+      "nx": 321,
+      "nz": 1265
+    },
+    "retainedContactMs": 2.5
+  },
+  "ordinary": {
+    "edition": "rich-patch-v2-baseline",
+    "renderedFps": 60,
+    "freshSnapshotsPerSecond": 56.45
+  },
+  "params": {
+    "slope": 0.05263157894736842,
+    "extension": 1.5,
+    "spacing": 0.5,
+    "minSpacing": 0.21428571428571427,
+    "samples": 134,
+    "maxSlices": 298
+  },
+  "schedule": {
+    "warm": 5,
+    "measured": 30,
+    "finalDiagnosticPass": 1,
+    "operationDeadlineMs": 10000,
+    "processDeadlineMs": 30000
+  },
+  "rangeSelector": {
+    "kind": "untimed original contact build with neutral still-level callback",
+    "heightOutputIsGeometryAuthority": false,
+    "proofPath": "/private/tmp/crest-ray-prepare-cost-20261003/range-selector-proof.md"
+  },
+  "limitations": [
+    "Actual start observer captured barrelCaseCount4 but not original request asset bytes/hashes. Library uses frozen immutable default assets byte-equal to canonical public assets, under original guarded loader/index contract.",
+    "One held fixture only. No borrowed-plan implementation, correctness replay, source chronology, contact geometry quality, renderer measurement or FPS saving is inferred."
+  ]
+}

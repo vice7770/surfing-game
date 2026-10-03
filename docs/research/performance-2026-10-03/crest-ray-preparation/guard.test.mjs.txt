@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { countGuard, configGuard, discoverRuns, expectedConfig } from './guard.mjs';
+function fixture(rows,capacity=rows.length){const a=new Float32Array(9*capacity);rows.forEach(([id,sigma],k)=>{a[9*k+2]=id;a[9*k+3]=sigma;});return a;}
+test('exact ordinary config passes; numeric resolution and seed changes fail',()=>{configGuard({...expectedConfig});assert.throws(()=>configGuard({...expectedConfig,dx:4}));assert.throws(()=>configGuard({...expectedConfig,seed:1}));});
+test('missing and extra config fields fail',()=>{const c={...expectedConfig};delete c.compute;assert.throws(()=>configGuard(c));assert.throws(()=>configGuard({...expectedConfig,contact:true}));});
+test('front count is an integer active prefix bounded by capacity',()=>{countGuard(2,27);assert.throws(()=>countGuard(4,27));assert.throws(()=>countGuard(1.5,27));assert.throws(()=>countGuard(-1,27));assert.throws(()=>countGuard(1,28));});
+test('two contiguous ranges preserve source order and complete endpoints',()=>{assert.deepEqual(discoverRuns(fixture([[7,0],[7,3],[9,0],[9,2]]),4),[{id:7,start:0,end:2,first:0,last:3},{id:9,start:2,end:4,first:0,last:2}]);});
+test('singleton and collapsed sigma run do not become tangents',()=>{assert.deepEqual(discoverRuns(fixture([[1,0],[2,0],[2,0],[3,0],[3,4]]),5),[{id:3,start:3,end:5,first:0,last:4}]);});
+test('same front ID in separated runs is not merged',()=>{assert.deepEqual(discoverRuns(fixture([[1,0],[1,2],[2,0],[1,0],[1,5]]),5),[{id:1,start:0,end:2,first:0,last:2},{id:1,start:3,end:5,first:0,last:5}]);});
+test('active prefix excludes trailing sentinel capacity and preserves truncated final run',()=>{const a=fixture([[1,0],[1,2],[1,4],[2,0],[2,5]],8);assert.deepEqual(discoverRuns(a,3),[{id:1,start:0,end:3,first:0,last:4}]);});
+test('discovery preserves invalid interior sigma instead of sorting or repairing',()=>{assert.deepEqual(discoverRuns(fixture([[1,0],[1,-1],[1,4]]),3),[{id:1,start:0,end:3,first:0,last:4}]);});

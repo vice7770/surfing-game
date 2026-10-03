@@ -1,0 +1,1080 @@
+{
+  "schema": 1,
+  "kind": "CPU-only CrestRayPlan.prepareRecords isolated cost",
+  "startedAt": "2026-10-03T22:57:52.403Z",
+  "status": "complete",
+  "phase": "complete",
+  "manifestSha256": "ee0fb0bc5b468079f8a64d5d75088654e0499481a3f122b034d50924f29e5cc6",
+  "authority": {
+    "source": {
+      "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/source.json.gz",
+      "sha256": "10b2651ef6b7f2a6a701ec98f0e266fe411a3c2e2e3ada8190ddd1fea1ca2783",
+      "bytes": 17543451
+    },
+    "held": {
+      "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/report.json",
+      "sha256": "b4ebf747f023c7f3790747bd059fef179f31b1c71cf4ce6253c4e630d76413dd",
+      "bytes": 361427
+    },
+    "fps": {
+      "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-fps.json",
+      "sha256": "528df2bb48ec60f8362c5c8e77c54e4110081b3b456a2f7091bfc5ed81d205fc",
+      "bytes": 389383
+    },
+    "meta": {
+      "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-adapter-meta.json",
+      "sha256": "f70dc637e04618042d8719340a37ee56f7a75171ae673afa89c0225a72aba3c9",
+      "bytes": 4684
+    },
+    "captureHelper": {
+      "path": "/private/tmp/rich-patch-held-helper-v2.mjs",
+      "sha256": "be839453b1555d33b5fd81f17ddf00ab15c327cc70caf0654a09af2823cffabc",
+      "bytes": 37652
+    }
+  },
+  "fixture": {
+    "config": {
+      "spot": "padang",
+      "seed": 8761,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "seaTime": 401.074379890966,
+    "compute": "gpu",
+    "cells": 116000,
+    "renderGrid": {
+      "xMin": -160,
+      "zMin": -1233.0249111256337,
+      "spacing": 2,
+      "nx": 161,
+      "nz": 633
+    },
+    "maskGrid": {
+      "xMin": -160,
+      "zMin": -1233.0249111256337,
+      "spacing": 1,
+      "nx": 321,
+      "nz": 1265
+    },
+    "retainedContactMs": 2.5
+  },
+  "front": {
+    "path": "/private/tmp/crest-ray-prepare-cost-20261003/front.bin",
+    "bytes": 73728,
+    "sha256": "a2c1724c2b487259d0999794aefc2815bb49d9bfab2b08e44dcc4caf8924d7b6",
+    "type": "Float32Array",
+    "length": 18432,
+    "count": 136,
+    "activeBytes": 4896
+  },
+  "cases": [
+    {
+      "file": "barrels/pad19-a20-l12.bin",
+      "path": "/private/tmp/surf-tube-stability-current-20261003/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37",
+      "sameAsCanonicalPublic": true
+    },
+    {
+      "file": "barrels/pad19-a30-l12.bin",
+      "path": "/private/tmp/surf-tube-stability-current-20261003/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041",
+      "sameAsCanonicalPublic": true
+    },
+    {
+      "file": "barrels/pad19-a45-l12.bin",
+      "path": "/private/tmp/surf-tube-stability-current-20261003/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af",
+      "sameAsCanonicalPublic": true
+    },
+    {
+      "file": "barrels/periodic-padang19s-l12.bin",
+      "path": "/private/tmp/surf-tube-stability-current-20261003/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab",
+      "sameAsCanonicalPublic": true
+    }
+  ],
+  "modules": [
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+      "file": "src/wave/barrel/crestRays.ts",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+      "file": "src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "file": "src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+      "file": "src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "file": "src/wave/barrel/sweptLoft.ts",
+      "bytes": 54858,
+      "sha256": "bda23f0eb188a9568cbe368b542cff2e073bd5e6e7d98bdda4f3d84b8f961f7b",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+      "file": "src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Bathymetry.ts",
+      "file": "src/wave/Bathymetry.ts",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/pool.ts",
+      "file": "src/wave/pool.ts",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState.ts",
+      "file": "src/wave/SeaState.ts",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/random.ts",
+      "file": "src/wave/random.ts",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sliceClock.ts",
+      "file": "src/wave/barrel/sliceClock.ts",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+      "file": "src/wave/barrel/lipSheet.ts",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibrary.ts",
+      "file": "src/wave/barrel/barrelLibrary.ts",
+      "bytes": 2036,
+      "sha256": "b58c4038afae8f3994cbf9e58a90a9806ac61d717a0cb51940ff7c5cd059d974",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibraryIndex.ts",
+      "file": "src/wave/barrel/barrelLibraryIndex.ts",
+      "bytes": 1662,
+      "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8",
+      "sameAsCanonical": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/profileFormat.ts",
+      "file": "src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "sameAsCanonical": true
+    }
+  ],
+  "schedule": {
+    "warm": 5,
+    "measured": 30,
+    "finalDiagnosticPass": 1,
+    "operationDeadlineMs": 10000,
+    "processDeadlineMs": 30000
+  },
+  "selector": {
+    "kind": "untimed original contact build with neutral still-level callback",
+    "heightOutputIsGeometryAuthority": false,
+    "proofPath": "/private/tmp/crest-ray-prepare-cost-20261003/range-selector-proof.md"
+  },
+  "limitations": [
+    "Actual start observer captured barrelCaseCount4 but not original request asset bytes/hashes. Library uses frozen immutable default assets byte-equal to canonical public assets, under original guarded loader/index contract.",
+    "One held fixture only. No borrowed-plan implementation, correctness replay, source chronology, contact geometry quality, renderer measurement or FPS saving is inferred."
+  ],
+  "rawElapsedMs": [
+    0.1319999999999908,
+    0.23075000000000045,
+    0.054417000000000826,
+    0.056834000000009155,
+    0.11245800000000372,
+    0.20595799999999542,
+    0.059208999999995626,
+    0.07395799999999042,
+    0.07466700000000515,
+    0.05283299999999258,
+    0.04854100000000017,
+    0.05316700000000196,
+    0.08845800000000281,
+    0.08187499999999659,
+    0.0993750000000091,
+    0.04720899999999517,
+    0.18658299999999883,
+    0.04749999999999943,
+    0.04691599999999596,
+    0.05579099999999926,
+    0.04579100000000835,
+    0.11991700000000094,
+    0.051625000000001364,
+    0.06199999999999761,
+    0.04662500000000591,
+    0.04441700000000992,
+    0.1842500000000058,
+    0.04783299999999713,
+    0.08320799999999906,
+    0.048749999999998295
+  ],
+  "decodedLibrary": [
+    {
+      "id": "pad19-a20-l12",
+      "slope": 0.0526316,
+      "nonlinearity": 0.2,
+      "framesLength": 37120,
+      "framesSha256": "a276b8c34661d684164d814356d083ac82f1544bf475fe1506ed31f3b561f834",
+      "tipVelocitySha256": "fe984ed19a498110ee60f7ed068f1b9ebd3be182989c837cfae7b655bcad48e2"
+    },
+    {
+      "id": "pad19-a30-l12",
+      "slope": 0.0526316,
+      "nonlinearity": 0.3,
+      "framesLength": 40448,
+      "framesSha256": "66c9655dd93c02f35413147c74dfe87466c7f6e2d0681490a6bf62025cdbd4e7",
+      "tipVelocitySha256": "73c71608166bfec34959174a6fd128e7375f0104a4422c63a5bd9b035f2b2068"
+    },
+    {
+      "id": "pad19-a45-l12",
+      "slope": 0.0526316,
+      "nonlinearity": 0.45,
+      "framesLength": 41728,
+      "framesSha256": "0f2fc37484e7a2545aae1ca7375158d2a8e9bc73979ab017e7d2fd4ccd7ff96c",
+      "tipVelocitySha256": "78e3755eceae64b67d315be6afa4e6027ec8430b275477f13209b9fa61776c9c"
+    },
+    {
+      "id": "periodic-padang19s-l12",
+      "slope": 0.0526316,
+      "nonlinearity": 0.1414,
+      "framesLength": 45056,
+      "framesSha256": "57064eb98efd1e2c93c3a9a32f96eec71fce0447a8304307928f9cc292511f1f",
+      "tipVelocitySha256": "edcec6822303cd1f679f7634aed8930de2895bbef15739cb09833dd33a291a28"
+    }
+  ],
+  "rangeSelection": {
+    "kind": "original contact build scopes",
+    "heightAt": "constant retained tide; range selection only, geometry discarded",
+    "heightDependentGeometryIsNotRetained": true,
+    "discovered": [
+      {
+        "id": 320,
+        "start": 0,
+        "end": 4,
+        "first": 0,
+        "last": 6.152691841125488
+      },
+      {
+        "id": 218,
+        "start": 6,
+        "end": 8,
+        "first": 0,
+        "last": 2.2360680103302
+      },
+      {
+        "id": 309,
+        "start": 8,
+        "end": 20,
+        "first": 0,
+        "last": 25.205028533935547
+      },
+      {
+        "id": 326,
+        "start": 20,
+        "end": 29,
+        "first": 0,
+        "last": 16.236068725585938
+      },
+      {
+        "id": 244,
+        "start": 30,
+        "end": 33,
+        "first": 0,
+        "last": 4.236067771911621
+      },
+      {
+        "id": 259,
+        "start": 35,
+        "end": 37,
+        "first": 0,
+        "last": 2
+      },
+      {
+        "id": 265,
+        "start": 37,
+        "end": 39,
+        "first": 0,
+        "last": 2
+      },
+      {
+        "id": 284,
+        "start": 39,
+        "end": 41,
+        "first": 0,
+        "last": 2
+      },
+      {
+        "id": 286,
+        "start": 41,
+        "end": 43,
+        "first": 0,
+        "last": 2
+      },
+      {
+        "id": 180,
+        "start": 43,
+        "end": 46,
+        "first": 0,
+        "last": 4.4721360206604
+      },
+      {
+        "id": 295,
+        "start": 46,
+        "end": 48,
+        "first": 0,
+        "last": 2
+      },
+      {
+        "id": 251,
+        "start": 48,
+        "end": 54,
+        "first": 0,
+        "last": 10.70820426940918
+      },
+      {
+        "id": 306,
+        "start": 55,
+        "end": 57,
+        "first": 0,
+        "last": 2
+      },
+      {
+        "id": 261,
+        "start": 58,
+        "end": 67,
+        "first": 0,
+        "last": 17.652475357055664
+      },
+      {
+        "id": 311,
+        "start": 68,
+        "end": 70,
+        "first": 0,
+        "last": 2
+      },
+      {
+        "id": 208,
+        "start": 70,
+        "end": 73,
+        "first": 0,
+        "last": 4.4721360206604
+      },
+      {
+        "id": 315,
+        "start": 74,
+        "end": 76,
+        "first": 0,
+        "last": 2
+      },
+      {
+        "id": 321,
+        "start": 78,
+        "end": 80,
+        "first": 0,
+        "last": 2.0164988040924072
+      },
+      {
+        "id": 207,
+        "start": 80,
+        "end": 84,
+        "first": 0,
+        "last": 6.236067771911621
+      },
+      {
+        "id": 323,
+        "start": 84,
+        "end": 94,
+        "first": 0,
+        "last": 19.39236068725586
+      },
+      {
+        "id": 288,
+        "start": 94,
+        "end": 107,
+        "first": 0,
+        "last": 26.59674835205078
+      },
+      {
+        "id": 327,
+        "start": 107,
+        "end": 109,
+        "first": 0,
+        "last": 2.8284270763397217
+      },
+      {
+        "id": 213,
+        "start": 110,
+        "end": 112,
+        "first": 0,
+        "last": 2.2360680103302
+      },
+      {
+        "id": 230,
+        "start": 114,
+        "end": 116,
+        "first": 0,
+        "last": 2
+      },
+      {
+        "id": 303,
+        "start": 117,
+        "end": 122,
+        "first": 0,
+        "last": 8
+      },
+      {
+        "id": 268,
+        "start": 122,
+        "end": 125,
+        "first": 0,
+        "last": 4.236067771911621
+      },
+      {
+        "id": 292,
+        "start": 125,
+        "end": 127,
+        "first": 0,
+        "last": 2
+      },
+      {
+        "id": 277,
+        "start": 128,
+        "end": 130,
+        "first": 0,
+        "last": 2
+      },
+      {
+        "id": 287,
+        "start": 130,
+        "end": 134,
+        "first": 0,
+        "last": 6.236067771911621
+      },
+      {
+        "id": 260,
+        "start": 134,
+        "end": 136,
+        "first": 0,
+        "last": 2
+      }
+    ],
+    "visited": [
+      {
+        "id": 320,
+        "start": 0,
+        "end": 4,
+        "first": 0,
+        "last": 6.152691841125488,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 0.7113340996300404,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "cdd7831664c841e6998f7f99d1c5d078d1014bab131eb2517d034571632e5bea"
+      },
+      {
+        "id": 218,
+        "start": 6,
+        "end": 8,
+        "first": 0,
+        "last": 2.2360680103302,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 0.999999911463753,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "595f3966eb4fcbc409b1a08b3d5ec48ddb2ce8b0b7053a87edc5fafed499f42b"
+      },
+      {
+        "id": 309,
+        "start": 8,
+        "end": 20,
+        "first": 0,
+        "last": 25.205028533935547,
+        "diagnostics": {
+          "blend": 0.9567416906356812,
+          "minimumAdvancePerSigma": 0.026983370542408458,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "cf94653ea0ba39e3be0c61b6549616d2115e66744cd62bc76ace9d84120541aa"
+      },
+      {
+        "id": 326,
+        "start": 20,
+        "end": 29,
+        "first": 0,
+        "last": 16.236068725585938,
+        "diagnostics": {
+          "blend": 0.7298269271850586,
+          "minimumAdvancePerSigma": 0.04984537871871553,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "b71d9f161e1251ee0e05f352a245e8b2939c5ea0714ef1669d4d048d6b7a4c64"
+      },
+      {
+        "id": 244,
+        "start": 30,
+        "end": 33,
+        "first": 0,
+        "last": 4.236067771911621,
+        "diagnostics": {
+          "blend": 0.6810240149497986,
+          "minimumAdvancePerSigma": 0.050721317006797384,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "c97ff29c3f97043ca968a2ce9f896cee5085f69f6fa56d43ebadd82d471491be"
+      },
+      {
+        "id": 259,
+        "start": 35,
+        "end": 37,
+        "first": 0,
+        "last": 2,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 1,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "79eaeb9072c7afa97763cfa573397f338de1a9af3e306a6951cfff189ab835eb"
+      },
+      {
+        "id": 265,
+        "start": 37,
+        "end": 39,
+        "first": 0,
+        "last": 2,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 1,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "31e6c59180199b74ef83187d62f207973c5bbf0a7b322a57f120bd8095c2688e"
+      },
+      {
+        "id": 284,
+        "start": 39,
+        "end": 41,
+        "first": 0,
+        "last": 2,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 1,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "2fc008569c6b90b1d8153be5d19ed9c414a63b9da84cf022142ffc96827c2d22"
+      },
+      {
+        "id": 286,
+        "start": 41,
+        "end": 43,
+        "first": 0,
+        "last": 2,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 1,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "b61800029a368711469e580f1a645e2168ff35b22a354ca211f6fe2e539afe88"
+      },
+      {
+        "id": 180,
+        "start": 43,
+        "end": 46,
+        "first": 0,
+        "last": 4.4721360206604,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 0.9999998816614301,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "515caa5421307395d4145b42d0cddb077e0d5b819684410d951e3873d08a1c7a"
+      },
+      {
+        "id": 295,
+        "start": 46,
+        "end": 48,
+        "first": 0,
+        "last": 2,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 1,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "ab5b2a885b3314ab73498d6eddf851c44862dd492f7fc0671666629fe998ef41"
+      },
+      {
+        "id": 251,
+        "start": 48,
+        "end": 54,
+        "first": 0,
+        "last": 10.70820426940918,
+        "diagnostics": {
+          "blend": 0.6954877376556396,
+          "minimumAdvancePerSigma": 0.04960699703577842,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "4e0a1a1b70b3fc7747bb612db3ed03816e6f68c23ebd2933e92989220b18f7c7"
+      },
+      {
+        "id": 306,
+        "start": 55,
+        "end": 57,
+        "first": 0,
+        "last": 2,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 1,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "60e0abd4e0f63f2043c65f1d04a475fbcdf9c4d74642a0c9462887628ea0a897"
+      },
+      {
+        "id": 261,
+        "start": 58,
+        "end": 67,
+        "first": 0,
+        "last": 17.652475357055664,
+        "diagnostics": {
+          "blend": 0.7325124740600586,
+          "minimumAdvancePerSigma": 0.04743448354497748,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "e5fae90e642b6df1825f47a5703b37ffb7f61dbd8af4f545e614013a46c589cc"
+      },
+      {
+        "id": 311,
+        "start": 68,
+        "end": 70,
+        "first": 0,
+        "last": 2,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 1,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "5558c277185b107866cb69e10133bf74e0a3ba9528bbd022d719b4c367f88703"
+      },
+      {
+        "id": 208,
+        "start": 70,
+        "end": 73,
+        "first": 0,
+        "last": 4.4721360206604,
+        "diagnostics": {
+          "blend": 0.8592003583908081,
+          "minimumAdvancePerSigma": 0.0458765214801401,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "bc7df6bfaae8cd146284abac3c57631e595cc54a4faabe72e3810d6ee99d18e3"
+      },
+      {
+        "id": 315,
+        "start": 74,
+        "end": 76,
+        "first": 0,
+        "last": 2,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 1,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "33981e6cc0a34e30dcb341b7bc15225b8d08ce6e100fe627208ba7c5bf27fe8d"
+      },
+      {
+        "id": 321,
+        "start": 78,
+        "end": 80,
+        "first": 0,
+        "last": 2.0164988040924072,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 0.9999995405846228,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "f5d05a61c4cf77e822a53836d683875037f852df47b4ce9224b910230a7bbfe7"
+      },
+      {
+        "id": 207,
+        "start": 80,
+        "end": 84,
+        "first": 0,
+        "last": 6.236067771911621,
+        "diagnostics": {
+          "blend": 0.6975836753845215,
+          "minimumAdvancePerSigma": 0.049193023997340934,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "25724977dc8fc71e6a97afdbdd2206d3ea15ea99dd3d22067b95aa7c5c587fee"
+      },
+      {
+        "id": 323,
+        "start": 84,
+        "end": 94,
+        "first": 0,
+        "last": 19.39236068725586,
+        "diagnostics": {
+          "blend": 0.9332085251808167,
+          "minimumAdvancePerSigma": 0.03810123185516934,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "2c0c338d407a881bca4ce271ad48d7bffac176ba45c0128d28dd3c4df39da25d"
+      },
+      {
+        "id": 288,
+        "start": 94,
+        "end": 107,
+        "first": 0,
+        "last": 26.59674835205078,
+        "diagnostics": {
+          "blend": 0.6901944279670715,
+          "minimumAdvancePerSigma": 0.04724901857606523,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "09b2b8b7d28078c254cba5ecd2ab222f2e2775e000f913588fb657a47db9634c"
+      },
+      {
+        "id": 327,
+        "start": 107,
+        "end": 109,
+        "first": 0,
+        "last": 2.8284270763397217,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 0.9999998717653978,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "7f2a87205c6efd53e5a59db7b7eeea7b117eb4db9a893eb7001d97a9f76efe90"
+      },
+      {
+        "id": 213,
+        "start": 110,
+        "end": 112,
+        "first": 0,
+        "last": 2.2360680103302,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 0.999999911463753,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "3238fb165f1a9a3ef8d64d3b2560325d2b847a7f49f1cbefe36118deaebd3343"
+      },
+      {
+        "id": 230,
+        "start": 114,
+        "end": 116,
+        "first": 0,
+        "last": 2,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 1,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "772200904ca2bd80b302007608a9855fb56abf88a275d8ab6b582a072163edec"
+      },
+      {
+        "id": 303,
+        "start": 117,
+        "end": 122,
+        "first": 0,
+        "last": 8,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 1,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "57a1fead9ef10165ba83ef39491ae9454810025e6bdad7c3d5a92390a249eb9c"
+      },
+      {
+        "id": 268,
+        "start": 122,
+        "end": 125,
+        "first": 0,
+        "last": 4.236067771911621,
+        "diagnostics": {
+          "blend": 0.6811501383781433,
+          "minimumAdvancePerSigma": 0.051086127003798665,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "bc0a7957af9cb90a741fdbfcc431e2348759b8e400a23f802b92f99521051cf3"
+      },
+      {
+        "id": 292,
+        "start": 125,
+        "end": 127,
+        "first": 0,
+        "last": 2,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 1,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "b1c7ca3972e45bc5da8aadd96d196e36a008895e0e3aaa6b904d8188025a9809"
+      },
+      {
+        "id": 277,
+        "start": 128,
+        "end": 130,
+        "first": 0,
+        "last": 2,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 1,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "17a53366da8c48ff9eb71a566f351b3ad86189598a97069557957b4943ce48d6"
+      },
+      {
+        "id": 287,
+        "start": 130,
+        "end": 134,
+        "first": 0,
+        "last": 6.236067771911621,
+        "diagnostics": {
+          "blend": 0.6981388926506042,
+          "minimumAdvancePerSigma": 0.05086641770211675,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "4699501d82c312804b8d8668d63c0e787e7b3c64a551a3ee532b8bb29713bb53"
+      },
+      {
+        "id": 260,
+        "start": 134,
+        "end": 136,
+        "first": 0,
+        "last": 2,
+        "diagnostics": {
+          "blend": 0,
+          "minimumAdvancePerSigma": 1,
+          "invalidIntervals": 0
+        },
+        "recordsSha256": "0cbf1f3617063d2060866396e14c43e60d717e0d3c94ede2351374830e4020df"
+      }
+    ],
+    "visitedControls": 120,
+    "skippedByBudget": 0,
+    "transportPrefixAtCapacity": false
+  },
+  "warmupElapsedMs": 1.5180000000000078,
+  "finalDiagnostics": [
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 0.7113340996300404,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 0.999999911463753,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0.9567416906356812,
+      "minimumAdvancePerSigma": 0.026983370542408458,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0.7298269271850586,
+      "minimumAdvancePerSigma": 0.04984537871871553,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0.6810240149497986,
+      "minimumAdvancePerSigma": 0.050721317006797384,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 1,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 1,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 1,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 1,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 0.9999998816614301,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 1,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0.6954877376556396,
+      "minimumAdvancePerSigma": 0.04960699703577842,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 1,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0.7325124740600586,
+      "minimumAdvancePerSigma": 0.04743448354497748,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 1,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0.8592003583908081,
+      "minimumAdvancePerSigma": 0.0458765214801401,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 1,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 0.9999995405846228,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0.6975836753845215,
+      "minimumAdvancePerSigma": 0.049193023997340934,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0.9332085251808167,
+      "minimumAdvancePerSigma": 0.03810123185516934,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0.6901944279670715,
+      "minimumAdvancePerSigma": 0.04724901857606523,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 0.9999998717653978,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 0.999999911463753,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 1,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 1,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0.6811501383781433,
+      "minimumAdvancePerSigma": 0.051086127003798665,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 1,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 1,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0.6981388926506042,
+      "minimumAdvancePerSigma": 0.05086641770211675,
+      "invalidIntervals": 0
+    },
+    {
+      "blend": 0,
+      "minimumAdvancePerSigma": 1,
+      "invalidIntervals": 0
+    }
+  ],
+  "inputByteIdentity": true,
+  "totalPrepareMsPerOriginalContactRangeSequence": {
+    "samples": 30,
+    "mean": 0.0847638333333336,
+    "p50": 0.056834000000009155,
+    "p95": 0.20595799999999542,
+    "max": 0.23075000000000045
+  },
+  "exclusions": [
+    "Library/case decoding and authored-envelope construction",
+    "Plan constructor and first capacity growth",
+    "One untimed neutral-height original contact scope selector",
+    "Per-range timers, logging/hashing, rayAt/profile lookup/water interpolation outside source preparation",
+    "One final untimed diagnostic pass"
+  ],
+  "inference": "Preparation-only cost of one retained native ordinary F32 front fixture; no state-sharing implementation, original contact geometry replay, numerical quality, chronology or FPS inference.",
+  "finishedAt": "2026-10-03T22:57:52.454Z"
+}

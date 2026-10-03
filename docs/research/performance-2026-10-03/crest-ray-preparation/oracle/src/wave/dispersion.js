@@ -1,0 +1,75 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GRAVITY = void 0;
+exports.waveNumber = waveNumber;
+exports.exactWaveNumber = exactWaveNumber;
+exports.waveKinematics = waveKinematics;
+exports.depthClass = depthClass;
+exports.shallowWaterWaveNumber = shallowWaterWaveNumber;
+exports.shoalingCoefficient = shoalingCoefficient;
+exports.groupSpeed = groupSpeed;
+/** Linear (Airy) water-wave dispersion, ω² = g k tanh(kh), in SI units. */
+exports.GRAVITY = 9.81;
+/**
+ * Explicit wavenumber from Guo (2002), exact in both limits and within 0.8 %
+ * of the dispersion root at every depth. Cheap enough for per-cell use.
+ * `depth` is still-water depth in metres; Infinity means deep water.
+ */
+function waveNumber(omega, depth, g = exports.GRAVITY) {
+    if (!(depth > 0))
+        throw new RangeError(`Water depth must be positive, got ${depth}`);
+    const deep = (omega * omega) / g;
+    if (!Number.isFinite(depth))
+        return deep;
+    const x = deep * depth;
+    const y = omega * Math.sqrt(depth / g);
+    return (x * Math.pow(1 - Math.exp(-Math.pow(y, 2.5)), -0.4)) / depth;
+}
+/** Exact dispersion root by Newton iteration from the Guo estimate, for setup-time use. */
+function exactWaveNumber(omega, depth, g = exports.GRAVITY) {
+    let k = waveNumber(omega, depth, g);
+    if (!Number.isFinite(depth))
+        return k;
+    for (let iteration = 0; iteration < 20; iteration += 1) {
+        const tanh = Math.tanh(k * depth);
+        const residual = g * k * tanh - omega * omega;
+        const slope = g * tanh + g * k * depth * (1 - tanh * tanh);
+        const next = k - residual / slope;
+        if (Math.abs(next - k) <= 1e-15 * k)
+            return next;
+        k = next;
+    }
+    return k;
+}
+function waveKinematics(period, depth, g = exports.GRAVITY) {
+    const omega = (2 * Math.PI) / period;
+    const k = exactWaveNumber(omega, depth, g);
+    const kh = k * depth;
+    const n = Number.isFinite(kh) ? 0.5 * (1 + (2 * kh) / Math.sinh(2 * kh)) : 0.5;
+    const phaseSpeed = omega / k;
+    return { k, wavelength: (2 * Math.PI) / k, phaseSpeed, groupSpeed: n * phaseSpeed, kh };
+}
+/** Passyworld/Sandwell classes: deep above L/2, shallow below L/20. */
+function depthClass(depth, wavelength) {
+    const ratio = depth / wavelength;
+    if (ratio > 0.5)
+        return 'deep';
+    if (ratio < 1 / 20)
+        return 'shallow';
+    return 'transitional';
+}
+/** Non-dispersive shallow-water wavenumber k = ω/√(gh), consistent with the stage 1 solver. */
+function shallowWaterWaveNumber(omega, depth, g = exports.GRAVITY) {
+    if (!(depth > 0) || !Number.isFinite(depth))
+        throw new RangeError(`Shallow-water waves need a finite positive depth, got ${depth}`);
+    return omega / Math.sqrt(g * depth);
+}
+/** Linear shoaling from deep water to depth h at period T: K_s = √(c_g∞ / c_g(h)), c_g∞ = gT/4π (the wave-sizes spec). */
+function shoalingCoefficient(period, depth, g = exports.GRAVITY) {
+    return Math.sqrt((g * period) / (4 * Math.PI) / waveKinematics(period, depth, g).groupSpeed);
+}
+/** Group speed dω/dk for any dispersion, by central difference in ω, m/s. */
+function groupSpeed(waveNumberAt, omega, depth) {
+    const step = omega * 1e-4;
+    return (2 * step) / (waveNumberAt(omega + step, depth) - waveNumberAt(omega - step, depth));
+}
