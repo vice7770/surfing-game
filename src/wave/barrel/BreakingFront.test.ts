@@ -332,6 +332,31 @@ describe('the breaking front as lines', () => {
     expect(nearest.unsized).toBe(2);
   });
 
+  // PR 5 with #105's jump rule: the held jets claim their crests first, and the sized crests follow the furthest crest
+  // ahead of them among the others.
+  it('with a jump reach, leaves the crest a jet-holding point keeps to the point, and follows a sized crest on the others (PR 5 with #105)', () => {
+    const front = new BreakingFront(1, TIMING, { jumpReach: 10 });
+    joinAt(front, [0], 20, 0, 1);
+    // A sized crest on its way in, 15 m behind the point in its column.
+    front.update([sample(0, 5, 7, 0), sample(0, 20.3, 2.9, 0.5)], 2, 1.05);
+    expect(front.points).toHaveLength(1);
+    expect(front.exportState().tracks).toHaveLength(1);
+    Object.assign(front.points[0], { jetStrip: 1, jetWindow: 7, jetPace: 5, jetBase: 20 });
+    // Two crests in both their reaches: the 14 is 6.8 m from the point's paced z (20.8), nearer than the 12, so the
+    // point keeps it; the sized crest, whose reach is 2 to 15 m, follows the 12. Neither takes the other's, and the
+    // sized crest's step is no jump.
+    const crests = [sample(0, 12, 2.4, 0), sample(0, 14, 2.4, 0.5)];
+    front.update(crests, crests.length, 1.15);
+    expect(front.points).toHaveLength(1);
+    expect(front.points[0]).toMatchObject({ jetStrip: 1, crestZ: 14 });
+    expect(front.points[0].z).toBeCloseTo(20.8, 12);
+    const { tracks } = front.exportState();
+    expect(tracks).toHaveLength(1);
+    expect(tracks[0]).toMatchObject({ z: 12, footHeight: FOOT });
+    expect(front.jumps).toBe(0);
+    expect(front.unsized).toBe(0);
+  });
+
   // The Reef's rules (FrontOptions, PR 7): small waves break as they cross onto its top.
   it('with a join reach past the throw depth, joins a crest the solver breaks within it, throwing as it joins', () => {
     const passes = (front: BreakingFront, breaksAt: number) => {

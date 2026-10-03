@@ -344,7 +344,8 @@ export class BreakingFront {
   /**
    * With `jumpReach`: each sized crest's continuation, the furthest crest in its column from a match reach behind it to
    * the jump reach ahead, claimed before the other crests match; a crest beside a front point is the point's, and a
-   * crest a point holding a jet has kept (`keptCrests`, PR 5) is its. A jump when it is not the crest nearest it.
+   * crest a point holding a jet has kept (`kept`, from `keptCrests`, PR 5) is its: `pointsOf` holds the points that match
+   * by z, not those jets' points, which claim theirs apart. A jump when it is not the crest nearest it.
    */
   private leadingCrests(
     samples: readonly CrestSample[], count: number, tracksOf: Map<number, CrestTrack[]>, pointsOf: Map<number, FrontPoint[]>,
