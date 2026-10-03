@@ -278,7 +278,7 @@ export const STANCES: readonly MappedStance[] = [
   {
     id: 'drop',
     name: 'The drop (preparation)',
-    reach: 'Crouched (Shift, 0.6) going down a 15° face at 5 m/s: the thesis\'s preparation (phase standing).',
+    reach: 'Crouched (Shift held: the full crouch, two thirds of Compress\'s depth) going down a 15° face at 5 m/s: the thesis\'s preparation (phase standing).',
     sides: 'both',
     targets: {
       kneeFront: { min: 90, max: 110, sources: ['desousa2022', 'kerr'], confidence: 'medium' },
