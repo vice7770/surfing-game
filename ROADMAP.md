@@ -105,15 +105,16 @@ Requirements agreed in a grilling session on 2026-09-26. The plan is [S1 sound](
     - M and the toggles mute;
     - the Sea slider sets its bus, and Mono folds the output to one channel.
   - **Recordings (2026-10-03).** The owner decided to generate them with ElevenLabs Sound Effects instead of downloading CC0 files, so the download approval was never needed:
-    - 14 files in `public/assets/audio/`, 0.96 MB in all: two candidates each for roar, distant, bubbles, lipJet, lipRoller, paddle and plunge, with their prompts, levels and processing in `docs/ASSETS.md`. The manifest records them with the licence `generated`, which `parseManifest` now accepts beside `CC0`; a test fails if the manifest lists a missing file, ships an unlisted one, or names a licence the game would drop.
-    - The tool makes at most 5 s a take, so each loop joins two takes with equal-power crossfades: 8.10 s long, −23.0 LUFS (EBU R128). One-shots are 0.6–2.8 s and peak at −1.0 dBFS.
-    - Every file is 1024 k + 960 samples long, which leaves AAC no end padding: CoreAudio and ffmpeg both decode each to exactly its source length, so a loop has no gap at its wrap, and the decoded wrap is as smooth as any other point in its file.
-    - Picks (roar 1, distant 1, bubbles 2, lipJet 1, lipRoller 1, paddle 1, plunge 1) and gains (1.14, 1.32, 1.57, 0.95, 0.99, 1.22, 1.40; each matches the recording's loudness to the synthesised sound it replaces) are **provisional**: from measurements and spectrograms. Nothing was heard.
-    - 33 takes were generated for the 20 used. The API key could not read the plan's credit balance, so the cost is not recorded.
+    - 14 files in `public/assets/audio/`, 1.7 MB in all: two candidates each for roar, distant, bubbles, lipJet, lipRoller, paddle and plunge, with their prompts, levels and processing in `docs/ASSETS.md`. The manifest records them with the licence `generated`, which `parseManifest` now accepts beside `CC0`; a test fails if the manifest lists a missing file, ships an unlisted one, or names a licence the game would drop.
+    - **A second pass the same day** replaced what a review of the first set found wanting: the six loops and four one-shots (`lipJet-1`, `paddle-2`, `plunge-1`, `plunge-2`). The first loops joined two takes each: the roar and distant ones were Gaussian, statistically like the synthesised noise they replaced (detrended kurtosis 2.9–3.3), the generator's spectral lines were left in, and the underwater loops had a loop marker at a join and a 2 kHz whistle; some one-shots came from clipped takes or carried stray clicks.
+    - **The loops are now 16.00 s rings of four 5 s takes** (the tool makes at most 5 s a take) with 0.45 s equal-power crossfades, −23.0 LUFS (EBU R128). The roars carry a foam-crackle layer (the bed takes alone have none), which puts their 4–10 kHz kurtosis at 8.3–8.6; the distant loops sit 30 dB down at 4 kHz; the roar and distant loops keep 6.6–8.0 dB of slow surge in every band, the bubbles 4.3–8.9 dB; no loop has a dip deeper than 4 dB beside a blend of its bed, or a join step beyond what the rest of the file shows. One-shots are 0.67–2.48 s and peak at −1.0 dBFS.
+    - Every file is 1024 k + 960 samples long, which leaves AAC no end padding: CoreAudio and ffmpeg both decode each to exactly its source length (their samples differ by less than 1e-6), so a loop has no gap at its wrap, and each decoded wrap is gentler than 74–99 % of its file's other 6 ms windows.
+    - Picks (roar 1, distant 1, bubbles 2, lipJet 1, lipRoller 1, paddle 1, plunge 1) and gains (1.14, 1.32, 1.57, 1.32, 0.99, 1.22, 1.48; each matches the recording's loudness to the synthesised sound it replaces) are **provisional**: from measurements and spectrograms. Nothing was heard.
+    - 152 takes were generated in the two passes (33, then 119) for the 41 used. The API key could not read the plan's credit balance (the subscription call is refused for lack of the `user_read` permission), so the cost is not recorded.
 - [ ] **Open:**
   - **The user's listening playtest,** which tunes the mapping's provisional levels and settles each recording's pick and gain in the sound check.
   - **The ElevenLabs plan's terms.** Its tier is not recorded: check it covers a shipped game and whether it asks for credit (an in-game credits screen if so).
-  - **The 8.10 s repeat.** If a loop's repeat is audible, join more takes.
+  - **The 16.00 s repeat.** If a loop's repeat is audible, join more takes.
 
 ### P1 · Online lineup (N1) — `Part A done (playtest open); Part B next`
 

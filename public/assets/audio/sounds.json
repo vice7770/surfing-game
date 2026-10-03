@@ -33,7 +33,7 @@
         { "file": "lipJet-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
       ],
       "chosen": 0,
-      "gain": 0.95
+      "gain": 1.32
     },
     "lipRoller": {
       "candidates": [
@@ -58,7 +58,7 @@
         { "file": "plunge-2.m4a", "source": "ElevenLabs Sound Effects, generated 2026-10-03 (prompt in docs/ASSETS.md)", "author": "ElevenLabs 2", "licence": "generated" }
       ],
       "chosen": 0,
-      "gain": 1.4
+      "gain": 1.48
     },
     "click": { "candidates": [], "chosen": 0, "gain": 1 },
     "chime": { "candidates": [], "chosen": 0, "gain": 1 }
