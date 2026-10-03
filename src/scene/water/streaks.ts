@@ -17,9 +17,12 @@ export const STREAK_COVER = 0.1;
 /** The late stage's tile as the streaks draw it, m (before the stretch): the small octave's, so a thread is a few centimetres wide. [provisional] */
 export const STREAK_TILE = FOAM_OCTAVES.small;
 /**
- * The streaks' edge is this many sigma of the field wider per metre of the pixel's footprint: half the late stage's
- * gradient at a threshold crossing, 69 sigma a metre at the median across the stretch (the test measures it), so a ramp
- * is about a pixel wide. (The foam field reads its gradient off the derivatives; the streaks' branch hides them.)
+ * The streaks' edge is this many sigma of the field wider per metre of the pixel's reach across the lines: half the late
+ * stage's gradient at a threshold crossing, 69 sigma a metre at the median across the stretch (the test measures it), so
+ * a ramp is about a pixel wide. The reach is the footprint across the lines, or along them over the stretch if that is
+ * more: seen at a grazing angle, lines that run away from the eye stay sharp and those across it soften, where the
+ * footprint's longest side once blurred them all into translucent ribbons. (The foam field reads its gradient off the
+ * derivatives; the streaks' branch hides them.)
  */
 export const STREAK_EDGE_SLOPE = 35;
 /** Where the second flow-map phase is shifted, m, so the two phases never sample alike (not a multiple of the tile). */
@@ -83,6 +86,16 @@ export function streakMask(steepness: number, foam: number): number {
   return smoothstep(STREAK_STEEP[0], STREAK_STEEP[1], steepness) * smoothstep(STREAK_FOAM[0], STREAK_FOAM[1], foam);
 }
 
+/**
+ * How far a pixel reaches across the streak lines, m, for their edge (`STREAK_EDGE_SLOPE`): its footprint (the world x and
+ * z it spans) across the current, or along it over the stretch if that is more. The shader's `reach`.
+ */
+export function streakReach(flowX: number, flowZ: number, footprintX: number, footprintZ: number): number {
+  const speed = Math.hypot(flowX, flowZ);
+  const [alongX, alongZ] = speed > 1e-3 ? [flowX / speed, flowZ / speed] : [0, 1];
+  return Math.max(Math.abs(alongZ) * footprintX + Math.abs(alongX) * footprintZ, (Math.abs(alongX) * footprintX + Math.abs(alongZ) * footprintZ) / STREAK_STRETCH);
+}
+
 /** A component's share below which it is left out: its threshold would sit past the texture's 4 sigma. */
 const STREAK_LEAST = 1e-4;
 
@@ -120,7 +133,7 @@ export function streakCover(
       best = Math.max(best, foamTurnedSample(u / STREAK_TILE, v / STREAK_TILE, hash[0], hash[1], 3) - foamQuantile(Math.exp(weight * keep)));
     }
   }
-  const width = Math.min(1, FOAM_EDGE + STREAK_EDGE_SLOPE * footprint);
+  const width = Math.min(1, FOAM_EDGE + STREAK_EDGE_SLOPE * streakReach(flowX, flowZ, footprint, footprint));
   return smoothstep(-width, width, best) * mask;
 }
 
@@ -184,7 +197,9 @@ float waterStreak( vec2 p, vec2 flow, float steepness, float foam ) {
     if ( weight * w > ${STREAK_LEAST.toExponential(0)} ) best = max( best, waterStreakGauss( pa, anchor, along, dpdx, dpdy, h ) - waterFoamQuantile( exp( weight * w * keep ) ) );
     if ( weight * ( 1.0 - w ) > ${STREAK_LEAST.toExponential(0)} ) best = max( best, waterStreakGauss( pb, anchor, along, dpdx, dpdy, h ^ uvec2( ${STREAK_PHASE_HASH}u ) ) - waterFoamQuantile( exp( weight * ( 1.0 - w ) * keep ) ) );
   }
-  float width = min( 1.0, ${FOAM_EDGE.toFixed(3)} + ${STREAK_EDGE_SLOPE.toFixed(3)} * size );
+  // The pixel's reach across the lines, and along them shrunk by the stretch: what the lines' field changes by across it.
+  float reach = max( abs( along.y ) * footprint.x + abs( along.x ) * footprint.y, ( abs( along.x ) * footprint.x + abs( along.y ) * footprint.y ) / STREAK_STRETCH );
+  float width = min( 1.0, ${FOAM_EDGE.toFixed(3)} + ${STREAK_EDGE_SLOPE.toFixed(3)} * reach );
   return smoothstep( -width, width, best ) * mask;
 }
 `;
