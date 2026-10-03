@@ -504,9 +504,10 @@ export class SprayCloud {
       this.particles[o + 1] = this.y[k];
       this.particles[o + 2] = this.z[k];
       this.particles[o + 3] = this.size[k] * (mist ? 1 + t : 1);
-      // A foam ball holds until its roller is gone, then fades over the time it lingers.
+      // A foam ball holds until its roller is gone, then fades over the time it lingers; while it holds it is as
+      // opaque as its own optical depth makes it (Rich draws it, `foamBallDepth`).
       this.particles[o + 4] = this.kind[k] === FOAM_BALL
-        ? 0.9 * Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER)
+        ? Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER)
         : (mist ? 0.25 : 0.8) * (1 - t * t);
       this.particles[o + 5] = this.kind[k];
     }

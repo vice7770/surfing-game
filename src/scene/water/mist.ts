@@ -2,6 +2,13 @@
 export const MIST_SIZE = 0.25;
 /** Mist's forward-scattering asymmetry: fine droplets throw most light on toward the eye when backlit. */
 export const MIST_G = 0.6;
+/**
+ * Water drops' forward-scattering asymmetry. Mie theory gives g = 0.86–0.87 for drops of 10–25 µm and 0.88 for
+ * 50–500 µm, 0.87–0.88 in sea water (docs/research/water-physics/notes/round4-spray-mist/spray-mist.md §3, computed
+ * with Bohren 1987's optics; spray-and-mist.md, decided 2026-09-29): half of what a drop scatters goes within 5° of
+ * straight on.
+ */
+export const DROP_G = 0.87;
 
 export function isMist(size: number): boolean {
   return size > MIST_SIZE;
@@ -17,5 +24,161 @@ const float MIST_SIZE = ${MIST_SIZE.toFixed(3)};
 const float MIST_G = ${MIST_G.toFixed(3)};
 float henyeyGreenstein( float cosTheta, float g ) {
   return ( 1.0 - g * g ) / ( 12.566370614 * pow( 1.0 + g * g - 2.0 * g * cosTheta, 1.5 ) );
+}
+`;
+
+/**
+ * The Rich foam ball (G9): a clump of the fresh whitewater a closing tube's roller tumbles, drawn as a sprite.
+ * - `depth`: its optical depth across the middle of the disc, thinning to nothing at its rim as
+ *   1 − smoothstep(0.55, 1, r) (`foamBallDepth`), so it is opaque but for a soft, torn rim the outer fifth of its
+ *   radius wide, where it is thin enough to pass the sun on [provisional: foam's own depth is hundreds, bubbles of a
+ *   millimetre or so at the void fraction near 0.2 measured under breakers (churnTexture.ts), so the rim's width is a
+ *   render value].
+ * - `fray`: how far the outline draws in across a crease of the churn's clumps, as a share of the radius [provisional].
+ * - `lumps`: the metres of churn seen across a ball, so its clumps are a fifth of a metre or so on a 0.5–0.8 m ball
+ *   [provisional].
+ * - `relief`: how far the clumps' slope tilts the sphere's normal [provisional].
+ * - `shadows`: the most balls whose shadows one ball's pixels look through (the nearest the eye) [a budget].
+ * Its creases are shaded as the water's fresh churn is (0.88 + 0.12 × the clump's height, richWaterGlsl.ts
+ * `RICH_FOAM`), so it is the whitewater it tumbles on.
+ */
+export const FOAM_BALL = { depth: 8, fray: 0.2, lumps: 2, relief: 0.18, shadows: 64 } as const;
+
+const luminance = (c: readonly number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+
+/** What a foam ball is lit by, in the scene's light units (linear RGB). */
+export interface BallLight {
+  /** The sky's irradiance on a level surface, per channel: the photographed sky's own (its environment map). */
+  readonly sky: readonly [number, number, number];
+  /** The sun's irradiance square on to it, per channel, and the sine of its elevation. */
+  readonly sun: readonly [number, number, number];
+  readonly sunHeight: number;
+  /** The water's foam colour (linear): the reflectance it draws its foam with. */
+  readonly foam: readonly [number, number, number];
+}
+
+/**
+ * The light of a point of a foam ball (linear RGB, before tone mapping), and its coverage. Fresh foam reflects a flat
+ * share across the visible (Koepke 1984: 55 %), so the ball is a neutral white of the water's foam colour's luminance,
+ * which carries the gain the water's foam composite does over Koepke's 0.55, and it is lit as the foam on the water is,
+ * R (E_sky + E_sun max(0, n·L)) / π (decided 2026-09-29, spray-and-mist.md), by the same sky and sun. A surface with
+ * normal `facing` the sun (n·L) and `up` (n·up) sees the sky over (1 + up) / 2 of its view (the sky's radiance taken
+ * as even over the dome [provisional]) and the lit whitewater sheet under the ball over the rest (its foam colour times
+ * the sky and the sun's level share). The other balls fill `enclosed` of its view (`ballShade`): there it sees foam lit
+ * as a ball is on average, by the sky and the ground over half of it each and the sun over a quarter (a sphere's
+ * cross-section over its surface), so the creases of a cluster fill with the light of the foam round them. `sunlit` is
+ * the share of the sun the other balls leave it, `crease` the churn's shading (0.88–1). `depth` is the optical depth τ
+ * at this point of the disc and `forward` the drops' phase function toward the eye, per steradian (Henyey–Greenstein,
+ * `DROP_G`): where the ball is thin the sun it passes on is scattered once toward the eye, E_sun p e^−τ over the
+ * 1 − e^−τ it covers, so a backlit ball has a gold rim (the drops' forward lobe) and a front-lit one none. The GLSL in
+ * `ballPars` mirrors it.
+ */
+export function foamBallLight(
+  light: BallLight, facing: number, up: number, sunlit: number, enclosed: number, crease: number, depth: number, forward: number,
+): { colour: [number, number, number]; alpha: number } {
+  const albedo = luminance(light.foam);
+  const lit = Math.max(0, facing) * sunlit;
+  const level = Math.max(0, light.sunHeight);
+  const colour = light.sky.map((sky, k) => {
+    const ground = light.foam[k] * (sky + light.sun[k] * level);
+    const open = sky * 0.5 * (1 + up) + ground * 0.5 * (1 - up);
+    const foam = albedo * (0.5 * (sky + ground) + 0.25 * light.sun[k]);
+    const irradiance = (1 - enclosed) * open + enclosed * foam + light.sun[k] * lit;
+    return (albedo * crease * irradiance) / Math.PI + light.sun[k] * forward * Math.exp(-depth) * sunlit;
+  }) as [number, number, number];
+  return { colour, alpha: 1 - Math.exp(-depth) };
+}
+
+/** The ball's optical depth at `r` (0 at its centre, 1 at its rim) of its disc: `FOAM_BALL.depth` thinning to nothing at the rim. */
+export function foamBallDepth(r: number): number {
+  const t = Math.min(1, Math.max(0, (r - 0.55) / 0.45));
+  return FOAM_BALL.depth * (1 - t * t * (3 - 2 * t));
+}
+
+/** A foam ball as the shadows see it: its centre, m, and its radius. */
+export interface BallShape {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly radius: number;
+}
+
+/**
+ * What the other foam balls (`self`, the one the point is on, aside) do to a point of a ball's surface with normal
+ * `normal`. `sunlit`: the share of the sun that reaches it. A ray toward the sun (`toSun`, a unit vector) through a ball
+ * at r of its radius from its centre passes the optical depth its disc has there (`foamBallDepth`, the same at any angle
+ * for a ball), and a point inside another ball is in its depth too; the depths add, and the sun is dimmed by e^−τ.
+ * `enclosed`: the share of its view (cosine-weighted) the balls fill, each the view factor of a sphere from a small
+ * surface facing it, cos θ (R / d)² (exact while the sphere is clear of the surface's plane), all of it inside one,
+ * the balls overlapping in its view as independent ones do: 1 − Π (1 − F). `visible`: how much of it shows past the
+ * balls it is inside: a sprite has no depth, so where one ball's face is inside another the other's foam hides it, by
+ * e^−τ of the depth that ball's disc has there, and the union of the balls is what is seen whatever order they are
+ * drawn in. The GLSL in `ballPars` mirrors it.
+ */
+export function ballShade(
+  point: { x: number; y: number; z: number }, normal: { x: number; y: number; z: number }, toSun: { x: number; y: number; z: number },
+  balls: readonly BallShape[], self?: BallShape,
+): { sunlit: number; enclosed: number; visible: number } {
+  let depth = 0;
+  let open = 1;
+  let buried = 0;
+  for (const ball of balls) {
+    if (ball === self) continue;
+    const dx = ball.x - point.x;
+    const dy = ball.y - point.y;
+    const dz = ball.z - point.z;
+    const distance2 = dx * dx + dy * dy + dz * dz;
+    const inside = distance2 < ball.radius * ball.radius;
+    if (inside) buried += foamBallDepth(Math.sqrt(distance2) / ball.radius);
+    const facing = (dx * normal.x + dy * normal.y + dz * normal.z) / Math.sqrt(distance2);
+    open *= inside ? 0 : 1 - Math.max(0, facing) * (ball.radius * ball.radius) / distance2;
+    const along = dx * toSun.x + dy * toSun.y + dz * toSun.z;
+    if (!(along > 0) && !inside) continue;
+    const miss = Math.hypot(dx - along * toSun.x, dy - along * toSun.y, dz - along * toSun.z) / ball.radius;
+    depth += foamBallDepth(miss);
+  }
+  return { sunlit: Math.exp(-depth), enclosed: 1 - open, visible: Math.exp(-buried) };
+}
+
+/** The foam ball's light in GLSL: the same numbers as `FOAM_BALL`, and `foamBallDepth`, `ballShade` and `foamBallLight` as functions. */
+export const ballPars = /* glsl */ `
+const float DROP_G = ${DROP_G.toFixed(3)};
+const float BALL_DEPTH = ${FOAM_BALL.depth.toFixed(3)};
+const float BALL_FRAY = ${FOAM_BALL.fray.toFixed(3)};
+const float BALL_LUMPS = ${FOAM_BALL.lumps.toFixed(3)};
+const float BALL_RELIEF = ${FOAM_BALL.relief.toFixed(3)};
+#define BALL_SHADOWS ${FOAM_BALL.shadows}
+uniform vec4 sprayBalls[ BALL_SHADOWS ];
+uniform int sprayBallCount;
+float foamBallDepth( float r ) {
+  return BALL_DEPTH * ( 1.0 - smoothstep( 0.55, 1.0, r ) );
+}
+vec3 ballShade( vec3 point, vec3 normal, vec3 toSun, vec3 self ) {
+  float depth = 0.0;
+  float open = 1.0;
+  float buried = 0.0;
+  for ( int j = 0; j < BALL_SHADOWS; j ++ ) {
+    if ( j >= sprayBallCount ) break;
+    vec4 ball = sprayBalls[ j ];
+    vec3 toBall = ball.xyz - point;
+    vec3 fromSelf = ball.xyz - self;
+    if ( dot( fromSelf, fromSelf ) < 1e-8 ) continue;
+    float distance2 = dot( toBall, toBall );
+    bool inside = distance2 < ball.w * ball.w;
+    if ( inside ) buried += foamBallDepth( sqrt( distance2 ) / ball.w );
+    open *= inside ? 0.0 : 1.0 - max( 0.0, dot( toBall, normal ) ) * inversesqrt( distance2 ) * ball.w * ball.w / distance2;
+    float along = dot( toBall, toSun );
+    if ( along <= 0.0 && ! inside ) continue;
+    depth += foamBallDepth( length( toBall - along * toSun ) / ball.w );
+  }
+  return vec3( exp( -depth ), 1.0 - open, exp( -buried ) );
+}
+vec3 foamBallLight( float facing, float up, float sunlit, float enclosed, float crease, float depth, float forward, vec3 sky, vec3 sun, float sunHeight, vec3 foam ) {
+  float albedo = dot( foam, vec3( 0.2126, 0.7152, 0.0722 ) );
+  vec3 ground = foam * ( sky + sun * max( 0.0, sunHeight ) );
+  vec3 open = sky * 0.5 * ( 1.0 + up ) + ground * 0.5 * ( 1.0 - up );
+  vec3 fill = albedo * ( 0.5 * ( sky + ground ) + 0.25 * sun );
+  vec3 irradiance = ( 1.0 - enclosed ) * open + enclosed * fill + sun * max( 0.0, facing ) * sunlit;
+  return albedo * crease * irradiance / 3.14159265 + sun * forward * exp( -depth ) * sunlit;
 }
 `;
