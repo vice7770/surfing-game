@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { ProfileLibrary } from './ProfileLibrary';
 import { CONTACT, createContactHit, SweptContact, tubeState } from './sweptContact';
@@ -47,7 +47,96 @@ const prepareAll = (contact: SweptContact) => {
   for (let s = 0; s + 1 < loft.sliceCount; s += 1) if (loft.sliceJoined[s] === 1) bucketState(contact).ensureBucket(s);
 };
 
+type GridState = BucketState & {
+  loft: SweptLoft;
+  x0: number; z0: number; nx: number; nz: number;
+  boxes: Int32Array;
+  cellStart: Int32Array;
+};
+
+/** The original full vertex scan, independent of the captured per-slice bounds. */
+function scanIndex(loft: NonNullable<SweptContact['last']>) {
+  if (!loft.sliceJoined.subarray(0, Math.max(0, loft.sliceCount - 1)).some((joined) => joined === 1)) return { nx: 0 };
+  const p = loft.positions;
+  let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+  for (let v = 0; v < loft.sliceCount * LOFT_SAMPLES; v += 1) {
+    x0 = Math.min(x0, p[3 * v]); x1 = Math.max(x1, p[3 * v]);
+    z0 = Math.min(z0, p[3 * v + 2]); z1 = Math.max(z1, p[3 * v + 2]);
+  }
+  const nx = Math.floor((x1 - x0) / CONTACT.cell) + 1;
+  const nz = Math.floor((z1 - z0) / CONTACT.cell) + 1;
+  const cells: number[][] = Array.from({ length: nx * nz }, () => []);
+  const boxes: number[][] = [];
+  for (let s = 0; s + 1 < loft.sliceCount; s += 1) {
+    if (loft.sliceJoined[s] !== 1) continue;
+    let lowX = Infinity, highX = -Infinity, lowZ = Infinity, highZ = -Infinity;
+    for (let v = s * LOFT_SAMPLES; v < (s + 2) * LOFT_SAMPLES; v += 1) {
+      lowX = Math.min(lowX, p[3 * v]); highX = Math.max(highX, p[3 * v]);
+      lowZ = Math.min(lowZ, p[3 * v + 2]); highZ = Math.max(highZ, p[3 * v + 2]);
+    }
+    const box = [Math.floor((lowX - x0) / CONTACT.cell), Math.floor((highX - x0) / CONTACT.cell),
+      Math.floor((lowZ - z0) / CONTACT.cell), Math.floor((highZ - z0) / CONTACT.cell)];
+    boxes.push([s, ...box]);
+    for (let cz = box[2]; cz <= box[3]; cz += 1) for (let cx = box[0]; cx <= box[1]; cx += 1) cells[cz * nx + cx].push(s);
+  }
+  const starts = [0];
+  for (const cell of cells) starts.push(starts[starts.length - 1] + cell.length);
+  return { x0, z0, nx, nz, boxes, starts, strips: cells.flat() };
+}
+
+function capturedIndex(contact: SweptContact) {
+  const state = contact as unknown as GridState;
+  if (state.nx === 0) return { nx: 0 };
+  const cells = state.nx * state.nz;
+  const loft = contact.last!;
+  const boxes: number[][] = [];
+  for (let s = 0; s + 1 < loft.sliceCount; s += 1) {
+    if (loft.sliceJoined[s] === 1) boxes.push([s, ...state.boxes.subarray(4 * s, 4 * s + 4)]);
+  }
+  return { x0: state.x0, z0: state.z0, nx: state.nx, nz: state.nz, boxes,
+    starts: Array.from(state.cellStart.subarray(0, cells + 1)),
+    strips: Array.from(state.cellStrips.subarray(0, state.cellStart[cells])) };
+}
+
 describe('the swept contact', () => {
+  it('keeps the full-scan grid and strip order through isolated, changed, resized and empty slices', () => {
+    const contact = contactAt(0.1);
+    const state = contact as unknown as GridState;
+    const template = contact.last!;
+    const make = (count: number, shift: number) => {
+      const loft = { ...template, sliceCount: count, vertexCount: count * LOFT_SAMPLES,
+        positions: template.positions.slice(0, 3 * (count + 2) * LOFT_SAMPLES), sliceJoined: template.sliceJoined.slice() };
+      loft.sliceJoined.fill(0, Math.max(0, count - 1));
+      for (let v = 0; v < loft.vertexCount; v += 1) {
+        loft.positions[3 * v] += shift;
+        loft.positions[3 * v + 2] -= 2 * shift;
+      }
+      if (count >= 4) {
+        // These unused slices still determine the global grid bounds, even though neither belongs to a strip.
+        loft.sliceJoined[0] = 0;
+        loft.sliceJoined[count - 2] = 0;
+        for (const [s, offset] of [[0, -13], [count - 1, 19]]) {
+          for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+            const v = s * LOFT_SAMPLES + j;
+            loft.positions[3 * v] += offset;
+            loft.positions[3 * v + 2] += offset;
+          }
+        }
+      }
+      return loft;
+    };
+    const build = vi.spyOn(state.loft, 'build');
+    for (const loft of [make(7, 0), make(7, 0.375), make(19, -4.125), make(0, 0), make(5, 0.125)]) {
+      build.mockReturnValue(loft);
+      const positions = loft.positions.slice();
+      contact.update(new Float32Array(0), 0, STILL, flat);
+      expect(capturedIndex(contact)).toEqual(scanIndex(loft));
+      expect(loft.positions).toEqual(positions);
+      expect(state.stripReady.every((ready) => ready === 0)).toBe(true);
+      expect([state.nextBucket, state.nextEntry]).toEqual([0, 0]);
+    }
+  });
+
   it('reads the tube’s air as air, over the face, under the lip', () => {
     const hit = createContactHit();
     expect(contactAt(0.1).query(10.3, 2.5, -93, hit)).toBe(true);

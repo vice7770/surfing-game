@@ -1,0 +1,478 @@
+{
+  "schema": 1,
+  "valid": true,
+  "captureKind": "Fixed archived10/20, output0 instrumented originals, original caustic framebuffer held; no physics steps or moving-photo attribution",
+  "elapsedSeconds": 11.126,
+  "viewport": [
+    1280,
+    720
+  ],
+  "rendererRuntime": {
+    "indexSha256": "df9f5b5b9064eeb635ad5ce1838f2f06aee37b9fe1481f8ab1c5ac360571552b",
+    "verifiedDirectory": "/private/tmp/surf-tube-stability-current-20261003",
+    "servedJavaScript": {
+      "assets/WorkerSurfZone-DsoxOk5J.js": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606",
+      "assets/devStepping-CLfXNMh-.js": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677",
+      "assets/index-Dhp1E5Jm.js": "cff7f235604df399fe95d2f872a877ca95fca141a66e588c0d9a5eb8efc90cf3",
+      "assets/jevRecorder-DKAk_GxP.js": "aa5a9ec59dc47571b87c9a62901bca07c54e39430b6cafe5d4abe8d05dc61300",
+      "assets/particleBench-UFIniUOA.js": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e",
+      "assets/rideRecorder-DdzH6W7j.js": "cc1f6cc0fb23c4aa8416dbe123564f02239e4db55fbc14f97d2d51072c540674",
+      "assets/surfZoneWorker-BH6FhcTP.js": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5",
+      "assets/waterSheet-heYJdhwA.js": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+    },
+    "bundleSha256": "d8d8564409cac85cd0bfd742025a7835e0e8627184e89579358952cdb0510788"
+  },
+  "strictRepeat": [
+    {
+      "state": 10,
+      "common": true,
+      "baselinePNG": true,
+      "baselineGeometry": true,
+      "postIDPNG": true,
+      "causticHold": {
+        "held": true,
+        "framebufferID": 4,
+        "method": "Retain the already-rendered HalfFloat caustic target; suppress only its color clear/draw writes. Original texture, filtering, fixed camera/domain/clock retained."
+      }
+    },
+    {
+      "state": 20,
+      "common": true,
+      "baselinePNG": true,
+      "baselineGeometry": true,
+      "postIDPNG": true,
+      "causticHold": {
+        "held": true,
+        "framebufferID": 4,
+        "method": "Retain the already-rendered HalfFloat caustic target; suppress only its color clear/draw writes. Original texture, filtering, fixed camera/domain/clock retained."
+      }
+    }
+  ],
+  "rows": [
+    {
+      "state": 10,
+      "seaTime": 173.88921329749155,
+      "variant": "baseline",
+      "geometryHash": "a570c8633dd0f19caa83de989cefe40bcf2b145a4e5502dea407158602a7466e",
+      "exposedSeabedPixels": 1043,
+      "solidCoverage": {
+        "absent": 745,
+        "present": 298,
+        "antialiasedOrOther": 0
+      },
+      "samePixelCausalCounts": {
+        "coveredAboveBedBothDiscard": 94,
+        "coveredBelowBed": 169,
+        "coveredAmbiguous": 31,
+        "coveredUnreliableWorld": 4,
+        "absentSolid": 745,
+        "antialiasedOrOther": 0
+      },
+      "worldProbeRejects": 0,
+      "sampledMaskOutside": {
+        "cells": 346,
+        "samplesPerAxis": 4,
+        "sampled": 5536,
+        "positiveSamples": 5536,
+        "outsideSamples": 441,
+        "maximumOutsideAlpha": 0.625,
+        "outsideAlphaAreaSquareMeters": 1.2712584252450994,
+        "activePotentialDiscardAreaSquareMeters": 1.2712584252450994,
+        "truncated": false,
+        "examples": [
+          {
+            "x": 110.125,
+            "z": -12.004621168689937,
+            "alpha": 0.009497549019607842
+          },
+          {
+            "x": 110.125,
+            "z": -11.754621168689937,
+            "alpha": 0.005698529411764706
+          },
+          {
+            "x": 110.125,
+            "z": -11.504621168689937,
+            "alpha": 0.0018995098039215686
+          },
+          {
+            "x": 110.375,
+            "z": -11.504621168689937,
+            "alpha": 0.005698529411764706
+          },
+          {
+            "x": 111.125,
+            "z": -10.504621168689937,
+            "alpha": 0.02922794117647059
+          },
+          {
+            "x": 111.125,
+            "z": -10.254621168689937,
+            "alpha": 0.019301470588235295
+          },
+          {
+            "x": 111.125,
+            "z": -10.004621168689937,
+            "alpha": 0.013786764705882353
+          },
+          {
+            "x": 111.125,
+            "z": -9.754621168689937,
+            "alpha": 0.008272058823529412
+          },
+          {
+            "x": 111.125,
+            "z": -9.504621168689937,
+            "alpha": 0.0027573529411764708
+          },
+          {
+            "x": 111.375,
+            "z": -10.004621168689937,
+            "alpha": 0.04136029411764706
+          },
+          {
+            "x": 111.375,
+            "z": -9.754621168689937,
+            "alpha": 0.024816176470588234
+          },
+          {
+            "x": 111.375,
+            "z": -9.504621168689937,
+            "alpha": 0.008272058823529412
+          }
+        ]
+      },
+      "sampledWaterProbes": {
+        "count": 12,
+        "outsideIndexedProjection": 2,
+        "dryNeighborsNonzero": 0
+      }
+    },
+    {
+      "state": 10,
+      "seaTime": 173.88921329749155,
+      "variant": "current",
+      "geometryHash": "1b675336374b996f254b31f8f6cd8ccb5256b0a5af319ac4555849b3bff5b36a",
+      "exposedSeabedPixels": 440,
+      "solidCoverage": {
+        "absent": 344,
+        "present": 96,
+        "antialiasedOrOther": 0
+      },
+      "samePixelCausalCounts": {
+        "coveredAboveBedBothDiscard": 52,
+        "coveredBelowBed": 13,
+        "coveredAmbiguous": 29,
+        "coveredUnreliableWorld": 2,
+        "absentSolid": 344,
+        "antialiasedOrOther": 0
+      },
+      "worldProbeRejects": 0,
+      "sampledMaskOutside": {
+        "cells": 238,
+        "samplesPerAxis": 4,
+        "sampled": 3808,
+        "positiveSamples": 3808,
+        "outsideSamples": 257,
+        "maximumOutsideAlpha": 0.5300245098039216,
+        "outsideAlphaAreaSquareMeters": 1.6394416360294104,
+        "activePotentialDiscardAreaSquareMeters": 1.6394416360294104,
+        "truncated": false,
+        "examples": [
+          {
+            "x": 111.125,
+            "z": -13.254621168689937,
+            "alpha": 0.0013480392156862745
+          },
+          {
+            "x": 111.125,
+            "z": -13.004621168689937,
+            "alpha": 0.004044117647058824
+          },
+          {
+            "x": 111.125,
+            "z": -12.754621168689937,
+            "alpha": 0.006740196078431373
+          },
+          {
+            "x": 111.125,
+            "z": -12.504621168689937,
+            "alpha": 0.009436274509803921
+          },
+          {
+            "x": 111.375,
+            "z": -13.254621168689937,
+            "alpha": 0.004044117647058824
+          },
+          {
+            "x": 111.375,
+            "z": -13.004621168689937,
+            "alpha": 0.01213235294117647
+          },
+          {
+            "x": 111.375,
+            "z": -12.754621168689937,
+            "alpha": 0.02022058823529412
+          },
+          {
+            "x": 111.375,
+            "z": -12.504621168689937,
+            "alpha": 0.028308823529411765
+          },
+          {
+            "x": 111.625,
+            "z": -13.254621168689937,
+            "alpha": 0.006740196078431373
+          },
+          {
+            "x": 111.125,
+            "z": -12.254621168689937,
+            "alpha": 0.014399509803921568
+          },
+          {
+            "x": 111.125,
+            "z": -12.004621168689937,
+            "alpha": 0.021629901960784313
+          },
+          {
+            "x": 111.125,
+            "z": -11.754621168689937,
+            "alpha": 0.02886029411764706
+          }
+        ]
+      },
+      "sampledWaterProbes": {
+        "count": 12,
+        "outsideIndexedProjection": 10,
+        "dryNeighborsNonzero": 0
+      }
+    },
+    {
+      "state": 20,
+      "seaTime": 179.9392132974912,
+      "variant": "baseline",
+      "geometryHash": "78dde5946ec09dc186d7f238867292065df5690567eecd92283724dc02a64910",
+      "exposedSeabedPixels": 595,
+      "solidCoverage": {
+        "absent": 332,
+        "present": 263,
+        "antialiasedOrOther": 0
+      },
+      "samePixelCausalCounts": {
+        "coveredAboveBedBothDiscard": 215,
+        "coveredBelowBed": 0,
+        "coveredAmbiguous": 48,
+        "coveredUnreliableWorld": 0,
+        "absentSolid": 332,
+        "antialiasedOrOther": 0
+      },
+      "worldProbeRejects": 0,
+      "sampledMaskOutside": {
+        "cells": 567,
+        "samplesPerAxis": 4,
+        "sampled": 9072,
+        "positiveSamples": 9072,
+        "outsideSamples": 483,
+        "maximumOutsideAlpha": 0.7626225490196078,
+        "outsideAlphaAreaSquareMeters": 2.6516161151960826,
+        "activePotentialDiscardAreaSquareMeters": 2.6516161151960826,
+        "truncated": false,
+        "examples": [
+          {
+            "x": 16.125,
+            "z": -122.25462116868994,
+            "alpha": 0.00012254901960784314
+          },
+          {
+            "x": 16.125,
+            "z": -122.00462116868994,
+            "alpha": 0.0003676470588235294
+          },
+          {
+            "x": 16.125,
+            "z": -121.75462116868994,
+            "alpha": 0.0006127450980392157
+          },
+          {
+            "x": 16.125,
+            "z": -121.50462116868994,
+            "alpha": 0.000857843137254902
+          },
+          {
+            "x": 16.375,
+            "z": -121.75462116868994,
+            "alpha": 0.001838235294117647
+          },
+          {
+            "x": 16.375,
+            "z": -121.50462116868994,
+            "alpha": 0.002573529411764706
+          },
+          {
+            "x": 16.125,
+            "z": -121.25462116868994,
+            "alpha": 0.0010416666666666667
+          },
+          {
+            "x": 16.125,
+            "z": -121.00462116868994,
+            "alpha": 0.0011642156862745098
+          },
+          {
+            "x": 16.125,
+            "z": -120.75462116868994,
+            "alpha": 0.001286764705882353
+          },
+          {
+            "x": 16.125,
+            "z": -120.50462116868994,
+            "alpha": 0.001409313725490196
+          },
+          {
+            "x": 16.375,
+            "z": -121.25462116868994,
+            "alpha": 0.003125
+          },
+          {
+            "x": 16.375,
+            "z": -121.00462116868994,
+            "alpha": 0.0034926470588235296
+          }
+        ]
+      },
+      "sampledWaterProbes": {
+        "count": 12,
+        "outsideIndexedProjection": 8,
+        "dryNeighborsNonzero": 0
+      }
+    },
+    {
+      "state": 20,
+      "seaTime": 179.9392132974912,
+      "variant": "current",
+      "geometryHash": "da2fd31acded3e5e20a7a782ace9fee7ead5d48127af37bb50717fa13ed54bcf",
+      "exposedSeabedPixels": 892,
+      "solidCoverage": {
+        "absent": 590,
+        "present": 302,
+        "antialiasedOrOther": 0
+      },
+      "samePixelCausalCounts": {
+        "coveredAboveBedBothDiscard": 250,
+        "coveredBelowBed": 0,
+        "coveredAmbiguous": 52,
+        "coveredUnreliableWorld": 0,
+        "absentSolid": 590,
+        "antialiasedOrOther": 0
+      },
+      "worldProbeRejects": 0,
+      "sampledMaskOutside": {
+        "cells": 463,
+        "samplesPerAxis": 4,
+        "sampled": 7408,
+        "positiveSamples": 7408,
+        "outsideSamples": 606,
+        "maximumOutsideAlpha": 0.919546568627451,
+        "outsideAlphaAreaSquareMeters": 4.719956341911768,
+        "activePotentialDiscardAreaSquareMeters": 4.719956341911768,
+        "truncated": false,
+        "examples": [
+          {
+            "x": 17.125,
+            "z": -122.25462116868994,
+            "alpha": 0.0004901960784313725
+          },
+          {
+            "x": 17.125,
+            "z": -122.00462116868994,
+            "alpha": 0.0014705882352941176
+          },
+          {
+            "x": 17.125,
+            "z": -121.75462116868994,
+            "alpha": 0.0024509803921568627
+          },
+          {
+            "x": 17.125,
+            "z": -121.50462116868994,
+            "alpha": 0.003431372549019608
+          },
+          {
+            "x": 17.375,
+            "z": -122.25462116868994,
+            "alpha": 0.0014705882352941176
+          },
+          {
+            "x": 17.375,
+            "z": -122.00462116868994,
+            "alpha": 0.004411764705882353
+          },
+          {
+            "x": 17.375,
+            "z": -121.75462116868994,
+            "alpha": 0.007352941176470588
+          },
+          {
+            "x": 17.375,
+            "z": -121.50462116868994,
+            "alpha": 0.010294117647058823
+          },
+          {
+            "x": 17.125,
+            "z": -121.25462116868994,
+            "alpha": 0.01636029411764706
+          },
+          {
+            "x": 17.125,
+            "z": -121.00462116868994,
+            "alpha": 0.041237745098039215
+          },
+          {
+            "x": 17.125,
+            "z": -120.75462116868994,
+            "alpha": 0.06611519607843137
+          },
+          {
+            "x": 17.125,
+            "z": -120.50462116868994,
+            "alpha": 0.09099264705882353
+          }
+        ]
+      },
+      "sampledWaterProbes": {
+        "count": 12,
+        "outsideIndexedProjection": 9,
+        "dryNeighborsNonzero": 0
+      }
+    }
+  ],
+  "files": {
+    "report.json": "16bf6828b30c4e6e815f70352e501280ba5a32960b0b0d3b3f74e7ea1b7842ab",
+    "at-10.baseline.masked-ids.png": "a8c43ea7e33aeaaea098dfe664361f5c290ccdda8da798091177f6fea1eeaf58",
+    "at-10.baseline.unmasked-ids.png": "f9a31ec86b6fc0432c59055b4ad943b8bc52d16e0da72e18741e988b560a36a2",
+    "at-10.baseline.swept-solid.png": "7c1a4fd0b3725e92878c7c4551aafd3601f157a6aba65006c50fc9a4e831c5f4",
+    "at-10.baseline.support-report.json": "88e7c3001d4ef6cfadd62bf71fa0f5659afc90475439f49103e173c31c73ecf9",
+    "at-10.current.masked-ids.png": "b8150b4bb7cceb310bb524d6734c4caedbec361828080f14e2d8130d6acb7960",
+    "at-10.current.unmasked-ids.png": "f9a31ec86b6fc0432c59055b4ad943b8bc52d16e0da72e18741e988b560a36a2",
+    "at-10.current.swept-solid.png": "73727f1b907291a0973422b2fd97217d5d493ef306573a9b50d382c8e7907f2e",
+    "at-10.current.support-report.json": "c3a9ca266b3ab1d9a8f74f8540ece06e3e6b6bfc38aaaa9df54a3d5bbd7d7848",
+    "at-20.baseline.masked-ids.png": "bbfa00ca14a3397926a495b3c15af11d4eeb8039154a8cf3157ef52644636bbb",
+    "at-20.baseline.unmasked-ids.png": "8211db1e0029f8b5b9f1e3c9397d71f04490ff79c94a137cebcecd6a44294435",
+    "at-20.baseline.swept-solid.png": "9799c04d6dfcb79dcc70e89f306bd6994f5986e3458bb7c915e92c33b61fb364",
+    "at-20.baseline.support-report.json": "27c038ffd32a0debd570246c141638ad6241b4f026d11e3217e467d8f96efaa0",
+    "at-20.current.masked-ids.png": "54992942917ec646b6f08ee281e0188792402c55bef3978f56f997e79458011d",
+    "at-20.current.unmasked-ids.png": "8211db1e0029f8b5b9f1e3c9397d71f04490ff79c94a137cebcecd6a44294435",
+    "at-20.current.swept-solid.png": "808f3f715216a39f98e1f9f40b4a28fc653e964e33d0d200df93816dbffd432b",
+    "at-20.current.support-report.json": "edac04618fb6266eaa30e386a0681249e5dc32acb8648d9fe2fc70e20491a0f9",
+    "at-10.current.png": "d0a618e8f5d9f530b342a536dd204ce2b14e5e283e1b00475e0363ed47fe9579",
+    "at-20.current.png": "b129e777d0e223a619ef3ac065a0083cde7baf319d5df3c3ac622c15b5c4e186"
+  },
+  "limitations": [
+    "FarField ID alpha is overridden to1; distant fades and antialiased/other pixels do not prove original blending. Water/swept/seabed foreground counters use pure opaque IDs.",
+    "Solid coordinates from background have reliable=false and are not geometry evidence; causal counters inspect only pure solid-swept pixels.",
+    "RGB24 worlds are bounds/reprojection checked; RGBA8 mask/dither uncertainty and2cm depth margin leave explicit ambiguity.",
+    "Outside mask alpha area is sampled expected rejection potential, not exact area or total screen-hole cause; indexed-xz support probes number12perstate/variant, not every exposed pixel.",
+    "Full input arrays remain in temporary capture directory; compact archived physics fixtures are separately retained by the geometry report.",
+    "No production mask/optics changes and no identification of moving169.6brown patch."
+  ]
+}

@@ -1,0 +1,1573 @@
+{
+  "schema": 1,
+  "capture": {
+    "held": true,
+    "clocks": {
+      "snapshot": 173.88921329749155,
+      "source": 173.88921329749155,
+      "shading": 173.88921329749155
+    },
+    "camera": {
+      "position": [
+        110.68021301872339,
+        17.487797216109374,
+        27.831886157383906
+      ],
+      "quaternion": [
+        -0.18496285502062101,
+        -0.18274908819367316,
+        -0.03502890298321545,
+        0.9649686466320003
+      ],
+      "projection": [
+        1.153295910888354,
+        0,
+        0,
+        0,
+        0,
+        2.050303841579296,
+        0,
+        0,
+        0,
+        0,
+        -1.000066668888963,
+        -1,
+        0,
+        0,
+        -0.2000066668888963,
+        0
+      ]
+    },
+    "viewport": {
+      "width": 1280,
+      "height": 720,
+      "pixelRatio": 1
+    }
+  },
+  "mask": {
+    "grid": {
+      "xMin": -160,
+      "zMin": -1130.37962116869,
+      "spacing": 1,
+      "nx": 321,
+      "nz": 1161
+    },
+    "active": true,
+    "positiveNodes": 278
+  },
+  "mesh": {
+    "visible": true,
+    "drawRange": {
+      "start": 0,
+      "count": 36708
+    }
+  },
+  "method": "Node-centered linear bytes versus active indexed xz projection; bounded midpoint samples. No rasterizer regeneration.",
+  "limitations": "Positive outside alpha is potential water rejection, not camera-ray replacement proof. CPU dither is nominal unless shader value is supplied. Vertex finiteness/run-end/lift checks do not test this coverage. Photographed classification needs held object/world ID passes; cubic water must be reconstructed, not raycast as its flat CPU geometry. Truncated sampling is explicitly partial.",
+  "sampled": {
+    "cells": 346,
+    "samplesPerAxis": 4,
+    "sampled": 5536,
+    "positiveSamples": 5536,
+    "outsideSamples": 441,
+    "maximumOutsideAlpha": 0.625,
+    "outsideAlphaAreaSquareMeters": 1.2712584252450994,
+    "activePotentialDiscardAreaSquareMeters": 1.2712584252450994,
+    "truncated": false,
+    "examples": [
+      {
+        "x": 110.125,
+        "z": -12.004621168689937,
+        "alpha": 0.009497549019607842
+      },
+      {
+        "x": 110.125,
+        "z": -11.754621168689937,
+        "alpha": 0.005698529411764706
+      },
+      {
+        "x": 110.125,
+        "z": -11.504621168689937,
+        "alpha": 0.0018995098039215686
+      },
+      {
+        "x": 110.375,
+        "z": -11.504621168689937,
+        "alpha": 0.005698529411764706
+      },
+      {
+        "x": 111.125,
+        "z": -10.504621168689937,
+        "alpha": 0.02922794117647059
+      },
+      {
+        "x": 111.125,
+        "z": -10.254621168689937,
+        "alpha": 0.019301470588235295
+      },
+      {
+        "x": 111.125,
+        "z": -10.004621168689937,
+        "alpha": 0.013786764705882353
+      },
+      {
+        "x": 111.125,
+        "z": -9.754621168689937,
+        "alpha": 0.008272058823529412
+      },
+      {
+        "x": 111.125,
+        "z": -9.504621168689937,
+        "alpha": 0.0027573529411764708
+      },
+      {
+        "x": 111.375,
+        "z": -10.004621168689937,
+        "alpha": 0.04136029411764706
+      },
+      {
+        "x": 111.375,
+        "z": -9.754621168689937,
+        "alpha": 0.024816176470588234
+      },
+      {
+        "x": 111.375,
+        "z": -9.504621168689937,
+        "alpha": 0.008272058823529412
+      }
+    ]
+  },
+  "probes": [
+    {
+      "label": "mask-exposes-seabed-0",
+      "pixel": [
+        696,
+        464
+      ],
+      "fragCoord": [
+        696.5,
+        255.5
+      ],
+      "worldReprojectionPixels": 0.0025026308981855767,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        123.98352688452769,
+        1.0764371280251908
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": true,
+      "samePixelWorlds": {
+        "water": {
+          "point": [
+            123.98352688452769,
+            0.4677353184065396,
+            1.0764371280251908
+          ],
+          "reprojectionPixels": 0.0025026308981855767,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 33.95077871132723
+        },
+        "bed": {
+          "point": [
+            124.33250864341915,
+            0.02136993535577858,
+            0.37477772926058606
+          ],
+          "reprojectionPixels": 0.003833765934731066,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 34.84117598128708
+        },
+        "solid": {
+          "point": [
+            124.46877702884547,
+            -0.15312958676395283,
+            0.10053635928193216
+          ],
+          "reprojectionPixels": 0.0035531949782927853,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 35.18915520303288
+        },
+        "solidAlpha": 0.8431372549019608,
+        "solidDither": 0.39215686274509803,
+        "classification": "coveredBelowBed",
+        "method": "Actual masked seabed, unmasked water and solid-swept GPU world varyings at one pixel. RGB8 mask/dither margin1/255; provisional view-depth margin2cm."
+      },
+      "unmaskedWaterWorld": [
+        123.98352688452769,
+        0.4677353184065396,
+        1.0764371280251908
+      ],
+      "shaderDither": 0.39215686274509803,
+      "gpuMaskAlpha": 0.6705882352941176,
+      "gpuMaskActive": 1,
+      "shaderDitherQuantization": 0.00392156862745098,
+      "evaluatedXZ": [
+        123.98352688452769,
+        1.0764371280251908
+      ],
+      "samePixelUnmaskedWaterPointProvided": true,
+      "suppliedShaderDitherHalfBin": 0.00196078431372549,
+      "alpha": 0.6705167595809122,
+      "indexedProjectionCount": 1,
+      "indexedHeights": [
+        0.41555614517595646
+      ],
+      "clip": {
+        "alpha": 0.6705167595809122,
+        "dither": 0.39215686274509803,
+        "waterDiscard": true,
+        "sweptPass": true,
+        "source": "supplied shader dither",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 0.468053184581591,
+        "shaderBedY": 0.06458622702343697,
+        "shaderColumnMeters": 0.40346695755815404,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": true,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h."
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "mask-exposes-seabed-1",
+      "pixel": [
+        703,
+        459
+      ],
+      "fragCoord": [
+        703.5,
+        260.5
+      ],
+      "worldReprojectionPixels": 0.0014758936021179296,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        124.51792535292657,
+        0.7160005301809633
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": true,
+      "samePixelWorlds": {
+        "water": {
+          "point": [
+            124.51792535292657,
+            0.4304886120849005,
+            0.7160005301809633
+          ],
+          "reprojectionPixels": 0.0014758936021179296,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 34.45780536593672
+        },
+        "bed": {
+          "point": [
+            124.86662053266889,
+            0.0006179809938657854,
+            0.03284330623182541
+          ],
+          "reprojectionPixels": 0.0038024001067957776,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 35.32600564818257
+        },
+        "solid": {
+          "point": [
+            124.98992121159563,
+            -0.15132904954725745,
+            -0.20884135229289313
+          ],
+          "reprojectionPixels": 0.00234734653988018,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 35.633085550980724
+        },
+        "solidAlpha": 0.996078431372549,
+        "solidDither": 0.8274509803921568,
+        "classification": "coveredBelowBed",
+        "method": "Actual masked seabed, unmasked water and solid-swept GPU world varyings at one pixel. RGB8 mask/dither margin1/255; provisional view-depth margin2cm."
+      },
+      "unmaskedWaterWorld": [
+        124.51792535292657,
+        0.4304886120849005,
+        0.7160005301809633
+      ],
+      "shaderDither": 0.8274509803921568,
+      "gpuMaskAlpha": 0.8745098039215686,
+      "gpuMaskActive": 1,
+      "shaderDitherQuantization": 0.00392156862745098,
+      "evaluatedXZ": [
+        124.51792535292657,
+        0.7160005301809633
+      ],
+      "samePixelUnmaskedWaterPointProvided": true,
+      "suppliedShaderDitherHalfBin": 0.00196078431372549,
+      "alpha": 0.8748088494677464,
+      "indexedProjectionCount": 1,
+      "indexedHeights": [
+        0.05874294381324852
+      ],
+      "clip": {
+        "alpha": 0.8748088494677464,
+        "dither": 0.8274509803921568,
+        "waterDiscard": true,
+        "sweptPass": true,
+        "source": "supplied shader dither",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 0.43112569996405303,
+        "shaderBedY": 0.04296003029343551,
+        "shaderColumnMeters": 0.3881656696706175,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": true,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h."
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "mask-exposes-seabed-2",
+      "pixel": [
+        688,
+        453
+      ],
+      "fragCoord": [
+        688.5,
+        266.5
+      ],
+      "worldReprojectionPixels": 0.0033553753355061383,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        124.24295265930618,
+        -0.34031353679779386
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": true,
+      "samePixelWorlds": {
+        "water": {
+          "point": [
+            124.24295265930618,
+            0.26023103357738364,
+            -0.34031353679779386
+          ],
+          "reprojectionPixels": 0.0033553753355061383,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 35.34082576204477
+        },
+        "bed": {
+          "point": [
+            124.6271120087572,
+            -0.22766877577714695,
+            -1.1383087784709005
+          ],
+          "reprojectionPixels": 0.0024186356738428562,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 36.3418419071503
+        },
+        "solid": {
+          "point": [
+            124.63793037163805,
+            -0.24144746312185816,
+            -1.16072487488168
+          ],
+          "reprojectionPixels": 0.003391815416954758,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 36.369997297461296
+        },
+        "solidAlpha": 0.9725490196078431,
+        "solidDither": 0.3333333333333333,
+        "classification": "coveredBelowBed",
+        "method": "Actual masked seabed, unmasked water and solid-swept GPU world varyings at one pixel. RGB8 mask/dither margin1/255; provisional view-depth margin2cm."
+      },
+      "unmaskedWaterWorld": [
+        124.24295265930618,
+        0.26023103357738364,
+        -0.34031353679779386
+      ],
+      "shaderDither": 0.3333333333333333,
+      "gpuMaskAlpha": 0.7450980392156863,
+      "gpuMaskActive": 1,
+      "shaderDitherQuantization": 0.00392156862745098,
+      "evaluatedXZ": [
+        124.24295265930618,
+        -0.34031353679779386
+      ],
+      "samePixelUnmaskedWaterPointProvided": true,
+      "suppliedShaderDitherHalfBin": 0.00196078431372549,
+      "alpha": 0.7446306855469056,
+      "indexedProjectionCount": 1,
+      "indexedHeights": [
+        -0.1950287605379075
+      ],
+      "clip": {
+        "alpha": 0.7446306855469056,
+        "dither": 0.3333333333333333,
+        "waterDiscard": true,
+        "sweptPass": true,
+        "source": "supplied shader dither",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 0.26019901547952745,
+        "shaderBedY": -0.07957198432985116,
+        "shaderColumnMeters": 0.33977099980937864,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": true,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h."
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "mask-exposes-seabed-3",
+      "pixel": [
+        407,
+        441
+      ],
+      "fragCoord": [
+        407.5,
+        278.5
+      ],
+      "worldReprojectionPixels": 0.002696881096227584,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        111.81086258952985,
+        -5.844799497110898
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": false,
+      "samePixelWorlds": {
+        "water": {
+          "point": [
+            111.81086258952985,
+            0.5999374747239017,
+            -5.844799497110898
+          ],
+          "reprojectionPixels": 0.002696881096227584,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 35.75176773558093
+        },
+        "bed": {
+          "point": [
+            112.00795739936575,
+            -2.342613359845487,
+            -11.712835401991924
+          ],
+          "reprojectionPixels": 0.0013797362332516072,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 41.981371996374904
+        },
+        "solid": {
+          "point": [
+            13.839839985361095,
+            13.596505021840642,
+            -605.9275253840044
+          ],
+          "reprojectionPixels": 433.6580839199165,
+          "insideEncoding": false,
+          "reliable": false,
+          "viewDepth": 516.6030844396965
+        },
+        "solidAlpha": 0.5529411764705883,
+        "solidDither": 0.596078431372549,
+        "classification": "coveredUnreliableWorld",
+        "method": "Actual masked seabed, unmasked water and solid-swept GPU world varyings at one pixel. RGB8 mask/dither margin1/255; provisional view-depth margin2cm."
+      },
+      "unmaskedWaterWorld": [
+        111.81086258952985,
+        0.5999374747239017,
+        -5.844799497110898
+      ],
+      "shaderDither": 0.5647058823529412,
+      "gpuMaskAlpha": 0.8117647058823529,
+      "gpuMaskActive": 1,
+      "shaderDitherQuantization": 0.00392156862745098,
+      "evaluatedXZ": [
+        111.81086258952985,
+        -5.844799497110898
+      ],
+      "samePixelUnmaskedWaterPointProvided": true,
+      "suppliedShaderDitherHalfBin": 0.00196078431372549,
+      "alpha": 0.8108625895298474,
+      "indexedProjectionCount": 2,
+      "indexedHeights": [
+        0.04464333949489398,
+        0.027379140274015026
+      ],
+      "clip": {
+        "alpha": 0.8108625895298474,
+        "dither": 0.5647058823529412,
+        "waterDiscard": true,
+        "sweptPass": true,
+        "source": "supplied shader dither",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 0.6004575598408323,
+        "shaderBedY": -1.1689599097176484,
+        "shaderColumnMeters": 1.7694174695584808,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": true,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h."
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "mask-exposes-seabed-4",
+      "pixel": [
+        409,
+        436
+      ],
+      "fragCoord": [
+        409.5,
+        283.5
+      ],
+      "worldReprojectionPixels": 0.003257413706811208,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        111.93853360048138,
+        -6.019858535747744
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": false,
+      "samePixelWorlds": {
+        "water": {
+          "point": [
+            111.93853360048138,
+            0.7621078945462614,
+            -6.019858535747744
+          ],
+          "reprojectionPixels": 0.003257413706811208,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 35.88656457401126
+        },
+        "bed": {
+          "point": [
+            112.18706936759168,
+            -2.541237028910942,
+            -12.705993006860808
+          ],
+          "reprojectionPixels": 0.000441365137575027,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 42.97453366961038
+        },
+        "solid": {
+          "point": [
+            13.839839985361095,
+            13.596505021840642,
+            -605.9275253840044
+          ],
+          "reprojectionPixels": 430.4708886974673,
+          "insideEncoding": false,
+          "reliable": false,
+          "viewDepth": 516.6030844396965
+        },
+        "solidAlpha": 0.5529411764705883,
+        "solidDither": 0.596078431372549,
+        "classification": "coveredUnreliableWorld",
+        "method": "Actual masked seabed, unmasked water and solid-swept GPU world varyings at one pixel. RGB8 mask/dither margin1/255; provisional view-depth margin2cm."
+      },
+      "unmaskedWaterWorld": [
+        111.93853360048138,
+        0.7621078945462614,
+        -6.019858535747744
+      ],
+      "shaderDither": 0.23921568627450981,
+      "gpuMaskAlpha": 0.9372549019607843,
+      "gpuMaskActive": 1,
+      "shaderDitherQuantization": 0.00392156862745098,
+      "evaluatedXZ": [
+        111.93853360048138,
+        -6.019858535747744
+      ],
+      "samePixelUnmaskedWaterPointProvided": true,
+      "suppliedShaderDitherHalfBin": 0.00196078431372549,
+      "alpha": 0.938533600481378,
+      "indexedProjectionCount": 2,
+      "indexedHeights": [
+        0.06194854944548853,
+        0.03010838578796868
+      ],
+      "clip": {
+        "alpha": 0.938533600481378,
+        "dither": 0.23921568627450981,
+        "waterDiscard": true,
+        "sweptPass": true,
+        "source": "supplied shader dither",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 0.7669509846977278,
+        "shaderBedY": -1.2039717049238194,
+        "shaderColumnMeters": 1.9709226896215473,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": true,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h."
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "mask-exposes-seabed-5",
+      "pixel": [
+        404,
+        432
+      ],
+      "fragCoord": [
+        404.5,
+        287.5
+      ],
+      "worldReprojectionPixels": 0.0016275431040185125,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        111.74079398755987,
+        -6.2478444686882995
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": false,
+      "samePixelWorlds": {
+        "water": {
+          "point": [
+            111.74079398755987,
+            0.9077835624088948,
+            -6.2478444686882995
+          ],
+          "reprojectionPixels": 0.0016275431040185125,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 35.962677186785854
+        },
+        "bed": {
+          "point": [
+            111.97514408678671,
+            -2.7556840631773554,
+            -13.778318571276031
+          ],
+          "reprojectionPixels": 0.0008415711116269712,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 43.90915994699374
+        },
+        "solid": {
+          "point": [
+            13.839839985361095,
+            13.596505021840642,
+            -605.9275253840044
+          ],
+          "reprojectionPixels": 424.42697459698934,
+          "insideEncoding": false,
+          "reliable": false,
+          "viewDepth": 516.6030844396965
+        },
+        "solidAlpha": 0.5529411764705883,
+        "solidDither": 0.596078431372549,
+        "classification": "coveredUnreliableWorld",
+        "method": "Actual masked seabed, unmasked water and solid-swept GPU world varyings at one pixel. RGB8 mask/dither margin1/255; provisional view-depth margin2cm."
+      },
+      "unmaskedWaterWorld": [
+        111.74079398755987,
+        0.9077835624088948,
+        -6.2478444686882995
+      ],
+      "shaderDither": 0.6784313725490196,
+      "gpuMaskAlpha": 0.7411764705882353,
+      "gpuMaskActive": 1,
+      "shaderDitherQuantization": 0.00392156862745098,
+      "evaluatedXZ": [
+        111.74079398755987,
+        -6.2478444686882995
+      ],
+      "samePixelUnmaskedWaterPointProvided": true,
+      "suppliedShaderDitherHalfBin": 0.00196078431372549,
+      "alpha": 0.7407939875598686,
+      "indexedProjectionCount": 2,
+      "indexedHeights": [
+        0.03265188312538642,
+        0.032157141774507673
+      ],
+      "clip": {
+        "alpha": 0.7407939875598686,
+        "dither": 0.6784313725490196,
+        "waterDiscard": true,
+        "sweptPass": true,
+        "source": "supplied shader dither",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 0.91479322206699,
+        "shaderBedY": -1.249568875205106,
+        "shaderColumnMeters": 2.164362097272096,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": true,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h."
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "mask-exposes-seabed-6",
+      "pixel": [
+        416,
+        429
+      ],
+      "fragCoord": [
+        416.5,
+        290.5
+      ],
+      "worldReprojectionPixels": 0.002120301216225159,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        112.31273432449893,
+        -6.249623523958917
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": false,
+      "samePixelWorlds": {
+        "water": {
+          "point": [
+            112.31273432449893,
+            0.9634628870167035,
+            -6.249623523958917
+          ],
+          "reprojectionPixels": 0.002120301216225159,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 36.137935986062004
+        },
+        "bed": {
+          "point": [
+            112.68485734968522,
+            -2.8041307213384385,
+            -14.020447993618518
+          ],
+          "reprojectionPixels": 0.0007265174290477193,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 44.37757874745904
+        },
+        "solid": {
+          "point": [
+            -4.959895489209657,
+            9.59256801560926,
+            -629.2689084411315
+          ],
+          "reprojectionPixels": 436.7574893539594,
+          "insideEncoding": false,
+          "reliable": false,
+          "viewDepth": 531.881900464812
+        },
+        "solidAlpha": 0.5372549019607843,
+        "solidDither": 0.592156862745098,
+        "classification": "coveredUnreliableWorld",
+        "method": "Actual masked seabed, unmasked water and solid-swept GPU world varyings at one pixel. RGB8 mask/dither margin1/255; provisional view-depth margin2cm."
+      },
+      "unmaskedWaterWorld": [
+        112.31273432449893,
+        0.9634628870167035,
+        -6.249623523958917
+      ],
+      "shaderDither": 0.29411764705882354,
+      "gpuMaskAlpha": 1,
+      "gpuMaskActive": 1,
+      "shaderDitherQuantization": 0.00392156862745098,
+      "evaluatedXZ": [
+        112.31273432449893,
+        -6.249623523958917
+      ],
+      "samePixelUnmaskedWaterPointProvided": true,
+      "suppliedShaderDitherHalfBin": 0.00196078431372549,
+      "alpha": 1,
+      "indexedProjectionCount": 2,
+      "indexedHeights": [
+        0.1752500556739828,
+        0.035899598394895
+      ],
+      "clip": {
+        "alpha": 1,
+        "dither": 0.29411764705882354,
+        "waterDiscard": true,
+        "sweptPass": true,
+        "source": "supplied shader dither",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 0.9706271376609201,
+        "shaderBedY": -1.2499246861319813,
+        "shaderColumnMeters": 2.2205518237929014,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": true,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h."
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "mask-exposes-seabed-7",
+      "pixel": [
+        390,
+        425
+      ],
+      "fragCoord": [
+        390.5,
+        294.5
+      ],
+      "worldReprojectionPixels": 0.002228148453570001,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        111.15488291709914,
+        -6.814829383460619
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": false,
+      "samePixelWorlds": {
+        "water": {
+          "point": [
+            111.15488291709914,
+            1.1302262026206336,
+            -6.814829383460619
+          ],
+          "reprojectionPixels": 0.002228148453570001,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 36.171688372058554
+        },
+        "bed": {
+          "point": [
+            111.28026129485727,
+            -3.1953355786404387,
+            -15.976519263754426
+          ],
+          "reprojectionPixels": 0.0017901599169788008,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 45.73661957653576
+        },
+        "solid": {
+          "point": [
+            23.230537189873303,
+            15.596520399839903,
+            -594.2682198091734
+          ],
+          "reprojectionPixels": 407.8212874977328,
+          "insideEncoding": false,
+          "reliable": false,
+          "viewDepth": 508.97112945132034
+        },
+        "solidAlpha": 0.5607843137254902,
+        "solidDither": 0.596078431372549,
+        "classification": "coveredUnreliableWorld",
+        "method": "Actual masked seabed, unmasked water and solid-swept GPU world varyings at one pixel. RGB8 mask/dither margin1/255; provisional view-depth margin2cm."
+      },
+      "unmaskedWaterWorld": [
+        111.15488291709914,
+        1.1302262026206336,
+        -6.814829383460619
+      ],
+      "shaderDither": 0.047058823529411764,
+      "gpuMaskAlpha": 0.09019607843137255,
+      "gpuMaskActive": 1,
+      "shaderDitherQuantization": 0.00392156862745098,
+      "evaluatedXZ": [
+        111.15488291709914,
+        -6.814829383460619
+      ],
+      "samePixelUnmaskedWaterPointProvided": true,
+      "suppliedShaderDitherHalfBin": 0.00196078431372549,
+      "alpha": 0.0874765992499499,
+      "indexedProjectionCount": 0,
+      "indexedHeights": [],
+      "clip": {
+        "alpha": 0.0874765992499499,
+        "dither": 0.047058823529411764,
+        "waterDiscard": true,
+        "sweptPass": true,
+        "source": "supplied shader dither",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 1.1342157539715516,
+        "shaderBedY": -1.3629658694865108,
+        "shaderColumnMeters": 2.4971816234580624,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": true,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h."
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": true,
+        "nominalWaterDiscardWithoutIndexedProjection": true,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "mask-exposes-seabed-8",
+      "pixel": [
+        424,
+        422
+      ],
+      "fragCoord": [
+        424.5,
+        297.5
+      ],
+      "worldReprojectionPixels": 0.0028824682489108477,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        112.74260304824122,
+        -6.541655446644427
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": false,
+      "samePixelWorlds": {
+        "water": {
+          "point": [
+            112.74260304824122,
+            1.1308365542195133,
+            -6.541655446644427
+          ],
+          "reprojectionPixels": 0.0028824682489108477,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 36.47463248505092
+        },
+        "bed": {
+          "point": [
+            113.27306105333923,
+            -3.076942627247732,
+            -15.384627575192098
+          ],
+          "reprojectionPixels": 0.0019470236618536565,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 45.858009758475134
+        },
+        "solid": {
+          "point": [
+            -9.673620979405655,
+            8.588646446981812,
+            -635.1213776123938
+          ],
+          "reprojectionPixels": 438.3214093458191,
+          "insideEncoding": false,
+          "reliable": false,
+          "viewDepth": 535.7128131207385
+        },
+        "solidAlpha": 0.5333333333333333,
+        "solidDither": 0.5882352941176471,
+        "classification": "coveredUnreliableWorld",
+        "method": "Actual masked seabed, unmasked water and solid-swept GPU world varyings at one pixel. RGB8 mask/dither margin1/255; provisional view-depth margin2cm."
+      },
+      "unmaskedWaterWorld": [
+        112.74260304824122,
+        1.1308365542195133,
+        -6.541655446644427
+      ],
+      "shaderDither": 0.9215686274509803,
+      "gpuMaskAlpha": 0.9568627450980393,
+      "gpuMaskActive": 1,
+      "shaderDitherQuantization": 0.00392156862745098,
+      "evaluatedXZ": [
+        112.74260304824122,
+        -6.541655446644427
+      ],
+      "samePixelUnmaskedWaterPointProvided": true,
+      "suppliedShaderDitherHalfBin": 0.00196078431372549,
+      "alpha": 0.9582928707740797,
+      "indexedProjectionCount": 2,
+      "indexedHeights": [
+        0.4277067878067799,
+        0.04584807851271529
+      ],
+      "clip": {
+        "alpha": 0.9582928707740797,
+        "dither": 0.9215686274509803,
+        "waterDiscard": true,
+        "sweptPass": true,
+        "source": "supplied shader dither",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 1.1359503474875263,
+        "shaderBedY": -1.3083310690973238,
+        "shaderColumnMeters": 2.4442814165848503,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": true,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h."
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "mask-exposes-seabed-9",
+      "pixel": [
+        420,
+        417
+      ],
+      "fragCoord": [
+        420.5,
+        302.5
+      ],
+      "worldReprojectionPixels": 0.0029824683788397667,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        112.60869894079553,
+        -6.998072076342851
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": false,
+      "samePixelWorlds": {
+        "water": {
+          "point": [
+            112.60869894079553,
+            1.2207566035244781,
+            -6.998072076342851
+          ],
+          "reprojectionPixels": 0.0029824683788397667,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 36.79059205736512
+        },
+        "bed": {
+          "point": [
+            113.15183807324388,
+            -3.3622209645641448,
+            -16.810896185713318
+          ],
+          "reprojectionPixels": 0.001965733491078784,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 47.155726098804635
+        },
+        "solid": {
+          "point": [
+            -4.959895489209657,
+            9.59256801560926,
+            -629.2689084411315
+          ],
+          "reprojectionPixels": 429.6003615404552,
+          "insideEncoding": false,
+          "reliable": false,
+          "viewDepth": 531.881900464812
+        },
+        "solidAlpha": 0.5372549019607843,
+        "solidDither": 0.592156862745098,
+        "classification": "coveredUnreliableWorld",
+        "method": "Actual masked seabed, unmasked water and solid-swept GPU world varyings at one pixel. RGB8 mask/dither margin1/255; provisional view-depth margin2cm."
+      },
+      "unmaskedWaterWorld": [
+        112.60869894079553,
+        1.2207566035244781,
+        -6.998072076342851
+      ],
+      "shaderDither": 0.22745098039215686,
+      "gpuMaskAlpha": 0.7568627450980392,
+      "gpuMaskActive": 1,
+      "shaderDitherQuantization": 0.00392156862745098,
+      "evaluatedXZ": [
+        112.60869894079553,
+        -6.998072076342851
+      ],
+      "samePixelUnmaskedWaterPointProvided": true,
+      "suppliedShaderDitherHalfBin": 0.00196078431372549,
+      "alpha": 0.7579995047694517,
+      "indexedProjectionCount": 2,
+      "indexedHeights": [
+        0.2713084641999921,
+        0.05372708727861563
+      ],
+      "clip": {
+        "alpha": 0.7579995047694517,
+        "dither": 0.22745098039215686,
+        "waterDiscard": true,
+        "sweptPass": true,
+        "source": "supplied shader dither",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 1.2236330130792608,
+        "shaderBedY": -1.3996144168006495,
+        "shaderColumnMeters": 2.6232474298799104,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": true,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h."
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "mask-exposes-seabed-10",
+      "pixel": [
+        424,
+        410
+      ],
+      "fragCoord": [
+        424.5,
+        309.5
+      ],
+      "worldReprojectionPixels": 0.0024726128813175366,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        112.87693702441072,
+        -7.618072838182343
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": false,
+      "samePixelWorlds": {
+        "water": {
+          "point": [
+            112.87693702441072,
+            1.2831345369299925,
+            -7.618072838182343
+          ],
+          "reprojectionPixels": 0.0024726128813175366,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 37.394822906098355
+        },
+        "bed": {
+          "point": [
+            113.55326381643192,
+            -3.706962806401421,
+            -18.534800743022743
+          ],
+          "reprojectionPixels": 0.00021515712535056402,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 48.91038344213045
+        },
+        "solid": {
+          "point": [
+            -9.673620979405655,
+            8.588646446981812,
+            -635.1213776123938
+          ],
+          "reprojectionPixels": 428.9945979629916,
+          "insideEncoding": false,
+          "reliable": false,
+          "viewDepth": 535.7128131207385
+        },
+        "solidAlpha": 0.5333333333333333,
+        "solidDither": 0.5882352941176471,
+        "classification": "coveredUnreliableWorld",
+        "method": "Actual masked seabed, unmasked water and solid-swept GPU world varyings at one pixel. RGB8 mask/dither margin1/255; provisional view-depth margin2cm."
+      },
+      "unmaskedWaterWorld": [
+        112.87693702441072,
+        1.2831345369299925,
+        -7.618072838182343
+      ],
+      "shaderDither": 0.6313725490196078,
+      "gpuMaskAlpha": 0.6666666666666666,
+      "gpuMaskActive": 1,
+      "shaderDitherQuantization": 0.00392156862745098,
+      "evaluatedXZ": [
+        112.87693702441072,
+        -7.618072838182343
+      ],
+      "samePixelUnmaskedWaterPointProvided": true,
+      "suppliedShaderDitherHalfBin": 0.00196078431372549,
+      "alpha": 0.6678299269002828,
+      "indexedProjectionCount": 2,
+      "indexedHeights": [
+        0.4054756223932071,
+        0.0843591817581574
+      ],
+      "clip": {
+        "alpha": 0.6678299269002828,
+        "dither": 0.6313725490196078,
+        "waterDiscard": true,
+        "sweptPass": true,
+        "source": "supplied shader dither",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 1.283176373514383,
+        "shaderBedY": -1.523614570306834,
+        "shaderColumnMeters": 2.806790943821217,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": true,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h."
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "mask-exposes-seabed-11",
+      "pixel": [
+        730,
+        368
+      ],
+      "fragCoord": [
+        730.5,
+        351.5
+      ],
+      "worldReprojectionPixels": 0.0004227158304409895,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        129.95956188199295,
+        -6.9496817729798295
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": false,
+      "samePixelWorlds": {
+        "water": {
+          "point": [
+            129.95956188199295,
+            1.270225600613685,
+            -6.9496817729798295
+          ],
+          "reprojectionPixels": 0.0004227158304409895,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 42.625168855741634
+        },
+        "bed": {
+          "point": [
+            135.49734571560293,
+            -3.388084613566676,
+            -16.94032245665676
+          ],
+          "reprojectionPixels": 0.00041555035157400227,
+          "insideEncoding": true,
+          "reliable": true,
+          "viewDepth": 54.868792938454405
+        },
+        "solid": {
+          "point": [
+            -202.7696486574202,
+            -32.53663066247884,
+            -874.8656205534
+          ],
+          "reprojectionPixels": 791.9429232284809,
+          "insideEncoding": false,
+          "reliable": false,
+          "viewDepth": 692.6447383631769
+        },
+        "solidAlpha": 0.37254901960784315,
+        "solidDither": 0.4627450980392157,
+        "classification": "coveredUnreliableWorld",
+        "method": "Actual masked seabed, unmasked water and solid-swept GPU world varyings at one pixel. RGB8 mask/dither margin1/255; provisional view-depth margin2cm."
+      },
+      "unmaskedWaterWorld": [
+        129.95956188199295,
+        1.270225600613685,
+        -6.9496817729798295
+      ],
+      "shaderDither": 0.027450980392156862,
+      "gpuMaskAlpha": 0.054901960784313725,
+      "gpuMaskActive": 1,
+      "shaderDitherQuantization": 0.00392156862745098,
+      "evaluatedXZ": [
+        129.95956188199295,
+        -6.9496817729798295
+      ],
+      "samePixelUnmaskedWaterPointProvided": true,
+      "suppliedShaderDitherHalfBin": 0.00196078431372549,
+      "alpha": 0.056670832594802434,
+      "indexedProjectionCount": 0,
+      "indexedHeights": [],
+      "clip": {
+        "alpha": 0.056670832594802434,
+        "dither": 0.027450980392156862,
+        "waterDiscard": true,
+        "sweptPass": true,
+        "source": "supplied shader dither",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 1.269881114613178,
+        "shaderBedY": -1.3899363538206158,
+        "shaderColumnMeters": 2.659817468433794,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": true,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h."
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": true,
+        "nominalWaterDiscardWithoutIndexedProjection": true,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "seabed-without-mask-0",
+      "pixel": [
+        1248,
+        364
+      ],
+      "fragCoord": [
+        1248.5,
+        355.5
+      ],
+      "worldReprojectionPixels": 0.0016983048358562816,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        161.88061028007337,
+        1.8556633365922153
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": false,
+      "pickedWorld": [
+        161.88061028007337,
+        0.11124420829082737,
+        1.8556633365922153
+      ],
+      "sceneBedY": 0.11124420829082737,
+      "evaluatedXZ": [
+        161.88061028007337,
+        1.8556633365922153
+      ],
+      "samePixelUnmaskedWaterPointProvided": false,
+      "alpha": 0,
+      "indexedProjectionCount": 0,
+      "indexedHeights": [],
+      "clip": {
+        "alpha": 0,
+        "dither": 0.7052373480710514,
+        "waterDiscard": false,
+        "sweptPass": false,
+        "source": "CPU nominal GLSL mirror; highp rounding is not GPU-pixel proof",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 0.6178963673662589,
+        "shaderBedY": 0.11133980139527849,
+        "shaderColumnMeters": 0.5065565659709803,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": false,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h.",
+        "sceneBedY": 0.11124420829082737
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "seabed-without-mask-1",
+      "pixel": [
+        1231,
+        357
+      ],
+      "fragCoord": [
+        1231.5,
+        362.5
+      ],
+      "worldReprojectionPixels": 0.0017996646691505287,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        162.39000471770794,
+        0.5540175477838147
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": false,
+      "pickedWorld": [
+        162.39000471770794,
+        0.0322494526058108,
+        0.5540175477838147
+      ],
+      "sceneBedY": 0.0322494526058108,
+      "evaluatedXZ": [
+        162.39000471770794,
+        0.5540175477838147
+      ],
+      "samePixelUnmaskedWaterPointProvided": false,
+      "alpha": 0,
+      "indexedProjectionCount": 0,
+      "indexedHeights": [],
+      "clip": {
+        "alpha": 0,
+        "dither": 0.4059138806397229,
+        "waterDiscard": false,
+        "sweptPass": false,
+        "source": "CPU nominal GLSL mirror; highp rounding is not GPU-pixel proof",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 0.5586927351546328,
+        "shaderBedY": 0.029154956091468117,
+        "shaderColumnMeters": 0.5295377790631647,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": false,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h.",
+        "sceneBedY": 0.0322494526058108
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "seabed-without-mask-2",
+      "pixel": [
+        1252,
+        351
+      ],
+      "fragCoord": [
+        1252.5,
+        368.5
+      ],
+      "worldReprojectionPixels": 0.0027283907958578304,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        164.86060356262942,
+        0.3286112449859502
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": false,
+      "pickedWorld": [
+        164.86060356262942,
+        0.01857757679090355,
+        0.3286112449859502
+      ],
+      "sceneBedY": 0.01857757679090355,
+      "evaluatedXZ": [
+        164.86060356262942,
+        0.3286112449859502
+      ],
+      "samePixelUnmaskedWaterPointProvided": false,
+      "alpha": 0,
+      "indexedProjectionCount": 0,
+      "indexedHeights": [],
+      "clip": {
+        "alpha": 0,
+        "dither": 0.96567206506848,
+        "waterDiscard": false,
+        "sweptPass": false,
+        "source": "CPU nominal GLSL mirror; highp rounding is not GPU-pixel proof",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 0.6403611409166567,
+        "shaderBedY": 0.0017515279009354956,
+        "shaderColumnMeters": 0.6386096130157213,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": false,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h.",
+        "sceneBedY": 0.01857757679090355
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    },
+    {
+      "label": "seabed-without-mask-3",
+      "pixel": [
+        749,
+        212
+      ],
+      "fragCoord": [
+        749.5,
+        507.5
+      ],
+      "worldReprojectionPixels": 0.001052968413406474,
+      "worldEncodingWithinBounds": true,
+      "xz": [
+        191.53861478201236,
+        -113.00610477503528
+      ],
+      "pickedObject": "seabed",
+      "solidSweptCoverage": false,
+      "pickedWorld": [
+        191.53861478201236,
+        -11.99912333483239,
+        -113.00610477503528
+      ],
+      "sceneBedY": -11.99912333483239,
+      "evaluatedXZ": [
+        191.53861478201236,
+        -113.00610477503528
+      ],
+      "samePixelUnmaskedWaterPointProvided": false,
+      "alpha": 0,
+      "indexedProjectionCount": 0,
+      "indexedHeights": [],
+      "clip": {
+        "alpha": 0,
+        "dither": 0.8666018477771402,
+        "waterDiscard": false,
+        "sweptPass": false,
+        "source": "CPU nominal GLSL mirror; highp rounding is not GPU-pixel proof",
+        "inactiveSweptPass": false
+      },
+      "water": {
+        "surfaceY": 0.20582358512220075,
+        "shaderBedY": -10.66566206953124,
+        "shaderColumnMeters": 10.87148565465344,
+        "packedDryNeighbors": 0,
+        "withinSnapshotWindow": false,
+        "surfaceEvidence": "CPU height-field interpolation, not a raycast of shader-displaced triangles; actual water-fragment y is unmaskedWaterWorld[1] when provided. Outside-window queries clamp source data and do not prove water draw coverage.",
+        "sourceDryEvidence": "Raw swept snapshot dry nodes are packed 5cm below bed; cubic interpolation is not solver h.",
+        "sceneBedY": -11.99912333483239
+      },
+      "classification": {
+        "filteredMaskOutsideIndexedProjection": false,
+        "nominalWaterDiscardWithoutIndexedProjection": false,
+        "maskedObjectID": "seabed"
+      }
+    }
+  ],
+  "input": {
+    "path": "/private/tmp/tube-mask-held-causal/at-10.baseline.support-input.json",
+    "sha256": "9b4b4c23285d31f33ee67c561904419668450d4c948b94b70449ba5a94b76d2f"
+  }
+}
