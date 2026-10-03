@@ -77,10 +77,13 @@ export const FOAM_FLOW_GATE = [0.03, 0.2] as const;
  */
 export const FOAM_EDGE = 0.04;
 /**
- * How far above its threshold, in sigma, the field must climb for foam to be at full thickness: a strand is a single
- * bubble layer at its edge (reflectance 0.10, Koepke 1984) and the full stage's by its core. [provisional]
+ * The width of a foam patch's fringe, m: a single layer of bubbles at its edge (reflectance 0.10, Koepke 1984), the
+ * stage's full reflectance inside it. A few bubble diameters: the bubbles of surf foam are a millimetre to a few across
+ * (the Hinze scale under breaking waves is near a millimetre, Deane & Stokes 2002). [provisional] The fringe climbs the
+ * field at its own gradient there. (At 1.5 sigma of the field, the first ramp, the fringe ran 10-30 cm, wider than the
+ * lace's threads, so every thread was drawn as a translucent, milky tube.)
  */
-export const FOAM_THICK = 1.5;
+export const FOAM_FRINGE = 0.02;
 /** Where the second octave's texture is shifted, tile fractions, so it never samples the first's own point. */
 const OCTAVE_SHIFT = [0.371, 0.629] as const;
 /** The seeds of the two octaves' and two phases' hex lattices. */
@@ -385,12 +388,15 @@ export function foamFieldCover(x: number, z: number, flowX: number, flowZ: numbe
 }
 
 /**
- * How thick the foam is at world (x, z), 0 at the edge of a patch (a single layer of bubbles) to 1 once the field is
- * `FOAM_THICK` sigma over its threshold; 1 where a pixel spans more than the pattern can show. The foam's reflectance
- * runs from the monolayer's to its stage's by it (`foamAlbedo`).
+ * How thick the foam is at world (x, z), 0 at the edge of a patch (a single layer of bubbles) to 1 once it is
+ * `FOAM_FRINGE` inside it (the field's climb at its gradient there, read off central differences); 1 where a pixel spans
+ * more than the pattern can show. The foam's reflectance runs from the monolayer's to its stage's by it.
  */
 export function foamFieldThickness(x: number, z: number, flowX: number, flowZ: number, foam: number, age: number, time: number, footprint = 0): number {
-  const thickness = smoothstep(0, FOAM_THICK, foamFieldValue(x, z, flowX, flowZ, foam, age, time));
+  const at = (px: number, pz: number) => foamFieldValue(px, pz, flowX, flowZ, foam, age, time);
+  const h = 0.005;
+  const gradient = Math.hypot(at(x + h, z) - at(x - h, z), at(x, z + h) - at(x, z - h)) / (2 * h);
+  const thickness = smoothstep(0, Math.max(FOAM_FRINGE * gradient, 1e-3), at(x, z));
   const fade = smoothstep(FOAM_FADE[0], FOAM_FADE[1], footprint);
   return thickness + (1 - thickness) * fade;
 }
@@ -475,8 +481,8 @@ float waterFoamUnion( vec2 p, vec2 dpdx, vec2 dpdy, vec2 flow, float foam, float
   return best;
 }
 // The foam at p as (share of the surface covered, thickness): covered where the field passes 0, the edge as soft as the
-// field changes across the pixel (half its fwidth); thin (a single layer of bubbles) at the edge, full once the field is
-// FOAM_THICK sigma over it. Both give way to the foam's mean and full thickness where a pixel (footprint, m) spans more
+// field changes across the pixel (half its fwidth); thin (a single layer of bubbles) at the edge, full FOAM_FRINGE metres
+// inside it. Both give way to the foam's mean and full thickness where a pixel (footprint, m) spans more
 // than they can show. The branches are taken by a whole 2 x 2 quad together, so that fwidth reads real neighbours: a
 // pixel with no foam may only return early when the foam at its neighbours, which its derivatives bound, is gone as
 // well, and a pixel may return the mean at once only when the smallest footprint in its quad is past the fade.
@@ -488,9 +494,12 @@ vec2 waterFoamField( vec2 p, vec2 flow, float foam, float age, float footprint )
   if ( reach <= 0.001 ) return vec2( 0.0, 1.0 );
   if ( least >= ${FOAM_FADE[1].toFixed(3)} ) return vec2( foam, 1.0 );
   float field = waterFoamUnion( p, dpdx, dpdy, flow, foam, age );
-  float width = clamp( 0.5 * fwidth( field ), ${FOAM_EDGE.toFixed(3)}, 1.0 );
+  float change = fwidth( field );
+  float width = clamp( 0.5 * change, ${FOAM_EDGE.toFixed(3)}, 1.0 );
+  // The fringe: FOAM_FRINGE metres of the field's climb at its gradient here, its change across the pixel over the pixel's size.
+  float fringe = max( ${FOAM_FRINGE.toFixed(3)} * change / max( footprint, 1e-4 ), 1e-3 );
   float fade = smoothstep( ${FOAM_FADE[0].toFixed(3)}, ${FOAM_FADE[1].toFixed(3)}, footprint );
-  return mix( vec2( smoothstep( -width, width, field ), smoothstep( 0.0, ${FOAM_THICK.toFixed(3)}, field ) ), vec2( foam, 1.0 ), fade );
+  return mix( vec2( smoothstep( -width, width, field ), smoothstep( 0.0, fringe, field ) ), vec2( foam, 1.0 ), fade );
 }
 #endif
 `;
