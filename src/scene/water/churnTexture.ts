@@ -83,7 +83,9 @@ export const FOAM_FADE = [0.12, 0.6] as const;
 export const FOAM_FLOW_GATE = [0.03, 0.2] as const;
 /**
  * The half-width of a covered edge, in sigma of the Gaussian field: half of what the field changes across a pixel (the
- * shader reads it off the derivatives; the edge is as soft as the pixel is large), and at least this.
+ * shader reads it off the derivatives; the edge is as soft as the pixel is large), and at least this, so an edge seen
+ * from very close is a ramp and never a hard step: about 3 mm at the field's median gradient across lace's edges (14
+ * sigma a metre, measured on the bake), finer than its 2-4 cm threads. [provisional]
  */
 export const FOAM_EDGE = 0.04;
 /**
