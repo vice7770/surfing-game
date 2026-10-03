@@ -49,7 +49,7 @@ The Wave Lab (a menu tile) is the original screen, around the legacy wave: the w
 - `?record` films an autopilot ride;
 - `?inpage` runs the surf zone without a worker.
 
-The Wave Lab's ♪ Sound button opens the **sound check**: every sound's synthesised version and its candidate recordings on buttons, a gain per sound, and the bus levels; `public/assets/audio/sounds.json` picks the recordings. `npm run report:sound` logs the sound an autopilot ride makes and checks it follows its causes ([sound report](docs/research/sound-report.md)).
+With dev tools on, the Sound check button in the Wave Lab's settings panel opens the **sound check**: every sound's synthesised version and its candidate recordings on buttons, a gain per sound, and the bus levels; `public/assets/audio/sounds.json` picks the recordings. `npm run report:sound` logs the sound an autopilot ride makes and checks it follows its causes ([sound report](docs/research/sound-report.md)).
 
 The 3D lip is a local hybrid model, not a full fluid solver; its scope is recorded in [ADR 0003](docs/adr/0003-plunging-sheet-collision.md) and [ROADMAP.md](ROADMAP.md).
 

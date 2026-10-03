@@ -50,12 +50,58 @@ export interface SoundTargets {
   oneShots: { id: OneShotId; gain: number; rate: number; position: Position }[];
   /** 0 clear … 1 fully muffled (under water). */
   muffle: number;
+  /**
+   * The pause menu's share of the muffle (0, or the paused bed's): the part that also covers the loops made
+   * under water (`UNMUFFLED_LOOPS`), which skip the water's own muffle but not the menu's.
+   */
+  pauseMuffle: number;
   /** Playback rate of everything: the simulation's time scale. */
   playbackRate: number;
 }
 
 /** At most this many one-shots start in one frame; the quietest are dropped. */
 export const ONE_SHOT_CAP = 32;
+
+/**
+ * Loops heard without the water's muffle (the underwater low-pass): they are made
+ * under water, so the water's filter must not colour them. That muffle is for what
+ * the camera hears through the surface. The pause menu's muffle (`pauseMuffle`)
+ * still covers them, as it covers everything in the world.
+ */
+export const UNMUFFLED_LOOPS: readonly LoopId[] = ['bubbles'];
+
+/**
+ * How far a sound that fires often is detuned from shot to shot (provisional, by
+ * ear): its playback rate by up to this many semitones either way. Together with a
+ * pool of recordings it keeps a landing or a stroke from repeating itself. Only the
+ * pitch varies: a shot's level always comes from its measured quantity, so no level
+ * is drawn at random.
+ */
+export const ONE_SHOT_JITTER: Partial<Record<OneShotId, number>> = { lipJet: 1, lipRoller: 1, paddle: 1.5 };
+
+/** A shot's playback-rate factor from a uniform draw in [0, 1): 0.5 is no change. */
+export function oneShotJitter(id: OneShotId, draw: number): number {
+  const semitones = ONE_SHOT_JITTER[id];
+  return semitones ? 2 ** ((semitones * (2 * draw - 1)) / 12) : 1;
+}
+
+/**
+ * Air takes the treble out of a sound with distance. The cutoff where the air has
+ * absorbed 3 dB falls as distance^−0.56: absorption grows steeply with frequency
+ * (ISO 9613-1: of the order of 5 dB/km at 1 kHz and 25 dB/km at 4 kHz in mild, humid
+ * air), roughly as f^1.8 above 2 kHz. Clear within the panner's reference distance,
+ * and never below AIR_FLOOR_HZ, so a far sector is dull, not gone. Provisional (by
+ * ear): the constants are a fit to that shape, tuned in the listening playtest.
+ */
+export const AIR_CLEAR_HZ = 18000;
+export const AIR_FLOOR_HZ = 900;
+const AIR_REFERENCE_M = 8;
+const AIR_KM_CUTOFF_HZ = 1230;
+export function airCutoff(distance: number): number {
+  if (!(distance > AIR_REFERENCE_M)) return AIR_CLEAR_HZ;
+  const cutoff = AIR_KM_CUTOFF_HZ * (distance / 1000) ** -0.56;
+  return Math.min(AIR_CLEAR_HZ, Math.max(AIR_FLOOR_HZ, cutoff));
+}
 
 /**
  * The shortest time between two one-shots of a kind in one place, s
@@ -273,6 +319,7 @@ export function soundTargets(frame: SoundFrame, shaper = new OneShotShaper()): S
     loops,
     oneShots,
     muffle: listener.underwater || frame.ride?.headUnder ? 1 : paused ? PAUSED_MUFFLE : 0,
+    pauseMuffle: paused ? PAUSED_MUFFLE : 0,
     playbackRate: frame.timeScale,
   };
 }
