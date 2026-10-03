@@ -215,6 +215,112 @@ How the contact uses it:
   - Started 2026-10-01 at load 22–38 (median 27.7) with the machine paging (64 MB free), its worker got 13–20 % of a core. It hadn't logged its first 5 s of sea after 29 minutes, so it would have run about 14 h, and it was stopped.
   - The probe now logs CPU time and the load beside each line, so its next run on a quieter machine gives the update and query costs, the dropped strips per 1000 (and any with an open tube), the tip gap on the sea, and the height field's slopes across the breaking faces: the yardstick the slope clamp could take instead of tan 60°.
 
+## The crash
+
+The swept barrel's jets, landing and whitewater (Part B, PR 5; `src/wave/barrel/SweptCrash.ts`, `crashCurve.ts`, `heldOverturn.ts`; the advisor's rulings of 2026-10-01). At a swept spot given the library, the solver stays the mass ledger, but its lips leave and land on the barrel's clock.
+
+**Where the lip lands** (ruling 1). On the drawn touchdown frame (the library's `hold: 'drawing'`), the face's point nearest the tip: the closest point to it on the lower surface, from the throat on, within 2 h0 ahead. That is `metrics.py`'s closing of the void, the gap whose closing is the runs' touchdown. The landing keeps the touchdown frame's own height through the fade, which dissolves the drawing into the water but doesn't move where the lip came down.
+- One point per front point, about one per solver column, in the loft's own frame: the ray from the front's tangent over ±2 m, the end weight, the anchor (from 0.8 of the open time handed back to the solver's crest) and PR 4's fade. A test holds the crash's tip and crest to the loft's drawn vertices.
+- On the drawn touchdown frames the tip stands 0.035, 0.025, 0.062 and 0 h0 off the face (a20, a30, a45, periodic): at most 0.43 m at h0 = 7 m. In a20 and a45 the last two frames are open duplicates, so the drawn lip never touches the face; the crash curve says where it lands.
+- Carrying the tip on at its own velocity to the still face would land it 0.78, 0.34 and 1.04 m further at h0 = 7 m: in the runs the face rises to meet the jet, and the gap closes within a frame [measured, NS].
+
+**The jet and the void** (rulings 3 and 8), each case's held frame (PR 4's `heldFrame`) measured as `metrics.py` measures its metrics frame, on the 128 points [measured, NS]:
+
+| Case | A_J held / metrics (h0²) | A_O held / metrics (h0²) | Void length held / metrics (h0) | Axis held / metrics |
+|---|---|---|---|---|
+| `pad19-a20-l12` | 0.00918 / 0.00861 | 0.00421 / 0.00411 | 0.141 / 0.129 | 49° / 57° |
+| `pad19-a30-l12` | 0.02868 / 0.02871 | 0.02611 / 0.02587 | 0.311 / 0.301 | 40° / 41° |
+| `pad19-a45-l12` | 0.04818 / 0.04833 | 0.06344 / 0.06315 | 0.487 / 0.477 | 41° / 40° |
+| `periodic-padang19s-l12` | 0.00830 / 0.00787 | 0.00400 / 0.00358 | 0.140 / 0.123 | 55° / 39° |
+
+- The areas agree within 12 %. The two small voids' axes are noisy (0.14 h0 on 24 samples), and only place G9's bubbles and foam ball.
+- At h0 = 7 m the jet is 0.41–2.36 m² a metre of crest and the void 0.20–3.11 m².
+- Blended by A0 as the frames are, scaled by h0², over the point's share of its front's length (half the σ gap to each neighbour) times the loft's end weight: the jet that is drawn is the water that lands.
+
+**The ledger** (rulings 2, 4–6):
+- **The throw:** at the point's τ = 0, all at once, the jet leaves the solver's crest under it by the lip's own source rule (#86). It takes the wave's upper half at most 0.2 of each cell, and its momentum along the held lip's horizontal velocity nearest first, clamped at each cell's own, never reversed; what can't be placed is counted. H is the solver's own wave height there.
+- **The hold:** the water waits as a strip of 8 parcels (`PlungingLip.holdJet`): in the sea handover, carving nothing.
+- **The crash:** at touchdown its void closes, trapping the held A_O over its share. Its water pours where the lip lands, a parcel every 1/7 of the tube's collapse, √(2W/g) (PR 4's `collapseSeconds`, so the water comes down as the drawing and the contact fade), each released where the landing then stands. It keeps the horizontal velocity it was taken with, and falls at the held lip's (each blended case's at its own held frame: `hold: 'contact'`). The solver's water stands above the drawn face there, so each lands where it is released.
+- **Each landing** is a lip parcel's: its water spread over the sheet's thickness along its travel, the plunge zone held, the splash-up (0.3 of it), foam, aeration by the jet's own fall (from the drawn crest at the throw to the landing), spray from the landing's own height, and sound.
+- **The tube's air** goes by G9's mechanism with W = PR 4's void height: half as a spit from the chain's open end (the newest thrown point, the tube's mouth), or an eruption where the section closed at once; the rest as bubbles down to 0.8 × the fall; and the foam ball.
+- **Waves no front joins** throw no jet: at a swept spot the barrel alone plunges, and Kennedy's onsets there are counted. Spilling breakers make a roller, not a jet.
+- **Late points:** a point first seen past touchdown throws and pours in one step. One first seen past its collapse was never drawn, and throws nothing.
+- **Overlapping fronts:** the loft draws the first front where two overlap (PR 4). So a later front's point whose drawn footprint (its slice's reach with the extensions, half its share of the front either side) overlaps a live point of an earlier front throws nothing, and its whitewater isn't gated. It is counted (`covered`).
+- **Lost points:** a point lost while its jet is held pours where and when it was foreseen at the throw, and its void closes as its pour begins. One alone on its front at its touchdown, or past its collapse, crashes as foreseen (`foreseen`). Until its crash the front keeps a jet's point on its crest over the throw's window (below).
+
+**The whitewater waits for the touchdown** (ruling 9). Kennedy's onset leads the lip by up to about 2 s and 20 m on the wedge. So while a point's clock is before touchdown, in its column over the drawn curl's footprint (profile samples 6–121), the solver's breaking is withheld from the whitewater:
+- the foam's bore source, and so the bore spray and the bubbles, which read it;
+- the bore's air and turbulence: an open tube's face is clear water, and the rider in it feels it (physics);
+- the roar.
+
+The foam field is shared, so **Classic's foam at Padang Padang changes too**, around the barrel and downstream of it: the change stays inside the swept spot, and follows the one-water rule (the owner's to look at). **A known inconsistency:** the rider's roller push keeps the solver's own breaking (Part D's to change: it moves the catch and ride reports), so in an open curl before touchdown a rider can still feel the early Kennedy bore's push.
+
+**The splash-up sheet** (ruling 10) is drawn at Padang Padang as at every spot (Rich's splash-up strips; Classic draws none). The barrel draws the jet, so the jet's strips stay hidden there. PR 7 must keep a splash-up renderer when it deletes `LipSheetMesh.ts` and `richLip.ts`.
+
+**Sound:** lip hits come from the pour's landings, so the crash sounds along the crash curve as the peel runs.
+
+**Measured before and after** (the advisor's condition on ruling 2; the `padangCrash` probe, 2026-10-01) [measured]. Padang Padang at 1 m cells, 120 s of sea after the spin-up, with Kennedy's lip (before PR 5) and with the crash. It ran on the M1 Air under other sessions' load (load averages 8–38), so the times read high; the crash's cost is its share of the same run's step.
+
+| Swell, seed | Small 1 | Small 2 | Medium 1 | Medium 2 |
+|---|---|---|---|---|
+| Fastest water, m/s | 6.6 → 6.6 | 6.3 → 6.1 | 7.1 → 7.1 | 8.5 → 7.3 |
+| The fine zone's highest water, m: median, 90 %, top | 1.72, 2.34, 3.18 → 1.72, 2.34, 2.67 | 1.84, 2.28, 3.29 → 1.84, 2.29, 2.69 | 2.42, 2.93, 3.79 → 2.40, 2.89, 3.19 | 2.79, 3.16, 3.85 → 2.79, 3.08, 3.37 |
+| The front's crests past the throw, m: median, 90 %, top | 0.80, 1.14, 1.72 → 0.81, 1.21, 1.85 | 0.73, 1.12, 1.86 → 0.76, 1.20, 1.93 | 1.02, 1.48, 2.53 → 1.03, 1.53, 2.60 | 1.12, 1.71, 2.56 → 1.07, 1.64, 2.63 |
+| Peel, the last wave | 24.9°, 12.1 m/s → 23.7°, 12.7 m/s | 0.9° (r² 0.04) → 18.2°, 16.4 m/s | 32.1°, 12.3 m/s → 36.2°, 11.1 m/s | 25.2°, 15.4 m/s → 30.3°, 13.0 m/s |
+| Surf readout, typical / sets, m | 3.21 / 3.48 → 3.37 / 3.49 | 3.30 / 3.50 → 3.31 / 3.51 | 3.69 / 3.81 → 3.70 / 3.74 | 3.59 / 3.68 → 3.59 / 3.65 |
+| Jets | 939 → 178 | 1605 → 365 | 1116 → 659 | 1475 → 1097 |
+| Water thrown (asked), m³ | 765 (826) → 76 (76) | 1328 (1420) → 131 (131) | 854 (877) → 386 (388) | 1810 (1928) → 792 (795) |
+| Starved: jets, water (m³) | 308, 61.4 → 11, 0.003 | 501, 92.0 → 16, 0 | 139, 23.6 → 38, 2.0 | 273, 118.0 → 58, 2.9 |
+| Unplaced momentum: jets, m⁴/s | 123, 134 → 14, 7 | 95, 110 → 27, 24 | 142, 339 → 63, 72 | 124, 305 → 180, 422 |
+| Jet impacts, m/s: median, 90 %, top | 8.8, 11.4, 16.2 → 7.1, 7.9, 8.1 | 9.0, 11.1, 14.2 → 6.2, 7.8, 8.6 | 9.5, 12.0, 15.1 → 8.2, 9.6, 10.8 | 9.9, 11.8, 15.0 → 8.3, 10.8, 12.2 |
+| Crashes / jets; covered points | 69 / 178; 74 | 153 / 365; 94 | 242 / 659; 278 | 392 / 1097; 430 |
+| The crash's update / the step, ms | 5.42 / 2351 | 1.41 / 982 | 11.36 / 3060 | 1.23 / 644 |
+
+- **Stable** in all eight seas, and the water no faster: the same fastest water on the two seas where it came early (t 22 s), and 0.2 and 1.2 m/s slower on the two where it came later.
+- **The crests don't stand taller without Kennedy's lip.** The fine zone's highest water is the same to 0.04 m at its median and 90th percentile. Only its top falls, by 0.5–0.6 m: most likely Kennedy's landings heaping water [inferred]. The front's crests past the throw stand 0.05–0.08 m taller at the 90th percentile on three seas and 0.07 m lower on the fourth: Kennedy's lip took its water up to 2 s before τ = 0, and the barrel takes it at τ = 0.
+- **The peel** meter reads the last wave of the 120 s, and the two seas part after the first throw, so its changes are the waves' spread. Small seed 2's last wave had no clean front before (r² 0.04).
+- **The surf readout** holds: typical heights within 0.16 m, sets within 0.07 m.
+- **The ledger moves less water:** 10 % of Kennedy's on Small and 45 % on Medium, in a fifth to three quarters as many jets. They are rarely starved: 2–6 % of the jets, at most 3 m³ against Kennedy's 24–118 m³. Their momentum is placed better on three seas. On Medium seed 2, 180 jets left 422 m⁴/s unplaced, against Kennedy's 124 and 305: the held lip leaves faster than the solver's water there [inferred].
+- **The join count on Small is held down** by Padang Padang's unsized peak (`claude/padang-peak-sizing`, daf6681), which hadn't landed when these ran.
+- **The pour lands at the held lip's speed,** 5–12 m/s, where Kennedy's lips hit at up to 14–16 m/s.
+- **The cost:** the crash's update is 0.14–0.37 % of the step.
+
+**The jets crash on their own point** (the advisor's rule (a), 2026-10-01) [measured]. As first built, only 36–42 % of the jets crashed on their point: the other points left the front before their touchdown. Their water poured where and when it was foreseen, so the ledger balanced, but their void's air was never trapped, and the loft stopped drawing their slices mid-tube.
+- **Why:** the throw takes the jet from the crest's upper half within 2 H of it (#86's window). The flattened crest's highest cell then jumps past the front's match reach (2 m plus a cell) in one step. A scratch probe followed every point at 1 m cells (Small seed 1, 110 s): with the crash, 99 of 140 thrown points (71 %) left before touchdown, 84 of them that way. Without the crash, 27 of 181 points past τ = 0 (15 %) left, early (a median 0.24 of the open time) and in fronts of 1–2 points.
+- **The rule:** a front point holding an uncrashed jet keeps its column's nearest crest within the match reach plus the throw's window (`jetWindow`, 2 H), at most TRACK_REACH (10 m), until its crash (`BreakingFront.keptCrests`). Each such point picks its crest before the samples are matched, and gets it only where no point matches within the match reach as before. Points without jets match as before, and none hold one without the crash. With the crest jumps' rule (#105, Padang Padang's), a crest a jet-holding point keeps is never a sized crest's continuation: the held jets claim first, then the sized crests take the furthest crest ahead of them among those left (`BreakingFront.leadingCrests`).
+- **Every void closes.** A jet whose point is alone on its front at its touchdown, with no ray to draw it by, or past its collapse, crashes as foreseen at its throw (`foreseen`). A jet whose point left the front closes its void as its pour begins. Both trap the void's own air.
+
+Measured with both (seed 1, 120 s of sea after the spin-up; the M1 at load 2–22):
+
+| Cells, swell | Jets | Crashed on their own point | Slices dropped mid-tube | Voids closed: own point / alone at touchdown / point lost | Void air, m³ | The kept crests' jumps, m |
+|---|---:|---:|---:|---|---:|---|
+| 2 m, Small | 92 | 89 (98.9 %) | 1 | 89 / 0 / 1 | 41.5 | 4 to 6 (28 jumps) |
+| 2 m, Medium | 386 | 342 (89.3 %) | 56 | 342 / 14 / 27 | 328.1 | −4 to 8 (186) |
+| 1 m, Small | 188 | 165 (88.2 %) | 12 | 165 / 17 / 5 | 38.2 | −3 to 6 (111) |
+| 1 m, Medium | 672 | 554 (82.8 %) | 48 | 554 / 84 / 31 | 253.9 | −5 to 8 (378) |
+
+- **No kept crest was another wave's.** None had another point within 10 m in its column, and the jumps stayed within 8 m: Padang Padang's waves stand about 100 m apart.
+- **Short of the advisor's target** (at least about 90 % on their own point, no slice dropped) on Medium and at 1 m. Three causes:
+  - **Alone at touchdown** (84 on Medium at 1 m): the kept point's z jumps 3–8 m with its crest, past the 3 rows its front links over, so it stands alone or splits its front. A point alone isn't drawn either: "slices dropped" counts only points that left the front.
+  - **The crest past the window** (38 on Medium at 1 m, 56 at 2 m): the nearest crest was a median 7 m away at 1 m, just past the match reach plus 2 H. At 2 m it was 16–152 m away: gone, at any point of the open time (10 %, 50 % and 90 % at 0.04, 0.50 and 0.88).
+  - Another point took the crest, or it stopped breaking (10).
+- **Options, for the advisor:** link a jet's point over the same window, or keep its z on its own pace while it holds the jet; widen the window to the 10 m cap; or the progressive take, the jet leaving as A_J(τ) grows (the fallback named).
+
+**The catch report before and after** (seeds 1–2, 2 min each, 30 ghost bots riding the swept contact; `--barrel --no-crash` against `--barrel`, built at 19bdee6, before the front's rule (a)) [measured]:
+
+| Swell | | Attempts | Cue lit | Stood | Rides ≥ 3 s | Longest, s | Top speed, m/s | No cue |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| Small | Kennedy's lip | 535 | 24 | 8 | 0 | 1.5 | 12.7 | 468 |
+| Small | The crash | 517 | 11 | 4 | 1 | 3.2 | 13.4 | 483 |
+| Medium | Kennedy's lip | 645 | 53 | 20 | 4 | 12.6 | 14.0 | 554 |
+| Medium | The crash | 623 | 49 | 29 | 3 | 10.8 | 13.3 | 552 |
+
+- The bots barely catch either way, so these are small numbers.
+- On Small the cue lit half as often with the crash, on both seeds (12 → 6 and 12 → 5). On Medium it lit about as often (53 → 49), and more boards stood (20 → 29).
+- Top speeds of 13–14 m/s come either way; they aren't the crash's.
+
+**Where the landing falls on the profile** (for the adaptive forward rest; the cases at touchdown, foot heights 1–4 m over 3–5 m) [measured]: at samples 99–111.5, mostly 111.5, 0.03–0.09 m before the toe (landmark 112), and up to 0.8 m before it at h0 5 m with a 1 m foot. So the landing sits where the drawing lifts the profile fully, at the edge of the forward rest. Its height takes the end weight and the seam's pin, as the loft did before `REST`. The crash test holds the tip and crest to the loft's vertices, not the landing.
+
 ## The lip's colour
 
 The drawn curl as shaded (Part B, after the owner's clip of PR 3 on the M4 Pro: a navy, almost black curl beside a pale cyan, foamy face; the advisor's `docs/research/water-physics/tube-colour-fix.md`, on their branch `main-sshdns`, and their rulings of 2026-10-01). `src/wave/barrel/sweptLoft.ts` (`sheetAcross`, `tubeSkyView`) and `src/scene/barrel/SweptBarrelMesh.ts` (`SWEPT_SHEET_BODY`).

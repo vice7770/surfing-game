@@ -162,6 +162,15 @@ export function heldFrame(c: BarrelCase): HeldFrame {
   return { tau: c.tauStart + f * c.tauStep, voidHeight: voidHeightAt(c.frames, f), clear: false };
 }
 
+/** The cases a slice blends and by how much (its A0 between theirs), its scale h0 (m), and whether it fell outside them. */
+export interface CaseBlend {
+  lower: BarrelCase;
+  upper: BarrelCase;
+  weight: number;
+  scale: number;
+  clamped: boolean;
+}
+
 export class ProfileLibrary {
   private readonly bySlope: BarrelCase[][];
   private readonly held = new Map<BarrelCase, HeldFrame>();
@@ -170,7 +179,7 @@ export class ProfileLibrary {
   private readonly tipUpper = new Float64Array(2);
   private readonly times = new Float64Array(4);
 
-  constructor(cases: readonly BarrelCase[]) {
+  constructor(readonly cases: readonly BarrelCase[]) {
     const groups = new Map<number, BarrelCase[]>();
     for (const c of cases) groups.set(c.slope, [...(groups.get(c.slope) ?? []), c]);
     this.bySlope = [...groups.values()].map((group) => [...group].sort((a, b) => a.nonlinearity - b.nonlinearity));
@@ -259,6 +268,12 @@ export class ProfileLibrary {
   /** A case's held frame, as the library measured it when it loaded. */
   heldFrameOf(c: BarrelCase): HeldFrame {
     return this.held.get(c) ?? heldFrame(c);
+  }
+
+  /** The cases a slice blends and by how much, and its scale, as `profileAt` blends and scales them (the crash's held overturn, PR 5). */
+  caseBlend(query: Omit<ProfileQuery, 'seconds'>): CaseBlend {
+    const b = this.bracket(query);
+    return { lower: b.lower, upper: b.upper, weight: b.weight, scale: b.scale, clamped: b.clamped };
   }
 
   /** The cases a slice blends (the nearest slope's two bracketing its A0), its scale (h0, m) and τ's unit, s. */

@@ -608,6 +608,24 @@ describe('the swept contact in the surf zone', () => {
     expect(runner.contactMs).toBeGreaterThanOrEqual(0);
   }, 600_000);
 
+  it('runs the crash with the cases at Padang Padang, with or without a rider, and hears only the barrel’s landings (PR 5)', () => {
+    const runner = new SurfZoneRunner(padang, { barrelCases: readBarrelCases() });
+    expect(runner.simulation.crash).toBeDefined();
+    expect(runner.contact).toBeUndefined();
+    expect(new SurfZoneRunner(padang).simulation.crash).toBeUndefined();
+    const ridden = new SurfZoneRunner(padang, { rider: true, barrelCases: readBarrelCases() });
+    expect(ridden.simulation.crash).toBeDefined();
+    expect(ridden.contact).toBeDefined();
+    const buffers = runner.createBuffers();
+    for (let batch = 0; batch < 30; batch += 1) {
+      runner.advance(2);
+      const crashes = runner.simulation.crash!.counts.crashes;
+      runner.fill(buffers);
+      // A landing heard before the barrel's first crash would be Kennedy's lip's, which no longer throws here.
+      if (crashes === 0) expect(buffers.lipHitCount).toBe(0);
+    }
+  }, 600_000);
+
   it('rides the carved water, struck by parcels, without the cases or away from a swept spot', () => {
     const plain = new SurfZoneRunner(padang, { rider: true });
     expect(plain.contact).toBeUndefined();

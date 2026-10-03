@@ -13,6 +13,8 @@ const MATCH_REACH = 2;
 const TRACK_REACH = 10;
 /** A point unseen this long is gone, s. */
 const HOLD = 0.5;
+/** A point's crest speed is the mean of its crest's `crestMotion` speeds over about this long, s (PR 5; provisional). */
+const PACE_SECONDS = 0.1;
 /**
  * Neighbours whose joins differ by more than this per metre between them are two waves, not a peel: 1 s/m is a peel
  * under 1 m/s, a crest running almost straight up the contours (θ > 79° at c ≈ 5 m/s), where Padang Padang peels at
@@ -108,6 +110,31 @@ export interface FrontPoint {
   jumped?: number;
   /** When it was last seen, s. */
   seen: number;
+  /**
+   * The swept barrel's crash (PR 5, `SweptCrash`): the lip strip holding its jet from its throw on (−1 when it threw
+   * none), and when its lip touched down, s. Absent until then; they travel with the point, and in the sea handover.
+   */
+  jetStrip?: number;
+  crashedAt?: number;
+  /**
+   * The throw's own window, m: how far from the crest it took the jet (#86's source reach, 2 H). Until its crash the
+   * point claims its column's crest over it too (`BreakingFront.update`). Set with `jetStrip`.
+   */
+  jetWindow?: number;
+  /**
+   * From its throw (PR 5; the advisor, 2026-10-01): its z runs at `jetPace` (m/s along its column), fixed at the throw,
+   * from `jetBase` (its z at τ = 0, m), z = jetBase + jetPace τ, not on the solver's crest; from τ = `jetBlend` it blends
+   * toward the crest it claims (`crestZ`) as the loft hands its anchor back, fully by `jetUntil`, and then matches as
+   * before. Set with `jetStrip` (`SweptCrash`, which keeps z on it each step).
+   */
+  jetPace?: number;
+  jetBase?: number;
+  jetBlend?: number;
+  jetUntil?: number;
+  /** The solver's crest it claimed this step while on its pace, m; absent with none in reach (PR 5). */
+  crestZ?: number;
+  /** Its crest's speed along its column over the last few frames, m/s (`crestMotion`, PACE_SECONDS); absent unmeasured. */
+  crestSpeed?: number;
 }
 
 export interface FrontState {
@@ -167,6 +194,8 @@ export class BreakingFront {
   jumps = 0;
   waveJumps = 0;
   latePasses = 0;
+  /** Steps a point holding an uncrashed jet ran on at its pace with no crest in reach (PR 5; a diagnostic). */
+  coasted = 0;
   private readonly linkReach: number;
   private readonly matchReach: number;
 
@@ -188,12 +217,26 @@ export class BreakingFront {
     const points: FrontPoint[] = [];
     const tracks: CrestTrack[] = [];
     const { h0 } = this.timing;
+    // A point holding an uncrashed jet runs on its own pace and claims its crest apart (PR 5; see `keptCrests`).
+    const jetCrests = this.keptCrests(previous, samples, count, time);
+    const plainOf = jetCrests ? byColumn(previous.filter((point) => !runsOnPace(point))) : pointsOf;
     const jumped = new Set<CrestTrack>();
-    const leading = this.options.jumpReach === undefined ? undefined : this.leadingCrests(samples, count, tracksOf, pointsOf, followed, jumped);
+    const leading = this.options.jumpReach === undefined ? undefined : this.leadingCrests(samples, count, tracksOf, plainOf, jetCrests, followed, jumped);
     for (let k = 0; k < count; k += 1) {
       const s = samples[k];
+      const holder = jetCrests?.get(s);
+      if (holder && !matched.has(holder)) {
+        // Its slice runs on from the throw at its own pace: the crest says its wave is still there, and where its z
+        // blends to as the loft hands its anchor back (SweptCrash).
+        matched.add(holder);
+        points.push({
+          ...holder, sigma: 0, x: s.x, z: holder.z + holder.jetPace! * (time - holder.seen), b: s.b, height: s.eta, crestDepth: s.depth,
+          seen: time, crestZ: s.z,
+        });
+        continue;
+      }
       // On a front: it stays while its segment breaks at all.
-      const point = this.nearest(pointsOf.get(s.column), matched, s.z);
+      const point = this.nearest(plainOf.get(s.column), matched, s.z);
       if (point) {
         if (!(s.strength > 0)) continue;
         matched.add(point);
@@ -206,7 +249,14 @@ export class BreakingFront {
             throwZ = point.z + f * (s.z - point.z);
           }
         }
-        points.push({ ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, crestDepth: s.depth, thrown, throwZ, seen: time, fresh });
+        // Its crest's speed over the last few frames: the pace its slice runs on once its jet is thrown (PR 5).
+        const crestSpeed = s.speed > 0
+          ? point.crestSpeed === undefined ? s.speed : point.crestSpeed + (s.speed - point.crestSpeed) * Math.min(1, (time - point.seen) / PACE_SECONDS)
+          : point.crestSpeed;
+        points.push({
+          ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, crestDepth: s.depth, thrown, throwZ, seen: time, fresh,
+          ...(crestSpeed === undefined ? {} : { crestSpeed }),
+        });
         continue;
       }
       const track = leading?.get(s) ?? this.nearest(tracksOf.get(s.column), followed, s.z, TRACK_REACH);
@@ -273,6 +323,17 @@ export class BreakingFront {
       }
       tracks.push(next);
     }
+    // A point holding an uncrashed jet stays on its front until its crash, with a crest or without: with none in reach
+    // it runs on at its pace (PR 5). It goes in by column and z, as the samples come, for the links.
+    let coasting = false;
+    for (const point of previous) {
+      if (matched.has(point) || !runsOnPace(point) || point.crashedAt !== undefined) continue;
+      matched.add(point);
+      this.coasted += 1;
+      coasting = true;
+      points.push({ ...point, sigma: 0, z: point.z + point.jetPace! * (time - point.seen), seen: time, crestZ: undefined });
+    }
+    if (coasting) points.sort((a, b) => a.column - b.column || a.z - b.z);
     this.points = this.link(points);
     this.held = previous.filter((old) => !matched.has(old) && time - old.seen <= HOLD);
     const kept = this.tracks.filter((old) => !followed.has(old) && time - old.seen <= HOLD);
@@ -282,12 +343,12 @@ export class BreakingFront {
 
   /**
    * With `jumpReach`: each sized crest's continuation, the furthest crest in its column from a match reach behind it to
-   * the jump reach ahead, claimed before the other crests match; a crest beside a front point is the point's. A jump
-   * when it is not the crest nearest it.
+   * the jump reach ahead, claimed before the other crests match; a crest beside a front point is the point's, and a
+   * crest a point holding a jet has kept (`keptCrests`, PR 5) is its. A jump when it is not the crest nearest it.
    */
   private leadingCrests(
     samples: readonly CrestSample[], count: number, tracksOf: Map<number, CrestTrack[]>, pointsOf: Map<number, FrontPoint[]>,
-    followed: Set<CrestTrack>, jumped: Set<CrestTrack>,
+    kept: ReadonlyMap<CrestSample, FrontPoint> | undefined, followed: Set<CrestTrack>, jumped: Set<CrestTrack>,
   ): Map<CrestSample, CrestTrack> {
     const leading = new Map<CrestSample, CrestTrack>();
     const reach = this.options.jumpReach!;
@@ -305,7 +366,7 @@ export class BreakingFront {
         for (let k = start; k < end; k += 1) {
           const s = samples[k];
           const ahead = s.z - track.z;
-          if (ahead < -this.matchReach || ahead > reach || leading.has(s)) continue;
+          if (ahead < -this.matchReach || ahead > reach || leading.has(s) || kept?.has(s)) continue;
           if (points.some((point) => Math.abs(point.z - s.z) < this.matchReach)) continue;
           if (!furthest || s.z > furthest.z) furthest = s;
           if (!nearest || Math.abs(ahead) < Math.abs(nearest.z - track.z)) nearest = s;
@@ -333,6 +394,40 @@ export class BreakingFront {
       if (ahead <= JUMP_WAVES * s.wave) this.waveJumps += 1;
       return;
     }
+  }
+
+  /**
+   * The swept barrel's crash (PR 5; the advisor, 2026-10-01). Once its lip is thrown, the depth-averaged solver can't
+   * hold the overturn: the crest's highest cell leaps 3–8 m as the face turns into a bore, so it no longer says where
+   * the plunging wave is, and following it made the drawing jump and the links break. So from the throw to its crash a
+   * point runs on its own pace (`jetPace`): its z advances from where it was last seen, and its links are tested there.
+   * It still claims its column's crest nearest that z within the match reach plus the throw's window (`jetWindow`, #86's
+   * 2 H), at most TRACK_REACH (waves stand about 100 m apart), so no second point forms on its wave in the column, but it
+   * doesn't take the crest's z (`crestZ`; its z blends toward it from `jetBlend` to `jetUntil`, as the loft hands its
+   * anchor back). Each such point picks its crest here, before the others match; two wanting one crest: the nearer
+   * keeps it. With none in reach it runs on all the same (`coasted`) until its crash. Past `jetUntil`, or crashed with
+   * no crest in reach, it goes back to the ordinary match. Points without jets are matched as before; none run on a pace
+   * without the crash (undefined then).
+   */
+  private keptCrests(previous: readonly FrontPoint[], samples: readonly CrestSample[], count: number, time: number): Map<CrestSample, FrontPoint> | undefined {
+    let kept: Map<CrestSample, FrontPoint> | undefined;
+    let samplesOf: Map<number, CrestSample[]> | undefined;
+    for (const point of previous) {
+      if (!runsOnPace(point)) continue;
+      samplesOf ??= byColumn(samples.slice(0, count));
+      const z = point.z + point.jetPace! * (time - point.seen);
+      const reach = Math.min(TRACK_REACH, this.matchReach + point.jetWindow!);
+      let best: CrestSample | undefined;
+      for (const s of samplesOf.get(point.column) ?? []) {
+        if (!(Math.abs(s.z - z) < reach)) continue;
+        if (!best || Math.abs(s.z - z) < Math.abs(best.z - z)) best = s;
+      }
+      if (!best) continue;
+      kept ??= new Map();
+      const other = kept.get(best);
+      if (!other || Math.abs(best.z - z) < Math.abs(best.z - (other.z + other.jetPace! * (time - other.seen)))) kept.set(best, point);
+    }
+    return kept;
   }
 
   /** The unclaimed one of `candidates` nearest `z` within the match reach. */
@@ -412,6 +507,15 @@ export class BreakingFront {
 function crossingFraction(fromDepth: number, depth: number, at: number): number | null {
   if (depth > at) return null;
   return fromDepth > depth ? Math.min(1, Math.max(0, (fromDepth - at) / (fromDepth - depth))) : 1;
+}
+
+/**
+ * Whether a point runs on its own pace (PR 5; `keptCrests`): it holds a jet whose pace is set, until its crash or, still
+ * blending toward its crest then, until `jetUntil`.
+ */
+function runsOnPace(point: FrontPoint): boolean {
+  return point.jetStrip !== undefined && point.jetStrip >= 0 && point.jetPace !== undefined && point.jetWindow !== undefined
+    && point.jetWindow > 0 && (point.crashedAt === undefined || (point.jetUntil !== undefined && point.tau < point.jetUntil));
 }
 
 function byColumn<T extends { column: number }>(items: readonly T[]): Map<number, T[]> {
