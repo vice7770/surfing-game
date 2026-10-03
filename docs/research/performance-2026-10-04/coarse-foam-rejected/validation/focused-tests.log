@@ -1,0 +1,10 @@
+
+ RUN  v5.0.1 /private/tmp/coarse-foam-coverage-20261004
+
+·················
+
+ Test Files  2 passed (2)
+      Tests  17 passed (17)
+   Start at  00:51:29
+   Duration  3.22s (tests 81%, transform 16%, import 3%)
+

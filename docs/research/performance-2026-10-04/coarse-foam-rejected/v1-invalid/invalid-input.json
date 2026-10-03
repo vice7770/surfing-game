@@ -1,0 +1,24 @@
+{
+  "valid": false,
+  "stage": "finite-input guard before timing",
+  "reason": "nonfinite archived breakingStrength",
+  "fixture": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/render-scale/baseline-held-source.json.gz",
+  "serializedSha256": "38b63fbe297eeb143c6449902855be39802455d4f14d540a07d152ead7ec32e0",
+  "nx": 160,
+  "nz": 725,
+  "badCount": 0,
+  "nanCount": 0,
+  "infinityCount": 0,
+  "wetBadCount": 0,
+  "dryBadCount": 0,
+  "firstBadCells": [],
+  "finiteStrengthRange": [
+    0.0,
+    1.0
+  ],
+  "timingsCollected": 0,
+  "elapsedCostRun": null,
+  "solverSteps": 0,
+  "gpuCalls": 0,
+  "rootProductionChanged": false
+}

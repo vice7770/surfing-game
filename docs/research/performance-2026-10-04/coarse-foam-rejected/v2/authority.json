@@ -1,0 +1,61 @@
+{
+  "baselineCommit": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+  "runtimeCompiledFromReviewedScratchSources": true,
+  "files": [
+    {
+      "path": "src/wave/FoamCoverageGrid.ts",
+      "bytes": 11555,
+      "sha256": "a57c6b05073ac3133d730f080c9abc56c56622c232c438c72cfa521b5bac0321"
+    },
+    {
+      "path": "src/wave/FoamField.ts",
+      "bytes": 11362,
+      "sha256": "9d353175913f7e6c4d5699023dd4ba0a9f273a30e41584818bf625a38ef2d1e9"
+    },
+    {
+      "path": "src/wave/SurfZoneSimulation.ts",
+      "bytes": 66750,
+      "sha256": "bf8ff1d01c23fd861e48a55ef4aef790b6aab52ec5d6e0c70d06f33b6392a6a2"
+    },
+    {
+      "path": "src/wave/surfZoneState.ts",
+      "bytes": 4203,
+      "sha256": "c88a4238f4a8187403efe5a2d6222ca6878791be72ed0413b16631899f0d7921"
+    },
+    {
+      "path": "src/wave/FoamCoverageGrid.test.ts",
+      "bytes": 7500,
+      "sha256": "cff21874450ffc000107859a4b2a0322bd510124925433914dc3fb159ad07709"
+    },
+    {
+      "path": "src/wave/CoarseFoamParity.test.ts",
+      "bytes": 14452,
+      "sha256": "f5a45f277ddc44071c065528cf39d51e24432ea00e5af701ada3332a59fac975"
+    },
+    {
+      "path": "cost-gate-v2.ts",
+      "bytes": 10675,
+      "sha256": "1e2bd92bd560cd33b2425d6544c37e527fe12108fabdd736a9ab7ffcf66e401a"
+    },
+    {
+      "path": "cost-gate-v2.mjs",
+      "bytes": 1033983,
+      "sha256": "e367235853e5360caff12b03659210f27d505ac0f2deb8005bc10fff5011a6bc"
+    },
+    {
+      "path": "cost-v2-intent.md",
+      "bytes": 1272,
+      "sha256": "757d34f9d6d97d3a1660dd7d84b0882361581cccf014e5efe6e2ba16e3ed94ad"
+    },
+    {
+      "path": "focused-tests.log",
+      "bytes": 228,
+      "sha256": "079dbb3e0eb146a15cef497f018febb54b6eaf8675074a207118d42768e9fae5"
+    },
+    {
+      "path": "scratch-build.log",
+      "bytes": 1328,
+      "sha256": "45124559294e56a7ebc1cb7518307efa4b28125a0cdb7f77154e544e4899fa2e"
+    }
+  ]
+}

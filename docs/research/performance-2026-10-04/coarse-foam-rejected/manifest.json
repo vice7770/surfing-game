@@ -1,0 +1,226 @@
+{
+  "classification": "Rejected coarse visual foam coverage: complete CPU field path slower; no production adoption",
+  "baselineCommit": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+  "archiveScope": "Source/cost evidence only; no tests, builds, benchmarks, browser runs, or production edits during archival",
+  "sourceDirectory": "/private/tmp/coarse-foam-coverage-20261004",
+  "compression": {
+    "method": "gzip",
+    "filename": "",
+    "mtime": 0,
+    "compresslevel": 9
+  },
+  "fixture": {
+    "relativePath": "../../performance-2026-10-03/render-scale/baseline-held-source.json.gz",
+    "storedBytes": 15308604,
+    "storedSha256": "95f3937160eff73a9c751fcbdc2246a811978b49be7dbbda0e56ed9dea69e584",
+    "expandedBytes": 59541184,
+    "expandedSha256": "8e73b4d10d268081891d0bf89b93c6706b37617a6bea5543af443d6963443587",
+    "serializedRawSha256": "38b63fbe297eeb143c6449902855be39802455d4f14d540a07d152ead7ec32e0"
+  },
+  "aliases": [
+    {
+      "path": "prototype/coarse-coverage.patch",
+      "encoding": "identity",
+      "storedBytes": 46718,
+      "storedSha256": "8c8892af8ea23c34a882e4a1b1329a36b9647c699325ebf00fd9af9857598944",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/coarse-coverage.patch",
+      "originalRelativePath": "coarse-coverage.patch",
+      "originalBytes": 46718,
+      "originalSha256": "8c8892af8ea23c34a882e4a1b1329a36b9647c699325ebf00fd9af9857598944"
+    },
+    {
+      "path": "prototype/manifest.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 5520,
+      "storedSha256": "00033f1903005f8bea1c94c7f9a9c4b49fd8aae71797b01678e03393fa442159",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/prototype-manifest.json",
+      "originalRelativePath": "prototype-manifest.json",
+      "originalBytes": 15042,
+      "originalSha256": "b24d560e9d5fdf35e52859e1d3809baf664fd27a0d657f2f2d41c846ab4f8e39"
+    },
+    {
+      "path": "prototype/intent.md",
+      "encoding": "identity",
+      "storedBytes": 8963,
+      "storedSha256": "fe1803f04e5e473323fd5660a39496c33a5db29b9d0cefca54f2206e003ff0cb",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/intent.md",
+      "originalRelativePath": "intent.md",
+      "originalBytes": 8963,
+      "originalSha256": "fe1803f04e5e473323fd5660a39496c33a5db29b9d0cefca54f2206e003ff0cb"
+    },
+    {
+      "path": "validation/focused-tests.log",
+      "encoding": "identity",
+      "storedBytes": 228,
+      "storedSha256": "079dbb3e0eb146a15cef497f018febb54b6eaf8675074a207118d42768e9fae5",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/focused-tests.log",
+      "originalRelativePath": "focused-tests.log",
+      "originalBytes": 228,
+      "originalSha256": "079dbb3e0eb146a15cef497f018febb54b6eaf8675074a207118d42768e9fae5"
+    },
+    {
+      "path": "validation/scratch-build.log",
+      "encoding": "identity",
+      "storedBytes": 1328,
+      "storedSha256": "45124559294e56a7ebc1cb7518307efa4b28125a0cdb7f77154e544e4899fa2e",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/scratch-build.log",
+      "originalRelativePath": "scratch-build.log",
+      "originalBytes": 1328,
+      "originalSha256": "45124559294e56a7ebc1cb7518307efa4b28125a0cdb7f77154e544e4899fa2e"
+    },
+    {
+      "path": "v2/intake-correction.md",
+      "encoding": "identity",
+      "storedBytes": 1272,
+      "storedSha256": "757d34f9d6d97d3a1660dd7d84b0882361581cccf014e5efe6e2ba16e3ed94ad",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-v2-intent.md",
+      "originalRelativePath": "cost-v2-intent.md",
+      "originalBytes": 1272,
+      "originalSha256": "757d34f9d6d97d3a1660dd7d84b0882361581cccf014e5efe6e2ba16e3ed94ad"
+    },
+    {
+      "path": "v2/authority.json",
+      "encoding": "identity",
+      "storedBytes": 1881,
+      "storedSha256": "d192d375e5abfcc83b060b0439002cda1718801f89a3b73c6c41a24910bc64c7",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-gate-v2-authority.json",
+      "originalRelativePath": "cost-gate-v2-authority.json",
+      "originalBytes": 1881,
+      "originalSha256": "d192d375e5abfcc83b060b0439002cda1718801f89a3b73c6c41a24910bc64c7"
+    },
+    {
+      "path": "v2/cost-gate.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 10675,
+      "storedSha256": "1e2bd92bd560cd33b2425d6544c37e527fe12108fabdd736a9ab7ffcf66e401a",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-gate-v2.ts",
+      "originalRelativePath": "cost-gate-v2.ts",
+      "originalBytes": 10675,
+      "originalSha256": "1e2bd92bd560cd33b2425d6544c37e527fe12108fabdd736a9ab7ffcf66e401a"
+    },
+    {
+      "path": "v2/cost-gate.mjs.gz",
+      "encoding": "gzip",
+      "storedBytes": 284333,
+      "storedSha256": "605b52c381179fc2f1423a5ad264a10675491de8fbeb6b83c7ee44081f6713b5",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-gate-v2.mjs",
+      "originalRelativePath": "cost-gate-v2.mjs",
+      "originalBytes": 1033983,
+      "originalSha256": "e367235853e5360caff12b03659210f27d505ac0f2deb8005bc10fff5011a6bc"
+    },
+    {
+      "path": "v2/report.json",
+      "encoding": "identity",
+      "storedBytes": 28342,
+      "storedSha256": "a67707d455f7874bf2d7f1e0ef1748e20be8e4ba97d2f7eb45618080d5c84a27",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-gate-v2-report.json",
+      "originalRelativePath": "cost-gate-v2-report.json",
+      "originalBytes": 28342,
+      "originalSha256": "a67707d455f7874bf2d7f1e0ef1748e20be8e4ba97d2f7eb45618080d5c84a27"
+    },
+    {
+      "path": "v2/stdout.json",
+      "encoding": "identity",
+      "storedBytes": 2869,
+      "storedSha256": "0cd6a3de6d1fb8d97d90b337b85626a6b6e17e09950961cfc43fbf497cb0a735",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-gate-v2-stdout.json",
+      "originalRelativePath": "cost-gate-v2-stdout.json",
+      "originalBytes": 2869,
+      "originalSha256": "0cd6a3de6d1fb8d97d90b337b85626a6b6e17e09950961cfc43fbf497cb0a735"
+    },
+    {
+      "path": "v2/stderr.txt",
+      "encoding": "identity",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-gate-v2-stderr.txt",
+      "originalRelativePath": "cost-gate-v2-stderr.txt",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "v2/compile.log",
+      "encoding": "identity",
+      "storedBytes": 95,
+      "storedSha256": "73ca89b7bb53f1e1fa90adea71218f41c99c7225b1a03b255d6e5d488f564266",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-gate-v2-compile.log",
+      "originalRelativePath": "cost-gate-v2-compile.log",
+      "originalBytes": 95,
+      "originalSha256": "73ca89b7bb53f1e1fa90adea71218f41c99c7225b1a03b255d6e5d488f564266"
+    },
+    {
+      "path": "v1-invalid/cost-gate.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 9604,
+      "storedSha256": "a2729fc105f7fab5784a361618eb965f273fc1d54311783b99d8dc64a356caaf",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-v1-invalid/cost-gate.ts",
+      "originalRelativePath": "cost-v1-invalid/cost-gate.ts",
+      "originalBytes": 9604,
+      "originalSha256": "a2729fc105f7fab5784a361618eb965f273fc1d54311783b99d8dc64a356caaf"
+    },
+    {
+      "path": "v1-invalid/cost-gate.mjs.gz",
+      "encoding": "gzip",
+      "storedBytes": 284107,
+      "storedSha256": "41ca3e5c8bc6b9ab0d3681542ca3240296e71c89309deebb880aa1c37986ae0a",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-v1-invalid/cost-gate.mjs",
+      "originalRelativePath": "cost-v1-invalid/cost-gate.mjs",
+      "originalBytes": 1033008,
+      "originalSha256": "c7132a6e1530615bb4344c26e25e4168f735c9e4fbaef6c27e9e270d46979e87"
+    },
+    {
+      "path": "v1-invalid/compile.log",
+      "encoding": "identity",
+      "storedBytes": 92,
+      "storedSha256": "c4d9ebc3a030e7ee62686570eef20eb71a4615405fc6df560e70d9bcffa392a1",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-v1-invalid/cost-gate-compile.log",
+      "originalRelativePath": "cost-v1-invalid/cost-gate-compile.log",
+      "originalBytes": 92,
+      "originalSha256": "c4d9ebc3a030e7ee62686570eef20eb71a4615405fc6df560e70d9bcffa392a1"
+    },
+    {
+      "path": "v1-invalid/invalid-input.json",
+      "encoding": "identity",
+      "storedBytes": 664,
+      "storedSha256": "580f0b164a6f7003652dc91268971b2bee399b424b200698188337d49d5b50b0",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-v1-invalid/cost-gate-invalid-input.json",
+      "originalRelativePath": "cost-v1-invalid/cost-gate-invalid-input.json",
+      "originalBytes": 664,
+      "originalSha256": "580f0b164a6f7003652dc91268971b2bee399b424b200698188337d49d5b50b0"
+    },
+    {
+      "path": "v1-invalid/stdout.json",
+      "encoding": "identity",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-v1-invalid/cost-gate-stdout.json",
+      "originalRelativePath": "cost-v1-invalid/cost-gate-stdout.json",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "v1-invalid/review.json",
+      "encoding": "identity",
+      "storedBytes": 1341,
+      "storedSha256": "cd7b13fc3268500bc8d190b3fd937c3a97d41c0d3ad32c10547c029f4d260bac",
+      "originalPath": "/private/tmp/coarse-foam-coverage-20261004/cost-v1-invalid/review.json",
+      "originalRelativePath": "cost-v1-invalid/review.json",
+      "originalBytes": 1341,
+      "originalSha256": "cd7b13fc3268500bc8d190b3fd937c3a97d41c0d3ad32c10547c029f4d260bac"
+    },
+    {
+      "path": "README.md",
+      "encoding": "identity",
+      "storedBytes": 4285,
+      "storedSha256": "46919a07772ef1cbf05ddffa0b187a01439dc1ea03b9dc0f57523c1f0b034195",
+      "generated": true
+    }
+  ],
+  "omitted": {
+    "scratchREADME": "Unrelated baseline repository README; historical prototype manifest reference preserved as provenance",
+    "distAssets": "Historical frozen build hashes retained in prototype manifest; browser assets not copied",
+    "earlier37TestLog": "Not present in frozen evidence; only manifest claim retained"
+  },
+  "rawReportsUnmodified": true,
+  "noRuntimeAdoption": true
+}

@@ -1,0 +1,874 @@
+diff --git a/src/wave/FoamField.ts b/src/wave/FoamField.ts
+--- a/src/wave/FoamField.ts
++++ b/src/wave/FoamField.ts
+@@ -1,6 +1,7 @@
+ import { GRAVITY } from './dispersion';
+ import type { ShallowWaterSolver } from './ShallowWaterSolver';
+ import type { AdvectionStencil } from './AdvectionStencil';
++import { FoamCoverageGrid, type FoamCoverageGrouping, type FoamCoverageLayout } from './FoamCoverageGrid';
+ 
+ /** Foam e-folding times, s: dense whitewater, and the residual lace it leaves. */
+ export interface FoamDecay {
+@@ -62,17 +63,20 @@
+   private readonly nextDense: Float64Array;
+   private readonly nextResidual: Float64Array;
+   private windowX: number;
+-
+-  constructor(private readonly solver: ShallowWaterSolver, readonly decay: FoamDecay) {
++  /** Experimental visual coverage only; physical sources remain on the solver grid. */
++  readonly coverage?: FoamCoverageGrid;
++
++  constructor(private readonly solver: ShallowWaterSolver, readonly decay: FoamDecay, grouping?: FoamCoverageGrouping) {
+     const size = solver.nx * solver.nz;
+-    this.dense = new Float64Array(size);
+-    this.residual = new Float64Array(size);
++    this.coverage = grouping && new FoamCoverageGrid(solver, grouping);
++    this.dense = this.coverage?.dense ?? new Float64Array(size);
++    this.residual = this.coverage?.residual ?? new Float64Array(size);
+     this.source = new Float64Array(size);
+     this.sourceCells = new Uint32Array(size);
+     this.breakingCells = new Uint32Array(size);
+     this.dissipation = new Float64Array(size);
+-    this.nextDense = new Float64Array(size);
+-    this.nextResidual = new Float64Array(size);
++    this.nextDense = new Float64Array(this.coverage ? 0 : size);
++    this.nextResidual = new Float64Array(this.coverage ? 0 : size);
+     this.windowX = solver.xCenters[0];
+   }
+ 
+@@ -85,6 +89,10 @@
+     const { solver } = this;
+     if (solver.beyondOpenEdge(x)) return;
+     const cell = solver.cellIndex(x, z);
++    if (this.coverage) {
++      this.coverage.addSplash(cell, volume, SPLASH_DEPTH);
++      return;
++    }
+     const area = solver.dx * solver.dz[Math.floor(cell / solver.nx)];
+     this.dense[cell] = Math.min(1, this.dense[cell] + volume / (area * SPLASH_DEPTH));
+     this.residual[cell] = Math.min(this.residual[cell], 1 - this.dense[cell]);
+@@ -93,6 +101,12 @@
+   /** Advance by `dt` seconds with the breaking strength B per cell. */
+   update(dt: number, breaking: ArrayLike<number>, stencil?: AdvectionStencil): void {
+     if (!(dt > 0)) return;
++    if (this.coverage) {
++      // No fine stencil is produced: aeration retains its original fine fallback.
++      stencil?.invalidate();
++      this.updateCoverage(dt, breaking);
++      return;
++    }
+     this.followWindow();
+     this.advect(dt, stencil);
+     const { h, bed, restLevel } = this.solver;
+@@ -124,6 +138,54 @@
+       // Flush traces the resampling spreads upstream; they would never show.
+       this.dense[i] = dense < TRACE ? 0 : Math.min(1, dense);
+       this.residual[i] = lace < TRACE ? 0 : Math.min(lace, 1 - this.dense[i]);
++    }
++  }
++
++  private updateCoverage(dt: number, breaking: ArrayLike<number>): void {
++    const coverage = this.coverage!;
++    coverage.beginMeasurement();
++    const { h, bed, restLevel, qx, qz } = this.solver;
++    this.sourceCount = 0;
++    this.breakingCount = 0;
++    for (let i = 0; i < h.length; i += 1) {
++      if (h[i] <= WET) {
++        this.source[i] = 0;
++        continue;
++      }
++      const strength = breaking[i];
++      let bore = 0;
++      if (strength > 0) {
++        bore = boreDissipation(restLevel - bed[i], h[i]);
++        this.breakingCells[this.breakingCount++] = i;
++        this.dissipation[i] = strength * bore;
++      }
++      const rate = strength > 0 ? (strength * FOAM_SOURCE_RATE * bore) / REFERENCE_DISSIPATION : 0;
++      this.source[i] = rate;
++      if (rate > 0) this.sourceCells[this.sourceCount++] = i;
++      coverage.accumulate(i, h[i], qx[i], qz[i], rate);
++    }
++    coverage.update(dt, this.decay, LACE_SHARE);
++  }
++
++  /** Explicit shape marker for the experimental coarse state; ordinary state stays unchanged. */
++  coverageLayout(): FoamCoverageLayout | undefined {
++    return this.coverage?.layout();
++  }
++
++  validateCoverageState(dense: ArrayLike<number> | undefined, residual: ArrayLike<number> | undefined, layout?: FoamCoverageLayout): void {
++    if (this.coverage) {
++      this.coverage.validateState(dense, residual, layout);
++    } else if (layout || (dense && dense.length !== this.dense.length) || (residual && residual.length !== this.residual.length)) {
++      throw new Error('A sea state from another foam coverage grid');
++    }
++  }
++
++  importCoverageState(dense: ArrayLike<number> | undefined, residual: ArrayLike<number> | undefined, layout?: FoamCoverageLayout): void {
++    this.validateCoverageState(dense, residual, layout);
++    if (this.coverage) this.coverage.importState(dense, residual, layout);
++    else {
++      if (dense) this.dense.set(dense);
++      if (residual) this.residual.set(residual);
+     }
+   }
+ 
+diff --git a/src/wave/FoamCoverageGrid.ts b/src/wave/FoamCoverageGrid.ts
+new file mode 100644
+--- /dev/null
++++ b/src/wave/FoamCoverageGrid.ts
+@@ -0,0 +1,257 @@
++import type { ShallowWaterSolver } from './ShallowWaterSolver';
++import type { FoamDecay } from './FoamField';
++
++export interface FoamCoverageGrouping { readonly columns: number; readonly rows: number }
++export interface FoamCoverageLayout extends FoamCoverageGrouping {
++  readonly nx: number;
++  readonly nz: number;
++  /** Left cell edge of the represented solver window, m. */
++  readonly xMin: number;
++}
++interface SampleGrid { nx: number; nz: number; spacing: number; xMin: number; zMin: number }
++const TRACE = 1e-6;
++
++/** Experimental visual-only cells, grouping existing physical cells without refining offshore. */
++export class FoamCoverageGrid {
++  readonly nx: number;
++  readonly nz: number;
++  readonly xCenters: Float64Array;
++  readonly zCenters: Float64Array;
++  readonly xEdges: Float64Array;
++  readonly zEdges: Float64Array;
++  readonly dense: Float64Array;
++  readonly residual: Float64Array;
++  private readonly nextDense: Float64Array;
++  private readonly nextResidual: Float64Array;
++  private readonly water: Float64Array;
++  private readonly momentumX: Float64Array;
++  private readonly momentumZ: Float64Array;
++  private readonly sourceArea: Float64Array;
++  private readonly columnGroups: Uint32Array;
++  private readonly rowGroups: Uint32Array;
++  private windowX: number;
++  private mapping?: {
++    grid: SampleGrid; windowX: number; columns: Uint32Array; columnWeights: Float64Array;
++    rows: Uint32Array; rowWeights: Float64Array;
++  };
++
++  constructor(private readonly solver: ShallowWaterSolver, readonly grouping: FoamCoverageGrouping) {
++    if (!Number.isInteger(grouping.columns) || grouping.columns < 1 || !Number.isInteger(grouping.rows) || grouping.rows < 1) {
++      throw new Error('Invalid foam coverage grouping');
++    }
++    this.nx = Math.ceil(solver.nx / grouping.columns);
++    this.nz = Math.ceil(solver.nz / grouping.rows);
++    this.xEdges = new Float64Array(this.nx + 1);
++    this.zEdges = new Float64Array(this.nz + 1);
++    this.xCenters = new Float64Array(this.nx);
++    this.zCenters = new Float64Array(this.nz);
++    this.windowX = solver.xCenters[0];
++    for (let c = 0; c <= this.nx; c += 1) this.xEdges[c] = this.windowX - solver.dx / 2 + Math.min(solver.nx, c * grouping.columns) * solver.dx;
++    for (let r = 0; r <= this.nz; r += 1) {
++      const fine = Math.min(solver.nz - 1, r * grouping.rows);
++      this.zEdges[r] = r === this.nz ? solver.zCenters[fine] + solver.dz[fine] / 2 : solver.zCenters[fine] - solver.dz[fine] / 2;
++    }
++    for (let c = 0; c < this.nx; c += 1) this.xCenters[c] = (this.xEdges[c] + this.xEdges[c + 1]) / 2;
++    for (let r = 0; r < this.nz; r += 1) this.zCenters[r] = (this.zEdges[r] + this.zEdges[r + 1]) / 2;
++    this.columnGroups = Uint32Array.from({ length: solver.nx }, (_, c) => Math.floor(c / grouping.columns));
++    this.rowGroups = Uint32Array.from({ length: solver.nz }, (_, r) => Math.floor(r / grouping.rows) * this.nx);
++    const n = this.nx * this.nz;
++    this.dense = new Float64Array(n);
++    this.residual = new Float64Array(n);
++    this.nextDense = new Float64Array(n);
++    this.nextResidual = new Float64Array(n);
++    this.water = new Float64Array(n);
++    this.momentumX = new Float64Array(n);
++    this.momentumZ = new Float64Array(n);
++    this.sourceArea = new Float64Array(n);
++  }
++
++  area(index: number): number {
++    const r = Math.floor(index / this.nx);
++    const c = index - r * this.nx;
++    return (this.xEdges[c + 1] - this.xEdges[c]) * (this.zEdges[r + 1] - this.zEdges[r]);
++  }
++
++  fineGroup(index: number): number {
++    const r = Math.floor(index / this.solver.nx);
++    return this.rowGroups[r] + this.columnGroups[index - r * this.solver.nx];
++  }
++
++  beginMeasurement(): void {
++    this.followWindow();
++    this.water.fill(0);
++    this.momentumX.fill(0);
++    this.momentumZ.fill(0);
++    this.sourceArea.fill(0);
++  }
++
++  /** Called only for original wet fine cells, in original cell order. */
++  accumulate(index: number, h: number, qx: number, qz: number, rate: number): void {
++    const r = Math.floor(index / this.solver.nx);
++    const group = this.rowGroups[r] + this.columnGroups[index - r * this.solver.nx];
++    const area = this.solver.dx * this.solver.dz[r];
++    this.water[group] += h * area;
++    this.momentumX[group] += qx * area;
++    this.momentumZ[group] += qz * area;
++    this.sourceArea[group] += rate * area;
++  }
++
++  update(dt: number, decay: FoamDecay, laceShare: number): void {
++    const keepDense = Math.exp(-dt / decay.dense);
++    const keepLace = Math.exp(-dt / decay.residual);
++    for (let r = 0; r < this.nz; r += 1) {
++      for (let c = 0; c < this.nx; c += 1) {
++        const i = r * this.nx + c;
++        const water = this.water[i];
++        if (!(water > 0)) { this.nextDense[i] = 0; this.nextResidual[i] = 0; continue; }
++        const x = this.xCenters[c] - this.momentumX[i] / water * dt;
++        const z = this.zCenters[r] - this.momentumZ[i] / water * dt;
++        const column = this.columnBelow(x);
++        const row = this.rowBelow(z, r);
++        const tx = this.weight(this.xCenters, column, x);
++        const tz = this.weight(this.zCenters, row, z);
++        const previous = this.sample(this.dense, column, row, tx, tz);
++        let dense = previous * keepDense;
++        const lace = this.sample(this.residual, column, row, tx, tz) * keepLace + laceShare * (previous - dense);
++        dense += this.sourceArea[i] / this.area(i) * dt;
++        this.nextDense[i] = dense < TRACE ? 0 : Math.min(1, dense);
++        this.nextResidual[i] = lace < TRACE ? 0 : Math.min(lace, 1 - this.nextDense[i]);
++      }
++    }
++    this.dense.set(this.nextDense);
++    this.residual.set(this.nextResidual);
++  }
++
++  addSplash(fineIndex: number, volume: number, splashDepth: number): void {
++    this.followWindow();
++    const i = this.fineGroup(fineIndex);
++    this.dense[i] = Math.min(1, this.dense[i] + volume / (this.area(i) * splashDepth));
++    this.residual[i] = Math.min(this.residual[i], 1 - this.dense[i]);
++  }
++
++  /** Piecewise-constant area remap handles odd fine-column shifts and partial end groups. */
++  followWindow(): void {
++    const delta = this.solver.xCenters[0] - this.windowX;
++    if (delta === 0) return;
++    for (let r = 0; r < this.nz; r += 1) {
++      let first = 0;
++      for (let c = 0; c < this.nx; c += 1) {
++        const low = this.xEdges[c] + delta;
++        const high = this.xEdges[c + 1] + delta;
++        while (first < this.nx && this.xEdges[first + 1] <= low) first += 1;
++        let dense = 0;
++        let residual = 0;
++        for (let old = first; old < this.nx && this.xEdges[old] < high; old += 1) {
++          const overlap = Math.max(0, Math.min(high, this.xEdges[old + 1]) - Math.max(low, this.xEdges[old]));
++          dense += this.dense[r * this.nx + old] * overlap;
++          residual += this.residual[r * this.nx + old] * overlap;
++        }
++        const i = r * this.nx + c;
++        this.nextDense[i] = dense / (high - low);
++        this.nextResidual[i] = residual / (high - low);
++      }
++    }
++    this.dense.set(this.nextDense);
++    this.residual.set(this.nextResidual);
++    this.moveCoordinates();
++  }
++
++  layout(): FoamCoverageLayout {
++    this.followWindow();
++    return { ...this.grouping, nx: this.nx, nz: this.nz, xMin: this.xEdges[0] };
++  }
++
++  validateState(dense: ArrayLike<number> | undefined, residual: ArrayLike<number> | undefined, layout?: FoamCoverageLayout): void {
++    const size = layout ? this.dense.length : this.solver.h.length;
++    if (layout && (layout.columns !== this.grouping.columns || layout.rows !== this.grouping.rows || layout.nx !== this.nx || layout.nz !== this.nz
++      || layout.xMin !== this.solver.xCenters[0] - this.solver.dx / 2)) throw new Error('A sea state from another foam coverage grid');
++    if ((dense && dense.length !== size) || (residual && residual.length !== size) || (layout && (!dense || !residual))) {
++      throw new Error('A sea state from another foam coverage grid');
++    }
++  }
++
++  importState(dense: ArrayLike<number> | undefined, residual: ArrayLike<number> | undefined, layout?: FoamCoverageLayout): void {
++    this.validateState(dense, residual, layout);
++    this.moveCoordinates();
++    if (layout) {
++      this.dense.set(dense!); this.residual.set(residual!);
++    } else {
++      // Explicit legacy fine-state conversion: conserve represented foam area before sampling.
++      if (dense) this.downsample(dense, this.dense);
++      if (residual) this.downsample(residual, this.residual);
++    }
++  }
++
++  mappingFor(grid: SampleGrid) {
++    this.followWindow();
++    let m = this.mapping;
++    if (!m || m.grid.nx !== grid.nx || m.grid.nz !== grid.nz || m.grid.spacing !== grid.spacing || m.grid.zMin !== grid.zMin) {
++      const rows = new Uint32Array(grid.nz);
++      const rowWeights = new Float64Array(grid.nz);
++      for (let r = 0; r < grid.nz; r += 1) {
++        const z = grid.zMin + r * grid.spacing;
++        rows[r] = this.rowBelow(z, 0);
++        rowWeights[r] = this.weight(this.zCenters, rows[r], z);
++      }
++      m = { grid: { ...grid }, windowX: NaN, columns: new Uint32Array(grid.nx), columnWeights: new Float64Array(grid.nx), rows, rowWeights };
++      this.mapping = m;
++    }
++    if (m.grid.xMin !== grid.xMin || m.windowX !== this.windowX) {
++      for (let c = 0; c < grid.nx; c += 1) {
++        const x = grid.xMin + c * grid.spacing;
++        m.columns[c] = this.columnBelow(x);
++        m.columnWeights[c] = this.weight(this.xCenters, m.columns[c], x);
++      }
++      m.grid.xMin = grid.xMin; m.windowX = this.windowX;
++    }
++    return m;
++  }
++
++  sampleAt(x: number, z: number): number {
++    this.followWindow();
++    const c = this.columnBelow(x);
++    const r = this.rowBelow(z, 0);
++    const tx = this.weight(this.xCenters, c, x);
++    const tz = this.weight(this.zCenters, r, z);
++    return this.sample(this.dense, c, r, tx, tz) + this.sample(this.residual, c, r, tx, tz);
++  }
++
++  private downsample(fine: ArrayLike<number>, coarse: Float64Array): void {
++    coarse.fill(0);
++    for (let i = 0; i < fine.length; i += 1) {
++      const r = Math.floor(i / this.solver.nx);
++      coarse[this.fineGroup(i)] += fine[i] * this.solver.dx * this.solver.dz[r];
++    }
++    for (let i = 0; i < coarse.length; i += 1) coarse[i] /= this.area(i);
++  }
++
++  private moveCoordinates(): void {
++    this.windowX = this.solver.xCenters[0];
++    for (let c = 0; c < this.xEdges.length; c += 1) {
++      this.xEdges[c] = this.windowX - this.solver.dx / 2 + Math.min(this.solver.nx, c * this.grouping.columns) * this.solver.dx;
++    }
++    for (let c = 0; c < this.xCenters.length; c += 1) this.xCenters[c] = (this.xEdges[c] + this.xEdges[c + 1]) / 2;
++  }
++
++  private columnBelow(x: number): number {
++    return Math.max(0, Math.min(this.nx - 2, Math.floor((x - this.xCenters[0]) / (this.solver.dx * this.grouping.columns))));
++  }
++
++  private rowBelow(z: number, guess: number): number {
++    let row = Math.max(0, Math.min(guess, this.nz - 2));
++    while (row > 0 && this.zCenters[row] > z) row -= 1;
++    while (row < this.nz - 2 && this.zCenters[row + 1] <= z) row += 1;
++    return row;
++  }
++
++  private weight(centres: Float64Array, index: number, value: number): number {
++    return centres.length === 1 ? 0 : Math.min(1, Math.max(0, (value - centres[index]) / (centres[index + 1] - centres[index])));
++  }
++
++  private sample(values: Float64Array, c: number, r: number, tx: number, tz: number): number {
++    const c1 = Math.min(c + 1, this.nx - 1);
++    const r1 = Math.min(r + 1, this.nz - 1);
++    return values[r * this.nx + c] * (1 - tx) * (1 - tz) + values[r * this.nx + c1] * tx * (1 - tz)
++      + values[r1 * this.nx + c] * (1 - tx) * tz + values[r1 * this.nx + c1] * tx * tz;
++  }
++}
+diff --git a/src/wave/SurfZoneSimulation.ts b/src/wave/SurfZoneSimulation.ts
+--- a/src/wave/SurfZoneSimulation.ts
++++ b/src/wave/SurfZoneSimulation.ts
+@@ -6,6 +6,7 @@
+ import { AERATION, AerationField } from './AerationField';
+ import { AdvectionStencil } from './AdvectionStencil';
+ import { FoamField, type FoamDecay } from './FoamField';
++import type { FoamCoverageGrouping } from './FoamCoverageGrid';
+ import { PlungingLip, lipThrow } from './PlungingLip';
+ import { TUBE_CAPACITY, carveGrid } from './tubeTable';
+ import { focusX } from './Refraction';
+@@ -552,7 +553,7 @@
+   private readonly spinUpSeconds: number;
+ 
+   /** `barrel`: the swept barrel's profile library, at a swept spot (the page's cases): the crash runs on it (PR 5). */
+-  constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary) {
++  constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary, experiment?: { foamCoverage?: FoamCoverageGrouping }) {
+     this.spot = createSpot(config.spot, config.seed);
+     const tank = tankLayout(config);
+     this.tank = tank;
+@@ -594,7 +595,7 @@
+     this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
+     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
+     this.lip = new PlungingLip(this.solver, undefined, LIP_JET[config.spot]?.sourceShare);
+-    this.foam = new FoamField(this.solver, config.foamDecay ?? FOAM_DECAY[config.spot]);
++    this.foam = new FoamField(this.solver, config.foamDecay ?? FOAM_DECAY[config.spot], experiment?.foamCoverage);
+     this.aeration = new AerationField(this.solver, { period: config.peakPeriod });
+     this.lip.onLand = (x, z, volume, vx, vy, vz, flight) => {
+       this.foam.addSplash(x, z, volume);
+@@ -703,11 +704,13 @@
+    * `importState` steps on exactly as this one does.
+    */
+   exportState(): SurfZoneState {
++    const foamCoverage = this.foam.coverageLayout();
+     const arrays = Object.fromEntries(Object.entries(this.stateArrays()).map(([name, array]) => [name, array.slice()]));
+     return {
+       nx: this.solver.nx, nz: this.solver.nz, solverTime: this.solver.time, seaTimeOffset: this.seaTimeOffset, arrays,
+       counters: { lipLaunches: this.lipLaunches, lipVolume: this.lipVolume, lipJets: this.lipJets, lipRollers: this.lipRollers, onsetsArmed: this.onsetsArmed },
+       lip: this.lip.exportState(),
++      ...(foamCoverage ? { foamCoverage } : {}),
+       ...(this.front ? { front: this.front.exportState() } : {}),
+     };
+   }
+@@ -717,11 +720,14 @@
+     const { solver } = this;
+     if (state.nx !== solver.nx || state.nz !== solver.nz) throw new Error(`A sea state from another tank (${state.nx}×${state.nz}, not ${solver.nx}×${solver.nz})`);
+     const arrays = this.stateArrays();
++    this.foam.validateCoverageState(state.arrays['foam.dense'], state.arrays['foam.residual'], state.foamCoverage);
+     for (const [name, values] of Object.entries(state.arrays)) {
++      if (name === 'foam.dense' || name === 'foam.residual') continue;
+       const target = arrays[name];
+       if (!target || target.length !== values.length) throw new Error(`A sea state from another tank: ${name} does not fit`);
+       target.set(values);
+     }
++    this.foam.importCoverageState(state.arrays['foam.dense'], state.arrays['foam.residual'], state.foamCoverage);
+     // The turbulence is not handed over (it never feeds back into the water): the breaking stirs it afresh.
+     this.aeration.turbulence.fill(0);
+     solver.time = state.solverTime;
+@@ -1148,7 +1154,8 @@
+   private writeUniformFields(grid: RenderGrid, surface?: Float32Array, flow?: Float32Array, aeration?: Float32Array): void {
+     const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
+     const { h, bed, qx, qz, nx } = this.solver;
+-    const { dense, residual } = this.foam;
++    const { dense, residual, coverage } = this.foam;
++    const foamMap = surface ? coverage?.mappingFor(grid) : undefined;
+     const plume = this.aeration.depth;
+     if (flow && (!this.velocityX || this.velocityX.length !== h.length)) {
+       this.velocityX = new Float64Array(h.length);
+@@ -1183,8 +1190,22 @@
+         if (surface) {
+           const bottom = bed[i] * w00 + bed[i + 1] * w10 + bed[i + nx] * w01 + bed[i + nx + 1] * w11;
+           surface[o] = depth > WET ? depth + bottom : bottom - 0.05;
+-          surface[o + 1] = depth > WET ? (dense[i] + residual[i]) * w00 + (dense[i + 1] + residual[i + 1]) * w10
+-            + (dense[i + nx] + residual[i + nx]) * w01 + (dense[i + nx + 1] + residual[i + nx + 1]) * w11 : 0;
++          if (coverage && foamMap) {
++            const fr = foamMap.rows[r];
++            const fc = foamMap.columns[c];
++            const row0 = fr * coverage.nx;
++            const row1 = Math.min(fr + 1, coverage.nz - 1) * coverage.nx;
++            const col1 = Math.min(fc + 1, coverage.nx - 1);
++            const fx = foamMap.columnWeights[c];
++            const fz = foamMap.rowWeights[r];
++            surface[o + 1] = depth > WET ? (dense[row0 + fc] + residual[row0 + fc]) * (1 - fx) * (1 - fz)
++              + (dense[row0 + col1] + residual[row0 + col1]) * fx * (1 - fz)
++              + (dense[row1 + fc] + residual[row1 + fc]) * (1 - fx) * fz
++              + (dense[row1 + col1] + residual[row1 + col1]) * fx * fz : 0;
++          } else {
++            surface[o + 1] = depth > WET ? (dense[i] + residual[i]) * w00 + (dense[i + 1] + residual[i + 1]) * w10
++              + (dense[i + nx] + residual[i + nx]) * w01 + (dense[i + nx + 1] + residual[i + nx + 1]) * w11 : 0;
++          }
+         }
+         if (flow) {
+           flow[o] = depth > WET ? u![i] * w00 + u![i + 1] * w10 + u![i + nx] * w01 + u![i + nx + 1] * w11 : 0;
+diff --git a/src/wave/surfZoneState.ts b/src/wave/surfZoneState.ts
+--- a/src/wave/surfZoneState.ts
++++ b/src/wave/surfZoneState.ts
+@@ -1,5 +1,6 @@
+ import type { LipState } from './PlungingLip';
+ import type { FrontState } from './barrel/BreakingFront';
++import type { FoamCoverageLayout } from './FoamCoverageGrid';
+ 
+ /**
+  * A running sea as data (spec N1: the sea handover): its grid (to check it
+@@ -17,6 +18,8 @@
+   lip: LipState;
+   /** The swept barrel's breaking front, on the spots that run it (the Padang Padang spec, Part B). */
+   front?: FrontState;
++  /** Present only for the explicitly experimental visual coverage grid. */
++  foamCoverage?: FoamCoverageLayout;
+ }
+ 
+ const MAGIC = 0x53455431; // "SET1"
+@@ -32,6 +35,7 @@
+   const names = Object.keys(state.arrays);
+   const header = new TextEncoder().encode(JSON.stringify({
+     nx: state.nx, nz: state.nz, solverTime: state.solverTime, seaTimeOffset: state.seaTimeOffset, counters: state.counters, lip: state.lip, front: state.front,
++    ...(state.foamCoverage ? { foamCoverage: state.foamCoverage } : {}),
+     arrays: names.map((name) => [name, state.arrays[name].length]),
+   }));
+   const start = 8 + Math.ceil(header.length / 4) * 4;
+diff --git a/src/wave/FoamCoverageGrid.test.ts b/src/wave/FoamCoverageGrid.test.ts
+new file mode 100644
+--- /dev/null
++++ b/src/wave/FoamCoverageGrid.test.ts
+@@ -0,0 +1,148 @@
++import { describe, expect, it } from 'vitest';
++import { FoamCoverageGrid } from './FoamCoverageGrid';
++import { FoamField, SPLASH_DEPTH } from './FoamField';
++import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
++
++const lasting = { dense: 1e9, residual: 1e9 };
++const grouping = { columns: 2, rows: 4 };
++const water = (nx = 5, edges: ArrayLike<number> = uniformEdges(0, 4, 4), dx = 1) =>
++  new ShallowWaterSolver({ nx, xMin: 0, dx, zEdges: edges, xBoundary: 'open' }, () => 2);
++const area = (grid: FoamCoverageGrid, values: Float64Array) => values.reduce((sum, value, i) => sum + value * grid.area(i), 0);
++
++describe('experimental grouped foam coverage', () => {
++  it('groups actual stretched edges, keeping partial groups and never refining offshore', () => {
++    const solver = water(5, [-10, -6, -3, -2, -1, 0, 4], 2);
++    const grid = new FoamCoverageGrid(solver, grouping);
++    expect([grid.nx, grid.nz]).toEqual([3, 2]);
++    expect(Array.from(grid.xEdges)).toEqual([0, 4, 8, 10]);
++    expect(Array.from(grid.zEdges)).toEqual([-10, -1, 4]);
++    expect(Array.from(grid.xCenters)).toEqual([2, 6, 9]);
++    expect(Array.from(grid.zCenters)).toEqual([-5.5, 1.5]);
++    expect(Array.from(grid.dense, (_, i) => grid.area(i))).toEqual([36, 36, 18, 20, 20, 10]);
++    expect(grid.dense.length).toBe(Math.ceil(solver.nx / 2) * Math.ceil(solver.nz / 4));
++    for (let i = 0; i < solver.h.length; i += 1) {
++      const r = Math.floor(i / solver.nx);
++      expect(grid.fineGroup(i)).toBe(Math.floor(r / 4) * grid.nx + Math.floor((i % solver.nx) / 2));
++    }
++  });
++
++  it('samples and advects finite coverage when both coarse axes have one cell', () => {
++    const solver = water(2, [0, 1, 2]);
++    const foam = new FoamField(solver, lasting, grouping);
++    foam.dense[0] = 0.4; foam.residual[0] = 0.1;
++    solver.qx.fill(5); solver.qz.fill(-3);
++    foam.update(1 / 60, new Float64Array(solver.h.length));
++    expect(foam.dense.length).toBe(1);
++    expect(foam.coverage!.sampleAt(-100, 100)).toBeCloseTo(0.5, 9);
++    const m = foam.coverage!.mappingFor({ nx: 3, nz: 3, spacing: 2, xMin: -2, zMin: -2 });
++    expect(Array.from(m.columns)).toEqual([0, 0, 0]);
++    expect(Array.from(m.rows)).toEqual([0, 0, 0]);
++    expect(Array.from(m.columnWeights)).toEqual([0, 0, 0]);
++    expect(Array.from(m.rowWeights)).toEqual([0, 0, 0]);
++  });
++
++  it('area-averages source forcing, clears fully dry groups and bounds mixed groups', () => {
++    const solver = water(5);
++    const foam = new FoamField(solver, lasting, grouping);
++    solver.bed.fill(-1); solver.h.fill(1.25);
++    const breaking = new Float64Array(solver.h.length).fill(1);
++    for (let r = 0; r < solver.nz; r += 1) {
++      solver.h[r * solver.nx] = 0;
++      solver.h[r * solver.nx + 4] = 0;
++    }
++    foam.dense.fill(0.1); foam.residual.fill(0.2);
++    foam.update(0.1, breaking);
++    expect(foam.dense[0]).toBeCloseTo(0.3, 8); // one of its two columns is wet
++    expect(foam.dense[1]).toBeCloseTo(0.5, 8);
++    expect(foam.dense[2]).toBe(0);
++    expect(foam.residual[2]).toBe(0);
++    foam.update(1, breaking);
++    expect(foam.dense.every(v => v >= 0 && v <= 1)).toBe(true);
++    expect(foam.dense.every((v, i) => v + foam.residual[i] <= 1)).toBe(true);
++  });
++
++  it('preserves an unsaturated splash dose on a partial stretched group', () => {
++    const solver = water(5, [-10, -6, -3, -2, -1, 0, 4]);
++    const grid = new FoamCoverageGrid(solver, grouping);
++    const fine = solver.h.length - 1;
++    grid.addSplash(fine, 0.001, SPLASH_DEPTH);
++    expect(grid.area(grid.fineGroup(fine))).toBe(5);
++    expect(area(grid, grid.dense)).toBeCloseTo(0.001 / SPLASH_DEPTH, 14);
++    grid.residual.fill(0.5);
++    grid.addSplash(fine, 10, SPLASH_DEPTH);
++    expect(grid.dense[grid.fineGroup(fine)]).toBe(1);
++    expect(grid.residual[grid.fineGroup(fine)]).toBe(0);
++  });
++
++  it('remaps odd shifts by actual overlap and loses only out-of-window represented area', () => {
++    const solver = water();
++    const grid = new FoamCoverageGrid(solver, grouping);
++    grid.dense.set([0.2, 0.6, 0.8]); grid.residual.set([0.1, 0.2, 0.3]);
++    solver.shiftAlongShore(1);
++    grid.followWindow();
++    expect(Array.from(grid.dense)).toEqual([0.4, 0.7, 0]);
++    expect(area(grid, grid.dense)).toBeCloseTo(2.2 * 4, 12);
++    expect(Array.from(grid.xEdges)).toEqual([1, 3, 5, 6]);
++    const retained = grid.dense.slice();
++    grid.followWindow();
++    expect(grid.dense).toEqual(retained);
++    solver.shiftAlongShore(-1);
++    grid.followWindow();
++    expect(Array.from(grid.dense)).toEqual([0.2, 0.55, 0.7]);
++    expect(area(grid, grid.dense)).toBeCloseTo(2.2 * 4, 12);
++  });
++
++  it('handles even, full-width and negative shifts, including partial entering cells', () => {
++    const solver = water();
++    const grid = new FoamCoverageGrid(solver, grouping);
++    grid.dense.set([0.2, 0.6, 0.8]);
++    solver.shiftAlongShore(-2); grid.followWindow();
++    expect(Array.from(grid.dense)).toEqual([0, 0.2, 0.6]);
++    for (let c = 0; c < solver.nx; c += 1) solver.xCenters[c] += 20;
++    grid.followWindow();
++    expect(area(grid, grid.dense)).toBe(0);
++  });
++
++  it('synchronizes before splash, avoids a second shift, and rejects the original open edge', () => {
++    const solver = water(20, uniformEdges(0, 8, 8));
++    const foam = new FoamField(solver, lasting, grouping);
++    solver.shiftAlongShore(1);
++    const x = solver.xCenters[10]; const z = solver.zCenters[2];
++    foam.addSplash(x, z, 0.01);
++    const dose = foam.dense.slice();
++    foam.coverage!.followWindow();
++    expect(foam.dense).toEqual(dose);
++    expect(area(foam.coverage!, foam.dense)).toBeCloseTo(0.01 / SPLASH_DEPTH, 14);
++    foam.addSplash(solver.xCenters[0] - solver.dx, z, 10);
++    expect(foam.dense).toEqual(dose);
++  });
++
++  it('explicitly converts fine state by actual area and rejects incompatible shape/origin', () => {
++    const solver = water(5, [-10, -6, -3, -2, -1, 0, 4]);
++    const foam = new FoamField(solver, lasting, grouping);
++    const dense = Float64Array.from(solver.h, (_, i) => (i % 5) / 10);
++    const residual = Float64Array.from(solver.h, (_, i) => (i % 3) / 20);
++    foam.importCoverageState(dense, residual);
++    const fineArea = dense.reduce((sum, value, i) => sum + value * solver.dx * solver.dz[Math.floor(i / solver.nx)], 0);
++    expect(area(foam.coverage!, foam.dense)).toBeCloseTo(fineArea, 12);
++    const layout = foam.coverageLayout()!;
++    const saved = foam.dense.slice();
++    foam.dense.fill(0); foam.importCoverageState(saved, foam.residual.slice(), layout);
++    expect(foam.dense).toEqual(saved);
++    expect(() => foam.importCoverageState(saved, foam.residual, { ...layout, columns: 4 })).toThrow('another foam');
++    expect(() => foam.importCoverageState(saved, foam.residual, { ...layout, xMin: 1 })).toThrow('another foam');
++    expect(() => new FoamField(solver, lasting).importCoverageState(saved, foam.residual, layout)).toThrow('another foam');
++    expect(() => foam.importCoverageState(saved, foam.residual)).toThrow('another foam');
++  });
++
++  it('invalidates cached sample columns when only the solver window changes', () => {
++    const solver = water(8, uniformEdges(0, 8, 8));
++    const foam = new FoamField(solver, lasting, grouping);
++    const grid = { nx: 5, nz: 4, spacing: 1, xMin: 2, zMin: 1 };
++    const old = foam.coverage!.mappingFor(grid).columnWeights.slice();
++    solver.shiftAlongShore(1);
++    const next = foam.coverage!.mappingFor(grid);
++    expect(next.columnWeights).not.toEqual(old);
++    expect(next.windowX).toBe(solver.xCenters[0]);
++  });
++});
+diff --git a/src/wave/CoarseFoamParity.test.ts b/src/wave/CoarseFoamParity.test.ts
+new file mode 100644
+--- /dev/null
++++ b/src/wave/CoarseFoamParity.test.ts
+@@ -0,0 +1,217 @@
++import { describe, expect, it, vi } from 'vitest';
++import { FoamField } from './FoamField';
++import { FoamField as OriginalFoam } from '../../oracle/src/wave/FoamField';
++import { AerationField } from './AerationField';
++import { AerationField as OriginalAir } from '../../oracle/src/wave/AerationField';
++import { AdvectionStencil } from './AdvectionStencil';
++import { AdvectionStencil as OriginalStencil } from '../../oracle/src/wave/AdvectionStencil';
++import { ShallowWaterSolver } from './ShallowWaterSolver';
++import { SurfZoneSimulation, type SurfZoneConfig } from './SurfZoneSimulation';
++import { SurfZoneSimulation as OriginalSimulation } from '../../oracle/src/wave/SurfZoneSimulation';
++import { encodeSurfZoneState, decodeSurfZoneState } from './surfZoneState';
++import { encodeSurfZoneState as originalEncode } from '../../oracle/src/wave/surfZoneState';
++import { BubbleCloud } from './BubbleCloud';
++import { SprayCloud } from './SprayCloud';
++import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
++import { createWaterSample } from '../physics/SurfWater';
++
++const dt = 1 / 60;
++const grouping = { columns: 2, rows: 4 };
++const decay = { dense: 3, residual: 20 };
++const bits = (values: Float64Array | Float32Array | Uint32Array | Uint8Array) => new Uint8Array(values.buffer, values.byteOffset, values.byteLength);
++function sameBits(a: Float64Array | Float32Array | Uint32Array | Uint8Array, b: Float64Array | Float32Array | Uint32Array | Uint8Array) { expect(bits(a)).toEqual(bits(b)); }
++const solver = () => new ShallowWaterSolver({ nx: 17, xMin: -17, dx: 2, zEdges: [-16, -12, -8, -5, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6], xBoundary: 'open' }, () => 2);
++const originalFoam = (water: ShallowWaterSolver) => new OriginalFoam(water as unknown as ConstructorParameters<typeof OriginalFoam>[0], decay);
++const originalAir = (water: ShallowWaterSolver) => new OriginalAir(water as unknown as ConstructorParameters<typeof OriginalAir>[0], { period: 10 });
++
++function waterSequence(water: ShallowWaterSolver, frame: number, breaking: Float64Array) {
++  for (let i = 0; i < water.h.length; i += 1) {
++    water.bed[i] = -1 - (i % 5) * 0.2;
++    water.h[i] = (i + frame) % 19 === 0 ? 0 : (i + frame) % 7 === 0 ? 0.4 : 1.5 + ((i * 3 + frame) % 11) / 12;
++    water.qx[i] = water.h[i] * ((i % 9) - 4) / 8;
++    water.qz[i] = water.h[i] * (((i * 5 + frame) % 13) - 3) / 7;
++    breaking[i] = (i + frame) % 5 === 0 ? 0 : 0.1 + ((i * 3 + frame) % 7) / 8;
++  }
++}
++
++function bores(foam: FoamField | OriginalFoam, air: AerationField | OriginalAir, water: ShallowWaterSolver, breaking: Float64Array) {
++  for (let n = 0; n < foam.breakingCount; n += 1) {
++    const i = foam.breakingCells[n];
++    if (foam.dissipation[i] > 0) air.addBore(i, foam.dissipation[i], water.h[i] - (water.restLevel - water.bed[i]), dt);
++    air.stir(i, breaking[i], dt);
++  }
++}
++
++function sourceParity(a: FoamField, b: OriginalFoam) {
++  expect(a.sourceCount).toBe(b.sourceCount);
++  expect(a.breakingCount).toBe(b.breakingCount);
++  sameBits(a.source, b.source);
++  sameBits(a.sourceCells, b.sourceCells); // includes original inactive tails
++  sameBits(a.breakingCells, b.breakingCells);
++  sameBits(a.dissipation, b.dissipation); // inactive values intentionally remain stale
++}
++
++describe('coarse coverage physical boundary against archived 58ceb', () => {
++  it('retains the default fine implementation including coverage and state marker absence', () => {
++    const water = solver(); const a = new FoamField(water, decay); const b = originalFoam(water);
++    a.dense.fill(0.35); b.dense.fill(0.35); a.residual.fill(0.1); b.residual.fill(0.1);
++    const breaking = new Float64Array(water.h.length);
++    for (let frame = 0; frame < 6; frame += 1) {
++      waterSequence(water, frame, breaking); a.update(dt, breaking); b.update(dt, breaking);
++      sourceParity(a, b); sameBits(a.dense, b.dense); sameBits(a.residual, b.residual);
++    }
++    expect(a.coverageLayout()).toBeUndefined();
++  });
++
++  it('preserves full fine source/list/dissipation bytes and all air/turbulence bytes through wet/dry and window changes', () => {
++    const water = solver();
++    const fine = originalFoam(water); const coarse = new FoamField(water, decay, grouping);
++    const beforeAir = originalAir(water); const afterAir = new AerationField(water, { period: 10 });
++    const fineStencil = new OriginalStencil(); const unusedStencil = new AdvectionStencil();
++    fine.dissipation.fill(123.5); coarse.dissipation.fill(123.5);
++    const breaking = new Float64Array(water.h.length);
++    for (let frame = 0; frame < 14; frame += 1) {
++      if (frame === 3) water.shiftAlongShore(1);
++      if (frame === 5) water.shiftAlongShore(-1);
++      if (frame === 7) water.shiftAlongShore(2);
++      if (frame === 9) water.shiftAlongShore(-2);
++      waterSequence(water, frame, breaking);
++      const x = water.xCenters[8]; const z = water.zCenters[7];
++      if (frame % 3 === 0) {
++        fine.addSplash(x, z, 0.015); coarse.addSplash(x, z, 0.015);
++        beforeAir.addPlunge(x, z, 100, 0.4); afterAir.addPlunge(x, z, 100, 0.4);
++      }
++      if (frame % 4 === 0) { beforeAir.addAir(x, z, 0.03, 0.3); afterAir.addAir(x, z, 0.03, 0.3); }
++      const physical = [water.h, water.qx, water.qz, water.bed, water.xCenters, water.zCenters].map(a => a.slice());
++      const input = breaking.slice();
++      // Prove invalidation rather than assuming an untouched scratch stencil is empty.
++      unusedStencil.begin(water, dt); unusedStencil.commit();
++      fine.update(dt, breaking, fineStencil); coarse.update(dt, breaking, unusedStencil);
++      expect(unusedStencil.take(water, dt)).toBeUndefined();
++      sourceParity(coarse, fine);
++      bores(fine, beforeAir, water, breaking); bores(coarse, afterAir, water, breaking);
++      beforeAir.update(dt, fineStencil); afterAir.update(dt); // original full fine fallback
++      sameBits(afterAir.air, beforeAir.air); sameBits(afterAir.depth, beforeAir.depth); sameBits(afterAir.turbulence, beforeAir.turbulence);
++      [water.h, water.qx, water.qz, water.bed, water.xCenters, water.zCenters].forEach((values, i) => sameBits(values, physical[i]));
++      sameBits(breaking, input);
++      const hitA = new PhysicalSurfWater(water, { peakPeriod: 10, breaking, aeration: afterAir });
++      const hitB = new PhysicalSurfWater(water, { peakPeriod: 10, breaking, aeration: beforeAir });
++      for (const y of [-1, -0.3, 0.2]) expect(hitA.sampleAt(x, y, z, createWaterSample())).toEqual(hitB.sampleAt(x, y, z, createWaterSample()));
++    }
++    expect(coarse.coverage!.nx * coarse.coverage!.nz).toBe(36); // ceil(17/2)*ceil(13/4)
++    expect(fine.dense.length).toBe(221);
++  });
++
++  it('retains fixed-RNG bubble/spray births on the same fine source and ordered impact stream', () => {
++    const water = solver(); const fine = originalFoam(water); const coarse = new FoamField(water, decay, grouping);
++    const bubbleA = new BubbleCloud(8761, 256); const bubbleB = new BubbleCloud(8761, 256);
++    const sprayA = new SprayCloud(8761, 512); const sprayB = new SprayCloud(8761, 512);
++    const breaking = new Float64Array(water.h.length);
++    for (let frame = 0; frame < 8; frame += 1) {
++      waterSequence(water, frame, breaking);
++      fine.update(dt, breaking); coarse.update(dt, breaking);
++      sourceParity(coarse, fine);
++      const impact = { x: water.xCenters[8], z: water.zCenters[7], volume: 0.02, vx: 0.3, vy: -3, vz: 2 };
++      const base = { solver: water, lipImpacts: [impact], windSpeed: -5 };
++      bubbleA.update({ solver: water, foam: fine }, dt); bubbleB.update({ solver: water, foam: coarse }, dt);
++      sprayA.update({ ...base, foam: fine }, dt);
++      sprayB.update({ ...base, foam: coarse }, dt);
++      expect(bubbleA.count).toBe(bubbleB.count); sameBits(bubbleA.positions, bubbleB.positions);
++      expect(sprayA.count).toBe(sprayB.count); sameBits(sprayA.particles, sprayB.particles);
++    }
++    expect(bubbleA.count).toBeGreaterThan(0); expect(sprayA.count).toBeGreaterThan(0);
++  });
++});
++
++const config: SurfZoneConfig = { spot: 'beach', seed: 8761, significantHeight: 1.5, peakPeriod: 10, directionDegrees: 10,
++  spreading: 12, tide: 0, alongShore: 34, dx: 2, fineSpacing: 2, coarseSpacing: 8, componentCount: 6, stage: 1, spinUpPeriods: 0 };
++const simulation = (coarse: boolean) => new SurfZoneSimulation(config, 'warm', undefined, coarse ? { foamCoverage: grouping } : undefined);
++
++describe('coarse foam experimental simulation state and fused snapshots', () => {
++  it('keeps all fused physical channels and physical export arrays bit-exact to original simulation', () => {
++    const fine = new OriginalSimulation(config, 'warm'); const coarse = simulation(true);
++    const breaking = new Float64Array(coarse.solver.h.length);
++    waterSequence(coarse.solver, 2, breaking); waterSequence(fine.solver as unknown as ShallowWaterSolver, 2, breaking);
++    for (let i = 0; i < fine.solver.h.length; i += 1) {
++      coarse.aeration.air[i] = fine.aeration.air[i] = (i % 7) / 100;
++      coarse.aeration.depth[i] = fine.aeration.depth[i] = (i % 9) / 10;
++    }
++    coarse.foam.dense.fill(0.4); coarse.foam.residual.fill(0.1);
++    for (const shift of [0, 1, -1, 2]) {
++      if (shift) { coarse.solver.shiftAlongShore(shift); fine.solver.shiftAlongShore(shift); }
++      for (const spacing of [1, 2, 3]) {
++        const grid = coarse.renderGrid(spacing);
++        const n = grid.nx * grid.nz * 2;
++        const a = [new Float32Array(n), new Float32Array(n), new Float32Array(n)];
++        const b = [new Float32Array(n), new Float32Array(n), new Float32Array(n)];
++        coarse.writeUniformSnapshot(a[0], a[1], a[2], grid); fine.writeUniformSnapshot(b[0], b[1], b[2], grid);
++        const aa = new Uint32Array(a[0].buffer); const bb = new Uint32Array(b[0].buffer);
++        for (let o = 0; o < n; o += 2) expect(aa[o]).toBe(bb[o]);
++        sameBits(a[1], b[1]); sameBits(a[2], b[2]);
++        const bedA = new Float32Array(n / 2); const bedB = new Float32Array(n / 2);
++        coarse.writeUniformBed(bedA, grid); fine.writeUniformBed(bedB, grid); sameBits(bedA, bedB);
++        const separate = new Float32Array(n); coarse.writeUniformSurface(separate, grid, false); sameBits(separate, a[0]);
++        for (let r = 0; r < grid.nz; r += 1) for (let c = 0; c < grid.nx; c += 1) {
++          const o = (r * grid.nx + c) * 2;
++          if (a[0][o + 1] > 0) expect(a[0][o + 1]).toBeCloseTo(coarse.foam.coverage!.sampleAt(grid.xMin + c * spacing, grid.zMin + r * spacing), 6);
++        }
++      }
++    }
++    const a = coarse.exportState(); const b = fine.exportState();
++    for (const [name, values] of Object.entries(a.arrays)) if (!name.startsWith('foam.')) sameBits(values, b.arrays[name]);
++    expect(a.counters).toEqual(b.counters); expect(a.lip).toEqual(b.lip); expect(a.front).toEqual(b.front);
++    expect(simulation(false).exportState().foamCoverage).toBeUndefined();
++  });
++
++  it('preserves actual ordered lip landing callbacks and physical aeration inputs', () => {
++    const fine = new OriginalSimulation(config, 'warm'); const coarse = simulation(true);
++    const a: unknown[] = []; const b: unknown[] = [];
++    for (const [scene, events] of [[fine, a], [coarse, b]] as const) {
++      const splash = scene.foam.addSplash.bind(scene.foam);
++      vi.spyOn(scene.foam, 'addSplash').mockImplementation((...args) => { events.push(['splash', ...args]); splash(...args); });
++      const impact = scene.lipImpacts.push.bind(scene.lipImpacts);
++      vi.spyOn(scene.lipImpacts, 'push').mockImplementation((...args) => { events.push(['impact', ...args]); return impact(...args); });
++      const air = scene.aeration.addPlunge.bind(scene.aeration);
++      vi.spyOn(scene.aeration, 'addPlunge').mockImplementation((...args) => { events.push(['air', ...args]); air(...args); });
++      for (const [x, z, volume] of [[scene.solver.xCenters[8], scene.solver.zCenters[3], 0.01], [scene.solver.xCenters[9], scene.solver.zCenters[5], 0.03]]) {
++        scene.lip.onLand!(x, z, volume, 0.3, -3, 2);
++      }
++    }
++    expect(a).toEqual(b);
++    expect(a.map(event => (event as unknown[])[0])).toEqual(['splash', 'impact', 'air', 'splash', 'impact', 'air']);
++    sameBits(fine.aeration.air, coarse.aeration.air); sameBits(fine.aeration.depth, coarse.aeration.depth);
++    expect(fine.lipImpacts).toEqual(coarse.lipImpacts);
++  });
++
++  it('preserves ordinary fine serialized state bytes when the experiment is absent', () => {
++    const fine = simulation(false); const old = new OriginalSimulation(config, 'warm');
++    sameBits(encodeSurfZoneState(fine.exportState()), originalEncode(old.exportState()));
++  });
++
++  it('round-trips the declared coarse layout directly and through the existing Float32 state codec', () => {
++    const donor = simulation(true); const receiver = simulation(true);
++    donor.foam.dense.forEach((_, i) => { donor.foam.dense[i] = (i % 7) / 10; donor.foam.residual[i] = (i % 3) / 20; });
++    const state = donor.exportState(); receiver.importState(state);
++    sameBits(receiver.foam.dense, donor.foam.dense); sameBits(receiver.foam.residual, donor.foam.residual);
++    const decoded = decodeSurfZoneState(encodeSurfZoneState(state));
++    expect(decoded.foamCoverage).toEqual(state.foamCoverage);
++    receiver.importState(decoded);
++    expect(receiver.foam.dense).toEqual(Float64Array.from(donor.foam.dense, Math.fround));
++    expect(() => simulation(false).importState(state)).toThrow('another foam');
++    expect(() => receiver.importState({ ...state, foamCoverage: { ...state.foamCoverage!, xMin: 1 } })).toThrow('another foam');
++    const a = simulation(true); const b = simulation(true); a.importState(decoded); b.importState(decoded);
++    const breaking = new Float64Array(a.solver.h.length).fill(0.5);
++    a.foam.update(dt, breaking); b.foam.update(dt, breaking);
++    sameBits(a.foam.dense, b.foam.dense); sameBits(a.foam.residual, b.foam.residual);
++  });
++
++  it('accepts legacy fine state only through explicit area conversion without changing physical state', () => {
++    const fine = simulation(false); const coarse = simulation(true);
++    fine.foam.dense.fill(0.4); fine.foam.residual.fill(0.1);
++    const state = fine.exportState(); coarse.importState(state);
++    expect(coarse.foam.dense.every(v => Math.abs(v - 0.4) < 1e-14)).toBe(true);
++    expect(coarse.foam.residual.every(v => Math.abs(v - 0.1) < 1e-14)).toBe(true);
++    const result = coarse.exportState();
++    for (const [name, values] of Object.entries(result.arrays)) if (!name.startsWith('foam.')) sameBits(values, state.arrays[name]);
++  });
++});

@@ -1,0 +1,113 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { gunzipSync, inflateSync } from 'node:zlib';
+import { SurfZoneSimulation } from './src/wave/SurfZoneSimulation';
+import { SurfZoneSimulation as OriginalSimulation } from './oracle/src/wave/SurfZoneSimulation';
+import { decodeSurfZoneState } from './oracle/src/wave/surfZoneState';
+import { AdvectionStencil } from './src/wave/AdvectionStencil';
+import { AdvectionStencil as OriginalStencil } from './oracle/src/wave/AdvectionStencil';
+
+const fixture = '/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/render-scale/baseline-held-source.json.gz';
+const sha = (a: Uint8Array | string) => createHash('sha256').update(a).digest('hex');
+const input = readFileSync(fixture);
+if (sha(input) !== '95f3937160eff73a9c751fcbdc2246a811978b49be7dbbda0e56ed9dea69e584') throw Error('Fixture gzip hash mismatch');
+const json = gunzipSync(input);
+if (sha(json) !== '8e73b4d10d268081891d0bf89b93c6706b37617a6bea5543af443d6963443587') throw Error('Fixture JSON hash mismatch');
+const capture = JSON.parse(json.toString('utf8'));
+const compressed = Buffer.from(capture.serialized.compressed.base64, 'base64');
+if (sha(compressed) !== capture.serialized.compressed.sha256) throw Error('Serialized compressed hash mismatch');
+const raw = capture.serialized.deflated ? inflateSync(compressed) : compressed;
+if (sha(raw) !== capture.serialized.rawSha256) throw Error('Serialized raw hash mismatch');
+const state = decodeSurfZoneState(raw);
+const config = capture.scalars.config;
+const grid = capture.scalars.waterGrid;
+const dt = 1 / 60;
+const variants = [
+  { name: 'archived58ceb', scene: new OriginalSimulation(config, 'warm'), stencil: new OriginalStencil() },
+  { name: 'candidateFineDefault', scene: new SurfZoneSimulation(config, 'warm'), stencil: new AdvectionStencil() },
+  { name: 'grouped2x4', scene: new SurfZoneSimulation(config, 'warm', undefined, { foamCoverage: { columns: 2, rows: 4 } }), stencil: new AdvectionStencil() },
+].map(v => {
+  v.scene.importState(state);
+  v.scene.breaking.update(0);
+  // This capture does not include SweptCrash's gated whitewater array. No front/crash update is invented.
+  // Both fields deliberately consume the same captured Boussinesq breakingStrength via BreakingModel.update(0).
+  for (const [name, values] of Object.entries({ h: v.scene.solver.h, bed: v.scene.solver.bed, qx: v.scene.solver.qx, qz: v.scene.solver.qz,
+    strength: v.scene.whitewaterStrength, air: v.scene.aeration.air, plume: v.scene.aeration.depth })) {
+    if (!(values as Float64Array).every(Number.isFinite)) throw Error('Nonfinite input: ' + name);
+  }
+  const n = grid.nx * grid.nz * 2;
+  return { ...v, initialDense: v.scene.foam.dense.slice(), initialResidual: v.scene.foam.residual.slice(),
+    initialAir: v.scene.aeration.air.slice(), initialDepth: v.scene.aeration.depth.slice(),
+    outputs: [new Float32Array(n), new Float32Array(n), new Float32Array(n)], samples: [] as number[][] };
+});
+const reset = (v: typeof variants[number]) => {
+  v.scene.foam.dense.set(v.initialDense); v.scene.foam.residual.set(v.initialResidual);
+  v.scene.aeration.air.set(v.initialAir); v.scene.aeration.depth.set(v.initialDepth); v.scene.aeration.turbulence.fill(0);
+};
+const update = (v: typeof variants[number]): number[] => {
+  const s = v.scene;
+  const t0 = performance.now();
+  s.foam.update(dt, s.whitewaterStrength, v.stencil as never);
+  const t1 = performance.now();
+  // Invoke the unchanged original method/order, rather than maintaining a second aeration-source implementation.
+  (s as unknown as { aerateBores(dt: number): void }).aerateBores(dt);
+  const t2 = performance.now();
+  s.aeration.update(dt, v.stencil as never); // grouped invalidates the stencil; existing full fine fallback
+  const t3 = performance.now();
+  s.writeUniformSnapshot(v.outputs[0], v.outputs[1], v.outputs[2], grid);
+  const t4 = performance.now();
+  return [t1 - t0, t2 - t1, t3 - t2, t4 - t3, t4 - t0];
+};
+const bytes = (a: ArrayBufferView) => new Uint8Array(a.buffer, a.byteOffset, a.byteLength);
+const equal = (a: ArrayBufferView, b: ArrayBufferView, name: string) => {
+  if (Buffer.compare(bytes(a), bytes(b)) !== 0) throw Error('Physical parity mismatch: ' + name);
+};
+for (const v of variants) { reset(v); update(v); }
+const base = variants[0];
+for (const v of variants.slice(1)) {
+  for (const name of ['source', 'sourceCells', 'breakingCells', 'dissipation'] as const) equal(v.scene.foam[name], base.scene.foam[name], name);
+  if (v.scene.foam.sourceCount !== base.scene.foam.sourceCount || v.scene.foam.breakingCount !== base.scene.foam.breakingCount) throw Error('Count parity mismatch');
+  for (const name of ['air', 'depth', 'turbulence'] as const) equal(v.scene.aeration[name], base.scene.aeration[name], 'air.' + name);
+  equal(v.outputs[1], base.outputs[1], 'snapshot.flow'); equal(v.outputs[2], base.outputs[2], 'snapshot.aeration');
+  const a = new Uint32Array(v.outputs[0].buffer), b = new Uint32Array(base.outputs[0].buffer);
+  for (let i = 0; i < a.length; i += 2) if (a[i] !== b[i]) throw Error('Snapshot height parity mismatch');
+  if (v.name === 'candidateFineDefault') equal(v.outputs[0], base.outputs[0], 'snapshot.fineCoverage');
+}
+const orders = [[0, 1, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0], [1, 0, 2], [0, 2, 1]];
+const begun = performance.now();
+for (let r = 0; r < 18; r += 1) for (const index of orders[r % orders.length]) { const v = variants[index]; reset(v); update(v); }
+const timings = [];
+for (let r = 0; r < 30; r += 1) {
+  if (performance.now() - begun > 20000) throw Error('Bounded cost run exceeded 20 seconds');
+  const row: Record<string, number[]> = {};
+  for (const index of orders[r % orders.length]) { const v = variants[index]; reset(v); const sample = update(v); v.samples.push(sample); row[v.name] = sample; }
+  timings.push({ round: r, order: orders[r % orders.length].map(i => variants[i].name), values: row });
+}
+const stats = (a: number[]) => {
+  const sorted = a.toSorted((x, y) => x - y);
+  return { median: (sorted[(sorted.length - 1) >> 1] + sorted[sorted.length >> 1]) / 2, mean: a.reduce((x, y) => x + y, 0) / a.length,
+    p95: sorted[Math.ceil(sorted.length * .95) - 1], min: sorted[0], max: sorted.at(-1) };
+};
+const phases = ['foam', 'airSources', 'aeration', 'snapshot', 'complete'];
+const summary = Object.fromEntries(variants.map(v => [v.name, Object.fromEntries(phases.map((phase, i) => [phase, stats(v.samples.map(row => row[i]))]))]));
+const saving = stats(timings.map(row => row.values.archived58ceb[4] - row.values.grouped2x4[4]));
+const finePerturbation = stats(timings.map(row => row.values.archived58ceb[4] - row.values.candidateFineDefault[4]));
+const coarse = variants[2].scene.foam.coverage!;
+const report = { valid: true, kind: 'Bounded CPU held-water complete foam/air/fused-snapshot cost; no solver or browser stepping', baselineCommit: '58ceb6a29617c00f93fb3b21eff3058d824319d5',
+  fixture: { path: fixture, gzipSha256: sha(input), jsonSha256: sha(json), serializedSha256: sha(raw), capturedRuntime: '1bcc7c0c9', config,
+    seaTime: capture.scalars.status.seaTime, sourceGrid: grid, physicalNx: base.scene.solver.nx, physicalNz: base.scene.solver.nz },
+  scope: { dt, solverSteps: 0, gpuCalls: 0, warmupRounds: 18, samplesPerVariant: 30, deadlineMs: 20000, elapsedMs: performance.now() - begun,
+    source: 'Captured Boussinesq breakingStrength, ungated. The captured gated SweptCrash whitewater field is unavailable; no front/crash lifecycle reconstructed.',
+    reset: 'Before each timed update: coverage and air/plume restored, turbulence zero as after existing state import. Reset/copy time excluded; allocation and initialization excluded.',
+    caveats: ['The SET1 saved physical arrays are Float32 serialization restored into Float64 storage.', 'This is a fixed input state field cost gate, not a whole water step, moving trajectory, particle timing, or FPS measurement.', 'Grouped visual coverage differs intentionally; no visual quality verdict.', 'Fresh fine source order/data and all air/physical snapshot bytes pass before timing.', 'No air-cache change: grouped uses unchanged fine fallback after invalidating shared stencil.'] },
+  physicalParity: { sourceAndListAllBytes: true, inactiveDissipationAllBytes: true, sourceCount: base.scene.foam.sourceCount, breakingCount: base.scene.foam.breakingCount,
+    fullAirDepthTurbulenceBytes: true, snapshotHeightFlowAerationBytes: true, defaultFineCoverageBytes: true },
+  work: { physicalCells: base.scene.solver.h.length, fineCoverageCells: base.scene.foam.dense.length, coarseCoverageCells: coarse.dense.length,
+    coverageCellRatio: base.scene.foam.dense.length / coarse.dense.length, coarseNx: coarse.nx, coarseNz: coarse.nz,
+    fineCoverageCurrentAndNextBytes: base.scene.foam.dense.byteLength * 4, coarseCoverageAndAggregationBytes: coarse.dense.byteLength * 8,
+    canonicalFineStencilBytes: variants[0].stencil.indices.byteLength + variants[0].stencil.values.byteLength,
+    experimentalFineStencilBytes: variants[2].stencil.indices.byteLength + variants[2].stencil.values.byteLength,
+    snapshotNodes: grid.nx * grid.nz, fineSourceAndAirCadence: 60 },
+  summaryMs: summary, pairedCompleteSavingMs: saving, pairedFineWrapperSavingMs: finePerturbation, raw: timings };
+writeFileSync('cost-gate-report.json', JSON.stringify(report, null, 2) + '\n');
+console.log(JSON.stringify({ valid: report.valid, work: report.work, summaryMs: report.summaryMs, pairedCompleteSavingMs: saving, pairedFineWrapperSavingMs: finePerturbation }));

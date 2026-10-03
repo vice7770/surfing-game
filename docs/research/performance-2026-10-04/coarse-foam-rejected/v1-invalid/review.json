@@ -1,0 +1,37 @@
+{
+  "valid": false,
+  "solverSteps": 0,
+  "gpuCalls": 0,
+  "timingSamples": 0,
+  "initialFailure": "Nonfinite input: strength",
+  "attributionCorrection": "Raw retained SET1 strength has 0 nonfinite values and range [0,1]. Node Buffer passed to the browser Uint8Array decoder caused Buffer.slice backing-buffer misalignment. This is harness misuse, not historical GPU nonfinite data or a production defect.",
+  "rawAuditFile": "cost-gate-invalid-input.json",
+  "exitCode": 1,
+  "files": [
+    {
+      "path": "cost-v1-invalid/cost-gate-compile.log",
+      "sha256": "c4d9ebc3a030e7ee62686570eef20eb71a4615405fc6df560e70d9bcffa392a1",
+      "bytes": 92
+    },
+    {
+      "path": "cost-v1-invalid/cost-gate-invalid-input.json",
+      "sha256": "580f0b164a6f7003652dc91268971b2bee399b424b200698188337d49d5b50b0",
+      "bytes": 664
+    },
+    {
+      "path": "cost-v1-invalid/cost-gate-stdout.json",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "cost-v1-invalid/cost-gate.mjs",
+      "sha256": "c7132a6e1530615bb4344c26e25e4168f735c9e4fbaef6c27e9e270d46979e87",
+      "bytes": 1033008
+    },
+    {
+      "path": "cost-v1-invalid/cost-gate.ts",
+      "sha256": "a2729fc105f7fab5784a361618eb965f273fc1d54311783b99d8dc64a356caaf",
+      "bytes": 9604
+    }
+  ]
+}
