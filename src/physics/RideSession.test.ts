@@ -70,6 +70,23 @@ describe('ride session', () => {
     expect(session.rider.phase).toBe('prone');
   });
 
+  // The pool flow probe's START=face: placed moving across a sloped face, the board starts along its surface.
+  it('places a board that follows the surface moving along a sloped face: the water\'s rise plus the slope along its motion', () => {
+    const tilt = Math.tan((12 * Math.PI) / 180);
+    const water = new PlaneWater({ slopeZ: -tilt, flow: { x: 0.3, y: 0.8, z: 0.5 } });
+    const placed = (followSurface?: boolean) => {
+      const session = new RideSession();
+      session.place({ x: 0, z: 0, heading: 0.6, speed: 6, phase: 'standing', followSurface }, water);
+      return session.board.velocity.clone();
+    };
+    const following = placed(true);
+    expect(following.z).toBeCloseTo(0.5 + 6 * Math.cos(0.6), 6);
+    expect(following.y).toBeCloseTo(0.8 - tilt * following.z, 6);
+    // Without it the board starts with the water's vertical flow alone, as before.
+    expect(placed().y).toBeCloseTo(0.8, 6);
+    expect(placed(false).y).toBeCloseTo(0.8, 6);
+  });
+
   it('places anywhere on the water, even in the whitewater, and stays finite', () => {
     const session = new RideSession();
     const water = new PlaneWater();
