@@ -195,8 +195,8 @@ describe('Classic water parity', () => {
     // GLSL wants a name declared before it is used: the sampler before the field that reads it, the streaks' sample declared
     // where the streaks come first and defined after the churn map.
     expect(fragment.indexOf('uniform sampler2D waterChurnMap;')).toBeLessThan(fragment.indexOf('textureGrad( waterChurnMap'));
-    expect(fragment.indexOf('float waterStreakField( vec2 frame, vec2 dx, vec2 dy );')).toBeLessThan(fragment.indexOf('float waterStreak( vec2 p'));
-    expect(fragment.indexOf('float waterStreak( vec2 p')).toBeLessThan(fragment.indexOf('float waterStreakField( vec2 frame, vec2 dx, vec2 dy ) {'));
+    expect(fragment.indexOf('float waterStreakField( vec2 frame, vec2 dx, vec2 dy, uvec2 h );')).toBeLessThan(fragment.indexOf('float waterStreak( vec2 p'));
+    expect(fragment.indexOf('float waterStreak( vec2 p')).toBeLessThan(fragment.indexOf('float waterStreakField( vec2 frame, vec2 dx, vec2 dy, uvec2 h ) {'));
     // One RGBA texture carries the churn and both foam stages; no new uniform.
     const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
     water.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);

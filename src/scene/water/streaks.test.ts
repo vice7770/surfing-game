@@ -1,9 +1,46 @@
 import { describe, expect, it } from 'vitest';
-import { FOAM_CELL } from '../foamPattern';
 import { foamQuantile, sampleFoamField, waterChurnPars } from './churnTexture';
 import {
   STREAK_ANCHOR, STREAK_COVER, STREAK_EDGE_SLOPE, STREAK_STRETCH, STREAK_TILE, streakAnchors, streakCover, streakFrame, streakMask, waterStreakPars,
 } from './streaks';
+
+/** A strip across a uniform current, as a mask of the lines: `across` samples `step` m apart, `rows` rows 0.1 m apart along it. */
+function strip(flow: [number, number], across = 3000, step = 0.02, rows = 40): { mask: Uint8Array; across: number; rows: number; cover: number } {
+  const speed = Math.hypot(flow[0], flow[1]);
+  const along = [flow[0] / speed, flow[1] / speed];
+  const mask = new Uint8Array(across * rows);
+  let sum = 0;
+  for (let j = 0; j < rows; j += 1) {
+    for (let i = 0; i < across; i += 1) {
+      const x = 7.3 - along[1] * i * step + along[0] * j * 0.1;
+      const z = -3.1 + along[0] * i * step + along[1] * j * 0.1;
+      const cover = streakCover(x, z, () => flow, 3.1, 0.8, 0.3);
+      sum += cover;
+      mask[j * across + i] = cover >= 0.5 ? 1 : 0;
+    }
+  }
+  return { mask, across, rows, cover: sum / (across * rows) };
+}
+
+/** The mask's autocorrelation `lag` samples across the current. */
+function acrossCorrelation({ mask, across, rows }: { mask: Uint8Array; across: number; rows: number }, lag: number): number {
+  let a = 0;
+  let b = 0;
+  let both = 0;
+  let count = 0;
+  for (let j = 0; j < rows; j += 1) {
+    for (let i = 0; i + lag < across; i += 1) {
+      const u = mask[j * across + i];
+      const v = mask[j * across + i + lag];
+      a += u;
+      b += v;
+      both += u * v;
+      count += 1;
+    }
+  }
+  const [ma, mb] = [a / count, b / count];
+  return (both / count - ma * mb) / Math.sqrt(ma * (1 - ma) * mb * (1 - mb));
+}
 
 describe('face streaks', () => {
   it('stretch the lace along the current: a step along it moves the pattern 1/STRETCH as far as a step across', () => {
@@ -32,27 +69,47 @@ describe('face streaks', () => {
     expect(streakMask(0.6, 0.004)).toBe(0);
   });
 
-  it('hold still when the current turns: a 1° turn moves the lines well under a lace cell, even 100 m from the origin', () => {
+  it('hold still when the current turns: a 1° turn moves the lines well under their spacing, even 100 m from the origin', () => {
+    // The lines' own spacing across the current, from the mask: the distance between one line's start and the next's.
+    const { mask, across } = strip([0, 1], 3000, 0.02, 1);
+    const starts: number[] = [];
+    for (let i = 1; i < across; i += 1) if (mask[i] && !mask[i - 1]) starts.push(i);
+    const spacing = ((starts[starts.length - 1] - starts[0]) / (starts.length - 1)) * 0.02;
+    expect(spacing).toBeGreaterThan(0.2);
     const [x, z] = [70.3, -71.2];
     const turn = Math.PI / 180;
     for (const anchor of streakAnchors(x, z)) {
       const [a0, b0] = streakFrame(x, z, 0.2, 1, anchor.x, anchor.z);
       const [a1, b1] = streakFrame(x, z, 0.2 * Math.cos(turn) - Math.sin(turn), 0.2 * Math.sin(turn) + Math.cos(turn), anchor.x, anchor.z);
-      expect(Math.hypot(a1 - a0, b1 - b0) / FOAM_CELL).toBeLessThan(0.3);
+      expect(Math.hypot(a1 - a0, b1 - b0) / spacing).toBeLessThan(0.3);
     }
+    // Turned about the world's origin instead, the same turn would move them several spacings.
+    const [o0, p0] = streakFrame(x, z, 0.2, 1);
+    const [o1, p1] = streakFrame(x, z, 0.2 * Math.cos(turn) - Math.sin(turn), 0.2 * Math.sin(turn) + Math.cos(turn));
+    expect(Math.hypot(o1 - o0, p1 - p0) / spacing).toBeGreaterThan(2);
   });
 
-  it('blend the four anchors around a point with weights that sum to 1 and change smoothly across anchor cells', () => {
+  it('weigh the three anchors of the triangle around a point to sum to 1, smoothly across its edges, each its own lines', () => {
     for (const [x, z] of [[0.1, 0.2], [70.3, -71.2], [-13, 44.9], [STREAK_ANCHOR * 3.5, -STREAK_ANCHOR * 2.5]]) {
       const anchors = streakAnchors(x, z);
-      expect(anchors).toHaveLength(4);
+      expect(anchors).toHaveLength(3);
       expect(anchors.reduce((sum, anchor) => sum + anchor.weight, 0)).toBeCloseTo(1, 12);
+      // Each anchor is a lattice corner within an edge of the point, and no two share a hash.
+      for (const anchor of anchors) expect(Math.hypot(anchor.x - x, anchor.z - z)).toBeLessThanOrEqual(STREAK_ANCHOR + 1e-9);
+      expect(new Set(anchors.map((anchor) => anchor.hash.join(','))).size).toBe(3);
     }
-    // Either side of a cell boundary, the same anchor carries the same weight.
+    // Either side of a triangle's edge, the anchors both triangles share carry the same weight.
     const weightOf = (x: number, z: number, ax: number, az: number) =>
-      streakAnchors(x, z).find((anchor) => anchor.x === ax && anchor.z === az)?.weight ?? 0;
-    const edge = STREAK_ANCHOR * 1.5;
-    expect(weightOf(edge - 1e-6, 1, STREAK_ANCHOR * 1.5, STREAK_ANCHOR * 0.5)).toBeCloseTo(weightOf(edge + 1e-6, 1, STREAK_ANCHOR * 1.5, STREAK_ANCHOR * 0.5), 5);
+      streakAnchors(x, z).find((anchor) => Math.abs(anchor.x - ax) < 1e-9 && Math.abs(anchor.z - az) < 1e-9)?.weight ?? 0;
+    // The edge from the corner (1, 0) to (0, 1) of the lattice's first cell, at its middle.
+    const [edgeX, edgeZ] = [0.75 * STREAK_ANCHOR, 0.4330127019 * STREAK_ANCHOR];
+    const normal = [0.8660254038, 0.5];
+    for (const [ax, az] of [[STREAK_ANCHOR, 0], [0.5 * STREAK_ANCHOR, 0.8660254038 * STREAK_ANCHOR]]) {
+      const inside = weightOf(edgeX - 1e-6 * normal[0], edgeZ - 1e-6 * normal[1], ax, az);
+      const outside = weightOf(edgeX + 1e-6 * normal[0], edgeZ + 1e-6 * normal[1], ax, az);
+      expect(inside).toBeGreaterThan(0.3);
+      expect(inside).toBeCloseTo(outside, 4);
+    }
   });
 
   it('has a GLSL twin', () => {
@@ -128,12 +185,26 @@ describe('face streaks from the foam field’s late stage', () => {
     expect(Math.abs(STREAK_EDGE_SLOPE - 0.5 * median) / (0.5 * median)).toBeLessThan(0.25);
   });
 
-  it('are blended in squares before the threshold, and defined where the churn map is: declared here, defined there', () => {
-    expect(waterStreakPars).toContain('float waterStreakField( vec2 frame, vec2 dx, vec2 dy );');
-    expect(waterStreakPars).toContain('squares += weight * weight * ( w * w + ( 1.0 - w ) * ( 1.0 - w ) );');
-    expect(waterStreakPars).toContain('sum / sqrt( squares )');
+  it('never repeat: across any current, the lines’ autocorrelation stays under 0.3 at every lag from 3 to 20 m, and cover a tenth', () => {
+    // Along an axis, the two anchors either side of the current once read the same texels (correlation 1 at 6 m); a 3 m tile
+    // read plainly repeated every 3 m. Each anchor now turns and shifts its own, and none repeats across its 6 m.
+    for (const flow of [[0, 1], [1, 0], [0.6, 0.8], [0.95, 0.31]] as [number, number][]) {
+      const lines = strip(flow);
+      expect(Math.abs(lines.cover - STREAK_COVER)).toBeLessThan(0.015);
+      for (const metres of [3, 4, 6, 8, 12, 16, 20]) expect(Math.abs(acrossCorrelation(lines, Math.round(metres / 0.02)))).toBeLessThan(0.3);
+    }
+  });
+
+  it('are combined by their union, each anchor’s phase thresholded for its weight, and defined where the churn map is', () => {
+    // A component that weighs w is drawn where it passes the value leaving (1 - F)^w of it below: six of them cover F.
+    expect(waterStreakPars).toContain(`float keep = log( ${(1 - STREAK_COVER).toFixed(4)} );`);
+    expect(waterStreakPars).toContain('waterFoamQuantile( exp( weight * w * keep ) )');
+    expect(waterStreakPars).toContain('return smoothstep( -width, width, best ) * mask;');
+    expect(waterStreakPars).not.toContain('sqrt( squares )');
+    expect(waterStreakPars).toContain('float waterStreakField( vec2 frame, vec2 dx, vec2 dy, uvec2 h );');
+    expect(waterStreakPars).toContain('uvec2 h = waterFoamPcg( uvec2( ivec2( corner ) + STREAK_SALT ) );');
     expect(waterStreakPars).not.toContain('waterFoamTile');
-    expect(waterChurnPars).toContain('float waterStreakField( vec2 frame, vec2 dx, vec2 dy ) {');
+    expect(waterChurnPars).toContain('float waterStreakField( vec2 frame, vec2 dx, vec2 dy, uvec2 h ) {');
     expect(/^[\x09\x0a\x20-\x7e]*$/.test(waterStreakPars)).toBe(true);
   });
 });

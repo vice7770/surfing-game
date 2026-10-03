@@ -345,7 +345,7 @@ describe('the foam field', () => {
     expect(field).toContain('float least = footprint - abs( dFdx( footprint ) ) - abs( dFdy( footprint ) );');
     expect(field).toContain(`if ( least >= ${FOAM_FADE[1].toFixed(3)} ) return vec2( foam, 1.0 );`);
     expect(field.indexOf('float least')).toBeLessThan(field.indexOf('return'));
-    expect(waterChurnPars).toContain('float waterStreakField( vec2 frame, vec2 dx, vec2 dy ) {');
+    expect(waterChurnPars).toContain('float waterStreakField( vec2 frame, vec2 dx, vec2 dy, uvec2 h ) {');
     // Plain ASCII: some drivers refuse anything else in a shader.
     expect(/^[\x09\x0a\x20-\x7e]*$/.test(waterChurnPars)).toBe(true);
   });
