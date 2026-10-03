@@ -36,6 +36,7 @@ describe('churn whitewater', () => {
     expect(CHURN_TEXTURE_SIZE).toBe(1024);
     expect(texture.format).toBe(RGBAFormat);
     expect(texture.generateMipmaps).toBe(true);
+    expect(texture.anisotropy).toBe(4);
     expect(texture).toBe(churnTexture());
     expect(CHURN_TILE).toBe(6);
     // Its bytes are made when first read (the GPU's first upload, or here), and only once.
