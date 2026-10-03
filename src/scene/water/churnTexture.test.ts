@@ -4,7 +4,7 @@ import { foamCover } from '../foamPattern';
 import { FOAM_BAKE, FOAM_RANGE, inverseNormal, mulberry32 } from './foamBake';
 import {
   CHURN_TEXTURE_SIZE, CHURN_TILE, FOAM_EDGE, FOAM_FADE, FOAM_OCTAVES, FOAM_STAGE_CORRELATION, FOAM_WEIGHTS, churnSample, churnTexture, churnTextureData,
-  FOAM_THICK, foamFieldCover, foamFieldThickness, foamGauss, foamHexGauss, foamQuantile, foamStageBlend, freshness, sampleFoamField, waterChurnPars,
+  FOAM_THICK, foamFieldCover, foamFieldThickness, foamFieldValue, foamHexGauss, foamPhaseGauss, foamQuantile, freshness, sampleFoamField, waterChurnPars,
 } from './churnTexture';
 
 describe('churn whitewater', () => {
@@ -153,21 +153,48 @@ describe('the foam field’s texture', () => {
 });
 
 describe('the foam field', () => {
-  it('blends the stages to a unit Gaussian whatever their age', () => {
-    expect(foamStageBlend(1.3, -0.4, 0)).toBeCloseTo(1.3, 12);
-    expect(foamStageBlend(1.3, -0.4, 1)).toBeCloseTo(-0.4, 12);
-    // Two unit Gaussians at the baked correlation: the blend’s variance stays 1.
+  it('unites its components, each thresholded for its weight: one alone at the plain quantile, any mix covering the foam’s share', () => {
+    // Still water, early foam: one component, thresholded where it leaves 1 - F below.
+    const [{ weight, early }] = foamPhaseGauss(4.2, 7.9, 0, 0, 1);
+    expect(weight).toBe(1);
+    expect(foamFieldValue(4.2, 7.9, 0, 0, 0.3, 0, 1)).toBeCloseTo(early - foamQuantile(0.7), 9);
+    // Independent unit Gaussians weighing w each, thresholded for (1 - F)^w, cover F together.
     const random = mulberry32(11);
     const gauss = () => Math.sqrt(-2 * Math.log(1 - random())) * Math.cos(2 * Math.PI * random());
-    for (const age of [0.25, 0.5, 0.8]) {
-      let square = 0;
+    for (const [foam, weights] of [[0.1, [0.5, 0.5]], [0.3, [0.25, 0.25, 0.25, 0.25]], [0.6, [0.7, 0.2, 0.1]], [0.9, [0.4, 0.6]]] as const) {
+      let covered = 0;
       for (let k = 0; k < 40000; k += 1) {
-        const a = gauss();
-        const b = FOAM_STAGE_CORRELATION * a + Math.sqrt(1 - FOAM_STAGE_CORRELATION ** 2) * gauss();
-        square += foamStageBlend(a, b, age) ** 2;
+        let best = -8;
+        for (const w of weights) best = Math.max(best, gauss() - foamQuantile((1 - foam) ** w));
+        if (best > 0) covered += 1;
       }
-      expect(Math.sqrt(square / 40000)).toBeCloseTo(1, 1);
+      expect(Math.abs(covered / 40000 - foam)).toBeLessThan(0.01);
     }
+  });
+
+  it('keeps the lace a web of lines while the flow-map phases cross: thinner lines of both webs, never blotches', () => {
+    // How much of the foam lies deep inside it: covered pixels with every pixel within 3 of them covered (5 cm at 1.7 cm a
+    // pixel). Blended linearly, two webs threshold to blotches at mid-period, a little thicker than one phase's web (0.115
+    // of the cover inside, against 0.108); united, each stays a web of lines at half its weight, so thinner (0.044).
+    const interior = (time: number) => {
+      const size = 300;
+      const step = 0.0166;
+      const mask = new Uint8Array(size * size);
+      for (let j = 0; j < size; j += 1) for (let i = 0; i < size; i += 1) mask[j * size + i] = foamFieldCover(5 + i * step, 5 + j * step, 0.5, 0.3, 0.12, 1, time) >= 0.5 ? 1 : 0;
+      let covered = 0;
+      let inside = 0;
+      for (let j = 3; j < size - 3; j += 1) {
+        for (let i = 3; i < size - 3; i += 1) {
+          if (!mask[j * size + i]) continue;
+          covered += 1;
+          let all = true;
+          for (let dj = -3; dj <= 3 && all; dj += 1) for (let di = -3; di <= 3 && all; di += 1) if (di * di + dj * dj <= 9) all = mask[(j + dj) * size + i + di] === 1;
+          if (all) inside += 1;
+        }
+      }
+      return inside / covered;
+    };
+    expect(interior(0.5)).toBeLessThan(0.6 * interior(1));
   });
 
   it('thresholds at the Gaussian quantile, to a few parts in ten thousand', () => {
@@ -202,8 +229,8 @@ describe('the foam field', () => {
       for (let k = 0; k < 4000; k += 1) {
         const x = random() * 40;
         const z = random() * 40;
-        const a = foamGauss(x, z, 0, 0, 1)[1];
-        const b = foamGauss(x + lag, z, 0, 0, 1)[1];
+        const a = foamPhaseGauss(x, z, 0, 0, 1)[0].late;
+        const b = foamPhaseGauss(x + lag, z, 0, 0, 1)[0].late;
         cross += a * b;
         first += a * a;
         second += b * b;
@@ -375,8 +402,11 @@ describe('the foam field', () => {
       moved += Math.abs(foamFieldCover(x + flow[0] * dt, z + flow[1] * dt, flow[0], flow[1], 0.5, 0, 1 + dt) - now);
       stayed += Math.abs(foamFieldCover(x + 0.3, z, flow[0], flow[1], 0.5, 0, 1 + dt) - now);
     }
-    expect(moved / 600).toBeLessThan(0.03);
+    // Carried, it changes only as the second phase starts to show (its densest lines, a few per cent of the surface);
+    // left in place, it changes several times as much.
+    expect(moved / 600).toBeLessThan(0.04);
     expect(stayed / 600).toBeGreaterThan(0.1);
+    expect(moved).toBeLessThan(stayed / 3);
   });
 
   it('is built from two octaves whose weights make a unit Gaussian, a large one for the holes and a small one for their edges', () => {
@@ -389,13 +419,15 @@ describe('the foam field', () => {
 
   it('has a GLSL twin: the same hash, the hex corners, the blends and the threshold', () => {
     expect(waterChurnPars).toContain('vec2 waterFoamField( vec2 p, vec2 flow, float foam, float age, float footprint )');
-    expect(waterChurnPars).toContain(`smoothstep( 0.0, ${FOAM_THICK.toFixed(3)}, blend - t )`);
+    expect(waterChurnPars).toContain(`smoothstep( 0.0, ${FOAM_THICK.toFixed(3)}, field )`);
     expect(waterChurnPars).toContain('v = v * 1664525u + 1013904223u;');
     expect(waterChurnPars).toContain('uvec2( ivec2( corner ) + 1024 ) + salt');
     expect(waterChurnPars).toContain('textureGrad( waterChurnMap');
     expect(waterChurnPars).toContain(`const float FOAM_TILE_LARGE = ${FOAM_OCTAVES.large.toFixed(3)};`);
     expect(waterChurnPars).toContain(`const float FOAM_TILE_SMALL = ${FOAM_OCTAVES.small.toFixed(3)};`);
-    expect(waterChurnPars).toContain(`2.0 * age * ( 1.0 - age ) * ${FOAM_STAGE_CORRELATION.toFixed(3)}`);
+    expect(waterChurnPars).toContain('float field = waterFoamUnion( p, dpdx, dpdy, flow, foam, age );');
+    expect(waterChurnPars).toContain('best = g.x - waterFoamQuantile( exp( w.x * keep ) );');
+    expect(waterChurnPars).not.toContain('waterFoamGauss');
     // The branch is the whole quad's, so its derivatives are real; the streaks' sample is defined here, after the churn map.
     expect(waterChurnPars).toContain('float reach = foam + abs( dFdx( foam ) ) + abs( dFdy( foam ) );');
     // A pixel returns the foam's mean at once only when the smallest footprint in its quad is past the fade (what the mix would
