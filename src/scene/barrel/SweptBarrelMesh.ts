@@ -1,12 +1,18 @@
 import { BufferAttribute, BufferGeometry, DoubleSide, DynamicDrawUsage, Mesh, MeshPhysicalMaterial, type WebGLProgramParametersWithUniforms } from 'three';
 import { LANDMARK } from '../../wave/barrel/ProfileLibrary';
-import { LOFT, LOFT_SAMPLES, THROAT, type LoftResult } from '../../wave/barrel/sweptLoft';
-import type { WaterLook } from '../water/waterLook';
-import { RICH_FAR_FOAM, RICH_REFLECTION, richFarNormal, richFragmentPars, richReflectionPars } from '../water/richWaterGlsl';
+import { LOFT, LOFT_SAMPLES, NO_CHORD, THROAT, type LoftResult } from '../../wave/barrel/sweptLoft';
+import { waterChurnPars } from '../water/churnTexture';
+import { richPatchFragmentPars } from '../water/richPatch';
+import {
+  RICH_FOAM, RICH_REFLECTION, richAerationFragmentPars, richAerationVertexPars, richFragmentPars, richNormalFragment, richReflectionPars, waterCubicPars,
+} from '../water/richWaterGlsl';
 import { waterRipplePars } from '../water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from '../water/specular';
+import { waterStreakPars } from '../water/streaks';
+import { waterTubePars } from '../water/tubeCarve';
+import type { WaterLook } from '../water/waterLook';
 import { waterChopNormal } from '../waterChop';
-import { CLASSIC_FOAM, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFragment } from '../waterOptics';
+import { CLASSIC_FOAM, CREST_SAMPLES, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFragment } from '../waterOptics';
 import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
 import { SWEPT_BAND_ALPHA, SWEPT_BARREL_DISCARD, waterBarrelMaskPars } from './barrelMaskGlsl';
 
@@ -93,16 +99,42 @@ gl_FragColor = vec4( vSweptView * ( 0.45 + 0.55 * abs( normalize( normal ).z ) )
 const SWEPT_REGION_OUTPUT = /* glsl */ `#include <opaque_fragment>
 gl_FragColor = vec4( vSweptView, 1.0 );`;
 
+/**
+ * The lift over which a curl vertex's normal passes from the water's own (resting) to the loft's (look-fix round 1): where
+ * the curl rests it is the water's surface, and its own normal there is the water's; the rests leave the water
+ * tangentially (a smoothstep), so by a lift of 0.05 the two have barely parted [provisional].
+ */
+export const REST_NORMAL = 0.05;
+/**
+ * The farthest a resting fragment is moved along its view ray to the water's drawn surface, m: the curl's rests lie on the
+ * water to centimetres, so this only guards a ray grazing the surface (look-fix round 1) [provisional].
+ */
+export const RESTING_REACH = 0.5;
+/** The height field's crest-light march's reach, m: its last sample (`CREST_SAMPLES`); past it the water lights nothing. */
+const CHORD_REACH = CREST_SAMPLES[CREST_SAMPLES.length - 1];
+
 // The loft's vertices are world positions and normals: the water's depth, foam and current are read where each lies.
 // The curl takes the water's foam only as far as it lies on the water: the solver breaks where the tube is, so its
 // roller's whitewater there is the tube's water, not foam on it; the tube's own foam comes with the crash curve (PR 5).
 // The lip's thickness and its weight as a sheet come from the loft (`sheetAcross`).
+//
+// Where the curl rests on the water (its lift 0) it is the water, and is shaded as the water (look-fix round 1): its
+// vertices take the water's own normal there (`vSweptRest`, by `REST_NORMAL`; the loft's where lifted), its fragments
+// the water's own surface, foam and current (`richRestingWater`, `classicRestingWater`), normal and relief
+// (`RICH_CURL_NORMAL`, `CLASSIC_CURL_NORMAL`), and its body the water's foam, air and crest light by 1 − the lift.
+// `sweptChord` is each vertex's slice's ray (x, z) and the water the sun crosses through the slice toward the vertex,
+// ahead and behind (`polylineChords`): the crest light where it is lifted.
 const sweptVertexPars = /* glsl */ `attribute float sweptLift;
 attribute float sweptSheet;
 attribute float sweptSheetWeight;
 attribute float sweptSheetBack;
 attribute vec3 sweptWall;
 attribute vec3 sweptWallNormal;
+attribute vec4 sweptChord;
+varying float vSweptLift;
+varying float vSweptRest;
+varying vec3 vSweptWaterNormal;
+varying vec4 vSweptChord;
 varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
@@ -116,8 +148,38 @@ vSweptSheet = sweptSheet;
 vSweptSheetWeight = sweptSheetWeight;
 vSweptSheetBack = sweptSheetBack;
 vSweptWallDepth = max( 0.0, sweptWall.y - waterBedAt( sweptWall.xz ) );
-vSweptWallNormal = sweptWallNormal;`;
-const sweptFragmentPars = /* glsl */ `varying float vSweptSheet;
+vSweptWallNormal = sweptWallNormal;
+vSweptLift = sweptLift;
+vSweptChord = sweptChord;
+vSweptRest = 1.0 - smoothstep( 0.0, ${REST_NORMAL.toFixed(2)}, sweptLift );
+vSweptWaterNormal = sweptWaterNormalAt( position.xz );
+objectNormal = normalize( mix( objectNormal, vSweptWaterNormal, vSweptRest ) );`;
+/**
+ * The water's own normal at a point, as each look's water mesh takes it at its vertices: Classic, the central
+ * differences of its bilinear heights (`waterBeginNormal`); Rich, its Catmull-Rom surface's (`richBeginNormal`).
+ */
+const classicWaterNormalAt = /* glsl */ `
+vec3 sweptWaterNormalAt( vec2 xz ) {
+  vec2 stepX = vec2( waterGrid.z, 0.0 );
+  vec2 stepZ = vec2( 0.0, waterGrid.z );
+  float slopeX = ( waterHeightAt( xz + stepX ) - waterHeightAt( xz - stepX ) ) / ( 2.0 * waterGrid.z );
+  float slopeZ = ( waterHeightAt( xz + stepZ ) - waterHeightAt( xz - stepZ ) ) / ( 2.0 * waterGrid.z );
+  return normalize( vec3( -slopeX, 1.0, -slopeZ ) );
+}`;
+const richWaterNormalAt = /* glsl */ `
+vec3 sweptWaterNormalAt( vec2 xz ) {
+  vec3 surface = waterCarvedCubic( xz );
+  return normalize( vec3( -surface.y, 1.0, -surface.z ) );
+}`;
+/** Rich: the air the plunge drove into the water, as far as the curl rests on it (`RICH_FOAM` reads both). */
+const richAirVertex = /* glsl */ `
+vWaterAir = ( 1.0 - sweptLift ) * waterAerationAt( position.xz ).x;
+vWaterPlumeDepth = waterAerationAt( position.xz ).y;`;
+const sweptFragmentPars = /* glsl */ `varying float vSweptLift;
+varying float vSweptRest;
+varying vec3 vSweptWaterNormal;
+varying vec4 vSweptChord;
+varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
 varying float vSweptWallDepth;
@@ -255,6 +317,210 @@ if ( vSweptThroat.w > 0.0 ) {
 const sweptBeginVertex = /* glsl */ `vec3 transformed = vec3( position );
 vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;`;
 
+/** `from` replaced by `to` in `source`, which must hold it (the water's own chunks the curl's are made from). */
+function replaced(source: string, from: string, to: string): string {
+  if (!source.includes(from)) throw new Error(`The water's shader chunk has changed: no "${from}"`);
+  return source.replace(from, to);
+}
+
+/**
+ * Where the curl rests on the water, the side of it the eye is on is the water's own, by the water's normal there
+ * (`sweptRestingNormal`), not its triangle's: neighbouring slices' anchors can cross where a front rests on the water,
+ * folding its rests over, and a folded triangle faces down (look-fix round 1). An eye above the water there is on its
+ * air side too, though behind its tangent plane: a camera a few centimetres over the rests, as inside the tube, sees
+ * their far, back-sloping rows at a grazing angle, and on the tangent plane alone drew them from below, a dark line along
+ * the curl's far edge. Lifted, the triangle's side is the curl's own.
+ */
+const SWEPT_RESTING_SIDE = /* glsl */ `if ( vSweptRest > 0.5 ) faceDirection = dot( cameraPosition - vWaterWorld, sweptRestingNormal ) >= 0.0 || cameraPosition.y >= vWaterWorld.y ? 1.0 : -1.0;`;
+
+/** The water's Rich normal chunk (`richNormalFragment`): the Catmull-Rom slope per pixel, the chop, the ripples, the churn. */
+const WATER_RICH_NORMAL = richNormalFragment({ ripples: true, churn: true });
+/**
+ * The Rich curl's normal (look-fix round 1): the water's own chunk, with its relief (the wind chop, the ripples carried
+ * by the current, fresh whitewater's clumps: `waterSlope`, from 0 here) added to the curl's surface in place of the
+ * water's. The curl's surface, out of the water, in the world, is its vertices' normal (the water's own where it rests,
+ * the loft's where lifted: `sweptBeginNormal`), with the water's per-pixel normal in place of its vertices' as far as it
+ * rests (`vSweptRest`), so a resting curl is the water's normal exactly. The relief goes on as the water's does, to its
+ * height field's slope, where the surface faces up, and across it where it stands steep or overturns.
+ */
+export const RICH_CURL_NORMAL = replaced(replaced(WATER_RICH_NORMAL,
+  'vec2 waterSlope = waterSurfaceSample.yz;', 'vec2 waterSlope = vec2( 0.0 );'),
+'vec3 waterWorldNormal = normalize( vec3( -waterSlope.x, 1.0, -waterSlope.y ) ) * faceDirection;', `vec3 sweptWaterPixel = normalize( vec3( -waterSurfaceSample.y, 1.0, -waterSurfaceSample.z ) );
+  vec3 sweptOut = normalize( ( vec4( normalize( vNormal ), 0.0 ) * viewMatrix ).xyz + vSweptRest * ( sweptWaterPixel - normalize( vSweptWaterNormal ) ) );
+  vec3 sweptField = normalize( vec3( sweptOut.x / max( sweptOut.y, 0.3 ) - waterSlope.x, 1.0, sweptOut.z / max( sweptOut.y, 0.3 ) - waterSlope.y ) );
+  vec3 sweptAcross = normalize( sweptOut + vec3( -waterSlope.x, 0.0, -waterSlope.y ) );
+  ${SWEPT_RESTING_SIDE.replace('sweptRestingNormal', 'sweptWaterPixel')}
+  vec3 waterWorldNormal = normalize( mix( sweptAcross, sweptField, smoothstep( 0.3, 0.7, sweptOut.y ) ) ) * faceDirection;`);
+
+/**
+ * The Classic curl's normal: the water's own chunk (its interpolated vertex normal, the water's own where the curl rests:
+ * `sweptBeginNormal`), with its wind chop (look-fix round 1), on the side of the water the eye is on where it rests.
+ */
+export const CLASSIC_CURL_NORMAL = replaced(waterChopNormal, '#include <normal_fragment_begin>', `#include <normal_fragment_begin>
+${SWEPT_RESTING_SIDE.replace('sweptRestingNormal', 'normalize( sweptWaterTriangleNormal )')}
+normal = normalize( mix( normalize( vNormal ), normalize( ( viewMatrix * vec4( sweptWaterTriangleNormal, 0.0 ) ).xyz ), vSweptRest ) ) * faceDirection;`);
+
+/**
+ * The crest light where the curl is lifted and no sheet (look-fix round 1; the advisor's ruling, "the curl's crest light
+ * at weight 0": over the profile's own horizontal chord toward the sun): the water's crest light (`waterBodyFragment`'s
+ * `CREST_SCATTER` form), its path the horizontal chord through the slice as drawn on the sun's side of the vertex
+ * (`polylineChords`) over the cosine of the sun's horizontal direction s to the slice's ray, chord / max(0.2, |s·ray|),
+ * as the water's own march through its height field, which under a lifted curl reads the hump, not the curl. Weighted by
+ * the lift less the sheet's weight (the sheet keeps its own), and faded out over the last 1.5 m of the march's 6 m reach
+ * (`NO_CHORD` beyond), where the water's cuts it [the fade provisional]. Needs `sweptSunBehind` from `SWEPT_SHEET_BODY`.
+ */
+export const SWEPT_CHORD_LIGHT = /* glsl */ `
+    float sweptSunLength = length( waterSunDirection.xz );
+    if ( sweptSunLength > 1e-3 ) {
+      float sweptAlong = dot( waterSunDirection.xz / sweptSunLength, vSweptChord.xy );
+      float sweptChordPath = ( sweptAlong > 0.0 ? vSweptChord.z : vSweptChord.w ) / max( 0.2, abs( sweptAlong ) );
+      totalEmissiveRadiance += max( 0.0, vSweptLift - vSweptSheetWeight ) * ${CREST_SCATTER.toFixed(6)} * ( 1.0 - vWaterFoam ) * sweptSunBehind
+        * ( 1.0 - waterFresnel( waterViewCos ) ) * waterSunRadiance * exp( -waterAttenuation * sweptChordPath )
+        * ( 1.0 - smoothstep( ${(CHORD_REACH - 1.5).toFixed(1)}, ${CHORD_REACH.toFixed(1)}, sweptChordPath ) );
+    }`;
+
+/** The line of the water's body block that adds its crest light (`waterBodyFragment`), and the curl's, by 1 − the lift. */
+const WATER_CREST_LINE = `totalEmissiveRadiance += ${CREST_SCATTER.toFixed(6)} * ( 1.0 - vWaterFoam ) * waterBehind`;
+const CURL_CREST_LINE = `totalEmissiveRadiance += ${CREST_SCATTER.toFixed(6)} * ( 1.0 - vSweptLift ) * ( 1.0 - vWaterFoam ) * waterBehind`;
+
+/**
+ * The curl's body (look-fix round 1): the water's own (`waterBodyFragment`), with the crest light marched through the
+ * height field as far as the curl rests on it (1 − the lift: under a lifted curl the height field is the hump), the lip's
+ * sheet and the lifted curl's chord light after the column, and the look's own foam: Rich's (the churn, the freshness,
+ * the streaks and the plume, on the air as far as the curl rests), Classic's.
+ */
+export function sweptBodyFragment(rich: boolean): string {
+  const body = rich
+    ? waterBodyFragment(true, true, RICH_FOAM, SWEPT_SHEET_BODY + RICH_LIP_GLOW + SWEPT_CHORD_LIGHT)
+    : waterBodyFragment(true, true, CLASSIC_FOAM, SWEPT_SHEET_BODY + SWEPT_CHORD_LIGHT);
+  return replaced(body, WATER_CREST_LINE, CURL_CREST_LINE);
+}
+
+/**
+ * Where the curl rests on the water it is the water, and is drawn at the water's own surface along the view ray, with the
+ * water's own foam and current there (look-fix round 1). The loft's rests lie on the water at its vertices, but between
+ * them its triangles (up to a metre long) cut across the water's drawn surface by centimetres, and its vertices' foam and
+ * current, interpolated over them (and over the folds where neighbouring slices' anchors cross), drift from the water's:
+ * at a grazing view the water's lace and glints shifted against the curl's along the seam. So, as far as it rests
+ * (`vSweptRest`), each fragment finds the water's surface on its view ray (one step to its tangent plane) and reads the
+ * water there as the water's own fragment would: Rich, its Catmull-Rom surface and its bilinear fields (the dense patch
+ * the Rich water is drawn with, a quarter-metre grid, interpolates them the same to a few parts in a thousand); Classic,
+ * its mesh's own triangle (`PlaneGeometry`'s, each cell split from (i, k + 1) to (i + 1, k)), its plane, and its vertices'
+ * foam, current and normal, as the water interpolates them. These stand for the water's varyings in every chunk after
+ * them, the seam's mask among them, so the curl and the water read the mask at the same point of a pixel.
+ */
+/**
+ * TypeScript twin of `sweptWaterTriangle`: the Classic water mesh's triangle under a point at grid coordinates (gx, gz)
+ * (`PlaneGeometry`'s cells, split from (i, k + 1) to (i + 1, k)): its three nodes (i, k) and their weights.
+ */
+export function waterTriangle(gx: number, gz: number): { nodes: [number, number][]; weights: [number, number, number] } {
+  const [i, k] = [Math.floor(gx), Math.floor(gz)];
+  const [tx, tz] = [gx - i, gz - k];
+  return tx + tz <= 1
+    ? { nodes: [[i, k], [i + 1, k], [i, k + 1]], weights: [1 - tx - tz, tx, tz] }
+    : { nodes: [[i + 1, k + 1], [i, k + 1], [i + 1, k]], weights: [tx + tz - 1, 1 - tx, 1 - tz] };
+}
+
+const SWEPT_RESTING_NAMES = ['vWaterWorld', 'vWaterFoam', 'vWaterFlow'] as const;
+const sweptRestingDefines = SWEPT_RESTING_NAMES.map((name, k) => `#define ${name} ${['sweptShading', 'sweptFoam', 'sweptFlow'][k]}`).join('\n');
+const sweptRestingUndefines = SWEPT_RESTING_NAMES.map((name) => `#undef ${name}`).join('\n');
+const richRestingPars = /* glsl */ `
+vec3 sweptShading;
+float sweptFoam;
+vec2 sweptFlow;
+vec4 sweptBilinear( sampler2D map, vec2 xz ) {
+  vec2 g = clamp( ( xz - waterGrid.xy ) / waterGrid.z, vec2( 0.0 ), waterGridSize - 1.0 );
+  ivec2 c = min( ivec2( floor( g ) ), ivec2( waterGridSize ) - 2 );
+  vec2 t = g - vec2( c );
+  return mix( mix( texelFetch( map, c, 0 ), texelFetch( map, c + ivec2( 1, 0 ), 0 ), t.x ), mix( texelFetch( map, c + ivec2( 0, 1 ), 0 ), texelFetch( map, c + ivec2( 1, 1 ), 0 ), t.x ), t.y );
+}
+${sweptRestingDefines}`;
+const classicRestingPars = /* glsl */ `
+uniform sampler2D waterFlow;
+vec3 sweptShading;
+float sweptFoam;
+vec2 sweptFlow;
+vec3 sweptWaterTriangleNormal;
+// The water mesh's triangle under xz: its three nodes and their weights.
+void sweptWaterTriangle( vec2 xz, out ivec2 a, out ivec2 b, out ivec2 c, out vec3 w ) {
+  vec2 g = ( xz - waterGrid.xy ) / waterGrid.z;
+  ivec2 cell = ivec2( floor( g ) );
+  vec2 t = g - vec2( cell );
+  if ( t.x + t.y <= 1.0 ) {
+    a = cell; b = cell + ivec2( 1, 0 ); c = cell + ivec2( 0, 1 ); w = vec3( 1.0 - t.x - t.y, t.x, t.y );
+  } else {
+    a = cell + ivec2( 1, 1 ); b = cell + ivec2( 0, 1 ); c = cell + ivec2( 1, 0 ); w = vec3( t.x + t.y - 1.0, 1.0 - t.x, 1.0 - t.y );
+  }
+}
+vec4 sweptNode( sampler2D map, ivec2 n ) { return texelFetch( map, clamp( n, ivec2( 0 ), ivec2( waterGridSize ) - 1 ), 0 ); }
+// A node's normal, as the Classic water's vertex shader takes it (central differences of the node heights).
+vec3 sweptNodeNormal( ivec2 n ) {
+  float sx = ( sweptNode( waterSurface, n + ivec2( 1, 0 ) ).r - sweptNode( waterSurface, n - ivec2( 1, 0 ) ).r ) / ( 2.0 * waterGrid.z );
+  float sz = ( sweptNode( waterSurface, n + ivec2( 0, 1 ) ).r - sweptNode( waterSurface, n - ivec2( 0, 1 ) ).r ) / ( 2.0 * waterGrid.z );
+  return normalize( vec3( -sx, 1.0, -sz ) );
+}
+${sweptRestingDefines}`;
+const richRestingWater = /* glsl */ `${sweptRestingUndefines}
+sweptShading = vWaterWorld;
+sweptFoam = vWaterFoam;
+sweptFlow = vWaterFlow;
+if ( vSweptRest > 0.0 ) {
+  vec3 sweptRay = normalize( vWaterWorld - cameraPosition );
+  vec3 sweptSurface = waterCarvedCubic( vWaterWorld.xz );
+  float sweptRate = sweptRay.y - dot( sweptSurface.yz, sweptRay.xz );
+  float sweptReach = abs( sweptRate ) > 1e-3 ? clamp( ( sweptSurface.x - vWaterWorld.y ) / sweptRate, -${RESTING_REACH.toFixed(2)}, ${RESTING_REACH.toFixed(2)} ) : 0.0;
+  sweptShading = vWaterWorld + vSweptRest * sweptReach * sweptRay;
+  sweptFoam = mix( vWaterFoam, sweptBilinear( waterSurface, sweptShading.xz ).g, vSweptRest );
+  sweptFlow = mix( vWaterFlow, sweptBilinear( waterFlow, sweptShading.xz ).rg, vSweptRest );
+}
+${sweptRestingDefines}`;
+const classicRestingWater = /* glsl */ `${sweptRestingUndefines}
+sweptShading = vWaterWorld;
+sweptFoam = vWaterFoam;
+sweptFlow = vWaterFlow;
+sweptWaterTriangleNormal = vec3( 0.0, 1.0, 0.0 );
+if ( vSweptRest > 0.0 ) {
+  ivec2 sweptA, sweptB, sweptC;
+  vec3 sweptW;
+  sweptWaterTriangle( vWaterWorld.xz, sweptA, sweptB, sweptC, sweptW );
+  vec3 sweptHeights = vec3( sweptNode( waterSurface, sweptA ).r, sweptNode( waterSurface, sweptB ).r, sweptNode( waterSurface, sweptC ).r );
+  // The triangle's plane: its slope along x and z from its nodes (one of the two corners' edges runs each way).
+  vec2 sweptSlope = sweptA.x == sweptB.x - 1
+    ? vec2( sweptHeights.y - sweptHeights.x, sweptHeights.z - sweptHeights.x ) / waterGrid.z
+    : vec2( sweptHeights.x - sweptHeights.y, sweptHeights.x - sweptHeights.z ) / waterGrid.z;
+  vec3 sweptRay = normalize( vWaterWorld - cameraPosition );
+  float sweptRate = sweptRay.y - dot( sweptSlope, sweptRay.xz );
+  float sweptReach = abs( sweptRate ) > 1e-3 ? clamp( ( dot( sweptW, sweptHeights ) - vWaterWorld.y ) / sweptRate, -${RESTING_REACH.toFixed(2)}, ${RESTING_REACH.toFixed(2)} ) : 0.0;
+  sweptShading = vWaterWorld + vSweptRest * sweptReach * sweptRay;
+  sweptWaterTriangle( sweptShading.xz, sweptA, sweptB, sweptC, sweptW );
+  sweptFoam = mix( vWaterFoam, dot( sweptW, vec3( sweptNode( waterSurface, sweptA ).g, sweptNode( waterSurface, sweptB ).g, sweptNode( waterSurface, sweptC ).g ) ), vSweptRest );
+  sweptFlow = mix( vWaterFlow, sweptW.x * sweptNode( waterFlow, sweptA ).rg + sweptW.y * sweptNode( waterFlow, sweptB ).rg + sweptW.z * sweptNode( waterFlow, sweptC ).rg, vSweptRest );
+  sweptWaterTriangleNormal = sweptW.x * sweptNodeNormal( sweptA ) + sweptW.y * sweptNodeNormal( sweptB ) + sweptW.z * sweptNodeNormal( sweptC );
+}
+${sweptRestingDefines}`;
+
+/**
+ * The Rich curl's fragment declarations: everything the water's own Rich fragment declares, in its order (`WaterSurface`,
+ * where its program is composed), so the water's shading chunks reach the curl too, then the seam's mask and the curl's
+ * own (look-fix round 1). The water's `waterCarve` is declared first, as there, for its crest light's march through the
+ * carved surface.
+ */
+const RICH_CURL_FRAGMENT_PARS = `#include <common>
+float waterCarve( vec2 xz, float surface );
+${waterFragmentPars}
+${richRestingPars}
+${waterCubicPars}
+${waterTubePars}
+${richFragmentPars}
+${richAerationFragmentPars}
+${waterRipplePars}
+${waterSpecularPars}
+${waterStreakPars}
+${waterChurnPars}
+${richReflectionPars}
+${richPatchFragmentPars}
+${waterBarrelMaskPars}`;
+
 /**
  * The polygon offset that draws the band over the water it rests on, the two surfaces coinciding there: factor −1 (with
  * the surface's depth slope), units −4 (a few steps of the depth buffer) (look-fix round 1) [provisional].
@@ -292,6 +558,8 @@ export class SweptBarrelMesh {
   private readonly throat = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
   private readonly tube = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
   private readonly ray = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
+  /** Both looks' crest light on the lifted curl (`SWEPT_CHORD_LIGHT`): each vertex's slice's ray (x, z) and its chords ahead and behind. */
+  private readonly chord = new BufferAttribute(new Float32Array(4 * VERTICES), 4).setUsage(DynamicDrawUsage);
   private readonly index = new BufferAttribute(new Uint32Array(INDICES), 1).setUsage(DynamicDrawUsage);
   /** The dev view's colours, made with the first view. */
   private viewColours?: BufferAttribute;
@@ -323,6 +591,7 @@ export class SweptBarrelMesh {
     geometry.setAttribute('sweptThroat', this.throat);
     geometry.setAttribute('sweptTube', this.tube);
     geometry.setAttribute('sweptRay', this.ray);
+    geometry.setAttribute('sweptChord', this.chord);
     geometry.setIndex(this.index);
     geometry.setDrawRange(0, 0);
     const parameters = { color: '#ffffff', roughness: CLASSIC_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide } as const;
@@ -355,17 +624,21 @@ export class SweptBarrelMesh {
     if (band) shader.uniforms.sweptBandOpaque = this.bandOpaqueUniform;
     const rich = this.look === 'rich';
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', rich ? `#include <common>\n${waterVertexPars}\n${sweptVertexPars}\n${richThroatVertexPars}` : `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
-      .replace('#include <beginnormal_vertex>', rich ? sweptBeginNormal + richThroatVertex : sweptBeginNormal)
+      .replace('#include <common>', rich
+        ? `#include <common>\n${waterVertexPars}\n${richAerationVertexPars}\n${waterCubicPars}\n${waterTubePars}\n${richWaterNormalAt}\n${sweptVertexPars}\n${richThroatVertexPars}`
+        : `#include <common>\n${waterVertexPars}\n${classicWaterNormalAt}\n${sweptVertexPars}`)
+      .replace('#include <beginnormal_vertex>', rich ? sweptBeginNormal + richAirVertex + richThroatVertex : sweptBeginNormal)
       .replace('#include <begin_vertex>', sweptBeginVertex);
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', rich
-        ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
-        : `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}`)
-      .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${SWEPT_SEAM}`)
-      .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
+        ? `${RICH_CURL_FRAGMENT_PARS}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
+        : `#include <common>\n${waterFragmentPars}\n${classicRestingPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}`)
+      .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${rich ? richRestingWater : classicRestingWater}\n${SWEPT_SEAM}`)
+      // The Rich water's crest light marches through the carved surface (G9), and so does the curl's where it rests.
+      .replace('float gap = waterHeightAt( p.xz ) - p.y;', rich ? 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;' : 'float gap = waterHeightAt( p.xz ) - p.y;')
+      .replace('#include <normal_fragment_begin>', rich ? RICH_CURL_NORMAL : CLASSIC_CURL_NORMAL)
       .replace('#include <color_fragment>', '')
-      .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, true, RICH_FAR_FOAM, SWEPT_SHEET_BODY + RICH_LIP_GLOW) : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
+      .replace('#include <emissivemap_fragment>', sweptBodyFragment(rich))
       .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>');
     const view = this.currentView;
     if (!view) return;
@@ -481,6 +754,20 @@ export class SweptBarrelMesh {
         attribute.needsUpdate = true;
       }
     }
+    // Each slice's ray with the chords through it, in both looks (a loft made without them has none).
+    const chord = this.chord.array as Float32Array;
+    for (let s = 0; s * LOFT_SAMPLES < vertices; s += 1) {
+      for (let j = 0; j < LOFT_SAMPLES && s * LOFT_SAMPLES + j < vertices; j += 1) {
+        const v = s * LOFT_SAMPLES + j;
+        chord[4 * v] = loft.sliceRayX[s];
+        chord[4 * v + 1] = loft.sliceRayZ[s];
+        chord[4 * v + 2] = loft.chord ? loft.chord[2 * v] : NO_CHORD;
+        chord[4 * v + 3] = loft.chord ? loft.chord[2 * v + 1] : NO_CHORD;
+      }
+    }
+    this.chord.clearUpdateRanges();
+    this.chord.addUpdateRange(0, 4 * vertices);
+    this.chord.needsUpdate = true;
     if (this.sheetShown) (this.sheetWeight.array as Float32Array).set(loft.sheetWeight.subarray(0, vertices));
     else (this.sheetWeight.array as Float32Array).fill(0, 0, vertices);
     const index = this.index.array as Uint32Array;

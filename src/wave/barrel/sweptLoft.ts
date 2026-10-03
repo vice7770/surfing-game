@@ -3,9 +3,9 @@ import { GRAVITY } from '../dispersion';
 import { BARREL_SPOTS } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
-import { SHEET, THROAT, sheetTablesLookup, throatViews, type SheetLookup } from './lipSheet';
+import { NO_CHORD, SHEET, THROAT, polylineChords, sheetTablesLookup, throatViews, type SheetLookup } from './lipSheet';
 
-export { SHEET, THROAT, arcView, sheetAcross, throatViews, tubeSkyView } from './lipSheet';
+export { NO_CHORD, SHEET, THROAT, arcView, polylineChords, sheetAcross, throatViews, tubeSkyView } from './lipSheet';
 
 /**
  * The swept loft's constants (the Padang Padang spec, Part B, PR 3; docs/research/water-physics/swept-barrel-build.md,
@@ -92,6 +92,13 @@ export interface LoftResult {
    * × its lift). The open sky, no lip, 0 and 0 elsewhere. Drawn lofts only.
    */
   throat: Float32Array;
+  /**
+   * Per vertex, 2 floats: the water the sun's light crosses through its slice as drawn to reach the vertex, along a
+   * horizontal line ahead (+ray) and behind it, m (`polylineChords`; look-fix round 1): the curl's crest light where it
+   * is lifted. `NO_CHORD` on the other side and where it rests. Drawn lofts only; a loft made by hand may leave it out,
+   * which reads as `NO_CHORD`.
+   */
+  chord?: Float32Array;
   indices: Uint32Array;
   vertexCount: number;
   indexCount: number;
@@ -259,6 +266,9 @@ export class SweptLoft {
   private readonly sheets: SheetLookup = { across: new Float32Array(PROFILE_POINTS), back: new Float32Array(PROFILE_POINTS) };
   /** A slice's throat views per profile point (`throatViews`). */
   private readonly inside = new Float32Array(4 * PROFILE_POINTS);
+  /** A slice as drawn in its own plane (along its ray, up) per sample, and its chords there, ahead and behind (`polylineChords`). */
+  private readonly drawn = new Float32Array(2 * LOFT_SAMPLES);
+  private readonly chords = new Float32Array(2 * LOFT_SAMPLES);
   /** How the drawing's profile blends its cases' frames, for the sheet's tables (`ProfileLibrary.frameBlend`). */
   private readonly blend = {
     weight: 0, scale: 0, lowerFrame: 0, lowerNext: 0, lowerShare: 0, upperFrame: 0, upperNext: 0, upperShare: 0,
@@ -274,6 +284,7 @@ export class SweptLoft {
     this.result = {
       positions: new Float32Array(3 * vertices), normals: new Float32Array(3 * vertices), mask: new Float32Array(vertices), lift: new Float32Array(vertices),
       sheet: new Float32Array(vertices), sheetWeight: new Float32Array(vertices), sheetBack: new Float32Array(vertices), throat: new Float32Array(4 * vertices),
+      chord: new Float32Array(2 * vertices).fill(NO_CHORD),
       indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * slices), vertexCount: 0, indexCount: 0, sliceCount: 0,
       sliceFront: new Int32Array(slices), sliceSigma: new Float32Array(slices), sliceTau: new Float32Array(slices),
       slicePhase: new Uint8Array(slices), sliceCrestOffset: new Float32Array(slices), sliceLife: new Float32Array(slices),
@@ -637,6 +648,7 @@ export class SweptLoft {
           lipThickness /= THROAT.thicknessTo - THROAT.thicknessFrom + 1;
         }
       }
+      const chorded = this.measureSheet && w > 0;
       const slice = r.sliceCount;
       r.sliceFormed[slice] = formed;
       r.sliceFront[slice] = f.id;
@@ -746,6 +758,16 @@ export class SweptLoft {
         r.throat[4 * v + 1] = underLip;
         r.throat[4 * v + 2] = lipThickness;
         r.throat[4 * v + 3] = inner * e;
+        this.drawn[2 * j] = along;
+        this.drawn[2 * j + 1] = r.positions[3 * v + 1];
+      }
+      // The water the sun crosses through the slice as drawn, for the curl's crest light where it is lifted (the drawing).
+      if (chorded) polylineChords(this.drawn, LOFT_SAMPLES, this.chords);
+      for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+        const v = slice * LOFT_SAMPLES + j;
+        const lifted = chorded && r.lift[v] > 0;
+        r.chord![2 * v] = lifted ? this.chords[2 * j] : NO_CHORD;
+        r.chord![2 * v + 1] = lifted ? this.chords[2 * j + 1] : NO_CHORD;
       }
       const tip = 3 * (slice * LOFT_SAMPLES + E + LANDMARK.lip);
       r.sliceTipX[slice] = r.positions[tip];

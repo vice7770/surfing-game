@@ -95,8 +95,8 @@ describe('the swept barrel’s mesh', () => {
       expect(fragment).toContain('vec3 sweptWall = waterBodyGain * waterBodyReflectance( vSweptWallDepth, max( 0.05, dot( sweptWallN, waterV ) ), sweptWallSun ) * sweptWallLight;');
       expect(fragment).toContain('vec3 sweptBack = vSweptSheetBack * sweptSky + ( 1.0 - vSweptSheetBack ) * sweptWall;');
       expect(fragment).toContain('float sweptSunPath = vSweptSheet / max( 0.2, abs( dot( waterN, waterSunDirection ) ) );');
-      // The height field's crest-light march never runs on the curl.
-      expect(fragment).not.toContain('waterCrestThickness( vWaterWorld');
+      // The height field's crest-light march runs on the curl only as far as it rests on the water (look-fix round 1).
+      expect(fragment).toContain('totalEmissiveRadiance += 0.350000 * ( 1.0 - vSweptLift ) * ( 1.0 - vWaterFoam ) * waterBehind');
       // The sheet's own lines come after the column's body, inside its lit branch, before the foam.
       expect(fragment.indexOf(SWEPT_SHEET_BODY)).toBeGreaterThan(fragment.indexOf('waterBody = waterBodyReflectanceLit('));
       expect(fragment.indexOf(SWEPT_SHEET_BODY)).toBeLessThan(fragment.indexOf('float waterCover'));
