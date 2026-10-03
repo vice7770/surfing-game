@@ -39,7 +39,6 @@ const ghosts = flag('ghosts');
 /** The swept barrel at a swept spot (Part B): the bots ride its contact; `--no-crash` keeps Kennedy's lip there (before PR 5). */
 const barrel = flag('barrel');
 const crash = !flag('no-crash');
-const barrelCases = barrel ? readBarrelCases() : undefined;
 /** Where the bots wait: metres along shore from the break point, and metres outside the break line (negative: inside). */
 const alongs = ghosts ? [-45, -25, -5, 15, 35] : [0];
 const offsets = ghosts ? [-8, -4, 0, 4, 8, 12] : [argument('offset', 3)];
@@ -108,7 +107,7 @@ function runSpot(spot: SpotName, seed: number): { attempts: Attempt[]; seconds: 
     tide: settings.tide,
     windSpeed: settings.windSpeed,
     ...(crash ? {} : { sweptCrash: false }),
-  }, barrelCases ? { barrelCases, contact: true } : {});
+  }, barrel ? { barrelCases: readBarrelCases(spot), contact: true } : {});
   // Ghosts: the water's reactions and the lip's recoil are dropped.
   const water: SurfWater = {
     sampleAt: (x, y, z, out) => runner.water.sampleAt(x, y, z, out),
