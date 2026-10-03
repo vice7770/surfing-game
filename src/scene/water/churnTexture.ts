@@ -65,7 +65,7 @@ export const FOAM_WEIGHTS = { large: Math.sqrt(0.96), small: 0.2 } as const;
  * masks would double the net where they disagree. Blended in Gaussian space instead, the mean of the two stays a
  * crisp field with a unit variance once it allows for this.
  */
-export const FOAM_STAGE_CORRELATION = 0.13;
+export const FOAM_STAGE_CORRELATION = 0.12;
 /** Hex tiling hides the tile (Mikkelsen 2022, after Heitz & Neyret 2018); the weights of a triangle's three corners are cubed, to keep the blend zones narrow. [provisional] */
 export const FOAM_HEX_POWER = 3;
 /** Past this footprint, m, the foam gives way to its mean, as it did with Classic's lace; the tile has few fine texels left to show. [provisional] */
@@ -124,8 +124,8 @@ function churnBytes(): Uint8Array {
 }
 
 /**
- * The texture's bytes, made afresh: the churn, and the foam's two stages from `bakeFoamCycle`, which takes about half a
- * second. What the bake's worker (`foamBakeWorker`) makes and hands back.
+ * The texture's bytes, made afresh: the churn, and the foam's two stages from `bakeFoamCycle`, which takes a second or
+ * two. What the bake's worker (`foamBakeWorker`) makes and hands back.
  */
 export function churnTextureBytes(): Uint8Array {
   const data = churnBytes();

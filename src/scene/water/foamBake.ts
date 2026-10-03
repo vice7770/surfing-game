@@ -29,35 +29,53 @@
  *   flow gather where the traced density says, with a Spearman rank correlation of 0.92 after 1.5 turnovers and 0.85
  *   after 3, both smoothed over two cells (the test repeats it with fewer particles).
  *
+ * The density is the mass of each cell, so a ridge thinner than a cell is drawn by how much of its length each cell
+ * holds: along a slanting ridge that rises and falls cell by cell, beads. The trace is as fine as the texture, and its
+ * density blurred over two of its cells, the least that removes the beads (at one they show): lines 2–4 cm wide. (At
+ * half the texture's resolution, the blur that hid them drew every line some 12 cm wide, and a little foam drew blobs.)
+ *
  * Provisional, until measured from footage (foam-lifecycle.md §9): the spectrum's shape and peak (4 box wavelengths
- * across the tile, an integral scale L_int of 0.8 m on the 12 m tile, so the tile is 15 L_int: the note asks for 16),
- * the unsteadiness λ, and the two stages' ages in turnovers of this flow (Boffetta et al. see clusters at about 3 of
- * theirs; the note's table has opening cells at 1–2, lace at 2–5 and streaks beyond 5).
+ * across the tile; the flow's integral scale, measured on it, is 0.40 m on the 12 m tile, so the tile is 30 L_int: the
+ * note asks for at least 16), its speed (one component's root-mean-square velocity 0.81 m a unit of the bake's time, so a
+ * unit is about two eddy turnovers L_int/u', measured), the unsteadiness λ, and the two stages' ages, 1.5 and 3 units,
+ * about 3 and 6 turnovers (Boffetta et al. see clusters at about 3 of theirs; the note's table has opening cells at 1–2,
+ * lace at 2–5 and streaks beyond 5).
  */
 
 export const FOAM_BAKE = {
   /** Texels per side of each stage's texture. */
   size: 1024,
-  /** Samples of the backward flow map per side; the density is read off its cells, then raised to `size`. */
-  trace: 512,
+  /** Samples of the backward flow map per side, as many as the texture's texels (the density is raised to `size` if fewer). */
+  trace: 1024,
   /** Velocity grid per side, 8 or more points to the shortest wavelength. */
   grid: 128,
-  /** Highest wavenumber of the flow, in tile wavelengths; the peak of the spectrum is at `peak`. */
+  /** Highest wavenumber of the flow, in tile wavelengths: two octaves past the peak, at the grid's 8 points a wavelength. [provisional] */
   maxMode: 16,
   peak: 4,
+  /**
+   * One component's root-mean-square velocity, tile lengths a unit of time (1.7 / 8π, kept from the first bake). The
+   * integral scale this spectrum gives is 0.0336 tiles (measured, the test), so a unit of time is two turnovers. [provisional]
+   */
+  speed: 0.0676408,
   /** Surface compressibility (Larkin et al. 2009: 0.49 ± 0.02). */
   compressibility: 0.49,
   /** Unsteadiness λ of Fung et al. 1992 (0.5–1 in the note): the correlation time is (k³E)^(-1/2)/λ. [provisional] */
   unsteadiness: 1,
-  /** Time steps per turnover; the backward map is advanced by the midpoint rule. */
+  /** Time steps a unit of time; the backward map is advanced by the midpoint rule. */
   stepsPerTurnover: 16,
-  /** The two stages' ages, turnovers since the raft was uniform. [provisional] */
+  /** The two stages' ages, units of time since the raft was uniform (about 3 and 6 turnovers). [provisional] */
   early: 1.5,
   late: 3,
-  /** The blur on the traced density (trace texels) and on the raised one (texels): a raft has a finite width, and the traced density is noisy along thin ridges. [provisional] */
+  /**
+   * The Gaussian blur on the traced density, trace cells: the least that removes the beads a ridge thinner than a cell
+   * draws (see the file's note). [provisional] And on the raised density, texels: none while the trace is the texture's size.
+   */
   smooth: 2,
-  blur: 1.3,
-  /** The wide blur that ranks the empty interior of a hole by its depth, in texels of a `depthGrid`² grid. */
+  blur: 0,
+  /**
+   * The wide blur that ranks the empty interior of a hole by its depth, in texels of a `depthGrid`² grid: σ = 24 × 12 m /
+   * 128, 2.25 m, about a hole's width (the bake's holes run 0.5–3 m), so holes close from their edges in. [provisional]
+   */
   depthBlur: 24,
   depthGrid: 128,
   seed: 0x5eed1e55,
@@ -166,7 +184,7 @@ function fft(re: Float64Array, im: Float64Array, offset: number, stride: number,
 /**
  * The surface flow: random Fourier modes of a compressive part (along the wavevector) and a solenoidal part (across
  * it), each an Ornstein–Uhlenbeck process, synthesised onto a periodic grid by one inverse FFT a step. Lengths are
- * tile fractions and times turnovers, so the root-mean-square velocity of one component is L_int per turnover.
+ * tile fractions and times units of the bake's time, in which one component's root-mean-square velocity is `speed`.
  */
 export class SurfaceFlow {
   readonly n: number;
@@ -230,9 +248,8 @@ export class SurfaceFlow {
     const shape = (kappa: number) => (kappa ** 3) / (1 + (kappa / parameters.peak) ** (17 / 3));
     let total = 0;
     list.forEach(([m, q]) => { total += 2 * shape(Math.hypot(m, q)); });
-    // One component's rms is L_int per turnover; L_int = 1.7 / (2π κ_p) tile lengths (k_p = 1.7 / L_int).
-    const lint = 1.7 / (2 * Math.PI * parameters.peak);
-    const scale = (2 * lint * lint) / total;
+    // One component's rms is `speed` tile lengths a unit of time.
+    const scale = (2 * parameters.speed * parameters.speed) / total;
     let compressive = 0;
     let all = 0;
     list.forEach(([m, q], index) => {
@@ -532,8 +549,8 @@ export function bakeFoamCycle(overrides: Partial<FoamBakeParameters> = {}): Foam
     const { dx, dy } = traceBack(history, parameters.grid, trace, steps);
     const coarse = cellDensity(dx, dy, parameters.grid, trace);
     if (parameters.smooth > 0) blur(coarse, trace, parameters.smooth);
-    const density = raise(coarse, trace, size);
-    blur(density, size, parameters.blur);
+    const density = trace === size ? coarse : raise(coarse, trace, size);
+    if (parameters.blur > 0) blur(density, size, parameters.blur);
     const depth = depthField(density, size, parameters.depthGrid, parameters.depthBlur);
     const key = new Float32Array(density.length);
     for (let k = 0; k < key.length; k += 1) key[k] = density[k] + 1e-3 * depth[k];
