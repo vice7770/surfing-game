@@ -3,7 +3,7 @@ import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
 import { LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
-import { LOFT, LOFT_SAMPLES, SHEET, SweptLoft, THROAT, sheetAcross, throatViews, tubeSkyView, type LoftResult } from './sweptLoft';
+import { LOFT, LOFT_SAMPLES, SHEET, SweptLoft, THROAT, mouthSkyShare, sheetAcross, throatViews, tubeSkyView, type LoftResult } from './sweptLoft';
 import { lipCase, toyCase, tubeCase } from './toyCase';
 
 /** The y where the vertical line at (x, z) meets triangle (u, v, w) strictly inside it; undefined where it misses. */
@@ -605,9 +605,16 @@ describe('the tube’s inside as its inner face sees it (the Rich look’s dark 
     for (let i = THROAT.thicknessFrom; i <= THROAT.thicknessTo; i += 1) mean += across[i];
     mean /= THROAT.thicknessTo - THROAT.thicknessFrom + 1;
     expect(mean).toBeGreaterThan(0.5);
+    // The mouth's share of the sky (look-fix round 1), tiny this far from it.
+    const s = sliceAt(loft, 10);
+    const point = (k: number) => Array.from(loft.positions.slice(3 * (base + k), 3 * (base + k) + 3));
+    const share = mouthSkyShare(loft.sliceMouth[s], 0.5 * Math.hypot(...point(LANDMARK.lip).map((c, k) => c - point(LANDMARK.throat)[k])));
+    expect(share).toBeGreaterThan(0);
+    expect(share).toBeLessThan(0.05);
     for (let i = 0; i < PROFILE_POINTS; i += 1) {
       const v = base + i;
-      expect(loft.throat[4 * v], `sky ${i}`).toBeCloseTo(views[4 * i], 5);
+      const inner = i >= LANDMARK.lip && i <= LANDMARK.toe;
+      expect(loft.throat[4 * v], `sky ${i}`).toBeCloseTo(views[4 * i] + (inner ? Math.max(0, 1 - views[4 * i] - views[4 * i + 1]) * share : 0), 5);
       expect(loft.throat[4 * v + 1], `lip ${i}`).toBeCloseTo(views[4 * i + 1], 5);
       expect(loft.throat[4 * v + 2], `thickness ${i}`).toBeCloseTo(mean, 4);
       expect(loft.throat[4 * v + 3], `weight ${i}`).toBe(i >= LANDMARK.lip && i <= LANDMARK.toe ? loft.lift[v] : 0);
