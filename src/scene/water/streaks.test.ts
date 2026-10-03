@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { foamQuantile, sampleFoamField, waterChurnPars } from './churnTexture';
 import {
-  STREAK_ANCHOR, STREAK_COVER, STREAK_EDGE_SLOPE, STREAK_STRETCH, STREAK_TILE, streakAnchors, streakCover, streakFrame, streakMask, waterStreakPars,
+  STREAK_ANCHOR, STREAK_COVER, STREAK_EDGE_SLOPE, STREAK_STRETCH, STREAK_TILE, streakAnchors, streakCover, streakFrame, streakMask, streakReach, waterStreakPars,
 } from './streaks';
 
 /** A strip across a uniform current, as a mask of the lines: `across` samples `step` m apart, `rows` rows 0.1 m apart along it. */
@@ -229,6 +229,20 @@ describe('face streaks from the foam field’s late stage', () => {
     }
     expect(windows).toBeGreaterThan(80);
     expect(angle / windows).toBeLessThan(15);
+  });
+
+  it('stay sharp where they run away from a grazing eye: their edge spans the pixel across them, not its longest side', () => {
+    // A current along +z and a pixel 1 cm across and 20 cm deep, the eye low and looking along z: the lines run along the
+    // view, so across them the pixel spans 1 cm; along them 20 cm, a seventh of that in the stretched field.
+    expect(streakReach(0, 1, 0.01, 0.2)).toBeCloseTo(0.2 / STREAK_STRETCH, 12);
+    // Lines across the view soften by the pixel's depth.
+    expect(streakReach(1, 0, 0.01, 0.2)).toBeCloseTo(0.2, 12);
+    // A square pixel: across any current, between its side and its diagonal.
+    for (const [x, z] of [[0, 1], [0.6, 0.8], [1, 0]]) {
+      expect(streakReach(x, z, 0.05, 0.05)).toBeGreaterThanOrEqual(0.05 - 1e-12);
+      expect(streakReach(x, z, 0.05, 0.05)).toBeLessThanOrEqual(0.05 * Math.SQRT2 + 1e-12);
+    }
+    expect(waterStreakPars).toContain('float reach = max( abs( along.y ) * footprint.x + abs( along.x ) * footprint.y, ( abs( along.x ) * footprint.x + abs( along.y ) * footprint.y ) / STREAK_STRETCH );');
   });
 
   it('are combined by their union, each anchor’s phase thresholded for its weight, and defined where the churn map is', () => {
